@@ -413,7 +413,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
   const [profitFloor, setProfitFloor] = useState<ProfitFloor>(0);
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
-  const [selectedPid, setSelectedPid] = useState(candidates[0]?.pid ?? "");
+  const [selectedPid, setSelectedPid] = useState("");
   const [actions, setActions] = useState<CandidateActions>(() => {
     if (typeof window === "undefined") return {};
     return loadActions();
@@ -422,6 +422,15 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(actions));
   }, [actions]);
+
+  useEffect(() => {
+    if (!selectedPid) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedPid("");
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedPid]);
 
   function updateAction(pid: string, patch: Partial<CandidateAction>) {
     setActions((current) => ({
@@ -438,8 +447,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
   function setStatus(pid: string, status: CandidateStatus) {
     updateAction(pid, { status });
     if (status === "hidden" && selectedPid === pid) {
-      const next = candidates.find((item) => item.pid !== pid && actions[item.pid]?.status !== "hidden");
-      setSelectedPid(next?.pid ?? "");
+      setSelectedPid("");
     }
   }
 
@@ -477,7 +485,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
     });
   }, [actions, candidates, categoryFilter, filter, profitFloor]);
 
-  const selected = filtered.find((item) => item.pid === selectedPid) ?? filtered[0] ?? candidates[0];
+  const selected = candidates.find((item) => item.pid === selectedPid) ?? null;
   const avgProfit = candidates.reduce((sum, item) => sum + expectedProfitMin(item), 0) / Math.max(1, candidates.length);
   const strongCount = candidates.filter((item) => scoreLabel(item) === "고순익 후보").length;
   const interestedCount = Object.values(actions).filter((item) => item.status === "interested").length;
@@ -488,39 +496,41 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
   return (
     <main className="min-h-screen bg-[#f6f7f9] text-zinc-950">
       <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-4 border-b border-zinc-200 pb-5 xl:flex-row xl:items-end xl:justify-between">
+        <header className="overflow-hidden rounded-lg border border-zinc-900 bg-zinc-950 p-5 text-white shadow-sm xl:flex xl:items-end xl:justify-between">
           <div>
-            <p className="text-sm font-medium text-emerald-700">미뇨이 MVP v0</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950 sm:text-3xl">
-              리셀갭 후보 작업대
+            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-300">Min-yoi deal intelligence</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
+              오늘 열어볼 리셀갭 후보
             </h1>
-            <p className="mt-2 text-sm text-zinc-500">마지막 갱신 {generatedAt}</p>
+            <p className="mt-2 max-w-2xl text-sm text-zinc-300">
+              사진으로 먼저 훑고, 순익이 설득되는 후보만 열어봅니다. 마지막 갱신 {generatedAt}
+            </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Link
                 href="/debug"
-                className="inline-flex rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 transition hover:border-zinc-400"
+                className="inline-flex rounded-md border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
               >
                 운영 로그
               </Link>
               <ThemeToggle />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-            <div className="rounded-md border border-zinc-200 bg-white px-3 py-2">
-              <div className="text-xs text-zinc-500">후보</div>
-              <div className="font-semibold">{filtered.length}/{candidates.length}건</div>
+          <div className="mt-5 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4 xl:mt-0 xl:min-w-[520px]">
+            <div className="rounded-md border border-white/10 bg-white/10 px-3 py-2">
+              <div className="text-xs text-zinc-300">후보</div>
+              <div className="font-semibold text-white">{filtered.length}/{candidates.length}건</div>
             </div>
-            <div className="rounded-md border border-zinc-200 bg-white px-3 py-2">
-              <div className="text-xs text-zinc-500">평균 순익</div>
-              <div className="font-semibold">{compactKrw(avgProfit)}</div>
+            <div className="rounded-md border border-white/10 bg-white/10 px-3 py-2">
+              <div className="text-xs text-zinc-300">평균 순익</div>
+              <div className="font-semibold text-white">{compactKrw(avgProfit)}</div>
             </div>
-            <div className="rounded-md border border-zinc-200 bg-white px-3 py-2">
-              <div className="text-xs text-zinc-500">고순익</div>
-              <div className="font-semibold">{strongCount}건</div>
+            <div className="rounded-md border border-white/10 bg-white/10 px-3 py-2">
+              <div className="text-xs text-zinc-300">고순익</div>
+              <div className="font-semibold text-white">{strongCount}건</div>
             </div>
-            <div className="rounded-md border border-zinc-200 bg-white px-3 py-2">
-              <div className="text-xs text-zinc-500">바로가기</div>
-              <div className="font-semibold">{openedCount}건</div>
+            <div className="rounded-md border border-white/10 bg-white/10 px-3 py-2">
+              <div className="text-xs text-zinc-300">바로가기</div>
+              <div className="font-semibold text-white">{openedCount}건</div>
             </div>
           </div>
         </header>
@@ -537,95 +547,113 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
           <span className="rounded-md border border-zinc-200 bg-white px-2.5 py-1.5">숨김 {hiddenCount}건</span>
         </section>
 
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_460px]">
-          <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 2xl:grid-cols-3">
-            {filtered.map((item, index) => {
-              const label = scoreLabel(item);
-              const active = selected?.pid === item.pid;
-              const action = actions[item.pid];
-              const profit = expectedProfitMax(item);
-              return (
-                <button
-                  key={item.pid}
-                  type="button"
-                  onClick={() => setSelectedPid(item.pid)}
-                  className={`group flex h-full flex-col overflow-hidden rounded-lg border bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-400 hover:shadow-md ${
-                    active ? "border-emerald-500 ring-2 ring-emerald-500/20" : "border-zinc-200"
-                  }`}
-                >
-                  <div className="relative">
-                    <CandidateImage item={item} priority={index < 4} />
-                    <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
-                      <span className="rounded-full bg-black/70 px-2 py-1 text-xs font-semibold text-white backdrop-blur">
-                        #{index + 1}
-                      </span>
-                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${labelClass(label)}`}>
-                        {label}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3 text-white">
-                      <div>
-                        <div className="text-xs text-white/75">예상 순익</div>
-                        <div className="text-2xl font-semibold leading-none">{profitLabel(item)}</div>
-                      </div>
-                      <div className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-zinc-950">
-                        {cashoutHint(item)}
-                      </div>
+        <section className="grid auto-rows-fr gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          {filtered.map((item, index) => {
+            const label = scoreLabel(item);
+            const action = actions[item.pid];
+            return (
+              <button
+                key={item.pid}
+                type="button"
+                onClick={() => setSelectedPid(item.pid)}
+                className="group flex h-full flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-400 hover:shadow-md"
+              >
+                <div className="relative">
+                  <CandidateImage item={item} priority={index < 6} className="aspect-square rounded-none" />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-3 pb-3 pt-10">
+                    <div className="w-fit rounded-md bg-black/75 px-2.5 py-1.5 shadow-sm ring-1 ring-white/15 backdrop-blur">
+                      <div className="text-[10px] font-semibold text-white/70">예상 순익</div>
+                      <div className="text-lg font-semibold leading-none text-white drop-shadow">{profitLabel(item)}</div>
                     </div>
                   </div>
+                  <div className="absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-wrap gap-1.5">
+                    <span className="rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur">
+                      #{index + 1}
+                    </span>
+                    <span className={`rounded-full px-2 py-1 text-[11px] font-semibold ring-1 ${labelClass(label)}`}>
+                      {label}
+                    </span>
+                  </div>
+                </div>
 
-                  <div className="flex flex-1 flex-col gap-4 p-4">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-600">
-                          {item.skuName}
+                <div className="flex flex-1 flex-col gap-3 p-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold text-zinc-600">
+                        {item.skuName}
+                      </span>
+                      {action?.status ? (
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${statusClass(action.status)}`}>
+                          {statusLabel(action.status)}
                         </span>
-                        {action?.status ? (
-                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ${statusClass(action.status)}`}>
-                            {statusLabel(action.status)}
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="mt-2 line-clamp-2 min-h-10 text-base font-semibold leading-5 text-zinc-950">
-                        {item.name}
-                      </div>
+                      ) : null}
                     </div>
-
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <div className="rounded-md bg-zinc-50 p-2">
-                        <div className="text-[11px] text-zinc-500">매물가</div>
-                        <div className="font-semibold">{compactKrw(item.price)}</div>
-                      </div>
-                      <div className="rounded-md bg-zinc-50 p-2">
-                        <div className="text-[11px] text-zinc-500">시세갭</div>
-                        <div className="font-semibold">{percent(item.priceGap)}</div>
-                      </div>
-                      <div className="rounded-md bg-zinc-50 p-2">
-                        <div className="text-[11px] text-zinc-500">찜</div>
-                        <div className="font-semibold">{item.numFaved.toLocaleString("ko-KR")}</div>
-                      </div>
-                    </div>
-
-                    <div className="mt-auto grid gap-2">
-                      <MetricBar label="관심도" value={item.velocity} />
-                      <MetricBar label="안전도" value={item.safety} />
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-zinc-100 pt-3">
-                      <span className="text-xs text-zinc-500">최대 {compactKrw(Math.max(0, profit))}</span>
-                      <span className="rounded-md bg-zinc-950 px-3 py-1.5 text-xs font-semibold text-white">
-                        자세히 보기
-                      </span>
+                    <div className="mt-2 line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-zinc-950">
+                      {item.name}
                     </div>
                   </div>
-                </button>
-              );
-            })}
-          </div>
 
-          {selected ? (
-            <aside className="h-fit rounded-md border border-zinc-200 bg-white p-5 shadow-sm xl:sticky xl:top-5">
-              <CandidateImage item={selected} priority className="mb-5" />
+                  <div className="mt-auto flex items-end justify-between gap-2">
+                    <div>
+                      <div className="text-[11px] text-zinc-500">매물가</div>
+                      <div className="text-sm font-semibold">{compactKrw(item.price)}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[11px] text-zinc-500">시세갭</div>
+                      <div className="text-sm font-semibold">{percent(item.priceGap)}</div>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </section>
+
+        {selected ? (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-3 backdrop-blur-sm sm:p-6"
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setSelectedPid("")}
+          >
+            <div
+              className="max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-lg bg-white shadow-2xl"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur">
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold text-emerald-700">리셀갭 상세</div>
+                  <div className="truncate text-sm font-semibold text-zinc-950">{selected.name}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPid("")}
+                  className="rounded-md border border-zinc-200 px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                >
+                  닫기
+                </button>
+              </div>
+
+              <div className="grid gap-0 lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)]">
+                <div className="bg-zinc-100 p-3 sm:p-5">
+                  <CandidateImage item={selected} priority className="aspect-square rounded-lg" />
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
+                    <div className="rounded-md bg-white p-3">
+                      <div className="text-xs text-zinc-500">찜</div>
+                      <div className="font-semibold">{selected.numFaved.toLocaleString("ko-KR")}개</div>
+                    </div>
+                    <div className="rounded-md bg-white p-3">
+                      <div className="text-xs text-zinc-500">예상 현금화</div>
+                      <div className={`font-semibold ${cashoutHintClass(selected)}`}>{cashoutHint(selected)}</div>
+                    </div>
+                    <div className="rounded-md bg-white p-3">
+                      <div className="text-xs text-zinc-500">안전도</div>
+                      <div className="font-semibold">{percent(selected.safety)}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex flex-wrap gap-2">
@@ -764,9 +792,11 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                 배송비 출처: {selected.shippingSource} · 수수료 {Math.round(SELLING_FEE_RATE * 1000) / 10}% (
                 {krw(sellingFee(selected))}) · 재배송 {krw(RESELL_SHIPPING_FEE)} · 버퍼 {krw(SAFETY_BUFFER)}
               </div>
-            </aside>
-          ) : null}
-        </section>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </main>
   );
