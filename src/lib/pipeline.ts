@@ -8,13 +8,7 @@ import { createHash } from "node:crypto";
 import { collectSearchItems, fetchDetail } from "@/lib/bunjang";
 import { CATALOG, normalize, ruleMatch, type Sku } from "@/lib/catalog";
 import { GENERATED_NOISE_RULES } from "@/lib/generated/noise-rules";
-
-// ─── 검색 키워드 ─────────────────────────────────────────────────────────────
-const SEARCH_QUERIES = [
-  "에어팟", "에어팟 프로", "에어팟 프로2", "에어팟 4세대", "에어팟 맥스",
-  "애플워치", "애플워치 se", "애플워치 9", "애플워치 10", "애플워치 울트라",
-  "갤럭시워치", "갤럭시 워치 6", "갤럭시 워치 7", "갤럭시 워치 울트라",
-];
+import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 
 // ─── 분류 키워드 ─────────────────────────────────────────────────────────────
 const BUYING_KEYWORDS = [
@@ -84,10 +78,7 @@ const RISK_KEYWORDS = [
   "초기화불가", "고장", "불량", "먹통", "작동안됨",
 ];
 const SHORT_TITLE_MIN = 9;
-const AI_REVIEW_TOP_N = Number(process.env.AI_REVIEW_TOP_N ?? 30);
 const AI_CLASSIFIER_MODEL = process.env.OPENAI_CLASSIFIER_MODEL ?? "gpt-4.1-mini";
-const DETAIL_ENRICH_LIMIT = Number(process.env.DETAIL_ENRICH_LIMIT ?? 120);
-const AI_REVIEW_CONCURRENCY = Number(process.env.AI_REVIEW_CONCURRENCY ?? 5);
 
 function nrm(text: unknown): string {
   return normalize(String(text ?? ""));
@@ -473,8 +464,13 @@ type AiClassifyOutcome = {
   source: "cache" | "api" | "unavailable";
 };
 export type PipelineOptions = {
+  searchQueries?: string[];
+  searchDelayMs?: number;
   detailLimit?: number;
+  detailConcurrency?: number;
+  detailDelayMs?: number;
   aiReviewTopN?: number;
+  aiReviewConcurrency?: number;
   aiReviewEnabled?: boolean;
 };
 
@@ -482,13 +478,20 @@ async function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-export async function runPipeline(pagesPerQuery = 2, options: PipelineOptions = {}): Promise<PipelineResult> {
-  const detailLimit = Math.max(0, Math.min(DETAIL_ENRICH_LIMIT, options.detailLimit ?? DETAIL_ENRICH_LIMIT));
+export async function runPipeline(pagesPerQuery?: number, options: PipelineOptions = {}): Promise<PipelineResult> {
+  const config = loadPipelineRuntimeConfig();
+  const resolvedPagesPerQuery = Math.max(1, Math.min(config.maxPagesPerQuery, pagesPerQuery ?? config.pagesPerQuery));
+  const searchQueries = options.searchQueries?.length ? options.searchQueries : config.searchQueries;
+  const searchDelayMs = Math.max(0, options.searchDelayMs ?? config.searchDelayMs);
+  const detailLimit = Math.max(0, Math.min(config.maxDetailLimit, options.detailLimit ?? config.detailLimit));
+  const detailConcurrency = Math.max(1, Math.min(config.maxDetailConcurrency, options.detailConcurrency ?? config.detailConcurrency));
+  const detailDelayMs = Math.max(0, options.detailDelayMs ?? config.detailDelayMs);
   const aiReviewEnabled = options.aiReviewEnabled ?? true;
-  const aiReviewTopN = Math.max(0, options.aiReviewTopN ?? AI_REVIEW_TOP_N);
+  const aiReviewTopN = Math.max(0, Math.min(config.maxAiReviewTopN, options.aiReviewTopN ?? config.aiReviewTopN));
+  const aiReviewConcurrency = Math.max(1, Math.min(config.maxAiReviewConcurrency, options.aiReviewConcurrency ?? config.aiReviewConcurrency));
 
   // 1. 검색
-  const searchItems = await collectSearchItems(SEARCH_QUERIES, pagesPerQuery);
+  const searchItems = await collectSearchItems(searchQueries, resolvedPagesPerQuery, searchDelayMs);
 
   // 2. 분류 — 검색 결과에서 normal만 추출 (상세 API 없이 제목만으로 1차 필터)
   type NormalCandidate = { pid: string; skuId: string; skuName: string };
@@ -503,16 +506,26 @@ export async function runPipeline(pagesPerQuery = 2, options: PipelineOptions = 
   // 3. 상세 enrich
   type Enriched = { pid: string; skuId: string; skuName: string; detail: NonNullable<Awaited<ReturnType<typeof fetchDetail>>>; freeShipping: boolean; price: number; numFaved: number; };
   const enriched: Enriched[] = [];
-  for (const c of normalCandidates.slice(0, detailLimit)) {
+  const enrichTargets = normalCandidates.slice(0, detailLimit);
+  let enrichCursor = 0;
+  async function enrichNext() {
+    const c = enrichTargets[enrichCursor++];
+    if (!c) return;
     const item = searchItems.get(c.pid)!;
     const detail = await fetchDetail(c.pid);
-    await sleep(300);
-    if (!detail) continue;
-    // 2차 필터: 상세 description 포함해 재분류
-    const { listingType } = classifyListing(item.name, detail.description, item.price);
-    if (listingType !== "normal") continue;
-    enriched.push({ pid: c.pid, skuId: c.skuId, skuName: c.skuName, detail, freeShipping: item.freeShipping, price: item.price, numFaved: item.numFaved });
+    if (detailDelayMs > 0) await sleep(detailDelayMs);
+    if (detail) {
+      // 2차 필터: 상세 description 포함해 재분류
+      const { listingType } = classifyListing(item.name, detail.description, item.price);
+      if (listingType === "normal") {
+        enriched.push({ pid: c.pid, skuId: c.skuId, skuName: c.skuName, detail, freeShipping: item.freeShipping, price: item.price, numFaved: item.numFaved });
+      }
+    }
+    await enrichNext();
   }
+  await Promise.all(
+    Array.from({ length: Math.min(detailConcurrency, enrichTargets.length) }, () => enrichNext()),
+  );
 
   // 4. SKU별 시세 계산 (normal 매물 가격 중앙값)
   const pricesBySku = new Map<string, number[]>();
@@ -585,7 +598,7 @@ export async function runPipeline(pagesPerQuery = 2, options: PipelineOptions = 
   }
 
   // 6. Tier 2 AI — 상위권 애매 후보만 판정. 실패/키 없음이면 룰 기반 결과 유지.
-  const aiReview = await applyAiReview(scored, { enabled: aiReviewEnabled, topN: aiReviewTopN });
+  const aiReview = await applyAiReview(scored, { enabled: aiReviewEnabled, topN: aiReviewTopN, concurrency: aiReviewConcurrency });
 
   // 7. Supabase upsert
   const upserted = await upsertToSupabase(aiReview.rows);
@@ -793,7 +806,7 @@ async function classifyWithCache(row: PipelineRow): Promise<AiClassifyOutcome> {
 
 async function applyAiReview(
   rows: PipelineRow[],
-  options: { enabled: boolean; topN: number },
+  options: { enabled: boolean; topN: number; concurrency: number },
 ): Promise<AiReviewResult> {
   const emptyStats: AiReviewStats = {
     requested: 0,
@@ -849,7 +862,7 @@ async function applyAiReview(
   }
 
   await Promise.all(
-    Array.from({ length: Math.min(AI_REVIEW_CONCURRENCY, reviewRows.length) }, () => reviewNext()),
+    Array.from({ length: Math.min(options.concurrency, reviewRows.length) }, () => reviewNext()),
   );
 
   const output: PipelineRow[] = [];

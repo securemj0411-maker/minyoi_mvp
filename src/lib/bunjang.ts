@@ -71,6 +71,7 @@ export async function searchPage(query: string, page: number): Promise<SearchIte
 export async function collectSearchItems(
   queries: string[],
   pagesPerQuery = 2,
+  delayMs = 200,
 ): Promise<Map<string, SearchItem>> {
   const dedup = new Map<string, SearchItem>();
   for (const query of queries) {
@@ -79,7 +80,7 @@ export async function collectSearchItems(
       for (const item of items) {
         if (!dedup.has(item.pid)) dedup.set(item.pid, item);
       }
-      await sleep(200);
+      if (delayMs > 0) await sleep(delayMs);
     }
   }
   return dedup;

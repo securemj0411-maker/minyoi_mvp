@@ -8,6 +8,7 @@ import {
   type CollectRunRequestMeta,
 } from "@/lib/collect-logs";
 import { runPipeline, type PipelineOptions } from "@/lib/pipeline";
+import { boundedInt, loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 
 export const maxDuration = 60;
 
@@ -21,22 +22,24 @@ function truncate(value: string | null, max = 500): string | null {
   return value.length > max ? `${value.slice(0, max)}...` : value;
 }
 
-function intParam(req: NextRequest, name: string, fallback: number, min: number, max: number) {
-  const raw = req.nextUrl.searchParams.get(name);
-  const parsed = raw == null ? fallback : Number.parseInt(raw, 10);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.max(min, Math.min(max, parsed));
-}
-
 function pipelineConfig(req: NextRequest): { pages: number; options: PipelineOptions } {
-  const pages = intParam(req, "pages", 2, 1, 3);
-  const detailLimit = intParam(req, "detailLimit", 120, 0, 120);
-  const aiTopN = intParam(req, "aiTopN", 30, 0, 30);
+  const defaults = loadPipelineRuntimeConfig();
+  const pages = boundedInt(req.nextUrl.searchParams.get("pages"), defaults.pagesPerQuery, 1, defaults.maxPagesPerQuery);
+  const detailLimit = boundedInt(req.nextUrl.searchParams.get("detailLimit"), defaults.detailLimit, 0, defaults.maxDetailLimit);
+  const detailConcurrency = boundedInt(req.nextUrl.searchParams.get("detailConcurrency"), defaults.detailConcurrency, 1, defaults.maxDetailConcurrency);
+  const detailDelayMs = boundedInt(req.nextUrl.searchParams.get("detailDelayMs"), defaults.detailDelayMs, 0, 5000);
+  const searchDelayMs = boundedInt(req.nextUrl.searchParams.get("searchDelayMs"), defaults.searchDelayMs, 0, 3000);
+  const aiTopN = boundedInt(req.nextUrl.searchParams.get("aiTopN"), defaults.aiReviewTopN, 0, defaults.maxAiReviewTopN);
+  const aiConcurrency = boundedInt(req.nextUrl.searchParams.get("aiConcurrency"), defaults.aiReviewConcurrency, 1, defaults.maxAiReviewConcurrency);
   return {
     pages,
     options: {
+      searchDelayMs,
       detailLimit,
+      detailConcurrency,
+      detailDelayMs,
       aiReviewTopN: aiTopN,
+      aiReviewConcurrency: aiConcurrency,
       aiReviewEnabled: aiTopN > 0,
     },
   };
@@ -97,7 +100,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const staleMarked = await markStaleCollectRuns(3);
+  const staleMarked = await markStaleCollectRuns(loadPipelineRuntimeConfig().staleRunMinutes);
   const run = await startCollectRun({
     ...meta,
     requestMeta: {
