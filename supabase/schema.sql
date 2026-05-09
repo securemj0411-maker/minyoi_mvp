@@ -234,7 +234,7 @@ begin
       or (q.status = 'processing' and q.locked_until < now())
       or (q.status = 'failed' and q.attempts < q.max_attempts and q.available_at <= now())
     )
-    order by q.priority desc, q.available_at asc, q.created_at asc
+    order by q.available_at asc, q.created_at asc, q.priority desc
     limit greatest(1, least(coalesce(p_batch_size, 30), 200))
     for update skip locked
   ), claimed as (
