@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-09T11:36:27.045Z",
+  "promotions": [
+    {
+      "category": "laptop",
+      "applied_at": "2026-05-09T11:36:27.045Z",
+      "source_hash": "0614d6b30ec88c76",
+      "skus": [
+        {
+          "id": "macbook-pro",
+          "brand": "Apple",
+          "category": "laptop",
+          "modelName": "MacBook Pro",
+          "aliases": [
+            "맥북 프로",
+            "맥북프로",
+            "MacBook Pro"
+          ],
+          "mustContain": [
+            [
+              "맥북 프로",
+              "맥북프로",
+              "macbook pro"
+            ]
+          ],
+          "mustNotContain": [
+            "맥북 에어",
+            "맥북에어",
+            "macbook air",
+            "아이맥",
+            "imac",
+            "케이스",
+            "파우치",
+            "스티커",
+            "키스킨",
+            "충전기만",
+            "어댑터만",
+            "액정",
+            "배터리만",
+            "부품용",
+            "고장",
+            "매입",
+            "삽니다",
+            "구합니다"
+          ],
+          "msrpKrw": 1798000,
+          "released": 2024,
+          "sourceCategory": "laptop",
+          "sourceClusterIds": [
+            "curated-laptop-2026-05-09"
+          ],
+          "promotionHash": "curated-macbook-pro-20260509"
+        },
+        {
+          "id": "macbook-air",
+          "brand": "Apple",
+          "category": "laptop",
+          "modelName": "MacBook Air",
+          "aliases": [
+            "맥북 에어",
+            "맥북에어",
+            "MacBook Air"
+          ],
+          "mustContain": [
+            [
+              "맥북 에어",
+              "맥북에어",
+              "macbook air"
+            ]
+          ],
+          "mustNotContain": [
+            "맥북 프로",
+            "맥북프로",
+            "macbook pro",
+            "아이맥",
+            "imac",
+            "케이스",
+            "파우치",
+            "스티커",
+            "키스킨",
+            "충전기만",
+            "어댑터만",
+            "액정",
+            "배터리만",
+            "부품용",
+            "고장",
+            "매입",
+            "삽니다",
+            "구합니다"
+          ],
+          "msrpKrw": 1598000,
+          "released": 2024,
+          "sourceCategory": "laptop",
+          "sourceClusterIds": [
+            "curated-laptop-2026-05-09"
+          ],
+          "promotionHash": "curated-macbook-air-20260509"
+        }
+      ],
+      "noise": [
+        {
+          "keyword": "매입",
+          "type": "buying",
+          "precision": 1,
+          "hitCount": 121,
+          "promotionHash": "348bcca878589194"
+        },
+        {
+          "keyword": "매입업체",
+          "type": "buying",
+          "precision": 1,
+          "hitCount": 47,
+          "promotionHash": "448e9f779b21b1c5"
+        }
+      ]
+    }
+  ]
+}

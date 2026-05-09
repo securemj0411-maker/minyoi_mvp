@@ -1,7 +1,7 @@
 {
   "version": 1,
   "category": "laptop",
-  "updated_at": "2026-05-09T11:31:51.104Z",
+  "updated_at": "2026-05-09T11:36:59.827Z",
   "instructions": [
     "Set approved=true only for entries you want to promote into runtime.",
     "Set rejected=true for entries you explicitly do not want to see again.",
@@ -13,7 +13,7 @@
       "key": "sku:레노버-리전-5-15ahp10-lg-그램-17z990-va7bk-삼성-노트북-i7-15-6인치",
       "kind": "sku",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "id": "레노버-리전-5-15ahp10-lg-그램-17z990-va7bk-삼성-노트북-i7-15-6인치",
       "modelName": "레노버 리전 5 15AHP10, LG 그램 17Z990-VA7BK, 삼성 노트북 i7 15.6인치",
       "brand": "Samsung",
@@ -35,7 +35,7 @@
       "sourceClusterIds": [
         6
       ],
-      "note": "",
+      "note": "혼합 브랜드/혼합 모델 클러스터. 노트북/RAM/SSD 같은 광범위 alias가 있어 운영 승격 제외.",
       "candidate": {
         "id": "레노버-리전-5-15ahp10-lg-그램-17z990-va7bk-삼성-노트북-i7-15-6인치",
         "brand": "Samsung",
@@ -83,7 +83,7 @@
       "key": "sku:레노버-legion-i7-8750h-16gb-256gb-gtx1050ti",
       "kind": "sku",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "id": "레노버-legion-i7-8750h-16gb-256gb-gtx1050ti",
       "modelName": "레노버 LEGION i7 8750H 16GB 256GB GTX1050Ti",
       "brand": "",
@@ -105,7 +105,7 @@
       "sourceClusterIds": [
         8
       ],
-      "note": "",
+      "note": "레노버 단일 계열 가능성은 있으나 i5/i7/ssd/그래픽 등 넓은 alias가 많아 별도 게이밍 노트북 마이닝 후 재검토.",
       "candidate": {
         "id": "레노버-legion-i7-8750h-16gb-256gb-gtx1050ti",
         "brand": "",
@@ -153,7 +153,7 @@
       "key": "sku:맥북-프로-m4-pro-16인치-24gb-512gb-ssd",
       "kind": "sku",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "id": "맥북-프로-m4-pro-16인치-24gb-512gb-ssd",
       "modelName": "맥북 프로 M4 Pro 16인치 24GB 512GB SSD",
       "brand": "Apple",
@@ -175,7 +175,7 @@
       "sourceClusterIds": [
         10
       ],
-      "note": "",
+      "note": "원본 후보에 맥북 에어/직거래/풀박스 등 SKU와 무관한 alias가 섞여 reject. curated macbook-pro로 대체.",
       "candidate": {
         "id": "맥북-프로-m4-pro-16인치-24gb-512gb-ssd",
         "brand": "Apple",
@@ -223,7 +223,7 @@
       "key": "sku:맥북프로-16-m4-pro-48gb-1tb",
       "kind": "sku",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "id": "맥북프로-16-m4-pro-48gb-1tb",
       "modelName": "맥북프로 16 M4 Pro 48GB 1TB",
       "brand": "Apple",
@@ -245,7 +245,7 @@
       "sourceClusterIds": [
         3
       ],
-      "note": "",
+      "note": "원본 후보에 M3/M4/램/SSD 등 넓은 alias가 섞여 reject. curated macbook-pro로 대체.",
       "candidate": {
         "id": "맥북프로-16-m4-pro-48gb-1tb",
         "brand": "Apple",
@@ -293,7 +293,7 @@
       "key": "sku:윈도우11-노트북-인텔-cpu-8gb-ram-ssd-120-512gb",
       "kind": "sku",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "id": "윈도우11-노트북-인텔-cpu-8gb-ram-ssd-120-512gb",
       "modelName": "윈도우11 노트북 인텔 CPU 8GB RAM SSD 120~512GB",
       "brand": "",
@@ -315,7 +315,7 @@
       "sourceClusterIds": [
         9
       ],
-      "note": "",
+      "note": "일반 윈도우 노트북 묶음이라 SKU로 쓰기 위험.",
       "candidate": {
         "id": "윈도우11-노트북-인텔-cpu-8gb-ram-ssd-120-512gb",
         "brand": "",
@@ -363,7 +363,7 @@
       "key": "sku:apple-imac-27-inch-5k-retina-2016-2019",
       "kind": "sku",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "id": "apple-imac-27-inch-5k-retina-2016-2019",
       "modelName": "Apple iMac 27-inch 5K Retina (2016-2019)",
       "brand": "Apple",
@@ -385,7 +385,7 @@
       "sourceClusterIds": [
         0
       ],
-      "note": "",
+      "note": "iMac은 laptop 확장 우선순위가 아니며 별도 desktop 카테고리에서 다룰 항목.",
       "candidate": {
         "id": "apple-imac-27-inch-5k-retina-2016-2019",
         "brand": "Apple",
@@ -433,7 +433,7 @@
       "key": "sku:gigabyte-aorus-16x-asg-53kr-에이서-프레데터-helios-neo-v-16-phn16-72-59",
       "kind": "sku",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "id": "gigabyte-aorus-16x-asg-53kr-에이서-프레데터-helios-neo-v-16-phn16-72-59",
       "modelName": "GIGABYTE AORUS 16X ASG-53KR, 에이서 프레데터 Helios Neo V 16 PHN16-72-59C2, HP 오멘 16-wf0156TX, HP 오멘 16-xf0052AX, HP 오멘 슬림 16-an0005TX",
       "brand": "",
@@ -455,7 +455,7 @@
       "sourceClusterIds": [
         5
       ],
-      "note": "",
+      "note": "게이밍 노트북 여러 모델 혼합 클러스터라 SKU로 쓰기 위험.",
       "candidate": {
         "id": "gigabyte-aorus-16x-asg-53kr-에이서-프레데터-helios-neo-v-16-phn16-72-59",
         "brand": "",
@@ -503,7 +503,7 @@
       "key": "sku:macbook-pro-13인치-a1502-macbook-pro-15인치-retina-2012-macbook-pro-",
       "kind": "sku",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "id": "macbook-pro-13인치-a1502-macbook-pro-15인치-retina-2012-macbook-pro-",
       "modelName": "MacBook Pro 13인치 A1502, MacBook Pro 15인치 Retina 2012, MacBook Pro 15인치 2017",
       "brand": "Apple",
@@ -525,7 +525,7 @@
       "sourceClusterIds": [
         7
       ],
-      "note": "",
+      "note": "여러 세대 MacBook Pro 혼합 후보. curated macbook-pro로 대체.",
       "candidate": {
         "id": "macbook-pro-13인치-a1502-macbook-pro-15인치-retina-2012-macbook-pro-",
         "brand": "Apple",
@@ -572,13 +572,13 @@
     {
       "key": "noise:buying:매입",
       "kind": "noise",
-      "approved": false,
+      "approved": true,
       "rejected": false,
       "type": "buying",
       "keyword": "매입",
       "precision": 1,
       "hitCount": 121,
-      "note": "",
+      "note": "이미 기본 룰에도 있지만 구매글 차단 근거가 강해 승인. 중복은 generated noise에서 dedupe됨.",
       "candidate": {
         "keyword": "매입",
         "type": "buying",
@@ -591,12 +591,12 @@
       "key": "noise:buying:출장",
       "kind": "noise",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "type": "buying",
       "keyword": "출장",
       "precision": 1,
       "hitCount": 70,
-      "note": "",
+      "note": "정상 판매글의 직거래/출장 수리 문맥과 충돌 가능성이 있어 카테고리 스코프 룰 도입 전 보류.",
       "candidate": {
         "keyword": "출장",
         "type": "buying",
@@ -609,12 +609,12 @@
       "key": "noise:buying:번톡",
       "kind": "noise",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "type": "buying",
       "keyword": "번톡",
       "precision": 1,
       "hitCount": 48,
-      "note": "",
+      "note": "정상 판매자가 문의 유도에 쓰는 표현이라 전역 buying 룰로는 위험.",
       "candidate": {
         "keyword": "번톡",
         "type": "buying",
@@ -626,19 +626,149 @@
     {
       "key": "noise:buying:매입업체",
       "kind": "noise",
-      "approved": false,
+      "approved": true,
       "rejected": false,
       "type": "buying",
       "keyword": "매입업체",
       "precision": 1,
       "hitCount": 47,
-      "note": "",
+      "note": "구매/매입 업자글 차단 근거가 강해 승인. 기본 룰 중복이지만 안전함.",
       "candidate": {
         "keyword": "매입업체",
         "type": "buying",
         "precision": 1,
         "hitCount": 47,
         "promotionHash": "448e9f779b21b1c5"
+      }
+    },
+    {
+      "key": "sku:macbook-pro",
+      "kind": "sku",
+      "approved": true,
+      "rejected": false,
+      "id": "macbook-pro",
+      "modelName": "MacBook Pro",
+      "brand": "Apple",
+      "category": "laptop",
+      "aliases": [
+        "맥북 프로",
+        "맥북프로",
+        "MacBook Pro"
+      ],
+      "medianFallbackKrw": 899000,
+      "sourceClusterIds": [
+        "curated-laptop-2026-05-09"
+      ],
+      "note": "AI 마이닝 결과에서 MacBook Pro 수요는 확인됐지만 원본 alias가 너무 넓어 사람이 좁힌 운영 후보.",
+      "candidate": {
+        "id": "macbook-pro",
+        "brand": "Apple",
+        "category": "laptop",
+        "modelName": "MacBook Pro",
+        "aliases": [
+          "맥북 프로",
+          "맥북프로",
+          "MacBook Pro"
+        ],
+        "mustContain": [
+          [
+            "맥북 프로",
+            "맥북프로",
+            "macbook pro"
+          ]
+        ],
+        "mustNotContain": [
+          "맥북 에어",
+          "맥북에어",
+          "macbook air",
+          "아이맥",
+          "imac",
+          "케이스",
+          "파우치",
+          "스티커",
+          "키스킨",
+          "충전기만",
+          "어댑터만",
+          "액정",
+          "배터리만",
+          "부품용",
+          "고장",
+          "매입",
+          "삽니다",
+          "구합니다"
+        ],
+        "msrpKrw": 1798000,
+        "released": 2024,
+        "sourceCategory": "laptop",
+        "sourceClusterIds": [
+          "curated-laptop-2026-05-09"
+        ],
+        "promotionHash": "curated-macbook-pro-20260509"
+      }
+    },
+    {
+      "key": "sku:macbook-air",
+      "kind": "sku",
+      "approved": true,
+      "rejected": false,
+      "id": "macbook-air",
+      "modelName": "MacBook Air",
+      "brand": "Apple",
+      "category": "laptop",
+      "aliases": [
+        "맥북 에어",
+        "맥북에어",
+        "MacBook Air"
+      ],
+      "medianFallbackKrw": 799000,
+      "sourceClusterIds": [
+        "curated-laptop-2026-05-09"
+      ],
+      "note": "AI 마이닝 price distribution에서 macbook-air 풀이 확인되어 사람이 좁힌 운영 후보로 추가.",
+      "candidate": {
+        "id": "macbook-air",
+        "brand": "Apple",
+        "category": "laptop",
+        "modelName": "MacBook Air",
+        "aliases": [
+          "맥북 에어",
+          "맥북에어",
+          "MacBook Air"
+        ],
+        "mustContain": [
+          [
+            "맥북 에어",
+            "맥북에어",
+            "macbook air"
+          ]
+        ],
+        "mustNotContain": [
+          "맥북 프로",
+          "맥북프로",
+          "macbook pro",
+          "아이맥",
+          "imac",
+          "케이스",
+          "파우치",
+          "스티커",
+          "키스킨",
+          "충전기만",
+          "어댑터만",
+          "액정",
+          "배터리만",
+          "부품용",
+          "고장",
+          "매입",
+          "삽니다",
+          "구합니다"
+        ],
+        "msrpKrw": 1598000,
+        "released": 2024,
+        "sourceCategory": "laptop",
+        "sourceClusterIds": [
+          "curated-laptop-2026-05-09"
+        ],
+        "promotionHash": "curated-macbook-air-20260509"
       }
     }
   ]

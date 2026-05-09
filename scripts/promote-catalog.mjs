@@ -235,14 +235,33 @@ async function loadApprovalQueue(category, candidates, { createIfMissing = false
 
 function filterCandidatesByApproval(candidates, approvalQueue) {
   if (!approvalQueue) return { skus: [], noise: [] };
-  const approved = new Set(
-    (approvalQueue.items ?? [])
-      .filter((item) => item.approved === true && item.rejected !== true)
-      .map((item) => item.key)
+  const approvedItems = (approvalQueue.items ?? []).filter((item) => item.approved === true && item.rejected !== true);
+  const curatedByKey = new Map(
+    approvedItems
+      .filter((item) => item.candidate && typeof item.candidate === "object")
+      .map((item) => [item.key, item.candidate])
   );
+  const sourceSkus = new Map(candidates.skus.map((sku) => [`sku:${sku.id}`, sku]));
+  const sourceNoise = new Map(candidates.noise.map((rule) => [`noise:${rule.type}:${rule.keyword}`, rule]));
+  const skus = [];
+  const noise = [];
+
+  for (const item of approvedItems) {
+    if (item.kind === "sku") {
+      const curated = curatedByKey.get(item.key);
+      const fallback = sourceSkus.get(item.key);
+      if (curated || fallback) skus.push(curated ?? fallback);
+    }
+    if (item.kind === "noise") {
+      const curated = curatedByKey.get(item.key);
+      const fallback = sourceNoise.get(item.key);
+      if (curated || fallback) noise.push(curated ?? fallback);
+    }
+  }
+
   return {
-    skus: candidates.skus.filter((sku) => approved.has(`sku:${sku.id}`)),
-    noise: candidates.noise.filter((rule) => approved.has(`noise:${rule.type}:${rule.keyword}`)),
+    skus,
+    noise,
   };
 }
 
