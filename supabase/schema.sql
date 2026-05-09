@@ -46,6 +46,31 @@ create table if not exists public.mvp_user_candidate_actions (
   unique (user_id, pid)
 );
 
+create table if not exists public.mvp_listing_ai_classifications (
+  pid bigint primary key references public.mvp_listings(pid) on delete cascade,
+  content_hash text not null,
+  listing_type text not null check (listing_type in (
+    'normal',
+    'counterfeit',
+    'parts',
+    'buying',
+    'callout',
+    'damaged',
+    'accessory',
+    'multi',
+    'unknown'
+  )),
+  confidence text not null check (confidence in ('high', 'medium', 'low')),
+  reason text not null default '',
+  risk_keywords text[] not null default '{}'::text[],
+  model text not null,
+  input_tokens integer,
+  output_tokens integer,
+  cost_usd numeric,
+  classified_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
 create index if not exists mvp_listing_analysis_rank_idx
   on public.mvp_listing_analysis(candidate_rank nulls last);
 
@@ -55,9 +80,16 @@ create index if not exists mvp_listing_analysis_score_idx
 create index if not exists mvp_user_candidate_actions_pid_idx
   on public.mvp_user_candidate_actions(pid);
 
+create index if not exists mvp_listing_ai_classifications_content_hash_idx
+  on public.mvp_listing_ai_classifications(content_hash);
+
+create index if not exists mvp_listing_ai_classifications_type_idx
+  on public.mvp_listing_ai_classifications(listing_type, confidence);
+
 alter table public.mvp_listings enable row level security;
 alter table public.mvp_listing_analysis enable row level security;
 alter table public.mvp_user_candidate_actions enable row level security;
+alter table public.mvp_listing_ai_classifications enable row level security;
 
 drop view if exists public.mvp_listing_candidates;
 create view public.mvp_listing_candidates

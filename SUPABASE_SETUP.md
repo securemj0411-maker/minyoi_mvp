@@ -22,6 +22,7 @@ mvp/supabase/schema.sql
 | `mvp_listings` | 번개장터 후보 매물 기본 정보 |
 | `mvp_listing_analysis` | 리셀갭 점수, 관심도, 안전도, 검토 플래그 |
 | `mvp_user_candidate_actions` | 이후 관심/보류/숨김을 DB로 옮길 때 쓸 테이블 |
+| `mvp_listing_ai_classifications` | 상위권 애매 후보의 AI 분류 캐시 |
 | `mvp_listing_candidates` | Next 서버가 읽는 후보 view |
 
 RLS는 켜져 있고, 현재는 Next 서버가 `service_role`로 읽는 구조입니다.
@@ -34,10 +35,15 @@ cp .env.local.example .env.local
 ```
 
 `.env.local`에서 `SUPABASE_SERVICE_ROLE_KEY`만 새 키로 바꿉니다.
+AI 검토를 켜려면 `OPENAI_API_KEY`도 넣습니다. 없으면 수집은 계속 돌고,
+상위권 애매 후보에 `ai_review_unavailable` 플래그만 붙습니다.
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://suwsvvjsycgcegepcktp.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=새로_발급한_service_role_key
+OPENAI_API_KEY=OpenAI_API_KEY
+OPENAI_CLASSIFIER_MODEL=gpt-4.1-mini
+AI_REVIEW_TOP_N=30
 USE_LOCAL_POC_DATA=false
 ```
 
@@ -71,6 +77,26 @@ Vercel Project Settings → Environment Variables에 추가합니다.
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://suwsvvjsycgcegepcktp.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | 새로 발급한 service role key |
+| `OPENAI_API_KEY` | OpenAI API key. 상위권 애매 후보 AI 분류용 |
+| `OPENAI_CLASSIFIER_MODEL` | `gpt-4.1-mini` |
+| `AI_REVIEW_TOP_N` | `30` |
 | `USE_LOCAL_POC_DATA` | `false` |
 
 주의: `SUPABASE_SERVICE_ROLE_KEY`는 절대 브라우저에서 쓰면 안 됩니다.
+
+## 6. AI 검토 정책
+
+AI는 모든 매물에 쓰지 않습니다. 수집 파이프라인에서 룰 필터를 통과한 후보 중
+점수가 높은 상위 `AI_REVIEW_TOP_N`개만 보고, 그 안에서도 아래 조건에 걸린 매물만
+검토합니다.
+
+| 조건 | 이유 |
+|---|---|
+| `deep_discount_review` | 가격이 너무 싸면 짭/부품/저격글일 확률이 큼 |
+| `short_title`, `weak_normal_signal` | 정상 본품 신호가 약함 |
+| `suspicious_model_review` | 출시/모델명이 이상한 표현 |
+
+AI가 `counterfeit`, `parts`, `buying`, `callout`, `damaged`, `accessory`, `multi`를
+`high` 또는 `medium` confidence로 반환하면 후보에서 제외합니다. 같은 `pid`와
+내용 해시는 `mvp_listing_ai_classifications`에 캐시되어 다음 5분 수집 때 다시
+비용을 쓰지 않습니다.

@@ -3,6 +3,8 @@
 //
 // Python PoC 09_airpods_filter_refine.py + 10_shipping_fee_test.py 포팅.
 
+import { createHash } from "node:crypto";
+
 import { collectSearchItems, fetchDetail } from "@/lib/bunjang";
 import { CATALOG, normalize, ruleMatch, type Sku } from "@/lib/catalog";
 
@@ -55,6 +57,8 @@ const RISK_KEYWORDS = [
   "초기화불가", "고장", "불량", "먹통", "작동안됨",
 ];
 const SHORT_TITLE_MIN = 9;
+const AI_REVIEW_TOP_N = Number(process.env.AI_REVIEW_TOP_N ?? 30);
+const AI_CLASSIFIER_MODEL = process.env.OPENAI_CLASSIFIER_MODEL ?? "gpt-4.1-mini";
 
 function nrm(text: unknown): string {
   return normalize(String(text ?? ""));
@@ -121,6 +125,11 @@ function damagedHits(title: string, desc: string): string[] {
   }
 
   return [...new Set(hits)];
+}
+
+function suspiciousModelText(title: string, desc: string): boolean {
+  const text = nrm(`${title}\n${desc}`).replace(/\s+/g, "");
+  return /에어팟프로[34]|airpodspro[34]/i.test(text);
 }
 
 export type ListingType = "normal" | "parts" | "multi" | "buying" | "callout" | "damaged" | "accessory" | "unknown";
@@ -350,6 +359,20 @@ export type PipelineRow = {
   netGapAfterShipping: number;
 };
 
+type AiListingType = "normal" | "counterfeit" | "parts" | "buying" | "callout" | "damaged" | "accessory" | "multi" | "unknown";
+type AiConfidence = "high" | "medium" | "low";
+type AiClassification = {
+  listingType: AiListingType;
+  confidence: AiConfidence;
+  reason: string;
+  riskKeywords: string[];
+  model: string;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  costUsd: number | null;
+  cached?: boolean;
+};
+
 async function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -418,6 +441,7 @@ export async function runPipeline(pagesPerQuery = 2): Promise<{ collected: numbe
 
     const flags: string[] = [];
     if (priceGap >= 0.55) flags.push("deep_discount_review");
+    if (suspiciousModelText(searchItems.get(r.pid)?.name ?? "", r.detail.description)) flags.push("suspicious_model_review");
     if (compactLen(r.detail.description === "" ? (searchItems.get(r.pid)?.name ?? "") : r.detail.description) < SHORT_TITLE_MIN) {
       if (!hasNormalSignal(searchItems.get(r.pid)?.name ?? "", r.detail.description)) flags.push("short_title");
     }
@@ -449,10 +473,13 @@ export async function runPipeline(pagesPerQuery = 2): Promise<{ collected: numbe
     });
   }
 
-  // 6. Supabase upsert
-  const upserted = await upsertToSupabase(scored);
+  // 6. Tier 2 AI — 상위권 애매 후보만 판정. 실패/키 없음이면 룰 기반 결과 유지.
+  const aiFiltered = await applyAiReview(scored);
 
-  return { collected: searchItems.size, normal: enriched.length, upserted };
+  // 7. Supabase upsert
+  const upserted = await upsertToSupabase(aiFiltered);
+
+  return { collected: searchItems.size, normal: aiFiltered.length, upserted };
 }
 
 // ─── Supabase upsert ─────────────────────────────────────────────────────────
@@ -484,6 +511,195 @@ async function upsertRows(table: string, rows: unknown[]): Promise<void> {
     const body = await res.text();
     throw new Error(`${table} upsert failed: ${res.status} ${body}`);
   }
+}
+
+function contentHash(row: PipelineRow): string {
+  return createHash("sha256")
+    .update(JSON.stringify({
+      name: row.name,
+      price: row.price,
+      skuName: row.skuName,
+      descriptionPreview: row.descriptionPreview,
+    }))
+    .digest("hex");
+}
+
+function shouldAiReview(row: PipelineRow): boolean {
+  return row.scoreFlags.length > 0 || row.priceGap >= 0.55 || suspiciousModelText(row.name, row.descriptionPreview);
+}
+
+async function fetchAiCache(row: PipelineRow, hash: string): Promise<AiClassification | null> {
+  const url = `${supabaseUrl("mvp_listing_ai_classifications")}?select=listing_type,confidence,reason,risk_keywords,model&pid=eq.${encodeURIComponent(row.pid)}&content_hash=eq.${encodeURIComponent(hash)}&limit=1`;
+  const res = await fetch(url, { headers: supabaseHeaders() });
+  if (!res.ok) return null;
+  const rows = await res.json() as Array<{
+    listing_type: AiListingType;
+    confidence: AiConfidence;
+    reason: string | null;
+    risk_keywords: string[] | null;
+    model: string | null;
+  }>;
+  const cached = rows[0];
+  if (!cached) return null;
+  return {
+    listingType: cached.listing_type,
+    confidence: cached.confidence,
+    reason: cached.reason ?? "",
+    riskKeywords: cached.risk_keywords ?? [],
+    model: cached.model ?? "cache",
+    inputTokens: null,
+    outputTokens: null,
+    costUsd: null,
+    cached: true,
+  };
+}
+
+async function upsertAiCache(row: PipelineRow, hash: string, result: AiClassification): Promise<void> {
+  try {
+    await upsertRows("mvp_listing_ai_classifications", [{
+      pid: parseInt(row.pid, 10),
+      content_hash: hash,
+      listing_type: result.listingType,
+      confidence: result.confidence,
+      reason: result.reason,
+      risk_keywords: result.riskKeywords,
+      model: result.model,
+      input_tokens: result.inputTokens,
+      output_tokens: result.outputTokens,
+      cost_usd: result.costUsd,
+      classified_at: new Date().toISOString(),
+    }]);
+  } catch {
+    // Cache is an optimization. Do not fail collection if the table is absent.
+  }
+}
+
+function parseAiClassification(raw: unknown): AiClassification | null {
+  if (!raw || typeof raw !== "object") return null;
+  const obj = raw as Record<string, unknown>;
+  const listingType = String(obj.listing_type ?? obj.listingType ?? "unknown") as AiListingType;
+  const confidence = String(obj.confidence ?? "low") as AiConfidence;
+  const allowedTypes: AiListingType[] = ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "unknown"];
+  const allowedConfidence: AiConfidence[] = ["high", "medium", "low"];
+  return {
+    listingType: allowedTypes.includes(listingType) ? listingType : "unknown",
+    confidence: allowedConfidence.includes(confidence) ? confidence : "low",
+    reason: String(obj.reason ?? ""),
+    riskKeywords: Array.isArray(obj.risk_keywords)
+      ? obj.risk_keywords.map(String).slice(0, 8)
+      : (Array.isArray(obj.riskKeywords) ? obj.riskKeywords.map(String).slice(0, 8) : []),
+    model: AI_CLASSIFIER_MODEL,
+    inputTokens: null,
+    outputTokens: null,
+    costUsd: null,
+  };
+}
+
+async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return null;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12_000);
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json",
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: AI_CLASSIFIER_MODEL,
+        temperature: 0,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content:
+              "Classify Korean secondhand marketplace listings for resale. Return only JSON with listing_type, confidence, reason, risk_keywords. Be conservative: counterfeit/parts/buying/callout/damaged/accessory/multi should not be shown as normal.",
+          },
+          {
+            role: "user",
+            content: JSON.stringify({
+              allowed_listing_type: ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "unknown"],
+              allowed_confidence: ["high", "medium", "low"],
+              policy: "If the listing explicitly says fake/replica/Taobao/counterfeit, classify counterfeit. If it is only a charging case/body/unit/one side, classify parts. If it is a buying post, classify buying. If unsure, unknown.",
+              listing: {
+                title: row.name,
+                price: row.price,
+                sku: row.skuName,
+                sku_median: row.skuMedian,
+                price_gap: row.priceGap,
+                flags: row.scoreFlags,
+                description: row.descriptionPreview.slice(0, 500),
+              },
+            }),
+          },
+        ],
+      }),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const content = json.choices?.[0]?.message?.content;
+    if (typeof content !== "string") return null;
+    const parsed = parseAiClassification(JSON.parse(content));
+    if (!parsed) return null;
+    parsed.inputTokens = Number.isFinite(json.usage?.prompt_tokens) ? json.usage.prompt_tokens : null;
+    parsed.outputTokens = Number.isFinite(json.usage?.completion_tokens) ? json.usage.completion_tokens : null;
+    return parsed;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function classifyWithCache(row: PipelineRow): Promise<AiClassification | null> {
+  const hash = contentHash(row);
+  const cached = await fetchAiCache(row, hash);
+  if (cached) return cached;
+  const fresh = await classifyWithAi(row);
+  if (fresh) await upsertAiCache(row, hash, fresh);
+  return fresh;
+}
+
+async function applyAiReview(rows: PipelineRow[]): Promise<PipelineRow[]> {
+  const sorted = [...rows].sort((a, b) => b.score - a.score);
+  const reviewPids = new Set(
+    sorted
+      .slice(0, AI_REVIEW_TOP_N)
+      .filter(shouldAiReview)
+      .map((row) => row.pid),
+  );
+  if (reviewPids.size === 0) return rows;
+
+  const output: PipelineRow[] = [];
+  for (const row of rows) {
+    if (!reviewPids.has(row.pid)) {
+      output.push(row);
+      continue;
+    }
+
+    const result = await classifyWithCache(row);
+    if (!result) {
+      output.push({ ...row, scoreFlags: [...row.scoreFlags, "ai_review_unavailable"] });
+      continue;
+    }
+
+    if (result.listingType === "normal" && result.confidence !== "low") {
+      output.push({ ...row, scoreFlags: [...row.scoreFlags, "ai_normal"] });
+      continue;
+    }
+
+    if (result.listingType !== "normal" && result.confidence !== "low") {
+      // AI-confirmed noise: do not upsert as a visible candidate.
+      continue;
+    }
+
+    output.push({ ...row, scoreFlags: [...row.scoreFlags, `ai_${result.listingType}_low_confidence`] });
+  }
+  return output;
 }
 
 async function upsertToSupabase(rows: PipelineRow[]): Promise<number> {
