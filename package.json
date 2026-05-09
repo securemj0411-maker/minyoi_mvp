@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed:supabase": "node scripts/seed-supabase.mjs",
-    "mine:rules": "node scripts/mine-noise-rules.mjs"
+    "mine:rules": "node scripts/mine-noise-rules.mjs",
+    "mine:category": "node scripts/mine-category-intelligence.mjs"
   },
   "dependencies": {
     "next": "16.2.6",

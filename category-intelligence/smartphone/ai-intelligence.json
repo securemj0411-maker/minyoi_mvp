@@ -1,0 +1,380 @@
+{
+  "sku_candidates": [
+    {
+      "id": "apple-iphone-15-128gb",
+      "brand": "Apple",
+      "model_name": "iPhone 15",
+      "aliases": [
+        "아이폰15",
+        "아이폰 15",
+        "iphone15"
+      ],
+      "differentiators": [
+        "storage"
+      ],
+      "evidence_pids": [
+        "290895728",
+        "295196670",
+        "406933010"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "apple-iphone-15-256gb",
+      "brand": "Apple",
+      "model_name": "iPhone 15",
+      "aliases": [
+        "아이폰15 256기가",
+        "아이폰 15 256GB"
+      ],
+      "differentiators": [
+        "storage"
+      ],
+      "evidence_pids": [
+        "406607461",
+        "405171506",
+        "406933010"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "apple-iphone-15-pro-128gb",
+      "brand": "Apple",
+      "model_name": "iPhone 15 Pro",
+      "aliases": [
+        "아이폰15프로 128",
+        "아이폰 15 프로 128GB"
+      ],
+      "differentiators": [
+        "storage"
+      ],
+      "evidence_pids": [
+        "406156711",
+        "405360016",
+        "406927189"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "apple-iphone-15-pro-256gb",
+      "brand": "Apple",
+      "model_name": "iPhone 15 Pro",
+      "aliases": [
+        "아이폰15프로 256",
+        "아이폰 15 프로 256GB"
+      ],
+      "differentiators": [
+        "storage"
+      ],
+      "evidence_pids": [
+        "406607461",
+        "406448859",
+        "360538580"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "apple-iphone-15-pro-512gb",
+      "brand": "Apple",
+      "model_name": "iPhone 15 Pro",
+      "aliases": [
+        "아이폰15프로 512",
+        "아이폰 15 프로 512GB"
+      ],
+      "differentiators": [
+        "storage"
+      ],
+      "evidence_pids": [
+        "406178658"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "apple-iphone-15-pro-1tb",
+      "brand": "Apple",
+      "model_name": "iPhone 15 Pro",
+      "aliases": [
+        "아이폰15프로 1테라",
+        "아이폰 15 프로 1TB"
+      ],
+      "differentiators": [
+        "storage"
+      ],
+      "evidence_pids": [
+        "405932301"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "apple-iphone-15-pro-max-256gb",
+      "brand": "Apple",
+      "model_name": "iPhone 15 Pro Max",
+      "aliases": [
+        "아이폰15프로맥스 256",
+        "아이폰 15 프로맥스 256GB"
+      ],
+      "differentiators": [
+        "storage"
+      ],
+      "evidence_pids": [
+        "254336053",
+        "405884432",
+        "406933010"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "apple-iphone-15-plus-128gb",
+      "brand": "Apple",
+      "model_name": "iPhone 15 Plus",
+      "aliases": [
+        "아이폰15플러스 128",
+        "아이폰 15 플러스 128GB"
+      ],
+      "differentiators": [
+        "storage"
+      ],
+      "evidence_pids": [
+        "254334793"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "apple-iphone-15-plus-256gb",
+      "brand": "Apple",
+      "model_name": "iPhone 15 Plus",
+      "aliases": [
+        "아이폰15플러스 256",
+        "아이폰 15 플러스 256GB"
+      ],
+      "differentiators": [
+        "storage"
+      ],
+      "evidence_pids": [
+        "406933461"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "apple-iphone-16",
+      "brand": "Apple",
+      "model_name": "iPhone 16",
+      "aliases": [
+        "아이폰16",
+        "아이폰 16"
+      ],
+      "differentiators": [],
+      "evidence_pids": [
+        "394158623",
+        "394157319",
+        "405871865"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "apple-iphone-16-pro",
+      "brand": "Apple",
+      "model_name": "iPhone 16 Pro",
+      "aliases": [
+        "아이폰16프로",
+        "아이폰 16 프로"
+      ],
+      "differentiators": [],
+      "evidence_pids": [
+        "394158623"
+      ],
+      "confidence": "medium"
+    }
+  ],
+  "alias_rules": [
+    {
+      "canonical": "apple-iphone-15-pro",
+      "aliases": [
+        "아이폰15프로",
+        "아이폰 15 프로",
+        "iphone15pro"
+      ],
+      "evidence_pids": [
+        "406156711",
+        "406607461",
+        "405360016"
+      ],
+      "confidence": "high"
+    },
+    {
+      "canonical": "apple-iphone-15-pro-max",
+      "aliases": [
+        "아이폰15프로맥스",
+        "아이폰 15 프로맥스",
+        "iphone15promax"
+      ],
+      "evidence_pids": [
+        "254336053",
+        "405884432"
+      ],
+      "confidence": "high"
+    },
+    {
+      "canonical": "apple-iphone-15-plus",
+      "aliases": [
+        "아이폰15플러스",
+        "아이폰 15 플러스",
+        "iphone15plus"
+      ],
+      "evidence_pids": [
+        "254334793",
+        "406933461"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "noise_rules": [
+    {
+      "listing_type": "accessory",
+      "add_to": "ACCESSORY_TITLE_KEYWORDS",
+      "keywords_or_regex": [
+        "케이스",
+        "폰케이스",
+        "충전기",
+        "박스",
+        "필름",
+        "보호필름",
+        "맥세이프",
+        "케이스티파이",
+        "마페아",
+        "마이페이브아카이브",
+        "폼폼푸린",
+        "트위너",
+        "실리콘케이스",
+        "정품 케이스"
+      ],
+      "negative_context": [
+        "폰",
+        "기기",
+        "본체",
+        "단말기"
+      ],
+      "evidence_pids": [
+        "333462453",
+        "375049295",
+        "385604995",
+        "351716716",
+        "404982372",
+        "404982608",
+        "404982011",
+        "405964472",
+        "406510363",
+        "405347556",
+        "406931472",
+        "405534602"
+      ],
+      "confidence": "high",
+      "rationale_ko": "케이스, 충전기, 박스, 필름 등은 스마트폰 본체가 아닌 액세서리로 분류되어야 하며, 단독 판매 시 노이즈로 간주됨."
+    },
+    {
+      "listing_type": "parts",
+      "add_to": "PARTS_KEYWORDS",
+      "keywords_or_regex": [
+        "파손폰",
+        "부품폰",
+        "메인보드",
+        "액정만",
+        "액정파손",
+        "기능불량",
+        "벽돌폰",
+        "침수",
+        "고장폰",
+        "부품용",
+        "부품판매"
+      ],
+      "negative_context": [
+        "정상",
+        "완납",
+        "새상품",
+        "미사용"
+      ],
+      "evidence_pids": [
+        "197139101",
+        "128627723",
+        "346976909"
+      ],
+      "confidence": "high",
+      "rationale_ko": "파손, 고장, 부품용 스마트폰은 정상 작동 제품과 구분되어야 하며, 부품 판매용으로 분류하여 노이즈 필터링 필요."
+    },
+    {
+      "listing_type": "buying",
+      "add_to": "BUYING_KEYWORDS",
+      "keywords_or_regex": [
+        "매입",
+        "삽니다",
+        "구매합니다",
+        "사요",
+        "매입합니다",
+        "매입전문",
+        "매입업체",
+        "매입환영"
+      ],
+      "negative_context": [
+        "판매",
+        "팝니다",
+        "판매합니다"
+      ],
+      "evidence_pids": [
+        "197139101",
+        "128627723",
+        "346976909"
+      ],
+      "confidence": "high",
+      "rationale_ko": "매입, 구매 의사 표현은 판매 상품과 구분되어야 하며, 구매 희망 문구는 노이즈로 분류하여 필터링 필요."
+    },
+    {
+      "listing_type": "multi",
+      "add_to": "MULTI_KEYWORDS",
+      "keywords_or_regex": [
+        "일괄",
+        "묶음",
+        "세트",
+        "풀박스",
+        "박스 단품",
+        "구성품",
+        "케이스 포함",
+        "케이스 2개",
+        "사은품",
+        "사은품 6종"
+      ],
+      "negative_context": [
+        "단품",
+        "기기 단품",
+        "본체만"
+      ],
+      "evidence_pids": [
+        "405943918",
+        "406448859",
+        "405171506"
+      ],
+      "confidence": "medium",
+      "rationale_ko": "여러 액세서리나 구성품을 포함한 묶음 판매는 단일 SKU 분류에 혼동을 줄 수 있어 별도 분류 필요."
+    }
+  ],
+  "price_notes_ko": [
+    "아이폰 15 시리즈는 128GB 모델 기준으로 약 9만 원부터 64만 원, 256GB 모델은 50만 원부터 90만 원 이상까지 가격대가 다양함.",
+    "아이폰 15 프로 모델은 128GB 기준 약 67만 원부터 90만 원 이상, 256GB 모델은 80만 원부터 100만 원 이상까지 분포되어 있음.",
+    "아이폰 15 프로 맥스 256GB 모델은 약 49만 원부터 95만 원 이상까지 가격 분포가 확인됨.",
+    "갤럭시 S24 시리즈 및 폴더블 모델은 가격 변동 폭이 크며, 특히 울트라 모델은 고가에 거래됨.",
+    "미사용 새상품 및 재고 정리 상품은 일반 중고 시세 대비 현저히 낮은 가격에 등록되어 있으므로 가격 필터링 시 주의 필요."
+  ],
+  "review_warnings_ko": [
+    "케이스, 충전기, 박스 등 액세서리 단독 판매는 스마트폰 본체와 혼동하지 않도록 주의해야 함.",
+    "파손폰, 부품폰, 침수폰 등 기능상 문제가 있는 제품은 별도 분류 및 필터링이 필요하며, 구매자 혼란 방지를 위해 명확한 표기가 요구됨.",
+    "매입, 구매 희망 문구가 포함된 매물은 판매 상품과 구분하여 노이즈로 처리해야 함.",
+    "복수 구성품 포함 매물은 단일 SKU 분류에 혼동을 줄 수 있으므로 별도 관리 필요.",
+    "가격이 지나치게 낮거나 미사용 새상품으로 과장된 매물은 실제 거래와 차이가 있을 수 있으니 주의 필요."
+  ],
+  "next_actions_ko": [
+    "SKU 후보에 저장용량(128GB, 256GB, 512GB, 1TB) 축 추가 및 자급제/통신사, 정상해지 여부 등 추가 속성 확장 검토.",
+    "파손, 부품, 매입 관련 노이즈 필터링 규칙을 강화하여 정상 매물과의 혼동 최소화.",
+    "액세서리 단독 매물에 대한 필터링 규칙을 명확히 하여 스마트폰 본체와 구분.",
+    "가격 분포를 기반으로 이상가 매물 탐지 및 리뷰 경고 시스템 고도화.",
+    "복수 구성품 포함 매물에 대한 별도 태깅 및 관리 정책 수립."
+  ]
+}
