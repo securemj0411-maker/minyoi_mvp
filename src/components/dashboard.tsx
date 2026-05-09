@@ -51,9 +51,9 @@ const filters: { id: Filter; label: string }[] = [
 
 const profitFloors: { id: ProfitFloor; label: string }[] = [
   { id: 0, label: "전체" },
-  { id: 10000, label: "1만원+" },
-  { id: 30000, label: "3만원+" },
-  { id: 50000, label: "5만원+" },
+  { id: 10000, label: "1만+" },
+  { id: 30000, label: "3만+" },
+  { id: 50000, label: "5만+" },
 ];
 
 const categoryFilters: { id: CategoryFilter; label: string }[] = [
@@ -119,9 +119,9 @@ function categoryOf(item: ListingCandidate): CategoryFilter {
 
 function cashoutHintClass(item: ListingCandidate) {
   const hint = cashoutHint(item);
-  if (hint === "빠름") return "text-emerald-700";
-  if (hint === "보통") return "text-sky-700";
-  return "text-zinc-600";
+  if (hint === "빠름") return "text-emerald-600 dark:text-emerald-400";
+  if (hint === "보통") return "text-sky-600 dark:text-sky-400";
+  return "text-zinc-500";
 }
 
 function labelClass(label: CandidateBand) {
@@ -138,60 +138,6 @@ function barColor(value: number) {
   return "bg-zinc-400";
 }
 
-function CandidateImage({
-  item,
-  priority = false,
-  className = "",
-}: {
-  item: ListingCandidate;
-  priority?: boolean;
-  className?: string;
-}) {
-  const src = candidateImage(item);
-  return (
-    <div className={`relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100 ${className}`}>
-      {src ? (
-        <Image
-          src={src}
-          alt={item.name}
-          fill
-          sizes="(min-width: 1280px) 260px, (min-width: 768px) 33vw, 50vw"
-          priority={priority}
-          className="object-cover transition duration-500 group-hover:scale-[1.03]"
-        />
-      ) : (
-        <div className="flex h-full min-h-32 items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 text-xs font-semibold text-zinc-400">
-          이미지 대기
-        </div>
-      )}
-      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/45 to-transparent" />
-    </div>
-  );
-}
-
-function MetricBar({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between text-xs text-zinc-500">
-        <span>{label}</span>
-        <span>{percent(value)}</span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-zinc-200">
-        <div className={`h-full rounded-full ${barColor(value)}`} style={{ width: percent(value) }} />
-      </div>
-    </div>
-  );
-}
-
-function loadActions(): CandidateActions {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as CandidateActions) : {};
-  } catch {
-    return {};
-  }
-}
-
 function statusLabel(status?: CandidateStatus) {
   if (status === "interested") return "관심";
   if (status === "hold") return "보류";
@@ -204,6 +150,25 @@ function statusClass(status?: CandidateStatus) {
   if (status === "hold") return "bg-indigo-50 text-indigo-800 ring-indigo-200";
   if (status === "hidden") return "bg-zinc-100 text-zinc-600 ring-zinc-200";
   return "";
+}
+
+function AccentBar({ label }: { label: CandidateBand }) {
+  if (label === "고순익 후보")
+    return <div className="h-[3px] w-full flex-none bg-gradient-to-r from-emerald-400 to-emerald-600" />;
+  if (label === "순익 후보")
+    return <div className="h-[3px] w-full flex-none bg-gradient-to-r from-sky-400 to-sky-500" />;
+  if (label === "검토필요")
+    return <div className="h-[3px] w-full flex-none bg-gradient-to-r from-amber-400 to-amber-500" />;
+  return <div className="h-[3px] w-full flex-none bg-zinc-200 dark:bg-zinc-700" />;
+}
+
+function loadActions(): CandidateActions {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as CandidateActions) : {};
+  } catch {
+    return {};
+  }
 }
 
 function applyTheme(mode: ThemeMode) {
@@ -241,7 +206,7 @@ function ThemeToggle() {
   }, [theme]);
 
   return (
-    <div className="flex rounded-md border border-zinc-200 bg-white p-1 text-xs font-semibold">
+    <div className="flex rounded-lg border border-zinc-200 bg-white p-1 text-xs font-semibold dark:border-zinc-700 dark:bg-zinc-800">
       {[
         ["system", "시스템"],
         ["light", "라이트"],
@@ -251,8 +216,10 @@ function ThemeToggle() {
           key={value}
           type="button"
           onClick={() => setTheme(value as ThemeMode)}
-          className={`rounded px-2.5 py-1.5 transition ${
-            theme === value ? "bg-zinc-950 text-white" : "text-zinc-600 hover:bg-zinc-100"
+          className={`rounded-md px-2.5 py-1.5 transition ${
+            theme === value
+              ? "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950"
+              : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700"
           }`}
         >
           {label}
@@ -262,19 +229,90 @@ function ThemeToggle() {
   );
 }
 
+function Navbar() {
+  return (
+    <nav className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/90 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
+      <div className="mx-auto flex max-w-[1500px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-sm font-black text-white shadow-md shadow-emerald-500/30">
+            M
+          </div>
+          <span className="font-black tracking-tight text-zinc-900 dark:text-white">미뇨이</span>
+          <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:ring-emerald-900">
+            Beta
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/debug"
+            className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            운영 로그
+          </Link>
+          <ThemeToggle />
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+function CandidateImage({
+  item,
+  priority = false,
+  className = "",
+}: {
+  item: ListingCandidate;
+  priority?: boolean;
+  className?: string;
+}) {
+  const src = candidateImage(item);
+  return (
+    <div className={`relative aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800 ${className}`}>
+      {src ? (
+        <Image
+          src={src}
+          alt={item.name}
+          fill
+          sizes="(min-width: 1280px) 260px, (min-width: 768px) 33vw, 50vw"
+          priority={priority}
+          className="object-cover transition duration-500 group-hover:scale-[1.04]"
+        />
+      ) : (
+        <div className="flex h-full min-h-32 items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 text-xs font-semibold text-zinc-400 dark:from-zinc-800 dark:to-zinc-900 dark:text-zinc-600">
+          이미지 대기
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MetricBar({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs text-zinc-500">
+        <span>{label}</span>
+        <span className="font-semibold">{percent(value)}</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-700">
+        <div className={`h-full rounded-full transition-all ${barColor(value)}`} style={{ width: percent(value) }} />
+      </div>
+    </div>
+  );
+}
+
 function SignalPills({ signals, tone }: { signals: CandidateSignal[]; tone: "good" | "watch" }) {
   if (signals.length === 0) return null;
   const className =
     tone === "good"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-      : "border-amber-200 bg-amber-50 text-amber-800";
+      ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-400"
+      : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-400";
 
   return (
     <div className="flex flex-wrap gap-1.5">
       {signals.map((signal) => (
         <span
           key={`${signal.source}-${signal.label}`}
-          className={`rounded-full border px-2 py-1 text-xs font-medium ${className}`}
+          className={`rounded-full border px-2.5 py-1 text-xs font-medium ${className}`}
         >
           {signal.label}
         </span>
@@ -295,32 +333,26 @@ function ProfitBreakdown({ item }: { item: ListingCandidate }) {
       : `${krw(breakdown.buyCostMin)} ~ ${krw(breakdown.buyCostMax)}`;
 
   return (
-    <div className="rounded-md border border-zinc-200 bg-white p-4">
-      <div className="text-sm font-semibold text-zinc-950">순익 계산</div>
-      <div className="mt-3 space-y-2 text-sm">
-        <div className="flex justify-between gap-3">
-          <span className="text-zinc-500">예상 판매가</span>
-          <span className="font-medium">{krw(breakdown.expectedSalePrice)}</span>
-        </div>
-        <div className="flex justify-between gap-3">
-          <span className="text-zinc-500">예상 구매비</span>
-          <span className="font-medium">- {buyCost}</span>
-        </div>
-        <div className="flex justify-between gap-3">
-          <span className="text-zinc-500">판매 수수료</span>
-          <span className="font-medium">- {krw(breakdown.sellingFee)}</span>
-        </div>
-        <div className="flex justify-between gap-3">
-          <span className="text-zinc-500">재판매 배송비</span>
-          <span className="font-medium">- {krw(breakdown.resellShippingFee)}</span>
-        </div>
-        <div className="flex justify-between gap-3">
-          <span className="text-zinc-500">안전 버퍼</span>
-          <span className="font-medium">- {krw(breakdown.safetyBuffer)}</span>
-        </div>
-        <div className="flex justify-between gap-3 border-t border-zinc-200 pt-2">
-          <span className="font-semibold text-zinc-950">예상 순익</span>
-          <span className="font-semibold text-emerald-700">{profit}</span>
+    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800/50">
+      <div className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+        <div className="text-sm font-bold text-zinc-950 dark:text-zinc-50">순익 계산</div>
+      </div>
+      <div className="space-y-2.5 p-4 text-sm">
+        {[
+          { label: "예상 판매가", value: krw(breakdown.expectedSalePrice), sign: "" },
+          { label: "예상 구매비", value: buyCost, sign: "-" },
+          { label: "판매 수수료", value: krw(breakdown.sellingFee), sign: "-" },
+          { label: "재판매 배송비", value: krw(breakdown.resellShippingFee), sign: "-" },
+          { label: "안전 버퍼", value: krw(breakdown.safetyBuffer), sign: "-" },
+        ].map(({ label, value, sign }) => (
+          <div key={label} className="flex justify-between gap-3">
+            <span className="text-zinc-500">{label}</span>
+            <span className="font-medium">{sign ? `${sign} ${value}` : value}</span>
+          </div>
+        ))}
+        <div className="flex justify-between gap-3 border-t border-zinc-200 pt-2.5 dark:border-zinc-700">
+          <span className="font-bold text-zinc-950 dark:text-zinc-50">예상 순익</span>
+          <span className="font-bold text-emerald-600 dark:text-emerald-400">{profit}</span>
         </div>
       </div>
     </div>
@@ -329,9 +361,9 @@ function ProfitBreakdown({ item }: { item: ListingCandidate }) {
 
 function AlertPreview({ item }: { item: ListingCandidate }) {
   return (
-    <div className="rounded-md border border-zinc-200 bg-zinc-950 p-4 font-mono text-xs leading-6 text-zinc-100">
-      <div>리셀갭 후보 발견</div>
-      <div>{item.name}</div>
+    <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 font-mono text-xs leading-6 text-zinc-100">
+      <div className="text-emerald-400">리셀갭 후보 발견</div>
+      <div className="font-semibold">{item.name}</div>
       <br />
       <div>가격: {krw(item.price)}</div>
       <div>배송비: {shippingLabel(item)}</div>
@@ -349,29 +381,33 @@ function AlertPreview({ item }: { item: ListingCandidate }) {
 function PriceHistoryPlaceholder({ item }: { item: ListingCandidate }) {
   const points = [0.62, 0.46, 0.52, 0.43, 0.55, 0.38, 0.49, 0.35, 0.41, 0.3];
   return (
-    <div className="rounded-md border border-zinc-200 bg-white p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <div className="text-sm font-semibold text-zinc-950">가격 추이</div>
-          <div className="text-xs text-zinc-500">7~14일 데이터 누적 후 실제 그래프 연결</div>
-        </div>
-        <div className="text-right text-xs text-zinc-500">
-          현재 갭
-          <div className="font-semibold text-zinc-950">{percent(item.priceGap)}</div>
+    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800/50">
+      <div className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-bold text-zinc-950 dark:text-zinc-50">가격 추이</div>
+            <div className="text-xs text-zinc-500">7~14일 데이터 누적 후 실제 그래프 연결</div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs text-zinc-500">현재 갭</div>
+            <div className="font-bold text-zinc-950 dark:text-zinc-50">{percent(item.priceGap)}</div>
+          </div>
         </div>
       </div>
-      <div className="mt-5 flex h-24 items-end gap-1.5 border-b border-l border-zinc-200 px-2 pb-2">
-        {points.map((value, index) => (
-          <div
-            key={`${value}-${index}`}
-            className="flex-1 rounded-t bg-zinc-200"
-            style={{ height: `${Math.max(14, value * 100)}%` }}
-          />
-        ))}
-      </div>
-      <div className="mt-2 flex justify-between text-xs text-zinc-500">
-        <span>과거</span>
-        <span>현재</span>
+      <div className="p-4">
+        <div className="flex h-20 items-end gap-1.5 border-b border-l border-zinc-200 px-2 pb-2 dark:border-zinc-700">
+          {points.map((value, index) => (
+            <div
+              key={`${value}-${index}`}
+              className="flex-1 rounded-t bg-zinc-200 dark:bg-zinc-700"
+              style={{ height: `${Math.max(14, value * 100)}%` }}
+            />
+          ))}
+        </div>
+        <div className="mt-2 flex justify-between text-xs text-zinc-400">
+          <span>과거</span>
+          <span>현재</span>
+        </div>
       </div>
     </div>
   );
@@ -389,16 +425,18 @@ function SegmentedControl<T extends string | number>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div className="space-y-1">
-      <div className="text-xs font-semibold text-zinc-500">{label}</div>
-      <div className="flex flex-wrap gap-1 rounded-md border border-zinc-200 bg-white p-1">
+    <div className="space-y-1.5">
+      <div className="text-xs font-bold uppercase tracking-wider text-zinc-400">{label}</div>
+      <div className="flex flex-wrap gap-1 rounded-lg border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-700 dark:bg-zinc-800/50">
         {options.map((item) => (
           <button
             key={String(item.id)}
             type="button"
             onClick={() => onChange(item.id)}
-            className={`rounded px-3 py-1.5 text-sm font-medium transition ${
-              value === item.id ? "bg-zinc-950 text-white" : "text-zinc-600 hover:bg-zinc-100"
+            className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
+              value === item.id
+                ? "bg-white text-zinc-950 shadow-sm dark:bg-zinc-700 dark:text-zinc-50"
+                : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
             }`}
           >
             {item.label}
@@ -494,310 +532,335 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
   const openedCount = Object.values(actions).filter((item) => item.openedCount > 0).length;
 
   return (
-    <main className="min-h-screen bg-[#f6f7f9] text-zinc-950">
-      <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="overflow-hidden rounded-lg border border-zinc-900 bg-zinc-950 p-5 text-white shadow-sm xl:flex xl:items-end xl:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-300">Min-yoi deal intelligence</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
-              오늘 열어볼 리셀갭 후보
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm text-zinc-300">
-              사진으로 먼저 훑고, 순익이 설득되는 후보만 열어봅니다. 마지막 갱신 {generatedAt}
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Link
-                href="/debug"
-                className="inline-flex rounded-md border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
-              >
-                운영 로그
-              </Link>
-              <ThemeToggle />
-            </div>
-          </div>
-          <div className="mt-5 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4 xl:mt-0 xl:min-w-[520px]">
-            <div className="rounded-md border border-white/10 bg-white/10 px-3 py-2">
-              <div className="text-xs text-zinc-300">후보</div>
-              <div className="font-semibold text-white">{filtered.length}/{candidates.length}건</div>
-            </div>
-            <div className="rounded-md border border-white/10 bg-white/10 px-3 py-2">
-              <div className="text-xs text-zinc-300">평균 순익</div>
-              <div className="font-semibold text-white">{compactKrw(avgProfit)}</div>
-            </div>
-            <div className="rounded-md border border-white/10 bg-white/10 px-3 py-2">
-              <div className="text-xs text-zinc-300">고순익</div>
-              <div className="font-semibold text-white">{strongCount}건</div>
-            </div>
-            <div className="rounded-md border border-white/10 bg-white/10 px-3 py-2">
-              <div className="text-xs text-zinc-300">바로가기</div>
-              <div className="font-semibold text-white">{openedCount}건</div>
-            </div>
-          </div>
-        </header>
+    <>
+      <Navbar />
+      <main className="min-h-screen bg-[#f4f6f8] dark:bg-zinc-950">
+        <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
 
-        <section className="grid gap-3 rounded-md border border-zinc-200 bg-white p-3 xl:grid-cols-[1.4fr_1fr_1fr]">
-          <SegmentedControl label="목록" value={filter} options={filters} onChange={setFilter} />
-          <SegmentedControl label="최소 순익" value={profitFloor} options={profitFloors} onChange={setProfitFloor} />
-          <SegmentedControl label="카테고리" value={categoryFilter} options={categoryFilters} onChange={setCategoryFilter} />
-        </section>
-
-        <section className="flex flex-wrap gap-2 text-xs text-zinc-500">
-          <span className="rounded-md border border-zinc-200 bg-white px-2.5 py-1.5">관심 {interestedCount}건</span>
-          <span className="rounded-md border border-zinc-200 bg-white px-2.5 py-1.5">보류 {holdCount}건</span>
-          <span className="rounded-md border border-zinc-200 bg-white px-2.5 py-1.5">숨김 {hiddenCount}건</span>
-        </section>
-
-        <section className="grid auto-rows-fr gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {filtered.map((item, index) => {
-            const label = scoreLabel(item);
-            const action = actions[item.pid];
-            return (
-              <button
-                key={item.pid}
-                type="button"
-                onClick={() => setSelectedPid(item.pid)}
-                className="group flex h-full flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-400 hover:shadow-md"
-              >
-                <div className="relative">
-                  <CandidateImage item={item} priority={index < 6} className="aspect-square rounded-none" />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-3 pb-3 pt-10">
-                    <div className="w-fit rounded-md bg-black/75 px-2.5 py-1.5 shadow-sm ring-1 ring-white/15 backdrop-blur">
-                      <div className="text-[10px] font-semibold text-white/70">예상 순익</div>
-                      <div className="text-lg font-semibold leading-none text-white drop-shadow">{profitLabel(item)}</div>
+          {/* Hero */}
+          <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 p-6 text-white shadow-xl shadow-emerald-900/30">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.08),transparent_60%)]" />
+            <div className="relative">
+              <p className="text-xs font-bold uppercase tracking-widest text-emerald-200/70">
+                리셀갭 인텔리전스
+              </p>
+              <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
+                오늘 열어볼 리셀갭 후보
+              </h1>
+              <p className="mt-1 text-sm text-emerald-100/60">
+                마지막 갱신 {generatedAt}
+              </p>
+              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  { label: "전체 후보", value: `${filtered.length}/${candidates.length}건` },
+                  { label: "평균 순익", value: compactKrw(avgProfit) },
+                  { label: "고순익", value: `${strongCount}건`, highlight: true },
+                  { label: "열람", value: `${openedCount}건` },
+                ].map(({ label, value, highlight }) => (
+                  <div
+                    key={label}
+                    className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm"
+                  >
+                    <div className="text-xs text-emerald-100/60">{label}</div>
+                    <div className={`mt-0.5 text-xl font-black tabular-nums leading-none ${highlight ? "text-yellow-300" : "text-white"}`}>
+                      {value}
                     </div>
                   </div>
-                  <div className="absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-wrap gap-1.5">
-                    <span className="rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur">
-                      #{index + 1}
-                    </span>
-                    <span className={`rounded-full px-2 py-1 text-[11px] font-semibold ring-1 ${labelClass(label)}`}>
-                      {label}
-                    </span>
-                  </div>
-                </div>
+                ))}
+              </div>
+            </div>
+          </header>
 
-                <div className="flex flex-1 flex-col gap-3 p-3">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold text-zinc-600">
-                        {item.skuName}
+          {/* Filters */}
+          <section className="grid gap-3 rounded-xl border border-zinc-200/80 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 xl:grid-cols-[1.4fr_1fr_1fr]">
+            <SegmentedControl label="목록" value={filter} options={filters} onChange={setFilter} />
+            <SegmentedControl label="최소 순익" value={profitFloor} options={profitFloors} onChange={setProfitFloor} />
+            <SegmentedControl label="카테고리" value={categoryFilter} options={categoryFilters} onChange={setCategoryFilter} />
+          </section>
+
+          {/* Status chips */}
+          <section className="flex flex-wrap gap-2">
+            {[
+              { label: `관심 ${interestedCount}건`, cls: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-400" },
+              { label: `보류 ${holdCount}건`, cls: "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-400" },
+              { label: `숨김 ${hiddenCount}건`, cls: "border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-400" },
+            ].map(({ label, cls }) => (
+              <span key={label} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${cls}`}>
+                {label}
+              </span>
+            ))}
+          </section>
+
+          {/* Card grid */}
+          <section className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            {filtered.map((item, index) => {
+              const label = scoreLabel(item);
+              const action = actions[item.pid];
+              const isPremium = label === "고순익 후보";
+              return (
+                <button
+                  key={item.pid}
+                  type="button"
+                  onClick={() => setSelectedPid(item.pid)}
+                  className={`group flex h-full flex-col overflow-hidden rounded-2xl border text-left transition-all duration-200 hover:-translate-y-1.5 ${
+                    isPremium
+                      ? "border-emerald-200 bg-white shadow-lg shadow-emerald-500/10 hover:border-emerald-300 hover:shadow-2xl hover:shadow-emerald-500/20 dark:border-emerald-900/50 dark:bg-zinc-900 dark:shadow-emerald-950/50 dark:hover:border-emerald-800"
+                      : "border-zinc-200/80 bg-white shadow-md hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+                  }`}
+                >
+                  <AccentBar label={label} />
+
+                  {/* Image block */}
+                  <div className="relative flex-none overflow-hidden">
+                    <CandidateImage item={item} priority={index < 6} className="aspect-[4/3] rounded-none" />
+
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent px-3 pb-3 pt-12">
+                      <div className="flex items-end justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="text-[9px] font-bold uppercase tracking-wider text-white/50">예상 순익</div>
+                          <div className={`text-xl font-black leading-tight ${isPremium ? "text-emerald-300" : "text-white"}`}>
+                            {profitLabel(item)}
+                          </div>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-black/60 px-2 py-1 text-xs font-bold text-white/80 backdrop-blur-sm">
+                          #{index + 1}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Label badge */}
+                    <div className="absolute left-2 top-2">
+                      <span className={`rounded-full px-2 py-1 text-[10px] font-bold ring-1 ${labelClass(label)}`}>
+                        {label}
                       </span>
-                      {action?.status ? (
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${statusClass(action.status)}`}>
+                    </div>
+
+                    {/* Status badge */}
+                    {action?.status ? (
+                      <div className="absolute right-2 top-2">
+                        <span className={`rounded-full px-2 py-1 text-[10px] font-bold ring-1 ${statusClass(action.status)}`}>
                           {statusLabel(action.status)}
                         </span>
-                      ) : null}
-                    </div>
-                    <div className="mt-2 line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-zinc-950">
-                      {item.name}
-                    </div>
+                      </div>
+                    ) : null}
                   </div>
 
-                  <div className="mt-auto flex items-end justify-between gap-2">
+                  {/* Card body */}
+                  <div className="flex flex-1 flex-col gap-2.5 p-3">
                     <div>
-                      <div className="text-[11px] text-zinc-500">매물가</div>
-                      <div className="text-sm font-semibold">{compactKrw(item.price)}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[11px] text-zinc-500">시세갭</div>
-                      <div className="text-sm font-semibold">{percent(item.priceGap)}</div>
-                    </div>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </section>
-
-        {selected ? (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-3 backdrop-blur-sm sm:p-6"
-            role="dialog"
-            aria-modal="true"
-            onClick={() => setSelectedPid("")}
-          >
-            <div
-              className="max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-lg bg-white shadow-2xl"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur">
-                <div className="min-w-0">
-                  <div className="text-xs font-semibold text-emerald-700">리셀갭 상세</div>
-                  <div className="truncate text-sm font-semibold text-zinc-950">{selected.name}</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedPid("")}
-                  className="rounded-md border border-zinc-200 px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
-                >
-                  닫기
-                </button>
-              </div>
-
-              <div className="grid gap-0 lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)]">
-                <div className="bg-zinc-100 p-3 sm:p-5">
-                  <CandidateImage item={selected} priority className="aspect-square rounded-lg" />
-                  <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
-                    <div className="rounded-md bg-white p-3">
-                      <div className="text-xs text-zinc-500">찜</div>
-                      <div className="font-semibold">{selected.numFaved.toLocaleString("ko-KR")}개</div>
-                    </div>
-                    <div className="rounded-md bg-white p-3">
-                      <div className="text-xs text-zinc-500">예상 현금화</div>
-                      <div className={`font-semibold ${cashoutHintClass(selected)}`}>{cashoutHint(selected)}</div>
-                    </div>
-                    <div className="rounded-md bg-white p-3">
-                      <div className="text-xs text-zinc-500">안전도</div>
-                      <div className="font-semibold">{percent(selected.safety)}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 sm:p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap gap-2">
-                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${labelClass(scoreLabel(selected))}`}>
-                      {scoreLabel(selected)}
-                    </span>
-                    {actions[selected.pid]?.status ? (
-                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${statusClass(actions[selected.pid]?.status)}`}>
-                        {statusLabel(actions[selected.pid]?.status)}
+                      <span className="rounded-md bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                        {item.skuName}
                       </span>
-                    ) : null}
+                      <div className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-5 text-zinc-900 dark:text-zinc-100">
+                        {item.name}
+                      </div>
+                    </div>
+
+                    <div className="mt-auto flex items-end justify-between gap-2 border-t border-zinc-100 pt-2.5 dark:border-zinc-800">
+                      <div>
+                        <div className="text-[10px] font-medium text-zinc-400">매물가</div>
+                        <div className="text-sm font-bold text-zinc-700 dark:text-zinc-300">{compactKrw(item.price)}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] font-medium text-zinc-400">시세갭</div>
+                        <div className={`text-sm font-bold ${item.priceGap >= 0.15 ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-700 dark:text-zinc-300"}`}>
+                          {percent(item.priceGap)}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <h2 className="mt-3 text-xl font-semibold leading-7">{selected.name}</h2>
-                  <div className="mt-1 text-sm text-zinc-500">{selected.skuName}</div>
-                </div>
-                <div className="shrink-0 text-right">
-                  <div className="text-3xl font-semibold text-emerald-700">{profitLabel(selected)}</div>
-                  <div className="text-xs text-zinc-500">예상 순익</div>
-                </div>
-              </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-md bg-zinc-50 p-3">
-                  <div className="text-xs text-zinc-500">매물가</div>
-                  <div className="font-semibold">{krw(selected.price)}</div>
-                </div>
-                <div className="rounded-md bg-zinc-50 p-3">
-                  <div className="text-xs text-zinc-500">추정 시세</div>
-                  <div className="font-semibold">{krw(selected.skuMedian)}</div>
-                </div>
-                <div className="rounded-md bg-zinc-50 p-3">
-                  <div className="text-xs text-zinc-500">배송비</div>
-                  <div className="font-semibold">{shippingLabel(selected)}</div>
-                </div>
-                <div className="rounded-md bg-zinc-50 p-3">
-                  <div className="text-xs text-zinc-500">예상 구매비</div>
-                  <div className="font-semibold">{buyCostLabel(selected)}</div>
-                </div>
-                <div className="rounded-md bg-zinc-50 p-3">
-                  <div className="text-xs text-zinc-500">배송 후 갭</div>
-                  <div className="font-semibold">{netGapLabel(selected)}</div>
-                </div>
-                <div className="rounded-md bg-zinc-50 p-3">
-                  <div className="text-xs text-zinc-500">예상 현금화</div>
-                  <div className={`font-semibold ${cashoutHintClass(selected)}`}>{cashoutHint(selected)}</div>
-                </div>
-              </div>
-
-              <div className="mt-5 grid gap-3">
-                <MetricBar label="시세갭" value={selected.priceGap} />
-                <MetricBar label="관심도" value={selected.velocity} />
-                <MetricBar label="안전도" value={selected.safety} />
-              </div>
-
-              <div className="mt-5 grid gap-3">
-                <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4">
-                  <div className="text-sm font-semibold text-zinc-950">좋게 보는 이유</div>
-                  <div className="mt-2">
-                    <SignalPills signals={positiveSignals(selected)} tone="good" />
-                    {positiveSignals(selected).length === 0 ? (
-                      <div className="text-sm text-zinc-500">강한 긍정 신호는 아직 없음</div>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4">
-                  <div className="text-sm font-semibold text-zinc-950">확인할 점</div>
-                  <div className="mt-2">
-                    <SignalPills signals={reviewSignals(selected)} tone="watch" />
-                    {reviewSignals(selected).length === 0 ? (
-                      <div className="text-sm text-zinc-500">검토 신호 없음</div>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5">
-                <PriceHistoryPlaceholder item={selected} />
-              </div>
-
-              <div className="mt-5">
-                <ProfitBreakdown item={selected} />
-              </div>
-
-              <p className="mt-5 max-h-32 overflow-auto rounded-md bg-zinc-50 p-3 text-sm leading-6 text-zinc-700">
-                {selected.descriptionPreview}
-              </p>
-
-              <div className="mt-5">
-                <AlertPreview item={selected} />
-              </div>
-
-              <div className="mt-5 grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setStatus(selected.pid, "interested")}
-                  className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
-                >
-                  관심
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setStatus(selected.pid, "hold")}
-                  className="rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-800 transition hover:bg-indigo-100"
-                >
-                  보류
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStatus(selected.pid, "hidden")}
-                  className="rounded-md border border-zinc-200 px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
-                >
-                  숨기기
-                </button>
-              </div>
-              {actions[selected.pid]?.status ? (
-                <button
-                  type="button"
-                  onClick={() => clearStatus(selected.pid)}
-                  className="mt-2 w-full rounded-md px-3 py-2 text-sm font-medium text-zinc-500 transition hover:bg-zinc-50 hover:text-zinc-800"
-                >
-                  상태 해제
-                </button>
-              ) : null}
+              );
+            })}
+          </section>
 
-              <a
-                href={selected.url}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => logOpen(selected.pid)}
-                className="mt-5 block rounded-md bg-zinc-950 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-zinc-800"
+          {/* Detail modal */}
+          {selected ? (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-6"
+              role="dialog"
+              aria-modal="true"
+              onClick={() => setSelectedPid("")}
+            >
+              <div
+                className="max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-zinc-900"
+                onClick={(event) => event.stopPropagation()}
               >
-                번개장터에서 보기
-              </a>
+                {/* Modal header */}
+                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white/95 px-5 py-4 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                      리셀갭 상세
+                    </div>
+                    <div className="truncate text-sm font-bold text-zinc-950 dark:text-zinc-50">{selected.name}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPid("")}
+                    className="rounded-lg border border-zinc-200 px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    닫기
+                  </button>
+                </div>
 
-              <div className="mt-4 text-xs leading-5 text-zinc-500">
-                배송비 출처: {selected.shippingSource} · 수수료 {Math.round(SELLING_FEE_RATE * 1000) / 10}% (
-                {krw(sellingFee(selected))}) · 재배송 {krw(RESELL_SHIPPING_FEE)} · 버퍼 {krw(SAFETY_BUFFER)}
-              </div>
+                <div className="grid gap-0 lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)]">
+                  {/* Left: image */}
+                  <div className="bg-zinc-50 p-4 dark:bg-zinc-800/40 sm:p-6">
+                    <CandidateImage item={selected} priority className="aspect-square rounded-xl" />
+                    <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
+                      <div className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
+                        <div className="text-xs text-zinc-400">찜</div>
+                        <div className="font-bold">{selected.numFaved.toLocaleString("ko-KR")}개</div>
+                      </div>
+                      <div className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
+                        <div className="text-xs text-zinc-400">예상 현금화</div>
+                        <div className={`font-bold ${cashoutHintClass(selected)}`}>{cashoutHint(selected)}</div>
+                      </div>
+                      <div className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
+                        <div className="text-xs text-zinc-400">안전도</div>
+                        <div className="font-bold">{percent(selected.safety)}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: details */}
+                  <div className="p-5 sm:p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap gap-2">
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${labelClass(scoreLabel(selected))}`}>
+                            {scoreLabel(selected)}
+                          </span>
+                          {actions[selected.pid]?.status ? (
+                            <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${statusClass(actions[selected.pid]?.status)}`}>
+                              {statusLabel(actions[selected.pid]?.status)}
+                            </span>
+                          ) : null}
+                        </div>
+                        <h2 className="mt-3 text-xl font-bold leading-7">{selected.name}</h2>
+                        <div className="mt-1 text-sm text-zinc-500">{selected.skuName}</div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{profitLabel(selected)}</div>
+                        <div className="text-xs text-zinc-400">예상 순익</div>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid grid-cols-2 gap-2.5 text-sm">
+                      {[
+                        { label: "매물가", value: krw(selected.price) },
+                        { label: "추정 시세", value: krw(selected.skuMedian) },
+                        { label: "배송비", value: shippingLabel(selected) },
+                        { label: "예상 구매비", value: buyCostLabel(selected) },
+                        { label: "배송 후 갭", value: netGapLabel(selected) },
+                        { label: "예상 현금화", value: cashoutHint(selected), cls: cashoutHintClass(selected) },
+                      ].map(({ label, value, cls }) => (
+                        <div key={label} className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800/50">
+                          <div className="text-xs text-zinc-400">{label}</div>
+                          <div className={`mt-0.5 font-bold ${cls ?? ""}`}>{value}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-5 grid gap-3">
+                      <MetricBar label="시세갭" value={selected.priceGap} />
+                      <MetricBar label="관심도" value={selected.velocity} />
+                      <MetricBar label="안전도" value={selected.safety} />
+                    </div>
+
+                    <div className="mt-5 grid gap-2.5">
+                      <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                        <div className="text-sm font-bold">좋게 보는 이유</div>
+                        <div className="mt-2.5">
+                          <SignalPills signals={positiveSignals(selected)} tone="good" />
+                          {positiveSignals(selected).length === 0 ? (
+                            <div className="text-sm text-zinc-500">강한 긍정 신호는 아직 없음</div>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                        <div className="text-sm font-bold">확인할 점</div>
+                        <div className="mt-2.5">
+                          <SignalPills signals={reviewSignals(selected)} tone="watch" />
+                          {reviewSignals(selected).length === 0 ? (
+                            <div className="text-sm text-zinc-500">검토 신호 없음</div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-5">
+                      <PriceHistoryPlaceholder item={selected} />
+                    </div>
+
+                    <div className="mt-4">
+                      <ProfitBreakdown item={selected} />
+                    </div>
+
+                    <p className="mt-4 max-h-32 overflow-auto rounded-xl bg-zinc-50 p-3 text-sm leading-6 text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-400">
+                      {selected.descriptionPreview}
+                    </p>
+
+                    <div className="mt-4">
+                      <AlertPreview item={selected} />
+                    </div>
+
+                    <div className="mt-5 grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setStatus(selected.pid, "interested")}
+                        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-400 dark:hover:bg-emerald-950/60"
+                      >
+                        관심
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStatus(selected.pid, "hold")}
+                        className="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-sm font-bold text-indigo-800 transition hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-400 dark:hover:bg-indigo-950/60"
+                      >
+                        보류
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStatus(selected.pid, "hidden")}
+                        className="rounded-xl border border-zinc-200 px-3 py-2.5 text-sm font-bold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        숨기기
+                      </button>
+                    </div>
+
+                    {actions[selected.pid]?.status ? (
+                      <button
+                        type="button"
+                        onClick={() => clearStatus(selected.pid)}
+                        className="mt-2 w-full rounded-xl px-3 py-2 text-sm font-medium text-zinc-400 transition hover:bg-zinc-50 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                      >
+                        상태 해제
+                      </button>
+                    ) : null}
+
+                    <a
+                      href={selected.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => logOpen(selected.pid)}
+                      className="mt-4 block rounded-xl bg-emerald-600 px-4 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-700 hover:shadow-emerald-500/30"
+                    >
+                      번개장터에서 보기
+                    </a>
+
+                    <div className="mt-4 text-xs leading-5 text-zinc-400">
+                      배송비 출처: {selected.shippingSource} · 수수료 {Math.round(SELLING_FEE_RATE * 1000) / 10}% (
+                      {krw(sellingFee(selected))}) · 재배송 {krw(RESELL_SHIPPING_FEE)} · 버퍼 {krw(SAFETY_BUFFER)}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : null}
-      </div>
-    </main>
+          ) : null}
+        </div>
+      </main>
+    </>
   );
 }
