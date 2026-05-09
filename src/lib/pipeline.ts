@@ -21,13 +21,12 @@ const CALLOUT_KEYWORDS = [
   "이미테이션", "정품아님", "정품 아님", "비정품",
 ];
 const PARTS_KEYWORDS = [
-  "부품용", "본체", "본체만", "유닛", "유닛만", "왼쪽", "오른쪽",
-  "좌측", "우측", "한쪽", "한짝", "한 쪽", "한알", "단품",
+  "부품용", "본체만", "유닛만", "좌측", "우측", "한쪽", "한짝", "한 쪽", "한알", "낱개", "단품",
   "케이스만", "충전케이스만", "충전 케이스만", "액정만", "배터리만",
   "교체용", "호환", "익스텐션", "연장",
 ];
 const DAMAGED_KEYWORDS = [
-  "고장", "하자", "작동안됨", "작동 안됨", "안켜짐", "안 켜짐",
+  "고장", "작동안됨", "작동 안됨", "안켜짐", "안 켜짐",
   "먹통", "충전안됨", "충전 안됨", "충전이 안됨", "충전이 안되는",
   "충전이안됨", "충전이안되는", "충전불량", "충전 불량",
   "툭툭", "끊김", "잡음", "소리 안", "소리가 안", "노캔 안됨",
@@ -84,6 +83,46 @@ function accessoryTitleHits(title: string): string[] {
   return hits;
 }
 
+function partsHits(title: string, desc: string): string[] {
+  const text = `${title}\n${desc}`;
+  const hits = containsAny(text, PARTS_KEYWORDS);
+  const compactTitle = nrm(title).replace(/\s+/g, "");
+  const compactText = nrm(text).replace(/\s+/g, "");
+
+  if (/(왼쪽|오른쪽|좌측|우측).{0,8}(유닛|이어버드)|(?:유닛|이어버드).{0,8}(왼쪽|오른쪽|좌측|우측)/.test(compactText)) {
+    hits.push("side_unit");
+  }
+  if (/(본체|충전케이스).{0,8}(단품|만|판매|팝니다)|(?:단품|만).{0,8}(본체|충전케이스)/.test(compactText)) {
+    hits.push("case_only");
+  }
+  if (/(l|r)\s*\/?\s*(유닛|unit)|\b(l|r)\b.{0,8}(낱개|단품)/i.test(title)) {
+    hits.push("lr_unit");
+  }
+  if (compactTitle.includes("본체") && !containsAny(text, ["양쪽", "풀박", "풀박스", "풀세트", "풀구성"]).length) {
+    hits.push("title_case_only");
+  }
+
+  return [...new Set(hits)];
+}
+
+function damagedHits(title: string, desc: string): string[] {
+  const text = `${title}\n${desc}`;
+  const hits = containsAny(text, DAMAGED_KEYWORDS);
+  const compactText = nrm(text).replace(/\s+/g, "");
+
+  if (compactText.includes("하자") && !/(하자없|하자전혀없|하자없이|무하자|하자는없|하자없습|하자전혀없이)/.test(compactText)) {
+    hits.push("하자");
+  }
+  if (compactText.includes("불량") && !/(불량없|불량없이|불량이슈로없습니다)/.test(compactText)) {
+    hits.push("불량");
+  }
+  if (/(안들림|안 들림|소리안남|소리 안남|한쪽안들림|한쪽 안들림)/.test(text)) {
+    hits.push("sound_failure");
+  }
+
+  return [...new Set(hits)];
+}
+
 export type ListingType = "normal" | "parts" | "multi" | "buying" | "callout" | "damaged" | "accessory" | "unknown";
 
 type ClassifyResult = { listingType: ListingType; sku: Sku | null };
@@ -94,8 +133,8 @@ function classifyListing(title: string, desc: string, price: number): ClassifyRe
   if (containsAny(title, BUYING_KEYWORDS).length > 0) return { listingType: "buying", sku: null };
   if (price <= 0 || price < 5000) return { listingType: "callout", sku: null };
   if (containsAny(text, CALLOUT_KEYWORDS).length > 0) return { listingType: "callout", sku: null };
-  if (containsAny(text, PARTS_KEYWORDS).length > 0) return { listingType: "parts", sku: null };
-  if (containsAny(text, DAMAGED_KEYWORDS).length > 0) return { listingType: "damaged", sku: null };
+  if (partsHits(title, desc).length > 0) return { listingType: "parts", sku: null };
+  if (damagedHits(title, desc).length > 0) return { listingType: "damaged", sku: null };
   if (accessoryTitleHits(title).length > 0) return { listingType: "accessory", sku: null };
 
   const multiHits = containsAny(title, MULTI_KEYWORDS);

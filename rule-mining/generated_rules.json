@@ -1,0 +1,47 @@
+{
+  "generated_at": "2026-05-09T03:15:42.863Z",
+  "sample_count": 250,
+  "source": "rule-mining/latest_samples.json + Codex analysis",
+  "note": "External OpenAI call timed out in this run, so these are generated from the 250-sample heuristic distribution and sample inspection.",
+  "approved_for_pipeline": [
+    {
+      "category": "counterfeit",
+      "keywords": ["타오바오", "타오바이", "taobao", "짭", "가품", "짝퉁", "레플", "레플리카", "이미테이션", "정품아님", "정품 아님", "비정품"],
+      "evidence": ["405327872", "406588588", "406306741", "406760558"],
+      "action": "callout"
+    },
+    {
+      "category": "parts",
+      "keywords": ["본체만", "유닛만", "한쪽", "한짝", "낱개", "단품", "케이스만", "충전케이스만", "왼쪽 유닛", "오른쪽 유닛"],
+      "context_rules": ["본체/유닛 단독 단어는 오탐이 많으므로 단품/만/판매/좌우 방향 문맥이 있을 때만 parts 처리"],
+      "evidence": ["406701518", "406928530", "406924990", "406757414"],
+      "action": "parts"
+    },
+    {
+      "category": "damaged",
+      "keywords": ["고장", "작동안됨", "충전안됨", "먹통", "노캔 안됨", "안들림", "소리 안남", "툭툭", "끊김"],
+      "negative_context": ["하자 없음", "하자 전혀 없음", "무하자", "불량 없음"],
+      "evidence": ["383678128", "406925644", "406491133"],
+      "action": "damaged"
+    },
+    {
+      "category": "buying",
+      "keywords": ["구합니다", "삽니다", "급구", "매입", "구매합니다"],
+      "negative_context": ["구매했습니다", "구매하고", "구매내역"],
+      "evidence": ["393343375", "403432567", "368069360"],
+      "action": "buying"
+    }
+  ],
+  "needs_review": [
+    {
+      "category": "future_or_fake_sku",
+      "keywords": ["에어팟 프로 3", "에어팟 프로3", "에어팟 프로 4"],
+      "reason": "표현 자체가 가품/미래 SKU/오표기와 정상 신제품이 섞일 수 있어 카탈로그와 출시 상태 기준이 필요"
+    },
+    {
+      "category": "deep_discount",
+      "keywords": ["AirPods Max 8만원 이하", "시세 대비 80% 이상 저가"],
+      "reason": "대부분 가품/저격/부품 가능성이 높지만, 단독 룰로 제외하면 극소수 진짜 급처를 놓칠 수 있어 AI/Tier2 확인 대상"
+    }
+  ]
+}
