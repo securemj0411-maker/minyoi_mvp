@@ -1,8 +1,14 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #f6f7f9;
   --foreground: #18181b;
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #f4f4f5;
 }
 
 @theme inline {
@@ -21,4 +27,48 @@ body {
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+}
+
+.dark .bg-white,
+.dark .bg-zinc-50,
+.dark .bg-zinc-100 {
+  background-color: #18181b !important;
+}
+
+.dark .bg-\[\#f6f7f9\] {
+  background-color: #09090b !important;
+}
+
+.dark .text-zinc-950,
+.dark .text-zinc-900,
+.dark .text-zinc-800,
+.dark .text-zinc-700 {
+  color: #f4f4f5 !important;
+}
+
+.dark .text-zinc-600,
+.dark .text-zinc-500 {
+  color: #a1a1aa !important;
+}
+
+.dark .border-zinc-100,
+.dark .border-zinc-200 {
+  border-color: #3f3f46 !important;
+}
+
+.dark .shadow-sm {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.45) !important;
+}
+
+.dark .hover\:bg-zinc-50:hover,
+.dark .hover\:bg-zinc-100:hover {
+  background-color: #27272a !important;
+}
+
+.dark .hover\:border-zinc-400:hover {
+  border-color: #71717a !important;
+}
+
+.dark .ring-zinc-950\/10 {
+  --tw-ring-color: rgb(244 244 245 / 0.16) !important;
 }

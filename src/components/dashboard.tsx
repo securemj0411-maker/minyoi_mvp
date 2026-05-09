@@ -35,6 +35,7 @@ type CandidateAction = {
 };
 type CandidateActions = Record<string, CandidateAction>;
 type Filter = "all" | "strong" | "interested" | "hold" | "review" | "hidden";
+type ThemeMode = "system" | "light" | "dark";
 
 const filters: { id: Filter; label: string }[] = [
   { id: "all", label: "전체" },
@@ -46,6 +47,7 @@ const filters: { id: Filter; label: string }[] = [
 ];
 
 const STORAGE_KEY = "minyoi-candidate-actions-v1";
+const THEME_STORAGE_KEY = "minyoi-theme-v1";
 function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
@@ -153,6 +155,62 @@ function statusClass(status?: CandidateStatus) {
   if (status === "hold") return "bg-indigo-50 text-indigo-800 ring-indigo-200";
   if (status === "hidden") return "bg-zinc-100 text-zinc-600 ring-zinc-200";
   return "";
+}
+
+function applyTheme(mode: ThemeMode) {
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const dark = mode === "dark" || (mode === "system" && prefersDark);
+  document.documentElement.classList.toggle("dark", dark);
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+}
+
+function loadTheme(): ThemeMode {
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "light" || stored === "dark" || stored === "system") return stored;
+  } catch {
+    return "system";
+  }
+  return "system";
+}
+
+function ThemeToggle() {
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") return "system";
+    return loadTheme();
+  });
+
+  useEffect(() => {
+    applyTheme(theme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+
+    if (theme !== "system") return;
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => applyTheme("system");
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, [theme]);
+
+  return (
+    <div className="flex rounded-md border border-zinc-200 bg-white p-1 text-xs font-semibold">
+      {[
+        ["system", "시스템"],
+        ["light", "라이트"],
+        ["dark", "다크"],
+      ].map(([value, label]) => (
+        <button
+          key={value}
+          type="button"
+          onClick={() => setTheme(value as ThemeMode)}
+          className={`rounded px-2.5 py-1.5 transition ${
+            theme === value ? "bg-zinc-950 text-white" : "text-zinc-600 hover:bg-zinc-100"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function SignalPills({ signals, tone }: { signals: CandidateSignal[]; tone: "good" | "watch" }) {
@@ -314,13 +372,14 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
             <h1 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950 sm:text-3xl">
               오늘의 리셀갭 후보
             </h1>
-            <div className="mt-3">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               <Link
                 href="/debug"
                 className="inline-flex rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 transition hover:border-zinc-400"
               >
                 운영 로그
               </Link>
+              <ThemeToggle />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">

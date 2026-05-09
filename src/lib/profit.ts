@@ -17,6 +17,19 @@ const FATAL_LISTING_KEYWORDS = [
   "정품 아님",
   "비정품",
 ];
+const INCOMPLETE_AIRPODS_KEYWORDS = [
+  "왼쪽",
+  "오른쪽",
+  "좌측",
+  "우측",
+  "한쪽",
+  "한짝",
+  "좌 유닛",
+  "우 유닛",
+  "좌유닛",
+  "우유닛",
+  "유닛만",
+];
 
 export function generalShippingFee(item: ListingCandidate) {
   return item.shippingFeeGeneral ?? item.shippingFee;
@@ -125,6 +138,15 @@ function hasAny(text: string, keywords: string[]) {
 
 export function isFatalListing(item: ListingCandidate) {
   return hasAny(textOf(item), FATAL_LISTING_KEYWORDS);
+}
+
+export function isVisibleResellCandidate(item: ListingCandidate) {
+  if (isFatalListing(item)) return false;
+  if (item.skuName.toLowerCase().includes("airpods") && hasAny(textOf(item), INCOMPLETE_AIRPODS_KEYWORDS)) {
+    return false;
+  }
+  if (item.netGapAfterShipping <= 0) return false;
+  return expectedProfitMax(item) > 0;
 }
 
 export function positiveSignals(item: ListingCandidate): CandidateSignal[] {

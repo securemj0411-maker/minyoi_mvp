@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import { compareCandidates } from "@/lib/profit";
+import { compareCandidates, isVisibleResellCandidate } from "@/lib/profit";
 import type { ListingCandidate } from "@/lib/types";
 
 type SummaryListing = {
@@ -136,7 +136,7 @@ async function loadCandidatesFromSupabase() {
   if (!restUrl || !serviceKey) return null;
 
   const response = await fetch(
-    `${restUrl}/mvp_listing_candidates?select=*&order=candidate_rank.asc.nullslast&limit=50`,
+    `${restUrl}/mvp_listing_candidates?select=*&order=candidate_rank.asc.nullslast&limit=150`,
     {
       headers: {
         apikey: serviceKey,
@@ -160,7 +160,11 @@ async function loadCandidatesFromSupabase() {
 
   return {
     generatedAt: rows[0]?.generated_at ?? "supabase",
-    candidates: rows.map(toCandidateFromSupabase).sort(compareCandidates),
+    candidates: rows
+      .map(toCandidateFromSupabase)
+      .filter(isVisibleResellCandidate)
+      .sort(compareCandidates)
+      .slice(0, 50),
   };
 }
 
@@ -183,6 +187,7 @@ async function loadCandidatesFromLocalJson() {
     generatedAt: summary.generated_at,
     candidates: summary.top10
       .map((item) => toCandidate(item, shippingByPid.get(String(item.pid))))
+      .filter(isVisibleResellCandidate)
       .sort(compareCandidates),
   };
 }

@@ -15,7 +15,24 @@ export default function RootLayout({
     <html
       lang="ko"
       className="h-full antialiased"
+      suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (() => {
+                try {
+                  const stored = localStorage.getItem("minyoi-theme-v1") || "system";
+                  const dark = stored === "dark" || (stored === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+                  document.documentElement.classList.toggle("dark", dark);
+                  document.documentElement.dataset.theme = dark ? "dark" : "light";
+                } catch {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
