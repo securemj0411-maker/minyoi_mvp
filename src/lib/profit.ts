@@ -30,6 +30,24 @@ const INCOMPLETE_AIRPODS_KEYWORDS = [
   "우유닛",
   "유닛만",
 ];
+const PRECISION_REVIEW_FLAGS = [
+  "coarse_market_price",
+  "option_parse_review",
+  "option_needs_review",
+  "ai_review_unavailable",
+  "weak_description",
+];
+
+const FLAG_LABELS: Record<string, string> = {
+  coarse_market_price: "정밀 옵션 표본 부족",
+  option_parse_review: "옵션 파싱 신뢰도 낮음",
+  option_needs_review: "용량/칩/사이즈 확인 필요",
+  ai_review_unavailable: "AI 검토 실패",
+  weak_description: "설명 부족",
+  deep_discount_review: "비정상 저가 검토 필요",
+  risk_keyword_review: "위험 키워드 검토 필요",
+  ai_normal: "AI 정상 매물 판정",
+};
 
 export function generalShippingFee(item: ListingCandidate) {
   return item.shippingFeeGeneral ?? item.shippingFee;
@@ -103,6 +121,9 @@ export function scoreLabel(item: ListingCandidate): CandidateBand {
   if (isFatalListing(item)) {
     return "제외";
   }
+  if (hasPrecisionRisk(item)) {
+    return "검토필요";
+  }
   if (item.scoreFlags.length > 0 || item.riskHits > 0) {
     return "검토필요";
   }
@@ -118,6 +139,8 @@ export function scoreLabel(item: ListingCandidate): CandidateBand {
 export function compareCandidates(a: ListingCandidate, b: ListingCandidate) {
   const fatalDelta = Number(isFatalListing(a)) - Number(isFatalListing(b));
   if (fatalDelta !== 0) return fatalDelta;
+  const precisionDelta = Number(hasPrecisionRisk(a)) - Number(hasPrecisionRisk(b));
+  if (precisionDelta !== 0) return precisionDelta;
 
   return (
     expectedProfitMin(b) - expectedProfitMin(a) ||
@@ -138,6 +161,18 @@ function hasAny(text: string, keywords: string[]) {
 
 export function isFatalListing(item: ListingCandidate) {
   return hasAny(textOf(item), FATAL_LISTING_KEYWORDS);
+}
+
+export function hasPrecisionRisk(item: ListingCandidate) {
+  return item.scoreFlags.some((flag) => PRECISION_REVIEW_FLAGS.includes(flag));
+}
+
+export function isHighPrecisionCandidate(item: ListingCandidate) {
+  if (!isVisibleResellCandidate(item)) return false;
+  if (hasPrecisionRisk(item)) return false;
+  if (item.riskHits > 0) return false;
+  if (expectedProfitMin(item) < 10000) return false;
+  return item.price < item.skuMedian;
 }
 
 export function isVisibleResellCandidate(item: ListingCandidate) {
@@ -183,7 +218,7 @@ export function positiveSignals(item: ListingCandidate): CandidateSignal[] {
 export function reviewSignals(item: ListingCandidate): CandidateSignal[] {
   const text = textOf(item);
   const signals: CandidateSignal[] = item.scoreFlags.map((flag) => ({
-    label: flag,
+    label: FLAG_LABELS[flag] ?? flag,
     source: "rule" as const,
   }));
 

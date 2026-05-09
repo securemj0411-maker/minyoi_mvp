@@ -13,7 +13,9 @@ import {
   expectedProfitMax,
   expectedProfitMin,
   generalShippingFee,
+  hasPrecisionRisk,
   hasShippingRange,
+  isHighPrecisionCandidate,
   netGapAfterGeneralShipping,
   positiveSignals,
   profitBreakdown,
@@ -35,12 +37,13 @@ type CandidateAction = {
   updatedAt?: string;
 };
 type CandidateActions = Record<string, CandidateAction>;
-type Filter = "all" | "strong" | "interested" | "hold" | "review" | "hidden";
+type Filter = "precision" | "all" | "strong" | "interested" | "hold" | "review" | "hidden";
 type ThemeMode = "system" | "light" | "dark";
 type ProfitFloor = 0 | 10000 | 30000 | 50000;
 type CategoryFilter = "all" | "airpods" | "applewatch" | "galaxywatch" | "laptop" | "smartphone";
 
 const filters: { id: Filter; label: string }[] = [
+  { id: "precision", label: "정밀 후보" },
   { id: "all", label: "전체" },
   { id: "strong", label: "고순익" },
   { id: "interested", label: "관심" },
@@ -449,7 +452,7 @@ function FilterPills<T extends string | number>({
 
 
 export default function Dashboard({ generatedAt, candidates }: Props) {
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>("precision");
   const [profitFloor, setProfitFloor] = useState<ProfitFloor>(0);
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [selectedPid, setSelectedPid] = useState("");
@@ -511,12 +514,14 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
     return [...candidates].sort(compareCandidates).filter((item) => {
       const label = scoreLabel(item);
       const action = actions[item.pid];
+      const reviewNeeded = label === "검토필요" || label === "제외" || hasPrecisionRisk(item);
       if (filter !== "hidden" && action?.status === "hidden") return false;
+      if (filter === "precision" && !isHighPrecisionCandidate(item)) return false;
       if (filter === "all" && label === "제외") return false;
       if (filter === "strong" && label !== "고순익 후보") return false;
       if (filter === "interested" && action?.status !== "interested") return false;
       if (filter === "hold" && action?.status !== "hold") return false;
-      if (filter === "review" && label !== "검토필요" && label !== "제외") return false;
+      if (filter === "review" && !reviewNeeded) return false;
       if (filter === "hidden" && action?.status !== "hidden") return false;
       if (profitFloor > 0 && expectedProfitMax(item) < profitFloor) return false;
       if (categoryFilter !== "all" && categoryOf(item) !== categoryFilter) return false;
@@ -527,6 +532,8 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
   const selected = candidates.find((item) => item.pid === selectedPid) ?? null;
   const avgProfit = candidates.reduce((sum, item) => sum + expectedProfitMin(item), 0) / Math.max(1, candidates.length);
   const strongCount = candidates.filter((item) => scoreLabel(item) === "고순익 후보").length;
+  const precisionCount = candidates.filter(isHighPrecisionCandidate).length;
+  const precisionReviewCount = candidates.filter(hasPrecisionRisk).length;
   const interestedCount = Object.values(actions).filter((item) => item.status === "interested").length;
   const holdCount = Object.values(actions).filter((item) => item.status === "hold").length;
   const hiddenCount = Object.values(actions).filter((item) => item.status === "hidden").length;
@@ -549,8 +556,10 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
             <div className="flex flex-wrap gap-2">
               {[
                 { label: "후보", value: `${filtered.length}/${candidates.length}건` },
+                { label: "정밀", value: `${precisionCount}건`, highlight: true },
+                { label: "검토", value: `${precisionReviewCount}건` },
                 { label: "평균 순익", value: compactKrw(avgProfit) },
-                { label: "고순익", value: `${strongCount}건`, highlight: true },
+                { label: "고순익", value: `${strongCount}건` },
               ].map(({ label, value, highlight }) => (
                 <div key={label} className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900">
                   <span className="text-xs text-zinc-400">{label} </span>
@@ -739,6 +748,15 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                         <div className="text-xs text-zinc-400">예상 순익</div>
                       </div>
                     </div>
+
+                    {hasPrecisionRisk(selected) ? (
+                      <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+                        <div className="font-bold">정밀도 낮음</div>
+                        <div className="mt-1 text-xs leading-5">
+                          같은 옵션 표본이 부족하거나 용량/칩/사이즈 파싱이 불확실합니다. 이런 후보는 기본 정밀 목록에서 제외하고 검토필요 탭에서만 확인합니다.
+                        </div>
+                      </div>
+                    ) : null}
 
                     <div className="mt-5 grid grid-cols-2 gap-2.5 text-sm">
                       {[
