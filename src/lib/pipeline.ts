@@ -134,6 +134,39 @@ function suspiciousModelText(title: string, desc: string): boolean {
   return /에어팟프로[34]|airpodspro[34]/i.test(text);
 }
 
+function multiModelHits(title: string): string[] {
+  const raw = String(title ?? "").toLowerCase();
+  const normalized = nrm(title);
+  const compact = normalized.replace(/\s+/g, "");
+  const hasChoiceSeparator = /[/|,·+]|또는|선택|중에|중 택|중택|가격\s*상이|가격상이/.test(raw);
+  if (!hasChoiceSeparator) return [];
+
+  const hits: string[] = [];
+  const add = (hit: string) => {
+    if (!hits.includes(hit)) hits.push(hit);
+  };
+
+  if (compact.includes("에어팟맥스") || normalized.includes("airpods max")) add("airpods_max");
+  if (compact.includes("에어팟프로") || normalized.includes("airpods pro")) add("airpods_pro");
+  if (/(에어팟|airpods).{0,6}(2세대|2nd)|에어팟2/.test(normalized)) add("airpods_2");
+  if (/(에어팟|airpods).{0,6}(3세대|3rd)|에어팟3/.test(normalized)) add("airpods_3");
+  if (/(에어팟|airpods).{0,6}(4세대|4th)|에어팟4/.test(normalized)) add("airpods_4");
+
+  if (compact.includes("애플워치울트라") || normalized.includes("applewatch ultra")) add("applewatch_ultra");
+  if (compact.includes("애플워치se") || normalized.includes("applewatch se")) add("applewatch_se");
+  for (const n of ["7", "8", "9", "10", "11"]) {
+    if (new RegExp(`애플워치(?:시리즈)?${n}|시리즈${n}|series${n}|applewatch${n}`).test(compact)) add(`applewatch_${n}`);
+  }
+
+  if (compact.includes("갤럭시워치울트라") || normalized.includes("galaxywatch ultra")) add("galaxywatch_ultra");
+  if (compact.includes("클래식") || normalized.includes("classic")) add("galaxywatch_classic");
+  for (const n of ["4", "5", "6", "7", "8"]) {
+    if (new RegExp(`갤럭시워치${n}|갤워치${n}|galaxywatch${n}|워치${n}`).test(compact)) add(`galaxywatch_${n}`);
+  }
+
+  return hits.length >= 2 ? hits : [];
+}
+
 export type ListingType = "normal" | "parts" | "multi" | "buying" | "callout" | "damaged" | "accessory" | "unknown";
 
 type ClassifyResult = { listingType: ListingType; sku: Sku | null };
@@ -150,6 +183,7 @@ function classifyListing(title: string, desc: string, price: number): ClassifyRe
 
   const multiHits = containsAny(title, MULTI_KEYWORDS);
   if (/\b[2-9]\s*개\b/.test(title)) multiHits.push("N개");
+  multiHits.push(...multiModelHits(title));
   if (multiHits.length > 0) return { listingType: "multi", sku: null };
 
   const sku = ruleMatch(title, desc);
@@ -474,6 +508,7 @@ export async function runPipeline(pagesPerQuery = 2): Promise<PipelineResult> {
     const flags: string[] = [];
     if (priceGap >= 0.55) flags.push("deep_discount_review");
     if (suspiciousModelText(searchItems.get(r.pid)?.name ?? "", r.detail.description)) flags.push("suspicious_model_review");
+    if (multiModelHits(searchItems.get(r.pid)?.name ?? "").length > 0) flags.push("multi_model_review");
     if (compactLen(r.detail.description === "" ? (searchItems.get(r.pid)?.name ?? "") : r.detail.description) < SHORT_TITLE_MIN) {
       if (!hasNormalSignal(searchItems.get(r.pid)?.name ?? "", r.detail.description)) flags.push("short_title");
     }
@@ -670,7 +705,7 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
             content: JSON.stringify({
               allowed_listing_type: ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "unknown"],
               allowed_confidence: ["high", "medium", "low"],
-              policy: "If the listing explicitly says fake/replica/Taobao/counterfeit, classify counterfeit. If it is only a charging case/body/unit/one side, classify parts. If it is a buying post, classify buying. If unsure, unknown.",
+              policy: "If the listing explicitly says fake/replica/Taobao/counterfeit, classify counterfeit. If it is only a charging case/body/unit/one side, classify parts. If it is a buying post, classify buying. If the title lists multiple different models/SKUs or selectable models with one price, classify multi. If unsure, unknown.",
               listing: {
                 title: row.name,
                 price: row.price,
