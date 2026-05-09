@@ -76,7 +76,7 @@ function toPipelineResult(result: Awaited<ReturnType<typeof runTickPipeline>>): 
   };
 }
 
-export async function GET(req: NextRequest) {
+async function handleTick(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
   const auth = req.headers.get("authorization");
   const authOk = !secret || auth === `Bearer ${secret}`;
@@ -128,4 +128,12 @@ export async function GET(req: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+export async function GET(req: NextRequest) {
+  return handleTick(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handleTick(req);
 }
