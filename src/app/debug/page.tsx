@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DebugAutoRefresh } from "@/app/debug/debug-auto-refresh";
 import { loadCollectRuns, type CollectRun } from "@/lib/collect-logs";
 
 export const dynamic = "force-dynamic";
@@ -262,6 +263,7 @@ export default async function DebugPage() {
           >
             후보 화면으로
           </Link>
+          <DebugAutoRefresh intervalSeconds={10} />
         </header>
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
