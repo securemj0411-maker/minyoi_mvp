@@ -104,7 +104,10 @@ export async function GET(req: NextRequest) {
 
   try {
     const result = await runTickPipeline();
-    await finishCollectRun(run.id, run.startedAt, toPipelineResult(result));
+    await finishCollectRun(run.id, run.startedAt, toPipelineResult(result), {
+      stages: result.stages,
+      stageDurationsMs: result.stageDurationsMs,
+    });
     return NextResponse.json({
       ok: true,
       runId: run.id,

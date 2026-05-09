@@ -50,6 +50,7 @@ export type StageStats = {
 
 export type TickResult = StageStats & {
   stages: Record<string, StageStats>;
+  stageDurationsMs: Record<string, number>;
 };
 
 function emptyStats(): StageStats {
@@ -120,6 +121,16 @@ async function upsertRows(table: string, rows: unknown[], onConflict?: string): 
   await restFetch(url, {
     method: "POST",
     headers: serviceHeaders("resolution=merge-duplicates"),
+    body: JSON.stringify(rows),
+  });
+}
+
+async function insertIgnoreRows(table: string, rows: unknown[], onConflict?: string): Promise<void> {
+  if (rows.length === 0) return;
+  const url = onConflict ? `${tableUrl(table)}?on_conflict=${encodeURIComponent(onConflict)}` : tableUrl(table);
+  await restFetch(url, {
+    method: "POST",
+    headers: serviceHeaders("resolution=ignore-duplicates"),
     body: JSON.stringify(rows),
   });
 }
@@ -199,7 +210,7 @@ export async function searchStage(deadlineMs: number): Promise<StageStats> {
   stats.rawUpserted = items.length;
 
   const queueItems = items.filter((item) => changedEnough(item, existing.get(Number(item.pid))));
-  await upsertRows("mvp_detail_queue", queueItems.map((item) => ({
+  await insertIgnoreRows("mvp_detail_queue", queueItems.map((item) => ({
     pid: Number(item.pid),
     status: "pending",
     priority: item.numFaved,
@@ -401,12 +412,24 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
 
 export async function runTickPipeline(): Promise<TickResult> {
   const config = loadPipelineRuntimeConfig();
-  const search = await searchStage(Date.now() + config.tickSearchBudgetMs);
-  const detail = await detailStage(Date.now() + config.tickDetailBudgetMs);
-  const score = await scoreStage(Date.now() + config.tickScoreBudgetMs);
+  const stageDurationsMs: Record<string, number> = {};
+
+  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const started = Date.now();
+    try {
+      return await fn();
+    } finally {
+      stageDurationsMs[name] = Date.now() - started;
+    }
+  }
+
+  const search = await timed("search", () => searchStage(Date.now() + config.tickSearchBudgetMs));
+  const detail = await timed("detail", () => detailStage(Date.now() + config.tickDetailBudgetMs));
+  const score = await timed("score", () => scoreStage(Date.now() + config.tickScoreBudgetMs));
   const total = mergeStats([search, detail, score]);
   return {
     ...total,
     stages: { search, detail, score },
+    stageDurationsMs,
   };
 }

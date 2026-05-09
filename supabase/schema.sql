@@ -151,6 +151,7 @@ create table if not exists public.mvp_collect_runs (
   ai_kept_normal_count integer not null default 0,
   ai_kept_low_confidence_count integer not null default 0,
   upserted_count integer not null default 0,
+  stage_stats jsonb not null default '{}'::jsonb,
   error_message text,
   created_at timestamptz not null default now()
 );

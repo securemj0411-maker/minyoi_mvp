@@ -35,6 +35,7 @@ export type CollectRun = {
   aiKeptNormalCount: number;
   aiKeptLowConfidenceCount: number;
   upsertedCount: number;
+  stageStats: Record<string, unknown>;
   errorMessage: string | null;
   createdAt: string;
 };
@@ -72,6 +73,7 @@ type CollectRunRow = {
   ai_kept_normal_count: number | null;
   ai_kept_low_confidence_count: number | null;
   upserted_count: number | null;
+  stage_stats: Record<string, unknown> | null;
   error_message: string | null;
   created_at: string;
 };
@@ -145,6 +147,7 @@ function toCollectRun(row: CollectRunRow): CollectRun {
     aiKeptNormalCount: row.ai_kept_normal_count ?? 0,
     aiKeptLowConfidenceCount: row.ai_kept_low_confidence_count ?? 0,
     upsertedCount: row.upserted_count ?? 0,
+    stageStats: row.stage_stats ?? {},
     errorMessage: row.error_message,
     createdAt: row.created_at,
   };
@@ -226,6 +229,7 @@ export async function finishCollectRun(
   id: string | null,
   startedAt: string,
   result: PipelineResult,
+  stageStats?: Record<string, unknown>,
 ): Promise<void> {
   if (!id) return;
   const finishedAt = new Date().toISOString();
@@ -245,6 +249,7 @@ export async function finishCollectRun(
     ai_kept_normal_count: result.aiKeptNormal,
     ai_kept_low_confidence_count: result.aiKeptLowConfidence,
     upserted_count: result.upserted,
+    ...(stageStats ? { stage_stats: stageStats } : {}),
     error_message: null,
   });
 }
