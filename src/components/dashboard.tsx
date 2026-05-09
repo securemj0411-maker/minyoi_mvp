@@ -86,6 +86,7 @@ function labelClass(label: CandidateBand) {
   if (label === "고순익 후보") return "bg-emerald-100 text-emerald-800 ring-emerald-200";
   if (label === "순익 후보") return "bg-sky-100 text-sky-800 ring-sky-200";
   if (label === "검토필요") return "bg-amber-100 text-amber-800 ring-amber-200";
+  if (label === "제외") return "bg-red-100 text-red-800 ring-red-200";
   return "bg-zinc-100 text-zinc-700 ring-zinc-200";
 }
 
@@ -285,10 +286,11 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
       const label = scoreLabel(item);
       const action = actions[item.pid];
       if (filter !== "hidden" && action?.status === "hidden") return false;
+      if (filter === "all" && label === "제외") return false;
       if (filter === "strong") return label === "고순익 후보";
       if (filter === "interested") return action?.status === "interested";
       if (filter === "hold") return action?.status === "hold";
-      if (filter === "review") return label === "검토필요";
+      if (filter === "review") return label === "검토필요" || label === "제외";
       if (filter === "hidden") return action?.status === "hidden";
       return true;
     });

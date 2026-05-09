@@ -3,6 +3,20 @@ import type { CandidateBand, CandidateSignal, CashoutHint, ListingCandidate } fr
 export const SELLING_FEE_RATE = 0.035;
 export const RESELL_SHIPPING_FEE = 3500;
 export const SAFETY_BUFFER = 5000;
+const FATAL_LISTING_KEYWORDS = [
+  "타오바오",
+  "타오바이",
+  "taobao",
+  "짭",
+  "가품",
+  "짝퉁",
+  "레플",
+  "레플리카",
+  "이미테이션",
+  "정품아님",
+  "정품 아님",
+  "비정품",
+];
 
 export function generalShippingFee(item: ListingCandidate) {
   return item.shippingFeeGeneral ?? item.shippingFee;
@@ -73,6 +87,9 @@ export function cashoutRank(item: ListingCandidate) {
 }
 
 export function scoreLabel(item: ListingCandidate): CandidateBand {
+  if (isFatalListing(item)) {
+    return "제외";
+  }
   if (item.scoreFlags.length > 0 || item.riskHits > 0) {
     return "검토필요";
   }
@@ -86,6 +103,9 @@ export function scoreLabel(item: ListingCandidate): CandidateBand {
 }
 
 export function compareCandidates(a: ListingCandidate, b: ListingCandidate) {
+  const fatalDelta = Number(isFatalListing(a)) - Number(isFatalListing(b));
+  if (fatalDelta !== 0) return fatalDelta;
+
   return (
     expectedProfitMin(b) - expectedProfitMin(a) ||
     cashoutRank(b) - cashoutRank(a) ||
@@ -103,9 +123,15 @@ function hasAny(text: string, keywords: string[]) {
   return keywords.some((keyword) => text.includes(keyword.toLowerCase()));
 }
 
+export function isFatalListing(item: ListingCandidate) {
+  return hasAny(textOf(item), FATAL_LISTING_KEYWORDS);
+}
+
 export function positiveSignals(item: ListingCandidate): CandidateSignal[] {
   const text = textOf(item);
   const signals: CandidateSignal[] = [];
+
+  if (isFatalListing(item)) return [];
 
   if (expectedProfitMin(item) >= 50000) {
     signals.push({ label: "예상 순익 5만원 이상", source: "profit" });
@@ -141,6 +167,10 @@ export function reviewSignals(item: ListingCandidate): CandidateSignal[] {
 
   if (item.riskHits > 0) {
     signals.push({ label: `위험 키워드 ${item.riskHits}개`, source: "rule" });
+  }
+
+  if (isFatalListing(item)) {
+    signals.push({ label: "가품/레플리카/타오바오 의심", source: "rule" });
   }
 
   if (hasAny(text, ["충전선은 없습니다", "충전선 없음", "케이블 제외", "구성품 제외", "사진에 보이는게 다", "보이는게 다", "박스 없음", "박스없음"])) {

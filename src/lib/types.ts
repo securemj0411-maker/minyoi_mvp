@@ -23,7 +23,7 @@ export type ListingCandidate = {
   netGapAfterShipping: number;
 };
 
-export type CandidateBand = "고순익 후보" | "순익 후보" | "검토필요" | "관찰";
+export type CandidateBand = "고순익 후보" | "순익 후보" | "검토필요" | "제외" | "관찰";
 export type CashoutHint = "빠름" | "보통" | "느림";
 export type CandidateSignal = {
   label: string;
