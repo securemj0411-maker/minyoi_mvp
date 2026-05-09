@@ -1,0 +1,493 @@
+// 수집 파이프라인:
+//   검색 → 분류(listing_type) → 정상 매물만 상세 enrich → 배송비 파싱 → 점수 계산 → Supabase upsert
+//
+// Python PoC 09_airpods_filter_refine.py + 10_shipping_fee_test.py 포팅.
+
+import { collectSearchItems, fetchDetail } from "@/lib/bunjang";
+import { CATALOG, normalize, ruleMatch, type Sku } from "@/lib/catalog";
+
+// ─── 검색 키워드 ─────────────────────────────────────────────────────────────
+const SEARCH_QUERIES = [
+  "에어팟", "에어팟 프로", "에어팟 프로2", "에어팟 4세대", "에어팟 맥스",
+  "애플워치", "애플워치 se", "애플워치 9", "애플워치 10", "애플워치 울트라",
+  "갤럭시워치", "갤럭시 워치 6", "갤럭시 워치 7", "갤럭시 워치 울트라",
+];
+
+// ─── 분류 키워드 ─────────────────────────────────────────────────────────────
+const BUYING_KEYWORDS = ["구합니다", "구해요", "삽니다", "급구", "매입", "최고가", "전국출장", "구매합니다"];
+const CALLOUT_KEYWORDS = ["사지마세요", "사기당함", "사기꾼", "저격", "도용", "짝퉁", "조심"];
+const PARTS_KEYWORDS = [
+  "부품용", "본체", "본체만", "유닛", "유닛만", "왼쪽", "오른쪽",
+  "좌측", "우측", "한쪽", "한짝", "한 쪽", "한알", "단품",
+  "케이스만", "충전케이스만", "충전 케이스만", "액정만", "배터리만",
+  "교체용", "호환", "익스텐션", "연장",
+];
+const DAMAGED_KEYWORDS = [
+  "고장", "하자", "작동안됨", "작동 안됨", "안켜짐", "안 켜짐",
+  "먹통", "충전안됨", "충전 안됨", "충전이 안됨", "충전이 안되는",
+  "충전이안됨", "충전이안되는", "충전불량", "충전 불량",
+  "툭툭", "끊김", "잡음", "소리 안", "소리가 안", "노캔 안됨",
+  "노캔키면", "알갱이 소리", "소리 들리는",
+  "수리이력", "찍힘 심", "기스 심", "액정깨짐", "잠김", "초기화불가",
+  "배터리 광탈", "배터리효율 낮", "방전",
+];
+const ACCESSORY_TITLE_KEYWORDS = [
+  "스트랩", "밴드", "파우치", "키링", "거치대", "충전기", "어댑터",
+  "브레이슬릿", "루프", "필름", "강화유리", "커버", "실리콘",
+  "악세사리", "악세서리", "이어팁", "보호캡",
+];
+const MULTI_KEYWORDS = ["일괄", "묶음", "각각", "선택", "여러개", "재고"];
+const NORMAL_SIGNALS = [
+  "미개봉", "새상품", "풀박스", "풀구성", "풀세트", "정상작동",
+  "정상 작동", "기능 정상", "기능에는 아무런 문제", "문제 없이",
+  "문제없", "정품", "시리얼", "구매내역", "구매 영수증",
+  "상자", "박스", "구성품", "양쪽", "노이즈 캔슬링", "노캔",
+  "기능적으로 문제", "문제되는 부분은 하나도", "상태양호", "상태 양호",
+];
+const RISK_KEYWORDS = [
+  "직거래만", "현금만", "박스없음", "박스 없음", "보증서없음",
+  "수리이력", "수리 이력", "배터리교체", "배터리 교체",
+  "충전안됨", "충전 안됨", "충전이 안됨", "충전이 안되는",
+  "기능이상", "외관손상", "액정깨짐", "잠김", "분실신고",
+  "초기화불가", "고장", "불량", "먹통", "작동안됨",
+];
+const SHORT_TITLE_MIN = 9;
+
+function nrm(text: unknown): string {
+  return normalize(String(text ?? ""));
+}
+
+function containsAny(text: string, keywords: string[]): string[] {
+  const n = nrm(text);
+  return keywords.filter((kw) => nrm(kw).trim() && n.includes(nrm(kw).trim()));
+}
+
+function compactLen(text: unknown): number {
+  return String(text ?? "").replace(/\s+/g, "").length;
+}
+
+function hasNormalSignal(title: string, desc: string): boolean {
+  return containsAny(`${title}\n${desc}`, NORMAL_SIGNALS).length > 0;
+}
+
+function accessoryTitleHits(title: string): string[] {
+  const hits = containsAny(title, ACCESSORY_TITLE_KEYWORDS);
+  const tn = nrm(title);
+  const fullSetTokens = ["풀세트", "풀구성", "풀박스"];
+  if (tn.includes("케이스") && !fullSetTokens.some((t) => tn.includes(t))) {
+    hits.push("케이스");
+  }
+  return hits;
+}
+
+export type ListingType = "normal" | "parts" | "multi" | "buying" | "callout" | "damaged" | "accessory" | "unknown";
+
+type ClassifyResult = { listingType: ListingType; sku: Sku | null };
+
+function classifyListing(title: string, desc: string, price: number): ClassifyResult {
+  const text = `${title}\n${desc}`;
+
+  if (containsAny(title, BUYING_KEYWORDS).length > 0) return { listingType: "buying", sku: null };
+  if (price <= 0 || price < 5000) return { listingType: "callout", sku: null };
+  if (containsAny(text, CALLOUT_KEYWORDS).length > 0) return { listingType: "callout", sku: null };
+  if (containsAny(text, PARTS_KEYWORDS).length > 0) return { listingType: "parts", sku: null };
+  if (containsAny(text, DAMAGED_KEYWORDS).length > 0) return { listingType: "damaged", sku: null };
+  if (accessoryTitleHits(title).length > 0) return { listingType: "accessory", sku: null };
+
+  const multiHits = containsAny(title, MULTI_KEYWORDS);
+  if (/\b[2-9]\s*개\b/.test(title)) multiHits.push("N개");
+  if (multiHits.length > 0) return { listingType: "multi", sku: null };
+
+  const sku = ruleMatch(title, desc);
+  if (!sku) return { listingType: "unknown", sku: null };
+  if (compactLen(title) < SHORT_TITLE_MIN && !hasNormalSignal(title, desc)) {
+    return { listingType: "unknown", sku: null };
+  }
+  return { listingType: "normal", sku };
+}
+
+// ─── 배송비 파싱 ─────────────────────────────────────────────────────────────
+function moneyToInt(raw: string): number | null {
+  const text = raw.replace(/,/g, "").trim();
+  if (!text) return null;
+  if (/\d+\s*만/.test(raw)) return null;
+  const v = parseInt(text, 10);
+  if (!Number.isFinite(v) || v < 1000 || v > 20000) return null;
+  return v;
+}
+
+function compactStr(text: string): string {
+  return text.replace(/\s+/g, "").toLowerCase();
+}
+
+const HALF_HINTS = ["반값", "반택", "gs반값", "gs", "cu", "끼리"];
+const GENERAL_HINTS_STR = ["일반", "일반택배", "택배", "우체국", "편의점택배", "cj", "대한통운"];
+
+function contextKind(ctx: string): "half" | "general" | "unknown" {
+  const c = compactStr(ctx);
+  if (HALF_HINTS.some((h) => c.includes(compactStr(h)))) return "half";
+  if (GENERAL_HINTS_STR.some((h) => c.includes(compactStr(h)))) return "general";
+  return "unknown";
+}
+
+type ShippingOption = { kind: "free" | "general" | "half" | "unknown"; amount: number };
+type ShippingParsed = { min: number | null; general: number | null; options: ShippingOption[] };
+
+function parseShippingFromDescription(description: string): ShippingParsed {
+  const text = description || "";
+  const FREE_PATTERNS = [
+    /무료\s*배송|무료배송|택배비\s*무료|배송비\s*무료|택배비\s*포함|택배비포함|배송비\s*포함|배송비포함|무료로\s*배송|제가\s*부담|내드릴께요|내드릴게요/,
+  ];
+  const hasFree = FREE_PATTERNS.some((p) => p.test(text));
+
+  const options: ShippingOption[] = [];
+  const seen = new Set<string>();
+
+  const kwRe = /(일반\s*택배|일반|반값\s*택배|반값|반택|gs\s*반값|gs|cu|끼리|편의점\s*택배|편의점택배|우체국|택배|배송|배송비|택배비)/gi;
+  const amRe = /([+]?\s*\d{1,2},?\d{3})\s*원?/;
+  const combinedRe = new RegExp(kwRe.source + `[^0-9가-힣a-zA-Z]{0,12}` + amRe.source, "gi");
+
+  for (const m of text.matchAll(combinedRe)) {
+    const ctx = m[0];
+    const amount = moneyToInt(m[2]);
+    if (amount == null) continue;
+    const kind = contextKind(ctx);
+    const key = `${kind}:${amount}`;
+    if (!seen.has(key)) { seen.add(key); options.push({ kind, amount }); }
+  }
+
+  const shortRe = /(택배|반택|반값|배송비|택배비)\s*([+]?\s*\d{4,5})\s*원?/gi;
+  for (const m of text.matchAll(shortRe)) {
+    const amount = moneyToInt(m[2]);
+    if (amount == null) continue;
+    const kind = contextKind(m[1]);
+    const key = `${kind}:${amount}`;
+    if (!seen.has(key)) { seen.add(key); options.push({ kind, amount }); }
+  }
+
+  if (hasFree && options.length === 0) {
+    return { min: 0, general: 0, options: [{ kind: "free", amount: 0 }] };
+  }
+
+  const all = options.map((o) => o.amount);
+  const generals = options.filter((o) => o.kind === "general").map((o) => o.amount);
+  return {
+    min: all.length > 0 ? Math.min(...all) : null,
+    general: generals.length > 0 ? generals[0] : (all.length > 0 ? Math.max(...all) : null),
+    options,
+  };
+}
+
+function parseShippingFromTrade(trade: unknown, trades: unknown): ShippingParsed {
+  const options: ShippingOption[] = [];
+
+  if (trade && typeof trade === "object") {
+    const t = trade as Record<string, unknown>;
+    if (t.freeShipping) {
+      return { min: 0, general: 0, options: [{ kind: "free", amount: 0 }] };
+    }
+    const specs = t.shippingSpecs;
+    if (specs && typeof specs === "object") {
+      for (const [key, spec] of Object.entries(specs as Record<string, unknown>)) {
+        if (!spec || typeof spec !== "object") continue;
+        const s = spec as Record<string, unknown>;
+        const amount = moneyToInt(String(s.fee ?? ""));
+        if (amount == null) continue;
+        const kind = key === "DEFAULT" ? "general" : "half";
+        options.push({ kind, amount });
+      }
+    }
+  }
+
+  if (options.length === 0 && Array.isArray(trades)) {
+    for (const block of trades) {
+      if (!block || typeof block !== "object") continue;
+      const b = block as Record<string, unknown>;
+      if (b.title !== "배송비") continue;
+      for (const content of (b.contents as string[]) ?? []) {
+        const parsed = parseShippingFromDescription(String(content));
+        options.push(...parsed.options);
+      }
+    }
+  }
+
+  const all = options.map((o) => o.amount);
+  const generals = options.filter((o) => o.kind === "general").map((o) => o.amount);
+  return {
+    min: all.length > 0 ? Math.min(...all) : null,
+    general: generals.length > 0 ? generals[0] : null,
+    options,
+  };
+}
+
+const DEFAULT_SHIPPING_FEE = 3500;
+
+type ShippingResult = {
+  shippingFee: number;
+  shippingFeeGeneral: number | null;
+  shippingSource: string;
+  estimatedBuyCost: number;
+  grossResellGap: number;
+  netGapAfterShipping: number;
+};
+
+function resolveShipping(
+  price: number,
+  skuMedian: number,
+  freeShipping: boolean,
+  apiParsed: ShippingParsed,
+  descParsed: ShippingParsed,
+): ShippingResult {
+  let fee: number;
+  let source: string;
+
+  if (freeShipping) {
+    fee = 0; source = "search_api_free_shipping";
+  } else if (apiParsed.min != null) {
+    fee = apiParsed.min; source = "detail_api_trade";
+  } else if (descParsed.min != null) {
+    fee = descParsed.min; source = "description_parse";
+  } else {
+    fee = DEFAULT_SHIPPING_FEE; source = "default";
+  }
+
+  const generalFee = apiParsed.general ?? descParsed.general ?? null;
+  const gross = Math.max(0, skuMedian - price);
+  return {
+    shippingFee: fee,
+    shippingFeeGeneral: generalFee,
+    shippingSource: source,
+    estimatedBuyCost: price + fee,
+    grossResellGap: gross,
+    netGapAfterShipping: Math.max(0, gross - fee),
+  };
+}
+
+// ─── 점수 계산 ───────────────────────────────────────────────────────────────
+function clamp(v: number, lo = 0, hi = 1): number {
+  return Math.max(lo, Math.min(hi, v));
+}
+
+function percentileRank(values: number[], value: number): number {
+  if (values.length === 0) return 0;
+  return values.filter((v) => v <= value).length / values.length;
+}
+
+function median(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+// ─── 메인 파이프라인 ─────────────────────────────────────────────────────────
+export type PipelineRow = {
+  pid: string;
+  url: string;
+  name: string;
+  price: number;
+  skuId: string;
+  skuName: string;
+  skuMedian: number;
+  descriptionPreview: string;
+  priceGap: number;
+  numFaved: number;
+  velocity: number;
+  reviewRating: number | null;
+  reviewCount: number;
+  safety: number;
+  riskHits: number;
+  score: number;
+  scoreFlags: string[];
+  shippingFee: number;
+  shippingFeeGeneral: number | null;
+  shippingSource: string;
+  estimatedBuyCost: number;
+  grossResellGap: number;
+  netGapAfterShipping: number;
+};
+
+async function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+export async function runPipeline(pagesPerQuery = 2): Promise<{ collected: number; normal: number; upserted: number }> {
+  // 1. 검색
+  const searchItems = await collectSearchItems(SEARCH_QUERIES, pagesPerQuery);
+
+  // 2. 분류 — 검색 결과에서 normal만 추출 (상세 API 없이 제목만으로 1차 필터)
+  type NormalCandidate = { pid: string; skuId: string; skuName: string };
+  const normalCandidates: NormalCandidate[] = [];
+  for (const item of searchItems.values()) {
+    const { listingType, sku } = classifyListing(item.name, "", item.price);
+    if (listingType === "normal" && sku) {
+      normalCandidates.push({ pid: item.pid, skuId: sku.id, skuName: sku.modelName });
+    }
+  }
+
+  // 3. 상세 enrich
+  type Enriched = { pid: string; skuId: string; skuName: string; detail: NonNullable<Awaited<ReturnType<typeof fetchDetail>>>; freeShipping: boolean; price: number; numFaved: number; };
+  const enriched: Enriched[] = [];
+  for (const c of normalCandidates) {
+    const item = searchItems.get(c.pid)!;
+    const detail = await fetchDetail(c.pid);
+    await sleep(300);
+    if (!detail) continue;
+    // 2차 필터: 상세 description 포함해 재분류
+    const { listingType } = classifyListing(item.name, detail.description, item.price);
+    if (listingType !== "normal") continue;
+    enriched.push({ pid: c.pid, skuId: c.skuId, skuName: c.skuName, detail, freeShipping: item.freeShipping, price: item.price, numFaved: item.numFaved });
+  }
+
+  // 4. SKU별 시세 계산 (normal 매물 가격 중앙값)
+  const pricesBySku = new Map<string, number[]>();
+  const favsBySku = new Map<string, number[]>();
+  for (const r of enriched) {
+    if (!pricesBySku.has(r.skuId)) pricesBySku.set(r.skuId, []);
+    pricesBySku.get(r.skuId)!.push(r.price);
+    if (!favsBySku.has(r.skuId)) favsBySku.set(r.skuId, []);
+    favsBySku.get(r.skuId)!.push(r.numFaved);
+  }
+
+  // SKU 중앙값이 적으면 MSRP*0.5 fallback
+  const skuMsrpMap = new Map(CATALOG.map((s) => [s.id, s.msrpKrw]));
+  function skuMedianFor(skuId: string): number {
+    const prices = pricesBySku.get(skuId) ?? [];
+    if (prices.length >= 5) return median(prices);
+    return (skuMsrpMap.get(skuId) ?? 300000) * 0.5;
+  }
+
+  // 5. 점수 계산 + 배송비 결정
+  const scored: PipelineRow[] = [];
+  for (const r of enriched) {
+    const skuMed = skuMedianFor(r.skuId);
+    const priceGap = skuMed <= 0 ? 0 : clamp((skuMed - r.price) / skuMed);
+    const velocity = percentileRank(favsBySku.get(r.skuId) ?? [], r.numFaved);
+
+    const ratingRaw = r.detail.shopReviewRating;
+    const safetyBase = ratingRaw == null ? 0.5 : clamp(ratingRaw / 5);
+    const reviewBonus = r.detail.shopReviewCount >= 100 ? 0.05 : 0;
+    const riskHits = RISK_KEYWORDS.filter((kw) =>
+      r.detail.description.toLowerCase().includes(kw.toLowerCase())
+    ).length;
+    const safety = clamp(safetyBase + reviewBonus - Math.min(0.5, riskHits * 0.1));
+    const score = (priceGap * 0.5 + velocity * 0.4 + safety * 0.1) * 100;
+
+    const flags: string[] = [];
+    if (priceGap >= 0.55) flags.push("deep_discount_review");
+    if (compactLen(r.detail.description === "" ? (searchItems.get(r.pid)?.name ?? "") : r.detail.description) < SHORT_TITLE_MIN) {
+      if (!hasNormalSignal(searchItems.get(r.pid)?.name ?? "", r.detail.description)) flags.push("short_title");
+    }
+    if (!hasNormalSignal(searchItems.get(r.pid)?.name ?? "", r.detail.description)) flags.push("weak_normal_signal");
+
+    const apiParsed = parseShippingFromTrade(r.detail.tradeData, r.detail.tradesData);
+    const descParsed = parseShippingFromDescription(r.detail.description);
+    const shipping = resolveShipping(r.price, skuMed, r.freeShipping, apiParsed, descParsed);
+
+    scored.push({
+      pid: r.pid,
+      url: searchItems.get(r.pid)!.url,
+      name: searchItems.get(r.pid)!.name,
+      price: r.price,
+      skuId: r.skuId,
+      skuName: r.skuName,
+      skuMedian: Math.round(skuMed),
+      descriptionPreview: r.detail.description.slice(0, 200),
+      priceGap,
+      numFaved: r.numFaved,
+      velocity,
+      reviewRating: ratingRaw,
+      reviewCount: r.detail.shopReviewCount,
+      safety,
+      riskHits,
+      score,
+      scoreFlags: flags,
+      ...shipping,
+    });
+  }
+
+  // 6. Supabase upsert
+  const upserted = await upsertToSupabase(scored);
+
+  return { collected: searchItems.size, normal: enriched.length, upserted };
+}
+
+// ─── Supabase upsert ─────────────────────────────────────────────────────────
+function supabaseHeaders() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY missing");
+  return {
+    apikey: key,
+    authorization: `Bearer ${key}`,
+    "content-type": "application/json",
+    prefer: "resolution=merge-duplicates",
+  };
+}
+
+function supabaseUrl(table: string): string {
+  const raw = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const base = raw.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
+  return `${base}/rest/v1/${table}`;
+}
+
+async function upsertRows(table: string, rows: unknown[]): Promise<void> {
+  if (rows.length === 0) return;
+  const res = await fetch(supabaseUrl(table), {
+    method: "POST",
+    headers: supabaseHeaders(),
+    body: JSON.stringify(rows),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`${table} upsert failed: ${res.status} ${body}`);
+  }
+}
+
+async function upsertToSupabase(rows: PipelineRow[]): Promise<number> {
+  if (rows.length === 0) return 0;
+
+  const now = new Date().toISOString();
+
+  // rank by score desc
+  const sorted = [...rows].sort((a, b) => b.score - a.score);
+
+  const listings = sorted.map((r) => ({
+    pid: parseInt(r.pid, 10),
+    url: r.url,
+    name: r.name,
+    price: r.price,
+    sku_name: r.skuName,
+    sku_median: r.skuMedian,
+    description_preview: r.descriptionPreview,
+    shipping_fee: r.shippingFee,
+    shipping_fee_general: r.shippingFeeGeneral,
+    shipping_source: r.shippingSource,
+    estimated_buy_cost: r.estimatedBuyCost,
+    gross_resell_gap: r.grossResellGap,
+    net_gap_after_shipping: r.netGapAfterShipping,
+    source_json: {},
+    generated_at: now,
+    updated_at: now,
+  }));
+
+  const analyses = sorted.map((r, i) => ({
+    pid: parseInt(r.pid, 10),
+    price_gap: r.priceGap,
+    num_faved: r.numFaved,
+    velocity: r.velocity,
+    review_rating: r.reviewRating,
+    review_count: r.reviewCount,
+    safety: r.safety,
+    risk_hits: r.riskHits,
+    score: r.score,
+    score_flags: r.scoreFlags,
+    candidate_rank: i + 1,
+    source_json: {},
+    analyzed_at: now,
+    updated_at: now,
+  }));
+
+  await upsertRows("mvp_listings", listings);
+  await upsertRows("mvp_listing_analysis", analyses);
+  return sorted.length;
+}
