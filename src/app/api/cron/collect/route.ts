@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { runPipeline } from "@/lib/pipeline";
 
 export const maxDuration = 60;
@@ -12,9 +13,14 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  runPipeline(2)
-    .then((result) => console.log("[cron/collect]", result))
-    .catch((err) => console.error("[cron/collect]", err instanceof Error ? err.message : String(err)));
+  after(async () => {
+    try {
+      const result = await runPipeline(2);
+      console.log("[cron/collect]", result);
+    } catch (err) {
+      console.error("[cron/collect]", err instanceof Error ? err.message : String(err));
+    }
+  });
 
   return NextResponse.json({ ok: true, started: true, ts: new Date().toISOString() });
 }
