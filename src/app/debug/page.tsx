@@ -1,0 +1,233 @@
+import Link from "next/link";
+import { loadCollectRuns, type CollectRun } from "@/lib/collect-logs";
+
+export const dynamic = "force-dynamic";
+
+function formatTime(value: string | null) {
+  if (!value) return "-";
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Seoul",
+  }).format(new Date(value));
+}
+
+function formatDuration(ms: number | null) {
+  if (ms == null) return "진행 중";
+  if (ms < 1000) return `${ms}ms`;
+  return `${Math.round(ms / 100) / 10}초`;
+}
+
+function statusLabel(status: CollectRun["status"]) {
+  if (status === "succeeded") return "완료";
+  if (status === "failed") return "실패";
+  return "진행 중";
+}
+
+function statusClass(status: CollectRun["status"]) {
+  if (status === "succeeded") return "bg-emerald-100 text-emerald-800 ring-emerald-200";
+  if (status === "failed") return "bg-red-100 text-red-800 ring-red-200";
+  return "bg-amber-100 text-amber-800 ring-amber-200";
+}
+
+function num(value: number) {
+  return value.toLocaleString("ko-KR");
+}
+
+function pct(part: number, total: number) {
+  if (total <= 0) return "0%";
+  return `${Math.round((part / total) * 100)}%`;
+}
+
+function lastSucceeded(runs: CollectRun[]) {
+  return runs.find((run) => run.status === "succeeded") ?? null;
+}
+
+function MetricCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-4">
+      <div className="text-xs font-medium text-zinc-500">{label}</div>
+      <div className="mt-1 text-2xl font-semibold text-zinc-950">{value}</div>
+      {sub ? <div className="mt-1 text-xs text-zinc-500">{sub}</div> : null}
+    </div>
+  );
+}
+
+function FlowBar({ run }: { run: CollectRun }) {
+  const steps = [
+    { label: "검색 수집", value: run.collectedCount, total: run.collectedCount },
+    { label: "제목 룰 통과", value: run.titleNormalCount, total: run.collectedCount },
+    { label: "상세 enrich", value: run.enrichedCount, total: run.titleNormalCount },
+    { label: "점수 계산", value: run.scoredCount, total: run.enrichedCount },
+    { label: "최종 upsert", value: run.upsertedCount, total: run.scoredCount },
+  ];
+
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-zinc-950">최근 수집 흐름</div>
+          <div className="text-xs text-zinc-500">{formatTime(run.startedAt)} 시작 · {formatDuration(run.durationMs)}</div>
+        </div>
+        <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${statusClass(run.status)}`}>
+          {statusLabel(run.status)}
+        </span>
+      </div>
+      <div className="mt-5 grid gap-3">
+        {steps.map((step) => (
+          <div key={step.label} className="grid gap-2 sm:grid-cols-[120px_minmax(0,1fr)_90px] sm:items-center">
+            <div className="text-sm font-medium text-zinc-700">{step.label}</div>
+            <div className="h-2 overflow-hidden rounded-full bg-zinc-100">
+              <div
+                className="h-full rounded-full bg-zinc-950"
+                style={{ width: pct(step.value, Math.max(1, step.total)) }}
+              />
+            </div>
+            <div className="text-sm text-zinc-600 sm:text-right">
+              {num(step.value)}건
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AiPanel({ run }: { run: CollectRun }) {
+  const skippedByCondition = Math.max(0, run.scoredCount - run.aiReviewRequested);
+  const aiHandled = run.aiCacheHits + run.aiApiCalls;
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="text-sm font-semibold text-zinc-950">OpenAI 검토</div>
+      <div className="mt-1 text-xs text-zinc-500">
+        룰로 충분한 후보는 AI 비용 없이 패스하고, 상위권 애매 후보만 확인합니다.
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <MetricCard label="조건 패스" value={`${num(skippedByCondition)}건`} sub="AI 호출 없이 통과" />
+        <MetricCard label="AI 검토 대상" value={`${num(run.aiReviewRequested)}건`} sub={`점수 계산 ${num(run.scoredCount)}건 중`} />
+        <MetricCard label="실제 API 호출" value={`${num(run.aiApiCalls)}건`} sub={`캐시 ${num(run.aiCacheHits)}건`} />
+        <MetricCard label="AI가 제외" value={`${num(run.aiFilteredCount)}건`} sub={`처리됨 ${num(aiHandled)}건 중`} />
+      </div>
+      {run.aiUnavailableCount > 0 ? (
+        <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          AI 검토 불가 {num(run.aiUnavailableCount)}건. Vercel `OPENAI_API_KEY` 또는 API timeout을 확인해야 합니다.
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function RunsTable({ runs }: { runs: CollectRun[] }) {
+  return (
+    <div className="overflow-hidden rounded-md border border-zinc-200 bg-white">
+      <div className="border-b border-zinc-200 px-5 py-4">
+        <div className="text-sm font-semibold text-zinc-950">최근 실행 내역</div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[920px] text-left text-sm">
+          <thead className="bg-zinc-50 text-xs font-semibold text-zinc-500">
+            <tr>
+              <th className="px-4 py-3">시각</th>
+              <th className="px-4 py-3">상태</th>
+              <th className="px-4 py-3">소요</th>
+              <th className="px-4 py-3">검색</th>
+              <th className="px-4 py-3">제목 통과</th>
+              <th className="px-4 py-3">상세</th>
+              <th className="px-4 py-3">AI 대상</th>
+              <th className="px-4 py-3">API</th>
+              <th className="px-4 py-3">캐시</th>
+              <th className="px-4 py-3">AI 제외</th>
+              <th className="px-4 py-3">저장</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-100">
+            {runs.map((run) => (
+              <tr key={run.id} className="align-top">
+                <td className="px-4 py-3 font-mono text-xs text-zinc-700">{formatTime(run.startedAt)}</td>
+                <td className="px-4 py-3">
+                  <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${statusClass(run.status)}`}>
+                    {statusLabel(run.status)}
+                  </span>
+                  {run.errorMessage ? <div className="mt-1 max-w-64 text-xs text-red-700">{run.errorMessage}</div> : null}
+                </td>
+                <td className="px-4 py-3 text-zinc-700">{formatDuration(run.durationMs)}</td>
+                <td className="px-4 py-3">{num(run.collectedCount)}</td>
+                <td className="px-4 py-3">{num(run.titleNormalCount)}</td>
+                <td className="px-4 py-3">{num(run.enrichedCount)}</td>
+                <td className="px-4 py-3">{num(run.aiReviewRequested)}</td>
+                <td className="px-4 py-3">{num(run.aiApiCalls)}</td>
+                <td className="px-4 py-3">{num(run.aiCacheHits)}</td>
+                <td className="px-4 py-3">{num(run.aiFilteredCount)}</td>
+                <td className="px-4 py-3 font-semibold">{num(run.upsertedCount)}</td>
+              </tr>
+            ))}
+            {runs.length === 0 ? (
+              <tr>
+                <td colSpan={11} className="px-4 py-10 text-center text-zinc-500">
+                  아직 수집 실행 기록이 없습니다.
+                </td>
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+export default async function DebugPage() {
+  const runs = await loadCollectRuns(30);
+  const latest = runs[0] ?? null;
+  const latestOk = lastSucceeded(runs);
+  const totalApiCalls = runs.reduce((sum, run) => sum + run.aiApiCalls, 0);
+  const totalAiFiltered = runs.reduce((sum, run) => sum + run.aiFilteredCount, 0);
+
+  return (
+    <main className="min-h-screen bg-[#f6f7f9] text-zinc-950">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
+        <header className="flex flex-col gap-4 border-b border-zinc-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-medium text-emerald-700">운영 로그</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950 sm:text-3xl">
+              수집 파이프라인 상태
+            </h1>
+          </div>
+          <Link
+            href="/"
+            className="w-fit rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 transition hover:border-zinc-400"
+          >
+            후보 화면으로
+          </Link>
+        </header>
+
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <MetricCard
+            label="마지막 실행"
+            value={latest ? formatTime(latest.startedAt) : "-"}
+            sub={latest ? statusLabel(latest.status) : "기록 없음"}
+          />
+          <MetricCard
+            label="마지막 성공"
+            value={latestOk ? formatTime(latestOk.startedAt) : "-"}
+            sub={latestOk ? `${num(latestOk.upsertedCount)}건 저장` : "성공 기록 없음"}
+          />
+          <MetricCard label="최근 AI API 호출" value={`${num(totalApiCalls)}건`} sub="최근 30회 합산" />
+          <MetricCard label="AI 제외 누적" value={`${num(totalAiFiltered)}건`} sub="최근 30회 합산" />
+        </section>
+
+        {latest ? (
+          <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
+            <FlowBar run={latest} />
+            <AiPanel run={latest} />
+          </section>
+        ) : null}
+
+        <RunsTable runs={runs} />
+      </div>
+    </main>
+  );
+}

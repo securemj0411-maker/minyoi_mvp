@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   RESELL_SHIPPING_FEE,
@@ -313,6 +314,14 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
             <h1 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950 sm:text-3xl">
               오늘의 리셀갭 후보
             </h1>
+            <div className="mt-3">
+              <Link
+                href="/debug"
+                className="inline-flex rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 transition hover:border-zinc-400"
+              >
+                운영 로그
+              </Link>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
             <div className="rounded-md border border-zinc-200 bg-white px-3 py-2">

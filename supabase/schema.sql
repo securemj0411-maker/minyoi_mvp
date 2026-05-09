@@ -71,6 +71,29 @@ create table if not exists public.mvp_listing_ai_classifications (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.mvp_collect_runs (
+  id uuid primary key default gen_random_uuid(),
+  status text not null check (status in ('running', 'succeeded', 'failed')),
+  trigger_source text not null default 'cron',
+  started_at timestamptz not null default now(),
+  finished_at timestamptz,
+  duration_ms integer,
+  collected_count integer not null default 0,
+  title_normal_count integer not null default 0,
+  enriched_count integer not null default 0,
+  scored_count integer not null default 0,
+  ai_review_requested integer not null default 0,
+  ai_cache_hits integer not null default 0,
+  ai_api_calls integer not null default 0,
+  ai_unavailable_count integer not null default 0,
+  ai_filtered_count integer not null default 0,
+  ai_kept_normal_count integer not null default 0,
+  ai_kept_low_confidence_count integer not null default 0,
+  upserted_count integer not null default 0,
+  error_message text,
+  created_at timestamptz not null default now()
+);
+
 create index if not exists mvp_listing_analysis_rank_idx
   on public.mvp_listing_analysis(candidate_rank nulls last);
 
@@ -86,10 +109,17 @@ create index if not exists mvp_listing_ai_classifications_content_hash_idx
 create index if not exists mvp_listing_ai_classifications_type_idx
   on public.mvp_listing_ai_classifications(listing_type, confidence);
 
+create index if not exists mvp_collect_runs_started_at_idx
+  on public.mvp_collect_runs(started_at desc);
+
+create index if not exists mvp_collect_runs_status_idx
+  on public.mvp_collect_runs(status);
+
 alter table public.mvp_listings enable row level security;
 alter table public.mvp_listing_analysis enable row level security;
 alter table public.mvp_user_candidate_actions enable row level security;
 alter table public.mvp_listing_ai_classifications enable row level security;
+alter table public.mvp_collect_runs enable row level security;
 
 drop view if exists public.mvp_listing_candidates;
 create view public.mvp_listing_candidates

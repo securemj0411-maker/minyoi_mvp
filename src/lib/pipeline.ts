@@ -59,6 +59,8 @@ const RISK_KEYWORDS = [
 const SHORT_TITLE_MIN = 9;
 const AI_REVIEW_TOP_N = Number(process.env.AI_REVIEW_TOP_N ?? 30);
 const AI_CLASSIFIER_MODEL = process.env.OPENAI_CLASSIFIER_MODEL ?? "gpt-4.1-mini";
+const DETAIL_ENRICH_LIMIT = Number(process.env.DETAIL_ENRICH_LIMIT ?? 120);
+const AI_REVIEW_CONCURRENCY = Number(process.env.AI_REVIEW_CONCURRENCY ?? 5);
 
 function nrm(text: unknown): string {
   return normalize(String(text ?? ""));
@@ -359,6 +361,22 @@ export type PipelineRow = {
   netGapAfterShipping: number;
 };
 
+export type PipelineResult = {
+  collected: number;
+  titleNormal: number;
+  enriched: number;
+  scored: number;
+  aiReviewRequested: number;
+  aiCacheHits: number;
+  aiApiCalls: number;
+  aiUnavailable: number;
+  aiFiltered: number;
+  aiKeptNormal: number;
+  aiKeptLowConfidence: number;
+  normal: number;
+  upserted: number;
+};
+
 type AiListingType = "normal" | "counterfeit" | "parts" | "buying" | "callout" | "damaged" | "accessory" | "multi" | "unknown";
 type AiConfidence = "high" | "medium" | "low";
 type AiClassification = {
@@ -372,12 +390,26 @@ type AiClassification = {
   costUsd: number | null;
   cached?: boolean;
 };
+type AiReviewStats = {
+  requested: number;
+  cacheHits: number;
+  apiCalls: number;
+  unavailable: number;
+  filtered: number;
+  keptNormal: number;
+  keptLowConfidence: number;
+};
+type AiReviewResult = { rows: PipelineRow[]; stats: AiReviewStats };
+type AiClassifyOutcome = {
+  result: AiClassification | null;
+  source: "cache" | "api" | "unavailable";
+};
 
 async function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-export async function runPipeline(pagesPerQuery = 2): Promise<{ collected: number; normal: number; upserted: number }> {
+export async function runPipeline(pagesPerQuery = 2): Promise<PipelineResult> {
   // 1. 검색
   const searchItems = await collectSearchItems(SEARCH_QUERIES, pagesPerQuery);
 
@@ -394,7 +426,7 @@ export async function runPipeline(pagesPerQuery = 2): Promise<{ collected: numbe
   // 3. 상세 enrich
   type Enriched = { pid: string; skuId: string; skuName: string; detail: NonNullable<Awaited<ReturnType<typeof fetchDetail>>>; freeShipping: boolean; price: number; numFaved: number; };
   const enriched: Enriched[] = [];
-  for (const c of normalCandidates) {
+  for (const c of normalCandidates.slice(0, DETAIL_ENRICH_LIMIT)) {
     const item = searchItems.get(c.pid)!;
     const detail = await fetchDetail(c.pid);
     await sleep(300);
@@ -474,12 +506,26 @@ export async function runPipeline(pagesPerQuery = 2): Promise<{ collected: numbe
   }
 
   // 6. Tier 2 AI — 상위권 애매 후보만 판정. 실패/키 없음이면 룰 기반 결과 유지.
-  const aiFiltered = await applyAiReview(scored);
+  const aiReview = await applyAiReview(scored);
 
   // 7. Supabase upsert
-  const upserted = await upsertToSupabase(aiFiltered);
+  const upserted = await upsertToSupabase(aiReview.rows);
 
-  return { collected: searchItems.size, normal: aiFiltered.length, upserted };
+  return {
+    collected: searchItems.size,
+    titleNormal: normalCandidates.length,
+    enriched: enriched.length,
+    scored: scored.length,
+    aiReviewRequested: aiReview.stats.requested,
+    aiCacheHits: aiReview.stats.cacheHits,
+    aiApiCalls: aiReview.stats.apiCalls,
+    aiUnavailable: aiReview.stats.unavailable,
+    aiFiltered: aiReview.stats.filtered,
+    aiKeptNormal: aiReview.stats.keptNormal,
+    aiKeptLowConfidence: aiReview.stats.keptLowConfidence,
+    normal: aiReview.rows.length,
+    upserted,
+  };
 }
 
 // ─── Supabase upsert ─────────────────────────────────────────────────────────
@@ -600,7 +646,7 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
   if (!apiKey) return null;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12_000);
+  const timeout = setTimeout(() => controller.abort(), 5_000);
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -655,24 +701,71 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
   }
 }
 
-async function classifyWithCache(row: PipelineRow): Promise<AiClassification | null> {
+async function classifyWithCache(row: PipelineRow): Promise<AiClassifyOutcome> {
   const hash = contentHash(row);
   const cached = await fetchAiCache(row, hash);
-  if (cached) return cached;
+  if (cached) return { result: cached, source: "cache" };
+  if (!process.env.OPENAI_API_KEY) return { result: null, source: "unavailable" };
   const fresh = await classifyWithAi(row);
+  if (!fresh) return { result: null, source: "unavailable" };
   if (fresh) await upsertAiCache(row, hash, fresh);
-  return fresh;
+  return { result: fresh, source: "api" };
 }
 
-async function applyAiReview(rows: PipelineRow[]): Promise<PipelineRow[]> {
+async function applyAiReview(rows: PipelineRow[]): Promise<AiReviewResult> {
   const sorted = [...rows].sort((a, b) => b.score - a.score);
-  const reviewPids = new Set(
-    sorted
-      .slice(0, AI_REVIEW_TOP_N)
-      .filter(shouldAiReview)
-      .map((row) => row.pid),
+  const reviewRows = sorted.slice(0, AI_REVIEW_TOP_N).filter(shouldAiReview);
+  const reviewPids = new Set(reviewRows.map((row) => row.pid));
+  const stats: AiReviewStats = {
+    requested: reviewPids.size,
+    cacheHits: 0,
+    apiCalls: 0,
+    unavailable: 0,
+    filtered: 0,
+    keptNormal: 0,
+    keptLowConfidence: 0,
+  };
+  if (reviewPids.size === 0) return { rows, stats };
+
+  const reviewed = new Map<string, PipelineRow | null>();
+  let cursor = 0;
+  async function reviewNext() {
+    const row = reviewRows[cursor++];
+    if (!row) return;
+    const { result, source } = await classifyWithCache(row);
+    if (source === "cache") stats.cacheHits += 1;
+    if (source === "api") stats.apiCalls += 1;
+    if (source === "unavailable") stats.unavailable += 1;
+
+    if (!result) {
+      reviewed.set(row.pid, { ...row, scoreFlags: [...row.scoreFlags, "ai_review_unavailable"] });
+      await reviewNext();
+      return;
+    }
+
+    if (result.listingType === "normal" && result.confidence !== "low") {
+      stats.keptNormal += 1;
+      reviewed.set(row.pid, { ...row, scoreFlags: [...row.scoreFlags, "ai_normal"] });
+      await reviewNext();
+      return;
+    }
+
+    if (result.listingType !== "normal" && result.confidence !== "low") {
+      // AI-confirmed noise: do not upsert as a visible candidate.
+      stats.filtered += 1;
+      reviewed.set(row.pid, null);
+      await reviewNext();
+      return;
+    }
+
+    stats.keptLowConfidence += 1;
+    reviewed.set(row.pid, { ...row, scoreFlags: [...row.scoreFlags, `ai_${result.listingType}_low_confidence`] });
+    await reviewNext();
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(AI_REVIEW_CONCURRENCY, reviewRows.length) }, () => reviewNext()),
   );
-  if (reviewPids.size === 0) return rows;
 
   const output: PipelineRow[] = [];
   for (const row of rows) {
@@ -680,26 +773,10 @@ async function applyAiReview(rows: PipelineRow[]): Promise<PipelineRow[]> {
       output.push(row);
       continue;
     }
-
-    const result = await classifyWithCache(row);
-    if (!result) {
-      output.push({ ...row, scoreFlags: [...row.scoreFlags, "ai_review_unavailable"] });
-      continue;
-    }
-
-    if (result.listingType === "normal" && result.confidence !== "low") {
-      output.push({ ...row, scoreFlags: [...row.scoreFlags, "ai_normal"] });
-      continue;
-    }
-
-    if (result.listingType !== "normal" && result.confidence !== "low") {
-      // AI-confirmed noise: do not upsert as a visible candidate.
-      continue;
-    }
-
-    output.push({ ...row, scoreFlags: [...row.scoreFlags, `ai_${result.listingType}_low_confidence`] });
+    const reviewedRow = reviewed.get(row.pid);
+    if (reviewedRow) output.push(reviewedRow);
   }
-  return output;
+  return { rows: output, stats };
 }
 
 async function upsertToSupabase(rows: PipelineRow[]): Promise<number> {
