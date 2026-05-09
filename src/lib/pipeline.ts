@@ -472,12 +472,21 @@ type AiClassifyOutcome = {
   result: AiClassification | null;
   source: "cache" | "api" | "unavailable";
 };
+export type PipelineOptions = {
+  detailLimit?: number;
+  aiReviewTopN?: number;
+  aiReviewEnabled?: boolean;
+};
 
 async function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-export async function runPipeline(pagesPerQuery = 2): Promise<PipelineResult> {
+export async function runPipeline(pagesPerQuery = 2, options: PipelineOptions = {}): Promise<PipelineResult> {
+  const detailLimit = Math.max(0, Math.min(DETAIL_ENRICH_LIMIT, options.detailLimit ?? DETAIL_ENRICH_LIMIT));
+  const aiReviewEnabled = options.aiReviewEnabled ?? true;
+  const aiReviewTopN = Math.max(0, options.aiReviewTopN ?? AI_REVIEW_TOP_N);
+
   // 1. 검색
   const searchItems = await collectSearchItems(SEARCH_QUERIES, pagesPerQuery);
 
@@ -494,7 +503,7 @@ export async function runPipeline(pagesPerQuery = 2): Promise<PipelineResult> {
   // 3. 상세 enrich
   type Enriched = { pid: string; skuId: string; skuName: string; detail: NonNullable<Awaited<ReturnType<typeof fetchDetail>>>; freeShipping: boolean; price: number; numFaved: number; };
   const enriched: Enriched[] = [];
-  for (const c of normalCandidates.slice(0, DETAIL_ENRICH_LIMIT)) {
+  for (const c of normalCandidates.slice(0, detailLimit)) {
     const item = searchItems.get(c.pid)!;
     const detail = await fetchDetail(c.pid);
     await sleep(300);
@@ -576,7 +585,7 @@ export async function runPipeline(pagesPerQuery = 2): Promise<PipelineResult> {
   }
 
   // 6. Tier 2 AI — 상위권 애매 후보만 판정. 실패/키 없음이면 룰 기반 결과 유지.
-  const aiReview = await applyAiReview(scored);
+  const aiReview = await applyAiReview(scored, { enabled: aiReviewEnabled, topN: aiReviewTopN });
 
   // 7. Supabase upsert
   const upserted = await upsertToSupabase(aiReview.rows);
@@ -782,12 +791,12 @@ async function classifyWithCache(row: PipelineRow): Promise<AiClassifyOutcome> {
   return { result: fresh, source: "api" };
 }
 
-async function applyAiReview(rows: PipelineRow[]): Promise<AiReviewResult> {
-  const sorted = [...rows].sort((a, b) => b.score - a.score);
-  const reviewRows = sorted.slice(0, AI_REVIEW_TOP_N).filter(shouldAiReview);
-  const reviewPids = new Set(reviewRows.map((row) => row.pid));
-  const stats: AiReviewStats = {
-    requested: reviewPids.size,
+async function applyAiReview(
+  rows: PipelineRow[],
+  options: { enabled: boolean; topN: number },
+): Promise<AiReviewResult> {
+  const emptyStats: AiReviewStats = {
+    requested: 0,
     cacheHits: 0,
     apiCalls: 0,
     unavailable: 0,
@@ -795,6 +804,12 @@ async function applyAiReview(rows: PipelineRow[]): Promise<AiReviewResult> {
     keptNormal: 0,
     keptLowConfidence: 0,
   };
+  if (!options.enabled || options.topN <= 0) return { rows, stats: emptyStats };
+
+  const sorted = [...rows].sort((a, b) => b.score - a.score);
+  const reviewRows = sorted.slice(0, options.topN).filter(shouldAiReview);
+  const reviewPids = new Set(reviewRows.map((row) => row.pid));
+  const stats: AiReviewStats = { ...emptyStats, requested: reviewPids.size };
   if (reviewPids.size === 0) return { rows, stats };
 
   const reviewed = new Map<string, PipelineRow | null>();

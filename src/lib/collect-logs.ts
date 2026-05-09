@@ -175,6 +175,29 @@ async function patchRun(id: string, payload: Record<string, unknown>): Promise<v
   });
 }
 
+export async function markStaleCollectRuns(maxAgeMinutes = 3): Promise<number> {
+  const base = restUrl();
+  const h = headers("return=representation");
+  if (!base || !h) return 0;
+  const cutoff = new Date(Date.now() - maxAgeMinutes * 60 * 1000).toISOString();
+  const finishedAt = new Date().toISOString();
+  const res = await fetch(
+    `${base}/mvp_collect_runs?status=eq.running&started_at=lt.${encodeURIComponent(cutoff)}`,
+    {
+      method: "PATCH",
+      headers: h,
+      body: JSON.stringify({
+        status: "failed",
+        finished_at: finishedAt,
+        error_message: `stale running run auto-marked after ${maxAgeMinutes}m`,
+      }),
+    },
+  );
+  if (!res.ok) return 0;
+  const rows = (await res.json()) as CollectRunRow[];
+  return rows.length;
+}
+
 export async function startCollectRun(meta: CollectRunRequestMeta): Promise<{ id: string | null; startedAt: string }> {
   const startedAt = new Date().toISOString();
   const row = await insertRun({

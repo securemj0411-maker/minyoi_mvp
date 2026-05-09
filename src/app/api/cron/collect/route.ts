@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { after } from "next/server";
-import { failCollectRun, finishCollectRun, startCollectRun, type CollectRunRequestMeta } from "@/lib/collect-logs";
-import { runPipeline } from "@/lib/pipeline";
+import {
+  failCollectRun,
+  finishCollectRun,
+  markStaleCollectRuns,
+  startCollectRun,
+  type CollectRunRequestMeta,
+} from "@/lib/collect-logs";
+import { runPipeline, type PipelineOptions } from "@/lib/pipeline";
 
 export const maxDuration = 60;
 
@@ -13,6 +19,27 @@ function firstForwardedIp(value: string | null): string | null {
 function truncate(value: string | null, max = 500): string | null {
   if (!value) return null;
   return value.length > max ? `${value.slice(0, max)}...` : value;
+}
+
+function intParam(req: NextRequest, name: string, fallback: number, min: number, max: number) {
+  const raw = req.nextUrl.searchParams.get(name);
+  const parsed = raw == null ? fallback : Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
+function pipelineConfig(req: NextRequest): { pages: number; options: PipelineOptions } {
+  const pages = intParam(req, "pages", 2, 1, 3);
+  const detailLimit = intParam(req, "detailLimit", 120, 0, 120);
+  const aiTopN = intParam(req, "aiTopN", 30, 0, 30);
+  return {
+    pages,
+    options: {
+      detailLimit,
+      aiReviewTopN: aiTopN,
+      aiReviewEnabled: aiTopN > 0,
+    },
+  };
 }
 
 function requestMeta(req: NextRequest, authOk: boolean, authReason: string): CollectRunRequestMeta {
@@ -61,6 +88,7 @@ export async function GET(req: NextRequest) {
   const auth = req.headers.get("authorization");
   const authOk = !secret || auth === `Bearer ${secret}`;
   const waitForResult = req.nextUrl.searchParams.get("wait") === "1";
+  const { pages, options } = pipelineConfig(req);
   const meta = requestMeta(req, authOk, authOk ? "authorized" : "invalid_or_missing_bearer");
 
   if (secret) {
@@ -69,17 +97,25 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const run = await startCollectRun(meta);
+  const staleMarked = await markStaleCollectRuns(3);
+  const run = await startCollectRun({
+    ...meta,
+    requestMeta: {
+      ...meta.requestMeta,
+      pipelineConfig: { pages, ...options },
+      staleMarkedBeforeRun: staleMarked,
+    },
+  });
 
   if (waitForResult) {
     try {
-      const result = await runPipeline(2);
+      const result = await runPipeline(pages, options);
       await finishCollectRun(run.id, run.startedAt, result);
-      return NextResponse.json({ ok: true, started: true, completed: true, runId: run.id, result, ts: run.startedAt });
+      return NextResponse.json({ ok: true, started: true, completed: true, runId: run.id, pipelineConfig: { pages, ...options }, result, ts: run.startedAt });
     } catch (err) {
       await failCollectRun(run.id, run.startedAt, err);
       return NextResponse.json(
-        { ok: false, started: true, completed: true, runId: run.id, error: err instanceof Error ? err.message : String(err), ts: run.startedAt },
+        { ok: false, started: true, completed: true, runId: run.id, pipelineConfig: { pages, ...options }, error: err instanceof Error ? err.message : String(err), ts: run.startedAt },
         { status: 500 },
       );
     }
@@ -87,7 +123,7 @@ export async function GET(req: NextRequest) {
 
   after(async () => {
     try {
-      const result = await runPipeline(2);
+      const result = await runPipeline(pages, options);
       await finishCollectRun(run.id, run.startedAt, result);
       console.log("[cron/collect]", result);
     } catch (err) {
@@ -96,5 +132,5 @@ export async function GET(req: NextRequest) {
     }
   });
 
-  return NextResponse.json({ ok: true, started: true, runId: run.id, ts: run.startedAt });
+  return NextResponse.json({ ok: true, started: true, runId: run.id, pipelineConfig: { pages, ...options }, ts: run.startedAt });
 }

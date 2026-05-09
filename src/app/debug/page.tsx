@@ -23,16 +23,38 @@ function formatDuration(ms: number | null) {
   return `${Math.round(ms / 100) / 10}초`;
 }
 
-function statusLabel(status: CollectRun["status"]) {
+function elapsedMs(run: CollectRun) {
+  return Math.max(0, Date.now() - Date.parse(run.startedAt));
+}
+
+function isStaleRunning(run: CollectRun) {
+  return run.status === "running" && elapsedMs(run) > 3 * 60 * 1000;
+}
+
+function statusLabel(run: CollectRun) {
+  if (isStaleRunning(run)) return "멈춤 의심";
+  const status = run.status;
   if (status === "succeeded") return "완료";
   if (status === "failed") return "실패";
   return "진행 중";
 }
 
-function statusClass(status: CollectRun["status"]) {
+function statusClass(run: CollectRun) {
+  if (isStaleRunning(run)) return "bg-red-100 text-red-800 ring-red-200";
+  const status = run.status;
   if (status === "succeeded") return "bg-emerald-100 text-emerald-800 ring-emerald-200";
   if (status === "failed") return "bg-red-100 text-red-800 ring-red-200";
   return "bg-amber-100 text-amber-800 ring-amber-200";
+}
+
+function durationLabel(run: CollectRun) {
+  if (run.durationMs != null) return formatDuration(run.durationMs);
+  if (run.status === "running") {
+    const elapsed = elapsedMs(run);
+    if (elapsed >= 60 * 1000) return `${Math.floor(elapsed / 60000)}분 경과`;
+    return `${Math.max(1, Math.floor(elapsed / 1000))}초 경과`;
+  }
+  return "-";
 }
 
 function num(value: number) {
@@ -77,10 +99,10 @@ function FlowBar({ run }: { run: CollectRun }) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-semibold text-zinc-950">최근 수집 흐름</div>
-          <div className="text-xs text-zinc-500">{formatTime(run.startedAt)} 시작 · {formatDuration(run.durationMs)}</div>
+          <div className="text-xs text-zinc-500">{formatTime(run.startedAt)} 시작 · {durationLabel(run)}</div>
         </div>
-        <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${statusClass(run.status)}`}>
-          {statusLabel(run.status)}
+        <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${statusClass(run)}`}>
+          {statusLabel(run)}
         </span>
       </div>
       <div className="mt-5 grid gap-3">
@@ -173,6 +195,21 @@ function RequestPanel({ run }: { run: CollectRun }) {
   );
 }
 
+function CronTimeoutAdvice({ run }: { run: CollectRun }) {
+  if (!run.waitMode || run.status !== "running") return null;
+  return (
+    <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+      <div className="font-semibold">cron-job.org 30초 timeout 가능성이 큽니다.</div>
+      <div className="mt-1 text-amber-900">
+        `wait=1` 전체 수집은 상세 enrich sleep만으로도 30초를 넘을 수 있어요. 디버깅 기간에는 아래처럼 가볍게 호출하는 게 안전합니다.
+      </div>
+      <code className="mt-3 block overflow-x-auto rounded-md bg-white px-3 py-2 text-xs text-zinc-900">
+        /api/cron/collect?wait=1&amp;pages=1&amp;detailLimit=30&amp;aiTopN=0
+      </code>
+    </div>
+  );
+}
+
 function RunsTable({ runs }: { runs: CollectRun[] }) {
   return (
     <div className="overflow-hidden rounded-md border border-zinc-200 bg-white">
@@ -204,8 +241,8 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
               <tr key={run.id} className="align-top">
                 <td className="px-4 py-3 font-mono text-xs text-zinc-700">{formatTime(run.startedAt)}</td>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${statusClass(run.status)}`}>
-                    {statusLabel(run.status)}
+                  <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${statusClass(run)}`}>
+                    {statusLabel(run)}
                   </span>
                   {run.errorMessage ? <div className="mt-1 max-w-64 text-xs text-red-700">{run.errorMessage}</div> : null}
                 </td>
@@ -215,7 +252,7 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
                   {run.responseMode === "sync_wait" ? "동기" : "백그라운드"}
                   {run.waitMode ? <div className="text-zinc-400">wait=1</div> : null}
                 </td>
-                <td className="px-4 py-3 text-zinc-700">{formatDuration(run.durationMs)}</td>
+                <td className="px-4 py-3 text-zinc-700">{durationLabel(run)}</td>
                 <td className="px-4 py-3">{num(run.collectedCount)}</td>
                 <td className="px-4 py-3">{num(run.titleNormalCount)}</td>
                 <td className="px-4 py-3">{num(run.enrichedCount)}</td>
@@ -270,7 +307,7 @@ export default async function DebugPage() {
           <MetricCard
             label="마지막 실행"
             value={latest ? formatTime(latest.startedAt) : "-"}
-            sub={latest ? statusLabel(latest.status) : "기록 없음"}
+            sub={latest ? statusLabel(latest) : "기록 없음"}
           />
           <MetricCard
             label="마지막 성공"
@@ -280,6 +317,8 @@ export default async function DebugPage() {
           <MetricCard label="최근 AI API 호출" value={`${num(totalApiCalls)}건`} sub="최근 30회 합산" />
           <MetricCard label="AI 제외 누적" value={`${num(totalAiFiltered)}건`} sub="최근 30회 합산" />
         </section>
+
+        {latest ? <CronTimeoutAdvice run={latest} /> : null}
 
         {latest ? (
           <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px_420px]">
