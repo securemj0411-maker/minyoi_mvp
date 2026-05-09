@@ -1,0 +1,14 @@
+{
+  "byType": {
+    "buying": 1,
+    "accessory": 1
+  },
+  "keywordCounts": {
+    "buying": {
+      "매입": 1
+    },
+    "accessory": {
+      "필름": 1
+    }
+  }
+}
