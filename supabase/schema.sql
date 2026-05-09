@@ -101,11 +101,90 @@ create table if not exists public.mvp_raw_listings (
   image_url_template text,
   image_count integer not null default 0 check (image_count >= 0),
   thumbnail_url text,
+  listing_state text not null default 'active' check (listing_state in (
+    'active','missing_suspect','sold_confirmed','disappeared','archived'
+  )),
+  missing_count integer not null default 0 check (missing_count >= 0),
+  last_missing_at timestamptz,
+  sold_detected_at timestamptz,
+  disappeared_at timestamptz,
+  source_uploaded_at timestamptz,
+  source_updated_at timestamptz,
   first_seen_at timestamptz not null default now(),
   last_seen_at timestamptz not null default now(),
   last_changed_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+create table if not exists public.mvp_listing_parsed (
+  pid bigint primary key references public.mvp_raw_listings(pid) on delete cascade,
+  parser_version text not null default 'option_parser_v1',
+  content_hash text not null default '',
+  category text,
+  family text,
+  model text,
+  variant_key text,
+  comparable_key text,
+  storage_gb integer check (storage_gb is null or storage_gb >= 0),
+  ram_gb integer check (ram_gb is null or ram_gb >= 0),
+  ssd_gb integer check (ssd_gb is null or ssd_gb >= 0),
+  screen_size_in numeric,
+  chip text,
+  release_year integer,
+  battery_health integer check (battery_health is null or (battery_health >= 0 and battery_health <= 100)),
+  battery_cycles integer check (battery_cycles is null or battery_cycles >= 0),
+  carrier text,
+  connectivity text,
+  condition_score numeric not null default 0.5 check (condition_score >= 0 and condition_score <= 1),
+  condition_notes text[] not null default '{}'::text[],
+  parse_confidence numeric not null default 0 check (parse_confidence >= 0 and parse_confidence <= 1),
+  needs_review boolean not null default true,
+  parsed_json jsonb not null default '{}'::jsonb,
+  parsed_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.mvp_listing_observations (
+  id bigserial primary key,
+  pid bigint not null references public.mvp_raw_listings(pid) on delete cascade,
+  observed_at timestamptz not null default now(),
+  run_id uuid,
+  event_type text not null check (event_type in (
+    'first_seen','search_seen','price_changed','faved_changed','title_changed',
+    'detail_enriched','state_changed','daily_snapshot'
+  )),
+  listing_state text not null default 'active',
+  price integer not null check (price >= 0),
+  num_faved integer not null default 0 check (num_faved >= 0),
+  name text not null,
+  sale_status text not null default '',
+  sku_id text,
+  sku_name text,
+  comparable_key text,
+  parse_confidence numeric,
+  source text not null default 'bunjang',
+  raw_json jsonb not null default '{}'::jsonb
+);
+
+create table if not exists public.mvp_market_price_daily (
+  date date not null,
+  comparable_key text not null,
+  category text,
+  family text,
+  model text,
+  variant_key text,
+  active_median_price integer,
+  sold_median_price integer,
+  blended_median_price integer,
+  p25_price integer,
+  p75_price integer,
+  active_sample_count integer not null default 0,
+  sold_sample_count integer not null default 0,
+  disappeared_sample_count integer not null default 0,
+  confidence text not null default 'low' check (confidence in ('high','medium','low')),
+  computed_at timestamptz not null default now(),
+  primary key (date, comparable_key)
 );
 
 create table if not exists public.mvp_detail_queue (
@@ -186,6 +265,27 @@ create index if not exists mvp_raw_listings_detail_status_idx
 create index if not exists mvp_raw_listings_listing_type_idx
   on public.mvp_raw_listings(listing_type, sku_id);
 
+create index if not exists mvp_raw_listings_state_idx
+  on public.mvp_raw_listings(listing_state, last_seen_at desc);
+
+create index if not exists mvp_listing_parsed_comparable_idx
+  on public.mvp_listing_parsed(comparable_key, parse_confidence desc);
+
+create index if not exists mvp_listing_parsed_needs_review_idx
+  on public.mvp_listing_parsed(needs_review, parsed_at desc);
+
+create index if not exists mvp_listing_observations_pid_seen_idx
+  on public.mvp_listing_observations(pid, observed_at desc);
+
+create index if not exists mvp_listing_observations_comparable_seen_idx
+  on public.mvp_listing_observations(comparable_key, observed_at desc);
+
+create index if not exists mvp_listing_observations_event_idx
+  on public.mvp_listing_observations(event_type, observed_at desc);
+
+create index if not exists mvp_market_price_daily_comparable_date_idx
+  on public.mvp_market_price_daily(comparable_key, date desc);
+
 create index if not exists mvp_detail_queue_claim_idx
   on public.mvp_detail_queue(status, available_at, priority desc, created_at);
 
@@ -209,6 +309,9 @@ alter table public.mvp_listing_analysis enable row level security;
 alter table public.mvp_user_candidate_actions enable row level security;
 alter table public.mvp_listing_ai_classifications enable row level security;
 alter table public.mvp_raw_listings enable row level security;
+alter table public.mvp_listing_parsed enable row level security;
+alter table public.mvp_listing_observations enable row level security;
+alter table public.mvp_market_price_daily enable row level security;
 alter table public.mvp_detail_queue enable row level security;
 alter table public.mvp_collect_runs enable row level security;
 

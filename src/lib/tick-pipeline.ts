@@ -20,7 +20,9 @@ type RawListingRow = {
   free_shipping: boolean;
   url: string;
   detail_enriched_at: string | null;
+  last_seen_at: string;
   last_changed_at: string;
+  listing_state: string;
 };
 
 type QueueClaimRow = {
@@ -170,6 +172,15 @@ async function insertIgnoreRows(table: string, rows: unknown[], onConflict?: str
   });
 }
 
+async function insertRows(table: string, rows: unknown[]): Promise<void> {
+  if (rows.length === 0) return;
+  await restFetch(tableUrl(table), {
+    method: "POST",
+    headers: serviceHeaders("return=minimal"),
+    body: JSON.stringify(rows),
+  });
+}
+
 async function patchRows(table: string, filter: string, payload: Record<string, unknown>): Promise<void> {
   await restFetch(`${tableUrl(table)}?${filter}`, {
     method: "PATCH",
@@ -185,7 +196,7 @@ function pidList(items: SearchItem[]) {
 async function loadExistingRaw(pids: number[]): Promise<Map<number, RawListingRow>> {
   if (pids.length === 0) return new Map();
   const unique = [...new Set(pids)];
-  const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,detail_enriched_at,last_changed_at&pid=in.(${unique.join(",")})`;
+  const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,detail_enriched_at,last_seen_at,last_changed_at,listing_state&pid=in.(${unique.join(",")})`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   const rows = (await res.json()) as RawListingRow[];
   return new Map(rows.map((row) => [row.pid, row]));
@@ -200,6 +211,21 @@ function changedEnough(item: SearchItem, existing: RawListingRow | undefined) {
     existing.num_faved !== item.numFaved ||
     existing.free_shipping !== item.freeShipping
   );
+}
+
+function sameKoreanDate(a: string | undefined, b: string) {
+  if (!a) return false;
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date(a)) ===
+    new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date(b));
+}
+
+function observationEventType(item: SearchItem, existing: RawListingRow | undefined, now: string) {
+  if (!existing) return "first_seen";
+  if (existing.price !== item.price) return "price_changed";
+  if (existing.name !== item.name) return "title_changed";
+  if (existing.num_faved !== item.numFaved) return "faved_changed";
+  if (!sameKoreanDate(existing.last_seen_at, now)) return "daily_snapshot";
+  return null;
 }
 
 export async function searchStage(deadlineMs: number): Promise<StageStats> {
@@ -225,6 +251,41 @@ export async function searchStage(deadlineMs: number): Promise<StageStats> {
   const items = [...seen.values()];
   const existing = await loadExistingRaw(pidList(items));
   const now = new Date().toISOString();
+  const observationRows = items.flatMap((item) => {
+    const current = existing.get(Number(item.pid));
+    const eventType = observationEventType(item, current, now);
+    if (!eventType) return [];
+    const changedFields = {
+      price: current && current.price !== item.price,
+      name: current && current.name !== item.name,
+      numFaved: current && current.num_faved !== item.numFaved,
+      freeShipping: current && current.free_shipping !== item.freeShipping,
+    };
+    return [{
+      pid: Number(item.pid),
+      observed_at: now,
+      event_type: eventType,
+      listing_state: "active",
+      price: item.price,
+      num_faved: item.numFaved,
+      name: item.name,
+      sale_status: "",
+      source: "bunjang",
+      raw_json: {
+        query: item.query,
+        url: item.url,
+        freeShipping: item.freeShipping,
+        previous: current ? {
+          price: current.price,
+          name: current.name,
+          numFaved: current.num_faved,
+          freeShipping: current.free_shipping,
+          listingState: current.listing_state,
+        } : null,
+        changedFields,
+      },
+    }];
+  });
 
   await upsertRows("mvp_raw_listings", items.map((item) => {
     const current = existing.get(Number(item.pid));
@@ -237,12 +298,16 @@ export async function searchStage(deadlineMs: number): Promise<StageStats> {
       free_shipping: item.freeShipping,
       query: item.query,
       source: "bunjang",
+      listing_state: "active",
+      missing_count: 0,
+      last_missing_at: null,
       last_seen_at: now,
       last_changed_at: changedEnough(item, current) ? now : current?.last_changed_at ?? now,
       updated_at: now,
     };
   }), "pid");
   stats.rawUpserted = items.length;
+  await insertRows("mvp_listing_observations", observationRows);
 
   const queueItems = items.filter((item) => changedEnough(item, existing.get(Number(item.pid))));
   await insertIgnoreRows("mvp_detail_queue", queueItems.map((item) => ({
