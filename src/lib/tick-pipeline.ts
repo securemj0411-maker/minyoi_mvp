@@ -45,6 +45,8 @@ type ScorableRawRow = RawListingRow & {
   sku_name: string | null;
 };
 
+const DETAIL_STAGE_SAFETY_MARGIN_MS = 8_000;
+
 export type StageStats = {
   collected: number;
   rawUpserted: number;
@@ -289,45 +291,53 @@ async function markQueueFailed(queueId: string, error: string) {
 export async function detailStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
-  const claims = await claimDetailQueue();
-  stats.claimed = claims.length;
 
-  for (const claim of claims) {
-    if (Date.now() >= deadlineMs) {
-      stats.timedOut = true;
-      return stats;
-    }
-    try {
-      const detail = await fetchDetail(String(claim.pid));
-      if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
-      if (!detail) {
-        stats.detailFailed += 1;
-        await markQueueFailed(claim.queue_id, "detail api returned null");
-        continue;
+  while (Date.now() < deadlineMs - DETAIL_STAGE_SAFETY_MARGIN_MS) {
+    const claims = await claimDetailQueue();
+    if (claims.length === 0) break;
+    stats.claimed += claims.length;
+
+    for (const claim of claims) {
+      if (Date.now() >= deadlineMs) {
+        stats.timedOut = true;
+        return stats;
       }
-      const { listingType, sku } = classifyListing(claim.name, detail.description, claim.price);
-      const now = new Date().toISOString();
-      await patchRows("mvp_raw_listings", `pid=eq.${claim.pid}`, {
-        description_preview: detail.description.slice(0, 500),
-        sale_status: detail.saleStatus,
-        shop_review_rating: detail.shopReviewRating,
-        shop_review_count: detail.shopReviewCount,
-        trade_data: detail.tradeData,
-        trades_data: detail.tradesData,
-        listing_type: listingType,
-        sku_id: sku?.id ?? null,
-        sku_name: sku?.modelName ?? null,
-        detail_status: "done",
-        detail_enriched_at: now,
-        detail_error: null,
-        updated_at: now,
-      });
-      await markQueueDone(claim.queue_id);
-      stats.enriched += 1;
-    } catch (err) {
-      stats.detailFailed += 1;
-      await markQueueFailed(claim.queue_id, err instanceof Error ? err.message : String(err));
+      try {
+        const detail = await fetchDetail(String(claim.pid));
+        if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
+        if (!detail) {
+          stats.detailFailed += 1;
+          await markQueueFailed(claim.queue_id, "detail api returned null");
+          continue;
+        }
+        const { listingType, sku } = classifyListing(claim.name, detail.description, claim.price);
+        const now = new Date().toISOString();
+        await patchRows("mvp_raw_listings", `pid=eq.${claim.pid}`, {
+          description_preview: detail.description.slice(0, 500),
+          sale_status: detail.saleStatus,
+          shop_review_rating: detail.shopReviewRating,
+          shop_review_count: detail.shopReviewCount,
+          trade_data: detail.tradeData,
+          trades_data: detail.tradesData,
+          listing_type: listingType,
+          sku_id: sku?.id ?? null,
+          sku_name: sku?.modelName ?? null,
+          detail_status: "done",
+          detail_enriched_at: now,
+          detail_error: null,
+          updated_at: now,
+        });
+        await markQueueDone(claim.queue_id);
+        stats.enriched += 1;
+      } catch (err) {
+        stats.detailFailed += 1;
+        await markQueueFailed(claim.queue_id, err instanceof Error ? err.message : String(err));
+      }
     }
+  }
+
+  if (Date.now() >= deadlineMs - DETAIL_STAGE_SAFETY_MARGIN_MS) {
+    stats.timedOut = true;
   }
 
   return stats;

@@ -11,7 +11,7 @@ import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runTickPipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
 
-export const maxDuration = 60;
+export const maxDuration = 90;
 
 function firstForwardedIp(value: string | null): string | null {
   if (!value) return null;
