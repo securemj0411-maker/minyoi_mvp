@@ -195,7 +195,7 @@ export type ListingType = "normal" | "parts" | "multi" | "buying" | "callout" | 
 
 type ClassifyResult = { listingType: ListingType; sku: Sku | null };
 
-function classifyListing(title: string, desc: string, price: number): ClassifyResult {
+export function classifyListing(title: string, desc: string, price: number): ClassifyResult {
   const text = `${title}\n${desc}`;
 
   if (containsAny(title, BUYING_KEYWORDS).length > 0) return { listingType: "buying", sku: null };

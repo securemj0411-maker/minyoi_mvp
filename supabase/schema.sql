@@ -71,6 +71,53 @@ create table if not exists public.mvp_listing_ai_classifications (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.mvp_raw_listings (
+  pid bigint primary key,
+  url text not null,
+  name text not null,
+  price integer not null check (price >= 0),
+  num_faved integer not null default 0 check (num_faved >= 0),
+  free_shipping boolean not null default false,
+  query text not null default '',
+  source text not null default 'bunjang',
+  description_preview text not null default '',
+  sale_status text not null default '',
+  shop_review_rating numeric,
+  shop_review_count integer not null default 0 check (shop_review_count >= 0),
+  trade_data jsonb,
+  trades_data jsonb,
+  listing_type text not null default 'unknown' check (listing_type in (
+    'normal','counterfeit','parts','buying','callout','damaged','accessory','multi','commercial','unknown'
+  )),
+  sku_id text,
+  sku_name text,
+  detail_status text not null default 'pending' check (detail_status in ('pending','done','failed','skipped')),
+  detail_enriched_at timestamptz,
+  detail_error text,
+  raw_json jsonb not null default '{}'::jsonb,
+  first_seen_at timestamptz not null default now(),
+  last_seen_at timestamptz not null default now(),
+  last_changed_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.mvp_detail_queue (
+  id uuid primary key default gen_random_uuid(),
+  pid bigint not null references public.mvp_raw_listings(pid) on delete cascade,
+  status text not null default 'pending' check (status in ('pending','processing','done','failed')),
+  priority integer not null default 0,
+  attempts integer not null default 0 check (attempts >= 0),
+  max_attempts integer not null default 3 check (max_attempts >= 1),
+  available_at timestamptz not null default now(),
+  locked_at timestamptz,
+  locked_until timestamptz,
+  last_error text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (pid)
+);
+
 create table if not exists public.mvp_collect_runs (
   id uuid primary key default gen_random_uuid(),
   status text not null check (status in ('running', 'succeeded', 'failed')),
@@ -123,6 +170,21 @@ create index if not exists mvp_listing_ai_classifications_content_hash_idx
 create index if not exists mvp_listing_ai_classifications_type_idx
   on public.mvp_listing_ai_classifications(listing_type, confidence);
 
+create index if not exists mvp_raw_listings_seen_idx
+  on public.mvp_raw_listings(last_seen_at desc);
+
+create index if not exists mvp_raw_listings_detail_status_idx
+  on public.mvp_raw_listings(detail_status, detail_enriched_at desc);
+
+create index if not exists mvp_raw_listings_listing_type_idx
+  on public.mvp_raw_listings(listing_type, sku_id);
+
+create index if not exists mvp_detail_queue_claim_idx
+  on public.mvp_detail_queue(status, available_at, priority desc, created_at);
+
+create index if not exists mvp_detail_queue_locked_until_idx
+  on public.mvp_detail_queue(locked_until);
+
 create index if not exists mvp_collect_runs_started_at_idx
   on public.mvp_collect_runs(started_at desc);
 
@@ -139,7 +201,65 @@ alter table public.mvp_listings enable row level security;
 alter table public.mvp_listing_analysis enable row level security;
 alter table public.mvp_user_candidate_actions enable row level security;
 alter table public.mvp_listing_ai_classifications enable row level security;
+alter table public.mvp_raw_listings enable row level security;
+alter table public.mvp_detail_queue enable row level security;
 alter table public.mvp_collect_runs enable row level security;
+
+create or replace function public.claim_mvp_detail_queue(
+  p_batch_size integer default 30,
+  p_lease_seconds integer default 60
+)
+returns table (
+  queue_id uuid,
+  pid bigint,
+  name text,
+  price integer,
+  num_faved integer,
+  free_shipping boolean,
+  url text,
+  attempts integer
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return query
+  with candidates as (
+    select q.id
+    from public.mvp_detail_queue q
+    where (
+      q.status = 'pending'
+      or (q.status = 'processing' and q.locked_until < now())
+      or (q.status = 'failed' and q.attempts < q.max_attempts and q.available_at <= now())
+    )
+    order by q.priority desc, q.available_at asc, q.created_at asc
+    limit greatest(1, least(coalesce(p_batch_size, 30), 200))
+    for update skip locked
+  ), claimed as (
+    update public.mvp_detail_queue q
+    set status = 'processing',
+        attempts = q.attempts + 1,
+        locked_at = now(),
+        locked_until = now() + (greatest(10, least(coalesce(p_lease_seconds, 60), 900)) || ' seconds')::interval,
+        updated_at = now(),
+        last_error = null
+    from candidates c
+    where q.id = c.id
+    returning q.id, q.pid, q.attempts
+  )
+  select c.id as queue_id,
+         r.pid,
+         r.name,
+         r.price,
+         r.num_faved,
+         r.free_shipping,
+         r.url,
+         c.attempts
+  from claimed c
+  join public.mvp_raw_listings r on r.pid = c.pid;
+end;
+$$;
 
 drop view if exists public.mvp_listing_candidates;
 create view public.mvp_listing_candidates

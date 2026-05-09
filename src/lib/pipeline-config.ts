@@ -19,6 +19,12 @@ export type PipelineRuntimeConfig = {
   aiReviewConcurrency: number;
   maxAiReviewConcurrency: number;
   staleRunMinutes: number;
+  tickSearchBudgetMs: number;
+  tickDetailBudgetMs: number;
+  tickScoreBudgetMs: number;
+  tickDetailBatchSize: number;
+  tickDetailLeaseSeconds: number;
+  tickScoreLimit: number;
 };
 
 function envInt(name: string, fallback: number, min: number, max: number): number {
@@ -68,6 +74,12 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     aiReviewConcurrency: envIntAny(["PIPELINE_AI_REVIEW_CONCURRENCY", "AI_REVIEW_CONCURRENCY"], 5, 1, maxAiReviewConcurrency),
     maxAiReviewConcurrency,
     staleRunMinutes: envInt("PIPELINE_STALE_RUN_MINUTES", 3, 1, 60),
+    tickSearchBudgetMs: envInt("PIPELINE_TICK_SEARCH_BUDGET_MS", 20_000, 1_000, 120_000),
+    tickDetailBudgetMs: envInt("PIPELINE_TICK_DETAIL_BUDGET_MS", 25_000, 1_000, 120_000),
+    tickScoreBudgetMs: envInt("PIPELINE_TICK_SCORE_BUDGET_MS", 10_000, 1_000, 120_000),
+    tickDetailBatchSize: envInt("PIPELINE_TICK_DETAIL_BATCH_SIZE", 40, 1, 200),
+    tickDetailLeaseSeconds: envInt("PIPELINE_TICK_DETAIL_LEASE_SECONDS", 90, 10, 900),
+    tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 300, 10, 2000),
   };
 }
 
