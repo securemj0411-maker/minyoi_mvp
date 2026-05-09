@@ -91,6 +91,18 @@ export function expectedProfitMax(item: ListingCandidate) {
   );
 }
 
+export function expectedProfitAverage(item: ListingCandidate) {
+  return Math.round((expectedProfitMin(item) + expectedProfitMax(item)) / 2);
+}
+
+export function bandFromProfit(profitMin: number, profitMax: number): 1 | 2 | 3 | null {
+  const avg = Math.round((profitMin + profitMax) / 2);
+  if (avg >= 70_000) return 3;
+  if (avg >= 40_000) return 2;
+  if (avg >= 20_000) return 1;
+  return null;
+}
+
 export function profitBreakdown(item: ListingCandidate) {
   return {
     expectedSalePrice: item.skuMedian,
@@ -101,6 +113,7 @@ export function profitBreakdown(item: ListingCandidate) {
     safetyBuffer: SAFETY_BUFFER,
     expectedProfitMin: expectedProfitMin(item),
     expectedProfitMax: expectedProfitMax(item),
+    expectedProfitAverage: expectedProfitAverage(item),
   };
 }
 
@@ -127,10 +140,10 @@ export function scoreLabel(item: ListingCandidate): CandidateBand {
   if (item.scoreFlags.length > 0 || item.riskHits > 0) {
     return "검토필요";
   }
-  if (expectedProfitMin(item) >= 30000 && cashoutHint(item) !== "느림") {
+  if (expectedProfitAverage(item) >= 30000 && cashoutHint(item) !== "느림") {
     return "고순익 후보";
   }
-  if (expectedProfitMin(item) >= 15000) {
+  if (expectedProfitAverage(item) >= 15000) {
     return "순익 후보";
   }
   return "관찰";
@@ -143,7 +156,7 @@ export function compareCandidates(a: ListingCandidate, b: ListingCandidate) {
   if (precisionDelta !== 0) return precisionDelta;
 
   return (
-    expectedProfitMin(b) - expectedProfitMin(a) ||
+    expectedProfitAverage(b) - expectedProfitAverage(a) ||
     cashoutRank(b) - cashoutRank(a) ||
     b.safety - a.safety ||
     b.velocity - a.velocity ||
@@ -171,7 +184,7 @@ export function isHighPrecisionCandidate(item: ListingCandidate) {
   if (!isVisibleResellCandidate(item)) return false;
   if (hasPrecisionRisk(item)) return false;
   if (item.riskHits > 0) return false;
-  if (expectedProfitMin(item) < 10000) return false;
+  if (expectedProfitAverage(item) < 10000) return false;
   return item.price < item.skuMedian;
 }
 
@@ -190,9 +203,9 @@ export function positiveSignals(item: ListingCandidate): CandidateSignal[] {
 
   if (isFatalListing(item)) return [];
 
-  if (expectedProfitMin(item) >= 50000) {
+  if (expectedProfitAverage(item) >= 50000) {
     signals.push({ label: "예상 순익 5만원 이상", source: "profit" });
-  } else if (expectedProfitMin(item) >= 30000) {
+  } else if (expectedProfitAverage(item) >= 30000) {
     signals.push({ label: "예상 순익 3만원 이상", source: "profit" });
   }
 

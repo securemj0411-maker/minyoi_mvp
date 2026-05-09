@@ -10,6 +10,7 @@ import {
   type PipelineRow,
 } from "@/lib/pipeline";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
+import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE, bandFromProfit } from "@/lib/profit";
 
 type Headers = Record<string, string>;
 
@@ -77,6 +78,8 @@ export type StageStats = {
   aiKeptNormal: number;
   aiKeptLowConfidence: number;
   upserted: number;
+  poolUpserted: number;
+  poolSkipped: number;
   timedOut: boolean;
 };
 
@@ -102,6 +105,8 @@ function emptyStats(): StageStats {
     aiKeptNormal: 0,
     aiKeptLowConfidence: 0,
     upserted: 0,
+    poolUpserted: 0,
+    poolSkipped: 0,
     timedOut: false,
   };
 }
@@ -123,6 +128,8 @@ function mergeStats(parts: StageStats[]): StageStats {
     aiKeptNormal: acc.aiKeptNormal + part.aiKeptNormal,
     aiKeptLowConfidence: acc.aiKeptLowConfidence + part.aiKeptLowConfidence,
     upserted: acc.upserted + part.upserted,
+    poolUpserted: acc.poolUpserted + part.poolUpserted,
+    poolSkipped: acc.poolSkipped + part.poolSkipped,
     timedOut: acc.timedOut || part.timedOut,
   }), emptyStats());
 }
@@ -639,6 +646,42 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   await upsertRows("mvp_listing_analysis", rankedAnalyses, "pid");
   stats.scored = scoredRows.length;
   stats.upserted = listings.length;
+
+  const poolEntries: Record<string, unknown>[] = [];
+  let poolSkipped = 0;
+  for (const row of aiReview.rows) {
+    const sellFee = Math.round(row.skuMedian * SELLING_FEE_RATE);
+    const buyMax = row.price + (row.shippingFeeGeneral ?? row.shippingFee);
+    const buyMin = row.estimatedBuyCost;
+    const profitMax = Math.max(0, row.skuMedian - buyMin - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
+    const profitMin = Math.max(0, row.skuMedian - buyMax - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
+    const band = bandFromProfit(profitMin, profitMax);
+    if (band === null) {
+      poolSkipped += 1;
+      continue;
+    }
+    const pid = Number(row.pid);
+    const parsed = parsedByPid.get(pid);
+    const parseConf = Number(parsed?.parse_confidence ?? 0.5);
+    let confidence = Math.max(0, Math.min(1, Number.isFinite(parseConf) ? parseConf : 0.5));
+    if (row.scoreFlags.includes("ai_normal")) confidence = Math.min(1, confidence + 0.2);
+    if (row.scoreFlags.includes("ai_review_unavailable")) confidence = Math.max(0, confidence - 0.1);
+    if (row.scoreFlags.some((flag) => flag.endsWith("_low_confidence"))) confidence = Math.max(0, confidence - 0.15);
+    poolEntries.push({
+      pid,
+      profit_band: band,
+      expected_profit_min: profitMin,
+      expected_profit_max: profitMax,
+      score: row.score,
+      confidence: Math.round(confidence * 100) / 100,
+      comparable_key: parsed?.comparable_key ?? null,
+      last_verified_at: now,
+      updated_at: now,
+    });
+  }
+  await upsertRows("mvp_candidate_pool", poolEntries, "pid");
+  stats.poolUpserted = poolEntries.length;
+  stats.poolSkipped = poolSkipped;
   return stats;
 }
 

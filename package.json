@@ -12,7 +12,8 @@
     "mine:category": "node scripts/mine-category-intelligence.mjs",
     "mine:category:v2": "node scripts/mine-category-intelligence-v2.mjs",
     "mine:category:v3": "node scripts/mine-category-intelligence-v3.mjs",
-    "promote:catalog": "node scripts/promote-catalog.mjs"
+    "promote:catalog": "node scripts/promote-catalog.mjs",
+    "backfill:pool": "node scripts/backfill-pool.mjs"
   },
   "dependencies": {
     "next": "16.2.6",
