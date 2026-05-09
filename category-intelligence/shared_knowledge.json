@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-09T08:43:50.584Z",
+  "updated_at": "2026-05-09T11:31:40.131Z",
   "notes": "Cross-category noise and SKU mining knowledge. Auto-suggested entries still require promotion review before production.",
   "noise_rules": [
     {
@@ -26,15 +26,39 @@
       "last_seen_at": "2026-05-09T08:33:32.449Z"
     },
     {
+      "keyword": "견적",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 65,
+      "categories": [
+        "smartphone"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T11:28:52.873Z"
+    },
+    {
       "keyword": "매입",
       "type": "buying",
-      "precision": 0.95,
+      "precision": 1,
       "categories": [
         "smartphone",
         "tablet",
         "laptop"
       ],
-      "source": "seed"
+      "source": "seed",
+      "hit_count": 121,
+      "last_seen_at": "2026-05-09T11:31:40.130Z"
+    },
+    {
+      "keyword": "매입업체",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 47,
+      "categories": [
+        "laptop"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T11:31:40.130Z"
     },
     {
       "keyword": "매입하는",
@@ -81,6 +105,17 @@
       "last_seen_at": "2026-05-09T08:33:32.449Z"
     },
     {
+      "keyword": "번톡",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 48,
+      "categories": [
+        "laptop"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T11:31:40.130Z"
+    },
+    {
       "keyword": "부품용",
       "type": "parts",
       "precision": 1,
@@ -96,6 +131,17 @@
       "last_seen_at": "2026-05-09T08:39:05.251Z"
     },
     {
+      "keyword": "부품용",
+      "type": "damaged",
+      "precision": 0.8,
+      "hit_count": 114,
+      "categories": [
+        "laptop"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T11:23:08.391Z"
+    },
+    {
       "keyword": "부품용으로",
       "type": "parts",
       "precision": 1,
@@ -105,6 +151,17 @@
       ],
       "source": "mine-category-intelligence-v3",
       "last_seen_at": "2026-05-09T08:39:05.251Z"
+    },
+    {
+      "keyword": "부품용으로",
+      "type": "damaged",
+      "precision": 1,
+      "hit_count": 67,
+      "categories": [
+        "laptop"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T11:23:08.391Z"
     },
     {
       "keyword": "삽니다",
@@ -117,8 +174,8 @@
         "applewatch"
       ],
       "source": "seed",
-      "hit_count": 14,
-      "last_seen_at": "2026-05-09T08:39:05.251Z"
+      "hit_count": 59,
+      "last_seen_at": "2026-05-09T11:28:52.873Z"
     },
     {
       "keyword": "삽니다",
@@ -145,13 +202,15 @@
     {
       "keyword": "액정파손",
       "type": "damaged",
-      "precision": 0.9,
+      "precision": 1,
       "categories": [
         "smartphone",
         "tablet",
         "laptop"
       ],
-      "source": "seed"
+      "source": "seed",
+      "hit_count": 51,
+      "last_seen_at": "2026-05-09T11:16:34.453Z"
     },
     {
       "keyword": "오른쪽",
@@ -176,6 +235,17 @@
       "last_seen_at": "2026-05-09T08:33:32.449Z"
     },
     {
+      "keyword": "이상",
+      "type": "damaged",
+      "precision": 1,
+      "hit_count": 182,
+      "categories": [
+        "smartphone"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T11:16:34.453Z"
+    },
+    {
       "keyword": "일괄",
       "type": "accessory",
       "precision": 1,
@@ -185,6 +255,40 @@
       ],
       "source": "mine-category-intelligence-v3",
       "last_seen_at": "2026-05-09T07:55:07.630Z"
+    },
+    {
+      "keyword": "전문",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 56,
+      "categories": [
+        "smartphone"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T11:28:52.873Z"
+    },
+    {
+      "keyword": "최고가",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 98,
+      "categories": [
+        "smartphone"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T11:28:52.873Z"
+    },
+    {
+      "keyword": "출장",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 70,
+      "categories": [
+        "smartphone",
+        "laptop"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T11:31:40.130Z"
     },
     {
       "keyword": "케이스",
@@ -211,6 +315,17 @@
       "last_seen_at": "2026-05-09T08:03:36.468Z"
     },
     {
+      "keyword": "파손",
+      "type": "damaged",
+      "precision": 0.8,
+      "hit_count": 160,
+      "categories": [
+        "smartphone"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T11:28:52.873Z"
+    },
+    {
       "keyword": "폰케이스",
       "type": "accessory",
       "precision": 1,
@@ -220,6 +335,17 @@
       ],
       "source": "mine-category-intelligence-v3",
       "last_seen_at": "2026-05-09T07:58:46.639Z"
+    },
+    {
+      "keyword": "프로",
+      "type": "buying",
+      "precision": 0.8,
+      "hit_count": 146,
+      "categories": [
+        "smartphone"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T11:28:52.873Z"
     },
     {
       "keyword": "필름",

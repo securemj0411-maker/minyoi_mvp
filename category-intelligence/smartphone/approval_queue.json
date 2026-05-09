@@ -1,7 +1,7 @@
 {
   "version": 1,
   "category": "smartphone",
-  "updated_at": "2026-05-09T08:18:45.355Z",
+  "updated_at": "2026-05-09T11:31:51.069Z",
   "instructions": [
     "Set approved=true only for entries you want to promote into runtime.",
     "Set rejected=true for entries you explicitly do not want to see again.",
@@ -10,389 +10,199 @@
   ],
   "items": [
     {
-      "key": "sku:아이폰13미니-128gb",
+      "key": "sku:갤럭시-s23-s22-s10e-버디-등-다양한-모델",
       "kind": "sku",
       "approved": false,
       "rejected": false,
-      "id": "아이폰13미니-128gb",
-      "modelName": "아이폰13미니 128GB",
-      "brand": "Apple",
+      "id": "갤럭시-s23-s22-s10e-버디-등-다양한-모델",
+      "modelName": "갤럭시 S23+, S22, S10e, 버디 등 다양한 모델",
+      "brand": "Samsung",
       "category": "smartphone",
       "aliases": [
-        "아이폰13미니 128GB",
-        "아이폰13미니",
-        "128",
-        "고장품 파손품 없음",
-        "모든기능 정상",
-        "배터리 상태",
-        "안전결제",
-        "기기단품",
-        "중고 공기계",
-        "반품 가능",
-        "생활기스"
+        "갤럭시 S23+, S22, S10e, 버디 등 다양한 모델",
+        "공기계",
+        "중고 휴대폰",
+        "기기 단품상품",
+        "정상작동",
+        "기능 이상없음",
+        "모서리 약한 찍힘",
+        "생활감",
+        "출고전 마지막검수",
+        "일반충전기",
+        "일반필름부착"
       ],
       "medianFallbackKrw": 300000,
       "sourceClusterIds": [
-        11
+        2
       ],
       "note": "",
       "candidate": {
-        "id": "아이폰13미니-128gb",
-        "brand": "Apple",
+        "id": "갤럭시-s23-s22-s10e-버디-등-다양한-모델",
+        "brand": "Samsung",
         "category": "smartphone",
-        "modelName": "아이폰13미니 128GB",
+        "modelName": "갤럭시 S23+, S22, S10e, 버디 등 다양한 모델",
         "aliases": [
-          "아이폰13미니 128GB",
-          "아이폰13미니",
-          "128",
-          "고장품 파손품 없음",
-          "모든기능 정상",
-          "배터리 상태",
-          "안전결제",
-          "기기단품",
-          "중고 공기계",
-          "반품 가능",
-          "생활기스"
+          "갤럭시 S23+, S22, S10e, 버디 등 다양한 모델",
+          "공기계",
+          "중고 휴대폰",
+          "기기 단품상품",
+          "정상작동",
+          "기능 이상없음",
+          "모서리 약한 찍힘",
+          "생활감",
+          "출고전 마지막검수",
+          "일반충전기",
+          "일반필름부착"
         ],
         "mustContain": [
           [
-            "아이폰13미니 128GB",
-            "아이폰13미니",
-            "128",
-            "고장품 파손품 없음",
-            "모든기능 정상",
-            "배터리 상태",
-            "안전결제",
-            "기기단품",
-            "중고 공기계",
-            "반품 가능",
-            "생활기스"
+            "갤럭시 S23+, S22, S10e, 버디 등 다양한 모델",
+            "공기계",
+            "중고 휴대폰",
+            "기기 단품상품",
+            "정상작동",
+            "기능 이상없음",
+            "모서리 약한 찍힘",
+            "생활감",
+            "출고전 마지막검수",
+            "일반충전기",
+            "일반필름부착"
           ]
         ],
         "mustNotContain": [],
         "msrpKrw": 600000,
-        "released": 2021,
-        "sourceCategory": "smartphone",
-        "sourceClusterIds": [
-          11
-        ],
-        "promotionHash": "075360e69bf1c9d3"
-      }
-    },
-    {
-      "key": "sku:iphone-13-mini-128gb",
-      "kind": "sku",
-      "approved": false,
-      "rejected": false,
-      "id": "iphone-13-mini-128gb",
-      "modelName": "iPhone 13 mini 128GB",
-      "brand": "Apple",
-      "category": "smartphone",
-      "aliases": [
-        "iPhone 13 mini 128GB",
-        "아이폰 13",
-        "아이폰 13미니",
-        "128GB",
-        "배터리 효율",
-        "중고 본품",
-        "외관 상태",
-        "수리 이력 없음",
-        "케이스 사용",
-        "액정 깨끗",
-        "색상(핑크, 화이트)"
-      ],
-      "medianFallbackKrw": 325000,
-      "sourceClusterIds": [
-        5
-      ],
-      "note": "",
-      "candidate": {
-        "id": "iphone-13-mini-128gb",
-        "brand": "Apple",
-        "category": "smartphone",
-        "modelName": "iPhone 13 mini 128GB",
-        "aliases": [
-          "iPhone 13 mini 128GB",
-          "아이폰 13",
-          "아이폰 13미니",
-          "128GB",
-          "배터리 효율",
-          "중고 본품",
-          "외관 상태",
-          "수리 이력 없음",
-          "케이스 사용",
-          "액정 깨끗",
-          "색상(핑크, 화이트)"
-        ],
-        "mustContain": [
-          [
-            "iPhone 13 mini 128GB",
-            "아이폰 13",
-            "아이폰 13미니",
-            "128GB",
-            "배터리 효율",
-            "중고 본품",
-            "외관 상태",
-            "수리 이력 없음",
-            "케이스 사용",
-            "액정 깨끗",
-            "색상(핑크, 화이트)"
-          ]
-        ],
-        "mustNotContain": [],
-        "msrpKrw": 650000,
-        "released": 2021,
-        "sourceCategory": "smartphone",
-        "sourceClusterIds": [
-          5
-        ],
-        "promotionHash": "bb08448ae44ab23f"
-      }
-    },
-    {
-      "key": "sku:iphone-13-mini-128gb-256gb",
-      "kind": "sku",
-      "approved": false,
-      "rejected": false,
-      "id": "iphone-13-mini-128gb-256gb",
-      "modelName": "iPhone 13 mini 128GB / 256GB",
-      "brand": "Apple",
-      "category": "smartphone",
-      "aliases": [
-        "iPhone 13 mini 128GB / 256GB",
-        "아이폰13미니",
-        "128",
-        "256",
-        "배터리",
-        "사설수리x",
-        "기능이상x",
-        "풀박스",
-        "리퍼미사용",
-        "미사용",
-        "정상"
-      ],
-      "medianFallbackKrw": 325000,
-      "sourceClusterIds": [
-        4
-      ],
-      "note": "",
-      "candidate": {
-        "id": "iphone-13-mini-128gb-256gb",
-        "brand": "Apple",
-        "category": "smartphone",
-        "modelName": "iPhone 13 mini 128GB / 256GB",
-        "aliases": [
-          "iPhone 13 mini 128GB / 256GB",
-          "아이폰13미니",
-          "128",
-          "256",
-          "배터리",
-          "사설수리x",
-          "기능이상x",
-          "풀박스",
-          "리퍼미사용",
-          "미사용",
-          "정상"
-        ],
-        "mustContain": [
-          [
-            "iPhone 13 mini 128GB / 256GB",
-            "아이폰13미니",
-            "128",
-            "256",
-            "배터리",
-            "사설수리x",
-            "기능이상x",
-            "풀박스",
-            "리퍼미사용",
-            "미사용",
-            "정상"
-          ]
-        ],
-        "mustNotContain": [],
-        "msrpKrw": 650000,
-        "released": 2021,
-        "sourceCategory": "smartphone",
-        "sourceClusterIds": [
-          4
-        ],
-        "promotionHash": "1467fb2f2606276b"
-      }
-    },
-    {
-      "key": "sku:iphone-14-pro-128gb",
-      "kind": "sku",
-      "approved": false,
-      "rejected": false,
-      "id": "iphone-14-pro-128gb",
-      "modelName": "iPhone 14 Pro 128GB",
-      "brand": "Apple",
-      "category": "smartphone",
-      "aliases": [
-        "iPhone 14 Pro 128GB",
-        "아이폰 14 프로",
-        "128GB",
-        "배터리 효율",
-        "정상 작동",
-        "외관 상태",
-        "케이스 포함",
-        "자급제",
-        "중고 본품",
-        "박스 포함",
-        "충전기 포함"
-      ],
-      "medianFallbackKrw": 520000,
-      "sourceClusterIds": [
-        3
-      ],
-      "note": "",
-      "candidate": {
-        "id": "iphone-14-pro-128gb",
-        "brand": "Apple",
-        "category": "smartphone",
-        "modelName": "iPhone 14 Pro 128GB",
-        "aliases": [
-          "iPhone 14 Pro 128GB",
-          "아이폰 14 프로",
-          "128GB",
-          "배터리 효율",
-          "정상 작동",
-          "외관 상태",
-          "케이스 포함",
-          "자급제",
-          "중고 본품",
-          "박스 포함",
-          "충전기 포함"
-        ],
-        "mustContain": [
-          [
-            "iPhone 14 Pro 128GB",
-            "아이폰 14 프로",
-            "128GB",
-            "배터리 효율",
-            "정상 작동",
-            "외관 상태",
-            "케이스 포함",
-            "자급제",
-            "중고 본품",
-            "박스 포함",
-            "충전기 포함"
-          ]
-        ],
-        "mustNotContain": [],
-        "msrpKrw": 1040000,
-        "released": 2022,
-        "sourceCategory": "smartphone",
-        "sourceClusterIds": [
-          3
-        ],
-        "promotionHash": "e92435b106e1ba68"
-      }
-    },
-    {
-      "key": "sku:iphone-15-pro-128gb-256gb",
-      "kind": "sku",
-      "approved": false,
-      "rejected": false,
-      "id": "iphone-15-pro-128gb-256gb",
-      "modelName": "iPhone 15 Pro 128GB / 256GB",
-      "brand": "Apple",
-      "category": "smartphone",
-      "aliases": [
-        "iPhone 15 Pro 128GB / 256GB",
-        "아이폰15pro",
-        "화이트",
-        "256GB",
-        "128GB",
-        "배터리 성능",
-        "기스 없음",
-        "케이스",
-        "보호필름",
-        "박스",
-        "충전기"
-      ],
-      "medianFallbackKrw": 820000,
-      "sourceClusterIds": [
-        13
-      ],
-      "note": "",
-      "candidate": {
-        "id": "iphone-15-pro-128gb-256gb",
-        "brand": "Apple",
-        "category": "smartphone",
-        "modelName": "iPhone 15 Pro 128GB / 256GB",
-        "aliases": [
-          "iPhone 15 Pro 128GB / 256GB",
-          "아이폰15pro",
-          "화이트",
-          "256GB",
-          "128GB",
-          "배터리 성능",
-          "기스 없음",
-          "케이스",
-          "보호필름",
-          "박스",
-          "충전기"
-        ],
-        "mustContain": [
-          [
-            "iPhone 15 Pro 128GB / 256GB",
-            "아이폰15pro",
-            "화이트",
-            "256GB",
-            "128GB",
-            "배터리 성능",
-            "기스 없음",
-            "케이스",
-            "보호필름",
-            "박스",
-            "충전기"
-          ]
-        ],
-        "mustNotContain": [],
-        "msrpKrw": 1640000,
         "released": 2023,
         "sourceCategory": "smartphone",
         "sourceClusterIds": [
-          13
+          2
         ],
-        "promotionHash": "469fb322e8e1d3a5"
+        "promotionHash": "fe19be924810f356"
       }
     },
     {
-      "key": "noise:accessory:케이스티파이",
+      "key": "noise:damaged:파손",
       "kind": "noise",
       "approved": false,
       "rejected": false,
-      "type": "accessory",
-      "keyword": "케이스티파이",
+      "type": "damaged",
+      "keyword": "파손",
       "precision": 0.8,
-      "hitCount": 21,
+      "hitCount": 160,
       "note": "",
       "candidate": {
-        "keyword": "케이스티파이",
-        "type": "accessory",
+        "keyword": "파손",
+        "type": "damaged",
         "precision": 0.8,
-        "hitCount": 21,
-        "promotionHash": "f9ddb6d09abe0b35"
+        "hitCount": 160,
+        "promotionHash": "f1b4bb3ea0e7ad9c"
       }
     },
     {
-      "key": "noise:accessory:맥세이프",
+      "key": "noise:buying:삽니다",
       "kind": "noise",
       "approved": false,
       "rejected": false,
-      "type": "accessory",
-      "keyword": "맥세이프",
+      "type": "buying",
+      "keyword": "삽니다",
       "precision": 0.8,
-      "hitCount": 27,
+      "hitCount": 59,
       "note": "",
       "candidate": {
-        "keyword": "맥세이프",
-        "type": "accessory",
+        "keyword": "삽니다",
+        "type": "buying",
         "precision": 0.8,
-        "hitCount": 27,
-        "promotionHash": "967c8babc84d1831"
+        "hitCount": 59,
+        "promotionHash": "fbe7db86e7442cbf"
+      }
+    },
+    {
+      "key": "noise:buying:최고가",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "buying",
+      "keyword": "최고가",
+      "precision": 1,
+      "hitCount": 98,
+      "note": "",
+      "candidate": {
+        "keyword": "최고가",
+        "type": "buying",
+        "precision": 1,
+        "hitCount": 98,
+        "promotionHash": "0ef561a6aa605b33"
+      }
+    },
+    {
+      "key": "noise:buying:출장",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "buying",
+      "keyword": "출장",
+      "precision": 1,
+      "hitCount": 50,
+      "note": "",
+      "candidate": {
+        "keyword": "출장",
+        "type": "buying",
+        "precision": 1,
+        "hitCount": 50,
+        "promotionHash": "2209ab02ef903e79"
+      }
+    },
+    {
+      "key": "noise:buying:견적",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "buying",
+      "keyword": "견적",
+      "precision": 0.8,
+      "hitCount": 65,
+      "note": "",
+      "candidate": {
+        "keyword": "견적",
+        "type": "buying",
+        "precision": 0.8,
+        "hitCount": 65,
+        "promotionHash": "9b78a5f9f87bb4d7"
+      }
+    },
+    {
+      "key": "noise:buying:전문",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "buying",
+      "keyword": "전문",
+      "precision": 1,
+      "hitCount": 56,
+      "note": "",
+      "candidate": {
+        "keyword": "전문",
+        "type": "buying",
+        "precision": 1,
+        "hitCount": 56,
+        "promotionHash": "cd5de69a57c29066"
+      }
+    },
+    {
+      "key": "noise:buying:프로",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "buying",
+      "keyword": "프로",
+      "precision": 0.8,
+      "hitCount": 146,
+      "note": "",
+      "candidate": {
+        "keyword": "프로",
+        "type": "buying",
+        "precision": 0.8,
+        "hitCount": 146,
+        "promotionHash": "11cb78c16cef5c8b"
       }
     }
   ]

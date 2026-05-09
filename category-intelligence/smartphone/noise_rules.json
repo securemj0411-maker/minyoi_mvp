@@ -1,171 +1,183 @@
 {
   "version": 1,
   "category": "smartphone",
-  "generated_at": "2026-05-09T07:59:39.789Z",
+  "generated_at": "2026-05-09T11:25:14.854Z",
   "method": "v3_embedding_cluster_ai_validation",
   "rules": [
     {
-      "keyword": "케이스티파이",
-      "type": "accessory",
+      "keyword": "매입합니다",
+      "type": "buying",
       "precision": 0.8,
-      "hit_count": 21,
-      "risk_flags": [],
-      "approval_status": "auto_approved_for_review",
-      "verdict_ko": "총 5개 중 4개가 액세서리 케이스로 정확하여 정밀도는 0.8입니다."
-    },
-    {
-      "keyword": "상점",
-      "type": "commercial",
-      "precision": 0.2,
-      "hit_count": 65,
-      "risk_flags": [],
-      "approval_status": "rejected",
-      "verdict_ko": "전체 5개 매물 중 1개만 상점(상업용) 매물로 판단되어 precision은 0.2임."
-    },
-    {
-      "keyword": "케이스입니다",
-      "type": "accessory",
-      "precision": 1,
-      "hit_count": 16,
+      "hit_count": 101,
       "risk_flags": [
         "sentence_fragment"
       ],
       "approval_status": "blocked_needs_review",
-      "verdict_ko": "모든 매물이 '케이스'로 명확히 액세서리 타입에 부합하여 정밀도는 1.0입니다."
+      "verdict_ko": "총 5개 매물 중 4개가 'buying' 타입으로 적절하여 전체 정밀도는 0.8입니다."
     },
     {
-      "keyword": "맥세이프",
-      "type": "accessory",
+      "keyword": "파손",
+      "type": "damaged",
       "precision": 0.8,
-      "hit_count": 27,
+      "hit_count": 160,
       "risk_flags": [],
       "approval_status": "auto_approved_for_review",
-      "verdict_ko": "총 5개 중 4개가 accessory 타입으로 적합하여 정밀도는 0.8임"
+      "verdict_ko": "전체적으로 5개 중 4개가 'damaged' 타입으로 정확히 분류되어 정밀도는 0.8로 평가됩니다."
     },
     {
-      "keyword": "10년",
-      "type": "commercial",
-      "precision": 0,
-      "hit_count": 31,
-      "risk_flags": [],
-      "approval_status": "rejected",
-      "verdict_ko": "제공된 모든 매물이 commercial 타입이 아니므로 전체 precision은 0.0입니다."
-    },
-    {
-      "keyword": "싸게",
-      "type": "noise",
+      "keyword": "파손폰",
+      "type": "damaged",
       "precision": 0.2,
-      "hit_count": 18,
-      "risk_flags": [
-        "generic_noise_type"
-      ],
-      "approval_status": "blocked_needs_review",
-      "verdict_ko": "전체적으로 대부분 매물이 정상적인 새상품 할인 판매로 노이즈 타입이 아니며, 한 매물만 노이즈 타입으로 판단되어 정밀도는 낮음."
-    },
-    {
-      "keyword": "재고정리",
-      "type": "commercial",
-      "precision": 0,
-      "hit_count": 18,
+      "hit_count": 63,
       "risk_flags": [],
       "approval_status": "rejected",
-      "verdict_ko": "모든 매물이 휴대폰 신제품 재고 정리 판매로 상업용 부동산이 아니므로 'commercial' 타입이 아님"
+      "verdict_ko": "전체 5개 매물 중 1개만 명확히 'damaged' 타입으로 판단되어 정밀도는 0.2로 낮은 편입니다."
     },
     {
-      "keyword": "출고가",
-      "type": "commercial",
-      "precision": 0,
-      "hit_count": 13,
+      "keyword": "삽니다",
+      "type": "buying",
+      "precision": 0.8,
+      "hit_count": 59,
       "risk_flags": [],
-      "approval_status": "rejected",
-      "verdict_ko": "모든 매물이 commercial 타입이 아니므로 precision은 0.0입니다."
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "총 5개 매물 중 4개가 buying 타입으로 적절하여 전체 precision은 0.8임."
     },
     {
-      "keyword": "할인가",
-      "type": "commercial",
-      "precision": 0.6,
-      "hit_count": 22,
-      "risk_flags": [],
-      "approval_status": "needs_human_review",
-      "verdict_ko": "전체적으로 할인가 및 재고정리 문구가 포함된 매물은 상업적 판매로 판단되나, 일부 매물은 개인 판매 성격이 강해 정확도는 60%임."
-    },
-    {
-      "keyword": "100대",
-      "type": "commercial",
-      "precision": 0,
-      "hit_count": 13,
-      "risk_flags": [],
-      "approval_status": "rejected",
-      "verdict_ko": "모든 매물이 commercial 타입이 아니므로 precision은 0.0입니다."
-    },
-    {
-      "keyword": "실거래",
-      "type": "noise",
-      "precision": 0,
-      "hit_count": 13,
-      "risk_flags": [
-        "generic_noise_type"
-      ],
-      "approval_status": "blocked_needs_review",
-      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 전체 precision은 0.0입니다."
-    },
-    {
-      "keyword": "별점",
+      "keyword": "맥북",
       "type": "noise",
       "precision": 1,
-      "hit_count": 13,
+      "hit_count": 43,
       "risk_flags": [
-        "generic_noise_type"
+        "generic_noise_type",
+        "broad_product_family_keyword"
       ],
       "approval_status": "blocked_needs_review",
       "verdict_ko": "모든 매물이 'noise' 타입으로 정확히 분류되어 정밀도는 1.0입니다."
     },
     {
-      "keyword": "로켓배송",
-      "type": "commercial",
-      "precision": 0,
-      "hit_count": 13,
+      "keyword": "24시간",
+      "type": "buying",
+      "precision": 0.6,
+      "hit_count": 55,
       "risk_flags": [],
-      "approval_status": "rejected",
-      "verdict_ko": "모든 매물이 commercial 타입이 아니므로 precision은 0.0입니다."
+      "approval_status": "needs_human_review",
+      "verdict_ko": "총 5개 매물 중 3개가 buying 타입에 부합하여 precision은 0.6으로 평가됩니다."
     },
     {
-      "keyword": "재고는",
-      "type": "noise",
+      "keyword": "최고가",
+      "type": "buying",
       "precision": 1,
-      "hit_count": 13,
+      "hit_count": 98,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 'buying' 타입에 부합하여 전체 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "출장",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 50,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 'buying' 타입으로 정확히 분류되어 전체 precision은 1.0입니다."
+    },
+    {
+      "keyword": "아이패드",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 40,
+      "risk_flags": [
+        "broad_product_family_keyword"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'buying' 타입으로 정확하게 분류되어 있어 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "미개봉",
+      "type": "buying",
+      "precision": 0.6,
+      "hit_count": 106,
+      "risk_flags": [],
+      "approval_status": "needs_human_review",
+      "verdict_ko": "전체적으로 5개 중 3개가 'buying' 타입으로 적합하여 정밀도는 0.6입니다."
+    },
+    {
+      "keyword": "견적",
+      "type": "buying",
+      "precision": 0.8,
+      "hit_count": 65,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "총 5개 매물 중 4개가 'buying' 타입으로 적절하여 정밀도는 0.8로 평가됨."
+    },
+    {
+      "keyword": "안녕하세요",
+      "type": "noise",
+      "precision": 0.6,
+      "hit_count": 42,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 매물 중 3개가 'noise' 타입으로 정확히 분류되어 정밀도는 0.6입니다."
+    },
+    {
+      "keyword": "노트북",
+      "type": "buying",
+      "precision": 0,
+      "hit_count": 53,
+      "risk_flags": [
+        "broad_product_family_keyword"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 '매입' 즉 구매 의뢰로, 'buying' 타입이 아니므로 전체 precision은 0.0입니다."
+    },
+    {
+      "keyword": "업체입니다",
+      "type": "noise",
+      "precision": 0.4,
+      "hit_count": 38,
       "risk_flags": [
         "generic_noise_type",
         "sentence_fragment"
       ],
       "approval_status": "blocked_needs_review",
-      "verdict_ko": "모든 매물이 'noise' 타입으로 정확히 분류되어 정밀도는 1.0입니다."
+      "verdict_ko": "전체 5개 매물 중 2개가 'noise' 타입으로 정확히 분류되어 정밀도는 0.4입니다."
     },
     {
-      "keyword": "보러왔다가",
-      "type": "commercial",
-      "precision": 0,
-      "hit_count": 13,
+      "keyword": "전문",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 56,
       "risk_flags": [],
-      "approval_status": "rejected",
-      "verdict_ko": "제공된 모든 매물은 전자제품으로, commercial 타입이 아니므로 정확도는 0.0입니다."
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 명확히 'buying' 타입으로 판단되어 전체 정밀도는 1.0입니다."
     },
     {
-      "keyword": "새폰을",
+      "keyword": "서울",
       "type": "noise",
       "precision": 0,
-      "hit_count": 13,
+      "hit_count": 114,
       "risk_flags": [
         "generic_noise_type"
       ],
       "approval_status": "blocked_needs_review",
-      "verdict_ko": "모든 매물이 정상가 대비 지나치게 저렴하여 'noise' 타입으로 판단되지 않음."
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
     },
     {
-      "keyword": "사본",
+      "keyword": "프로",
+      "type": "buying",
+      "precision": 0.8,
+      "hit_count": 146,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "총 5개 매물 중 4개가 구매용 매물로 정확하여 전체 정밀도는 0.8입니다."
+    },
+    {
+      "keyword": "빠르고",
       "type": "noise",
       "precision": 0,
-      "hit_count": 13,
+      "hit_count": 33,
       "risk_flags": [
         "generic_noise_type"
       ],
@@ -173,111 +185,141 @@
       "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 precision은 0.0입니다."
     },
     {
-      "keyword": "있나요",
+      "keyword": "편하게",
       "type": "noise",
-      "precision": 0,
-      "hit_count": 13,
+      "precision": 0.4,
+      "hit_count": 43,
       "risk_flags": [
         "generic_noise_type"
       ],
       "approval_status": "blocked_needs_review",
-      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 전체 precision은 0.0입니다."
+      "verdict_ko": "전체적으로 5개 중 2개 매물만 '편하게' 키워드를 포함하여 noise 타입으로 적절히 분류됨."
     },
     {
-      "keyword": "이미",
+      "keyword": "경기",
       "type": "noise",
       "precision": 0,
-      "hit_count": 13,
+      "hit_count": 41,
       "risk_flags": [
         "generic_noise_type"
       ],
       "approval_status": "blocked_needs_review",
-      "verdict_ko": "제공된 모든 매물은 noise 타입이 아니므로 precision은 0.0임."
-    },
-    {
-      "keyword": "고객님들이",
-      "type": "noise",
-      "precision": 0,
-      "hit_count": 13,
-      "risk_flags": [
-        "generic_noise_type"
-      ],
-      "approval_status": "blocked_needs_review",
-      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+      "verdict_ko": "제공된 모든 매물은 'noise' 타입이 아니므로 전체 precision은 0.0입니다."
     }
   ],
   "cluster_evidence": [
     {
       "cluster_id": 0,
-      "listing_type": "accessory",
+      "listing_type": "buying",
       "classification_confidence": 0.9,
       "confidence_label": "high",
-      "confidence_reason": "이 클러스터는 아이폰 케이스 관련 상품들로 구성되어 있으며, 제목과 설명에 '케이스티파이', '폰케이스', '실리콘케이스' 등 액세서리임을 명확히 나타내는 단어들이 반복적으로 등장합니다. 가격대도 케이스 가격에 적합한 수준으로, 본체 스마트폰이 아닌 액세서리임이 확실합니다.",
+      "confidence_reason": "대표 샘플들의 제목과 설명에서 '매입', '삽니다', '최고가 매입', '구매만 합니다' 등의 단어가 반복적으로 등장하며, 판매가 아닌 구매 의사를 나타내는 글임을 명확히 하고 있습니다. 또한, 가격 정보도 매입가 수준으로 책정되어 있고, 액세서리나 부품 판매가 아닌 중고폰 및 태블릿, 노트북 등 다양한 전자기기 매입 전문임을 알 수 있습니다. 따라서 이 클러스터는 중고 스마트폰 및 전자기기 매입글로 분류됩니다.",
       "evidence_terms": [
-        "케이스티파이",
-        "폰케이스",
-        "실리콘케이스",
-        "아이폰14프로",
-        "아이폰13",
-        "소니엔젤",
-        "중고거래",
-        "상태",
-        "안전결제"
+        "매입",
+        "삽니다",
+        "최고가 매입",
+        "구매만 합니다",
+        "당일결제",
+        "매입전문업체",
+        "번개톡",
+        "상점 닉네임 클릭",
+        "아이패드 매입",
+        "갤럭시탭 매입"
       ]
     },
     {
       "cluster_id": 1,
-      "listing_type": "commercial",
+      "listing_type": "damaged",
       "classification_confidence": 0.9,
       "confidence_label": "high",
-      "confidence_reason": "이 클러스터는 '미사용/새상품', '재고정리 할인', '100대 한정', '출고가 대비 큰 할인' 등의 문구가 반복적으로 등장하며, 정상 중고폰이 아닌 재고 정리 및 프로모션용 새상품을 판매하는 상업적 목적의 매물임을 명확히 보여줍니다. 또한, '번개장터 10년 인증 상점', '애플·삼성 공식센터 1년 무상 A/S', '로켓배송' 등 신뢰성 및 판매 조건을 강조하는 문구가 포함되어 있어 일반 개인 간 거래가 아닌 전문 판매자의 상업적 매물임을 나타냅니다.",
+      "confidence_reason": "이 클러스터는 아이폰 모델들이 액정 파손, 뒷면 파손, 충전 문제 등 물리적 손상이나 기능 일부 이상이 명확히 언급된 매물들로 구성되어 있습니다. 대부분 판매자가 액정파손, 페이스아이디 불가, 부품용 등 손상 상태를 강조하며 정상 작동하지 않는 부분을 명확히 안내하고 있어 'damaged' 타입으로 분류하는 것이 적합합니다.",
       "evidence_terms": [
-        "미사용/새상품",
-        "재고정리 할인",
-        "100대 한정",
-        "출고가",
-        "번개장터 10년 인증 상점",
-        "무상 A/S",
-        "로켓배송",
-        "번개페이 안전결제",
-        "재고 소진 시 종료",
-        "중고폰 보러왔다가 새폰"
+        "액정파손",
+        "파손",
+        "부품용",
+        "페이스아이디 안됨",
+        "충전 문제",
+        "손상",
+        "수리필요",
+        "배터리 성능 표기",
+        "외관 파손",
+        "부분 작동"
+      ]
+    },
+    {
+      "cluster_id": 3,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 '구매합니다', '삽니다', '매입' 등의 단어가 반복적으로 등장하며, 미개봉 자급제 아이폰17 프로 및 프로맥스 모델을 대량으로 매입하려는 의도를 명확히 나타내고 있습니다. 판매가 아닌 구매 의뢰 글로 구성되어 있어 구매(매입) 유형으로 분류됩니다.",
+      "evidence_terms": [
+        "구매합니다",
+        "삽니다",
+        "매입",
+        "미개봉",
+        "자급제",
+        "아이폰17 프로",
+        "아이폰17 프로맥스",
+        "대량 매입",
+        "직거래",
+        "수량 무제한"
+      ]
+    },
+    {
+      "cluster_id": 6,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 '매입'이라는 단어가 반복적으로 등장하며, 노트북과 맥북 등 IT기기를 대량으로 매입한다는 내용이 주를 이룹니다. 판매가 아닌 구매 의사를 나타내는 매입글로 구성되어 있고, 전문 매입업체임을 강조하는 문구가 포함되어 있어 'buying' 타입으로 분류됩니다.",
+      "evidence_terms": [
+        "매입",
+        "미개봉",
+        "대량매입",
+        "노트북 매입업체",
+        "최고가매입",
+        "견적",
+        "방문 매입",
+        "택배",
+        "퀵",
+        "입금 처리"
       ]
     },
     {
       "cluster_id": 7,
-      "listing_type": "accessory",
+      "listing_type": "damaged",
       "classification_confidence": 0.9,
       "confidence_label": "high",
-      "confidence_reason": "이 클러스터는 아이폰 14 프로 관련 케이스 상품들로 구성되어 있으며, 대부분 제목과 설명에 '케이스', '폰케이스', '맥세이프', '지갑형 케이스', '투명 케이스' 등 액세서리임을 명확히 나타내는 단어들이 포함되어 있습니다. 본체나 공기계 판매가 아닌 케이스 등 부가 상품 중심으로 구성되어 있어 액세서리 타입으로 분류됩니다.",
+      "confidence_reason": "이 클러스터는 '액정 파손', '파손', '부품용' 등의 단어가 반복적으로 등장하며, 제품 상태가 손상된 스마트폰임을 명확히 나타내고 있습니다. 가격도 정상 중고폰 대비 매우 낮고, 설명에서 수리용이나 부품용으로 적합하다는 내용이 많아 손상폰(파손폰) 카테고리에 해당합니다.",
       "evidence_terms": [
-        "케이스",
-        "폰케이스",
-        "맥세이프",
-        "지갑형",
-        "투명 케이스",
-        "케이스티파이",
-        "새상품",
-        "아이폰 14프로"
+        "액정 파손",
+        "파손",
+        "부품용",
+        "깨짐",
+        "수리",
+        "손상",
+        "부품",
+        "고장",
+        "액정 깨짐",
+        "파손폰"
       ]
     },
     {
-      "cluster_id": 9,
+      "cluster_id": 8,
       "listing_type": "accessory",
       "classification_confidence": 0.9,
       "confidence_label": "high",
-      "confidence_reason": "이 클러스터는 아이폰15 시리즈용 정품 실리콘케이스, 맥세이프 케이스 등 액세서리 제품들로 구성되어 있습니다. 제목과 설명에서 '실리콘케이스', '맥세이프', '케이스'라는 단어가 반복적으로 등장하며, 본품 스마트폰이 아닌 케이스만 판매하는 내용임이 명확합니다. 또한 가격대도 스마트폰 본체에 비해 매우 낮아 액세서리임을 뒷받침합니다.",
+      "confidence_reason": "이 클러스터는 스마트폰 본체가 아닌 미개봉 이어폰(갤럭시 버즈4 프로, 갤럭시 버즈4)과 핸드폰 스트랩, 키링, 가챠 등 스마트폰 관련 액세서리 및 부가 상품들로 구성되어 있습니다. 본체나 공기계가 아닌 주변기기 및 장식품 위주이며, '미개봉', '스트랩', '키링', '가챠' 등의 단어가 반복적으로 등장하여 액세서리 카테고리에 해당합니다.",
       "evidence_terms": [
-        "실리콘케이스",
-        "맥세이프",
-        "케이스",
-        "정품",
-        "아이폰15",
-        "아이폰15 프로",
-        "아이폰15 프로맥스",
-        "미사용",
-        "새상품",
-        "블랙색상"
+        "미개봉",
+        "갤럭시 버즈4 프로",
+        "갤럭시 버즈4",
+        "핸드폰 스트랩",
+        "키링",
+        "가챠",
+        "블루아카이브",
+        "모모프렌즈",
+        "도코모 가라케",
+        "한정"
       ]
     },
     {
@@ -285,56 +327,112 @@
       "listing_type": "accessory",
       "classification_confidence": 0.9,
       "confidence_label": "high",
-      "confidence_reason": "이 클러스터는 모두 아이폰 케이스 관련 상품으로, 케이스티파이 브랜드의 아이폰 14, 15 시리즈용 케이스들이 주를 이루고 있습니다. 설명에 '케이스', '케이스티파이', '맥세이프', '폰케이스', '임팩트 케이스' 등 액세서리 관련 키워드가 반복적으로 등장하며, 본체나 부품, 고장 관련 내용이 전혀 없고, 케이스 상태 및 사용감 위주로 설명되어 있어 액세서리 카테고리임이 명확합니다.",
+      "confidence_reason": "이 클러스터는 아이폰 케이스 관련 매물로 구성되어 있으며, 제품명과 설명에 '케이스', '케이스티파이', '맥세이프', '범퍼', '투명' 등 액세서리임을 명확히 나타내는 단어들이 반복적으로 등장합니다. 또한, 본체 스마트폰이 아닌 케이스 단품 판매임을 명시하고 있어 정상 스마트폰 본품이 아닌 액세서리 카테고리에 해당합니다.",
       "evidence_terms": [
         "케이스",
         "케이스티파이",
-        "폰케이스",
         "맥세이프",
-        "임팩트 케이스",
-        "미러 케이스",
-        "아이폰15",
-        "아이폰14",
-        "액세서리",
-        "상태"
+        "범퍼",
+        "투명",
+        "아이폰",
+        "휴대폰 케이스",
+        "정품",
+        "미사용",
+        "중고"
+      ]
+    },
+    {
+      "cluster_id": 11,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "클러스터 내 다수의 매물이 핸드폰 케이스 및 핸드폰 거치대 등 스마트폰 액세서리임을 명확히 나타내고 있으며, 본품 스마트폰 매물은 소수에 불과하고 가격 및 설명도 액세서리 특성을 띠고 있어 액세서리 타입으로 분류함이 적합함.",
+      "evidence_terms": [
+        "핸드폰케이스",
+        "케이스",
+        "핸드폰 거치대",
+        "보관만",
+        "중고 케이스",
+        "S23울트라",
+        "망고",
+        "팰리세이드용",
+        "세트",
+        "핸드폰용"
       ]
     },
     {
       "cluster_id": 12,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 중고폰, 자급제폰, 파손폰, 액정파손폰 등 다양한 상태의 스마트폰을 매입한다는 내용이 반복적으로 등장하며, 방문 매입, 출장 매입, 당일 결제 등의 매입 관련 서비스가 주를 이루고 있습니다. 또한 '매입', '구매', '방문 매입', '출장 매입', '24시간 문의' 등의 키워드가 다수 포함되어 있어 판매용 매물이 아닌 매입 의뢰글임이 명확합니다.",
+      "evidence_terms": [
+        "매입",
+        "방문 매입",
+        "출장 매입",
+        "중고폰 매입",
+        "파손폰 매입",
+        "자급제",
+        "24시간 문의",
+        "당일 결제",
+        "최고가",
+        "액파폰"
+      ]
+    },
+    {
+      "cluster_id": 14,
       "listing_type": "accessory",
       "classification_confidence": 0.9,
       "confidence_label": "high",
-      "confidence_reason": "이 클러스터는 갤럭시 S23, S24, S25 시리즈용 케이스 및 맥세이프 관련 액세서리 위주로 구성되어 있습니다. 대부분의 매물이 케이스, 맥세이프, 실리콘케이스, 정품 가죽 케이스 등 액세서리 제품이며, 본체 스마트폰 매물은 극히 일부에 불과합니다. 따라서 이 클러스터는 액세서리 중심의 매물군으로 분류하는 것이 적합합니다.",
+      "confidence_reason": "이 클러스터는 갤럭시 워치, 갤럭시 버즈, 갤럭시탭 케이스 등 스마트폰 및 주변기기 관련 액세서리와 일부 웨어러블 기기들이 포함되어 있습니다. 다수의 상품 설명에 '케이스', '실리콘 스트랩', '구성품' 등 액세서리 관련 단어가 반복적으로 등장하며, 본체 단독 판매보다는 부속품이나 케이스 위주로 판매하는 특징이 뚜렷합니다. 또한, 고장이나 부품용, 매입글과는 달리 정상 작동하는 상태임을 강조하는 점도 액세서리 및 정상 부속품 판매임을 뒷받침합니다.",
       "evidence_terms": [
         "케이스",
-        "맥세이프",
-        "실리콘케이스",
-        "정품 가죽 케이스",
-        "슈피겐",
-        "케이스티파이",
-        "일괄",
-        "울트라",
-        "플러스",
-        "블랙"
+        "실리콘 스트랩",
+        "구성품",
+        "풀박스",
+        "보호필름",
+        "액세서리",
+        "케이스부착",
+        "생활 기스",
+        "색상",
+        "스트랩"
+      ]
+    },
+    {
+      "cluster_id": 16,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 중고폰 매입을 전문으로 하는 글들로 구성되어 있습니다. 제목과 설명에서 '매입', '삽니다', '최고가 매입', '파손폰 매입', '고장폰 매입' 등의 단어가 반복적으로 등장하며, 정상폰뿐 아니라 파손폰, 고장폰, 부품폰 등 다양한 상태의 중고폰을 매입한다는 점이 명확합니다. 또한, 판매가 아닌 구매 의도를 가진 글들로, 매입 전문 업체나 개인이 중고폰을 사들이는 내용임이 분명합니다.",
+      "evidence_terms": [
+        "매입",
+        "삽니다",
+        "최고가 매입",
+        "파손폰",
+        "고장폰",
+        "중고폰 매입",
+        "부품폰",
+        "침수폰",
+        "정직한 가격",
+        "무료 택배접수"
       ]
     },
     {
       "cluster_id": 17,
-      "listing_type": "commercial",
+      "listing_type": "accessory",
       "classification_confidence": 0.9,
       "confidence_label": "high",
-      "confidence_reason": "이 클러스터는 '미사용/새상품', '재고정리', '선착순특가', '출고가 대비 할인' 등의 문구가 반복적으로 등장하며, 다수의 매물이 미개봉 새상품임을 강조하고 있습니다. 또한 '100대 한정', '재고 소진 시 종료', '번개장터 10년 인증 상점', '애플·삼성 공식센터 1년 무상 A/S' 등의 문구로 상업적 프로모션 및 재고 정리 목적의 판매임을 명확히 하고 있어 정상 중고폰이 아닌 상점의 재고 정리용 상업 매물로 분류됩니다.",
+      "confidence_reason": "이 클러스터는 휴대폰 본체가 아닌 휴대폰 거치대 관련 제품들로 구성되어 있습니다. 제품 설명에 '거치대', '핸드폰 거치대', '자전거 휴대폰 거치대', '각도조절 거치대', '자석충전 거치대' 등의 단어가 반복적으로 등장하며, 본체가 아닌 액세서리임이 명확합니다. 또한 가격대가 본체에 비해 매우 낮고, 상태 설명도 사용감이나 기스 위주로 되어 있어 액세서리임을 뒷받침합니다.",
       "evidence_terms": [
-        "미사용",
-        "새상품",
-        "재고정리",
-        "선착순특가",
-        "출고가",
-        "할인",
-        "100대 한정",
-        "재고 소진",
-        "번개장터 인증",
-        "무상 A/S"
+        "거치대",
+        "핸드폰 거치대",
+        "자전거 거치대",
+        "각도조절",
+        "자석충전",
+        "접이식",
+        "휴대폰 거치대",
+        "마운트",
+        "액세서리"
       ]
     }
   ]

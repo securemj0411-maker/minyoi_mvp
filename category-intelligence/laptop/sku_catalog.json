@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "category": "laptop",
+  "generated_at": "2026-05-09T11:25:14.854Z",
+  "method": "v3_normal_cluster_to_sku_candidates",
+  "skus": [
+    {
+      "id": "레노버-리전-5-15ahp10-lg-그램-17z990-va7bk-삼성-노트북-i7-15-6인치",
+      "brand": "",
+      "model_name": "레노버 리전 5 15AHP10, LG 그램 17Z990-VA7BK, 삼성 노트북 i7 15.6인치",
+      "aliases": [
+        "레노버 리전 5 15AHP10, LG 그램 17Z990-VA7BK, 삼성 노트북 i7 15.6인치",
+        "노트북",
+        "중고",
+        "CPU",
+        "RAM",
+        "SSD",
+        "정상 작동",
+        "게이밍",
+        "LG 그램",
+        "레노버 리전",
+        "삼성 노트북"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        6
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 주로 중고 노트북 본체를 판매하는 매물로 구성되어 있으며, 제품 상태가 양호하고 정상 작동하는 제품들이 대부분입니다. 액세서리 단독 판매, 부품용, 파손, 매입글과 같은 노이즈가 적고, 제품 설명에 CPU, RAM, SSD, 디스플레이 등 주요 사양과 정상 작동 여부가 명확히 기재되어 있습니다. 따라서 정상 중고 노트북 본체 매물로 분류됩니다."
+    },
+    {
+      "id": "레노버-legion-i7-8750h-16gb-256gb-gtx1050ti",
+      "brand": "",
+      "model_name": "레노버 LEGION i7 8750H 16GB 256GB GTX1050Ti",
+      "aliases": [
+        "레노버 LEGION i7 8750H 16GB 256GB GTX1050Ti",
+        "중고노트북",
+        "게이밍 노트북",
+        "레노버",
+        "사양",
+        "i5",
+        "i7",
+        "램",
+        "ssd",
+        "그래픽",
+        "택배거래"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        8
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 대부분 중고 노트북 본체를 판매하는 정상 매물로 구성되어 있습니다. 제품 설명에 사양, 사용 용도, 외관 상태, 거래 방법 등이 상세히 기재되어 있으며, 부품용이나 파손된 제품은 일부에 불과합니다. 액세서리 단독 판매나 매입글, 부품용/파손 제품과 달리 정상 작동하는 중고 노트북 본체 판매가 주를 이루고 있어 'normal' 타입으로 분류됩니다."
+    },
+    {
+      "id": "맥북-프로-m4-pro-16인치-24gb-512gb-ssd",
+      "brand": "",
+      "model_name": "맥북 프로 M4 Pro 16인치 24GB 512GB SSD",
+      "aliases": [
+        "맥북 프로 M4 Pro 16인치 24GB 512GB SSD",
+        "맥북 프로",
+        "맥북 에어",
+        "M4 Pro",
+        "배터리 효율 100",
+        "중고 본체",
+        "풀박스",
+        "충전기 포함",
+        "영문 각인",
+        "직거래",
+        "상태 좋음"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        10
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 대부분 맥북 프로 및 맥북 에어 중고 본체 매물로 구성되어 있으며, 충전기나 액세서리 단독 판매, 파손이나 부품용 매물은 포함되어 있지 않습니다. 제품 상태가 'LIGHTLY_USED' 또는 'LIKE_NEW'로 양호하며, 배터리 효율과 사이클 정보가 명확히 기재되어 있어 정상 중고 노트북 매물임을 알 수 있습니다."
+    },
+    {
+      "id": "맥북프로-16-m4-pro-48gb-1tb",
+      "brand": "",
+      "model_name": "맥북프로 16 M4 Pro 48GB 1TB",
+      "aliases": [
+        "맥북프로 16 M4 Pro 48GB 1TB",
+        "맥북프로",
+        "M4",
+        "M3",
+        "중고노트북",
+        "실사용",
+        "애플케어",
+        "풀박스",
+        "미개봉",
+        "램",
+        "SSD"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        3
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 대부분 정상 중고 노트북 본체 매물로 구성되어 있으며, 제품 상태가 양호하거나 거의 새 제품에 가까운 상태임을 나타냅니다. 충전기, 파우치 등 액세서리가 포함된 경우도 있으나, 액세서리 단독 판매나 부품용, 파손 제품과는 구분됩니다. 매입글이나 부품용, 파손 제품 관련 키워드가 적고, 대부분 실제 사용 가능한 중고 노트북 본체임을 명확히 하고 있어 정상 중고 노트북으로 분류됩니다."
+    },
+    {
+      "id": "윈도우11-노트북-인텔-cpu-8gb-ram-ssd-120-512gb",
+      "brand": "",
+      "model_name": "윈도우11 노트북 인텔 CPU 8GB RAM SSD 120~512GB",
+      "aliases": [
+        "윈도우11 노트북 인텔 CPU 8GB RAM SSD 120~512GB",
+        "윈도우11",
+        "노트북",
+        "중고 본체",
+        "정품인증",
+        "인텔 CPU",
+        "램",
+        "SSD",
+        "사무용",
+        "인강용",
+        "충전기 포함"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        9
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 윈도우11이 설치된 중고 노트북 본체 매물로 구성되어 있으며, 충전기나 마우스 등 기본 액세서리가 포함된 경우가 많고, 액정파손이나 침수, 키보드 불량 같은 파손 관련 언급이 없고 부품용이나 매입글도 포함되어 있지 않아 정상 중고 노트북 매물로 분류됩니다."
+    },
+    {
+      "id": "apple-imac-27-inch-5k-retina-2016-2019",
+      "brand": "",
+      "model_name": "Apple iMac 27-inch 5K Retina (2016-2019)",
+      "aliases": [
+        "Apple iMac 27-inch 5K Retina (2016-2019)",
+        "아이맥",
+        "27인치",
+        "5K",
+        "레티나",
+        "SSD",
+        "중고 본체",
+        "전원케이블",
+        "정상 작동",
+        "2016년식",
+        "2019년식"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        0
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 주로 2016년부터 2019년형 아이맥 27인치 5K 레티나 모델의 중고 본체 매물로 구성되어 있습니다. 제품 상태가 'LIKE_NEW' 또는 'LIGHTLY_USED'로 정상 작동하는 중고 제품임을 명확히 하고 있으며, 구성품으로 아이맥 본체와 전원 케이블이 포함되어 있습니다. 액세서리 단독 판매, 부품용, 파손, 매입글과 같은 노이즈가 없고, 구매 가이드 및 직거래 정보가 포함되어 있어 정상 중고 매물임을 뒷받침합니다."
+    },
+    {
+      "id": "gigabyte-aorus-16x-asg-53kr-에이서-프레데터-helios-neo-v-16-phn16-72-59",
+      "brand": "",
+      "model_name": "GIGABYTE AORUS 16X ASG-53KR, 에이서 프레데터 Helios Neo V 16 PHN16-72-59C2, HP 오멘 16-wf0156TX, HP 오멘 16-xf0052AX, HP 오멘 슬림 16-an0005TX",
+      "aliases": [
+        "GIGABYTE AORUS 16X ASG-53KR, 에이서 프레데터 Helios Neo V 16 PHN16-72-59C2, HP 오멘 16-wf0156TX, HP 오멘 16-xf0052AX, HP 오멘 슬림 16-an0005TX",
+        "16인치",
+        "게이밍노트북",
+        "직거래위치",
+        "택배가격",
+        "초기출시가",
+        "모델명",
+        "QHD",
+        "CPU",
+        "가격",
+        "중고 본체"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        5
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 모두 16인치 게이밍 노트북 본체를 중고로 판매하는 정상 매물로, 액세서리나 부품용, 파손품, 매입글과 달리 제품 사양과 상태가 명확히 기재되어 있으며, 동일한 거래 위치와 가격 정책을 공유하고 있습니다."
+    },
+    {
+      "id": "macbook-pro-13인치-a1502-macbook-pro-15인치-retina-2012-macbook-pro-",
+      "brand": "",
+      "model_name": "MacBook Pro 13인치 A1502, MacBook Pro 15인치 Retina 2012, MacBook Pro 15인치 2017",
+      "aliases": [
+        "MacBook Pro 13인치 A1502, MacBook Pro 15인치 Retina 2012, MacBook Pro 15인치 2017",
+        "가성비 노트북 중고",
+        "MacBook Pro",
+        "본체",
+        "충전기",
+        "노트북 가방",
+        "마우스패드",
+        "외관상태",
+        "배터리 사이클",
+        "LIGHTLY_USED",
+        "인치"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": 899000,
+      "price_range": [
+        450000,
+        1999000
+      ],
+      "source_cluster_ids": [
+        7
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 중고 노트북 본체를 판매하는 정상 매물로 구성되어 있습니다. 제품 설명에 본체와 충전기, 노트북 가방, 마우스패드 등 기본 구성품이 포함되어 있으며, 액정파손, 침수, 키보드 불량 등 파손 관련 언급이 없습니다. 또한 부품용이나 매입글과 달리 제품 상태가 'LIGHTLY_USED'로 명확히 표기되어 있고, 가격대도 중고 노트북 본체 판매에 적합한 수준입니다."
+    }
+  ]
+}

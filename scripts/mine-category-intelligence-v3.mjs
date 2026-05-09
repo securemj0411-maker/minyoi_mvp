@@ -904,10 +904,38 @@ function keywordRiskFlags(keyword, expectedType) {
   const raw = String(keyword ?? "").trim();
   const text = raw.toLowerCase().replace(/\s+/g, "");
   const flags = [];
+  const broadProductFamilyKeywords = new Set([
+    "airpods",
+    "에어팟",
+    "applewatch",
+    "애플워치",
+    "galaxywatch",
+    "갤럭시워치",
+    "iphone",
+    "아이폰",
+    "galaxy",
+    "갤럭시",
+    "smartphone",
+    "스마트폰",
+    "휴대폰",
+    "핸드폰",
+    "laptop",
+    "notebook",
+    "노트북",
+    "macbook",
+    "맥북",
+    "ipad",
+    "아이패드",
+    "tablet",
+    "태블릿",
+  ]);
   if (!expectedType || expectedType === "noise") flags.push("generic_noise_type");
   if (!text || text.length < 2) flags.push("too_short");
   if (["apple", "애플", "samsung", "삼성", "galaxy", "갤럭시", "iphone", "아이폰"].includes(text)) {
     flags.push("generic_brand_or_family");
+  }
+  if (broadProductFamilyKeywords.has(text) && expectedType !== "accessory") {
+    flags.push("broad_product_family_keyword");
   }
   if (/(아이폰|iphone)\d{1,2}(프로|max|promax|plus|플러스)?/.test(text) && expectedType !== "normal") {
     flags.push("model_name_as_noise_keyword");

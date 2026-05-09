@@ -1,0 +1,336 @@
+{
+  "version": 1,
+  "category": "laptop",
+  "generated_at": "2026-05-09T11:25:14.854Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [
+    {
+      "keyword": "매입",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 121,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 '매입' 관련 내용으로 buying 타입이 맞으므로 정밀도는 1.0임."
+    },
+    {
+      "keyword": "매입합니다",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 60,
+      "risk_flags": [
+        "sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 '매입합니다'라는 키워드를 포함하여 모두 'buying' 타입으로 정확히 분류되었습니다."
+    },
+    {
+      "keyword": "처리",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 71,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 정상적인 매입 광고로, 'noise' 타입이 아니므로 precision은 0.0임"
+    },
+    {
+      "keyword": "출장",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 70,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 'buying' 타입에 부합하는 매입(구매) 의뢰 글로 정확히 분류됨."
+    },
+    {
+      "keyword": "갤럭시북",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 62,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "it",
+      "type": "noise",
+      "precision": 0.6,
+      "hit_count": 103,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체적으로 IT 관련 매입 광고가 'noise' 타입으로 적절히 분류되었으나, 일부 판매 매물은 해당 타입이 아님."
+    },
+    {
+      "keyword": "업체입니다",
+      "type": "noise",
+      "precision": 0.8,
+      "hit_count": 49,
+      "risk_flags": [
+        "generic_noise_type",
+        "sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체적으로 5개 중 4개가 'noise' 타입으로 정확히 분류되어 정밀도는 0.8로 평가됩니다."
+    },
+    {
+      "keyword": "정책상",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 47,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "아이패드",
+      "type": "noise",
+      "precision": 0.8,
+      "hit_count": 51,
+      "risk_flags": [
+        "generic_noise_type",
+        "broad_product_family_keyword"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체적으로 5개 매물 중 4개가 'noise' 타입에 적합하여 정밀도는 0.8로 평가됩니다."
+    },
+    {
+      "keyword": "번개장터",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 74,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "빠르고",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 66,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "분실",
+      "type": "noise",
+      "precision": 0.6,
+      "hit_count": 51,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 매물 중 3개가 'noise' 타입으로 정확히 판단되어 정밀도는 0.6입니다."
+    },
+    {
+      "keyword": "입금",
+      "type": "buying",
+      "precision": 0,
+      "hit_count": 56,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "모든 매물이 '매입' 즉 판매자가 구매자를 찾는 내용으로, 'buying' 타입이 아니며 '입금' 키워드도 없어 정확한 'buying' 타입 매물은 없음"
+    },
+    {
+      "keyword": "친절하게",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 42,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물은 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "정식",
+      "type": "noise",
+      "precision": 0.4,
+      "hit_count": 46,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체적으로 '정식' 키워드가 포함된 매물만 'noise' 타입으로 판단되어 정확도는 0.4임"
+    },
+    {
+      "keyword": "주시면",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 172,
+      "risk_flags": [
+        "generic_noise_type",
+        "transaction_or_sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "번톡",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 48,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 'buying' 타입으로 적절하게 분류되어 있어 정밀도는 1.0임."
+    },
+    {
+      "keyword": "매입업체",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 47,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 'buying' 타입으로 적합하여 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "번톡으로",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 42,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 \"번톡으로\" 문의하는 내용이 포함되어 있어 모두 'noise' 타입으로 정확히 분류됨"
+    },
+    {
+      "keyword": "정직한",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 39,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 precision은 0.0입니다."
+    }
+  ],
+  "cluster_evidence": [
+    {
+      "cluster_id": 1,
+      "listing_type": "damaged",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 '고장/부품용 노트북'이라는 문구가 반복적으로 등장하며, 키보드 불량, 윈도우 미설치, RAM·SSD 미포함, 후면 개봉, 액정 문제 등 정상 사용이 어려운 상태임을 명확히 안내하고 있습니다. 또한 교환·환불·반품 불가 조건이 명시되어 있어 정상 중고 노트북이 아닌 고장 또는 부품용임을 분명히 하고 있습니다.",
+      "evidence_terms": [
+        "고장/부품용 노트북",
+        "키보드불량",
+        "윈도우 설치 안됨",
+        "RAM·SSD 미포함",
+        "후면 개봉",
+        "교환·환불·반품 불가",
+        "액정 문제",
+        "부품용 판매",
+        "사용감 있음",
+        "테두리 기스"
+      ]
+    },
+    {
+      "cluster_id": 2,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 '매입', '삽니다', '전문 매입', '고가 매입', '24시간 채팅' 등의 단어가 반복적으로 등장하며, 노트북 및 관련 기기를 구매하려는 매입글임을 명확히 나타냅니다. 또한 가격이 매우 높고, 제품 상태나 모델 정보를 알려달라는 내용이 포함되어 있어 중고 판매자가 판매 전에 매입가를 문의하는 글임을 알 수 있습니다.",
+      "evidence_terms": [
+        "매입",
+        "삽니다",
+        "전문 매입",
+        "고가 매입",
+        "24시간 채팅",
+        "모델넘버",
+        "사양",
+        "상태",
+        "구성품",
+        "노트북"
+      ]
+    },
+    {
+      "cluster_id": 4,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 노트북, 맥북, 태블릿 등 다양한 IT기기를 매입한다는 내용이 반복적으로 등장하며, '매입', '출장매입', '최고가 매입', '픽업 서비스', '번톡 문의' 등의 키워드가 포함되어 있어 판매자가 아닌 구매자(매입자) 입장에서 작성된 매입글임을 명확히 보여줍니다. 또한, 제품 상태나 상세 스펙보다는 매입 조건과 서비스 안내에 집중하고 있어 중고 제품을 사들이는 매입글로 분류됩니다.",
+      "evidence_terms": [
+        "매입",
+        "출장매입",
+        "최고가 매입",
+        "픽업 서비스",
+        "번톡 문의",
+        "중고 노트북",
+        "중고 맥북",
+        "중고 태블릿",
+        "방문매입",
+        "즉시 지급"
+      ]
+    },
+    {
+      "cluster_id": 11,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "해당 클러스터는 '노트북 스티커 미개봉 특전'이라는 제목과 '미개봉' 상태, 그리고 가격이 매우 저렴한 점으로 보아 노트북 본체가 아닌 액세서리류임을 명확히 알 수 있습니다. 또한, 노트북 관련 액세서리 중 스티커는 본체와는 별개로 취급되며, 충전기나 파우치와 같은 액세서리와 유사한 카테고리에 속합니다.",
+      "evidence_terms": [
+        "노트북",
+        "스티커",
+        "미개봉",
+        "특전",
+        "액세서리",
+        "저가",
+        "안전결제",
+        "채팅",
+        "gs 반택"
+      ]
+    },
+    {
+      "cluster_id": 12,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 '매입', '최고가매입', '매입업체', '매입문의', '견적', '방문 매입', '당일 입금' 등의 단어가 반복적으로 등장하며, 판매가 아닌 노트북 매입을 목적으로 하는 글들로 구성되어 있습니다. 또한, 제품 상태가 'NEW'로 표기되어 있으나 실제로는 매입을 위한 광고성 글임을 설명하고 있어, 구매 의사를 나타내는 'buying' 타입으로 분류됩니다.",
+      "evidence_terms": [
+        "매입",
+        "최고가매입",
+        "매입업체",
+        "매입문의",
+        "견적",
+        "방문 매입",
+        "당일 입금",
+        "미개봉",
+        "정상작동",
+        "IT노트존"
+      ]
+    },
+    {
+      "cluster_id": 13,
+      "listing_type": "ambiguous",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 아디다스 여성용 반팔 카라티 및 기능성 티셔츠에 대한 중고 의류 매물로, 노트북 카테고리와 전혀 관련이 없으며 액세서리, 부품, 파손, 매입 등 노트북 관련 분류 기준과도 맞지 않습니다. 따라서 노트북 카테고리 내에서는 명확한 분류가 불가능하여 ambiguous로 분류합니다.",
+      "evidence_terms": [
+        "아디다스",
+        "climachill",
+        "climacool",
+        "여성",
+        "반팔",
+        "카라티",
+        "기능성",
+        "티셔츠",
+        "블랙",
+        "블루"
+      ]
+    }
+  ]
+}

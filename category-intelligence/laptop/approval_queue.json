@@ -1,0 +1,645 @@
+{
+  "version": 1,
+  "category": "laptop",
+  "updated_at": "2026-05-09T11:31:51.104Z",
+  "instructions": [
+    "Set approved=true only for entries you want to promote into runtime.",
+    "Set rejected=true for entries you explicitly do not want to see again.",
+    "Leave both false for pending review.",
+    "promote-catalog --apply reads only approved=true and rejected!=true entries."
+  ],
+  "items": [
+    {
+      "key": "sku:레노버-리전-5-15ahp10-lg-그램-17z990-va7bk-삼성-노트북-i7-15-6인치",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "레노버-리전-5-15ahp10-lg-그램-17z990-va7bk-삼성-노트북-i7-15-6인치",
+      "modelName": "레노버 리전 5 15AHP10, LG 그램 17Z990-VA7BK, 삼성 노트북 i7 15.6인치",
+      "brand": "Samsung",
+      "category": "laptop",
+      "aliases": [
+        "레노버 리전 5 15AHP10, LG 그램 17Z990-VA7BK, 삼성 노트북 i7 15.6인치",
+        "노트북",
+        "중고",
+        "CPU",
+        "RAM",
+        "SSD",
+        "정상 작동",
+        "게이밍",
+        "LG 그램",
+        "레노버 리전",
+        "삼성 노트북"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        6
+      ],
+      "note": "",
+      "candidate": {
+        "id": "레노버-리전-5-15ahp10-lg-그램-17z990-va7bk-삼성-노트북-i7-15-6인치",
+        "brand": "Samsung",
+        "category": "laptop",
+        "modelName": "레노버 리전 5 15AHP10, LG 그램 17Z990-VA7BK, 삼성 노트북 i7 15.6인치",
+        "aliases": [
+          "레노버 리전 5 15AHP10, LG 그램 17Z990-VA7BK, 삼성 노트북 i7 15.6인치",
+          "노트북",
+          "중고",
+          "CPU",
+          "RAM",
+          "SSD",
+          "정상 작동",
+          "게이밍",
+          "LG 그램",
+          "레노버 리전",
+          "삼성 노트북"
+        ],
+        "mustContain": [
+          [
+            "레노버 리전 5 15AHP10, LG 그램 17Z990-VA7BK, 삼성 노트북 i7 15.6인치",
+            "노트북",
+            "중고",
+            "CPU",
+            "RAM",
+            "SSD",
+            "정상 작동",
+            "게이밍",
+            "LG 그램",
+            "레노버 리전",
+            "삼성 노트북"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "laptop",
+        "sourceClusterIds": [
+          6
+        ],
+        "promotionHash": "9128a2ed397987e5"
+      }
+    },
+    {
+      "key": "sku:레노버-legion-i7-8750h-16gb-256gb-gtx1050ti",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "레노버-legion-i7-8750h-16gb-256gb-gtx1050ti",
+      "modelName": "레노버 LEGION i7 8750H 16GB 256GB GTX1050Ti",
+      "brand": "",
+      "category": "laptop",
+      "aliases": [
+        "레노버 LEGION i7 8750H 16GB 256GB GTX1050Ti",
+        "중고노트북",
+        "게이밍 노트북",
+        "레노버",
+        "사양",
+        "i5",
+        "i7",
+        "램",
+        "ssd",
+        "그래픽",
+        "택배거래"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        8
+      ],
+      "note": "",
+      "candidate": {
+        "id": "레노버-legion-i7-8750h-16gb-256gb-gtx1050ti",
+        "brand": "",
+        "category": "laptop",
+        "modelName": "레노버 LEGION i7 8750H 16GB 256GB GTX1050Ti",
+        "aliases": [
+          "레노버 LEGION i7 8750H 16GB 256GB GTX1050Ti",
+          "중고노트북",
+          "게이밍 노트북",
+          "레노버",
+          "사양",
+          "i5",
+          "i7",
+          "램",
+          "ssd",
+          "그래픽",
+          "택배거래"
+        ],
+        "mustContain": [
+          [
+            "레노버 LEGION i7 8750H 16GB 256GB GTX1050Ti",
+            "중고노트북",
+            "게이밍 노트북",
+            "레노버",
+            "사양",
+            "i5",
+            "i7",
+            "램",
+            "ssd",
+            "그래픽",
+            "택배거래"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "laptop",
+        "sourceClusterIds": [
+          8
+        ],
+        "promotionHash": "b789f7448b648d37"
+      }
+    },
+    {
+      "key": "sku:맥북-프로-m4-pro-16인치-24gb-512gb-ssd",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "맥북-프로-m4-pro-16인치-24gb-512gb-ssd",
+      "modelName": "맥북 프로 M4 Pro 16인치 24GB 512GB SSD",
+      "brand": "Apple",
+      "category": "laptop",
+      "aliases": [
+        "맥북 프로 M4 Pro 16인치 24GB 512GB SSD",
+        "맥북 프로",
+        "맥북 에어",
+        "M4 Pro",
+        "배터리 효율 100",
+        "중고 본체",
+        "풀박스",
+        "충전기 포함",
+        "영문 각인",
+        "직거래",
+        "상태 좋음"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        10
+      ],
+      "note": "",
+      "candidate": {
+        "id": "맥북-프로-m4-pro-16인치-24gb-512gb-ssd",
+        "brand": "Apple",
+        "category": "laptop",
+        "modelName": "맥북 프로 M4 Pro 16인치 24GB 512GB SSD",
+        "aliases": [
+          "맥북 프로 M4 Pro 16인치 24GB 512GB SSD",
+          "맥북 프로",
+          "맥북 에어",
+          "M4 Pro",
+          "배터리 효율 100",
+          "중고 본체",
+          "풀박스",
+          "충전기 포함",
+          "영문 각인",
+          "직거래",
+          "상태 좋음"
+        ],
+        "mustContain": [
+          [
+            "맥북 프로 M4 Pro 16인치 24GB 512GB SSD",
+            "맥북 프로",
+            "맥북 에어",
+            "M4 Pro",
+            "배터리 효율 100",
+            "중고 본체",
+            "풀박스",
+            "충전기 포함",
+            "영문 각인",
+            "직거래",
+            "상태 좋음"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "laptop",
+        "sourceClusterIds": [
+          10
+        ],
+        "promotionHash": "f3d2297189c4c480"
+      }
+    },
+    {
+      "key": "sku:맥북프로-16-m4-pro-48gb-1tb",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "맥북프로-16-m4-pro-48gb-1tb",
+      "modelName": "맥북프로 16 M4 Pro 48GB 1TB",
+      "brand": "Apple",
+      "category": "laptop",
+      "aliases": [
+        "맥북프로 16 M4 Pro 48GB 1TB",
+        "맥북프로",
+        "M4",
+        "M3",
+        "중고노트북",
+        "실사용",
+        "애플케어",
+        "풀박스",
+        "미개봉",
+        "램",
+        "SSD"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        3
+      ],
+      "note": "",
+      "candidate": {
+        "id": "맥북프로-16-m4-pro-48gb-1tb",
+        "brand": "Apple",
+        "category": "laptop",
+        "modelName": "맥북프로 16 M4 Pro 48GB 1TB",
+        "aliases": [
+          "맥북프로 16 M4 Pro 48GB 1TB",
+          "맥북프로",
+          "M4",
+          "M3",
+          "중고노트북",
+          "실사용",
+          "애플케어",
+          "풀박스",
+          "미개봉",
+          "램",
+          "SSD"
+        ],
+        "mustContain": [
+          [
+            "맥북프로 16 M4 Pro 48GB 1TB",
+            "맥북프로",
+            "M4",
+            "M3",
+            "중고노트북",
+            "실사용",
+            "애플케어",
+            "풀박스",
+            "미개봉",
+            "램",
+            "SSD"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "laptop",
+        "sourceClusterIds": [
+          3
+        ],
+        "promotionHash": "41840edd91d0d3bd"
+      }
+    },
+    {
+      "key": "sku:윈도우11-노트북-인텔-cpu-8gb-ram-ssd-120-512gb",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "윈도우11-노트북-인텔-cpu-8gb-ram-ssd-120-512gb",
+      "modelName": "윈도우11 노트북 인텔 CPU 8GB RAM SSD 120~512GB",
+      "brand": "",
+      "category": "laptop",
+      "aliases": [
+        "윈도우11 노트북 인텔 CPU 8GB RAM SSD 120~512GB",
+        "윈도우11",
+        "노트북",
+        "중고 본체",
+        "정품인증",
+        "인텔 CPU",
+        "램",
+        "SSD",
+        "사무용",
+        "인강용",
+        "충전기 포함"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        9
+      ],
+      "note": "",
+      "candidate": {
+        "id": "윈도우11-노트북-인텔-cpu-8gb-ram-ssd-120-512gb",
+        "brand": "",
+        "category": "laptop",
+        "modelName": "윈도우11 노트북 인텔 CPU 8GB RAM SSD 120~512GB",
+        "aliases": [
+          "윈도우11 노트북 인텔 CPU 8GB RAM SSD 120~512GB",
+          "윈도우11",
+          "노트북",
+          "중고 본체",
+          "정품인증",
+          "인텔 CPU",
+          "램",
+          "SSD",
+          "사무용",
+          "인강용",
+          "충전기 포함"
+        ],
+        "mustContain": [
+          [
+            "윈도우11 노트북 인텔 CPU 8GB RAM SSD 120~512GB",
+            "윈도우11",
+            "노트북",
+            "중고 본체",
+            "정품인증",
+            "인텔 CPU",
+            "램",
+            "SSD",
+            "사무용",
+            "인강용",
+            "충전기 포함"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "laptop",
+        "sourceClusterIds": [
+          9
+        ],
+        "promotionHash": "cfaf98ceb561a445"
+      }
+    },
+    {
+      "key": "sku:apple-imac-27-inch-5k-retina-2016-2019",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-imac-27-inch-5k-retina-2016-2019",
+      "modelName": "Apple iMac 27-inch 5K Retina (2016-2019)",
+      "brand": "Apple",
+      "category": "laptop",
+      "aliases": [
+        "Apple iMac 27-inch 5K Retina (2016-2019)",
+        "아이맥",
+        "27인치",
+        "5K",
+        "레티나",
+        "SSD",
+        "중고 본체",
+        "전원케이블",
+        "정상 작동",
+        "2016년식",
+        "2019년식"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        0
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-imac-27-inch-5k-retina-2016-2019",
+        "brand": "Apple",
+        "category": "laptop",
+        "modelName": "Apple iMac 27-inch 5K Retina (2016-2019)",
+        "aliases": [
+          "Apple iMac 27-inch 5K Retina (2016-2019)",
+          "아이맥",
+          "27인치",
+          "5K",
+          "레티나",
+          "SSD",
+          "중고 본체",
+          "전원케이블",
+          "정상 작동",
+          "2016년식",
+          "2019년식"
+        ],
+        "mustContain": [
+          [
+            "Apple iMac 27-inch 5K Retina (2016-2019)",
+            "아이맥",
+            "27인치",
+            "5K",
+            "레티나",
+            "SSD",
+            "중고 본체",
+            "전원케이블",
+            "정상 작동",
+            "2016년식",
+            "2019년식"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "laptop",
+        "sourceClusterIds": [
+          0
+        ],
+        "promotionHash": "ee3d0b4a02723bb1"
+      }
+    },
+    {
+      "key": "sku:gigabyte-aorus-16x-asg-53kr-에이서-프레데터-helios-neo-v-16-phn16-72-59",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "gigabyte-aorus-16x-asg-53kr-에이서-프레데터-helios-neo-v-16-phn16-72-59",
+      "modelName": "GIGABYTE AORUS 16X ASG-53KR, 에이서 프레데터 Helios Neo V 16 PHN16-72-59C2, HP 오멘 16-wf0156TX, HP 오멘 16-xf0052AX, HP 오멘 슬림 16-an0005TX",
+      "brand": "",
+      "category": "laptop",
+      "aliases": [
+        "GIGABYTE AORUS 16X ASG-53KR, 에이서 프레데터 Helios Neo V 16 PHN16-72-59C2, HP 오멘 16-wf0156TX, HP 오멘 16-xf0052AX, HP 오멘 슬림 16-an0005TX",
+        "16인치",
+        "게이밍노트북",
+        "직거래위치",
+        "택배가격",
+        "초기출시가",
+        "모델명",
+        "QHD",
+        "CPU",
+        "가격",
+        "중고 본체"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        5
+      ],
+      "note": "",
+      "candidate": {
+        "id": "gigabyte-aorus-16x-asg-53kr-에이서-프레데터-helios-neo-v-16-phn16-72-59",
+        "brand": "",
+        "category": "laptop",
+        "modelName": "GIGABYTE AORUS 16X ASG-53KR, 에이서 프레데터 Helios Neo V 16 PHN16-72-59C2, HP 오멘 16-wf0156TX, HP 오멘 16-xf0052AX, HP 오멘 슬림 16-an0005TX",
+        "aliases": [
+          "GIGABYTE AORUS 16X ASG-53KR, 에이서 프레데터 Helios Neo V 16 PHN16-72-59C2, HP 오멘 16-wf0156TX, HP 오멘 16-xf0052AX, HP 오멘 슬림 16-an0005TX",
+          "16인치",
+          "게이밍노트북",
+          "직거래위치",
+          "택배가격",
+          "초기출시가",
+          "모델명",
+          "QHD",
+          "CPU",
+          "가격",
+          "중고 본체"
+        ],
+        "mustContain": [
+          [
+            "GIGABYTE AORUS 16X ASG-53KR, 에이서 프레데터 Helios Neo V 16 PHN16-72-59C2, HP 오멘 16-wf0156TX, HP 오멘 16-xf0052AX, HP 오멘 슬림 16-an0005TX",
+            "16인치",
+            "게이밍노트북",
+            "직거래위치",
+            "택배가격",
+            "초기출시가",
+            "모델명",
+            "QHD",
+            "CPU",
+            "가격",
+            "중고 본체"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "laptop",
+        "sourceClusterIds": [
+          5
+        ],
+        "promotionHash": "789a99dfac401cfd"
+      }
+    },
+    {
+      "key": "sku:macbook-pro-13인치-a1502-macbook-pro-15인치-retina-2012-macbook-pro-",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "macbook-pro-13인치-a1502-macbook-pro-15인치-retina-2012-macbook-pro-",
+      "modelName": "MacBook Pro 13인치 A1502, MacBook Pro 15인치 Retina 2012, MacBook Pro 15인치 2017",
+      "brand": "Apple",
+      "category": "laptop",
+      "aliases": [
+        "MacBook Pro 13인치 A1502, MacBook Pro 15인치 Retina 2012, MacBook Pro 15인치 2017",
+        "가성비 노트북 중고",
+        "MacBook Pro",
+        "본체",
+        "충전기",
+        "노트북 가방",
+        "마우스패드",
+        "외관상태",
+        "배터리 사이클",
+        "LIGHTLY_USED",
+        "인치"
+      ],
+      "medianFallbackKrw": 899000,
+      "sourceClusterIds": [
+        7
+      ],
+      "note": "",
+      "candidate": {
+        "id": "macbook-pro-13인치-a1502-macbook-pro-15인치-retina-2012-macbook-pro-",
+        "brand": "Apple",
+        "category": "laptop",
+        "modelName": "MacBook Pro 13인치 A1502, MacBook Pro 15인치 Retina 2012, MacBook Pro 15인치 2017",
+        "aliases": [
+          "MacBook Pro 13인치 A1502, MacBook Pro 15인치 Retina 2012, MacBook Pro 15인치 2017",
+          "가성비 노트북 중고",
+          "MacBook Pro",
+          "본체",
+          "충전기",
+          "노트북 가방",
+          "마우스패드",
+          "외관상태",
+          "배터리 사이클",
+          "LIGHTLY_USED",
+          "인치"
+        ],
+        "mustContain": [
+          [
+            "MacBook Pro 13인치 A1502, MacBook Pro 15인치 Retina 2012, MacBook Pro 15인치 2017",
+            "가성비 노트북 중고",
+            "MacBook Pro",
+            "본체",
+            "충전기",
+            "노트북 가방",
+            "마우스패드",
+            "외관상태",
+            "배터리 사이클",
+            "LIGHTLY_USED",
+            "인치"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 1798000,
+        "released": 2026,
+        "sourceCategory": "laptop",
+        "sourceClusterIds": [
+          7
+        ],
+        "promotionHash": "8ddc880dfb740bf6"
+      }
+    },
+    {
+      "key": "noise:buying:매입",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "buying",
+      "keyword": "매입",
+      "precision": 1,
+      "hitCount": 121,
+      "note": "",
+      "candidate": {
+        "keyword": "매입",
+        "type": "buying",
+        "precision": 1,
+        "hitCount": 121,
+        "promotionHash": "348bcca878589194"
+      }
+    },
+    {
+      "key": "noise:buying:출장",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "buying",
+      "keyword": "출장",
+      "precision": 1,
+      "hitCount": 70,
+      "note": "",
+      "candidate": {
+        "keyword": "출장",
+        "type": "buying",
+        "precision": 1,
+        "hitCount": 70,
+        "promotionHash": "1302efffdf50cf21"
+      }
+    },
+    {
+      "key": "noise:buying:번톡",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "buying",
+      "keyword": "번톡",
+      "precision": 1,
+      "hitCount": 48,
+      "note": "",
+      "candidate": {
+        "keyword": "번톡",
+        "type": "buying",
+        "precision": 1,
+        "hitCount": 48,
+        "promotionHash": "fcf84b2753ad156a"
+      }
+    },
+    {
+      "key": "noise:buying:매입업체",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "buying",
+      "keyword": "매입업체",
+      "precision": 1,
+      "hitCount": 47,
+      "note": "",
+      "candidate": {
+        "keyword": "매입업체",
+        "type": "buying",
+        "precision": 1,
+        "hitCount": 47,
+        "promotionHash": "448e9f779b21b1c5"
+      }
+    }
+  ]
+}

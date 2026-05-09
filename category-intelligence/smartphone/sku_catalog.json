@@ -1,56 +1,25 @@
 {
   "version": 1,
   "category": "smartphone",
-  "generated_at": "2026-05-09T07:59:39.789Z",
+  "generated_at": "2026-05-09T11:25:14.854Z",
   "method": "v3_normal_cluster_to_sku_candidates",
   "skus": [
     {
-      "id": "갤럭시-s23-256gb",
+      "id": "갤럭시-s23-s22-s10e-버디-등-다양한-모델",
       "brand": "",
-      "model_name": "갤럭시 S23 256GB",
+      "model_name": "갤럭시 S23+, S22, S10e, 버디 등 다양한 모델",
       "aliases": [
-        "갤럭시 S23 256GB",
-        "갤럭시S23",
-        "256GB",
-        "블랙",
-        "무잔상",
-        "A급",
-        "외관",
-        "중고폰",
-        "본품",
-        "최초통신사",
-        "직거래"
-      ],
-      "model_codes": [],
-      "differentiators": [],
-      "sku_median": null,
-      "price_range": null,
-      "source_cluster_ids": [
-        6
-      ],
-      "classification_confidence": 0.9,
-      "risk_flags": [
-        "commercial_or_bait_terms"
-      ],
-      "approval_status": "blocked_needs_review",
-      "rationale_ko": "이 클러스터는 갤럭시 S23 시리즈 스마트폰 본품을 중고로 판매하는 정상 매물로 구성되어 있습니다. 제품명, 용량, 색상, 외관 등 상세 정보가 포함되어 있으며, 액세서리나 부품, 고장 관련 언급이 없고, 매입글이나 일괄 묶음 판매도 보이지 않습니다. 또한, 무잔상, A급, A+ 등 외관 상태를 명확히 표기하여 정상적인 중고 스마트폰 본품임을 나타냅니다."
-    },
-    {
-      "id": "갤럭시-s23-fe-256gb",
-      "brand": "",
-      "model_name": "갤럭시 S23 FE 256GB",
-      "aliases": [
-        "갤럭시 S23 FE 256GB",
-        "갤럭시S23",
-        "중고폰",
+        "갤럭시 S23+, S22, S10e, 버디 등 다양한 모델",
         "공기계",
-        "무잔상",
-        "기능이상없음",
-        "케이스+필름+고속충전케이블증정",
-        "전문검수",
-        "무상AS",
-        "24년개통",
-        "실사100%"
+        "중고 휴대폰",
+        "기기 단품상품",
+        "정상작동",
+        "기능 이상없음",
+        "모서리 약한 찍힘",
+        "생활감",
+        "출고전 마지막검수",
+        "일반충전기",
+        "일반필름부착"
       ],
       "model_codes": [],
       "differentiators": [],
@@ -60,92 +29,57 @@
         2
       ],
       "classification_confidence": 0.9,
-      "risk_flags": [
-        "commercial_or_bait_terms"
-      ],
-      "approval_status": "blocked_needs_review",
-      "rationale_ko": "이 클러스터는 갤럭시 S23 시리즈 중고폰 공기계 매물로, 제품 상태가 무잔상, 기능 이상 없음, 액정 및 외관 깨끗함을 강조하며, 케이스, 필름, 고속충전케이블 증정 등의 정상 중고폰 판매 패턴을 보입니다. 부품용, 고장, 액세서리, 매입글, 일괄묶음 등의 노이즈가 없고, 전문검수 완료 및 무상 AS 가능 안내가 반복되어 정상 중고폰임이 명확합니다."
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 '공기계', '중고 휴대폰', '기기 단품상품', '정상작동', '기능 이상없음' 등의 표현이 반복적으로 등장하며, 액세서리나 부품, 고장 관련 언급 없이 정상 작동하는 중고 스마트폰 본품을 판매하는 매물로 구성되어 있습니다. 또한, 가격대와 상태 설명이 정상 중고폰 거래에 부합하여 정상 매물로 분류됩니다."
     },
     {
-      "id": "갤럭시-s24-256gb",
+      "id": "갤럭시-s25-256gb-512gb-1tb-모델별로-s25-s25-플러스-s25-엣지-s25-울트라-포함",
       "brand": "",
-      "model_name": "갤럭시 S24 256GB",
+      "model_name": "갤럭시 S25 256GB, 512GB, 1TB (모델별로 S25, S25 플러스, S25 엣지, S25 울트라 포함)",
       "aliases": [
-        "갤럭시 S24 256GB",
-        "갤럭시 S24",
-        "중고폰",
-        "공기계",
-        "제품등급",
-        "최초통신사",
-        "최초통화일",
-        "정상작동",
-        "배터리상태 양호",
-        "A+",
-        "실사사진"
-      ],
-      "model_codes": [],
-      "differentiators": [],
-      "sku_median": null,
-      "price_range": null,
-      "source_cluster_ids": [
-        8
-      ],
-      "classification_confidence": 0.9,
-      "risk_flags": [
-        "commercial_or_bait_terms"
-      ],
-      "approval_status": "blocked_needs_review",
-      "rationale_ko": "이 클러스터는 갤럭시 S24 시리즈 중고 스마트폰 본품 매물로 구성되어 있으며, 액세서리나 부품, 고장폰 관련 언급이 없고, 정상 작동 및 공기계 상태임을 강조하는 설명이 반복됩니다. 또한, 제품 등급(A+), 최초 통신사 및 통화일 정보가 포함되어 있어 정상 중고폰 매물임을 명확히 나타냅니다."
-    },
-    {
-      "id": "갤럭시s23-갤럭시s24-아이폰15-프로",
-      "brand": "",
-      "model_name": "갤럭시S23, 갤럭시S24, 아이폰15 프로",
-      "aliases": [
-        "갤럭시S23, 갤럭시S24, 아이폰15 프로",
-        "새상품",
+        "갤럭시 S25 256GB, 512GB, 1TB (모델별로 S25, S25 플러스, S25 엣지, S25 울트라 포함)",
+        "갤럭시 S25",
         "미개봉",
         "정품",
-        "완납폰",
-        "삼성전자",
-        "아이폰15",
-        "갤럭시S23",
-        "안전결제",
-        "전국택배",
-        "퀵배송"
+        "삼성케어",
+        "신제품",
+        "재고 확인",
+        "새상품",
+        "공기계",
+        "자급제",
+        "중고 본품"
       ],
       "model_codes": [],
       "differentiators": [],
       "sku_median": null,
       "price_range": null,
       "source_cluster_ids": [
-        14
+        5
       ],
       "classification_confidence": 0.9,
       "risk_flags": [
-        "commercial_or_bait_terms",
-        "multi_model_sku_hint",
-        "separator_with_multiple_models"
+        "commercial_or_bait_terms"
       ],
       "approval_status": "blocked_needs_review",
-      "rationale_ko": "이 클러스터는 '새상품', '미개봉', '정품', '완납폰', '삼성전자', '아이폰15', '갤럭시S23' 등 정상 중고 스마트폰 본품을 나타내는 키워드가 반복적으로 등장하며, 액세서리나 부품, 고장폰 관련 언급이 전혀 없고, 매입이나 일괄묶음 같은 업자 미끼성 문구도 포함되어 있지 않습니다. 또한, 판매자가 안전결제, 전국택배, 퀵배송 등을 강조하여 정상적인 중고 스마트폰 거래임을 명확히 하고 있어 정상 중고 스마트폰 본품으로 분류됩니다."
+      "rationale_ko": "이 클러스터는 모두 갤럭시 S25 시리즈의 미개봉 신제품 또는 미사용 새상품을 중심으로 구성되어 있으며, 제품 설명에 정품, 삼성케어, 재고 확인 및 상담 필요 등의 문구가 반복적으로 등장합니다. 액세서리, 부품, 고장폰, 매입글, 일괄묶음 등의 노이즈가 전혀 없고, 정상적인 공기계 또는 자급제 중고 본품으로 분류할 수 있습니다."
     },
     {
-      "id": "갤럭시z플립4-256gb-갤럭시s23fe-256gb-갤럭시z플립3-256gb-갤럭시z플립6-256gb-갤럭시z플립5",
+      "id": "갤럭시s22-256gb-갤럭시s7-32gb-아이폰6s-64gb-갤럭시z폴드7",
       "brand": "",
-      "model_name": "갤럭시Z플립4 256GB, 갤럭시S23FE 256GB, 갤럭시Z플립3 256GB, 갤럭시Z플립6 256GB, 갤럭시Z플립5 512GB",
+      "model_name": "갤럭시S22 256GB, 갤럭시S7 32GB, 아이폰6s 64GB, 갤럭시Z폴드7",
       "aliases": [
-        "갤럭시Z플립4 256GB, 갤럭시S23FE 256GB, 갤럭시Z플립3 256GB, 갤럭시Z플립6 256GB, 갤럭시Z플립5 512GB",
-        "기기단품",
+        "갤럭시S22 256GB, 갤럭시S7 32GB, 아이폰6s 64GB, 갤럭시Z폴드7",
+        "중고",
+        "실버",
+        "64기가",
         "무잔상",
-        "잔상없음",
-        "통신사 무관",
-        "유심 옮겨 사용 가능",
-        "최초통신사",
-        "최초개통일",
-        "액정 상태",
-        "외관 상태",
-        "중고 본품"
+        "가성비",
+        "중고폰",
+        "정상작동",
+        "배터리성능",
+        "유심인식",
+        "무상 보증"
       ],
       "model_codes": [],
       "differentiators": [],
@@ -161,199 +95,104 @@
         "separator_with_multiple_models"
       ],
       "approval_status": "blocked_needs_review",
-      "rationale_ko": "이 클러스터는 갤럭시 Z플립 시리즈 및 갤럭시 S23FE 등 중고 스마트폰 본품을 판매하는 매물로 구성되어 있습니다. 액세서리나 부품, 고장폰 관련 언급 없이 기기 단품 판매가 주를 이루며, 액정 상태, 외관 상태, 최초 통신사, 개통일 등 정상 중고폰 거래에 필요한 정보가 상세히 포함되어 있습니다. 또한, '기기단품', '무잔상', '잔상없음', '통신사 무관 유심 호환' 등의 표현이 반복되어 정상 중고폰임을 명확히 하고 있습니다."
+      "rationale_ko": "이 클러스터는 주로 중고 스마트폰 본체를 판매하는 정상 매물로 구성되어 있습니다. 대표 샘플들의 제목과 설명에서 '중고', '실버', '64기가', '무잔상', '가성비' 등 정상적인 중고폰 거래에 해당하는 단어들이 반복적으로 등장하며, 액세서리나 부품, 고장폰 관련 언급이 적고, 매입이나 재고정리, 일괄묶음과 같은 업자용 문구도 드물어 정상 중고폰 거래임을 알 수 있습니다."
     },
     {
-      "id": "아이폰13미니-128gb",
+      "id": "아이폰se1-16gb-32gb-128gb",
       "brand": "",
-      "model_name": "아이폰13미니 128GB",
+      "model_name": "아이폰SE1 16GB/32GB/128GB",
       "aliases": [
-        "아이폰13미니 128GB",
-        "아이폰13미니",
-        "128",
-        "고장품 파손품 없음",
-        "모든기능 정상",
-        "배터리 상태",
-        "안전결제",
-        "기기단품",
-        "중고 공기계",
-        "반품 가능",
-        "생활기스"
+        "아이폰SE1 16GB/32GB/128GB",
+        "sss급",
+        "외관새상품급",
+        "베터리성능100",
+        "유심인식가능",
+        "카메라 정상작동",
+        "지문인식 가능",
+        "에어드롭 가능",
+        "휴대폰 본체",
+        "케이스",
+        "보호 필름",
+        "충전기"
       ],
       "model_codes": [],
       "differentiators": [],
       "sku_median": null,
       "price_range": null,
       "source_cluster_ids": [
-        11
+        9
       ],
       "classification_confidence": 0.9,
-      "risk_flags": [],
-      "approval_status": "needs_human_approval",
-      "rationale_ko": "이 클러스터는 아이폰13미니 128GB 모델의 중고 정상 공기계 매물로, 고장품이나 파손품이 없고 모든 기능이 정상 작동하며 배터리 상태가 명시되어 있습니다. 판매 조건과 반품 정책이 명확하며, 액세서리나 부품 관련 언급이 없고, 매입이나 일괄 판매 같은 업자 미끼성 문구도 포함되어 있지 않습니다. 따라서 정상 중고폰(본품) 매물로 분류됩니다."
+      "risk_flags": [
+        "commercial_or_bait_terms"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 'sss급', '외관새상품급', '베터리성능100', '유심인식가능', '카메라 정상작동', '지문인식 가능', '에어드롭 가능' 등의 표현이 반복적으로 등장하며, 정상 작동하는 중고 스마트폰 본체를 판매하는 매물임을 명확히 나타냅니다. 또한 구성품으로 휴대폰 본체, 케이스, 보호 필름, 충전기, 유선 이어폰 등이 포함되어 있어 액세서리 단품이나 부품, 고장품과 구분됩니다. 매입글이나 재고정리, 일괄묶음 등의 업자 미끼 문구도 없고, 고장/파손 관련 언급도 없어 정상 중고폰(공기계) 매물로 분류됩니다."
     },
     {
-      "id": "iphone-13-mini-128gb",
+      "id": "iphone-15-pro-256gb",
       "brand": "",
-      "model_name": "iPhone 13 mini 128GB",
+      "model_name": "iPhone 15 Pro 256GB",
       "aliases": [
-        "iPhone 13 mini 128GB",
-        "아이폰 13",
-        "아이폰 13미니",
-        "128GB",
+        "iPhone 15 Pro 256GB",
+        "아이폰15프로",
+        "아이폰14플러스",
+        "중고",
+        "기기단품",
         "배터리 효율",
-        "중고 본품",
-        "외관 상태",
-        "수리 이력 없음",
-        "케이스 사용",
-        "액정 깨끗",
-        "색상(핑크, 화이트)"
+        "기능 정상",
+        "유심만 넣으면 사용 가능",
+        "케이블 포함",
+        "조기 품절 예상",
+        "택배퀵 가능"
       ],
       "model_codes": [],
       "differentiators": [],
-      "sku_median": 325000,
+      "sku_median": 636000,
       "price_range": [
-        280000,
-        380000
-      ],
-      "source_cluster_ids": [
-        5
-      ],
-      "classification_confidence": 0.9,
-      "risk_flags": [],
-      "approval_status": "needs_human_approval",
-      "rationale_ko": "이 클러스터는 아이폰 13 및 13미니 모델의 중고 본품 매물로, 배터리 효율, 외관 상태, 색상, 용량 등의 정상적인 중고 스마트폰 판매 정보를 포함하고 있습니다. 액세서리나 부품, 고장 관련 언급이 없으며, 매입이나 상업적 대량 판매, 일괄 묶음도 나타나지 않아 정상 중고폰 매물로 분류됩니다."
-    },
-    {
-      "id": "iphone-13-mini-128gb-256gb",
-      "brand": "",
-      "model_name": "iPhone 13 mini 128GB / 256GB",
-      "aliases": [
-        "iPhone 13 mini 128GB / 256GB",
-        "아이폰13미니",
-        "128",
-        "256",
-        "배터리",
-        "사설수리x",
-        "기능이상x",
-        "풀박스",
-        "리퍼미사용",
-        "미사용",
-        "정상"
-      ],
-      "model_codes": [],
-      "differentiators": [],
-      "sku_median": 325000,
-      "price_range": [
-        280000,
-        380000
+        600000,
+        662000
       ],
       "source_cluster_ids": [
         4
       ],
       "classification_confidence": 0.9,
-      "risk_flags": [],
-      "approval_status": "needs_human_approval",
-      "rationale_ko": "이 클러스터는 아이폰 13미니 모델의 중고 정상 공기계 매물로, 사설수리 내역이 없고 기능 이상이 없으며 배터리 상태와 외관 상태를 상세히 기재한 정상 중고폰 판매글들로 구성되어 있습니다. 리퍼폰도 미사용 새제품으로 정상 제품군에 포함됩니다. 액세서리나 부품, 고장폰, 매입글, 일괄묶음 등 노이즈가 없고, 모두 개별 단품 판매임이 명확합니다."
+      "risk_flags": [
+        "commercial_or_bait_terms"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 아이폰 14, 14 플러스, 15 프로 등 최신 모델의 중고 공기계 단품을 판매하는 정상 매물로 구성되어 있습니다. 제품 설명에 '기기단품, 케이블' 포함, '배터리 효율', '기능 정상' 등의 내용이 반복되며, 고장이나 부품용, 액세서리 판매가 아닌 완전한 중고폰임을 명확히 하고 있습니다. 또한 매입글, 부품, 고장폰, 액세서리 관련 단어가 없고, 판매 가격도 정상 중고 시세 범위 내에 있습니다."
     },
     {
-      "id": "iphone-14-pro-128gb",
+      "id": "iphone-se1-128gb",
       "brand": "",
-      "model_name": "iPhone 14 Pro 128GB",
+      "model_name": "iPhone SE1 128GB",
       "aliases": [
-        "iPhone 14 Pro 128GB",
-        "아이폰 14 프로",
-        "128GB",
-        "배터리 효율",
-        "정상 작동",
-        "외관 상태",
-        "케이스 포함",
-        "자급제",
-        "중고 본품",
-        "박스 포함",
-        "충전기 포함"
-      ],
-      "model_codes": [],
-      "differentiators": [],
-      "sku_median": 520000,
-      "price_range": [
-        350000,
-        590000
-      ],
-      "source_cluster_ids": [
-        3
-      ],
-      "classification_confidence": 0.9,
-      "risk_flags": [],
-      "approval_status": "needs_human_approval",
-      "rationale_ko": "이 클러스터는 아이폰 14 프로 128GB 모델의 중고 본품 매물로, 배터리 효율 정보와 외관 상태, 정상 작동 여부를 상세히 기재하고 있으며, 케이스나 충전기 등 액세서리가 포함된 경우도 있으나 본체 중심의 정상 중고폰임을 명확히 하고 있습니다. 고장, 부품용, 매입글, 일괄묶음 등의 노이즈가 없고, 정상 작동과 깨끗한 외관을 강조하는 점에서 정상 중고 스마트폰 매물로 분류됩니다."
-    },
-    {
-      "id": "iphone-15-pro-128gb-256gb",
-      "brand": "",
-      "model_name": "iPhone 15 Pro 128GB / 256GB",
-      "aliases": [
-        "iPhone 15 Pro 128GB / 256GB",
-        "아이폰15pro",
-        "화이트",
-        "256GB",
-        "128GB",
+        "iPhone SE1 128GB",
+        "아이폰 SE1 128GB",
+        "아이폰13미니 128G",
+        "중고 본체",
+        "배터리 교체",
+        "액정 깨끗",
+        "기능 이상 없음",
+        "강화필름 포함",
+        "투명 케이스 포함",
         "배터리 성능",
-        "기스 없음",
-        "케이스",
-        "보호필름",
-        "박스",
-        "충전기"
+        "유심인식 가능"
       ],
       "model_codes": [],
       "differentiators": [],
-      "sku_median": 820000,
-      "price_range": [
-        670000,
-        900000
-      ],
+      "sku_median": null,
+      "price_range": null,
       "source_cluster_ids": [
         13
       ],
       "classification_confidence": 0.9,
-      "risk_flags": [],
-      "approval_status": "needs_human_approval",
-      "rationale_ko": "이 클러스터는 아이폰 15 Pro 시리즈의 중고 본품 매물로, 대부분 정상 작동하며 외관에 큰 손상 없이 케이스와 보호필름을 사용해 깨끗한 상태임을 강조하고 있습니다. 충전기나 박스 포함 여부가 다양하지만 이는 정상 매물에서 흔히 나타나는 요소이며, 부품용, 고장, 매입글, 액세서리 관련 단어가 거의 없고 구매자 대상 판매글임이 명확합니다."
-    },
-    {
-      "id": "iphone-16-iphone-16-pro-iphone-17-iphone-17e",
-      "brand": "",
-      "model_name": "iPhone 16, iPhone 16 Pro, iPhone 17, iPhone 17e",
-      "aliases": [
-        "iPhone 16, iPhone 16 Pro, iPhone 17, iPhone 17e",
-        "미사용",
-        "선착순 한정판매",
-        "정품",
-        "미개봉 새상품",
-        "1년 무상 A/S",
-        "번개페이 안전결제",
-        "무료배송",
-        "특가",
-        "입고한정 프로모션"
-      ],
-      "model_codes": [],
-      "differentiators": [],
-      "sku_median": 90000,
-      "price_range": [
-        90000,
-        90000
-      ],
-      "source_cluster_ids": [
-        16
-      ],
-      "classification_confidence": 0.9,
       "risk_flags": [
-        "commercial_or_bait_terms",
-        "multi_model_sku_hint",
-        "separator_with_multiple_models"
+        "commercial_or_bait_terms"
       ],
       "approval_status": "blocked_needs_review",
-      "rationale_ko": "이 클러스터는 '미사용', '선착순 한정판매', '정품', '미개봉 새상품' 등의 표현이 반복적으로 등장하며, 고장이나 부품 관련 언급 없이 정상적인 중고 스마트폰 본품을 판매하는 내용으로 구성되어 있습니다. 또한 1년 무상 A/S와 안전결제, 무료배송 등의 정상 거래 조건을 강조하여 액세서리나 부품, 고장폰, 매입글과 구분됩니다."
+      "rationale_ko": "이 클러스터는 대부분 아이폰 SE1 128GB와 아이폰13미니, 아이폰11 등 중고 스마트폰 본체를 판매하는 정상 매물로 구성되어 있습니다. 제품 상태가 'LIKE_NEW' 또는 'LIGHTLY_USED'로 표기되어 있고, 액세서리나 부품, 고장 관련 언급 없이 본체 위주로 판매되고 있어 정상 중고폰(공기계, 자급제) 매물로 분류됩니다."
     }
   ]
 }

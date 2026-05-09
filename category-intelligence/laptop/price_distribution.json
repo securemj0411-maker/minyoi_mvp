@@ -1,0 +1,46 @@
+[
+  {
+    "key": "unknown",
+    "count": 270,
+    "min": 150000,
+    "p25": 259000,
+    "median": 499000,
+    "p75": 950000,
+    "max": 6500000,
+    "core_sample_count": 270,
+    "excluded_count": 333
+  },
+  {
+    "key": "macbook-pro",
+    "count": 61,
+    "min": 175000,
+    "p25": 450000,
+    "median": 899000,
+    "p75": 1999000,
+    "max": 9900000,
+    "core_sample_count": 61,
+    "excluded_count": 333
+  },
+  {
+    "key": "macbook-air",
+    "count": 29,
+    "min": 192000,
+    "p25": 684000,
+    "median": 799000,
+    "p75": 1310000,
+    "max": 1800000,
+    "core_sample_count": 29,
+    "excluded_count": 333
+  },
+  {
+    "key": "galaxy-s20",
+    "count": 1,
+    "min": 870000,
+    "p25": 870000,
+    "median": 870000,
+    "p75": 870000,
+    "max": 870000,
+    "core_sample_count": 1,
+    "excluded_count": 333
+  }
+]

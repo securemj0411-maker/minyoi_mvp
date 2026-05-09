@@ -1,0 +1,27 @@
+{
+  "category": "laptop",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "Laptop",
+  "queries": [
+    "맥북 에어 m1",
+    "맥북 에어 m2",
+    "맥북 에어 m3",
+    "맥북 프로 m2",
+    "맥북 프로 m3",
+    "그램 노트북",
+    "갤럭시북"
+  ],
+  "seedSkus": [
+    "macbook-air-m1",
+    "macbook-air-m2",
+    "macbook-air-m3",
+    "macbook-pro-m2",
+    "macbook-pro-m3",
+    "lg-gram",
+    "galaxy-book"
+  ],
+  "minNormalPrice": 150000,
+  "clusterK": 14,
+  "aiHints": "노트북. 주요 노이즈: 충전기/파우치 단독(액세서리), 액정파손/침수/키보드불량/배터리사이클과다(파손), 부품용, 매입글. 정상: 중고 본체.\n교차 카테고리 지식: 3in1=accessory(p=1), 견적=buying(p=1), 매입=buying(p=1), 매입업체=buying(p=1), 매입하는=buying(p=1), 맥세이프=accessory(p=1), 문제=parts(p=1), 부품용=parts(p=1), 부품용=damaged(p=0.8), 부품용으로=parts(p=1), 부품용으로=damaged(p=1), 삽니다=buying(p=1), 삽니다=mixed(p=1), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=1), 오른쪽=parts(p=1), 이상=damaged(p=1), 일괄=accessory(p=1), 전문=buying(p=1), 최고가=buying(p=1), 출장=buying(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

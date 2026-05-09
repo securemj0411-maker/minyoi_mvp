@@ -31,5 +31,5 @@
   ],
   "minNormalPrice": 50000,
   "clusterK": 18,
-  "aiHints": "스마트폰. 주요 노이즈: 케이스/필름/충전기(액세서리), 부품폰/액정만(부품), 고장/파손(파손), 매입글, 재고정리/완납폰/선착순특가/제휴카드(업자미끼), 일괄묶음(다중). 정상: 공기계, 자급제, 중고 본품.\n교차 카테고리 지식: 매입=buying(p=0.95), 맥세이프=accessory(p=1), 부품용=parts(p=0.9), 삽니다=buying(p=0.94), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=0.9), 일괄=accessory(p=1), 케이스=accessory(p=0.92), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1), 필름=accessory(p=0.9)"
+  "aiHints": "스마트폰. 주요 노이즈: 케이스/필름/충전기(액세서리), 부품폰/액정만(부품), 고장/파손(파손), 매입글, 재고정리/완납폰/선착순특가/제휴카드(업자미끼), 일괄묶음(다중). 정상: 공기계, 자급제, 중고 본품.\n교차 카테고리 지식: 3in1=accessory(p=1), 견적=buying(p=1), 노트북=buying(p=1), 매입=buying(p=1), 매입업체=buying(p=1), 매입하는=buying(p=1), 맥북=buying(p=1), 맥세이프=accessory(p=1), 문제=parts(p=1), 부품용=parts(p=1), 부품용으로=parts(p=1), 부품용으로=damaged(p=1), 삽니다=buying(p=1), 삽니다=mixed(p=1), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=1), 오른쪽=parts(p=1), 이상=damaged(p=1), 일괄=accessory(p=1), 전문=buying(p=1), 최고가=buying(p=0.8), 케이스=accessory(p=0.92), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1), 필름=accessory(p=0.9)"
 }
