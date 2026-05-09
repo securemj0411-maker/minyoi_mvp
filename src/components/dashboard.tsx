@@ -413,7 +413,7 @@ function PriceHistoryPlaceholder({ item }: { item: ListingCandidate }) {
   );
 }
 
-function SegmentedControl<T extends string | number>({
+function FilterPills<T extends string | number>({
   label,
   value,
   options,
@@ -425,18 +425,18 @@ function SegmentedControl<T extends string | number>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div className="space-y-1.5">
-      <div className="text-xs font-bold uppercase tracking-wider text-zinc-400">{label}</div>
-      <div className="flex flex-wrap gap-1 rounded-lg border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-700 dark:bg-zinc-800/50">
+    <div className="flex items-center gap-1.5">
+      <span className="text-xs font-bold text-zinc-400">{label}</span>
+      <div className="flex flex-wrap gap-1">
         {options.map((item) => (
           <button
             key={String(item.id)}
             type="button"
             onClick={() => onChange(item.id)}
-            className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
+            className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
               value === item.id
-                ? "bg-white text-zinc-950 shadow-sm dark:bg-zinc-700 dark:text-zinc-50"
-                : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
             }`}
           >
             {item.label}
@@ -446,6 +446,7 @@ function SegmentedControl<T extends string | number>({
     </div>
   );
 }
+
 
 export default function Dashboard({ generatedAt, candidates }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
@@ -529,7 +530,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
   const interestedCount = Object.values(actions).filter((item) => item.status === "interested").length;
   const holdCount = Object.values(actions).filter((item) => item.status === "hold").length;
   const hiddenCount = Object.values(actions).filter((item) => item.status === "hidden").length;
-  const openedCount = Object.values(actions).filter((item) => item.openedCount > 0).length;
+
 
   return (
     <>
@@ -537,45 +538,37 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
       <main className="min-h-screen bg-[#f4f6f8] dark:bg-zinc-950">
         <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
 
-          {/* Hero */}
-          <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 p-6 text-white shadow-xl shadow-emerald-900/30">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.08),transparent_60%)]" />
-            <div className="relative">
-              <p className="text-xs font-bold uppercase tracking-widest text-emerald-200/70">
-                리셀갭 인텔리전스
-              </p>
-              <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
-                오늘 열어볼 리셀갭 후보
+          {/* Slim header */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-lg font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+                오늘의 리셀갭 후보
               </h1>
-              <p className="mt-1 text-sm text-emerald-100/60">
-                마지막 갱신 {generatedAt}
-              </p>
-              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {[
-                  { label: "전체 후보", value: `${filtered.length}/${candidates.length}건` },
-                  { label: "평균 순익", value: compactKrw(avgProfit) },
-                  { label: "고순익", value: `${strongCount}건`, highlight: true },
-                  { label: "열람", value: `${openedCount}건` },
-                ].map(({ label, value, highlight }) => (
-                  <div
-                    key={label}
-                    className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm"
-                  >
-                    <div className="text-xs text-emerald-100/60">{label}</div>
-                    <div className={`mt-0.5 text-xl font-black tabular-nums leading-none ${highlight ? "text-yellow-300" : "text-white"}`}>
-                      {value}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="text-xs text-zinc-400">갱신 {generatedAt}</p>
             </div>
-          </header>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "후보", value: `${filtered.length}/${candidates.length}건` },
+                { label: "평균 순익", value: compactKrw(avgProfit) },
+                { label: "고순익", value: `${strongCount}건`, highlight: true },
+              ].map(({ label, value, highlight }) => (
+                <div key={label} className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900">
+                  <span className="text-xs text-zinc-400">{label} </span>
+                  <span className={`text-sm font-bold tabular-nums ${highlight ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-800 dark:text-zinc-200"}`}>
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Filters */}
-          <section className="grid gap-3 rounded-xl border border-zinc-200/80 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 xl:grid-cols-[1.4fr_1fr_1fr]">
-            <SegmentedControl label="목록" value={filter} options={filters} onChange={setFilter} />
-            <SegmentedControl label="최소 순익" value={profitFloor} options={profitFloors} onChange={setProfitFloor} />
-            <SegmentedControl label="카테고리" value={categoryFilter} options={categoryFilters} onChange={setCategoryFilter} />
+          <section className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-zinc-200/80 bg-white px-4 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <FilterPills label="목록" value={filter} options={filters} onChange={setFilter} />
+            <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-700 max-sm:hidden" />
+            <FilterPills label="순익" value={profitFloor} options={profitFloors} onChange={setProfitFloor} />
+            <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-700 max-sm:hidden" />
+            <FilterPills label="카테고리" value={categoryFilter} options={categoryFilters} onChange={setCategoryFilter} />
           </section>
 
           {/* Status chips */}
