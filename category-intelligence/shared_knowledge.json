@@ -1,0 +1,236 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-09T08:43:50.584Z",
+  "notes": "Cross-category noise and SKU mining knowledge. Auto-suggested entries still require promotion review before production.",
+  "noise_rules": [
+    {
+      "keyword": "3in1",
+      "type": "accessory",
+      "precision": 1,
+      "hit_count": 6,
+      "categories": [
+        "galaxywatch"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T08:43:50.583Z"
+    },
+    {
+      "keyword": "8핀",
+      "type": "parts",
+      "precision": 0.8,
+      "hit_count": 57,
+      "categories": [
+        "airpods"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T08:33:32.449Z"
+    },
+    {
+      "keyword": "매입",
+      "type": "buying",
+      "precision": 0.95,
+      "categories": [
+        "smartphone",
+        "tablet",
+        "laptop"
+      ],
+      "source": "seed"
+    },
+    {
+      "keyword": "매입하는",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 9,
+      "categories": [
+        "applewatch"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T08:39:05.251Z"
+    },
+    {
+      "keyword": "맥세이프",
+      "type": "accessory",
+      "precision": 1,
+      "hit_count": 27,
+      "categories": [
+        "smartphone"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T08:03:36.468Z"
+    },
+    {
+      "keyword": "무선",
+      "type": "accessory",
+      "precision": 0.8,
+      "hit_count": 11,
+      "categories": [
+        "galaxywatch"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T08:43:50.583Z"
+    },
+    {
+      "keyword": "문제",
+      "type": "parts",
+      "precision": 1,
+      "hit_count": 53,
+      "categories": [
+        "airpods"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T08:33:32.449Z"
+    },
+    {
+      "keyword": "부품용",
+      "type": "parts",
+      "precision": 1,
+      "categories": [
+        "smartphone",
+        "tablet",
+        "laptop",
+        "airpods",
+        "applewatch"
+      ],
+      "source": "seed",
+      "hit_count": 93,
+      "last_seen_at": "2026-05-09T08:39:05.251Z"
+    },
+    {
+      "keyword": "부품용으로",
+      "type": "parts",
+      "precision": 1,
+      "hit_count": 53,
+      "categories": [
+        "applewatch"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T08:39:05.251Z"
+    },
+    {
+      "keyword": "삽니다",
+      "type": "buying",
+      "precision": 1,
+      "categories": [
+        "smartphone",
+        "tablet",
+        "laptop",
+        "applewatch"
+      ],
+      "source": "seed",
+      "hit_count": 14,
+      "last_seen_at": "2026-05-09T08:39:05.251Z"
+    },
+    {
+      "keyword": "삽니다",
+      "type": "mixed",
+      "precision": 1,
+      "hit_count": 30,
+      "categories": [
+        "galaxywatch"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T08:43:50.583Z"
+    },
+    {
+      "keyword": "실리콘케이스",
+      "type": "accessory",
+      "precision": 1,
+      "hit_count": 4,
+      "categories": [
+        "smartphone"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T07:58:46.639Z"
+    },
+    {
+      "keyword": "액정파손",
+      "type": "damaged",
+      "precision": 0.9,
+      "categories": [
+        "smartphone",
+        "tablet",
+        "laptop"
+      ],
+      "source": "seed"
+    },
+    {
+      "keyword": "오른쪽",
+      "type": "parts",
+      "precision": 1,
+      "hit_count": 54,
+      "categories": [
+        "airpods"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T08:33:32.449Z"
+    },
+    {
+      "keyword": "왼쪽",
+      "type": "parts",
+      "precision": 0.8,
+      "hit_count": 70,
+      "categories": [
+        "airpods"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T08:33:32.449Z"
+    },
+    {
+      "keyword": "일괄",
+      "type": "accessory",
+      "precision": 1,
+      "hit_count": 7,
+      "categories": [
+        "smartphone"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T07:55:07.630Z"
+    },
+    {
+      "keyword": "케이스",
+      "type": "accessory",
+      "precision": 0.92,
+      "categories": [
+        "smartphone",
+        "tablet",
+        "airpods"
+      ],
+      "source": "seed",
+      "hit_count": 141,
+      "last_seen_at": "2026-05-09T08:33:32.449Z"
+    },
+    {
+      "keyword": "케이스티파이",
+      "type": "accessory",
+      "precision": 1,
+      "hit_count": 21,
+      "categories": [
+        "smartphone"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T08:03:36.468Z"
+    },
+    {
+      "keyword": "폰케이스",
+      "type": "accessory",
+      "precision": 1,
+      "hit_count": 11,
+      "categories": [
+        "smartphone"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-09T07:58:46.639Z"
+    },
+    {
+      "keyword": "필름",
+      "type": "accessory",
+      "precision": 0.9,
+      "categories": [
+        "smartphone",
+        "tablet"
+      ],
+      "source": "seed"
+    }
+  ],
+  "category_notes": {}
+}

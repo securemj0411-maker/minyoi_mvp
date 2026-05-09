@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "category": "galaxywatch",
+  "generated_at": "2026-05-09T08:27:28.335Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [
+    {
+      "keyword": "삽니다",
+      "type": "mixed",
+      "precision": 1,
+      "hit_count": 30,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 \"삽니다\" 키워드와 구매 의사를 포함하여 mixed 타입으로 정확히 분류됨."
+    },
+    {
+      "keyword": "워치8",
+      "type": "mixed",
+      "precision": 0.4,
+      "hit_count": 61,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "전체적으로 미개봉 새제품이 많아 'mixed' 타입으로 보기 어려우며, 5개 중 2개만 적합하여 정밀도는 0.4임."
+    },
+    {
+      "keyword": "가개통",
+      "type": "mixed",
+      "precision": 0.4,
+      "hit_count": 19,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "전체적으로 가개통 여부가 명확한 매물은 일부에 불과하며, mixed 타입으로 정확히 분류된 매물은 2건으로 전체 정밀도는 낮은 편입니다."
+    },
+    {
+      "keyword": "3in1",
+      "type": "accessory",
+      "precision": 1,
+      "hit_count": 6,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 accessory 타입에 부합하여 정확도가 100%입니다."
+    },
+    {
+      "keyword": "20mm",
+      "type": "noise",
+      "precision": 0.6,
+      "hit_count": 12,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 중 3개가 'noise' 타입으로 정확히 분류되어 정밀도는 0.6입니다."
+    },
+    {
+      "keyword": "무선",
+      "type": "accessory",
+      "precision": 0.8,
+      "hit_count": 11,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "총 5개 중 4개가 accessory 타입에 적합하여 전체 precision은 0.8입니다."
+    },
+    {
+      "keyword": "구합니다",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 6,
+      "risk_flags": [
+        "generic_noise_type",
+        "sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입으로 정확히 분류되어 정밀도는 1.0입니다."
+    }
+  ],
+  "cluster_evidence": [
+    {
+      "cluster_id": 4,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 갤럭시워치 본체가 아닌 충전기 및 무선 충전 거치대 관련 매물로 구성되어 있습니다. 제목과 설명에 '충전기', '무선 충전기', '3in1', '고속 충전기', '거치대' 등의 단어가 반복적으로 등장하며, 본체 판매가 아닌 액세서리 판매임이 명확합니다. 또한 밴드, 스트랩, 케이스 등 다른 액세서리도 일부 포함될 수 있으나, 본 클러스터는 충전기류에 집중되어 있습니다.",
+      "evidence_terms": [
+        "충전기",
+        "무선 충전기",
+        "3in1",
+        "고속 충전기",
+        "거치대",
+        "갤럭시워치",
+        "버즈",
+        "휴대용",
+        "고속",
+        "무선"
+      ]
+    },
+    {
+      "cluster_id": 8,
+      "listing_type": "mixed",
+      "classification_confidence": 0.7,
+      "confidence_label": "medium",
+      "confidence_reason": "이 클러스터는 갤럭시 워치8 모델의 매물과 구매 희망 글이 혼재되어 있습니다. 대표 샘플 중 일부는 '삽니다'라는 구매 의사를 나타내는 제목을 가지고 있으며, 다른 매물들은 미개봉 새제품 판매 글입니다. 액세서리나 부품용 매물은 포함되어 있지 않고, 일반 스마트워치와도 혼동되지 않는 갤럭시 워치8 모델에 집중되어 있습니다. 따라서 판매와 구매 글이 섞여 있어 단일 타입으로 분류하기 어려우나, 구매 글이 다수 포함되어 있어 'mixed'로 판단합니다.",
+      "evidence_terms": [
+        "갤럭시워치8",
+        "삼성",
+        "미개봉",
+        "삽니다",
+        "실버",
+        "40mm",
+        "44mm",
+        "LTE",
+        "가개통",
+        "새상품"
+      ]
+    },
+    {
+      "cluster_id": 14,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 갤럭시 워치 본체가 아닌 스트랩, 밴드 등 액세서리 위주로 구성되어 있습니다. 대표 샘플들의 제목과 설명에서 '스트랩', '밴드', '스포츠밴드', '애슬레저 밴드' 등 액세서리 관련 단어가 반복적으로 등장하며, 본체 판매 매물과 달리 가격대가 낮고 상태도 새상품 또는 거의 사용하지 않은 상태임을 강조합니다. 또한, 부품용, 매입, 충전기 등 본체와 관련 없는 키워드는 포함되어 있지 않아 액세서리 카테고리로 분류가 명확합니다.",
+      "evidence_terms": [
+        "스트랩",
+        "밴드",
+        "스포츠밴드",
+        "애슬레저 밴드",
+        "정품",
+        "새상품",
+        "미사용",
+        "호환가능",
+        "삼성 갤럭시 워치"
+      ]
+    }
+  ]
+}

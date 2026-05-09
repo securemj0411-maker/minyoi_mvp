@@ -1,0 +1,329 @@
+{
+  "version": 1,
+  "category": "applewatch",
+  "generated_at": "2026-05-09T08:27:28.335Z",
+  "method": "v3_normal_cluster_to_sku_candidates",
+  "skus": [
+    {
+      "id": "애플워치-시리즈-9-gps-45mm",
+      "brand": "",
+      "model_name": "애플워치 시리즈 9 GPS 45mm",
+      "aliases": [
+        "애플워치 시리즈 9 GPS 45mm",
+        "애플워치",
+        "시리즈9",
+        "시리즈10",
+        "GPS",
+        "45mm",
+        "46mm",
+        "배터리 성능",
+        "본체",
+        "박스 포함",
+        "상태"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        14
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 애플워치 시리즈 9, 10 GPS 모델 본체 위주로 구성되어 있으며, 밴드, 충전기, 부품용, 삽니다 등 액세서리나 부품, 매입 관련 키워드가 배제되어 있습니다. 대부분 상태 설명과 배터리 성능, 구성품(본체, 박스, 충전기 등) 포함 여부를 명확히 기재하고 있어 정상적인 중고 애플워치 본체 매물임을 알 수 있습니다."
+    },
+    {
+      "id": "애플워치-se-44mm-애플워치-시리즈-11-46mm",
+      "brand": "",
+      "model_name": "애플워치 SE 44mm, 애플워치 시리즈 11 46mm",
+      "aliases": [
+        "애플워치 SE 44mm, 애플워치 시리즈 11 46mm",
+        "애플워치",
+        "SE",
+        "시리즈3",
+        "시리즈11",
+        "셀룰러",
+        "미개봉",
+        "부품용",
+        "직거래",
+        "기스",
+        "44mm",
+        "46mm"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        1
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 애플워치 본체를 판매하는 정상 매물로 구성되어 있으며, 부품용이나 액세서리, 매입글과 명확히 구분됩니다. 대표 샘플들에서 SE, 시리즈3, 시리즈11 등 다양한 애플워치 모델의 본체가 주로 판매되고 있고, 밴드나 충전기 같은 액세서리 전용 단어는 제외되어 있습니다. 일부 부품용 매물도 있으나 전체적으로 본체 판매가 주를 이루어 정상 매물로 분류하였습니다."
+    },
+    {
+      "id": "apple-watch-se-3-40mm-gps",
+      "brand": "",
+      "model_name": "Apple Watch SE 3 40mm GPS",
+      "aliases": [
+        "Apple Watch SE 3 40mm GPS",
+        "애플워치 SE",
+        "SE3",
+        "40mm",
+        "배터리 성능",
+        "충전기",
+        "스트랩",
+        "GPS",
+        "중고",
+        "정상 작동",
+        "생활기스"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        2
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 애플워치 SE 시리즈(특히 SE3 40mm 모델)를 중심으로 한 중고 매물들로 구성되어 있으며, 대부분 정상 작동하는 제품을 판매하는 게시글입니다. 밴드, 충전기 등 액세서리 언급이 있으나 제품 본체 판매가 주된 내용이고, '삽니다'나 '부품용' 같은 구매 또는 부품용 게시글이 포함되어 있지 않습니다. 따라서 정상적인 중고 애플워치 본체 판매 매물로 분류됩니다."
+    },
+    {
+      "id": "apple-watch-se-40mm-apple-watch-se3-40mm-apple-watch-series-7-45",
+      "brand": "",
+      "model_name": "Apple Watch SE 40mm, Apple Watch SE3 40mm, Apple Watch Series 7 45mm",
+      "aliases": [
+        "Apple Watch SE 40mm, Apple Watch SE3 40mm, Apple Watch Series 7 45mm",
+        "애플워치",
+        "SE",
+        "SE3",
+        "Series 7",
+        "에르메스",
+        "가죽밴드",
+        "GPS+Cellular",
+        "본체",
+        "미사용 밴드",
+        "배터리 성능"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        4
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 모두 애플워치 본체를 판매하는 정상 매물로, SE, SE3, Series 7 등 다양한 애플워치 모델들이 포함되어 있습니다. 밴드나 충전기 등 액세서리만을 판매하는 매물이 아니며, 구매 희망 글(삽니다)이나 부품용, 문제 있는 제품도 포함되어 있지 않습니다. 따라서 정상적인 중고 애플워치 본체 매물로 분류됩니다."
+    },
+    {
+      "id": "apple-watch-se3-44mm-se3-40mm-se2-40mm-se1",
+      "brand": "",
+      "model_name": "Apple Watch SE3 44mm / SE3 40mm / SE2 40mm / SE1",
+      "aliases": [
+        "Apple Watch SE3 44mm / SE3 40mm / SE2 40mm / SE1",
+        "애플워치",
+        "SE3",
+        "SE2",
+        "미개봉",
+        "새제품",
+        "정품",
+        "충전기",
+        "스트랩",
+        "부품용",
+        "44mm",
+        "40mm"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        10
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 애플워치 SE 시리즈(특히 SE3, SE2, SE1) 본체를 판매하는 매물로 구성되어 있으며, 대부분 미개봉 새제품 또는 상태 좋은 중고 제품입니다. '부품용' 매물도 있으나 소수이며, 밴드, 충전기, 케이스 등 액세서리 전용 매물은 포함되어 있지 않습니다. '삽니다' 같은 매입 게시물도 없고, 일반 스마트워치가 아닌 애플워치 본체 중심의 매물로 분류됩니다."
+    },
+    {
+      "id": "apple-watch-series-10-gps-46mm",
+      "brand": "",
+      "model_name": "Apple Watch Series 10 GPS 46mm",
+      "aliases": [
+        "Apple Watch Series 10 GPS 46mm",
+        "애플워치",
+        "Series 10",
+        "Series 7",
+        "SE",
+        "GPS",
+        "배터리 성능",
+        "초기화 완료",
+        "중고",
+        "알루미늄",
+        "정상 작동"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        13
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 애플워치 본체를 판매하는 일반 중고 매물로 구성되어 있습니다. 대부분의 게시글에서 애플워치 시리즈 7, 10, SE 등 다양한 모델과 GPS 기능이 명확히 언급되어 있으며, 배터리 성능, 상태, 초기화 여부 등 정상 작동하는 중고 제품임을 강조하고 있습니다. 액세서리(밴드, 충전기 등)나 부품용, 매입(삽니다) 게시글과 달리 본체 단품 판매에 집중되어 있어 일반 중고 매물로 분류됩니다."
+    },
+    {
+      "id": "apple-watch-series-3",
+      "brand": "",
+      "model_name": "Apple Watch Series 3",
+      "aliases": [
+        "Apple Watch Series 3",
+        "애플워치",
+        "시리즈 3",
+        "판매",
+        "배터리",
+        "스트랩",
+        "기스",
+        "실버",
+        "블랙",
+        "중고",
+        "본체"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        6
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 모두 애플워치 시리즈 3 본체를 판매하는 일반 중고 매물로, 밴드나 충전기 등 액세서리 전용이 아니며, 구매 요청(삽니다)이나 부품용(부품용, 문제)도 포함되어 있지 않습니다. 따라서 정상적인 중고 애플워치 본체 판매 매물로 분류됩니다."
+    },
+    {
+      "id": "apple-watch-series-3-38mm-42mm",
+      "brand": "",
+      "model_name": "Apple Watch Series 3 38mm / 42mm",
+      "aliases": [
+        "Apple Watch Series 3 38mm / 42mm",
+        "애플워치",
+        "시리즈3",
+        "38mm",
+        "42mm",
+        "배터리 성능",
+        "충전기 포함",
+        "중고",
+        "생활 기스",
+        "초기화 완료",
+        "스트랩"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        11
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 애플워치 시리즈 3의 중고 매물로, 대부분 제품 상태, 배터리 성능, 충전기 포함 여부 등 정상적인 중고 판매 정보를 포함하고 있습니다. 밴드, 충전기, 부품용, 삽니다 등의 액세서리나 매입 관련 키워드가 아닌, 실제 애플워치 본체 판매에 집중되어 있어 일반 중고 매물로 분류됩니다."
+    },
+    {
+      "id": "apple-watch-series-5-44mm-series-6-40mm-series-11-46mm-se1-44mm",
+      "brand": "",
+      "model_name": "Apple Watch Series 5 44mm, Series 6 40mm, Series 11 46mm, SE1 44mm",
+      "aliases": [
+        "Apple Watch Series 5 44mm, Series 6 40mm, Series 11 46mm, SE1 44mm",
+        "애플워치",
+        "시리즈",
+        "풀박스",
+        "배터리 성능",
+        "44mm",
+        "40mm",
+        "셀룰러",
+        "에르메스",
+        "스페이스 블랙",
+        "제트블랙"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        5
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 애플워치 본체를 판매하는 일반 중고 매물로 구성되어 있습니다. 제목과 설명에 '애플워치', '시리즈', '풀박스', '배터리 성능' 등의 단어가 반복적으로 등장하며, 밴드, 충전기, 부품용, 삽니다 같은 액세서리나 매입 관련 단어가 포함되어 있지 않습니다. 따라서 액세서리나 부품용, 매입 게시물이 아닌 정상적인 중고 애플워치 본체 매물로 분류됩니다."
+    },
+    {
+      "id": "apple-watch-series-6",
+      "brand": "",
+      "model_name": "Apple Watch Series 6",
+      "aliases": [
+        "Apple Watch Series 6",
+        "애플워치",
+        "시리즈6",
+        "Series 6",
+        "본체",
+        "충전기",
+        "박스",
+        "배터리효율",
+        "부품용",
+        "액티베이션락",
+        "40mm"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        8
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 애플워치 시리즈6 본체를 중심으로 한 정상 작동하는 중고 매물들로 구성되어 있습니다. 일부 매물에 충전기나 스트랩이 포함되어 있으나, 이는 액세서리 전용이 아닌 본체 판매에 부가적으로 포함된 경우입니다. 부품용이나 액티베이션락 상태의 매물도 일부 있으나, 전체적으로 정상 사용 가능한 애플워치 본체 판매가 주를 이루고 있어 'normal' 타입으로 분류됩니다."
+    },
+    {
+      "id": "apple-watch-series-7-45mm",
+      "brand": "",
+      "model_name": "Apple Watch Series 7 45mm",
+      "aliases": [
+        "Apple Watch Series 7 45mm",
+        "애플워치",
+        "시리즈7",
+        "45mm",
+        "배터리 효율",
+        "셀룰러",
+        "미드나이트",
+        "스타라이트",
+        "티타늄",
+        "중고",
+        "풀박스"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        15
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 모두 애플워치 시리즈7 45mm 모델을 중심으로 한 중고 매물로, 본체 판매가 주를 이루며 밴드, 충전기 등 액세서리는 부가적으로 포함된 경우가 있으나 액세서리 전용 매물은 아님. '삽니다'나 '부품용' 같은 구매 또는 부품용 키워드가 없고, 일반 스마트워치가 아닌 애플워치 시리즈7 모델에 집중되어 있어 정상 중고 매물로 분류됨."
+    }
+  ]
+}

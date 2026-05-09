@@ -7,6 +7,7 @@ import { createHash } from "node:crypto";
 
 import { collectSearchItems, fetchDetail } from "@/lib/bunjang";
 import { CATALOG, normalize, ruleMatch, type Sku } from "@/lib/catalog";
+import { GENERATED_NOISE_RULES } from "@/lib/generated/noise-rules";
 
 // ─── 검색 키워드 ─────────────────────────────────────────────────────────────
 const SEARCH_QUERIES = [
@@ -19,16 +20,19 @@ const SEARCH_QUERIES = [
 const BUYING_KEYWORDS = [
   "구합니다", "구해요", "삽니다", "급구", "매입", "최고가", "전국출장", "구매합니다",
   "구매만 합니다", "매입전문", "매입업체", "출장매입", "매입합니다", "구매원함", "매입문의",
+  ...GENERATED_NOISE_RULES.buying,
 ];
 const CALLOUT_KEYWORDS = [
   "사지마세요", "사기당함", "사기꾼", "저격", "도용", "짝퉁", "조심",
   "타오바오", "타오바이", "taobao", "짭", "가품", "레플", "레플리카",
   "이미테이션", "정품아님", "정품 아님", "비정품",
+  ...GENERATED_NOISE_RULES.callout,
 ];
 const PARTS_KEYWORDS = [
   "부품용", "본체만", "유닛만", "좌측", "우측", "한쪽", "한짝", "한 쪽", "한알", "낱개", "단품",
   "케이스만", "충전케이스만", "충전 케이스만", "액정만", "배터리만",
   "교체용", "호환", "익스텐션", "연장",
+  ...GENERATED_NOISE_RULES.parts,
 ];
 const DAMAGED_KEYWORDS = [
   "고장", "작동안됨", "작동 안됨", "안켜짐", "안 켜짐",
@@ -38,6 +42,7 @@ const DAMAGED_KEYWORDS = [
   "노캔키면", "알갱이 소리", "소리 들리는",
   "수리이력", "찍힘 심", "기스 심", "액정깨짐", "잠김", "초기화불가",
   "배터리 광탈", "배터리효율 낮", "방전",
+  ...GENERATED_NOISE_RULES.damaged,
 ];
 const ACCESSORY_TITLE_KEYWORDS = [
   "스트랩", "밴드", "파우치", "키링", "거치대", "충전기", "어댑터",
@@ -45,8 +50,25 @@ const ACCESSORY_TITLE_KEYWORDS = [
   "악세사리", "악세서리", "이어팁", "보호캡", "메탈밴드", "나토밴드",
   "밀레니즈", "밀레니즈 루프", "가죽스트랩", "시계줄", "충전기케이블",
   "보호필름", "메탈스트랩", "나토 스트랩", "퀵체인지 스트랩", "스포츠밴드", "d버클",
+  ...GENERATED_NOISE_RULES.accessory,
 ];
-const MULTI_KEYWORDS = ["일괄", "묶음", "각각", "선택", "여러개", "재고"];
+const MULTI_KEYWORDS = ["일괄", "묶음", "각각", "선택", "여러개", "재고", ...GENERATED_NOISE_RULES.multi];
+// 업자성/미끼성 매물 — 1개라도 있으면 commercial. 정상 본품 가격 분포에 절대 들어가면 안 됨.
+// 스마트폰 샘플 300건에서 직접 관찰됨: 재고정리·완납폰·제휴카드·유심 그대로 류는
+// 개인 판매자는 거의 쓰지 않고 통신사 대리점/도매상 매물에 집중됨.
+const COMMERCIAL_STRONG_KEYWORDS = [
+  "재고정리", "재고 정리", "선착순특가", "선착순 특가", "선착순 한정",
+  "한정판매", "한정 판매", "마지막입고", "마지막 입고",
+  "극소량보유", "극소량 보유", "완납폰", "제휴카드",
+  "유심 그대로", "유심그대로",
+  ...GENERATED_NOISE_RULES.commercialStrong,
+];
+// 단독으로는 정상 매물에도 나올 수 있으나 가격 왜곡 의심. AI 검토용 플래그만 부여.
+const COMMERCIAL_WEAK_KEYWORDS = [
+  "통신사 특가", "신규개통", "번호이동", "개통 조건", "2년 약정",
+  "자급제 신규", "선착순",
+  ...GENERATED_NOISE_RULES.commercialWeak,
+];
 const NORMAL_SIGNALS = [
   "미개봉", "새상품", "풀박스", "풀구성", "풀세트", "정상작동",
   "정상 작동", "기능 정상", "기능에는 아무런 문제", "문제 없이",
@@ -178,7 +200,7 @@ function multiModelHits(title: string): string[] {
   return hits.length >= 2 ? hits : [];
 }
 
-export type ListingType = "normal" | "parts" | "multi" | "buying" | "callout" | "damaged" | "accessory" | "unknown";
+export type ListingType = "normal" | "parts" | "multi" | "buying" | "callout" | "damaged" | "accessory" | "commercial" | "unknown";
 
 type ClassifyResult = { listingType: ListingType; sku: Sku | null };
 
@@ -188,6 +210,7 @@ function classifyListing(title: string, desc: string, price: number): ClassifyRe
   if (containsAny(title, BUYING_KEYWORDS).length > 0) return { listingType: "buying", sku: null };
   if (price <= 0 || price < 5000) return { listingType: "callout", sku: null };
   if (containsAny(text, CALLOUT_KEYWORDS).length > 0) return { listingType: "callout", sku: null };
+  if (containsAny(text, COMMERCIAL_STRONG_KEYWORDS).length > 0) return { listingType: "commercial", sku: null };
   if (partsHits(title, desc).length > 0) return { listingType: "parts", sku: null };
   if (damagedHits(title, desc).length > 0) return { listingType: "damaged", sku: null };
   if (accessoryTitleHits(title).length > 0) return { listingType: "accessory", sku: null };
@@ -422,7 +445,7 @@ export type PipelineResult = {
   upserted: number;
 };
 
-type AiListingType = "normal" | "counterfeit" | "parts" | "buying" | "callout" | "damaged" | "accessory" | "multi" | "unknown";
+type AiListingType = "normal" | "counterfeit" | "parts" | "buying" | "callout" | "damaged" | "accessory" | "multi" | "commercial" | "unknown";
 type AiConfidence = "high" | "medium" | "low";
 type AiClassification = {
   listingType: AiListingType;
@@ -524,6 +547,7 @@ export async function runPipeline(pagesPerQuery = 2): Promise<PipelineResult> {
       if (!hasNormalSignal(searchItems.get(r.pid)?.name ?? "", r.detail.description)) flags.push("short_title");
     }
     if (!hasNormalSignal(searchItems.get(r.pid)?.name ?? "", r.detail.description)) flags.push("weak_normal_signal");
+    if (containsAny(`${searchItems.get(r.pid)?.name ?? ""}\n${r.detail.description}`, COMMERCIAL_WEAK_KEYWORDS).length > 0) flags.push("commercial_review");
 
     const apiParsed = parseShippingFromTrade(r.detail.tradeData, r.detail.tradesData);
     const descParsed = parseShippingFromDescription(r.detail.description);
@@ -671,7 +695,7 @@ function parseAiClassification(raw: unknown): AiClassification | null {
   const obj = raw as Record<string, unknown>;
   const listingType = String(obj.listing_type ?? obj.listingType ?? "unknown") as AiListingType;
   const confidence = String(obj.confidence ?? "low") as AiConfidence;
-  const allowedTypes: AiListingType[] = ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "unknown"];
+  const allowedTypes: AiListingType[] = ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "commercial", "unknown"];
   const allowedConfidence: AiConfidence[] = ["high", "medium", "low"];
   return {
     listingType: allowedTypes.includes(listingType) ? listingType : "unknown",
@@ -714,9 +738,9 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
           {
             role: "user",
             content: JSON.stringify({
-              allowed_listing_type: ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "unknown"],
+              allowed_listing_type: ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "commercial", "unknown"],
               allowed_confidence: ["high", "medium", "low"],
-              policy: "If the listing explicitly says fake/replica/Taobao/counterfeit, classify counterfeit. If it is only a charging case/body/unit/one side, classify parts. If it is a buying post, classify buying. If the title lists multiple different models/SKUs or selectable models with one price, classify multi. If unsure, unknown.",
+              policy: "If the listing explicitly says fake/replica/Taobao/counterfeit, classify counterfeit. If it is only a charging case/body/unit/one side, classify parts. If it is a buying post, classify buying. If the title lists multiple different models/SKUs or selectable models with one price, classify multi. If it is a commercial/dealer-style listing — stock liquidation (재고정리), first-come specials (선착순특가), telco bundle deals (완납폰/제휴카드/유심 그대로/통신사 특가), bait-style new-product clearance with multiple model options — classify commercial. If unsure, unknown.",
               listing: {
                 title: row.name,
                 price: row.price,

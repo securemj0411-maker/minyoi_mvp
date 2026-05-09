@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "request": "에어팟 애플워치 갤럭시워치",
+  "generated_at": "2026-05-09T08:27:28.335Z",
+  "planner": "ai-category-planner",
+  "categories": [
+    {
+      "id": "airpods",
+      "label": "에어팟",
+      "queries": [
+        "에어팟",
+        "에어팟 프로",
+        "에어팟 2세대",
+        "에어팟 3세대",
+        "에어팟 맥스",
+        "애플 에어팟",
+        "에어팟 무선 이어폰",
+        "에어팟 부품",
+        "에어팟 삽니다"
+      ],
+      "seedSkus": [
+        "airpods_2nd",
+        "airpods_3rd",
+        "airpods_pro",
+        "airpods_max"
+      ],
+      "minNormalPrice": 40000,
+      "clusterK": 16,
+      "aiHints": "Korean context: includes all AirPods generations and models; common noise includes accessories like 케이스, 부품용, and buying posts 삽니다; avoid mixing with 일반 블루투스 이어폰. 검색 쿼리 단계에서 밴드/스트랩/케이스/필름/충전기 같은 액세서리 전용 쿼리는 제외한다.",
+      "generated_by": "ai-category-planner"
+    },
+    {
+      "id": "applewatch",
+      "label": "애플워치",
+      "queries": [
+        "애플워치",
+        "애플워치 시리즈 3",
+        "애플워치 시리즈 4",
+        "애플워치 시리즈 5",
+        "애플워치 시리즈 6",
+        "애플워치 SE",
+        "애플워치 부품",
+        "애플워치 삽니다"
+      ],
+      "seedSkus": [
+        "applewatch_series3",
+        "applewatch_series4",
+        "applewatch_series5",
+        "applewatch_series6",
+        "applewatch_se"
+      ],
+      "minNormalPrice": 50000,
+      "clusterK": 16,
+      "aiHints": "Korean context: includes all Apple Watch series and SE; common noise includes 밴드, 충전기, 부품용, and buying posts 삽니다; avoid mixing with 일반 스마트워치. 검색 쿼리 단계에서 밴드/스트랩/케이스/필름/충전기 같은 액세서리 전용 쿼리는 제외한다.",
+      "generated_by": "ai-category-planner"
+    },
+    {
+      "id": "galaxywatch",
+      "label": "갤럭시워치",
+      "queries": [
+        "갤럭시워치",
+        "갤럭시워치 3",
+        "갤럭시워치 4",
+        "갤럭시워치 5",
+        "갤럭시워치 액티브",
+        "갤럭시워치 부품",
+        "갤럭시워치 삽니다",
+        "삼성 갤럭시워치"
+      ],
+      "seedSkus": [
+        "galaxywatch_3",
+        "galaxywatch_4",
+        "galaxywatch_5",
+        "galaxywatch_active"
+      ],
+      "minNormalPrice": 50000,
+      "clusterK": 16,
+      "aiHints": "Korean context: includes all Galaxy Watch models and Active; common noise includes 밴드, 충전기, 부품용, and buying posts 삽니다; avoid mixing with 일반 스마트워치. 검색 쿼리 단계에서 밴드/스트랩/케이스/필름/충전기 같은 액세서리 전용 쿼리는 제외한다.",
+      "generated_by": "ai-category-planner"
+    }
+  ]
+}

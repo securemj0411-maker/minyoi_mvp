@@ -1,0 +1,861 @@
+{
+  "version": 1,
+  "category": "applewatch",
+  "updated_at": "2026-05-09T08:44:05.945Z",
+  "instructions": [
+    "Set approved=true only for entries you want to promote into runtime.",
+    "Set rejected=true for entries you explicitly do not want to see again.",
+    "Leave both false for pending review.",
+    "promote-catalog --apply reads only approved=true and rejected!=true entries."
+  ],
+  "items": [
+    {
+      "key": "sku:애플워치-시리즈-9-gps-45mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "애플워치-시리즈-9-gps-45mm",
+      "modelName": "애플워치 시리즈 9 GPS 45mm",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "애플워치 시리즈 9 GPS 45mm",
+        "애플워치",
+        "시리즈9",
+        "시리즈10",
+        "GPS",
+        "45mm",
+        "46mm",
+        "배터리 성능",
+        "본체",
+        "박스 포함",
+        "상태"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        14
+      ],
+      "note": "",
+      "candidate": {
+        "id": "애플워치-시리즈-9-gps-45mm",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "애플워치 시리즈 9 GPS 45mm",
+        "aliases": [
+          "애플워치 시리즈 9 GPS 45mm",
+          "애플워치",
+          "시리즈9",
+          "시리즈10",
+          "GPS",
+          "45mm",
+          "46mm",
+          "배터리 성능",
+          "본체",
+          "박스 포함",
+          "상태"
+        ],
+        "mustContain": [
+          [
+            "애플워치 시리즈 9 GPS 45mm",
+            "애플워치",
+            "시리즈9",
+            "시리즈10",
+            "GPS",
+            "45mm",
+            "46mm",
+            "배터리 성능",
+            "본체",
+            "박스 포함",
+            "상태"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "applewatch",
+        "sourceClusterIds": [
+          14
+        ],
+        "promotionHash": "c3a04c0522e5ffef"
+      }
+    },
+    {
+      "key": "sku:애플워치-se-44mm-애플워치-시리즈-11-46mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "애플워치-se-44mm-애플워치-시리즈-11-46mm",
+      "modelName": "애플워치 SE 44mm, 애플워치 시리즈 11 46mm",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "애플워치 SE 44mm, 애플워치 시리즈 11 46mm",
+        "애플워치",
+        "SE",
+        "시리즈3",
+        "시리즈11",
+        "셀룰러",
+        "미개봉",
+        "부품용",
+        "직거래",
+        "기스",
+        "44mm",
+        "46mm"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        1
+      ],
+      "note": "",
+      "candidate": {
+        "id": "애플워치-se-44mm-애플워치-시리즈-11-46mm",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "애플워치 SE 44mm, 애플워치 시리즈 11 46mm",
+        "aliases": [
+          "애플워치 SE 44mm, 애플워치 시리즈 11 46mm",
+          "애플워치",
+          "SE",
+          "시리즈3",
+          "시리즈11",
+          "셀룰러",
+          "미개봉",
+          "부품용",
+          "직거래",
+          "기스",
+          "44mm",
+          "46mm"
+        ],
+        "mustContain": [
+          [
+            "애플워치 SE 44mm, 애플워치 시리즈 11 46mm",
+            "애플워치",
+            "SE",
+            "시리즈3",
+            "시리즈11",
+            "셀룰러",
+            "미개봉",
+            "부품용",
+            "직거래",
+            "기스",
+            "44mm",
+            "46mm"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "applewatch",
+        "sourceClusterIds": [
+          1
+        ],
+        "promotionHash": "cc16a5d43e508a5b"
+      }
+    },
+    {
+      "key": "sku:apple-watch-se-3-40mm-gps",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-watch-se-3-40mm-gps",
+      "modelName": "Apple Watch SE 3 40mm GPS",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "Apple Watch SE 3 40mm GPS",
+        "애플워치 SE",
+        "SE3",
+        "40mm",
+        "배터리 성능",
+        "충전기",
+        "스트랩",
+        "GPS",
+        "중고",
+        "정상 작동",
+        "생활기스"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        2
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-watch-se-3-40mm-gps",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "Apple Watch SE 3 40mm GPS",
+        "aliases": [
+          "Apple Watch SE 3 40mm GPS",
+          "애플워치 SE",
+          "SE3",
+          "40mm",
+          "배터리 성능",
+          "충전기",
+          "스트랩",
+          "GPS",
+          "중고",
+          "정상 작동",
+          "생활기스"
+        ],
+        "mustContain": [
+          [
+            "Apple Watch SE 3 40mm GPS",
+            "애플워치 SE",
+            "SE3",
+            "40mm",
+            "배터리 성능",
+            "충전기",
+            "스트랩",
+            "GPS",
+            "중고",
+            "정상 작동",
+            "생활기스"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "applewatch",
+        "sourceClusterIds": [
+          2
+        ],
+        "promotionHash": "f8ed3559e233df92"
+      }
+    },
+    {
+      "key": "sku:apple-watch-se-40mm-apple-watch-se3-40mm-apple-watch-series-7-45",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-watch-se-40mm-apple-watch-se3-40mm-apple-watch-series-7-45",
+      "modelName": "Apple Watch SE 40mm, Apple Watch SE3 40mm, Apple Watch Series 7 45mm",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "Apple Watch SE 40mm, Apple Watch SE3 40mm, Apple Watch Series 7 45mm",
+        "애플워치",
+        "SE",
+        "SE3",
+        "Series 7",
+        "에르메스",
+        "가죽밴드",
+        "GPS+Cellular",
+        "본체",
+        "미사용 밴드",
+        "배터리 성능"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        4
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-watch-se-40mm-apple-watch-se3-40mm-apple-watch-series-7-45",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "Apple Watch SE 40mm, Apple Watch SE3 40mm, Apple Watch Series 7 45mm",
+        "aliases": [
+          "Apple Watch SE 40mm, Apple Watch SE3 40mm, Apple Watch Series 7 45mm",
+          "애플워치",
+          "SE",
+          "SE3",
+          "Series 7",
+          "에르메스",
+          "가죽밴드",
+          "GPS+Cellular",
+          "본체",
+          "미사용 밴드",
+          "배터리 성능"
+        ],
+        "mustContain": [
+          [
+            "Apple Watch SE 40mm, Apple Watch SE3 40mm, Apple Watch Series 7 45mm",
+            "애플워치",
+            "SE",
+            "SE3",
+            "Series 7",
+            "에르메스",
+            "가죽밴드",
+            "GPS+Cellular",
+            "본체",
+            "미사용 밴드",
+            "배터리 성능"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "applewatch",
+        "sourceClusterIds": [
+          4
+        ],
+        "promotionHash": "15ad6f5058e699f6"
+      }
+    },
+    {
+      "key": "sku:apple-watch-se3-44mm-se3-40mm-se2-40mm-se1",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-watch-se3-44mm-se3-40mm-se2-40mm-se1",
+      "modelName": "Apple Watch SE3 44mm / SE3 40mm / SE2 40mm / SE1",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "Apple Watch SE3 44mm / SE3 40mm / SE2 40mm / SE1",
+        "애플워치",
+        "SE3",
+        "SE2",
+        "미개봉",
+        "새제품",
+        "정품",
+        "충전기",
+        "스트랩",
+        "부품용",
+        "44mm",
+        "40mm"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        10
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-watch-se3-44mm-se3-40mm-se2-40mm-se1",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "Apple Watch SE3 44mm / SE3 40mm / SE2 40mm / SE1",
+        "aliases": [
+          "Apple Watch SE3 44mm / SE3 40mm / SE2 40mm / SE1",
+          "애플워치",
+          "SE3",
+          "SE2",
+          "미개봉",
+          "새제품",
+          "정품",
+          "충전기",
+          "스트랩",
+          "부품용",
+          "44mm",
+          "40mm"
+        ],
+        "mustContain": [
+          [
+            "Apple Watch SE3 44mm / SE3 40mm / SE2 40mm / SE1",
+            "애플워치",
+            "SE3",
+            "SE2",
+            "미개봉",
+            "새제품",
+            "정품",
+            "충전기",
+            "스트랩",
+            "부품용",
+            "44mm",
+            "40mm"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "applewatch",
+        "sourceClusterIds": [
+          10
+        ],
+        "promotionHash": "de57f9cd5a2b042b"
+      }
+    },
+    {
+      "key": "sku:apple-watch-series-10-gps-46mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-watch-series-10-gps-46mm",
+      "modelName": "Apple Watch Series 10 GPS 46mm",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "Apple Watch Series 10 GPS 46mm",
+        "애플워치",
+        "Series 10",
+        "Series 7",
+        "SE",
+        "GPS",
+        "배터리 성능",
+        "초기화 완료",
+        "중고",
+        "알루미늄",
+        "정상 작동"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        13
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-watch-series-10-gps-46mm",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "Apple Watch Series 10 GPS 46mm",
+        "aliases": [
+          "Apple Watch Series 10 GPS 46mm",
+          "애플워치",
+          "Series 10",
+          "Series 7",
+          "SE",
+          "GPS",
+          "배터리 성능",
+          "초기화 완료",
+          "중고",
+          "알루미늄",
+          "정상 작동"
+        ],
+        "mustContain": [
+          [
+            "Apple Watch Series 10 GPS 46mm",
+            "애플워치",
+            "Series 10",
+            "Series 7",
+            "SE",
+            "GPS",
+            "배터리 성능",
+            "초기화 완료",
+            "중고",
+            "알루미늄",
+            "정상 작동"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "applewatch",
+        "sourceClusterIds": [
+          13
+        ],
+        "promotionHash": "4535f2755724888d"
+      }
+    },
+    {
+      "key": "sku:apple-watch-series-3",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-watch-series-3",
+      "modelName": "Apple Watch Series 3",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "Apple Watch Series 3",
+        "애플워치",
+        "시리즈 3",
+        "판매",
+        "배터리",
+        "스트랩",
+        "기스",
+        "실버",
+        "블랙",
+        "중고",
+        "본체"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        6
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-watch-series-3",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "Apple Watch Series 3",
+        "aliases": [
+          "Apple Watch Series 3",
+          "애플워치",
+          "시리즈 3",
+          "판매",
+          "배터리",
+          "스트랩",
+          "기스",
+          "실버",
+          "블랙",
+          "중고",
+          "본체"
+        ],
+        "mustContain": [
+          [
+            "Apple Watch Series 3",
+            "애플워치",
+            "시리즈 3",
+            "판매",
+            "배터리",
+            "스트랩",
+            "기스",
+            "실버",
+            "블랙",
+            "중고",
+            "본체"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "applewatch",
+        "sourceClusterIds": [
+          6
+        ],
+        "promotionHash": "542adbd8fa675b71"
+      }
+    },
+    {
+      "key": "sku:apple-watch-series-3-38mm-42mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-watch-series-3-38mm-42mm",
+      "modelName": "Apple Watch Series 3 38mm / 42mm",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "Apple Watch Series 3 38mm / 42mm",
+        "애플워치",
+        "시리즈3",
+        "38mm",
+        "42mm",
+        "배터리 성능",
+        "충전기 포함",
+        "중고",
+        "생활 기스",
+        "초기화 완료",
+        "스트랩"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        11
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-watch-series-3-38mm-42mm",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "Apple Watch Series 3 38mm / 42mm",
+        "aliases": [
+          "Apple Watch Series 3 38mm / 42mm",
+          "애플워치",
+          "시리즈3",
+          "38mm",
+          "42mm",
+          "배터리 성능",
+          "충전기 포함",
+          "중고",
+          "생활 기스",
+          "초기화 완료",
+          "스트랩"
+        ],
+        "mustContain": [
+          [
+            "Apple Watch Series 3 38mm / 42mm",
+            "애플워치",
+            "시리즈3",
+            "38mm",
+            "42mm",
+            "배터리 성능",
+            "충전기 포함",
+            "중고",
+            "생활 기스",
+            "초기화 완료",
+            "스트랩"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "applewatch",
+        "sourceClusterIds": [
+          11
+        ],
+        "promotionHash": "b80ee2cae1aa88d6"
+      }
+    },
+    {
+      "key": "sku:apple-watch-series-5-44mm-series-6-40mm-series-11-46mm-se1-44mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-watch-series-5-44mm-series-6-40mm-series-11-46mm-se1-44mm",
+      "modelName": "Apple Watch Series 5 44mm, Series 6 40mm, Series 11 46mm, SE1 44mm",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "Apple Watch Series 5 44mm, Series 6 40mm, Series 11 46mm, SE1 44mm",
+        "애플워치",
+        "시리즈",
+        "풀박스",
+        "배터리 성능",
+        "44mm",
+        "40mm",
+        "셀룰러",
+        "에르메스",
+        "스페이스 블랙",
+        "제트블랙"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        5
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-watch-series-5-44mm-series-6-40mm-series-11-46mm-se1-44mm",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "Apple Watch Series 5 44mm, Series 6 40mm, Series 11 46mm, SE1 44mm",
+        "aliases": [
+          "Apple Watch Series 5 44mm, Series 6 40mm, Series 11 46mm, SE1 44mm",
+          "애플워치",
+          "시리즈",
+          "풀박스",
+          "배터리 성능",
+          "44mm",
+          "40mm",
+          "셀룰러",
+          "에르메스",
+          "스페이스 블랙",
+          "제트블랙"
+        ],
+        "mustContain": [
+          [
+            "Apple Watch Series 5 44mm, Series 6 40mm, Series 11 46mm, SE1 44mm",
+            "애플워치",
+            "시리즈",
+            "풀박스",
+            "배터리 성능",
+            "44mm",
+            "40mm",
+            "셀룰러",
+            "에르메스",
+            "스페이스 블랙",
+            "제트블랙"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "applewatch",
+        "sourceClusterIds": [
+          5
+        ],
+        "promotionHash": "5e6e3a8246633ac1"
+      }
+    },
+    {
+      "key": "sku:apple-watch-series-6",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-watch-series-6",
+      "modelName": "Apple Watch Series 6",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "Apple Watch Series 6",
+        "애플워치",
+        "시리즈6",
+        "Series 6",
+        "본체",
+        "충전기",
+        "박스",
+        "배터리효율",
+        "부품용",
+        "액티베이션락",
+        "40mm"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        8
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-watch-series-6",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "Apple Watch Series 6",
+        "aliases": [
+          "Apple Watch Series 6",
+          "애플워치",
+          "시리즈6",
+          "Series 6",
+          "본체",
+          "충전기",
+          "박스",
+          "배터리효율",
+          "부품용",
+          "액티베이션락",
+          "40mm"
+        ],
+        "mustContain": [
+          [
+            "Apple Watch Series 6",
+            "애플워치",
+            "시리즈6",
+            "Series 6",
+            "본체",
+            "충전기",
+            "박스",
+            "배터리효율",
+            "부품용",
+            "액티베이션락",
+            "40mm"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "applewatch",
+        "sourceClusterIds": [
+          8
+        ],
+        "promotionHash": "dbac8d0e95c5cdfb"
+      }
+    },
+    {
+      "key": "sku:apple-watch-series-7-45mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-watch-series-7-45mm",
+      "modelName": "Apple Watch Series 7 45mm",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "Apple Watch Series 7 45mm",
+        "애플워치",
+        "시리즈7",
+        "45mm",
+        "배터리 효율",
+        "셀룰러",
+        "미드나이트",
+        "스타라이트",
+        "티타늄",
+        "중고",
+        "풀박스"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        15
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-watch-series-7-45mm",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "Apple Watch Series 7 45mm",
+        "aliases": [
+          "Apple Watch Series 7 45mm",
+          "애플워치",
+          "시리즈7",
+          "45mm",
+          "배터리 효율",
+          "셀룰러",
+          "미드나이트",
+          "스타라이트",
+          "티타늄",
+          "중고",
+          "풀박스"
+        ],
+        "mustContain": [
+          [
+            "Apple Watch Series 7 45mm",
+            "애플워치",
+            "시리즈7",
+            "45mm",
+            "배터리 효율",
+            "셀룰러",
+            "미드나이트",
+            "스타라이트",
+            "티타늄",
+            "중고",
+            "풀박스"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "applewatch",
+        "sourceClusterIds": [
+          15
+        ],
+        "promotionHash": "4f2df762881bee60"
+      }
+    },
+    {
+      "key": "noise:parts:부품용",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "parts",
+      "keyword": "부품용",
+      "precision": 0.8,
+      "hitCount": 93,
+      "note": "",
+      "candidate": {
+        "keyword": "부품용",
+        "type": "parts",
+        "precision": 0.8,
+        "hitCount": 93,
+        "promotionHash": "24d5857c83618853"
+      }
+    },
+    {
+      "key": "noise:buying:삽니다",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "buying",
+      "keyword": "삽니다",
+      "precision": 1,
+      "hitCount": 14,
+      "note": "",
+      "candidate": {
+        "keyword": "삽니다",
+        "type": "buying",
+        "precision": 1,
+        "hitCount": 14,
+        "promotionHash": "c708a8b84aa986dd"
+      }
+    },
+    {
+      "key": "noise:parts:부품용으로",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "parts",
+      "keyword": "부품용으로",
+      "precision": 1,
+      "hitCount": 53,
+      "note": "",
+      "candidate": {
+        "keyword": "부품용으로",
+        "type": "parts",
+        "precision": 1,
+        "hitCount": 53,
+        "promotionHash": "9d7ec3090335c2f2"
+      }
+    },
+    {
+      "key": "noise:buying:매입하는",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "buying",
+      "keyword": "매입하는",
+      "precision": 1,
+      "hitCount": 9,
+      "note": "",
+      "candidate": {
+        "keyword": "매입하는",
+        "type": "buying",
+        "precision": 1,
+        "hitCount": 9,
+        "promotionHash": "19c8da3d5c9b6424"
+      }
+    }
+  ]
+}

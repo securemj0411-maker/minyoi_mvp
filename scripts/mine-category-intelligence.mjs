@@ -81,6 +81,12 @@ const NOISE_SEEDS = {
   buying: ["삽니다", "구합니다", "매입", "구매합니다", "급구"],
   counterfeit: ["짭", "가품", "레플", "이미테이션", "정품아님", "타오바오"],
   multi: ["일괄", "묶음", "각각", "선택", "여러대", "여러개"],
+  // 업자성/미끼성. 정상 본품 가격 분포에서 반드시 제외.
+  commercial: [
+    "재고정리", "선착순특가", "선착순 특가", "선착순 한정", "한정판매", "마지막입고", "마지막 입고",
+    "극소량보유", "극소량 보유", "완납폰", "제휴카드", "유심 그대로", "유심그대로",
+    "통신사 특가", "신규개통", "번호이동",
+  ],
 };
 
 function argValue(name, fallback) {
@@ -154,7 +160,7 @@ function noiseHits(sample) {
 
 function isLikelyCoreListing(sample, category) {
   const noisyTypes = new Set(Object.keys(sample.noiseHits));
-  if (["accessory", "parts", "buying", "counterfeit", "multi"].some((type) => noisyTypes.has(type))) return false;
+  if (["accessory", "parts", "buying", "counterfeit", "multi", "commercial"].some((type) => noisyTypes.has(type))) return false;
   if (category === "smartphone" && sample.price < 50000) return false;
   if (category === "tablet" && sample.price < 50000) return false;
   if (category === "laptop" && sample.price < 100000) return false;
@@ -358,8 +364,8 @@ async function callOpenAi({ samples, category, config, prices }) {
           ],
           noise_rules: [
             {
-              listing_type: "accessory|parts|damaged|buying|counterfeit|multi|callout",
-              add_to: "BUYING_KEYWORDS|CALLOUT_KEYWORDS|PARTS_KEYWORDS|DAMAGED_KEYWORDS|ACCESSORY_TITLE_KEYWORDS|MULTI_KEYWORDS|regex|none",
+              listing_type: "accessory|parts|damaged|buying|counterfeit|multi|callout|commercial",
+              add_to: "BUYING_KEYWORDS|CALLOUT_KEYWORDS|PARTS_KEYWORDS|DAMAGED_KEYWORDS|ACCESSORY_TITLE_KEYWORDS|MULTI_KEYWORDS|COMMERCIAL_STRONG_KEYWORDS|COMMERCIAL_WEAK_KEYWORDS|regex|none",
               keywords_or_regex: ["string"],
               negative_context: ["string"],
               evidence_pids: ["string"],
@@ -518,7 +524,11 @@ async function runCategory({ category, config, limit, pages, generatedAt }) {
   let samples;
   if (hasFlag("--reuse-samples")) {
     samples = JSON.parse(await readFile(path.join(categoryDir, "samples.json"), "utf-8"));
-    console.log(`\n[${category}] reusing samples (${samples.length})`);
+    // Recompute noise hits with current seeds — noise rules evolve faster than samples.
+    for (const sample of samples) {
+      sample.noiseHits = noiseHits(sample);
+    }
+    console.log(`\n[${category}] reusing samples (${samples.length}) — noiseHits refreshed`);
   } else {
     console.log(`\n[${category}] collecting samples (limit=${limit}, pages=${pages})`);
     samples = await collectSamples({ queries: config.queries, limit, pages });

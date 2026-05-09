@@ -1,0 +1,283 @@
+{
+  "version": 1,
+  "category": "applewatch",
+  "generated_at": "2026-05-09T08:27:28.335Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [
+    {
+      "keyword": "부품용",
+      "type": "parts",
+      "precision": 0.8,
+      "hit_count": 93,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "총 5개 매물 중 4개가 부품용으로 적절히 분류되어 전체 정밀도는 0.8입니다."
+    },
+    {
+      "keyword": "삽니다",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 14,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 '삽니다' 키워드를 포함하여 구매 의도가 명확하므로 전체 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "부품용으로",
+      "type": "parts",
+      "precision": 1,
+      "hit_count": 53,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 부품용으로 명확히 표시되어 있어 전체적으로 부품용 타입 매물임이 확실합니다."
+    },
+    {
+      "keyword": "매입",
+      "type": "buying",
+      "precision": 0.6,
+      "hit_count": 17,
+      "risk_flags": [],
+      "approval_status": "needs_human_review",
+      "verdict_ko": "총 5개 매물 중 3개가 'buying' 타입으로 정확히 분류되어 전체 precision은 0.6입니다."
+    },
+    {
+      "keyword": "울트라",
+      "type": "accessory",
+      "precision": 0.4,
+      "hit_count": 25,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "총 5개 중 2개가 액세서리 타입으로 적합하여 정밀도는 0.4임"
+    },
+    {
+      "keyword": "50",
+      "type": "noise",
+      "precision": 0.4,
+      "hit_count": 27,
+      "risk_flags": [
+        "generic_noise_type",
+        "numeric_only"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 매물 중 2개가 'noise' 타입으로 정확히 분류되어 정밀도는 0.4입니다."
+    },
+    {
+      "keyword": "매입하는",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 9,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 '매입하는' 즉 buying 타입에 부합하여 precision은 1.0입니다."
+    },
+    {
+      "keyword": "se1",
+      "type": "noise",
+      "precision": 0.8,
+      "hit_count": 20,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 중 4개가 noise 타입으로 적합하여 전체 precision은 0.8로 양호합니다."
+    },
+    {
+      "keyword": "애플워치4",
+      "type": "accessory",
+      "precision": 0,
+      "hit_count": 13,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "모든 매물이 액세서리 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "울트라1",
+      "type": "buying",
+      "precision": 0.6,
+      "hit_count": 10,
+      "risk_flags": [],
+      "approval_status": "needs_human_review",
+      "verdict_ko": "총 5개 중 3개가 buying 타입으로 정확히 분류되어 정밀도는 0.6입니다."
+    },
+    {
+      "keyword": "받습니다",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 11,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "주어진 매물 중 '받습니다' 키워드가 포함된 매입 의사 표현 매물 2개 모두 정확히 'noise' 타입으로 판단되어 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "애플워치se",
+      "type": "accessory",
+      "precision": 0,
+      "hit_count": 46,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "모든 매물이 액세서리 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "언제든",
+      "type": "noise",
+      "precision": 0.2,
+      "hit_count": 12,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체적으로 대부분 매입 요청 글로 noise 타입이 아니며, 한 매물만 noise 타입으로 판단되어 정밀도는 0.2입니다."
+    },
+    {
+      "keyword": "se2",
+      "type": "buying",
+      "precision": 0.4,
+      "hit_count": 29,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "총 5개 매물 중 2개가 buying 타입으로 정확히 분류되어 전체 precision은 0.4입니다."
+    },
+    {
+      "keyword": "맨처음",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 8,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 '맨처음' 키워드를 포함하고 있어 모두 'noise' 타입으로 정확히 분류됨."
+    },
+    {
+      "keyword": "양식부터",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 8,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 '양식부터' 키워드를 포함한 'noise' 타입으로 정확히 분류되었습니다."
+    },
+    {
+      "keyword": "안적으시면",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 8,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 \"안적으시면\" 키워드를 포함하여 noise 타입으로 정확히 분류됨."
+    },
+    {
+      "keyword": "답장안합니다",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 8,
+      "risk_flags": [
+        "generic_noise_type",
+        "sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 \"답장안합니다\" 문구를 포함하여 noise 타입으로 정확히 분류되었습니다."
+    }
+  ],
+  "cluster_evidence": [
+    {
+      "cluster_id": 0,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "두 개의 대표 샘플 모두 애플워치 본체가 아닌 충전 거치대를 판매하는 매물로, 엘라고 브랜드의 애플워치 충전 스탠드 및 거치대임을 명확히 언급하고 있습니다. 또한 설명에서 애플워치와 직접적인 부품이나 본체가 아닌 충전용 액세서리임을 강조하고 있어 액세서리 타입으로 분류하는 것이 적합합니다.",
+      "evidence_terms": [
+        "애플워치",
+        "충전",
+        "거치대",
+        "엘라고",
+        "스탠드",
+        "충전거치대",
+        "맥킨토시 디자인",
+        "워키토키 디자인",
+        "울트라 사이즈 호환"
+      ]
+    },
+    {
+      "cluster_id": 3,
+      "listing_type": "parts",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 '부품용', '액정 깨진', '수리', '화면이 켜지지 않음', '락 걸림' 등의 단어가 반복적으로 등장하며, 상태가 'DAMAGED', 'HEAVILY_USED'로 표기되어 정상 작동하지 않는 제품을 부품용으로 판매하는 매물임을 명확히 나타냅니다. 또한 스트랩, 충전기 등 액세서리는 별도임을 명시하여 액세서리와 구분됩니다.",
+      "evidence_terms": [
+        "부품용",
+        "액정 깨진",
+        "수리",
+        "화면이 켜지지 않음",
+        "락 걸림",
+        "DAMAGED",
+        "HEAVILY_USED",
+        "스트랩 별도",
+        "충전기 없음",
+        "애플워치 SE"
+      ]
+    },
+    {
+      "cluster_id": 7,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "대표 샘플은 애플워치 본체가 아닌 밴드(스트랩) 제품으로, 시리즈4-6 및 SE 모델과 호환되는 케이스티파이 무라카미 콜라보 밴드를 판매하는 내용입니다. 밴드, 케이스티파이, SE, 시리즈4-6 등의 키워드가 액세서리임을 명확히 하며, 본체가 아닌 부속품임을 나타내므로 액세서리 타입으로 분류합니다.",
+      "evidence_terms": [
+        "케이스티파이",
+        "애플워치",
+        "밴드",
+        "시리즈4-6",
+        "SE",
+        "무라카미",
+        "콜라보",
+        "미개봉",
+        "새상품"
+      ]
+    },
+    {
+      "cluster_id": 9,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 '삽니다', '매입'이라는 단어가 반복적으로 등장하며, 판매가 아닌 구매 의사를 나타내는 게시물들로 구성되어 있습니다. 또한 애플워치 전 시리즈와 SE, 울트라, 스테인리스, 에르메스, 티타늄 등 다양한 모델을 매입 대상으로 명시하고 있어 구매 요청 게시물임이 명확합니다. 액세서리나 부품용, 일반 판매 게시물과는 구분되는 특징을 가지고 있습니다.",
+      "evidence_terms": [
+        "매입",
+        "삽니다",
+        "애플워치",
+        "se2",
+        "울트라",
+        "티타늄",
+        "스테인리스",
+        "에르메스",
+        "기스",
+        "배터리효율"
+      ]
+    },
+    {
+      "cluster_id": 12,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "두 매물 모두 '에르메스 애플워치 싱글투어 골드 스트랩'과 '애플워치 에르메스 로즈 텍사스 루즈 피그먼트 점핑 싱글 스트랩'으로, 애플워치 본체가 아닌 스트랩(밴드) 제품임을 명확히 하고 있습니다. 또한 '미사용 새제품', '100% 정품'이라는 설명과 함께 스트랩 사이즈(41mm, 42,44,45mm)를 명시하여 액세서리임을 구분할 수 있습니다. 따라서 이 클러스터는 애플워치 액세서리 카테고리에 해당합니다.",
+      "evidence_terms": [
+        "에르메스",
+        "애플워치",
+        "싱글투어",
+        "스트랩",
+        "밴드",
+        "미사용",
+        "새제품",
+        "정품",
+        "41mm",
+        "42mm"
+      ]
+    }
+  ]
+}

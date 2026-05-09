@@ -1,0 +1,24 @@
+[
+  {
+    "key": "unknown",
+    "count": 337,
+    "min": 50000,
+    "p25": 90000,
+    "median": 165000,
+    "p75": 289000,
+    "max": 1350000,
+    "core_sample_count": 337,
+    "excluded_count": 162
+  },
+  {
+    "key": "iphone-16-pro",
+    "count": 1,
+    "min": 8744440,
+    "p25": 8744440,
+    "median": 8744440,
+    "p75": 8744440,
+    "max": 8744440,
+    "core_sample_count": 1,
+    "excluded_count": 162
+  }
+]

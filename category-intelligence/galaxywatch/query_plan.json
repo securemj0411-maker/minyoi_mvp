@@ -1,0 +1,25 @@
+{
+  "category": "galaxywatch",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "갤럭시워치",
+  "queries": [
+    "갤럭시워치",
+    "갤럭시워치 3",
+    "갤럭시워치 4",
+    "갤럭시워치 5",
+    "갤럭시워치 액티브",
+    "갤럭시워치 부품",
+    "갤럭시워치 삽니다",
+    "삼성 갤럭시워치"
+  ],
+  "seedSkus": [
+    "galaxywatch_3",
+    "galaxywatch_4",
+    "galaxywatch_5",
+    "galaxywatch_active"
+  ],
+  "minNormalPrice": 50000,
+  "clusterK": 16,
+  "aiHints": "Korean context: includes all Galaxy Watch models and Active; common noise includes 밴드, 충전기, 부품용, and buying posts 삽니다; avoid mixing with 일반 스마트워치. 검색 쿼리 단계에서 밴드/스트랩/케이스/필름/충전기 같은 액세서리 전용 쿼리는 제외한다.\n교차 카테고리 지식: 매입=buying(p=0.95), 매입하는=buying(p=1), 맥세이프=accessory(p=1), 문제=parts(p=1), 부품용=parts(p=1), 부품용으로=parts(p=1), 삽니다=buying(p=1), 실리콘케이스=accessory(p=1), 오른쪽=parts(p=1), 일괄=accessory(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

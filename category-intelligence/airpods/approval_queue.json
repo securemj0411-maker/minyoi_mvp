@@ -1,0 +1,549 @@
+{
+  "version": 1,
+  "category": "airpods",
+  "updated_at": "2026-05-09T08:44:05.730Z",
+  "instructions": [
+    "Set approved=true only for entries you want to promote into runtime.",
+    "Set rejected=true for entries you explicitly do not want to see again.",
+    "Leave both false for pending review.",
+    "promote-catalog --apply reads only approved=true and rejected!=true entries."
+  ],
+  "items": [
+    {
+      "key": "sku:애플-에어팟-4세대-노이즈-캔슬링-미탑재-모델-포함",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "애플-에어팟-4세대-노이즈-캔슬링-미탑재-모델-포함",
+      "modelName": "애플 에어팟 4세대 (노이즈 캔슬링 미탑재 모델 포함)",
+      "brand": "Apple",
+      "category": "earphone",
+      "aliases": [
+        "애플 에어팟 4세대 (노이즈 캔슬링 미탑재 모델 포함)",
+        "애플 에어팟 4",
+        "노캔X",
+        "미개봉",
+        "새상품",
+        "블루투스 무선 이어폰",
+        "충전 본체",
+        "직거래",
+        "정품",
+        "노이즈 캔슬링",
+        "선물용"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        15
+      ],
+      "note": "",
+      "candidate": {
+        "id": "애플-에어팟-4세대-노이즈-캔슬링-미탑재-모델-포함",
+        "brand": "Apple",
+        "category": "earphone",
+        "modelName": "애플 에어팟 4세대 (노이즈 캔슬링 미탑재 모델 포함)",
+        "aliases": [
+          "애플 에어팟 4세대 (노이즈 캔슬링 미탑재 모델 포함)",
+          "애플 에어팟 4",
+          "노캔X",
+          "미개봉",
+          "새상품",
+          "블루투스 무선 이어폰",
+          "충전 본체",
+          "직거래",
+          "정품",
+          "노이즈 캔슬링",
+          "선물용"
+        ],
+        "mustContain": [
+          [
+            "애플 에어팟 4세대 (노이즈 캔슬링 미탑재 모델 포함)",
+            "애플 에어팟 4",
+            "노캔X",
+            "미개봉",
+            "새상품",
+            "블루투스 무선 이어폰",
+            "충전 본체",
+            "직거래",
+            "정품",
+            "노이즈 캔슬링",
+            "선물용"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "airpods",
+        "sourceClusterIds": [
+          15
+        ],
+        "promotionHash": "12ba3d8796e436c2"
+      }
+    },
+    {
+      "key": "sku:에어팟-3세대",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "에어팟-3세대",
+      "modelName": "에어팟 3세대",
+      "brand": "",
+      "category": "earphone",
+      "aliases": [
+        "에어팟 3세대",
+        "판매합니다",
+        "정상 작동",
+        "본체",
+        "풀박스",
+        "기능 이상 없음",
+        "중고",
+        "생활기스",
+        "음질",
+        "단품"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        1
+      ],
+      "note": "",
+      "candidate": {
+        "id": "에어팟-3세대",
+        "brand": "",
+        "category": "earphone",
+        "modelName": "에어팟 3세대",
+        "aliases": [
+          "에어팟 3세대",
+          "판매합니다",
+          "정상 작동",
+          "본체",
+          "풀박스",
+          "기능 이상 없음",
+          "중고",
+          "생활기스",
+          "음질",
+          "단품"
+        ],
+        "mustContain": [
+          [
+            "에어팟 3세대",
+            "판매합니다",
+            "정상 작동",
+            "본체",
+            "풀박스",
+            "기능 이상 없음",
+            "중고",
+            "생활기스",
+            "음질",
+            "단품"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "airpods",
+        "sourceClusterIds": [
+          1
+        ],
+        "promotionHash": "fe82a5c1cf7b0fae"
+      }
+    },
+    {
+      "key": "sku:에어팟-프로-3세대",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "에어팟-프로-3세대",
+      "modelName": "에어팟 프로 3세대",
+      "brand": "Apple",
+      "category": "earphone",
+      "aliases": [
+        "에어팟 프로 3세대",
+        "미개봉",
+        "새상품",
+        "정품",
+        "판매합니다",
+        "선물",
+        "안전결제",
+        "택배거래",
+        "새제품",
+        "무상 AS",
+        "에어팟 3세대",
+        "풀박스",
+        "사용감 적음",
+        "애플스토어 구매",
+        "보증",
+        "직거래"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        9,
+        13
+      ],
+      "note": "",
+      "candidate": {
+        "id": "에어팟-프로-3세대",
+        "brand": "Apple",
+        "category": "earphone",
+        "modelName": "에어팟 프로 3세대",
+        "aliases": [
+          "에어팟 프로 3세대",
+          "미개봉",
+          "새상품",
+          "정품",
+          "판매합니다",
+          "선물",
+          "안전결제",
+          "택배거래",
+          "새제품",
+          "무상 AS",
+          "에어팟 3세대",
+          "풀박스",
+          "사용감 적음",
+          "애플스토어 구매",
+          "보증",
+          "직거래"
+        ],
+        "mustContain": [
+          [
+            "에어팟 프로 3세대",
+            "미개봉",
+            "새상품",
+            "정품",
+            "판매합니다",
+            "선물",
+            "안전결제",
+            "택배거래",
+            "새제품",
+            "무상 AS",
+            "에어팟 3세대",
+            "풀박스",
+            "사용감 적음",
+            "애플스토어 구매",
+            "보증",
+            "직거래"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "airpods",
+        "sourceClusterIds": [
+          9,
+          13
+        ],
+        "promotionHash": "90016bd8daabd987"
+      }
+    },
+    {
+      "key": "sku:airpods-max-1세대-8핀-실버",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "airpods-max-1세대-8핀-실버",
+      "modelName": "AirPods Max 1세대 8핀 실버",
+      "brand": "",
+      "category": "earphone",
+      "aliases": [
+        "AirPods Max 1세대 8핀 실버",
+        "에어팟 맥스",
+        "1세대",
+        "실버",
+        "풀박스",
+        "8핀",
+        "스마트케이스",
+        "실리콘커버",
+        "사용감 적음",
+        "SSS급",
+        "직거래"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        14
+      ],
+      "note": "",
+      "candidate": {
+        "id": "airpods-max-1세대-8핀-실버",
+        "brand": "",
+        "category": "earphone",
+        "modelName": "AirPods Max 1세대 8핀 실버",
+        "aliases": [
+          "AirPods Max 1세대 8핀 실버",
+          "에어팟 맥스",
+          "1세대",
+          "실버",
+          "풀박스",
+          "8핀",
+          "스마트케이스",
+          "실리콘커버",
+          "사용감 적음",
+          "SSS급",
+          "직거래"
+        ],
+        "mustContain": [
+          [
+            "AirPods Max 1세대 8핀 실버",
+            "에어팟 맥스",
+            "1세대",
+            "실버",
+            "풀박스",
+            "8핀",
+            "스마트케이스",
+            "실리콘커버",
+            "사용감 적음",
+            "SSS급",
+            "직거래"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "airpods",
+        "sourceClusterIds": [
+          14
+        ],
+        "promotionHash": "3d0d273fd81f3d8a"
+      }
+    },
+    {
+      "key": "sku:airpods-max-미드나이트",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "airpods-max-미드나이트",
+      "modelName": "AirPods Max 미드나이트",
+      "brand": "",
+      "category": "earphone",
+      "aliases": [
+        "AirPods Max 미드나이트",
+        "에어팟맥스",
+        "미드나이트",
+        "기스",
+        "헤드늘어짐",
+        "C타입",
+        "박스",
+        "직거래",
+        "우체국택배",
+        "실사용"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        2
+      ],
+      "note": "",
+      "candidate": {
+        "id": "airpods-max-미드나이트",
+        "brand": "",
+        "category": "earphone",
+        "modelName": "AirPods Max 미드나이트",
+        "aliases": [
+          "AirPods Max 미드나이트",
+          "에어팟맥스",
+          "미드나이트",
+          "기스",
+          "헤드늘어짐",
+          "C타입",
+          "박스",
+          "직거래",
+          "우체국택배",
+          "실사용"
+        ],
+        "mustContain": [
+          [
+            "AirPods Max 미드나이트",
+            "에어팟맥스",
+            "미드나이트",
+            "기스",
+            "헤드늘어짐",
+            "C타입",
+            "박스",
+            "직거래",
+            "우체국택배",
+            "실사용"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "airpods",
+        "sourceClusterIds": [
+          2
+        ],
+        "promotionHash": "6c3aae0f5c9bd916"
+      }
+    },
+    {
+      "key": "sku:airpods-pro-2세대-usb-c-타입",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "airpods-pro-2세대-usb-c-타입",
+      "modelName": "AirPods Pro 2세대 USB-C 타입",
+      "brand": "",
+      "category": "earphone",
+      "aliases": [
+        "AirPods Pro 2세대 USB-C 타입",
+        "미개봉",
+        "에어팟 프로 2",
+        "USB-C",
+        "새제품",
+        "선물받았는데",
+        "안전결제",
+        "판매합니다",
+        "완전 새 제품",
+        "에어팟 프로2"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        3
+      ],
+      "note": "",
+      "candidate": {
+        "id": "airpods-pro-2세대-usb-c-타입",
+        "brand": "",
+        "category": "earphone",
+        "modelName": "AirPods Pro 2세대 USB-C 타입",
+        "aliases": [
+          "AirPods Pro 2세대 USB-C 타입",
+          "미개봉",
+          "에어팟 프로 2",
+          "USB-C",
+          "새제품",
+          "선물받았는데",
+          "안전결제",
+          "판매합니다",
+          "완전 새 제품",
+          "에어팟 프로2"
+        ],
+        "mustContain": [
+          [
+            "AirPods Pro 2세대 USB-C 타입",
+            "미개봉",
+            "에어팟 프로 2",
+            "USB-C",
+            "새제품",
+            "선물받았는데",
+            "안전결제",
+            "판매합니다",
+            "완전 새 제품",
+            "에어팟 프로2"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "airpods",
+        "sourceClusterIds": [
+          3
+        ],
+        "promotionHash": "f3b24e75405c4b46"
+      }
+    },
+    {
+      "key": "noise:parts:왼쪽",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "parts",
+      "keyword": "왼쪽",
+      "precision": 0.8,
+      "hitCount": 70,
+      "note": "",
+      "candidate": {
+        "keyword": "왼쪽",
+        "type": "parts",
+        "precision": 0.8,
+        "hitCount": 70,
+        "promotionHash": "03f584cdc9702ddf"
+      }
+    },
+    {
+      "key": "noise:parts:부품용",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "parts",
+      "keyword": "부품용",
+      "precision": 1,
+      "hitCount": 31,
+      "note": "",
+      "candidate": {
+        "keyword": "부품용",
+        "type": "parts",
+        "precision": 1,
+        "hitCount": 31,
+        "promotionHash": "35ca47c5950a09aa"
+      }
+    },
+    {
+      "key": "noise:accessory:케이스",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "accessory",
+      "keyword": "케이스",
+      "precision": 0.8,
+      "hitCount": 141,
+      "note": "",
+      "candidate": {
+        "keyword": "케이스",
+        "type": "accessory",
+        "precision": 0.8,
+        "hitCount": 141,
+        "promotionHash": "be6f6b1ea79b2311"
+      }
+    },
+    {
+      "key": "noise:parts:오른쪽",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "parts",
+      "keyword": "오른쪽",
+      "precision": 1,
+      "hitCount": 54,
+      "note": "",
+      "candidate": {
+        "keyword": "오른쪽",
+        "type": "parts",
+        "precision": 1,
+        "hitCount": 54,
+        "promotionHash": "d86b0199aa0fa305"
+      }
+    },
+    {
+      "key": "noise:parts:8핀",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "parts",
+      "keyword": "8핀",
+      "precision": 0.8,
+      "hitCount": 57,
+      "note": "",
+      "candidate": {
+        "keyword": "8핀",
+        "type": "parts",
+        "precision": 0.8,
+        "hitCount": 57,
+        "promotionHash": "be6416be1286b931"
+      }
+    },
+    {
+      "key": "noise:parts:문제",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "parts",
+      "keyword": "문제",
+      "precision": 1,
+      "hitCount": 53,
+      "note": "",
+      "candidate": {
+        "keyword": "문제",
+        "type": "parts",
+        "precision": 1,
+        "hitCount": 53,
+        "promotionHash": "ecae01a7e780c9ed"
+      }
+    }
+  ]
+}

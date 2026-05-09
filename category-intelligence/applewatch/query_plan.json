@@ -1,0 +1,26 @@
+{
+  "category": "applewatch",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "애플워치",
+  "queries": [
+    "애플워치",
+    "애플워치 시리즈 3",
+    "애플워치 시리즈 4",
+    "애플워치 시리즈 5",
+    "애플워치 시리즈 6",
+    "애플워치 SE",
+    "애플워치 부품",
+    "애플워치 삽니다"
+  ],
+  "seedSkus": [
+    "applewatch_series3",
+    "applewatch_series4",
+    "applewatch_series5",
+    "applewatch_series6",
+    "applewatch_se"
+  ],
+  "minNormalPrice": 50000,
+  "clusterK": 16,
+  "aiHints": "Korean context: includes all Apple Watch series and SE; common noise includes 밴드, 충전기, 부품용, and buying posts 삽니다; avoid mixing with 일반 스마트워치. 검색 쿼리 단계에서 밴드/스트랩/케이스/필름/충전기 같은 액세서리 전용 쿼리는 제외한다.\n교차 카테고리 지식: 매입=buying(p=0.95), 맥세이프=accessory(p=1), 문제=parts(p=1), 부품용=parts(p=1), 삽니다=buying(p=0.94), 실리콘케이스=accessory(p=1), 오른쪽=parts(p=1), 일괄=accessory(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

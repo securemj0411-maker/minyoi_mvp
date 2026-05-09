@@ -75,6 +75,20 @@ create table if not exists public.mvp_collect_runs (
   id uuid primary key default gen_random_uuid(),
   status text not null check (status in ('running', 'succeeded', 'failed')),
   trigger_source text not null default 'cron',
+  request_method text,
+  request_path text,
+  request_host text,
+  request_ip text,
+  request_user_agent text,
+  request_referer text,
+  request_origin text,
+  request_vercel_id text,
+  request_country text,
+  wait_mode boolean not null default false,
+  auth_ok boolean not null default true,
+  auth_reason text,
+  response_mode text,
+  request_meta jsonb not null default '{}'::jsonb,
   started_at timestamptz not null default now(),
   finished_at timestamptz,
   duration_ms integer,
@@ -114,6 +128,12 @@ create index if not exists mvp_collect_runs_started_at_idx
 
 create index if not exists mvp_collect_runs_status_idx
   on public.mvp_collect_runs(status);
+
+create index if not exists mvp_collect_runs_request_ip_idx
+  on public.mvp_collect_runs(request_ip);
+
+create index if not exists mvp_collect_runs_response_mode_idx
+  on public.mvp_collect_runs(response_mode);
 
 alter table public.mvp_listings enable row level security;
 alter table public.mvp_listing_analysis enable row level security;

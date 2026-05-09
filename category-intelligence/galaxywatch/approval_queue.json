@@ -1,0 +1,962 @@
+{
+  "version": 1,
+  "category": "galaxywatch",
+  "updated_at": "2026-05-09T08:44:06.206Z",
+  "instructions": [
+    "Set approved=true only for entries you want to promote into runtime.",
+    "Set rejected=true for entries you explicitly do not want to see again.",
+    "Leave both false for pending review.",
+    "promote-catalog --apply reads only approved=true and rejected!=true entries."
+  ],
+  "items": [
+    {
+      "key": "sku:갤럭시-워치3-41mm-45mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "갤럭시-워치3-41mm-45mm",
+      "modelName": "갤럭시 워치3 41mm, 45mm",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "갤럭시 워치3 41mm, 45mm",
+        "갤럭시 워치3",
+        "45mm",
+        "41mm",
+        "충전기",
+        "가죽 스트랩",
+        "풀박스",
+        "추가 줄",
+        "강화유리",
+        "판매",
+        "중고"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        12
+      ],
+      "note": "",
+      "candidate": {
+        "id": "갤럭시-워치3-41mm-45mm",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "갤럭시 워치3 41mm, 45mm",
+        "aliases": [
+          "갤럭시 워치3 41mm, 45mm",
+          "갤럭시 워치3",
+          "45mm",
+          "41mm",
+          "충전기",
+          "가죽 스트랩",
+          "풀박스",
+          "추가 줄",
+          "강화유리",
+          "판매",
+          "중고"
+        ],
+        "mustContain": [
+          [
+            "갤럭시 워치3 41mm, 45mm",
+            "갤럭시 워치3",
+            "45mm",
+            "41mm",
+            "충전기",
+            "가죽 스트랩",
+            "풀박스",
+            "추가 줄",
+            "강화유리",
+            "판매",
+            "중고"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          12
+        ],
+        "promotionHash": "b9e7956cf695d18e"
+      }
+    },
+    {
+      "key": "sku:갤럭시-워치4-40mm-또는-44mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "갤럭시-워치4-40mm-또는-44mm",
+      "modelName": "갤럭시 워치4 40mm 또는 44mm",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "갤럭시 워치4 40mm 또는 44mm",
+        "갤럭시 워치4",
+        "판매합니다",
+        "본체",
+        "기능 정상",
+        "기스",
+        "초기화",
+        "충전기 포함",
+        "사용감",
+        "직거래",
+        "택배"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        0
+      ],
+      "note": "",
+      "candidate": {
+        "id": "갤럭시-워치4-40mm-또는-44mm",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "갤럭시 워치4 40mm 또는 44mm",
+        "aliases": [
+          "갤럭시 워치4 40mm 또는 44mm",
+          "갤럭시 워치4",
+          "판매합니다",
+          "본체",
+          "기능 정상",
+          "기스",
+          "초기화",
+          "충전기 포함",
+          "사용감",
+          "직거래",
+          "택배"
+        ],
+        "mustContain": [
+          [
+            "갤럭시 워치4 40mm 또는 44mm",
+            "갤럭시 워치4",
+            "판매합니다",
+            "본체",
+            "기능 정상",
+            "기스",
+            "초기화",
+            "충전기 포함",
+            "사용감",
+            "직거래",
+            "택배"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          0
+        ],
+        "promotionHash": "06fc2cf2755ff98b"
+      }
+    },
+    {
+      "key": "sku:갤럭시-워치4-44mm-갤럭시-워치5-44mm-갤럭시-워치4-40mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "갤럭시-워치4-44mm-갤럭시-워치5-44mm-갤럭시-워치4-40mm",
+      "modelName": "갤럭시 워치4 44mm, 갤럭시 워치5 44mm, 갤럭시 워치4 40mm",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "갤럭시 워치4 44mm, 갤럭시 워치5 44mm, 갤럭시 워치4 40mm",
+        "갤럭시워치4",
+        "갤럭시 워치5",
+        "44mm",
+        "40mm",
+        "판매합니다",
+        "실버",
+        "블랙",
+        "메탈 재질",
+        "미개봉",
+        "박스 포함"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        13
+      ],
+      "note": "",
+      "candidate": {
+        "id": "갤럭시-워치4-44mm-갤럭시-워치5-44mm-갤럭시-워치4-40mm",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "갤럭시 워치4 44mm, 갤럭시 워치5 44mm, 갤럭시 워치4 40mm",
+        "aliases": [
+          "갤럭시 워치4 44mm, 갤럭시 워치5 44mm, 갤럭시 워치4 40mm",
+          "갤럭시워치4",
+          "갤럭시 워치5",
+          "44mm",
+          "40mm",
+          "판매합니다",
+          "실버",
+          "블랙",
+          "메탈 재질",
+          "미개봉",
+          "박스 포함"
+        ],
+        "mustContain": [
+          [
+            "갤럭시 워치4 44mm, 갤럭시 워치5 44mm, 갤럭시 워치4 40mm",
+            "갤럭시워치4",
+            "갤럭시 워치5",
+            "44mm",
+            "40mm",
+            "판매합니다",
+            "실버",
+            "블랙",
+            "메탈 재질",
+            "미개봉",
+            "박스 포함"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          13
+        ],
+        "promotionHash": "51a4825c7aa63d18"
+      }
+    },
+    {
+      "key": "sku:갤럭시-워치5-40mm-갤럭시-워치5-44mm-갤럭시-워치5-프로-45mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "갤럭시-워치5-40mm-갤럭시-워치5-44mm-갤럭시-워치5-프로-45mm",
+      "modelName": "갤럭시 워치5 40mm, 갤럭시 워치5 44mm, 갤럭시 워치5 프로 45mm",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "갤럭시 워치5 40mm, 갤럭시 워치5 44mm, 갤럭시 워치5 프로 45mm",
+        "갤럭시 워치5",
+        "갤럭시워치5",
+        "워치5 프로",
+        "44mm",
+        "45mm",
+        "LTE",
+        "충전기 포함",
+        "판매합니다",
+        "중고",
+        "상태"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        3
+      ],
+      "note": "",
+      "candidate": {
+        "id": "갤럭시-워치5-40mm-갤럭시-워치5-44mm-갤럭시-워치5-프로-45mm",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "갤럭시 워치5 40mm, 갤럭시 워치5 44mm, 갤럭시 워치5 프로 45mm",
+        "aliases": [
+          "갤럭시 워치5 40mm, 갤럭시 워치5 44mm, 갤럭시 워치5 프로 45mm",
+          "갤럭시 워치5",
+          "갤럭시워치5",
+          "워치5 프로",
+          "44mm",
+          "45mm",
+          "LTE",
+          "충전기 포함",
+          "판매합니다",
+          "중고",
+          "상태"
+        ],
+        "mustContain": [
+          [
+            "갤럭시 워치5 40mm, 갤럭시 워치5 44mm, 갤럭시 워치5 프로 45mm",
+            "갤럭시 워치5",
+            "갤럭시워치5",
+            "워치5 프로",
+            "44mm",
+            "45mm",
+            "LTE",
+            "충전기 포함",
+            "판매합니다",
+            "중고",
+            "상태"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          3
+        ],
+        "promotionHash": "d1f22aae89a87481"
+      }
+    },
+    {
+      "key": "sku:갤럭시워치4-44mm-갤럭시워치4-클래식",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "갤럭시워치4-44mm-갤럭시워치4-클래식",
+      "modelName": "갤럭시워치4 44mm / 갤럭시워치4 클래식",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "갤럭시워치4 44mm / 갤럭시워치4 클래식",
+        "갤럭시워치4",
+        "갤럭시워치4 클래식",
+        "판매",
+        "본체",
+        "충전기",
+        "스트랩",
+        "44m",
+        "중고",
+        "기기 정상작동",
+        "기스"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        11
+      ],
+      "note": "",
+      "candidate": {
+        "id": "갤럭시워치4-44mm-갤럭시워치4-클래식",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "갤럭시워치4 44mm / 갤럭시워치4 클래식",
+        "aliases": [
+          "갤럭시워치4 44mm / 갤럭시워치4 클래식",
+          "갤럭시워치4",
+          "갤럭시워치4 클래식",
+          "판매",
+          "본체",
+          "충전기",
+          "스트랩",
+          "44m",
+          "중고",
+          "기기 정상작동",
+          "기스"
+        ],
+        "mustContain": [
+          [
+            "갤럭시워치4 44mm / 갤럭시워치4 클래식",
+            "갤럭시워치4",
+            "갤럭시워치4 클래식",
+            "판매",
+            "본체",
+            "충전기",
+            "스트랩",
+            "44m",
+            "중고",
+            "기기 정상작동",
+            "기스"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          11
+        ],
+        "promotionHash": "b9b132bb10241586"
+      }
+    },
+    {
+      "key": "sku:삼성-갤럭시-워치8-32gb",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "삼성-갤럭시-워치8-32gb",
+      "modelName": "삼성 갤럭시 워치8 32GB",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "삼성 갤럭시 워치8 32GB",
+        "갤럭시 워치8",
+        "미개봉",
+        "새상품",
+        "32GB",
+        "단순개봉",
+        "실버",
+        "그라파이트",
+        "중고폰 연구소",
+        "안산중고폰",
+        "무료배송"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        10
+      ],
+      "note": "",
+      "candidate": {
+        "id": "삼성-갤럭시-워치8-32gb",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "삼성 갤럭시 워치8 32GB",
+        "aliases": [
+          "삼성 갤럭시 워치8 32GB",
+          "갤럭시 워치8",
+          "미개봉",
+          "새상품",
+          "32GB",
+          "단순개봉",
+          "실버",
+          "그라파이트",
+          "중고폰 연구소",
+          "안산중고폰",
+          "무료배송"
+        ],
+        "mustContain": [
+          [
+            "삼성 갤럭시 워치8 32GB",
+            "갤럭시 워치8",
+            "미개봉",
+            "새상품",
+            "32GB",
+            "단순개봉",
+            "실버",
+            "그라파이트",
+            "중고폰 연구소",
+            "안산중고폰",
+            "무료배송"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          10
+        ],
+        "promotionHash": "3866c703d4752941"
+      }
+    },
+    {
+      "key": "sku:삼성-갤럭시워치4-40mm-sm-r860-sm-r865n-sm-r865u-및-갤럭시워치5-40mm-sm-r900",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "삼성-갤럭시워치4-40mm-sm-r860-sm-r865n-sm-r865u-및-갤럭시워치5-40mm-sm-r900",
+      "modelName": "삼성 갤럭시워치4 40mm SM-R860, SM-R865N, SM-R865U 및 갤럭시워치5 40mm SM-R900",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "삼성 갤럭시워치4 40mm SM-R860, SM-R865N, SM-R865U 및 갤럭시워치5 40mm SM-R900",
+        "갤럭시워치",
+        "삼성",
+        "SM-R860",
+        "SM-R865N",
+        "SM-R865U",
+        "SM-R900",
+        "wifi",
+        "LTE",
+        "40mm",
+        "워치 단품만 판매"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        1
+      ],
+      "note": "",
+      "candidate": {
+        "id": "삼성-갤럭시워치4-40mm-sm-r860-sm-r865n-sm-r865u-및-갤럭시워치5-40mm-sm-r900",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "삼성 갤럭시워치4 40mm SM-R860, SM-R865N, SM-R865U 및 갤럭시워치5 40mm SM-R900",
+        "aliases": [
+          "삼성 갤럭시워치4 40mm SM-R860, SM-R865N, SM-R865U 및 갤럭시워치5 40mm SM-R900",
+          "갤럭시워치",
+          "삼성",
+          "SM-R860",
+          "SM-R865N",
+          "SM-R865U",
+          "SM-R900",
+          "wifi",
+          "LTE",
+          "40mm",
+          "워치 단품만 판매"
+        ],
+        "mustContain": [
+          [
+            "삼성 갤럭시워치4 40mm SM-R860, SM-R865N, SM-R865U 및 갤럭시워치5 40mm SM-R900",
+            "갤럭시워치",
+            "삼성",
+            "SM-R860",
+            "SM-R865N",
+            "SM-R865U",
+            "SM-R900",
+            "wifi",
+            "LTE",
+            "40mm",
+            "워치 단품만 판매"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          1
+        ],
+        "promotionHash": "829e04bc4b010fcf"
+      }
+    },
+    {
+      "key": "sku:샤오미-레드미워치5-액티브-블랙",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "샤오미-레드미워치5-액티브-블랙",
+      "modelName": "샤오미 레드미워치5 액티브 블랙",
+      "brand": "",
+      "category": "smartwatch",
+      "aliases": [
+        "샤오미 레드미워치5 액티브 블랙",
+        "샤오미",
+        "스마트워치",
+        "레드미워치5",
+        "액티브",
+        "블랙",
+        "새상품",
+        "상자",
+        "아날로그 시계",
+        "보관",
+        "팝니다"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        9
+      ],
+      "note": "",
+      "candidate": {
+        "id": "샤오미-레드미워치5-액티브-블랙",
+        "brand": "",
+        "category": "smartwatch",
+        "modelName": "샤오미 레드미워치5 액티브 블랙",
+        "aliases": [
+          "샤오미 레드미워치5 액티브 블랙",
+          "샤오미",
+          "스마트워치",
+          "레드미워치5",
+          "액티브",
+          "블랙",
+          "새상품",
+          "상자",
+          "아날로그 시계",
+          "보관",
+          "팝니다"
+        ],
+        "mustContain": [
+          [
+            "샤오미 레드미워치5 액티브 블랙",
+            "샤오미",
+            "스마트워치",
+            "레드미워치5",
+            "액티브",
+            "블랙",
+            "새상품",
+            "상자",
+            "아날로그 시계",
+            "보관",
+            "팝니다"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          9
+        ],
+        "promotionHash": "1b577a7cf4413208"
+      }
+    },
+    {
+      "key": "sku:galaxy-watch-3",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "galaxy-watch-3",
+      "modelName": "Galaxy Watch 3",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "Galaxy Watch 3",
+        "갤럭시워치3",
+        "워치3",
+        "본체",
+        "충전기",
+        "시계줄",
+        "액정 필름",
+        "판매합니다",
+        "중고",
+        "사용감",
+        "생활 스크래치"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        7
+      ],
+      "note": "",
+      "candidate": {
+        "id": "galaxy-watch-3",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "Galaxy Watch 3",
+        "aliases": [
+          "Galaxy Watch 3",
+          "갤럭시워치3",
+          "워치3",
+          "본체",
+          "충전기",
+          "시계줄",
+          "액정 필름",
+          "판매합니다",
+          "중고",
+          "사용감",
+          "생활 스크래치"
+        ],
+        "mustContain": [
+          [
+            "Galaxy Watch 3",
+            "갤럭시워치3",
+            "워치3",
+            "본체",
+            "충전기",
+            "시계줄",
+            "액정 필름",
+            "판매합니다",
+            "중고",
+            "사용감",
+            "생활 스크래치"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          7
+        ],
+        "promotionHash": "b215eecdc7d01d64"
+      }
+    },
+    {
+      "key": "sku:galaxy-watch-3-galaxy-watch-5-galaxy-watch-6-톰브라운-에디션-포함",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "galaxy-watch-3-galaxy-watch-5-galaxy-watch-6-톰브라운-에디션-포함",
+      "modelName": "Galaxy Watch 3, Galaxy Watch 5, Galaxy Watch 6 톰브라운 에디션 포함",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "Galaxy Watch 3, Galaxy Watch 5, Galaxy Watch 6 톰브라운 에디션 포함",
+        "갤럭시워치",
+        "삼성",
+        "워치",
+        "스트랩",
+        "정품",
+        "미사용",
+        "새제품",
+        "에디션",
+        "블랙",
+        "가죽"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        15
+      ],
+      "note": "",
+      "candidate": {
+        "id": "galaxy-watch-3-galaxy-watch-5-galaxy-watch-6-톰브라운-에디션-포함",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "Galaxy Watch 3, Galaxy Watch 5, Galaxy Watch 6 톰브라운 에디션 포함",
+        "aliases": [
+          "Galaxy Watch 3, Galaxy Watch 5, Galaxy Watch 6 톰브라운 에디션 포함",
+          "갤럭시워치",
+          "삼성",
+          "워치",
+          "스트랩",
+          "정품",
+          "미사용",
+          "새제품",
+          "에디션",
+          "블랙",
+          "가죽"
+        ],
+        "mustContain": [
+          [
+            "Galaxy Watch 3, Galaxy Watch 5, Galaxy Watch 6 톰브라운 에디션 포함",
+            "갤럭시워치",
+            "삼성",
+            "워치",
+            "스트랩",
+            "정품",
+            "미사용",
+            "새제품",
+            "에디션",
+            "블랙",
+            "가죽"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          15
+        ],
+        "promotionHash": "7b4e9eb5b924fe8d"
+      }
+    },
+    {
+      "key": "sku:galaxy-watch-3-galaxy-watch-ultra-galaxy-watch5-pro-galaxy-activ",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "galaxy-watch-3-galaxy-watch-ultra-galaxy-watch5-pro-galaxy-activ",
+      "modelName": "Galaxy Watch 3, Galaxy Watch Ultra, Galaxy Watch5 Pro, Galaxy Active2",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "Galaxy Watch 3, Galaxy Watch Ultra, Galaxy Watch5 Pro, Galaxy Active2",
+        "갤럭시 워치",
+        "풀박스",
+        "새상품",
+        "s급",
+        "충전기 포함",
+        "메탈스트랩",
+        "블랙",
+        "실버",
+        "울트라",
+        "프로"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        2
+      ],
+      "note": "",
+      "candidate": {
+        "id": "galaxy-watch-3-galaxy-watch-ultra-galaxy-watch5-pro-galaxy-activ",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "Galaxy Watch 3, Galaxy Watch Ultra, Galaxy Watch5 Pro, Galaxy Active2",
+        "aliases": [
+          "Galaxy Watch 3, Galaxy Watch Ultra, Galaxy Watch5 Pro, Galaxy Active2",
+          "갤럭시 워치",
+          "풀박스",
+          "새상품",
+          "s급",
+          "충전기 포함",
+          "메탈스트랩",
+          "블랙",
+          "실버",
+          "울트라",
+          "프로"
+        ],
+        "mustContain": [
+          [
+            "Galaxy Watch 3, Galaxy Watch Ultra, Galaxy Watch5 Pro, Galaxy Active2",
+            "갤럭시 워치",
+            "풀박스",
+            "새상품",
+            "s급",
+            "충전기 포함",
+            "메탈스트랩",
+            "블랙",
+            "실버",
+            "울트라",
+            "프로"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          2
+        ],
+        "promotionHash": "13f155bc6d9a8ecc"
+      }
+    },
+    {
+      "key": "sku:galaxy-watch8-40mm-galaxy-watch8-44mm-galaxy-watch8-classic",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "galaxy-watch8-40mm-galaxy-watch8-44mm-galaxy-watch8-classic",
+      "modelName": "Galaxy Watch8 40mm, Galaxy Watch8 44mm, Galaxy Watch8 Classic",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "Galaxy Watch8 40mm, Galaxy Watch8 44mm, Galaxy Watch8 Classic",
+        "갤럭시워치8",
+        "미개봉",
+        "새상품",
+        "삼성정품",
+        "블루투스",
+        "LTE",
+        "40mm",
+        "44mm",
+        "클래식",
+        "실버",
+        "블랙"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        5
+      ],
+      "note": "",
+      "candidate": {
+        "id": "galaxy-watch8-40mm-galaxy-watch8-44mm-galaxy-watch8-classic",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "Galaxy Watch8 40mm, Galaxy Watch8 44mm, Galaxy Watch8 Classic",
+        "aliases": [
+          "Galaxy Watch8 40mm, Galaxy Watch8 44mm, Galaxy Watch8 Classic",
+          "갤럭시워치8",
+          "미개봉",
+          "새상품",
+          "삼성정품",
+          "블루투스",
+          "LTE",
+          "40mm",
+          "44mm",
+          "클래식",
+          "실버",
+          "블랙"
+        ],
+        "mustContain": [
+          [
+            "Galaxy Watch8 40mm, Galaxy Watch8 44mm, Galaxy Watch8 Classic",
+            "갤럭시워치8",
+            "미개봉",
+            "새상품",
+            "삼성정품",
+            "블루투스",
+            "LTE",
+            "40mm",
+            "44mm",
+            "클래식",
+            "실버",
+            "블랙"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          5
+        ],
+        "promotionHash": "abbfcd7bdd26bb5a"
+      }
+    },
+    {
+      "key": "sku:samsung-galaxy-watch7-44mm-samsung-galaxy-watch6-40mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "samsung-galaxy-watch7-44mm-samsung-galaxy-watch6-40mm",
+      "modelName": "Samsung Galaxy Watch7 44mm, Samsung Galaxy Watch6 40mm",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "Samsung Galaxy Watch7 44mm, Samsung Galaxy Watch6 40mm",
+        "갤럭시 워치7",
+        "갤럭시 워치6",
+        "44mm",
+        "40mm",
+        "판매",
+        "미개봉",
+        "중고",
+        "LTE",
+        "박스",
+        "충전기"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        6
+      ],
+      "note": "",
+      "candidate": {
+        "id": "samsung-galaxy-watch7-44mm-samsung-galaxy-watch6-40mm",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "Samsung Galaxy Watch7 44mm, Samsung Galaxy Watch6 40mm",
+        "aliases": [
+          "Samsung Galaxy Watch7 44mm, Samsung Galaxy Watch6 40mm",
+          "갤럭시 워치7",
+          "갤럭시 워치6",
+          "44mm",
+          "40mm",
+          "판매",
+          "미개봉",
+          "중고",
+          "LTE",
+          "박스",
+          "충전기"
+        ],
+        "mustContain": [
+          [
+            "Samsung Galaxy Watch7 44mm, Samsung Galaxy Watch6 40mm",
+            "갤럭시 워치7",
+            "갤럭시 워치6",
+            "44mm",
+            "40mm",
+            "판매",
+            "미개봉",
+            "중고",
+            "LTE",
+            "박스",
+            "충전기"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "galaxywatch",
+        "sourceClusterIds": [
+          6
+        ],
+        "promotionHash": "a2673207f4091b66"
+      }
+    },
+    {
+      "key": "noise:accessory:3in1",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "accessory",
+      "keyword": "3in1",
+      "precision": 1,
+      "hitCount": 6,
+      "note": "",
+      "candidate": {
+        "keyword": "3in1",
+        "type": "accessory",
+        "precision": 1,
+        "hitCount": 6,
+        "promotionHash": "8866fefb8c2eaa60"
+      }
+    },
+    {
+      "key": "noise:accessory:무선",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "accessory",
+      "keyword": "무선",
+      "precision": 0.8,
+      "hitCount": 11,
+      "note": "",
+      "candidate": {
+        "keyword": "무선",
+        "type": "accessory",
+        "precision": 0.8,
+        "hitCount": 11,
+        "promotionHash": "10050cc8ffa519a7"
+      }
+    }
+  ]
+}

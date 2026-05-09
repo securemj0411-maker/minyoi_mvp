@@ -6,6 +6,20 @@ export type CollectRun = {
   id: string;
   status: CollectRunStatus;
   triggerSource: string;
+  requestMethod: string | null;
+  requestPath: string | null;
+  requestHost: string | null;
+  requestIp: string | null;
+  requestUserAgent: string | null;
+  requestReferer: string | null;
+  requestOrigin: string | null;
+  requestVercelId: string | null;
+  requestCountry: string | null;
+  waitMode: boolean;
+  authOk: boolean;
+  authReason: string | null;
+  responseMode: string | null;
+  requestMeta: Record<string, unknown>;
   startedAt: string;
   finishedAt: string | null;
   durationMs: number | null;
@@ -29,6 +43,20 @@ type CollectRunRow = {
   id: string;
   status: CollectRunStatus;
   trigger_source: string;
+  request_method: string | null;
+  request_path: string | null;
+  request_host: string | null;
+  request_ip: string | null;
+  request_user_agent: string | null;
+  request_referer: string | null;
+  request_origin: string | null;
+  request_vercel_id: string | null;
+  request_country: string | null;
+  wait_mode: boolean | null;
+  auth_ok: boolean | null;
+  auth_reason: string | null;
+  response_mode: string | null;
+  request_meta: Record<string, unknown> | null;
   started_at: string;
   finished_at: string | null;
   duration_ms: number | null;
@@ -46,6 +74,24 @@ type CollectRunRow = {
   upserted_count: number | null;
   error_message: string | null;
   created_at: string;
+};
+
+export type CollectRunRequestMeta = {
+  triggerSource: string;
+  requestMethod: string;
+  requestPath: string;
+  requestHost: string | null;
+  requestIp: string | null;
+  requestUserAgent: string | null;
+  requestReferer: string | null;
+  requestOrigin: string | null;
+  requestVercelId: string | null;
+  requestCountry: string | null;
+  waitMode: boolean;
+  authOk: boolean;
+  authReason: string;
+  responseMode: "sync_wait" | "background";
+  requestMeta: Record<string, unknown>;
 };
 
 function restUrl() {
@@ -70,6 +116,20 @@ function toCollectRun(row: CollectRunRow): CollectRun {
     id: row.id,
     status: row.status,
     triggerSource: row.trigger_source,
+    requestMethod: row.request_method,
+    requestPath: row.request_path,
+    requestHost: row.request_host,
+    requestIp: row.request_ip,
+    requestUserAgent: row.request_user_agent,
+    requestReferer: row.request_referer,
+    requestOrigin: row.request_origin,
+    requestVercelId: row.request_vercel_id,
+    requestCountry: row.request_country,
+    waitMode: row.wait_mode ?? false,
+    authOk: row.auth_ok ?? true,
+    authReason: row.auth_reason,
+    responseMode: row.response_mode,
+    requestMeta: row.request_meta ?? {},
     startedAt: row.started_at,
     finishedAt: row.finished_at,
     durationMs: row.duration_ms,
@@ -115,11 +175,25 @@ async function patchRun(id: string, payload: Record<string, unknown>): Promise<v
   });
 }
 
-export async function startCollectRun(triggerSource: string): Promise<{ id: string | null; startedAt: string }> {
+export async function startCollectRun(meta: CollectRunRequestMeta): Promise<{ id: string | null; startedAt: string }> {
   const startedAt = new Date().toISOString();
   const row = await insertRun({
     status: "running",
-    trigger_source: triggerSource,
+    trigger_source: meta.triggerSource,
+    request_method: meta.requestMethod,
+    request_path: meta.requestPath,
+    request_host: meta.requestHost,
+    request_ip: meta.requestIp,
+    request_user_agent: meta.requestUserAgent,
+    request_referer: meta.requestReferer,
+    request_origin: meta.requestOrigin,
+    request_vercel_id: meta.requestVercelId,
+    request_country: meta.requestCountry,
+    wait_mode: meta.waitMode,
+    auth_ok: meta.authOk,
+    auth_reason: meta.authReason,
+    response_mode: meta.responseMode,
+    request_meta: meta.requestMeta,
     started_at: startedAt,
   });
   return { id: row?.id ?? null, startedAt };

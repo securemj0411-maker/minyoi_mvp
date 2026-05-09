@@ -1,0 +1,26 @@
+{
+  "category": "airpods",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "에어팟",
+  "queries": [
+    "에어팟",
+    "에어팟 프로",
+    "에어팟 2세대",
+    "에어팟 3세대",
+    "에어팟 맥스",
+    "애플 에어팟",
+    "에어팟 무선 이어폰",
+    "에어팟 부품",
+    "에어팟 삽니다"
+  ],
+  "seedSkus": [
+    "airpods_2nd",
+    "airpods_3rd",
+    "airpods_pro",
+    "airpods_max"
+  ],
+  "minNormalPrice": 40000,
+  "clusterK": 16,
+  "aiHints": "Korean context: includes all AirPods generations and models; common noise includes accessories like 케이스, 부품용, and buying posts 삽니다; avoid mixing with 일반 블루투스 이어폰. 검색 쿼리 단계에서 밴드/스트랩/케이스/필름/충전기 같은 액세서리 전용 쿼리는 제외한다.\n교차 카테고리 지식: 매입=buying(p=0.95), 맥세이프=accessory(p=1), 삽니다=buying(p=0.94), 실리콘케이스=accessory(p=1), 일괄=accessory(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

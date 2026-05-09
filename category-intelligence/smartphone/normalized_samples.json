@@ -27,7 +27,23 @@
       "buying": [
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "197139101",
+    "title": "아이폰매입 아이폰 아이폰프로 아이폰프로맥스 아이폰파손폰매입",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2000,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2369,
+      "view_count": null
+    },
+    "content_hash": "193fe2ffce4b61316dc891f5"
   },
   {
     "pid": "394160573",
@@ -49,7 +65,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394160573",
+    "title": "[미사용/새상품] 아이폰17프로 재고정리 할인 [13,14,15,16]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1090,
+      "view_count": null
+    },
+    "content_hash": "6bc2b3b311ebdeea29332113"
   },
   {
     "pid": "406607461",
@@ -67,7 +99,23 @@
     "reviewCount": 7,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406607461",
+    "title": "아이폰15프로 256기가 내추럴",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 7,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "ddbb2d7be4f6377275bd1af1"
   },
   {
     "pid": "406638655",
@@ -85,7 +133,23 @@
     "reviewCount": 9,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406638655",
+    "title": "아이폰 15프로 256 블랙티타늄 자급제",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 9,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 6,
+      "view_count": null
+    },
+    "content_hash": "6f7ae9cde30a1c93e687e527"
   },
   {
     "pid": "333462453",
@@ -107,7 +171,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "333462453",
+    "title": "아이폰15프로맥스 맥세이프케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 11,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 5,
+      "view_count": null
+    },
+    "content_hash": "b618dc2ac2ff2d34fb025eed"
   },
   {
     "pid": "405869614",
@@ -129,7 +209,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405869614",
+    "title": "[미사용/새상품]아이폰16E 재고정리 할인 [13,14,15,17,프로]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 23,
+      "view_count": null
+    },
+    "content_hash": "051ef0cfedc04bb0b7948a49"
   },
   {
     "pid": "323636975",
@@ -152,7 +248,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "323636975",
+    "title": "특가 아이폰16 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3183,
+      "view_count": null
+    },
+    "content_hash": "b2cc627e234d1f0226532567"
   },
   {
     "pid": "375049295",
@@ -174,7 +286,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "375049295",
+    "title": "아이폰15pro 프로, 어프어프 빵빵이 맥세이프 케이스",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 10,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "98a0ad44c37a43bb71251058"
   },
   {
     "pid": "385604995",
@@ -196,7 +324,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "385604995",
+    "title": "케이스티파이 리틀트윈스타 아이폰 15프로",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 5,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 16,
+      "view_count": null
+    },
+    "content_hash": "0d11ebaf92bb1069f02a8d08"
   },
   {
     "pid": "351716716",
@@ -218,7 +362,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "351716716",
+    "title": "아이폰15 투명폰케이스 미사용",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 4,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4,
+      "view_count": null
+    },
+    "content_hash": "6b5772de0fad60177fd991bb"
   },
   {
     "pid": "406096212",
@@ -236,7 +396,23 @@
     "reviewCount": 2,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406096212",
+    "title": "아이폰15pro 256GB 화이트",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "5a8bd7edb408f29d409d4b5d"
   },
   {
     "pid": "405878593",
@@ -258,7 +434,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405878593",
+    "title": "[미사용/새상품]아이폰17E 재고정리 할인 [13,14,15,16,프로]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 64,
+      "view_count": null
+    },
+    "content_hash": "f2fa1433b11560c582b87bf9"
   },
   {
     "pid": "403946502",
@@ -276,7 +468,23 @@
     "reviewCount": 307,
     "roughModelKey": "iphone-15",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "403946502",
+    "title": "아이폰15 정품 파인우븐 맥세이프 블랙색상팝니다.",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 307,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "409167678d0258200da9d2cb"
   },
   {
     "pid": "404982372",
@@ -298,7 +506,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "404982372",
+    "title": "아이폰15 프로 정품 실리콘케이스 맥세이프 블랙색상팝니다.",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 307,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 12,
+      "view_count": null
+    },
+    "content_hash": "d5d65c7b4c97bbe2d662ca2c"
   },
   {
     "pid": "404982608",
@@ -320,7 +544,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "404982608",
+    "title": "아이폰15 프로 정품 실리콘케이스 맥세이프 핑크샌드색상팝니다.",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 307,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 11,
+      "view_count": null
+    },
+    "content_hash": "38c58bf5c6577ef6a4945cba"
   },
   {
     "pid": "404982011",
@@ -342,7 +582,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "404982011",
+    "title": "아이폰15 프로맥스 정품 실리콘케이스 맥세이프 스톰블루색상팝니다.",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 307,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "1787f8eace83f32a86bca640"
   },
   {
     "pid": "394158623",
@@ -364,7 +620,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394158623",
+    "title": "[미사용/새상품] 아이폰16프로 재고정리 할인 [13,14,15,17]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 197,
+      "view_count": null
+    },
+    "content_hash": "bdac5fbbc73b492657717911"
   },
   {
     "pid": "394157319",
@@ -386,7 +658,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394157319",
+    "title": "[미사용/새상품] 아이폰16 재고정리 할인 [13,14,15,17,프로]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 320,
+      "view_count": null
+    },
+    "content_hash": "787e8edb1c14a05f517fbee5"
   },
   {
     "pid": "295196670",
@@ -411,7 +699,23 @@
         "유심 그대로",
         "유심그대로"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "295196670",
+    "title": "[새상품/완납폰/제휴카드X]아이폰15시리즈 쓰던 유심 그대로 교체",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 508,
+      "view_count": null
+    },
+    "content_hash": "fb269f3ffd67696b5432b9aa"
   },
   {
     "pid": "254334793",
@@ -434,7 +738,23 @@
         "극소량보유",
         "극소량 보유"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "254334793",
+    "title": "[Apple]아이폰15플러스 핑크/블루 극소량 보유중 번개톡 문의주세요",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 389,
+      "view_count": null
+    },
+    "content_hash": "c9340445a3a4bce783f19529"
   },
   {
     "pid": "128627723",
@@ -466,7 +786,23 @@
         "삽니다",
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "128627723",
+    "title": "파손아이폰 삽니다 아이폰12 13 14 15 16",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 91,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1135,
+      "view_count": null
+    },
+    "content_hash": "7ecf35a572908f3a1877b6a1"
   },
   {
     "pid": "406156711",
@@ -484,7 +820,23 @@
     "reviewCount": 2,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406156711",
+    "title": "아이폰15프로 128",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "f5a795d46f1b128a5972bfe6"
   },
   {
     "pid": "290895728",
@@ -508,7 +860,23 @@
         "선착순특가",
         "선착순 특가"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "290895728",
+    "title": "[애플]아이폰15 재고정리 선착순특가 판매합니다.",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 326,
+      "view_count": null
+    },
+    "content_hash": "21ed1f3526c4bb930ff5d105"
   },
   {
     "pid": "254335596",
@@ -532,7 +900,23 @@
         "마지막입고",
         "마지막 입고"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "254335596",
+    "title": "[풀박스/전색상]아이폰15프로 재고정리 마지막 입고",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 652,
+      "view_count": null
+    },
+    "content_hash": "d5b8fe8fbd6191cab991de8d"
   },
   {
     "pid": "286412512",
@@ -554,7 +938,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "286412512",
+    "title": "아이폰15 트위너 케이스 Lucky clover phone case",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 19,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 7,
+      "view_count": null
+    },
+    "content_hash": "9b5829365861b363a652b7d1"
   },
   {
     "pid": "405877777",
@@ -577,7 +977,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405877777",
+    "title": "특가 아이폰17e 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 20,
+      "view_count": null
+    },
+    "content_hash": "7d933d81a342cb268051e17f"
   },
   {
     "pid": "360538580",
@@ -595,7 +1011,23 @@
     "reviewCount": 39,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "360538580",
+    "title": "[홍콩] 아이폰 15프로 256 티타늄 실버 듀어유심 카메라 무음",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 39,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 20,
+      "view_count": null
+    },
+    "content_hash": "df16ce99cda31c5cc624f9dd"
   },
   {
     "pid": "254336053",
@@ -613,7 +1045,23 @@
     "reviewCount": 610,
     "roughModelKey": "iphone-15-pro-max",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "254336053",
+    "title": "[Apple]아이폰15프로맥스 256기가 미개봉제품 판매합니다.",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 260,
+      "view_count": null
+    },
+    "content_hash": "aa02aa5270882286f05b4574"
   },
   {
     "pid": "405171506",
@@ -635,7 +1083,23 @@
       "damaged": [
         "침수"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405171506",
+    "title": "(배터리100%) 아이폰 15 256GB",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 35,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 17,
+      "view_count": null
+    },
+    "content_hash": "1dc540cb7c3c4df0c2d3379b"
   },
   {
     "pid": "405593084",
@@ -653,7 +1117,23 @@
     "reviewCount": 0,
     "roughModelKey": "iphone-15-pro",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405593084",
+    "title": "아이폰 15 pro 128 네추럴티타늄",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "81a44d5e384d11aad3f144cb"
   },
   {
     "pid": "406178658",
@@ -671,7 +1151,23 @@
     "reviewCount": 23,
     "roughModelKey": "iphone-15-pro",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406178658",
+    "title": "(새상품) 아이폰15프로 512 내추럴티타늄 리퍼 후 미사용 팝니다",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 23,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 8,
+      "view_count": null
+    },
+    "content_hash": "84c5b7160cf00b750844ba9a"
   },
   {
     "pid": "405943918",
@@ -696,7 +1192,23 @@
       "multi": [
         "일괄"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405943918",
+    "title": "아이폰 15프로 케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 8,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "8292f25d14a5442bcc8e918d"
   },
   {
     "pid": "405932301",
@@ -714,7 +1226,23 @@
     "reviewCount": 8,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 1024,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405932301",
+    "title": "아이폰 15프로 1테라",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 8,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 6,
+      "view_count": null
+    },
+    "content_hash": "fcf6888c17eafe275e46063a"
   },
   {
     "pid": "406448859",
@@ -736,7 +1264,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406448859",
+    "title": "아이폰 15프로 내추럴 티타늄 256GB 판매",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 18,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "e328d50a0cc954a62df01718"
   },
   {
     "pid": "405964472",
@@ -758,7 +1302,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405964472",
+    "title": "[마지막 가격내림]케이스티파이 아이폰15프로 컴팩트 케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 69,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3,
+      "view_count": null
+    },
+    "content_hash": "0e2355f91570d2dec03354df"
   },
   {
     "pid": "405884432",
@@ -776,7 +1336,23 @@
     "reviewCount": 651,
     "roughModelKey": "iphone-15-pro-max",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405884432",
+    "title": "아이폰 15 ProMax 자급제 256기가 화이트 티타늄 판매합니다",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 651,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3,
+      "view_count": null
+    },
+    "content_hash": "5d01d5c8e4e38b20df614b84"
   },
   {
     "pid": "405534602",
@@ -798,7 +1374,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405534602",
+    "title": "폼폼푸린 케이스티파이 아이폰15 폰케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 27,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4,
+      "view_count": null
+    },
+    "content_hash": "3daccd890c1e8096b4c4ed09"
   },
   {
     "pid": "406933461",
@@ -816,7 +1408,23 @@
     "reviewCount": 1,
     "roughModelKey": "iphone-15-plus",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406933461",
+    "title": "아이폰 15 plus 256GB 핑크",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 1,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "b36146396f80e78b246f0a72"
   },
   {
     "pid": "405347556",
@@ -838,7 +1446,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405347556",
+    "title": "케이스티파이 아이폰15 미러 맥세이프 케이스",
+    "seller": {
+      "review_rating": 3.9,
+      "review_count": 8,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3,
+      "view_count": null
+    },
+    "content_hash": "6bd98f0259175bfe6fa982a1"
   },
   {
     "pid": "405871865",
@@ -861,7 +1485,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405871865",
+    "title": "특가 아이폰16e 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 12,
+      "view_count": null
+    },
+    "content_hash": "64c170db675b858afdede5fb"
   },
   {
     "pid": "406510363",
@@ -883,7 +1523,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406510363",
+    "title": "Mafavarchive 마이페이브아카이브 마페아 아이폰 15 프로 케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 82,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "74f57d16a53439154e2ee8f2"
   },
   {
     "pid": "405347844",
@@ -905,7 +1561,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405347844",
+    "title": "(풀박스 상태최상) 애플 정품 아이폰15 맥세이프 투명 케이스",
+    "seller": {
+      "review_rating": 3.9,
+      "review_count": 8,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "6f4113727e1fe053da85ea11"
   },
   {
     "pid": "406931472",
@@ -927,7 +1599,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406931472",
+    "title": "케이스티파이 아이폰 15프로 케이스 미개봉 새상품 판매합니다 !",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "bca6552b4df136accc90bf9f"
   },
   {
     "pid": "406933010",
@@ -945,7 +1633,23 @@
     "reviewCount": 127,
     "roughModelKey": "iphone-15",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406933010",
+    "title": "급매) 아이폰15 256G 화이트 상태굿 싸게팜 64만",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 127,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "7151f708036d5a85a6757bf6"
   },
   {
     "pid": "405360016",
@@ -972,7 +1676,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405360016",
+    "title": "아이폰15프로 128기가 블랙 (S급) / 0501",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 90,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3,
+      "view_count": null
+    },
+    "content_hash": "9b03288563a801b20d351339"
   },
   {
     "pid": "346976909",
@@ -1002,7 +1722,23 @@
       "buying": [
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "346976909",
+    "title": "중고폰매입 아이폰17프로.16프로.15프로.14프로.13프로.12프로.",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 127,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 35,
+      "view_count": null
+    },
+    "content_hash": "54f3e8ab0cacd2ddccd217ad"
   },
   {
     "pid": "406926797",
@@ -1020,7 +1756,23 @@
     "reviewCount": 7,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406926797",
+    "title": "아이폰15프로128g화이트",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 7,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "aa9a97abc8868573dea04f04"
   },
   {
     "pid": "394159868",
@@ -1042,7 +1794,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394159868",
+    "title": "[미사용/새상품]아이폰17에어 재고정리 할인[13,14,15,16,프로]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 173,
+      "view_count": null
+    },
+    "content_hash": "f6137caf40a703c0a17ae201"
   },
   {
     "pid": "406925541",
@@ -1064,7 +1832,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406925541",
+    "title": "아이폰15프로 128G 그레이 59538",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 34,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "e45c3baa1871394ffdf84b7d"
   },
   {
     "pid": "406927189",
@@ -1082,7 +1866,23 @@
     "reviewCount": 43,
     "roughModelKey": "iphone-15-pro-max",
     "storageGb": 512,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406927189",
+    "title": "아이폰박스 아이폰15프로맥스 빈박스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 43,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "a980d480c94c35ff82215800"
   },
   {
     "pid": "287927513",
@@ -1100,7 +1900,23 @@
     "reviewCount": 610,
     "roughModelKey": "iphone-15",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "287927513",
+    "title": "아이폰15/128GB[APPLE]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 255,
+      "view_count": null
+    },
+    "content_hash": "6fe4f4240dfbc1201a31414a"
   },
   {
     "pid": "287928673",
@@ -1118,7 +1934,23 @@
     "reviewCount": 610,
     "roughModelKey": "iphone-15",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "287928673",
+    "title": "아이폰15/128GB[APPLE]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 102,
+      "view_count": null
+    },
+    "content_hash": "7a7a3a14d6c5b2c995a396e2"
   },
   {
     "pid": "287921903",
@@ -1140,7 +1972,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "287921903",
+    "title": "아이폰15프로/128GB[APPLE]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 236,
+      "view_count": null
+    },
+    "content_hash": "fd9ef6eb6ca89cdfd42a4729"
   },
   {
     "pid": "305446385",
@@ -1162,7 +2010,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "305446385",
+    "title": "아이폰15프로/256기가",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 91,
+      "view_count": null
+    },
+    "content_hash": "0dfa5cb1f383b6f63f9bc1ff"
   },
   {
     "pid": "287918227",
@@ -1184,7 +2048,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "287918227",
+    "title": "아이폰15프로맥스/아이폰15프로[Apple]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 209,
+      "view_count": null
+    },
+    "content_hash": "20f5988f7ce6e86d9529a0c0"
   },
   {
     "pid": "184592369",
@@ -1217,7 +2097,23 @@
         "삽니다",
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "184592369",
+    "title": "파손폰매입 중고폰매입 고장폰 아이폰파손 불량폰 파손폰11 12 13 14",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2000,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4683,
+      "view_count": null
+    },
+    "content_hash": "bbfb929b20a77b2aa8200dcf"
   },
   {
     "pid": "404769644",
@@ -1243,7 +2139,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "404769644",
+    "title": "매입 갤럭시 s 26 25 24 울트라 플러스 폴드 아이폰 노트북 맥북",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 110,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 8,
+      "view_count": null
+    },
+    "content_hash": "b8642061f76bea35ccbcdbbc"
   },
   {
     "pid": "323645070",
@@ -1266,7 +2178,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "323645070",
+    "title": "특가 아이폰17프로맥스 미사용 선착순 한정판매 13/14/15/16/애플",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2013,
+      "view_count": null
+    },
+    "content_hash": "629fe137e8a97b0560aead4c"
   },
   {
     "pid": "406717714",
@@ -1284,7 +2212,23 @@
     "reviewCount": 7,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406717714",
+    "title": "아이폰15프로 256기가",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 7,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 7,
+      "view_count": null
+    },
+    "content_hash": "6a22574c78e94cc63f91749d"
   },
   {
     "pid": "406430050",
@@ -1302,7 +2246,23 @@
     "reviewCount": 93,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406430050",
+    "title": "아이폰 15 Pro 화이트 128GB 티타늄",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 93,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "c47c54ca1c5a96930a2bac43"
   },
   {
     "pid": "406154780",
@@ -1320,7 +2280,23 @@
     "reviewCount": 36,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 1024,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406154780",
+    "title": "아이폰 15프로 1테라 자급제 판매합니다~!",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 36,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 10,
+      "view_count": null
+    },
+    "content_hash": "e3ab40b0ab8e7a668e8ce601"
   },
   {
     "pid": "345096784",
@@ -1343,7 +2319,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "345096784",
+    "title": "특가 아이폰16프로 미사용 선착순 한정판매 맥스/13/14/15/17",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 767,
+      "view_count": null
+    },
+    "content_hash": "13b48f8f0856631b8d2456c0"
   },
   {
     "pid": "406323383",
@@ -1365,7 +2357,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406323383",
+    "title": "새거급 아이폰15프로 1테라 티타늄 블랙 정품 케이스 포함",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 38,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 5,
+      "view_count": null
+    },
+    "content_hash": "28bdb411f22310d3f79f228b"
   },
   {
     "pid": "406585374",
@@ -1383,7 +2391,23 @@
     "reviewCount": 103,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406585374",
+    "title": "아이폰15프로128G 무잔상 액정무기스 깨끗한 중고폰 공기계",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 103,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "61a6e52951f923c76a438247"
   },
   {
     "pid": "385256496",
@@ -1408,7 +2432,23 @@
       "multi": [
         "여러개"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "385256496",
+    "title": "아이폰15pro 폰케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 6,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "a4cffa94f91c15df3209045a"
   },
   {
     "pid": "394161073",
@@ -1430,7 +2470,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394161073",
+    "title": "[미사용/새상품]아이폰17프로맥스 재고정리 할인 [13,14,15,16]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 146,
+      "view_count": null
+    },
+    "content_hash": "a8f7e27dcd48ae360a2659a1"
   },
   {
     "pid": "406926037",
@@ -1456,7 +2512,23 @@
       "multi": [
         "일괄"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406926037",
+    "title": "아이폰 15프로 강화유리 액정 보호필름",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "536f3131e308861e70c4b7ad"
   },
   {
     "pid": "406921638",
@@ -1478,7 +2550,23 @@
       "parts": [
         "부품"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406921638",
+    "title": "아이폰15프로 256(배터리 사설교체 100프로)",
+    "seller": {
+      "review_rating": 4.2,
+      "review_count": 5,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "f4e1a4e85b2fbfa74300da59"
   },
   {
     "pid": "335818502",
@@ -1503,7 +2591,23 @@
       "multi": [
         "일괄"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "335818502",
+    "title": "아이폰15 pro benks 케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 28,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "77929a839d0ff78ca8b1b9cb"
   },
   {
     "pid": "305443486",
@@ -1525,7 +2629,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "305443486",
+    "title": "[SKT]아이폰15프로/128기가",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 89,
+      "view_count": null
+    },
+    "content_hash": "e8acf68f53d94c8d4248fa17"
   },
   {
     "pid": "401563668",
@@ -1543,7 +2663,23 @@
     "reviewCount": 1,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "401563668",
+    "title": "아이폰 15pro 128기가 S급",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 1,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3,
+      "view_count": null
+    },
+    "content_hash": "73df09689d6f7af1109731a7"
   },
   {
     "pid": "355922342",
@@ -1565,7 +2701,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "355922342",
+    "title": "헬로키티 큐빅 아이폰 15pro 케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 30,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 16,
+      "view_count": null
+    },
+    "content_hash": "618a82ce95bde6ff3e903876"
   },
   {
     "pid": "305444515",
@@ -1587,7 +2739,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "305444515",
+    "title": "[KT]아이폰15프로 [새상품/미개봉/정품]",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 162,
+      "view_count": null
+    },
+    "content_hash": "114ab217093862b6bf050465"
   },
   {
     "pid": "371454941",
@@ -1609,7 +2777,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "371454941",
+    "title": "급처) 원피스 케이스티파이 미러케이스 아이폰15pro",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 19,
+      "view_count": null
+    },
+    "content_hash": "03cb4630f058cf788381c27a"
   },
   {
     "pid": "355383202",
@@ -1632,7 +2816,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "355383202",
+    "title": "특가 아이폰17에어 미사용 선착순 한정판매 프로/13/14/15/16",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 415,
+      "view_count": null
+    },
+    "content_hash": "e613e74533f19a273a41e272"
   },
   {
     "pid": "403218867",
@@ -1654,7 +2854,23 @@
       "accessory": [
         "필름"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "403218867",
+    "title": "마이멜로디 카메라랜즈필름 아이폰17 아이폰15pro 16  아이폰13",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 546,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 8,
+      "view_count": null
+    },
+    "content_hash": "a66f1eeda6bc05c17152f627"
   },
   {
     "pid": "405236723",
@@ -1672,7 +2888,23 @@
     "reviewCount": 22,
     "roughModelKey": "iphone-15-pro",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405236723",
+    "title": "아이폰 15프로 화이트티타늄 256GB",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 22,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 11,
+      "view_count": null
+    },
+    "content_hash": "930e216338c422650141a835"
   },
   {
     "pid": "404072550",
@@ -1698,7 +2930,23 @@
       "multi": [
         "일괄"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "404072550",
+    "title": "아이폰15프로 케이스&프라이버시 강화유리 판매합니다",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 6,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "4fd3e8b97e51b4bed73f1056"
   },
   {
     "pid": "290882901",
@@ -1720,7 +2968,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "290882901",
+    "title": "[애플]아이폰15프로 마지막 재고정리 행사중 화이트/블랙 빠른품절 예상",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 259,
+      "view_count": null
+    },
+    "content_hash": "bb05de721640e5ec0828df1e"
   },
   {
     "pid": "406631727",
@@ -1742,7 +3006,23 @@
       "parts": [
         "부품"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406631727",
+    "title": "아이폰15pro 128g 리퍼폰",
+    "seller": {
+      "review_rating": 4.4,
+      "review_count": 9,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "8514bd396dfb7d4eeebb6d20"
   },
   {
     "pid": "406645511",
@@ -1764,7 +3044,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406645511",
+    "title": "아이폰 15 pro 화이트 128gb SS급",
+    "seller": {
+      "review_rating": 4.2,
+      "review_count": 6,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4,
+      "view_count": null
+    },
+    "content_hash": "f9e7e181453353e849c7a02d"
   },
   {
     "pid": "313189541",
@@ -1787,7 +3083,23 @@
         "재고정리",
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "313189541",
+    "title": "[재고정리]아이폰15프로 특가 알뜰통신사 가능합니다.",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 227,
+      "view_count": null
+    },
+    "content_hash": "598081176a2cba38fbc7e430"
   },
   {
     "pid": "394370565",
@@ -1809,7 +3121,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394370565",
+    "title": "아이폰 15프로 춘식이 케이스티파이",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4,
+      "view_count": null
+    },
+    "content_hash": "8bcc55640ffbc69d586fa02e"
   },
   {
     "pid": "355734470",
@@ -1842,7 +3170,23 @@
       "buying": [
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "355734470",
+    "title": "중고폰매입 파손폰매입 아이폰매입 고장폰 불량폰 부품폰 파손폰 아이폰파손",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 634,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 183,
+      "view_count": null
+    },
+    "content_hash": "a07b6903caf425366ecbbb7b"
   },
   {
     "pid": "405832652",
@@ -1864,7 +3208,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405832652",
+    "title": "새상품) 아이폰 14 PRO 지갑형 핸드폰 케이스",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 93,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "1fab36a7bc95694f9ebbb4fa"
   },
   {
     "pid": "404403877",
@@ -1886,7 +3246,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "404403877",
+    "title": "케이스티파이 아이폰 14프로 짱구 콜라보",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 24,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 5,
+      "view_count": null
+    },
+    "content_hash": "6862be65dc9aeb3e6e5a17f1"
   },
   {
     "pid": "391530010",
@@ -1904,7 +3280,23 @@
     "reviewCount": 28,
     "roughModelKey": "iphone-14-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "391530010",
+    "title": "아이폰 14 프로 128 배터리 효율 73",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 28,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 10,
+      "view_count": null
+    },
+    "content_hash": "eecc90ea7d76e68583acc779"
   },
   {
     "pid": "382008844",
@@ -1926,7 +3318,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "382008844",
+    "title": "리락쿠마 아이폰 14 프로 케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 13,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 7,
+      "view_count": null
+    },
+    "content_hash": "ad4b9a8f9b8a0f897609de28"
   },
   {
     "pid": "295221912",
@@ -1951,7 +3359,23 @@
         "유심 그대로",
         "유심그대로"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "295221912",
+    "title": "[새상품/완납폰/제휴카드X]아이폰14프로/프로맥스 쓰던 유심 그대로 교체",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 232,
+      "view_count": null
+    },
+    "content_hash": "6cbe53c0b1d2ff80c71b5128"
   },
   {
     "pid": "281737423",
@@ -1973,7 +3397,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "281737423",
+    "title": "[Apple]아이폰14프로 퍼플 단독 행사중 현재 해당제품도 소량입니다.",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 229,
+      "view_count": null
+    },
+    "content_hash": "f2824dfdcf7fe3023ce28099"
   },
   {
     "pid": "406945334",
@@ -1995,7 +3435,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406945334",
+    "title": "케이스티파이 아이폰14pro 케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 6,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "145ac1731f0fddf32c3f1774"
   },
   {
     "pid": "402459551",
@@ -2017,7 +3473,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "402459551",
+    "title": "케이스티파이 아이폰14프로 케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "ef5270784ca7efb45d8d4dc3"
   },
   {
     "pid": "245624905",
@@ -2039,7 +3511,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "245624905",
+    "title": "새상품)아이폰14pro 곰돌이 나사 케이스",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 71,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "eaff441c382ae7f511b51efb"
   },
   {
     "pid": "218119305",
@@ -2061,7 +3549,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "218119305",
+    "title": "아이폰 14 13 12프로 자스민 케이스",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 71,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 10,
+      "view_count": null
+    },
+    "content_hash": "3fb9040255e7ac8272b55a16"
   },
   {
     "pid": "295223906",
@@ -2083,7 +3587,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "295223906",
+    "title": "아이폰14프로/14프로맥스[새상품]",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 419,
+      "view_count": null
+    },
+    "content_hash": "ab4bf3c3434ce9be5a28fe08"
   },
   {
     "pid": "403028676",
@@ -2105,7 +3625,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "403028676",
+    "title": "케이스티파이 아이폰14 프로 달 카드케이스",
+    "seller": {
+      "review_rating": 4.7,
+      "review_count": 31,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "ced79269cf584ad4e1b02904"
   },
   {
     "pid": "377742846",
@@ -2127,7 +3663,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "377742846",
+    "title": "아이폰14프로 케이스 (보라돌이)",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 20,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "5d7d4a42009aca8b8e94e51d"
   },
   {
     "pid": "406582968",
@@ -2145,7 +3697,23 @@
     "reviewCount": 7,
     "roughModelKey": "iphone-14-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406582968",
+    "title": "아이폰 14 Pro 스페이스 블랙",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 7,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 5,
+      "view_count": null
+    },
+    "content_hash": "eac021be08927d33c48ad0b8"
   },
   {
     "pid": "406074846",
@@ -2167,7 +3735,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406074846",
+    "title": "[정품] EARPEARP 어프어프 토끼 하트 아이폰14프로 폰케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 91,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "9a77d2aaaa0c236839066090"
   },
   {
     "pid": "406597213",
@@ -2190,7 +3774,23 @@
         "유심 그대로",
         "유심그대로"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406597213",
+    "title": "아이폰14프로 1테라 실버 배터리 100%정품수리",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 6,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "83a5d7ad6c86206baceb0ba6"
   },
   {
     "pid": "406845193",
@@ -2208,7 +3808,23 @@
     "reviewCount": 128,
     "roughModelKey": "iphone-14-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406845193",
+    "title": "아이폰14프로 128기가 실버 (작은 멍)",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 128,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "63e3e3576c2e61dbc7d5c31d"
   },
   {
     "pid": "355383741",
@@ -2231,7 +3847,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "355383741",
+    "title": "특가 아이폰17프로 미사용 선착순 한정판매 맥스/13/14/15/16",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2909,
+      "view_count": null
+    },
+    "content_hash": "b885a3b9a07a084c1189e902"
   },
   {
     "pid": "406818987",
@@ -2249,7 +3881,23 @@
     "reviewCount": 74,
     "roughModelKey": "iphone-14-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406818987",
+    "title": "아이폰14프로 128기가,골드,배터리83%,자급제",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 74,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "14585ab16a282edd78e261a2"
   },
   {
     "pid": "405606276",
@@ -2267,7 +3915,23 @@
     "reviewCount": 4,
     "roughModelKey": "iphone-14-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405606276",
+    "title": "아이폰 14pro 128g 블랙",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 4,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 5,
+      "view_count": null
+    },
+    "content_hash": "92026aef025767d0f9041e2c"
   },
   {
     "pid": "406938529",
@@ -2285,7 +3949,23 @@
     "reviewCount": 0,
     "roughModelKey": "iphone-14-pro",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406938529",
+    "title": "아이폰 14 프로 (딥 퍼플) 수리이력 없는 S급 판매합니다!",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "e1f9785a8658724c33c4e28b"
   },
   {
     "pid": "314174138",
@@ -2308,7 +3988,23 @@
         "케이스",
         "필름"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "314174138",
+    "title": "[아이폰 14 프로 맥스] 케이스 보호필름 액세서리 (내셔널 지오그래픽)",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 37,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "9081470c26f5ed1d1fe1ecec"
   },
   {
     "pid": "305409982",
@@ -2334,7 +4030,23 @@
       "damaged": [
         "불량"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "305409982",
+    "title": "[새상품/B급] 아이폰 14 프로 맥세이프 거치대 링 투명 케이스",
+    "seller": {
+      "review_rating": 4.7,
+      "review_count": 15,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "e0e6789ef6fd7ee574528abb"
   },
   {
     "pid": "406916998",
@@ -2352,7 +4064,23 @@
     "reviewCount": 0,
     "roughModelKey": "iphone-14-pro",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406916998",
+    "title": "아이폰 14 프로 256gb (카메라 무음 버전)",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "83700d6104ae0115c8cf3dca"
   },
   {
     "pid": "402539606",
@@ -2374,7 +4102,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "402539606",
+    "title": "케이스티파이 미러케이스 아이폰 14pro",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 7,
+      "view_count": null
+    },
+    "content_hash": "8b8c710321fa182fe62a5720"
   },
   {
     "pid": "358712101",
@@ -2396,7 +4140,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "358712101",
+    "title": "케이스티파이 오픈와이와이 아이폰14 프로 케이스",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 99,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 25,
+      "view_count": null
+    },
+    "content_hash": "2f4e33286633681e355fc736"
   },
   {
     "pid": "323637784",
@@ -2419,7 +4179,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "323637784",
+    "title": "특가 아이폰17 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 7773,
+      "view_count": null
+    },
+    "content_hash": "22516bd82a188389df1fbe17"
   },
   {
     "pid": "382159880",
@@ -2441,7 +4217,23 @@
       "accessory": [
         "필름"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "382159880",
+    "title": "아이폰14프로 프라이버시 휴대폰 필름",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "e179cfcb6813195b12021396"
   },
   {
     "pid": "404758297",
@@ -2459,7 +4251,23 @@
     "reviewCount": 116,
     "roughModelKey": "iphone-14-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "404758297",
+    "title": "아이폰 14 프로 퍼플 s급",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 116,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 5,
+      "view_count": null
+    },
+    "content_hash": "776c1a6f521bb9e9b636f15d"
   },
   {
     "pid": "355516506",
@@ -2481,7 +4289,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "355516506",
+    "title": "오하호 스튜디오 폰케이스 아이폰14프로",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 51,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 8,
+      "view_count": null
+    },
+    "content_hash": "609800f77493a5cdfe545449"
   },
   {
     "pid": "373233497",
@@ -2503,7 +4327,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "373233497",
+    "title": "아이폰14프로 정품 실리콘케이스 쵸크핑크색상",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 651,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 31,
+      "view_count": null
+    },
+    "content_hash": "09229029ca5f40f0bfc509f8"
   },
   {
     "pid": "406603046",
@@ -2521,7 +4361,23 @@
     "reviewCount": 5,
     "roughModelKey": "iphone-14-pro",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406603046",
+    "title": "아이폰14프로 256 실버",
+    "seller": {
+      "review_rating": 4.6,
+      "review_count": 5,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "98eb8e5afab92cb5010c9dc2"
   },
   {
     "pid": "322678018",
@@ -2543,7 +4399,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "322678018",
+    "title": "아이폰 14프로 케이스",
+    "seller": {
+      "review_rating": 4.2,
+      "review_count": 8,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "daf38726d88eae517068fc1b"
   },
   {
     "pid": "406652166",
@@ -2565,7 +4437,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406652166",
+    "title": "아더에러 케이스티파이 아이폰 14프로 맥세이프 폰케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 16,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "44d83bf001d2921f5d84467e"
   },
   {
     "pid": "406703345",
@@ -2587,7 +4475,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406703345",
+    "title": "아이폰 14 Pro 블랙 128  +어반소피스티케이스",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "0dbb73ef74a9f3c5518aa384"
   },
   {
     "pid": "406651363",
@@ -2609,7 +4513,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406651363",
+    "title": "아이폰 14프로 맥세이프 정품 투명 폰케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 16,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "04e3858e558f3d7f4f964c04"
   },
   {
     "pid": "362187050",
@@ -2631,7 +4551,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "362187050",
+    "title": "아이폰14프로 케이스티파이",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 36,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 10,
+      "view_count": null
+    },
+    "content_hash": "cafbd622911d26ccfe567ac3"
   },
   {
     "pid": "399799639",
@@ -2653,7 +4589,23 @@
       "damaged": [
         "파손"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "399799639",
+    "title": "아이폰 14프로 128기가 스페이스그레이",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 102,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 10,
+      "view_count": null
+    },
+    "content_hash": "92ddf41fcafa4982a512a8e5"
   },
   {
     "pid": "405016908",
@@ -2675,7 +4627,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405016908",
+    "title": "GRAGG 아이폰 케이스 14프로",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 1,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "7c3d371aa671c3c489fafc9f"
   },
   {
     "pid": "383693430",
@@ -2697,7 +4665,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "383693430",
+    "title": "케이스티파이 헬로키티 아이폰14프로 케이스+맥세이프 카드 수납형 스탠드",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 57,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 11,
+      "view_count": null
+    },
+    "content_hash": "d6c040cc42323e9a5639cb2e"
   },
   {
     "pid": "362304884",
@@ -2722,7 +4706,23 @@
       "multi": [
         "일괄"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "362304884",
+    "title": "아이폰14프로  케이스맥세이프 가능 2개 ,1개는 일반케이스상태",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 36,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 7,
+      "view_count": null
+    },
+    "content_hash": "4376b63aa1995d58c5896ffc"
   },
   {
     "pid": "381913272",
@@ -2747,7 +4747,23 @@
       "multi": [
         "여러개"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "381913272",
+    "title": "아이폰 14프로 케이스 모음",
+    "seller": {
+      "review_rating": 4.7,
+      "review_count": 28,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "750d3146ad650b8d34d21157"
   },
   {
     "pid": "362304210",
@@ -2769,7 +4785,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "362304210",
+    "title": "아이폰14프로 케이스티파이상태 괜찮음 ㅡ사진과 동일구매원하시면 안",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 36,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 10,
+      "view_count": null
+    },
+    "content_hash": "531ff1b8d14573ac1cf8a674"
   },
   {
     "pid": "394124796",
@@ -2791,7 +4823,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394124796",
+    "title": "소니엔젤 케이스티파이 아이폰 14pro",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 6,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4,
+      "view_count": null
+    },
+    "content_hash": "737c080b1b565424d639042f"
   },
   {
     "pid": "406607867",
@@ -2809,7 +4857,23 @@
     "reviewCount": 11,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406607867",
+    "title": "아이폰 13 미니 128GB",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 11,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4,
+      "view_count": null
+    },
+    "content_hash": "6f5207b5804b18738bbe582b"
   },
   {
     "pid": "406950692",
@@ -2833,7 +4897,23 @@
         "파손",
         "불량"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406950692",
+    "title": "아이폰13미니 128 핑크 상태좋음",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 158,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "bbb34d5626c16195a4518e91"
   },
   {
     "pid": "406950619",
@@ -2857,7 +4937,23 @@
         "파손",
         "불량"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406950619",
+    "title": "아이폰13미니 128스타라이트",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 158,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "1c644752e70dd02b2e646a46"
   },
   {
     "pid": "388087712",
@@ -2883,7 +4979,23 @@
       "buying": [
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "388087712",
+    "title": "아이패드매입 아이패드.갤럭시탭.갤럭시폴드.제트플립.s26.s25.s24",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 67,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 7,
+      "view_count": null
+    },
+    "content_hash": "5a9902dd1da09ff1769bd18b"
   },
   {
     "pid": "406950315",
@@ -2907,7 +5019,23 @@
         "파손",
         "불량"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406950315",
+    "title": "아이폰13미니 128 그린 최상품",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 158,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "9c1e0ffe9846344c3576ef29"
   },
   {
     "pid": "406950395",
@@ -2925,7 +5053,23 @@
     "reviewCount": 158,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406950395",
+    "title": "아이폰13미니 128 리퍼미사용 신품",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 158,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "875c14921f0887ae94e6e256"
   },
   {
     "pid": "406949409",
@@ -2943,7 +5087,23 @@
     "reviewCount": 0,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406949409",
+    "title": "아이폰 13미니 128기가",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "04365102a45494edb3a8f5ba"
   },
   {
     "pid": "406708111",
@@ -2961,7 +5121,23 @@
     "reviewCount": 29,
     "roughModelKey": "iphone-13",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406708111",
+    "title": "아이폰13미니 128 그린 풀박스 S급",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 29,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "3833dbdb55613aeddf91dae2"
   },
   {
     "pid": "406708297",
@@ -2979,7 +5155,23 @@
     "reviewCount": 29,
     "roughModelKey": "iphone-13",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406708297",
+    "title": "아이폰13미니 128미드나이트 새상품급",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 29,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "39cc82917d37b2eb23706392"
   },
   {
     "pid": "406708413",
@@ -2997,7 +5189,23 @@
     "reviewCount": 29,
     "roughModelKey": "iphone-13",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406708413",
+    "title": "아이폰13미니 256그린 배터리 98프로 SS급",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 29,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "103635fa202eb4614ae37f0e"
   },
   {
     "pid": "406583936",
@@ -3015,7 +5223,23 @@
     "reviewCount": 103,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406583936",
+    "title": "아이폰13미니128G 무잔상 액정무기스 중고폰 공기계",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 103,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 6,
+      "view_count": null
+    },
+    "content_hash": "8c81dd61cdac0ab19e593841"
   },
   {
     "pid": "406197960",
@@ -3037,7 +5261,23 @@
       "damaged": [
         "침수"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406197960",
+    "title": "아이폰13침수폰",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 17,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4,
+      "view_count": null
+    },
+    "content_hash": "8be40655441d2fdfb52ba8d4"
   },
   {
     "pid": "370624838",
@@ -3059,7 +5299,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "370624838",
+    "title": "로우모이 아이폰13 스노우트리케이스 하드유광 새상품",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 41,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "ebadfca204ee12b0d37980ce"
   },
   {
     "pid": "301742722",
@@ -3081,7 +5337,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "301742722",
+    "title": "(아이폰13 아이폰14) mafavarchive 마페아 젤리하드케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 112,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 6,
+      "view_count": null
+    },
+    "content_hash": "2292d14d92083057455f135a"
   },
   {
     "pid": "380193348",
@@ -3103,7 +5375,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "380193348",
+    "title": "아이폰13  정품 실리콘 핑크 케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 3,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3,
+      "view_count": null
+    },
+    "content_hash": "be3391508214b5e0df517491"
   },
   {
     "pid": "401758716",
@@ -3121,7 +5409,23 @@
     "reviewCount": 186,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "401758716",
+    "title": "아이폰13미니 128기가 화이트 배터리100%",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 186,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 11,
+      "view_count": null
+    },
+    "content_hash": "34ba4a691ce94361784e9f46"
   },
   {
     "pid": "85739178",
@@ -3149,7 +5453,23 @@
         "삽니다",
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "85739178",
+    "title": "삽니다)아이폰파손 아이폰12프로 아이폰13 아이폰14 XS X 매입합니다",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 91,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 754,
+      "view_count": null
+    },
+    "content_hash": "82d390520633ead38711d392"
   },
   {
     "pid": "386193819",
@@ -3174,7 +5494,23 @@
       "multi": [
         "일괄"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "386193819",
+    "title": "아이폰13프로 케이스티파이 핸드폰케이스5개 일괄",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 30,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 10,
+      "view_count": null
+    },
+    "content_hash": "572c64cc7ba0b7e45b48c68e"
   },
   {
     "pid": "406946370",
@@ -3197,7 +5533,23 @@
         "부품용",
         "부품"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406946370",
+    "title": "아이폰 13 128G 부품용",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "3874e4b01ce960c2ea3f358d"
   },
   {
     "pid": "406946975",
@@ -3215,7 +5567,23 @@
     "reviewCount": 2,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406946975",
+    "title": "아이폰 13미니 128g 판매",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "3a2b9b37862c4890189ddae7"
   },
   {
     "pid": "406234226",
@@ -3233,7 +5601,23 @@
     "reviewCount": 13,
     "roughModelKey": "iphone-13-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406234226",
+    "title": "아이폰13프로 128기가",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 13,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 8,
+      "view_count": null
+    },
+    "content_hash": "3d32b138bc579e45dc15b99e"
   },
   {
     "pid": "406272110",
@@ -3251,7 +5635,23 @@
     "reviewCount": 19,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406272110",
+    "title": "아이폰13미니 핑크 ios17.5.1",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 19,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 8,
+      "view_count": null
+    },
+    "content_hash": "7e1b4a4dbca1e0375c6607fb"
   },
   {
     "pid": "374964424",
@@ -3269,7 +5669,23 @@
     "reviewCount": 3,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "374964424",
+    "title": "아이폰13미니 스타라이트 128GB 배터리70",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 3,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 12,
+      "view_count": null
+    },
+    "content_hash": "8fc09b30229952deee243546"
   },
   {
     "pid": "373987527",
@@ -3287,7 +5703,23 @@
     "reviewCount": 3,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "373987527",
+    "title": "아이폰13미니 스타라이트 128GB 배터리77",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 3,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 30,
+      "view_count": null
+    },
+    "content_hash": "80753fddb2514910fabdf076"
   },
   {
     "pid": "349191684",
@@ -3305,7 +5737,23 @@
     "reviewCount": 1,
     "roughModelKey": "iphone-13-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "349191684",
+    "title": "아이폰13프로 128기가 액정수리",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 1,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "50d2b270775153d895db0d16"
   },
   {
     "pid": "406940073",
@@ -3323,7 +5771,23 @@
     "reviewCount": 12,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406940073",
+    "title": "아이폰 13미니 핑크 128g",
+    "seller": {
+      "review_rating": 4.6,
+      "review_count": 12,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "69c7749951434d46776a6fbc"
   },
   {
     "pid": "406833026",
@@ -3345,7 +5809,23 @@
       "damaged": [
         "불량"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406833026",
+    "title": "아이폰13 128GB 스타라이트",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 1,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "648a6dd1443e95c190c77fa4"
   },
   {
     "pid": "387754913",
@@ -3363,7 +5843,23 @@
     "reviewCount": 1,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "387754913",
+    "title": "애플 아이폰 13미니 블랙 A급 배터리 100 128기가입니다",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 1,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 11,
+      "view_count": null
+    },
+    "content_hash": "4354a9268a064604de03815e"
   },
   {
     "pid": "406940330",
@@ -3385,7 +5881,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406940330",
+    "title": "100% 아이폰 13미니 256기가 미드나잇 정품배터리 13mini",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 21,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "fc1f22ea4560b403375e639e"
   },
   {
     "pid": "399329404",
@@ -3407,7 +5919,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "399329404",
+    "title": "아이폰 13pro max 케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 1,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "95894d1d9d959d094d770d9e"
   },
   {
     "pid": "406329589",
@@ -3432,7 +5960,23 @@
       "counterfeit": [
         "가품"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406329589",
+    "title": "아이폰13미니 128G 그린",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 518,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 6,
+      "view_count": null
+    },
+    "content_hash": "0afe73aad28b7c8e061654a3"
   },
   {
     "pid": "406941178",
@@ -3458,7 +6002,23 @@
       "multi": [
         "여러개"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406941178",
+    "title": "아이폰 SE2, SE3, 12미니, 12프로, 13미니 케이스, 강화필름",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 101,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "eee0073d923fa0bc20208200"
   },
   {
     "pid": "375224633",
@@ -3483,7 +6043,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "375224633",
+    "title": "아이폰13 카드지갑 폰케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 9,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 12,
+      "view_count": null
+    },
+    "content_hash": "fe133cfeb348d0c29a29e46c"
   },
   {
     "pid": "406592693",
@@ -3501,7 +6077,23 @@
     "reviewCount": 8,
     "roughModelKey": "iphone-13",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406592693",
+    "title": "애플 아이폰 13 배터리효울 85%",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 8,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "f69f6375b24e471b9ae009b3"
   },
   {
     "pid": "399329874",
@@ -3526,7 +6118,23 @@
       "multi": [
         "묶음"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "399329874",
+    "title": "아이폰 13pro 케이스 6개 묶음 판매",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 1,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "e3bdd6009b4787fa760bc89a"
   },
   {
     "pid": "393139110",
@@ -3548,7 +6156,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "393139110",
+    "title": "(총알배송)아이폰13 미니 128기가 판매합니다",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 6,
+      "view_count": null
+    },
+    "content_hash": "8098490b7290718a76e56077"
   },
   {
     "pid": "393378468",
@@ -3566,7 +6190,23 @@
     "reviewCount": 44,
     "roughModelKey": "iphone-13",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "393378468",
+    "title": "아이폰 13 미드나이트 128 풀박스 팝니다",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 44,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 7,
+      "view_count": null
+    },
+    "content_hash": "12b856a0bb5e2210387c9b77"
   },
   {
     "pid": "406346116",
@@ -3584,7 +6224,23 @@
     "reviewCount": 2,
     "roughModelKey": "iphone-13-pro",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406346116",
+    "title": "아이폰 13프로 그래파이트 128g",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "96624bc28d421c88963e42d3"
   },
   {
     "pid": "406616750",
@@ -3602,7 +6258,23 @@
     "reviewCount": 48,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406616750",
+    "title": "아이폰13미니 미드나이트 새제품",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 48,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "5d62951cef2157242be7d42c"
   },
   {
     "pid": "405663016",
@@ -3620,7 +6292,23 @@
     "reviewCount": 221,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405663016",
+    "title": "아이폰 13미니 128 스타라이트,풀박스,상태A급,배터리90프로  모든.",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 221,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "ce290ff9d04d34c158b1e3b5"
   },
   {
     "pid": "406300036",
@@ -3642,7 +6330,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406300036",
+    "title": "@배터리85@ 아이폰 13미니 128GB 핑크 [75422]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 33,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "b9bb901e28eacb450c124f0c"
   },
   {
     "pid": "406692640",
@@ -3660,7 +6364,23 @@
     "reviewCount": 9,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406692640",
+    "title": "아이폰13",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 9,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "1874b4db110309a3af119b06"
   },
   {
     "pid": "405864320",
@@ -3678,7 +6398,23 @@
     "reviewCount": 0,
     "roughModelKey": "iphone-13",
     "storageGb": 128,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405864320",
+    "title": "아이폰 13 128GB",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3,
+      "view_count": null
+    },
+    "content_hash": "33bb81379d4d5edc321f06bd"
   },
   {
     "pid": "405927493",
@@ -3700,7 +6436,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405927493",
+    "title": "아이폰 13 프로 / 신지모루 실리콘 케이스 블랙",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 26,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "a24d87e044a410eda852bd70"
   },
   {
     "pid": "406549268",
@@ -3718,7 +6470,23 @@
     "reviewCount": 1,
     "roughModelKey": "iphone-13-pro",
     "storageGb": 512,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406549268",
+    "title": "급처)아이폰13pro 512기가",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 1,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "79b113b341a2674ef539173b"
   },
   {
     "pid": "402689588",
@@ -3740,7 +6508,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "402689588",
+    "title": "아이폰 13미니 128기가 스타라이트",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 19,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4,
+      "view_count": null
+    },
+    "content_hash": "c6d71221d7bdcd878ff61a8a"
   },
   {
     "pid": "406335695",
@@ -3758,7 +6542,23 @@
     "reviewCount": 1,
     "roughModelKey": "iphone-13",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406335695",
+    "title": "아이폰13미니 핑크 256",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 1,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 2,
+      "view_count": null
+    },
+    "content_hash": "d9436a2c9343d2ef7d3cff09"
   },
   {
     "pid": "406591221",
@@ -3781,7 +6581,23 @@
         "액정깨짐",
         "액정 깨짐"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406591221",
+    "title": "(iOS 13) 아이폰 X 64gb 그레이",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 46,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "6dcbb411fc20c2f27af4545d"
   },
   {
     "pid": "394165261",
@@ -3803,7 +6619,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394165261",
+    "title": "[미사용/새상품] 갤럭시S26 재고정리 할인 [23,24,25,Z플립7]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1012,
+      "view_count": null
+    },
+    "content_hash": "f0a3c2f83197f2e233ccbb12"
   },
   {
     "pid": "406707025",
@@ -3825,7 +6657,23 @@
       "buying": [
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406707025",
+    "title": "갤럭시S24Fe 자급제 미개봉 새제품 판매합니다",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "747b41e4478f5a395420c262"
   },
   {
     "pid": "295692813",
@@ -3850,7 +6698,23 @@
         "유심 그대로",
         "유심그대로"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "295692813",
+    "title": "[새상품/완납폰/제휴카드X]갤럭시S24/플러스/울트라 쓰던 유심 그대로",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 310,
+      "view_count": null
+    },
+    "content_hash": "6070ce7a357ff597d8efadc0"
   },
   {
     "pid": "298931681",
@@ -3873,7 +6737,23 @@
         "완납폰",
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "298931681",
+    "title": "[새상품/완납폰/제휴카드X]갤럭시S24FE 알뜰 통신사 가능합니다",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 74,
+      "view_count": null
+    },
+    "content_hash": "f7ca0824afebf663860a67b0"
   },
   {
     "pid": "394163027",
@@ -3895,7 +6775,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394163027",
+    "title": "[미사용/새상품]갤럭시S25울트라 재고정리 할인[23,24,26,플립7]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 108,
+      "view_count": null
+    },
+    "content_hash": "648ffefac46ae341306b7097"
   },
   {
     "pid": "353140986",
@@ -3918,7 +6814,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "353140986",
+    "title": "특가 갤럭시S25 미사용 선착순 한정판매 울트라/플립/23/24/26",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1728,
+      "view_count": null
+    },
+    "content_hash": "25ff0ada6222d1f02c30941a"
   },
   {
     "pid": "406761717",
@@ -3936,7 +6848,23 @@
     "reviewCount": 19,
     "roughModelKey": "galaxy-s24-ultra",
     "storageGb": 1024,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406761717",
+    "title": "s급)갤럭시 S24 울트라 티타늄 블랙 1테라 자급제 풀박스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 19,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3,
+      "view_count": null
+    },
+    "content_hash": "01a60354b58fc6ac96fa52ca"
   },
   {
     "pid": "267774992",
@@ -3961,7 +6889,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "267774992",
+    "title": "갤럭시s24 256G 512G 무잔상 액정상태최상 ^^",
+    "seller": {
+      "review_rating": 4.7,
+      "review_count": 19,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 11,
+      "view_count": null
+    },
+    "content_hash": "75467985041f2f7a4a37bb46"
   },
   {
     "pid": "406944830",
@@ -3979,7 +6923,23 @@
     "reviewCount": 154,
     "roughModelKey": "galaxy-s24-plus",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406944830",
+    "title": "갤럭시s24플러스 256 판매합니다",
+    "seller": {
+      "review_rating": 4.5,
+      "review_count": 154,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "43161dfb528b2bdc7d4453b5"
   },
   {
     "pid": "406943404",
@@ -4001,7 +6961,23 @@
       "damaged": [
         "파손"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406943404",
+    "title": "리퍼급 갤럭시s24 256GB 그레이 완전깨끗 중고폰",
+    "seller": {
+      "review_rating": 4.3,
+      "review_count": 16,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "5c26d108fcf9b55f99947856"
   },
   {
     "pid": "394162001",
@@ -4023,7 +6999,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394162001",
+    "title": "[미사용/새상품] 갤럭시S25 재고정리 할인 [23,24,26,Z플립7]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 150,
+      "view_count": null
+    },
+    "content_hash": "804f7f4e6b3a941144b8d00a"
   },
   {
     "pid": "406945099",
@@ -4046,7 +7038,23 @@
         "침수",
         "불량"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406945099",
+    "title": "S급)갤럭시S24플러스 무잔상 256G 58만 상태굿 최저가",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 18,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "b0bef171809efba100324d9b"
   },
   {
     "pid": "291206261",
@@ -4068,7 +7076,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "291206261",
+    "title": "[삼성]갤럭시S24FE (플러스 크기 와 동일합니다)",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 124,
+      "view_count": null
+    },
+    "content_hash": "c5510b90a763c8d43ad60471"
   },
   {
     "pid": "406941026",
@@ -4090,7 +7114,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406941026",
+    "title": "갤럭시 S24 울트라 256기가",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 82,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "953a417a6cde943871211269"
   },
   {
     "pid": "291040437",
@@ -4108,7 +7148,23 @@
     "reviewCount": 610,
     "roughModelKey": "galaxy-s24-ultra",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "291040437",
+    "title": "[핫딜]갤럭시S24울트라 미개봉제품 특가판매합니다",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 399,
+      "view_count": null
+    },
+    "content_hash": "d8181f0955f14584689c523e"
   },
   {
     "pid": "345258215",
@@ -4131,7 +7187,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "345258215",
+    "title": "특가 갤럭시Z플립7 미사용 선착순 한정판매 폴드/S23/24/25/26",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1880,
+      "view_count": null
+    },
+    "content_hash": "7afc6f8c8a16d88b8176b81d"
   },
   {
     "pid": "406300557",
@@ -4153,7 +7225,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406300557",
+    "title": "갤럭시 S24 512GB 퍼플 [75426]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 33,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "8bc9e49a56c6ec8a0c9d4d16"
   },
   {
     "pid": "406299637",
@@ -4175,7 +7263,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406299637",
+    "title": "갤럭시 S24 플러스 256GB 퍼플 [74275]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 33,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "e98b23357e880e781d0c3b5a"
   },
   {
     "pid": "274084069",
@@ -4193,7 +7297,23 @@
     "reviewCount": 2555,
     "roughModelKey": "galaxy-s24-ultra",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "274084069",
+    "title": "[S24시리즈 통신사]갤럭시S24플러스[갤럭시S24울트라/갤럭시S24]",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 313,
+      "view_count": null
+    },
+    "content_hash": "794edbc8e8eaf2f45dba77a1"
   },
   {
     "pid": "254211943",
@@ -4215,7 +7335,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "254211943",
+    "title": "[삼성전자]갤럭시S24 마지막 재고정리",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 223,
+      "view_count": null
+    },
+    "content_hash": "93443c71b07685488df1b031"
   },
   {
     "pid": "323635712",
@@ -4238,7 +7374,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "323635712",
+    "title": "특가 갤럭시S26울트라 미사용 선착순 한정판매 23/24/25/플립/7",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4189,
+      "view_count": null
+    },
+    "content_hash": "d5aa980727be34ef8dc35716"
   },
   {
     "pid": "406198703",
@@ -4256,7 +7408,23 @@
     "reviewCount": 2,
     "roughModelKey": "galaxy-s24-ultra",
     "storageGb": 512,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406198703",
+    "title": "[판매] 갤럭시 S24 울트라 512GB 듀얼유심 해외폰 블랙",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4,
+      "view_count": null
+    },
+    "content_hash": "76e9a8ecb16a78b4f4575181"
   },
   {
     "pid": "406936749",
@@ -4278,7 +7446,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406936749",
+    "title": "갤럭시S24FE 특SSS급",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 31,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "d7737e5010ac0b66c4fe7fa0"
   },
   {
     "pid": "406934864",
@@ -4303,7 +7487,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406934864",
+    "title": "A급. 갤럭시S24플러스 256기가 부산중고폰 71261 김해 명지 울산",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 4,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "5e2c714995e9e2e12e593c14"
   },
   {
     "pid": "406574018",
@@ -4328,7 +7528,23 @@
       "multi": [
         "일괄"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406574018",
+    "title": "갤럭시 S24 울트라 케이스 3개 일괄",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 38,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "c6558f9563661f3943c8bfb9"
   },
   {
     "pid": "323639702",
@@ -4351,7 +7567,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "323639702",
+    "title": "특가 갤럭시S26 미사용 선착순 한정판매 23/24/25/7/플립/울트라",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 5651,
+      "view_count": null
+    },
+    "content_hash": "4cd2e6873cb9d893c91b84ad"
   },
   {
     "pid": "406935579",
@@ -4374,7 +7606,23 @@
         "침수",
         "불량"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406935579",
+    "title": "S급)갤럭시S24 무잔상 256G 52.5만 상태굿 최저가",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 18,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "1f60e9f1b076c7946b30f693"
   },
   {
     "pid": "406130078",
@@ -4401,7 +7649,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406130078",
+    "title": "갤럭시S24 256기가 옐로우 (무잔상) / 0504",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 90,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "f19c7d507648be6dffeebb06"
   },
   {
     "pid": "406128346",
@@ -4428,7 +7692,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406128346",
+    "title": "갤럭시S24 256기가 옐로우 (무잔상) / 0504",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 321,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "71335077869d703d84b09a56"
   },
   {
     "pid": "406929230",
@@ -4450,7 +7730,23 @@
       "damaged": [
         "파손"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406929230",
+    "title": "리퍼급 갤럭시s24 256GB 옐로우 완전깨끗 중고폰",
+    "seller": {
+      "review_rating": 4.3,
+      "review_count": 16,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "47ac4aa34bb3244cd701f89e"
   },
   {
     "pid": "288737439",
@@ -4472,7 +7768,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "288737439",
+    "title": "[자급제X/마지막재고]갤럭시S24 [256GB]",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 68,
+      "view_count": null
+    },
+    "content_hash": "0f5beb6de273c14c803b5004"
   },
   {
     "pid": "396996894",
@@ -4494,7 +7806,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "396996894",
+    "title": "갤럭시 S24플러스 앰버옐로우 256GB A급 팝니다.",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 75,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3,
+      "view_count": null
+    },
+    "content_hash": "7c8eb6293a11005dec183fbd"
   },
   {
     "pid": "406518887",
@@ -4512,7 +7840,23 @@
     "reviewCount": 13,
     "roughModelKey": "galaxy-s24",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406518887",
+    "title": "SKT 갤럭시 S24+ 플러스 256GB 블랙",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 13,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "37dbb20b49c1faeaf57a1f31"
   },
   {
     "pid": "399804311",
@@ -4539,7 +7883,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "399804311",
+    "title": "갤럭시S24플러스 256기가 옐로우 (무잔상) / 0404",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 90,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3,
+      "view_count": null
+    },
+    "content_hash": "d6e3eeb4e16137c05fc9f199"
   },
   {
     "pid": "400860367",
@@ -4566,7 +7926,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "400860367",
+    "title": "갤럭시S24울트라 512기가 그레이 (무잔상) / 0410",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 90,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "29cc45d43e939f47b6df7226"
   },
   {
     "pid": "394166342",
@@ -4588,7 +7964,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394166342",
+    "title": "[미사용/새상품] 갤럭시Z플립7 재고정리 할인 [S23,24,25,26]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 143,
+      "view_count": null
+    },
+    "content_hash": "8af95463dd0bf7c040a4e685"
   },
   {
     "pid": "406927332",
@@ -4613,7 +8005,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406927332",
+    "title": "갤럭시S24플러스 256기가 블랙 부산중고폰 13305 대구 대전 울산",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 4,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "35924e7f5639b3fd366f3401"
   },
   {
     "pid": "406926331",
@@ -4638,7 +8046,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406926331",
+    "title": "갤럭시S24플러스 256기가 그레이 부산중고폰 71258 대구 대전 울산",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 4,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "0d79c289e5d1bf2ba39bad13"
   },
   {
     "pid": "406923325",
@@ -4660,7 +8084,23 @@
       "damaged": [
         "불량"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406923325",
+    "title": "[리퍼급]갤럭시S24 최상급컨디션 256G 퍼플 공기계 중고폰",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 96,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "eb56e0bc50f7e6e7ff55a57d"
   },
   {
     "pid": "406925661",
@@ -4685,7 +8125,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406925661",
+    "title": "갤럭시S24FE 256기가 그라파이트 부산중고폰 70778 광주 진해",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 4,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "e65128b9ab097e419f8b2793"
   },
   {
     "pid": "406924942",
@@ -4707,7 +8163,23 @@
       "buying": [
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406924942",
+    "title": "갤럭시S24 256기가 블랙 부산중고폰 66224 광주 진해 창원",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 4,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "027fa7443b1193ac1e291d2e"
   },
   {
     "pid": "406923296",
@@ -4733,7 +8205,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406923296",
+    "title": "SS급 갤럭시S24최상품 팝니다 정상해지 중고폰 단말기 할인가능",
+    "seller": {
+      "review_rating": 4.7,
+      "review_count": 169,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "58d90740a9699dc3c987aba3"
   },
   {
     "pid": "406924620",
@@ -4758,7 +8246,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406924620",
+    "title": "A급. 갤럭시S24플러스 256기가 블랙 부산중고폰 71989 광주 진해",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 4,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "c0d6edd5f56f9dbdbaf95bf8"
   },
   {
     "pid": "406911560",
@@ -4780,7 +8284,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406911560",
+    "title": "갤럭시 S24플러스 256g 42만",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 225,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "1d2ae2c73d3c81e3609f68fa"
   },
   {
     "pid": "345259753",
@@ -4803,7 +8323,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "345259753",
+    "title": "특가 갤럭시Z폴드7 미사용 선착순 한정판매 플립/S23/24/25/26",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 501,
+      "view_count": null
+    },
+    "content_hash": "344973787a905f1a3f1206da"
   },
   {
     "pid": "406913316",
@@ -4825,7 +8361,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406913316",
+    "title": "갤럭시 S24 256 판매합니다",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "da6551b8280b502dc9cfae1a"
   },
   {
     "pid": "322281361",
@@ -4847,7 +8399,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "322281361",
+    "title": "갤럭시S24/FE/미개봉/전색상/새상품/삼성전자/정품/삼케플",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 163,
+      "view_count": null
+    },
+    "content_hash": "807761526327507b9086820c"
   },
   {
     "pid": "404049048",
@@ -4869,7 +8437,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "404049048",
+    "title": "갤럭시S24 울트라 슈피겐 케이스",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 10,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3,
+      "view_count": null
+    },
+    "content_hash": "b5dcbcdb4a37d0973ce69ea0"
   },
   {
     "pid": "254213166",
@@ -4887,7 +8471,23 @@
     "reviewCount": 610,
     "roughModelKey": "galaxy-s24-ultra",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "254213166",
+    "title": "[삼성전자]갤럭시S24플러스(갤럭시S24울트라,S23울트라,S23플러스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 294,
+      "view_count": null
+    },
+    "content_hash": "013aca2ca4faa6a65d5b5f39"
   },
   {
     "pid": "406916901",
@@ -4909,7 +8509,23 @@
       "commercial": [
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406916901",
+    "title": ">한정판매< 갤럭시 S24 플러스 256G S급 블랙 (직거래 할인)",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 13,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "3dc92983322084053ab5f00d"
   },
   {
     "pid": "406914458",
@@ -4936,7 +8552,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406914458",
+    "title": "리퍼급]갤럭시S24플러스 바이올렛 무잔상 최고등급",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 19,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "5a9e628c5cc441027a77cdf6"
   },
   {
     "pid": "406079674",
@@ -4958,7 +8590,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406079674",
+    "title": "갤럭시s24플러스 256gb 옐로우",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 19,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "a3ba81f54fce286b3e608f43"
   },
   {
     "pid": "393978839",
@@ -4976,7 +8624,23 @@
     "reviewCount": 6,
     "roughModelKey": "galaxy-s24",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "393978839",
+    "title": "갤럭시 S24",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 6,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 4,
+      "view_count": null
+    },
+    "content_hash": "efcf7a1279cf6d877d2b9b50"
   },
   {
     "pid": "323643698",
@@ -4999,7 +8663,23 @@
         "선착순 한정",
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "323643698",
+    "title": "특가 갤럭시S26플러스 미사용 선착순 한정판매 23/24/25/플립/7",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2300,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 3488,
+      "view_count": null
+    },
+    "content_hash": "2e43cadcf4675d7f629a736c"
   },
   {
     "pid": "401753850",
@@ -5021,7 +8701,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "401753850",
+    "title": "케이스티파이 정품 갤럭시 s24 플러스 s25 플러스 텔레토비 케이스",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 10,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 11,
+      "view_count": null
+    },
+    "content_hash": "aa7d7b66403d5a015141ba78"
   },
   {
     "pid": "404746105",
@@ -5046,7 +8742,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "404746105",
+    "title": "갤럭시 S23 / 특S급 / 4-53",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 29,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "ebc40f1ccc2a3c5664cac4ec"
   },
   {
     "pid": "406906697",
@@ -5068,7 +8780,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406906697",
+    "title": "갤럭시S24 512G 무잔상 블랙 59969",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 15,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "e4ffdbe026bf707f38b99798"
   },
   {
     "pid": "406950245",
@@ -5086,7 +8814,23 @@
     "reviewCount": 7,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406950245",
+    "title": "갤럭시S23FE 256G 무잔상 깨끗한 A급 중고폰 대량보유",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 7,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "0fa0a304a65a8c30a7b4970e"
   },
   {
     "pid": "406839823",
@@ -5104,7 +8848,23 @@
     "reviewCount": 6,
     "roughModelKey": "galaxy-s23",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406839823",
+    "title": "푸마 수원삼성 갤럭시 S23 반팔 유니폼",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 6,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "56a18c92fdf3e975d1a52fe3"
   },
   {
     "pid": "405839256",
@@ -5122,7 +8882,23 @@
     "reviewCount": 3,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "405839256",
+    "title": "갤럭시 S23 FE 256GB",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 3,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "55c52e6436c72ce5032bc958"
   },
   {
     "pid": "406947726",
@@ -5140,7 +8916,23 @@
     "reviewCount": 7,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406947726",
+    "title": "갤럭시S23FE민트(7140)",
+    "seller": {
+      "review_rating": 4.4,
+      "review_count": 7,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "f596aba996f847465f58bcc7"
   },
   {
     "pid": "341423637",
@@ -5158,7 +8950,23 @@
     "reviewCount": 153,
     "roughModelKey": "galaxy-s23-ultra",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "341423637",
+    "title": "갤럭시 s23 울트라 대여 공연장직거래 라이즈 루시 부산",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 153,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 208,
+      "view_count": null
+    },
+    "content_hash": "4c4384dfda94bd0d47f7d442"
   },
   {
     "pid": "397397369",
@@ -5176,7 +8984,23 @@
     "reviewCount": 29,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "397397369",
+    "title": "삼성 갤럭시 s23 256gb 라벤더 택포",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 29,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 8,
+      "view_count": null
+    },
+    "content_hash": "ebd305cc2b7f35e9e567e8b3"
   },
   {
     "pid": "281568383",
@@ -5194,7 +9018,23 @@
     "reviewCount": 610,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "281568383",
+    "title": "[삼성전자]갤럭시S23 핫딜가 특가판매합니다.",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 240,
+      "view_count": null
+    },
+    "content_hash": "768e9687589e9dce4083dc7a"
   },
   {
     "pid": "281569084",
@@ -5212,7 +9052,23 @@
     "reviewCount": 610,
     "roughModelKey": "galaxy-s23-plus",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "281569084",
+    "title": "[삼성전자]갤럭시S23플러스(갤럭시S23,S23울트라,S22플러스,S22",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 157,
+      "view_count": null
+    },
+    "content_hash": "747d1d74a17f4255d216f460"
   },
   {
     "pid": "406944035",
@@ -5234,7 +9090,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406944035",
+    "title": "갤럭시S23FE 256G 무잔상 퍼플 59207",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 34,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "a2808dc4a02d0881f769b7d7"
   },
   {
     "pid": "406942066",
@@ -5252,7 +9124,23 @@
     "reviewCount": 17,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406942066",
+    "title": "갤럭시S23FE크림(7236)",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 17,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "46e47ec0f04ec4d70fe49882"
   },
   {
     "pid": "406807415",
@@ -5270,7 +9158,23 @@
     "reviewCount": 103,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406807415",
+    "title": "갤럭시S23FE 256G 무잔상 상태굿 중고폰 공기계",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 103,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "0085c191b5114a463fb25c63"
   },
   {
     "pid": "394166674",
@@ -5292,7 +9196,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394166674",
+    "title": "[미사용/새상품] 갤럭시Z폴드7 재고정리 할인 [S23,24,25,26]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 68,
+      "view_count": null
+    },
+    "content_hash": "b0e160e693aa1ccbe518e883"
   },
   {
     "pid": "406942913",
@@ -5310,7 +9230,23 @@
     "reviewCount": 7,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406942913",
+    "title": "갤럭시S23FE 256G 무잔상 깨끗한 A급 중고폰 대량보유",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 7,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "85cf730626d425327ec9c069"
   },
   {
     "pid": "401840244",
@@ -5332,7 +9268,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "401840244",
+    "title": "갤럭시 S23용 맥세이프 와 정품 가죽 케이스",
+    "seller": {
+      "review_rating": 4.7,
+      "review_count": 68,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "8d58ef376d1ca7ae712a9a9d"
   },
   {
     "pid": "406941494",
@@ -5350,7 +9302,23 @@
     "reviewCount": 27,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406941494",
+    "title": "갤럭시 S23 256GB 라벤더",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 27,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "9670819814f6d7ffb9315e48"
   },
   {
     "pid": "406942805",
@@ -5375,7 +9343,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406942805",
+    "title": "새폰급)갤럭시s23FE 24년개통 블랙 기스찍힘없음 중고폰공기계!",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 144,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "d8f9699f4f6e1722a6bcdaab"
   },
   {
     "pid": "394165938",
@@ -5397,7 +9381,23 @@
       "commercial": [
         "재고정리"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "394165938",
+    "title": "[미사용/새상품]갤럭시S26울트라 재고정리 할인[23,24,25,플립7]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2057,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 742,
+      "view_count": null
+    },
+    "content_hash": "6cb943eb8c7f089154245d43"
   },
   {
     "pid": "406941339",
@@ -5415,7 +9415,23 @@
     "reviewCount": 17,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406941339",
+    "title": "갤럭시S23FE민트(8482)",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 17,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "5c7fac2f5cf8d9cf7a9d758f"
   },
   {
     "pid": "404135168",
@@ -5433,7 +9449,23 @@
     "reviewCount": 103,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "404135168",
+    "title": "갤럭시S23FE 256G 무잔상 상태굿 중고폰 공기계",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 103,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 6,
+      "view_count": null
+    },
+    "content_hash": "570b7f8eed8318806a4a9e11"
   },
   {
     "pid": "406940966",
@@ -5459,7 +9491,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406940966",
+    "title": "SS급 삼성 갤럭시S23 무잔상 정품 정상해지 할인가능",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "35f41092afcb5aa2db56c703"
   },
   {
     "pid": "406939927",
@@ -5481,7 +9529,23 @@
       "commercial": [
         "한정판매"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406939927",
+    "title": ">한정판매< 갤럭시S23 FE 256G 자급제 SS급 퍼플(직거래 할인)",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 13,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "e15c7a88c452142658ca7284"
   },
   {
     "pid": "323369581",
@@ -5503,7 +9567,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "323369581",
+    "title": "갤럭시S23[새상품/미개봉/삼성전자/정품/삼성케어]",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 151,
+      "view_count": null
+    },
+    "content_hash": "734f9c93ab77d45ec13eb3fc"
   },
   {
     "pid": "323373762",
@@ -5525,7 +9605,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "323373762",
+    "title": "갤럭시S23울트라[새상품/미개봉/삼성정품/A/S보증/삼성케어]",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 376,
+      "view_count": null
+    },
+    "content_hash": "acfe56661eb8f0ff2266dcca"
   },
   {
     "pid": "323370666",
@@ -5547,7 +9643,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "323370666",
+    "title": "갤럭시S23플러스[새상품/미개봉/삼성전자/정품/삼성케어]",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 170,
+      "view_count": null
+    },
+    "content_hash": "5f301e6bdd5e0e0adc895a9e"
   },
   {
     "pid": "406169808",
@@ -5569,7 +9681,23 @@
       "multi": [
         "여러개"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406169808",
+    "title": "갤럭시 S23 256GB 라벤더",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 10,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "d5fac55ee492c56508463166"
   },
   {
     "pid": "406932457",
@@ -5587,7 +9715,23 @@
     "reviewCount": 26,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406932457",
+    "title": "갤럭시S23FE 그라파이트 256GB 부산 서면 중고폰 897214",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 26,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "18a7bbe4982ccefe40694140"
   },
   {
     "pid": "406938349",
@@ -5612,7 +9756,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406938349",
+    "title": "갤럭시s23 그린  액정기스없음 중고폰공기계!",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 144,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "7e389b46c6cf08d28057eeb7"
   },
   {
     "pid": "406939209",
@@ -5638,7 +9798,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406939209",
+    "title": "S급 특가 갤럭시S23플러스 무잔상 팝니다 할인가능",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "7309a6c42e0d051a77886f65"
   },
   {
     "pid": "406932699",
@@ -5665,7 +9841,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406932699",
+    "title": "리퍼급]갤럭시S23FE 민트 최고등급 공기계 리퍼급",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 19,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "b0c3d0ba928c708eb15aff9c"
   },
   {
     "pid": "406930202",
@@ -5691,7 +9883,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406930202",
+    "title": "삼성 갤럭시S23FE 도매가판매 중고폰할인가능",
+    "seller": {
+      "review_rating": 4.7,
+      "review_count": 169,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "b5e7b238809bc7d846a271bc"
   },
   {
     "pid": "406939256",
@@ -5718,7 +9926,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406939256",
+    "title": "리퍼급]갤럭시S23FE 퍼플 최고등급 공기계 리퍼급",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 19,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "49f5db152f83292a40a276ac"
   },
   {
     "pid": "406937391",
@@ -5743,7 +9967,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406937391",
+    "title": "A급. 갤럭시S23FE 256기가 민트 부산중고폰 01776 경주 김천",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 4,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "803d2f357d47cc10d30f1a44"
   },
   {
     "pid": "406935214",
@@ -5768,7 +10008,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406935214",
+    "title": "A급. 갤럭시S23FE 256기가 크림 부산중고폰 01802 김해 명지",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 4,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "e3e26d8313e6df6bd948d3fc"
   },
   {
     "pid": "406930203",
@@ -5790,7 +10046,23 @@
       "damaged": [
         "불량"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406930203",
+    "title": "[리퍼급]갤럭시S23 최상급컨디션 256G 화이트 공기계 중고폰",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 96,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "c6e1e22081bea274ad137a6e"
   },
   {
     "pid": "406125169",
@@ -5817,7 +10089,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406125169",
+    "title": "갤럭시S23 256기가 블랙 (무잔상) / 0504",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 90,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "49bf6b66d3e59f94aef0ee11"
   },
   {
     "pid": "406123411",
@@ -5844,7 +10132,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406123411",
+    "title": "갤럭시S23 256기가 블랙 (무잔상) / 0504",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 321,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "a67a7372e027b8d0a7063b7f"
   },
   {
     "pid": "404310142",
@@ -5866,7 +10170,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "404310142",
+    "title": "갤럭시 S23 256GB 블랙 [75118]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 33,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "0828a6847bb3d90bae6f8796"
   },
   {
     "pid": "406935194",
@@ -5891,7 +10211,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406935194",
+    "title": "새폰급)갤럭시s23FE 24년개통 민트 기스찍힘없음 중고폰공기계!",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 144,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "123b4bfd5c2780394d7ac023"
   },
   {
     "pid": "406919993",
@@ -5909,7 +10245,23 @@
     "reviewCount": 22,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406919993",
+    "title": "갤럭시S23FE민트(8482)",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 22,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "6dc48808c9eac22a8ecaf03b"
   },
   {
     "pid": "406925601",
@@ -5927,7 +10279,23 @@
     "reviewCount": 6,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406925601",
+    "title": "갤럭시S23FE민트(7140)",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 6,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "9343f33f3544f95ee1cdcd00"
   },
   {
     "pid": "406920682",
@@ -5945,7 +10313,23 @@
     "reviewCount": 22,
     "roughModelKey": "galaxy-s23",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406920682",
+    "title": "갤럭시S23FE크림(7236)",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 22,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "3317526e16422f092e472bfe"
   },
   {
     "pid": "406928048",
@@ -5970,7 +10354,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406928048",
+    "title": "갤럭시s23플러스 블랙 512gb  중고폰공기계!",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 144,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "75d3b877c9edd4319bf7f796"
   },
   {
     "pid": "406929612",
@@ -5992,7 +10392,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406929612",
+    "title": "갤럭시S23울트라 256G 무잔상 크림 59513",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 34,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "c427d054f6d40ad75fd04869"
   },
   {
     "pid": "406889967",
@@ -6014,7 +10430,23 @@
       "buying": [
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406889967",
+    "title": "갤럭시 S23화이트 무잔상 정상공기기 중고폰",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 37,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "3afb49d648bd6a95bf726513"
   },
   {
     "pid": "400276098",
@@ -6036,7 +10468,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "400276098",
+    "title": "갤럭시 S23플러스 블랙 256GB A급 팝니다.",
+    "seller": {
+      "review_rating": 4.8,
+      "review_count": 75,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "98c4fbe3f47a7a10080807f3"
   },
   {
     "pid": "406926462",
@@ -6063,7 +10511,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406926462",
+    "title": "리퍼급]갤럭시S23FE 크림 최고등급 공기계 리퍼급",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 19,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "6c886ebddcb49a116de92067"
   },
   {
     "pid": "406920138",
@@ -6090,7 +10554,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406920138",
+    "title": "리퍼급]갤럭시S23FE 그라파이트 최고등급 공기계 리퍼급",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 19,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "50dc90f720c0fcf2fb68ab34"
   },
   {
     "pid": "387210187",
@@ -6115,7 +10595,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "387210187",
+    "title": "MAZZZZY 마찌 갤럭시 s23 y2k 쿠션 케이스",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 8,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 5,
+      "view_count": null
+    },
+    "content_hash": "aa6adcc84f44a6c38a2a7076"
   },
   {
     "pid": "406705663",
@@ -6133,7 +10629,23 @@
     "reviewCount": 0,
     "roughModelKey": "galaxy-z-flip5",
     "storageGb": 512,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406705663",
+    "title": "갤럭시 z플립 5 512GB 판매합니다",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "9e5c333a53f0b9ee9f3b728e"
   },
   {
     "pid": "406950461",
@@ -6155,7 +10667,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406950461",
+    "title": "갤럭시Z플립4 256G 무잔상 퍼플 59636",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 34,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "a3a3407893fc25736e02420a"
   },
   {
     "pid": "406947281",
@@ -6177,7 +10705,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406947281",
+    "title": "자급제) 갤럭시Z플립7 256G 블랙 공기계 65594",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 34,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "34588858e48562e7da901f01"
   },
   {
     "pid": "238020027",
@@ -6200,7 +10744,23 @@
         "삽니다",
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "238020027",
+    "title": "삽니다) 갤럭시 z폴드7 z플립7 s26울트라 s26플러스 s26 매입",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 21,
+      "view_count": null
+    },
+    "content_hash": "0787549c49df09bcbc328306"
   },
   {
     "pid": "406946418",
@@ -6222,7 +10782,23 @@
       "accessory": [
         "케이스"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406946418",
+    "title": "자급제 ㅡ 그냥 새폰 ㅡ 갤럭시 Z플립7 256GB + 새케이스",
+    "seller": {
+      "review_rating": 4.2,
+      "review_count": 6,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "33921265fb2f99eccff35a40"
   },
   {
     "pid": "406946719",
@@ -6248,7 +10824,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406946719",
+    "title": "S급 새상품급 삼성 갤럭시Z플립5 민트 팝니다 할인가능 중고폰",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 2,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "17784e5812d8997a01608642"
   },
   {
     "pid": "254216127",
@@ -6266,7 +10858,23 @@
     "reviewCount": 610,
     "roughModelKey": "galaxy-z-flip5",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "254216127",
+    "title": "갤럭시Z플립5[새상품,전색상,미개봉]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 137,
+      "view_count": null
+    },
+    "content_hash": "f3f2985dbea79ba9b91c33f9"
   },
   {
     "pid": "351014591",
@@ -6288,7 +10896,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "351014591",
+    "title": "갤럭시Z플립7/갤럭시Z플립7FE [삼성전자/미개봉/정품]",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 78,
+      "view_count": null
+    },
+    "content_hash": "7f5c4f90ad72331f35fd6170"
   },
   {
     "pid": "348125337",
@@ -6316,7 +10940,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "348125337",
+    "title": "[LG]갤럭시Z플립7/256GB/[미개봉/새상품/정품]",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 66,
+      "view_count": null
+    },
+    "content_hash": "8e97dab452d06d25e92ffe3c"
   },
   {
     "pid": "290953645",
@@ -6334,7 +10974,23 @@
     "reviewCount": 610,
     "roughModelKey": "galaxy-z-flip6",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "290953645",
+    "title": "[삼성]갤럭시Z플립6(갤럭시제트플립6/갤럭시Z플립5/갤럭시Z플립4/삼성)",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 264,
+      "view_count": null
+    },
+    "content_hash": "8c4748799969ff5941d447af"
   },
   {
     "pid": "296844256",
@@ -6357,7 +11013,23 @@
         "완납폰",
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "296844256",
+    "title": "[새상품/완납폰/제휴카드X]갤럭시Z플립6 쓰던 유신 그대로 교체",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 2555,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 97,
+      "view_count": null
+    },
+    "content_hash": "7ba89a1c026182669c6de8ac"
   },
   {
     "pid": "347793848",
@@ -6379,7 +11051,23 @@
       "commercial": [
         "제휴카드"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "347793848",
+    "title": "갤럭시z플립7[미개봉/정품/삼성케어]1년에 딱한번 갤럭시 저렴한시기",
+    "seller": {
+      "review_rating": 5,
+      "review_count": 610,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 93,
+      "view_count": null
+    },
+    "content_hash": "07a8c8e89529644236bad8fd"
   },
   {
     "pid": "406945275",
@@ -6397,7 +11085,23 @@
     "reviewCount": 154,
     "roughModelKey": "galaxy-z-flip6",
     "storageGb": null,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406945275",
+    "title": "갤럭시z플립6 256 깨끗한기기 판매",
+    "seller": {
+      "review_rating": 4.5,
+      "review_count": 154,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "bb07a2d57af267cf38cfca9c"
   },
   {
     "pid": "406943758",
@@ -6419,7 +11123,23 @@
       "buying": [
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406943758",
+    "title": "갤럭시Z플립5 자급제 미개봉 새제품 판매합니다.",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "895984aba7695fa9088bb61c"
   },
   {
     "pid": "406943695",
@@ -6441,7 +11161,23 @@
       "buying": [
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406943695",
+    "title": "갤럭시Z플립6 자급제 미개봉 새제품 판매합니다.",
+    "seller": {
+      "review_rating": 0,
+      "review_count": 0,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "253e23b14fe62c257d0aa032"
   },
   {
     "pid": "406944459",
@@ -6466,7 +11202,23 @@
       "buying": [
         "매입"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406944459",
+    "title": "갤럭시 Z플립5블랙 무잔상  정상공기기 중고폰",
+    "seller": {
+      "review_rating": 4.7,
+      "review_count": 54,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 1,
+      "view_count": null
+    },
+    "content_hash": "d5562203b84283061fd9a1d6"
   },
   {
     "pid": "406944621",
@@ -6492,7 +11244,23 @@
       "multi": [
         "선택"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406944621",
+    "title": "정품 새상품급 삼성 갤럭시Z플립4 블루 팝니다 정상해지 할인가능",
+    "seller": {
+      "review_rating": 4.7,
+      "review_count": 169,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "b627ff01bbca303216a5c98d"
   },
   {
     "pid": "391144932",
@@ -6510,7 +11278,23 @@
     "reviewCount": 186,
     "roughModelKey": "galaxy-z-flip5",
     "storageGb": 256,
-    "noiseHits": {}
+    "noiseHits": {},
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "391144932",
+    "title": "갤럭시 Z플립5 256기가 민트",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 186,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 11,
+      "view_count": null
+    },
+    "content_hash": "4d71488494f0844a052e8636"
   },
   {
     "pid": "406940136",
@@ -6532,6 +11316,22 @@
       "damaged": [
         "불량"
       ]
-    }
+    },
+    "source": "bunjang",
+    "source_type": "marketplace_listing",
+    "source_listing_id": "406940136",
+    "title": "갤럭시Z플립3 256기가 퍼플 *가성비굿굿흑점~/#078836",
+    "seller": {
+      "review_rating": 4.9,
+      "review_count": 464,
+      "sales_count": 0,
+      "proshop": false,
+      "is_official": false
+    },
+    "metrics": {
+      "num_faved": 0,
+      "view_count": null
+    },
+    "content_hash": "be6623001a939f9e630d7594"
   }
 ]

@@ -1,0 +1,35 @@
+{
+  "category": "smartphone",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "Smartphone",
+  "queries": [
+    "아이폰 15",
+    "아이폰 15 프로",
+    "아이폰 14 프로",
+    "아이폰 13",
+    "갤럭시 s24",
+    "갤럭시 s23",
+    "갤럭시 z플립",
+    "갤럭시 z폴드"
+  ],
+  "seedSkus": [
+    "iphone-15",
+    "iphone-15-pro",
+    "iphone-15-pro-max",
+    "iphone-14",
+    "iphone-14-pro",
+    "iphone-14-pro-max",
+    "galaxy-s24",
+    "galaxy-s24-ultra",
+    "galaxy-s23",
+    "galaxy-s23-ultra",
+    "galaxy-z-flip5",
+    "galaxy-z-flip6",
+    "galaxy-z-fold5",
+    "galaxy-z-fold6"
+  ],
+  "minNormalPrice": 50000,
+  "clusterK": 18,
+  "aiHints": "스마트폰. 주요 노이즈: 케이스/필름/충전기(액세서리), 부품폰/액정만(부품), 고장/파손(파손), 매입글, 재고정리/완납폰/선착순특가/제휴카드(업자미끼), 일괄묶음(다중). 정상: 공기계, 자급제, 중고 본품.\n교차 카테고리 지식: 매입=buying(p=0.95), 맥세이프=accessory(p=1), 부품용=parts(p=0.9), 삽니다=buying(p=0.94), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=0.9), 일괄=accessory(p=1), 케이스=accessory(p=0.92), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1), 필름=accessory(p=0.9)"
+}

@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "request": "에어팟 애플워치 갤럭시워치",
+  "generated_at": "2026-05-09T08:26:28.094Z",
+  "planner": "ai-category-planner",
+  "categories": [
+    {
+      "id": "airpods",
+      "label": "에어팟",
+      "queries": [
+        "에어팟",
+        "에어팟 프로",
+        "에어팟 2세대",
+        "에어팟 3세대",
+        "에어팟 맥스",
+        "애플 에어팟",
+        "에어팟 무선 이어폰",
+        "에어팟 케이스",
+        "에어팟 부품",
+        "에어팟 삽니다"
+      ],
+      "seedSkus": [
+        "airpods_2nd",
+        "airpods_3rd",
+        "airpods_pro",
+        "airpods_max"
+      ],
+      "minNormalPrice": 40000,
+      "clusterK": 16,
+      "aiHints": "에어팟 관련 제품군. 부품용, 케이스, 삽니다 등 노이즈 포함. 중고 무선 이어폰 중심. 저가 액세서리 제외.",
+      "generated_by": "ai-category-planner"
+    },
+    {
+      "id": "applewatch",
+      "label": "애플워치",
+      "queries": [
+        "애플워치",
+        "애플워치 시리즈 3",
+        "애플워치 시리즈 6",
+        "애플워치 SE",
+        "애플워치 밴드",
+        "애플워치 충전기",
+        "애플워치 부품",
+        "애플워치 삽니다",
+        "애플워치 케이스",
+        "애플워치 스트랩"
+      ],
+      "seedSkus": [
+        "applewatch_series3",
+        "applewatch_series6",
+        "applewatch_se"
+      ],
+      "minNormalPrice": 50000,
+      "clusterK": 16,
+      "aiHints": "애플워치 본체 중심. 밴드, 충전기, 부품, 삽니다 등 노이즈 포함. 중고 스마트워치 중심.",
+      "generated_by": "ai-category-planner"
+    },
+    {
+      "id": "galaxywatch",
+      "label": "갤럭시워치",
+      "queries": [
+        "갤럭시워치",
+        "갤럭시워치 3",
+        "갤럭시워치 4",
+        "갤럭시워치 액티브",
+        "갤럭시워치 밴드",
+        "갤럭시워치 충전기",
+        "갤럭시워치 부품",
+        "갤럭시워치 삽니다",
+        "갤럭시워치 케이스",
+        "갤럭시워치 스트랩"
+      ],
+      "seedSkus": [
+        "galaxywatch_3",
+        "galaxywatch_4",
+        "galaxywatch_active"
+      ],
+      "minNormalPrice": 50000,
+      "clusterK": 16,
+      "aiHints": "삼성 갤럭시워치 본체 중심. 밴드, 충전기, 부품, 삽니다 등 노이즈 포함. 중고 스마트워치 중심.",
+      "generated_by": "ai-category-planner"
+    }
+  ]
+}

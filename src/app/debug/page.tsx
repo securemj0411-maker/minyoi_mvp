@@ -38,6 +38,11 @@ function num(value: number) {
   return value.toLocaleString("ko-KR");
 }
 
+function shortText(value: string | null, max = 42) {
+  if (!value) return "-";
+  return value.length > max ? `${value.slice(0, max)}...` : value;
+}
+
 function pct(part: number, total: number) {
   if (total <= 0) return "0%";
   return `${Math.round((part / total) * 100)}%`;
@@ -121,6 +126,52 @@ function AiPanel({ run }: { run: CollectRun }) {
   );
 }
 
+function RequestPanel({ run }: { run: CollectRun }) {
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-zinc-950">요청 출발 정보</div>
+          <div className="mt-1 text-xs text-zinc-500">
+            cron-job.org/Vercel 경유 여부를 확인하기 위한 운영 메타입니다.
+          </div>
+        </div>
+        <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-700 ring-1 ring-zinc-200">
+          {run.responseMode === "sync_wait" ? "동기 실행" : "백그라운드"}
+        </span>
+      </div>
+      <div className="mt-4 grid gap-3 text-sm">
+        <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-3">
+          <div className="text-zinc-500">출발</div>
+          <div className="font-medium text-zinc-950">{shortText(run.triggerSource, 88)}</div>
+        </div>
+        <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-3">
+          <div className="text-zinc-500">IP</div>
+          <div className="font-mono text-xs text-zinc-800">{run.requestIp ?? "-"}</div>
+        </div>
+        <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-3">
+          <div className="text-zinc-500">Host</div>
+          <div className="font-mono text-xs text-zinc-800">{run.requestHost ?? "-"}</div>
+        </div>
+        <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-3">
+          <div className="text-zinc-500">Path</div>
+          <div className="font-mono text-xs text-zinc-800">{run.requestPath ?? "-"}</div>
+        </div>
+        <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-3">
+          <div className="text-zinc-500">Vercel</div>
+          <div className="font-mono text-xs text-zinc-800">{shortText(run.requestVercelId, 80)}</div>
+        </div>
+        <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-3">
+          <div className="text-zinc-500">인증</div>
+          <div className={run.authOk ? "text-emerald-700" : "text-red-700"}>
+            {run.authOk ? "통과" : "실패"} · {run.authReason ?? "-"}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RunsTable({ runs }: { runs: CollectRun[] }) {
   return (
     <div className="overflow-hidden rounded-md border border-zinc-200 bg-white">
@@ -133,6 +184,9 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
             <tr>
               <th className="px-4 py-3">시각</th>
               <th className="px-4 py-3">상태</th>
+              <th className="px-4 py-3">출발</th>
+              <th className="px-4 py-3">IP</th>
+              <th className="px-4 py-3">모드</th>
               <th className="px-4 py-3">소요</th>
               <th className="px-4 py-3">검색</th>
               <th className="px-4 py-3">제목 통과</th>
@@ -154,6 +208,12 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
                   </span>
                   {run.errorMessage ? <div className="mt-1 max-w-64 text-xs text-red-700">{run.errorMessage}</div> : null}
                 </td>
+                <td className="px-4 py-3 max-w-56 text-xs text-zinc-700">{shortText(run.triggerSource, 48)}</td>
+                <td className="px-4 py-3 font-mono text-xs text-zinc-600">{run.requestIp ?? "-"}</td>
+                <td className="px-4 py-3 text-xs text-zinc-700">
+                  {run.responseMode === "sync_wait" ? "동기" : "백그라운드"}
+                  {run.waitMode ? <div className="text-zinc-400">wait=1</div> : null}
+                </td>
                 <td className="px-4 py-3 text-zinc-700">{formatDuration(run.durationMs)}</td>
                 <td className="px-4 py-3">{num(run.collectedCount)}</td>
                 <td className="px-4 py-3">{num(run.titleNormalCount)}</td>
@@ -167,7 +227,7 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
             ))}
             {runs.length === 0 ? (
               <tr>
-                <td colSpan={11} className="px-4 py-10 text-center text-zinc-500">
+                <td colSpan={14} className="px-4 py-10 text-center text-zinc-500">
                   아직 수집 실행 기록이 없습니다.
                 </td>
               </tr>
@@ -220,9 +280,10 @@ export default async function DebugPage() {
         </section>
 
         {latest ? (
-          <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
+          <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px_420px]">
             <FlowBar run={latest} />
             <AiPanel run={latest} />
+            <RequestPanel run={latest} />
           </section>
         ) : null}
 

@@ -1,10 +1,12 @@
 // catalog_v1.py를 TypeScript로 포팅.
-// 카탈로그 SKU 19개 + normalize + ruleMatch.
+// 카탈로그 SKU 19개 + generated mining catalog + normalize + ruleMatch.
+
+import { GENERATED_CATALOG } from "@/lib/generated/catalog";
 
 export type Sku = {
   id: string;
   brand: string;
-  category: "earphone" | "smartwatch";
+  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "small_appliance";
   modelName: string;
   aliases: string[];
   mustContain: string[][];
@@ -258,6 +260,7 @@ export const CATALOG: Sku[] = [
     msrpKrw: 829000,
     released: 2024,
   },
+  ...GENERATED_CATALOG,
 ];
 
 const SKU_MAP = new Map(CATALOG.map((s) => [s.id, s]));
