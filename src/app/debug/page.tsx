@@ -75,12 +75,103 @@ function lastSucceeded(runs: CollectRun[]) {
   return runs.find((run) => run.status === "succeeded") ?? null;
 }
 
+function stageStats(run: CollectRun, stage: "search" | "detail" | "score") {
+  const stages = run.stageStats.stages;
+  if (!stages || typeof stages !== "object") return null;
+  const value = (stages as Record<string, unknown>)[stage];
+  if (!value || typeof value !== "object") return null;
+  return value as Record<string, unknown>;
+}
+
+function stageDuration(run: CollectRun, stage: "search" | "detail" | "score") {
+  const durations = run.stageStats.stageDurationsMs;
+  if (!durations || typeof durations !== "object") return null;
+  const value = (durations as Record<string, unknown>)[stage];
+  return typeof value === "number" ? value : null;
+}
+
+function stageValue(stats: Record<string, unknown> | null, key: string) {
+  const value = stats?.[key];
+  return typeof value === "number" ? value : 0;
+}
+
+function stageTimedOut(stats: Record<string, unknown> | null) {
+  return stats?.timedOut === true;
+}
+
 function MetricCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-md border border-zinc-200 bg-white p-4">
       <div className="text-xs font-medium text-zinc-500">{label}</div>
       <div className="mt-1 text-2xl font-semibold text-zinc-950">{value}</div>
       {sub ? <div className="mt-1 text-xs text-zinc-500">{sub}</div> : null}
+    </div>
+  );
+}
+
+function StagePanel({ run }: { run: CollectRun }) {
+  const rows = [
+    {
+      key: "search" as const,
+      label: "검색",
+      primary: "수집",
+      primaryKey: "collected",
+      secondary: "큐 적재",
+      secondaryKey: "queued",
+    },
+    {
+      key: "detail" as const,
+      label: "상세",
+      primary: "claim",
+      primaryKey: "claimed",
+      secondary: "enrich",
+      secondaryKey: "enriched",
+    },
+    {
+      key: "score" as const,
+      label: "점수",
+      primary: "계산",
+      primaryKey: "scored",
+      secondary: "저장",
+      secondaryKey: "upserted",
+    },
+  ];
+
+  if (!run.stageStats.stages) return null;
+
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="text-sm font-semibold text-zinc-950">Stage 예산</div>
+      <div className="mt-1 text-xs text-zinc-500">
+        tick이 search/detail/score를 시간 예산 안에서 어디까지 처리했는지 봅니다.
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        {rows.map((row) => {
+          const stats = stageStats(run, row.key);
+          const duration = stageDuration(run, row.key);
+          return (
+            <div key={row.key} className="rounded-md border border-zinc-200 p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-sm font-semibold text-zinc-950">{row.label}</div>
+                <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${
+                  stageTimedOut(stats)
+                    ? "bg-amber-100 text-amber-800 ring-amber-200"
+                    : "bg-emerald-100 text-emerald-800 ring-emerald-200"
+                }`}>
+                  {stageTimedOut(stats) ? "budget stop" : "완료"}
+                </span>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <MetricCard label={row.primary} value={`${num(stageValue(stats, row.primaryKey))}건`} />
+                <MetricCard label={row.secondary} value={`${num(stageValue(stats, row.secondaryKey))}건`} />
+              </div>
+              <div className="mt-3 text-xs text-zinc-500">
+                소요 {duration == null ? "-" : formatDuration(duration)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -327,6 +418,8 @@ export default async function DebugPage() {
             <RequestPanel run={latest} />
           </section>
         ) : null}
+
+        {latest ? <StagePanel run={latest} /> : null}
 
         <RunsTable runs={runs} />
       </div>
