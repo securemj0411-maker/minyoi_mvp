@@ -1,5 +1,6 @@
 import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
 import { CATALOG } from "@/lib/catalog";
+import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import {
   applyAiReview,
   classifyListing,
@@ -48,6 +49,14 @@ type ScorableRawRow = RawListingRow & {
   listing_type: string;
   sku_id: string | null;
   sku_name: string | null;
+};
+
+type ParsedListingRow = {
+  pid: number;
+  comparable_key: string | null;
+  parse_confidence: number | null;
+  condition_score: number | null;
+  needs_review: boolean | null;
 };
 
 const DETAIL_STAGE_SAFETY_MARGIN_MS = 8_000;
@@ -379,6 +388,13 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           continue;
         }
         const { listingType, sku } = classifyListing(claim.name, detail.description, claim.price);
+        const parsed = parseListingOptions({
+          title: claim.name,
+          description: detail.description,
+          skuId: sku?.id ?? null,
+          skuName: sku?.modelName ?? null,
+          category: sku?.category ?? null,
+        });
         const now = new Date().toISOString();
         await patchRows("mvp_raw_listings", `pid=eq.${claim.pid}`, {
           description_preview: detail.description.slice(0, 500),
@@ -398,6 +414,31 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           detail_error: null,
           updated_at: now,
         });
+        try {
+          await upsertRows("mvp_listing_parsed", [toParsedListingRow(claim.pid, parsed)], "pid");
+          await insertRows("mvp_listing_observations", [{
+            pid: Number(claim.pid),
+            observed_at: now,
+            event_type: "detail_enriched",
+            price: claim.price,
+            name: claim.name,
+            num_faved: claim.num_faved,
+            sale_status: detail.saleStatus,
+            listing_state: "active",
+            sku_id: sku?.id ?? null,
+            sku_name: sku?.modelName ?? null,
+            comparable_key: parsed.comparableKey,
+            parse_confidence: parsed.parseConfidence,
+            source: "tick_detail",
+            raw_json: {
+              listing_type: listingType,
+              parser_version: parsed.parserVersion,
+              needs_review: parsed.needsReview,
+            },
+          }]);
+        } catch (err) {
+          console.error("option parse side-write failed", err);
+        }
         await markQueueDone(claim.queue_id);
         stats.enriched += 1;
       } catch (err) {
@@ -434,20 +475,42 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   return (await res.json()) as ScorableRawRow[];
 }
 
+async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListingRow>> {
+  if (pids.length === 0) return new Map();
+  const unique = [...new Set(pids)];
+  const columns = "pid,comparable_key,parse_confidence,condition_score,needs_review";
+  const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&pid=in.(${unique.join(",")})`;
+  const res = await restFetch(url, { headers: serviceHeaders() });
+  const rows = (await res.json()) as ParsedListingRow[];
+  return new Map(rows.map((row) => [row.pid, row]));
+}
+
+function marketGroupKey(row: ScorableRawRow, parsed: ParsedListingRow | undefined) {
+  if (parsed?.comparable_key && Number(parsed.parse_confidence ?? 0) >= 0.65) {
+    return parsed.comparable_key;
+  }
+  return row.sku_id ?? "";
+}
+
 export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
   const rows = await loadScorableRows(config.tickScoreLimit);
   if (rows.length === 0) return stats;
+  const parsedByPid = await loadParsedRows(rows.map((row) => row.pid));
 
+  const pricesByMarket = new Map<string, number[]>();
+  const favsByMarket = new Map<string, number[]>();
   const pricesBySku = new Map<string, number[]>();
-  const favsBySku = new Map<string, number[]>();
   for (const row of rows) {
     const skuId = row.sku_id ?? "";
+    const marketKey = marketGroupKey(row, parsedByPid.get(row.pid));
+    if (!pricesByMarket.has(marketKey)) pricesByMarket.set(marketKey, []);
+    if (!favsByMarket.has(marketKey)) favsByMarket.set(marketKey, []);
     if (!pricesBySku.has(skuId)) pricesBySku.set(skuId, []);
-    if (!favsBySku.has(skuId)) favsBySku.set(skuId, []);
     pricesBySku.get(skuId)!.push(row.price);
-    favsBySku.get(skuId)!.push(row.num_faved);
+    pricesByMarket.get(marketKey)!.push(row.price);
+    favsByMarket.get(marketKey)!.push(row.num_faved);
   }
 
   const skuMsrp = new Map(CATALOG.map((sku) => [sku.id, sku.msrpKrw]));
@@ -460,15 +523,23 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       break;
     }
     const skuId = row.sku_id ?? "";
-    const prices = pricesBySku.get(skuId) ?? [];
-    const skuMedian = prices.length >= 5 ? median(prices) : (skuMsrp.get(skuId) ?? 300000) * 0.5;
+    const parsed = parsedByPid.get(row.pid);
+    const marketKey = marketGroupKey(row, parsed);
+    const prices = pricesByMarket.get(marketKey) ?? [];
+    const coarsePrices = pricesBySku.get(skuId) ?? [];
+    const hasPreciseMarket = prices.length >= 5;
+    const skuMedian = hasPreciseMarket
+      ? median(prices)
+      : (coarsePrices.length >= 5 ? median(coarsePrices) : (skuMsrp.get(skuId) ?? 300000) * 0.5);
     const priceGap = skuMedian <= 0 ? 0 : Math.max(0, Math.min(1, (skuMedian - row.price) / skuMedian));
-    const velocity = percentileRank(favsBySku.get(skuId) ?? [], row.num_faved);
+    const velocity = percentileRank(favsByMarket.get(marketKey) ?? [], row.num_faved);
     const safetyBase = row.shop_review_rating == null ? 0.5 : Math.max(0, Math.min(1, Number(row.shop_review_rating) / 5));
     const safety = Math.max(0, Math.min(1, safetyBase + (row.shop_review_count >= 100 ? 0.05 : 0)));
     const riskHits = ["직거래만", "현금만", "박스없음", "박스 없음", "수리이력", "충전안됨", "충전 안됨", "고장", "불량", "먹통"]
       .filter((kw) => row.description_preview.toLowerCase().includes(kw.toLowerCase())).length;
-    const score = (priceGap * 0.5 + velocity * 0.4 + safety * 0.1) * 100;
+    const parseConfidence = Number(parsed?.parse_confidence ?? 0);
+    const precisionPenalty = (parseConfidence > 0 && parseConfidence < 0.65 ? 0.75 : 1) * (hasPreciseMarket ? 1 : 0.85);
+    const score = (priceGap * 0.5 + velocity * 0.4 + safety * 0.1) * 100 * precisionPenalty;
     const apiParsed = parseShippingFromTrade(row.trade_data, row.trades_data);
     const descParsed = parseShippingFromDescription(row.description_preview);
     const shipping = resolveShipping(row.price, skuMedian, row.free_shipping, apiParsed, descParsed);
@@ -476,6 +547,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     if (priceGap >= 0.55) scoreFlags.push("deep_discount_review");
     if (riskHits > 0) scoreFlags.push("risk_keyword_review");
     if (row.description_preview.trim().length < 20) scoreFlags.push("weak_description");
+    if (!hasPreciseMarket) scoreFlags.push("coarse_market_price");
+    if (parseConfidence > 0 && parseConfidence < 0.65) scoreFlags.push("option_parse_review");
+    if (parsed?.needs_review) scoreFlags.push("option_needs_review");
 
     scoredRows.push({
       pid: String(row.pid),
