@@ -1,7 +1,7 @@
 {
   "version": 1,
   "category": "smartphone",
-  "updated_at": "2026-05-09T11:31:51.069Z",
+  "updated_at": "2026-05-09T13:10:25.892Z",
   "instructions": [
     "Set approved=true only for entries you want to promote into runtime.",
     "Set rejected=true for entries you explicitly do not want to see again.",
@@ -13,7 +13,7 @@
       "key": "sku:갤럭시-s23-s22-s10e-버디-등-다양한-모델",
       "kind": "sku",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "id": "갤럭시-s23-s22-s10e-버디-등-다양한-모델",
       "modelName": "갤럭시 S23+, S22, S10e, 버디 등 다양한 모델",
       "brand": "Samsung",
@@ -35,7 +35,7 @@
       "sourceClusterIds": [
         2
       ],
-      "note": "",
+      "note": "AI 원본 SKU가 여러 갤럭시 모델/공기계/중고폰/정상작동 같은 광범위 alias를 포함해 운영 승격 제외. curated smartphone SKU로 대체.",
       "candidate": {
         "id": "갤럭시-s23-s22-s10e-버디-등-다양한-모델",
         "brand": "Samsung",
@@ -83,12 +83,12 @@
       "key": "noise:damaged:파손",
       "kind": "noise",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "type": "damaged",
       "keyword": "파손",
       "precision": 0.8,
       "hitCount": 160,
-      "note": "",
+      "note": "파손 없음/파손 없는 정상폰 문맥 오탐 가능. 문맥 예외 룰 보강 전 전역 damaged keyword로는 보류.",
       "candidate": {
         "keyword": "파손",
         "type": "damaged",
@@ -100,13 +100,13 @@
     {
       "key": "noise:buying:삽니다",
       "kind": "noise",
-      "approved": false,
+      "approved": true,
       "rejected": false,
       "type": "buying",
       "keyword": "삽니다",
       "precision": 0.8,
       "hitCount": 59,
-      "note": "",
+      "note": "구매글 차단 strong signal. 기본 룰 중복이지만 안전함.",
       "candidate": {
         "keyword": "삽니다",
         "type": "buying",
@@ -118,13 +118,13 @@
     {
       "key": "noise:buying:최고가",
       "kind": "noise",
-      "approved": false,
+      "approved": true,
       "rejected": false,
       "type": "buying",
       "keyword": "최고가",
       "precision": 1,
       "hitCount": 98,
-      "note": "",
+      "note": "매입/업자성 구매글 strong signal. 기본 룰 중복이지만 안전함.",
       "candidate": {
         "keyword": "최고가",
         "type": "buying",
@@ -137,12 +137,12 @@
       "key": "noise:buying:출장",
       "kind": "noise",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "type": "buying",
       "keyword": "출장",
       "precision": 1,
       "hitCount": 50,
-      "note": "",
+      "note": "정상 판매 문맥과 충돌할 수 있어 카테고리 스코프 룰 전까지 보류.",
       "candidate": {
         "keyword": "출장",
         "type": "buying",
@@ -155,12 +155,12 @@
       "key": "noise:buying:견적",
       "kind": "noise",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "type": "buying",
       "keyword": "견적",
       "precision": 0.8,
       "hitCount": 65,
-      "note": "",
+      "note": "정상 판매 문맥과 충돌할 수 있어 카테고리 스코프 룰 전까지 보류.",
       "candidate": {
         "keyword": "견적",
         "type": "buying",
@@ -173,12 +173,12 @@
       "key": "noise:buying:전문",
       "kind": "noise",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "type": "buying",
       "keyword": "전문",
       "precision": 1,
       "hitCount": 56,
-      "note": "",
+      "note": "정상 판매 문맥과 충돌할 수 있어 카테고리 스코프 룰 전까지 보류.",
       "candidate": {
         "keyword": "전문",
         "type": "buying",
@@ -191,18 +191,673 @@
       "key": "noise:buying:프로",
       "kind": "noise",
       "approved": false,
-      "rejected": false,
+      "rejected": true,
       "type": "buying",
       "keyword": "프로",
       "precision": 0.8,
       "hitCount": 146,
-      "note": "",
+      "note": "iPhone Pro/Galaxy Pro 정상 SKU를 죽이는 치명적 오탐 위험.",
       "candidate": {
         "keyword": "프로",
         "type": "buying",
         "precision": 0.8,
         "hitCount": 146,
         "promotionHash": "11cb78c16cef5c8b"
+      }
+    },
+    {
+      "key": "sku:iphone-12",
+      "kind": "sku",
+      "approved": true,
+      "rejected": false,
+      "id": "iphone-12",
+      "modelName": "iPhone 12",
+      "brand": "Apple",
+      "category": "smartphone",
+      "aliases": [
+        "아이폰 12",
+        "아이폰12",
+        "iPhone 12"
+      ],
+      "medianFallbackKrw": 209000,
+      "sourceClusterIds": [
+        "curated-smartphone-2026-05-09"
+      ],
+      "note": "price_distribution count>=5 모델을 사람이 좁힌 운영 후보. 원본 AI cluster alias는 사용하지 않음.",
+      "candidate": {
+        "id": "iphone-12",
+        "brand": "Apple",
+        "category": "smartphone",
+        "modelName": "iPhone 12",
+        "aliases": [
+          "아이폰 12",
+          "아이폰12",
+          "iPhone 12"
+        ],
+        "mustContain": [
+          [
+            "아이폰 12",
+            "아이폰12",
+            "iphone 12"
+          ]
+        ],
+        "mustNotContain": [
+          "프로",
+          "pro",
+          "프로맥스",
+          "pro max",
+          "미니",
+          "mini",
+          "케이스",
+          "필름",
+          "강화유리",
+          "충전기만",
+          "어댑터만",
+          "액정",
+          "액정만",
+          "배터리만",
+          "메인보드",
+          "부품용",
+          "파손폰",
+          "고장폰",
+          "고장",
+          "분실폰",
+          "잠김",
+          "락걸림",
+          "매입",
+          "삽니다",
+          "구합니다",
+          "최고가"
+        ],
+        "msrpKrw": 418000,
+        "released": 2024,
+        "sourceCategory": "smartphone",
+        "sourceClusterIds": [
+          "curated-smartphone-2026-05-09"
+        ],
+        "promotionHash": "curated-iphone-12-20260509"
+      }
+    },
+    {
+      "key": "sku:iphone-13",
+      "kind": "sku",
+      "approved": true,
+      "rejected": false,
+      "id": "iphone-13",
+      "modelName": "iPhone 13",
+      "brand": "Apple",
+      "category": "smartphone",
+      "aliases": [
+        "아이폰 13",
+        "아이폰13",
+        "iPhone 13"
+      ],
+      "medianFallbackKrw": 320000,
+      "sourceClusterIds": [
+        "curated-smartphone-2026-05-09"
+      ],
+      "note": "price_distribution count>=5 모델을 사람이 좁힌 운영 후보. 원본 AI cluster alias는 사용하지 않음.",
+      "candidate": {
+        "id": "iphone-13",
+        "brand": "Apple",
+        "category": "smartphone",
+        "modelName": "iPhone 13",
+        "aliases": [
+          "아이폰 13",
+          "아이폰13",
+          "iPhone 13"
+        ],
+        "mustContain": [
+          [
+            "아이폰 13",
+            "아이폰13",
+            "iphone 13"
+          ]
+        ],
+        "mustNotContain": [
+          "프로",
+          "pro",
+          "프로맥스",
+          "pro max",
+          "미니",
+          "mini",
+          "케이스",
+          "필름",
+          "강화유리",
+          "충전기만",
+          "어댑터만",
+          "액정",
+          "액정만",
+          "배터리만",
+          "메인보드",
+          "부품용",
+          "파손폰",
+          "고장폰",
+          "고장",
+          "분실폰",
+          "잠김",
+          "락걸림",
+          "매입",
+          "삽니다",
+          "구합니다",
+          "최고가"
+        ],
+        "msrpKrw": 640000,
+        "released": 2024,
+        "sourceCategory": "smartphone",
+        "sourceClusterIds": [
+          "curated-smartphone-2026-05-09"
+        ],
+        "promotionHash": "curated-iphone-13-20260509"
+      }
+    },
+    {
+      "key": "sku:iphone-14",
+      "kind": "sku",
+      "approved": true,
+      "rejected": false,
+      "id": "iphone-14",
+      "modelName": "iPhone 14",
+      "brand": "Apple",
+      "category": "smartphone",
+      "aliases": [
+        "아이폰 14",
+        "아이폰14",
+        "iPhone 14"
+      ],
+      "medianFallbackKrw": 441000,
+      "sourceClusterIds": [
+        "curated-smartphone-2026-05-09"
+      ],
+      "note": "price_distribution count>=5 모델을 사람이 좁힌 운영 후보. 원본 AI cluster alias는 사용하지 않음.",
+      "candidate": {
+        "id": "iphone-14",
+        "brand": "Apple",
+        "category": "smartphone",
+        "modelName": "iPhone 14",
+        "aliases": [
+          "아이폰 14",
+          "아이폰14",
+          "iPhone 14"
+        ],
+        "mustContain": [
+          [
+            "아이폰 14",
+            "아이폰14",
+            "iphone 14"
+          ]
+        ],
+        "mustNotContain": [
+          "프로",
+          "pro",
+          "프로맥스",
+          "pro max",
+          "플러스",
+          "plus",
+          "케이스",
+          "필름",
+          "강화유리",
+          "충전기만",
+          "어댑터만",
+          "액정",
+          "액정만",
+          "배터리만",
+          "메인보드",
+          "부품용",
+          "파손폰",
+          "고장폰",
+          "고장",
+          "분실폰",
+          "잠김",
+          "락걸림",
+          "매입",
+          "삽니다",
+          "구합니다",
+          "최고가"
+        ],
+        "msrpKrw": 882000,
+        "released": 2024,
+        "sourceCategory": "smartphone",
+        "sourceClusterIds": [
+          "curated-smartphone-2026-05-09"
+        ],
+        "promotionHash": "curated-iphone-14-20260509"
+      }
+    },
+    {
+      "key": "sku:iphone-15",
+      "kind": "sku",
+      "approved": true,
+      "rejected": false,
+      "id": "iphone-15",
+      "modelName": "iPhone 15",
+      "brand": "Apple",
+      "category": "smartphone",
+      "aliases": [
+        "아이폰 15",
+        "아이폰15",
+        "iPhone 15"
+      ],
+      "medianFallbackKrw": 636000,
+      "sourceClusterIds": [
+        "curated-smartphone-2026-05-09"
+      ],
+      "note": "price_distribution count>=5 모델을 사람이 좁힌 운영 후보. 원본 AI cluster alias는 사용하지 않음.",
+      "candidate": {
+        "id": "iphone-15",
+        "brand": "Apple",
+        "category": "smartphone",
+        "modelName": "iPhone 15",
+        "aliases": [
+          "아이폰 15",
+          "아이폰15",
+          "iPhone 15"
+        ],
+        "mustContain": [
+          [
+            "아이폰 15",
+            "아이폰15",
+            "iphone 15"
+          ]
+        ],
+        "mustNotContain": [
+          "프로",
+          "pro",
+          "프로맥스",
+          "pro max",
+          "플러스",
+          "plus",
+          "케이스",
+          "필름",
+          "강화유리",
+          "충전기만",
+          "어댑터만",
+          "액정",
+          "액정만",
+          "배터리만",
+          "메인보드",
+          "부품용",
+          "파손폰",
+          "고장폰",
+          "고장",
+          "분실폰",
+          "잠김",
+          "락걸림",
+          "매입",
+          "삽니다",
+          "구합니다",
+          "최고가"
+        ],
+        "msrpKrw": 1272000,
+        "released": 2024,
+        "sourceCategory": "smartphone",
+        "sourceClusterIds": [
+          "curated-smartphone-2026-05-09"
+        ],
+        "promotionHash": "curated-iphone-15-20260509"
+      }
+    },
+    {
+      "key": "sku:iphone-15-pro",
+      "kind": "sku",
+      "approved": true,
+      "rejected": false,
+      "id": "iphone-15-pro",
+      "modelName": "iPhone 15 Pro",
+      "brand": "Apple",
+      "category": "smartphone",
+      "aliases": [
+        "아이폰 15 프로",
+        "아이폰15프로",
+        "iPhone 15 Pro"
+      ],
+      "medianFallbackKrw": 905000,
+      "sourceClusterIds": [
+        "curated-smartphone-2026-05-09"
+      ],
+      "note": "price_distribution count>=5 모델을 사람이 좁힌 운영 후보. 원본 AI cluster alias는 사용하지 않음.",
+      "candidate": {
+        "id": "iphone-15-pro",
+        "brand": "Apple",
+        "category": "smartphone",
+        "modelName": "iPhone 15 Pro",
+        "aliases": [
+          "아이폰 15 프로",
+          "아이폰15프로",
+          "iPhone 15 Pro"
+        ],
+        "mustContain": [
+          [
+            "아이폰 15 프로",
+            "아이폰15프로",
+            "iphone 15 pro"
+          ]
+        ],
+        "mustNotContain": [
+          "프로맥스",
+          "pro max",
+          "플러스",
+          "plus",
+          "케이스",
+          "필름",
+          "강화유리",
+          "충전기만",
+          "어댑터만",
+          "액정",
+          "액정만",
+          "배터리만",
+          "메인보드",
+          "부품용",
+          "파손폰",
+          "고장폰",
+          "고장",
+          "분실폰",
+          "잠김",
+          "락걸림",
+          "매입",
+          "삽니다",
+          "구합니다",
+          "최고가"
+        ],
+        "msrpKrw": 1810000,
+        "released": 2024,
+        "sourceCategory": "smartphone",
+        "sourceClusterIds": [
+          "curated-smartphone-2026-05-09"
+        ],
+        "promotionHash": "curated-iphone-15-pro-20260509"
+      }
+    },
+    {
+      "key": "sku:iphone-16",
+      "kind": "sku",
+      "approved": true,
+      "rejected": false,
+      "id": "iphone-16",
+      "modelName": "iPhone 16",
+      "brand": "Apple",
+      "category": "smartphone",
+      "aliases": [
+        "아이폰 16",
+        "아이폰16",
+        "iPhone 16"
+      ],
+      "medianFallbackKrw": 789000,
+      "sourceClusterIds": [
+        "curated-smartphone-2026-05-09"
+      ],
+      "note": "price_distribution count>=5 모델을 사람이 좁힌 운영 후보. 원본 AI cluster alias는 사용하지 않음.",
+      "candidate": {
+        "id": "iphone-16",
+        "brand": "Apple",
+        "category": "smartphone",
+        "modelName": "iPhone 16",
+        "aliases": [
+          "아이폰 16",
+          "아이폰16",
+          "iPhone 16"
+        ],
+        "mustContain": [
+          [
+            "아이폰 16",
+            "아이폰16",
+            "iphone 16"
+          ]
+        ],
+        "mustNotContain": [
+          "프로",
+          "pro",
+          "프로맥스",
+          "pro max",
+          "플러스",
+          "plus",
+          "케이스",
+          "필름",
+          "강화유리",
+          "충전기만",
+          "어댑터만",
+          "액정",
+          "액정만",
+          "배터리만",
+          "메인보드",
+          "부품용",
+          "파손폰",
+          "고장폰",
+          "고장",
+          "분실폰",
+          "잠김",
+          "락걸림",
+          "매입",
+          "삽니다",
+          "구합니다",
+          "최고가"
+        ],
+        "msrpKrw": 1578000,
+        "released": 2024,
+        "sourceCategory": "smartphone",
+        "sourceClusterIds": [
+          "curated-smartphone-2026-05-09"
+        ],
+        "promotionHash": "curated-iphone-16-20260509"
+      }
+    },
+    {
+      "key": "sku:galaxy-s23",
+      "kind": "sku",
+      "approved": true,
+      "rejected": false,
+      "id": "galaxy-s23",
+      "modelName": "Galaxy S23",
+      "brand": "Samsung",
+      "category": "smartphone",
+      "aliases": [
+        "갤럭시 S23",
+        "갤럭시S23",
+        "Galaxy S23"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        "curated-smartphone-2026-05-09"
+      ],
+      "note": "price_distribution count>=5 모델을 사람이 좁힌 운영 후보. 원본 AI cluster alias는 사용하지 않음.",
+      "candidate": {
+        "id": "galaxy-s23",
+        "brand": "Samsung",
+        "category": "smartphone",
+        "modelName": "Galaxy S23",
+        "aliases": [
+          "갤럭시 S23",
+          "갤럭시S23",
+          "Galaxy S23"
+        ],
+        "mustContain": [
+          [
+            "갤럭시 s23",
+            "갤럭시s23",
+            "galaxy s23"
+          ]
+        ],
+        "mustNotContain": [
+          "울트라",
+          "ultra",
+          "플러스",
+          "plus",
+          "s23+",
+          "fe",
+          "케이스",
+          "필름",
+          "강화유리",
+          "충전기만",
+          "어댑터만",
+          "액정",
+          "액정만",
+          "배터리만",
+          "메인보드",
+          "부품용",
+          "파손폰",
+          "고장폰",
+          "고장",
+          "분실폰",
+          "잠김",
+          "락걸림",
+          "매입",
+          "삽니다",
+          "구합니다",
+          "최고가"
+        ],
+        "msrpKrw": 600000,
+        "released": 2024,
+        "sourceCategory": "smartphone",
+        "sourceClusterIds": [
+          "curated-smartphone-2026-05-09"
+        ],
+        "promotionHash": "curated-galaxy-s23-20260509"
+      }
+    },
+    {
+      "key": "sku:galaxy-s24",
+      "kind": "sku",
+      "approved": true,
+      "rejected": false,
+      "id": "galaxy-s24",
+      "modelName": "Galaxy S24",
+      "brand": "Samsung",
+      "category": "smartphone",
+      "aliases": [
+        "갤럭시 S24",
+        "갤럭시S24",
+        "Galaxy S24"
+      ],
+      "medianFallbackKrw": 430000,
+      "sourceClusterIds": [
+        "curated-smartphone-2026-05-09"
+      ],
+      "note": "price_distribution count>=5 모델을 사람이 좁힌 운영 후보. 원본 AI cluster alias는 사용하지 않음.",
+      "candidate": {
+        "id": "galaxy-s24",
+        "brand": "Samsung",
+        "category": "smartphone",
+        "modelName": "Galaxy S24",
+        "aliases": [
+          "갤럭시 S24",
+          "갤럭시S24",
+          "Galaxy S24"
+        ],
+        "mustContain": [
+          [
+            "갤럭시 s24",
+            "갤럭시s24",
+            "galaxy s24"
+          ]
+        ],
+        "mustNotContain": [
+          "울트라",
+          "ultra",
+          "플러스",
+          "plus",
+          "s24+",
+          "fe",
+          "케이스",
+          "필름",
+          "강화유리",
+          "충전기만",
+          "어댑터만",
+          "액정",
+          "액정만",
+          "배터리만",
+          "메인보드",
+          "부품용",
+          "파손폰",
+          "고장폰",
+          "고장",
+          "분실폰",
+          "잠김",
+          "락걸림",
+          "매입",
+          "삽니다",
+          "구합니다",
+          "최고가"
+        ],
+        "msrpKrw": 860000,
+        "released": 2024,
+        "sourceCategory": "smartphone",
+        "sourceClusterIds": [
+          "curated-smartphone-2026-05-09"
+        ],
+        "promotionHash": "curated-galaxy-s24-20260509"
+      }
+    },
+    {
+      "key": "sku:galaxy-s24-plus",
+      "kind": "sku",
+      "approved": true,
+      "rejected": false,
+      "id": "galaxy-s24-plus",
+      "modelName": "Galaxy S24 Plus",
+      "brand": "Samsung",
+      "category": "smartphone",
+      "aliases": [
+        "갤럭시 S24 플러스",
+        "갤럭시S24플러스",
+        "Galaxy S24 Plus",
+        "Galaxy S24+"
+      ],
+      "medianFallbackKrw": 515000,
+      "sourceClusterIds": [
+        "curated-smartphone-2026-05-09"
+      ],
+      "note": "price_distribution count>=5 모델을 사람이 좁힌 운영 후보. 원본 AI cluster alias는 사용하지 않음.",
+      "candidate": {
+        "id": "galaxy-s24-plus",
+        "brand": "Samsung",
+        "category": "smartphone",
+        "modelName": "Galaxy S24 Plus",
+        "aliases": [
+          "갤럭시 S24 플러스",
+          "갤럭시S24플러스",
+          "Galaxy S24 Plus",
+          "Galaxy S24+"
+        ],
+        "mustContain": [
+          [
+            "갤럭시 s24 플러스",
+            "갤럭시s24플러스",
+            "galaxy s24 plus",
+            "s24+"
+          ]
+        ],
+        "mustNotContain": [
+          "울트라",
+          "ultra",
+          "fe",
+          "케이스",
+          "필름",
+          "강화유리",
+          "충전기만",
+          "어댑터만",
+          "액정",
+          "액정만",
+          "배터리만",
+          "메인보드",
+          "부품용",
+          "파손폰",
+          "고장폰",
+          "고장",
+          "분실폰",
+          "잠김",
+          "락걸림",
+          "매입",
+          "삽니다",
+          "구합니다",
+          "최고가"
+        ],
+        "msrpKrw": 1030000,
+        "released": 2024,
+        "sourceCategory": "smartphone",
+        "sourceClusterIds": [
+          "curated-smartphone-2026-05-09"
+        ],
+        "promotionHash": "curated-galaxy-s24-plus-20260509"
       }
     }
   ]

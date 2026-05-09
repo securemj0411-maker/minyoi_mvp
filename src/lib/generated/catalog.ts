@@ -4,6 +4,435 @@ import type { Sku } from "@/lib/catalog";
 // Do not edit by hand; approve mining outputs, then rerun the promoter.
 export const GENERATED_CATALOG: Sku[] = [
   {
+    "id": "galaxy-s23",
+    "brand": "Samsung",
+    "category": "smartphone",
+    "modelName": "Galaxy S23",
+    "aliases": [
+      "갤럭시 S23",
+      "갤럭시S23",
+      "Galaxy S23"
+    ],
+    "mustContain": [
+      [
+        "갤럭시 s23",
+        "갤럭시s23",
+        "galaxy s23"
+      ]
+    ],
+    "mustNotContain": [
+      "울트라",
+      "ultra",
+      "플러스",
+      "plus",
+      "s23+",
+      "fe",
+      "케이스",
+      "필름",
+      "강화유리",
+      "충전기만",
+      "어댑터만",
+      "액정",
+      "액정만",
+      "배터리만",
+      "메인보드",
+      "부품용",
+      "파손폰",
+      "고장폰",
+      "고장",
+      "분실폰",
+      "잠김",
+      "락걸림",
+      "매입",
+      "삽니다",
+      "구합니다",
+      "최고가"
+    ],
+    "msrpKrw": 600000,
+    "released": 2024
+  },
+  {
+    "id": "galaxy-s24",
+    "brand": "Samsung",
+    "category": "smartphone",
+    "modelName": "Galaxy S24",
+    "aliases": [
+      "갤럭시 S24",
+      "갤럭시S24",
+      "Galaxy S24"
+    ],
+    "mustContain": [
+      [
+        "갤럭시 s24",
+        "갤럭시s24",
+        "galaxy s24"
+      ]
+    ],
+    "mustNotContain": [
+      "울트라",
+      "ultra",
+      "플러스",
+      "plus",
+      "s24+",
+      "fe",
+      "케이스",
+      "필름",
+      "강화유리",
+      "충전기만",
+      "어댑터만",
+      "액정",
+      "액정만",
+      "배터리만",
+      "메인보드",
+      "부품용",
+      "파손폰",
+      "고장폰",
+      "고장",
+      "분실폰",
+      "잠김",
+      "락걸림",
+      "매입",
+      "삽니다",
+      "구합니다",
+      "최고가"
+    ],
+    "msrpKrw": 860000,
+    "released": 2024
+  },
+  {
+    "id": "galaxy-s24-plus",
+    "brand": "Samsung",
+    "category": "smartphone",
+    "modelName": "Galaxy S24 Plus",
+    "aliases": [
+      "갤럭시 S24 플러스",
+      "갤럭시S24플러스",
+      "Galaxy S24 Plus",
+      "Galaxy S24+"
+    ],
+    "mustContain": [
+      [
+        "갤럭시 s24 플러스",
+        "갤럭시s24플러스",
+        "galaxy s24 plus",
+        "s24+"
+      ]
+    ],
+    "mustNotContain": [
+      "울트라",
+      "ultra",
+      "fe",
+      "케이스",
+      "필름",
+      "강화유리",
+      "충전기만",
+      "어댑터만",
+      "액정",
+      "액정만",
+      "배터리만",
+      "메인보드",
+      "부품용",
+      "파손폰",
+      "고장폰",
+      "고장",
+      "분실폰",
+      "잠김",
+      "락걸림",
+      "매입",
+      "삽니다",
+      "구합니다",
+      "최고가"
+    ],
+    "msrpKrw": 1030000,
+    "released": 2024
+  },
+  {
+    "id": "iphone-12",
+    "brand": "Apple",
+    "category": "smartphone",
+    "modelName": "iPhone 12",
+    "aliases": [
+      "아이폰 12",
+      "아이폰12",
+      "iPhone 12"
+    ],
+    "mustContain": [
+      [
+        "아이폰 12",
+        "아이폰12",
+        "iphone 12"
+      ]
+    ],
+    "mustNotContain": [
+      "프로",
+      "pro",
+      "프로맥스",
+      "pro max",
+      "미니",
+      "mini",
+      "케이스",
+      "필름",
+      "강화유리",
+      "충전기만",
+      "어댑터만",
+      "액정",
+      "액정만",
+      "배터리만",
+      "메인보드",
+      "부품용",
+      "파손폰",
+      "고장폰",
+      "고장",
+      "분실폰",
+      "잠김",
+      "락걸림",
+      "매입",
+      "삽니다",
+      "구합니다",
+      "최고가"
+    ],
+    "msrpKrw": 418000,
+    "released": 2024
+  },
+  {
+    "id": "iphone-13",
+    "brand": "Apple",
+    "category": "smartphone",
+    "modelName": "iPhone 13",
+    "aliases": [
+      "아이폰 13",
+      "아이폰13",
+      "iPhone 13"
+    ],
+    "mustContain": [
+      [
+        "아이폰 13",
+        "아이폰13",
+        "iphone 13"
+      ]
+    ],
+    "mustNotContain": [
+      "프로",
+      "pro",
+      "프로맥스",
+      "pro max",
+      "미니",
+      "mini",
+      "케이스",
+      "필름",
+      "강화유리",
+      "충전기만",
+      "어댑터만",
+      "액정",
+      "액정만",
+      "배터리만",
+      "메인보드",
+      "부품용",
+      "파손폰",
+      "고장폰",
+      "고장",
+      "분실폰",
+      "잠김",
+      "락걸림",
+      "매입",
+      "삽니다",
+      "구합니다",
+      "최고가"
+    ],
+    "msrpKrw": 640000,
+    "released": 2024
+  },
+  {
+    "id": "iphone-14",
+    "brand": "Apple",
+    "category": "smartphone",
+    "modelName": "iPhone 14",
+    "aliases": [
+      "아이폰 14",
+      "아이폰14",
+      "iPhone 14"
+    ],
+    "mustContain": [
+      [
+        "아이폰 14",
+        "아이폰14",
+        "iphone 14"
+      ]
+    ],
+    "mustNotContain": [
+      "프로",
+      "pro",
+      "프로맥스",
+      "pro max",
+      "플러스",
+      "plus",
+      "케이스",
+      "필름",
+      "강화유리",
+      "충전기만",
+      "어댑터만",
+      "액정",
+      "액정만",
+      "배터리만",
+      "메인보드",
+      "부품용",
+      "파손폰",
+      "고장폰",
+      "고장",
+      "분실폰",
+      "잠김",
+      "락걸림",
+      "매입",
+      "삽니다",
+      "구합니다",
+      "최고가"
+    ],
+    "msrpKrw": 882000,
+    "released": 2024
+  },
+  {
+    "id": "iphone-15",
+    "brand": "Apple",
+    "category": "smartphone",
+    "modelName": "iPhone 15",
+    "aliases": [
+      "아이폰 15",
+      "아이폰15",
+      "iPhone 15"
+    ],
+    "mustContain": [
+      [
+        "아이폰 15",
+        "아이폰15",
+        "iphone 15"
+      ]
+    ],
+    "mustNotContain": [
+      "프로",
+      "pro",
+      "프로맥스",
+      "pro max",
+      "플러스",
+      "plus",
+      "케이스",
+      "필름",
+      "강화유리",
+      "충전기만",
+      "어댑터만",
+      "액정",
+      "액정만",
+      "배터리만",
+      "메인보드",
+      "부품용",
+      "파손폰",
+      "고장폰",
+      "고장",
+      "분실폰",
+      "잠김",
+      "락걸림",
+      "매입",
+      "삽니다",
+      "구합니다",
+      "최고가"
+    ],
+    "msrpKrw": 1272000,
+    "released": 2024
+  },
+  {
+    "id": "iphone-15-pro",
+    "brand": "Apple",
+    "category": "smartphone",
+    "modelName": "iPhone 15 Pro",
+    "aliases": [
+      "아이폰 15 프로",
+      "아이폰15프로",
+      "iPhone 15 Pro"
+    ],
+    "mustContain": [
+      [
+        "아이폰 15 프로",
+        "아이폰15프로",
+        "iphone 15 pro"
+      ]
+    ],
+    "mustNotContain": [
+      "프로맥스",
+      "pro max",
+      "플러스",
+      "plus",
+      "케이스",
+      "필름",
+      "강화유리",
+      "충전기만",
+      "어댑터만",
+      "액정",
+      "액정만",
+      "배터리만",
+      "메인보드",
+      "부품용",
+      "파손폰",
+      "고장폰",
+      "고장",
+      "분실폰",
+      "잠김",
+      "락걸림",
+      "매입",
+      "삽니다",
+      "구합니다",
+      "최고가"
+    ],
+    "msrpKrw": 1810000,
+    "released": 2024
+  },
+  {
+    "id": "iphone-16",
+    "brand": "Apple",
+    "category": "smartphone",
+    "modelName": "iPhone 16",
+    "aliases": [
+      "아이폰 16",
+      "아이폰16",
+      "iPhone 16"
+    ],
+    "mustContain": [
+      [
+        "아이폰 16",
+        "아이폰16",
+        "iphone 16"
+      ]
+    ],
+    "mustNotContain": [
+      "프로",
+      "pro",
+      "프로맥스",
+      "pro max",
+      "플러스",
+      "plus",
+      "케이스",
+      "필름",
+      "강화유리",
+      "충전기만",
+      "어댑터만",
+      "액정",
+      "액정만",
+      "배터리만",
+      "메인보드",
+      "부품용",
+      "파손폰",
+      "고장폰",
+      "고장",
+      "분실폰",
+      "잠김",
+      "락걸림",
+      "매입",
+      "삽니다",
+      "구합니다",
+      "최고가"
+    ],
+    "msrpKrw": 1578000,
+    "released": 2024
+  },
+  {
     "id": "macbook-air",
     "brand": "Apple",
     "category": "laptop",

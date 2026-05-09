@@ -37,7 +37,7 @@ type CandidateActions = Record<string, CandidateAction>;
 type Filter = "all" | "strong" | "interested" | "hold" | "review" | "hidden";
 type ThemeMode = "system" | "light" | "dark";
 type ProfitFloor = 0 | 10000 | 30000 | 50000;
-type CategoryFilter = "all" | "airpods" | "applewatch" | "galaxywatch" | "laptop";
+type CategoryFilter = "all" | "airpods" | "applewatch" | "galaxywatch" | "laptop" | "smartphone";
 
 const filters: { id: Filter; label: string }[] = [
   { id: "all", label: "전체" },
@@ -61,6 +61,7 @@ const categoryFilters: { id: CategoryFilter; label: string }[] = [
   { id: "applewatch", label: "Apple Watch" },
   { id: "galaxywatch", label: "Galaxy Watch" },
   { id: "laptop", label: "Laptop" },
+  { id: "smartphone", label: "Phone" },
 ];
 
 const STORAGE_KEY = "minyoi-candidate-actions-v1";
@@ -106,6 +107,7 @@ function categoryOf(item: ListingCandidate): CategoryFilter {
   if (sku.includes("galaxy watch")) return "galaxywatch";
   if (sku.includes("apple watch")) return "applewatch";
   if (sku.includes("macbook")) return "laptop";
+  if (sku.includes("iphone") || sku.includes("galaxy s")) return "smartphone";
   if (sku.includes("airpods")) return "airpods";
   return "all";
 }

@@ -3,7 +3,9 @@
 export const GENERATED_NOISE_RULES = {
   "buying": [
     "매입",
-    "매입업체"
+    "매입업체",
+    "삽니다",
+    "최고가"
   ],
   "callout": [],
   "parts": [],
