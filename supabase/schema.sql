@@ -6,6 +6,9 @@ create table if not exists public.mvp_listings (
   sku_name text not null,
   sku_median integer not null check (sku_median >= 0),
   description_preview text not null default '',
+  image_url_template text,
+  image_count integer not null default 0 check (image_count >= 0),
+  thumbnail_url text,
   shipping_fee integer not null default 0 check (shipping_fee >= 0),
   shipping_fee_general integer,
   shipping_source text not null default 'not_loaded',
@@ -95,6 +98,9 @@ create table if not exists public.mvp_raw_listings (
   detail_enriched_at timestamptz,
   detail_error text,
   raw_json jsonb not null default '{}'::jsonb,
+  image_url_template text,
+  image_count integer not null default 0 check (image_count >= 0),
+  thumbnail_url text,
   first_seen_at timestamptz not null default now(),
   last_seen_at timestamptz not null default now(),
   last_changed_at timestamptz not null default now(),
@@ -262,6 +268,11 @@ begin
 end;
 $$;
 
+revoke all on function public.claim_mvp_detail_queue(integer, integer) from public;
+revoke execute on function public.claim_mvp_detail_queue(integer, integer) from anon;
+revoke execute on function public.claim_mvp_detail_queue(integer, integer) from authenticated;
+grant execute on function public.claim_mvp_detail_queue(integer, integer) to service_role;
+
 drop view if exists public.mvp_listing_candidates;
 create view public.mvp_listing_candidates
 with (security_invoker = true)
@@ -283,6 +294,9 @@ select
   a.score,
   a.score_flags,
   l.description_preview,
+  l.image_url_template,
+  l.image_count,
+  l.thumbnail_url,
   l.shipping_fee,
   l.shipping_fee_general,
   l.shipping_source,

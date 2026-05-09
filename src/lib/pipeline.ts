@@ -403,6 +403,9 @@ export type PipelineRow = {
   skuName: string;
   skuMedian: number;
   descriptionPreview: string;
+  imageUrlTemplate?: string | null;
+  imageCount?: number;
+  thumbnailUrl?: string | null;
   priceGap: number;
   numFaved: number;
   velocity: number;

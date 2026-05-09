@@ -15,6 +15,9 @@ export type ListingCandidate = {
   score: number;
   scoreFlags: string[];
   descriptionPreview: string;
+  imageUrlTemplate: string | null;
+  imageCount: number;
+  thumbnailUrl: string | null;
   shippingFee: number;
   shippingFeeGeneral: number | null;
   shippingSource: string;

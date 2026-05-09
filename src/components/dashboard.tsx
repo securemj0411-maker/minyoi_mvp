@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -102,6 +103,10 @@ function profitLabel(item: ListingCandidate) {
   return `${krw(min)} ~ ${krw(max)}`;
 }
 
+function candidateImage(item: ListingCandidate) {
+  return item.thumbnailUrl ?? null;
+}
+
 function categoryOf(item: ListingCandidate): CategoryFilter {
   const sku = item.skuName.toLowerCase();
   if (sku.includes("galaxy watch")) return "galaxywatch";
@@ -131,6 +136,37 @@ function barColor(value: number) {
   if (value >= 0.75) return "bg-emerald-500";
   if (value >= 0.45) return "bg-sky-500";
   return "bg-zinc-400";
+}
+
+function CandidateImage({
+  item,
+  priority = false,
+  className = "",
+}: {
+  item: ListingCandidate;
+  priority?: boolean;
+  className?: string;
+}) {
+  const src = candidateImage(item);
+  return (
+    <div className={`relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100 ${className}`}>
+      {src ? (
+        <Image
+          src={src}
+          alt={item.name}
+          fill
+          sizes="(min-width: 1280px) 260px, (min-width: 768px) 33vw, 50vw"
+          priority={priority}
+          className="object-cover transition duration-500 group-hover:scale-[1.03]"
+        />
+      ) : (
+        <div className="flex h-full min-h-32 items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 text-xs font-semibold text-zinc-400">
+          이미지 대기
+        </div>
+      )}
+      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/45 to-transparent" />
+    </div>
+  );
 }
 
 function MetricBar({ label, value }: { label: string; value: number }) {
@@ -501,38 +537,47 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
           <span className="rounded-md border border-zinc-200 bg-white px-2.5 py-1.5">숨김 {hiddenCount}건</span>
         </section>
 
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_430px]">
-          <div className="overflow-hidden rounded-md border border-zinc-200 bg-white">
-            <div className="grid grid-cols-[48px_minmax(240px,1fr)_128px_112px_92px_92px_116px] gap-3 border-b border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-500">
-              <div>#</div>
-              <div>매물</div>
-              <div className="text-right">예상 순익</div>
-              <div className="text-right">매입가</div>
-              <div className="text-right">갭</div>
-              <div className="text-right">현금화</div>
-              <div className="text-right">액션</div>
-            </div>
-            <div className="divide-y divide-zinc-100">
-              {filtered.map((item, index) => {
-                const label = scoreLabel(item);
-                const active = selected?.pid === item.pid;
-                const action = actions[item.pid];
-                return (
-                  <button
-                    key={item.pid}
-                    type="button"
-                    onClick={() => setSelectedPid(item.pid)}
-                    className={`grid w-full grid-cols-[48px_minmax(240px,1fr)_128px_112px_92px_92px_116px] items-center gap-3 px-3 py-3 text-left transition hover:bg-zinc-50 ${
-                      active ? "bg-emerald-50/60" : "bg-white"
-                    }`}
-                  >
-                    <div className="text-sm font-semibold text-zinc-500">#{index + 1}</div>
-                    <div className="min-w-0">
+        <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_460px]">
+          <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+            {filtered.map((item, index) => {
+              const label = scoreLabel(item);
+              const active = selected?.pid === item.pid;
+              const action = actions[item.pid];
+              const profit = expectedProfitMax(item);
+              return (
+                <button
+                  key={item.pid}
+                  type="button"
+                  onClick={() => setSelectedPid(item.pid)}
+                  className={`group flex h-full flex-col overflow-hidden rounded-lg border bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-400 hover:shadow-md ${
+                    active ? "border-emerald-500 ring-2 ring-emerald-500/20" : "border-zinc-200"
+                  }`}
+                >
+                  <div className="relative">
+                    <CandidateImage item={item} priority={index < 4} />
+                    <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+                      <span className="rounded-full bg-black/70 px-2 py-1 text-xs font-semibold text-white backdrop-blur">
+                        #{index + 1}
+                      </span>
+                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${labelClass(label)}`}>
+                        {label}
+                      </span>
+                    </div>
+                    <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3 text-white">
+                      <div>
+                        <div className="text-xs text-white/75">예상 순익</div>
+                        <div className="text-2xl font-semibold leading-none">{profitLabel(item)}</div>
+                      </div>
+                      <div className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-zinc-950">
+                        {cashoutHint(item)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-1 flex-col gap-4 p-4">
+                    <div>
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ${labelClass(label)}`}>
-                          {label}
-                        </span>
-                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600">
+                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-600">
                           {item.skuName}
                         </span>
                         {action?.status ? (
@@ -541,39 +586,46 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                           </span>
                         ) : null}
                       </div>
-                      <div className="mt-1 truncate text-sm font-semibold text-zinc-950">{item.name}</div>
-                      <div className="mt-1 text-xs text-zinc-500">
-                        시세 {compactKrw(item.skuMedian)} · 찜 {item.numFaved.toLocaleString("ko-KR")} · 안전도 {percent(item.safety)}
+                      <div className="mt-2 line-clamp-2 min-h-10 text-base font-semibold leading-5 text-zinc-950">
+                        {item.name}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-base font-semibold text-emerald-700">{profitLabel(item)}</div>
-                      <div className="text-xs text-zinc-500">{scoreLabel(item) === "검토필요" ? "확인 필요" : "순익"}</div>
+
+                    <div className="grid grid-cols-3 gap-2 text-sm">
+                      <div className="rounded-md bg-zinc-50 p-2">
+                        <div className="text-[11px] text-zinc-500">매물가</div>
+                        <div className="font-semibold">{compactKrw(item.price)}</div>
+                      </div>
+                      <div className="rounded-md bg-zinc-50 p-2">
+                        <div className="text-[11px] text-zinc-500">시세갭</div>
+                        <div className="font-semibold">{percent(item.priceGap)}</div>
+                      </div>
+                      <div className="rounded-md bg-zinc-50 p-2">
+                        <div className="text-[11px] text-zinc-500">찜</div>
+                        <div className="font-semibold">{item.numFaved.toLocaleString("ko-KR")}</div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-semibold">{compactKrw(item.price)}</div>
-                      <div className="text-xs text-zinc-500">배송 {compactKrw(item.shippingFee)}</div>
+
+                    <div className="mt-auto grid gap-2">
+                      <MetricBar label="관심도" value={item.velocity} />
+                      <MetricBar label="안전도" value={item.safety} />
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-semibold">{percent(item.priceGap)}</div>
-                      <div className="text-xs text-zinc-500">{compactKrw(item.netGapAfterShipping)}</div>
-                    </div>
-                    <div className={`text-right text-sm font-semibold ${cashoutHintClass(item)}`}>
-                      {cashoutHint(item)}
-                    </div>
-                    <div className="flex justify-end gap-1.5">
-                      <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-medium text-zinc-600">
-                        상세
+
+                    <div className="flex items-center justify-between border-t border-zinc-100 pt-3">
+                      <span className="text-xs text-zinc-500">최대 {compactKrw(Math.max(0, profit))}</span>
+                      <span className="rounded-md bg-zinc-950 px-3 py-1.5 text-xs font-semibold text-white">
+                        자세히 보기
                       </span>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           {selected ? (
             <aside className="h-fit rounded-md border border-zinc-200 bg-white p-5 shadow-sm xl:sticky xl:top-5">
+              <CandidateImage item={selected} priority className="mb-5" />
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex flex-wrap gap-2">

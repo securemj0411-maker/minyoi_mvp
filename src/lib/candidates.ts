@@ -22,6 +22,9 @@ type SummaryListing = {
   score_flags?: string[];
   description_preview?: string;
   description?: string;
+  image_url_template?: string | null;
+  image_count?: number | null;
+  thumbnail_url?: string | null;
 };
 
 type Summary = {
@@ -60,6 +63,9 @@ type SupabaseCandidateRow = {
   score: number;
   score_flags: string[] | null;
   description_preview: string | null;
+  image_url_template: string | null;
+  image_count: number | null;
+  thumbnail_url: string | null;
   shipping_fee: number;
   shipping_fee_general: number | null;
   shipping_source: string;
@@ -87,6 +93,9 @@ function toCandidate(item: SummaryListing, shipping?: ShippingRow): ListingCandi
     score: item.score,
     scoreFlags: item.score_flags ?? [],
     descriptionPreview: item.description_preview || item.description || "",
+    imageUrlTemplate: item.image_url_template ?? null,
+    imageCount: item.image_count ?? 0,
+    thumbnailUrl: item.thumbnail_url ?? null,
     shippingFee: shipping?.buyer_shipping_fee ?? 0,
     shippingFeeGeneral: shipping?.buyer_shipping_fee_general ?? null,
     shippingSource: shipping?.shipping_source ?? "not_loaded",
@@ -114,6 +123,9 @@ function toCandidateFromSupabase(row: SupabaseCandidateRow): ListingCandidate {
     score: Number(row.score),
     scoreFlags: row.score_flags ?? [],
     descriptionPreview: row.description_preview ?? "",
+    imageUrlTemplate: row.image_url_template,
+    imageCount: row.image_count ?? 0,
+    thumbnailUrl: row.thumbnail_url,
     shippingFee: row.shipping_fee,
     shippingFeeGeneral: row.shipping_fee_general,
     shippingSource: row.shipping_source,

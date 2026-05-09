@@ -40,6 +40,9 @@ type ScorableRawRow = RawListingRow & {
   shop_review_count: number;
   trade_data: unknown;
   trades_data: unknown;
+  image_url_template: string | null;
+  image_count: number;
+  thumbnail_url: string | null;
   listing_type: string;
   sku_id: string | null;
   sku_name: string | null;
@@ -319,6 +322,9 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           shop_review_count: detail.shopReviewCount,
           trade_data: detail.tradeData,
           trades_data: detail.tradesData,
+          image_url_template: detail.imageUrlTemplate,
+          image_count: detail.imageCount,
+          thumbnail_url: detail.thumbnailUrl,
           listing_type: listingType,
           sku_id: sku?.id ?? null,
           sku_name: sku?.modelName ?? null,
@@ -357,7 +363,7 @@ function percentileRank(values: number[], value: number) {
 }
 
 async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,listing_type,sku_id,sku_name,detail_enriched_at";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,detail_enriched_at";
   const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&order=last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
@@ -415,6 +421,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       skuName: row.sku_name ?? skuId,
       skuMedian: Math.round(skuMedian),
       descriptionPreview: row.description_preview.slice(0, 200),
+      imageUrlTemplate: row.image_url_template,
+      imageCount: row.image_count,
+      thumbnailUrl: row.thumbnail_url,
       priceGap,
       numFaved: row.num_faved,
       velocity,
@@ -449,6 +458,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     sku_name: row.skuName,
     sku_median: row.skuMedian,
     description_preview: row.descriptionPreview,
+    image_url_template: row.imageUrlTemplate,
+    image_count: row.imageCount ?? 0,
+    thumbnail_url: row.thumbnailUrl,
     shipping_fee: row.shippingFee,
     shipping_fee_general: row.shippingFeeGeneral,
     shipping_source: row.shippingSource,

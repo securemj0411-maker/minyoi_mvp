@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DebugAutoRefresh } from "@/app/debug/debug-auto-refresh";
+import { DebugResetPanel } from "@/app/debug/debug-reset-panel";
 import { loadCollectRuns, type CollectRun } from "@/lib/collect-logs";
 
 export const dynamic = "force-dynamic";
@@ -420,6 +421,8 @@ export default async function DebugPage() {
         ) : null}
 
         {latest ? <StagePanel run={latest} /> : null}
+
+        <DebugResetPanel />
 
         <RunsTable runs={runs} />
       </div>

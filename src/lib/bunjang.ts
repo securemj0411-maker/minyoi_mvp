@@ -27,11 +27,19 @@ export type DetailData = {
   shopReviewCount: number;
   tradeData: unknown;
   tradesData: unknown;
+  imageUrlTemplate: string | null;
+  imageCount: number;
+  thumbnailUrl: string | null;
 };
 
 function toInt(v: unknown, fallback = 0): number {
   const n = Number(v);
   return Number.isFinite(n) ? Math.round(n) : fallback;
+}
+
+export function buildBunjangImageUrl(template: string | null | undefined, index = 1, res = 856): string | null {
+  if (!template) return null;
+  return template.replace("{cnt}", String(index)).replace("{res}", String(res));
 }
 
 async function sleep(ms: number) {
@@ -96,6 +104,8 @@ export async function fetchDetail(pid: string): Promise<DetailData | null> {
     const product = data?.product ?? {};
     const shop = data?.shop ?? {};
     const metrics = product?.metrics ?? {};
+    const imageUrlTemplate = typeof product?.imageUrl === "string" ? product.imageUrl : null;
+    const imageCount = toInt(product?.imageCount);
     return {
       description: String(product?.description ?? "").slice(0, 500),
       saleStatus: String(product?.saleStatus ?? ""),
@@ -105,6 +115,9 @@ export async function fetchDetail(pid: string): Promise<DetailData | null> {
       shopReviewCount: toInt(shop?.reviewCount),
       tradeData: product?.trade ?? null,
       tradesData: product?.trades ?? null,
+      imageUrlTemplate,
+      imageCount,
+      thumbnailUrl: buildBunjangImageUrl(imageUrlTemplate, 1, 856),
     };
     void metrics;
   } catch {
