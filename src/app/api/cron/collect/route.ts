@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runPipeline } from "@/lib/pipeline";
 
-// Vercel cron 또는 외부 cron(cron-job.org 등)에서 호출.
-// CRON_SECRET 환경변수로 인증한다.
+export const maxDuration = 60;
+
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (secret) {
@@ -12,12 +12,9 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  try {
-    const result = await runPipeline(2);
-    return NextResponse.json({ ok: true, ...result, ts: new Date().toISOString() });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error("[cron/collect]", message);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
-  }
+  runPipeline(2)
+    .then((result) => console.log("[cron/collect]", result))
+    .catch((err) => console.error("[cron/collect]", err instanceof Error ? err.message : String(err)));
+
+  return NextResponse.json({ ok: true, started: true, ts: new Date().toISOString() });
 }
