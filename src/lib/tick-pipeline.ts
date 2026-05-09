@@ -1,6 +1,13 @@
 import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
 import { CATALOG } from "@/lib/catalog";
-import { classifyListing } from "@/lib/pipeline";
+import {
+  applyAiReview,
+  classifyListing,
+  parseShippingFromDescription,
+  parseShippingFromTrade,
+  resolveShipping,
+  type PipelineRow,
+} from "@/lib/pipeline";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 
 type Headers = Record<string, string>;
@@ -31,6 +38,8 @@ type ScorableRawRow = RawListingRow & {
   description_preview: string;
   shop_review_rating: number | null;
   shop_review_count: number;
+  trade_data: unknown;
+  trades_data: unknown;
   listing_type: string;
   sku_id: string | null;
   sku_name: string | null;
@@ -44,6 +53,13 @@ export type StageStats = {
   enriched: number;
   detailFailed: number;
   scored: number;
+  aiReviewRequested: number;
+  aiCacheHits: number;
+  aiApiCalls: number;
+  aiUnavailable: number;
+  aiFiltered: number;
+  aiKeptNormal: number;
+  aiKeptLowConfidence: number;
   upserted: number;
   timedOut: boolean;
 };
@@ -62,6 +78,13 @@ function emptyStats(): StageStats {
     enriched: 0,
     detailFailed: 0,
     scored: 0,
+    aiReviewRequested: 0,
+    aiCacheHits: 0,
+    aiApiCalls: 0,
+    aiUnavailable: 0,
+    aiFiltered: 0,
+    aiKeptNormal: 0,
+    aiKeptLowConfidence: 0,
     upserted: 0,
     timedOut: false,
   };
@@ -76,6 +99,13 @@ function mergeStats(parts: StageStats[]): StageStats {
     enriched: acc.enriched + part.enriched,
     detailFailed: acc.detailFailed + part.detailFailed,
     scored: acc.scored + part.scored,
+    aiReviewRequested: acc.aiReviewRequested + part.aiReviewRequested,
+    aiCacheHits: acc.aiCacheHits + part.aiCacheHits,
+    aiApiCalls: acc.aiApiCalls + part.aiApiCalls,
+    aiUnavailable: acc.aiUnavailable + part.aiUnavailable,
+    aiFiltered: acc.aiFiltered + part.aiFiltered,
+    aiKeptNormal: acc.aiKeptNormal + part.aiKeptNormal,
+    aiKeptLowConfidence: acc.aiKeptLowConfidence + part.aiKeptLowConfidence,
     upserted: acc.upserted + part.upserted,
     timedOut: acc.timedOut || part.timedOut,
   }), emptyStats());
@@ -317,7 +347,7 @@ function percentileRank(values: number[], value: number) {
 }
 
 async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,listing_type,sku_id,sku_name,detail_enriched_at";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,listing_type,sku_id,sku_name,detail_enriched_at";
   const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&order=last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
@@ -341,8 +371,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
 
   const skuMsrp = new Map(CATALOG.map((sku) => [sku.id, sku.msrpKrw]));
   const now = new Date().toISOString();
-  const listings = [];
-  const analyses = [];
+  const scoredRows: PipelineRow[] = [];
 
   for (const row of rows) {
     if (Date.now() >= deadlineMs) {
@@ -356,43 +385,85 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const velocity = percentileRank(favsBySku.get(skuId) ?? [], row.num_faved);
     const safetyBase = row.shop_review_rating == null ? 0.5 : Math.max(0, Math.min(1, Number(row.shop_review_rating) / 5));
     const safety = Math.max(0, Math.min(1, safetyBase + (row.shop_review_count >= 100 ? 0.05 : 0)));
+    const riskHits = ["직거래만", "현금만", "박스없음", "박스 없음", "수리이력", "충전안됨", "충전 안됨", "고장", "불량", "먹통"]
+      .filter((kw) => row.description_preview.toLowerCase().includes(kw.toLowerCase())).length;
     const score = (priceGap * 0.5 + velocity * 0.4 + safety * 0.1) * 100;
-    const shippingFee = row.free_shipping ? 0 : 3000;
+    const apiParsed = parseShippingFromTrade(row.trade_data, row.trades_data);
+    const descParsed = parseShippingFromDescription(row.description_preview);
+    const shipping = resolveShipping(row.price, skuMedian, row.free_shipping, apiParsed, descParsed);
+    const scoreFlags: string[] = [];
+    if (priceGap >= 0.55) scoreFlags.push("deep_discount_review");
+    if (riskHits > 0) scoreFlags.push("risk_keyword_review");
+    if (row.description_preview.trim().length < 20) scoreFlags.push("weak_description");
 
-    listings.push({
-      pid: row.pid,
+    scoredRows.push({
+      pid: String(row.pid),
       url: row.url,
       name: row.name,
       price: row.price,
-      sku_name: row.sku_name ?? skuId,
-      sku_median: Math.round(skuMedian),
-      description_preview: row.description_preview.slice(0, 200),
-      shipping_fee: shippingFee,
-      shipping_fee_general: shippingFee,
-      shipping_source: row.free_shipping ? "search_free_shipping" : "tick_default",
-      estimated_buy_cost: row.price + shippingFee,
-      gross_resell_gap: Math.round(Math.max(0, skuMedian - row.price)),
-      net_gap_after_shipping: Math.round(Math.max(0, skuMedian - row.price - shippingFee)),
-      source_json: { pipeline: "tick" },
-      generated_at: now,
-      updated_at: now,
-    });
-    analyses.push({
-      pid: row.pid,
-      price_gap: priceGap,
-      num_faved: row.num_faved,
+      skuId,
+      skuName: row.sku_name ?? skuId,
+      skuMedian: Math.round(skuMedian),
+      descriptionPreview: row.description_preview.slice(0, 200),
+      priceGap,
+      numFaved: row.num_faved,
       velocity,
-      review_rating: row.shop_review_rating,
-      review_count: row.shop_review_count,
+      reviewRating: row.shop_review_rating,
+      reviewCount: row.shop_review_count,
       safety,
-      risk_hits: 0,
+      riskHits,
       score,
-      score_flags: [],
-      source_json: { pipeline: "tick" },
-      analyzed_at: now,
-      updated_at: now,
+      scoreFlags,
+      ...shipping,
     });
   }
+
+  const aiReview = await applyAiReview(scoredRows, {
+    enabled: config.aiReviewTopN > 0,
+    topN: config.aiReviewTopN,
+    concurrency: config.aiReviewConcurrency,
+  });
+  stats.aiReviewRequested = aiReview.stats.requested;
+  stats.aiCacheHits = aiReview.stats.cacheHits;
+  stats.aiApiCalls = aiReview.stats.apiCalls;
+  stats.aiUnavailable = aiReview.stats.unavailable;
+  stats.aiFiltered = aiReview.stats.filtered;
+  stats.aiKeptNormal = aiReview.stats.keptNormal;
+  stats.aiKeptLowConfidence = aiReview.stats.keptLowConfidence;
+
+  const listings = aiReview.rows.map((row) => ({
+    pid: Number(row.pid),
+    url: row.url,
+    name: row.name,
+    price: row.price,
+    sku_name: row.skuName,
+    sku_median: row.skuMedian,
+    description_preview: row.descriptionPreview,
+    shipping_fee: row.shippingFee,
+    shipping_fee_general: row.shippingFeeGeneral,
+    shipping_source: row.shippingSource,
+    estimated_buy_cost: row.estimatedBuyCost,
+    gross_resell_gap: row.grossResellGap,
+    net_gap_after_shipping: row.netGapAfterShipping,
+    source_json: { pipeline: "tick" },
+    generated_at: now,
+    updated_at: now,
+  }));
+  const analyses = aiReview.rows.map((row) => ({
+    pid: Number(row.pid),
+    price_gap: row.priceGap,
+    num_faved: row.numFaved,
+    velocity: row.velocity,
+    review_rating: row.reviewRating,
+    review_count: row.reviewCount,
+    safety: row.safety,
+    risk_hits: row.riskHits,
+    score: row.score,
+    score_flags: row.scoreFlags,
+    source_json: { pipeline: "tick" },
+    analyzed_at: now,
+    updated_at: now,
+  }));
 
   const ranked = analyses
     .map((analysis, index) => ({ ...analysis, originalIndex: index }))
@@ -405,7 +476,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
 
   await upsertRows("mvp_listings", listings, "pid");
   await upsertRows("mvp_listing_analysis", rankedAnalyses, "pid");
-  stats.scored = analyses.length;
+  stats.scored = scoredRows.length;
   stats.upserted = listings.length;
   return stats;
 }

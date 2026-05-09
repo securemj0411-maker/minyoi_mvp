@@ -246,7 +246,7 @@ function contextKind(ctx: string): "half" | "general" | "unknown" {
 type ShippingOption = { kind: "free" | "general" | "half" | "unknown"; amount: number };
 type ShippingParsed = { min: number | null; general: number | null; options: ShippingOption[] };
 
-function parseShippingFromDescription(description: string): ShippingParsed {
+export function parseShippingFromDescription(description: string): ShippingParsed {
   const text = description || "";
   const FREE_PATTERNS = [
     /무료\s*배송|무료배송|택배비\s*무료|배송비\s*무료|택배비\s*포함|택배비포함|배송비\s*포함|배송비포함|무료로\s*배송|제가\s*부담|내드릴께요|내드릴게요/,
@@ -291,7 +291,7 @@ function parseShippingFromDescription(description: string): ShippingParsed {
   };
 }
 
-function parseShippingFromTrade(trade: unknown, trades: unknown): ShippingParsed {
+export function parseShippingFromTrade(trade: unknown, trades: unknown): ShippingParsed {
   const options: ShippingOption[] = [];
 
   if (trade && typeof trade === "object") {
@@ -344,7 +344,7 @@ type ShippingResult = {
   netGapAfterShipping: number;
 };
 
-function resolveShipping(
+export function resolveShipping(
   price: number,
   skuMedian: number,
   freeShipping: boolean,
@@ -804,7 +804,7 @@ async function classifyWithCache(row: PipelineRow): Promise<AiClassifyOutcome> {
   return { result: fresh, source: "api" };
 }
 
-async function applyAiReview(
+export async function applyAiReview(
   rows: PipelineRow[],
   options: { enabled: boolean; topN: number; concurrency: number },
 ): Promise<AiReviewResult> {
