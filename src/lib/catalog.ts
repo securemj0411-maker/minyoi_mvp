@@ -77,6 +77,30 @@ const TABLET_NOISE = [
   "렌탈",
 ];
 
+const LAPTOP_NOISE = [
+  "메인보드",
+  "메인 보드",
+  "로직보드",
+  "로직 보드",
+  "상판",
+  "하판",
+  "액정만",
+  "배터리만",
+  "키보드만",
+  "부품용",
+  "부품",
+  "고장",
+  "침수",
+];
+
+const GENERATED_CATALOG_WITH_GATES: Sku[] = GENERATED_CATALOG.map((sku) => {
+  if (sku.category !== "laptop") return sku;
+  return {
+    ...sku,
+    mustNotContain: [...new Set([...sku.mustNotContain, ...LAPTOP_NOISE])],
+  };
+});
+
 const CORE_SMARTPHONE_CATALOG: Sku[] = [
   {
     id: "iphone-13-pro",
@@ -605,7 +629,7 @@ export const CATALOG: Sku[] = [
   },
   ...CORE_SMARTPHONE_CATALOG,
   ...CORE_TABLET_CATALOG,
-  ...GENERATED_CATALOG,
+  ...GENERATED_CATALOG_WITH_GATES,
 ];
 
 const SKU_MAP = new Map(CATALOG.map((s) => [s.id, s]));

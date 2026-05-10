@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v18";
+const PARSER_VERSION = "option-parser-v19";
 
 function hashText(text: string) {
   return createHash("sha256").update(text).digest("hex");
@@ -110,27 +110,28 @@ function parseLooseDeviceStorageGb(text: string, category: Sku["category"] | nul
 
 function parseRamAndSsd(text: string, category: Sku["category"] | null) {
   const lower = normalize(text).toLowerCase();
-  const pair = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*\/\s*(128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\b/);
-  const pairWithUnits = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)?\s*\/\s*(128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|t|tb|테라)?\b/);
+  const ramPattern = "4|6|8|16|24|32|36|48|64|96|128";
+  const pair = lower.match(new RegExp(`(?:^|[^0-9])(${ramPattern})\\s*\\/\\s*(128|250|256|500|512|1\\s*t|1\\s*tb|2\\s*t|2\\s*tb|4\\s*t|4\\s*tb|1테라|2테라|4테라)(?:[^0-9]|$)`));
+  const pairWithUnits = lower.match(new RegExp(`(?:^|[^0-9])(${ramPattern})\\s*(?:gb|g|기가)?\\s*\\/\\s*(128|250|256|500|512|1\\s*t|1\\s*tb|2\\s*t|2\\s*tb|4\\s*t|4\\s*tb|1테라|2테라|4테라)\\s*(?:gb|g|기가|t|tb|테라)?(?:[^0-9]|$)`));
   const looseLaptopPair = category === "laptop"
-    ? lower.match(/\b(8|16|24|32|36|48|64|96|128)\s+(128|256|500|512)\b/)
+    ? lower.match(new RegExp(`(?:^|[^0-9])(${ramPattern})\\s+(128|256|500|512)(?:[^0-9]|$)`))
     : null;
   const adjacentLaptopPair = category === "laptop"
-    ? lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)\s+(121|128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|t|tb|테라|ssd)?\b/)
+    ? lower.match(new RegExp(`(?:^|[^0-9])(${ramPattern})\\s*(?:gb|g|기가)\\s+(121|128|250|256|500|512|1\\s*t|1\\s*tb|2\\s*t|2\\s*tb|4\\s*t|4\\s*tb|1테라|2테라|4테라)\\s*(?:gb|g|기가|t|tb|테라|ssd)?(?:[^0-9]|$)`))
     : null;
   const reversedPair = category === "laptop"
-    ? lower.match(/\b(128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|t|tb|테라)?\s+(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)?\b/)
+    ? lower.match(new RegExp(`(?:^|[^0-9])(128|250|256|500|512|1\\s*t|1\\s*tb|2\\s*t|2\\s*tb|4\\s*t|4\\s*tb|1테라|2테라|4테라)\\s*(?:gb|g|기가|t|tb|테라)?\\s+(${ramPattern})\\s*(?:gb|g|기가)?(?:[^0-9]|$)`))
     : null;
-  const ramExplicit = lower.match(/(?:램|ram|memory|메모리|통합\s*메모리)\s*[:：]?\s*(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)?/);
-  const ramSuffix = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:(?:gb|g|기가)\s*)?(?:램|ram|memory|메모리|통합\s*메모리)\b/);
-  const ramBeforeMemory = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)\b(?=.{0,16}(?:통합\s*메모리|메모리|램|ram))/);
+  const ramExplicit = lower.match(new RegExp(`(?:램|ram|memory|메모리|통합\\s*메모리)\\s*[:：]?\\s*(${ramPattern})\\s*(?:gb|g|기가)?`));
+  const ramSuffix = lower.match(new RegExp(`(?:^|[^0-9])(${ramPattern})\\s*(?:(?:gb|g|기가)\\s*)?(?:램|ram|memory|메모리|통합\\s*메모리)(?:[^0-9a-z가-힣]|$)`));
+  const ramBeforeMemory = lower.match(new RegExp(`(?:^|[^0-9])(${ramPattern})\\s*(?:gb|g|기가)(?=.{0,16}(?:통합\\s*메모리|메모리|램|ram))`));
   const ramBeforeSsd = category === "laptop"
-    ? lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)\b(?=.{0,20}(?:ssd|저장공간|스토리지))/)
+    ? lower.match(new RegExp(`(?:^|[^0-9])(${ramPattern})\\s*(?:gb|g|기가)(?=.{0,20}(?:ssd|저장공간|스토리지))`))
     : null;
   const singleLaptopRam = category === "laptop"
-    ? lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)\b/)
+    ? lower.match(new RegExp(`(?:^|[^0-9])(${ramPattern})\\s*(?:gb|g|기가)(?:[^0-9a-z가-힣]|$)`))
     : null;
-  const ssdExplicit = lower.match(/(?:ssd|용량|저장\s*공간|저장공간|저장\s*장치|스토리지)\s*[:：]?\s*(121|128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|t|tb|테라)?/);
+  const ssdExplicit = lower.match(/(?:ssd|hdd|하드|용량|저장\s*공간|저장공간|저장\s*장치|스토리지)\s*[:：]?\s*(121|128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|t|tb|테라)?/);
   const ssdSuffix = lower.match(/\b(121|128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|t|tb|테라)\s*(?:ssd|용량|저장\s*공간|저장공간|저장\s*장치|스토리지)?\b/);
   const ramGb = parseGb(ramExplicit?.[1] ?? ramSuffix?.[1] ?? ramBeforeMemory?.[1] ?? ramBeforeSsd?.[1] ?? pairWithUnits?.[1] ?? pair?.[1] ?? adjacentLaptopPair?.[1] ?? looseLaptopPair?.[1] ?? reversedPair?.[2] ?? singleLaptopRam?.[1]);
   const bareLaptopSsd = category === "laptop"
