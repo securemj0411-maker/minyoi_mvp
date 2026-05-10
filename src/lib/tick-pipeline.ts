@@ -1,5 +1,5 @@
 import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
-import { CATALOG } from "@/lib/catalog";
+import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import {
   applyAiReview,
@@ -75,6 +75,7 @@ export type StageStats = {
   collected: number;
   rawUpserted: number;
   queued: number;
+  detailQueueSkipped: number;
   claimed: number;
   enriched: number;
   detailFailed: number;
@@ -102,6 +103,7 @@ function emptyStats(): StageStats {
     collected: 0,
     rawUpserted: 0,
     queued: 0,
+    detailQueueSkipped: 0,
     claimed: 0,
     enriched: 0,
     detailFailed: 0,
@@ -125,6 +127,7 @@ function mergeStats(parts: StageStats[]): StageStats {
     collected: acc.collected + part.collected,
     rawUpserted: acc.rawUpserted + part.rawUpserted,
     queued: acc.queued + part.queued,
+    detailQueueSkipped: acc.detailQueueSkipped + part.detailQueueSkipped,
     claimed: acc.claimed + part.claimed,
     enriched: acc.enriched + part.enriched,
     detailFailed: acc.detailFailed + part.detailFailed,
@@ -238,6 +241,86 @@ function changedEnough(item: SearchItem, existing: RawListingRow | undefined) {
   );
 }
 
+type DetailQueueDecision = {
+  queue: boolean;
+  reason: string;
+  priority: number;
+  listingType: string;
+  skuId: string | null;
+  skuName: string | null;
+  purpose: "candidate" | "market_sample" | "skip";
+};
+
+function needsDetailRefresh(item: SearchItem, existing: RawListingRow | undefined) {
+  if (!existing) return true;
+  if (!existing.detail_enriched_at) return true;
+  return existing.name !== item.name;
+}
+
+function roughUsedSeed(sku: Sku) {
+  // 상세 전 단계의 거친 우선순위용 시드. 실제 후보 판단은 detail/option parse 이후에만 한다.
+  return Math.round(sku.msrpKrw * 0.55);
+}
+
+function detailQueueDecision(item: SearchItem, existing: RawListingRow | undefined): DetailQueueDecision {
+  if (!needsDetailRefresh(item, existing)) {
+    return {
+      queue: false,
+      reason: "search_only_update",
+      priority: 0,
+      listingType: "unchanged_detail",
+      skuId: null,
+      skuName: null,
+      purpose: "skip",
+    };
+  }
+
+  const titleOnly = classifyListing(item.name, "", item.price);
+  const sku = titleOnly.sku ?? ruleMatch(item.name, "");
+  const hardNoiseTypes = new Set(["buying", "callout", "parts", "damaged", "accessory", "multi", "commercial"]);
+
+  if (hardNoiseTypes.has(titleOnly.listingType)) {
+    return {
+      queue: false,
+      reason: `title_noise_${titleOnly.listingType}`,
+      priority: 0,
+      listingType: titleOnly.listingType,
+      skuId: null,
+      skuName: null,
+      purpose: "skip",
+    };
+  }
+
+  if (!sku) {
+    return {
+      queue: false,
+      reason: "title_unknown_sku",
+      priority: 0,
+      listingType: titleOnly.listingType,
+      skuId: null,
+      skuName: null,
+      purpose: "skip",
+    };
+  }
+
+  const roughGap = roughUsedSeed(sku) - item.price;
+  const likelyCandidate = roughGap >= 20_000 || item.numFaved >= 10;
+  const priority =
+    (likelyCandidate ? 1000 : 100) +
+    Math.min(500, Math.max(0, Math.round(roughGap / 1000))) +
+    Math.min(300, Math.max(0, item.numFaved * 5));
+
+  return {
+    queue: true,
+    reason: likelyCandidate ? "candidate_title_pass" : "market_sample_title_pass",
+    priority,
+    listingType: titleOnly.listingType === "normal" ? "normal" : "title_sku_match",
+    skuId: sku.id,
+    skuName: sku.modelName,
+    purpose: likelyCandidate ? "candidate" : "market_sample",
+  };
+}
+
 function sameKoreanDate(a: string | undefined, b: string) {
   if (!a) return false;
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date(a)) ===
@@ -289,8 +372,12 @@ export async function searchStage(deadlineMs: number): Promise<StageStats> {
   const items = [...seen.values()];
   const existing = await loadExistingRaw(pidList(items));
   const now = new Date().toISOString();
+  const detailDecisions = new Map(
+    items.map((item) => [item.pid, detailQueueDecision(item, existing.get(Number(item.pid)))])
+  );
   const observationRows = items.flatMap((item) => {
     const current = existing.get(Number(item.pid));
+    const detailDecision = detailDecisions.get(item.pid);
     const eventType = observationEventType(item, current, now);
     if (!eventType) return [];
     const changedFields = {
@@ -321,6 +408,14 @@ export async function searchStage(deadlineMs: number): Promise<StageStats> {
           listingState: current.listing_state,
         } : null,
         changedFields,
+        detailTriage: detailDecision ? {
+          queue: detailDecision.queue,
+          reason: detailDecision.reason,
+          purpose: detailDecision.purpose,
+          listingType: detailDecision.listingType,
+          skuId: detailDecision.skuId,
+          priority: detailDecision.priority,
+        } : null,
       },
     }];
   });
@@ -347,11 +442,12 @@ export async function searchStage(deadlineMs: number): Promise<StageStats> {
   stats.rawUpserted = items.length;
   await insertRows("mvp_listing_observations", observationRows);
 
-  const queueItems = items.filter((item) => changedEnough(item, existing.get(Number(item.pid))));
+  const changedItems = items.filter((item) => changedEnough(item, existing.get(Number(item.pid))));
+  const queueItems = changedItems.filter((item) => detailDecisions.get(item.pid)?.queue);
   await insertIgnoreRows("mvp_detail_queue", queueItems.map((item) => ({
     pid: Number(item.pid),
     status: "pending",
-    priority: item.numFaved,
+    priority: detailDecisions.get(item.pid)?.priority ?? item.numFaved,
     available_at: now,
     locked_at: null,
     locked_until: null,
@@ -359,6 +455,7 @@ export async function searchStage(deadlineMs: number): Promise<StageStats> {
     updated_at: now,
   })), "pid");
   stats.queued = queueItems.length;
+  stats.detailQueueSkipped = changedItems.length - queueItems.length;
 
   return stats;
 }
