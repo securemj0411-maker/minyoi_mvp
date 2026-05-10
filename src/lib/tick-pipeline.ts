@@ -253,13 +253,26 @@ function observationEventType(item: SearchItem, existing: RawListingRow | undefi
   return null;
 }
 
+function searchPagesForTick(pagesPerQuery: number, deepCrawlMaxPage: number, nowMs = Date.now()) {
+  if (pagesPerQuery <= 1) return [0];
+  const maxDeep = Math.max(1, deepCrawlMaxPage);
+  const tickBucket = Math.floor(nowMs / (5 * 60 * 1000));
+  const deepStart = 1 + (tickBucket % maxDeep);
+  const pages = new Set<number>([0]);
+  for (let i = 0; pages.size < pagesPerQuery; i += 1) {
+    pages.add(1 + ((deepStart - 1 + i) % maxDeep));
+  }
+  return [...pages];
+}
+
 export async function searchStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
   const seen = new Map<string, SearchItem>();
+  const pages = searchPagesForTick(config.pagesPerQuery, config.deepCrawlMaxPage);
 
   for (const query of config.searchQueries) {
-    for (let page = 0; page < config.pagesPerQuery; page += 1) {
+    for (const page of pages) {
       if (Date.now() >= deadlineMs) {
         stats.timedOut = true;
         return stats;

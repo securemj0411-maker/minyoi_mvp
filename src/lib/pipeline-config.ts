@@ -28,6 +28,7 @@ export type PipelineRuntimeConfig = {
   tickDetailBatchSize: number;
   tickDetailLeaseSeconds: number;
   tickScoreLimit: number;
+  deepCrawlMaxPage: number;
 };
 
 function envInt(name: string, fallback: number, min: number, max: number): number {
@@ -83,6 +84,7 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     tickDetailBatchSize: envInt("PIPELINE_TICK_DETAIL_BATCH_SIZE", 40, 1, 200),
     tickDetailLeaseSeconds: envInt("PIPELINE_TICK_DETAIL_LEASE_SECONDS", 150, 10, 900),
     tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 300, 10, 2000),
+    deepCrawlMaxPage: envInt("PIPELINE_DEEP_CRAWL_MAX_PAGE", 10, 1, 30),
   };
 }
 
