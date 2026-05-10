@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-10T10:13:08.132Z",
+  "generated_at": "2026-05-10T10:17:35.643Z",
   "limit": 8000,
   "categories": [
     "smartphone",
@@ -10,25 +10,33 @@
     {
       "category": "smartphone",
       "status": "internal_only",
-      "total": 83,
-      "parseReady": 77,
-      "parseReadyRate": 92.8,
-      "needsReview": 6,
-      "lowConfidence": 6,
-      "criticalUnknownCount": 6,
-      "criticalUnknownRate": 7.2,
-      "comparableKeyCount": 33,
+      "total": 110,
+      "parseReady": 96,
+      "parseReadyRate": 87.3,
+      "needsReview": 14,
+      "lowConfidence": 14,
+      "criticalUnknownCount": 14,
+      "criticalUnknownRate": 12.7,
+      "comparableKeyCount": 40,
       "trustedMarketKeyCount": 11,
       "highMarketKeyCount": 0,
       "mediumMarketKeyCount": 11,
-      "lowMarketKeyCount": 16,
+      "lowMarketKeyCount": 17,
       "topKeys": [
+        {
+          "key": "iphone|iphone_14|128gb",
+          "count": 8
+        },
         {
           "key": "iphone|iphone_15|128gb",
           "count": 7
         },
         {
-          "key": "iphone|iphone_14|128gb",
+          "key": "iphone|iphone_15_pro_max|256gb",
+          "count": 7
+        },
+        {
+          "key": "galaxy_s|galaxy_s23|256gb",
           "count": 7
         },
         {
@@ -36,28 +44,20 @@
           "count": 5
         },
         {
-          "key": "galaxy_s|galaxy_s23|256gb",
+          "key": "iphone|iphone_16_pro_max|256gb",
           "count": 5
+        },
+        {
+          "key": "galaxy_s|galaxy_s24_plus|256gb",
+          "count": 4
         },
         {
           "key": "iphone|iphone_15_pro|256gb",
           "count": 4
         },
         {
-          "key": "iphone|iphone_15_pro_max|256gb",
+          "key": "iphone|iphone_16|128gb",
           "count": 4
-        },
-        {
-          "key": "iphone|iphone_14_pro|256gb",
-          "count": 4
-        },
-        {
-          "key": "galaxy_s|galaxy_s24_plus|256gb",
-          "count": 3
-        },
-        {
-          "key": "galaxy_s|galaxy_s24|256gb",
-          "count": 3
         },
         {
           "key": "iphone|iphone_15|256gb",
@@ -67,13 +67,13 @@
       "topCriticalUnknowns": [
         {
           "key": "unknown_storage",
-          "count": 6
+          "count": 14
         }
       ],
       "topUnknownParts": [
         {
           "key": "unknown_storage",
-          "count": 6
+          "count": 14
         }
       ],
       "highRiskExamples": [
@@ -90,18 +90,6 @@
           "issue": "condition:cosmetic_wear,low_battery_health"
         },
         {
-          "pid": 406824593,
-          "name": "아이폰 14 화이트  128GB 스타라이트",
-          "price": 430000,
-          "sku": "iPhone 14",
-          "key": "iphone|iphone_14|128gb",
-          "confidence": 0.85,
-          "market": "medium",
-          "median": 418190,
-          "unknown": "",
-          "issue": "condition:repair_or_defect_signal,low_battery_health,screen_replaced"
-        },
-        {
           "pid": 407184980,
           "name": "새제품 아이폰14블랙128기가",
           "price": 590000,
@@ -114,18 +102,6 @@
           "issue": "condition:new_or_open_box,refurbished_or_repaired"
         },
         {
-          "pid": 407155322,
-          "name": "갤럭시S23 특SS급 256g 서울s23 부산s23 강원s23 파주s23",
-          "price": 399000,
-          "sku": "Galaxy S23",
-          "key": "galaxy_s|galaxy_s23|256gb",
-          "confidence": 0.8,
-          "market": "medium",
-          "median": 360000,
-          "unknown": "",
-          "issue": "condition:good_condition,cosmetic_wear,repair_or_defect_signal,carrier_status_disclosed"
-        },
-        {
           "pid": 406815800,
           "name": "아이폰 15 프로맥스 뒷판 (셀프수리) 화이트 새상품",
           "price": 18000,
@@ -136,16 +112,40 @@
           "median": null,
           "unknown": "unknown_storage",
           "issue": "condition:new_or_open_box,repair_or_defect_signal"
+        },
+        {
+          "pid": 407202833,
+          "name": "아이폰 15 128GB 블랙",
+          "price": 530000,
+          "sku": "iPhone 15",
+          "key": "iphone|iphone_15|128gb",
+          "confidence": 0.85,
+          "market": "medium",
+          "median": 539000,
+          "unknown": "",
+          "issue": "condition:low_battery_health"
+        },
+        {
+          "pid": 406824593,
+          "name": "아이폰 14 화이트  128GB 스타라이트",
+          "price": 430000,
+          "sku": "iPhone 14",
+          "key": "iphone|iphone_14|128gb",
+          "confidence": 0.85,
+          "market": "medium",
+          "median": 418190,
+          "unknown": "",
+          "issue": "condition:repair_or_defect_signal,low_battery_health,screen_replaced"
         }
       ],
       "examples": {
         "needsReview": [
           {
-            "pid": 407064978,
-            "name": "아이폰16프로맥스 데저트티타늄과 색상교환하실분",
-            "price": 1400000,
-            "sku": "iPhone 16 Pro Max",
-            "key": "iphone|iphone_16_pro_max|unknown_storage",
+            "pid": 406815800,
+            "name": "아이폰 15 프로맥스 뒷판 (셀프수리) 화이트 새상품",
+            "price": 18000,
+            "sku": "iPhone 15 Pro Max",
+            "key": "iphone|iphone_15_pro_max|unknown_storage",
             "confidence": 0.45,
             "market": "-",
             "median": null,
@@ -163,11 +163,22 @@
             "unknown": "unknown_storage"
           },
           {
-            "pid": 406815800,
-            "name": "아이폰 15 프로맥스 뒷판 (셀프수리) 화이트 새상품",
-            "price": 18000,
-            "sku": "iPhone 15 Pro Max",
-            "key": "iphone|iphone_15_pro_max|unknown_storage",
+            "pid": 405025592,
+            "name": "갤럭시 s22, s23 ,S24, S25, S26 울트라 대여해드립니다",
+            "price": 250000,
+            "sku": "Galaxy S23 Ultra",
+            "key": "galaxy_s|galaxy_s23_ultra|unknown_storage",
+            "confidence": 0.45,
+            "market": "-",
+            "median": null,
+            "unknown": "unknown_storage"
+          },
+          {
+            "pid": 407064978,
+            "name": "아이폰16프로맥스 데저트티타늄과 색상교환하실분",
+            "price": 1400000,
+            "sku": "iPhone 16 Pro Max",
+            "key": "iphone|iphone_16_pro_max|unknown_storage",
             "confidence": 0.45,
             "market": "-",
             "median": null,
@@ -180,17 +191,6 @@
             "sku": "iPhone 16e",
             "key": "iphone|iphone_16e|unknown_storage",
             "confidence": 0.55,
-            "market": "-",
-            "median": null,
-            "unknown": "unknown_storage"
-          },
-          {
-            "pid": 405025592,
-            "name": "갤럭시 s22, s23 ,S24, S25, S26 울트라 대여해드립니다",
-            "price": 250000,
-            "sku": "Galaxy S23 Ultra",
-            "key": "galaxy_s|galaxy_s23_ultra|unknown_storage",
-            "confidence": 0.45,
             "market": "-",
             "median": null,
             "unknown": "unknown_storage"
@@ -198,11 +198,11 @@
         ],
         "lowConfidence": [
           {
-            "pid": 407064978,
-            "name": "아이폰16프로맥스 데저트티타늄과 색상교환하실분",
-            "price": 1400000,
-            "sku": "iPhone 16 Pro Max",
-            "key": "iphone|iphone_16_pro_max|unknown_storage",
+            "pid": 406815800,
+            "name": "아이폰 15 프로맥스 뒷판 (셀프수리) 화이트 새상품",
+            "price": 18000,
+            "sku": "iPhone 15 Pro Max",
+            "key": "iphone|iphone_15_pro_max|unknown_storage",
             "confidence": 0.45,
             "market": "-",
             "median": null,
@@ -220,11 +220,22 @@
             "unknown": "unknown_storage"
           },
           {
-            "pid": 406815800,
-            "name": "아이폰 15 프로맥스 뒷판 (셀프수리) 화이트 새상품",
-            "price": 18000,
-            "sku": "iPhone 15 Pro Max",
-            "key": "iphone|iphone_15_pro_max|unknown_storage",
+            "pid": 405025592,
+            "name": "갤럭시 s22, s23 ,S24, S25, S26 울트라 대여해드립니다",
+            "price": 250000,
+            "sku": "Galaxy S23 Ultra",
+            "key": "galaxy_s|galaxy_s23_ultra|unknown_storage",
+            "confidence": 0.45,
+            "market": "-",
+            "median": null,
+            "unknown": "unknown_storage"
+          },
+          {
+            "pid": 407064978,
+            "name": "아이폰16프로맥스 데저트티타늄과 색상교환하실분",
+            "price": 1400000,
+            "sku": "iPhone 16 Pro Max",
+            "key": "iphone|iphone_16_pro_max|unknown_storage",
             "confidence": 0.45,
             "market": "-",
             "median": null,
@@ -240,42 +251,9 @@
             "market": "-",
             "median": null,
             "unknown": "unknown_storage"
-          },
-          {
-            "pid": 405025592,
-            "name": "갤럭시 s22, s23 ,S24, S25, S26 울트라 대여해드립니다",
-            "price": 250000,
-            "sku": "Galaxy S23 Ultra",
-            "key": "galaxy_s|galaxy_s23_ultra|unknown_storage",
-            "confidence": 0.45,
-            "market": "-",
-            "median": null,
-            "unknown": "unknown_storage"
           }
         ],
         "trusted": [
-          {
-            "pid": 407158607,
-            "name": "갤럭시S23 512G 무잔상 중고폰 공기계",
-            "price": 340000,
-            "sku": "Galaxy S23",
-            "key": "galaxy_s|galaxy_s23|512gb",
-            "confidence": 0.75,
-            "market": "medium",
-            "median": 360000,
-            "unknown": ""
-          },
-          {
-            "pid": 287927513,
-            "name": "아이폰15/128GB[APPLE]",
-            "price": 343000,
-            "sku": "iPhone 15",
-            "key": "iphone|iphone_15|128gb",
-            "confidence": 0.75,
-            "market": "medium",
-            "median": 539000,
-            "unknown": ""
-          },
           {
             "pid": 407191428,
             "name": "아이폰 14 퍼플 128GB",
@@ -288,42 +266,64 @@
             "unknown": ""
           },
           {
-            "pid": 394131875,
-            "name": "아이폰13 128G 미개봉새제품(블랙,화이트)",
-            "price": 480000,
-            "sku": "iPhone 13",
-            "key": "iphone|iphone_13|128gb",
+            "pid": 407184980,
+            "name": "새제품 아이폰14블랙128기가",
+            "price": 590000,
+            "sku": "iPhone 14",
+            "key": "iphone|iphone_14|128gb",
             "confidence": 0.75,
             "market": "medium",
-            "median": 340000,
+            "median": 418190,
             "unknown": ""
           },
           {
-            "pid": 406824593,
-            "name": "아이폰 14 화이트  128GB 스타라이트",
-            "price": 430000,
-            "sku": "iPhone 14",
-            "key": "iphone|iphone_14|128gb",
-            "confidence": 0.85,
+            "pid": 394214130,
+            "name": "아이폰15 256기가 블랙 (특S급) / 0307",
+            "price": 710000,
+            "sku": "iPhone 15",
+            "key": "iphone|iphone_15|256gb",
+            "confidence": 0.75,
             "market": "medium",
-            "median": 418190,
+            "median": 630000,
+            "unknown": ""
+          },
+          {
+            "pid": 287928673,
+            "name": "아이폰15/128GB[APPLE]",
+            "price": 198800,
+            "sku": "iPhone 15",
+            "key": "iphone|iphone_15|128gb",
+            "confidence": 0.75,
+            "market": "medium",
+            "median": 539000,
+            "unknown": ""
+          },
+          {
+            "pid": 254336053,
+            "name": "[Apple]아이폰15프로맥스 256기가 미개봉제품 판매합니다.",
+            "price": 492000,
+            "sku": "iPhone 15 Pro Max",
+            "key": "iphone|iphone_15_pro_max|256gb",
+            "confidence": 0.75,
+            "market": "medium",
+            "median": 1015000,
             "unknown": ""
           }
         ]
       },
-      "recommendation": "keep_internal: 표본 100건 미만"
+      "recommendation": "keep_internal: 고위험 샘플 검수 필요"
     },
     {
       "category": "tablet",
       "status": "internal_only",
-      "total": 23,
+      "total": 21,
       "parseReady": 19,
-      "parseReadyRate": 82.6,
-      "needsReview": 4,
+      "parseReadyRate": 90.5,
+      "needsReview": 2,
       "lowConfidence": 0,
-      "criticalUnknownCount": 4,
-      "criticalUnknownRate": 17.4,
-      "comparableKeyCount": 16,
+      "criticalUnknownCount": 2,
+      "criticalUnknownRate": 9.5,
+      "comparableKeyCount": 14,
       "trustedMarketKeyCount": 0,
       "highMarketKeyCount": 0,
       "mediumMarketKeyCount": 0,
@@ -342,121 +342,62 @@
           "count": 2
         },
         {
-          "key": "ipad|ipad_mini|7_9in|64gb|wifi",
-          "count": 2
-        },
-        {
-          "key": "ipad|ipad_pro|13in|256gb|wifi",
+          "key": "ipad|ipad_mini|8_3in|128gb|wifi",
           "count": 2
         },
         {
           "key": "ipad|ipad_pro|12_9in|128gb|wifi",
+          "count": 2
+        },
+        {
+          "key": "ipad|ipad_mini|7_9in|32gb|wifi",
           "count": 1
         },
         {
-          "key": "ipad|ipad_air|10_5in|64gb|wifi",
+          "key": "ipad|ipad_pro|12_9in|64gb|cellular",
           "count": 1
         },
         {
-          "key": "ipad|ipad_mini|8_3in|128gb|wifi",
+          "key": "ipad|ipad_mini|7_9in|unknown_storage|wifi",
           "count": 1
         },
         {
-          "key": "ipad|ipad_mini|7_9in|64gb|cellular",
+          "key": "ipad|ipad_air|11in|128gb|wifi",
           "count": 1
         },
         {
-          "key": "ipad|ipad_pro|11in|unknown_storage|wifi",
+          "key": "ipad|ipad_pro|11in|128gb|cellular",
           "count": 1
         }
       ],
       "topCriticalUnknowns": [
         {
           "key": "unknown_storage",
-          "count": 4
+          "count": 2
         }
       ],
       "topUnknownParts": [
         {
           "key": "unknown_storage",
-          "count": 4
+          "count": 2
         }
       ],
       "highRiskExamples": [
         {
-          "pid": 405624488,
-          "name": "아이패드 에어5세대 64GB",
-          "price": 420000,
-          "sku": "iPad Air",
-          "key": "ipad|ipad_air|10_9in|64gb|wifi",
+          "pid": 397192954,
+          "name": "아이패드 미니3 64기가",
+          "price": 100000,
+          "sku": "iPad mini",
+          "key": "ipad|ipad_mini|7_9in|64gb|wifi",
           "confidence": 0.92,
           "market": "-",
           "median": null,
           "unknown": "",
           "issue": "condition:cosmetic_wear,repair_or_defect_signal"
-        },
-        {
-          "pid": 406127551,
-          "name": "아이패드 에어 3 애플팬슬 1세대",
-          "price": 270000,
-          "sku": "iPad Air",
-          "key": "ipad|ipad_air|10_5in|64gb|wifi",
-          "confidence": 0.9700000000000001,
-          "market": "-",
-          "median": null,
-          "unknown": "",
-          "issue": "condition:good_condition,cosmetic_wear,repair_or_defect_signal,low_battery_health,locked_or_lost_signal"
-        },
-        {
-          "pid": 395262676,
-          "name": "아이패드 미니6(배터리100)",
-          "price": 450000,
-          "sku": "iPad mini",
-          "key": "ipad|ipad_mini|8_3in|64gb|wifi",
-          "confidence": 0.9700000000000001,
-          "market": "low",
-          "median": 225000,
-          "unknown": "",
-          "issue": "condition:refurbished_or_repaired"
-        },
-        {
-          "pid": 396078208,
-          "name": "ipad mini 7 wifi (애케플)",
-          "price": 630000,
-          "sku": "iPad mini",
-          "key": "ipad|ipad_mini|8_3in|unknown_storage|wifi",
-          "confidence": 0.7400000000000001,
-          "market": "-",
-          "median": null,
-          "unknown": "unknown_storage",
-          "issue": "condition:new_or_open_box,cosmetic_wear,repair_or_defect_signal"
-        },
-        {
-          "pid": 405450379,
-          "name": "아이패드 에어 4세대 실버",
-          "price": 320000,
-          "sku": "iPad Air",
-          "key": "ipad|ipad_air|10_9in|unknown_storage|wifi",
-          "confidence": 0.6900000000000001,
-          "market": "-",
-          "median": null,
-          "unknown": "unknown_storage",
-          "issue": "condition:cosmetic_wear,repair_or_defect_signal"
         }
       ],
       "examples": {
         "needsReview": [
-          {
-            "pid": 406863067,
-            "name": "아이패드 프로 11 3세대 M1",
-            "price": 550000,
-            "sku": "iPad Pro",
-            "key": "ipad|ipad_pro|11in|unknown_storage|wifi",
-            "confidence": 0.6900000000000001,
-            "market": "-",
-            "median": null,
-            "unknown": "unknown_storage"
-          },
           {
             "pid": 399888403,
             "name": "애플 아이패드 미니 2",
@@ -478,17 +419,6 @@
             "market": "-",
             "median": null,
             "unknown": "unknown_storage"
-          },
-          {
-            "pid": 405450379,
-            "name": "아이패드 에어 4세대 실버",
-            "price": 320000,
-            "sku": "iPad Air",
-            "key": "ipad|ipad_air|10_9in|unknown_storage|wifi",
-            "confidence": 0.6900000000000001,
-            "market": "-",
-            "median": null,
-            "unknown": "unknown_storage"
           }
         ],
         "lowConfidence": [],
@@ -499,26 +429,26 @@
     {
       "category": "laptop",
       "status": "internal_only",
-      "total": 201,
-      "parseReady": 132,
-      "parseReadyRate": 65.7,
-      "needsReview": 69,
-      "lowConfidence": 11,
-      "criticalUnknownCount": 120,
-      "criticalUnknownRate": 59.7,
-      "comparableKeyCount": 136,
+      "total": 183,
+      "parseReady": 120,
+      "parseReadyRate": 65.6,
+      "needsReview": 63,
+      "lowConfidence": 14,
+      "criticalUnknownCount": 117,
+      "criticalUnknownRate": 63.9,
+      "comparableKeyCount": 120,
       "trustedMarketKeyCount": 4,
       "highMarketKeyCount": 1,
       "mediumMarketKeyCount": 3,
-      "lowMarketKeyCount": 55,
+      "lowMarketKeyCount": 48,
       "topKeys": [
         {
-          "key": "macbook|macbook_air|m1|13in|8gb_ram|256gb_ssd",
+          "key": "macbook|macbook_air|unknown_chip|13in|unknown_ram|unknown_ssd",
           "count": 8
         },
         {
-          "key": "macbook|macbook_air|unknown_chip|13in|unknown_ram|unknown_ssd",
-          "count": 7
+          "key": "macbook|macbook_air|m1|13in|8gb_ram|256gb_ssd",
+          "count": 6
         },
         {
           "key": "macbook|macbook_pro|m1|14in|16gb_ram|512gb_ssd",
@@ -529,76 +459,65 @@
           "count": 4
         },
         {
-          "key": "macbook|macbook_air|m2|13in|16gb_ram|256gb_ssd",
-          "count": 4
-        },
-        {
           "key": "macbook|macbook_air|m2|15in|8gb_ram|256gb_ssd",
           "count": 4
         },
         {
-          "key": "macbook|macbook_air|m4|15in|16gb_ram|256gb_ssd",
-          "count": 4
-        },
-        {
-          "key": "macbook|macbook_pro|m5|14in|24gb_ram|1024gb_ssd",
+          "key": "macbook|macbook_air|m2|13in|16gb_ram|256gb_ssd",
           "count": 3
         },
         {
-          "key": "macbook|macbook_air|m5|13in|16gb_ram|512gb_ssd",
+          "key": "macbook|macbook_air|i5|11in|unknown_ram|unknown_ssd",
           "count": 3
         },
         {
           "key": "macbook|macbook_pro|m2|13in|8gb_ram|256gb_ssd",
+          "count": 3
+        },
+        {
+          "key": "macbook|macbook_air|m3|15in|8gb_ram|256gb_ssd",
+          "count": 3
+        },
+        {
+          "key": "macbook|macbook_pro|m4_pro|16in|24gb_ram|512gb_ssd",
           "count": 3
         }
       ],
       "topCriticalUnknowns": [
         {
           "key": "unknown_ram",
-          "count": 56
+          "count": 55
         },
         {
           "key": "unknown_ssd",
-          "count": 44
+          "count": 40
         },
         {
           "key": "unknown_chip",
-          "count": 20
+          "count": 22
         }
       ],
       "topUnknownParts": [
         {
           "key": "unknown_ram",
-          "count": 56
+          "count": 55
         },
         {
           "key": "unknown_ssd",
-          "count": 44
+          "count": 40
         },
         {
           "key": "unknown_chip",
-          "count": 20
+          "count": 22
         },
         {
           "key": "unknown_screen",
-          "count": 4
+          "count": 5
         }
       ],
       "highRiskExamples": [],
       "examples": {
         "needsReview": [
-          {
-            "pid": 380541339,
-            "name": "맥북에어 A1370",
-            "price": 150000,
-            "sku": "MacBook Air",
-            "key": "macbook|macbook_air|unknown_chip|13in|unknown_ram|unknown_ssd",
-            "confidence": 0.5900000000000001,
-            "market": "-",
-            "median": null,
-            "unknown": "unknown_chip, unknown_ram, unknown_ssd"
-          },
           {
             "pid": 404476018,
             "name": "맥북 에어 m2",
@@ -611,51 +530,51 @@
             "unknown": "unknown_ram, unknown_ssd"
           },
           {
-            "pid": 407168152,
-            "name": "실사용 가능 애플 맥북 프로 레티나 13인치 2015",
-            "price": 80000,
+            "pid": 404291865,
+            "name": "맥북프로 2015 15인치 cto 모델",
+            "price": 260000,
             "sku": "MacBook Pro",
-            "key": "macbook|macbook_pro|unknown_chip|13in|unknown_ram|121gb_ssd",
-            "confidence": 0.7300000000000001,
+            "key": "macbook|macbook_pro|unknown_chip|15in|16gb_ram|512gb_ssd",
+            "confidence": 0.8700000000000001,
             "market": "-",
             "median": null,
-            "unknown": "unknown_chip, unknown_ram"
+            "unknown": "unknown_chip"
           },
           {
-            "pid": 406201752,
-            "name": "맥북프로 고급형 I7 CPU 1테라 하드",
-            "price": 300000,
-            "sku": "MacBook Pro",
-            "key": "macbook|macbook_pro|i7|unknown_screen|unknown_ram|unknown_ssd",
-            "confidence": 0.63,
-            "market": "-",
-            "median": null,
-            "unknown": "unknown_ram, unknown_ssd"
-          },
-          {
-            "pid": 403829715,
-            "name": "맥북 에어 M4 15인치 미드나이트",
-            "price": 1500000,
+            "pid": 407177317,
+            "name": "맥북에어 2015 11인치 a1465 메인보드",
+            "price": 55000,
             "sku": "MacBook Air",
-            "key": "macbook|macbook_air|m4|15in|unknown_ram|unknown_ssd",
+            "key": "macbook|macbook_air|i5|11in|unknown_ram|unknown_ssd",
             "confidence": 0.77,
             "market": "-",
             "median": null,
             "unknown": "unknown_ram, unknown_ssd"
+          },
+          {
+            "pid": 393652405,
+            "name": "맥북프로 Mid 2012 13인치 ssd 250기가 램 6기가",
+            "price": 110000,
+            "sku": "MacBook Pro",
+            "key": "macbook|macbook_pro|i5|13in|unknown_ram|250gb_ssd",
+            "confidence": 0.91,
+            "market": "-",
+            "median": null,
+            "unknown": "unknown_ram"
+          },
+          {
+            "pid": 407186043,
+            "name": "[상태 최상급 보장] 애플 맥북프로 노트북 M1 14인치 실버",
+            "price": 1350000,
+            "sku": "MacBook Pro",
+            "key": "macbook|macbook_pro|m1|14in|16gb_ram|unknown_ssd",
+            "confidence": 0.91,
+            "market": "-",
+            "median": null,
+            "unknown": "unknown_ssd"
           }
         ],
         "lowConfidence": [
-          {
-            "pid": 380541339,
-            "name": "맥북에어 A1370",
-            "price": 150000,
-            "sku": "MacBook Air",
-            "key": "macbook|macbook_air|unknown_chip|13in|unknown_ram|unknown_ssd",
-            "confidence": 0.5900000000000001,
-            "market": "-",
-            "median": null,
-            "unknown": "unknown_chip, unknown_ram, unknown_ssd"
-          },
           {
             "pid": 406201752,
             "name": "맥북프로 고급형 I7 CPU 1테라 하드",
@@ -668,20 +587,9 @@
             "unknown": "unknown_ram, unknown_ssd"
           },
           {
-            "pid": 406642377,
-            "name": "드디어 팝니다!!!@@@ 집에서만 사용한!! 애플 맥북 에어 2015",
-            "price": 170000,
-            "sku": "MacBook Air",
-            "key": "macbook|macbook_air|unknown_chip|13in|unknown_ram|unknown_ssd",
-            "confidence": 0.5900000000000001,
-            "market": "-",
-            "median": null,
-            "unknown": "unknown_chip, unknown_ram, unknown_ssd"
-          },
-          {
-            "pid": 402839681,
-            "name": "맥북 에어 2017",
-            "price": 200000,
+            "pid": 401961692,
+            "name": "맥북 에어 MacBook Air / A1466",
+            "price": 192000,
             "sku": "MacBook Air",
             "key": "macbook|macbook_air|unknown_chip|13in|unknown_ram|unknown_ssd",
             "confidence": 0.5900000000000001,
@@ -699,18 +607,40 @@
             "market": "-",
             "median": null,
             "unknown": "unknown_chip, unknown_ram, unknown_ssd"
+          },
+          {
+            "pid": 380541339,
+            "name": "맥북에어 A1370",
+            "price": 150000,
+            "sku": "MacBook Air",
+            "key": "macbook|macbook_air|unknown_chip|13in|unknown_ram|unknown_ssd",
+            "confidence": 0.5900000000000001,
+            "market": "-",
+            "median": null,
+            "unknown": "unknown_chip, unknown_ram, unknown_ssd"
+          },
+          {
+            "pid": 406642377,
+            "name": "드디어 팝니다!!!@@@ 집에서만 사용한!! 애플 맥북 에어 2015",
+            "price": 170000,
+            "sku": "MacBook Air",
+            "key": "macbook|macbook_air|unknown_chip|13in|unknown_ram|unknown_ssd",
+            "confidence": 0.5900000000000001,
+            "market": "-",
+            "median": null,
+            "unknown": "unknown_chip, unknown_ram, unknown_ssd"
           }
         ],
         "trusted": [
           {
-            "pid": 407020054,
-            "name": "맥북에어 13인치 m2 8/256",
-            "price": 650000,
+            "pid": 407180247,
+            "name": "(미개봉)애플 맥북 에어 13 M5 실버 512GB",
+            "price": 1590000,
             "sku": "MacBook Air",
-            "key": "macbook|macbook_air|m2|13in|8gb_ram|256gb_ssd",
+            "key": "macbook|macbook_air|m5|13in|16gb_ram|512gb_ssd",
             "confidence": 1,
             "market": "medium",
-            "median": 800000,
+            "median": 1560000,
             "unknown": ""
           },
           {
@@ -725,9 +655,9 @@
             "unknown": ""
           },
           {
-            "pid": 407231746,
-            "name": "맥북 에어m1 로즈골드",
-            "price": 580000,
+            "pid": 407218307,
+            "name": "맥북 에어 M1 2020 8GB 실버",
+            "price": 550000,
             "sku": "MacBook Air",
             "key": "macbook|macbook_air|m1|13in|8gb_ram|256gb_ssd",
             "confidence": 1,
@@ -736,25 +666,25 @@
             "unknown": ""
           },
           {
-            "pid": 403205378,
-            "name": "맥북 프로 13인치 노트북 a1502 (2014) 인텔 코어 i5",
-            "price": 140000,
-            "sku": "MacBook Pro",
-            "key": "macbook|macbook_pro|i5|13in|8gb_ram|256gb_ssd",
-            "confidence": 1,
-            "market": "medium",
-            "median": 355000,
-            "unknown": ""
-          },
-          {
-            "pid": 354789789,
-            "name": "애플 맥북 에어 M2 2022 실버 256GB",
-            "price": 940000,
+            "pid": 407020054,
+            "name": "맥북에어 13인치 m2 8/256",
+            "price": 650000,
             "sku": "MacBook Air",
             "key": "macbook|macbook_air|m2|13in|8gb_ram|256gb_ssd",
             "confidence": 1,
             "market": "medium",
             "median": 800000,
+            "unknown": ""
+          },
+          {
+            "pid": 317588724,
+            "name": "맥북에어 M1 2021 로즈골드 상태최상 하자 없음",
+            "price": 600000,
+            "sku": "MacBook Air",
+            "key": "macbook|macbook_air|m1|13in|8gb_ram|256gb_ssd",
+            "confidence": 1,
+            "market": "high",
+            "median": 550000,
             "unknown": ""
           }
         ]
