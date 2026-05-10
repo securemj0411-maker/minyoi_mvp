@@ -290,6 +290,9 @@ export default function PackRevealModal({
                 후보 {result.attemptedCount}건 검증 → {result.reveals.length}장 공개 ·{" "}
                 {(result.durationMs / 1000).toFixed(1)}초
               </div>
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs leading-5 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-100">
+                가격 비교는 같은 전체 본품끼리만 보세요. 왼쪽/오른쪽 유닛, 본체만, 케이스만 매물은 가격이 낮아 보여도 다른 상품입니다.
+              </div>
               <div className="grid gap-4 md:grid-cols-2">
                 {result.reveals.map((card, idx) => (
                   <RevealCardItem

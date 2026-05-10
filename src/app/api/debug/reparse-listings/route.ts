@@ -98,7 +98,7 @@ async function handleReparse(req: NextRequest) {
     skuRecovered: 0,
     reclassified: 0,
     criticalUnknown: {} as Record<string, number>,
-    parserVersion: "option-parser-v2",
+    parserVersion: "",
   };
 
   const rawPatchRows: { pid: number; sku_id: string | null; sku_name: string | null; listing_type: string | null; updated_at: string }[] = [];
@@ -142,6 +142,7 @@ async function handleReparse(req: NextRequest) {
       skuName: sku?.modelName ?? row.sku_name,
       category: sku?.category ?? categoryFor(row),
     });
+    summary.parserVersion = parsed.parserVersion;
     if (parsed.needsReview) summary.needsReview += 1;
     if (!parsed.comparableKey) summary.noComparableKey += 1;
     const critical = Array.isArray(parsed.parsedJson.critical_unknown)

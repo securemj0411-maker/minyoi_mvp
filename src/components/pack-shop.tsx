@@ -458,6 +458,15 @@ export default function PackShop({ initialInventory }: Props) {
               <li>한 번 본 카드는 같은 사람에게 다시 공개되지 않습니다.</li>
             </ol>
           </section>
+
+          <section className="rounded-2xl border border-emerald-200/80 bg-emerald-50 p-5 text-xs leading-6 text-emerald-900 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-100">
+            <div className="mb-2 text-sm font-black">비교할 때 꼭 같은 조건만 보세요</div>
+            <p>
+              에어팟/버즈는 사진이 풀세트처럼 보여도 실제 설명은 왼쪽 유닛, 오른쪽 유닛, 본체만인 경우가 많아요.
+              미뇨이는 후보를 전체 본품 기준으로 비교하고, 단품 유닛/케이스/본체만 매물은 후보에서 제외합니다.
+              AirPods 4처럼 노캔 O/X가 갈리는 모델은 같은 노캔 옵션끼리만 시세를 비교하도록 분리합니다.
+            </p>
+          </section>
         </div>
       </main>
 

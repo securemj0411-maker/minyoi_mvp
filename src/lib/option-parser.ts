@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v19";
+const PARSER_VERSION = "option-parser-v20";
 
 function hashText(text: string) {
   return createHash("sha256").update(text).digest("hex");
@@ -317,6 +317,28 @@ function defaultAirpodsConnector(model: string | null, text: string) {
   return null;
 }
 
+function parseAirpodsNoiseControl(model: string | null, text: string) {
+  if (!model?.includes("airpods_4")) return null;
+  const lower = normalize(text).toLowerCase();
+  const compact = lower.replace(/\s+/g, "");
+
+  if (
+    /노캔\s*(?:x|×|없|아님|안됨|안\s*됨|미지원)|노이즈\s*캔슬링\s*(?:x|×|없|아님|안됨|안\s*됨|미지원)|anc\s*(?:x|no|없|미지원)/.test(lower) ||
+    /노캔이되는모델은아니|노캔안되는|노캔없는|노캔x|ancx/.test(compact)
+  ) {
+    return "no_anc";
+  }
+
+  if (
+    /노캔\s*(?:o|○|지원|되는|가능)|노이즈\s*캔슬링|액티브\s*노이즈|anc\s*(?:o|yes|지원)?/.test(lower) ||
+    /노캔o|노캔되는|노캔가능|노이즈캔슬링/.test(compact)
+  ) {
+    return "anc";
+  }
+
+  return "unknown_anc";
+}
+
 function defaultWatchSizeMm(model: string | null) {
   if (!model) return null;
   if (model.includes("applewatch_ultra")) return 49;
@@ -421,6 +443,7 @@ function comparableParts(input: {
   carrier: string | null;
   watchSizeMm: number | null;
   airpodsConnector: string | null;
+  airpodsNoiseControl: string | null;
 }) {
   const { category, family, model } = input;
   if (!category || !family || !model) return null;
@@ -455,7 +478,11 @@ function comparableParts(input: {
     ];
   }
   if (category === "earphone") {
-    return [family, model, input.airpodsConnector ?? "unknown_connector"];
+    const parts = [family, model, input.airpodsConnector ?? "unknown_connector"];
+    if (model === "airpods_4") {
+      parts.push(input.airpodsNoiseControl ?? "unknown_anc");
+    }
+    return parts;
   }
   return [family, model];
 }
@@ -472,6 +499,7 @@ function confidence(input: {
   carrier: string | null;
   watchSizeMm: number | null;
   airpodsConnector: string | null;
+  airpodsNoiseControl: string | null;
   batteryHealth: number | null;
   batteryCycles: number | null;
 }) {
@@ -499,6 +527,7 @@ function confidence(input: {
     if (input.batteryHealth) score += 0.05;
   } else if (input.category === "earphone") {
     score += input.airpodsConnector ? 0.25 : 0.12;
+    if (input.model === "airpods_4") score += input.airpodsNoiseControl && input.airpodsNoiseControl !== "unknown_anc" ? 0.18 : -0.08;
   }
   return cap01(score);
 }
@@ -519,7 +548,7 @@ function criticalUnknowns(category: Sku["category"] | null, comparableKey: strin
     return parts.filter((part) => part === "unknown_size");
   }
   if (category === "earphone") {
-    return parts.filter((part) => part === "unknown_connector");
+    return parts.filter((part) => part === "unknown_connector" || part === "unknown_anc");
   }
   return parts;
 }
@@ -554,6 +583,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const connectivity = parseConnectivity(title) ?? parseConnectivity(description) ?? defaultConnectivity(model) ?? (category === "tablet" ? "wifi" : null);
   const carrier = parseCarrier(text);
   const airpodsConnector = parseAirpodsConnector(title) ?? parseAirpodsConnector(description) ?? defaultAirpodsConnector(model, text);
+  const airpodsNoiseControl = parseAirpodsNoiseControl(model, text);
   const { conditionScore, conditionNotes } = conditionFromText(text, batteryHealth, batteryCycles);
   const parts = comparableParts({
     category,
@@ -568,6 +598,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     carrier,
     watchSizeMm,
     airpodsConnector,
+    airpodsNoiseControl,
   });
   const comparableKey = parts?.map(slug).join("|") ?? null;
   const parseConfidence = confidence({
@@ -582,6 +613,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     carrier,
     watchSizeMm,
     airpodsConnector,
+    airpodsNoiseControl,
     batteryHealth,
     batteryCycles,
   });
@@ -614,6 +646,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     parsedJson: {
       watch_size_mm: watchSizeMm,
       airpods_connector: airpodsConnector,
+      airpods_noise_control: airpodsNoiseControl,
       inferred_screen_size: parsedScreenSizeIn == null && screenSizeIn != null,
       raw_sku_id: input.skuId ?? null,
       raw_sku_name: input.skuName ?? null,

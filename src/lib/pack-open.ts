@@ -7,6 +7,7 @@ import {
   isSoldOut,
   type SourceHealthStatus,
 } from "@/lib/sold-out";
+import { classifyListing, isSideOnlyEarbudListing } from "@/lib/pipeline";
 
 const TIMEOUT_MS = 30_000;
 
@@ -329,19 +330,28 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       await rpcInvalidate(candidate.pid, "missing_listing_meta");
       continue;
     }
+    if (isSideOnlyEarbudListing(meta.name)) {
+      await rpcInvalidate(candidate.pid, "pack_open_side_only_earbud_title");
+      continue;
+    }
 
     const lastVerified = new Date(candidate.last_verified_at).getTime();
     const isFresh = Number.isFinite(lastVerified) && Date.now() - lastVerified < freshnessMs;
 
     let liveVerifiedAt = candidate.last_verified_at;
     if (!isFresh) {
-      const { signals } = await verifyAndCheckSold(candidate.pid, meta.price);
+      const { detail, signals } = await verifyAndCheckSold(candidate.pid, meta.price);
       if (isSoldOut(signals)) {
         if (canPermanentlyInvalidateSoldOut(signals, sourceHealth)) {
           await rpcInvalidate(candidate.pid, `${sourceHealth}_${describeSignals(signals)}`);
         } else {
           releasePids.push(candidate.pid);
         }
+        continue;
+      }
+      const liveType = classifyListing(meta.name, detail?.description ?? "", meta.price).listingType;
+      if (liveType !== "normal") {
+        await rpcInvalidate(candidate.pid, `pack_open_live_${liveType}`);
         continue;
       }
       await patchPoolVerified(candidate.pid);

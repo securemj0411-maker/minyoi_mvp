@@ -115,6 +115,28 @@ function accessoryTitleHits(title: string): string[] {
   return hits;
 }
 
+export function isSideOnlyEarbudListing(title: string, desc = ""): boolean {
+  const text = `${title}\n${desc}`;
+  const normalized = nrm(text);
+  const compact = normalized.replace(/\s+/g, "");
+  const isEarbud = /(에어팟|airpods|버즈|buds|이어버드|이어폰)/i.test(normalized);
+  if (!isEarbud) return false;
+
+  const sideSignal =
+    /(왼쪽|오른쪽|좌측|우측|좌유닛|우유닛|좌\s*유닛|우\s*유닛|left|right)/i.test(normalized) ||
+    /(?:^|[^a-z가-힣])(l|r)(?:쪽|유닛|unit|낱개|단품|만|$)/i.test(normalized);
+  if (!sideSignal) return false;
+
+  const fullProductSignal = /(양쪽|좌우|둘다|둘 다|풀박|풀박스|풀세트|풀구성|본품\s*전체|구성품\s*전부|케이스\s*포함)/.test(normalized);
+  const explicitUnitSignal = /(유닛|이어버드|낱개|단품|한쪽|한짝|한알|쪽만|만\s*판매)/.test(normalized);
+
+  // "에어팟 프로 2세대 왼쪽 8핀"처럼 유닛이라는 단어가 없어도
+  // 좌/우 방향만 제목에 뜨면 대부분 단품 판매다. 풀세트 신호가 강한 경우만 살린다.
+  if (!fullProductSignal) return true;
+  if (explicitUnitSignal && !/(양쪽|좌우|둘다|둘 다)/.test(compact)) return true;
+  return false;
+}
+
 function partsHits(title: string, desc: string): string[] {
   const text = `${title}\n${desc}`;
   const hits = containsAny(text, PARTS_KEYWORDS);
@@ -129,6 +151,9 @@ function partsHits(title: string, desc: string): string[] {
   }
   if (/(l|r)\s*\/?\s*(유닛|unit)|\b(l|r)\b.{0,8}(낱개|단품)/i.test(title)) {
     hits.push("lr_unit");
+  }
+  if (isSideOnlyEarbudListing(title, desc)) {
+    hits.push("side_only_earbud");
   }
   if (compactTitle.includes("본체") && !containsAny(text, ["양쪽", "풀박", "풀박스", "풀세트", "풀구성"]).length) {
     hits.push("title_case_only");
