@@ -69,7 +69,7 @@ function shortText(value: string | null, max = 42) {
 
 function pct(part: number, total: number) {
   if (total <= 0) return "0%";
-  return `${Math.round((part / total) * 100)}%`;
+  return `${Math.max(0, Math.min(100, Math.round((part / total) * 100)))}%`;
 }
 
 function restUrl() {
@@ -97,6 +97,110 @@ type MarketPriceDebugRow = {
   confidence: "high" | "medium" | "low";
   active_median_price: number | null;
 };
+
+type BottleneckRawRow = {
+  pid: number;
+  name: string;
+  price: number;
+  sku_name: string | null;
+  thumbnail_url: string | null;
+};
+
+type BottleneckListingRow = {
+  pid: number;
+  price: number;
+  sku_median: number | null;
+  shipping_fee: number | null;
+  shipping_fee_general: number | null;
+  estimated_buy_cost: number | null;
+  thumbnail_url: string | null;
+  name: string;
+  sku_name: string | null;
+};
+
+type BottleneckAnalysisRow = {
+  pid: number;
+  risk_hits: number | null;
+  score_flags: string[] | null;
+};
+
+type BottleneckParsedRow = {
+  pid: number;
+  comparable_key: string | null;
+  parse_confidence: number | null;
+  needs_review: boolean | null;
+  parsed_json: Record<string, unknown> | null;
+};
+
+type PoolRow = {
+  profit_band: 1 | 2 | 3;
+  status: string;
+};
+
+const SELLING_FEE_RATE = 0.035;
+const RESELL_SHIPPING_FEE = 3500;
+const SAFETY_BUFFER = 5000;
+const POOL_CONFIDENCE_FLOOR = 0.7;
+const POOL_BLOCK_FLAGS = [
+  "coarse_market_price",
+  "market_confidence_low",
+  "market_stat_missing",
+  "option_parse_review",
+  "option_needs_review",
+  "ai_review_unavailable",
+  "weak_description",
+  "risk_keyword_review",
+];
+
+function bandFromProfit(profitMin: number, profitMax: number) {
+  const avg = Math.round((profitMin + profitMax) / 2);
+  if (avg >= 70_000) return 3;
+  if (avg >= 40_000) return 2;
+  if (avg >= 20_000) return 1;
+  return null;
+}
+
+function poolConfidence(parseConfidence: number | null | undefined, flags: string[]) {
+  let confidence = Math.max(0, Math.min(1, Number(parseConfidence ?? 0.5) || 0.5));
+  if (flags.includes("ai_normal")) confidence = Math.min(1, confidence + 0.2);
+  if (flags.includes("ai_review_unavailable")) confidence = Math.max(0, confidence - 0.1);
+  if (flags.some((flag) => flag.endsWith("_low_confidence"))) confidence = Math.max(0, confidence - 0.15);
+  return Math.round(confidence * 100) / 100;
+}
+
+function poolBlockFlag(flags: string[]) {
+  return flags.some((flag) => (
+    POOL_BLOCK_FLAGS.includes(flag) ||
+    flag.endsWith("_low_confidence") ||
+    (flag === "deep_discount_review" && !flags.includes("ai_normal"))
+  ));
+}
+
+function increment(map: Map<string, number>, key: string, by = 1) {
+  map.set(key, (map.get(key) ?? 0) + by);
+}
+
+function mapRows<T extends { pid: number }>(rows: T[]) {
+  return new Map(rows.map((row) => [Number(row.pid), row]));
+}
+
+async function restJson<T>(path: string, fallback: T): Promise<T> {
+  const base = restUrl();
+  const headers = serviceHeaders();
+  if (!base || !headers) return fallback;
+  const res = await fetch(`${base}${path}`, { headers, cache: "no-store" });
+  if (!res.ok) return fallback;
+  return await res.json() as T;
+}
+
+async function loadPidChunked<T>(pids: number[], pathForChunk: (ids: string) => string): Promise<T[]> {
+  const rows: T[] = [];
+  for (let i = 0; i < pids.length; i += 200) {
+    const ids = pids.slice(i, i + 200).join(",");
+    rows.push(...await restJson<T[]>(pathForChunk(ids), []));
+  }
+  return rows;
+}
 
 async function loadMarketPriceDebug() {
   const base = restUrl();
@@ -135,6 +239,97 @@ async function loadMarketPriceDebug() {
     low: rows.filter((row) => row.confidence === "low").length,
     totalSamples: rows.reduce((sum, row) => sum + Number(row.active_sample_count ?? 0), 0),
     top: rows.slice(0, 5),
+  };
+}
+
+async function loadBottleneckDebug() {
+  const rawRows = await restJson<BottleneckRawRow[]>(
+    "/mvp_raw_listings?select=pid,name,price,sku_name,thumbnail_url&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&order=last_seen_at.desc&limit=500",
+    [],
+  );
+  const pids = rawRows.map((row) => Number(row.pid)).filter(Number.isFinite);
+  const [listingRows, analysisRows, parsedRows, poolRows] = await Promise.all([
+    loadPidChunked<BottleneckListingRow>(pids, (ids) => `/mvp_listings?select=pid,price,sku_median,shipping_fee,shipping_fee_general,estimated_buy_cost,thumbnail_url,name,sku_name&pid=in.(${ids})`),
+    loadPidChunked<BottleneckAnalysisRow>(pids, (ids) => `/mvp_listing_analysis?select=pid,risk_hits,score_flags&pid=in.(${ids})`),
+    loadPidChunked<BottleneckParsedRow>(pids, (ids) => `/mvp_listing_parsed?select=pid,comparable_key,parse_confidence,needs_review,parsed_json&pid=in.(${ids})`),
+    restJson<PoolRow[]>("/mvp_candidate_pool?select=profit_band,status&limit=5000", []),
+  ]);
+
+  const listingMap = mapRows(listingRows);
+  const analysisMap = mapRows(analysisRows);
+  const parsedMap = mapRows(parsedRows);
+  const reasons = new Map<string, number>();
+  const criticalUnknown = new Map<string, number>();
+  let pass = 0;
+  let mediumOrHighReady = 0;
+
+  for (const row of poolRows) {
+    if (row.status === "ready") mediumOrHighReady += 1;
+  }
+
+  for (const raw of rawRows) {
+    const listing = listingMap.get(raw.pid);
+    const analysis = analysisMap.get(raw.pid);
+    const parsed = parsedMap.get(raw.pid);
+    const flags = Array.isArray(analysis?.score_flags) ? analysis.score_flags : [];
+    const parsedJson = parsed?.parsed_json ?? {};
+    const critical = Array.isArray(parsedJson.critical_unknown) ? parsedJson.critical_unknown.map(String) : [];
+    for (const item of critical) increment(criticalUnknown, item);
+
+    if (!listing) {
+      increment(reasons, "not_scored_yet");
+      continue;
+    }
+
+    const skuMedian = Number(listing.sku_median ?? 0);
+    const price = Number(listing.price ?? raw.price ?? 0);
+    if (skuMedian <= 0 || price <= 0) {
+      increment(reasons, "no_price_or_median");
+      continue;
+    }
+
+    const shippingFee = Number(listing.shipping_fee ?? 0);
+    const shippingFeeGeneral = listing.shipping_fee_general == null ? null : Number(listing.shipping_fee_general);
+    const estimatedBuyCost = Number(listing.estimated_buy_cost ?? price);
+    const sellFee = Math.round(skuMedian * SELLING_FEE_RATE);
+    const profitMax = Math.max(0, skuMedian - estimatedBuyCost - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
+    const profitMin = Math.max(0, skuMedian - (price + (shippingFeeGeneral ?? shippingFee)) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
+    const band = bandFromProfit(profitMin, profitMax);
+    const confidence = poolConfidence(parsed?.parse_confidence, flags);
+
+    if (band === null) increment(reasons, "profit_below_band");
+    else if (profitMin <= 0) increment(reasons, "profit_min_zero");
+    else if (price >= skuMedian) increment(reasons, "price_gte_median");
+    else if (Number(analysis?.risk_hits ?? 0) > 0) increment(reasons, "risk_hits");
+    else if (!listing.thumbnail_url && !raw.thumbnail_url) increment(reasons, "no_thumbnail");
+    else if (!parsed?.comparable_key) increment(reasons, "no_comparable_key");
+    else if (parsed.needs_review) increment(reasons, "parsed_needs_review");
+    else if (confidence < POOL_CONFIDENCE_FLOOR) increment(reasons, "confidence_below_0_7");
+    else if (poolBlockFlag(flags)) increment(reasons, "blocked_flag");
+    else pass += 1;
+  }
+
+  const reasonRows = [...reasons.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([key, count]) => ({ key, count }));
+  const criticalRows = [...criticalUnknown.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([key, count]) => ({ key, count }));
+  const poolSummary = poolRows.reduce<Record<string, number>>((acc, row) => {
+    const key = `band${row.profit_band}:${row.status}`;
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return {
+    sampleSize: rawRows.length,
+    scored: listingRows.length,
+    parsed: parsedRows.length,
+    pass,
+    readyPool: mediumOrHighReady,
+    reasonRows,
+    criticalRows,
+    poolSummary,
   };
 }
 
@@ -337,6 +532,104 @@ function MarketStatsPanel({ stats }: { stats: Awaited<ReturnType<typeof loadMark
   );
 }
 
+function labelReason(key: string) {
+  const labels: Record<string, string> = {
+    profit_below_band: "순익 구간 미달",
+    not_scored_yet: "아직 점수 미계산",
+    blocked_flag: "시세/AI/설명 플래그 차단",
+    parsed_needs_review: "옵션 정보 부족",
+    risk_hits: "위험 키워드",
+    no_comparable_key: "시세키 없음",
+    no_thumbnail: "이미지 없음",
+    confidence_below_0_7: "신뢰도 0.7 미만",
+    price_gte_median: "매물가가 시세 이상",
+    profit_min_zero: "보수 순익 0",
+    no_price_or_median: "가격/시세 없음",
+  };
+  return labels[key] ?? key;
+}
+
+function BottleneckPanel({ stats }: { stats: Awaited<ReturnType<typeof loadBottleneckDebug>> }) {
+  const topReasons = stats.reasonRows.slice(0, 6);
+  const topCritical = stats.criticalRows.slice(0, 6);
+  const readyByBand = ["band3:ready", "band2:ready", "band1:ready"].map((key) => ({
+    key,
+    label: key.replace("band", "팩 ").replace(":ready", ""),
+    count: stats.poolSummary[key] ?? 0,
+  }));
+
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="text-sm font-semibold text-zinc-950">후보팩 병목 진단</div>
+          <div className="mt-1 text-xs text-zinc-500">
+            최근 정상 상세 매물 500개가 후보팩까지 가는 길에서 어디서 막히는지 봅니다.
+          </div>
+        </div>
+        <span className="w-fit rounded-full bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-700 ring-1 ring-zinc-200">
+          구조 진단
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <MetricCard label="표본" value={`${num(stats.sampleSize)}건`} sub="정상 상세 raw" />
+        <MetricCard label="점수 계산됨" value={`${num(stats.scored)}건`} sub="mvp_listings 존재" />
+        <MetricCard label="옵션 파싱됨" value={`${num(stats.parsed)}건`} sub="parsed row 존재" />
+        <MetricCard label="후보팩 통과 가능" value={`${num(stats.pass)}건`} sub="시뮬레이션" />
+        <MetricCard label="현재 ready pool" value={`${num(stats.readyPool)}건`} sub="사용자 공개 가능" />
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px_260px]">
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">탈락 이유 Top</div>
+          <div className="divide-y divide-zinc-100">
+            {topReasons.map((row) => (
+              <div key={row.key} className="grid grid-cols-[150px_minmax(0,1fr)_64px] items-center gap-3 px-3 py-2 text-xs">
+                <div className="font-medium text-zinc-700">{labelReason(row.key)}</div>
+                <div className="h-2 overflow-hidden rounded-full bg-zinc-100">
+                  <div
+                    className="h-full rounded-full bg-zinc-950"
+                    style={{ width: pct(row.count, Math.max(1, stats.sampleSize)) }}
+                  />
+                </div>
+                <div className="text-right font-mono text-zinc-600">{num(row.count)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">치명 옵션 누락</div>
+          <div className="divide-y divide-zinc-100">
+            {topCritical.map((row) => (
+              <div key={row.key} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
+                <div className="font-mono text-zinc-700">{row.key}</div>
+                <div className="font-semibold text-zinc-900">{num(row.count)}건</div>
+              </div>
+            ))}
+            {topCritical.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-zinc-500">치명 옵션 누락 없음</div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">팩별 ready</div>
+          <div className="divide-y divide-zinc-100">
+            {readyByBand.map((row) => (
+              <div key={row.key} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
+                <div className="font-medium text-zinc-700">{row.label}</div>
+                <div className="font-semibold text-zinc-900">{num(row.count)}건</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RequestPanel({ run }: { run: CollectRun }) {
   return (
     <div className="rounded-md border border-zinc-200 bg-white p-5">
@@ -466,8 +759,11 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
 }
 
 export default async function DebugPage() {
-  const runs = await loadCollectRuns(30);
-  const marketStats = await loadMarketPriceDebug();
+  const [runs, marketStats, bottleneckStats] = await Promise.all([
+    loadCollectRuns(30),
+    loadMarketPriceDebug(),
+    loadBottleneckDebug(),
+  ]);
   const latest = runs[0] ?? null;
   const latestOk = lastSucceeded(runs);
   const totalApiCalls = runs.reduce((sum, run) => sum + run.aiApiCalls, 0);
@@ -519,7 +815,10 @@ export default async function DebugPage() {
 
         {latest ? <StagePanel run={latest} /> : null}
 
-        <MarketStatsPanel stats={marketStats} />
+        <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <BottleneckPanel stats={bottleneckStats} />
+          <MarketStatsPanel stats={marketStats} />
+        </section>
 
         <DebugResetPanel />
 
