@@ -824,11 +824,31 @@ async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
   return (await res.json()) as ScorableRawRow[];
 }
 
+async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<ScorableRawRow[]> {
+  const unique = [...new Set(pids.filter(Number.isFinite))].slice(0, limit);
+  if (unique.length === 0) return [];
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,detail_enriched_at";
+  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&pid=in.(${unique.join(",")})&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&limit=${limit}`;
+  const res = await restFetch(url, { headers: serviceHeaders() });
+  return (await res.json()) as ScorableRawRow[];
+}
+
 async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListingRow>> {
   if (pids.length === 0) return new Map();
   const unique = [...new Set(pids)];
   const columns = "pid,parser_version,comparable_key,parse_confidence,condition_score,needs_review";
   const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&pid=in.(${unique.join(",")})`;
+  const res = await restFetch(url, { headers: serviceHeaders() });
+  const rows = (await res.json()) as ParsedListingRow[];
+  return new Map(rows.map((row) => [row.pid, row]));
+}
+
+async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: number): Promise<Map<number, ParsedListingRow>> {
+  const unique = [...new Set(comparableKeys.filter(Boolean))].slice(0, limit);
+  if (unique.length === 0) return new Map();
+  const columns = "pid,parser_version,comparable_key,parse_confidence,condition_score,needs_review";
+  const encoded = unique.map((key) => encodeURIComponent(key)).join(",");
+  const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&comparable_key=in.(${encoded})&parse_confidence=gte.0.65&needs_review=eq.false&limit=${Math.max(limit, unique.length * 100)}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   const rows = (await res.json()) as ParsedListingRow[];
   return new Map(rows.map((row) => [row.pid, row]));
@@ -1155,17 +1175,34 @@ export async function marketStatsStage(): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
   const pendingInvalidations = await loadPendingMarketInvalidations();
-  const rows = await loadMarketStatRows(config.marketStatsLimit);
-  if (rows.length === 0) return stats;
+  const pendingKeys = new Set(pendingInvalidations.map((row) => row.comparable_key));
+  const invalidatedParsedByPid = await loadParsedRowsByComparableKeys([...pendingKeys], config.marketStatsLimit);
+  const invalidatedPids = [...invalidatedParsedByPid.keys()];
+  if (pendingInvalidations.length > 0 && invalidatedPids.length === 0) {
+    stats.queued = pendingInvalidations.length;
+    stats.enriched = await markMarketInvalidationsDone([...pendingKeys]);
+    return stats;
+  }
+  const rows = invalidatedPids.length > 0
+    ? await loadMarketStatRowsByPids(invalidatedPids, config.marketStatsLimit)
+    : await loadMarketStatRows(config.marketStatsLimit);
+  if (rows.length === 0) {
+    stats.queued = pendingInvalidations.length;
+    if (pendingInvalidations.length > 0) {
+      stats.enriched = await markMarketInvalidationsDone([...pendingKeys]);
+    }
+    return stats;
+  }
 
-  const parsedByPid = await ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid)));
+  const parsedByPid = invalidatedPids.length > 0
+    ? await ensureParsedRows(rows, invalidatedParsedByPid)
+    : await ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid)));
   const result = await upsertMarketPriceDaily(rows, parsedByPid);
   const recomputedKeys = [...new Set(
     rows
       .map((row) => preciseComparableKey(parsedByPid.get(row.pid)))
       .filter((key): key is string => Boolean(key))
   )];
-  const pendingKeys = new Set(pendingInvalidations.map((row) => row.comparable_key));
   const completedInvalidationKeys = recomputedKeys.filter((key) => pendingKeys.has(key));
   const closedInvalidations = await markMarketInvalidationsDone(completedInvalidationKeys);
   stats.scored = rows.length;
