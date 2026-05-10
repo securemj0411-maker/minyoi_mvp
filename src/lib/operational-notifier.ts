@@ -81,20 +81,12 @@ function buildMessage(context: NotifyContext, event: NotifyResult["event"], aler
   ].join("\n");
 }
 
-export async function notifyOperationalAlerts(context: NotifyContext): Promise<NotifyResult> {
+async function sendTelegramMessage(message: string): Promise<Omit<NotifyResult, "event">> {
   const config = telegramConfig();
   if (!config) {
-    return { enabled: false, sent: false, reason: "telegram_env_missing", event: "none" };
+    return { enabled: false, sent: false, reason: "telegram_env_missing" };
   }
 
-  const freshAlerts = newAlerts(context.previousAlerts, context.alerts);
-  const recovered = context.previousAlerts.length > 0 && context.alerts.length === 0;
-  const event: NotifyResult["event"] = recovered ? "recovered" : freshAlerts.length > 0 ? "new_alert" : "none";
-  if (event === "none") {
-    return { enabled: true, sent: false, reason: "no_new_alert", event };
-  }
-
-  const message = buildMessage(context, event, recovered ? [] : freshAlerts);
   try {
     const res = await fetch(`https://api.telegram.org/bot${config.token}/sendMessage`, {
       method: "POST",
@@ -106,15 +98,37 @@ export async function notifyOperationalAlerts(context: NotifyContext): Promise<N
       }),
     });
     if (!res.ok) {
-      return { enabled: true, sent: false, reason: `telegram_${res.status}`, event };
+      return { enabled: true, sent: false, reason: `telegram_${res.status}` };
     }
-    return { enabled: true, sent: true, reason: "sent", event };
+    return { enabled: true, sent: true, reason: "sent" };
   } catch (err) {
     return {
       enabled: true,
       sent: false,
       reason: err instanceof Error ? err.message : String(err),
-      event,
     };
   }
+}
+
+export async function notifyOperationalAlerts(context: NotifyContext): Promise<NotifyResult> {
+  const freshAlerts = newAlerts(context.previousAlerts, context.alerts);
+  const recovered = context.previousAlerts.length > 0 && context.alerts.length === 0;
+  const event: NotifyResult["event"] = recovered ? "recovered" : freshAlerts.length > 0 ? "new_alert" : "none";
+  if (event === "none") {
+    const config = telegramConfig();
+    return { enabled: Boolean(config), sent: false, reason: config ? "no_new_alert" : "telegram_env_missing", event };
+  }
+
+  const message = buildMessage(context, event, recovered ? [] : freshAlerts);
+  const result = await sendTelegramMessage(message);
+  return { ...result, event };
+}
+
+export async function sendOperationalTestAlert() {
+  const message = [
+    "[미뇨이] 운영 알림 테스트",
+    "Telegram 연결이 정상입니다.",
+    `checked: ${kstTime(new Date().toISOString())}`,
+  ].join("\n");
+  return sendTelegramMessage(message);
 }
