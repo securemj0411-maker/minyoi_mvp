@@ -654,6 +654,13 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   return (await res.json()) as ScorableRawRow[];
 }
 
+async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,detail_enriched_at";
+  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&order=detail_enriched_at.desc.nullslast,last_seen_at.desc&limit=${limit}`;
+  const res = await restFetch(url, { headers: serviceHeaders() });
+  return (await res.json()) as ScorableRawRow[];
+}
+
 async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListingRow>> {
   if (pids.length === 0) return new Map();
   const unique = [...new Set(pids)];
@@ -790,6 +797,24 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   });
 
   await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key");
+  return {
+    keyCount: marketRows.length,
+    sampleCount: [...byKey.values()].reduce((sum, group) => sum + group.prices.length, 0),
+  };
+}
+
+export async function marketStatsStage(): Promise<StageStats> {
+  const config = loadPipelineRuntimeConfig();
+  const stats = emptyStats();
+  const rows = await loadMarketStatRows(config.marketStatsLimit);
+  if (rows.length === 0) return stats;
+
+  const parsedByPid = await ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid)));
+  const result = await upsertMarketPriceDaily(rows, parsedByPid);
+  stats.scored = rows.length;
+  stats.upserted = result.keyCount;
+  stats.poolUpserted = result.sampleCount;
+  return stats;
 }
 
 function poolMaxExposure(band: 1 | 2 | 3) {
@@ -1255,6 +1280,29 @@ export async function runPoolWarmerPipeline(): Promise<TickResult> {
   const search = emptyStats();
   const detail = await timed("pool_warmer", () => poolWarmerStage(Date.now() + config.tickDetailBudgetMs));
   const score = emptyStats();
+  const total = mergeStats([search, detail, score]);
+  return {
+    ...total,
+    stages: { search, detail, score },
+    stageDurationsMs,
+  };
+}
+
+export async function runMarketStatsPipeline(): Promise<TickResult> {
+  const stageDurationsMs: Record<string, number> = {};
+
+  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const started = Date.now();
+    try {
+      return await fn();
+    } finally {
+      stageDurationsMs[name] = Date.now() - started;
+    }
+  }
+
+  const search = emptyStats();
+  const detail = emptyStats();
+  const score = await timed("market_stats", () => marketStatsStage());
   const total = mergeStats([search, detail, score]);
   return {
     ...total,
