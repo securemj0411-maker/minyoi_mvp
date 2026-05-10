@@ -195,6 +195,39 @@ export type ListingType = "normal" | "parts" | "multi" | "buying" | "callout" | 
 
 type ClassifyResult = { listingType: ListingType; sku: Sku | null };
 
+function categoryScopedNoise(title: string, desc: string, price: number, sku: Sku): ListingType | null {
+  if (sku.category !== "laptop") return null;
+
+  const titleN = nrm(title);
+  const textN = nrm(`${title}\n${desc}`);
+  const compactTitle = titleN.replace(/\s+/g, "");
+  const compactText = textN.replace(/\s+/g, "");
+  const fullBoxSignal = /(풀박스|풀박|풀구성|풀세트|박스포함|박스 포함)/.test(compactText);
+  const boxOnlySignal = !fullBoxSignal && /(박스만|박스판매|박스팝니다|박스구함|박스삽니다|맥북박스|맥북에어박스|맥북프로박스)/.test(compactText);
+
+  if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 100_000)) {
+    return "accessory";
+  }
+
+  if (/(전용\s*ssd|ssd\s*저장\s*장치|저장\s*장치|외장\s*ssd|ssd\s*교체용)/.test(titleN)) {
+    return "parts";
+  }
+
+  if (/(액정|디스플레이|상판|하판|키보드|트랙패드|배터리).{0,16}(교체용|부품용|부품|전용)|(?:교체용|부품용|부품|전용).{0,16}(액정|디스플레이|상판|하판|키보드|트랙패드|배터리)/.test(titleN)) {
+    return "parts";
+  }
+
+  const accessoryOnly = /(어댑터|충전기|케이블|파우치|케이스|키스킨|필름|보호필름|스탠드|거치대)/.test(titleN);
+  const hasMacbookSpec = /(m[1-5]|i[3579]|13\s*인치|14\s*인치|15\s*인치|16\s*인치|8\s*gb|16\s*gb|24\s*gb|32\s*gb|256\s*gb|512\s*gb|1\s*tb|1\s*테라)/.test(textN);
+  if (accessoryOnly && !hasMacbookSpec) return "accessory";
+
+  if (compactTitle.includes("맥북") && /(삽니다|구합니다|매입|박스구함|박스삽니다)/.test(compactText)) {
+    return "buying";
+  }
+
+  return null;
+}
+
 export function classifyListing(title: string, desc: string, price: number): ClassifyResult {
   const text = `${title}\n${desc}`;
 
@@ -213,6 +246,8 @@ export function classifyListing(title: string, desc: string, price: number): Cla
 
   const sku = ruleMatch(title, desc);
   if (!sku) return { listingType: "unknown", sku: null };
+  const scopedNoise = categoryScopedNoise(title, desc, price, sku);
+  if (scopedNoise) return { listingType: scopedNoise, sku: null };
   if (compactLen(title) < SHORT_TITLE_MIN && !hasNormalSignal(title, desc)) {
     return { listingType: "unknown", sku: null };
   }
