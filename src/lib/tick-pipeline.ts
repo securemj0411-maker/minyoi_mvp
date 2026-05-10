@@ -96,6 +96,8 @@ const POOL_BLOCK_FLAGS = [
   "risk_keyword_review",
 ];
 
+const catalogById = new Map(CATALOG.map((sku) => [sku.id, sku]));
+
 export type StageStats = {
   collected: number;
   rawUpserted: number;
@@ -662,6 +664,35 @@ async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListing
   return new Map(rows.map((row) => [row.pid, row]));
 }
 
+async function ensureParsedRows(rows: ScorableRawRow[], parsedByPid: Map<number, ParsedListingRow>) {
+  const missingRows = rows.filter((row) => !parsedByPid.has(row.pid));
+  if (missingRows.length === 0) return parsedByPid;
+
+  const parsedRows = missingRows.map((row) => {
+    const sku = catalogById.get(row.sku_id ?? "");
+    const parsed = parseListingOptions({
+      title: row.name,
+      description: row.description_preview,
+      skuId: row.sku_id,
+      skuName: row.sku_name,
+      category: sku?.category ?? null,
+    });
+    return toParsedListingRow(row.pid, parsed);
+  });
+
+  await upsertRows("mvp_listing_parsed", parsedRows, "pid");
+  for (const row of parsedRows) {
+    parsedByPid.set(Number(row.pid), {
+      pid: Number(row.pid),
+      comparable_key: (row.comparable_key as string | null) ?? null,
+      parse_confidence: (row.parse_confidence as number | null) ?? null,
+      condition_score: (row.condition_score as number | null) ?? null,
+      needs_review: (row.needs_review as boolean | null) ?? null,
+    });
+  }
+  return parsedByPid;
+}
+
 async function loadMarketPriceStats(comparableKeys: string[]): Promise<Map<string, MarketPriceRow>> {
   const unique = [...new Set(comparableKeys.filter(Boolean))];
   if (unique.length === 0) return new Map();
@@ -892,7 +923,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const stats = emptyStats();
   const rows = await loadScorableRows(config.tickScoreLimit);
   if (rows.length === 0) return stats;
-  const parsedByPid = await loadParsedRows(rows.map((row) => row.pid));
+  const parsedByPid = await ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid)));
   await upsertMarketPriceDaily(rows, parsedByPid);
   const marketStatsByKey = await loadMarketPriceStats(
     rows

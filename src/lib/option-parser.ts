@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v1";
+const PARSER_VERSION = "option-parser-v2";
 
 function hashText(text: string) {
   return createHash("sha256").update(text).digest("hex");
@@ -86,27 +86,33 @@ function parseStorageGb(text: string, category: Sku["category"] | null) {
   return null;
 }
 
-function parseRamAndSsd(text: string) {
+function parseRamAndSsd(text: string, category: Sku["category"] | null) {
   const lower = normalize(text).toLowerCase();
-  const pair = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*\/\s*(128|256|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\b/);
+  const pair = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*\/\s*(128|256|500|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\b/);
+  const pairWithUnits = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)?\s*\/\s*(128|256|500|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|tb|테라)?\b/);
   const ramExplicit = lower.match(/(?:램|ram|memory|메모리)\s*[:：]?\s*(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)?/);
   const ramSuffix = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)\s*(?:램|ram|memory|메모리)\b/);
-  const ssdExplicit = lower.match(/(?:ssd|용량|저장공간|스토리지)\s*[:：]?\s*(128|256|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|tb|테라)?/);
-  const ssdSuffix = lower.match(/\b(128|256|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|tb|테라)\s*(?:ssd|용량|저장공간|스토리지)?\b/);
-  return {
-    ramGb: parseGb(ramExplicit?.[1] ?? ramSuffix?.[1] ?? pair?.[1]),
-    ssdGb: parseGb(ssdExplicit?.[1] ?? pair?.[2] ?? ssdSuffix?.[1]),
-  };
+  const ramBeforeSsd = category === "laptop"
+    ? lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)\b(?=.{0,20}(?:ssd|저장공간|스토리지))/)
+    : null;
+  const ssdExplicit = lower.match(/(?:ssd|용량|저장공간|스토리지)\s*[:：]?\s*(128|256|500|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|tb|테라)?/);
+  const ssdSuffix = lower.match(/\b(128|256|500|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|tb|테라)\s*(?:ssd|용량|저장공간|스토리지)?\b/);
+  const ramGb = parseGb(ramExplicit?.[1] ?? ramSuffix?.[1] ?? ramBeforeSsd?.[1] ?? pairWithUnits?.[1] ?? pair?.[1]);
+  const bareLaptopSsd = category === "laptop"
+    ? lower.match(/(?:^|[^0-9])(128|256|500|512)(?:[^0-9]|$)/)
+    : null;
+  const ssdGb = parseGb(ssdExplicit?.[1] ?? pairWithUnits?.[2] ?? pair?.[2] ?? ssdSuffix?.[1] ?? bareLaptopSsd?.[1]);
+  return { ramGb, ssdGb };
 }
 
 function parseScreenSizeIn(text: string) {
   const lower = normalize(text).toLowerCase();
-  const match = lower.match(/\b(11|12\.9|13|13\.3|14|15|16|17)\s*(?:인치|inch|")/);
+  const match = lower.match(/(?:^|[^0-9])(11|12\.9|13|13\.3|14|15|16|17)\s*(?:인치|inch|"|형)/);
   return match ? Number(match[1]) : null;
 }
 
 function parseWatchSizeMm(text: string) {
-  const match = normalize(text).toLowerCase().match(/\b(40|41|42|44|45|46|47|49)\s*mm\b/);
+  const match = normalize(text).toLowerCase().match(/\b(40|41|42|43|44|45|46|47|49)\s*m{1,2}\b/);
   return match ? Number(match[1]) : null;
 }
 
@@ -180,8 +186,39 @@ function familyFrom(category: Sku["category"] | null, model: string | null) {
 
 function parseAirpodsConnector(text: string) {
   const lower = normalize(text).toLowerCase();
-  if (/usb\s*-?\s*c|usbc|c타입|타입c|씨타입|타입씨|c-type|ctype/.test(lower)) return "usbc";
+  if (/usb\s*-?\s*c|usbc|c타입|타입c|씨타입|타입씨|c-type|ctype|c터입/.test(lower)) return "usbc";
   if (/라이트닝|lightning|8핀|8\s*핀/.test(lower)) return "lightning";
+  return null;
+}
+
+function defaultAirpodsConnector(model: string | null, text: string) {
+  const lower = normalize(text).toLowerCase();
+  if (!model?.includes("airpods")) return null;
+  if (model.includes("airpods_pro_2_usbc") || model.includes("airpods_4")) return "usbc";
+  if (
+    model.includes("airpods_2") ||
+    model.includes("airpods_3") ||
+    model.includes("airpods_pro_1") ||
+    model.includes("airpods_pro_2_lightning")
+  ) return "lightning";
+  if (model.includes("airpods_max")) {
+    if (/2024|c타입|타입c|usb\s*-?\s*c|usbc|ctype/.test(lower)) return "usbc";
+    if (/맥스\s*2|맥스2|max\s*2|max2|2세대|2 세대/.test(lower)) return "usbc";
+    if (/1세대|1 세대|8핀|8\s*핀|라이트닝|lightning/.test(lower)) return "lightning";
+  }
+  return null;
+}
+
+function defaultWatchSizeMm(model: string | null) {
+  if (!model) return null;
+  if (model.includes("applewatch_ultra")) return 49;
+  if (model.includes("galaxywatch_ultra")) return 47;
+  return null;
+}
+
+function defaultConnectivity(model: string | null) {
+  if (!model) return null;
+  if (model.includes("applewatch_ultra") || model.includes("galaxywatch_ultra")) return "cellular";
   return null;
 }
 
@@ -279,13 +316,32 @@ function confidence(input: {
     if (input.ssdGb) score += 0.14;
     if (input.batteryCycles) score += 0.05;
   } else if (input.category === "smartwatch") {
-    if (input.watchSizeMm) score += 0.18;
+    if (input.watchSizeMm) score += 0.25;
     if (input.connectivity) score += 0.12;
+    else score += 0.05;
     if (input.batteryHealth) score += 0.05;
   } else if (input.category === "earphone") {
     score += input.airpodsConnector ? 0.25 : 0.12;
   }
   return cap01(score);
+}
+
+function criticalUnknowns(category: Sku["category"] | null, comparableKey: string | null) {
+  const parts = comparableKey?.split("|").filter((part) => part.startsWith("unknown_")) ?? [];
+  if (parts.length === 0) return [];
+  if (category === "smartphone" || category === "tablet") {
+    return parts.filter((part) => part === "unknown_storage");
+  }
+  if (category === "laptop") {
+    return parts.filter((part) => ["unknown_chip", "unknown_ram", "unknown_ssd"].includes(part));
+  }
+  if (category === "smartwatch") {
+    return parts.filter((part) => part === "unknown_size");
+  }
+  if (category === "earphone") {
+    return parts.filter((part) => part === "unknown_connector");
+  }
+  return parts;
 }
 
 export function parseListingOptions(input: ParseInput): ParsedListingOptions {
@@ -296,15 +352,16 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const model = modelFromSku(input.skuId, input.skuName);
   const family = familyFrom(category, model);
   const storageGb = parseStorageGb(text, category);
-  const { ramGb, ssdGb } = parseRamAndSsd(text);
-  const screenSizeIn = parseScreenSizeIn(text);
-  const watchSizeMm = parseWatchSizeMm(text);
+  const { ramGb, ssdGb } = parseRamAndSsd(text, category);
+  const parsedScreenSizeIn = parseScreenSizeIn(text);
+  const screenSizeIn = parsedScreenSizeIn ?? (category === "laptop" && model === "macbook_air" ? 13 : null);
+  const watchSizeMm = parseWatchSizeMm(text) ?? defaultWatchSizeMm(model);
   const chip = parseChip(text);
   const batteryHealth = parseBatteryHealth(text);
   const batteryCycles = parseBatteryCycles(text);
-  const connectivity = parseConnectivity(text);
+  const connectivity = parseConnectivity(title) ?? parseConnectivity(description) ?? defaultConnectivity(model);
   const carrier = parseCarrier(text);
-  const airpodsConnector = parseAirpodsConnector(text);
+  const airpodsConnector = parseAirpodsConnector(title) ?? parseAirpodsConnector(description) ?? defaultAirpodsConnector(model, text);
   const { conditionScore, conditionNotes } = conditionFromText(text, batteryHealth, batteryCycles);
   const parts = comparableParts({
     category,
@@ -337,7 +394,8 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     batteryCycles,
   });
   const variantKey = parts ? parts.slice(2).join(" / ") : null;
-  const needsReview = parseConfidence < 0.7 || Boolean(comparableKey?.includes("unknown_"));
+  const criticalUnknown = criticalUnknowns(category, comparableKey);
+  const needsReview = parseConfidence < 0.65 || criticalUnknown.length > 0 || !comparableKey;
 
   return {
     parserVersion: PARSER_VERSION,
@@ -364,9 +422,11 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     parsedJson: {
       watch_size_mm: watchSizeMm,
       airpods_connector: airpodsConnector,
+      inferred_screen_size: parsedScreenSizeIn == null && screenSizeIn != null,
       raw_sku_id: input.skuId ?? null,
       raw_sku_name: input.skuName ?? null,
-      critical_unknown: comparableKey?.split("|").filter((part) => part.startsWith("unknown_")) ?? [],
+      unknown_parts: comparableKey?.split("|").filter((part) => part.startsWith("unknown_")) ?? [],
+      critical_unknown: criticalUnknown,
     },
   };
 }

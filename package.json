@@ -15,6 +15,8 @@
     "promote:catalog": "node scripts/promote-catalog.mjs",
     "backfill:market": "node scripts/backfill-market.mjs",
     "backfill:pool": "node scripts/backfill-pool.mjs",
+    "reparse:listings": "node scripts/reparse-listings.mjs",
+    "diagnose:parser": "node scripts/diagnose-parser.mjs",
     "diagnose:pool": "node scripts/diagnose-pool.mjs"
   },
   "dependencies": {

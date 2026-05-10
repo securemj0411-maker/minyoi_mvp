@@ -295,6 +295,7 @@ const NORMALIZATIONS: [RegExp, string][] = [
 
 export function normalize(text: string): string {
   let t = (text ?? "").toLowerCase();
+  t = t.replace(/\+/g, " plus ");
   for (const [pat, repl] of NORMALIZATIONS) {
     t = t.replace(pat, repl);
   }
@@ -319,13 +320,19 @@ function skuMatches(sku: Sku, normalizedText: string): boolean {
   return true;
 }
 
+function stripLinkLikeText(text: string): string {
+  return String(text ?? "")
+    .replace(/https?:\/\/\S+/gi, " ")
+    .replace(/\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/gi, " ");
+}
+
 export function ruleMatch(title: string, description = ""): Sku | null {
   const titleNorm = normalize(title);
   const titleCandidates = CATALOG.filter((s) => skuMatches(s, titleNorm));
   if (titleCandidates.length === 1) return titleCandidates[0];
   if (titleCandidates.length > 1) return null;
 
-  const combined = normalize(`${title} ${description.slice(0, 200)}`);
+  const combined = normalize(`${title} ${stripLinkLikeText(description).slice(0, 200)}`);
   const descCandidates = CATALOG.filter((s) => skuMatches(s, combined));
   if (descCandidates.length === 1) return descCandidates[0];
   return null;

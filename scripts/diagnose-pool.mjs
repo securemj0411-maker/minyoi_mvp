@@ -119,21 +119,24 @@ console.table(pool.slice(0, 20).map((row) => ({
   key: row.comparable_key,
 })));
 
-const listings = await fetchJson(
-  `/mvp_listings?select=pid,price,sku_median,shipping_fee,shipping_fee_general,estimated_buy_cost,thumbnail_url,name,sku_name&order=updated_at.desc&limit=${limit}`,
+const rawRows = await fetchJson(
+  `/mvp_raw_listings?select=pid,name,price,sku_name,thumbnail_url,sku_id,last_seen_at&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&order=last_seen_at.desc&limit=${limit}`,
 );
-const pids = listings.map((row) => Number(row.pid));
+const pids = rawRows.map((row) => Number(row.pid));
 const chunks = [];
 for (let i = 0; i < pids.length; i += 200) chunks.push(pids.slice(i, i + 200));
 
 const analysisMap = new Map();
 const parsedMap = new Map();
+const listingMap = new Map();
 for (const chunk of chunks) {
   const ids = chunk.join(",");
   const analyses = await fetchJson(`/mvp_listing_analysis?select=pid,score,risk_hits,score_flags&pid=in.(${ids})`);
   const parsedRows = await fetchJson(`/mvp_listing_parsed?select=pid,comparable_key,parse_confidence,needs_review&pid=in.(${ids})`);
+  const listings = await fetchJson(`/mvp_listings?select=pid,price,sku_median,shipping_fee,shipping_fee_general,estimated_buy_cost,thumbnail_url,name,sku_name&pid=in.(${ids})`);
   for (const row of analyses) analysisMap.set(Number(row.pid), row);
   for (const row of parsedRows) parsedMap.set(Number(row.pid), row);
+  for (const row of listings) listingMap.set(Number(row.pid), row);
 }
 
 const reasons = new Map();
@@ -145,10 +148,15 @@ function reject(reason, row) {
   if (!examples.has(reason)) examples.set(reason, row);
 }
 
-for (const listing of listings) {
-  const pid = Number(listing.pid);
+for (const raw of rawRows) {
+  const pid = Number(raw.pid);
+  const listing = listingMap.get(pid);
+  if (!listing) {
+    reject("not_scored_yet", raw);
+    continue;
+  }
   const skuMedian = Number(listing.sku_median) || 0;
-  const price = Number(listing.price) || 0;
+  const price = Number(listing.price ?? raw.price) || 0;
   const shippingFee = Number(listing.shipping_fee) || 0;
   const shippingFeeGeneral = listing.shipping_fee_general == null ? null : Number(listing.shipping_fee_general);
   const estimatedBuyCost = Number(listing.estimated_buy_cost) || price;
@@ -167,7 +175,7 @@ for (const listing of listings) {
   const band = bandFromProfit(profitMin, profitMax);
   const confidence = computeConfidence(parsed?.parse_confidence, scoreFlags);
 
-  const diagnostic = { ...listing, profitMin, profitMax, scoreFlags, confidence, parsed };
+  const diagnostic = { ...raw, ...listing, profitMin, profitMax, scoreFlags, confidence, parsed };
   if (band === null) reject("profit_below_band", diagnostic);
   else if (profitMin <= 0) reject("profit_min_zero", diagnostic);
   else if (price >= skuMedian) reject("price_gte_median", diagnostic);
@@ -180,7 +188,7 @@ for (const listing of listings) {
   else simulatedPass += 1;
 }
 
-console.log(`\nSIMULATED pass=${simulatedPass} / listings=${listings.length}`);
+console.log(`\nSIMULATED pass=${simulatedPass} / listings=${rawRows.length}`);
 console.table(toRows(reasons));
 console.log("\nEXAMPLES");
 for (const [reason, row] of examples.entries()) {
