@@ -571,6 +571,76 @@ alter table public.mvp_candidate_pool enable row level security;
 alter table public.mvp_pack_opens enable row level security;
 alter table public.mvp_pack_reveals enable row level security;
 
+create or replace function public.enqueue_mvp_market_key_invalidation(
+  p_comparable_key text,
+  p_reason text default 'unknown',
+  p_priority integer default 0,
+  p_affected_pid bigint default null,
+  p_old_comparable_key text default null,
+  p_new_comparable_key text default null,
+  p_parser_version text default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_key text;
+begin
+  v_key := nullif(trim(p_comparable_key), '');
+  if v_key is null then
+    return;
+  end if;
+
+  insert into public.mvp_market_key_invalidation (
+    comparable_key,
+    reason,
+    priority,
+    affected_pid,
+    old_comparable_key,
+    new_comparable_key,
+    parser_version,
+    status,
+    event_count,
+    first_event_at,
+    last_event_at
+  )
+  values (
+    v_key,
+    left(coalesce(p_reason, 'unknown'), 120),
+    greatest(0, coalesce(p_priority, 0)),
+    p_affected_pid,
+    p_old_comparable_key,
+    p_new_comparable_key,
+    p_parser_version,
+    'pending',
+    1,
+    now(),
+    now()
+  )
+  on conflict (comparable_key) do update
+  set reason = excluded.reason,
+      priority = greatest(public.mvp_market_key_invalidation.priority, excluded.priority),
+      affected_pid = coalesce(excluded.affected_pid, public.mvp_market_key_invalidation.affected_pid),
+      old_comparable_key = coalesce(excluded.old_comparable_key, public.mvp_market_key_invalidation.old_comparable_key),
+      new_comparable_key = coalesce(excluded.new_comparable_key, public.mvp_market_key_invalidation.new_comparable_key),
+      parser_version = coalesce(excluded.parser_version, public.mvp_market_key_invalidation.parser_version),
+      event_count = public.mvp_market_key_invalidation.event_count + 1,
+      last_event_at = now(),
+      last_error = null,
+      status = case
+        when public.mvp_market_key_invalidation.status in ('done', 'failed') then 'pending'
+        else public.mvp_market_key_invalidation.status
+      end;
+end;
+$$;
+
+revoke all on function public.enqueue_mvp_market_key_invalidation(text, text, integer, bigint, text, text, text) from public;
+revoke execute on function public.enqueue_mvp_market_key_invalidation(text, text, integer, bigint, text, text, text) from anon;
+revoke execute on function public.enqueue_mvp_market_key_invalidation(text, text, integer, bigint, text, text, text) from authenticated;
+grant execute on function public.enqueue_mvp_market_key_invalidation(text, text, integer, bigint, text, text, text) to service_role;
+
 create or replace function public.reserve_mvp_pool_candidates(
   p_band smallint,
   p_user_ref text,
