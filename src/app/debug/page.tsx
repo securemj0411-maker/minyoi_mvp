@@ -890,6 +890,10 @@ function SourceHealthPanel({ health }: { health: Awaited<ReturnType<typeof loadS
         <div className="mt-1">
           hysteresis: {String(hysteresis.note ?? "future gate")} · changed={String(hysteresis.changed ?? false)}
         </div>
+        <div className="mt-1">
+          proposed {String(hysteresis.proposedStatus ?? baseline.proposedStatus ?? "-")} → effective {health.status}
+          {hysteresis.gateDecision ? ` · ${String(hysteresis.gateDecision)}` : ""}
+        </div>
       </div>
     </div>
   );

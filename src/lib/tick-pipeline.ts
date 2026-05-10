@@ -99,6 +99,8 @@ type SourceHealthRow = {
   status: "healthy" | "degraded" | "unhealthy";
   checked_at: string;
   baseline_json: Record<string, unknown> | null;
+  hysteresis_json: Record<string, unknown> | null;
+  reason: string | null;
 };
 
 type MarketKeyInvalidationRow = {
@@ -1056,7 +1058,7 @@ async function loadRecentCollectRuns(windowMinutes: number): Promise<CollectRunH
 
 async function loadLatestSourceHealth(): Promise<SourceHealthRow | null> {
   try {
-    const url = `${tableUrl("mvp_source_health")}?select=status,checked_at,baseline_json&source=eq.bunjang&order=checked_at.desc&limit=1`;
+    const url = `${tableUrl("mvp_source_health")}?select=status,checked_at,baseline_json,hysteresis_json,reason&source=eq.bunjang&order=checked_at.desc&limit=1`;
     const res = await restFetch(url, { headers: serviceHeaders() });
     const rows = (await res.json()) as SourceHealthRow[];
     return rows[0] ?? null;
@@ -1143,6 +1145,104 @@ function proposeSourceStatus(input: {
   return { status: "healthy" as const, reason: "within_operating_bounds" };
 }
 
+const SOURCE_HEALTH_ENTER_DEGRADED_MS = 5 * 60 * 1000;
+const SOURCE_HEALTH_ENTER_UNHEALTHY_MS = 5 * 60 * 1000;
+const SOURCE_HEALTH_RECOVER_HEALTHY_MS = 15 * 60 * 1000;
+
+type ProposedSourceStatus = ReturnType<typeof proposeSourceStatus>;
+
+function isoOrNow(raw: unknown, nowMs: number) {
+  if (typeof raw !== "string") return new Date(nowMs).toISOString();
+  const parsed = Date.parse(raw);
+  return Number.isFinite(parsed) ? raw : new Date(nowMs).toISOString();
+}
+
+function applySourceHealthHysteresis(
+  proposed: ProposedSourceStatus,
+  previous: SourceHealthRow | null,
+  nowMs = Date.now(),
+) {
+  const previousHysteresis = asRecord(previous?.hysteresis_json);
+  const previousStatus = previous?.status ?? null;
+  const previousProposedStatus = typeof previousHysteresis.proposedStatus === "string"
+    ? previousHysteresis.proposedStatus
+    : typeof asRecord(previous?.baseline_json).proposedStatus === "string"
+      ? asRecord(previous?.baseline_json).proposedStatus
+      : previousStatus;
+
+  const proposedStatusSince = previousProposedStatus === proposed.status
+    ? isoOrNow(previousHysteresis.proposedStatusSince, nowMs)
+    : new Date(nowMs).toISOString();
+  const proposedStatusAgeMs = Math.max(0, nowMs - Date.parse(proposedStatusSince));
+
+  const healthySince = proposed.status === "healthy"
+    ? (previousProposedStatus === "healthy" ? isoOrNow(previousHysteresis.healthySince, nowMs) : new Date(nowMs).toISOString())
+    : null;
+  const nonHealthySince = proposed.status !== "healthy"
+    ? (previousProposedStatus !== "healthy" ? isoOrNow(previousHysteresis.nonHealthySince, nowMs) : new Date(nowMs).toISOString())
+    : null;
+  const unhealthySince = proposed.status === "unhealthy"
+    ? (previousProposedStatus === "unhealthy" ? isoOrNow(previousHysteresis.unhealthySince, nowMs) : new Date(nowMs).toISOString())
+    : null;
+
+  let status: SourceHealthRow["status"] = previousStatus ?? proposed.status;
+  let gateDecision = "hold_previous_status";
+
+  if (!previousStatus) {
+    status = proposed.status;
+    gateDecision = "initial_snapshot";
+  } else if (proposed.status === "healthy") {
+    if (previousStatus === "healthy") {
+      status = "healthy";
+      gateDecision = "already_healthy";
+    } else if (healthySince && nowMs - Date.parse(healthySince) >= SOURCE_HEALTH_RECOVER_HEALTHY_MS) {
+      status = "healthy";
+      gateDecision = "recovered_after_hysteresis";
+    } else {
+      status = previousStatus === "unhealthy" ? "degraded" : previousStatus;
+      gateDecision = "waiting_for_recovery_hysteresis";
+    }
+  } else if (proposed.status === "degraded") {
+    if (previousStatus === "unhealthy") {
+      status = "degraded";
+      gateDecision = "recover_one_level_from_unhealthy";
+    } else if (previousStatus === "degraded") {
+      status = "degraded";
+      gateDecision = "already_degraded";
+    } else if (nonHealthySince && nowMs - Date.parse(nonHealthySince) >= SOURCE_HEALTH_ENTER_DEGRADED_MS) {
+      status = "degraded";
+      gateDecision = "entered_degraded_after_hysteresis";
+    } else {
+      status = "healthy";
+      gateDecision = "waiting_for_degraded_hysteresis";
+    }
+  } else {
+    if (previousStatus === "unhealthy") {
+      status = "unhealthy";
+      gateDecision = "already_unhealthy";
+    } else if (unhealthySince && nowMs - Date.parse(unhealthySince) >= SOURCE_HEALTH_ENTER_UNHEALTHY_MS) {
+      status = "unhealthy";
+      gateDecision = "entered_unhealthy_after_hysteresis";
+    } else {
+      status = "degraded";
+      gateDecision = "degraded_while_waiting_for_unhealthy_hysteresis";
+    }
+  }
+
+  return {
+    status,
+    changed: previousStatus !== status,
+    gateDecision,
+    proposedStatusSince,
+    proposedStatusAgeMs,
+    healthySince,
+    nonHealthySince,
+    unhealthySince,
+    previousStatus,
+    previousProposedStatus,
+  };
+}
+
 export async function sourceHealthStage(): Promise<StageStats> {
   const stats = emptyStats();
   const windowMinutes = 30;
@@ -1211,13 +1311,13 @@ export async function sourceHealthStage(): Promise<StageStats> {
     dominantSearchFailureMode,
     workerBreakdown,
   });
-  const changed = previous?.status !== proposed.status;
+  const hysteresis = applySourceHealthHysteresis(proposed, previous);
   const now = new Date().toISOString();
   const payload = {
     source: "bunjang",
     checked_at: now,
     window_minutes: windowMinutes,
-    status: proposed.status,
+    status: hysteresis.status,
     previous_status: previous?.status ?? null,
     detail_success_rate: Math.round(detailSuccessRate * 1000) / 1000,
     detail_404_rate: 0,
@@ -1242,16 +1342,25 @@ export async function sourceHealthStage(): Promise<StageStats> {
       searchFailedByMode: Object.fromEntries(searchFailedByMode.entries()),
       avgSearchCollected: Math.round(avgSearchCollected),
       previousCheckedAt: previous?.checked_at ?? null,
-      advisoryOnly: true,
+      effectiveStatus: hysteresis.status,
       ignoredInternalWorkerFailures: rows.filter((row) => !isSourceRelevantMode(runMode(row)) && row.status === "failed").length,
       workerBreakdown: Object.fromEntries(workerBreakdown.entries()),
     },
     hysteresis_json: {
-      changed,
-      note: "step1_advisory_only_no_lifecycle_gate_yet",
+      changed: hysteresis.changed,
+      note: "source_health_hysteresis_active",
+      gateDecision: hysteresis.gateDecision,
+      proposedStatus: proposed.status,
+      previousProposedStatus: hysteresis.previousProposedStatus,
+      proposedStatusSince: hysteresis.proposedStatusSince,
+      proposedStatusAgeMs: hysteresis.proposedStatusAgeMs,
+      healthySince: hysteresis.healthySince,
+      nonHealthySince: hysteresis.nonHealthySince,
+      unhealthySince: hysteresis.unhealthySince,
       enterDegradedAfterMinutes: 5,
+      enterUnhealthyAfterMinutes: 5,
       recoverHealthyAfterMinutes: 15,
-      futurePolicy: "healthy=all_transitions,degraded=pool_and_high_priority,unhealthy=no_lifecycle_transitions",
+      policy: "healthy=all_transitions,degraded=pool_and_high_priority,unhealthy=no_lifecycle_transitions",
     },
     reason: proposed.reason,
   };
@@ -1259,7 +1368,7 @@ export async function sourceHealthStage(): Promise<StageStats> {
   stats.scored = rows.length;
   stats.upserted = inserted ? 1 : 0;
   stats.detailFailed = detailFailed;
-  if (proposed.status !== "healthy") stats.poolSkipped = 1;
+  if (hysteresis.status !== "healthy") stats.poolSkipped = 1;
   return stats;
 }
 
