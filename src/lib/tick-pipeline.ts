@@ -1154,7 +1154,7 @@ export async function runSearchScorePipeline(): Promise<TickResult> {
   };
 }
 
-export async function runDeepCrawlPipeline(): Promise<TickResult> {
+export async function runDeepCrawlPipeline(pageOverride?: number): Promise<TickResult> {
   const config = loadPipelineRuntimeConfig();
   const stageDurationsMs: Record<string, number> = {};
 
@@ -1167,7 +1167,9 @@ export async function runDeepCrawlPipeline(): Promise<TickResult> {
     }
   }
 
-  const page = rotatedDeepPage(config.deepCrawlMaxPage);
+  const page = pageOverride != null
+    ? Math.max(1, Math.min(config.deepCrawlMaxPage, Math.round(pageOverride)))
+    : rotatedDeepPage(config.deepCrawlMaxPage);
   const search = await timed("deep", () => searchStage(Date.now() + config.tickSearchBudgetMs, {
     pages: [page],
     mode: "deep",

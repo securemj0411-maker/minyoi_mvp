@@ -7,7 +7,7 @@ import {
   startCollectRun,
   type CollectRunRequestMeta,
 } from "@/lib/collect-logs";
-import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
+import { boundedInt, loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runDeepCrawlPipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
 
@@ -103,7 +103,10 @@ async function handleDeepCrawl(req: NextRequest) {
   });
 
   try {
-    const result = await runDeepCrawlPipeline();
+    const pageOverride = req.nextUrl.searchParams.has("page")
+      ? boundedInt(req.nextUrl.searchParams.get("page"), 1, 1, config.deepCrawlMaxPage)
+      : undefined;
+    const result = await runDeepCrawlPipeline(pageOverride);
     await finishCollectRun(run.id, run.startedAt, toPipelineResult(result), {
       stages: result.stages,
       stageDurationsMs: result.stageDurationsMs,
