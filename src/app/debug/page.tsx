@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { DebugAutoRefresh } from "@/app/debug/debug-auto-refresh";
 import { DebugResetPanel } from "@/app/debug/debug-reset-panel";
+import { categoryReadinessRows, evaluateCategoryReadiness } from "@/lib/category-readiness";
 import { loadCollectRuns, type CollectRun } from "@/lib/collect-logs";
+import type { Sku } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -130,6 +132,7 @@ type BottleneckAnalysisRow = {
 
 type BottleneckParsedRow = {
   pid: number;
+  category: Sku["category"] | null;
   comparable_key: string | null;
   parse_confidence: number | null;
   needs_review: boolean | null;
@@ -139,6 +142,7 @@ type BottleneckParsedRow = {
 type PoolRow = {
   profit_band: 1 | 2 | 3;
   status: string;
+  comparable_key: string | null;
 };
 
 type SourceHealthDebugRow = {
@@ -204,6 +208,16 @@ function poolBlockFlag(flags: string[]) {
     flag.endsWith("_low_confidence") ||
     (flag === "deep_discount_review" && !flags.includes("ai_normal"))
   ));
+}
+
+function categoryFromComparableKey(value: string | null | undefined): Sku["category"] | null {
+  const family = value?.split("|")[0] ?? "";
+  if (family === "airpods") return "earphone";
+  if (family === "applewatch" || family === "galaxywatch") return "smartwatch";
+  if (family === "iphone" || family === "galaxy_s") return "smartphone";
+  if (family === "ipad") return "tablet";
+  if (family === "macbook") return "laptop";
+  return null;
 }
 
 function increment(map: Map<string, number>, key: string, by = 1) {
@@ -333,8 +347,8 @@ async function loadBottleneckDebug() {
   const [listingRows, analysisRows, parsedRows, poolRows] = await Promise.all([
     loadPidChunked<BottleneckListingRow>(pids, (ids) => `/mvp_listings?select=pid,price,sku_median,shipping_fee,shipping_fee_general,estimated_buy_cost,thumbnail_url,name,sku_name&pid=in.(${ids})`),
     loadPidChunked<BottleneckAnalysisRow>(pids, (ids) => `/mvp_listing_analysis?select=pid,risk_hits,score_flags&pid=in.(${ids})`),
-    loadPidChunked<BottleneckParsedRow>(pids, (ids) => `/mvp_listing_parsed?select=pid,comparable_key,parse_confidence,needs_review,parsed_json&pid=in.(${ids})`),
-    restJson<PoolRow[]>("/mvp_candidate_pool?select=profit_band,status&limit=5000", []),
+    loadPidChunked<BottleneckParsedRow>(pids, (ids) => `/mvp_listing_parsed?select=pid,category,comparable_key,parse_confidence,needs_review,parsed_json&pid=in.(${ids})`),
+    restJson<PoolRow[]>("/mvp_candidate_pool?select=profit_band,status,comparable_key&limit=5000", []),
   ]);
 
   const listingMap = mapRows(listingRows);
@@ -342,11 +356,24 @@ async function loadBottleneckDebug() {
   const parsedMap = mapRows(parsedRows);
   const reasons = new Map<string, number>();
   const criticalUnknown = new Map<string, number>();
+  const categoryRows = new Map<string, { category: string; status: string; raw: number; pass: number; readyPool: number }>();
   let pass = 0;
   let mediumOrHighReady = 0;
 
   for (const row of poolRows) {
     if (row.status === "ready") mediumOrHighReady += 1;
+    const poolCategory = categoryFromComparableKey(row.comparable_key);
+    const readiness = evaluateCategoryReadiness(poolCategory);
+    const categoryKey = poolCategory ?? "unknown";
+    const current = categoryRows.get(categoryKey) ?? {
+      category: categoryKey,
+      status: readiness.status,
+      raw: 0,
+      pass: 0,
+      readyPool: 0,
+    };
+    if (row.status === "ready") current.readyPool += 1;
+    categoryRows.set(categoryKey, current);
   }
 
   for (const raw of rawRows) {
@@ -355,6 +382,17 @@ async function loadBottleneckDebug() {
     const parsed = parsedMap.get(raw.pid);
     const flags = Array.isArray(analysis?.score_flags) ? analysis.score_flags : [];
     const parsedJson = parsed?.parsed_json ?? {};
+    const readiness = evaluateCategoryReadiness(parsed?.category ?? null);
+    const categoryKey = parsed?.category ?? "unknown";
+    const categoryStat = categoryRows.get(categoryKey) ?? {
+      category: categoryKey,
+      status: readiness.status,
+      raw: 0,
+      pass: 0,
+      readyPool: 0,
+    };
+    categoryStat.raw += 1;
+    categoryRows.set(categoryKey, categoryStat);
     const critical = Array.isArray(parsedJson.critical_unknown) ? parsedJson.critical_unknown.map(String) : [];
     for (const item of critical) increment(criticalUnknown, item);
 
@@ -382,13 +420,17 @@ async function loadBottleneckDebug() {
     if (band === null) increment(reasons, "profit_below_band");
     else if (profitMin <= 0) increment(reasons, "profit_min_zero");
     else if (price >= skuMedian) increment(reasons, "price_gte_median");
+    else if (!readiness.canEnterPool) increment(reasons, readiness.reason);
     else if (Number(analysis?.risk_hits ?? 0) > 0) increment(reasons, "risk_hits");
     else if (!listing.thumbnail_url && !raw.thumbnail_url) increment(reasons, "no_thumbnail");
     else if (!parsed?.comparable_key) increment(reasons, "no_comparable_key");
     else if (parsed.needs_review) increment(reasons, "parsed_needs_review");
     else if (confidence < POOL_CONFIDENCE_FLOOR) increment(reasons, "confidence_below_0_7");
     else if (poolBlockFlag(flags)) increment(reasons, "blocked_flag");
-    else pass += 1;
+    else {
+      pass += 1;
+      categoryStat.pass += 1;
+    }
   }
 
   const reasonRows = [...reasons.entries()]
@@ -412,6 +454,7 @@ async function loadBottleneckDebug() {
     reasonRows,
     criticalRows,
     poolSummary,
+    categoryRows: [...categoryRows.values()].sort((a, b) => b.raw - a.raw),
   };
 }
 
@@ -929,6 +972,11 @@ function labelReason(key: string) {
     price_gte_median: "매물가가 시세 이상",
     profit_min_zero: "보수 순익 0",
     no_price_or_median: "가격/시세 없음",
+    category_unknown: "카테고리 미확정",
+    category_internal_only_smartphone: "스마트폰 내부 학습 전용",
+    category_internal_only_tablet: "태블릿 내부 학습 전용",
+    category_internal_only_laptop: "랩탑 내부 학습 전용",
+    category_blocked_small_appliance: "소형가전 보류",
   };
   return labels[key] ?? key;
 }
@@ -1005,6 +1053,42 @@ function BottleneckPanel({ stats }: { stats: Awaited<ReturnType<typeof loadBottl
               <div key={row.key} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
                 <div className="font-medium text-zinc-700">{row.label}</div>
                 <div className="font-semibold text-zinc-900">{num(row.count)}건</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-md border border-zinc-100">
+        <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+          카테고리 readiness gate
+        </div>
+        <div className="grid gap-0 divide-y divide-zinc-100 md:grid-cols-2 md:divide-x md:divide-y-0">
+          <div className="divide-y divide-zinc-100">
+            {categoryReadinessRows().map((row) => (
+              <div key={row.category} className="grid grid-cols-[120px_92px_minmax(0,1fr)] items-center gap-3 px-3 py-2 text-xs">
+                <div className="font-semibold text-zinc-800">{row.label}</div>
+                <div className={
+                  row.status === "ready"
+                    ? "w-fit rounded-full bg-emerald-100 px-2 py-1 font-semibold text-emerald-800"
+                    : row.status === "internal_only"
+                      ? "w-fit rounded-full bg-amber-100 px-2 py-1 font-semibold text-amber-800"
+                      : "w-fit rounded-full bg-zinc-100 px-2 py-1 font-semibold text-zinc-600"
+                }>
+                  {row.status}
+                </div>
+                <div className="truncate text-zinc-500">{row.note}</div>
+              </div>
+            ))}
+          </div>
+          <div className="divide-y divide-zinc-100">
+            {stats.categoryRows.slice(0, 8).map((row) => (
+              <div key={row.category} className="grid grid-cols-[110px_92px_repeat(3,1fr)] items-center gap-2 px-3 py-2 text-xs">
+                <div className="font-mono text-zinc-700">{row.category}</div>
+                <div className="text-zinc-500">{row.status}</div>
+                <div><span className="text-zinc-400">raw</span> {num(row.raw)}</div>
+                <div><span className="text-zinc-400">pass</span> {num(row.pass)}</div>
+                <div><span className="text-zinc-400">pool</span> {num(row.readyPool)}</div>
               </div>
             ))}
           </div>

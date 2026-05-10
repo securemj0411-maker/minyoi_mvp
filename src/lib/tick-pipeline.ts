@@ -1,4 +1,5 @@
 import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
+import { evaluateCategoryReadiness } from "@/lib/category-readiness";
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import {
@@ -87,6 +88,7 @@ type ScorableRawRow = RawListingRow & {
 type ParsedListingRow = {
   pid: number;
   parser_version: string | null;
+  category: Sku["category"] | null;
   comparable_key: string | null;
   parse_confidence: number | null;
   condition_score: number | null;
@@ -1185,7 +1187,7 @@ async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<
 async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListingRow>> {
   if (pids.length === 0) return new Map();
   const unique = [...new Set(pids)];
-  const columns = "pid,parser_version,comparable_key,parse_confidence,condition_score,needs_review";
+  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,needs_review";
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
     const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&pid=in.(${chunk.join(",")})`;
@@ -1198,7 +1200,7 @@ async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListing
 async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: number): Promise<Map<number, ParsedListingRow>> {
   const unique = [...new Set(comparableKeys.filter(Boolean))].slice(0, limit);
   if (unique.length === 0) return new Map();
-  const columns = "pid,parser_version,comparable_key,parse_confidence,condition_score,needs_review";
+  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,needs_review";
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_KEY_READ_CHUNK_SIZE)) {
     const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
@@ -1230,6 +1232,7 @@ async function ensureParsedRows(rows: ScorableRawRow[], parsedByPid: Map<number,
     parsedByPid.set(Number(row.pid), {
       pid: Number(row.pid),
       parser_version: (row.parser_version as string | null) ?? null,
+      category: (row.category as Sku["category"] | null) ?? null,
       comparable_key: (row.comparable_key as string | null) ?? null,
       parse_confidence: (row.parse_confidence as number | null) ?? null,
       condition_score: (row.condition_score as number | null) ?? null,
@@ -2300,10 +2303,13 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       continue;
     }
     const parsed = parsedByPid.get(pid);
+    const sku = catalogById.get(row.skuId ?? "");
+    const readiness = evaluateCategoryReadiness(parsed?.category ?? sku?.category ?? null);
     const confidence = computePoolConfidence(Number(parsed?.parse_confidence ?? 0.5), row.scoreFlags);
     const comparableKey = parsed?.comparable_key ?? null;
     const skipReason =
       profitMin <= 0 ? "profit_not_positive" :
+      !readiness.canEnterPool ? readiness.reason :
       row.price >= row.skuMedian ? "price_gte_market" :
       row.riskHits > 0 ? "risk_keyword" :
       !row.thumbnailUrl ? "missing_thumbnail" :

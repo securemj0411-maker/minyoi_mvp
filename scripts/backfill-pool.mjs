@@ -35,6 +35,14 @@ const POOL_BLOCK_FLAGS = [
   "weak_description",
   "risk_keyword_review",
 ];
+const CATEGORY_POOL_STATUS = {
+  earphone: "ready",
+  smartwatch: "ready",
+  smartphone: "internal_only",
+  tablet: "internal_only",
+  laptop: "internal_only",
+  small_appliance: "blocked",
+};
 
 function bandFromProfit(profitMin, profitMax) {
   const avg = Math.round((profitMin + profitMax) / 2);
@@ -86,7 +94,7 @@ async function fetchAnalysis(pids) {
 
 async function fetchParsed(pids) {
   if (pids.length === 0) return new Map();
-  const url = `${supabaseRestUrl()}/mvp_listing_parsed?select=pid,comparable_key,parse_confidence,needs_review&pid=in.(${pids.join(",")})`;
+  const url = `${supabaseRestUrl()}/mvp_listing_parsed?select=pid,category,comparable_key,parse_confidence,needs_review&pid=in.(${pids.join(",")})`;
   const res = await fetch(url, { headers: authHeaders() });
   if (!res.ok) {
     throw new Error(`fetchParsed ${res.status}: ${await res.text()}`);
@@ -124,6 +132,10 @@ function hasPoolBlockFlag(scoreFlags) {
     (typeof flag === "string" && flag.endsWith("_low_confidence")) ||
     (flag === "deep_discount_review" && !flags.includes("ai_normal"))
   ));
+}
+
+function categoryCanEnterPool(category) {
+  return CATEGORY_POOL_STATUS[category] === "ready";
 }
 
 function poolMaxExposure(band) {
@@ -179,6 +191,7 @@ async function main() {
         price >= skuMedian ||
         Number(analysis?.risk_hits ?? 0) > 0 ||
         !l.thumbnail_url ||
+        !categoryCanEnterPool(parsed?.category) ||
         !parsed?.comparable_key ||
         parsed?.needs_review ||
         confidence < POOL_CONFIDENCE_FLOOR ||
