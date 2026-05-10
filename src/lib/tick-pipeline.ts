@@ -1055,6 +1055,29 @@ function isSourceRelevantMode(mode: string) {
   return mode === "tick" || mode === "deep_crawl" || mode === "detail_worker" || mode === "pool_warmer";
 }
 
+function sourceWorkerFailureStatus(
+  workerBreakdown: Map<string, { total: number; failed: number; collected: number; enriched: number }>,
+) {
+  const orderedModes = ["tick", "detail_worker", "deep_crawl", "pool_warmer"];
+  for (const mode of orderedModes) {
+    const bucket = workerBreakdown.get(mode);
+    if (!bucket || bucket.failed === 0 || bucket.total === 0) continue;
+    const rate = bucket.failed / bucket.total;
+    if (bucket.total >= 3 && rate >= 0.5) {
+      return { status: "unhealthy" as const, reason: `${mode}_failure_rate_high` };
+    }
+  }
+  for (const mode of orderedModes) {
+    const bucket = workerBreakdown.get(mode);
+    if (!bucket || bucket.failed === 0 || bucket.total === 0) continue;
+    const rate = bucket.failed / bucket.total;
+    if (rate >= 0.2) {
+      return { status: "degraded" as const, reason: `${mode}_failure_rate_elevated` };
+    }
+  }
+  return null;
+}
+
 function proposeSourceStatus(input: {
   runCount: number;
   failedRunRate: number;
@@ -1062,12 +1085,17 @@ function proposeSourceStatus(input: {
   detailSuccessRate: number;
   searchRunCount: number;
   avgSearchCollected: number;
+  workerBreakdown: Map<string, { total: number; failed: number; collected: number; enriched: number }>;
 }) {
   if (input.runCount === 0) {
-    return { status: "degraded" as const, reason: "no_recent_runs" };
+    return { status: "degraded" as const, reason: "no_recent_source_runs" };
+  }
+  const workerFailure = sourceWorkerFailureStatus(input.workerBreakdown);
+  if (workerFailure) {
+    return workerFailure;
   }
   if (input.failedRunRate >= 0.5) {
-    return { status: "unhealthy" as const, reason: "collect_run_failure_rate_high" };
+    return { status: "unhealthy" as const, reason: "source_worker_failure_rate_high" };
   }
   if (input.detailAttempts >= 10 && input.detailSuccessRate < 0.5) {
     return { status: "unhealthy" as const, reason: "detail_success_rate_critical" };
@@ -1076,7 +1104,7 @@ function proposeSourceStatus(input: {
     return { status: "unhealthy" as const, reason: "search_result_count_critical" };
   }
   if (input.failedRunRate >= 0.2) {
-    return { status: "degraded" as const, reason: "collect_run_failure_rate_elevated" };
+    return { status: "degraded" as const, reason: "source_worker_failure_rate_elevated" };
   }
   if (input.detailAttempts >= 10 && input.detailSuccessRate < 0.85) {
     return { status: "degraded" as const, reason: "detail_success_rate_elevated" };
@@ -1131,12 +1159,13 @@ export async function sourceHealthStage(): Promise<StageStats> {
   const detailSuccessRate = detailAttempts === 0 ? 1 : detailSucceeded / detailAttempts;
   const avgSearchCollected = searchRunCount === 0 ? 0 : searchCollected / searchRunCount;
   const proposed = proposeSourceStatus({
-    runCount: rows.length,
+    runCount: sourceRows.length,
     failedRunRate,
     detailAttempts,
     detailSuccessRate,
     searchRunCount,
     avgSearchCollected,
+    workerBreakdown,
   });
   const changed = previous?.status !== proposed.status;
   const now = new Date().toISOString();
