@@ -351,8 +351,17 @@ export default function PackShop({ initialInventory }: Props) {
   }, [lastPack, openPack, handleClose]);
 
   const handleLinkClicked = useCallback((pid: number) => {
-    void fetch(`/api/packs/inventory?clicked=${pid}`, { method: "GET", cache: "no-store" }).catch(() => undefined);
-  }, []);
+    if (!userRef) return;
+    void fetch("/api/packs/reveals/click", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-ref": userRef,
+      },
+      body: JSON.stringify({ pid }),
+      cache: "no-store",
+    }).catch(() => undefined);
+  }, [userRef]);
 
   const handleTopUp = useCallback(() => {
     setTokens(addTokens(5));

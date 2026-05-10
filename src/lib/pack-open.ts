@@ -220,6 +220,17 @@ async function insertReveals(
   });
 }
 
+export async function markRevealClicked(input: { userRef: string; pid: number }): Promise<void> {
+  await callSupabase(
+    `/mvp_pack_reveals?user_ref=eq.${encodeURIComponent(input.userRef)}&pid=eq.${input.pid}`,
+    {
+      method: "PATCH",
+      headers: authHeaders("return=minimal"),
+      body: JSON.stringify({ link_clicked_at: new Date().toISOString() }),
+    },
+  );
+}
+
 async function verifyAndCheckSold(pid: number, currentPrice: number | null) {
   const detail = await fetchDetail(String(pid));
   const signals = detectSoldOut(detail, currentPrice);
