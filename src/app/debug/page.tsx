@@ -596,10 +596,9 @@ function WorkerStatusPanel({ runs }: { runs: CollectRun[] }) {
       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {summaries.map((item) => {
           const latest = item.latest;
-          const isFailing = latest?.status === "failed" || item.failureCount >= Math.max(2, Math.ceil(item.runCount / 2));
           const badgeClass = !latest
             ? "bg-zinc-100 text-zinc-600 ring-zinc-200"
-            : isFailing
+            : latest.status === "failed"
               ? "bg-red-100 text-red-800 ring-red-200"
               : latest.status === "running"
                 ? "bg-amber-100 text-amber-800 ring-amber-200"
@@ -623,6 +622,7 @@ function WorkerStatusPanel({ runs }: { runs: CollectRun[] }) {
               </div>
               <div className="mt-3 grid gap-1 text-xs text-zinc-500">
                 <div>최근 성공: {item.lastSuccess ? formatTime(item.lastSuccess.startedAt) : "-"}</div>
+                <div>최근 {item.runCount}회 중 실패: {num(item.failureCount)}회</div>
                 <div className={item.lastFailure ? "text-red-700" : ""}>
                   최근 실패: {item.lastFailure ? `${formatTime(item.lastFailure.startedAt)} · ${shortText(item.lastFailure.errorMessage, 54)}` : "-"}
                 </div>

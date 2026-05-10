@@ -129,6 +129,9 @@ const POOL_BLOCK_FLAGS = [
   "weak_description",
   "risk_keyword_review",
 ];
+const REST_READ_CHUNK_SIZE = 250;
+const REST_WRITE_CHUNK_SIZE = 200;
+const REST_KEY_READ_CHUNK_SIZE = 50;
 
 const catalogById = new Map(CATALOG.map((sku) => [sku.id, sku]));
 
@@ -232,6 +235,14 @@ function rpcUrl(name: string) {
   return `${restBase()}/rpc/${name}`;
 }
 
+function chunkArray<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
+
 async function restFetch(path: string, init: RequestInit = {}) {
   const res = await fetch(path, init);
   if (!res.ok) {
@@ -244,30 +255,36 @@ async function restFetch(path: string, init: RequestInit = {}) {
 async function upsertRows(table: string, rows: unknown[], onConflict?: string): Promise<void> {
   if (rows.length === 0) return;
   const url = onConflict ? `${tableUrl(table)}?on_conflict=${encodeURIComponent(onConflict)}` : tableUrl(table);
-  await restFetch(url, {
-    method: "POST",
-    headers: serviceHeaders("resolution=merge-duplicates"),
-    body: JSON.stringify(rows),
-  });
+  for (const chunk of chunkArray(rows, REST_WRITE_CHUNK_SIZE)) {
+    await restFetch(url, {
+      method: "POST",
+      headers: serviceHeaders("resolution=merge-duplicates"),
+      body: JSON.stringify(chunk),
+    });
+  }
 }
 
 async function insertIgnoreRows(table: string, rows: unknown[], onConflict?: string): Promise<void> {
   if (rows.length === 0) return;
   const url = onConflict ? `${tableUrl(table)}?on_conflict=${encodeURIComponent(onConflict)}` : tableUrl(table);
-  await restFetch(url, {
-    method: "POST",
-    headers: serviceHeaders("resolution=ignore-duplicates"),
-    body: JSON.stringify(rows),
-  });
+  for (const chunk of chunkArray(rows, REST_WRITE_CHUNK_SIZE)) {
+    await restFetch(url, {
+      method: "POST",
+      headers: serviceHeaders("resolution=ignore-duplicates"),
+      body: JSON.stringify(chunk),
+    });
+  }
 }
 
 async function insertRows(table: string, rows: unknown[]): Promise<void> {
   if (rows.length === 0) return;
-  await restFetch(tableUrl(table), {
-    method: "POST",
-    headers: serviceHeaders("return=minimal"),
-    body: JSON.stringify(rows),
-  });
+  for (const chunk of chunkArray(rows, REST_WRITE_CHUNK_SIZE)) {
+    await restFetch(tableUrl(table), {
+      method: "POST",
+      headers: serviceHeaders("return=minimal"),
+      body: JSON.stringify(chunk),
+    });
+  }
 }
 
 async function patchRows(table: string, filter: string, payload: Record<string, unknown>): Promise<void> {
@@ -330,9 +347,12 @@ function pidList(items: SearchItem[]) {
 async function loadExistingRaw(pids: number[]): Promise<Map<number, RawListingRow>> {
   if (pids.length === 0) return new Map();
   const unique = [...new Set(pids)];
-  const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,thumbnail_url,detail_enriched_at,last_seen_at,last_changed_at,listing_state&pid=in.(${unique.join(",")})`;
-  const res = await restFetch(url, { headers: serviceHeaders() });
-  const rows = (await res.json()) as RawListingRow[];
+  const rows: RawListingRow[] = [];
+  for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
+    const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,thumbnail_url,detail_enriched_at,last_seen_at,last_changed_at,listing_state&pid=in.(${chunk.join(",")})`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    rows.push(...((await res.json()) as RawListingRow[]));
+  }
   return new Map(rows.map((row) => [row.pid, row]));
 }
 
@@ -837,9 +857,12 @@ async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListing
   if (pids.length === 0) return new Map();
   const unique = [...new Set(pids)];
   const columns = "pid,parser_version,comparable_key,parse_confidence,condition_score,needs_review";
-  const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&pid=in.(${unique.join(",")})`;
-  const res = await restFetch(url, { headers: serviceHeaders() });
-  const rows = (await res.json()) as ParsedListingRow[];
+  const rows: ParsedListingRow[] = [];
+  for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
+    const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&pid=in.(${chunk.join(",")})`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    rows.push(...((await res.json()) as ParsedListingRow[]));
+  }
   return new Map(rows.map((row) => [row.pid, row]));
 }
 
@@ -847,10 +870,13 @@ async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: n
   const unique = [...new Set(comparableKeys.filter(Boolean))].slice(0, limit);
   if (unique.length === 0) return new Map();
   const columns = "pid,parser_version,comparable_key,parse_confidence,condition_score,needs_review";
-  const encoded = unique.map((key) => encodeURIComponent(key)).join(",");
-  const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&comparable_key=in.(${encoded})&parse_confidence=gte.0.65&needs_review=eq.false&limit=${Math.max(limit, unique.length * 100)}`;
-  const res = await restFetch(url, { headers: serviceHeaders() });
-  const rows = (await res.json()) as ParsedListingRow[];
+  const rows: ParsedListingRow[] = [];
+  for (const chunk of chunkArray(unique, REST_KEY_READ_CHUNK_SIZE)) {
+    const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
+    const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&comparable_key=in.(${encoded})&parse_confidence=gte.0.65&needs_review=eq.false&limit=${Math.max(limit, chunk.length * 100)}`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    rows.push(...((await res.json()) as ParsedListingRow[]));
+  }
   return new Map(rows.map((row) => [row.pid, row]));
 }
 
