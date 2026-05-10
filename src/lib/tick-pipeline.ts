@@ -1771,7 +1771,11 @@ export async function marketStatsStage(): Promise<StageStats> {
       .map((row) => preciseComparableKey(parsedByPid.get(row.pid)))
       .filter((key): key is string => Boolean(key))
   )];
-  const completedInvalidationKeys = recomputedKeys.filter((key) => pendingKeys.has(key));
+  // Once a pending key has been loaded and the current eligible sample was inspected,
+  // close the invalidation even if no row survived the active/sold/disappeared filters.
+  // Otherwise low-sample or now-ineligible comparable_keys stay pending forever and make
+  // the market queue look permanently backlogged.
+  const completedInvalidationKeys = pendingInvalidations.length > 0 ? [...pendingKeys] : recomputedKeys;
   const closedInvalidations = await markMarketInvalidationsDone(completedInvalidationKeys);
   stats.scored = rows.length;
   stats.upserted = result.keyCount;
