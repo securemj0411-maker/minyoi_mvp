@@ -15,6 +15,331 @@ export type Sku = {
   released: number;
 };
 
+const PHONE_NOISE = [
+  "케이스",
+  "필름",
+  "강화유리",
+  "충전기만",
+  "어댑터만",
+  "액정",
+  "액정만",
+  "배터리만",
+  "메인보드",
+  "부품용",
+  "파손폰",
+  "고장폰",
+  "고장",
+  "분실폰",
+  "잠김",
+  "락걸림",
+  "매입",
+  "삽니다",
+  "구합니다",
+  "최고가",
+];
+
+const TABLET_NOISE = [
+  "케이스",
+  "필름",
+  "강화유리",
+  "펜슬",
+  "애플펜슬",
+  "키보드",
+  "매직키보드",
+  "키보드만",
+  "충전기만",
+  "액정",
+  "액정만",
+  "배터리만",
+  "부품용",
+  "파손",
+  "고장",
+  "매입",
+  "삽니다",
+  "구합니다",
+];
+
+const CORE_SMARTPHONE_CATALOG: Sku[] = [
+  {
+    id: "iphone-13-pro",
+    brand: "Apple",
+    category: "smartphone",
+    modelName: "iPhone 13 Pro",
+    aliases: ["아이폰 13 프로", "아이폰13프로", "iPhone 13 Pro"],
+    mustContain: [["아이폰 13 프로", "아이폰13프로", "iphone 13 pro"]],
+    mustNotContain: ["프로맥스", "pro max", "플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 1350000,
+    released: 2021,
+  },
+  {
+    id: "iphone-13-pro-max",
+    brand: "Apple",
+    category: "smartphone",
+    modelName: "iPhone 13 Pro Max",
+    aliases: ["아이폰 13 프로맥스", "아이폰13프로맥스", "iPhone 13 Pro Max"],
+    mustContain: [["아이폰 13 프로맥스", "아이폰13프로맥스", "iphone 13 pro max"]],
+    mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 1490000,
+    released: 2021,
+  },
+  {
+    id: "iphone-14-pro",
+    brand: "Apple",
+    category: "smartphone",
+    modelName: "iPhone 14 Pro",
+    aliases: ["아이폰 14 프로", "아이폰14프로", "iPhone 14 Pro"],
+    mustContain: [["아이폰 14 프로", "아이폰14프로", "iphone 14 pro"]],
+    mustNotContain: ["프로맥스", "pro max", "플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 1550000,
+    released: 2022,
+  },
+  {
+    id: "iphone-14-pro-max",
+    brand: "Apple",
+    category: "smartphone",
+    modelName: "iPhone 14 Pro Max",
+    aliases: ["아이폰 14 프로맥스", "아이폰14프로맥스", "iPhone 14 Pro Max"],
+    mustContain: [["아이폰 14 프로맥스", "아이폰14프로맥스", "iphone 14 pro max"]],
+    mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 1750000,
+    released: 2022,
+  },
+  {
+    id: "iphone-15-pro-max",
+    brand: "Apple",
+    category: "smartphone",
+    modelName: "iPhone 15 Pro Max",
+    aliases: ["아이폰 15 프로맥스", "아이폰15프로맥스", "iPhone 15 Pro Max"],
+    mustContain: [["아이폰 15 프로맥스", "아이폰15프로맥스", "iphone 15 pro max"]],
+    mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 1900000,
+    released: 2023,
+  },
+  {
+    id: "iphone-16e",
+    brand: "Apple",
+    category: "smartphone",
+    modelName: "iPhone 16e",
+    aliases: ["아이폰 16e", "아이폰16e", "iPhone 16e"],
+    mustContain: [["아이폰 16e", "아이폰16e", "iphone 16e"]],
+    mustNotContain: ["프로", "pro", "프로맥스", "pro max", "플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 990000,
+    released: 2025,
+  },
+  {
+    id: "iphone-16-pro",
+    brand: "Apple",
+    category: "smartphone",
+    modelName: "iPhone 16 Pro",
+    aliases: ["아이폰 16 프로", "아이폰16프로", "iPhone 16 Pro"],
+    mustContain: [["아이폰 16 프로", "아이폰16프로", "iphone 16 pro"]],
+    mustNotContain: ["프로맥스", "pro max", "플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 1550000,
+    released: 2024,
+  },
+  {
+    id: "iphone-16-pro-max",
+    brand: "Apple",
+    category: "smartphone",
+    modelName: "iPhone 16 Pro Max",
+    aliases: ["아이폰 16 프로맥스", "아이폰16프로맥스", "iPhone 16 Pro Max"],
+    mustContain: [["아이폰 16 프로맥스", "아이폰16프로맥스", "iphone 16 pro max"]],
+    mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 1900000,
+    released: 2024,
+  },
+  {
+    id: "galaxy-s23-ultra",
+    brand: "Samsung",
+    category: "smartphone",
+    modelName: "Galaxy S23 Ultra",
+    aliases: ["갤럭시 S23 울트라", "갤럭시S23울트라", "Galaxy S23 Ultra"],
+    mustContain: [["갤럭시 s23 울트라", "갤럭시s23울트라", "galaxy s23 ultra", "s23 ultra"]],
+    mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 1600000,
+    released: 2023,
+  },
+  {
+    id: "galaxy-s24-ultra",
+    brand: "Samsung",
+    category: "smartphone",
+    modelName: "Galaxy S24 Ultra",
+    aliases: ["갤럭시 S24 울트라", "갤럭시S24울트라", "Galaxy S24 Ultra"],
+    mustContain: [["갤럭시 s24 울트라", "갤럭시s24울트라", "galaxy s24 ultra", "s24 ultra"]],
+    mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 1700000,
+    released: 2024,
+  },
+  {
+    id: "galaxy-s25",
+    brand: "Samsung",
+    category: "smartphone",
+    modelName: "Galaxy S25",
+    aliases: ["갤럭시 S25", "갤럭시S25", "Galaxy S25"],
+    mustContain: [["갤럭시 s25", "갤럭시s25", "galaxy s25", "s25"]],
+    mustNotContain: ["울트라", "ultra", "플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 1150000,
+    released: 2025,
+  },
+  {
+    id: "galaxy-s25-plus",
+    brand: "Samsung",
+    category: "smartphone",
+    modelName: "Galaxy S25 Plus",
+    aliases: ["갤럭시 S25 플러스", "갤럭시S25플러스", "Galaxy S25 Plus"],
+    mustContain: [["갤럭시 s25 플러스", "갤럭시s25플러스", "galaxy s25 plus", "s25 plus"]],
+    mustNotContain: ["울트라", "ultra", ...PHONE_NOISE],
+    msrpKrw: 1350000,
+    released: 2025,
+  },
+  {
+    id: "galaxy-s25-ultra",
+    brand: "Samsung",
+    category: "smartphone",
+    modelName: "Galaxy S25 Ultra",
+    aliases: ["갤럭시 S25 울트라", "갤럭시S25울트라", "Galaxy S25 Ultra"],
+    mustContain: [["갤럭시 s25 울트라", "갤럭시s25울트라", "galaxy s25 ultra", "s25 ultra"]],
+    mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
+    msrpKrw: 1700000,
+    released: 2025,
+  },
+];
+
+const CORE_TABLET_CATALOG: Sku[] = [
+  {
+    id: "ipad-pro",
+    brand: "Apple",
+    category: "tablet",
+    modelName: "iPad Pro",
+    aliases: ["아이패드 프로", "아이패드프로", "iPad Pro"],
+    mustContain: [["아이패드 프로", "아이패드프로", "ipad pro"]],
+    mustNotContain: ["에어", "air", "미니", "mini", ...TABLET_NOISE],
+    msrpKrw: 1500000,
+    released: 2024,
+  },
+  {
+    id: "ipad-air",
+    brand: "Apple",
+    category: "tablet",
+    modelName: "iPad Air",
+    aliases: ["아이패드 에어", "아이패드에어", "iPad Air"],
+    mustContain: [["아이패드 에어", "아이패드에어", "ipad air"]],
+    mustNotContain: ["프로", "pro", "미니", "mini", ...TABLET_NOISE],
+    msrpKrw: 900000,
+    released: 2024,
+  },
+  {
+    id: "ipad-mini",
+    brand: "Apple",
+    category: "tablet",
+    modelName: "iPad mini",
+    aliases: ["아이패드 미니", "아이패드미니", "iPad mini"],
+    mustContain: [["아이패드 미니", "아이패드미니", "ipad mini"]],
+    mustNotContain: ["프로", "pro", "에어", "air", ...TABLET_NOISE],
+    msrpKrw: 750000,
+    released: 2024,
+  },
+  {
+    id: "ipad-10",
+    brand: "Apple",
+    category: "tablet",
+    modelName: "iPad 10th gen",
+    aliases: ["아이패드 10세대", "아이패드10세대", "iPad 10th gen"],
+    mustContain: [["아이패드 10세대", "아이패드10세대", "ipad 10"]],
+    mustNotContain: ["프로", "pro", "에어", "air", "미니", "mini", ...TABLET_NOISE],
+    msrpKrw: 680000,
+    released: 2022,
+  },
+  {
+    id: "galaxy-tab-s8",
+    brand: "Samsung",
+    category: "tablet",
+    modelName: "Galaxy Tab S8",
+    aliases: ["갤럭시탭 S8", "갤탭 S8", "Galaxy Tab S8"],
+    mustContain: [["갤럭시탭 s8", "갤탭 s8", "galaxy tab s8", "tab s8"]],
+    mustNotContain: ["s8 울트라", "s8 ultra", "s8 플러스", "s8 plus", ...TABLET_NOISE],
+    msrpKrw: 900000,
+    released: 2022,
+  },
+  {
+    id: "galaxy-tab-s8-plus",
+    brand: "Samsung",
+    category: "tablet",
+    modelName: "Galaxy Tab S8 Plus",
+    aliases: ["갤럭시탭 S8 플러스", "갤탭 S8+", "Galaxy Tab S8 Plus"],
+    mustContain: [["갤럭시탭 s8 플러스", "갤럭시탭 s8+", "갤탭 s8+", "galaxy tab s8 plus"]],
+    mustNotContain: ["울트라", "ultra", ...TABLET_NOISE],
+    msrpKrw: 1100000,
+    released: 2022,
+  },
+  {
+    id: "galaxy-tab-s8-ultra",
+    brand: "Samsung",
+    category: "tablet",
+    modelName: "Galaxy Tab S8 Ultra",
+    aliases: ["갤럭시탭 S8 울트라", "갤탭 S8 울트라", "Galaxy Tab S8 Ultra"],
+    mustContain: [["갤럭시탭 s8 울트라", "갤탭 s8 울트라", "galaxy tab s8 ultra"]],
+    mustNotContain: ["플러스", "plus", ...TABLET_NOISE],
+    msrpKrw: 1400000,
+    released: 2022,
+  },
+  {
+    id: "galaxy-tab-s9",
+    brand: "Samsung",
+    category: "tablet",
+    modelName: "Galaxy Tab S9",
+    aliases: ["갤럭시탭 S9", "갤탭 S9", "Galaxy Tab S9"],
+    mustContain: [["갤럭시탭 s9", "갤탭 s9", "galaxy tab s9", "tab s9"]],
+    mustNotContain: ["s9 울트라", "s9 ultra", "s9 플러스", "s9 plus", ...TABLET_NOISE],
+    msrpKrw: 1000000,
+    released: 2023,
+  },
+  {
+    id: "galaxy-tab-s9-plus",
+    brand: "Samsung",
+    category: "tablet",
+    modelName: "Galaxy Tab S9 Plus",
+    aliases: ["갤럭시탭 S9 플러스", "갤탭 S9+", "Galaxy Tab S9 Plus"],
+    mustContain: [["갤럭시탭 s9 플러스", "갤럭시탭 s9+", "갤탭 s9+", "galaxy tab s9 plus"]],
+    mustNotContain: ["울트라", "ultra", ...TABLET_NOISE],
+    msrpKrw: 1200000,
+    released: 2023,
+  },
+  {
+    id: "galaxy-tab-s9-ultra",
+    brand: "Samsung",
+    category: "tablet",
+    modelName: "Galaxy Tab S9 Ultra",
+    aliases: ["갤럭시탭 S9 울트라", "갤탭 S9 울트라", "Galaxy Tab S9 Ultra"],
+    mustContain: [["갤럭시탭 s9 울트라", "갤탭 s9 울트라", "galaxy tab s9 ultra"]],
+    mustNotContain: ["플러스", "plus", ...TABLET_NOISE],
+    msrpKrw: 1600000,
+    released: 2023,
+  },
+  {
+    id: "galaxy-tab-s10-plus",
+    brand: "Samsung",
+    category: "tablet",
+    modelName: "Galaxy Tab S10 Plus",
+    aliases: ["갤럭시탭 S10 플러스", "갤탭 S10+", "Galaxy Tab S10 Plus"],
+    mustContain: [["갤럭시탭 s10 플러스", "갤럭시탭 s10+", "갤탭 s10+", "galaxy tab s10 plus"]],
+    mustNotContain: ["울트라", "ultra", ...TABLET_NOISE],
+    msrpKrw: 1250000,
+    released: 2024,
+  },
+  {
+    id: "galaxy-tab-s10-ultra",
+    brand: "Samsung",
+    category: "tablet",
+    modelName: "Galaxy Tab S10 Ultra",
+    aliases: ["갤럭시탭 S10 울트라", "갤탭 S10 울트라", "Galaxy Tab S10 Ultra"],
+    mustContain: [["갤럭시탭 s10 울트라", "갤탭 s10 울트라", "galaxy tab s10 ultra"]],
+    mustNotContain: ["플러스", "plus", ...TABLET_NOISE],
+    msrpKrw: 1700000,
+    released: 2024,
+  },
+];
+
 export const CATALOG: Sku[] = [
   // ─── AirPods ─────────────────────────────────────────
   {
@@ -260,6 +585,8 @@ export const CATALOG: Sku[] = [
     msrpKrw: 829000,
     released: 2024,
   },
+  ...CORE_SMARTPHONE_CATALOG,
+  ...CORE_TABLET_CATALOG,
   ...GENERATED_CATALOG,
 ];
 
@@ -326,13 +653,27 @@ function stripLinkLikeText(text: string): string {
     .replace(/\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/gi, " ");
 }
 
+function directSpecificMatch(normalizedText: string): Sku | null {
+  const compact = normalizedText.replace(/\s+/g, "");
+  if (/(아이폰16e|iphone16e)/i.test(compact) || /iphone\s*16e/i.test(normalizedText)) {
+    return skuById("iphone-16e") ?? null;
+  }
+  return null;
+}
+
 export function ruleMatch(title: string, description = ""): Sku | null {
   const titleNorm = normalize(title);
+  const titleDirect = directSpecificMatch(titleNorm);
+  if (titleDirect) return titleDirect;
+
   const titleCandidates = CATALOG.filter((s) => skuMatches(s, titleNorm));
   if (titleCandidates.length === 1) return titleCandidates[0];
   if (titleCandidates.length > 1) return null;
 
   const combined = normalize(`${title} ${stripLinkLikeText(description).slice(0, 200)}`);
+  const combinedDirect = directSpecificMatch(combined);
+  if (combinedDirect) return combinedDirect;
+
   const descCandidates = CATALOG.filter((s) => skuMatches(s, combined));
   if (descCandidates.length === 1) return descCandidates[0];
   return null;
