@@ -137,6 +137,8 @@ const catalogById = new Map(CATALOG.map((sku) => [sku.id, sku]));
 
 export type StageStats = {
   collected: number;
+  searchSucceeded: number;
+  searchFailed: number;
   rawUpserted: number;
   queued: number;
   detailQueueSkipped: number;
@@ -165,6 +167,8 @@ export type TickResult = StageStats & {
 function emptyStats(): StageStats {
   return {
     collected: 0,
+    searchSucceeded: 0,
+    searchFailed: 0,
     rawUpserted: 0,
     queued: 0,
     detailQueueSkipped: 0,
@@ -189,6 +193,8 @@ function emptyStats(): StageStats {
 function mergeStats(parts: StageStats[]): StageStats {
   return parts.reduce((acc, part) => ({
     collected: acc.collected + part.collected,
+    searchSucceeded: acc.searchSucceeded + part.searchSucceeded,
+    searchFailed: acc.searchFailed + part.searchFailed,
     rawUpserted: acc.rawUpserted + part.rawUpserted,
     queued: acc.queued + part.queued,
     detailQueueSkipped: acc.detailQueueSkipped + part.detailQueueSkipped,
@@ -511,7 +517,20 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
         stats.timedOut = true;
         return stats;
       }
-      const items = await searchPage(query, page, searchOptionsForMode(mode));
+      let items: SearchItem[] = [];
+      try {
+        items = await searchPage(query, page, searchOptionsForMode(mode));
+        stats.searchSucceeded += 1;
+      } catch (err) {
+        stats.searchFailed += 1;
+        console.error("search page failed", {
+          query,
+          page,
+          mode,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        continue;
+      }
       for (const item of items) {
         if (!seen.has(item.pid)) seen.set(item.pid, item);
       }
@@ -1085,6 +1104,9 @@ function proposeSourceStatus(input: {
   detailSuccessRate: number;
   searchRunCount: number;
   avgSearchCollected: number;
+  searchAttemptCount: number;
+  searchFailureRate: number;
+  dominantSearchFailureMode: string | null;
   workerBreakdown: Map<string, { total: number; failed: number; collected: number; enriched: number }>;
 }) {
   if (input.runCount === 0) {
@@ -1100,6 +1122,9 @@ function proposeSourceStatus(input: {
   if (input.detailAttempts >= 10 && input.detailSuccessRate < 0.5) {
     return { status: "unhealthy" as const, reason: "detail_success_rate_critical" };
   }
+  if (input.searchAttemptCount >= 10 && input.searchFailureRate >= 0.5) {
+    return { status: "unhealthy" as const, reason: `${input.dominantSearchFailureMode ?? "search"}_partial_failure_rate_high` };
+  }
   if (input.searchRunCount > 0 && input.avgSearchCollected < 30) {
     return { status: "unhealthy" as const, reason: "search_result_count_critical" };
   }
@@ -1108,6 +1133,9 @@ function proposeSourceStatus(input: {
   }
   if (input.detailAttempts >= 10 && input.detailSuccessRate < 0.85) {
     return { status: "degraded" as const, reason: "detail_success_rate_elevated" };
+  }
+  if (input.searchAttemptCount >= 10 && input.searchFailureRate >= 0.2) {
+    return { status: "degraded" as const, reason: `${input.dominantSearchFailureMode ?? "search"}_partial_failure_rate_elevated` };
   }
   if (input.searchRunCount > 0 && input.avgSearchCollected < 100) {
     return { status: "degraded" as const, reason: "search_result_count_low" };
@@ -1129,6 +1157,9 @@ export async function sourceHealthStage(): Promise<StageStats> {
   let detailFailed = 0;
   let searchCollected = 0;
   let searchRunCount = 0;
+  let searchSucceeded = 0;
+  let searchFailed = 0;
+  const searchFailedByMode = new Map<string, number>();
 
   for (const row of rows) {
     const stages = nestedRecord(row.stage_stats, "stages");
@@ -1150,14 +1181,24 @@ export async function sourceHealthStage(): Promise<StageStats> {
       detailFailed += failed;
     }
     const collected = numberField(search, "collected") || Number(row.collected_count ?? 0);
-    if (mode === "tick" || mode === "deep_crawl" || collected > 0) {
+    const searchSucceededForRun = numberField(search, "searchSucceeded");
+    const searchFailedForRun = numberField(search, "searchFailed");
+    if (mode === "tick" || mode === "deep_crawl" || collected > 0 || searchSucceededForRun > 0 || searchFailedForRun > 0) {
       searchRunCount += 1;
       searchCollected += collected;
+      searchSucceeded += searchSucceededForRun;
+      searchFailed += searchFailedForRun;
+      if (searchFailedForRun > 0) {
+        searchFailedByMode.set(mode, (searchFailedByMode.get(mode) ?? 0) + searchFailedForRun);
+      }
     }
   }
 
   const detailSuccessRate = detailAttempts === 0 ? 1 : detailSucceeded / detailAttempts;
   const avgSearchCollected = searchRunCount === 0 ? 0 : searchCollected / searchRunCount;
+  const searchAttemptCount = searchSucceeded + searchFailed;
+  const searchFailureRate = searchAttemptCount === 0 ? 0 : searchFailed / searchAttemptCount;
+  const dominantSearchFailureMode = [...searchFailedByMode.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
   const proposed = proposeSourceStatus({
     runCount: sourceRows.length,
     failedRunRate,
@@ -1165,6 +1206,9 @@ export async function sourceHealthStage(): Promise<StageStats> {
     detailSuccessRate,
     searchRunCount,
     avgSearchCollected,
+    searchAttemptCount,
+    searchFailureRate,
+    dominantSearchFailureMode,
     workerBreakdown,
   });
   const changed = previous?.status !== proposed.status;
@@ -1191,6 +1235,11 @@ export async function sourceHealthStage(): Promise<StageStats> {
       detailSucceeded,
       detailFailed,
       searchRunCount,
+      searchSucceeded,
+      searchFailed,
+      searchAttemptCount,
+      searchFailureRate: Math.round(searchFailureRate * 1000) / 1000,
+      searchFailedByMode: Object.fromEntries(searchFailedByMode.entries()),
       avgSearchCollected: Math.round(avgSearchCollected),
       previousCheckedAt: previous?.checked_at ?? null,
       advisoryOnly: true,

@@ -849,6 +849,11 @@ function SourceHealthPanel({ health }: { health: Awaited<ReturnType<typeof loadS
         <MetricCard label="검색 수집" value={`${num(Number(health.search_result_count))}건`} sub="최근 window 합산" />
         <MetricCard label="실행 수" value={`${num(Number(baseline.runCount ?? 0))}회`} sub={`실패 ${num(Number(baseline.failedRuns ?? 0))}회`} />
         <MetricCard label="Detail 시도" value={`${num(Number(baseline.detailAttempts ?? 0))}건`} sub={`실패 ${num(Number(baseline.detailFailed ?? 0))}건`} />
+        <MetricCard
+          label="검색 API"
+          value={`${num(Number(baseline.searchSucceeded ?? 0))}/${num(Number(baseline.searchAttemptCount ?? 0))}`}
+          sub={`실패 ${num(Number(baseline.searchFailed ?? 0))}건 · partial ${Math.round(Number(baseline.searchFailureRate ?? 0) * 100)}%`}
+        />
       </div>
 
       {workerBreakdown.length > 0 ? (
