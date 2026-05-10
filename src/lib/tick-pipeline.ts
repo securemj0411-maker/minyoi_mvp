@@ -74,6 +74,21 @@ type MarketPriceRow = {
   computed_at: string;
 };
 
+type CollectRunHealthRow = {
+  status: string;
+  collected_count: number | null;
+  enriched_count: number | null;
+  stage_stats: Record<string, unknown> | null;
+  request_meta: Record<string, unknown> | null;
+  started_at: string;
+};
+
+type SourceHealthRow = {
+  status: "healthy" | "degraded" | "unhealthy";
+  checked_at: string;
+  baseline_json: Record<string, unknown> | null;
+};
+
 type PoolWarmRow = {
   pid: number;
   profit_band: 1 | 2 | 3;
@@ -242,6 +257,17 @@ async function patchRows(table: string, filter: string, payload: Record<string, 
     headers: serviceHeaders(),
     body: JSON.stringify(payload),
   });
+}
+
+async function softInsertRows(table: string, rows: unknown[]): Promise<boolean> {
+  if (rows.length === 0) return true;
+  try {
+    await insertRows(table, rows);
+    return true;
+  } catch (err) {
+    console.error(`soft insert failed for ${table}`, err);
+    return false;
+  }
 }
 
 function pidList(items: SearchItem[]) {
@@ -760,6 +786,160 @@ function marketKeyMeta(comparableKey: string, skuId: string | null) {
     model: parts[1] ?? null,
     variant_key: parts.slice(2).join("|") || null,
   };
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function nestedRecord(value: unknown, key: string): Record<string, unknown> {
+  return asRecord(asRecord(value)[key]);
+}
+
+function numberField(value: unknown, key: string) {
+  const raw = asRecord(value)[key];
+  return typeof raw === "number" && Number.isFinite(raw) ? raw : 0;
+}
+
+async function loadRecentCollectRuns(windowMinutes: number): Promise<CollectRunHealthRow[]> {
+  const cutoff = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
+  const columns = "status,collected_count,enriched_count,stage_stats,request_meta,started_at";
+  const url = `${tableUrl("mvp_collect_runs")}?select=${columns}&started_at=gte.${encodeURIComponent(cutoff)}&order=started_at.desc&limit=200`;
+  const res = await restFetch(url, { headers: serviceHeaders() });
+  return (await res.json()) as CollectRunHealthRow[];
+}
+
+async function loadLatestSourceHealth(): Promise<SourceHealthRow | null> {
+  try {
+    const url = `${tableUrl("mvp_source_health")}?select=status,checked_at,baseline_json&source=eq.bunjang&order=checked_at.desc&limit=1`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    const rows = (await res.json()) as SourceHealthRow[];
+    return rows[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function runMode(row: CollectRunHealthRow) {
+  const meta = asRecord(row.request_meta);
+  return String(meta.pipelineMode ?? "");
+}
+
+function proposeSourceStatus(input: {
+  runCount: number;
+  failedRunRate: number;
+  detailAttempts: number;
+  detailSuccessRate: number;
+  searchRunCount: number;
+  avgSearchCollected: number;
+}) {
+  if (input.runCount === 0) {
+    return { status: "degraded" as const, reason: "no_recent_runs" };
+  }
+  if (input.failedRunRate >= 0.5) {
+    return { status: "unhealthy" as const, reason: "collect_run_failure_rate_high" };
+  }
+  if (input.detailAttempts >= 10 && input.detailSuccessRate < 0.5) {
+    return { status: "unhealthy" as const, reason: "detail_success_rate_critical" };
+  }
+  if (input.searchRunCount > 0 && input.avgSearchCollected < 30) {
+    return { status: "unhealthy" as const, reason: "search_result_count_critical" };
+  }
+  if (input.failedRunRate >= 0.2) {
+    return { status: "degraded" as const, reason: "collect_run_failure_rate_elevated" };
+  }
+  if (input.detailAttempts >= 10 && input.detailSuccessRate < 0.85) {
+    return { status: "degraded" as const, reason: "detail_success_rate_elevated" };
+  }
+  if (input.searchRunCount > 0 && input.avgSearchCollected < 100) {
+    return { status: "degraded" as const, reason: "search_result_count_low" };
+  }
+  return { status: "healthy" as const, reason: "within_operating_bounds" };
+}
+
+export async function sourceHealthStage(): Promise<StageStats> {
+  const stats = emptyStats();
+  const windowMinutes = 30;
+  const rows = await loadRecentCollectRuns(windowMinutes);
+  const previous = await loadLatestSourceHealth();
+  const failedRuns = rows.filter((row) => row.status === "failed").length;
+  const failedRunRate = rows.length === 0 ? 0 : failedRuns / rows.length;
+  let detailAttempts = 0;
+  let detailSucceeded = 0;
+  let detailFailed = 0;
+  let searchCollected = 0;
+  let searchRunCount = 0;
+
+  for (const row of rows) {
+    const stages = nestedRecord(row.stage_stats, "stages");
+    const detail = nestedRecord(stages, "detail");
+    const search = nestedRecord(stages, "search");
+    const mode = runMode(row);
+    const claimed = numberField(detail, "claimed");
+    const enriched = numberField(detail, "enriched");
+    const failed = numberField(detail, "detailFailed");
+    detailAttempts += claimed;
+    detailSucceeded += enriched;
+    detailFailed += failed;
+    const collected = numberField(search, "collected") || Number(row.collected_count ?? 0);
+    if (mode === "tick" || mode === "deep_crawl" || collected > 0) {
+      searchRunCount += 1;
+      searchCollected += collected;
+    }
+  }
+
+  const detailSuccessRate = detailAttempts === 0 ? 1 : detailSucceeded / detailAttempts;
+  const avgSearchCollected = searchRunCount === 0 ? 0 : searchCollected / searchRunCount;
+  const proposed = proposeSourceStatus({
+    runCount: rows.length,
+    failedRunRate,
+    detailAttempts,
+    detailSuccessRate,
+    searchRunCount,
+    avgSearchCollected,
+  });
+  const changed = previous?.status !== proposed.status;
+  const now = new Date().toISOString();
+  const payload = {
+    source: "bunjang",
+    checked_at: now,
+    window_minutes: windowMinutes,
+    status: proposed.status,
+    previous_status: previous?.status ?? null,
+    detail_success_rate: Math.round(detailSuccessRate * 1000) / 1000,
+    detail_404_rate: 0,
+    detail_5xx_rate: 0,
+    sold_transition_rate: 0,
+    disappeared_transition_rate: 0,
+    search_result_count: searchCollected,
+    baseline_json: {
+      proposedStatus: proposed.status,
+      runCount: rows.length,
+      failedRuns,
+      failedRunRate: Math.round(failedRunRate * 1000) / 1000,
+      detailAttempts,
+      detailSucceeded,
+      detailFailed,
+      searchRunCount,
+      avgSearchCollected: Math.round(avgSearchCollected),
+      previousCheckedAt: previous?.checked_at ?? null,
+      advisoryOnly: true,
+    },
+    hysteresis_json: {
+      changed,
+      note: "step1_advisory_only_no_lifecycle_gate_yet",
+      enterDegradedAfterMinutes: 5,
+      recoverHealthyAfterMinutes: 15,
+      futurePolicy: "healthy=all_transitions,degraded=pool_and_high_priority,unhealthy=no_lifecycle_transitions",
+    },
+    reason: proposed.reason,
+  };
+  const inserted = await softInsertRows("mvp_source_health", [payload]);
+  stats.scored = rows.length;
+  stats.upserted = inserted ? 1 : 0;
+  stats.detailFailed = detailFailed;
+  if (proposed.status !== "healthy") stats.poolSkipped = 1;
+  return stats;
 }
 
 async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<number, ParsedListingRow>) {
@@ -1302,11 +1482,13 @@ export async function runMarketStatsPipeline(): Promise<TickResult> {
 
   const search = emptyStats();
   const detail = emptyStats();
-  const score = await timed("market_stats", () => marketStatsStage());
+  const health = await timed("source_health", () => sourceHealthStage());
+  const market = await timed("market_stats", () => marketStatsStage());
+  const score = mergeStats([health, market]);
   const total = mergeStats([search, detail, score]);
   return {
     ...total,
-    stages: { search, detail, score },
+    stages: { search, detail, source_health: health, market_stats: market, score },
     stageDurationsMs,
   };
 }

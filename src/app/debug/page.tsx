@@ -137,6 +137,22 @@ type PoolRow = {
   status: string;
 };
 
+type SourceHealthDebugRow = {
+  status: "healthy" | "degraded" | "unhealthy";
+  previous_status: "healthy" | "degraded" | "unhealthy" | null;
+  checked_at: string;
+  window_minutes: number;
+  detail_success_rate: number;
+  detail_404_rate: number;
+  detail_5xx_rate: number;
+  sold_transition_rate: number;
+  disappeared_transition_rate: number;
+  search_result_count: number;
+  baseline_json: Record<string, unknown> | null;
+  hysteresis_json: Record<string, unknown> | null;
+  reason: string;
+};
+
 const SELLING_FEE_RATE = 0.035;
 const RESELL_SHIPPING_FEE = 3500;
 const SAFETY_BUFFER = 5000;
@@ -240,6 +256,13 @@ async function loadMarketPriceDebug() {
     totalSamples: rows.reduce((sum, row) => sum + Number(row.active_sample_count ?? 0), 0),
     top: rows.slice(0, 5),
   };
+}
+
+async function loadSourceHealthDebug() {
+  return (await restJson<SourceHealthDebugRow[]>(
+    "/mvp_source_health?select=status,previous_status,checked_at,window_minutes,detail_success_rate,detail_404_rate,detail_5xx_rate,sold_transition_rate,disappeared_transition_rate,search_result_count,baseline_json,hysteresis_json,reason&source=eq.bunjang&order=checked_at.desc&limit=1",
+    [],
+  ))[0] ?? null;
 }
 
 async function loadBottleneckDebug() {
@@ -532,6 +555,60 @@ function MarketStatsPanel({ stats }: { stats: Awaited<ReturnType<typeof loadMark
   );
 }
 
+function sourceHealthClass(status: string) {
+  if (status === "healthy") return "bg-emerald-100 text-emerald-800 ring-emerald-200";
+  if (status === "degraded") return "bg-amber-100 text-amber-800 ring-amber-200";
+  return "bg-red-100 text-red-800 ring-red-200";
+}
+
+function SourceHealthPanel({ health }: { health: Awaited<ReturnType<typeof loadSourceHealthDebug>> }) {
+  const baseline = health?.baseline_json ?? {};
+  const hysteresis = health?.hysteresis_json ?? {};
+  if (!health) {
+    return (
+      <div className="rounded-md border border-zinc-200 bg-white p-5">
+        <div className="text-sm font-semibold text-zinc-950">소스 헬스 게이트</div>
+        <div className="mt-2 text-sm text-zinc-500">
+          아직 source health snapshot이 없습니다. `/api/cron/market-worker`가 한 번 돌면 표시됩니다.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-zinc-950">소스 헬스 게이트</div>
+          <div className="mt-1 text-xs text-zinc-500">
+            아직 상태 전이를 막지는 않고, API/worker를 믿어도 되는지 advisory로 기록합니다.
+          </div>
+        </div>
+        <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${sourceHealthClass(health.status)}`}>
+          {health.status}
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <MetricCard label="Detail 성공률" value={`${Math.round(Number(health.detail_success_rate) * 100)}%`} sub={`${health.window_minutes}분 window`} />
+        <MetricCard label="검색 수집" value={`${num(Number(health.search_result_count))}건`} sub="최근 window 합산" />
+        <MetricCard label="실행 수" value={`${num(Number(baseline.runCount ?? 0))}회`} sub={`실패 ${num(Number(baseline.failedRuns ?? 0))}회`} />
+        <MetricCard label="Detail 시도" value={`${num(Number(baseline.detailAttempts ?? 0))}건`} sub={`실패 ${num(Number(baseline.detailFailed ?? 0))}건`} />
+      </div>
+
+      <div className="mt-4 rounded-md border border-zinc-100 bg-zinc-50 p-3 text-xs text-zinc-600">
+        <div className="font-semibold text-zinc-800">판정 근거: {health.reason || "-"}</div>
+        <div className="mt-1">
+          이전 상태 {health.previous_status ?? "-"} · 확인 {formatTime(health.checked_at)}
+        </div>
+        <div className="mt-1">
+          hysteresis: {String(hysteresis.note ?? "future gate")} · changed={String(hysteresis.changed ?? false)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function labelReason(key: string) {
   const labels: Record<string, string> = {
     profit_below_band: "순익 구간 미달",
@@ -759,10 +836,11 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
 }
 
 export default async function DebugPage() {
-  const [runs, marketStats, bottleneckStats] = await Promise.all([
+  const [runs, marketStats, bottleneckStats, sourceHealth] = await Promise.all([
     loadCollectRuns(30),
     loadMarketPriceDebug(),
     loadBottleneckDebug(),
+    loadSourceHealthDebug(),
   ]);
   const latest = runs[0] ?? null;
   const latestOk = lastSucceeded(runs);
@@ -817,7 +895,10 @@ export default async function DebugPage() {
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
           <BottleneckPanel stats={bottleneckStats} />
-          <MarketStatsPanel stats={marketStats} />
+          <div className="grid gap-5">
+            <SourceHealthPanel health={sourceHealth} />
+            <MarketStatsPanel stats={marketStats} />
+          </div>
         </section>
 
         <DebugResetPanel />
