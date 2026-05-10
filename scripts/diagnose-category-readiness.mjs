@@ -133,7 +133,7 @@ const rawByPid = new Map(rawRows.map((row) => [Number(row.pid), row]));
 const parsedRows = [];
 for (const chunk of chunkArray(pids, 200)) {
   parsedRows.push(...await fetchJson(
-    `/mvp_listing_parsed?select=pid,category,family,model,variant_key,comparable_key,parse_confidence,needs_review,parsed_json&pid=in.(${chunk.join(",")})`,
+    `/mvp_listing_parsed?select=pid,category,family,model,variant_key,comparable_key,parse_confidence,condition_score,needs_review,parsed_json&pid=in.(${chunk.join(",")})`,
   ));
 }
 
@@ -207,6 +207,20 @@ for (const category of categories) {
       highRiskExamples.length < 5
     ) {
       highRiskExamples.push({ ...sample, issue: "apple_silicon_not_in_key" });
+    }
+    const conditionNotes = Array.isArray(json.condition_notes) ? json.condition_notes.map(String) : [];
+    if (
+      (category === "smartphone" || category === "tablet") &&
+      (Number(row.condition_score ?? 1) < 0.65 || conditionNotes.some((note) => (
+        note.includes("defect") ||
+        note.includes("repaired") ||
+        note.includes("locked") ||
+        note.includes("installment") ||
+        note.includes("water_damage")
+      ))) &&
+      highRiskExamples.length < 5
+    ) {
+      highRiskExamples.push({ ...sample, issue: `condition:${conditionNotes.join(",") || row.condition_score}` });
     }
   }
 

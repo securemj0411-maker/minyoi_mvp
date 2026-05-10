@@ -178,6 +178,7 @@ const POOL_BLOCK_FLAGS = [
   "ai_review_unavailable",
   "weak_description",
   "risk_keyword_review",
+  "condition_review",
 ];
 const REST_READ_CHUNK_SIZE = 250;
 const REST_WRITE_CHUNK_SIZE = 200;
@@ -2176,7 +2177,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const priceGap = skuMedian <= 0 ? 0 : Math.max(0, Math.min(1, (skuMedian - row.price) / skuMedian));
     const velocity = percentileRank(favsByMarket.get(marketKey) ?? [], row.num_faved);
     const safetyBase = row.shop_review_rating == null ? 0.5 : Math.max(0, Math.min(1, Number(row.shop_review_rating) / 5));
-    const safety = Math.max(0, Math.min(1, safetyBase + (row.shop_review_count >= 100 ? 0.05 : 0)));
+    const sellerSafety = Math.max(0, Math.min(1, safetyBase + (row.shop_review_count >= 100 ? 0.05 : 0)));
+    const conditionScore = parsed?.condition_score == null ? 0.75 : Math.max(0, Math.min(1, Number(parsed.condition_score)));
+    const safety = Math.max(0, Math.min(1, sellerSafety * 0.7 + conditionScore * 0.3));
     const riskHits = ["직거래만", "현금만", "박스없음", "박스 없음", "수리이력", "충전안됨", "충전 안됨", "고장", "불량", "먹통"]
       .filter((kw) => row.description_preview.toLowerCase().includes(kw.toLowerCase())).length;
     const parseConfidence = Number(parsed?.parse_confidence ?? 0);
@@ -2196,6 +2199,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     }
     if (parseConfidence > 0 && parseConfidence < 0.65) scoreFlags.push("option_parse_review");
     if (parsed?.needs_review) scoreFlags.push("option_needs_review");
+    if (conditionScore < 0.65) scoreFlags.push("condition_review");
 
     scoredRows.push({
       pid: String(row.pid),

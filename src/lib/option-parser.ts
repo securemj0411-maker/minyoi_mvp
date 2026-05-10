@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v11";
+const PARSER_VERSION = "option-parser-v12";
 
 function hashText(text: string) {
   return createHash("sha256").update(text).digest("hex");
@@ -274,6 +274,7 @@ function defaultConnectivity(model: string | null) {
 
 function conditionFromText(text: string, batteryHealth: number | null, cycles: number | null) {
   const lower = normalize(text).toLowerCase();
+  const compact = lower.replace(/\s+/g, "");
   let score = 0.75;
   const notes: string[] = [];
   const add = (note: string, delta: number) => {
@@ -288,6 +289,21 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   if (/수리|교체|하자|고장|불량|파손|깨짐/.test(lower)) add("repair_or_defect_signal", -0.2);
   if (batteryHealth != null && batteryHealth < 85) add("low_battery_health", -0.15);
   if (cycles != null && cycles > 500) add("high_battery_cycles", -0.1);
+
+  if (/리퍼|리퍼폰|리퍼\s*교체|부분\s*수리|사설\s*수리|사설수리/.test(lower)) add("refurbished_or_repaired", -0.15);
+  if (/(액정|디스플레이|화면).{0,16}(교체|수리)|(?:교체|수리).{0,16}(액정|디스플레이|화면)/.test(lower)) add("screen_replaced", -0.12);
+  const noDisplayDefect = /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없)|번인\s*(?:없|없음|없습니다)/.test(lower);
+  if (!noDisplayDefect && /잔상|번인|burn\s*in|녹조|흑점|멍|터치\s*불량|터치불량/.test(lower)) add("display_defect", -0.25);
+  const noFaceIdIssue = /(페이스\s*아이디|face\s*id|faceid).{0,30}(문제\s*(?:없|없음|없고|없습니다)|정상|잘\s*됨|작동)|기능에\s*아무\s*문제\s*없/.test(lower);
+  if (!noFaceIdIssue && /(페이스\s*아이디|face\s*id|faceid).{0,20}(안됨|불가|고장|불량|문제|수리)|(?:안됨|불가|고장|불량|문제|수리).{0,20}(페이스\s*아이디|face\s*id|faceid)/.test(lower)) add("faceid_issue", -0.25);
+  if (/(카메라|전면|후면).{0,20}(안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량)|(?:안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량).{0,20}(카메라|전면|후면)/.test(lower)) add("camera_issue", -0.2);
+  if (/(유심|sim).{0,20}(인식\s*불|인식불|안됨|불가|락)|(?:인식\s*불|인식불|안됨|불가|락).{0,20}(유심|sim)/.test(lower)) add("sim_or_carrier_issue", -0.2);
+  const noWaterDamage = /침수(?:폰)?\s*(?:없|없음|없습니다|아님|일절\s*취급하지|취급하지\s*않)|침수\s*라벨\s*(?:정상|깨끗)/.test(lower);
+  if (!noWaterDamage && /침수|물\s*들어|물먹|물\s*먹/.test(lower)) add("water_damage", -0.35);
+  const noLostOrLocked = /분실\s*도난\s*침수폰?\s*일절\s*취급하지|분실\s*(?:없|없음|신고\s*없)|도난\s*(?:없|없음)|분실.{0,8}도난.{0,16}검수\s*완료|정상\s*해지|정상해지/.test(lower);
+  if (!noLostOrLocked && /분실|도난|락걸림|락\s*걸림|잠김|아이클라우드|icloud|초기화\s*불가|초기화불가/.test(lower)) add("locked_or_lost_signal", -0.4);
+  if (/선약|선택\s*약정|확정\s*기변|확정기변|정상\s*해지|정상해지/.test(lower)) add("carrier_status_disclosed", 0.03);
+  if (/(할부|미납|요금).{0,12}(남|있|미납)|(?:남은|잔여).{0,8}할부/.test(compact)) add("installment_risk", -0.25);
 
   return {
     conditionScore: cap01(score),
@@ -482,6 +498,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       raw_sku_name: input.skuName ?? null,
       unknown_parts: comparableKey?.split("|").filter((part) => part.startsWith("unknown_")) ?? [],
       critical_unknown: criticalUnknown,
+      condition_notes: conditionNotes,
     },
   };
 }

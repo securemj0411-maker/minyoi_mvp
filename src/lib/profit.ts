@@ -38,6 +38,7 @@ const PRECISION_REVIEW_FLAGS = [
   "option_needs_review",
   "ai_review_unavailable",
   "weak_description",
+  "condition_review",
 ];
 
 const FLAG_LABELS: Record<string, string> = {
@@ -48,6 +49,7 @@ const FLAG_LABELS: Record<string, string> = {
   option_needs_review: "용량/칩/사이즈 확인 필요",
   ai_review_unavailable: "AI 검토 실패",
   weak_description: "설명 부족",
+  condition_review: "상태/수리 이력 확인 필요",
   deep_discount_review: "비정상 저가 검토 필요",
   risk_keyword_review: "위험 키워드 검토 필요",
   ai_normal: "AI 정상 매물 판정",

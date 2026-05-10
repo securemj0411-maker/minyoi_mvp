@@ -36,6 +36,9 @@ const DAMAGED_KEYWORDS = [
   "노캔키면", "알갱이 소리", "소리 들리는",
   "수리이력", "찍힘 심", "기스 심", "액정깨짐", "잠김", "초기화불가",
   "배터리 광탈", "배터리효율 낮", "방전",
+  "잔상", "번인", "터치불량", "터치 불량", "페이스아이디 안됨", "face id 안됨",
+  "카메라불량", "카메라 불량", "유심인식불량", "유심 인식 불량", "침수",
+  "분실폰", "도난폰", "아이클라우드 잠김", "icloud 잠김", "미납폰",
   ...GENERATED_NOISE_RULES.damaged,
 ];
 const ACCESSORY_TITLE_KEYWORDS = [
@@ -55,6 +58,9 @@ const COMMERCIAL_STRONG_KEYWORDS = [
   "한정판매", "한정 판매", "마지막입고", "마지막 입고",
   "극소량보유", "극소량 보유", "완납폰", "제휴카드",
   "유심 그대로", "유심그대로",
+  "재고 유무", "재고유무", "재고확인", "전색상", "재입고", "품절임박",
+  "상품번호", "대량구매", "매장방문", "중고폰 구매", "부산중고폰",
+  "1년에 딱 한번", "저렴한시기", "저렴한 시기", "전색상입고", "전색상 입고",
   ...GENERATED_NOISE_RULES.commercialStrong,
 ];
 // 단독으로는 정상 매물에도 나올 수 있으나 가격 왜곡 의심. AI 검토용 플래그만 부여.
@@ -131,7 +137,13 @@ function partsHits(title: string, desc: string): string[] {
 
 function damagedHits(title: string, desc: string): string[] {
   const text = `${title}\n${desc}`;
-  const hits = containsAny(text, DAMAGED_KEYWORDS);
+  const normalized = nrm(text);
+  const hits = containsAny(text, DAMAGED_KEYWORDS).filter((hit) => {
+    if (hit === "잔상" && /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없)/.test(normalized)) return false;
+    if (hit === "침수" && /침수(?:폰)?\s*(?:없|없음|없습니다|아님|일절\s*취급하지|취급하지\s*않)|침수\s*라벨\s*(?:정상|깨끗)/.test(normalized)) return false;
+    if ((hit === "분실폰" || hit === "도난폰") && /분실\s*도난\s*침수폰?\s*일절\s*취급하지|분실\s*(?:없|없음|신고\s*없)|도난\s*(?:없|없음)/.test(normalized)) return false;
+    return true;
+  });
   const compactText = nrm(text).replace(/\s+/g, "");
 
   if (compactText.includes("하자") && !/(하자없|하자전혀없|하자없이|무하자|하자는없|하자없습|하자전혀없이)/.test(compactText)) {
@@ -196,6 +208,13 @@ export type ListingType = "normal" | "parts" | "multi" | "buying" | "callout" | 
 type ClassifyResult = { listingType: ListingType; sku: Sku | null };
 
 function categoryScopedNoise(title: string, desc: string, price: number, sku: Sku): ListingType | null {
+  if (sku.category === "smartphone") {
+    const compactTitle = nrm(title).replace(/\s+/g, "");
+    if (sku.id === "iphone-16" && /(아이폰16e|iphone16e|iphone\s*16e)/i.test(compactTitle)) {
+      return "unknown";
+    }
+  }
+
   if (sku.category !== "laptop") return null;
 
   const titleN = nrm(title);
