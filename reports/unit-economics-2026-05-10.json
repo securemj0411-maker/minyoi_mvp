@@ -1,30 +1,30 @@
 {
-  "generatedAt": "2026-05-10T11:27:45.852Z",
+  "generatedAt": "2026-05-10T11:45:14.438Z",
   "windowHours": 24,
-  "cutoff": "2026-05-09T11:27:45.852Z",
+  "cutoff": "2026-05-09T11:45:14.438Z",
   "runs": {
     "total": 1000,
-    "succeeded": 366,
-    "failed": 634,
-    "qstash": 917,
-    "functionSeconds": 23176.772,
-    "p95DurationMs": 35363,
+    "succeeded": 379,
+    "failed": 619,
+    "qstash": 915,
+    "functionSeconds": 22717.199,
+    "p95DurationMs": 34936,
     "stableWindowHours": 2,
     "stable": {
-      "runs": 101,
+      "runs": 100,
       "failed": 2,
-      "failureRate": 0.019801980198019802,
+      "failureRate": 0.02,
       "qstash": 88,
       "qstashPerDay": 1056,
-      "searchCalls": 1214,
-      "detailClaimed": 2213,
-      "detailEnriched": 2184,
-      "scored": 10164,
-      "poolUpserted": 2313,
-      "functionSeconds": 2752.994
+      "searchCalls": 1131,
+      "detailClaimed": 2543,
+      "detailEnriched": 2518,
+      "scored": 11000,
+      "poolUpserted": 3532,
+      "functionSeconds": 2696.233
     },
     "failureReasons": {
-      "supabase_schema_cache": 607,
+      "supabase_schema_cache": 592,
       "fetch_failed": 27
     },
     "stableFailureReasons": {
@@ -32,55 +32,54 @@
     }
   },
   "pipeline": {
-    "searchCalls": 1830,
-    "collected": 264514,
-    "queued": 24242,
-    "detailClaimed": 6766,
-    "detailEnriched": 6619,
+    "searchCalls": 1986,
+    "collected": 278787,
+    "queued": 25851,
+    "detailClaimed": 7296,
+    "detailEnriched": 7149,
     "detailFailed": 69,
-    "scored": 49721,
-    "poolUpserted": 15001,
-    "aiReviewRequested": 1225,
-    "aiApiCalls": 316,
-    "aiCacheHits": 909
+    "scored": 52057,
+    "poolUpserted": 16342,
+    "aiReviewRequested": 1258,
+    "aiApiCalls": 329,
+    "aiCacheHits": 929
   },
   "costs": {
-    "aiInputTokens": 52788,
-    "aiOutputTokens": 9398,
-    "aiCostSource": "token_estimate",
-    "recordedAiCostUsd": 0,
-    "estimatedAiCostUsd": 0.036152,
-    "aiCostUsd": 0.036152,
-    "aiCostPerDay": 0.036152,
-    "aiCostPerMonth": 1.08456,
-    "qstashMessagesPerDay": 917,
+    "aiInputTokens": 54406,
+    "aiOutputTokens": 9675,
+    "aiCostSource": "recorded_cost_usd",
+    "recordedAiCostUsd": 0.0010904,
+    "estimatedAiCostUsd": 0.0372424,
+    "aiCostUsd": 0.0010904,
+    "aiCostPerDay": 0.0010904,
+    "aiCostPerMonth": 0.032712000000000005,
+    "qstashMessagesPerDay": 915,
     "qstashPaidUsdPerDay": 0,
     "qstashPaidUsdPerMonth": 0,
-    "runtimeSecondsPerDay": 23176.772,
-    "detailCallsPerDay": 6766,
-    "searchCallsPerDay": 1830
+    "runtimeSecondsPerDay": 22717.199,
+    "detailCallsPerDay": 7296,
+    "searchCallsPerDay": 1986
   },
   "pack": {
-    "opens": 0,
-    "success": 0,
+    "opens": 3,
+    "success": 3,
     "refunded": 0,
     "failed": 0,
-    "attemptedCards": 0,
-    "revealedCards": 0,
-    "tokensSpent": 0,
+    "attemptedCards": 6,
+    "revealedCards": 6,
+    "tokensSpent": 6,
     "tokensRefunded": 0
   },
   "feedback": {
-    "total": 0,
-    "positive": 0,
+    "total": 1,
+    "positive": 1,
     "negative": 0
   },
   "pool": {
-    "ready": 58,
-    "averageReadyProfit": 64805
+    "ready": 56,
+    "averageReadyProfit": 63395
   },
   "risks": [
-    "전체 24시간 실패율은 63.4%지만 최근 2시간은 2.0%라 과거 스키마/설정 실패 영향 가능성이 큼",
-    "AI cost_usd가 비어 있어 토큰 기반 추정값을 사용 중"
+    "전체 24시간 실패율은 61.9%지만 최근 2시간은 2.0%라 과거 스키마/설정 실패 영향 가능성이 큼"
   ]
 }
