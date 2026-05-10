@@ -1,6 +1,7 @@
 import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
 import { evaluateCategoryReadiness, loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
+import { notifyOperationalAlerts, type OperationalAlert } from "@/lib/operational-notifier";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import {
   applyAiReview,
@@ -1404,7 +1405,7 @@ function sourceWorkerFailureStatus(
 
 function workerFailureAlerts(
   workerBreakdown: Map<string, { total: number; failed: number; collected: number; enriched: number }>,
-) {
+): OperationalAlert[] {
   const labels: Record<string, string> = {
     tick: "Tick",
     detail_worker: "Detail",
@@ -1439,6 +1440,28 @@ function workerFailureAlerts(
       const severityOrder = { critical: 0, warning: 1 };
       return severityOrder[a.severity] - severityOrder[b.severity] || b.failureRate - a.failureRate;
     });
+}
+
+function previousOperationalAlerts(previous: SourceHealthRow | null): OperationalAlert[] {
+  const raw = asRecord(previous?.baseline_json).operationalAlerts;
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => {
+      const alert = asRecord(item);
+      const severity = alert.severity === "critical" || alert.severity === "warning" ? alert.severity : null;
+      if (!severity || typeof alert.key !== "string") return null;
+      return {
+        key: alert.key,
+        severity,
+        mode: String(alert.mode ?? ""),
+        label: String(alert.label ?? alert.mode ?? alert.key),
+        message: String(alert.message ?? ""),
+        total: Number(alert.total ?? 0),
+        failed: Number(alert.failed ?? 0),
+        failureRate: Number(alert.failureRate ?? 0),
+      };
+    })
+    .filter((item): item is OperationalAlert => Boolean(item));
 }
 
 function proposeSourceStatus(input: {
@@ -1656,6 +1679,15 @@ export async function sourceHealthStage(): Promise<StageStats> {
   const operationalAlerts = workerFailureAlerts(workerBreakdown);
   const hysteresis = applySourceHealthHysteresis(proposed, previous);
   const now = new Date().toISOString();
+  const notification = await notifyOperationalAlerts({
+    source: "bunjang",
+    status: hysteresis.status,
+    previousStatus: previous?.status ?? null,
+    reason: proposed.reason,
+    checkedAt: now,
+    previousAlerts: previousOperationalAlerts(previous),
+    alerts: operationalAlerts,
+  });
   const payload = {
     source: "bunjang",
     checked_at: now,
@@ -1691,6 +1723,7 @@ export async function sourceHealthStage(): Promise<StageStats> {
       operationalAlerts,
       alertCount: operationalAlerts.length,
       criticalAlertCount: operationalAlerts.filter((alert) => alert.severity === "critical").length,
+      notification,
     },
     hysteresis_json: {
       changed: hysteresis.changed,
