@@ -244,7 +244,13 @@ function chunkArray<T>(items: T[], size: number): T[][] {
 }
 
 async function restFetch(path: string, init: RequestInit = {}) {
-  const res = await fetch(path, init);
+  let res: Response;
+  try {
+    res = await fetch(path, init);
+  } catch (err) {
+    const method = init.method ?? "GET";
+    throw new Error(`Supabase REST fetch failed ${method} ${path.slice(0, 240)}: ${err instanceof Error ? err.message : String(err)}`);
+  }
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`Supabase REST failed ${res.status}: ${body}`);
@@ -848,9 +854,15 @@ async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<
   const unique = [...new Set(pids.filter(Number.isFinite))].slice(0, limit);
   if (unique.length === 0) return [];
   const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,detail_enriched_at";
-  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&pid=in.(${unique.join(",")})&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&limit=${limit}`;
-  const res = await restFetch(url, { headers: serviceHeaders() });
-  return (await res.json()) as ScorableRawRow[];
+  const rows: ScorableRawRow[] = [];
+  for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
+    const remaining = limit - rows.length;
+    if (remaining <= 0) break;
+    const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&pid=in.(${chunk.join(",")})&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&limit=${Math.min(remaining, chunk.length)}`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    rows.push(...((await res.json()) as ScorableRawRow[]));
+  }
+  return rows.slice(0, limit);
 }
 
 async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListingRow>> {
