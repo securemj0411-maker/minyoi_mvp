@@ -11,7 +11,14 @@ import {
 } from "@/lib/pipeline";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE, bandFromProfit } from "@/lib/profit";
-import { canPermanentlyInvalidateSoldOut, describeSignals, detectSoldOut, isSoldOut, type SourceHealthStatus } from "@/lib/sold-out";
+import {
+  canPermanentlyInvalidateSoldOut,
+  describeSignals,
+  detectSoldOut,
+  hasStrongSoldOutSignal,
+  isSoldOut,
+  type SourceHealthStatus,
+} from "@/lib/sold-out";
 
 type Headers = Record<string, string>;
 
@@ -902,6 +909,61 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
         if (!detail) {
           stats.detailFailed += 1;
           await markQueueFailed(claim.queue_id, "detail api returned null");
+          continue;
+        }
+        const soldSignals = detectSoldOut(detail, claim.price);
+        if (hasStrongSoldOutSignal(soldSignals)) {
+          const now = new Date().toISOString();
+          await patchRows("mvp_raw_listings", `pid=eq.${claim.pid}`, {
+            description_preview: detail.description.slice(0, 500),
+            sale_status: detail.saleStatus,
+            trade_data: detail.tradeData,
+            trades_data: detail.tradesData,
+            image_url_template: detail.imageUrlTemplate,
+            image_count: detail.imageCount,
+            thumbnail_url: detail.thumbnailUrl,
+            seller_uid: detail.shopUid,
+            seller_name: detail.shopName,
+            seller_source: "bunjang",
+            listing_state: "sold_confirmed",
+            sold_detected_at: now,
+            detail_status: "done",
+            detail_enriched_at: now,
+            detail_error: null,
+            updated_at: now,
+          });
+          await insertRows("mvp_listing_observations", [{
+            pid: Number(claim.pid),
+            observed_at: now,
+            event_type: "state_changed",
+            price: claim.price,
+            name: claim.name,
+            num_faved: claim.num_faved,
+            sale_status: detail.saleStatus,
+            listing_state: "sold_confirmed",
+            seller_uid: detail.shopUid,
+            source: "tick_detail",
+            raw_json: {
+              sold_signals: soldSignals,
+              reason: "detail_stage_strong_sold_signal",
+            },
+          }]);
+          await patchLifecycle(Number(claim.pid), {
+            status: "sold_confirmed",
+            last_checked_at: now,
+            last_check_result: "sold",
+            consecutive_missing_count: 0,
+            consecutive_error_count: 0,
+            next_check_at: lifecycleNextCheckAt("general", "sold_confirmed"),
+            last_error: null,
+            detail_status_code: 200,
+            transition_confidence: 0.95,
+            state_reason: `detail_stage_${describeSignals(soldSignals)}`,
+          }).catch(() => undefined);
+          await invalidatePoolEntries([{ pid: Number(claim.pid), reason: `detail_stage_${describeSignals(soldSignals)}` }]);
+          await markQueueDone(claim.queue_id);
+          stats.enriched += 1;
+          stats.poolSkipped += 1;
           continue;
         }
         const { listingType, sku } = classifyListing(claim.name, detail.description, claim.price);

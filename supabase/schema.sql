@@ -925,4 +925,11 @@ select
   a.candidate_rank,
   l.generated_at
 from public.mvp_listings l
-join public.mvp_listing_analysis a on a.pid = l.pid;
+join public.mvp_listing_analysis a on a.pid = l.pid
+join public.mvp_raw_listings r on r.pid = l.pid
+left join public.mvp_candidate_pool cp on cp.pid = l.pid
+where r.detail_status = 'done'
+  and r.listing_type = 'normal'
+  and r.listing_state = 'active'
+  and coalesce(nullif(r.sale_status, ''), 'SELLING') in ('SELLING', 'AVAILABLE', 'ON_SALE', 'ACTIVE')
+  and (cp.pid is null or cp.status in ('ready', 'reserved', 'spent'));
