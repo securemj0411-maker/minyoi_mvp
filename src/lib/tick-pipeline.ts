@@ -53,6 +53,7 @@ type ScorableRawRow = RawListingRow & {
   listing_type: string;
   sku_id: string | null;
   sku_name: string | null;
+  seller_uid: string | null;
 };
 
 type ParsedListingRow = {
@@ -948,6 +949,35 @@ function quantile(values: number[], q: number) {
   return next == null ? sorted[base] : sorted[base] + rest * (next - sorted[base]);
 }
 
+function sellerRepresentativePrices(rows: ScorableRawRow[]) {
+  const bySeller = new Map<string, number[]>();
+  for (const row of rows) {
+    const sellerKey = row.seller_uid?.trim() ? `seller:${row.seller_uid.trim()}` : `pid:${row.pid}`;
+    const prices = bySeller.get(sellerKey) ?? [];
+    prices.push(row.price);
+    bySeller.set(sellerKey, prices);
+  }
+  return [...bySeller.values()].map((prices) => Math.round(median(prices)));
+}
+
+function madTrim(values: number[]) {
+  if (values.length < 8) {
+    return { values, medianValue: median(values), mad: 0, removed: 0 };
+  }
+  const medianValue = median(values);
+  const deviations = values.map((value) => Math.abs(value - medianValue));
+  const mad = median(deviations);
+  if (mad <= 0) {
+    return { values, medianValue, mad, removed: 0 };
+  }
+  const threshold = 3 * 1.4826 * mad;
+  const trimmed = values.filter((value) => Math.abs(value - medianValue) <= threshold);
+  if (trimmed.length < Math.max(5, Math.ceil(values.length * 0.5))) {
+    return { values, medianValue, mad, removed: 0 };
+  }
+  return { values: trimmed, medianValue, mad, removed: values.length - trimmed.length };
+}
+
 function percentileRank(values: number[], value: number) {
   if (values.length <= 1) return 0.5;
   const belowOrEqual = values.filter((v) => v <= value).length;
@@ -955,14 +985,14 @@ function percentileRank(values: number[], value: number) {
 }
 
 async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,detail_enriched_at";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at";
   const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&order=last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
 }
 
 async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,detail_enriched_at";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at";
   const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&order=detail_enriched_at.desc.nullslast,last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
@@ -971,7 +1001,7 @@ async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
 async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<ScorableRawRow[]> {
   const unique = [...new Set(pids.filter(Number.isFinite))].slice(0, limit);
   if (unique.length === 0) return [];
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,detail_enriched_at";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at";
   const rows: ScorableRawRow[] = [];
   for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
     const remaining = limit - rows.length;
@@ -1470,21 +1500,24 @@ export async function sourceHealthStage(): Promise<StageStats> {
 }
 
 async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<number, ParsedListingRow>) {
-  const byKey = new Map<string, { prices: number[]; skuId: string | null }>();
+  const byKey = new Map<string, { rows: ScorableRawRow[]; skuId: string | null }>();
   for (const row of rows) {
     const parsed = parsedByPid.get(row.pid);
     if (!parsed?.comparable_key || Number(parsed.parse_confidence ?? 0) < 0.65 || parsed.needs_review) continue;
     const key = parsed.comparable_key;
-    if (!byKey.has(key)) byKey.set(key, { prices: [], skuId: row.sku_id });
-    byKey.get(key)!.prices.push(row.price);
+    if (!byKey.has(key)) byKey.set(key, { rows: [], skuId: row.sku_id });
+    byKey.get(key)!.rows.push(row);
   }
 
   const today = kstDateString();
   const marketRows = [...byKey.entries()].map(([comparableKey, group]) => {
-    const activeSampleCount = group.prices.length;
-    const activeMedian = Math.round(median(group.prices));
-    const p25 = Math.round(quantile(group.prices, 0.25));
-    const p75 = Math.round(quantile(group.prices, 0.75));
+    const representativePrices = sellerRepresentativePrices(group.rows);
+    const trimmed = madTrim(representativePrices);
+    const marketPrices = trimmed.values;
+    const activeSampleCount = marketPrices.length;
+    const activeMedian = Math.round(median(marketPrices));
+    const p25 = Math.round(quantile(marketPrices, 0.25));
+    const p75 = Math.round(quantile(marketPrices, 0.75));
     const confidence = activeSampleCount >= 20 ? "high" : activeSampleCount >= 8 ? "medium" : "low";
     return {
       date: today,
@@ -1506,7 +1539,7 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key");
   return {
     keyCount: marketRows.length,
-    sampleCount: [...byKey.values()].reduce((sum, group) => sum + group.prices.length, 0),
+    sampleCount: marketRows.reduce((sum, row) => sum + row.active_sample_count, 0),
   };
 }
 
