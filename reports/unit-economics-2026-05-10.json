@@ -1,27 +1,48 @@
 {
-  "generatedAt": "2026-05-10T11:22:52.386Z",
+  "generatedAt": "2026-05-10T11:27:45.852Z",
   "windowHours": 24,
-  "cutoff": "2026-05-09T11:22:52.386Z",
+  "cutoff": "2026-05-09T11:27:45.852Z",
   "runs": {
     "total": 1000,
-    "succeeded": 362,
-    "failed": 638,
+    "succeeded": 366,
+    "failed": 634,
     "qstash": 917,
-    "functionSeconds": 23359.796,
-    "p95DurationMs": 35810
+    "functionSeconds": 23176.772,
+    "p95DurationMs": 35363,
+    "stableWindowHours": 2,
+    "stable": {
+      "runs": 101,
+      "failed": 2,
+      "failureRate": 0.019801980198019802,
+      "qstash": 88,
+      "qstashPerDay": 1056,
+      "searchCalls": 1214,
+      "detailClaimed": 2213,
+      "detailEnriched": 2184,
+      "scored": 10164,
+      "poolUpserted": 2313,
+      "functionSeconds": 2752.994
+    },
+    "failureReasons": {
+      "supabase_schema_cache": 607,
+      "fetch_failed": 27
+    },
+    "stableFailureReasons": {
+      "supabase_schema_cache": 2
+    }
   },
   "pipeline": {
-    "searchCalls": 1791,
-    "collected": 260770,
-    "queued": 24083,
-    "detailClaimed": 6686,
-    "detailEnriched": 6539,
+    "searchCalls": 1830,
+    "collected": 264514,
+    "queued": 24242,
+    "detailClaimed": 6766,
+    "detailEnriched": 6619,
     "detailFailed": 69,
-    "scored": 49421,
-    "poolUpserted": 14973,
-    "aiReviewRequested": 1215,
-    "aiApiCalls": 314,
-    "aiCacheHits": 901
+    "scored": 49721,
+    "poolUpserted": 15001,
+    "aiReviewRequested": 1225,
+    "aiApiCalls": 316,
+    "aiCacheHits": 909
   },
   "costs": {
     "aiInputTokens": 52788,
@@ -35,9 +56,9 @@
     "qstashMessagesPerDay": 917,
     "qstashPaidUsdPerDay": 0,
     "qstashPaidUsdPerMonth": 0,
-    "runtimeSecondsPerDay": 23359.796,
-    "detailCallsPerDay": 6686,
-    "searchCallsPerDay": 1791
+    "runtimeSecondsPerDay": 23176.772,
+    "detailCallsPerDay": 6766,
+    "searchCallsPerDay": 1830
   },
   "pack": {
     "opens": 0,
@@ -55,11 +76,11 @@
     "negative": 0
   },
   "pool": {
-    "ready": 57,
-    "averageReadyProfit": 63617
+    "ready": 58,
+    "averageReadyProfit": 64805
   },
   "risks": [
-    "cron 실패율 63.8%로 높음",
+    "전체 24시간 실패율은 63.4%지만 최근 2시간은 2.0%라 과거 스키마/설정 실패 영향 가능성이 큼",
     "AI cost_usd가 비어 있어 토큰 기반 추정값을 사용 중"
   ]
 }

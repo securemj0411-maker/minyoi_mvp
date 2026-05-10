@@ -152,9 +152,12 @@ function dateStamp(date) {
 }
 
 const windowHours = intArg("window-hours", 24, 1, 720);
+const stableWindowHours = Math.min(windowHours, intArg("stable-window-hours", 2, 1, 24));
 const now = new Date();
 const cutoff = new Date(now.getTime() - windowHours * 60 * 60 * 1000);
 const cutoffIso = cutoff.toISOString();
+const stableCutoff = new Date(now.getTime() - stableWindowHours * 60 * 60 * 1000);
+const stableCutoffIso = stableCutoff.toISOString();
 const reportDir = path.join(appDir, "reports");
 const outPath = arg("out", path.join(reportDir, `unit-economics-${dateStamp(now)}.md`));
 const summaryPath = outPath.replace(/\.md$/i, ".json");
@@ -195,6 +198,43 @@ const succeededRuns = runs.filter((row) => row.status === "succeeded");
 const failedRuns = runs.filter((row) => row.status === "failed");
 const qstashRuns = runs.filter(isQstashRun);
 const durations = runs.map((row) => row.duration_ms).filter((value) => value != null);
+const stableRuns = runs.filter((row) => Date.parse(row.started_at) >= stableCutoff.getTime());
+const stableFailedRuns = stableRuns.filter((row) => row.status === "failed");
+
+function failureBucket(row) {
+  const raw = String(row.error_message ?? "unknown").trim();
+  if (raw.includes("schema cache") || raw.includes("PGRST204") || raw.includes("PGRST205")) {
+    return "supabase_schema_cache";
+  }
+  if (raw.includes("fetch failed")) return "fetch_failed";
+  if (raw.includes("timeout")) return "timeout";
+  return raw.slice(0, 90) || "unknown";
+}
+
+const failureReasons = new Map();
+const stableFailureReasons = new Map();
+for (const row of failedRuns) inc(failureReasons, failureBucket(row));
+for (const row of stableFailedRuns) inc(stableFailureReasons, failureBucket(row));
+
+function metricsFor(rowsForWindow, hours) {
+  const failed = rowsForWindow.filter((row) => row.status === "failed");
+  const qstash = rowsForWindow.filter(isQstashRun);
+  return {
+    runs: rowsForWindow.length,
+    failed: failed.length,
+    failureRate: rowsForWindow.length ? failed.length / rowsForWindow.length : 0,
+    qstash: qstash.length,
+    qstashPerDay: perDay(qstash.length, hours),
+    searchCalls: sum(rowsForWindow, (row) => stage(row, "search").searchSucceeded),
+    detailClaimed: sum(rowsForWindow, detailClaimCount),
+    detailEnriched: sum(rowsForWindow, detailEnrichedCount),
+    scored: sum(rowsForWindow, (row) => stage(row, "score").scored || row.scored_count),
+    poolUpserted: sum(rowsForWindow, (row) => stage(row, "score").poolUpserted),
+    functionSeconds: sum(rowsForWindow, (row) => row.duration_ms) / 1000,
+  };
+}
+
+const stableMetrics = metricsFor(stableRuns, stableWindowHours);
 
 const workerStats = new Map();
 for (const row of runs) {
@@ -304,8 +344,10 @@ const risks = [];
 if (qstashMessagesPerDay > QSTASH_FREE_MESSAGES_PER_DAY) {
   risks.push(`QStash projected ${Math.round(qstashMessagesPerDay).toLocaleString("ko-KR")}/day로 free ${QSTASH_FREE_MESSAGES_PER_DAY.toLocaleString("ko-KR")}/day 초과`);
 }
-if (failedRuns.length / Math.max(1, runs.length) > 0.1) {
-  risks.push(`cron 실패율 ${pct(failedRuns.length, runs.length)}로 높음`);
+if (stableMetrics.failureRate > 0.1) {
+  risks.push(`최근 ${stableWindowHours}시간 cron 실패율 ${pct(stableMetrics.failed, stableMetrics.runs)}로 높음`);
+} else if (failedRuns.length / Math.max(1, runs.length) > 0.1) {
+  risks.push(`전체 ${windowHours}시간 실패율은 ${pct(failedRuns.length, runs.length)}지만 최근 ${stableWindowHours}시간은 ${pct(stableMetrics.failed, stableMetrics.runs)}라 과거 스키마/설정 실패 영향 가능성이 큼`);
 }
 if ((queueStatus.get("pending") ?? 0) > 500) {
   risks.push(`detail queue pending ${(queueStatus.get("pending") ?? 0).toLocaleString("ko-KR")}건으로 backlog 확인 필요`);
@@ -354,6 +396,10 @@ const summary = {
     qstash: qstashRuns.length,
     functionSeconds: totalFunctionSeconds,
     p95DurationMs: percentile(durations, 95),
+    stableWindowHours,
+    stable: stableMetrics,
+    failureReasons: Object.fromEntries(failureReasons),
+    stableFailureReasons: Object.fromEntries(stableFailureReasons),
   },
   pipeline: {
     searchCalls: totalSearchCalls,
@@ -410,6 +456,7 @@ const md = `# 미뇨이 단위경제성 리포트
 
 - 생성 시각: ${now.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
 - 분석 구간: 최근 ${windowHours}시간 (${cutoffIso} 이후)
+- 안정 구간: 최근 ${stableWindowHours}시간 (${stableCutoffIso} 이후)
 - 데이터 소스: Supabase 운영 로그, 후보팩 기록, AI 분류 비용 기록
 
 ## 한 줄 결론
@@ -417,6 +464,31 @@ const md = `# 미뇨이 단위경제성 리포트
 ${risks.length === 0
   ? "현재 관측 구간에서는 즉시 막아야 할 비용 폭발 신호는 없습니다. 다음 판단은 카드팩 성공률과 ready pool 깊이를 더 쌓아본 뒤 하면 됩니다."
   : `주의 신호 ${risks.length}개가 있습니다: ${risks[0]}.`}
+
+## 안정 구간 판정
+
+${table(
+  ["항목", `전체 ${windowHours}h`, `최근 ${stableWindowHours}h`, "판정"],
+  [
+    ["cron 실패율", pct(failedRuns.length, runs.length), pct(stableMetrics.failed, stableMetrics.runs), stableMetrics.failureRate <= 0.05 ? "최근 안정" : "최근 실패 확인 필요"],
+    ["QStash/day", Math.round(qstashMessagesPerDay).toLocaleString("ko-KR"), Math.round(stableMetrics.qstashPerDay).toLocaleString("ko-KR"), stableMetrics.qstashPerDay <= QSTASH_FREE_MESSAGES_PER_DAY ? "free 안쪽" : "free 초과"],
+    ["detail claim/day", Math.round(detailCallsPerDay).toLocaleString("ko-KR"), Math.round(perDay(stableMetrics.detailClaimed, stableWindowHours)).toLocaleString("ko-KR"), "처리량 기준"],
+    ["score/day", Math.round(perDay(totalScored, windowHours)).toLocaleString("ko-KR"), Math.round(perDay(stableMetrics.scored, stableWindowHours)).toLocaleString("ko-KR"), "pool 공급 기준"],
+    ["pool upsert/day", Math.round(perDay(totalPoolUpserted, windowHours)).toLocaleString("ko-KR"), Math.round(perDay(stableMetrics.poolUpserted, stableWindowHours)).toLocaleString("ko-KR"), "후보 공급 기준"],
+  ],
+)}
+
+### 실패 원인 Top
+
+${failedRuns.length === 0
+  ? "실패 로그 없음"
+  : table(
+      ["구간", "원인", "count"],
+      [
+        ...mapRows(failureReasons, 5).map(([reason, count]) => [`전체 ${windowHours}h`, reason, count]),
+        ...mapRows(stableFailureReasons, 5).map(([reason, count]) => [`최근 ${stableWindowHours}h`, reason, count]),
+      ],
+    )}
 
 ## 운영 처리량
 
