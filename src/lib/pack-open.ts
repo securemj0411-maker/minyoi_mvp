@@ -1,5 +1,11 @@
 import { fetchDetail } from "@/lib/bunjang";
-import { detectSoldOut, describeSignals, isSoldOut } from "@/lib/sold-out";
+import {
+  canPermanentlyInvalidateSoldOut,
+  detectSoldOut,
+  describeSignals,
+  isSoldOut,
+  type SourceHealthStatus,
+} from "@/lib/sold-out";
 
 const TIMEOUT_MS = 30_000;
 
@@ -71,6 +77,11 @@ type ListingMeta = {
   price: number;
   sku_name: string;
   thumbnail_url: string | null;
+};
+
+type SourceHealthRow = {
+  status: SourceHealthStatus;
+  checked_at: string;
 };
 
 function supabaseRest() {
@@ -148,6 +159,19 @@ async function rpcInvalidate(pid: number, reason: string): Promise<void> {
     headers: authHeaders(),
     body: JSON.stringify({ p_pid: pid, p_reason: reason.slice(0, 120) }),
   });
+}
+
+async function loadLatestSourceHealth(): Promise<SourceHealthStatus> {
+  try {
+    const res = await callSupabase(
+      "/mvp_source_health?select=status,checked_at&source=eq.bunjang&order=checked_at.desc&limit=1",
+      { headers: authHeaders() },
+    );
+    const rows = (await res.json()) as SourceHealthRow[];
+    return rows[0]?.status ?? "degraded";
+  } catch {
+    return "degraded";
+  }
 }
 
 async function fetchListings(pids: number[]): Promise<Map<number, ListingMeta>> {
@@ -253,6 +277,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
   }
 
   const listingMap = await fetchListings(reserved.map((r) => r.pid));
+  const sourceHealth = await loadLatestSourceHealth();
   const reveals: RevealCard[] = [];
   const attemptedPids: number[] = [];
   const releasePids: number[] = [];
@@ -276,7 +301,11 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     if (!isFresh) {
       const { signals } = await verifyAndCheckSold(candidate.pid, meta.price);
       if (isSoldOut(signals)) {
-        await rpcInvalidate(candidate.pid, describeSignals(signals));
+        if (canPermanentlyInvalidateSoldOut(signals, sourceHealth)) {
+          await rpcInvalidate(candidate.pid, `${sourceHealth}_${describeSignals(signals)}`);
+        } else {
+          releasePids.push(candidate.pid);
+        }
         continue;
       }
       await patchPoolVerified(candidate.pid);

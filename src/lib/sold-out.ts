@@ -7,6 +7,8 @@ export type SoldOutSignal =
   | "price_zero"
   | "missing_data";
 
+export type SourceHealthStatus = "healthy" | "degraded" | "unhealthy";
+
 const TRADED_KEYWORDS = [
   "거래완료",
   "판매완료",
@@ -53,6 +55,24 @@ export function detectSoldOut(
 
 export function isSoldOut(signals: SoldOutSignal[]): boolean {
   return signals.length > 0;
+}
+
+export function hasStrongSoldOutSignal(signals: SoldOutSignal[]): boolean {
+  return signals.some((signal) => (
+    signal === "sale_status_inactive" ||
+    signal === "description_traded" ||
+    signal === "price_zero"
+  ));
+}
+
+export function canPermanentlyInvalidateSoldOut(
+  signals: SoldOutSignal[],
+  sourceHealth: SourceHealthStatus,
+): boolean {
+  if (signals.length === 0) return false;
+  if (sourceHealth === "healthy") return true;
+  if (sourceHealth === "degraded") return hasStrongSoldOutSignal(signals);
+  return false;
 }
 
 export function describeSignals(signals: SoldOutSignal[]): string {

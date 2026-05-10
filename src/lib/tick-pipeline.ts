@@ -11,7 +11,7 @@ import {
 } from "@/lib/pipeline";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE, bandFromProfit } from "@/lib/profit";
-import { describeSignals, detectSoldOut, isSoldOut } from "@/lib/sold-out";
+import { canPermanentlyInvalidateSoldOut, describeSignals, detectSoldOut, isSoldOut } from "@/lib/sold-out";
 
 type Headers = Record<string, string>;
 
@@ -1241,6 +1241,12 @@ async function markPoolVerified(pid: number) {
 export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
+  const sourceHealth = await loadLatestSourceHealth();
+  const healthStatus = sourceHealth?.status ?? "degraded";
+  if (healthStatus === "unhealthy") {
+    stats.poolSkipped = 1;
+    return stats;
+  }
   const rows = await loadPoolWarmRows(Math.min(80, config.tickDetailBatchSize * 2));
   const prices = await loadRawPrices(rows.map((row) => row.pid));
 
@@ -1258,7 +1264,9 @@ export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
       continue;
     }
     if (isSoldOut(signals)) {
-      await invalidatePoolEntries([{ pid: row.pid, reason: `pool_warmer_${describeSignals(signals)}` }]);
+      if (canPermanentlyInvalidateSoldOut(signals, healthStatus)) {
+        await invalidatePoolEntries([{ pid: row.pid, reason: `pool_warmer_${healthStatus}_${describeSignals(signals)}` }]);
+      }
       stats.poolSkipped += 1;
       continue;
     }
