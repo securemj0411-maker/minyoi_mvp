@@ -807,6 +807,18 @@ function sourceHealthClass(status: string) {
 function SourceHealthPanel({ health }: { health: Awaited<ReturnType<typeof loadSourceHealthDebug>> }) {
   const baseline = health?.baseline_json ?? {};
   const hysteresis = health?.hysteresis_json ?? {};
+  const workerBreakdown = baseline.workerBreakdown && typeof baseline.workerBreakdown === "object" && !Array.isArray(baseline.workerBreakdown)
+    ? Object.entries(baseline.workerBreakdown as Record<string, unknown>).map(([mode, raw]) => {
+      const item = raw && typeof raw === "object" && !Array.isArray(raw) ? raw as Record<string, unknown> : {};
+      return {
+        mode,
+        total: Number(item.total ?? 0),
+        failed: Number(item.failed ?? 0),
+        collected: Number(item.collected ?? 0),
+        enriched: Number(item.enriched ?? 0),
+      };
+    }).sort((a, b) => b.total - a.total)
+    : [];
   if (!health) {
     return (
       <div className="rounded-md border border-zinc-200 bg-white p-5">
@@ -838,6 +850,32 @@ function SourceHealthPanel({ health }: { health: Awaited<ReturnType<typeof loadS
         <MetricCard label="실행 수" value={`${num(Number(baseline.runCount ?? 0))}회`} sub={`실패 ${num(Number(baseline.failedRuns ?? 0))}회`} />
         <MetricCard label="Detail 시도" value={`${num(Number(baseline.detailAttempts ?? 0))}건`} sub={`실패 ${num(Number(baseline.detailFailed ?? 0))}건`} />
       </div>
+
+      {workerBreakdown.length > 0 ? (
+        <div className="mt-4 rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+            Worker별 헬스 기여도
+          </div>
+          <div className="divide-y divide-zinc-100">
+            {workerBreakdown.map((row) => (
+              <div key={row.mode} className="grid grid-cols-[110px_1fr_70px] items-center gap-3 px-3 py-2 text-xs">
+                <div className="font-semibold text-zinc-800">{pipelineModeLabel(row.mode)}</div>
+                <div className="text-zinc-500">
+                  실행 {num(row.total)}회 · 검색 {num(row.collected)}건 · 상세 {num(row.enriched)}건
+                </div>
+                <div className={row.failed > 0 ? "text-right font-semibold text-red-700" : "text-right font-semibold text-emerald-700"}>
+                  실패 {num(row.failed)}
+                </div>
+              </div>
+            ))}
+          </div>
+          {Number(baseline.ignoredInternalWorkerFailures ?? 0) > 0 ? (
+            <div className="border-t border-zinc-100 px-3 py-2 text-xs text-zinc-500">
+              내부 worker 실패 {num(Number(baseline.ignoredInternalWorkerFailures ?? 0))}회는 source health 판정에서 제외됨
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-4 rounded-md border border-zinc-100 bg-zinc-50 p-3 text-xs text-zinc-600">
         <div className="font-semibold text-zinc-800">판정 근거: {health.reason || "-"}</div>
