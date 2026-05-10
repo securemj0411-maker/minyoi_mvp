@@ -22,6 +22,7 @@ type RawListingRow = {
   num_faved: number;
   free_shipping: boolean;
   url: string;
+  thumbnail_url: string | null;
   detail_enriched_at: string | null;
   last_seen_at: string;
   last_changed_at: string;
@@ -277,7 +278,7 @@ function pidList(items: SearchItem[]) {
 async function loadExistingRaw(pids: number[]): Promise<Map<number, RawListingRow>> {
   if (pids.length === 0) return new Map();
   const unique = [...new Set(pids)];
-  const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,detail_enriched_at,last_seen_at,last_changed_at,listing_state&pid=in.(${unique.join(",")})`;
+  const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,thumbnail_url,detail_enriched_at,last_seen_at,last_changed_at,listing_state&pid=in.(${unique.join(",")})`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   const rows = (await res.json()) as RawListingRow[];
   return new Map(rows.map((row) => [row.pid, row]));
@@ -389,6 +390,13 @@ function observationEventType(item: SearchItem, existing: RawListingRow | undefi
   return null;
 }
 
+function searchOptionsForMode(mode: SearchStageOptions["mode"]) {
+  if (mode === "fresh" || mode === "deep") {
+    return { order: "date" as const, limit: 96 };
+  }
+  return { order: "score" as const, limit: 30 };
+}
+
 function rotatedDeepPage(deepCrawlMaxPage: number, nowMs = Date.now()) {
   const maxDeep = Math.max(1, deepCrawlMaxPage);
   const tickBucket = Math.floor(nowMs / (30 * 60 * 1000));
@@ -425,7 +433,7 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
         stats.timedOut = true;
         return stats;
       }
-      const items = await searchPage(query, page);
+      const items = await searchPage(query, page, searchOptionsForMode(mode));
       for (const item of items) {
         if (!seen.has(item.pid)) seen.set(item.pid, item);
       }
@@ -473,6 +481,14 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
           listingState: current.listing_state,
         } : null,
         changedFields,
+        searchMeta: {
+          order: searchOptionsForMode(mode).order,
+          limit: searchOptionsForMode(mode).limit,
+          sellerUid: item.sellerUid,
+          location: item.location,
+          updateTime: item.updateTime,
+          productImage: item.productImage,
+        },
         searchMode: mode,
         detailTriage: detailDecision ? {
           queue: detailDecision.queue,
@@ -497,6 +513,18 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
       free_shipping: item.freeShipping,
       query: item.query,
       source: "bunjang",
+      thumbnail_url: current?.thumbnail_url ?? item.productImage,
+      raw_json: {
+        search: item.raw,
+        searchMeta: {
+          order: searchOptionsForMode(mode).order,
+          limit: searchOptionsForMode(mode).limit,
+          sellerUid: item.sellerUid,
+          location: item.location,
+          updateTime: item.updateTime,
+          productImage: item.productImage,
+        },
+      },
       listing_state: "active",
       missing_count: 0,
       last_missing_at: null,

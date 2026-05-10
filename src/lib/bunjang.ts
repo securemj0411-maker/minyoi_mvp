@@ -18,6 +18,18 @@ export type SearchItem = {
   freeShipping: boolean;
   query: string;
   url: string;
+  sellerUid: string | null;
+  location: string | null;
+  productImage: string | null;
+  updateTime: number | null;
+  raw: Record<string, unknown>;
+};
+
+export type SearchOrder = "score" | "date";
+
+export type SearchPageOptions = {
+  order?: SearchOrder;
+  limit?: number;
 };
 
 export type DetailData = {
@@ -42,17 +54,32 @@ export function buildBunjangImageUrl(template: string | null | undefined, index 
   return template.replace("{cnt}", String(index)).replace("{res}", String(res));
 }
 
+function stringOrNull(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const trimmed = v.trim();
+  return trimmed ? trimmed : null;
+}
+
+function boolish(v: unknown): boolean {
+  return v === true || v === "1" || v === 1;
+}
+
 async function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-export async function searchPage(query: string, page: number): Promise<SearchItem[]> {
+export async function searchPage(query: string, page: number, options: SearchPageOptions = {}): Promise<SearchItem[]> {
+  const order = options.order ?? "score";
+  const limit = Math.max(1, Math.min(96, Math.round(options.limit ?? 30)));
   const url = new URL(`${API_BASE}/api/1/find_v2.json`);
   url.searchParams.set("q", query);
-  url.searchParams.set("order", "score");
+  url.searchParams.set("order", order);
   url.searchParams.set("page", String(page));
-  url.searchParams.set("n", "30");
+  url.searchParams.set("n", String(limit));
   url.searchParams.set("stat_device", "w");
+  url.searchParams.set("req_ref", "search");
+  url.searchParams.set("stat_category_required", "1");
+  url.searchParams.set("version", "4");
 
   try {
     const res = await fetch(url.toString(), { headers: HEADERS });
@@ -66,9 +93,14 @@ export async function searchPage(query: string, page: number): Promise<SearchIte
         name: String(item.name ?? ""),
         price: toInt(item.price),
         numFaved: toInt(item.num_faved),
-        freeShipping: item.free_shipping === true || item.free_shipping === "1",
+        freeShipping: boolish(item.free_shipping),
         query,
         url: `https://m.bunjang.co.kr/products/${item.pid}`,
+        sellerUid: stringOrNull(item.uid),
+        location: stringOrNull(item.location),
+        productImage: stringOrNull(item.product_image),
+        updateTime: Number.isFinite(Number(item.update_time)) ? Number(item.update_time) : null,
+        raw: item,
       };
     }).filter((item) => item.pid);
   } catch {
