@@ -22,6 +22,7 @@ type RawListingRow = {
   num_faved: number;
   free_shipping: boolean;
   url: string;
+  seller_uid: string | null;
   thumbnail_url: string | null;
   detail_enriched_at: string | null;
   last_seen_at: string;
@@ -71,6 +72,22 @@ type MarketKeyInvalidationEvent = {
   oldComparableKey?: string | null;
   newComparableKey?: string | null;
   parserVersion?: string | null;
+};
+
+type SellerUpsertRow = {
+  source: string;
+  seller_uid: string;
+  seller_name?: string | null;
+  review_rating?: number | null;
+  review_count?: number;
+  sales_count?: number;
+  follower_count?: number;
+  is_proshop?: boolean;
+  is_official_seller?: boolean;
+  joined_at?: string | null;
+  source_json?: Record<string, unknown>;
+  last_seen_at: string;
+  updated_at: string;
 };
 
 type MarketPriceRow = {
@@ -155,6 +172,7 @@ export type StageStats = {
   aiFiltered: number;
   aiKeptNormal: number;
   aiKeptLowConfidence: number;
+  sellerUpserted: number;
   upserted: number;
   poolUpserted: number;
   poolSkipped: number;
@@ -185,6 +203,7 @@ function emptyStats(): StageStats {
     aiFiltered: 0,
     aiKeptNormal: 0,
     aiKeptLowConfidence: 0,
+    sellerUpserted: 0,
     upserted: 0,
     poolUpserted: 0,
     poolSkipped: 0,
@@ -211,6 +230,7 @@ function mergeStats(parts: StageStats[]): StageStats {
     aiFiltered: acc.aiFiltered + part.aiFiltered,
     aiKeptNormal: acc.aiKeptNormal + part.aiKeptNormal,
     aiKeptLowConfidence: acc.aiKeptLowConfidence + part.aiKeptLowConfidence,
+    sellerUpserted: acc.sellerUpserted + part.sellerUpserted,
     upserted: acc.upserted + part.upserted,
     poolUpserted: acc.poolUpserted + part.poolUpserted,
     poolSkipped: acc.poolSkipped + part.poolSkipped,
@@ -320,6 +340,34 @@ async function softInsertRows(table: string, rows: unknown[]): Promise<boolean> 
   }
 }
 
+async function upsertSellerRows(rows: SellerUpsertRow[]): Promise<number> {
+  const bySeller = new Map<string, SellerUpsertRow>();
+  for (const row of rows) {
+    const uid = row.seller_uid.trim();
+    if (!uid) continue;
+    const existing = bySeller.get(uid);
+    bySeller.set(uid, {
+      ...existing,
+      ...row,
+      seller_uid: uid,
+      seller_name: row.seller_name ?? existing?.seller_name,
+      review_rating: row.review_rating ?? existing?.review_rating,
+      review_count: row.review_count ?? existing?.review_count,
+      sales_count: row.sales_count ?? existing?.sales_count,
+      follower_count: row.follower_count ?? existing?.follower_count,
+      is_proshop: row.is_proshop ?? existing?.is_proshop,
+      is_official_seller: row.is_official_seller ?? existing?.is_official_seller,
+      joined_at: row.joined_at ?? existing?.joined_at,
+      source_json: { ...(existing?.source_json ?? {}), ...(row.source_json ?? {}) },
+      last_seen_at: row.last_seen_at > (existing?.last_seen_at ?? "") ? row.last_seen_at : existing?.last_seen_at ?? row.last_seen_at,
+      updated_at: row.updated_at > (existing?.updated_at ?? "") ? row.updated_at : existing?.updated_at ?? row.updated_at,
+    });
+  }
+  const sellers = [...bySeller.values()];
+  await upsertRows("mvp_sellers", sellers, "source,seller_uid");
+  return sellers.length;
+}
+
 async function enqueueMarketKeyInvalidations(events: MarketKeyInvalidationEvent[]): Promise<number> {
   const merged = new Map<string, MarketKeyInvalidationEvent>();
   for (const event of events) {
@@ -363,7 +411,7 @@ async function loadExistingRaw(pids: number[]): Promise<Map<number, RawListingRo
   const unique = [...new Set(pids)];
   const rows: RawListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
-    const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,thumbnail_url,detail_enriched_at,last_seen_at,last_changed_at,listing_state&pid=in.(${chunk.join(",")})`;
+    const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,seller_uid,thumbnail_url,detail_enriched_at,last_seen_at,last_changed_at,listing_state&pid=in.(${chunk.join(",")})`;
     const res = await restFetch(url, { headers: serviceHeaders() });
     rows.push(...((await res.json()) as RawListingRow[]));
   }
@@ -567,6 +615,7 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
       num_faved: item.numFaved,
       name: item.name,
       sale_status: "",
+      seller_uid: item.sellerUid,
       source: "bunjang",
       raw_json: {
         query: item.query,
@@ -584,6 +633,8 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
           order: searchOptionsForMode(mode).order,
           limit: searchOptionsForMode(mode).limit,
           sellerUid: item.sellerUid,
+          sellerProshop: item.sellerProshop,
+          sellerBizseller: item.sellerBizseller,
           location: item.location,
           updateTime: item.updateTime,
           productImage: item.productImage,
@@ -612,6 +663,8 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
       free_shipping: item.freeShipping,
       query: item.query,
       source: "bunjang",
+      seller_uid: item.sellerUid,
+      seller_source: "bunjang",
       thumbnail_url: current?.thumbnail_url ?? item.productImage,
       raw_json: {
         search: item.raw,
@@ -619,6 +672,8 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
           order: searchOptionsForMode(mode).order,
           limit: searchOptionsForMode(mode).limit,
           sellerUid: item.sellerUid,
+          sellerProshop: item.sellerProshop,
+          sellerBizseller: item.sellerBizseller,
           location: item.location,
           updateTime: item.updateTime,
           productImage: item.productImage,
@@ -634,6 +689,24 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
   }), "pid");
   stats.rawUpserted = items.length;
   await insertRows("mvp_listing_observations", observationRows);
+  stats.sellerUpserted += await upsertSellerRows(items.flatMap((item) => {
+    if (!item.sellerUid) return [];
+    return [{
+      source: "bunjang",
+      seller_uid: item.sellerUid,
+      is_proshop: item.sellerProshop,
+      source_json: {
+        search: {
+          proshop: item.sellerProshop,
+          bizseller: item.sellerBizseller,
+          query: item.query,
+          pid: item.pid,
+        },
+      },
+      last_seen_at: now,
+      updated_at: now,
+    }];
+  }));
 
   const changedItems = items.filter((item) => changedEnough(item, existing.get(Number(item.pid))));
   const changedParsedByPid = await loadParsedRows(changedItems.map((item) => Number(item.pid)).filter(Number.isFinite));
@@ -760,6 +833,9 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           image_url_template: detail.imageUrlTemplate,
           image_count: detail.imageCount,
           thumbnail_url: detail.thumbnailUrl,
+          seller_uid: detail.shopUid,
+          seller_name: detail.shopName,
+          seller_source: "bunjang",
           listing_type: listingType,
           sku_id: sku?.id ?? null,
           sku_name: sku?.modelName ?? null,
@@ -769,6 +845,26 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           updated_at: now,
         });
         try {
+          if (detail.shopUid) {
+            stats.sellerUpserted += await upsertSellerRows([{
+              source: "bunjang",
+              seller_uid: detail.shopUid,
+              seller_name: detail.shopName,
+              review_rating: detail.shopReviewRating,
+              review_count: detail.shopReviewCount,
+              sales_count: detail.shopSalesCount,
+              follower_count: detail.shopFollowerCount,
+              is_proshop: detail.shopProshop,
+              is_official_seller: detail.shopOfficialSeller,
+              joined_at: detail.shopJoinDate,
+              source_json: {
+                detail: detail.shopData,
+                pid: claim.pid,
+              },
+              last_seen_at: now,
+              updated_at: now,
+            }]);
+          }
           await upsertRows("mvp_listing_parsed", [toParsedListingRow(claim.pid, parsed)], "pid");
           if (existingParsed?.comparable_key && existingParsed.comparable_key !== parsed.comparableKey) {
             marketInvalidations.push({
@@ -803,6 +899,7 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
             num_faved: claim.num_faved,
             sale_status: detail.saleStatus,
             listing_state: "active",
+            seller_uid: detail.shopUid,
             sku_id: sku?.id ?? null,
             sku_name: sku?.modelName ?? null,
             comparable_key: parsed.comparableKey,
@@ -1478,7 +1575,7 @@ function hasPoolBlockFlag(scoreFlags: string[]) {
 }
 
 async function invalidatePoolEntries(entries: { pid: number; reason: string }[]) {
-  await Promise.all(entries.map((entry) => patchRows(
+  const results = await Promise.allSettled(entries.map((entry) => patchRows(
     "mvp_candidate_pool",
     `pid=eq.${entry.pid}&status=in.(ready,reserved)`,
     {
@@ -1488,6 +1585,14 @@ async function invalidatePoolEntries(entries: { pid: number; reason: string }[])
       updated_at: new Date().toISOString(),
     },
   )));
+  const failed = results.filter((result) => result.status === "rejected");
+  if (failed.length > 0) {
+    console.error("pool invalidation partially failed", {
+      failed: failed.length,
+      total: entries.length,
+      errors: failed.slice(0, 3).map((result) => result.reason instanceof Error ? result.reason.message : String(result.reason)),
+    });
+  }
 }
 
 async function loadPoolWarmRows(limit: number): Promise<PoolWarmRow[]> {

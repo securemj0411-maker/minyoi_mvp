@@ -1082,6 +1082,7 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
               <th className="px-4 py-3">API</th>
               <th className="px-4 py-3">캐시</th>
               <th className="px-4 py-3">AI 제외</th>
+              <th className="px-4 py-3">판매자</th>
               <th className="px-4 py-3">저장</th>
             </tr>
           </thead>
@@ -1114,6 +1115,12 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
                 <td className="px-4 py-3">{num(run.aiApiCalls)}</td>
                 <td className="px-4 py-3">{num(run.aiCacheHits)}</td>
                 <td className="px-4 py-3">{num(run.aiFilteredCount)}</td>
+                <td className="px-4 py-3">{num(
+                  ["search", "detail", "score", "market_stats", "source_health", "pool_warmer"].reduce((sum, stage) => {
+                    const stats = stageStats(run, stage as "search" | "detail" | "score");
+                    return sum + stageValue(stats, "sellerUpserted");
+                  }, 0)
+                )}</td>
                 <td className="px-4 py-3 font-semibold">{num(run.upsertedCount)}</td>
               </tr>
             ))}

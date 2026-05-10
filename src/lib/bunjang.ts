@@ -19,6 +19,8 @@ export type SearchItem = {
   query: string;
   url: string;
   sellerUid: string | null;
+  sellerProshop: boolean;
+  sellerBizseller: boolean;
   location: string | null;
   productImage: string | null;
   updateTime: number | null;
@@ -37,6 +39,14 @@ export type DetailData = {
   saleStatus: string;
   shopReviewRating: number | null;
   shopReviewCount: number;
+  shopUid: string | null;
+  shopName: string | null;
+  shopFollowerCount: number;
+  shopSalesCount: number;
+  shopProshop: boolean;
+  shopOfficialSeller: boolean;
+  shopJoinDate: string | null;
+  shopData: Record<string, unknown>;
   tradeData: unknown;
   tradesData: unknown;
   imageUrlTemplate: string | null;
@@ -97,6 +107,8 @@ export async function searchPage(query: string, page: number, options: SearchPag
         query,
         url: `https://m.bunjang.co.kr/products/${item.pid}`,
         sellerUid: stringOrNull(item.uid),
+        sellerProshop: boolish(item.proshop),
+        sellerBizseller: boolish(item.bizseller),
         location: stringOrNull(item.location),
         productImage: stringOrNull(item.product_image),
         updateTime: Number.isFinite(Number(item.update_time)) ? Number(item.update_time) : null,
@@ -145,6 +157,14 @@ export async function fetchDetail(pid: string): Promise<DetailData | null> {
         ? Number(shop?.reviewRating ?? 0) || null
         : null,
       shopReviewCount: toInt(shop?.reviewCount),
+      shopUid: stringOrNull(shop?.uid == null ? null : String(shop.uid)),
+      shopName: stringOrNull(shop?.name),
+      shopFollowerCount: toInt(shop?.followerCount),
+      shopSalesCount: toInt(shop?.salesCount),
+      shopProshop: boolish(shop?.proshop && typeof shop.proshop === "object" ? (shop.proshop as Record<string, unknown>).isProshop : null),
+      shopOfficialSeller: boolish(shop?.isOfficialSeller),
+      shopJoinDate: stringOrNull(shop?.joinDate),
+      shopData: shop && typeof shop === "object" && !Array.isArray(shop) ? shop as Record<string, unknown> : {},
       tradeData: product?.trade ?? null,
       tradesData: product?.trades ?? null,
       imageUrlTemplate,
