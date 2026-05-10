@@ -161,9 +161,10 @@ function PackCard({
   busy: boolean;
 }) {
   const ready = inventory?.ready ?? 0;
+  const usableReady = inventory?.usableReady ?? ready;
   const fresh = inventory?.freshUnder2h ?? 0;
   const insufficient = tokens < pack.cost;
-  const sold = ready === 0;
+  const sold = usableReady === 0;
   const disabled = busy || insufficient || sold;
 
   return (
@@ -197,9 +198,9 @@ function PackCard({
           </div>
         </div>
         <div className="rounded-xl bg-white/70 p-2 backdrop-blur dark:bg-zinc-800/40">
-          <div className="text-[10px] text-zinc-500">가용 후보</div>
+          <div className="text-[10px] text-zinc-500">공개 가능</div>
           <div className="mt-0.5 text-base font-black tabular-nums text-zinc-900 dark:text-zinc-50">
-            {ready}건
+            {usableReady}건
           </div>
         </div>
         <div className="rounded-xl bg-white/70 p-2 backdrop-blur dark:bg-zinc-800/40">

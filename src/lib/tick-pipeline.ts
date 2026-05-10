@@ -1,5 +1,5 @@
 import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
-import { evaluateCategoryReadiness } from "@/lib/category-readiness";
+import { evaluateCategoryReadiness, loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import {
@@ -2134,6 +2134,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const stats = emptyStats();
   const rows = await loadScorableRows(config.tickScoreLimit);
   if (rows.length === 0) return stats;
+  const categoryReadiness = await loadCategoryReadinessMap();
   const parsedByPid = await ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid)));
   const marketStatsByKey = await loadMarketPriceStats(
     rows
@@ -2311,7 +2312,8 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     }
     const parsed = parsedByPid.get(pid);
     const sku = catalogById.get(row.skuId ?? "");
-    const readiness = evaluateCategoryReadiness(parsed?.category ?? sku?.category ?? null);
+    const category = parsed?.category ?? sku?.category ?? null;
+    const readiness = evaluateCategoryReadiness(category, categoryReadiness);
     const confidence = computePoolConfidence(Number(parsed?.parse_confidence ?? 0.5), row.scoreFlags);
     const comparableKey = parsed?.comparable_key ?? null;
     const skipReason =
@@ -2333,6 +2335,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     poolEntries.push({
       pid,
       profit_band: band,
+      category,
       expected_profit_min: profitMin,
       expected_profit_max: profitMax,
       score: row.score,

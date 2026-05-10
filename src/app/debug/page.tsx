@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { DebugAutoRefresh } from "@/app/debug/debug-auto-refresh";
 import { DebugResetPanel } from "@/app/debug/debug-reset-panel";
-import { categoryReadinessRows, evaluateCategoryReadiness } from "@/lib/category-readiness";
+import {
+  categoryFromComparableKey,
+  categoryReadinessRows,
+  evaluateCategoryReadiness,
+  loadCategoryReadinessMap,
+} from "@/lib/category-readiness";
 import { loadCollectRuns, type CollectRun } from "@/lib/collect-logs";
 import type { Sku } from "@/lib/catalog";
 
@@ -142,6 +147,7 @@ type BottleneckParsedRow = {
 type PoolRow = {
   profit_band: 1 | 2 | 3;
   status: string;
+  category: Sku["category"] | null;
   comparable_key: string | null;
 };
 
@@ -208,16 +214,6 @@ function poolBlockFlag(flags: string[]) {
     flag.endsWith("_low_confidence") ||
     (flag === "deep_discount_review" && !flags.includes("ai_normal"))
   ));
-}
-
-function categoryFromComparableKey(value: string | null | undefined): Sku["category"] | null {
-  const family = value?.split("|")[0] ?? "";
-  if (family === "airpods") return "earphone";
-  if (family === "applewatch" || family === "galaxywatch") return "smartwatch";
-  if (family === "iphone" || family === "galaxy_s") return "smartphone";
-  if (family === "ipad") return "tablet";
-  if (family === "macbook") return "laptop";
-  return null;
 }
 
 function increment(map: Map<string, number>, key: string, by = 1) {
@@ -339,6 +335,7 @@ async function loadMarketInvalidationDebug() {
 }
 
 async function loadBottleneckDebug() {
+  const readinessMap = await loadCategoryReadinessMap();
   const rawRows = await restJson<BottleneckRawRow[]>(
     "/mvp_raw_listings?select=pid,name,price,sku_name,thumbnail_url&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&order=last_seen_at.desc&limit=500",
     [],
@@ -348,7 +345,7 @@ async function loadBottleneckDebug() {
     loadPidChunked<BottleneckListingRow>(pids, (ids) => `/mvp_listings?select=pid,price,sku_median,shipping_fee,shipping_fee_general,estimated_buy_cost,thumbnail_url,name,sku_name&pid=in.(${ids})`),
     loadPidChunked<BottleneckAnalysisRow>(pids, (ids) => `/mvp_listing_analysis?select=pid,risk_hits,score_flags&pid=in.(${ids})`),
     loadPidChunked<BottleneckParsedRow>(pids, (ids) => `/mvp_listing_parsed?select=pid,category,comparable_key,parse_confidence,needs_review,parsed_json&pid=in.(${ids})`),
-    restJson<PoolRow[]>("/mvp_candidate_pool?select=profit_band,status,comparable_key&limit=5000", []),
+    restJson<PoolRow[]>("/mvp_candidate_pool?select=profit_band,status,category,comparable_key&limit=5000", []),
   ]);
 
   const listingMap = mapRows(listingRows);
@@ -362,8 +359,8 @@ async function loadBottleneckDebug() {
 
   for (const row of poolRows) {
     if (row.status === "ready") mediumOrHighReady += 1;
-    const poolCategory = categoryFromComparableKey(row.comparable_key);
-    const readiness = evaluateCategoryReadiness(poolCategory);
+    const poolCategory = row.category ?? categoryFromComparableKey(row.comparable_key);
+    const readiness = evaluateCategoryReadiness(poolCategory, readinessMap);
     const categoryKey = poolCategory ?? "unknown";
     const current = categoryRows.get(categoryKey) ?? {
       category: categoryKey,
@@ -382,7 +379,7 @@ async function loadBottleneckDebug() {
     const parsed = parsedMap.get(raw.pid);
     const flags = Array.isArray(analysis?.score_flags) ? analysis.score_flags : [];
     const parsedJson = parsed?.parsed_json ?? {};
-    const readiness = evaluateCategoryReadiness(parsed?.category ?? null);
+    const readiness = evaluateCategoryReadiness(parsed?.category ?? null, readinessMap);
     const categoryKey = parsed?.category ?? "unknown";
     const categoryStat = categoryRows.get(categoryKey) ?? {
       category: categoryKey,
@@ -454,6 +451,7 @@ async function loadBottleneckDebug() {
     reasonRows,
     criticalRows,
     poolSummary,
+    readinessRows: categoryReadinessRows(readinessMap),
     categoryRows: [...categoryRows.values()].sort((a, b) => b.raw - a.raw),
   };
 }
@@ -1065,7 +1063,7 @@ function BottleneckPanel({ stats }: { stats: Awaited<ReturnType<typeof loadBottl
         </div>
         <div className="grid gap-0 divide-y divide-zinc-100 md:grid-cols-2 md:divide-x md:divide-y-0">
           <div className="divide-y divide-zinc-100">
-            {categoryReadinessRows().map((row) => (
+            {stats.readinessRows.map((row) => (
               <div key={row.category} className="grid grid-cols-[120px_92px_minmax(0,1fr)] items-center gap-3 px-3 py-2 text-xs">
                 <div className="font-semibold text-zinc-800">{row.label}</div>
                 <div className={

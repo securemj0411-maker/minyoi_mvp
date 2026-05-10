@@ -244,6 +244,120 @@ create table if not exists public.mvp_source_health (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.mvp_category_readiness (
+  category text primary key,
+  status text not null default 'blocked' check (status in ('ready', 'internal_only', 'blocked')),
+  label text not null,
+  note text not null default '',
+  min_ready_pool integer not null default 6 check (min_ready_pool >= 0),
+  min_parse_rate numeric not null default 0 check (min_parse_rate >= 0 and min_parse_rate <= 1),
+  min_trusted_keys integer not null default 0 check (min_trusted_keys >= 0),
+  last_measured_at timestamptz,
+  measured_json jsonb not null default '{}'::jsonb,
+  operator_note text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+insert into public.mvp_category_readiness (
+  category,
+  status,
+  label,
+  note,
+  min_ready_pool,
+  min_parse_rate,
+  min_trusted_keys
+) values
+  (
+    'earphone',
+    'ready',
+    'Audio',
+    'AirPods 계열은 SKU/노이즈/커넥터 파서가 후보팩 최소 기준을 통과했습니다.',
+    6,
+    0.85,
+    5
+  ),
+  (
+    'smartwatch',
+    'ready',
+    'Watch',
+    'Apple Watch/Galaxy Watch는 사이즈·셀룰러·모델 파서가 후보팩 최소 기준을 통과했습니다.',
+    6,
+    0.80,
+    5
+  ),
+  (
+    'smartphone',
+    'internal_only',
+    'Mobile Phone',
+    '용량·배터리효율·자급제/통신사·파손 상태 검증이 더 필요해 시세 학습만 허용합니다.',
+    8,
+    0.90,
+    10
+  ),
+  (
+    'tablet',
+    'internal_only',
+    'Tablet',
+    '세대·용량·Wi-Fi/Cellular·펜/키보드 포함 여부 검증 전까지 시세 학습만 허용합니다.',
+    8,
+    0.88,
+    8
+  ),
+  (
+    'laptop',
+    'internal_only',
+    'PC/Laptop',
+    '칩·연식·RAM·SSD·화면 크기·배터리 사이클 파서 검증 전까지 시세 학습만 허용합니다.',
+    8,
+    0.85,
+    8
+  ),
+  (
+    'small_appliance',
+    'blocked',
+    'Small Appliance',
+    '카테고리별 SKU/옵션/노이즈 모델이 아직 없어 후보팩과 시세 학습 모두 보류합니다.',
+    10,
+    0.90,
+    10
+  )
+on conflict (category) do update set
+  label = excluded.label,
+  note = case
+    when public.mvp_category_readiness.note = '' then excluded.note
+    else public.mvp_category_readiness.note
+  end,
+  min_ready_pool = greatest(public.mvp_category_readiness.min_ready_pool, excluded.min_ready_pool),
+  min_parse_rate = greatest(public.mvp_category_readiness.min_parse_rate, excluded.min_parse_rate),
+  min_trusted_keys = greatest(public.mvp_category_readiness.min_trusted_keys, excluded.min_trusted_keys),
+  updated_at = now();
+
+alter table public.mvp_category_readiness enable row level security;
+
+create or replace function public.mvp_category_from_comparable_key(p_value text)
+returns text
+language sql
+immutable
+as $$
+  select case split_part(coalesce(p_value, ''), '|', 1)
+    when 'earphone' then 'earphone'
+    when 'smartwatch' then 'smartwatch'
+    when 'smartphone' then 'smartphone'
+    when 'tablet' then 'tablet'
+    when 'laptop' then 'laptop'
+    when 'small_appliance' then 'small_appliance'
+    when 'airpods' then 'earphone'
+    when 'applewatch' then 'smartwatch'
+    when 'galaxywatch' then 'smartwatch'
+    when 'iphone' then 'smartphone'
+    when 'galaxy_s' then 'smartphone'
+    when 'ipad' then 'tablet'
+    when 'galaxy_tab' then 'tablet'
+    when 'macbook' then 'laptop'
+    else null
+  end;
+$$;
+
 create table if not exists public.mvp_lifecycle_checks (
   pid bigint primary key references public.mvp_raw_listings(pid) on delete cascade,
   source text not null default 'bunjang',
@@ -612,6 +726,7 @@ grant execute on function public.claim_mvp_lifecycle_checks(integer, integer) to
 create table if not exists public.mvp_candidate_pool (
   pid bigint primary key references public.mvp_raw_listings(pid) on delete cascade,
   profit_band smallint not null check (profit_band in (1, 2, 3)),
+  category text,
   expected_profit_min integer not null,
   expected_profit_max integer not null,
   score numeric not null default 0,
@@ -626,6 +741,17 @@ create table if not exists public.mvp_candidate_pool (
   added_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.mvp_candidate_pool
+  add column if not exists category text;
+
+update public.mvp_candidate_pool
+set category = public.mvp_category_from_comparable_key(comparable_key)
+where public.mvp_category_from_comparable_key(comparable_key) is not null
+  and (
+    category is null or
+    category not in ('earphone','smartwatch','smartphone','tablet','laptop','small_appliance')
+  );
 
 create table if not exists public.mvp_pack_opens (
   id bigserial primary key,
@@ -656,6 +782,9 @@ create table if not exists public.mvp_pack_reveals (
 create index if not exists mvp_candidate_pool_band_status_idx
   on public.mvp_candidate_pool(profit_band, status, last_verified_at desc);
 
+create index if not exists mvp_candidate_pool_category_status_idx
+  on public.mvp_candidate_pool(category, profit_band, status);
+
 create index if not exists mvp_candidate_pool_reserved_idx
   on public.mvp_candidate_pool(reserved_until)
   where status = 'reserved';
@@ -672,6 +801,7 @@ create index if not exists mvp_pack_reveals_pack_idx
 alter table public.mvp_candidate_pool enable row level security;
 alter table public.mvp_pack_opens enable row level security;
 alter table public.mvp_pack_reveals enable row level security;
+alter table public.mvp_category_readiness enable row level security;
 
 create or replace function public.enqueue_mvp_market_key_invalidation(
   p_comparable_key text,
@@ -768,9 +898,29 @@ set search_path = public
 as $$
 begin
   return query
-  with quality_candidates as (
+  with eligible_categories as (
+    select
+      coalesce(pp.category, public.mvp_category_from_comparable_key(pp.comparable_key)) as pool_category,
+      count(*) as ready_count,
+      cr.min_ready_pool
+    from public.mvp_candidate_pool pp
+    join public.mvp_category_readiness cr
+      on cr.category = coalesce(pp.category, public.mvp_category_from_comparable_key(pp.comparable_key))
+    where pp.profit_band = p_band
+      and cr.status = 'ready'
+      and (pp.status = 'ready' or (pp.status = 'reserved' and pp.reserved_until < now()))
+      and pp.exposure_count < pp.max_exposure
+      and not exists (
+        select 1 from public.mvp_pack_reveals r
+        where r.user_ref = p_user_ref and r.pid = pp.pid
+      )
+    group by pool_category, cr.min_ready_pool
+    having count(*) >= cr.min_ready_pool
+  ), quality_candidates as (
     select pp.pid
     from public.mvp_candidate_pool pp
+    join eligible_categories ec
+      on ec.pool_category = coalesce(pp.category, public.mvp_category_from_comparable_key(pp.comparable_key))
     where pp.profit_band = p_band
       and (pp.status = 'ready' or (pp.status = 'reserved' and pp.reserved_until < now()))
       and pp.exposure_count < pp.max_exposure

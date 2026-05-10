@@ -1,4 +1,5 @@
 import { fetchDetail } from "@/lib/bunjang";
+import { categoryFromComparableKey, loadCategoryReadinessMap } from "@/lib/category-readiness";
 import {
   canPermanentlyInvalidateSoldOut,
   detectSoldOut,
@@ -83,6 +84,10 @@ type SourceHealthRow = {
   status: SourceHealthStatus;
   checked_at: string;
 };
+
+function categoryFromPool(row: { category: string | null; comparable_key: string | null }) {
+  return categoryFromComparableKey(row.category) ?? categoryFromComparableKey(row.comparable_key);
+}
 
 function supabaseRest() {
   const raw = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
@@ -266,6 +271,15 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
   const targetCards = Math.max(1, Math.min(input.requestedCards ?? 2, 4));
   const reserveLimit = Math.max(targetCards * 8, 12);
   const freshnessMs = freshnessMsForBand(input.band);
+  const inventory = await loadInventory().catch(() => []);
+  const bandInventory = inventory.find((row) => row.band === input.band);
+  if (bandInventory && bandInventory.usableReady < Math.max(targetCards * 3, targetCards)) {
+    return {
+      result: "unavailable",
+      reason: "현재 이 등급은 검증된 후보 풀이 얕아서 열지 않았어요. 후보 큐레이션이 더 쌓인 뒤 다시 시도해주세요.",
+      durationMs: Date.now() - startedAt,
+    };
+  }
 
   const reserved = await rpcReservePool(input.band, input.userRef, reserveLimit);
   if (reserved.length === 0) {
@@ -387,6 +401,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
 export type InventorySnapshot = {
   band: PackBand;
   ready: number;
+  usableReady: number;
   reserved: number;
   spent: number;
   invalidated: number;
@@ -394,14 +409,31 @@ export type InventorySnapshot = {
 };
 
 export async function loadInventory(): Promise<InventorySnapshot[]> {
-  const cols = "profit_band,status,last_verified_at";
+  const cols = "profit_band,status,last_verified_at,category,comparable_key";
   const res = await callSupabase(`/mvp_candidate_pool?select=${cols}`, { headers: authHeaders() });
-  const rows = (await res.json()) as { profit_band: number; status: string; last_verified_at: string }[];
+  const rows = (await res.json()) as {
+    profit_band: number;
+    status: string;
+    last_verified_at: string;
+    category: string | null;
+    comparable_key: string | null;
+  }[];
+  const readiness = await loadCategoryReadinessMap();
+  const readyByCategory = new Map<string, number>();
+  for (const row of rows) {
+    if (row.status !== "ready") continue;
+    const category = categoryFromPool(row);
+    if (!category) continue;
+    const config = readiness[category];
+    if (!config || config.status !== "ready") continue;
+    readyByCategory.set(category, (readyByCategory.get(category) ?? 0) + 1);
+  }
   const buckets = new Map<PackBand, InventorySnapshot>();
   for (const band of [1, 2, 3] as PackBand[]) {
     buckets.set(band, {
       band,
       ready: 0,
+      usableReady: 0,
       reserved: 0,
       spent: 0,
       invalidated: 0,
@@ -418,6 +450,12 @@ export async function loadInventory(): Promise<InventorySnapshot[]> {
     else if (row.status === "spent") bucket.spent += 1;
     else if (row.status === "invalidated") bucket.invalidated += 1;
     if (row.status === "ready") {
+      const category = categoryFromPool(row);
+      const config = category ? readiness[category] : undefined;
+      const categoryReady = category ? readyByCategory.get(category) ?? 0 : 0;
+      if (config?.status === "ready" && categoryReady >= config.minReadyPool) {
+        bucket.usableReady += 1;
+      }
       const verified = new Date(row.last_verified_at).getTime();
       if (Number.isFinite(verified) && now - verified < freshnessMsForBand(band)) {
         bucket.freshUnder2h += 1;
