@@ -72,6 +72,72 @@ function pct(part: number, total: number) {
   return `${Math.round((part / total) * 100)}%`;
 }
 
+function restUrl() {
+  const raw = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!raw) return null;
+  return raw.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "") + "/rest/v1";
+}
+
+function serviceHeaders() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) return null;
+  return {
+    apikey: key,
+    authorization: `Bearer ${key}`,
+  };
+}
+
+function kstDateString(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(date);
+}
+
+type MarketPriceDebugRow = {
+  comparable_key: string;
+  active_sample_count: number;
+  confidence: "high" | "medium" | "low";
+  active_median_price: number | null;
+};
+
+async function loadMarketPriceDebug() {
+  const base = restUrl();
+  const headers = serviceHeaders();
+  if (!base || !headers) {
+    return {
+      date: kstDateString(),
+      total: 0,
+      high: 0,
+      medium: 0,
+      low: 0,
+      totalSamples: 0,
+      top: [] as MarketPriceDebugRow[],
+    };
+  }
+  const today = kstDateString();
+  const url = `${base}/mvp_market_price_daily?select=comparable_key,active_sample_count,confidence,active_median_price&date=eq.${today}&order=active_sample_count.desc&limit=1000`;
+  const res = await fetch(url, { headers, cache: "no-store" });
+  if (!res.ok) {
+    return {
+      date: today,
+      total: 0,
+      high: 0,
+      medium: 0,
+      low: 0,
+      totalSamples: 0,
+      top: [] as MarketPriceDebugRow[],
+    };
+  }
+  const rows = (await res.json()) as MarketPriceDebugRow[];
+  return {
+    date: today,
+    total: rows.length,
+    high: rows.filter((row) => row.confidence === "high").length,
+    medium: rows.filter((row) => row.confidence === "medium").length,
+    low: rows.filter((row) => row.confidence === "low").length,
+    totalSamples: rows.reduce((sum, row) => sum + Number(row.active_sample_count ?? 0), 0),
+    top: rows.slice(0, 5),
+  };
+}
+
 function lastSucceeded(runs: CollectRun[]) {
   return runs.find((run) => run.status === "succeeded") ?? null;
 }
@@ -182,7 +248,7 @@ function FlowBar({ run }: { run: CollectRun }) {
     { label: "검색 수집", value: run.collectedCount, total: run.collectedCount },
     { label: "제목 룰 통과", value: run.titleNormalCount, total: run.collectedCount },
     { label: "상세 enrich", value: run.enrichedCount, total: run.titleNormalCount },
-    { label: "점수 계산", value: run.scoredCount, total: run.enrichedCount },
+    { label: "점수 계산", value: run.scoredCount, total: Math.max(run.scoredCount, run.enrichedCount) },
     { label: "최종 upsert", value: run.upsertedCount, total: run.scoredCount },
   ];
 
@@ -237,6 +303,36 @@ function AiPanel({ run }: { run: CollectRun }) {
           AI 검토 불가 {num(run.aiUnavailableCount)}건. Vercel `OPENAI_API_KEY` 또는 API timeout을 확인해야 합니다.
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function MarketStatsPanel({ stats }: { stats: Awaited<ReturnType<typeof loadMarketPriceDebug>> }) {
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="text-sm font-semibold text-zinc-950">시세 통계 품질</div>
+      <div className="mt-1 text-xs text-zinc-500">
+        후보팩은 comparable_key 시세가 medium/high인 매물만 통과시킵니다.
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <MetricCard label="오늘 시세키" value={`${num(stats.total)}개`} sub={stats.date} />
+        <MetricCard label="High" value={`${num(stats.high)}개`} sub="표본 20건+" />
+        <MetricCard label="Medium" value={`${num(stats.medium)}개`} sub="표본 8건+" />
+        <MetricCard label="Low" value={`${num(stats.low)}개`} sub={`총 표본 ${num(stats.totalSamples)}건`} />
+      </div>
+      <div className="mt-4 divide-y divide-zinc-100 rounded-md border border-zinc-100">
+        {stats.top.map((row) => (
+          <div key={row.comparable_key} className="grid gap-2 px-3 py-2 text-xs sm:grid-cols-[minmax(0,1fr)_80px_80px_80px] sm:items-center">
+            <div className="truncate font-mono text-zinc-700">{row.comparable_key}</div>
+            <div className="text-zinc-500 sm:text-right">{num(row.active_sample_count)}건</div>
+            <div className="font-semibold text-zinc-700 sm:text-right">{row.confidence}</div>
+            <div className="text-zinc-700 sm:text-right">{num(Number(row.active_median_price ?? 0))}원</div>
+          </div>
+        ))}
+        {stats.top.length === 0 ? (
+          <div className="px-3 py-6 text-center text-xs text-zinc-500">아직 오늘 시세 통계가 없습니다.</div>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -371,6 +467,7 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
 
 export default async function DebugPage() {
   const runs = await loadCollectRuns(30);
+  const marketStats = await loadMarketPriceDebug();
   const latest = runs[0] ?? null;
   const latestOk = lastSucceeded(runs);
   const totalApiCalls = runs.reduce((sum, run) => sum + run.aiApiCalls, 0);
@@ -421,6 +518,8 @@ export default async function DebugPage() {
         ) : null}
 
         {latest ? <StagePanel run={latest} /> : null}
+
+        <MarketStatsPanel stats={marketStats} />
 
         <DebugResetPanel />
 

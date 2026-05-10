@@ -32,6 +32,8 @@ const INCOMPLETE_AIRPODS_KEYWORDS = [
 ];
 const PRECISION_REVIEW_FLAGS = [
   "coarse_market_price",
+  "market_confidence_low",
+  "market_stat_missing",
   "option_parse_review",
   "option_needs_review",
   "ai_review_unavailable",
@@ -40,6 +42,8 @@ const PRECISION_REVIEW_FLAGS = [
 
 const FLAG_LABELS: Record<string, string> = {
   coarse_market_price: "정밀 옵션 표본 부족",
+  market_confidence_low: "시세 표본 신뢰도 낮음",
+  market_stat_missing: "시세 통계 없음",
   option_parse_review: "옵션 파싱 신뢰도 낮음",
   option_needs_review: "용량/칩/사이즈 확인 필요",
   ai_review_unavailable: "AI 검토 실패",

@@ -60,10 +60,25 @@ type ParsedListingRow = {
   needs_review: boolean | null;
 };
 
+type MarketPriceRow = {
+  date: string;
+  comparable_key: string;
+  active_median_price: number | null;
+  sold_median_price: number | null;
+  blended_median_price: number | null;
+  active_sample_count: number;
+  sold_sample_count: number;
+  disappeared_sample_count: number;
+  confidence: "high" | "medium" | "low";
+  computed_at: string;
+};
+
 const DETAIL_STAGE_SAFETY_MARGIN_MS = 8_000;
 const POOL_CONFIDENCE_FLOOR = 0.7;
 const POOL_BLOCK_FLAGS = [
   "coarse_market_price",
+  "market_confidence_low",
+  "market_stat_missing",
   "option_parse_review",
   "option_needs_review",
   "ai_review_unavailable",
@@ -624,11 +639,51 @@ async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListing
   return new Map(rows.map((row) => [row.pid, row]));
 }
 
+async function loadMarketPriceStats(comparableKeys: string[]): Promise<Map<string, MarketPriceRow>> {
+  const unique = [...new Set(comparableKeys.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  const columns = [
+    "date",
+    "comparable_key",
+    "active_median_price",
+    "sold_median_price",
+    "blended_median_price",
+    "active_sample_count",
+    "sold_sample_count",
+    "disappeared_sample_count",
+    "confidence",
+    "computed_at",
+  ].join(",");
+  const encoded = unique.map((key) => encodeURIComponent(key)).join(",");
+  const url = `${tableUrl("mvp_market_price_daily")}?select=${columns}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(1000, unique.length * 5)}`;
+  const res = await restFetch(url, { headers: serviceHeaders() });
+  const rows = (await res.json()) as MarketPriceRow[];
+  const latest = new Map<string, MarketPriceRow>();
+  for (const row of rows) {
+    if (!latest.has(row.comparable_key)) latest.set(row.comparable_key, row);
+  }
+  return latest;
+}
+
 function marketGroupKey(row: ScorableRawRow, parsed: ParsedListingRow | undefined) {
   if (parsed?.comparable_key && Number(parsed.parse_confidence ?? 0) >= 0.65) {
     return parsed.comparable_key;
   }
   return row.sku_id ?? "";
+}
+
+function preciseComparableKey(parsed: ParsedListingRow | undefined) {
+  if (!parsed?.comparable_key) return null;
+  if (Number(parsed.parse_confidence ?? 0) < 0.65) return null;
+  if (parsed.needs_review) return null;
+  return parsed.comparable_key;
+}
+
+function trustedMarketMedian(stat: MarketPriceRow | undefined) {
+  if (!stat) return null;
+  if (stat.confidence !== "high" && stat.confidence !== "medium") return null;
+  const value = Number(stat.blended_median_price ?? stat.active_median_price ?? 0);
+  return value > 0 ? value : null;
 }
 
 function kstDateString(date = new Date()) {
@@ -705,6 +760,19 @@ function hasPoolBlockFlag(scoreFlags: string[]) {
   ));
 }
 
+async function invalidatePoolEntries(entries: { pid: number; reason: string }[]) {
+  await Promise.all(entries.map((entry) => patchRows(
+    "mvp_candidate_pool",
+    `pid=eq.${entry.pid}&status=in.(ready,reserved)`,
+    {
+      status: "invalidated",
+      invalidated_reason: entry.reason.slice(0, 120),
+      reserved_until: null,
+      updated_at: new Date().toISOString(),
+    },
+  )));
+}
+
 export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
@@ -712,6 +780,11 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   if (rows.length === 0) return stats;
   const parsedByPid = await loadParsedRows(rows.map((row) => row.pid));
   await upsertMarketPriceDaily(rows, parsedByPid);
+  const marketStatsByKey = await loadMarketPriceStats(
+    rows
+      .map((row) => preciseComparableKey(parsedByPid.get(row.pid)))
+      .filter((key): key is string => Boolean(key))
+  );
 
   const pricesByMarket = new Map<string, number[]>();
   const favsByMarket = new Map<string, number[]>();
@@ -739,12 +812,16 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const skuId = row.sku_id ?? "";
     const parsed = parsedByPid.get(row.pid);
     const marketKey = marketGroupKey(row, parsed);
+    const comparableKey = preciseComparableKey(parsed);
+    const marketStat = comparableKey ? marketStatsByKey.get(comparableKey) : undefined;
+    const trustedMedian = trustedMarketMedian(marketStat);
     const prices = pricesByMarket.get(marketKey) ?? [];
     const coarsePrices = pricesBySku.get(skuId) ?? [];
-    const hasPreciseMarket = prices.length >= 5;
-    const skuMedian = hasPreciseMarket
+    const hasTrustedMarket = trustedMedian != null;
+    const fallbackMedian = prices.length >= 5
       ? median(prices)
       : (coarsePrices.length >= 5 ? median(coarsePrices) : (skuMsrp.get(skuId) ?? 300000) * 0.5);
+    const skuMedian = hasTrustedMarket ? trustedMedian : fallbackMedian;
     const priceGap = skuMedian <= 0 ? 0 : Math.max(0, Math.min(1, (skuMedian - row.price) / skuMedian));
     const velocity = percentileRank(favsByMarket.get(marketKey) ?? [], row.num_faved);
     const safetyBase = row.shop_review_rating == null ? 0.5 : Math.max(0, Math.min(1, Number(row.shop_review_rating) / 5));
@@ -752,7 +829,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const riskHits = ["직거래만", "현금만", "박스없음", "박스 없음", "수리이력", "충전안됨", "충전 안됨", "고장", "불량", "먹통"]
       .filter((kw) => row.description_preview.toLowerCase().includes(kw.toLowerCase())).length;
     const parseConfidence = Number(parsed?.parse_confidence ?? 0);
-    const precisionPenalty = (parseConfidence > 0 && parseConfidence < 0.65 ? 0.75 : 1) * (hasPreciseMarket ? 1 : 0.85);
+    const precisionPenalty = (parseConfidence > 0 && parseConfidence < 0.65 ? 0.75 : 1) * (hasTrustedMarket ? 1 : 0.65);
     const score = (priceGap * 0.5 + velocity * 0.4 + safety * 0.1) * 100 * precisionPenalty;
     const apiParsed = parseShippingFromTrade(row.trade_data, row.trades_data);
     const descParsed = parseShippingFromDescription(row.description_preview);
@@ -761,7 +838,11 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     if (priceGap >= 0.55) scoreFlags.push("deep_discount_review");
     if (riskHits > 0) scoreFlags.push("risk_keyword_review");
     if (row.description_preview.trim().length < 20) scoreFlags.push("weak_description");
-    if (!hasPreciseMarket) scoreFlags.push("coarse_market_price");
+    if (!hasTrustedMarket) {
+      scoreFlags.push("coarse_market_price");
+      if (!comparableKey || !marketStat) scoreFlags.push("market_stat_missing");
+      else if (marketStat.confidence === "low") scoreFlags.push("market_confidence_low");
+    }
     if (parseConfidence > 0 && parseConfidence < 0.65) scoreFlags.push("option_parse_review");
     if (parsed?.needs_review) scoreFlags.push("option_needs_review");
 
@@ -855,6 +936,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   stats.upserted = listings.length;
 
   const poolEntries: Record<string, unknown>[] = [];
+  const poolInvalidations: { pid: number; reason: string }[] = [];
   let poolSkipped = 0;
   for (const row of aiReview.rows) {
     const sellFee = Math.round(row.skuMedian * SELLING_FEE_RATE);
@@ -863,25 +945,28 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const profitMax = Math.max(0, row.skuMedian - buyMin - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
     const profitMin = Math.max(0, row.skuMedian - buyMax - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
     const band = bandFromProfit(profitMin, profitMax);
+    const pid = Number(row.pid);
     if (band === null) {
       poolSkipped += 1;
+      poolInvalidations.push({ pid, reason: "profit_below_pack_band" });
       continue;
     }
-    const pid = Number(row.pid);
     const parsed = parsedByPid.get(pid);
     const confidence = computePoolConfidence(Number(parsed?.parse_confidence ?? 0.5), row.scoreFlags);
     const comparableKey = parsed?.comparable_key ?? null;
-    if (
-      profitMin <= 0 ||
-      row.price >= row.skuMedian ||
-      row.riskHits > 0 ||
-      !row.thumbnailUrl ||
-      !comparableKey ||
-      parsed?.needs_review ||
-      confidence < POOL_CONFIDENCE_FLOOR ||
-      hasPoolBlockFlag(row.scoreFlags)
-    ) {
+    const skipReason =
+      profitMin <= 0 ? "profit_not_positive" :
+      row.price >= row.skuMedian ? "price_gte_market" :
+      row.riskHits > 0 ? "risk_keyword" :
+      !row.thumbnailUrl ? "missing_thumbnail" :
+      !comparableKey ? "missing_comparable_key" :
+      parsed?.needs_review ? "option_needs_review" :
+      confidence < POOL_CONFIDENCE_FLOOR ? "pool_confidence_low" :
+      hasPoolBlockFlag(row.scoreFlags) ? `blocked_${row.scoreFlags.find((flag) => POOL_BLOCK_FLAGS.includes(flag) || flag.endsWith("_low_confidence")) ?? "score_flag"}` :
+      null;
+    if (skipReason) {
       poolSkipped += 1;
+      poolInvalidations.push({ pid, reason: skipReason });
       continue;
     }
     poolEntries.push({
@@ -898,6 +983,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     });
   }
   await upsertRows("mvp_candidate_pool", poolEntries, "pid");
+  await invalidatePoolEntries(poolInvalidations);
   stats.poolUpserted = poolEntries.length;
   stats.poolSkipped = poolSkipped;
   return stats;
