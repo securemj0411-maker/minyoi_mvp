@@ -10,6 +10,7 @@ import {
   cashoutHint,
   compareCandidates,
   estimatedBuyCostGeneral,
+  expectedProfitAverage,
   expectedProfitMax,
   expectedProfitMin,
   generalShippingFee,
@@ -80,6 +81,10 @@ function compactKrw(value: number) {
   return `${rounded.toLocaleString("ko-KR")}천원`;
 }
 
+function signedKrw(value: number) {
+  return `+${Math.round(value).toLocaleString("ko-KR")}원`;
+}
+
 function percent(value: number) {
   return `${Math.round(value * 100)}%`;
 }
@@ -100,10 +105,7 @@ function netGapLabel(item: ListingCandidate) {
 }
 
 function profitLabel(item: ListingCandidate) {
-  const min = expectedProfitMin(item);
-  const max = expectedProfitMax(item);
-  if (min === max) return krw(max);
-  return `${krw(min)} ~ ${krw(max)}`;
+  return signedKrw(expectedProfitAverage(item));
 }
 
 function candidateImage(item: ListingCandidate) {
