@@ -11,6 +11,7 @@ import {
 } from "@/lib/pipeline";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE, bandFromProfit } from "@/lib/profit";
+import { describeSignals, detectSoldOut, isSoldOut } from "@/lib/sold-out";
 
 type Headers = Record<string, string>;
 
@@ -71,6 +72,15 @@ type MarketPriceRow = {
   disappeared_sample_count: number;
   confidence: "high" | "medium" | "low";
   computed_at: string;
+};
+
+type PoolWarmRow = {
+  pid: number;
+  profit_band: 1 | 2 | 3;
+  expected_profit_min: number;
+  expected_profit_max: number;
+  status: string;
+  last_verified_at: string;
 };
 
 const DETAIL_STAGE_SAFETY_MARGIN_MS = 8_000;
@@ -351,6 +361,12 @@ function observationEventType(item: SearchItem, existing: RawListingRow | undefi
   return null;
 }
 
+function rotatedDeepPage(deepCrawlMaxPage: number, nowMs = Date.now()) {
+  const maxDeep = Math.max(1, deepCrawlMaxPage);
+  const tickBucket = Math.floor(nowMs / (30 * 60 * 1000));
+  return 1 + (tickBucket % maxDeep);
+}
+
 function searchPagesForTick(pagesPerQuery: number, deepCrawlMaxPage: number, nowMs = Date.now()) {
   if (pagesPerQuery <= 1) return [0];
   const maxDeep = Math.max(1, deepCrawlMaxPage);
@@ -363,11 +379,17 @@ function searchPagesForTick(pagesPerQuery: number, deepCrawlMaxPage: number, now
   return [...pages];
 }
 
-export async function searchStage(deadlineMs: number): Promise<StageStats> {
+type SearchStageOptions = {
+  pages?: number[];
+  mode?: "fresh" | "deep" | "mixed";
+};
+
+export async function searchStage(deadlineMs: number, options: SearchStageOptions = {}): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
   const seen = new Map<string, SearchItem>();
-  const pages = searchPagesForTick(config.pagesPerQuery, config.deepCrawlMaxPage);
+  const pages = options.pages ?? searchPagesForTick(config.pagesPerQuery, config.deepCrawlMaxPage);
+  const mode = options.mode ?? "mixed";
 
   for (const query of config.searchQueries) {
     for (const page of pages) {
@@ -423,6 +445,7 @@ export async function searchStage(deadlineMs: number): Promise<StageStats> {
           listingState: current.listing_state,
         } : null,
         changedFields,
+        searchMode: mode,
         detailTriage: detailDecision ? {
           queue: detailDecision.queue,
           reason: detailDecision.reason,
@@ -773,6 +796,97 @@ async function invalidatePoolEntries(entries: { pid: number; reason: string }[])
   )));
 }
 
+async function loadPoolWarmRows(limit: number): Promise<PoolWarmRow[]> {
+  const cols = "pid,profit_band,expected_profit_min,expected_profit_max,status,last_verified_at";
+  const res = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=${cols}&status=eq.ready&order=profit_band.desc,expected_profit_min.desc,last_verified_at.asc&limit=${limit}`,
+    { headers: serviceHeaders() },
+  );
+  return (await res.json()) as PoolWarmRow[];
+}
+
+async function loadRawPrices(pids: number[]): Promise<Map<number, number>> {
+  if (pids.length === 0) return new Map();
+  const res = await restFetch(
+    `${tableUrl("mvp_raw_listings")}?select=pid,price&pid=in.(${pids.join(",")})`,
+    { headers: serviceHeaders() },
+  );
+  const rows = (await res.json()) as { pid: number; price: number }[];
+  return new Map(rows.map((row) => [Number(row.pid), Number(row.price)]));
+}
+
+async function markPoolVerified(pid: number) {
+  const now = new Date().toISOString();
+  await patchRows("mvp_candidate_pool", `pid=eq.${pid}`, {
+    last_verified_at: now,
+    updated_at: now,
+  });
+}
+
+export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
+  const config = loadPipelineRuntimeConfig();
+  const stats = emptyStats();
+  const rows = await loadPoolWarmRows(Math.min(80, config.tickDetailBatchSize * 2));
+  const prices = await loadRawPrices(rows.map((row) => row.pid));
+
+  for (const row of rows) {
+    if (Date.now() >= deadlineMs - DETAIL_STAGE_SAFETY_MARGIN_MS) {
+      stats.timedOut = true;
+      return stats;
+    }
+    const detail = await fetchDetail(String(row.pid));
+    if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
+    const signals = detectSoldOut(detail, prices.get(row.pid));
+    stats.claimed += 1;
+    if (!detail) {
+      stats.detailFailed += 1;
+      continue;
+    }
+    if (isSoldOut(signals)) {
+      await invalidatePoolEntries([{ pid: row.pid, reason: `pool_warmer_${describeSignals(signals)}` }]);
+      stats.poolSkipped += 1;
+      continue;
+    }
+    await markPoolVerified(row.pid);
+    stats.enriched += 1;
+  }
+
+  return stats;
+}
+
+export async function housekeeperStage(): Promise<StageStats> {
+  const stats = emptyStats();
+  const now = new Date().toISOString();
+
+  const expiredPoolRes = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid,exposure_count,max_exposure&status=eq.reserved&reserved_until=lt.${encodeURIComponent(now)}&limit=200`,
+    { headers: serviceHeaders() },
+  );
+  const expiredPool = (await expiredPoolRes.json()) as { pid: number; exposure_count: number; max_exposure: number }[];
+  await Promise.all(expiredPool.map((row) => patchRows("mvp_candidate_pool", `pid=eq.${row.pid}&status=eq.reserved`, {
+    status: Number(row.exposure_count) >= Number(row.max_exposure) ? "spent" : "ready",
+    reserved_until: null,
+    updated_at: now,
+  })));
+
+  const staleQueueRes = await restFetch(
+    `${tableUrl("mvp_detail_queue")}?select=id,status&status=eq.processing&locked_until=lt.${encodeURIComponent(now)}&limit=200`,
+    { headers: serviceHeaders() },
+  );
+  const staleQueue = (await staleQueueRes.json()) as { id: string }[];
+  await Promise.all(staleQueue.map((row) => patchRows("mvp_detail_queue", `id=eq.${encodeURIComponent(row.id)}`, {
+    status: "pending",
+    locked_at: null,
+    locked_until: null,
+    available_at: now,
+    updated_at: now,
+  })));
+
+  stats.upserted = expiredPool.length;
+  stats.queued = staleQueue.length;
+  return stats;
+}
+
 export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
@@ -1026,7 +1140,10 @@ export async function runSearchScorePipeline(): Promise<TickResult> {
     }
   }
 
-  const search = await timed("search", () => searchStage(Date.now() + config.tickSearchBudgetMs));
+  const search = await timed("search", () => searchStage(Date.now() + config.tickSearchBudgetMs, {
+    pages: [0],
+    mode: "fresh",
+  }));
   const score = await timed("score", () => scoreStage(Date.now() + config.tickScoreBudgetMs));
   const detail = emptyStats();
   const total = mergeStats([search, detail, score]);
@@ -1034,6 +1151,34 @@ export async function runSearchScorePipeline(): Promise<TickResult> {
     ...total,
     stages: { search, detail, score },
     stageDurationsMs,
+  };
+}
+
+export async function runDeepCrawlPipeline(): Promise<TickResult> {
+  const config = loadPipelineRuntimeConfig();
+  const stageDurationsMs: Record<string, number> = {};
+
+  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const started = Date.now();
+    try {
+      return await fn();
+    } finally {
+      stageDurationsMs[name] = Date.now() - started;
+    }
+  }
+
+  const page = rotatedDeepPage(config.deepCrawlMaxPage);
+  const search = await timed("deep", () => searchStage(Date.now() + config.tickSearchBudgetMs, {
+    pages: [page],
+    mode: "deep",
+  }));
+  const detail = emptyStats();
+  const score = emptyStats();
+  const total = mergeStats([search, detail, score]);
+  return {
+    ...total,
+    stages: { search, detail, score },
+    stageDurationsMs: { ...stageDurationsMs, deepPage: page },
   };
 }
 
@@ -1053,6 +1198,53 @@ export async function runDetailWorkerPipeline(): Promise<TickResult> {
   const search = emptyStats();
   const detail = await timed("detail", () => detailStage(Date.now() + config.tickDetailBudgetMs));
   const score = emptyStats();
+  const total = mergeStats([search, detail, score]);
+  return {
+    ...total,
+    stages: { search, detail, score },
+    stageDurationsMs,
+  };
+}
+
+export async function runPoolWarmerPipeline(): Promise<TickResult> {
+  const config = loadPipelineRuntimeConfig();
+  const stageDurationsMs: Record<string, number> = {};
+
+  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const started = Date.now();
+    try {
+      return await fn();
+    } finally {
+      stageDurationsMs[name] = Date.now() - started;
+    }
+  }
+
+  const search = emptyStats();
+  const detail = await timed("pool_warmer", () => poolWarmerStage(Date.now() + config.tickDetailBudgetMs));
+  const score = emptyStats();
+  const total = mergeStats([search, detail, score]);
+  return {
+    ...total,
+    stages: { search, detail, score },
+    stageDurationsMs,
+  };
+}
+
+export async function runHousekeeperPipeline(): Promise<TickResult> {
+  const stageDurationsMs: Record<string, number> = {};
+
+  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const started = Date.now();
+    try {
+      return await fn();
+    } finally {
+      stageDurationsMs[name] = Date.now() - started;
+    }
+  }
+
+  const search = emptyStats();
+  const detail = emptyStats();
+  const score = await timed("housekeeper", () => housekeeperStage());
   const total = mergeStats([search, detail, score]);
   return {
     ...total,
