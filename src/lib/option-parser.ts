@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v14";
+const PARSER_VERSION = "option-parser-v15";
 
 function hashText(text: string) {
   return createHash("sha256").update(text).digest("hex");
@@ -148,8 +148,61 @@ function parseRamAndSsd(text: string, category: Sku["category"] | null) {
 
 function parseScreenSizeIn(text: string) {
   const lower = normalize(text).toLowerCase();
-  const match = lower.match(/(?:^|[^0-9])(8\.3|10\.2|10\.5|10\.9|11|12\.4|12\.9|13|13\.3|14|14\.6|15|15\.6|16|17)\s*(?:인치|inch|"|형)/);
+  const match = lower.match(/(?:^|[^0-9])(7\.9|8\.3|9\.7|10\.2|10\.5|10\.9|11|12\.4|12\.9|13|13\.3|14|14\.6|15|15\.6|16|17)\s*(?:인치|inch|"|형)/);
   return match ? Number(match[1]) : null;
+}
+
+function parseTabletGeneration(text: string, model: string | null) {
+  if (!model) return null;
+  const lower = normalize(text).toLowerCase();
+  if (model === "ipad_mini") {
+    const match = lower.match(/(?:아이패드\s*)?(?:미니|mini)\s*(?:a17\s*pro\s*)?(\d)(?:세대)?/);
+    return match ? Number(match[1]) : null;
+  }
+  if (model === "ipad_air") {
+    const match = lower.match(/(?:아이패드\s*)?(?:에어|air)\s*(\d)(?:세대)?/);
+    return match ? Number(match[1]) : null;
+  }
+  return null;
+}
+
+function parseBareTabletScreenSizeIn(text: string, model: string | null) {
+  const lower = normalize(text).toLowerCase();
+  const screenPattern = "(7\\.9|8\\.3|9\\.7|10\\.2|10\\.5|10\\.9|11|12\\.4|12\\.9|13|14\\.6)";
+  const ipadProBefore = new RegExp(`(?:아이패드\\s*프로|아이패드프로|ipad\\s*pro|프로|pro)\\s*${screenPattern}(?:[^0-9]|$)`);
+  const ipadProAfter = new RegExp(`(?:^|[^0-9])${screenPattern}\\s*(?:아이패드\\s*프로|아이패드프로|ipad\\s*pro|프로|pro)`);
+  const galaxyTabBefore = new RegExp(`(?:갤럭시\\s*탭|갤럭시탭|갤탭|galaxy\\s*tab|tab).{0,16}?${screenPattern}(?:[^0-9]|$)`);
+  const galaxyTabAfter = new RegExp(`(?:^|[^0-9])${screenPattern}.{0,16}?(?:갤럭시\\s*탭|갤럭시탭|갤탭|galaxy\\s*tab|tab)`);
+
+  const match = lower.match(ipadProBefore)
+    ?? lower.match(ipadProAfter)
+    ?? lower.match(galaxyTabBefore)
+    ?? lower.match(galaxyTabAfter);
+  if (match?.[1]) return Number(match[1]);
+
+  if (model === "ipad_pro") {
+    const compact = lower.match(/(?:아이패드프로|ipadpro|프로)(11|13)(?:[^0-9]|$)/);
+    if (compact?.[1]) return Number(compact[1]);
+  }
+  return null;
+}
+
+function parseTabletScreenSizeIn(text: string, model: string | null) {
+  const explicit = parseScreenSizeIn(text);
+  if (explicit) return explicit;
+  const bare = parseBareTabletScreenSizeIn(text, model);
+  if (bare) return bare;
+
+  const generation = parseTabletGeneration(text, model);
+  if (model === "ipad_mini") {
+    if (generation && generation <= 5) return 7.9;
+    if (generation && generation >= 6) return 8.3;
+  }
+  if (model === "ipad_air") {
+    if (generation === 3) return 10.5;
+    if (generation === 4 || generation === 5) return 10.9;
+  }
+  return defaultTabletScreenSizeIn(model);
 }
 
 function parseLaptopScreenSizeIn(text: string) {
@@ -278,7 +331,6 @@ function defaultConnectivity(model: string | null) {
 
 function defaultTabletScreenSizeIn(model: string | null) {
   if (!model) return null;
-  if (model === "ipad_mini") return 8.3;
   if (model === "ipad_10") return 10.9;
   if (model === "galaxy_tab_s8_plus" || model === "galaxy_tab_s9_plus" || model === "galaxy_tab_s10_plus") return 12.4;
   if (model === "galaxy_tab_s8_ultra" || model === "galaxy_tab_s9_ultra" || model === "galaxy_tab_s10_ultra") return 14.6;
@@ -474,6 +526,8 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const parsedSsdGb = titleMemory.ssdGb ?? combinedMemory.ssdGb;
   const parsedScreenSizeIn = category === "laptop"
     ? (parseLaptopScreenSizeIn(title) ?? parseLaptopScreenSizeIn(text))
+    : category === "tablet"
+      ? (parseTabletScreenSizeIn(title, model) ?? parseTabletScreenSizeIn(text, model))
     : (parseScreenSizeIn(title) ?? parseScreenSizeIn(text));
   const screenSizeIn = parsedScreenSizeIn
     ?? (category === "laptop" && model === "macbook_air" ? 13 : null)
@@ -485,7 +539,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const ssdGb = parsedSsdGb ?? laptopMemoryDefault.ssdGb;
   const batteryHealth = parseBatteryHealth(text);
   const batteryCycles = parseBatteryCycles(text);
-  const connectivity = parseConnectivity(title) ?? parseConnectivity(description) ?? defaultConnectivity(model);
+  const connectivity = parseConnectivity(title) ?? parseConnectivity(description) ?? defaultConnectivity(model) ?? (category === "tablet" ? "wifi" : null);
   const carrier = parseCarrier(text);
   const airpodsConnector = parseAirpodsConnector(title) ?? parseAirpodsConnector(description) ?? defaultAirpodsConnector(model, text);
   const { conditionScore, conditionNotes } = conditionFromText(text, batteryHealth, batteryCycles);
