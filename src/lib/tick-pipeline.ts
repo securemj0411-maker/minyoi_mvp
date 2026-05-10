@@ -494,10 +494,13 @@ async function markQueueFailed(queueId: string, error: string) {
 export async function detailStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
+  let batchesProcessed = 0;
 
   while (Date.now() < deadlineMs - DETAIL_STAGE_SAFETY_MARGIN_MS) {
+    if (batchesProcessed >= 1) break;
     const claims = await claimDetailQueue();
     if (claims.length === 0) break;
+    batchesProcessed += 1;
     stats.claimed += claims.length;
 
     for (const claim of claims) {
@@ -916,6 +919,54 @@ export async function runTickPipeline(): Promise<TickResult> {
   const search = await timed("search", () => searchStage(Date.now() + config.tickSearchBudgetMs));
   const detail = await timed("detail", () => detailStage(Date.now() + config.tickDetailBudgetMs));
   const score = await timed("score", () => scoreStage(Date.now() + config.tickScoreBudgetMs));
+  const total = mergeStats([search, detail, score]);
+  return {
+    ...total,
+    stages: { search, detail, score },
+    stageDurationsMs,
+  };
+}
+
+export async function runSearchScorePipeline(): Promise<TickResult> {
+  const config = loadPipelineRuntimeConfig();
+  const stageDurationsMs: Record<string, number> = {};
+
+  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const started = Date.now();
+    try {
+      return await fn();
+    } finally {
+      stageDurationsMs[name] = Date.now() - started;
+    }
+  }
+
+  const search = await timed("search", () => searchStage(Date.now() + config.tickSearchBudgetMs));
+  const score = await timed("score", () => scoreStage(Date.now() + config.tickScoreBudgetMs));
+  const detail = emptyStats();
+  const total = mergeStats([search, detail, score]);
+  return {
+    ...total,
+    stages: { search, detail, score },
+    stageDurationsMs,
+  };
+}
+
+export async function runDetailWorkerPipeline(): Promise<TickResult> {
+  const config = loadPipelineRuntimeConfig();
+  const stageDurationsMs: Record<string, number> = {};
+
+  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const started = Date.now();
+    try {
+      return await fn();
+    } finally {
+      stageDurationsMs[name] = Date.now() - started;
+    }
+  }
+
+  const search = emptyStats();
+  const detail = await timed("detail", () => detailStage(Date.now() + config.tickDetailBudgetMs));
+  const score = emptyStats();
   const total = mergeStats([search, detail, score]);
   return {
     ...total,

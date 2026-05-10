@@ -8,7 +8,7 @@ import {
   type CollectRunRequestMeta,
 } from "@/lib/collect-logs";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
-import { runSearchScorePipeline } from "@/lib/tick-pipeline";
+import { runDetailWorkerPipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
 
 export const maxDuration = 90;
@@ -33,7 +33,7 @@ function requestMeta(req: NextRequest, authOk: boolean, authReason: string): Col
     headers.get("x-vercel-forwarded-for");
 
   return {
-    triggerSource: (headers.get("x-qstash-schedule-id") ?? userAgent ?? "tick").slice(0, 120),
+    triggerSource: (headers.get("x-qstash-schedule-id") ?? userAgent ?? "detail-worker").slice(0, 120),
     requestMethod: req.method,
     requestPath: `${req.nextUrl.pathname}${req.nextUrl.search}`,
     requestHost: headers.get("host"),
@@ -58,7 +58,7 @@ function requestMeta(req: NextRequest, authOk: boolean, authReason: string): Col
   };
 }
 
-function toPipelineResult(result: Awaited<ReturnType<typeof runSearchScorePipeline>>): PipelineResult {
+function toPipelineResult(result: Awaited<ReturnType<typeof runDetailWorkerPipeline>>): PipelineResult {
   return {
     collected: result.collected,
     titleNormal: result.queued,
@@ -76,7 +76,7 @@ function toPipelineResult(result: Awaited<ReturnType<typeof runSearchScorePipeli
   };
 }
 
-async function handleTick(req: NextRequest) {
+async function handleDetailWorker(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
   const auth = req.headers.get("authorization");
   const authOk = !secret || auth === `Bearer ${secret}`;
@@ -92,7 +92,7 @@ async function handleTick(req: NextRequest) {
     ...meta,
     requestMeta: {
       ...meta.requestMeta,
-      pipelineMode: "tick",
+      pipelineMode: "detail_worker",
       budgets: {
         search: config.tickSearchBudgetMs,
         detail: config.tickDetailBudgetMs,
@@ -103,7 +103,7 @@ async function handleTick(req: NextRequest) {
   });
 
   try {
-    const result = await runSearchScorePipeline();
+    const result = await runDetailWorkerPipeline();
     await finishCollectRun(run.id, run.startedAt, toPipelineResult(result), {
       stages: result.stages,
       stageDurationsMs: result.stageDurationsMs,
@@ -111,7 +111,7 @@ async function handleTick(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       runId: run.id,
-      mode: "tick",
+      mode: "detail_worker",
       result,
       ts: run.startedAt,
     });
@@ -121,7 +121,7 @@ async function handleTick(req: NextRequest) {
       {
         ok: false,
         runId: run.id,
-        mode: "tick",
+        mode: "detail_worker",
         error: err instanceof Error ? err.message : String(err),
         ts: run.startedAt,
       },
@@ -131,9 +131,9 @@ async function handleTick(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  return handleTick(req);
+  return handleDetailWorker(req);
 }
 
 export async function POST(req: NextRequest) {
-  return handleTick(req);
+  return handleDetailWorker(req);
 }
