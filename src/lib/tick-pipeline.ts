@@ -1054,6 +1054,19 @@ function sellerRepresentativePrices(rows: ScorableRawRow[]) {
   return [...bySeller.values()].map((prices) => Math.round(median(prices)));
 }
 
+function trimmedSellerMarket(rows: ScorableRawRow[]) {
+  const representativePrices = sellerRepresentativePrices(rows);
+  const trimmed = madTrim(representativePrices);
+  const values = trimmed.values;
+  return {
+    values,
+    count: values.length,
+    median: values.length > 0 ? Math.round(median(values)) : null,
+    p25: values.length > 0 ? Math.round(quantile(values, 0.25)) : null,
+    p75: values.length > 0 ? Math.round(quantile(values, 0.75)) : null,
+  };
+}
+
 function madTrim(values: number[]) {
   if (values.length < 8) {
     return { values, medianValue: median(values), mad: 0, removed: 0 };
@@ -1079,15 +1092,15 @@ function percentileRank(values: number[], value: number) {
 }
 
 async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at";
-  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&order=last_seen_at.desc&limit=${limit}`;
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at,listing_state";
+  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&order=last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
 }
 
 async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at";
-  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&order=detail_enriched_at.desc.nullslast,last_seen_at.desc&limit=${limit}`;
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at,listing_state";
+  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&order=detail_enriched_at.desc.nullslast,last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
 }
@@ -1095,12 +1108,12 @@ async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
 async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<ScorableRawRow[]> {
   const unique = [...new Set(pids.filter(Number.isFinite))].slice(0, limit);
   if (unique.length === 0) return [];
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at,listing_state";
   const rows: ScorableRawRow[] = [];
   for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
     const remaining = limit - rows.length;
     if (remaining <= 0) break;
-    const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&pid=in.(${chunk.join(",")})&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&limit=${Math.min(remaining, chunk.length)}`;
+    const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&pid=in.(${chunk.join(",")})&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&limit=${Math.min(remaining, chunk.length)}`;
     const res = await restFetch(url, { headers: serviceHeaders() });
     rows.push(...((await res.json()) as ScorableRawRow[]));
   }
@@ -1594,37 +1607,57 @@ export async function sourceHealthStage(): Promise<StageStats> {
 }
 
 async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<number, ParsedListingRow>) {
-  const byKey = new Map<string, { rows: ScorableRawRow[]; skuId: string | null }>();
+  const byKey = new Map<string, {
+    rows: ScorableRawRow[];
+    activeRows: ScorableRawRow[];
+    soldRows: ScorableRawRow[];
+    disappearedRows: ScorableRawRow[];
+    skuId: string | null;
+  }>();
   for (const row of rows) {
     const parsed = parsedByPid.get(row.pid);
     if (!parsed?.comparable_key || Number(parsed.parse_confidence ?? 0) < 0.65 || parsed.needs_review) continue;
     const key = parsed.comparable_key;
-    if (!byKey.has(key)) byKey.set(key, { rows: [], skuId: row.sku_id });
-    byKey.get(key)!.rows.push(row);
+    if (!byKey.has(key)) byKey.set(key, { rows: [], activeRows: [], soldRows: [], disappearedRows: [], skuId: row.sku_id });
+    const group = byKey.get(key)!;
+    group.rows.push(row);
+    if (row.listing_state === "sold_confirmed") group.soldRows.push(row);
+    else if (row.listing_state === "disappeared") group.disappearedRows.push(row);
+    else group.activeRows.push(row);
   }
 
   const today = kstDateString();
   const marketRows = [...byKey.entries()].map(([comparableKey, group]) => {
-    const representativePrices = sellerRepresentativePrices(group.rows);
-    const trimmed = madTrim(representativePrices);
-    const marketPrices = trimmed.values;
-    const activeSampleCount = marketPrices.length;
-    const activeMedian = Math.round(median(marketPrices));
-    const p25 = Math.round(quantile(marketPrices, 0.25));
-    const p75 = Math.round(quantile(marketPrices, 0.75));
-    const confidence = activeSampleCount >= 20 ? "high" : activeSampleCount >= 8 ? "medium" : "low";
+    const active = trimmedSellerMarket(group.activeRows);
+    const sold = trimmedSellerMarket(group.soldRows);
+    const disappeared = trimmedSellerMarket(group.disappearedRows);
+    const activeMedian = active.median;
+    const soldMedian = sold.median;
+    const disappearedMedian = disappeared.median;
+    const blendedMedian =
+      soldMedian != null && sold.count >= 8 && activeMedian != null && active.count >= 5
+        ? Math.round((soldMedian * 0.7) + (activeMedian * 0.3))
+        : soldMedian != null && sold.count >= 5
+          ? soldMedian
+          : activeMedian != null
+            ? activeMedian
+            : disappearedMedian != null && disappeared.count >= 8
+              ? Math.round(disappearedMedian * 0.9)
+              : disappearedMedian;
+    const confidenceBasis = sold.count >= 8 ? sold.count : active.count;
+    const confidence = confidenceBasis >= 20 ? "high" : confidenceBasis >= 8 ? "medium" : "low";
     return {
       date: today,
       comparable_key: comparableKey,
       ...marketKeyMeta(comparableKey, group.skuId),
       active_median_price: activeMedian,
-      sold_median_price: null,
-      blended_median_price: activeMedian,
-      p25_price: p25,
-      p75_price: p75,
-      active_sample_count: activeSampleCount,
-      sold_sample_count: 0,
-      disappeared_sample_count: 0,
+      sold_median_price: soldMedian,
+      blended_median_price: blendedMedian,
+      p25_price: active.p25,
+      p75_price: active.p75,
+      active_sample_count: active.count,
+      sold_sample_count: sold.count,
+      disappeared_sample_count: disappeared.count,
       confidence,
       computed_at: new Date().toISOString(),
     };
@@ -1633,7 +1666,7 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key");
   return {
     keyCount: marketRows.length,
-    sampleCount: marketRows.reduce((sum, row) => sum + row.active_sample_count, 0),
+    sampleCount: marketRows.reduce((sum, row) => sum + row.active_sample_count + row.sold_sample_count + row.disappeared_sample_count, 0),
   };
 }
 
@@ -2033,7 +2066,6 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const rows = await loadScorableRows(config.tickScoreLimit);
   if (rows.length === 0) return stats;
   const parsedByPid = await ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid)));
-  await upsertMarketPriceDaily(rows, parsedByPid);
   const marketStatsByKey = await loadMarketPriceStats(
     rows
       .map((row) => preciseComparableKey(parsedByPid.get(row.pid)))

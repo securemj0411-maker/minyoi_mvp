@@ -94,8 +94,12 @@ function kstDateString(date = new Date()) {
 type MarketPriceDebugRow = {
   comparable_key: string;
   active_sample_count: number;
+  sold_sample_count: number;
+  disappeared_sample_count: number;
   confidence: "high" | "medium" | "low";
   active_median_price: number | null;
+  sold_median_price: number | null;
+  blended_median_price: number | null;
 };
 
 type BottleneckRawRow = {
@@ -243,7 +247,7 @@ async function loadMarketPriceDebug() {
     };
   }
   const today = kstDateString();
-  const url = `${base}/mvp_market_price_daily?select=comparable_key,active_sample_count,confidence,active_median_price&date=eq.${today}&order=active_sample_count.desc&limit=1000`;
+  const url = `${base}/mvp_market_price_daily?select=comparable_key,active_sample_count,sold_sample_count,disappeared_sample_count,confidence,active_median_price,sold_median_price,blended_median_price&date=eq.${today}&order=active_sample_count.desc&limit=1000`;
   const res = await fetch(url, { headers, cache: "no-store" });
   if (!res.ok) {
     return {
@@ -263,7 +267,12 @@ async function loadMarketPriceDebug() {
     high: rows.filter((row) => row.confidence === "high").length,
     medium: rows.filter((row) => row.confidence === "medium").length,
     low: rows.filter((row) => row.confidence === "low").length,
-    totalSamples: rows.reduce((sum, row) => sum + Number(row.active_sample_count ?? 0), 0),
+    totalSamples: rows.reduce((sum, row) => (
+      sum +
+      Number(row.active_sample_count ?? 0) +
+      Number(row.sold_sample_count ?? 0) +
+      Number(row.disappeared_sample_count ?? 0)
+    ), 0),
     top: rows.slice(0, 5),
   };
 }
@@ -722,9 +731,11 @@ function MarketStatsPanel({ stats }: { stats: Awaited<ReturnType<typeof loadMark
         {stats.top.map((row) => (
           <div key={row.comparable_key} className="grid gap-2 px-3 py-2 text-xs sm:grid-cols-[minmax(0,1fr)_80px_80px_80px] sm:items-center">
             <div className="truncate font-mono text-zinc-700">{row.comparable_key}</div>
-            <div className="text-zinc-500 sm:text-right">{num(row.active_sample_count)}건</div>
+            <div className="text-zinc-500 sm:text-right">
+              A{num(row.active_sample_count)} / S{num(row.sold_sample_count)} / D{num(row.disappeared_sample_count)}
+            </div>
             <div className="font-semibold text-zinc-700 sm:text-right">{row.confidence}</div>
-            <div className="text-zinc-700 sm:text-right">{num(Number(row.active_median_price ?? 0))}원</div>
+            <div className="text-zinc-700 sm:text-right">{num(Number(row.blended_median_price ?? row.active_median_price ?? 0))}원</div>
           </div>
         ))}
         {stats.top.length === 0 ? (
