@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v13";
+const PARSER_VERSION = "option-parser-v14";
 
 function hashText(text: string) {
   return createHash("sha256").update(text).digest("hex");
@@ -80,7 +80,7 @@ function parseGb(raw: string | undefined) {
   const compact = lower.replace(/\s+/g, "");
   const num = Number(compact.match(/\d+(?:\.\d+)?/)?.[0]);
   if (!Number.isFinite(num)) return null;
-  if (/tb|테라/.test(compact)) return Math.round(num * 1024);
+  if (/tb|테라|^[124]t$/.test(compact)) return Math.round(num * 1024);
   return Math.round(num);
 }
 
@@ -110,16 +110,16 @@ function parseLooseDeviceStorageGb(text: string, category: Sku["category"] | nul
 
 function parseRamAndSsd(text: string, category: Sku["category"] | null) {
   const lower = normalize(text).toLowerCase();
-  const pair = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*\/\s*(128|250|256|500|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\b/);
-  const pairWithUnits = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)?\s*\/\s*(128|250|256|500|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|tb|테라)?\b/);
+  const pair = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*\/\s*(128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\b/);
+  const pairWithUnits = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)?\s*\/\s*(128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|t|tb|테라)?\b/);
   const looseLaptopPair = category === "laptop"
     ? lower.match(/\b(8|16|24|32|36|48|64|96|128)\s+(128|256|500|512)\b/)
     : null;
   const adjacentLaptopPair = category === "laptop"
-    ? lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)\s+(121|128|250|256|500|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|tb|테라|ssd)?\b/)
+    ? lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)\s+(121|128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|t|tb|테라|ssd)?\b/)
     : null;
   const reversedPair = category === "laptop"
-    ? lower.match(/\b(128|250|256|500|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|tb|테라)?\s+(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)?\b/)
+    ? lower.match(/\b(128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|t|tb|테라)?\s+(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)?\b/)
     : null;
   const ramExplicit = lower.match(/(?:램|ram|memory|메모리|통합\s*메모리)\s*[:：]?\s*(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)?/);
   const ramSuffix = lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:(?:gb|g|기가)\s*)?(?:램|ram|memory|메모리|통합\s*메모리)\b/);
@@ -130,8 +130,8 @@ function parseRamAndSsd(text: string, category: Sku["category"] | null) {
   const singleLaptopRam = category === "laptop"
     ? lower.match(/\b(8|16|24|32|36|48|64|96|128)\s*(?:gb|g|기가)\b/)
     : null;
-  const ssdExplicit = lower.match(/(?:ssd|용량|저장\s*공간|저장공간|저장\s*장치|스토리지)\s*[:：]?\s*(121|128|250|256|500|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|tb|테라)?/);
-  const ssdSuffix = lower.match(/\b(121|128|250|256|500|512|1\s*tb|2\s*tb|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|tb|테라)\s*(?:ssd|용량|저장\s*공간|저장공간|저장\s*장치|스토리지)?\b/);
+  const ssdExplicit = lower.match(/(?:ssd|용량|저장\s*공간|저장공간|저장\s*장치|스토리지)\s*[:：]?\s*(121|128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|t|tb|테라)?/);
+  const ssdSuffix = lower.match(/\b(121|128|250|256|500|512|1\s*t|1\s*tb|2\s*t|2\s*tb|4\s*t|4\s*tb|1테라|2테라|4테라)\s*(?:gb|g|기가|t|tb|테라)\s*(?:ssd|용량|저장\s*공간|저장공간|저장\s*장치|스토리지)?\b/);
   const ramGb = parseGb(ramExplicit?.[1] ?? ramSuffix?.[1] ?? ramBeforeMemory?.[1] ?? ramBeforeSsd?.[1] ?? pairWithUnits?.[1] ?? pair?.[1] ?? adjacentLaptopPair?.[1] ?? looseLaptopPair?.[1] ?? reversedPair?.[2] ?? singleLaptopRam?.[1]);
   const bareLaptopSsd = category === "laptop"
     ? lower.match(/(?:^|[^0-9])(121|128|250|256|500|512)(?:[^0-9]|$)/)
@@ -140,7 +140,7 @@ function parseRamAndSsd(text: string, category: Sku["category"] | null) {
     ? lower.match(/\b(121|128|250|256|500|512)\s*ssd\b/)
     : null;
   const teraSsd = category === "laptop"
-    ? lower.match(/\b([124])\s*(?:tb|테라)\b/)
+    ? lower.match(/\b([124])\s*(?:t|tb|테라)\b/)
     : null;
   const ssdGb = parseGb(ssdExplicit?.[1] ?? pairWithUnits?.[2] ?? pair?.[2] ?? adjacentLaptopPair?.[2] ?? looseLaptopPair?.[2] ?? reversedPair?.[1] ?? ssdSuffix?.[1] ?? compactSsd?.[1] ?? teraSsd?.[0] ?? bareLaptopSsd?.[1]);
   return { ramGb, ssdGb };
@@ -283,6 +283,26 @@ function defaultTabletScreenSizeIn(model: string | null) {
   if (model === "galaxy_tab_s8_plus" || model === "galaxy_tab_s9_plus" || model === "galaxy_tab_s10_plus") return 12.4;
   if (model === "galaxy_tab_s8_ultra" || model === "galaxy_tab_s9_ultra" || model === "galaxy_tab_s10_ultra") return 14.6;
   return null;
+}
+
+function defaultLaptopMemory(category: Sku["category"] | null, model: string | null, chip: string | null, screenSizeIn: number | null, text: string) {
+  if (category !== "laptop" || !model) return { ramGb: null, ssdGb: null };
+  const lower = normalize(text).toLowerCase();
+  const baseSignal = /기본형|기본\s*모델|깡통|베이스\s*모델|base\s*model/.test(lower);
+  if (!baseSignal) return { ramGb: null, ssdGb: null };
+
+  if (model === "macbook_air") {
+    return { ramGb: 8, ssdGb: 256 };
+  }
+
+  if (model === "macbook_pro") {
+    if (screenSizeIn === 13) return { ramGb: 8, ssdGb: 256 };
+    if (screenSizeIn === 14 || screenSizeIn === 16 || chip?.includes("pro") || chip?.includes("max")) {
+      return { ramGb: 16, ssdGb: 512 };
+    }
+  }
+
+  return { ramGb: null, ssdGb: null };
 }
 
 function conditionFromText(text: string, batteryHealth: number | null, cycles: number | null) {
@@ -450,8 +470,8 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const storageGb = parseStorageGb(title, category) ?? parseLooseDeviceStorageGb(title, category) ?? parseStorageGb(text, category);
   const titleMemory = parseRamAndSsd(title, category);
   const combinedMemory = parseRamAndSsd(text, category);
-  const ramGb = titleMemory.ramGb ?? combinedMemory.ramGb;
-  const ssdGb = titleMemory.ssdGb ?? combinedMemory.ssdGb;
+  const parsedRamGb = titleMemory.ramGb ?? combinedMemory.ramGb;
+  const parsedSsdGb = titleMemory.ssdGb ?? combinedMemory.ssdGb;
   const parsedScreenSizeIn = category === "laptop"
     ? (parseLaptopScreenSizeIn(title) ?? parseLaptopScreenSizeIn(text))
     : (parseScreenSizeIn(title) ?? parseScreenSizeIn(text));
@@ -460,6 +480,9 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     ?? (category === "tablet" ? defaultTabletScreenSizeIn(model) : null);
   const watchSizeMm = parseWatchSizeMm(text) ?? defaultWatchSizeMm(model);
   const chip = parseChip(title) ?? parseChip(text);
+  const laptopMemoryDefault = defaultLaptopMemory(category, model, chip, screenSizeIn, text);
+  const ramGb = parsedRamGb ?? laptopMemoryDefault.ramGb;
+  const ssdGb = parsedSsdGb ?? laptopMemoryDefault.ssdGb;
   const batteryHealth = parseBatteryHealth(text);
   const batteryCycles = parseBatteryCycles(text);
   const connectivity = parseConnectivity(title) ?? parseConnectivity(description) ?? defaultConnectivity(model);
