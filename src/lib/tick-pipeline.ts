@@ -1402,6 +1402,45 @@ function sourceWorkerFailureStatus(
   return null;
 }
 
+function workerFailureAlerts(
+  workerBreakdown: Map<string, { total: number; failed: number; collected: number; enriched: number }>,
+) {
+  const labels: Record<string, string> = {
+    tick: "Tick",
+    detail_worker: "Detail",
+    deep_crawl: "Deep crawl",
+    lifecycle_worker: "Lifecycle",
+    market_worker: "Market",
+    pool_warmer: "Warmer",
+    housekeeper: "Housekeeper",
+  };
+  return [...workerBreakdown.entries()]
+    .map(([mode, bucket]) => {
+      const failureRate = bucket.total === 0 ? 0 : bucket.failed / bucket.total;
+      const severity = bucket.total >= 3 && failureRate >= 0.2
+        ? "critical"
+        : bucket.total >= 3 && failureRate >= 0.05
+          ? "warning"
+          : null;
+      if (!severity) return null;
+      return {
+        key: `${mode}_failure_rate_${severity}`,
+        severity: severity as "critical" | "warning",
+        mode,
+        label: labels[mode] ?? mode,
+        message: `${labels[mode] ?? mode} worker failure rate ${Math.round(failureRate * 100)}% over source health window`,
+        total: bucket.total,
+        failed: bucket.failed,
+        failureRate: Math.round(failureRate * 1000) / 1000,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .sort((a, b) => {
+      const severityOrder = { critical: 0, warning: 1 };
+      return severityOrder[a.severity] - severityOrder[b.severity] || b.failureRate - a.failureRate;
+    });
+}
+
 function proposeSourceStatus(input: {
   runCount: number;
   failedRunRate: number;
@@ -1614,6 +1653,7 @@ export async function sourceHealthStage(): Promise<StageStats> {
     dominantSearchFailureMode,
     workerBreakdown,
   });
+  const operationalAlerts = workerFailureAlerts(workerBreakdown);
   const hysteresis = applySourceHealthHysteresis(proposed, previous);
   const now = new Date().toISOString();
   const payload = {
@@ -1648,6 +1688,9 @@ export async function sourceHealthStage(): Promise<StageStats> {
       effectiveStatus: hysteresis.status,
       ignoredInternalWorkerFailures: rows.filter((row) => !isSourceRelevantMode(runMode(row)) && row.status === "failed").length,
       workerBreakdown: Object.fromEntries(workerBreakdown.entries()),
+      operationalAlerts,
+      alertCount: operationalAlerts.length,
+      criticalAlertCount: operationalAlerts.filter((alert) => alert.severity === "critical").length,
     },
     hysteresis_json: {
       changed: hysteresis.changed,

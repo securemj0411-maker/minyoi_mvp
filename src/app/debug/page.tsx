@@ -622,6 +622,33 @@ function workerSummary(runs: CollectRun[]) {
   });
 }
 
+function workerAlerts(runs: CollectRun[]) {
+  return workerSummary(runs)
+    .map((item) => {
+      const failureRate = item.runCount === 0 ? 0 : item.failureCount / item.runCount;
+      const severity = item.runCount >= 3 && failureRate >= 0.2
+        ? "critical"
+        : item.runCount >= 3 && failureRate >= 0.05
+          ? "warning"
+          : null;
+      if (!severity) return null;
+      return {
+        mode: item.mode,
+        label: pipelineModeLabel(item.mode),
+        severity: severity as "critical" | "warning",
+        failureRate,
+        runCount: item.runCount,
+        failureCount: item.failureCount,
+        lastFailure: item.lastFailure,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .sort((a, b) => {
+      const severityOrder = { critical: 0, warning: 1 };
+      return severityOrder[a.severity] - severityOrder[b.severity] || b.failureRate - a.failureRate;
+    });
+}
+
 function stageStats(run: CollectRun, stage: "search" | "detail" | "score") {
   const stages = run.stageStats.stages;
   if (!stages || typeof stages !== "object") return null;
@@ -776,6 +803,60 @@ function WorkerStatusPanel({ runs }: { runs: CollectRun[] }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function WorkerAlertPanel({ runs }: { runs: CollectRun[] }) {
+  const alerts = workerAlerts(runs);
+  return (
+    <div className={`rounded-md border p-5 ${
+      alerts.some((alert) => alert.severity === "critical")
+        ? "border-red-200 bg-red-50"
+        : alerts.length > 0
+          ? "border-amber-200 bg-amber-50"
+          : "border-emerald-200 bg-emerald-50"
+    }`}>
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="text-sm font-semibold text-zinc-950">운영 알림</div>
+          <div className="mt-1 text-xs text-zinc-600">
+            worker별 실패율이 최근 실행 window에서 5% 이상이면 경고, 20% 이상이면 긴급으로 봅니다.
+          </div>
+        </div>
+        <span className={`w-fit rounded-full px-2 py-1 text-xs font-semibold ring-1 ${
+          alerts.some((alert) => alert.severity === "critical")
+            ? "bg-red-100 text-red-800 ring-red-200"
+            : alerts.length > 0
+              ? "bg-amber-100 text-amber-800 ring-amber-200"
+              : "bg-emerald-100 text-emerald-800 ring-emerald-200"
+        }`}>
+          {alerts.length === 0 ? "정상" : `${num(alerts.length)}개 알림`}
+        </span>
+      </div>
+
+      {alerts.length === 0 ? (
+        <div className="mt-4 rounded-md border border-emerald-100 bg-white/60 p-3 text-sm text-emerald-800">
+          최근 worker 실패율 기준으로 즉시 조치할 알림은 없습니다.
+        </div>
+      ) : (
+        <div className="mt-4 grid gap-2">
+          {alerts.map((alert) => (
+            <div key={alert.mode} className="grid gap-2 rounded-md border border-white/70 bg-white/70 p-3 text-sm sm:grid-cols-[110px_minmax(0,1fr)_110px] sm:items-center">
+              <div className={alert.severity === "critical" ? "font-semibold text-red-800" : "font-semibold text-amber-800"}>
+                {alert.severity === "critical" ? "긴급" : "경고"} · {alert.label}
+              </div>
+              <div className="text-zinc-700">
+                최근 {num(alert.runCount)}회 중 실패 {num(alert.failureCount)}회 · 실패율 {Math.round(alert.failureRate * 100)}%
+                {alert.lastFailure?.errorMessage ? ` · ${shortText(alert.lastFailure.errorMessage, 72)}` : ""}
+              </div>
+              <div className="text-xs text-zinc-500 sm:text-right">
+                {alert.lastFailure ? formatTime(alert.lastFailure.startedAt) : "-"}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -1457,6 +1538,8 @@ export default async function DebugPage() {
           <MetricCard label="최근 AI API 호출" value={`${num(totalApiCalls)}건`} sub="최근 30회 합산" />
           <MetricCard label="AI 제외 누적" value={`${num(totalAiFiltered)}건`} sub="최근 30회 합산" />
         </section>
+
+        <WorkerAlertPanel runs={runs} />
 
         {latest ? <CronTimeoutAdvice run={latest} /> : null}
 
