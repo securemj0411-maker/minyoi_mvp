@@ -8,10 +8,14 @@ const RUNTIME_TABLES = [
   { name: "mvp_listing_analysis", filter: "pid=not.is.null" },
   { name: "mvp_listings", filter: "pid=not.is.null" },
   { name: "mvp_detail_queue", filter: "id=not.is.null" },
+  { name: "mvp_lifecycle_checks", filter: "pid=not.is.null" },
+  { name: "mvp_market_key_invalidation", filter: "comparable_key=not.is.null" },
   { name: "mvp_listing_parsed", filter: "pid=not.is.null" },
   { name: "mvp_listing_observations", filter: "id=not.is.null" },
   { name: "mvp_market_price_daily", filter: "comparable_key=not.is.null" },
+  { name: "mvp_source_health", filter: "id=not.is.null" },
   { name: "mvp_raw_listings", filter: "pid=not.is.null" },
+  { name: "mvp_sellers", filter: "seller_uid=not.is.null" },
   { name: "mvp_collect_runs", filter: "id=not.is.null" },
 ];
 

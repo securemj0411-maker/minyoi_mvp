@@ -74,6 +74,32 @@ create table if not exists public.mvp_listing_ai_classifications (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.mvp_sellers (
+  source text not null default 'bunjang',
+  seller_uid text not null,
+  seller_name text,
+  review_rating numeric,
+  review_count integer not null default 0 check (review_count >= 0),
+  sales_count integer not null default 0 check (sales_count >= 0),
+  follower_count integer not null default 0 check (follower_count >= 0),
+  is_proshop boolean not null default false,
+  is_official_seller boolean not null default false,
+  joined_at timestamptz,
+  listing_count integer not null default 0 check (listing_count >= 0),
+  active_listing_count integer not null default 0 check (active_listing_count >= 0),
+  comparable_key_listing_count jsonb not null default '{}'::jsonb,
+  resurrection_count integer not null default 0 check (resurrection_count >= 0),
+  resurrection_rate numeric not null default 0 check (resurrection_rate >= 0),
+  relist_count integer not null default 0 check (relist_count >= 0),
+  price_change_count integer not null default 0 check (price_change_count >= 0),
+  price_change_rate numeric not null default 0 check (price_change_rate >= 0),
+  source_json jsonb not null default '{}'::jsonb,
+  first_seen_at timestamptz not null default now(),
+  last_seen_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (source, seller_uid)
+);
+
 create table if not exists public.mvp_raw_listings (
   pid bigint primary key,
   url text not null,
@@ -87,6 +113,9 @@ create table if not exists public.mvp_raw_listings (
   sale_status text not null default '',
   shop_review_rating numeric,
   shop_review_count integer not null default 0 check (shop_review_count >= 0),
+  seller_uid text,
+  seller_name text,
+  seller_source text not null default 'bunjang',
   trade_data jsonb,
   trades_data jsonb,
   listing_type text not null default 'unknown' check (listing_type in (
@@ -116,6 +145,11 @@ create table if not exists public.mvp_raw_listings (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.mvp_raw_listings
+  add column if not exists seller_uid text,
+  add column if not exists seller_name text,
+  add column if not exists seller_source text not null default 'bunjang';
 
 create table if not exists public.mvp_listing_parsed (
   pid bigint primary key references public.mvp_raw_listings(pid) on delete cascade,
@@ -163,9 +197,13 @@ create table if not exists public.mvp_listing_observations (
   sku_name text,
   comparable_key text,
   parse_confidence numeric,
+  seller_uid text,
   source text not null default 'bunjang',
   raw_json jsonb not null default '{}'::jsonb
 );
+
+alter table public.mvp_listing_observations
+  add column if not exists seller_uid text;
 
 create table if not exists public.mvp_market_price_daily (
   date date not null,
@@ -185,6 +223,68 @@ create table if not exists public.mvp_market_price_daily (
   confidence text not null default 'low' check (confidence in ('high','medium','low')),
   computed_at timestamptz not null default now(),
   primary key (date, comparable_key)
+);
+
+create table if not exists public.mvp_source_health (
+  id bigserial primary key,
+  source text not null default 'bunjang',
+  checked_at timestamptz not null default now(),
+  window_minutes integer not null default 5 check (window_minutes > 0),
+  status text not null default 'healthy' check (status in ('healthy','degraded','unhealthy')),
+  previous_status text check (previous_status in ('healthy','degraded','unhealthy')),
+  detail_success_rate numeric not null default 1 check (detail_success_rate >= 0 and detail_success_rate <= 1),
+  detail_404_rate numeric not null default 0 check (detail_404_rate >= 0 and detail_404_rate <= 1),
+  detail_5xx_rate numeric not null default 0 check (detail_5xx_rate >= 0 and detail_5xx_rate <= 1),
+  sold_transition_rate numeric not null default 0 check (sold_transition_rate >= 0),
+  disappeared_transition_rate numeric not null default 0 check (disappeared_transition_rate >= 0),
+  search_result_count integer not null default 0 check (search_result_count >= 0),
+  baseline_json jsonb not null default '{}'::jsonb,
+  hysteresis_json jsonb not null default '{}'::jsonb,
+  reason text not null default '',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.mvp_lifecycle_checks (
+  pid bigint primary key references public.mvp_raw_listings(pid) on delete cascade,
+  source text not null default 'bunjang',
+  status text not null default 'active' check (status in (
+    'active','missing_suspect','sold_confirmed','disappeared','archived'
+  )),
+  priority_tier text not null default 'general' check (priority_tier in (
+    'pool','near_pool','market_sample','general','exploration'
+  )),
+  next_check_at timestamptz not null default now(),
+  last_checked_at timestamptz,
+  last_check_result text check (last_check_result in (
+    'active','sold','missing','error','skipped_source_degraded','skipped_budget'
+  )),
+  consecutive_missing_count integer not null default 0 check (consecutive_missing_count >= 0),
+  consecutive_error_count integer not null default 0 check (consecutive_error_count >= 0),
+  last_error text,
+  detail_status_code integer,
+  transition_confidence numeric not null default 0 check (transition_confidence >= 0 and transition_confidence <= 1),
+  state_reason text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.mvp_market_key_invalidation (
+  comparable_key text primary key,
+  source text not null default 'bunjang',
+  reason text not null default 'unknown',
+  priority integer not null default 0,
+  affected_pid bigint,
+  old_comparable_key text,
+  new_comparable_key text,
+  parser_version text,
+  event_count integer not null default 1 check (event_count >= 1),
+  first_event_at timestamptz not null default now(),
+  last_event_at timestamptz not null default now(),
+  claimed_at timestamptz,
+  locked_until timestamptz,
+  attempts integer not null default 0 check (attempts >= 0),
+  last_recomputed_at timestamptz,
+  last_error text,
+  status text not null default 'pending' check (status in ('pending','processing','done','failed'))
 );
 
 create table if not exists public.mvp_detail_queue (
@@ -256,6 +356,12 @@ create index if not exists mvp_listing_ai_classifications_content_hash_idx
 create index if not exists mvp_listing_ai_classifications_type_idx
   on public.mvp_listing_ai_classifications(listing_type, confidence);
 
+create index if not exists mvp_sellers_seen_idx
+  on public.mvp_sellers(source, last_seen_at desc);
+
+create index if not exists mvp_sellers_resurrection_idx
+  on public.mvp_sellers(resurrection_rate desc, last_seen_at desc);
+
 create index if not exists mvp_raw_listings_seen_idx
   on public.mvp_raw_listings(last_seen_at desc);
 
@@ -267,6 +373,9 @@ create index if not exists mvp_raw_listings_listing_type_idx
 
 create index if not exists mvp_raw_listings_state_idx
   on public.mvp_raw_listings(listing_state, last_seen_at desc);
+
+create index if not exists mvp_raw_listings_seller_idx
+  on public.mvp_raw_listings(seller_source, seller_uid, last_seen_at desc);
 
 create index if not exists mvp_listing_parsed_comparable_idx
   on public.mvp_listing_parsed(comparable_key, parse_confidence desc);
@@ -283,8 +392,26 @@ create index if not exists mvp_listing_observations_comparable_seen_idx
 create index if not exists mvp_listing_observations_event_idx
   on public.mvp_listing_observations(event_type, observed_at desc);
 
+create index if not exists mvp_listing_observations_seller_idx
+  on public.mvp_listing_observations(source, seller_uid, observed_at desc);
+
 create index if not exists mvp_market_price_daily_comparable_date_idx
   on public.mvp_market_price_daily(comparable_key, date desc);
+
+create index if not exists mvp_source_health_source_checked_idx
+  on public.mvp_source_health(source, checked_at desc);
+
+create index if not exists mvp_lifecycle_checks_due_idx
+  on public.mvp_lifecycle_checks(status, next_check_at, priority_tier);
+
+create index if not exists mvp_lifecycle_checks_tier_idx
+  on public.mvp_lifecycle_checks(priority_tier, next_check_at);
+
+create index if not exists mvp_market_key_invalidation_claim_idx
+  on public.mvp_market_key_invalidation(status, priority desc, last_event_at asc);
+
+create index if not exists mvp_market_key_invalidation_locked_idx
+  on public.mvp_market_key_invalidation(locked_until);
 
 create index if not exists mvp_detail_queue_claim_idx
   on public.mvp_detail_queue(status, available_at, priority desc, created_at);
@@ -308,10 +435,14 @@ alter table public.mvp_listings enable row level security;
 alter table public.mvp_listing_analysis enable row level security;
 alter table public.mvp_user_candidate_actions enable row level security;
 alter table public.mvp_listing_ai_classifications enable row level security;
+alter table public.mvp_sellers enable row level security;
 alter table public.mvp_raw_listings enable row level security;
 alter table public.mvp_listing_parsed enable row level security;
 alter table public.mvp_listing_observations enable row level security;
 alter table public.mvp_market_price_daily enable row level security;
+alter table public.mvp_source_health enable row level security;
+alter table public.mvp_lifecycle_checks enable row level security;
+alter table public.mvp_market_key_invalidation enable row level security;
 alter table public.mvp_detail_queue enable row level security;
 alter table public.mvp_collect_runs enable row level security;
 
