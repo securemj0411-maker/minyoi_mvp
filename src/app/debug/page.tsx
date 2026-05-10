@@ -410,6 +410,73 @@ function lastSucceeded(runs: CollectRun[]) {
   return runs.find((run) => run.status === "succeeded") ?? null;
 }
 
+function pipelineMode(run: CollectRun) {
+  const value = run.requestMeta.pipelineMode;
+  if (typeof value === "string" && value.trim()) return value.trim();
+  const path = run.requestPath ?? "";
+  if (path.includes("/detail-worker")) return "detail_worker";
+  if (path.includes("/deep-crawl")) return "deep_crawl";
+  if (path.includes("/pool-warmer")) return "pool_warmer";
+  if (path.includes("/housekeeper")) return "housekeeper";
+  if (path.includes("/market-worker")) return "market_worker";
+  if (path.includes("/tick")) return "tick";
+  if (path.includes("/collect")) return "legacy_collect";
+  return "unknown";
+}
+
+function pipelineModeLabel(mode: string) {
+  const labels: Record<string, string> = {
+    tick: "Tick",
+    detail_worker: "Detail",
+    deep_crawl: "Deep crawl",
+    market_worker: "Market",
+    pool_warmer: "Warmer",
+    housekeeper: "Housekeeper",
+    legacy_collect: "Legacy",
+    unknown: "Unknown",
+  };
+  return labels[mode] ?? mode;
+}
+
+function workerPrimaryMetric(run: CollectRun | null) {
+  if (!run) return { label: "최근 처리", value: "-" };
+  const mode = pipelineMode(run);
+  const stages = run.stageStats.stages as Record<string, unknown> | undefined;
+  const market = stages?.market_stats && typeof stages.market_stats === "object"
+    ? stages.market_stats as Record<string, unknown>
+    : null;
+  if (mode === "tick" || mode === "deep_crawl") return { label: "최근 검색", value: `${num(run.collectedCount)}건` };
+  if (mode === "detail_worker") return { label: "최근 상세", value: `${num(run.enrichedCount)}건` };
+  if (mode === "market_worker") return { label: "최근 시세키", value: `${num(stageValue(market, "upserted"))}개` };
+  if (mode === "pool_warmer") return { label: "최근 검증", value: `${num(run.enrichedCount)}건` };
+  if (mode === "housekeeper") return { label: "최근 정리", value: `${num(run.upsertedCount)}건` };
+  return { label: "최근 저장", value: `${num(run.upsertedCount)}건` };
+}
+
+function workerSummary(runs: CollectRun[]) {
+  const modes = ["tick", "detail_worker", "deep_crawl", "market_worker", "pool_warmer", "housekeeper"];
+  return modes.map((mode) => {
+    const scoped = runs.filter((run) => pipelineMode(run) === mode);
+    const latest = scoped[0] ?? null;
+    const lastSuccess = scoped.find((run) => run.status === "succeeded") ?? null;
+    const lastFailure = scoped.find((run) => run.status === "failed") ?? null;
+    const completed = scoped.filter((run) => run.durationMs != null);
+    const avgDurationMs = completed.length === 0
+      ? null
+      : Math.round(completed.reduce((sum, run) => sum + Number(run.durationMs ?? 0), 0) / completed.length);
+    return {
+      mode,
+      latest,
+      lastSuccess,
+      lastFailure,
+      avgDurationMs,
+      primary: workerPrimaryMetric(latest),
+      failureCount: scoped.filter((run) => run.status === "failed").length,
+      runCount: scoped.length,
+    };
+  });
+}
+
 function stageStats(run: CollectRun, stage: "search" | "detail" | "score") {
   const stages = run.stageStats.stages;
   if (!stages || typeof stages !== "object") return null;
@@ -502,6 +569,63 @@ function StagePanel({ run }: { run: CollectRun }) {
               </div>
               <div className="mt-3 text-xs text-zinc-500">
                 소요 {duration == null ? "-" : formatDuration(duration)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function WorkerStatusPanel({ runs }: { runs: CollectRun[] }) {
+  const summaries = workerSummary(runs);
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="text-sm font-semibold text-zinc-950">Worker별 실행 상태</div>
+          <div className="mt-1 text-xs text-zinc-500">
+            tick/detail/market 등이 한 표에 섞여 보이는 문제를 분리해서 봅니다.
+          </div>
+        </div>
+        <span className="w-fit rounded-full bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-700 ring-1 ring-zinc-200">
+          최근 {num(runs.length)}회 기준
+        </span>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {summaries.map((item) => {
+          const latest = item.latest;
+          const isFailing = latest?.status === "failed" || item.failureCount >= Math.max(2, Math.ceil(item.runCount / 2));
+          const badgeClass = !latest
+            ? "bg-zinc-100 text-zinc-600 ring-zinc-200"
+            : isFailing
+              ? "bg-red-100 text-red-800 ring-red-200"
+              : latest.status === "running"
+                ? "bg-amber-100 text-amber-800 ring-amber-200"
+                : "bg-emerald-100 text-emerald-800 ring-emerald-200";
+          return (
+            <div key={item.mode} className="rounded-md border border-zinc-200 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-zinc-950">{pipelineModeLabel(item.mode)}</div>
+                  <div className="mt-1 text-xs text-zinc-500">
+                    {latest ? `최근 ${formatTime(latest.startedAt)}` : "최근 실행 없음"}
+                  </div>
+                </div>
+                <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${badgeClass}`}>
+                  {latest ? statusLabel(latest) : "없음"}
+                </span>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <MetricCard label={item.primary.label} value={item.primary.value} />
+                <MetricCard label="평균 소요" value={item.avgDurationMs == null ? "-" : formatDuration(item.avgDurationMs)} />
+              </div>
+              <div className="mt-3 grid gap-1 text-xs text-zinc-500">
+                <div>최근 성공: {item.lastSuccess ? formatTime(item.lastSuccess.startedAt) : "-"}</div>
+                <div className={item.lastFailure ? "text-red-700" : ""}>
+                  최근 실패: {item.lastFailure ? `${formatTime(item.lastFailure.startedAt)} · ${shortText(item.lastFailure.errorMessage, 54)}` : "-"}
+                </div>
               </div>
             </div>
           );
@@ -899,6 +1023,7 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
             <tr>
               <th className="px-4 py-3">시각</th>
               <th className="px-4 py-3">상태</th>
+              <th className="px-4 py-3">작업</th>
               <th className="px-4 py-3">출발</th>
               <th className="px-4 py-3">IP</th>
               <th className="px-4 py-3">모드</th>
@@ -923,6 +1048,11 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
                   </span>
                   {run.errorMessage ? <div className="mt-1 max-w-64 text-xs text-red-700">{run.errorMessage}</div> : null}
                 </td>
+                <td className="px-4 py-3">
+                  <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-700 ring-1 ring-zinc-200">
+                    {pipelineModeLabel(pipelineMode(run))}
+                  </span>
+                </td>
                 <td className="px-4 py-3 max-w-56 text-xs text-zinc-700">{shortText(run.triggerSource, 48)}</td>
                 <td className="px-4 py-3 font-mono text-xs text-zinc-600">{run.requestIp ?? "-"}</td>
                 <td className="px-4 py-3 text-xs text-zinc-700">
@@ -942,7 +1072,7 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
             ))}
             {runs.length === 0 ? (
               <tr>
-                <td colSpan={14} className="px-4 py-10 text-center text-zinc-500">
+                <td colSpan={15} className="px-4 py-10 text-center text-zinc-500">
                   아직 수집 실행 기록이 없습니다.
                 </td>
               </tr>
@@ -1002,6 +1132,8 @@ export default async function DebugPage() {
         </section>
 
         {latest ? <CronTimeoutAdvice run={latest} /> : null}
+
+        <WorkerStatusPanel runs={runs} />
 
         {latest ? (
           <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px_420px]">
