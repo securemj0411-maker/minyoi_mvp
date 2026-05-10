@@ -153,6 +153,16 @@ type SourceHealthDebugRow = {
   reason: string;
 };
 
+type MarketInvalidationDebugRow = {
+  comparable_key: string;
+  status: "pending" | "processing" | "done" | "failed";
+  reason: string;
+  priority: number;
+  event_count: number;
+  last_event_at: string;
+  last_recomputed_at: string | null;
+};
+
 const SELLING_FEE_RATE = 0.035;
 const RESELL_SHIPPING_FEE = 3500;
 const SAFETY_BUFFER = 5000;
@@ -263,6 +273,46 @@ async function loadSourceHealthDebug() {
     "/mvp_source_health?select=status,previous_status,checked_at,window_minutes,detail_success_rate,detail_404_rate,detail_5xx_rate,sold_transition_rate,disappeared_transition_rate,search_result_count,baseline_json,hysteresis_json,reason&source=eq.bunjang&order=checked_at.desc&limit=1",
     [],
   ))[0] ?? null;
+}
+
+async function loadMarketInvalidationDebug() {
+  const rows = await restJson<MarketInvalidationDebugRow[]>(
+    "/mvp_market_key_invalidation?select=comparable_key,status,reason,priority,event_count,last_event_at,last_recomputed_at&order=last_event_at.desc&limit=1000",
+    [],
+  );
+  const counts = rows.reduce<Record<string, number>>((acc, row) => {
+    acc[row.status] = (acc[row.status] ?? 0) + 1;
+    return acc;
+  }, {});
+  const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
+  const recentlyClosed = rows.filter((row) => (
+    row.status === "done" &&
+    row.last_recomputed_at &&
+    Date.parse(row.last_recomputed_at) >= thirtyMinutesAgo
+  )).length;
+  const reasonCounts = rows.reduce<Map<string, number>>((acc, row) => {
+    acc.set(row.reason || "unknown", (acc.get(row.reason || "unknown") ?? 0) + Number(row.event_count ?? 1));
+    return acc;
+  }, new Map());
+  const topReasons = [...reasonCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([reason, count]) => ({ reason, count }));
+  const pendingTop = rows
+    .filter((row) => row.status === "pending")
+    .sort((a, b) => b.priority - a.priority || Date.parse(a.last_event_at) - Date.parse(b.last_event_at))
+    .slice(0, 6);
+  return {
+    total: rows.length,
+    pending: counts.pending ?? 0,
+    processing: counts.processing ?? 0,
+    done: counts.done ?? 0,
+    failed: counts.failed ?? 0,
+    recentlyClosed,
+    eventCount: rows.reduce((sum, row) => sum + Number(row.event_count ?? 0), 0),
+    topReasons,
+    pendingTop,
+  };
 }
 
 async function loadBottleneckDebug() {
@@ -555,6 +605,75 @@ function MarketStatsPanel({ stats }: { stats: Awaited<ReturnType<typeof loadMark
   );
 }
 
+function MarketInvalidationPanel({ stats }: { stats: Awaited<ReturnType<typeof loadMarketInvalidationDebug>> }) {
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-zinc-950">시세 재계산 큐</div>
+          <div className="mt-1 text-xs text-zinc-500">
+            가격/제목/파서 변경으로 다시 계산해야 하는 comparable_key dedup set입니다.
+          </div>
+        </div>
+        <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${
+          stats.failed > 0
+            ? "bg-red-100 text-red-800 ring-red-200"
+            : stats.pending > 0
+              ? "bg-amber-100 text-amber-800 ring-amber-200"
+              : "bg-emerald-100 text-emerald-800 ring-emerald-200"
+        }`}>
+          {stats.failed > 0 ? "확인 필요" : stats.pending > 0 ? "대기 있음" : "정상"}
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <MetricCard label="Pending" value={`${num(stats.pending)}개`} sub="재계산 대기 key" />
+        <MetricCard label="최근 완료" value={`${num(stats.recentlyClosed)}개`} sub="최근 30분 done" />
+        <MetricCard label="Failed" value={`${num(stats.failed)}개`} sub={`전체 ${num(stats.total)}개 중`} />
+        <MetricCard label="이벤트" value={`${num(stats.eventCount)}회`} sub="중복 key 병합 후 합산" />
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">Reason TOP</div>
+          <div className="divide-y divide-zinc-100">
+            {stats.topReasons.map((row) => (
+              <div key={row.reason} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
+                <div className="font-mono text-zinc-700">{row.reason}</div>
+                <div className="font-semibold text-zinc-900">{num(row.count)}회</div>
+              </div>
+            ))}
+            {stats.topReasons.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-zinc-500">아직 재계산 이벤트가 없습니다.</div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">우선 처리 Pending</div>
+          <div className="divide-y divide-zinc-100">
+            {stats.pendingTop.map((row) => (
+              <div key={row.comparable_key} className="px-3 py-2 text-xs">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="truncate font-mono text-zinc-700">{row.comparable_key}</div>
+                  <div className="shrink-0 font-semibold text-zinc-900">P{num(row.priority)}</div>
+                </div>
+                <div className="mt-1 flex items-center justify-between gap-3 text-zinc-500">
+                  <span>{row.reason}</span>
+                  <span>{formatTime(row.last_event_at)}</span>
+                </div>
+              </div>
+            ))}
+            {stats.pendingTop.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-zinc-500">대기 중인 key가 없습니다.</div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function sourceHealthClass(status: string) {
   if (status === "healthy") return "bg-emerald-100 text-emerald-800 ring-emerald-200";
   if (status === "degraded") return "bg-amber-100 text-amber-800 ring-amber-200";
@@ -836,9 +955,10 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
 }
 
 export default async function DebugPage() {
-  const [runs, marketStats, bottleneckStats, sourceHealth] = await Promise.all([
+  const [runs, marketStats, marketInvalidations, bottleneckStats, sourceHealth] = await Promise.all([
     loadCollectRuns(30),
     loadMarketPriceDebug(),
+    loadMarketInvalidationDebug(),
     loadBottleneckDebug(),
     loadSourceHealthDebug(),
   ]);
@@ -897,6 +1017,7 @@ export default async function DebugPage() {
           <BottleneckPanel stats={bottleneckStats} />
           <div className="grid gap-5">
             <SourceHealthPanel health={sourceHealth} />
+            <MarketInvalidationPanel stats={marketInvalidations} />
             <MarketStatsPanel stats={marketStats} />
           </div>
         </section>
