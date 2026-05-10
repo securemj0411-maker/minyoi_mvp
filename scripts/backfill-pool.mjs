@@ -26,6 +26,15 @@ await loadEnvFile(path.join(appDir, ".env"));
 const SELLING_FEE_RATE = 0.035;
 const RESELL_SHIPPING_FEE = 3500;
 const SAFETY_BUFFER = 5000;
+const POOL_CONFIDENCE_FLOOR = 0.7;
+const POOL_BLOCK_FLAGS = [
+  "coarse_market_price",
+  "option_parse_review",
+  "option_needs_review",
+  "ai_review_unavailable",
+  "weak_description",
+  "risk_keyword_review",
+];
 
 function bandFromProfit(profitMin, profitMax) {
   const avg = Math.round((profitMin + profitMax) / 2);
@@ -55,7 +64,7 @@ function authHeaders(prefer) {
 
 async function fetchListings(limit, offset) {
   const cols =
-    "pid,price,sku_median,shipping_fee,shipping_fee_general,estimated_buy_cost";
+    "pid,price,sku_median,shipping_fee,shipping_fee_general,estimated_buy_cost,thumbnail_url";
   const url = `${supabaseRestUrl()}/mvp_listings?select=${cols}&order=updated_at.desc&limit=${limit}&offset=${offset}`;
   const res = await fetch(url, { headers: authHeaders() });
   if (!res.ok) {
@@ -66,7 +75,7 @@ async function fetchListings(limit, offset) {
 
 async function fetchAnalysis(pids) {
   if (pids.length === 0) return new Map();
-  const url = `${supabaseRestUrl()}/mvp_listing_analysis?select=pid,score,score_flags&pid=in.(${pids.join(",")})`;
+  const url = `${supabaseRestUrl()}/mvp_listing_analysis?select=pid,score,risk_hits,score_flags&pid=in.(${pids.join(",")})`;
   const res = await fetch(url, { headers: authHeaders() });
   if (!res.ok) {
     throw new Error(`fetchAnalysis ${res.status}: ${await res.text()}`);
@@ -77,7 +86,7 @@ async function fetchAnalysis(pids) {
 
 async function fetchParsed(pids) {
   if (pids.length === 0) return new Map();
-  const url = `${supabaseRestUrl()}/mvp_listing_parsed?select=pid,comparable_key,parse_confidence&pid=in.(${pids.join(",")})`;
+  const url = `${supabaseRestUrl()}/mvp_listing_parsed?select=pid,comparable_key,parse_confidence,needs_review&pid=in.(${pids.join(",")})`;
   const res = await fetch(url, { headers: authHeaders() });
   if (!res.ok) {
     throw new Error(`fetchParsed ${res.status}: ${await res.text()}`);
@@ -106,6 +115,21 @@ function computeConfidence(parseConfidence, scoreFlags) {
   if (flags.includes("ai_review_unavailable")) c = Math.max(0, c - 0.1);
   if (flags.some((f) => typeof f === "string" && f.endsWith("_low_confidence"))) c = Math.max(0, c - 0.15);
   return Math.round(c * 100) / 100;
+}
+
+function hasPoolBlockFlag(scoreFlags) {
+  const flags = scoreFlags ?? [];
+  return flags.some((flag) => (
+    POOL_BLOCK_FLAGS.includes(flag) ||
+    (typeof flag === "string" && flag.endsWith("_low_confidence")) ||
+    (flag === "deep_discount_review" && !flags.includes("ai_normal"))
+  ));
+}
+
+function poolMaxExposure(band) {
+  if (band === 3) return 1;
+  if (band === 2) return 2;
+  return 3;
 }
 
 async function main() {
@@ -149,14 +173,29 @@ async function main() {
       }
       const analysis = analysisMap.get(pid);
       const parsed = parsedMap.get(pid);
+      const confidence = computeConfidence(parsed?.parse_confidence, analysis?.score_flags);
+      if (
+        profitMin <= 0 ||
+        price >= skuMedian ||
+        Number(analysis?.risk_hits ?? 0) > 0 ||
+        !l.thumbnail_url ||
+        !parsed?.comparable_key ||
+        parsed?.needs_review ||
+        confidence < POOL_CONFIDENCE_FLOOR ||
+        hasPoolBlockFlag(analysis?.score_flags)
+      ) {
+        totalSkipped += 1;
+        continue;
+      }
       poolRows.push({
         pid,
         profit_band: band,
         expected_profit_min: profitMin,
         expected_profit_max: profitMax,
         score: Number(analysis?.score ?? 0),
-        confidence: computeConfidence(parsed?.parse_confidence, analysis?.score_flags),
-        comparable_key: parsed?.comparable_key ?? null,
+        confidence,
+        comparable_key: parsed.comparable_key,
+        max_exposure: poolMaxExposure(band),
         last_verified_at: now,
         updated_at: now,
       });

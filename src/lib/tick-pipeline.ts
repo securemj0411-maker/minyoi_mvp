@@ -61,6 +61,15 @@ type ParsedListingRow = {
 };
 
 const DETAIL_STAGE_SAFETY_MARGIN_MS = 8_000;
+const POOL_CONFIDENCE_FLOOR = 0.7;
+const POOL_BLOCK_FLAGS = [
+  "coarse_market_price",
+  "option_parse_review",
+  "option_needs_review",
+  "ai_review_unavailable",
+  "weak_description",
+  "risk_keyword_review",
+];
 
 export type StageStats = {
   collected: number;
@@ -499,6 +508,28 @@ function marketGroupKey(row: ScorableRawRow, parsed: ParsedListingRow | undefine
   return row.sku_id ?? "";
 }
 
+function poolMaxExposure(band: 1 | 2 | 3) {
+  if (band === 3) return 1;
+  if (band === 2) return 2;
+  return 3;
+}
+
+function computePoolConfidence(parseConfidence: number, scoreFlags: string[]) {
+  let confidence = Math.max(0, Math.min(1, Number.isFinite(parseConfidence) ? parseConfidence : 0.5));
+  if (scoreFlags.includes("ai_normal")) confidence = Math.min(1, confidence + 0.2);
+  if (scoreFlags.includes("ai_review_unavailable")) confidence = Math.max(0, confidence - 0.1);
+  if (scoreFlags.some((flag) => flag.endsWith("_low_confidence"))) confidence = Math.max(0, confidence - 0.15);
+  return Math.round(confidence * 100) / 100;
+}
+
+function hasPoolBlockFlag(scoreFlags: string[]) {
+  return scoreFlags.some((flag) => (
+    POOL_BLOCK_FLAGS.includes(flag) ||
+    flag.endsWith("_low_confidence") ||
+    (flag === "deep_discount_review" && !scoreFlags.includes("ai_normal"))
+  ));
+}
+
 export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
@@ -662,19 +693,30 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     }
     const pid = Number(row.pid);
     const parsed = parsedByPid.get(pid);
-    const parseConf = Number(parsed?.parse_confidence ?? 0.5);
-    let confidence = Math.max(0, Math.min(1, Number.isFinite(parseConf) ? parseConf : 0.5));
-    if (row.scoreFlags.includes("ai_normal")) confidence = Math.min(1, confidence + 0.2);
-    if (row.scoreFlags.includes("ai_review_unavailable")) confidence = Math.max(0, confidence - 0.1);
-    if (row.scoreFlags.some((flag) => flag.endsWith("_low_confidence"))) confidence = Math.max(0, confidence - 0.15);
+    const confidence = computePoolConfidence(Number(parsed?.parse_confidence ?? 0.5), row.scoreFlags);
+    const comparableKey = parsed?.comparable_key ?? null;
+    if (
+      profitMin <= 0 ||
+      row.price >= row.skuMedian ||
+      row.riskHits > 0 ||
+      !row.thumbnailUrl ||
+      !comparableKey ||
+      parsed?.needs_review ||
+      confidence < POOL_CONFIDENCE_FLOOR ||
+      hasPoolBlockFlag(row.scoreFlags)
+    ) {
+      poolSkipped += 1;
+      continue;
+    }
     poolEntries.push({
       pid,
       profit_band: band,
       expected_profit_min: profitMin,
       expected_profit_max: profitMax,
       score: row.score,
-      confidence: Math.round(confidence * 100) / 100,
-      comparable_key: parsed?.comparable_key ?? null,
+      confidence,
+      comparable_key: comparableKey,
+      max_exposure: poolMaxExposure(band),
       last_verified_at: now,
       updated_at: now,
     });

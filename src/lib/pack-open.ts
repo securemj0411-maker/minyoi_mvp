@@ -1,7 +1,6 @@
 import { fetchDetail } from "@/lib/bunjang";
 import { detectSoldOut, describeSignals, isSoldOut } from "@/lib/sold-out";
 
-const FRESHNESS_MS = 2 * 60 * 60 * 1000;
 const TIMEOUT_MS = 30_000;
 
 export type PackBand = 1 | 2 | 3;
@@ -137,6 +136,12 @@ async function rpcReleaseReservation(pid: number): Promise<void> {
   });
 }
 
+function freshnessMsForBand(band: PackBand) {
+  if (band === 3) return 0;
+  if (band === 2) return 5 * 60 * 1000;
+  return 15 * 60 * 1000;
+}
+
 async function rpcInvalidate(pid: number, reason: string): Promise<void> {
   await callSupabase("/rpc/invalidate_mvp_pool_entry", {
     method: "POST",
@@ -224,7 +229,8 @@ async function verifyAndCheckSold(pid: number, currentPrice: number | null) {
 export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
   const startedAt = Date.now();
   const targetCards = Math.max(1, Math.min(input.requestedCards ?? 2, 4));
-  const reserveLimit = Math.max(targetCards * 4, 8);
+  const reserveLimit = Math.max(targetCards * 8, 12);
+  const freshnessMs = freshnessMsForBand(input.band);
 
   const reserved = await rpcReservePool(input.band, input.userRef, reserveLimit);
   if (reserved.length === 0) {
@@ -253,7 +259,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     }
 
     const lastVerified = new Date(candidate.last_verified_at).getTime();
-    const isFresh = Number.isFinite(lastVerified) && Date.now() - lastVerified < FRESHNESS_MS;
+    const isFresh = Number.isFinite(lastVerified) && Date.now() - lastVerified < freshnessMs;
 
     let liveVerifiedAt = candidate.last_verified_at;
     if (!isFresh) {
@@ -288,7 +294,10 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     await rpcReleaseReservation(pid).catch(() => undefined);
   }
 
-  if (reveals.length === 0) {
+  if (reveals.length < targetCards) {
+    for (const reveal of reveals) {
+      await rpcReleaseReservation(reveal.pid).catch(() => undefined);
+    }
     const durationMs = Date.now() - startedAt;
     await insertPackOpen({
       userRef: input.userRef,
@@ -302,7 +311,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     }).catch(() => 0);
     return {
       result: "refunded",
-      reason: "검증한 매물이 모두 판매됐거나 검증 실패. 토큰을 돌려드렸어요.",
+      reason: "약속한 카드 수만큼 검증된 매물이 부족해 토큰을 돌려드렸어요.",
       attemptedCount: attemptedPids.length,
       tokensRefunded: input.tokensSpent,
       durationMs,
@@ -370,7 +379,7 @@ export async function loadInventory(): Promise<InventorySnapshot[]> {
     else if (row.status === "invalidated") bucket.invalidated += 1;
     if (row.status === "ready") {
       const verified = new Date(row.last_verified_at).getTime();
-      if (Number.isFinite(verified) && now - verified < FRESHNESS_MS) {
+      if (Number.isFinite(verified) && now - verified < freshnessMsForBand(band)) {
         bucket.freshUnder2h += 1;
       }
     }

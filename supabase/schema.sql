@@ -465,7 +465,7 @@ set search_path = public
 as $$
 begin
   return query
-  with candidates as (
+  with quality_candidates as (
     select pp.pid
     from public.mvp_candidate_pool pp
     where pp.profit_band = p_band
@@ -475,9 +475,17 @@ begin
         select 1 from public.mvp_pack_reveals r
         where r.user_ref = p_user_ref and r.pid = pp.pid
       )
-    order by pp.last_verified_at desc, pp.score desc
-    limit greatest(1, least(coalesce(p_limit, 5), 50))
+    order by pp.exposure_count asc,
+             pp.confidence desc,
+             pp.score desc,
+             pp.last_verified_at desc
+    limit greatest(1, least(coalesce(p_limit, 5), 50)) * 8
     for update skip locked
+  ), candidates as (
+    select pid
+    from quality_candidates
+    order by random()
+    limit greatest(1, least(coalesce(p_limit, 5), 50))
   ), claimed as (
     update public.mvp_candidate_pool p
     set status = 'reserved',
