@@ -1,0 +1,65 @@
+{
+  "generatedAt": "2026-05-10T11:22:52.386Z",
+  "windowHours": 24,
+  "cutoff": "2026-05-09T11:22:52.386Z",
+  "runs": {
+    "total": 1000,
+    "succeeded": 362,
+    "failed": 638,
+    "qstash": 917,
+    "functionSeconds": 23359.796,
+    "p95DurationMs": 35810
+  },
+  "pipeline": {
+    "searchCalls": 1791,
+    "collected": 260770,
+    "queued": 24083,
+    "detailClaimed": 6686,
+    "detailEnriched": 6539,
+    "detailFailed": 69,
+    "scored": 49421,
+    "poolUpserted": 14973,
+    "aiReviewRequested": 1215,
+    "aiApiCalls": 314,
+    "aiCacheHits": 901
+  },
+  "costs": {
+    "aiInputTokens": 52788,
+    "aiOutputTokens": 9398,
+    "aiCostSource": "token_estimate",
+    "recordedAiCostUsd": 0,
+    "estimatedAiCostUsd": 0.036152,
+    "aiCostUsd": 0.036152,
+    "aiCostPerDay": 0.036152,
+    "aiCostPerMonth": 1.08456,
+    "qstashMessagesPerDay": 917,
+    "qstashPaidUsdPerDay": 0,
+    "qstashPaidUsdPerMonth": 0,
+    "runtimeSecondsPerDay": 23359.796,
+    "detailCallsPerDay": 6686,
+    "searchCallsPerDay": 1791
+  },
+  "pack": {
+    "opens": 0,
+    "success": 0,
+    "refunded": 0,
+    "failed": 0,
+    "attemptedCards": 0,
+    "revealedCards": 0,
+    "tokensSpent": 0,
+    "tokensRefunded": 0
+  },
+  "feedback": {
+    "total": 0,
+    "positive": 0,
+    "negative": 0
+  },
+  "pool": {
+    "ready": 57,
+    "averageReadyProfit": 63617
+  },
+  "risks": [
+    "cron 실패율 63.8%로 높음",
+    "AI cost_usd가 비어 있어 토큰 기반 추정값을 사용 중"
+  ]
+}

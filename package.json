@@ -18,7 +18,8 @@
     "reparse:listings": "node scripts/reparse-listings.mjs",
     "diagnose:parser": "node scripts/diagnose-parser.mjs",
     "diagnose:pool": "node scripts/diagnose-pool.mjs",
-    "diagnose:readiness": "node scripts/diagnose-category-readiness.mjs"
+    "diagnose:readiness": "node scripts/diagnose-category-readiness.mjs",
+    "report:unit-economics": "node scripts/report-unit-economics.mjs"
   },
   "dependencies": {
     "next": "16.2.6",

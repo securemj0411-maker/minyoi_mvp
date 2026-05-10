@@ -85,6 +85,8 @@ const RISK_KEYWORDS = [
 ];
 const SHORT_TITLE_MIN = 9;
 const AI_CLASSIFIER_MODEL = process.env.OPENAI_CLASSIFIER_MODEL ?? "gpt-4.1-mini";
+const AI_CLASSIFIER_INPUT_USD_PER_1M = Number(process.env.OPENAI_CLASSIFIER_INPUT_USD_PER_1M ?? 0.4);
+const AI_CLASSIFIER_OUTPUT_USD_PER_1M = Number(process.env.OPENAI_CLASSIFIER_OUTPUT_USD_PER_1M ?? 1.6);
 
 function nrm(text: unknown): string {
   return normalize(String(text ?? ""));
@@ -842,6 +844,12 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
     if (!parsed) return null;
     parsed.inputTokens = Number.isFinite(json.usage?.prompt_tokens) ? json.usage.prompt_tokens : null;
     parsed.outputTokens = Number.isFinite(json.usage?.completion_tokens) ? json.usage.completion_tokens : null;
+    if (parsed.inputTokens != null || parsed.outputTokens != null) {
+      parsed.costUsd = (
+        ((parsed.inputTokens ?? 0) * AI_CLASSIFIER_INPUT_USD_PER_1M) +
+        ((parsed.outputTokens ?? 0) * AI_CLASSIFIER_OUTPUT_USD_PER_1M)
+      ) / 1_000_000;
+    }
     return parsed;
   } catch {
     return null;
