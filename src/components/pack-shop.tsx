@@ -20,6 +20,13 @@ type PackDef = {
   ctaTone: "sky" | "emerald" | "amber";
 };
 
+type PackOpenApiResult = RevealResult | {
+  result: "error";
+  message?: string;
+  error?: string;
+  tokensRefunded?: number;
+};
+
 const PACKS: PackDef[] = [
   {
     band: 1,
@@ -287,7 +294,7 @@ export default function PackShop({ initialInventory }: Props) {
             requestedCards: pack.cards,
           }),
         });
-        const data = (await res.json()) as RevealResult & { tokensRefunded?: number };
+        const data = (await res.json()) as PackOpenApiResult;
         if (data.result === "success") {
           setResult({
             result: "success",
@@ -315,7 +322,7 @@ export default function PackShop({ initialInventory }: Props) {
           setTokens(prevTokens);
           setResult({
             result: "refunded",
-            reason: "예상치 못한 응답이에요. 다시 시도해주세요.",
+            reason: data.message ?? data.error ?? "예상치 못한 응답이에요. 다시 시도해주세요.",
             tokensRefunded: pack.cost,
             durationMs: 0,
           });

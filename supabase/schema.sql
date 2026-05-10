@@ -961,8 +961,8 @@ begin
     limit greatest(1, least(coalesce(p_limit, 5), 50)) * 8
     for update skip locked
   ), candidates as (
-    select pid
-    from quality_candidates
+    select qc.pid
+    from quality_candidates qc
     order by random()
     limit greatest(1, least(coalesce(p_limit, 5), 50))
   ), claimed as (
