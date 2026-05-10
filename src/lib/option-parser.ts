@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v17";
+const PARSER_VERSION = "option-parser-v18";
 
 function hashText(text: string) {
   return createHash("sha256").update(text).digest("hex");
@@ -169,19 +169,19 @@ function parseTabletGeneration(text: string, model: string | null) {
 function parseBareTabletScreenSizeIn(text: string, model: string | null) {
   const lower = normalize(text).toLowerCase();
   const screenPattern = "(7\\.9|8\\.3|9\\.7|10\\.2|10\\.5|10\\.9|11|12\\.4|12\\.9|13|14\\.6)";
-  const ipadProBefore = new RegExp(`(?:아이패드\\s*프로|아이패드프로|ipad\\s*pro|프로|pro)\\s*${screenPattern}(?:[^0-9]|$)`);
-  const ipadProAfter = new RegExp(`(?:^|[^0-9])${screenPattern}\\s*(?:아이패드\\s*프로|아이패드프로|ipad\\s*pro|프로|pro)`);
+  const ipadModelBefore = new RegExp(`(?:아이패드\\s*(?:프로|에어)|아이패드(?:프로|에어)|ipad\\s*(?:pro|air)|프로|에어|pro|air)\\s*${screenPattern}(?:[^0-9]|$)`);
+  const ipadModelAfter = new RegExp(`(?:^|[^0-9])${screenPattern}\\s*(?:아이패드\\s*(?:프로|에어)|아이패드(?:프로|에어)|ipad\\s*(?:pro|air)|프로|에어|pro|air)`);
   const galaxyTabBefore = new RegExp(`(?:갤럭시\\s*탭|갤럭시탭|갤탭|galaxy\\s*tab|tab).{0,16}?${screenPattern}(?:[^0-9]|$)`);
   const galaxyTabAfter = new RegExp(`(?:^|[^0-9])${screenPattern}.{0,16}?(?:갤럭시\\s*탭|갤럭시탭|갤탭|galaxy\\s*tab|tab)`);
 
-  const match = lower.match(ipadProBefore)
-    ?? lower.match(ipadProAfter)
+  const match = lower.match(ipadModelBefore)
+    ?? lower.match(ipadModelAfter)
     ?? lower.match(galaxyTabBefore)
     ?? lower.match(galaxyTabAfter);
   if (match?.[1]) return Number(match[1]);
 
-  if (model === "ipad_pro") {
-    const compact = lower.match(/(?:아이패드프로|ipadpro|프로)(11|13)(?:[^0-9]|$)/);
+  if (model === "ipad_pro" || model === "ipad_air") {
+    const compact = lower.match(/(?:아이패드(?:프로|에어)|ipad(?:pro|air)|프로|에어)(11|13)(?:[^0-9]|$)/);
     if (compact?.[1]) return Number(compact[1]);
   }
   return null;
@@ -364,6 +364,7 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
     .replace(/리퍼\s*(?:제품\s*)?(?:아님|아닙니다|아닌|아니고|아니며)/g, " ")
     .replace(/(?:수리|교체)\s*(?:이력|내역)?\s*(?:없|없음|없습니다|없고|안함|안\s*함|한\s*적\s*없)/g, " ")
     .replace(/(?:하자|불량|파손|깨짐)(?:이나|이나요|은|는|이|가)?\s*(?:전혀\s*)?(?:없|없음|없습니다|없고|없이|아님|아닙니다)/g, " ")
+    .replace(/(?:깨짐|기스|스크래치).{0,12}(?:없|없음|없습니다|없고)/g, " ")
     .replace(/(?:액정|디스플레이|화면)\s*(?:깨짐|파손|불량)\s*(?:없|없음|없습니다|없고)/g, " ")
     .replace(/무상\s*수리\s*가능/g, " ")
     .replace(/추후.{0,20}(?:파손|수리).{0,20}시/g, " ")
