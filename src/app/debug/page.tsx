@@ -151,6 +151,19 @@ type PoolRow = {
   comparable_key: string | null;
 };
 
+type RevealFeedbackRow = {
+  pid: number;
+  feedback_type: "interested" | "bought" | "missed_sold" | "bad_pick" | "watching";
+  updated_at: string;
+};
+
+type FeedbackRawRow = {
+  pid: number;
+  name: string;
+  sku_name: string | null;
+  price: number;
+};
+
 type SourceHealthDebugRow = {
   status: "healthy" | "degraded" | "unhealthy";
   previous_status: "healthy" | "degraded" | "unhealthy" | null;
@@ -453,6 +466,82 @@ async function loadBottleneckDebug() {
     poolSummary,
     readinessRows: categoryReadinessRows(readinessMap),
     categoryRows: [...categoryRows.values()].sort((a, b) => b.raw - a.raw),
+  };
+}
+
+async function loadFeedbackDebug() {
+  const rows = await restJson<RevealFeedbackRow[]>(
+    "/mvp_reveal_feedback?select=pid,feedback_type,updated_at&order=updated_at.desc&limit=500",
+    [],
+  );
+  const pids = [...new Set(rows.map((row) => Number(row.pid)).filter(Number.isFinite))];
+  const [rawRows, parsedRows] = await Promise.all([
+    loadPidChunked<FeedbackRawRow>(pids, (ids) => `/mvp_raw_listings?select=pid,name,sku_name,price&pid=in.(${ids})`),
+    loadPidChunked<BottleneckParsedRow>(pids, (ids) => `/mvp_listing_parsed?select=pid,category,comparable_key,parse_confidence,needs_review,parsed_json&pid=in.(${ids})`),
+  ]);
+  const rawMap = mapRows(rawRows);
+  const parsedMap = mapRows(parsedRows);
+  const counts = new Map<string, number>();
+  const categoryCounts = new Map<string, { category: string; total: number; bought: number; missedSold: number; badPick: number; interested: number }>();
+  const flagged = new Map<number, {
+    pid: number;
+    name: string;
+    skuName: string;
+    category: string;
+    feedbackType: string;
+    updatedAt: string;
+  }>();
+  const recentCutoff = Date.now() - 24 * 60 * 60 * 1000;
+  let recent24h = 0;
+
+  for (const row of rows) {
+    const type = row.feedback_type;
+    increment(counts, type);
+    if (Date.parse(row.updated_at) >= recentCutoff) recent24h += 1;
+    const parsed = parsedMap.get(row.pid);
+    const category = parsed?.category ?? categoryFromComparableKey(parsed?.comparable_key) ?? "unknown";
+    const current = categoryCounts.get(category) ?? {
+      category,
+      total: 0,
+      bought: 0,
+      missedSold: 0,
+      badPick: 0,
+      interested: 0,
+    };
+    current.total += 1;
+    if (type === "bought") current.bought += 1;
+    if (type === "missed_sold") current.missedSold += 1;
+    if (type === "bad_pick") current.badPick += 1;
+    if (type === "interested") current.interested += 1;
+    categoryCounts.set(category, current);
+
+    if (type === "missed_sold" || type === "bad_pick") {
+      const raw = rawMap.get(row.pid);
+      flagged.set(row.pid, {
+        pid: row.pid,
+        name: raw?.name ?? `pid ${row.pid}`,
+        skuName: raw?.sku_name ?? "-",
+        category,
+        feedbackType: type,
+        updatedAt: row.updated_at,
+      });
+    }
+  }
+
+  return {
+    total: rows.length,
+    recent24h,
+    counts: {
+      interested: counts.get("interested") ?? 0,
+      bought: counts.get("bought") ?? 0,
+      missedSold: counts.get("missed_sold") ?? 0,
+      badPick: counts.get("bad_pick") ?? 0,
+      watching: counts.get("watching") ?? 0,
+    },
+    categoryRows: [...categoryCounts.values()].sort((a, b) => b.total - a.total),
+    flaggedRows: [...flagged.values()]
+      .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
+      .slice(0, 8),
   };
 }
 
@@ -1096,6 +1185,90 @@ function BottleneckPanel({ stats }: { stats: Awaited<ReturnType<typeof loadBottl
   );
 }
 
+function feedbackLabel(type: string) {
+  const labels: Record<string, string> = {
+    interested: "관심",
+    bought: "매수함",
+    missed_sold: "이미 팔림",
+    bad_pick: "별로",
+    watching: "관찰",
+  };
+  return labels[type] ?? type;
+}
+
+function FeedbackPanel({ stats }: { stats: Awaited<ReturnType<typeof loadFeedbackDebug>> }) {
+  const negative = stats.counts.missedSold + stats.counts.badPick;
+  const positive = stats.counts.bought + stats.counts.interested;
+  const categoryRows = stats.categoryRows.slice(0, 6);
+
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="text-sm font-semibold text-zinc-950">Reveal 피드백</div>
+          <div className="mt-1 text-xs text-zinc-500">
+            후보 공개 후 사용자가 남긴 실제 반응입니다. false positive와 sold race를 찾는 신호로 씁니다.
+          </div>
+        </div>
+        <span className="w-fit rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+          user ROI loop
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <MetricCard label="전체 피드백" value={`${num(stats.total)}건`} sub={`최근 24h ${num(stats.recent24h)}건`} />
+        <MetricCard label="긍정 신호" value={`${num(positive)}건`} sub={`관심 ${num(stats.counts.interested)} · 매수 ${num(stats.counts.bought)}`} />
+        <MetricCard label="부정 신호" value={`${num(negative)}건`} sub={`팔림 ${num(stats.counts.missedSold)} · 별로 ${num(stats.counts.badPick)}`} />
+        <MetricCard label="이미 팔림" value={`${num(stats.counts.missedSold)}건`} sub="live verify 이후 race 후보" />
+        <MetricCard label="별로" value={`${num(stats.counts.badPick)}건`} sub="시세/옵션/노이즈 오탐" />
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+            카테고리별 반응
+          </div>
+          <div className="divide-y divide-zinc-100">
+            {categoryRows.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-zinc-500">아직 피드백 없음</div>
+            ) : categoryRows.map((row) => (
+              <div key={row.category} className="grid grid-cols-[100px_repeat(4,1fr)] items-center gap-2 px-3 py-2 text-xs">
+                <div className="font-mono font-semibold text-zinc-800">{row.category}</div>
+                <div><span className="text-zinc-400">총</span> {num(row.total)}</div>
+                <div><span className="text-zinc-400">매수</span> {num(row.bought)}</div>
+                <div><span className="text-zinc-400">팔림</span> {num(row.missedSold)}</div>
+                <div><span className="text-zinc-400">별로</span> {num(row.badPick)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+            최근 확인 필요한 피드백
+          </div>
+          <div className="divide-y divide-zinc-100">
+            {stats.flaggedRows.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-zinc-500">부정 피드백 없음</div>
+            ) : stats.flaggedRows.map((row) => (
+              <div key={`${row.pid}-${row.feedbackType}`} className="grid grid-cols-[74px_minmax(0,1fr)_70px] items-center gap-3 px-3 py-2 text-xs">
+                <div className={row.feedbackType === "missed_sold" ? "font-semibold text-amber-700" : "font-semibold text-red-700"}>
+                  {feedbackLabel(row.feedbackType)}
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate font-medium text-zinc-800">{row.name}</div>
+                  <div className="truncate font-mono text-[10px] text-zinc-400">{row.category} · {row.skuName}</div>
+                </div>
+                <div className="text-right text-zinc-400">{formatTime(row.updatedAt)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RequestPanel({ run }: { run: CollectRun }) {
   return (
     <div className="rounded-md border border-zinc-200 bg-white p-5">
@@ -1238,12 +1411,13 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
 }
 
 export default async function DebugPage() {
-  const [runs, marketStats, marketInvalidations, bottleneckStats, sourceHealth] = await Promise.all([
+  const [runs, marketStats, marketInvalidations, bottleneckStats, sourceHealth, feedbackStats] = await Promise.all([
     loadCollectRuns(30),
     loadMarketPriceDebug(),
     loadMarketInvalidationDebug(),
     loadBottleneckDebug(),
     loadSourceHealthDebug(),
+    loadFeedbackDebug(),
   ]);
   const latest = runs[0] ?? null;
   const latestOk = lastSucceeded(runs);
@@ -1306,6 +1480,8 @@ export default async function DebugPage() {
             <MarketStatsPanel stats={marketStats} />
           </div>
         </section>
+
+        <FeedbackPanel stats={feedbackStats} />
 
         <DebugResetPanel />
 
