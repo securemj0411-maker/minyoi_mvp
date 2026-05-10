@@ -1051,6 +1051,10 @@ function runMode(row: CollectRunHealthRow) {
   return String(meta.pipelineMode ?? "");
 }
 
+function isSourceRelevantMode(mode: string) {
+  return mode === "tick" || mode === "deep_crawl" || mode === "detail_worker" || mode === "pool_warmer";
+}
+
 function proposeSourceStatus(input: {
   runCount: number;
   failedRunRate: number;
@@ -1088,8 +1092,10 @@ export async function sourceHealthStage(): Promise<StageStats> {
   const windowMinutes = 30;
   const rows = await loadRecentCollectRuns(windowMinutes);
   const previous = await loadLatestSourceHealth();
-  const failedRuns = rows.filter((row) => row.status === "failed").length;
-  const failedRunRate = rows.length === 0 ? 0 : failedRuns / rows.length;
+  const sourceRows = rows.filter((row) => isSourceRelevantMode(runMode(row)));
+  const failedRuns = sourceRows.filter((row) => row.status === "failed").length;
+  const failedRunRate = sourceRows.length === 0 ? 0 : failedRuns / sourceRows.length;
+  const workerBreakdown = new Map<string, { total: number; failed: number; collected: number; enriched: number }>();
   let detailAttempts = 0;
   let detailSucceeded = 0;
   let detailFailed = 0;
@@ -1101,12 +1107,20 @@ export async function sourceHealthStage(): Promise<StageStats> {
     const detail = nestedRecord(stages, "detail");
     const search = nestedRecord(stages, "search");
     const mode = runMode(row);
+    const bucket = workerBreakdown.get(mode) ?? { total: 0, failed: 0, collected: 0, enriched: 0 };
+    bucket.total += 1;
+    if (row.status === "failed") bucket.failed += 1;
+    bucket.collected += Number(row.collected_count ?? 0);
+    bucket.enriched += Number(row.enriched_count ?? 0);
+    workerBreakdown.set(mode, bucket);
     const claimed = numberField(detail, "claimed");
     const enriched = numberField(detail, "enriched");
     const failed = numberField(detail, "detailFailed");
-    detailAttempts += claimed;
-    detailSucceeded += enriched;
-    detailFailed += failed;
+    if (mode === "detail_worker" || mode === "pool_warmer" || claimed > 0) {
+      detailAttempts += claimed;
+      detailSucceeded += enriched;
+      detailFailed += failed;
+    }
     const collected = numberField(search, "collected") || Number(row.collected_count ?? 0);
     if (mode === "tick" || mode === "deep_crawl" || collected > 0) {
       searchRunCount += 1;
@@ -1140,7 +1154,8 @@ export async function sourceHealthStage(): Promise<StageStats> {
     search_result_count: searchCollected,
     baseline_json: {
       proposedStatus: proposed.status,
-      runCount: rows.length,
+      runCount: sourceRows.length,
+      allWorkerRunCount: rows.length,
       failedRuns,
       failedRunRate: Math.round(failedRunRate * 1000) / 1000,
       detailAttempts,
@@ -1150,6 +1165,8 @@ export async function sourceHealthStage(): Promise<StageStats> {
       avgSearchCollected: Math.round(avgSearchCollected),
       previousCheckedAt: previous?.checked_at ?? null,
       advisoryOnly: true,
+      ignoredInternalWorkerFailures: rows.filter((row) => !isSourceRelevantMode(runMode(row)) && row.status === "failed").length,
+      workerBreakdown: Object.fromEntries(workerBreakdown.entries()),
     },
     hysteresis_json: {
       changed,
