@@ -17,7 +17,8 @@
     "backfill:pool": "node scripts/backfill-pool.mjs",
     "reparse:listings": "node scripts/reparse-listings.mjs",
     "diagnose:parser": "node scripts/diagnose-parser.mjs",
-    "diagnose:pool": "node scripts/diagnose-pool.mjs"
+    "diagnose:pool": "node scripts/diagnose-pool.mjs",
+    "diagnose:readiness": "node scripts/diagnose-category-readiness.mjs"
   },
   "dependencies": {
     "next": "16.2.6",
