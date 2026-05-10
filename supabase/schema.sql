@@ -779,6 +779,25 @@ create table if not exists public.mvp_pack_reveals (
   unique (user_ref, pid)
 );
 
+create table if not exists public.mvp_reveal_feedback (
+  id bigserial primary key,
+  user_ref text not null,
+  pid bigint not null references public.mvp_raw_listings(pid) on delete cascade,
+  pack_open_id bigint references public.mvp_pack_opens(id) on delete set null,
+  feedback_type text not null check (feedback_type in (
+    'interested',
+    'bought',
+    'missed_sold',
+    'bad_pick',
+    'watching'
+  )),
+  note text not null default '',
+  source text not null default 'reveal_modal',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_ref, pid)
+);
+
 create index if not exists mvp_candidate_pool_band_status_idx
   on public.mvp_candidate_pool(profit_band, status, last_verified_at desc);
 
@@ -798,10 +817,17 @@ create index if not exists mvp_pack_reveals_user_idx
 create index if not exists mvp_pack_reveals_pack_idx
   on public.mvp_pack_reveals(pack_open_id);
 
+create index if not exists mvp_reveal_feedback_type_idx
+  on public.mvp_reveal_feedback(feedback_type, updated_at desc);
+
+create index if not exists mvp_reveal_feedback_pid_idx
+  on public.mvp_reveal_feedback(pid, updated_at desc);
+
 alter table public.mvp_candidate_pool enable row level security;
 alter table public.mvp_pack_opens enable row level security;
 alter table public.mvp_pack_reveals enable row level security;
 alter table public.mvp_category_readiness enable row level security;
+alter table public.mvp_reveal_feedback enable row level security;
 
 create or replace function public.enqueue_mvp_market_key_invalidation(
   p_comparable_key text,

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { addTokens, loadTokens, spendTokens } from "@/lib/mock-tokens";
-import type { InventorySnapshot, PackBand } from "@/lib/pack-open";
+import type { InventorySnapshot, PackBand, RevealFeedbackType } from "@/lib/pack-open";
 import { getOrCreateUserRef } from "@/lib/user-ref";
 
 type ThemeMode = "system" | "light" | "dark";
@@ -364,6 +364,19 @@ export default function PackShop({ initialInventory }: Props) {
     }).catch(() => undefined);
   }, [userRef]);
 
+  const handleFeedback = useCallback((pid: number, feedbackType: RevealFeedbackType) => {
+    if (!userRef) return;
+    void fetch("/api/packs/reveals/feedback", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-ref": userRef,
+      },
+      body: JSON.stringify({ pid, feedbackType }),
+      cache: "no-store",
+    }).catch(() => undefined);
+  }, [userRef]);
+
   const handleTopUp = useCallback(() => {
     setTokens(addTokens(5));
   }, []);
@@ -448,6 +461,7 @@ export default function PackShop({ initialInventory }: Props) {
         result={result}
         onClose={handleClose}
         onLinkClicked={handleLinkClicked}
+        onFeedback={handleFeedback}
         onRetry={handleRetry}
       />
     </>

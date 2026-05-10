@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import type { PackBand, RevealCard } from "@/lib/pack-open";
+import type { PackBand, RevealCard, RevealFeedbackType } from "@/lib/pack-open";
 
 type RevealResult =
   | {
@@ -30,6 +30,7 @@ type Props = {
   result: RevealResult | null;
   onClose: () => void;
   onLinkClicked: (pid: number) => void;
+  onFeedback: (pid: number, feedbackType: RevealFeedbackType) => void;
   onRetry: () => void;
 };
 
@@ -111,16 +112,31 @@ function RevealCardItem({
   card,
   delay,
   onLinkClicked,
+  onFeedback,
 }: {
   card: RevealCard;
   delay: number;
   onLinkClicked: (pid: number) => void;
+  onFeedback: (pid: number, feedbackType: RevealFeedbackType) => void;
 }) {
   const [shown, setShown] = useState(false);
+  const [feedback, setFeedback] = useState<RevealFeedbackType | null>(null);
   useEffect(() => {
     const id = window.setTimeout(() => setShown(true), delay);
     return () => window.clearTimeout(id);
   }, [delay]);
+
+  const feedbackOptions: { type: RevealFeedbackType; label: string }[] = [
+    { type: "interested", label: "관심" },
+    { type: "bought", label: "매수함" },
+    { type: "missed_sold", label: "이미 팔림" },
+    { type: "bad_pick", label: "별로" },
+  ];
+
+  function handleFeedback(type: RevealFeedbackType) {
+    setFeedback(type);
+    onFeedback(card.pid, type);
+  }
 
   return (
     <div
@@ -177,6 +193,23 @@ function RevealCardItem({
 
         <ConfidenceBar value={card.confidence} />
 
+        <div className="grid grid-cols-4 gap-1.5">
+          {feedbackOptions.map((option) => (
+            <button
+              key={option.type}
+              type="button"
+              onClick={() => handleFeedback(option.type)}
+              className={`rounded-lg border px-2 py-2 text-[11px] font-bold transition ${
+                feedback === option.type
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-400 dark:bg-emerald-950/40 dark:text-emerald-300"
+                  : "border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-800"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
         <a
           href={card.url}
           target="_blank"
@@ -198,6 +231,7 @@ export default function PackRevealModal({
   result,
   onClose,
   onLinkClicked,
+  onFeedback,
   onRetry,
 }: Props) {
   useEffect(() => {
@@ -263,6 +297,7 @@ export default function PackRevealModal({
                     card={card}
                     delay={idx * 250}
                     onLinkClicked={onLinkClicked}
+                    onFeedback={onFeedback}
                   />
                 ))}
               </div>

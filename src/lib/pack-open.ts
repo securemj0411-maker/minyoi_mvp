@@ -33,6 +33,8 @@ export type PackOpenInput = {
   requestedCards?: number;
 };
 
+export type RevealFeedbackType = "interested" | "bought" | "missed_sold" | "bad_pick" | "watching";
+
 export type PackOpenSuccess = {
   result: "success";
   packOpenId: number;
@@ -258,6 +260,26 @@ export async function markRevealClicked(input: { userRef: string; pid: number })
       body: JSON.stringify({ link_clicked_at: new Date().toISOString() }),
     },
   );
+}
+
+export async function submitRevealFeedback(input: {
+  userRef: string;
+  pid: number;
+  feedbackType: RevealFeedbackType;
+  note?: string;
+}): Promise<void> {
+  await callSupabase("/mvp_reveal_feedback?on_conflict=user_ref,pid", {
+    method: "POST",
+    headers: authHeaders("resolution=merge-duplicates,return=minimal"),
+    body: JSON.stringify({
+      user_ref: input.userRef,
+      pid: input.pid,
+      feedback_type: input.feedbackType,
+      note: input.note?.slice(0, 500) ?? "",
+      source: "reveal_modal",
+      updated_at: new Date().toISOString(),
+    }),
+  });
 }
 
 async function verifyAndCheckSold(pid: number, currentPrice: number | null) {
