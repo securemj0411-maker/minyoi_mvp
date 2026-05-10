@@ -11,7 +11,7 @@ import {
 } from "@/lib/pipeline";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE, bandFromProfit } from "@/lib/profit";
-import { canPermanentlyInvalidateSoldOut, describeSignals, detectSoldOut, isSoldOut } from "@/lib/sold-out";
+import { canPermanentlyInvalidateSoldOut, describeSignals, detectSoldOut, isSoldOut, type SourceHealthStatus } from "@/lib/sold-out";
 
 type Headers = Record<string, string>;
 
@@ -39,6 +39,27 @@ type QueueClaimRow = {
   free_shipping: boolean;
   url: string;
   attempts: number;
+};
+
+type LifecycleStatus = "active" | "missing_suspect" | "sold_confirmed" | "disappeared" | "archived";
+type LifecyclePriorityTier = "pool" | "near_pool" | "market_sample" | "general" | "exploration";
+
+type LifecycleClaimRow = {
+  pid: number;
+  lifecycle_status: LifecycleStatus;
+  priority_tier: LifecyclePriorityTier;
+  consecutive_missing_count: number;
+  consecutive_error_count: number;
+  attempts: number;
+  price: number;
+  name: string;
+  num_faved: number;
+  listing_state: string;
+  sku_id: string | null;
+  sku_name: string | null;
+  seller_uid: string | null;
+  comparable_key: string | null;
+  parser_version: string | null;
 };
 
 type ScorableRawRow = RawListingRow & {
@@ -401,6 +422,75 @@ async function enqueueMarketKeyInvalidations(events: MarketKeyInvalidationEvent[
     }
   }
   return queued;
+}
+
+function lifecycleDelayMs(tier: LifecyclePriorityTier, status: LifecycleStatus = "active") {
+  if (status === "sold_confirmed" || status === "disappeared" || status === "archived") return 7 * 24 * 60 * 60 * 1000;
+  if (status === "missing_suspect") return 2 * 60 * 60 * 1000;
+  if (tier === "pool") return 60 * 60 * 1000;
+  if (tier === "near_pool") return 4 * 60 * 60 * 1000;
+  if (tier === "exploration") return 12 * 60 * 60 * 1000;
+  if (tier === "market_sample") return 24 * 60 * 60 * 1000;
+  return 48 * 60 * 60 * 1000;
+}
+
+function lifecycleNextCheckAt(tier: LifecyclePriorityTier, status: LifecycleStatus = "active") {
+  return new Date(Date.now() + lifecycleDelayMs(tier, status)).toISOString();
+}
+
+function lifecycleTierForParsed(parsed: { parseConfidence?: number; needsReview?: boolean; comparableKey?: string | null }) {
+  if (!parsed.comparableKey) return "general" as const;
+  if (Number(parsed.parseConfidence ?? 0) >= 0.65 && !parsed.needsReview) return "market_sample" as const;
+  return "exploration" as const;
+}
+
+async function seedLifecycleChecks(rows: {
+  pid: number;
+  priorityTier: LifecyclePriorityTier;
+  nextCheckAt?: string;
+}[]) {
+  if (rows.length === 0) return 0;
+  const now = new Date().toISOString();
+  const deduped = new Map<number, { pid: number; priorityTier: LifecyclePriorityTier; nextCheckAt?: string }>();
+  const priorityScore: Record<LifecyclePriorityTier, number> = {
+    pool: 5,
+    near_pool: 4,
+    exploration: 3,
+    market_sample: 2,
+    general: 1,
+  };
+  for (const row of rows) {
+    const existing = deduped.get(row.pid);
+    if (!existing || priorityScore[row.priorityTier] > priorityScore[existing.priorityTier]) {
+      deduped.set(row.pid, row);
+    }
+  }
+  await insertIgnoreRows("mvp_lifecycle_checks", [...deduped.values()].map((row) => ({
+    pid: row.pid,
+    source: "bunjang",
+    status: "active",
+    priority_tier: row.priorityTier,
+    next_check_at: row.nextCheckAt ?? lifecycleNextCheckAt(row.priorityTier),
+    state_reason: "seeded_from_pipeline",
+    updated_at: now,
+  })), "pid");
+  return deduped.size;
+}
+
+async function promoteLifecyclePriority(pids: number[], tier: LifecyclePriorityTier, nextCheckAt?: string) {
+  const unique = [...new Set(pids.filter(Number.isFinite))];
+  if (unique.length === 0) return 0;
+  const now = new Date().toISOString();
+  for (const chunk of chunkArray(unique, REST_WRITE_CHUNK_SIZE)) {
+    await patchRows("mvp_lifecycle_checks", `pid=in.(${chunk.join(",")})&status=in.(active,missing_suspect)`, {
+      priority_tier: tier,
+      next_check_at: nextCheckAt ?? lifecycleNextCheckAt(tier),
+      locked_at: null,
+      locked_until: null,
+      updated_at: now,
+    });
+  }
+  return unique.length;
 }
 
 function pidList(items: SearchItem[]) {
@@ -911,6 +1001,10 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
               parser_version: parsed.parserVersion,
               needs_review: parsed.needsReview,
             },
+          }]);
+          await seedLifecycleChecks([{
+            pid: Number(claim.pid),
+            priorityTier: lifecycleTierForParsed(parsed),
           }]);
         } catch (err) {
           console.error("option parse side-write failed", err);
@@ -1655,6 +1749,212 @@ async function markPoolVerified(pid: number) {
   });
 }
 
+async function claimLifecycleChecks(): Promise<LifecycleClaimRow[]> {
+  const config = loadPipelineRuntimeConfig();
+  const res = await restFetch(rpcUrl("claim_mvp_lifecycle_checks"), {
+    method: "POST",
+    headers: serviceHeaders(),
+    body: JSON.stringify({
+      p_batch_size: Math.min(30, config.tickDetailBatchSize),
+      p_lease_seconds: config.tickDetailLeaseSeconds,
+    }),
+  });
+  return (await res.json()) as LifecycleClaimRow[];
+}
+
+async function patchLifecycle(pid: number, payload: Record<string, unknown>) {
+  await patchRows("mvp_lifecycle_checks", `pid=eq.${pid}`, {
+    ...payload,
+    locked_at: null,
+    locked_until: null,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+async function markRawLifecycleState(row: LifecycleClaimRow, status: LifecycleStatus, detailSaleStatus?: string | null) {
+  const now = new Date().toISOString();
+  const patch: Record<string, unknown> = {
+    listing_state: status,
+    updated_at: now,
+  };
+  if (status === "sold_confirmed") patch.sold_detected_at = now;
+  if (status === "disappeared") patch.disappeared_at = now;
+  if (status === "missing_suspect" || status === "disappeared") {
+    patch.last_missing_at = now;
+  }
+  if (status === "active") {
+    patch.missing_count = 0;
+  }
+  if (detailSaleStatus != null) patch.sale_status = detailSaleStatus;
+  await patchRows("mvp_raw_listings", `pid=eq.${row.pid}`, patch);
+}
+
+async function insertLifecycleObservation(row: LifecycleClaimRow, status: LifecycleStatus, result: string, detailSaleStatus?: string | null) {
+  await insertRows("mvp_listing_observations", [{
+    pid: Number(row.pid),
+    observed_at: new Date().toISOString(),
+    event_type: "state_changed",
+    price: Number(row.price ?? 0),
+    name: row.name,
+    num_faved: Number(row.num_faved ?? 0),
+    sale_status: detailSaleStatus ?? "",
+    listing_state: status,
+    seller_uid: row.seller_uid,
+    sku_id: row.sku_id,
+    sku_name: row.sku_name,
+    comparable_key: row.comparable_key,
+    source: "lifecycle_worker",
+    raw_json: {
+      lifecycle_result: result,
+      previous_status: row.lifecycle_status,
+      priority_tier: row.priority_tier,
+      parser_version: row.parser_version,
+    },
+  }]);
+}
+
+function shouldSkipLifecycleForHealth(row: LifecycleClaimRow, health: SourceHealthStatus) {
+  if (health === "healthy") return false;
+  if (health === "unhealthy") return true;
+  return row.priority_tier !== "pool" && row.priority_tier !== "near_pool";
+}
+
+export async function lifecycleStage(deadlineMs: number): Promise<StageStats> {
+  const config = loadPipelineRuntimeConfig();
+  const stats = emptyStats();
+  const sourceHealth = await loadLatestSourceHealth();
+  const healthStatus = sourceHealth?.status ?? "degraded";
+  const claims = await claimLifecycleChecks();
+  stats.claimed = claims.length;
+  const marketInvalidations: MarketKeyInvalidationEvent[] = [];
+
+  for (const row of claims) {
+    if (Date.now() >= deadlineMs - DETAIL_STAGE_SAFETY_MARGIN_MS) {
+      stats.timedOut = true;
+      await patchLifecycle(row.pid, {
+        last_check_result: "skipped_budget",
+        next_check_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        state_reason: "lifecycle_budget_guard",
+      });
+      continue;
+    }
+
+    if (shouldSkipLifecycleForHealth(row, healthStatus)) {
+      stats.poolSkipped += 1;
+      await patchLifecycle(row.pid, {
+        last_check_result: "skipped_source_degraded",
+        next_check_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        state_reason: `source_health_${healthStatus}`,
+      });
+      continue;
+    }
+
+    try {
+      const detail = await fetchDetail(String(row.pid));
+      if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
+      const signals = detectSoldOut(detail, row.price);
+      const reason = describeSignals(signals);
+      stats.enriched += detail ? 1 : 0;
+      stats.detailFailed += detail ? 0 : 1;
+
+      if (!detail) {
+        const missingCount = row.consecutive_missing_count + 1;
+        const nextStatus: LifecycleStatus = missingCount >= 3 && healthStatus === "healthy" ? "disappeared" : "missing_suspect";
+        await patchLifecycle(row.pid, {
+          status: nextStatus,
+          last_checked_at: new Date().toISOString(),
+          last_check_result: missingCount >= 3 ? "missing" : "error",
+          consecutive_missing_count: missingCount,
+          consecutive_error_count: row.consecutive_error_count + 1,
+          next_check_at: lifecycleNextCheckAt(row.priority_tier, nextStatus),
+          last_error: "detail api returned null",
+          transition_confidence: nextStatus === "disappeared" ? 0.7 : 0.35,
+          state_reason: nextStatus === "disappeared" ? "repeated_detail_fetch_missing" : "detail_fetch_missing_once",
+        });
+        if (nextStatus !== row.lifecycle_status) {
+          await markRawLifecycleState(row, nextStatus);
+          await insertLifecycleObservation(row, nextStatus, reason);
+          marketInvalidations.push({
+            comparableKey: row.comparable_key,
+            reason: `lifecycle_${nextStatus}`,
+            priority: 100,
+            affectedPid: row.pid,
+            oldComparableKey: row.comparable_key,
+            parserVersion: row.parser_version,
+          });
+        }
+        continue;
+      }
+
+      if (isSoldOut(signals) && canPermanentlyInvalidateSoldOut(signals, healthStatus)) {
+        await patchLifecycle(row.pid, {
+          status: "sold_confirmed",
+          last_checked_at: new Date().toISOString(),
+          last_check_result: "sold",
+          consecutive_missing_count: 0,
+          consecutive_error_count: 0,
+          next_check_at: lifecycleNextCheckAt(row.priority_tier, "sold_confirmed"),
+          last_error: null,
+          detail_status_code: 200,
+          transition_confidence: healthStatus === "healthy" ? 0.95 : 0.8,
+          state_reason: `sold_signal_${reason}`,
+        });
+        await markRawLifecycleState(row, "sold_confirmed", detail.saleStatus);
+        await invalidatePoolEntries([{ pid: row.pid, reason: `lifecycle_sold_${reason}` }]);
+        await insertLifecycleObservation(row, "sold_confirmed", reason, detail.saleStatus);
+        marketInvalidations.push({
+          comparableKey: row.comparable_key,
+          reason: "lifecycle_sold_confirmed",
+          priority: 100,
+          affectedPid: row.pid,
+          oldComparableKey: row.comparable_key,
+          parserVersion: row.parser_version,
+        });
+        stats.poolSkipped += 1;
+        continue;
+      }
+
+      await patchLifecycle(row.pid, {
+        status: "active",
+        last_checked_at: new Date().toISOString(),
+        last_check_result: "active",
+        consecutive_missing_count: 0,
+        consecutive_error_count: 0,
+        attempts: 0,
+        next_check_at: lifecycleNextCheckAt(row.priority_tier, "active"),
+        last_error: null,
+        detail_status_code: 200,
+        transition_confidence: 1,
+        state_reason: reason === "active" ? "detail_active" : `non_terminal_signal_${reason}`,
+      });
+      if (row.lifecycle_status !== "active" || row.listing_state !== "active") {
+        await markRawLifecycleState(row, "active", detail.saleStatus);
+        await insertLifecycleObservation(row, "active", reason, detail.saleStatus);
+        marketInvalidations.push({
+          comparableKey: row.comparable_key,
+          reason: "lifecycle_reactivated",
+          priority: 90,
+          affectedPid: row.pid,
+          oldComparableKey: row.comparable_key,
+          parserVersion: row.parser_version,
+        });
+      }
+    } catch (err) {
+      stats.detailFailed += 1;
+      await patchLifecycle(row.pid, {
+        last_check_result: "error",
+        consecutive_error_count: row.consecutive_error_count + 1,
+        next_check_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+        last_error: err instanceof Error ? err.message.slice(0, 500) : String(err).slice(0, 500),
+        state_reason: "lifecycle_exception",
+      });
+    }
+  }
+
+  stats.upserted = await enqueueMarketKeyInvalidations(marketInvalidations);
+  return stats;
+}
+
 export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
@@ -1937,6 +2237,11 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     });
   }
   await upsertRows("mvp_candidate_pool", poolEntries, "pid");
+  await promoteLifecyclePriority(
+    poolEntries.map((entry) => Number(entry.pid)).filter(Number.isFinite),
+    "pool",
+    new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+  );
   await invalidatePoolEntries(poolInvalidations);
   stats.poolUpserted = poolEntries.length;
   stats.poolSkipped = poolSkipped;
@@ -2068,6 +2373,30 @@ export async function runPoolWarmerPipeline(): Promise<TickResult> {
   return {
     ...total,
     stages: { search, detail, score },
+    stageDurationsMs,
+  };
+}
+
+export async function runLifecycleWorkerPipeline(): Promise<TickResult> {
+  const config = loadPipelineRuntimeConfig();
+  const stageDurationsMs: Record<string, number> = {};
+
+  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const started = Date.now();
+    try {
+      return await fn();
+    } finally {
+      stageDurationsMs[name] = Date.now() - started;
+    }
+  }
+
+  const search = emptyStats();
+  const detail = await timed("lifecycle", () => lifecycleStage(Date.now() + config.tickDetailBudgetMs));
+  const score = emptyStats();
+  const total = mergeStats([search, detail, score]);
+  return {
+    ...total,
+    stages: { search, detail, lifecycle: detail, score },
     stageDurationsMs,
   };
 }

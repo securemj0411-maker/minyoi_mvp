@@ -260,12 +260,22 @@ create table if not exists public.mvp_lifecycle_checks (
   )),
   consecutive_missing_count integer not null default 0 check (consecutive_missing_count >= 0),
   consecutive_error_count integer not null default 0 check (consecutive_error_count >= 0),
+  attempts integer not null default 0 check (attempts >= 0),
+  max_attempts integer not null default 10 check (max_attempts >= 1),
+  locked_at timestamptz,
+  locked_until timestamptz,
   last_error text,
   detail_status_code integer,
   transition_confidence numeric not null default 0 check (transition_confidence >= 0 and transition_confidence <= 1),
   state_reason text not null default '',
   updated_at timestamptz not null default now()
 );
+
+alter table public.mvp_lifecycle_checks
+  add column if not exists attempts integer not null default 0 check (attempts >= 0),
+  add column if not exists max_attempts integer not null default 10 check (max_attempts >= 1),
+  add column if not exists locked_at timestamptz,
+  add column if not exists locked_until timestamptz;
 
 create table if not exists public.mvp_market_key_invalidation (
   comparable_key text primary key,
@@ -407,6 +417,9 @@ create index if not exists mvp_lifecycle_checks_due_idx
 create index if not exists mvp_lifecycle_checks_tier_idx
   on public.mvp_lifecycle_checks(priority_tier, next_check_at);
 
+create index if not exists mvp_lifecycle_checks_locked_until_idx
+  on public.mvp_lifecycle_checks(locked_until);
+
 create index if not exists mvp_market_key_invalidation_claim_idx
   on public.mvp_market_key_invalidation(status, priority desc, last_event_at asc);
 
@@ -506,6 +519,95 @@ revoke all on function public.claim_mvp_detail_queue(integer, integer) from publ
 revoke execute on function public.claim_mvp_detail_queue(integer, integer) from anon;
 revoke execute on function public.claim_mvp_detail_queue(integer, integer) from authenticated;
 grant execute on function public.claim_mvp_detail_queue(integer, integer) to service_role;
+
+drop function if exists public.claim_mvp_lifecycle_checks(integer, integer);
+
+create or replace function public.claim_mvp_lifecycle_checks(
+  p_batch_size integer default 30,
+  p_lease_seconds integer default 120
+)
+returns table (
+  pid bigint,
+  lifecycle_status text,
+  priority_tier text,
+  consecutive_missing_count integer,
+  consecutive_error_count integer,
+  attempts integer,
+  price integer,
+  name text,
+  num_faved integer,
+  listing_state text,
+  sku_id text,
+  sku_name text,
+  seller_uid text,
+  comparable_key text,
+  parser_version text
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return query
+  with candidates as (
+    select c.pid
+    from public.mvp_lifecycle_checks c
+    where c.status in ('active', 'missing_suspect')
+      and c.next_check_at <= now()
+      and c.attempts < c.max_attempts
+      and (c.locked_until is null or c.locked_until < now())
+    order by
+      case c.priority_tier
+        when 'pool' then 0
+        when 'near_pool' then 1
+        when 'exploration' then 2
+        when 'market_sample' then 3
+        else 4
+      end,
+      c.next_check_at asc,
+      c.updated_at asc
+    limit greatest(1, least(coalesce(p_batch_size, 30), 200))
+    for update skip locked
+  ), claimed as (
+    update public.mvp_lifecycle_checks c
+    set locked_at = now(),
+        locked_until = now() + (greatest(10, least(coalesce(p_lease_seconds, 120), 900)) || ' seconds')::interval,
+        attempts = c.attempts + 1,
+        updated_at = now()
+    from candidates x
+    where c.pid = x.pid
+    returning c.pid,
+              c.status,
+              c.priority_tier,
+              c.consecutive_missing_count,
+              c.consecutive_error_count,
+              c.attempts
+  )
+  select c.pid,
+         c.status as lifecycle_status,
+         c.priority_tier,
+         c.consecutive_missing_count,
+         c.consecutive_error_count,
+         c.attempts,
+         r.price,
+         r.name,
+         r.num_faved,
+         r.listing_state,
+         r.sku_id,
+         r.sku_name,
+         r.seller_uid,
+         p.comparable_key,
+         p.parser_version
+  from claimed c
+  join public.mvp_raw_listings r on r.pid = c.pid
+  left join public.mvp_listing_parsed p on p.pid = c.pid;
+end;
+$$;
+
+revoke all on function public.claim_mvp_lifecycle_checks(integer, integer) from public;
+revoke execute on function public.claim_mvp_lifecycle_checks(integer, integer) from anon;
+revoke execute on function public.claim_mvp_lifecycle_checks(integer, integer) from authenticated;
+grant execute on function public.claim_mvp_lifecycle_checks(integer, integer) to service_role;
 
 create table if not exists public.mvp_candidate_pool (
   pid bigint primary key references public.mvp_raw_listings(pid) on delete cascade,

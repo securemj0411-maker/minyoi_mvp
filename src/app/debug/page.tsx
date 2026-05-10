@@ -416,6 +416,7 @@ function pipelineMode(run: CollectRun) {
   const path = run.requestPath ?? "";
   if (path.includes("/detail-worker")) return "detail_worker";
   if (path.includes("/deep-crawl")) return "deep_crawl";
+  if (path.includes("/lifecycle-worker")) return "lifecycle_worker";
   if (path.includes("/pool-warmer")) return "pool_warmer";
   if (path.includes("/housekeeper")) return "housekeeper";
   if (path.includes("/market-worker")) return "market_worker";
@@ -429,6 +430,7 @@ function pipelineModeLabel(mode: string) {
     tick: "Tick",
     detail_worker: "Detail",
     deep_crawl: "Deep crawl",
+    lifecycle_worker: "Lifecycle",
     market_worker: "Market",
     pool_warmer: "Warmer",
     housekeeper: "Housekeeper",
@@ -447,6 +449,10 @@ function workerPrimaryMetric(run: CollectRun | null) {
     : null;
   if (mode === "tick" || mode === "deep_crawl") return { label: "최근 검색", value: `${num(run.collectedCount)}건` };
   if (mode === "detail_worker") return { label: "최근 상세", value: `${num(run.enrichedCount)}건` };
+  if (mode === "lifecycle_worker") {
+    const lifecycle = stages?.detail && typeof stages.detail === "object" ? stages.detail as Record<string, unknown> : null;
+    return { label: "최근 상태확인", value: `${num(stageValue(lifecycle, "claimed"))}건` };
+  }
   if (mode === "market_worker") return { label: "최근 시세키", value: `${num(stageValue(market, "upserted"))}개` };
   if (mode === "pool_warmer") return { label: "최근 검증", value: `${num(run.enrichedCount)}건` };
   if (mode === "housekeeper") return { label: "최근 정리", value: `${num(run.upsertedCount)}건` };
@@ -454,7 +460,7 @@ function workerPrimaryMetric(run: CollectRun | null) {
 }
 
 function workerSummary(runs: CollectRun[]) {
-  const modes = ["tick", "detail_worker", "deep_crawl", "market_worker", "pool_warmer", "housekeeper"];
+  const modes = ["tick", "detail_worker", "deep_crawl", "lifecycle_worker", "market_worker", "pool_warmer", "housekeeper"];
   return modes.map((mode) => {
     const scoped = runs.filter((run) => pipelineMode(run) === mode);
     const latest = scoped[0] ?? null;
