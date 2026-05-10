@@ -537,7 +537,7 @@ type DetailQueueDecision = {
   listingType: string;
   skuId: string | null;
   skuName: string | null;
-  purpose: "candidate" | "market_sample" | "skip";
+  purpose: "candidate" | "market_sample" | "exploration" | "skip";
 };
 
 function needsDetailRefresh(item: SearchItem, existing: RawListingRow | undefined) {
@@ -594,19 +594,22 @@ function detailQueueDecision(item: SearchItem, existing: RawListingRow | undefin
 
   const roughGap = roughUsedSeed(sku) - item.price;
   const likelyCandidate = roughGap >= 20_000 || item.numFaved >= 10;
+  const explorationCategory = sku.category === "smartphone" || sku.category === "tablet" || sku.category === "laptop";
+  const explorationBoost = explorationCategory && !existing?.detail_enriched_at ? 700 : 0;
   const priority =
     (likelyCandidate ? 1000 : 100) +
+    explorationBoost +
     Math.min(500, Math.max(0, Math.round(roughGap / 1000))) +
     Math.min(300, Math.max(0, item.numFaved * 5));
 
   return {
     queue: true,
-    reason: likelyCandidate ? "candidate_title_pass" : "market_sample_title_pass",
+    reason: explorationBoost > 0 ? "exploration_title_pass" : likelyCandidate ? "candidate_title_pass" : "market_sample_title_pass",
     priority,
     listingType: titleOnly.listingType === "normal" ? "normal" : "title_sku_match",
     skuId: sku.id,
     skuName: sku.modelName,
-    purpose: likelyCandidate ? "candidate" : "market_sample",
+    purpose: explorationBoost > 0 ? "exploration" : likelyCandidate ? "candidate" : "market_sample",
   };
 }
 
