@@ -588,6 +588,16 @@ function median(values: number[]) {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
+function quantile(values: number[], q: number) {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const pos = (sorted.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
+  const next = sorted[base + 1];
+  return next == null ? sorted[base] : sorted[base] + rest * (next - sorted[base]);
+}
+
 function percentileRank(values: number[], value: number) {
   if (values.length <= 1) return 0.5;
   const belowOrEqual = values.filter((v) => v <= value).length;
@@ -618,6 +628,58 @@ function marketGroupKey(row: ScorableRawRow, parsed: ParsedListingRow | undefine
   return row.sku_id ?? "";
 }
 
+function kstDateString(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(date);
+}
+
+function marketKeyMeta(comparableKey: string, skuId: string | null) {
+  const parts = comparableKey.split("|").filter(Boolean);
+  const sku = skuId ? CATALOG.find((item) => item.id === skuId) : null;
+  return {
+    category: sku?.category ?? null,
+    family: parts[0] ?? null,
+    model: parts[1] ?? null,
+    variant_key: parts.slice(2).join("|") || null,
+  };
+}
+
+async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<number, ParsedListingRow>) {
+  const byKey = new Map<string, { prices: number[]; skuId: string | null }>();
+  for (const row of rows) {
+    const parsed = parsedByPid.get(row.pid);
+    if (!parsed?.comparable_key || Number(parsed.parse_confidence ?? 0) < 0.65 || parsed.needs_review) continue;
+    const key = parsed.comparable_key;
+    if (!byKey.has(key)) byKey.set(key, { prices: [], skuId: row.sku_id });
+    byKey.get(key)!.prices.push(row.price);
+  }
+
+  const today = kstDateString();
+  const marketRows = [...byKey.entries()].map(([comparableKey, group]) => {
+    const activeSampleCount = group.prices.length;
+    const activeMedian = Math.round(median(group.prices));
+    const p25 = Math.round(quantile(group.prices, 0.25));
+    const p75 = Math.round(quantile(group.prices, 0.75));
+    const confidence = activeSampleCount >= 20 ? "high" : activeSampleCount >= 8 ? "medium" : "low";
+    return {
+      date: today,
+      comparable_key: comparableKey,
+      ...marketKeyMeta(comparableKey, group.skuId),
+      active_median_price: activeMedian,
+      sold_median_price: null,
+      blended_median_price: activeMedian,
+      p25_price: p25,
+      p75_price: p75,
+      active_sample_count: activeSampleCount,
+      sold_sample_count: 0,
+      disappeared_sample_count: 0,
+      confidence,
+      computed_at: new Date().toISOString(),
+    };
+  });
+
+  await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key");
+}
+
 function poolMaxExposure(band: 1 | 2 | 3) {
   if (band === 3) return 1;
   if (band === 2) return 2;
@@ -646,6 +708,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const rows = await loadScorableRows(config.tickScoreLimit);
   if (rows.length === 0) return stats;
   const parsedByPid = await loadParsedRows(rows.map((row) => row.pid));
+  await upsertMarketPriceDaily(rows, parsedByPid);
 
   const pricesByMarket = new Map<string, number[]>();
   const favsByMarket = new Map<string, number[]>();
