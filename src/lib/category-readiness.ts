@@ -57,6 +57,11 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "iPhone 15 Pro 128GB (자급제)",
     note: "자급제 + 128GB + 비-Pro Max만. 통신사 약정/완납폰/리퍼/타 용량은 catalog mustNotContain으로 차단.",
   },
+  macbook_air_m3_13_256: {
+    status: "ready",
+    label: "MacBook Air M3 13\" 256GB",
+    note: "laptop_broad의 첫 narrow exit. M3 칩 + 13인치 + 256GB만. M1/M2/M4, 15인치, MacBook Pro, 부품/액정/메인보드 매물은 catalog mustNotContain으로 차단.",
+  },
 };
 
 export type CategoryReadinessConfig = {
