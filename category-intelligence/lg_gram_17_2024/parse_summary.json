@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "lane_key": "lg_gram_17_2024",
+  "category": "laptop",
+  "generated_at": "2026-05-12T11:13:28.591Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "lg 그램 17 2024",
+    "lg gram 17 2024",
+    "엘지 그램 17",
+    "lg 그램 17인치 2024",
+    "lg 그램 17 16gb 512",
+    "lg gram 17 16gb"
+  ],
+  "pages": 8,
+  "price_range_krw": [
+    900000,
+    2200000
+  ],
+  "target_parse_ready": 200,
+  "total_fetched": 305,
+  "parse_ready_count": 5,
+  "rejected_count": 300,
+  "target_reached": false,
+  "reject_breakdown": [
+    {
+      "reason": "missing_any_2024_13_s_세대_14_s_세대_ult",
+      "count": 268
+    },
+    {
+      "reason": "price_too_low",
+      "count": 177
+    },
+    {
+      "reason": "reject_wrong_storage_256",
+      "count": 101
+    },
+    {
+      "reason": "reject_wrong_ram_8gb",
+      "count": 72
+    },
+    {
+      "reason": "missing_lg_s_그램_엘지_s_그램_lg_s_gra",
+      "count": 63
+    },
+    {
+      "reason": "missing_any_17_s_인치_17_s_형_17_17_",
+      "count": 42
+    },
+    {
+      "reason": "reject_wrong_model_gram_pro",
+      "count": 22
+    },
+    {
+      "reason": "reject_wrong_storage_1tb",
+      "count": 19
+    },
+    {
+      "reason": "reject_wrong_year_2021",
+      "count": 19
+    },
+    {
+      "reason": "price_too_high",
+      "count": 18
+    },
+    {
+      "reason": "reject_wrong_ram_32gb",
+      "count": 18
+    },
+    {
+      "reason": "reject_wrong_year_2022",
+      "count": 14
+    },
+    {
+      "reason": "reject_wrong_year_2023",
+      "count": 12
+    },
+    {
+      "reason": "reject_broken_or_parts_only",
+      "count": 12
+    },
+    {
+      "reason": "reject_wrong_year_2020",
+      "count": 11
+    },
+    {
+      "reason": "reject_buying_post",
+      "count": 9
+    },
+    {
+      "reason": "reject_wrong_size_14",
+      "count": 9
+    },
+    {
+      "reason": "reject_wrong_year_2019",
+      "count": 6
+    },
+    {
+      "reason": "reject_wrong_size_15",
+      "count": 4
+    },
+    {
+      "reason": "reject_wrong_form_2in1",
+      "count": 1
+    },
+    {
+      "reason": "reject_wrong_size_16",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [
+      "lg\\s*그램|엘지\\s*그램|lg\\s*gram"
+    ],
+    "accept_any_of": [
+      [
+        "17\\s*인치|17\\s*형|17\"|17″|\\b17\\b"
+      ],
+      [
+        "2024|13\\s*세대|14\\s*세대|ultra\\s*7|ultra\\s*5"
+      ]
+    ]
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_size_14",
+      "pattern": "14\\s*인치|14\\s*형|14\"|14″"
+    },
+    {
+      "label": "wrong_size_15",
+      "pattern": "15\\s*인치|15\\s*형|15\"|15″"
+    },
+    {
+      "label": "wrong_size_16",
+      "pattern": "16\\s*인치|16\\s*형|16\"|16″"
+    },
+    {
+      "label": "wrong_form_2in1",
+      "pattern": "2\\s*in\\s*1|2in1|투\\s*인\\s*원"
+    },
+    {
+      "label": "wrong_model_gram_pro",
+      "pattern": "gram\\s*pro|그램\\s*프로"
+    },
+    {
+      "label": "wrong_ram_8gb",
+      "pattern": "(?:^|[^0-9])8\\s*(?:gb|기가)\\b"
+    },
+    {
+      "label": "wrong_ram_32gb",
+      "pattern": "(?:^|[^0-9])32\\s*(?:gb|기가)\\b"
+    },
+    {
+      "label": "wrong_storage_1tb",
+      "pattern": "\\b1\\s*tb\\b|1\\s*테라"
+    },
+    {
+      "label": "wrong_storage_256",
+      "pattern": "(?:^|[^0-9])256\\s*(?:gb|기가)\\b"
+    },
+    {
+      "label": "wrong_year_2023",
+      "pattern": "\\b2023\\b"
+    },
+    {
+      "label": "wrong_year_2022",
+      "pattern": "\\b2022\\b"
+    },
+    {
+      "label": "wrong_year_2021",
+      "pattern": "\\b2021\\b"
+    },
+    {
+      "label": "wrong_year_2020",
+      "pattern": "\\b2020\\b"
+    },
+    {
+      "label": "wrong_year_2019",
+      "pattern": "\\b2019\\b"
+    },
+    {
+      "label": "broken_or_parts_only",
+      "pattern": "액정\\s*만|메인\\s*보드|로직\\s*보드|상판\\s*만|하판\\s*만|부품\\s*용|부품용|키보드\\s*만|배터리\\s*만|침수|액정\\s*파손|파손\\s*품"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입|삽니다|구해요|구매\\s*합니다|구매합니다"
+    }
+  ]
+}

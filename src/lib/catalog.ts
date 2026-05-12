@@ -818,6 +818,31 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
     msrpKrw: 1390000,
     released: 2024,
   },
+  {
+    id: "lg-gram-17-2024",
+    brand: "LG",
+    category: "laptop",
+    laneKey: "lg_gram_17_2024",
+    modelName: "LG Gram 17\" 2024 (16GB / 512GB)",
+    aliases: ["LG 그램 17 2024", "엘지 그램 17 2024", "LG Gram 17 2024"],
+    mustContain: [
+      ["lg 그램", "엘지 그램", "lg gram"],
+      ["17인치", "17 인치", "17형", "17\""],
+      ["2024", "13세대", "14세대", "ultra 7", "ultra 5"],
+    ],
+    mustNotContain: [
+      "14인치", "14 인치", "14형",
+      "15인치", "15 인치", "15형",
+      "16인치", "16형",
+      "2 in 1", "2in1",
+      "gram pro", "그램프로",
+      "2023", "2022", "2021", "2020", "2019",
+      "액정만", "메인보드", "부품", "고장", "침수",
+      "매입", "삽니다",
+    ],
+    msrpKrw: 1990000,
+    released: 2024,
+  },
 ];
 
 export const CATALOG: Sku[] = [

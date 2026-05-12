@@ -1,0 +1,91 @@
+{
+  "lane_key": "lg_gram_17_2024",
+  "category": "laptop",
+  "queries": [
+    "lg 그램 17 2024",
+    "lg gram 17 2024",
+    "엘지 그램 17",
+    "lg 그램 17인치 2024",
+    "lg 그램 17 16gb 512",
+    "lg gram 17 16gb"
+  ],
+  "accept_all": [
+    "lg\\s*그램|엘지\\s*그램|lg\\s*gram"
+  ],
+  "accept_any_of": [
+    [
+      "17\\s*인치|17\\s*형|17\"|17″|\\b17\\b"
+    ],
+    [
+      "2024|13\\s*세대|14\\s*세대|ultra\\s*7|ultra\\s*5"
+    ]
+  ],
+  "reject_rules": [
+    {
+      "label": "wrong_size_14",
+      "pattern": "14\\s*인치|14\\s*형|14\"|14″"
+    },
+    {
+      "label": "wrong_size_15",
+      "pattern": "15\\s*인치|15\\s*형|15\"|15″"
+    },
+    {
+      "label": "wrong_size_16",
+      "pattern": "16\\s*인치|16\\s*형|16\"|16″"
+    },
+    {
+      "label": "wrong_form_2in1",
+      "pattern": "2\\s*in\\s*1|2in1|투\\s*인\\s*원"
+    },
+    {
+      "label": "wrong_model_gram_pro",
+      "pattern": "gram\\s*pro|그램\\s*프로"
+    },
+    {
+      "label": "wrong_ram_8gb",
+      "pattern": "(?:^|[^0-9])8\\s*(?:gb|기가)\\b"
+    },
+    {
+      "label": "wrong_ram_32gb",
+      "pattern": "(?:^|[^0-9])32\\s*(?:gb|기가)\\b"
+    },
+    {
+      "label": "wrong_storage_1tb",
+      "pattern": "\\b1\\s*tb\\b|1\\s*테라"
+    },
+    {
+      "label": "wrong_storage_256",
+      "pattern": "(?:^|[^0-9])256\\s*(?:gb|기가)\\b"
+    },
+    {
+      "label": "wrong_year_2023",
+      "pattern": "\\b2023\\b"
+    },
+    {
+      "label": "wrong_year_2022",
+      "pattern": "\\b2022\\b"
+    },
+    {
+      "label": "wrong_year_2021",
+      "pattern": "\\b2021\\b"
+    },
+    {
+      "label": "wrong_year_2020",
+      "pattern": "\\b2020\\b"
+    },
+    {
+      "label": "wrong_year_2019",
+      "pattern": "\\b2019\\b"
+    },
+    {
+      "label": "broken_or_parts_only",
+      "pattern": "액정\\s*만|메인\\s*보드|로직\\s*보드|상판\\s*만|하판\\s*만|부품\\s*용|부품용|키보드\\s*만|배터리\\s*만|침수|액정\\s*파손|파손\\s*품"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입|삽니다|구해요|구매\\s*합니다|구매합니다"
+    }
+  ],
+  "price_min_krw": 900000,
+  "price_max_krw": 2200000
+}
