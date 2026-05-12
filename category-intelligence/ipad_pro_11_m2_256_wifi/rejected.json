@@ -1,0 +1,2401 @@
+[
+  {
+    "pid": "405078460",
+    "name": "삽니다 컴퓨터 게이밍 데스크탑 아이패드 갤럭시탭 노트북 맥북 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "361849284",
+    "name": "매입 아이패드 미니 에어 프로 M1 M2 M3 M4 11 13 인치 세대",
+    "price": 4090000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_wrong_size_13_inch_or_12_9",
+      "reject_buying_post",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "407655088",
+    "name": "아이패드 에어 M2 11인치 실버 256기가 + 애플펜슬 프로",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "406951639",
+    "name": "아이패드 에어11(m2)+애플펜슬 프로 스타라이트 256 팝니다",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "402998404",
+    "name": "노트북 맥북 아이패드 매입 고가! 갤럭시탭 프로 에어 컴퓨터 데스크탑 T",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "361850209",
+    "name": "매입 맥북 프로 에어 13 14 15 16 인치 M1 M2 M3 M4",
+    "price": 5120000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "393540412",
+    "name": "아이패드 에어6 13인치256 프로11 4세대m2교환",
+    "price": 500000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "393965296",
+    "name": "[배성능100]아이패드 프로4세대 11 m2 256기가와이파이+애플펜슬2",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "392626366",
+    "name": "[배성능100/애케플]아이패드 프로4세대 11 m2 256기가+애플펜슬2",
+    "price": 960000,
+    "reject_reasons": [
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "403895968",
+    "name": "고가매입 삼성 갤럭시북 프로 Lg 그램 갤럭시탭 아이패드 맥북 프로 에어",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "381801940",
+    "name": "아이패드 m2 프로 11인치 256+ 펜슬",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "403567686",
+    "name": "중고 컴퓨터 데스크탑 본체 최고가 매입 맥북 노트북 아이패드 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "371367493",
+    "name": "아이패드 프로 4세대 11인치 m2 256기가 셀룰러+애펜2",
+    "price": 730000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "403645517",
+    "name": "노트북 최고가 매입 업체! 갤럭시탭 아이패드 맥북 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "337032413",
+    "name": "아이패드 프로6세대 11인치 M2칩 256기가 와이파이",
+    "price": 879000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "333491668",
+    "name": "아이패드 프로 11 M2 4세대 wifi 256기가 판매합니다",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404357135",
+    "name": "삽니다 아이맥 맥북 프로 에어 맥미니 맥스튜디오 갤럭시탭 아이패드 노트북",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "400936662",
+    "name": "아이패드 에어 11 m2 256g 셀룰러 / 애플펜슬 프로 / 키보드",
+    "price": 730000,
+    "reject_reasons": [
+      "reject_cellular_variant",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "400086222",
+    "name": "아이패드 에어 11 m2 256G 스타라이트 Wi-fi용 팝니다",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "386725176",
+    "name": "애플 아이패드 프로 11 4세대 M2칩 + 애플펜슬 2세대",
+    "price": 930000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "406725841",
+    "name": "급처 아이패드에어 M2 11 256GB WIFI A급 풀박스+애플펜슬프로",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "333452335",
+    "name": "Lg 그램 갤럭시북 고가 매입 맥북 프로 에어 노트북 아이패드 갤럭시탭",
+    "price": 2000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403696417",
+    "name": "고가매입! 맥북 프로 에어 맥미니 아이맥 맥프로 아이패드 노트북 갤럭시탭",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "390961158",
+    "name": "아이패드 프로 11 4세대 m2 256g 셀룰러",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "390850919",
+    "name": "아이패드 에어 11 m2 256GB +애플펜슬 프로",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "407131640",
+    "name": "hp asus msi 프로 에어 게이밍 컴 노트북 맥북 아이패드 갤럭시탭",
+    "price": 7000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "393897252",
+    "name": "S급 풀박스 아이패드 에어 M2 11(어탭터 제외) + 애플펜슬 프로",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "392242451",
+    "name": "아이패드 프로4세대 M2 256g 11인치",
+    "price": 530000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "404383965",
+    "name": "삽니다 / 맥북 프로 에어 맥미니 아이맥 맥스튜디오 아이패드 갤럭시탭",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404075236",
+    "name": "매입 삼성 갤럭시북 lg 그램 360 울트라 노트북 맥북 프로 아이패드",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403860512",
+    "name": "최고가 삽니다 데스크탑 컴퓨터 노트북 맥북 프로 에어 아이패드 갤럭시탭",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403432567",
+    "name": "아이패드 최고가 매입 프로 에어 M 1 2 3 4 5 11 13 노트북",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404558290",
+    "name": "it최고매입 갤럭시탭 s11 울트라 s 10 9 8 7  노트북 아이패드",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403295532",
+    "name": "최고가 매입 갤럭시탭 s11 s10 s9 s8 s7 플러스 울트라 it",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403789649",
+    "name": "삽니다 맥북 프로 에어 맥미니 아이맥 아이패드 갤럭시탭 노트북",
+    "price": 7000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407209389",
+    "name": "삽니다 울트라 플러스 프로 에어 갤럭시탭 아이패드 노트북 맥북 컴퓨터",
+    "price": 6900000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "405243990",
+    "name": "아이패드 프로 6세대 m2 12.9 256기가 와이파이 스그 풀박스+애펜",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "403066824",
+    "name": "S급 아이패드 프로 6세대 12.9 m2 256기가 실버 와이파이+애펜2",
+    "price": 1030000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "370368253",
+    "name": "아이패드 프로 6세대 12.9 m2 256기가 실버 와이파이+애펜2",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "331686121",
+    "name": "아이패드 프로 11 4세대 M2칩 256GB wifi+cellular 슬",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "391672579",
+    "name": "아이패드 프로6세대 m2 12.9 wifi 256g",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "402380012",
+    "name": "아이패드 에어 6세대 m2 Wi-Fi 모델 256GB 실버 펜슬프로",
+    "price": 770000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "395773407",
+    "name": "아이패드프로6 M2칩 12.9 인치 256GB 5G+wifi 셀룰러",
+    "price": 1090000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "395281795",
+    "name": "아이패드 에어 6세대 11인치 M2 256기가 판매",
+    "price": 690000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "361851146",
+    "name": "매입 애플 아이맥 21 27 24 인치 맥미니 인텔 M1 M2 M3 M4",
+    "price": 5140000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "373681966",
+    "name": "아이패드 에어6 M2 11인치 256기가",
+    "price": 770000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "394522649",
+    "name": "아이패드 에어 11인치 m2 wifi 퍼플 일본에서구입 256gb",
+    "price": 740000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "392262434",
+    "name": "아이패드에어6세대 m2 11인치 256gb 스페이스그레이",
+    "price": 700000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "367924829",
+    "name": "아이패드 에어 m2 11인치 스타라이트 Wi-Fi",
+    "price": 640000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "407297609",
+    "name": "[리퍼+펜슬포함]아이패드 프로 M2 11인치",
+    "price": 930000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "405982572",
+    "name": "판매) 판매) 아이패드 에어11 m2 + 펜슬프로 + 스마트폴리오",
+    "price": 890000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "407621663",
+    "name": "아이패드 프로 4세대 11(m2)",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "407234801",
+    "name": "애플 아이패드 프로 11형 4세대(M2)",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "407543806",
+    "name": "아이패드 프로11 4세대 M2 128GB 풀박스",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "407484459",
+    "name": "iPad 에어 11 m2 스페이스 그레이 128GB+애플펜슬 프로",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "403041757",
+    "name": "아이패드 프로 4세대 11인치 M2칩 128기가 wifi+애플펜슬 2세대",
+    "price": 920000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "407372378",
+    "name": "아이패드 에어 11 m2 128GB + 애플펜슬 프로",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "407147982",
+    "name": "아이패드 프로 11 4세대 M2 128G + 애플펜슬2+ 매직키보드",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406943463",
+    "name": "Apple 아이패드 프로 11 4세대 M2칩, 애플펜슬 2세대",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406779423",
+    "name": "[아이패드 프로 11 4세대 M2 셀룰러]",
+    "price": 760000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "406533191",
+    "name": "애플 아이패드 프로 스페이스 그레이 m2 11인치 4세대 128GB",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406446782",
+    "name": "아이패드 프로11 M2 128G 애플펜슬2세대 풀구성",
+    "price": 1050000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "406437648",
+    "name": "s급 풀박스 아이패드 프로m2 11인치 4세대 스페이스 그레이 128기가",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406168592",
+    "name": "[판매완료] 아이패드 프로 11 4세대 M2 판매합니다",
+    "price": 999999999,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406142043",
+    "name": "아이패드 프로 11인치 4세대(M2) 512GB + 애플펜슬 2세대",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "405607030",
+    "name": "아이패드 프로 M2 11인치 셀룰러 128GB 박스 본체 리퍼완료",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "404945267",
+    "name": "아이패드에어6 11인치 m2 128 S급 + 애플펜슬프로",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "404541911",
+    "name": "아이패드 프로 11 4세대(M2) wifi + 애플펜슬",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "403974638",
+    "name": "Apple 아이패드 프로 11 4세대 M2 스페이스 그레이",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "404351028",
+    "name": "아이패드 에어 11 M2 스페이스그레이+애플펜슬 프로 등",
+    "price": 880000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "403951547",
+    "name": "아이패드 프로 11(4세대) M2 1TB - 애플펜슬 2세대 포함",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "402626558",
+    "name": "아이패드 프로 11 4세대 m2 128 wifi",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "403974832",
+    "name": "아이패드 4세대 프로 11 키보드 (M2 호환) 실사용 15회 미만",
+    "price": 260000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "402042742",
+    "name": "애플 아이패드 프로 11인치 4세대 m2",
+    "price": 470000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401968857",
+    "name": "아이패드 프로 11 4세대(m2) + 애플펜슬 정품",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "399230618",
+    "name": "(급처) 아이패드 m2 11인치+애플펜슬프로",
+    "price": 755000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "398484091",
+    "name": "애플 아이패드 프로 11 4세대 M2칩 128G 와이파이",
+    "price": 790000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "397648190",
+    "name": "(애플케어플러스) 아이패드 프로 11 4세대 m2",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "398137678",
+    "name": "아이패드 프로 M2 11인치 + 정품 키보드 판매합니다",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "397170644",
+    "name": "아이패드 프로 11 4세대 m2 스페이스 그레이+ 펜슬",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "397257981",
+    "name": "아이패드 프로 11 4세대 M2 + 스마트 폴리오(정품) 3세트",
+    "price": 810000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "396178672",
+    "name": "아이패드 프로11 4세대 (M2) 256GB 셀룰러 실버",
+    "price": 1280000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "395425995",
+    "name": "풀박) 아이패드 11 프로 M2  실버 셀룰러 128g 팝니다.",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "395839422",
+    "name": "아이패드 프로11인치 m2 128기가 스페이스 그레이 펜슬 키보드 셋트",
+    "price": 930000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "393961931",
+    "name": "아이패드 프로 11인치 M2 128GB 셀룰러 + 매직키보드+애플펜슬2",
+    "price": 1060000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "392529109",
+    "name": "아이패드 에어 M2 11인치 + 애플펜슬프로",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "392094474",
+    "name": "아이패드 프로 11 4세대(M2) 128GB + 애플펜슬",
+    "price": 860000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "392767005",
+    "name": "아이패드 프로 4세대 11인치 M2 128GB+ 애플펜슬 2세대",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "391587644",
+    "name": "아이패드 프로 11 M2 4세대 판매합니다",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "390937507",
+    "name": "애플 아이패드 프로 11인치 4세대 m2",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "390166065",
+    "name": "아이패드 프로 11인치 케이스 모음 (4세대 M2칩)",
+    "price": 2000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "389838679",
+    "name": "아이패드 프로 11인치 m2 m4 ,12.9인치 m2 삽니다",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_wrong_size_13_inch_or_12_9",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "389960663",
+    "name": "아이패드 에어6 m2 11인치 128기가 와이파이+애펜프로",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "389154741",
+    "name": "아이패드 프로 11 4세대 M2칩 실버 2테라 셀룰러팝니다.",
+    "price": 1580000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "388579336",
+    "name": "아이패드 에어 11 M2 wifi 128gb 97% +애플펜슬 프로",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_accessory_only",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "389102381",
+    "name": "애플 아이패드 에어11 m2 128기가 외이파이모델 + 애플펜슬프로",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "388608301",
+    "name": "아이패드 프로 11형 4세대 M2 128GB Wi-Fi + 애플 펜슬 2",
+    "price": 880000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "388119833",
+    "name": "아이패드 프로 11인치 4세대 M2 128GB 와이파이 그레이 태블릿PC",
+    "price": 741200,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "387074186",
+    "name": "아이패드 프로 4세대 m2 11인치 128기가 실버 와이파이+애펜2",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "385529348",
+    "name": "아이패드 11에어 (m2) 128기가 + 애플펜슬 pro (정품)",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "385328096",
+    "name": "아이패드 프로 11 4세대 m2 2TB 셀룰러 매직키보드 포함",
+    "price": 1400000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "379223744",
+    "name": "아이패드 프로 4세대 11인치 m2 512기가 스그 와이파이",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "379974336",
+    "name": "아이패드 프로 4세대 m2 11인치 128기가 와이파이 풀박스+애펜2",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "378851330",
+    "name": "아이패드 프로 11 4세대 M2 + 애플펜슬 2세대, 스마트 키보드",
+    "price": 580000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "379223122",
+    "name": "아이패드 프로 4세대 m2 11인치 512기가 실버 풀박스+매직키보드",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "365796361",
+    "name": "아이패드 프로 11 m2 4세대 128기가 +애플펜슬2",
+    "price": 760000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "376401175",
+    "name": "아이패드 프로 11인치 4세대 M2 512GB",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "375220387",
+    "name": "아이패드 에어11(m2) WIFI 128GB + 애플팬슬 pro +케이스",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "373793697",
+    "name": "아이패드 프로 11 4세대 m2 셀룰러 128",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "371998579",
+    "name": "아이패드 프로 11 M2 4세대 512GB + 애플펜슬 2세대",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "373028861",
+    "name": "아이패드 에어6 m2 11인치 128기가 와이파이+애펜프로",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "373043301",
+    "name": "아이패드 프로 11인치 4세대 M2 512GB 와이파이 실버 태블릿PC",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "373394354",
+    "name": "아이패드 프로 4세대 m2 11인치 128기가 스그 와이파이+애팬2",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "369839709",
+    "name": "아이패드 프로 11인치 4세대 m2 + 애플펜슬 판매합니다.",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "369222868",
+    "name": "아이패드 프로 11인치 4세대 M2 128GB 와이파이 그레이 태블릿PC",
+    "price": 660000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "367399658",
+    "name": "아이패드 프로 M2 11인치 128기가 wi-fi",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "367173603",
+    "name": "아이패드 프로 11 4세대 m2 wifi + 애플펜슬 2세대",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "367046253",
+    "name": "아이패드 프로 11 4세대 M2칩 + 애플펜슬 2세대",
+    "price": 1060000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "367900360",
+    "name": "아이패드 프로 11인치 M2 4세대 Wi-Fi 128GB 실 버 모델 판",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "364811077",
+    "name": "M2 아이패드 프로 11형 셀룰러",
+    "price": 830000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "365019512",
+    "name": "케이스티파이 조구만 아이패드프로 11인치 케이스(4세대용) M2",
+    "price": 58000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "363113171",
+    "name": "애플 아이패드프로 11 M2 실버 (박스 포함)",
+    "price": 1112000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "363414951",
+    "name": "아이패드 프로11 4세대 (m2) 128/wifi / 정품 펜슬+케이스",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "363677345",
+    "name": "아이패드 프로 11 M2(4세대/128G) /정품케이스/ 애플펜슬2세대/",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "361178242",
+    "name": "아이패드 프로4세대 11 m2 128G",
+    "price": 745000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "362088725",
+    "name": "아이패드 에어 11 M2 퍼플 + 애플 펜슬 프로 팔아용",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "350401963",
+    "name": "아이패드 Pro 4세대 11인치 M2 셀룰러 스페이스그레이",
+    "price": 860000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "350229140",
+    "name": "아이패드 프로 11 4세대 M2 128gb 셀룰러 스페이스 그레이",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "350812454",
+    "name": "아이패드프로11 4세대 m2 s급 풀박 최저가73에팝니다 정품케이스포함",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "347785296",
+    "name": "판매완) 아이패드 프로 11인치 4세대 M2 스그",
+    "price": 725000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "345789681",
+    "name": "아이패드 프로 11 4세대 M2 128기가 S급(+애플펜슬, 애플펜슬팁",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "345492137",
+    "name": "iPad Air 11(M2) Wi-Fi 128 GB / 애플팬슬 프로",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "345031865",
+    "name": "아이패드 프로 11 m2 4세대 128기가 *리퍼 제품 미사용*",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "344843777",
+    "name": "아이패드프로11(M2)셀룰러+펜슬+애케플(새상품)",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "343935123",
+    "name": "아이패드 프로 11 m2 128gb wifi 사이클 36 배터리 100",
+    "price": 840000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406797032",
+    "name": "아이패드 에어 11 M4 wifi +케이스 단순개봉",
+    "price": 829000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "343180155",
+    "name": "아이패드 프로 11 m2 128gb 셀룰러(4세대) 6세대",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "342090208",
+    "name": "아이패드 프로11 4세대 (m2) 128기가",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "341743581",
+    "name": "아이패드 프로 11인치 4세대 M2",
+    "price": 759000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406797266",
+    "name": "새상품 아이패드 에어 11 M4 128GB WIFI +거치대",
+    "price": 869000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "340051750",
+    "name": "아이패드 프로11 M2 삽니다",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "339930392",
+    "name": "아이패드 프로 11 M2 칩 실버",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "340330757",
+    "name": "급처 아이패드 에어11 m2 128기가 펜슬 프로",
+    "price": 760000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "339705558",
+    "name": "아이패드 에어 11 m2모델 128gb + 애플펜슬 프로",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "338619997",
+    "name": "아이패드 프로 11 4세대 m2 128기가 삽니다",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "339078869",
+    "name": "아이패드 에어11 M2128기가+애플펜슬 프로 (일괄/ 새삥)",
+    "price": 845000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "336873293",
+    "name": "아이패드 프로 11 4세대 M2 스페이스그레이 128G Wifi",
+    "price": 880000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "338148440",
+    "name": "아이패드 11프로 4세대m2 128g(애케플) 애플펜슬2",
+    "price": 830000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "335940544",
+    "name": "아이패드 프로 11(4세대/m2/128gb) + 애플펜슬2세대",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "334771071",
+    "name": "아이패드 프로 11 M2 셀룰러 256GB",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "335975053",
+    "name": "아이패드 에어11 M2 128기가 + 애플펜슬 프로2",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "335593267",
+    "name": "아이패드 에어 11 M2 스그 (Wi-Fi, 128GB) + 펜슬프로",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "376505408",
+    "name": "아이패드 프로 m2 4세대 WiFi 128g",
+    "price": 599900,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "388649327",
+    "name": "아이패드 11 4세대 m2 128G wifi + 애플펜슬 2세대",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "368154516",
+    "name": "아이패드 프로 4세대 m2",
+    "price": 340000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "354708139",
+    "name": "아이패드 프로 m2 128",
+    "price": 830000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "354196298",
+    "name": "아이패드프로 M2",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "353474927",
+    "name": "아이패드 프로 M2칩 128기가 WiFi",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "339655918",
+    "name": "애플 정품 아이패드 프로 11인치 4/3/2세대 폴리오 케이스 서프 블루",
+    "price": 39200,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프"
+    ]
+  },
+  {
+    "pid": "376650020",
+    "name": "유엠투 UM2 아이패드 마그네틱 거치대 11인치 10.9형 프로 에어",
+    "price": 35000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프"
+    ]
+  },
+  {
+    "pid": "406680602",
+    "name": "아이패드 프로 4세대 11인치 M2 128GB",
+    "price": 350000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "406544542",
+    "name": "s급 아이패드 프로 11 4세대 m2 128 wifi 팔아요",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406530332",
+    "name": "애플 아이패드 프로 m2 11인치 실버 +애플펜슬 팔아요",
+    "price": 500000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "406524555",
+    "name": "아이패드 프로 11 4세대 M2칩 + 정품케이스 + 애플펜슬 2세대",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406538600",
+    "name": "아이패드프로11형 4세대(M2) 512G WIFI 스그+애플펜슬2",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "405401573",
+    "name": "아이패드에어6 11 m2 애플케어 +애플펜슬프로",
+    "price": 780000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "404923620",
+    "name": "아이패드 프로 4세대 M2 11인치 128GB wifi",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "405875368",
+    "name": "판/교 S급 아이패드 프로 11 M2 128G Wi-Fi 풀박",
+    "price": 860000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404993785",
+    "name": "아이패드 프로 m2 11인치 4세대 배터리 효율98",
+    "price": 740000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "405914135",
+    "name": "아이패드 프로 11인치 4세대 m2 + 애플펜슬 2세대 직거 73",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404702016",
+    "name": "애플 아이패드 프로 11 4세대(M2) 스페이스그레이 128g",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "404747712",
+    "name": "아이패드 프로 4세대 11인치 M2 128 실버 wifi",
+    "price": 429000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "405192737",
+    "name": "아이패드 프로 11 4세대 M2칩 WIFI 128GB 스페이스그레이 판매",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404543092",
+    "name": "애플 아이패드 프로 4세대 11(M2) + 애플펜슬",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404506467",
+    "name": "아이패드 프로 11 4세대 M2 셀룰러 128GB",
+    "price": 759000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "402596660",
+    "name": "아이패드 에어 11 m2 + 애플펜슬 프로 일괄 판매",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "400679569",
+    "name": "아이패드 프로 11인치 m2",
+    "price": 550000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "400369829",
+    "name": "아이패드 프로 11 4세대 m2 128 wifi",
+    "price": 590000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "402018135",
+    "name": "[리퍼 미사용,펜슬 포함] 아이패드 프로 11인치 4세대 M2 128GB",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401113367",
+    "name": "급처)아이패드 11에어 m2 애플펜슬 프로 포함",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "397887401",
+    "name": "아이패드 에어11 M2칩+ 애플 펜슬 프로",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "398464330",
+    "name": "아이패드에어 11 (M2) Wi-Fi 128GB 및 애플펜슬 프로",
+    "price": 830000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "398187935",
+    "name": "아이패드 에어6 11인치(m2) 128 애플펜슬 프로 포함",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "397268954",
+    "name": "아이패드에어 11 m2 128gb퍼플+애플펜슬 프로",
+    "price": 735000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "397799498",
+    "name": "[s급] 아이패드 프로 11인치 4세대 M2 스페이스 그레이 (배터리 8",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "397092552",
+    "name": "아이패드 에어11 m2 128기가 + 애플펜슬 프로",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "397360817",
+    "name": "S급 아이패드 프로11 4세대 m2 셀룰러 128 스그 풀박스",
+    "price": 830000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "396879245",
+    "name": "애플 정품 매직 키보드 아이패드 프로 11 4세대/아이패드 에어11 M2",
+    "price": 270000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "397221639",
+    "name": "아이패드 프로 11 4세대(wifi) M2 새상품급 팝니다(애플펜슬 포함",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "395146506",
+    "name": "아이패드 프로11 M2 WIFI 128GB",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "396048458",
+    "name": "아이패드 에어11 m2 스페이스 그레이+애플펜슬 프로",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "396672431",
+    "name": "아이패드 에어 11 M2 128GB 스타라이트 wifi+애플펜슬pro",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "395197005",
+    "name": "아이패드 에어11 M2 + 애플펜슬 프로",
+    "price": 770000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "396284148",
+    "name": "애플 아이패드 프로 11 스페이스그레이 M2 128GB 파손 부품용",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "395420137",
+    "name": "아이패드 프로 4세대(m2) 11인치 128GB 실버",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "396121864",
+    "name": "아이패드 프로 11 4세대 M2 애플펜슬 시라카미후부키에디션",
+    "price": 760000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "395437668",
+    "name": "아이패드 프로 M2 11인치 128GB + 애플펜슬 2세대",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "395452456",
+    "name": "아이패드프로 11 4세대 m2 Wifi 128G+애플팬슬 2세대",
+    "price": 770000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "393809345",
+    "name": "아이패드프로11 4세대 m2",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "394824589",
+    "name": "아이패드 에어 11 M2 (6세대) + 애플펜슬 프로 팝니다",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "395077728",
+    "name": "애플 아이패드 프로 11 4세대 M2 스페이스 그레이 128GB WiFi",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "393090239",
+    "name": "아이패드iPad 에어11 m2 128GB + 펜슬 프로 전용 충전기",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "395242468",
+    "name": "S급 아이패드 프로 11인치 4세대 + 애플 펜슬 (m2) 128 wif",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "370409140",
+    "name": "iPad Pro 11인치 4세대 (M2) 128GB",
+    "price": 380000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "394990812",
+    "name": "아이패드 에어11 m2와 애슬펜슬 프로 팝니다",
+    "price": 769000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "392149028",
+    "name": "아이패드 프로 m2 4세대 11",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "394659020",
+    "name": "아이패드 에어 11 M2칩 스타라이트 128GB, Wi-Fi 애플펜슬프로",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "395327109",
+    "name": "애캐플 아이패드 m2 프로 11인치 4세대 셀룰러 128g + 애플펜슬2",
+    "price": 810000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "393408967",
+    "name": "아이패드 프로 M2 11인치 128GB + 애플펜슬2 + 아이패드 2in",
+    "price": 699000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "391593864",
+    "name": "아이패드 프로 4세대(m2) 11 128기가 와이파이",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "391443054",
+    "name": "아이패드 프로 4세대 m2 11인치 128 wifi",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390950056",
+    "name": "아이패드 에어 11 M2 128GB Blue + 애플 펜슬 프로",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "390173192",
+    "name": "아이패드 프로4세대 11인치 실버 m2",
+    "price": 620000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "390913867",
+    "name": "아이패드 프로11 4세대 M2 512GB 스페이스그레이 wifi",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "390831804",
+    "name": "애플 아이패드 에어 11 128gb 퍼플 m2 + 애플팬슬 프로 포함",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "383866204",
+    "name": "아이패드 프로 11 4세대 m2칩 128GB WiFi",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390421080",
+    "name": "아이패드 프로 11 4세대 M2 128기가 와이파이+ 애플펜슬 2세대+",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "388943716",
+    "name": "아이패드 에어 11 m2 128gb + 애플펜슬 Pro",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "391072762",
+    "name": "정품 애플 아이패드프로11 에어 M1 M2 매직키보드 블랙 풀박스 팔아요",
+    "price": 230000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3_m4"
+    ]
+  },
+  {
+    "pid": "389593474",
+    "name": "아이패드 에어6 M2 11 128기가 스타라이트 + 애플펜슬 프로",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "388854999",
+    "name": "아이패드 에어 11(m2) 128 와이파이 + 애플펜슬 프로 팝니다",
+    "price": 570000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "387118493",
+    "name": "아이패드 프로 11인치 m2 + 애플펜슬 2세대",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "388097222",
+    "name": "아이패드 에어 6 m2 11 스페이스 그레이 128g 애플펜슬 프로",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "386616055",
+    "name": "아이패드 프로 11인치 4세대 M2 스페이스그레이+ 애플펜슬 2세대",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "377593981",
+    "name": "아이패드 프로 m2(11형 4세대) wifi 128GB 실버",
+    "price": 630000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "371581474",
+    "name": "[애케플] 아이패드 프로 11 M2 128gb",
+    "price": 500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "356856366",
+    "name": "(미사용 신품)아이패드 프로 M2 11인치 매직키보드 판매",
+    "price": 250000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_case_or_smart_folio_listing"
+    ]
+  },
+  {
+    "pid": "321244395",
+    "name": "(애케플o) 아이패드 에어6 11 M2 128gb wifi, 애플펜슬프로",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "261424399",
+    "name": "아이패드 프로 4세대 11인치 M2 (애캐플 가능)",
+    "price": 980000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "401709144",
+    "name": "아이패드 프로 4세대 M2 128gb",
+    "price": 590000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "400972576",
+    "name": "아이패드프로 4 m2 128  +애플펜슬2",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "393877787",
+    "name": "아이패드 프로 11 3세대(셀룰러 128GB),키보드,애플펜슬2세대",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_wrong_storage_128",
+      "reject_wrong_size_13_inch_or_12_9",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "373639364",
+    "name": "아이패드 air 128GB m2 wifi + 애플 펜슬 pro",
+    "price": 790000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "357595355",
+    "name": "아이패드 프로 4세대 M2 셀룰러 128gb+애펜2",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_wrong_size_13_inch_or_12_9",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "407527023",
+    "name": "아이패드 11프로 4세대 256기가",
+    "price": 1140000,
+    "reject_reasons": [
+      "reject_wrong_chip_m1_m3_m4"
+    ]
+  },
+  {
+    "pid": "385886891",
+    "name": "아이패드 프로 11인치 4세대 셀룰러 256 실버 상태 아주 굳",
+    "price": 860000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "407214161",
+    "name": "아이패드프로 11인치 256G 4세대 셀룰러",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "358803302",
+    "name": "아이패드 프로 11인치 4세대 셀룰러 256기가",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "405564230",
+    "name": "애플 아이패드 프로11 4세대  256GB Wifi A급 12.9",
+    "price": 510000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "388580935",
+    "name": "아이패드 프로 11 4세대 256GB",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_chip_m1_m3_m4"
+    ]
+  },
+  {
+    "pid": "341573570",
+    "name": "아이패드 프로11 4세대",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "358968411",
+    "name": "ipad pro 11 4세대 256GB 셀룰러 (풀박스)",
+    "price": 985000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "388714181",
+    "name": "아이패드 프로 4세대 11 셀룰러 256기가 펜슬 매직키보드 포함",
+    "price": 851060,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "400219187",
+    "name": "아이패드프로12.9인치M2_256GB+펜슬+매직키보드 풀세트",
+    "price": 1650000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "386545637",
+    "name": "아이패드 프로 12.9인치 6세대 M2 256GB 셀룰러 실버 태블릿PC",
+    "price": 1199000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "386612367",
+    "name": "아이패드 프로 12.9인치 6세대 M2 256GB+에르메스 클릭아슈 팔찌",
+    "price": 1300000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "324751309",
+    "name": "아이패드 에어 13 M2 256GB스타라이트 배터리 성능 100프로",
+    "price": 1120000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "406641119",
+    "name": "아이패드 프로 6세대 12.9 m2 256기가 셀룰러 실버 풀박스+애펜2",
+    "price": 1040000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "407340920",
+    "name": "애플 아이패드 프로 12.9 6세대 m2 애플펜슬 매직키보드",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "405077773",
+    "name": "애플 아이패드 에어 13 m2 + 아이패드 프로 + 애플케어플러스",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "403126727",
+    "name": "아이패드 프로 6세대 m2 12.9인치 실버 256기가 + 애플펜슬2세대",
+    "price": 1250000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "395372669",
+    "name": "아이패드 프로 6세대 12.9 256기가 M2",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "329076311",
+    "name": "아이패드 프로 6세대 m2 256g 12.9 + 키보드 박스 풀셋",
+    "price": 1450000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "404217342",
+    "name": "[S급] 아이패드 프로 12.9 6세대 M2 셀룰러 256GB 풀박스",
+    "price": 1049000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "398486978",
+    "name": "아이패드 프로 12.9 6세대 m2 실버 256gb 셀룰러 리퍼 새제품",
+    "price": 1230000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "396566977",
+    "name": "아이패드 프로 6세대 12.9 m2 256GB 팝니다",
+    "price": 960000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "395475199",
+    "name": "아이패드 프로 12.9인치 6세대 M2칩 256GB 실버 (민트,S급)",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9"
+    ]
+  },
+  {
+    "pid": "391880812",
+    "name": "애플 아이패드 에어 13인치 M2 256GB 블루+애플펜슬 프로 판매",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "402852195",
+    "name": "아이패드 프로 6세대 M2 12.9 셀룰러 실버 256G",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch_or_12_9",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "396233149",
+    "name": "아이패드프로 m2 12.9 256셀룰러팝니다.",
+    "price": 1150000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "397941419",
+    "name": "아이패드프로 6세대 12.9 256gb S급 셀룰러",
+    "price": 1080000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_m2__or_4_s_세대_아이패드_s_프로_s_4세대_프",
+      "reject_wrong_size_13_inch_or_12_9",
+      "reject_cellular_variant"
+    ]
+  }
+]

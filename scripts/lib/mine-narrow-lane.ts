@@ -23,6 +23,7 @@ const outBase = path.join(appDir, "category-intelligence");
 
 type LaneKey =
   | "ipad_pro_11_m4_256_wifi"
+  | "ipad_pro_11_m2_256_wifi"
   | "ipad_air_m2_11_256_wifi"
   | "ipad_pro_13_m4_256_wifi"
   | "ipad_air_m3_11_256_wifi"
@@ -102,6 +103,49 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "buying_post", pattern: /매입|삽니다|구매\s*합니다|구매합니다|사요|구해요/ },
       { label: "ipad_air_or_mini", pattern: /아이패드\s*에어|ipad\s*air|아이패드\s*미니|ipad\s*mini/i },
       { label: "wrong_model_year_m2_2022", pattern: /2022\s*년|아이패드\s*프로\s*6세대|6세대\s*프로/i },
+    ],
+  },
+
+  ipad_pro_11_m2_256_wifi: {
+    laneKey: "ipad_pro_11_m2_256_wifi",
+    category: "tablet",
+    queries: [
+      "아이패드 프로 11 m2 256",
+      "아이패드 프로 m2 256 와이파이",
+      "ipad pro 11 m2 256",
+      "아이패드 m2 11인치 256",
+      "아이패드 프로 m2 11",
+      "ipad pro m2 11",
+      "아이패드 프로 11 m2 256gb",
+      "ipad pro 11 m2 256gb",
+      "아이패드 프로 4세대 11 256",
+      "ipad pro 4세대 11 256",
+      "아이패드 프로 11 4세대 m2 256",
+      "아이패드 프로 m2 256gb",
+      "아이패드 프로 11 m2 256기가",
+      "아이패드 프로 11 m2 wifi 256",
+      "ipad pro m2 11 wifi 256",
+      "아이패드 프로 11인치 m2 256",
+      "ipad pro 11 inch m2 256",
+    ],
+    pages: 10,
+    targetParseReady: 200,
+    priceMin: 500_000,
+    priceMax: 1_800_000,
+    acceptAll: [/256/, /아이패드|ipad/i],
+    acceptAnyOf: [[/\bm2\b|m2\s*칩|\(m2\)/i, /4\s*세대|아이패드\s*프로\s*4세대|프로\s*11\s*4세대|11\s*프로\s*4세대|4th\s*gen/i]],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_chip_m1_m3_m4", pattern: /\bm[134]\b|m1\s*칩|m3\s*칩|m4\s*칩/i },
+      { label: "wrong_storage_512_1tb_2tb", pattern: /512\s*(?:gb|기가)?|1\s*tb|2\s*tb|1\s*테라|2\s*테라/i },
+      { label: "wrong_storage_128", pattern: /(?:^|[^0-9])128\s*(?:gb|기가)?\b/i },
+      { label: "wrong_size_13_inch_or_12_9", pattern: /13\s*인치|13\s*형|12\.9\s*인치|13"|13″|아이패드\s*프로\s*6세대|6세대\s*프로/i },
+      { label: "cellular_variant", pattern: /셀룰러|cellular|\blte\b|\b5g\b|유심|sim\s*트레이|esim/i },
+      { label: "accessory_only", pattern: /케이스\s*(?:만|단품|개별)|필름\s*(?:만|단품)|키보드\s*만|펜슬\s*만|어댑터\s*만|충전기\s*만/i },
+      { label: "case_or_smart_folio_listing", pattern: /(?:스마트\s*폴리오|스마트\s*커버|폴리오\s*케이스).{0,8}판매|매직\s*키보드\s*판매/i },
+      { label: "broken_or_parts_only", pattern: /액정\s*파손|부품\s*용|부품용|파손\s*품/i },
+      { label: "buying_post", pattern: /매입|삽니다|구매\s*합니다|구매합니다|사요|구해요/ },
+      { label: "ipad_air_or_mini", pattern: /아이패드\s*에어|ipad\s*air|아이패드\s*미니|ipad\s*mini/i },
     ],
   },
 
