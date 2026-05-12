@@ -1,0 +1,953 @@
+[
+  {
+    "pid": "406550470",
+    "name": "미개봉 PS5 슬림디스크 커버 테크노레드",
+    "price": 64000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407589101",
+    "name": "ps5 슬림디스크 23.11제조 새상품",
+    "price": 1000000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "406458595",
+    "name": "PS5 슬림 디지털 에디션용 디스크 드라이브",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406116593",
+    "name": "PS5 프로 슬림 디스크 드라이브 새상품",
+    "price": 130000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "393572899",
+    "name": "ps5 슬림 디스크 삽니다",
+    "price": 1000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "362078620",
+    "name": "Ps5슬림디지털/디스크 삽니다",
+    "price": 350000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "356335896",
+    "name": "플스5 플레이스테이션5 ps5 디지털 디스크 슬림 프로 구형 삽니다매입",
+    "price": 990000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "256000879",
+    "name": "플스5 ps5 슬림 디스크 에디션 CFI-2018A 5년약정",
+    "price": 23500,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "390748530",
+    "name": "플스5슬림디스크 + 듀얼센스2개 + 쿨링충전스탠드",
+    "price": 560000,
+    "reject_reasons": [
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "324818856",
+    "name": "플스5 슬림 디스크 드라이브 미개봉 새상품",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406408603",
+    "name": "PS5 디스크 드라이브 미개봉 새상품 판매합니다 플레이스테이션5 프로슬림",
+    "price": 117000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_ps5_pro"
+    ]
+  },
+  {
+    "pid": "404380823",
+    "name": "ps5 플스5 슬림 디스크 에디션 2018 1TB 팔아요",
+    "price": 540000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_nintendo"
+    ]
+  },
+  {
+    "pid": "402579950",
+    "name": "PS5 슬림 디스크에디션 듀얼센스X2 번들 (ASIA-00497) 미개봉",
+    "price": 790000,
+    "reject_reasons": [
+      "reject_wrong_model_ps5_pro"
+    ]
+  },
+  {
+    "pid": "398241950",
+    "name": "ps5 슬림 디스크버전 판매 합니다",
+    "price": 570000,
+    "reject_reasons": [
+      "reject_wrong_model_ps5_pro"
+    ]
+  },
+  {
+    "pid": "397410519",
+    "name": "ps5 슬림_ 프로 디스크 드라이브",
+    "price": 135000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "393090057",
+    "name": "PS5 슬림디스크 듀얼센스 세트",
+    "price": 540000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_nintendo"
+    ]
+  },
+  {
+    "pid": "406694874",
+    "name": "소니 ps5 30주년 에디션 디지털 슬림",
+    "price": 1000000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "401749408",
+    "name": "PS5 슬림 30주년 디지털 에디션 + 30주년 듀얼센스 미개봉 새제품",
+    "price": 950000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "397566474",
+    "name": "플스5 PS5 슬림 디지털 에디션 24년7월 제품 판매",
+    "price": 440000,
+    "reject_reasons": [
+      "reject_wrong_model_ps5_pro"
+    ]
+  },
+  {
+    "pid": "256000171",
+    "name": "플스5 슬림 디지털에디션 +수직받침대+겜맥듀얼패드 차징독 5년약정",
+    "price": 21400,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "399338050",
+    "name": "[신품급] ps5 플스5 슬림 디지털 에디션",
+    "price": 510000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "393432848",
+    "name": "PS5 슬림 디지털 에디션 1TB 풀박스",
+    "price": 430000,
+    "reject_reasons": [
+      "reject_wrong_model_ps5_pro"
+    ]
+  },
+  {
+    "pid": "407634313",
+    "name": "PS2 플스2 슬림 본체+게임 다수 위닝10 그란트리스모3 철권테그,5",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "407122106",
+    "name": "플레이스테이션5 슬림 825gb + 충전독 미드나이트, 듀얼센스",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "406999028",
+    "name": "Ps5 플스5 슬림 신공정 모델 2118",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "407559976",
+    "name": "플스5 슬림 디스크 에디션과 닌텐도 스위치 교환 구합니다",
+    "price": 20000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_switch_nintendo",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407363995",
+    "name": "플스5슬림",
+    "price": 1200000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "406475205",
+    "name": "플스5 디스크슬림",
+    "price": 620000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_nintendo"
+    ]
+  },
+  {
+    "pid": "406565855",
+    "name": "플스5 슬림 디지털 박스 삽니다",
+    "price": 5000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "406197120",
+    "name": "플레이스테이션5 슬림 2118",
+    "price": 580000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "406261003",
+    "name": "플스5 슬림 디지털 삽니다",
+    "price": 500000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403255948",
+    "name": "플레이스테이션 5 슬림 판매합니다.",
+    "price": 380000,
+    "reject_reasons": [
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "402643412",
+    "name": "[새상품]플레이스테이션5 슬림 듀얼센스 번들",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "396483839",
+    "name": "플스5슬림 정품 커버 쉘 하우징 - 크로마 펄 풀박스",
+    "price": 60000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "393078755",
+    "name": "플스5슬림",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "392485414",
+    "name": "[PS5] 플레이스테이션 5 슬림 스탠다드 에디션 - 1TB CFI-21",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "391647750",
+    "name": "플레이스테이션5 슬림 S급 컨트롤러 게임칩 판매",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "383930778",
+    "name": "PS5 플레이스테이션5 슬림 스탠다드 에디션 새제품",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "375846871",
+    "name": "게이밍노트북 플스5슬림이랑 교환합니다",
+    "price": 1004,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "368670170",
+    "name": "플스5 슬림 스탠다드 1TB",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "364623855",
+    "name": "플스5 슬림디스크 버전 40초반으로 삽니다",
+    "price": 400000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "361668327",
+    "name": "플스5 슬림 풀박스",
+    "price": 420000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "347440735",
+    "name": "삽니다 플스5 중고 미개봉 슬림 출장 구매 매입",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "339725739",
+    "name": "플스5 슬림 디지털 / 포탈 /듀얼센스 엣지 풀set 급매",
+    "price": 890000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "351288029",
+    "name": "플스5 슬림",
+    "price": 560000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "345818429",
+    "name": "플레이스테이션2 슬림 본체+cd 5개",
+    "price": 140000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "342444418",
+    "name": "플스5  슬림 스탠다드 에디션 (ps5) CFI-2018A01",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "339087548",
+    "name": "플스5 슬림 최신",
+    "price": 550000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "338030207",
+    "name": "플스5 슬림 디스크 구매합니다.",
+    "price": 400000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "334017161",
+    "name": "플스5  디스크 슬림 새상품 판매",
+    "price": 1000000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "334568458",
+    "name": "플스5 슬림 프로용 수직 거치대 정품 미개봉",
+    "price": 32000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "311245544",
+    "name": "플스5 슬림 디지털 박스만 구매합니다.",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403304083",
+    "name": "플스4 슬림 500G 풀박스 듀얼쇼크4 + 정품 수직스탠드",
+    "price": 170000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "405283004",
+    "name": "플스2 PS2 90005 슬림 본체만(게임패드 제외)",
+    "price": 127000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "398824686",
+    "name": "소니 플레이스테이션2 ps2 슬림 모델(SCPH-70005)",
+    "price": 80000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "398118316",
+    "name": "[PS4] 플스4슬림 CUH-2017A 500GB 글레이셔 화이트",
+    "price": 198000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "391664858",
+    "name": "플스4 슬림 500 화이트",
+    "price": 130000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "378160141",
+    "name": "소니 ps2 슬림 7005 팝니다 플스2",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "379685606",
+    "name": "플스2 ps2 슈퍼슬림모델 90005 블랙",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "379676926",
+    "name": "플스2 / PS2 슬림모델 70005(풀박스)",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "376365038",
+    "name": "ps2 슬림 75000 실버 버전 본체 플스",
+    "price": 99000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "342690884",
+    "name": "플스4 슬림1t 풀박스, 듀얼쇼크 2개",
+    "price": 160000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "354364392",
+    "name": "scph-70005  플스2 슬림 +아이토이 타이틀3종",
+    "price": 80000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "350650545",
+    "name": "PS4 플스4 슬림 2105A",
+    "price": 145000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "406816675",
+    "name": "플레이스테이션5 슬림",
+    "price": 500000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "406570192",
+    "name": "대구 플스5 슬림 26년 1월 제조 팝니다 ps5 플레이스테이션",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "405618219",
+    "name": "PS5 플스5 슬림 pro 스탠드",
+    "price": 6600,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "404532274",
+    "name": "플레이스테이션5 슬림 콘솔 커버 블랙",
+    "price": 30000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "404178941",
+    "name": "미개봉 플스5 슬림 스탠다드 에디션",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "403300751",
+    "name": "[풀박스]플레이스테이션5 슬림 + 블랙 케이스 포함",
+    "price": 550000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "402229166",
+    "name": "플스5 슬림 팝니다. (예약)",
+    "price": 480000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "403307427",
+    "name": "플레이스테이션 5 슬림 스탠다드 듀얼센스 번들 [1TB]",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "401129133",
+    "name": "플레이스테이션5 PS5 슬림",
+    "price": 500000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "401869141",
+    "name": "플레이스테이션5 PS5 슬림 판매합니다",
+    "price": 450000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "401741552",
+    "name": "플스5슬림 CFI-2118 B01",
+    "price": 550000,
+    "reject_reasons": [
+      "reject_wrong_model_ps5_pro"
+    ]
+  },
+  {
+    "pid": "401081752",
+    "name": "플레이스테이션5 슬림 디지털에디션 825GB",
+    "price": 450000,
+    "reject_reasons": [
+      "reject_wrong_model_ps5_pro"
+    ]
+  },
+  {
+    "pid": "399598829",
+    "name": "플레이스테이션 5 슬림",
+    "price": 550000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "402301712",
+    "name": "플스4(PS4)슬림 2218 1테라 박스셋, 듀얼쇼크2개, 게임5개",
+    "price": 190000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "398484188",
+    "name": "플레이스테이션5 슬림/프로 쿨러",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "399677982",
+    "name": "플레이스테이션 5 슬림 콘솔 커버 (볼카닉 레드)",
+    "price": 30000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "396222159",
+    "name": "플레이스테이션5 슬림 디스크 풀박스",
+    "price": 530000,
+    "reject_reasons": [
+      "reject_wrong_model_ps5_pro"
+    ]
+  },
+  {
+    "pid": "394942247",
+    "name": "플스5 슬림 팝니다",
+    "price": 630000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "395001850",
+    "name": "플스5 슬림 팝니드",
+    "price": 370000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "396186425",
+    "name": "ps5 플스5 슬림및 프로 후면 배기 쿨러 이이네 오토모드",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "392917075",
+    "name": "미개봉) 플스5 슬림 스탠다드 에디션 듀얼센스 1TB",
+    "price": 550000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "391324559",
+    "name": "ps5 플스5 슬림 프로 멀티쿨링스탠드 듀얼센스충전겸용",
+    "price": 15000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "407451898",
+    "name": "PS4 슬림 500GB 실버 본체 + 컨트롤러",
+    "price": 100000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "406438742",
+    "name": "PS2  플스2 슬림 79005번  2인셋",
+    "price": 80000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "406219742",
+    "name": "PS4 Slim 500GB 플스4 슬림 실버 듀얼쇼크 포함",
+    "price": 128000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "403887669",
+    "name": "플스2 슬림 70005번 정크",
+    "price": 25000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "403659710",
+    "name": "플레이스테이션 4 슬림 블랙 500gb + 컨트롤러 2개",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "402308790",
+    "name": "플레이스테이션 4 슬림 500GB 듀얼쇼크2개",
+    "price": 180000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "399664304",
+    "name": "PS2  플스2슬림   70005번  2인셋",
+    "price": 54000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "400282573",
+    "name": "PS4  플스4 슬림500기가  12.50  판매합니다.",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "399106689",
+    "name": "PS4  플스4  슬림500기가 판매합니다.",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "398564859",
+    "name": "플레이스테이션 PS5 슬림, PS포탈 세트 판매합니다",
+    "price": 550000,
+    "reject_reasons": [
+      "missing_any_디스크_disc_디지털_digital"
+    ]
+  },
+  {
+    "pid": "398442084",
+    "name": "PS4  플스4  슬림 500 기가 11.0 판매합니다.",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "394532713",
+    "name": "플스4슬림 500GB",
+    "price": 170000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "392169555",
+    "name": "플스4 슬림 본체 500기가",
+    "price": 130000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "393703402",
+    "name": "플스4 슬림 블랙 ssd 500gb",
+    "price": 180000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "389750055",
+    "name": "플레이스테이션4 슬림 500g",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "391452106",
+    "name": "PS4  플스4   슬림 화이트  500기가 어몽어스한정판",
+    "price": 130000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "390842715",
+    "name": "플스2 PS2  SCPH-70005 슬림 모델(흰색패드)",
+    "price": 80000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "389769007",
+    "name": "급처)PS4 슬림 1TB 화이트 풀박스 + 듀얼쇼크 2개 + 게임 5종",
+    "price": 220000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  },
+  {
+    "pid": "320829674",
+    "name": "소니 플스4 슬림 CUH-2017 500GB 제트블랙",
+    "price": 133000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "missing_any_디스크_disc_디지털_digital",
+      "reject_wrong_model_ps_old"
+    ]
+  }
+]

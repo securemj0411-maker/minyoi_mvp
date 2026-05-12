@@ -44,7 +44,8 @@ type LaneKey =
   | "beats_studio_pro"
   | "iphone_13_pro_128gb_self"
   | "galaxy_s23_ultra_256_self"
-  | "applewatch_ultra_2";
+  | "applewatch_ultra_2"
+  | "ps5_slim";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -962,6 +963,38 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|액정\s*만|디스플레이\s*만|배터리\s*만/ },
       { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|액정\s*파손/ },
       { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다|구합니다/ },
+    ],
+  },
+
+  ps5_slim: {
+    laneKey: "ps5_slim",
+    category: "game_console",
+    queries: [
+      "ps5 슬림 디스크",
+      "ps5 슬림 디지털",
+      "플스5 슬림",
+      "playstation 5 slim",
+      "ps5 slim disc",
+      "ps5 slim digital",
+      "플스5 슬림 디지털",
+    ],
+    pages: 6,
+    targetParseReady: 200,
+    priceMin: 300_000,
+    priceMax: 850_000,
+    acceptAll: [/ps5|플스\s*5|플레이스테이션\s*5|playstation\s*5/i, /슬림|slim/i],
+    acceptAnyOf: [[/디스크|disc|디지털|digital/i]],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_ps5_pro", pattern: /ps5\s*pro|ps\s*5\s*pro|ps5pro|플스\s*5?\s*프로|플레이스테이션\s*5\s*프로/i },
+      { label: "wrong_model_psvr", pattern: /psvr2?|ps\s*vr|\bvr\s*2\b|vr2|psvr\s*2/i },
+      { label: "wrong_model_switch_nintendo", pattern: /닌텐도|nintendo|스위치|\bswitch\b/i },
+      { label: "wrong_model_ps_old", pattern: /\bps[1-4]\b|플스\s*[1-4]\b|플레이스테이션\s*[1-4]\b/i },
+      { label: "controller_only", pattern: /컨트롤러\s*만|듀얼\s*센스\s*만|듀얼센스\s*만|dualsense\s*만/i },
+      { label: "accessory_only", pattern: /충전기\s*만|케이스\s*만|스탠드\s*만|쿨러\s*만|거치대\s*만|ssd\s*만|ssd\s*단품/i },
+      { label: "gift_card_or_subscription", pattern: /기프트|gift\s*card|디지털\s*카드|월정액|psn\s*카드|플스플러스\s*카드/i },
+      { label: "buying_post", pattern: /구합니다|삽니다|매입|구해요|구매\s*합니다|구매합니다/ },
+      { label: "broken_or_parts", pattern: /부품\s*용|부품용|고장|불량\s*품|파손\s*품/ },
     ],
   },
 };

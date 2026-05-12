@@ -117,6 +117,11 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "Galaxy S24 Ultra 256GB (자급제)",
     note: "S25 자급제 sibling. S22/S23/S25, 512/1TB, 통신사는 catalog로 차단.",
   },
+  ps5_slim: {
+    status: "ready",
+    label: "PlayStation 5 Slim (Disc/Digital)",
+    note: "PS5 Slim 2023-11 narrow lane. Standard sibling은 ps5_disc_digital_standard. Pro/PSVR/Switch/액세서리는 catalog mustNotContain으로 분리.",
+  },
 };
 
 export type CategoryReadinessConfig = {
@@ -206,7 +211,7 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
   game_console: {
     status: "internal_only",
     label: "Game Console",
-    note: "PS5/Switch broad는 보류. ps5_disc_digital_standard narrow lane만 LANE_READINESS로 별도 ready 처리.",
+    note: "PS5/Switch broad는 보류. ps5_disc_digital_standard + ps5_slim narrow lane만 LANE_READINESS로 별도 ready 처리.",
     minReadyPool: 6,
     minParseRate: 0.9,
     minTrustedKeys: 4,

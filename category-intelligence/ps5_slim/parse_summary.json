@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "lane_key": "ps5_slim",
+  "category": "game_console",
+  "generated_at": "2026-05-12T11:38:00.221Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "ps5 슬림 디스크",
+    "ps5 슬림 디지털",
+    "플스5 슬림",
+    "playstation 5 slim",
+    "ps5 slim disc",
+    "ps5 slim digital",
+    "플스5 슬림 디지털"
+  ],
+  "pages": 6,
+  "price_range_krw": [
+    300000,
+    850000
+  ],
+  "target_parse_ready": 200,
+  "total_fetched": 264,
+  "parse_ready_count": 159,
+  "rejected_count": 105,
+  "target_reached": false,
+  "reject_breakdown": [
+    {
+      "reason": "missing_any_디스크_disc_디지털_digital",
+      "count": 62
+    },
+    {
+      "reason": "price_too_low",
+      "count": 54
+    },
+    {
+      "reason": "missing_ps5_플스_s_5_플레이스테이션_s_5_p",
+      "count": 33
+    },
+    {
+      "reason": "reject_wrong_model_ps_old",
+      "count": 33
+    },
+    {
+      "reason": "reject_buying_post",
+      "count": 11
+    },
+    {
+      "reason": "reject_wrong_model_ps5_pro",
+      "count": 8
+    },
+    {
+      "reason": "price_too_high",
+      "count": 7
+    },
+    {
+      "reason": "reject_wrong_model_switch_nintendo",
+      "count": 4
+    },
+    {
+      "reason": "reject_broken_or_parts",
+      "count": 3
+    },
+    {
+      "reason": "reject_accessory_only",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [
+      "ps5|플스\\s*5|플레이스테이션\\s*5|playstation\\s*5",
+      "슬림|slim"
+    ],
+    "accept_any_of": [
+      [
+        "디스크|disc|디지털|digital"
+      ]
+    ]
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_model_ps5_pro",
+      "pattern": "ps5\\s*pro|ps\\s*5\\s*pro|ps5pro|플스\\s*5?\\s*프로|플레이스테이션\\s*5\\s*프로"
+    },
+    {
+      "label": "wrong_model_psvr",
+      "pattern": "psvr2?|ps\\s*vr|\\bvr\\s*2\\b|vr2|psvr\\s*2"
+    },
+    {
+      "label": "wrong_model_switch_nintendo",
+      "pattern": "닌텐도|nintendo|스위치|\\bswitch\\b"
+    },
+    {
+      "label": "wrong_model_ps_old",
+      "pattern": "\\bps[1-4]\\b|플스\\s*[1-4]\\b|플레이스테이션\\s*[1-4]\\b"
+    },
+    {
+      "label": "controller_only",
+      "pattern": "컨트롤러\\s*만|듀얼\\s*센스\\s*만|듀얼센스\\s*만|dualsense\\s*만"
+    },
+    {
+      "label": "accessory_only",
+      "pattern": "충전기\\s*만|케이스\\s*만|스탠드\\s*만|쿨러\\s*만|거치대\\s*만|ssd\\s*만|ssd\\s*단품"
+    },
+    {
+      "label": "gift_card_or_subscription",
+      "pattern": "기프트|gift\\s*card|디지털\\s*카드|월정액|psn\\s*카드|플스플러스\\s*카드"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "구합니다|삽니다|매입|구해요|구매\\s*합니다|구매합니다"
+    },
+    {
+      "label": "broken_or_parts",
+      "pattern": "부품\\s*용|부품용|고장|불량\\s*품|파손\\s*품"
+    }
+  ]
+}
