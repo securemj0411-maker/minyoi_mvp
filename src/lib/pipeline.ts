@@ -5,8 +5,9 @@
 
 import { createHash } from "node:crypto";
 
+import { shouldReviewByPolicy } from "@/lib/ai-l2-policy";
 import { collectSearchItems, fetchDetail } from "@/lib/bunjang";
-import { CATALOG, normalize, ruleMatch, type Sku } from "@/lib/catalog";
+import { CATALOG, normalize, ruleMatch, skuById, type Sku } from "@/lib/catalog";
 import { GENERATED_NOISE_RULES } from "@/lib/generated/noise-rules";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { soldOutTextHits } from "@/lib/sold-out";
@@ -1068,7 +1069,12 @@ function contentHash(row: PipelineRow): string {
 }
 
 function shouldAiReview(row: PipelineRow): boolean {
-  return row.scoreFlags.length > 0 || row.priceGap >= 0.55 || suspiciousModelText(row.name, row.descriptionPreview);
+  return shouldReviewByPolicy({
+    priceGap: row.priceGap,
+    scoreFlags: row.scoreFlags,
+    category: skuById(row.skuId)?.category ?? null,
+    legacySuspicious: suspiciousModelText(row.name, row.descriptionPreview),
+  });
 }
 
 const AI_HARD_RISK_KEYWORDS = [

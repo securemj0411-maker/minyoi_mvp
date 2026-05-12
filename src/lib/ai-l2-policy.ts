@@ -46,6 +46,25 @@ export type AiL2Input = {
   category?: string | null;
 };
 
+// 환경변수 게이트. =1 면 정책 v1 (decideAiL2Review). 그 외/미설정이면 기존 룰 유지.
+// production 기본값은 off — 측정 결과 검토 + ramp 후 켠다.
+export function isAiL2PolicyEnabled(): boolean {
+  return process.env.AI_L2_POLICY_ENABLED === "1";
+}
+
+// pipeline.ts shouldAiReview 의 wire 지점.
+// off:  legacy boolean (scoreFlags 있거나 gap ≥ 0.55 거나 suspicious 텍스트).
+// on:   decideAiL2Review(...).review.
+// legacySuspicious 는 off 경로 parity 용 — on 경로에선 suspicious_model_review flag 가 동일 신호.
+export function shouldReviewByPolicy(input: AiL2Input & { legacySuspicious?: boolean }): boolean {
+  if (isAiL2PolicyEnabled()) return decideAiL2Review(input).review;
+  return (
+    input.scoreFlags.length > 0 ||
+    (input.priceGap ?? 0) >= 0.55 ||
+    input.legacySuspicious === true
+  );
+}
+
 // 모델 추상화. production: gpt-4o-mini (OpenAI fallback for Haiku 4.5).
 // Anthropic Haiku 4.5 비교는 다음 wave에서 swap 가능하게 env로 분리.
 export const AI_L2_MODEL =
