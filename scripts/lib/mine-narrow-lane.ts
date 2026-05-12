@@ -27,7 +27,8 @@ type LaneKey =
   | "sony_wh_ch520"
   | "iphone_15_pro_128gb_self"
   | "macbook_air_m3_13_256"
-  | "bose_qc_ultra";
+  | "bose_qc_ultra"
+  | "airpods_max_usbc";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -252,6 +253,40 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
       { label: "non_bose_clone", pattern: /짝퉁|가품|복제품|레플리카/ },
       { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
+    ],
+  },
+
+  airpods_max_usbc: {
+    laneKey: "airpods_max_usbc",
+    category: "earphone",
+    queries: [
+      "에어팟 맥스 usb",
+      "에어팟맥스 usb-c",
+      "airpods max usb-c",
+      "airpods max usbc",
+      "에어팟맥스 2024",
+      "에어팟 맥스 신형",
+      "에어팟맥스 c타입",
+    ],
+    pages: 8,
+    targetParseReady: 200,
+    priceMin: 250_000,
+    priceMax: 850_000,
+    acceptAll: [/에어\s*팟|airpods/i, /맥스|max/i],
+    acceptAnyOf: [[/usb\s*-?\s*c|usbc|c\s*타입|타입\s*c|씨\s*타입/i]],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_connector_lightning", pattern: /라이트닝|lightning/i },
+      { label: "case_only", pattern: /케이스\s*(?:만|단품|개별)|하드\s*케이스\s*만|보관\s*케이스\s*만|스마트\s*케이스\s*만/ },
+      { label: "earcushion_only", pattern: /이어\s*쿠션(?:\s*만|\s*교체|\s*단품)?|이어\s*패드(?:\s*만|\s*교체|\s*단품)?|쿠션\s*교체|쿠션만\s*판매|패드만\s*판매/ },
+      { label: "pouch_only", pattern: /파우치\s*(?:만|단품|개별)|파우치만\s*판매/ },
+      { label: "headband_or_canopy_only", pattern: /헤드\s*밴드\s*만|헤드밴드\s*교체|헤드\s*쿠션\s*만|캐노피\s*만/ },
+      { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만|힌지\s*부품/ },
+      { label: "charger_or_cable_only", pattern: /충전기\s*만|케이블\s*만|어댑터\s*만|usb\s*케이블\s*만/i },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+      { label: "non_apple_clone", pattern: /짝퉁|가품|복제품|레플리카/ },
+      { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
+      { label: "wrong_product_airpods_pro_or_2_3_4", pattern: /에어\s*팟\s*프로|airpods\s*pro|에어\s*팟\s*[234]\s*세대|airpods\s*[234]/i },
     ],
   },
 

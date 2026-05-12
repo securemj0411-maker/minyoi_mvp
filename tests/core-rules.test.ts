@@ -320,7 +320,7 @@ test("headphone included accessories do not make full unit an accessory listing"
     410_000,
   );
   assert.equal(result.listingType, "normal");
-  assert.equal(result.sku?.id, "airpods-max");
+  assert.equal(result.sku?.id, "airpods-max-usbc");
 });
 
 test("headphone standalone cushion and case listings stay excluded", () => {
@@ -346,7 +346,7 @@ test("AirPods Max merch-only listings are excluded without blocking real units",
 
   const realUnit = classifyListing("에어팟 맥스 미드나이트 USB-C 풀박스", "정품 헤드폰 판매합니다", 430_000);
   assert.equal(realUnit.listingType, "normal");
-  assert.equal(realUnit.sku?.id, "airpods-max");
+  assert.equal(realUnit.sku?.id, "airpods-max-usbc");
 });
 
 test("non-AirPods headphone SKUs parse without connector review", () => {

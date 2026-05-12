@@ -1,0 +1,702 @@
+[
+  {
+    "pid": "406848762",
+    "name": "[미개봉] 에어팟 프로 2 USB-C",
+    "price": 170000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_맥스_max",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "375777453",
+    "name": "고가매입]아이폰,에어팟,에어팟맥스,애플펜슬,애플워치,아이패드,맥북",
+    "price": 290000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "371545558",
+    "name": "[ 미개봉 새상품 ] 애플 에어팟 맥스 2세대 USB-C 스타라이트",
+    "price": 550000,
+    "reject_reasons": [
+      "reject_non_apple_clone"
+    ]
+  },
+  {
+    "pid": "391630039",
+    "name": "베이스어스(baseus) bowie 30max 헤드폰 판매합니다.",
+    "price": 25000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_에어_s_팟_airpods",
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "406604028",
+    "name": "에어팟 맥스 미드나이트 (USB-C)",
+    "price": 400000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "401990829",
+    "name": "애어팟 맥스 2024 usb-c 미드나잇색상입니다",
+    "price": 320000,
+    "reject_reasons": [
+      "missing_에어_s_팟_airpods"
+    ]
+  },
+  {
+    "pid": "394205022",
+    "name": "C&B 티컵+유리빨대 2P 기프트세트 (엠버,그레이)",
+    "price": 29000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_에어_s_팟_airpods",
+      "missing_맥스_max",
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "394202980",
+    "name": "C&B 샴페인잔+유리빨대 4P 기프트세트 (로즈핑크)",
+    "price": 49000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_에어_s_팟_airpods",
+      "missing_맥스_max",
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "394200066",
+    "name": "C&B 샴페인잔+유리빨대 4P 기프트세트 (스모키그레이)",
+    "price": 49000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_에어_s_팟_airpods",
+      "missing_맥스_max",
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "394203801",
+    "name": "C&B 샴페인잔+유리빨대 2P 기프트세트 (로즈핑크)",
+    "price": 29000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_에어_s_팟_airpods",
+      "missing_맥스_max",
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "394201132",
+    "name": "C&B 샴페인잔+유리빨대 2P 기프트세트 (스모키그레이)",
+    "price": 29000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_에어_s_팟_airpods",
+      "missing_맥스_max",
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "345315494",
+    "name": "(A급) 애플 에어팟 프로 2세대 맥세이프 호환 USB C타입",
+    "price": 159000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_맥스_max",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "401584823",
+    "name": "애플 2024 에어팟 맥스 노이즈캔슬링 블루투스 헤드폰 스타라이트",
+    "price": 500000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "405609172",
+    "name": "Apple 2024 에어팟 맥스 노이즈 캔슬링 블루투스 헤드폰",
+    "price": 580000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "405301098",
+    "name": "에어팟맥스 2024 C타입 미드나이트 보증남음 깔끔",
+    "price": 400000,
+    "reject_reasons": [
+      "reject_charger_or_cable_only"
+    ]
+  },
+  {
+    "pid": "380528855",
+    "name": "에어팟맥스 2 c타입 퍼플 2024 풀박스",
+    "price": 540000,
+    "reject_reasons": [
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "377005216",
+    "name": "에어팟 맥스 2024년",
+    "price": 439000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "372543049",
+    "name": "에어팟 맥스 실버 풀박스 (2024 8월 제조)",
+    "price": 340000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "370530095",
+    "name": "에어팟 맥스 (2024)",
+    "price": 400000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "355717394",
+    "name": "Apple 2024 에어팟 맥스 스타라이트",
+    "price": 710000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "352542551",
+    "name": "Apple 2024 에어팟 맥스 (스타라이트 색상)",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "339618118",
+    "name": "Airpod max 2024",
+    "price": 360000,
+    "reject_reasons": [
+      "missing_에어_s_팟_airpods",
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "347734158",
+    "name": "2024 에어팟맥스2 퍼플 판매",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "346828547",
+    "name": "미개봉 에어팟 맥스 2024  미드나이트 국내정품",
+    "price": 620000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "338833005",
+    "name": "에어팟 맥스 2024 (미드나이트)",
+    "price": 380000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "338759957",
+    "name": "2024 애플 에어팟 맥스 미드나이트 급처",
+    "price": 430000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "395269147",
+    "name": "Apple 2024 에어팟 맥스 노이즈 캔슬링 블루투스 헤드폰",
+    "price": 580000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "390072555",
+    "name": "새제품 에어팟 맥스 2024 팔아요",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "360794866",
+    "name": "에어팟맥스 에어팟맥스 2세대 신형에어팟맥스 중고에어팟맥스 매입",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404357135",
+    "name": "삽니다 아이맥 맥북 프로 에어 맥미니 맥스튜디오 갤럭시탭 아이패드 노트북",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_에어_s_팟_airpods",
+      "missing_any_usb_s_s_c_usbc_c_s_타입",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404075236",
+    "name": "매입 삼성 갤럭시북 lg 그램 360 울트라 노트북 맥북 프로 아이패드",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_에어_s_팟_airpods",
+      "missing_맥스_max",
+      "missing_any_usb_s_s_c_usbc_c_s_타입",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404383965",
+    "name": "삽니다 / 맥북 프로 에어 맥미니 아이맥 맥스튜디오 아이패드 갤럭시탭",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_에어_s_팟_airpods",
+      "missing_any_usb_s_s_c_usbc_c_s_타입",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404558290",
+    "name": "it최고매입 갤럭시탭 s11 울트라 s 10 9 8 7  노트북 아이패드",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_에어_s_팟_airpods",
+      "missing_맥스_max",
+      "missing_any_usb_s_s_c_usbc_c_s_타입",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "402215883",
+    "name": "애플 충전기 세트 어댑터케이블 c타입",
+    "price": 24100,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_에어_s_팟_airpods",
+      "missing_맥스_max"
+    ]
+  },
+  {
+    "pid": "405820577",
+    "name": "애플 에어팟 맥스 스페이스 그레이 C타입",
+    "price": 380000,
+    "reject_reasons": [
+      "reject_case_only"
+    ]
+  },
+  {
+    "pid": "403682544",
+    "name": "애플 충전기 세트 어댑터케이블 c타입",
+    "price": 23888,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_에어_s_팟_airpods",
+      "missing_맥스_max"
+    ]
+  },
+  {
+    "pid": "407539739",
+    "name": "에어팟 맥스 에어팟3,4 프로2,3 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "395843301",
+    "name": "애플 에어팟맥스 c타입",
+    "price": 450000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "328197790",
+    "name": "에어팟 2 3 4 세대 에어팟프로1,2세대 c타입 왼쪽 오른쪽 본체 유닛",
+    "price": 55000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_맥스_max",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "404128881",
+    "name": "애플 에어팟 맥스 미드나이트 c타입",
+    "price": 550000,
+    "reject_reasons": [
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "403513401",
+    "name": "애플 에어팟 맥스 라벤더 C타입",
+    "price": 350000,
+    "reject_reasons": [
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "403810710",
+    "name": "애플 에어팟 맥스 퍼플 미개봉(C-타입)",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any_usb_s_s_c_usbc_c_s_타입"
+    ]
+  },
+  {
+    "pid": "398883758",
+    "name": "에어팟맥스 c타입 블루 팝니다",
+    "price": 280000,
+    "reject_reasons": [
+      "reject_non_apple_clone",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "399106745",
+    "name": "에어팟맥스 2025 C타입 (풀박스, 애플케어있음)",
+    "price": 450000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "397145348",
+    "name": "에어팟 맥스1 C타입 미드나이트 P-82",
+    "price": 429990,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "397147016",
+    "name": "에어팟맥스1 C타입 스타라이트 S급 P-84",
+    "price": 499000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "395740609",
+    "name": "애플 에어팟 맥스 스타라이트 c타입 판매합니다 보증 9월까지",
+    "price": 430000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "388226315",
+    "name": "에어팟 맥스2(C타입) 퍼플",
+    "price": 430000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "380184779",
+    "name": "에어팟 맥스2 C타입 미드나이트 보증26.3.5까지 P-68",
+    "price": 455000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "375420967",
+    "name": "[S급 새상품급] 에어팟맥스(미드나이트 C타입)",
+    "price": 480000,
+    "reject_reasons": [
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "369940131",
+    "name": "에어팟 맥스2 c타입  민트급",
+    "price": 589000,
+    "reject_reasons": [
+      "reject_case_only"
+    ]
+  },
+  {
+    "pid": "364678312",
+    "name": "에어팟 맥스 C타입 미드나이트 (애케플O)",
+    "price": 540000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "362208229",
+    "name": "에어팟맥스 C타입 미개봉 판매합니다.",
+    "price": 570000,
+    "reject_reasons": [
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "358150995",
+    "name": "미개봉 에어팟 맥스2 c타입 미드나이트 블랙 팝니다!!",
+    "price": 3570000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "356336512",
+    "name": "에어팟맥스1 에어팟맥스2 실버 스그 라이트닝 c타입 삽니다 매입",
+    "price": 990000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_wrong_connector_lightning",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "348420531",
+    "name": "에어팟 맥스 에어팟3,4 프로1,2 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "347336717",
+    "name": "에어팟 맥스 에어팟3,4 프로1,2 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "347230542",
+    "name": "에어팟 맥스 에어팟3,4 프로1,2 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "346963076",
+    "name": "에어팟 맥스 에어팟3,4 프로1,2 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "346767928",
+    "name": "에어팟 맥스 에어팟3,4 프로1,2 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "345607618",
+    "name": "에어팟 맥스 에어팟3,4 프로1,2 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "345405773",
+    "name": "에어팟 맥스 에어팟3,4 프로1,2 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "345055003",
+    "name": "에어팟 맥스 에어팟3,4 프로1,2 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "344910189",
+    "name": "에어팟 맥스 에어팟3,4 프로1,2 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "344663688",
+    "name": "에어팟 맥스 에어팟3,4 프로1,2 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "344159174",
+    "name": "에어팟 맥스 에어팟3,4 프로1,2 최고가 매입 삽니다 라이트닝 C타입",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_connector_lightning",
+      "reject_buying_post",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "341554314",
+    "name": "애플 에어팟 맥스 스타라이트 c타입 풀박스",
+    "price": 470000,
+    "reject_reasons": [
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "407237753",
+    "name": "에어팟프로2 C타입",
+    "price": 160000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_맥스_max",
+      "reject_non_apple_clone",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "389028886",
+    "name": "에어팟프로2 C타입 급처",
+    "price": 155000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_맥스_max",
+      "reject_non_apple_clone",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "352936227",
+    "name": "(새상품급) 에어팟프로 2 c타입",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_맥스_max",
+      "reject_wrong_connector_lightning",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "347195350",
+    "name": "에어팟 프로2 C타입 보증O",
+    "price": 185000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_맥스_max",
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "407437513",
+    "name": "새상품급 에어팟 맥스 스페이스그레이 c타입",
+    "price": 390000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "407612792",
+    "name": "미개봉 에어팟 맥스 c타입 4대 예약",
+    "price": 2060000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "407367832",
+    "name": "에어팟 맥스2세대 c타입",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406660997",
+    "name": "에어팟 맥스 c타입 오렌지색상 판매합니다.",
+    "price": 310000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "403816339",
+    "name": "에어팟 맥스 미드나이트 C 타입 애플케어",
+    "price": 390000,
+    "reject_reasons": [
+      "reject_wrong_product_airpods_pro_or_2_3_4"
+    ]
+  },
+  {
+    "pid": "401604186",
+    "name": "에어팟맥스2 C타입 스타라이트",
+    "price": 390000,
+    "reject_reasons": [
+      "reject_earcushion_only",
+      "reject_non_apple_clone"
+    ]
+  }
+]
