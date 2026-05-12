@@ -1,0 +1,894 @@
+[
+  {
+    "pid": "405078460",
+    "name": "삽니다 컴퓨터 게이밍 데스크탑 아이패드 갤럭시탭 노트북 맥북 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "361849284",
+    "name": "매입 아이패드 미니 에어 프로 M1 M2 M3 M4 11 13 인치 세대",
+    "price": 4090000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_buying_post",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "405077773",
+    "name": "애플 아이패드 에어 13 m2 + 아이패드 프로 + 애플케어플러스",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "406843823",
+    "name": "아이패드에어13인치M2 256기가셀룰러+애플펜슬프로(각인)판매",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_cellular_variant",
+      "reject_accessory_only",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "399471422",
+    "name": "(애플펜슬프로포함)아이패드 에어 13인치 M2/256G/배터리성능 100",
+    "price": 1150000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "402998404",
+    "name": "노트북 맥북 아이패드 매입 고가! 갤럭시탭 프로 에어 컴퓨터 데스크탑 T",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "361850209",
+    "name": "매입 맥북 프로 에어 13 14 15 16 인치 M1 M2 M3 M4",
+    "price": 5120000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "393540412",
+    "name": "아이패드 에어6 13인치256 프로11 4세대m2교환",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_size_11_inch",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "324751309",
+    "name": "아이패드 에어 13 M2 256GB스타라이트 배터리 성능 100프로",
+    "price": 1120000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "402714230",
+    "name": "아이패드 에어 13 M2 256 wife+애플펜슬프로+키보드/성능100",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "391880812",
+    "name": "애플 아이패드 에어 13인치 M2 256GB 블루+애플펜슬 프로 판매",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "403895968",
+    "name": "고가매입 삼성 갤럭시북 프로 Lg 그램 갤럭시탭 아이패드 맥북 프로 에어",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403959011",
+    "name": "아이패드 에어13(m2)256g 에플팬슬프로 판매합니다",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "403567686",
+    "name": "중고 컴퓨터 데스크탑 본체 최고가 매입 맥북 노트북 아이패드 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404357135",
+    "name": "삽니다 아이맥 맥북 프로 에어 맥미니 맥스튜디오 갤럭시탭 아이패드 노트북",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403645517",
+    "name": "노트북 최고가 매입 업체! 갤럭시탭 아이패드 맥북 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "333452335",
+    "name": "Lg 그램 갤럭시북 고가 매입 맥북 프로 에어 노트북 아이패드 갤럭시탭",
+    "price": 2000000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403696417",
+    "name": "고가매입! 맥북 프로 에어 맥미니 아이맥 맥프로 아이패드 노트북 갤럭시탭",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407131640",
+    "name": "hp asus msi 프로 에어 게이밍 컴 노트북 맥북 아이패드 갤럭시탭",
+    "price": 7000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404383965",
+    "name": "삽니다 / 맥북 프로 에어 맥미니 아이맥 맥스튜디오 아이패드 갤럭시탭",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404075236",
+    "name": "매입 삼성 갤럭시북 lg 그램 360 울트라 노트북 맥북 프로 아이패드",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403860512",
+    "name": "최고가 삽니다 데스크탑 컴퓨터 노트북 맥북 프로 에어 아이패드 갤럭시탭",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403432567",
+    "name": "아이패드 최고가 매입 프로 에어 M 1 2 3 4 5 11 13 노트북",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403789649",
+    "name": "삽니다 맥북 프로 에어 맥미니 아이맥 아이패드 갤럭시탭 노트북",
+    "price": 7000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407209389",
+    "name": "삽니다 울트라 플러스 프로 에어 갤럭시탭 아이패드 노트북 맥북 컴퓨터",
+    "price": 6900000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "394157319",
+    "name": "[미사용/새상품] 아이폰16 재고정리 할인 [13,14,15,17,프로]",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "405871865",
+    "name": "특가 아이폰16e 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "405869614",
+    "name": "[미사용/새상품]아이폰16E 재고정리 할인 [13,14,15,17,프로]",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "394158623",
+    "name": "[미사용/새상품] 아이폰16프로 재고정리 할인 [13,14,15,17]",
+    "price": 370000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "394159868",
+    "name": "[미사용/새상품]아이폰17에어 재고정리 할인[13,14,15,16,프로]",
+    "price": 410000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "323637784",
+    "name": "특가 아이폰17 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
+    "price": 230000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "394161073",
+    "name": "[미사용/새상품]아이폰17프로맥스 재고정리 할인 [13,14,15,16]",
+    "price": 930000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "355383741",
+    "name": "특가 아이폰17프로 미사용 선착순 한정판매 맥스/13/14/15/16",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "394160573",
+    "name": "[미사용/새상품] 아이폰17프로 재고정리 할인 [13,14,15,16]",
+    "price": 610000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "345096784",
+    "name": "특가 아이폰16프로 미사용 선착순 한정판매 맥스/13/14/15/17",
+    "price": 490000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "405877777",
+    "name": "특가 아이폰17e 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "85739178",
+    "name": "삽니다)아이폰파손 아이폰12프로 아이폰13 아이폰14 XS X 매입합니다",
+    "price": 740000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_broken_or_parts_only",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "394159506",
+    "name": "[미사용/새상품] 아이폰17 재고정리 할인 [13,14,15,16,프로]",
+    "price": 110000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "323645070",
+    "name": "특가 아이폰17프로맥스 미사용 선착순 한정판매 13/14/15/16/애플",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "405878593",
+    "name": "[미사용/새상품]아이폰17E 재고정리 할인 [13,14,15,16,프로]",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "407256911",
+    "name": "애플 맥북 프로 13\" 2017",
+    "price": 440000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "406641119",
+    "name": "아이패드 프로 6세대 12.9 m2 256기가 셀룰러 실버 풀박스+애펜2",
+    "price": 1040000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "405243990",
+    "name": "아이패드 프로 6세대 m2 12.9 256기가 와이파이 스그 풀박스+애펜",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1"
+    ]
+  },
+  {
+    "pid": "407291526",
+    "name": "아이패드프로 6세대(M2) 12.9 256 풀패키지 팝니다!",
+    "price": 1400000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "406147872",
+    "name": "아이패드 프로 12.9 6세대 M2 256기가 매직키보드 애플펜슬 포함",
+    "price": 1330000,
+    "reject_reasons": [
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "403066824",
+    "name": "S급 아이패드 프로 6세대 12.9 m2 256기가 실버 와이파이+애펜2",
+    "price": 1030000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1"
+    ]
+  },
+  {
+    "pid": "400664105",
+    "name": "아이패드프로6 M2 12.9 256기가 셀룰러 S급",
+    "price": 1020000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "395372669",
+    "name": "아이패드 프로 6세대 12.9 256기가 M2",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1"
+    ]
+  },
+  {
+    "pid": "370368253",
+    "name": "아이패드 프로 6세대 12.9 m2 256기가 실버 와이파이+애펜2",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1"
+    ]
+  },
+  {
+    "pid": "386545637",
+    "name": "아이패드 프로 12.9인치 6세대 M2 256GB 셀룰러 실버 태블릿PC",
+    "price": 1199000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "378482527",
+    "name": "아이패드 프로 12.9 m2 256g 셀룰러",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "375094194",
+    "name": "아이패드 프로 M2 (6세대) 12.9 256GB",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1"
+    ]
+  },
+  {
+    "pid": "329076311",
+    "name": "아이패드 프로 6세대 m2 256g 12.9 + 키보드 박스 풀셋",
+    "price": 1450000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1"
+    ]
+  },
+  {
+    "pid": "396233149",
+    "name": "아이패드프로 m2 12.9 256셀룰러팝니다.",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "402852195",
+    "name": "아이패드 프로 6세대 M2 12.9 셀룰러 실버 256G",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "404217342",
+    "name": "[S급] 아이패드 프로 12.9 6세대 M2 셀룰러 256GB 풀박스",
+    "price": 1049000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "398486978",
+    "name": "아이패드 프로 12.9 6세대 m2 실버 256gb 셀룰러 리퍼 새제품",
+    "price": 1230000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "391672579",
+    "name": "아이패드 프로6세대 m2 12.9 wifi 256g",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1"
+    ]
+  },
+  {
+    "pid": "397941419",
+    "name": "아이패드프로 6세대 12.9 256gb S급 셀룰러",
+    "price": 1080000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "395773407",
+    "name": "아이패드프로6 M2칩 12.9 인치 256GB 5G+wifi 셀룰러",
+    "price": 1090000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "323636975",
+    "name": "특가 아이폰16 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
+    "price": 180000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "394730892",
+    "name": "아이패드 에어 13 M2 128GB 스페이스그레이 + 애플펜슬 프로",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "392653245",
+    "name": "아이패드 에어13 m2+애플펜슬 프로",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "377145162",
+    "name": "애플 아이패드 에어13 m2칩 (애플팬슬 프로 포함)",
+    "price": 880000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "347236016",
+    "name": "아이패드 13프로 m2 스페이스 그레이 128기가 급처합니다",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "343881543",
+    "name": "(판매중) sss급 아이패드 에어 13 m2 +애플 팬슬 프로",
+    "price": 930000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "333419953",
+    "name": "애플 스마트키보드폴리오 아이패드프로 12.9 3세대 에어13 M2 M3/",
+    "price": 161000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "406797032",
+    "name": "아이패드 에어 11 M4 wifi +케이스 단순개봉",
+    "price": 829000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "406797266",
+    "name": "새상품 아이패드 에어 11 M4 128GB WIFI +거치대",
+    "price": 869000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "406527517",
+    "name": "아이패드 에어 13인치 m2 128 애플 펜슬 프로 구조독 키보드",
+    "price": 1060000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "399984036",
+    "name": "아이패드 에어6 M2 13인치 128gb 블루, 애플펜슬 프로, 거치대",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "393924964",
+    "name": "아이패드 에어 m2 13인치 128GB wifi + 애플펜슬 프로",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "371094918",
+    "name": "아이패드 에어 13인치 M2 wifi 128g + 애플펜슬프로",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "334222273",
+    "name": "나눔) 아이패드 !케이스! 프로 5세대,에어 6 (M2) 13인치 크림색",
+    "price": 500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "334465757",
+    "name": "아이패드에어6 13인치M2스타라이트 128기가 WiFi 풀박스+펜슬프로",
+    "price": 980000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "403162635",
+    "name": "아이패드 M2 에어 13 스페이스 그레이 + 애플펜슬 프로",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "401362638",
+    "name": "아이패드 에어13 M2 + 애플펜슬 프로",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "401196928",
+    "name": "아이패드 에어 13 m2 128gb, 애플팬슬 프로, 콤보터치 키보드",
+    "price": 790000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "397998172",
+    "name": "아이패드 에어 13 M2 128GB + 애플팬슬 프로",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "394986644",
+    "name": "아이패드 프로 3~6세대/ 에어 13 m2 ~ 용 매직키보드 블랙 한글",
+    "price": 228000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "393227328",
+    "name": "아이패드 에어 13 m2 스페이스 그레이 펜슬프로 포함",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "393277891",
+    "name": "아이패드 에어 13(M2) + 애플펜슬 프로 일괄 판매 (배터리 98%)",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "404148721",
+    "name": "아이패드 프로 12.9 에어 13인치 매직키보드 M1 M2 M3 M4",
+    "price": 230000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3_m4",
+      "reject_ipad_air_or_mini"
+    ]
+  },
+  {
+    "pid": "355383202",
+    "name": "특가 아이폰17에어 미사용 선착순 한정판매 프로/13/14/15/16",
+    "price": 530000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  }
+]

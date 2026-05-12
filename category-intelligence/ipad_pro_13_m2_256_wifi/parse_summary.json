@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "lane_key": "ipad_pro_13_m2_256_wifi",
+  "category": "tablet",
+  "generated_at": "2026-05-12T12:05:37.319Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "아이패드 프로 13 m2 256",
+    "아이패드 프로 m2 12.9 256",
+    "ipad pro 13 m2 256",
+    "ipad pro 12.9 m2 256",
+    "아이패드 프로 m2 13"
+  ],
+  "pages": 10,
+  "price_range_krw": [
+    700000,
+    2400000
+  ],
+  "target_parse_ready": 200,
+  "total_fetched": 95,
+  "parse_ready_count": 11,
+  "rejected_count": 84,
+  "target_reached": false,
+  "reject_breakdown": [
+    {
+      "reason": "missing_any_13_s_인치_13_s_형_b13_b_1",
+      "count": 58
+    },
+    {
+      "reason": "missing_256",
+      "count": 50
+    },
+    {
+      "reason": "missing_any__bm2_b_m2_s_칩_m2__or_6_s_세대_아이패드_s_프로_s_6세대_프",
+      "count": 35
+    },
+    {
+      "reason": "reject_ipad_air_or_mini",
+      "count": 29
+    },
+    {
+      "reason": "reject_cellular_variant",
+      "count": 28
+    },
+    {
+      "reason": "reject_wrong_storage_128",
+      "count": 23
+    },
+    {
+      "reason": "price_too_low",
+      "count": 19
+    },
+    {
+      "reason": "reject_buying_post",
+      "count": 18
+    },
+    {
+      "reason": "missing_아이패드_ipad",
+      "count": 18
+    },
+    {
+      "reason": "price_too_high",
+      "count": 16
+    },
+    {
+      "reason": "reject_wrong_chip_m1_m3_m4",
+      "count": 6
+    },
+    {
+      "reason": "reject_accessory_only",
+      "count": 1
+    },
+    {
+      "reason": "reject_wrong_size_11_inch",
+      "count": 1
+    },
+    {
+      "reason": "reject_broken_or_parts_only",
+      "count": 1
+    },
+    {
+      "reason": "reject_wrong_storage_512_1tb_2tb",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [
+      "256",
+      "아이패드|ipad"
+    ],
+    "accept_any_of": [
+      [
+        "\\bm2\\b|m2\\s*칩|\\(m2\\)",
+        "6\\s*세대|아이패드\\s*프로\\s*6세대|프로\\s*6세대|6th\\s*gen"
+      ],
+      [
+        "13\\s*인치|13\\s*형|\\b13\"\\b|13″|12\\.9\\s*인치|12\\.9\\s*형|\\b12\\.9\"\\b|아이패드\\s*프로\\s*13\\b|ipad\\s*pro\\s*13\\b|아이패드\\s*프로\\s*12\\.9|ipad\\s*pro\\s*12\\.9|\\bpro\\s*13\\b|\\bpro\\s*12\\.9\\b"
+      ]
+    ]
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_chip_m1_m3_m4",
+      "pattern": "\\bm[134]\\b|m1\\s*칩|m3\\s*칩|m4\\s*칩"
+    },
+    {
+      "label": "wrong_storage_512_1tb_2tb",
+      "pattern": "512\\s*(?:gb|기가)?|1\\s*tb|2\\s*tb|1\\s*테라|2\\s*테라"
+    },
+    {
+      "label": "wrong_storage_128",
+      "pattern": "(?:^|[^0-9])128\\s*(?:gb|기가)?\\b"
+    },
+    {
+      "label": "wrong_size_11_inch",
+      "pattern": "11\\s*인치|11\\s*형|\\b11\"\\b|11″|아이패드\\s*프로\\s*11\\b|ipad\\s*pro\\s*11\\b|\\bpro\\s*11\\b|프로\\s*11\\s*m2|\\b11\\s*m2\\b|아이패드\\s*프로\\s*4세대|4세대\\s*프로"
+    },
+    {
+      "label": "cellular_variant",
+      "pattern": "셀룰러|cellular|\\blte\\b|\\b5g\\b|유심|sim\\s*트레이|esim"
+    },
+    {
+      "label": "accessory_only",
+      "pattern": "케이스\\s*(?:만|단품|개별)|필름\\s*(?:만|단품)|키보드\\s*만|펜슬\\s*만|어댑터\\s*만|충전기\\s*만"
+    },
+    {
+      "label": "case_or_smart_folio_listing",
+      "pattern": "(?:스마트\\s*폴리오|스마트\\s*커버|폴리오\\s*케이스).{0,8}판매|매직\\s*키보드\\s*판매"
+    },
+    {
+      "label": "broken_or_parts_only",
+      "pattern": "액정\\s*파손|부품\\s*용|부품용|파손\\s*품"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입|삽니다|구매\\s*합니다|구매합니다|사요|구해요"
+    },
+    {
+      "label": "ipad_air_or_mini",
+      "pattern": "아이패드\\s*에어|ipad\\s*air|아이패드\\s*미니|ipad\\s*mini"
+    }
+  ]
+}
