@@ -204,6 +204,38 @@ const GENERATED_CATALOG_WITH_GATES: Sku[] = GENERATED_CATALOG.map((sku) => {
 
 const CORE_SMARTPHONE_CATALOG: Sku[] = [
   {
+    id: "iphone-12-pro-128-self",
+    brand: "Apple",
+    category: "smartphone",
+    laneKey: "iphone_12_pro_128gb_self",
+    modelName: "iPhone 12 Pro 128GB (자급제)",
+    aliases: ["아이폰 12 프로 128 자급제", "iPhone 12 Pro 128 SIM-Free"],
+    mustContain: [
+      ["아이폰 12 프로", "아이폰12프로", "iphone 12 pro"],
+      ["128gb", "128 gb", "128기가", "128g"],
+      ["자급제", "자급", "공기계", "언락"],
+    ],
+    mustNotContain: [
+      "프로맥스", "pro max", "promax", "프맥", "프로 맥스",
+      "미니", "mini",
+      "플러스", "plus",
+      "아이폰 11", "iphone 11", "아이폰11",
+      "아이폰 13", "iphone 13", "아이폰13",
+      "256gb", "256 gb", "256기가",
+      "512gb", "512 gb", "512기가",
+      "1tb", "1 tb", "1테라",
+      "skt 완납", "skt 개통", "skt 약정", "skt 전용",
+      "kt 완납", "kt 개통", "kt 약정", "kt 전용",
+      "lgu+", "lg u+", "유플러스", "엘지유플",
+      "통신사 개통", "통신사 전용", "번호 이동", "약정 승계",
+      "완납폰", "완납 폰", "할부 승계", "할부 잔여", "확정 기변",
+      "리퍼폰", "리퍼 폰",
+      ...PHONE_NOISE,
+    ],
+    msrpKrw: 1350000,
+    released: 2020,
+  },
+  {
     id: "iphone-13-pro",
     brand: "Apple",
     category: "smartphone",
