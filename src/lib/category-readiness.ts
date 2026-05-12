@@ -62,6 +62,21 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "MacBook Air M3 13\" 256GB",
     note: "laptop_broad의 첫 narrow exit. M3 칩 + 13인치 + 256GB만. M1/M2/M4, 15인치, MacBook Pro, 부품/액정/메인보드 매물은 catalog mustNotContain으로 차단.",
   },
+  airpods_max_usbc: {
+    status: "ready",
+    label: "AirPods Max (USB-C, 2024)",
+    note: "AirPods Max USB-C 신형 narrow lane. Lightning 구형은 catalog mustNotContain으로 분리.",
+  },
+  ipad_pro_13_m4_256_wifi: {
+    status: "ready",
+    label: "iPad Pro 13\" M4 256GB Wi-Fi",
+    note: "11\" sibling lane (ipad_pro_11_m4_256_wifi)와 분리. 셀룰러/타 용량/타 chip 차단.",
+  },
+  iphone_16_pro_128gb_self: {
+    status: "ready",
+    label: "iPhone 16 Pro 128GB (자급제)",
+    note: "iphone_15_pro_128gb_self의 16세대 sibling. Pro Max/15/17/통신사 차단.",
+  },
 };
 
 export type CategoryReadinessConfig = {

@@ -2,7 +2,7 @@ export const CORE_RUNTIME_SKU_IDS = new Set([
   "airpods-max",
   "beats-solo4",
   "bose-qc45",
-  "bose-qc-ultra",
+  "bose-qc-ultra-headphones",
   "sony-wh-1000xm3",
   "sony-wh-1000xm4",
   "sony-wh-1000xm5",
