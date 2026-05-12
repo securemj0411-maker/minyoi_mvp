@@ -27,6 +27,7 @@ type LaneKey =
   | "ipad_air_m2_11_256_wifi"
   | "ipad_pro_13_m4_256_wifi"
   | "ipad_air_m3_11_256_wifi"
+  | "ipad_mini_7_128_wifi"
   | "sony_wh1000xm4"
   | "sony_wh_ch520"
   | "iphone_12_pro_128gb_self"
@@ -276,6 +277,41 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "broken_or_parts_only", pattern: /액정\s*파손|부품\s*용|부품용|파손\s*품/i },
       { label: "buying_post", pattern: /매입|삽니다|구매\s*합니다|구매합니다|사요|구해요/ },
       { label: "ipad_pro_or_mini", pattern: /아이패드\s*프로|ipad\s*pro|아이패드\s*미니|ipad\s*mini/i },
+    ],
+  },
+
+  ipad_mini_7_128_wifi: {
+    laneKey: "ipad_mini_7_128_wifi",
+    category: "tablet",
+    queries: [
+      "아이패드 미니 7",
+      "아이패드미니 7",
+      "ipad mini 7",
+      "아이패드 미니 7세대",
+      "ipad mini 7th",
+      "아이패드 미니 a17",
+      "ipad mini a17 pro",
+    ],
+    pages: 8,
+    targetParseReady: 200,
+    priceMin: 400_000,
+    priceMax: 1_100_000,
+    acceptAll: [/아이패드|ipad/i, /미니|mini/i],
+    acceptAnyOf: [
+      [/a17(?:\s*pro)?/i, /7\s*세대|\b7th\b|미니\s*7\b|미니7\b|mini\s*7\b/i],
+    ],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_gen_mini_6", pattern: /미니\s*6\b|미니6\b|mini\s*6\b|6\s*세대\s*미니|미니\s*6세대/i },
+      { label: "wrong_gen_mini_5_or_older", pattern: /미니\s*[2345]\b|미니[2345]\b|mini\s*[2345]\b|[2345]\s*세대\s*미니/i },
+      { label: "wrong_chip_m1_m2", pattern: /\bm[12]\b|m1\s*칩|m2\s*칩/i },
+      { label: "wrong_storage_256_512_1tb", pattern: /(?:^|[^0-9])256\s*(?:gb|기가)?\b|512\s*(?:gb|기가)?|1\s*tb|1\s*테라/i },
+      { label: "cellular_variant", pattern: /셀룰러|cellular|\blte\b|\b5g\b|유심|sim\s*트레이|esim/i },
+      { label: "accessory_only", pattern: /케이스\s*(?:만|단품|개별)|필름\s*(?:만|단품)|키보드\s*만|펜슬\s*만|어댑터\s*만|충전기\s*만/i },
+      { label: "case_or_smart_folio_listing", pattern: /(?:스마트\s*폴리오|스마트\s*커버|폴리오\s*케이스).{0,8}판매|매직\s*키보드\s*판매/i },
+      { label: "broken_or_parts_only", pattern: /액정\s*파손|부품\s*용|부품용|파손\s*품/i },
+      { label: "buying_post", pattern: /매입|삽니다|구매\s*합니다|구매합니다|사요|구해요/ },
+      { label: "ipad_pro_air_or_base", pattern: /아이패드\s*프로|ipad\s*pro|아이패드\s*에어|ipad\s*air|아이패드\s*\d+\s*세대/i },
     ],
   },
 
