@@ -1,0 +1,741 @@
+[
+  {
+    "pid": "338524227",
+    "name": "[매입] 닌텐도 삽니다 스위치, ds, 3ds, wii",
+    "price": 100000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_oled_올레드",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "318575652",
+    "name": "[매입] 닌텐도 삽니다 스위치, ds, 3ds 게임기 , 게임칩",
+    "price": 1000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any_oled_올레드",
+      "reject_wrong_model_switch_lite",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "284802054",
+    "name": "(매입)닌텐도 플스 스위치 3DS DS 게임기 칩 타이틀 최고가 삽니다",
+    "price": 9000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any_oled_올레드",
+      "reject_wrong_model_switch_2",
+      "reject_wrong_model_switch_v1",
+      "reject_wrong_platform_playstation",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "284519529",
+    "name": "매입] 닌텐도 닌텐도스위치 oled 플스5 스위치2 3ds 2ds ps5",
+    "price": 1000000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_wrong_model_switch_2",
+      "reject_wrong_model_switch_lite",
+      "reject_wrong_platform_playstation",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407410799",
+    "name": "닌텐도스위치 OLED 올레드 본체 (21년 제조)",
+    "price": 160000,
+    "reject_reasons": [
+      "reject_parts_or_broken"
+    ]
+  },
+  {
+    "pid": "407185156",
+    "name": "닌텐도 포켓몬스터 피카츄 스위치1 Oled 케이스",
+    "price": 7500,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_switch_v1"
+    ]
+  },
+  {
+    "pid": "300449651",
+    "name": "[매입] 닌텐도 DS,2DS,3DS,스위치,OLED,칩 매입합니다 삽니다",
+    "price": 1000000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "201109754",
+    "name": "구매) 닌텐도 닌텐도스위치 oled 스위치2 3ds 2ds ps5 플스5",
+    "price": 1000000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_wrong_model_switch_2",
+      "reject_wrong_platform_playstation",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "406425821",
+    "name": "플랜보 닌텐도 스위치 패밀리팩 G케이스(Oled)",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406524550",
+    "name": "닌텐도 스위치1 및 OLED 정품 TV독 세트. 사진구성.",
+    "price": 54000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_switch_v1"
+    ]
+  },
+  {
+    "pid": "407478793",
+    "name": "닌텐도 스위치 oled 24제조",
+    "price": 260000,
+    "reject_reasons": [
+      "reject_controller_only"
+    ]
+  },
+  {
+    "pid": "407576501",
+    "name": "닌텐도 스위치 OLED 정품 독",
+    "price": 25000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407551610",
+    "name": "닌텐도 스위치 OLED 판매합니다",
+    "price": 180000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_v1"
+    ]
+  },
+  {
+    "pid": "406273576",
+    "name": "닌텐도 스위치 oled 정품 독 닌텐도스위치 올레드 스위치1 정품독",
+    "price": 32000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_switch_v1"
+    ]
+  },
+  {
+    "pid": "407574195",
+    "name": "7닌텐도 스위치 oled 스칼렛 바이올렛 정품 독",
+    "price": 35000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "407572524",
+    "name": "닌텐도 스위치 oled 바이올렛 에디션 본체만 판매",
+    "price": 250000,
+    "reject_reasons": [
+      "reject_controller_only"
+    ]
+  },
+  {
+    "pid": "407571618",
+    "name": "닌텐도 스위치 oled 판매 박스 없음 충전기 일판",
+    "price": 269000,
+    "reject_reasons": [
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "407564598",
+    "name": "닌텐도 스위치 oled독 판매 개당 가격 잔기스 있음",
+    "price": 30000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "407513479",
+    "name": "닌텐도 스위치 OLED + 프로컨 + 샌디스크익스트림프로 1TB",
+    "price": 520000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "401121050",
+    "name": "상태최상) 닌텐도 스위치 OLED 화이트 풀박스 + 파우치 + 케이스",
+    "price": 373000,
+    "reject_reasons": [
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "396578311",
+    "name": "닌텐도 스위치 oled 배터리개선판+각종 추가기기들+칩들",
+    "price": 400000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_v1",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "291042105",
+    "name": "[삽니다] 닌텐도 DS,2DS,3DS,스위치,OLED,칩 매입합니다",
+    "price": 1000000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "291211908",
+    "name": "[구매] 닌텐도 DS,2DS,3DS,스위치,OLED,칩 매입합니다 삽니다",
+    "price": 1000000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "332176917",
+    "name": "신제품 종합세트 닌텐도 스위치 oled 젤다의전설 티어스 오브더킹덤",
+    "price": 630000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "407400162",
+    "name": "닌텐도 스위치 OLED + 게임 12개",
+    "price": 600000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "407446919",
+    "name": "삽니다) 닌텐도 스위치 OLED 풀구성 삽니다",
+    "price": 250000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407463850",
+    "name": "닌텐도 스위치 oled 미개봉 새상품 >>삽니다<<",
+    "price": 300000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407103057",
+    "name": "닌텐도 스위치 OLED 화이트 삽니다",
+    "price": 230000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407055923",
+    "name": "닌텐도 스위치 OLED 박스만 삽니다",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407160907",
+    "name": "닌텐도 스위치 긱쉐어 조이콘 커버 (oled 라이트)",
+    "price": 2500,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_switch_2",
+      "reject_wrong_model_switch_lite"
+    ]
+  },
+  {
+    "pid": "406779844",
+    "name": "닌텐도 스위치1 oled",
+    "price": 300000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_v1"
+    ]
+  },
+  {
+    "pid": "406436986",
+    "name": "닌텐도 스위치 oled 조이콘 호환 게임핸들 핸드그립 컨트롤러",
+    "price": 20000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406396224",
+    "name": "닌텐도 스위치 OLED 케이스 실리콘 스킨 새상품",
+    "price": 21000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "405623232",
+    "name": "닌텐도 스위치 oled 독",
+    "price": 40000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406069460",
+    "name": "닌텐도 스위치 OLED 본체 와이파이 에러",
+    "price": 135000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405646353",
+    "name": "닌텐도 스위치 oled 본체만 삽니다",
+    "price": 150000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "405175965",
+    "name": "구매)닌텐도 스위치 OLED 화이트 미개봉",
+    "price": 300000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "405466659",
+    "name": "고장난 닌텐도 스위치 OLED 화이트 삽니다",
+    "price": 100000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_switch_2",
+      "reject_parts_or_broken",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404982064",
+    "name": "닌텐도 스위치 동물의 숲 칩 OLED 2 라이트",
+    "price": 54000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_switch_lite"
+    ]
+  },
+  {
+    "pid": "405628390",
+    "name": "닌텐도스위치OLED 조이콘 커버 판매합니다:)",
+    "price": 5310,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "405358791",
+    "name": "30만/사진업로드예정)  닌텐도 스위치1 OLED 화이트",
+    "price": 292550,
+    "reject_reasons": [
+      "reject_wrong_model_switch_v1"
+    ]
+  },
+  {
+    "pid": "404728672",
+    "name": "닌텐도스위치 OLED 화이트 풀팩키지 세트 판매합니다.",
+    "price": 340000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "404349841",
+    "name": "닌텐도 스위치 OLED 파우치 화이트",
+    "price": 8000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "404337255",
+    "name": "닌텐도 스위치 oled + 케이스, 조이콘",
+    "price": 330000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "403496616",
+    "name": "닌텐도 스위치 oled 부속품",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "403701174",
+    "name": "닌텐도 스위치 컨트롤러 그립OLED-레드/블루",
+    "price": 11000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "403023958",
+    "name": "닌텐도스위치 oled 젤다에디션",
+    "price": 220000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "403935083",
+    "name": "포켓몬 소드 + 닌텐도스위치oled일판 풀구성 + 파우치",
+    "price": 290000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "403020570",
+    "name": "닌텐도스위치 OLED 판매합니다. 커펌X",
+    "price": 280000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "404275674",
+    "name": "미개봉 닌텐도 스위치 OLED 화이트 마리오카트 포함 선물용 풀세트",
+    "price": 500000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "401988852",
+    "name": "닌텐도 스위치 OLED 2 마리오카트 세트",
+    "price": 730000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "402802735",
+    "name": "[미개봉 새상품] 닌텐도 스위치 OLED 본체 화이트 홍콩판 (정품)",
+    "price": 510000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "313276841",
+    "name": "[397]2021 닌텐도 스위치 OLED Fine급",
+    "price": 290000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "401766181",
+    "name": "(본체 케이스) 닌텐도 스위치 스칼렛 바이올렛 *OLED 전용",
+    "price": 5000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "401831154",
+    "name": "닌텐도 스위치 OLED 마리오카트 월드 세트 미개봍",
+    "price": 700000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "402102290",
+    "name": "닌텐도스위치 칩 3개+스위치1/OLED/2 케이스 일괄",
+    "price": 91000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_switch_v1",
+      "reject_controller_only"
+    ]
+  },
+  {
+    "pid": "401209282",
+    "name": "A급 닌텐도 스위치 oled 화이트 풀셋+정품 파우치",
+    "price": 250000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_lite"
+    ]
+  },
+  {
+    "pid": "399737593",
+    "name": "닌텐도 스위치 OLED A급",
+    "price": 255000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "402143713",
+    "name": "닌텐도 스위치 OLED 젤다에디션 추가조이콘 추가 SD 64GB 게임칩",
+    "price": 300000,
+    "reject_reasons": [
+      "reject_controller_only"
+    ]
+  },
+  {
+    "pid": "400849359",
+    "name": "상태최상) 닌텐도 스위치 OLED 화이트 풀박스 + 파우치 + 케이스",
+    "price": 373000,
+    "reject_reasons": [
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "400427693",
+    "name": "닌텐도 스위치 OLED 방탄필름 정리해요",
+    "price": 20000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398379173",
+    "name": "닌텐도스위치 OLED 멀티리더기",
+    "price": 38000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "399397838",
+    "name": "(미사용) 닌텐도스위치 OLED 보호 케이스 (투명)",
+    "price": 5000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398282641",
+    "name": "닌텐도스위치 OLED 멀티리더기",
+    "price": 38000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398836634",
+    "name": "닌텐도 스위치 OLED 화이트 + 게임 다수 풀박스",
+    "price": 450000,
+    "reject_reasons": [
+      "reject_game_only"
+    ]
+  },
+  {
+    "pid": "398767910",
+    "name": "닌텐도 스위치 OLED 풀세트 악세사리 다수",
+    "price": 532000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "398433470",
+    "name": "닌텐도 스위치 oled전용 풀케이스 충전독호환",
+    "price": 5000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "397614793",
+    "name": "닌텐도 스위치 OLED 스칼렛 바이올렛 에디션 풀박스",
+    "price": 300000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "397532952",
+    "name": "닌텐도 스위치 OLED 풀박스 중고 무료배송",
+    "price": 250000,
+    "reject_reasons": [
+      "reject_controller_only"
+    ]
+  },
+  {
+    "pid": "396486176",
+    "name": "닌텐도 스위치 OLED 화이트",
+    "price": 1400000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_game_only",
+      "reject_parts_or_broken"
+    ]
+  },
+  {
+    "pid": "397111252",
+    "name": "닌텐도 스위치 및 OLED 호환 조이콘",
+    "price": 40900,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "397633655",
+    "name": "닌텐도 스위치 OLED + 인기 타이틀 6종 일괄 판매",
+    "price": 520000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "396274655",
+    "name": "S급)닌텐도 스위치 OLED 화이트 풀박스+파우치,케이스",
+    "price": 555,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398225981",
+    "name": "닌텐도 스위치 OLED화이트+칩3개(동숲 포켓몬아르세우스 마리오오디세이)",
+    "price": 400000,
+    "reject_reasons": [
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "396891903",
+    "name": "닌텐도 스위치 OLED 마리오레드 박스 구합니다.",
+    "price": 1000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "397654530",
+    "name": "닌텐도스위치OLED+포켓몬 레전드ZA+긱쉐어정품 고양이파우치",
+    "price": 270000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_v1"
+    ]
+  },
+  {
+    "pid": "395908490",
+    "name": "닌텐도 스위치 OLED 화이트 콘솔 게임기",
+    "price": 227100,
+    "reject_reasons": [
+      "reject_parts_or_broken"
+    ]
+  },
+  {
+    "pid": "313268897",
+    "name": "[393]2021 닌텐도 스위치 OLED 화이트 Fine급",
+    "price": 280000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "395568903",
+    "name": "닌텐도 스위치1 OLED 팝니다",
+    "price": 250000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_v1"
+    ]
+  },
+  {
+    "pid": "395257268",
+    "name": "닌텐도 스위치 OLED 화이트 본체",
+    "price": 240000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "396272133",
+    "name": "닌텐도 스위치 OLED 화이트 풀박스 +게임칩 +프로콘",
+    "price": 300000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_v1"
+    ]
+  },
+  {
+    "pid": "396052320",
+    "name": "삽니다)닌텐도 스위치 oled 젤다 에디션 박스만",
+    "price": 20000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "394962881",
+    "name": "닌텐도 스위치 oled 풀구성",
+    "price": 180000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "394492207",
+    "name": "닌텐도 스위치 Oled 화이트",
+    "price": 320000,
+    "reject_reasons": [
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "395097920",
+    "name": "닌텐도 스위치 1 oled 판매 동물의 숲 칩",
+    "price": 330000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_v1"
+    ]
+  },
+  {
+    "pid": "394463242",
+    "name": "닌텐도 스위치 OLED 화이트 풀박스",
+    "price": 270000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_2"
+    ]
+  },
+  {
+    "pid": "394991627",
+    "name": "닌텐도 스위치 OLED 화이트 + 미토피아 + 폼폼푸린 케이스 일괄",
+    "price": 320000,
+    "reject_reasons": [
+      "reject_wrong_model_switch_2"
+    ]
+  }
+]

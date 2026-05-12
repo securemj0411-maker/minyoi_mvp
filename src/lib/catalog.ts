@@ -1458,6 +1458,33 @@ export const CATALOG: Sku[] = [
     msrpKrw: 568000,
     released: 2020,
   },
+  // ─── Nintendo Switch OLED (2021-10) ─────────────────
+  // narrow lane: switch_oled (Switch 2/Lite/일반 스위치/PS5/액세서리 차단)
+  {
+    id: "switch-oled",
+    brand: "Nintendo",
+    category: "game_console",
+    laneKey: "switch_oled",
+    modelName: "Nintendo Switch OLED",
+    aliases: ["Nintendo Switch OLED", "닌텐도 스위치 OLED", "스위치 올레드", "스위치 OLED"],
+    mustContain: [
+      ["닌텐도", "nintendo", "스위치", "switch"],
+      ["oled", "올레드"],
+    ],
+    mustNotContain: [
+      "스위치 2", "switch 2", "스위치2", "switch2",
+      "라이트", "lite",
+      "일반 스위치", "스위치 1",
+      "ps5", "ps4",
+      "컨트롤러만", "조이콘만", "게임만", "게임 팩", "게임 카드",
+      "기프트", "gift",
+      "충전기만", "케이스만",
+      "부품", "고장",
+      "매입", "삽니다",
+    ],
+    msrpKrw: 414000,
+    released: 2021,
+  },
   // ─── PlayStation 5 Slim (Disc/Digital, 2023-11) ─────
   // narrow lane: ps5_slim (Standard/Pro/PSVR/Switch/액세서리 차단)
   {

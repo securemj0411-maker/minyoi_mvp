@@ -53,7 +53,8 @@ type LaneKey =
   | "bose_qc45"
   | "macbook_air_m2_13_256"
   | "iphone_11_pro_128gb_self"
-  | "galaxy_z_flip_5_256_self";
+  | "galaxy_z_flip_5_256_self"
+  | "switch_oled";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -1299,6 +1300,37 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "refurbished_only", pattern: /리퍼\s*폰|리퍼폰|리퍼\s*제품|리퍼\s*수령|센터\s*리퍼/ },
       { label: "accessory_only", pattern: /케이스\s*(?:만|단품)|필름\s*(?:만|단품)|충전기\s*만|보호\s*필름\s*만|어댑터\s*만|힌지\s*부품/ },
       { label: "lost_or_locked", pattern: /분실\s*폰|분실폰|잠김|락걸림|아이디\s*잠금|구글\s*계정\s*잠금|분실\s*보상폰|분실보상폰/ },
+    ],
+  },
+
+  switch_oled: {
+    laneKey: "switch_oled",
+    category: "game_console",
+    queries: [
+      "닌텐도 스위치 oled",
+      "switch oled",
+      "스위치 oled",
+      "스위치 올레드",
+      "닌텐도 oled",
+    ],
+    pages: 8,
+    targetParseReady: 200,
+    priceMin: 150_000,
+    priceMax: 500_000,
+    acceptAll: [/닌텐도|nintendo|스위치|switch/i],
+    acceptAnyOf: [[/oled|올레드/i]],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_switch_2", pattern: /스위치\s*2\b|switch\s*2\b|스위치2|switch2/i },
+      { label: "wrong_model_switch_lite", pattern: /라이트|\blite\b|switchlite|스위치\s*라이트/i },
+      { label: "wrong_model_switch_v1", pattern: /일반\s*스위치|스위치\s*1\b|구형\s*스위치|스위치\s*v1/i },
+      { label: "wrong_platform_playstation", pattern: /\bps5\b|\bps4\b|플스\s*[45]\b|플레이스테이션\s*[45]\b/i },
+      { label: "controller_only", pattern: /컨트롤러\s*만|조이콘\s*만|프로콘\s*만|프로\s*컨트롤러\s*만/ },
+      { label: "game_only", pattern: /게임\s*만|게임\s*팩|게임\s*카드|게임\s*소프트만|타이틀\s*만/ },
+      { label: "gift_card", pattern: /기프트|gift\s*card|기프트\s*카드|닌텐도\s*카드|eshop\s*카드|이샵\s*카드/i },
+      { label: "accessory_only", pattern: /충전기\s*만|케이스\s*만|독\s*만|거치대\s*만|스탠드\s*만|보호\s*필름\s*만/ },
+      { label: "parts_or_broken", pattern: /부품\s*용|부품용|부품\s*만|고장|불량\s*품|파손\s*품|액정\s*파손/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구합니다|구매\s*합니다|구매합니다/ },
     ],
   },
 };
