@@ -24,6 +24,7 @@ const outBase = path.join(appDir, "category-intelligence");
 type LaneKey =
   | "ipad_pro_11_m4_256_wifi"
   | "ipad_air_m2_11_256_wifi"
+  | "ipad_pro_13_m4_256_wifi"
   | "sony_wh1000xm4"
   | "sony_wh_ch520"
   | "iphone_15_pro_128gb_self"
@@ -131,10 +132,7 @@ const LANES: Record<LaneKey, LaneConfig> = {
     priceMax: 1_500_000,
     acceptAll: [/256/, /아이패드|ipad/i, /에어|air/i],
     acceptAnyOf: [
-      // M2 explicit, OR implicit via "6세대" / "에어6" (iPad Air 6th gen = M2)
       [/\bm2\b|m2\s*칩/i, /6\s*세대|에어\s*6\b|에어\s*6세대|\bair\s*6\b/i],
-      // Must mention 11" form factor — bare "13" with no inch unit slips by the
-      // 13" reject below, so positively require 11" presence.
       [/\b11\b|11\s*인치|11\s*형|11"|11″|에어\s*11|에어11|\bair\s*11|아이패드\s*11/i],
     ],
     reject: [],
@@ -150,6 +148,42 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "broken_or_parts_only", pattern: /액정\s*파손|부품\s*용|부품용|파손\s*품/i },
       { label: "buying_post", pattern: /매입|삽니다|구매\s*합니다|구매합니다|사요|구해요/ },
       { label: "ipad_pro_or_mini", pattern: /아이패드\s*프로|ipad\s*pro|아이패드\s*미니|ipad\s*mini/i },
+    ],
+  },
+
+  ipad_pro_13_m4_256_wifi: {
+    laneKey: "ipad_pro_13_m4_256_wifi",
+    category: "tablet",
+    queries: [
+      "아이패드 프로 13 m4 256",
+      "아이패드 프로 m4 13인치 256",
+      "ipad pro 13 m4 256",
+      "ipad pro m4 13 256gb",
+      "아이패드 프로 13 m4 256 와이파이",
+      "아이패드 프로 m4 256 와이파이",
+      "아이패드 m4 13인치 256",
+      "ipad pro m4 13",
+      "아이패드 프로 13 m4",
+    ],
+    pages: 6,
+    targetParseReady: 200,
+    priceMin: 900_000,
+    priceMax: 2_800_000,
+    acceptAll: [/m4/i, /256/, /아이패드|ipad/i],
+    acceptAnyOf: [[/13\s*인치|13\s*형|\b13"\b|13″|아이패드\s*프로\s*13\b|ipad\s*pro\s*13\b|\bpro\s*13\b|프로\s*13\s*m4|\b13\s*m4\b/i]],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_chip_m1_m2_m3", pattern: /\bm[123]\b|m1\s*칩|m2\s*칩|m3\s*칩/i },
+      { label: "wrong_storage_512_1tb_2tb", pattern: /512\s*(?:gb|기가)?|1\s*tb|2\s*tb|1\s*테라|2\s*테라/i },
+      { label: "wrong_storage_128", pattern: /(?:^|[^0-9])128\s*(?:gb|기가)?\b/i },
+      { label: "wrong_size_11_inch", pattern: /11\s*인치|11\s*형|\b11"\b|11″|아이패드\s*프로\s*11\b|ipad\s*pro\s*11\b|\bpro\s*11\b|프로\s*11\s*m4|\b11\s*m4\b/i },
+      { label: "cellular_variant", pattern: /셀룰러|cellular|\blte\b|\b5g\b|유심|sim\s*트레이|esim/i },
+      { label: "accessory_only", pattern: /케이스\s*(?:만|단품|개별)|필름\s*(?:만|단품)|키보드\s*만|펜슬\s*만|어댑터\s*만|충전기\s*만/i },
+      { label: "case_or_smart_folio_listing", pattern: /(?:스마트\s*폴리오|스마트\s*커버|폴리오\s*케이스).{0,8}판매|매직\s*키보드\s*판매/i },
+      { label: "broken_or_parts_only", pattern: /액정\s*파손|부품\s*용|부품용|파손\s*품/i },
+      { label: "buying_post", pattern: /매입|삽니다|구매\s*합니다|구매합니다|사요|구해요/ },
+      { label: "ipad_air_or_mini", pattern: /아이패드\s*에어|ipad\s*air|아이패드\s*미니|ipad\s*mini/i },
+      { label: "wrong_model_year_m2_2022", pattern: /2022\s*년|아이패드\s*프로\s*6세대|6세대\s*프로/i },
     ],
   },
 
