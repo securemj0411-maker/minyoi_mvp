@@ -440,6 +440,43 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
   },
 ];
 
+const CORE_LAPTOP_CATALOG: Sku[] = [
+  {
+    id: "macbook-pro-14-m3-18-512",
+    brand: "Apple",
+    category: "laptop",
+    laneKey: "macbook_pro_14_m3_18_512",
+    modelName: "MacBook Pro 14\" M3 18GB 512GB",
+    aliases: ["맥북 프로 14 M3 18 512", "MacBook Pro 14 M3 18GB 512GB"],
+    mustContain: [
+      ["맥북", "macbook"],
+      ["프로", "pro"],
+      ["m3"],
+      ["14인치", "14 인치", "14형", "14\""],
+    ],
+    mustNotContain: [
+      "에어", "air",
+      "16인치", "16형",
+      "(m1)", "(m2)", "(m4)",
+      " m1 ", " m2 ", " m4 ",
+      // 8GB exclusion intentionally omitted: tokenHit is substring-based and would
+      // self-reject "18gb"/"18 gb"/"18기가". 8GB base units are filtered by the
+      // lane mining regex and the candidate-pool price range (1.5M~3M).
+      "16gb", "16 gb",
+      "24gb",
+      "36gb",
+      "256gb", "256 gb",
+      "1tb", "2tb",
+      "메인보드", "로직보드", "상판", "하판",
+      "액정만", "배터리만", "키보드만",
+      "부품", "고장", "침수",
+      "매입", "삽니다",
+    ],
+    msrpKrw: 2690000,
+    released: 2023,
+  },
+];
+
 const CORE_TABLET_CATALOG: Sku[] = [
   {
     id: "ipad-pro",
@@ -1558,8 +1595,10 @@ const NORMALIZATIONS: [RegExp, string][] = [
   [/2\s*세대|이\s*세대|second|2nd/gi, " 2세대 "],
   [/3\s*세대|삼\s*세대|third|3rd/gi, " 3세대 "],
   [/4\s*세대|사\s*세대|fourth|4th/gi, " 4세대 "],
-  [/프로\s*2/gi, " 프로 프로2 2세대 "],
-  [/프로\s*1/gi, " 프로 프로1 1세대 "],
+  // `(?!\d)` prevents "프로 14" / "프로14" from being consumed as "프로 1" + leftover "4",
+  // which previously destroyed any "14"/"15"/etc digit after "프로".
+  [/프로\s*2(?!\d)/gi, " 프로 프로2 2세대 "],
+  [/프로\s*1(?!\d)/gi, " 프로 프로1 1세대 "],
   [/\bpro\s*2\b/gi, " pro pro2 2세대 "],
   [/\bpro\s*1\b/gi, " pro pro1 1세대 "],
   [/에어팟\s*([234])/g, " 에어팟 $1세대 "],

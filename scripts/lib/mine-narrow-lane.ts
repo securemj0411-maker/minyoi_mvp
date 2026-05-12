@@ -34,7 +34,8 @@ type LaneKey =
   | "airpods_max_usbc"
   | "iphone_16_pro_128gb_self"
   | "galaxy_s25_ultra_256_self"
-  | "airpods_pro_3";
+  | "airpods_pro_3"
+  | "macbook_pro_14_m3_18_512";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -466,6 +467,42 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
       { label: "refurbished_only", pattern: /리퍼\s*폰|리퍼폰|리퍼\s*제품|리퍼\s*수령/ },
       { label: "accessory_only", pattern: /케이스\s*(?:만|단품)|필름\s*(?:만|단품)|충전기\s*만|보호\s*필름\s*만/ },
+    ],
+  },
+
+  macbook_pro_14_m3_18_512: {
+    laneKey: "macbook_pro_14_m3_18_512",
+    category: "laptop",
+    queries: [
+      "맥북 프로 14 m3 18 512",
+      "맥북프로 14 m3",
+      "macbook pro 14 m3",
+      "맥북 프로 14인치 m3",
+      "macbook pro 14 m3 18gb 512gb",
+      "맥북 프로 m3 14",
+    ],
+    pages: 10,
+    targetParseReady: 200,
+    priceMin: 1_500_000,
+    priceMax: 3_000_000,
+    acceptAll: [/맥북|macbook/i, /프로|pro/i, /m3\s*(?:pro|max)|\bm3\b/i],
+    acceptAnyOf: [[/14\s*인치|14\s*형|\b14"|14″|\b14\b/i]],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_chip_m1", pattern: /\bm1\b|m1\s*(?:pro|max|칩)|\(m1\)/i },
+      { label: "wrong_chip_m2", pattern: /\bm2\b|m2\s*(?:pro|max|칩)|\(m2\)/i },
+      { label: "wrong_chip_m4", pattern: /\bm4\b|m4\s*(?:pro|max|칩)|\(m4\)/i },
+      { label: "wrong_size_16", pattern: /16\s*인치|16\s*형|\b16"|16″/i },
+      { label: "wrong_model_air", pattern: /에어|\bair\b/i },
+      { label: "wrong_ram_8", pattern: /(?:^|[^0-9])8\s*(?:gb|기가)\b|8\s*gb\s*ram/i },
+      { label: "wrong_ram_16", pattern: /(?:^|[^0-9])16\s*(?:gb|기가)\b/i },
+      { label: "wrong_ram_24", pattern: /(?:^|[^0-9])24\s*(?:gb|기가)\b/i },
+      { label: "wrong_ram_36", pattern: /(?:^|[^0-9])36\s*(?:gb|기가)\b/i },
+      { label: "wrong_storage_256", pattern: /(?:^|[^0-9])256\s*(?:gb|기가)\b/i },
+      { label: "wrong_storage_1tb_2tb", pattern: /\b1\s*tb\b|\b2\s*tb\b|1\s*테라|2\s*테라/i },
+      { label: "parts_only", pattern: /액정\s*만|메인보드|로직보드|상판|하판|배터리\s*만|키보드\s*만|부품\s*용|부품용/ },
+      { label: "broken_or_water", pattern: /고장|침수|파손\s*품|작동\s*불량/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
     ],
   },
 
