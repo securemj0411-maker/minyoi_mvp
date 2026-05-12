@@ -1,0 +1,620 @@
+[
+  {
+    "pid": "396871057",
+    "name": "Bose QC45 헤드셋 블랙",
+    "price": 155000,
+    "reject_reasons": [
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "404836857",
+    "name": "보스qc45",
+    "price": 170000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "407597334",
+    "name": "보스 QC 콰이어트 컴포트 45 블루투스 무선 헤드폰, 헤드셋",
+    "price": 240000,
+    "reject_reasons": [
+      "missing_any__bqc_s_45_b_qc45_quietco"
+    ]
+  },
+  {
+    "pid": "407020533",
+    "name": "보스 QC45 헤드셋 화이트 스모크",
+    "price": 150000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "404987526",
+    "name": "Bose 보스 qc45 블랙",
+    "price": 130000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "405512605",
+    "name": "보스 헤드폰 헤드셋 qc45 스모크화이트",
+    "price": 155000,
+    "reject_reasons": [
+      "reject_charger_or_cable_only"
+    ]
+  },
+  {
+    "pid": "356462095",
+    "name": "보스 qc45",
+    "price": 220000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "402660833",
+    "name": "BOSE 보스 QC45 블루투스 헤드셋",
+    "price": 160000,
+    "reject_reasons": [
+      "reject_non_bose_clone"
+    ]
+  },
+  {
+    "pid": "402617969",
+    "name": "BOSE 보스 QC45 블루투스 헤드셋 화이트 판매",
+    "price": 130000,
+    "reject_reasons": [
+      "reject_earcushion_only",
+      "reject_non_bose_clone"
+    ]
+  },
+  {
+    "pid": "401756050",
+    "name": "보스 QC45",
+    "price": 130000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "402542953",
+    "name": "보스 QC45 스모크화이트",
+    "price": 140000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "401530883",
+    "name": "보스 qc45 트리플블랙",
+    "price": 110000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "399848353",
+    "name": "보스 qc45",
+    "price": 90000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "401096222",
+    "name": "보스 qc45 헤드셋 (상태좋음)",
+    "price": 180000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "398079329",
+    "name": "보스qc45 화이트",
+    "price": 120000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋",
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "396664889",
+    "name": "보스 헤드셋 qc45 블랙",
+    "price": 170000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "393166879",
+    "name": "보스 헤드폰 헤드셋 qc45",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "392566268",
+    "name": "보스 qc45 판매합니다!",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "392168767",
+    "name": "보스 QC45 노이즈 캔슬링 헤드폰 Eclipse Grey 팝니다",
+    "price": 120000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "388026493",
+    "name": "보스 qc45 블랙",
+    "price": 150000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "389108234",
+    "name": "보스 qc45 스모크 화이트 판매합니다.",
+    "price": 100000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "388667494",
+    "name": "보스 qc45 색상 교환 화이트스모크 -> 블랙",
+    "price": 777777,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any_헤드폰_headphone_헤드셋",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "385242688",
+    "name": "보스 BOSE QC45 블랙 (정말 깨끗한 S급상태)",
+    "price": 205000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "383227206",
+    "name": "보스 qc45 업그레이드버전",
+    "price": 94000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "381746935",
+    "name": "보스 qc45 S급 화이트스모크",
+    "price": 190000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "382570977",
+    "name": "보스qc 35,45 9만원에 찾습니다",
+    "price": 7777,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bqc_s_45_b_qc45_quietco",
+      "missing_any_헤드폰_headphone_헤드셋",
+      "reject_wrong_model_qc35"
+    ]
+  },
+  {
+    "pid": "373722667",
+    "name": "보스 qc45 S급",
+    "price": 190000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "363992250",
+    "name": "보스qc45 시착1회",
+    "price": 199000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "357985525",
+    "name": "보스 qc45 화이트 20만원",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "338077102",
+    "name": "Bose QC45 블랙 정품",
+    "price": 190000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "334544896",
+    "name": "보스 QC (qc45) 샌드스톤",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "334369576",
+    "name": "bose qc 45 스모크 화이트",
+    "price": 250000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "324494477",
+    "name": "Bose qc45",
+    "price": 170000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "313228522",
+    "name": "보스 qc45",
+    "price": 210000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "259711706",
+    "name": "보스 qc45 블랙 극미",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "231559218",
+    "name": "BOSE 헤드폰 케이스 파우치 QC-25, QC-35, QC-45",
+    "price": 13150,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bqc_s_45_b_qc45_quietco"
+    ]
+  },
+  {
+    "pid": "214708042",
+    "name": "BOSE QC-45, QC-35, QC-25 쎌프교체용 헤드밴드",
+    "price": 8900,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bqc_s_45_b_qc45_quietco",
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "404804558",
+    "name": "보스 qc45 블랙",
+    "price": 100000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "402370865",
+    "name": "보스 Bose Qc45",
+    "price": 140000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "402616376",
+    "name": "BOSE 보스 QC45 블루투스 헤드셋",
+    "price": 150000,
+    "reject_reasons": [
+      "reject_non_bose_clone"
+    ]
+  },
+  {
+    "pid": "401606988",
+    "name": "보스 qc45 화이트 스모크",
+    "price": 140000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "399936451",
+    "name": "보스 QC45",
+    "price": 100000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋",
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "400554028",
+    "name": "보스 qc45 블랙 헤드폰",
+    "price": 91000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "399909617",
+    "name": "보스 qc45 이클립스그레이",
+    "price": 95000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "398980164",
+    "name": "보스qc45",
+    "price": 140000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "398912814",
+    "name": "보스qc45 그레이",
+    "price": 130000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "397770833",
+    "name": "bose qc45",
+    "price": 140000,
+    "reject_reasons": [
+      "reject_charger_or_cable_only"
+    ]
+  },
+  {
+    "pid": "397577841",
+    "name": "보스 qc45",
+    "price": 110000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "397480151",
+    "name": "보스 qc45",
+    "price": 155000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "398975069",
+    "name": "보스qc45(화이트스모크) 판매합니다",
+    "price": 150000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "396427404",
+    "name": "보스 qc 45",
+    "price": 107000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "395077252",
+    "name": "보스 qc 45 블랙 (풀구성)",
+    "price": 160000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "391807665",
+    "name": "Bose 보스 블랙 QC45",
+    "price": 120000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "393764233",
+    "name": "보스qc45",
+    "price": 60000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_헤드폰_headphone_헤드셋",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "393741864",
+    "name": "보스QC45 화이트스모크",
+    "price": 120000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "394056988",
+    "name": "보스 QC45 헤드폰 이클립스 그레이",
+    "price": 160000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "393860374",
+    "name": "보스 QC45 헤드폰 화이트 그레이",
+    "price": 88000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "394421898",
+    "name": "보스 헤드셋 qc45 블랙 (풀박+이어패드)",
+    "price": 150000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "393250344",
+    "name": "보스 QC45 헤드셋 블랙",
+    "price": 160000,
+    "reject_reasons": [
+      "reject_wrong_model_qc_ultra",
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "390137380",
+    "name": "보스 BOSE QC-45 판매",
+    "price": 130000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "392118747",
+    "name": "보스 qc45",
+    "price": 80000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "392480207",
+    "name": "보스 헤드폰 QC45",
+    "price": 140000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "391991967",
+    "name": "보스qc45",
+    "price": 130000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "391244469",
+    "name": "보스 qc45 헤드폰",
+    "price": 100000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "390221448",
+    "name": "보스 QC45 헤드셋 화이트 스모크 풀박스",
+    "price": 130000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "388697814",
+    "name": "보스 boss qc 45 헤드폰",
+    "price": 112000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "389605277",
+    "name": "(풀구성) 보스 QC45 판매합니다!",
+    "price": 140000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "390330529",
+    "name": "보스 QC 45 울트라 헤드폰 1세대 블랙 풀박스 - 무상수리 보험 포함",
+    "price": 220000,
+    "reject_reasons": [
+      "reject_wrong_model_qc_ultra"
+    ]
+  },
+  {
+    "pid": "387177040",
+    "name": "보스 qc45 헤드셋 풀박스",
+    "price": 169000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "386385227",
+    "name": "보스 qc 45 화이트 헤드폰 + 정품 박스",
+    "price": 100000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "383184458",
+    "name": "보스 QC45 블랙 A급",
+    "price": 135000,
+    "reject_reasons": [
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  },
+  {
+    "pid": "380024294",
+    "name": "보스 QC45 헤드폰 미드나잇 블루 + 거치대",
+    "price": 150000,
+    "reject_reasons": [
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "362930079",
+    "name": "bose qc45",
+    "price": 87000,
+    "reject_reasons": [
+      "reject_wrong_model_qc35"
+    ]
+  },
+  {
+    "pid": "376576946",
+    "name": "qc45 헤드폰",
+    "price": 130000,
+    "reject_reasons": [
+      "missing_보스_bose",
+      "reject_earcushion_only"
+    ]
+  },
+  {
+    "pid": "362803769",
+    "name": "Boss qc45",
+    "price": 150000,
+    "reject_reasons": [
+      "missing_보스_bose",
+      "missing_any_헤드폰_headphone_헤드셋"
+    ]
+  }
+]

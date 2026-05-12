@@ -48,7 +48,8 @@ type LaneKey =
   | "ps5_slim"
   | "beats_solo_4"
   | "airpods_4_anc"
-  | "galaxy_buds_3_pro";
+  | "galaxy_buds_3_pro"
+  | "bose_qc45";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -1108,6 +1109,51 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만/ },
       { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
       { label: "non_galaxy_clone", pattern: /짝퉁|가품|복제품|레플리카/ },
+      { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
+    ],
+  },
+
+  bose_qc45: {
+    laneKey: "bose_qc45",
+    category: "headphone",
+    queries: [
+      "bose qc45",
+      "보스 qc45",
+      "보스 qc 45 헤드폰",
+      "bose quietcomfort 45",
+      "bose quietcomfort45",
+      "보스 quietcomfort 45",
+      "bose qc 45 헤드폰",
+      "보스 qc45 헤드폰",
+      "보스 qc 45",
+      "보스 콰이어트컴포트 45",
+      "콰이어트컴포트 45",
+      "보스 헤드폰 qc45",
+      "qc45 헤드폰",
+    ],
+    pages: 12,
+    targetParseReady: 200,
+    priceMin: 80_000,
+    priceMax: 500_000,
+    acceptAll: [/보스|bose/i],
+    acceptAnyOf: [
+      [/\bqc\s*45\b|qc45|quietcomfort\s*45|quietcomfort45/i],
+      [/헤드폰|headphone|헤드셋/i],
+    ],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_qc35", pattern: /\bqc\s*35\b|qc35|quietcomfort\s*35/i },
+      { label: "wrong_model_qc15", pattern: /\bqc\s*15\b|qc15|quietcomfort\s*15/i },
+      { label: "wrong_model_qc20", pattern: /\bqc\s*20\b|qc20|quietcomfort\s*20/i },
+      { label: "wrong_model_qc_ultra", pattern: /qc\s*ultra|qc울트라|qc\s*울트라|quietcomfort\s*ultra|quietcomfort\s*울트라|qcultra/i },
+      { label: "wrong_product_earbuds", pattern: /quietcomfort\s*earbuds|qc\s*이어버드|qc\s*earbuds|이어버드|earbuds|무선\s*이어폰/i },
+      { label: "wrong_product_soundlink", pattern: /soundlink|사운드링크|사운드\s*링크/i },
+      { label: "case_or_pouch_only", pattern: /케이스\s*(?:만|단품|개별)|파우치\s*만|하드\s*케이스\s*만|보관\s*케이스\s*만/ },
+      { label: "earcushion_only", pattern: /이어\s*쿠션(?:\s*만|\s*교체|\s*단품)?|쿠션\s*교체|쿠션만\s*판매|이어\s*패드(?:\s*만|\s*교체|\s*단품)?/ },
+      { label: "charger_or_cable_only", pattern: /충전기\s*만|케이블\s*만|usb\s*케이블\s*만|어댑터\s*만/i },
+      { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만|힌지\s*부품/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+      { label: "non_bose_clone", pattern: /짝퉁|가품|복제품|레플리카/ },
       { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
     ],
   },
