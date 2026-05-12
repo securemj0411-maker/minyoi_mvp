@@ -52,7 +52,8 @@ type LaneKey =
   | "galaxy_buds_3_pro"
   | "bose_qc45"
   | "macbook_air_m2_13_256"
-  | "iphone_11_pro_128gb_self";
+  | "iphone_11_pro_128gb_self"
+  | "galaxy_z_flip_5_256_self";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -1263,6 +1264,41 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "buying_post", pattern: /매입(?!\s*도)|삽니다|구해요|구매\s*합니다|구매합니다|구합니다/ },
       { label: "refurbished_only", pattern: /리퍼\s*폰|리퍼폰|리퍼\s*제품|리퍼\s*수령|센터\s*리퍼/ },
       { label: "accessory_only", pattern: /케이스\s*(?:만|단품)|필름\s*(?:만|단품)|충전기\s*만|보호\s*필름\s*만/ },
+    ],
+  },
+
+  galaxy_z_flip_5_256_self: {
+    laneKey: "galaxy_z_flip_5_256_self",
+    category: "smartphone",
+    queries: [
+      "갤럭시 z 플립5 256 자급제",
+      "갤럭시 z 플립 5 256",
+      "galaxy z flip5 256",
+      "갤럭시 플립5 자급제",
+      "z flip5 256 자급제",
+    ],
+    pages: 8,
+    targetParseReady: 200,
+    priceMin: 200_000,
+    priceMax: 1_400_000,
+    acceptAll: [/갤럭시\s*z?\s*플립|galaxy\s*z\s*flip|z\s*flip|갤럭시\s*플립/i],
+    acceptAnyOf: [[/플립\s*5\b|플립5\b|flip\s*5\b|flip5\b|5\s*세대/i]],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_flip4", pattern: /플립\s*4\b|플립4\b|flip\s*4\b|flip4\b|z\s*flip\s*4/i },
+      { label: "wrong_model_flip6", pattern: /플립\s*6\b|플립6\b|flip\s*6\b|flip6\b|z\s*flip\s*6/i },
+      { label: "wrong_model_flip3", pattern: /플립\s*3\b|플립3\b|flip\s*3\b|flip3\b|z\s*flip\s*3/i },
+      { label: "wrong_model_fold", pattern: /폴드|fold|z\s*fold/i },
+      { label: "wrong_storage_512_1tb", pattern: /512\s*(?:gb|기가)?|1\s*tb|1\s*테라/i },
+      { label: "carrier_skt", pattern: /\bskt\b\s*(?:완납|개통|약정|이동|승계|전용)|skt\s*완납폰|skt\s*전용/i },
+      { label: "carrier_kt", pattern: /(?:^|\s)kt\s*(?:완납|개통|약정|이동|승계|전용)|케이티\s*개통|kt\s*완납폰/i },
+      { label: "carrier_lg", pattern: /\blgu\+|\blg\s*u\+|유플\s*러스|엘지\s*유플|엘지유플|lg\s*전용/i },
+      { label: "carrier_locked_generic", pattern: /통신사\s*개통|약정\s*승계|완납\s*폰|완납폰/ },
+      { label: "broken_or_parts", pattern: /액정\s*파손|부품\s*용|부품용/ },
+      { label: "buying_post", pattern: /매입(?!\s*도)|삽니다|구해요|구매\s*합니다|구매합니다|구합니다/ },
+      { label: "refurbished_only", pattern: /리퍼\s*폰|리퍼폰|리퍼\s*제품|리퍼\s*수령|센터\s*리퍼/ },
+      { label: "accessory_only", pattern: /케이스\s*(?:만|단품)|필름\s*(?:만|단품)|충전기\s*만|보호\s*필름\s*만|어댑터\s*만|힌지\s*부품/ },
+      { label: "lost_or_locked", pattern: /분실\s*폰|분실폰|잠김|락걸림|아이디\s*잠금|구글\s*계정\s*잠금|분실\s*보상폰|분실보상폰/ },
     ],
   },
 };
