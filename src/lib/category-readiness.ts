@@ -147,6 +147,31 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "iPad mini 7 (A17 Pro) 128GB Wi-Fi",
     note: "신모델. mini 5/6, M-chip, 256+ 차단.",
   },
+  ipad_pro_13_m2_256_wifi: {
+    status: "ready",
+    label: "iPad Pro 13\" M2 256GB Wi-Fi",
+    note: "M4 13\" sibling. 11\"/M1/M3/M4/셀룰러/타 용량은 catalog로 차단.",
+  },
+  macbook_air_m2_13_256: {
+    status: "ready",
+    label: "MacBook Air M2 13\" 256GB",
+    note: "M3 sibling. M1/M3/M4, 15인치, MacBook Pro, 타 RAM/SSD는 catalog로 차단.",
+  },
+  iphone_11_pro_128gb_self: {
+    status: "ready",
+    label: "iPhone 11 Pro 128GB (자급제)",
+    note: "구형 자급제 narrow lane. Pro Max/12/통신사/리퍼는 catalog로 차단.",
+  },
+  galaxy_z_flip_5_256_self: {
+    status: "ready",
+    label: "Galaxy Z Flip 5 256GB (자급제)",
+    note: "Flip 4/6, Fold, 512/1TB, 통신사는 catalog로 차단.",
+  },
+  switch_oled: {
+    status: "ready",
+    label: "Nintendo Switch OLED",
+    note: "OLED 단독 narrow lane. v1/Lite/Switch 2/PS는 catalog로 차단.",
+  },
 };
 
 export type CategoryReadinessConfig = {
