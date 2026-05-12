@@ -47,6 +47,16 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "PlayStation 5 (Standard)",
     note: "PS5 Disc/Digital Standard 단독 narrow lane. Slim/Pro/PSVR/Switch는 catalog mustNotContain으로 차단.",
   },
+  ipad_pro_11_m4_256_wifi: {
+    status: "ready",
+    label: "iPad Pro 11\" M4 256GB Wi-Fi",
+    note: "단일 변형 narrow lane. 13인치/셀룰러/M1~M3/타 용량은 catalog mustNotContain으로 차단.",
+  },
+  iphone_15_pro_128gb_self: {
+    status: "ready",
+    label: "iPhone 15 Pro 128GB (자급제)",
+    note: "자급제 + 128GB + 비-Pro Max만. 통신사 약정/완납폰/리퍼/타 용량은 catalog mustNotContain으로 차단.",
+  },
 };
 
 export type CategoryReadinessConfig = {
