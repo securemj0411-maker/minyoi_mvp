@@ -45,7 +45,8 @@ type LaneKey =
   | "iphone_13_pro_128gb_self"
   | "galaxy_s23_ultra_256_self"
   | "applewatch_ultra_2"
-  | "ps5_slim";
+  | "ps5_slim"
+  | "beats_solo_4";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -995,6 +996,45 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "gift_card_or_subscription", pattern: /기프트|gift\s*card|디지털\s*카드|월정액|psn\s*카드|플스플러스\s*카드/i },
       { label: "buying_post", pattern: /구합니다|삽니다|매입|구해요|구매\s*합니다|구매합니다/ },
       { label: "broken_or_parts", pattern: /부품\s*용|부품용|고장|불량\s*품|파손\s*품/ },
+    ],
+  },
+
+  beats_solo_4: {
+    laneKey: "beats_solo_4",
+    category: "headphone",
+    queries: [
+      "beats solo 4",
+      "비츠 솔로 4",
+      "비츠 솔로4",
+      "beats solo4",
+      "솔로 4 헤드폰",
+      "beats 솔로 4",
+      "비츠 헤드폰 솔로",
+    ],
+    pages: 8,
+    targetParseReady: 200,
+    priceMin: 70_000,
+    priceMax: 280_000,
+    acceptAll: [/비츠|beats/i],
+    acceptAnyOf: [[/솔로\s*4|solo\s*4|솔로4|solo4/i]],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_solo3", pattern: /솔로\s*3|솔로3|solo\s*3\b|solo3\b/i },
+      { label: "wrong_model_solo2", pattern: /솔로\s*2|솔로2|solo\s*2\b|solo2\b/i },
+      { label: "wrong_model_solo_pro", pattern: /솔로\s*프로|solo\s*pro|solopro/i },
+      { label: "wrong_model_studio_pro", pattern: /스튜디오\s*프로|스튜디오프로|studio\s*pro|studiopro/i },
+      { label: "wrong_model_studio3", pattern: /스튜디오\s*3|스튜디오3|studio\s*3\b|studio3\b/i },
+      { label: "wrong_model_studio2", pattern: /스튜디오\s*2|스튜디오2|studio\s*2\b|studio2\b/i },
+      { label: "wrong_product_fit_or_flex", pattern: /비츠\s*fit|beats\s*fit|fit\s*pro|비츠\s*flex|beats\s*flex/i },
+      { label: "wrong_product_powerbeats", pattern: /파워비츠|powerbeats|power\s*beats/i },
+      { label: "wrong_product_earbuds", pattern: /이어버드|earbuds|earphone|무선\s*이어폰/i },
+      { label: "case_or_pouch_only", pattern: /케이스\s*(?:만|단품|개별)|파우치\s*만|하드\s*케이스\s*만|보관\s*케이스\s*만/ },
+      { label: "earcushion_only", pattern: /이어\s*쿠션(?:\s*만|\s*교체|\s*단품)?|쿠션\s*교체|쿠션만\s*판매|이어\s*패드(?:\s*만|\s*교체|\s*단품)?/ },
+      { label: "charger_or_cable_only", pattern: /충전기\s*만|케이블\s*만|usb\s*케이블\s*만|어댑터\s*만/i },
+      { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만|힌지\s*부품/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+      { label: "non_beats_clone", pattern: /짝퉁|가품|복제품|레플리카/ },
+      { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
     ],
   },
 };
