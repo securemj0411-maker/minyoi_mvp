@@ -122,6 +122,31 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "PlayStation 5 Slim (Disc/Digital)",
     note: "PS5 Slim 2023-11 narrow lane. Standard sibling은 ps5_disc_digital_standard. Pro/PSVR/Switch/액세서리는 catalog mustNotContain으로 분리.",
   },
+  iphone_13_pro_128gb_self: {
+    status: "ready",
+    label: "iPhone 13 Pro 128GB (자급제)",
+    note: "iPhone 14/15/16 Pro 자급제 sibling.",
+  },
+  iphone_12_pro_128gb_self: {
+    status: "ready",
+    label: "iPhone 12 Pro 128GB (자급제)",
+    note: "구형 자급제 narrow lane. Pro Max/미니/통신사는 catalog로 차단.",
+  },
+  galaxy_s23_ultra_256_self: {
+    status: "ready",
+    label: "Galaxy S23 Ultra 256GB (자급제)",
+    note: "S22/S24/S25 sibling 차단.",
+  },
+  ipad_pro_11_m2_256_wifi: {
+    status: "ready",
+    label: "iPad Pro 11\" M2 256GB Wi-Fi",
+    note: "M4 sibling. M1/M3/M4, 13인치, 셀룰러 차단.",
+  },
+  ipad_mini_7_128_wifi: {
+    status: "ready",
+    label: "iPad mini 7 (A17 Pro) 128GB Wi-Fi",
+    note: "신모델. mini 5/6, M-chip, 256+ 차단.",
+  },
 };
 
 export type CategoryReadinessConfig = {
