@@ -561,6 +561,37 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     msrpKrw: 1700000,
     released: 2025,
   },
+  {
+    id: "galaxy-s23-ultra-256-self",
+    brand: "Samsung",
+    category: "smartphone",
+    laneKey: "galaxy_s23_ultra_256_self",
+    modelName: "Galaxy S23 Ultra 256GB (자급제)",
+    aliases: ["갤럭시 S23 울트라 256 자급제", "Galaxy S23 Ultra 256 SIM-Free"],
+    mustContain: [
+      ["갤럭시 s23 울트라", "갤럭시s23울트라", "galaxy s23 ultra", "s23 ultra"],
+      ["256gb", "256 gb", "256기가", "256g"],
+      ["자급제", "자급", "공기계", "언락"],
+    ],
+    mustNotContain: [
+      "s22", "갤럭시 s22", "galaxy s22",
+      "s24", "갤럭시 s24", "galaxy s24",
+      "s25", "갤럭시 s25", "galaxy s25",
+      "s26", "갤럭시 s26", "galaxy s26",
+      "플러스", "plus", "일반", "basic",
+      "512gb", "512 gb", "512기가",
+      "1tb", "1 tb", "1테라",
+      "skt 완납", "skt 개통", "skt 약정", "skt 전용",
+      "kt 완납", "kt 개통", "kt 약정", "kt 전용",
+      "lgu+", "lg u+", "유플러스", "엘지유플",
+      "통신사 개통", "통신사 전용", "번호 이동", "약정 승계",
+      "완납폰", "완납 폰", "할부 승계", "할부 잔여", "확정 기변",
+      "리퍼폰", "리퍼 폰",
+      ...PHONE_NOISE,
+    ],
+    msrpKrw: 1600000,
+    released: 2023,
+  },
 ];
 
 const CORE_LAPTOP_CATALOG_PRO: Sku[] = [

@@ -40,7 +40,8 @@ type LaneKey =
   | "iphone_14_pro_128gb_self"
   | "galaxy_s24_ultra_256_self"
   | "beats_studio_pro"
-  | "iphone_13_pro_128gb_self";
+  | "iphone_13_pro_128gb_self"
+  | "galaxy_s23_ultra_256_self";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -794,6 +795,50 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "wrong_model_s23", pattern: /갤럭시\s*s23|galaxy\s*s23|\bs23\s*(?:울트라|ultra|플러스|plus|기본|\+)?/i },
       { label: "wrong_model_s22", pattern: /갤럭시\s*s22|galaxy\s*s22|\bs22\s*(?:울트라|ultra|플러스|plus|기본|\+)?/i },
       { label: "wrong_model_plus_or_base", pattern: /s24\s*(?:플러스|plus|\+)|갤럭시\s*s24\s*플러스|galaxy\s*s24\s*plus|s24\s*(?:기본|일반|basic)/i },
+      { label: "wrong_storage_512_1tb", pattern: /512\s*(?:gb|기가)?|1\s*tb|1\s*테라/i },
+      { label: "carrier_skt", pattern: /\bskt\b\s*(?:완납|개통|약정|이동|승계|전용)|skt\s*완납폰|skt\s*전용/i },
+      { label: "carrier_kt", pattern: /(?:^|\s)kt\s*(?:완납|개통|약정|이동|승계|전용)|케이티\s*개통|kt\s*완납폰/i },
+      { label: "carrier_lg", pattern: /\blgu\+|\blg\s*u\+|유플\s*러스|엘지\s*유플|엘지유플|lg\s*전용/i },
+      { label: "carrier_locked_generic", pattern: /통신사\s*개통|약정\s*승계|완납\s*폰|완납폰/ },
+      { label: "broken_or_parts", pattern: /액정\s*파손|부품\s*용|부품용/ },
+      { label: "buying_post", pattern: /매입(?!\s*도)|삽니다|구해요|구매\s*합니다|구매합니다|구합니다/ },
+      { label: "refurbished_only", pattern: /리퍼\s*폰|리퍼폰|리퍼\s*제품|리퍼\s*수령|센터\s*리퍼/ },
+      { label: "accessory_only", pattern: /케이스\s*(?:만|단품)|필름\s*(?:만|단품)|충전기\s*만|보호\s*필름\s*만|s\s*펜\s*만|s펜만|어댑터\s*만/ },
+      { label: "lost_or_locked", pattern: /분실\s*폰|분실폰|잠김|락걸림|아이디\s*잠금|구글\s*계정\s*잠금|분실\s*보상폰|분실보상폰/ },
+    ],
+  },
+
+  galaxy_s23_ultra_256_self: {
+    laneKey: "galaxy_s23_ultra_256_self",
+    category: "smartphone",
+    queries: [
+      "갤럭시 s23 울트라 256 자급제",
+      "galaxy s23 ultra 256 자급제",
+      "s23 울트라 자급제 256",
+      "갤s23울트라 256 자급제",
+      "갤럭시 s23 울트라 256",
+      "갤럭시s23울트라 256",
+      "galaxy s23 ultra 256",
+      "갤럭시 s23 울트라 자급제",
+      "s23 ultra 256 self",
+      "갤럭시 s23 울트라 256gb",
+      "s23울트라 256 자급제",
+      "s23 ultra 256",
+    ],
+    pages: 6,
+    targetParseReady: 200,
+    priceMin: 400_000,
+    priceMax: 1_500_000,
+    acceptAll: [/갤럭시\s*s23\s*울트라|galaxy\s*s23\s*ultra|s23\s*ultra|s23\s*울트라/i],
+    acceptAnyOf: [],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_s22", pattern: /갤럭시\s*s22|galaxy\s*s22|\bs22\s*(?:울트라|ultra|플러스|plus|기본|\+)?/i },
+      { label: "wrong_model_s24", pattern: /갤럭시\s*s24|galaxy\s*s24|\bs24\s*(?:울트라|ultra|플러스|plus|기본|\+)?/i },
+      { label: "wrong_model_s25", pattern: /갤럭시\s*s25|galaxy\s*s25|\bs25\s*(?:울트라|ultra|플러스|plus|기본|\+)?/i },
+      { label: "wrong_model_s26", pattern: /갤럭시\s*s26|galaxy\s*s26|\bs26\s*(?:울트라|ultra|플러스|plus|기본|\+)?/i },
+      { label: "wrong_model_plus_or_base", pattern: /s23\s*(?:플러스|plus|\+)|갤럭시\s*s23\s*플러스|galaxy\s*s23\s*plus|s23\s*(?:기본|일반|basic)/i },
+      { label: "wrong_storage_128", pattern: /(?:^|[^0-9])128\s*(?:gb|기가)\b/i },
       { label: "wrong_storage_512_1tb", pattern: /512\s*(?:gb|기가)?|1\s*tb|1\s*테라/i },
       { label: "carrier_skt", pattern: /\bskt\b\s*(?:완납|개통|약정|이동|승계|전용)|skt\s*완납폰|skt\s*전용/i },
       { label: "carrier_kt", pattern: /(?:^|\s)kt\s*(?:완납|개통|약정|이동|승계|전용)|케이티\s*개통|kt\s*완납폰/i },
