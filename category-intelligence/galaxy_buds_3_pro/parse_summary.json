@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "lane_key": "galaxy_buds_3_pro",
+  "category": "earphone",
+  "generated_at": "2026-05-12T12:08:01.589Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "갤럭시 버즈 3 프로",
+    "갤버즈3프로",
+    "galaxy buds 3 pro",
+    "갤럭시버즈3프로"
+  ],
+  "pages": 12,
+  "price_range_krw": [
+    90000,
+    360000
+  ],
+  "target_parse_ready": 200,
+  "total_fetched": 349,
+  "parse_ready_count": 200,
+  "rejected_count": 149,
+  "target_reached": true,
+  "reject_breakdown": [
+    {
+      "reason": "price_too_low",
+      "count": 104
+    },
+    {
+      "reason": "missing_any_3_s_프로_3프로_3_s_pro_buds_",
+      "count": 41
+    },
+    {
+      "reason": "reject_buying_post",
+      "count": 16
+    },
+    {
+      "reason": "missing_갤럭시_s_버즈_갤버즈_galaxy_s_bu",
+      "count": 15
+    },
+    {
+      "reason": "reject_wrong_model_buds2",
+      "count": 14
+    },
+    {
+      "reason": "reject_single_unit_only",
+      "count": 14
+    },
+    {
+      "reason": "reject_wrong_model_buds2_pro",
+      "count": 11
+    },
+    {
+      "reason": "reject_wrong_model_buds_live",
+      "count": 11
+    },
+    {
+      "reason": "reject_wrong_model_buds1",
+      "count": 10
+    },
+    {
+      "reason": "reject_wrong_model_buds_plus",
+      "count": 9
+    },
+    {
+      "reason": "reject_broken",
+      "count": 9
+    },
+    {
+      "reason": "price_too_high",
+      "count": 8
+    },
+    {
+      "reason": "reject_wrong_model_buds_fe",
+      "count": 3
+    },
+    {
+      "reason": "reject_case_or_pouch_only",
+      "count": 2
+    },
+    {
+      "reason": "reject_non_galaxy_clone",
+      "count": 1
+    },
+    {
+      "reason": "reject_charger_or_cable_only",
+      "count": 1
+    },
+    {
+      "reason": "reject_eartip_only",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [
+      "갤럭시\\s*버즈|갤버즈|galaxy\\s*buds"
+    ],
+    "accept_any_of": [
+      [
+        "3\\s*프로|3프로|3\\s*pro|buds\\s*3\\s*pro|버즈\\s*3\\s*프로"
+      ]
+    ]
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_model_buds2_pro",
+      "pattern": "버즈\\s*2\\s*프로|버즈2\\s*프로|버즈2프로|buds\\s*2\\s*pro|buds2\\s*pro|buds2pro"
+    },
+    {
+      "label": "wrong_model_buds2",
+      "pattern": "버즈\\s*2\\b|버즈2\\b|buds\\s*2\\b|buds2\\b"
+    },
+    {
+      "label": "wrong_model_buds1",
+      "pattern": "버즈\\s*1\\b|버즈1\\b|buds\\s*1\\b|buds1\\b|갤럭시\\s*버즈\\s*기본|1세대\\s*버즈"
+    },
+    {
+      "label": "wrong_model_buds_live",
+      "pattern": "버즈\\s*라이브|버즈라이브|buds\\s*live|budslive"
+    },
+    {
+      "label": "wrong_model_buds_fe",
+      "pattern": "버즈\\s*fe|버즈fe|buds\\s*fe|budsfe"
+    },
+    {
+      "label": "wrong_model_buds_plus",
+      "pattern": "버즈\\s*\\+|버즈\\+|버즈\\s*플러스|buds\\s*\\+|buds\\+|buds\\s*plus"
+    },
+    {
+      "label": "wrong_model_buds3_basic",
+      "pattern": "버즈\\s*3\\s*(?:기본|일반)|기본형\\s*버즈\\s*3"
+    },
+    {
+      "label": "case_or_pouch_only",
+      "pattern": "케이스\\s*(?:만|단품|개별)|파우치\\s*만|하드\\s*케이스\\s*만|보관\\s*케이스\\s*만|커버\\s*만"
+    },
+    {
+      "label": "eartip_only",
+      "pattern": "이어\\s*팁(?:\\s*만|\\s*단품|\\s*교체)|이어팁\\s*만|팁\\s*만\\s*판매"
+    },
+    {
+      "label": "charger_or_cable_only",
+      "pattern": "충전기\\s*만|케이블\\s*만|usb\\s*케이블\\s*만|어댑터\\s*만|크래들\\s*만"
+    },
+    {
+      "label": "single_unit_only",
+      "pattern": "왼쪽\\s*만|오른쪽\\s*만|좌측\\s*만|우측\\s*만|한쪽\\s*만|편쪽\\s*만|유닛\\s*만|한짝"
+    },
+    {
+      "label": "parts_only",
+      "pattern": "부품\\s*용|부품용|파트\\s*만|리퍼\\s*부품|단자\\s*만"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입|삽니다|구해요|구매\\s*합니다|구매합니다"
+    },
+    {
+      "label": "non_galaxy_clone",
+      "pattern": "짝퉁|가품|복제품|레플리카"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|불량\\s*품|파손\\s*품|작동\\s*안\\s*됨|소리\\s*안\\s*나"
+    }
+  ]
+}
