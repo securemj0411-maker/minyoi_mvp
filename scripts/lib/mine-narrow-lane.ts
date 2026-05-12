@@ -43,7 +43,8 @@ type LaneKey =
   | "galaxy_s24_ultra_256_self"
   | "beats_studio_pro"
   | "iphone_13_pro_128gb_self"
-  | "galaxy_s23_ultra_256_self";
+  | "galaxy_s23_ultra_256_self"
+  | "applewatch_ultra_2";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -929,6 +930,38 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "refurbished_only", pattern: /리퍼\s*폰|리퍼폰|리퍼\s*제품|리퍼\s*수령|센터\s*리퍼/ },
       { label: "accessory_only", pattern: /케이스\s*(?:만|단품)|필름\s*(?:만|단품)|충전기\s*만|보호\s*필름\s*만|s\s*펜\s*만|s펜만|어댑터\s*만/ },
       { label: "lost_or_locked", pattern: /분실\s*폰|분실폰|잠김|락걸림|아이디\s*잠금|구글\s*계정\s*잠금|분실\s*보상폰|분실보상폰/ },
+    ],
+  },
+
+  applewatch_ultra_2: {
+    laneKey: "applewatch_ultra_2",
+    category: "smartwatch",
+    queries: [
+      "애플워치 울트라 2",
+      "apple watch ultra 2",
+      "에플워치 울트라2",
+      "애플워치 울트라2",
+      "applewatch ultra 2",
+      "워치 울트라 2",
+    ],
+    pages: 8,
+    targetParseReady: 200,
+    priceMin: 400_000,
+    priceMax: 1_200_000,
+    acceptAll: [/애플\s*워치|apple\s*watch|applewatch|에플\s*워치|워치/i],
+    acceptAnyOf: [[/울트라\s*2|ultra\s*2|울트라2|ultra2/i]],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_gen_ultra_1", pattern: /울트라\s*1\b|ultra\s*1\b|울트라1\b|ultra1\b|1\s*세대\s*울트라|울트라\s*1\s*세대/i },
+      { label: "wrong_model_se", pattern: /\bse\b|se\s*1세대|se\s*2세대|se\s*3세대|se2|se3/i },
+      { label: "wrong_model_series_9", pattern: /시리즈\s*9|series\s*9|s9\s*워치|애플\s*워치\s*9\b|apple\s*watch\s*9\b/i },
+      { label: "wrong_model_series_10", pattern: /시리즈\s*10|series\s*10|s10\s*워치|애플\s*워치\s*10\b|apple\s*watch\s*10\b/i },
+      { label: "case_only", pattern: /케이스\s*만|케이스만|보호\s*케이스\s*판매/ },
+      { label: "band_only", pattern: /밴드\s*만|밴드만|스트랩\s*만|스트랩만|솔로\s*루프\s*만|알파인\s*루프\s*만|오션\s*밴드\s*만|트레일\s*루프\s*만/ },
+      { label: "charger_only", pattern: /충전기\s*만|충전기만|충전\s*케이블\s*만|마그네틱\s*충전\s*만/ },
+      { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|액정\s*만|디스플레이\s*만|배터리\s*만/ },
+      { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|액정\s*파손/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다|구합니다/ },
     ],
   },
 };

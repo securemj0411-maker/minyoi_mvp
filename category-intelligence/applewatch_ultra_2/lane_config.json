@@ -1,0 +1,64 @@
+{
+  "lane_key": "applewatch_ultra_2",
+  "category": "smartwatch",
+  "queries": [
+    "애플워치 울트라 2",
+    "apple watch ultra 2",
+    "에플워치 울트라2",
+    "애플워치 울트라2",
+    "applewatch ultra 2",
+    "워치 울트라 2"
+  ],
+  "accept_all": [
+    "애플\\s*워치|apple\\s*watch|applewatch|에플\\s*워치|워치"
+  ],
+  "accept_any_of": [
+    [
+      "울트라\\s*2|ultra\\s*2|울트라2|ultra2"
+    ]
+  ],
+  "reject_rules": [
+    {
+      "label": "wrong_gen_ultra_1",
+      "pattern": "울트라\\s*1\\b|ultra\\s*1\\b|울트라1\\b|ultra1\\b|1\\s*세대\\s*울트라|울트라\\s*1\\s*세대"
+    },
+    {
+      "label": "wrong_model_se",
+      "pattern": "\\bse\\b|se\\s*1세대|se\\s*2세대|se\\s*3세대|se2|se3"
+    },
+    {
+      "label": "wrong_model_series_9",
+      "pattern": "시리즈\\s*9|series\\s*9|s9\\s*워치|애플\\s*워치\\s*9\\b|apple\\s*watch\\s*9\\b"
+    },
+    {
+      "label": "wrong_model_series_10",
+      "pattern": "시리즈\\s*10|series\\s*10|s10\\s*워치|애플\\s*워치\\s*10\\b|apple\\s*watch\\s*10\\b"
+    },
+    {
+      "label": "case_only",
+      "pattern": "케이스\\s*만|케이스만|보호\\s*케이스\\s*판매"
+    },
+    {
+      "label": "band_only",
+      "pattern": "밴드\\s*만|밴드만|스트랩\\s*만|스트랩만|솔로\\s*루프\\s*만|알파인\\s*루프\\s*만|오션\\s*밴드\\s*만|트레일\\s*루프\\s*만"
+    },
+    {
+      "label": "charger_only",
+      "pattern": "충전기\\s*만|충전기만|충전\\s*케이블\\s*만|마그네틱\\s*충전\\s*만"
+    },
+    {
+      "label": "parts_only",
+      "pattern": "부품\\s*용|부품용|파트\\s*만|액정\\s*만|디스플레이\\s*만|배터리\\s*만"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|불량\\s*품|파손\\s*품|작동\\s*안\\s*됨|액정\\s*파손"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입|삽니다|구해요|구매\\s*합니다|구매합니다|구합니다"
+    }
+  ],
+  "price_min_krw": 400000,
+  "price_max_krw": 1200000
+}
