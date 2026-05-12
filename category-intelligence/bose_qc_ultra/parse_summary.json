@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "lane_key": "bose_qc_ultra",
+  "category": "headphone",
+  "generated_at": "2026-05-12T10:48:00.123Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "보스 quietcomfort ultra",
+    "bose qc ultra",
+    "보스 qc 울트라",
+    "bose quietcomfort ultra 헤드폰",
+    "보스 울트라 헤드폰",
+    "bose quietcomfort ultra headphone",
+    "보스 qc ultra 헤드폰",
+    "bose qcultra"
+  ],
+  "pages": 8,
+  "price_range_krw": [
+    200000,
+    700000
+  ],
+  "target_parse_ready": 200,
+  "total_fetched": 368,
+  "parse_ready_count": 200,
+  "rejected_count": 168,
+  "target_reached": true,
+  "reject_breakdown": [
+    {
+      "reason": "missing_any_헤드폰_headphone_헤드셋",
+      "count": 127
+    },
+    {
+      "reason": "price_too_low",
+      "count": 56
+    },
+    {
+      "reason": "reject_wrong_product_earbuds",
+      "count": 50
+    },
+    {
+      "reason": "reject_earcushion_only",
+      "count": 15
+    },
+    {
+      "reason": "missing_any_quietcomfort_s_ultra_qc_",
+      "count": 14
+    },
+    {
+      "reason": "reject_broken",
+      "count": 4
+    },
+    {
+      "reason": "reject_wrong_model_qc45",
+      "count": 3
+    },
+    {
+      "reason": "reject_buying_post",
+      "count": 3
+    },
+    {
+      "reason": "reject_case_or_pouch_only",
+      "count": 1
+    },
+    {
+      "reason": "reject_non_bose_clone",
+      "count": 1
+    },
+    {
+      "reason": "reject_wrong_model_qc35",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [
+      "보스|bose"
+    ],
+    "accept_any_of": [
+      [
+        "quietcomfort\\s*ultra|qc\\s*ultra|qc\\s*울트라|quietcomfort\\s*울트라|qcultra"
+      ],
+      [
+        "헤드폰|headphone|헤드셋"
+      ]
+    ]
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_model_qc35",
+      "pattern": "\\bqc\\s*35\\b|quietcomfort\\s*35"
+    },
+    {
+      "label": "wrong_model_qc45",
+      "pattern": "\\bqc\\s*45\\b|quietcomfort\\s*45"
+    },
+    {
+      "label": "wrong_model_qc15",
+      "pattern": "\\bqc\\s*15\\b|quietcomfort\\s*15"
+    },
+    {
+      "label": "wrong_model_qc20",
+      "pattern": "\\bqc\\s*20\\b|quietcomfort\\s*20"
+    },
+    {
+      "label": "wrong_product_earbuds",
+      "pattern": "quietcomfort\\s*earbuds|qc\\s*이어버드|qc\\s*earbuds|이어버드|earbuds|무선\\s*이어폰"
+    },
+    {
+      "label": "wrong_product_soundlink",
+      "pattern": "soundlink|사운드링크|사운드\\s*링크"
+    },
+    {
+      "label": "case_or_pouch_only",
+      "pattern": "케이스\\s*(?:만|단품|개별)|파우치\\s*만|하드\\s*케이스\\s*만|보관\\s*케이스\\s*만"
+    },
+    {
+      "label": "earcushion_only",
+      "pattern": "이어\\s*쿠션(?:\\s*만|\\s*교체|\\s*단품)?|쿠션\\s*교체|쿠션만\\s*판매|이어\\s*패드(?:\\s*만|\\s*교체|\\s*단품)?"
+    },
+    {
+      "label": "charger_or_cable_only",
+      "pattern": "충전기\\s*만|케이블\\s*만|usb\\s*케이블\\s*만|어댑터\\s*만"
+    },
+    {
+      "label": "parts_only",
+      "pattern": "부품\\s*용|부품용|파트\\s*만|리퍼\\s*부품|단자\\s*만|힌지\\s*부품"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입|삽니다|구해요|구매\\s*합니다|구매합니다"
+    },
+    {
+      "label": "non_bose_clone",
+      "pattern": "짝퉁|가품|복제품|레플리카"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|불량\\s*품|파손\\s*품|작동\\s*안\\s*됨|소리\\s*안\\s*나"
+    }
+  ]
+}

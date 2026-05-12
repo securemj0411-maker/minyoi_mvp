@@ -26,7 +26,8 @@ type LaneKey =
   | "sony_wh1000xm4"
   | "sony_wh_ch520"
   | "iphone_15_pro_128gb_self"
-  | "macbook_air_m3_13_256";
+  | "macbook_air_m3_13_256"
+  | "bose_qc_ultra";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -211,6 +212,46 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "wrong_storage_2tb", pattern: /\b2\s*tb\b|2\s*테라/i },
       { label: "broken_or_parts_only", pattern: /액정\s*만|메인\s*보드|로직\s*보드|상판\s*만|하판\s*만|부품\s*용|부품용|키보드\s*만|배터리\s*만|침수/ },
       { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+    ],
+  },
+
+  bose_qc_ultra: {
+    laneKey: "bose_qc_ultra",
+    category: "headphone",
+    queries: [
+      "보스 quietcomfort ultra",
+      "bose qc ultra",
+      "보스 qc 울트라",
+      "bose quietcomfort ultra 헤드폰",
+      "보스 울트라 헤드폰",
+      "bose quietcomfort ultra headphone",
+      "보스 qc ultra 헤드폰",
+      "bose qcultra",
+    ],
+    pages: 8,
+    targetParseReady: 200,
+    priceMin: 200_000,
+    priceMax: 700_000,
+    acceptAll: [/보스|bose/i],
+    acceptAnyOf: [
+      [/quietcomfort\s*ultra|qc\s*ultra|qc\s*울트라|quietcomfort\s*울트라|qcultra/i],
+      [/헤드폰|headphone|헤드셋/i],
+    ],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_qc35", pattern: /\bqc\s*35\b|quietcomfort\s*35/i },
+      { label: "wrong_model_qc45", pattern: /\bqc\s*45\b|quietcomfort\s*45/i },
+      { label: "wrong_model_qc15", pattern: /\bqc\s*15\b|quietcomfort\s*15/i },
+      { label: "wrong_model_qc20", pattern: /\bqc\s*20\b|quietcomfort\s*20/i },
+      { label: "wrong_product_earbuds", pattern: /quietcomfort\s*earbuds|qc\s*이어버드|qc\s*earbuds|이어버드|earbuds|무선\s*이어폰/i },
+      { label: "wrong_product_soundlink", pattern: /soundlink|사운드링크|사운드\s*링크/i },
+      { label: "case_or_pouch_only", pattern: /케이스\s*(?:만|단품|개별)|파우치\s*만|하드\s*케이스\s*만|보관\s*케이스\s*만/ },
+      { label: "earcushion_only", pattern: /이어\s*쿠션(?:\s*만|\s*교체|\s*단품)?|쿠션\s*교체|쿠션만\s*판매|이어\s*패드(?:\s*만|\s*교체|\s*단품)?/ },
+      { label: "charger_or_cable_only", pattern: /충전기\s*만|케이블\s*만|usb\s*케이블\s*만|어댑터\s*만/i },
+      { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만|힌지\s*부품/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+      { label: "non_bose_clone", pattern: /짝퉁|가품|복제품|레플리카/ },
+      { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
     ],
   },
 
