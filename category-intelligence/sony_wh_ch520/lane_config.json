@@ -1,0 +1,91 @@
+{
+  "lane_key": "sony_wh_ch520",
+  "category": "headphone",
+  "queries": [
+    "소니 wh-ch520",
+    "wh-ch520",
+    "wh ch520",
+    "whch520",
+    "소니 ch520",
+    "sony ch520",
+    "sony wh-ch520",
+    "sony wh ch520",
+    "ch520",
+    "소니 헤드폰 ch520",
+    "소니 블루투스 헤드폰 ch520",
+    "소니 무선헤드폰 ch520",
+    "wh ch 520"
+  ],
+  "accept_all": [
+    "소니|sony"
+  ],
+  "accept_any_of": [
+    [
+      "wh\\s*-?\\s*ch\\s*520|whch520|\\bch\\s*520\\b"
+    ]
+  ],
+  "reject_rules": [
+    {
+      "label": "wrong_model_ch700n",
+      "pattern": "wh\\s*-?\\s*ch\\s*700n|whch700n|\\bch\\s*700n\\b"
+    },
+    {
+      "label": "wrong_model_ch710n",
+      "pattern": "wh\\s*-?\\s*ch\\s*710n|whch710n|\\bch\\s*710n\\b"
+    },
+    {
+      "label": "wrong_model_ch500",
+      "pattern": "wh\\s*-?\\s*ch\\s*500\\b|whch500|\\bch\\s*500\\b"
+    },
+    {
+      "label": "wrong_model_ch720n",
+      "pattern": "wh\\s*-?\\s*ch\\s*720n|whch720n|\\bch\\s*720n\\b"
+    },
+    {
+      "label": "wrong_model_xm_series",
+      "pattern": "1000\\s*xm[3-6]|wh\\s*-?\\s*1000\\s*xm[3-6]|\\bxm[3-6]\\b"
+    },
+    {
+      "label": "wrong_model_ult",
+      "pattern": "ult\\s*900n|ult\\s*wear|ultwear"
+    },
+    {
+      "label": "wrong_model_linkbuds",
+      "pattern": "linkbuds|링크\\s*버즈"
+    },
+    {
+      "label": "wrong_model_wf_earbuds",
+      "pattern": "\\bwf\\s*-?\\s*\\d{3,4}|무선\\s*이어폰|이어버드"
+    },
+    {
+      "label": "case_only",
+      "pattern": "케이스\\s*(?:만|단품|개별)|하드\\s*케이스\\s*만|파우치\\s*만|보관\\s*케이스\\s*만"
+    },
+    {
+      "label": "earpad_only",
+      "pattern": "이어\\s*패드(?:\\s*만|\\s*교체|\\s*단품)?|패드\\s*교체용|쿠션\\s*교체|패드만\\s*판매"
+    },
+    {
+      "label": "charger_or_cable_only",
+      "pattern": "충전기\\s*만|케이블\\s*만|usb\\s*케이블\\s*만|어댑터\\s*만"
+    },
+    {
+      "label": "parts_only",
+      "pattern": "부품\\s*용|부품용|파트\\s*만|리퍼\\s*부품|단자\\s*만|힌지\\s*부품"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입|삽니다|구해요|구매\\s*합니다|구매합니다"
+    },
+    {
+      "label": "non_sony_clone",
+      "pattern": "짝퉁|가품|복제품|레플리카"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|불량\\s*품|파손\\s*품|작동\\s*안\\s*됨|소리\\s*안\\s*나"
+    }
+  ],
+  "price_min_krw": 20000,
+  "price_max_krw": 120000
+}

@@ -1,0 +1,268 @@
+[
+  {
+    "pid": "348783288",
+    "name": "SONY 소니 무선헤드셋 WH-CH520 화이트",
+    "price": 38000,
+    "reject_reasons": [
+      "reject_non_sony_clone"
+    ]
+  },
+  {
+    "pid": "395309135",
+    "name": "SONY 소니 화이트 헤드폰",
+    "price": 45000,
+    "reject_reasons": [
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "402632497",
+    "name": "소니헤드셋 WH-CH520 베이지",
+    "price": 40000,
+    "reject_reasons": [
+      "reject_non_sony_clone"
+    ]
+  },
+  {
+    "pid": "386257785",
+    "name": "SONY 소니 블루투스 헤드셋  WH-CH520",
+    "price": 38000,
+    "reject_reasons": [
+      "reject_non_sony_clone"
+    ]
+  },
+  {
+    "pid": "328766821",
+    "name": "wh-ch520 헤드폰 헤드셋 팔아요",
+    "price": 50000,
+    "reject_reasons": [
+      "missing_소니_sony"
+    ]
+  },
+  {
+    "pid": "290105205",
+    "name": "쏘니 무선 헤드셋 wh-ch-520",
+    "price": 60000,
+    "reject_reasons": [
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "392504346",
+    "name": "소니 편한 데일리 블루투스 헤드폰 CH-520",
+    "price": 45000,
+    "reject_reasons": [
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "390072757",
+    "name": "소니 CH-520",
+    "price": 20000,
+    "reject_reasons": [
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "399614668",
+    "name": "34inch) 리바이스 520 KOREA 와이드 데님 청바지",
+    "price": 60000,
+    "reject_reasons": [
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "349553672",
+    "name": "USA 리바이스 520 화이트탭 데님 팬츠 (32inch)",
+    "price": 65000,
+    "reject_reasons": [
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "344472578",
+    "name": "Levis 리바이스 520 인디고 데님 팬츠 (32inch)",
+    "price": 48000,
+    "reject_reasons": [
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "406895998",
+    "name": "퍼시스의자 베스토의자(VESTO) CH5200중역용의자",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "407457946",
+    "name": "미스치프 MISCHIEF 뷔스티에 / k4520",
+    "price": 18000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "380212359",
+    "name": "샤넬 샤넬 선글라스 CH 5201-Q (C.714/3B) 선글라스 팝니다",
+    "price": 90000,
+    "reject_reasons": [
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "405320409",
+    "name": "미스테리 CHT520 3번우드 디아마나 TB 50 S",
+    "price": 350000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "405136689",
+    "name": "(중고) 쿠쿠 초음파 가습기 CH-DS0520FW 팝니다",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "366335120",
+    "name": "a0520it MICHAA 미샤 경량  롱 패딩 코트 55",
+    "price": 50000,
+    "reject_reasons": [
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "366287344",
+    "name": "2520 MSCHF 미스치프 로고 피그먼트 후드티 L",
+    "price": 40000,
+    "reject_reasons": [
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "369645236",
+    "name": "SMC SMC-5200 AS/RS Machine Conrol",
+    "price": 170000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "370750408",
+    "name": "hitachi cp-wu5500 중고빔프로젝터 5200안시 wuxga",
+    "price": 409000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "358707747",
+    "name": "CHILLE anap 니트 [25092520]",
+    "price": 20000,
+    "reject_reasons": [
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "344525860",
+    "name": "CHANEL 06P 리본 니트 탑 (P35209 K02063)",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "334581561",
+    "name": "Chana 모리걸 민소매 원피스 [25052019]",
+    "price": 25000,
+    "reject_reasons": [
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "334581350",
+    "name": "Honey Bunch 블라우스 [25052015]",
+    "price": 25000,
+    "reject_reasons": [
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "328054581",
+    "name": "휘슬러 TCH5520 3구 전기렌지 핫플레이트",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "336485427",
+    "name": "히다찌캠코더/HITACHI VM-s5200 풀셋트",
+    "price": 125000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "310300058",
+    "name": "삼성 보조배터리 정품fast charge EB PN-920 5200mah",
+    "price": 17000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "229586254",
+    "name": "삼성 보조배터리 정품fast charge EB PN-920 5200mah",
+    "price": 16000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  },
+  {
+    "pid": "400179901",
+    "name": "[NO.5205] MICHAEL JACKSON (Thriller) LP판",
+    "price": 12500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_소니_sony",
+      "missing_any_wh_s_s_ch_s_520_whch5"
+    ]
+  }
+]
