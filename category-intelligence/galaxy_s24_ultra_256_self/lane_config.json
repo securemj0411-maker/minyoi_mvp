@@ -1,0 +1,82 @@
+{
+  "lane_key": "galaxy_s24_ultra_256_self",
+  "category": "smartphone",
+  "queries": [
+    "갤럭시 s24 울트라 256 자급제",
+    "갤s24울트라 256 자급제",
+    "galaxy s24 ultra 256 자급제",
+    "s24 울트라 자급제 256",
+    "갤럭시 s24 울트라 256",
+    "갤럭시s24울트라 256",
+    "galaxy s24 ultra 256",
+    "갤럭시 s24 울트라 자급제",
+    "s24 ultra 256 self",
+    "갤럭시 s24 울트라 256gb",
+    "s24울트라 256 자급제",
+    "s24 ultra 256"
+  ],
+  "accept_all": [
+    "갤럭시\\s*s24\\s*울트라|galaxy\\s*s24\\s*ultra|s24\\s*ultra|s24\\s*울트라"
+  ],
+  "accept_any_of": [],
+  "reject_rules": [
+    {
+      "label": "wrong_model_s25",
+      "pattern": "갤럭시\\s*s25|galaxy\\s*s25|\\bs25\\s*(?:울트라|ultra|플러스|plus|기본|\\+)?"
+    },
+    {
+      "label": "wrong_model_s23",
+      "pattern": "갤럭시\\s*s23|galaxy\\s*s23|\\bs23\\s*(?:울트라|ultra|플러스|plus|기본|\\+)?"
+    },
+    {
+      "label": "wrong_model_s22",
+      "pattern": "갤럭시\\s*s22|galaxy\\s*s22|\\bs22\\s*(?:울트라|ultra|플러스|plus|기본|\\+)?"
+    },
+    {
+      "label": "wrong_model_plus_or_base",
+      "pattern": "s24\\s*(?:플러스|plus|\\+)|갤럭시\\s*s24\\s*플러스|galaxy\\s*s24\\s*plus|s24\\s*(?:기본|일반|basic)"
+    },
+    {
+      "label": "wrong_storage_512_1tb",
+      "pattern": "512\\s*(?:gb|기가)?|1\\s*tb|1\\s*테라"
+    },
+    {
+      "label": "carrier_skt",
+      "pattern": "\\bskt\\b\\s*(?:완납|개통|약정|이동|승계|전용)|skt\\s*완납폰|skt\\s*전용"
+    },
+    {
+      "label": "carrier_kt",
+      "pattern": "(?:^|\\s)kt\\s*(?:완납|개통|약정|이동|승계|전용)|케이티\\s*개통|kt\\s*완납폰"
+    },
+    {
+      "label": "carrier_lg",
+      "pattern": "\\blgu\\+|\\blg\\s*u\\+|유플\\s*러스|엘지\\s*유플|엘지유플|lg\\s*전용"
+    },
+    {
+      "label": "carrier_locked_generic",
+      "pattern": "통신사\\s*개통|약정\\s*승계|완납\\s*폰|완납폰"
+    },
+    {
+      "label": "broken_or_parts",
+      "pattern": "액정\\s*파손|부품\\s*용|부품용"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입(?!\\s*도)|삽니다|구해요|구매\\s*합니다|구매합니다|구합니다"
+    },
+    {
+      "label": "refurbished_only",
+      "pattern": "리퍼\\s*폰|리퍼폰|리퍼\\s*제품|리퍼\\s*수령|센터\\s*리퍼"
+    },
+    {
+      "label": "accessory_only",
+      "pattern": "케이스\\s*(?:만|단품)|필름\\s*(?:만|단품)|충전기\\s*만|보호\\s*필름\\s*만|s\\s*펜\\s*만|s펜만|어댑터\\s*만"
+    },
+    {
+      "label": "lost_or_locked",
+      "pattern": "분실\\s*폰|분실폰|잠김|락걸림|아이디\\s*잠금|구글\\s*계정\\s*잠금|분실\\s*보상폰|분실보상폰"
+    }
+  ],
+  "price_min_krw": 600000,
+  "price_max_krw": 1700000
+}
