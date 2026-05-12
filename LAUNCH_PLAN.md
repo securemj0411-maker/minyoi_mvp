@@ -353,6 +353,21 @@ iphone_12~16_pro_128gb_self (27~48%), galaxy_s23~24 (32~40%), bose_qc45 (39%), i
 
 수술: mining acceptAll 정규식 완화가 아니라, **정확한 query 변형 추가 + read-only sample 보강**이 우선. 자급제/연식 추정은 AI L2로 넘긴다.
 
+#### 3.3a needs_more_mining lane 재진단 (2026-05-13)
+
+**산출물**: `reports/needs-more-mining-lanes-latest.md/json`  
+**명령**: `npm run report:needs-more-mining-lanes`
+
+| lane | class | 판단 | 다음 |
+|---|---|---|---|
+| `beats_solo_4` | closed_set_shallow | parse-ready 15건이지만 replay complete 100%. parser patch 금지. | 기존 non-AirPods live/search report에서 30~50건으로 backfill하거나 tiny no-write acquisition. leak 감시만 |
+| `ipad_pro_13_m2_256_wifi` | structured_more_mining | replay complete 72.7%. M2/6세대 + 12.9/13 + 256 + Wi-Fi가 명시되어야 함. | `12.9 6세대 256 wifi`, `m2 256 와이파이` query 보강. cellular/구성품 ambiguity는 AI/review |
+| `iphone_12_pro_128gb_self` | ai_l2_primary | 자급제 명시 parse-ready 3건뿐. silent carrier 상태는 결정론으로 추정 금지. | 명시 자급제/공기계/정상해지만 L1, 나머지는 AI L2 |
+| `iphone_13_pro_128gb_self` | ai_l2_primary | iPhone 12 Pro와 동일. 표본 보강은 평가용이지 결정론 recall ceiling 해결책 아님. | 명시 자급제만 L1, 나머지는 AI L2 |
+| `lg_gram_17_2024` | query_precision_problem | 현재 query가 LG 세탁기/가전과 wrong-size Gram을 대량 유입. parser patch 전에 query precision 문제. | `그램 17 노트북 2024`, `17인치 노트북 2024`, `16gb 512` 등 노트북 문맥 query로 재마이닝 |
+
+결정: `needs_more_mining`을 하나로 묶지 않는다. Beats는 shallow-but-clean, iPad는 structured mining, iPhone 자급제는 AI L2 primary, LG Gram은 query precision problem으로 분리한다.
+
 ### 3.4 `needs_ai_l2` — 결정론 한계
 - `report:ai-l2-parser-gap-routing` 최신 결과: needs_ai_l2 30 lane.
 - 대표 사유:
@@ -438,6 +453,7 @@ D. **CATEGORY_READINESS DB sync**: headphone/monitor/speaker/camera/game_console
 | 2026-05-13 | AI L2 runtime bridge 설계 작성 | `reports/ai-l2-runtime-bridge-design-latest.md` 추가. 중요한 발견: `mvp_listing_ai_classifications`가 `mvp_listings(pid)`를 FK로 참조해서 신규 `needs_review` row는 AI cache가 실패할 수 있음. 추천은 FK를 `mvp_raw_listings(pid)`로 바꾸는 migration 후 escrow inclusion. | 다음은 DDL 없이 `PipelineRow` parser metadata + AI prompt 확장부터. `needs_review` rescue runtime은 FK/캐시 설계 승인 전 보류 |
 | 2026-05-14 | overnight phase 1: 5 lane needs_more_mining 진단 | beats_solo_4→(a)가격상한완화+Jennie query, lg_gram_17_2024→(a)acceptAll패턴수정, ipad_pro_13_m2/iphone12/13→(b)AI L2 후보. 산출물: OVERNIGHT_PHASE1_MINING_DIAGNOSIS.md | beats_solo_4 price ceiling 280k→400k 실제 적용 (MJ 승인 후) |
 | 2026-05-14 | overnight phase 2: 50 lane replay 측정 + board | A급 10 lane (100%→87.5%), B급 14, C급 8, D급 18. GPT 라우팅 30개 중 27개 일치, bose_qc_ultra/galaxy_buds_3_pro A급 상향. macbook_pro_14 unknown 95.6% 긴급 진단. 산출물: OVERNIGHT_PHASE2_LANE_BOARD.md + reports/lane-replay-overnight-20260514.json | AI L2 cost 시뮬 (Phase 3) |
+| 2026-05-14 | overnight phase 3: AI L2 cost 시뮬레이션 | aiReviewTopN=1000 Haiku: 월 $0.13 (70% 캐시). aiReviewTopN=5000 Haiku: $0.63. Sonnet 10% escalation 포함 시 최대 $0.88. 팩 1팩($1.09) 대비 AI 비용 0.018%. 산출물: OVERNIGHT_PHASE3_AI_L2_COST.md | SESSION_HANDOFF 작성 (Phase 4) |
 
 ---
 
