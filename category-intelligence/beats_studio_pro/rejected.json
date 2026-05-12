@@ -1,0 +1,267 @@
+[
+  {
+    "pid": "404357135",
+    "name": "삽니다 아이맥 맥북 프로 에어 맥미니 맥스튜디오 갤럭시탭 아이패드 노트북",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_비츠_beats",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404383965",
+    "name": "삽니다 / 맥북 프로 에어 맥미니 아이맥 맥스튜디오 아이패드 갤럭시탭",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_비츠_beats",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "392657811",
+    "name": "Apple 애플 정품 Beats Studio Pro 비츠 스튜디오 헤드셋",
+    "price": 110000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406346772",
+    "name": "비츠 스튜디오 프로 헤드셋",
+    "price": 120000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "396142197",
+    "name": "Apple Beats Studio3 비츠 스튜디오3 ANC 헤드폰",
+    "price": 45000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_",
+      "reject_wrong_model_studio3"
+    ]
+  },
+  {
+    "pid": "402683254",
+    "name": "애플 비츠 스튜디오 프로 블랙",
+    "price": 195000,
+    "reject_reasons": [
+      "reject_non_beats_clone"
+    ]
+  },
+  {
+    "pid": "392627060",
+    "name": "스투시 비츠스튜디오프로 헤드셋 콜라보 미개봉 헤드셋",
+    "price": 940000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "342182419",
+    "name": "비츠 스튜디오 프로 브라운",
+    "price": 83000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "334750861",
+    "name": "비츠 스튜디오 프로3",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "403570215",
+    "name": "비츠 스튜디오 프로 무선 오버 이어 헤드폰 블랙",
+    "price": 120000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "400984421",
+    "name": "비츠스튜디오프로",
+    "price": 120000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "401275844",
+    "name": "애플 비츠 스튜디오 프로",
+    "price": 139000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "395832702",
+    "name": "비츠스튜디오프로 딥브라운 헤드셋 / s급",
+    "price": 130000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "394793387",
+    "name": "비츠 스튜디오 프로 + 애플케어",
+    "price": 140000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "391207130",
+    "name": "비츠 스튜디오 프로 블랙",
+    "price": 180000,
+    "reject_reasons": [
+      "reject_case_or_pouch_only"
+    ]
+  },
+  {
+    "pid": "389715959",
+    "name": "비츠 스튜디오 프로 판매합니다",
+    "price": 130000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "362390624",
+    "name": "애플 정품) 비츠 스튜디오 버즈, 프로 헤드셋입니다.",
+    "price": 89000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407431405",
+    "name": "애플 비츠 솔로 프로 아이보리 Beats Solo Pro 닥터드레 헤드폰",
+    "price": 60000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_",
+      "reject_wrong_model_solo"
+    ]
+  },
+  {
+    "pid": "405811928",
+    "name": "스투시x비츠 프로 무선헤드폰 (가격 마지막으루 내려요 ㅠ)",
+    "price": 590000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "375484662",
+    "name": "비츠 솔로 프로 헤드폰",
+    "price": 65000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "402456898",
+    "name": "애플 비츠 솔로 프로",
+    "price": 150000,
+    "reject_reasons": [
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_"
+    ]
+  },
+  {
+    "pid": "354759231",
+    "name": "beats solo pro 팝니다",
+    "price": 100000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_",
+      "reject_wrong_model_solo"
+    ]
+  },
+  {
+    "pid": "310673277",
+    "name": "8월까지) 비츠솔로프로 블루(새상품급) 판매합니다!",
+    "price": 230000,
+    "reject_reasons": [
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_"
+    ]
+  },
+  {
+    "pid": "245492981",
+    "name": "비츠 닥터드레 프로 디톡스 24K 골드 한정판 / 몬스터 정품",
+    "price": 400000,
+    "reject_reasons": [
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_"
+    ]
+  },
+  {
+    "pid": "395044662",
+    "name": "Apple Beats Solo PRO 비츠 솔로 프로 노이즈캔슬링 헤드폰",
+    "price": 73000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_",
+      "reject_wrong_model_solo"
+    ]
+  },
+  {
+    "pid": "390511620",
+    "name": "애플 비츠 솔로 프로 아이보리 Beats Solo Pro 닥터드레 헤드폰",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_",
+      "reject_wrong_model_solo"
+    ]
+  },
+  {
+    "pid": "328889042",
+    "name": "비츠 솔로 프로 헤드폰",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_"
+    ]
+  },
+  {
+    "pid": "405620285",
+    "name": "닥터드레 Beats Solo Pro 그레이 헤드폰 풀박스",
+    "price": 80000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_",
+      "reject_wrong_model_solo"
+    ]
+  },
+  {
+    "pid": "393449492",
+    "name": "비츠솔로 프로",
+    "price": 35000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_"
+    ]
+  },
+  {
+    "pid": "396691945",
+    "name": "Beats Solo pro 헤드폰 부품용 팝니다.",
+    "price": 25000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_스튜디오_s_프로_스튜디오프로_studio_",
+      "reject_wrong_model_solo",
+      "reject_parts_only"
+    ]
+  }
+]

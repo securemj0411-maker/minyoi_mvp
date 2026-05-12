@@ -37,7 +37,8 @@ type LaneKey =
   | "airpods_pro_3"
   | "macbook_pro_14_m3_18_512"
   | "iphone_14_pro_128gb_self"
-  | "galaxy_s24_ultra_256_self";
+  | "galaxy_s24_ultra_256_self"
+  | "beats_studio_pro";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -545,6 +546,43 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
       { label: "refurbished_only", pattern: /리퍼\s*폰|리퍼폰|리퍼\s*제품|리퍼\s*수령/ },
       { label: "accessory_only", pattern: /케이스\s*(?:만|단품)|필름\s*(?:만|단품)|충전기\s*만|보호\s*필름\s*만/ },
+    ],
+  },
+
+  beats_studio_pro: {
+    laneKey: "beats_studio_pro",
+    category: "headphone",
+    queries: [
+      "beats studio pro",
+      "비츠 스튜디오 프로",
+      "비츠 스튜디오프로",
+      "beats studio pro 헤드폰",
+      "비츠 헤드폰 프로",
+      "beats studio3 pro",
+    ],
+    pages: 8,
+    targetParseReady: 200,
+    priceMin: 150_000,
+    priceMax: 500_000,
+    acceptAll: [/비츠|beats/i],
+    acceptAnyOf: [
+      [/스튜디오\s*프로|스튜디오프로|studio\s*pro|studiopro/i],
+    ],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_studio3", pattern: /스튜디오\s*3|스튜디오3|studio\s*3\b|studio3\b/i },
+      { label: "wrong_model_studio2", pattern: /스튜디오\s*2|스튜디오2|studio\s*2\b|studio2\b/i },
+      { label: "wrong_model_solo", pattern: /\b솔로\b|\bsolo\s*4\b|\bsolo4\b|\bsolo\s*3\b|\bsolo3\b|beats\s*solo/i },
+      { label: "wrong_product_fit_or_flex", pattern: /비츠\s*fit|beats\s*fit|fit\s*pro|비츠\s*flex|beats\s*flex/i },
+      { label: "wrong_product_powerbeats", pattern: /파워비츠|powerbeats|power\s*beats/i },
+      { label: "wrong_product_earbuds", pattern: /이어버드|earbuds|earphone|무선\s*이어폰/i },
+      { label: "case_or_pouch_only", pattern: /케이스\s*(?:만|단품|개별)|파우치\s*만|하드\s*케이스\s*만|보관\s*케이스\s*만/ },
+      { label: "earcushion_only", pattern: /이어\s*쿠션(?:\s*만|\s*교체|\s*단품)?|쿠션\s*교체|쿠션만\s*판매|이어\s*패드(?:\s*만|\s*교체|\s*단품)?/ },
+      { label: "charger_or_cable_only", pattern: /충전기\s*만|케이블\s*만|usb\s*케이블\s*만|어댑터\s*만/i },
+      { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만|힌지\s*부품/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+      { label: "non_beats_clone", pattern: /짝퉁|가품|복제품|레플리카/ },
+      { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
     ],
   },
 
