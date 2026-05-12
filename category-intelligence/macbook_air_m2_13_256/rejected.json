@@ -1,0 +1,2894 @@
+[
+  {
+    "pid": "405078460",
+    "name": "삽니다 컴퓨터 게이밍 데스크탑 아이패드 갤럭시탭 노트북 맥북 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "361849284",
+    "name": "매입 아이패드 미니 에어 프로 M1 M2 M3 M4 11 13 인치 세대",
+    "price": 4090000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_wrong_chip_m1",
+      "reject_wrong_chip_m3",
+      "reject_wrong_chip_m4",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "367438691",
+    "name": "S급 m2 램16 256 맥북에어13 미개봉 새제품 급",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "402998404",
+    "name": "노트북 맥북 아이패드 매입 고가! 갤럭시탭 프로 에어 컴퓨터 데스크탑 T",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "361850209",
+    "name": "매입 맥북 프로 에어 13 14 15 16 인치 M1 M2 M3 M4",
+    "price": 5120000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_wrong_chip_m1",
+      "reject_wrong_chip_m3",
+      "reject_wrong_chip_m4",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "375777453",
+    "name": "고가매입]아이폰,에어팟,에어팟맥스,애플펜슬,애플워치,아이패드,맥북",
+    "price": 290000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407020599",
+    "name": "맥북 에어 13 M2 (마우스포함) 16GB,256GB",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "403895968",
+    "name": "고가매입 삼성 갤럭시북 프로 Lg 그램 갤럭시탭 아이패드 맥북 프로 에어",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "402156067",
+    "name": "맥북 에어 M2 13인치 16GB, 256GB 미드나이트",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "403567686",
+    "name": "중고 컴퓨터 데스크탑 본체 최고가 매입 맥북 노트북 아이패드 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404357135",
+    "name": "삽니다 아이맥 맥북 프로 에어 맥미니 맥스튜디오 갤럭시탭 아이패드 노트북",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "406688409",
+    "name": "애플 맥북에어 M2 미드나이트 13 8g 256g 배터리성능 100% 새",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_chip_m1"
+    ]
+  },
+  {
+    "pid": "406724966",
+    "name": "애플 맥북에어 M4 실버 13인치 16ram 256gb",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_any__bm2_b",
+      "reject_wrong_chip_m4"
+    ]
+  },
+  {
+    "pid": "403645517",
+    "name": "노트북 최고가 매입 업체! 갤럭시탭 아이패드 맥북 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "401365820",
+    "name": "애플 맥북에어13 M2 CPU 8코어 8코어 램 16GB 256GB 블루",
+    "price": 970100,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "333452335",
+    "name": "Lg 그램 갤럭시북 고가 매입 맥북 프로 에어 노트북 아이패드 갤럭시탭",
+    "price": 2000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "396984617",
+    "name": "맥북에어13 M2 CPU 8코어 8코어 램 16GB 256GB 그레이",
+    "price": 926500,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "403696417",
+    "name": "고가매입! 맥북 프로 에어 맥미니 아이맥 맥프로 아이패드 노트북 갤럭시탭",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407131640",
+    "name": "hp asus msi 프로 에어 게이밍 컴 노트북 맥북 아이패드 갤럭시탭",
+    "price": 7000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "377768452",
+    "name": "맥북에어13 m2 미드나이트 16gb 256gb",
+    "price": 111111111,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "404383965",
+    "name": "삽니다 / 맥북 프로 에어 맥미니 아이맥 맥스튜디오 아이패드 갤럭시탭",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "372074185",
+    "name": "맥북 M2 에어 13인치 8GB 256GB 스타라이트 풀박",
+    "price": 790000,
+    "reject_reasons": [
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "373213623",
+    "name": "맥북 에어 M2 13인치  풀박스 램 16gb 256gb 한달사용 급처",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "403860512",
+    "name": "최고가 삽니다 데스크탑 컴퓨터 노트북 맥북 프로 에어 아이패드 갤럭시탭",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "355944999",
+    "name": "맥북에어 M2 13인치 스타라이트 256gb",
+    "price": 720000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "407552767",
+    "name": "특가 매입 hp Asus msi 삼성 lg 게이밍 노트북 맥북 프로 에어",
+    "price": 7000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "357525243",
+    "name": "2025년 맥북 에어 13M 256GB 판매합니다",
+    "price": 1300000,
+    "reject_reasons": [
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "403432567",
+    "name": "아이패드 최고가 매입 프로 에어 M 1 2 3 4 5 11 13 노트북",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403789649",
+    "name": "삽니다 맥북 프로 에어 맥미니 아이맥 아이패드 갤럭시탭 노트북",
+    "price": 7000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "396079159",
+    "name": "맥북 에어 M2 / 13인치 / 16 / 256 / 스페이스 그레이",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "407209389",
+    "name": "삽니다 울트라 플러스 프로 에어 갤럭시탭 아이패드 노트북 맥북 컴퓨터",
+    "price": 6900000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "391238395",
+    "name": "애플 맥북 에어 13 m2 미드나이트 256gb 16gb 8코어",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "390678039",
+    "name": "맥북 에어 M2 13인치 스타라이트 256GB, RAM 16GB 팝니다",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "355383202",
+    "name": "특가 아이폰17에어 미사용 선착순 한정판매 프로/13/14/15/16",
+    "price": 530000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_맥북_macbook",
+      "missing_any__bm2_b"
+    ]
+  },
+  {
+    "pid": "407020054",
+    "name": "맥북에어 13인치 m2 8/256",
+    "price": 650000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406119334",
+    "name": "맥북에어 m2 (8G/256GB) 13.6인치",
+    "price": 600000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "403066890",
+    "name": "맥북 에어 M2 13인치 미드나이트 16/256",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "394159868",
+    "name": "[미사용/새상품]아이폰17에어 재고정리 할인[13,14,15,16,프로]",
+    "price": 410000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_맥북_macbook",
+      "missing_any__bm2_b"
+    ]
+  },
+  {
+    "pid": "403383524",
+    "name": "맥북에어 13 M2 16GB 256GB 미드나이트",
+    "price": 980000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "404551337",
+    "name": "맥북에어13 M2 CPU 8코어 8코어 램 16GB 256GB 그레이",
+    "price": 926500,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "407256911",
+    "name": "애플 맥북 프로 13\" 2017",
+    "price": 440000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_에어_air",
+      "missing_any__bm2_b",
+      "reject_wrong_model_macbook_pro",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_1tb"
+    ]
+  },
+  {
+    "pid": "403450462",
+    "name": "LCD불량 맥북에어 M2 13인치 16GB 256GB",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "397663513",
+    "name": "맥북에어 M2 13인치 8G 256G 실버",
+    "price": 700000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "400104947",
+    "name": "맥북에어 13 M2 16g/256g 미드나이트 (S급 풀박스)",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "400496265",
+    "name": "맥북에어m2 16gb 256gb 13인치",
+    "price": 790000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "397667890",
+    "name": "맥북에어 M2 13인치 16G 256G 실버",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "397206722",
+    "name": "맥북에어 m2 13인치, 미드나이트, 램16, ssd256",
+    "price": 990000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "396473995",
+    "name": "맥북에어 M2 13인치 16GB/256GB 팝니다",
+    "price": 930000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "392697276",
+    "name": "S급 맥북에어 13인치 M2 8코어 256GB, 16GB",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "407614425",
+    "name": "맥북 에어 M2 13 (16GB / 512GB)",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "314931118",
+    "name": "[대여]맥북에어13 M2 1일 단기 렌탈 임대 화상면접 영상편집 빌리팩토",
+    "price": 13900,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407236915",
+    "name": "급처) 애플 맥북에어 13 M2 스타라이트 미사용",
+    "price": 1440000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_1tb"
+    ]
+  },
+  {
+    "pid": "403561504",
+    "name": "(빈박스) 애플 13.6인치 맥북 에어 M2 박스 A2681",
+    "price": 19000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "402397924",
+    "name": "상태 최상,일괄 판매)맥북 에어 13 m2 265GB 8GB 실버",
+    "price": 990000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "397959805",
+    "name": "애플 맥북에어13 M2 스페이스그레이",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "398577802",
+    "name": "맥북 에어 m2 13 16gb 512gb 스페이스 그레이",
+    "price": 1400000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "386964685",
+    "name": "Macbook M2 air 13 맥북 M2 에어 팝니다!",
+    "price": 960000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "394941247",
+    "name": "맥북 에어 13.6 꽃무늬 케이스 A2681 m2/m3",
+    "price": 8000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_chip_m3"
+    ]
+  },
+  {
+    "pid": "394958478",
+    "name": "맥북 에어 13 M2(2022) 8GB/512GB 92% 판매합니다",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "384690634",
+    "name": "맥북에어 m2 13 512/16",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "380599575",
+    "name": "맥북에어 m2 13 스페이스그레이",
+    "price": 650000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_macbook_pro"
+    ]
+  },
+  {
+    "pid": "380514935",
+    "name": "맥북에어 M2 13.6인치 / 8GB / 512GB / 배터리 86%",
+    "price": 680000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "376335040",
+    "name": "맥북에어 13 M2 [16GB/512GB]",
+    "price": 960000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "378376478",
+    "name": "맥북에어13 M2 8코어 10코어 램 16GB SSD 1TB 스타라이트",
+    "price": 1035500,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_1tb"
+    ]
+  },
+  {
+    "pid": "369400621",
+    "name": "S급 맥북에어 m2 16gb 512gb 13",
+    "price": 1200000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "365585311",
+    "name": "배터리 성능 100 맥북에어 13 m2 스타라이트",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_1tb"
+    ]
+  },
+  {
+    "pid": "351853032",
+    "name": "Apple 맥북 에어 13 M2 512기가 16기가",
+    "price": 1200000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "344415853",
+    "name": "맥북 에어 13 M2 스페이스 그레이 10코어 512GB 16GB",
+    "price": 1300000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "337265332",
+    "name": "맥북 에어 13 M2 스타라이트",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "333329262",
+    "name": "맥북에어 m2 13 (a2681) 로직보드사요",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken_or_parts_only",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "332379869",
+    "name": "맥북에어m2 15 -> 13 교환",
+    "price": 950,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "332651894",
+    "name": "M2 맥북에어 13, 16GB, 500GB",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "331724262",
+    "name": "맥북 에어13 M2 스타라이트  M2 8코어",
+    "price": 1125680,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "394904248",
+    "name": "맥북에어 13인치 M2 512GB 영문 미드나이트",
+    "price": 1080000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "407458196",
+    "name": "A급 맥북 에어 m2 13인치 512GB 8GB",
+    "price": 1200000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "404601140",
+    "name": "맥북에어 M2 13인치 보호필름 팝니다. 스코코",
+    "price": 15000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405913110",
+    "name": "맥북에어 M2 13인치 미드나잇 블루 16G 512GB 배터리100%",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "290857278",
+    "name": "(새상품)맥북 에어 13인치 투명케이스 M1,M2,M3",
+    "price": 7000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_chip_m1",
+      "reject_wrong_chip_m3"
+    ]
+  },
+  {
+    "pid": "402110794",
+    "name": "맥북에어 m2 13인치 고급형 16/512..ss급...92만",
+    "price": 920000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "399480528",
+    "name": "맥북에어 m2 미드나이트 256기가 13인치",
+    "price": 2500,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405943512",
+    "name": "맥북 에어 M2 13인치 모델 (8/512) 급처합니다",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "395601368",
+    "name": "스코코 맥북에어 m2 13인치 올레포빅 액정보호필름",
+    "price": 9900,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398668680",
+    "name": "맥북에어 미드나이트 M2 13인치 (2022년) / 16램+512기가",
+    "price": 1170000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "394034808",
+    "name": "맥북에어 m2 15 램16 ssd512 (애케플) 직거시 130",
+    "price": 1385000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "402309853",
+    "name": "2022 맥북 에어 13인치 m2 미드나이트 24gb 2tb",
+    "price": 1420000,
+    "reject_reasons": [
+      "reject_wrong_ram_24gb",
+      "reject_wrong_storage_2tb"
+    ]
+  },
+  {
+    "pid": "381017469",
+    "name": "2022 M2 맥북에어 13인치 판매합니다",
+    "price": 698000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "381498865",
+    "name": "맥북에어 M2 13인치 16GB 512GB 최상금",
+    "price": 1450000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "382878736",
+    "name": "애플 맥북에어 13인치 m2 ram 16gb ssd 512gb 노트북",
+    "price": 1030000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "407420037",
+    "name": "케이스티파이 맥북 에어 13인치 케이스 (M2-M5) 미개봉",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407431032",
+    "name": "배터리 97% 맥북 에어 M2 13인치 실버 8G/512GB",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "376396139",
+    "name": "[램 24GB 모델] 맥북에어 m2 13인치 미드나이트 512GB",
+    "price": 1250000,
+    "reject_reasons": [
+      "reject_wrong_ram_24gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "370326408",
+    "name": "맥북에어 13인치 M2 8코어 10코어 8GB 512GB 블루 노트북",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "406963849",
+    "name": "맥북에어m2 13인치 미드나이트 512gb 16gb",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "360637055",
+    "name": "맥북에어 M2 13인치 미드나이트",
+    "price": 1180000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "367156179",
+    "name": "애플 맥북에어 13인치 M2 8코어 10코어 8GB512GB 블루 노트북",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "360704678",
+    "name": "맥북에어 m1 or m2 13인치 램16gb 삽니다",
+    "price": 500,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_chip_m1",
+      "reject_wrong_ram_16gb",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "406191612",
+    "name": "(새상품)맥북 에어m2 13인치 8g 512GB",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "405414922",
+    "name": "애플 맥북 에어 미드나이트 블루 M2 13인치 8 512",
+    "price": 840000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "405569990",
+    "name": "맥북 에어 13인치(M2부터 사용 가능)",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "351692816",
+    "name": "맥북에어 m2 13인치 8gb 512gb",
+    "price": 920000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "350900226",
+    "name": "맥북에어 M2 16GB 고급형 13인치",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "400415794",
+    "name": "맥북 에어 M2 스페이스 그레이 13인치",
+    "price": 600000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "401942266",
+    "name": "맥북에어m2 13인치  256기가 미드나이트",
+    "price": 600000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "394000591",
+    "name": "맥북 에어 m2칩 13인치 네이비 아이패드랑 교신합니다",
+    "price": 1004,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "344494765",
+    "name": "맥북에어 M2 13인치 16GB 512GB 애플케어플러스 스타라이트",
+    "price": 1250000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "385074807",
+    "name": "애플 맥북 에어 M2 13인치",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "388744598",
+    "name": "맥북 에어 13인치 구매원합니다 (M2~M4)",
+    "price": 600000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_chip_m4"
+    ]
+  },
+  {
+    "pid": "360854017",
+    "name": "(애케플 2년)맥북 에어 13.6인치 A2681",
+    "price": 1010000,
+    "reject_reasons": [
+      "missing_any__bm2_b"
+    ]
+  },
+  {
+    "pid": "336072182",
+    "name": "맥북에어 M2 13인치 512GB 8GB 미드나이트 96W 충전기 + c",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "383687327",
+    "name": "맥북 에어 M2 13인치 8gb/512gb 미드나이트 풀박스",
+    "price": 720000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "373431081",
+    "name": "맥북 에어 M2 M3 M4 핑크 케이스 반투명 투명 13인치",
+    "price": 5000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_chip_m3",
+      "reject_wrong_chip_m4"
+    ]
+  },
+  {
+    "pid": "375757661",
+    "name": "[삽니다] 맥북에어m2 13인치 스페이스 그레이 16gb 삽니다",
+    "price": 700000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "341585690",
+    "name": "급처)맥북 프로 M2칩 터치바 23년 13인치 8GB/256GB 풀박스",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any_에어_air",
+      "reject_wrong_model_macbook_pro"
+    ]
+  },
+  {
+    "pid": "373148625",
+    "name": "맥북 에어M2 13인치 16RAM 512GB GPU 10코어 (보험 유)",
+    "price": 1300000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "371415017",
+    "name": "맥북 에어 m2 13인치 미드나이트색상 같은모델 다른색상 교환",
+    "price": 1000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "363471754",
+    "name": "맥북 에어 m2 13인치 -> 15인치 교환",
+    "price": 1000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "314345068",
+    "name": "맥북에어 M2 13인치 미드나이트",
+    "price": 500,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "348736070",
+    "name": "(판매 완료)맥북에어 M2 13인치 24GB 스페이스그레이",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_macbook_pro",
+      "reject_wrong_ram_24gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "346835653",
+    "name": "맥북에어m2.m4 13인치 하드케이스 2종일괄",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_chip_m4"
+    ]
+  },
+  {
+    "pid": "342368111",
+    "name": "맥북 m2 13인치 에어 화면보호필름",
+    "price": 15000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "339926671",
+    "name": "맥북에어m2 13인치 8,512",
+    "price": 810000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "324110546",
+    "name": "맥북 에어 13인치 m2 실버 16GB 256GB 풀박스",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "315898882",
+    "name": "맥북 에어 m2 13인치 16g 512",
+    "price": 1350000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "402930751",
+    "name": "맥북에어13 M2 5일 대여권",
+    "price": 69500,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "403422666",
+    "name": "APPLE 맥북에어13 M2 512GB 미드나이트 풀박스 새상품급 중고",
+    "price": 780000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "401194568",
+    "name": "맥북에어13 M2 2일 연장 대여건",
+    "price": 27800,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "399594791",
+    "name": "맥북에어 M2 13 메모리16G  512GB 2023년형",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "398118838",
+    "name": "맥북에어13 m2 512gb 민트급",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "393983662",
+    "name": "맥북 에어 M2 13 미드나이트 16GB/256GB",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "393005171",
+    "name": "맥북에어 M2 13 8GB 256GB",
+    "price": 670000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "392679658",
+    "name": "맥북에어 m2 13형 실버 부품",
+    "price": 285000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "393173162",
+    "name": "맥북 에어 M2 13 미드나이트 16GB/512GB",
+    "price": 930000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "392773846",
+    "name": "(최상급) 애플 맥북 에어13 M2 8gb 512gb 실버 노트북",
+    "price": 1150000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "390860822",
+    "name": "애플 맥북에어 13 /m2 / 16g / 256",
+    "price": 830000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "390398406",
+    "name": "[S급/배터리 효율100%] 서울 직거래 맥북 에어 13 M2 512 실",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "390143732",
+    "name": "맥북 에어 M2 13.6인치 16GB램 512GB 용량 풀박스 SSS급",
+    "price": 1250000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "365795980",
+    "name": "맥북에어13 M2 16GB 512GB 스페이스그레이 미개봉",
+    "price": 1250000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "316471071",
+    "name": "맥북 에어 13 m2 10코어 8gb 512gb 미드나이트",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "404827972",
+    "name": "맥북에어 m2 13인치",
+    "price": 650000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "401933564",
+    "name": "맥북에어 m2 13인치",
+    "price": 880000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "255077893",
+    "name": "맥북 에어 13 m2칩 512기가",
+    "price": 1151000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "402669165",
+    "name": "M1, M2 맥북에어 13인치 파손 스크린",
+    "price": 15000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_chip_m1"
+    ]
+  },
+  {
+    "pid": "399162330",
+    "name": "맥북에어 M2 13인치 부품용 판매",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "398056691",
+    "name": "맥북에어 m2 13인치 실버 기본형",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406136558",
+    "name": "[a급]맥북에어 m2 13인치 미드나이트",
+    "price": 690000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "396389722",
+    "name": "맥북에어 M2 13인치 RAM 8GB, 512GB",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "390513505",
+    "name": "맥북에어 m2 13인치 판매합니다!",
+    "price": 600000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398217865",
+    "name": "맥북 에어 m2 13인치 기본형",
+    "price": 680000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "395416728",
+    "name": "맥북에어 M2 13인치 스타라이트 / 8GB 512GB / 광주 직거래",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "407297612",
+    "name": "맥북 에어m2 13인치",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "398777075",
+    "name": "맥북 m2 13인치 스페이스그레이 8코어 256GB",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_에어_air"
+    ]
+  },
+  {
+    "pid": "387960881",
+    "name": "맥북에어 m2 13인치 실버 (512gb/8gb) -> 직거래시 60만원",
+    "price": 640000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "394970225",
+    "name": "맥북 에어 m2 13인치 10코어gpu 8gb램 512gb ssd",
+    "price": 860000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "402184706",
+    "name": "맥북 에어 M2 13인치 스페이스 그레이 풀박스 512GB",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "394889956",
+    "name": "2022 맥북 에어M2 13인치 부품용",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "396534409",
+    "name": "맥북 에어 M2 13인치/미드나이트/램16/512GB",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "394974900",
+    "name": "[부품용] 맥북 에어 M2 13인치 (A2681) 실버 - 외관 상급 /",
+    "price": 350000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken_or_parts_only",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "321233576",
+    "name": "맥북에어 M2 13인치 실버 512gb",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "253875883",
+    "name": "맥북 에어 13 로즈골드",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any__bm2_b"
+    ]
+  },
+  {
+    "pid": "339697069",
+    "name": "[484]2020 맥북 프로 13 M1/8GB/256GB Fair급",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any__bm2_b",
+      "reject_wrong_chip_m1",
+      "reject_wrong_model_macbook_pro",
+      "reject_broken_or_parts_only",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407672516",
+    "name": "맥북에어 15인치 미드나이트 m2 16GB 256GB 모델",
+    "price": 970000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "333781833",
+    "name": "맥북에어 맥북 프로 매입 m1 m2 m3 m4 m5 14인치 16인치",
+    "price": 3000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_chip_m1",
+      "reject_wrong_chip_m3",
+      "reject_wrong_chip_m4",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407376120",
+    "name": "(A급) 맥북에어 15 M2 배터리 100%",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "407650045",
+    "name": "맥북에어 m2 m3 15인치 케이스티파이 케이스",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_chip_m3",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "407109740",
+    "name": "맥북에어 M2 15인치 8GB 256GB 미드나이트 풀박스",
+    "price": 1050000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "405019156",
+    "name": "맥북 에어m2 핀매",
+    "price": 680000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407550909",
+    "name": "맥북 에어15 m2 (애플케어) 스페이스그레이 램 16GB  용량 256",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "407616610",
+    "name": "맥북 에어 m2 m3 15인치 투명 하드케이스",
+    "price": 7000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_chip_m3",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "397238985",
+    "name": "애플 맥북 에어 M2, 2022년 모델",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "398780693",
+    "name": "맥북에어M2 512GB 배터리100% 고급형 (부산 직거래)",
+    "price": 860000,
+    "reject_reasons": [
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "407121538",
+    "name": "(사이클3)맥북에어 15 M2 512GB",
+    "price": 1050000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "407180959",
+    "name": "맥북에어M2 256기가 스페이스그레이 판매합니다 (배터리 100)",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "406363206",
+    "name": "맥북에어 15 M2 8GB 512GB 미드나잇 배터리97%",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "406231328",
+    "name": "[정품/새상품] 케이스티파이 x 치이카와 맥북 에어 15인치(M2~M5)",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_chip_m3",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "405970022",
+    "name": "맥북 에어m2",
+    "price": 630000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "405893985",
+    "name": "애플 맥북에어 M2 스페이스그레이",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "405348308",
+    "name": "맥북에어m2 미드나이트",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "405923143",
+    "name": "맥북 에어 m2 15인치 8gb 256gb 미개봉",
+    "price": 1080000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "405627929",
+    "name": "애플 2022 맥북에어 M2 256GB (스페이스 그레이)",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "405599014",
+    "name": "맥북에어15 M2 스그 애플케어플러스",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "405524076",
+    "name": "맥북 에어 M2 2022년형 8GB",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "406055584",
+    "name": "맥북 에어 15인치 M2 사용감 없음 / 군입대 처분",
+    "price": 890000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "406158123",
+    "name": "애플 맥북 에어 15인치 m2 기본형 스페이스 그레이 판매합니당",
+    "price": 880000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "404476018",
+    "name": "맥북 에어 m2",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "404349069",
+    "name": "맥북 에어 m2 16gb 256gb  실버",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "403287894",
+    "name": "맥북 에어 m2 스그 256gb",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "403293177",
+    "name": "맥북 에어 15 m2 스페이스그레이",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "403603463",
+    "name": "맥북에어 m2 16GB/256GB 미드나이트",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "403271588",
+    "name": "(삽니다) 맥북 에어 m2,3 16gb 256gb",
+    "price": 899000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404502253",
+    "name": "[새상품] 맥북에어 M2 15 실버 (A2941) 상판 일체형 부품",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "402880320",
+    "name": "2022 맥북 에어 M2 256 실버 / 2개월 사용 액정 파손",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "402130684",
+    "name": "맥북에어 m2 8gb 256gb 영문자판 팝니다",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "400549428",
+    "name": "맥북에어 m2/256gb 팝니다",
+    "price": 679000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "401503576",
+    "name": "맥북프로 에어 m2 256기가 스페이스 그레이",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro"
+    ]
+  },
+  {
+    "pid": "400073580",
+    "name": "맥북 에어 M2 실버 256GB",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "400192162",
+    "name": "맥북에어 M2 15인치 기본형 미드나이트",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "400177924",
+    "name": "맥북에어2 m2(2022) 배터리 성능 100%",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "401522992",
+    "name": "맥북에어 M2 16램 1TB SSD 보증 27년 3월",
+    "price": 1140000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_storage_1tb"
+    ]
+  },
+  {
+    "pid": "399284350",
+    "name": "맥북에어 m2삽니다 70이하",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "400237021",
+    "name": "맥북에어 m1-m2 16기가 구해요",
+    "price": 99999,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_chip_m1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "399821930",
+    "name": "맥북에어 M2 15인치 스타라이트 8/256",
+    "price": 920000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "397789982",
+    "name": "맥북에어m2",
+    "price": 600000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_model_macbook_pro"
+    ]
+  },
+  {
+    "pid": "398759056",
+    "name": "맥북 m2 에어 70만원 이하로 구매합니다",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "397009121",
+    "name": "애플 맥북에어 M2 미드나이트",
+    "price": 865000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "397642939",
+    "name": "맥북 프로 m1 14, 맥북 에어 m2 삽니다",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_chip_m1",
+      "reject_wrong_model_macbook_pro",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "398303237",
+    "name": "맥북 에어 m2 15인치 램 16기가 256기가 실버 풀박 맥북 거치대",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "397600538",
+    "name": "맥북에어 m2 8/256/512 구매합니다",
+    "price": 600000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_storage_512",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "395813788",
+    "name": "맥북 에어 M2 실버",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "395799370",
+    "name": "맥북에어15 m2",
+    "price": 1200000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "398781286",
+    "name": "맥북 에어 15 M2 미드나이트 8G/512G S급 풀박스 판매합니",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "396074423",
+    "name": "맥북 에어 m2 16gb 512gb",
+    "price": 1250000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "395028179",
+    "name": "맥북에어m2",
+    "price": 872000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "398291041",
+    "name": "맥북 에어 15 M2 8GB RAM 바로 사면 5만원 네고",
+    "price": 1070000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "395241428",
+    "name": "맥북 m2 에어 구매합니다",
+    "price": 650000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "395892132",
+    "name": "고장난 맥북 에어 15인치 m2 사요",
+    "price": 123456,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "395153204",
+    "name": "맥북 에어 M2 미드 나이트 풀박스",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "394784415",
+    "name": "맥북에어15 m2 16gb 1TB",
+    "price": 1300000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_1tb"
+    ]
+  },
+  {
+    "pid": "394873673",
+    "name": "애플  맥북에어 15 M2 256GB 스페이스그레이",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "395581878",
+    "name": "맥북에어 m2 8gb 256gb 미드나이트 팝니다 (판매완료)",
+    "price": 9999999,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "394897942",
+    "name": "맥북에어 M2 M3 16기가 구매합니다",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_chip_m3",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "394426226",
+    "name": "맥북 에어 M2 15인치 16GB 512GB 미드나이트",
+    "price": 1390000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "393455932",
+    "name": "맥북에어M2 15 인치 배터리100%",
+    "price": 955000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "392123348",
+    "name": "맥북에어 m2 삽니다",
+    "price": 650000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "394872035",
+    "name": "맥북 에어 m2 2022년형 8GB 256GB 판매합니다",
+    "price": 910000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "393256791",
+    "name": "맥북 에어 15 M2 16GB 256GB 스페이스 그레이",
+    "price": 1300000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "391293166",
+    "name": "맥북 에어 M2 15인치",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "373061818",
+    "name": "맥북에어 23년식 15인치 M2 램16GB 512GB 판매합니다",
+    "price": 1200000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "389981391",
+    "name": "맥북 에어 M2 512GB, 8GB 신동급 판매합니다!!!",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "286522359",
+    "name": "맥북 에어 m2 판매 및 교환합니다",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "389643549",
+    "name": "m2 맥북에어 15인치",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "390600361",
+    "name": "맥북 에어 M2 기본형 스페이스 그레이",
+    "price": 760000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "390509032",
+    "name": "맥북에어M2 15인치 램8 용량256 팔아요",
+    "price": 910000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "392182846",
+    "name": "맥북 에어 M2 8코어 8gb 미드나이트 클램쉘, 부품용(기능정상)",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "389069615",
+    "name": "맥북에어 m3,512g 블루 ---> m2,m3,512g,15인치 교환",
+    "price": 12345,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_chip_m3",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "390078063",
+    "name": "애플 맥북에어 스타라이트 15 M2 16GB램 256SSD",
+    "price": 1120000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "387229004",
+    "name": "맥북 에어 m2 15인치 256",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "389930422",
+    "name": "(거의 완전 진짜 새거!!!!!) 맥북 에어 15 M2 24GB 512G",
+    "price": 1500000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_24gb"
+    ]
+  },
+  {
+    "pid": "387245240",
+    "name": "맥북에어 M2 스페이스 그레이, 배터리 99%",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "385446549",
+    "name": "맥북 에어 m2 256gb",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "387981480",
+    "name": "맥북 에어 M2 15인치 256GB / S급 / 배터리 양호 판매합니다",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "385272421",
+    "name": "맥북 에어 m2 상태 최상",
+    "price": 797000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "385593685",
+    "name": "m2 맥북에어 삽니다 (업자X)",
+    "price": 650000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "386931122",
+    "name": "애플 맥북 에어  M2 2022년 8GB 256GB 배터리 100",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "382266531",
+    "name": "맥북 에어 m2 15인치",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "384910797",
+    "name": "맥북에어 m2 15인치 512/8 애플케어 스페이스그레이 판매합니다.",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "382248503",
+    "name": "맥북에어 M2 판매합니다!",
+    "price": 690000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "385283218",
+    "name": "애플 맥북에어13 M2 2027년7월 애플케어 2/3일까지만 이 가격",
+    "price": 1111,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_macbook_pro"
+    ]
+  },
+  {
+    "pid": "381268106",
+    "name": "맥북에어M2 미드나이트 15인치",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "380114735",
+    "name": "맥북 에어 15인치 M2 512GB (실버)",
+    "price": 1200000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "379061069",
+    "name": "맥북 에어 m2 512GB",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "379821599",
+    "name": "맥북에어 M2 (s+급) 배터리 성능 100%",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "380753863",
+    "name": "2022 맥북 에어 스타라이트 M2 256GB 8GB +2021매직마우스",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "379807612",
+    "name": "애플 맥북에어 M2 (256gb)효율100 + 마우스,충전기",
+    "price": 920000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "376402223",
+    "name": "맥북 에어 m2",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "376684113",
+    "name": "맥북 m2 에어 팝니다",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "377209444",
+    "name": "맥북 에어 15 M2 8GB/512GB 스페이스 그레이 + 박스",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "377192318",
+    "name": "맥북에어 M2 15인치 16gb 512g 리퍼급 모델 판매",
+    "price": 1050000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "375154461",
+    "name": "가격내림@@@@ 맥북 에어 m2 512GB 스타라이트 급처 합니다!",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "372262045",
+    "name": "맥북 에어 m2 15인치(2023) 512GB",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "374119929",
+    "name": "맥북 에어 m2(2024) 512/16/8코어/97% S급스타라이트 판매",
+    "price": 970000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "372263698",
+    "name": "맥북에어 m2 급쳐합니다",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "371037690",
+    "name": "맥북 M2 에어 미드나이트",
+    "price": 380000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "371248616",
+    "name": "맥북에어 M2 급처합니다 !!",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "370433895",
+    "name": "맥북 에어 m2 스페이스그레이",
+    "price": 810000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "371383628",
+    "name": "Apple 2022 맥북 에어 M2 스타라이트 256GB",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "369962820",
+    "name": "맥북에어M2 미드나이트 풀박스 16GB/256GB",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "368096058",
+    "name": "맥북 에어 15 M2 실버",
+    "price": 930000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "367088989",
+    "name": "맥북 에어 15 m2",
+    "price": 980000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "367985565",
+    "name": "맥북 에어15 m2 램8기가",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "367792444",
+    "name": "맥북 에어 15 스페이스 그레이 M2 8코어, 10코어",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "365551727",
+    "name": "맥북 에어 15 M2 실버 8GB 실버",
+    "price": 930000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "364004588",
+    "name": "맥북 에어 m2",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "363584195",
+    "name": "맥북 에어m2 16gb 512gb 급처해요",
+    "price": 980000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "363253516",
+    "name": "맥북 에어 m2 미드나잇 네이비 16gb 512",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "362689385",
+    "name": "맥북에어 M2 16GB 256GB",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "362576094",
+    "name": "Apple 맥북 에어 M2 미드나이트 512G",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "362679864",
+    "name": "삽니다)맥북에어(프로)m2 16/256",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "362094705",
+    "name": "미개봉 미드나이트 맥북에어 M2 16gb 256",
+    "price": 920000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "362423391",
+    "name": "[풀박스/AppleCare+] 맥북 에어 15 M2(16GB/512GB)",
+    "price": 1350000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "361216130",
+    "name": "S급 맥북 에어 M2 2022 실버 + 매직 마우스",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "359720439",
+    "name": "애플 맥북 에어 15인치 스페이스 그레이 M2",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "359625934",
+    "name": "맥북에어 스그 m2 +매직마우스 + 애플케어",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "356705268",
+    "name": "맥북 에어 m2 15인치",
+    "price": 1050000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "356058946",
+    "name": "맥북에어 m2",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "359780931",
+    "name": "맥북 에어 M2 모델 ssd 512gb 업그레이드 버젼 램 8GB",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "356140829",
+    "name": "맥북에어 m2 미드나트",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "357193649",
+    "name": "맥북에어 M2 8GB / 512GB / 애플케어",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "357128590",
+    "name": "맥북 에어 15 m2 (애케플 포함",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "355233995",
+    "name": "맥북에어 m2 15 16",
+    "price": 1200000,
+    "reject_reasons": [
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "291858777",
+    "name": "맥북에어 m2  상태최상...최저가 72만",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "352790498",
+    "name": "맥북에어 m2 8+256",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "352523970",
+    "name": "맥북에어 m2미드나이트",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "352137635",
+    "name": "애플 맥북에어 m2",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "352070786",
+    "name": "(급처)맥북 에어 M2 + 매직 마우스",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "351466172",
+    "name": "맥북 에어 M2칩 풀박스",
+    "price": 903000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "344967015",
+    "name": "맥북 에어 M2 실버 256GB",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "350915474",
+    "name": "맥북 에어 m2 15인치 ,512기가",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "350122201",
+    "name": "맥북에어 15인치 M2 8코어 10코어 8GB 256GB 노트북 128",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "350897829",
+    "name": "맥북에어 m2 풀박스 (매직마우스 포함)",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "350617607",
+    "name": "맥북 에어 15 M2 스페이스그레이 24GB 512GB",
+    "price": 1400000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_24gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "350240502",
+    "name": "맥북 에어m2 스페이스 그레이(애플케어)+애플 정품마우스",
+    "price": 1350000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "349812706",
+    "name": "2024 맥북 에어 M2 15인치  16GB RAM  512GB SS",
+    "price": 1400000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "349136862",
+    "name": "맥북 에어 M2 15인치 실버 (상태 매우 좋음)",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "349723938",
+    "name": "맥북 에어 15 M2 16GB/512GB 배터리 97%  - 16GB 메",
+    "price": 1650000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "347524647",
+    "name": "[거래 중] 맥북 에어 m2 팝니다",
+    "price": 1342600,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "347847575",
+    "name": "[윈도우설치]맥북 에어 M2 256g 스페이스그레이",
+    "price": 890000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "346164320",
+    "name": "맥북에어m2 미드나이트",
+    "price": 790000,
+    "reject_reasons": [
+      "reject_wrong_model_macbook_pro"
+    ]
+  },
+  {
+    "pid": "347335578",
+    "name": "맥북 에어14인치 m2 256gb램8gb",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "345595339",
+    "name": "맥북에어 m2 256g 미드나잇 초저가 판매",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "344850696",
+    "name": "맥북에어 m2 미드나이트 256gb",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "343866763",
+    "name": "맥북에어 m2",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb"
+    ]
+  },
+  {
+    "pid": "344041112",
+    "name": "맥북 에어 m2 개봉만한 새상품 미드나잇",
+    "price": 970000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "343529052",
+    "name": "맥북에어M2 15인치 512GB 8GB",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "344055232",
+    "name": "맥북 에어 M2 16GB 스페이스그레이 택배 가능",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_512"
+    ]
+  },
+  {
+    "pid": "342529871",
+    "name": "맥북에어 15 m2",
+    "price": 1200000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "344092128",
+    "name": "맥북에어 m2 초고사양 16GB 메모리/1테라 SSD",
+    "price": 17000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_ram_16gb",
+      "reject_wrong_storage_1tb"
+    ]
+  },
+  {
+    "pid": "341613740",
+    "name": "맥북에어 m2 256g 스페이스 그레이",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "342170200",
+    "name": "급처) 맥북 에어 M2 15인치 스페이스 그레이",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "340557770",
+    "name": "맥북 에어 M2 풀박스",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "340909554",
+    "name": "맥북 에어 m2 15인치 23년식",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "339520134",
+    "name": "맥북 에어 m2 8코어",
+    "price": 1050000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "341206170",
+    "name": "맥북에어 15인치 m2 10GPU 8GB 256GB 미드나이트",
+    "price": 1070000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  },
+  {
+    "pid": "341225832",
+    "name": "아이패드 미니7+M2맥북에어로 아이패드 12.9인치 교환원해요",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_13_s_인치_13_s_형_13_13_"
+    ]
+  },
+  {
+    "pid": "338523519",
+    "name": "맥북에어M2 15인치",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any_13_s_인치_13_s_형_13_13_",
+      "reject_wrong_size_15"
+    ]
+  }
+]

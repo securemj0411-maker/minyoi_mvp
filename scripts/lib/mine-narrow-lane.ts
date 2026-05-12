@@ -50,7 +50,8 @@ type LaneKey =
   | "beats_solo_4"
   | "airpods_4_anc"
   | "galaxy_buds_3_pro"
-  | "bose_qc45";
+  | "bose_qc45"
+  | "macbook_air_m2_13_256";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -1190,6 +1191,42 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
       { label: "non_bose_clone", pattern: /짝퉁|가품|복제품|레플리카/ },
       { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
+    ],
+  },
+
+  macbook_air_m2_13_256: {
+    laneKey: "macbook_air_m2_13_256",
+    category: "laptop",
+    queries: [
+      "맥북 에어 m2 13 256",
+      "맥북에어 m2 13",
+      "macbook air m2 13 256",
+      "맥북 에어 m2",
+    ],
+    pages: 10,
+    targetParseReady: 200,
+    priceMin: 700_000,
+    priceMax: 1_800_000,
+    acceptAll: [/맥북|macbook/i],
+    acceptAnyOf: [
+      [/에어|air/i],
+      [/\bm2\b/i],
+      [/13\s*인치|13\s*형|13"|13″|\b13\b/i],
+    ],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_chip_m1", pattern: /\bm1\b|m1\s*칩/i },
+      { label: "wrong_chip_m3", pattern: /\bm3\b|m3\s*칩/i },
+      { label: "wrong_chip_m4", pattern: /\bm4\b|m4\s*칩/i },
+      { label: "wrong_size_15", pattern: /15\s*인치|15\s*형|15"/ },
+      { label: "wrong_model_macbook_pro", pattern: /맥북\s*프로|macbook\s*pro/i },
+      { label: "wrong_ram_16gb", pattern: /(?:^|[^0-9])16\s*(?:gb|기가)\b/i },
+      { label: "wrong_ram_24gb", pattern: /(?:^|[^0-9])24\s*(?:gb|기가)\b/i },
+      { label: "wrong_storage_512", pattern: /(?:^|[^0-9])512\s*(?:gb|기가)?\b/i },
+      { label: "wrong_storage_1tb", pattern: /\b1\s*tb\b|1\s*테라/i },
+      { label: "wrong_storage_2tb", pattern: /\b2\s*tb\b|2\s*테라/i },
+      { label: "broken_or_parts_only", pattern: /액정\s*만|메인\s*보드|로직\s*보드|상판\s*만|하판\s*만|부품\s*용|부품용|키보드\s*만|배터리\s*만|침수/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
     ],
   },
 };

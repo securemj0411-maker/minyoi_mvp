@@ -1027,6 +1027,33 @@ const CORE_TABLET_CATALOG: Sku[] = [
 
 const CORE_LAPTOP_CATALOG: Sku[] = [
   {
+    id: "macbook-air-m2-13-256",
+    brand: "Apple",
+    category: "laptop",
+    laneKey: "macbook_air_m2_13_256",
+    modelName: "MacBook Air M2 13\" 256GB",
+    aliases: ["맥북 에어 M2 13 256", "MacBook Air M2 13\" 256GB"],
+    mustContain: [
+      ["맥북", "macbook"],
+      ["에어", "air"],
+      ["m2"],
+      ["13인치", "13 인치", "13형", "13\""],
+    ],
+    mustNotContain: [
+      "프로", "pro",
+      "15인치", "15형",
+      "(m1)", "(m3)", "(m4)",
+      " m1 ", " m3 ", " m4 ",
+      "16gb", "24gb", "512gb", "1tb",
+      "메인보드", "로직보드", "상판", "하판",
+      "액정만", "배터리만", "키보드만",
+      "부품", "고장", "침수",
+      "매입", "삽니다",
+    ],
+    msrpKrw: 1690000,
+    released: 2022,
+  },
+  {
     id: "macbook-air-m3-13-256",
     brand: "Apple",
     category: "laptop",

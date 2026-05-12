@@ -1,0 +1,76 @@
+{
+  "lane_key": "macbook_air_m2_13_256",
+  "category": "laptop",
+  "queries": [
+    "맥북 에어 m2 13 256",
+    "맥북에어 m2 13",
+    "macbook air m2 13 256",
+    "맥북 에어 m2"
+  ],
+  "accept_all": [
+    "맥북|macbook"
+  ],
+  "accept_any_of": [
+    [
+      "에어|air"
+    ],
+    [
+      "\\bm2\\b"
+    ],
+    [
+      "13\\s*인치|13\\s*형|13\"|13″|\\b13\\b"
+    ]
+  ],
+  "reject_rules": [
+    {
+      "label": "wrong_chip_m1",
+      "pattern": "\\bm1\\b|m1\\s*칩"
+    },
+    {
+      "label": "wrong_chip_m3",
+      "pattern": "\\bm3\\b|m3\\s*칩"
+    },
+    {
+      "label": "wrong_chip_m4",
+      "pattern": "\\bm4\\b|m4\\s*칩"
+    },
+    {
+      "label": "wrong_size_15",
+      "pattern": "15\\s*인치|15\\s*형|15\""
+    },
+    {
+      "label": "wrong_model_macbook_pro",
+      "pattern": "맥북\\s*프로|macbook\\s*pro"
+    },
+    {
+      "label": "wrong_ram_16gb",
+      "pattern": "(?:^|[^0-9])16\\s*(?:gb|기가)\\b"
+    },
+    {
+      "label": "wrong_ram_24gb",
+      "pattern": "(?:^|[^0-9])24\\s*(?:gb|기가)\\b"
+    },
+    {
+      "label": "wrong_storage_512",
+      "pattern": "(?:^|[^0-9])512\\s*(?:gb|기가)?\\b"
+    },
+    {
+      "label": "wrong_storage_1tb",
+      "pattern": "\\b1\\s*tb\\b|1\\s*테라"
+    },
+    {
+      "label": "wrong_storage_2tb",
+      "pattern": "\\b2\\s*tb\\b|2\\s*테라"
+    },
+    {
+      "label": "broken_or_parts_only",
+      "pattern": "액정\\s*만|메인\\s*보드|로직\\s*보드|상판\\s*만|하판\\s*만|부품\\s*용|부품용|키보드\\s*만|배터리\\s*만|침수"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입|삽니다|구해요|구매\\s*합니다|구매합니다"
+    }
+  ],
+  "price_min_krw": 700000,
+  "price_max_krw": 1800000
+}
