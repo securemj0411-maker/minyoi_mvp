@@ -82,6 +82,11 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "iPad Air M2 11\" 256GB Wi-Fi",
     note: "iPad Pro M4의 보급형 sibling. M1/M3, 13인치, 셀룰러, 타 용량은 catalog mustNotContain으로 차단.",
   },
+  galaxy_s25_ultra_256_self: {
+    status: "ready",
+    label: "Galaxy S25 Ultra 256GB (자급제)",
+    note: "S24/S26, 512/1TB, 통신사 약정/완납폰/리퍼는 catalog mustNotContain으로 차단.",
+  },
 };
 
 export type CategoryReadinessConfig = {
