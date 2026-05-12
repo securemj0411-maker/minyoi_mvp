@@ -1,0 +1,8080 @@
+[
+  {
+    "pid": "405078460",
+    "name": "삽니다 컴퓨터 게이밍 데스크탑 아이패드 갤럭시탭 노트북 맥북 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "361849284",
+    "name": "매입 아이패드 미니 에어 프로 M1 M2 M3 M4 11 13 인치 세대",
+    "price": 4090000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch",
+      "reject_buying_post",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "402998404",
+    "name": "노트북 맥북 아이패드 매입 고가! 갤럭시탭 프로 에어 컴퓨터 데스크탑 T",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "375777453",
+    "name": "고가매입]아이폰,에어팟,에어팟맥스,애플펜슬,애플워치,아이패드,맥북",
+    "price": 290000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "393540412",
+    "name": "아이패드 에어6 13인치256 프로11 4세대m2교환",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_size_13_inch",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "361850209",
+    "name": "매입 맥북 프로 에어 13 14 15 16 인치 M1 M2 M3 M4",
+    "price": 5120000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "400936662",
+    "name": "아이패드 에어 11 m2 256g 셀룰러 / 애플펜슬 프로 / 키보드",
+    "price": 730000,
+    "reject_reasons": [
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "403895968",
+    "name": "고가매입 삼성 갤럭시북 프로 Lg 그램 갤럭시탭 아이패드 맥북 프로 에어",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "381801940",
+    "name": "아이패드 m2 프로 11인치 256+ 펜슬",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_에어_air",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "403567686",
+    "name": "중고 컴퓨터 데스크탑 본체 최고가 매입 맥북 노트북 아이패드 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "371259003",
+    "name": "급처 아이패드 에어 m2 256GB 새상품급 + 케이스",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  },
+  {
+    "pid": "357439889",
+    "name": "아이패드 에어 11 m2 256gb",
+    "price": 700000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "403645517",
+    "name": "노트북 최고가 매입 업체! 갤럭시탭 아이패드 맥북 프로 에어",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "354334894",
+    "name": "아이패드 11 M2 256GB 판매합니다(풀박)",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_에어_air"
+    ]
+  },
+  {
+    "pid": "404357135",
+    "name": "삽니다 아이맥 맥북 프로 에어 맥미니 맥스튜디오 갤럭시탭 아이패드 노트북",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "333452335",
+    "name": "Lg 그램 갤럭시북 고가 매입 맥북 프로 에어 노트북 아이패드 갤럭시탭",
+    "price": 2000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403696417",
+    "name": "고가매입! 맥북 프로 에어 맥미니 아이맥 맥프로 아이패드 노트북 갤럭시탭",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407131640",
+    "name": "hp asus msi 프로 에어 게이밍 컴 노트북 맥북 아이패드 갤럭시탭",
+    "price": 7000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "403860512",
+    "name": "최고가 삽니다 데스크탑 컴퓨터 노트북 맥북 프로 에어 아이패드 갤럭시탭",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404383965",
+    "name": "삽니다 / 맥북 프로 에어 맥미니 아이맥 맥스튜디오 아이패드 갤럭시탭",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403432567",
+    "name": "아이패드 최고가 매입 프로 에어 M 1 2 3 4 5 11 13 노트북",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "404558290",
+    "name": "it최고매입 갤럭시탭 s11 울트라 s 10 9 8 7  노트북 아이패드",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_에어_air",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403295532",
+    "name": "최고가 매입 갤럭시탭 s11 s10 s9 s8 s7 플러스 울트라 it",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_에어_air",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403789649",
+    "name": "삽니다 맥북 프로 에어 맥미니 아이맥 아이패드 갤럭시탭 노트북",
+    "price": 7000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407209389",
+    "name": "삽니다 울트라 플러스 프로 에어 갤럭시탭 아이패드 노트북 맥북 컴퓨터",
+    "price": 6900000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "406843823",
+    "name": "아이패드에어13인치M2 256기가셀룰러+애플펜슬프로(각인)판매",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch",
+      "reject_cellular_variant",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "398027285",
+    "name": "아이패드 에어 13 M2 256기가 세룰러 블루 판매",
+    "price": 905000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "370510210",
+    "name": "아이패드 에어 13 M2 셀룰러 256 매직키보드 판매합니다.",
+    "price": 1350000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch",
+      "reject_cellular_variant",
+      "reject_case_or_smart_folio_listing"
+    ]
+  },
+  {
+    "pid": "345497154",
+    "name": "아이패드 에어 13 m2 256 스그 / 애플펜슬 2세대 / 매직키보드",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "405689770",
+    "name": "아이패드 에어13 m2",
+    "price": 770000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "405911869",
+    "name": "아이패드 에어 13 m2 256GB WiFi 스페이스그레이 96%",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "403479914",
+    "name": "아이패드 에어 13 m2",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "405077773",
+    "name": "애플 아이패드 에어 13 m2 + 아이패드 프로 + 애플케어플러스",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "400080244",
+    "name": "아이패드 에어 13 m2 256gb 스페이스그",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "399471422",
+    "name": "(애플펜슬프로포함)아이패드 에어 13인치 M2/256G/배터리성능 100",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "382658469",
+    "name": "아이패드 에어 13 / m2 / 256G / 성능 100 / 펜슬포함 /",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "374844744",
+    "name": "애플 아이패드 에어 13인치 M2 256GB 와이파이 퍼플 태블릿PC",
+    "price": 980000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "406790765",
+    "name": "아이패드에어13 m2 256gb",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "378085665",
+    "name": "아이패드 에어6세대 (m2) 256gb",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  },
+  {
+    "pid": "324751309",
+    "name": "아이패드 에어 13 M2 256GB스타라이트 배터리 성능 100프로",
+    "price": 1120000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "401968249",
+    "name": "아이패드에어6세대 M2 256기가 퍼플 와이파이!!!",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  },
+  {
+    "pid": "402714230",
+    "name": "아이패드 에어 13 M2 256 wife+애플펜슬프로+키보드/성능100",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "394147858",
+    "name": "아이패드13에어 m2 256기가",
+    "price": 880000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "406831459",
+    "name": "애플 아이패드에어13 M2 256g 블루 wi-fi + 셀룰러",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "403846036",
+    "name": "아이패드에어13 M2 / 256g",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "402287068",
+    "name": "아이패드 에어 13 M2 256GB 파손 (전원정상 / 부품용",
+    "price": 250000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "401999475",
+    "name": "아이패드 에어 13 m2 256gb 판매합니다 가격조정 가능",
+    "price": 807500,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "402380012",
+    "name": "아이패드 에어 6세대 m2 Wi-Fi 모델 256GB 실버 펜슬프로",
+    "price": 770000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  },
+  {
+    "pid": "398107805",
+    "name": "아이패드 에어 13 m2 256gb 스페이스그레이",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "395483573",
+    "name": "아이패드 에어 13인치 m2 256GB  팝니다",
+    "price": 910000,
+    "reject_reasons": [
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "391880812",
+    "name": "애플 아이패드 에어 13인치 M2 256GB 블루+애플펜슬 프로 판매",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "389276594",
+    "name": "아이패드에어 13 m2칩 256gb 색상 블루",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "393897252",
+    "name": "S급 풀박스 아이패드 에어 M2 11(어탭터 제외) + 애플펜슬 프로",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "382064952",
+    "name": "아이패드 에어 13인치 m2 256GB+정품케이스",
+    "price": 836000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "406456872",
+    "name": "애플 아이패드 에어13(M2)13인치 256GB 퍼플",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "403959011",
+    "name": "아이패드 에어13(m2)256g 에플팬슬프로 판매합니다",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "407105153",
+    "name": "아이패드 에어 11인치 m2 128g wifi 배터리효율 99%",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "404615112",
+    "name": "아이패드 에어m2 11인치",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "406912045",
+    "name": "아이패드 에어 M2 11인치 128G 셀룰러",
+    "price": 710000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "402873869",
+    "name": "아이패드 에어 11인치 6세대 M2 128GB 와이파이 + 짭펜슬",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404026651",
+    "name": "애케플 ) 아이패드 에어 M2 11인치 128GB 셀룰러 스페이스그레이",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "407173134",
+    "name": "아이패드에어 11인치 M2 128기가 와이파이 스타라이트 보증26/6",
+    "price": 580000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406725938",
+    "name": "아이패드 에어 m2 11인치 판매합니다",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "405564966",
+    "name": "아이패드 에어 m2 1tb+셀룰러 (미개봉,블루,11인치)",
+    "price": 1400000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb",
+      "reject_wrong_size_13_inch",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "404945267",
+    "name": "아이패드에어6 11인치 m2 128 S급 + 애플펜슬프로",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404404373",
+    "name": "애플 아이패드 에어 M2 11인치 지문방지 액정보호필름",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "403565198",
+    "name": "SS급) 아이패드 에어 6세대 11인치(M2) 11인치 1tb 스타라이트",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "398677209",
+    "name": "아이패드 에어 M2 11인치 6세대 128g wifi 블루",
+    "price": 770000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "397508227",
+    "name": "애플 아이패드 에어 11 m2 11인치 128GB 키보드,애플펜슬 세트",
+    "price": 860000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "397430362",
+    "name": "아이패드 에어6 m2 11인치 퍼플 128GB",
+    "price": 722000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "396168169",
+    "name": "아이패드 에어 11인치 m2",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "397529967",
+    "name": "아이패드 에어 11인치 M2 128GB 퍼플 (케이스 포함) | 상태 최",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "393063264",
+    "name": "아이패드 에어(M2) 11인치 128gb 스페이스 그레이",
+    "price": 630000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "392529109",
+    "name": "아이패드 에어 M2 11인치 + 애플펜슬프로",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "389960663",
+    "name": "아이패드 에어6 m2 11인치 128기가 와이파이+애펜프로",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "386825275",
+    "name": "애플 아이패드 에어 11인치 M2 128GB 와이파이 블루 태블릿PC",
+    "price": 741200,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "380951612",
+    "name": "매직존 아이패드 에어6 M2 11인치 액정 보호필름",
+    "price": 12000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "377920544",
+    "name": "아이패드 에어6세대(M2) 11인치 WiFi 128GB 스페이스 그레이",
+    "price": 638290,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "377170036",
+    "name": "아이패드 에어 M2 6세대 11인치 스페이스그레이 풀박스",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "374967425",
+    "name": "아이패드 에어 6세대 m2 11인치 부품용",
+    "price": 250000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "373028861",
+    "name": "아이패드 에어6 m2 11인치 128기가 와이파이+애펜프로",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "370114552",
+    "name": "애플 아이패드 에어 11인치 M2 512GB 와이파이 블루 태블릿PC",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "369006934",
+    "name": "아이패드에어6세대 M2 11인치 128 퍼플 와이파이",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "365982031",
+    "name": "애플 아이패드 에어 11인치 M2 128GB 와이파이 블루 태블릿PC",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "349319036",
+    "name": "아이패드 에어 M2 11인치 512GB 새제품 판매합니다.",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "347597655",
+    "name": "아이패드 케이스&필름 일괄 에어6세대 M2 11인치",
+    "price": 20000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "348096750",
+    "name": "로지텍 콤보 터치 키보드케이스 아이패드 에어 11인치(4, 5세대, M2",
+    "price": 195000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "338867678",
+    "name": "배터리98%)아이패드 에어M2칩 11인치 6세대 128기가 와이파이",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "335092067",
+    "name": "S급 ) 아이패드 M2 에어6세대 11인치 와이파이 128",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "361851146",
+    "name": "매입 애플 아이맥 21 27 24 인치 맥미니 인텔 M1 M2 M3 M4",
+    "price": 5140000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_에어_air",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "333495350",
+    "name": "아이패드 에어 M2 11인치 애케플",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "332150577",
+    "name": "아이패드 에어 M2 11인치 Wifi 128GB",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "311004554",
+    "name": "아이패드6 에어 m2 11인치 128gb퍼플wifi팔아요",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "379935466",
+    "name": "애플 매직키보드 아이패드 에어 11 M3 M2 7 6 5 4세대 화이트/",
+    "price": 306300,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "358435703",
+    "name": "아이패드 11인치 m2 (128gb)",
+    "price": 735000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_에어_air",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "395495495",
+    "name": "로지텍 콤보터치 아이패드에어11 M3 M2 7 6 5 4세대 키보드케이스",
+    "price": 212400,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "376650020",
+    "name": "유엠투 UM2 아이패드 마그네틱 거치대 11인치 10.9형 프로 에어",
+    "price": 35000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "206645080",
+    "name": "로지텍 콤보 터치 아이패드 에어 4세대 5세대 6 11 M2 키보드케이스",
+    "price": 193300,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404968608",
+    "name": "아이패드 에어6세대(M2) 11인치 128gb",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "405974839",
+    "name": "아이패드 에어 6세대 M2 11인치 128gb 스타라이트",
+    "price": 590000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "405520650",
+    "name": "아이패드 에어 6세대11인치 M2 128GB 블루",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "402919444",
+    "name": "아이패드 에어6 11인치 m2 128G S급",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401140107",
+    "name": "아이패드 에어 M2 11인치 128gb Wi-fi (풀박스)",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "400602787",
+    "name": "아이패드 에어 11인치 M2 2024 128gb 풀박",
+    "price": 630000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "400523360",
+    "name": "아이패드 에어 M2 11인치 128GB wifi 풀박스",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "400009733",
+    "name": "미사용 새제품 아이패드 10.9인치 폴리오 케이스 에어 11 M2 4 5",
+    "price": 5500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "397421495",
+    "name": "애플 아이패드 에어 11인치 M2 스페이스그레이",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "398187935",
+    "name": "아이패드 에어6 11인치(m2) 128 애플펜슬 프로 포함",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "397717502",
+    "name": "아이패드 케이스 11인치 에어4/5/11 M2/M3 그레이",
+    "price": 5000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "396407767",
+    "name": "아이패드 에어 11인치 m2 128gb 퍼플 팝니다",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "397221885",
+    "name": "아이패드 에어 11인치 M2 128GB 애플케어플러스 스페이스그레이",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "395720391",
+    "name": "아이패드 에어 11인치 m2 wi-fi 128gb 퍼플",
+    "price": 460000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "393893000",
+    "name": "아이패드 에어 M2 128GB 11인치 퍼플",
+    "price": 530000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "393160500",
+    "name": "아이패드 에어6세대 m2 11인치 128 와이파이",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "393191477",
+    "name": "아이패드 에어 m2 11인치 배터리 99% 스페이스 그레이",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "387444229",
+    "name": "아이패드 11인치 매직키보드 화이트(에어4, 에어5, m2, m3 가능)",
+    "price": 100000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_case_or_smart_folio_listing"
+    ]
+  },
+  {
+    "pid": "365797780",
+    "name": "아이패드 에어 11인치 M2용(M3호환가능) 매직키보드케이스",
+    "price": 360000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "355043051",
+    "name": "아이패드 에어 M2 11인치 S급",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "407443684",
+    "name": "아이패드 에어11 256GB + 에어펜슬프로",
+    "price": 1030000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "405239449",
+    "name": "아이패드 에어 13 13인치 256GB + 애플펜슬 정품",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "399166146",
+    "name": "아이패드 에어 13(m2) 퍼플 256GB",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "394650173",
+    "name": "아이패드 에어11 256GB 스페이스그레이(Wi-Fi) 256GB",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "381751253",
+    "name": "아이패드 에어 11 256GB",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "390673747",
+    "name": "아이패드에어13",
+    "price": 830000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "384876832",
+    "name": "(미개봉급)아이패드 에어 11 256GB스페이스 그레이+펜슬 프로",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "407185790",
+    "name": "아이패드 13 에어 6세대 256gb",
+    "price": 810000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "380364465",
+    "name": "아이패드 에어6 256기가 (마지막)",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  },
+  {
+    "pid": "355067826",
+    "name": "아이패드 에어5 256기가 또는 에어6 11 128기가 구매원해요.",
+    "price": 999,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "338069058",
+    "name": "아이패드 에어6 256기가 13인치 +무선키보드마우스세트+애플팬슬프로",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "407467875",
+    "name": "아이패드 에어 M4 13인치 256기가 스타라이트 풀빅스",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "386782686",
+    "name": "[당일출발] 아이패드 에어3 셀룰러모델 256기가 실버 로즈골드",
+    "price": 270000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "407199507",
+    "name": "아이패드 에어 11 M3 256GB",
+    "price": 740000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "407433146",
+    "name": "직거 네고) M3 아이패드 에어 13 256 풀세트",
+    "price": 1350000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "407638100",
+    "name": "택배비 포함) 아이패드 에어 11 m3 256gb &  매직키보드 일괄",
+    "price": 1070000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_case_or_smart_folio_listing"
+    ]
+  },
+  {
+    "pid": "406348885",
+    "name": "아이패드 에어 3세대 골드 256GB",
+    "price": 260000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "407625890",
+    "name": "아이패드 에어 M4 11인치 256GB wifi 단순개봉급",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "407597793",
+    "name": "아이패드 에어11인치 M3.256GB / 애플펜슬프로",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "407602188",
+    "name": "아이패드 에어 5세대 M1 256GB",
+    "price": 570000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "407058913",
+    "name": "아이패드 에어 4세대 256GB WIFI 클라우드락 부품용 팝니다.",
+    "price": 65000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "406703608",
+    "name": "[미개봉] 아이패드 에어 13 M4 256",
+    "price": 1250000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "406453032",
+    "name": "아이패드 에어5 256기가",
+    "price": 630000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "398562589",
+    "name": "아이패드에어5 256gb + 애플펜슬2",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "407628523",
+    "name": "맥북 에어 M3 15인치 미드나이트 램16GB SSD256GB",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "407563739",
+    "name": "아이패드 에어5 256기가 파손(정상작동)",
+    "price": 350000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "403316799",
+    "name": "아이패드 에어3세대 256 애플펜슬1세대  정품 스마트 키보드 폴리오",
+    "price": 325000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "407572548",
+    "name": "[미개봉새제품] 아이패드에어3 256G 셀룰러 실버 판매합니다",
+    "price": 435000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "402391691",
+    "name": "[직거래만] 아이패드 에어5세대 256GB 풀박스 펜슬포함",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "407520666",
+    "name": "아이패드 에어4 256GB + 애플펜슬 2세대",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "403180803",
+    "name": "아이패드 에어 4세대 256GB Wifi 그린",
+    "price": 320000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "407340688",
+    "name": "아이패드 에어 13 m3 256",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "407087893",
+    "name": "아이패드 에어11 m4 256",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "407257552",
+    "name": "아이패드 에어 11 (M3) 256GB 셀룰러 (배터리 100%, 보증",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "407237019",
+    "name": "아이패드 에어 5세대 256gb 배터리 100",
+    "price": 620000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "406547181",
+    "name": "아이패드 에어 13 256 스페이스 그레이m4",
+    "price": 1200000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "406552044",
+    "name": "아이패드 에어3 256기가 wifi + 애플펜슬 1세대",
+    "price": 250000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "406587560",
+    "name": "아이패드 에어 5세대 256GB wifi 본체 상태좋음",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "406345730",
+    "name": "아이패드 에어 11 m3 256GB",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "406552183",
+    "name": "아이패드 에어 4 256GB wifi 핑크 + 케이스 +애플펜슬 2세대",
+    "price": 580000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "406177370",
+    "name": "아이패드 에어4 256 wifi + 애플펜슬 2세대",
+    "price": 330000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404970968",
+    "name": "아이패드 에어 5세대 256G",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "406192388",
+    "name": "(미개봉) 아이패드 에어 11 M3 256GB 스페이스그레이",
+    "price": 860000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "406286618",
+    "name": "아이패드 에어 4세대 wifi 256GB 본체단품 상태좋음",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "405991357",
+    "name": "아이패드 에어11 m3 256기가 와이파이",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "404932401",
+    "name": "아이패드 에어5 256GB + 애플펜슬 2세대",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404986526",
+    "name": "아이패드 에어 13 m3 256G, 애플펜슬 프로",
+    "price": 1300000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "405402540",
+    "name": "아이패드 에어 11 M3 256GB 스페이스 그레이 Wifi",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "405859667",
+    "name": "아이패드 에어5 256g 스페이스그레이 (sss급)",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "405684864",
+    "name": "아이폰 13 프로 pro 골드 256GB 중고/ 아이패드 에어팟 애플",
+    "price": 380000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  },
+  {
+    "pid": "402683603",
+    "name": "아이패드 에어 5세대 256GB",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404849744",
+    "name": "애플 아이패드 에어5세대 256기가 퍼플(+애플펜슬2세대)",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "402794696",
+    "name": "아이패드 교환 a16 128 -> 에어4 256",
+    "price": 100000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404765066",
+    "name": "애플 아이패드 에어13 M3 256GB 와이파이 스타라이트 태블릿PC",
+    "price": 1057300,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "404074211",
+    "name": "아이패드 에어5 256GB WIFI + 애플펜슬",
+    "price": 590000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "403722791",
+    "name": "아이패드 에어5 256 + 펜슬2 / S급 / 상태좋음 / 박스O",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "399886768",
+    "name": "아이패드 에어5 256GB",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "406533745",
+    "name": "맥북에어 m2 256gb 8gb 13인치",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이패드_ipad",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "404769754",
+    "name": "아이패드에어 5세대 M1 256GB 와이파이 스페이스그레이 태블릿PC",
+    "price": 621300,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "346968429",
+    "name": "아이패드 에어6 <설명 꼭 보기>",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  },
+  {
+    "pid": "403857381",
+    "name": "애플 아이패드 에어3세대 로즈골드 256GB 팝니다",
+    "price": 350000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404506251",
+    "name": "아이패드 에어4 256GB WI-FI 판매합니다.",
+    "price": 430000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "403861934",
+    "name": "애플 아이패드 에어 5세대 퍼플 256gb wifi 상단 휘어짐",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "400754393",
+    "name": "아이패드 에어5세대 256기가",
+    "price": 519000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "401062432",
+    "name": "아이패드 에어4세대 256GB 부품용",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "402797682",
+    "name": "아이패드 a16 128무하자 , 추가금액  -> 아이패드 에어5 256",
+    "price": 10000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "395189394",
+    "name": "아이패드 에어5 256",
+    "price": 540000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "392296677",
+    "name": "아이패드에어7 13인치 256G wifi",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "400142150",
+    "name": "네고O 아이패드 에어4 256GB 풀박 그린",
+    "price": 340000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "401998471",
+    "name": "애플 아이패드 에어 4 핑크 256GB 판매합니다!",
+    "price": 85000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "402774671",
+    "name": "아이패드 에어 11 M3 256g(펜슬세트)",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "398561544",
+    "name": "아이패드에어5 256g 와이파이  스타라이트",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "401217612",
+    "name": "아이패드 에어3 실버 256기가 + 애플펜슬 1세대",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "401013227",
+    "name": "아이패드에어4 256G 셀룰러 로즈골드",
+    "price": 810000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "402607310",
+    "name": "[미개봉] 아이패드 에어 M4 11인치 셀룰러 256GB 블랙 팝니다",
+    "price": 1230000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "398852634",
+    "name": "애플 아이패드 에어4 256GB 태블릿",
+    "price": 329000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "401446203",
+    "name": "[일본-미개봉] 아이패드 에어 11 m3 256gb",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "384124517",
+    "name": "[당일배송] 아이패드 에어3 셀룰러 256g 실버 핑크골드",
+    "price": 270000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "398874428",
+    "name": "미개봉 애플 아이패드 에어 5세대 와이파이 256 블루",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "400555665",
+    "name": "아이패드 에어4 로즈골드 256GB + 애플펜슬 2세대  S급",
+    "price": 480000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "402868301",
+    "name": "아이패드 에어 5세대 WiFi 256GB 스타라이트 + 애플펜슬2세대",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "393395174",
+    "name": "아이패드 에어3 256",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "398700593",
+    "name": "아이패드 에어11 m4 256gb 단순개봉",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "394573264",
+    "name": "급처) 아이패드 에어5 256",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "402866885",
+    "name": "배터리100% 아이패드에어 5세대  A2588 스페이스그레이 256GB",
+    "price": 760000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "398865929",
+    "name": "아이패드 에어5 256gb +애플펜슬 정품 2세대",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "391626886",
+    "name": "아이패드 에어5 M1 256GB + 애플펜슬 2세대",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "396978107",
+    "name": "급처)아이패드 에어4 256",
+    "price": 540000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "393494728",
+    "name": "아이패드 에어 4세대 256",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "394981507",
+    "name": "아이패드 에어11 m3 256 블루 팝니다",
+    "price": 790000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "398397738",
+    "name": "아이패드 에어4세대 256 wifi 스카이블루 리퍼",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "393253619",
+    "name": "아이패드 에어 m3 11 256 애케플 ss급",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "395792681",
+    "name": "아이패드 에어 3세대 256GB 실버 ipad air",
+    "price": 285000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "394257499",
+    "name": "아이패드 에어5 256GB wifi",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "401763304",
+    "name": "애플 풀세트(아이패드 에어13 m3 256gb+매직키보드+애플펜슬 에어)",
+    "price": 1300000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "395923339",
+    "name": "아이패드 에어13 m3 256GB 스페이스그레이",
+    "price": 1240000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "390362934",
+    "name": "아이패드 에어4 256 팝니다",
+    "price": 430000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "391508965",
+    "name": "아이패드 에어5 256g 퍼플 리퍼 신품",
+    "price": 675000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "393928221",
+    "name": "아이패드 에어 5 256GB + 애플펜슬 2세대",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "394635872",
+    "name": "아이패드 에어 11 M4 256 스페이스그레이 미개봉",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "389690029",
+    "name": "아이패드 에어4 256 팝니다",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "390858568",
+    "name": "아이패드 에어4 256 + 매직 키보드 판매",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_case_or_smart_folio_listing",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "393929296",
+    "name": "아이패드 에어5 핑크 256gb + 애플펜슬 2세대",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "391087432",
+    "name": "애플 아이패드 에어 5세대 256기가",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "393519020",
+    "name": "아이패드 에어 13 M3 256GB 미개봉 새상품 삽니다",
+    "price": 500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "392899121",
+    "name": "아이패드 에어 5세대 256GB + 애플펜슬 2세대",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "393126676",
+    "name": "아이패드 에어 5 스타라이트 (256GB)",
+    "price": 620000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "394878404",
+    "name": "애플 아이패드 에어4 스페이스 그레이 256기가+펜슬 2세대 판매합니다",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "393780121",
+    "name": "아이패드 에어5 256GB WiFi+ 애플펜슬 2세대 일괄",
+    "price": 604200,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "393512562",
+    "name": "아이패드 에어 5세대 스타라이트 256GB (충전 선 제외 풀박)",
+    "price": 330000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "387480711",
+    "name": "아이패드 에어 5 256기가",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "393902212",
+    "name": "아이패드 에어(M3 모델) 11인치 256기가+애플펜슬 프로+",
+    "price": 1250000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "389152837",
+    "name": "아이패드 에어11 m3 256GB",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "390418985",
+    "name": "[교환] 아이패드 에어4 스페이스 그레이 256 wifi",
+    "price": 100000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "390683382",
+    "name": "아이패드에어11 m3 256G 미개봉 팝니다",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "386634638",
+    "name": "아이패드 에어5 와이파이 256G",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "389569322",
+    "name": "아이패드에어13 m3 wifi 256",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "390583709",
+    "name": "아이패드 에어 5 256GB 스타라이트 (침수) 상자 포함",
+    "price": 250000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "388625853",
+    "name": "아이패드 에어3 256GB + 애플펜슬1",
+    "price": 345000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "391794007",
+    "name": "아이패드에어 5세대 10.9인치 M1 256GB 와이파이 스타라이트",
+    "price": 599500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "388218251",
+    "name": "아이패드 4세대 에어 256기가 + 애플펜슬 프로",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "385378585",
+    "name": "급처) 아이패드 에어3 256기가 셀룰러 모델 s급 + 애플펜슬",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "385406790",
+    "name": "애플 아이패드 에어11 M3 미개봉 스페이스그레이 256g",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "388512749",
+    "name": "(미개봉 새제품)아이패드 에어 11 M3 Wi-Fi 256GB 스페이스",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "387378508",
+    "name": "아이패드 에어3 로즈골드 256GB wifi + 애플펜슬 (파우치증정)",
+    "price": 250000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "382128606",
+    "name": "아이패드 에어 3세대 골드 256GB 셀룰러",
+    "price": 320000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "388362800",
+    "name": "아이패드 에어4 256GB(액정파손,화면터치가능)",
+    "price": 12000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "381221171",
+    "name": "애플 아이패드 에어5 256GB + 애플 팬슬 2세대",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "388665125",
+    "name": "(급처)아이패드 에어3(256gd)+펜슬1세대 / 실버/ wifi",
+    "price": 270000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "379866298",
+    "name": "아이패드 에어4 256기가 구해요",
+    "price": 380000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "370468506",
+    "name": "A급중고 아이패드 에어 4세대 256GB WIFI 판매합니다",
+    "price": 399000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "381136985",
+    "name": "아이패드 에어5 256기가 퍼플 와이파이 s급",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "381728594",
+    "name": "아이패드 에어 5세대 256g wifi 스타라이트",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "377765291",
+    "name": "아이패드 에어 4 256gb 스그",
+    "price": 380000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "380131383",
+    "name": "침수 아이패드에어 5 256기가 wifi",
+    "price": 170000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "381323337",
+    "name": "아이패드 에어11 m3 256기가 애플펜슬 프로 애플정품 케이스",
+    "price": 1200000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "382465402",
+    "name": "(미개봉)아이패드 에어 13 M3 256GB 스페이스그레이",
+    "price": 1250000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "379542980",
+    "name": "애플 아이패드 에어 5 핑크 256GB + 펜슬, 종이필름 부착",
+    "price": 740000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "381017610",
+    "name": "70만원에 일괄) 배터리 100% 아이패드 에어4 그린 256gb",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "376563365",
+    "name": "아이패드 에어4 셀룰러 256기가",
+    "price": 480000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "379044925",
+    "name": "아이패드 에어4 256 셀룰러 + 펜슬2세대 (60만원)",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "384364835",
+    "name": "아이패드11 m3  256gb 미개봉 스그",
+    "price": 864000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "377559338",
+    "name": "[부품용] 아이패드 에어4 256 스카이블루",
+    "price": 110000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "376631831",
+    "name": "아이패드 에어 4 256 스페이스그레이",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "379165933",
+    "name": "(미개봉) 아이패드 에어 11 M3 256GB wifi 팔아요! (7세대",
+    "price": 880000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "378873040",
+    "name": "아이패드 에어 5세대 256GB 스그 와이파이+애플펜슬 2세대",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "377193713",
+    "name": "급처) 아이패드 에어 4세대 스카이블루 256g WiFi",
+    "price": 250000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "377583847",
+    "name": "아이패드 에어 m3 13인치 256기가 + 애플펜슬 모두 풀박입니다",
+    "price": 1601000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "370216766",
+    "name": "아이패드 ipad air 에어 4세대 256GB wifi 블루",
+    "price": 373000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "372845122",
+    "name": "(가격인하없음) 아이패드 에어 5 256GB+ 애플펜슬 2세대",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "369973960",
+    "name": "아이패드 에어5 256GB 셀룰러+와이파이",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "367147651",
+    "name": "아이패드 에어 5 256GM 블랙 와이파이",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "369582158",
+    "name": "아이패드 에어5 스타라이트 256GB wifi 팔아요",
+    "price": 620000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "370459664",
+    "name": "Apple 2025 애플 아이패드 에어 13 M3 256GB 미개봉",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "370325406",
+    "name": "아이패드 에어 13인치 M3 256GB 와이파이 스타라이트 태블릿PC",
+    "price": 1120000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "364003802",
+    "name": "아이패드 에어4세대 256",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "361925290",
+    "name": "아이패드 에어5 256G",
+    "price": 420000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "368831411",
+    "name": "아이패드 에어 4세대 10.9인치 256GB 와이파이 블루 태블릿PC",
+    "price": 430000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "365915577",
+    "name": "아이패드 에어4 블루 256gb wifi 배터리 81",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "365549704",
+    "name": "아이패드에어 13인치 m3 256g 셀룰러 블루",
+    "price": 1200000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "365306696",
+    "name": "아이패드에어3세대 256기가 색상 로즈골드",
+    "price": 105000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "366897833",
+    "name": "[부품용 판매] 아이패드 에어 4 스카이256GB (초음파 세척 완료",
+    "price": 110000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "357462355",
+    "name": "아이패드 에어5 256",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "367141410",
+    "name": "애플 아이패드에어 3세대 10.5인치 256GB 와이파이 실버 태블릿PC",
+    "price": 180000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "364983234",
+    "name": "애플 아이패드 에어 13인치 M3 와이파이 256GB 스페이스 그레이",
+    "price": 1350000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "370677132",
+    "name": "\"미개봉\" 아이패드 에어 13(M3,256GB,Wifi)+펜슬프로등등",
+    "price": 1400000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "363066238",
+    "name": "아이패드 에어 11 5세대 256GB + WiFi 부품용",
+    "price": 100000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "361930604",
+    "name": "애플 아이패드 에어 5세대 256GB 스페이스 그레이",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "363033637",
+    "name": "(급처) 아이패드 에어5 256G (셀룰러 5G + WIFI)",
+    "price": 570000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "364877616",
+    "name": "애플 아이패드 에어 13 M3 스타라이트 256GB+애플펜슬 프로",
+    "price": 1200000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "362664168",
+    "name": "아이패드 에어 5세대 M1 256GB입니다!",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "364979874",
+    "name": "애플 아이패드 에어 11 7세대 M3 WIFI 256GB 스페이스그레이",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "359351297",
+    "name": "아이패드 에어 5 256+ 애플펜슬 2세대",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "362009758",
+    "name": "아이패드 에어 11인치 (M3) 256기가 와이파이+키보드",
+    "price": 1200000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "361493205",
+    "name": "아이패드 에어 로즈골드 3세대 256기가 + 애플펜슬",
+    "price": 230000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "353497219",
+    "name": "아이패드 에어5 256",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "355051811",
+    "name": "아이패드 에어 3 256기가",
+    "price": 320000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "357127767",
+    "name": "미개봉 아이패드 에어11 m3 256G 애플 2025 최신형",
+    "price": 875000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "357004709",
+    "name": "애플 아이패드 에어5 스페이스 그레이 256기가 와이파이 모델",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "356637384",
+    "name": "아이패드에어 7세대 m3  256기가 스페이스그레이",
+    "price": 890000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "356190184",
+    "name": "급처)아이패드 에어4 256G 스카이블루",
+    "price": 220000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "353393842",
+    "name": "아이패드 에어4세대 256gb",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "355799709",
+    "name": "(원가 60프로 할인)애플 아이패드 에어 256기가 + 애플펜슬 풀박스",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "350029971",
+    "name": "아이패드 에어 5세대 256",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "352167497",
+    "name": "아이패드 에어 5세대 256GB 핑크",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "357002889",
+    "name": "아이패드 에어5(팬슬포함256GB)",
+    "price": 520000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "353360683",
+    "name": "아이패드에어11 256GB",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "354934016",
+    "name": "(새상품)아이패드에어11 256기가 와이파이 스타라이트",
+    "price": 880000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "353980859",
+    "name": "아이패드 에어5 256 스페이스그레이 거의 새거",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "356357890",
+    "name": "급처)애플 아이패드 에어 13 M3 스페이스그레이 256GB + 애플펜슬",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "353896466",
+    "name": "아이패드에어5 256g 와이파이모델",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "352552139",
+    "name": "아이패드에어4 256기가",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "351852501",
+    "name": "아이패드 에어 m3 11인치 256기가",
+    "price": 940000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "354714126",
+    "name": "아이패드 에어5 퍼플, 256GB, WI-FI + 애플펜슬 2세대",
+    "price": 830000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "356667634",
+    "name": "아이패드  에어4 wifi 256g, 애플펜슬 2세대+로지텍 무선키보드",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "353069048",
+    "name": "급처)아이패드 에어4  에어4세대 256기가 wifi",
+    "price": 440000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "352249976",
+    "name": "아이패드 에어m3 13인치 미개봉 256 삽니다",
+    "price": 1080000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "350306825",
+    "name": "아이패드 에어4 256G wifi 블루",
+    "price": 475000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "353467513",
+    "name": "(미개봉)아이패드에어11(M3) wi-fi 256기가 스그",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "352934345",
+    "name": "애플 아이패드 에어(Air) 3세대 256GB + 애플펜슬 1세대",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "351294453",
+    "name": "아이패드 에어 3세대 256GB 펜슬,필름 팜니다",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "350890927",
+    "name": "미개봉 2025 최신형 아이패드 에어11 M3.256기가. 95만",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "350849304",
+    "name": "아이패드에어5 256gb(셀룰러)",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_size_13_inch",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "350240821",
+    "name": "아이패드 에어 M3 11 256스페이스 그레이 셀룰러  미개봉 새상품",
+    "price": 1180000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "348940913",
+    "name": "아이패드 에어 4세대 256GB 스카이블루",
+    "price": 230000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "348138318",
+    "name": "아이패드에어11 M3 256G",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "341705243",
+    "name": "아이패드 에어3 256",
+    "price": 320000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "346787755",
+    "name": "아이패드 에어4세대 256GB + 애플펜슬 2세대",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "349073562",
+    "name": "아이패드 에어4 256gb + 애플펜슬 2 + 3만원 AR종이질감 필름",
+    "price": 290000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "345548621",
+    "name": "아이패드 11 256 와이파이 에어 애플팬슬 포함",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "346167203",
+    "name": "아이패드에어5 256  배터리성능(100)",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "349315270",
+    "name": "아이패드에어13 셀룰러256GB+애케플",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128",
+      "reject_wrong_size_13_inch",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "342411333",
+    "name": "아이패드 에어4 256GB",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "349017513",
+    "name": "아이패드 에어4 WiFi 256GB+애플펜슬 2세대",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "344233252",
+    "name": "아이패드 에어5 핑크 256GB 구합니다",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "342342050",
+    "name": "아이패드 에어 스타라이트 256",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  },
+  {
+    "pid": "339811183",
+    "name": "아이패드 에어3 256",
+    "price": 350000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "341728121",
+    "name": "아이패드 에어4 256GB",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "342166383",
+    "name": "아이패드 에어 4세대 256기가",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "346911959",
+    "name": "S급 아이패드 에어5세대 WIFI 블루 256GB 정품 애플펜슬 팝니다",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "345076567",
+    "name": "아이패드 에어4 256기가 와이파이&정품매직키보드&펜슬",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "346829118",
+    "name": "미개봉 아이패드 에어11(M3) 256GB Wi-Fi 스페이스그레이",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "338464705",
+    "name": "아이패드 에어5 256G",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "342448043",
+    "name": "아이패드 에어3 256 20만원 구매하지 마세요",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "343979237",
+    "name": "아이패드에어11 m3 256gb 새상품입니다!",
+    "price": 920000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "341754777",
+    "name": "아이패드 에어4 스페이스그레이 256g",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "344509082",
+    "name": "맥북 에어 m1 8/256",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "345088060",
+    "name": "아이패드 에어5 wifi 256GB+애플펜슬2세대",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "337719484",
+    "name": "아이패드 에어 5 256gb s급 급처",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "340574839",
+    "name": "아이패드 에어5 256기가 스페이스그레이 A급",
+    "price": 599000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "342980161",
+    "name": "아이패드 에어3 Wi-Fi 256GB 스페이스 그레이 + 애플펜슬",
+    "price": 330000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "339329551",
+    "name": "(거의 새제품) 아이패드 에어 5 셀룰러 256 퍼플",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "340158950",
+    "name": "B급 아이패드에어4 (셀룰러) 256기가 팝니다",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "338432880",
+    "name": "아이패드 에어 11 M3 256G 미개봉 새상품",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "344943367",
+    "name": "아이패드에어3 셀룰러 256GB 골드 가성비좋은 중고26만4천팝니다.",
+    "price": 264000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "341194400",
+    "name": "아이패드 에어5 256기가 + 애플펜슬 풀박스 급처 가격제의 가능",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "339961978",
+    "name": "에어5 256GB + 애플펜슬 2세대 +  아이패드, 펜슬 상자 + 필름",
+    "price": 415000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "335804999",
+    "name": "아이패드 에어 4세대 256기가 팝니다",
+    "price": 410000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "339130013",
+    "name": "아이패드에어 5세대 256GB 스페이스그레이 + 매직키보드",
+    "price": 620000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "337227652",
+    "name": "아이패드에어7세대 13 256(거래완료)",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "339730635",
+    "name": "성능100% 아이패드 에어 11 m3 스타라이트 (wifi전용) 256G",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "337328758",
+    "name": "!급처!아이패드 에어 4 블루 256 & 셀룰러 + 애플펜슬 2세대",
+    "price": 630000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "334455618",
+    "name": "아이패드 에어3 256기가 와이파이",
+    "price": 220000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "336514060",
+    "name": "아이패드 에어5 스타라이트 256 + 애플펜슬2세대",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "337051540",
+    "name": "미개봉 직거래) 아이패드 에어 11 M3 256GB wifi 판매",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "333425966",
+    "name": "아이패드에어4 256 셀룰러",
+    "price": 520000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "334576711",
+    "name": "아이패드 에어3 256기가 + 애플펜슬 박스O",
+    "price": 310000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "334581295",
+    "name": "아이패드 에어5 256gb 데이터+셀룰러 모델",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "332689178",
+    "name": "아이패드 에어 4세대 256GB 셀룰러",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "336103604",
+    "name": "아이패드 에어  11 M3, 스페이스그레이, 256GB, Wi-Fi",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "333700604",
+    "name": "아이패드 에어 4세대 256기가, 애플펜슬 2",
+    "price": 475000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "330196832",
+    "name": "아이패드 에어 4 256GB",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "336502486",
+    "name": "(판매완료)아이패드 에어4 WIFI 256GB",
+    "price": 630000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "335396253",
+    "name": "미개봉3종. 아이패드에어 13. m3. 256g. 셀룰러/ 애플펜슬 프로",
+    "price": 1750000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "334361575",
+    "name": "침수 아이패드 에어5 wifi 256기가 급처합니다 + 애플펜슬 케이스",
+    "price": 350000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "334275797",
+    "name": "[아이패드 에어 5세대 256GB + 애플펜슬 2세대 세트 판매합니다]",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "333534633",
+    "name": "아이패드에어4세대 256gb + 애플정품! 매직키보드",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "332984423",
+    "name": "A급) 아이패드 에어4 256gb 11인치 실버 풀박스 wifi",
+    "price": 530000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "330269428",
+    "name": "(S급)아이패드 에어5 256기가 wifi + 애플펜슬 2세대",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "327621862",
+    "name": "아이패드 에어4세대 256기가+애플펜슬2 (와이파이)",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "322698526",
+    "name": "아이패드 에어 3세대 256GB",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "322226588",
+    "name": "아이패드 에어 5세대 256GB",
+    "price": 880000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "322059480",
+    "name": "아이패드 에어 5세대 256GB",
+    "price": 880000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "326274485",
+    "name": "아이패드 에어3 스페이스그레이 256GB wifi + 애플펜슬",
+    "price": 370000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "322103800",
+    "name": "사이클 53회 맥북 에어 M1 13인치 실버 램8gb 저장공간 256gb",
+    "price": 460000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "312383784",
+    "name": "아이패드 에어5세대 스그 256기가 케이스티파이+펜슬+필름",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "407615792",
+    "name": "아이패드에어5 256기가 wifi +펜슬2세대 판매",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "398215153",
+    "name": "아이패드에어5 256GB + 매직키보드 + 펜슬 + 박스",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "397052672",
+    "name": "아이패드에어5 256GB + 매직키보드 + 펜슬 + 파우치",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "407457407",
+    "name": "아이패드 에어 3 256기가 + 애플펜슬 1세대 판매",
+    "price": 140000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "407213213",
+    "name": "아이패드 에어4 256gb 중고 판매",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "407031346",
+    "name": "아이패드 에어 13 m4 256기가 (미개봉)",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "407145713",
+    "name": "아이패드 에어 4세대 256GB 11인치",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "406406373",
+    "name": "*풀박스* 아이패드 에어4 256GB WiFi",
+    "price": 390000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "405161813",
+    "name": "아이패드 에어5세대 256GB WIFI",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "406300717",
+    "name": "애플 아이패드 에어 4세대 256GB  + 애플펜슬2세대",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "405042074",
+    "name": "아이패드 에어 m1 11인티 256",
+    "price": 570000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "405829105",
+    "name": "아이패드 에어4 256GB 급처합니다",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "405850315",
+    "name": "아이패드 에어4 스페이스그레이 256GB",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "402132699",
+    "name": "아이패드 에어5 퍼플 256",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "405001363",
+    "name": "아이패드에어4 256gb 애플펜슬",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "405073060",
+    "name": "아이패드 에어5(256기가)+애플펜슬",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404692336",
+    "name": "아이패드 에어3 256기가 실버 + 애플펜슬1세대",
+    "price": 310000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "402422804",
+    "name": "아이패드 에어5 256gb",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "406074165",
+    "name": "iPad Air 아이패드 에어 5세대 (M1) 256GB wifi 블루",
+    "price": 430000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404837333",
+    "name": "아이패드 에어 5세대 핑크 256GB 와이파이 + 애플펜슬 2세대",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404108325",
+    "name": "아이패드 에어4세대 256기가",
+    "price": 330000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404482088",
+    "name": "아이패드 에어5 256gb 스페이스 그레이",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "401475563",
+    "name": "아이패드 에어 5세대 256GB",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "402921094",
+    "name": "아이패드 에어 5세대 4세대 프로 256기가",
+    "price": 595000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "401324111",
+    "name": "아이패드 에어5 퍼플 256GB",
+    "price": 630000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "398397859",
+    "name": "아이패드 에어11 m3 256",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "407092960",
+    "name": "Apple iPad Air 11 M4 Wi-Fi 256GB 스페이스 그레",
+    "price": 860000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "407219551",
+    "name": "아이패드 에어4 64gb 스카이 블루 + 애플펜슬 2",
+    "price": 430000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404987736",
+    "name": "아이패드 에어 / iPad Air 11(M4) Wi-Fi 256GB 스페",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "401644545",
+    "name": "아이패드 Air4 256G Cellular  애플펜슬 포함",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "402943066",
+    "name": "Apple iPad Air 13인치 256GB Wi-Fi 스페이스그레이",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "397858905",
+    "name": "아이패드 air 13 m4 256gb 미개봉",
+    "price": 1250000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "396520341",
+    "name": "iPad Air 4세대 256GB + 애플펜슬",
+    "price": 520000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "396401653",
+    "name": "iPad Air 4세대 256GB + 애플펜슬",
+    "price": 520000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "393650842",
+    "name": "미개봉 애플 iPad Air 13 M3 256GB 블루",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "393755685",
+    "name": "미개봉 iPad Air 11 M3 256GB 스페이스 그레이",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "394302512",
+    "name": "@256기가@미개봉@Air 11@스페이스 그레이",
+    "price": 930000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "377906961",
+    "name": "미개봉 iPad Air 13 M3 스타라이트 256GB",
+    "price": 1250000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "370301613",
+    "name": "아이패드 iPad Air 11 M3 256G",
+    "price": 889000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "367855029",
+    "name": "미개봉 iPad Air 11 M3 256GB 스페이스그레이",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "357020562",
+    "name": "아이패드 5세대 air 256g",
+    "price": 540000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "354159738",
+    "name": "(미개봉)아이패드 iPad Air 11 7세대 M3 WiFi 256GB",
+    "price": 890000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "403650291",
+    "name": "[S등급] 아이패드 Air 13 (M3) 256GB Wi-Fi 블루",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "399547733",
+    "name": "아이패드 AIR 5 256G  애플펜슬포함",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "394121692",
+    "name": "[S등급] 아이패드 Air 11 (M3) 256GB 와이파이 Purple",
+    "price": 770000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "406888403",
+    "name": "아이패드 에어 11 m3 256GB 미개봉 새상품 (애플펜슬 포함)",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "404548164",
+    "name": "미개봉 아이패드 에어 11인치 M4 256GB 와이파이 그레이 태블릿PC",
+    "price": 981000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "400217779",
+    "name": "아이패드 에어 11 M3 256GB Wi Fi",
+    "price": 790000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "398856057",
+    "name": "(미개봉)아이패드 에어 m4 11인치 256gb",
+    "price": 960000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "399333889",
+    "name": "[일본-미개봉] 아이패드 에어 11 m3 256gb + 애플펜슬pro",
+    "price": 1190000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "371772523",
+    "name": "SS급) 아이패드 에어 11 M3 스페이스 그레이 256GB WiFI 거",
+    "price": 1030000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "310031051",
+    "name": "아이패드에어 11  256GB삽니다 새상품 부산",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_wrong_chip_m1_m3",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "403844042",
+    "name": "아이패드 에어 11 m4",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "250363840",
+    "name": "아이패드 에어11 ,10세대 와이파이 64, 128, 256GB 미개봉",
+    "price": 779000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "386375936",
+    "name": "아이패드 에어 11인치 4세대 실버 wifi 배터리성능 89%",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "372147215",
+    "name": "2025 아이패드 에어 11 M3",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "371700177",
+    "name": "아이패드 11 에어7세대 m3 +매직키보드+애플펜슬프로",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "370033291",
+    "name": "아이패드 에어11(M3)+펜슬 프로",
+    "price": 970000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "356773912",
+    "name": "m3 아이패드 에어 11 255기가",
+    "price": 1600000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "401708265",
+    "name": "아이패드에어11 M3 와이파이 256GB",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "402469760",
+    "name": "아이패드 에어 11(M3) 256GB + 매직키보드 + 애플펜슬 (풀구성",
+    "price": 1120000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "396450905",
+    "name": "아이패드 에어 11 M4 256GB 스페이스 그레이 단순개봉 쿨거시 네고",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "390626640",
+    "name": "[미개봉]아이패드에어11M3 256GB + 애플펜슬프로",
+    "price": 1060000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "389041033",
+    "name": "아이패드 에어5세대 256GB wifi 11인치 스페이스그레이+애플펜슬",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "387009626",
+    "name": "아이패드 에어 7세대 11인치 256GB 블루 급처",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "384680187",
+    "name": "아이패드 에어 11 M3 256GB 풀세트",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "379984674",
+    "name": "아이패드 에어 11 (M3 모델) 256GB 셀룰러",
+    "price": 930000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "403428963",
+    "name": "Apple 2025 아이패드 에어 11(M3 모델) Wi-Fi+Cellu",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "394338530",
+    "name": "아이패드 에어11 M3 256 wifi 단순개봉급",
+    "price": 840000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "397423814",
+    "name": "아이패드에어 11 m3 256g 판매합니다.",
+    "price": 890000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "397624864",
+    "name": "Apple2025 아이패드 에어11 M3 256G wifi",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "394728821",
+    "name": "아이패드 에어 7세대 m3 11인치 256기가 스타라이트 풀박스+애펜프로",
+    "price": 940000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "390982433",
+    "name": "[자급제/S급] 아이패드 에어7 11 m3 256기가 셀룰러 풀박",
+    "price": 920000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "407000076",
+    "name": "아이패드에어11(m2)_바로발송",
+    "price": 798000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "398029642",
+    "name": "애플 아이패드 에어 11 M2 128GB Wi-Fi",
+    "price": 745000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "405982572",
+    "name": "판매) 판매) 아이패드 에어11 m2 + 펜슬프로 + 스마트폴리오",
+    "price": 890000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "407599283",
+    "name": "아이패드 에어 11 m2 128 wifi",
+    "price": 660000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "407564005",
+    "name": "아이패드 에어 11 m2 셀룰러 1tb 미개봉",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "393324415",
+    "name": "가격안내림)케이스티파이 아이패드 에어 11 m2/m3 케이스 nba에디션",
+    "price": 48900,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "406823321",
+    "name": "애플 아이패드 에어 11 M2 / 에플케 0/ 99퍼 효율 /케이스0",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "406832166",
+    "name": "오늘안에 안팔리면 글 내려요 S급 아이패드 에어11 m2 128기가 퍼플",
+    "price": 570000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "407484459",
+    "name": "iPad 에어 11 m2 스페이스 그레이 128GB+애플펜슬 프로",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "407417586",
+    "name": "아이패드 에어 11 m2 128gb",
+    "price": 620000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "407434422",
+    "name": "배터리 98% 아이패드 에어 11 M2 128GB",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "407372378",
+    "name": "아이패드 에어 11 m2 128GB + 애플펜슬 프로",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406456824",
+    "name": "아이패드 에어 11(M2) 128GB wi-fi 퍼플",
+    "price": 630000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406417086",
+    "name": "아이패드11 에어M2 셀룰러 1테라바이트",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "406266942",
+    "name": "아이패드 에어 11 M2 128g wi-fi 그레이",
+    "price": 615000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "406265230",
+    "name": "(S급)Apple 정품 2024 아이패드 에어 11 M2(128기가)+",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406016553",
+    "name": "아이패드 에어11 M2 128기가 와이파이",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406012429",
+    "name": "아이패드 에어11 (m2) 128기가 셀룰러",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "405244663",
+    "name": "(미개봉)아이패드 에어 11 (m2) 128기가",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406111306",
+    "name": "[효율99%]아이패드 에어 11(M2) 128 퍼플 + 로지텍 키보드 +",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "400320185",
+    "name": "아이패드 에어11 M2",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401214793",
+    "name": "아이패드 에어11(6세대) M2 + 팬슬프로 팝니다.",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "402265689",
+    "name": "아이패드 에어 4 5 6 7 8 10.9 11 M2 M3 M4 케이스",
+    "price": 4000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "395389545",
+    "name": "아이패드 에어11 m2 128gb",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "402155522",
+    "name": "애플펜슬 프로또는 아이패드 11 에어 m2에 맞는 짭플펜슬 구해봅니다.",
+    "price": 950,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "400065622",
+    "name": "아이패드 에어 11형 M2 M3 M4 6세대 케이스 베이비핑크",
+    "price": 9000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "398238246",
+    "name": "아이패드 에어 11 m2 + 애플케어",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "398766378",
+    "name": "풀박스] 아이패드에어11 M2 WiFi 128GB 판매",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "399912881",
+    "name": "애케플+) 아이패드에어 6세대 셀룰러 11 (M2)",
+    "price": 790000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "398413319",
+    "name": "아이패드 에어 11 m2칩 128gb 풀박스",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "398674588",
+    "name": "아이패드 에어6 11(M2) (부품용/액정파손) 네고가능 설명참고",
+    "price": 255000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "397335830",
+    "name": "풀박스무하자] 아이패드에어11 M2 WiFi 128GB 판매",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "396395610",
+    "name": "아이패드 에어 11 M2 128GB 스페이스 그레이",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "394890718",
+    "name": "아이패드 에어 11 m2",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "395807121",
+    "name": "아이패드 에어 11 M2 128GB 셀룰러 S급",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "398172246",
+    "name": "로지텍 콤보터치 아이패드에어11 M3 M2 7 6 5 4 키보드케이스 /",
+    "price": 200700,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "396005090",
+    "name": "아이패드 교환 에어m2>11세대(a16)",
+    "price": 9999,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "393998047",
+    "name": "아이패드 에어 11 M2 128GB 실버",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "394439257",
+    "name": "아이패드 에어 블루 11 M2칩 128GB",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "395092494",
+    "name": "아이패드 에어11 m2 128gb 애케플O 스페이스그레이",
+    "price": 840000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "388579336",
+    "name": "아이패드 에어 11 M2 wifi 128gb 97% +애플펜슬 프로",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "389102381",
+    "name": "애플 아이패드 에어11 m2 128기가 외이파이모델 + 애플펜슬프로",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "385624671",
+    "name": "아이패드에어11(m2)WIFI 128GB+애플펜슬",
+    "price": 790000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "384563128",
+    "name": "아이패드 에어 11 m2 128gb 셀룰러",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "385529348",
+    "name": "아이패드 11에어 (m2) 128기가 + 애플펜슬 pro (정품)",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "383938099",
+    "name": "아이패드 에어 11 M2 실버 128GB Wi-Fi + 키보드 케이스",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "382990903",
+    "name": "아이패드 에어 11 케이스 7세대 6세대 M3/M2",
+    "price": 10500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "383594938",
+    "name": "애플 아이패드 에어 11 6세대 M2 스페이스 그레이 + 애플펜슬 포함",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "382012722",
+    "name": "애플 아이패드 에어 11 M2 128GB 퍼플",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "381171158",
+    "name": "아이패드 에어11 M2 128",
+    "price": 665000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "380850020",
+    "name": "급처))아이패드 에어11(M2/M3)케이스 일괄판매합니다",
+    "price": 15000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "378444600",
+    "name": "아이패드 에어 11 M2 128GB 블루",
+    "price": 813,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "377135677",
+    "name": "급처 아이패드 에어11 m2 128gb wifi",
+    "price": 625000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "375220387",
+    "name": "아이패드 에어11(m2) WIFI 128GB + 애플팬슬 pro +케이스",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "367511538",
+    "name": "[미개봉] 아이패드 에어11 6세대 (M2) 128GB 스페이스그레이",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "367231878",
+    "name": "아이패드 에어11 m2 스페이스그레이 풀박스 교신/판매",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "364404552",
+    "name": "아이패드 에어 11 M2 파손",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "362256400",
+    "name": "Apple 정품 2024 아이패드 에어 11 M2칩 급하게 팔아용",
+    "price": 709000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "360560272",
+    "name": "아이패드 에어 11 m2 128GB 스페이드 그레이",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "359674961",
+    "name": "SSS급 아이패드 에어 11 M2 128GB WI-FI 거의새제품 풀박스",
+    "price": 740000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "359672654",
+    "name": "아이패드 에어 11 M2 128GB WI-FI 거의 미사용 제품 풀박스",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "359670629",
+    "name": "로지텍 콤보터치 아이패드에어4 5세대 전용 11 M2 M3 키보드케이스/",
+    "price": 189000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "357351527",
+    "name": "아이패드 에어 5세대 11 M2 128GB 애플 펜슬 포함",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "356655686",
+    "name": "아이패드 에어11 M2 스그 128g wifi",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "354830456",
+    "name": "아이패드 에어 11(m2) wi-fi",
+    "price": 790000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "353429818",
+    "name": "아이패드 에어 11 m2",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "354984085",
+    "name": "오터박스 symmetry folio 아이패드 에어 m3/m2 11인치",
+    "price": 65000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "354002576",
+    "name": "아이패드 에어 11 M2칩 + 애플펜슬 프로",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "355673550",
+    "name": "아이패드 에어 11 m2 스타라이트 128GB(애케플27.03.06)",
+    "price": 760000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "354429925",
+    "name": "아이패드 에어7(M3)/에어6(M2)11/에어5/에어4,10.9,블랙",
+    "price": 20000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "352096111",
+    "name": "아이패드 에어 11 m2 128GB",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "351544370",
+    "name": "아이패드 에어11 m2+ 애플펜슬 프로",
+    "price": 890000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "353200542",
+    "name": "급처)아이패드 에어M2 6세대 11 128 셀룰러+애플펜슬 프로+에케플",
+    "price": 890000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "352764990",
+    "name": "로지텍 콤보터치 아이패드 에어4 5세대 11인치 M2 M3 키보드케이스/",
+    "price": 200700,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "349701274",
+    "name": "아이패드 에어 11 M2",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "350563446",
+    "name": "아이패드 에어 11 (m2) + 애플펜슬 프로",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "349192578",
+    "name": "아이패드 에어 11 M2",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "349624069",
+    "name": "아이패드 에어 11m2 + 매직키보드",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "348701481",
+    "name": "아이패드 에어 6 11인치 m2칩",
+    "price": 635000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "347877196",
+    "name": "아이패드 에어11 M2칩 퍼플 128GB",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "347774507",
+    "name": "아이패드 에어11 m2칩 128GB 퍼플",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "337298881",
+    "name": "아이패드 에어 11 M2 스페이스그레이 128GB Wi-Fi (S급)",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "335975053",
+    "name": "아이패드 에어11 M2 128기가 + 애플펜슬 프로2",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "335593267",
+    "name": "아이패드 에어 11 M2 스그 (Wi-Fi, 128GB) + 펜슬프로",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "336212951",
+    "name": "로지텍 콤보터치 아이패드 에어4 5세대 전용 11 M2 M3 키보드케이스",
+    "price": 192200,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "334087924",
+    "name": "아이패드 에어11(M2) 512기가 블루",
+    "price": 1150000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "333099878",
+    "name": "아이패드 에어 11 m2 128기가 + 애플펜슬 + 키보드",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "330560144",
+    "name": "2025 아이패드 에어 11(M2) 1TB 스그",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "319917959",
+    "name": "로지텍 폴리오터치 아이패드 에어4 5세대 11 M2 M3 키보드 케이스/",
+    "price": 159100,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "407465742",
+    "name": "아이패드 에어 M2 6세대 128G WIFI",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  },
+  {
+    "pid": "407372788",
+    "name": "아이패드에어 m2 512 거의새거",
+    "price": 799000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "406797032",
+    "name": "아이패드 에어 11 M4 wifi +케이스 단순개봉",
+    "price": 829000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406797266",
+    "name": "새상품 아이패드 에어 11 M4 128GB WIFI +거치대",
+    "price": 869000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "407488790",
+    "name": "아이패드 에어6 m2 13인치 128기가 스타라이트",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "407289019",
+    "name": "[애플케어 O] 아이패드 11 m2 스페이스그레이 512기가 Wifi",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_에어_air",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "407179961",
+    "name": "애플 아이패드 에어 6세대 M2 128GB 실버",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "405980154",
+    "name": "아이패드 에어 6세대  m2 풀박스",
+    "price": 630000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "400839097",
+    "name": "아이패드 M2 에어 128기가",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "400396859",
+    "name": "[신품급]아이패드 에어 M2 풀박스",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "397170644",
+    "name": "아이패드 프로 11 4세대 m2 스페이스 그레이+ 펜슬",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_storage_128",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "380264283",
+    "name": "아이패드 m2 11 128기가",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_에어_air",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "389905730",
+    "name": "(판매완료)아이패드 에어 6 M2 128GB A2902 풀박스 SS급",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "373790970",
+    "name": "아이패드 에어 M2 1TB 셀룰러 + 애플펜슬",
+    "price": 1250000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_storage_512_1tb_2tb",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "368067216",
+    "name": "아이패드 에어 6세대 m2 128gb wifi",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "363376158",
+    "name": "아이패드에어 m2 128기가 판매",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "202059526",
+    "name": "로지텍 폴리오 터치 아이패드 에어4 5세대 11 M2 M3 키보드 케이스",
+    "price": 184700,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "406806200",
+    "name": "아이패드 에어 11 (m2) 128g wifi S급",
+    "price": 570000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "406832853",
+    "name": "아이패드에어11m2 128g판매합니다",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "405415431",
+    "name": "S급] 아이패드에어11 M2 WiFi 128GB 판매",
+    "price": 620000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406224658",
+    "name": "아이패드 에어 11 m2 (6세대) 스페이스 그레이",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404508942",
+    "name": "아이패드 에어11 m2 + 애플펜슬",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "403624702",
+    "name": "아이패드에어6 11 m2 풀박스",
+    "price": 660000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "403648227",
+    "name": "아이패드 에어11 M2 WiFi 128GB 판매",
+    "price": 620000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "403339852",
+    "name": "아이패드 에어 11 m2 128g wifi 펜슬포함",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401753213",
+    "name": "아이패드 에어 11 M2 셀룰러모델",
+    "price": 651000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "402596660",
+    "name": "아이패드 에어 11 m2 + 애플펜슬 프로 일괄 판매",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "401630008",
+    "name": "아이패드 에어 11(m2) 128GB wifi 모델",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401825595",
+    "name": "애플 아이패드 에어 11 m2 128기가 wifi",
+    "price": 580000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "402016305",
+    "name": "아이패드 에어 11(M2) 실버 128GB 판매합니다",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401555596",
+    "name": "아이패드 에어 11(m2,m3,m4) 종이 질감 필름",
+    "price": 5310,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "401775783",
+    "name": "[A등급] 아이패드 에어 11(M2) 128GB Wi-Fi Gray",
+    "price": 570000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "400334324",
+    "name": "아이패드 에어 11 m2 wifi 128g",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401182023",
+    "name": "아이패드에어11형 M2 128G WIFI 퍼플 A급",
+    "price": 580000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "399901038",
+    "name": "아이패드에어11 m2 128 wifi",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "398918953",
+    "name": "아이패드 에어 11 m2 128G 판매합니다. ipad air 11 m2",
+    "price": 660000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "401113367",
+    "name": "급처)아이패드 11에어 m2 애플펜슬 프로 포함",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "399573543",
+    "name": "아이패드 에어 11 m2 <판매중>",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "397887401",
+    "name": "아이패드 에어11 M2칩+ 애플 펜슬 프로",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "398464330",
+    "name": "아이패드에어 11 (M2) Wi-Fi 128GB 및 애플펜슬 프로",
+    "price": 830000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "396707998",
+    "name": "미개봉] 아이패드에어11 M2 WiFi 128GB 판매",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "396696612",
+    "name": "아이패드 에어 11 M2 스페이스 그레이 128GB",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "395989927",
+    "name": "아이패드 에어 11 (m2) 128gb",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "397268954",
+    "name": "아이패드에어 11 m2 128gb퍼플+애플펜슬 프로",
+    "price": 735000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "395045281",
+    "name": "아이패드 에어11 m2 128",
+    "price": 590000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "397092552",
+    "name": "아이패드 에어11 m2 128기가 + 애플펜슬 프로",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "397569501",
+    "name": "애플 아이패드 에어11 M2 128GB 와이파이버전 스페이스 그레이 판매",
+    "price": 350000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "397090838",
+    "name": "아이패드 에어 11M2 스페이스 그레이+애플펜슬+정품키보드",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "396032822",
+    "name": "아이패드 에어 11 M2 128G 퍼플 wifi",
+    "price": 660000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "396879245",
+    "name": "애플 정품 매직 키보드 아이패드 프로 11 4세대/아이패드 에어11 M2",
+    "price": 270000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "395430060",
+    "name": "아이패드 에어11 m2 128gb 스페이스그레이",
+    "price": 630000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "396048458",
+    "name": "아이패드 에어11 m2 스페이스 그레이+애플펜슬 프로",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "396672431",
+    "name": "아이패드 에어 11 M2 128GB 스타라이트 wifi+애플펜슬pro",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "394980944",
+    "name": "아이패드 에어11 m2 128 블루 단품 팝니다",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "395197005",
+    "name": "아이패드 에어11 M2 + 애플펜슬 프로",
+    "price": 770000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "395062505",
+    "name": "S급풀박스] 아이패드에어11 M2 WiFi 128GB 판매",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "394824589",
+    "name": "아이패드 에어 11 M2 (6세대) + 애플펜슬 프로 팝니다",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "394112290",
+    "name": "아이패드 에어 11(M2) Wi-Fi 12",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "393090239",
+    "name": "아이패드iPad 에어11 m2 128GB + 펜슬 프로 전용 충전기",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "394990812",
+    "name": "아이패드 에어11 m2와 애슬펜슬 프로 팝니다",
+    "price": 769000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "393157680",
+    "name": "아이패드 에어11 m2 128gb 스페이스 그레이",
+    "price": 570000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "393718095",
+    "name": "아이패드 에어11 m2/128gb(효율100)+애케플",
+    "price": 740000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "394572552",
+    "name": "애플 아이패드 에어 m2 11인치(배터리 100%)(애케플 2027 까지",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "391577132",
+    "name": "아이패드 에어11 6세대 m2 퍼플 128gb",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "391783369",
+    "name": "아이패드 에어 m2 11인치 스페이스 그레이 128gb",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "391384909",
+    "name": "아이패드 에어6 11 m2 128G 셀룰러",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "390889960",
+    "name": "아이패드 11 에어6세대 m2 (95%)판매",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "391445573",
+    "name": "아이패드 에어 11 M2 128GB 스페이스 그레이(급처)",
+    "price": 380000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "392336828",
+    "name": "아이패드 에어 11인치 m2 128 +보호필름2장 (급처)",
+    "price": 430000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "391187119",
+    "name": "아이패드 에어 11 m2 스그 128기가 팔아요",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390950056",
+    "name": "아이패드 에어 11 M2 128GB Blue + 애플 펜슬 프로",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390242557",
+    "name": "아이패드 에어 m2 11 128 팔아용",
+    "price": 570000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390850334",
+    "name": "아이패드 에어 11 m2 128G 와이파이 스그 배송비포함",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "388499577",
+    "name": "애플 아이패드11 에어 (m2)  실버 128기가 와이파이 팔아요",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390725048",
+    "name": "아이패드 에어 4/5/11 m2, m3 케이스 아이보리",
+    "price": 11000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "390831804",
+    "name": "애플 아이패드 에어 11 128gb 퍼플 m2 + 애플팬슬 프로 포함",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390830729",
+    "name": "아이패드 에어11 6세대 M2 128기가 wifi 스타라이트",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390808716",
+    "name": "아이패드 에어 6세대 11인치 m2 (128기가 스그 와이파이)",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390579018",
+    "name": "아이패드 에어 11 M2 wi-fi 스그 (애플 케어 포함) 애플팬슬ㅇ",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "388943716",
+    "name": "아이패드 에어 11 m2 128gb + 애플펜슬 Pro",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "391072762",
+    "name": "정품 애플 아이패드프로11 에어 M1 M2 매직키보드 블랙 풀박스 팔아요",
+    "price": 230000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "389593474",
+    "name": "아이패드 에어6 M2 11 128기가 스타라이트 + 애플펜슬 프로",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "388854999",
+    "name": "아이패드 에어 11(m2) 128 와이파이 + 애플펜슬 프로 팝니다",
+    "price": 570000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "389379474",
+    "name": "애케플, 100%) 아이패드 에어11 M2 128GB Wifi",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "387975628",
+    "name": "아이패드에어11(m2) 128GB 와이파이+셀룰러 팝니다",
+    "price": 799000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "388895613",
+    "name": "아이패드 11인치 매직키보드 블랙 (에어4, 에어5, m2, m3 가능)",
+    "price": 170000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "388476900",
+    "name": "15일까지 이 가격!!))아이패드 에어 11인치 M2 스타라이트",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "388097222",
+    "name": "아이패드 에어 6 m2 11 스페이스 그레이 128g 애플펜슬 프로",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "366053556",
+    "name": "아이패드 에어11 m2(에어11 6세대) 128GB WiFi",
+    "price": 180000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "352266392",
+    "name": "아이패드 에어6세대 11 M2 128GB Wi-Fi블루 애플팬슬 팝니다~",
+    "price": 829010,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "337837314",
+    "name": "아이패드 에어 11 WIFE M2 128GB 스타라이트",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "321244395",
+    "name": "(애케플o) 아이패드 에어6 11 M2 128gb wifi, 애플펜슬프로",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "391613261",
+    "name": "아이패드 11 m2 팝니다.",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "373639364",
+    "name": "아이패드 air 128GB m2 wifi + 애플 펜슬 pro",
+    "price": 790000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "394550607",
+    "name": "애플박스ㅡ아이패드 에어11 (m2)박스사진과 동일중고로 파시는분",
+    "price": 40000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "406115791",
+    "name": "Apple iPad Air 11(M2) 128GB 스페이스그레이",
+    "price": 681000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404830126",
+    "name": "iPad air 11 M2 Wi-Fi + Cellular 128GB",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "401534364",
+    "name": "ipad air 11(m2)+애플펜슬 포함+애플케어 2027.2.22",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "382017335",
+    "name": "iPad Air 11\" (M2)6세대",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "354418481",
+    "name": "iPad Air11 M2 스페이스 그레이",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "345228993",
+    "name": "아이패드 에어 (iPad Air) 11(M2) 128GB 배터리 성능 1",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "345492137",
+    "name": "iPad Air 11(M2) Wi-Fi 128 GB / 애플팬슬 프로",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "344673546",
+    "name": "iPad Air 11(M2 모델)용 Magic Keyboard - 한국어",
+    "price": 280000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "341634954",
+    "name": "iPad Air 11 M2 스페이스 그레이 매직키보드 세트",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "290372687",
+    "name": "iPad Air 11(M2 모델)용 Smart Folio - 라이트 바이",
+    "price": 60000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "403189288",
+    "name": "애플 아이패드 에어 11 m2 128",
+    "price": 590000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "403277794",
+    "name": "아이패드 에어11 m2 128기가 셀룰러",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "394980170",
+    "name": "아이패드 에어11 m2 128 스그 단품+ 애케플 팝니다",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390121591",
+    "name": "아이패드 에어 11 M2 스페이스 그레이+HOU키보드(ss급풀박",
+    "price": 744900,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "391917519",
+    "name": "아이패드 에어 11 m2 wifi 128gb 스페이스그레이 - 애플케어",
+    "price": 620000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "361510747",
+    "name": "아이패드 m2 에어 11인치 128 wifi(ss급)",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "364321109",
+    "name": "아이패드 에어 11 m2칩 128GB 퍼플 팝니다. +펜슬, 매직키보드",
+    "price": 795000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "364224980",
+    "name": "아이패드 에어11 M2  스페이스 그레이 128GB",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "359363572",
+    "name": "펜슬+아이패드 에어 6세대 m2 128g wifi",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "345034211",
+    "name": "아이패드 에어 6세대 m2 128기가 스페이스그레이 wifi",
+    "price": 590000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "339705558",
+    "name": "아이패드 에어 11 m2모델 128gb + 애플펜슬 프로",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "341723189",
+    "name": "아이패드 에어 6세대 M2 100% SSS급",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "340330757",
+    "name": "급처 아이패드 에어11 m2 128기가 펜슬 프로",
+    "price": 760000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "340326900",
+    "name": "[새상품급] 아이패드 에어11 m2 셀룰러 6세대 애플펜슬에어5",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "396917253",
+    "name": "아이패드 에어 11 128 m2 wifi",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "399738404",
+    "name": "아이패드 에어 11 m2 128gb wifi(풀박스)",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401491652",
+    "name": "아이패드에어 11 m2   Wifi모델 유튜브및 사진보관용으로 쓰던거",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "398219790",
+    "name": "아이패드 에어11 M2 블루 128기가",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "398529848",
+    "name": "아이패드 에어11 m2 128g + 애플펜슬 프로",
+    "price": 670000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "397178794",
+    "name": "아이패드에어11 M2 WiFi 128GB 판매",
+    "price": 620000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "393751147",
+    "name": "아이패드 에어 11 M2 128G 퍼플+애플펜슬 PRO 배터리 효율100",
+    "price": 901000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "387333354",
+    "name": "주말까지만이가격!! 아이패드 에어 11 M2 128GB 스타라이트",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "384638998",
+    "name": "아이패드 에어 11 M2칩 125GB wifi 스페이스 그레이",
+    "price": 639000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "368836024",
+    "name": "아이패드 에어11 M2 스페이스그레이",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "390125838",
+    "name": "아이패드 에어 6세대 11인치",
+    "price": 660000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "390379629",
+    "name": "rorentech 아이패드 에어 4/5/6세대 케이스 10.9/11",
+    "price": 11000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "385440905",
+    "name": "아이패드 에어 6세대 11형 128GB",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "386417031",
+    "name": "맥세이프 아이패드 에어 11인치  10.9 6세대 7세대 케이스 판매",
+    "price": 20000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "376698132",
+    "name": "애플 아이패드 에어 6세대 11인치 스페이스 그레이 128GB",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "369879468",
+    "name": "아이패드에어6세대 11인치 128 그레이 셀룰러",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "364387995",
+    "name": "아이패드 에어6세대 11 M2 128GB Wi-Fi블루",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "346770883",
+    "name": "아이패드에어 11 M3 6세대",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "340944994",
+    "name": "HOU 아이패드 케이스 에어 6세대 11",
+    "price": 64000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "407340579",
+    "name": "애플 아이패드 에어5 64기가",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "406961240",
+    "name": "아이패드 6세대 11인치",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_에어_air",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "406516086",
+    "name": "애플 매직키보드 아이패드 프로 11 1 2 3 4 에어4 5 6 7세대",
+    "price": 311100,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "404351028",
+    "name": "아이패드 에어 11 M2 스페이스그레이+애플펜슬 프로 등",
+    "price": 880000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "400150300",
+    "name": "애플 아이패드 에어 11 128 스타라이트",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401723949",
+    "name": "애플 아이패드 에어 + 펜슬",
+    "price": 770000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  },
+  {
+    "pid": "405521939",
+    "name": "아이패드 에어11 m2 128G 스페이스 그레이 판매합니다.",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "404270963",
+    "name": "아이패드 에어M2 풀박스 (찍힘 있음!!)",
+    "price": 535000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "397745209",
+    "name": "아이패드 에어 6팝니다 128기가",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "360790942",
+    "name": "단순개봉)아이패드 에어 11 128기가+애플펜슬 USB-C타입 팝니다",
+    "price": 790000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390306795",
+    "name": "애플 스마트 키보드 폴리오 아이패드 프로 11 1세대 에어4 5 6 7",
+    "price": 178800,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "390546779",
+    "name": "[판매완료] 아이패드 에어6 128GB 블루+애플펜슬프로+애플케어플러스",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "382657868",
+    "name": "아이패드 에어11 128기가",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "367840246",
+    "name": "아이패드 에어 11 스페이스그레이 128기가",
+    "price": 530000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "375180565",
+    "name": "상태 매우 좋음) 아이패드6 11인치 128 풀박스+애플펜슬프로",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "368766477",
+    "name": "애플 아이패드 에어 스페이스 그레이",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "361109451",
+    "name": "아이패드 에어 11 128GB",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "370555738",
+    "name": "아이패드 에어11 128GB wifi 스페이스그레이",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "362199991",
+    "name": "아이패드 에어 M2 11인치 1테라 wifi 미사용",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_512_1tb_2tb"
+    ]
+  },
+  {
+    "pid": "366162845",
+    "name": "아이패드 에어 6 스페이스그레이 128 새상품급",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "362492801",
+    "name": "애플 아이패드 에어 11인치 M2 칩 Wi-Fi 128GB입니다",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "351014231",
+    "name": "아이패드 에어 11",
+    "price": 586000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "357919212",
+    "name": "애플 매직키보드 아이패드프로 11 1 2 3 4 에어4 5 6 7 대만-",
+    "price": 259100,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "339694932",
+    "name": "아이패드 에어 11 128기가 스그",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "338756216",
+    "name": "아이패드 에어 11 128gb 블루",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "340903377",
+    "name": "아이패드 에어6 스그 128",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "333325143",
+    "name": "아이패드 에어 11 팔아요",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "334469654",
+    "name": "아이패드 에어 6 + 애플펜슬 프로",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "389383451",
+    "name": "애플 스마트키보드폴리오 아이패드프로11 1 2 3 4 에어4 5 6 7/",
+    "price": 163900,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "380781343",
+    "name": "애플 스마트키보드 폴리오 아이패드프로11 1 2 3 4 에어4 5 6 7",
+    "price": 189500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "327400906",
+    "name": "애플 스마트 키보드 폴리오 아이패드 프로 11 1세대 에어4 5 6 7",
+    "price": 155800,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "391302660",
+    "name": "아이패드 에어 6세대 11인치 Wifi 128GB 스페이스그레이",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "389882950",
+    "name": "아이패드 에어 6세대 11인치 128기가",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "366867995",
+    "name": "아이패드 에어 11\" 6세대 케이스",
+    "price": 65000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "406433526",
+    "name": "애플 매직키보드 아이패드 프로 11 1 2 3 4 에어4 5 6 7세대",
+    "price": 311100,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "403680010",
+    "name": "애플 아이패드 에어 실버",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401304704",
+    "name": "아이패드 에어6 11인치 128g + 애플펜슬프로 풀박",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "404543092",
+    "name": "애플 아이패드 프로 4세대 11(M2) + 애플펜슬",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_에어_air",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_storage_128",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "395435634",
+    "name": "애플 매직키보드 아이패드 프로 11 1 2 3 4 에어4 5 6 7세대",
+    "price": 311100,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "392050102",
+    "name": "아이패드 에어11 m2 급처",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "394034705",
+    "name": "[네고 가능]아이패드 에어 6세대+애플펜슬 2세대 급처",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390525463",
+    "name": "애플 매직키보드 아이패드 프로 11 1 2 3 4 에어4 5 6 7세대",
+    "price": 304700,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "398438675",
+    "name": "아이패드 Air 11 (M2) 2024 128G",
+    "price": 765000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "394729856",
+    "name": "아이패드 에어m2신품급 풀박 128gb스페이스 그레이 매직키보드 포함",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "389406512",
+    "name": "애플 매직키보드 아이패드 프로 11 1 2 3 4 에어4 5 6 7세대",
+    "price": 304700,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "389716726",
+    "name": "아이패드에어6세대m2 128기가,애플펜슬프로판매",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "389957474",
+    "name": "아이패드 air 11 (M2) 128기가 (wifi) 실버",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "370168660",
+    "name": "판매완료",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_에어_air",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  },
+  {
+    "pid": "324839827",
+    "name": "애플 매직키보드 아이패드 프로 11 1 2 3 4 에어4 5 6 7세대-",
+    "price": 269700,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "368347413",
+    "name": "(교환) 아이패드 에어6 11인치 128 > 아이패드 프로 12.9",
+    "price": 999999,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_storage_128",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "407370361",
+    "name": "새상품~아이패드 에어 11 6/7세대 스티커 투명 케이스라벤더",
+    "price": 6000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "405965662",
+    "name": "아이패드 에어6 11인치 사생활보호 탈부착 필름",
+    "price": 15000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "402997974",
+    "name": "아이패드 에어 5 4 / 프로 11 6 5 4 3세대 필름",
+    "price": 7000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "403477525",
+    "name": "아이패드 프로5/6 12.9,11,  에어4/5 10.9 케이스, 종이질",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_size_13_inch",
+      "reject_accessory_only",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "399719179",
+    "name": "아이패드 에어 6 11인치 128기가 퍼플 wifi",
+    "price": 5000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "401231997",
+    "name": "제이런 아이패드 매직키보드 프로 11/ 에어4/5/6 프로 12.9/ 에",
+    "price": 42000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "399671884",
+    "name": "핑크샌드 아이패드 케이스 에어8/에어7/에어6/에어11/ 에어5",
+    "price": 12000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "395900290",
+    "name": "아이패드 에어6 11인치 128기가 퍼플 + 애플펜슬 프로 교환",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "388520227",
+    "name": "아이패드 에어 4/5/6/7세대 11인치 케이스",
+    "price": 20000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "387411875",
+    "name": "[미개봉]아이패드 에어 6 11인치 Wi-Fi 128GB",
+    "price": 660000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "385723780",
+    "name": "아이패드 에어6 11인치",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "385759194",
+    "name": "아이패드 에어 6 11 펜슬 케이스",
+    "price": 15000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "387982704",
+    "name": "아이OK 블루투스 키보드 아이패드 프로 11&에어4/5/6/7호환 블랙",
+    "price": 67680,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "384854908",
+    "name": "김포존잘감자남 사기당하신분 연락주세요 미개봉 아이패드 에어6 11인치",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "214271750",
+    "name": "(삽니다)아이패드 에어4, 에어5, 에어6, 아이패드 10세대,11세대",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_gen_non_m2",
+      "reject_buying_post",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "349263106",
+    "name": "애플 매직키보드 아이패드 프로 11 1 2 3 4 에어4 5 6 7세대/",
+    "price": 272700,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "345808871",
+    "name": "아이패드 에어 6 11인치 128GB",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "344816447",
+    "name": "아이패드 에어6 11인치 + 애플펜슬프로",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "340902318",
+    "name": "애플 매직키보드 아이패드프로 11 1 2 3 4 에어4 5 6 7 유럽/",
+    "price": 259100,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "328750738",
+    "name": "아이패드 케이스10.9인치 에어11,4,5,6 공용 가능",
+    "price": 17000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "329722500",
+    "name": "애플 정품 매직키보드 아이패드프로 11 1 2 3 4 에어4 5 6 7/",
+    "price": 260300,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "313170529",
+    "name": "아이패드 액정 필름(미니6 프로11 에어4 5)",
+    "price": 6500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "407635664",
+    "name": "Apple  2026 아이패드 에어 11 [M4모델] 팝니다",
+    "price": 810000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "407630914",
+    "name": "[새상품/미개봉] 아이패드 에어 11 m4 2026 128기가",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "394759069",
+    "name": "Apple 2026 아이패드 에어 11(M4 모델)",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "396304501",
+    "name": "아이페드 에어 6세대 11인치 128GB (애플케어 포함)",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "407237655",
+    "name": "민트급 급처 아이패드 에어 m1 11인치 64기가",
+    "price": 469000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "290151059",
+    "name": "삽니다)아이패드프로11 13 에어6 미개봉 당일출장매입구매 24시",
+    "price": 3000000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "reject_buying_post",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "403461741",
+    "name": "Apple 2026 아이패드 에어 11(M4 모델) WiFi 128GB",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "398257156",
+    "name": "Apple 2026 애플아이패드 에어 11(M4 모델)",
+    "price": 860000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "397749088",
+    "name": "Apple 2026 아이패드 에어 11(M4 모델)",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "395154497",
+    "name": "아이패드 에어4 11인치 64기가 와이파이",
+    "price": 435000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "397655285",
+    "name": "[미개봉] Apple 2026 아이패드 에어 11(M4 ) 128기가 스",
+    "price": 840000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "391539272",
+    "name": "아이패드 케이스 에어11 A16",
+    "price": 9000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "395759954",
+    "name": "아이패드 에어5 64GB WIFI 스페이스 그레이 11인치",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "394693416",
+    "name": "2026 애플 아이패드 에어 11(M4 모델)",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "396871809",
+    "name": "아이패드 에어 11 M3 판매합니다 (2026.2.11구매)",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "389409370",
+    "name": "(네고가능) 아이패드 에어5 실버 11인치 64기가 판매",
+    "price": 530000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "385332720",
+    "name": "아이패드 에어 5 m1 11인치 64gb",
+    "price": 430000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "388396932",
+    "name": "아이패드 에어 11 m3 256 스페이스그레이 Wi-Fi",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "370141766",
+    "name": "아이패드 에어4 64기가 11인치 스페이스그레이 +정품 스마트폴리오",
+    "price": 9999999,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "348825151",
+    "name": "아이패드 에어11(M3) 256GB 미개봉 새상품",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "347958857",
+    "name": "아이패드 에어11(m3) 256기가 그레이(와이파이)",
+    "price": 111111111,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "295249101",
+    "name": "아이패드 에어6세대 11인치 필름 (2매) 판매합니다",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "337771040",
+    "name": "아이패드 에어 11 M3 256g wifi 새상품 팝니다",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "395543535",
+    "name": "새상품 아이패드 케이스 프로 11/ 에어 4,5,6 (세트판매)",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "392631913",
+    "name": "아이패드에어6 11인치 128g팜",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "390592567",
+    "name": "에어6 11인치 아이패드 케이스",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256"
+    ]
+  },
+  {
+    "pid": "392615713",
+    "name": "애플 매직키보드 아이패드 프로 11 1 2 3 4 에어4 5 6 7세대",
+    "price": 304700,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_ipad_pro_or_mini"
+    ]
+  },
+  {
+    "pid": "378253422",
+    "name": "신지모루 아이패드 에어6 11인치 에어5 에어4",
+    "price": 9000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404922635",
+    "name": "Apple 2026 아이패드 에어 11(M4 모델)",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404381659",
+    "name": "아이패드에어6세대 11 셀룰러 + 애플펜슬프로",
+    "price": 860000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "403254199",
+    "name": "아이패드 에어5 m1 11인치 256g 와이파이 액정파손 76%",
+    "price": 250000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "396403868",
+    "name": "아이패드 에어 4세대 11인치 64gb wifi + 애플펜슬 2세대",
+    "price": 479000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "395299201",
+    "name": "아이패드 에어 11 m4 256기가 스타라이트",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "395673875",
+    "name": "아이패드 에어 m4 11인치 256기가 스타라이트",
+    "price": 1080000,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "395701962",
+    "name": "아이패드 에어 5 M1 11인치 64GB WIFI + 애플펜슬 2세대",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "394279372",
+    "name": "아이패드 에어4 11인치 64gb 와이파이 스페이스그레이 애플펜슬 세트",
+    "price": 470000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "392570964",
+    "name": "아이패드 에어 5세대 M1 스타라이트 11인치 64gb",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "393006610",
+    "name": "아이패드 에어 11 M3 256G + 짭펜슬(미사용) + 키보드케이스",
+    "price": 810888,
+    "reject_reasons": [
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3"
+    ]
+  },
+  {
+    "pid": "389338961",
+    "name": "아이패드 에어5 11  m1 256g 파손 와이파이 89%",
+    "price": 280000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_broken_or_parts_only"
+    ]
+  },
+  {
+    "pid": "367836881",
+    "name": "아이패드 에어4 64 스페이스그레이 11인치 A급",
+    "price": 380000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "404110200",
+    "name": "아이패드 에어 5세대 11인치 64gb + 애플펜슬 2세대",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "400866273",
+    "name": "아이패드 에어 11 + 애플펜슬 프로 정품 + 충전기 + 케이스",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "395703620",
+    "name": "아이패드 에어 5세대 11인치 판매합니다",
+    "price": 485000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "402791609",
+    "name": "아이패드 에어11m2 스페이스그레이",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대"
+    ]
+  },
+  {
+    "pid": "395370795",
+    "name": "아이패드 에어 4세대 11인치 + 애플펜슬 2세대 풀컨디션",
+    "price": 580000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "383651454",
+    "name": "아이패드 에어11스카이블루 + 애플 펜슬 프로 + 매직 키보드",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_256",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "357993844",
+    "name": "아이패드 에어 5세대 11 iPad Air 스타라이트",
+    "price": 390000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2",
+      "reject_wrong_size_13_inch"
+    ]
+  },
+  {
+    "pid": "400674613",
+    "name": "아이패드 에어4세대 11인치 로즈골드 64GB 판매합니다.",
+    "price": 320000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_gen_non_m2"
+    ]
+  },
+  {
+    "pid": "398918147",
+    "name": "아이패드에어 5세대 11인치 64G (m1칩) 셀룰러 팝니다",
+    "price": 580000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_chip_m1_m3",
+      "reject_wrong_gen_non_m2",
+      "reject_cellular_variant"
+    ]
+  },
+  {
+    "pid": "389926590",
+    "name": "아이패드 에어 6 128gb",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "390701800",
+    "name": "애플 아이패드 에어 11 128 기가 스페이스 그레이 오늘만 이각겨",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_256",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "reject_wrong_storage_128"
+    ]
+  },
+  {
+    "pid": "404075236",
+    "name": "매입 삼성 갤럭시북 lg 그램 360 울트라 노트북 맥북 프로 아이패드",
+    "price": 7700000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_256",
+      "missing_에어_air",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "406348578",
+    "name": "2022년 LG 2도어 냉장고 스탠드형 실버 311리터",
+    "price": 320000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_256",
+      "missing_아이패드_ipad",
+      "missing_any__bm2_b_m2_s_칩_or_6_s_세대_에어_s_6_b_에어_s_6세대",
+      "missing_any__b11_b_11_s_인치_11_s_형_11"
+    ]
+  }
+]
