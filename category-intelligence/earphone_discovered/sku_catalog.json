@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "category": "earphone_discovered",
+  "generated_at": "2026-05-10T15:27:45.577Z",
+  "method": "v3_normal_cluster_to_sku_candidates",
+  "skus": [
+    {
+      "id": "뉴클-nctw-cl-10-iz-lg-톤프리-hbs-tfn7-앱코-atf1000-삼성-갤럭시버즈fe-애플-비츠-핏-프",
+      "brand": "",
+      "model_name": "뉴클 NCTW-CL-10-IZ, LG 톤프리 HBS-TFN7, 앱코 ATF1000, 삼성 갤럭시버즈FE, 애플 비츠 핏 프로",
+      "aliases": [
+        "뉴클 NCTW-CL-10-IZ, LG 톤프리 HBS-TFN7, 앱코 ATF1000, 삼성 갤럭시버즈FE, 애플 비츠 핏 프로",
+        "본체",
+        "이어폰 (오른쪽, 왼쪽)",
+        "중고",
+        "생활기스 제외",
+        "충전 C핀 가능",
+        "김해 장유(율하2지구)",
+        "택배 가능",
+        "상태 좋음",
+        "화이트 색상",
+        "기기변경 판매"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        6
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 대부분 본체와 양쪽 이어폰 유닛이 포함된 정상 작동하는 중고 이어폰 매물로 구성되어 있습니다. 설명에 '본체 + 이어폰 (오른쪽, 왼쪽)' 구성이 명확히 언급되어 있으며, 상태도 '생활기스 제외 깔끔' 등 정상 사용 가능한 상태임을 강조하고 있습니다. 일부 매물은 본체만 포함된 경우도 있으나, 전체적으로 정상 제품군에 해당합니다."
+    },
+    {
+      "id": "에어팟-프로-2세대-c타입",
+      "brand": "",
+      "model_name": "에어팟 프로 2세대 C타입",
+      "aliases": [
+        "에어팟 프로 2세대 C타입",
+        "에어팟 프로2",
+        "C타입",
+        "본체",
+        "충전케이스",
+        "최상",
+        "하자없음",
+        "정상 작동",
+        "급처",
+        "상태좋음",
+        "박스X"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        0
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 에어팟 프로 2세대 본품을 주로 다루고 있으며, 양쪽 유닛과 충전 케이스가 포함된 정상 작동 제품들이 대부분입니다. 일부 매물은 충전 문제나 박스 미포함 등 경미한 차이가 있으나, 전체적으로 정상 작동하는 완제품으로 분류할 수 있습니다."
+    },
+    {
+      "id": "airpods-pro2",
+      "brand": "",
+      "model_name": "Airpods Pro2",
+      "aliases": [
+        "Airpods Pro2",
+        "미개봉",
+        "에어팟 프로2",
+        "새상품",
+        "비닐 포장",
+        "안전결제",
+        "양쪽 유닛",
+        "본품",
+        "판매합니다",
+        "음향기기 업그레이드"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        7
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 '에어팟 프로2' 미개봉 새상품을 판매하는 정상 매물로, 양쪽 유닛과 케이스가 모두 포함된 완전한 본품임을 명확히 언급하고 있습니다. 제품 상태가 'NEW'이며, 비닐 포장도 뜯지 않은 새상품임을 반복적으로 강조하여 정상 이어폰 카테고리에 해당합니다."
+    }
+  ]
+}

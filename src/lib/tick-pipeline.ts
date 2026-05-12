@@ -1,6 +1,12 @@
 import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
-import { evaluateCategoryReadiness, loadCategoryReadinessMap } from "@/lib/category-readiness";
+import { loadCategoryReadinessMap } from "@/lib/category-readiness";
+import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
+import {
+  median,
+  percentileRank,
+  trimmedSellerMarket,
+} from "@/lib/market-math";
 import { notifyOperationalAlerts, type OperationalAlert } from "@/lib/operational-notifier";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import {
@@ -12,17 +18,40 @@ import {
   type PipelineRow,
 } from "@/lib/pipeline";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
-import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE, bandFromProfit } from "@/lib/profit";
+import {
+  decideCadence,
+  queryFamily,
+  type CadenceDecision,
+  type CategoryReadinessStatus,
+  type QueryYieldRow,
+} from "@/lib/search-query-cadence";
+import {
+  emptyStats,
+  mergeStats,
+  timedStage,
+  type StageStats,
+  type TickResult,
+} from "@/lib/pipeline-stage";
 import {
   canPermanentlyInvalidateSoldOut,
   describeSignals,
   detectSoldOut,
   hasStrongSoldOutSignal,
+  isActiveSaleStatus,
   isSoldOut,
   type SourceHealthStatus,
 } from "@/lib/sold-out";
-
-type Headers = Record<string, string>;
+import {
+  analysisOutputDiffReasons,
+  analysisOutputChanged,
+  listingOutputDiffReasons,
+  listingOutputChanged,
+  toListingOutputRows,
+  toRankedAnalysisRows,
+  type AnalysisOutputRow,
+  type ListingOutputRow,
+} from "@/lib/score-output-mapper";
+import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 type RawListingRow = {
   pid: number;
@@ -33,10 +62,19 @@ type RawListingRow = {
   url: string;
   seller_uid: string | null;
   thumbnail_url: string | null;
+  listing_type: string;
+  sku_id: string | null;
+  sku_name: string | null;
+  detail_status: string;
   detail_enriched_at: string | null;
+  detail_error: string | null;
   last_seen_at: string;
   last_changed_at: string;
+  source_updated_at: string | null;
   listing_state: string;
+  sale_status?: string | null;
+  missing_count: number;
+  last_missing_at: string | null;
 };
 
 type QueueClaimRow = {
@@ -52,6 +90,7 @@ type QueueClaimRow = {
 
 type LifecycleStatus = "active" | "missing_suspect" | "sold_confirmed" | "disappeared" | "archived";
 type LifecyclePriorityTier = "pool" | "near_pool" | "market_sample" | "general" | "exploration";
+type LifecycleClaimMode = "default" | "terminal_recheck";
 
 type LifecycleClaimRow = {
   pid: number;
@@ -122,6 +161,13 @@ type SellerUpsertRow = {
   updated_at: string;
 };
 
+type ExistingSearchSellerRow = {
+  seller_uid: string;
+  is_proshop: boolean | null;
+  last_seen_at: string | null;
+  source_json: Record<string, unknown> | null;
+};
+
 type MarketPriceRow = {
   date: string;
   comparable_key: string;
@@ -169,132 +215,30 @@ type PoolWarmRow = {
 };
 
 const DETAIL_STAGE_SAFETY_MARGIN_MS = 8_000;
-const POOL_CONFIDENCE_FLOOR = 0.7;
-const POOL_BLOCK_FLAGS = [
-  "coarse_market_price",
-  "market_confidence_low",
-  "market_stat_missing",
-  "option_parse_review",
-  "option_needs_review",
-  "ai_review_unavailable",
-  "weak_description",
-  "risk_keyword_review",
-  "condition_review",
-];
-const REST_READ_CHUNK_SIZE = 250;
-const REST_WRITE_CHUNK_SIZE = 200;
+const REST_READ_CHUNK_SIZE = 25;
+const RAW_EXISTING_READ_CHUNK_SIZE = 500;
+const POOL_PID_READ_CHUNK_SIZE = 500;
+const REST_WRITE_CHUNK_SIZE = 50;
+const RAW_TOUCH_WRITE_CHUNK_SIZE = 400;
+const SELLER_WRITE_CHUNK_SIZE = 200;
+const SELLER_READ_CHUNK_SIZE = 300;
+const DEFAULT_SELLER_SEARCH_REFRESH_MS = 3 * 60 * 60 * 1000;
+const PARSED_PID_READ_CHUNK_SIZE = 300;
 const REST_KEY_READ_CHUNK_SIZE = 50;
+const TERMINAL_LISTING_STATES = new Set(["sold_confirmed", "disappeared", "archived"]);
+const TITLE_TRIAGE_SKIP_VERSION = "title_triage_v1";
 
 const catalogById = new Map(CATALOG.map((sku) => [sku.id, sku]));
 
-export type StageStats = {
-  collected: number;
-  searchSucceeded: number;
-  searchFailed: number;
-  rawUpserted: number;
-  queued: number;
-  detailQueueSkipped: number;
-  claimed: number;
-  enriched: number;
-  detailFailed: number;
-  scored: number;
-  aiReviewRequested: number;
-  aiCacheHits: number;
-  aiApiCalls: number;
-  aiUnavailable: number;
-  aiFiltered: number;
-  aiKeptNormal: number;
-  aiKeptLowConfidence: number;
-  sellerUpserted: number;
-  upserted: number;
-  poolUpserted: number;
-  poolSkipped: number;
-  timedOut: boolean;
+const SKIP_DETAIL_DECISION: DetailQueueDecision = {
+  queue: false,
+  reason: "search_only_update",
+  priority: 0,
+  listingType: "unchanged_detail",
+  skuId: null,
+  skuName: null,
+  purpose: "skip",
 };
-
-export type TickResult = StageStats & {
-  stages: Record<string, StageStats>;
-  stageDurationsMs: Record<string, number>;
-};
-
-function emptyStats(): StageStats {
-  return {
-    collected: 0,
-    searchSucceeded: 0,
-    searchFailed: 0,
-    rawUpserted: 0,
-    queued: 0,
-    detailQueueSkipped: 0,
-    claimed: 0,
-    enriched: 0,
-    detailFailed: 0,
-    scored: 0,
-    aiReviewRequested: 0,
-    aiCacheHits: 0,
-    aiApiCalls: 0,
-    aiUnavailable: 0,
-    aiFiltered: 0,
-    aiKeptNormal: 0,
-    aiKeptLowConfidence: 0,
-    sellerUpserted: 0,
-    upserted: 0,
-    poolUpserted: 0,
-    poolSkipped: 0,
-    timedOut: false,
-  };
-}
-
-function mergeStats(parts: StageStats[]): StageStats {
-  return parts.reduce((acc, part) => ({
-    collected: acc.collected + part.collected,
-    searchSucceeded: acc.searchSucceeded + part.searchSucceeded,
-    searchFailed: acc.searchFailed + part.searchFailed,
-    rawUpserted: acc.rawUpserted + part.rawUpserted,
-    queued: acc.queued + part.queued,
-    detailQueueSkipped: acc.detailQueueSkipped + part.detailQueueSkipped,
-    claimed: acc.claimed + part.claimed,
-    enriched: acc.enriched + part.enriched,
-    detailFailed: acc.detailFailed + part.detailFailed,
-    scored: acc.scored + part.scored,
-    aiReviewRequested: acc.aiReviewRequested + part.aiReviewRequested,
-    aiCacheHits: acc.aiCacheHits + part.aiCacheHits,
-    aiApiCalls: acc.aiApiCalls + part.aiApiCalls,
-    aiUnavailable: acc.aiUnavailable + part.aiUnavailable,
-    aiFiltered: acc.aiFiltered + part.aiFiltered,
-    aiKeptNormal: acc.aiKeptNormal + part.aiKeptNormal,
-    aiKeptLowConfidence: acc.aiKeptLowConfidence + part.aiKeptLowConfidence,
-    sellerUpserted: acc.sellerUpserted + part.sellerUpserted,
-    upserted: acc.upserted + part.upserted,
-    poolUpserted: acc.poolUpserted + part.poolUpserted,
-    poolSkipped: acc.poolSkipped + part.poolSkipped,
-    timedOut: acc.timedOut || part.timedOut,
-  }), emptyStats());
-}
-
-function serviceHeaders(prefer?: string): Headers {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY missing");
-  return {
-    apikey: key,
-    authorization: `Bearer ${key}`,
-    "content-type": "application/json",
-    ...(prefer ? { prefer } : {}),
-  };
-}
-
-function restBase() {
-  const raw = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  if (!raw) throw new Error("SUPABASE_URL missing");
-  return raw.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "") + "/rest/v1";
-}
-
-function tableUrl(table: string) {
-  return `${restBase()}/${table}`;
-}
-
-function rpcUrl(name: string) {
-  return `${restBase()}/rpc/${name}`;
-}
 
 function chunkArray<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -304,29 +248,27 @@ function chunkArray<T>(items: T[], size: number): T[][] {
   return chunks;
 }
 
-async function restFetch(path: string, init: RequestInit = {}) {
-  let res: Response;
-  try {
-    res = await fetch(path, init);
-  } catch (err) {
-    const method = init.method ?? "GET";
-    throw new Error(`Supabase REST fetch failed ${method} ${path.slice(0, 240)}: ${err instanceof Error ? err.message : String(err)}`);
-  }
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Supabase REST failed ${res.status}: ${body}`);
-  }
-  return res;
+function incrementCount(map: Map<string, number>, keys: string[]) {
+  for (const key of keys) map.set(key, (map.get(key) ?? 0) + 1);
 }
 
-async function upsertRows(table: string, rows: unknown[], onConflict?: string): Promise<void> {
+function topCountTimings(prefix: string, counts: Map<string, number>, limit = 5) {
+  return Object.fromEntries(
+    [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, limit)
+      .map(([key, count]) => [`${prefix}_${key}`, count]),
+  );
+}
+
+async function upsertRows(table: string, rows: unknown[], onConflict?: string, chunkSize = REST_WRITE_CHUNK_SIZE): Promise<void> {
   if (rows.length === 0) return;
   const url = onConflict ? `${tableUrl(table)}?on_conflict=${encodeURIComponent(onConflict)}` : tableUrl(table);
-  for (const chunk of chunkArray(rows, REST_WRITE_CHUNK_SIZE)) {
+  for (const chunk of chunkArray(rows, chunkSize)) {
     await restFetch(url, {
       method: "POST",
       headers: serviceHeaders("resolution=merge-duplicates"),
-      body: JSON.stringify(chunk),
+      body: jsonBody(chunk),
     });
   }
 }
@@ -338,7 +280,7 @@ async function insertIgnoreRows(table: string, rows: unknown[], onConflict?: str
     await restFetch(url, {
       method: "POST",
       headers: serviceHeaders("resolution=ignore-duplicates"),
-      body: JSON.stringify(chunk),
+      body: jsonBody(chunk),
     });
   }
 }
@@ -349,17 +291,52 @@ async function insertRows(table: string, rows: unknown[]): Promise<void> {
     await restFetch(tableUrl(table), {
       method: "POST",
       headers: serviceHeaders("return=minimal"),
-      body: JSON.stringify(chunk),
+      body: jsonBody(chunk),
     });
+  }
+}
+
+// P2-2: observations split. Fact row first (must succeed), then payload row carrying raw_json.
+// Worst-case partial failure leaves a "payload missing" record, which is acceptable — the fact row
+// powers velocity/price graphs and is permanent; raw_json is only retained 90d anyway.
+async function insertObservationsWithPayloads(rows: Array<Record<string, unknown>>): Promise<void> {
+  if (rows.length === 0) return;
+  for (const chunk of chunkArray(rows, REST_WRITE_CHUNK_SIZE)) {
+    const factRows = chunk.map(({ raw_json: _raw, ...rest }) => rest);
+    const url = `${tableUrl("mvp_listing_observations")}?select=id,pid,observed_at`;
+    const res = await restFetch(url, {
+      method: "POST",
+      headers: serviceHeaders("return=representation"),
+      body: jsonBody(factRows),
+    });
+    const inserted = (await res.json()) as Array<{ id: number; pid: number; observed_at: string }>;
+    const payloadRows = inserted.map((ins, i) => ({
+      observation_id: ins.id,
+      pid: ins.pid,
+      observed_at: ins.observed_at,
+      raw_json: (chunk[i].raw_json as unknown) ?? {},
+    }));
+    try {
+      await insertRows("mvp_listing_observation_payloads", payloadRows);
+    } catch (err) {
+      console.error("[obs-payload] payload insert failed; fact rows persisted without payload", err);
+    }
   }
 }
 
 async function patchRows(table: string, filter: string, payload: Record<string, unknown>): Promise<void> {
   await restFetch(`${tableUrl(table)}?${filter}`, {
     method: "PATCH",
-    headers: serviceHeaders(),
-    body: JSON.stringify(payload),
+    headers: serviceHeaders("return=minimal"),
+    body: jsonBody(payload),
   });
+}
+
+async function patchRowsByIds(table: string, ids: number[], payload: Record<string, unknown>, chunkSize = REST_WRITE_CHUNK_SIZE): Promise<void> {
+  if (ids.length === 0) return;
+  for (const chunk of chunkArray(ids, chunkSize)) {
+    await patchRows(table, `pid=in.(${chunk.join(",")})`, payload);
+  }
 }
 
 async function softInsertRows(table: string, rows: unknown[]): Promise<boolean> {
@@ -397,8 +374,68 @@ async function upsertSellerRows(rows: SellerUpsertRow[]): Promise<number> {
     });
   }
   const sellers = [...bySeller.values()];
-  await upsertRows("mvp_sellers", sellers, "source,seller_uid");
+  await upsertRows("mvp_sellers", sellers, "source,seller_uid", SELLER_WRITE_CHUNK_SIZE);
   return sellers.length;
+}
+
+function searchSellerBizseller(row: ExistingSearchSellerRow | undefined) {
+  const search = row?.source_json?.search;
+  if (!search || typeof search !== "object" || Array.isArray(search)) return null;
+  const value = (search as Record<string, unknown>).bizseller;
+  return typeof value === "boolean" ? value : null;
+}
+
+export function shouldRefreshSearchSeller(
+  row: SellerUpsertRow,
+  existing: ExistingSearchSellerRow | undefined,
+  nowMs = Date.now(),
+  refreshMs = DEFAULT_SELLER_SEARCH_REFRESH_MS,
+) {
+  if (!existing) return true;
+  if (existing.is_proshop !== row.is_proshop) return true;
+  const bizseller = typeof row.source_json?.search === "object" && row.source_json.search && !Array.isArray(row.source_json.search)
+    ? (row.source_json.search as Record<string, unknown>).bizseller
+    : null;
+  if (typeof bizseller === "boolean" && searchSellerBizseller(existing) !== bizseller) return true;
+  const lastSeenMs = existing.last_seen_at ? new Date(existing.last_seen_at).getTime() : 0;
+  if (!Number.isFinite(lastSeenMs) || lastSeenMs <= 0) return true;
+  return nowMs - lastSeenMs >= refreshMs;
+}
+
+async function loadExistingSearchSellers(sellerUids: string[]): Promise<Map<string, ExistingSearchSellerRow>> {
+  const unique = [...new Set(sellerUids.map((uid) => uid.trim()).filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  const rows: ExistingSearchSellerRow[] = [];
+  for (const chunk of chunkArray(unique, SELLER_READ_CHUNK_SIZE)) {
+    const encoded = chunk.map((uid) => encodeURIComponent(uid)).join(",");
+    const url = `${tableUrl("mvp_sellers")}?select=seller_uid,is_proshop,last_seen_at,source_json&source=eq.bunjang&seller_uid=in.(${encoded})`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    rows.push(...((await res.json()) as ExistingSearchSellerRow[]));
+  }
+  return new Map(rows.map((row) => [row.seller_uid, row]));
+}
+
+async function upsertSearchSellerRows(rows: SellerUpsertRow[], timingsMs?: Record<string, number>, refreshMs = DEFAULT_SELLER_SEARCH_REFRESH_MS): Promise<number> {
+  const bySeller = new Map<string, SellerUpsertRow>();
+  for (const row of rows) {
+    const uid = row.seller_uid.trim();
+    if (!uid) continue;
+    bySeller.set(uid, { ...row, seller_uid: uid });
+  }
+  const deduped = [...bySeller.values()];
+  const existing = await timedSearchSubstage(
+    timingsMs ?? {},
+    "load_existing_sellers",
+    () => loadExistingSearchSellers(deduped.map((row) => row.seller_uid)),
+  );
+  const nowMs = Date.now();
+  const refreshRows = deduped.filter((row) => shouldRefreshSearchSeller(row, existing.get(row.seller_uid), nowMs, refreshMs));
+  if (timingsMs) {
+    timingsMs.seller_upsert_rows = refreshRows.length;
+    timingsMs.seller_upsert_skipped_rows = deduped.length - refreshRows.length;
+    timingsMs.seller_search_refresh_window_ms = refreshMs;
+  }
+  return upsertSellerRows(refreshRows);
 }
 
 async function enqueueMarketKeyInvalidations(events: MarketKeyInvalidationEvent[]): Promise<number> {
@@ -412,12 +449,15 @@ async function enqueueMarketKeyInvalidations(events: MarketKeyInvalidationEvent[
     }
   }
   let queued = 0;
+  const failures: { key: string; reason: string; error: string }[] = [];
   for (const event of merged.values()) {
-    try {
-      await restFetch(rpcUrl("enqueue_mvp_market_key_invalidation"), {
+    // P0-7: enqueue 실패 시 catch로 삼키지 않고, 3회 backoff 재시도 후에도 실패하면
+    // 명시적 stats/log로 운영 가시화. fallback DLQ 테이블은 P1에서 도입.
+    const ok = await retryAsync(
+      () => restFetch(rpcUrl("enqueue_mvp_market_key_invalidation"), {
         method: "POST",
         headers: serviceHeaders(),
-        body: JSON.stringify({
+        body: jsonBody({
           p_comparable_key: event.comparableKey,
           p_reason: event.reason.slice(0, 120),
           p_priority: Math.max(0, Math.round(event.priority ?? 0)),
@@ -426,13 +466,68 @@ async function enqueueMarketKeyInvalidations(events: MarketKeyInvalidationEvent[
           p_new_comparable_key: event.newComparableKey ?? null,
           p_parser_version: event.parserVersion ?? null,
         }),
-      });
+      }),
+      { attempts: 3, baseDelayMs: 200 },
+    );
+    if (ok.ok) {
       queued += 1;
-    } catch (err) {
-      console.error("market key invalidation enqueue failed", err);
+    } else {
+      failures.push({
+        key: event.comparableKey ?? "",
+        reason: event.reason.slice(0, 120),
+        error: ok.error,
+      });
     }
   }
+  if (failures.length > 0) {
+    console.error("market key invalidation enqueue failed after retries", {
+      failed: failures.length,
+      total: merged.size,
+      sample: failures.slice(0, 3),
+    });
+    // 글로벌 카운터로 운영 가시화. /debug에서 읽기 위함.
+    enqueueFailureState().marketInvalidationFailuresLastHour += failures.length;
+    enqueueFailureState().lastMarketInvalidationFailureAt = new Date().toISOString();
+  }
   return queued;
+}
+
+type EnqueueFailureState = {
+  marketInvalidationFailuresLastHour: number;
+  lastMarketInvalidationFailureAt: string | null;
+};
+
+function enqueueFailureState(): EnqueueFailureState {
+  const g = globalThis as typeof globalThis & { __minyoiEnqueueFailures?: EnqueueFailureState };
+  g.__minyoiEnqueueFailures ??= {
+    marketInvalidationFailuresLastHour: 0,
+    lastMarketInvalidationFailureAt: null,
+  };
+  return g.__minyoiEnqueueFailures;
+}
+
+export function getEnqueueFailureSnapshot(): EnqueueFailureState {
+  return { ...enqueueFailureState() };
+}
+
+async function retryAsync<T>(
+  fn: () => Promise<T>,
+  opts: { attempts: number; baseDelayMs: number },
+): Promise<{ ok: true; value: T } | { ok: false; error: string }> {
+  let lastErr: unknown = null;
+  for (let i = 0; i < opts.attempts; i++) {
+    try {
+      const value = await fn();
+      return { ok: true, value };
+    } catch (err) {
+      lastErr = err;
+      if (i < opts.attempts - 1) {
+        await new Promise((r) => setTimeout(r, opts.baseDelayMs * Math.pow(2, i)));
+      }
+    }
+  }
+  const message = lastErr instanceof Error ? lastErr.message : String(lastErr);
+  return { ok: false, error: message.slice(0, 240) };
 }
 
 function lifecycleDelayMs(tier: LifecyclePriorityTier, status: LifecycleStatus = "active") {
@@ -504,30 +599,114 @@ async function promoteLifecyclePriority(pids: number[], tier: LifecyclePriorityT
   return unique.length;
 }
 
+async function requestTerminalLifecycleRecheck(pids: number[], now: string) {
+  const unique = [...new Set(pids.filter(Number.isFinite))];
+  if (unique.length === 0) return 0;
+  const config = loadPipelineRuntimeConfig();
+  const lastCheckedCutoff = new Date(Date.now() - config.terminalLifecycleRecheckCooldownMs).toISOString();
+  const cooldownFilter = `or=(last_checked_at.is.null,last_checked_at.lt.${encodeURIComponent(lastCheckedCutoff)})`;
+  const statusPatch = config.terminalLifecycleRecheckPreserveStatus
+    ? {}
+    : { status: "missing_suspect" };
+  for (const chunk of chunkArray(unique, REST_WRITE_CHUNK_SIZE)) {
+    await patchRows("mvp_lifecycle_checks", `pid=in.(${chunk.join(",")})&status=in.(sold_confirmed,disappeared,archived)&${cooldownFilter}`, {
+      ...statusPatch,
+      next_check_at: now,
+      locked_at: null,
+      locked_until: null,
+      last_check_result: null,
+      consecutive_error_count: 0,
+      transition_confidence: 0.35,
+      state_reason: "terminal_reappeared_in_search",
+      updated_at: now,
+    });
+  }
+  return unique.length;
+}
+
 function pidList(items: SearchItem[]) {
   return items.map((item) => Number(item.pid)).filter(Number.isFinite);
+}
+
+export function sourceUpdatedAtFromSearchUpdateTime(updateTime: number | null | undefined) {
+  if (updateTime == null) return null;
+  const n = Number(updateTime);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  const ms = n > 1_000_000_000_000 ? n : n * 1000;
+  const date = new Date(ms);
+  if (!Number.isFinite(date.getTime())) return null;
+  if (date.getTime() < Date.UTC(2020, 0, 1)) return null;
+  if (date.getTime() > Date.now() + 24 * 60 * 60 * 1000) return null;
+  return date.toISOString();
 }
 
 async function loadExistingRaw(pids: number[]): Promise<Map<number, RawListingRow>> {
   if (pids.length === 0) return new Map();
   const unique = [...new Set(pids)];
   const rows: RawListingRow[] = [];
-  for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
-    const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,seller_uid,thumbnail_url,detail_enriched_at,last_seen_at,last_changed_at,listing_state&pid=in.(${chunk.join(",")})`;
+  for (const chunk of chunkArray(unique, RAW_EXISTING_READ_CHUNK_SIZE)) {
+    const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,seller_uid,thumbnail_url,listing_type,sku_id,sku_name,detail_status,detail_enriched_at,detail_error,last_seen_at,last_changed_at,source_updated_at,listing_state,missing_count,last_missing_at&pid=in.(${chunk.join(",")})`;
     const res = await restFetch(url, { headers: serviceHeaders() });
     rows.push(...((await res.json()) as RawListingRow[]));
   }
   return new Map(rows.map((row) => [row.pid, row]));
 }
 
+async function loadProtectedCandidatePoolPids(pids: number[]): Promise<Set<number>> {
+  const unique = [...new Set(pids.filter(Number.isFinite))];
+  if (unique.length === 0) return new Set();
+  const rows: { pid: number }[] = [];
+  for (const chunk of chunkArray(unique, POOL_PID_READ_CHUNK_SIZE)) {
+    const res = await restFetch(`${tableUrl("mvp_candidate_pool")}?select=pid&status=in.(ready,reserved)&pid=in.(${chunk.join(",")})`, {
+      headers: serviceHeaders(),
+    });
+    rows.push(...((await res.json()) as { pid: number }[]));
+  }
+  return new Set(rows.map((row) => Number(row.pid)).filter(Number.isFinite));
+}
+
+function isCurrentTitleTriageSkip(existing: RawListingRow | undefined) {
+  return existing?.detail_status === "skipped" && existing.detail_error?.startsWith(`${TITLE_TRIAGE_SKIP_VERSION}:`);
+}
+
 function changedEnough(item: SearchItem, existing: RawListingRow | undefined) {
   if (!existing) return true;
+  if (isCurrentTitleTriageSkip(existing)) return searchCoreChanged(item, existing);
   if (!existing.detail_enriched_at) return true;
+  return searchCoreChanged(item, existing);
+}
+
+function searchCoreChanged(item: SearchItem, existing: RawListingRow | undefined) {
+  if (!existing) return true;
   return (
     existing.name !== item.name ||
     existing.price !== item.price ||
     existing.num_faved !== item.numFaved ||
     existing.free_shipping !== item.freeShipping
+  );
+}
+
+function sourceUpdatedAtForSearchItem(item: SearchItem, existing: RawListingRow | undefined) {
+  return sourceUpdatedAtFromSearchUpdateTime(item.updateTime) ?? existing?.source_updated_at ?? null;
+}
+
+function sameInstant(a: string | null | undefined, b: string | null | undefined) {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  const left = new Date(a).getTime();
+  const right = new Date(b).getTime();
+  if (!Number.isFinite(left) || !Number.isFinite(right)) return a === b;
+  return left === right;
+}
+
+function needsFullRawUpsert(item: SearchItem, existing: RawListingRow | undefined, sourceUpdatedAt: string | null) {
+  if (!existing) return true;
+  if (searchCoreChanged(item, existing)) return true;
+  return (
+    existing.url !== item.url ||
+    existing.seller_uid !== item.sellerUid ||
+    !sameInstant(existing.source_updated_at, sourceUpdatedAt) ||
+    (!existing.thumbnail_url && Boolean(item.productImage))
   );
 }
 
@@ -543,6 +722,7 @@ type DetailQueueDecision = {
 
 function needsDetailRefresh(item: SearchItem, existing: RawListingRow | undefined) {
   if (!existing) return true;
+  if (isCurrentTitleTriageSkip(existing)) return existing.name !== item.name;
   if (!existing.detail_enriched_at) return true;
   return existing.name !== item.name;
 }
@@ -614,10 +794,117 @@ function detailQueueDecision(item: SearchItem, existing: RawListingRow | undefin
   };
 }
 
+function titleTriageSkipPatch(decision: DetailQueueDecision | undefined) {
+  if (!decision || decision.queue || decision.reason === "search_only_update") return null;
+  return {
+    detail_status: "skipped",
+    detail_error: `${TITLE_TRIAGE_SKIP_VERSION}:${decision.reason}`,
+    listing_type: decision.listingType,
+    sku_id: decision.skuId,
+    sku_name: decision.skuName,
+  };
+}
+
 function sameKoreanDate(a: string | undefined, b: string) {
   if (!a) return false;
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date(a)) ===
     new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date(b));
+}
+
+export type SearchListingStateExisting = {
+  listing_state?: string | null;
+  missing_count?: number | null;
+  last_missing_at?: string | null;
+};
+
+export function isTerminalListingState(state: string | null | undefined) {
+  return TERMINAL_LISTING_STATES.has(state ?? "");
+}
+
+export function searchListingStatePatch(existing: SearchListingStateExisting | undefined) {
+  if (isTerminalListingState(existing?.listing_state)) {
+    return {
+      listing_state: existing?.listing_state ?? "sold_confirmed",
+      missing_count: existing?.missing_count ?? 0,
+      last_missing_at: existing?.last_missing_at ?? null,
+      terminal_preserved: true,
+    };
+  }
+
+  return {
+    listing_state: "active",
+    missing_count: 0,
+    last_missing_at: null,
+    terminal_preserved: false,
+  };
+}
+
+function needsActiveSearchStateReset(
+  existing: RawListingRow | undefined,
+  statePatch: ReturnType<typeof searchListingStatePatch>,
+) {
+  if (!existing) return true;
+  return (
+    existing.listing_state !== statePatch.listing_state ||
+    (existing.missing_count ?? 0) !== (statePatch.missing_count ?? 0) ||
+    (existing.last_missing_at ?? null) !== (statePatch.last_missing_at ?? null)
+  );
+}
+
+export function shouldCoalesceActiveSeenOnlyTouch(
+  existing: { last_seen_at?: string | null } | undefined,
+  nowMs: number,
+  windowMs: number,
+) {
+  if (!existing?.last_seen_at) return false;
+  if (!Number.isFinite(nowMs) || !Number.isFinite(windowMs) || windowMs <= 0) return false;
+  const lastSeenMs = new Date(existing.last_seen_at).getTime();
+  if (!Number.isFinite(lastSeenMs) || lastSeenMs <= 0) return false;
+  return nowMs - lastSeenMs < windowMs;
+}
+
+export function splitActiveSeenOnlyTouches(
+  pids: number[],
+  existing: Map<number, { last_seen_at?: string | null }>,
+  nowMs: number,
+  windowMs: number,
+): { touchNow: number[]; skipped: number[] } {
+  const touchNow: number[] = [];
+  const skipped: number[] = [];
+  for (const pid of pids) {
+    if (shouldCoalesceActiveSeenOnlyTouch(existing.get(pid), nowMs, windowMs)) {
+      skipped.push(pid);
+    } else {
+      touchNow.push(pid);
+    }
+  }
+  return { touchNow, skipped };
+}
+
+export function splitActiveSeenOnlyTouchesByPoolProtection(
+  pids: number[],
+  existing: Map<number, { last_seen_at?: string | null }>,
+  protectedPids: Set<number>,
+  nowMs: number,
+  protectedWindowMs: number,
+  nonPoolWindowMs: number,
+): { touchNow: number[]; skipped: number[]; protectedPool: number[]; nonPool: number[] } {
+  const touchNow: number[] = [];
+  const skipped: number[] = [];
+  const protectedPool: number[] = [];
+  const nonPool: number[] = [];
+  for (const pid of pids) {
+    const isProtected = protectedPids.has(pid);
+    const windowMs = isProtected ? protectedWindowMs : nonPoolWindowMs;
+    if (isProtected) protectedPool.push(pid);
+    else nonPool.push(pid);
+    if (shouldCoalesceActiveSeenOnlyTouch(existing.get(pid), nowMs, windowMs)) {
+      skipped.push(pid);
+    } else {
+      touchNow.push(pid);
+    }
+  }
+  return { touchNow, skipped, protectedPool, nonPool };
 }
 
 function observationEventType(item: SearchItem, existing: RawListingRow | undefined, now: string) {
@@ -625,6 +912,7 @@ function observationEventType(item: SearchItem, existing: RawListingRow | undefi
   if (existing.price !== item.price) return "price_changed";
   if (existing.name !== item.name) return "title_changed";
   if (existing.num_faved !== item.numFaved) return "faved_changed";
+  if (isTerminalListingState(existing.listing_state)) return "search_seen";
   if (!sameKoreanDate(existing.last_seen_at, now)) return "daily_snapshot";
   return null;
 }
@@ -659,23 +947,72 @@ type SearchStageOptions = {
   mode?: "fresh" | "deep" | "mixed";
 };
 
+async function timedSearchSubstage<T>(
+  timingsMs: Record<string, number>,
+  name: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const started = Date.now();
+  try {
+    return await fn();
+  } finally {
+    timingsMs[name] = (timingsMs[name] ?? 0) + Date.now() - started;
+  }
+}
+
+function timedSearchBlock<T>(
+  timingsMs: Record<string, number>,
+  name: string,
+  fn: () => T,
+): T {
+  const started = Date.now();
+  try {
+    return fn();
+  } finally {
+    timingsMs[name] = (timingsMs[name] ?? 0) + Date.now() - started;
+  }
+}
+
 export async function searchStage(deadlineMs: number, options: SearchStageOptions = {}): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
+  const timingsMs: Record<string, number> = {};
+  stats.timingsMs = timingsMs;
   const seen = new Map<string, SearchItem>();
   const pages = options.pages ?? searchPagesForTick(config.pagesPerQuery, config.deepCrawlMaxPage);
   const mode = options.mode ?? "mixed";
 
-  for (const query of config.searchQueries) {
+  // P2-1: registry 기반 cadence gate.
+  // env의 PIPELINE_SEARCH_QUERIES가 source-of-truth (운영자가 query 추가/삭제는 env로).
+  // registry는 query별 cadence_minutes·last_scanned_at만 관리.
+  // - 새 query는 ensure로 registry에 row 자동 생성(default 5m, mode='gather').
+  // - last_scanned_at + cadence_minutes 지났거나 NULL인 query만 이번 tick에 호출.
+  // - 호출한 query는 tick 끝에 last_scanned_at = now() 갱신.
+  // 면제: mode='deep'(deep-crawl의 강제 회전 — 일부 page를 의도적으로 다시 훑음).
+  // mode='fresh'(일반 tick page 0 freshness scan)와 default(mixed)는 cadence gate 적용.
+  const enforceCadence = options.mode !== "deep";
+  await ensureSearchQueryRows(config.searchQueries);
+  const dueQueries = enforceCadence
+    ? await filterDueSearchQueries(config.searchQueries)
+    : [...config.searchQueries];
+  timingsMs.search_queries_total = config.searchQueries.length;
+  timingsMs.search_queries_due = dueQueries.length;
+  timingsMs.search_queries_skipped_by_cadence = config.searchQueries.length - dueQueries.length;
+  const scannedQueries: string[] = [];
+
+  searchLoop:
+  for (const query of dueQueries) {
+    let pagesAttempted = false;
     for (const page of pages) {
       if (Date.now() >= deadlineMs) {
         stats.timedOut = true;
-        return stats;
+        break searchLoop;
       }
       let items: SearchItem[] = [];
       try {
-        items = await searchPage(query, page, searchOptionsForMode(mode));
+        items = await timedSearchSubstage(timingsMs, "api_fetch", () => searchPage(query, page, searchOptionsForMode(mode)));
         stats.searchSucceeded += 1;
+        pagesAttempted = true;
       } catch (err) {
         stats.searchFailed += 1;
         console.error("search page failed", {
@@ -690,19 +1027,47 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
         if (!seen.has(item.pid)) seen.set(item.pid, item);
       }
       stats.collected += items.length;
-      if (config.searchDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.searchDelayMs));
+      if (config.searchDelayMs > 0) {
+        await timedSearchSubstage(timingsMs, "configured_delay", () => new Promise((resolve) => setTimeout(resolve, config.searchDelayMs)));
+      }
     }
+    if (pagesAttempted) scannedQueries.push(query);
   }
 
+  // P2-1: 이번 tick에서 실제 번개장터에 던진 query만 last_scanned_at 갱신.
+  if (enforceCadence && scannedQueries.length > 0) {
+    const markResult = await markSearchQueriesScanned(scannedQueries);
+    timingsMs.search_queries_mark_scanned_ok = markResult.ok;
+    timingsMs.search_queries_mark_scanned_failed = markResult.failed;
+    if (markResult.lastError) {
+      timingsMs.search_queries_mark_scanned_error_len = markResult.lastError.length;
+    }
+  }
+  timingsMs.search_queries_scanned = scannedQueries.length;
+  timingsMs.search_queries_enforce_cadence = enforceCadence ? 1 : 0;
+
   const items = [...seen.values()];
-  const existing = await loadExistingRaw(pidList(items));
+  timingsMs.unique_items = items.length;
+  const searchPids = pidList(items);
+  const uniqueSearchPidCount = new Set(searchPids).size;
+  timingsMs.load_existing_raw_requested_pids = searchPids.length;
+  timingsMs.load_existing_raw_unique_pids = uniqueSearchPidCount;
+  timingsMs.load_existing_raw_chunks = Math.ceil(uniqueSearchPidCount / RAW_EXISTING_READ_CHUNK_SIZE);
+  const existing = await timedSearchSubstage(timingsMs, "load_existing_raw", () => loadExistingRaw(searchPids));
+  timingsMs.load_existing_raw_returned_rows = existing.size;
   const now = new Date().toISOString();
-  const detailDecisions = new Map(
-    items.map((item) => [item.pid, detailQueueDecision(item, existing.get(Number(item.pid)))])
-  );
-  const observationRows = items.flatMap((item) => {
+  const detailRefreshItems = items.filter((item) => needsDetailRefresh(item, existing.get(Number(item.pid))));
+  timingsMs.detail_refresh_items = detailRefreshItems.length;
+  const detailDecisions = timedSearchBlock(timingsMs, "build_detail_decisions", () => new Map(
+    detailRefreshItems.map((item) => [item.pid, detailQueueDecision(item, existing.get(Number(item.pid)))])
+  ));
+  const statePatches = timedSearchBlock(timingsMs, "build_state_patches", () => new Map(
+    items.map((item) => [item.pid, searchListingStatePatch(existing.get(Number(item.pid)))])
+  ));
+  const observationRows = timedSearchBlock(timingsMs, "build_observations", () => items.flatMap((item) => {
     const current = existing.get(Number(item.pid));
-    const detailDecision = detailDecisions.get(item.pid);
+    const detailDecision = detailDecisions.get(item.pid) ?? SKIP_DETAIL_DECISION;
+    const statePatch = statePatches.get(item.pid) ?? searchListingStatePatch(current);
     const eventType = observationEventType(item, current, now);
     if (!eventType) return [];
     const changedFields = {
@@ -715,7 +1080,7 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
       pid: Number(item.pid),
       observed_at: now,
       event_type: eventType,
-      listing_state: "active",
+      listing_state: statePatch.listing_state,
       price: item.price,
       num_faved: item.numFaved,
       name: item.name,
@@ -745,6 +1110,7 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
           productImage: item.productImage,
         },
         searchMode: mode,
+        terminalPreserved: statePatch.terminal_preserved,
         detailTriage: detailDecision ? {
           queue: detailDecision.queue,
           reason: detailDecision.reason,
@@ -755,11 +1121,21 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
         } : null,
       },
     }];
-  });
+  }));
+  timingsMs.observation_rows = observationRows.length;
 
-  await upsertRows("mvp_raw_listings", items.map((item) => {
+  const rawFullUpsertRows = timedSearchBlock(timingsMs, "build_raw_upsert_rows", () => items.flatMap((item) => {
     const current = existing.get(Number(item.pid));
-    return {
+    const statePatch = statePatches.get(item.pid) ?? searchListingStatePatch(current);
+    const sourceUpdatedAt = sourceUpdatedAtForSearchItem(item, current);
+    if (!needsFullRawUpsert(item, current, sourceUpdatedAt)) return [];
+    const detailDecision = detailDecisions.get(item.pid);
+    const skipPatch = titleTriageSkipPatch(detailDecision);
+    const resetSkippedPatch = isCurrentTitleTriageSkip(current) && detailDecision?.queue
+      ? { detail_status: "pending", detail_error: null, listing_type: detailDecision.listingType, sku_id: detailDecision.skuId, sku_name: detailDecision.skuName }
+      : null;
+    const detailPatch = skipPatch ?? resetSkippedPatch;
+    return [{
       pid: Number(item.pid),
       url: item.url,
       name: item.name,
@@ -783,18 +1159,144 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
           updateTime: item.updateTime,
           productImage: item.productImage,
         },
+        terminalPreserved: statePatch.terminal_preserved,
       },
+      listing_state: statePatch.listing_state,
+      missing_count: statePatch.missing_count,
+      last_missing_at: statePatch.last_missing_at,
+      source_updated_at: sourceUpdatedAt,
+      last_seen_at: now,
+      last_changed_at: searchCoreChanged(item, current) ? now : current?.last_changed_at ?? now,
+      updated_at: now,
+      listing_type: detailPatch?.listing_type ?? current?.listing_type ?? "unknown",
+      sku_id: detailPatch?.sku_id ?? current?.sku_id ?? null,
+      sku_name: detailPatch?.sku_name ?? current?.sku_name ?? null,
+      detail_status: detailPatch?.detail_status ?? current?.detail_status ?? "pending",
+      detail_error: detailPatch?.detail_error ?? current?.detail_error ?? null,
+      score_dirty: true,
+    }];
+  }));
+  timingsMs.raw_full_upsert_rows = rawFullUpsertRows.length;
+  await timedSearchSubstage(
+    timingsMs,
+    "upsert_raw_listings",
+    () => upsertRows("mvp_raw_listings", rawFullUpsertRows, "pid"),
+  );
+  stats.rawUpserted = rawFullUpsertRows.length;
+
+  const titleTriageSkipGroups = timedSearchBlock(timingsMs, "build_title_triage_skip_groups", () => {
+    const groups = new Map<string, { payload: Record<string, unknown>; ids: number[] }>();
+    for (const item of detailRefreshItems) {
+      const current = existing.get(Number(item.pid));
+      const sourceUpdatedAt = sourceUpdatedAtForSearchItem(item, current);
+      if (needsFullRawUpsert(item, current, sourceUpdatedAt)) continue;
+      const patch = titleTriageSkipPatch(detailDecisions.get(item.pid));
+      if (!patch) continue;
+      const key = JSON.stringify(patch);
+      const group = groups.get(key) ?? { payload: patch, ids: [] as number[] };
+      group.ids.push(Number(item.pid));
+      groups.set(key, group);
+    }
+    return [...groups.values()];
+  });
+  timingsMs.title_triage_skip_rows = titleTriageSkipGroups.reduce((sum, group) => sum + group.ids.length, 0);
+  await timedSearchSubstage(timingsMs, "patch_title_triage_skips", async () => {
+    for (const group of titleTriageSkipGroups) {
+      await patchRowsByIds("mvp_raw_listings", group.ids, {
+        ...group.payload,
+        updated_at: now,
+      }, RAW_TOUCH_WRITE_CHUNK_SIZE);
+    }
+  });
+
+  const rawTouchGroups = timedSearchBlock(timingsMs, "build_raw_touch_groups", () => {
+    const activeSeenOnly: number[] = [];
+    const activeStateReset: number[] = [];
+    const terminal: number[] = [];
+    for (const item of items) {
+      const current = existing.get(Number(item.pid));
+      const sourceUpdatedAt = sourceUpdatedAtForSearchItem(item, current);
+      if (needsFullRawUpsert(item, current, sourceUpdatedAt)) continue;
+      const statePatch = statePatches.get(item.pid) ?? searchListingStatePatch(current);
+      if (statePatch.terminal_preserved) terminal.push(Number(item.pid));
+      else if (needsActiveSearchStateReset(current, statePatch)) activeStateReset.push(Number(item.pid));
+      else activeSeenOnly.push(Number(item.pid));
+    }
+    return { activeSeenOnly, activeStateReset, terminal };
+  });
+  timingsMs.raw_touch_active_seen_rows = rawTouchGroups.activeSeenOnly.length;
+  timingsMs.raw_touch_active_reset_rows = rawTouchGroups.activeStateReset.length;
+  timingsMs.raw_touch_active_rows = rawTouchGroups.activeSeenOnly.length + rawTouchGroups.activeStateReset.length;
+  timingsMs.raw_touch_terminal_rows = rawTouchGroups.terminal.length;
+  let activeSeenOnlyTouchNow = rawTouchGroups.activeSeenOnly;
+  if (config.rawTouchCoalesceActiveSeenOnly || config.rawTouchCoalesceActiveSeenOnlyDryRun) {
+    const useNonPoolWindow =
+      config.rawTouchCoalesceActiveSeenOnlyNonPoolWindowMs > config.rawTouchCoalesceActiveSeenOnlyWindowMs;
+    let poolProtectedRows = 0;
+    let nonPoolRows = rawTouchGroups.activeSeenOnly.length;
+    let touchSplit: { touchNow: number[]; skipped: number[] };
+    if (useNonPoolWindow) {
+      const splitByPool = splitActiveSeenOnlyTouchesByPoolProtection(
+          rawTouchGroups.activeSeenOnly,
+          existing,
+          await timedSearchSubstage(
+            timingsMs,
+            "load_protected_candidate_pool_pids",
+            () => loadProtectedCandidatePoolPids(rawTouchGroups.activeSeenOnly),
+          ),
+          Date.parse(now),
+          config.rawTouchCoalesceActiveSeenOnlyWindowMs,
+          config.rawTouchCoalesceActiveSeenOnlyNonPoolWindowMs,
+        );
+      poolProtectedRows = splitByPool.protectedPool.length;
+      nonPoolRows = splitByPool.nonPool.length;
+      touchSplit = splitByPool;
+    } else {
+      touchSplit = splitActiveSeenOnlyTouches(
+        rawTouchGroups.activeSeenOnly,
+        existing,
+        Date.parse(now),
+        config.rawTouchCoalesceActiveSeenOnlyWindowMs,
+      );
+    }
+    if (config.rawTouchCoalesceActiveSeenOnly) {
+      activeSeenOnlyTouchNow = touchSplit.touchNow;
+    }
+    timingsMs.raw_touch_active_seen_coalesce_eligible_rows = rawTouchGroups.activeSeenOnly.length;
+    timingsMs.raw_touch_active_seen_coalesce_would_skip_rows = touchSplit.skipped.length;
+    timingsMs.raw_touch_active_seen_coalesce_skipped_rows = config.rawTouchCoalesceActiveSeenOnly ? touchSplit.skipped.length : 0;
+    timingsMs.raw_touch_active_seen_coalesce_touch_now_rows = activeSeenOnlyTouchNow.length;
+    timingsMs.raw_touch_active_seen_coalesce_protected_rows = rawTouchGroups.activeStateReset.length + rawTouchGroups.terminal.length;
+    timingsMs.raw_touch_active_seen_coalesce_window_ms = config.rawTouchCoalesceActiveSeenOnlyWindowMs;
+    timingsMs.raw_touch_active_seen_coalesce_non_pool_window_ms = config.rawTouchCoalesceActiveSeenOnlyNonPoolWindowMs;
+    timingsMs.raw_touch_active_seen_coalesce_pool_protected_rows = poolProtectedRows;
+    timingsMs.raw_touch_active_seen_coalesce_non_pool_rows = nonPoolRows;
+    timingsMs.raw_touch_active_seen_coalesce_enabled = config.rawTouchCoalesceActiveSeenOnly ? 1 : 0;
+  }
+  await timedSearchSubstage(timingsMs, "touch_raw_listings", async () => {
+    await patchRowsByIds("mvp_raw_listings", activeSeenOnlyTouchNow, {
+      last_seen_at: now,
+    }, RAW_TOUCH_WRITE_CHUNK_SIZE);
+    await patchRowsByIds("mvp_raw_listings", rawTouchGroups.activeStateReset, {
       listing_state: "active",
       missing_count: 0,
       last_missing_at: null,
       last_seen_at: now,
-      last_changed_at: changedEnough(item, current) ? now : current?.last_changed_at ?? now,
       updated_at: now,
-    };
-  }), "pid");
-  stats.rawUpserted = items.length;
-  await insertRows("mvp_listing_observations", observationRows);
-  stats.sellerUpserted += await upsertSellerRows(items.flatMap((item) => {
+    }, RAW_TOUCH_WRITE_CHUNK_SIZE);
+    await patchRowsByIds("mvp_raw_listings", rawTouchGroups.terminal, {
+      last_seen_at: now,
+    }, RAW_TOUCH_WRITE_CHUNK_SIZE);
+  });
+  await timedSearchSubstage(timingsMs, "request_terminal_lifecycle_recheck", () => requestTerminalLifecycleRecheck(
+    items
+      .filter((item) => statePatches.get(item.pid)?.terminal_preserved)
+      .map((item) => Number(item.pid))
+      .filter(Number.isFinite),
+    now,
+  ));
+  await timedSearchSubstage(timingsMs, "insert_observations", () => insertObservationsWithPayloads(observationRows));
+  const searchSellerRows = items.flatMap((item) => {
     if (!item.sellerUid) return [];
     return [{
       source: "bunjang",
@@ -811,11 +1313,23 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
       last_seen_at: now,
       updated_at: now,
     }];
-  }));
+  });
+  timingsMs.seller_seen_rows = searchSellerRows.length;
+  stats.sellerUpserted += await timedSearchSubstage(timingsMs, "upsert_sellers", () => upsertSearchSellerRows(searchSellerRows, timingsMs, config.sellerSearchRefreshMs));
 
   const changedItems = items.filter((item) => changedEnough(item, existing.get(Number(item.pid))));
-  const changedParsedByPid = await loadParsedRows(changedItems.map((item) => Number(item.pid)).filter(Number.isFinite));
-  const marketInvalidations = changedItems.flatMap((item) => {
+  timingsMs.changed_items = changedItems.length;
+  const marketChangedItems = changedItems.filter((item) => {
+    const current = existing.get(Number(item.pid));
+    return Boolean(current && (current.price !== item.price || current.name !== item.name));
+  });
+  timingsMs.market_changed_items = marketChangedItems.length;
+  const changedParsedByPid = await timedSearchSubstage(
+    timingsMs,
+    "load_changed_parsed_rows",
+    () => loadParsedRows(marketChangedItems.map((item) => Number(item.pid)).filter(Number.isFinite)),
+  );
+  const marketInvalidations = timedSearchBlock(timingsMs, "build_market_invalidations", () => marketChangedItems.flatMap((item) => {
     const current = existing.get(Number(item.pid));
     const parsed = changedParsedByPid.get(Number(item.pid));
     if (!current || !parsed?.comparable_key) return [];
@@ -840,11 +1354,12 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
       }];
     }
     return [];
-  });
-  stats.upserted += await enqueueMarketKeyInvalidations(marketInvalidations);
+  }));
+  timingsMs.market_invalidations = marketInvalidations.length;
+  stats.upserted += await timedSearchSubstage(timingsMs, "enqueue_market_invalidations", () => enqueueMarketKeyInvalidations(marketInvalidations));
 
   const queueItems = changedItems.filter((item) => detailDecisions.get(item.pid)?.queue);
-  await insertIgnoreRows("mvp_detail_queue", queueItems.map((item) => ({
+  await timedSearchSubstage(timingsMs, "insert_detail_queue", () => insertIgnoreRows("mvp_detail_queue", queueItems.map((item) => ({
     pid: Number(item.pid),
     status: "pending",
     priority: detailDecisions.get(item.pid)?.priority ?? item.numFaved,
@@ -853,7 +1368,7 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
     locked_until: null,
     last_error: null,
     updated_at: now,
-  })), "pid");
+  })), "pid"));
   stats.queued = queueItems.length;
   stats.detailQueueSkipped = changedItems.length - queueItems.length;
 
@@ -865,7 +1380,7 @@ async function claimDetailQueue(): Promise<QueueClaimRow[]> {
   const res = await restFetch(rpcUrl("claim_mvp_detail_queue"), {
     method: "POST",
     headers: serviceHeaders(),
-    body: JSON.stringify({
+    body: jsonBody({
       p_batch_size: config.tickDetailBatchSize,
       p_lease_seconds: config.tickDetailLeaseSeconds,
     }),
@@ -918,7 +1433,7 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           await markQueueFailed(claim.queue_id, "detail api returned null");
           continue;
         }
-        const soldSignals = detectSoldOut(detail, claim.price);
+        const soldSignals = detectSoldOut(detail, claim.price, { title: claim.name });
         if (hasStrongSoldOutSignal(soldSignals)) {
           const now = new Date().toISOString();
           await patchRows("mvp_raw_listings", `pid=eq.${claim.pid}`, {
@@ -939,7 +1454,7 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
             detail_error: null,
             updated_at: now,
           });
-          await insertRows("mvp_listing_observations", [{
+          await insertObservationsWithPayloads([{
             pid: Number(claim.pid),
             observed_at: now,
             event_type: "state_changed",
@@ -1003,6 +1518,7 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           detail_enriched_at: now,
           detail_error: null,
           updated_at: now,
+          score_dirty: true,
         });
         try {
           if (detail.shopUid) {
@@ -1050,7 +1566,7 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
               parserVersion: parsed.parserVersion,
             });
           }
-          await insertRows("mvp_listing_observations", [{
+          await insertObservationsWithPayloads([{
             pid: Number(claim.pid),
             observed_at: now,
             event_type: "detail_enriched",
@@ -1095,80 +1611,98 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
   return stats;
 }
 
-function median(values: number[]) {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
+// P0-5: loadScorableRows를 event-driven으로 바꾸면서 더 이상 사용 안 함.
+// (이전엔 limit*4 후보 중 unscored 우선 정렬에 쓰였으나, 이제 score_dirty=true 필터로 대체됨.)
 
-function quantile(values: number[], q: number) {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const pos = (sorted.length - 1) * q;
-  const base = Math.floor(pos);
-  const rest = pos - base;
-  const next = sorted[base + 1];
-  return next == null ? sorted[base] : sorted[base] + rest * (next - sorted[base]);
-}
+async function loadExistingScoreOutputs(pids: number[]): Promise<{
+  listings: Map<number, Record<string, unknown>>;
+  analyses: Map<number, Record<string, unknown>>;
+}> {
+  const unique = [...new Set(pids.filter(Number.isFinite))];
+  const listings = new Map<number, Record<string, unknown>>();
+  const analyses = new Map<number, Record<string, unknown>>();
+  if (unique.length === 0) return { listings, analyses };
 
-function sellerRepresentativePrices(rows: ScorableRawRow[]) {
-  const bySeller = new Map<string, number[]>();
-  for (const row of rows) {
-    const sellerKey = row.seller_uid?.trim() ? `seller:${row.seller_uid.trim()}` : `pid:${row.pid}`;
-    const prices = bySeller.get(sellerKey) ?? [];
-    prices.push(row.price);
-    bySeller.set(sellerKey, prices);
+  const listingColumns = [
+    "pid",
+    "url",
+    "name",
+    "price",
+    "sku_name",
+    "sku_median",
+    "description_preview",
+    "image_url_template",
+    "image_count",
+    "thumbnail_url",
+    "shipping_fee",
+    "shipping_fee_general",
+    "shipping_source",
+    "estimated_buy_cost",
+    "gross_resell_gap",
+    "net_gap_after_shipping",
+  ].join(",");
+  const analysisColumns = [
+    "pid",
+    "price_gap",
+    "num_faved",
+    "velocity",
+    "review_rating",
+    "review_count",
+    "safety",
+    "risk_hits",
+    "score",
+    "score_flags",
+    "candidate_rank",
+  ].join(",");
+
+  for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
+    const pidFilter = chunk.join(",");
+    const [listingRes, analysisRes] = await Promise.all([
+      restFetch(`${tableUrl("mvp_listings")}?select=${listingColumns}&pid=in.(${pidFilter})`, { headers: serviceHeaders() }),
+      restFetch(`${tableUrl("mvp_listing_analysis")}?select=${analysisColumns}&pid=in.(${pidFilter})`, { headers: serviceHeaders() }),
+    ]);
+    const listingRows = (await listingRes.json()) as Record<string, unknown>[];
+    const analysisRows = (await analysisRes.json()) as Record<string, unknown>[];
+    for (const row of listingRows) listings.set(Number(row.pid), row);
+    for (const row of analysisRows) analyses.set(Number(row.pid), row);
   }
-  return [...bySeller.values()].map((prices) => Math.round(median(prices)));
-}
 
-function trimmedSellerMarket(rows: ScorableRawRow[]) {
-  const representativePrices = sellerRepresentativePrices(rows);
-  const trimmed = madTrim(representativePrices);
-  const values = trimmed.values;
-  return {
-    values,
-    count: values.length,
-    median: values.length > 0 ? Math.round(median(values)) : null,
-    p25: values.length > 0 ? Math.round(quantile(values, 0.25)) : null,
-    p75: values.length > 0 ? Math.round(quantile(values, 0.75)) : null,
-  };
-}
-
-function madTrim(values: number[]) {
-  if (values.length < 8) {
-    return { values, medianValue: median(values), mad: 0, removed: 0 };
-  }
-  const medianValue = median(values);
-  const deviations = values.map((value) => Math.abs(value - medianValue));
-  const mad = median(deviations);
-  if (mad <= 0) {
-    return { values, medianValue, mad, removed: 0 };
-  }
-  const threshold = 3 * 1.4826 * mad;
-  const trimmed = values.filter((value) => Math.abs(value - medianValue) <= threshold);
-  if (trimmed.length < Math.max(5, Math.ceil(values.length * 0.5))) {
-    return { values, medianValue, mad, removed: 0 };
-  }
-  return { values: trimmed, medianValue, mad, removed: values.length - trimmed.length };
-}
-
-function percentileRank(values: number[], value: number) {
-  if (values.length <= 1) return 0.5;
-  const belowOrEqual = values.filter((v) => v <= value).length;
-  return Math.max(0, Math.min(1, (belowOrEqual - 1) / (values.length - 1)));
+  return { listings, analyses };
 }
 
 async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at,listing_state";
-  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&order=last_seen_at.desc&limit=${limit}`;
+  // P0-5: event-driven score. score_dirty=true인 row만 처리한다.
+  // search touch만 발생한 row(변경 없음)는 dirty 안 됨 → score 재계산 안 함.
+  // raw upsert / detail enrichment / market invalidation 시점에 dirty=true로 마킹.
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status";
+  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&score_dirty=eq.true&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&order=last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
 }
 
+async function clearScoreDirty(pids: number[]): Promise<void> {
+  const unique = [...new Set(pids.filter(Number.isFinite))];
+  if (unique.length === 0) return;
+  for (const chunk of chunkArray(unique, REST_WRITE_CHUNK_SIZE)) {
+    await patchRowsByIds("mvp_raw_listings", chunk, { score_dirty: false }, REST_WRITE_CHUNK_SIZE);
+  }
+}
+
+async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Promise<number> {
+  const unique = [...new Set(comparableKeys.filter(Boolean))];
+  if (unique.length === 0) return 0;
+  // comparable_key를 가진 parsed pid를 모은 뒤 raw_listings.score_dirty=true.
+  const parsedByPid = await loadParsedRowsByComparableKeys(unique, 5000);
+  const pids = [...parsedByPid.keys()];
+  if (pids.length === 0) return 0;
+  for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
+    await patchRowsByIds("mvp_raw_listings", chunk, { score_dirty: true }, REST_WRITE_CHUNK_SIZE);
+  }
+  return pids.length;
+}
+
 async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at,listing_state";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status";
   const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&order=detail_enriched_at.desc.nullslast,last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
@@ -1177,9 +1711,9 @@ async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
 async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<ScorableRawRow[]> {
   const unique = [...new Set(pids.filter(Number.isFinite))].slice(0, limit);
   if (unique.length === 0) return [];
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,listing_type,sku_id,sku_name,seller_uid,detail_enriched_at,listing_state";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status";
   const rows: ScorableRawRow[] = [];
-  for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
+  for (const chunk of chunkArray(unique, PARSED_PID_READ_CHUNK_SIZE)) {
     const remaining = limit - rows.length;
     if (remaining <= 0) break;
     const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&pid=in.(${chunk.join(",")})&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&limit=${Math.min(remaining, chunk.length)}`;
@@ -1411,6 +1945,7 @@ function workerFailureAlerts(
     detail_worker: "Detail",
     deep_crawl: "Deep crawl",
     lifecycle_worker: "Lifecycle",
+    lifecycle_terminal_recheck: "Lifecycle terminal",
     market_worker: "Market",
     pool_warmer: "Warmer",
     housekeeper: "Housekeeper",
@@ -1611,8 +2146,19 @@ function applySourceHealthHysteresis(
 export async function sourceHealthStage(): Promise<StageStats> {
   const stats = emptyStats();
   const windowMinutes = 30;
-  const rows = await loadRecentCollectRuns(windowMinutes);
-  const previous = await loadLatestSourceHealth();
+  let rows: CollectRunHealthRow[];
+  let previous: SourceHealthRow | null;
+  try {
+    rows = await loadRecentCollectRuns(windowMinutes);
+    previous = await loadLatestSourceHealth();
+  } catch (err) {
+    stats.detailFailed += 1;
+    stats.poolSkipped += 1;
+    console.error("source health stage skipped", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return stats;
+  }
   const sourceRows = rows.filter((row) => isSourceRelevantMode(runMode(row)));
   const failedRuns = sourceRows.filter((row) => row.status === "failed").length;
   const failedRunRate = sourceRows.length === 0 ? 0 : failedRuns / sourceRows.length;
@@ -1766,8 +2312,9 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     if (!byKey.has(key)) byKey.set(key, { rows: [], activeRows: [], soldRows: [], disappearedRows: [], skuId: row.sku_id });
     const group = byKey.get(key)!;
     group.rows.push(row);
-    if (row.listing_state === "sold_confirmed") group.soldRows.push(row);
-    else if (row.listing_state === "disappeared") group.disappearedRows.push(row);
+    const effectiveState = isActiveSaleStatus(row.sale_status) ? row.listing_state : "sold_confirmed";
+    if (effectiveState === "sold_confirmed") group.soldRows.push(row);
+    else if (effectiveState === "disappeared") group.disappearedRows.push(row);
     else group.activeRows.push(row);
   }
 
@@ -1853,52 +2400,55 @@ export async function marketStatsStage(): Promise<StageStats> {
   // the market queue look permanently backlogged.
   const completedInvalidationKeys = pendingInvalidations.length > 0 ? [...pendingKeys] : recomputedKeys;
   const closedInvalidations = await markMarketInvalidationsDone(completedInvalidationKeys);
+  // P0-5: 시세가 갱신된 comparable_key의 raw_listings는 score를 재계산해야 한다.
+  // 같은 매물이라도 trustedMedian이 바뀌면 priceGap/score가 달라지므로 dirty=true.
+  const markedDirty = await markRawScoreDirtyByComparableKeys(recomputedKeys).catch((err) => {
+    console.error("mark raw score dirty by comparable keys failed", err);
+    return 0;
+  });
   stats.scored = rows.length;
   stats.upserted = result.keyCount;
   stats.poolUpserted = result.sampleCount;
   stats.queued = pendingInvalidations.length;
   stats.enriched = closedInvalidations;
+  stats.timingsMs = {
+    ...(stats.timingsMs ?? {}),
+    market_score_dirty_marked_rows: markedDirty,
+  };
   return stats;
 }
 
-function poolMaxExposure(band: 1 | 2 | 3) {
-  if (band === 3) return 1;
-  if (band === 2) return 2;
-  return 3;
-}
-
-function computePoolConfidence(parseConfidence: number, scoreFlags: string[]) {
-  let confidence = Math.max(0, Math.min(1, Number.isFinite(parseConfidence) ? parseConfidence : 0.5));
-  if (scoreFlags.includes("ai_normal")) confidence = Math.min(1, confidence + 0.2);
-  if (scoreFlags.includes("ai_review_unavailable")) confidence = Math.max(0, confidence - 0.1);
-  if (scoreFlags.some((flag) => flag.endsWith("_low_confidence"))) confidence = Math.max(0, confidence - 0.15);
-  return Math.round(confidence * 100) / 100;
-}
-
-function hasPoolBlockFlag(scoreFlags: string[]) {
-  return scoreFlags.some((flag) => (
-    POOL_BLOCK_FLAGS.includes(flag) ||
-    flag.endsWith("_low_confidence") ||
-    (flag === "deep_discount_review" && !scoreFlags.includes("ai_normal"))
-  ));
-}
-
 async function invalidatePoolEntries(entries: { pid: number; reason: string }[]) {
-  const results = await Promise.allSettled(entries.map((entry) => patchRows(
-    "mvp_candidate_pool",
-    `pid=eq.${entry.pid}&status=in.(ready,reserved)`,
-    {
-      status: "invalidated",
-      invalidated_reason: entry.reason.slice(0, 120),
-      reserved_until: null,
-      updated_at: new Date().toISOString(),
-    },
-  )));
+  const byReason = new Map<string, Set<number>>();
+  for (const entry of entries) {
+    const pid = Number(entry.pid);
+    if (!Number.isFinite(pid)) continue;
+    const reason = entry.reason.slice(0, 120);
+    if (!byReason.has(reason)) byReason.set(reason, new Set());
+    byReason.get(reason)?.add(pid);
+  }
+  const patches: Promise<void>[] = [];
+  const updatedAt = new Date().toISOString();
+  for (const [reason, pids] of byReason.entries()) {
+    for (const chunk of chunkArray([...pids], REST_WRITE_CHUNK_SIZE)) {
+      patches.push(patchRows(
+        "mvp_candidate_pool",
+        `pid=in.(${chunk.join(",")})&status=in.(ready,reserved)`,
+        {
+          status: "invalidated",
+          invalidated_reason: reason,
+          reserved_until: null,
+          updated_at: updatedAt,
+        },
+      ));
+    }
+  }
+  const results = await Promise.allSettled(patches);
   const failed = results.filter((result) => result.status === "rejected");
   if (failed.length > 0) {
     console.error("pool invalidation partially failed", {
       failed: failed.length,
-      total: entries.length,
+      total: patches.length,
       errors: failed.slice(0, 3).map((result) => result.reason instanceof Error ? result.reason.message : String(result.reason)),
     });
   }
@@ -1913,14 +2463,14 @@ async function loadPoolWarmRows(limit: number): Promise<PoolWarmRow[]> {
   return (await res.json()) as PoolWarmRow[];
 }
 
-async function loadRawPrices(pids: number[]): Promise<Map<number, number>> {
+async function loadRawPriceNames(pids: number[]): Promise<Map<number, { price: number; name: string }>> {
   if (pids.length === 0) return new Map();
   const res = await restFetch(
-    `${tableUrl("mvp_raw_listings")}?select=pid,price&pid=in.(${pids.join(",")})`,
+    `${tableUrl("mvp_raw_listings")}?select=pid,price,name&pid=in.(${pids.join(",")})`,
     { headers: serviceHeaders() },
   );
-  const rows = (await res.json()) as { pid: number; price: number }[];
-  return new Map(rows.map((row) => [Number(row.pid), Number(row.price)]));
+  const rows = (await res.json()) as { pid: number; price: number; name: string }[];
+  return new Map(rows.map((row) => [Number(row.pid), { price: Number(row.price), name: row.name }]));
 }
 
 async function markPoolVerified(pid: number) {
@@ -1931,13 +2481,19 @@ async function markPoolVerified(pid: number) {
   });
 }
 
-async function claimLifecycleChecks(): Promise<LifecycleClaimRow[]> {
+async function claimLifecycleChecks(mode: LifecycleClaimMode = "default"): Promise<LifecycleClaimRow[]> {
   const config = loadPipelineRuntimeConfig();
-  const res = await restFetch(rpcUrl("claim_mvp_lifecycle_checks"), {
+  const batchSize = mode === "terminal_recheck"
+    ? config.terminalLifecycleRecheckBatchSize
+    : Math.min(30, config.tickDetailBatchSize);
+  const rpcName = mode === "terminal_recheck"
+    ? "claim_mvp_terminal_lifecycle_rechecks"
+    : "claim_mvp_lifecycle_checks";
+  const res = await restFetch(rpcUrl(rpcName), {
     method: "POST",
     headers: serviceHeaders(),
-    body: JSON.stringify({
-      p_batch_size: Math.min(30, config.tickDetailBatchSize),
+    body: jsonBody({
+      p_batch_size: batchSize,
       p_lease_seconds: config.tickDetailLeaseSeconds,
     }),
   });
@@ -1972,7 +2528,7 @@ async function markRawLifecycleState(row: LifecycleClaimRow, status: LifecycleSt
 }
 
 async function insertLifecycleObservation(row: LifecycleClaimRow, status: LifecycleStatus, result: string, detailSaleStatus?: string | null) {
-  await insertRows("mvp_listing_observations", [{
+  await insertObservationsWithPayloads([{
     pid: Number(row.pid),
     observed_at: new Date().toISOString(),
     event_type: "state_changed",
@@ -2001,13 +2557,14 @@ function shouldSkipLifecycleForHealth(row: LifecycleClaimRow, health: SourceHeal
   return row.priority_tier !== "pool" && row.priority_tier !== "near_pool";
 }
 
-export async function lifecycleStage(deadlineMs: number): Promise<StageStats> {
+export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMode = "default"): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
   const sourceHealth = await loadLatestSourceHealth();
   const healthStatus = sourceHealth?.status ?? "degraded";
-  const claims = await claimLifecycleChecks();
+  const claims = await claimLifecycleChecks(mode);
   stats.claimed = claims.length;
+  stats.timingsMs = { claim_mode_terminal_recheck: mode === "terminal_recheck" ? 1 : 0 };
   const marketInvalidations: MarketKeyInvalidationEvent[] = [];
 
   for (const row of claims) {
@@ -2034,7 +2591,7 @@ export async function lifecycleStage(deadlineMs: number): Promise<StageStats> {
     try {
       const detail = await fetchDetail(String(row.pid));
       if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
-      const signals = detectSoldOut(detail, row.price);
+      const signals = detectSoldOut(detail, row.price, { title: row.name });
       const reason = describeSignals(signals);
       stats.enriched += detail ? 1 : 0;
       stats.detailFailed += detail ? 0 : 1;
@@ -2147,7 +2704,7 @@ export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
     return stats;
   }
   const rows = await loadPoolWarmRows(Math.min(80, config.tickDetailBatchSize * 2));
-  const prices = await loadRawPrices(rows.map((row) => row.pid));
+  const rawByPid = await loadRawPriceNames(rows.map((row) => row.pid));
 
   for (const row of rows) {
     if (Date.now() >= deadlineMs - DETAIL_STAGE_SAFETY_MARGIN_MS) {
@@ -2156,7 +2713,8 @@ export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
     }
     const detail = await fetchDetail(String(row.pid));
     if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
-    const signals = detectSoldOut(detail, prices.get(row.pid));
+    const raw = rawByPid.get(row.pid);
+    const signals = detectSoldOut(detail, raw?.price, { title: raw?.name });
     stats.claimed += 1;
     if (!detail) {
       stats.detailFailed += 1;
@@ -2174,6 +2732,383 @@ export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
   }
 
   return stats;
+}
+
+// P2-1: searchStage가 호출하기 전에 due query 목록을 registry에서 가져온다.
+// env list가 source-of-truth이고, registry는 query별 cadence·last_scanned_at 갈무리 역할.
+// registry에 없는 query는 5m default로 즉시 due 취급 + 새 row 생성. 운영자가 env에서 query를 빼면 그 query는 더 이상 scan되지 않음.
+type DueQueryRow = {
+  query: string;
+  effective_cadence_minutes: number;
+  cadence_minutes: number;
+  mode: string;
+  reason: string;
+  last_scanned_at: string | null;
+};
+
+async function loadRegistryQueryStates(queries: string[]): Promise<Map<string, DueQueryRow>> {
+  if (queries.length === 0) return new Map();
+  const result = new Map<string, DueQueryRow>();
+  for (const chunk of chunkArray(queries, 50)) {
+    const encoded = chunk.map((q) => encodeURIComponent(q)).join(",");
+    const url = `${tableUrl("mvp_search_queries")}?select=query,cadence_minutes,cadence_override,mode,reason,last_scanned_at,enabled&query=in.(${encoded})`;
+    try {
+      const res = await restFetch(url, { headers: serviceHeaders() });
+      const rows = (await res.json()) as Array<{
+        query: string;
+        cadence_minutes: number;
+        cadence_override: number | null;
+        mode: string;
+        reason: string;
+        last_scanned_at: string | null;
+        enabled: boolean;
+      }>;
+      for (const row of rows) {
+        if (!row.enabled) continue;
+        result.set(row.query, {
+          query: row.query,
+          cadence_minutes: row.cadence_minutes,
+          effective_cadence_minutes: row.cadence_override ?? row.cadence_minutes,
+          mode: row.mode,
+          reason: row.reason,
+          last_scanned_at: row.last_scanned_at,
+        });
+      }
+    } catch (err) {
+      console.error("loadRegistryQueryStates failed (fallback to all-due)", { error: err instanceof Error ? err.message : String(err) });
+      return new Map();
+    }
+  }
+  return result;
+}
+
+export async function filterDueSearchQueries(envQueries: string[]): Promise<string[]> {
+  const registry = await loadRegistryQueryStates(envQueries);
+  const nowMs = Date.now();
+  const due: string[] = [];
+  for (const query of envQueries) {
+    const state = registry.get(query);
+    if (!state) {
+      // 새 query — registry에 없으니 즉시 due 처리. ensure 단계에서 row 생성.
+      due.push(query);
+      continue;
+    }
+    if (!state.last_scanned_at) {
+      due.push(query);
+      continue;
+    }
+    const lastMs = Date.parse(state.last_scanned_at);
+    if (!Number.isFinite(lastMs)) {
+      due.push(query);
+      continue;
+    }
+    const dueAt = lastMs + state.effective_cadence_minutes * 60_000;
+    if (nowMs >= dueAt) due.push(query);
+  }
+  return due;
+}
+
+async function ensureSearchQueryRows(queries: string[]): Promise<void> {
+  if (queries.length === 0) return;
+  const rows = queries.map((query) => ({
+    query,
+    category: queryFamily(query),
+    enabled: true,
+  }));
+  try {
+    await restFetch(`${tableUrl("mvp_search_queries")}?on_conflict=query`, {
+      method: "POST",
+      headers: { ...serviceHeaders("resolution=ignore-duplicates,return=minimal") },
+      body: jsonBody(rows),
+    });
+  } catch (err) {
+    console.error("ensureSearchQueryRows failed (continuing)", { error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
+export async function markSearchQueriesScanned(queries: string[]): Promise<{ ok: number; failed: number; lastError: string | null }> {
+  const result = { ok: 0, failed: 0, lastError: null as string | null };
+  if (queries.length === 0) return result;
+  const now = new Date().toISOString();
+  for (const chunk of chunkArray(queries, 50)) {
+    const encoded = chunk.map((q) => encodeURIComponent(q)).join(",");
+    try {
+      await restFetch(`${tableUrl("mvp_search_queries")}?query=in.(${encoded})`, {
+        method: "PATCH",
+        headers: { ...serviceHeaders("return=minimal") },
+        body: jsonBody({ last_scanned_at: now, updated_at: now }),
+      });
+      result.ok += chunk.length;
+    } catch (err) {
+      result.failed += chunk.length;
+      result.lastError = err instanceof Error ? err.message : String(err);
+      console.error("markSearchQueriesScanned failed", { error: result.lastError });
+    }
+  }
+  return result;
+}
+
+// 자동 재평가: 최근 24h 데이터로 query별 yield 측정 후 cadence 산출.
+// housekeeperStage에서 1시간 cooldown으로 호출한다.
+export async function evaluateSearchQueryCadences(): Promise<{
+  evaluated: number;
+  changed: number;
+  upgradedToFaster: number;
+  downgradedToSlower: number;
+  errors: number;
+}> {
+  const stats = { evaluated: 0, changed: 0, upgradedToFaster: 0, downgradedToSlower: 0, errors: 0 };
+  const cutoffMs = Date.now() - 24 * 60 * 60_000;
+  const cutoffIso = new Date(cutoffMs).toISOString();
+
+  // 최근 24h raw_listings를 query별 집계 (PostgREST aggregate 없이 chunk로 가져와 JS 집계).
+  // 데이터량이 클 수 있어 raw 컬럼은 query, last_changed_at, listing_state, detail_status, listing_type, pid만.
+  const rawRows: Array<{ pid: number; query: string; last_changed_at: string | null; listing_state: string; detail_status: string; listing_type: string }> = [];
+  const PAGE = 1000;
+  const HARD_CAP = 100_000;
+  for (let offset = 0; offset < HARD_CAP; offset += PAGE) {
+    const url = `${tableUrl("mvp_raw_listings")}?select=pid,query,last_changed_at,listing_state,detail_status,listing_type&last_seen_at=gte.${encodeURIComponent(cutoffIso)}&order=last_seen_at.desc&offset=${offset}&limit=${PAGE}`;
+    let chunk: typeof rawRows;
+    try {
+      const res = await restFetch(url, { headers: serviceHeaders() });
+      chunk = (await res.json()) as typeof rawRows;
+    } catch (err) {
+      stats.errors += 1;
+      console.error("evaluateSearchQueryCadences raw fetch failed", err);
+      break;
+    }
+    rawRows.push(...chunk);
+    if (chunk.length < PAGE) break;
+  }
+
+  // candidate_pool 전체 status/pid 가져와 pid→status map.
+  const poolByPid = new Map<number, string>();
+  try {
+    const poolRes = await restFetch(`${tableUrl("mvp_candidate_pool")}?select=pid,status&limit=50000`, { headers: serviceHeaders() });
+    const poolRows = (await poolRes.json()) as Array<{ pid: number; status: string }>;
+    for (const row of poolRows) poolByPid.set(Number(row.pid), row.status);
+  } catch (err) {
+    stats.errors += 1;
+    console.error("evaluateSearchQueryCadences pool fetch failed", err);
+  }
+
+  // readiness map.
+  const readinessByCategory = new Map<string, { status: CategoryReadinessStatus }>();
+  try {
+    const res = await restFetch(`${tableUrl("mvp_category_readiness")}?select=category,status`, { headers: serviceHeaders() });
+    const rows = (await res.json()) as Array<{ category: string; status: CategoryReadinessStatus }>;
+    for (const row of rows) readinessByCategory.set(row.category, { status: row.status });
+  } catch (err) {
+    stats.errors += 1;
+    console.error("evaluateSearchQueryCadences readiness fetch failed", err);
+  }
+
+  // query별 집계.
+  const yieldByQuery = new Map<string, QueryYieldRow>();
+  for (const row of rawRows) {
+    const query = String(row.query ?? "").trim();
+    if (!query) continue;
+    let agg = yieldByQuery.get(query);
+    if (!agg) {
+      agg = {
+        query,
+        family: queryFamily(query),
+        observed: 0, changed: 0, active: 0, normalType: 0,
+        detailsPending: 0, detailsDone: 0,
+        poolAny: 0, poolReady: 0, poolReserved: 0, poolSpent: 0,
+      };
+      yieldByQuery.set(query, agg);
+    }
+    agg.observed += 1;
+    if (row.listing_state === "active") agg.active += 1;
+    if (row.detail_status === "pending") agg.detailsPending += 1;
+    if (row.detail_status === "done") agg.detailsDone += 1;
+    if (row.listing_type === "normal") agg.normalType += 1;
+    if (row.last_changed_at && Date.parse(row.last_changed_at) >= cutoffMs) agg.changed += 1;
+    const poolStatus = poolByPid.get(Number(row.pid));
+    if (poolStatus) {
+      agg.poolAny += 1;
+      if (poolStatus === "ready") agg.poolReady += 1;
+      if (poolStatus === "reserved") agg.poolReserved += 1;
+      if (poolStatus === "spent") agg.poolSpent += 1;
+    }
+  }
+
+  // 기존 registry 상태 fetch (변경 감지용).
+  const existing = await loadRegistryQueryStates([...yieldByQuery.keys()]);
+
+  const upserts: Array<{
+    query: string;
+    category: string;
+    cadence_minutes: number;
+    mode: string;
+    reason: string;
+    last_evaluated_at: string;
+    last_observed: number;
+    last_changed: number;
+    last_pool_any: number;
+    last_pool_ready: number;
+    updated_at: string;
+  }> = [];
+  const logs: Array<{
+    query: string;
+    before_cadence_minutes: number | null;
+    after_cadence_minutes: number;
+    before_mode: string | null;
+    after_mode: string;
+    reason: string;
+    measurement: Record<string, number>;
+    source: string;
+  }> = [];
+  const now = new Date().toISOString();
+
+  for (const row of yieldByQuery.values()) {
+    const decision: CadenceDecision = decideCadence(row, readinessByCategory.get(row.family) ?? null);
+    stats.evaluated += 1;
+    const prior = existing.get(row.query);
+    upserts.push({
+      query: row.query,
+      category: row.family,
+      cadence_minutes: decision.cadenceMinutes,
+      mode: decision.mode,
+      reason: decision.reason,
+      last_evaluated_at: now,
+      last_observed: row.observed,
+      last_changed: row.changed,
+      last_pool_any: row.poolAny,
+      last_pool_ready: row.poolReady,
+      updated_at: now,
+    });
+    const beforeCadence = prior?.cadence_minutes ?? null;
+    const beforeMode = prior?.mode ?? null;
+    if (beforeCadence !== decision.cadenceMinutes || beforeMode !== decision.mode) {
+      stats.changed += 1;
+      if (beforeCadence != null && decision.cadenceMinutes < beforeCadence) stats.upgradedToFaster += 1;
+      if (beforeCadence != null && decision.cadenceMinutes > beforeCadence) stats.downgradedToSlower += 1;
+      logs.push({
+        query: row.query,
+        before_cadence_minutes: beforeCadence,
+        after_cadence_minutes: decision.cadenceMinutes,
+        before_mode: beforeMode,
+        after_mode: decision.mode,
+        reason: decision.reason,
+        measurement: {
+          observed: row.observed,
+          changed: row.changed,
+          poolAny: row.poolAny,
+          poolReady: row.poolReady,
+        },
+        source: prior ? "evaluator" : "seed",
+      });
+    }
+  }
+
+  // upsert registry (cadence_override가 있으면 cadence_minutes 갱신은 무시되어야 함 — PG가 자동으로 함:
+  // upsert는 cadence_minutes만 update하고, override는 별도 컬럼이라 영향 없음. effective는 view에서 coalesce.)
+  if (upserts.length > 0) {
+    for (const chunk of chunkArray(upserts, 100)) {
+      try {
+        await restFetch(`${tableUrl("mvp_search_queries")}?on_conflict=query`, {
+          method: "POST",
+          headers: { ...serviceHeaders("resolution=merge-duplicates,return=minimal") },
+          body: jsonBody(chunk),
+        });
+      } catch (err) {
+        stats.errors += 1;
+        console.error("evaluateSearchQueryCadences upsert failed", err);
+      }
+    }
+  }
+
+  if (logs.length > 0) {
+    for (const chunk of chunkArray(logs, 100)) {
+      try {
+        await restFetch(tableUrl("mvp_search_query_cadence_log"), {
+          method: "POST",
+          headers: { ...serviceHeaders("return=minimal") },
+          body: jsonBody(chunk),
+        });
+      } catch (err) {
+        stats.errors += 1;
+        console.error("evaluateSearchQueryCadences log insert failed", err);
+      }
+    }
+  }
+
+  return stats;
+}
+
+const QUERY_CADENCE_EVAL_COOLDOWN_MS = 60 * 60_000; // 1시간
+const PAYLOAD_RETENTION_COOLDOWN_MS = 24 * 60 * 60_000; // 1일
+const PAYLOAD_RETENTION_DAYS = 90;
+const PAYLOAD_RETENTION_BATCH_LIMIT = 50_000;
+
+// P2-2: observation payload 90일 retention 게이트. mvp_cron_locks 테이블을 marker로 재활용해
+// 마지막 sweep 시각을 멀티 인스턴스 안전하게 공유한다(lease_until = 다음 실행 가능 시각).
+async function shouldRunPayloadRetention(): Promise<boolean> {
+  try {
+    const res = await restFetch(
+      `${tableUrl("mvp_cron_locks")}?select=lease_until&mode=eq.payload_retention_sweep&limit=1`,
+      { headers: serviceHeaders() },
+    );
+    const rows = (await res.json()) as Array<{ lease_until: string | null }>;
+    const leaseUntil = rows[0]?.lease_until ?? null;
+    if (!leaseUntil) return true;
+    return Date.parse(leaseUntil) <= Date.now();
+  } catch {
+    return false;
+  }
+}
+
+async function recordPayloadRetentionRun(): Promise<void> {
+  const now = new Date();
+  const leaseUntil = new Date(now.getTime() + PAYLOAD_RETENTION_COOLDOWN_MS);
+  try {
+    await restFetch(
+      `${tableUrl("mvp_cron_locks")}?on_conflict=mode`,
+      {
+        method: "POST",
+        headers: serviceHeaders("resolution=merge-duplicates,return=minimal"),
+        body: jsonBody([{
+          mode: "payload_retention_sweep",
+          owner: "housekeeper",
+          acquired_at: now.toISOString(),
+          lease_until: leaseUntil.toISOString(),
+        }]),
+      },
+    );
+  } catch (err) {
+    console.error("[payload-retention] failed to record cooldown marker", err);
+  }
+}
+
+async function runPayloadRetention(): Promise<number> {
+  const res = await restFetch(rpcUrl("prune_listing_observation_payloads"), {
+    method: "POST",
+    headers: serviceHeaders(),
+    body: jsonBody({ p_days: PAYLOAD_RETENTION_DAYS, p_batch_limit: PAYLOAD_RETENTION_BATCH_LIMIT }),
+  });
+  const body = await res.text();
+  const parsed = Number.parseInt(body.replace(/[^0-9-]/g, ""), 10);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+async function shouldRunCadenceEvaluator(): Promise<boolean> {
+  // 가장 최근 evaluator 실행 시각을 registry에서 본다(메모리 의존 X, 멀티 인스턴스 안전).
+  try {
+    const res = await restFetch(
+      `${tableUrl("mvp_search_queries")}?select=last_evaluated_at&order=last_evaluated_at.desc.nullslast&limit=1`,
+      { headers: serviceHeaders() },
+    );
+    const rows = (await res.json()) as Array<{ last_evaluated_at: string | null }>;
+    const lastIso = rows[0]?.last_evaluated_at ?? null;
+    if (!lastIso) return true;
+    const ageMs = Date.now() - Date.parse(lastIso);
+    return Number.isFinite(ageMs) && ageMs >= QUERY_CADENCE_EVAL_COOLDOWN_MS;
+  } catch {
+    // DB 읽기 실패 시 보수적으로 skip (다음 housekeeper에 다시 시도).
+    return false;
+  }
 }
 
 export async function housekeeperStage(): Promise<StageStats> {
@@ -2206,6 +3141,50 @@ export async function housekeeperStage(): Promise<StageStats> {
 
   stats.upserted = expiredPool.length;
   stats.queued = staleQueue.length;
+
+  // P2-1: 1시간 cooldown으로 query cadence 자동 재평가.
+  // cooldown 체크는 registry에서 가장 최근 last_evaluated_at을 보고 결정(멀티 인스턴스 안전).
+  // override 만료도 같이 처리.
+  if (await shouldRunCadenceEvaluator()) {
+    try {
+      await restFetch(rpcUrl("expire_search_query_cadence_overrides"), {
+        method: "POST",
+        headers: serviceHeaders(),
+        body: jsonBody({}),
+      });
+    } catch (err) {
+      console.error("expire cadence overrides failed", err);
+    }
+    try {
+      const result = await evaluateSearchQueryCadences();
+      stats.timingsMs = {
+        ...(stats.timingsMs ?? {}),
+        cadence_evaluator_evaluated: result.evaluated,
+        cadence_evaluator_changed: result.changed,
+        cadence_evaluator_upgraded: result.upgradedToFaster,
+        cadence_evaluator_downgraded: result.downgradedToSlower,
+        cadence_evaluator_errors: result.errors,
+      };
+    } catch (err) {
+      console.error("cadence evaluator threw", err);
+    }
+  }
+
+  // P2-2: observation payload 90일 retention. daily cooldown.
+  if (await shouldRunPayloadRetention()) {
+    try {
+      const deleted = await runPayloadRetention();
+      stats.timingsMs = {
+        ...(stats.timingsMs ?? {}),
+        payload_retention_deleted: deleted,
+      };
+    } catch (err) {
+      console.error("[payload-retention] sweep failed", err);
+    }
+    // marker는 sweep 성공/실패 무관하게 기록 — 실패 시에도 다음 실행은 24h 뒤로(로그/알람으로 별도 대응).
+    await recordPayloadRetentionRun();
+  }
+
   return stats;
 }
 
@@ -2240,13 +3219,26 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const now = new Date().toISOString();
   const scoredRows: PipelineRow[] = [];
 
+  let needsReviewSkipped = 0;
+  const handledPids: number[] = [];
   for (const row of rows) {
     if (Date.now() >= deadlineMs) {
       stats.timedOut = true;
       break;
     }
+    // 처리 시도 자체를 했다면 dirty=false 후보. needs_review가 다시 false로 바뀌면
+    // detail-worker의 raw patch에서 score_dirty=true로 재마킹된다.
+    handledPids.push(Number(row.pid));
     const skuId = row.sku_id ?? "";
     const parsed = parsedByPid.get(row.pid);
+    // P0-8: needs_review=true인 parsed는 신뢰도 낮음. score 계산 자체를 건너뛰고
+    // mvp_listings/mvp_listing_analysis output에 못 들어가게 한다. pool에는 이미 pool-policy에서 차단되어 있지만,
+    // listings output을 통해 노출되는 경로(랜딩/디버그/관리)에서 보이는 것을 막는다.
+    // parsed가 아예 없는 경우(ensureParsedRows 실패)는 기존처럼 fallback 처리.
+    if (parsed?.needs_review === true) {
+      needsReviewSkipped += 1;
+      continue;
+    }
     const marketKey = marketGroupKey(row, parsed);
     const comparableKey = preciseComparableKey(parsed);
     const marketStat = comparableKey ? marketStatsByKey.get(comparableKey) : undefined;
@@ -2273,6 +3265,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const descParsed = parseShippingFromDescription(row.description_preview);
     const shipping = resolveShipping(row.price, skuMedian, row.free_shipping, apiParsed, descParsed);
     const scoreFlags: string[] = [];
+    if (priceGap >= 0.75) scoreFlags.push("extreme_discount_review");
     if (priceGap >= 0.55) scoreFlags.push("deep_discount_review");
     if (riskHits > 0) scoreFlags.push("risk_keyword_review");
     if (row.description_preview.trim().length < 20) scoreFlags.push("weak_description");
@@ -2293,6 +3286,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       skuId,
       skuName: row.sku_name ?? skuId,
       skuMedian: Math.round(skuMedian),
+      saleStatus: row.sale_status,
       descriptionPreview: row.description_preview.slice(0, 200),
       imageUrlTemplate: row.image_url_template,
       imageCount: row.image_count,
@@ -2323,118 +3317,70 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   stats.aiKeptNormal = aiReview.stats.keptNormal;
   stats.aiKeptLowConfidence = aiReview.stats.keptLowConfidence;
 
-  const listings = aiReview.rows.map((row) => ({
-    pid: Number(row.pid),
-    url: row.url,
-    name: row.name,
-    price: row.price,
-    sku_name: row.skuName,
-    sku_median: row.skuMedian,
-    description_preview: row.descriptionPreview,
-    image_url_template: row.imageUrlTemplate,
-    image_count: row.imageCount ?? 0,
-    thumbnail_url: row.thumbnailUrl,
-    shipping_fee: row.shippingFee,
-    shipping_fee_general: row.shippingFeeGeneral,
-    shipping_source: row.shippingSource,
-    estimated_buy_cost: row.estimatedBuyCost,
-    gross_resell_gap: row.grossResellGap,
-    net_gap_after_shipping: row.netGapAfterShipping,
-    source_json: { pipeline: "tick" },
-    generated_at: now,
-    updated_at: now,
-  }));
-  const analyses = aiReview.rows.map((row) => ({
-    pid: Number(row.pid),
-    price_gap: row.priceGap,
-    num_faved: row.numFaved,
-    velocity: row.velocity,
-    review_rating: row.reviewRating,
-    review_count: row.reviewCount,
-    safety: row.safety,
-    risk_hits: row.riskHits,
-    score: row.score,
-    score_flags: row.scoreFlags,
-    source_json: { pipeline: "tick" },
-    analyzed_at: now,
-    updated_at: now,
-  }));
+  const listings = toListingOutputRows(aiReview.rows, now);
+  const rankedAnalyses = toRankedAnalysisRows(aiReview.rows, now);
+  const existingOutputs = await loadExistingScoreOutputs(listings.map((row) => row.pid));
+  const listingDiffCounts = new Map<string, number>();
+  const analysisDiffCounts = new Map<string, number>();
+  const listingUpserts: ListingOutputRow[] = listings.filter((row) => {
+    const reasons = listingOutputDiffReasons(row, existingOutputs.listings.get(row.pid));
+    incrementCount(listingDiffCounts, reasons);
+    return listingOutputChanged(row, existingOutputs.listings.get(row.pid));
+  });
+  const analysisUpserts: AnalysisOutputRow[] = rankedAnalyses.filter((row) => {
+    const reasons = analysisOutputDiffReasons(row, existingOutputs.analyses.get(row.pid));
+    incrementCount(analysisDiffCounts, reasons);
+    return analysisOutputChanged(row, existingOutputs.analyses.get(row.pid));
+  });
 
-  const ranked = analyses
-    .map((analysis, index) => ({ ...analysis, originalIndex: index }))
-    .sort((a, b) => Number(b.score) - Number(a.score));
-  const rankByPid = new Map(ranked.map((analysis, index) => [analysis.pid, index + 1]));
-  const rankedAnalyses = analyses.map((analysis) => ({
-    ...analysis,
-    candidate_rank: rankByPid.get(analysis.pid) ?? null,
-  }));
-
-  await upsertRows("mvp_listings", listings, "pid");
-  await upsertRows("mvp_listing_analysis", rankedAnalyses, "pid");
+  await upsertRows("mvp_listings", listingUpserts, "pid");
+  await upsertRows("mvp_listing_analysis", analysisUpserts, "pid");
   stats.scored = scoredRows.length;
-  stats.upserted = listings.length;
+  stats.upserted = new Set([
+    ...listingUpserts.map((row) => row.pid),
+    ...analysisUpserts.map((row) => row.pid),
+  ]).size;
+  stats.timingsMs = {
+    ...(stats.timingsMs ?? {}),
+    score_output_rows: listings.length,
+    score_listing_upsert_rows: listingUpserts.length,
+    score_listing_skipped_rows: listings.length - listingUpserts.length,
+    score_analysis_upsert_rows: analysisUpserts.length,
+    score_analysis_skipped_rows: rankedAnalyses.length - analysisUpserts.length,
+    ...topCountTimings("score_listing_diff", listingDiffCounts),
+    ...topCountTimings("score_analysis_diff", analysisDiffCounts),
+  };
 
-  const poolEntries: Record<string, unknown>[] = [];
-  const poolInvalidations: { pid: number; reason: string }[] = [];
-  let poolSkipped = 0;
-  for (const row of aiReview.rows) {
-    const sellFee = Math.round(row.skuMedian * SELLING_FEE_RATE);
-    const buyMax = row.price + (row.shippingFeeGeneral ?? row.shippingFee);
-    const buyMin = row.estimatedBuyCost;
-    const profitMax = Math.max(0, row.skuMedian - buyMin - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
-    const profitMin = Math.max(0, row.skuMedian - buyMax - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
-    const band = bandFromProfit(profitMin, profitMax);
-    const pid = Number(row.pid);
-    if (band === null) {
-      poolSkipped += 1;
-      poolInvalidations.push({ pid, reason: "profit_below_pack_band" });
-      continue;
-    }
-    const parsed = parsedByPid.get(pid);
-    const sku = catalogById.get(row.skuId ?? "");
-    const category = parsed?.category ?? sku?.category ?? null;
-    const readiness = evaluateCategoryReadiness(category, categoryReadiness);
-    const confidence = computePoolConfidence(Number(parsed?.parse_confidence ?? 0.5), row.scoreFlags);
-    const comparableKey = parsed?.comparable_key ?? null;
-    const skipReason =
-      profitMin <= 0 ? "profit_not_positive" :
-      !readiness.canEnterPool ? readiness.reason :
-      row.price >= row.skuMedian ? "price_gte_market" :
-      row.riskHits > 0 ? "risk_keyword" :
-      !row.thumbnailUrl ? "missing_thumbnail" :
-      !comparableKey ? "missing_comparable_key" :
-      parsed?.needs_review ? "option_needs_review" :
-      confidence < POOL_CONFIDENCE_FLOOR ? "pool_confidence_low" :
-      hasPoolBlockFlag(row.scoreFlags) ? `blocked_${row.scoreFlags.find((flag) => POOL_BLOCK_FLAGS.includes(flag) || flag.endsWith("_low_confidence")) ?? "score_flag"}` :
-      null;
-    if (skipReason) {
-      poolSkipped += 1;
-      poolInvalidations.push({ pid, reason: skipReason });
-      continue;
-    }
-    poolEntries.push({
-      pid,
-      profit_band: band,
-      category,
-      expected_profit_min: profitMin,
-      expected_profit_max: profitMax,
-      score: row.score,
-      confidence,
-      comparable_key: comparableKey,
-      max_exposure: poolMaxExposure(band),
-      last_verified_at: now,
-      updated_at: now,
-    });
-  }
+  const poolBuild = buildCandidatePoolRows({
+    rows: aiReview.rows,
+    parsedByPid,
+    catalogById,
+    categoryReadiness,
+    now,
+  });
+  const poolEntries = poolBuild.entries;
   await upsertRows("mvp_candidate_pool", poolEntries, "pid");
   await promoteLifecyclePriority(
     poolEntries.map((entry) => Number(entry.pid)).filter(Number.isFinite),
     "pool",
     new Date(Date.now() + 30 * 60 * 1000).toISOString(),
   );
-  await invalidatePoolEntries(poolInvalidations);
+  await invalidatePoolEntries(poolBuild.invalidations);
   stats.poolUpserted = poolEntries.length;
-  stats.poolSkipped = poolSkipped;
+  stats.poolSkipped = poolBuild.skipped;
+
+  // P0-5/P0-8: score를 처리한 row(needs_review로 skip된 것 포함) 모두 dirty=false.
+  // - 시도 자체를 했다면 다음 tick에 다시 후보가 되지 않게 한다.
+  // - needs_review가 나중에 false로 바뀌는 시점은 detail-worker가 parsed를 갱신할 때이고,
+  //   그때 raw_listings.score_dirty=true로 다시 마킹되어 자연스럽게 재진입한다.
+  // - budget timeout으로 일부만 처리했다면 그 부분만 내림 — 나머지는 dirty=true 그대로.
+  const processedPids = handledPids.filter(Number.isFinite);
+  await clearScoreDirty(processedPids);
+  stats.timingsMs = {
+    ...(stats.timingsMs ?? {}),
+    score_dirty_cleared_rows: processedPids.length,
+    score_needs_review_skipped: needsReviewSkipped,
+  };
   return stats;
 }
 
@@ -2442,18 +3388,9 @@ export async function runTickPipeline(): Promise<TickResult> {
   const config = loadPipelineRuntimeConfig();
   const stageDurationsMs: Record<string, number> = {};
 
-  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    const started = Date.now();
-    try {
-      return await fn();
-    } finally {
-      stageDurationsMs[name] = Date.now() - started;
-    }
-  }
-
-  const search = await timed("search", () => searchStage(Date.now() + config.tickSearchBudgetMs));
-  const detail = await timed("detail", () => detailStage(Date.now() + config.tickDetailBudgetMs));
-  const score = await timed("score", () => scoreStage(Date.now() + config.tickScoreBudgetMs));
+  const search = await timedStage(stageDurationsMs, "search", () => searchStage(Date.now() + config.tickSearchBudgetMs));
+  const detail = await timedStage(stageDurationsMs, "detail", () => detailStage(Date.now() + config.tickDetailBudgetMs));
+  const score = await timedStage(stageDurationsMs, "score", () => scoreStage(Date.now() + config.tickScoreBudgetMs));
   const total = mergeStats([search, detail, score]);
   return {
     ...total,
@@ -2466,20 +3403,11 @@ export async function runSearchScorePipeline(): Promise<TickResult> {
   const config = loadPipelineRuntimeConfig();
   const stageDurationsMs: Record<string, number> = {};
 
-  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    const started = Date.now();
-    try {
-      return await fn();
-    } finally {
-      stageDurationsMs[name] = Date.now() - started;
-    }
-  }
-
-  const search = await timed("search", () => searchStage(Date.now() + config.tickSearchBudgetMs, {
+  const search = await timedStage(stageDurationsMs, "search", () => searchStage(Date.now() + config.tickSearchBudgetMs, {
     pages: [0],
     mode: "fresh",
   }));
-  const score = await timed("score", () => scoreStage(Date.now() + config.tickScoreBudgetMs));
+  const score = await timedStage(stageDurationsMs, "score", () => scoreStage(Date.now() + config.tickScoreBudgetMs));
   const detail = emptyStats();
   const total = mergeStats([search, detail, score]);
   return {
@@ -2493,19 +3421,10 @@ export async function runDeepCrawlPipeline(pageOverride?: number): Promise<TickR
   const config = loadPipelineRuntimeConfig();
   const stageDurationsMs: Record<string, number> = {};
 
-  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    const started = Date.now();
-    try {
-      return await fn();
-    } finally {
-      stageDurationsMs[name] = Date.now() - started;
-    }
-  }
-
   const page = pageOverride != null
     ? Math.max(1, Math.min(config.deepCrawlMaxPage, Math.round(pageOverride)))
     : rotatedDeepPage(config.deepCrawlMaxPage);
-  const search = await timed("deep", () => searchStage(Date.now() + config.tickSearchBudgetMs, {
+  const search = await timedStage(stageDurationsMs, "deep", () => searchStage(Date.now() + config.tickSearchBudgetMs, {
     pages: [page],
     mode: "deep",
   }));
@@ -2523,17 +3442,8 @@ export async function runDetailWorkerPipeline(): Promise<TickResult> {
   const config = loadPipelineRuntimeConfig();
   const stageDurationsMs: Record<string, number> = {};
 
-  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    const started = Date.now();
-    try {
-      return await fn();
-    } finally {
-      stageDurationsMs[name] = Date.now() - started;
-    }
-  }
-
   const search = emptyStats();
-  const detail = await timed("detail", () => detailStage(Date.now() + config.tickDetailBudgetMs));
+  const detail = await timedStage(stageDurationsMs, "detail", () => detailStage(Date.now() + config.tickDetailBudgetMs));
   const score = emptyStats();
   const total = mergeStats([search, detail, score]);
   return {
@@ -2547,17 +3457,8 @@ export async function runPoolWarmerPipeline(): Promise<TickResult> {
   const config = loadPipelineRuntimeConfig();
   const stageDurationsMs: Record<string, number> = {};
 
-  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    const started = Date.now();
-    try {
-      return await fn();
-    } finally {
-      stageDurationsMs[name] = Date.now() - started;
-    }
-  }
-
   const search = emptyStats();
-  const detail = await timed("pool_warmer", () => poolWarmerStage(Date.now() + config.tickDetailBudgetMs));
+  const detail = await timedStage(stageDurationsMs, "pool_warmer", () => poolWarmerStage(Date.now() + config.tickDetailBudgetMs));
   const score = emptyStats();
   const total = mergeStats([search, detail, score]);
   return {
@@ -2567,21 +3468,14 @@ export async function runPoolWarmerPipeline(): Promise<TickResult> {
   };
 }
 
-export async function runLifecycleWorkerPipeline(): Promise<TickResult> {
+export async function runLifecycleWorkerPipeline(options: { terminalRecheck?: boolean } = {}): Promise<TickResult> {
   const config = loadPipelineRuntimeConfig();
   const stageDurationsMs: Record<string, number> = {};
-
-  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    const started = Date.now();
-    try {
-      return await fn();
-    } finally {
-      stageDurationsMs[name] = Date.now() - started;
-    }
-  }
+  const mode: LifecycleClaimMode = options.terminalRecheck ? "terminal_recheck" : "default";
 
   const search = emptyStats();
-  const detail = await timed("lifecycle", () => lifecycleStage(Date.now() + config.tickDetailBudgetMs));
+  const detail = await timedStage(stageDurationsMs, "lifecycle", () => lifecycleStage(Date.now() + config.tickDetailBudgetMs, mode));
+  stageDurationsMs.lifecycleMode = options.terminalRecheck ? 1 : 0;
   const score = emptyStats();
   const total = mergeStats([search, detail, score]);
   return {
@@ -2594,19 +3488,10 @@ export async function runLifecycleWorkerPipeline(): Promise<TickResult> {
 export async function runMarketStatsPipeline(): Promise<TickResult> {
   const stageDurationsMs: Record<string, number> = {};
 
-  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    const started = Date.now();
-    try {
-      return await fn();
-    } finally {
-      stageDurationsMs[name] = Date.now() - started;
-    }
-  }
-
   const search = emptyStats();
   const detail = emptyStats();
-  const health = await timed("source_health", () => sourceHealthStage());
-  const market = await timed("market_stats", () => marketStatsStage());
+  const health = await timedStage(stageDurationsMs, "source_health", () => sourceHealthStage());
+  const market = await timedStage(stageDurationsMs, "market_stats", () => marketStatsStage());
   const score = mergeStats([health, market]);
   const total = mergeStats([search, detail, score]);
   return {
@@ -2619,18 +3504,9 @@ export async function runMarketStatsPipeline(): Promise<TickResult> {
 export async function runHousekeeperPipeline(): Promise<TickResult> {
   const stageDurationsMs: Record<string, number> = {};
 
-  async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    const started = Date.now();
-    try {
-      return await fn();
-    } finally {
-      stageDurationsMs[name] = Date.now() - started;
-    }
-  }
-
   const search = emptyStats();
   const detail = emptyStats();
-  const score = await timed("housekeeper", () => housekeeperStage());
+  const score = await timedStage(stageDurationsMs, "housekeeper", () => housekeeperStage());
   const total = mergeStats([search, detail, score]);
   return {
     ...total,

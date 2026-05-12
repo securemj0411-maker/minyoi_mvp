@@ -1,0 +1,29 @@
+{
+  "category": "game_console_discovered",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "Game Console From Bunjang Category",
+  "categoryIds": [
+    "600600001",
+    "600600002"
+  ],
+  "queries": [
+    "닌텐도 스위치 OLED",
+    "닌텐도 스위치 라이트",
+    "닌텐도 스위치 본체",
+    "플스5 디스크",
+    "플스5 디지털",
+    "PS5 본체"
+  ],
+  "seedSkus": [
+    "nintendo-switch-oled",
+    "nintendo-switch-lite",
+    "nintendo-switch",
+    "playstation-5-disc",
+    "playstation-5-digital",
+    "playstation-4-pro"
+  ],
+  "minNormalPrice": 50000,
+  "clusterK": 12,
+  "aiHints": "번개장터 600600001/600600002 게임기 카테고리. 정상: 닌텐도 스위치/스위치 OLED/스위치 라이트/플레이스테이션 본체. 노이즈: 게임 타이틀/칩/팩 단독, 듀얼센스/조이콘/프로콘/충전독/케이스/파우치/스킨 등 액세서리 단독, 커펌/밴/고장/부품용, 계정/다운로드 코드, 여러 기기 일괄.\n교차 카테고리 지식: 3in1=accessory(p=1), 게임=multi(p=0.8), 게임기=buying(p=1), 견적=buying(p=1), 단품=parts(p=1), 매입=buying(p=1), 매입업체=buying(p=1), 매입하는=buying(p=1), 맥세이프=accessory(p=1), 무료증정=multi(p=1), 미개봉=multi(p=1), 번톡=buying(p=1), 부품용으로=damaged(p=1), 삽니다=buying(p=1), 삽니다=mixed(p=1), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=1), 오른쪽=parts(p=1), 유닛=parts(p=1), 이상=damaged(p=1), 일괄=accessory(p=1), 전문=buying(p=1), 최고가=buying(p=1), 출장=buying(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

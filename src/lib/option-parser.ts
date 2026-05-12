@@ -35,7 +35,129 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v20";
+const PARSER_VERSION = "option-parser-v30";
+
+const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
+  a1278: { screenSizeIn: 13, chip: "intel" },
+  a1286: { screenSizeIn: 15, chip: "intel" },
+  a1297: { screenSizeIn: 17, chip: "intel" },
+  a1369: { screenSizeIn: 13, chip: "intel" },
+  a1370: { screenSizeIn: 11, chip: "intel" },
+  a1398: { screenSizeIn: 15, chip: "intel" },
+  a1465: { screenSizeIn: 11, chip: "intel" },
+  a1466: { screenSizeIn: 13, chip: "intel" },
+  a1502: { screenSizeIn: 13, chip: "intel" },
+  a1534: { screenSizeIn: 12, chip: "intel" },
+  a1706: { screenSizeIn: 13, chip: "intel" },
+  a1707: { screenSizeIn: 15, chip: "intel" },
+  a1708: { screenSizeIn: 13, chip: "intel" },
+  a1932: { screenSizeIn: 13, chip: "intel" },
+  a1989: { screenSizeIn: 13, chip: "intel" },
+  a1990: { screenSizeIn: 15, chip: "intel" },
+  a2141: { screenSizeIn: 16, chip: "intel", releaseYear: 2019 },
+  a2159: { screenSizeIn: 13, chip: "intel", releaseYear: 2019 },
+  a2179: { screenSizeIn: 13, chip: "intel", releaseYear: 2020 },
+  a2251: { screenSizeIn: 13, chip: "intel", releaseYear: 2020 },
+  a2289: { screenSizeIn: 13, chip: "intel", releaseYear: 2020 },
+  a2337: { screenSizeIn: 13, chip: "m1", releaseYear: 2020 },
+  a2338: { screenSizeIn: 13, chip: "m1", releaseYear: 2020 },
+  a2442: { screenSizeIn: 14, releaseYear: 2021 },
+  a2485: { screenSizeIn: 16, releaseYear: 2021 },
+  a2681: { screenSizeIn: 13, chip: "m2", releaseYear: 2022 },
+  a2686: { screenSizeIn: 13, chip: "m2", releaseYear: 2022 },
+  a2779: { screenSizeIn: 14, releaseYear: 2023 },
+  a2780: { screenSizeIn: 16, releaseYear: 2023 },
+  a2918: { screenSizeIn: 13, chip: "m3", releaseYear: 2024 },
+  a2991: { screenSizeIn: 14, releaseYear: 2023 },
+  a2992: { screenSizeIn: 16, releaseYear: 2023 },
+  a3113: { screenSizeIn: 13, chip: "m3", releaseYear: 2024 },
+};
+
+const MONITOR_MODEL_HINTS: Record<string, {
+  screenSizeIn?: number;
+  monitorResolution?: string;
+  monitorRefreshRate?: number;
+  monitorPanelType?: string;
+  monitorShape?: string;
+}> = {
+  "24gl600f": { screenSizeIn: 24, monitorResolution: "fhd", monitorRefreshRate: 144, monitorPanelType: "tn" },
+  "27gl650f": { screenSizeIn: 27, monitorResolution: "fhd", monitorRefreshRate: 144, monitorPanelType: "ips" },
+  "27gs85q": { screenSizeIn: 27, monitorResolution: "qhd", monitorRefreshRate: 180, monitorPanelType: "ips" },
+  "27ml600sw": { screenSizeIn: 27, monitorResolution: "fhd", monitorRefreshRate: 75, monitorPanelType: "ips" },
+  "27mp37vq": { screenSizeIn: 27, monitorResolution: "fhd", monitorRefreshRate: 60, monitorPanelType: "ips" },
+  "27up850n": { screenSizeIn: 27, monitorResolution: "uhd_4k", monitorRefreshRate: 60, monitorPanelType: "ips" },
+  "27us550": { screenSizeIn: 27, monitorResolution: "uhd_4k", monitorRefreshRate: 60, monitorPanelType: "ips" },
+  "32m2n8800": { screenSizeIn: 32, monitorResolution: "uhd_4k", monitorRefreshRate: 240, monitorPanelType: "oled" },
+  "34gs95qe": { screenSizeIn: 34, monitorResolution: "wqhd", monitorRefreshRate: 240, monitorPanelType: "oled" },
+  "39gx900a": { screenSizeIn: 39, monitorResolution: "wqhd", monitorRefreshRate: 240, monitorPanelType: "oled", monitorShape: "curved_ultrawide" },
+  "247fm100": { screenSizeIn: 24, monitorResolution: "fhd", monitorRefreshRate: 100 },
+  aw2525hm: { screenSizeIn: 25, monitorResolution: "fhd", monitorRefreshRate: 320, monitorPanelType: "ips" },
+  bg27fm3: { screenSizeIn: 27, monitorResolution: "fhd", monitorRefreshRate: 240, monitorPanelType: "tn" },
+  ls27f354fhk: { screenSizeIn: 27, monitorResolution: "fhd", monitorRefreshRate: 60, monitorPanelType: "pls" },
+  mb27f165: { screenSizeIn: 27, monitorResolution: "fhd", monitorRefreshRate: 165 },
+  odyssey_g4: { monitorResolution: "fhd", monitorRefreshRate: 240, monitorPanelType: "ips" },
+  odyssey_g5: { monitorResolution: "qhd", monitorRefreshRate: 165 },
+  pg248qp: { screenSizeIn: 24, monitorResolution: "fhd", monitorRefreshRate: 540, monitorPanelType: "tn" },
+  pg27aqdp: { screenSizeIn: 27, monitorResolution: "qhd", monitorRefreshRate: 480, monitorPanelType: "oled" },
+  x24f165: { screenSizeIn: 24, monitorResolution: "fhd", monitorRefreshRate: 165 },
+  xg2401: { screenSizeIn: 24, monitorResolution: "fhd", monitorRefreshRate: 144 },
+  xg27acdms: { screenSizeIn: 27, monitorResolution: "qhd", monitorRefreshRate: 280, monitorPanelType: "oled" },
+  xl2411: { screenSizeIn: 24, monitorResolution: "fhd", monitorRefreshRate: 144, monitorPanelType: "tn" },
+  xl2411k: { screenSizeIn: 24, monitorResolution: "fhd", monitorRefreshRate: 144, monitorPanelType: "tn" },
+  xl2540k: { screenSizeIn: 24.5, monitorResolution: "fhd", monitorRefreshRate: 240, monitorPanelType: "tn" },
+  xl2540x: { screenSizeIn: 24, monitorResolution: "fhd", monitorRefreshRate: 280, monitorPanelType: "tn" },
+  xl2720: { screenSizeIn: 27, monitorResolution: "fhd", monitorRefreshRate: 144 },
+  xl2720z: { screenSizeIn: 27, monitorResolution: "fhd", monitorRefreshRate: 144 },
+};
+
+const MONITOR_CM_SIZE_HINTS: Record<number, number> = {
+  48: 19,
+  51: 20,
+  54: 21.5,
+  56: 22,
+  58: 24,
+  59: 24,
+  61: 24,
+  68: 27,
+  69: 27,
+  71: 28,
+  80: 32,
+  81: 32,
+  86: 34,
+  95: 38,
+  99: 39,
+  124: 49,
+};
+
+function parseAppleLaptopModelNumber(text: string) {
+  const match = normalize(text).match(/\ba\s*(\d{4})\b/i);
+  return match?.[1] ? `a${match[1]}` : null;
+}
+
+function parseLaptopReleaseYear(text: string) {
+  const lower = normalize(text).toLowerCase();
+  const fullYear = firstMatch(lower, [
+    /\b(20(?:0[8-9]|1[0-9]|2[0-6]))\s*(?:년형|년도|년식|년|형|model)?\b/,
+    /\b(?:early|mid|late)\s*(20(?:0[8-9]|1[0-9]|2[0-6]))\b/,
+    /\b(20(?:0[8-9]|1[0-9]|2[0-6]))\s*(?:맥북|macbook|에어|프로|air|pro)\b/,
+  ]);
+  if (fullYear?.[1]) return Number(fullYear[1]);
+
+  const shortYear = firstMatch(lower, [
+    /(?:^|[^0-9])([0-2][0-9])\s*(?:년형|년도|년식|년)(?:[^0-9]|$)/,
+    /\b(?:early|mid|late)\s*([0-2][0-9])\b/,
+  ]);
+  if (!shortYear?.[1]) return null;
+  const twoDigit = Number(shortYear[1]);
+  if (twoDigit >= 8 && twoDigit <= 26) return 2000 + twoDigit;
+  return null;
+}
+
+function laptopGenerationKey(releaseYear: number | null, modelNumber: string | null) {
+  if (releaseYear) return `${releaseYear}y`;
+  if (modelNumber) return modelNumber;
+  return null;
+}
 
 function hashText(text: string) {
   return createHash("sha256").update(text).digest("hex");
@@ -149,19 +271,123 @@ function parseRamAndSsd(text: string, category: Sku["category"] | null) {
 
 function parseScreenSizeIn(text: string) {
   const lower = normalize(text).toLowerCase();
-  const match = lower.match(/(?:^|[^0-9])(7\.9|8\.3|9\.7|10\.2|10\.5|10\.9|11|12\.4|12\.9|13|13\.3|14|14\.6|15|15\.6|16|17)\s*(?:인치|inch|"|형)/);
+  const match = lower.match(/(?:^|[^0-9])(7\.9|8\.3|9\.7|10\.2|10\.5|10\.9|11|12\.4|12\.9|13|13\.1|13\.3|14|14\.6|15|15\.6|16|17)\s*(?:인치|inch|"|형)/);
   return match ? Number(match[1]) : null;
+}
+
+function parseMonitorBrand(text: string) {
+  const lower = normalize(text).toLowerCase();
+  const compact = lower.replace(/\s+/g, "");
+  const brandPatterns: Array<[string, RegExp]> = [
+    ["lg", /\blg\b|엘지|울트라기어|ultragear/],
+    ["samsung", /삼성|samsung|오디세이|odyssey/],
+    ["benq", /벤큐|benq|zowie|조위/],
+    ["dell", /\bdell\b|델\s*(?:모니터|monitor)|alienware|에일리언웨어/],
+    ["asus", /asus|에이수스|아수스|rog|tuf/],
+    ["msi", /\bmsi\b|엠에스아이/],
+    ["gigabyte", /gigabyte|기가바이트|aorus/],
+    ["viewsonic", /viewsonic|뷰소닉/],
+    ["hansung", /한성|hansung/],
+    ["jooyontech", /주연|jooyon/],
+  ];
+  for (const [brand, pattern] of brandPatterns) {
+    if (pattern.test(lower) || pattern.test(compact)) return brand;
+  }
+  return null;
+}
+
+function parseMonitorModelCode(text: string) {
+  const lower = normalize(text).toLowerCase();
+  const odyssey = lower.match(/(?:오디세이|odyssey)\s*(g[3-9])\b/i);
+  if (odyssey?.[1]) return `odyssey_${slug(odyssey[1])}`;
+  const legion = lower.match(/\blegion\s+(\d{2}q)\s+(\d{2})\b/);
+  if (legion?.[1] && legion[2]) return `${legion[1]}_${legion[2]}`;
+  const matches = lower.match(/\b(?:[a-z]{1,6}\d{2,5}[a-z0-9]{0,8}|\d{2,3}[a-z]{1,5}[-_]?\d{1,5}[a-z0-9]{0,8}|\d{2,3}[a-z]{2,5})\b/g) ?? [];
+  const ignored = new Set(["1080p", "1440p", "2160p"]);
+  for (const raw of matches) {
+    const value = slug(raw);
+    if (!value || ignored.has(value)) continue;
+    if (/^\d+(?:hz|gb|tb|mm|cm|in)$/.test(value)) continue;
+    if (/^(fhd|qhd|uhd|oled|ips|va|tn)$/.test(value)) continue;
+    return value;
+  }
+  return null;
+}
+
+function parseMonitorScreenSizeIn(text: string) {
+  const lower = normalize(text).toLowerCase();
+  const match = lower.match(/(?:^|[^0-9])(13\.3|15\.6|16|17|19|20|21|22|23|24|24\.5|25|27|28|29|30|32|34|38|40|43|45|49|55)\s*(?:인치|inch|"|형)(?:[^0-9]|$)/);
+  if (match) return Number(match[1]);
+  const cmMatch = lower.match(/(?:^|[^0-9])(48|51|54|56|58|59|61|68|69|71|80|81|86|95|124)\s*(?:cm|센치|센티)(?:[^0-9]|$)/);
+  const cm = cmMatch?.[1] ? Number(cmMatch[1]) : null;
+  return cm ? (MONITOR_CM_SIZE_HINTS[cm] ?? null) : null;
+}
+
+function parseMonitorScreenSizeFromModelCode(modelCode: string | null) {
+  if (!modelCode) return null;
+  const compact = modelCode.replace(/_/g, "");
+  const match = compact.match(/^(?:[a-z]{0,3})(13|15|16|17|19|20|21|22|23|24|25|27|28|29|30|32|34|38|40|43|45|49|55)(?=[a-z0-9])/);
+  if (!match?.[1]) return null;
+  const size = Number(match[1]);
+  return Number.isFinite(size) ? size : null;
+}
+
+function parseMonitorResolution(text: string) {
+  const lower = normalize(text).toLowerCase();
+  if (/3840\s*[x/]\s*2160|\b2160p\b|\buhd\b|\b4k\b/.test(lower)) return "uhd_4k";
+  if (/3440\s*[x/]\s*1440|\b(?:u?wqhd|uwqhd)\b/.test(lower)) return "wqhd";
+  if (/2560\s*[x/]\s*1440|\b1440p\b|\bqhd\b|\b2k\b/.test(lower)) return "qhd";
+  if (/1920\s*[x/]\s*1080|\b1080p\b|\bfhd\b|\bwfhd\b|풀\s*hd/.test(lower)) return "fhd";
+  return null;
+}
+
+function parseMonitorRefreshRate(text: string) {
+  const lower = normalize(text).toLowerCase();
+  const refreshPattern = "60|75|100|120|144|160|165|170|180|200|240|280|300|320|360|480|500|540";
+  const explicit = lower.match(new RegExp(`(?:^|[^0-9])(${refreshPattern})\\s*(?:hz|헤르츠)(?:[^0-9]|$)`));
+  if (explicit?.[1]) return Number(explicit[1]);
+
+  const bareAfterContext = lower.match(new RegExp(`(?:주사율|고주사율|게이밍|게임용|리얼|모니터|fhd|qhd|wqhd|uwqhd|uhd|4k).{0,18}?(?:^|[^0-9])(${refreshPattern})(?:[^0-9]|$)`));
+  if (bareAfterContext?.[1]) return Number(bareAfterContext[1]);
+
+  const bareBeforeContext = lower.match(new RegExp(`(?:^|[^0-9])(${refreshPattern})(?:[^0-9]|$).{0,18}?(?:주사율|고주사율|게이밍|게임용|리얼|모니터|fhd|qhd|wqhd|uwqhd|uhd|4k)`));
+  return bareBeforeContext?.[1] ? Number(bareBeforeContext[1]) : null;
+}
+
+function parseMonitorPanelType(text: string) {
+  const lower = normalize(text).toLowerCase();
+  if (/\boled\b|올레드/.test(lower)) return "oled";
+  if (/[a-z0-9]ips\b/.test(lower)) return "ips";
+  if (/\bips\b/.test(lower)) return "ips";
+  if (/(?:^|[^a-z])va(?:[^a-z]|$)/.test(lower)) return "va";
+  if (/(?:^|[^a-z])tn(?:[^a-z]|$)/.test(lower)) return "tn";
+  return null;
+}
+
+function parseMonitorShape(text: string) {
+  const lower = normalize(text).toLowerCase();
+  if (/울트라\s*와이드|ultra\s*wide|ultrawide|21\s*[:/]\s*9/.test(lower)) return "ultrawide";
+  if (/커브드|curved|곡면/.test(lower)) return "curved";
+  if (/평면|flat/.test(lower)) return "flat";
+  return null;
 }
 
 function parseTabletGeneration(text: string, model: string | null) {
   if (!model) return null;
   const lower = normalize(text).toLowerCase();
   if (model === "ipad_mini") {
-    const match = lower.match(/(?:아이패드\s*)?(?:미니|mini)\s*(?:a17\s*pro\s*)?(\d)(?:세대)?/);
+    if (/\ba\s*17\b|a17\s*pro|a17pro/.test(lower)) return 7;
+    const match = firstMatch(lower, [
+      /(?:아이패드\s*)?(?:미니|mini).{0,24}?(\d)(?:세대)?/,
+      /(\d)(?:세대)?.{0,24}?(?:미니|mini)/,
+    ]);
     return match ? Number(match[1]) : null;
   }
   if (model === "ipad_air") {
-    const match = lower.match(/(?:아이패드\s*)?(?:에어|air)\s*(\d)(?:세대)?/);
+    const match = firstMatch(lower, [
+      /(?:아이패드\s*)?(?:에어|air).{0,24}?(\d)(?:세대)?/,
+      /(\d)(?:세대)?.{0,24}?(?:에어|air)/,
+    ]);
     return match ? Number(match[1]) : null;
   }
   return null;
@@ -169,11 +395,11 @@ function parseTabletGeneration(text: string, model: string | null) {
 
 function parseBareTabletScreenSizeIn(text: string, model: string | null) {
   const lower = normalize(text).toLowerCase();
-  const screenPattern = "(7\\.9|8\\.3|9\\.7|10\\.2|10\\.5|10\\.9|11|12\\.4|12\\.9|13|14\\.6)";
-  const ipadModelBefore = new RegExp(`(?:아이패드\\s*(?:프로|에어)|아이패드(?:프로|에어)|ipad\\s*(?:pro|air)|프로|에어|pro|air)\\s*${screenPattern}(?:[^0-9]|$)`);
-  const ipadModelAfter = new RegExp(`(?:^|[^0-9])${screenPattern}\\s*(?:아이패드\\s*(?:프로|에어)|아이패드(?:프로|에어)|ipad\\s*(?:pro|air)|프로|에어|pro|air)`);
-  const galaxyTabBefore = new RegExp(`(?:갤럭시\\s*탭|갤럭시탭|갤탭|galaxy\\s*tab|tab).{0,16}?${screenPattern}(?:[^0-9]|$)`);
-  const galaxyTabAfter = new RegExp(`(?:^|[^0-9])${screenPattern}.{0,16}?(?:갤럭시\\s*탭|갤럭시탭|갤탭|galaxy\\s*tab|tab)`);
+  const screenPattern = "(7\\.9|8\\.3|9\\.7|10\\.2|10\\.5|10\\.9|11|12\\.4|12\\.9|13|13\\.1|14\\.6)";
+  const ipadModelBefore = new RegExp(`(?:아이패드\\s*(?:프로|에어|미니)|아이패드(?:프로|에어|미니)|ipad\\s*(?:pro|air|mini)|프로|에어|미니|pro|air|mini).{0,40}?${screenPattern}(?:[^0-9]|$)`);
+  const ipadModelAfter = new RegExp(`(?:^|[^0-9])${screenPattern}.{0,40}?(?:아이패드\\s*(?:프로|에어|미니)|아이패드(?:프로|에어|미니)|ipad\\s*(?:pro|air|mini)|프로|에어|미니|pro|air|mini)`);
+  const galaxyTabBefore = new RegExp(`(?:갤럭시\\s*탭|갤럭시탭|갤탭|galaxy\\s*tab|tab).{0,32}?${screenPattern}(?:[^0-9]|$)`);
+  const galaxyTabAfter = new RegExp(`(?:^|[^0-9])${screenPattern}.{0,32}?(?:갤럭시\\s*탭|갤럭시탭|갤탭|galaxy\\s*tab|tab)`);
 
   const match = lower.match(ipadModelBefore)
     ?? lower.match(ipadModelAfter)
@@ -200,6 +426,7 @@ function parseTabletScreenSizeIn(text: string, model: string | null) {
     if (generation && generation >= 6) return 8.3;
   }
   if (model === "ipad_air") {
+    if (generation === 1 || generation === 2) return 9.7;
     if (generation === 3) return 10.5;
     if (generation === 4 || generation === 5) return 10.9;
   }
@@ -250,8 +477,8 @@ function parseBatteryCycles(text: string) {
 function parseConnectivity(text: string) {
   const lower = normalize(text).toLowerCase();
   if (/셀룰러|cellular|lte|5g/.test(lower)) return "cellular";
+  if (/와이\s*파이|wifi|wi\s*fi|wi-fi/.test(lower)) return "wifi";
   if (/gps|블루투스|bluetooth|bt/.test(lower)) return "gps";
-  if (/와이파이|wifi|wi-fi/.test(lower)) return "wifi";
   return null;
 }
 
@@ -276,6 +503,14 @@ function modelFromSku(skuId?: string | null, skuName?: string | null) {
   if (id.startsWith("applewatch")) return id;
   if (id.startsWith("galaxywatch")) return id;
   if (id.startsWith("airpods")) return id;
+  if (id === "camera_canon_eos_r6_mark_ii") return "eos_r6_mark_ii";
+  if (id === "camera_sony_a7m3") return "a7_iii";
+  if (id === "camera_sony_a7c") return "a7c";
+  if (id === "camera_sony_a5100") return "a5100";
+  if (id === "camera_canon_eos_m6") return "eos_m6";
+  if (id === "camera_nikon_z9") return "z9";
+  if (id === "camera_canon_eos_6d") return "eos_6d";
+  if (id === "camera_fujifilm_x_t4") return "x_t4";
   return name || id || null;
 }
 
@@ -289,13 +524,22 @@ function familyFrom(category: Sku["category"] | null, model: string | null) {
   if (model.includes("applewatch")) return "applewatch";
   if (model.includes("galaxywatch")) return "galaxywatch";
   if (model.includes("airpods")) return "airpods";
+  if (category === "monitor") return "monitor";
+  if (category === "speaker") return "speaker";
+  if (category === "camera") {
+    if (model.startsWith("eos_")) return "canon";
+    if (model.startsWith("a")) return "sony";
+    if (model.startsWith("z")) return "nikon";
+    if (model.startsWith("x_")) return "fujifilm";
+    return "camera";
+  }
   return category;
 }
 
 function parseAirpodsConnector(text: string) {
   const lower = normalize(text).toLowerCase();
-  if (/usb\s*-?\s*c|usbc|c타입|타입c|씨타입|타입씨|c-type|ctype|c터입/.test(lower)) return "usbc";
-  if (/라이트닝|lightning|8핀|8\s*핀/.test(lower)) return "lightning";
+  if (/usb\s*-?\s*c|usbc|c타입|타입c|씨타입|타입씨|c-type|ctype|c터입|c핀|c\s*핀|\ba3184\b|\bmww\d{2}/.test(lower)) return "usbc";
+  if (/라이트닝|lightning|8핀|8\s*핀|팔핀|팔\s*핀|\ba2096\b/.test(lower)) return "lightning";
   return null;
 }
 
@@ -310,28 +554,73 @@ function defaultAirpodsConnector(model: string | null, text: string) {
     model.includes("airpods_pro_2_lightning")
   ) return "lightning";
   if (model.includes("airpods_max")) {
-    if (/2024|c타입|타입c|usb\s*-?\s*c|usbc|ctype/.test(lower)) return "usbc";
+    if (/202[4-6]|c타입|타입c|usb\s*-?\s*c|usbc|ctype|c핀|c\s*핀|미드나이트|스타라이트|퍼플|오렌지|\ba3184\b|\bmww\d{2}/.test(lower)) return "usbc";
     if (/맥스\s*2|맥스2|max\s*2|max2|2세대|2 세대/.test(lower)) return "usbc";
-    if (/1세대|1 세대|8핀|8\s*핀|라이트닝|lightning/.test(lower)) return "lightning";
+    if (/1세대|1 세대|8핀|8\s*핀|팔핀|팔\s*핀|라이트닝|lightning|\ba2096\b|202[0-3]|2[0-3]\s*년/.test(lower)) return "lightning";
   }
   return null;
 }
 
-function parseAirpodsNoiseControl(model: string | null, text: string) {
-  if (!model?.includes("airpods_4")) return null;
+function parseAirpodsMaxGeneration(model: string | null, text: string) {
+  if (!model?.includes("airpods_max")) return null;
+  const lower = normalize(text).toLowerCase();
+  const rawLower = (text ?? "").normalize("NFKC").toLowerCase();
+  const rawCompact = rawLower.replace(/\s+/g, "");
+
+  const ambiguous =
+    /(?:1st|1\s*세대|1세대|1)\s*(?:or|또는|혹은|\/|,|와|과)\s*(?:2nd|2\s*세대|2세대|2)/.test(rawLower) ||
+    /(?:1st|1\s*세대|1세대|1).{0,12}(?:2nd|2\s*세대|2세대|2).{0,12}(?:generation|세대)/.test(rawLower) ||
+    /1(?:st)?or2(?:nd)?|1세대또는2세대|1세대2세대|1\/2세대/.test(rawCompact);
+  if (ambiguous) return "unknown_generation";
+
+  const usbCSignal = /202[4-6]|c타입|타입c|usb\s*-?\s*c|usbc|ctype|c핀|c\s*핀|미드나이트|스타라이트|퍼플|오렌지|\ba3184\b|\bmww\d{2}|맥스\s*2|맥스2|max\s*2|max2|2세대|2 세대/.test(lower);
+  const lightningSignal = /1세대|1 세대|8핀|8\s*핀|팔핀|팔\s*핀|라이트닝|lightning|\ba2096\b|202[0-3]|2[0-3]\s*년/.test(lower);
+  const legacyColorSignal = /스페이스\s*그레이|space\s*gr[ae]y|실버|silver|그린|green|핑크|pink/.test(lower);
+
+  if (usbCSignal && legacyColorSignal) return "unknown_generation";
+  if (usbCSignal && lightningSignal) return "unknown_generation";
+  if (usbCSignal) return "max_usbc";
+  if (lightningSignal) return "max_lightning";
+  return "unknown_generation";
+}
+
+function hasAirpodsMaxFullProductContext(text: string) {
   const lower = normalize(text).toLowerCase();
   const compact = lower.replace(/\s+/g, "");
+  return (
+    /(풀박스|풀박|풀구성|풀세트|박스\s*포함|구성품|본품|본체|정품|새상품|미개봉|a급|s급|헤드폰|헤드셋|headphone|headset)/.test(lower) ||
+    /에어팟맥스.{0,12}(정상|상태좋|상태굿|사용감|실사용|구매|애플케어|보증)|(?:정상|상태좋|상태굿|사용감|실사용|구매|애플케어|보증).{0,12}에어팟맥스/.test(compact)
+  );
+}
+
+function parseAirpodsNoiseControl(model: string | null, text: string) {
+  if (!model?.includes("airpods_4")) return null;
+  const rawLower = (text ?? "").normalize("NFKC").toLowerCase();
+  const lower = normalize(text).toLowerCase();
+  const compact = lower.replace(/\s+/g, "");
+  const rawCompact = rawLower.replace(/\s+/g, "");
 
   if (
-    /노캔\s*(?:x|×|없|아님|안됨|안\s*됨|미지원)|노이즈\s*캔슬링\s*(?:x|×|없|아님|안됨|안\s*됨|미지원)|anc\s*(?:x|no|없|미지원)/.test(lower) ||
-    /노캔이되는모델은아니|노캔안되는|노캔없는|노캔x|ancx/.test(compact)
+    /노캔.{0,20}(?:모르|되는지\s*안\s*되는지)|노캔.{0,20}되는지안되는지/.test(lower) ||
+    /노캔.{0,20}(?:모르|되는지\s*안\s*되는지)|노캔.{0,20}되는지안되는지/.test(rawLower)
+  ) {
+    return "unknown_anc";
+  }
+
+  if (
+    /노캔\s*(?:x|×|❌|ㄴㄴ|노노|없|아님|아니|안됨|안\s*됨|미지원)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)\s*(?:x|×|❌|없|아님|아니|안됨|안\s*됨|미지원)|anc\s*(?:x|no|없|미지원)/.test(rawLower) ||
+    /노캔\s*(?:x|없|아님|아니|안됨|안\s*됨|미지원)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)\s*(?:x|없|아님|아니|안됨|안\s*됨|미지원)|anc\s*(?:x|no|없|미지원)/.test(lower) ||
+    /노캔이되는모델은아니|노캔안되는|노캔없는|노캔x|노캔❌|노캔ㄴㄴ|노캔노노|노캔아님|노캔아니|노캔착각|노클x|ancx/.test(rawCompact) ||
+    /노캔이되는모델은아니|노캔안되는|노캔없는|노캔x|노캔아님|노캔아니|노캔착각|노클x|ancx/.test(compact) ||
+    /일반\s*모델|일반형|기본\s*모델|기본모델|유선\s*충전|유선충전|mxp63/.test(lower)
   ) {
     return "no_anc";
   }
 
   if (
-    /노캔\s*(?:o|○|지원|되는|가능)|노이즈\s*캔슬링|액티브\s*노이즈|anc\s*(?:o|yes|지원)?/.test(lower) ||
-    /노캔o|노캔되는|노캔가능|노이즈캔슬링/.test(compact)
+    /노캔\s*(?:0|o|○|지원|되는|가능|됩니다|됨|되요|돼요|있|있음|모델|제품|상품|미개봉|풀박스|풀박|판매|팔아)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)|액티브\s*노이즈|anc\s*(?:o|yes|지원)?/.test(lower) ||
+    /노캔0|노캔o|노캔되는|노캔가능|노캔됩니다|노캔됨|노캔있음|노캔모델|노캔제품|노캔상품|노캔미개봉|노캔풀박|노이즈캔슬링|노이즈켄슬링|노이즈캔슬|노이즈켄슬/.test(compact) ||
+    /노캔\s*(?:미개봉|풀박스|풀박|모델)?\s*$/.test(rawLower.trim())
   ) {
     return "anc";
   }
@@ -355,6 +644,10 @@ function defaultConnectivity(model: string | null) {
 function defaultTabletScreenSizeIn(model: string | null) {
   if (!model) return null;
   if (model === "ipad_10") return 10.9;
+  if (model === "galaxy_tab_s8" || model === "galaxy_tab_s9") return 11;
+  if (model === "galaxy_tab_s9_fe") return 10.9;
+  if (model === "galaxy_tab_s9_fe_plus") return 12.4;
+  if (model === "galaxy_tab_s10_fe_plus") return 13.1;
   if (model === "galaxy_tab_s8_plus" || model === "galaxy_tab_s9_plus" || model === "galaxy_tab_s10_plus") return 12.4;
   if (model === "galaxy_tab_s8_ultra" || model === "galaxy_tab_s9_ultra" || model === "galaxy_tab_s10_ultra") return 14.6;
   return null;
@@ -434,6 +727,8 @@ function comparableParts(input: {
   category: Sku["category"] | null;
   family: string | null;
   model: string | null;
+  releaseYear: number | null;
+  laptopModelNumber: string | null;
   storageGb: number | null;
   ramGb: number | null;
   ssdGb: number | null;
@@ -444,6 +739,11 @@ function comparableParts(input: {
   watchSizeMm: number | null;
   airpodsConnector: string | null;
   airpodsNoiseControl: string | null;
+  monitorModelCode: string | null;
+  monitorResolution: string | null;
+  monitorRefreshRate: number | null;
+  monitorPanelType: string | null;
+  monitorShape: string | null;
 }) {
   const { category, family, model } = input;
   if (!category || !family || !model) return null;
@@ -463,6 +763,7 @@ function comparableParts(input: {
     return [
       family,
       model,
+      laptopGenerationKey(input.releaseYear, input.laptopModelNumber) ?? "unknown_generation",
       input.chip ?? "unknown_chip",
       input.screenSizeIn ? `${input.screenSizeIn}in` : "unknown_screen",
       input.ramGb ? `${input.ramGb}gb_ram` : "unknown_ram",
@@ -478,11 +779,31 @@ function comparableParts(input: {
     ];
   }
   if (category === "earphone") {
+    if (!model.includes("airpods")) {
+      return [family, model];
+    }
     const parts = [family, model, input.airpodsConnector ?? "unknown_connector"];
     if (model === "airpods_4") {
       parts.push(input.airpodsNoiseControl ?? "unknown_anc");
     }
     return parts;
+  }
+  if (category === "monitor") {
+    return [
+      family,
+      model,
+      input.screenSizeIn ? `${input.screenSizeIn}in` : "unknown_screen",
+      input.monitorResolution ?? "unknown_resolution",
+      input.monitorRefreshRate ? `${input.monitorRefreshRate}hz` : "unknown_refresh",
+      input.monitorPanelType ?? "unknown_panel",
+      input.monitorShape ?? "unknown_shape",
+    ];
+  }
+  if (category === "speaker") {
+    return [family, model, "portable_bluetooth_speaker"];
+  }
+  if (category === "camera") {
+    return ["camera", family, model, "body_only", "no_lens"];
   }
   return [family, model];
 }
@@ -490,6 +811,8 @@ function comparableParts(input: {
 function confidence(input: {
   category: Sku["category"] | null;
   model: string | null;
+  releaseYear: number | null;
+  laptopModelNumber: string | null;
   storageGb: number | null;
   ramGb: number | null;
   ssdGb: number | null;
@@ -500,6 +823,12 @@ function confidence(input: {
   watchSizeMm: number | null;
   airpodsConnector: string | null;
   airpodsNoiseControl: string | null;
+  airpodsMaxGeneration: string | null;
+  monitorModelCode: string | null;
+  monitorResolution: string | null;
+  monitorRefreshRate: number | null;
+  monitorPanelType: string | null;
+  monitorShape: string | null;
   batteryHealth: number | null;
   batteryCycles: number | null;
 }) {
@@ -515,6 +844,7 @@ function confidence(input: {
     if (input.connectivity) score += 0.12;
     if (input.batteryHealth || input.batteryCycles) score += 0.05;
   } else if (input.category === "laptop") {
+    if (input.releaseYear || input.laptopModelNumber) score += 0.12;
     if (input.chip) score += 0.18;
     if (input.screenSizeIn) score += 0.14;
     if (input.ramGb) score += 0.14;
@@ -526,8 +856,24 @@ function confidence(input: {
     else score += 0.05;
     if (input.batteryHealth) score += 0.05;
   } else if (input.category === "earphone") {
-    score += input.airpodsConnector ? 0.25 : 0.12;
-    if (input.model === "airpods_4") score += input.airpodsNoiseControl && input.airpodsNoiseControl !== "unknown_anc" ? 0.18 : -0.08;
+    if (input.model?.includes("airpods")) {
+      score += input.airpodsConnector ? 0.25 : 0.12;
+      if (input.model === "airpods_4") score += input.airpodsNoiseControl && input.airpodsNoiseControl !== "unknown_anc" ? 0.18 : -0.08;
+      if (input.model.includes("airpods_max")) score += input.airpodsMaxGeneration && input.airpodsMaxGeneration !== "unknown_generation" ? 0.05 : -0.1;
+    } else {
+      score += 0.35;
+    }
+  } else if (input.category === "monitor") {
+    if (input.monitorModelCode) score += 0.18;
+    if (input.screenSizeIn) score += 0.12;
+    if (input.monitorResolution) score += 0.12;
+    if (input.monitorRefreshRate) score += 0.12;
+    if (input.monitorPanelType) score += 0.06;
+    if (input.monitorShape) score += 0.03;
+  } else if (input.category === "speaker") {
+    score += 0.35;
+  } else if (input.category === "camera") {
+    score += 0.35;
   }
   return cap01(score);
 }
@@ -542,13 +888,16 @@ function criticalUnknowns(category: Sku["category"] | null, comparableKey: strin
     return parts.filter((part) => ["unknown_screen", "unknown_storage", "unknown_connectivity"].includes(part));
   }
   if (category === "laptop") {
-    return parts.filter((part) => ["unknown_chip", "unknown_ram", "unknown_ssd"].includes(part));
+    return parts.filter((part) => ["unknown_generation", "unknown_chip", "unknown_ram", "unknown_ssd"].includes(part));
   }
   if (category === "smartwatch") {
     return parts.filter((part) => part === "unknown_size");
   }
   if (category === "earphone") {
     return parts.filter((part) => part === "unknown_connector" || part === "unknown_anc");
+  }
+  if (category === "monitor") {
+    return parts.filter((part) => ["unknown_screen", "unknown_resolution", "unknown_refresh"].includes(part));
   }
   return parts;
 }
@@ -558,23 +907,41 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const description = input.description ?? "";
   const text = `${title}\n${description.slice(0, 1200)}`;
   const category = input.category ?? null;
-  const model = modelFromSku(input.skuId, input.skuName);
+  const monitorBrand = category === "monitor" ? (parseMonitorBrand(title) ?? parseMonitorBrand(text)) : null;
+  const monitorModelCode = category === "monitor" ? (parseMonitorModelCode(title) ?? parseMonitorModelCode(text)) : null;
+  const monitorModelHint = monitorModelCode ? (MONITOR_MODEL_HINTS[monitorModelCode] ?? null) : null;
+  const model = category === "monitor" ? (monitorModelCode ?? "generic_monitor") : modelFromSku(input.skuId, input.skuName);
   const family = familyFrom(category, model);
   const storageGb = parseStorageGb(title, category) ?? parseLooseDeviceStorageGb(title, category) ?? parseStorageGb(text, category);
   const titleMemory = parseRamAndSsd(title, category);
   const combinedMemory = parseRamAndSsd(text, category);
   const parsedRamGb = titleMemory.ramGb ?? combinedMemory.ramGb;
   const parsedSsdGb = titleMemory.ssdGb ?? combinedMemory.ssdGb;
+  const laptopModelNumber = category === "laptop"
+    ? (parseAppleLaptopModelNumber(title) ?? parseAppleLaptopModelNumber(text))
+    : null;
+  const laptopModelHint = laptopModelNumber ? (APPLE_LAPTOP_MODEL_HINTS[laptopModelNumber] ?? null) : null;
+  const parsedReleaseYear = category === "laptop"
+    ? (parseLaptopReleaseYear(title) ?? parseLaptopReleaseYear(text))
+    : null;
+  const releaseYear = category === "laptop"
+    ? (parsedReleaseYear ?? laptopModelHint?.releaseYear ?? null)
+    : null;
   const parsedScreenSizeIn = category === "laptop"
     ? (parseLaptopScreenSizeIn(title) ?? parseLaptopScreenSizeIn(text))
     : category === "tablet"
       ? (parseTabletScreenSizeIn(title, model) ?? parseTabletScreenSizeIn(text, model))
+    : category === "monitor"
+      ? (parseMonitorScreenSizeIn(title) ?? parseMonitorScreenSizeIn(text))
     : (parseScreenSizeIn(title) ?? parseScreenSizeIn(text));
   const screenSizeIn = parsedScreenSizeIn
+    ?? (category === "laptop" ? (laptopModelHint?.screenSizeIn ?? null) : null)
+    ?? (category === "monitor" ? (monitorModelHint?.screenSizeIn ?? null) : null)
+    ?? (category === "monitor" ? parseMonitorScreenSizeFromModelCode(monitorModelCode) : null)
     ?? (category === "laptop" && model === "macbook_air" ? 13 : null)
     ?? (category === "tablet" ? defaultTabletScreenSizeIn(model) : null);
   const watchSizeMm = parseWatchSizeMm(text) ?? defaultWatchSizeMm(model);
-  const chip = parseChip(title) ?? parseChip(text);
+  const chip = parseChip(title) ?? parseChip(text) ?? (category === "laptop" ? (laptopModelHint?.chip ?? null) : null);
   const laptopMemoryDefault = defaultLaptopMemory(category, model, chip, screenSizeIn, text);
   const ramGb = parsedRamGb ?? laptopMemoryDefault.ramGb;
   const ssdGb = parsedSsdGb ?? laptopMemoryDefault.ssdGb;
@@ -582,13 +949,34 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const batteryCycles = parseBatteryCycles(text);
   const connectivity = parseConnectivity(title) ?? parseConnectivity(description) ?? defaultConnectivity(model) ?? (category === "tablet" ? "wifi" : null);
   const carrier = parseCarrier(text);
-  const airpodsConnector = parseAirpodsConnector(title) ?? parseAirpodsConnector(description) ?? defaultAirpodsConnector(model, text);
-  const airpodsNoiseControl = parseAirpodsNoiseControl(model, text);
+  const airpodsConnector = category === "earphone"
+    ? (parseAirpodsConnector(title) ?? parseAirpodsConnector(description) ?? defaultAirpodsConnector(model, text))
+    : null;
+  const airpodsNoiseControl = category === "earphone" ? parseAirpodsNoiseControl(model, text) : null;
+  const airpodsMaxGeneration = category === "earphone" ? parseAirpodsMaxGeneration(model, text) : null;
+  const airpodsMaxFullProductContext =
+    category === "earphone" && model?.includes("airpods_max")
+      ? hasAirpodsMaxFullProductContext(text)
+      : false;
+  const monitorResolution = category === "monitor"
+    ? (parseMonitorResolution(title) ?? parseMonitorResolution(text) ?? monitorModelHint?.monitorResolution ?? null)
+    : null;
+  const monitorRefreshRate = category === "monitor"
+    ? (parseMonitorRefreshRate(title) ?? parseMonitorRefreshRate(text) ?? monitorModelHint?.monitorRefreshRate ?? null)
+    : null;
+  const monitorPanelType = category === "monitor"
+    ? (parseMonitorPanelType(title) ?? parseMonitorPanelType(text) ?? monitorModelHint?.monitorPanelType ?? null)
+    : null;
+  const monitorShape = category === "monitor"
+    ? (parseMonitorShape(title) ?? parseMonitorShape(text) ?? monitorModelHint?.monitorShape ?? null)
+    : null;
   const { conditionScore, conditionNotes } = conditionFromText(text, batteryHealth, batteryCycles);
   const parts = comparableParts({
     category,
     family,
     model,
+    releaseYear,
+    laptopModelNumber,
     storageGb,
     ramGb,
     ssdGb,
@@ -599,11 +987,18 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     watchSizeMm,
     airpodsConnector,
     airpodsNoiseControl,
+    monitorModelCode,
+    monitorResolution,
+    monitorRefreshRate,
+    monitorPanelType,
+    monitorShape,
   });
   const comparableKey = parts?.map(slug).join("|") ?? null;
   const parseConfidence = confidence({
     category,
     model,
+    releaseYear,
+    laptopModelNumber,
     storageGb,
     ramGb,
     ssdGb,
@@ -614,12 +1009,23 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     watchSizeMm,
     airpodsConnector,
     airpodsNoiseControl,
+    airpodsMaxGeneration,
+    monitorModelCode,
+    monitorResolution,
+    monitorRefreshRate,
+    monitorPanelType,
+    monitorShape,
     batteryHealth,
     batteryCycles,
   });
   const variantKey = parts ? parts.slice(2).join(" / ") : null;
   const criticalUnknown = criticalUnknowns(category, comparableKey);
-  const needsReview = parseConfidence < 0.65 || criticalUnknown.length > 0 || !comparableKey;
+  const needsReview = parseConfidence < 0.65
+    || criticalUnknown.length > 0
+    || airpodsMaxGeneration === "unknown_generation"
+    || (airpodsMaxGeneration === "max_lightning" && !airpodsMaxFullProductContext)
+    || (category === "monitor" && !monitorModelCode)
+    || !comparableKey;
 
   return {
     parserVersion: PARSER_VERSION,
@@ -634,7 +1040,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     ssdGb,
     screenSizeIn,
     chip,
-    releaseYear: null,
+    releaseYear,
     batteryHealth,
     batteryCycles,
     carrier,
@@ -647,6 +1053,18 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       watch_size_mm: watchSizeMm,
       airpods_connector: airpodsConnector,
       airpods_noise_control: airpodsNoiseControl,
+      airpods_max_generation: airpodsMaxGeneration,
+      airpods_max_full_product_context: airpodsMaxFullProductContext,
+      monitor_brand: monitorBrand,
+      monitor_model_code: monitorModelCode,
+      monitor_resolution: monitorResolution,
+      monitor_refresh_rate_hz: monitorRefreshRate,
+      monitor_panel_type: monitorPanelType,
+      monitor_shape: monitorShape,
+      monitor_model_hint: monitorModelHint,
+      laptop_model_number: laptopModelNumber,
+      laptop_model_hint: laptopModelHint,
+      inferred_release_year: parsedReleaseYear == null && releaseYear != null,
       inferred_screen_size: parsedScreenSizeIn == null && screenSizeIn != null,
       raw_sku_id: input.skuId ?? null,
       raw_sku_name: input.skuName ?? null,

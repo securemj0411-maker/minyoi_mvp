@@ -60,7 +60,7 @@ export function DebugResetPanel() {
           <input
             value={secret}
             onChange={(event) => setSecret(event.target.value)}
-            placeholder="CRON_SECRET"
+            placeholder="RESET SECRET"
             type="password"
             className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-red-400"
           />

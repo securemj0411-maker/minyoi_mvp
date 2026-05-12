@@ -7,7 +7,12 @@ import {
   isSoldOut,
   type SourceHealthStatus,
 } from "@/lib/sold-out";
-import { classifyListing, isSideOnlyEarbudListing } from "@/lib/pipeline";
+import {
+  classifyListing,
+  isSideOnlyEarbudListing,
+  parseShippingFromDescription,
+  parseShippingFromTrade,
+} from "@/lib/pipeline";
 
 const TIMEOUT_MS = 30_000;
 
@@ -18,13 +23,83 @@ export type RevealCard = {
   name: string;
   url: string;
   price: number;
+  skuId?: string | null;
   skuName: string;
   thumbnailUrl: string | null;
   expectedProfitMin: number;
   expectedProfitMax: number;
   confidence: number;
+  marketBasis: RevealMarketBasis;
+  velocityBasis: RevealVelocityBasis | null;
   lastVerifiedAt: string;
   freshSeconds: number;
+  savedDetail?: {
+    descriptionPreview: string;
+    favoriteCount: number | null;
+    freeShipping: boolean;
+    sellerName: string | null;
+    sellerReviewRating: number | null;
+    sellerReviewCount: number;
+  };
+};
+
+export type RevealVelocityBasis = {
+  comparableKey: string;
+  confidence: "high" | "medium";
+  observedSoldSampleCount: number;
+  activeSampleCount: number;
+  sold24hCount: number;
+  sold7dCount: number;
+  medianHoursToSold: number | null;
+  p25HoursToSold: number | null;
+  p75HoursToSold: number | null;
+  clockBasis: string;
+  computedAt: string | null;
+};
+
+export type RevealMarketBasis = {
+  comparableKey: string | null;
+  label: string;
+  p25Price: number | null;
+  medianPrice: number | null;
+  p75Price: number | null;
+  sampleCount: number;
+  activeSampleCount: number;
+  soldSampleCount: number;
+  disappearedSampleCount: number;
+  confidence: string | null;
+  computedAt: string | null;
+  excludedExamples: string[];
+};
+
+export type RevealListingDetail = {
+  pid: number;
+  description: string;
+  saleStatus: string;
+  conditionLabel: string | null;
+  thumbnailUrl: string | null;
+  imageUrls: string[];
+  metrics: {
+    viewCount: number | null;
+    favoriteCount: number | null;
+    commentCount: number | null;
+  };
+  seller: {
+    uid: string | null;
+    name: string | null;
+    reviewRating: number | null;
+    reviewCount: number;
+    followerCount: number;
+    salesCount: number;
+    proshop: boolean;
+    officialSeller: boolean;
+    joinDate: string | null;
+  };
+  shippingOptions: {
+    kind: "free" | "general" | "half" | "unknown";
+    amount: number;
+  }[];
+  shippingSummary: string;
 };
 
 export type PackOpenInput = {
@@ -32,6 +107,7 @@ export type PackOpenInput = {
   userRef: string;
   tokensSpent: number;
   requestedCards?: number;
+  consumeInventory?: boolean;
 };
 
 export type RevealFeedbackType = "interested" | "bought" | "missed_sold" | "bad_pick" | "watching";
@@ -79,13 +155,48 @@ type ListingMeta = {
   name: string;
   url: string;
   price: number;
+  sku_id: string | null;
   sku_name: string;
   thumbnail_url: string | null;
+};
+
+type RawSkuMeta = {
+  pid: number;
+  sku_id: string | null;
 };
 
 type SourceHealthRow = {
   status: SourceHealthStatus;
   checked_at: string;
+};
+
+type MarketPriceRow = {
+  comparable_key: string;
+  active_median_price: number | null;
+  sold_median_price: number | null;
+  blended_median_price: number | null;
+  p25_price: number | null;
+  p75_price: number | null;
+  active_sample_count: number;
+  sold_sample_count: number;
+  disappeared_sample_count: number;
+  confidence: string | null;
+  computed_at: string | null;
+};
+
+type MarketVelocityRow = {
+  comparable_key: string;
+  category: string | null;
+  observed_sold_sample_count: number;
+  active_sample_count: number;
+  sold_24h_count: number;
+  sold_7d_count: number;
+  confidence: "high" | "medium" | "low";
+  median_hours_to_sold: number | null;
+  p25_hours_to_sold: number | null;
+  p75_hours_to_sold: number | null;
+  clock_basis: string;
+  computed_at: string | null;
 };
 
 function categoryFromPool(row: { category: string | null; comparable_key: string | null }) {
@@ -139,12 +250,20 @@ async function rpcReservePool(band: PackBand, userRef: string, limit: number): P
   return (await res.json()) as ReservedRow[];
 }
 
-async function rpcCommitReveal(pid: number): Promise<void> {
-  await callSupabase("/rpc/commit_mvp_pool_reveal", {
+async function rpcCommitReveal(pid: number): Promise<boolean> {
+  // P0-4: RPC가 boolean을 반환한다. status='reserved' AND reserved_until>now() 가 아니면 false.
+  // false인 경우: reservation이 이미 만료/취소/이미 commit됨. 호출자가 관측 가능하게 결과 반환.
+  const res = await callSupabase("/rpc/commit_mvp_pool_reveal", {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ p_pid: pid }),
   });
+  try {
+    const body = (await res.json()) as boolean | null;
+    return body === true;
+  } catch {
+    return false;
+  }
 }
 
 async function rpcReleaseReservation(pid: number): Promise<void> {
@@ -184,13 +303,171 @@ async function loadLatestSourceHealth(): Promise<SourceHealthStatus> {
 
 async function fetchListings(pids: number[]): Promise<Map<number, ListingMeta>> {
   if (pids.length === 0) return new Map();
-  const cols = "pid,name,url,price,sku_name,thumbnail_url";
+  const pidFilter = pids.join(",");
+  const listingCols = "pid,name,url,price,sku_name,thumbnail_url";
+  const rawCols = "pid,sku_id";
+  const [listingRes, rawRes] = await Promise.all([
+    callSupabase(`/mvp_listings?select=${listingCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
+    callSupabase(`/mvp_raw_listings?select=${rawCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
+  ]);
+  const rows = (await listingRes.json()) as Omit<ListingMeta, "sku_id">[];
+  const rawRows = (await rawRes.json()) as RawSkuMeta[];
+  const skuByPid = new Map(rawRows.map((row) => [Number(row.pid), row.sku_id]));
+  return new Map(rows.map((row) => [Number(row.pid), { ...row, sku_id: skuByPid.get(Number(row.pid)) ?? null }]));
+}
+
+async function assertRevealAccess(userRef: string, pid: number): Promise<void> {
   const res = await callSupabase(
-    `/mvp_listings?select=${cols}&pid=in.(${pids.join(",")})`,
+    `/mvp_pack_reveals?select=pid&user_ref=eq.${encodeURIComponent(userRef)}&pid=eq.${pid}&limit=1`,
     { headers: authHeaders() },
   );
-  const rows = (await res.json()) as ListingMeta[];
-  return new Map(rows.map((r) => [Number(r.pid), r]));
+  const rows = (await res.json()) as { pid: number }[];
+  if (rows.length === 0) throw new Error("reveal not found for user");
+}
+
+async function fetchLatestMarketStats(comparableKeys: (string | null)[]): Promise<Map<string, MarketPriceRow>> {
+  const unique = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
+  if (unique.length === 0) return new Map();
+  const cols = [
+    "comparable_key",
+    "active_median_price",
+    "sold_median_price",
+    "blended_median_price",
+    "p25_price",
+    "p75_price",
+    "active_sample_count",
+    "sold_sample_count",
+    "disappeared_sample_count",
+    "confidence",
+    "computed_at",
+  ].join(",");
+  const encoded = unique.map((key) => encodeURIComponent(key)).join(",");
+  const res = await callSupabase(
+    `/mvp_market_price_daily?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(100, unique.length * 5)}`,
+    { headers: authHeaders() },
+  );
+  const rows = (await res.json()) as MarketPriceRow[];
+  const latest = new Map<string, MarketPriceRow>();
+  for (const row of rows) {
+    if (!latest.has(row.comparable_key)) latest.set(row.comparable_key, row);
+  }
+  return latest;
+}
+
+async function fetchLatestMarketVelocity(comparableKeys: (string | null)[]): Promise<Map<string, MarketVelocityRow>> {
+  const unique = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
+  if (unique.length === 0) return new Map();
+  const cols = [
+    "comparable_key",
+    "category",
+    "observed_sold_sample_count",
+    "active_sample_count",
+    "sold_24h_count",
+    "sold_7d_count",
+    "confidence",
+    "median_hours_to_sold",
+    "p25_hours_to_sold",
+    "p75_hours_to_sold",
+    "clock_basis",
+    "computed_at",
+  ].join(",");
+  const encoded = unique.map((key) => encodeURIComponent(key)).join(",");
+  const res = await callSupabase(
+    `/mvp_market_velocity_daily?select=${cols}&comparable_key=in.(${encoded})&confidence=in.(high,medium)&order=date.desc,computed_at.desc&limit=${Math.max(100, unique.length * 5)}`,
+    { headers: authHeaders() },
+  );
+  const rows = (await res.json()) as MarketVelocityRow[];
+  const latest = new Map<string, MarketVelocityRow>();
+  for (const row of rows) {
+    if (!latest.has(row.comparable_key)) latest.set(row.comparable_key, row);
+  }
+  return latest;
+}
+
+const MARKET_LABELS: Record<string, string> = {
+  airpods: "AirPods",
+  airpods_max: "AirPods Max",
+  airpods_pro_2: "AirPods Pro 2",
+  airpods_4: "AirPods 4",
+  applewatch: "Apple Watch",
+  galaxywatch: "Galaxy Watch",
+  usbc: "USB-C",
+  lightning: "Lightning",
+  anc: "ANC",
+  no_anc: "비ANC",
+  gps: "GPS",
+  cellular: "셀룰러",
+  aluminum: "알루미늄",
+  stainless: "스테인리스",
+  ultra: "Ultra",
+};
+
+function marketBasisLabel(comparableKey: string | null, skuName: string) {
+  if (!comparableKey) return `${skuName} 비교 기준 미확정`;
+  const parts = comparableKey.split("|").filter(Boolean);
+  const readable = parts.map((part) => MARKET_LABELS[part] ?? part.replaceAll("_", " ")).join(" · ");
+  return `${readable} · 전체 본품`;
+}
+
+function excludedExamplesForKey(comparableKey: string | null) {
+  const key = comparableKey ?? "";
+  if (key.startsWith("airpods|") || key.includes("buds")) {
+    return ["왼쪽/오른쪽 유닛", "본체만", "케이스만"];
+  }
+  if (key.startsWith("applewatch|") || key.startsWith("galaxywatch|")) {
+    return ["스트랩/밴드 단품", "충전기만", "파손/부품용"];
+  }
+  return ["부품용", "구성품 일부", "다중상품/선택가"];
+}
+
+function marketBasisForCandidate(
+  comparableKey: string | null,
+  skuName: string,
+  marketStats: Map<string, MarketPriceRow>,
+): RevealMarketBasis {
+  const stat = comparableKey ? marketStats.get(comparableKey) : undefined;
+  const activeSampleCount = Number(stat?.active_sample_count ?? 0);
+  const soldSampleCount = Number(stat?.sold_sample_count ?? 0);
+  const disappearedSampleCount = Number(stat?.disappeared_sample_count ?? 0);
+  return {
+    comparableKey,
+    label: marketBasisLabel(comparableKey, skuName),
+    p25Price: stat?.p25_price ?? null,
+    medianPrice: stat?.blended_median_price ?? stat?.active_median_price ?? null,
+    p75Price: stat?.p75_price ?? null,
+    sampleCount: activeSampleCount + soldSampleCount + disappearedSampleCount,
+    activeSampleCount,
+    soldSampleCount,
+    disappearedSampleCount,
+    confidence: stat?.confidence ?? null,
+    computedAt: stat?.computed_at ?? null,
+    excludedExamples: excludedExamplesForKey(comparableKey),
+  };
+}
+
+function velocityBasisForCandidate(
+  comparableKey: string | null,
+  velocityStats: Map<string, MarketVelocityRow>,
+  readinessMap: Awaited<ReturnType<typeof loadCategoryReadinessMap>>,
+): RevealVelocityBasis | null {
+  if (!comparableKey) return null;
+  const category = categoryFromComparableKey(comparableKey);
+  if (!category || readinessMap[category]?.status !== "ready") return null;
+  const stat = velocityStats.get(comparableKey);
+  if (!stat || (stat.confidence !== "high" && stat.confidence !== "medium")) return null;
+  return {
+    comparableKey,
+    confidence: stat.confidence,
+    observedSoldSampleCount: Number(stat.observed_sold_sample_count ?? 0),
+    activeSampleCount: Number(stat.active_sample_count ?? 0),
+    sold24hCount: Number(stat.sold_24h_count ?? 0),
+    sold7dCount: Number(stat.sold_7d_count ?? 0),
+    medianHoursToSold: stat.median_hours_to_sold,
+    p25HoursToSold: stat.p25_hours_to_sold,
+    p75HoursToSold: stat.p75_hours_to_sold,
+    clockBasis: stat.clock_basis,
+    computedAt: stat.computed_at,
+  };
 }
 
 async function patchPoolVerified(pid: number): Promise<void> {
@@ -283,23 +560,86 @@ export async function submitRevealFeedback(input: {
   });
 }
 
-async function verifyAndCheckSold(pid: number, currentPrice: number | null) {
+function shippingSummary(options: RevealListingDetail["shippingOptions"]) {
+  if (options.length === 0) return "배송비 정보 없음";
+  if (options.some((option) => option.kind === "free" && option.amount === 0)) return "무료배송";
+  const labelByKind: Record<RevealListingDetail["shippingOptions"][number]["kind"], string> = {
+    free: "무료",
+    general: "일반",
+    half: "반값",
+    unknown: "배송",
+  };
+  return options
+    .map((option) => `${labelByKind[option.kind]} ${option.amount.toLocaleString("ko-KR")}원`)
+    .join(" · ");
+}
+
+export async function loadRevealListingDetail(input: {
+  userRef: string;
+  pid: number;
+}): Promise<RevealListingDetail> {
+  await assertRevealAccess(input.userRef, input.pid);
+  const detail = await fetchDetail(String(input.pid));
+  if (!detail) throw new Error("listing detail unavailable");
+
+  const apiParsed = parseShippingFromTrade(detail.tradeData, detail.tradesData);
+  const descParsed = parseShippingFromDescription(detail.description);
+  const mergedOptions = [...apiParsed.options, ...descParsed.options];
+  const seen = new Set<string>();
+  const shippingOptions = mergedOptions.filter((option) => {
+    const key = `${option.kind}:${option.amount}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return {
+    pid: input.pid,
+    description: detail.description,
+    saleStatus: detail.saleStatus,
+    conditionLabel: detail.conditionLabel,
+    thumbnailUrl: detail.thumbnailUrl,
+    imageUrls: detail.imageUrls,
+    metrics: {
+      viewCount: detail.viewCount,
+      favoriteCount: detail.favoriteCount,
+      commentCount: detail.commentCount,
+    },
+    seller: {
+      uid: detail.shopUid,
+      name: detail.shopName,
+      reviewRating: detail.shopReviewRating,
+      reviewCount: detail.shopReviewCount,
+      followerCount: detail.shopFollowerCount,
+      salesCount: detail.shopSalesCount,
+      proshop: detail.shopProshop,
+      officialSeller: detail.shopOfficialSeller,
+      joinDate: detail.shopJoinDate,
+    },
+    shippingOptions,
+    shippingSummary: shippingSummary(shippingOptions),
+  };
+}
+
+async function verifyAndCheckSold(pid: number, currentPrice: number | null, title?: string | null) {
   const detail = await fetchDetail(String(pid));
-  const signals = detectSoldOut(detail, currentPrice);
+  const signals = detectSoldOut(detail, currentPrice, { title });
   return { detail, signals };
 }
 
 export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
   const startedAt = Date.now();
-  const targetCards = Math.max(1, Math.min(input.requestedCards ?? 2, 4));
-  const reserveLimit = Math.max(targetCards * 8, 12);
+  const consumeInventory = input.consumeInventory ?? true;
+  const targetCardsRaw = Math.max(2, Math.min(input.requestedCards ?? 2, 30));
+  const targetCards = targetCardsRaw % 2 === 0 ? targetCardsRaw : targetCardsRaw - 1;
+  const reserveLimit = Math.min(Math.max(targetCards * 4, 12), 160);
   const freshnessMs = freshnessMsForBand(input.band);
   const inventory = await loadInventory().catch(() => []);
   const bandInventory = inventory.find((row) => row.band === input.band);
-  if (bandInventory && bandInventory.usableReady < Math.max(targetCards * 3, targetCards)) {
+  if (bandInventory && bandInventory.usableReady < targetCards) {
     return {
       result: "unavailable",
-      reason: "현재 이 등급은 검증된 후보 풀이 얕아서 열지 않았어요. 후보 큐레이션이 더 쌓인 뒤 다시 시도해주세요.",
+      reason: `지금은 이 수익 구간에서 ${targetCards}건을 보여드릴 만큼 재고가 부족해요. 수량을 줄여 다시 시도해주세요.`,
       durationMs: Date.now() - startedAt,
     };
   }
@@ -313,121 +653,163 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     };
   }
 
-  const listingMap = await fetchListings(reserved.map((r) => r.pid));
-  const sourceHealth = await loadLatestSourceHealth();
-  const reveals: RevealCard[] = [];
-  const attemptedPids: number[] = [];
-  const releasePids: number[] = [];
+  try {
+    const [listingMap, marketStats, velocityStats, readinessMap] = await Promise.all([
+      fetchListings(reserved.map((r) => r.pid)),
+      fetchLatestMarketStats(reserved.map((r) => r.comparable_key)),
+      fetchLatestMarketVelocity(reserved.map((r) => r.comparable_key)),
+      loadCategoryReadinessMap(),
+    ]);
+    const sourceHealth = await loadLatestSourceHealth();
+    const reveals: RevealCard[] = [];
+    const attemptedPids: number[] = [];
+    const releasePids: number[] = [];
 
-  for (const candidate of reserved) {
-    if (reveals.length >= targetCards) {
-      releasePids.push(candidate.pid);
-      continue;
-    }
-    attemptedPids.push(candidate.pid);
-    const meta = listingMap.get(candidate.pid);
-    if (!meta) {
-      await rpcInvalidate(candidate.pid, "missing_listing_meta");
-      continue;
-    }
-    if (isSideOnlyEarbudListing(meta.name)) {
-      await rpcInvalidate(candidate.pid, "pack_open_side_only_earbud_title");
-      continue;
-    }
+    for (const candidate of reserved) {
+      if (reveals.length >= targetCards) {
+        releasePids.push(candidate.pid);
+        continue;
+      }
+      attemptedPids.push(candidate.pid);
+      const meta = listingMap.get(candidate.pid);
+      if (!meta) {
+        await rpcInvalidate(candidate.pid, "missing_listing_meta");
+        continue;
+      }
+      if (isSideOnlyEarbudListing(meta.name)) {
+        await rpcInvalidate(candidate.pid, "pack_open_side_only_earbud_title");
+        continue;
+      }
 
-    const lastVerified = new Date(candidate.last_verified_at).getTime();
-    const isFresh = Number.isFinite(lastVerified) && Date.now() - lastVerified < freshnessMs;
+      const lastVerified = new Date(candidate.last_verified_at).getTime();
+      const isFresh = Number.isFinite(lastVerified) && Date.now() - lastVerified < freshnessMs;
 
-    let liveVerifiedAt = candidate.last_verified_at;
-    if (!isFresh) {
-      const { detail, signals } = await verifyAndCheckSold(candidate.pid, meta.price);
-      if (isSoldOut(signals)) {
-        if (canPermanentlyInvalidateSoldOut(signals, sourceHealth)) {
-          await rpcInvalidate(candidate.pid, `${sourceHealth}_${describeSignals(signals)}`);
-        } else {
-          releasePids.push(candidate.pid);
+      let liveVerifiedAt = candidate.last_verified_at;
+      if (!isFresh) {
+        const { detail, signals } = await verifyAndCheckSold(candidate.pid, meta.price, meta.name);
+        if (isSoldOut(signals)) {
+          if (canPermanentlyInvalidateSoldOut(signals, sourceHealth)) {
+            await rpcInvalidate(candidate.pid, `${sourceHealth}_${describeSignals(signals)}`);
+          } else {
+            releasePids.push(candidate.pid);
+          }
+          continue;
         }
-        continue;
+        const liveType = classifyListing(meta.name, detail?.description ?? "", meta.price).listingType;
+        if (liveType !== "normal") {
+          await rpcInvalidate(candidate.pid, `pack_open_live_${liveType}`);
+          continue;
+        }
+        await patchPoolVerified(candidate.pid);
+        liveVerifiedAt = new Date().toISOString();
       }
-      const liveType = classifyListing(meta.name, detail?.description ?? "", meta.price).listingType;
-      if (liveType !== "normal") {
-        await rpcInvalidate(candidate.pid, `pack_open_live_${liveType}`);
-        continue;
-      }
-      await patchPoolVerified(candidate.pid);
-      liveVerifiedAt = new Date().toISOString();
+
+      const verifiedAtMs = new Date(liveVerifiedAt).getTime();
+      const freshSeconds = Math.max(0, Math.floor((Date.now() - verifiedAtMs) / 1000));
+
+      reveals.push({
+        pid: candidate.pid,
+        name: meta.name,
+        url: meta.url,
+        price: meta.price,
+        skuId: meta.sku_id,
+        skuName: meta.sku_name,
+        thumbnailUrl: meta.thumbnail_url,
+        expectedProfitMin: candidate.expected_profit_min,
+        expectedProfitMax: candidate.expected_profit_max,
+        confidence: candidate.confidence,
+        marketBasis: marketBasisForCandidate(candidate.comparable_key, meta.sku_name, marketStats),
+        velocityBasis: velocityBasisForCandidate(candidate.comparable_key, velocityStats, readinessMap),
+        lastVerifiedAt: liveVerifiedAt,
+        freshSeconds,
+      });
     }
 
-    const verifiedAtMs = new Date(liveVerifiedAt).getTime();
-    const freshSeconds = Math.max(0, Math.floor((Date.now() - verifiedAtMs) / 1000));
-
-    reveals.push({
-      pid: candidate.pid,
-      name: meta.name,
-      url: meta.url,
-      price: meta.price,
-      skuName: meta.sku_name,
-      thumbnailUrl: meta.thumbnail_url,
-      expectedProfitMin: candidate.expected_profit_min,
-      expectedProfitMax: candidate.expected_profit_max,
-      confidence: candidate.confidence,
-      lastVerifiedAt: liveVerifiedAt,
-      freshSeconds,
-    });
-  }
-
-  for (const pid of releasePids) {
-    await rpcReleaseReservation(pid).catch(() => undefined);
-  }
-
-  if (reveals.length < targetCards) {
-    for (const reveal of reveals) {
-      await rpcReleaseReservation(reveal.pid).catch(() => undefined);
+    for (const pid of releasePids) {
+      await rpcReleaseReservation(pid).catch(() => undefined);
     }
+
+    if (reveals.length < targetCards) {
+      for (const reveal of reveals) {
+        await rpcReleaseReservation(reveal.pid).catch(() => undefined);
+      }
+      const durationMs = Date.now() - startedAt;
+      await insertPackOpen({
+        userRef: input.userRef,
+        band: input.band,
+        tokensSpent: input.tokensSpent,
+        tokensRefunded: input.tokensSpent,
+        result: "refunded",
+        attemptedPids,
+        revealedPids: [],
+        durationMs,
+      }).catch((err) => {
+        // P1-A: audit insert 실패는 사용자 환불 자체에 영향 없음(route에서 별도 처리).
+        // 단 운영 관측을 위해 로그 남김.
+        console.error("pack_open audit insert failed (refunded path)", {
+          userRef: input.userRef,
+          band: input.band,
+          attemptedCount: attemptedPids.length,
+          err: err instanceof Error ? err.message : String(err),
+        });
+        return 0;
+      });
+      return {
+        result: "refunded",
+        reason: "약속한 추천 수만큼 검증된 매물이 부족해 크레딧을 돌려드렸어요.",
+        attemptedCount: attemptedPids.length,
+        tokensRefunded: input.tokensSpent,
+        durationMs,
+      };
+    }
+
     const durationMs = Date.now() - startedAt;
-    await insertPackOpen({
+    const packOpenId = await insertPackOpen({
       userRef: input.userRef,
       band: input.band,
       tokensSpent: input.tokensSpent,
-      tokensRefunded: input.tokensSpent,
-      result: "refunded",
+      tokensRefunded: 0,
+      result: "success",
       attemptedPids,
-      revealedPids: [],
+      revealedPids: reveals.map((r) => r.pid),
       durationMs,
-    }).catch(() => 0);
+    });
+
+    await insertReveals(packOpenId, reveals, input.userRef);
+    if (consumeInventory) {
+      for (const reveal of reveals) {
+        // P0-4: commit RPC가 false 반환 시(reservation 만료/이중 commit) 로그.
+        // 실패한다고 reveal을 무효화하지는 않는다(이미 사용자에게 카드를 보여줬다).
+        // 단 운영 관측을 위해 명시 로깅.
+        const committed = await rpcCommitReveal(reveal.pid).catch((err) => {
+          console.error("pool reveal commit threw", { pid: reveal.pid, packOpenId, err });
+          return false;
+        });
+        if (!committed) {
+          console.error("pool reveal commit returned false (reservation expired or stale)", {
+            pid: reveal.pid,
+            packOpenId,
+            userRef: input.userRef,
+          });
+        }
+      }
+    } else {
+      for (const reveal of reveals) {
+        await rpcReleaseReservation(reveal.pid).catch(() => undefined);
+      }
+    }
+
     return {
-      result: "refunded",
-      reason: "약속한 카드 수만큼 검증된 매물이 부족해 토큰을 돌려드렸어요.",
+      result: "success",
+      packOpenId,
+      reveals,
       attemptedCount: attemptedPids.length,
-      tokensRefunded: input.tokensSpent,
       durationMs,
     };
+  } catch (err) {
+    await Promise.allSettled(reserved.map((row) => rpcReleaseReservation(row.pid)));
+    throw err;
   }
-
-  const durationMs = Date.now() - startedAt;
-  const packOpenId = await insertPackOpen({
-    userRef: input.userRef,
-    band: input.band,
-    tokensSpent: input.tokensSpent,
-    tokensRefunded: 0,
-    result: "success",
-    attemptedPids,
-    revealedPids: reveals.map((r) => r.pid),
-    durationMs,
-  });
-
-  await insertReveals(packOpenId, reveals, input.userRef);
-  for (const reveal of reveals) {
-    await rpcCommitReveal(reveal.pid).catch(() => undefined);
-  }
-
-  return {
-    result: "success",
-    packOpenId,
-    reveals,
-    attemptedCount: attemptedPids.length,
-    durationMs,
-  };
 }
 
 export type InventorySnapshot = {
@@ -441,7 +823,7 @@ export type InventorySnapshot = {
 };
 
 export async function loadInventory(): Promise<InventorySnapshot[]> {
-  const cols = "profit_band,status,last_verified_at,category,comparable_key";
+  const cols = "profit_band,status,last_verified_at,category,comparable_key,exposure_count,max_exposure";
   const res = await callSupabase(`/mvp_candidate_pool?select=${cols}`, { headers: authHeaders() });
   const rows = (await res.json()) as {
     profit_band: number;
@@ -449,6 +831,8 @@ export async function loadInventory(): Promise<InventorySnapshot[]> {
     last_verified_at: string;
     category: string | null;
     comparable_key: string | null;
+    exposure_count: number | null;
+    max_exposure: number | null;
   }[];
   const readiness = await loadCategoryReadinessMap();
   const readyByCategory = new Map<string, number>();
@@ -485,7 +869,10 @@ export async function loadInventory(): Promise<InventorySnapshot[]> {
       const category = categoryFromPool(row);
       const config = category ? readiness[category] : undefined;
       const categoryReady = category ? readyByCategory.get(category) ?? 0 : 0;
-      if (config?.status === "ready" && categoryReady >= config.minReadyPool) {
+      const exposure = Number(row.exposure_count ?? 0);
+      const maxExposure = Number(row.max_exposure ?? 0);
+      const exposureAvailable = !Number.isFinite(maxExposure) || maxExposure <= 0 || exposure < maxExposure;
+      if (config?.status === "ready" && categoryReady >= config.minReadyPool && exposureAvailable) {
         bucket.usableReady += 1;
       }
       const verified = new Date(row.last_verified_at).getTime();

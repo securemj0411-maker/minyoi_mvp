@@ -1,0 +1,622 @@
+"use client";
+
+import type { User } from "@supabase/supabase-js";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import CreditIcon from "@/components/credit-icon";
+import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
+import { loadClientCredits } from "@/lib/client-credits";
+import { dispatchPackRevealsUpdated } from "@/lib/pack-events";
+import type { InventorySnapshot, PackBand, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getOrCreateUserRef, userRefForAuthUser } from "@/lib/user-ref";
+
+type PackDef = {
+  band: PackBand;
+  cost: number;
+  ctaTone: "sky" | "emerald" | "amber";
+};
+
+type PackOpenRequest = {
+  pack: PackDef;
+  requestedCards: number;
+  tokenCost: number;
+};
+
+const MIN_REQUESTED_CARDS = 2;
+const MAX_REQUESTED_CARDS = 30;
+const CARDS_PER_COST_STEP = 2;
+const MIN_PROFIT_MANWON = 2;
+const MAX_PROFIT_MANWON = 10;
+const HIGH_PROFIT_WARNING_SESSION_KEY = "minyoi-hide-high-profit-warning-v1";
+
+type PackOpenApiResult = (RevealResult & {
+  tokensRemaining?: number;
+  infiniteCredits?: boolean;
+}) | {
+  result: "error";
+  message?: string;
+  error?: string;
+  tokensRefunded?: number;
+  tokensRemaining?: number;
+  infiniteCredits?: boolean;
+};
+
+const PACKS: PackDef[] = [
+  {
+    band: 1,
+    cost: 1,
+    ctaTone: "sky",
+  },
+  {
+    band: 2,
+    cost: 2,
+    ctaTone: "emerald",
+  },
+  {
+    band: 3,
+    cost: 3,
+    ctaTone: "amber",
+  },
+];
+
+function packCardClasses(band: PackBand) {
+  if (band === 3)
+    return "border-[#ead8a7] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(251,245,230,0.96)_100%)] shadow-[0_24px_60px_rgba(183,143,54,0.12)] hover:shadow-[0_28px_70px_rgba(183,143,54,0.18)] dark:border-amber-800/60 dark:from-amber-950/40 dark:via-zinc-900 dark:to-amber-950/20 dark:shadow-amber-950/40";
+  if (band === 2)
+    return "border-[#d8dccd] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(247,243,233,0.98)_100%)] shadow-[0_24px_60px_rgba(63,99,67,0.10)] hover:shadow-[0_28px_70px_rgba(63,99,67,0.16)] dark:border-emerald-900/40 dark:from-emerald-950/30 dark:via-zinc-900 dark:to-emerald-950/10";
+  return "border-[#d8e4e2] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(242,247,247,0.98)_100%)] shadow-[0_24px_60px_rgba(73,113,126,0.10)] hover:shadow-[0_28px_70px_rgba(73,113,126,0.16)] dark:border-sky-900/40 dark:from-sky-950/30 dark:via-zinc-900 dark:to-sky-950/10";
+}
+
+function ctaClasses(tone: PackDef["ctaTone"], disabled: boolean) {
+  const base = "w-full rounded-2xl px-4 py-3 text-sm font-black text-white transition";
+  if (disabled) return `${base} cursor-not-allowed bg-zinc-300 text-zinc-500 dark:bg-zinc-800`;
+  if (tone === "amber")
+    return `${base} bg-gradient-to-r from-[#b8742f] to-[#a56325] shadow-[0_16px_36px_rgba(184,116,47,0.28)] hover:from-[#a56325] hover:to-[#8f541d]`;
+  if (tone === "emerald")
+    return `${base} bg-gradient-to-r from-[#395542] to-[#2f4737] shadow-[0_16px_36px_rgba(47,71,55,0.28)] hover:from-[#2f4737] hover:to-[#24382b]`;
+  return `${base} bg-gradient-to-r from-[#4c7280] to-[#3f6170] shadow-[0_16px_36px_rgba(63,97,112,0.24)] hover:from-[#3f6170] hover:to-[#324c59]`;
+}
+
+function rangeAccentClass(band: PackBand) {
+  if (band === 3) return "accent-amber-500";
+  if (band === 2) return "accent-emerald-500";
+  return "accent-sky-500";
+}
+
+function bandForMinProfit(value: number): PackBand {
+  if (value >= 7) return 3;
+  if (value >= 4) return 2;
+  return 1;
+}
+
+function minProfitLabel(value: number) {
+  return value >= MAX_PROFIT_MANWON ? `${MAX_PROFIT_MANWON}만원+` : `${value}만원+`;
+}
+
+function selectableCardLimit(usableReady: number) {
+  const capped = Math.min(MAX_REQUESTED_CARDS, Math.max(usableReady, MIN_REQUESTED_CARDS));
+  return capped % 2 === 0 ? capped : capped - 1;
+}
+
+function clampRequestedCards(value: number, maxCards = MAX_REQUESTED_CARDS) {
+  const rounded = Number.isFinite(value) ? Math.round(value) : MIN_REQUESTED_CARDS;
+  const capped = Math.max(MIN_REQUESTED_CARDS, Math.min(maxCards, rounded));
+  return capped % 2 === 0 ? capped : capped - 1;
+}
+
+function totalCostFor(pack: PackDef, requestedCards: number) {
+  return Math.ceil(requestedCards / CARDS_PER_COST_STEP) * pack.cost;
+}
+
+function needsHighProfitWarning(pack: PackDef) {
+  return pack.band === 3;
+}
+
+function CostBadge({ value }: { value: number }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-[#f3eee5] px-2.5 py-1 text-xs font-black tabular-nums text-[var(--brand-accent-strong)] ring-1 ring-[#d9e3d7]">
+      <CreditIcon size={18} className="shrink-0 drop-shadow-[0_1px_1px_rgba(63,42,10,0.25)]" />
+      <span>{value}</span>
+    </span>
+  );
+}
+
+function PackSelectorCard({
+  selectedPack,
+  selectedInventory,
+  minProfitManwon,
+  requestedCards,
+  tokens,
+  infiniteCredits,
+  onOpen,
+  busy,
+  isAuthenticated,
+  onMinProfitChange,
+  onRequestedCardsChange,
+}: {
+  selectedPack: PackDef;
+  selectedInventory?: InventorySnapshot;
+  minProfitManwon: number;
+  requestedCards: number;
+  tokens: number;
+  infiniteCredits: boolean;
+  onOpen: (pack: PackDef, requestedCards: number) => void;
+  busy: boolean;
+  isAuthenticated: boolean;
+  onMinProfitChange: (value: number) => void;
+  onRequestedCardsChange: (requestedCards: number) => void;
+}) {
+  const [warningOpen, setWarningOpen] = useState(false);
+  const [hideWarningForSession, setHideWarningForSession] = useState(false);
+  const usableReady = selectedInventory?.usableReady ?? 0;
+  const maxSelectableCards = selectableCardLimit(usableReady);
+  const selectedCount = clampRequestedCards(requestedCards, maxSelectableCards);
+  const totalCost = totalCostFor(selectedPack, selectedCount);
+  const loginRequired = !isAuthenticated;
+  const insufficient = !infiniteCredits && tokens < totalCost;
+  const sold = usableReady < MIN_REQUESTED_CARDS;
+  const disabled = busy || loginRequired || insufficient || sold;
+
+  function handleOpenClick() {
+    if (disabled) return;
+    if (needsHighProfitWarning(selectedPack)) {
+      const dismissed = window.sessionStorage.getItem(HIGH_PROFIT_WARNING_SESSION_KEY) === "1";
+      if (!dismissed) {
+        setHideWarningForSession(false);
+        setWarningOpen(true);
+        return;
+      }
+    }
+    onOpen(selectedPack, selectedCount);
+  }
+
+  function handleConfirmHighProfitSearch() {
+    if (hideWarningForSession) {
+      window.sessionStorage.setItem(HIGH_PROFIT_WARNING_SESSION_KEY, "1");
+    }
+    setWarningOpen(false);
+    onOpen(selectedPack, selectedCount);
+  }
+
+  return (
+    <>
+    <div className={`w-full max-w-[460px] overflow-hidden rounded-[28px] border p-4 shadow-[0_18px_36px_rgba(34,49,39,0.08)] transition sm:p-4.5 ${packCardClasses(selectedPack.band)}`}>
+      <div>
+        <h2 className="text-xl font-black tracking-tight text-[#223127] dark:text-zinc-50 sm:text-2xl">
+          AI 추천 상품 찾기
+        </h2>
+        <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
+          원하는 최소 수익과 추천 수를 고릅니다.
+        </p>
+      </div>
+
+      <div className="mt-4 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
+        <div className="rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">최소 예상 수익</div>
+              <div className="mt-1 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+                {minProfitLabel(minProfitManwon)}
+              </div>
+            </div>
+            <div className="rounded-full bg-[#fffaf1] px-3 py-1 text-[11px] font-black text-[#5d735f] dark:bg-zinc-900 dark:text-zinc-300">
+              빠른 필터
+            </div>
+          </div>
+          <div className="mt-3">
+            <input
+              type="range"
+              min={MIN_PROFIT_MANWON}
+              max={MAX_PROFIT_MANWON}
+              step={1}
+              value={minProfitManwon}
+              onChange={(event) => onMinProfitChange(Number(event.target.value))}
+              disabled={busy}
+              aria-label="최소 예상 수익 조절"
+              className={`h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 ${rangeAccentClass(selectedPack.band)} disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-700`}
+            />
+            <div className="mt-1.5 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+              <span>{MIN_PROFIT_MANWON}만원+</span>
+              <span>{MAX_PROFIT_MANWON}만원+</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
+        <div className="space-y-2.5">
+          <div className="rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
+            <div className="flex items-end justify-between gap-4">
+              <div className="min-w-0">
+                <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">추천 상품 수</div>
+                <div className="mt-1 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+                  {selectedCount}
+                  <span className="ml-1 text-base text-zinc-500 dark:text-zinc-400">건</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-2.5">
+              <input
+                type="range"
+                min={MIN_REQUESTED_CARDS}
+                max={maxSelectableCards}
+                step={2}
+                value={selectedCount}
+                onChange={(event) => onRequestedCardsChange(clampRequestedCards(Number(event.target.value), maxSelectableCards))}
+                disabled={busy || sold}
+                aria-label="추천 상품 수 조절"
+                className={`h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 ${rangeAccentClass(selectedPack.band)} disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-700`}
+              />
+              <div className="mt-1.5 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+                <span>{MIN_REQUESTED_CARDS}건</span>
+                <span>최대 {maxSelectableCards}건</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleOpenClick}
+            disabled={disabled}
+            className={ctaClasses(selectedPack.ctaTone, disabled)}
+          >
+            <span className="inline-flex items-center justify-center gap-2">
+              {busy
+                ? "처리 중..."
+                : loginRequired
+                  ? "로그인하고 검색"
+                  : sold
+                    ? "추천 없음"
+                    : insufficient
+                      ? (
+                          <>
+                            <span>부족</span>
+                            <CostBadge value={totalCost} />
+                          </>
+                        )
+                      : (
+                          <>
+                            <span>검색하기</span>
+                            <CostBadge value={totalCost} />
+                          </>
+                        )}
+            </span>
+          </button>
+
+          <div className="flex items-center justify-between gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+            <div className="rounded-full bg-[#f4eee3] px-3 py-1.5 dark:bg-zinc-800/60">
+              재고 {usableReady}건 남음
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e7dece] pt-2.5 text-[11px] text-zinc-500 dark:border-zinc-700/60 dark:text-zinc-400">
+            <p>같은 전체 본품 기준으로만 비교</p>
+            <p>검증 실패 시 자동 환불</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {warningOpen ? (
+      <div
+        className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(31,40,34,0.48)] p-4 backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+        onClick={() => setWarningOpen(false)}
+      >
+        <div
+          className="w-full max-w-md rounded-[24px] border border-[#ddd4c7] bg-[#fffaf6] p-5 shadow-[0_24px_64px_rgba(34,49,39,0.20)] dark:border-zinc-800 dark:bg-zinc-900"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#e4d6bd] bg-[#f7ecd8] px-3 py-1 text-xs font-black text-[#7b5724] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+            <CostBadge value={totalCost} />
+            고수익 검색
+          </div>
+          <h3 className="mt-4 text-xl font-black tracking-tight text-[#223127] dark:text-white">
+            매입가도 높을 수 있어요
+          </h3>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[#626d61] dark:text-zinc-300">
+            수익 구간이 높은 상품은 예상 차익이 큰 대신, 실제 매입가도 같이 높아질 수 있습니다.
+            구매 전에는 판매 상태, 구성품, 판매자 리뷰를 한 번 더 확인해주세요.
+          </p>
+          <label className="mt-4 flex cursor-pointer items-center gap-2 rounded-2xl border border-[#e7dece] bg-[#fffbf4] px-3 py-2 text-sm font-bold text-[#344136] dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-200">
+            <input
+              type="checkbox"
+              checked={hideWarningForSession}
+              onChange={(event) => setHideWarningForSession(event.target.checked)}
+              className="h-4 w-4 accent-[var(--brand-accent-strong)]"
+            />
+            이번 세션에서는 다시 보지 않기
+          </label>
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setWarningOpen(false)}
+              className="rounded-xl border border-[#ddd4c7] bg-[#fffaf6] px-4 py-3 text-sm font-black text-[#344136] transition hover:bg-[#f4eee3] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmHighProfitSearch}
+              className="rounded-xl bg-[var(--brand-accent-strong)] px-4 py-3 text-sm font-black text-[var(--brand-cream)] shadow-[0_14px_30px_rgba(49,66,56,0.22)] transition hover:bg-[#29382f]"
+            >
+              확인하고 검색
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null}
+    </>
+  );
+}
+
+type Props = {
+  initialInventory: InventorySnapshot[];
+};
+
+export default function RecommendationWorkspace({ initialInventory }: Props) {
+  const [inventory, setInventory] = useState<InventorySnapshot[]>(initialInventory);
+  const [tokens, setTokens] = useState<number>(0);
+  const [infiniteCredits, setInfiniteCredits] = useState(false);
+  const [userRef, setUserRef] = useState<string>(() => getOrCreateUserRef());
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [minProfitManwon, setMinProfitManwon] = useState<number>(4);
+  const [requestedCards, setRequestedCards] = useState<number>(MIN_REQUESTED_CARDS);
+  const [activeBand, setActiveBand] = useState<PackBand | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<RevealResult | null>(null);
+  const [lastRequest, setLastRequest] = useState<PackOpenRequest | null>(null);
+
+  const refreshCredits = useCallback(async () => {
+    const credits = await loadClientCredits().catch(() => null);
+    if (!credits) {
+      setTokens(0);
+      setInfiniteCredits(false);
+      return;
+    }
+    setTokens(credits.tokens);
+    setInfiniteCredits(credits.infinite);
+  }, []);
+
+  useEffect(() => {
+    const anonymousRef = getOrCreateUserRef();
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    let mounted = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!mounted) return;
+      const nextUser = data.user ?? null;
+      setAuthUser(nextUser);
+      setUserRef(nextUser ? userRefForAuthUser(nextUser.id) : anonymousRef);
+      if (nextUser) void refreshCredits();
+    }).catch(() => undefined);
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUser = session?.user ?? null;
+      setAuthUser(nextUser);
+      setUserRef(nextUser ? userRefForAuthUser(nextUser.id) : anonymousRef);
+      if (nextUser) {
+        void refreshCredits();
+      } else {
+        setTokens(0);
+        setInfiniteCredits(false);
+      }
+    });
+    return () => {
+      mounted = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [refreshCredits]);
+
+  const inventoryByBand = useMemo(() => {
+    const map = new Map<PackBand, InventorySnapshot>();
+    for (const snap of inventory) map.set(snap.band, snap);
+    return map;
+  }, [inventory]);
+  const selectedPack = useMemo(
+    () => PACKS.find((pack) => pack.band === bandForMinProfit(minProfitManwon)) ?? PACKS[1],
+    [minProfitManwon],
+  );
+  const selectedInventory = inventoryByBand.get(selectedPack.band);
+
+  const refreshInventory = useCallback(async () => {
+    try {
+      const res = await fetch("/api/packs/inventory", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = (await res.json()) as { inventory: InventorySnapshot[] };
+      if (Array.isArray(data?.inventory)) setInventory(data.inventory);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const openPack = useCallback(
+    async (pack: PackDef, requestedCardsInput: number) => {
+      if (loading) return;
+      if (!authUser) {
+        window.location.href = "/login";
+        return;
+      }
+      const requestedCards = clampRequestedCards(requestedCardsInput);
+      const tokenCost = totalCostFor(pack, requestedCards);
+      if (!infiniteCredits && tokens < tokenCost) return;
+      setLastRequest({ pack, requestedCards, tokenCost });
+      setActiveBand(pack.band);
+      setLoading(true);
+      setResult(null);
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const { data: sessionData } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+        const token = sessionData.session?.access_token;
+        if (!token) throw new Error("로그인이 필요해요.");
+        const res = await fetch("/api/packs/open", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "x-user-ref": userRef,
+          },
+          body: JSON.stringify({
+            band: pack.band,
+            requestedCards,
+          }),
+        });
+        const openData = (await res.json()) as PackOpenApiResult;
+        if (typeof openData.tokensRemaining === "number") setTokens(openData.tokensRemaining);
+        if (typeof openData.infiniteCredits === "boolean") setInfiniteCredits(openData.infiniteCredits);
+        if (openData.result === "success") {
+          dispatchPackRevealsUpdated({
+            band: pack.band,
+            reveals: openData.reveals,
+          });
+          setResult({
+            result: "success",
+            reveals: openData.reveals,
+            attemptedCount: openData.attemptedCount,
+            durationMs: openData.durationMs,
+          });
+        } else if (openData.result === "refunded") {
+          const refunded = openData.tokensRefunded ?? tokenCost;
+          setResult({
+            result: "refunded",
+            reason: openData.reason,
+            tokensRefunded: refunded,
+            durationMs: openData.durationMs,
+          });
+        } else if (openData.result === "unavailable") {
+          setResult({
+            result: "unavailable",
+            reason: openData.reason,
+            durationMs: openData.durationMs,
+          });
+        } else {
+          setResult({
+            result: "refunded",
+            reason: openData.message ?? openData.error ?? "예상치 못한 응답이에요. 다시 시도해주세요.",
+            tokensRefunded: tokenCost,
+            durationMs: 0,
+          });
+        }
+      } catch (err) {
+        setResult({
+          result: "refunded",
+          reason: err instanceof Error ? err.message : "네트워크 오류",
+          tokensRefunded: tokenCost,
+          durationMs: 0,
+        });
+      } finally {
+        setLoading(false);
+        refreshCredits();
+        refreshInventory();
+      }
+    },
+    [authUser, loading, tokens, infiniteCredits, userRef, refreshCredits, refreshInventory],
+  );
+
+  const handleClose = useCallback(() => {
+    setActiveBand(null);
+    setResult(null);
+    setLastRequest(null);
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    if (!lastRequest) {
+      handleClose();
+      return;
+    }
+    setResult(null);
+    void openPack(lastRequest.pack, lastRequest.requestedCards);
+  }, [lastRequest, openPack, handleClose]);
+
+  const handleLinkClicked = useCallback((pid: number) => {
+    if (!userRef) return;
+    const supabase = getSupabaseBrowserClient();
+    void supabase?.auth.getSession().then(({ data }) => {
+      const token = data.session?.access_token;
+      if (!token) return;
+      return fetch("/api/packs/reveals/click", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "x-user-ref": userRef,
+      },
+      body: JSON.stringify({ pid }),
+      cache: "no-store",
+      });
+    }).catch(() => undefined);
+  }, [userRef]);
+
+  const handleFeedback = useCallback((pid: number, feedbackType: RevealFeedbackType, note?: string) => {
+    if (!userRef) return;
+    const supabase = getSupabaseBrowserClient();
+    void supabase?.auth.getSession().then(({ data }) => {
+      const token = data.session?.access_token;
+      if (!token) return;
+      return fetch("/api/packs/reveals/feedback", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "x-user-ref": userRef,
+      },
+      body: JSON.stringify({ pid, feedbackType, note }),
+      cache: "no-store",
+      });
+    }).catch(() => undefined);
+  }, [userRef]);
+
+  const handleLoadDetail = useCallback(async (pid: number): Promise<RevealListingDetail> => {
+    if (!userRef) throw new Error("사용자 식별값이 아직 준비되지 않았어요.");
+    const supabase = getSupabaseBrowserClient();
+    const { data: sessionData } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+    const token = sessionData.session?.access_token;
+    if (!token) throw new Error("로그인이 필요해요.");
+    const res = await fetch("/api/packs/reveals/detail", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "x-user-ref": userRef,
+      },
+      body: JSON.stringify({ pid }),
+      cache: "no-store",
+    });
+    const detailData = (await res.json()) as { detail?: RevealListingDetail; error?: string };
+    if (!res.ok || !detailData.detail) throw new Error(detailData.error ?? "상세 정보 요청 실패");
+    return detailData.detail;
+  }, [userRef]);
+
+  return (
+    <>
+      <section className="flex justify-center">
+        <PackSelectorCard
+          selectedPack={selectedPack}
+          selectedInventory={selectedInventory}
+          minProfitManwon={minProfitManwon}
+          requestedCards={requestedCards}
+          tokens={tokens}
+          infiniteCredits={infiniteCredits}
+          onOpen={openPack}
+          busy={loading}
+          isAuthenticated={Boolean(authUser)}
+          onMinProfitChange={setMinProfitManwon}
+          onRequestedCardsChange={setRequestedCards}
+        />
+      </section>
+
+      <PackRevealModal
+        open={activeBand !== null}
+        band={activeBand ?? 1}
+        loading={loading}
+        result={result}
+        onClose={handleClose}
+        onLinkClicked={handleLinkClicked}
+        onFeedback={handleFeedback}
+        onLoadDetail={handleLoadDetail}
+        onRetry={handleRetry}
+      />
+    </>
+  );
+}

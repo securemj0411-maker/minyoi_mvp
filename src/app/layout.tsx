@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import AppFooter from "@/components/app-footer";
+import AppNav from "@/components/app-nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,22 +20,17 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (() => {
-                try {
-                  const stored = localStorage.getItem("minyoi-theme-v1") || "system";
-                  const dark = stored === "dark" || (stored === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
-                  document.documentElement.classList.toggle("dark", dark);
-                  document.documentElement.dataset.theme = dark ? "dark" : "light";
-                } catch {}
-              })();
-            `,
-          }}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css"
         />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AppNav />
+        <div className="flex-1">{children}</div>
+        <AppFooter />
+      </body>
     </html>
   );
 }

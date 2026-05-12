@@ -7,6 +7,14 @@ import {
   startCollectRun,
   type CollectRunRequestMeta,
 } from "@/lib/collect-logs";
+import { checkCronAuth } from "@/lib/cron-auth";
+import {
+  acquireCronGuard,
+  acquireCronGuardWithSourceHealth,
+  cronGuardSkipBody,
+  type CronGuardAllowed,
+  type CronWorkerMode,
+} from "@/lib/cron-guard";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runLifecycleWorkerPipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
@@ -76,56 +84,131 @@ function toPipelineResult(result: Awaited<ReturnType<typeof runLifecycleWorkerPi
   };
 }
 
-async function handleLifecycleWorker(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const auth = req.headers.get("authorization");
-  const authOk = !secret || auth === `Bearer ${secret}`;
-  const meta = requestMeta(req, authOk, authOk ? "authorized" : "invalid_or_missing_bearer");
+function isTerminalRecheckMode(req: NextRequest) {
+  const raw = req.nextUrl.searchParams.get("mode") ?? req.nextUrl.searchParams.get("target");
+  return raw === "terminal-recheck" || raw === "terminal_recheck";
+}
 
-  if (secret && !authOk) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
+function lifecycleGuardMode(terminalRecheck: boolean): CronWorkerMode {
+  return terminalRecheck ? "lifecycle_terminal_recheck" : "lifecycle_worker";
+}
 
+type LifecycleRunOutcome = {
+  status: number;
+  body: Record<string, unknown>;
+};
+
+async function executeLifecycleRun(
+  meta: CollectRunRequestMeta,
+  guard: CronGuardAllowed,
+  guardMode: CronWorkerMode,
+  terminalRecheck: boolean,
+  requestMetaExtras: Record<string, unknown> = {},
+): Promise<LifecycleRunOutcome> {
   const config = loadPipelineRuntimeConfig();
   const staleMarked = await markStaleCollectRuns(config.staleRunMinutes);
   const run = await startCollectRun({
     ...meta,
     requestMeta: {
       ...meta.requestMeta,
-      pipelineMode: "lifecycle_worker",
+      ...requestMetaExtras,
+      pipelineMode: guardMode,
+      lifecycleMode: terminalRecheck ? "terminal_recheck" : "default",
       budgets: {
         detail: config.tickDetailBudgetMs,
       },
       staleMarkedBeforeRun: staleMarked,
     },
   });
+  if (!run.id) {
+    guard.release();
+    return {
+      status: 503,
+      body: { ok: false, mode: guardMode, error: "supabase_unavailable_before_pipeline", ts: run.startedAt },
+    };
+  }
 
   try {
-    const result = await runLifecycleWorkerPipeline();
+    const result = await runLifecycleWorkerPipeline({ terminalRecheck });
     await finishCollectRun(run.id, run.startedAt, toPipelineResult(result), {
       stages: result.stages,
       stageDurationsMs: result.stageDurationsMs,
     });
-    return NextResponse.json({
-      ok: true,
-      runId: run.id,
-      mode: "lifecycle_worker",
-      result,
-      ts: run.startedAt,
-    });
+    return {
+      status: 200,
+      body: {
+        ok: true,
+        runId: run.id,
+        mode: guardMode,
+        lifecycleMode: terminalRecheck ? "terminal_recheck" : "default",
+        result,
+        ts: run.startedAt,
+      },
+    };
   } catch (err) {
     await failCollectRun(run.id, run.startedAt, err);
-    return NextResponse.json(
-      {
+    return {
+      status: 500,
+      body: {
         ok: false,
         runId: run.id,
-        mode: "lifecycle_worker",
+        mode: guardMode,
         error: err instanceof Error ? err.message : String(err),
         ts: run.startedAt,
       },
-      { status: 500 },
-    );
+    };
+  } finally {
+    guard.release();
   }
+}
+
+async function handleLifecycleWorker(req: NextRequest) {
+  const { authOk, authReason } = checkCronAuth(req);
+  const meta = requestMeta(req, authOk, authReason);
+  const terminalRecheck = isTerminalRecheckMode(req);
+  const guardMode = lifecycleGuardMode(terminalRecheck);
+
+  if (!authOk) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const guard = terminalRecheck
+    ? await acquireCronGuardWithSourceHealth(guardMode, req)
+    : acquireCronGuard(guardMode, req);
+  if (!guard.allowed) {
+    return NextResponse.json(cronGuardSkipBody(guard));
+  }
+
+  const outcome = await executeLifecycleRun(meta, guard, guardMode, terminalRecheck);
+
+  if (terminalRecheck || outcome.status !== 200) {
+    return NextResponse.json(outcome.body, { status: outcome.status });
+  }
+
+  const terminalGuardMode: CronWorkerMode = "lifecycle_terminal_recheck";
+  const terminalGuard = await acquireCronGuardWithSourceHealth(terminalGuardMode, req);
+  if (!terminalGuard.allowed) {
+    return NextResponse.json({
+      ...outcome.body,
+      terminalRecheck: cronGuardSkipBody(terminalGuard),
+    });
+  }
+
+  const terminalOutcome = await executeLifecycleRun(
+    meta,
+    terminalGuard,
+    terminalGuardMode,
+    true,
+    {
+      embeddedIn: "lifecycle_worker",
+      embeddedTriggerPath: meta.requestPath,
+    },
+  );
+
+  return NextResponse.json({
+    ...outcome.body,
+    terminalRecheck: terminalOutcome.body,
+  });
 }
 
 export async function GET(req: NextRequest) {

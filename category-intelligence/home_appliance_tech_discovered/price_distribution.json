@@ -1,0 +1,68 @@
+[
+  {
+    "key": "unknown",
+    "count": 102,
+    "min": 20000,
+    "p25": 39000,
+    "median": 79000,
+    "p75": 159000,
+    "max": 3000000,
+    "core_sample_count": 102,
+    "excluded_count": 41
+  },
+  {
+    "key": "robot-vacuum",
+    "count": 10,
+    "min": 35000,
+    "p25": 35000,
+    "median": 85000,
+    "p75": 180000,
+    "max": 1500000,
+    "core_sample_count": 10,
+    "excluded_count": 41
+  },
+  {
+    "key": "air-fryer",
+    "count": 4,
+    "min": 25000,
+    "p25": 25000,
+    "median": 42750,
+    "p75": 50000,
+    "max": 180000,
+    "core_sample_count": 4,
+    "excluded_count": 41
+  },
+  {
+    "key": "dyson-v7",
+    "count": 1,
+    "min": 65000,
+    "p25": 65000,
+    "median": 65000,
+    "p75": 65000,
+    "max": 65000,
+    "core_sample_count": 1,
+    "excluded_count": 41
+  },
+  {
+    "key": "dyson-v10",
+    "count": 1,
+    "min": 230000,
+    "p25": 230000,
+    "median": 230000,
+    "p75": 230000,
+    "max": 230000,
+    "core_sample_count": 1,
+    "excluded_count": 41
+  },
+  {
+    "key": "dyson-v8",
+    "count": 1,
+    "min": 130000,
+    "p25": 130000,
+    "median": 130000,
+    "p75": 130000,
+    "max": 130000,
+    "core_sample_count": 1,
+    "excluded_count": 41
+  }
+]

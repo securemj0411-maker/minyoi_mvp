@@ -1,0 +1,266 @@
+{
+  "version": 1,
+  "category": "game_console_body_narrow",
+  "generated_at": "2026-05-11T02:09:33.449Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [
+    {
+      "keyword": "매입",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 4,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 '매입' 키워드를 포함하고 구매 의사를 명확히 표현하여 모두 'buying' 타입으로 적합합니다."
+    },
+    {
+      "keyword": "3ds",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 4,
+      "risk_flags": [
+        "generic_noise_type",
+        "broad_product_family_keyword"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입으로 적합하여 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "찍어서",
+      "type": "noise",
+      "precision": 0.2,
+      "hit_count": 6,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 매물 중 1개만 '찍어서' 키워드가 포함된 noise 타입으로 정확히 판단되어 정밀도는 0.2임."
+    },
+    {
+      "keyword": "게임기",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 5,
+      "risk_flags": [
+        "generic_noise_type",
+        "broad_product_family_keyword"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 '게임기' 관련 내용으로 noise 타입에 부합하여 전체 precision은 1.0입니다."
+    },
+    {
+      "keyword": "해드립니다",
+      "type": "noise",
+      "precision": 0.2,
+      "hit_count": 10,
+      "risk_flags": [
+        "generic_noise_type",
+        "sentence_fragment",
+        "verb_phrase_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 매물 중 1개만 'noise' 타입으로 판단되어 정밀도는 0.2임."
+    },
+    {
+      "keyword": "직접",
+      "type": "noise",
+      "precision": 0.5,
+      "hit_count": 4,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체적으로 닌텐도 직접 매입 관련 매물은 일부에 해당하며, 정확도는 50%로 보임."
+    },
+    {
+      "keyword": "ds",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 4,
+      "risk_flags": [
+        "generic_noise_type",
+        "broad_product_family_keyword"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입으로 적합하여 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "최고가",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 4,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 buying 타입에 부합하여 precision은 1.0입니다."
+    },
+    {
+      "keyword": "2ds",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 3,
+      "risk_flags": [
+        "generic_noise_type",
+        "broad_product_family_keyword"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 전체 precision은 0.0임."
+    },
+    {
+      "keyword": "3dsxl",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 3,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물은 'noise' 타입이 아니므로 전체 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "24시간",
+      "type": "noise",
+      "precision": 0.3333333333,
+      "hit_count": 3,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체적으로 3개의 매물 중 1개만 'noise' 타입으로 적절하게 분류되어 정밀도가 낮음."
+    },
+    {
+      "keyword": "삽니다",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 5,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 '삽니다' 키워드에 부합하는 구매 의도를 가진 'buying' 타입으로 정확히 분류됨."
+    },
+    {
+      "keyword": "가격은",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "보내주시면",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type",
+        "transaction_or_sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 매물 모두 'noise' 타입이 아니므로 전체 precision은 0.0입니다."
+    },
+    {
+      "keyword": "번개장터",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 4,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "국내",
+      "type": "multi",
+      "precision": 0.25,
+      "hit_count": 4,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "제공된 매물 중 'multi' 타입은 4개 중 1개로, 전체적으로 'multi' 타입 매물로 분류된 경우가 적절하지 않습니다."
+    },
+    {
+      "keyword": "가구요",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0입니다."
+    },
+    {
+      "keyword": "매입합니다",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 2,
+      "risk_flags": [
+        "sentence_fragment",
+        "verb_phrase_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 buying 타입으로 정확히 분류되어 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "진행",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 5,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물은 'noise' 타입이 아니므로 전체 precision은 0.0입니다."
+    },
+    {
+      "keyword": "번개페이로만",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입으로 정확히 분류되었습니다."
+    }
+  ],
+  "cluster_evidence": [
+    {
+      "cluster_id": 5,
+      "listing_type": "multi",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "클러스터 내에 닌텐도 스위치 라이트 본체와 본체 하우징, 팬 환풍기 등 본체와 직접 비교 가능한 완제품이 아닌 액세서리 및 부품이 혼재되어 있어 단일 본체 SKU로 분류하기 어렵고, 여러 제품군이 묶여 있어 'multi' 타입으로 분류됩니다.",
+      "evidence_terms": [
+        "닌텐도 스위치 라이트",
+        "본체",
+        "국내 정품",
+        "하우징",
+        "팬",
+        "환풍기",
+        "새상품",
+        "무료배송"
+      ]
+    },
+    {
+      "cluster_id": 8,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 닌텐도 스위치, 3DS, DS, PS5 등 게임기 본체 및 게임칩을 포함한 다양한 게임기 제품을 최고가로 매입한다는 내용의 매입글로 구성되어 있습니다. 본체 단독 판매가 아닌 매입 의뢰 및 구매 희망 글이 주를 이루며, 매입, 삽니다, 최고가, 안전결제 등의 단어가 반복적으로 등장하여 구매 의도를 명확히 나타냅니다. 따라서 본체 전용 정상 매물(판매)과는 달리 매입(구매) 글로 분류하는 것이 적합합니다.",
+      "evidence_terms": [
+        "매입",
+        "삽니다",
+        "최고가",
+        "안전결제",
+        "닌텐도",
+        "스위치",
+        "3DS",
+        "DS",
+        "플스5",
+        "게임칩"
+      ]
+    }
+  ]
+}

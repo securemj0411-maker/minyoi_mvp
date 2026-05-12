@@ -1,0 +1,377 @@
+{
+  "version": 1,
+  "category": "speaker_audio_discovered",
+  "generated_at": "2026-05-10T18:41:29.284Z",
+  "method": "v3_normal_cluster_to_sku_candidates",
+  "skus": [
+    {
+      "id": "무니-무선-블루투스-스피커-minieye-01-b",
+      "brand": "",
+      "model_name": "무니 무선 블루투스 스피커 MINIEYE_01_B",
+      "aliases": [
+        "무니 무선 블루투스 스피커 MINIEYE_01_B",
+        "블루투스 스피커",
+        "무선",
+        "스피커 본체",
+        "모델명",
+        "출력",
+        "배터리",
+        "충전시간",
+        "사용시간",
+        "RGB 조명",
+        "파티박스"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        7
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 블루투스 스피커 본체 단품으로 구성되어 있으며, 제품명과 모델명, 스펙이 명확히 기재되어 있어 정상적인 스피커/앰프 카테고리의 핵심 제품군에 해당합니다. 액세서리나 부품, 고장품, 매입글 등이 포함되어 있지 않고, 단일 완제품으로 판매되는 점이 특징입니다."
+    },
+    {
+      "id": "브리츠-ba-c1-브리츠-ba-rbt1-아이리버-iab40-플레오맥스-pbs-m5-에릭-bp-610",
+      "brand": "",
+      "model_name": "브리츠 BA-C1, 브리츠 BA-RBT1, 아이리버 IAB40, 플레오맥스 PBS-M5, 에릭 BP-610",
+      "aliases": [
+        "브리츠 BA-C1, 브리츠 BA-RBT1, 아이리버 IAB40, 플레오맥스 PBS-M5, 에릭 BP-610",
+        "블루투스 스피커",
+        "라디오",
+        "스피커",
+        "우드 디자인",
+        "풀박스",
+        "무선",
+        "충전식",
+        "멀티 스피커",
+        "신품",
+        "중고"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        8
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 블루투스 스피커 및 라디오 기능을 갖춘 완전한 스피커 본체 제품들로 구성되어 있습니다. 제품명에 '블루투스 스피커', '라디오', '스피커'가 반복적으로 등장하며, 리모컨, 케이블 등 부속품 단독 판매나 이어폰, 헤드폰, 마이크 등 다른 오디오 기기 혼입 없이 스피커 본체 단품 또는 기본 구성으로 명확히 구분됩니다. 따라서 정상적인 스피커/앰프 카테고리 내 핵심 제품군으로 판단됩니다."
+    },
+    {
+      "id": "브리츠-br-st202-sharp-cp-200a-브리츠-br-1100-v2-yfczpeak-블루투스-스피커",
+      "brand": "",
+      "model_name": "브리츠 BR-ST202, Sharp CP-200a, 브리츠 br-1100(v2), YFCZPEAK 블루투스 스피커",
+      "aliases": [
+        "브리츠 BR-ST202, Sharp CP-200a, 브리츠 br-1100(v2), YFCZPEAK 블루투스 스피커",
+        "블루투스 스피커",
+        "북쉘프 스피커",
+        "브리츠",
+        "샤프",
+        "새제품",
+        "중형 스피커",
+        "HIFI 음질",
+        "본체",
+        "스피커 판매",
+        "모델명"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        6
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 모두 스피커 본체 단품으로, 블루투스 스피커와 북쉘프 스피커 등 정상적인 스피커 제품들이 포함되어 있습니다. 케이블, 리모컨, 부품, 액세서리 등이 아닌 완전한 스피커 본체이며, 설명과 제목에서 명확히 스피커 모델명과 상태가 언급되어 있어 정상 매물로 분류됩니다."
+    },
+    {
+      "id": "브리츠-bz-jb9600",
+      "brand": "",
+      "model_name": "브리츠 BZ-JB9600",
+      "aliases": [
+        "브리츠 BZ-JB9600",
+        "블루투스 스피커",
+        "TWS",
+        "IPX4 방수",
+        "배터리 사용시간",
+        "출력(W)",
+        "핸즈프리 통화",
+        "FM 라디오",
+        "휴대용",
+        "새상품",
+        "블루투스 버전"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        10
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 블루투스 스피커 본체 단품으로 구성되어 있으며, 제품 설명에 블루투스 버전, 출력, 배터리 용량, 방수 기능 등 스피커의 핵심 사양이 명확히 기재되어 있습니다. 또한, 케이블, 리모컨, 스탠드 등 액세서리나 부품 단독 판매가 아닌 완전한 스피커 제품으로 판단됩니다. 따라서 정상적인 스피커/앰프 카테고리 내의 본체 단품 매물로 분류됩니다."
+    },
+    {
+      "id": "블루투스-스피커-단품",
+      "brand": "",
+      "model_name": "블루투스 스피커 단품",
+      "aliases": [
+        "블루투스 스피커 단품",
+        "블루투스 스피커",
+        "본체",
+        "풀박스",
+        "신동품급",
+        "정상품",
+        "개봉만",
+        "새상품",
+        "작동 잘됨",
+        "서비스 포함",
+        "단품 판매"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        9
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 블루투스 스피커 본체 단품 위주로 구성되어 있으며, 정상적인 스피커/앰프 카테고리에 부합하는 완전한 핵심 제품들로 이루어져 있습니다. 케이블, 리모컨, 스탠드 등 액세서리나 부품 단독 매물은 포함되어 있지 않고, 이어폰, 헤드폰, 마이크 등 다른 오디오 기기는 혼입되어 있지 않습니다. 또한, 고장품이나 수리용, 매입글, 일괄 판매도 포함되어 있지 않아 정상적인 단품 스피커 매물로 분류됩니다."
+    },
+    {
+      "id": "블루투스-스피커-앰프-본체-단품",
+      "brand": "",
+      "model_name": "블루투스 스피커/앰프 본체 단품",
+      "aliases": [
+        "블루투스 스피커/앰프 본체 단품",
+        "블루투스 스피커",
+        "앰프",
+        "본체",
+        "가성비",
+        "노래방",
+        "연결",
+        "새상품",
+        "테스트",
+        "고장없음",
+        "인테리어"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        0
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 블루투스 스피커와 앰프 본체 단품으로 구성되어 있으며, 케이블, 리모컨, 스탠드 등 액세서리나 부품 단독 매물이 포함되어 있지 않습니다. 제품 설명과 제목에서 모두 스피커 및 앰프 본체임을 명확히 하고 있어 정상적인 스피커/앰프 카테고리 내 핵심 제품군에 해당합니다."
+    },
+    {
+      "id": "에릭-파티박스-bp-810",
+      "brand": "",
+      "model_name": "에릭 파티박스 BP-810",
+      "aliases": [
+        "에릭 파티박스 BP-810",
+        "블루투스 스피커",
+        "노래방 스피커",
+        "휴대용 스피커",
+        "마이크 세트",
+        "충전식",
+        "대음량",
+        "사운드바",
+        "본체 단품",
+        "가정용 노래방기계",
+        "삼성 하만카돈"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        4
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 블루투스 스피커, 노래방 스피커, 휴대용 스피커, 사운드바 등 스피커 및 앰프 본체 단품 또는 명확한 기본 구성으로 이루어져 있어 정상 매물로 분류됩니다. 마이크가 포함된 노래방용 스피커 세트도 본체와 함께 판매되어 대상 제품군에 부합하며, 케이블, 리모컨, 스탠드 등 액세서리나 부품 단독 매물은 포함되어 있지 않습니다. 또한 차량용 오디오, 고장품, 매입글 등 노이즈 요소가 없고, 단일 제품 위주로 구성되어 있어 정상으로 판단됩니다."
+    },
+    {
+      "id": "오디오테크니카-at-sp105-퀄리티캐스트-coco-5i-microlab-fc-10-krk-rokit5-g3-오디오",
+      "brand": "",
+      "model_name": "오디오테크니카 AT-SP105, 퀄리티캐스트 COCO 5i, Microlab FC-10, krk rokit5 g3, 오디오엔진 HD3",
+      "aliases": [
+        "오디오테크니카 AT-SP105, 퀄리티캐스트 COCO 5i, Microlab FC-10, krk rokit5 g3, 오디오엔진 HD3",
+        "스피커",
+        "앰프",
+        "액티브 스피커",
+        "진공관 인티앰프",
+        "모니터링 스피커",
+        "데스크파이",
+        "USB 연결",
+        "AUX 단자",
+        "헤드폰잭",
+        "파워드 스피커"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        5
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 스피커 및 앰프 본체 단품 위주로 구성되어 있으며, USB, AUX, 헤드폰잭 지원, 진공관 인티앰프, 모니터링 스피커, 데스크파이 등 정상적인 오디오 본체 제품들이 포함되어 있습니다. 케이블, 리모컨, 스탠드, 이어폰, 마이크 등 주변기기나 부품은 포함되어 있지 않아 정상(normal) 타입으로 분류됩니다."
+    },
+    {
+      "id": "jbl-go3-jbl-go4-jbl-tune-520bt-jbl-tune-510",
+      "brand": "",
+      "model_name": "JBL GO3 / JBL GO4 / JBL TUNE 520BT / JBL TUNE 510",
+      "aliases": [
+        "JBL GO3 / JBL GO4 / JBL TUNE 520BT / JBL TUNE 510",
+        "JBL",
+        "블루투스 스피커",
+        "미개봉",
+        "새제품",
+        "무선 연결",
+        "포장 뜯지 않은",
+        "TUNE 520BT",
+        "GO3",
+        "GO4",
+        "510"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": 35000,
+      "price_range": [
+        35000,
+        35000
+      ],
+      "source_cluster_ids": [
+        2
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 JBL 브랜드의 블루투스 스피커 신제품 또는 미개봉 새제품으로 구성되어 있으며, 스피커 본체 단품 위주로 판매되고 있어 정상적인 스피커/앰프 카테고리 내 핵심 제품군에 해당합니다. 액세서리나 부품, 고장품, 기타 주변기기와 혼합되지 않고, 명확히 완제품 스피커임이 확인됩니다."
+    },
+    {
+      "id": "lg-블루투스-스피커-pk5-pk7w-홈보이-스테이션-nd070a",
+      "brand": "",
+      "model_name": "LG 블루투스 스피커 PK5 / PK7W / 홈보이 스테이션 ND070A",
+      "aliases": [
+        "LG 블루투스 스피커 PK5 / PK7W / 홈보이 스테이션 ND070A",
+        "LG",
+        "블루투스 스피커",
+        "PK5",
+        "PK7W",
+        "ND070A",
+        "엑스붐",
+        "도킹 스피커",
+        "MERIDIAN",
+        "캠핑",
+        "차박"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        1
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 LG 브랜드의 블루투스 스피커 본체 단품으로 구성되어 있으며, 스피커/앰프 카테고리 내 정상적인 완제품에 해당합니다. 케이블, 리모컨, 스탠드 등 액세서리나 부품 단독 판매가 아니고, 이어폰, 마이크 등 다른 오디오 기기 혼입도 없습니다. 제품 상태도 다양하지만 모두 스피커 본체로서 정상적인 중고 거래 대상입니다."
+    },
+    {
+      "id": "marantz-sr-7000g-marantz-2385-mackie-showbox-레이니-cub-super-10-야마",
+      "brand": "",
+      "model_name": "MARANTZ SR-7000G, MARANTZ 2385, MACKIE ShowBox, 레이니 CUB SUPER 10, 야마하 HS4",
+      "aliases": [
+        "MARANTZ SR-7000G, MARANTZ 2385, MACKIE ShowBox, 레이니 CUB SUPER 10, 야마하 HS4",
+        "앰프",
+        "리시버",
+        "스피커",
+        "모니터링 스피커",
+        "MARANTZ",
+        "MACKIE",
+        "야마하",
+        "풀진공관",
+        "빈티지 오디오",
+        "단품"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        3
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 앰프, 리시버, 모니터링 스피커 등 스피커/앰프 카테고리 내 핵심 제품들로 구성되어 있으며, 각 제품은 단품 본체로 판매되고 있습니다. 케이블, 리모컨, 스탠드 등 액세서리나 부품 단독 매물은 포함되어 있지 않고, 차량용 오디오나 고장품도 없습니다. 따라서 정상적인 스피커 및 앰프 본체 단품 매물로 분류됩니다."
+    },
+    {
+      "id": "marshall-stanmore-3-acton-3-woburn-3-bluetooth-speaker",
+      "brand": "",
+      "model_name": "Marshall Stanmore 3 / Acton 3 / Woburn 3 Bluetooth Speaker",
+      "aliases": [
+        "Marshall Stanmore 3 / Acton 3 / Woburn 3 Bluetooth Speaker",
+        "마샬",
+        "블루투스 스피커",
+        "미개봉",
+        "정품",
+        "스탠모어3",
+        "액톤3",
+        "워번3",
+        "크림 색상",
+        "블랙",
+        "새상품"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": 400000,
+      "price_range": [
+        400000,
+        400000
+      ],
+      "source_cluster_ids": [
+        11
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint",
+        "generic_alias_heavy"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 마샬(Marshall) 브랜드의 블루투스 스피커 본체 단품 위주로 구성되어 있으며, 미개봉 새상품 상태가 많고 스탠드나 기타 액세서리 없이 스피커 본체만을 판매하는 정상적인 중고거래 매물입니다. 케이블, 리모컨, 부품, 이어폰, 마이크 등 주변기기나 부속품은 포함되어 있지 않아 정상(normal) 유형에 부합합니다."
+    }
+  ]
+}

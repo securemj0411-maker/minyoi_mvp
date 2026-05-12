@@ -1,0 +1,220 @@
+{
+  "version": 1,
+  "category": "game_console_body_narrow",
+  "generated_at": "2026-05-11T02:09:33.449Z",
+  "method": "v3_normal_cluster_to_sku_candidates",
+  "skus": [
+    {
+      "id": "닌텐도-스위치-본체",
+      "brand": "",
+      "model_name": "닌텐도 스위치 본체",
+      "aliases": [
+        "닌텐도 스위치 본체",
+        "닌텐도 스위치",
+        "본체",
+        "풀박스",
+        "충전기",
+        "모동숲 칩",
+        "박스 포함",
+        "정상 작동",
+        "라이트",
+        "그레이",
+        "펌 가능"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        2
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 닌텐도 스위치 본체의 완제품 매물로, 본체와 박스, 충전기 등 기본 구성품이 포함된 풀박스 형태의 정상적인 게임기 본체 매물들로 구성되어 있습니다. 게임 타이틀이나 액세서리 단독 매물이 아니며, 본체 단품 또는 부품, 고장품도 포함되어 있지 않아 본체 전용 정상 매물로 분류됩니다."
+    },
+    {
+      "id": "닌텐도-스위치-oled",
+      "brand": "",
+      "model_name": "닌텐도 스위치 OLED",
+      "aliases": [
+        "닌텐도 스위치 OLED",
+        "풀박",
+        "본체",
+        "충전기 포함",
+        "화이트",
+        "배터리 개선판",
+        "조이콘",
+        "박스",
+        "상태 최상",
+        "작동 잘 됩니다",
+        "풀박스",
+        "충전기",
+        "새상품급",
+        "상태최상",
+        "케이스 포함",
+        "1인 사용"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        3,
+        9
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 닌텐도 스위치 OLED 본체의 완제품 매물로 구성되어 있으며, 본체와 충전기, 박스 등 기본 구성품이 포함된 상태로 판매되고 있습니다. 게임 타이틀, 액세서리, 부품 단독 매물이 없고, 본체 하드웨어 중심의 정상 매물로 판단됩니다. / 이 클러스터는 닌텐도 스위치 OLED 본체의 완제품 매물로 구성되어 있으며, 본체와 조이콘, 충전기 등 필수 구성품이 포함된 풀박스 형태의 정상적인 게임기 본체 매물입니다. 게임 타이틀, 액세서리, 부품 단독 매물은 포함되어 있지 않고, 본체 단일 SKU로 비교 가능한 제품군으로 분류됩니다."
+    },
+    {
+      "id": "닌텐도-스위치-oled-64gb",
+      "brand": "",
+      "model_name": "닌텐도 스위치 OLED 64GB",
+      "aliases": [
+        "닌텐도 스위치 OLED 64GB",
+        "닌텐도 스위치 OLED",
+        "본체",
+        "풀박스",
+        "스플래툰 에디션",
+        "젤다에디션",
+        "64G",
+        "SD카드 포함",
+        "풀세트",
+        "상태 좋음",
+        "중고"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        4
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 닌텐도 스위치 OLED 본체의 완제품 매물로 구성되어 있으며, 게임 타이틀이나 액세서리, 부품 단독 매물이 포함되어 있지 않습니다. 각 매물은 본체 상태, 구성품, 에디션(스플래툰, 젤다 등)을 명확히 언급하고 있어 본체 전용 좁은 마이닝 조건에 부합합니다."
+    },
+    {
+      "id": "닌텐도-스위치-oled-화이트",
+      "brand": "",
+      "model_name": "닌텐도 스위치 OLED 화이트",
+      "aliases": [
+        "닌텐도 스위치 OLED 화이트",
+        "닌텐도 스위치 OLED",
+        "화이트",
+        "풀박스",
+        "본체",
+        "기능적 하자 없음",
+        "사용감 거의 없음",
+        "파우치 포함",
+        "액정보호필름",
+        "직거래",
+        "네고"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        6
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 닌텐도 스위치 OLED 화이트 본체의 완전한 풀박스 제품들로 구성되어 있으며, 게임 타이틀이나 액세서리 단독이 아닌 본체 하드웨어 중심의 매물입니다. 설명에 '풀박스', '본체', '기능적 하자 없음', '사용감 거의 없음' 등의 문구가 반복적으로 등장하여 정상적인 본체 매물임을 명확히 합니다. 또한, 가격대도 본체 제품군에 적합한 수준으로 형성되어 있어 본체 전용 좁은 마이닝 조건에 부합합니다."
+    },
+    {
+      "id": "닌텐도-스위치-oled-화이트-본체",
+      "brand": "",
+      "model_name": "닌텐도 스위치 OLED 화이트 본체",
+      "aliases": [
+        "닌텐도 스위치 OLED 화이트 본체",
+        "닌텐도 스위치 OLED",
+        "본체",
+        "화이트 본체",
+        "단품",
+        "미개봉",
+        "풀박스",
+        "액정 필름",
+        "박스 포함",
+        "충전기 포함",
+        "케이스 포함"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        0
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 닌텐도 스위치 OLED 본체 단품 또는 본체 포함 구성으로, 게임 타이틀이나 액세서리, 부품이 아닌 완전한 콘솔 하드웨어 제품만 포함되어 있습니다. 대표 샘플들의 제목과 설명에서 '본체', '닌텐도 스위치 OLED', '화이트 본체', '단품' 등의 키워드가 반복적으로 나타나며, 액세서리나 부품 단독 판매는 포함되어 있지 않습니다. 따라서 번개장터 게임기 카테고리 내 본체 전용 좁은 마이닝 기준에 부합하는 정상 매물로 분류됩니다."
+    },
+    {
+      "id": "playstation-5-디스크-에디션",
+      "brand": "",
+      "model_name": "PlayStation 5 디스크 에디션",
+      "aliases": [
+        "PlayStation 5 디스크 에디션",
+        "플레이스테이션5",
+        "PS5",
+        "본체",
+        "디스크버전",
+        "슬림",
+        "화이트",
+        "듀얼센스",
+        "컨트롤러",
+        "박스 포함",
+        "전원선"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": 500000,
+      "price_range": [
+        470000,
+        600000
+      ],
+      "source_cluster_ids": [
+        7
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 플레이스테이션5(PS5) 본체 중심의 매물로, 디스크 버전 및 슬림 모델 등 완전한 콘솔 하드웨어를 포함하고 있습니다. 듀얼센스 컨트롤러가 포함된 경우도 있으나, 본체가 주된 판매 대상이며 게임 타이틀이나 액세서리 단독 매물은 포함되어 있지 않습니다. 따라서 번개장터 게임기 카테고리 내 본체 전용 좁은 마이닝 기준에 부합하는 정상(normal) 매물로 분류됩니다."
+    },
+    {
+      "id": "ps5-디스크-에디션-ps5-디지털-에디션",
+      "brand": "",
+      "model_name": "PS5 디스크 에디션 / PS5 디지털 에디션",
+      "aliases": [
+        "PS5 디스크 에디션 / PS5 디지털 에디션",
+        "플스5",
+        "PS5",
+        "디스크 에디션",
+        "디지털 에디션",
+        "본체",
+        "듀얼센스",
+        "본체 전원 케이블",
+        "초기화 완료",
+        "제조년월",
+        "직거래"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        1
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 PS5 본체 제품군으로, 디스크 에디션과 디지털 에디션 본체가 포함되어 있으며, 듀얼센스 컨트롤러가 포함된 완제품 본체 판매에 집중되어 있습니다. 게임 타이틀이나 액세서리 단독 판매가 아닌, 비교 가능한 콘솔 하드웨어 본체 중심의 매물로 구성되어 있어 정상(normal) 타입으로 분류됩니다."
+    }
+  ]
+}

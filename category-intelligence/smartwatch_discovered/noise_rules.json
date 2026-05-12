@@ -1,0 +1,274 @@
+{
+  "version": 1,
+  "category": "smartwatch_discovered",
+  "generated_at": "2026-05-10T15:27:45.577Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [
+    {
+      "keyword": "가민",
+      "type": "noise",
+      "precision": 0.5,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "두 매물 중 한 개만 'noise' 타입에 적합하여 정밀도는 0.5입니다."
+    },
+    {
+      "keyword": "어메이즈핏",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0입니다."
+    },
+    {
+      "keyword": "티렉스3",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "개봉씰도",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "안뜯은",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "국내정발",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "택포",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0입니다."
+    },
+    {
+      "keyword": "허용",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "안심결제로만",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "지역",
+      "type": "noise",
+      "precision": 0.6,
+      "hit_count": 8,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 매물 중 3개가 'noise' 타입으로 정확히 분류되어 정밀도는 0.6입니다."
+    },
+    {
+      "keyword": "착용을",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 '착용을 거의 안 한' 상태로 'noise' 타입에 부합하여 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "안했습니다",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 3,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0입니다."
+    },
+    {
+      "keyword": "중고로",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 매물 모두 'noise' 타입이 아니므로 전체 precision은 0.0입니다."
+    },
+    {
+      "keyword": "신품",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 6,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 신품급이나 중고 상태로 'noise' 타입이 아니므로 정밀도는 0입니다."
+    },
+    {
+      "keyword": "새제품입니다",
+      "type": "noise",
+      "precision": 0.5,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type",
+        "sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "두 매물 중 한 매물만 'noise' 타입에 부합하여 전체 정밀도는 0.5로 평가됨."
+    },
+    {
+      "keyword": "가격제안",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 3,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 '가격제안' 키워드를 포함하여 'noise' 타입으로 정확히 분류되었습니다."
+    },
+    {
+      "keyword": "차단",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 4,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물은 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    }
+  ],
+  "cluster_evidence": [
+    {
+      "cluster_id": 0,
+      "listing_type": "ambiguous",
+      "classification_confidence": 0.7,
+      "confidence_label": "medium",
+      "confidence_reason": "클러스터 내에 애플워치 본체와 스트랩이 혼재되어 있어 정상 본체 매물과 액세서리 매물이 함께 포함되어 있습니다. 본체 매물은 정상 스마트워치로 분류되지만 스트랩은 액세서리로 분류되어 두 가지 유형이 혼합된 상태입니다.",
+      "evidence_terms": [
+        "애플워치",
+        "40mm",
+        "셀룰러",
+        "스트랩",
+        "풀박스",
+        "알루미늄",
+        "로즈골드",
+        "잔기스",
+        "사용감",
+        "택배비"
+      ]
+    },
+    {
+      "cluster_id": 2,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "두 개의 대표 샘플 모두 가민 스마트워치 모델을 구매하겠다는 의사를 명확히 표현하고 있으며, 판매가 아닌 구매 요청 형태의 글입니다. 따라서 이 클러스터는 구매 희망 매물로 분류됩니다.",
+      "evidence_terms": [
+        "구매합니다",
+        "삽니다",
+        "연락주세요",
+        "구매",
+        "사자마자",
+        "티타늄밴드",
+        "트랜스미터",
+        "논산",
+        "운동",
+        "다이빙"
+      ]
+    },
+    {
+      "cluster_id": 8,
+      "listing_type": "ambiguous",
+      "classification_confidence": 0.7,
+      "confidence_label": "medium",
+      "confidence_reason": "이 클러스터는 스마트워치 본체와 스마트워치용 메탈 스트랩이 혼재되어 있어 단일한 정상 매물로 분류하기 어렵습니다. 첫 번째 샘플은 스마트워치 본체(Watch M9)이고, 두 번째 샘플은 애플워치용 메탈 스트랩으로 액세서리에 해당합니다. 따라서 본체와 액세서리가 혼합된 클러스터로 판단됩니다. / 허용되지 않은 listing_type(mixed)이라 ambiguous로 정규화",
+      "evidence_terms": [
+        "스마트워치",
+        "풀박스",
+        "메탈스트랩",
+        "링크브레이슬릿",
+        "티타늄",
+        "41mm",
+        "42mm",
+        "이지링크",
+        "체결부",
+        "실버"
+      ]
+    },
+    {
+      "cluster_id": 11,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 애플워치 본체와 함께 사용되는 스트랩, 밴드, 밀레니즈 루프 등 액세서리 위주로 구성되어 있습니다. 일부 본체 매물도 있으나, 대표 샘플 대부분이 스트랩이나 밴드 단독 판매이며, '미사용', '정품', '실리콘 스트랩', '밀레니즈 루프' 등의 키워드가 반복적으로 등장합니다. 본체 단독 매물과 달리 충전기, 보호필름, 케이스 등은 포함되어 있지 않고, 배터리 문제나 액정 파손 같은 손상 관련 언급도 없습니다. 따라서 이 클러스터는 스마트워치 액세서리 카테고리에 해당합니다.",
+      "evidence_terms": [
+        "스트랩",
+        "밴드",
+        "밀레니즈 루프",
+        "미사용",
+        "정품",
+        "에르메스",
+        "실리콘",
+        "티타늄",
+        "내추럴",
+        "S사이즈"
+      ]
+    }
+  ]
+}

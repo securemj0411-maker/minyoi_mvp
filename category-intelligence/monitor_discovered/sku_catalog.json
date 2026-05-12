@@ -1,0 +1,270 @@
+{
+  "version": 1,
+  "category": "monitor_discovered",
+  "generated_at": "2026-05-10T18:07:57.182Z",
+  "method": "v3_normal_cluster_to_sku_candidates",
+  "skus": [
+    {
+      "id": "게이밍-모니터-24-32인치-fhd-144-180hz",
+      "brand": "",
+      "model_name": "게이밍 모니터 24~32인치 FHD 144~180Hz",
+      "aliases": [
+        "게이밍 모니터 24~32인치 FHD 144~180Hz",
+        "게이밍 모니터",
+        "32인치",
+        "144Hz",
+        "180Hz",
+        "FHD",
+        "정상 작동",
+        "본체",
+        "FPS 게임",
+        "VA 패널",
+        "고주사율"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        2
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 모두 정상 작동하는 게이밍 모니터 본체를 판매하는 매물로 구성되어 있습니다. 제품 설명에 화면 깨짐, 줄감, 멍, 빛샘 등 불량 증상이 없으며, 모니터암, 스탠드, 어댑터, 케이블 등 부품 단독 판매나 액정 파손 관련 내용이 포함되어 있지 않습니다. 또한 TV, 태블릿, 터치패널 혼합 매물도 없고, 여러 대 일괄 판매도 아닌 개별 모니터 본체 매물로 일관되어 있어 정상 모니터 본체(normal) 타입으로 분류됩니다."
+    },
+    {
+      "id": "주연테크-27인치-게이밍모니터-qhd-120hz",
+      "brand": "",
+      "model_name": "주연테크 27인치 게이밍모니터 QHD 120Hz",
+      "aliases": [
+        "주연테크 27인치 게이밍모니터 QHD 120Hz",
+        "27인치",
+        "게이밍모니터",
+        "QHD",
+        "144Hz",
+        "100Hz",
+        "새상품",
+        "사용감 없는",
+        "모니터 본체",
+        "핫딜스토리",
+        "무료배송"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        7
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 모두 27인치 이상의 게이밍 모니터 또는 고해상도 모니터 본체를 판매하는 정상 매물로 구성되어 있습니다. 제품 설명에 모니터 본체임을 명확히 하고 있으며, 액세서리나 부품, 손상된 제품과 관련된 언급이 없습니다. 또한, 상태가 새상품 또는 거의 새상품급으로 양호한 점이 특징입니다."
+    },
+    {
+      "id": "화이트-게이밍-모니터-victrack-게이밍-모니터",
+      "brand": "",
+      "model_name": "화이트 게이밍 모니터, VICTRACK 게이밍 모니터",
+      "aliases": [
+        "화이트 게이밍 모니터, VICTRACK 게이밍 모니터",
+        "게이밍 모니터",
+        "모니터 본체",
+        "주사율",
+        "사용",
+        "화면 문제 없음",
+        "스탠드",
+        "화이트",
+        "VICTRACK",
+        "1년 반 사용",
+        "네고 가능"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        0
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "두 개의 매물 모두 게이밍 모니터 본체를 판매하는 정상 매물로, 모니터암, 스탠드, 부품 등 액세서리나 부품 단독 판매가 아니며, 액정 파손이나 불량화소 등의 손상 언급도 없습니다. 또한, 각각의 설명에서 모니터 사용에 문제가 없음을 명확히 하고 있어 정상 모니터 본체로 분류됩니다."
+    },
+    {
+      "id": "aw2525hm",
+      "brand": "",
+      "model_name": "aw2525hm",
+      "aliases": [
+        "aw2525hm",
+        "모니터",
+        "하자 전혀 없음",
+        "구성품 전부 있음",
+        "3달",
+        "AS 문제 없음",
+        "설명서 없음",
+        "인쇄서 없음"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        6
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "해당 클러스터는 'aw2525hm' 모니터 본체를 판매하는 정상 매물로, 하자가 전혀 없고 구매한 지 3개월밖에 되지 않은 상태입니다. 구성품도 모두 포함되어 있으며, 제품 설명서 및 인쇄서가 없지만 AS에 지장이 없다는 점에서 정상적인 모니터 본체 매물로 분류됩니다."
+    },
+    {
+      "id": "bg27fm3-pg248qp-mag275qf-xl2540k-유디아-25인치",
+      "brand": "",
+      "model_name": "BG27FM3, PG248QP, MAG275QF, XL2540K, 유디아 25인치",
+      "aliases": [
+        "BG27FM3, PG248QP, MAG275QF, XL2540K, 유디아 25인치",
+        "게이밍 모니터",
+        "인치",
+        "Hz",
+        "브랜드명",
+        "직거래",
+        "무결점",
+        "고주사율",
+        "상태 좋음",
+        "박스 없음",
+        "QHD"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        10
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 모두 게이밍 모니터 본체를 중심으로 한 정상 매물로 구성되어 있습니다. 제품명에 모니터 크기(25인치, 27인치 등), 주사율(240Hz, 165Hz, 540Hz 등), 브랜드(ASUS, MSI, 벤큐, 유디아 등)가 명확히 표기되어 있으며, 액세서리나 부품 단독 판매, 액정 파손이나 불량화소 관련 언급이 없습니다. 또한, 다수의 매물이 직거래를 선호하며, 상태가 양호하다는 설명이 포함되어 있어 정상 모니터 본체 매물임을 확신할 수 있습니다."
+    },
+    {
+      "id": "lg-울트라기어-27gl650f-기가바이트-gs27qa-rog-swift-oled-pg27aqdp",
+      "brand": "",
+      "model_name": "LG 울트라기어 27GL650F, 기가바이트 GS27QA, ROG SWIFT OLED PG27AQDP",
+      "aliases": [
+        "LG 울트라기어 27GL650F, 기가바이트 GS27QA, ROG SWIFT OLED PG27AQDP",
+        "27인치",
+        "게이밍 모니터",
+        "IPS",
+        "TN",
+        "FHD",
+        "QHD",
+        "144Hz",
+        "165Hz",
+        "180Hz",
+        "HDR"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        1
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 모두 27인치 이상의 게이밍 모니터 본체를 중심으로 한 정상 매물로 구성되어 있습니다. 제품 설명에 모니터 크기, 해상도, 주사율, 패널 종류, 연결 단자 등 모니터 본체의 주요 사양이 상세히 기재되어 있으며, 모니터암, 스탠드, 케이블 등 액세서리나 부품 단독 판매는 포함되어 있지 않습니다. 또한 액정파손, 불량화소 등 손상 관련 언급이 없고, 매입이나 구매 의뢰성 문구도 발견되지 않아 정상 모니터 본체 매물임이 명확합니다."
+    },
+    {
+      "id": "lg전자-27mp37vq",
+      "brand": "",
+      "model_name": "LG전자 27MP37VQ",
+      "aliases": [
+        "LG전자 27MP37VQ",
+        "모니터",
+        "LG전자",
+        "IPS",
+        "27인치",
+        "23인치",
+        "광시야각",
+        "터치모니터",
+        "본체",
+        "리모콘 포함",
+        "신품급"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        11
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 모두 LG전자 및 카멜 브랜드의 모니터 본체를 판매하는 정상 매물로, 모니터암, 스탠드, 케이블 등 부속품이나 부품 단독 판매가 아니며, 액정 파손이나 불량화소 등의 손상 언급도 없습니다. 또한, 각 매물은 단일 모니터 제품을 대상으로 하여 정상적인 모니터 본체 판매에 해당합니다."
+    },
+    {
+      "id": "msi-275qf-lg-울트라기어-gx",
+      "brand": "",
+      "model_name": "MSI 275QF, LG 울트라기어 GX",
+      "aliases": [
+        "MSI 275QF, LG 울트라기어 GX",
+        "새제품",
+        "미개봉",
+        "게이밍모니터",
+        "직거래",
+        "모니터",
+        "QHD",
+        "커브드",
+        "울트라기어",
+        "OLED",
+        "GX"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        9
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 모두 새제품 또는 미개봉 상태의 게이밍 모니터 본체를 판매하는 정상 매물로 구성되어 있습니다. 모니터암, 스탠드, 케이블 등 액세서리나 부품 단독 판매가 아니며, 액정 파손이나 불량화소 등 손상된 제품도 포함되어 있지 않습니다. 또한 TV, 태블릿 등 다른 카테고리 제품과 혼합되어 있지 않고, 여러 대 일괄 판매도 아닙니다. 따라서 정상적인 모니터 본체 판매로 분류됩니다."
+    },
+    {
+      "id": "tvlogic-lvm-171a-victrack-2-1k",
+      "brand": "",
+      "model_name": "TVLogic LVM-171A, VICTRACK 2.1K",
+      "aliases": [
+        "TVLogic LVM-171A, VICTRACK 2.1K",
+        "모니터",
+        "본체",
+        "IPS 패널",
+        "해상도",
+        "입력 단자",
+        "상태 정상",
+        "스탠드 포함",
+        "전원 케이블 포함",
+        "휴대용 모니터",
+        "거치대 포함"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        4
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "두 개의 대표 샘플 모두 모니터 본체를 판매하는 정상 매물로, 제품 설명에 모니터 크기, 해상도, 입력 단자, 상태 등이 상세히 기재되어 있습니다. 액세서리나 부품 단독 판매가 아니며, 액정 파손이나 불량화소 등의 손상 언급도 없습니다. 따라서 이 클러스터는 정상 작동하는 모니터 본체 매물로 분류됩니다."
+    }
+  ]
+}

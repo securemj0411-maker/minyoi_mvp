@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "category": "speaker_audio_discovered",
+  "generated_at": "2026-05-10T18:41:29.284Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [],
+  "cluster_evidence": []
+}

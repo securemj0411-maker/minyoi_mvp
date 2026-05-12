@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "category": "camera_discovered",
+  "generated_at": "2026-05-10T18:36:24.821Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [],
+  "cluster_evidence": [
+    {
+      "cluster_id": 3,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 카메라 본체가 아닌 가죽 케이스, 탑핸들, 카메라 케이스 등 카메라 본체를 보완하거나 보호하는 액세서리 제품들로 구성되어 있습니다. 따라서 카메라 바디 본체나 키트가 아닌 액세서리로 분류하는 것이 적합합니다.",
+      "evidence_terms": [
+        "케이스",
+        "가죽케이스",
+        "탑핸들",
+        "유니버셜",
+        "박스 포함",
+        "증정",
+        "로케이팅",
+        "마운트 포인트",
+        "액세서리"
+      ]
+    }
+  ]
+}

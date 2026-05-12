@@ -1,27 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { requireDebugAdmin } from "@/lib/debug-admin";
 import { sendOperationalTestAlert } from "@/lib/operational-notifier";
 
 export const maxDuration = 30;
 
-function authorized(req: NextRequest, bodySecret: unknown) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return true;
-  const auth = req.headers.get("authorization");
-  return auth === `Bearer ${secret}` || bodySecret === secret;
-}
-
 export async function POST(req: NextRequest) {
-  let body: { secret?: string } = {};
-  try {
-    body = (await req.json()) as { secret?: string };
-  } catch {
-    body = {};
-  }
-
-  if (!authorized(req, body.secret)) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
-  }
+  const auth = await requireDebugAdmin(req);
+  if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
 
   const result = await sendOperationalTestAlert();
   return NextResponse.json({

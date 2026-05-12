@@ -1,15 +1,7 @@
 import PackShop from "@/components/pack-shop";
-import { loadInventory, type InventorySnapshot } from "@/lib/pack-open";
-
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+import { getLandingKpis, getLandingShowcases } from "@/lib/landing-showcases";
 
 export default async function Home() {
-  let inventory: InventorySnapshot[] = [];
-  try {
-    inventory = await loadInventory();
-  } catch {
-    inventory = [];
-  }
-  return <PackShop initialInventory={inventory} />;
+  const [showcases, kpis] = await Promise.all([getLandingShowcases(), getLandingKpis()]);
+  return <PackShop showcases={showcases} kpis={kpis} />;
 }

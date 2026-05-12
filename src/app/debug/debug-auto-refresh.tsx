@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 
 type DebugAutoRefreshProps = {
   intervalSeconds?: number;
+  defaultEnabled?: boolean;
 };
 
 function nowLabel() {
@@ -17,12 +18,13 @@ function nowLabel() {
   }).format(new Date());
 }
 
-export function DebugAutoRefresh({ intervalSeconds = 10 }: DebugAutoRefreshProps) {
+export function DebugAutoRefresh({ intervalSeconds = 60, defaultEnabled = true }: DebugAutoRefreshProps) {
   const router = useRouter();
-  const [enabled, setEnabled] = useState(true);
+  const [enabled, setEnabled] = useState(defaultEnabled);
   const [lastRefreshAt, setLastRefreshAt] = useState(nowLabel());
   const [isPending, startTransition] = useTransition();
-  const intervalMs = useMemo(() => Math.max(5, intervalSeconds) * 1000, [intervalSeconds]);
+  const effectiveIntervalSeconds = Math.max(30, intervalSeconds);
+  const intervalMs = useMemo(() => effectiveIntervalSeconds * 1000, [effectiveIntervalSeconds]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -62,7 +64,7 @@ export function DebugAutoRefresh({ intervalSeconds = 10 }: DebugAutoRefreshProps
         자동 {enabled ? "켜짐" : "꺼짐"}
       </button>
       <div className="text-xs text-zinc-500">
-        {intervalSeconds}초마다 갱신 · 마지막 {lastRefreshAt}
+        {effectiveIntervalSeconds}초마다 갱신 · 마지막 {lastRefreshAt}
       </div>
     </div>
   );

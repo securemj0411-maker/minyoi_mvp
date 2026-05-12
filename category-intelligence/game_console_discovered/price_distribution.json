@@ -1,0 +1,13 @@
+[
+  {
+    "key": "unknown",
+    "count": 36,
+    "min": 100000,
+    "p25": 267000,
+    "median": 320000,
+    "p75": 380000,
+    "max": 1000000,
+    "core_sample_count": 36,
+    "excluded_count": 124
+  }
+]

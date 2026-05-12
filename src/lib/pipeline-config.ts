@@ -29,10 +29,18 @@ export type PipelineRuntimeConfig = {
   tickDetailBudgetMs: number;
   tickScoreBudgetMs: number;
   tickDetailBatchSize: number;
+  terminalLifecycleRecheckBatchSize: number;
+  terminalLifecycleRecheckCooldownMs: number;
+  terminalLifecycleRecheckPreserveStatus: boolean;
   tickDetailLeaseSeconds: number;
   tickScoreLimit: number;
   marketStatsLimit: number;
   deepCrawlMaxPage: number;
+  sellerSearchRefreshMs: number;
+  rawTouchCoalesceActiveSeenOnly: boolean;
+  rawTouchCoalesceActiveSeenOnlyDryRun: boolean;
+  rawTouchCoalesceActiveSeenOnlyWindowMs: number;
+  rawTouchCoalesceActiveSeenOnlyNonPoolWindowMs: number;
 };
 
 function envInt(name: string, fallback: number, min: number, max: number): number {
@@ -50,6 +58,12 @@ function envIntAny(names: string[], fallback: number, min: number, max: number):
   return Math.max(min, Math.min(max, fallback));
 }
 
+function envBool(name: string, fallback: boolean): boolean {
+  const raw = process.env[name];
+  if (raw == null || raw.trim() === "") return fallback;
+  return ["1", "true", "yes", "on"].includes(raw.trim().toLowerCase());
+}
+
 function envQueries(): string[] {
   const raw = process.env.PIPELINE_SEARCH_QUERIES;
   if (!raw) return DEFAULT_SEARCH_QUERIES;
@@ -61,35 +75,50 @@ function envQueries(): string[] {
 }
 
 export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
-  const maxPagesPerQuery = envInt("PIPELINE_MAX_PAGES_PER_QUERY", 3, 1, 10);
-  const maxDetailLimit = envInt("PIPELINE_MAX_DETAIL_LIMIT", 120, 0, 500);
-  const maxDetailConcurrency = envInt("PIPELINE_MAX_DETAIL_CONCURRENCY", 4, 1, 10);
-  const maxAiReviewTopN = envInt("PIPELINE_MAX_AI_REVIEW_TOP_N", 30, 0, 200);
-  const maxAiReviewConcurrency = envInt("PIPELINE_MAX_AI_REVIEW_CONCURRENCY", 5, 1, 20);
+  const maxPagesPerQuery = envInt("PIPELINE_MAX_PAGES_PER_QUERY", 1, 1, 10);
+  const maxDetailLimit = envInt("PIPELINE_MAX_DETAIL_LIMIT", 60, 0, 500);
+  const maxDetailConcurrency = envInt("PIPELINE_MAX_DETAIL_CONCURRENCY", 2, 1, 10);
+  const maxAiReviewTopN = envInt("PIPELINE_MAX_AI_REVIEW_TOP_N", 10, 0, 200);
+  const maxAiReviewConcurrency = envInt("PIPELINE_MAX_AI_REVIEW_CONCURRENCY", 2, 1, 20);
+
+  const rawTouchCoalesceActiveSeenOnlyWindowMs = envInt("RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY_WINDOW_MS", 10 * 60 * 1000, 60 * 1000, 24 * 60 * 60 * 1000);
 
   return {
     searchQueries: envQueries(),
-    pagesPerQuery: envInt("PIPELINE_PAGES_PER_QUERY", 2, 1, maxPagesPerQuery),
+    pagesPerQuery: envInt("PIPELINE_PAGES_PER_QUERY", 1, 1, maxPagesPerQuery),
     maxPagesPerQuery,
-    searchDelayMs: envInt("PIPELINE_SEARCH_DELAY_MS", 200, 0, 3000),
-    detailLimit: envIntAny(["PIPELINE_DETAIL_LIMIT", "DETAIL_ENRICH_LIMIT"], 120, 0, maxDetailLimit),
+    searchDelayMs: envInt("PIPELINE_SEARCH_DELAY_MS", 100, 0, 3000),
+    detailLimit: envIntAny(["PIPELINE_DETAIL_LIMIT", "DETAIL_ENRICH_LIMIT"], 60, 0, maxDetailLimit),
     maxDetailLimit,
     detailConcurrency: envInt("PIPELINE_DETAIL_CONCURRENCY", 2, 1, maxDetailConcurrency),
     maxDetailConcurrency,
     detailDelayMs: envInt("PIPELINE_DETAIL_DELAY_MS", 300, 0, 5000),
-    aiReviewTopN: envIntAny(["PIPELINE_AI_REVIEW_TOP_N", "AI_REVIEW_TOP_N"], 30, 0, maxAiReviewTopN),
+    aiReviewTopN: envIntAny(["PIPELINE_AI_REVIEW_TOP_N", "AI_REVIEW_TOP_N"], 10, 0, maxAiReviewTopN),
     maxAiReviewTopN,
     aiReviewConcurrency: envIntAny(["PIPELINE_AI_REVIEW_CONCURRENCY", "AI_REVIEW_CONCURRENCY"], 5, 1, maxAiReviewConcurrency),
     maxAiReviewConcurrency,
     staleRunMinutes: envInt("PIPELINE_STALE_RUN_MINUTES", 3, 1, 60),
-    tickSearchBudgetMs: envInt("PIPELINE_TICK_SEARCH_BUDGET_MS", 20_000, 1_000, 120_000),
-    tickDetailBudgetMs: envInt("PIPELINE_TICK_DETAIL_BUDGET_MS", 45_000, 1_000, 120_000),
+    tickSearchBudgetMs: envInt("PIPELINE_TICK_SEARCH_BUDGET_MS", 15_000, 1_000, 120_000),
+    tickDetailBudgetMs: envInt("PIPELINE_TICK_DETAIL_BUDGET_MS", 20_000, 1_000, 120_000),
     tickScoreBudgetMs: envInt("PIPELINE_TICK_SCORE_BUDGET_MS", 10_000, 1_000, 120_000),
-    tickDetailBatchSize: envInt("PIPELINE_TICK_DETAIL_BATCH_SIZE", 40, 1, 200),
-    tickDetailLeaseSeconds: envInt("PIPELINE_TICK_DETAIL_LEASE_SECONDS", 150, 10, 900),
-    tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 300, 10, 2000),
-    marketStatsLimit: envInt("PIPELINE_MARKET_STATS_LIMIT", 3000, 100, 10000),
-    deepCrawlMaxPage: envInt("PIPELINE_DEEP_CRAWL_MAX_PAGE", 10, 1, 30),
+    tickDetailBatchSize: envInt("PIPELINE_TICK_DETAIL_BATCH_SIZE", 20, 1, 200),
+    terminalLifecycleRecheckBatchSize: envInt("PIPELINE_TERMINAL_LIFECYCLE_RECHECK_BATCH_SIZE", 10, 1, 50),
+    terminalLifecycleRecheckCooldownMs: envInt("PIPELINE_TERMINAL_LIFECYCLE_RECHECK_COOLDOWN_MS", 30 * 60 * 1000, 60 * 1000, 24 * 60 * 60 * 1000),
+    terminalLifecycleRecheckPreserveStatus: envBool("PIPELINE_TERMINAL_LIFECYCLE_RECHECK_PRESERVE_STATUS", false),
+    tickDetailLeaseSeconds: envInt("PIPELINE_TICK_DETAIL_LEASE_SECONDS", 90, 10, 900),
+    tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 150, 10, 2000),
+    marketStatsLimit: envInt("PIPELINE_MARKET_STATS_LIMIT", 800, 100, 10000),
+    deepCrawlMaxPage: envInt("PIPELINE_DEEP_CRAWL_MAX_PAGE", 3, 1, 30),
+    sellerSearchRefreshMs: envInt("PIPELINE_SELLER_SEARCH_REFRESH_MS", 3 * 60 * 60 * 1000, 10 * 60 * 1000, 24 * 60 * 60 * 1000),
+    rawTouchCoalesceActiveSeenOnly: envBool("RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY", false),
+    rawTouchCoalesceActiveSeenOnlyDryRun: envBool("RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY_DRY_RUN", false),
+    rawTouchCoalesceActiveSeenOnlyWindowMs,
+    rawTouchCoalesceActiveSeenOnlyNonPoolWindowMs: envInt(
+      "RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY_NON_POOL_WINDOW_MS",
+      rawTouchCoalesceActiveSeenOnlyWindowMs,
+      rawTouchCoalesceActiveSeenOnlyWindowMs,
+      24 * 60 * 60 * 1000,
+    ),
   };
 }
 

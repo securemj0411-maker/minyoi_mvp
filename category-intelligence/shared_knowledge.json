@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-09T11:31:40.131Z",
+  "updated_at": "2026-05-11T02:12:41.543Z",
   "notes": "Cross-category noise and SKU mining knowledge. Auto-suggested entries still require promotion review before production.",
   "noise_rules": [
     {
@@ -15,15 +15,15 @@
       "last_seen_at": "2026-05-09T08:43:50.583Z"
     },
     {
-      "keyword": "8핀",
-      "type": "parts",
+      "keyword": "게임보이",
+      "type": "accessory",
       "precision": 0.8,
-      "hit_count": 57,
+      "hit_count": 9,
       "categories": [
-        "airpods"
+        "game_console_body_narrow"
       ],
       "source": "mine-category-intelligence-v3",
-      "last_seen_at": "2026-05-09T08:33:32.449Z"
+      "last_seen_at": "2026-05-11T02:08:03.523Z"
     },
     {
       "keyword": "견적",
@@ -37,17 +37,29 @@
       "last_seen_at": "2026-05-09T11:28:52.873Z"
     },
     {
+      "keyword": "단품",
+      "type": "parts",
+      "precision": 1,
+      "hit_count": 11,
+      "categories": [
+        "earphone_discovered"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-10T15:32:31.121Z"
+    },
+    {
       "keyword": "매입",
       "type": "buying",
       "precision": 1,
       "categories": [
         "smartphone",
         "tablet",
-        "laptop"
+        "laptop",
+        "game_console_body_narrow"
       ],
       "source": "seed",
       "hit_count": 121,
-      "last_seen_at": "2026-05-09T11:31:40.130Z"
+      "last_seen_at": "2026-05-11T02:12:41.542Z"
     },
     {
       "keyword": "매입업체",
@@ -83,6 +95,17 @@
       "last_seen_at": "2026-05-09T08:03:36.468Z"
     },
     {
+      "keyword": "무료증정",
+      "type": "multi",
+      "precision": 1,
+      "hit_count": 3,
+      "categories": [
+        "monitor_discovered"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-10T18:11:11.728Z"
+    },
+    {
       "keyword": "무선",
       "type": "accessory",
       "precision": 0.8,
@@ -92,17 +115,6 @@
       ],
       "source": "mine-category-intelligence-v3",
       "last_seen_at": "2026-05-09T08:43:50.583Z"
-    },
-    {
-      "keyword": "문제",
-      "type": "parts",
-      "precision": 1,
-      "hit_count": 53,
-      "categories": [
-        "airpods"
-      ],
-      "source": "mine-category-intelligence-v3",
-      "last_seen_at": "2026-05-09T08:33:32.449Z"
     },
     {
       "keyword": "번톡",
@@ -117,21 +129,6 @@
     },
     {
       "keyword": "부품용",
-      "type": "parts",
-      "precision": 1,
-      "categories": [
-        "smartphone",
-        "tablet",
-        "laptop",
-        "airpods",
-        "applewatch"
-      ],
-      "source": "seed",
-      "hit_count": 93,
-      "last_seen_at": "2026-05-09T08:39:05.251Z"
-    },
-    {
-      "keyword": "부품용",
       "type": "damaged",
       "precision": 0.8,
       "hit_count": 114,
@@ -140,17 +137,6 @@
       ],
       "source": "mine-category-intelligence-v3",
       "last_seen_at": "2026-05-09T11:23:08.391Z"
-    },
-    {
-      "keyword": "부품용으로",
-      "type": "parts",
-      "precision": 1,
-      "hit_count": 53,
-      "categories": [
-        "applewatch"
-      ],
-      "source": "mine-category-intelligence-v3",
-      "last_seen_at": "2026-05-09T08:39:05.251Z"
     },
     {
       "keyword": "부품용으로",
@@ -171,11 +157,13 @@
         "smartphone",
         "tablet",
         "laptop",
-        "applewatch"
+        "applewatch",
+        "game_console_discovered",
+        "game_console_body_narrow"
       ],
       "source": "seed",
       "hit_count": 59,
-      "last_seen_at": "2026-05-09T11:28:52.873Z"
+      "last_seen_at": "2026-05-11T02:12:41.542Z"
     },
     {
       "keyword": "삽니다",
@@ -235,6 +223,17 @@
       "last_seen_at": "2026-05-09T08:33:32.449Z"
     },
     {
+      "keyword": "유닛",
+      "type": "parts",
+      "precision": 1,
+      "hit_count": 35,
+      "categories": [
+        "earphone_discovered"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-10T15:32:31.121Z"
+    },
+    {
       "keyword": "이상",
       "type": "damaged",
       "precision": 1,
@@ -273,10 +272,12 @@
       "precision": 1,
       "hit_count": 98,
       "categories": [
-        "smartphone"
+        "smartphone",
+        "game_console_discovered",
+        "game_console_body_narrow"
       ],
       "source": "mine-category-intelligence-v3",
-      "last_seen_at": "2026-05-09T11:28:52.873Z"
+      "last_seen_at": "2026-05-11T02:12:41.542Z"
     },
     {
       "keyword": "출장",
@@ -335,6 +336,17 @@
       ],
       "source": "mine-category-intelligence-v3",
       "last_seen_at": "2026-05-09T07:58:46.639Z"
+    },
+    {
+      "keyword": "풀세트",
+      "type": "multi",
+      "precision": 0.8,
+      "hit_count": 6,
+      "categories": [
+        "monitor_discovered"
+      ],
+      "source": "mine-category-intelligence-v3",
+      "last_seen_at": "2026-05-10T18:11:11.728Z"
     },
     {
       "keyword": "프로",

@@ -1,6 +1,12 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  bandFromProfit,
+  computePoolConfidence,
+  poolMaxExposure,
+  poolSkipReason,
+} from "../src/lib/pool-policy.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const appDir = path.join(__dirname, "..");
@@ -26,31 +32,6 @@ await loadEnvFile(path.join(appDir, ".env"));
 const SELLING_FEE_RATE = 0.035;
 const RESELL_SHIPPING_FEE = 3500;
 const SAFETY_BUFFER = 5000;
-const POOL_CONFIDENCE_FLOOR = 0.7;
-const POOL_BLOCK_FLAGS = [
-  "coarse_market_price",
-  "option_parse_review",
-  "option_needs_review",
-  "ai_review_unavailable",
-  "weak_description",
-  "risk_keyword_review",
-];
-const CATEGORY_POOL_STATUS = {
-  earphone: "ready",
-  smartwatch: "ready",
-  smartphone: "internal_only",
-  tablet: "internal_only",
-  laptop: "internal_only",
-  small_appliance: "blocked",
-};
-
-function bandFromProfit(profitMin, profitMax) {
-  const avg = Math.round((profitMin + profitMax) / 2);
-  if (avg >= 70_000) return 3;
-  if (avg >= 40_000) return 2;
-  if (avg >= 20_000) return 1;
-  return null;
-}
 
 function supabaseRestUrl() {
   const raw = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -103,6 +84,39 @@ async function fetchParsed(pids) {
   return new Map(rows.map((r) => [Number(r.pid), r]));
 }
 
+async function fetchActivePool() {
+  const url = `${supabaseRestUrl()}/mvp_candidate_pool?select=pid,status&status=in.(ready,reserved)&limit=5000`;
+  const res = await fetch(url, { headers: authHeaders() });
+  if (!res.ok) {
+    throw new Error(`fetchActivePool ${res.status}: ${await res.text()}`);
+  }
+  return res.json();
+}
+
+async function fetchRawListingTypes(pids) {
+  if (pids.length === 0) return new Map();
+  const rows = [];
+  for (let i = 0; i < pids.length; i += 200) {
+    const chunk = pids.slice(i, i + 200);
+    const url = `${supabaseRestUrl()}/mvp_raw_listings?select=pid,listing_type&pid=in.(${chunk.join(",")})`;
+    const res = await fetch(url, { headers: authHeaders() });
+    if (!res.ok) {
+      throw new Error(`fetchRawListingTypes ${res.status}: ${await res.text()}`);
+    }
+    rows.push(...await res.json());
+  }
+  return new Map(rows.map((r) => [Number(r.pid), r]));
+}
+
+async function fetchCategoryReadiness() {
+  const url = `${supabaseRestUrl()}/mvp_category_readiness?select=category,status`;
+  const res = await fetch(url, { headers: authHeaders() });
+  if (!res.ok) {
+    throw new Error(`fetchCategoryReadiness ${res.status}: ${await res.text()}`);
+  }
+  return new Map((await res.json()).map((row) => [row.category, row.status]));
+}
+
 async function upsertPool(rows) {
   if (rows.length === 0) return;
   const url = `${supabaseRestUrl()}/mvp_candidate_pool?on_conflict=pid`;
@@ -116,32 +130,56 @@ async function upsertPool(rows) {
   }
 }
 
-function computeConfidence(parseConfidence, scoreFlags) {
-  let c = Math.max(0, Math.min(1, Number(parseConfidence ?? 0.5) || 0.5));
-  const flags = scoreFlags ?? [];
-  if (flags.includes("ai_normal")) c = Math.min(1, c + 0.2);
-  if (flags.includes("ai_review_unavailable")) c = Math.max(0, c - 0.1);
-  if (flags.some((f) => typeof f === "string" && f.endsWith("_low_confidence"))) c = Math.max(0, c - 0.15);
-  return Math.round(c * 100) / 100;
+async function invalidatePoolRows(entries) {
+  if (entries.length === 0) return;
+  await Promise.all(entries.map(async (entry) => {
+    const url = `${supabaseRestUrl()}/mvp_candidate_pool?pid=eq.${entry.pid}&status=in.(ready,reserved)`;
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: authHeaders("return=minimal"),
+      body: JSON.stringify({
+        status: "invalidated",
+        invalidated_reason: entry.reason.slice(0, 120),
+        reserved_until: null,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+    if (!res.ok) {
+      throw new Error(`invalidatePoolRows ${res.status}: ${await res.text()}`);
+    }
+  }));
 }
 
-function hasPoolBlockFlag(scoreFlags) {
-  const flags = scoreFlags ?? [];
-  return flags.some((flag) => (
-    POOL_BLOCK_FLAGS.includes(flag) ||
-    (typeof flag === "string" && flag.endsWith("_low_confidence")) ||
-    (flag === "deep_discount_review" && !flags.includes("ai_normal"))
-  ));
+function categoryCanEnterPool(readinessMap, category) {
+  return readinessMap.get(category) === "ready";
 }
 
-function categoryCanEnterPool(category) {
-  return CATEGORY_POOL_STATUS[category] === "ready";
-}
+async function cleanupStaleActivePool(readinessMap) {
+  const active = await fetchActivePool();
+  const pids = active.map((row) => Number(row.pid)).filter(Number.isFinite);
+  if (pids.length === 0) return 0;
 
-function poolMaxExposure(band) {
-  if (band === 3) return 1;
-  if (band === 2) return 2;
-  return 3;
+  const [rawMap, parsedMap] = await Promise.all([
+    fetchRawListingTypes(pids),
+    fetchParsed(pids),
+  ]);
+
+  const invalidations = [];
+  for (const row of active) {
+    const pid = Number(row.pid);
+    const raw = rawMap.get(pid);
+    const parsed = parsedMap.get(pid);
+    const reason =
+      raw?.listing_type !== "normal" ? `raw_${raw?.listing_type ?? "missing"}` :
+      !parsed?.comparable_key ? "missing_comparable_key" :
+      parsed?.needs_review ? "option_needs_review" :
+      !categoryCanEnterPool(readinessMap, parsed?.category) ? `category_${parsed?.category ?? "missing"}_not_ready` :
+      null;
+    if (reason) invalidations.push({ pid, reason });
+  }
+
+  await invalidatePoolRows(invalidations);
+  return invalidations.length;
 }
 
 async function main() {
@@ -150,6 +188,9 @@ async function main() {
   let totalUpserted = 0;
   let totalSkipped = 0;
   const now = new Date().toISOString();
+  const readinessMap = await fetchCategoryReadiness();
+  const cleaned = await cleanupStaleActivePool(readinessMap);
+  console.log(`cleanup stale active pool invalidated=${cleaned}`);
 
   while (true) {
     const listings = await fetchListings(pageSize, offset);
@@ -185,24 +226,30 @@ async function main() {
       }
       const analysis = analysisMap.get(pid);
       const parsed = parsedMap.get(pid);
-      const confidence = computeConfidence(parsed?.parse_confidence, analysis?.score_flags);
-      if (
-        profitMin <= 0 ||
-        price >= skuMedian ||
-        Number(analysis?.risk_hits ?? 0) > 0 ||
-        !l.thumbnail_url ||
-        !categoryCanEnterPool(parsed?.category) ||
-        !parsed?.comparable_key ||
-        parsed?.needs_review ||
-        confidence < POOL_CONFIDENCE_FLOOR ||
-        hasPoolBlockFlag(analysis?.score_flags)
-      ) {
+      const scoreFlags = analysis?.score_flags ?? [];
+      const confidence = computePoolConfidence(parsed?.parse_confidence, scoreFlags);
+      const categoryReady = categoryCanEnterPool(readinessMap, parsed?.category);
+      const skipReason = poolSkipReason({
+        profitMin,
+        price,
+        skuMedian,
+        riskHits: Number(analysis?.risk_hits ?? 0),
+        thumbnailUrl: l.thumbnail_url,
+        categoryCanEnterPool: categoryReady,
+        categoryReason: `category_${parsed?.category ?? "missing"}_not_ready`,
+        comparableKey: parsed?.comparable_key,
+        needsReview: Boolean(parsed?.needs_review),
+        confidence,
+        scoreFlags,
+      });
+      if (skipReason) {
         totalSkipped += 1;
         continue;
       }
       poolRows.push({
         pid,
         profit_band: band,
+        category: parsed.category,
         expected_profit_min: profitMin,
         expected_profit_max: profitMax,
         score: Number(analysis?.score ?? 0),

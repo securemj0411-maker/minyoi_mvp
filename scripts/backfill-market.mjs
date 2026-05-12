@@ -47,6 +47,7 @@ const pages = intArg("pages", 10, 1, 30);
 const detailRounds = intArg("detail-rounds", 8, 0, 60);
 const detailDelayMs = intArg("detail-delay-ms", 1500, 0, 30_000);
 const pageDelayMs = intArg("page-delay-ms", 1500, 0, 30_000);
+const retries = intArg("retries", 1, 0, 5);
 
 async function call(pathname, timeoutMs = 90_000) {
   const ctrl = new AbortController();
@@ -77,6 +78,36 @@ async function call(pathname, timeoutMs = 90_000) {
   }
 }
 
+async function callWithRetry(label, pathname, timeoutMs = 90_000) {
+  let lastError = null;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await call(pathname, timeoutMs);
+    } catch (err) {
+      lastError = err;
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(JSON.stringify({
+        label,
+        attempt: attempt + 1,
+        maxAttempts: retries + 1,
+        error: message.slice(0, 500),
+      }));
+      if (attempt < retries) await sleep(2000 * (attempt + 1));
+    }
+  }
+  const message = lastError instanceof Error ? lastError.message : String(lastError);
+  return {
+    status: 0,
+    ms: 0,
+    body: {
+      result: {
+        error: message.slice(0, 500),
+        timedOut: /abort|timeout/i.test(message),
+      },
+    },
+  };
+}
+
 function summarize(label, result) {
   const r = result.body?.result ?? {};
   console.log(JSON.stringify({
@@ -91,6 +122,7 @@ function summarize(label, result) {
     poolUpserted: r.poolUpserted,
     poolSkipped: r.poolSkipped,
     timedOut: r.timedOut,
+    error: r.error,
     stageDurationsMs: r.stageDurationsMs,
   }));
 }
@@ -98,24 +130,24 @@ function summarize(label, result) {
 console.log(`market backfill start base=${base} pages=${pages} detailRounds=${detailRounds}`);
 
 for (let page = 1; page <= pages; page += 1) {
-  const result = await call(`/api/cron/deep-crawl?wait=1&page=${page}`);
+  const result = await callWithRetry(`deep-crawl:page-${page}`, `/api/cron/deep-crawl?wait=1&page=${page}`);
   summarize(`deep-crawl:page-${page}`, result);
   if (pageDelayMs > 0) await sleep(pageDelayMs);
 }
 
 for (let round = 1; round <= detailRounds; round += 1) {
-  const result = await call("/api/cron/detail-worker?wait=1");
+  const result = await callWithRetry(`detail-worker:${round}`, "/api/cron/detail-worker?wait=1");
   summarize(`detail-worker:${round}`, result);
   if (detailDelayMs > 0) await sleep(detailDelayMs);
 }
 
-const score = await call("/api/cron/tick?wait=1");
+const score = await callWithRetry("tick:score-refresh", "/api/cron/tick?wait=1");
 summarize("tick:score-refresh", score);
 
-const warm = await call("/api/cron/pool-warmer?wait=1");
+const warm = await callWithRetry("pool-warmer", "/api/cron/pool-warmer?wait=1");
 summarize("pool-warmer", warm);
 
-const clean = await call("/api/cron/housekeeper?wait=1", 45_000);
+const clean = await callWithRetry("housekeeper", "/api/cron/housekeeper?wait=1", 45_000);
 summarize("housekeeper", clean);
 
 console.log("market backfill done");

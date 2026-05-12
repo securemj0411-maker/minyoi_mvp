@@ -1,0 +1,257 @@
+{
+  "version": 1,
+  "category": "desktop_pc_discovered",
+  "generated_at": "2026-05-10T18:50:49.181Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [
+    {
+      "keyword": "프로",
+      "type": "accessory",
+      "precision": 0,
+      "hit_count": 40,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "모든 매물이 액세서리 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "오래된",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 11,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 전체 precision은 0.0입니다."
+    },
+    {
+      "keyword": "안전한",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 15,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물은 'noise' 타입이 아니므로 전체 precision은 0.0입니다."
+    },
+    {
+      "keyword": "해드리겠습니다",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 14,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "닉네임",
+      "type": "noise",
+      "precision": 0.2,
+      "hit_count": 11,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체적으로 5개 중 1개만 'noise' 타입으로 정확히 분류되어 정밀도는 0.2임."
+    },
+    {
+      "keyword": "번개톡으로",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 11,
+      "risk_flags": [
+        "transaction_or_sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'buying' 타입으로 적절하게 분류되어 정확도가 100%입니다."
+    },
+    {
+      "keyword": "정품키",
+      "type": "accessory",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "모든 매물이 액세서리 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "오피스2021",
+      "type": "accessory",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "모든 매물이 액세서리 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "거래내역",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 전체 precision은 0.0입니다."
+    },
+    {
+      "keyword": "000건",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "1등",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 19,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입으로 적절하게 분류되어 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "microsoft에서",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "출고된",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 noise 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "정품키만",
+      "type": "accessory",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "모든 매물이 액세서리 타입이 아니므로 전체 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "1대의",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "정품인증",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 10,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입으로 정확히 분류되어 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "지원됩니다",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물은 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "입력하면",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [
+        "generic_noise_type",
+        "verb_phrase_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "영구인증",
+      "type": "accessory",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "모든 매물이 액세서리 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "리테일",
+      "type": "accessory",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "모든 매물이 액세서리 타입이 아니므로 precision은 0.0입니다."
+    }
+  ],
+  "cluster_evidence": [
+    {
+      "cluster_id": 2,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 윈도우10, 윈도우11 프로 홈 정품키 및 오피스2021 정품키를 판매하는 목록들로, 데스크탑/PC 본체나 조립PC가 아닌 소프트웨어 라이선스 키를 판매하는 상품입니다. 따라서 데스크탑/PC 카테고리 내에서 핵심 제품인 완제품 본체가 아니며, 소프트웨어 정품키는 하드웨어 본체가 아닌 주변기기 또는 액세서리 성격으로 분류됩니다.",
+      "evidence_terms": [
+        "윈도우11",
+        "윈도우10",
+        "프로 홈",
+        "정품키",
+        "오피스2021",
+        "번개발송",
+        "영구인증",
+        "설치파일",
+        "설치메뉴얼",
+        "리테일 정품키"
+      ]
+    },
+    {
+      "cluster_id": 11,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 데스크탑/PC 부품 및 완제품을 직접 판매하는 매물이 아니라, 컴퓨터 부품 및 노트북 등 다양한 전자기기를 매입하는 광고성 매입글로 구성되어 있습니다. 따라서 정상적인 완제품 데스크탑 본체나 조립PC 본체가 아닌 매입을 목적으로 한 글들이며, 이는 category_hints에서 정의한 '매입글/출장매입/업자 광고' 유형에 부합합니다.",
+      "evidence_terms": [
+        "매입",
+        "최고가 매입",
+        "컴퓨터 부품",
+        "CPU",
+        "RAM",
+        "그래픽카드",
+        "출장매입",
+        "번개톡",
+        "매입절차",
+        "판매/매입"
+      ]
+    }
+  ]
+}

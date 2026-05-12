@@ -7,6 +7,8 @@ import {
   startCollectRun,
   type CollectRunRequestMeta,
 } from "@/lib/collect-logs";
+import { checkCronAuth } from "@/lib/cron-auth";
+import { acquireCronGuardWithSourceHealth, cronGuardSkipBody } from "@/lib/cron-guard";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runPoolWarmerPipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
@@ -77,13 +79,16 @@ function toPipelineResult(result: Awaited<ReturnType<typeof runPoolWarmerPipelin
 }
 
 async function handlePoolWarmer(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const auth = req.headers.get("authorization");
-  const authOk = !secret || auth === `Bearer ${secret}`;
-  const meta = requestMeta(req, authOk, authOk ? "authorized" : "invalid_or_missing_bearer");
+  const { authOk, authReason } = checkCronAuth(req);
+  const meta = requestMeta(req, authOk, authReason);
 
-  if (secret && !authOk) {
+  if (!authOk) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const guard = await acquireCronGuardWithSourceHealth("pool_warmer", req);
+  if (!guard.allowed) {
+    return NextResponse.json(cronGuardSkipBody(guard));
   }
 
   const config = loadPipelineRuntimeConfig();
@@ -101,6 +106,13 @@ async function handlePoolWarmer(req: NextRequest) {
       staleMarkedBeforeRun: staleMarked,
     },
   });
+  if (!run.id) {
+    guard.release();
+    return NextResponse.json(
+      { ok: false, mode: "pool_warmer", error: "supabase_unavailable_before_pipeline", ts: run.startedAt },
+      { status: 503 },
+    );
+  }
 
   try {
     const result = await runPoolWarmerPipeline();
@@ -127,6 +139,8 @@ async function handlePoolWarmer(req: NextRequest) {
       },
       { status: 500 },
     );
+  } finally {
+    guard.release();
   }
 }
 

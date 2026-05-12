@@ -85,6 +85,160 @@ const CATEGORIES = {
     clusterK: 12,
     aiHints: "소형가전/전자기기. 노이즈: 부품/고장/소모품/호환액세서리/구매글/다중상품. 정상: 중고 본체.",
   },
+  smartwatch_discovered: {
+    label: "Smartwatch From Bunjang Category",
+    categoryIds: ["600720100"],
+    queries: [
+      "애플워치", "애플워치 se", "애플워치 울트라", "갤럭시워치",
+      "갤럭시워치 클래식", "스마트워치",
+    ],
+    seedSkus: [
+      "apple-watch-se", "apple-watch-series", "apple-watch-ultra",
+      "galaxy-watch", "galaxy-watch-classic", "galaxy-watch-ultra",
+    ],
+    minNormalPrice: 50000,
+    clusterK: 12,
+    aiHints: "번개장터 600720100 스마트워치/밴드 카테고리. 정상: 애플워치/갤럭시워치 본체. 노이즈: 스트랩/밴드/충전기/보호필름/케이스 단독, 배터리 낮음, 액정파손, 매입글, 여러 모델 나열.",
+  },
+  headphone_discovered: {
+    label: "Headphone From Bunjang Category",
+    categoryIds: ["600500011"],
+    queries: [
+      "에어팟 맥스", "소니 헤드폰", "보스 헤드폰", "젠하이저 헤드폰",
+      "비츠 헤드폰", "무선 헤드폰",
+    ],
+    seedSkus: [
+      "airpods-max", "sony-wh-1000xm", "bose-qc", "bose-quietcomfort",
+      "sennheiser-headphone", "beats-headphone",
+    ],
+    minNormalPrice: 50000,
+    clusterK: 12,
+    aiHints: "번개장터 600500011 헤드폰 카테고리. 정상: 무선/유선 헤드폰 본체. 노이즈: 이어패드/케이스/케이블/거치대 단독, 가품/레플, 고장/한쪽 소리 안남, 매입글, 여러 제품 일괄.",
+  },
+  earphone_discovered: {
+    label: "Earphone From Bunjang Category",
+    categoryIds: ["600500010"],
+    queries: [
+      "에어팟 프로", "에어팟 프로2", "에어팟 4", "버즈 프로",
+      "버즈3 프로", "무선 이어폰",
+    ],
+    seedSkus: [
+      "airpods-pro", "airpods-pro-2", "airpods-4",
+      "galaxy-buds-pro", "galaxy-buds3-pro",
+    ],
+    minNormalPrice: 30000,
+    clusterK: 12,
+    aiHints: "번개장터 600500010 이어폰 카테고리. 정상: 양쪽 유닛+케이스 전체 본품. 노이즈: 한쪽 유닛/본체만/케이스만/이어팁/철가루방지 스티커, 가품/레플/호환, 고장/배터리 이상, 매입글.",
+  },
+  monitor_discovered: {
+    label: "Monitor From Bunjang Category",
+    categoryIds: ["600100007"],
+    queries: [
+      "게이밍 모니터", "LG 27인치 모니터", "삼성 오디세이 모니터",
+      "델 모니터", "벤큐 조위", "울트라와이드 모니터",
+    ],
+    seedSkus: [
+      "lg-monitor", "samsung-odyssey", "dell-monitor", "benq-zowie",
+      "ultrawide-monitor", "gaming-monitor",
+    ],
+    minNormalPrice: 30000,
+    clusterK: 12,
+    aiHints: "번개장터 600100007 모니터 카테고리. 정상: 모니터 본체. 노이즈: 모니터암/스탠드/어댑터/케이블/부품/패널 단독, 액정파손/멍/줄/번인/불량화소, 업자성 재고/전국설치, TV/태블릿/터치패널 혼합, 여러 대 일괄.",
+  },
+  game_console_discovered: {
+    label: "Game Console From Bunjang Category",
+    categoryIds: ["600600001", "600600002"],
+    queries: [
+      "닌텐도 스위치 OLED", "닌텐도 스위치 라이트", "닌텐도 스위치 본체",
+      "플스5 디스크", "플스5 디지털", "PS5 본체",
+    ],
+    seedSkus: [
+      "nintendo-switch-oled", "nintendo-switch-lite", "nintendo-switch",
+      "playstation-5-disc", "playstation-5-digital", "playstation-4-pro",
+    ],
+    minNormalPrice: 50000,
+    clusterK: 12,
+    aiHints: "번개장터 600600001/600600002 게임기 카테고리. 정상: 닌텐도 스위치/스위치 OLED/스위치 라이트/플레이스테이션 본체. 노이즈: 게임 타이틀/칩/팩 단독, 듀얼센스/조이콘/프로콘/충전독/케이스/파우치/스킨 등 액세서리 단독, 커펌/밴/고장/부품용, 계정/다운로드 코드, 여러 기기 일괄.",
+  },
+  game_console_body_narrow: {
+    label: "Game Console Body Narrow Mining",
+    categoryIds: ["600600001", "600600002"],
+    queryOnly: true,
+    queries: [
+      "닌텐도 스위치 OLED 본체", "닌텐도 스위치 OLED 풀박스",
+      "닌텐도 스위치 라이트 본체", "닌텐도 스위치 본체 풀박스",
+      "플스5 본체 디스크", "플스5 본체 디지털",
+      "PS5 본체", "플스5 슬림 본체",
+    ],
+    seedSkus: [
+      "nintendo-switch-oled-body", "nintendo-switch-lite-body",
+      "nintendo-switch-v2-body", "playstation-5-disc-body",
+      "playstation-5-digital-body", "playstation-5-slim-body",
+    ],
+    minNormalPrice: 100000,
+    clusterK: 10,
+    aiHints: "번개장터 게임기 카테고리의 본체 전용 좁은 마이닝. 이 config는 category page를 섞지 않고 검색어 기반으로만 수집한다. 정상: 닌텐도 스위치 OLED/라이트/구형·신형 본체, PS5 디스크/디지털/슬림 본체처럼 비교 가능한 콘솔 하드웨어. 노이즈: 게임 타이틀/칩/팩/CD/디스크 단독, 듀얼센스/조이콘/프로콘/독/충전기/케이스/파우치/그립캡/터치펜/하우징 단독, 커펌/밴/고장/부품용, 매입글, 여러 본체나 게임 다수 일괄.",
+  },
+  camera_discovered: {
+    label: "Camera Body From Bunjang Category",
+    categoryIds: ["600300001"],
+    queries: [
+      "소니 미러리스 바디", "캐논 미러리스 바디", "니콘 미러리스 바디",
+      "후지필름 미러리스 바디", "캐논 DSLR 바디", "소니 a7 바디",
+    ],
+    seedSkus: [
+      "sony-a7-series", "sony-a6000-series", "canon-eos-r",
+      "canon-eos-m", "nikon-z", "fujifilm-x-series",
+    ],
+    minNormalPrice: 80000,
+    clusterK: 12,
+    aiHints: "번개장터 600300001 DSLR/미러리스 카테고리. 정상: 카메라 바디 본체 또는 명확한 바디+기본 구성. 노이즈: 렌즈/필터/컨버터/가방/스트랩/배터리/충전기 단독, 렌즈 포함 키트와 바디 단품 혼합, 필름카메라/토이카메라/캠코더 혼입, 셔터막/센서/액정/AF 고장, 컷수 과다 또는 컷수 미상, 매입글, 여러 바디 일괄.",
+  },
+  speaker_audio_discovered: {
+    label: "Speaker Audio From Bunjang Category",
+    categoryIds: ["600500006"],
+    queries: [
+      "블루투스 스피커", "마샬 스피커", "보스 스피커",
+      "JBL 스피커", "앰프", "사운드바",
+    ],
+    seedSkus: [
+      "marshall-speaker", "bose-speaker", "jbl-speaker",
+      "sony-speaker", "soundbar", "amplifier",
+    ],
+    minNormalPrice: 20000,
+    clusterK: 12,
+    aiHints: "번개장터 600500006 스피커/앰프 카테고리. 정상: 블루투스 스피커/패시브 스피커/앰프/사운드바 본체 단품 또는 명확한 기본 구성. 노이즈: 케이블/리모컨/스탠드/브라켓/거치대/전원어댑터 단독, 이어폰/헤드폰/마이크/오디오 인터페이스 혼입, 차량용 오디오/카오디오, 고장/소리 안남/잡음/찢어짐/수리용, 여러 대 일괄/매장 정리, 매입글.",
+  },
+  desktop_pc_discovered: {
+    label: "Desktop PC From Bunjang Category",
+    categoryIds: ["600100006"],
+    queries: [
+      "게이밍 컴퓨터 본체", "조립PC 본체", "사무용 컴퓨터 본체",
+      "데스크탑 본체", "아이맥", "맥미니",
+    ],
+    seedSkus: [
+      "gaming-desktop", "office-desktop", "assembled-pc",
+      "imac", "mac-mini", "mac-studio",
+    ],
+    minNormalPrice: 50000,
+    clusterK: 12,
+    aiHints: "번개장터 600100006 데스크탑/PC 카테고리. 정상: 완제품 데스크탑 본체, 조립PC 본체, iMac/Mac mini/Mac Studio 본체. 노이즈: 그래픽카드/CPU/메인보드/RAM/SSD/HDD/케이스/파워/쿨러/부품 단독, 모니터/키보드/마우스 주변기기 단독, 폐컴퓨터/고장/부품용, PC방/사무실 대량 일괄, 매입글/출장매입/업자 광고, 견적글.",
+  },
+  home_appliance_tech_discovered: {
+    label: "Home Appliance Tech From Bunjang Category",
+    categoryIds: ["610500005", "610600", "610700003"],
+    queries: [
+      "다이슨 청소기", "로보락 로봇청소기", "드리미 로봇청소기",
+      "에어프라이어", "닌자 블렌더", "다이슨 에어랩",
+    ],
+    seedSkus: [
+      "dyson-vacuum", "roborock-robot-vacuum", "dreame-robot-vacuum",
+      "air-fryer", "ninja-blender", "dyson-airwrap",
+    ],
+    minNormalPrice: 20000,
+    clusterK: 12,
+    aiHints: "번개장터 생활/주방/미용 가전 discovery. 정상: 청소기/로봇청소기/에어프라이어/블렌더/헤어드라이어/에어랩 등 전자식 가전 본체와 명확한 기본 구성. 노이즈: 필터/브러시/배터리/거치대/어댑터/부품 단독, 화장품/소모품/식기/비전자 주방용품, 고장/수리용/부품용, 렌탈/설치형/대형가전 배송 리스크, 여러 제품 일괄, 매입글.",
+  },
 };
 
 const HEADERS = {
@@ -307,6 +461,56 @@ async function searchPage(query, page) {
     .filter((item) => item.pid);
 }
 
+function productArrayCandidates(value, arrays = []) {
+  if (Array.isArray(value)) {
+    const productLikeCount = value.filter(
+      (item) =>
+        item &&
+        typeof item === "object" &&
+        (item.pid || item.productId || item.productSeq) &&
+        (item.name || item.productName || item.title),
+    ).length;
+
+    if (productLikeCount > 0) arrays.push(value);
+    for (const item of value) productArrayCandidates(item, arrays);
+    return arrays;
+  }
+
+  if (value && typeof value === "object") {
+    for (const child of Object.values(value)) productArrayCandidates(child, arrays);
+  }
+
+  return arrays;
+}
+
+function extractCategoryProducts(payload, categoryId) {
+  const arrays = productArrayCandidates(payload);
+  const largest = arrays.sort((a, b) => b.length - a.length)[0] ?? [];
+  return largest
+    .filter((item) => item && typeof item === "object")
+    .map((item) => ({
+      pid: String(item.pid ?? item.productId ?? item.productSeq ?? ""),
+      name: String(item.name ?? item.productName ?? item.title ?? ""),
+      price: toInt(item.price ?? item.productPrice ?? item.salePrice),
+      numFaved: toInt(item.numFaved ?? item.num_faved ?? item.favoriteCount ?? item.faved),
+      query: `category:${categoryId}`,
+      categoryId,
+      freeShipping: item.free_shipping === true || item.free_shipping === "1",
+    }))
+    .filter((item) => item.pid);
+}
+
+async function categoryPage(categoryId, page, size = 60) {
+  const url = new URL("https://api.bunjang.co.kr/api/search/v8/pw/product/specs/category");
+  url.searchParams.set("categoryId", categoryId);
+  url.searchParams.set("order", "score");
+  url.searchParams.set("page", String(page));
+  url.searchParams.set("size", String(size));
+  const res = await fetch(url, { headers: HEADERS });
+  if (!res.ok) return [];
+  return extractCategoryProducts(await res.json(), categoryId);
+}
+
 async function fetchDetail(pid) {
   const url = `https://api.bunjang.co.kr/api/pms/v1/products/${pid}/detail/web`;
   const res = await fetch(url, { headers: HEADERS });
@@ -326,8 +530,17 @@ async function fetchDetail(pid) {
   };
 }
 
-async function collectSamples({ queries, limit, pages }) {
+async function collectSamples({ queries, categoryIds = [], limit, pages }) {
   const byPid = new Map();
+  for (const categoryId of categoryIds) {
+    for (let page = 0; page < pages; page++) {
+      const items = await categoryPage(categoryId, page);
+      for (const item of items) {
+        if (!byPid.has(item.pid)) byPid.set(item.pid, item);
+      }
+      await sleep(120);
+    }
+  }
   for (const query of queries) {
     for (let page = 0; page < pages; page++) {
       const items = await searchPage(query, page);
@@ -390,6 +603,26 @@ function cosineDist(a, b) {
   return 1 - dot / (Math.sqrt(magA) * Math.sqrt(magB) || 1);
 }
 
+function hashString(input) {
+  let h = 2166136261;
+  for (const ch of String(input ?? "")) {
+    h ^= ch.charCodeAt(0);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function seededRandom(seed) {
+  let state = hashString(seed) || 1;
+  return () => {
+    state += 0x6d2b79f5;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 function assignToCentroids(embeddings, centroids) {
   return embeddings.map((e) => {
     let best = 0, bestDist = Infinity;
@@ -416,10 +649,11 @@ function recomputeCentroids(embeddings, assignments, k) {
   return centroids;
 }
 
-function kMeans(embeddings, k, maxIter = 60) {
+function kMeans(embeddings, k, maxIter = 60, seed = "default") {
+  const random = seededRandom(seed);
   // k-means++ initialization
   const centroids = [];
-  const first = Math.floor(Math.random() * embeddings.length);
+  const first = Math.floor(random() * embeddings.length);
   centroids.push([...embeddings[first]]);
   while (centroids.length < k) {
     const dists = embeddings.map((e) => {
@@ -428,7 +662,7 @@ function kMeans(embeddings, k, maxIter = 60) {
       return minD;
     });
     const sum = dists.reduce((a, b) => a + b, 0);
-    let r = Math.random() * sum;
+    let r = random() * sum;
     for (let i = 0; i < dists.length; i++) {
       r -= dists[i];
       if (r <= 0) { centroids.push([...embeddings[i]]); break; }
@@ -637,6 +871,14 @@ async function labelCluster(clusterId, repSamples, clusterSize, category, config
         task: "Classify this cluster of similar listings. Identify their common listing type and distinctive patterns.",
         category,
         category_hints: config.aiHints,
+        classification_rules: [
+          "`normal` means a complete core product that matches the target product family in category_hints, not merely a legitimate marketplace listing.",
+          "Adjacent products outside the target family must not be labeled normal. Examples: game software/title/chip/pack for a console-hardware category, watch straps for smartwatch, cases/cables/stands for electronics.",
+          "Use `accessory` for usable adjacent items or accessories that are not the target core product.",
+          "Use `parts` for replacement parts, broken-for-repair items, or single component listings.",
+          "Use `multi` when several target products or product families are bundled so one comparable SKU cannot be inferred.",
+          "Only provide sku_hint for normal clusters that represent a target core product SKU.",
+        ],
         cluster_id: clusterId,
         cluster_size: clusterSize,
         representative_samples: compacted,
@@ -692,7 +934,7 @@ async function validateKeyword(keyword, expectedType, allSamples, apiKey) {
     `${s.name} ${s.description}`.toLowerCase().includes(keyword.toLowerCase())
   );
   if (hits.length === 0) return { keyword, expectedType, precision: 0, hitCount: 0, validated: false };
-  const sampleHits = hits.sort(() => Math.random() - 0.5).slice(0, 5).map((s) => ({
+  const sampleHits = hits.sort((a, b) => String(a.pid).localeCompare(String(b.pid))).slice(0, 5).map((s) => ({
     pid: s.pid,
     title: s.name,
     price: s.price,
@@ -724,10 +966,11 @@ async function validateKeyword(keyword, expectedType, allSamples, apiKey) {
 function priceDistributionFromClusters(samples, normalIndices, config) {
   const normalSamples = samples.filter((_, i) => normalIndices.has(i) && samples[i].price >= config.minNormalPrice);
 
-  // Group by rough model key (same regex as v1 for compatibility)
+  // Group by rough model key. Keep patterns category-scoped so a broad token
+  // such as "s20" in a camera title does not become a Galaxy price bucket.
   function roughKey(name) {
     const t = name.toLowerCase().replace(/\s+/g, "");
-    const patterns = [
+    const generalPatterns = [
       [/아이폰(1[1-6])(?:프로맥스|promax|pro max)/i, "iphone-$1-pro-max"],
       [/아이폰(1[1-6])(?:프로|pro)/i, "iphone-$1-pro"],
       [/아이폰(1[1-6])(?:플러스|plus)/i, "iphone-$1-plus"],
@@ -741,6 +984,78 @@ function priceDistributionFromClusters(samples, normalIndices, config) {
       [/아이패드미니/i, "ipad-mini"], [/맥북에어/i, "macbook-air"],
       [/맥북프로/i, "macbook-pro"],
     ];
+    const categoryPatterns = {
+      camera_discovered: [
+        [/소니(?:알파)?a7m?([2-5])|sonya7m?([2-5])/i, "sony-a7m$1$2"],
+        [/소니(?:알파)?a7c(?:ii|2)?|sonya7c(?:ii|2)?/i, "sony-a7c"],
+        [/소니a6([0-9]{3})|sonya6([0-9]{3})/i, "sony-a6$1$2"],
+        [/캐논(?:eos)?r6(?:mark2|mk2|ii|2)?|canoneosr6(?:mark2|mk2|ii|2)?/i, "canon-eos-r6"],
+        [/캐논(?:eos)?r8|canoneosr8/i, "canon-eos-r8"],
+        [/캐논(?:eos)?r10|canoneosr10/i, "canon-eos-r10"],
+        [/캐논(?:eos)?rp|canoneosrp/i, "canon-eos-rp"],
+        [/캐논(?:eos)?200d|canoneos200d/i, "canon-eos-200d"],
+        [/후지(?:필름)?x-t([0-9]{1,2})|fujix-t([0-9]{1,2})/i, "fujifilm-x-t$1$2"],
+        [/후지(?:필름)?x-s([0-9]{1,2})|fujix-s([0-9]{1,2})/i, "fujifilm-x-s$1$2"],
+        [/니콘z([0-9]{1,2})|nikonz([0-9]{1,2})/i, "nikon-z$1$2"],
+      ],
+      game_console_discovered: [
+        [/스위치oled|switcholed|닌텐도oled/i, "nintendo-switch-oled"],
+        [/스위치라이트|switchlite/i, "nintendo-switch-lite"],
+        [/스위치2|switch2/i, "nintendo-switch-2"],
+        [/닌텐도스위치|nintendoswitch|switch/i, "nintendo-switch"],
+        [/ps5|플스5|플레이스테이션5/i, "playstation-5"],
+        [/ps4|플스4|플레이스테이션4/i, "playstation-4"],
+      ],
+      game_console_body_narrow: [
+        [/스위치oled|switcholed|닌텐도oled/i, "nintendo-switch-oled"],
+        [/스위치라이트|switchlite/i, "nintendo-switch-lite"],
+        [/스위치2|switch2/i, "nintendo-switch-2"],
+        [/닌텐도스위치|nintendoswitch|switch/i, "nintendo-switch"],
+        [/ps5.{0,16}(디지털|digital)|(?:디지털|digital).{0,16}ps5/i, "playstation-5-digital"],
+        [/ps5.{0,16}(슬림|slim)|(?:슬림|slim).{0,16}ps5/i, "playstation-5-slim"],
+        [/ps5|플스5|플레이스테이션5/i, "playstation-5"],
+        [/ps4|플스4|플레이스테이션4/i, "playstation-4"],
+      ],
+      monitor_discovered: [
+        [/([2-4][0-9])인치.*?(fhd|qhd|uhd|4k).*?([1-3][0-9]{2})hz/i, "monitor-$1in-$2-$3hz"],
+        [/([2-4][0-9])인치.*?(fhd|qhd|uhd|4k)/i, "monitor-$1in-$2"],
+      ],
+      speaker_audio_discovered: [
+        [/마샬스탠모어 ?([1-3])|marshallstanmore ?([1-3])/i, "marshall-stanmore-$1$2"],
+        [/마샬액톤 ?([1-3])|marshallacton ?([1-3])/i, "marshall-acton-$1$2"],
+        [/마샬워번 ?([1-3])|marshallwoburn ?([1-3])/i, "marshall-woburn-$1$2"],
+        [/jblgo ?([2-4])/i, "jbl-go-$1"],
+        [/jblflip ?([4-7])/i, "jbl-flip-$1"],
+        [/jblcharge ?([4-6])/i, "jbl-charge-$1"],
+        [/브리츠(?:bz-)?([a-z0-9-]{3,})|britz(?:bz-)?([a-z0-9-]{3,})/i, "britz-$1$2"],
+        [/보스사운드링크|bosesoundlink/i, "bose-soundlink"],
+        [/lg(?:엑스붐|xboom)?pk([0-9])/i, "lg-pk$1"],
+      ],
+      desktop_pc_discovered: [
+        [/아이맥|imac/i, "imac"],
+        [/맥미니|macmini/i, "mac-mini"],
+        [/맥스튜디오|macstudio/i, "mac-studio"],
+        [/rtx ?(30[56789]0|40[56789]0|50[6789]0)/i, "desktop-rtx-$1"],
+        [/gtx ?(16[056]0)/i, "desktop-gtx-$1"],
+        [/i([3579])-?(1[0-5])세대/i, "desktop-intel-i$1-$2th"],
+        [/i([3579])-?(1[0-5])[0-9]{3}/i, "desktop-intel-i$1-$2th"],
+        [/라이젠 ?([3579])|ryzen ?([3579])/i, "desktop-ryzen-$1$2"],
+        [/게이밍(?:컴퓨터|pc|본체)|gamingpc/i, "gaming-desktop"],
+        [/사무용(?:컴퓨터|pc|본체)/i, "office-desktop"],
+      ],
+      home_appliance_tech_discovered: [
+        [/다이슨v([0-9]{1,2})|dysonv([0-9]{1,2})/i, "dyson-v$1$2"],
+        [/다이슨에어랩|dysonairwrap/i, "dyson-airwrap"],
+        [/다이슨슈퍼소닉|dysonsupersonic/i, "dyson-supersonic"],
+        [/로보락s([0-9]{1,2})|roborocks([0-9]{1,2})/i, "roborock-s$1$2"],
+        [/로보락q([0-9]{1,2})|roborockq([0-9]{1,2})/i, "roborock-q$1$2"],
+        [/드리미(?:x|l)?([0-9]{1,2})|dreame(?:x|l)?([0-9]{1,2})/i, "dreame-$1$2"],
+        [/닌자(?:블렌더|초퍼)|ninjablender/i, "ninja-blender"],
+        [/에어프라이어|airfryer/i, "air-fryer"],
+        [/로봇청소기/i, "robot-vacuum"],
+      ],
+    };
+    const patterns = categoryPatterns[config.key] ?? generalPatterns;
     for (const [pat, key] of patterns) {
       const m = t.match(pat);
       if (m) return key.replace(/\$(\d)/g, (_, i) => m[Number(i)] ?? "");
@@ -798,6 +1113,18 @@ function markdownCatalog({ config, category, generatedAt, clusterLabels, prices 
 
 function markdownNoise({ config, category, generatedAt, clusterLabels, validatedKeywords }) {
   const noiseClusters = clusterLabels.filter((c) => c.listing_type !== "normal" && c.listing_type !== "ambiguous");
+  const keywordRows = validatedKeywords.map((v) => {
+    const type = v.expectedType ?? "noise";
+    const riskFlags = keywordRiskFlags(v.keyword, type);
+    const approvalStatus = riskFlags.length
+      ? "blocked_needs_review"
+      : v.precision >= 0.80
+        ? "auto_approved_for_review"
+        : v.precision >= 0.60
+          ? "needs_human_review"
+          : "rejected";
+    return { ...v, type, riskFlags, approvalStatus };
+  });
   const lines = [
     `# ${config.label} — Noise Rule Suggestions (v2)`,
     "",
@@ -813,18 +1140,21 @@ function markdownNoise({ config, category, generatedAt, clusterLabels, validated
   for (const c of noiseClusters) {
     lines.push(`| ${c.cluster_id} | ${c.listing_type} | ${c.confidence} | ${(c.distinctive_keywords ?? []).slice(0, 5).join(", ")} | ${c.rationale_ko ?? "-"} |`);
   }
-  lines.push("", "## Auto-Validated Keywords", "", "> precision ≥ 0.80 → pipeline.ts에 추가 권장. 0.60~0.79 → 사람 검수 후 추가. < 0.60 → 제외.", "");
-  const approved = validatedKeywords.filter((v) => v.precision >= 0.80);
-  const review = validatedKeywords.filter((v) => v.precision >= 0.60 && v.precision < 0.80);
-  const rejected = validatedKeywords.filter((v) => v.precision < 0.60);
+  lines.push("", "## Auto-Validated Keywords", "", "> precision ≥ 0.80 이더라도 일반 판매 문구/모델군 단어/거래 문장은 자동 반영하지 않는다.", "");
+  const approved = keywordRows.filter((v) => v.approvalStatus === "auto_approved_for_review");
+  const review = keywordRows.filter((v) => v.approvalStatus !== "auto_approved_for_review" && v.approvalStatus !== "rejected");
+  const rejected = keywordRows.filter((v) => v.approvalStatus === "rejected");
   if (approved.length) {
-    lines.push("### ✅ 자동 승인 (precision ≥ 0.80)", "");
+    lines.push("### ✅ 자동 승인", "");
     for (const v of approved) lines.push(`- \`${v.keyword}\` — precision: ${v.precision.toFixed(2)}, hits: ${v.hitCount}${v.verdict ? ` — ${v.verdict}` : ""}`);
     lines.push("");
   }
   if (review.length) {
-    lines.push("### 🔍 사람 검수 필요 (0.60 ≤ precision < 0.80)", "");
-    for (const v of review) lines.push(`- \`${v.keyword}\` — precision: ${v.precision.toFixed(2)}, hits: ${v.hitCount}${v.verdict ? ` — ${v.verdict}` : ""}`);
+    lines.push("### 🔍 사람 검수/자동 차단", "");
+    for (const v of review) {
+      const risk = v.riskFlags.length ? ` / risk=${v.riskFlags.join(",")}` : "";
+      lines.push(`- \`${v.keyword}\` — ${v.type}, precision: ${v.precision.toFixed(2)}, hits: ${v.hitCount}${risk}${v.verdict ? ` — ${v.verdict}` : ""}`);
+    }
     lines.push("");
   }
   if (rejected.length) {
@@ -928,11 +1258,50 @@ function keywordRiskFlags(keyword, expectedType) {
     "아이패드",
     "tablet",
     "태블릿",
+    "nintendo",
+    "닌텐도",
+    "switch",
+    "스위치",
+    "playstation",
+    "플레이스테이션",
+    "플스",
+    "ps",
+    "ps2",
+    "ps3",
+    "ps4",
+    "ps5",
+    "psp",
+    "vita",
+    "psvita",
+    "ds",
+    "2ds",
+    "3ds",
+    "dsi",
+    "게임",
+    "게임기",
+    "타이틀",
+    "칩",
+    "팩",
   ]);
   if (!expectedType || expectedType === "noise") flags.push("generic_noise_type");
   if (!text || text.length < 2) flags.push("too_short");
+  const genericMarketWords = new Set([
+    "가격", "판매", "팝니다", "판매합니다", "연락주세요", "문의", "직거래",
+    "상품은", "이미지에", "상태", "있음", "반품", "택배", "평일",
+    "미개봉", "새상품", "소장용", "소장용으로", "비닐", "뜯지", "분들께",
+  ]);
+  if (genericMarketWords.has(text)) flags.push("generic_marketplace_word");
   if (["apple", "애플", "samsung", "삼성", "galaxy", "갤럭시", "iphone", "아이폰"].includes(text)) {
     flags.push("generic_brand_or_family");
+  }
+  if (
+    expectedType === "parts" &&
+    !/(유닛|본체만|케이스만|충전케이스|단품|낱개|왼쪽|오른쪽|좌측|우측|부분|한쪽|이어버드)/.test(text)
+  ) {
+    flags.push("parts_keyword_without_part_context");
+  }
+  if (expectedType !== "normal" && /(에어팟|airpods|버즈|buds|노캔|라이트닝|8핀|c타입|4세대|프로2|프로3)/.test(text)) {
+    flags.push("model_or_option_as_noise_keyword");
   }
   if (broadProductFamilyKeywords.has(text) && expectedType !== "accessory") {
     flags.push("broad_product_family_keyword");
@@ -946,7 +1315,10 @@ function keywordRiskFlags(keyword, expectedType) {
   if (/(입니다|합니다|있습니다|판매합니다|드립니다|재고는)$/.test(text)) {
     flags.push("sentence_fragment");
   }
-  if (/(택배비|배송비|안전결제|없으시면|주시면|문의|연락)/.test(text)) {
+  if (/(해서|하여|하고|되면|하면|하시면|하실|쓰실|보시면|드립니다|합니다)$/.test(text)) {
+    flags.push("verb_phrase_fragment");
+  }
+  if (/(택배비|배송비|안전결제|없으시면|주시면|문의|연락|번개톡)/.test(text)) {
     flags.push("transaction_or_sentence_fragment");
   }
   if (/^\d+$/.test(text)) flags.push("numeric_only");
@@ -1007,7 +1379,7 @@ function skuCandidateRiskFlags(cluster) {
     cluster.rationale_ko,
   ].join(" ").toLowerCase();
   const flags = [];
-  const commercialTerms = ["특가", "선착순", "완납폰", "제휴카드", "통신사", "개통", "재고", "유심", "할부"];
+  const commercialTerms = ["특가", "선착순", "완납폰", "제휴카드", "통신사", "개통", "재고", "유심", "할부", "맞춤", "초특가", "한정수량"];
   if (commercialTerms.some((term) => text.includes(term))) flags.push("commercial_or_bait_terms");
 
   const skuHintText = String(cluster.sku_hint ?? "").toLowerCase();
@@ -1021,15 +1393,35 @@ function skuCandidateRiskFlags(cluster) {
     /z\s*플립\s*([3-9])/gi,
     /갤럭시\s*z\s*폴드\s*([3-9])/gi,
     /z\s*폴드\s*([3-9])/gi,
+    /airpods?\s*(max|pro|[1-9])/gi,
+    /에어팟\s*(맥스|프로|[1-9]|4세대)/gi,
+    /애플워치\s*(se|울트라|[1-9])/gi,
+    /apple\s*watch\s*(se|ultra|[1-9])/gi,
+    /galaxy\s*watch\s*(classic|ultra|[1-9])/gi,
+    /갤럭시\s*워치\s*(클래식|울트라|[1-9])/gi,
+    /wh-?\s*1000xm\s*([3-9])/gi,
+    /xm\s*([3-9])/gi,
   ];
   for (const pattern of patterns) {
     for (const match of skuHintText.matchAll(pattern)) modelHits.add(match[0].replace(/\s+/g, ""));
   }
   if (modelHits.size >= 2) flags.push("multi_model_sku_hint");
 
+  const separatorCount = (String(cluster.sku_hint ?? "").match(/[,/|]/g) ?? []).length;
   if (/[,+/|]/.test(String(cluster.sku_hint ?? "")) && modelHits.size >= 2) {
     flags.push("separator_with_multiple_models");
   }
+  if (separatorCount >= 2) flags.push("many_separators_in_sku_hint");
+  if (/(다양한\s*사양|풀세트|풀셋트|사무용.*게이밍|게이밍.*사무용|및)/.test(String(cluster.sku_hint ?? ""))) {
+    flags.push("broad_bundle_or_usecase_sku_hint");
+  }
+
+  const genericAliasTerms = ["본체", "무선", "블루투스", "이어폰", "헤드폰", "헤드셋", "새상품", "미개봉", "정품"];
+  const aliases = cluster.distinctive_keywords ?? [];
+  const genericAliasCount = aliases.filter((alias) =>
+    genericAliasTerms.includes(String(alias).toLowerCase().replace(/\s+/g, ""))
+  ).length;
+  if (genericAliasCount >= 3) flags.push("generic_alias_heavy");
   return [...new Set(flags)];
 }
 
@@ -1121,6 +1513,7 @@ async function runCategory({ category, config, limit, pages, generatedAt, apiKey
     source: "bunjang",
     source_type: "marketplace_listing",
     label: config.label,
+    categoryIds: config.categoryIds ?? [],
     queries: config.queries,
     seedSkus: config.seedSkus ?? [],
     minNormalPrice: config.minNormalPrice,
@@ -1136,7 +1529,12 @@ async function runCategory({ category, config, limit, pages, generatedAt, apiKey
     console.log(`\n[${category}] reusing ${samples.length} samples`);
   } else {
     console.log(`\n[${category}] collecting (limit=${limit}, pages=${pages})`);
-    samples = await collectSamples({ queries: config.queries, limit, pages });
+    samples = await collectSamples({
+      queries: config.queries,
+      categoryIds: config.queryOnly ? [] : config.categoryIds ?? [],
+      limit,
+      pages,
+    });
     await writeFile(path.join(categoryDir, "samples.json"), JSON.stringify(samples, null, 2));
   }
   samples = samples.map(normalizeMarketplaceSample);
@@ -1165,7 +1563,7 @@ async function runCategory({ category, config, limit, pages, generatedAt, apiKey
   // Phase 3: K-means cluster
   const k = config.clusterK;
   console.log(`[${category}] clustering k=${k}...`);
-  const { assignments, centroids } = kMeans(embeddings, k);
+  const { assignments, centroids } = kMeans(embeddings, k, 60, category);
   const groups = clusterGroups(samples, assignments, k);
 
   // Phase 4: AI cluster labeling
@@ -1222,7 +1620,7 @@ async function runCategory({ category, config, limit, pages, generatedAt, apiKey
   }
 
   // Price distribution
-  const prices = priceDistributionFromClusters(samples, normalIndices, config);
+  const prices = priceDistributionFromClusters(samples, normalIndices, { ...config, key: category });
   const noiseRules = buildNoiseRules({ category, generatedAt, clusterLabels, validatedKeywords });
   const skuCatalog = buildSkuCatalog({ category, generatedAt, clusterLabels, prices });
 

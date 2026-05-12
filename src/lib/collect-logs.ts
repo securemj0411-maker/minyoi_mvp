@@ -78,6 +78,8 @@ type CollectRunRow = {
   created_at: string;
 };
 
+let lastStaleMarkAttemptAt = 0;
+
 export type CollectRunRequestMeta = {
   triggerSource: string;
   requestMethod: string;
@@ -157,35 +159,48 @@ async function insertRun(payload: Record<string, unknown>): Promise<CollectRunRo
   const base = restUrl();
   const h = headers("return=representation");
   if (!base || !h) return null;
-  const res = await fetch(`${base}/mvp_collect_runs`, {
-    method: "POST",
-    headers: h,
-    body: JSON.stringify([payload]),
-  });
-  if (!res.ok) return null;
-  const rows = (await res.json()) as CollectRunRow[];
-  return rows[0] ?? null;
+  try {
+    const res = await fetch(`${base}/mvp_collect_runs`, {
+      method: "POST",
+      headers: h,
+      body: JSON.stringify([payload]),
+      signal: AbortSignal.timeout(3_000),
+    });
+    if (!res.ok) return null;
+    const rows = (await res.json()) as CollectRunRow[];
+    return rows[0] ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function patchRun(id: string, payload: Record<string, unknown>): Promise<void> {
   const base = restUrl();
   const h = headers();
   if (!base || !h) return;
-  await fetch(`${base}/mvp_collect_runs?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: h,
-    body: JSON.stringify(payload),
-  });
+  try {
+    await fetch(`${base}/mvp_collect_runs?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: h,
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(3_000),
+    });
+  } catch {
+    // Logging must not make cron workers hang while Supabase is overloaded.
+  }
 }
 
 export async function markStaleCollectRuns(maxAgeMinutes = 3): Promise<number> {
+  const nowMs = Date.now();
+  if (nowMs - lastStaleMarkAttemptAt < 60_000) return 0;
+  lastStaleMarkAttemptAt = nowMs;
   const base = restUrl();
   const h = headers("return=representation");
   if (!base || !h) return 0;
   const cutoff = new Date(Date.now() - maxAgeMinutes * 60 * 1000).toISOString();
   const finishedAt = new Date().toISOString();
   const res = await fetch(
-    `${base}/mvp_collect_runs?status=eq.running&started_at=lt.${encodeURIComponent(cutoff)}`,
+    `${base}/mvp_collect_runs?status=eq.running&started_at=lt.${encodeURIComponent(cutoff)}&select=id`,
     {
       method: "PATCH",
       headers: h,
@@ -194,10 +209,11 @@ export async function markStaleCollectRuns(maxAgeMinutes = 3): Promise<number> {
         finished_at: finishedAt,
         error_message: `stale running run auto-marked after ${maxAgeMinutes}m`,
       }),
+      signal: AbortSignal.timeout(3_000),
     },
-  );
-  if (!res.ok) return 0;
-  const rows = (await res.json()) as CollectRunRow[];
+  ).catch(() => null);
+  if (!res?.ok) return 0;
+  const rows = (await res.json().catch(() => [])) as Array<{ id?: string }>;
   return rows.length;
 }
 

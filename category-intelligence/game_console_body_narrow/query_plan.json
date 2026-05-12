@@ -1,0 +1,31 @@
+{
+  "category": "game_console_body_narrow",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "Game Console Body Narrow Mining",
+  "categoryIds": [
+    "600600001",
+    "600600002"
+  ],
+  "queries": [
+    "닌텐도 스위치 OLED 본체",
+    "닌텐도 스위치 OLED 풀박스",
+    "닌텐도 스위치 라이트 본체",
+    "닌텐도 스위치 본체 풀박스",
+    "플스5 본체 디스크",
+    "플스5 본체 디지털",
+    "PS5 본체",
+    "플스5 슬림 본체"
+  ],
+  "seedSkus": [
+    "nintendo-switch-oled-body",
+    "nintendo-switch-lite-body",
+    "nintendo-switch-v2-body",
+    "playstation-5-disc-body",
+    "playstation-5-digital-body",
+    "playstation-5-slim-body"
+  ],
+  "minNormalPrice": 100000,
+  "clusterK": 10,
+  "aiHints": "번개장터 게임기 카테고리의 본체 전용 좁은 마이닝. 이 config는 category page를 섞지 않고 검색어 기반으로만 수집한다. 정상: 닌텐도 스위치 OLED/라이트/구형·신형 본체, PS5 디스크/디지털/슬림 본체처럼 비교 가능한 콘솔 하드웨어. 노이즈: 게임 타이틀/칩/팩/CD/디스크 단독, 듀얼센스/조이콘/프로콘/독/충전기/케이스/파우치/그립캡/터치펜/하우징 단독, 커펌/밴/고장/부품용, 매입글, 여러 본체나 게임 다수 일괄.\n교차 카테고리 지식: 3in1=accessory(p=1), 게임보이=accessory(p=0.8), 견적=buying(p=1), 단품=parts(p=1), 매입=buying(p=1), 매입업체=buying(p=1), 매입하는=buying(p=1), 맥세이프=accessory(p=1), 무료증정=multi(p=1), 번톡=buying(p=1), 부품용으로=damaged(p=1), 삽니다=buying(p=1), 삽니다=mixed(p=1), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=1), 오른쪽=parts(p=1), 유닛=parts(p=1), 이상=damaged(p=1), 일괄=accessory(p=1), 전문=buying(p=1), 최고가=buying(p=1), 출장=buying(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

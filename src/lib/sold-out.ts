@@ -4,6 +4,7 @@ export type SoldOutSignal =
   | "fetch_failed"
   | "sale_status_inactive"
   | "description_traded"
+  | "text_traded"
   | "price_zero"
   | "missing_data";
 
@@ -27,9 +28,49 @@ const TRADED_KEYWORDS = [
 
 const ACTIVE_SALE_STATUSES = new Set(["SELLING", "AVAILABLE", "ON_SALE", "ACTIVE", ""]);
 
+export function isActiveSaleStatus(value: unknown): boolean {
+  const status = String(value ?? "").trim().toUpperCase();
+  return ACTIVE_SALE_STATUSES.has(status);
+}
+
+function normalizedText(text: unknown) {
+  return String(text ?? "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function compactText(text: unknown) {
+  return normalizedText(text).replace(/\s+/g, "");
+}
+
+export function soldOutTextHits(...texts: unknown[]): string[] {
+  const raw = texts.map((text) => String(text ?? "")).join("\n");
+  const normalized = normalizedText(raw);
+  const compact = compactText(raw);
+  if (!normalized) return [];
+
+  const hits = TRADED_KEYWORDS.filter((keyword) => {
+    const normalizedKeyword = normalizedText(keyword);
+    const compactKeyword = compactText(keyword);
+    if (!normalizedKeyword || !compactKeyword) return false;
+    return normalized.includes(normalizedKeyword) || compact.includes(compactKeyword);
+  });
+
+  if (hits.length === 0) return [];
+  if (/(판매완료|거래완료|판매완|거래완|예약중|예약완료|구매완료)(?:아님|아니|아닙니다|전\s*아님|전\s*아니)/.test(compact)) {
+    return [];
+  }
+  if (/(판매완료|거래완료|판매완|거래완)(?:시|되면|후)(?:삭제|내림|내립니다)/.test(compact)) {
+    return [];
+  }
+  return [...new Set(hits)];
+}
+
 export function detectSoldOut(
   detail: DetailData | null,
   currentPrice?: number | null,
+  context?: { title?: string | null; description?: string | null },
 ): SoldOutSignal[] {
   const signals: SoldOutSignal[] = [];
   if (!detail) {
@@ -37,12 +78,16 @@ export function detectSoldOut(
     return signals;
   }
   const status = (detail.saleStatus ?? "").toString().trim().toUpperCase();
-  if (status && !ACTIVE_SALE_STATUSES.has(status)) {
+  if (status && !isActiveSaleStatus(status)) {
     signals.push("sale_status_inactive");
   }
   const desc = (detail.description ?? "").toLowerCase();
-  if (TRADED_KEYWORDS.some((kw) => desc.includes(kw.toLowerCase()))) {
+  if (soldOutTextHits(desc).length > 0) {
     signals.push("description_traded");
+  }
+  const contextText = [context?.title, context?.description].filter(Boolean).join("\n");
+  if (contextText && soldOutTextHits(contextText).length > 0) {
+    signals.push("text_traded");
   }
   if (currentPrice != null && currentPrice <= 0) {
     signals.push("price_zero");
@@ -61,6 +106,7 @@ export function hasStrongSoldOutSignal(signals: SoldOutSignal[]): boolean {
   return signals.some((signal) => (
     signal === "sale_status_inactive" ||
     signal === "description_traded" ||
+    signal === "text_traded" ||
     signal === "price_zero"
   ));
 }

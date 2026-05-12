@@ -1,0 +1,328 @@
+{
+  "version": 1,
+  "category": "headphone_discovered",
+  "generated_at": "2026-05-10T15:27:45.577Z",
+  "method": "v3_normal_cluster_to_sku_candidates",
+  "skus": [
+    {
+      "id": "에어팟맥스-2026-스타라이트",
+      "brand": "",
+      "model_name": "에어팟맥스 2026 스타라이트",
+      "aliases": [
+        "에어팟맥스 2026 스타라이트",
+        "에어팟맥스",
+        "단순개봉",
+        "2026",
+        "스타라이트",
+        "헤드폰",
+        "무선",
+        "본체",
+        "구매",
+        "신제품",
+        "정상"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        0
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "generic_alias_heavy"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "해당 클러스터는 '2026 에어팟맥스 단순개봉 스타라이트'라는 무선 헤드폰 본체를 단순개봉 상태로 판매하는 정상 매물로, 이어패드, 케이스, 케이블 등 액세서리나 부품 단독 판매가 아닌 완제품 본체임이 명확하여 normal 타입으로 분류하였습니다."
+    },
+    {
+      "id": "젠하이저-hd569-비츠-닥터드레-ep-소니-mdr-30-소니-mdr-zx310ap-b-o-포탈",
+      "brand": "",
+      "model_name": "젠하이저 HD569, 비츠 닥터드레 EP, 소니 MDR-30, 소니 MDR-ZX310AP, b&o 포탈",
+      "aliases": [
+        "젠하이저 HD569, 비츠 닥터드레 EP, 소니 MDR-30, 소니 MDR-ZX310AP, b&o 포탈",
+        "헤드폰",
+        "유선",
+        "무선",
+        "본체",
+        "정품",
+        "사용감",
+        "상태",
+        "박스 포함",
+        "모델명",
+        "음악 감상"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        11
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint",
+        "generic_alias_heavy"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 모두 유선 또는 무선 헤드폰 본체를 판매하는 정상 매물로 구성되어 있습니다. 이어패드, 케이블, 케이스 등 부속품 단독 판매나 고장, 부품용 매물은 포함되어 있지 않고, 제품 상태도 사용감이 적거나 중고 상태임을 명확히 표기하고 있습니다. 또한 매입글이나 여러 제품 일괄 판매, 가품 관련 내용도 없습니다."
+    },
+    {
+      "id": "airpods-max-8핀-스페이스-그레이",
+      "brand": "",
+      "model_name": "AirPods Max 8핀 스페이스 그레이",
+      "aliases": [
+        "AirPods Max 8핀 스페이스 그레이",
+        "에어팟 맥스",
+        "8핀",
+        "스페이스 그레이",
+        "헤드폰",
+        "헤드셋",
+        "풀박스",
+        "상태 A급",
+        "상태 S급",
+        "무선",
+        "본체"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        10
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "generic_alias_heavy"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 모두 에어팟 맥스 8핀 모델의 무선 헤드폰 본체를 판매하는 정상 매물로 구성되어 있습니다. 제품 상태가 S급, A급, lightly used 등으로 명확히 본체 상태를 설명하고 있으며, 부품용이나 액세서리 단독 판매, 고장 제품, 매입글 등이 포함되어 있지 않습니다. 따라서 정상적인 무선 헤드폰 본체 판매 매물로 분류됩니다."
+    },
+    {
+      "id": "apple-airpods-max",
+      "brand": "",
+      "model_name": "Apple AirPods Max",
+      "aliases": [
+        "Apple AirPods Max",
+        "에어팟 맥스",
+        "AirPods Max",
+        "미개봉",
+        "새상품",
+        "풀박스",
+        "정상 작동",
+        "실사용 5회 미만",
+        "스타라이트",
+        "라벤더",
+        "실버",
+        "헤드폰",
+        "C타입",
+        "노이즈 캔슬링",
+        "박스 보관",
+        "직거래"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        6,
+        9
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "generic_alias_heavy"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 에어팟 맥스(Apple AirPods Max) 헤드폰 본체의 새상품 및 거의 새것과 같은 상태의 정상 매물로 구성되어 있습니다. 이어패드, 케이스, 케이블 등 단독 액세서리나 부품, 고장품, 매입글이 포함되어 있지 않고, 모두 완전한 헤드폰 본체를 판매하는 정상 매물입니다. / 이 클러스터는 에어팟 맥스 헤드폰 본체의 정상 매물로 구성되어 있습니다. 대부분 미개봉 새상품 또는 거의 새것과 같은 상태로 판매되고 있으며, 이어패드, 케이스, 케이블 등 부속품 단독 판매나 고장, 부품용 매물은 포함되어 있지 않습니다. 또한 매입글이나 여러 제품 일괄 판매도 없고, 가품이나 레플 제품에 대한 언급도 없습니다. 따라서 정상적인 무선 헤드폰 본체 판매로 분류됩니다."
+    },
+    {
+      "id": "apple-airpods-max-1st-or-2nd-generation-usb-c-모델",
+      "brand": "",
+      "model_name": "Apple AirPods Max (1st or 2nd generation) USB-C 모델",
+      "aliases": [
+        "Apple AirPods Max (1st or 2nd generation) USB-C 모델",
+        "에어팟 맥스",
+        "C타입",
+        "미드나이트",
+        "풀박스",
+        "정품",
+        "실착 5회 미만",
+        "애플케어",
+        "상태 최상",
+        "헤드폰 본체",
+        "무선 헤드폰"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        8
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 모두 애플 에어팟 맥스 또는 에어팟 맥스2 모델의 무선 헤드폰 본체를 판매하는 정상 매물로 구성되어 있습니다. 제품 상태가 'LIKE_NEW' 또는 'LIGHTLY_USED'로 매우 양호하며, 풀박스 구성품과 추가 액세서리를 포함한 완제품 판매가 주를 이룹니다. 이어패드, 케이스, 케이블 등 단독 부품이나 액세서리만 판매하는 매물은 포함되어 있지 않고, 고장이나 가품 관련 언급도 없습니다."
+    },
+    {
+      "id": "apple-airpods-max-c타입",
+      "brand": "",
+      "model_name": "Apple AirPods Max C타입",
+      "aliases": [
+        "Apple AirPods Max C타입",
+        "에어팟 맥스",
+        "C타입",
+        "미개봉",
+        "새상품",
+        "애플",
+        "충전선",
+        "거치대",
+        "최상급",
+        "블루",
+        "퍼플",
+        "헤드폰",
+        "본체",
+        "박스",
+        "스마트케이스",
+        "미드나이트"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        3,
+        7
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "generic_alias_heavy"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 모두 애플 에어팟 맥스 헤드폰 본체를 판매하는 정상 매물로, 미개봉 새상품이나 사용감이 적은 상태의 제품들로 구성되어 있습니다. 이어패드, 충전선, 거치대 등 부속품이 포함된 경우도 있으나, 단독 액세서리나 부품 판매가 아니며, 고장이나 매입글도 포함되어 있지 않습니다. / 이 클러스터는 모두 애플 에어팟 맥스 C타입 모델의 무선 헤드폰 본체를 판매하는 정상 매물로 구성되어 있습니다. 제품 상태가 새것 또는 거의 새것 수준이며, 본체와 박스, 케이스 등 기본 구성품이 포함되어 있습니다. 이어패드, 케이블, 거치대 단독 판매나 부품용, 고장 제품, 매입글 등이 포함되어 있지 않아 정상 헤드폰 본체 매물로 분류됩니다."
+    },
+    {
+      "id": "bose-qc-ultra",
+      "brand": "",
+      "model_name": "Bose QC Ultra",
+      "aliases": [
+        "Bose QC Ultra",
+        "보스 QC 울트라",
+        "헤드폰",
+        "블루투스",
+        "노이즈캔슬링",
+        "정상작동",
+        "본체",
+        "중고",
+        "정품",
+        "상태 양호",
+        "직거래"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        4
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "generic_alias_heavy"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 보스 QC 울트라 헤드폰 본체를 판매하는 정상 매물로 구성되어 있습니다. 제품 상태가 'LIKE_NEW' 또는 'LIGHTLY_USED'로 양호하며, 이어패드, 케이블, 케이스 등 부속품 단독 판매나 고장, 부품용 매물은 포함되어 있지 않습니다. 또한 매입글이나 여러 제품 일괄 판매도 없고, 가품이나 레플 제품에 대한 언급도 없습니다. 따라서 정상적인 무선/유선 헤드폰 본체 판매 매물로 분류됩니다."
+    },
+    {
+      "id": "sony-wh-1000xm5",
+      "brand": "",
+      "model_name": "Sony WH-1000XM5",
+      "aliases": [
+        "Sony WH-1000XM5",
+        "소니",
+        "헤드폰",
+        "WH-1000XM5",
+        "WH-1000XM6",
+        "WH-ULT900N",
+        "케이스 포함",
+        "무선",
+        "블랙",
+        "정상 상태",
+        "박스 포함"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        5
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "multi_model_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 소니 WH-1000XM5, WH-1000XM6, WH-ULT900N 등 무선 헤드폰 본체를 판매하는 정상 매물로 구성되어 있습니다. 케이스, 케이블, 박스 등이 포함되어 있다는 설명이 많으며, 이어패드나 부품 단독 판매, 고장 제품, 매입글, 가품 관련 내용이 전혀 없고, 제품 상태도 'LIKE_NEW' 또는 'LIGHTLY_USED'로 양호한 상태임을 강조하고 있습니다. 따라서 이 클러스터는 정상적인 무선 헤드폰 본체 판매 매물로 분류됩니다."
+    },
+    {
+      "id": "sony-wh-1000xm5-sony-wh-1000xm6",
+      "brand": "",
+      "model_name": "Sony WH-1000XM5, Sony WH-1000XM6",
+      "aliases": [
+        "Sony WH-1000XM5, Sony WH-1000XM6",
+        "소니",
+        "WH-1000XM5",
+        "WH-1000XM6",
+        "헤드폰",
+        "무선",
+        "박스 포함",
+        "기능 이상 없음",
+        "실버",
+        "스모키 핑크",
+        "풀구성"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        1
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "multi_model_sku_hint",
+        "separator_with_multiple_models"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 소니 WH-1000XM5 및 WH-1000XM6 무선 헤드폰 본체를 판매하는 정상 매물로 구성되어 있습니다. 제품 상태가 'LIKE_NEW' 또는 'LIGHTLY_USED'로 양호하며, 이어패드, 케이블, 케이스 단독 판매나 부품용, 고장품, 매입글 등이 포함되어 있지 않습니다. 또한, 제품 설명에 기능 이상 없음, 박스 포함 여부, 구성품 완비 등의 정상적인 판매 조건이 명시되어 있어 정상 매물로 분류됩니다."
+    },
+    {
+      "id": "sony-wh-ch520",
+      "brand": "",
+      "model_name": "Sony WH-CH520",
+      "aliases": [
+        "Sony WH-CH520",
+        "소니",
+        "WH-CH520",
+        "무선 헤드폰",
+        "블루투스",
+        "화이트",
+        "블랙",
+        "그레이",
+        "풀박스",
+        "새상품",
+        "사용감 적음"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        2
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 모두 소니 WH-CH520 무선/블루투스 헤드폰 본체를 판매하는 정상 매물로 구성되어 있습니다. 이어패드, 케이스, 케이블 등 액세서리나 부품 단독 판매가 없고, 고장이나 한쪽 소리 안남 등의 문제를 언급하지 않아 정상 제품임이 명확합니다. 또한 매입글이나 여러 제품 일괄 판매도 포함되어 있지 않습니다."
+    }
+  ]
+}

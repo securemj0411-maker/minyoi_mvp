@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "category": "headphone_discovered",
+  "updated_at": "2026-05-10T21:12:06.609Z",
+  "instructions": [
+    "Set approved=true only for entries you want to promote into runtime.",
+    "Items with non-empty riskFlags are shown for review but are skipped by --apply until the underlying risk is fixed.",
+    "Set rejected=true for entries you explicitly do not want to see again.",
+    "Leave both false for pending review.",
+    "promote-catalog --apply reads only approved=true and rejected!=true entries."
+  ],
+  "items": [
+    {
+      "key": "sku:apple-airpods-max-1st-or-2nd-generation-usb-c-모델",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-airpods-max-1st-or-2nd-generation-usb-c-모델",
+      "modelName": "Apple AirPods Max (1st or 2nd generation) USB-C 모델",
+      "brand": "Apple",
+      "category": "earphone",
+      "aliases": [
+        "Apple AirPods Max (1st or 2nd generation) USB-C 모델",
+        "에어팟 맥스",
+        "C타입",
+        "미드나이트",
+        "풀박스",
+        "정품",
+        "실착 5회 미만",
+        "애플케어",
+        "상태 최상",
+        "헤드폰 본체",
+        "무선 헤드폰"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        8
+      ],
+      "riskFlags": [
+        "airpods_max_generation_ambiguous"
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-airpods-max-1st-or-2nd-generation-usb-c-모델",
+        "brand": "Apple",
+        "category": "earphone",
+        "modelName": "Apple AirPods Max (1st or 2nd generation) USB-C 모델",
+        "aliases": [
+          "Apple AirPods Max (1st or 2nd generation) USB-C 모델",
+          "에어팟 맥스",
+          "C타입",
+          "미드나이트",
+          "풀박스",
+          "정품",
+          "실착 5회 미만",
+          "애플케어",
+          "상태 최상",
+          "헤드폰 본체",
+          "무선 헤드폰"
+        ],
+        "mustContain": [
+          [
+            "Apple AirPods Max (1st or 2nd generation) USB-C 모델",
+            "에어팟 맥스",
+            "C타입",
+            "미드나이트",
+            "풀박스",
+            "정품",
+            "실착 5회 미만",
+            "애플케어",
+            "상태 최상",
+            "헤드폰 본체",
+            "무선 헤드폰"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "headphone_discovered",
+        "sourceClusterIds": [
+          8
+        ],
+        "promotionHash": "6d93058152adf635",
+        "riskFlags": [
+          "airpods_max_generation_ambiguous"
+        ]
+      }
+    },
+    {
+      "key": "sku:sony-wh-ch520",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "sony-wh-ch520",
+      "modelName": "Sony WH-CH520",
+      "brand": "Sony",
+      "category": "earphone",
+      "aliases": [
+        "Sony WH-CH520",
+        "소니",
+        "WH-CH520",
+        "무선 헤드폰",
+        "블루투스",
+        "화이트",
+        "블랙",
+        "그레이",
+        "풀박스",
+        "새상품",
+        "사용감 적음"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        2
+      ],
+      "riskFlags": [
+        "runtime_core_sku_duplicate"
+      ],
+      "note": "",
+      "candidate": {
+        "id": "sony-wh-ch520",
+        "brand": "Sony",
+        "category": "earphone",
+        "modelName": "Sony WH-CH520",
+        "aliases": [
+          "Sony WH-CH520",
+          "소니",
+          "WH-CH520",
+          "무선 헤드폰",
+          "블루투스",
+          "화이트",
+          "블랙",
+          "그레이",
+          "풀박스",
+          "새상품",
+          "사용감 적음"
+        ],
+        "mustContain": [
+          [
+            "Sony WH-CH520",
+            "소니",
+            "WH-CH520",
+            "무선 헤드폰",
+            "블루투스",
+            "화이트",
+            "블랙",
+            "그레이",
+            "풀박스",
+            "새상품",
+            "사용감 적음"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "headphone_discovered",
+        "sourceClusterIds": [
+          2
+        ],
+        "promotionHash": "e1564d095adcb5da",
+        "riskFlags": [
+          "runtime_core_sku_duplicate"
+        ]
+      }
+    }
+  ]
+}

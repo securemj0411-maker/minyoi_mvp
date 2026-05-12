@@ -1,0 +1,211 @@
+{
+  "version": 1,
+  "category": "earphone_discovered",
+  "updated_at": "2026-05-10T21:12:06.653Z",
+  "instructions": [
+    "Set approved=true only for entries you want to promote into runtime.",
+    "Items with non-empty riskFlags are shown for review but are skipped by --apply until the underlying risk is fixed.",
+    "Set rejected=true for entries you explicitly do not want to see again.",
+    "Leave both false for pending review.",
+    "promote-catalog --apply reads only approved=true and rejected!=true entries."
+  ],
+  "items": [
+    {
+      "key": "sku:에어팟-프로-2세대-c타입",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "에어팟-프로-2세대-c타입",
+      "modelName": "에어팟 프로 2세대 C타입",
+      "brand": "Apple",
+      "category": "earphone",
+      "aliases": [
+        "에어팟 프로 2세대 C타입",
+        "에어팟 프로2",
+        "C타입",
+        "본체",
+        "충전케이스",
+        "최상",
+        "하자없음",
+        "정상 작동",
+        "급처",
+        "상태좋음",
+        "박스X"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        0
+      ],
+      "riskFlags": [
+        "runtime_core_model_duplicate"
+      ],
+      "note": "",
+      "candidate": {
+        "id": "에어팟-프로-2세대-c타입",
+        "brand": "Apple",
+        "category": "earphone",
+        "modelName": "에어팟 프로 2세대 C타입",
+        "aliases": [
+          "에어팟 프로 2세대 C타입",
+          "에어팟 프로2",
+          "C타입",
+          "본체",
+          "충전케이스",
+          "최상",
+          "하자없음",
+          "정상 작동",
+          "급처",
+          "상태좋음",
+          "박스X"
+        ],
+        "mustContain": [
+          [
+            "에어팟 프로 2세대 C타입",
+            "에어팟 프로2",
+            "C타입",
+            "본체",
+            "충전케이스",
+            "최상",
+            "하자없음",
+            "정상 작동",
+            "급처",
+            "상태좋음",
+            "박스X"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "earphone_discovered",
+        "sourceClusterIds": [
+          0
+        ],
+        "promotionHash": "99e536f022fb9851",
+        "riskFlags": [
+          "runtime_core_model_duplicate"
+        ]
+      }
+    },
+    {
+      "key": "sku:airpods-pro2",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "airpods-pro2",
+      "modelName": "Airpods Pro2",
+      "brand": "Apple",
+      "category": "earphone",
+      "aliases": [
+        "Airpods Pro2",
+        "미개봉",
+        "에어팟 프로2",
+        "새상품",
+        "비닐 포장",
+        "안전결제",
+        "양쪽 유닛",
+        "본품",
+        "판매합니다",
+        "음향기기 업그레이드"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        7
+      ],
+      "riskFlags": [
+        "airpods_pro2_connector_missing"
+      ],
+      "note": "",
+      "candidate": {
+        "id": "airpods-pro2",
+        "brand": "Apple",
+        "category": "earphone",
+        "modelName": "Airpods Pro2",
+        "aliases": [
+          "Airpods Pro2",
+          "미개봉",
+          "에어팟 프로2",
+          "새상품",
+          "비닐 포장",
+          "안전결제",
+          "양쪽 유닛",
+          "본품",
+          "판매합니다",
+          "음향기기 업그레이드"
+        ],
+        "mustContain": [
+          [
+            "Airpods Pro2",
+            "미개봉",
+            "에어팟 프로2",
+            "새상품",
+            "비닐 포장",
+            "안전결제",
+            "양쪽 유닛",
+            "본품",
+            "판매합니다",
+            "음향기기 업그레이드"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "earphone_discovered",
+        "sourceClusterIds": [
+          7
+        ],
+        "promotionHash": "99857709c6635bc2",
+        "riskFlags": [
+          "airpods_pro2_connector_missing"
+        ]
+      }
+    },
+    {
+      "key": "noise:parts:유닛",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "parts",
+      "keyword": "유닛",
+      "precision": 1,
+      "hitCount": 35,
+      "riskFlags": [
+        "context_dependent_earphone_part_keyword"
+      ],
+      "note": "",
+      "candidate": {
+        "keyword": "유닛",
+        "type": "parts",
+        "precision": 1,
+        "hitCount": 35,
+        "promotionHash": "b01a279e666f436a",
+        "riskFlags": [
+          "context_dependent_earphone_part_keyword"
+        ]
+      }
+    },
+    {
+      "key": "noise:parts:단품",
+      "kind": "noise",
+      "approved": false,
+      "rejected": false,
+      "type": "parts",
+      "keyword": "단품",
+      "precision": 1,
+      "hitCount": 11,
+      "riskFlags": [
+        "context_dependent_earphone_part_keyword"
+      ],
+      "note": "",
+      "candidate": {
+        "keyword": "단품",
+        "type": "parts",
+        "precision": 1,
+        "hitCount": 11,
+        "promotionHash": "32b5c3d6b4c1b769",
+        "riskFlags": [
+          "context_dependent_earphone_part_keyword"
+        ]
+      }
+    }
+  ]
+}

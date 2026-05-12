@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { readFile } from "node:fs/promises";
+import type { ReactNode } from "react";
+import { DebugAdminGate } from "@/app/debug/debug-admin-gate";
 import { DebugAutoRefresh } from "@/app/debug/debug-auto-refresh";
 import { DebugResetPanel } from "@/app/debug/debug-reset-panel";
 import {
@@ -8,9 +12,28 @@ import {
   loadCategoryReadinessMap,
 } from "@/lib/category-readiness";
 import { loadCollectRuns, type CollectRun } from "@/lib/collect-logs";
+import { getCronGuardSnapshot } from "@/lib/cron-guard";
+import { requireDebugAdminFromCookies } from "@/lib/debug-admin";
+import {
+  bandFromProfit,
+  computePoolConfidence,
+  poolSkipReason,
+} from "@/lib/pool-policy.mjs";
+import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import type { Sku } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
+
+type DebugSearchParams = Record<string, string | string[] | undefined>;
+
+function firstSearchParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function isDiagnosticsEnabled(params: DebugSearchParams) {
+  const raw = firstSearchParam(params.diagnostics ?? params.full ?? params.heavy);
+  return raw === "1" || raw === "true" || raw === "on";
+}
 
 function formatTime(value: string | null) {
   if (!value) return "-";
@@ -79,6 +102,18 @@ function pct(part: number, total: number) {
   return `${Math.max(0, Math.min(100, Math.round((part / total) * 100)))}%`;
 }
 
+function hoursLabel(value: number | null) {
+  if (value == null || !Number.isFinite(Number(value))) return "-";
+  const hours = Number(value);
+  if (hours < 24) return `${Math.round(hours * 10) / 10}h`;
+  return `${Math.round((hours / 24) * 10) / 10}d`;
+}
+
+function rate(part: number, total: number) {
+  if (total <= 0) return 0;
+  return Math.max(0, Math.min(1, part / total));
+}
+
 function restUrl() {
   const raw = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!raw) return null;
@@ -98,6 +133,10 @@ function kstDateString(date = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(date);
 }
 
+function withAdminGate(children: ReactNode) {
+  return <DebugAdminGate>{children}</DebugAdminGate>;
+}
+
 type MarketPriceDebugRow = {
   comparable_key: string;
   active_sample_count: number;
@@ -107,6 +146,20 @@ type MarketPriceDebugRow = {
   active_median_price: number | null;
   sold_median_price: number | null;
   blended_median_price: number | null;
+};
+
+type MarketVelocityDebugRow = {
+  comparable_key: string;
+  category: Sku["category"] | null;
+  observed_sold_sample_count: number;
+  active_sample_count: number;
+  sold_24h_count: number;
+  sold_7d_count: number;
+  confidence: "high" | "medium" | "low";
+  median_hours_to_sold: number | null;
+  p25_hours_to_sold: number | null;
+  p75_hours_to_sold: number | null;
+  clock_basis: string;
 };
 
 type BottleneckRawRow = {
@@ -154,6 +207,7 @@ type PoolRow = {
 type RevealFeedbackRow = {
   pid: number;
   feedback_type: "interested" | "bought" | "missed_sold" | "bad_pick" | "watching";
+  note: string;
   updated_at: string;
 };
 
@@ -162,6 +216,16 @@ type FeedbackRawRow = {
   name: string;
   sku_name: string | null;
   price: number;
+};
+
+type FeedbackRevealRow = {
+  pid: number;
+  pack_open_id: number;
+};
+
+type FeedbackPackOpenRow = {
+  id: number;
+  band_requested: 1 | 2 | 3;
 };
 
 type SourceHealthDebugRow = {
@@ -190,44 +254,43 @@ type MarketInvalidationDebugRow = {
   last_recomputed_at: string | null;
 };
 
-const SELLING_FEE_RATE = 0.035;
-const RESELL_SHIPPING_FEE = 3500;
-const SAFETY_BUFFER = 5000;
-const POOL_CONFIDENCE_FLOOR = 0.7;
-const POOL_BLOCK_FLAGS = [
-  "coarse_market_price",
-  "market_confidence_low",
-  "market_stat_missing",
-  "option_parse_review",
-  "option_needs_review",
-  "ai_review_unavailable",
-  "weak_description",
-  "risk_keyword_review",
-];
+type ApprovalQueueReportRow = {
+  category: string;
+  key: string;
+  kind: "sku" | "noise";
+  id: string;
+  modelName: string;
+  brand: string;
+  runtimeCategory: string;
+  approved: boolean;
+  rejected: boolean;
+  status: "approved" | "pending" | "rejected";
+  riskFlags: string[];
+  aliasCount: number;
+  sourceClusterIds: number[];
+  note: string;
+};
 
-function bandFromProfit(profitMin: number, profitMax: number) {
-  const avg = Math.round((profitMin + profitMax) / 2);
-  if (avg >= 70_000) return 3;
-  if (avg >= 40_000) return 2;
-  if (avg >= 20_000) return 1;
-  return null;
-}
+type ApprovalQueueSummary = {
+  category: string;
+  updatedAt: string | null;
+  approved: number;
+  pending: number;
+  rejected: number;
+  total: number;
+  rows: ApprovalQueueReportRow[];
+};
 
-function poolConfidence(parseConfidence: number | null | undefined, flags: string[]) {
-  let confidence = Math.max(0, Math.min(1, Number(parseConfidence ?? 0.5) || 0.5));
-  if (flags.includes("ai_normal")) confidence = Math.min(1, confidence + 0.2);
-  if (flags.includes("ai_review_unavailable")) confidence = Math.max(0, confidence - 0.1);
-  if (flags.some((flag) => flag.endsWith("_low_confidence"))) confidence = Math.max(0, confidence - 0.15);
-  return Math.round(confidence * 100) / 100;
-}
-
-function poolBlockFlag(flags: string[]) {
-  return flags.some((flag) => (
-    POOL_BLOCK_FLAGS.includes(flag) ||
-    flag.endsWith("_low_confidence") ||
-    (flag === "deep_discount_review" && !flags.includes("ai_normal"))
-  ));
-}
+type ApprovalQueueReport = {
+  generatedAt: string;
+  totals: {
+    approved: number;
+    pending: number;
+    rejected: number;
+    total: number;
+  };
+  queues: ApprovalQueueSummary[];
+};
 
 function increment(map: Map<string, number>, key: string, by = 1) {
   map.set(key, (map.get(key) ?? 0) + by);
@@ -300,6 +363,23 @@ async function loadMarketPriceDebug() {
   };
 }
 
+async function loadMarketVelocityDebug() {
+  const today = kstDateString();
+  const rows = await restJson<MarketVelocityDebugRow[]>(
+    `/mvp_market_velocity_daily?select=comparable_key,category,observed_sold_sample_count,active_sample_count,sold_24h_count,sold_7d_count,confidence,median_hours_to_sold,p25_hours_to_sold,p75_hours_to_sold,clock_basis&date=eq.${today}&confidence=in.(high,medium)&order=observed_sold_sample_count.desc&limit=24`,
+    [],
+  );
+  return {
+    date: today,
+    total: rows.length,
+    high: rows.filter((row) => row.confidence === "high").length,
+    medium: rows.filter((row) => row.confidence === "medium").length,
+    observedSoldSamples: rows.reduce((sum, row) => sum + Number(row.observed_sold_sample_count ?? 0), 0),
+    activeSamples: rows.reduce((sum, row) => sum + Number(row.active_sample_count ?? 0), 0),
+    top: rows.slice(0, 8),
+  };
+}
+
 async function loadSourceHealthDebug() {
   return (await restJson<SourceHealthDebugRow[]>(
     "/mvp_source_health?select=status,previous_status,checked_at,window_minutes,detail_success_rate,detail_404_rate,detail_5xx_rate,sold_transition_rate,disappeared_transition_rate,search_result_count,baseline_json,hysteresis_json,reason&source=eq.bunjang&order=checked_at.desc&limit=1",
@@ -345,6 +425,35 @@ async function loadMarketInvalidationDebug() {
     topReasons,
     pendingTop,
   };
+}
+
+async function loadApprovalQueueDebug() {
+  try {
+    const raw = await readFile(`${process.cwd()}/reports/approval-queues-latest.json`, "utf-8");
+    const report = JSON.parse(raw) as ApprovalQueueReport;
+    const pendingRows = report.queues
+      .flatMap((queue) => queue.rows.filter((row) => row.status === "pending"))
+      .sort((a, b) => (b.riskFlags.length - a.riskFlags.length) || a.category.localeCompare(b.category, "ko"))
+      .slice(0, 12);
+    const riskRows = pendingRows.filter((row) => row.riskFlags.length > 0);
+    return {
+      ok: true,
+      generatedAt: report.generatedAt,
+      totals: report.totals,
+      queues: report.queues,
+      pendingRows,
+      riskRows,
+    };
+  } catch {
+    return {
+      ok: false,
+      generatedAt: null,
+      totals: { approved: 0, pending: 0, rejected: 0, total: 0 },
+      queues: [] as ApprovalQueueSummary[],
+      pendingRows: [] as ApprovalQueueReportRow[],
+      riskRows: [] as ApprovalQueueReportRow[],
+    };
+  }
 }
 
 async function loadBottleneckDebug() {
@@ -425,18 +534,23 @@ async function loadBottleneckDebug() {
     const profitMax = Math.max(0, skuMedian - estimatedBuyCost - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
     const profitMin = Math.max(0, skuMedian - (price + (shippingFeeGeneral ?? shippingFee)) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
     const band = bandFromProfit(profitMin, profitMax);
-    const confidence = poolConfidence(parsed?.parse_confidence, flags);
+    const confidence = computePoolConfidence(parsed?.parse_confidence, flags);
+    const skipReason = poolSkipReason({
+      profitMin,
+      price,
+      skuMedian,
+      riskHits: Number(analysis?.risk_hits ?? 0),
+      thumbnailUrl: listing.thumbnail_url ?? raw.thumbnail_url,
+      categoryCanEnterPool: readiness.canEnterPool,
+      categoryReason: readiness.reason,
+      comparableKey: parsed?.comparable_key,
+      needsReview: Boolean(parsed?.needs_review),
+      confidence,
+      scoreFlags: flags,
+    });
 
     if (band === null) increment(reasons, "profit_below_band");
-    else if (profitMin <= 0) increment(reasons, "profit_min_zero");
-    else if (price >= skuMedian) increment(reasons, "price_gte_median");
-    else if (!readiness.canEnterPool) increment(reasons, readiness.reason);
-    else if (Number(analysis?.risk_hits ?? 0) > 0) increment(reasons, "risk_hits");
-    else if (!listing.thumbnail_url && !raw.thumbnail_url) increment(reasons, "no_thumbnail");
-    else if (!parsed?.comparable_key) increment(reasons, "no_comparable_key");
-    else if (parsed.needs_review) increment(reasons, "parsed_needs_review");
-    else if (confidence < POOL_CONFIDENCE_FLOOR) increment(reasons, "confidence_below_0_7");
-    else if (poolBlockFlag(flags)) increment(reasons, "blocked_flag");
+    else if (skipReason) increment(reasons, skipReason);
     else {
       pass += 1;
       categoryStat.pass += 1;
@@ -471,35 +585,65 @@ async function loadBottleneckDebug() {
 
 async function loadFeedbackDebug() {
   const rows = await restJson<RevealFeedbackRow[]>(
-    "/mvp_reveal_feedback?select=pid,feedback_type,updated_at&order=updated_at.desc&limit=500",
+    "/mvp_reveal_feedback?select=pid,feedback_type,note,updated_at&order=updated_at.desc&limit=500",
     [],
   );
   const pids = [...new Set(rows.map((row) => Number(row.pid)).filter(Number.isFinite))];
-  const [rawRows, parsedRows] = await Promise.all([
+  const [rawRows, parsedRows, revealRows] = await Promise.all([
     loadPidChunked<FeedbackRawRow>(pids, (ids) => `/mvp_raw_listings?select=pid,name,sku_name,price&pid=in.(${ids})`),
     loadPidChunked<BottleneckParsedRow>(pids, (ids) => `/mvp_listing_parsed?select=pid,category,comparable_key,parse_confidence,needs_review,parsed_json&pid=in.(${ids})`),
+    loadPidChunked<FeedbackRevealRow>(pids, (ids) => `/mvp_pack_reveals?select=pid,pack_open_id&pid=in.(${ids})`),
   ]);
+  const packOpenIds = [...new Set(revealRows.map((row) => Number(row.pack_open_id)).filter(Number.isFinite))];
+  const packOpenRows = await restJson<FeedbackPackOpenRow[]>(
+    packOpenIds.length > 0
+      ? `/mvp_pack_opens?select=id,band_requested&id=in.(${packOpenIds.join(",")})`
+      : "/mvp_pack_opens?select=id,band_requested&limit=0",
+    [],
+  );
   const rawMap = mapRows(rawRows);
   const parsedMap = mapRows(parsedRows);
+  const revealOpenByPid = new Map<number, number>();
+  for (const row of revealRows) {
+    if (!revealOpenByPid.has(row.pid)) revealOpenByPid.set(row.pid, row.pack_open_id);
+  }
+  const bandByOpenId = new Map(packOpenRows.map((row) => [Number(row.id), row.band_requested]));
   const counts = new Map<string, number>();
   const categoryCounts = new Map<string, { category: string; total: number; bought: number; missedSold: number; badPick: number; interested: number }>();
+  const skuCounts = new Map<string, { skuName: string; category: string; total: number; bought: number; missedSold: number; badPick: number; interested: number }>();
+  const bandCounts = new Map<number, { band: number; total: number; bought: number; missedSold: number; badPick: number; interested: number; watching: number }>();
+  const pidCounts = new Map<number, { pid: number; name: string; skuName: string; category: string; badPick: number; missedSold: number; total: number; lastFeedbackAt: string }>();
+  const termCounts = new Map<string, number>();
   const flagged = new Map<number, {
     pid: number;
     name: string;
     skuName: string;
     category: string;
     feedbackType: string;
+    note: string;
+    updatedAt: string;
+  }>();
+  const noted = new Map<number, {
+    pid: number;
+    name: string;
+    skuName: string;
+    category: string;
+    feedbackType: string;
+    note: string;
     updatedAt: string;
   }>();
   const recentCutoff = Date.now() - 24 * 60 * 60 * 1000;
   let recent24h = 0;
+  const stopTerms = new Set(["이건", "너무", "그냥", "같음", "아님", "후보", "가격", "매물", "상세", "비교", "사진상"]);
 
   for (const row of rows) {
     const type = row.feedback_type;
     increment(counts, type);
     if (Date.parse(row.updated_at) >= recentCutoff) recent24h += 1;
+    const raw = rawMap.get(row.pid);
     const parsed = parsedMap.get(row.pid);
     const category = parsed?.category ?? categoryFromComparableKey(parsed?.comparable_key) ?? "unknown";
+    const skuName = raw?.sku_name ?? "-";
     const current = categoryCounts.get(category) ?? {
       category,
       total: 0,
@@ -515,14 +659,92 @@ async function loadFeedbackDebug() {
     if (type === "interested") current.interested += 1;
     categoryCounts.set(category, current);
 
+    const skuKey = `${category}:${skuName}`;
+    const sku = skuCounts.get(skuKey) ?? {
+      skuName,
+      category,
+      total: 0,
+      bought: 0,
+      missedSold: 0,
+      badPick: 0,
+      interested: 0,
+    };
+    sku.total += 1;
+    if (type === "bought") sku.bought += 1;
+    if (type === "missed_sold") sku.missedSold += 1;
+    if (type === "bad_pick") sku.badPick += 1;
+    if (type === "interested") sku.interested += 1;
+    skuCounts.set(skuKey, sku);
+
+    const band = bandByOpenId.get(revealOpenByPid.get(row.pid) ?? 0);
+    if (band) {
+      const bandRow = bandCounts.get(band) ?? {
+        band,
+        total: 0,
+        bought: 0,
+        missedSold: 0,
+        badPick: 0,
+        interested: 0,
+        watching: 0,
+      };
+      bandRow.total += 1;
+      if (type === "bought") bandRow.bought += 1;
+      if (type === "missed_sold") bandRow.missedSold += 1;
+      if (type === "bad_pick") bandRow.badPick += 1;
+      if (type === "interested") bandRow.interested += 1;
+      if (type === "watching") bandRow.watching += 1;
+      bandCounts.set(band, bandRow);
+    }
+
     if (type === "missed_sold" || type === "bad_pick") {
-      const raw = rawMap.get(row.pid);
+      const pidRow = pidCounts.get(row.pid) ?? {
+        pid: row.pid,
+        name: raw?.name ?? `pid ${row.pid}`,
+        skuName,
+        category,
+        badPick: 0,
+        missedSold: 0,
+        total: 0,
+        lastFeedbackAt: row.updated_at,
+      };
+      pidRow.total += 1;
+      if (type === "missed_sold") pidRow.missedSold += 1;
+      if (type === "bad_pick") pidRow.badPick += 1;
+      if (Date.parse(row.updated_at) > Date.parse(pidRow.lastFeedbackAt)) pidRow.lastFeedbackAt = row.updated_at;
+      pidCounts.set(row.pid, pidRow);
+    }
+
+    const note = row.note?.trim() ?? "";
+    if (note) {
+      for (const match of note.matchAll(/\[([^\]]{1,24})\]/g)) {
+        increment(termCounts, match[1]);
+      }
+      const plain = note.replace(/\[[^\]]+\]/g, " ");
+      for (const token of plain.split(/[\s,./|·:;!?()]+/).map((item) => item.trim()).filter(Boolean)) {
+        if (token.length < 2 || stopTerms.has(token)) continue;
+        increment(termCounts, token);
+      }
+    }
+
+    if (type === "missed_sold" || type === "bad_pick") {
       flagged.set(row.pid, {
         pid: row.pid,
         name: raw?.name ?? `pid ${row.pid}`,
-        skuName: raw?.sku_name ?? "-",
+        skuName,
         category,
         feedbackType: type,
+        note: row.note ?? "",
+        updatedAt: row.updated_at,
+      });
+    }
+    if (row.note?.trim()) {
+      noted.set(row.pid, {
+        pid: row.pid,
+        name: raw?.name ?? `pid ${row.pid}`,
+        skuName,
+        category,
+        feedbackType: type,
+        note: row.note.trim(),
         updatedAt: row.updated_at,
       });
     }
@@ -539,7 +761,33 @@ async function loadFeedbackDebug() {
       watching: counts.get("watching") ?? 0,
     },
     categoryRows: [...categoryCounts.values()].sort((a, b) => b.total - a.total),
+    skuRows: [...skuCounts.values()]
+      .map((row) => ({
+        ...row,
+        issueRate: rate(row.badPick + row.missedSold, row.total),
+      }))
+      .sort((a, b) => (b.issueRate - a.issueRate) || (b.total - a.total))
+      .slice(0, 8),
+    bandRows: [...bandCounts.values()]
+      .map((row) => ({
+        ...row,
+        positive: row.bought + row.interested,
+        negative: row.badPick + row.missedSold,
+        satisfactionRate: rate(row.bought + row.interested, row.total),
+        issueRate: rate(row.badPick + row.missedSold, row.total),
+      }))
+      .sort((a, b) => a.band - b.band),
+    topProblemRows: [...pidCounts.values()]
+      .sort((a, b) => (b.badPick + b.missedSold) - (a.badPick + a.missedSold) || Date.parse(b.lastFeedbackAt) - Date.parse(a.lastFeedbackAt))
+      .slice(0, 8),
+    termRows: [...termCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([term, count]) => ({ term, count })),
     flaggedRows: [...flagged.values()]
+      .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
+      .slice(0, 8),
+    notedRows: [...noted.values()]
       .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
       .slice(0, 8),
   };
@@ -555,6 +803,7 @@ function pipelineMode(run: CollectRun) {
   const path = run.requestPath ?? "";
   if (path.includes("/detail-worker")) return "detail_worker";
   if (path.includes("/deep-crawl")) return "deep_crawl";
+  if (path.includes("/lifecycle-worker") && (path.includes("terminal-recheck") || path.includes("terminal_recheck"))) return "lifecycle_terminal_recheck";
   if (path.includes("/lifecycle-worker")) return "lifecycle_worker";
   if (path.includes("/pool-warmer")) return "pool_warmer";
   if (path.includes("/housekeeper")) return "housekeeper";
@@ -570,6 +819,7 @@ function pipelineModeLabel(mode: string) {
     detail_worker: "Detail",
     deep_crawl: "Deep crawl",
     lifecycle_worker: "Lifecycle",
+    lifecycle_terminal_recheck: "Lifecycle terminal",
     market_worker: "Market",
     pool_warmer: "Warmer",
     housekeeper: "Housekeeper",
@@ -577,6 +827,15 @@ function pipelineModeLabel(mode: string) {
     unknown: "Unknown",
   };
   return labels[mode] ?? mode;
+}
+
+function cronGuardReasonLabel(reason: string) {
+  const labels: Record<string, string> = {
+    cooldown: "쿨다운",
+    same_worker_running: "동일 worker 실행 중",
+    source_health_unhealthy: "소스 헬스 unhealthy",
+  };
+  return labels[reason] ?? reason;
 }
 
 function workerPrimaryMetric(run: CollectRun | null) {
@@ -588,7 +847,7 @@ function workerPrimaryMetric(run: CollectRun | null) {
     : null;
   if (mode === "tick" || mode === "deep_crawl") return { label: "최근 검색", value: `${num(run.collectedCount)}건` };
   if (mode === "detail_worker") return { label: "최근 상세", value: `${num(run.enrichedCount)}건` };
-  if (mode === "lifecycle_worker") {
+  if (mode === "lifecycle_worker" || mode === "lifecycle_terminal_recheck") {
     const lifecycle = stages?.detail && typeof stages.detail === "object" ? stages.detail as Record<string, unknown> : null;
     return { label: "최근 상태확인", value: `${num(stageValue(lifecycle, "claimed"))}건` };
   }
@@ -599,7 +858,7 @@ function workerPrimaryMetric(run: CollectRun | null) {
 }
 
 function workerSummary(runs: CollectRun[]) {
-  const modes = ["tick", "detail_worker", "deep_crawl", "lifecycle_worker", "market_worker", "pool_warmer", "housekeeper"];
+  const modes = ["tick", "detail_worker", "deep_crawl", "lifecycle_worker", "lifecycle_terminal_recheck", "market_worker", "pool_warmer", "housekeeper"];
   return modes.map((mode) => {
     const scoped = runs.filter((run) => pipelineMode(run) === mode);
     const latest = scoped[0] ?? null;
@@ -807,6 +1066,81 @@ function WorkerStatusPanel({ runs }: { runs: CollectRun[] }) {
   );
 }
 
+function CronGuardPanel({ snapshot }: { snapshot: ReturnType<typeof getCronGuardSnapshot> }) {
+  const topSkip = snapshot.skipCounters[0] ?? null;
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="text-sm font-semibold text-zinc-950">Cron Guard Skip</div>
+          <div className="mt-1 text-xs text-zinc-500">
+            skip은 실패가 아니라 보호 동작입니다. DB에 매번 쓰지 않고 현재 프로세스 메모리 기준 최근 1시간만 보여줍니다.
+          </div>
+        </div>
+        <span className={`w-fit rounded-full px-2 py-1 text-xs font-semibold ring-1 ${
+          snapshot.totalSkipsLastHour > 0
+            ? "bg-sky-100 text-sky-800 ring-sky-200"
+            : "bg-zinc-100 text-zinc-700 ring-zinc-200"
+        }`}>
+          {snapshot.totalSkipsLastHour > 0 ? `의도적 휴식 ${num(snapshot.totalSkipsLastHour)}건` : "skip 없음"}
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <MetricCard label="최근 1시간 skip" value={`${num(snapshot.totalSkipsLastHour)}건`} sub="실패율에 포함하지 않음" />
+        <MetricCard label="실행 중 lock" value={`${num(snapshot.running.length)}개`} sub="같은 worker 중복 방지" />
+        <MetricCard
+          label="최다 skip 사유"
+          value={topSkip ? cronGuardReasonLabel(topSkip.reason) : "-"}
+          sub={topSkip ? `${pipelineModeLabel(topSkip.mode)} · ${num(topSkip.count)}건` : "최근 skip 없음"}
+        />
+        <MetricCard
+          label="최근 skip"
+          value={snapshot.recentSkips[0] ? pipelineModeLabel(snapshot.recentSkips[0].mode) : "-"}
+          sub={snapshot.recentSkips[0] ? `${cronGuardReasonLabel(snapshot.recentSkips[0].reason)} · ${formatTime(snapshot.recentSkips[0].ts)}` : "최근 skip 없음"}
+        />
+      </div>
+
+      {snapshot.skipCounters.length > 0 ? (
+        <div className="mt-4 rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+            Skip reason별 집계
+          </div>
+          <div className="divide-y divide-zinc-100">
+            {snapshot.skipCounters.slice(0, 8).map((row) => (
+              <div key={`${row.mode}:${row.reason}:${row.hourBucket}`} className="grid gap-2 px-3 py-2 text-xs sm:grid-cols-[120px_140px_minmax(0,1fr)_70px] sm:items-center">
+                <div className="font-semibold text-zinc-800">{pipelineModeLabel(row.mode)}</div>
+                <div className="text-zinc-600">{cronGuardReasonLabel(row.reason)}</div>
+                <div className="text-zinc-500">
+                  {formatTime(row.hourBucket)} bucket · 최근 갱신 {formatTime(row.updatedAt)}
+                </div>
+                <div className="font-semibold text-sky-800 sm:text-right">{num(row.count)}건</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4 rounded-md border border-zinc-100 bg-zinc-50 p-3 text-sm text-zinc-600">
+          최근 1시간 동안 guard skip은 없습니다.
+        </div>
+      )}
+
+      {snapshot.running.length > 0 ? (
+        <div className="mt-4 rounded-md border border-zinc-100 bg-zinc-50 p-3 text-xs text-zinc-600">
+          <div className="font-semibold text-zinc-800">현재 실행 중 lock</div>
+          <div className="mt-2 grid gap-1">
+            {snapshot.running.map((row) => (
+              <div key={row.mode}>
+                {pipelineModeLabel(row.mode)} · 시작 {formatTime(row.startedAt)} · lease {formatTime(row.leaseUntil)}까지
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function WorkerAlertPanel({ runs }: { runs: CollectRun[] }) {
   const alerts = workerAlerts(runs);
   return (
@@ -821,7 +1155,7 @@ function WorkerAlertPanel({ runs }: { runs: CollectRun[] }) {
         <div>
           <div className="text-sm font-semibold text-zinc-950">운영 알림</div>
           <div className="mt-1 text-xs text-zinc-600">
-            worker별 실패율이 최근 실행 window에서 5% 이상이면 경고, 20% 이상이면 긴급으로 봅니다.
+            worker별 실패율이 최근 실행 window에서 5% 이상이면 경고, 20% 이상이면 긴급으로 봅니다. Guard skip은 아래 패널에서 별도로 봅니다.
           </div>
         </div>
         <span className={`w-fit rounded-full px-2 py-1 text-xs font-semibold ring-1 ${
@@ -951,6 +1285,51 @@ function MarketStatsPanel({ stats }: { stats: Awaited<ReturnType<typeof loadMark
         ))}
         {stats.top.length === 0 ? (
           <div className="px-3 py-6 text-center text-xs text-zinc-500">아직 오늘 시세 통계가 없습니다.</div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function MarketVelocityPanel({ stats }: { stats: Awaited<ReturnType<typeof loadMarketVelocityDebug>> }) {
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="text-sm font-semibold text-zinc-950">관측 판매속도</div>
+          <div className="mt-1 text-xs text-zinc-500">
+            이미 계산된 daily high/medium summary만 읽습니다. raw 재집계는 하지 않습니다.
+          </div>
+        </div>
+        <span className="w-fit rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+          {stats.date}
+        </span>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <MetricCard label="High" value={`${num(stats.high)}개`} sub="판매속도 표본 충분" />
+        <MetricCard label="Medium" value={`${num(stats.medium)}개`} sub="관찰용 공개 가능" />
+        <MetricCard label="판매 관측" value={`${num(stats.observedSoldSamples)}건`} sub="sold/disappeared sample" />
+        <MetricCard label="활성 표본" value={`${num(stats.activeSamples)}건`} sub={`상위 ${num(stats.total)}개 key`} />
+      </div>
+      <div className="mt-4 divide-y divide-zinc-100 rounded-md border border-zinc-100">
+        {stats.top.map((row) => (
+          <div key={row.comparable_key} className="grid gap-2 px-3 py-2 text-xs sm:grid-cols-[minmax(0,1fr)_76px_94px_86px_86px] sm:items-center">
+            <div className="min-w-0">
+              <div className="truncate font-mono text-zinc-700">{row.comparable_key}</div>
+              <div className="mt-0.5 text-[10px] text-zinc-400">{row.category ?? "-"} · {row.clock_basis}</div>
+            </div>
+            <div className="font-semibold text-zinc-700 sm:text-right">{row.confidence}</div>
+            <div className="text-zinc-500 sm:text-right">
+              S{num(row.observed_sold_sample_count)} / A{num(row.active_sample_count)}
+            </div>
+            <div className="text-zinc-500 sm:text-right">7d {num(row.sold_7d_count)}</div>
+            <div className="font-semibold text-zinc-800 sm:text-right">{hoursLabel(row.median_hours_to_sold)}</div>
+          </div>
+        ))}
+        {stats.top.length === 0 ? (
+          <div className="px-3 py-6 text-center text-xs text-zinc-500">
+            아직 오늘 판매속도 summary가 없습니다.
+          </div>
         ) : null}
       </div>
     </div>
@@ -1131,14 +1510,13 @@ function labelReason(key: string) {
   const labels: Record<string, string> = {
     profit_below_band: "순익 구간 미달",
     not_scored_yet: "아직 점수 미계산",
-    blocked_flag: "시세/AI/설명 플래그 차단",
-    parsed_needs_review: "옵션 정보 부족",
-    risk_hits: "위험 키워드",
-    no_comparable_key: "시세키 없음",
-    no_thumbnail: "이미지 없음",
-    confidence_below_0_7: "신뢰도 0.7 미만",
-    price_gte_median: "매물가가 시세 이상",
-    profit_min_zero: "보수 순익 0",
+    pool_confidence_low: "신뢰도 0.7 미만",
+    profit_not_positive: "보수 순익 0",
+    price_gte_market: "매물가가 시세 이상",
+    risk_keyword: "위험 키워드",
+    missing_thumbnail: "이미지 없음",
+    missing_comparable_key: "시세키 없음",
+    option_needs_review: "옵션 정보 부족",
     no_price_or_median: "가격/시세 없음",
     category_unknown: "카테고리 미확정",
     category_internal_only_smartphone: "스마트폰 내부 학습 전용",
@@ -1307,6 +1685,84 @@ function FeedbackPanel({ stats }: { stats: Awaited<ReturnType<typeof loadFeedbac
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="rounded-md border border-zinc-100">
           <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+            후보팩 band별 만족도
+          </div>
+          <div className="divide-y divide-zinc-100">
+            {stats.bandRows.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-zinc-500">아직 band 피드백 없음</div>
+            ) : stats.bandRows.map((row) => (
+              <div key={row.band} className="grid grid-cols-[70px_repeat(4,1fr)] items-center gap-2 px-3 py-2 text-xs">
+                <div className="font-black text-zinc-800">Band {row.band}</div>
+                <div><span className="text-zinc-400">총</span> {num(row.total)}</div>
+                <div><span className="text-zinc-400">만족</span> {pct(row.positive, row.total)}</div>
+                <div><span className="text-zinc-400">문제</span> {pct(row.negative, row.total)}</div>
+                <div className="text-zinc-500">매수 {num(row.bought)} · 팔림 {num(row.missedSold)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+            코멘트 자주 나온 말
+          </div>
+          <div className="flex flex-wrap gap-2 p-3">
+            {stats.termRows.length === 0 ? (
+              <div className="w-full py-4 text-center text-xs text-zinc-500">아직 태그/키워드 없음</div>
+            ) : stats.termRows.map((row) => (
+              <span key={row.term} className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-semibold text-zinc-700 ring-1 ring-zinc-200">
+                {row.term} <span className="text-zinc-400">{num(row.count)}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+            SKU별 오탐률
+          </div>
+          <div className="divide-y divide-zinc-100">
+            {stats.skuRows.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-zinc-500">아직 SKU 피드백 없음</div>
+            ) : stats.skuRows.map((row) => (
+              <div key={`${row.category}-${row.skuName}`} className="grid grid-cols-[minmax(0,1fr)_60px_70px] items-center gap-3 px-3 py-2 text-xs">
+                <div className="min-w-0">
+                  <div className="truncate font-semibold text-zinc-800">{row.skuName}</div>
+                  <div className="font-mono text-[10px] text-zinc-400">{row.category} · 총 {num(row.total)} · 팔림 {num(row.missedSold)} · 별로 {num(row.badPick)}</div>
+                </div>
+                <div className="text-right font-black text-red-600">{pct(row.badPick + row.missedSold, row.total)}</div>
+                <div className="text-right text-zinc-400">오탐률</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+            별로/이미 팔림 상위 후보
+          </div>
+          <div className="divide-y divide-zinc-100">
+            {stats.topProblemRows.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-zinc-500">문제 후보 없음</div>
+            ) : stats.topProblemRows.map((row) => (
+              <div key={row.pid} className="grid grid-cols-[minmax(0,1fr)_92px] gap-3 px-3 py-2 text-xs">
+                <div className="min-w-0">
+                  <div className="truncate font-medium text-zinc-800">{row.name}</div>
+                  <div className="truncate font-mono text-[10px] text-zinc-400">{row.category} · {row.skuName}</div>
+                </div>
+                <div className="text-right text-zinc-500">
+                  <div className="font-semibold text-red-700">별로 {num(row.badPick)}</div>
+                  <div className="font-semibold text-amber-700">팔림 {num(row.missedSold)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
             카테고리별 반응
           </div>
           <div className="divide-y divide-zinc-100">
@@ -1339,8 +1795,124 @@ function FeedbackPanel({ stats }: { stats: Awaited<ReturnType<typeof loadFeedbac
                 <div className="min-w-0">
                   <div className="truncate font-medium text-zinc-800">{row.name}</div>
                   <div className="truncate font-mono text-[10px] text-zinc-400">{row.category} · {row.skuName}</div>
+                  {row.note ? <div className="mt-1 line-clamp-2 text-[11px] leading-4 text-zinc-500">{row.note}</div> : null}
                 </div>
                 <div className="text-right text-zinc-400">{formatTime(row.updatedAt)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-md border border-zinc-100">
+        <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+          최근 테스트 코멘트
+        </div>
+        <div className="divide-y divide-zinc-100">
+          {stats.notedRows.length === 0 ? (
+            <div className="px-3 py-6 text-center text-xs text-zinc-500">아직 코멘트 없음</div>
+          ) : stats.notedRows.map((row) => (
+            <div key={`${row.pid}-${row.updatedAt}`} className="grid grid-cols-[74px_minmax(0,1fr)_70px] gap-3 px-3 py-2 text-xs">
+              <div className="font-semibold text-zinc-700">{feedbackLabel(row.feedbackType)}</div>
+              <div className="min-w-0">
+                <div className="truncate font-medium text-zinc-800">{row.name}</div>
+                <div className="truncate font-mono text-[10px] text-zinc-400">{row.category} · {row.skuName}</div>
+                <div className="mt-1 text-[11px] leading-4 text-zinc-600">{row.note}</div>
+              </div>
+              <div className="text-right text-zinc-400">{formatTime(row.updatedAt)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ApprovalQueuePanel({ stats }: { stats: Awaited<ReturnType<typeof loadApprovalQueueDebug>> }) {
+  const riskyPending = stats.pendingRows.filter((row) => row.riskFlags.length > 0);
+  const cleanPending = Math.max(0, stats.totals.pending - riskyPending.length);
+  const topQueues = stats.queues
+    .filter((queue) => queue.pending > 0 || queue.rejected > 0 || queue.approved > 0)
+    .sort((a, b) => b.pending - a.pending || a.category.localeCompare(b.category, "ko"))
+    .slice(0, 7);
+
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="text-sm font-semibold text-zinc-950">Approval Queue</div>
+          <div className="mt-1 text-xs text-zinc-500">
+            마이닝 후보를 runtime catalog에 올리기 전 사람이 볼 대기열입니다. risk flag가 있으면 apply에서 스킵됩니다.
+          </div>
+        </div>
+        <span className={`w-fit rounded-full px-2 py-1 text-xs font-semibold ring-1 ${
+          riskyPending.length > 0
+            ? "bg-amber-100 text-amber-800 ring-amber-200"
+            : stats.ok
+              ? "bg-emerald-100 text-emerald-800 ring-emerald-200"
+              : "bg-red-100 text-red-800 ring-red-200"
+        }`}>
+          {stats.ok ? `갱신 ${formatTime(stats.generatedAt)}` : "리포트 없음"}
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <MetricCard label="전체 항목" value={`${num(stats.totals.total)}개`} sub="approval queues" />
+        <MetricCard label="대기" value={`${num(stats.totals.pending)}개`} sub={`clean ${num(cleanPending)} · risk ${num(riskyPending.length)}`} />
+        <MetricCard label="승인" value={`${num(stats.totals.approved)}개`} sub="apply 대상" />
+        <MetricCard label="반려" value={`${num(stats.totals.rejected)}개`} sub="재노출 차단" />
+        <MetricCard label="큐" value={`${num(stats.queues.length)}개`} sub="category-intelligence" />
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+            큐별 상태
+          </div>
+          <div className="divide-y divide-zinc-100">
+            {topQueues.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-zinc-500">approval queue 없음</div>
+            ) : topQueues.map((queue) => (
+              <div key={queue.category} className="grid grid-cols-[minmax(0,1fr)_repeat(3,42px)] items-center gap-2 px-3 py-2 text-xs">
+                <div className="min-w-0">
+                  <div className="truncate font-mono font-semibold text-zinc-800">{queue.category}</div>
+                  <div className="text-[10px] text-zinc-400">{queue.updatedAt ? formatTime(queue.updatedAt) : "-"}</div>
+                </div>
+                <div className="text-right text-amber-700">{num(queue.pending)}</div>
+                <div className="text-right text-emerald-700">{num(queue.approved)}</div>
+                <div className="text-right text-red-700">{num(queue.rejected)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-zinc-100">
+          <div className="border-b border-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-500">
+            승인 전 확인할 후보
+          </div>
+          <div className="divide-y divide-zinc-100">
+            {stats.pendingRows.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-zinc-500">대기 후보 없음</div>
+            ) : stats.pendingRows.map((row) => (
+              <div key={`${row.category}-${row.key}`} className="grid gap-2 px-3 py-2 text-xs lg:grid-cols-[120px_minmax(0,1fr)_minmax(160px,0.55fr)] lg:items-center">
+                <div className="font-mono text-zinc-500">{row.category}</div>
+                <div className="min-w-0">
+                  <div className="truncate font-semibold text-zinc-800">{row.id || row.modelName}</div>
+                  <div className="truncate text-[10px] text-zinc-400">
+                    {row.brand || "-"} · {row.runtimeCategory || "-"} · clusters {row.sourceClusterIds.join(", ") || "-"}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1 lg:justify-end">
+                  {row.riskFlags.length === 0 ? (
+                    <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                      clean pending
+                    </span>
+                  ) : row.riskFlags.map((flag) => (
+                    <span key={flag} className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-800 ring-1 ring-amber-100">
+                      {flag}
+                    </span>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -1357,7 +1929,7 @@ function RequestPanel({ run }: { run: CollectRun }) {
         <div>
           <div className="text-sm font-semibold text-zinc-950">요청 출발 정보</div>
           <div className="mt-1 text-xs text-zinc-500">
-            cron-job.org/Vercel 경유 여부를 확인하기 위한 운영 메타입니다.
+            QStash, 외부 스케줄러, 로컬 수동 호출 중 어디서 들어왔는지 확인하는 운영 메타입니다.
           </div>
         </div>
         <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-700 ring-1 ring-zinc-200">
@@ -1400,12 +1972,13 @@ function CronTimeoutAdvice({ run }: { run: CollectRun }) {
   if (!run.waitMode || run.status !== "running") return null;
   return (
     <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-      <div className="font-semibold">cron-job.org 30초 timeout 가능성이 큽니다.</div>
+      <div className="font-semibold">동기 wait 실행 timeout 가능성이 큽니다.</div>
       <div className="mt-1 text-amber-900">
-        `wait=1` 전체 수집은 상세 enrich sleep만으로도 30초를 넘을 수 있어요. 디버깅 기간에는 아래처럼 가볍게 호출하는 게 안전합니다.
+        QStash/외부 스케줄러/로컬 호출 모두 `wait=1`로 오래 기다리면 DB timeout이나 서버리스 timeout에 같이 걸릴 수 있어요.
+        디버깅 기간에는 역할별 endpoint를 작게 호출하고, 전체 collect는 fallback으로만 쓰는 게 안전합니다.
       </div>
       <code className="mt-3 block overflow-x-auto rounded-md bg-white px-3 py-2 text-xs text-zinc-900">
-        /api/cron/collect?wait=1&amp;pages=1&amp;detailLimit=30&amp;aiTopN=0
+        /api/cron/tick?wait=1 · /api/cron/detail-worker?wait=1
       </code>
     </div>
   );
@@ -1491,21 +2064,57 @@ function RunsTable({ runs }: { runs: CollectRun[] }) {
   );
 }
 
-export default async function DebugPage() {
-  const [runs, marketStats, marketInvalidations, bottleneckStats, sourceHealth, feedbackStats] = await Promise.all([
+function DiagnosticsLoadShedPanel() {
+  return (
+    <section className="rounded-md border border-amber-200 bg-amber-50 p-5">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div className="text-sm font-semibold text-amber-950">무거운 진단은 기본 새로고침에서 제외됨</div>
+          <div className="mt-1 text-sm leading-6 text-amber-900">
+            후보팩 병목, 시세 재계산 큐, 시세 통계, 피드백, approval queue는 DB 집계를 많이 읽어서 필요할 때만 켭니다.
+            기본 화면은 최근 실행, worker 상태, 이미 계산된 판매속도 summary만 60초마다 확인합니다.
+          </div>
+        </div>
+        <Link
+          href="/debug?diagnostics=1"
+          className="w-fit rounded-md border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-950 transition hover:border-amber-500"
+        >
+          무거운 진단 보기
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+export default async function DebugPage({ searchParams }: { searchParams?: Promise<DebugSearchParams> }) {
+  const admin = await requireDebugAdminFromCookies();
+  if (!admin.ok) {
+    redirect(admin.status === 403 ? "/" : "/login?next=/debug");
+  }
+
+  const params = searchParams ? await searchParams : {};
+  const diagnosticsEnabled = isDiagnosticsEnabled(params);
+  const guardSnapshot = getCronGuardSnapshot();
+  const [runs, sourceHealth, marketVelocity] = await Promise.all([
     loadCollectRuns(30),
-    loadMarketPriceDebug(),
-    loadMarketInvalidationDebug(),
-    loadBottleneckDebug(),
     loadSourceHealthDebug(),
-    loadFeedbackDebug(),
+    loadMarketVelocityDebug(),
   ]);
+  const diagnostics = diagnosticsEnabled
+    ? await Promise.all([
+      loadMarketPriceDebug(),
+      loadMarketInvalidationDebug(),
+      loadBottleneckDebug(),
+      loadFeedbackDebug(),
+      loadApprovalQueueDebug(),
+    ])
+    : null;
   const latest = runs[0] ?? null;
   const latestOk = lastSucceeded(runs);
   const totalApiCalls = runs.reduce((sum, run) => sum + run.aiApiCalls, 0);
   const totalAiFiltered = runs.reduce((sum, run) => sum + run.aiFilteredCount, 0);
 
-  return (
+  return withAdminGate(
     <main className="min-h-screen bg-[#f6f7f9] text-zinc-950">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-4 border-b border-zinc-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
@@ -1515,13 +2124,25 @@ export default async function DebugPage() {
               수집 파이프라인 상태
             </h1>
           </div>
-          <Link
-            href="/"
-            className="w-fit rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 transition hover:border-zinc-400"
-          >
-            후보 화면으로
-          </Link>
-          <DebugAutoRefresh intervalSeconds={10} />
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/"
+              className="w-fit rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 transition hover:border-zinc-400"
+            >
+              후보 화면으로
+            </Link>
+            <Link
+              href={diagnosticsEnabled ? "/debug" : "/debug?diagnostics=1"}
+              className={`w-fit rounded-md border px-4 py-2 text-sm font-semibold transition ${
+                diagnosticsEnabled
+                  ? "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-500"
+                  : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-400"
+              }`}
+            >
+              {diagnosticsEnabled ? "가벼운 모드" : "무거운 진단"}
+            </Link>
+            <DebugAutoRefresh intervalSeconds={diagnosticsEnabled ? 120 : 60} defaultEnabled={false} />
+          </div>
         </header>
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -1539,11 +2160,15 @@ export default async function DebugPage() {
           <MetricCard label="AI 제외 누적" value={`${num(totalAiFiltered)}건`} sub="최근 30회 합산" />
         </section>
 
+        <MarketVelocityPanel stats={marketVelocity} />
+
         <WorkerAlertPanel runs={runs} />
 
         {latest ? <CronTimeoutAdvice run={latest} /> : null}
 
         <WorkerStatusPanel runs={runs} />
+
+        <CronGuardPanel snapshot={guardSnapshot} />
 
         {latest ? (
           <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px_420px]">
@@ -1555,21 +2180,34 @@ export default async function DebugPage() {
 
         {latest ? <StagePanel run={latest} /> : null}
 
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
-          <BottleneckPanel stats={bottleneckStats} />
-          <div className="grid gap-5">
-            <SourceHealthPanel health={sourceHealth} />
-            <MarketInvalidationPanel stats={marketInvalidations} />
-            <MarketStatsPanel stats={marketStats} />
-          </div>
-        </section>
+        {diagnostics ? (
+          <>
+            <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+              <BottleneckPanel stats={diagnostics[2]} />
+              <div className="grid gap-5">
+                <SourceHealthPanel health={sourceHealth} />
+                <MarketInvalidationPanel stats={diagnostics[1]} />
+                <MarketStatsPanel stats={diagnostics[0]} />
+              </div>
+            </section>
 
-        <FeedbackPanel stats={feedbackStats} />
+            <FeedbackPanel stats={diagnostics[3]} />
+
+            <ApprovalQueuePanel stats={diagnostics[4]} />
+          </>
+        ) : (
+          <>
+            <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+              <DiagnosticsLoadShedPanel />
+              <SourceHealthPanel health={sourceHealth} />
+            </section>
+          </>
+        )}
 
         <DebugResetPanel />
 
         <RunsTable runs={runs} />
       </div>
-    </main>
+    </main>,
   );
 }

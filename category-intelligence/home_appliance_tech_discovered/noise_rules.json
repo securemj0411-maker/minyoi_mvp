@@ -1,0 +1,263 @@
+{
+  "version": 1,
+  "category": "home_appliance_tech_discovered",
+  "generated_at": "2026-05-10T18:54:44.194Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [
+    {
+      "keyword": "택배비",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 9,
+      "risk_flags": [
+        "generic_noise_type",
+        "transaction_or_sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "해주세요",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 12,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "스타벅스",
+      "type": "accessory",
+      "precision": 0.4,
+      "hit_count": 6,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "전체적으로 액세서리 타입 매물은 40%로 낮은 편입니다."
+    },
+    {
+      "keyword": "4천원",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 6,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "5000원",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 6,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "메디큐브",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 5,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0으로 평가됨."
+    },
+    {
+      "keyword": "포함",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 16,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "배송비",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 6,
+      "risk_flags": [
+        "generic_noise_type",
+        "transaction_or_sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "중계동",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "역삼동",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "강남",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0으로 매우 낮음."
+    },
+    {
+      "keyword": "스펙",
+      "type": "noise",
+      "precision": 0.5,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "두 매물 중 한 매물만 'noise' 타입으로 정확히 분류되어 전체 정밀도는 0.5입니다."
+    },
+    {
+      "keyword": "공정상",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 '공정상' 키워드를 포함한 noise 타입으로 정확히 분류됨."
+    },
+    {
+      "keyword": "해주시면",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 16,
+      "risk_flags": [
+        "generic_noise_type",
+        "transaction_or_sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "가격문의",
+      "type": "noise",
+      "precision": 0.5,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type",
+        "transaction_or_sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "두 매물 중 한 매물만 noise 타입으로 정확히 분류되어 전체 precision은 0.5입니다."
+    },
+    {
+      "keyword": "텀쿠",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0입니다."
+    },
+    {
+      "keyword": "사진은",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 2,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 \"사진은\" 키워드를 포함하여 noise 타입으로 정확히 분류됨."
+    },
+    {
+      "keyword": "미개봉새제품",
+      "type": "multi",
+      "precision": 0,
+      "hit_count": 3,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "제공된 모든 매물은 'multi' 타입이 아니므로 전체 정밀도는 0.0입니다."
+    }
+  ],
+  "cluster_evidence": [
+    {
+      "cluster_id": 4,
+      "listing_type": "multi",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 미개봉 새상품, 뷰티 디바이스, 무선청소기 등 다양한 생활/주방/미용 가전 제품들이 혼재되어 있어 단일 핵심 제품군으로 분류하기 어렵습니다. 일부는 뷰티 디바이스, 일부는 청소기 등 서로 다른 전자식 가전 본체들이 포함되어 있어 하나의 SKU로 대표할 수 없습니다. 또한 일부는 화장품이나 앰플 등 비전자식 소모품도 포함되어 있어 정상(normal) 카테고리에 부합하지 않습니다. 따라서 여러 제품이 혼합된 묶음(multi)으로 분류하는 것이 적절합니다.",
+      "evidence_terms": [
+        "미개봉",
+        "새상품",
+        "부스터프로",
+        "청소기",
+        "디바이스",
+        "앰플",
+        "뷰티",
+        "무선청소기",
+        "센텔라모어세럼",
+        "칼라민팩"
+      ]
+    },
+    {
+      "cluster_id": 7,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "대표 샘플 '페이셜 클렌징 마사지'는 생활/주방/미용 가전 본체가 아닌 미용 보조기구로, 전자식 가전 본체나 명확한 기본 구성품이 아니며, 클렌징 마사지라는 액세서리 성격이 강해 정상 제품군에 해당하지 않습니다. 따라서 액세서리로 분류하는 것이 적합합니다.",
+      "evidence_terms": [
+        "페이셜",
+        "클렌징",
+        "마사지",
+        "미용",
+        "보조기구",
+        "택포가",
+        "눈가",
+        "은색"
+      ]
+    },
+    {
+      "cluster_id": 8,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 스타벅스 관련 상품들로, 텀블러, 키링, 키체인, 파우치 등 생활/주방/미용 가전과 직접 관련된 전자식 본체가 아닌 액세서리 및 기념품류 제품들로 구성되어 있습니다. 따라서 전자식 가전 본체가 아닌 주변 액세서리로 분류됩니다.",
+      "evidence_terms": [
+        "스타벅스",
+        "키링",
+        "키체인",
+        "파우치",
+        "텀블러",
+        "애니버서리",
+        "조이풀",
+        "투고그린",
+        "오텀",
+        "글로벌"
+      ]
+    }
+  ]
+}

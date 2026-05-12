@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireDebugAdmin } from "@/lib/debug-admin";
 
 export const maxDuration = 30;
 
@@ -36,13 +37,6 @@ function serviceHeaders(prefer?: string) {
   };
 }
 
-function authorized(req: NextRequest, bodySecret: unknown) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return true;
-  const auth = req.headers.get("authorization");
-  return auth === `Bearer ${secret}` || bodySecret === secret;
-}
-
 async function deleteAllRows(base: string, table: string, filter: string) {
   const headers = serviceHeaders("return=minimal");
   if (!headers) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured");
@@ -58,6 +52,10 @@ async function deleteAllRows(base: string, table: string, filter: string) {
 }
 
 export async function POST(req: NextRequest) {
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEBUG_RESET !== "1") {
+    return NextResponse.json({ ok: false, error: "disabled in production" }, { status: 403 });
+  }
+
   const base = restBaseUrl();
   if (!base) {
     return NextResponse.json({ ok: false, error: "Supabase URL is not configured" }, { status: 500 });
@@ -74,8 +72,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "confirm must be RESET" }, { status: 400 });
   }
 
-  if (!authorized(req, body.secret)) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  const auth = await requireDebugAdmin(req);
+  if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
+
+  const resetSecret = process.env.DEBUG_RESET_SECRET?.trim();
+  if (!resetSecret) {
+    return NextResponse.json({ ok: false, error: "DEBUG_RESET_SECRET is not configured" }, { status: 500 });
+  }
+  if (body.secret?.trim() !== resetSecret) {
+    return NextResponse.json({ ok: false, error: "invalid reset secret" }, { status: 403 });
   }
 
   const cleared: string[] = [];

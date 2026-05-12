@@ -1,0 +1,30 @@
+{
+  "category": "home_appliance_tech_discovered",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "Home Appliance Tech From Bunjang Category",
+  "categoryIds": [
+    "610500005",
+    "610600",
+    "610700003"
+  ],
+  "queries": [
+    "다이슨 청소기",
+    "로보락 로봇청소기",
+    "드리미 로봇청소기",
+    "에어프라이어",
+    "닌자 블렌더",
+    "다이슨 에어랩"
+  ],
+  "seedSkus": [
+    "dyson-vacuum",
+    "roborock-robot-vacuum",
+    "dreame-robot-vacuum",
+    "air-fryer",
+    "ninja-blender",
+    "dyson-airwrap"
+  ],
+  "minNormalPrice": 20000,
+  "clusterK": 12,
+  "aiHints": "번개장터 생활/주방/미용 가전 discovery. 정상: 청소기/로봇청소기/에어프라이어/블렌더/헤어드라이어/에어랩 등 전자식 가전 본체와 명확한 기본 구성. 노이즈: 필터/브러시/배터리/거치대/어댑터/부품 단독, 화장품/소모품/식기/비전자 주방용품, 고장/수리용/부품용, 렌탈/설치형/대형가전 배송 리스크, 여러 제품 일괄, 매입글.\n교차 카테고리 지식: 3in1=accessory(p=1), 견적=buying(p=1), 단품=parts(p=1), 매입=buying(p=1), 매입업체=buying(p=1), 매입하는=buying(p=1), 맥세이프=accessory(p=1), 무료증정=multi(p=1), 번톡=buying(p=1), 부품용으로=damaged(p=1), 삽니다=buying(p=1), 삽니다=mixed(p=1), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=1), 오른쪽=parts(p=1), 유닛=parts(p=1), 이상=damaged(p=1), 일괄=accessory(p=1), 전문=buying(p=1), 최고가=buying(p=1), 출장=buying(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

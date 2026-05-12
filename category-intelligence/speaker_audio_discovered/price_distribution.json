@@ -1,0 +1,123 @@
+[
+  {
+    "key": "unknown",
+    "count": 116,
+    "min": 20000,
+    "p25": 40000,
+    "median": 81000,
+    "p75": 200000,
+    "max": 5500000,
+    "core_sample_count": 116,
+    "excluded_count": 31
+  },
+  {
+    "key": "marshall-acton-3",
+    "count": 3,
+    "min": 330000,
+    "p25": 330000,
+    "median": 395000,
+    "p75": 395000,
+    "max": 400000,
+    "core_sample_count": 3,
+    "excluded_count": 31
+  },
+  {
+    "key": "marshall-stanmore-3",
+    "count": 2,
+    "min": 400000,
+    "p25": 400000,
+    "median": 400000,
+    "p75": 400000,
+    "max": 450000,
+    "core_sample_count": 2,
+    "excluded_count": 31
+  },
+  {
+    "key": "jbl-go-3",
+    "count": 1,
+    "min": 35000,
+    "p25": 35000,
+    "median": 35000,
+    "p75": 35000,
+    "max": 35000,
+    "core_sample_count": 1,
+    "excluded_count": 31
+  },
+  {
+    "key": "britz-jb9600",
+    "count": 1,
+    "min": 65000,
+    "p25": 65000,
+    "median": 65000,
+    "p75": 65000,
+    "max": 65000,
+    "core_sample_count": 1,
+    "excluded_count": 31
+  },
+  {
+    "key": "jbl-go-4",
+    "count": 1,
+    "min": 40000,
+    "p25": 40000,
+    "median": 40000,
+    "p75": 40000,
+    "max": 40000,
+    "core_sample_count": 1,
+    "excluded_count": 31
+  },
+  {
+    "key": "britz-ba-rbt1",
+    "count": 1,
+    "min": 30000,
+    "p25": 30000,
+    "median": 30000,
+    "p75": 30000,
+    "max": 30000,
+    "core_sample_count": 1,
+    "excluded_count": 31
+  },
+  {
+    "key": "bose-soundlink",
+    "count": 1,
+    "min": 170000,
+    "p25": 170000,
+    "median": 170000,
+    "p75": 170000,
+    "max": 170000,
+    "core_sample_count": 1,
+    "excluded_count": 31
+  },
+  {
+    "key": "britz-ba-c1",
+    "count": 1,
+    "min": 20000,
+    "p25": 20000,
+    "median": 20000,
+    "p75": 20000,
+    "max": 20000,
+    "core_sample_count": 1,
+    "excluded_count": 31
+  },
+  {
+    "key": "britz-bz-s8",
+    "count": 1,
+    "min": 35000,
+    "p25": 35000,
+    "median": 35000,
+    "p75": 35000,
+    "max": 35000,
+    "core_sample_count": 1,
+    "excluded_count": 31
+  },
+  {
+    "key": "marshall-woburn-3",
+    "count": 1,
+    "min": 650000,
+    "p25": 650000,
+    "median": 650000,
+    "p75": 650000,
+    "max": 650000,
+    "core_sample_count": 1,
+    "excluded_count": 31
+  }
+]

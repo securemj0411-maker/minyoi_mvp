@@ -133,6 +133,8 @@ create table if not exists public.mvp_raw_listings (
   listing_state text not null default 'active' check (listing_state in (
     'active','missing_suspect','sold_confirmed','disappeared','archived'
   )),
+  pool_eligible boolean not null default true,
+  score_dirty boolean not null default true,
   missing_count integer not null default 0 check (missing_count >= 0),
   last_missing_at timestamptz,
   sold_detected_at timestamptz,
@@ -149,7 +151,9 @@ create table if not exists public.mvp_raw_listings (
 alter table public.mvp_raw_listings
   add column if not exists seller_uid text,
   add column if not exists seller_name text,
-  add column if not exists seller_source text not null default 'bunjang';
+  add column if not exists seller_source text not null default 'bunjang',
+  add column if not exists pool_eligible boolean not null default true,
+  add column if not exists score_dirty boolean not null default true;
 
 create table if not exists public.mvp_listing_parsed (
   pid bigint primary key references public.mvp_raw_listings(pid) on delete cascade,
@@ -198,12 +202,39 @@ create table if not exists public.mvp_listing_observations (
   comparable_key text,
   parse_confidence numeric,
   seller_uid text,
-  source text not null default 'bunjang',
-  raw_json jsonb not null default '{}'::jsonb
+  source text not null default 'bunjang'
+  -- P2-2: raw_json column removed; payload moved to mvp_listing_observation_payloads (90d retention).
 );
 
 alter table public.mvp_listing_observations
   add column if not exists seller_uid text;
+
+alter table public.mvp_listing_observations
+  drop column if exists raw_json;
+
+-- P2-2: raw_json split off into a separate 90d-retention table.
+-- The fact table above (mvp_listing_observations) is permanent and powers velocity / price graphs.
+-- This payload table keeps the heavy jsonb blob, purged by housekeeperStage on a daily cooldown.
+-- observation_id is a soft pointer (no FK) so the retention DELETE is cheap and self-contained.
+create table if not exists public.mvp_listing_observation_payloads (
+  id             bigserial primary key,
+  observation_id bigint      not null,
+  pid            bigint      not null,
+  observed_at    timestamptz not null,
+  raw_json       jsonb       not null default '{}'::jsonb,
+  inserted_at    timestamptz not null default now()
+);
+
+create index if not exists mvp_listing_observation_payloads_obs_idx
+  on public.mvp_listing_observation_payloads(observation_id);
+
+create index if not exists mvp_listing_observation_payloads_observed_at_idx
+  on public.mvp_listing_observation_payloads(observed_at);
+
+create index if not exists mvp_listing_observation_payloads_pid_seen_idx
+  on public.mvp_listing_observation_payloads(pid, observed_at desc);
+
+alter table public.mvp_listing_observation_payloads enable row level security;
 
 create table if not exists public.mvp_market_price_daily (
   date date not null,
@@ -221,6 +252,27 @@ create table if not exists public.mvp_market_price_daily (
   sold_sample_count integer not null default 0,
   disappeared_sample_count integer not null default 0,
   confidence text not null default 'low' check (confidence in ('high','medium','low')),
+  computed_at timestamptz not null default now(),
+  primary key (date, comparable_key)
+);
+
+create table if not exists public.mvp_market_velocity_daily (
+  date date not null,
+  comparable_key text not null,
+  category text,
+  family text,
+  model text,
+  variant_key text,
+  observed_sold_sample_count integer not null default 0,
+  active_sample_count integer not null default 0,
+  sold_24h_count integer not null default 0,
+  sold_7d_count integer not null default 0,
+  median_hours_to_sold numeric,
+  p25_hours_to_sold numeric,
+  p75_hours_to_sold numeric,
+  confidence text not null default 'low' check (confidence in ('high','medium','low')),
+  clock_basis text not null default 'first_seen_to_sold_detected'
+    check (clock_basis in ('first_seen_to_sold_detected')),
   computed_at timestamptz not null default now(),
   primary key (date, comparable_key)
 );
@@ -501,6 +553,152 @@ create index if not exists mvp_raw_listings_state_idx
 create index if not exists mvp_raw_listings_seller_idx
   on public.mvp_raw_listings(seller_source, seller_uid, last_seen_at desc);
 
+create index if not exists mvp_raw_listings_score_ready_idx
+  on public.mvp_raw_listings(detail_status, listing_type, listing_state, last_seen_at desc)
+  where sku_id is not null;
+
+create index if not exists mvp_raw_listings_market_stats_idx
+  on public.mvp_raw_listings(detail_status, listing_type, detail_enriched_at desc, last_seen_at desc)
+  where sku_id is not null;
+
+create index if not exists mvp_raw_listings_score_dirty_idx
+  on public.mvp_raw_listings(last_seen_at desc)
+  where score_dirty = true;
+
+create table if not exists public.mvp_cron_locks (
+  mode text primary key,
+  owner text not null,
+  acquired_at timestamptz not null default now(),
+  lease_until timestamptz not null
+);
+
+create index if not exists mvp_cron_locks_lease_until_idx
+  on public.mvp_cron_locks(lease_until);
+
+-- P2-1: query registry + yield-based cadence
+create table if not exists public.mvp_search_queries (
+  query text primary key,
+  category text not null default 'unknown',
+  enabled boolean not null default true,
+  cadence_minutes integer not null default 5 check (cadence_minutes in (5, 10, 30, 60)),
+  mode text not null default 'gather' check (mode in ('harvest', 'gather')),
+  reason text not null default 'seed',
+  last_evaluated_at timestamptz,
+  last_observed integer not null default 0,
+  last_changed integer not null default 0,
+  last_pool_any integer not null default 0,
+  last_pool_ready integer not null default 0,
+  last_scanned_at timestamptz,
+  cadence_override integer check (cadence_override is null or cadence_override in (5, 10, 30, 60)),
+  cadence_override_expires_at timestamptz,
+  cadence_override_note text,
+  priority smallint not null default 50,
+  pack_contribution_count integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists mvp_search_queries_due_idx
+  on public.mvp_search_queries(last_scanned_at nulls first)
+  where enabled = true;
+
+create index if not exists mvp_search_queries_category_idx
+  on public.mvp_search_queries(category, mode);
+
+create table if not exists public.mvp_search_query_cadence_log (
+  id bigserial primary key,
+  query text not null,
+  changed_at timestamptz not null default now(),
+  before_cadence_minutes integer,
+  after_cadence_minutes integer not null,
+  before_mode text,
+  after_mode text not null,
+  reason text not null,
+  measurement jsonb not null default '{}'::jsonb,
+  source text not null default 'evaluator'
+);
+
+create index if not exists mvp_search_query_cadence_log_query_idx
+  on public.mvp_search_query_cadence_log(query, changed_at desc);
+
+create index if not exists mvp_search_query_cadence_log_changed_at_idx
+  on public.mvp_search_query_cadence_log(changed_at desc);
+
+create or replace view public.mvp_search_queries_due as
+  select
+    q.query,
+    q.category,
+    q.mode,
+    q.reason,
+    coalesce(q.cadence_override, q.cadence_minutes) as effective_cadence_minutes,
+    q.last_scanned_at,
+    q.priority,
+    q.enabled
+  from public.mvp_search_queries q
+  where q.enabled = true
+    and (
+      q.last_scanned_at is null
+      or q.last_scanned_at + make_interval(mins => coalesce(q.cadence_override, q.cadence_minutes)) <= now()
+    );
+
+create or replace function public.expire_search_query_cadence_overrides()
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_count integer;
+begin
+  update public.mvp_search_queries
+  set cadence_override = null,
+      cadence_override_expires_at = null,
+      cadence_override_note = null,
+      updated_at = now()
+  where cadence_override is not null
+    and cadence_override_expires_at is not null
+    and cadence_override_expires_at <= now();
+  get diagnostics v_count = row_count;
+  return v_count;
+end;
+$$;
+
+revoke all on function public.expire_search_query_cadence_overrides() from public;
+revoke execute on function public.expire_search_query_cadence_overrides() from anon;
+revoke execute on function public.expire_search_query_cadence_overrides() from authenticated;
+grant execute on function public.expire_search_query_cadence_overrides() to service_role;
+
+-- P2-2: observation payload 90일 retention. housekeeperStage가 daily cooldown으로 호출.
+-- p_batch_limit으로 한 번에 지울 양 제한 → 락 짧게 유지. 잔여분은 다음 sweep에서 정리.
+create or replace function public.prune_listing_observation_payloads(
+  p_days integer default 90,
+  p_batch_limit integer default 50000
+)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_cutoff timestamptz := now() - make_interval(days => p_days);
+  v_deleted bigint;
+begin
+  delete from public.mvp_listing_observation_payloads
+  where id in (
+    select id
+    from public.mvp_listing_observation_payloads
+    where observed_at < v_cutoff
+    order by observed_at
+    limit p_batch_limit
+  );
+  get diagnostics v_deleted = row_count;
+  return v_deleted;
+end;
+$$;
+
+revoke all on function public.prune_listing_observation_payloads(integer, integer) from public;
+grant execute on function public.prune_listing_observation_payloads(integer, integer) to service_role;
+
 create index if not exists mvp_listing_parsed_comparable_idx
   on public.mvp_listing_parsed(comparable_key, parse_confidence desc);
 
@@ -522,6 +720,9 @@ create index if not exists mvp_listing_observations_seller_idx
 create index if not exists mvp_market_price_daily_comparable_date_idx
   on public.mvp_market_price_daily(comparable_key, date desc);
 
+create index if not exists mvp_market_velocity_daily_comparable_date_idx
+  on public.mvp_market_velocity_daily(comparable_key, date desc);
+
 create index if not exists mvp_source_health_source_checked_idx
   on public.mvp_source_health(source, checked_at desc);
 
@@ -533,6 +734,10 @@ create index if not exists mvp_lifecycle_checks_tier_idx
 
 create index if not exists mvp_lifecycle_checks_locked_until_idx
   on public.mvp_lifecycle_checks(locked_until);
+
+create index if not exists mvp_lifecycle_checks_claim_ready_idx
+  on public.mvp_lifecycle_checks(next_check_at, priority_tier, updated_at)
+  where status in ('active', 'missing_suspect');
 
 create index if not exists mvp_market_key_invalidation_claim_idx
   on public.mvp_market_key_invalidation(status, priority desc, last_event_at asc);
@@ -552,6 +757,9 @@ create index if not exists mvp_collect_runs_started_at_idx
 create index if not exists mvp_collect_runs_status_idx
   on public.mvp_collect_runs(status);
 
+create index if not exists mvp_collect_runs_status_started_idx
+  on public.mvp_collect_runs(status, started_at desc);
+
 create index if not exists mvp_collect_runs_request_ip_idx
   on public.mvp_collect_runs(request_ip);
 
@@ -567,11 +775,13 @@ alter table public.mvp_raw_listings enable row level security;
 alter table public.mvp_listing_parsed enable row level security;
 alter table public.mvp_listing_observations enable row level security;
 alter table public.mvp_market_price_daily enable row level security;
+alter table public.mvp_market_velocity_daily enable row level security;
 alter table public.mvp_source_health enable row level security;
 alter table public.mvp_lifecycle_checks enable row level security;
 alter table public.mvp_market_key_invalidation enable row level security;
 alter table public.mvp_detail_queue enable row level security;
 alter table public.mvp_collect_runs enable row level security;
+alter table public.mvp_landing_showcases enable row level security;
 
 create or replace function public.claim_mvp_detail_queue(
   p_batch_size integer default 30,
@@ -723,6 +933,112 @@ revoke execute on function public.claim_mvp_lifecycle_checks(integer, integer) f
 revoke execute on function public.claim_mvp_lifecycle_checks(integer, integer) from authenticated;
 grant execute on function public.claim_mvp_lifecycle_checks(integer, integer) to service_role;
 
+drop function if exists public.claim_mvp_terminal_lifecycle_rechecks(integer, integer);
+
+create or replace function public.claim_mvp_terminal_lifecycle_rechecks(
+  p_batch_size integer default 10,
+  p_lease_seconds integer default 120
+)
+returns table (
+  pid bigint,
+  lifecycle_status text,
+  priority_tier text,
+  consecutive_missing_count integer,
+  consecutive_error_count integer,
+  attempts integer,
+  price integer,
+  name text,
+  num_faved integer,
+  listing_state text,
+  sku_id text,
+  sku_name text,
+  seller_uid text,
+  comparable_key text,
+  parser_version text
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return query
+  with candidates as (
+    select c.pid
+    from public.mvp_lifecycle_checks c
+    join public.mvp_raw_listings r on r.pid = c.pid
+    left join public.mvp_listing_parsed p on p.pid = c.pid
+    left join public.mvp_category_readiness cr on cr.category = p.category
+    left join public.mvp_candidate_pool cp
+      on cp.pid = c.pid
+     and cp.status in ('ready', 'reserved')
+    where c.status in ('active', 'missing_suspect')
+      and r.listing_state in ('sold_confirmed', 'disappeared', 'archived')
+      and c.next_check_at <= now()
+      and c.attempts < c.max_attempts
+      and (c.locked_until is null or c.locked_until < now())
+    order by
+      case when cp.pid is not null then 0 else 1 end,
+      case c.priority_tier
+        when 'pool' then 0
+        when 'near_pool' then 1
+        when 'exploration' then 2
+        when 'market_sample' then 3
+        else 4
+      end,
+      case coalesce(cr.status, '')
+        when 'ready' then 0
+        else 1
+      end,
+      case coalesce(p.category, '')
+        when 'smartwatch' then 0
+        when 'earphone' then 1
+        else 2
+      end,
+      c.next_check_at asc,
+      c.updated_at asc
+    limit greatest(1, least(coalesce(p_batch_size, 10), 50))
+    for update of c skip locked
+  ), claimed as (
+    update public.mvp_lifecycle_checks c
+    set locked_at = now(),
+        locked_until = now() + (greatest(10, least(coalesce(p_lease_seconds, 120), 900)) || ' seconds')::interval,
+        attempts = c.attempts + 1,
+        updated_at = now()
+    from candidates x
+    where c.pid = x.pid
+    returning c.pid,
+              c.status,
+              c.priority_tier,
+              c.consecutive_missing_count,
+              c.consecutive_error_count,
+              c.attempts
+  )
+  select c.pid,
+         c.status as lifecycle_status,
+         c.priority_tier,
+         c.consecutive_missing_count,
+         c.consecutive_error_count,
+         c.attempts,
+         r.price,
+         r.name,
+         r.num_faved,
+         r.listing_state,
+         r.sku_id,
+         r.sku_name,
+         r.seller_uid,
+         p.comparable_key,
+         p.parser_version
+  from claimed c
+  join public.mvp_raw_listings r on r.pid = c.pid
+  left join public.mvp_listing_parsed p on p.pid = c.pid;
+end;
+$$;
+
+revoke all on function public.claim_mvp_terminal_lifecycle_rechecks(integer, integer) from public;
+revoke execute on function public.claim_mvp_terminal_lifecycle_rechecks(integer, integer) from anon;
+revoke execute on function public.claim_mvp_terminal_lifecycle_rechecks(integer, integer) from authenticated;
+grant execute on function public.claim_mvp_terminal_lifecycle_rechecks(integer, integer) to service_role;
+
 create table if not exists public.mvp_candidate_pool (
   pid bigint primary key references public.mvp_raw_listings(pid) on delete cascade,
   profit_band smallint not null check (profit_band in (1, 2, 3)),
@@ -779,6 +1095,48 @@ create table if not exists public.mvp_pack_reveals (
   unique (user_ref, pid)
 );
 
+create table if not exists public.mvp_user_credits (
+  user_ref text primary key,
+  auth_user_id uuid not null unique,
+  balance integer not null default 0 check (balance >= 0),
+  free_grant_tokens integer not null default 5 check (free_grant_tokens >= 0),
+  free_granted_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.mvp_credit_ledger (
+  id bigserial primary key,
+  user_ref text not null,
+  auth_user_id uuid not null,
+  event_type text not null check (event_type in ('free_grant', 'pack_spend', 'pack_refund')),
+  amount integer not null,
+  balance_after integer not null check (balance_after >= 0),
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.mvp_landing_showcases (
+  id bigserial primary key,
+  slot_index smallint not null check (slot_index between 1 and 10),
+  pid bigint not null references public.mvp_raw_listings(pid) on delete cascade,
+  name text not null,
+  image_url text not null,
+  buy_price integer not null check (buy_price >= 0),
+  market_price integer not null check (market_price >= 0),
+  expected_profit integer not null,
+  confidence_percent integer not null check (confidence_percent between 0 and 100),
+  sku_label text,
+  sample_count integer not null default 0 check (sample_count >= 0),
+  is_active boolean not null default true,
+  source_snapshot jsonb not null default '{}'::jsonb,
+  starts_at timestamptz not null default now(),
+  expires_at timestamptz,
+  updated_at timestamptz not null default now(),
+  unique (slot_index),
+  unique (pid)
+);
+
 create table if not exists public.mvp_reveal_feedback (
   id bigserial primary key,
   user_ref text not null,
@@ -817,6 +1175,12 @@ create index if not exists mvp_pack_reveals_user_idx
 create index if not exists mvp_pack_reveals_pack_idx
   on public.mvp_pack_reveals(pack_open_id);
 
+create index if not exists mvp_user_credits_auth_user_idx
+  on public.mvp_user_credits(auth_user_id);
+
+create index if not exists mvp_credit_ledger_user_idx
+  on public.mvp_credit_ledger(user_ref, created_at desc);
+
 create index if not exists mvp_reveal_feedback_type_idx
   on public.mvp_reveal_feedback(feedback_type, updated_at desc);
 
@@ -826,8 +1190,230 @@ create index if not exists mvp_reveal_feedback_pid_idx
 alter table public.mvp_candidate_pool enable row level security;
 alter table public.mvp_pack_opens enable row level security;
 alter table public.mvp_pack_reveals enable row level security;
+alter table public.mvp_user_credits enable row level security;
+alter table public.mvp_credit_ledger enable row level security;
 alter table public.mvp_category_readiness enable row level security;
 alter table public.mvp_reveal_feedback enable row level security;
+
+create or replace function public.claim_mvp_user_credits(
+  p_user_ref text,
+  p_auth_user_id uuid,
+  p_free_grant integer default 5
+)
+returns table (
+  balance integer,
+  free_granted_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_ref text;
+  v_grant integer;
+begin
+  v_user_ref := nullif(left(trim(coalesce(p_user_ref, '')), 64), '');
+  v_grant := greatest(0, coalesce(p_free_grant, 0));
+
+  if v_user_ref is null then
+    raise exception 'missing user ref';
+  end if;
+
+  insert into public.mvp_user_credits (
+    user_ref,
+    auth_user_id,
+    balance,
+    free_grant_tokens,
+    free_granted_at
+  )
+  values (
+    v_user_ref,
+    p_auth_user_id,
+    v_grant,
+    v_grant,
+    now()
+  )
+  on conflict (user_ref) do update
+  set auth_user_id = excluded.auth_user_id,
+      updated_at = now()
+  returning public.mvp_user_credits.balance,
+            public.mvp_user_credits.free_granted_at
+  into balance, free_granted_at;
+
+  if not exists (
+    select 1
+    from public.mvp_credit_ledger l
+    where l.user_ref = v_user_ref
+      and l.event_type = 'free_grant'
+  ) then
+    insert into public.mvp_credit_ledger (
+      user_ref,
+      auth_user_id,
+      event_type,
+      amount,
+      balance_after,
+      metadata
+    )
+    values (
+      v_user_ref,
+      p_auth_user_id,
+      'free_grant',
+      v_grant,
+      balance,
+      jsonb_build_object('source', 'claim_mvp_user_credits')
+    );
+  end if;
+
+  return next;
+end;
+$$;
+
+revoke all on function public.claim_mvp_user_credits(text, uuid, integer) from public;
+revoke execute on function public.claim_mvp_user_credits(text, uuid, integer) from anon;
+revoke execute on function public.claim_mvp_user_credits(text, uuid, integer) from authenticated;
+grant execute on function public.claim_mvp_user_credits(text, uuid, integer) to service_role;
+
+create or replace function public.spend_mvp_user_credits(
+  p_user_ref text,
+  p_auth_user_id uuid,
+  p_amount integer,
+  p_metadata jsonb default '{}'::jsonb
+)
+returns table (
+  ok boolean,
+  balance integer,
+  message text
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_ref text;
+  v_amount integer;
+begin
+  v_user_ref := nullif(left(trim(coalesce(p_user_ref, '')), 64), '');
+  v_amount := greatest(0, coalesce(p_amount, 0));
+
+  if v_user_ref is null then
+    return query select false, 0, 'missing user ref';
+    return;
+  end if;
+
+  if v_amount = 0 then
+    return query
+      select true, c.balance, 'ok'
+      from public.mvp_user_credits c
+      where c.user_ref = v_user_ref
+        and c.auth_user_id = p_auth_user_id;
+    return;
+  end if;
+
+  update public.mvp_user_credits c
+  set balance = c.balance - v_amount,
+      updated_at = now()
+  where c.user_ref = v_user_ref
+    and c.auth_user_id = p_auth_user_id
+    and c.balance >= v_amount
+  returning c.balance into balance;
+
+  if balance is null then
+    select c.balance
+    into balance
+    from public.mvp_user_credits c
+    where c.user_ref = v_user_ref
+      and c.auth_user_id = p_auth_user_id;
+
+    return query select false, coalesce(balance, 0), 'insufficient credits';
+    return;
+  end if;
+
+  insert into public.mvp_credit_ledger (
+    user_ref,
+    auth_user_id,
+    event_type,
+    amount,
+    balance_after,
+    metadata
+  )
+  values (
+    v_user_ref,
+    p_auth_user_id,
+    'pack_spend',
+    -v_amount,
+    balance,
+    coalesce(p_metadata, '{}'::jsonb)
+  );
+
+  return query select true, balance, 'ok';
+end;
+$$;
+
+revoke all on function public.spend_mvp_user_credits(text, uuid, integer, jsonb) from public;
+revoke execute on function public.spend_mvp_user_credits(text, uuid, integer, jsonb) from anon;
+revoke execute on function public.spend_mvp_user_credits(text, uuid, integer, jsonb) from authenticated;
+grant execute on function public.spend_mvp_user_credits(text, uuid, integer, jsonb) to service_role;
+
+create or replace function public.refund_mvp_user_credits(
+  p_user_ref text,
+  p_auth_user_id uuid,
+  p_amount integer,
+  p_metadata jsonb default '{}'::jsonb
+)
+returns table (
+  balance integer
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_ref text;
+  v_amount integer;
+begin
+  v_user_ref := nullif(left(trim(coalesce(p_user_ref, '')), 64), '');
+  v_amount := greatest(0, coalesce(p_amount, 0));
+
+  if v_user_ref is null then
+    raise exception 'missing user ref';
+  end if;
+
+  update public.mvp_user_credits c
+  set balance = c.balance + v_amount,
+      updated_at = now()
+  where c.user_ref = v_user_ref
+    and c.auth_user_id = p_auth_user_id
+  returning c.balance into balance;
+
+  if balance is null then
+    raise exception 'credit row not found';
+  end if;
+
+  insert into public.mvp_credit_ledger (
+    user_ref,
+    auth_user_id,
+    event_type,
+    amount,
+    balance_after,
+    metadata
+  )
+  values (
+    v_user_ref,
+    p_auth_user_id,
+    'pack_refund',
+    v_amount,
+    balance,
+    coalesce(p_metadata, '{}'::jsonb)
+  );
+
+  return next;
+end;
+$$;
+
+revoke all on function public.refund_mvp_user_credits(text, uuid, integer, jsonb) from public;
+revoke execute on function public.refund_mvp_user_credits(text, uuid, integer, jsonb) from anon;
+revoke execute on function public.refund_mvp_user_credits(text, uuid, integer, jsonb) from authenticated;
+grant execute on function public.refund_mvp_user_credits(text, uuid, integer, jsonb) to service_role;
 
 create or replace function public.enqueue_mvp_market_key_invalidation(
   p_comparable_key text,
@@ -993,15 +1579,20 @@ revoke execute on function public.reserve_mvp_pool_candidates(smallint, text, in
 revoke execute on function public.reserve_mvp_pool_candidates(smallint, text, integer, integer) from authenticated;
 grant execute on function public.reserve_mvp_pool_candidates(smallint, text, integer, integer) to service_role;
 
+drop function if exists public.commit_mvp_pool_reveal(bigint);
+
 create or replace function public.commit_mvp_pool_reveal(
   p_pid bigint
 )
-returns void
+returns boolean
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_updated int;
 begin
+  -- P0-4: status/reserved_until 검증. 같은 reservation이 살아있는 동안만 commit.
   update public.mvp_candidate_pool
   set exposure_count = exposure_count + 1,
       status = case
@@ -1010,7 +1601,12 @@ begin
       end,
       reserved_until = null,
       updated_at = now()
-  where pid = p_pid;
+  where pid = p_pid
+    and status = 'reserved'
+    and reserved_until is not null
+    and reserved_until > now();
+  get diagnostics v_updated = row_count;
+  return v_updated > 0;
 end;
 $$;
 
@@ -1112,3 +1708,77 @@ where r.detail_status = 'done'
   and p.needs_review is false
   and coalesce(nullif(r.sale_status, ''), 'SELLING') in ('SELLING', 'AVAILABLE', 'ON_SALE', 'ACTIVE')
   and (cp.pid is null or cp.status in ('ready', 'reserved', 'spent'));
+-- P0-3: rate limiter for user-facing paid endpoints (packs/open 등).
+-- 단일 row per bucket. window roll 시 overwrite → cleanup 불필요.
+
+create table if not exists public.mvp_rate_limits (
+  bucket_key text primary key,
+  window_started_at timestamptz not null,
+  request_count integer not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.mvp_rate_limits enable row level security;
+
+create or replace function public.check_mvp_rate_limit(
+  p_bucket_key text,
+  p_max_requests integer,
+  p_window_seconds integer
+)
+returns table (
+  allowed boolean,
+  current_count integer,
+  reset_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_now timestamptz := now();
+  v_window_start timestamptz;
+  v_count integer;
+  v_key text;
+  v_max integer;
+  v_window integer;
+begin
+  v_key := nullif(left(trim(coalesce(p_bucket_key, '')), 200), '');
+  v_max := greatest(1, coalesce(p_max_requests, 1));
+  v_window := greatest(1, coalesce(p_window_seconds, 1));
+
+  if v_key is null then
+    return query select true, 0, v_now;
+    return;
+  end if;
+
+  v_window_start := to_timestamp(
+    floor(extract(epoch from v_now)::numeric / v_window) * v_window
+  );
+
+  insert into public.mvp_rate_limits (bucket_key, window_started_at, request_count, updated_at)
+  values (v_key, v_window_start, 1, v_now)
+  on conflict (bucket_key) do update set
+    window_started_at = case
+      when public.mvp_rate_limits.window_started_at = excluded.window_started_at
+        then public.mvp_rate_limits.window_started_at
+      else excluded.window_started_at
+    end,
+    request_count = case
+      when public.mvp_rate_limits.window_started_at = excluded.window_started_at
+        then public.mvp_rate_limits.request_count + 1
+      else 1
+    end,
+    updated_at = v_now
+  returning public.mvp_rate_limits.request_count into v_count;
+
+  return query select
+    v_count <= v_max,
+    v_count,
+    v_window_start + make_interval(secs => v_window);
+end;
+$$;
+
+revoke all on function public.check_mvp_rate_limit(text, integer, integer) from public;
+revoke execute on function public.check_mvp_rate_limit(text, integer, integer) from anon;
+revoke execute on function public.check_mvp_rate_limit(text, integer, integer) from authenticated;
+grant execute on function public.check_mvp_rate_limit(text, integer, integer) to service_role;

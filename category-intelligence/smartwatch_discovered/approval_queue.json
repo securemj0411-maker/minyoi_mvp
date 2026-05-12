@@ -1,0 +1,390 @@
+{
+  "version": 1,
+  "category": "smartwatch_discovered",
+  "updated_at": "2026-05-10T21:12:06.568Z",
+  "instructions": [
+    "Set approved=true only for entries you want to promote into runtime.",
+    "Items with non-empty riskFlags are shown for review but are skipped by --apply until the underlying risk is fixed.",
+    "Set rejected=true for entries you explicitly do not want to see again.",
+    "Leave both false for pending review.",
+    "promote-catalog --apply reads only approved=true and rejected!=true entries."
+  ],
+  "items": [
+    {
+      "key": "sku:삼성-갤럭시-워치7-44mm-실버",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "삼성-갤럭시-워치7-44mm-실버",
+      "modelName": "삼성 갤럭시 워치7 44mm 실버",
+      "brand": "Samsung",
+      "category": "smartwatch",
+      "aliases": [
+        "삼성 갤럭시 워치7 44mm 실버",
+        "갤럭시 워치7",
+        "44mm",
+        "실버",
+        "본체",
+        "스트랩 포함",
+        "상태 양호",
+        "충전기 본품",
+        "애플워치 밴드",
+        "스포츠밴드",
+        "타이젠OS"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        1
+      ],
+      "riskFlags": [],
+      "note": "",
+      "candidate": {
+        "id": "삼성-갤럭시-워치7-44mm-실버",
+        "brand": "Samsung",
+        "category": "smartwatch",
+        "modelName": "삼성 갤럭시 워치7 44mm 실버",
+        "aliases": [
+          "삼성 갤럭시 워치7 44mm 실버",
+          "갤럭시 워치7",
+          "44mm",
+          "실버",
+          "본체",
+          "스트랩 포함",
+          "상태 양호",
+          "충전기 본품",
+          "애플워치 밴드",
+          "스포츠밴드",
+          "타이젠OS"
+        ],
+        "mustContain": [
+          [
+            "삼성 갤럭시 워치7 44mm 실버",
+            "갤럭시 워치7",
+            "44mm",
+            "실버",
+            "본체",
+            "스트랩 포함",
+            "상태 양호",
+            "충전기 본품",
+            "애플워치 밴드",
+            "스포츠밴드",
+            "타이젠OS"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "smartwatch_discovered",
+        "sourceClusterIds": [
+          1
+        ],
+        "promotionHash": "fedadf3d0e95ec1b",
+        "riskFlags": []
+      }
+    },
+    {
+      "key": "sku:애플워치-울트라2-내추럴-49mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "애플워치-울트라2-내추럴-49mm",
+      "modelName": "애플워치 울트라2 내추럴 49mm",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "애플워치 울트라2 내추럴 49mm",
+        "애플워치 울트라2",
+        "내추럴",
+        "49mm",
+        "배터리 95프로",
+        "SS급",
+        "최상급",
+        "기능 정상",
+        "셀룰러 LTE",
+        "티타늄바디",
+        "사파이어글라스"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        3
+      ],
+      "riskFlags": [],
+      "note": "",
+      "candidate": {
+        "id": "애플워치-울트라2-내추럴-49mm",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "애플워치 울트라2 내추럴 49mm",
+        "aliases": [
+          "애플워치 울트라2 내추럴 49mm",
+          "애플워치 울트라2",
+          "내추럴",
+          "49mm",
+          "배터리 95프로",
+          "SS급",
+          "최상급",
+          "기능 정상",
+          "셀룰러 LTE",
+          "티타늄바디",
+          "사파이어글라스"
+        ],
+        "mustContain": [
+          [
+            "애플워치 울트라2 내추럴 49mm",
+            "애플워치 울트라2",
+            "내추럴",
+            "49mm",
+            "배터리 95프로",
+            "SS급",
+            "최상급",
+            "기능 정상",
+            "셀룰러 LTE",
+            "티타늄바디",
+            "사파이어글라스"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "smartwatch_discovered",
+        "sourceClusterIds": [
+          3
+        ],
+        "promotionHash": "dce27889e26fb69e",
+        "riskFlags": []
+      }
+    },
+    {
+      "key": "sku:애플워치-se-40mm-44mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "애플워치-se-40mm-44mm",
+      "modelName": "애플워치 SE 40mm / 44mm",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "애플워치 SE 40mm / 44mm",
+        "애플워치 SE",
+        "40mm",
+        "44mm",
+        "정품",
+        "본체",
+        "스트랩 포함",
+        "거치대 포함",
+        "부품용(일부)",
+        "락걸림",
+        "생활잔기스"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        6
+      ],
+      "riskFlags": [
+        "smartwatch_size_mixed",
+        "applewatch_se_generation_missing",
+        "sku_alias_contains_listing_risk"
+      ],
+      "note": "",
+      "candidate": {
+        "id": "애플워치-se-40mm-44mm",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "애플워치 SE 40mm / 44mm",
+        "aliases": [
+          "애플워치 SE 40mm / 44mm",
+          "애플워치 SE",
+          "40mm",
+          "44mm",
+          "정품",
+          "본체",
+          "스트랩 포함",
+          "거치대 포함",
+          "부품용(일부)",
+          "락걸림",
+          "생활잔기스"
+        ],
+        "mustContain": [
+          [
+            "애플워치 SE 40mm / 44mm",
+            "애플워치 SE",
+            "40mm",
+            "44mm",
+            "정품",
+            "본체",
+            "스트랩 포함",
+            "거치대 포함",
+            "부품용(일부)",
+            "락걸림",
+            "생활잔기스"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "smartwatch_discovered",
+        "sourceClusterIds": [
+          6
+        ],
+        "promotionHash": "5d53d31e68ca9079",
+        "riskFlags": [
+          "smartwatch_size_mixed",
+          "applewatch_se_generation_missing",
+          "sku_alias_contains_listing_risk"
+        ]
+      }
+    },
+    {
+      "key": "sku:애플워치-se-44mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "애플워치-se-44mm",
+      "modelName": "애플워치 SE 44mm",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "애플워치 SE 44mm",
+        "애플워치 SE",
+        "44mm",
+        "풀박스",
+        "배터리 성능",
+        "미드나이트",
+        "나이키 에디션",
+        "충전기 포함",
+        "실사용 문제 없음",
+        "기스 없음",
+        "GPS"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        7
+      ],
+      "riskFlags": [
+        "applewatch_se_generation_missing"
+      ],
+      "note": "",
+      "candidate": {
+        "id": "애플워치-se-44mm",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "애플워치 SE 44mm",
+        "aliases": [
+          "애플워치 SE 44mm",
+          "애플워치 SE",
+          "44mm",
+          "풀박스",
+          "배터리 성능",
+          "미드나이트",
+          "나이키 에디션",
+          "충전기 포함",
+          "실사용 문제 없음",
+          "기스 없음",
+          "GPS"
+        ],
+        "mustContain": [
+          [
+            "애플워치 SE 44mm",
+            "애플워치 SE",
+            "44mm",
+            "풀박스",
+            "배터리 성능",
+            "미드나이트",
+            "나이키 에디션",
+            "충전기 포함",
+            "실사용 문제 없음",
+            "기스 없음",
+            "GPS"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "smartwatch_discovered",
+        "sourceClusterIds": [
+          7
+        ],
+        "promotionHash": "6cdc1be22ccfb78e",
+        "riskFlags": [
+          "applewatch_se_generation_missing"
+        ]
+      }
+    },
+    {
+      "key": "sku:apple-watch-se-40mm",
+      "kind": "sku",
+      "approved": false,
+      "rejected": false,
+      "id": "apple-watch-se-40mm",
+      "modelName": "Apple Watch SE 40mm",
+      "brand": "Apple",
+      "category": "smartwatch",
+      "aliases": [
+        "Apple Watch SE 40mm",
+        "애플워치",
+        "SE",
+        "40mm",
+        "배터리성능",
+        "풀박스",
+        "스트랩 포함",
+        "충전기 포함",
+        "S급",
+        "정상작동",
+        "초기화"
+      ],
+      "medianFallbackKrw": 300000,
+      "sourceClusterIds": [
+        5
+      ],
+      "riskFlags": [
+        "applewatch_se_generation_missing"
+      ],
+      "note": "",
+      "candidate": {
+        "id": "apple-watch-se-40mm",
+        "brand": "Apple",
+        "category": "smartwatch",
+        "modelName": "Apple Watch SE 40mm",
+        "aliases": [
+          "Apple Watch SE 40mm",
+          "애플워치",
+          "SE",
+          "40mm",
+          "배터리성능",
+          "풀박스",
+          "스트랩 포함",
+          "충전기 포함",
+          "S급",
+          "정상작동",
+          "초기화"
+        ],
+        "mustContain": [
+          [
+            "Apple Watch SE 40mm",
+            "애플워치",
+            "SE",
+            "40mm",
+            "배터리성능",
+            "풀박스",
+            "스트랩 포함",
+            "충전기 포함",
+            "S급",
+            "정상작동",
+            "초기화"
+          ]
+        ],
+        "mustNotContain": [],
+        "msrpKrw": 600000,
+        "released": 2026,
+        "sourceCategory": "smartwatch_discovered",
+        "sourceClusterIds": [
+          5
+        ],
+        "promotionHash": "d642cb38c7be4f3f",
+        "riskFlags": [
+          "applewatch_se_generation_missing"
+        ]
+      }
+    }
+  ]
+}

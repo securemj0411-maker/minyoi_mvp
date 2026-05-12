@@ -1,6 +1,11 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  bandFromProfit,
+  computePoolConfidence,
+  poolSkipReason,
+} from "../src/lib/pool-policy.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const appDir = path.join(__dirname, "..");
@@ -23,18 +28,9 @@ async function loadEnvFile(filePath) {
 await loadEnvFile(path.join(appDir, ".env.local"));
 await loadEnvFile(path.join(appDir, ".env"));
 
-const SELLING_FEE_RATE = 0.035;
 const RESELL_SHIPPING_FEE = 3500;
 const SAFETY_BUFFER = 5000;
-const POOL_CONFIDENCE_FLOOR = 0.7;
-const POOL_BLOCK_FLAGS = [
-  "coarse_market_price",
-  "option_parse_review",
-  "option_needs_review",
-  "ai_review_unavailable",
-  "weak_description",
-  "risk_keyword_review",
-];
+const SELLING_FEE_RATE = 0.035;
 
 function supabaseRestUrl() {
   const raw = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -57,34 +53,6 @@ async function fetchJson(pathname) {
     throw new Error(`${pathname} ${res.status}: ${await res.text()}`);
   }
   return res.json();
-}
-
-function bandFromProfit(profitMin, profitMax) {
-  const avg = Math.round((profitMin + profitMax) / 2);
-  if (avg >= 70_000) return 3;
-  if (avg >= 40_000) return 2;
-  if (avg >= 20_000) return 1;
-  return null;
-}
-
-function computeConfidence(parseConfidence, scoreFlags) {
-  let confidence = Math.max(0, Math.min(1, Number(parseConfidence ?? 0.5) || 0.5));
-  const flags = scoreFlags ?? [];
-  if (flags.includes("ai_normal")) confidence = Math.min(1, confidence + 0.2);
-  if (flags.includes("ai_review_unavailable")) confidence = Math.max(0, confidence - 0.1);
-  if (flags.some((flag) => typeof flag === "string" && flag.endsWith("_low_confidence"))) {
-    confidence = Math.max(0, confidence - 0.15);
-  }
-  return Math.round(confidence * 100) / 100;
-}
-
-function hasPoolBlockFlag(scoreFlags) {
-  const flags = scoreFlags ?? [];
-  return flags.some((flag) => (
-    POOL_BLOCK_FLAGS.includes(flag) ||
-    (typeof flag === "string" && flag.endsWith("_low_confidence")) ||
-    (flag === "deep_discount_review" && !flags.includes("ai_normal"))
-  ));
 }
 
 function addCount(map, key) {
@@ -173,18 +141,23 @@ for (const raw of rawRows) {
   const profitMax = Math.max(0, skuMedian - estimatedBuyCost - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
   const profitMin = Math.max(0, skuMedian - (price + (shippingFeeGeneral ?? shippingFee)) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
   const band = bandFromProfit(profitMin, profitMax);
-  const confidence = computeConfidence(parsed?.parse_confidence, scoreFlags);
+  const confidence = computePoolConfidence(parsed?.parse_confidence, scoreFlags);
 
   const diagnostic = { ...raw, ...listing, profitMin, profitMax, scoreFlags, confidence, parsed };
+  const skipReason = poolSkipReason({
+    profitMin,
+    price,
+    skuMedian,
+    riskHits: Number(analysis?.risk_hits ?? 0),
+    thumbnailUrl: listing.thumbnail_url,
+    categoryCanEnterPool: true,
+    comparableKey: parsed?.comparable_key,
+    needsReview: Boolean(parsed?.needs_review),
+    confidence,
+    scoreFlags,
+  });
   if (band === null) reject("profit_below_band", diagnostic);
-  else if (profitMin <= 0) reject("profit_min_zero", diagnostic);
-  else if (price >= skuMedian) reject("price_gte_median", diagnostic);
-  else if (Number(analysis?.risk_hits ?? 0) > 0) reject("risk_hits", diagnostic);
-  else if (!listing.thumbnail_url) reject("no_thumbnail", diagnostic);
-  else if (!parsed?.comparable_key) reject("no_comparable_key", diagnostic);
-  else if (parsed?.needs_review) reject("parsed_needs_review", diagnostic);
-  else if (confidence < POOL_CONFIDENCE_FLOOR) reject("confidence_below_0_7", diagnostic);
-  else if (hasPoolBlockFlag(scoreFlags)) reject("blocked_flag", diagnostic);
+  else if (skipReason) reject(skipReason, diagnostic);
   else simulatedPass += 1;
 }
 

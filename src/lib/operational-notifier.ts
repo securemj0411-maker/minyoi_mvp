@@ -81,12 +81,18 @@ function buildMessage(context: NotifyContext, event: NotifyResult["event"], aler
   ].join("\n");
 }
 
-async function sendTelegramMessage(message: string): Promise<Omit<NotifyResult, "event">> {
+async function sendTelegramMessage(
+  message: string,
+  options: { timeoutMs?: number } = {},
+): Promise<Omit<NotifyResult, "event">> {
   const config = telegramConfig();
   if (!config) {
     return { enabled: false, sent: false, reason: "telegram_env_missing" };
   }
 
+  const timeoutMs = options.timeoutMs ?? 0;
+  const ctrl = timeoutMs > 0 ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), timeoutMs) : null;
   try {
     const res = await fetch(`https://api.telegram.org/bot${config.token}/sendMessage`, {
       method: "POST",
@@ -96,6 +102,7 @@ async function sendTelegramMessage(message: string): Promise<Omit<NotifyResult, 
         text: message,
         disable_web_page_preview: true,
       }),
+      signal: ctrl?.signal,
     });
     if (!res.ok) {
       return { enabled: true, sent: false, reason: `telegram_${res.status}` };
@@ -107,7 +114,36 @@ async function sendTelegramMessage(message: string): Promise<Omit<NotifyResult, 
       sent: false,
       reason: err instanceof Error ? err.message : String(err),
     };
+  } finally {
+    if (timer) clearTimeout(timer);
   }
+}
+
+export type CriticalIncidentInput = {
+  source: string;
+  summary: string;
+  context?: Record<string, unknown>;
+};
+
+export type CriticalIncidentResult = Omit<NotifyResult, "event">;
+
+export async function reportCriticalIncident(
+  input: CriticalIncidentInput,
+): Promise<CriticalIncidentResult> {
+  const lines = [
+    "[미뇨이] 운영 사고",
+    `source: ${input.source}`,
+    `summary: ${input.summary}`,
+    `at: ${kstTime(new Date().toISOString())}`,
+  ];
+  if (input.context && Object.keys(input.context).length > 0) {
+    lines.push("", "context:");
+    for (const [key, value] of Object.entries(input.context)) {
+      const rendered = typeof value === "string" ? value : JSON.stringify(value);
+      lines.push(`  ${key}: ${rendered}`);
+    }
+  }
+  return sendTelegramMessage(lines.join("\n"), { timeoutMs: 5000 });
 }
 
 export async function notifyOperationalAlerts(context: NotifyContext): Promise<NotifyResult> {

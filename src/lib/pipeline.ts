@@ -9,17 +9,20 @@ import { collectSearchItems, fetchDetail } from "@/lib/bunjang";
 import { CATALOG, normalize, ruleMatch, type Sku } from "@/lib/catalog";
 import { GENERATED_NOISE_RULES } from "@/lib/generated/noise-rules";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
+import { soldOutTextHits } from "@/lib/sold-out";
+import { jsonBody } from "@/lib/supabase-rest";
 
 // ─── 분류 키워드 ─────────────────────────────────────────────────────────────
 const BUYING_KEYWORDS = [
   "구합니다", "구해요", "삽니다", "급구", "매입", "최고가", "전국출장", "구매합니다",
   "구매만 합니다", "매입전문", "매입업체", "출장매입", "매입합니다", "구매원함", "매입문의",
+  "구합니", "구해봅니다", "구해 봅니다", "구매함",
   ...GENERATED_NOISE_RULES.buying,
 ];
 const CALLOUT_KEYWORDS = [
   "사지마세요", "사기당함", "사기꾼", "저격", "도용", "짝퉁", "조심",
   "타오바오", "타오바이", "taobao", "짭", "가품", "레플", "레플리카",
-  "이미테이션", "정품아님", "정품 아님", "비정품",
+  "이미테이션", "정품아님", "정품 아님", "비정품", "차이팟",
   ...GENERATED_NOISE_RULES.callout,
 ];
 const PARTS_KEYWORDS = [
@@ -34,9 +37,12 @@ const DAMAGED_KEYWORDS = [
   "충전이안됨", "충전이안되는", "충전불량", "충전 불량",
   "툭툭", "끊김", "잡음", "소리 안", "소리가 안", "노캔 안됨",
   "노캔키면", "알갱이 소리", "소리 들리는",
-  "수리이력", "찍힘 심", "기스 심", "액정깨짐", "잠김", "초기화불가",
+  "수리이력", "찍힘 심", "기스 심", "파손", "액정파손", "액정 파손",
+  "액정깨짐", "액정 깨짐", "액정 멍", "액정에 멍", "화면 멍", "디스플레이 멍",
+  "멍있음", "멍 있음", "잠김", "초기화불가",
   "배터리 광탈", "배터리효율 낮", "방전",
   "잔상", "번인", "터치불량", "터치 불량", "페이스아이디 안됨", "face id 안됨",
+  "줄감", "세로줄", "가로줄", "불량화소",
   "카메라불량", "카메라 불량", "유심인식불량", "유심 인식 불량", "침수",
   "분실폰", "도난폰", "아이클라우드 잠김", "icloud 잠김", "미납폰",
   ...GENERATED_NOISE_RULES.damaged,
@@ -45,8 +51,12 @@ const ACCESSORY_TITLE_KEYWORDS = [
   "스트랩", "밴드", "파우치", "키링", "거치대", "충전기", "어댑터",
   "브레이슬릿", "루프", "필름", "강화유리", "커버", "실리콘",
   "악세사리", "악세서리", "이어팁", "보호캡", "메탈밴드", "나토밴드",
+  "이어패드", "이어 패드", "이어쿠션", "이어 쿠션", "헤드쿠션", "헤드 쿠션",
+  "스탠드", "충전독", "충전 독",
+  "모니터암", "모니터 암", "받침대", "브라켓",
   "밀레니즈", "밀레니즈 루프", "가죽스트랩", "시계줄", "충전기케이블",
   "보호필름", "메탈스트랩", "나토 스트랩", "퀵체인지 스트랩", "스포츠밴드", "d버클",
+  "링크브레이슬릿", "링크 브레이슬릿", "링블", "싱글투어", "싱글 투어",
   ...GENERATED_NOISE_RULES.accessory,
 ];
 const MULTI_KEYWORDS = ["일괄", "묶음", "각각", "선택", "여러개", "재고", ...GENERATED_NOISE_RULES.multi];
@@ -59,7 +69,8 @@ const COMMERCIAL_STRONG_KEYWORDS = [
   "극소량보유", "극소량 보유", "완납폰", "제휴카드",
   "유심 그대로", "유심그대로",
   "재고 유무", "재고유무", "재고확인", "전색상", "재입고", "품절임박",
-  "상품번호", "대량구매", "매장방문", "중고폰 구매", "부산중고폰",
+  "상품번호", "대량구매", "대량 판매", "대량판매", "도매", "세금계산서", "매장방문", "중고폰 구매", "부산중고폰",
+  "단기 렌탈", "장기 렌탈", "렌탈", "임대", "대여",
   "1년에 딱 한번", "저렴한시기", "저렴한 시기", "전색상입고", "전색상 입고",
   ...GENERATED_NOISE_RULES.commercialStrong,
 ];
@@ -105,21 +116,101 @@ function hasNormalSignal(title: string, desc: string): boolean {
   return containsAny(`${title}\n${desc}`, NORMAL_SIGNALS).length > 0;
 }
 
+function buyingHits(title: string, desc: string): string[] {
+  const hits = containsAny(title, BUYING_KEYWORDS);
+  const normalizedTitle = nrm(title);
+  const normalizedText = nrm(`${title}\n${desc}`);
+  const historicalPurchaseSignal =
+    /(구매\s*(?:내역|영수증|인증|시기|날짜|일자|처|당시|후|한|했|했습니다)|\d{2,4}\s*년.{0,8}구매|구매한지|구매하고|구매하여|구매해서|구매했던|구매해놓고)/.test(normalizedText);
+
+  if (
+    !historicalPurchaseSignal &&
+    /(구매\s*합니다|구매합니다|구매\s*원합니다|구매원합니다|구매\s*원함|구매원함|정품만\s*구매|삽니다|급구|매입\s*합니다|매입합니다|(?:정품만|가격|선에서|\d+\s*만원).{0,16}(구합니다|구해요|구해봅니다|구해\s*봅니다))/.test(normalizedText)
+  ) {
+    hits.push("buying_intent_text");
+  }
+
+  if (
+    !historicalPurchaseSignal &&
+    /(?:^|[\s/])구매$/.test(normalizedTitle) &&
+    !/(판매|팝니다|급처|처분|미개봉|새상품|풀박|풀박스|정상|상태)/.test(normalizedText)
+  ) {
+    hits.push("buying_title_suffix");
+  }
+
+  return [...new Set(hits)];
+}
+
 function accessoryTitleHits(title: string): string[] {
-  const hits = containsAny(title, ACCESSORY_TITLE_KEYWORDS);
+  let hits = containsAny(title, ACCESSORY_TITLE_KEYWORDS);
   const tn = nrm(title);
+  const compact = tn.replace(/\s+/g, "");
+  if (/후지\s*필름|fujifilm/i.test(tn)) {
+    hits = hits.filter((hit) => hit !== "필름");
+  }
   const fullSetTokens = ["풀세트", "풀구성", "풀박스"];
-  if (tn.includes("케이스") && !fullSetTokens.some((t) => tn.includes(t))) {
+  const productToken = "(에어팟|airpods|소니|sony|보스|bose|비츠|beats|젠하이저|sennheiser|헤드폰|헤드셋|맥스|max|wh|xm|qc)";
+  const accessoryToken = "(케이스|파우치|거치대|충전선|케이블|이어쿠션|이어패드|헤드쿠션|스마트케이스|커버)";
+  const includedAccessorySignal =
+    fullSetTokens.some((t) => compact.includes(t)) ||
+    new RegExp(`${accessoryToken}(?:포함|있|있음|o|같이|드림|드립니다|까지)`, "i").test(compact) ||
+    (isFullSizeHeadphoneText(tn) && new RegExp(`(?:\\+|plus|및|랑|와|과)${accessoryToken}$`, "i").test(compact)) ||
+    new RegExp(`${productToken}.{0,50}(?:\\+|plus|및|랑|와|과)${accessoryToken}$`, "i").test(compact) ||
+    new RegExp(`${productToken}.{0,50}${accessoryToken}(?:\\+|까지|포함|같이|드림|드립니다|있|있음|o)`, "i").test(compact) ||
+    new RegExp(`${accessoryToken}(?:\\+|까지|포함|같이).{0,24}${productToken}`, "i").test(compact) ||
+    /(?:구성품|본품|본체).{0,16}(케이스|파우치|거치대|충전선|케이블|스마트케이스)/.test(tn);
+  if (includedAccessorySignal) {
+    hits = hits.filter((hit) => !["케이스", "파우치", "거치대", "스탠드", "이어패드", "이어 패드", "이어쿠션", "이어 쿠션", "헤드쿠션", "헤드 쿠션", "커버", "케이블", "충전기"].includes(hit));
+  }
+  if (isEarbudProtectiveCaseOnlyTitle(tn, compact)) {
+    hits.push("케이스");
+  } else if (tn.includes("케이스") && !includedAccessorySignal) {
     hits.push("케이스");
   }
+  if (
+    !fullSetTokens.some((t) => compact.includes(t)) &&
+    (/(?:에어팟|airpods|애플워치|applewatch|갤럭시워치|galaxywatch).{0,12}박스(?:만|판매|팝니다|삽니다|구함|$)/i.test(tn) ||
+      /(?:박스만|박스판매|박스팝니다|박스삽니다|박스구함)/.test(compact))
+  ) {
+    hits.push("box_only");
+  }
   return hits;
+}
+
+function isEarphoneLikeText(text: string): boolean {
+  return /(에어팟|airpods|버즈|buds|이어버드|이어폰)/i.test(text);
+}
+
+function isFullSizeHeadphoneText(text: string): boolean {
+  return /(에어팟\s*맥스|airpods\s*max|헤드폰|헤드셋|headphone|headset|소니|sony|보스|bose|비츠|beats|젠하이저|sennheiser|wh[-\s]?\d|xm[3-6]|qc\s*(?:울트라|ultra|45)|quietcomfort)/i.test(text);
+}
+
+function hasCompleteEarphoneSetSignal(normalized: string, compact: string): boolean {
+  if (/(풀박|풀박스|풀세트|풀구성|본품\s*전체|구성품\s*전부|케이스\s*포함|충전케이스\s*포함)/.test(normalized)) {
+    return true;
+  }
+  return /(양쪽|좌우|둘다|둘 다)/.test(normalized) && /(본체|케이스|충전케이스)/.test(compact);
+}
+
+function isEarbudProtectiveCaseOnlyTitle(normalizedTitle: string, compactTitle: string, normalizedText = normalizedTitle, compactText = compactTitle): boolean {
+  if (!isEarphoneLikeText(normalizedTitle) || isFullSizeHeadphoneText(normalizedTitle)) return false;
+  if (!/(케이스|case|커버)/i.test(normalizedTitle)) return false;
+  if (/(충전\s*케이스|충전케이스)/.test(normalizedTitle)) return false;
+  if (hasCompleteEarphoneSetSignal(normalizedText, compactText)) return false;
+  if (/(풀박|풀박스|풀세트|풀구성|본품전체|구성품전부)/.test(compactText)) return false;
+
+  return (
+    /(?:케이스|case|커버)(?:단독|단품|만|판매|팝니다|새상품|미개봉|급처|처분)?$/i.test(compactTitle) ||
+    /(?:단독|단품|만).{0,8}(?:케이스|case|커버)|(?:케이스|case|커버).{0,8}(?:단독|단품|만|새상품|미개봉)/i.test(normalizedTitle)
+  );
 }
 
 export function isSideOnlyEarbudListing(title: string, desc = ""): boolean {
   const text = `${title}\n${desc}`;
   const normalized = nrm(text);
   const compact = normalized.replace(/\s+/g, "");
-  const isEarbud = /(에어팟|airpods|버즈|buds|이어버드|이어폰)/i.test(normalized);
+  if (isFullSizeHeadphoneText(normalized)) return false;
+  const isEarbud = isEarphoneLikeText(normalized);
   if (!isEarbud) return false;
 
   const sideSignal =
@@ -127,7 +218,7 @@ export function isSideOnlyEarbudListing(title: string, desc = ""): boolean {
     /(?:^|[^a-z가-힣])(l|r)(?:쪽|유닛|unit|낱개|단품|만|$)/i.test(normalized);
   if (!sideSignal) return false;
 
-  const fullProductSignal = /(양쪽|좌우|둘다|둘 다|풀박|풀박스|풀세트|풀구성|본품\s*전체|구성품\s*전부|케이스\s*포함)/.test(normalized);
+  const fullProductSignal = hasCompleteEarphoneSetSignal(normalized, compact);
   const explicitUnitSignal = /(유닛|이어버드|낱개|단품|한쪽|한짝|한알|쪽만|만\s*판매)/.test(normalized);
 
   // "에어팟 프로 2세대 왼쪽 8핀"처럼 유닛이라는 단어가 없어도
@@ -139,14 +230,27 @@ export function isSideOnlyEarbudListing(title: string, desc = ""): boolean {
 
 function partsHits(title: string, desc: string): string[] {
   const text = `${title}\n${desc}`;
-  const hits = containsAny(text, PARTS_KEYWORDS);
+  let hits = containsAny(text, PARTS_KEYWORDS);
   const compactTitle = nrm(title).replace(/\s+/g, "");
+  const normalizedTitle = nrm(title);
   const compactText = nrm(text).replace(/\s+/g, "");
+  const normalizedText = nrm(text);
+  const fullSizeHeadphone = isFullSizeHeadphoneText(normalizedText);
+  const explicitEarbudPart =
+    /(유닛|이어버드|충전케이스|충전\s*케이스|왼쪽|오른쪽|좌측|우측|한쪽|한짝|한알|l\s*유닛|r\s*유닛|left|right)/i.test(normalizedText);
+  const protectiveCaseOnly = isEarbudProtectiveCaseOnlyTitle(normalizedTitle, compactTitle, normalizedText, compactText);
+
+  if (fullSizeHeadphone && !explicitEarbudPart) {
+    hits = hits.filter((hit) => hit !== "단품" && hit !== "본체만");
+  }
+  if (protectiveCaseOnly) {
+    hits = hits.filter((hit) => !["케이스만", "단품", "낱개", "호환"].includes(hit));
+  }
 
   if (/(왼쪽|오른쪽|좌측|우측).{0,8}(유닛|이어버드)|(?:유닛|이어버드).{0,8}(왼쪽|오른쪽|좌측|우측)/.test(compactText)) {
     hits.push("side_unit");
   }
-  if (/(본체|충전케이스).{0,8}(단품|만|판매|팝니다)|(?:단품|만).{0,8}(본체|충전케이스)/.test(compactText)) {
+  if (!fullSizeHeadphone && /(본체|충전케이스).{0,8}(단품|만|판매|팝니다)|(?:단품|만).{0,8}(본체|충전케이스)/.test(compactText)) {
     hits.push("case_only");
   }
   if (/(l|r)\s*\/?\s*(유닛|unit)|\b(l|r)\b.{0,8}(낱개|단품)/i.test(title)) {
@@ -155,11 +259,46 @@ function partsHits(title: string, desc: string): string[] {
   if (isSideOnlyEarbudListing(title, desc)) {
     hits.push("side_only_earbud");
   }
-  if (compactTitle.includes("본체") && !containsAny(text, ["양쪽", "풀박", "풀박스", "풀세트", "풀구성"]).length) {
+  if (
+    isEarphoneLikeText(normalizedTitle) &&
+    /(유닛|unit)/i.test(normalizedTitle) &&
+    !hasCompleteEarphoneSetSignal(normalizedTitle, compactTitle)
+  ) {
+    hits.push("title_unit_only");
+  }
+  if (!fullSizeHeadphone && compactTitle.includes("본체") && !containsAny(text, ["양쪽", "풀박", "풀박스", "풀세트", "풀구성"]).length) {
     hits.push("title_case_only");
+  }
+  if (
+    isEarphoneLikeText(nrm(text)) &&
+    /(유닛|이어버드).{0,12}(잃어버|분실|없|없음)|(?:잃어버|분실|없|없음).{0,12}(유닛|이어버드)/.test(nrm(text))
+  ) {
+    hits.push("missing_earbud_unit");
+  }
+  if (
+    isEarphoneLikeText(normalizedText) &&
+    !fullSizeHeadphone &&
+    /(왼쪽|오른쪽|좌측|우측|left|right).{0,18}(잃어\s*버|잃어버|분실|없(?:습니다|어요|음|다)?)/i.test(normalizedText) &&
+    !/(왼쪽|오른쪽|좌측|우측).{0,18}(기스|흠집|찍힘|스크래치|하자|문제).{0,12}없|(?:기스|흠집|찍힘|스크래치|하자|문제).{0,12}없.{0,18}(왼쪽|오른쪽|좌측|우측)/.test(normalizedText)
+  ) {
+    hits.push("missing_side_earbud");
   }
 
   return [...new Set(hits)];
+}
+
+function calloutHits(title: string, desc: string): string[] {
+  const text = `${title}\n${desc}`;
+  const normalized = nrm(text);
+  return containsAny(text, CALLOUT_KEYWORDS).filter((hit) => {
+    if (
+      (hit === "가품" || hit === "짝퉁" || hit === "레플" || hit === "정품아님" || hit === "정품 아님" || hit === "비정품") &&
+      /(가품|짝퉁|레플|비정품|정품\s*아님).{0,12}(?:일\s*경우|이면|시).{0,20}(?:환불|보상)|(?:가품|짝퉁|레플|비정품)\s*아닙니다|정품만\s*판매|100%\s*정품/.test(normalized)
+    ) {
+      return false;
+    }
+    return true;
+  });
 }
 
 function damagedHits(title: string, desc: string): string[] {
@@ -167,25 +306,42 @@ function damagedHits(title: string, desc: string): string[] {
   const normalized = nrm(text);
   const hits = containsAny(text, DAMAGED_KEYWORDS).filter((hit) => {
     if (hit === "잔상" && /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없)/.test(normalized)) return false;
+    if (hit === "고장" && /고장\s*(?:없|없음|없습니다|아님|아닙니다)|고장없/.test(normalized)) return false;
+    if (hit === "고장" && /고장품(?:이나)?\s*불량품은\s*판매하지|고장품.*판매하지\s*않/.test(normalized)) return false;
+    if ((hit === "파손" || hit.includes("파손")) && /파손\s*(?:없|없음|없습니다|아님|아닙니다|안|우려|우려\s*없|우려\s*없이)|파손없|파손안/.test(normalized)) return false;
+    if (hit.includes("멍") && /멍\s*(?:없|없음|없습니다|아님|아닙니다)|멍없/.test(normalized)) return false;
     if (hit === "침수" && /침수(?:폰)?\s*(?:없|없음|없습니다|아님|일절\s*취급하지|취급하지\s*않)|침수\s*라벨\s*(?:정상|깨끗)/.test(normalized)) return false;
     if ((hit === "분실폰" || hit === "도난폰") && /분실\s*도난\s*침수폰?\s*일절\s*취급하지|분실\s*(?:없|없음|신고\s*없)|도난\s*(?:없|없음)/.test(normalized)) return false;
     return true;
   });
   const compactText = nrm(text).replace(/\s+/g, "");
 
-  if (compactText.includes("하자") && !/(하자없|하자전혀없|하자없이|무하자|하자는없|하자없습|하자전혀없이)/.test(compactText)) {
+  const hasNegatedOrContingentDefect =
+    /(하자없|하자전혀없|하자없이|무하자|하자는없|하자없습|하자없습니다|하자도없|큰하자없|큰하자가없|기능하자없|기능하자없고|하자전혀없이|하자x)/i.test(compactText) ||
+    /(택배|배송|보내면|보낼\s*경우).{0,24}(하자|파손|문제).{0,16}(발생할\s*수|생길\s*수|우려|위험)|(?:하자|파손|문제).{0,16}(발생할\s*수|생길\s*수|우려|위험).{0,24}(택배|배송|보내면|보낼\s*경우)/.test(normalized);
+
+  if (compactText.includes("하자") && !hasNegatedOrContingentDefect) {
     hits.push("하자");
   }
-  if (compactText.includes("불량") && !/(불량없|불량없이|불량이슈로없습니다)/.test(compactText)) {
+  if (compactText.includes("불량") && !/(불량없|불량없이|불량이슈로없습니다|불량품은판매하지|기능불량시.*(?:환불|반품)|불량시.*(?:환불|반품))/.test(compactText)) {
     hits.push("불량");
   }
-  if (/(안들림|안 들림|소리안남|소리 안남|한쪽안들림|한쪽 안들림)/.test(text)) {
+  if (
+    /(안들림|안 들림|소리안남|소리 안남|한쪽안들림|한쪽 안들림)/.test(text) ||
+    /(소리|오디오|음성|사운드).{0,8}(안\s*나오|안\s*남|나오지\s*않|출력\s*안|출력\s*불가)/.test(normalized)
+  ) {
     hits.push("sound_failure");
+  }
+  if (/(작동\s*여부|작동여부).{0,12}(모름|모릅니다|불명|확인\s*불가)|작동\s*확인.{0,12}(안|못|불가)/.test(normalized)) {
+    hits.push("function_unverified");
   }
   if (/(배터리(?:효율|성능)?|배터리\s*(?:효율|성능)).{0,8}([0-7][0-9])\s*%/.test(text)) {
     hits.push("low_battery_under_80");
   }
   if (/배터리(?:효율|성능)?\s*80\s*%\s*미만/.test(compactText)) {
+    hits.push("low_battery_under_80");
+  }
+  if (/배터리(?:효율|성능)?(?:은|는|:)?[0-7][0-9](?!\d)(?:%|프로|퍼|입니다|사진|$)/.test(compactText)) {
     hits.push("low_battery_under_80");
   }
 
@@ -234,21 +390,147 @@ export type ListingType = "normal" | "parts" | "multi" | "buying" | "callout" | 
 
 type ClassifyResult = { listingType: ListingType; sku: Sku | null };
 
+function monitorPreSkuNoise(title: string, desc: string, price: number): ListingType | null {
+  const textN = nrm(`${title}\n${desc}`);
+  const titleN = nrm(title);
+  const compactText = textN.replace(/\s+/g, "");
+  const monitorSignal = /(모니터|monitor|울트라기어|오디세이|odyssey|벤큐|benq|zowie|조위|alienware|에일리언웨어)/i.test(textN);
+  if (!monitorSignal) return null;
+
+  const accessoryOnly =
+    /(모니터\s*암|모니터암|스탠드|받침대|브라켓|어댑터|전원선|케이블|hdmi|dp케이블|dp\s*케이블).{0,16}(단독|단품|만|판매|팝니다)|(?:단독|단품|만|판매|팝니다).{0,16}(모니터\s*암|모니터암|스탠드|받침대|브라켓|어댑터|전원선|케이블|hdmi|dp케이블|dp\s*케이블)/i.test(textN);
+  if (accessoryOnly && price > 0 && price < 180_000) return "accessory";
+
+  const damagedPanel =
+    /(액정|패널|화면|디스플레이).{0,16}(파손|깨짐|불량|고장|나감)|(?:줄감|세로줄|가로줄|멍|번인|불량화소|백라이트\s*불량|백라이트불량)/.test(textN);
+  if (damagedPanel) return "damaged";
+
+  const pcBundle =
+    /(본체|데스크탑|데스크톱|pc|컴퓨터|키보드|마우스).{0,24}(모니터)|(?:모니터).{0,24}(본체|데스크탑|데스크톱|pc|컴퓨터|키보드|마우스)/i.test(textN);
+  if (pcBundle && !/(모니터\s*단품|모니터만|모니터\s*만)/.test(compactText)) return "multi";
+
+  const multiMonitor = /\b[2-9]\s*대\b/.test(titleN) || /(듀얼\s*모니터|모니터\s*2대|모니터두대|2대\s*일괄)/.test(compactText);
+  if (multiMonitor) return "multi";
+
+  return null;
+}
+
 function categoryScopedNoise(title: string, desc: string, price: number, sku: Sku): ListingType | null {
-  if (sku.category === "smartphone") {
-    const compactTitle = nrm(title).replace(/\s+/g, "");
-    if (sku.id === "iphone-16" && /(아이폰16e|iphone16e|iphone\s*16e)/i.test(compactTitle)) {
-      return "unknown";
-    }
-  }
-
-  if (sku.category !== "laptop") return null;
-
   const titleN = nrm(title);
   const textN = nrm(`${title}\n${desc}`);
   const compactTitle = titleN.replace(/\s+/g, "");
   const compactText = textN.replace(/\s+/g, "");
   const fullBoxSignal = /(풀박스|풀박|풀구성|풀세트|박스포함|박스 포함)/.test(compactText);
+
+  if (sku.category === "earphone") {
+    const merchOnlySignal =
+      /(포카|포토\s*카드|포토카드|특전|럭드|미공포|미개봉\s*특전|키링|스티커).{0,24}(에어팟\s*맥스|에어팟맥스|airpods\s*max)|(?:에어팟\s*맥스|에어팟맥스|airpods\s*max).{0,24}(포카|포토\s*카드|포토카드|특전|럭드|미공포|미개봉\s*특전|키링|스티커)/i.test(textN);
+    if (merchOnlySignal && price > 0 && price < 80_000) {
+      return "accessory";
+    }
+
+    const boxOnlySignal = !fullBoxSignal && /(박스만(?!없)|박스판매|박스팝니다|박스구함|박스삽니다|에어팟(?:프로|맥스)?박스)/.test(compactText);
+    if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 30_000)) {
+      return "accessory";
+    }
+
+    const includedAccessoryContext =
+      /(케이스|파우치|거치대|충전선|케이블|이어패드|이어\s*패드|이어쿠션|이어\s*쿠션|헤드쿠션|헤드\s*쿠션|스마트케이스).{0,24}(포함|있|있음|같이|드림|드립니다|까지)|(?:구성품|풀구성|풀세트).{0,40}(케이스|파우치|거치대|충전선|케이블|이어패드|이어쿠션|헤드쿠션|스마트케이스)/.test(textN);
+    const accessoryOnlyTitle =
+      /(스탠드|충전독|충전\s*독|거치대|이어패드|이어\s*패드|이어쿠션|이어\s*쿠션|헤드쿠션|헤드\s*쿠션|스펀지)/.test(titleN) &&
+      !includedAccessoryContext;
+    const accessoryOnlyContext =
+      /(이어패드|이어\s*패드|이어쿠션|이어\s*쿠션|헤드쿠션|헤드\s*쿠션|스펀지|거치대|스탠드).{0,12}(단독|단품|만|판매|팝니다)|(?:단독|단품|만|판매|팝니다).{0,12}(이어패드|이어\s*패드|이어쿠션|이어\s*쿠션|헤드쿠션|헤드\s*쿠션|스펀지|거치대|스탠드)/.test(textN);
+    const protectiveCaseOnly = isEarbudProtectiveCaseOnlyTitle(titleN, compactTitle, textN, compactText) && !includedAccessoryContext;
+    if (protectiveCaseOnly) {
+      return "accessory";
+    }
+    if (accessoryOnlyTitle || (accessoryOnlyContext && !includedAccessoryContext)) {
+      return /(스펀지)/.test(textN) ? "parts" : "accessory";
+    }
+    if (/(배터리|교체\s*부품|교체부품).{0,12}(단독|단품|만|판매|팝니다|부품)|(?:단독|단품|만|판매|팝니다|부품).{0,12}(배터리|교체\s*부품|교체부품)/.test(textN)) {
+      return "parts";
+    }
+
+    if (/(케이스|충전케이스).{0,20}(유닛|이어버드).{0,20}(잃어버|분실|없)|(?:유닛|이어버드).{0,20}(잃어버|분실|없).{0,20}(케이스|충전케이스)/.test(textN)) {
+      return "parts";
+    }
+  }
+
+  if (sku.category === "speaker") {
+    const accessoryOnly =
+      /(케이스|하드쉘|파우치|가방|커버|스탠드|거치대|충전기|케이블).{0,16}(단독|단품|만|판매|팝니다|구함|삽니다)|(?:단독|단품|만|판매|팝니다|구함|삽니다).{0,16}(케이스|하드쉘|파우치|가방|커버|스탠드|거치대|충전기|케이블)/.test(textN)
+      || /(케이스|하드쉘|파우치|가방|커버|스탠드|거치대|충전기|케이블)/.test(titleN);
+    if (accessoryOnly && !fullBoxSignal) return "accessory";
+
+    const wrongDeviceClass =
+      /(무선\s*마이크|마이크|노래방|karaoke|pa\s*스피커|eon|리시버|receiver|앰프|amp|마란츠|marantz|사운드바|soundbar|북쉘프|패시브\s*스피커|인티앰프)/.test(textN);
+    if (wrongDeviceClass) return "unknown";
+
+    const mixedOrRental =
+      /(일괄|묶음|세트).{0,24}(스피커|마이크|앰프|리시버)|(?:스피커|마이크|앰프|리시버).{0,24}(일괄|묶음|세트)|대여|렌탈/.test(textN);
+    if (mixedOrRental) return "multi";
+  }
+
+  if (sku.category === "camera") {
+    const cameraHardExclusion =
+      /(구매|삽니다|구합니다|업자x|사기꾼|하자|수리\s*필요|수리필요|부품용|고장|바디캡|렌즈캡|뒷캡|케이스|가방)/.test(textN);
+    if (cameraHardExclusion) return /(구매|삽니다|구합니다)/.test(textN) ? "buying" : "accessory";
+
+    const fixedLensCompact = /(g7x|powershot|파워샷|cyber\s*shot|사이버샷)/.test(textN);
+    if (fixedLensCompact) return "unknown";
+
+    const noLensSignal = /(렌즈\s*(별도|미포함|없|없음|제외)|렌즈는?\s*별도)/.test(textN);
+    const lensOrBundleSignal =
+      !noLensSignal && /(렌즈|번들|번들킷|키트|세트|풀셋|풀셋트|탐론|시그마|삼양|ttartisan|\bmm\b|f[0-9.]+)/.test(textN)
+      || /\+\s*[0-9]/.test(`${title} ${desc}`);
+    if (lensOrBundleSignal) return "multi";
+  }
+
+  if (sku.category === "smartphone") {
+    if (sku.id === "iphone-16" && /(아이폰16e|iphone16e|iphone\s*16e)/i.test(compactTitle)) {
+      return "unknown";
+    }
+    const boxOnlySignal = !fullBoxSignal && /(빈박스|박스만|박스판매|박스팝니다|박스구함|박스삽니다|아이폰박스|갤럭시박스)/.test(compactText);
+    if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 50_000)) {
+      return "accessory";
+    }
+    const phoneAccessorySignal = /(case|케이스|폰케이스|그립톡|스마트톡|맥세이프|파인우븐|슬림아머|슈피겐|어반소피스티케이션|모란카노|tyreus|디월렛|다이어리|보호필름|강화유리|필름|줄이어폰|이어폰|충전기|어댑터)/i.test(textN);
+    if (phoneAccessorySignal && price > 0 && price < 150_000) {
+      return "accessory";
+    }
+    const phonePartsSignal = /(백글라스|후면\s*유리|후면유리|후면판|카메라\s*렌즈|카메라렌즈|충전\s*단자|충전단자|액정|배터리|메인보드|하우징).{0,16}(판매|팝니다|교체|부품|정품)|(?:판매|팝니다|교체|부품|정품).{0,16}(백글라스|후면\s*유리|후면유리|후면판|카메라\s*렌즈|카메라렌즈|충전\s*단자|충전단자|액정|배터리|메인보드|하우징)/.test(textN);
+    if (phonePartsSignal && price > 0 && price < 180_000) {
+      return "parts";
+    }
+  }
+
+  if (sku.category === "smartwatch") {
+    const boxOnlySignal = !fullBoxSignal && /(박스만|박스판매|박스팝니다|박스구함|박스삽니다|애플워치박스|갤럭시워치박스)/.test(compactText);
+    if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 50_000)) {
+      return "accessory";
+    }
+    if (/(충전독|충전\s*독|충전기|케이블|스트랩|밴드|브레이슬릿|루프|시계줄|필름|강화유리|커버|거치대|스탠드)/.test(titleN)) {
+      return "accessory";
+    }
+  }
+
+  if (sku.category === "tablet") {
+    const hasTabletStorage = /(?:^|[^0-9])(32|64|128|256|512)\s*(?:gb|g|기가)|(?:1|2)\s*(?:tb|테라)/.test(textN);
+    const boxOnlySignal = !fullBoxSignal && /(빈박스|빈\s*박스|박스만|박스판매|박스팝니다|박스구함|박스삽니다|아이패드박스|갤럭시탭박스|갤탭박스)/.test(compactText);
+    const strongTabletAccessory =
+      /(매직\s*키보드|magic\s*keyboard|스마트\s*폴리오|smart\s*folio|북커버|북\s*커버|키보드\s*케이스|키보드케이스|종이질감|보호필름|강화유리|케이스|파우치|거치대|스탠드)/i.test(titleN);
+    const pencilOnly =
+      /(애플\s*펜슬|애플펜슬|apple\s*pencil|s펜|s\s*pen)/i.test(titleN) &&
+      !/(아이패드|ipad|갤럭시\s*탭|갤럭시탭|갤탭|galaxy\s*tab).{0,8}(?:\+|와|과|랑|및|포함)/i.test(titleN);
+
+    if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 60_000)) return "accessory";
+    if (strongTabletAccessory && (!hasTabletStorage || price < 500_000)) return "accessory";
+    if (pencilOnly && price < 250_000) return "accessory";
+  }
+
+  if (sku.category !== "laptop") return null;
+
   const boxOnlySignal = !fullBoxSignal && /(박스만|박스판매|박스팝니다|박스구함|박스삽니다|맥북박스|맥북에어박스|맥북프로박스)/.test(compactText);
 
   if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 100_000)) {
@@ -263,9 +545,25 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
     return "parts";
   }
 
-  const accessoryOnly = /(어댑터|충전기|케이블|파우치|케이스|키스킨|필름|보호필름|스탠드|거치대)/.test(titleN);
+  const accessoryOnly =
+    /(어댑터|충전기|케이블|파우치|케이스|하드쉘|슬리브|인케이스|incase|가방|키스킨|필름|보호필름|스탠드|거치대|허브|독|dock|hub|마우스|매직마우스|키보드|트랙패드|터치패드|trackpad|touchpad|모니터|monitor)/i.test(titleN);
   const hasMacbookSpec = /(m[1-5]|i[3579]|13\s*인치|14\s*인치|15\s*인치|16\s*인치|8\s*gb|16\s*gb|24\s*gb|32\s*gb|256\s*gb|512\s*gb|1\s*tb|1\s*테라)/.test(textN);
   if (accessoryOnly && !hasMacbookSpec) return "accessory";
+
+  const accessoryDominant =
+    /(케이스|하드쉘|슬리브|인케이스|incase|가방|파우치|키스킨|필름|보호필름|스탠드|거치대|허브|독|dock|hub|마우스|매직마우스|키보드|트랙패드|터치패드|trackpad|touchpad|모니터|monitor)/i.test(titleN);
+  const strongAccessoryDominant =
+    /(케이스|하드쉘|슬리브|인케이스|incase|가방|파우치|키스킨|필름|보호필름|키보드\s*가드|키보드가드|트랙패드|터치패드|trackpad|touchpad|허브|독|dock|hub|모니터|monitor)/i.test(titleN);
+  const fullUnitSignal =
+    /(정상작동|정상 작동|풀박|풀박스|풀구성|풀세트|박스포함|구성품|본품|노트북)/.test(textN);
+  if (accessoryDominant && !fullUnitSignal && (!hasMacbookSpec || price < 150_000 || strongAccessoryDominant)) {
+    return "accessory";
+  }
+
+  const titlePartOnly =
+    /(배터리|액정|디스플레이|상판|하판|키보드|트랙패드|터치패드|로직보드|보드)/i.test(titleN) &&
+    !/(배터리\s*(?:성능|효율|사이클)|배터리.{0,12}(?:좋|정상|양호))/.test(textN);
+  if (titlePartOnly && !fullUnitSignal && price < 150_000) return "parts";
 
   if (compactTitle.includes("맥북") && /(삽니다|구합니다|매입|박스구함|박스삽니다)/.test(compactText)) {
     return "buying";
@@ -276,11 +574,30 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
 
 export function classifyListing(title: string, desc: string, price: number): ClassifyResult {
   const text = `${title}\n${desc}`;
+  const normalizedText = nrm(text);
+  const normalizedTitle = nrm(title);
+  const accessoryWords = /(case|케이스|폰케이스|그립톡|스마트톡|맥세이프|파인우븐|슬림아머|슈피겐|어반소피스티케이션|모란카노|tyreus|디월렛|다이어리|보호필름|강화유리|필름)/i;
+  const accessoryTitleSignal = accessoryWords.test(normalizedTitle);
+  const accessoryStandaloneTextSignal =
+    /(?:case|케이스|폰케이스|그립톡|스마트톡|맥세이프|파인우븐|슬림아머|슈피겐|어반소피스티케이션|모란카노|tyreus|디월렛|다이어리|보호필름|강화유리|필름).{0,12}(?:단독|단품|만|판매|팝니다|새상품|미개봉|급처|처분)|(?:단독|단품|만|판매|팝니다).{0,12}(?:case|케이스|폰케이스|그립톡|스마트톡|맥세이프|보호필름|강화유리|필름)/i.test(normalizedText);
+  const includedAccessoryTextSignal =
+    /(?:케이스|박스|충전기|케이블|필름|스트랩|밴드).{0,18}(?:포함|같이|드려요|드립니다|드림|있|있음|붙여|보관)|(?:본품|본체|풀박|풀박스|기기|제품).{0,24}(?:케이스|박스|충전기|케이블|필름|스트랩|밴드)/.test(normalizedText);
 
-  if (containsAny(title, BUYING_KEYWORDS).length > 0) return { listingType: "buying", sku: null };
+  if (soldOutTextHits(title, desc).length > 0) return { listingType: "callout", sku: null };
+  if (buyingHits(title, desc).length > 0) return { listingType: "buying", sku: null };
   if (price <= 0 || price < 5000) return { listingType: "callout", sku: null };
-  if (containsAny(text, CALLOUT_KEYWORDS).length > 0) return { listingType: "callout", sku: null };
+  if (calloutHits(title, desc).length > 0) return { listingType: "callout", sku: null };
   if (containsAny(text, COMMERCIAL_STRONG_KEYWORDS).length > 0) return { listingType: "commercial", sku: null };
+  const monitorNoise = monitorPreSkuNoise(title, desc, price);
+  if (monitorNoise) return { listingType: monitorNoise, sku: null };
+  if (
+    !isEarphoneLikeText(normalizedText) &&
+    (accessoryTitleSignal || (accessoryStandaloneTextSignal && !includedAccessoryTextSignal)) &&
+    price > 0 &&
+    price < 150_000
+  ) {
+    return { listingType: "accessory", sku: null };
+  }
   if (partsHits(title, desc).length > 0) return { listingType: "parts", sku: null };
   if (damagedHits(title, desc).length > 0) return { listingType: "damaged", sku: null };
   if (accessoryTitleHits(title).length > 0) return { listingType: "accessory", sku: null };
@@ -294,7 +611,7 @@ export function classifyListing(title: string, desc: string, price: number): Cla
   if (!sku) return { listingType: "unknown", sku: null };
   const scopedNoise = categoryScopedNoise(title, desc, price, sku);
   if (scopedNoise) return { listingType: scopedNoise, sku: null };
-  if (compactLen(title) < SHORT_TITLE_MIN && !hasNormalSignal(title, desc)) {
+  if (compactLen(title) < SHORT_TITLE_MIN && !hasNormalSignal(title, desc) && !["monitor", "camera"].includes(sku.category)) {
     return { listingType: "unknown", sku: null };
   }
   return { listingType: "normal", sku };
@@ -483,6 +800,7 @@ export type PipelineRow = {
   skuId: string;
   skuName: string;
   skuMedian: number;
+  saleStatus?: string | null;
   descriptionPreview: string;
   imageUrlTemplate?: string | null;
   imageCount?: number;
@@ -522,8 +840,10 @@ export type PipelineResult = {
 
 type AiListingType = "normal" | "counterfeit" | "parts" | "buying" | "callout" | "damaged" | "accessory" | "multi" | "commercial" | "unknown";
 type AiConfidence = "high" | "medium" | "low";
+type AiDecision = "pass" | "hold" | "reject";
 type AiClassification = {
   listingType: AiListingType;
+  decision: AiDecision | null;
   confidence: AiConfidence;
   reason: string;
   riskKeywords: string[];
@@ -646,6 +966,7 @@ export async function runPipeline(pagesPerQuery?: number, options: PipelineOptio
     const score = (priceGap * 0.5 + velocity * 0.4 + safety * 0.1) * 100;
 
     const flags: string[] = [];
+    if (priceGap >= 0.75) flags.push("extreme_discount_review");
     if (priceGap >= 0.55) flags.push("deep_discount_review");
     if (suspiciousModelText(searchItems.get(r.pid)?.name ?? "", r.detail.description)) flags.push("suspicious_model_review");
     if (multiModelHits(searchItems.get(r.pid)?.name ?? "").length > 0) flags.push("multi_model_review");
@@ -727,7 +1048,7 @@ async function upsertRows(table: string, rows: unknown[]): Promise<void> {
   const res = await fetch(supabaseUrl(table), {
     method: "POST",
     headers: supabaseHeaders(),
-    body: JSON.stringify(rows),
+    body: jsonBody(rows),
   });
   if (!res.ok) {
     const body = await res.text();
@@ -750,6 +1071,53 @@ function shouldAiReview(row: PipelineRow): boolean {
   return row.scoreFlags.length > 0 || row.priceGap >= 0.55 || suspiciousModelText(row.name, row.descriptionPreview);
 }
 
+const AI_HARD_RISK_KEYWORDS = [
+  "case_only",
+  "charging_case_only",
+  "protective_case_only",
+  "cover_only",
+  "unit_only",
+  "one_side",
+  "parts",
+  "broken",
+  "damaged",
+  "counterfeit",
+  "fake",
+  "replica",
+  "buying",
+  "wanted",
+  "sold_out",
+  "reserved",
+  "multi_sku",
+  "commercial",
+  "dealer",
+  "케이스단독",
+  "케이스 단독",
+  "유닛단독",
+  "유닛 단독",
+  "단품",
+  "가품",
+  "짝퉁",
+  "삽니다",
+  "구매",
+  "판매완료",
+  "거래완료",
+];
+
+function aiHasHardRisk(result: AiClassification): boolean {
+  const text = result.riskKeywords.map((keyword) => nrm(keyword)).join(" ");
+  return AI_HARD_RISK_KEYWORDS.some((keyword) => text.includes(nrm(keyword)));
+}
+
+function aiSecondOpinionDecision(result: AiClassification): AiDecision {
+  if (result.decision) return result.decision;
+  if (result.listingType === "normal") {
+    return result.confidence === "high" ? "pass" : "hold";
+  }
+  if (result.listingType === "unknown" || result.confidence === "low") return "hold";
+  return "reject";
+}
+
 async function fetchAiCache(row: PipelineRow, hash: string): Promise<AiClassification | null> {
   const url = `${supabaseUrl("mvp_listing_ai_classifications")}?select=listing_type,confidence,reason,risk_keywords,model&pid=eq.${encodeURIComponent(row.pid)}&content_hash=eq.${encodeURIComponent(hash)}&limit=1`;
   const res = await fetch(url, { headers: supabaseHeaders() });
@@ -765,6 +1133,7 @@ async function fetchAiCache(row: PipelineRow, hash: string): Promise<AiClassific
   if (!cached) return null;
   return {
     listingType: cached.listing_type,
+    decision: null,
     confidence: cached.confidence,
     reason: cached.reason ?? "",
     riskKeywords: cached.risk_keywords ?? [],
@@ -800,11 +1169,14 @@ function parseAiClassification(raw: unknown): AiClassification | null {
   if (!raw || typeof raw !== "object") return null;
   const obj = raw as Record<string, unknown>;
   const listingType = String(obj.listing_type ?? obj.listingType ?? "unknown") as AiListingType;
+  const decision = String(obj.decision ?? "") as AiDecision;
   const confidence = String(obj.confidence ?? "low") as AiConfidence;
   const allowedTypes: AiListingType[] = ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "commercial", "unknown"];
+  const allowedDecisions: AiDecision[] = ["pass", "hold", "reject"];
   const allowedConfidence: AiConfidence[] = ["high", "medium", "low"];
   return {
     listingType: allowedTypes.includes(listingType) ? listingType : "unknown",
+    decision: allowedDecisions.includes(decision) ? decision : null,
     confidence: allowedConfidence.includes(confidence) ? confidence : "low",
     reason: String(obj.reason ?? ""),
     riskKeywords: Array.isArray(obj.risk_keywords)
@@ -831,7 +1203,7 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
         "content-type": "application/json",
       },
       signal: controller.signal,
-      body: JSON.stringify({
+      body: jsonBody({
         model: AI_CLASSIFIER_MODEL,
         temperature: 0,
         response_format: { type: "json_object" },
@@ -839,20 +1211,30 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
           {
             role: "system",
             content:
-              "Classify Korean secondhand marketplace listings for resale. Return only JSON with listing_type, confidence, reason, risk_keywords. Be conservative: counterfeit/parts/buying/callout/damaged/accessory/multi should not be shown as normal.",
+              "You are a conservative second-opinion reviewer for Korean secondhand resale candidates. Return only JSON with decision, listing_type, confidence, reason, risk_keywords. decision must be pass, hold, or reject. pass is allowed only when the listing is clearly a full working unit, the SKU/options match, it is currently sellable, and no unresolved risk remains. If there is any doubt, choose hold. Reject clear counterfeit/parts/buying/callout/damaged/accessory/multi/commercial listings. Positive bias is forbidden.",
           },
           {
             role: "user",
             content: JSON.stringify({
+              allowed_decision: ["pass", "hold", "reject"],
               allowed_listing_type: ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "commercial", "unknown"],
               allowed_confidence: ["high", "medium", "low"],
-              policy: "If the listing explicitly says fake/replica/Taobao/counterfeit, classify counterfeit. If it is only a charging case/body/unit/one side, classify parts. If it is a buying post, classify buying. If the title lists multiple different models/SKUs or selectable models with one price, classify multi. If it is a commercial/dealer-style listing — stock liquidation (재고정리), first-come specials (선착순특가), telco bundle deals (완납폰/제휴카드/유심 그대로/통신사 특가), bait-style new-product clearance with multiple model options — classify commercial. If unsure, unknown.",
+              policy: "This is not a primary classifier. It is an escrow check for candidates that rules already found suspicious or unusually profitable. If the listing explicitly says fake/replica/Taobao/counterfeit, classify counterfeit and reject. If it is only a charging case/body/unit/one side/protective case/cover/pouch/accessory, classify parts or accessory and reject. If it is a buying post, classify buying and reject. If the title lists multiple different models/SKUs or selectable models with one price, classify multi and reject. If it is a commercial/dealer-style listing — stock liquidation (재고정리), first-come specials (선착순특가), telco bundle deals (완납폰/제휴카드/유심 그대로/통신사 특가), bait-style new-product clearance with multiple model options — classify commercial and reject. If status, SKU, options, condition, or sellability is not clear enough, choose hold. Only choose pass with high confidence.",
               listing: {
                 title: row.name,
                 price: row.price,
                 sku: row.skuName,
                 sku_median: row.skuMedian,
                 price_gap: row.priceGap,
+                shipping_fee: row.shippingFee,
+                general_shipping_fee: row.shippingFeeGeneral,
+                estimated_buy_cost: row.estimatedBuyCost,
+                gross_resell_gap: row.grossResellGap,
+                net_gap_after_shipping: row.netGapAfterShipping,
+                seller_review_rating: row.reviewRating,
+                seller_review_count: row.reviewCount,
+                risk_hits: row.riskHits,
+                sale_status: row.saleStatus,
                 flags: row.scoreFlags,
                 description: row.descriptionPreview.slice(0, 500),
               },
@@ -931,14 +1313,17 @@ export async function applyAiReview(
       return;
     }
 
-    if (result.listingType === "normal" && result.confidence !== "low") {
+    const decision = aiSecondOpinionDecision(result);
+    const hardRisk = aiHasHardRisk(result);
+
+    if (decision === "pass" && result.listingType === "normal" && result.confidence === "high" && !hardRisk) {
       stats.keptNormal += 1;
-      reviewed.set(row.pid, { ...row, scoreFlags: [...row.scoreFlags, "ai_normal"] });
+      reviewed.set(row.pid, { ...row, scoreFlags: [...row.scoreFlags, "ai_normal", "ai_second_opinion_pass"] });
       await reviewNext();
       return;
     }
 
-    if (result.listingType !== "normal" && result.confidence !== "low") {
+    if (decision === "reject" && result.confidence !== "low") {
       // AI-confirmed noise: do not upsert as a visible candidate.
       stats.filtered += 1;
       reviewed.set(row.pid, null);
@@ -947,7 +1332,14 @@ export async function applyAiReview(
     }
 
     stats.keptLowConfidence += 1;
-    reviewed.set(row.pid, { ...row, scoreFlags: [...row.scoreFlags, `ai_${result.listingType}_low_confidence`] });
+    reviewed.set(row.pid, {
+      ...row,
+      scoreFlags: [
+        ...row.scoreFlags,
+        "ai_second_opinion_hold",
+        `ai_${result.listingType}_${result.confidence}_confidence`,
+      ],
+    });
     await reviewNext();
   }
 

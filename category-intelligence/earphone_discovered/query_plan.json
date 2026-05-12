@@ -1,0 +1,27 @@
+{
+  "category": "earphone_discovered",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "Earphone From Bunjang Category",
+  "categoryIds": [
+    "600500010"
+  ],
+  "queries": [
+    "에어팟 프로",
+    "에어팟 프로2",
+    "에어팟 4",
+    "버즈 프로",
+    "버즈3 프로",
+    "무선 이어폰"
+  ],
+  "seedSkus": [
+    "airpods-pro",
+    "airpods-pro-2",
+    "airpods-4",
+    "galaxy-buds-pro",
+    "galaxy-buds3-pro"
+  ],
+  "minNormalPrice": 30000,
+  "clusterK": 12,
+  "aiHints": "번개장터 600500010 이어폰 카테고리. 정상: 양쪽 유닛+케이스 전체 본품. 노이즈: 한쪽 유닛/본체만/케이스만/이어팁/철가루방지 스티커, 가품/레플/호환, 고장/배터리 이상, 매입글.\n교차 카테고리 지식: 3in1=accessory(p=1), 견적=buying(p=1), 매입=buying(p=1), 매입업체=buying(p=1), 매입하는=buying(p=1), 맥세이프=accessory(p=1), 번톡=buying(p=1), 부품용으로=damaged(p=1), 삽니다=buying(p=1), 삽니다=mixed(p=1), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=1), 오른쪽=parts(p=1), 이상=damaged(p=1), 일괄=accessory(p=1), 전문=buying(p=1), 최고가=buying(p=1), 출장=buying(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

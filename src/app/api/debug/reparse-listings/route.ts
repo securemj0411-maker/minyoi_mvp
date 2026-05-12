@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
+import { requireDebugAdmin } from "@/lib/debug-admin";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import { classifyListing } from "@/lib/pipeline";
 import { boundedInt } from "@/lib/pipeline-config";
@@ -81,11 +82,8 @@ async function patchRawRows(rows: { pid: number; sku_id: string | null; sku_name
 }
 
 async function handleReparse(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const authOk = !secret || req.headers.get("authorization") === `Bearer ${secret}`;
-  if (secret && !authOk) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
+  const auth = await requireDebugAdmin(req);
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const limit = boundedInt(req.nextUrl.searchParams.get("limit"), 200, 1, 1000);
   const offset = boundedInt(req.nextUrl.searchParams.get("offset"), 0, 0, 100000);

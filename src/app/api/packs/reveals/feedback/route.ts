@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { submitRevealFeedback, type RevealFeedbackType } from "@/lib/pack-open";
+import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,6 +20,9 @@ function isFeedbackType(value: unknown): value is RevealFeedbackType {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireSupabaseUser(req);
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
   let body: unknown;
   try {
     body = await req.json();
@@ -33,6 +38,9 @@ export async function POST(req: Request) {
   const note = typeof payload.note === "string" ? payload.note : "";
 
   if (!userRef) return NextResponse.json({ error: "missing user ref" }, { status: 400 });
+  if (userRef !== userRefForAuthUser(auth.user.id)) {
+    return NextResponse.json({ error: "user ref does not match session" }, { status: 403 });
+  }
   if (!Number.isFinite(pid)) return NextResponse.json({ error: "invalid pid" }, { status: 400 });
   if (!isFeedbackType(feedbackType)) return NextResponse.json({ error: "invalid feedback type" }, { status: 400 });
 

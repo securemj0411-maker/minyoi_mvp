@@ -1,0 +1,35 @@
+[
+  {
+    "key": "unknown",
+    "count": 123,
+    "min": 50000,
+    "p25": 110000,
+    "median": 275000,
+    "p75": 528000,
+    "max": 1160000,
+    "core_sample_count": 123,
+    "excluded_count": 35
+  },
+  {
+    "key": "macbook-pro",
+    "count": 1,
+    "min": 5000000,
+    "p25": 5000000,
+    "median": 5000000,
+    "p75": 5000000,
+    "max": 5000000,
+    "core_sample_count": 1,
+    "excluded_count": 35
+  },
+  {
+    "key": "galaxy-s25",
+    "count": 1,
+    "min": 9990000,
+    "p25": 9990000,
+    "median": 9990000,
+    "p75": 9990000,
+    "max": 9990000,
+    "core_sample_count": 1,
+    "excluded_count": 35
+  }
+]

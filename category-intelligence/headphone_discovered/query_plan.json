@@ -1,0 +1,28 @@
+{
+  "category": "headphone_discovered",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "Headphone From Bunjang Category",
+  "categoryIds": [
+    "600500011"
+  ],
+  "queries": [
+    "에어팟 맥스",
+    "소니 헤드폰",
+    "보스 헤드폰",
+    "젠하이저 헤드폰",
+    "비츠 헤드폰",
+    "무선 헤드폰"
+  ],
+  "seedSkus": [
+    "airpods-max",
+    "sony-wh-1000xm",
+    "bose-qc",
+    "bose-quietcomfort",
+    "sennheiser-headphone",
+    "beats-headphone"
+  ],
+  "minNormalPrice": 50000,
+  "clusterK": 12,
+  "aiHints": "번개장터 600500011 헤드폰 카테고리. 정상: 무선/유선 헤드폰 본체. 노이즈: 이어패드/케이스/케이블/거치대 단독, 가품/레플, 고장/한쪽 소리 안남, 매입글, 여러 제품 일괄.\n교차 카테고리 지식: 3in1=accessory(p=1), 견적=buying(p=1), 매입=buying(p=1), 매입업체=buying(p=1), 매입하는=buying(p=1), 맥세이프=accessory(p=1), 번톡=buying(p=1), 부품용으로=damaged(p=1), 삽니다=buying(p=1), 삽니다=mixed(p=1), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=1), 오른쪽=parts(p=1), 이상=damaged(p=1), 일괄=accessory(p=1), 전문=buying(p=1), 최고가=buying(p=1), 출장=buying(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

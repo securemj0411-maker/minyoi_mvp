@@ -37,6 +37,10 @@ export type SearchPageOptions = {
 export type DetailData = {
   description: string;
   saleStatus: string;
+  conditionLabel: string | null;
+  viewCount: number | null;
+  favoriteCount: number | null;
+  commentCount: number | null;
   shopReviewRating: number | null;
   shopReviewCount: number;
   shopUid: string | null;
@@ -52,6 +56,8 @@ export type DetailData = {
   imageUrlTemplate: string | null;
   imageCount: number;
   thumbnailUrl: string | null;
+  imageUrls: string[];
+  metricsData: Record<string, unknown>;
 };
 
 function toInt(v: unknown, fallback = 0): number {
@@ -74,8 +80,32 @@ function boolish(v: unknown): boolean {
   return v === true || v === "1" || v === 1;
 }
 
+function numberOrNull(v: unknown): number | null {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.round(n) : null;
+}
+
+function firstNumber(...values: unknown[]): number | null {
+  for (const value of values) {
+    const n = numberOrNull(value);
+    if (n != null) return n;
+  }
+  return null;
+}
+
+function labelFromUnknown(value: unknown): string | null {
+  if (typeof value === "string") return stringOrNull(value);
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const record = value as Record<string, unknown>;
+  return stringOrNull(record.label) ?? stringOrNull(record.name) ?? stringOrNull(record.value);
+}
+
 async function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+function timeoutSignal(ms: number) {
+  return AbortSignal.timeout(Math.max(1_000, ms));
 }
 
 export async function searchPage(query: string, page: number, options: SearchPageOptions = {}): Promise<SearchItem[]> {
@@ -92,7 +122,7 @@ export async function searchPage(query: string, page: number, options: SearchPag
   url.searchParams.set("version", "4");
 
   try {
-    const res = await fetch(url.toString(), { headers: HEADERS });
+    const res = await fetch(url.toString(), { headers: HEADERS, signal: timeoutSignal(4_000) });
     if (!res.ok) return [];
     const data = await res.json();
     const list: unknown[] = data?.list ?? [];
@@ -141,7 +171,7 @@ export async function collectSearchItems(
 export async function fetchDetail(pid: string): Promise<DetailData | null> {
   const url = `${API_BASE}/api/pms/v1/products/${pid}/detail/web`;
   try {
-    const res = await fetch(url, { headers: HEADERS });
+    const res = await fetch(url, { headers: HEADERS, signal: timeoutSignal(6_000) });
     if (!res.ok) return null;
     const json = await res.json();
     const data = json?.data ?? {};
@@ -150,9 +180,23 @@ export async function fetchDetail(pid: string): Promise<DetailData | null> {
     const metrics = product?.metrics ?? {};
     const imageUrlTemplate = typeof product?.imageUrl === "string" ? product.imageUrl : null;
     const imageCount = toInt(product?.imageCount);
+    const metricsData = metrics && typeof metrics === "object" && !Array.isArray(metrics)
+      ? metrics as Record<string, unknown>
+      : {};
+    const imageUrls = Array.from({ length: Math.min(Math.max(imageCount, 0), 5) }, (_, idx) =>
+      buildBunjangImageUrl(imageUrlTemplate, idx + 1, 856),
+    ).filter((src): src is string => Boolean(src));
     return {
-      description: String(product?.description ?? "").slice(0, 500),
+      description: String(product?.description ?? "").slice(0, 1200),
       saleStatus: String(product?.saleStatus ?? ""),
+      conditionLabel:
+        labelFromUnknown(product?.condition) ??
+        labelFromUnknown(product?.productCondition) ??
+        labelFromUnknown(product?.status) ??
+        null,
+      viewCount: firstNumber(metricsData.viewCount, metricsData.views, metricsData.numViews, product?.viewCount, product?.numViews),
+      favoriteCount: firstNumber(metricsData.favoriteCount, metricsData.favorites, metricsData.numFaved, product?.favoriteCount, product?.numFaved),
+      commentCount: firstNumber(metricsData.commentCount, metricsData.comments, metricsData.numComments, product?.commentCount, product?.numComments),
       shopReviewRating: product?.inspectionStatus != null || shop?.reviewRating != null
         ? Number(shop?.reviewRating ?? 0) || null
         : null,
@@ -170,8 +214,9 @@ export async function fetchDetail(pid: string): Promise<DetailData | null> {
       imageUrlTemplate,
       imageCount,
       thumbnailUrl: buildBunjangImageUrl(imageUrlTemplate, 1, 856),
+      imageUrls,
+      metricsData,
     };
-    void metrics;
   } catch {
     return null;
   }

@@ -1,0 +1,28 @@
+{
+  "category": "smartwatch_discovered",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "Smartwatch From Bunjang Category",
+  "categoryIds": [
+    "600720100"
+  ],
+  "queries": [
+    "애플워치",
+    "애플워치 se",
+    "애플워치 울트라",
+    "갤럭시워치",
+    "갤럭시워치 클래식",
+    "스마트워치"
+  ],
+  "seedSkus": [
+    "apple-watch-se",
+    "apple-watch-series",
+    "apple-watch-ultra",
+    "galaxy-watch",
+    "galaxy-watch-classic",
+    "galaxy-watch-ultra"
+  ],
+  "minNormalPrice": 50000,
+  "clusterK": 12,
+  "aiHints": "번개장터 600720100 스마트워치/밴드 카테고리. 정상: 애플워치/갤럭시워치 본체. 노이즈: 스트랩/밴드/충전기/보호필름/케이스 단독, 배터리 낮음, 액정파손, 매입글, 여러 모델 나열.\n교차 카테고리 지식: 3in1=accessory(p=1), 견적=buying(p=1), 매입=buying(p=1), 매입업체=buying(p=1), 매입하는=buying(p=1), 맥세이프=accessory(p=1), 문제=parts(p=1), 번톡=buying(p=1), 부품용=parts(p=1), 부품용으로=parts(p=1), 부품용으로=damaged(p=1), 삽니다=buying(p=1), 삽니다=mixed(p=1), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=1), 오른쪽=parts(p=1), 이상=damaged(p=1), 일괄=accessory(p=1), 전문=buying(p=1), 최고가=buying(p=1), 출장=buying(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

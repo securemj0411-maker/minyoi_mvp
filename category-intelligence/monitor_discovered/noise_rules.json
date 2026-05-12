@@ -1,0 +1,269 @@
+{
+  "version": 1,
+  "category": "monitor_discovered",
+  "generated_at": "2026-05-10T18:07:57.182Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [
+    {
+      "keyword": "풀세트",
+      "type": "multi",
+      "precision": 0.8,
+      "hit_count": 6,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "전체적으로 5개 매물 중 4개가 'multi' 타입인 풀세트로 적절히 분류되었으나, 1개는 풀세트 기준에 부합하지 않아 정밀도는 0.8임."
+    },
+    {
+      "keyword": "문의는",
+      "type": "noise",
+      "precision": 0.8,
+      "hit_count": 5,
+      "risk_flags": [
+        "generic_noise_type",
+        "transaction_or_sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 매물 중 4개가 noise 타입으로 정확히 분류되어 전체 precision은 0.8입니다."
+    },
+    {
+      "keyword": "2번",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 9,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물은 'noise' 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "키보드",
+      "type": "multi",
+      "precision": 0.4,
+      "hit_count": 8,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "키보드 포함 여부를 기준으로 판단했을 때, 5개 중 2개만이 'multi' 타입으로 적절하여 정밀도는 0.4입니다."
+    },
+    {
+      "keyword": "마우스",
+      "type": "multi",
+      "precision": 0.2,
+      "hit_count": 8,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "전체적으로 'multi' 타입 매물은 1건에 불과하며, 대부분 단일 본체 또는 모니터 구성으로 정확도가 낮음."
+    },
+    {
+      "keyword": "본체만",
+      "type": "noise",
+      "precision": 0.75,
+      "hit_count": 4,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체적으로 4개 중 3개가 '본체만' 키워드를 포함한 'noise' 타입으로 정확히 분류되어 정밀도는 0.75임."
+    },
+    {
+      "keyword": "9400f",
+      "type": "noise",
+      "precision": 0.5,
+      "hit_count": 4,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 4개 매물 중 2개가 정확히 '9400f' 타입으로 판단되어 정밀도는 0.5입니다."
+    },
+    {
+      "keyword": "16g",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 7,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물이 'noise' 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "안전결제해주시면",
+      "type": "noise",
+      "precision": 0.2,
+      "hit_count": 12,
+      "risk_flags": [
+        "generic_noise_type",
+        "transaction_or_sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체 매물 중 'noise' 타입은 1건으로, 정밀도는 0.2로 낮은 편임."
+    },
+    {
+      "keyword": "12",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 23,
+      "risk_flags": [
+        "generic_noise_type",
+        "numeric_only"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "미개봉",
+      "type": "accessory",
+      "precision": 0,
+      "hit_count": 9,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "모든 매물이 액세서리 타입이 아니므로 정밀도는 0.0으로 평가됨."
+    },
+    {
+      "keyword": "주세요",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 25,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "신품",
+      "type": "noise",
+      "precision": 0.8,
+      "hit_count": 9,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 중 4개가 'noise' 타입으로 정확히 분류되어 정밀도는 0.8입니다."
+    },
+    {
+      "keyword": "rtx",
+      "type": "noise",
+      "precision": 0.6,
+      "hit_count": 7,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 매물 중 3개가 'noise' 타입으로 정확히 분류되어 정밀도는 0.6입니다."
+    },
+    {
+      "keyword": "중고",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 16,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물은 'noise' 타입이 아니므로 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "직거래는",
+      "type": "accessory",
+      "precision": 0.2,
+      "hit_count": 6,
+      "risk_flags": [],
+      "approval_status": "rejected",
+      "verdict_ko": "총 5개 중 1개만 액세서리 타입으로 정확히 분류되어 정밀도는 0.2임"
+    },
+    {
+      "keyword": "택배문의",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 3,
+      "risk_flags": [
+        "generic_noise_type",
+        "transaction_or_sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "제공된 모든 매물은 'noise' 타입이 아니므로 전체 precision은 0.0입니다."
+    },
+    {
+      "keyword": "풀세트입니다",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 3,
+      "risk_flags": [
+        "generic_noise_type",
+        "sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 '풀세트입니다' 키워드에 부합하는 'noise' 타입으로 정확히 분류됨."
+    },
+    {
+      "keyword": "무료증정",
+      "type": "multi",
+      "precision": 1,
+      "hit_count": 3,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 'multi' 타입에 적합하여 정확도가 100%입니다."
+    }
+  ],
+  "cluster_evidence": [
+    {
+      "cluster_id": 3,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 LG 모니터 본체와 함께 판매되는 어댑터, 전원선, HDMI 케이블 등 모니터 사용에 필요한 부속품 및 액세서리 위주로 구성되어 있습니다. 일부는 모니터 본체도 포함되어 있으나, 대표적으로 어댑터 단독 판매가 다수이며, 모니터 본체 단독 매물과는 구분되는 액세서리 중심의 매물들이 혼재되어 있습니다. 따라서 번개장터 모니터 카테고리 내 정상 매물(모니터 본체)와 구분되는 액세서리 유형으로 분류됩니다.",
+      "evidence_terms": [
+        "어댑터",
+        "전원선",
+        "HDMI 케이블",
+        "모니터 본체 포함",
+        "액세서리",
+        "부속품",
+        "모델명 확인",
+        "직거래",
+        "박스 포함",
+        "LG 모니터"
+      ]
+    },
+    {
+      "cluster_id": 5,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 모니터 본체가 아닌 모니터 스탠드, 거치대 등 모니터 사용에 필요한 부속품 위주로 구성되어 있습니다. 일부는 부품용 액정 파손 제품도 있으나, 대부분 스탠드 단독 판매이며, 모니터 본체와는 별개로 취급되는 액세서리 성격이 강합니다. 따라서 모니터 본체가 아닌 액세서리로 분류하는 것이 적합합니다.",
+      "evidence_terms": [
+        "모니터 스탠드",
+        "거치대",
+        "부품용",
+        "액정파손",
+        "삼성",
+        "LG",
+        "미개봉",
+        "새제품",
+        "부속품",
+        "스탠드 단독"
+      ]
+    },
+    {
+      "cluster_id": 8,
+      "listing_type": "multi",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 게이밍 컴퓨터 풀세트(본체+모니터)와 단독 게이밍 모니터 매물이 혼재되어 있어 단일한 'normal' 모니터 본체 타입으로 분류하기 어렵고, 액세서리나 부품 단독 매물이 없으며, 본체와 모니터가 함께 포함된 '풀세트' 형태와 단독 모니터 판매가 섞여 있어 'multi' 타입으로 분류됩니다.",
+      "evidence_terms": [
+        "게임용 본체",
+        "게이밍 모니터",
+        "컴퓨터 풀세트",
+        "본체 모니터",
+        "벤큐 게이밍 모니터",
+        "XL2411K",
+        "XL2720",
+        "144 게이밍",
+        "풀세트 구매시 무료증정",
+        "LED 게이밍 키보드 마우스"
+      ]
+    }
+  ]
+}

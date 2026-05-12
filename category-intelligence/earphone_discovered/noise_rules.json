@@ -1,0 +1,401 @@
+{
+  "version": 1,
+  "category": "earphone_discovered",
+  "generated_at": "2026-05-10T15:27:45.577Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [
+    {
+      "keyword": "에어팟4",
+      "type": "parts",
+      "precision": 0.6,
+      "hit_count": 29,
+      "risk_flags": [
+        "parts_keyword_without_part_context",
+        "model_or_option_as_noise_keyword"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체적으로 5개 중 3개가 부품 타입 매물로 적합하여 정밀도는 0.6입니다."
+    },
+    {
+      "keyword": "유닛",
+      "type": "parts",
+      "precision": 1,
+      "hit_count": 35,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 'parts' 타입으로 적합하여 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "노캔",
+      "type": "parts",
+      "precision": 0.4,
+      "hit_count": 38,
+      "risk_flags": [
+        "parts_keyword_without_part_context",
+        "model_or_option_as_noise_keyword"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 중 2개가 부품(parts) 타입으로 적절하여 정밀도는 0.4로 평가됨."
+    },
+    {
+      "keyword": "찍힘",
+      "type": "parts",
+      "precision": 1,
+      "hit_count": 20,
+      "risk_flags": [
+        "parts_keyword_without_part_context"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 찍힘이 있는 단품 부품으로 parts 타입에 적합하여 정확도가 100%입니다."
+    },
+    {
+      "keyword": "8핀",
+      "type": "parts",
+      "precision": 0.6,
+      "hit_count": 19,
+      "risk_flags": [
+        "parts_keyword_without_part_context",
+        "model_or_option_as_noise_keyword"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체 매물 중 3개가 부품(parts) 타입으로 적절하며, 정확도는 0.6임"
+    },
+    {
+      "keyword": "4세대",
+      "type": "parts",
+      "precision": 0.6,
+      "hit_count": 16,
+      "risk_flags": [
+        "parts_keyword_without_part_context",
+        "model_or_option_as_noise_keyword"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 중 3개가 부품(parts) 타입으로 정확히 분류되어 정밀도는 0.6입니다."
+    },
+    {
+      "keyword": "있음",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 14,
+      "risk_flags": [
+        "generic_noise_type",
+        "generic_marketplace_word"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "판매",
+      "type": "buying",
+      "precision": 1,
+      "hit_count": 71,
+      "risk_flags": [
+        "generic_marketplace_word"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 '판매' 키워드를 포함하고 있어 모두 'buying' 타입으로 적합하므로 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "풀박스",
+      "type": "parts",
+      "precision": 0.8,
+      "hit_count": 13,
+      "risk_flags": [
+        "parts_keyword_without_part_context"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체 5개 매물 중 4개가 'parts' 타입으로 적합하여 정밀도는 0.8입니다."
+    },
+    {
+      "keyword": "직거래",
+      "type": "buying",
+      "precision": 0.4,
+      "hit_count": 24,
+      "risk_flags": [
+        "generic_marketplace_word"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "전체 5개 매물 중 2개만 직거래 관련 언급이 있어 buying 타입으로 적절하며, precision은 0.4임"
+    },
+    {
+      "keyword": "가격",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 17,
+      "risk_flags": [
+        "generic_noise_type",
+        "generic_marketplace_word"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입이 아니므로 정확도가 1.0으로 판단됩니다."
+    },
+    {
+      "keyword": "깨끗합니다",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 10,
+      "risk_flags": [
+        "generic_noise_type",
+        "sentence_fragment"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 \"noise\" 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "없습니다",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 22,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 노이즈 타입이 아니므로 전체 정밀도는 0.0입니다."
+    },
+    {
+      "keyword": "상태",
+      "type": "buying",
+      "precision": 0.6,
+      "hit_count": 47,
+      "risk_flags": [
+        "generic_marketplace_word"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 매물 중 3개가 buying 타입으로 정확히 분류되어 전체 precision은 0.6입니다."
+    },
+    {
+      "keyword": "단품",
+      "type": "parts",
+      "precision": 1,
+      "hit_count": 11,
+      "risk_flags": [],
+      "approval_status": "auto_approved_for_review",
+      "verdict_ko": "모든 매물이 '단품'으로 명확히 표시되어 있어 모두 'parts' 타입으로 적합함."
+    },
+    {
+      "keyword": "신청주세요",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 9,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 'noise' 타입으로 정확히 분류되어 정밀도는 1.0입니다."
+    },
+    {
+      "keyword": "사용감은",
+      "type": "noise",
+      "precision": 1,
+      "hit_count": 9,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 '사용감은' 키워드가 포함되어 있어 모두 'noise' 타입으로 정확히 분류됨."
+    },
+    {
+      "keyword": "기스",
+      "type": "parts",
+      "precision": 0.4,
+      "hit_count": 33,
+      "risk_flags": [
+        "parts_keyword_without_part_context"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 매물 중 2개만 부품(parts) 타입으로 정확하여 정밀도는 0.4임."
+    },
+    {
+      "keyword": "다른",
+      "type": "noise",
+      "precision": 0,
+      "hit_count": 15,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "모든 매물이 noise 타입이 아니므로 precision은 0.0입니다."
+    },
+    {
+      "keyword": "사진과",
+      "type": "noise",
+      "precision": 0.4,
+      "hit_count": 9,
+      "risk_flags": [
+        "generic_noise_type"
+      ],
+      "approval_status": "blocked_needs_review",
+      "verdict_ko": "총 5개 매물 중 2개만 'noise' 타입에 부합하여 정밀도는 0.4로 낮은 편입니다."
+    }
+  ],
+  "cluster_evidence": [
+    {
+      "cluster_id": 1,
+      "listing_type": "parts",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 이어폰 본품 전체가 아닌 한쪽 유닛(왼쪽 또는 오른쪽)이나 충전 케이스 단품으로 구성된 매물들로 이루어져 있습니다. 대표 샘플들에서 '왼쪽 L 이어폰 단품', '오른쪽 R 이어폰 단품', '충전케이스 단품' 등의 표현이 반복되며, 정상적인 완제품이 아닌 부품 단위 판매임을 명확히 하고 있습니다. 따라서 정상 본품이 아닌 부품(이어폰 단품) 카테고리에 해당합니다.",
+      "evidence_terms": [
+        "왼쪽",
+        "오른쪽",
+        "단품",
+        "낱개",
+        "유닛",
+        "본체",
+        "충전케이스",
+        "삼성정품",
+        "버즈3FE",
+        "에어팟 프로3"
+      ]
+    },
+    {
+      "cluster_id": 2,
+      "listing_type": "parts",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "대표 샘플들의 제목과 설명에서 '에어팟 프로2 본체', '왼쪽', '충전케이스 단품' 등 한쪽 유닛이나 본체 단품 위주로 판매하는 점이 명확하며, 정상적인 양쪽 유닛+케이스 전체 본품이 아닌 부분품 위주로 구성되어 있어 parts 타입으로 분류됩니다.",
+      "evidence_terms": [
+        "본체",
+        "왼쪽",
+        "충전케이스 단품",
+        "C타입",
+        "8핀",
+        "중고",
+        "S급",
+        "기스",
+        "찍힘",
+        "단품"
+      ]
+    },
+    {
+      "cluster_id": 3,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "해당 클러스터는 아이패드 및 노트북, 태블릿 등 다양한 전자기기의 최고가 매입을 전문으로 하는 매입 전문 업체의 매입 글로 구성되어 있습니다. 제품 판매가 아닌 매입 문의를 받는 내용이며, 이어폰 본품이나 부품 판매와는 무관한 매입(구매) 카테고리에 해당합니다.",
+      "evidence_terms": [
+        "최고가 매입",
+        "매입 전문 업체",
+        "판매는 하지 않습니다",
+        "번개톡으로 문의",
+        "모델명",
+        "스펙",
+        "구성품",
+        "제품 상태",
+        "상세 사진",
+        "견적 안내"
+      ]
+    },
+    {
+      "cluster_id": 4,
+      "listing_type": "parts",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 에어팟 4세대 본체만 판매하는 매물로 구성되어 있으며, 케이스나 양쪽 유닛 전체가 아닌 본체 단품 위주로 등록되어 있습니다. 설명에 '본체만', '노캔X', '기능 정상' 등의 문구가 반복되어 나타나고, 가격대도 본체 단품에 맞는 낮은 수준으로 형성되어 있어 정상 완제품이 아닌 부품 또는 본체 단품 매물로 분류됩니다.",
+      "evidence_terms": [
+        "본체",
+        "노캔",
+        "에어팟4",
+        "4세대",
+        "노캔X",
+        "기능 정상",
+        "풀박스",
+        "본체만",
+        "노캔 anc",
+        "상태 깨끗"
+      ]
+    },
+    {
+      "cluster_id": 5,
+      "listing_type": "buying",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 에어팟 4세대 및 프로 모델을 중심으로 미개봉, 중고 제품을 매입하거나 구매하려는 글들로 구성되어 있습니다. 대표 샘플들에서 '매입', '삽니다', '구매 매입' 등의 키워드가 반복적으로 등장하며, 제품 상태와 가격 제시, 거래 방식 안내 등이 포함되어 있어 구매 의사를 명확히 나타내는 매입글임을 알 수 있습니다. 따라서 이 클러스터는 정상 제품 판매가 아닌 구매(매입) 의뢰글로 분류됩니다.",
+      "evidence_terms": [
+        "매입",
+        "삽니다",
+        "구매",
+        "미개봉",
+        "최고가",
+        "에어팟4",
+        "프로3",
+        "프로2",
+        "직거래",
+        "택배"
+      ]
+    },
+    {
+      "cluster_id": 8,
+      "listing_type": "accessory",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 에어팟 본체가 아닌 케이스, 키링, 실리콘 커버 등 에어팟 관련 액세서리 위주로 구성되어 있습니다. 대표 샘플 중 일부는 에어팟 본체가 포함된 정상 매물도 있으나, 대부분은 케이스 및 보호용품으로 정상 본품과는 구분됩니다. 따라서 액세서리 카테고리에 해당합니다.",
+      "evidence_terms": [
+        "케이스",
+        "키링",
+        "실리콘 케이스",
+        "철가루 방지",
+        "캐리어 케이스",
+        "데코 스티커",
+        "에어팟 프로",
+        "에어팟 4세대",
+        "나비 디자인",
+        "키티"
+      ]
+    },
+    {
+      "cluster_id": 9,
+      "listing_type": "damaged",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "두 개의 매물 모두 에어팟 프로 1세대 제품으로, 노이즈(지직거림) 문제가 명확히 언급되어 있으며, 한쪽 유닛에서 소리가 이상하게 나는 등 정상적인 상태가 아님을 설명하고 있습니다. 또한 충전은 가능하지만 이어캡이나 충전기 미포함, 철가루 등 부품 상태에 문제가 있음을 나타내어 'damaged' 타입으로 분류됩니다.",
+      "evidence_terms": [
+        "노캔 지직 거림",
+        "왼쪽 유닛 소리 이상",
+        "철가루",
+        "소량 찍힘",
+        "충전은 잘 됨",
+        "이어캡 없음",
+        "박스 포함",
+        "에어팟 프로 1세대"
+      ]
+    },
+    {
+      "cluster_id": 10,
+      "listing_type": "ambiguous",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 에어팟 프로 2세대 및 3세대 본체 전체, 왼쪽 유닛, 오른쪽 유닛 등 다양한 구성품이 혼재되어 있어 정상 본품과 부품용 매물이 함께 포함되어 있습니다. 일부는 본체 전체 판매, 일부는 한쪽 유닛만 판매하는 점이 특징이며, 상태도 양호한 중고 제품 위주입니다. 따라서 정상과 부품용이 혼합된 'mixed' 타입으로 분류됩니다. / 허용되지 않은 listing_type(mixed)이라 ambiguous로 정규화",
+      "evidence_terms": [
+        "에어팟 프로",
+        "본체",
+        "왼쪽유닛",
+        "오른쪽유닛",
+        "C타입",
+        "애플 정품",
+        "상태 좋음",
+        "기능 이상 없음",
+        "급처",
+        "중고"
+      ]
+    },
+    {
+      "cluster_id": 11,
+      "listing_type": "parts",
+      "classification_confidence": 0.9,
+      "confidence_label": "high",
+      "confidence_reason": "이 클러스터는 에어팟 프로 1, 2 모델의 왼쪽 유닛, 오른쪽 유닛, 본체 등 개별 부품 단위로 판매되는 매물들로 구성되어 있습니다. 전체 본품(양쪽 유닛과 케이스 포함)이 아닌 한쪽 유닛이나 본체만 별도로 판매하는 점이 특징이며, 이는 이어폰 부품 판매에 해당합니다. 또한 설명에 '왼쪽유닛', '오른쪽유닛', '본체'라는 단어가 반복적으로 등장하여 부품 단위임을 명확히 하고 있습니다.",
+      "evidence_terms": [
+        "왼쪽유닛",
+        "오른쪽유닛",
+        "본체",
+        "에어팟프로1",
+        "에어팟프로2",
+        "중고",
+        "S등급",
+        "부분판매",
+        "부품"
+      ]
+    }
+  ]
+}

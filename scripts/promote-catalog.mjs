@@ -17,6 +17,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { promotionNoiseRiskFlags, promotionRiskFlags } from "./lib/promotion-risk.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const appDir = path.join(__dirname, "..");
@@ -34,6 +35,18 @@ const CATEGORY_MAP = {
   airpods: "earphone",
   applewatch: "smartwatch",
   galaxywatch: "smartwatch",
+  earphone_discovered: "earphone",
+  headphone_discovered: "earphone",
+  smartwatch_discovered: "smartwatch",
+};
+
+const PROMOTION_BLOCKED_CATEGORIES = {
+  monitor_discovered: "monitor parser skeleton exists, but runtime catalog/pool gate is not promoted yet",
+  game_console_discovered: "game-console runtime category/comparable-key parser is not implemented yet",
+  camera_discovered: "camera runtime category/comparable-key parser is not implemented yet",
+  speaker_audio_discovered: "speaker/audio runtime category/comparable-key parser is not implemented yet",
+  desktop_pc_discovered: "desktop PC runtime category/comparable-key parser is not implemented yet",
+  home_appliance_tech_discovered: "home-appliance runtime risk model and logistics gate are not implemented yet",
 };
 
 const NOISE_BUCKETS = {
@@ -86,9 +99,16 @@ function uniqueStrings(values) {
 }
 
 function inferBrand(modelName, aliases) {
-  const text = `${modelName} ${aliases.join(" ")}`.toLowerCase();
-  if (/iphone|아이폰|apple|애플|ipad|아이패드|macbook|맥북/.test(text)) return "Apple";
+  const primary = String(modelName ?? "").toLowerCase();
+  const text = `${primary} ${aliases.join(" ")}`.toLowerCase();
+  if (/galaxy|갤럭시|samsung|삼성|갤탭/.test(primary)) return "Samsung";
+  if (/iphone|아이폰|apple|애플|ipad|아이패드|macbook|맥북|airpods?|에어팟/.test(primary)) return "Apple";
+  if (/dyson|다이슨/.test(primary)) return "Dyson";
+  if (/sony|소니/.test(primary)) return "Sony";
+  if (/bose|보스/.test(primary)) return "Bose";
+  if (/nintendo|닌텐도/.test(primary)) return "Nintendo";
   if (/galaxy|갤럭시|samsung|삼성|갤탭/.test(text)) return "Samsung";
+  if (/iphone|아이폰|apple|애플|ipad|아이패드|macbook|맥북|airpods?|에어팟/.test(text)) return "Apple";
   if (/dyson|다이슨/.test(text)) return "Dyson";
   if (/sony|소니/.test(text)) return "Sony";
   if (/bose|보스/.test(text)) return "Bose";
@@ -118,7 +138,24 @@ function inferReleaseYear(modelName) {
   return new Date().getFullYear();
 }
 
+function runtimeCategoryFor(category) {
+  return CATEGORY_MAP[category] ?? null;
+}
+
+function assertPromotableCategory(category) {
+  if (runtimeCategoryFor(category)) return;
+  const reason = PROMOTION_BLOCKED_CATEGORIES[category] ?? "no explicit runtime category mapping exists";
+  throw new Error(
+    `Category "${category}" cannot be promoted yet: ${reason}. ` +
+    "Keep it in internal mining/readiness docs until catalog type, parser, gates, and approval policy are added.",
+  );
+}
+
 function toCatalogSku(raw, category) {
+  const runtimeCategory = runtimeCategoryFor(category);
+  if (!runtimeCategory) {
+    throw new Error(`unpromotable category: ${category}`);
+  }
   const aliases = uniqueStrings([raw.model_name, ...(raw.aliases ?? [])]).slice(0, 16);
   const median = Number(raw.sku_median ?? 0);
   const priceRange = Array.isArray(raw.price_range) ? raw.price_range.map(Number).filter(Number.isFinite) : [];
@@ -128,7 +165,7 @@ function toCatalogSku(raw, category) {
   return {
     id: raw.id,
     brand: raw.brand || inferBrand(raw.model_name, aliases),
-    category: CATEGORY_MAP[category] ?? category,
+    category: runtimeCategory,
     modelName: raw.model_name,
     aliases,
     mustContain: [aliases],
@@ -147,7 +184,13 @@ function selectPromotionCandidates(category, skuCatalog, noiseRules) {
   const skus = (skuCatalog.skus ?? [])
     .filter((sku) => sku.approval_status === "needs_human_approval")
     .filter((sku) => !(sku.risk_flags ?? []).length)
-    .map((sku) => toCatalogSku(sku, category));
+    .map((sku) => {
+      const candidate = toCatalogSku(sku, category);
+      return {
+        ...candidate,
+        riskFlags: promotionRiskFlags(candidate),
+      };
+    });
 
   const noise = (noiseRules.rules ?? [])
     .filter((rule) => rule.approval_status === "auto_approved_for_review")
@@ -159,7 +202,11 @@ function selectPromotionCandidates(category, skuCatalog, noiseRules) {
       hitCount: Number(rule.hit_count ?? 0),
       promotionHash: hash(rule),
     }))
-    .filter((rule) => rule.keyword && NOISE_BUCKETS[rule.type]);
+    .filter((rule) => rule.keyword && NOISE_BUCKETS[rule.type])
+    .map((rule) => ({
+      ...rule,
+      riskFlags: promotionNoiseRiskFlags(rule, category),
+    }));
 
   return { skus, noise };
 }
@@ -187,6 +234,7 @@ function makeApprovalQueue(category, candidates, previous = null) {
       aliases: sku.aliases,
       medianFallbackKrw: Math.round(sku.msrpKrw * 0.5),
       sourceClusterIds: sku.sourceClusterIds,
+      riskFlags: sku.riskFlags ?? [],
       note: prev?.note ?? "",
       candidate: sku,
     });
@@ -204,6 +252,7 @@ function makeApprovalQueue(category, candidates, previous = null) {
       keyword: rule.keyword,
       precision: rule.precision,
       hitCount: rule.hitCount,
+      riskFlags: rule.riskFlags ?? [],
       note: prev?.note ?? "",
       candidate: rule,
     });
@@ -215,6 +264,7 @@ function makeApprovalQueue(category, candidates, previous = null) {
     updated_at: new Date().toISOString(),
     instructions: [
       "Set approved=true only for entries you want to promote into runtime.",
+      "Items with non-empty riskFlags are shown for review but are skipped by --apply until the underlying risk is fixed.",
       "Set rejected=true for entries you explicitly do not want to see again.",
       "Leave both false for pending review.",
       "promote-catalog --apply reads only approved=true and rejected!=true entries.",
@@ -250,12 +300,18 @@ function filterCandidatesByApproval(candidates, approvalQueue) {
     if (item.kind === "sku") {
       const curated = curatedByKey.get(item.key);
       const fallback = sourceSkus.get(item.key);
-      if (curated || fallback) skus.push(curated ?? fallback);
+      const sku = curated
+        ? { ...curated, riskFlags: curated.riskFlags ?? fallback?.riskFlags ?? [] }
+        : fallback;
+      if (sku && !(sku.riskFlags ?? []).length) skus.push(sku);
     }
     if (item.kind === "noise") {
       const curated = curatedByKey.get(item.key);
       const fallback = sourceNoise.get(item.key);
-      if (curated || fallback) noise.push(curated ?? fallback);
+      const rule = curated
+        ? { ...curated, riskFlags: curated.riskFlags ?? fallback?.riskFlags ?? [] }
+        : fallback;
+      if (rule && !(rule.riskFlags ?? []).length) noise.push(rule);
     }
   }
 
@@ -348,7 +404,8 @@ function printSummary(summary) {
   console.log(`\n[promote-catalog] category=${summary.category}`);
   console.log(`  new SKU candidates: ${summary.newSkus.length}`);
   for (const sku of summary.newSkus) {
-    console.log(`    + ${sku.id} / ${sku.modelName} / medianFallback=${Math.round(sku.msrpKrw * 0.5).toLocaleString("ko-KR")}원`);
+    const risks = (sku.riskFlags ?? []).length ? ` / risks=${sku.riskFlags.join(",")}` : "";
+    console.log(`    + ${sku.id} / ${sku.modelName} / medianFallback=${Math.round(sku.msrpKrw * 0.5).toLocaleString("ko-KR")}원${risks}`);
   }
   if (summary.skippedSkus.length) console.log(`  skipped cached SKUs: ${summary.skippedSkus.map((sku) => sku.id).join(", ")}`);
 
@@ -377,6 +434,7 @@ async function main() {
     console.error("Usage: node scripts/promote-catalog.mjs --category=<category> [--dry-run|--prepare-approval|--apply]");
     process.exit(1);
   }
+  assertPromotableCategory(category);
 
   const categoryDir = path.join(intelligenceDir, category);
   const skuCatalog = await readJson(path.join(categoryDir, "sku_catalog.json"));

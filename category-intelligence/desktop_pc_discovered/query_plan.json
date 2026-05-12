@@ -1,0 +1,28 @@
+{
+  "category": "desktop_pc_discovered",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "Desktop PC From Bunjang Category",
+  "categoryIds": [
+    "600100006"
+  ],
+  "queries": [
+    "게이밍 컴퓨터 본체",
+    "조립PC 본체",
+    "사무용 컴퓨터 본체",
+    "데스크탑 본체",
+    "아이맥",
+    "맥미니"
+  ],
+  "seedSkus": [
+    "gaming-desktop",
+    "office-desktop",
+    "assembled-pc",
+    "imac",
+    "mac-mini",
+    "mac-studio"
+  ],
+  "minNormalPrice": 50000,
+  "clusterK": 12,
+  "aiHints": "번개장터 600100006 데스크탑/PC 카테고리. 정상: 완제품 데스크탑 본체, 조립PC 본체, iMac/Mac mini/Mac Studio 본체. 노이즈: 그래픽카드/CPU/메인보드/RAM/SSD/HDD/케이스/파워/쿨러/부품 단독, 모니터/키보드/마우스 주변기기 단독, 폐컴퓨터/고장/부품용, PC방/사무실 대량 일괄, 매입글/출장매입/업자 광고, 견적글.\n교차 카테고리 지식: 3in1=accessory(p=1), 견적=buying(p=1), 단품=parts(p=1), 매입=buying(p=1), 매입업체=buying(p=1), 매입하는=buying(p=1), 맥세이프=accessory(p=1), 무료증정=multi(p=1), 번톡=buying(p=1), 부품용으로=damaged(p=1), 삽니다=buying(p=1), 삽니다=mixed(p=1), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=1), 오른쪽=parts(p=1), 유닛=parts(p=1), 이상=damaged(p=1), 일괄=accessory(p=1), 전문=buying(p=1), 최고가=buying(p=1), 출장=buying(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

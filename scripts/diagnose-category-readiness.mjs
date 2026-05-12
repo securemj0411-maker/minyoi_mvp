@@ -29,6 +29,7 @@ const CATEGORY_STATUS = {
   smartphone: "internal_only",
   tablet: "internal_only",
   laptop: "internal_only",
+  monitor: "internal_only",
   small_appliance: "blocked",
 };
 
@@ -123,9 +124,10 @@ const categories = arg("category", "smartphone,laptop")
   .map((item) => item.trim())
   .filter(Boolean);
 const limit = intArg("limit", 2000, 100, 10000);
+const orderBy = arg("order", "detail_enriched_at");
 
 const rawRows = await fetchJson(
-  `/mvp_raw_listings?select=pid,name,price,sku_id,sku_name,thumbnail_url,listing_state,detail_status,listing_type,sale_status,last_seen_at&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&order=last_seen_at.desc&limit=${limit}`,
+  `/mvp_raw_listings?select=pid,name,price,sku_id,sku_name,thumbnail_url,listing_state,detail_status,listing_type,sale_status,last_seen_at,detail_enriched_at&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&order=${encodeURIComponent(orderBy)}.desc&limit=${limit}`,
 );
 const pids = rawRows.map((row) => Number(row.pid)).filter(Number.isFinite);
 const rawByPid = new Map(rawRows.map((row) => [Number(row.pid), row]));

@@ -1,85 +1,87 @@
 {
-  "generatedAt": "2026-05-10T11:45:14.438Z",
+  "generatedAt": "2026-05-10T16:39:49.476Z",
   "windowHours": 24,
-  "cutoff": "2026-05-09T11:45:14.438Z",
+  "cutoff": "2026-05-09T16:39:49.476Z",
   "runs": {
     "total": 1000,
-    "succeeded": 379,
-    "failed": 619,
-    "qstash": 915,
-    "functionSeconds": 22717.199,
-    "p95DurationMs": 34936,
+    "succeeded": 589,
+    "failed": 411,
+    "qstash": 885,
+    "functionSeconds": 24695.026,
+    "p95DurationMs": 42562,
     "stableWindowHours": 2,
     "stable": {
-      "runs": 100,
-      "failed": 2,
-      "failureRate": 0.02,
-      "qstash": 88,
-      "qstashPerDay": 1056,
-      "searchCalls": 1131,
-      "detailClaimed": 2543,
-      "detailEnriched": 2518,
-      "scored": 11000,
-      "poolUpserted": 3532,
-      "functionSeconds": 2696.233
+      "runs": 87,
+      "failed": 1,
+      "failureRate": 0.011494252873563218,
+      "qstash": 62,
+      "qstashPerDay": 744,
+      "searchCalls": 1326,
+      "detailClaimed": 2067,
+      "detailEnriched": 1989,
+      "scored": 10256,
+      "poolUpserted": 3211,
+      "functionSeconds": 3296.724
     },
     "failureReasons": {
-      "supabase_schema_cache": 592,
+      "Supabase REST failed 500: {\"code\":\"40P01\",\"details\":\"Process 142976 waits for ShareLock on": 1,
+      "Supabase REST failed 400: {\"code\":\"22P02\",\"details\":null,\"hint\":null,\"message\":\"invalid in": 4,
+      "supabase_schema_cache": 379,
       "fetch_failed": 27
     },
     "stableFailureReasons": {
-      "supabase_schema_cache": 2
+      "Supabase REST failed 500: {\"code\":\"40P01\",\"details\":\"Process 142976 waits for ShareLock on": 1
     }
   },
   "pipeline": {
-    "searchCalls": 1986,
-    "collected": 278787,
-    "queued": 25851,
-    "detailClaimed": 7296,
-    "detailEnriched": 7149,
-    "detailFailed": 69,
-    "scored": 52057,
-    "poolUpserted": 16342,
-    "aiReviewRequested": 1258,
-    "aiApiCalls": 329,
-    "aiCacheHits": 929
+    "searchCalls": 4872,
+    "collected": 552264,
+    "queued": 42673,
+    "detailClaimed": 13086,
+    "detailEnriched": 12817,
+    "detailFailed": 131,
+    "scored": 82932,
+    "poolUpserted": 29420,
+    "aiReviewRequested": 1706,
+    "aiApiCalls": 442,
+    "aiCacheHits": 1264
   },
   "costs": {
-    "aiInputTokens": 54406,
-    "aiOutputTokens": 9675,
+    "aiInputTokens": 45995,
+    "aiOutputTokens": 8159,
     "aiCostSource": "recorded_cost_usd",
-    "recordedAiCostUsd": 0.0010904,
-    "estimatedAiCostUsd": 0.0372424,
-    "aiCostUsd": 0.0010904,
-    "aiCostPerDay": 0.0010904,
-    "aiCostPerMonth": 0.032712000000000005,
-    "qstashMessagesPerDay": 915,
+    "recordedAiCostUsd": 0.007526399999999998,
+    "estimatedAiCostUsd": 0.0314524,
+    "aiCostUsd": 0.007526399999999998,
+    "aiCostPerDay": 0.007526399999999998,
+    "aiCostPerMonth": 0.22579199999999994,
+    "qstashMessagesPerDay": 885,
     "qstashPaidUsdPerDay": 0,
     "qstashPaidUsdPerMonth": 0,
-    "runtimeSecondsPerDay": 22717.199,
-    "detailCallsPerDay": 7296,
-    "searchCallsPerDay": 1986
+    "runtimeSecondsPerDay": 24695.026,
+    "detailCallsPerDay": 13086,
+    "searchCallsPerDay": 4872
   },
   "pack": {
-    "opens": 3,
-    "success": 3,
+    "opens": 14,
+    "success": 14,
     "refunded": 0,
     "failed": 0,
-    "attemptedCards": 6,
-    "revealedCards": 6,
-    "tokensSpent": 6,
+    "attemptedCards": 28,
+    "revealedCards": 28,
+    "tokensSpent": 24,
     "tokensRefunded": 0
   },
   "feedback": {
-    "total": 1,
-    "positive": 1,
-    "negative": 0
+    "total": 5,
+    "positive": 4,
+    "negative": 1
   },
   "pool": {
-    "ready": 56,
-    "averageReadyProfit": 63395
+    "ready": 90,
+    "averageReadyProfit": 61744
   },
   "risks": [
-    "전체 24시간 실패율은 61.9%지만 최근 2시간은 2.0%라 과거 스키마/설정 실패 영향 가능성이 큼"
+    "전체 24시간 실패율은 41.1%지만 최근 2시간은 1.1%라 과거 스키마/설정 실패 영향 가능성이 큼"
   ]
 }

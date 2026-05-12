@@ -1,0 +1,28 @@
+{
+  "category": "monitor_discovered",
+  "source": "bunjang",
+  "source_type": "marketplace_listing",
+  "label": "Monitor From Bunjang Category",
+  "categoryIds": [
+    "600100007"
+  ],
+  "queries": [
+    "게이밍 모니터",
+    "LG 27인치 모니터",
+    "삼성 오디세이 모니터",
+    "델 모니터",
+    "벤큐 조위",
+    "울트라와이드 모니터"
+  ],
+  "seedSkus": [
+    "lg-monitor",
+    "samsung-odyssey",
+    "dell-monitor",
+    "benq-zowie",
+    "ultrawide-monitor",
+    "gaming-monitor"
+  ],
+  "minNormalPrice": 30000,
+  "clusterK": 12,
+  "aiHints": "번개장터 600100007 모니터 카테고리. 정상: 모니터 본체. 노이즈: 모니터암/스탠드/어댑터/케이블/부품/패널 단독, 액정파손/멍/줄/번인/불량화소, 업자성 재고/전국설치, TV/태블릿/터치패널 혼합, 여러 대 일괄.\n교차 카테고리 지식: 3in1=accessory(p=1), 견적=buying(p=1), 단품=parts(p=1), 매입=buying(p=1), 매입업체=buying(p=1), 매입하는=buying(p=1), 맥세이프=accessory(p=1), 번톡=buying(p=1), 부품용으로=damaged(p=1), 삽니다=buying(p=1), 삽니다=mixed(p=1), 실리콘케이스=accessory(p=1), 액정파손=damaged(p=1), 오른쪽=parts(p=1), 유닛=parts(p=1), 이상=damaged(p=1), 일괄=accessory(p=1), 전문=buying(p=1), 최고가=buying(p=1), 출장=buying(p=1), 케이스티파이=accessory(p=1), 폰케이스=accessory(p=1)"
+}

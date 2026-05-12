@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "category": "headphone_discovered",
+  "generated_at": "2026-05-10T15:27:45.577Z",
+  "method": "v3_embedding_cluster_ai_validation",
+  "rules": [],
+  "cluster_evidence": []
+}

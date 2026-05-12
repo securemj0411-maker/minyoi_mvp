@@ -1,0 +1,68 @@
+[
+  {
+    "key": "nintendo-switch-oled",
+    "count": 94,
+    "min": 130000,
+    "p25": 230000,
+    "median": 280000,
+    "p75": 320000,
+    "max": 510000,
+    "core_sample_count": 94,
+    "excluded_count": 15
+  },
+  {
+    "key": "nintendo-switch",
+    "count": 21,
+    "min": 180000,
+    "p25": 200000,
+    "median": 250000,
+    "p75": 270000,
+    "max": 310000,
+    "core_sample_count": 21,
+    "excluded_count": 15
+  },
+  {
+    "key": "nintendo-switch-lite",
+    "count": 12,
+    "min": 100000,
+    "p25": 130000,
+    "median": 139000,
+    "p75": 165000,
+    "max": 180000,
+    "core_sample_count": 12,
+    "excluded_count": 15
+  },
+  {
+    "key": "playstation-5",
+    "count": 12,
+    "min": 400000,
+    "p25": 470000,
+    "median": 500000,
+    "p75": 600000,
+    "max": 1032000,
+    "core_sample_count": 12,
+    "excluded_count": 15
+  },
+  {
+    "key": "nintendo-switch-2",
+    "count": 5,
+    "min": 560000,
+    "p25": 600000,
+    "median": 640000,
+    "p75": 690000,
+    "max": 850000,
+    "core_sample_count": 5,
+    "excluded_count": 15
+  },
+  {
+    "key": "playstation-5-digital",
+    "count": 1,
+    "min": 750000,
+    "p25": 750000,
+    "median": 750000,
+    "p75": 750000,
+    "max": 750000,
+    "core_sample_count": 1,
+    "excluded_count": 15
+  }
+]

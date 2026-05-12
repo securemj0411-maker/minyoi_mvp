@@ -1,0 +1,280 @@
+{
+  "version": 1,
+  "category": "home_appliance_tech_discovered",
+  "generated_at": "2026-05-10T18:54:44.194Z",
+  "method": "v3_normal_cluster_to_sku_candidates",
+  "skus": [
+    {
+      "id": "다이슨-v7-v8-무선-청소기-lg-코드제로-무선-청소기",
+      "brand": "",
+      "model_name": "다이슨 V7/V8 무선 청소기, LG 코드제로 무선 청소기",
+      "aliases": [
+        "다이슨 V7/V8 무선 청소기, LG 코드제로 무선 청소기",
+        "다이슨",
+        "무선 청소기",
+        "본체",
+        "배터리",
+        "충전기",
+        "거치대",
+        "틈새흡입봉",
+        "LG 코드제로",
+        "작동 잘됨",
+        "청소기"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        3
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 다이슨 및 LG 코드제로 무선 청소기 본체와 충전기, 배터리, 거치대 등 기본 구성품이 포함된 완전한 무선 청소기 제품들이 주를 이루고 있습니다. 제품 설명에 본체와 충전기, 배터리, 흡입봉 등 청소기 핵심 부품이 함께 판매된다고 명확히 기재되어 있으며, 작동 상태도 언급되어 있어 정상적인 완제품으로 분류됩니다. 일부 매물은 배터리 성능 저하나 사용감이 있으나 여전히 본체 중심의 완제품으로 판단됩니다. 부품 단독 판매나 고장품, 소모품 단품은 대표 샘플에 포함되어 있지 않아 노이즈가 적은 정상 클러스터입니다."
+    },
+    {
+      "id": "레비오사두유제조기-파벡스에어프라이기-칼만-에어-플렉스-무선청소기-dk-4012-이녹스프랑-에어프라이기",
+      "brand": "",
+      "model_name": "레비오사두유제조기, 파벡스에어프라이기, 칼만 에어 플렉스 무선청소기 DK-4012, 이녹스프랑 에어프라이기",
+      "aliases": [
+        "레비오사두유제조기, 파벡스에어프라이기, 칼만 에어 플렉스 무선청소기 DK-4012, 이녹스프랑 에어프라이기",
+        "미개봉",
+        "새제품",
+        "무선청소기",
+        "에어프라이어",
+        "두유제조기",
+        "가전",
+        "정상가",
+        "핸디청소기",
+        "대용량",
+        "반품불가"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        10
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 청소기, 무선청소기, 에어프라이어, 두유제조기 등 생활/주방/미용 가전의 완제품으로 구성되어 있으며, 모두 새제품(미개봉) 상태로 판매되고 있어 정상적인 전자식 가전 본체 매물로 판단됩니다. 부품, 액세서리, 소모품, 고장품, 렌탈형 대형가전 등이 포함되어 있지 않고, 단일 제품 단위로 판매되는 점이 특징입니다."
+    },
+    {
+      "id": "메디큐브-하이포커스샷-부스터젤-에이블미-페이스-갈바닉-마사지기-쿠쿠-6인용-ih압력밥솥",
+      "brand": "",
+      "model_name": "메디큐브 하이포커스샷+부스터젤, 에이블미 페이스 갈바닉 마사지기, 쿠쿠 6인용 IH압력밥솥",
+      "aliases": [
+        "메디큐브 하이포커스샷+부스터젤, 에이블미 페이스 갈바닉 마사지기, 쿠쿠 6인용 IH압력밥솥",
+        "메디큐브 하이포커스샷",
+        "부스터젤",
+        "에이블미 페이스 갈바닉 마사지기",
+        "충전 케이블",
+        "쿠쿠 6인용 IH압력밥솥",
+        "내솥",
+        "전자식 가전 본체",
+        "풀세트",
+        "정상제품",
+        "생활/주방/미용 가전"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        11
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 메디큐브 하이포커스샷+부스터젤, 에이블미 페이스 갈바닉 마사지기, 쿠쿠 6인용 IH압력밥솥 등 생활/주방/미용 가전의 완전한 본체 제품들로 구성되어 있습니다. 각 제품은 충전 케이블, 설명서, 내솥 등 기본 구성품을 포함하고 있으며, 전자식 가전 본체로서 정상적인 사용이 가능한 상태임이 명확합니다. 따라서 번개장터 생활/주방/미용 가전 discovery 카테고리 내 정상(normal) 매물에 해당합니다."
+    },
+    {
+      "id": "월홈-wpm-kd-310-돌체구스토-캡슐커피머신-네스프레소-픽시-보쉬-타시모-t20-씨메-시그니처-토탈-피오렌자또-",
+      "brand": "",
+      "model_name": "월홈 WPM KD-310, 돌체구스토 캡슐커피머신, 네스프레소 픽시, 보쉬 타시모 T20, 씨메 시그니처 토탈 피오렌자또 f64e",
+      "aliases": [
+        "월홈 WPM KD-310, 돌체구스토 캡슐커피머신, 네스프레소 픽시, 보쉬 타시모 T20, 씨메 시그니처 토탈 피오렌자또 f64e",
+        "커피머신",
+        "에스프레소",
+        "캡슐머신",
+        "포타필터",
+        "스팀노즐",
+        "반자동",
+        "정상작동",
+        "본체",
+        "풀박스",
+        "사용감"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        5
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 모두 커피머신이라는 동일한 핵심 가전제품을 중심으로 구성되어 있으며, 각 매물은 본체와 기본 구성품(포타필터, 바스켓, 스팀노즐 등)을 포함한 완전한 정상 작동 제품으로 보입니다. 설명에 캡슐머신, 에스프레소 머신, 반자동 커피머신 등 명확한 커피머신 본체가 언급되어 있고, 부품이나 액세서리 단독 판매가 아닌 완제품 위주로 구성되어 있어 정상(normal) 타입으로 분류됩니다."
+    },
+    {
+      "id": "침구청소기",
+      "brand": "",
+      "model_name": "침구청소기",
+      "aliases": [
+        "침구청소기",
+        "본체",
+        "필터",
+        "먼지통",
+        "화이트",
+        "사용감 적음",
+        "생활가전",
+        "청소기",
+        "완제품",
+        "전자식 가전"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        9
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 침구청소기라는 동일한 전자식 생활가전 본체 제품군으로 구성되어 있으며, 본체와 기본 구성품(필터, 먼지통 등)이 포함된 완제품 매물로 정상적인 생활/주방/미용 가전 카테고리에 부합합니다. 부품 단독, 소모품, 고장품, 렌탈형, 다품목 일괄 매물 등이 포함되어 있지 않아 정상(normal)으로 분류됩니다."
+    },
+    {
+      "id": "쿠쿠-3구-하이브리드-인덕션-하이라이트-전기레인지-cihr-d304fb",
+      "brand": "",
+      "model_name": "쿠쿠 3구 하이브리드 인덕션 하이라이트 전기레인지 CIHR-D304FB",
+      "aliases": [
+        "쿠쿠 3구 하이브리드 인덕션 하이라이트 전기레인지 CIHR-D304FB",
+        "인덕션",
+        "전기레인지",
+        "진공청소기",
+        "새제품",
+        "풀박",
+        "완제품",
+        "삼성전자",
+        "쿠쿠",
+        "정상 작동",
+        "생활가전"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        1
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 인덕션 전기레인지, 진공청소기 등 생활/주방 가전의 완제품 본체를 중심으로 구성되어 있으며, 제품 설명에 새제품, 풀박스, 정상 작동 등의 내용이 포함되어 있어 정상적인 완제품 매물임을 명확히 알 수 있습니다. 또한 부품이나 액세서리 단독 판매가 아닌 완전한 가전제품 본체임이 확인되어 'normal'로 분류하였습니다."
+    },
+    {
+      "id": "클리벤-4in1-무선청소기-클리엔-r9-로봇청소기-다이슨-v10-카본파이버-무선청소기-샤오미-미지아-프로-물걸레-로",
+      "brand": "",
+      "model_name": "클리벤 4in1 무선청소기, 클리엔 R9 로봇청소기, 다이슨 V10 카본파이버 무선청소기, 샤오미 미지아 프로 물걸레 로봇청소기, 한경희 건강식마스터 HFM-1000",
+      "aliases": [
+        "클리벤 4in1 무선청소기, 클리엔 R9 로봇청소기, 다이슨 V10 카본파이버 무선청소기, 샤오미 미지아 프로 물걸레 로봇청소기, 한경희 건강식마스터 HFM-1000",
+        "무선청소기",
+        "로봇청소기",
+        "새상품",
+        "풀세트",
+        "구성품 포함",
+        "미사용",
+        "다이슨 V10",
+        "클리벤",
+        "샤오미 미지아",
+        "건강식마스터"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        0
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 무선청소기, 로봇청소기, 에어프라이어, 블렌더 등 전자식 가전 본체와 명확한 기본 구성품을 포함한 정상적인 생활/주방/미용 가전 제품들로 구성되어 있습니다. 제품 설명에 본체와 다양한 구성품이 포함되어 있고, 단품 부품이나 액세서리, 고장품이 아닌 완전한 제품임이 명확하여 정상(normal) 타입으로 분류됩니다."
+    },
+    {
+      "id": "ems-고주파-마사지기-및-바디관리기",
+      "brand": "",
+      "model_name": "EMS 고주파 마사지기 및 바디관리기",
+      "aliases": [
+        "EMS 고주파 마사지기 및 바디관리기",
+        "EMS",
+        "고주파",
+        "마사지기",
+        "바디관리기",
+        "스킨테라피",
+        "리프팅",
+        "피부탄력",
+        "풀박스",
+        "충전기",
+        "본체"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        6
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "broad_bundle_or_usecase_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 EMS, 고주파, 마사지기 등 피부 및 바디 관리를 위한 전자식 가전 본체 제품들로 구성되어 있습니다. 각 제품은 본체와 충전기, 설명서 등 기본 구성품이 포함되어 있으며, 피부 탄력 개선, 리프팅, 바디 셀룰라이트 관리 등 기능이 명확히 기술되어 있습니다. 부품이나 액세서리 단품이 아닌 완전한 핵심 제품으로 분류할 수 있어 정상(normal) 타입에 해당합니다."
+    },
+    {
+      "id": "lg-코드제로-a9-무선청소기",
+      "brand": "",
+      "model_name": "LG 코드제로 A9 무선청소기",
+      "aliases": [
+        "LG 코드제로 A9 무선청소기",
+        "LG 코드제로 A9",
+        "무선청소기",
+        "스마트 인버터 모터",
+        "스탠드",
+        "충전기",
+        "브러시",
+        "완제품",
+        "중고",
+        "작동 이상 없음",
+        "배터리 포함"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        2
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 LG 코드제로 A9 무선청소기라는 완전한 핵심 제품 본체를 포함하고 있으며, 스탠드, 충전기, 브러시 등 기본 구성품이 명확히 포함되어 있습니다. 제품 상태도 LIGHTLY_USED 또는 HEAVILY_USED로 정상 작동하는 중고 제품임을 나타내며, 필터, 배터리, 부품 단독 판매가 아닌 완제품 위주로 구성되어 있어 정상(normal) 타입으로 분류됩니다."
+    }
+  ]
+}

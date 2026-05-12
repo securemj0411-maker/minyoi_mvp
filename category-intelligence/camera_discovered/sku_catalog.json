@@ -1,0 +1,345 @@
+{
+  "version": 1,
+  "category": "camera_discovered",
+  "generated_at": "2026-05-10T18:36:24.821Z",
+  "method": "v3_normal_cluster_to_sku_candidates",
+  "skus": [
+    {
+      "id": "니콘-zfc-니콘-z5-삼성-ex2f",
+      "brand": "",
+      "model_name": "니콘 ZFC, 니콘 Z5, 삼성 EX2F",
+      "aliases": [
+        "니콘 ZFC, 니콘 Z5, 삼성 EX2F",
+        "니콘 ZFC",
+        "미러리스",
+        "바디만",
+        "렌즈 포함 키트",
+        "풀박스",
+        "컷수",
+        "배터리 포함",
+        "충전기 포함",
+        "삼성 EX2F",
+        "하이엔드 디카"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        5
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 DSLR/미러리스 카테고리 내에서 카메라 바디 본체 또는 바디와 렌즈가 포함된 기본 구성의 정상 매물로 구성되어 있습니다. 대표 샘플들은 니콘 ZFC, 니콘 Z5 바디 및 번들킷, 삼성 하이엔드 디카 등 카메라 본체 중심이며, 액세서리 단독이나 부품, 손상품이 포함되어 있지 않습니다. 따라서 정상(normal) 타입으로 분류됩니다."
+    },
+    {
+      "id": "소니-a6000-캐논-eos-600d-캐논-eos-200d-소니-a5100-후지필름-x-t50",
+      "brand": "",
+      "model_name": "소니 a6000, 캐논 EOS 600D, 캐논 EOS 200D, 소니 A5100, 후지필름 X-T50",
+      "aliases": [
+        "소니 a6000, 캐논 EOS 600D, 캐논 EOS 200D, 소니 A5100, 후지필름 X-T50",
+        "DSLR 카메라 바디",
+        "미러리스 카메라 바디",
+        "컷수",
+        "배터리 포함",
+        "충전기 포함",
+        "스트랩 포함",
+        "정상 작동",
+        "박스 포함",
+        "입문용 DSLR",
+        "고화소"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        8
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 DSLR 및 미러리스 카메라 바디 중심의 정상 매물로 구성되어 있습니다. 대부분 바디 단품 또는 바디와 기본 구성품(배터리, 충전기, 스트랩 등)을 포함하며, 렌즈 단독이나 액세서리 단품, 부품용, 손상품 등이 혼입되어 있지 않습니다. 컷수 정보와 상태 설명이 상세히 포함되어 있어 정상적인 카메라 바디 매물임을 명확히 알 수 있습니다."
+    },
+    {
+      "id": "후지필름-x-s10-x-t20-x-t4-미러리스-카메라-바디",
+      "brand": "",
+      "model_name": "후지필름 X-S10 / X-T20 / X-T4 미러리스 카메라 바디",
+      "aliases": [
+        "후지필름 X-S10 / X-T20 / X-T4 미러리스 카메라 바디",
+        "후지필름",
+        "미러리스",
+        "바디",
+        "렌즈 포함",
+        "XF 18-55mm",
+        "X-S10",
+        "X-T20",
+        "X-T4",
+        "중고 카메라",
+        "본체"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        1
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 후지필름 미러리스 카메라 바디 중심으로 구성되어 있으며, 일부는 렌즈 포함 키트도 있으나 모두 카메라 바디 본체를 주로 판매하는 정상 매물입니다. 부품용이나 액세서리 단독 매물, 혼합 매물은 포함되어 있지 않고, 카메라 바디 단품 또는 바디+기본 렌즈 구성으로 명확히 구분됩니다."
+    },
+    {
+      "id": "canon-eos-r6",
+      "brand": "",
+      "model_name": "Canon EOS R6",
+      "aliases": [
+        "Canon EOS R6",
+        "캐논",
+        "EOS R6",
+        "EOS M6",
+        "바디",
+        "미러리스",
+        "풀박스",
+        "배터리",
+        "스트랩",
+        "리퍼",
+        "점검 완료"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": 1900000,
+      "price_range": [
+        1470000,
+        2150000
+      ],
+      "source_cluster_ids": [
+        0
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 캐논 EOS R6, EOS M6 등 DSLR/미러리스 카메라 바디 본체 위주로 구성되어 있으며, 바디 단품 또는 바디+기본 구성(배터리, 스트랩, 박스 등)을 포함한 정상적인 카메라 본체 매물로 판단됩니다. 렌즈 단독, 액세서리, 부품, 손상품 등이 포함되어 있지 않고, 구매자에게 핵심 제품인 카메라 바디를 제공하는 매물들로 구성되어 있습니다."
+    },
+    {
+      "id": "canon-eos-r8-eos-r10-eos-r6-eos-6d",
+      "brand": "",
+      "model_name": "Canon EOS R8 / EOS R10 / EOS R6 / EOS 6D",
+      "aliases": [
+        "Canon EOS R8 / EOS R10 / EOS R6 / EOS 6D",
+        "캐논",
+        "EOS",
+        "미러리스",
+        "DSLR",
+        "카메라 바디",
+        "배터리",
+        "충전기",
+        "메모리 카드",
+        "정품",
+        "단품"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": 1340000,
+      "price_range": [
+        1150000,
+        1350000
+      ],
+      "source_cluster_ids": [
+        2
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 캐논 EOS R8, EOS R10, EOS R6, EOS 6D 등 미러리스 및 DSLR 카메라 바디 중심의 매물로 구성되어 있으며, 대부분 바디 단품 또는 바디와 기본 구성품(배터리, 충전기, 메모리 카드 등)을 포함한 정상적인 카메라 본체 판매임을 명확히 하고 있습니다. 렌즈 단독, 액세서리, 부품용, 손상품 등은 포함되어 있지 않고, 카메라 바디 본체 중심으로 판매되어 정상(normal) 타입으로 분류됩니다."
+    },
+    {
+      "id": "leica-m6-ttl",
+      "brand": "",
+      "model_name": "Leica M6 TTL",
+      "aliases": [
+        "Leica M6 TTL",
+        "leica",
+        "m6 ttl",
+        "new",
+        "필름카메라",
+        "바디",
+        "본체",
+        "블랙",
+        "정상",
+        "카메라"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        4
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 'leica m6 ttl new'라는 완전한 필름 카메라 바디 본체를 대표하는 정상 매물로, 카메라 바디 단품으로서 DSLR/미러리스 카테고리 내 핵심 제품군에 해당합니다. 설명에 바디 상태가 명확히 'new'로 표기되어 있고, 렌즈나 액세서리 단독이 아닌 본체 중심의 매물임이 분명합니다."
+    },
+    {
+      "id": "nikon-z5-nikon-1-j1",
+      "brand": "",
+      "model_name": "Nikon Z5 / Nikon 1 J1",
+      "aliases": [
+        "Nikon Z5 / Nikon 1 J1",
+        "니콘",
+        "미러리스",
+        "카메라 바디",
+        "배터리",
+        "충전기",
+        "풀프레임",
+        "J1",
+        "Z5",
+        "정상작동",
+        "단품"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": 900000,
+      "price_range": [
+        800000,
+        900000
+      ],
+      "source_cluster_ids": [
+        10
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 니콘 미러리스 카메라 바디 중심으로 구성되어 있으며, 바디 단품 또는 바디와 기본 구성품(배터리, 충전기 등)이 포함된 정상적인 카메라 본체 매물로 판단됩니다. 렌즈 단독, 액세서리 단독, 부품용 또는 고장 제품이 혼입되어 있지 않고, 필름카메라나 캠코더도 포함되어 있지 않습니다. 따라서 DSLR/미러리스 카테고리 내 정상적인 카메라 바디 매물로 분류됩니다."
+    },
+    {
+      "id": "sony-a5100-a5000-미러리스-카메라-바디",
+      "brand": "",
+      "model_name": "Sony a5100 / a5000 미러리스 카메라 바디",
+      "aliases": [
+        "Sony a5100 / a5000 미러리스 카메라 바디",
+        "소니",
+        "미러리스",
+        "a5100",
+        "a5000",
+        "바디",
+        "배터리",
+        "충전기",
+        "정상 작동",
+        "본체",
+        "스트랩"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        6
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 소니 미러리스 카메라 바디 단품 또는 바디와 기본 구성품(배터리, 충전기 등)을 포함한 정상 작동하는 카메라 본체 매물로 구성되어 있습니다. 렌즈 단독, 액세서리, 부품, 또는 손상된 제품이 아닌 카메라 바디 중심의 정상 제품군으로, DSLR/미러리스 카테고리 내 정상 매물 기준에 부합합니다."
+    },
+    {
+      "id": "sony-a7-series-full-frame-mirrorless-camera-body",
+      "brand": "",
+      "model_name": "Sony A7 Series Full Frame Mirrorless Camera Body",
+      "aliases": [
+        "Sony A7 Series Full Frame Mirrorless Camera Body",
+        "소니",
+        "A7",
+        "풀프레임",
+        "미러리스",
+        "카메라 바디",
+        "배터리",
+        "충전기",
+        "컷수",
+        "바디캡",
+        "정상 작동"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        9
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 소니 A7 시리즈 풀프레임 미러리스 카메라 바디 단품 위주로 구성되어 있으며, 렌즈 없이 바디 본체와 기본 구성품(배터리, 충전기, 바디캡 등)이 포함된 정상적인 카메라 바디 매물입니다. 설명에 렌즈 단독, 액세서리, 부품, 고장 관련 내용이 없고, 컷수와 상태 정보가 명확히 기재되어 있어 정상 매물로 분류됩니다."
+    },
+    {
+      "id": "sony-a7rm5-mirrorless-camera-body",
+      "brand": "",
+      "model_name": "Sony A7RM5 Mirrorless Camera Body",
+      "aliases": [
+        "Sony A7RM5 Mirrorless Camera Body",
+        "미러리스 카메라 바디",
+        "정품 박스",
+        "충전기",
+        "배터리",
+        "렌즈 포함 키트",
+        "고화질 촬영",
+        "영상촬영용",
+        "셔터 컷수",
+        "소니 A7RM5",
+        "니콘 J5"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        7
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [],
+      "approval_status": "needs_human_approval",
+      "rationale_ko": "이 클러스터는 DSLR/미러리스 카메라 바디 본체 또는 바디와 기본 구성품이 포함된 정상적인 카메라 매물로 구성되어 있습니다. 대표 샘플들에서 소니 A7RM5, 니콘 J5, 소니 a6500 등 미러리스 카메라 바디와 충전기, 배터리 등 기본 구성품이 포함되어 있음을 확인할 수 있습니다. 일부 렌즈 단품이나 부품용 렌즈가 있으나 전체 클러스터의 주류는 정상적인 카메라 바디 매물입니다."
+    },
+    {
+      "id": "sony-cyber-shot-dsc-w830-sony-cyber-shot-dsc-w110-sony-zv-e10",
+      "brand": "",
+      "model_name": "Sony Cyber-shot DSC-W830 / Sony Cyber-shot DSC-W110 / SONY ZV-e10",
+      "aliases": [
+        "Sony Cyber-shot DSC-W830 / Sony Cyber-shot DSC-W110 / SONY ZV-e10",
+        "디지털카메라",
+        "사이버샷",
+        "DSC-W830",
+        "DSC-W110",
+        "SONNY ZV-e10",
+        "배터리",
+        "충전기",
+        "본품 구성",
+        "실사용",
+        "중고"
+      ],
+      "model_codes": [],
+      "differentiators": [],
+      "sku_median": null,
+      "price_range": null,
+      "source_cluster_ids": [
+        11
+      ],
+      "classification_confidence": 0.9,
+      "risk_flags": [
+        "many_separators_in_sku_hint"
+      ],
+      "approval_status": "blocked_needs_review",
+      "rationale_ko": "이 클러스터는 모두 디지털 카메라 본체를 중심으로 한 정상적인 중고 카메라 매물로 구성되어 있습니다. 각 매물은 카메라 바디 본체와 기본 구성품(배터리, 충전기 등)을 포함하고 있으며, 필름카메라, 부품, 액세서리 단독 매물과 혼합되어 있지 않습니다. 따라서 DSLR/미러리스 카테고리 내 정상적인 카메라 바디 매물로 분류됩니다."
+    }
+  ]
+}

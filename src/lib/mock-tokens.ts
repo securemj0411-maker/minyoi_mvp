@@ -1,5 +1,11 @@
 export const MOCK_TOKEN_STORAGE_KEY = "minyoi-mock-tokens-v1";
+export const MOCK_TOKEN_EVENT = "minyoi:tokens-updated";
 export const STARTING_TOKENS = 5;
+
+function notifyTokensChanged(value: number): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(MOCK_TOKEN_EVENT, { detail: { tokens: value } }));
+}
 
 export function loadTokens(): number {
   if (typeof window === "undefined") return STARTING_TOKENS;
@@ -16,6 +22,7 @@ export function saveTokens(value: number): void {
   if (typeof window === "undefined") return;
   const safe = Math.max(0, Math.floor(value));
   window.localStorage.setItem(MOCK_TOKEN_STORAGE_KEY, String(safe));
+  notifyTokensChanged(safe);
 }
 
 export function spendTokens(amount: number): number {

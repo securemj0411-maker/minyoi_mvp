@@ -1,8 +1,10 @@
 "use client";
 
+import type { User } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { isAdminUser } from "@/lib/auth-users";
 import {
   RESELL_SHIPPING_FEE,
   SAFETY_BUFFER,
@@ -24,6 +26,7 @@ import {
   scoreLabel,
   sellingFee,
 } from "@/lib/profit";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import type { CandidateBand, CandidateSignal, ListingCandidate } from "@/lib/types";
 
 type Props = {
@@ -235,6 +238,29 @@ function ThemeToggle() {
 }
 
 function Navbar() {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+
+    let mounted = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (mounted) setUser(data.user ?? null);
+    }).catch(() => undefined);
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const admin = isAdminUser(user);
+
   return (
     <nav className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/90 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
       <div className="mx-auto flex max-w-[1500px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
@@ -248,12 +274,14 @@ function Navbar() {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            href="/debug"
-            className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-          >
-            운영 로그
-          </Link>
+          {admin ? (
+            <Link
+              href="/debug"
+              className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            >
+              운영 로그
+            </Link>
+          ) : null}
           <ThemeToggle />
         </div>
       </div>

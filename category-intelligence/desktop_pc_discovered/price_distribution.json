@@ -1,0 +1,167 @@
+[
+  {
+    "key": "gaming-desktop",
+    "count": 56,
+    "min": 150000,
+    "p25": 460000,
+    "median": 590000,
+    "p75": 680000,
+    "max": 3560000,
+    "core_sample_count": 56,
+    "excluded_count": 20
+  },
+  {
+    "key": "unknown",
+    "count": 53,
+    "min": 50000,
+    "p25": 190000,
+    "median": 390000,
+    "p75": 470000,
+    "max": 5000000,
+    "core_sample_count": 53,
+    "excluded_count": 20
+  },
+  {
+    "key": "desktop-rtx-5060",
+    "count": 6,
+    "min": 1140000,
+    "p25": 1300000,
+    "median": 1500000,
+    "p75": 1500000,
+    "max": 1690000,
+    "core_sample_count": 6,
+    "excluded_count": 20
+  },
+  {
+    "key": "desktop-rtx-3060",
+    "count": 6,
+    "min": 720000,
+    "p25": 720000,
+    "median": 750000,
+    "p75": 750000,
+    "max": 870000,
+    "core_sample_count": 6,
+    "excluded_count": 20
+  },
+  {
+    "key": "desktop-intel-i5-14th",
+    "count": 5,
+    "min": 1010000,
+    "p25": 1010000,
+    "median": 1150000,
+    "p75": 1150000,
+    "max": 1150000,
+    "core_sample_count": 5,
+    "excluded_count": 20
+  },
+  {
+    "key": "desktop-rtx-5070",
+    "count": 3,
+    "min": 2260000,
+    "p25": 2260000,
+    "median": 2790000,
+    "p75": 2790000,
+    "max": 3490000,
+    "core_sample_count": 3,
+    "excluded_count": 20
+  },
+  {
+    "key": "desktop-rtx-4060",
+    "count": 2,
+    "min": 1130000,
+    "p25": 1130000,
+    "median": 1130000,
+    "p75": 1130000,
+    "max": 1150000,
+    "core_sample_count": 2,
+    "excluded_count": 20
+  },
+  {
+    "key": "desktop-rtx-3080",
+    "count": 2,
+    "min": 1050000,
+    "p25": 1050000,
+    "median": 1050000,
+    "p75": 1050000,
+    "max": 3000000,
+    "core_sample_count": 2,
+    "excluded_count": 20
+  },
+  {
+    "key": "desktop-ryzen-3",
+    "count": 1,
+    "min": 490000,
+    "p25": 490000,
+    "median": 490000,
+    "p75": 490000,
+    "max": 490000,
+    "core_sample_count": 1,
+    "excluded_count": 20
+  },
+  {
+    "key": "mac-mini",
+    "count": 1,
+    "min": 900000,
+    "p25": 900000,
+    "median": 900000,
+    "p75": 900000,
+    "max": 900000,
+    "core_sample_count": 1,
+    "excluded_count": 20
+  },
+  {
+    "key": "desktop-ryzen-5",
+    "count": 1,
+    "min": 780000,
+    "p25": 780000,
+    "median": 780000,
+    "p75": 780000,
+    "max": 780000,
+    "core_sample_count": 1,
+    "excluded_count": 20
+  },
+  {
+    "key": "desktop-rtx-5080",
+    "count": 1,
+    "min": 3700000,
+    "p25": 3700000,
+    "median": 3700000,
+    "p75": 3700000,
+    "max": 3700000,
+    "core_sample_count": 1,
+    "excluded_count": 20
+  },
+  {
+    "key": "office-desktop",
+    "count": 1,
+    "min": 150000,
+    "p25": 150000,
+    "median": 150000,
+    "p75": 150000,
+    "max": 150000,
+    "core_sample_count": 1,
+    "excluded_count": 20
+  },
+  {
+    "key": "desktop-ryzen-7",
+    "count": 1,
+    "min": 790000,
+    "p25": 790000,
+    "median": 790000,
+    "p75": 790000,
+    "max": 790000,
+    "core_sample_count": 1,
+    "excluded_count": 20
+  },
+  {
+    "key": "desktop-rtx-4070",
+    "count": 1,
+    "min": 3030000,
+    "p25": 3030000,
+    "median": 3030000,
+    "p75": 3030000,
+    "max": 3030000,
+    "core_sample_count": 1,
+    "excluded_count": 20
+  }
+]

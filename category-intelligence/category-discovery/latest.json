@@ -1,0 +1,4492 @@
+{
+  "generatedAt": "2026-05-10T15:11:45.278Z",
+  "sources": {
+    "categoryTree": "https://api.bunjang.co.kr/api/1/categories/list.json",
+    "categoryProducts": "https://api.bunjang.co.kr/api/search/v8/pw/product/specs/category"
+  },
+  "parameters": {
+    "sampleSize": 30,
+    "maxCategories": 48
+  },
+  "roots": [
+    {
+      "id": "310",
+      "title": "여성의류",
+      "count": 2443326,
+      "depth": 1,
+      "pathIds": [
+        "310"
+      ],
+      "pathTitles": [
+        "여성의류"
+      ],
+      "childCount": 9
+    },
+    {
+      "id": "910",
+      "title": "스타굿즈",
+      "count": 2275954,
+      "depth": 1,
+      "pathIds": [
+        "910"
+      ],
+      "pathTitles": [
+        "스타굿즈"
+      ],
+      "childCount": 8
+    },
+    {
+      "id": "320",
+      "title": "남성의류",
+      "count": 1871084,
+      "depth": 1,
+      "pathIds": [
+        "320"
+      ],
+      "pathTitles": [
+        "남성의류"
+      ],
+      "childCount": 7
+    },
+    {
+      "id": "930",
+      "title": "키덜트",
+      "count": 1293137,
+      "depth": 1,
+      "pathIds": [
+        "930"
+      ],
+      "pathTitles": [
+        "키덜트"
+      ],
+      "childCount": 7
+    },
+    {
+      "id": "700",
+      "title": "스포츠/레저",
+      "count": 844068,
+      "depth": 1,
+      "pathIds": [
+        "700"
+      ],
+      "pathTitles": [
+        "스포츠/레저"
+      ],
+      "childCount": 20
+    },
+    {
+      "id": "900",
+      "title": "도서/티켓/문구",
+      "count": 733478,
+      "depth": 1,
+      "pathIds": [
+        "900"
+      ],
+      "pathTitles": [
+        "도서/티켓/문구"
+      ],
+      "childCount": 5
+    },
+    {
+      "id": "600",
+      "title": "디지털",
+      "count": 687765,
+      "depth": 1,
+      "pathIds": [
+        "600"
+      ],
+      "pathTitles": [
+        "디지털"
+      ],
+      "childCount": 8
+    },
+    {
+      "id": "990",
+      "title": "예술/희귀/수집품",
+      "count": 549979,
+      "depth": 1,
+      "pathIds": [
+        "990"
+      ],
+      "pathTitles": [
+        "예술/희귀/수집품"
+      ],
+      "childCount": 3
+    },
+    {
+      "id": "405",
+      "title": "신발",
+      "count": 539688,
+      "depth": 1,
+      "pathIds": [
+        "405"
+      ],
+      "pathTitles": [
+        "신발"
+      ],
+      "childCount": 4
+    },
+    {
+      "id": "400",
+      "title": "패션 액세서리",
+      "count": 499011,
+      "depth": 1,
+      "pathIds": [
+        "400"
+      ],
+      "pathTitles": [
+        "패션 액세서리"
+      ],
+      "childCount": 9
+    },
+    {
+      "id": "430",
+      "title": "가방/지갑",
+      "count": 433536,
+      "depth": 1,
+      "pathIds": [
+        "430"
+      ],
+      "pathTitles": [
+        "가방/지갑"
+      ],
+      "childCount": 6
+    },
+    {
+      "id": "750",
+      "title": "차량/오토바이",
+      "count": 383808,
+      "depth": 1,
+      "pathIds": [
+        "750"
+      ],
+      "pathTitles": [
+        "차량/오토바이"
+      ],
+      "childCount": 3
+    },
+    {
+      "id": "500",
+      "title": "유아동/출산",
+      "count": 375260,
+      "depth": 1,
+      "pathIds": [
+        "500"
+      ],
+      "pathTitles": [
+        "유아동/출산"
+      ],
+      "childCount": 10
+    },
+    {
+      "id": "410",
+      "title": "뷰티/미용",
+      "count": 314746,
+      "depth": 1,
+      "pathIds": [
+        "410"
+      ],
+      "pathTitles": [
+        "뷰티/미용"
+      ],
+      "childCount": 9
+    },
+    {
+      "id": "810",
+      "title": "가구/인테리어",
+      "count": 217027,
+      "depth": 1,
+      "pathIds": [
+        "810"
+      ],
+      "pathTitles": [
+        "가구/인테리어"
+      ],
+      "childCount": 9
+    },
+    {
+      "id": "920",
+      "title": "음반/악기",
+      "count": 210175,
+      "depth": 1,
+      "pathIds": [
+        "920"
+      ],
+      "pathTitles": [
+        "음반/악기"
+      ],
+      "childCount": 2
+    },
+    {
+      "id": "422",
+      "title": "쥬얼리",
+      "count": 171472,
+      "depth": 1,
+      "pathIds": [
+        "422"
+      ],
+      "pathTitles": [
+        "쥬얼리"
+      ],
+      "childCount": 7
+    },
+    {
+      "id": "800",
+      "title": "생활/주방용품",
+      "count": 167202,
+      "depth": 1,
+      "pathIds": [
+        "800"
+      ],
+      "pathTitles": [
+        "생활/주방용품"
+      ],
+      "childCount": 3
+    },
+    {
+      "id": "999",
+      "title": "기타",
+      "count": 113170,
+      "depth": 1,
+      "pathIds": [
+        "999"
+      ],
+      "pathTitles": [
+        "기타"
+      ],
+      "childCount": 0
+    },
+    {
+      "id": "610",
+      "title": "가전제품",
+      "count": 106001,
+      "depth": 1,
+      "pathIds": [
+        "610"
+      ],
+      "pathTitles": [
+        "가전제품"
+      ],
+      "childCount": 9
+    },
+    {
+      "id": "421",
+      "title": "시계",
+      "count": 57946,
+      "depth": 1,
+      "pathIds": [
+        "421"
+      ],
+      "pathTitles": [
+        "시계"
+      ],
+      "childCount": 3
+    },
+    {
+      "id": "830",
+      "title": "공구/산업용품",
+      "count": 56530,
+      "depth": 1,
+      "pathIds": [
+        "830"
+      ],
+      "pathTitles": [
+        "공구/산업용품"
+      ],
+      "childCount": 8
+    },
+    {
+      "id": "820",
+      "title": "식품",
+      "count": 29069,
+      "depth": 1,
+      "pathIds": [
+        "820"
+      ],
+      "pathTitles": [
+        "식품"
+      ],
+      "childCount": 9
+    },
+    {
+      "id": "980",
+      "title": "반려동물용품",
+      "count": 20070,
+      "depth": 1,
+      "pathIds": [
+        "980"
+      ],
+      "pathTitles": [
+        "반려동물용품"
+      ],
+      "childCount": 8
+    },
+    {
+      "id": "210",
+      "title": "재능",
+      "count": 3903,
+      "depth": 1,
+      "pathIds": [
+        "210"
+      ],
+      "pathTitles": [
+        "재능"
+      ],
+      "childCount": 6
+    }
+  ],
+  "priorities": [
+    {
+      "category": {
+        "id": "600500002",
+        "title": "비디오/프로젝터",
+        "count": 23206,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600500",
+          "600500002"
+        ],
+        "pathTitles": [
+          "디지털",
+          "오디오/영상/관련기기",
+          "비디오/프로젝터"
+        ],
+        "childCount": 0
+      },
+      "family": "audio",
+      "coverage": "ready_partial",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 171000,
+          "median": 238000,
+          "p75": 306000
+        },
+        "noiseCount": 0,
+        "noiseRate": 0,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "353673171",
+            "name": "CCTV[특가!]240만800백만 4대CCTV풀세트,감시카메라자가설치/유",
+            "price": 158000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302995",
+            "name": "토시바 TLP-X3000 3000안시 XGA 중고 빔프로젝터",
+            "price": 99000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "201523466",
+            "name": "1998년 제작 VHS 비디오 / 스노우보드 영상집",
+            "price": 31500,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302308",
+            "name": "BENQ MH741 빔프로젝터 4000안씨",
+            "price": 250000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302242",
+            "name": "효성 ITX EV-500X 5000안시 XGA 중고 빔프로젝터",
+            "price": 335000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407301565",
+            "name": "엡손 EB-501KG 5000안시 XGA 중고빔프로젝터",
+            "price": 197000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407300858",
+            "name": "히타치 CP-EX400  4200안시 XGA 중고 빔프로젝터",
+            "price": 265000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407300111",
+            "name": "엡손 EB-1950 4500안시 XGA 중고빔프로젝터",
+            "price": 345000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 87,
+      "rank": 1
+    },
+    {
+      "category": {
+        "id": "600720100",
+        "title": "스마트워치/밴드",
+        "count": 13351,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600720",
+          "600720100"
+        ],
+        "pathTitles": [
+          "디지털",
+          "웨어러블(워치/밴드)",
+          "스마트워치/밴드"
+        ],
+        "childCount": 0
+      },
+      "family": "wearable_watch",
+      "coverage": "ready_partial",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 125000,
+          "median": 400000,
+          "p75": 593250
+        },
+        "noiseCount": 4,
+        "noiseRate": 0.13333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "406435629",
+            "name": "S급 새상품 애플워치 se2 실버 40mm 풀박 배터리성능 100%",
+            "price": 250000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "399508927",
+            "name": "애플워치 스트랩",
+            "price": 10000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401031742",
+            "name": "애플워치se2(급처a급)안팔림",
+            "price": 120000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "400232191",
+            "name": "애플워치se2(a-급)",
+            "price": 120000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302735",
+            "name": "애플워치se2 44mm",
+            "price": 140000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403628162",
+            "name": "갤럭시 워치3 SM-R840 실버 스테인리스",
+            "price": 25000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "397432347",
+            "name": "애플워치9 스테인리스 스틸 45mm, 실버, GPS + Cellular",
+            "price": 450000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "357181303",
+            "name": "태그호이어 커넥티드 e4 포르쉐에디션",
+            "price": 1600000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 87,
+      "rank": 2
+    },
+    {
+      "category": {
+        "id": "600700001",
+        "title": "스마트폰",
+        "count": 83174,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600700",
+          "600700001"
+        ],
+        "pathTitles": [
+          "디지털",
+          "휴대폰",
+          "스마트폰"
+        ],
+        "childCount": 0
+      },
+      "family": "smartphone",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 112500,
+          "median": 169500,
+          "p75": 437500
+        },
+        "noiseCount": 8,
+        "noiseRate": 0.26666666666666666,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "184592369",
+            "name": "파손폰매입 중고폰매입 고장폰 아이폰파손 불량폰 파손폰11 12 13 14",
+            "price": 777000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "355734470",
+            "name": "중고폰매입 파손폰매입 아이폰매입 고장폰 불량폰 부품폰 파손폰 아이폰파손",
+            "price": 486000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303494",
+            "name": "갤럭시S21팬텀바이올렛A+급.무잔상(2800)",
+            "price": 180000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303436",
+            "name": "[리퍼급]갤럭시S21 최상급컨디션 256G 화이트 공기계 중고폰",
+            "price": 229000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303434",
+            "name": "아이폰7 128GB (내용 확인)",
+            "price": 55000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "373411521",
+            "name": "매입 중고폰 파손폰 아이폰 미개봉 자급제 공기계 유심기변용 새폰 박스폰",
+            "price": 979000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303384",
+            "name": "갤럭시 A16그레이 무잔상 A급 정상공기계 중고폰",
+            "price": 160000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "388666239",
+            "name": "(삽 니 다) 삼성 갤럭시 A33  검정색  \"블랙\"  색상  (삽니다)",
+            "price": 555,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 85,
+      "rank": 3
+    },
+    {
+      "category": {
+        "id": "600500006",
+        "title": "스피커/앰프",
+        "count": 21835,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600500",
+          "600500006"
+        ],
+        "pathTitles": [
+          "디지털",
+          "오디오/영상/관련기기",
+          "스피커/앰프"
+        ],
+        "childCount": 0
+      },
+      "family": "audio",
+      "coverage": "ready_partial",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 38750,
+          "median": 130000,
+          "p75": 317500
+        },
+        "noiseCount": 0,
+        "noiseRate": 0,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "407303378",
+            "name": "jbl 어센틱200",
+            "price": 220000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401447505",
+            "name": "레이니 CUB SUPER 10 풀진공관 기타 앰프 (신품급, 상자 있음)",
+            "price": 420000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404817566",
+            "name": "브리츠 스피커 br-1100(v2)",
+            "price": 10000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406208597",
+            "name": "네이버 클로바 프랜즈 ai 블루투스 스피커 브라운",
+            "price": 10000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "342296343",
+            "name": "카카오프렌즈 블루투스 스피커",
+            "price": 100000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "399369646",
+            "name": "오아 렛츠플레이 OEAP-004BK 무선 블랙 헤드폰",
+            "price": 30000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407176637",
+            "name": "레토 LETO 마그네틱 컴팩트 휴대용 블루투스 무선 스피커",
+            "price": 20210,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406271183",
+            "name": "JBL AS3 PARTYBOX 투채널 무선마이크. 완전 깨끗합니다",
+            "price": 124000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 85,
+      "rank": 4
+    },
+    {
+      "category": {
+        "id": "600500011",
+        "title": "헤드폰",
+        "count": 12050,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600500",
+          "600500011"
+        ],
+        "pathTitles": [
+          "디지털",
+          "오디오/영상/관련기기",
+          "헤드폰"
+        ],
+        "childCount": 0
+      },
+      "family": "audio",
+      "coverage": "ready_partial",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 156250,
+          "median": 360000,
+          "p75": 447500
+        },
+        "noiseCount": 3,
+        "noiseRate": 0.1,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "407303059",
+            "name": "애플 에어팟 맥스 블루 C타입 (급처",
+            "price": 350000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "388262650",
+            "name": "b&o 포탈 헤드폰",
+            "price": 160000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404738399",
+            "name": "[새상품 / 정품] 비츠 솔로4 무선 온이어 헤드폰 제니 스페셜 에디션",
+            "price": 499000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406334022",
+            "name": "젠하이저 HD569 헤드폰 (거의 새상품)",
+            "price": 86000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "398853018",
+            "name": "울트라손 시그니쳐 퓨전 밀폐형 헤드폰",
+            "price": 200000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406581049",
+            "name": "레이저 블랙샤크 V3 Hyperspeed 무선 헤드셋",
+            "price": 105000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401760270",
+            "name": "소니 WH-ULT900N 화이트 헤드폰",
+            "price": 150000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406399280",
+            "name": "[26.03.15 구매] Dali io-8 블루투스 노이즈캔슬링 헤드폰팝",
+            "price": 475000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 85,
+      "rank": 5
+    },
+    {
+      "category": {
+        "id": "600710100",
+        "title": "태블릿",
+        "count": 22353,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600710",
+          "600710100"
+        ],
+        "pathTitles": [
+          "디지털",
+          "태블릿",
+          "태블릿"
+        ],
+        "childCount": 0
+      },
+      "family": "tablet",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 261000,
+          "median": 585350,
+          "p75": 2712500
+        },
+        "noiseCount": 10,
+        "noiseRate": 0.3333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "403432567",
+            "name": "아이패드 최고가 매입 프로 에어 M 1 2 3 4 5 11 13 노트북",
+            "price": 7700000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404558290",
+            "name": "it최고매입 갤럭시탭 s11 울트라 s 10 9 8 7  노트북 아이패드",
+            "price": 5000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "391707440",
+            "name": "아이패드프로 M5 13 2TB 스그/서울",
+            "price": 3000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "388250754",
+            "name": "아이패드 프로 6세대 12.9치 512gb,애플펜슬,정품 케이스",
+            "price": 1600000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406900115",
+            "name": "아이패드9세대64gb+짭펜슬(급처)",
+            "price": 270000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "388087712",
+            "name": "아이패드매입 아이패드.갤럭시탭.갤럭시폴드.제트플립.s26.s25.s24",
+            "price": 9990000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302679",
+            "name": "갤럭시탭 s7+ 256gb wifi모델",
+            "price": 410000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405580681",
+            "name": "중고 아이패드 에어2세대 스그 128GB",
+            "price": 100000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 84,
+      "rank": 6
+    },
+    {
+      "category": {
+        "id": "600500",
+        "title": "오디오/영상/관련기기",
+        "count": 118102,
+        "depth": 2,
+        "pathIds": [
+          "600",
+          "600500"
+        ],
+        "pathTitles": [
+          "디지털",
+          "오디오/영상/관련기기"
+        ],
+        "childCount": 7
+      },
+      "family": "audio",
+      "coverage": "ready_partial",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 60000,
+          "median": 94500,
+          "p75": 169675
+        },
+        "noiseCount": 1,
+        "noiseRate": 0.03333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "379401472",
+            "name": "고가매입]아이폰,에어팟,에어팟맥스,애플펜슬,애플워치,아이패드,맥북",
+            "price": 290000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407048811",
+            "name": "Airpods Pro2",
+            "price": 162000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407281978",
+            "name": "애플 에어팟 프로 3",
+            "price": 260000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303389",
+            "name": "에어팟 프로3 새제품 미개봉",
+            "price": 249000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303378",
+            "name": "jbl 어센틱200",
+            "price": 220000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405006451",
+            "name": "Airpods Pro2",
+            "price": 170000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303362",
+            "name": "에어팟 4세대 노캔 왼쪽유닛",
+            "price": 65000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406605587",
+            "name": "(급처) 에어팟프로2 C타입 왼쪽 유닛",
+            "price": 70000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 83,
+      "rank": 7
+    },
+    {
+      "category": {
+        "id": "600100006",
+        "title": "데스크탑",
+        "count": 34460,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600100",
+          "600100006"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC/노트북",
+          "데스크탑"
+        ],
+        "childCount": 0
+      },
+      "family": "pc_laptop",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 60000,
+          "median": 282500,
+          "p75": 497500
+        },
+        "noiseCount": 3,
+        "noiseRate": 0.1,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "52257536",
+            "name": "[전국최저가] 5월추천PC 게이밍본체 종류별 판매합니다",
+            "price": 300000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "395278830",
+            "name": "[번장1등 컴퓨터 풀셋트 본체]한정수량 초특가 이벤트 판매 합니다",
+            "price": 285000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "402982557",
+            "name": "(빈박스) 애플 맥 스튜디오 박스 A3143 (M4 Max)",
+            "price": 30000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406329485",
+            "name": "[번개발송] 윈도우11 / 윈도우10 프로 홈 정품키 오피스2021",
+            "price": 4000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303084",
+            "name": "MS오피스2024 2021 2019 2016 365 윈도우 정품키 엑셀",
+            "price": 5500,
+            "status": "SELLING"
+          },
+          {
+            "pid": "192320432",
+            "name": "[최고매입가]컴퓨터매입 노트북매입 중고노트북매입 msi매입 중입니다",
+            "price": 8500000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406716793",
+            "name": "32인치대형화면,RTX3060,I7-12세대 올인원PC,일체형PC",
+            "price": 900000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302708",
+            "name": "[빠른발송] MS오피스2024/2021/2019/365엑셀,윈도우 정품키",
+            "price": 5500,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 83,
+      "rank": 8
+    },
+    {
+      "category": {
+        "id": "600500004",
+        "title": "MP3/PMP",
+        "count": 6939,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600500",
+          "600500004"
+        ],
+        "pathTitles": [
+          "디지털",
+          "오디오/영상/관련기기",
+          "MP3/PMP"
+        ],
+        "childCount": 0
+      },
+      "family": "audio",
+      "coverage": "ready_partial",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 60000,
+          "median": 65000,
+          "p75": 99750
+        },
+        "noiseCount": 0,
+        "noiseRate": 0,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "396108136",
+            "name": "누리안 R7 전자사전 어학연수용",
+            "price": 50000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406449089",
+            "name": "버즈 FE 왼쪽유닛, 오른쪽유닛 (그라파이트)",
+            "price": 23000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "378972193",
+            "name": "버즈1 프로 우측유닛 (블랙)",
+            "price": 25000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "367832205",
+            "name": "버즈1 왼쪽유닛 (블랙)",
+            "price": 20000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "382249832",
+            "name": "카시오 EX-word 전자사전 일어  어학연수용",
+            "price": 90000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "400472979",
+            "name": "베스타 bk100 전자사전 어학연수용",
+            "price": 170000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "384174744",
+            "name": "아이리버 딕플 D33 전자사전 어학연수용 베스트모델",
+            "price": 150000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "382034448",
+            "name": "누리안 X10 전자사전 어학연수용",
+            "price": 60000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 83,
+      "rank": 9
+    },
+    {
+      "category": {
+        "id": "600710",
+        "title": "태블릿",
+        "count": 34326,
+        "depth": 2,
+        "pathIds": [
+          "600",
+          "600710"
+        ],
+        "pathTitles": [
+          "디지털",
+          "태블릿"
+        ],
+        "childCount": 3
+      },
+      "family": "tablet",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 185000,
+          "median": 345000,
+          "p75": 1675000
+        },
+        "noiseCount": 10,
+        "noiseRate": 0.3333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "403432567",
+            "name": "아이패드 최고가 매입 프로 에어 M 1 2 3 4 5 11 13 노트북",
+            "price": 7700000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404558290",
+            "name": "it최고매입 갤럭시탭 s11 울트라 s 10 9 8 7  노트북 아이패드",
+            "price": 5000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303349",
+            "name": "아이패드 에어 11 m3 256gb + 매직키보드 일괄 판매합니다",
+            "price": 1070000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "391707440",
+            "name": "아이패드프로 M5 13 2TB 스그/서울",
+            "price": 3000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "388250754",
+            "name": "아이패드 프로 6세대 12.9치 512gb,애플펜슬,정품 케이스",
+            "price": 1600000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "388087712",
+            "name": "아이패드매입 아이패드.갤럭시탭.갤럭시폴드.제트플립.s26.s25.s24",
+            "price": 9990000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406900115",
+            "name": "아이패드9세대64gb+짭펜슬(급처)",
+            "price": 270000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302679",
+            "name": "갤럭시탭 s7+ 256gb wifi모델",
+            "price": 410000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 82,
+      "rank": 10
+    },
+    {
+      "category": {
+        "id": "600500005",
+        "title": "오디오/홈시어터",
+        "count": 11431,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600500",
+          "600500005"
+        ],
+        "pathTitles": [
+          "디지털",
+          "오디오/영상/관련기기",
+          "오디오/홈시어터"
+        ],
+        "childCount": 0
+      },
+      "family": "audio",
+      "coverage": "ready_partial",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 81250,
+          "median": 150000,
+          "p75": 272500
+        },
+        "noiseCount": 3,
+        "noiseRate": 0.1,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "347016186",
+            "name": "b&o 뱅앤올룹슨 베오사운드 밸런스 gva",
+            "price": 2500000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407301903",
+            "name": "줌h6 zoom h6 마이크 레코더",
+            "price": 210000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404296137",
+            "name": "오디오테크니카 듀얼 마그넷 LP카트리지 (택포)",
+            "price": 85000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "317513745",
+            "name": "올포토 Q-mic 다용도 마이크",
+            "price": 30000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407298981",
+            "name": "턴테이블 카트리지 / 슈어 V15 TYPE IV HE",
+            "price": 280000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403213218",
+            "name": "삼성 갤럭시 홈미니 새상품",
+            "price": 50000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401835880",
+            "name": "파이오니아 앰프 튜너 카세트 세트 팝니다",
+            "price": 405000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405336363",
+            "name": "데논 DCD-1610 CD플레이어 팝니다",
+            "price": 298000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 82,
+      "rank": 11
+    },
+    {
+      "category": {
+        "id": "600100007",
+        "title": "모니터",
+        "count": 5619,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600100",
+          "600100007"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC/노트북",
+          "모니터"
+        ],
+        "childCount": 0
+      },
+      "family": "pc_laptop",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 56250,
+          "median": 105000,
+          "p75": 183750
+        },
+        "noiseCount": 1,
+        "noiseRate": 0.03333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "175110869",
+            "name": "벤큐 BenQ ZOWIE XL2411-B 아이케어 무결점 부가세포함",
+            "price": 99000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "325887149",
+            "name": "(할인) 벤큐 밴큐 32인치 144hz EX3200R 저렴하게판매",
+            "price": 119000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405921652",
+            "name": "카멜 CT2210IPS 54cm 안드로이드 터치모니터",
+            "price": 190000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404815897",
+            "name": "LG전자 27MP37VQ 광시야각 FHD 27인치 모니터",
+            "price": 110000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404609333",
+            "name": "델 24인치 피벗 모니터 u2412mb",
+            "price": 50000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "160301269",
+            "name": "벤큐 밴큐 XL2720 27인치 144 게이밍 게임용모니터",
+            "price": 119000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "394311669",
+            "name": "게이밍-BenQ XL2411b 24인치 게이밍-초A급",
+            "price": 75000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "402662251",
+            "name": "부품용)camel 27인치 모니터",
+            "price": 15000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 81,
+      "rank": 12
+    },
+    {
+      "category": {
+        "id": "600720",
+        "title": "웨어러블(워치/밴드)",
+        "count": 19498,
+        "depth": 2,
+        "pathIds": [
+          "600",
+          "600720"
+        ],
+        "pathTitles": [
+          "디지털",
+          "웨어러블(워치/밴드)"
+        ],
+        "childCount": 3
+      },
+      "family": "wearable_watch",
+      "coverage": "ready_partial",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 38750,
+          "median": 130000,
+          "p75": 407500
+        },
+        "noiseCount": 7,
+        "noiseRate": 0.23333333333333334,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "406435629",
+            "name": "S급 새상품 애플워치 se2 실버 40mm 풀박 배터리성능 100%",
+            "price": 250000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "399508927",
+            "name": "애플워치 스트랩",
+            "price": 10000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401031742",
+            "name": "애플워치se2(급처a급)안팔림",
+            "price": 120000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "400232191",
+            "name": "애플워치se2(a-급)",
+            "price": 120000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302759",
+            "name": "애플워치 정품 46mm 솔로루프 4사이즈",
+            "price": 25000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302735",
+            "name": "애플워치se2 44mm",
+            "price": 140000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403628162",
+            "name": "갤럭시 워치3 SM-R840 실버 스테인리스",
+            "price": 25000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "397432347",
+            "name": "애플워치9 스테인리스 스틸 45mm, 실버, GPS + Cellular",
+            "price": 450000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 80,
+      "rank": 13
+    },
+    {
+      "category": {
+        "id": "600500010",
+        "title": "이어폰",
+        "count": 38111,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600500",
+          "600500010"
+        ],
+        "pathTitles": [
+          "디지털",
+          "오디오/영상/관련기기",
+          "이어폰"
+        ],
+        "childCount": 0
+      },
+      "family": "audio",
+      "coverage": "ready_partial",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 30625,
+          "median": 57500,
+          "p75": 143750
+        },
+        "noiseCount": 3,
+        "noiseRate": 0.1,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "379401472",
+            "name": "고가매입]아이폰,에어팟,에어팟맥스,애플펜슬,애플워치,아이패드,맥북",
+            "price": 290000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407048811",
+            "name": "Airpods Pro2",
+            "price": 162000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407281978",
+            "name": "애플 에어팟 프로 3",
+            "price": 260000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303389",
+            "name": "에어팟 프로3 새제품 미개봉",
+            "price": 249000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303362",
+            "name": "에어팟 4세대 노캔 왼쪽유닛",
+            "price": 65000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405006451",
+            "name": "Airpods Pro2",
+            "price": 170000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406605587",
+            "name": "(급처) 에어팟프로2 C타입 왼쪽 유닛",
+            "price": 70000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406854215",
+            "name": "(급처) 에어팟프로2 C타입 본체",
+            "price": 60000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 79,
+      "rank": 14
+    },
+    {
+      "category": {
+        "id": "600700",
+        "title": "휴대폰",
+        "count": 162303,
+        "depth": 2,
+        "pathIds": [
+          "600",
+          "600700"
+        ],
+        "pathTitles": [
+          "디지털",
+          "휴대폰"
+        ],
+        "childCount": 5
+      },
+      "family": "smartphone",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 22000,
+          "median": 125000,
+          "p75": 282250
+        },
+        "noiseCount": 14,
+        "noiseRate": 0.4666666666666667,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "184592369",
+            "name": "파손폰매입 중고폰매입 고장폰 아이폰파손 불량폰 파손폰11 12 13 14",
+            "price": 777000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "355734470",
+            "name": "중고폰매입 파손폰매입 아이폰매입 고장폰 불량폰 부품폰 파손폰 아이폰파손",
+            "price": 486000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303494",
+            "name": "갤럭시S21팬텀바이올렛A+급.무잔상(2800)",
+            "price": 180000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303436",
+            "name": "[리퍼급]갤럭시S21 최상급컨디션 256G 화이트 공기계 중고폰",
+            "price": 229000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303434",
+            "name": "아이폰7 128GB (내용 확인)",
+            "price": 55000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "373411521",
+            "name": "매입 중고폰 파손폰 아이폰 미개봉 자급제 공기계 유심기변용 새폰 박스폰",
+            "price": 979000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303430",
+            "name": "[판매] 화산귀환 에디션 매화 무선 충전기",
+            "price": 50000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303384",
+            "name": "갤럭시 A16그레이 무잔상 A급 정상공기계 중고폰",
+            "price": 160000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 78,
+      "rank": 15
+    },
+    {
+      "category": {
+        "id": "600100001",
+        "title": "노트북/넷북",
+        "count": 26445,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600100",
+          "600100001"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC/노트북",
+          "노트북/넷북"
+        ],
+        "childCount": 0
+      },
+      "family": "pc_laptop",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 140975,
+          "median": 529500,
+          "p75": 3412500
+        },
+        "noiseCount": 11,
+        "noiseRate": 0.36666666666666664,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "301041564",
+            "name": "노트북매입 중고노트북매입 노트북매입 미개봉노트북매입 컴퓨터매입",
+            "price": 8500000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "342976125",
+            "name": "게이밍 노트북 고가 매입 합니다(균가에 판매도 하는중)",
+            "price": 3820000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "394790122",
+            "name": "NT501R5A 삼성 노트북 (디스플레이 손상)",
+            "price": 143900,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303030",
+            "name": "A급 2021 LG울트라 PC 라이젠5 4500U 풀업 고성능노트북",
+            "price": 499000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401443790",
+            "name": "삼성 갤럭시 북6 울트라( NT960UJH-XC72Y) 풀박 핍니다",
+            "price": 3550000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "329436063",
+            "name": "[노트북매입] 최고가매입 24시운영 중고노트북,노트북",
+            "price": 5000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302658",
+            "name": "최저가]레노버 16인치 게이밍노트북 리전프(i9-13/4070/램32GB",
+            "price": 1600000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403210258",
+            "name": "삼성 노트북 넷북 NT-NC10",
+            "price": 35000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 77,
+      "rank": 16
+    },
+    {
+      "category": {
+        "id": "610500006",
+        "title": "마사지기",
+        "count": 9097,
+        "depth": 3,
+        "pathIds": [
+          "610",
+          "610500",
+          "610500006"
+        ],
+        "pathTitles": [
+          "가전제품",
+          "생활가전",
+          "마사지기"
+        ],
+        "childCount": 0
+      },
+      "family": "home_appliance",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 33500,
+          "median": 55600,
+          "p75": 475000
+        },
+        "noiseCount": 0,
+        "noiseRate": 0,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "367104260",
+            "name": "프롬메디 힙시 마사지기 새제품 힙업",
+            "price": 5000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "311964003",
+            "name": "원적외선 LED 기기 수입새제품.",
+            "price": 35000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "315428107",
+            "name": "새상품)미라클EMS 르뎀스 허벅지+팔뚝 무선 운동마사지기 다이어트",
+            "price": 200000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "359831346",
+            "name": "V 페이스 뷰티 미터 맛사지기",
+            "price": 25000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "345565620",
+            "name": "발란스핏마사지기",
+            "price": 60000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302051",
+            "name": "풀리오 목어깨 베개 마사지기",
+            "price": 65000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406716825",
+            "name": "오아 목 어깨 마사지기 안마기",
+            "price": 52000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "392918051",
+            "name": "실버 마사지 롤러 + 파우치 팝니다",
+            "price": 10000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 76,
+      "rank": 17
+    },
+    {
+      "category": {
+        "id": "610500",
+        "title": "생활가전",
+        "count": 33930,
+        "depth": 2,
+        "pathIds": [
+          "610",
+          "610500"
+        ],
+        "pathTitles": [
+          "가전제품",
+          "생활가전"
+        ],
+        "childCount": 10
+      },
+      "family": "home_appliance",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 34250,
+          "median": 52500,
+          "p75": 83750
+        },
+        "noiseCount": 1,
+        "noiseRate": 0.03333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "403685887",
+            "name": "신품 케이페이지 14인치 좌석용 선풍기 KEF-25145",
+            "price": 34000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401526354",
+            "name": "2021년 한일 업소용 영업용 스텐드 30인치 대형 선풍기",
+            "price": 130000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "367104260",
+            "name": "프롬메디 힙시 마사지기 새제품 힙업",
+            "price": 5000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "228967044",
+            "name": "새상품 무선 욕실청소기",
+            "price": 40000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "228726143",
+            "name": "파벡스 무선듀얼스핀 물걸레청소기",
+            "price": 80000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "344088983",
+            "name": "2개 세트 1등급 삼성 무풍 에어컨 2in1 실외기 포함 실사용1년",
+            "price": 1890000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403068540",
+            "name": "[미개봉]오아 플렌티무드 미니 가습기 7가지 무드등 소형 초음파 통세척",
+            "price": 35000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "311964003",
+            "name": "원적외선 LED 기기 수입새제품.",
+            "price": 35000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 75,
+      "rank": 18
+    },
+    {
+      "category": {
+        "id": "600100",
+        "title": "PC/노트북",
+        "count": 115163,
+        "depth": 2,
+        "pathIds": [
+          "600",
+          "600100"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC/노트북"
+        ],
+        "childCount": 8
+      },
+      "family": "pc_laptop",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 11250,
+          "median": 52500,
+          "p75": 799750
+        },
+        "noiseCount": 6,
+        "noiseRate": 0.2,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "175110869",
+            "name": "벤큐 BenQ ZOWIE XL2411-B 아이케어 무결점 부가세포함",
+            "price": 99000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "301041564",
+            "name": "노트북매입 중고노트북매입 노트북매입 미개봉노트북매입 컴퓨터매입",
+            "price": 8500000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "199001426",
+            "name": "미니언즈 노트북파우치",
+            "price": 14000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303435",
+            "name": "[빠른발송] 윈도우11 / 윈도우10 프로 홈 정품키 오피스2021",
+            "price": 4000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "392830077",
+            "name": "키보드 마우스 세트",
+            "price": 5000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "52257536",
+            "name": "[전국최저가] 5월추천PC 게이밍본체 종류별 판매합니다",
+            "price": 300000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404987277",
+            "name": "쁘숑앤포숑 11인치 태블릿 노트북 아이패드 파우치 강아지 비숑 자수",
+            "price": 5000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405921652",
+            "name": "카멜 CT2210IPS 54cm 안드로이드 터치모니터",
+            "price": 190000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 74,
+      "rank": 19
+    },
+    {
+      "category": {
+        "id": "610500005",
+        "title": "청소기",
+        "count": 6644,
+        "depth": 3,
+        "pathIds": [
+          "610",
+          "610500",
+          "610500005"
+        ],
+        "pathTitles": [
+          "가전제품",
+          "생활가전",
+          "청소기"
+        ],
+        "childCount": 0
+      },
+      "family": "home_appliance",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 36000,
+          "median": 62500,
+          "p75": 80000
+        },
+        "noiseCount": 2,
+        "noiseRate": 0.06666666666666667,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "405909046",
+            "name": "가게 문닫구 정가 120만 무선청소기 싸게 정리합니다ㅠ",
+            "price": 180000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "228967044",
+            "name": "새상품 무선 욕실청소기",
+            "price": 40000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "228726143",
+            "name": "파벡스 무선듀얼스핀 물걸레청소기",
+            "price": 80000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406587044",
+            "name": "LG 엘지 코드제로 무선청소기",
+            "price": 60000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "399467395",
+            "name": "씽크에어 로봇청소기 RV50",
+            "price": 35000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403172687",
+            "name": "샤오미 로봇청소기 s51",
+            "price": 85000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403164662",
+            "name": "다이슨 무선청소기",
+            "price": 45000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403050706",
+            "name": "일렉트로룩스 well Q6 무선청소기",
+            "price": 25000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 74,
+      "rank": 20
+    },
+    {
+      "category": {
+        "id": "610600",
+        "title": "주방가전",
+        "count": 19490,
+        "depth": 2,
+        "pathIds": [
+          "610",
+          "610600"
+        ],
+        "pathTitles": [
+          "가전제품",
+          "주방가전"
+        ],
+        "childCount": 12
+      },
+      "family": "kitchen_appliance",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 49250,
+          "median": 144500,
+          "p75": 372500
+        },
+        "noiseCount": 2,
+        "noiseRate": 0.06666666666666667,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "290819523",
+            "name": "프랑스 화이트 AUBE 3구 풀인덕션",
+            "price": 1000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403937263",
+            "name": "쿡셀 블랙큐브 IH 인덕션 레인지",
+            "price": 50000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "373012988",
+            "name": "쿠쿠 CRP-QS107FG 로즈골드 전기밥솥",
+            "price": 139000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "395711424",
+            "name": "가이타이너 슈라우프 플러스 에어프라이어 5L GTKAF-700 미개봉 새",
+            "price": 65000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "260295370",
+            "name": "코웨이 직수 정수기",
+            "price": 250000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "373650578",
+            "name": "밀레 전자동 커피머신CM6310",
+            "price": 580000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302536",
+            "name": "안핌 스코디2 그라인더",
+            "price": 600000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "369642800",
+            "name": "SK매직 얼음정수기 판매합니다.",
+            "price": 150000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 73,
+      "rank": 21
+    },
+    {
+      "category": {
+        "id": "600300",
+        "title": "카메라/DSLR",
+        "count": 71066,
+        "depth": 2,
+        "pathIds": [
+          "600",
+          "600300"
+        ],
+        "pathTitles": [
+          "디지털",
+          "카메라/DSLR"
+        ],
+        "childCount": 8
+      },
+      "family": "camera",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 110000,
+          "median": 235000,
+          "p75": 370000
+        },
+        "noiseCount": 1,
+        "noiseRate": 0.03333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "406563435",
+            "name": "소니 A5100",
+            "price": 380000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "353592707",
+            "name": "CCTV[최저가보장!]240만800백만4대CCTV풀세트,감시카메라자가설치",
+            "price": 158000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303492",
+            "name": "소니코리아 정품 HVL-F58AM 알파 전용 플래시/스트로보 k",
+            "price": 110000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "388860883",
+            "name": "[수동렌즈] MINOLTA MD 100-200MM F5.6 FOR MD",
+            "price": 90000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "331256760",
+            "name": "인스타360 드립퍼",
+            "price": 21000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "296742302",
+            "name": "leica m6 ttl new",
+            "price": 20000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401231720",
+            "name": "[입문용 필름카메라] MINOLTA MPS X700 ZOOM SET",
+            "price": 320000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "369348993",
+            "name": "[필름카메라] MINOLTA CLE PERPECT SET",
+            "price": 3300000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 72,
+      "rank": 22
+    },
+    {
+      "category": {
+        "id": "600100999",
+        "title": "기타 PC/노트북",
+        "count": 7532,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600100",
+          "600100999"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC/노트북",
+          "기타 PC/노트북"
+        ],
+        "childCount": 0
+      },
+      "family": "pc_laptop",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 4000,
+          "median": 5500,
+          "p75": 5500
+        },
+        "noiseCount": 0,
+        "noiseRate": 0,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "407303435",
+            "name": "[빠른발송] 윈도우11 / 윈도우10 프로 홈 정품키 오피스2021",
+            "price": 4000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407300788",
+            "name": "[빠른발송] MS오피스2024 2021 2019 365 윈도우 엑셀 워드",
+            "price": 5500,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407299437",
+            "name": "[빠른발송] MS오피스2021 2019 2016 365 윈도우 엑셀 워드",
+            "price": 5500,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407297632",
+            "name": "[빠른발송] 윈도우11 / 윈도우10 프로 홈 정품키 오피스2024",
+            "price": 4000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407294847",
+            "name": "[빠른발송] 윈도우11 / 윈도우10 프로 홈 정품키 오피스2021",
+            "price": 4000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407294068",
+            "name": "[빠른발송] MS오피스2024 2021 2019 365 윈도우 엑셀 워드",
+            "price": 5500,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407290358",
+            "name": "[빠른발송] MS오피스2021 2019 2016 365 윈도우 엑셀 워드",
+            "price": 5500,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407288999",
+            "name": "[빠른발송] 윈도우11 / 윈도우10 프로 홈 정품키 오피스2024",
+            "price": 4000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe",
+      "priorityScore": 72,
+      "rank": 23
+    },
+    {
+      "category": {
+        "id": "600300002",
+        "title": "일반디카/토이카메라",
+        "count": 17606,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600300",
+          "600300002"
+        ],
+        "pathTitles": [
+          "디지털",
+          "카메라/DSLR",
+          "일반디카/토이카메라"
+        ],
+        "childCount": 0
+      },
+      "family": "camera",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 150000,
+          "median": 210000,
+          "p75": 250000
+        },
+        "noiseCount": 2,
+        "noiseRate": 0.06666666666666667,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "407062739",
+            "name": "캐논 IXY 익시  110is",
+            "price": 340000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "400093940",
+            "name": "삼성  wb350",
+            "price": 190000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "394435261",
+            "name": "캐논 익시200a",
+            "price": 220000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407065581",
+            "name": "소니사이버샷 DSC-W810",
+            "price": 230000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407065399",
+            "name": "소니사이버샷 DSC-W810",
+            "price": 240000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407063775",
+            "name": "캐논 익시 IXY320 PC1037",
+            "price": 280000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407064846",
+            "name": "캐논 IXy 익시400",
+            "price": 280000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407064385",
+            "name": "캐논 익서스 900Ti 디카 풀세트",
+            "price": 320000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 71,
+      "rank": 24
+    },
+    {
+      "category": {
+        "id": "610700003",
+        "title": "피부케어기기",
+        "count": 11978,
+        "depth": 3,
+        "pathIds": [
+          "610",
+          "610700",
+          "610700003"
+        ],
+        "pathTitles": [
+          "가전제품",
+          "미용가전",
+          "피부케어기기"
+        ],
+        "childCount": 0
+      },
+      "family": "beauty_appliance",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 41750,
+          "median": 100000,
+          "p75": 267500
+        },
+        "noiseCount": 0,
+        "noiseRate": 0,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "403702357",
+            "name": "핑크스톤 페이스 롤러 마사지기 괄사",
+            "price": 13000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406741623",
+            "name": "쿼드쎄라 t1 티탄 세트(토스페이5천원할인)",
+            "price": 870000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403915488",
+            "name": "BBS Care 스킨 레볼루션 얼굴 스팀기 풀세트",
+            "price": 54000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406143744",
+            "name": "루안 갈바닉 3-step 피부 두피 관리기 ust-350",
+            "price": 15000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "389208797",
+            "name": "메디큐브 에이지알 부스터힐러",
+            "price": 88000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "396474793",
+            "name": "에스트라 푸드 컨테이너 새상품",
+            "price": 6100,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405178619",
+            "name": "셀린턴 프리미엄 마스크 판매합니다.",
+            "price": 80000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "402263334",
+            "name": "메디큐브 부스터프로 스페셜에디션 미개봉 새상품",
+            "price": 270000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 70,
+      "rank": 25
+    },
+    {
+      "category": {
+        "id": "600300003",
+        "title": "필름카메라/중형카메라",
+        "count": 16760,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600300",
+          "600300003"
+        ],
+        "pathTitles": [
+          "디지털",
+          "카메라/DSLR",
+          "필름카메라/중형카메라"
+        ],
+        "childCount": 0
+      },
+      "family": "camera",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 79250,
+          "median": 175000,
+          "p75": 590000
+        },
+        "noiseCount": 3,
+        "noiseRate": 0.1,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "382804546",
+            "name": "캐논 뉴 오토보이 파노라마 필름카메라(8)",
+            "price": 124000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "354705317",
+            "name": "leica m3",
+            "price": 10000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401231720",
+            "name": "[입문용 필름카메라] MINOLTA MPS X700 ZOOM SET",
+            "price": 320000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "369348993",
+            "name": "[필름카메라] MINOLTA CLE PERPECT SET",
+            "price": 3300000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "376561984",
+            "name": "후지 카디아 큐트 데이트 cardia cute date 필름 카메라",
+            "price": 50000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407069251",
+            "name": "마미야 RB67 ProSD + 90mm 렌즈",
+            "price": 760000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401199092",
+            "name": "니콘 필름카메라 L35AD 부품용 수집용 무료배송",
+            "price": 39000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "309302616",
+            "name": "떨이-니콘 TW Zoom Quartz Date 35mm",
+            "price": 69000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 69,
+      "rank": 26
+    },
+    {
+      "category": {
+        "id": "600300004",
+        "title": "렌즈/필터/컨버터",
+        "count": 10251,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600300",
+          "600300004"
+        ],
+        "pathTitles": [
+          "디지털",
+          "카메라/DSLR",
+          "렌즈/필터/컨버터"
+        ],
+        "childCount": 0
+      },
+      "family": "camera",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 22500,
+          "median": 137500,
+          "p75": 702500
+        },
+        "noiseCount": 2,
+        "noiseRate": 0.06666666666666667,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "388860883",
+            "name": "[수동렌즈] MINOLTA MD 100-200MM F5.6 FOR MD",
+            "price": 90000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "352952921",
+            "name": "[수동렌즈] MINOLTA MC AUTO 100MM F2 FOR MC",
+            "price": 720000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "375074724",
+            "name": "셀피 캠 렌즈 (스마트폰 광각렌즈)",
+            "price": 4000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303063",
+            "name": "캐논 EF24-70mm 2.8 신계륵",
+            "price": 1150000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302957",
+            "name": "켄코 카메라 렌즈 필터 55mm 49mm 72mm",
+            "price": 13000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405294729",
+            "name": "TTArtisan Tilt 50mm 틸트 렌즈 (소니 E마운트, 풀박)",
+            "price": 170000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302934",
+            "name": "소니 40mm FE 2.5/40 G 렌즈",
+            "price": 650000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407301680",
+            "name": "[나시카 스피릿 20X50 망원경 대여]",
+            "price": 6000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 69,
+      "rank": 27
+    },
+    {
+      "category": {
+        "id": "600300007",
+        "title": "디지털 캠코더",
+        "count": 6603,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600300",
+          "600300007"
+        ],
+        "pathTitles": [
+          "디지털",
+          "카메라/DSLR",
+          "디지털 캠코더"
+        ],
+        "childCount": 0
+      },
+      "family": "camera",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 94820,
+          "median": 157000,
+          "p75": 265000
+        },
+        "noiseCount": 3,
+        "noiseRate": 0.1,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "353592707",
+            "name": "CCTV[최저가보장!]240만800백만4대CCTV풀세트,감시카메라자가설치",
+            "price": 158000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "331256760",
+            "name": "인스타360 드립퍼",
+            "price": 21000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "402944599",
+            "name": "큐리오hdㅡad켐코드3x",
+            "price": 130000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407184291",
+            "name": "(네고가능) 파나소닉 AG-UX90AN 4K 캠코더 / 비디오 카메라",
+            "price": 1050000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401464667",
+            "name": "(네고가능) 파나소닉 AG-UX90AN 4K 캠코더 / 비디오 카메라",
+            "price": 1050000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "319863703",
+            "name": "소니캠코더 6mm 충전기 AC-SQ950",
+            "price": 45000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "402449888",
+            "name": "파나소닉 NV-C7 Mini DV  6mm 캠코더",
+            "price": 145000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "397440840",
+            "name": "소니 AC-VF50 배터리 충전기",
+            "price": 35000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 69,
+      "rank": 28
+    },
+    {
+      "category": {
+        "id": "610700",
+        "title": "미용가전",
+        "count": 24317,
+        "depth": 2,
+        "pathIds": [
+          "610",
+          "610700"
+        ],
+        "pathTitles": [
+          "가전제품",
+          "미용가전"
+        ],
+        "childCount": 5
+      },
+      "family": "beauty_appliance",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 20318,
+          "median": 46500,
+          "p75": 79500
+        },
+        "noiseCount": 0,
+        "noiseRate": 0,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "396627967",
+            "name": "보다나 물결고데기 40mm",
+            "price": 42000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405861487",
+            "name": "[급처] 논그로운 & 혼바디 왁싱세트 판매합니다!",
+            "price": 60000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303313",
+            "name": "글램팜 201t 퓨어블랙",
+            "price": 140000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303271",
+            "name": "보다나 봉고데기 40mm (파우더 핑크)",
+            "price": 65000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403702357",
+            "name": "핑크스톤 페이스 롤러 마사지기 괄사",
+            "price": 13000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403247221",
+            "name": "필립스 5000 시리즈 전기면도기",
+            "price": 15000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406741623",
+            "name": "쿼드쎄라 t1 티탄 세트(토스페이5천원할인)",
+            "price": 870000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403915488",
+            "name": "BBS Care 스킨 레볼루션 얼굴 스팀기 풀세트",
+            "price": 54000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe",
+      "priorityScore": 67,
+      "rank": 29
+    },
+    {
+      "category": {
+        "id": "610700001",
+        "title": "고데기",
+        "count": 6775,
+        "depth": 3,
+        "pathIds": [
+          "610",
+          "610700",
+          "610700001"
+        ],
+        "pathTitles": [
+          "가전제품",
+          "미용가전",
+          "고데기"
+        ],
+        "childCount": 0
+      },
+      "family": "beauty_appliance",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 19250,
+          "median": 38500,
+          "p75": 58000
+        },
+        "noiseCount": 0,
+        "noiseRate": 0,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "396627967",
+            "name": "보다나 물결고데기 40mm",
+            "price": 42000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303313",
+            "name": "글램팜 201t 퓨어블랙",
+            "price": 140000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303271",
+            "name": "보다나 봉고데기 40mm (파우더 핑크)",
+            "price": 65000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "389002597",
+            "name": "(최상)보다나 물결고데기 40mm 프리볼트",
+            "price": 52000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "392804661",
+            "name": "보다나 봉고데기 36mm 스카이블루",
+            "price": 28000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "224562227",
+            "name": "새상품)차홍 볼륨 컬러 회전식 자동 고데기 32.5mm",
+            "price": 96000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "378058134",
+            "name": "(최상)보다나 물결고데기 32mm",
+            "price": 40000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "378058640",
+            "name": "(최상)보다나 물결고데기 40mm 프리볼트",
+            "price": 51000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe",
+      "priorityScore": 67,
+      "rank": 30
+    },
+    {
+      "category": {
+        "id": "600300001",
+        "title": "DSLR/미러리스",
+        "count": 9580,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600300",
+          "600300001"
+        ],
+        "pathTitles": [
+          "디지털",
+          "카메라/DSLR",
+          "DSLR/미러리스"
+        ],
+        "childCount": 0
+      },
+      "family": "camera",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 96250,
+          "median": 355000,
+          "p75": 696750
+        },
+        "noiseCount": 8,
+        "noiseRate": 0.26666666666666666,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "406563435",
+            "name": "소니 A5100",
+            "price": 380000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "296742302",
+            "name": "leica m6 ttl new",
+            "price": 20000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407068673",
+            "name": "소니 NEX-5t화이트 + 배터리 SD카드 포함",
+            "price": 200000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302999",
+            "name": "소니 a6000 바디 미러리스 입문용",
+            "price": 480000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "397035587",
+            "name": "소니 A200 DSLR 카메라 (18-70mm 렌즈) 판매",
+            "price": 107000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302602",
+            "name": "캐논 100D + 시그마 F2.8 17-50 렌즈",
+            "price": 400000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406905241",
+            "name": "니콘 Z5 + 렌즈 2종(24-70,85)풀박스 판매",
+            "price": 1800000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404555148",
+            "name": "올림푸스 e-pl2미러리스 카메라 화이트",
+            "price": 200000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 66,
+      "rank": 31
+    },
+    {
+      "category": {
+        "id": "600600005",
+        "title": "PC게임",
+        "count": 26965,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600600",
+          "600600005"
+        ],
+        "pathTitles": [
+          "디지털",
+          "게임/타이틀",
+          "PC게임"
+        ],
+        "childCount": 0
+      },
+      "family": "game_console",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 8500,
+          "median": 39000,
+          "p75": 100000
+        },
+        "noiseCount": 2,
+        "noiseRate": 0.06666666666666667,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "397383978",
+            "name": "유튜브 프리미엄 1년 선물 링크",
+            "price": 30400,
+            "status": "SELLING"
+          },
+          {
+            "pid": "400260772",
+            "name": "리그오브레전드 징크스 중형인형",
+            "price": 6000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303442",
+            "name": "로블록스 라이벌 스킨 구해요( 크리스마스, 할로윈, 키 )",
+            "price": 1004,
+            "status": "SELLING"
+          },
+          {
+            "pid": "188716783",
+            "name": "팝픈뮤직 popnmusic 팝픈콘 팝픈 컨트롤러",
+            "price": 160000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "186241239",
+            "name": "펌프게임 손펌프 PUMP 팝니다. 손펌프콘 pump it up 펌프패드",
+            "price": 105000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407279009",
+            "name": "(일괄) 젠레스 존 제로 젠존제 엔젤디 더현대 아크릴 스탠드",
+            "price": 74460,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406642367",
+            "name": "(판매/교환) 젠레스 존 제로 젠레스 젠존제 아스트라, 세스 마그넷",
+            "price": 7440,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406638708",
+            "name": "(판매/교환) 원신 박맛젤 띠부씰",
+            "price": 740,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe",
+      "priorityScore": 64,
+      "rank": 32
+    },
+    {
+      "category": {
+        "id": "600600002",
+        "title": "소니/플레이스테이션",
+        "count": 18393,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600600",
+          "600600002"
+        ],
+        "pathTitles": [
+          "디지털",
+          "게임/타이틀",
+          "소니/플레이스테이션"
+        ],
+        "childCount": 0
+      },
+      "family": "game_console",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 40625,
+          "median": 72000,
+          "p75": 205000
+        },
+        "noiseCount": 4,
+        "noiseRate": 0.13333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "199800847",
+            "name": "플스CD 매입 다삽니다.  플스5 플스4 플스3 플스2",
+            "price": 1000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403403612",
+            "name": "플스2 솔디바이드 드래곤블레이즈",
+            "price": 300000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403441076",
+            "name": "플스2 사이바리아2",
+            "price": 170000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404036779",
+            "name": "플스2 부신 제로",
+            "price": 210000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "353417689",
+            "name": "플스2 페르소나",
+            "price": 100000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "376466543",
+            "name": "플스2 페르소나 어펜드",
+            "price": 650000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302639",
+            "name": "PS1용 캡콤 레트로게임 컬렉션 VOL.1-5 일괄 판매합니다",
+            "price": 240000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "390216810",
+            "name": "PS4 마인크래프트 스타터팩 한국어버전",
+            "price": 24000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 64,
+      "rank": 33
+    },
+    {
+      "category": {
+        "id": "600600",
+        "title": "게임/타이틀",
+        "count": 112985,
+        "depth": 2,
+        "pathIds": [
+          "600",
+          "600600"
+        ],
+        "pathTitles": [
+          "디지털",
+          "게임/타이틀"
+        ],
+        "childCount": 5
+      },
+      "family": "game_console",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 35250,
+          "median": 97500,
+          "p75": 247500
+        },
+        "noiseCount": 7,
+        "noiseRate": 0.23333333333333334,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "338524227",
+            "name": "[매입] 닌텐도 삽니다 스위치, ds, 3ds, wii",
+            "price": 100000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "318575652",
+            "name": "[매입] 닌텐도 삽니다 스위치, ds, 3ds 게임기 , 게임칩",
+            "price": 1000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303476",
+            "name": "[알팩]드래곤퀘스트6+엘파리아 닌텐도 SFC 슈퍼패미컴 슈패미",
+            "price": 6400,
+            "status": "SELLING"
+          },
+          {
+            "pid": "402043447",
+            "name": "닌텐도 젤다의 전설 하트 생명 변온 머그컵",
+            "price": 36000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "400260772",
+            "name": "리그오브레전드 징크스 중형인형",
+            "price": 6000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "379401279",
+            "name": "고가매입]닌텐도,오큘러스퀘스트,플레이스테이션 등등 구매합니다.",
+            "price": 580000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303442",
+            "name": "로블록스 라이벌 스킨 구해요( 크리스마스, 할로윈, 키 )",
+            "price": 1004,
+            "status": "SELLING"
+          },
+          {
+            "pid": "399724544",
+            "name": "닌텐도 2DS 식빵 핑크 일판",
+            "price": 260000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 62,
+      "rank": 34
+    },
+    {
+      "category": {
+        "id": "600600001",
+        "title": "닌텐도/NDS/Wii",
+        "count": 59616,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600600",
+          "600600001"
+        ],
+        "pathTitles": [
+          "디지털",
+          "게임/타이틀",
+          "닌텐도/NDS/Wii"
+        ],
+        "childCount": 0
+      },
+      "family": "game_console",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 46250,
+          "median": 92500,
+          "p75": 350000
+        },
+        "noiseCount": 9,
+        "noiseRate": 0.3,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "338524227",
+            "name": "[매입] 닌텐도 삽니다 스위치, ds, 3ds, wii",
+            "price": 100000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "318575652",
+            "name": "[매입] 닌텐도 삽니다 스위치, ds, 3ds 게임기 , 게임칩",
+            "price": 1000000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303476",
+            "name": "[알팩]드래곤퀘스트6+엘파리아 닌텐도 SFC 슈퍼패미컴 슈패미",
+            "price": 6400,
+            "status": "SELLING"
+          },
+          {
+            "pid": "402043447",
+            "name": "닌텐도 젤다의 전설 하트 생명 변온 머그컵",
+            "price": 36000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "399724544",
+            "name": "닌텐도 2DS 식빵 핑크 일판",
+            "price": 260000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "379401279",
+            "name": "고가매입]닌텐도,오큘러스퀘스트,플레이스테이션 등등 구매합니다.",
+            "price": 580000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "399834582",
+            "name": "닌텐도 스위치 SD 신 가면라이더 난무",
+            "price": 15000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405589055",
+            "name": "msx 실전4인마작 곽팩 메뉴얼 있음 제작사 sony 초 레어",
+            "price": 95000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_now",
+      "priorityScore": 60,
+      "rank": 35
+    },
+    {
+      "category": {
+        "id": "600700002",
+        "title": "일반폰(피처폰)",
+        "count": 17956,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600700",
+          "600700002"
+        ],
+        "pathTitles": [
+          "디지털",
+          "휴대폰",
+          "일반폰(피처폰)"
+        ],
+        "childCount": 0
+      },
+      "family": "legacy_mobile",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 101250,
+          "median": 125000,
+          "p75": 143750
+        },
+        "noiseCount": 2,
+        "noiseRate": 0.06666666666666667,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "392433115",
+            "name": "당일발송 아이폰6s 64기가 실버,스페이스 그레이 판매",
+            "price": 140000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "367083850",
+            "name": "S급 아이폰se1 6s 5s 6 7 xs 초특가 판매!!!",
+            "price": 99000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404528113",
+            "name": "애플 아이폰 xs 실버 64GB",
+            "price": 300000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "381951600",
+            "name": "[당일배송] S급 아이폰6S 스페이스그레이 16GB",
+            "price": 120000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "369021123",
+            "name": "[당일배송] 아이폰7 // 5 5s 6 6s 7 8 컬러선택 가능 !!",
+            "price": 130000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "253667648",
+            "name": "S급 아이폰se1 초특가판매!!!",
+            "price": 105000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "363183332",
+            "name": "[오늘출발] S급 아이폰6 100% 전색상 판매합니다",
+            "price": 85000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "355159842",
+            "name": "[빠른배송] A급 아이폰5 블랙 실버",
+            "price": 80000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe",
+      "priorityScore": 57,
+      "rank": 36
+    },
+    {
+      "category": {
+        "id": "600710300",
+        "title": "케이블/충전기/주변기기",
+        "count": 5654,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600710",
+          "600710300"
+        ],
+        "pathTitles": [
+          "디지털",
+          "태블릿",
+          "케이블/충전기/주변기기"
+        ],
+        "childCount": 0
+      },
+      "family": "tablet",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 16000,
+          "median": 58000,
+          "p75": 87500
+        },
+        "noiseCount": 4,
+        "noiseRate": 0.13333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "407303349",
+            "name": "아이패드 에어 11 m3 256gb + 매직키보드 일괄 판매합니다",
+            "price": 1070000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404279518",
+            "name": "애플 매직키보드",
+            "price": 250000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "380332663",
+            "name": "애플펜슬 2세대 미개봉정품",
+            "price": 140000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406146328",
+            "name": "와콤 Wacom CTE-640  펜 태블릿",
+            "price": 35000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404192569",
+            "name": "ARKON 차량용 태블릿 거치대 TAB-RSHM7",
+            "price": 10000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407301858",
+            "name": "갤럭시탭 S10울트라 5G 256GB 셀룰러 판매합니다",
+            "price": 1070000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "393662931",
+            "name": "monlab 휴대폰 및 태블릿 거치대",
+            "price": 10000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "342687108",
+            "name": "구조독 에어6 매직키보드 아이패드 새상품 무료배송",
+            "price": 70000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 57,
+      "rank": 37
+    },
+    {
+      "category": {
+        "id": "600100010",
+        "title": "키보드",
+        "count": 19063,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600100",
+          "600100010"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC/노트북",
+          "키보드"
+        ],
+        "childCount": 0
+      },
+      "family": "pc_laptop",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 17500,
+          "median": 72000,
+          "p75": 196000
+        },
+        "noiseCount": 1,
+        "noiseRate": 0.03333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "382559651",
+            "name": "인피니키 성역승화 키캡 미개봉",
+            "price": 265000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "392830077",
+            "name": "키보드 마우스 세트",
+            "price": 5000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405367296",
+            "name": "MCHOSE 게이밍 키보드 8K 래피드 트리거",
+            "price": 65000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406848649",
+            "name": "evo80 스칼렛 pp 보강판 팝니다",
+            "price": 100000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405655354",
+            "name": "NZXT Function 2 화이트 게이밍 키보드 팝니다",
+            "price": 70000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405146632",
+            "name": "레이저 헌츠맨 V3 Pro 미개봉 팝니다",
+            "price": 230000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "397104195",
+            "name": "[우디공방] 베놈60he 베놈tkl venom60he 래피드트리거키보드",
+            "price": 196000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "397103223",
+            "name": "[우디공방] Venom60he 베놈87he 베놈60he 래피드트리거키보드",
+            "price": 196000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 55,
+      "rank": 38
+    },
+    {
+      "category": {
+        "id": "600100011",
+        "title": "마우스",
+        "count": 9853,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600100",
+          "600100011"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC/노트북",
+          "마우스"
+        ],
+        "childCount": 0
+      },
+      "family": "pc_laptop",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 13500,
+          "median": 49500,
+          "p75": 89750
+        },
+        "noiseCount": 0,
+        "noiseRate": 0,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "406434068",
+            "name": "춘배 딸기냥 무선 마우스",
+            "price": 12000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "397168831",
+            "name": "로지텍 마우스 화이트 판매",
+            "price": 13000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "321990933",
+            "name": "애플 정품 매직마우스2 MLA02KH/A실버 8핀",
+            "price": 70000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302000",
+            "name": "고구마먹는 춘식이 무선 마우스",
+            "price": 7000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406857353",
+            "name": "아티산제로 xsoft xxl",
+            "price": 56000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403180121",
+            "name": "펄사 벡시 fs-1 게이밍 마우스 입니다",
+            "price": 130000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406580035",
+            "name": "바이퍼 v4 pro",
+            "price": 220000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407300978",
+            "name": "파이널마우스 ulx pro series aceu L",
+            "price": 810000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 55,
+      "rank": 39
+    },
+    {
+      "category": {
+        "id": "610999",
+        "title": "기타 가전제품",
+        "count": 8206,
+        "depth": 2,
+        "pathIds": [
+          "610",
+          "610999"
+        ],
+        "pathTitles": [
+          "가전제품",
+          "기타 가전제품"
+        ],
+        "childCount": 0
+      },
+      "family": "other_tech",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 23500,
+          "median": 72500,
+          "p75": 177500
+        },
+        "noiseCount": 6,
+        "noiseRate": 0.2,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "406920492",
+            "name": "Gemini Pro 제미나이 프로 12개월 1년 구독권 google ai",
+            "price": 23000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "400917596",
+            "name": "(삽니다) 정품 대만 산진라디오  WR-11  WR-11SE  블루투스X",
+            "price": 555,
+            "status": "SELLING"
+          },
+          {
+            "pid": "145302132",
+            "name": "세프랑  홈그릴(전기그릴)",
+            "price": 50000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403065024",
+            "name": "[A+급 미사용] 삼성 에어드레서 우드 로즈",
+            "price": 450000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403237433",
+            "name": "마끼다 18V 충전체인톱 10인치 본체 DUC258Z 미개봉 새상품",
+            "price": 320000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "399077723",
+            "name": "마끼다 18V 충전멀티컷터 DTM53Z 본체만 새상품 정품",
+            "price": 170000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "389201567",
+            "name": "마끼다 18V 충전원형톱 165mm DSS611Z 본체 정품 새상품",
+            "price": 130000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "380490057",
+            "name": "마끼다 DC40WA 40Vmax 듀얼충전기 1911M6-7새상품 정품",
+            "price": 120000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "mine_next",
+      "priorityScore": 51,
+      "rank": 40
+    },
+    {
+      "category": {
+        "id": "600100004",
+        "title": "노트북 가방/액세서리",
+        "count": 9775,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600100",
+          "600100004"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC/노트북",
+          "노트북 가방/액세서리"
+        ],
+        "childCount": 0
+      },
+      "family": "pc_laptop",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 10723,
+          "median": 18000,
+          "p75": 28750
+        },
+        "noiseCount": 5,
+        "noiseRate": 0.16666666666666666,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "199001426",
+            "name": "미니언즈 노트북파우치",
+            "price": 14000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404987277",
+            "name": "쁘숑앤포숑 11인치 태블릿 노트북 아이패드 파우치 강아지 비숑 자수",
+            "price": 5000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "387976381",
+            "name": "(빈 박스) 애플 아이패드 프로 3세대 11인치 / A2377",
+            "price": 18000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "388204477",
+            "name": "원신 라이덴 쇼군 장패드",
+            "price": 25000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302620",
+            "name": "리락쿠마 마우스 패드 새상품",
+            "price": 11000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404750629",
+            "name": "tomtoc(탐탁) H13 노트북가방",
+            "price": 50000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407073251",
+            "name": "토니모리 키캡 키링 메타몽 1개",
+            "price": 18000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407301386",
+            "name": "로지텍 메타몽 데스크 패드",
+            "price": 75000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 46,
+      "rank": 41
+    },
+    {
+      "category": {
+        "id": "600700010",
+        "title": "케이블/충전기/주변기기",
+        "count": 15273,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600700",
+          "600700010"
+        ],
+        "pathTitles": [
+          "디지털",
+          "휴대폰",
+          "케이블/충전기/주변기기"
+        ],
+        "childCount": 0
+      },
+      "family": "smartphone",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 10250,
+          "median": 20000,
+          "p75": 43750
+        },
+        "noiseCount": 15,
+        "noiseRate": 0.5,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "402215883",
+            "name": "애플 충전기 세트 어댑터케이블 c타입",
+            "price": 24100,
+            "status": "SELLING"
+          },
+          {
+            "pid": "400360106",
+            "name": "택포) s23울트라 s펜",
+            "price": 46000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303430",
+            "name": "[판매] 화산귀환 에디션 매화 무선 충전기",
+            "price": 50000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "402685410",
+            "name": "액트몬 휴대폰 무선 충전기",
+            "price": 15000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406337619",
+            "name": "춘배 토마토냥/맥세이프 보조배터리",
+            "price": 15000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403682544",
+            "name": "애플 충전기 세트 어댑터케이블 c타입",
+            "price": 23888,
+            "status": "SELLING"
+          },
+          {
+            "pid": "383195803",
+            "name": "케이블충전선,usb케이블선,충전선",
+            "price": 8000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302855",
+            "name": "IWALK 아이워크 도킹형 보조배터리, 아이폰용 민트색",
+            "price": 10000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 45,
+      "rank": 42
+    },
+    {
+      "category": {
+        "id": "600710200",
+        "title": "케이스/보호필름/액세서리",
+        "count": 6319,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600710",
+          "600710200"
+        ],
+        "pathTitles": [
+          "디지털",
+          "태블릿",
+          "케이스/보호필름/액세서리"
+        ],
+        "childCount": 0
+      },
+      "family": "tablet",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 11250,
+          "median": 22000,
+          "p75": 51000
+        },
+        "noiseCount": 17,
+        "noiseRate": 0.5666666666666667,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "291229368",
+            "name": "아이스토리 무선충전 애플펜슬 케이스",
+            "price": 17000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405667511",
+            "name": "케이스티파이 스쿠나 애플 펜슬 케이스",
+            "price": 130000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "331261490",
+            "name": "뽀용한 아이패드 컴포지션북 케이스_베이비핑크",
+            "price": 39000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403940171",
+            "name": "새상품) 힐링쉴드 갤럭시탭 S11 무광 후면 보호필름",
+            "price": 6000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "399335470",
+            "name": "니케 아이패드 키보드케이스 한국어(화이트)",
+            "price": 89000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "350382022",
+            "name": "컴피코지 v2 태블릿 pc 아이패드 백 11인치",
+            "price": 25300,
+            "status": "SELLING"
+          },
+          {
+            "pid": "375505516",
+            "name": "애플 스티커 2개 및 아이패드 프로 11형 빈 박스",
+            "price": 1800,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407299065",
+            "name": "신지모루 아이패드 13 풀커버 강화유리 1매",
+            "price": 6000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 41,
+      "rank": 43
+    },
+    {
+      "category": {
+        "id": "600200003",
+        "title": "CPU/메인보드",
+        "count": 8779,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600200",
+          "600200003"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC부품/저장장치",
+          "CPU/메인보드"
+        ],
+        "childCount": 0
+      },
+      "family": "pc_parts",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 235000,
+          "median": 451000,
+          "p75": 579000
+        },
+        "noiseCount": 0,
+        "noiseRate": 0,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "407303220",
+            "name": "e5 1680v2 cpu 팝니다",
+            "price": 100000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "322656182",
+            "name": "ASUS 인텔 2세대 CPU용 메인보드",
+            "price": 15000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302580",
+            "name": "AMD 라이젠5 7500F CPU 새상품급",
+            "price": 150000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404358969",
+            "name": "새제품! AMD 라이젠 9 5950X CPU #5950 #5900X",
+            "price": 654000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302309",
+            "name": "I7 12700KF + MSI Z690 + 지스킬로얄 32GB 보드셋",
+            "price": 700000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404584070",
+            "name": "새제품!! ASUS PRIME Z790-A WIFI 메인보드",
+            "price": 425000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "401568507",
+            "name": "새제품! AMD 라이젠9 5900X CPU #라이젠#5900",
+            "price": 455000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "394705695",
+            "name": "새제품! 인텔 i7-14700K 입니다.",
+            "price": 608000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 32,
+      "rank": 44
+    },
+    {
+      "category": {
+        "id": "600200005",
+        "title": "메모리/VGA",
+        "count": 15229,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600200",
+          "600200005"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC부품/저장장치",
+          "메모리/VGA"
+        ],
+        "childCount": 0
+      },
+      "family": "pc_parts",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 261250,
+          "median": 452500,
+          "p75": 609250
+        },
+        "noiseCount": 1,
+        "noiseRate": 0.03333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "317972425",
+            "name": "xfx rx6700xt 3팬에이급 제품판매합니다 ~",
+            "price": 355000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "214219252",
+            "name": "S급상태 22년제품 2060SUPER 이엠텍 한정수량 깔끔판매.",
+            "price": 265000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406868906",
+            "name": "라데온 rx6700xt xfx 고장",
+            "price": 140000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405014372",
+            "name": "만리 폴라폭스 RTX 5060Ti 8GB 그래픽카드",
+            "price": 580000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406453511",
+            "name": "지스킬 트라이던트 DDR4 8GB 2개",
+            "price": 150000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403525146",
+            "name": "삼성 4GB PC3-10600S 램 노트북 메모리",
+            "price": 6000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404713749",
+            "name": "MSI RTX 4080 게이밍 X 트리오 16GB그래픽카드",
+            "price": 1256000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "400992581",
+            "name": "타무즈 마이크론 DDR5-5600 CL46 64GB(32*2)",
+            "price": 846000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 31,
+      "rank": 45
+    },
+    {
+      "category": {
+        "id": "600700003",
+        "title": "케이스/보호필름/액세서리",
+        "count": 45409,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600700",
+          "600700003"
+        ],
+        "pathTitles": [
+          "디지털",
+          "휴대폰",
+          "케이스/보호필름/액세서리"
+        ],
+        "childCount": 0
+      },
+      "family": "smartphone",
+      "coverage": "internal_only",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 5625,
+          "median": 11500,
+          "p75": 20000
+        },
+        "noiseCount": 28,
+        "noiseRate": 0.9333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "351291651",
+            "name": "슈피겐 케이스 아이폰 16 프로 맥세이프 울트라 하이브리드 맥핏",
+            "price": 28000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "381948120",
+            "name": "코끼리 파랑 핸드폰 케이스 아이폰 15",
+            "price": 20000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "376429553",
+            "name": "아이폰 15 애프터썬 케이스",
+            "price": 20000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405842835",
+            "name": "춘배 아이폰 미니13 케이스 /2종",
+            "price": 6000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405458486",
+            "name": "춘배와친구들 맥세이프 그립톡2종",
+            "price": 9000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "402264531",
+            "name": "아이폰 14 케이스 티파이 케이스",
+            "price": 25000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "395701840",
+            "name": "S26 울트라 가죽 투명 케이스 보호필름 새상품",
+            "price": 80000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "353995533",
+            "name": "케이스티파이 보라색 캐릭터 폰케이스 15프로",
+            "price": 13000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 30,
+      "rank": 46
+    },
+    {
+      "category": {
+        "id": "600200004",
+        "title": "HDD/ODD/SSD",
+        "count": 7958,
+        "depth": 3,
+        "pathIds": [
+          "600",
+          "600200",
+          "600200004"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC부품/저장장치",
+          "HDD/ODD/SSD"
+        ],
+        "childCount": 0
+      },
+      "family": "pc_parts",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 126985,
+          "median": 227500,
+          "p75": 309500
+        },
+        "noiseCount": 1,
+        "noiseRate": 0.03333333333333333,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "405887114",
+            "name": "SanDisk SSD 2TB SATA 6Gb/s",
+            "price": 200000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "310203158",
+            "name": "2테라 시게이트/WD 외장하드 2TB 판매 (수량많음)",
+            "price": 75000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302867",
+            "name": "삼성 SSD 980 1TB NVMe M.2 윈도우설치",
+            "price": 230000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407302420",
+            "name": "삼성 860 evo 500g",
+            "price": 60000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404444441",
+            "name": "새제품! WD RED Plus 6TB *버퍼256MB  #NAS #HDD",
+            "price": 334000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "402312540",
+            "name": "새제품! 샌디스크 익스트림 프로 500GB#WD#PRO#980#512GB",
+            "price": 194000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "402311561",
+            "name": "미개봉! 삼성 980 PRO 500GB SSD #990#1TB#512GB",
+            "price": 214000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "404482029",
+            "name": "새제품! WD RED PLUS 4TB 하드디스크 #NAS #하드 #HDD",
+            "price": 224000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 29,
+      "rank": 47
+    },
+    {
+      "category": {
+        "id": "600200",
+        "title": "PC부품/저장장치",
+        "count": 54304,
+        "depth": 2,
+        "pathIds": [
+          "600",
+          "600200"
+        ],
+        "pathTitles": [
+          "디지털",
+          "PC부품/저장장치"
+        ],
+        "childCount": 8
+      },
+      "family": "pc_parts",
+      "coverage": "not_started",
+      "sample": {
+        "sampleCount": 30,
+        "priceStats": {
+          "p25": 28043,
+          "median": 89000,
+          "p75": 221500
+        },
+        "noiseCount": 3,
+        "noiseRate": 0.1,
+        "statusCounts": {
+          "SELLING": 30
+        },
+        "sampleNames": [
+          {
+            "pid": "401499232",
+            "name": "로지텍 밋업 logitech meetup 화상장비",
+            "price": 600000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "405887114",
+            "name": "SanDisk SSD 2TB SATA 6Gb/s",
+            "price": 200000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "407303220",
+            "name": "e5 1680v2 cpu 팝니다",
+            "price": 100000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "406511401",
+            "name": "히로이치 HEC 600와트 파워 80plus",
+            "price": 20000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "322656182",
+            "name": "ASUS 인텔 2세대 CPU용 메인보드",
+            "price": 15000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "317972425",
+            "name": "xfx rx6700xt 3팬에이급 제품판매합니다 ~",
+            "price": 355000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403351190",
+            "name": "USB C to HDMI 노트북 모니터확장기 덱스모드 갤8 9 미러링 T",
+            "price": 8000,
+            "status": "SELLING"
+          },
+          {
+            "pid": "403350731",
+            "name": "케이블메이트 USB 3.1 Type-C C타입 to HDMI 2.0 컨버",
+            "price": 8000,
+            "status": "SELLING"
+          }
+        ]
+      },
+      "action": "observe_noisy",
+      "priorityScore": 24,
+      "rank": 48
+    }
+  ]
+}

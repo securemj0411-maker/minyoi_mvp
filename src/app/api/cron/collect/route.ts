@@ -7,6 +7,8 @@ import {
   startCollectRun,
   type CollectRunRequestMeta,
 } from "@/lib/collect-logs";
+import { checkCronAuth } from "@/lib/cron-auth";
+import { acquireCronGuard, cronGuardSkipBody } from "@/lib/cron-guard";
 import { runPipeline, type PipelineOptions } from "@/lib/pipeline";
 import { boundedInt, loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 
@@ -87,17 +89,18 @@ function requestMeta(req: NextRequest, authOk: boolean, authReason: string): Col
 }
 
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const auth = req.headers.get("authorization");
-  const authOk = !secret || auth === `Bearer ${secret}`;
+  const { authOk, authReason } = checkCronAuth(req);
   const waitForResult = req.nextUrl.searchParams.get("wait") === "1";
   const { pages, options } = pipelineConfig(req);
-  const meta = requestMeta(req, authOk, authOk ? "authorized" : "invalid_or_missing_bearer");
+  const meta = requestMeta(req, authOk, authReason);
 
-  if (secret) {
-    if (!authOk) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-    }
+  if (!authOk) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const guard = acquireCronGuard("collect", req);
+  if (!guard.allowed) {
+    return NextResponse.json(cronGuardSkipBody(guard));
   }
 
   const staleMarked = await markStaleCollectRuns(loadPipelineRuntimeConfig().staleRunMinutes);
@@ -109,6 +112,13 @@ export async function GET(req: NextRequest) {
       staleMarkedBeforeRun: staleMarked,
     },
   });
+  if (!run.id) {
+    guard.release();
+    return NextResponse.json(
+      { ok: false, started: false, pipelineConfig: { pages, ...options }, error: "supabase_unavailable_before_pipeline", ts: run.startedAt },
+      { status: 503 },
+    );
+  }
 
   if (waitForResult) {
     try {
@@ -121,6 +131,8 @@ export async function GET(req: NextRequest) {
         { ok: false, started: true, completed: true, runId: run.id, pipelineConfig: { pages, ...options }, error: err instanceof Error ? err.message : String(err), ts: run.startedAt },
         { status: 500 },
       );
+    } finally {
+      guard.release();
     }
   }
 
@@ -132,6 +144,8 @@ export async function GET(req: NextRequest) {
     } catch (err) {
       await failCollectRun(run.id, run.startedAt, err);
       console.error("[cron/collect]", err instanceof Error ? err.message : String(err));
+    } finally {
+      guard.release();
     }
   });
 

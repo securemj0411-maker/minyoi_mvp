@@ -32,11 +32,13 @@ const INCOMPLETE_AIRPODS_KEYWORDS = [
 ];
 const PRECISION_REVIEW_FLAGS = [
   "coarse_market_price",
+  "extreme_discount_review",
   "market_confidence_low",
   "market_stat_missing",
   "option_parse_review",
   "option_needs_review",
   "ai_review_unavailable",
+  "ai_second_opinion_hold",
   "weak_description",
   "condition_review",
 ];
@@ -48,11 +50,14 @@ const FLAG_LABELS: Record<string, string> = {
   option_parse_review: "옵션 파싱 신뢰도 낮음",
   option_needs_review: "용량/칩/사이즈 확인 필요",
   ai_review_unavailable: "AI 검토 실패",
+  ai_second_opinion_hold: "AI 보수 검토 보류",
   weak_description: "설명 부족",
   condition_review: "상태/수리 이력 확인 필요",
   deep_discount_review: "비정상 저가 검토 필요",
+  extreme_discount_review: "비현실적 초저가 보류",
   risk_keyword_review: "위험 키워드 검토 필요",
   ai_normal: "AI 정상 매물 판정",
+  ai_second_opinion_pass: "AI 보수 검토 통과",
 };
 
 export function generalShippingFee(item: ListingCandidate) {

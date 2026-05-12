@@ -64,6 +64,30 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minParseRate: 0.85,
     minTrustedKeys: 8,
   },
+  monitor: {
+    status: "internal_only",
+    label: "Monitor",
+    note: "모델코드·인치·해상도·주사율 파서 골격만 열었고, 카탈로그 승격과 공개 후보팩은 보류합니다.",
+    minReadyPool: 8,
+    minParseRate: 0.85,
+    minTrustedKeys: 8,
+  },
+  speaker: {
+    status: "internal_only",
+    label: "Speaker",
+    note: "JBL/LG portable exact-model 5개만 내부 파싱 후보로 열고, broad speaker/audio 공개 후보팩은 보류합니다.",
+    minReadyPool: 8,
+    minParseRate: 0.9,
+    minTrustedKeys: 5,
+  },
+  camera: {
+    status: "internal_only",
+    label: "Camera",
+    note: "교환식 카메라 body-only exact-model만 내부 파싱 후보로 열고, 렌즈/킷/컴팩트/액세서리/하자/구매 행은 보류합니다.",
+    minReadyPool: 8,
+    minParseRate: 0.9,
+    minTrustedKeys: 5,
+  },
   small_appliance: {
     status: "blocked",
     label: "Small Appliance",
@@ -82,6 +106,9 @@ export function categoryFromComparableKey(value: string | null | undefined): Sku
     family === "smartphone" ||
     family === "tablet" ||
     family === "laptop" ||
+    family === "monitor" ||
+    family === "speaker" ||
+    family === "camera" ||
     family === "small_appliance"
   ) {
     return family;
@@ -91,6 +118,7 @@ export function categoryFromComparableKey(value: string | null | undefined): Sku
   if (family === "iphone" || family === "galaxy_s") return "smartphone";
   if (family === "ipad" || family === "galaxy_tab") return "tablet";
   if (family === "macbook") return "laptop";
+  if (family === "display") return "monitor";
   return null;
 }
 

@@ -1,5 +1,9 @@
 export const USER_REF_STORAGE_KEY = "minyoi-user-ref-v1";
 
+export function userRefForAuthUser(userId: string): string {
+  return `auth:${userId}`.slice(0, 64);
+}
+
 export function getOrCreateUserRef(): string {
   if (typeof window === "undefined") return "";
   let ref = window.localStorage.getItem(USER_REF_STORAGE_KEY);
