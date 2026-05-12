@@ -632,13 +632,13 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     laneKey: "galaxy_z_flip_5_256_self",
     modelName: "Galaxy Z Flip 5 256GB (자급제)",
     aliases: ["갤럭시 Z 플립5 256 자급제", "Galaxy Z Flip 5 256 SIM-Free"],
-    // mustContain[자급제] 제거: catalog에 broader Z Flip 5 SKU 없음 → 충돌 risk 0.
-    // 자급제 격리는 mustNotContain의 carrier 키워드로 처리.
-    // 매물 변형 흡수: "갤럭시z플립5" (공백 없음), "256G" 등.
+    // 변형 흡수만 추가 (같은 의미 다른 표현). 자급제 group은 정확성 우선 원칙으로 유지 —
+    // 명시 안 된 매물은 lane 진입 금지. "256" 단독은 가격 텍스트와 충돌 risk → 제거.
     mustContain: [
       ["갤럭시 z 플립", "갤럭시z플립", "갤럭시 플립", "갤럭시플립", "galaxy z flip", "galaxyzflip", "z flip", "zflip"],
       ["플립5", "플립 5", "flip5", "flip 5", "5세대"],
-      ["256gb", "256 gb", "256g", "256기가", "256"],
+      ["256gb", "256 gb", "256g", "256기가"],
+      ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
       "플립4", "플립 4", "flip 4",
@@ -1571,7 +1571,8 @@ export const CATALOG: Sku[] = [
     modelName: "AirPods 4th gen",
     aliases: ["에어팟 4세대", "AirPods 4", "에어팟4"],
     mustContain: [["에어팟", "airpods"], ["4세대", "4 세대", "4th"]],
-    mustNotContain: ["프로", "pro", "max", "맥스", "2세대", "3세대"],
+    // ANC 매물은 airpods-4-anc SKU로만 분류 (별도 제품).
+    mustNotContain: ["프로", "pro", "max", "맥스", "2세대", "3세대", "anc", "노이즈 캔슬", "노캔", "노이즈캔슬"],
     msrpKrw: 199000,
     released: 2024,
   },
@@ -1623,10 +1624,12 @@ export const CATALOG: Sku[] = [
     category: "earphone",
     modelName: "AirPods 4 (ANC)",
     aliases: ["에어팟 4세대 ANC", "AirPods 4 ANC", "에어팟4 ANC"],
+    // 변형 흡수: "에어팟4 ANC" (공백 없음), "에어팟 4 ANC" 등.
+    // 다른 세대는 mustNotContain "1세대/2세대/3세대"로 격리.
     mustContain: [
       ["에어팟", "airpods"],
-      ["4세대", "4 세대", "4th"],
-      ["anc", "노이즈 캔슬", "노캔"],
+      ["4세대", "4 세대", "4th", "에어팟4", "에어팟 4", "airpods 4", "airpods4"],
+      ["anc", "노이즈 캔슬", "노캔", "노이즈캔슬"],
     ],
     mustNotContain: ["프로", "pro", "max", "1세대", "2세대", "3세대", ...HEADPHONE_NOISE],
     msrpKrw: 249000,

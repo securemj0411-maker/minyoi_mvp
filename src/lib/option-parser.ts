@@ -551,7 +551,11 @@ function parseAirpodsConnector(text: string) {
 function defaultAirpodsConnector(model: string | null, text: string) {
   const lower = normalize(text).toLowerCase();
   if (!model?.includes("airpods")) return null;
-  if (model.includes("airpods_pro_2_usbc") || model.includes("airpods_4")) return "usbc";
+  if (
+    model.includes("airpods_pro_2_usbc") ||
+    model.includes("airpods_4") ||
+    model.includes("airpods_pro_3")
+  ) return "usbc";
   if (
     model.includes("airpods_2") ||
     model.includes("airpods_3") ||
