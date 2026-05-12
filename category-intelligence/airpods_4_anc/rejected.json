@@ -1,0 +1,1696 @@
+[
+  {
+    "pid": "406848762",
+    "name": "[미개봉] 에어팟 프로 2 USB-C",
+    "price": 170000,
+    "reject_reasons": [
+      "missing_any_4_s_세대_4세대_b4th_b_에어팟_s",
+      "missing_any__banc_b_노이즈_s_캔슬_노캔_액티브_",
+      "reject_wrong_model_pro",
+      "reject_wrong_gen_2"
+    ]
+  },
+  {
+    "pid": "328197790",
+    "name": "에어팟 2 3 4 세대 에어팟프로1,2세대 c타입 왼쪽 오른쪽 본체 유닛",
+    "price": 55000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro",
+      "reject_wrong_gen_1",
+      "reject_wrong_gen_2",
+      "reject_wrong_gen_3",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "407453089",
+    "name": "애플 에어팟 4 ANC",
+    "price": 180000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "407230886",
+    "name": "에어팟 4 오른쪽 유닛 anc 모델",
+    "price": 45000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "403894852",
+    "name": "에어팟 4 anc 노캔o (오른쪽 유닛남음)",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "402533748",
+    "name": "에어팟4 노캔 ㅇ anc 양쪽 유닛 (네고ㅇ)",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "400198095",
+    "name": "에어팟4ANC (A3055) 화이트 (QTY06N9)",
+    "price": 238000,
+    "reject_reasons": [
+      "missing_any_4_s_세대_4세대_b4th_b_에어팟_s",
+      "missing_any__banc_b_노이즈_s_캔슬_노캔_액티브_"
+    ]
+  },
+  {
+    "pid": "396627665",
+    "name": "애플 에어팟 4 (ANC) 미개봉 새상품",
+    "price": 230000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "392757565",
+    "name": "에어팟4 ANC 미개봉 상품 팔아요!!",
+    "price": 210000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "392089110",
+    "name": "에어팟4 노이즈캔슬링  노캔 본체 판매 (ANC)",
+    "price": 65000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "388122495",
+    "name": "에어팟 4ANC",
+    "price": 260000,
+    "reject_reasons": [
+      "missing_any_4_s_세대_4세대_b4th_b_에어팟_s",
+      "missing_any__banc_b_노이즈_s_캔슬_노캔_액티브_"
+    ]
+  },
+  {
+    "pid": "380936473",
+    "name": "에어팟4 anc모델 본체 A3059",
+    "price": 55000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "381525785",
+    "name": "에어팟 4 액티브 노이즈캔슬링 (ANC) 미개봉 새상품",
+    "price": 200000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "379266249",
+    "name": "에어팟4(ANC) 오른쪽 유닛 판매",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "340078007",
+    "name": "[애플정품]에어팟 4 본체 케이스 노캔 (ANC) 팝니다",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "333267694",
+    "name": "[애플정품]에어팟 4 노이즈캔슬링(ANC) 왼쪽유닛 팝니다",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "364719785",
+    "name": "[애플정품]에어팟 4 오른쪽유닛 노이즈캔슬링(ANC) 팝니다",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "344036902",
+    "name": "[애플정품]에어팟 4 본체 노캔 (ANC) 팝니다",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "364110699",
+    "name": "에어팟4 노캔ANC 본체 보증있습니다.",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "364115084",
+    "name": "에어팟4  노캔 ANC 본체 보증남아있습니다",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_case_only"
+    ]
+  },
+  {
+    "pid": "355008786",
+    "name": "(정품) 에어팟 4 에어팟 4세대 노캔 ANC 버전 본체만 팝니다",
+    "price": 500,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "350913744",
+    "name": "에어팟4 anc >_< (노캔o)",
+    "price": 190000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "349084908",
+    "name": "애플 에어팟 4 노캔버전 ANC 본체",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "349084750",
+    "name": "애플 에어팟 4 노캔버전 ANC 오른쪽 유닛",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "346545662",
+    "name": "에어팟 4  anc 노캔가능 본체",
+    "price": 66500,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "320918410",
+    "name": "(내일도착)에어팟4ANC 노캔0왼쪽 유닛만",
+    "price": 71999,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_4_s_세대_4세대_b4th_b_에어팟_s",
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "320918500",
+    "name": "(내일도착)에어팟4ANC 노캔0오른쪽 유닛만",
+    "price": 74999,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_4_s_세대_4세대_b4th_b_에어팟_s",
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "319601414",
+    "name": "(내일도착)에어팟4ANC 노캔0왼쪽 유닛만",
+    "price": 54999,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_4_s_세대_4세대_b4th_b_에어팟_s",
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "406958742",
+    "name": "애플 에어팟 4세대 ANC 노이즈캔슬링",
+    "price": 65000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "395972654",
+    "name": "에어팟4세대(anc) 본체만",
+    "price": 55000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407519109",
+    "name": "애플 에어팟4세대 ANC(노이즈캔슬링) 모델 본체 팔아요",
+    "price": 70500,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "395123663",
+    "name": "에어팟 4세대 본체 anc 노캔o",
+    "price": 62000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398745989",
+    "name": "에어팟 4세대 ANC 유닛 판매합니다! 노캔 o",
+    "price": 65000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "395207885",
+    "name": "애플 에어팟 4세대 노캔 ANC 미개봉",
+    "price": 200000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "396894788",
+    "name": "애플 에어팟 4세대 ANC 노캔 케이스 + 왼쪽 유닛",
+    "price": 120000,
+    "reject_reasons": [
+      "reject_case_only"
+    ]
+  },
+  {
+    "pid": "393522316",
+    "name": "애플 에어팟 4세대 ANC 노이즈캔슬링 모델",
+    "price": 1234,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "329437000",
+    "name": "<리퍼>고급형 에어팟4세대 왼쪽 유닛 단품 ANC(노캔버전)",
+    "price": 89000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "407538272",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링 미개봉 중고",
+    "price": 54900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "407538677",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링 미개봉 중고",
+    "price": 62900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "407540473",
+    "name": "에어팟 3,4세대 본체 왼쪽 오른쪽 유닛 노캔 일반 ANC (케이스)",
+    "price": 40000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_gen_3",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "407539201",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛 미개봉 중고",
+    "price": 54900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "390501758",
+    "name": "<<미개봉,네고가능>> 애플 에어팟 4세대 노이즈 캔슬링 ANC",
+    "price": 210000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "377565692",
+    "name": "에어팟 4세대 anc 본체만 팔아요",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "376846409",
+    "name": "[미개봉 노캔 가능]애플 에어팟 4세대 ANC 풀박 새제품(판매완료)",
+    "price": 215000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "407376110",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛 미개봉 중고",
+    "price": 54900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "407152139",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링 미개봉 중고",
+    "price": 54900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "364923767",
+    "name": "에어팟 4세대 본체만 anc 노이즈캔슬링 버전",
+    "price": 55000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406947482",
+    "name": "에어팟4세대 본체, No ANC, A3058, MC9X~",
+    "price": 47000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406944683",
+    "name": "에어팟4세대 왼쪽, No ANC, A3053, 7E93(GN1H~)",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "406945511",
+    "name": "에어팟4세대 오른쪽, No ANC, A3050, 7E93(GN1H~)",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "406569592",
+    "name": "에어팟 4세대(ANC) 팔아요",
+    "price": 195000,
+    "reject_reasons": [
+      "reject_case_only"
+    ]
+  },
+  {
+    "pid": "348072268",
+    "name": "에어팟 4세대 ANC 본체만",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405459303",
+    "name": "에어팟4세대 노이즈캔슬링(ANC)",
+    "price": 155000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "404725828",
+    "name": "(내일도착)에어팟4세대anc왼쪽 오른쪽 본체만",
+    "price": 59999,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "403664953",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛 미개봉 중고",
+    "price": 54900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "398754219",
+    "name": "에어팟4세대 ANC 노캔 본체!  무료배송",
+    "price": 58000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398074602",
+    "name": "(내일도착)에어팟4세대 왼쪽오른쪽유닛anc",
+    "price": 59999,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "397861516",
+    "name": "(최저가)(내일도착)에어팟4세대anc풀박스",
+    "price": 159999,
+    "reject_reasons": [
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "335742875",
+    "name": "에어팟 4세대 노캔 O ANC (부품용)",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_parts_only",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "396873504",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링 미개봉 중고",
+    "price": 62900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "396873849",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛 미개봉 중고",
+    "price": 54900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "390262600",
+    "name": "에어팟 4세대 노이즈 캔슬링(ANC) 본체+왼쪽 유닛 / 오른쪽 분실 급",
+    "price": 89000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "385940465",
+    "name": "에어팟 4세대 본체 (ANC, A3059)",
+    "price": 60000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "323563876",
+    "name": "에어팟 4세대 노캔 ANC 오른쪽 새상품급",
+    "price": 79000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "378274076",
+    "name": "(내일도착)에어팟4세대anc왼쪽 오른쪽 본체만",
+    "price": 64999,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "306607254",
+    "name": "<리퍼>고급형  에어팟4세대 왼쪽 유닛 단품 ANC(노캔버전)",
+    "price": 89000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "375935351",
+    "name": "[S급]에어팟 4세대 노캔o 노이즈캔슬링 ANC 오른쪽유닛",
+    "price": 65000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "306607894",
+    "name": "<리퍼>고급형 에어팟4세대 본체 케이스 단품 ANC (노이즈캔슬링)",
+    "price": 89000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro",
+      "reject_non_anc_gen4",
+      "reject_case_only"
+    ]
+  },
+  {
+    "pid": "306610241",
+    "name": "<새상품>고급형  에어팟4세대 케이스 본체 단품 ANC(노캔버전)",
+    "price": 93000,
+    "reject_reasons": [
+      "reject_wrong_model_pro",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "313856355",
+    "name": "(번개페이) 4세대 본체 노캔0 에어팟 노이즈캔슬링 anc",
+    "price": 75000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "313856572",
+    "name": "(번개페이) 4세대 왼쪽 노캔0 에어팟 노이즈캔슬링 anc 유닛",
+    "price": 75000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "313856807",
+    "name": "(번개페이) 4세대 오른쪽 노캔0 에어팟 노이즈 캔슬링 anc 유닛",
+    "price": 75000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "306611638",
+    "name": "<새상품> 고급형 에어팟4세대 오른쪽 유닛 단품 ANC (노이즈캔슬링)",
+    "price": 93000,
+    "reject_reasons": [
+      "reject_wrong_model_pro",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "358619069",
+    "name": "[새상품급]에어팟 4세대 노캔 노이즈캔슬링 ANC 왼쪽유닛",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "358619553",
+    "name": "[S급애플정품]에어팟 4세대 노캔 노이즈캔슬링 ANC 오른쪽유닛",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "351394020",
+    "name": "에어팟4세대 노이즈캔슬링(ANC) 본체",
+    "price": 55000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "306611020",
+    "name": "<새상품>고급형 에어팟4세대 왼쪽 유닛 단품 ANC(노이즈캔슬링)",
+    "price": 93000,
+    "reject_reasons": [
+      "reject_wrong_model_pro",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "349353148",
+    "name": "(미)에어팟4세대 본체 노캔 ANC 미개봉 새상품",
+    "price": 82900,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "349357198",
+    "name": "(미)에어팟4세대 오른쪽 노캔 ANC 유닛 새상품",
+    "price": 89900,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "349354587",
+    "name": "(S)에어팟4세대 왼쪽 유닛 노캔 ANC 노이즈캔슬링",
+    "price": 78800,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "349339604",
+    "name": "(A)에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 54900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "349340466",
+    "name": "(A)에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 62900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "348416049",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "348416777",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "349356824",
+    "name": "(S)에어팟4세대 오른쪽 우측 유닛 노캔 ANC 노이즈캔슬링",
+    "price": 78800,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "349341313",
+    "name": "(A)에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 55900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "349354964",
+    "name": "(미)에어팟4세대 왼쪽 일반 노캔 ANC 유닛 새상품 노이즈캔슬링",
+    "price": 89900,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "348046329",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "348417514",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347892335",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "348047652",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347696391",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "348422747",
+    "name": "에어팟 3,4세대 본체 왼쪽 오른쪽 유닛 노캔 일반 ANC (케이스)",
+    "price": 40000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_gen_3",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347696751",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347893040",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347559871",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347560694",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347697134",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347331451",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347224793",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347332349",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347561456",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347225655",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347333233",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "346957849",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "346958671",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347226602",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "346762926",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "346763716",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "346959484",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "346764503",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "345602564",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "345603315",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "345401532",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "345402248",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "345604223",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "345049907",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "345402965",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "345050789",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "344904399",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "344905368",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "345051615",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "344658230",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "344659155",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "344906326",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "344660071",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "344352849",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "344153738",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "343877367",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "344155571",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "343877643",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "343877923",
+    "name": "에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "341265385",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "340909326",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "340418371",
+    "name": "에어팟4세대 노이즈캔슬링 노캔 ANC 왼쪽유닛",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "338501064",
+    "name": "(내일도착)에어팟4세대anc 본체만",
+    "price": 49999,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "306606334",
+    "name": "<리퍼>고급형  에어팟4세대 오른쪽 유닛 단품 ANC(노캔버전)",
+    "price": 89000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "334092863",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 75000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "334492491",
+    "name": "(S)에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "334492337",
+    "name": "(S)에어팟4세대 오른쪽 일반 노캔 ANC 노이즈캔슬링 유닛",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "243372597",
+    "name": "브리츠 BT4000 bt4000 ANC 헤드폰 헤드셋",
+    "price": 59000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_에어팟_airpods",
+      "missing_any_4_s_세대_4세대_b4th_b_에어팟_s"
+    ]
+  },
+  {
+    "pid": "407269622",
+    "name": "에어팟4 anc 본체 노캔O 애케플O",
+    "price": 43000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406941556",
+    "name": "애플 에어팟4 노캔버전 anc 본체 a3059",
+    "price": 48000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro",
+      "reject_wrong_gen_3"
+    ]
+  },
+  {
+    "pid": "406405141",
+    "name": "에어팟4 4세대 본체 팝니다 노캔 anc",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406202847",
+    "name": "애플 에어팟4 노캔 가능 왼쪽 유닛 anc",
+    "price": 56000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro",
+      "reject_wrong_gen_3"
+    ]
+  },
+  {
+    "pid": "404044534",
+    "name": "에어팟 4 anc 본체 팔아요",
+    "price": 45000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_case_only"
+    ]
+  },
+  {
+    "pid": "404085711",
+    "name": "에어팟4 ANC(노캔) 오른쪽 유닛 양도합니다",
+    "price": 60000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "402848349",
+    "name": "에어팟4 4세대 왼쪽 유닛 팝니다 노캔 anc",
+    "price": 55000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "399636325",
+    "name": "에어팟 4 노캔O(ANC)",
+    "price": 110000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "397872431",
+    "name": "에어팟4 ANC",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398440189",
+    "name": "에어팟4 ANC 왼쪽 유닛",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_parts_only"
+    ]
+  },
+  {
+    "pid": "397820110",
+    "name": "에어팟 4 노캔(anc) 오른쪽 유닛 판매",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "396251358",
+    "name": "에어팟4 ANC 미개봉 새제품",
+    "price": 210000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "394916300",
+    "name": "에어팟 4 (ANC)",
+    "price": 64000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_parts_only"
+    ]
+  },
+  {
+    "pid": "395249636",
+    "name": "애플 에어팟 4 충전 케이스 (노 ANC)",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_case_only"
+    ]
+  },
+  {
+    "pid": "395013942",
+    "name": "에어팟 4 ANC 애케플",
+    "price": 240000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "393820477",
+    "name": "에어팟 4 ANC 99%새상품",
+    "price": 180000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "394046293",
+    "name": "애플. 에어팟4. ANC버전. 노캔O. 유닛 L. 왼쪽 유닛.",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "392058182",
+    "name": "에어팟4 본체 노캔 ANC",
+    "price": 65000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "392430627",
+    "name": "에어팟4 왼쪽 유닛 노캔 가능 ANC 판매",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "391297647",
+    "name": "애플 에어팟 4 (ANC) 미개봉 새상품",
+    "price": 59000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "391296990",
+    "name": "애플 에어팟 4 (ANC) 미개봉 새상품",
+    "price": 59000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "391512225",
+    "name": "에어팟 4 ANC 모델 오른쪽 유닛",
+    "price": 49000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "389988367",
+    "name": "에어팟4anc",
+    "price": 65000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_any_4_s_세대_4세대_b4th_b_에어팟_s"
+    ]
+  },
+  {
+    "pid": "392057848",
+    "name": "에어팟4 왼쪽 유닛 노캔 ANC 팔아요",
+    "price": 60000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "391745801",
+    "name": "(애플케어보험) 애플 에어팟 4 ANC 거의미사용",
+    "price": 210000,
+    "reject_reasons": [
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "390794542",
+    "name": "에어팟 4 노캔O ANC 왼쪽 유닛",
+    "price": 45000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "390428582",
+    "name": "에어팟4 노이즈캔슬링(ANC) 미개봉 새상품",
+    "price": 190000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "389314806",
+    "name": "에어팟4 ANC 노캔 미개봉 새상품 잠실 애플매장제품",
+    "price": 205000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "360789795",
+    "name": "에어팟4 노캔 ANC 오른쪽",
+    "price": 35000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "348548111",
+    "name": "에어팟4(ANC) 노이즈 캔슬링",
+    "price": 999,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "403139131",
+    "name": "애플 에어팟 4세대 ANC 노이즈캔슬링",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "399687951",
+    "name": "에어팟 4세대 ANC (노캔 0) 풀박스",
+    "price": 150000,
+    "reject_reasons": [
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "396389747",
+    "name": "에어팟 4세대 노캔 anc 모델 본체",
+    "price": 65000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "396120332",
+    "name": "에어팟 4세대 ANC 노캔 제품 본체+왼쪽 팝니다",
+    "price": 51800,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "387791497",
+    "name": "ANC 에어팟 4세대 노캔 본체",
+    "price": 52800,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "393194837",
+    "name": "에어팟 4세대 액티브 노이즈캔슬링 ANC",
+    "price": 201000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "389889675",
+    "name": "ANC 에어팟 4세대 노캔 버전 왼쪽 유닛",
+    "price": 69800,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "390217614",
+    "name": "ANC 에어팟 4세대 노이즈캔슬링 본체",
+    "price": 54800,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "390217824",
+    "name": "ANC 에어팟 4세대 노이즈캔슬링 오른쪽",
+    "price": 69800,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "406760558",
+    "name": "에어팟4세대 노캔 ANC",
+    "price": 155000,
+    "reject_reasons": [
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "406110519",
+    "name": "에어팟 4세대 왼쪽 유닛(ANC 미지원) 팝니다",
+    "price": 39900,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "403573992",
+    "name": "에어팟4세대 노캔 ANC 풀박스",
+    "price": 164000,
+    "reject_reasons": [
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "404782073",
+    "name": "에어팟4세대 노캔버전(ANC) 미개봉 새것 팜!!!",
+    "price": 213000,
+    "reject_reasons": [
+      "reject_clone"
+    ]
+  },
+  {
+    "pid": "401222892",
+    "name": "에어팟 4세대(ANC) 왼쪽 유닛",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "401205002",
+    "name": "에어팟 4세대 노캔형(ANC) a3059 본체",
+    "price": 45000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "397125477",
+    "name": "내일도착)에어팟4세대anc 본체만a급",
+    "price": 49999,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "391961577",
+    "name": "에어팟 4세대 노캔(ANC)",
+    "price": 150000,
+    "reject_reasons": [
+      "reject_wrong_model_pro"
+    ]
+  },
+  {
+    "pid": "388088187",
+    "name": "에어팟 4세대 노캔(ANC) 본체",
+    "price": 60000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "388087869",
+    "name": "에어팟 4세대 노캔(ANC) 왼쪽 유닛",
+    "price": 45000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "377666168",
+    "name": "에어팟4세대(ANC) 본체, A3059, DPW9~",
+    "price": 48000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "396873135",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링 미개봉 중고",
+    "price": 54900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "347891600",
+    "name": "에어팟4세대 왼쪽 일반 노캔 ANC 유닛 노이즈캔슬링",
+    "price": 53000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "348046994",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "344154655",
+    "name": "에어팟4세대 본체 노캔 ANC 일반 케이스 노이즈캔슬링",
+    "price": 63000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_non_anc_gen4"
+    ]
+  },
+  {
+    "pid": "394909149",
+    "name": "에어팟 4세대 ANC 노캔 왼쪽 유닛",
+    "price": 62900,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  }
+]

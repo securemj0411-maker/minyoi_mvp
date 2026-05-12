@@ -46,7 +46,8 @@ type LaneKey =
   | "galaxy_s23_ultra_256_self"
   | "applewatch_ultra_2"
   | "ps5_slim"
-  | "beats_solo_4";
+  | "beats_solo_4"
+  | "airpods_4_anc";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -1034,6 +1035,43 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만|힌지\s*부품/ },
       { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
       { label: "non_beats_clone", pattern: /짝퉁|가품|복제품|레플리카/ },
+      { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
+    ],
+  },
+
+  airpods_4_anc: {
+    laneKey: "airpods_4_anc",
+    category: "earphone",
+    queries: [
+      "에어팟 4 anc",
+      "에어팟4 anc",
+      "에어팟 4세대 anc",
+      "airpods 4 anc",
+      "에어팟4세대 anc",
+    ],
+    pages: 8,
+    targetParseReady: 200,
+    priceMin: 90_000,
+    priceMax: 260_000,
+    acceptAll: [/에어팟|airpods/i],
+    acceptAnyOf: [
+      [/4\s*세대|4세대|\b4th\b|에어팟\s*4\b|에어팟4\b|airpods\s*4\b/i],
+      [/\banc\b|노이즈\s*캔슬|노캔|액티브\s*노이즈/i],
+    ],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_pro", pattern: /프로|\bpro\b/i },
+      { label: "wrong_model_max", pattern: /맥스|\bmax\b/i },
+      { label: "wrong_gen_1", pattern: /1\s*세대|1세대|\b1st\b|에어팟\s*1\b|에어팟1\b/i },
+      { label: "wrong_gen_2", pattern: /2\s*세대|2세대|\b2nd\b|에어팟\s*2\b|에어팟2\b/i },
+      { label: "wrong_gen_3", pattern: /3\s*세대|3세대|\b3rd\b|에어팟\s*3\b|에어팟3\b/i },
+      { label: "non_anc_gen4", pattern: /비\s*anc|non[-\s]*anc|논\s*anc|anc\s*없음|일반형|기본형|무\s*anc/i },
+      { label: "case_only", pattern: /케이스\s*(?:만|단품|개별)|충전\s*케이스\s*만|보관\s*케이스\s*만/ },
+      { label: "pouch_only", pattern: /파우치\s*만|하드\s*케이스\s*만/ },
+      { label: "charger_or_cable_only", pattern: /충전기\s*만|케이블\s*만|usb\s*케이블\s*만|어댑터\s*만/i },
+      { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|단자\s*만|리퍼\s*부품|한쪽\s*만|한쪽만|좌측\s*만|우측\s*만|왼쪽\s*만|오른쪽\s*만/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+      { label: "clone", pattern: /짝퉁|가품|복제품|레플리카/ },
       { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
     ],
   },

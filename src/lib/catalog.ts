@@ -1474,6 +1474,21 @@ export const CATALOG: Sku[] = [
     released: 2023,
   },
   {
+    id: "airpods-4-anc",
+    brand: "Apple",
+    category: "earphone",
+    modelName: "AirPods 4 (ANC)",
+    aliases: ["에어팟 4세대 ANC", "AirPods 4 ANC", "에어팟4 ANC"],
+    mustContain: [
+      ["에어팟", "airpods"],
+      ["4세대", "4 세대", "4th"],
+      ["anc", "노이즈 캔슬", "노캔"],
+    ],
+    mustNotContain: ["프로", "pro", "max", "1세대", "2세대", "3세대", ...HEADPHONE_NOISE],
+    msrpKrw: 249000,
+    released: 2024,
+  },
+  {
     id: "airpods-pro-3",
     brand: "Apple",
     category: "earphone",
