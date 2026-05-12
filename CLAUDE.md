@@ -1,4 +1,5 @@
 @AGENTS.md
+@LAUNCH_PLAN.md
 
 # 미뇨이 MVP — Claude Code 작업 가이드
 

@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v30";
+const PARSER_VERSION = "option-parser-v31";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -153,9 +153,14 @@ function parseLaptopReleaseYear(text: string) {
   return null;
 }
 
-function laptopGenerationKey(releaseYear: number | null, modelNumber: string | null) {
+function laptopGenerationKey(
+  releaseYear: number | null,
+  modelNumber: string | null,
+  chip: string | null = null,
+) {
   if (releaseYear) return `${releaseYear}y`;
   if (modelNumber) return modelNumber;
+  if (chip && /^m[1-9][a-z]*$/i.test(chip)) return `${chip.toLowerCase()}_gen`;
   return null;
 }
 
@@ -763,7 +768,7 @@ function comparableParts(input: {
     return [
       family,
       model,
-      laptopGenerationKey(input.releaseYear, input.laptopModelNumber) ?? "unknown_generation",
+      laptopGenerationKey(input.releaseYear, input.laptopModelNumber, input.chip) ?? "unknown_generation",
       input.chip ?? "unknown_chip",
       input.screenSizeIn ? `${input.screenSizeIn}in` : "unknown_screen",
       input.ramGb ? `${input.ramGb}gb_ram` : "unknown_ram",
