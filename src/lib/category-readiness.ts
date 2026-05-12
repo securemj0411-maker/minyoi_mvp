@@ -77,6 +77,11 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "iPhone 16 Pro 128GB (자급제)",
     note: "iphone_15_pro_128gb_self의 16세대 sibling. Pro Max/15/17/통신사 차단.",
   },
+  ipad_air_m2_11_256_wifi: {
+    status: "ready",
+    label: "iPad Air M2 11\" 256GB Wi-Fi",
+    note: "iPad Pro M4의 보급형 sibling. M1/M3, 13인치, 셀룰러, 타 용량은 catalog mustNotContain으로 차단.",
+  },
 };
 
 export type CategoryReadinessConfig = {
