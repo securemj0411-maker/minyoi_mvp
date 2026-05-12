@@ -87,6 +87,36 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "Galaxy S25 Ultra 256GB (자급제)",
     note: "S24/S26, 512/1TB, 통신사 약정/완납폰/리퍼는 catalog mustNotContain으로 차단.",
   },
+  ipad_air_m3_11_256_wifi: {
+    status: "ready",
+    label: "iPad Air M3 11\" 256GB Wi-Fi",
+    note: "M3 신모델 (2025) narrow lane. M1/M2/M4, 13인치, 셀룰러는 catalog로 차단.",
+  },
+  galaxy_tab_s10_ultra_256_self: {
+    status: "ready",
+    label: "Galaxy Tab S10 Ultra 256GB (자급제)",
+    note: "S10 Ultra Wi-Fi 256GB 자급제 narrow lane. S9/S11/FE/셀룰러/통신사는 catalog로 차단.",
+  },
+  macbook_pro_14_m3_18_512: {
+    status: "ready",
+    label: "MacBook Pro 14\" M3 18GB 512GB",
+    note: "MacBook Air sibling. M1/M2/M4, 16인치, Air, 타 RAM/SSD는 catalog로 차단.",
+  },
+  lg_gram_17_2024: {
+    status: "ready",
+    label: "LG 그램 17\" 2024 (16GB 512GB)",
+    note: "한국 인기 laptop narrow. 14/15/16인치, gram pro, 구세대(2020-2023)는 catalog로 차단.",
+  },
+  iphone_14_pro_128gb_self: {
+    status: "ready",
+    label: "iPhone 14 Pro 128GB (자급제)",
+    note: "iPhone 15/16 Pro 자급제 sibling. 13/15세대, Pro Max, 통신사는 catalog로 차단.",
+  },
+  galaxy_s24_ultra_256_self: {
+    status: "ready",
+    label: "Galaxy S24 Ultra 256GB (자급제)",
+    note: "S25 자급제 sibling. S22/S23/S25, 512/1TB, 통신사는 catalog로 차단.",
+  },
 };
 
 export type CategoryReadinessConfig = {
