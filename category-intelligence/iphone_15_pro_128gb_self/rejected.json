@@ -1,0 +1,4056 @@
+[
+  {
+    "pid": "197139101",
+    "name": "아이폰매입 아이폰 아이폰프로 아이폰프로맥스 아이폰파손폰매입",
+    "price": 970000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "401932759",
+    "name": "중고아이폰 파손아이폰 고장아이폰 아이폰부품아이폰17 아이폰16 아이폰15",
+    "price": 777000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_16",
+      "reject_broken_or_parts",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "405358927",
+    "name": "아이폰15프로 128기가 블랙 (S급) / 0501",
+    "price": 840000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "305443486",
+    "name": "[SKT]아이폰15프로/128기가",
+    "price": 358880,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_carrier_skt",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "355383202",
+    "name": "특가 아이폰17에어 미사용 선착순 한정판매 프로/13/14/15/16",
+    "price": 530000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "323645070",
+    "name": "특가 아이폰17프로맥스 미사용 선착순 한정판매 13/14/15/16/애플",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "407598444",
+    "name": "아이폰15프로 128기가 화이트 / 0511",
+    "price": 540000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_carrier_locked_generic",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "407597086",
+    "name": "아이폰15프로 128기가 화이트 / 0511",
+    "price": 540000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_carrier_locked_generic",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "355383741",
+    "name": "특가 아이폰17프로 미사용 선착순 한정판매 맥스/13/14/15/16",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "405360016",
+    "name": "아이폰15프로 128기가 블랙 (S급) / 0501",
+    "price": 840000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "401563668",
+    "name": "아이폰 15pro 128기가 S급",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "128627723",
+    "name": "파손아이폰 삽니다 아이폰12 13 14 15 16",
+    "price": 884000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_broken_or_parts",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "405155585",
+    "name": "아이폰15프로 128기가 내추럴 / 0309",
+    "price": 790000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "405155775",
+    "name": "아이폰15프로 128기가 내추럴 / 0309",
+    "price": 790000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "345096784",
+    "name": "특가 아이폰16프로 미사용 선착순 한정판매 맥스/13/14/15/17",
+    "price": 490000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_16",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "406974617",
+    "name": "아이폰 15프로 128기가 액정파손",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "406749272",
+    "name": "아이폰15프로 128 ㅁㅣㄴㅏㅂ",
+    "price": 450000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405871865",
+    "name": "특가 아이폰16e 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_16",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "405653582",
+    "name": "아이폰 15pro 128기가 블랙",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "405878593",
+    "name": "[미사용/새상품]아이폰17E 재고정리 할인 [13,14,15,16,프로]",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "404091515",
+    "name": "아이폰15프로 128 판매",
+    "price": 569000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "394159506",
+    "name": "[미사용/새상품] 아이폰17 재고정리 할인 [13,14,15,16,프로]",
+    "price": 110000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "405869614",
+    "name": "[미사용/새상품]아이폰16E 재고정리 할인 [13,14,15,17,프로]",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_16",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "396392532",
+    "name": "아이폰 15 pro 프로 128기가 네추럴 티타늄",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "398232521",
+    "name": "아이폰15 프로 128 내추럴 티타늄 풀박스 (심한 스크래치)",
+    "price": 600000,
+    "reject_reasons": [
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "396554538",
+    "name": "아이폰15프로 128 내추럴티타늄",
+    "price": 499999,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "395654933",
+    "name": "아이폰 15프로 128기가",
+    "price": 756000,
+    "reject_reasons": [
+      "reject_carrier_lg"
+    ]
+  },
+  {
+    "pid": "394157319",
+    "name": "[미사용/새상품] 아이폰16 재고정리 할인 [13,14,15,17,프로]",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_16",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "396762598",
+    "name": "아이폰 15 pro 블루티타늄 128기가 새상품급 판매합니다",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "393914914",
+    "name": "아이폰 15 pro 128",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "394190101",
+    "name": "아이폰 15프로 128기가 블랙.",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_carrier_skt"
+    ]
+  },
+  {
+    "pid": "394394136",
+    "name": "아이폰15프로 128 화이트티타늄  자급제",
+    "price": 7200,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "394161073",
+    "name": "[미사용/새상품]아이폰17프로맥스 재고정리 할인 [13,14,15,16]",
+    "price": 930000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "393699268",
+    "name": "아이폰15프로 화이트 티타늄 128기가 SS급 팝니다",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "389047026",
+    "name": "아이폰 15프로 128기가 화이트",
+    "price": 730000,
+    "reject_reasons": [
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "323637784",
+    "name": "특가 아이폰17 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
+    "price": 230000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "387861863",
+    "name": "아이폰 15pro 128기가",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "306550857",
+    "name": "아이폰6S 16G 32G 64G 128G 실버 스페이스그레이",
+    "price": 117000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_64",
+      "reject_carrier_skt",
+      "reject_carrier_lg"
+    ]
+  },
+  {
+    "pid": "384272982",
+    "name": "아이폰 15프로 128 네츄럴 티타늄",
+    "price": 670000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "383891631",
+    "name": "아이폰15 128기가 배터리 98프로",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "306550241",
+    "name": "아이폰SE (Se1) 16G 32G 64G 128G 실버 스페이스그레이",
+    "price": 107000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_64",
+      "reject_carrier_skt",
+      "reject_carrier_lg"
+    ]
+  },
+  {
+    "pid": "383773409",
+    "name": "아이폰 15 pro 배터리 100% 128기가 팝니다",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "382299037",
+    "name": "아이폰 15프로 128 파손폰",
+    "price": 350000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405877777",
+    "name": "특가 아이폰17e 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "381151178",
+    "name": "아이폰 15pro 128",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "381597094",
+    "name": "아이폰15프로 티타늄그레이 128기가 급매",
+    "price": 60000000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "394159868",
+    "name": "[미사용/새상품]아이폰17에어 재고정리 할인[13,14,15,16,프로]",
+    "price": 410000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "380644989",
+    "name": "아이폰 15 Pro 화이트 128기가 풀박스",
+    "price": 798000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "381960146",
+    "name": "아이폰 15프로 블랙 128기가로 갤럭시 z폴드 6 256기가 (사진 색",
+    "price": 1234,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_storage_256",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "377739857",
+    "name": "아이폰15프로 128 블랙",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "379097611",
+    "name": "아이폰15프로 네츄럴 티타늄 128기가 SS급 팝니다.",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "378692827",
+    "name": "아이폰 15 프로 128 기가(미사용 리퍼새제품)",
+    "price": 830000,
+    "reject_reasons": [
+      "reject_refurbished_only"
+    ]
+  },
+  {
+    "pid": "378768181",
+    "name": "아이폰15프로 블루 티타늄 128기가 SS급 팝니다.",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "378768571",
+    "name": "아이폰15프로 네츄럴 티타늄 128기가 SS급 팝니다.",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "337393960",
+    "name": "아이폰se2 se3 무음 64G 128G 256G 국내배송팝니다.",
+    "price": 199500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "373041634",
+    "name": "아이폰15pro 128 깨끗합니다",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "371827786",
+    "name": "아이폰 15 Pro 네추럴 128",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "371574214",
+    "name": "[배터리100%]아이폰15프로/128/내추럴/83544",
+    "price": 879000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "370196186",
+    "name": "아이폰15pro 128기가",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "370230767",
+    "name": "애플 아이폰15pro 화이트 128기가",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "334521734",
+    "name": "아이폰7  32G 128G 256G 국내배송 판매합니다.",
+    "price": 184500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "369206508",
+    "name": "아이폰 15pro 화이트 128기가",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "366863382",
+    "name": "아이폰15pro 128 팝니다.! 상태좋아요!",
+    "price": 745000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "366311410",
+    "name": "아이폰15pro 128기가 리퍼 새상품",
+    "price": 860000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "366028555",
+    "name": "아이폰15pro 128기가 블루",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "365938313",
+    "name": "아이폰15pro 128기가 블루",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "364158969",
+    "name": "아이폰15프로 128기가",
+    "price": 960000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "362739847",
+    "name": "아이폰 15 프로 128 기가",
+    "price": 780000,
+    "reject_reasons": [
+      "reject_carrier_skt",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "363807541",
+    "name": "아이폰15프로 네츄럴 티타늄 128기가 SS급 팝니다.",
+    "price": 990000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "363807742",
+    "name": "아이폰15프로 네츄럴 티타늄 128기가 SS급 팝니다.",
+    "price": 990000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "363807915",
+    "name": "아이폰15프로 네츄럴 티타늄 128기가 SS급 팝니다.",
+    "price": 990000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "360638069",
+    "name": "아이폰15프로 128",
+    "price": 780000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "358612208",
+    "name": "아이폰15pro딥블루128",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "358651349",
+    "name": "아이폰15 Pro 내추럴티타늄 128기가",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "359877724",
+    "name": "[애플케어] 아이폰15 프로 128기가 내츄럴 티타늄",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "357213081",
+    "name": "아이폰15pro 128",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "356781017",
+    "name": "아이폰15 pro 128",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "358942469",
+    "name": "- 68민원 - 아이폰 15 Pro 128기가 내추럴 티타늄 색상",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "355125342",
+    "name": "아이폰 15 Pro 블루 티타늄 128기가 풀박스",
+    "price": 829200,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "352087857",
+    "name": "아이폰 15프로 128기가 화이트 삽니다",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "350892514",
+    "name": "아이폰15프로 128 화이트 티타늄<판매완료>",
+    "price": 860000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "351850385",
+    "name": "당일발송 무잔상 아이폰 15프로 128기가 블랙 S급 부산중고폰",
+    "price": 970000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "349171900",
+    "name": "아이폰15프로 화이트 티타늄 128기가 SS급 팝니다",
+    "price": 990000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "344883311",
+    "name": "아이폰15프로 128기가 내츄럴티타늄 풀박스",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_carrier_skt"
+    ]
+  },
+  {
+    "pid": "341059305",
+    "name": "아이폰15pro 128",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "340712667",
+    "name": "아이폰 15Pro 128 티타늄블랙 팝니다",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "340644773",
+    "name": "아이폰 16프로 데져트티타늄 128기가 -> 15프로,14프로,13프로",
+    "price": 500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_16"
+    ]
+  },
+  {
+    "pid": "395718058",
+    "name": "아이폰 15Pro 블루 티타늄 128g s급공기계",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "337960530",
+    "name": "아이폰 15프로 화이트256 16프로128로 교환",
+    "price": 100000000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "335549103",
+    "name": "아이폰 15프로 128 사설 액정,후카",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "334894698",
+    "name": "아이폰 15 Pro 128 내추럴 티타늄",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "330142347",
+    "name": "배터리100)아이폰15프로128",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "407614127",
+    "name": "아이폰 15 pro 128g",
+    "price": 680000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "407587000",
+    "name": "아이폰 15프로",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max"
+    ]
+  },
+  {
+    "pid": "263578361",
+    "name": "아이폰15프로 128G 256G 무찍힘 상태최상 ^^",
+    "price": 830000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "259306974",
+    "name": "아이폰15프로 128G 256G 무찍힘 상태최상 ^^",
+    "price": 840000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407481835",
+    "name": "아이폰 15 Pro 128GB 내추럴 티타늄",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "407477173",
+    "name": "아이폰 15pro 128gb 화이트",
+    "price": 830000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "406968919",
+    "name": "아이폰 15 프로 128G 블랙티타늄",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "85739178",
+    "name": "삽니다)아이폰파손 아이폰12프로 아이폰13 아이폰14 XS X 매입합니다",
+    "price": 740000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_14",
+      "reject_broken_or_parts",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "394160573",
+    "name": "[미사용/새상품] 아이폰17프로 재고정리 할인 [13,14,15,16]",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "323636975",
+    "name": "특가 아이폰16 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
+    "price": 180000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_16",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "407502305",
+    "name": "(미개봉) 맥북 프로 14 M5칩 24GB 메모리 1TB 스페이스 그레이",
+    "price": 2550000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "334511109",
+    "name": "바로출발~! 아이폰6S   32G 64G 128G 팝니다",
+    "price": 174500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "361574647",
+    "name": "아이폰15Pro 128기가 찍힘x갤럭시교환원해요",
+    "price": 100000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "407533668",
+    "name": "아이폰15프로 128G 그레이 59538",
+    "price": 670000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "407450866",
+    "name": "아이폰15프로 블루 128GB 상태좋은 중고87만팝니다",
+    "price": 870000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407199937",
+    "name": "아이폰15프로 128G 그레이 59538",
+    "price": 670000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "386907583",
+    "name": "아이폰 14프로 128GB",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_14"
+    ]
+  },
+  {
+    "pid": "287921903",
+    "name": "아이폰15프로/128GB[APPLE]",
+    "price": 189800,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "361850209",
+    "name": "매입 맥북 프로 에어 13 14 15 16 인치 M1 M2 M3 M4",
+    "price": 5120000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "394158623",
+    "name": "[미사용/새상품] 아이폰16프로 재고정리 할인 [13,14,15,17]",
+    "price": 370000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_16",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "373411521",
+    "name": "매입 중고폰 파손폰 아이폰 미개봉 자급제 공기계 유심기변용 새폰 박스폰",
+    "price": 979000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "369838551",
+    "name": "애플 아이폰 15 Pro 블랙티타늄 128GB 자급제",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "369711004",
+    "name": "아이폰15pro 128g 자급제(s급)",
+    "price": 810000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "358954903",
+    "name": "아이폰15프로 128G 리퍼 새 제품 자급제",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_refurbished_only"
+    ]
+  },
+  {
+    "pid": "350312838",
+    "name": "아이폰 15프로 네추럴 티타늄 128GB (skt파손보험)",
+    "price": 852000,
+    "reject_reasons": [
+      "reject_carrier_skt",
+      "reject_refurbished_only"
+    ]
+  },
+  {
+    "pid": "406805068",
+    "name": "애플 아이폰 15 Pro 자급제 128GB",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "390541529",
+    "name": "자급제 아이폰 15 Pro 화이트 티타늄 128G 풀박스",
+    "price": 830000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "387478041",
+    "name": "아이폰15Pro 128G 블랙 판매합니다",
+    "price": 770000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "397213892",
+    "name": "미개봉 자급제 아이폰15 옐로우 128 팝니다!!",
+    "price": 840000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "406154780",
+    "name": "아이폰 15프로 1테라 자급제 판매합니다~!",
+    "price": 970000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "405884432",
+    "name": "아이폰 15 ProMax 자급제 256기가 화이트 티타늄 판매합니다",
+    "price": 940000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "406638655",
+    "name": "아이폰 15프로 256 블랙티타늄 자급제",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "405973059",
+    "name": "애플 아이폰 15프로 화이트 티타늄 256GB 자급제 새제품",
+    "price": 1150000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "399726862",
+    "name": "아이폰 15pro max 512 화이트 자급제",
+    "price": 1020000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "402252594",
+    "name": "자급제 아이폰 15 Pro 화이트 티타늄 512GB",
+    "price": 1050000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "401615652",
+    "name": "아이폰15프로 화이트 256기가 (자급제)",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "397490378",
+    "name": "아이폰 15프로 512 블랙 자급제",
+    "price": 790000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "395302286",
+    "name": "Apple 정품 아이폰 15 Pro 자급제 256기가",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "392372975",
+    "name": "애케플) 아이폰 15프로 256GB 자급제",
+    "price": 880000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "388667277",
+    "name": "아이폰 15 pro 네츄럴티타늄 256GB 자급제",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "388123212",
+    "name": "자급제 아이폰 15pro s급 급처해요",
+    "price": 860000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "386156675",
+    "name": "아이폰 15 프로 맥스 512기가 블랙 자급제",
+    "price": 1080000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "385426760",
+    "name": "아이폰 15프로 256기가 자급제 판매합니다",
+    "price": 710000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "383840109",
+    "name": "아이폰 15프로(256GB) 화이트 SS자급제 256GB",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "381938359",
+    "name": "자급제 아이폰15프로 맥스",
+    "price": 1500000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "380200210",
+    "name": "아이폰 15 Pro 블루 티타늄 256GB 자급제 정상해지폰",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "365667727",
+    "name": "아이폰15프로 256 자급제 미개봉",
+    "price": 1280000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "365871641",
+    "name": "아이폰 15 Pro 내추럴 티타늄 1TB 자급제",
+    "price": 1200000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "362327254",
+    "name": "아이폰15프로 미개봉 자급제 새제품 판매합니다.",
+    "price": 1180000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "362101612",
+    "name": "아이폰15프로 미개봉 자급제 새제품 판매합니다.",
+    "price": 1180000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "361284869",
+    "name": "아이폰 15 promax 512GB 화이트 티타늄 자급제",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "359007532",
+    "name": "아이폰15pro 256g 자급제",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "352574835",
+    "name": "아이폰15프로 256 풀박스 자급제 애플케어있음(추금주고 16프로,맥스환",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "349181351",
+    "name": "아이폰15프로 256 자급제",
+    "price": 970000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "349340344",
+    "name": "아이폰15프로 네츄럴 (자급제) 박스O",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "348959193",
+    "name": "아이폰 15 프로 티타늄 256GB 자급제",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "343416878",
+    "name": "아이폰15프로 256기가 자급제(대구직거래만)",
+    "price": 865000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "337268748",
+    "name": "(S급) 아이폰 15프로 256 자급제",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "337550741",
+    "name": "[오늘만 94!]아이폰 15프로 256기가 블랙 자급제 S급",
+    "price": 940000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "335799838",
+    "name": "아이폰 15 100프로 자급제 (256기가)",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "335327628",
+    "name": "아이폰15프로 자급제 256기가 급처",
+    "price": 910000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "335210250",
+    "name": "[SS급] 자급제 아이폰 15 Pro 256 네츄럴티타늄",
+    "price": 1070000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "334469573",
+    "name": "아이폰 15 프로 512GB 자급제 미국판 무음 / Casetify 케이",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "330201767",
+    "name": "아이폰15프로 256 화이트 자급제 88% 급처",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "327627980",
+    "name": "아이폰 15프로 256 블루 티타늄 S급 자급제 중고폰 판매",
+    "price": 1089000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "264315438",
+    "name": "아이폰 15 pro 프로 자급제 화이트 티타늄 256GB 기가 ipone",
+    "price": 1350000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "396545196",
+    "name": "아이폰 15프로맥스 자급제",
+    "price": 860000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max"
+    ]
+  },
+  {
+    "pid": "371675339",
+    "name": "아이폰15프로맥스1테라  정품 자급제 판매합니다 내츄럴티타늄",
+    "price": 1500000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "400008299",
+    "name": "아이폰15프로맥스 256 자급제",
+    "price": 885000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "401345547",
+    "name": "아이폰 15프로맥스 1테라 화이트 티타늄 자급제 풀박 팝니다",
+    "price": 1710000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "382922743",
+    "name": "아이폰15프로맥스 512화이트 자급제 리퍼폰 미사용",
+    "price": 1250000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb",
+      "reject_refurbished_only"
+    ]
+  },
+  {
+    "pid": "407220879",
+    "name": "[휴대폰나라] 아이폰15 프로맥스 256G 화이트 (자급제)",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "357365534",
+    "name": "자급제 아이폰15프로맥스 스페이스블랙 256",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "398936893",
+    "name": "아이폰15 프로맥스 256gb 자급제 3달사용",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "346630025",
+    "name": "아이폰 15프로맥스 256GB 자급제 풀박스 판매",
+    "price": 940000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "391719482",
+    "name": "아이폰 15 프로맥스 256GB 블랙티타늄 (자급제)",
+    "price": 729000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "333401643",
+    "name": "아이폰 15 프로맥스 512 자급제",
+    "price": 1315000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "385650692",
+    "name": "아이폰15프로맥스 256sss자급제팝니다",
+    "price": 1080000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max"
+    ]
+  },
+  {
+    "pid": "362955395",
+    "name": "아이폰15프로맥스 미개봉 자급제 새제품 판매합니다.",
+    "price": 1450000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "362773155",
+    "name": "아이폰15프로맥스 미개봉 자급제 새제품 판매합니다.",
+    "price": 1450000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "362552270",
+    "name": "아이폰15프로맥스 미개봉 자급제 새제품 판매합니다.",
+    "price": 1450000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "362327305",
+    "name": "아이폰15프로맥스 미개봉 자급제 새제품 판매합니다.",
+    "price": 1450000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "362101452",
+    "name": "아이폰15프로맥스 미개봉 자급제 새제품 판매합니다.",
+    "price": 1450000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "406071935",
+    "name": "아이폰 15프로 블랙 256(자급제)",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "405099842",
+    "name": "자급제 아이폰15프로 256gb 미국판 카메라무음",
+    "price": 790000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "400635573",
+    "name": "자급제 아이폰15 프로 256gb 내추럴 티타늄",
+    "price": 798000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "400586098",
+    "name": "아이폰15프로 화이트 256gb 자급제무음",
+    "price": 815000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "399959449",
+    "name": "애플 아이폰 15 프로 맥스 256gb 자급제 내추럴티타늄",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "397187136",
+    "name": "아이폰15프로 스페이스 블랙 256기가 자급제",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "395134284",
+    "name": "아이폰 15프로 256 자급제 팝니다",
+    "price": 770000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "394608214",
+    "name": "자급제)) 아이폰15프로 256",
+    "price": 730000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "396203153",
+    "name": "F급 아이폰 11 프로 256 자급제 스그 착불 15만",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "396435084",
+    "name": "아이폰15프로 티타늄 256GB (액정살짝찍힘) 자급제폰 판매!",
+    "price": 690000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "394439585",
+    "name": "(자급제) 아이폰15 Pro 512기가 티타늄",
+    "price": 841000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "391244496",
+    "name": "아이폰15프로 256 티타늄실버 자급제",
+    "price": 830000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "390867168",
+    "name": "아이폰 15프로 자급제 미개봉 512gb",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "392325668",
+    "name": "(S급)아이폰15프로 512Gb 블랙티타늄 자급제 판매합니다.",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "294717199",
+    "name": "아이폰 15프로 256 자급제",
+    "price": 1230000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "391326000",
+    "name": "아이폰 15 프로맥스 256gb 자급제",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "394645728",
+    "name": "[개인] 미사용 리퍼 새기기 아이폰 15 프로맥스 512 자급제",
+    "price": 1190000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "387576596",
+    "name": "아이폰 15 프로맥스 256 자급제 내추럴티타늄",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "397258635",
+    "name": "아이폰 15 프로 맥스 1tb - 내추럴 티타늄 (미국판/무음)",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "395195168",
+    "name": "아이폰15프로맥스 블랙 512GB 자급제. 배터리 100%",
+    "price": 1120000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "372447318",
+    "name": "리퍼 미사용 자급제 아이폰15프로맥스 1테라 티타늄화이트 구성품 풀박스",
+    "price": 1500000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "330298639",
+    "name": "애쉬크로프트 휴즈3 빅사이즈 티타늄 안경테 매트블랙컬러 55사이즈",
+    "price": 78000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "407447720",
+    "name": "아이폰 15 Pro 티타늄블랙256+케어플(26.12.03)팝니다",
+    "price": 875000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "406323383",
+    "name": "새거급 아이폰15프로 1테라 티타늄 블랙 정품 케이스 포함",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "407407042",
+    "name": "아이폰15프로 256 블랙티타늄",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "406639946",
+    "name": "아이폰 15프로 맥스 256 블랙 티타늄",
+    "price": 1180000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "403170562",
+    "name": "아이폰15프로 256기가 티타늄 블랙",
+    "price": 700000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "403492215",
+    "name": "아이폰15프로 256 블랙티타늄 애캐플",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "403662938",
+    "name": "212623 아이폰 15프로 티타늄블랙 256G 무잔상 A급 배터리85%",
+    "price": 960000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "401574782",
+    "name": "아이폰 15 프로 256 티타늄 블랙",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "402284169",
+    "name": "아이폰 15 pro 256 GB 블랙티타늄 풀박스 SSS급",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "400610568",
+    "name": "아이폰 15프로 256기가 블랙티타늄",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "396058412",
+    "name": "아이폰 15 Pro 256GB 블랙티타늄",
+    "price": 590000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "396100011",
+    "name": "애플 아이폰 15 프로 256GB 블랙 티타늄 스마트폰",
+    "price": 697600,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "395291014",
+    "name": "아이폰 15 Pro Max 블랙 티타늄 256GB",
+    "price": 1050000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "394290683",
+    "name": "아이폰15프로 블랙 티타늄 512기가 SS급 팝니다",
+    "price": 970000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "391293713",
+    "name": "아이폰 15pro 블랙티타늄 256GB",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "391373277",
+    "name": "(판완) 아이폰 15프로 15pro 256기가 블랙티타늄 판매",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "391983470",
+    "name": "아이폰15프로 블랙티타늄 256 판매합니다",
+    "price": 720000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "388787023",
+    "name": "아이폰15프로 256GB 블랙 티타늄 86%",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "385836287",
+    "name": "아이폰 15 Pro 블랙 티타늄 128GB",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "384431254",
+    "name": "아이폰15프로 256gb 블랙티타늄 판매",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "383626131",
+    "name": "아이폰15프로256 블랙티타늄",
+    "price": 835000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "382230918",
+    "name": "아이폰 15 프로 256GB 티타늄블랙 박스O",
+    "price": 860000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "360455769",
+    "name": "아이폰15프로 블랙 티타늄 256기가 A급",
+    "price": 810000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "359236100",
+    "name": "아이폰 15promax 256 블랙 티타늄",
+    "price": 1070000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "359662410",
+    "name": "A급 아이폰 15프로 256 블랙티타늄 판매합니다!",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "359376317",
+    "name": "아이폰15프로 블랙 티타늄 256기가 SS급 팝니다.",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "359200782",
+    "name": "아이폰 15 프로 512 티타늄 블랙 판매합니다 s급",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "358207102",
+    "name": "아이폰 15프로 256 기가 티타늄 블랙",
+    "price": 770000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "359158091",
+    "name": "아이폰15프로 256 블랙티타늄 배터리88% 판매합니다!",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "358756256",
+    "name": "아이폰15프로 블랙 티타늄 512기가 SS급 팝니다",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "358738119",
+    "name": "아이폰15프로 블랙티타늄 256기가 배성능88% 판매합니다.",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "357506961",
+    "name": "자급제 아이폰15프로 블랙티타늄 512g 판매합니다",
+    "price": 930000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "354050017",
+    "name": "아이폰 15 프로 블랙 티타늄 256GB",
+    "price": 680000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "352844292",
+    "name": "아이폰15프로 256 블랙티타늄 판매",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "350561954",
+    "name": "아이폰15프로 블랙 티타늄 256기가 A급 팝니다",
+    "price": 990000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "350989024",
+    "name": "아이폰15프로 256기가 블랙 티타늄  lcd화면손상 65만원",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "349171203",
+    "name": "아이폰15프로 블랙 티타늄 256기가 SS급 팝니다",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "349171616",
+    "name": "아이폰15프로 블랙 티타늄 256기가 SS급 팝니다",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "348877872",
+    "name": "아이폰 15프로 블랙티타늄 256기가->화이트 256기가 교환하실분",
+    "price": 9999,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "341014798",
+    "name": "아이폰15pro 티타늄블랙 128GB",
+    "price": 1100000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "336489445",
+    "name": "아이폰15프로 256기가 블랙티타늄 s급",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "334947659",
+    "name": "아이폰 15프로 512 블랙 티타늄",
+    "price": 1150000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "335898853",
+    "name": "아이폰15프로 블랙티타늄 256GB 부산 중고폰 팝니다 94113",
+    "price": 930000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "335686945",
+    "name": "아이폰15프로 블랙티타늄 128GB A급 부산 중고폰 팝니다 90741",
+    "price": 880000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "334347729",
+    "name": "아이폰15프로 블랙티타늄 256GB A급 부산 중고폰 팝니다 88253",
+    "price": 980000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "333851281",
+    "name": "아이폰15프로 블랙티타늄 256GB A급 부산 중고폰 팝니다 06473",
+    "price": 920000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "400445654",
+    "name": "아이폰15프로맥스 블랙티타늄 색상 256기가 팝니다 !!  /",
+    "price": 890000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "403054862",
+    "name": "아이폰15프로맥스 256G 블랙티타늄 S급!",
+    "price": 1020000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "378465389",
+    "name": "(판매완료)아이폰15프로맥스 블랙티타늄 배터리99%",
+    "price": 910000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max"
+    ]
+  },
+  {
+    "pid": "357563195",
+    "name": "(리퍼 미사용)아이폰15프로맥스 256기가 블랙 티타늄",
+    "price": 1190000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "349838707",
+    "name": "S급!! 아이폰 15프로맥스 256기가 블랙 티타늄 배터리 94",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "346960447",
+    "name": "아이폰 15 프로맥스 512GB 블랙 티타늄] 풀박스 / 기스 없음 /",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "401836471",
+    "name": "아이폰 15 Pro 블랙 티타늄 256GB",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "401615076",
+    "name": "아이폰 15 Pro 128GB_블랙 티타늄",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "400571008",
+    "name": "아이폰15pro 512GB 티타늄블랙",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "400277369",
+    "name": "아이폰15프로 티타늄블랙 256",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "399544988",
+    "name": "아이폰15 프로 256기가 블랙 티타늄",
+    "price": 780000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "397437485",
+    "name": "아이폰 15프로 256GB 블랙티타늄 배터리99퍼",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "396595183",
+    "name": "iPhone 15 Pro Max 블랙 티타늄 256GB  부품용",
+    "price": 159000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "395094010",
+    "name": "아이폰 15PRO 256GB 블랙 티타늄",
+    "price": 790000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "394735877",
+    "name": "아이폰15pro 블랙티타늄 256gb",
+    "price": 830000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "396940841",
+    "name": "아이폰 15 pro max 256 블랙 티타늄 +케이스6종 (1,2개가능",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "394377363",
+    "name": "아이폰 15프로 티타늄 블랙 256",
+    "price": 744600,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "394050820",
+    "name": "아이폰 15pro 256g 블랙 티타늄",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "391600828",
+    "name": "아이폰 15 프로 블랙 티타늄 128GB",
+    "price": 630000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "390949799",
+    "name": "아이폰15Pro 블랙티타늄 256GB",
+    "price": 820000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "390298001",
+    "name": "아이폰 15pro 블랙 티타늄",
+    "price": 730000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "388077603",
+    "name": "아이폰 15프로 블랙티타늄 256기가",
+    "price": 720000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "384398522",
+    "name": "아이폰 15프로 티타늄 블랙 256GB(선택약정X~26.07.23)",
+    "price": 620000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "342002368",
+    "name": "아이폰15프로 블랙티타늄 256GB",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "403127065",
+    "name": "2025년 LG 오브제컬렉션 2도어 냉장고 화이트 215리터",
+    "price": 350000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "407259219",
+    "name": "아이폰15프로 256GB 티타늄 화이트 배터리 86%",
+    "price": 829000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "404266432",
+    "name": "아이폰 15프로 512GB 판매 화이트티타늄",
+    "price": 880000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "407058758",
+    "name": "아이폰 15 프로 화이트 티타늄 256GB 팝니다. 배터리 성능100",
+    "price": 960000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "406099044",
+    "name": "아이폰 15프로 256기가 화이트티타늄",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "406341731",
+    "name": "2024년 삼성 일반형 냉장고 화이트 152리터",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "400418820",
+    "name": "아이폰 15 pro 화이트 티타늄",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "398780311",
+    "name": "아이폰 15 Pro 256GB 화이트 티타늄 풀박스",
+    "price": 810000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "400658549",
+    "name": "아이폰 15pro 화이트티타늄 256g (애케플4/26까지)",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "397579030",
+    "name": "아이폰15Pro 128Gb 화이트 티타늄 새액정",
+    "price": 598000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "397219411",
+    "name": "아이폰 15 Pro Max 512 화이트 티타늄 (최종인하)",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "394904778",
+    "name": "아이폰 15 Pro, 화이트티타늄",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "393721271",
+    "name": "아이폰15Pro 128GB 화이트 티타늄",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "394473503",
+    "name": "아이폰15프로 화이트 티타늄 256기가 SS급 팝니다",
+    "price": 930000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "394473577",
+    "name": "아이폰15프로 화이트 티타늄 256기가 SS급 팝니다",
+    "price": 930000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "393394717",
+    "name": "아이폰 15 프로 512기가 화이트티타늄",
+    "price": 880000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "389735114",
+    "name": "아이폰 15pro 화이트 티타늄 판매",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "389399328",
+    "name": "아이폰15 프로 512GB 티타늄 화이트 무결점 SS급 판매합니다",
+    "price": 840000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "389104410",
+    "name": "아이폰 15 pro max 화이트 티타늄 1TB SS급 판매합니다",
+    "price": 1350000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "385798905",
+    "name": "아이폰15프로화이트티타늄256GB사진그대로",
+    "price": 890000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "381677272",
+    "name": "아이폰 15 Pro 256GB 화이트 티타늄",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "378828018",
+    "name": "아이폰15프로 화이트 티타늄 256기가 SS급 팝니다.",
+    "price": 990000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "376488972",
+    "name": "아이폰15프로 256기가 화이트 티타늄",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_skt"
+    ]
+  },
+  {
+    "pid": "376784438",
+    "name": "해외판 아이폰 15 Pro 화이트 티타늄 (256G)",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "376951227",
+    "name": "아이폰15프로 화이트 티타늄 512기가 A급 팝니다.",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "362775313",
+    "name": "아이폰15프로 화이트티타늄 256GB 해외판 부산 중고폰 20420",
+    "price": 880000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "360846250",
+    "name": "아이폰 15 Pro 화이트티타늄 256gb 최상급",
+    "price": 840000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "359379104",
+    "name": "아이폰15프로 화이트 티타늄 256기가 SS급 팝니다.",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "358267246",
+    "name": "아이폰15프로 256기가 화이트 티타늄 S급판매",
+    "price": 870000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "357915550",
+    "name": "아이폰15프로 256기가 화이트 티타늄 팝니다.",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "356884403",
+    "name": "아이폰 15 Pro max 티타늄 화이트",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max"
+    ]
+  },
+  {
+    "pid": "359990564",
+    "name": "아이폰15프로 화이트 티타늄 256기가 배터리 86% (자급제, 애케플)",
+    "price": 872340,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "351169763",
+    "name": "아이폰15pro 256gb 화이트티타늄",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "351526968",
+    "name": "아이폰 15 Pro 256GB 화이트 티타늄 (박스포함)",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "351562594",
+    "name": "아이폰15프로 화이트 티타늄 256기가 새상품 팝니다",
+    "price": 1250000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "349172755",
+    "name": "아이폰15프로 화이트 티타늄 256기가 SS급 팝니다",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "347681604",
+    "name": "아이폰 15 Pro 화이트 티타늄 256기가",
+    "price": 940000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "345377696",
+    "name": "아이폰 15프로 1TB 화이트 티타늄",
+    "price": 1200000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "344621030",
+    "name": "아이폰 15프로 256기가 화이트티타늄",
+    "price": 890000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "341455373",
+    "name": "마지막 내림(A급)아이폰15 프로 맥스 512 화이트티타늄",
+    "price": 1140000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "319702444",
+    "name": "아이폰15 pro 화이트 티타늄 128g s급",
+    "price": 940000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "318857860",
+    "name": "아이폰15프로 512기가 티타늄화이트",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "407578483",
+    "name": "아이폰15프로맥스 1T 화이트티타늄 SS급! 풀박스",
+    "price": 1210000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "407471848",
+    "name": "아이폰15프로맥스 256기가 화이트티타늄",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "387481945",
+    "name": "아이폰15 프로맥스 256GB 화이트티타늄 (유심기변용)",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "372544926",
+    "name": "아이폰15프로맥스 화이트 티타늄 256GB",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_refurbished_only"
+    ]
+  },
+  {
+    "pid": "370074194",
+    "name": "아이폰 15프로맥스 512기가 화이트 티타늄 팝니다",
+    "price": 1200000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "348871996",
+    "name": "아이폰15프로맥스 512 화이트 티타늄 팝니다",
+    "price": 1400000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "352362940",
+    "name": "아이폰15프로맥스512G화이트티타늄 (애케플25/10/20)서울 은평",
+    "price": 1250000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "407282660",
+    "name": "아이폰 15프로 티타늄 화이트 256 리퍼 새제품",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_refurbished_only"
+    ]
+  },
+  {
+    "pid": "407266873",
+    "name": "아이폰15 프로 화이트티타늄 128기가 팝니다",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "405214405",
+    "name": "아이폰 15 프로 256GB 화이트 티타늄 풀박스",
+    "price": 855000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "405012282",
+    "name": "아이폰15프로 128기가 화이트 티타늄",
+    "price": 554000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "404921504",
+    "name": "아이폰15프로 128G 화이트티타늄 SSS급!",
+    "price": 790000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "404567481",
+    "name": "아이폰15프로 화이트 티타늄 256g s급",
+    "price": 762000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "399799667",
+    "name": "아이폰15 pro 128G 화이트티타늄",
+    "price": 720000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "396641956",
+    "name": "아이폰 15 Pro 512GB 화이트 티타늄",
+    "price": 870000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "397590674",
+    "name": "아이폰 15프로 256GB 화이트티타늄 제품 판매합니다.",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "396936828",
+    "name": "아이폰15프로 화이트 티타늄 256gb 판매합니다.",
+    "price": 730000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "397941446",
+    "name": "아이폰 15 Pro 128GB 화이트티타늄 상태 좋음 배터리87% 정상작",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "394098609",
+    "name": "아이폰 15프로 256 화이트 티타늄",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "393944985",
+    "name": "아이폰 15프로 화이트 티타늄 256GB",
+    "price": 700000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "393732381",
+    "name": "아이폰 15 Pro 화이트티타늄  256gb",
+    "price": 780000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "393824393",
+    "name": "아이폰15프로 512 화이트티타늄",
+    "price": 890000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "392954621",
+    "name": "아이폰15pro 256 화이트티타늄",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "393227749",
+    "name": "아이폰15프로 256 티타늄화이트 무음카메라",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "393563776",
+    "name": "아이폰15 Pro 128GB 화이트 티타늄 S급 풀패키지 판매합니다.",
+    "price": 695000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "390612056",
+    "name": "아이폰 15프로 화이트 티타늄 256 싸게 팔아요",
+    "price": 290000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "389258160",
+    "name": "아이폰 15 프로 256gb 화이트 티타늄",
+    "price": 680000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "389008994",
+    "name": "아이폰15프로 256 화이트 티타늄",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "388849568",
+    "name": "A급 아이폰15프로 256기가 화이트 티타늄 팝니다",
+    "price": 840000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "388834515",
+    "name": "아이폰 15pro 화이트티타늄 128gb",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "388582264",
+    "name": "아이폰15ProMax 256G 화이트티타늄",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max"
+    ]
+  },
+  {
+    "pid": "407407447",
+    "name": "아이폰 15 프로 256 블루티타늄 S급",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "406698945",
+    "name": "아이폰 15 프로 맥스 블루 티타늄 1테라 S급입니다",
+    "price": 1400000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "405619224",
+    "name": "아이폰15프로 블루티타늄256",
+    "price": 12345,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "392668557",
+    "name": "(S급에 가까운 A급) 아이폰 15Pro 128GB 블루 티타늄",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "388207895",
+    "name": "아이폰 15 Pro 티타늄 블루",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "386912438",
+    "name": "아이폰 15프로 512g 티타늄블루 판매해요 :)",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "379641986",
+    "name": "아이폰 15 Pro 512GB 블루 티타늄 풀박스",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "375683850",
+    "name": "아이폰 15 프로 블루티타늄 256기가",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "373810688",
+    "name": "아이폰 15 프로 블루티타늄 512G 판매합니다.",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "370017879",
+    "name": "[새상품] 아이폰15PRO 티타늄블루 1TB",
+    "price": 1220000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "368358885",
+    "name": "아이폰 15 Pro Max 512GB 블루 티타늄",
+    "price": 1070000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "366791257",
+    "name": "아이폰15프로 블루티타늄 리퍼 256gb",
+    "price": 920000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_refurbished_only"
+    ]
+  },
+  {
+    "pid": "362658195",
+    "name": "아이폰 15 프로 Promax 1TB 티타늄 블루 리퍼 새상품",
+    "price": 1600000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "361479800",
+    "name": "아이폰15프로 256 티타늄블루",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "361284786",
+    "name": "아이폰15프로 블루티타늄 128GB 부산 중고폰 팝니다 80481",
+    "price": 810000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "359377512",
+    "name": "아이폰15프로 블루 티타늄 256기가 SS급 팝니다.",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "340126516",
+    "name": "아이폰 15 Pro 티타늄블루 256GB",
+    "price": 890000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "335694945",
+    "name": "아이폰15프로 블루티타늄 128GB A급 부산 중고폰 팝니다 88244",
+    "price": 910000,
+    "reject_reasons": [
+      "reject_wrong_model_16",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "335757994",
+    "name": "아이폰 15 Pro 256GB 블루 티타늄 색상 판매합니다배터리 성능",
+    "price": 1020000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "395005507",
+    "name": "아이폰15프로맥스 256 블루티타늄",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "363841183",
+    "name": "아이폰15 프로맥스 256gb 블루티타늄 리퍼 미사용",
+    "price": 1045000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "376797839",
+    "name": "아이폰 15프로 블루 512",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "347464944",
+    "name": "아이폰 15프로맥스 512기가 블루티타늄",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "347463071",
+    "name": "아이폰15 프로맥스 256기가 블루티타늄 풀박스",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_carrier_skt"
+    ]
+  },
+  {
+    "pid": "389089041",
+    "name": "아이폰 15 프로맥스 256G 블루 티타늄",
+    "price": 920000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "375389300",
+    "name": "아이폰 15 프로맥스 512기가 블루 티타늄 팝니다",
+    "price": 1250000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "379078325",
+    "name": "어이폰15 프로 256 블루 티타늄 판매(+애플워치)",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "362612458",
+    "name": "(리퍼 미사용)아이폰15프로맥스 256기가 블루 티타늄",
+    "price": 1150000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "406818193",
+    "name": "[s급/풀박] 아이폰 15 Pro 256GB 블루티타늄 (배터리 97%)",
+    "price": 1000000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "400382790",
+    "name": "아이폰15프로 128 블루티타늄 / 사설교체",
+    "price": 565000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "397116484",
+    "name": "아이폰 15 프로 128기가 블루티타늄",
+    "price": 255000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "395073423",
+    "name": "아이폰 15프로 256GB 블루 티타늄",
+    "price": 700000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "394471093",
+    "name": "아이폰15Pro 블루티타늄 128",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "394319790",
+    "name": "아이폰 15 Pro 블루 티타늄 256GB",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "392977252",
+    "name": "아이폰 15프로 256기가 블루티타늄",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "392231601",
+    "name": "아이폰15프로블루티타늄256GBA급사진그대로",
+    "price": 865000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "390862491",
+    "name": "아이폰15프로 128GB 티타늄블루 팝니다",
+    "price": 730000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "390106321",
+    "name": "아이폰 15 Pro 블루티타늄 512G (배터리100%)",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "319029450",
+    "name": "아이폰 15 프로 256GB 블루티타늄 색상",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "311667951",
+    "name": "아이폰 15프로맥스 1테라 블루티타늄 ProMax 북미판",
+    "price": 1020000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "407617740",
+    "name": "아이폰15Pro 256GB 내추럴 티타늄",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "407609248",
+    "name": "아이폰 15 프로 256 내추럴 티타늄 리퍼 미사용 (애케플 6/3까지)",
+    "price": 1020000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "406448859",
+    "name": "아이폰 15프로 내추럴 티타늄 256GB 판매",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "406541327",
+    "name": "A+급 아이폰15프로 256G 내추럴티타늄 [품번 195]",
+    "price": 790000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "406533053",
+    "name": "A+급 아이폰15프로 256G 내추럴티타늄 [품번 195]",
+    "price": 790000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "406101441",
+    "name": "아이폰 15 Pro 256GB 카메라 무음 내추럴 티타늄",
+    "price": 830000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "403908791",
+    "name": "아이폰15프로 256gb 내추럴티타늄",
+    "price": 780000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "384234015",
+    "name": "[S등급] 아이폰 15프로 맥스 256GB 내추럴 티타늄",
+    "price": 1030000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "403823219",
+    "name": "아이폰 15 프로 256기가 내추럴 티타늄",
+    "price": 890000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "403276449",
+    "name": "애플 아이폰15 Pro Max 내추럴 티타늄 256GB",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "400041554",
+    "name": "아이폰 15 프로 맥스 256GB 내추럴 티타늄",
+    "price": 1150000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "397841549",
+    "name": "아이폰 15프로 256 내추럴 티타늄",
+    "price": 780000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "397746819",
+    "name": "아이폰 15 프로 128GB 내추럴 티타늄 팔아요!!",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "396085939",
+    "name": "아이폰 15 프로 내추럴 티타늄 256 리퍼 새상품 급 배터리 100%",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "394450493",
+    "name": "아이폰 15Pro 내추럴 티타늄 256G 팝니다",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "387311767",
+    "name": "아이폰 15Pro 내추럴티타늄 512 풀박스 S급",
+    "price": 930000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "386943010",
+    "name": "아이폰15프로 512기가 내추럴 티타늄<판매완료>",
+    "price": 880000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "387146389",
+    "name": "리퍼 미사용) 아이폰15 Pro Max 256gb 내추럴 티타늄",
+    "price": 1200000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_refurbished_only"
+    ]
+  },
+  {
+    "pid": "382452803",
+    "name": "아이폰15프로 내추럴티타늄 512g",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "381617342",
+    "name": "iPhone 15 pro max 내추럴 티타늄 팝니다.",
+    "price": 930000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max"
+    ]
+  },
+  {
+    "pid": "382136579",
+    "name": "아이폰15프로 512GB 내추럴 티타늄 풀박스 상태 최상급",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "366839014",
+    "name": "아이폰 15pro 256 내추럴티타늄",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "365028072",
+    "name": "아이폰15프로256GB 내추럴티타늄",
+    "price": 860000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "365030495",
+    "name": "아이폰 15 프로 맥스 512GB 내추럴 티타늄",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "364465981",
+    "name": "아이폰15프로 내추럴티타늄 512 리퍼 사이클1",
+    "price": 1120000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "363254229",
+    "name": "아이폰 15pro 256GB 내추럴티타늄",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "363119382",
+    "name": "아이폰15pro 256GB 내추럴티타늄",
+    "price": 950000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "362381126",
+    "name": "아이폰15pro 내추럴티타늄 256",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "362230030",
+    "name": "애플 아이폰 15pro 128gb 내추럴티타늄 판매ㅔ",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "360800371",
+    "name": "아이폰 15 pro max 256GB 내추럴 티타늄",
+    "price": 920000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "361647092",
+    "name": "아이폰 15 Pro 내추럴 티타늄 색상 s급 풀박스(케이블 없음)",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "359092994",
+    "name": "아이폰 15프로 내추럴 티타늄 256",
+    "price": 777000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "358868425",
+    "name": "아이폰15 Pro 내추럴 티타늄 256기가 s급",
+    "price": 850000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "357867913",
+    "name": "(판매완료)아이폰15프로 512GB 내추럴 티타늄",
+    "price": 960000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "356447230",
+    "name": "아이폰 15 Pro 256GB내추럴 티타늄",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "358263266",
+    "name": "아이폰 15 프로맥스 promax 256 내추럴 티타늄 풀박스 판매합니다",
+    "price": 1063820,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "355453671",
+    "name": "iphone15 promax 1tb 티타늄 내추럴",
+    "price": 1250000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "355404975",
+    "name": "아이폰 15 pro max 256기가 내추럴티타늄",
+    "price": 1050000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "352340414",
+    "name": "아이폰 15 프로 256기가 내추럴티타늄",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "351947228",
+    "name": "아이폰15프로 512 내추럴 티타늄<판매완료>",
+    "price": 1120000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "350653586",
+    "name": "아이폰 15프로 256, 내추럴 티타늄",
+    "price": 940000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "352272608",
+    "name": "부품용 아이폰 15pro 내추럴티타늄 256 카메라 무음 미국판",
+    "price": 750000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "336841105",
+    "name": "[s급] (이번주까지만 올립니다)아이폰15 pro 내추럴 티타늄 256G",
+    "price": 990000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256",
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "331771125",
+    "name": "아이폰15프로 내추럴티타늄 256GB A급 부산 중고폰 팝니다 82121",
+    "price": 990000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "405410710",
+    "name": "아이폰15프로맥스 512GB 내추럴티타늄 A급",
+    "price": 1080000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "384982798",
+    "name": "아이폰15PM 내추럴티타늄 256 판매합니당",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "375271687",
+    "name": "아이폰 15 프로맥스 256gb 내추럴 티타늄",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "401807465",
+    "name": "아이폰 15 프로맥스 내추럴 티타늄 판매합니다",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "400351444",
+    "name": "아이폰 15 프로맥스 256기가 내추럴 티타늄",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "358360206",
+    "name": "[미사용]아이폰15프로맥스 내추럴티타늄 256 리퍼",
+    "price": 1190000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "388818313",
+    "name": "아이폰15 프로맥스 256GB 내추럴 티타늄 판매합니다",
+    "price": 1000000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "343947190",
+    "name": "아이폰 15 프로 맥스 개봉만한 새제품 256",
+    "price": 1150000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "380014860",
+    "name": "아이폰15프로맥스 256G -내추럴티타늄 S급",
+    "price": 1065000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max"
+    ]
+  },
+  {
+    "pid": "370347767",
+    "name": "아이폰 15프로맥스 내추럴 티타늄 256",
+    "price": 1010000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "368376110",
+    "name": "아이폰 15 프로맥스 애케플 내추럴 티타늄 256",
+    "price": 1150000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "364707171",
+    "name": "아이폰 15프로맥스 내추럴 티타늄 256gb",
+    "price": 1200000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "353966960",
+    "name": "아이폰 15 프로맥스 512 내추럴 티타늄 애케플o",
+    "price": 1070000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "406518426",
+    "name": "아이폰 15프로 256 내추럴 티타늄 A급 판매합니다",
+    "price": 700000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "406287496",
+    "name": "아이폰 15 프로 내추럴 티타늄 256GB",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "405933713",
+    "name": "아이폰15프로 내추럴 티타늄",
+    "price": 650000,
+    "reject_reasons": [
+      "reject_accessory_only"
+    ]
+  },
+  {
+    "pid": "406106724",
+    "name": "<판매중> 아이폰 15 pro 내추럴티타늄 128GB",
+    "price": 700000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "405359957",
+    "name": "아이폰15프로 128GB 내추럴티타늄 팝니다",
+    "price": 400000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "404622231",
+    "name": "아이폰15 프로 256기가 내추럴 티타늄",
+    "price": 870000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "404265743",
+    "name": "아이폰15 프로 내추럴 티타늄 색상 256GB",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "403710205",
+    "name": "카메라 무음) 아이폰15프로 256GB 미국구매 esim 내추럴티타늄",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "402574508",
+    "name": "[S급]아이폰15프로 내추럴티타늄 128gb  애플케어",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "400957127",
+    "name": "아이폰15프로 256GB 내추럴티타늄 (풀박)",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_broken_or_parts"
+    ]
+  },
+  {
+    "pid": "400718853",
+    "name": "아이폰 15 pro 128 내추럴 티타늄 89%",
+    "price": 770000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "395719277",
+    "name": "아이폰 15프로 256기가 내추럴 티타늄 + 케이스/필름",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "395256933",
+    "name": "아이폰 15프로 내추럴 티타늄 128기가 팝니다",
+    "price": 520000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "392894398",
+    "name": "애플 아이폰 15프로 내추럴 티타늄 중고 128기가",
+    "price": 340000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "393843380",
+    "name": "애플 아이폰15프로 256기가 내추럴티타늄색상 판매합니다.",
+    "price": 750000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "390374178",
+    "name": "아이폰 15 프로 256기가 내추럴 티타늄",
+    "price": 820000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "390216102",
+    "name": "[S급] 아이폰 15프로 512G 내추럴 티타늄 [21049]",
+    "price": 990000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb",
+      "reject_carrier_skt",
+      "reject_broken_or_parts",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "389035487",
+    "name": "아이폰15프로 256G 내추럴티타늄 리퍼폰 새상품",
+    "price": 1010000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic",
+      "reject_refurbished_only"
+    ]
+  },
+  {
+    "pid": "388819459",
+    "name": "아이폰15pro 256 내추럴 티타늄",
+    "price": 770000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "377798639",
+    "name": "[미국판] 아이폰15 프로 맥스 / 512GB / 내추럴 티타늄",
+    "price": 1040000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "394087812",
+    "name": "아이폰15 프로맥스 512 내추럴티타늄",
+    "price": 900000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "405973393",
+    "name": "아이폰15프로맥스 512GB 내추럴 티타늄 풀박스 배터리 90%",
+    "price": 1190000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "396807685",
+    "name": "아이폰 15프로맥스 내추럴티타늄 256gb",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "395825825",
+    "name": "아이폰 15프로맥스 256기가 내추럴 티타늄",
+    "price": 800000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "397299832",
+    "name": "아이폰15프로맥스 내추럴 티타늄 1TB 워치7나이키에디션",
+    "price": 1350000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
+    "pid": "406556897",
+    "name": "아이폰 15pro 128GB 판매합니다",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "405433684",
+    "name": "아이폰 15 pro 128GB S급",
+    "price": 800000,
+    "reject_reasons": [
+      "missing_아이폰_s_15_s_프로_iphone_s_1"
+    ]
+  },
+  {
+    "pid": "405334156",
+    "name": "아이폰15프로 블랙 128GB 배터리89% 상태좋은 중고90만5천팝니다",
+    "price": 905000,
+    "reject_reasons": [
+      "reject_carrier_locked_generic",
+      "reject_buying_post"
+    ]
+  }
+]

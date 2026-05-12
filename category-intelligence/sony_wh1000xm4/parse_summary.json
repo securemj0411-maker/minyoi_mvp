@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "lane_key": "sony_wh1000xm4",
+  "category": "headphone",
+  "generated_at": "2026-05-12T09:02:32.577Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "wh-1000xm4",
+    "wh1000xm4",
+    "소니 1000xm4",
+    "sony xm4",
+    "소니 xm4",
+    "1000xm4"
+  ],
+  "pages": 6,
+  "price_range_krw": [
+    90000,
+    450000
+  ],
+  "target_parse_ready": 200,
+  "total_fetched": 282,
+  "parse_ready_count": 200,
+  "rejected_count": 82,
+  "target_reached": true,
+  "reject_breakdown": [
+    {
+      "reason": "price_too_low",
+      "count": 42
+    },
+    {
+      "reason": "reject_wrong_product_earbuds",
+      "count": 29
+    },
+    {
+      "reason": "reject_earpad_only",
+      "count": 11
+    },
+    {
+      "reason": "missing_any_1000_s_xm4_wh_s_s_100",
+      "count": 8
+    },
+    {
+      "reason": "reject_wrong_gen_xm5",
+      "count": 7
+    },
+    {
+      "reason": "reject_buying_post",
+      "count": 5
+    },
+    {
+      "reason": "reject_broken",
+      "count": 4
+    },
+    {
+      "reason": "price_too_high",
+      "count": 3
+    },
+    {
+      "reason": "reject_non_sony_clone",
+      "count": 3
+    },
+    {
+      "reason": "reject_wrong_gen_xm3",
+      "count": 3
+    },
+    {
+      "reason": "reject_wrong_gen_xm6",
+      "count": 2
+    },
+    {
+      "reason": "reject_parts_only",
+      "count": 1
+    },
+    {
+      "reason": "reject_case_only",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [],
+    "accept_any_of": [
+      [
+        "1000\\s*xm4|wh\\s*-?\\s*1000\\s*xm4|\\bxm4\\b"
+      ]
+    ]
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_gen_xm3",
+      "pattern": "1000\\s*xm3|wh\\s*-?\\s*1000\\s*xm3|\\bxm3\\b"
+    },
+    {
+      "label": "wrong_gen_xm5",
+      "pattern": "1000\\s*xm5|wh\\s*-?\\s*1000\\s*xm5|\\bxm5\\b"
+    },
+    {
+      "label": "wrong_gen_xm6",
+      "pattern": "1000\\s*xm6|\\bxm6\\b"
+    },
+    {
+      "label": "case_only",
+      "pattern": "케이스\\s*(?:만|단품|개별)|하드\\s*케이스\\s*만|파우치\\s*만|보관\\s*케이스\\s*만"
+    },
+    {
+      "label": "earpad_only",
+      "pattern": "이어\\s*패드(?:\\s*만|\\s*교체|\\s*단품)?|패드\\s*교체용|쿠션\\s*교체|패드만\\s*판매"
+    },
+    {
+      "label": "charger_or_cable_only",
+      "pattern": "충전기\\s*만|케이블\\s*만|usb\\s*케이블\\s*만|어댑터\\s*만"
+    },
+    {
+      "label": "parts_only",
+      "pattern": "부품\\s*용|부품용|파트\\s*만|리퍼\\s*부품|단자\\s*만|힌지\\s*부품"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입|삽니다|구해요|구매\\s*합니다|구매합니다"
+    },
+    {
+      "label": "wrong_product_neckband",
+      "pattern": "넥밴드|wi\\s*-?\\s*c\\d{3}|sp\\s*510"
+    },
+    {
+      "label": "wrong_product_earbuds",
+      "pattern": "무선\\s*이어폰|이어버드|wf\\s*-?\\s*1000|linkbuds"
+    },
+    {
+      "label": "non_sony_clone",
+      "pattern": "짝퉁|가품|복제품|레플리카"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|불량\\s*품|파손\\s*품|작동\\s*안\\s*됨|소리\\s*안\\s*나"
+    }
+  ]
+}

@@ -1,0 +1,695 @@
+[
+  {
+    "pid": "403037155",
+    "name": "wh1000xm4 부품",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_parts_only"
+    ]
+  },
+  {
+    "pid": "401627464",
+    "name": "소니 WH-1000XM4 미드나잇블루 풀박스",
+    "price": 110000,
+    "reject_reasons": [
+      "reject_earpad_only"
+    ]
+  },
+  {
+    "pid": "398733489",
+    "name": "[구매]WH-1000XM4 헤드폰 케이스",
+    "price": 5000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "398741485",
+    "name": "소니 WH-1000XM4 헤드셋 블랙",
+    "price": 80000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "397584694",
+    "name": "소니 WH-1000XM4 그레이 색상 헤드폰",
+    "price": 130000,
+    "reject_reasons": [
+      "reject_earpad_only"
+    ]
+  },
+  {
+    "pid": "385001119",
+    "name": "소니WH-1000XM4 블랙[네고가능]",
+    "price": 166000,
+    "reject_reasons": [
+      "reject_earpad_only"
+    ]
+  },
+  {
+    "pid": "379468220",
+    "name": "소니 wh1000xm4",
+    "price": 999,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "378559893",
+    "name": "소니 블랙 헤드폰 wh-1000xm4",
+    "price": 120000,
+    "reject_reasons": [
+      "reject_earpad_only"
+    ]
+  },
+  {
+    "pid": "375500024",
+    "name": "소니 헤드폰 WH-1000XM4 판매합니다.",
+    "price": 250000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "372589238",
+    "name": "소니 WH-1000XM4 실버",
+    "price": 110000,
+    "reject_reasons": [
+      "reject_wrong_gen_xm5"
+    ]
+  },
+  {
+    "pid": "371044043",
+    "name": "소니 WH-1000XM4 플래티넘 실버 헤드셋",
+    "price": 140000,
+    "reject_reasons": [
+      "reject_earpad_only"
+    ]
+  },
+  {
+    "pid": "370725200",
+    "name": "소니 WH-1000XM4 블랙 헤드폰",
+    "price": 1234,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "367337806",
+    "name": "소니 wh-1000xm4 헤드폰",
+    "price": 200000,
+    "reject_reasons": [
+      "reject_earpad_only"
+    ]
+  },
+  {
+    "pid": "363522157",
+    "name": "소니 wh-1000xm4-->에어팟 맥스 교환",
+    "price": 500,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "359350321",
+    "name": "소니 WH- 1000XM4 미드나잇 블루",
+    "price": 1300,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "360965751",
+    "name": "구해요) 소니 WH-1000XM4 화이트 헤드폰 제발 제게 팔아주세요",
+    "price": 486486,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "348789976",
+    "name": "SONY 소니 무선 헤드셋 WH-1000XM4",
+    "price": 128000,
+    "reject_reasons": [
+      "reject_non_sony_clone"
+    ]
+  },
+  {
+    "pid": "348791615",
+    "name": "SONY 소니 무선 헤드셋 WH-1000XM4",
+    "price": 135000,
+    "reject_reasons": [
+      "reject_non_sony_clone"
+    ]
+  },
+  {
+    "pid": "337989641",
+    "name": "소니 WH-1000XM4 삽니다.",
+    "price": 200000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "335374376",
+    "name": "소니 wh 1000xm4 헤드셋",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "335099959",
+    "name": "소니 wh 1000xm4 헤드셋",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "334712213",
+    "name": "소니 wh 1000xm4 헤드셋",
+    "price": 73000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "334416124",
+    "name": "소니 wh 1000xm4 헤드셋",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "328477743",
+    "name": "소니 정품 wh1000xm5 wh1000xm4 케이블 선 줄",
+    "price": 27000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_gen_xm3",
+      "reject_wrong_gen_xm5"
+    ]
+  },
+  {
+    "pid": "289833044",
+    "name": "소니 wh 1000xm4",
+    "price": 130000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "210798477",
+    "name": "소니 wh1000XM5 wh1000xm3 wh1000xm4 항공잭",
+    "price": 5000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_gen_xm3",
+      "reject_wrong_gen_xm5"
+    ]
+  },
+  {
+    "pid": "370553341",
+    "name": "SONY WH-1000XM6 블랙 s급 (직거래 40)",
+    "price": 420000,
+    "reject_reasons": [
+      "missing_any_1000_s_xm4_wh_s_s_100",
+      "reject_wrong_gen_xm6"
+    ]
+  },
+  {
+    "pid": "357047559",
+    "name": "소니 WH-1000XM6 헤드폰 블랙 직거시48",
+    "price": 500000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_any_1000_s_xm4_wh_s_s_100",
+      "reject_wrong_gen_xm6"
+    ]
+  },
+  {
+    "pid": "145562917",
+    "name": "소니 WH-1000XM4 블루투스 헤드폰 팝니다",
+    "price": 460000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "407250637",
+    "name": "소니 WH-1000XM4",
+    "price": 75000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407269057",
+    "name": "소니 노캔 헤드셋 WH-1000XM4 접이식 가능한 모델 풀박스",
+    "price": 125000,
+    "reject_reasons": [
+      "reject_wrong_gen_xm5"
+    ]
+  },
+  {
+    "pid": "406698362",
+    "name": "SONY 소니 무선 노이즈 캔슬링 헤드폰 WH-1000XM4 화이트",
+    "price": 120000,
+    "reject_reasons": [
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "402783520",
+    "name": "소니 wh1000xm4",
+    "price": 75000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "402152549",
+    "name": "소니 WH-1000XM4 xm4 블랙",
+    "price": 85000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "400399983",
+    "name": "소니 WH-1000XM4",
+    "price": 80000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "400242287",
+    "name": "소니 wh1000xm4",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "401279266",
+    "name": "소니 헤드폰 wh-1000xm4 블랙+ 케이스",
+    "price": 100000,
+    "reject_reasons": [
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "402646716",
+    "name": "소니 노이즈캔슬링 블루투스헤드셋 WH-1000XM4 블랙",
+    "price": 110000,
+    "reject_reasons": [
+      "reject_non_sony_clone"
+    ]
+  },
+  {
+    "pid": "400052638",
+    "name": "소니 wh1000xm4",
+    "price": 45000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "399939342",
+    "name": "소니 WH-1000XM4",
+    "price": 55000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398763906",
+    "name": "소니 WH-1000XM4 블랙 풀박스",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398404044",
+    "name": "(풀셋) 소니 WH-1000XM4",
+    "price": 80000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398802283",
+    "name": "(급처) 소니 wh-1000XM4 택포",
+    "price": 35000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_earpad_only"
+    ]
+  },
+  {
+    "pid": "397469790",
+    "name": "소니 헤드셋 wh-1000xm4",
+    "price": 80000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "400123261",
+    "name": "깜짝할인!내일까지만!A급!!소니 블루투스헤드셋WH-1000XM4 팔아용~",
+    "price": 190000,
+    "reject_reasons": [
+      "reject_earpad_only"
+    ]
+  },
+  {
+    "pid": "397958496",
+    "name": "소니 WH-1000XM4 실버 헤드폰 A급 풀박스",
+    "price": 160000,
+    "reject_reasons": [
+      "reject_earpad_only"
+    ]
+  },
+  {
+    "pid": "404035992",
+    "name": "마샬 메이저 5 브라운 헤드폰",
+    "price": 109000,
+    "reject_reasons": [
+      "missing_any_1000_s_xm4_wh_s_s_100"
+    ]
+  },
+  {
+    "pid": "361326794",
+    "name": "소니 wh 1000mx4",
+    "price": 111000,
+    "reject_reasons": [
+      "missing_any_1000_s_xm4_wh_s_s_100"
+    ]
+  },
+  {
+    "pid": "355998358",
+    "name": "소니 WH-1000M4",
+    "price": 150000,
+    "reject_reasons": [
+      "missing_any_1000_s_xm4_wh_s_s_100"
+    ]
+  },
+  {
+    "pid": "343975656",
+    "name": "소니 wh 1000xm5 블랙 헤드폰 판매합니다",
+    "price": 248700,
+    "reject_reasons": [
+      "missing_any_1000_s_xm4_wh_s_s_100",
+      "reject_wrong_gen_xm5"
+    ]
+  },
+  {
+    "pid": "333433416",
+    "name": "소니 헤드셋 wh-1004xm4 실버",
+    "price": 170000,
+    "reject_reasons": [
+      "missing_any_1000_s_xm4_wh_s_s_100"
+    ]
+  },
+  {
+    "pid": "227237481",
+    "name": "소니 wh-1004xm4 판매합니다",
+    "price": 220000,
+    "reject_reasons": [
+      "missing_any_1000_s_xm4_wh_s_s_100"
+    ]
+  },
+  {
+    "pid": "407517425",
+    "name": "소니 WF-1000XM4 무선 이어폰 실버",
+    "price": 75000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "407267219",
+    "name": "소니wf-1000xm4 왼쪽 삽니다.",
+    "price": 35000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_buying_post",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "407276889",
+    "name": "소니 WF-1000XM4 블루투스 무선 이어폰 본체",
+    "price": 110000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "407362092",
+    "name": "소니 WF-1000XM4 블루투스 무선 이어폰 R 유닛",
+    "price": 75000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "406116102",
+    "name": "소니 WF1000XM4 팝니다.",
+    "price": 90000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "405246827",
+    "name": "소니 wf1000xm4",
+    "price": 75000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "404194766",
+    "name": "최종가격!!소니 WF-1000XM4 무선 이어폰 팝니다!!",
+    "price": 110000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "402284415",
+    "name": "소니 wf1000xm4",
+    "price": 90000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "396177557",
+    "name": "소니 wf-1000xm4",
+    "price": 110000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "356350462",
+    "name": "소니 WF-1000XM4 종이케이스 / 악세서리만(본품 없음)",
+    "price": 19900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_case_only",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "392202338",
+    "name": "소니 WF-1000XM4 블루투스 무선 이어폰 본체",
+    "price": 75000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "290716532",
+    "name": "소니 WF-1000XM4 이어폰 배터리 교체",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "386834768",
+    "name": "소니 WF-1000XM4 오른쪽, 음질A급",
+    "price": 45000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "297156449",
+    "name": "zenipower z55h 배터리 (소니 wf-1000xm4 배터리)",
+    "price": 12000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "313531671",
+    "name": "zenipower z55h 배터리(소니 wf-1000xm4 전용)",
+    "price": 12000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "382911399",
+    "name": "소니 헤드폰 1000xm4",
+    "price": 180000,
+    "reject_reasons": [
+      "reject_earpad_only"
+    ]
+  },
+  {
+    "pid": "376999548",
+    "name": "미테르 소니 SONY WF-1000XM4 이어폰 가죽 케이",
+    "price": 13000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_gen_xm5",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "373386537",
+    "name": "소니 wf 1000xm4 본체",
+    "price": 57000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "372612900",
+    "name": "Sony wf1000xm4",
+    "price": 125000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "369943206",
+    "name": "SONY 소니 WF-1000XM4 블랙 무선이어폰",
+    "price": 83000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "367581826",
+    "name": "소니 WF-1000XM4 본체",
+    "price": 40000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "363083947",
+    "name": "소니 WF1000XM4",
+    "price": 75000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "355236740",
+    "name": "소니(SONY) WF-1000XM4 무선 이어폰 입니다",
+    "price": 150000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "356737117",
+    "name": "마지막 가격조정/ 소니 WF-1000XM4 풀박스",
+    "price": 133000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "346309858",
+    "name": "소니 WF-1000XM4 이어폰 판매합니다.",
+    "price": 90000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "334324072",
+    "name": "소니 wf-1000xm4",
+    "price": 105000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "331087592",
+    "name": "소니 WF-1000XM4 본체",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "331005856",
+    "name": "소니 WF-1000XM4 본체",
+    "price": 50000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_product_earbuds"
+    ]
+  },
+  {
+    "pid": "267540994",
+    "name": "Sony 노이즈캔슬링 이어패드 이어쿠션 1000 XM3 XM4 XM5",
+    "price": 6900,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_gen_xm3",
+      "reject_wrong_gen_xm5",
+      "reject_earpad_only"
+    ]
+  },
+  {
+    "pid": "294118520",
+    "name": "SONY WF-1000XM4",
+    "price": 120000,
+    "reject_reasons": [
+      "reject_wrong_product_earbuds"
+    ]
+  }
+]
