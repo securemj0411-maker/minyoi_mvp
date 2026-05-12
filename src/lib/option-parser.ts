@@ -1075,6 +1075,120 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   };
 }
 
+// ─── Narrow lane reject rules ────────────────────────────────────────────────
+// Scoped to specific narrow lanes only. Do not extend to broad categories —
+// broad smartphone/headphone/laptop pipelines go through AI L2 (Agent A).
+// Mined and verified by Agent D against 200+ samples per lane.
+
+export type NarrowLaneKey =
+  | "ipad_pro_11_m4_256_wifi"
+  | "sony_wh1000xm4"
+  | "iphone_15_pro_128gb_self";
+
+export type NarrowLaneEvaluation = {
+  laneKey: NarrowLaneKey;
+  parseReady: boolean;
+  rejectReasons: string[];
+};
+
+type NarrowLaneRule = {
+  laneKey: NarrowLaneKey;
+  acceptAll: RegExp[];
+  reject: { label: string; pattern: RegExp }[];
+};
+
+const NARROW_LANE_RULES: Record<NarrowLaneKey, NarrowLaneRule> = {
+  ipad_pro_11_m4_256_wifi: {
+    laneKey: "ipad_pro_11_m4_256_wifi",
+    acceptAll: [/m4/i, /256/, /아이패드|ipad/i],
+    reject: [
+      { label: "wrong_chip_m1_m2_m3", pattern: /\bm[123]\b|m1\s*칩|m2\s*칩|m3\s*칩/i },
+      { label: "wrong_storage_512_1tb_2tb", pattern: /512\s*(?:gb|기가)?|1\s*tb|2\s*tb|1\s*테라|2\s*테라/i },
+      { label: "wrong_storage_128", pattern: /(?:^|[^0-9])128\s*(?:gb|기가)?\b/i },
+      { label: "wrong_size_13_inch", pattern: /13\s*인치|12\.9\s*인치|13"|13″/ },
+      { label: "cellular_variant", pattern: /셀룰러|cellular|\blte\b|\b5g\b|유심|sim\s*트레이|esim/i },
+      { label: "accessory_only", pattern: /케이스\s*(?:만|단품|개별)|필름\s*(?:만|단품)|키보드\s*만|펜슬\s*만|어댑터\s*만|충전기\s*만/i },
+      { label: "case_or_smart_folio_listing", pattern: /(?:스마트\s*폴리오|스마트\s*커버|폴리오\s*케이스).{0,8}판매|매직\s*키보드\s*판매/i },
+      { label: "broken_or_parts_only", pattern: /액정\s*파손|부품\s*용|부품용|파손\s*품/i },
+      { label: "buying_post", pattern: /매입|삽니다|구매\s*합니다|구매합니다|사요|구해요/ },
+      { label: "ipad_air_or_mini", pattern: /아이패드\s*에어|ipad\s*air|아이패드\s*미니|ipad\s*mini/i },
+    ],
+  },
+  sony_wh1000xm4: {
+    laneKey: "sony_wh1000xm4",
+    acceptAll: [/1000\s*xm4|wh\s*-?\s*1000\s*xm4|\bxm4\b/i],
+    reject: [
+      { label: "wrong_gen_xm3", pattern: /1000\s*xm3|wh\s*-?\s*1000\s*xm3|\bxm3\b/i },
+      { label: "wrong_gen_xm5", pattern: /1000\s*xm5|wh\s*-?\s*1000\s*xm5|\bxm5\b/i },
+      { label: "wrong_gen_xm6", pattern: /1000\s*xm6|\bxm6\b/i },
+      { label: "case_only", pattern: /케이스\s*(?:만|단품|개별)|하드\s*케이스\s*만|파우치\s*만|보관\s*케이스\s*만/ },
+      { label: "earpad_only", pattern: /이어\s*패드(?:\s*만|\s*교체|\s*단품)?|패드\s*교체용|쿠션\s*교체|패드만\s*판매/ },
+      { label: "charger_or_cable_only", pattern: /충전기\s*만|케이블\s*만|usb\s*케이블\s*만|어댑터\s*만/i },
+      { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만|힌지\s*부품/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+      { label: "wrong_product_earbuds", pattern: /무선\s*이어폰|이어버드|wf\s*-?\s*1000|linkbuds/i },
+      { label: "wrong_product_neckband", pattern: /넥밴드|wi\s*-?\s*c\d{3}|sp\s*510/i },
+      { label: "non_sony_clone", pattern: /짝퉁|가품|복제품|레플리카/ },
+      { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
+    ],
+  },
+  iphone_15_pro_128gb_self: {
+    laneKey: "iphone_15_pro_128gb_self",
+    acceptAll: [/아이폰\s*15\s*프로|iphone\s*15\s*pro/i],
+    reject: [
+      { label: "wrong_model_pro_max", pattern: /프로\s*맥스|promax|pro\s*max|프맥/i },
+      { label: "wrong_model_15_base_or_plus", pattern: /아이폰\s*15\s*플러스|iphone\s*15\s*plus|아이폰\s*15\s*기본/i },
+      { label: "wrong_model_14", pattern: /아이폰\s*14|iphone\s*14/i },
+      { label: "wrong_model_16", pattern: /아이폰\s*16|iphone\s*16/i },
+      { label: "wrong_storage_64", pattern: /(?:^|[^0-9])64\s*(?:gb|기가)\b/i },
+      { label: "wrong_storage_256", pattern: /(?:^|[^0-9])256\s*(?:gb|기가)?\b/i },
+      { label: "wrong_storage_512_1tb", pattern: /512\s*(?:gb|기가)?|1\s*tb|1\s*테라/i },
+      { label: "carrier_skt", pattern: /\bskt\b|sk\s*텔레콤|에스케이\s*텔레콤/ },
+      { label: "carrier_kt", pattern: /(?:^|\s)kt\s*(?:완납|개통|약정|이동|번호|요금|승계|유심)|케이티\s*개통|kt\s*전용/i },
+      { label: "carrier_lg", pattern: /\blgu\+?|\blg\s*u\+?|유플\s*러스|엘지\s*유플|엘지유플|lg\s*전용/i },
+      { label: "carrier_locked_generic", pattern: /통신사\s*(?:개통|이동|전용|확정)|번호\s*이동|약정\s*(?:승계|진행|걸|남)|선택\s*약정|공시\s*지원|완납\s*폰|완납폰|제휴\s*카드|할부\s*승계|할부\s*원금|할부\s*잔여|개통\s*후|확정\s*기변|확정기변/ },
+      { label: "broken_or_parts", pattern: /액정\s*파손|부품\s*용|부품용|파손\s*품|침수|배터리\s*교체\s*요망/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+      { label: "refurbished_only", pattern: /리퍼\s*폰|리퍼폰|리퍼\s*제품|리퍼\s*수령/ },
+      { label: "accessory_only", pattern: /케이스\s*(?:만|단품)|필름\s*(?:만|단품)|충전기\s*만|보호\s*필름\s*만/ },
+    ],
+  },
+};
+
+function normalizeForNarrowLane(text: string): string {
+  return (text ?? "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[‐-―]/g, "-")
+    .replace(/[^0-9a-z가-힣./\s-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function evaluateNarrowLane(
+  laneKey: NarrowLaneKey,
+  input: { title: string; description?: string },
+): NarrowLaneEvaluation {
+  const rule = NARROW_LANE_RULES[laneKey];
+  if (!rule) {
+    return { laneKey, parseReady: false, rejectReasons: ["unknown_lane"] };
+  }
+  const text = normalizeForNarrowLane(`${input.title}\n${input.description ?? ""}`);
+  const rejectReasons: string[] = [];
+
+  for (const pattern of rule.acceptAll) {
+    if (!pattern.test(text)) rejectReasons.push(`missing_${pattern.source.slice(0, 24).replace(/[^a-z0-9가-힣]+/gi, "_")}`);
+  }
+  for (const rejectRule of rule.reject) {
+    if (rejectRule.pattern.test(text)) rejectReasons.push(`reject_${rejectRule.label}`);
+  }
+  return {
+    laneKey,
+    parseReady: rejectReasons.length === 0,
+    rejectReasons,
+  };
+}
+
 export function toParsedListingRow(pid: number | string, parsed: ParsedListingOptions) {
   return {
     pid: Number(pid),
