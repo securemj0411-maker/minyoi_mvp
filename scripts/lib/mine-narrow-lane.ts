@@ -35,7 +35,8 @@ type LaneKey =
   | "iphone_16_pro_128gb_self"
   | "galaxy_s25_ultra_256_self"
   | "airpods_pro_3"
-  | "macbook_pro_14_m3_18_512";
+  | "macbook_pro_14_m3_18_512"
+  | "iphone_14_pro_128gb_self";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -503,6 +504,46 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "parts_only", pattern: /액정\s*만|메인보드|로직보드|상판|하판|배터리\s*만|키보드\s*만|부품\s*용|부품용/ },
       { label: "broken_or_water", pattern: /고장|침수|파손\s*품|작동\s*불량/ },
       { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+    ],
+  },
+
+  iphone_14_pro_128gb_self: {
+    laneKey: "iphone_14_pro_128gb_self",
+    category: "smartphone",
+    queries: [
+      "아이폰 14 프로 128 자급제",
+      "아이폰14프로 128 자급제",
+      "iphone 14 pro 128 자급제",
+      "아이폰 14 프로 자급제",
+      "아이폰 14 프로 128",
+      "아이폰14프로 128",
+      "iphone 14 pro 128",
+      "아이폰 14 프로 128gb",
+      "아이폰14프로 128gb",
+    ],
+    pages: 8,
+    targetParseReady: 200,
+    priceMin: 350_000,
+    priceMax: 1_100_000,
+    acceptAll: [/아이폰\s*14\s*프로|iphone\s*14\s*pro/i],
+    acceptAnyOf: [],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_pro_max", pattern: /프로\s*맥스|promax|pro\s*max|프맥/i },
+      { label: "wrong_model_14_base_or_plus", pattern: /아이폰\s*14\s*플러스|iphone\s*14\s*plus|아이폰\s*14\s*기본/i },
+      { label: "wrong_model_13", pattern: /아이폰\s*13|iphone\s*13/i },
+      { label: "wrong_model_15", pattern: /아이폰\s*15|iphone\s*15/i },
+      { label: "wrong_storage_64", pattern: /(?:^|[^0-9])64\s*(?:gb|기가)\b/i },
+      { label: "wrong_storage_256", pattern: /(?:^|[^0-9])256\s*(?:gb|기가)?\b/i },
+      { label: "wrong_storage_512_1tb", pattern: /512\s*(?:gb|기가)?|1\s*tb|1\s*테라/i },
+      { label: "carrier_skt", pattern: /\bskt\b|sk\s*텔레콤|에스케이\s*텔레콤/ },
+      { label: "carrier_kt", pattern: /(?:^|\s)kt\s*(?:완납|개통|약정|이동|번호|요금|승계|유심)|케이티\s*개통|kt\s*전용/i },
+      { label: "carrier_lg", pattern: /\blgu\+?|\blg\s*u\+?|유플\s*러스|엘지\s*유플|엘지유플|lg\s*전용/i },
+      { label: "carrier_locked_generic", pattern: /통신사\s*(?:개통|이동|전용|확정)|번호\s*이동|약정\s*(?:승계|진행|걸|남)|선택\s*약정|공시\s*지원|완납\s*폰|완납폰|제휴\s*카드|할부\s*승계|할부\s*원금|할부\s*잔여|개통\s*후|확정\s*기변|확정기변/ },
+      { label: "broken_or_parts", pattern: /액정\s*파손|부품\s*용|부품용|파손\s*품|침수|배터리\s*교체\s*요망/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+      { label: "refurbished_only", pattern: /리퍼\s*폰|리퍼폰|리퍼\s*제품|리퍼\s*수령/ },
+      { label: "accessory_only", pattern: /케이스\s*(?:만|단품)|필름\s*(?:만|단품)|충전기\s*만|보호\s*필름\s*만/ },
     ],
   },
 
