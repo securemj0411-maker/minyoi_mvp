@@ -6,13 +6,17 @@ import { GENERATED_CATALOG } from "@/lib/generated/catalog";
 export type Sku = {
   id: string;
   brand: string;
-  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "small_appliance";
+  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "small_appliance";
   modelName: string;
   aliases: string[];
   mustContain: string[][];
   mustNotContain: string[];
   msrpKrw: number;
   released: number;
+  // Optional narrow-lane tag. When set, this SKU belongs to a specific runtime
+  // lane (e.g. "ps5_disc_digital_standard") whose readiness in
+  // `LANE_READINESS` overrides the broader category gate.
+  laneKey?: string;
 };
 
 const PHONE_NOISE = [
@@ -518,6 +522,7 @@ export const CATALOG: Sku[] = [
     id: "monitor-xl2540k",
     brand: "BenQ ZOWIE",
     category: "monitor",
+    laneKey: "monitor_benq_xl2540k",
     modelName: "BenQ ZOWIE XL2540K",
     aliases: ["XL2540K", "벤큐 XL2540K", "ZOWIE XL2540K"],
     mustContain: [["xl2540k"]],
@@ -607,6 +612,7 @@ export const CATALOG: Sku[] = [
     id: "speaker-jbl-flip-6",
     brand: "JBL",
     category: "speaker",
+    laneKey: "speaker_jbl_flip6",
     modelName: "JBL Flip 6",
     aliases: ["JBL Flip 6", "JBL Flip6", "JBL 플립6", "제이비엘 플립6"],
     mustContain: [["jbl", "제이비엘"], ["flip6", "flip 6", "플립6"]],
@@ -652,6 +658,7 @@ export const CATALOG: Sku[] = [
     id: "camera-canon-eos-r6-mark-ii",
     brand: "Canon",
     category: "camera",
+    laneKey: "camera_body_only_exact_model",
     modelName: "Canon EOS R6 Mark II",
     aliases: ["Canon EOS R6 Mark II", "캐논 EOS R6 Mark II", "알육막투", "R6M2"],
     mustContain: [["eos r6 mark ii", "r6 mark ii", "r6m2", "알육막투"], ["바디", "바디만", "body"]],
@@ -663,6 +670,7 @@ export const CATALOG: Sku[] = [
     id: "camera-sony-a7m3",
     brand: "Sony",
     category: "camera",
+    laneKey: "camera_body_only_exact_model",
     modelName: "Sony A7 III",
     aliases: ["Sony A7 III", "Sony A7M3", "소니 A7M3", "ILCE-7M3"],
     mustContain: [["a7m3", "a7 iii", "a7 3", "ilce 7m3"], ["바디", "바디만", "바디셋", "body"]],
@@ -674,6 +682,7 @@ export const CATALOG: Sku[] = [
     id: "camera-sony-a7c",
     brand: "Sony",
     category: "camera",
+    laneKey: "camera_body_only_exact_model",
     modelName: "Sony A7C",
     aliases: ["Sony A7C", "소니 A7C", "ILCE-7C"],
     mustContain: [["a7c", "ilce 7c"], ["바디", "바디만", "body"]],
@@ -685,6 +694,7 @@ export const CATALOG: Sku[] = [
     id: "camera-sony-a5100",
     brand: "Sony",
     category: "camera",
+    laneKey: "camera_body_only_exact_model",
     modelName: "Sony A5100",
     aliases: ["Sony A5100", "소니 A5100", "ILCE-5100"],
     mustContain: [["a5100", "ilce 5100"], ["바디", "바디만", "body"]],
@@ -696,6 +706,7 @@ export const CATALOG: Sku[] = [
     id: "camera-canon-eos-m6",
     brand: "Canon",
     category: "camera",
+    laneKey: "camera_body_only_exact_model",
     modelName: "Canon EOS M6",
     aliases: ["Canon EOS M6", "캐논 EOS M6"],
     mustContain: [["eos m6", "캐논 m6"], ["바디", "바디만", "body"]],
@@ -707,6 +718,7 @@ export const CATALOG: Sku[] = [
     id: "camera-nikon-z9",
     brand: "Nikon",
     category: "camera",
+    laneKey: "camera_body_only_exact_model",
     modelName: "Nikon Z9",
     aliases: ["Nikon Z9", "니콘 Z9"],
     mustContain: [["z9", "니콘 z9"], ["바디", "바디만", "body"]],
@@ -718,6 +730,7 @@ export const CATALOG: Sku[] = [
     id: "camera-canon-eos-6d",
     brand: "Canon",
     category: "camera",
+    laneKey: "camera_body_only_exact_model",
     modelName: "Canon EOS 6D",
     aliases: ["Canon EOS 6D", "캐논 EOS 6D"],
     mustContain: [["eos 6d", "캐논 6d"], ["바디", "바디만", "body"]],
@@ -729,11 +742,68 @@ export const CATALOG: Sku[] = [
     id: "camera-fujifilm-x-t4",
     brand: "Fujifilm",
     category: "camera",
+    laneKey: "camera_body_only_exact_model",
     modelName: "Fujifilm X-T4",
     aliases: ["Fujifilm X-T4", "후지필름 X-T4", "후지 X-T4"],
     mustContain: [["x-t4", "x t4", "xt4"], ["바디", "바디만", "body"]],
     mustNotContain: [...CAMERA_BODY_ONLY_NOISE],
     msrpKrw: 2099000,
+    released: 2020,
+  },
+  // ─── PlayStation 5 (Standard, Disc/Digital) ─────────
+  // narrow lane: ps5_disc_digital_standard (Slim/Pro/PSVR/Switch/액세서리 차단)
+  {
+    id: "ps5-disc-standard",
+    brand: "Sony",
+    category: "game_console",
+    laneKey: "ps5_disc_digital_standard",
+    modelName: "PlayStation 5 (Disc, Standard)",
+    aliases: ["PS5 디스크", "PS5 Disc", "플스5 디스크", "플레이스테이션 5 디스크"],
+    mustContain: [
+      ["ps5", "플스5", "플스 5", "플레이스테이션 5", "playstation 5"],
+      ["디스크", "disc"],
+    ],
+    mustNotContain: [
+      "ps5 pro", "ps 5 pro", "플스5 프로", "플스 5 프로", "ps5pro",
+      "슬림", "slim", "ps5 slim", "플스5 슬림",
+      "디지털 에디션", "digital edition", "디지털에디션",
+      "psvr", "psvr2", "ps vr", "vr2", "vr 2",
+      "스위치", "switch", "닌텐도", "nintendo",
+      "ps4", "ps3", "ps2", "ps1",
+      "컨트롤러만", "듀얼센스만", "dualsense만", "충전기만", "케이스만", "스탠드만",
+      "기프트", "gift card", "디지털 카드", "월정액",
+      "ssd만", "ssd 단품", "카드만",
+      "구합니다", "삽니다", "매입", "wts", "wtb",
+      "부품용", "고장",
+    ],
+    msrpKrw: 698000,
+    released: 2020,
+  },
+  {
+    id: "ps5-digital-standard",
+    brand: "Sony",
+    category: "game_console",
+    laneKey: "ps5_disc_digital_standard",
+    modelName: "PlayStation 5 (Digital, Standard)",
+    aliases: ["PS5 디지털", "PS5 Digital", "플스5 디지털", "플레이스테이션 5 디지털 에디션"],
+    mustContain: [
+      ["ps5", "플스5", "플스 5", "플레이스테이션 5", "playstation 5"],
+      ["디지털", "digital"],
+    ],
+    mustNotContain: [
+      "ps5 pro", "ps 5 pro", "플스5 프로", "플스 5 프로", "ps5pro",
+      "슬림", "slim", "ps5 slim", "플스5 슬림",
+      "디스크 에디션", "disc edition", "디스크에디션",
+      "psvr", "psvr2", "ps vr", "vr2", "vr 2",
+      "스위치", "switch", "닌텐도", "nintendo",
+      "ps4", "ps3", "ps2", "ps1",
+      "컨트롤러만", "듀얼센스만", "dualsense만", "충전기만", "케이스만", "스탠드만",
+      "기프트", "gift card", "디지털 카드", "월정액", "psn",
+      "ssd만", "ssd 단품", "카드만",
+      "구합니다", "삽니다", "매입", "wts", "wtb",
+      "부품용", "고장",
+    ],
+    msrpKrw: 568000,
     released: 2020,
   },
   // ─── AirPods ─────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
-import { loadCategoryReadinessMap } from "@/lib/category-readiness";
+import { loadCategoryReadinessMap, loadLaneReadinessMap } from "@/lib/category-readiness";
 import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
 import {
@@ -3194,6 +3194,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const rows = await loadScorableRows(config.tickScoreLimit);
   if (rows.length === 0) return stats;
   const categoryReadiness = await loadCategoryReadinessMap();
+  const laneReadiness = await loadLaneReadinessMap();
   const parsedByPid = await ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid)));
   const marketStatsByKey = await loadMarketPriceStats(
     rows
@@ -3356,6 +3357,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     parsedByPid,
     catalogById,
     categoryReadiness,
+    laneReadiness,
     now,
   });
   const poolEntries = poolBuild.entries;

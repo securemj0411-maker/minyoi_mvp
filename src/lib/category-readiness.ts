@@ -10,6 +10,43 @@ export type CategoryReadinessDecision = {
   label: string;
   note?: string;
   minReadyPool?: number;
+  laneKey?: string;
+};
+
+export type LaneReadinessStatus = "ready" | "blocked";
+
+export type LaneReadinessConfig = {
+  status: LaneReadinessStatus;
+  label: string;
+  note?: string;
+};
+
+export type LaneReadinessMap = Record<string, LaneReadinessConfig>;
+
+// Narrow-lane readiness overrides category readiness. A SKU tagged with a
+// laneKey here can enter the public candidate pool even if its broader
+// category is `internal_only`. Categories without a ready lane stay gated.
+export const LANE_READINESS: LaneReadinessMap = {
+  camera_body_only_exact_model: {
+    status: "ready",
+    label: "Camera (body-only exact model)",
+    note: "교환식 카메라 body-only narrow lane. lens/번들/킷/액세서리/하자 행은 catalog mustNotContain으로 차단.",
+  },
+  monitor_benq_xl2540k: {
+    status: "ready",
+    label: "BenQ ZOWIE XL2540K",
+    note: "단일 모델 모니터 narrow lane.",
+  },
+  speaker_jbl_flip6: {
+    status: "ready",
+    label: "JBL Flip 6",
+    note: "단일 모델 portable speaker narrow lane. broad speaker/PA는 차단 유지.",
+  },
+  ps5_disc_digital_standard: {
+    status: "ready",
+    label: "PlayStation 5 (Standard)",
+    note: "PS5 Disc/Digital Standard 단독 narrow lane. Slim/Pro/PSVR/Switch는 catalog mustNotContain으로 차단.",
+  },
 };
 
 export type CategoryReadinessConfig = {
@@ -96,6 +133,14 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minParseRate: 0.9,
     minTrustedKeys: 10,
   },
+  game_console: {
+    status: "internal_only",
+    label: "Game Console",
+    note: "PS5/Switch broad는 보류. ps5_disc_digital_standard narrow lane만 LANE_READINESS로 별도 ready 처리.",
+    minReadyPool: 6,
+    minParseRate: 0.9,
+    minTrustedKeys: 4,
+  },
 };
 
 export function categoryFromComparableKey(value: string | null | undefined): Sku["category"] | null {
@@ -109,6 +154,7 @@ export function categoryFromComparableKey(value: string | null | undefined): Sku
     family === "monitor" ||
     family === "speaker" ||
     family === "camera" ||
+    family === "game_console" ||
     family === "small_appliance"
   ) {
     return family;
@@ -119,6 +165,7 @@ export function categoryFromComparableKey(value: string | null | undefined): Sku
   if (family === "ipad" || family === "galaxy_tab") return "tablet";
   if (family === "macbook") return "laptop";
   if (family === "display") return "monitor";
+  if (family === "ps5" || family === "playstation" || family === "switch") return "game_console";
   return null;
 }
 
@@ -235,4 +282,31 @@ export function categoryReadinessRows(readinessMap: CategoryReadinessMap = CATEG
     category: category as Sku["category"],
     ...config,
   }));
+}
+
+export function evaluateLaneReadinessForSku(
+  sku: Sku | null | undefined,
+  laneMap: LaneReadinessMap = LANE_READINESS,
+): CategoryReadinessDecision | null {
+  const laneKey = sku?.laneKey;
+  if (!laneKey) return null;
+  const config = laneMap[laneKey];
+  if (!config) return null;
+  return {
+    category: sku?.category ?? null,
+    status: config.status === "ready" ? "ready" : "blocked",
+    canEnterPool: config.status === "ready",
+    reason: config.status === "ready" ? `lane_ready_${laneKey}` : `lane_blocked_${laneKey}`,
+    label: config.label,
+    note: config.note,
+    laneKey,
+  };
+}
+
+export async function loadLaneReadinessMap(): Promise<LaneReadinessMap> {
+  // DB-backed override hook — table not present yet, so we fall back to the
+  // in-code map. Mirrors `loadCategoryReadinessMap()` shape so tick-pipeline
+  // can `await` both without a special case once a `mvp_lane_readiness`
+  // table exists.
+  return LANE_READINESS;
 }

@@ -1,6 +1,10 @@
 import {
   evaluateCategoryReadiness,
+  evaluateLaneReadinessForSku,
+  LANE_READINESS,
+  type CategoryReadinessDecision,
   type CategoryReadinessMap,
+  type LaneReadinessMap,
 } from "@/lib/category-readiness";
 import type { Sku } from "@/lib/catalog";
 import {
@@ -39,11 +43,39 @@ export type CandidatePoolBuildResult = {
   skipped: number;
 };
 
+// Lane-aware pool gate. A SKU tagged with a `ready` laneKey enters the pool
+// even when its broader category is `internal_only`. SKUs without a lane (or
+// whose lane is itself blocked) fall back to the category gate.
+export function evaluatePoolGate(
+  input: { sku?: Sku | null; category: Sku["category"] | null },
+  maps: { categoryReadiness?: CategoryReadinessMap; laneReadiness?: LaneReadinessMap } = {},
+): CategoryReadinessDecision {
+  const laneMap = maps.laneReadiness ?? LANE_READINESS;
+  const laneDecision = evaluateLaneReadinessForSku(input.sku ?? undefined, laneMap);
+  if (laneDecision && laneDecision.status === "ready") return laneDecision;
+
+  const categoryDecision = evaluateCategoryReadiness(input.category, maps.categoryReadiness);
+
+  // Lane exists but is blocked → surface the lane reason instead of silently
+  // falling through to category readiness (which might be `ready`).
+  if (laneDecision && laneDecision.status !== "ready") {
+    return {
+      ...categoryDecision,
+      status: "blocked",
+      canEnterPool: false,
+      reason: laneDecision.reason,
+      laneKey: laneDecision.laneKey,
+    };
+  }
+  return categoryDecision;
+}
+
 export function buildCandidatePoolRows(input: {
   rows: PoolCandidateInput[];
   parsedByPid: Map<number, PoolParsedInput>;
   catalogById: Map<string, Sku>;
   categoryReadiness: CategoryReadinessMap;
+  laneReadiness?: LaneReadinessMap;
   now: string;
 }): CandidatePoolBuildResult {
   const entries: Record<string, unknown>[] = [];
@@ -68,7 +100,10 @@ export function buildCandidatePoolRows(input: {
     const parsed = input.parsedByPid.get(pid);
     const sku = input.catalogById.get(row.skuId ?? "");
     const category = parsed?.category ?? sku?.category ?? null;
-    const readiness = evaluateCategoryReadiness(category, input.categoryReadiness);
+    const readiness = evaluatePoolGate(
+      { sku, category },
+      { categoryReadiness: input.categoryReadiness, laneReadiness: input.laneReadiness },
+    );
     const confidence = computePoolConfidence(Number(parsed?.parse_confidence ?? 0.5), row.scoreFlags);
     const comparableKey = parsed?.comparable_key ?? null;
     const skipReason = poolSkipReason({
