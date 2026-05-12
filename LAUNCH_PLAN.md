@@ -287,6 +287,8 @@ D. **CATEGORY_READINESS DB sync**: headphone/monitor/speaker/camera/game_console
 | 2026-05-13 | wave 1~6 readiness 데이터 수집 + sub-agent 결과 spot check (8 lane false alarm 차단) | catalog 정합성 OK, production needs_review 16.4% baseline 측정, runtime_not_deployed blocker 폐기 | macbook patch + owner decisions |
 | 2026-05-13 | option-parser v30→v31 patch: macbook chip→generation fallback (`m1`→`m1_gen`) | tsc clean, test 102/105 pass | lane-level production replay |
 | 2026-05-13 | `scripts/lane-replay-readiness.ts` 작성 + 50 lane × 15,607 samples 측정 | D등급 5 lane 발견 (airpods_4_anc/galaxy_z_flip_5/lg_gram_17/iphone_11_pro/galaxy_s25 — skuMatch <20%). airpods_pro_3 unknown 82% 발견. 우선순위 재정렬 | D등급 lane catalog mustContain 완화 수술 |
+| 2026-05-13 | parse_ready=true subset filter 추가 + 재측정 | 진짜 catalog 매칭 정밀도 측정. 동시에 D등급 일괄 patch 시도 (자급제 group 제거) → iphone 50% → 19% **하락**. broader SKU 충돌 확인. revert. | lane별 신중히 patch |
+| 2026-05-13 | galaxy_z_flip_5 단일 lane patch (broader SKU 없는 lane이라 자급제 group 제거 안전 + 매물 변형 흡수) | **0% → 75%** (120 samples). 함정 발견: 일괄 patch 금지, lane별 broader SKU 충돌 확인 후 진행 | self vs broader 격리 정책 결정 + 다른 약점 lane |
 
 ---
 

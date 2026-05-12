@@ -632,17 +632,19 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     laneKey: "galaxy_z_flip_5_256_self",
     modelName: "Galaxy Z Flip 5 256GB (자급제)",
     aliases: ["갤럭시 Z 플립5 256 자급제", "Galaxy Z Flip 5 256 SIM-Free"],
+    // mustContain[자급제] 제거: catalog에 broader Z Flip 5 SKU 없음 → 충돌 risk 0.
+    // 자급제 격리는 mustNotContain의 carrier 키워드로 처리.
+    // 매물 변형 흡수: "갤럭시z플립5" (공백 없음), "256G" 등.
     mustContain: [
-      ["갤럭시 z 플립", "갤럭시 플립", "galaxy z flip", "z flip"],
-      ["5", "5세대"],
-      ["256gb", "256 gb", "256기가"],
-      ["자급제", "자급", "공기계", "언락"],
+      ["갤럭시 z 플립", "갤럭시z플립", "갤럭시 플립", "갤럭시플립", "galaxy z flip", "galaxyzflip", "z flip", "zflip"],
+      ["플립5", "플립 5", "flip5", "flip 5", "5세대"],
+      ["256gb", "256 gb", "256g", "256기가", "256"],
     ],
     mustNotContain: [
       "플립4", "플립 4", "flip 4",
       "플립6", "flip 6",
       "폴드", "fold",
-      "512gb", "1tb",
+      "512gb", "512 gb", "512g", "1tb",
       "skt 완납", "skt 개통", "skt 약정", "skt 전용",
       "kt 완납", "kt 개통", "kt 약정", "kt 전용",
       "lgu+", "lg u+", "유플러스", "엘지유플",

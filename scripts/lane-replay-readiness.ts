@@ -41,6 +41,11 @@ for (const lane of listLaneDirs()) {
     continue;
   }
   if (samples.length === 0) continue;
+  // Filter to mining-validated samples only (lane_config acceptAll/reject passed).
+  // Without this, D-grade lanes look fake-bad because samples include wrong-lane fetches.
+  const filtered = samples.filter((s) => s.parse_ready === true);
+  const effective = filtered.length > 0 ? filtered : samples;
+  samples = effective;
 
   let skuMatched = 0;
   let laneMatched = 0;
