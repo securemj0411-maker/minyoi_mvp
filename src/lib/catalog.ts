@@ -500,7 +500,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
   },
 ];
 
-const CORE_LAPTOP_CATALOG: Sku[] = [
+const CORE_LAPTOP_CATALOG_PRO: Sku[] = [
   {
     id: "macbook-pro-14-m3-18-512",
     brand: "Apple",
@@ -1694,6 +1694,7 @@ export const CATALOG: Sku[] = [
   ...CORE_SMARTPHONE_CATALOG,
   ...CORE_TABLET_CATALOG,
   ...CORE_LAPTOP_CATALOG,
+  ...CORE_LAPTOP_CATALOG_PRO,
   ...GENERATED_CATALOG_WITH_GATES,
 ];
 
