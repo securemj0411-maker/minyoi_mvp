@@ -1,0 +1,74 @@
+{
+  "lane_key": "iphone_16_pro_128gb_self",
+  "category": "smartphone",
+  "queries": [
+    "아이폰 16 프로 128 자급제",
+    "아이폰16프로 128 자급제",
+    "iphone 16 pro 128 자급제",
+    "아이폰 16 프로 자급제"
+  ],
+  "accept_all": [
+    "아이폰\\s*16\\s*(?:프로|pro)|iphone\\s*16\\s*(?:pro|프로)"
+  ],
+  "accept_any_of": [],
+  "reject_rules": [
+    {
+      "label": "wrong_model_pro_max",
+      "pattern": "프로\\s*맥스|promax|pro\\s*max|프맥"
+    },
+    {
+      "label": "wrong_model_16_base_or_plus",
+      "pattern": "아이폰\\s*16\\s*플러스|iphone\\s*16\\s*plus|아이폰\\s*16\\s*기본|아이폰\\s*16e\\b|iphone\\s*16e\\b"
+    },
+    {
+      "label": "wrong_model_15",
+      "pattern": "아이폰\\s*15(?!\\d)|iphone\\s*15(?!\\d)"
+    },
+    {
+      "label": "wrong_model_17",
+      "pattern": "아이폰\\s*17(?!\\d)|iphone\\s*17(?!\\d)"
+    },
+    {
+      "label": "wrong_storage_256",
+      "pattern": "(?:^|[^0-9])256\\s*(?:gb|기가)?\\b"
+    },
+    {
+      "label": "wrong_storage_512_1tb",
+      "pattern": "512\\s*(?:gb|기가)?|1\\s*tb|1\\s*테라"
+    },
+    {
+      "label": "carrier_skt",
+      "pattern": "\\bskt\\b|sk\\s*텔레콤|에스케이\\s*텔레콤"
+    },
+    {
+      "label": "carrier_kt",
+      "pattern": "(?:^|\\s)kt\\s*(?:완납|개통|약정|이동|번호|요금|승계|유심)|케이티\\s*개통|kt\\s*전용"
+    },
+    {
+      "label": "carrier_lg",
+      "pattern": "\\blgu\\+?|\\blg\\s*u\\+?|유플\\s*러스|엘지\\s*유플|엘지유플|lg\\s*전용"
+    },
+    {
+      "label": "carrier_locked_generic",
+      "pattern": "통신사\\s*(?:개통|이동|전용|확정)|번호\\s*이동|약정\\s*(?:승계|진행|걸|남)|선택\\s*약정|공시\\s*지원|완납\\s*폰|완납폰|제휴\\s*카드|할부\\s*승계|할부\\s*원금|할부\\s*잔여|개통\\s*후|확정\\s*기변|확정기변"
+    },
+    {
+      "label": "broken_or_parts",
+      "pattern": "액정\\s*파손|부품\\s*용|부품용|파손\\s*품|침수|배터리\\s*교체\\s*요망"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입|삽니다|구해요|구매\\s*합니다|구매합니다"
+    },
+    {
+      "label": "refurbished_only",
+      "pattern": "리퍼\\s*폰|리퍼폰|리퍼\\s*제품|리퍼\\s*수령"
+    },
+    {
+      "label": "accessory_only",
+      "pattern": "케이스\\s*(?:만|단품)|필름\\s*(?:만|단품)|충전기\\s*만|보호\\s*필름\\s*만"
+    }
+  ],
+  "price_min_krw": 700000,
+  "price_max_krw": 1700000
+}
