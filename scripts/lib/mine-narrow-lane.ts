@@ -32,7 +32,8 @@ type LaneKey =
   | "bose_qc_ultra"
   | "airpods_max_usbc"
   | "iphone_16_pro_128gb_self"
-  | "galaxy_s25_ultra_256_self";
+  | "galaxy_s25_ultra_256_self"
+  | "airpods_pro_3";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -501,6 +502,42 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "refurbished_only", pattern: /리퍼\s*폰|리퍼폰|리퍼\s*제품|리퍼\s*수령|센터\s*리퍼/ },
       { label: "accessory_only", pattern: /케이스\s*(?:만|단품)|필름\s*(?:만|단품)|충전기\s*만|보호\s*필름\s*만|s\s*펜\s*만|s펜만|어댑터\s*만/ },
       { label: "lost_or_locked", pattern: /분실\s*폰|분실폰|잠김|락걸림|아이디\s*잠금|구글\s*계정\s*잠금|분실\s*보상폰|분실보상폰/ },
+    ],
+  },
+
+  airpods_pro_3: {
+    laneKey: "airpods_pro_3",
+    category: "earphone",
+    queries: [
+      "에어팟 프로 3",
+      "에어팟프로 3",
+      "에어팟 프로 3세대",
+      "에어팟프로3",
+      "airpods pro 3",
+      "airpods pro 3rd",
+      "에어팟 프로3",
+      "에어팟 프로 3 2025",
+      "ap pro 3",
+    ],
+    pages: 8,
+    targetParseReady: 200,
+    priceMin: 200_000,
+    priceMax: 450_000,
+    acceptAll: [/에어\s*팟|airpods/i, /프로|pro/i],
+    acceptAnyOf: [[/3\s*세대|프로\s*3\b|pro\s*3\b|\b3rd\b/i]],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_gen_1", pattern: /1\s*세대|\b1st\b|프로\s*1\b|pro\s*1\b/i },
+      { label: "wrong_gen_2", pattern: /2\s*세대|\b2nd\b|프로\s*2\b|pro\s*2\b/i },
+      { label: "wrong_model_max", pattern: /맥스|\bmax\b/i },
+      { label: "wrong_connector_lightning", pattern: /라이트닝|lightning/i },
+      { label: "case_only", pattern: /케이스\s*(?:만|단품|개별)|하드\s*케이스\s*만|실리콘\s*케이스\s*만|보관\s*케이스\s*만/ },
+      { label: "tip_only", pattern: /이어\s*팁\s*(?:만|단품|교체)|폼\s*팁\s*만|팁만\s*판매|이어팁\s*세트\s*만/ },
+      { label: "charger_or_cable_only", pattern: /충전기\s*만|케이블\s*만|어댑터\s*만|usb\s*케이블\s*만|무선\s*충전기\s*만/i },
+      { label: "parts_only", pattern: /부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만|힌지\s*부품/ },
+      { label: "buying_post", pattern: /매입|삽니다|구해요|구매\s*합니다|구매합니다/ },
+      { label: "non_apple_clone", pattern: /짝퉁|가품|복제품|레플리카/ },
+      { label: "broken", pattern: /고장|불량\s*품|파손\s*품|작동\s*안\s*됨|소리\s*안\s*나/ },
     ],
   },
 };
