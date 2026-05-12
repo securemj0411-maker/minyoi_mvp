@@ -715,6 +715,43 @@ const CORE_TABLET_CATALOG: Sku[] = [
     msrpKrw: 1700000,
     released: 2024,
   },
+  {
+    id: "galaxy-tab-s10-ultra-256-self",
+    brand: "Samsung",
+    category: "tablet",
+    laneKey: "galaxy_tab_s10_ultra_256_self",
+    modelName: "Galaxy Tab S10 Ultra 256GB Wi-Fi (자급제)",
+    aliases: [
+      "갤럭시탭 S10 울트라 256 자급제",
+      "갤탭 S10 울트라 256 와이파이",
+      "Galaxy Tab S10 Ultra 256 Wi-Fi",
+    ],
+    mustContain: [
+      ["갤럭시탭", "갤탭", "galaxy tab", "tab"],
+      ["s10", "s 10"],
+      ["울트라", "ultra"],
+      ["256gb", "256 gb", "256기가", "256g"],
+      ["자급제", "자급", "wifi", "와이파이"],
+    ],
+    mustNotContain: [
+      "플러스", "plus",
+      "fe", "팬에디션",
+      "s9", "갤럭시탭 s9", "갤탭 s9", "galaxy tab s9", "tab s9",
+      "s11", "갤럭시탭 s11", "갤탭 s11", "galaxy tab s11", "tab s11",
+      "셀룰러", "cellular", "5g", "lte", "유심",
+      "512gb", "512 gb", "512기가",
+      "1tb", "1 tb", "1테라",
+      "skt 완납", "skt 개통", "skt 약정", "skt 전용",
+      "kt 완납", "kt 개통", "kt 약정", "kt 전용",
+      "lgu+", "lg u+", "유플러스", "엘지유플",
+      "통신사 개통", "통신사 전용", "번호 이동", "약정 승계",
+      "완납폰", "완납 폰", "할부 승계", "할부 잔여", "확정 기변",
+      "리퍼폰", "리퍼 폰",
+      ...TABLET_NOISE,
+    ],
+    msrpKrw: 1700000,
+    released: 2024,
+  },
 ];
 
 const CORE_LAPTOP_CATALOG: Sku[] = [

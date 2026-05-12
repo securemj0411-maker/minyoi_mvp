@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "lane_key": "galaxy_tab_s10_ultra_256_self",
+  "category": "tablet",
+  "generated_at": "2026-05-12T11:18:37.464Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "갤럭시탭 s10 울트라 256 자급제",
+    "갤탭 s10 울트라 256",
+    "galaxy tab s10 ultra 256",
+    "갤럭시탭 s10울트라 256",
+    "갤탭 s10 ultra wifi",
+    "갤탭 s10 울트라 자급제"
+  ],
+  "pages": 15,
+  "price_range_krw": [
+    800000,
+    1900000
+  ],
+  "target_parse_ready": 200,
+  "total_fetched": 99,
+  "parse_ready_count": 30,
+  "rejected_count": 69,
+  "target_reached": false,
+  "reject_breakdown": [
+    {
+      "reason": "missing_any_자급_wifi_와이파이",
+      "count": 48
+    },
+    {
+      "reason": "missing_256",
+      "count": 22
+    },
+    {
+      "reason": "missing_any__bs_s_10_b",
+      "count": 21
+    },
+    {
+      "reason": "price_too_high",
+      "count": 19
+    },
+    {
+      "reason": "reject_buying_post",
+      "count": 19
+    },
+    {
+      "reason": "reject_cellular_variant",
+      "count": 17
+    },
+    {
+      "reason": "missing_울트라_ultra",
+      "count": 11
+    },
+    {
+      "reason": "missing_갤럭시_s_탭_갤탭_galaxy_s_tab",
+      "count": 8
+    },
+    {
+      "reason": "reject_wrong_model_plus",
+      "count": 7
+    },
+    {
+      "reason": "price_too_low",
+      "count": 5
+    },
+    {
+      "reason": "reject_carrier_locked_generic",
+      "count": 5
+    },
+    {
+      "reason": "reject_wrong_gen_s11",
+      "count": 3
+    },
+    {
+      "reason": "reject_wrong_storage_128",
+      "count": 3
+    },
+    {
+      "reason": "reject_accessory_only",
+      "count": 3
+    },
+    {
+      "reason": "reject_wrong_storage_512",
+      "count": 3
+    },
+    {
+      "reason": "reject_wrong_gen_s9",
+      "count": 2
+    },
+    {
+      "reason": "reject_wrong_storage_1tb",
+      "count": 2
+    },
+    {
+      "reason": "reject_carrier_skt",
+      "count": 1
+    },
+    {
+      "reason": "reject_carrier_lg",
+      "count": 1
+    },
+    {
+      "reason": "reject_broken_or_parts_only",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [
+      "256",
+      "울트라|ultra",
+      "갤럭시\\s*탭|갤탭|galaxy\\s*tab"
+    ],
+    "accept_any_of": [
+      [
+        "\\bs\\s*10\\b"
+      ],
+      [
+        "자급|wifi|와이파이"
+      ]
+    ]
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_gen_s9",
+      "pattern": "\\bs\\s*9\\b|갤럭시\\s*탭\\s*s\\s*9|갤탭\\s*s\\s*9|galaxy\\s*tab\\s*s\\s*9|tab\\s*s\\s*9\\b"
+    },
+    {
+      "label": "wrong_gen_s11",
+      "pattern": "\\bs\\s*11\\b|갤럭시\\s*탭\\s*s\\s*11|갤탭\\s*s\\s*11|galaxy\\s*tab\\s*s\\s*11|tab\\s*s\\s*11\\b"
+    },
+    {
+      "label": "wrong_model_plus",
+      "pattern": "플러스|\\bplus\\b|\\+\\s*256|s10\\+|s10플러스"
+    },
+    {
+      "label": "wrong_model_fe",
+      "pattern": "\\bfe\\b|팬\\s*에디션"
+    },
+    {
+      "label": "wrong_storage_512",
+      "pattern": "(?:^|[^0-9])512\\s*(?:gb|기가)?\\b"
+    },
+    {
+      "label": "wrong_storage_1tb",
+      "pattern": "\\b1\\s*tb\\b|1\\s*테라"
+    },
+    {
+      "label": "wrong_storage_128",
+      "pattern": "(?:^|[^0-9])128\\s*(?:gb|기가)\\b"
+    },
+    {
+      "label": "cellular_variant",
+      "pattern": "셀룰러|cellular|\\blte\\b|\\b5g\\b|유심|sim\\s*트레이|esim"
+    },
+    {
+      "label": "carrier_skt",
+      "pattern": "\\bskt\\b|sk\\s*텔레콤|에스케이\\s*텔레콤"
+    },
+    {
+      "label": "carrier_kt",
+      "pattern": "(?:^|\\s)kt\\s*(?:완납|개통|약정|이동|번호|요금|승계|유심)|케이티\\s*개통|kt\\s*전용"
+    },
+    {
+      "label": "carrier_lg",
+      "pattern": "\\blgu\\+?|\\blg\\s*u\\+?|유플\\s*러스|엘지\\s*유플|엘지유플|lg\\s*전용"
+    },
+    {
+      "label": "carrier_locked_generic",
+      "pattern": "통신사\\s*(?:개통|이동|전용|확정)|번호\\s*이동|약정\\s*(?:승계|진행|걸|남)|선택\\s*약정|공시\\s*지원|완납\\s*폰|완납폰|제휴\\s*카드|할부\\s*승계|할부\\s*원금|할부\\s*잔여|개통\\s*후|확정\\s*기변|확정기변"
+    },
+    {
+      "label": "accessory_only",
+      "pattern": "케이스\\s*(?:만|단품|개별)|필름\\s*(?:만|단품)|키보드\\s*만|매직\\s*키보드\\s*만|북커버\\s*키보드\\s*만|북커버키보드만|s\\s*pen\\s*만|에스펜\\s*만|펜슬\\s*만|애플\\s*펜슬\\s*만|어댑터\\s*만|충전기\\s*만|보호\\s*필름\\s*만"
+    },
+    {
+      "label": "case_or_cover_listing",
+      "pattern": "(?:북커버|북\\s*커버|스마트\\s*커버|폴리오\\s*케이스|클리어\\s*커버).{0,8}판매"
+    },
+    {
+      "label": "broken_or_parts_only",
+      "pattern": "액정\\s*파손|부품\\s*용|부품용|파손\\s*품|침수"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "매입|삽니다|구해요|구매\\s*합니다|구매합니다"
+    },
+    {
+      "label": "refurbished_only",
+      "pattern": "리퍼\\s*제품|리퍼\\s*수령|리퍼품"
+    }
+  ]
+}
