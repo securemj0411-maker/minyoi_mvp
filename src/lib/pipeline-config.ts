@@ -15,6 +15,13 @@ export const DEFAULT_SEARCH_QUERIES = [
   "닌텐도 스위치 OLED", "스위치 OLED",
   "플스5 디스크", "PS5 디스크", "플스5 디지털", "PS5 디지털", "PS5 슬림",
   "다이슨 V12", "다이슨 V15", "로보락 S8", "Roborock S8",
+  // Wave 57: Bose / Sony WH / desktop natural-language coverage (3 categories
+  // were 0 in Wave 55/56 audit; only synthetic wave*_boost: tags existed).
+  // start as queryFamily=unknown → gather + 5m default. Yield-based downrank
+  // applies once evidence accumulates.
+  "보스 QC", "Bose QC",
+  "WH-1000XM", "소니 헤드폰",
+  "맥미니", "아이맥", "맥스튜디오",
 ];
 
 export type PipelineRuntimeConfig = {
