@@ -1,6 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { isAdminUser } from "@/lib/auth-users";
-import { jsonBody, restFetch, rpcUrl, serviceHeaders } from "@/lib/supabase-rest";
+import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 export const FREE_CREDIT_GRANT = 5;
 export const ADMIN_CREDIT_LABEL = "∞";
@@ -57,6 +57,29 @@ export async function claimUserCredits(user: User, userRef: string): Promise<Use
   });
   const rows = (await res.json()) as ClaimCreditRow[];
   const row = rows[0] ?? {};
+  return {
+    tokens: Math.max(0, Number(row.balance ?? 0)),
+    infinite: false,
+    freeGrantedAt: row.free_granted_at ?? null,
+  };
+}
+
+// SELECT only — 페이지뷰당 DB write 방지. row 없으면 null 반환.
+// 신규 사용자 첫 호출은 호출자에서 claimUserCredits로 fallback.
+export async function getUserCreditsReadOnly(
+  user: User,
+  userRef: string,
+): Promise<UserCreditState | null> {
+  if (isAdminUser(user)) return adminCreditState();
+
+  const url = `${tableUrl("mvp_user_credits")}?select=balance,free_granted_at&user_ref=eq.${encodeURIComponent(userRef)}&auth_user_id=eq.${user.id}&limit=1`;
+  const res = await restFetch(url, {
+    method: "GET",
+    headers: serviceHeaders(),
+  });
+  const rows = (await res.json()) as ClaimCreditRow[];
+  if (rows.length === 0) return null;
+  const row = rows[0]!;
   return {
     tokens: Math.max(0, Number(row.balance ?? 0)),
     infinite: false,

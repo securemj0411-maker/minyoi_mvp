@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { claimUserCredits } from "@/lib/user-credits";
+import { claimUserCredits, getUserCreditsReadOnly } from "@/lib/user-credits";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -32,7 +32,12 @@ export async function GET(req: Request) {
   }
 
   try {
-    const credits = await claimUserCredits(auth.user, userRef);
+    // 1. SELECT 우선 시도 (기존 사용자 = DB write 0회)
+    let credits = await getUserCreditsReadOnly(auth.user, userRef);
+    // 2. row 없으면 (신규 사용자 첫 호출) 그때만 claim — free grant 발급
+    if (!credits) {
+      credits = await claimUserCredits(auth.user, userRef);
+    }
     return NextResponse.json({
       ...credits,
       userRef,
