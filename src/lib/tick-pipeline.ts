@@ -1521,6 +1521,11 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           updated_at: now,
           score_dirty: true,
         });
+        // pool에 이미 들어간 매물이면 last_verified_at 갱신 → pack-open에서 재verify 안 함
+        // (cron이 이미 fetchDetail + sold-out 체크 완료한 사실을 pool에 반영)
+        await patchRows("mvp_candidate_pool", `pid=eq.${claim.pid}`, {
+          last_verified_at: now,
+        }).catch(() => undefined);
         try {
           if (detail.shopUid) {
             stats.sellerUpserted += await upsertSellerRows([{
