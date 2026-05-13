@@ -555,7 +555,8 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
 
   if (sku.category !== "laptop") return null;
 
-  const boxOnlySignal = !fullBoxSignal && /(박스만|박스판매|박스팝니다|박스구함|박스삽니다|맥북박스|맥북에어박스|맥북프로박스)/.test(compactText);
+  const boxMissingSignal = /(?:박스|상자)(?:는|가|은)?(?:없|없음|없습니다|미포함|제외)|(?:박스|상자)(?:없이|없는)/.test(compactText);
+  const boxOnlySignal = !fullBoxSignal && !boxMissingSignal && /(박스만|박스판매|박스팝니다|박스구함|박스삽니다|맥북박스|맥북에어박스|맥북프로박스)/.test(compactText);
 
   if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 100_000)) {
     return "accessory";

@@ -21,7 +21,7 @@ export const DEFAULT_SEARCH_QUERIES = [
   // applies once evidence accumulates.
   "보스 QC", "Bose QC",
   "WH-1000XM", "소니 헤드폰",
-  "맥미니", "아이맥", "맥스튜디오",
+  "맥미니", "아이맥", "맥 스튜디오", "Mac Studio",
 ];
 
 export type PipelineRuntimeConfig = {

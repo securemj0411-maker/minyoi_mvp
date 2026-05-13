@@ -1522,6 +1522,26 @@ export const CATALOG: Sku[] = [
   },
   // ─── Desktop Wave 22: iMac M3 24-inch ───
   {
+    // Apple iMac M1 24" (2021). Dense enough in generic "아이맥" query, but
+    // must stay separate from older Intel 21/27-inch and newer M3/M4 models.
+    id: "desktop-imac-m1-24",
+    brand: "Apple",
+    category: "desktop",
+    laneKey: "desktop_imac_m1_24",
+    modelName: "Apple iMac M1 24\"",
+    aliases: ["iMac M1", "아이맥 M1", "iMac M1 24", "아이맥 M1 24", "아이맥 24인치 M1"],
+    mustContain: [["imac", "아이맥"], ["m1"]],
+    mustNotContain: [
+      "m2", "m3", "m4", "intel", "인텔",
+      "27인치", "27\"", "27in", "21인치", "21.5", "21\"", "21in", "retina 5k", "5k retina",
+      "mac studio", "맥 스튜디오", "맥스튜디오", "mac pro", "맥프로", "mac mini", "맥미니", "macbook", "맥북",
+      "스탠드만", "어댑터만", "케이블만", "박스만", "케이스만", "부품용", "파손", "고장", "수리이력", "액정파손", "메인보드",
+      "매입", "삽니다", "구해요", "구매합니다", "구합니다",
+    ],
+    msrpKrw: 1690000,
+    released: 2021,
+  },
+  {
     // Apple iMac M3 24" (2023). msrp 1,690~2,090k (8GB/256 base ~ 16GB/512 top).
     // Bunjang probe: M3 67건 (가장 dense), distribution 1.2~1.55M. wide enough for profit_band 1~2.
     // 다른 chip(M1/M2/M4/Intel) + 27"/21" 이전 세대 분리.
@@ -1546,6 +1566,26 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 1890000,
     released: 2023,
+  },
+  {
+    // Apple Mac Studio M4 Max 512GB (2025). Query "맥스튜디오" is polluted by
+    // MAXSTUDIO apparel; only exact Mac Studio + M4 Max + 512 rows may bind.
+    id: "desktop-mac-studio-m4-max-512",
+    brand: "Apple",
+    category: "desktop",
+    laneKey: "desktop_mac_studio_m4_max_512",
+    modelName: "Apple Mac Studio M4 Max 512GB",
+    aliases: ["Mac Studio M4 Max", "맥 스튜디오 M4 Max", "맥스튜디오 M4 Max", "맥 스튜디오 M4 맥스"],
+    mustContain: [["mac studio", "맥 스튜디오", "맥스튜디오"], ["m4 max", "m4max", "m4 맥스"], ["512", "512gb", "512g"]],
+    mustNotContain: [
+      "m1", "m2", "m3", "m4 pro", "m4pro", "m2 max", "m2max", "m2 ultra", "m2ultra",
+      "imac", "아이맥", "mac mini", "맥미니", "macbook", "맥북", "mac pro", "맥프로",
+      "1tb", "1테라", "2tb", "2테라", "4tb", "4테라",
+      "스탠드만", "어댑터만", "케이블만", "박스만", "케이스만", "부품용", "파손", "고장", "수리이력", "메인보드",
+      "매입", "삽니다", "구해요", "구매합니다", "구합니다",
+    ],
+    msrpKrw: 3290000,
+    released: 2025,
   },
   // ─── Camera body-only exact-model internal candidates ───
   {

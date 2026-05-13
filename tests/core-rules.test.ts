@@ -476,6 +476,31 @@ test("MacBook purchase year does not fragment Apple Silicon generation", () => {
   assert.equal(parsed.comparableKey, "macbook|macbook_air|m2_gen|m2|13in|8gb_ram|256gb_ssd");
 });
 
+test("MacBook Pro M1 Pro chip creates deterministic generation axis", () => {
+  const parsed = parseListingOptions({
+    category: "laptop",
+    skuId: "macbook_pro",
+    title: "맥북 프로 m1 pro 16인치 16gb 512gb 효율98% 실버",
+  });
+  assert.equal(parsed.comparableKey, "macbook|macbook_pro|m1pro_gen|m1_pro|16in|16gb_ram|512gb_ssd");
+  assert.equal(parsed.needsReview, false);
+});
+
+test("MacBook missing-box wording does not become box-only accessory", () => {
+  const withMissingBox = classifyListing(
+    "맥북 에어 M3 15인치 8GB 256GB 실버",
+    "본체, 맥세이프3 충전선, 정품 충전기, 불투명 케이스 포함. 맥북에어 박스는 없음.",
+    1_100_000,
+  );
+  assert.equal(withMissingBox.listingType, "normal");
+  assert.equal(withMissingBox.sku?.id, "macbook-air");
+
+  assert.notEqual(
+    classifyListing("맥북에어 박스만 판매", "빈 박스 단품입니다.", 20_000).listingType,
+    "normal",
+  );
+});
+
 test("LG Gram 17 2024 exact model codes match narrow laptop lane", () => {
   const matched = ruleMatch("LG 그램17 17ZD90SU 코어울트라7 16GB 1TB 17인치", "");
   assert.equal(matched?.id, "lg-gram-17-2024");
@@ -518,6 +543,34 @@ test("iPad mini 7 exact lane keeps mini screen default", () => {
   });
   assert.equal(parsed.comparableKey, "ipad|ipad_mini_7_128_wifi|8_3in|128gb|wifi");
   assert.equal(parsed.needsReview, false);
+});
+
+test("desktop Apple exact model SKUs bind only precise iMac/Mac Studio rows", () => {
+  const imacM1 = ruleMatch("아이맥 m1 블루 색상 풀박스", "");
+  assert.equal(imacM1?.id, "desktop-imac-m1-24");
+  const parsedImac = parseListingOptions({
+    category: imacM1?.category,
+    skuId: imacM1?.id,
+    skuName: imacM1?.modelName,
+    title: "아이맥 m1 블루 색상 풀박스",
+  });
+  assert.equal(parsedImac.comparableKey, "desktop|apple_imac_m1_24");
+  assert.equal(parsedImac.needsReview, false);
+
+  const studio = ruleMatch("애플 맥 스튜디오 m4 max 512g", "");
+  assert.equal(studio?.id, "desktop-mac-studio-m4-max-512");
+  const parsedStudio = parseListingOptions({
+    category: studio?.category,
+    skuId: studio?.id,
+    skuName: studio?.modelName,
+    title: "애플 맥 스튜디오 m4 max 512g",
+  });
+  assert.equal(parsedStudio.comparableKey, "desktop|apple_mac_studio_m4_max_512gb");
+  assert.equal(parsedStudio.needsReview, false);
+
+  assert.equal(ruleMatch("맥스튜디오 청바지 26인치", "")?.id, undefined);
+  assert.equal(ruleMatch("맥스스튜디오 여성 블루 린넨 벨티드 7부 블라우스 66", "")?.id, undefined);
+  assert.equal(ruleMatch("CGV 아이맥스 IMAX 4DX 당일 영화예매", "")?.id, undefined);
 });
 
 test("monitor model code and core options become comparable key", () => {

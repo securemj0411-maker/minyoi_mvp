@@ -138,3 +138,104 @@ Wave 56과 동일 메커니즘: housekeeper / tick search stage가 `DEFAULT_SEAR
 7. JBL 플립6 (한글 변형) raw 0 cleanup (사이드 발견)
 
 → **남은 blocker 7건**.
+
+---
+
+## Follow-up 측정 (Wave 57 patch 후, db_now=2026-05-13 23:19 UTC)
+
+read-only. DB write 0, candidate_pool 0, public 0, DDL 0, RPC 0, manual detail fire 0.
+
+### A. PS5 parser patch 효과 — **확인됨**
+
+PS5 5 query 19분간 변화:
+
+| query | raw | queue | q_pending | q_done | parsed | clean | distinct_sku |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 플스5 디스크 | 96 | 65 | 55 | **10** | 9 | 4 | **2** |
+| 플스5 디지털 | 93 | 68 | 68 | 0 | 0 | 0 | 0 |
+| PS5 디지털 | 56 | 49 | 49 | 0 | 0 | 0 | 0 |
+| PS5 디스크 | 46 | 33 | 33 | 0 | 0 | 0 | 0 |
+| PS5 슬림 | 33 | 13 | 13 | 0 | 0 | 0 | 0 |
+
+"플스5 디스크" 10 done → parsed 9 → SKU 매칭:
+- `ps5-disc-standard` (key `game_console|playstation_5_disc_standard`): **3 clean**
+- `ps5-slim-disc` (key `game_console|playstation_5_slim_disc`): **1 clean**
+- null SKU (구성/사양 모호): 5
+
+→ **Wave 56 game-console parser patch + global classifier scoped parser 연결이 production에서 정상 작동**. Wave 53 PS5 root cause (`policy-ps5-*-basic` 미등록)가 GPT의 Wave 56 patch로 catalog 진짜 SKU (`ps5-disc-standard`, `ps5-slim-disc`) 바인딩으로 해소.
+
+나머지 4 query (플스5 디지털 / PS5 디지털·디스크·슬림): 큐는 채워졌지만 claim 순서상 "플스5 디스크" 뒤. 차례 대기 중.
+
+### B. Wave 57 +7 query 등록 및 raw inflow
+
+7/7 mvp_search_queries 자동 등록 (manual sync 없음, last_scanned_at 23:10).
+
+| query | registry | raw_total | raw_since_w57 | detail_done | parsed | sku |
+|---|---|---:|---:|---:|---:|---:|
+| WH-1000XM | registered 5m gather | 96 | 95 | 0 | 0 | 0 |
+| 보스 QC | registered 5m gather | 95 | 94 | 0 | 0 | 0 |
+| 맥스튜디오 | registered 5m gather | 87 | 87 | 0 | 0 | 0 |
+| 아이맥 | registered 5m gather | 86 | 86 | 0 | 0 | 0 |
+| 맥미니 | registered 5m gather | 83 | 83 | 0 | 0 | 0 |
+| 소니 헤드폰 | registered 5m gather | 54 | 54 | 0 | 0 | 0 |
+| **Bose QC** | registered 5m gather | **0** | **0** | 0 | 0 | 0 |
+
+총 raw +501 / 19분. 한국어 표기가 효과적, 영어 "Bose QC" 단독은 raw 0 (한국 매물 표기와 미스매치). detail_done은 모두 0 — PS5/기존 backlog 우선.
+
+→ **"Bose QC" 자연 사용 없음 — Wave 58+ cleanup 후보** (Wave 57 본문의 JBL 플립6 cleanup 후보와 동일 패턴).
+
+### C. detail_queue backlog 과부하 분석
+
+전체 status:
+- pending **369** (Wave 57 시점 280 → +89)
+- done 17,414 (Wave 57 17,377 → +37)
+- processing 0 → 2 (PS5 진행 중)
+- failed 125 (변동 없음)
+
+pending 369 분해 (PS5 / WAVE57 / OTHER):
+
+| bucket | pending | processing | created 범위 | 비중 |
+|---|---:|---:|---|---:|
+| PS5 | 198 | 2 | 22:44:06~22:44:07 | 54% |
+| WAVE57 | 121 | 0 | 23:10:29~23:20:23 | 33% |
+| OTHER | 37 | 0 | 22:44~23:20 | 10% |
+
+drain rate:
+- last 30분: **115 done (≈230 row/hour)**
+- last 60분: 184 done (≈184 row/hour) — 30분 throughput이 더 빠름. 가속 추세.
+
+추정 catch-up:
+- PS5 198 backlog: claim 순서상 1순위. drain rate 230/hour 가정 → ~50분 후 처리 (단 WAVE57 121이 23:10에 큐 진입했지만 created_at >> PS5라 순서적으로 PS5 먼저).
+- WAVE57 121 + 추가 inflow: PS5 catch-up 끝난 후 시작. 7 query × 5m × 60~96 raw = ~250 row/hour 신규 추가 — 거의 drain rate와 비슷. 안정화 가능하나 burst 시 추월 위험.
+
+**과부하 판정**: **임박한 위기는 아님**. drain rate 230/hr ≈ Wave 57 inflow rate. PS5 catch-up 끝나면 안정화 예상. burst 시 일시 적체 가능. manual detail fire 불필요 (자연 cycle 충분).
+
+### D. 결론
+
+1. **PS5 parser patch 효과 production 확인**: ps5-disc-standard 3 / ps5-slim-disc 1 SKU clean binding 발생. Wave 53 root cause 해소.
+2. **Wave 57 +7 query 7/7 등록 + 6 query 자연 raw inflow 정상**. Bose QC (영어)만 0 raw → cleanup 후보.
+3. **detail_queue 369 pending이지만 drain rate 230/hr로 따라감**. 1.5~2시간 내 안정화 예상. manual fire 불필요.
+4. PS5 parser 검증은 "플스5 디스크" 1 query에서만 확인됨 — 나머지 4 PS5 query는 차례 대기.
+
+### E. 변경/검증/위험 (follow-up)
+
+- 변경: 없음 (read-only 측정)
+- 검증: 6 SQL query
+- 위험: 없음
+- 다음 (Wave 58+ 후보):
+  - PS5 나머지 4 query 차례 도달 후 동일 SKU binding 확인 (PS5 plain 등 비-디스크 variant)
+  - Wave 57 6 query catch-up 후 SKU binding 확인 (bose-qc-ultra/qc45, sony-wh-1000xm4/ch520, desktop-mac-mini/imac/mac-studio)
+  - "Bose QC" + "JBL 플립6" 한글 변형 0 raw cleanup (DEFAULT_SEARCH_QUERIES 2 줄 제거)
+
+### F. 남은 blocker (재정렬)
+
+1. R3 contentHash 더블체크 path
+2. needs-owner 407 stale row 사인오프
+3. Phase A backup table DROP (2026-05-21+)
+4. ~~PS5 lanes owner decision~~ — **부분 해소**: 플스5 디스크 SKU binding 확인. 4 query 차례 도달 후 재평가
+5. PS5 detail queue 198 pending catch-up (drain 진행 중, ~50분)
+6. Wave 57 +7 query 121 pending catch-up + SKU 매칭 측정 (~1.5h 후)
+7. **"Bose QC" + "JBL 플립6" 0-raw 변형 cleanup** (Wave 58+)
+
+→ **남은 blocker 7건** (#4가 부분 해소되어 우선순위 강등).
+

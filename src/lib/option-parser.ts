@@ -173,7 +173,7 @@ function laptopGenerationKey(
 ) {
   if (releaseYear) return `${releaseYear}y`;
   if (modelNumber) return modelNumber;
-  if (chip && /^m[1-9][a-z]*$/i.test(chip)) return `${chip.toLowerCase()}_gen`;
+  if (chip && /^m[1-9](?:_[a-z]+|[a-z]*)?$/i.test(chip)) return `${chip.toLowerCase().replaceAll("_", "")}_gen`;
   return null;
 }
 
