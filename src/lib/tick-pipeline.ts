@@ -643,7 +643,9 @@ export function sourceUpdatedAtFromSearchUpdateTime(updateTime: number | null | 
 
 async function loadExistingRaw(pids: number[]): Promise<Map<number, RawListingRow>> {
   if (pids.length === 0) return new Map();
-  const unique = [...new Set(pids)];
+  // invalid pid (NaN/undefined/null) 차단 — PostgREST 400 방지
+  const unique = [...new Set(pids.filter(Number.isFinite))];
+  if (unique.length === 0) return new Map();
   const rows: RawListingRow[] = [];
   for (const chunk of chunkArray(unique, RAW_EXISTING_READ_CHUNK_SIZE)) {
     const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,seller_uid,thumbnail_url,listing_type,sku_id,sku_name,detail_status,detail_enriched_at,detail_error,last_seen_at,last_changed_at,source_updated_at,listing_state,missing_count,last_missing_at&pid=in.(${chunk.join(",")})`;
@@ -1731,7 +1733,8 @@ async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<
 
 async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListingRow>> {
   if (pids.length === 0) return new Map();
-  const unique = [...new Set(pids)];
+  const unique = [...new Set(pids.filter(Number.isFinite))];
+  if (unique.length === 0) return new Map();
   const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,needs_review,parsed_json";
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
