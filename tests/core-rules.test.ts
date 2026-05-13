@@ -431,6 +431,26 @@ test("MacBook release year becomes part of laptop comparable key", () => {
   assert.equal(parsed.needsReview, true);
 });
 
+test("MacBook purchase year does not fragment Apple Silicon generation", () => {
+  const parsed = parseListingOptions({
+    category: "laptop",
+    skuId: "macbook_air_m2_13_256",
+    title: "맥북 에어 M2 13인치 8GB 256GB",
+    description: "2025년 2월 구매했고 풀박스입니다.",
+  });
+  assert.equal(parsed.comparableKey, "macbook|macbook_air|m2_gen|m2|13in|8gb_ram|256gb_ssd");
+});
+
+test("iPad mini 7 exact lane keeps mini screen default", () => {
+  const parsed = parseListingOptions({
+    category: "tablet",
+    skuId: "ipad-mini-7-128-wifi",
+    title: "아이패드 미니7 128기가 wifi 풀박스",
+  });
+  assert.equal(parsed.comparableKey, "ipad|ipad_mini_7_128_wifi|8_3in|128gb|wifi");
+  assert.equal(parsed.needsReview, false);
+});
+
 test("monitor model code and core options become comparable key", () => {
   const parsed = parseListingOptions({
     category: "monitor",
@@ -1085,6 +1105,24 @@ test("pool policy blocks AI second-opinion hold even when candidate otherwise lo
       scoreFlags: ["ai_second_opinion_hold", "ai_normal"],
     }),
     "blocked_ai_second_opinion_hold",
+  );
+});
+
+test("pool policy blocks parser-gap AI L2 flags by default", () => {
+  assert.equal(
+    poolSkipReason({
+      profitMin: 45_000,
+      price: 125_000,
+      skuMedian: 180_000,
+      riskHits: 0,
+      thumbnailUrl: "https://example.test/ipad.jpg",
+      categoryCanEnterPool: true,
+      comparableKey: "ipad|ipad_air|11in|256gb|wifi",
+      needsReview: false,
+      confidence: 0.95,
+      scoreFlags: ["connectivity_ambiguity", "ai_normal"],
+    }),
+    "blocked_connectivity_ambiguity",
   );
 });
 

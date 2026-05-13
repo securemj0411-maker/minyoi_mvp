@@ -51,17 +51,51 @@ function searchCounter(dbHotpaths, name) {
   return dbHotpaths.searchCounters?.find((row) => row.name === name) ?? { calls: 0, total: 0, max: 0 };
 }
 
+function parseDate(value) {
+  const date = new Date(value ?? "");
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function hoursOld(value, nowDate = now) {
+  const date = parseDate(value);
+  if (!date) return Number.POSITIVE_INFINITY;
+  return Math.max(0, (nowDate.getTime() - date.getTime()) / 3_600_000);
+}
+
+function sourceReportInfo(name, generatedAt, maxAgeHours) {
+  const ageHours = hoursOld(generatedAt);
+  return {
+    name,
+    generatedAt: generatedAt ?? null,
+    ageHours,
+    stale: ageHours > maxAgeHours,
+  };
+}
+
 function decisionStatus({ tick, pack, lifecycle, terminal, db }) {
+  const maxSourceAgeHours = n(arg("max-source-age-hours", "2"));
+  const sourceReports = [
+    sourceReportInfo("tick", tick.generatedAt, maxSourceAgeHours),
+    sourceReportInfo("pack", pack.generatedAt, maxSourceAgeHours),
+    sourceReportInfo("lifecycle", lifecycle.generated_at, maxSourceAgeHours),
+    sourceReportInfo("terminal", terminal.generated_at, maxSourceAgeHours),
+    sourceReportInfo("db", db.generatedAt, maxSourceAgeHours),
+  ];
+  const staleReports = sourceReports.filter((report) => report.stale);
   const dryRunCalls = searchCounter(db, "raw_touch_active_seen_coalesce_eligible_rows").calls;
   const enabledSamples = searchCounter(db, "raw_touch_active_seen_coalesce_enabled").total;
   const failures = n(db.runs?.failed);
+  const failureRate = n(db.runs?.failureRate);
+  const tickWorker = db.workers?.find((row) => row.worker === "tick") ?? {};
+  const tickFailures = n(tickWorker.failed);
   const reveal = n(String(pack.summary?.reveal ?? "0").match(/\d+/)?.[0]);
   const sampled = n(pack.summary?.sampled);
   const activePoolOverlap = n(terminal.summary?.active_pool_rows) + n(terminal.summary?.ready_pool_rows) + n(terminal.summary?.reserved_pool_rows);
   const recheck = n(lifecycle.summary?.recheck_required);
 
+  if (staleReports.length > 0) return "hold_stale_inputs";
   if (dryRunCalls < 10) return "observe_more";
-  if (db.latestSourceHealth?.status !== "healthy" || failures > 0) return "hold_health";
+  if (db.latestSourceHealth?.status !== "healthy" || failureRate > 0.05 || tickFailures > 0) return "hold_health";
   if (sampled > 0 && reveal < sampled) return "hold_pack_open";
   if (activePoolOverlap > 0) return "hold_terminal_overlap";
   if (recheck > 0) return "hold_lifecycle_recheck";
@@ -132,9 +166,21 @@ const dbSummary = {
 };
 
 const status = decisionStatus({ tick, pack, lifecycle, terminal, db });
+const maxSourceAgeHours = n(arg("max-source-age-hours", "2"));
+const sourceReportRows = [
+  sourceReportInfo("tick", tick.generatedAt, maxSourceAgeHours),
+  sourceReportInfo("pack", pack.generatedAt, maxSourceAgeHours),
+  sourceReportInfo("lifecycle", lifecycle.generated_at, maxSourceAgeHours),
+  sourceReportInfo("terminal", terminal.generated_at, maxSourceAgeHours),
+  sourceReportInfo("db", db.generatedAt, maxSourceAgeHours),
+];
+const staleReports = sourceReportRows.filter((report) => report.stale);
 const notes = [];
+if (status === "hold_stale_inputs") {
+  notes.push(`입력 리포트가 오래됐습니다. stale reports: ${staleReports.map((report) => `${report.name} ${report.ageHours.toFixed(1)}h`).join(", ")}. lifecycle/terminal/db/tick/pack 리포트를 같은 window로 재생성한 뒤 다시 판단합니다.`);
+}
 if (status === "observe_more") notes.push("dry-run counter 호출 수가 아직 적습니다. 실제 write skip 판단은 최소 24시간 window 이후로 보류합니다.");
-if (status === "hold_health") notes.push("source health 또는 최근 run 실패가 불안정합니다. write 절감 기능을 켜기 전에 안정화가 먼저입니다.");
+if (status === "hold_health") notes.push("source health, tick 실패, 또는 전체 실패율이 불안정합니다. write 절감 기능을 켜기 전에 안정화가 먼저입니다.");
 if (status === "hold_pack_open") notes.push("pack open/reveal 경로에 문제가 있습니다. 사용자 가시 경로가 정상화되기 전까지 write skip은 보류합니다.");
 if (status === "hold_terminal_overlap") notes.push("terminal interval 후보가 active/ready/reserved pool과 겹칩니다. sold/live 경로 정리 전까지 write skip은 보류합니다.");
 if (status === "hold_lifecycle_recheck") notes.push("lifecycle recheck 대기열이 남아 있습니다. 이 상태에서는 last_seen 의미 변경을 보수적으로 다룹니다.");
@@ -152,11 +198,11 @@ const summary = {
   db: dbSummary,
   notes,
   sourceReports: {
-    tick: tick.generatedAt,
-    pack: pack.generatedAt,
-    lifecycle: lifecycle.generated_at,
-    terminal: terminal.generated_at,
-    db: db.generatedAt,
+    tick: sourceReportRows.find((report) => report.name === "tick"),
+    pack: sourceReportRows.find((report) => report.name === "pack"),
+    lifecycle: sourceReportRows.find((report) => report.name === "lifecycle"),
+    terminal: sourceReportRows.find((report) => report.name === "terminal"),
+    db: sourceReportRows.find((report) => report.name === "db"),
   },
 };
 
@@ -205,8 +251,13 @@ ${table(
 ## Source Reports
 
 ${table(
-  ["report", "generated_at"],
-  Object.entries(summary.sourceReports).map(([name, generatedAt]) => [name, generatedAt ?? "-"]),
+  ["report", "generated_at", "age", "freshness"],
+  Object.entries(summary.sourceReports).map(([name, report]) => [
+    name,
+    report?.generatedAt ?? "-",
+    Number.isFinite(report?.ageHours) ? `${report.ageHours.toFixed(1)}h` : "unknown",
+    report?.stale ? "stale" : "fresh",
+  ]),
 )}
 `;
 

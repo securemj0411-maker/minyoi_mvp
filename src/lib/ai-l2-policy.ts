@@ -30,6 +30,15 @@ export const AI_L2_FLAGS = [
   "weak_normal_signal",
   "short_title",
   "commercial_review",
+  "option_parse_review",
+  "option_needs_review",
+  "market_stat_missing",
+  "market_confidence_low",
+  "self_unlocked_ambiguity",
+  "bundle_or_accessory_ambiguity",
+  "generation_ambiguity",
+  "connectivity_ambiguity",
+  "parser_unknown_option",
 ] as const;
 
 export type AiL2Flag = (typeof AI_L2_FLAGS)[number];
@@ -102,10 +111,11 @@ function flagsOfInterest(flags: readonly string[]): AiL2Flag[] {
  *  2. multi_model_review → review/high. 한 글에 여러 SKU 옵션.
  *  3. extreme_discount_review (priceGap ≥ 0.75) → review/high. 100% AI noise 확정.
  *  4. open-set 카테고리 (desktop_custom_build) → review/normal. SKU 자체가 없어 AI에 위임.
- *  5. commercial_review → review/normal. 약한 업자 신호.
- *  6. deep_discount_review (≥ 0.55) → review/normal.
- *  7. weak_normal_signal / short_title (단독) → review/normal. 8.8% overturn = AI가 의미 있게 필터.
- *  8. flag 없음 + gap < DEEP_GAP_FLOOR → skip.
+ *  5. parser/option ambiguity → review/normal. 결정론이 정확성 기준으로 멈춘 lane의 L2 담당.
+ *  6. commercial_review → review/normal. 약한 업자 신호.
+ *  7. deep_discount_review (≥ 0.55) → review/normal.
+ *  8. weak_normal_signal / short_title (단독) → review/normal. 8.8% overturn = AI가 의미 있게 필터.
+ *  9. flag 없음 + gap < DEEP_GAP_FLOOR → skip.
  */
 export function decideAiL2Review(input: AiL2Input): AiL2Decision {
   const flags = flagsOfInterest(input.scoreFlags);
@@ -123,6 +133,28 @@ export function decideAiL2Review(input: AiL2Input): AiL2Decision {
   }
   if (POLICY_PARAMS.OPEN_SET_CATEGORIES.includes(category)) {
     return { review: true, priority: "normal", reason: "open_set_category" };
+  }
+  if (hasFlag(flags, "self_unlocked_ambiguity")) {
+    return { review: true, priority: "normal", reason: "self_unlocked_ambiguity" };
+  }
+  if (hasFlag(flags, "bundle_or_accessory_ambiguity")) {
+    return { review: true, priority: "normal", reason: "bundle_or_accessory_ambiguity" };
+  }
+  if (hasFlag(flags, "generation_ambiguity")) {
+    return { review: true, priority: "normal", reason: "generation_ambiguity" };
+  }
+  if (hasFlag(flags, "connectivity_ambiguity")) {
+    return { review: true, priority: "normal", reason: "connectivity_ambiguity" };
+  }
+  if (
+    hasFlag(flags, "option_parse_review") ||
+    hasFlag(flags, "option_needs_review") ||
+    hasFlag(flags, "parser_unknown_option")
+  ) {
+    return { review: true, priority: "normal", reason: "parser_option_ambiguity" };
+  }
+  if (hasFlag(flags, "market_stat_missing") || hasFlag(flags, "market_confidence_low")) {
+    return { review: true, priority: "normal", reason: "market_stat_uncertain" };
   }
   if (hasFlag(flags, "commercial_review")) {
     return { review: true, priority: "normal", reason: "commercial_weak_signal" };

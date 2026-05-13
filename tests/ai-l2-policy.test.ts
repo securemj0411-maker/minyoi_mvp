@@ -78,3 +78,42 @@ test("shouldReviewByPolicy on → open_set category triggers review even with no
     assert.equal(out, true);
   });
 });
+
+test("decideAiL2Review routes parser option ambiguity to normal priority review", () => {
+  const out = decideAiL2Review({
+    priceGap: 0.1,
+    scoreFlags: ["option_needs_review"],
+    category: "tablet",
+  });
+  assert.deepEqual(out, {
+    review: true,
+    priority: "normal",
+    reason: "parser_option_ambiguity",
+  });
+});
+
+test("decideAiL2Review routes self-unlocked ambiguity before weak signals", () => {
+  const out = decideAiL2Review({
+    priceGap: 0.1,
+    scoreFlags: ["weak_normal_signal", "self_unlocked_ambiguity"],
+    category: "smartphone",
+  });
+  assert.deepEqual(out, {
+    review: true,
+    priority: "normal",
+    reason: "self_unlocked_ambiguity",
+  });
+});
+
+test("decideAiL2Review routes bundle/accessory ambiguity to review", () => {
+  const out = decideAiL2Review({
+    priceGap: 0.1,
+    scoreFlags: ["bundle_or_accessory_ambiguity"],
+    category: "home_appliance",
+  });
+  assert.deepEqual(out, {
+    review: true,
+    priority: "normal",
+    reason: "bundle_or_accessory_ambiguity",
+  });
+});

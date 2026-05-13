@@ -133,6 +133,7 @@ type ParsedListingRow = {
   parse_confidence: number | null;
   condition_score: number | null;
   needs_review: boolean | null;
+  parsed_json: Record<string, unknown> | null;
 };
 
 type MarketKeyInvalidationEvent = {
@@ -1726,7 +1727,7 @@ async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<
 async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListingRow>> {
   if (pids.length === 0) return new Map();
   const unique = [...new Set(pids)];
-  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,needs_review";
+  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,needs_review,parsed_json";
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
     const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&pid=in.(${chunk.join(",")})`;
@@ -1739,7 +1740,7 @@ async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListing
 async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: number): Promise<Map<number, ParsedListingRow>> {
   const unique = [...new Set(comparableKeys.filter(Boolean))].slice(0, limit);
   if (unique.length === 0) return new Map();
-  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,needs_review";
+  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,needs_review,parsed_json";
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_KEY_READ_CHUNK_SIZE)) {
     const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
@@ -1776,6 +1777,7 @@ async function ensureParsedRows(rows: ScorableRawRow[], parsedByPid: Map<number,
       parse_confidence: (row.parse_confidence as number | null) ?? null,
       condition_score: (row.condition_score as number | null) ?? null,
       needs_review: (row.needs_review as boolean | null) ?? null,
+      parsed_json: (row.parsed_json as Record<string, unknown> | null) ?? null,
     });
   }
   return parsedByPid;
@@ -1849,6 +1851,40 @@ function preciseComparableKey(parsed: ParsedListingRow | undefined) {
   if (Number(parsed.parse_confidence ?? 0) < 0.65) return null;
   if (parsed.needs_review) return null;
   return parsed.comparable_key;
+}
+
+function parsedJsonObject(parsed: ParsedListingRow | undefined) {
+  const value = parsed?.parsed_json;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value;
+}
+
+function stringArrayFromParsedJson(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item)).filter(Boolean).slice(0, 8);
+}
+
+function parserUnknownParts(parsed: ParsedListingRow | undefined, comparableKey: string | null) {
+  const fromJson = stringArrayFromParsedJson(parsedJsonObject(parsed).unknown_parts);
+  if (fromJson.length > 0) return fromJson;
+  return comparableKey?.split("|").filter((part) => part.startsWith("unknown_")).slice(0, 8) ?? [];
+}
+
+function parserCriticalUnknownParts(parsed: ParsedListingRow | undefined) {
+  return stringArrayFromParsedJson(parsedJsonObject(parsed).critical_unknown);
+}
+
+function aiEscrowKindForParserMetadata(
+  parsed: ParsedListingRow | undefined,
+  unknownParts: string[],
+  criticalUnknownParts: string[],
+) {
+  if (criticalUnknownParts.length > 0) return "parser_critical_unknown";
+  if (parsed?.needs_review) return "parser_option_ambiguity";
+  if (unknownParts.some((part) => part.includes("connectivity") || part.includes("carrier"))) return "connectivity_ambiguity";
+  if (unknownParts.some((part) => part.includes("generation") || part.includes("gen"))) return "generation_ambiguity";
+  if (unknownParts.length > 0) return "parser_unknown_option";
+  return null;
 }
 
 function trustedMarketMedian(stat: MarketPriceRow | undefined) {
@@ -3278,6 +3314,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     if (parseConfidence > 0 && parseConfidence < 0.65) scoreFlags.push("option_parse_review");
     if (parsed?.needs_review) scoreFlags.push("option_needs_review");
     if (conditionScore < 0.65) scoreFlags.push("condition_review");
+    const unknownParts = parserUnknownParts(parsed, comparableKey);
+    const criticalUnknownParts = parserCriticalUnknownParts(parsed);
+    const aiEscrowKind = aiEscrowKindForParserMetadata(parsed, unknownParts, criticalUnknownParts);
 
     scoredRows.push({
       pid: String(row.pid),
@@ -3301,6 +3340,12 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       riskHits,
       score,
       scoreFlags,
+      parseConfidence: parsed?.parse_confidence ?? null,
+      parserNeedsReview: parsed?.needs_review ?? null,
+      comparableKey,
+      parserUnknownParts: unknownParts,
+      parserCriticalUnknown: criticalUnknownParts,
+      aiEscrowKind,
       ...shipping,
     });
   }

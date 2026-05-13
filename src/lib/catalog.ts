@@ -903,6 +903,7 @@ const CORE_TABLET_CATALOG: Sku[] = [
       ["아이패드", "ipad"],
       ["미니", "mini"],
       ["a17", "7세대", "7 세대", "ipad mini 7", "미니 7", "미니7"],
+      ["128gb", "128 gb", "128기가", "128g"],
     ],
     mustNotContain: [
       "프로", "pro", "에어", "air",
@@ -1102,15 +1103,21 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
       ["에어", "air"],
       ["m2"],
       ["13인치", "13 인치", "13형", "13\""],
+      ["8gb", "8 gb", "8기가", "8램", "8g", "기본형", "기본 모델", "깡통"],
     ],
     mustNotContain: [
       "프로", "pro",
       "15인치", "15형",
       "(m1)", "(m3)", "(m4)",
       " m1 ", " m3 ", " m4 ",
-      "16gb", "24gb", "512gb", "1tb",
+      "16gb", "16 gb", "16기가", "16램",
+      "24gb", "24 gb", "24기가", "24램",
+      "512gb", "512 gb", "512기가", "512",
+      "1tb", "1 tb", "1테라",
       "메인보드", "로직보드", "상판", "하판",
       "액정만", "배터리만", "키보드만",
+      "빈박스", "박스만", "보호필름", "필름", "케이스만", "파우치",
+      "교환", "교신",
       "부품", "고장", "침수",
       "매입", "삽니다",
     ],
@@ -2267,20 +2274,38 @@ function directSpecificMatch(normalizedText: string): Sku | null {
   return null;
 }
 
+function chooseUniqueCandidate(candidates: Sku[]): Sku | null {
+  if (candidates.length === 1) return candidates[0];
+
+  // Narrow lane SKUs are stricter than generated broad family SKUs. If exactly
+  // one lane SKU matched alongside broad siblings, prefer the lane instead of
+  // dropping the listing as ambiguous. Keep true multi-lane collisions blocked.
+  const laneCandidates = candidates.filter(
+    (sku) => Boolean(sku.laneKey) && ["laptop", "tablet"].includes(sku.category),
+  );
+  if (laneCandidates.length === 1) return laneCandidates[0];
+
+  return null;
+}
+
+function requiresCombinedLaneVeto(sku: Sku | null): sku is Sku {
+  return sku !== null && Boolean(sku.laneKey) && ["laptop", "tablet"].includes(sku.category);
+}
+
 export function ruleMatch(title: string, description = ""): Sku | null {
   const titleNorm = normalize(title);
+  const combined = normalize(`${title} ${stripLinkLikeText(description).slice(0, 200)}`);
   const titleDirect = directSpecificMatch(titleNorm);
-  if (titleDirect) return titleDirect;
+  if (titleDirect) return requiresCombinedLaneVeto(titleDirect) && !skuMatches(titleDirect, combined) ? null : titleDirect;
 
   const titleCandidates = CATALOG.filter((s) => skuMatches(s, titleNorm));
-  if (titleCandidates.length === 1) return titleCandidates[0];
+  const titleChoice = chooseUniqueCandidate(titleCandidates);
+  if (titleChoice) return requiresCombinedLaneVeto(titleChoice) && !skuMatches(titleChoice, combined) ? null : titleChoice;
   if (titleCandidates.length > 1) return null;
 
-  const combined = normalize(`${title} ${stripLinkLikeText(description).slice(0, 200)}`);
   const combinedDirect = directSpecificMatch(combined);
   if (combinedDirect) return combinedDirect;
 
   const descCandidates = CATALOG.filter((s) => skuMatches(s, combined));
-  if (descCandidates.length === 1) return descCandidates[0];
-  return null;
+  return chooseUniqueCandidate(descCandidates);
 }

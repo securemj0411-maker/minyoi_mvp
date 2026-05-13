@@ -137,14 +137,14 @@ function parseAppleLaptopModelNumber(text: string) {
 function parseLaptopReleaseYear(text: string) {
   const lower = normalize(text).toLowerCase();
   const fullYear = firstMatch(lower, [
-    /\b(20(?:0[8-9]|1[0-9]|2[0-6]))\s*(?:년형|년도|년식|년|형|model)?\b/,
+    /\b(20(?:0[8-9]|1[0-9]|2[0-6]))\s*(?:년형|년식|형|model)(?:[^0-9a-z가-힣]|$)/,
     /\b(?:early|mid|late)\s*(20(?:0[8-9]|1[0-9]|2[0-6]))\b/,
     /\b(20(?:0[8-9]|1[0-9]|2[0-6]))\s*(?:맥북|macbook|에어|프로|air|pro)\b/,
   ]);
   if (fullYear?.[1]) return Number(fullYear[1]);
 
   const shortYear = firstMatch(lower, [
-    /(?:^|[^0-9])([0-2][0-9])\s*(?:년형|년도|년식|년)(?:[^0-9]|$)/,
+    /(?:^|[^0-9])([0-2][0-9])\s*(?:년형|년식)(?:[^0-9]|$)/,
     /\b(?:early|mid|late)\s*([0-2][0-9])\b/,
   ]);
   if (!shortYear?.[1]) return null;
@@ -653,6 +653,9 @@ function defaultConnectivity(model: string | null) {
 function defaultTabletScreenSizeIn(model: string | null) {
   if (!model) return null;
   if (model === "ipad_10") return 10.9;
+  if (/^ipad_(?:pro|air)_11_/.test(model)) return 11;
+  if (/^ipad_(?:pro|air)_13_/.test(model)) return 13;
+  if (/^ipad_mini_/.test(model)) return 8.3;
   if (model === "galaxy_tab_s8" || model === "galaxy_tab_s9") return 11;
   if (model === "galaxy_tab_s9_fe") return 10.9;
   if (model === "galaxy_tab_s9_fe_plus") return 12.4;

@@ -97,6 +97,7 @@ const RISK_KEYWORDS = [
 ];
 const SHORT_TITLE_MIN = 9;
 const AI_CLASSIFIER_MODEL = process.env.OPENAI_CLASSIFIER_MODEL ?? "gpt-4.1-mini";
+const AI_CLASSIFIER_PROMPT_VERSION = "ai_l2_parser_metadata_v1";
 const AI_CLASSIFIER_INPUT_USD_PER_1M = Number(process.env.OPENAI_CLASSIFIER_INPUT_USD_PER_1M ?? 0.4);
 const AI_CLASSIFIER_OUTPUT_USD_PER_1M = Number(process.env.OPENAI_CLASSIFIER_OUTPUT_USD_PER_1M ?? 1.6);
 
@@ -815,6 +816,12 @@ export type PipelineRow = {
   riskHits: number;
   score: number;
   scoreFlags: string[];
+  parseConfidence?: number | null;
+  parserNeedsReview?: boolean | null;
+  comparableKey?: string | null;
+  parserUnknownParts?: string[];
+  parserCriticalUnknown?: string[];
+  aiEscrowKind?: string | null;
   shippingFee: number;
   shippingFeeGeneral: number | null;
   shippingSource: string;
@@ -1060,10 +1067,20 @@ async function upsertRows(table: string, rows: unknown[]): Promise<void> {
 function contentHash(row: PipelineRow): string {
   return createHash("sha256")
     .update(JSON.stringify({
+      promptVersion: AI_CLASSIFIER_PROMPT_VERSION,
       name: row.name,
       price: row.price,
       skuName: row.skuName,
       descriptionPreview: row.descriptionPreview,
+      flags: row.scoreFlags,
+      parser: {
+        comparableKey: row.comparableKey ?? null,
+        parseConfidence: row.parseConfidence ?? null,
+        needsReview: row.parserNeedsReview ?? null,
+        unknownParts: row.parserUnknownParts ?? [],
+        criticalUnknown: row.parserCriticalUnknown ?? [],
+        escrowKind: row.aiEscrowKind ?? null,
+      },
     }))
     .digest("hex");
 }
@@ -1226,6 +1243,7 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
               allowed_listing_type: ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "commercial", "unknown"],
               allowed_confidence: ["high", "medium", "low"],
               policy: "This is not a primary classifier. It is an escrow check for candidates that rules already found suspicious or unusually profitable. If the listing explicitly says fake/replica/Taobao/counterfeit, classify counterfeit and reject. If it is only a charging case/body/unit/one side/protective case/cover/pouch/accessory, classify parts or accessory and reject. If it is a buying post, classify buying and reject. If the title lists multiple different models/SKUs or selectable models with one price, classify multi and reject. If it is a commercial/dealer-style listing — stock liquidation (재고정리), first-come specials (선착순특가), telco bundle deals (완납폰/제휴카드/유심 그대로/통신사 특가), bait-style new-product clearance with multiple model options — classify commercial and reject. If status, SKU, options, condition, or sellability is not clear enough, choose hold. Only choose pass with high confidence.",
+              parser_policy: "Parser metadata is context, not permission to rescue a listing. If model identity is missing, SKU/options conflict, or parser critical unknowns remain unresolved from the text, choose hold. AI pass must not override deterministic sold/inactive, buying, damaged, counterfeit, accessory-only, or category-readiness blocks.",
               listing: {
                 title: row.name,
                 price: row.price,
@@ -1242,6 +1260,14 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
                 risk_hits: row.riskHits,
                 sale_status: row.saleStatus,
                 flags: row.scoreFlags,
+                parser: {
+                  comparable_key: row.comparableKey ?? null,
+                  parse_confidence: row.parseConfidence ?? null,
+                  needs_review: row.parserNeedsReview ?? null,
+                  unknown_parts: row.parserUnknownParts ?? [],
+                  critical_unknown: row.parserCriticalUnknown ?? [],
+                  escrow_kind: row.aiEscrowKind ?? null,
+                },
                 description: row.descriptionPreview.slice(0, 500),
               },
             }),

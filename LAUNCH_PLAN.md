@@ -415,6 +415,62 @@ D. **CATEGORY_READINESS DB sync**: headphone/monitor/speaker/camera/game_console
 - Phase 2는 FK/cache fix 승인 후 `needs_review` escrow tiny cap.
 - Phase 3에서만 AI 결과의 parser write-back을 검토한다. AI pass 단독 public promotion은 금지.
 
+#### 4.5a Parser-gap dry-run (2026-05-13)
+
+**산출물**: `reports/ai-l2-parser-gap-dry-run-latest.md/json`  
+**명령**: `npm run report:ai-l2-parser-gap-dry-run`
+
+| Metric | Value |
+|---|---:|
+| parsed rows | 15,378 |
+| parser-gap rows | 8,642 |
+| needs_review rows | 7,881 |
+| needs_review missing from listings | 6,136 |
+| existing AI cache rows | 387 |
+| parser-gap rows already cached | 96 |
+| parser-gap cache hit | 1.1% |
+| tiny cap dry-run calls | 100 |
+| estimated tiny-cap cost | $0.0648 |
+
+Top reasons:
+- `option_needs_review`: 6,036
+- `parser_critical_unknown`: 1,845
+- `connectivity_ambiguity`: 751
+- `parser_unknown_option`: 10
+
+결정:
+- broad AI L2 enable은 금지. parser-gap 모집단이 너무 커서 호출/캐시 write가 통제되지 않는다.
+- 비용 자체는 tiny cap 기준 낮다. 병목은 비용보다 FK/cache와 public-pool hard block이다.
+- 다음은 FK migration 승인 전까지 `tiny cap + no public release + pool block 유지` 형태의 escrow 설계만 진행한다.
+
+#### 4.5b Tiny escrow candidate selector (2026-05-13)
+
+**산출물**: `reports/ai-l2-tiny-escrow-candidates-latest.md/json`  
+**명령**: `npm run report:ai-l2-tiny-escrow-candidates`
+
+| Metric | Value |
+|---|---:|
+| needsReview parsed rows | 7,886 |
+| raw done normal rows | 9,270 |
+| eligible escrow rows | 1,553 |
+| selected tiny-cap rows | 100 |
+
+Eligible category mix:
+- laptop: 770
+- tablet: 306
+- earphone: 217
+- smartphone: 146
+- smartwatch: 114
+
+Eligible reason mix:
+- `parser_critical_unknown`: 1,545
+- `option_needs_review`: 8
+
+결정:
+- runtime으로 바로 진행하지 않는다. FK migration 승인이 blocker다.
+- tiny-cap 후보는 “AI가 후보팩에 공개해도 된다고 판단”하는 용도가 아니라, missing option evidence를 찾아 parser/backfill로 되돌리는 escrow 용도다.
+- Phase 1b 조건: FK raw migration + tiny cap + pool block 유지 + AI pass 단독 public release 금지.
+
 ### 4.6 Owner decisions 일괄
 - 4개 항목 (위 3.5) → 너가 답 → 즉시 적용
 
