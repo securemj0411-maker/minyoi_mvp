@@ -101,6 +101,35 @@ Bunjang API
 
 `diagnose:{parser,pool,readiness,pack-open}`, `report:{db-hotpaths,unit-economics}`. 전체 명령은 `package.json` 참조.
 
+## 결정 로그 (필수, 빠뜨리면 다음 에이전트 망함)
+
+**모든 runtime/code/migration 변경은 `docs/DECISIONS/YYYY-MM-DD-waveN.md`에 박는다.** 빠뜨리면:
+- 다음 에이전트가 같은 작업 중복 시도
+- 잘못된 가정으로 진행 → 충돌 / 회귀
+- 의도 파악 못 해서 임의 revert 가능성
+
+### 박는 포맷 (필수 필드)
+```markdown
+## <섹션 제목>
+
+- 시간: YYYY-MM-DD HH:MM KST (또는 단위 단계명)
+- 발견 (선택): 어떤 데이터/현상 보고 변경 결정했는지
+- 변경: 정확히 어떤 파일 / 어느 라인 / 어떤 로직
+- 검증: test/lint/측정 결과 (`npm run test:core`, `npx tsc --noEmit` 등)
+- 위험: 영향 범위 + 보류 사항
+- 다음: 후속 액션 (있으면)
+```
+
+### 박을 타이밍
+- code commit 직후 또는 동일 commit에 포함
+- DB migration 적용 직후
+- 정책/임계값 변경 직후
+- "어차피 작은 거"라도 박음 — 작은 게 다음 에이전트한테 큰 단서
+
+### 박지 않는 것
+- 진단/측정만 한 것 (변경 없음) — 단 측정 기반 다음 액션 정했으면 박음
+- 실패해서 revert한 것 — 단 "왜 실패했는지"는 박음 (반복 방지)
+
 ## 참고 (루트 `../`)
 
 `기술_엔진_운영맵_*.md` (운영 스냅샷), `30일_실행계획.md` (의사결정 히스토리), `미뇨이_외부감사.md` (감사 지적), `mvp/SUPABASE_SETUP.md` (Supabase 연결).
