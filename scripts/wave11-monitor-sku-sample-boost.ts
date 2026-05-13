@@ -72,8 +72,6 @@ const HARD_REJECT_KEYWORDS = [
   "교환문의", "교환 문의", "분실",
 ];
 
-const SOFT_HOLD_KEYWORDS = ["미개봉", "박스개봉", "새제품 미사용"]; // 단가 outlier 가능, but allow
-
 function hasHardReject(text: string): string | null {
   const norm = text.toLowerCase().replace(/\s+/g, " ");
   for (const kw of HARD_REJECT_KEYWORDS) {

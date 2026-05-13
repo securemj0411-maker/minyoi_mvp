@@ -22,14 +22,6 @@ async function loadEnvFile(filePath: string) {
   } catch {}
 }
 
-type Row = {
-  pid: number;
-  name: string;
-  description_preview: string;
-  parser_version: string;
-  sku_id: string;
-};
-
 async function main() {
   await loadEnvFile(path.join(appDir, ".env.local"));
   const base = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;

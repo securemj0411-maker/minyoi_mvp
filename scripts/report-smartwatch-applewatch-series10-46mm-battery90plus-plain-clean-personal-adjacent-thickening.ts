@@ -27,7 +27,6 @@ async function main(): Promise<void> {
   const careBackedGpsRows = branches.metrics.careBackedGpsRows ?? 0;
   const cellularPremiumRows = branches.metrics.cellularPremiumRows ?? 0;
   const bundleRows = clean.metrics.bundleRows ?? 0;
-  const cellularRows = clean.metrics.cellularRows ?? 0;
   const titanium = branches.metrics.titaniumRows ?? 0;
 
   // coherent-core = title plain branch (가장 보수적). adjacent = remainder of base.

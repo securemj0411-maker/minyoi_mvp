@@ -7,14 +7,18 @@ function tokenHit(n: string, t: string): boolean {
   if (/^\d+$/.test(x)) return n.includes(` ${x} `);
   return n.includes(x);
 }
-function skuMatches(sku: any, n: string): boolean {
+type CatalogSku = (typeof CATALOG)[number];
+
+function skuMatches(sku: CatalogSku, n: string): boolean {
   for (const g of sku.mustContain) if (!g.some((t: string) => tokenHit(n, t))) return false;
   for (const t of sku.mustNotContain) if (tokenHit(n, t)) return false;
   return true;
 }
 
-const samples = JSON.parse(readFileSync("category-intelligence/airpods_4_anc/samples.json", "utf-8"));
-const ready = samples.filter((s: any) => s.parse_ready === true);
+type AirpodsAncSample = { name: string; parse_ready?: boolean };
+
+const samples = JSON.parse(readFileSync("category-intelligence/airpods_4_anc/samples.json", "utf-8")) as AirpodsAncSample[];
+const ready = samples.filter((s) => s.parse_ready === true);
 
 const counts: Record<string, number> = {};
 let multi = 0;

@@ -1,7 +1,7 @@
 // Module-resolution hook that maps the `@/...` tsconfig path alias to
 // `<repo>/src/...`. Loaded by `_alias-loader.mjs` via `register()`.
 
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { pathToFileURL } from "node:url";
 import path from "node:path";
 import fs from "node:fs";
 

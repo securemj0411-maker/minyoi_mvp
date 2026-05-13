@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { ANCHORS, readAllAnchorSummaries, type AnchorKey, type ParseSummary } from "./lib/phones-anchor-trio-mining.js";
+import { ANCHORS, readAllAnchorSummaries, type AnchorKey } from "./lib/phones-anchor-trio-mining.js";
 
 const reportsDir = path.join(process.cwd(), "reports");
 

@@ -91,7 +91,6 @@ function classify(entry: DependencyEntry): { bucket: Bucket; reasoning: string }
   );
   const heavyAxisGap = snap.comparableKeyMissingAxes >= 4;
   const extremeAxisGap = snap.comparableKeyMissingAxes >= 5;
-  const pollutionHigh = (snap.semanticPollutionShare ?? 0) > 0.2;
   const pollutionMedium = (snap.semanticPollutionShare ?? 0) > 0.15;
   const productionMissing = snap.parsedCount === 0;
   const lowParseRate =

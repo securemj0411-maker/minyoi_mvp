@@ -14,7 +14,7 @@ async function tryReadJson<T>(file: string): Promise<T | null> {
 }
 
 async function main(): Promise<void> {
-  const summary = await tryReadJson<ReportFile>(
+  await tryReadJson<ReportFile>(
     "phones-discovered-anchor-trio-parser-bottleneck-summary-latest.json",
   );
   const trustBlocker = await tryReadJson<ReportFile>(

@@ -166,7 +166,7 @@ async function main() {
         skuId,
         skuName,
       });
-    } catch (err) {
+    } catch {
       const c: Classification = "blocked_parser_throw";
       totals.by_classification[c] = (totals.by_classification[c] ?? 0) + 1;
       totals.parser_throw_count += 1;

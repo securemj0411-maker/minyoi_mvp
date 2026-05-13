@@ -84,7 +84,6 @@ function decisionStatus({ tick, pack, lifecycle, terminal, db }) {
   const staleReports = sourceReports.filter((report) => report.stale);
   const dryRunCalls = searchCounter(db, "raw_touch_active_seen_coalesce_eligible_rows").calls;
   const enabledSamples = searchCounter(db, "raw_touch_active_seen_coalesce_enabled").total;
-  const failures = n(db.runs?.failed);
   const failureRate = n(db.runs?.failureRate);
   const tickWorker = db.workers?.find((row) => row.worker === "tick") ?? {};
   const tickFailures = n(tickWorker.failed);
