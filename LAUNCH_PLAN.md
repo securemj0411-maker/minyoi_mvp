@@ -27,17 +27,18 @@ else
 이 분기를 흐릿하게 두지 않는다. 매 lane을 위 명제의 어느 쪽인지 명시한다.
 
 ### 5. 결정론 ceiling 명시
-고정 숫자 하나로 모든 lane을 밀어붙이지 않는다. 목표는 **정확성 우선 L1을 빠르게 수렴시키고, 수렴 이후는 AI L2/사람 검수로 넘기는 것**이다.
+고정 숫자 하나로 모든 lane을 밀어붙이지 않는다. `80%` 같은 숫자는 컷오프가 아니라 **계기판**이다. 목표는 **정확성 우선 L1을 최대한 수렴시키고, 한계효용이 낮아지는 지점부터 AI L2/사람 검수로 넘기는 것**이다.
 
-- **A급 closed-set lane**: 공식 스펙/단일 변형/명확한 모델명 기반. 85~95%까지 결정론 시도 가능.
-- **B급 structured lane**: 칩/용량/사이즈/커넥터처럼 명시 옵션이 반복적으로 나오는 lane. 75~85% 근처에서 수렴 확인.
-- **C급 open-vocabulary lane**: 자급제/구성품/상태/세대가 문맥에 흩어진 lane. 50~75%에서 false positive 없이 멈추고 AI L2 후보화.
+- **A급 closed-set lane**: 공식 스펙/단일 변형/명확한 모델명 기반. false positive 없이 더 올라갈 여지가 있으면 90%대까지도 결정론 보강 가능.
+- **B급 structured lane**: 칩/용량/사이즈/커넥터처럼 명시 옵션이 반복적으로 나오는 lane. 동의어/표기 변형/공식 모델코드 보강은 계속 가능하되, RAM/SSD/통신상태 추정은 금지.
+- **C급 open-vocabulary lane**: 자급제/구성품/상태/세대가 문맥에 흩어진 lane. 명시 token만 L1로 받고 silent carrier/bundle/full-set 추정은 AI L2 후보화.
 - **D급 ambiguity lane**: 세대/구성품/본품 여부가 문맥 추정인 lane. 결정론 patch 최소화, AI L2/사람 검수 우선.
 
 공통 stop rule:
 - false positive 위험이 보이면 즉시 revert/보류.
-- patch 1회 후 `needsReviewFalse` 또는 `comparableKeyComplete` 상승폭이 +3~5%p 이하로 둔화되면 수렴으로 보고 stop.
+- 표본이 충분한데 patch 1회 후 `needsReviewFalse` 또는 `comparableKeyComplete` 상승폭이 +3~5%p 이하로 둔화되거나, 다음 +1~2%p를 위해 의미 추정/대규모 예외룰이 필요하면 수렴으로 보고 stop.
 - 의미 완화로 recall만 올리는 patch는 금지. 남은 recall은 AI L2가 담당.
+- 단, 공식 스펙/명시 토큰/동의어/모델코드/확정 negative transfer처럼 정확성을 높이는 보강은 숫자와 무관하게 허용한다.
 
 ### 6. lane 상태 = 4-blocker 라벨로만 단정
 다음 4개 label만 사용. `internal_only` / `dormant` / `report_only_pass` 같은 추상 라벨로 묶지 않는다.

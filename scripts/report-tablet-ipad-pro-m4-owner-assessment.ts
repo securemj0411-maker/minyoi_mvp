@@ -176,7 +176,7 @@ async function main() {
 
   console.log(JSON.stringify({
     conclusion: report.conclusion,
-    freshLiveCandidates: report.metrics.freshLiveCandidates,
+    freshLiveCandidates: report.metrics.combinedUniqueFreshLiveCandidates,
     ownerReadyKeys: report.metrics.ownerReadyKeys,
     promisingKeys: report.metrics.promisingKeys,
     jsonPath,

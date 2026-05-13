@@ -8,7 +8,10 @@ export type NextWorkQueueStatus =
   | "post_readiness_completed_report_only"
   | "evidence_completed_report_only";
 
-export type MaterializedNextWorkRow = NextWorkBaseRow & {
+export type MaterializedNextWorkRow = Omit<
+  NextWorkBaseRow,
+  "completedReport" | "followupCompletedReport" | "readinessCompletedReport" | "postReadinessCompletedReport" | "evidenceCompletedReport"
+> & {
   queueStatus: NextWorkQueueStatus;
   registryGroupKey: string | null;
   registryScopeSummary: string;
@@ -58,7 +61,7 @@ export async function materializeNextWorkRows(
       followupCompletedReport: followupCompleted ? row.followupCompletedReport : null,
       readinessCompletedReport: readinessCompleted ? row.readinessCompletedReport : null,
       postReadinessCompletedReport: postReadinessCompleted ? row.postReadinessCompletedReport : null,
-      evidenceCompletedReport: evidenceCompleted ? row.evidenceCompletedReport : null,
+      evidenceCompletedReport: evidenceCompleted ? (row.evidenceCompletedReport ?? null) : null,
       nextSafeReportOnlyTask: evidenceCompleted && row.nextAfterEvidenceTask
         ? row.nextAfterEvidenceTask
         : postReadinessCompleted

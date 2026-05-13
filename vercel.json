@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/compliance-retention",
+      "schedule": "0 19 * * *"
+    },
+    {
+      "path": "/api/cron/housekeeper-ai-cache-prune",
+      "schedule": "17 * * * *"
+    }
+  ]
+}

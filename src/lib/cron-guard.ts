@@ -10,7 +10,9 @@ export type CronWorkerMode =
   | "lifecycle_worker"
   | "lifecycle_terminal_recheck"
   | "housekeeper"
-  | "collect";
+  | "collect"
+  | "compliance_retention"
+  | "housekeeper_ai_cache_prune";
 
 type CronGuardSkipReason = "cooldown" | "same_worker_running" | "source_health_unhealthy";
 
@@ -73,6 +75,8 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   lifecycle_terminal_recheck: 5 * 60_000,
   housekeeper: 5 * 60_000,
   collect: 5 * 60_000,
+  compliance_retention: 60_000,
+  housekeeper_ai_cache_prune: 30 * 60_000,
 };
 
 const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
@@ -85,6 +89,8 @@ const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
   lifecycle_terminal_recheck: 2 * 60_000,
   housekeeper: 2 * 60_000,
   collect: 2 * 60_000,
+  compliance_retention: 2 * 60_000,
+  housekeeper_ai_cache_prune: 2 * 60_000,
 };
 
 const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([

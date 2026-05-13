@@ -3,19 +3,12 @@ import path from "node:path";
 import { loadReadinessRows } from "./lib/report-category-status-context";
 import { buildNextWorkBaseRows, type GuideGapAudit, type SuiteStatus } from "./lib/report-next-work-context";
 import { materializeNextWorkRows } from "./lib/report-next-work-row-status";
+import type { RegistryBacklogSignalRow } from "./lib/report-registry-backlog-context";
 import { renderNextWorkQueueMarkdown } from "./lib/report-next-work-render";
 import { nextWorkGuardrails, nextWorkNotQueuedReasons, nextWorkReportMode } from "./lib/report-next-work-static-spec";
 
 type RegistryBacklogSignals = {
-  rows: Array<{
-    key: string;
-    category: string;
-    family: string;
-    phase: string;
-    lane: string;
-    packets: number;
-    severityScore: number;
-  }>;
+  rows: RegistryBacklogSignalRow[];
 };
 
 const reportsDir = path.join(process.cwd(), "reports");

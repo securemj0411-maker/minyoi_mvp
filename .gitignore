@@ -25,6 +25,7 @@
 *.pem
 reports/
 .codex-backups/
+.agent-bridge/
 
 # debug
 npm-debug.log*

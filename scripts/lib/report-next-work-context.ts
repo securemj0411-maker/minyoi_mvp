@@ -63,6 +63,10 @@ export type NextWorkBaseRow = {
   guideCoverage?: GuideCoverageBucket;
   guideSignals: GuideSignal[];
   registryBacklogTopSignal: RegistryBacklogSignalRow | null;
+  registryCategory: string;
+  registryFamily: string | null;
+  registryPhase: string | null;
+  registryTags: string[];
 } & NextWorkPlanEntry;
 
 const coverageRank = { missing: 0, weak: 1, adjacent: 2, direct: 3 } as const;
@@ -131,7 +135,7 @@ export function buildNextWorkBaseRows(params: {
   const guideCoverageByCategory = buildGuideCoverageByCategory(params.guideGap);
   const guideSignalsByCategory = buildGuideSignalsByCategory(params.guideGap);
 
-  return [
+  const rows: Array<NextWorkBaseRow | null> = [
     ...params.suite.candidateRows.map((row) => ({ kind: "candidate" as const, ...row })),
     ...params.suite.holdRows.map((row) => ({
       kind: "hold" as const,
@@ -147,6 +151,7 @@ export function buildNextWorkBaseRows(params: {
       if (!plan) return null;
       const guideCategory = normalizeGuideCategory(row.category);
       return {
+        ...plan,
         category: row.category,
         registryGroupKey: plan.registryGroupKey,
         kind: row.kind,
@@ -158,9 +163,10 @@ export function buildNextWorkBaseRows(params: {
         guideCoverage: guideCoverageByCategory.get(guideCategory),
         guideSignals: guideSignalsByCategory.get(guideCategory) ?? [],
         registryBacklogTopSignal: findTopRegistryBacklogSignalForQueueCategory(row.category, params.registryBacklogRows) ?? null,
-        ...plan,
       };
-    })
+    });
+
+  return rows
     .filter((row): row is NextWorkBaseRow => row !== null)
     .sort((a, b) => a.priority - b.priority);
 }

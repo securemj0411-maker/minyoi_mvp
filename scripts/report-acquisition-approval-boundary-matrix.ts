@@ -38,7 +38,7 @@ function fileMap(category: string) {
       return {
         ownerPacket: "monitor-xl2540k-owner-review-packet-latest.json",
         executionChecklist: "monitor-xl2540k-execution-readiness-checklist-latest.json",
-        runtimeReviewRequest: null,
+        runtimeReviewRequest: "runtime-review-request-draft-monitor-discovered-benq-zowie-xl2540k-latest.json",
       };
     case "headphone_discovered":
       return {
@@ -50,13 +50,13 @@ function fileMap(category: string) {
       return {
         ownerPacket: "speaker-jbl-flip6-owner-review-packet-latest.json",
         executionChecklist: "speaker-jbl-flip6-execution-readiness-checklist-latest.json",
-        runtimeReviewRequest: null,
+        runtimeReviewRequest: "runtime-review-request-draft-speaker-audio-discovered-jbl-flip-6-latest.json",
       };
     case "tablet_discovered":
       return {
         ownerPacket: "tablet-ipad-pro-m4-owner-assessment-latest.json",
         executionChecklist: "tablet-ipad-pro-m4-execution-readiness-checklist-latest.json",
-        runtimeReviewRequest: null,
+        runtimeReviewRequest: "runtime-review-request-draft-tablet-discovered-apple-ipad-pro-11-m4-256-wifi-latest.json",
       };
     case "camera_discovered":
       return {
@@ -114,6 +114,7 @@ async function main() {
 
   const missingHardBoundaryRows = rows.filter((row) => row.status === "owner_review_ready" && (!row.hasOwnerPacket || !row.hasExecutionChecklist));
   const missingRuntimeRequestRows = rows.filter((row) => row.status === "owner_review_ready" && !row.hasRuntimeReviewRequest);
+  const blockedRows = rows.filter((row) => row.status.startsWith("blocked"));
   const report = {
     generatedAt,
     reportOnly: true,
@@ -126,7 +127,7 @@ async function main() {
     metrics: {
       rows: rows.length,
       ownerReviewReadyRows: rows.filter((row) => row.status === "owner_review_ready").length,
-      blockedRows: rows.filter((row) => row.status === "blocked").length,
+      blockedRows: blockedRows.length,
       missingHardBoundaryRows: missingHardBoundaryRows.length,
       missingRuntimeRequestRows: missingRuntimeRequestRows.length,
     },
@@ -136,7 +137,7 @@ async function main() {
       : "acquisition_approval_boundary_matrix_missing_hard_boundary_report_only",
     nextStep:
       missingRuntimeRequestRows.length > 0
-        ? "If a monitor or speaker lane is selected for runtime review, generate a narrow runtime-review request draft before touching runtime code."
+        ? "If a ready lane without a runtime request is selected, generate a narrow runtime-review request draft before touching runtime code."
         : "Proceed to owner review only after P0 stabilization; no runtime changes in this report-only wave.",
   };
 

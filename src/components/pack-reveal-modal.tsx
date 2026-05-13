@@ -165,11 +165,6 @@ function SavedDetailMini({ card }: { card: RevealCard }) {
             찜 {detail.favoriteCount.toLocaleString("ko-KR")}
           </span>
         ) : null}
-        {detail.sellerName ? (
-          <span className="rounded-full bg-[#f3eee5] px-2 py-0.5 font-black text-[#344136] dark:bg-zinc-900 dark:text-zinc-200">
-            {detail.sellerName}
-          </span>
-        ) : null}
         {rating ? (
           <span className="rounded-full bg-[#f3eee5] px-2 py-0.5 font-black text-[#344136] dark:bg-zinc-900 dark:text-zinc-200">
             리뷰 {rating}

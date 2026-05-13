@@ -24,6 +24,7 @@ export type PoolCandidateInput = {
   shippingFeeGeneral: number | null;
   riskHits: number;
   thumbnailUrl?: string | null;
+  poolEligible?: boolean | null;
   skuId: string | null;
   score: number;
   scoreFlags: string[];
@@ -83,14 +84,19 @@ export function buildCandidatePoolRows(input: {
   let skipped = 0;
 
   for (const row of input.rows) {
+    const pid = Number(row.pid);
+    if (row.poolEligible === false) {
+      skipped += 1;
+      invalidations.push({ pid, reason: "pool_eligible_false" });
+      continue;
+    }
+
     const sellFee = Math.round(row.skuMedian * SELLING_FEE_RATE);
     const buyMax = row.price + (row.shippingFeeGeneral ?? row.shippingFee);
     const buyMin = row.estimatedBuyCost;
     const profitMax = Math.max(0, row.skuMedian - buyMin - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
     const profitMin = Math.max(0, row.skuMedian - buyMax - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
     const band = bandFromProfit(profitMin, profitMax);
-    const pid = Number(row.pid);
-
     if (band === null) {
       skipped += 1;
       invalidations.push({ pid, reason: "profit_below_pack_band" });

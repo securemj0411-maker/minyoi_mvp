@@ -6,7 +6,7 @@ import { GENERATED_CATALOG } from "@/lib/generated/catalog";
 export type Sku = {
   id: string;
   brand: string;
-  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "small_appliance";
+  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance";
   modelName: string;
   aliases: string[];
   mustContain: string[][];
@@ -275,7 +275,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     modelName: "iPhone 13 Pro",
     aliases: ["아이폰 13 프로", "아이폰13프로", "iPhone 13 Pro"],
     mustContain: [["아이폰 13 프로", "아이폰13프로", "iphone 13 pro"]],
-    mustNotContain: ["프로맥스", "pro max", "플러스", "plus", ...PHONE_NOISE],
+    mustNotContain: ["프로맥스", "프로 맥스", "promax", "프맥", "pro max", "플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1350000,
     released: 2021,
   },
@@ -316,7 +316,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 13 Pro Max",
     aliases: ["아이폰 13 프로맥스", "아이폰13프로맥스", "iPhone 13 Pro Max"],
-    mustContain: [["아이폰 13 프로맥스", "아이폰13프로맥스", "iphone 13 pro max"]],
+    mustContain: [["아이폰 13 프로맥스", "아이폰13프로맥스", "아이폰 13 프로 맥스", "iphone 13 pro max"]],
     mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1490000,
     released: 2021,
@@ -328,7 +328,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     modelName: "iPhone 14 Pro",
     aliases: ["아이폰 14 프로", "아이폰14프로", "iPhone 14 Pro"],
     mustContain: [["아이폰 14 프로", "아이폰14프로", "iphone 14 pro"]],
-    mustNotContain: ["프로맥스", "pro max", "플러스", "plus", ...PHONE_NOISE],
+    mustNotContain: ["프로맥스", "프로 맥스", "promax", "프맥", "pro max", "플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1550000,
     released: 2022,
   },
@@ -369,7 +369,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 14 Pro Max",
     aliases: ["아이폰 14 프로맥스", "아이폰14프로맥스", "iPhone 14 Pro Max"],
-    mustContain: [["아이폰 14 프로맥스", "아이폰14프로맥스", "iphone 14 pro max"]],
+    mustContain: [["아이폰 14 프로맥스", "아이폰14프로맥스", "아이폰 14 프로 맥스", "iphone 14 pro max"]],
     mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1750000,
     released: 2022,
@@ -380,7 +380,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 15 Pro Max",
     aliases: ["아이폰 15 프로맥스", "아이폰15프로맥스", "iPhone 15 Pro Max"],
-    mustContain: [["아이폰 15 프로맥스", "아이폰15프로맥스", "iphone 15 pro max"]],
+    mustContain: [["아이폰 15 프로맥스", "아이폰15프로맥스", "아이폰 15 프로 맥스", "iphone 15 pro max"]],
     mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1900000,
     released: 2023,
@@ -434,7 +434,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     modelName: "iPhone 16 Pro",
     aliases: ["아이폰 16 프로", "아이폰16프로", "iPhone 16 Pro"],
     mustContain: [["아이폰 16 프로", "아이폰16프로", "iphone 16 pro"]],
-    mustNotContain: ["프로맥스", "pro max", "플러스", "plus", ...PHONE_NOISE],
+    mustNotContain: ["프로맥스", "프로 맥스", "promax", "프맥", "pro max", "플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1550000,
     released: 2024,
   },
@@ -475,7 +475,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 16 Pro Max",
     aliases: ["아이폰 16 프로맥스", "아이폰16프로맥스", "iPhone 16 Pro Max"],
-    mustContain: [["아이폰 16 프로맥스", "아이폰16프로맥스", "iphone 16 pro max"]],
+    mustContain: [["아이폰 16 프로맥스", "아이폰16프로맥스", "아이폰 16 프로 맥스", "iphone 16 pro max"]],
     mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1900000,
     released: 2024,
@@ -538,7 +538,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     modelName: "Galaxy S25",
     aliases: ["갤럭시 S25", "갤럭시S25", "Galaxy S25"],
     mustContain: [["갤럭시 s25", "갤럭시s25", "galaxy s25", "s25"]],
-    mustNotContain: ["울트라", "ultra", "플러스", "plus", "gs25", ...PHONE_NOISE],
+    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", "gs25", ...PHONE_NOISE],
     msrpKrw: 1150000,
     released: 2025,
   },
@@ -718,7 +718,7 @@ const CORE_TABLET_CATALOG: Sku[] = [
       ["아이패드", "ipad"],
       ["프로", "pro"],
       ["m4"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["11인치", "11 인치", "11형", "11\"", "11″"],
     ],
     mustNotContain: [
@@ -1158,16 +1158,18 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
     modelName: "LG Gram 17\" 2024 (16GB / 512GB)",
     aliases: ["LG 그램 17 2024", "엘지 그램 17 2024", "LG Gram 17 2024"],
     mustContain: [
-      ["lg 그램", "엘지 그램", "lg gram"],
-      ["17인치", "17 인치", "17형", "17\""],
-      ["2024", "13세대", "14세대", "ultra 7", "ultra 5"],
+      ["lg 그램", "lg그램", "lg전자 그램", "lg전자그램", "엘지 그램", "엘지그램", "lg gram"],
+      ["17인치", "17 인치", "17형", "17\"", "17z90s", "17zd90s", "17zd90su"],
+      ["2024", "13세대", "14세대", "ultra 7", "ultra 5", "코어울트라", "17z90s", "17zd90s", "17zd90su"],
     ],
     mustNotContain: [
       "14인치", "14 인치", "14형",
       "15인치", "15 인치", "15형",
       "16인치", "16형",
       "2 in 1", "2in1",
-      "gram pro", "그램프로",
+      "gram pro", "그램프로", "그램 프로",
+      "17z90sp", "17zd90sp", "17z90tr", "17zd90tr",
+      "17z90r", "17zd90r", "17z90p", "17zd90p", "17z90q", "17zd90q", "17z90u", "17zd90u", "17zd90ru",
       "2023", "2022", "2021", "2020", "2019",
       "액정만", "메인보드", "부품", "고장", "침수",
       "매입", "삽니다",
@@ -1236,6 +1238,54 @@ export const CATALOG: Sku[] = [
     released: 2025,
   },
   {
+    // Wave 24: LG 27UP850N-W (UltraFine 4K, USB-C 90W, 2022 refresh). msrp 약 650k.
+    // 중고 시세 255~500k (Bunjang 7 collected). UP850 / UP850N / UP850K 변형 포함 (동일 form factor).
+    id: "monitor-27up850n",
+    brand: "LG",
+    category: "monitor",
+    laneKey: "monitor_lg_27up850n",
+    modelName: "LG 27UP850N-W",
+    aliases: ["27UP850N", "27UP850", "27UP850K", "27UP850N-W", "LG 27UP850N", "LG 27UP850", "LG UltraFine 27UP850"],
+    mustContain: [["27up850"]],
+    mustNotContain: [
+      // 다른 LG 4K monitor 변형 분리
+      "27ul850", "27uk850", "27up550", "27up600", "27us550",
+      // gaming 27GP850과 격리
+      "27gp850", "27gn850", "ultragear", "울트라기어",
+      // 32"/24" 다른 사이즈
+      "32up850", "32up", "24up",
+      // 부품/단품/하자
+      "스탠드만", "거치대만", "케이블만", "어댑터만", "부품용", "파손", "고장", "수리이력", "액정파손",
+      "매입", "삽니다", "구해요", "구매합니다", "구합니다",
+    ],
+    msrpKrw: 650000,
+    released: 2022,
+  },
+  {
+    // Wave 24 fallback: LG 27GP850-B (UltraGear QHD 165Hz Nano IPS, 2021). msrp 590k.
+    // 27UP850N의 distribution 너무 좁음(356~380k)으로 fallback. 중고 240~340k wider.
+    id: "monitor-27gp850",
+    brand: "LG",
+    category: "monitor",
+    laneKey: "monitor_lg_27gp850",
+    modelName: "LG UltraGear 27GP850-B",
+    aliases: ["27GP850", "27GP850-B", "LG 27GP850", "LG UltraGear 27GP850", "엘지 울트라기어 27GP850"],
+    mustContain: [["27gp850"]],
+    mustNotContain: [
+      // 다른 LG UltraGear gaming 변형 격리
+      "27gn850", "27gn800", "27gp83", "27gp95", "27gp700",
+      // UltraFine 4K 라인업과 격리
+      "27up850", "27ul850", "27uk850",
+      // 32"/24" 다른 사이즈
+      "32gp850", "24gp850",
+      // 부품/단품/하자
+      "스탠드만", "거치대만", "케이블만", "어댑터만", "부품용", "파손", "고장", "수리이력", "액정파손",
+      "매입", "삽니다", "구해요", "구매합니다", "구합니다",
+    ],
+    msrpKrw: 590000,
+    released: 2021,
+  },
+  {
     id: "monitor-27gl650f",
     brand: "LG",
     category: "monitor",
@@ -1282,6 +1332,96 @@ export const CATALOG: Sku[] = [
     released: 2021,
   },
   {
+    // Wave 16: Bose SoundLink Flex narrow lane.
+    // JBL Flip 6 (시세 80k)가 bandFromProfit 1 threshold(20k) 통과 구조적 불가하여
+    // 더 wide한 가격 분포 (신품 219k, 중고 시세 100~150k) 를 가진 Bose SoundLink Flex 추가.
+    // "soundlink flex" 명시 강제 — SoundLink Mini/Revolve/Color/Micro 변형은 mustNotContain로 제외.
+    id: "speaker-bose-soundlink-flex",
+    brand: "Bose",
+    category: "speaker",
+    laneKey: "speaker_bose_soundlink_flex",
+    modelName: "Bose SoundLink Flex",
+    aliases: ["Bose SoundLink Flex", "보스 사운드링크 플렉스", "bose soundlink flex", "보스 SoundLink Flex"],
+    mustContain: [["bose", "보스"], ["soundlink flex", "soundlinkflex", "사운드링크 플렉스", "사운드링크플렉스"]],
+    mustNotContain: [...SPEAKER_NOISE, "mini", "revolve", "color", "micro", "soundbar", "사운드바"],
+    msrpKrw: 219000,
+    released: 2021,
+  },
+  {
+    // Wave 20: Sonos Roam (1st gen, 2021) narrow lane.
+    // msrp 269k. 중고 시세 100~200k 추정 → bandFromProfit 1+ 통과 가능.
+    // Roam SL/Roam 2/Move/One/Five/Era 등 sub-variant는 mustNotContain로 분리.
+    id: "speaker-sonos-roam",
+    brand: "Sonos",
+    category: "speaker",
+    laneKey: "speaker_sonos_roam",
+    modelName: "Sonos Roam",
+    aliases: ["Sonos Roam", "소노스 롬", "소노스Roam", "소노스 로엄", "소노스 로암"],
+    mustContain: [["sonos", "소노스"], ["roam", "롬", "로엄", "로암"]],
+    mustNotContain: [
+      ...SPEAKER_NOISE,
+      // Roam 변형 / 다른 Sonos 라인업 격리
+      "roam sl", "roamsl", "roam 2", "roam2",
+      "move", "one", "five", "era", "beam", "arc", "play:1", "play:3", "play:5", "sub",
+      // 충전 도크/패드만 단독 판매 제외
+      "충전도크", "충전 도크", "도크만", "wireless charger", "charging dock",
+    ],
+    msrpKrw: 269000,
+    released: 2021,
+  },
+  {
+    // Wave 20: Marshall Emberton II narrow lane (Sonos Roam은 Bunjang 0건으로 pivot).
+    // msrp 219k. 중고 시세 80~150k 추정 → bandFromProfit 1~3 통과 가능.
+    // Emberton I/III, Stockwell/Kilburn/Willen/Tufton 등 다른 Marshall portable은 분리.
+    id: "speaker-marshall-emberton-ii",
+    brand: "Marshall",
+    category: "speaker",
+    laneKey: "speaker_marshall_emberton_ii",
+    modelName: "Marshall Emberton II",
+    aliases: ["Marshall Emberton II", "Marshall Emberton 2", "마샬 엠버튼 II", "마샬 엠버튼 2", "마샬엠버튼2"],
+    mustContain: [["marshall", "마샬"], ["emberton ii", "emberton 2", "emberton2", "엠버튼 ii", "엠버튼 2", "엠버튼2"]],
+    mustNotContain: [
+      ...SPEAKER_NOISE,
+      // Emberton 다른 세대 격리
+      "emberton iii", "emberton 3", "emberton3", "엠버튼 iii", "엠버튼 3", "엠버튼3",
+      // 다른 Marshall portable 라인업 분리
+      "stockwell", "스탁웰", "kilburn", "킬번", "willen", "윌렌", "tufton", "터프턴", "middleton", "미들턴",
+      // 거치/홈 시리즈 분리
+      "stanmore", "스탠모어", "acton", "액턴", "woburn", "워번",
+      // 헤드폰/이어폰 라인업
+      "major", "minor", "monitor ii", "헤드폰", "이어폰",
+      // 앰프 (마샬은 기타 앰프 브랜드라 같이 검색됨)
+      "기타 앰프", "guitar amp", "콤보앰프",
+    ],
+    msrpKrw: 219000,
+    released: 2022,
+  },
+  {
+    // Wave 20 second pivot: Bose SoundLink Mini II (Marshall Emberton II 150k median 압축으로 pool 미달).
+    // msrp 219k (2015 모델). 중고 시세 50~130k → distribution wider → bandFromProfit 1~2 통과 가능.
+    // SoundLink Flex/Revolve/Color/Micro 변형은 mustNotContain로 분리.
+    id: "speaker-bose-soundlink-mini-ii",
+    brand: "Bose",
+    category: "speaker",
+    laneKey: "speaker_bose_soundlink_mini_ii",
+    modelName: "Bose SoundLink Mini II",
+    aliases: ["Bose SoundLink Mini II", "보스 사운드링크 미니 II", "Bose SoundLink Mini 2", "보스 사운드링크 미니 2", "사운드링크 미니2"],
+    mustContain: [["bose", "보스"], ["soundlink mini ii", "soundlink mini 2", "soundlinkmini2", "사운드링크 미니 ii", "사운드링크 미니 2", "사운드링크미니2", "사운드링크미니 2"]],
+    mustNotContain: [
+      ...SPEAKER_NOISE,
+      // SoundLink 다른 변형 분리
+      "flex", "플렉스", "revolve", "color", "micro", "마이크로",
+      // Mini I (1세대) 격리 — 미니 II만 lane
+      "mini i ", "soundlink mini i ", "사운드링크 미니 i ",
+      // 사운드바
+      "soundbar", "사운드바",
+      // 헤드폰/이어폰
+      "qc", "quietcomfort", "qc ultra",
+    ],
+    msrpKrw: 219000,
+    released: 2015,
+  },
+  {
     id: "speaker-jbl-boombox-2",
     brand: "JBL",
     category: "speaker",
@@ -1313,6 +1453,99 @@ export const CATALOG: Sku[] = [
     mustNotContain: [...SPEAKER_NOISE],
     msrpKrw: 299000,
     released: 2018,
+  },
+  // ─── Desktop narrow-lane Wave 17: Mac mini M2 base 256GB ───
+  {
+    // Mac mini M2 (2023) 8GB/256GB 정가 990k.
+    // 중고 시세 분포 600~850k 추정 → bandFromProfit 1 (20k+) 통과 충분.
+    // option-parser는 desktop fallthrough로 [family, model] comparable_key 생성.
+    id: "desktop-mac-mini-m2-256",
+    brand: "Apple",
+    category: "desktop",
+    laneKey: "desktop_mac_mini_m2_256",
+    modelName: "Apple Mac mini M2 256GB",
+    aliases: ["Mac mini M2", "맥미니 M2", "맥미니M2", "Apple Mac mini M2", "Mac mini M2 256"],
+    mustContain: [["mac mini", "맥미니", "맥 미니"], ["m2"]],
+    // M1/M3/M4/Pro/Ultra/Studio 변형 + 512GB 이상 + 16GB RAM 변형 제외 (base 256/8GB만).
+    mustNotContain: ["m1", "m3", "m4", "m2 pro", "m2pro", "m2 ultra", "m2ultra", "mac studio", "맥스튜디오", "imac", "아이맥", "macbook", "맥북", "512gb", "1tb", "2tb", "16gb", "24gb"],
+    msrpKrw: 990000,
+    released: 2023,
+  },
+  // ─── Home appliance narrow-lane Wave 19: Dyson V12 Detect Slim ───
+  {
+    // Dyson V12 Detect Slim (Korea SKU). msrp 약 890k. 중고 시세 350~700k 추정.
+    // 다른 V-시리즈(V6/V7/V8/V10/V11/V15/Gen5)와 분리. option-parser는 home_appliance fallthrough로 [family, model] comparable_key 생성.
+    id: "home-appliance-dyson-v12-detect-slim",
+    brand: "Dyson",
+    category: "home_appliance",
+    laneKey: "home_appliance_dyson_v12_detect_slim",
+    modelName: "Dyson V12 Detect Slim",
+    aliases: ["Dyson V12", "다이슨 V12", "다이슨V12", "Dyson V12 Detect Slim", "다이슨 V12 디텍트 슬림"],
+    mustContain: [["v12"], ["다이슨", "dyson"]],
+    // V12 외 다른 Dyson 모델 + 부품/액세서리/매입/하자 제외.
+    mustNotContain: ["v6", "v7", "v8", "v10", "v11", "v15", "gen5", "gen 5", "outsize", "옴니글라이드", "omni-glide", "헤어드라이어", "에어랩", "airwrap", "supersonic", "선풍기", "공기청정기", "히터", "헤드만", "툴만", "배터리만", "필터만", "충전기만", "거치대만", "케이스만", "박스만", "부품용", "파손", "고장", "수리이력", "v12s", "submarine", "서브마린", "물걸레"],
+    msrpKrw: 890000,
+    released: 2022,
+  },
+  // ─── Home appliance Wave 21: Roborock S8 Pro Ultra ───
+  {
+    // Roborock S8 Pro Ultra (flagship robot vacuum + mop, 2023). msrp 1,790k.
+    // 중고 시세 600~1,200k 추정 → bandFromProfit 2~3 통과 가능 (distribution wide).
+    // Bunjang Roborock 모집단에서 가장 dense (S8 base 0건, Pro Ultra 14건, Qrevo 12건).
+    // S8 base/S8+/S8 MaxV/Qrevo/S7/Q-series 등은 mustNotContain로 분리.
+    id: "home-appliance-roborock-s8-pro-ultra",
+    brand: "Roborock",
+    category: "home_appliance",
+    laneKey: "home_appliance_roborock_s8_pro_ultra",
+    modelName: "Roborock S8 Pro Ultra",
+    aliases: ["Roborock S8 Pro Ultra", "로보락 S8 Pro Ultra", "로보락 S8프로울트라", "로보락 S8 프로 울트라", "Roborock S8 ProUltra"],
+    mustContain: [["roborock", "로보락"], ["s8 pro ultra", "s8proultra", "s8 프로 울트라", "s8프로울트라", "s8프로 울트라", "s8 프로울트라"]],
+    mustNotContain: [
+      // S8 다른 변형 분리
+      "s8 maxv", "s8maxv", "s8 max v",
+      "s8+", "s8 plus", "s8plus",
+      // 다른 세대/시리즈
+      "s7", "s6", "s5",
+      "qrevo", "q revo", "q5", "q7", "q8",
+      "g10", "g20", "h7",
+      // 부품/소모품/액세서리만
+      "걸레만", "솔만", "필터만", "배터리만", "충전기만", "어댑터만", "케이블만",
+      "도크만", "충전도크", "거치대만", "케이스만", "박스만",
+      "부품용", "파손", "고장", "수리이력", "침수",
+      // 매입/구매
+      "매입", "삽니다", "구해요", "구매합니다", "구합니다",
+      // 타 브랜드 robot vac
+      "샤오미", "dreame", "드리미", "ecovacs", "에코백스", "lg 코드제로", "삼성 비스포크",
+    ],
+    msrpKrw: 1790000,
+    released: 2023,
+  },
+  // ─── Desktop Wave 22: iMac M3 24-inch ───
+  {
+    // Apple iMac M3 24" (2023). msrp 1,690~2,090k (8GB/256 base ~ 16GB/512 top).
+    // Bunjang probe: M3 67건 (가장 dense), distribution 1.2~1.55M. wide enough for profit_band 1~2.
+    // 다른 chip(M1/M2/M4/Intel) + 27"/21" 이전 세대 분리.
+    id: "desktop-imac-m3-24",
+    brand: "Apple",
+    category: "desktop",
+    laneKey: "desktop_imac_m3_24",
+    modelName: "Apple iMac M3 24\"",
+    aliases: ["iMac M3", "아이맥 M3", "iMac M3 24", "아이맥 M3 24", "아이맥 24인치 M3"],
+    mustContain: [["imac", "아이맥"], ["m3"]],
+    mustNotContain: [
+      // 다른 chip 격리
+      "m1", "m2", "m4", "intel", "인텔",
+      // iMac 27"/21" (Intel 시절) 격리
+      "27인치", "27\"", "27in", "21인치", "21.5", "21\"", "21in", "retina 5k", "5k retina",
+      // Mac Studio / mini / Pro / MacBook 분리
+      "mac studio", "맥스튜디오", "mac pro", "맥프로", "mac mini", "맥미니", "macbook", "맥북",
+      // 부품/단품/하자
+      "스탠드만", "어댑터만", "케이블만", "박스만", "케이스만", "부품용", "파손", "고장", "수리이력", "액정파손", "메인보드",
+      // 매입/구매
+      "매입", "삽니다", "구해요", "구매합니다", "구합니다",
+    ],
+    msrpKrw: 1890000,
+    released: 2023,
   },
   // ─── Camera body-only exact-model internal candidates ───
   {
@@ -2281,7 +2514,7 @@ function chooseUniqueCandidate(candidates: Sku[]): Sku | null {
   // one lane SKU matched alongside broad siblings, prefer the lane instead of
   // dropping the listing as ambiguous. Keep true multi-lane collisions blocked.
   const laneCandidates = candidates.filter(
-    (sku) => Boolean(sku.laneKey) && ["laptop", "tablet"].includes(sku.category),
+    (sku) => Boolean(sku.laneKey) && ["laptop", "tablet", "smartphone"].includes(sku.category),
   );
   if (laneCandidates.length === 1) return laneCandidates[0];
 
@@ -2289,7 +2522,7 @@ function chooseUniqueCandidate(candidates: Sku[]): Sku | null {
 }
 
 function requiresCombinedLaneVeto(sku: Sku | null): sku is Sku {
-  return sku !== null && Boolean(sku.laneKey) && ["laptop", "tablet"].includes(sku.category);
+  return sku !== null && Boolean(sku.laneKey) && ["laptop", "tablet", "smartphone"].includes(sku.category);
 }
 
 export function ruleMatch(title: string, description = ""): Sku | null {

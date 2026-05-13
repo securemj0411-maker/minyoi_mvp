@@ -14,7 +14,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { decideAiL2Review } from "../src/lib/ai-l2-policy.ts";
+import { decideAiL2Review } from "../src/lib/ai-l2-policy";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const appDir = path.join(__dirname, "..");

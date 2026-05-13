@@ -21,15 +21,15 @@ const principles = [
 const supportRows = [
   { category: "이어폰", status: "지금 지원", note: "AirPods 중심으로 공개 가능" },
   { category: "스마트워치", status: "지금 지원", note: "Apple Watch, Galaxy Watch 중심" },
-  { category: "스마트폰", status: "내부 학습", note: "표본과 위험 신호 검수 중" },
-  { category: "태블릿", status: "내부 학습", note: "storage/screen/cellular 보강 중" },
+  { category: "스마트폰", status: "비공개 검증", note: "표본과 위험 신호 검수 중" },
+  { category: "태블릿", status: "비공개 검증", note: "storage/screen/cellular 보강 중" },
   { category: "노트북", status: "보류", note: "RAM/SSD/chip 오차 위험이 큼" },
 ];
 
 const engineSteps = [
   {
-    step: "1. 검색/수집",
-    text: "번개장터 검색 결과와 상세를 계속 쌓고, 원본 매물 데이터를 저장합니다.",
+    step: "1. 데이터 모니터링",
+    text: "공개된 매물의 가격·인기도 신호를 지속적으로 모니터링해, 시세 통계와 비교 인덱스로 가공합니다.",
   },
   {
     step: "2. 옵션 파싱",
@@ -218,7 +218,7 @@ export default function HowItWorksPage() {
                     className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${
                       row.status === "지금 지원"
                         ? "bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
-                        : row.status === "내부 학습"
+                        : row.status === "비공개 검증"
                           ? "bg-[#f4eee3] text-[#6a6f62]"
                           : "bg-[#f1ebe2] text-[#7a6b60]"
                     }`}

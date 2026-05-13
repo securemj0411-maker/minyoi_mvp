@@ -42,8 +42,6 @@ type RawRow = {
   description_preview: string;
   shop_review_rating: number | null;
   shop_review_count: number;
-  seller_uid: string | null;
-  seller_name: string | null;
   sku_id: string | null;
   thumbnail_url: string | null;
   sku_name: string | null;
@@ -198,7 +196,7 @@ export async function GET(req: Request) {
   const packOpenList = packOpenIds.join(",");
   const [rawRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,seller_uid,seller_name,sku_id,thumbnail_url,sku_name,listing_state,sale_status&pid=in.(${pidList})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status&pid=in.(${pidList})`,
     ),
     loadJson<FeedbackRow[]>(
       `${tableUrl("mvp_reveal_feedback")}?select=pid,feedback_type,note&user_ref=eq.${encodedUserRef}&pid=in.(${pidList})`,
@@ -230,8 +228,8 @@ export async function GET(req: Request) {
         favoriteCount: raw ? Number(raw.num_faved ?? 0) : null,
         freeShipping: Boolean(raw?.free_shipping),
         descriptionPreview: raw?.description_preview ?? "",
-        sellerUid: raw?.seller_uid ?? null,
-        sellerName: raw?.seller_name ?? null,
+        sellerUid: null,
+        sellerName: null,
         sellerReviewRating: raw?.shop_review_rating == null ? null : Number(raw.shop_review_rating),
         sellerReviewCount: Number(raw?.shop_review_count ?? 0),
         skuId: raw?.sku_id ?? null,

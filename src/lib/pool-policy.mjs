@@ -1,9 +1,10 @@
 export const POOL_CONFIDENCE_FLOOR = 0.7;
 
 export const POOL_BLOCK_FLAGS = [
-  "coarse_market_price",
+  // Wave 13: coarse_market_price + market_confidence_low 제거.
+  // trustedMarketMedian이 confidence=low + sample>=2 도 trusted로 받게 변경됨에 따라
+  // 두 flag는 candidate-pool-builder 차단에서 제외. market_stat_missing은 유지 (시세 자체 없으면 차단).
   "extreme_discount_review",
-  "market_confidence_low",
   "market_stat_missing",
   "option_parse_review",
   "option_needs_review",
@@ -17,6 +18,10 @@ export const POOL_BLOCK_FLAGS = [
   "weak_description",
   "risk_keyword_review",
   "condition_review",
+  // Wave 33 — AI L2 Phase 2 escrow. AI verdict 전까지 hard block.
+  "ai_escrow_pending",       // narrow smartphone needs_review row가 escrow queue에 들어간 상태.
+  "ai_escrow_held",          // AI verdict가 confidence 낮거나 보류 — 사람 review 대기.
+  "ai_escrow_unavailable",   // AI L2 API/cache 호출 실패 — 다음 tick에서 재시도.
 ];
 
 export function bandFromProfit(profitMin, profitMax) {

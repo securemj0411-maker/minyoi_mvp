@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
-import { CATALOG } from "@/lib/catalog";
+import { CATALOG, ruleMatch } from "@/lib/catalog";
 import { parseGameConsoleListing } from "@/lib/game-console-parser";
 import { parseListingOptions } from "@/lib/option-parser";
 import { classifyListing } from "@/lib/pipeline";
@@ -17,6 +17,7 @@ import {
   shouldRefreshSearchSeller,
   splitActiveSeenOnlyTouches,
   splitActiveSeenOnlyTouchesByPoolProtection,
+  rawListingTypeForStorage,
 } from "@/lib/tick-pipeline";
 import {
   computePoolConfidence,
@@ -35,6 +36,12 @@ test("manual sold-out wording is excluded before category-specific parsing", () 
 
   const genericResult = classifyListing("애플워치 울트라2 거래완료", "", 650_000);
   assert.equal(genericResult.listingType, "callout");
+});
+
+test("raw listing type storage rejects internal triage labels", () => {
+  assert.equal(rawListingTypeForStorage("normal"), "normal");
+  assert.equal(rawListingTypeForStorage("title_sku_match"), "unknown");
+  assert.equal(rawListingTypeForStorage("unchanged_detail"), "unknown");
 });
 
 test("search seller cache skips unchanged recent sellers", () => {
@@ -240,9 +247,37 @@ test("GS25 shipping text does not make a smartwatch match Galaxy S25", () => {
   assert.notEqual(result.sku?.id, "galaxy-s25");
 });
 
+test("Galaxy S25 FE does not leak into base Galaxy S25 SKU", () => {
+  const result = classifyListing("갤럭시S25FE 미개봉 새상품", "", 700_000);
+  assert.notEqual(result.sku?.id, "galaxy-s25");
+});
+
+test("spaced iPhone Pro Max wording does not leak into Pro SKU", () => {
+  const result = classifyListing("아이폰 16 프로 맥스", "", 1_100_000);
+  assert.equal(result.sku?.id, "iphone-16-pro-max");
+});
+
 test("rental smartphone listing is commercial, not normal", () => {
   const result = classifyListing("갤럭시 S24 울트라 단기 렌탈 대여", "업체 렌탈 상품입니다", 80_000);
   assert.equal(result.listingType, "commercial");
+});
+
+test("smartphone explicit terabyte storage tokens parse without AI", () => {
+  const iphone = parseListingOptions({
+    category: "smartphone",
+    skuId: "iphone-16-pro-max",
+    title: "아이폰 16프로맥스 1T 화이트",
+  });
+  assert.equal(iphone.comparableKey, "iphone|iphone_16_pro_max|1024gb");
+  assert.equal(iphone.needsReview, false);
+
+  const galaxy = parseListingOptions({
+    category: "smartphone",
+    skuId: "galaxy-s25-ultra",
+    title: "갤럭시 S25 울트라 1테라",
+  });
+  assert.equal(galaxy.comparableKey, "galaxy_s|galaxy_s25_ultra|1024gb");
+  assert.equal(galaxy.needsReview, false);
 });
 
 test("negated damage wording does not force damaged classification", () => {
@@ -439,6 +474,40 @@ test("MacBook purchase year does not fragment Apple Silicon generation", () => {
     description: "2025년 2월 구매했고 풀박스입니다.",
   });
   assert.equal(parsed.comparableKey, "macbook|macbook_air|m2_gen|m2|13in|8gb_ram|256gb_ssd");
+});
+
+test("LG Gram 17 2024 exact model codes match narrow laptop lane", () => {
+  const matched = ruleMatch("LG 그램17 17ZD90SU 코어울트라7 16GB 1TB 17인치", "");
+  assert.equal(matched?.id, "lg-gram-17-2024");
+
+  const lgElectronics = ruleMatch("LG전자 그램17 17Z90S-GALGL 노트북", "");
+  assert.equal(lgElectronics?.id, "lg-gram-17-2024");
+
+  const pro = ruleMatch("LG그램 프로17인치 17Z90SP-GA5HK 팝니다", "");
+  assert.notEqual(pro?.id, "lg-gram-17-2024");
+
+  const older = ruleMatch("S급 LG 그램 17인치 노트북 17ZD90P-GX70K", "");
+  assert.notEqual(older?.id, "lg-gram-17-2024");
+});
+
+test("LG Gram 17 2024 model code builds laptop comparable key without inferring memory", () => {
+  const parsed = parseListingOptions({
+    category: "laptop",
+    skuId: "lg-gram-17-2024",
+    title: "LG 그램17 17ZD90SU 코어울트라7 16GB 1TB 17인치",
+  });
+
+  assert.equal(parsed.comparableKey, "lg_gram|lg_gram_17_2024|2024y|ultra7|17in|16gb_ram|1024gb_ssd");
+  assert.equal(parsed.needsReview, false);
+
+  const missingMemory = parseListingOptions({
+    category: "laptop",
+    skuId: "lg-gram-17-2024",
+    title: "LG 그램 17인치 노트북 1테라 17Z90S-GA5PK",
+  });
+
+  assert.equal(missingMemory.comparableKey, "lg_gram|lg_gram_17_2024|2024y|ultra5|17in|unknown_ram|1024gb_ssd");
+  assert.equal(missingMemory.needsReview, true);
 });
 
 test("iPad mini 7 exact lane keeps mini screen default", () => {
@@ -752,6 +821,60 @@ test("game console parser separates PS5 disc and digital editions", () => {
   assert.equal(digital.comparableKey, "game_console|playstation_5|digital|full_set");
 });
 
+test("game console parser recognizes compact Korean PS5 edition wording", () => {
+  const disc = parseGameConsoleListing(
+    "플스5 디스크 본체 풀박스",
+    "듀얼센스와 케이블 포함입니다.",
+    520_000,
+  );
+  assert.equal(disc.edition, "disc");
+  assert.equal(disc.comparableKey, "game_console|playstation_5|disc|full_set");
+  assert.equal(disc.needsReview, false);
+
+  const digital = parseGameConsoleListing(
+    "플스5 디지털 본체 풀박",
+    "전원선 hdmi 듀얼센스 포함 정상 작동",
+    470_000,
+  );
+  assert.equal(digital.edition, "digital");
+  assert.equal(digital.comparableKey, "game_console|playstation_5|digital|full_set");
+  assert.equal(digital.needsReview, false);
+});
+
+test("global classifier does not treat PS5 full-unit body wording as earbud parts", () => {
+  const disc = classifyListing("플레이스테이션5 PS5 본체 디스크버전", "듀얼센스 포함 풀박스입니다", 490_000);
+  assert.equal(disc.listingType, "normal");
+  assert.equal(disc.sku?.id, "ps5-disc-standard");
+
+  const digital = classifyListing("소니 PS5 디지털 에디션 본체", "정상 작동 본체 듀얼센스 포함 풀박스입니다", 470_000);
+  assert.equal(digital.listingType, "normal");
+  assert.equal(digital.sku?.id, "ps5-digital-standard");
+
+  const parsed = parseListingOptions({
+    title: "소니 PS5 디지털 에디션 본체",
+    description: "정상 작동 확인 및 초기화 완료된 풀박스입니다.",
+    category: "game_console",
+    skuId: "ps5-digital-standard",
+    skuName: "PlayStation 5 (Digital, Standard)",
+  });
+  assert.equal(parsed.comparableKey, "game_console|playstation_5_digital_standard");
+  assert.equal(parsed.needsReview, false);
+});
+
+test("global classifier routes game-console title/accessory noise through scoped parser", () => {
+  const titleOnly = classifyListing("PS5 디스크 게임 타이틀", "", 50_000);
+  assert.equal(titleOnly.listingType, "accessory");
+  assert.equal(titleOnly.sku, null);
+
+  const unknownBody = classifyListing("플스5 디스크", "", 500_000);
+  assert.equal(unknownBody.listingType, "unknown");
+  assert.equal(unknownBody.sku, null);
+
+  const fullUnit = classifyListing("플스5 디스크 본체 풀박스", "듀얼센스 포함 정상 작동", 520_000);
+  assert.equal(fullUnit.listingType, "normal");
+  assert.equal(fullUnit.sku?.id, "ps5-disc-standard");
+});
+
 test("game console parser excludes title/accessory/damaged/buying noise", () => {
   assert.equal(
     parseGameConsoleListing("닌텐도 스위치 젤다의 전설 타이틀 팝니다", "", 45_000).listingType,
@@ -945,8 +1068,9 @@ test("iPad Pro bare screen size near generation becomes precise comparable key",
     skuId: "ipad_pro",
     title: "아이패드 프로 5세대 m1 12.9 128기가 셀룰러 풀박+애펜2",
   });
-  assert.equal(parsed.comparableKey, "ipad|ipad_pro|12_9in|128gb|cellular");
-  assert.equal(parsed.needsReview, false);
+  assert.equal(parsed.comparableKey, "ipad|ipad_pro|m1|12_9in|128gb|cellular");
+  assert.equal(parsed.needsReview, true);
+  assert.equal(parsed.parsedJson.tablet_bundle_price_review, true);
 });
 
 test("iPad Pro compact generation title keeps 11-inch split", () => {
@@ -955,7 +1079,41 @@ test("iPad Pro compact generation title keeps 11-inch split", () => {
     skuId: "ipad_pro",
     title: "아이패드 프로4세대 11 128GB 스그",
   });
-  assert.equal(parsed.comparableKey, "ipad|ipad_pro|11in|128gb|wifi");
+  assert.equal(parsed.comparableKey, "ipad|ipad_pro|m2|11in|128gb|wifi");
+  assert.equal(parsed.needsReview, false);
+});
+
+test("iPad Pro generic comparable key includes chip axis and bundle rows stay review-gated", () => {
+  const clean = parseListingOptions({
+    category: "tablet",
+    skuId: "ipad-pro",
+    title: "Ipad Pro11 3세대/256GB/Wifi/m1칩",
+  });
+  assert.equal(clean.comparableKey, "ipad|ipad_pro|m1|11in|256gb|wifi");
+  assert.equal(clean.needsReview, false);
+
+  const bundled = parseListingOptions({
+    category: "tablet",
+    skuId: "ipad-pro",
+    title: "아이패드프로3세대 11 m1 셀룰러 + 애플펜슬2",
+    description: "아이패드 프로 3세대 11인치 M1 칩 128gb 셀룰러 모델과 애플펜슬 2세대 함께 판매합니다.",
+  });
+  assert.equal(bundled.comparableKey, "ipad|ipad_pro|m1|11in|128gb|cellular");
+  assert.equal(bundled.needsReview, true);
+  assert.equal(bundled.parsedJson.tablet_bundle_price_review, true);
+});
+
+test("iPad Pro 11 M4 exact lane accepts bare 256 storage wording", () => {
+  const sku = ruleMatch("아이패드 프로 m4 11인치 256 wifi 실버");
+  assert.equal(sku?.id, "ipad-pro-11-m4-256-wifi");
+
+  const parsed = parseListingOptions({
+    category: "tablet",
+    skuId: sku?.id,
+    skuName: sku?.modelName,
+    title: "아이패드 프로 m4 11인치 256 wifi 실버",
+  });
+  assert.equal(parsed.comparableKey, "ipad|ipad_pro_11_m4_256_wifi|11in|256gb|wifi");
   assert.equal(parsed.needsReview, false);
 });
 
@@ -1006,6 +1164,26 @@ test("smartphone cases and grip accessories do not enter normal phone pool", () 
     classifyListing("아이폰 15 POLO case 미개봉", "케이스 새상품", 50_000).listingType,
     "accessory",
   );
+  assert.equal(
+    classifyListing("토라스아이폰16프로맥스", "보호 케이스 새상품", 35_000).listingType,
+    "accessory",
+  );
+  assert.equal(
+    classifyListing("푸른코리아 아이폰16 청량글라스", "강화유리 필름입니다", 18_000).listingType,
+    "accessory",
+  );
+  assert.equal(
+    classifyListing("Switcheasy 아이폰16프로", "케이스 단품", 28_000).listingType,
+    "accessory",
+  );
+  assert.equal(
+    classifyListing("브리즈피 아이폰15프로 비바 마젠타 컬러 새상품", "휴대폰 케이스입니다", 32_000).listingType,
+    "accessory",
+  );
+  assert.equal(
+    classifyListing("와일드플라워 아이폰 15 프로맥스", "케이스 단품", 45_000).listingType,
+    "accessory",
+  );
 });
 
 test("smartphone repair parts and buying posts are excluded before scoring", () => {
@@ -1016,6 +1194,18 @@ test("smartphone repair parts and buying posts are excluded before scoring", () 
   assert.equal(
     classifyListing("갤럭시 s24 울트라 구매함", "구매 원합니다", 700_000).listingType,
     "buying",
+  );
+  assert.equal(
+    classifyListing("삼성 갤럭시 S23 울트라, S24 울트라 스타일러스 펜, S펜", "정품 S펜만 판매합니다", 50_000).listingType,
+    "parts",
+  );
+  assert.equal(
+    classifyListing("아이폰 15 프로 새 OLED 터치스크린", "액정 부품입니다", 80_000).listingType,
+    "parts",
+  );
+  assert.equal(
+    classifyListing("아이폰 15 프로 새 OLED 터치스크린", "", 80_000).listingType,
+    "parts",
   );
 });
 
@@ -1049,7 +1239,9 @@ test("description-level buying intent is excluded without blocking purchase-hist
 });
 
 test("pool policy gives one shared skip reason for blocked flags", () => {
-  const confidence = computePoolConfidence(0.8, ["coarse_market_price"]);
+  // Wave 13: coarse_market_price/market_confidence_low POOL_BLOCK 제거됨.
+  // 다른 POOL_BLOCK_FLAGS (risk_keyword_review 등)로 동일 share-reason 동작 검증.
+  const confidence = computePoolConfidence(0.8, ["risk_keyword_review"]);
   assert.equal(confidence, 0.8);
   assert.equal(
     poolSkipReason({
@@ -1062,9 +1254,9 @@ test("pool policy gives one shared skip reason for blocked flags", () => {
       comparableKey: "airpods|airpods_pro_2_usbc|usbc",
       needsReview: false,
       confidence,
-      scoreFlags: ["coarse_market_price"],
+      scoreFlags: ["risk_keyword_review"],
     }),
-    "blocked_coarse_market_price",
+    "blocked_risk_keyword_review",
   );
 });
 
@@ -1216,6 +1408,51 @@ test("candidate pool builder blocks non-ready laptop category despite high profi
 
   assert.equal(result.entries.length, 0);
   assert.deepEqual(result.invalidations, [{ pid: 1, reason: "category_internal_only_laptop" }]);
+});
+
+test("candidate pool builder hard-blocks pool_eligible=false rows before lane readiness", () => {
+  const sku = CATALOG.find((item) => item.laneKey === "airpods_max_usbc" || item.id === "airpods-max-usbc");
+  assert.ok(sku, "expected AirPods Max USB-C SKU in catalog");
+  const parsedByPid = new Map([
+    [10, {
+      category: "earphone" as const,
+      comparable_key: "airpods|airpods_max_usbc|usbc",
+      parse_confidence: 1,
+      needs_review: false,
+    }],
+  ]);
+  const result = buildCandidatePoolRows({
+    rows: [{
+      pid: 10,
+      price: 300_000,
+      skuMedian: 600_000,
+      estimatedBuyCost: 300_000,
+      shippingFee: 0,
+      shippingFeeGeneral: 0,
+      riskHits: 0,
+      thumbnailUrl: "https://example.test/airpods-max.jpg",
+      poolEligible: false,
+      skuId: sku.id,
+      score: 95,
+      scoreFlags: [],
+    }],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: {
+      earphone: {
+        status: "ready",
+        label: "Audio",
+        note: "ready",
+        minReadyPool: 6,
+        minParseRate: 0.85,
+        minTrustedKeys: 5,
+      },
+    },
+    now: "2026-05-13T00:00:00.000Z",
+  });
+
+  assert.equal(result.entries.length, 0);
+  assert.deepEqual(result.invalidations, [{ pid: 10, reason: "pool_eligible_false" }]);
 });
 
 test("score output mapper preserves rows while assigning rank by score", () => {

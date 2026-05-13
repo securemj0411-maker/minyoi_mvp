@@ -244,6 +244,8 @@ async function main(): Promise<void> {
     publicPromotion: false,
     runtimeCatalogApply: false,
     candidatePoolPolicyWiring: false,
+    category: "smartwatch_discovered",
+    decision: "smartwatch_ambiguity_split_prep_report_only",
     scope: "Smartwatch ambiguity lightweight split prep only",
     nonScope: [
       "whole smartwatch_discovered public readiness",

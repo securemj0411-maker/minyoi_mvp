@@ -111,6 +111,11 @@ async function main(): Promise<void> {
   const summary = {
     category: "smartwatch_discovered",
     generatedAt: new Date().toISOString(),
+    reportOnly: true,
+    publicPromotion: false,
+    runtimeCatalogApply: false,
+    candidatePoolPolicyWiring: false,
+    decision: "smartwatch_parser_readiness_diagnostic_report_only",
     total: samples.length,
     normal,
     normalRate: pct(normal, samples.length),

@@ -8,6 +8,7 @@ const reportsDir = path.join(appDir, "reports");
 
 type StrictContract = {
   conclusion: string;
+  category: string;
   metrics: {
     sourceRows: number;
     strictAllowedRows: number;

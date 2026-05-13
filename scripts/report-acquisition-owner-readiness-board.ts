@@ -42,6 +42,17 @@ type RankingReport = {
   }>;
 };
 
+type ExactAcquisitionBoard = {
+  lanes?: Array<{
+    lane: string;
+    activeClean: number;
+    reviewRows: number;
+    readiness: string;
+    next: string;
+    blocker: string;
+  }>;
+};
+
 async function readJson<T>(file: string): Promise<T> {
   return JSON.parse(await readFile(path.join(reportsDir, file), "utf-8")) as T;
 }
@@ -60,10 +71,39 @@ function statusFromChecklist(checklist: Checklist) {
   return "owner_review_ready";
 }
 
+function applyLatestDetailGate<T extends {
+  category: string;
+  target: string;
+  status: string;
+  allowedRows: number;
+  maxFutureWriteCap: number;
+  failedChecks: number;
+  nextStep: string;
+}>(entry: T, exactBoard: ExactAcquisitionBoard): T {
+  const laneKey =
+    entry.category === "game_console_body_narrow" && entry.target.includes("playstation-5")
+      ? "ps5_disc_digital_standard"
+      : null;
+  if (!laneKey) return entry;
+
+  const latest = exactBoard.lanes?.find((lane) => lane.lane === laneKey);
+  if (!latest || latest.readiness.startsWith("owner_review")) return entry;
+
+  return {
+    ...entry,
+    status: "blocked_latest_detail",
+    allowedRows: latest.activeClean,
+    maxFutureWriteCap: Math.min(entry.maxFutureWriteCap, latest.activeClean),
+    failedChecks: Math.max(entry.failedChecks, 1),
+    nextStep: `${latest.next} Latest detail gate overrides older checklist: ${latest.blocker}`,
+  };
+}
+
 async function main() {
   await mkdir(reportsDir, { recursive: true });
   const generatedAt = new Date().toISOString();
   const ranking = await readJson<RankingReport>("next-acquisition-readiness-ranking-latest.json");
+  const exactBoard = await readJson<ExactAcquisitionBoard>("exact-acquisition-readiness-board-latest.json");
   const monitor = await readJson<Checklist>("monitor-xl2540k-execution-readiness-checklist-latest.json");
   const headphone = await readJson<Checklist>("headphone-sony-first-wave-execution-readiness-checklist-latest.json");
   const speaker = await readJson<Checklist>("speaker-jbl-flip6-execution-readiness-checklist-latest.json");
@@ -112,7 +152,7 @@ async function main() {
       score: ranking.entries.find((entry) => entry.firstTarget === speaker.target)?.score ?? null,
       nextStep: speaker.nextStep,
     },
-    {
+    applyLatestDetailGate({
       category: ps5.category,
       target: ps5.target,
       source: "game-console-ps5-execution-readiness-checklist-latest.json",
@@ -124,7 +164,7 @@ async function main() {
       failedChecks: ps5.metrics.failedChecks,
       score: ranking.entries.find((entry) => entry.category === ps5.category)?.score ?? null,
       nextStep: ps5.nextStep,
-    },
+    }, exactBoard),
     {
       category: tablet.category,
       target: tablet.target,
@@ -177,6 +217,7 @@ async function main() {
       "headphone-sony-first-wave-execution-readiness-checklist-latest.json",
       "speaker-jbl-flip6-execution-readiness-checklist-latest.json",
       "game-console-ps5-execution-readiness-checklist-latest.json",
+      "exact-acquisition-readiness-board-latest.json",
       "tablet-ipad-pro-m4-execution-readiness-checklist-latest.json",
       "camera-sony-a7m3-execution-readiness-checklist-latest.json",
     ],
@@ -185,11 +226,14 @@ async function main() {
       "Do not execute any packet while P0 Supabase/runtime work is active.",
       "If execution is later approved, start with monitor XL2540K because it has the cleanest checklist.",
       "Headphone Sony XM4/CH520 is now checklist-ready and can be compared with monitor after P0 stabilization.",
-      `Ready targets: ${readyEntries.map((entry) => `${entry.category}/${entry.target}`).join("; ")}.`,
+      readyEntries.length > 0
+        ? `Ready targets: ${readyEntries.map((entry) => `${entry.category}/${entry.target}`).join("; ")}.`
+        : "No ready targets remain after latest detail gates.",
       warningEntries.length > 0
         ? `Warning targets: ${warningEntries.map((entry) => `${entry.category}/${entry.target}`).join("; ")}.`
         : "No warning targets remain after the latest report-only checks.",
       "Keep camera A7M3 blocked because the second no-write live-read wave still has fewer than 4 clean rows.",
+      "Latest detail gates override older source/spec checklists when they disagree.",
     ],
     conclusion: "acquisition_owner_readiness_board_prepared_report_only",
     nextStep:

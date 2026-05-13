@@ -8,6 +8,13 @@ export const DEFAULT_SEARCH_QUERIES = [
   "갤럭시 S23", "갤럭시 S23 울트라", "갤럭시 S24", "갤럭시 S24 울트라", "갤럭시 S25", "갤럭시 S25 울트라",
   "아이패드 프로", "아이패드 에어", "아이패드 미니", "아이패드 10세대",
   "갤럭시탭 S8", "갤럭시탭 S9", "갤럭시탭 S10",
+  // Wave 54/56: narrow tech/home lane validation queries. These start as
+  // gather traffic; query cadence can downrank low-yield lanes after evidence.
+  "벤큐 XL2540K", "LG 27US550", "LG 27GL650F", "LG 39GX900A",
+  "JBL Flip 6", "JBL 플립6",
+  "닌텐도 스위치 OLED", "스위치 OLED",
+  "플스5 디스크", "PS5 디스크", "플스5 디지털", "PS5 디지털", "PS5 슬림",
+  "다이슨 V12", "다이슨 V15", "로보락 S8", "Roborock S8",
 ];
 
 export type PipelineRuntimeConfig = {

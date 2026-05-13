@@ -1,5 +1,7 @@
 // 번개장터 API 호출 — 검색 + 상세.
 
+import { hashSellerUid } from "./compliance-hashing";
+
 const API_BASE = "https://api.bunjang.co.kr";
 const HEADERS = {
   "User-Agent":
@@ -136,7 +138,7 @@ export async function searchPage(query: string, page: number, options: SearchPag
         freeShipping: boolish(item.free_shipping),
         query,
         url: `https://m.bunjang.co.kr/products/${item.pid}`,
-        sellerUid: stringOrNull(item.uid),
+        sellerUid: hashSellerUid(stringOrNull(item.uid)),
         sellerProshop: boolish(item.proshop),
         sellerBizseller: boolish(item.bizseller),
         location: stringOrNull(item.location),
@@ -201,8 +203,8 @@ export async function fetchDetail(pid: string): Promise<DetailData | null> {
         ? Number(shop?.reviewRating ?? 0) || null
         : null,
       shopReviewCount: toInt(shop?.reviewCount),
-      shopUid: stringOrNull(shop?.uid == null ? null : String(shop.uid)),
-      shopName: stringOrNull(shop?.name),
+      shopUid: hashSellerUid(stringOrNull(shop?.uid == null ? null : String(shop.uid))),
+      shopName: null,
       shopFollowerCount: toInt(shop?.followerCount),
       shopSalesCount: toInt(shop?.salesCount),
       shopProshop: boolish(shop?.proshop && typeof shop.proshop === "object" ? (shop.proshop as Record<string, unknown>).isProshop : null),

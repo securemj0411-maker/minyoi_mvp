@@ -42,6 +42,51 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "JBL Flip 6",
     note: "단일 모델 portable speaker narrow lane. broad speaker/PA는 차단 유지.",
   },
+  monitor_lg_27up850n: {
+    status: "ready",
+    label: "LG 27UP850N-W",
+    note: "Wave 24: LG UltraFine 4K USB-C narrow lane. distribution 압축으로 pool 미달, sample 누적 대기 상태. 27UL850/27UK850/27UP550/27UP600/27US550 + UltraGear/32\"/24\"는 catalog mustNotContain으로 차단.",
+  },
+  monitor_lg_27gp850: {
+    status: "ready",
+    label: "LG UltraGear 27GP850-B",
+    note: "Wave 24 fallback: LG UltraGear QHD 165Hz Nano IPS narrow lane. 27GN850/27GP83/27GP95/27GP700 + UltraFine UP/UL/UK + 32\"/24\"는 catalog mustNotContain으로 차단.",
+  },
+  speaker_bose_soundlink_flex: {
+    status: "ready",
+    label: "Bose SoundLink Flex",
+    note: "Wave 16: Bose SoundLink Flex portable speaker narrow lane. Mini/Revolve/Color/Micro/사운드바는 catalog mustNotContain으로 차단.",
+  },
+  speaker_sonos_roam: {
+    status: "ready",
+    label: "Sonos Roam",
+    note: "Wave 20: Sonos Roam (1st gen) portable speaker narrow lane. Bunjang 모집단 0건으로 sample 누적 대기 상태. Roam SL/Roam 2/Move/One/Five/Era 등은 catalog mustNotContain으로 차단.",
+  },
+  speaker_marshall_emberton_ii: {
+    status: "ready",
+    label: "Marshall Emberton II",
+    note: "Wave 20 pivot 1: Sonos Roam Bunjang 0건 → Marshall Emberton II. 16 row apply 했으나 median 150k 압축으로 pool 미달 (JBL Flip 6 패턴 반복). sample 누적 + 가격 하락 대기.",
+  },
+  speaker_bose_soundlink_mini_ii: {
+    status: "ready",
+    label: "Bose SoundLink Mini II",
+    note: "Wave 20 pivot 2: Marshall Emberton II도 distribution 좁아 Bose SoundLink Mini II로 전환. msrp 219k (2015), 중고 50~130k wider distribution.",
+  },
+  home_appliance_dyson_v12_detect_slim: {
+    status: "ready",
+    label: "Dyson V12 Detect Slim",
+    note: "Wave 19: 단일 모델 stick vacuum narrow lane. V6/V7/V8/V10/V11/V15/Gen5/Outsize/Omni-glide 등은 catalog mustNotContain으로 차단.",
+  },
+  desktop_imac_m3_24: {
+    status: "ready",
+    label: "iMac M3 24\"",
+    note: "Wave 22: Apple iMac M3 24-inch (2023) narrow lane. M1/M2/M4/Intel + 27\"/21\" 이전 세대 + Mac Studio/mini/Pro/MacBook은 catalog mustNotContain으로 차단.",
+  },
+  home_appliance_roborock_s8_pro_ultra: {
+    status: "ready",
+    label: "Roborock S8 Pro Ultra",
+    note: "Wave 21: 단일 모델 robot vacuum narrow lane. S8 base/S8+/S8 MaxV/Qrevo/S7/Q-series 등은 catalog mustNotContain으로 차단.",
+  },
   ps5_disc_digital_standard: {
     status: "ready",
     label: "PlayStation 5 (Standard)",
@@ -266,6 +311,22 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minParseRate: 0.9,
     minTrustedKeys: 4,
   },
+  desktop: {
+    status: "ready",
+    label: "Desktop",
+    note: "Wave 17: Mac mini M2 narrow lane unlock 후 readiness DB row에서 ready.",
+    minReadyPool: 1,
+    minParseRate: 0.85,
+    minTrustedKeys: 3,
+  },
+  home_appliance: {
+    status: "ready",
+    label: "Home Appliance",
+    note: "Wave 19: Dyson V12 Detect Slim narrow lane unlock 후 readiness DB row에서 ready.",
+    minReadyPool: 1,
+    minParseRate: 0.85,
+    minTrustedKeys: 3,
+  },
 };
 
 export function categoryFromComparableKey(value: string | null | undefined): Sku["category"] | null {
@@ -280,7 +341,9 @@ export function categoryFromComparableKey(value: string | null | undefined): Sku
     family === "speaker" ||
     family === "camera" ||
     family === "game_console" ||
-    family === "small_appliance"
+    family === "small_appliance" ||
+    family === "home_appliance" ||
+    family === "desktop"
   ) {
     return family;
   }

@@ -1,5 +1,6 @@
 import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
 import { loadCategoryReadinessMap, loadLaneReadinessMap } from "@/lib/category-readiness";
+import { evaluatePhase2Escrow, isPhase2EscrowEnabled } from "@/lib/ai-l2-escrow";
 import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
 import {
@@ -149,7 +150,6 @@ type MarketKeyInvalidationEvent = {
 type SellerUpsertRow = {
   source: string;
   seller_uid: string;
-  seller_name?: string | null;
   review_rating?: number | null;
   review_count?: number;
   sales_count?: number;
@@ -222,12 +222,35 @@ const POOL_PID_READ_CHUNK_SIZE = 500;
 const REST_WRITE_CHUNK_SIZE = 50;
 const RAW_TOUCH_WRITE_CHUNK_SIZE = 400;
 const SELLER_WRITE_CHUNK_SIZE = 200;
-const SELLER_READ_CHUNK_SIZE = 300;
+// Keep seller_uid=in.(...) URLs under common proxy/request-line limits.
+const SELLER_READ_CHUNK_SIZE = 80;
 const DEFAULT_SELLER_SEARCH_REFRESH_MS = 3 * 60 * 60 * 1000;
 const PARSED_PID_READ_CHUNK_SIZE = 300;
 const REST_KEY_READ_CHUNK_SIZE = 50;
 const TERMINAL_LISTING_STATES = new Set(["sold_confirmed", "disappeared", "archived"]);
 const TITLE_TRIAGE_SKIP_VERSION = "title_triage_v1";
+let rawScoreDirtySchemaAvailablePromise: Promise<boolean> | null = null;
+
+async function rawScoreDirtySchemaAvailable() {
+  rawScoreDirtySchemaAvailablePromise ??= (async () => {
+    try {
+      const res = await restFetch(
+        `${tableUrl("mvp_raw_listings")}?select=pid,score_dirty,pool_eligible&limit=1`,
+        { headers: serviceHeaders() },
+      );
+      await res.arrayBuffer();
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (/pool_eligible|score_dirty|42703|does not exist/i.test(message)) {
+        console.warn("raw score-dirty schema columns unavailable; falling back to legacy score scan");
+        return false;
+      }
+      throw err;
+    }
+  })();
+  return rawScoreDirtySchemaAvailablePromise;
+}
 
 const catalogById = new Map(CATALOG.map((sku) => [sku.id, sku]));
 
@@ -361,7 +384,6 @@ async function upsertSellerRows(rows: SellerUpsertRow[]): Promise<number> {
       ...existing,
       ...row,
       seller_uid: uid,
-      seller_name: row.seller_name ?? existing?.seller_name,
       review_rating: row.review_rating ?? existing?.review_rating,
       review_count: row.review_count ?? existing?.review_count,
       sales_count: row.sales_count ?? existing?.sales_count,
@@ -723,6 +745,23 @@ type DetailQueueDecision = {
   purpose: "candidate" | "market_sample" | "exploration" | "skip";
 };
 
+const RAW_LISTING_TYPES = new Set([
+  "normal",
+  "counterfeit",
+  "parts",
+  "buying",
+  "callout",
+  "damaged",
+  "accessory",
+  "multi",
+  "commercial",
+  "unknown",
+]);
+
+export function rawListingTypeForStorage(value: string | null | undefined) {
+  return value && RAW_LISTING_TYPES.has(value) ? value : "unknown";
+}
+
 function needsDetailRefresh(item: SearchItem, existing: RawListingRow | undefined) {
   if (!existing) return true;
   if (isCurrentTitleTriageSkip(existing)) return existing.name !== item.name;
@@ -802,7 +841,7 @@ function titleTriageSkipPatch(decision: DetailQueueDecision | undefined) {
   return {
     detail_status: "skipped",
     detail_error: `${TITLE_TRIAGE_SKIP_VERSION}:${decision.reason}`,
-    listing_type: decision.listingType,
+    listing_type: rawListingTypeForStorage(decision.listingType),
     sku_id: decision.skuId,
     sku_name: decision.skuName,
   };
@@ -1127,6 +1166,7 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
   }));
   timingsMs.observation_rows = observationRows.length;
 
+  const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
   const rawFullUpsertRows = timedSearchBlock(timingsMs, "build_raw_upsert_rows", () => items.flatMap((item) => {
     const current = existing.get(Number(item.pid));
     const statePatch = statePatches.get(item.pid) ?? searchListingStatePatch(current);
@@ -1135,7 +1175,13 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
     const detailDecision = detailDecisions.get(item.pid);
     const skipPatch = titleTriageSkipPatch(detailDecision);
     const resetSkippedPatch = isCurrentTitleTriageSkip(current) && detailDecision?.queue
-      ? { detail_status: "pending", detail_error: null, listing_type: detailDecision.listingType, sku_id: detailDecision.skuId, sku_name: detailDecision.skuName }
+      ? {
+        detail_status: "pending",
+        detail_error: null,
+        listing_type: rawListingTypeForStorage(detailDecision.listingType),
+        sku_id: detailDecision.skuId,
+        sku_name: detailDecision.skuName,
+      }
       : null;
     const detailPatch = skipPatch ?? resetSkippedPatch;
     return [{
@@ -1176,7 +1222,7 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
       sku_name: detailPatch?.sku_name ?? current?.sku_name ?? null,
       detail_status: detailPatch?.detail_status ?? current?.detail_status ?? "pending",
       detail_error: detailPatch?.detail_error ?? current?.detail_error ?? null,
-      score_dirty: true,
+      ...(scoreDirtyAvailable ? { score_dirty: true } : {}),
     }];
   }));
   timingsMs.raw_full_upsert_rows = rawFullUpsertRows.length;
@@ -1448,7 +1494,6 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
             image_count: detail.imageCount,
             thumbnail_url: detail.thumbnailUrl,
             seller_uid: detail.shopUid,
-            seller_name: detail.shopName,
             seller_source: "bunjang",
             listing_state: "sold_confirmed",
             sold_detected_at: now,
@@ -1492,6 +1537,7 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           continue;
         }
         const { listingType, sku } = classifyListing(claim.name, detail.description, claim.price);
+        const storageListingType = rawListingTypeForStorage(listingType);
         const parsed = parseListingOptions({
           title: claim.name,
           description: detail.description,
@@ -1501,6 +1547,7 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
         });
         const existingParsed = existingParsedByPid.get(Number(claim.pid));
         const now = new Date().toISOString();
+        const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
         await patchRows("mvp_raw_listings", `pid=eq.${claim.pid}`, {
           description_preview: detail.description.slice(0, 500),
           sale_status: detail.saleStatus,
@@ -1512,16 +1559,15 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           image_count: detail.imageCount,
           thumbnail_url: detail.thumbnailUrl,
           seller_uid: detail.shopUid,
-          seller_name: detail.shopName,
           seller_source: "bunjang",
-          listing_type: listingType,
+          listing_type: storageListingType,
           sku_id: sku?.id ?? null,
           sku_name: sku?.modelName ?? null,
           detail_status: "done",
           detail_enriched_at: now,
           detail_error: null,
           updated_at: now,
-          score_dirty: true,
+          ...(scoreDirtyAvailable ? { score_dirty: true } : {}),
         });
         // pool에 이미 들어간 매물이면 last_verified_at 갱신 → pack-open에서 재verify 안 함
         // (cron이 이미 fetchDetail + sold-out 체크 완료한 사실을 pool에 반영)
@@ -1533,7 +1579,6 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
             stats.sellerUpserted += await upsertSellerRows([{
               source: "bunjang",
               seller_uid: detail.shopUid,
-              seller_name: detail.shopName,
               review_rating: detail.shopReviewRating,
               review_count: detail.shopReviewCount,
               sales_count: detail.shopSalesCount,
@@ -1682,13 +1727,17 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   // P0-5: event-driven score. score_dirty=true인 row만 처리한다.
   // search touch만 발생한 row(변경 없음)는 dirty 안 됨 → score 재계산 안 함.
   // raw upsert / detail enrichment / market invalidation 시점에 dirty=true로 마킹.
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status";
-  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&score_dirty=eq.true&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&order=last_seen_at.desc&limit=${limit}`;
+  const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
+  const baseColumns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status";
+  const columns = scoreDirtyAvailable ? `${baseColumns},pool_eligible` : baseColumns;
+  const dirtyFilter = scoreDirtyAvailable ? "&score_dirty=eq.true" : "";
+  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}${dirtyFilter}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&order=last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
 }
 
 async function clearScoreDirty(pids: number[]): Promise<void> {
+  if (!(await rawScoreDirtySchemaAvailable())) return;
   const unique = [...new Set(pids.filter(Number.isFinite))];
   if (unique.length === 0) return;
   for (const chunk of chunkArray(unique, REST_WRITE_CHUNK_SIZE)) {
@@ -1697,6 +1746,7 @@ async function clearScoreDirty(pids: number[]): Promise<void> {
 }
 
 async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Promise<number> {
+  if (!(await rawScoreDirtySchemaAvailable())) return 0;
   const unique = [...new Set(comparableKeys.filter(Boolean))];
   if (unique.length === 0) return 0;
   // comparable_key를 가진 parsed pid를 모은 뒤 raw_listings.score_dirty=true.
@@ -1897,7 +1947,9 @@ function aiEscrowKindForParserMetadata(
 
 function trustedMarketMedian(stat: MarketPriceRow | undefined) {
   if (!stat) return null;
-  if (stat.confidence !== "high" && stat.confidence !== "medium") return null;
+  // Wave 13: confidence=low + active_sample_count>=2 도 trusted median으로 받음.
+  // sample 8+ 도달 어려운 가전/IT narrow lane이 fallback msrp*0.5에 갇히는 문제 해소.
+  if (stat.confidence === "low" && (stat.active_sample_count ?? 0) < 2) return null;
   const value = Number(stat.blended_median_price ?? stat.active_median_price ?? 0);
   return value > 0 ? value : null;
 }
@@ -2189,7 +2241,9 @@ function applySourceHealthHysteresis(
 
 export async function sourceHealthStage(): Promise<StageStats> {
   const stats = emptyStats();
-  const windowMinutes = 30;
+  // F1 patch (wave2 owner approved): 30→120m to mitigate sparse window + stale claim
+  // batch noise. threshold 0.85 + detail_success_rate definition unchanged.
+  const windowMinutes = 120;
   let rows: CollectRunHealthRow[];
   let previous: SourceHealthRow | null;
   try {
@@ -2249,7 +2303,11 @@ export async function sourceHealthStage(): Promise<StageStats> {
     }
   }
 
-  const detailSuccessRate = detailAttempts === 0 ? 1 : detailSucceeded / detailAttempts;
+  // F2a patch (wave2 owner approved): denominator = visible outcomes (enriched + detailFailed)
+  // 대신 detailAttempts(claimed). stale/no-op/timeout/invisible claim은 분모 제외.
+  // threshold 0.85, numerator enriched 정의 그대로. denominator 0이면 neutral 1 유지.
+  const detailVisibleOutcomes = detailSucceeded + detailFailed;
+  const detailSuccessRate = detailVisibleOutcomes === 0 ? 1 : detailSucceeded / detailVisibleOutcomes;
   const avgSearchCollected = searchRunCount === 0 ? 0 : searchCollected / searchRunCount;
   const searchAttemptCount = searchSucceeded + searchFailed;
   const searchFailureRate = searchAttemptCount === 0 ? 0 : searchFailed / searchAttemptCount;
@@ -3265,6 +3323,8 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const scoredRows: PipelineRow[] = [];
 
   let needsReviewSkipped = 0;
+  let phase2EscrowSelected = 0;
+  const phase2EscrowFlagByPid = new Map<string, "ai_escrow_pending">();
   const handledPids: number[] = [];
   for (const row of rows) {
     if (Date.now() >= deadlineMs) {
@@ -3280,9 +3340,19 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     // mvp_listings/mvp_listing_analysis output에 못 들어가게 한다. pool에는 이미 pool-policy에서 차단되어 있지만,
     // listings output을 통해 노출되는 경로(랜딩/디버그/관리)에서 보이는 것을 막는다.
     // parsed가 아예 없는 경우(ensureParsedRows 실패)는 기존처럼 fallback 처리.
+    //
+    // Wave 33: Phase 2 escrow gate. AI_L2_ESCROW_PHASE2_ENABLED=1 + narrow smartphone +
+    // parse_confidence >= 0.55 row는 scoreStage를 통과시키되, pool-policy의
+    // `ai_escrow_pending` flag로 pool 진입을 차단한다. AI verdict 후 detail-worker가
+    // flag 제거 + score_dirty=true 재마킹. gate OFF가 default → 기존 skip 동작 유지.
     if (parsed?.needs_review === true) {
-      needsReviewSkipped += 1;
-      continue;
+      const escrow = evaluatePhase2Escrow({ parsed, selectedSoFar: phase2EscrowSelected });
+      if (!escrow.eligible) {
+        needsReviewSkipped += 1;
+        continue;
+      }
+      phase2EscrowSelected += 1;
+      phase2EscrowFlagByPid.set(String(row.pid), escrow.flag);
     }
     const marketKey = marketGroupKey(row, parsed);
     const comparableKey = preciseComparableKey(parsed);
@@ -3321,6 +3391,8 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     }
     if (parseConfidence > 0 && parseConfidence < 0.65) scoreFlags.push("option_parse_review");
     if (parsed?.needs_review) scoreFlags.push("option_needs_review");
+    const escrowFlag = phase2EscrowFlagByPid.get(String(row.pid));
+    if (escrowFlag) scoreFlags.push(escrowFlag);
     if (conditionScore < 0.65) scoreFlags.push("condition_review");
     const unknownParts = parserUnknownParts(parsed, comparableKey);
     const criticalUnknownParts = parserCriticalUnknownParts(parsed);
@@ -3370,6 +3442,18 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   stats.aiFiltered = aiReview.stats.filtered;
   stats.aiKeptNormal = aiReview.stats.keptNormal;
   stats.aiKeptLowConfidence = aiReview.stats.keptLowConfidence;
+
+  // Wave 34: escrow unavailable row는 다음 tick에서 재시도되도록 raw.score_dirty=true 재마킹.
+  // gate OFF 면 escrowUnavailablePids 는 빈 배열이므로 no-op.
+  if (aiReview.escrowUnavailablePids.length > 0) {
+    const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
+    if (scoreDirtyAvailable) {
+      const ids = aiReview.escrowUnavailablePids.map((p) => Number(p)).filter(Number.isFinite);
+      if (ids.length > 0) {
+        await patchRowsByIds("mvp_raw_listings", ids, { score_dirty: true }, REST_WRITE_CHUNK_SIZE);
+      }
+    }
+  }
 
   const listings = toListingOutputRows(aiReview.rows, now);
   const rankedAnalyses = toRankedAnalysisRows(aiReview.rows, now);
@@ -3435,6 +3519,11 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     ...(stats.timingsMs ?? {}),
     score_dirty_cleared_rows: processedPids.length,
     score_needs_review_skipped: needsReviewSkipped,
+    score_phase2_escrow_selected: phase2EscrowSelected,
+    score_phase2_escrow_gate_enabled: isPhase2EscrowEnabled() ? 1 : 0,
+    score_phase2_escrow_resolved_pass: aiReview.stats.escrowResolvedPass,
+    score_phase2_escrow_held: aiReview.stats.escrowHeld,
+    score_phase2_escrow_unavailable_retry: aiReview.stats.escrowUnavailableRetry,
   };
   return stats;
 }

@@ -53,12 +53,13 @@ function detectModel(text: string, dense: string) {
 
   const ps5 = /ps5|플스\s*5|플레이스테이션\s*5/.test(text);
   if (ps5) {
-    const pro = /ps5\s*pro|플스\s*5\s*프로|플레이스테이션\s*5\s*프로/.test(text);
-    const slim = /ps5.{0,16}(슬림|slim)|(?:슬림|slim).{0,16}ps5|플스\s*5\s*슬림/.test(text);
-    const digital = /ps5.{0,16}(디지털|digital)|(?:디지털|digital).{0,16}ps5|디지털\s*에디션/.test(text);
+    const ps5Token = "(?:ps5|플스\\s*5|플스5|플레이스테이션\\s*5)";
+    const pro = new RegExp(`${ps5Token}\\s*(?:pro|프로)|(?:pro|프로)\\s*${ps5Token}`).test(text);
+    const slim = new RegExp(`${ps5Token}.{0,16}(?:슬림|slim)|(?:슬림|slim).{0,16}${ps5Token}`).test(text);
+    const digital = new RegExp(`${ps5Token}.{0,16}(?:디지털|digital)|(?:디지털|digital).{0,16}${ps5Token}|디지털\\s*에디션`).test(text);
     const cfiDigital = /cfi[-\s]?\d{4}\s*b\b/.test(text);
     const cfiDisc = /cfi[-\s]?\d{4}\s*a\b/.test(text);
-    const disc = /ps5.{0,16}(디스크|disc)|(?:디스크|disc).{0,16}ps5|디스크\s*에디션|디스크버전/.test(text);
+    const disc = new RegExp(`${ps5Token}.{0,16}(?:디스크|disc)|(?:디스크|disc).{0,16}${ps5Token}|디스크\\s*에디션|디스크버전`).test(text);
     const edition = pro
       ? "pro"
       : slim && digital

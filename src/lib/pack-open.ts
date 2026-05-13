@@ -630,7 +630,7 @@ export async function loadRevealListingDetail(input: {
     },
     seller: {
       uid: detail.shopUid,
-      name: detail.shopName,
+      name: null,
       reviewRating: detail.shopReviewRating,
       reviewCount: detail.shopReviewCount,
       followerCount: detail.shopFollowerCount,

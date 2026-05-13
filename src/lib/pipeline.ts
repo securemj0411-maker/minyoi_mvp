@@ -6,8 +6,10 @@
 import { createHash } from "node:crypto";
 
 import { shouldReviewByPolicy } from "@/lib/ai-l2-policy";
+import { applyEscrowTransition } from "@/lib/ai-l2-escrow";
 import { collectSearchItems, fetchDetail } from "@/lib/bunjang";
 import { CATALOG, normalize, ruleMatch, skuById, type Sku } from "@/lib/catalog";
+import { parseGameConsoleListing } from "@/lib/game-console-parser";
 import { GENERATED_NOISE_RULES } from "@/lib/generated/noise-rules";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { soldOutTextHits } from "@/lib/sold-out";
@@ -187,6 +189,11 @@ function isFullSizeHeadphoneText(text: string): boolean {
   return /(에어팟\s*맥스|airpods\s*max|헤드폰|헤드셋|headphone|headset|소니|sony|보스|bose|비츠|beats|젠하이저|sennheiser|wh[-\s]?\d|xm[3-6]|qc\s*(?:울트라|ultra|45)|quietcomfort)/i.test(text);
 }
 
+function isGameConsoleFullUnitText(text: string): boolean {
+  return /(ps5|플스\s*5|플스5|플레이스테이션\s*5|playstation\s*5|닌텐도\s*스위치|스위치\s*oled|switch\s*oled|switch\s*2)/i.test(text) &&
+    /(본체|풀박|풀박스|풀구성|풀세트|디스크\s*에디션|디지털\s*에디션|disc\s*edition|digital\s*edition)/i.test(text);
+}
+
 function hasCompleteEarphoneSetSignal(normalized: string, compact: string): boolean {
   if (/(풀박|풀박스|풀세트|풀구성|본품\s*전체|구성품\s*전부|케이스\s*포함|충전케이스\s*포함)/.test(normalized)) {
     return true;
@@ -248,11 +255,14 @@ function partsHits(title: string, desc: string): string[] {
   if (protectiveCaseOnly) {
     hits = hits.filter((hit) => !["케이스만", "단품", "낱개", "호환"].includes(hit));
   }
+  if (isGameConsoleFullUnitText(normalizedText)) {
+    hits = hits.filter((hit) => hit !== "본체만");
+  }
 
   if (/(왼쪽|오른쪽|좌측|우측).{0,8}(유닛|이어버드)|(?:유닛|이어버드).{0,8}(왼쪽|오른쪽|좌측|우측)/.test(compactText)) {
     hits.push("side_unit");
   }
-  if (!fullSizeHeadphone && /(본체|충전케이스).{0,8}(단품|만|판매|팝니다)|(?:단품|만).{0,8}(본체|충전케이스)/.test(compactText)) {
+  if (isEarphoneLikeText(normalizedText) && !fullSizeHeadphone && /(본체|충전케이스).{0,8}(단품|만|판매|팝니다)|(?:단품|만).{0,8}(본체|충전케이스)/.test(compactText)) {
     hits.push("case_only");
   }
   if (/(l|r)\s*\/?\s*(유닛|unit)|\b(l|r)\b.{0,8}(낱개|단품)/i.test(title)) {
@@ -268,7 +278,7 @@ function partsHits(title: string, desc: string): string[] {
   ) {
     hits.push("title_unit_only");
   }
-  if (!fullSizeHeadphone && compactTitle.includes("본체") && !containsAny(text, ["양쪽", "풀박", "풀박스", "풀세트", "풀구성"]).length) {
+  if (!fullSizeHeadphone && !isGameConsoleFullUnitText(normalizedText) && compactTitle.includes("본체") && !containsAny(text, ["양쪽", "풀박", "풀박스", "풀세트", "풀구성"]).length) {
     hits.push("title_case_only");
   }
   if (
@@ -489,6 +499,15 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
     if (lensOrBundleSignal) return "multi";
   }
 
+  if (sku.category === "game_console") {
+    const game = parseGameConsoleListing(title, desc, price);
+    if (game.listingType === "accessory" || game.listingType === "game_title") return "accessory";
+    if (game.listingType === "damaged_or_modded") return "damaged";
+    if (game.listingType === "buying") return "buying";
+    if (game.listingType === "multi_bundle") return "multi";
+    if (game.listingType !== "normal" || game.needsReview) return "unknown";
+  }
+
   if (sku.category === "smartphone") {
     if (sku.id === "iphone-16" && /(아이폰16e|iphone16e|iphone\s*16e)/i.test(compactTitle)) {
       return "unknown";
@@ -497,11 +516,14 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
     if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 50_000)) {
       return "accessory";
     }
-    const phoneAccessorySignal = /(case|케이스|폰케이스|그립톡|스마트톡|맥세이프|파인우븐|슬림아머|슈피겐|어반소피스티케이션|모란카노|tyreus|디월렛|다이어리|보호필름|강화유리|필름|줄이어폰|이어폰|충전기|어댑터)/i.test(textN);
+    const phoneAccessorySignal = /(case|케이스|폰케이스|그립톡|스마트톡|맥세이프|파인우븐|슬림아머|슈피겐|어반소피스티케이션|모란카노|tyreus|토라스|torras|switcheasy|스위치이지|브리즈피|와일드플라워|wildflower|디월렛|다이어리|청량\s*글라스|청량글라스|보호필름|강화유리|필름|줄이어폰|이어폰|충전기|어댑터|beats)/i.test(textN);
     if (phoneAccessorySignal && price > 0 && price < 150_000) {
       return "accessory";
     }
-    const phonePartsSignal = /(백글라스|후면\s*유리|후면유리|후면판|카메라\s*렌즈|카메라렌즈|충전\s*단자|충전단자|액정|배터리|메인보드|하우징).{0,16}(판매|팝니다|교체|부품|정품)|(?:판매|팝니다|교체|부품|정품).{0,16}(백글라스|후면\s*유리|후면유리|후면판|카메라\s*렌즈|카메라렌즈|충전\s*단자|충전단자|액정|배터리|메인보드|하우징)/.test(textN);
+    if (/(터치\s*스크린|터치스크린|oled\s*터치|s\s*펜|s펜|스타일러스)/i.test(titleN) && price > 0 && price < 180_000) {
+      return "parts";
+    }
+    const phonePartsSignal = /(백글라스|후면\s*유리|후면유리|후면판|카메라\s*렌즈|카메라렌즈|충전\s*단자|충전단자|액정|터치\s*스크린|터치스크린|oled\s*터치|배터리|메인보드|하우징|s\s*펜|s펜|스타일러스).{0,16}(판매|팝니다|교체|부품|정품|펜)|(?:판매|팝니다|교체|부품|정품).{0,16}(백글라스|후면\s*유리|후면유리|후면판|카메라\s*렌즈|카메라렌즈|충전\s*단자|충전단자|액정|터치\s*스크린|터치스크린|oled\s*터치|배터리|메인보드|하우징|s\s*펜|s펜|스타일러스)/.test(textN);
     if (phonePartsSignal && price > 0 && price < 180_000) {
       return "parts";
     }
@@ -869,8 +891,17 @@ type AiReviewStats = {
   filtered: number;
   keptNormal: number;
   keptLowConfidence: number;
+  // Wave 34 — escrow transitions (gate OFF default → 모두 0).
+  escrowResolvedPass: number;
+  escrowHeld: number;
+  escrowUnavailableRetry: number;
 };
-type AiReviewResult = { rows: PipelineRow[]; stats: AiReviewStats };
+type AiReviewResult = {
+  rows: PipelineRow[];
+  stats: AiReviewStats;
+  // Wave 34 — caller (scoreStage)가 score_dirty 재마킹할 pid 목록.
+  escrowUnavailablePids: string[];
+};
 type AiClassifyOutcome = {
   result: AiClassification | null;
   source: "cache" | "api" | "unavailable";
@@ -1320,14 +1351,26 @@ export async function applyAiReview(
     filtered: 0,
     keptNormal: 0,
     keptLowConfidence: 0,
+    escrowResolvedPass: 0,
+    escrowHeld: 0,
+    escrowUnavailableRetry: 0,
   };
-  if (!options.enabled || options.topN <= 0) return { rows, stats: emptyStats };
+  if (!options.enabled || options.topN <= 0) {
+    return { rows, stats: emptyStats, escrowUnavailablePids: [] };
+  }
 
-  const sorted = [...rows].sort((a, b) => b.score - a.score);
+  // Wave 44 — AI review topN sort에만 적용하는 boost. row.score는 변경하지 않음 (pool/listings/analysis
+  // 출력 + 사용자 노출 rank 무관 유지). escrow pending row가 starvation으로 AI까지 못 가는 문제 해결용.
+  // pool-policy는 ai_escrow_pending을 hard block하므로 AI verdict 전까지 user-facing 노출 차단 유지.
+  const ESCROW_AI_REVIEW_PRIORITY_BOOST = 1e6;
+  const reviewPriority = (row: PipelineRow): number =>
+    row.score + (row.scoreFlags.includes("ai_escrow_pending") ? ESCROW_AI_REVIEW_PRIORITY_BOOST : 0);
+  const sorted = [...rows].sort((a, b) => reviewPriority(b) - reviewPriority(a));
   const reviewRows = sorted.slice(0, options.topN).filter(shouldAiReview);
   const reviewPids = new Set(reviewRows.map((row) => row.pid));
   const stats: AiReviewStats = { ...emptyStats, requested: reviewPids.size };
-  if (reviewPids.size === 0) return { rows, stats };
+  const escrowUnavailablePids: string[] = [];
+  if (reviewPids.size === 0) return { rows, stats, escrowUnavailablePids };
 
   const reviewed = new Map<string, PipelineRow | null>();
   let cursor = 0;
@@ -1339,8 +1382,19 @@ export async function applyAiReview(
     if (source === "api") stats.apiCalls += 1;
     if (source === "unavailable") stats.unavailable += 1;
 
+    const hasEscrowPending = row.scoreFlags.includes("ai_escrow_pending");
+
     if (!result) {
-      reviewed.set(row.pid, { ...row, scoreFlags: [...row.scoreFlags, "ai_review_unavailable"] });
+      // Wave 34: escrow row의 AI 호출이 실패한 경우 pending → unavailable으로 전환,
+      // caller가 raw_listings.score_dirty=true로 다시 마킹해 다음 tick에 재시도.
+      const base = hasEscrowPending
+        ? applyEscrowTransition(row.scoreFlags, "unavailable")
+        : [...row.scoreFlags, "ai_review_unavailable"];
+      if (hasEscrowPending) {
+        stats.escrowUnavailableRetry += 1;
+        escrowUnavailablePids.push(row.pid);
+      }
+      reviewed.set(row.pid, { ...row, scoreFlags: base });
       await reviewNext();
       return;
     }
@@ -1350,7 +1404,12 @@ export async function applyAiReview(
 
     if (decision === "pass" && result.listingType === "normal" && result.confidence === "high" && !hardRisk) {
       stats.keptNormal += 1;
-      reviewed.set(row.pid, { ...row, scoreFlags: [...row.scoreFlags, "ai_normal", "ai_second_opinion_pass"] });
+      // Wave 34: escrow row가 AI pass면 pending flag 제거 → pool 진입 허용.
+      const baseFlags = hasEscrowPending
+        ? applyEscrowTransition(row.scoreFlags, "pass")
+        : [...row.scoreFlags];
+      if (hasEscrowPending) stats.escrowResolvedPass += 1;
+      reviewed.set(row.pid, { ...row, scoreFlags: [...baseFlags, "ai_normal", "ai_second_opinion_pass"] });
       await reviewNext();
       return;
     }
@@ -1364,10 +1423,15 @@ export async function applyAiReview(
     }
 
     stats.keptLowConfidence += 1;
+    // Wave 34: escrow row가 hold이면 pending → held로 전환. pool은 계속 차단.
+    const baseFlags = hasEscrowPending
+      ? applyEscrowTransition(row.scoreFlags, "hold")
+      : [...row.scoreFlags];
+    if (hasEscrowPending) stats.escrowHeld += 1;
     reviewed.set(row.pid, {
       ...row,
       scoreFlags: [
-        ...row.scoreFlags,
+        ...baseFlags,
         "ai_second_opinion_hold",
         `ai_${result.listingType}_${result.confidence}_confidence`,
       ],
@@ -1388,7 +1452,7 @@ export async function applyAiReview(
     const reviewedRow = reviewed.get(row.pid);
     if (reviewedRow) output.push(reviewedRow);
   }
-  return { rows: output, stats };
+  return { rows: output, stats, escrowUnavailablePids };
 }
 
 async function upsertToSupabase(rows: PipelineRow[]): Promise<number> {

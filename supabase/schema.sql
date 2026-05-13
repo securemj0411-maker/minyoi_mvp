@@ -77,7 +77,6 @@ create table if not exists public.mvp_listing_ai_classifications (
 create table if not exists public.mvp_sellers (
   source text not null default 'bunjang',
   seller_uid text not null,
-  seller_name text,
   review_rating numeric,
   review_count integer not null default 0 check (review_count >= 0),
   sales_count integer not null default 0 check (sales_count >= 0),
@@ -114,7 +113,6 @@ create table if not exists public.mvp_raw_listings (
   shop_review_rating numeric,
   shop_review_count integer not null default 0 check (shop_review_count >= 0),
   seller_uid text,
-  seller_name text,
   seller_source text not null default 'bunjang',
   trade_data jsonb,
   trades_data jsonb,
@@ -150,7 +148,6 @@ create table if not exists public.mvp_raw_listings (
 
 alter table public.mvp_raw_listings
   add column if not exists seller_uid text,
-  add column if not exists seller_name text,
   add column if not exists seller_source text not null default 'bunjang',
   add column if not exists pool_eligible boolean not null default true,
   add column if not exists score_dirty boolean not null default true;
@@ -1782,3 +1779,130 @@ revoke all on function public.check_mvp_rate_limit(text, integer, integer) from 
 revoke execute on function public.check_mvp_rate_limit(text, integer, integer) from anon;
 revoke execute on function public.check_mvp_rate_limit(text, integer, integer) from authenticated;
 grant execute on function public.check_mvp_rate_limit(text, integer, integer) to service_role;
+
+-- =====================================================================
+-- Compliance Wave 1.1 — raw_listings 텍스트 retention
+-- =====================================================================
+-- 분쟁 노출도 감소 목적. 매뉴얼 Layer 2 (잡코리아 패소 패턴 회피) 적용.
+-- 시계열 fact column (mvp_listing_observations.price/num_faved 등),
+-- 통계 테이블 (mvp_market_price_daily/velocity_daily),
+-- 파싱 결과 (mvp_listing_parsed),
+-- 점수 결과 (mvp_listing_analysis) 모두 영향 없음 — 본 함수는 raw text/json만 NULL/'' 처리.
+--
+-- Active 매물 (사용자 노출 가능 상태): 90일 후 description_preview, raw_json만 NULL.
+--   name/thumbnail_url/image_url_template 보존 (사용자 노출에 필요).
+-- Dead 매물 (sold_confirmed/disappeared/archived): 30일 후 name, description_preview, raw_json NULL.
+--   이미지 URL 처리는 Wave 1.2에서 별도 검토 (이 wave 적용 X).
+--
+-- p_dry_run=true 시 update 없이 대상 row count만 반환 → 안전 dry-run 가능.
+
+create or replace function public.prune_raw_listings_active_text(
+  p_days integer default 90,
+  p_batch_limit integer default 5000,
+  p_dry_run boolean default false
+)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_cutoff timestamptz := now() - make_interval(days => greatest(1, p_days));
+  v_count bigint;
+begin
+  if p_dry_run then
+    select count(*) into v_count
+    from public.mvp_raw_listings
+    where coalesce(listing_state, '') = 'active'
+      and last_changed_at < v_cutoff
+      and (
+        coalesce(description_preview, '') <> ''
+        or coalesce(raw_json, '{}'::jsonb) <> '{}'::jsonb
+      );
+    return v_count;
+  end if;
+
+  with target as (
+    select pid
+    from public.mvp_raw_listings
+    where coalesce(listing_state, '') = 'active'
+      and last_changed_at < v_cutoff
+      and (
+        coalesce(description_preview, '') <> ''
+        or coalesce(raw_json, '{}'::jsonb) <> '{}'::jsonb
+      )
+    order by last_changed_at
+    limit greatest(1, p_batch_limit)
+  )
+  update public.mvp_raw_listings r
+  set description_preview = '',
+      raw_json = '{}'::jsonb,
+      updated_at = now()
+  from target t
+  where r.pid = t.pid;
+  get diagnostics v_count = row_count;
+  return v_count;
+end;
+$$;
+
+revoke all on function public.prune_raw_listings_active_text(integer, integer, boolean) from public;
+revoke execute on function public.prune_raw_listings_active_text(integer, integer, boolean) from anon;
+revoke execute on function public.prune_raw_listings_active_text(integer, integer, boolean) from authenticated;
+grant execute on function public.prune_raw_listings_active_text(integer, integer, boolean) to service_role;
+
+create or replace function public.prune_raw_listings_dead_text(
+  p_days integer default 30,
+  p_batch_limit integer default 5000,
+  p_dry_run boolean default false
+)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_cutoff timestamptz := now() - make_interval(days => greatest(1, p_days));
+  v_count bigint;
+begin
+  if p_dry_run then
+    select count(*) into v_count
+    from public.mvp_raw_listings
+    where coalesce(listing_state, '') in ('sold_confirmed', 'disappeared', 'archived')
+      and last_changed_at < v_cutoff
+      and (
+        coalesce(name, '') <> ''
+        or coalesce(description_preview, '') <> ''
+        or coalesce(raw_json, '{}'::jsonb) <> '{}'::jsonb
+      );
+    return v_count;
+  end if;
+
+  with target as (
+    select pid
+    from public.mvp_raw_listings
+    where coalesce(listing_state, '') in ('sold_confirmed', 'disappeared', 'archived')
+      and last_changed_at < v_cutoff
+      and (
+        coalesce(name, '') <> ''
+        or coalesce(description_preview, '') <> ''
+        or coalesce(raw_json, '{}'::jsonb) <> '{}'::jsonb
+      )
+    order by last_changed_at
+    limit greatest(1, p_batch_limit)
+  )
+  update public.mvp_raw_listings r
+  set name = '',
+      description_preview = '',
+      raw_json = '{}'::jsonb,
+      updated_at = now()
+  from target t
+  where r.pid = t.pid;
+  get diagnostics v_count = row_count;
+  return v_count;
+end;
+$$;
+
+revoke all on function public.prune_raw_listings_dead_text(integer, integer, boolean) from public;
+revoke execute on function public.prune_raw_listings_dead_text(integer, integer, boolean) from anon;
+revoke execute on function public.prune_raw_listings_dead_text(integer, integer, boolean) from authenticated;
+grant execute on function public.prune_raw_listings_dead_text(integer, integer, boolean) to service_role;
