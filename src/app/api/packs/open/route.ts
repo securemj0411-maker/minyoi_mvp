@@ -4,7 +4,6 @@ import { reportCriticalIncident } from "@/lib/operational-notifier";
 import { openPack, type PackBand } from "@/lib/pack-open";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
-import { refundUserCredits, spendUserCredits } from "@/lib/user-credits";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -88,127 +87,36 @@ export async function POST(req: Request) {
   const requestedCards = Number(payload.requestedCards ?? 2);
   const sanitizedRequestedCards = clampRequestedCards(requestedCards);
   const tokenCost = tokenCostFor(band, sanitizedRequestedCards);
-
-  const spend = await spendUserCredits({
-    user: auth.user,
-    userRef,
-    amount: tokenCost,
-    metadata: {
-      band,
-      requestedCards: sanitizedRequestedCards,
-      source: "pack_open",
-    },
-  });
-  if (!spend.ok) {
-    return NextResponse.json(
-      {
-        result: "error",
-        message: "크레딧이 부족해요.",
-        tokensRemaining: spend.tokens,
-        infiniteCredits: spend.infinite,
-      },
-      { status: 402 },
-    );
-  }
+  const infinite = isAdminUser(auth.user);
 
   try {
     const result = await openPack({
       band,
       userRef,
-      tokensSpent: spend.infinite ? 0 : tokenCost,
+      authUserId: auth.user.id,
+      isInfiniteCredits: infinite,
+      tokensSpent: tokenCost,
       requestedCards: sanitizedRequestedCards,
-      consumeInventory: !spend.infinite,
+      consumeInventory: !infinite,
     });
-    if (result.result === "refunded" || result.result === "unavailable") {
-      try {
-        const refund = await refundUserCredits({
-          user: auth.user,
-          userRef,
-          amount: tokenCost,
-          metadata: {
-            band,
-            requestedCards: sanitizedRequestedCards,
-            source: result.result === "refunded" ? "pack_refunded" : "pack_unavailable",
-          },
-        });
-        return NextResponse.json({
-          ...result,
-          tokensRemaining: refund.tokens,
-          infiniteCredits: refund.infinite,
-        });
-      } catch (refundErr) {
-        console.error("pack_open refund failed", {
-          userRef,
-          amount: tokenCost,
-          result: result.result,
-          err: refundErr instanceof Error ? refundErr.message : String(refundErr),
-        });
-        await reportCriticalIncident({
-          source: "packs.open.refund_failed",
-          summary: `pack ${result.result} 환불 실패 (${tokenCost} 크레딧)`,
-          context: {
-            userRef,
-            band,
-            requestedCards: sanitizedRequestedCards,
-            result: result.result,
-            error: refundErr instanceof Error ? refundErr.message : String(refundErr),
-          },
-        });
-        return NextResponse.json(
-          {
-            ...result,
-            tokensRemaining: spend.tokens,
-            infiniteCredits: spend.infinite,
-            refundPending: true,
-          },
-          { status: 500 },
-        );
-      }
+    // 성공/실패/취소 모두 result 안에 tokensRemaining/infiniteCredits 포함됨
+    if (result.result === "success") {
+      return NextResponse.json(result);
     }
+    // unavailable/refunded: 크레딧 차감 없음 (atomic RPC에서 amount=0으로 처리)
     return NextResponse.json({
       ...result,
-      tokensRemaining: spend.tokens,
-      infiniteCredits: spend.infinite,
+      tokensRemaining: undefined,
+      infiniteCredits: infinite,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";
-    console.error("pack_open threw", {
-      userRef,
-      band,
-      requestedCards: sanitizedRequestedCards,
-      err: message,
+    console.error("pack_open threw", { userRef, band, requestedCards: sanitizedRequestedCards, err: message });
+    await reportCriticalIncident({
+      source: "packs.open.threw",
+      summary: `openPack 예외 (크레딧 미차감 상태)`,
+      context: { userRef, band, requestedCards: sanitizedRequestedCards, error: message },
     });
-    let refundPending = false;
-    try {
-      await refundUserCredits({
-        user: auth.user,
-        userRef,
-        amount: tokenCost,
-        metadata: {
-          band,
-          requestedCards: sanitizedRequestedCards,
-          source: "pack_open_error",
-        },
-      });
-    } catch (refundErr) {
-      refundPending = true;
-      console.error("pack_open error refund failed", {
-        userRef,
-        amount: tokenCost,
-        err: refundErr instanceof Error ? refundErr.message : String(refundErr),
-      });
-      await reportCriticalIncident({
-        source: "packs.open.refund_failed_after_error",
-        summary: `openPack 예외 후 환불도 실패 (${tokenCost} 크레딧)`,
-        context: {
-          userRef,
-          band,
-          requestedCards: sanitizedRequestedCards,
-          packErr: message,
-          refundErr: refundErr instanceof Error ? refundErr.message : String(refundErr),
-        },
-      });
-    }
-    return NextResponse.json({ result: "error", message, refundPending }, { status: 500 });
+    return NextResponse.json({ result: "error", message }, { status: 500 });
   }
 }

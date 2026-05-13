@@ -105,6 +105,8 @@ export type RevealListingDetail = {
 export type PackOpenInput = {
   band: PackBand;
   userRef: string;
+  authUserId: string;
+  isInfiniteCredits: boolean;
   tokensSpent: number;
   requestedCards?: number;
   consumeInventory?: boolean;
@@ -118,6 +120,8 @@ export type PackOpenSuccess = {
   reveals: RevealCard[];
   attemptedCount: number;
   durationMs: number;
+  tokensRemaining: number;
+  infiniteCredits: boolean;
 };
 
 export type PackOpenRefunded = {
@@ -479,8 +483,19 @@ async function patchPoolVerified(pid: number): Promise<void> {
   });
 }
 
-async function insertPackOpen(input: {
+type SpendAndRecordResult = {
+  packOpenId: number;
+  ok: boolean;
+  balance: number;
+  message: string;
+};
+
+// 크레딧 차감과 pack_open 기록을 하나의 DB 트랜잭션으로 처리.
+// isInfiniteCredits=true이면 amount=0으로 호출해 차감 없이 감사 기록만 남김.
+async function rpcSpendAndRecord(input: {
   userRef: string;
+  authUserId: string;
+  amount: number;
   band: PackBand;
   tokensSpent: number;
   tokensRefunded: number;
@@ -488,23 +503,31 @@ async function insertPackOpen(input: {
   attemptedPids: number[];
   revealedPids: number[];
   durationMs: number;
-}): Promise<number> {
-  const res = await callSupabase("/mvp_pack_opens", {
+}): Promise<SpendAndRecordResult> {
+  const res = await callSupabase("/rpc/spend_and_record_pack_open", {
     method: "POST",
-    headers: authHeaders("return=representation"),
+    headers: authHeaders(),
     body: JSON.stringify({
-      user_ref: input.userRef,
-      band_requested: input.band,
-      tokens_spent: input.tokensSpent,
-      tokens_refunded: input.tokensRefunded,
-      result: input.result,
-      attempted_pids: input.attemptedPids,
-      revealed_pids: input.revealedPids,
-      duration_ms: input.durationMs,
+      p_user_ref: input.userRef,
+      p_auth_user_id: input.authUserId,
+      p_amount: input.amount,
+      p_band: input.band,
+      p_tokens_spent: input.tokensSpent,
+      p_tokens_refunded: input.tokensRefunded,
+      p_result: input.result,
+      p_attempted_pids: input.attemptedPids,
+      p_revealed_pids: input.revealedPids,
+      p_duration_ms: input.durationMs,
     }),
   });
-  const rows = (await res.json()) as { id: number }[];
-  return rows[0]?.id ?? 0;
+  const rows = (await res.json()) as { pack_open_id: number; ok: boolean; balance: number; message: string }[];
+  const row = rows[0];
+  return {
+    packOpenId: row?.pack_open_id ?? 0,
+    ok: row?.ok ?? false,
+    balance: row?.balance ?? 0,
+    message: row?.message ?? "unknown",
+  };
 }
 
 async function insertReveals(
@@ -734,38 +757,41 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         await rpcReleaseReservation(reveal.pid).catch(() => undefined);
       }
       const durationMs = Date.now() - startedAt;
-      await insertPackOpen({
+      // amount=0: 크레딧 차감 없이 감사 기록만 (못 채웠으니 청구 안 함)
+      await rpcSpendAndRecord({
         userRef: input.userRef,
+        authUserId: input.authUserId,
+        amount: 0,
         band: input.band,
-        tokensSpent: input.tokensSpent,
-        tokensRefunded: input.tokensSpent,
+        tokensSpent: 0,
+        tokensRefunded: 0,
         result: "refunded",
         attemptedPids,
         revealedPids: [],
         durationMs,
       }).catch((err) => {
-        // P1-A: audit insert 실패는 사용자 환불 자체에 영향 없음(route에서 별도 처리).
-        // 단 운영 관측을 위해 로그 남김.
         console.error("pack_open audit insert failed (refunded path)", {
           userRef: input.userRef,
           band: input.band,
           attemptedCount: attemptedPids.length,
           err: err instanceof Error ? err.message : String(err),
         });
-        return 0;
       });
       return {
         result: "refunded",
         reason: "약속한 추천 수만큼 검증된 매물이 부족해 크레딧을 돌려드렸어요.",
         attemptedCount: attemptedPids.length,
-        tokensRefunded: input.tokensSpent,
+        tokensRefunded: 0,
         durationMs,
       };
     }
 
     const durationMs = Date.now() - startedAt;
-    const packOpenId = await insertPackOpen({
+    // 크레딧 차감 + pack_open 기록 원자적 처리
+    const spendResult = await rpcSpendAndRecord({
       userRef: input.userRef,
+      authUserId: input.authUserId,
+      amount: input.isInfiniteCredits ? 0 : input.tokensSpent,
       band: input.band,
       tokensSpent: input.tokensSpent,
       tokensRefunded: 0,
@@ -774,13 +800,18 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       revealedPids: reveals.map((r) => r.pid),
       durationMs,
     });
+    if (!spendResult.ok) {
+      // 크레딧 부족 (매우 드문 race condition: 팩 처리 도중 다른 세션이 크레딧 소진)
+      await Promise.allSettled(reveals.map((r) => rpcReleaseReservation(r.pid)));
+      throw new Error(`pack_open spend failed: ${spendResult.message}`);
+    }
+    const packOpenId = spendResult.packOpenId;
 
     await insertReveals(packOpenId, reveals, input.userRef);
     if (consumeInventory) {
       for (const reveal of reveals) {
         // P0-4: commit RPC가 false 반환 시(reservation 만료/이중 commit) 로그.
         // 실패한다고 reveal을 무효화하지는 않는다(이미 사용자에게 카드를 보여줬다).
-        // 단 운영 관측을 위해 명시 로깅.
         const committed = await rpcCommitReveal(reveal.pid).catch((err) => {
           console.error("pool reveal commit threw", { pid: reveal.pid, packOpenId, err });
           return false;
@@ -805,6 +836,8 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       reveals,
       attemptedCount: attemptedPids.length,
       durationMs,
+      tokensRemaining: spendResult.balance,
+      infiniteCredits: input.isInfiniteCredits,
     };
   } catch (err) {
     await Promise.allSettled(reserved.map((row) => rpcReleaseReservation(row.pid)));

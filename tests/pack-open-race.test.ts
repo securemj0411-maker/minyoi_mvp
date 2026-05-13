@@ -1,22 +1,16 @@
 /**
  * P0-1 race-condition simulation for openPack.
  *
- * Boundary tested: the finalization step (pack_opens row + reveals rows + pool
- * commit/release updates). Before the `record_mvp_pack_open` RPC, this was
- * three sequential HTTP calls and any failure between them left the system
- * inconsistent (charged with no reveals, or revealed with no exposure bump,
- * etc.). After: one RPC call carries the entire bundle; Postgres rolls back
- * the whole transaction on any error.
+ * Boundary tested: pack reservation + reveal commit ordering.
  *
  * The test stubs the global fetch handler and:
- *   1. Confirms `openPack` issues exactly ONE finalize call per invocation
- *      (no partial state can be exposed mid-flight).
+ *   1. Confirms `openPack` writes one pack open audit row, one reveal batch,
+ *      and commits exactly the revealed pids.
  *   2. Runs N=10 concurrent invocations and confirms each one reserves a
  *      distinct candidate set (proves the pool reservation RPC, not the app,
  *      is the atomic gate for double-spend).
- *   3. Simulates a failure on the finalize RPC and confirms openPack throws
- *      without first having written anything to pack_opens/pack_reveals via
- *      direct PostgREST writes — i.e. all writes go through the RPC.
+ *   3. Simulates a failure while writing reveals and confirms openPack throws
+ *      before any pool exposure commit is made.
  */
 
 import { strict as assert } from "node:assert";
@@ -102,7 +96,7 @@ function fakeListing(pid: number) {
 function buildHandler(opts: {
   inventory?: Array<{ band: number; usableReady: number }>;
   reserved: number[];
-  failFinalize?: boolean;
+  failRevealWrite?: boolean;
 } = { reserved: [] }) {
   return async (call: FetchCall): Promise<Response> => {
     // Inventory loadInventory() query
@@ -134,14 +128,33 @@ function buildHandler(opts: {
         .filter((n) => Number.isFinite(n));
       return jsonResponse(pids.map(fakeListing));
     }
+    if (call.url.includes("/mvp_raw_listings?select=pid,sku_id")) {
+      const pids = (call.url.match(/pid=in\.\(([^)]*)\)/)?.[1] ?? "")
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => Number.isFinite(n));
+      return jsonResponse(pids.map((pid) => ({ pid, sku_id: "airpods-pro-2-usbc" })));
+    }
+    if (call.url.includes("/mvp_market_price_daily")) {
+      return jsonResponse([]);
+    }
+    if (call.url.includes("/mvp_market_velocity_daily")) {
+      return jsonResponse([]);
+    }
     if (call.url.includes("/mvp_source_health")) {
       return jsonResponse([{ status: "healthy", checked_at: new Date().toISOString() }]);
     }
-    if (call.url.includes("/rpc/record_mvp_pack_open")) {
-      if (opts.failFinalize) {
+    if (call.url.includes("/rpc/spend_and_record_pack_open")) {
+      return jsonResponse([{ pack_open_id: 123, ok: true, balance: 4, message: "ok" }]);
+    }
+    if (call.url.includes("/mvp_pack_reveals") && call.method === "POST") {
+      if (opts.failRevealWrite) {
         return jsonResponse({ message: "simulated failure" }, 500);
       }
-      return jsonResponse(123);
+      return jsonResponse([]);
+    }
+    if (call.url.includes("/rpc/commit_mvp_pool_reveal")) {
+      return jsonResponse(true);
     }
     // verify fetch (bunjang detail) — return any non-sold response
     if (call.url.includes("bunjang") || call.url.includes("/products/")) {
@@ -152,7 +165,7 @@ function buildHandler(opts: {
   };
 }
 
-test("openPack issues exactly one finalize call on success", async () => {
+test("openPack records one audit row and commits exactly revealed pids on success", async () => {
   process.env.SUPABASE_URL = "https://stub.supabase.co";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "stub-key";
 
@@ -162,34 +175,25 @@ test("openPack issues exactly one finalize call on success", async () => {
     const result = await openPack({
       band: 1,
       userRef: "user-a",
+      authUserId: "auth-a",
+      isInfiniteCredits: false,
       tokensSpent: 1,
       requestedCards: 2,
     });
 
-    const finalizeCalls = stub.calls.filter((c) => c.url.includes("/rpc/record_mvp_pack_open"));
-    const directPackOpens = stub.calls.filter(
-      (c) =>
-        c.url.includes("/mvp_pack_opens") &&
-        !c.url.includes("/rpc/") &&
-        c.method !== "GET",
-    );
-    const directReveals = stub.calls.filter(
-      (c) =>
-        c.url.includes("/mvp_pack_reveals") &&
-        !c.url.includes("/rpc/") &&
-        c.method !== "GET",
-    );
+    const packOpenWrites = stub.calls.filter((c) => c.url.includes("/rpc/spend_and_record_pack_open"));
+    const revealWrites = stub.calls.filter((c) => c.url.includes("/mvp_pack_reveals") && c.method === "POST");
+    const commitCalls = stub.calls.filter((c) => c.url.includes("/rpc/commit_mvp_pool_reveal"));
 
-    assert.equal(finalizeCalls.length, 1, "exactly one finalize RPC call expected");
-    assert.equal(directPackOpens.length, 0, "no direct PostgREST writes to mvp_pack_opens");
-    assert.equal(directReveals.length, 0, "no direct PostgREST writes to mvp_pack_reveals");
+    assert.equal(packOpenWrites.length, 1, "one pack open audit row expected");
+    assert.equal(revealWrites.length, 1, "one batched reveal write expected");
+    assert.equal(commitCalls.length, 2, "one pool commit per revealed card expected");
     assert.equal(result.result, "success");
 
-    const payload = finalizeCalls[0]!.body as Record<string, unknown>;
+    const payload = packOpenWrites[0]!.body as Record<string, unknown>;
     assert.equal(payload.p_user_ref, "user-a");
     assert.equal(payload.p_result, "success");
-    assert.ok(Array.isArray(payload.p_reveals));
-    assert.equal((payload.p_reveals as unknown[]).length, 2);
+    assert.deepEqual(payload.p_revealed_pids, [101, 102]);
   } finally {
     stub.restore();
   }
@@ -212,18 +216,23 @@ test("concurrent openPack invocations each finalize exactly once", async () => {
 
     const results = await Promise.all(
       Array.from({ length: 10 }, (_, i) =>
-        openPack({ band: 1, userRef: `user-${i}`, tokensSpent: 1, requestedCards: 2 }),
+        openPack({ band: 1, userRef: `user-${i}`, authUserId: `auth-${i}`, isInfiniteCredits: false, tokensSpent: 1, requestedCards: 2 }),
       ),
     );
 
-    const finalizeCalls = stub.calls.filter((c) => c.url.includes("/rpc/record_mvp_pack_open"));
-    assert.equal(finalizeCalls.length, 10, "one finalize per concurrent invocation");
+    const spendCalls = stub.calls.filter((c) => c.url.includes("/rpc/spend_and_record_pack_open"));
+    const revealWrites = stub.calls.filter((c) => c.url.includes("/mvp_pack_reveals") && c.method === "POST");
+    const commitCalls = stub.calls.filter((c) => c.url.includes("/rpc/commit_mvp_pool_reveal"));
+    assert.equal(spendCalls.length, 10, "one atomic spend+record per concurrent invocation");
+    assert.equal(revealWrites.length, 10, "one batched reveal write per concurrent invocation");
+    assert.equal(commitCalls.length, 20, "one pool commit per revealed card");
 
     const allReservedPids = new Set<number>();
     let collisions = 0;
-    for (const call of finalizeCalls) {
-      const payload = call.body as { p_attempted_pids: number[] };
-      for (const pid of payload.p_attempted_pids) {
+    for (const call of commitCalls) {
+      const payload = call.body as { p_pid: number };
+      const pid = payload.p_pid;
+      {
         if (allReservedPids.has(pid)) collisions += 1;
         allReservedPids.add(pid);
       }
@@ -239,33 +248,24 @@ test("concurrent openPack invocations each finalize exactly once", async () => {
   }
 });
 
-test("openPack throws on finalize failure without partial writes", async () => {
+test("openPack throws on reveal write failure before pool exposure commit", async () => {
   process.env.SUPABASE_URL = "https://stub.supabase.co";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "stub-key";
 
   const stub = stubFetch();
   try {
-    stub.setHandler(buildHandler({ reserved: [201, 202, 203, 204], failFinalize: true }));
+    stub.setHandler(buildHandler({ reserved: [201, 202, 203, 204], failRevealWrite: true }));
 
     await assert.rejects(
-      openPack({ band: 1, userRef: "user-b", tokensSpent: 1, requestedCards: 2 }),
-      /supabase.*record_mvp_pack_open|500/i,
+      openPack({ band: 1, userRef: "user-b", authUserId: "auth-b", isInfiniteCredits: false, tokensSpent: 1, requestedCards: 2 }),
+      /supabase.*mvp_pack_reveals|500/i,
     );
 
-    const directPackOpens = stub.calls.filter(
-      (c) =>
-        c.url.includes("/mvp_pack_opens") &&
-        !c.url.includes("/rpc/") &&
-        c.method !== "GET",
-    );
-    const directReveals = stub.calls.filter(
-      (c) =>
-        c.url.includes("/mvp_pack_reveals") &&
-        !c.url.includes("/rpc/") &&
-        c.method !== "GET",
-    );
-    assert.equal(directPackOpens.length, 0, "no app-side write to mvp_pack_opens before RPC");
-    assert.equal(directReveals.length, 0, "no app-side write to mvp_pack_reveals before RPC");
+    const commitCalls = stub.calls.filter((c) => c.url.includes("/rpc/commit_mvp_pool_reveal"));
+    const releaseCalls = stub.calls.filter((c) => c.url.includes("/rpc/release_mvp_pool_reservation"));
+    assert.equal(commitCalls.length, 0, "pool exposure is not committed when reveal write fails");
+    const releasedPids = new Set(releaseCalls.map((call) => (call.body as { p_pid: number }).p_pid));
+    assert.deepEqual([...releasedPids].sort((a, b) => a - b), [201, 202, 203, 204], "all reserved candidates are released after failure");
   } finally {
     stub.restore();
   }
