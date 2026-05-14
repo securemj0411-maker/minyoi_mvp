@@ -791,6 +791,26 @@ export default function PackRevealModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, loading, handleClose]);
 
+  // Wave 81: 모달 열림 시 body scroll lock. 모바일에서 백드롭 너머 스크롤 +
+  // 터치 click-through 방지. iOS Safari 호환 위해 position fixed + 복원 패턴.
+  useEffect(() => {
+    if (!open) return;
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const scrollY = window.scrollY;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, [open]);
+
   useEffect(() => {
     if (!open || loading || !result || result.result !== "success") return;
     if (!initialPreviewCard || initialPreviewSeed == null) return;
@@ -817,7 +837,7 @@ export default function PackRevealModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(31,40,34,0.48)] p-3 backdrop-blur-sm sm:p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center overscroll-contain bg-[rgba(31,40,34,0.48)] p-3 backdrop-blur-sm sm:p-6"
       role="dialog"
       aria-modal="true"
       onClick={() => {
