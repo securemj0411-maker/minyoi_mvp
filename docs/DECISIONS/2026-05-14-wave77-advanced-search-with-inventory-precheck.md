@@ -1,0 +1,31 @@
+## Wave 77 — 고급 검색 모드 + Inventory pre-check API
+
+- 시간: 2026-05-14 KST
+- 발견: 기존 검색이 차익 슬라이더 + 카드 수만으로 너무 단순. 사용자 요청: ResellAI 스타일 고급 검색 + 매입가/신뢰도/카테고리 필터 + 회전일수(비활성).
+- 변경:
+  - `src/app/api/packs/preview-inventory/route.ts` (신규): inventory pre-check endpoint
+    - GET 파라미터: band, priceMax, minProfit, minConfidence, categories, maxFreshHours
+    - 응답: matchingCount, freshUnder2h, byCategory
+    - PostgREST query로 mvp_candidate_pool 필터 (status=ready + exposure 가용 + 사용자 조건)
+    - 가격 필터는 mvp_raw_listings JOIN
+  - `src/components/recommendation-workspace.tsx`:
+    - `searchMode` state ("easy" | "advanced") 토글 — 기본 easy
+    - Risk preset 3개 (안전/균형/공격) — 누르면 band + 모든 filter preset 적용
+    - 매입가격 / 최소 차익 / 신뢰도 슬라이더 (advanced)
+    - 카테고리 multi-select chips (advanced)
+    - 회전일수: UI는 있지만 disabled ("곧 활성화" 라벨)
+    - Inventory pre-check 라이브 (debounced 350ms) — "조건 매칭 X건" 표시
+    - 카테고리 chip에 매물 수 표시 (예: "이어폰 17")
+- 검증:
+  - npx tsc --noEmit clean
+  - npm run test:core 139/139 pass
+  - npm run build 성공
+  - eslint: pre-existing 1 error (내 코드 외)
+- 위험:
+  - LOW: UI + 새 read-only API.
+  - 서버 pack-open API 자체 변경 0 → token spend 로직 그대로.
+  - Inventory pre-check는 사용자 결제 전 정보 제공 (실제 검색은 band 기반)
+- 다음 (Phase 2):
+  - pack-open API에 filter 파라미터 추가 → 정확히 매칭 매물만 reveal
+  - 필요 시 client-side post-filter + refund (현재 mechanism 활용 가능)
+  - 회전일수 데이터 누적 후 활성화

@@ -29,6 +29,62 @@ const MIN_PROFIT_MANWON = 2;
 const MAX_PROFIT_MANWON = 10;
 const HIGH_PROFIT_WARNING_SESSION_KEY = "minyoi-hide-high-profit-warning-v1";
 
+// Wave 77: 고급 검색 — Risk profile preset
+type RiskProfile = "safe" | "balanced" | "aggressive";
+type AdvancedFilters = {
+  priceMaxManwon: number; // 매물가 상한 (만원). 0 = 무제한
+  minProfitManwon: number;
+  minConfidencePct: number; // 0~100
+  categories: string[]; // empty = 전체
+  maxFreshHours: number; // 0 = 무제한
+};
+type RiskPreset = {
+  band: PackBand;
+  filters: AdvancedFilters;
+  label: string;
+  emoji: string;
+  desc: string;
+};
+const RISK_PRESETS: Record<RiskProfile, RiskPreset> = {
+  safe: {
+    band: 1, label: "안전", emoji: "🛡️",
+    desc: "가격 ≤30만, 차익 3만+, 신뢰도 80%+",
+    filters: { priceMaxManwon: 30, minProfitManwon: 3, minConfidencePct: 80, categories: [], maxFreshHours: 1 },
+  },
+  balanced: {
+    band: 2, label: "균형", emoji: "⚖️",
+    desc: "가격 ≤80만, 차익 5만+, 신뢰도 70%+",
+    filters: { priceMaxManwon: 80, minProfitManwon: 5, minConfidencePct: 70, categories: [], maxFreshHours: 2 },
+  },
+  aggressive: {
+    band: 3, label: "공격", emoji: "⚔️",
+    desc: "가격 무제한, 차익 7만+, 신뢰도 60%+",
+    filters: { priceMaxManwon: 0, minProfitManwon: 7, minConfidencePct: 60, categories: [], maxFreshHours: 6 },
+  },
+};
+const CATEGORY_OPTIONS = [
+  { id: "earphone", label: "이어폰" },
+  { id: "smartwatch", label: "워치(스마트)" },
+  { id: "watch", label: "시계" },
+  { id: "monitor", label: "모니터" },
+  { id: "speaker", label: "스피커" },
+  { id: "camera", label: "카메라" },
+  { id: "desktop", label: "데스크탑" },
+  { id: "laptop", label: "노트북" },
+  { id: "tablet", label: "태블릿" },
+  { id: "smartphone", label: "스마트폰" },
+  { id: "game_console", label: "게임기" },
+  { id: "home_appliance", label: "가전" },
+  { id: "sport_golf", label: "골프" },
+];
+
+type PreviewInventoryResp = {
+  band: PackBand | null;
+  matchingCount: number;
+  freshUnder2h: number;
+  byCategory: Record<string, number>;
+};
+
 type PackOpenApiResult = (RevealResult & {
   tokensRemaining?: number;
   infiniteCredits?: boolean;
@@ -152,6 +208,50 @@ function PackSelectorCard({
 }) {
   const [warningOpen, setWarningOpen] = useState(false);
   const [hideWarningForSession, setHideWarningForSession] = useState(false);
+  // Wave 77: 고급 검색 mode
+  const [searchMode, setSearchMode] = useState<"easy" | "advanced">("easy");
+  const [riskProfile, setRiskProfile] = useState<RiskProfile>("balanced");
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(RISK_PRESETS.balanced.filters);
+  const [previewInventory, setPreviewInventory] = useState<PreviewInventoryResp | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  // Risk preset 변경 시 filters + band 자동 적용
+  function applyRiskPreset(profile: RiskProfile) {
+    setRiskProfile(profile);
+    setAdvancedFilters(RISK_PRESETS[profile].filters);
+    onMinProfitChange(RISK_PRESETS[profile].filters.minProfitManwon);
+  }
+
+  // 고급 mode일 때 inventory pre-check (debounced)
+  useEffect(() => {
+    if (searchMode !== "advanced") return;
+    const timer = setTimeout(async () => {
+      setPreviewLoading(true);
+      try {
+        const params = new URLSearchParams();
+        const band = RISK_PRESETS[riskProfile].band;
+        params.set("band", String(band));
+        if (advancedFilters.priceMaxManwon > 0) params.set("priceMax", String(advancedFilters.priceMaxManwon * 10000));
+        if (advancedFilters.minProfitManwon > 0) params.set("minProfit", String(advancedFilters.minProfitManwon * 10000));
+        if (advancedFilters.minConfidencePct > 0) params.set("minConfidence", String(advancedFilters.minConfidencePct / 100));
+        if (advancedFilters.categories.length > 0) params.set("categories", advancedFilters.categories.join(","));
+        if (advancedFilters.maxFreshHours > 0) params.set("maxFreshHours", String(advancedFilters.maxFreshHours));
+        const res = await fetch(`/api/packs/preview-inventory?${params.toString()}`);
+        if (res.ok) {
+          const data = await res.json();
+          setPreviewInventory(data);
+        }
+      } catch {} finally { setPreviewLoading(false); }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchMode, riskProfile, advancedFilters]);
+
+  function toggleCategory(id: string) {
+    setAdvancedFilters(f => ({
+      ...f,
+      categories: f.categories.includes(id) ? f.categories.filter(c => c !== id) : [...f.categories, id],
+    }));
+  }
   const usableReady = selectedInventory?.usableReady ?? 0;
   const maxSelectableCards = selectableCardLimit(usableReady);
   const selectedCount = clampRequestedCards(requestedCards, maxSelectableCards);
@@ -190,9 +290,165 @@ function PackSelectorCard({
           AI 추천 상품 찾기
         </h2>
         <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
-          원하는 최소 수익과 추천 수를 고릅니다.
+          {searchMode === "easy" ? "원하는 최소 수익과 추천 수를 고릅니다." : "검색 프로필을 고르고 세부 조건을 조정합니다."}
         </p>
       </div>
+
+      {/* Wave 77: 검색 mode 토글 */}
+      <div className="mt-3 inline-flex rounded-full border border-[#d8d2c4] bg-[#fffbf2] p-0.5 text-xs font-black dark:border-zinc-700 dark:bg-zinc-900">
+        <button
+          type="button"
+          onClick={() => setSearchMode("easy")}
+          className={`rounded-full px-3.5 py-1.5 transition ${searchMode === "easy" ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)]" : "text-[#6b7269] dark:text-zinc-400"}`}
+        >
+          ✨ 쉬운 모드
+        </button>
+        <button
+          type="button"
+          onClick={() => setSearchMode("advanced")}
+          className={`rounded-full px-3.5 py-1.5 transition ${searchMode === "advanced" ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)]" : "text-[#6b7269] dark:text-zinc-400"}`}
+        >
+          🛠️ 고급 검색
+        </button>
+      </div>
+
+      {searchMode === "advanced" ? (
+        <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
+          {/* Risk profile preset */}
+          <div className="rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
+            <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">검색 프로필</div>
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {(Object.keys(RISK_PRESETS) as RiskProfile[]).map((profile) => {
+                const preset = RISK_PRESETS[profile];
+                const active = riskProfile === profile;
+                return (
+                  <button
+                    key={profile}
+                    type="button"
+                    onClick={() => applyRiskPreset(profile)}
+                    className={`rounded-2xl border px-2 py-2 text-center transition ${active ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]" : "border-[#e0d6c5] bg-white text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"}`}
+                  >
+                    <div className="text-base">{preset.emoji}</div>
+                    <div className="mt-0.5 text-xs font-black">{preset.label}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-2 text-[11px] text-[#7a8478] dark:text-zinc-500">{RISK_PRESETS[riskProfile].desc}</div>
+          </div>
+
+          {/* 매물가격 상한 */}
+          <div className="mt-3 rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
+            <div className="flex items-end justify-between">
+              <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">매입가격 상한</div>
+              <div className="text-base font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+                {advancedFilters.priceMaxManwon === 0 ? "무제한" : `${advancedFilters.priceMaxManwon}만원 이하`}
+              </div>
+            </div>
+            <input
+              type="range" min={0} max={300} step={5}
+              value={advancedFilters.priceMaxManwon}
+              onChange={(e) => setAdvancedFilters(f => ({ ...f, priceMaxManwon: Number(e.target.value) }))}
+              disabled={busy}
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 accent-[var(--brand-accent)] disabled:opacity-50 dark:bg-zinc-700"
+            />
+            <div className="mt-1 flex justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+              <span>무제한</span><span>300만</span>
+            </div>
+          </div>
+
+          {/* 최소 차익 */}
+          <div className="mt-3 rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
+            <div className="flex items-end justify-between">
+              <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">최소 차익</div>
+              <div className="text-base font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+                {advancedFilters.minProfitManwon}만원+
+              </div>
+            </div>
+            <input
+              type="range" min={MIN_PROFIT_MANWON} max={MAX_PROFIT_MANWON} step={1}
+              value={advancedFilters.minProfitManwon}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setAdvancedFilters(f => ({ ...f, minProfitManwon: v }));
+                onMinProfitChange(v);
+              }}
+              disabled={busy}
+              className={`mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 ${rangeAccentClass(selectedPack.band)} disabled:opacity-50 dark:bg-zinc-700`}
+            />
+          </div>
+
+          {/* 신뢰도 */}
+          <div className="mt-3 rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
+            <div className="flex items-end justify-between">
+              <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">최소 신뢰도</div>
+              <div className="text-base font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+                {advancedFilters.minConfidencePct}%+
+              </div>
+            </div>
+            <input
+              type="range" min={50} max={95} step={5}
+              value={advancedFilters.minConfidencePct}
+              onChange={(e) => setAdvancedFilters(f => ({ ...f, minConfidencePct: Number(e.target.value) }))}
+              disabled={busy}
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 accent-[var(--brand-accent)] disabled:opacity-50 dark:bg-zinc-700"
+            />
+          </div>
+
+          {/* 회전일수 (비활성) */}
+          <div className="mt-3 rounded-[20px] bg-[#f6efe4]/60 p-3 dark:bg-zinc-950/30">
+            <div className="flex items-end justify-between">
+              <div className="text-sm font-black text-zinc-400 dark:text-zinc-600">현금화 일수 (회전)</div>
+              <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-black text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500">곧 활성화</span>
+            </div>
+            <div className="mt-1 text-[11px] text-zinc-400">데이터 누적 중 — 회전 통계 신뢰도 ≥80% 도달 후 오픈</div>
+          </div>
+
+          {/* 카테고리 (선택) */}
+          <div className="mt-3 rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
+            <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">카테고리 (선택, 비우면 전체)</div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {CATEGORY_OPTIONS.map((opt) => {
+                const active = advancedFilters.categories.includes(opt.id);
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => toggleCategory(opt.id)}
+                    disabled={busy}
+                    className={`rounded-full border px-2.5 py-1 text-[11px] font-black transition ${active ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]" : "border-[#d8d2c4] bg-white text-zinc-500 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"}`}
+                  >
+                    {opt.label}
+                    {previewInventory && previewInventory.byCategory[opt.id] ? (
+                      <span className="ml-1 text-[10px] opacity-70">{previewInventory.byCategory[opt.id]}</span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Inventory pre-check */}
+          <div className="mt-3 rounded-[20px] border-2 border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] p-3 text-center">
+            <div className="text-[11px] font-black text-[var(--brand-accent-strong)]">조건 매칭 매물</div>
+            <div className="mt-1 text-3xl font-black tracking-tight text-[var(--brand-accent-strong)]">
+              {previewLoading ? "..." : previewInventory ? `${previewInventory.matchingCount}건` : "-"}
+            </div>
+            {previewInventory && previewInventory.matchingCount > 0 ? (
+              <div className="mt-1 text-[11px] text-[#5d735f]">
+                신선 (2시간 내) {previewInventory.freshUnder2h}건
+              </div>
+            ) : null}
+            {previewInventory && previewInventory.matchingCount === 0 ? (
+              <div className="mt-1 text-[11px] text-[#a04545]">조건 완화 추천 — 가격 상한 ↑ 또는 신뢰도 ↓</div>
+            ) : null}
+          </div>
+
+          <div className="mt-2 text-[10.5px] leading-[1.45] text-[#7a8478] dark:text-zinc-500">
+            ⓘ 표시 수익은 시세 기반 추정 (해당 가격에 정상 판매 시). AI 추천이며 수익 보장 X — 매입가 협상·판매 시점·구성품에 따라 달라집니다.
+          </div>
+        </div>
+      ) : (
 
       <div className="mt-4 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
         <div className="rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
@@ -229,6 +485,7 @@ function PackSelectorCard({
           </div>
         </div>
       </div>
+      )}
 
       <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
         <div className="space-y-2.5">
