@@ -191,29 +191,60 @@ function SavedDetailMini({ card }: { card: RevealCard }) {
 }
 
 function LoadingStage() {
-  const [stepIndex, setStepIndex] = useState(0);
+  // Wave 73: 진행률 게이지 + 단계 동기화. 실제 server progress feed 없어 시각용
+  // ease-out curve로 0→90% 약 4초간 채움 (loading=false 시 unmount → 100% 도달 불필요).
+  // 90% 도달 후엔 hold (server 응답 더 지연돼도 멈춘 듯 안 보이게 점진적 0.5%씩 추가).
+  const [pct, setPct] = useState(5);
   useEffect(() => {
-    const id = window.setInterval(() => {
-      setStepIndex((i) => Math.min(i + 1, LOADING_STEPS.length - 1));
-    }, 700);
-    return () => window.clearInterval(id);
+    const startedAt = performance.now();
+    const TARGET_MS = 4000;
+    let rafId = 0;
+    const tick = () => {
+      const elapsed = performance.now() - startedAt;
+      if (elapsed < TARGET_MS) {
+        const t = elapsed / TARGET_MS;
+        // ease-out cubic: 빠르게 시작, 천천히 도착
+        const eased = 1 - Math.pow(1 - t, 3);
+        setPct(5 + eased * 85);
+      } else {
+        // 4s 이후엔 분당 ~3% 정도 천천히 증가, 최대 95%
+        const overshoot = (elapsed - TARGET_MS) / 1000;
+        setPct(Math.min(95, 90 + overshoot * 0.5));
+      }
+      rafId = window.requestAnimationFrame(tick);
+    };
+    rafId = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(rafId);
   }, []);
 
+  // 단계 라벨은 게이지 % 임계값 기반 (시간 기반 X → 게이지와 항상 일치)
+  const stepIndex = pct < 25 ? 0 : pct < 50 ? 1 : pct < 75 ? 2 : 3;
+
   return (
-    <div className="flex flex-col items-center gap-6 py-16">
+    <div className="flex flex-col items-center gap-6 py-12">
       <div className="relative h-20 w-20">
         <div className="absolute inset-0 animate-ping rounded-full bg-[var(--brand-accent)]/20" />
         <div className="absolute inset-2 animate-pulse rounded-full bg-gradient-to-br from-[var(--brand-accent)] to-[var(--brand-accent-strong)] shadow-lg shadow-[rgba(92,116,95,0.35)]" />
-        <div className="absolute inset-5 rounded-full bg-white dark:bg-zinc-900" />
+        <div className="absolute inset-5 flex items-center justify-center rounded-full bg-white text-[11px] font-black tabular-nums text-[var(--brand-accent-strong)] dark:bg-zinc-900 dark:text-zinc-100">
+          {Math.round(pct)}%
+        </div>
       </div>
-      <div className="text-center">
-        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--brand-accent)] dark:text-zinc-300">
+      <div className="w-full max-w-xs">
+        <div className="text-center text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--brand-accent)] dark:text-zinc-300">
           LIVE ANALYSIS
         </div>
-        <div className="mt-2 text-xl font-black text-zinc-900 dark:text-zinc-50">AI가 상품을 분석중입니다</div>
-        <div className="mt-2 h-10 text-sm leading-5 text-zinc-500 transition dark:text-zinc-400">{LOADING_STEPS[stepIndex]}</div>
-        <div className="mt-3 text-xs text-zinc-400 dark:text-zinc-500">
-          판매 완료, 단품, 조건 불일치 상품은 여기서 바로 걸러냅니다.
+        <div className="mt-2 text-center text-xl font-black text-zinc-900 dark:text-zinc-50">AI가 상품을 분석중입니다</div>
+        <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[var(--brand-accent)] to-[var(--brand-accent-strong)] transition-[width] duration-200 ease-out"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <div className="mt-3 min-h-[40px] text-center text-sm leading-5 text-zinc-500 transition dark:text-zinc-400">
+          {LOADING_STEPS[stepIndex]}
+        </div>
+        <div className="mt-1 text-center text-xs text-zinc-400 dark:text-zinc-500">
+          번개장터 실시간 검증 · 시세 재계산 · 리스크 필터
         </div>
       </div>
     </div>
