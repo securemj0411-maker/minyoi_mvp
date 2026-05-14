@@ -1,11 +1,51 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-14T20:50:00.000Z",
+  "_updated_at": "2026-05-14T21:05:00.000Z",
   "resolutions": {
     "406566033": {
       "resolved_at": "2026-05-14T20:30:00.000Z",
-      "summary": "iPad Pro 12.9 2세대 chip a10x 매핑 추가 + comparable_key에 generation 추가 (parser v36). 같은 세대만 한 그룹으로 시세 계산 → false positive 차익 제거.",
+      "summary": "iPad Pro 12.9 2세대 chip a10x 매핑 + comparable_key에 generation 추가 (parser v36). 같은 세대만 한 그룹으로 시세 계산.",
       "commits": ["8421506"]
+    },
+    "407486890": {
+      "resolved_at": "2026-05-14T21:05:00.000Z",
+      "summary": "iPad Pro 12.9 3세대 — parser v36 fix 적용 대상. 새 매물 들어오면 자동 분리. 기존 매물 reparse 필요 (npm run reparse:listings). 사용자 추가 제안 (애플펜슬 번들 정책 변경)은 별도 wave.",
+      "commits": ["8421506"]
+    },
+    "405103487": {
+      "resolved_at": "2026-05-14T21:05:00.000Z",
+      "summary": "iPad Pro 12.9 4세대 — parser v36 동일 fix. reparse 후 4_gen|a12z로 분리.",
+      "commits": ["8421506"]
+    },
+    "394439158": {
+      "resolved_at": "2026-05-14T21:01:00.000Z",
+      "summary": "맥북 16 2019 i7 — MSRP × 0.5 fallback 폐기 (pipeline.ts:986). sample <5건이면 sku_median=0 → bandFromProfit null → 풀 진입 차단. broad SKU false positive 양산 root 제거. LAUNCH_PLAN §12b 정확성 우선 정책 준수.",
+      "commits": ["2761586"]
+    },
+    "394738416": {
+      "resolved_at": "2026-05-14T21:01:00.000Z",
+      "summary": "맥북 16 2019 i9 1TB — 동일 MSRP fallback 폐기 fix.",
+      "commits": ["2761586"]
+    },
+    "407687887": {
+      "resolved_at": "2026-05-14T21:01:00.000Z",
+      "summary": "맥북 M2 2022 — 동일 MSRP fallback 폐기 fix. 추가로 unknown_screen parser 약점은 후속 wave에서 (M2 chip + 13/16 size 매핑 보강).",
+      "commits": ["2761586"]
+    },
+    "407507382": {
+      "resolved_at": "2026-05-14T21:01:00.000Z",
+      "summary": "맥북 15 2018 i7 — 동일 MSRP fallback 폐기 fix. 사용자 별도 발견 (삭제된 매물 보임): lifecycle-worker deleted 검사 부재 — 별도 wave.",
+      "commits": ["2761586"]
+    },
+    "396321711": {
+      "resolved_at": "2026-05-14T21:05:00.000Z",
+      "summary": "iMac M3 24\" — desktop comparable_key에 RAM/SSD axis 추가 (option-parser v37). 8GB/256GB가 16GB/1TB와 한 그룹으로 묶이는 문제 해결. 같은 RAM/SSD만 비교.",
+      "commits": ["2761586"]
     }
+  },
+  "_pending_separate_wave": {
+    "358002617": "갤럭시탭 S8 Ultra outlier — sample 부족 (active 2건). 시간이 해결. 별도 작업 X.",
+    "lifecycle_deleted": "Bunjang에서 삭제된 매물 lifecycle-worker가 감지 못 함. 검사 추가 필요.",
+    "bundle_policy": "iPad/맥북 + 애플펜슬/매직키보드 번들 매물 → 현재 needs_review 차단. 사용자 제안: 풀 진입시키되 marketBasis 메타로 알림 (신뢰도/구성품/가격 등). 정책 결정 + 큰 변경 별도 wave."
   }
 }
