@@ -1352,7 +1352,9 @@ export const CATALOG: Sku[] = [
     modelName: "JBL Flip 6",
     aliases: ["JBL Flip 6", "JBL Flip6", "JBL 플립6", "제이비엘 플립6"],
     mustContain: [["jbl", "제이비엘"], ["flip6", "flip 6", "플립6"]],
-    mustNotContain: [...SPEAKER_NOISE],
+    // Wave 84: Flip 5/7 격리. Flip 5/6/7 모두 USB-C라 단자 구분 불가, 텍스트로만.
+    // Flip 7 (2025.2) 출시 후 Flip 6 자연 시세 하락 — 격리 명시 필수.
+    mustNotContain: [...SPEAKER_NOISE, "flip 5", "flip5", "플립 5", "플립5", "flip 7", "flip7", "플립 7", "플립7", "flip 4", "플립4", "플립 4", "flip 3"],
     msrpKrw: 149000,
     released: 2021,
   },
@@ -2513,7 +2515,10 @@ export const CATALOG: Sku[] = [
     modelName: "Casio G-Shock GA-2100 (CasiOak)",
     aliases: ["G-Shock GA-2100", "지샥 GA-2100", "GA2100", "지얄오크", "카시오크"],
     mustContain: [["ga-2100", "ga2100", "지얄오크", "카시오크"]],
-    mustNotContain: [...WATCH_NOISE, "dw-5600", "dw5600", "gmw-b5000", "gmwb5000"],
+    // Wave 84: GA-2200 (2022 후속, 전면 라이트 버튼) / GA-B2100 (솔라+BT) /
+    // GM-2100 (스테인리스 베젤) / GMA-S2100 (여성용 미드사이즈) 격리.
+    // 디자인 매우 유사한 후속/변형 흡수 risk 차단.
+    mustNotContain: [...WATCH_NOISE, "dw-5600", "dw5600", "gmw-b5000", "gmwb5000", "ga-2200", "ga2200", "ga 2200", "ga-b2100", "gab2100", "gm-2100", "gm2100", "gma-s2100", "gma s2100"],
     msrpKrw: 169000,
     released: 2019,
   },
