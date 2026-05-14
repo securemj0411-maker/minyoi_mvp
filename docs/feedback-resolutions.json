@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-14T21:27:26.343Z",
+  "_updated_at": "2026-05-14T22:02:51.365Z",
   "resolutions": {
     "358002617": {
       "resolved_at": "2026-05-14T21:27:26.329Z",
@@ -35,6 +35,27 @@
       "summary": "Wave 90 근본 fix 3종 (lifecycle auto-invalidate + Apple Watch Ultra 3 차단 + madTrim 8→5)",
       "commits": [
         "c75998f"
+      ]
+    },
+    "401500642": {
+      "resolved_at": "2026-05-14T22:02:51.142Z",
+      "summary": "parser v39 (chip prefix lookahead + 비노캔 키워드) + reparse",
+      "commits": [
+        "ddcbaa9"
+      ]
+    },
+    "402181838": {
+      "resolved_at": "2026-05-14T22:02:50.938Z",
+      "summary": "parser v39 (chip prefix lookahead + 비노캔 키워드) + reparse",
+      "commits": [
+        "ddcbaa9"
+      ]
+    },
+    "403846241": {
+      "resolved_at": "2026-05-14T22:02:51.361Z",
+      "summary": "parser v39 (chip prefix lookahead + 비노캔 키워드) + reparse",
+      "commits": [
+        "ddcbaa9"
       ]
     },
     "405103487": {
