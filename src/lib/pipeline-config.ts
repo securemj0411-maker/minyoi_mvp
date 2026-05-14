@@ -77,6 +77,12 @@ export const DEFAULT_CATEGORY_SWEEPS: { id: string; title: string }[] = [
   { id: "421",    title: "시계" },           // G-Shock/세이코
   { id: "610",    title: "가전제품" },       // 다이슨/로보락
   { id: "700600", title: "골프" },           // 타이틀리스트
+  // Wave 90 (2026-05-15): 일반인 친화 + 셀러 시세 인식 약 카테고리 확장.
+  // 측정 (wave89-all-roots-sample): 990 인플로 14k건/일, 910 28k건/일, 800 5k건/일.
+  // catalog narrow SKU 추가 wave는 후속. 일단 raw 흡수 시작 (ruleMatch fail은 pool 진입 X — 안전).
+  { id: "990",    title: "예술/희귀/수집품" }, // 포켓몬 띠부씰/한정카드/지포라이터/스티커
+  { id: "910",    title: "스타굿즈" },         // 한정 굿즈/피규어/아크릴/일러스트
+  { id: "800",    title: "생활/주방용품" },    // 스타벅스 시즌 텀블러/콜라보 한정
 ];
 
 function buildCategorySweepQueries(): string[] {

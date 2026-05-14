@@ -28,7 +28,9 @@ export function bandFromProfit(profitMin, profitMax) {
   const avg = Math.round((profitMin + profitMax) / 2);
   if (avg >= 70_000) return 3;
   if (avg >= 40_000) return 2;
-  if (avg >= 20_000) return 1;
+  // Wave 90 (2026-05-15): 1만 게이트로 lower. 배송비/수수료 net 1만 차익이면 사용자 가치.
+  // 풀 산출량 측면 일반인 친화 (저자본 진입자) + outlier 매물 더 많이 흡수.
+  if (avg >= 10_000) return 1;
   return null;
 }
 

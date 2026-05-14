@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import ModelGuidePanel from "@/components/model-guide-panel";
+import { MarketSourceDebug } from "@/components/market-source-debug";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 
@@ -456,17 +457,22 @@ function RevealCardItem({
 
         <SkuListingFlowMini card={card} />
 
+        {/* Wave 90 (2026-05-15): 시세 근거 디버그 패널 — 사용자가 검증할 때
+            "이 시세가 어떤 매물 기준인지" 즉시 확인 가능. comparable_key + market_price_daily
+            + 같은 SKU 매물 N건 list (가격순) + 번장 링크. */}
+        <MarketSourceDebug pid={card.pid} ourPrice={card.price} />
+
         {/* Wave 80: SavedDetailMini (찜/리뷰/리뷰N개/판매자 설명문) 제거 — 번개장터 데이터 직접 노출 법적 위험. 원본은 "번개장터 열기" 버튼으로 확인. */}
 
         {/* Wave 80: 개별 피드백 버튼 (관심/매수함/이미 팔림/별로) + quickTags (단품 의심 등) 제거.
             단일 "추천 상품이 이상해요" 신고 버튼 + 코멘트 폼으로 대체. */}
         <details className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs dark:border-zinc-800 dark:bg-zinc-800/50">
           <summary className="cursor-pointer font-bold text-zinc-500 dark:text-zinc-300">
-            ⚠️ 추천 상품이 이상해요 — 신고 {noteSaved ? "· 접수됨" : ""}
+            💬 검증 메모 · 추천 평가 {noteSaved ? "· 저장됨" : ""}
           </summary>
           <div className="mt-2 space-y-2">
             <div className="text-[10.5px] leading-[1.5] text-zinc-500 dark:text-zinc-400">
-              어떤 점이 이상한지 알려주세요. 다음 추천 품질 향상에 사용됩니다.
+              매물 검증 결과 / 의심점 / 추천 품질 평가 자유 기록. 나중에 일괄 검토용.
             </div>
             <textarea
               id={`reveal-note-${card.pid}`}
@@ -477,7 +483,7 @@ function RevealCardItem({
               }}
               maxLength={500}
               rows={3}
-              placeholder="예) 단품 의심 · 가격 비교 틀린 듯 · 사진 애매 · 판매자 위험 · 이미 팔린 것 같음"
+              placeholder="예) 시세 비교 OK / 단품 의심 / 가격 비교 틀린 듯 / 사진 애매 / 이거 좋은 추천 / 이미 팔린 것 같음 등 자유"
               className="w-full resize-none rounded-lg border border-[#ddd6ca] bg-white px-3 py-2 text-xs leading-5 text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
             />
             <div className="flex items-center justify-between gap-2">

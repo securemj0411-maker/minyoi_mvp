@@ -25,6 +25,7 @@
     "diagnose:pack-open": "tsx scripts/diagnose-pack-open-dry-run.ts",
     "diagnose:pool": "node scripts/diagnose-pool.mjs",
     "diagnose:readiness": "node scripts/diagnose-category-readiness.mjs",
+    "review:user-feedback": "node scripts/review-user-feedback.mjs",
     "report:category-expansion": "node scripts/report-category-expansion.mjs",
     "report:monitor-parser": "tsx scripts/report-monitor-parser.ts",
     "report:game-console-narrowing": "tsx scripts/report-game-console-narrowing.ts",
