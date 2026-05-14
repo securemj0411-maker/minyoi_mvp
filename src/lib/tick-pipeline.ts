@@ -2433,6 +2433,10 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     if (!parsed?.comparable_key || Number(parsed.parse_confidence ?? 0) < 0.65 || parsed.needs_review) continue;
     // risk_hits>0 매물 제외 (analysis 없으면 default safe)
     if (safeByPid.has(row.pid) && safeByPid.get(row.pid) === false) continue;
+    // Wave 90 (사용자 지적): 새상품/미개봉 매물은 시세 평균에서 제외 (다른 condition).
+    // parser가 conditionNotes에 "new_or_open_box" 마킹. 풀 진입은 별개 (싸게 올라온 새상품도 차익 OK).
+    const conditionNotes = (parsed.parsed_json?.condition_notes as string[] | undefined) ?? [];
+    if (conditionNotes.includes("new_or_open_box")) continue;
     const key = parsed.comparable_key;
     if (!byKey.has(key)) byKey.set(key, { rows: [], activeRows: [], soldRows: [], disappearedRows: [], skuId: row.sku_id });
     const group = byKey.get(key)!;

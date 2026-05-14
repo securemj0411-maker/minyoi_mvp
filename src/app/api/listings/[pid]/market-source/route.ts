@@ -101,9 +101,8 @@ export async function GET(
         .filter((p) => Number.isFinite(p) && p !== pid)
         .slice(0, MAX_COMPARABLES);
       if (sameKeyPids.length > 0) {
-        // Wave 90: listing_type=normal + risk_hits=0 필터 추가 (사용자 지적 — 사기/parts/위험 매물 시세 왜곡 차단).
-        // analysis fetch는 별도 (raw_listings에 risk_hits 컬럼 없음 → mvp_listing_analysis join).
-        const [rawListRes, analysisRes] = await Promise.all([
+        // Wave 90: listing_type=normal + risk_hits=0 + 새상품 제외 필터.
+        const [rawListRes, analysisRes, parsedRes2] = await Promise.all([
           restFetch(
             `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=in.(${sameKeyPids.join(",")})&listing_type=eq.normal&order=last_seen_at.desc`,
             { headers: serviceHeaders() },
@@ -112,11 +111,26 @@ export async function GET(
             `${tableUrl("mvp_listing_analysis")}?select=pid,risk_hits&pid=in.(${sameKeyPids.join(",")})`,
             { headers: serviceHeaders() },
           ),
+          restFetch(
+            `${tableUrl("mvp_listing_parsed")}?select=pid,parsed_json&pid=in.(${sameKeyPids.join(",")})`,
+            { headers: serviceHeaders() },
+          ),
         ]);
         const rawRows = (await rawListRes.json()) as Array<Record<string, unknown>>;
         const analysisRows = (await analysisRes.json()) as Array<{ pid: number; risk_hits: number }>;
+        const parsedRowsForCond = (await parsedRes2.json()) as Array<{ pid: number; parsed_json: Record<string, unknown> | null }>;
         const riskByPid = new Map(analysisRows.map((r) => [Number(r.pid), Number(r.risk_hits ?? 0)]));
-        const safeRows = rawRows.filter((r) => (riskByPid.get(Number(r.pid)) ?? 0) === 0);
+        const isNewByPid = new Map<number, boolean>();
+        for (const p of parsedRowsForCond) {
+          const notes = (p.parsed_json?.condition_notes as string[] | undefined) ?? [];
+          isNewByPid.set(Number(p.pid), notes.includes("new_or_open_box"));
+        }
+        const safeRows = rawRows.filter((r) => {
+          const pid = Number(r.pid);
+          if ((riskByPid.get(pid) ?? 0) > 0) return false;
+          if (isNewByPid.get(pid) === true) return false;
+          return true;
+        });
         comparables = safeRows.map((row) => ({
           pid: Number(row.pid),
           name: String(row.name ?? ""),
