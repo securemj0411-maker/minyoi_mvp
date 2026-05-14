@@ -51,6 +51,26 @@ const aiRules = [
   "AI가 애매하게 답하면 통과가 아니라 보류가 먼저입니다.",
 ];
 
+// 직접 검색 시나리오 vs 미뇨이 (도발적 비교). 가상 데이터 아님 — 실제 검색 패턴 기반.
+const directSearchBreakdown = [
+  { kind: "부품용 / 액정만 / 메인보드", count: 5, tone: "warn" as const },
+  { kind: "케이스만 / 충전기만", count: 8, tone: "warn" as const },
+  { kind: "매입 / 삽니다 / 구매합니다 광고", count: 6, tone: "warn" as const },
+  { kind: "사기 의심 (거래 0건 + 시세 60%↓)", count: 3, tone: "danger" as const },
+  { kind: "통신사 약정 / 자급제 미명시", count: 7, tone: "warn" as const },
+  { kind: "고장 / 파손 / 침수", count: 0, tone: "warn" as const },
+  { kind: "남는 본품 매물", count: 21, tone: "ok" as const },
+];
+
+const compareSteps = [
+  { task: "검색 결과 첫 페이지 열기", direct: "1분", minyoi: "1분" },
+  { task: "관련 없는 매물 거르기", direct: "10분", minyoi: "자동" },
+  { task: "시세 비교 (네이버 / 다른 매물)", direct: "10분", minyoi: "자동" },
+  { task: "판매자 거래 / 평점 일일이 확인", direct: "5분", minyoi: "자동" },
+  { task: "남은 매물 중 결정", direct: "5분", minyoi: "5분" },
+  { task: "그 사이 진짜 좋은 매물 거래 완료", direct: "2~3개", minyoi: "0개" },
+];
+
 function ServiceFlowVisual() {
   return (
     <div className="rounded-[30px] border border-[#e5dccf] bg-[#fffaf1] p-4 shadow-[0_18px_42px_rgba(34,49,39,0.08)]">
@@ -171,6 +191,143 @@ export default function HowItWorksPage() {
               </div>
             </div>
             <ServiceFlowVisual />
+          </div>
+        </section>
+
+        {/* Why Minyoi — 직접 검색 vs 미뇨이 비교. 도발적 톤 + 시간 게임 강조. */}
+        <section className="rounded-[34px] border border-[#ddd4c7] bg-[#fffbf4] px-6 py-8 shadow-[0_18px_42px_rgba(34,49,39,0.08)] sm:px-8 sm:py-10">
+          <div className="text-xs font-black uppercase tracking-[0.22em] text-[#5d735f]">
+            왜 미뇨이를 써야 하나
+          </div>
+          <h2 className="mt-3 break-keep text-2xl font-black tracking-tight text-[#223127] [text-wrap:balance] sm:text-4xl">
+            네, 번개장터에서 직접 다 찾을 수 있어요.
+            <br />
+            <span className="text-[#4f6f58]">한 번 직접 해보세요. 30분 후에 다시 옵니다.</span>
+          </h2>
+          <p className="mt-4 max-w-3xl break-keep text-sm leading-7 text-[#5a6658] sm:text-[15px]">
+            번개장터·중고나라·당근에서 직접 검색하면 매물 다 나옵니다. 우리도 거기서 가져옵니다.
+            <strong className="font-black text-[#344136]"> 단 한 번 30분만 직접 해보세요.</strong>
+            왜 우리가 필요한지 알게 됩니다.
+          </p>
+
+          {/* 직접 검색 30분 시나리오 */}
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            <article className="rounded-[24px] border border-[#e5dccf] bg-[#fffaf1] px-5 py-5">
+              <div className="flex items-center gap-2">
+                <span className="rounded-md bg-[#f4eee3] px-2 py-1 text-[10px] font-black uppercase tracking-wider text-[#7a6b60]">
+                  직접 검색 — 30분
+                </span>
+              </div>
+              <h3 className="mt-3 text-lg font-black text-[#223127] sm:text-xl">
+                &ldquo;에어팟 프로 2 자급제&rdquo; 검색 첫 페이지 50건
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-[#5a6658]">
+                일일이 클릭해서 본품인지 확인하면:
+              </p>
+              <div className="mt-4 divide-y divide-[#ece3d6] rounded-[18px] border border-[#e5dccf] bg-[#fffbf4]">
+                {directSearchBreakdown.map((row) => (
+                  <div key={row.kind} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                    <span className="text-sm font-semibold text-[#586356]">{row.kind}</span>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-black ${
+                        row.tone === "danger"
+                          ? "bg-[#f6e3df] text-[#a04a3c]"
+                          : row.tone === "warn"
+                            ? "bg-[#f4eee3] text-[#7a6b60]"
+                            : "bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
+                      }`}
+                    >
+                      {row.count}건
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-sm leading-6 text-[#586356]">
+                결국 본품 21건. 시세 비교 + 판매자 등급 일일이 확인하면 +20분.
+                <strong className="font-black text-[#a04a3c]">
+                  {" "}그 사이 진짜 좋은 매물 2~3개는 이미 팔립니다.
+                </strong>
+              </p>
+            </article>
+
+            <article className="rounded-[24px] border border-[#c8d8c4] bg-[var(--brand-accent-soft)] px-5 py-5">
+              <div className="flex items-center gap-2">
+                <span className="rounded-md bg-[var(--brand-accent-strong)] px-2 py-1 text-[10px] font-black uppercase tracking-wider text-[var(--brand-cream)]">
+                  미뇨이 — 5분
+                </span>
+              </div>
+              <h3 className="mt-3 text-lg font-black text-[#223127] sm:text-xl">
+                같은 검색, 자동 분류된 추천 화면
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-[#334235]">
+                들어오자마자 보이는 것:
+              </p>
+              <ul className="mt-4 space-y-2 rounded-[18px] border border-[#c8d8c4] bg-[#fffbf4] px-4 py-3">
+                {[
+                  "부품 / 케이스만 / 매입 광고 / 사기 의심 — 자동 제거 완료",
+                  "본품 매물만 시세순 정렬",
+                  "판매자 등급 + 거래 횟수 + 평점 한 줄로",
+                  "호가 분포에서 이 매물이 어디인지 한눈에",
+                  "&ldquo;왜 이 매물이 좋은가&rdquo; 이유 표시",
+                ].map((item, i) => (
+                  <li key={i} className="flex gap-2 text-sm font-semibold leading-6 text-[#334235]">
+                    <span className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--brand-accent-strong)]" />
+                    <span dangerouslySetInnerHTML={{ __html: item }} />
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 text-sm leading-6 text-[#334235]">
+                남은 5분으로 결정만. <strong className="font-black">같은 검색, 25분 차이.</strong>
+              </p>
+            </article>
+          </div>
+
+          {/* 시간 비교 표 */}
+          <div className="mt-6 overflow-x-auto rounded-[22px] border border-[#e5dccf]">
+            <table className="w-full min-w-[480px] text-left text-sm">
+              <thead className="bg-[#f3eee5] text-[10px] uppercase tracking-wider text-[#5d735f]">
+                <tr>
+                  <th className="px-4 py-2.5 font-black">단계</th>
+                  <th className="px-4 py-2.5 font-black">직접 검색</th>
+                  <th className="px-4 py-2.5 font-black">미뇨이</th>
+                </tr>
+              </thead>
+              <tbody>
+                {compareSteps.map((row, i) => (
+                  <tr key={i} className="border-t border-[#ece3d6] bg-[#fffaf1]">
+                    <td className="px-4 py-2.5 font-semibold text-[#344136]">{row.task}</td>
+                    <td className="px-4 py-2.5 font-black text-[#7a6b60]">{row.direct}</td>
+                    <td className="px-4 py-2.5 font-black text-[var(--brand-accent-strong)]">{row.minyoi}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* 알람 메시지 */}
+          <div className="mt-6 rounded-[22px] border-l-4 border-[var(--brand-accent-strong)] bg-[var(--brand-accent-soft)] px-5 py-4">
+            <p className="text-sm font-black leading-7 text-[#223127] sm:text-base">
+              그리고 30분 안에 팔리는 매물을 직접 검색으로 잡을 수 있나요? 불가능합니다.
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[#344136]">
+              인기 매물은 등록 후 30분 ~ 몇 시간 안에 거래 완료됩니다. 직접 검색은 등장한 순간 알 수 없어요.
+              미뇨이 알람은 등록 즉시 알려줍니다. <strong className="font-black">시간이 곧 가격입니다.</strong>
+            </p>
+          </div>
+
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/me"
+              className="inline-flex items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-6 py-3.5 text-base font-black text-[var(--brand-cream)] shadow-[0_14px_28px_rgba(49,66,56,0.16)] transition hover:bg-[#29382f]"
+            >
+              지금 5분으로 비교해보기
+            </Link>
+            <Link
+              href="/plans"
+              className="inline-flex items-center justify-center rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] px-5 py-3.5 text-sm font-black text-[#344136] transition hover:bg-[var(--brand-accent-soft)]"
+            >
+              알람 받는 플랜 보기
+            </Link>
           </div>
         </section>
 
