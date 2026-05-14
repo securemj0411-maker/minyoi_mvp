@@ -1,12 +1,33 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-14T22:58:54.680Z",
+  "_updated_at": "2026-05-14T23:21:16.497Z",
   "resolutions": {
+    "334750861": {
+      "resolved_at": "2026-05-14T23:21:16.219Z",
+      "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
+      "commits": [
+        "61d0dbb"
+      ]
+    },
     "358002617": {
       "resolved_at": "2026-05-14T21:27:26.329Z",
       "summary": "Wave 90 근본 fix 3종 (lifecycle auto-invalidate + Apple Watch Ultra 3 차단 + madTrim 8→5)",
       "commits": [
         "c75998f"
+      ]
+    },
+    "367574084": {
+      "resolved_at": "2026-05-14T23:21:16.273Z",
+      "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
+      "commits": [
+        "61d0dbb"
+      ]
+    },
+    "368060006": {
+      "resolved_at": "2026-05-14T23:21:16.493Z",
+      "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
+      "commits": [
+        "61d0dbb"
       ]
     },
     "394439158": {
@@ -79,6 +100,13 @@
         "e1046cf"
       ]
     },
+    "405918236": {
+      "resolved_at": "2026-05-14T23:21:16.329Z",
+      "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
+      "commits": [
+        "61d0dbb"
+      ]
+    },
     "406074278": {
       "resolved_at": "2026-05-14T21:27:23.980Z",
       "summary": "Wave 90 근본 fix 3종 (lifecycle auto-invalidate + Apple Watch Ultra 3 차단 + madTrim 8→5)",
@@ -99,6 +127,13 @@
       "summary": "Wave 90 ABCD",
       "commits": [
         "e1046cf"
+      ]
+    },
+    "407135933": {
+      "resolved_at": "2026-05-14T23:21:16.386Z",
+      "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
+      "commits": [
+        "61d0dbb"
       ]
     },
     "407486890": {
@@ -149,6 +184,20 @@
       "summary": "맥북 M2 2022 — 동일 MSRP fallback 폐기 fix. 추가로 unknown_screen parser 약점은 후속 wave에서 (M2 chip + 13/16 size 매핑 보강).",
       "commits": [
         "2761586"
+      ]
+    },
+    "408077307": {
+      "resolved_at": "2026-05-14T23:21:16.167Z",
+      "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
+      "commits": [
+        "61d0dbb"
+      ]
+    },
+    "408116585": {
+      "resolved_at": "2026-05-14T23:21:16.441Z",
+      "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
+      "commits": [
+        "61d0dbb"
       ]
     }
   },
