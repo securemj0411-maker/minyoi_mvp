@@ -1,0 +1,183 @@
+[
+  {
+    "pid": "346794477",
+    "name": "[SEIKO] 세이코5 SRPD55K1 스포츠 오토매틱 메탈 남자시계",
+    "price": 335000,
+    "reject_reasons": [
+      "reject_fake"
+    ]
+  },
+  {
+    "pid": "322035802",
+    "name": "[SEIKO] 세이코5  SRPD51K1  오토매틱다이버 청판 남성시계",
+    "price": 350000,
+    "reject_reasons": [
+      "reject_fake"
+    ]
+  },
+  {
+    "pid": "383428901",
+    "name": "[세이코] SRPD95 오토매틱 하이브리드 밴드 손목시계",
+    "price": 430000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "383413497",
+    "name": "[세이코] SRPD65K1 오토매틱 메탈 손목시계",
+    "price": 310000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "383423191",
+    "name": "[세이코] SRPD65K4 오토매틱 나토 스트랩 손목시계",
+    "price": 310000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "383416215",
+    "name": "[세이코] SRPD65K3 오토매틱 가죽 손목시계",
+    "price": 430000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "383405686",
+    "name": "[세이코] SRPD55K3 나일론 나토 스트랩 오토매틱 손목시계",
+    "price": 320000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "383410362",
+    "name": "[세이코] SRPD59K1 오토매틱 메탈 손목시계",
+    "price": 280000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "383409151",
+    "name": "[세이코] SRPD57K1 오토매틱 메탈 손목시계",
+    "price": 340000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "342927090",
+    "name": "세이코 srpd55 (판매완료)",
+    "price": 210000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "392668651",
+    "name": "(새상품) 세이코 5 SRPD 호환 쥬빌레 스트랩 22mm",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "401216757",
+    "name": "세이코 SRPD51K",
+    "price": 235000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "399790638",
+    "name": "세이코 srpd53k1",
+    "price": 280000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "393394530",
+    "name": "세이코 오토매틱 블랙 다이버 시계 SRPD55K1",
+    "price": 190000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "388592768",
+    "name": "세이코 SRPD55K1 오토매틱 시계 풀박스",
+    "price": 220000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "407494562",
+    "name": "세이코 7548-7000 쿼츠 빈티지 다이버 시계 skx",
+    "price": 480000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "407031140",
+    "name": "skx015",
+    "price": 690000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "392564624",
+    "name": "[실물 깡패] 세이코5 오토 그레이린넨  SKXP01(7S26-8760)",
+    "price": 432000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "347417670",
+    "name": "세이코5 skxp19",
+    "price": 140000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "336398900",
+    "name": "[초희귀템] 세이코 SKX 시리즈의 시작 SKX005 오토매틱 38mm",
+    "price": 995000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_seiko_s_5_세이코_s_5_세이코5",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "389138206",
+    "name": "세이코 다이버 skx025",
+    "price": 380000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "401516551",
+    "name": "세이코srpd61 상태a  박스풀셋 팝니다.",
+    "price": 249000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  }
+]

@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "lane_key": "sport_golf_titleist_tsr3_driver",
+  "category": "sport_golf",
+  "generated_at": "2026-05-14T02:27:17.261Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "타이틀리스트 TSR3 드라이버",
+    "Titleist TSR3 driver",
+    "TSR3 드라이버"
+  ],
+  "pages": 6,
+  "price_range_krw": [
+    300000,
+    1200000
+  ],
+  "target_parse_ready": 100,
+  "total_fetched": 125,
+  "parse_ready_count": 85,
+  "rejected_count": 40,
+  "target_reached": false,
+  "reject_breakdown": [
+    {
+      "reason": "missing_tsr_s_3_tsr_3",
+      "count": 22
+    },
+    {
+      "reason": "reject_wrong_model_tsr2",
+      "count": 14
+    },
+    {
+      "reason": "reject_head_only",
+      "count": 13
+    },
+    {
+      "reason": "price_too_low",
+      "count": 6
+    },
+    {
+      "reason": "reject_wrong_club_utility",
+      "count": 3
+    },
+    {
+      "reason": "reject_buying_post",
+      "count": 2
+    },
+    {
+      "reason": "reject_fake",
+      "count": 1
+    },
+    {
+      "reason": "missing_드라이버_driver",
+      "count": 1
+    },
+    {
+      "reason": "reject_wrong_model_tsr1",
+      "count": 1
+    },
+    {
+      "reason": "reject_wrong_series_tsi_ts",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [
+      "tsr\\s*3|tsr-3",
+      "드라이버|driver"
+    ],
+    "accept_any_of": []
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_model_tsr2",
+      "pattern": "tsr\\s*2|tsr-2"
+    },
+    {
+      "label": "wrong_model_tsr1",
+      "pattern": "tsr\\s*1|tsr-1"
+    },
+    {
+      "label": "wrong_series_tsi_ts",
+      "pattern": "tsi\\s*[1-4]|ts[1-4](?!r)"
+    },
+    {
+      "label": "head_only",
+      "pattern": "헤드\\s*만|head\\s*only"
+    },
+    {
+      "label": "full_set",
+      "pattern": "풀세트|풀\\s*세트|골프\\s*세트|아이언\\s*세트|우드\\s*세트"
+    },
+    {
+      "label": "wrong_club_utility",
+      "pattern": "유틸|utility|아이언"
+    },
+    {
+      "label": "fake",
+      "pattern": "가품|이미테이션|fake"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|수리\\s*필요|부품\\s*용|부품용"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "삽니다|구합니다|구매\\s*합니다|구매합니다|구해요|매입"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "lane_key": "watch_seiko_5_sports_sbsa",
+  "category": "watch",
+  "queries": [
+    "세이코 5 SBSA",
+    "Seiko 5 SBSA",
+    "SBSA001",
+    "SBSA017"
+  ],
+  "accept_all": [
+    "seiko\\s*5|세이코\\s*5|세이코5",
+    "sbsa"
+  ],
+  "accept_any_of": [],
+  "reject_rules": [
+    {
+      "label": "wrong_model_srpd",
+      "pattern": "srpd|5kx"
+    },
+    {
+      "label": "wrong_model_prospex",
+      "pattern": "프로스펙스|prospex"
+    },
+    {
+      "label": "strap_only",
+      "pattern": "줄\\s*만|스트랩\\s*만|밴드\\s*만"
+    },
+    {
+      "label": "case_only",
+      "pattern": "케이스\\s*만"
+    },
+    {
+      "label": "fake",
+      "pattern": "가품|이미테이션|복각|homage|오마주|fake"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|수리\\s*필요|부품\\s*용|부품용"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "삽니다|구합니다|구매\\s*합니다|구매합니다|구해요|매입"
+    }
+  ],
+  "price_min_krw": 100000,
+  "price_max_krw": 800000
+}

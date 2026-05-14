@@ -1,0 +1,501 @@
+[
+  {
+    "pid": "407934025",
+    "name": "지샥 gmw-b5000 불소 러버 디버클 밴드 오렌지 손목둘레 17cm",
+    "price": 29000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "362801056",
+    "name": "교환가능 지샥 포터 gmw-b5000tfc-1jr 오리지날 풀세트",
+    "price": 5600000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "406904452",
+    "name": "지샥 GMW-B5000TB",
+    "price": 2350000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "403342072",
+    "name": "지샥 gmw-b5000 빈티지 커스텀 킷 팝니다.",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407601941",
+    "name": "지샥GMW-B5000D-1DR 팝니다.",
+    "price": 330000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407678683",
+    "name": "카시오 지샥 GMW-B5000D 풀메탈 시계",
+    "price": 270000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407131170",
+    "name": "지샥 gmw-b5000",
+    "price": 284000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405568718",
+    "name": "지샥 풀메탈 GMW B5000D 1DR",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405111274",
+    "name": "지샥 GMW-B5000D(+정품 우레탄밴드) 판매",
+    "price": 320000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405098654",
+    "name": "지샥 gmw b5000 팝니다(정식 배터리, 오링교환)",
+    "price": 310000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405107124",
+    "name": "지샥 GMW-B5000GD-9(골드, 민트급) 판매",
+    "price": 375000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405074592",
+    "name": "지샥 길라잡이 gmw b5000 하이브리드 나노글라스 보호필름 팝니다.",
+    "price": 7500,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "405106028",
+    "name": "지샥 GMW-B5000D-1C(빨테) 팝니다.",
+    "price": 340000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "404579838",
+    "name": "지샥 GMW-B5000RD 판매",
+    "price": 320000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "404792002",
+    "name": "지샥 GMW-B5000D-3 (스타벅스) 판매",
+    "price": 340000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "404597241",
+    "name": "지샥 gmw b5000 스틸 골드 베젤 팝니다.",
+    "price": 15000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398652464",
+    "name": "[정품] 지샥 GMW-B5000 풀 메탈 실버",
+    "price": 380000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "395833310",
+    "name": "카시오 G-SHOCK GMW-B5000-1DR풀메탈시계팝니다",
+    "price": 390000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "374378261",
+    "name": "카시오 G-SHOCK GMW-B5000D 풀메탈 판매합니다.",
+    "price": 290000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "367903711",
+    "name": "지샥 포터 (GMW-B5000TFC-1DR) 정품액정",
+    "price": 110000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "367903828",
+    "name": "지샥 포터 (GMW-B5000TFC-1DR) 정품백판",
+    "price": 130000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "364360807",
+    "name": "지샥 GMW-B5000 백케이스 판매합니다.",
+    "price": 25000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "364360664",
+    "name": "지샥 GMW-B5000D-1DR 글라스 판매합니다.",
+    "price": 25000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "359457907",
+    "name": "지샥 GMW-B5000D-1DR",
+    "price": 390000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "357960428",
+    "name": "지샥 시계 gmw-b5000gd-1jf 올블랙",
+    "price": 350000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "333527571",
+    "name": "지샥 G-SHOCK GMW-B5000-1DR",
+    "price": 2000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "333547629",
+    "name": "지샥 G-SHOCK GMW-B5000GD-1DR 블랙 풀메탈",
+    "price": 2000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "333529287",
+    "name": "지샥 G-SHOCK GMW-B5000GD-1DR 블랙 풀메탈 ,반메탈",
+    "price": 2000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "328715889",
+    "name": "지샥 풀메탈 gmw-b5000 구매원합니다!!",
+    "price": 99999,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "326860885",
+    "name": "새제품!! 지샥 GMW-B5000SS 50주년 정품 밴드 + 백케이스",
+    "price": 331600,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "301492376",
+    "name": "지샥 gmw b5000d 2dr",
+    "price": 2000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407444040",
+    "name": "지샥 gmw bz5000 백화점 구매",
+    "price": 640000,
+    "reject_reasons": [
+      "missing_gmw_s_b_5000_풀_s_메탈_s"
+    ]
+  },
+  {
+    "pid": "401144206",
+    "name": "지샥 gw-b5600 mrg 커스텀",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_gmw_s_b_5000_풀_s_메탈_s"
+    ]
+  },
+  {
+    "pid": "394842881",
+    "name": "GMW-B5000D 풀박스",
+    "price": 270000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "391187727",
+    "name": "지샥 gmw-b5000 금장 케이스",
+    "price": 40000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "404928688",
+    "name": "지샥 GMW-B5000 실떱이",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "404992251",
+    "name": "지샥 B5000 풀메탈 블랙 시계 GMW-B5000GD-1DR",
+    "price": 380000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "404291327",
+    "name": "카시오 G-SHOCK GMW-B5000D-3DR",
+    "price": 333000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "398580159",
+    "name": "gmw-b5000 반메 카시오 지샥",
+    "price": 210000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "397186788",
+    "name": "지샥 GMW - B5000 - 4ADR",
+    "price": 230000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "397327815",
+    "name": "풀메탈 지샥 GMW-B5000D+여분 스트랩",
+    "price": 250000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "395601370",
+    "name": "지샥 gmw-b5000 실버",
+    "price": 290000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "394424336",
+    "name": "카시오 지샥 GMW-B5000 중고",
+    "price": 270000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "395170973",
+    "name": "지샥 40주년 gmw-b5000ps-1 한정판",
+    "price": 730000,
+    "reject_reasons": [
+      "reject_strap_only"
+    ]
+  },
+  {
+    "pid": "393879476",
+    "name": "지샥 gmw-b5000d-1dr",
+    "price": 380000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "393399628",
+    "name": "카시오 지샥 GMW B5000 1ER",
+    "price": 270000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "392860842",
+    "name": "지샥 GMW-B5000D-1dr",
+    "price": 360000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "385510770",
+    "name": "카시오 G-SHOCK Gmw-B5000 풀메탈 터프솔라 전파",
+    "price": 280000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "392153998",
+    "name": "GMW B5000D 지샥 풀메탈 + 티타늄 벨베젤",
+    "price": 370000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "390922376",
+    "name": "지샥 gmw-b5000gd 흑떱이",
+    "price": 370000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "390921378",
+    "name": "지샥 gmw-b5000d 실떱이",
+    "price": 320000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "388951479",
+    "name": "지샥 GMW-B5000 반메탈",
+    "price": 250000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "387852075",
+    "name": "지샥 GMW-B5000D 풀메탈 실버 (풀구성)",
+    "price": 230000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "401143788",
+    "name": "지샥 gw-b5600 mrg 커스텀",
+    "price": 300000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_gmw_s_b_5000_풀_s_메탈_s"
+    ]
+  },
+  {
+    "pid": "406834679",
+    "name": "지샥 b5000d-1 풀메탈",
+    "price": 320000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_gmw_s_b_5000_풀_s_메탈_s"
+    ]
+  },
+  {
+    "pid": "404354771",
+    "name": "지샥 B5000D 풀메탈 샤이닝커스텀",
+    "price": 200000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_gmw_s_b_5000_풀_s_메탈_s"
+    ]
+  },
+  {
+    "pid": "393827576",
+    "name": "지샥 블랙 풀메탈 b5000d 팝니다!",
+    "price": 280000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_gmw_s_b_5000_풀_s_메탈_s"
+    ]
+  },
+  {
+    "pid": "258895461",
+    "name": "SPH-W5000 메탈슬림폰 풀셋 핑크색상 폴더폰 피처폰 학생폰 KT용",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_gmw_s_b_5000_풀_s_메탈_s"
+    ]
+  },
+  {
+    "pid": "324342159",
+    "name": "SPH-W5000 메탈슬림폰 커피 브라운 색상 풀셋_폴더폰(옛날폰)",
+    "price": 120000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_gmw_s_b_5000_풀_s_메탈_s"
+    ]
+  },
+  {
+    "pid": "324303006",
+    "name": "[KT용/메탈슬림폰/A급풀셋13/폰만7 ] SPH-W5000 폴더폰",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_gmw_s_b_5000_풀_s_메탈_s"
+    ]
+  },
+  {
+    "pid": "254731131",
+    "name": "SPH-W5000 메탈슬림폰(로맨틱 핑크 색상) 풀셋_폴더폰",
+    "price": 150000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_gmw_s_b_5000_풀_s_메탈_s"
+    ]
+  }
+]

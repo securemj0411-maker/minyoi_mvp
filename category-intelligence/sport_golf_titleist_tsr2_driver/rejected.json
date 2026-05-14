@@ -1,0 +1,410 @@
+[
+  {
+    "pid": "406630521",
+    "name": "드라이버 tsr2 10도 타이틀리스트",
+    "price": 396000,
+    "reject_reasons": [
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "407824416",
+    "name": "타이틀리스트 TSR2 9도 드라이버 헤드 커",
+    "price": 280000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "407766866",
+    "name": "A급]타이틀리스트 TSR2 9도 중고 헤드 골프채 남자 드라이버 헤드만",
+    "price": 390000,
+    "reject_reasons": [
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "407722645",
+    "name": "(S급) 드라이버 tsr2 9도 타이틀리스트",
+    "price": 428000,
+    "reject_reasons": [
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "407724003",
+    "name": "(헤드만) 드라이버 tsr2 10도 타이틀리스트",
+    "price": 334000,
+    "reject_reasons": [
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "388114114",
+    "name": "타이틀리스트 TSR2 중고드라이버 패더슨 샤프트",
+    "price": 624000,
+    "reject_reasons": [
+      "reject_wrong_series_tsi_ts"
+    ]
+  },
+  {
+    "pid": "383850707",
+    "name": "타이틀리스트 TSR 9도 드라이버 헤드2",
+    "price": 407000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "384390053",
+    "name": "타이틀리스트 TSR2 드라이버 ping아이언등클럽 풀세트",
+    "price": 1300000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_full_set",
+      "reject_wrong_club_utility"
+    ]
+  },
+  {
+    "pid": "296852814",
+    "name": "타이틀리스트 TSR2 드라이버 9도 TSP111 강도S",
+    "price": 539000,
+    "reject_reasons": [
+      "reject_wrong_model_tsr3"
+    ]
+  },
+  {
+    "pid": "296851715",
+    "name": "타이틀리스트 TSR2 드라이버 9도 TSP111 강도S 중고",
+    "price": 539000,
+    "reject_reasons": [
+      "reject_wrong_model_tsr3"
+    ]
+  },
+  {
+    "pid": "336283437",
+    "name": "아쿠쉬정품) 타이틀리스트 tsr2 드라이버 9도 헤드 드날리블랙 6.0",
+    "price": 1111,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "330519663",
+    "name": "타이틀리스트 TSR2 TSR3 드라이버 헤드 단품 판매합니다",
+    "price": 330000,
+    "reject_reasons": [
+      "reject_wrong_model_tsr3",
+      "reject_fake"
+    ]
+  },
+  {
+    "pid": "306790133",
+    "name": "타이틀리스트 tsr2 드라이버. T200아이언 팝니다.",
+    "price": 1350000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_wrong_club_utility"
+    ]
+  },
+  {
+    "pid": "407939758",
+    "name": "A급]타이틀리스트 TSR3 10도 중고 헤드 골프채 남자 드라이버 헤드",
+    "price": 390000,
+    "reject_reasons": [
+      "reject_wrong_model_tsr3"
+    ]
+  },
+  {
+    "pid": "261945698",
+    "name": "타이틀리스트 여성용 특주  정품 Tsr2 드라이버,우드",
+    "price": 1050000,
+    "reject_reasons": [
+      "reject_wrong_club_utility"
+    ]
+  },
+  {
+    "pid": "407418508",
+    "name": "타이틀리스트 TSR3 10도 TSP111 S 드라이버(49215)",
+    "price": 560000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr3"
+    ]
+  },
+  {
+    "pid": "402232506",
+    "name": "타이틀리스트 TSR3 10도 드라이버 TSP310 S강도 B241213",
+    "price": 435000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr3"
+    ]
+  },
+  {
+    "pid": "401540656",
+    "name": "타이틀리스트 TSR3 드라이버 헤드 8도 커 2026040613430",
+    "price": 435000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr3"
+    ]
+  },
+  {
+    "pid": "397315366",
+    "name": "페루가 TSS 드라이버우드샤프트 타이틀리스트용 GT2GTTSRTSi 슬리",
+    "price": 260000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_series_tsi_ts"
+    ]
+  },
+  {
+    "pid": "397292643",
+    "name": "페루가 PBS 드라이버우드샤프트 타이틀리스트용 GT2GTTSRTSi 슬리",
+    "price": 260000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_series_tsi_ts"
+    ]
+  },
+  {
+    "pid": "397292592",
+    "name": "페루가 NPS 드라이버우드샤프트 타이틀리스트용 GT2GTTSRTSi 슬리",
+    "price": 260000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_series_tsi_ts"
+    ]
+  },
+  {
+    "pid": "390963057",
+    "name": "타이틀리스트 TSR4 10도 드라이버 헤드, 000520H",
+    "price": 400000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2"
+    ]
+  },
+  {
+    "pid": "390962739",
+    "name": "타이틀리스트 TSR4 10도 드라이버(텐세이1K 블랙 6S),000520",
+    "price": 600000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2"
+    ]
+  },
+  {
+    "pid": "386512116",
+    "name": "타이틀리스트 TSR4 9도 드라이버 헤드 0202",
+    "price": 360000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2"
+    ]
+  },
+  {
+    "pid": "388057784",
+    "name": "타이틀리스트 TSR용 TSP310 S걍도 중고 드라이버 샤프트M206",
+    "price": 70000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_tsr_s_2_tsr_2"
+    ]
+  },
+  {
+    "pid": "383647466",
+    "name": "타이틀리스트 TSr1 드라이버 12도 헤드만",
+    "price": 300000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr1",
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "372969716",
+    "name": "타이틀리스트 TSR4 10도 드라이버 헤드0 2025100312593",
+    "price": 398000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2"
+    ]
+  },
+  {
+    "pid": "282894340",
+    "name": "타이틀리스트 TSR1 드라이버 10도 TSP120 강도SR",
+    "price": 539000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr1"
+    ]
+  },
+  {
+    "pid": "365591298",
+    "name": "타이틀리스트 TSR3 10도 TSP310 S 드라이버 (47290)",
+    "price": 480700,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr3"
+    ]
+  },
+  {
+    "pid": "363881285",
+    "name": "타이틀리스트 드라이버 TSR1 10도 TSP120 R",
+    "price": 450000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr1"
+    ]
+  },
+  {
+    "pid": "296853975",
+    "name": "타이틀리스트 TSR1 드라이버 10도 TSP120 강도R",
+    "price": 539000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr1"
+    ]
+  },
+  {
+    "pid": "303385934",
+    "name": "중고 타이틀리스트 TSR1 드라이버 10도 TSP120 샤프트 강도R",
+    "price": 498000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr1"
+    ]
+  },
+  {
+    "pid": "355356442",
+    "name": "타이틀리스트 TSR3 10도 R강도 중고 드라이버 M25082601",
+    "price": 390000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr3"
+    ]
+  },
+  {
+    "pid": "361162631",
+    "name": "타이틀리스트 TSI2 9도 드라이버 S",
+    "price": 240000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_series_tsi_ts"
+    ]
+  },
+  {
+    "pid": "399011154",
+    "name": "(헤드만) 드라이버 tsr2 9도 타이틀리스트",
+    "price": 375000,
+    "reject_reasons": [
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "395793975",
+    "name": "타이틀리스트 TSr2 드라이버 헤드",
+    "price": 290000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "395668008",
+    "name": "드라이버 tsr2 10도 타이틀리스트",
+    "price": 407000,
+    "reject_reasons": [
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "393084294",
+    "name": "드라이버 tsr2 10도 타이틀리스트",
+    "price": 386000,
+    "reject_reasons": [
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "392047638",
+    "name": "타이틀리스트 TSi2, TSR2 드라이버 9도 헤드만",
+    "price": 300000,
+    "reject_reasons": [
+      "reject_wrong_series_tsi_ts",
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "387045193",
+    "name": "(헤드만) 드라이버 tsr2 10도 타이틀리스트",
+    "price": 365000,
+    "reject_reasons": [
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "384819724",
+    "name": "(헤드만) 드라이버 tsr2 9도 타이틀리스트",
+    "price": 365000,
+    "reject_reasons": [
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "380961971",
+    "name": "(S급) 드라이버 tsr2 10도 타이틀리스트",
+    "price": 438000,
+    "reject_reasons": [
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "407263776",
+    "name": "타이틀 TSR2 9.0도 드라이버 헤드",
+    "price": 370000,
+    "reject_reasons": [
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "333942906",
+    "name": "tsr3 9도 드라이버 tsr2 3번우드 팝니다",
+    "price": 850000,
+    "reject_reasons": [
+      "reject_wrong_model_tsr3",
+      "reject_head_only"
+    ]
+  },
+  {
+    "pid": "236929741",
+    "name": "tsr1 tsi3 tsi2 드라이버 우드 유틸 풀커버 보호필름",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr1",
+      "reject_wrong_series_tsi_ts",
+      "reject_wrong_club_utility"
+    ]
+  },
+  {
+    "pid": "378398343",
+    "name": "TSR1 드라이버 12도 / 여성용",
+    "price": 350000,
+    "reject_reasons": [
+      "missing_tsr_s_2_tsr_2",
+      "reject_wrong_model_tsr1"
+    ]
+  },
+  {
+    "pid": "389879790",
+    "name": "Titleist TSR2+ 13도 미니드라이버",
+    "price": 320000,
+    "reject_reasons": [
+      "reject_buying_post"
+    ]
+  }
+]

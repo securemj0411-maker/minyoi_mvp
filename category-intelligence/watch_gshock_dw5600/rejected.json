@@ -1,0 +1,778 @@
+[
+  {
+    "pid": "400062261",
+    "name": "조슈아 비데스 x 지샥 DW5600JV-7",
+    "price": 430000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "407714782",
+    "name": "카시오 지샥 DW-5600BB",
+    "price": 40000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "405892979",
+    "name": "(G-SHOCK) 카시오 지샥 DW-5600HR 메탈스트랩",
+    "price": 69000,
+    "reject_reasons": [
+      "reject_fake"
+    ]
+  },
+  {
+    "pid": "406411473",
+    "name": "카시오 지샥 DW 5600 G5600 커스텀 베젤 케이스 시계줄 밴드 호",
+    "price": 30000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "402397603",
+    "name": "지샥 DW-5600BB",
+    "price": 43000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "402964215",
+    "name": "아더에러x지샥(ADER ERROR X G SHOCK)DW-5600ADER",
+    "price": 1300000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "396610371",
+    "name": "카시오 지샥 G-SHOCK DW-5600BB",
+    "price": 38000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "396312442",
+    "name": "카시오 G-SHOCK DW-5600",
+    "price": 32000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "381899487",
+    "name": "GShock DW5600 지샥 에반게리온 레이 시계 풀박스",
+    "price": 550000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "385152932",
+    "name": "지샥 블루투스탑재 단종상품 DW-B5600G-7DR 풀박스",
+    "price": 80000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "376931618",
+    "name": "지샥 DW5600",
+    "price": 70000,
+    "reject_reasons": [
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "374903439",
+    "name": "지샥 독개구리 스퀘어 DW-B5600AH-6DR G-SHOCK",
+    "price": 83000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "370044972",
+    "name": "지샥 dw-5600",
+    "price": 34000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "359197863",
+    "name": "지샥dw5600 시계줄 커넥터 팝니다",
+    "price": 5000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "351649762",
+    "name": "지샥 dw5600 클리어 벨베젤 gw5000 투명벨베젤",
+    "price": 48000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_bezel_only"
+    ]
+  },
+  {
+    "pid": "347015318",
+    "name": "카시오 지샥 DW5600",
+    "price": 50000,
+    "reject_reasons": [
+      "reject_strap_only"
+    ]
+  },
+  {
+    "pid": "332088383",
+    "name": "지샥 호딩키 DW-5600OC23-3 HIDINKEE",
+    "price": 2000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "330772959",
+    "name": "지샥 DW-5600CF-2 블루카모 스퀘어",
+    "price": 2000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "331839515",
+    "name": "[OS] 지샥 에릭헤이즈 콜라보 25주년 한정판 DW-5600EH 새제품",
+    "price": 500,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "318321800",
+    "name": "베이프 X 카시오 지샥 DW-5600 VT 손목시계 블랙 스페셜 콜라보",
+    "price": 427500,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "290674876",
+    "name": "지샥 GSHOCK 스파이더맨 콜라보 DW-5600VTSPI1-1TJR",
+    "price": 2000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "260022878",
+    "name": "지샥 DW G GLX 5600 5610 베젤 벨트 벨베젤",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "401206324",
+    "name": "G-SHOCK DWE-5600HG-1DR 풀세트 지샥 시계",
+    "price": 190000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "403049592",
+    "name": "DW-5600TF19-1CJR 트랜스포머 (마스터 네메시스 프라임)",
+    "price": 420000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "394039541",
+    "name": "[국내 정발]지샥 나노 링워치 블랙 G-SHOCK DWN-5600-1DR",
+    "price": 180000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "223157211",
+    "name": "지샥 DWE-5600R-9DR 새제품 팝니다",
+    "price": 296000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "242111236",
+    "name": "지샥 DWE-5600KS",
+    "price": 174000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "264471098",
+    "name": "(새상품)지샥디자인 시계",
+    "price": 13000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "250544300",
+    "name": "카시오 지샥 DWE-5600HG-1DR 새상품",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "223157004",
+    "name": "지샥 DWE-5600HG-1DR 새제품 팝니다",
+    "price": 295000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "239743046",
+    "name": "지샥 DWE-5600CC",
+    "price": 174000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "222117385",
+    "name": "특가세일 DWE-5600CC-3DR 베절 밴드추가구성",
+    "price": 198000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "405017738",
+    "name": "카시오 지샥 DW-5600USKE-7 투명 시계",
+    "price": 75000,
+    "reject_reasons": [
+      "reject_fake"
+    ]
+  },
+  {
+    "pid": "403925663",
+    "name": "G-SHOCK DW-h5600 스마트워치",
+    "price": 190000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "402577151",
+    "name": "지샥 G-SQUAD DW-H5600 1DR",
+    "price": 180000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "402414988",
+    "name": "지샥 DW-5600BB 블랙 손목시계",
+    "price": 48000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "402748707",
+    "name": "카시오 지샥 DW H5600MB 1DR 중고",
+    "price": 180000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "400275770",
+    "name": "지샥 카시오 dw 5600 pm 베젤 스트랩",
+    "price": 20000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "396698821",
+    "name": "카시오 쥐샥 지샥 G-shock DW5600 dw-5600pm 블랙 핑크",
+    "price": 40000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "400640418",
+    "name": "지샥 dw-5600bb-1dr 부품용 판매",
+    "price": 35000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "395469385",
+    "name": "카시오 G-SHOCK DW-5600BB 올블랙",
+    "price": 35000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "393852590",
+    "name": "지샥 dw5600 팝니다.",
+    "price": 39000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "392733485",
+    "name": "지샥 DW-5600BB",
+    "price": 30000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "392453242",
+    "name": "카시오 지샥 DW-5600EP-9DR",
+    "price": 47500,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "390982572",
+    "name": "카시오 지샥 DW-5600BB 올블랙",
+    "price": 18000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "390598988",
+    "name": "지샥 dw 5600 ms 군대시계 학생시계",
+    "price": 35000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "389310191",
+    "name": "지샥 dw5600 군대시계 학생시계",
+    "price": 40000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "389271041",
+    "name": "지샥 독개구리 스퀘어(DW-B5600AH-6DR) 팝니다",
+    "price": 55000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "387767365",
+    "name": "카시오 지샥 DW-5600BB 올블랙 시계",
+    "price": 38000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "382532262",
+    "name": "(새상품) 지샥시계 DW-B5600G-1DR",
+    "price": 110000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "369105463",
+    "name": "스우파 쿄카  스마트워치 DW-H5600-1블랙 품절 팔아요",
+    "price": 300000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "351569461",
+    "name": "디스이즈네버댓 x 카시오  dw5600 신품",
+    "price": 420000,
+    "reject_reasons": [
+      "price_too_high"
+    ]
+  },
+  {
+    "pid": "377523799",
+    "name": "지샥 DW-5035E 35주년 글래시어골드",
+    "price": 266000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "351651086",
+    "name": "지샥 ga2100 투명 벨베젤 클리어 벨베젤 지얄오크",
+    "price": 50000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스",
+      "reject_wrong_model_ga2100"
+    ]
+  },
+  {
+    "pid": "391431446",
+    "name": "DW-H5600 풀박",
+    "price": 220000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "407936695",
+    "name": "G-SHOCK시계 GM-5600MF 메탈 스퀘어 물안개모델",
+    "price": 110000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "407152149",
+    "name": "카시오 지샥 GW-B5600 터프솔라 블루투스 멀티밴드 시계",
+    "price": 120000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "407904100",
+    "name": "카시오 지샥 5600BB",
+    "price": 45000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "385846616",
+    "name": "지샥 GW-B5600-1AJF",
+    "price": 320000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "382941643",
+    "name": "일본발매품!! 지샥 포터 85주년 스퀘어 GM-5600EY",
+    "price": 744700,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "407438252",
+    "name": "카시오 지샥 GM-5600SG 풀박스",
+    "price": 140000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "407297412",
+    "name": "카시오 지샥 블랙 검노 반전액전 터프솔라5600 박풀",
+    "price": 150000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "405894298",
+    "name": "(G-SHOCK) 지샥 GLX-5600 메탈스트랩",
+    "price": 62000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스",
+      "reject_fake"
+    ]
+  },
+  {
+    "pid": "405887249",
+    "name": "지샥 GW-B5600HR",
+    "price": 180000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "405882706",
+    "name": "지샥 GW-B5600HR",
+    "price": 240000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "404403812",
+    "name": "아더에러 지샥 콜라보 5600 시계",
+    "price": 300000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "403573067",
+    "name": "지샥 카시오 5600 투명",
+    "price": 99000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "399951453",
+    "name": "쥐샥 GM-5600-1DR 메탈 커버드 시계  AS 아트스쿨 콜라보",
+    "price": 290000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "401455853",
+    "name": "지샥 터프솔라 G-5600E",
+    "price": 80000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "401144206",
+    "name": "지샥 gw-b5600 mrg 커스텀",
+    "price": 300000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "402119671",
+    "name": "지샥 GW-B5600CD(찰스다윈 한정판, 그린) 판매 완료",
+    "price": 215000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "402118189",
+    "name": "지샥 GW-B5600MG (STN액정) 민트급 판매",
+    "price": 215000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "402121352",
+    "name": "지샥 GW-B5600AR (티탄베젤, 검정버튼, 소밴) 판매 완료",
+    "price": 320000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "399365599",
+    "name": "지샥 GB-5600AB( 판매 완료 )",
+    "price": 85000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "398085350",
+    "name": "지샥 5600 러스티블랙",
+    "price": 45000,
+    "reject_reasons": [
+      "price_too_low"
+    ]
+  },
+  {
+    "pid": "399367620",
+    "name": "지샥 GWX - 5600C 판매(최종가) 판매완료",
+    "price": 85000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "400080225",
+    "name": "지샥 GW-B5600 기반 MRG 커스텀 (판매완료)",
+    "price": 215000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "401034135",
+    "name": "지샥 GW-B5600DC (STN액정 커스텀) 민트급 판매 완료",
+    "price": 180000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "400297057",
+    "name": "지샥 GW-B5600CY (STN액정 커스텀) 판매 완료",
+    "price": 180000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "400078218",
+    "name": "지샥 GW-B5600 TVA 풀커스텀 (판매완료)",
+    "price": 320000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "401036522",
+    "name": "지샥 GWX-5600WB (극희귀품) 판매 가격내림(최종가) 판매완료",
+    "price": 160000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "398636786",
+    "name": "지샥 GW-B5600BC-1DR",
+    "price": 190000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "399366277",
+    "name": "지샥 G-5600E (GW 5000 모듈 스왑) (판매 완료)",
+    "price": 85000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "400295489",
+    "name": "지샥 GW-B5600HR(선없튀) STN액정 커스텀 판매 완료",
+    "price": 215000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "395497316",
+    "name": "G-SHOCK GM-5600UB",
+    "price": 224300,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "392135222",
+    "name": "지샥 G-5600UE",
+    "price": 69000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "392811106",
+    "name": "카시오 지샥 GM-5600B-1 S급 풀박스 주우재시계",
+    "price": 205000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "390442651",
+    "name": "지샥 지라이드 GLX-5600 팔아요~!!",
+    "price": 130000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "387818852",
+    "name": "지샥 G-LIDE GWX-5600-1JF 팝니다!",
+    "price": 165000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "385998003",
+    "name": "G-SHOCK 5600 호환  메탈 케이스 실버 새제품",
+    "price": 22000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "378131718",
+    "name": "지샥 G-SHOCK GW-B5600BC-1B 블랙 시계",
+    "price": 90000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "379548000",
+    "name": "쥐샥gw b5600",
+    "price": 150000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "376828305",
+    "name": "카시오 지샥 기념 링워치 5600 레드 빨강 쥐샥 시계 굿즈",
+    "price": 170000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "376828590",
+    "name": "카시오 지샥 기념 링워치 5600 노랑 옐로우 쥐샥 시계 굿즈",
+    "price": 160000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "375992143",
+    "name": "카시오 지샥 기념 링워치 5600 블랙 레드 옐로우 쥐샥 시계 굿즈",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  },
+  {
+    "pid": "378009291",
+    "name": "지샥 GM-5600SCM-1DR",
+    "price": 150000,
+    "reject_reasons": [
+      "missing_dw_s_5600_지샥_s_5600_스"
+    ]
+  }
+]

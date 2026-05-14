@@ -1,0 +1,63 @@
+{
+  "lane_key": "camera_sony_a6400",
+  "category": "camera",
+  "queries": [
+    "소니 a6400",
+    "Sony a6400",
+    "ILCE-6400",
+    "알파 6400",
+    "a6400 바디"
+  ],
+  "accept_all": [
+    "a6400|ilce[\\s-]*6400|알파\\s*6400|알파6400"
+  ],
+  "accept_any_of": [
+    [
+      "바디|body|풀박스"
+    ]
+  ],
+  "reject_rules": [
+    {
+      "label": "wrong_model_a6300",
+      "pattern": "a6300|ilce[\\s-]*6300"
+    },
+    {
+      "label": "wrong_model_a6500",
+      "pattern": "a6500|ilce[\\s-]*6500"
+    },
+    {
+      "label": "wrong_model_a6600",
+      "pattern": "a6600|ilce[\\s-]*6600"
+    },
+    {
+      "label": "wrong_model_a6700",
+      "pattern": "a6700|ilce[\\s-]*6700"
+    },
+    {
+      "label": "lens_kit",
+      "pattern": "렌즈\\s*킷|렌즈킷|kit|키트|번들|렌즈\\s*포함|렌즈\\s*세트|sel\\s*1650|sel\\s*18135"
+    },
+    {
+      "label": "lens_only",
+      "pattern": "렌즈\\s*만|렌즈만|lens\\s*only"
+    },
+    {
+      "label": "case_or_acc_only",
+      "pattern": "케이스\\s*만|가방\\s*만|배터리\\s*만|충전기\\s*만|스트랩\\s*만"
+    },
+    {
+      "label": "fake",
+      "pattern": "가품|이미테이션|fake"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|수리\\s*필요|부품\\s*용|부품용|셔터막|센서\\s*고장|af\\s*고장"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "삽니다|구합니다|구매\\s*합니다|구매합니다|구해요|매입"
+    }
+  ],
+  "price_min_krw": 400000,
+  "price_max_krw": 1500000
+}

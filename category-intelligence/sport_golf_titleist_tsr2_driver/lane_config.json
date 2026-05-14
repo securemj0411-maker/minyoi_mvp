@@ -1,0 +1,54 @@
+{
+  "lane_key": "sport_golf_titleist_tsr2_driver",
+  "category": "sport_golf",
+  "queries": [
+    "타이틀리스트 TSR2 드라이버",
+    "Titleist TSR2 driver",
+    "TSR2 드라이버"
+  ],
+  "accept_all": [
+    "tsr\\s*2|tsr-2",
+    "드라이버|driver"
+  ],
+  "accept_any_of": [],
+  "reject_rules": [
+    {
+      "label": "wrong_model_tsr3",
+      "pattern": "tsr\\s*3|tsr-3"
+    },
+    {
+      "label": "wrong_model_tsr1",
+      "pattern": "tsr\\s*1|tsr-1"
+    },
+    {
+      "label": "wrong_series_tsi_ts",
+      "pattern": "tsi\\s*[1-4]|ts[1-4](?!r)"
+    },
+    {
+      "label": "head_only",
+      "pattern": "헤드\\s*만|head\\s*only"
+    },
+    {
+      "label": "full_set",
+      "pattern": "풀세트|풀\\s*세트|골프\\s*세트|아이언\\s*세트|우드\\s*세트"
+    },
+    {
+      "label": "wrong_club_utility",
+      "pattern": "유틸|utility|아이언"
+    },
+    {
+      "label": "fake",
+      "pattern": "가품|이미테이션|fake"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|수리\\s*필요|부품\\s*용|부품용"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "삽니다|구합니다|구매\\s*합니다|구매합니다|구해요|매입"
+    }
+  ],
+  "price_min_krw": 300000,
+  "price_max_krw": 1200000
+}

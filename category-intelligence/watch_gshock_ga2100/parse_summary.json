@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "lane_key": "watch_gshock_ga2100",
+  "category": "watch",
+  "generated_at": "2026-05-14T02:22:04.947Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "지샥 GA-2100",
+    "G-Shock GA-2100",
+    "GA2100",
+    "지얄오크",
+    "카시오크"
+  ],
+  "pages": 6,
+  "price_range_krw": [
+    50000,
+    500000
+  ],
+  "target_parse_ready": 150,
+  "total_fetched": 422,
+  "parse_ready_count": 140,
+  "rejected_count": 282,
+  "target_reached": false,
+  "reject_breakdown": [
+    {
+      "reason": "missing_ga_s_2100_지얄오크_카시오크",
+      "count": 256
+    },
+    {
+      "reason": "price_too_low",
+      "count": 55
+    },
+    {
+      "reason": "price_too_high",
+      "count": 25
+    },
+    {
+      "reason": "reject_buying_post",
+      "count": 9
+    },
+    {
+      "reason": "reject_broken",
+      "count": 9
+    },
+    {
+      "reason": "reject_fake",
+      "count": 6
+    },
+    {
+      "reason": "reject_wrong_model_dw5600",
+      "count": 2
+    },
+    {
+      "reason": "reject_bezel_only",
+      "count": 1
+    },
+    {
+      "reason": "reject_strap_only",
+      "count": 1
+    },
+    {
+      "reason": "reject_wrong_model_gmwb5000",
+      "count": 1
+    },
+    {
+      "reason": "reject_case_only",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [
+      "ga[\\s-]*2100|지얄오크|카시오크"
+    ],
+    "accept_any_of": []
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_model_dw5600",
+      "pattern": "dw[\\s-]*5600|스퀘어\\s*지샥|지샥\\s*5600"
+    },
+    {
+      "label": "wrong_model_gmwb5000",
+      "pattern": "gmw[\\s-]*b?5000|풀\\s*메탈\\s*5000"
+    },
+    {
+      "label": "strap_only",
+      "pattern": "줄\\s*만|스트랩\\s*만|밴드\\s*만"
+    },
+    {
+      "label": "bezel_only",
+      "pattern": "베젤\\s*만|유리\\s*만|쉬라우드\\s*만"
+    },
+    {
+      "label": "case_only",
+      "pattern": "케이스\\s*만"
+    },
+    {
+      "label": "fake",
+      "pattern": "가품|이미테이션|복각|homage|오마주|fake"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|수리\\s*필요|부품\\s*용|부품용|as\\s*용"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "삽니다|구합니다|구매\\s*합니다|구매합니다|구해요|매입"
+    }
+  ]
+}

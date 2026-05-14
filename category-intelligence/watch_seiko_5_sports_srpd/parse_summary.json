@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "lane_key": "watch_seiko_5_sports_srpd",
+  "category": "watch",
+  "generated_at": "2026-05-14T02:26:17.426Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "세이코 5 SRPD",
+    "Seiko 5 SRPD",
+    "세이코 5KX",
+    "SRPD55",
+    "SRPD51",
+    "SRPD61",
+    "SRPD79"
+  ],
+  "pages": 6,
+  "price_range_krw": [
+    100000,
+    700000
+  ],
+  "target_parse_ready": 120,
+  "total_fetched": 26,
+  "parse_ready_count": 4,
+  "rejected_count": 22,
+  "target_reached": false,
+  "reject_breakdown": [
+    {
+      "reason": "missing_seiko_s_5_세이코_s_5_세이코5",
+      "count": 17
+    },
+    {
+      "reason": "missing_srpd_5kx",
+      "count": 6
+    },
+    {
+      "reason": "reject_fake",
+      "count": 2
+    },
+    {
+      "reason": "price_too_low",
+      "count": 1
+    },
+    {
+      "reason": "price_too_high",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [
+      "seiko\\s*5|세이코\\s*5|세이코5",
+      "srpd|5kx"
+    ],
+    "accept_any_of": []
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_model_sbsa",
+      "pattern": "sbsa"
+    },
+    {
+      "label": "wrong_model_prospex",
+      "pattern": "프로스펙스|prospex"
+    },
+    {
+      "label": "wrong_model_presage",
+      "pattern": "프레사지|presage"
+    },
+    {
+      "label": "strap_only",
+      "pattern": "줄\\s*만|스트랩\\s*만|밴드\\s*만"
+    },
+    {
+      "label": "case_only",
+      "pattern": "케이스\\s*만"
+    },
+    {
+      "label": "fake",
+      "pattern": "가품|이미테이션|복각|homage|오마주|fake"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|수리\\s*필요|부품\\s*용|부품용"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "삽니다|구합니다|구매\\s*합니다|구매합니다|구해요|매입"
+    }
+  ]
+}

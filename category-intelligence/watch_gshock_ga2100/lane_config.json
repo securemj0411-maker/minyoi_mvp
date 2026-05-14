@@ -1,0 +1,51 @@
+{
+  "lane_key": "watch_gshock_ga2100",
+  "category": "watch",
+  "queries": [
+    "지샥 GA-2100",
+    "G-Shock GA-2100",
+    "GA2100",
+    "지얄오크",
+    "카시오크"
+  ],
+  "accept_all": [
+    "ga[\\s-]*2100|지얄오크|카시오크"
+  ],
+  "accept_any_of": [],
+  "reject_rules": [
+    {
+      "label": "wrong_model_dw5600",
+      "pattern": "dw[\\s-]*5600|스퀘어\\s*지샥|지샥\\s*5600"
+    },
+    {
+      "label": "wrong_model_gmwb5000",
+      "pattern": "gmw[\\s-]*b?5000|풀\\s*메탈\\s*5000"
+    },
+    {
+      "label": "strap_only",
+      "pattern": "줄\\s*만|스트랩\\s*만|밴드\\s*만"
+    },
+    {
+      "label": "bezel_only",
+      "pattern": "베젤\\s*만|유리\\s*만|쉬라우드\\s*만"
+    },
+    {
+      "label": "case_only",
+      "pattern": "케이스\\s*만"
+    },
+    {
+      "label": "fake",
+      "pattern": "가품|이미테이션|복각|homage|오마주|fake"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|수리\\s*필요|부품\\s*용|부품용|as\\s*용"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "삽니다|구합니다|구매\\s*합니다|구매합니다|구해요|매입"
+    }
+  ],
+  "price_min_krw": 50000,
+  "price_max_krw": 500000
+}

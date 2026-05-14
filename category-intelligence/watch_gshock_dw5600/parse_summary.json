@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "lane_key": "watch_gshock_dw5600",
+  "category": "watch",
+  "generated_at": "2026-05-14T02:24:34.235Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "지샥 DW-5600",
+    "G-Shock DW-5600",
+    "DW5600",
+    "지샥 5600",
+    "스퀘어 지샥"
+  ],
+  "pages": 4,
+  "price_range_krw": [
+    50000,
+    400000
+  ],
+  "target_parse_ready": 80,
+  "total_fetched": 221,
+  "parse_ready_count": 125,
+  "rejected_count": 96,
+  "target_reached": true,
+  "reject_breakdown": [
+    {
+      "reason": "missing_dw_s_5600_지샥_s_5600_스",
+      "count": 59
+    },
+    {
+      "reason": "price_too_low",
+      "count": 29
+    },
+    {
+      "reason": "price_too_high",
+      "count": 7
+    },
+    {
+      "reason": "reject_fake",
+      "count": 3
+    },
+    {
+      "reason": "reject_broken",
+      "count": 3
+    },
+    {
+      "reason": "reject_bezel_only",
+      "count": 1
+    },
+    {
+      "reason": "reject_strap_only",
+      "count": 1
+    },
+    {
+      "reason": "reject_wrong_model_ga2100",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [
+      "dw[\\s-]*5600|지샥\\s*5600|스퀘어\\s*지샥"
+    ],
+    "accept_any_of": []
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_model_ga2100",
+      "pattern": "ga[\\s-]*2100|지얄오크|카시오크"
+    },
+    {
+      "label": "wrong_model_gmwb5000",
+      "pattern": "gmw[\\s-]*b?5000|풀\\s*메탈\\s*5000"
+    },
+    {
+      "label": "strap_only",
+      "pattern": "줄\\s*만|스트랩\\s*만|밴드\\s*만"
+    },
+    {
+      "label": "bezel_only",
+      "pattern": "베젤\\s*만|유리\\s*만|쉬라우드\\s*만"
+    },
+    {
+      "label": "case_only",
+      "pattern": "케이스\\s*만"
+    },
+    {
+      "label": "fake",
+      "pattern": "가품|이미테이션|복각|homage|오마주|fake"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|수리\\s*필요|부품\\s*용|부품용|as\\s*용"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "삽니다|구합니다|구매\\s*합니다|구매합니다|구해요|매입"
+    }
+  ]
+}

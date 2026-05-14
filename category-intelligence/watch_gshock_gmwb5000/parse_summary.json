@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "lane_key": "watch_gshock_gmwb5000",
+  "category": "watch",
+  "generated_at": "2026-05-14T02:25:45.522Z",
+  "method": "mine-narrow-lane-v1",
+  "queries": [
+    "지샥 GMW-B5000",
+    "G-Shock GMW-B5000",
+    "지샥 풀메탈 5000",
+    "풀메탈 5000"
+  ],
+  "pages": 4,
+  "price_range_krw": [
+    400000,
+    2000000
+  ],
+  "target_parse_ready": 60,
+  "total_fetched": 101,
+  "parse_ready_count": 40,
+  "rejected_count": 61,
+  "target_reached": false,
+  "reject_breakdown": [
+    {
+      "reason": "price_too_low",
+      "count": 57
+    },
+    {
+      "reason": "missing_gmw_s_b_5000_풀_s_메탈_s",
+      "count": 10
+    },
+    {
+      "reason": "price_too_high",
+      "count": 2
+    },
+    {
+      "reason": "reject_buying_post",
+      "count": 2
+    },
+    {
+      "reason": "reject_strap_only",
+      "count": 1
+    }
+  ],
+  "accept_rules": {
+    "accept_all": [
+      "gmw[\\s-]*b?5000|풀\\s*메탈\\s*5000|풀메탈5000"
+    ],
+    "accept_any_of": []
+  },
+  "reject_rules": [
+    {
+      "label": "wrong_model_dw5600",
+      "pattern": "dw[\\s-]*5600|스퀘어\\s*지샥"
+    },
+    {
+      "label": "wrong_model_ga2100",
+      "pattern": "ga[\\s-]*2100|지얄오크|카시오크"
+    },
+    {
+      "label": "strap_only",
+      "pattern": "줄\\s*만|스트랩\\s*만|밴드\\s*만"
+    },
+    {
+      "label": "bezel_only",
+      "pattern": "베젤\\s*만|유리\\s*만"
+    },
+    {
+      "label": "case_only",
+      "pattern": "케이스\\s*만"
+    },
+    {
+      "label": "fake",
+      "pattern": "가품|이미테이션|복각|homage|오마주|fake"
+    },
+    {
+      "label": "broken",
+      "pattern": "고장|수리\\s*필요|부품\\s*용|부품용"
+    },
+    {
+      "label": "buying_post",
+      "pattern": "삽니다|구합니다|구매\\s*합니다|구매합니다|구해요|매입"
+    }
+  ]
+}

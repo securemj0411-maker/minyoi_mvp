@@ -54,7 +54,15 @@ type LaneKey =
   | "macbook_air_m2_13_256"
   | "iphone_11_pro_128gb_self"
   | "galaxy_z_flip_5_256_self"
-  | "switch_oled";
+  | "switch_oled"
+  | "watch_gshock_dw5600"
+  | "watch_gshock_ga2100"
+  | "watch_gshock_gmwb5000"
+  | "watch_seiko_5_sports_srpd"
+  | "watch_seiko_5_sports_sbsa"
+  | "sport_golf_titleist_tsr2_driver"
+  | "sport_golf_titleist_tsr3_driver"
+  | "camera_sony_a6400";
 
 type RejectRule = { label: string; pattern: RegExp };
 
@@ -1331,6 +1339,191 @@ const LANES: Record<LaneKey, LaneConfig> = {
       { label: "accessory_only", pattern: /충전기\s*만|케이스\s*만|독\s*만|거치대\s*만|스탠드\s*만|보호\s*필름\s*만/ },
       { label: "parts_or_broken", pattern: /부품\s*용|부품용|부품\s*만|고장|불량\s*품|파손\s*품|액정\s*파손/ },
       { label: "buying_post", pattern: /매입|삽니다|구해요|구합니다|구매\s*합니다|구매합니다/ },
+    ],
+  },
+
+  // Wave 67 신 SKU 마이닝 — 시계 (G-Shock + Seiko 5)
+  watch_gshock_dw5600: {
+    laneKey: "watch_gshock_dw5600",
+    category: "watch",
+    queries: ["지샥 DW-5600", "G-Shock DW-5600", "DW5600", "지샥 5600", "스퀘어 지샥"],
+    pages: 4,
+    targetParseReady: 80,
+    priceMin: 50_000,
+    priceMax: 400_000,
+    acceptAll: [/dw[\s-]*5600|지샥\s*5600|스퀘어\s*지샥/i],
+    acceptAnyOf: [],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_ga2100", pattern: /ga[\s-]*2100|지얄오크|카시오크/i },
+      { label: "wrong_model_gmwb5000", pattern: /gmw[\s-]*b?5000|풀\s*메탈\s*5000/i },
+      { label: "strap_only", pattern: /줄\s*만|스트랩\s*만|밴드\s*만/ },
+      { label: "bezel_only", pattern: /베젤\s*만|유리\s*만|쉬라우드\s*만/ },
+      { label: "case_only", pattern: /케이스\s*만/ },
+      { label: "fake", pattern: /가품|이미테이션|복각|homage|오마주|fake/i },
+      { label: "broken", pattern: /고장|수리\s*필요|부품\s*용|부품용|as\s*용/i },
+      { label: "buying_post", pattern: /삽니다|구합니다|구매\s*합니다|구매합니다|구해요|매입/ },
+    ],
+  },
+  watch_gshock_ga2100: {
+    laneKey: "watch_gshock_ga2100",
+    category: "watch",
+    queries: ["지샥 GA-2100", "G-Shock GA-2100", "GA2100", "지얄오크", "카시오크"],
+    pages: 6,
+    targetParseReady: 150,
+    priceMin: 50_000,
+    priceMax: 500_000,
+    acceptAll: [/ga[\s-]*2100|지얄오크|카시오크/i],
+    acceptAnyOf: [],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_dw5600", pattern: /dw[\s-]*5600|스퀘어\s*지샥|지샥\s*5600/i },
+      { label: "wrong_model_gmwb5000", pattern: /gmw[\s-]*b?5000|풀\s*메탈\s*5000/i },
+      { label: "strap_only", pattern: /줄\s*만|스트랩\s*만|밴드\s*만/ },
+      { label: "bezel_only", pattern: /베젤\s*만|유리\s*만|쉬라우드\s*만/ },
+      { label: "case_only", pattern: /케이스\s*만/ },
+      { label: "fake", pattern: /가품|이미테이션|복각|homage|오마주|fake/i },
+      { label: "broken", pattern: /고장|수리\s*필요|부품\s*용|부품용|as\s*용/i },
+      { label: "buying_post", pattern: /삽니다|구합니다|구매\s*합니다|구매합니다|구해요|매입/ },
+    ],
+  },
+  watch_gshock_gmwb5000: {
+    laneKey: "watch_gshock_gmwb5000",
+    category: "watch",
+    queries: ["지샥 GMW-B5000", "G-Shock GMW-B5000", "지샥 풀메탈 5000", "풀메탈 5000"],
+    pages: 4,
+    targetParseReady: 60,
+    priceMin: 400_000,
+    priceMax: 2_000_000,
+    acceptAll: [/gmw[\s-]*b?5000|풀\s*메탈\s*5000|풀메탈5000/i],
+    acceptAnyOf: [],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_dw5600", pattern: /dw[\s-]*5600|스퀘어\s*지샥/i },
+      { label: "wrong_model_ga2100", pattern: /ga[\s-]*2100|지얄오크|카시오크/i },
+      { label: "strap_only", pattern: /줄\s*만|스트랩\s*만|밴드\s*만/ },
+      { label: "bezel_only", pattern: /베젤\s*만|유리\s*만/ },
+      { label: "case_only", pattern: /케이스\s*만/ },
+      { label: "fake", pattern: /가품|이미테이션|복각|homage|오마주|fake/i },
+      { label: "broken", pattern: /고장|수리\s*필요|부품\s*용|부품용/ },
+      { label: "buying_post", pattern: /삽니다|구합니다|구매\s*합니다|구매합니다|구해요|매입/ },
+    ],
+  },
+  watch_seiko_5_sports_srpd: {
+    laneKey: "watch_seiko_5_sports_srpd",
+    category: "watch",
+    queries: ["세이코 5 SRPD", "Seiko 5 SRPD", "세이코 5KX", "SRPD55", "SRPD51", "SRPD61", "SRPD79"],
+    pages: 6,
+    targetParseReady: 120,
+    priceMin: 100_000,
+    priceMax: 700_000,
+    acceptAll: [/seiko\s*5|세이코\s*5|세이코5/i, /srpd|5kx/i],
+    acceptAnyOf: [],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_sbsa", pattern: /sbsa/i },
+      { label: "wrong_model_prospex", pattern: /프로스펙스|prospex/i },
+      { label: "wrong_model_presage", pattern: /프레사지|presage/i },
+      { label: "strap_only", pattern: /줄\s*만|스트랩\s*만|밴드\s*만/ },
+      { label: "case_only", pattern: /케이스\s*만/ },
+      { label: "fake", pattern: /가품|이미테이션|복각|homage|오마주|fake/i },
+      { label: "broken", pattern: /고장|수리\s*필요|부품\s*용|부품용/ },
+      { label: "buying_post", pattern: /삽니다|구합니다|구매\s*합니다|구매합니다|구해요|매입/ },
+    ],
+  },
+  watch_seiko_5_sports_sbsa: {
+    laneKey: "watch_seiko_5_sports_sbsa",
+    category: "watch",
+    queries: ["세이코 5 SBSA", "Seiko 5 SBSA", "SBSA001", "SBSA017"],
+    pages: 4,
+    targetParseReady: 60,
+    priceMin: 100_000,
+    priceMax: 800_000,
+    acceptAll: [/seiko\s*5|세이코\s*5|세이코5/i, /sbsa/i],
+    acceptAnyOf: [],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_srpd", pattern: /srpd|5kx/i },
+      { label: "wrong_model_prospex", pattern: /프로스펙스|prospex/i },
+      { label: "strap_only", pattern: /줄\s*만|스트랩\s*만|밴드\s*만/ },
+      { label: "case_only", pattern: /케이스\s*만/ },
+      { label: "fake", pattern: /가품|이미테이션|복각|homage|오마주|fake/i },
+      { label: "broken", pattern: /고장|수리\s*필요|부품\s*용|부품용/ },
+      { label: "buying_post", pattern: /삽니다|구합니다|구매\s*합니다|구매합니다|구해요|매입/ },
+    ],
+  },
+
+  // Wave 67 신 SKU 마이닝 — 골프 (Titleist TSR2/TSR3 드라이버)
+  sport_golf_titleist_tsr2_driver: {
+    laneKey: "sport_golf_titleist_tsr2_driver",
+    category: "sport_golf",
+    queries: ["타이틀리스트 TSR2 드라이버", "Titleist TSR2 driver", "TSR2 드라이버"],
+    pages: 6,
+    targetParseReady: 100,
+    priceMin: 300_000,
+    priceMax: 1_200_000,
+    acceptAll: [/tsr\s*2|tsr-2/i, /드라이버|driver/i],
+    acceptAnyOf: [],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_tsr3", pattern: /tsr\s*3|tsr-3/i },
+      { label: "wrong_model_tsr1", pattern: /tsr\s*1|tsr-1/i },
+      { label: "wrong_series_tsi_ts", pattern: /tsi\s*[1-4]|ts[1-4](?!r)/i },
+      { label: "head_only", pattern: /헤드\s*만|head\s*only/i },
+      { label: "full_set", pattern: /풀세트|풀\s*세트|골프\s*세트|아이언\s*세트|우드\s*세트/ },
+      { label: "wrong_club_utility", pattern: /유틸|utility|아이언/i },
+      { label: "fake", pattern: /가품|이미테이션|fake/i },
+      { label: "broken", pattern: /고장|수리\s*필요|부품\s*용|부품용/ },
+      { label: "buying_post", pattern: /삽니다|구합니다|구매\s*합니다|구매합니다|구해요|매입/ },
+    ],
+  },
+  sport_golf_titleist_tsr3_driver: {
+    laneKey: "sport_golf_titleist_tsr3_driver",
+    category: "sport_golf",
+    queries: ["타이틀리스트 TSR3 드라이버", "Titleist TSR3 driver", "TSR3 드라이버"],
+    pages: 6,
+    targetParseReady: 100,
+    priceMin: 300_000,
+    priceMax: 1_200_000,
+    acceptAll: [/tsr\s*3|tsr-3/i, /드라이버|driver/i],
+    acceptAnyOf: [],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_tsr2", pattern: /tsr\s*2|tsr-2/i },
+      { label: "wrong_model_tsr1", pattern: /tsr\s*1|tsr-1/i },
+      { label: "wrong_series_tsi_ts", pattern: /tsi\s*[1-4]|ts[1-4](?!r)/i },
+      { label: "head_only", pattern: /헤드\s*만|head\s*only/i },
+      { label: "full_set", pattern: /풀세트|풀\s*세트|골프\s*세트|아이언\s*세트|우드\s*세트/ },
+      { label: "wrong_club_utility", pattern: /유틸|utility|아이언/i },
+      { label: "fake", pattern: /가품|이미테이션|fake/i },
+      { label: "broken", pattern: /고장|수리\s*필요|부품\s*용|부품용/ },
+      { label: "buying_post", pattern: /삽니다|구합니다|구매\s*합니다|구매합니다|구해요|매입/ },
+    ],
+  },
+
+  // Wave 67 카메라 보강 — Sony a6400 (기존 camera_body_only_exact_model 정책 동일)
+  camera_sony_a6400: {
+    laneKey: "camera_sony_a6400",
+    category: "camera",
+    queries: ["소니 a6400", "Sony a6400", "ILCE-6400", "알파 6400", "a6400 바디"],
+    pages: 6,
+    targetParseReady: 120,
+    priceMin: 400_000,
+    priceMax: 1_500_000,
+    acceptAll: [/a6400|ilce[\s-]*6400|알파\s*6400|알파6400/i],
+    acceptAnyOf: [[/바디|body|풀박스/i]],
+    reject: [],
+    rejectLabelled: [
+      { label: "wrong_model_a6300", pattern: /a6300|ilce[\s-]*6300/i },
+      { label: "wrong_model_a6500", pattern: /a6500|ilce[\s-]*6500/i },
+      { label: "wrong_model_a6600", pattern: /a6600|ilce[\s-]*6600/i },
+      { label: "wrong_model_a6700", pattern: /a6700|ilce[\s-]*6700/i },
+      { label: "lens_kit", pattern: /렌즈\s*킷|렌즈킷|kit|키트|번들|렌즈\s*포함|렌즈\s*세트|sel\s*1650|sel\s*18135/i },
+      { label: "lens_only", pattern: /렌즈\s*만|렌즈만|lens\s*only/ },
+      { label: "case_or_acc_only", pattern: /케이스\s*만|가방\s*만|배터리\s*만|충전기\s*만|스트랩\s*만/ },
+      { label: "fake", pattern: /가품|이미테이션|fake/i },
+      { label: "broken", pattern: /고장|수리\s*필요|부품\s*용|부품용|셔터막|센서\s*고장|af\s*고장/i },
+      { label: "buying_post", pattern: /삽니다|구합니다|구매\s*합니다|구매합니다|구해요|매입/ },
     ],
   },
 };
