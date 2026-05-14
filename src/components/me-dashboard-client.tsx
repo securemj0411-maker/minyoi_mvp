@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdminPoolBrowser from "@/components/admin-pool-browser";
+import HotdealAlertsView from "@/components/hotdeal-alerts-view";
 import PlaybookOverview from "@/components/playbook-overview";
 import RecommendationWorkspace from "@/components/recommendation-workspace";
 import UserRevealDashboard from "@/components/user-reveal-dashboard";
@@ -16,7 +17,8 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 // Wave 90 (2026-05-15): view를 단일 활성 view로 분리. 이전엔 "work" view 안에
 // recommend + history 섹션이 같이 mount돼서 /me 들어올 때마다 둘 다 fetch.
 // 이제 각 view 클릭 시 그것만 mount → DB I/O 절약.
-type DashboardView = "recommend" | "history" | "guides" | "admin-pool";
+// Wave 93a: hotdeal-alerts (텔레그램 알림) 메뉴 추가.
+type DashboardView = "recommend" | "history" | "guides" | "hotdeal-alerts" | "admin-pool";
 
 function GuideLibraryView() {
   return (
@@ -196,10 +198,11 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
               <div className="mt-1 text-sm font-black text-[#223127] dark:text-zinc-100">작업 메뉴</div>
             </div>
             <div className="flex gap-1 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
-              {(["recommend", "history", "guides", ...(isAdminUser(user) ? (["admin-pool"] as const) : [])] as const).map((v) => {
+              {(["recommend", "history", "guides", "hotdeal-alerts", ...(isAdminUser(user) ? (["admin-pool"] as const) : [])] as const).map((v) => {
                 const label = v === "recommend" ? "추천 상품 받기"
                   : v === "history" ? "나의 상품"
                   : v === "guides" ? "공략집"
+                  : v === "hotdeal-alerts" ? "🔥 핫딜 알림"
                   : "🔧 운영자: 풀 전체";
                 const active = activeView === v;
                 return (
@@ -224,6 +227,8 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
 
         {activeView === "guides" ? (
           <GuideLibraryView />
+        ) : activeView === "hotdeal-alerts" ? (
+          <HotdealAlertsView />
         ) : activeView === "admin-pool" ? (
           <AdminPoolBrowser />
         ) : activeView === "recommend" ? (
