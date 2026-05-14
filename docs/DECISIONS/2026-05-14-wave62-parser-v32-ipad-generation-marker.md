@@ -1,0 +1,22 @@
+## Wave 62 — option-parser v32 추가 patch: iPad generation marker 우선순위
+
+- 시간: 2026-05-14
+- 발견:
+  - Wave 61 v32 commit 후 recent-cron-parser-audit에서 unknown_chip 5건 추가 발견.
+  - 패턴: "아이패드 프로 12.9 5세대 128GB Cellular 풀세트" 같은 매물에서 generation 추출 실패.
+  - 원인: `parseTabletGeneration`의 regex `(\d)(?:세대)?` 가 세대 marker 옵셔널이라, "12.9 5세대"에서 "1" (decimal "12.9"의 일부) 을 generation으로 잘못 캡처.
+- 변경:
+  - `src/lib/option-parser.ts:399` `parseTabletGeneration`:
+    - 함수 진입 시 `lower.match(/(\d)\s*세대/)` 우선 매칭. 세대 marker 명시 시 즉시 그 digit 사용.
+    - fallback regex에 `[^0-9.]` 경계 추가하여 decimal 일부 캡처 방지.
+- 검증:
+  - iPad Pro 12.9 5세대 4 variant 모두 m1로 정상 추출
+  - iPad Air 5/6/7세대 + iPad Pro 5/6/7세대 모두 chip 정상 매핑
+  - `npm run test:core` 139/139 pass
+  - `npx tsc --noEmit` clean
+- 위험:
+  - 세대 marker 우선 매칭은 명시 토큰만 사용 → silent estimation 아님 (§12b 준수)
+  - decimal 경계 추가는 false-positive 줄임 → precision 향상
+- 다음:
+  - production audit 재측정으로 unknown_chip 추가 감소 확인
+  - iPad Air 4 (A14 칩) 같은 narrow lane 미존재 케이스는 별도 SKU 추가 검토 필요 (지금은 unknown_chip 정상)

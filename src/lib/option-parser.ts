@@ -399,25 +399,30 @@ function parseMonitorShape(text: string) {
 function parseTabletGeneration(text: string, model: string | null) {
   if (!model) return null;
   const lower = normalize(text).toLowerCase();
+  // v32: 세대 명시 토큰을 먼저 우선 매칭. "12.9 5세대" 같은 케이스에서 "1" (decimal 일부) 잘못 캡처 방지.
+  const genWithMarker = lower.match(/(\d)\s*세대/);
+  if (genWithMarker?.[1]) return Number(genWithMarker[1]);
+
   if (model === "ipad_pro") {
     const match = firstMatch(lower, [
-      /(?:아이패드\s*)?(?:프로|pro).{0,24}?(\d)(?:세대)?/,
-      /(\d)(?:세대)?.{0,24}?(?:프로|pro)/,
+      // 세대 marker 없을 때만 → 모델명 "프로/pro" 인접 단일 digit 사용 (decimal 회피 위해 [^.0-9] 경계)
+      /(?:아이패드\s*)?(?:프로|pro)\s+(?:[^0-9.]{0,12}?)?(\d)(?:[^0-9.]|$)/,
+      /(?:^|[^0-9.])(\d)(?:[^0-9.]{0,12})?(?:프로|pro)/,
     ]);
     return match ? Number(match[1]) : null;
   }
   if (model === "ipad_mini") {
     if (/\ba\s*17\b|a17\s*pro|a17pro/.test(lower)) return 7;
     const match = firstMatch(lower, [
-      /(?:아이패드\s*)?(?:미니|mini).{0,24}?(\d)(?:세대)?/,
-      /(\d)(?:세대)?.{0,24}?(?:미니|mini)/,
+      /(?:아이패드\s*)?(?:미니|mini)\s+(?:[^0-9.]{0,12}?)?(\d)(?:[^0-9.]|$)/,
+      /(?:^|[^0-9.])(\d)(?:[^0-9.]{0,12})?(?:미니|mini)/,
     ]);
     return match ? Number(match[1]) : null;
   }
   if (model === "ipad_air") {
     const match = firstMatch(lower, [
-      /(?:아이패드\s*)?(?:에어|air).{0,24}?(\d)(?:세대)?/,
-      /(\d)(?:세대)?.{0,24}?(?:에어|air)/,
+      /(?:아이패드\s*)?(?:에어|air)\s*(\d)(?:[^0-9.]|$)/,
+      /(?:^|[^0-9.])(\d)\s*(?:에어|air)/,
     ]);
     return match ? Number(match[1]) : null;
   }
