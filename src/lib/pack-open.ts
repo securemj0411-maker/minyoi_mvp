@@ -33,6 +33,12 @@ export type RevealCard = {
   velocityBasis: RevealVelocityBasis | null;
   lastVerifiedAt: string;
   freshSeconds: number;
+  // Wave 80: SKU별 일별 매물 유입량 (24h rolling + 7d 평균)
+  // 사용자가 매물대 크기/회전성 직관 파악용.
+  skuListingFlow?: {
+    count24h: number;
+    avgPerDay7d: number;
+  } | null;
   savedDetail?: {
     descriptionPreview: string;
     favoriteCount: number | null;
@@ -750,6 +756,46 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
 
     for (const pid of releasePids) {
       await rpcReleaseReservation(pid).catch(() => undefined);
+    }
+
+    // Wave 80: reveal 카드별 SKU 일별 매물 유입량 (24h + 7d 평균) batch 계산.
+    // PostgREST의 group by + filter 패턴 미지원 → RPC 또는 raw SQL이 필요.
+    // 여기선 PostgREST의 count=exact + sku 별 2회 호출이 깔끔하지 않아 직접 raw RPC
+    // 패턴 회피하고, in.(sku_ids) 로 7d row 받아 클라이언트에서 집계.
+    try {
+      const skuIds = Array.from(
+        new Set(reveals.map((r) => r.skuId).filter((s): s is string => Boolean(s))),
+      );
+      if (skuIds.length > 0) {
+        const encoded = skuIds.map((s) => encodeURIComponent(s)).join(",");
+        const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const res = await callSupabase(
+          `/mvp_raw_listings?select=sku_id,created_at&sku_id=in.(${encoded})&created_at=gte.${since7d}&limit=20000`,
+          { headers: authHeaders() },
+        );
+        const rows = (await res.json()) as Array<{ sku_id: string; created_at: string }>;
+        const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
+        const flow = new Map<string, { count24h: number; total7d: number }>();
+        for (const row of rows) {
+          const entry = flow.get(row.sku_id) ?? { count24h: 0, total7d: 0 };
+          entry.total7d += 1;
+          if (new Date(row.created_at).getTime() >= cutoff24h) entry.count24h += 1;
+          flow.set(row.sku_id, entry);
+        }
+        for (const reveal of reveals) {
+          if (!reveal.skuId) continue;
+          const f = flow.get(reveal.skuId);
+          if (!f) continue;
+          reveal.skuListingFlow = {
+            count24h: f.count24h,
+            avgPerDay7d: Math.round((f.total7d / 7) * 10) / 10,
+          };
+        }
+      }
+    } catch (err) {
+      console.error("skuListingFlow batch fetch failed (non-fatal)", {
+        err: err instanceof Error ? err.message : String(err),
+      });
     }
 
     if (reveals.length < targetCards) {

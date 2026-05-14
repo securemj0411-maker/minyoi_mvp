@@ -126,6 +126,31 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
   );
 }
 
+function SkuListingFlowMini({ card }: { card: RevealCard }) {
+  const flow = card.skuListingFlow;
+  if (!flow) return null;
+  // 24h count 대비 7d 평균 색상 강조 (오늘 많이 올라옴 = emerald, 평소 같음 = neutral, 적음 = amber)
+  const ratio = flow.avgPerDay7d > 0 ? flow.count24h / flow.avgPerDay7d : 1;
+  const trendTone =
+    ratio >= 1.3
+      ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+      : ratio <= 0.6
+        ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
+        : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800/40 dark:text-zinc-200";
+  const trendLabel = ratio >= 1.3 ? "오늘 많음" : ratio <= 0.6 ? "오늘 적음" : "평소 수준";
+  return (
+    <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border px-3 py-1.5 text-[11px] leading-4 ${trendTone}`}>
+      <span className="font-black">📦 매물 유입량</span>
+      <span className="tabular-nums">24h <b>{flow.count24h}</b>건</span>
+      <span>·</span>
+      <span className="tabular-nums">7일 평균 {flow.avgPerDay7d}건/일</span>
+      <span className="rounded-full bg-white/60 px-1.5 py-0.5 text-[10px] font-bold dark:bg-zinc-900/50">
+        {trendLabel}
+      </span>
+    </div>
+  );
+}
+
 function VelocityBasisMini({ card }: { card: RevealCard }) {
   const velocity = card.velocityBasis;
   if (!velocity) return null;
@@ -394,6 +419,8 @@ function RevealCardItem({
         <MarketBasisMini card={card} />
 
         <VelocityBasisMini card={card} />
+
+        <SkuListingFlowMini card={card} />
 
         <SavedDetailMini card={card} />
 
