@@ -141,12 +141,38 @@ export async function GET(req: NextRequest) {
       };
     });
 
+    // 4. Stats — band × status breakdown (page=1 호출 시만 계산해 DB I/O 절약)
+    let stats: { byBandStatus: Record<string, number>; totals: Record<string, number>; totalAll: number } | null = null;
+    if (page === 1) {
+      const bands = [1, 2, 3];
+      const statuses = ["ready", "invalidated", "spent"];
+      const requests = bands.flatMap((b) => statuses.map(async (s) => {
+        const r = await restFetch(
+          `${tableUrl("mvp_candidate_pool")}?select=pid&profit_band=eq.${b}&status=eq.${s}&limit=1`,
+          { headers: { ...serviceHeaders(), Prefer: "count=exact" } },
+        );
+        const cr = r.headers.get("content-range") ?? "0-0/0";
+        return { band: b, status: s, count: Number(cr.split("/")[1] ?? 0) };
+      }));
+      const results = await Promise.all(requests);
+      const byBandStatus: Record<string, number> = {};
+      const totals: Record<string, number> = { ready: 0, invalidated: 0, spent: 0 };
+      let totalAll = 0;
+      for (const r of results) {
+        byBandStatus[`band${r.band}_${r.status}`] = r.count;
+        totals[r.status] = (totals[r.status] ?? 0) + r.count;
+        totalAll += r.count;
+      }
+      stats = { byBandStatus, totals, totalAll };
+    }
+
     return NextResponse.json({
       page,
       pageSize,
       total,
       totalPages: Math.max(1, Math.ceil(total / pageSize)),
       items,
+      stats,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";

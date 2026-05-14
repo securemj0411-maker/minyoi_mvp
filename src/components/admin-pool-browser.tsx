@@ -41,6 +41,11 @@ type Resp = {
   total: number;
   totalPages: number;
   items: PoolItem[];
+  stats: {
+    byBandStatus: Record<string, number>;
+    totals: Record<string, number>;
+    totalAll: number;
+  } | null;
 };
 
 const krw = (v: number) => `₩${Math.round(v).toLocaleString("ko-KR")}`;
@@ -70,6 +75,7 @@ const SORT_OPTIONS = [
 
 export default function AdminPoolBrowser() {
   const [data, setData] = useState<Resp | null>(null);
+  const [stats, setStats] = useState<Resp["stats"]>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -89,7 +95,10 @@ export default function AdminPoolBrowser() {
         const body = (await res.json().catch(() => null)) as { error?: string } | null;
         throw new Error(body?.error ?? `HTTP ${res.status}`);
       }
-      setData((await res.json()) as Resp);
+      const json = (await res.json()) as Resp;
+      setData(json);
+      // stats는 page=1 응답에만 포함 — 받으면 메모리에 보관 (페이지 이동해도 유지)
+      if (json.stats) setStats(json.stats);
     } catch (err) {
       setError(err instanceof Error ? err.message : "fetch failed");
     } finally {
@@ -121,10 +130,47 @@ export default function AdminPoolBrowser() {
           </div>
           {data && (
             <div className="text-right text-xs text-zinc-500">
-              총 {data.total.toLocaleString()}건 / {data.totalPages}페이지
+              필터 결과 {data.total.toLocaleString()}건 / {data.totalPages}페이지
             </div>
           )}
         </div>
+
+        {/* Pool 전체 stats — band × status breakdown */}
+        {stats && (
+          <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
+            <div className="mb-2 flex items-baseline justify-between">
+              <div className="font-bold text-zinc-700 dark:text-zinc-200">📊 풀 전체 (모든 status)</div>
+              <div className="font-mono text-sm font-black text-zinc-900 dark:text-zinc-100">총 {stats.totalAll.toLocaleString()}건</div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[11px]">
+                <thead>
+                  <tr className="text-left text-zinc-500">
+                    <th className="py-1 pr-3"></th>
+                    <th className="py-1 pr-3 text-right">band 1</th>
+                    <th className="py-1 pr-3 text-right">band 2</th>
+                    <th className="py-1 pr-3 text-right">band 3</th>
+                    <th className="py-1 pl-3 text-right font-bold">합계</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono">
+                  {(["ready", "invalidated", "spent"] as const).map((s) => (
+                    <tr key={s} className="border-t border-zinc-100 dark:border-zinc-800">
+                      <td className="py-1 pr-3 font-sans font-semibold text-zinc-700 dark:text-zinc-200">
+                        {s === "ready" ? "🟢 ready" : s === "invalidated" ? "⚫ invalidated" : "🔵 spent"}
+                      </td>
+                      <td className="py-1 pr-3 text-right tabular-nums">{(stats.byBandStatus[`band1_${s}`] ?? 0).toLocaleString()}</td>
+                      <td className="py-1 pr-3 text-right tabular-nums">{(stats.byBandStatus[`band2_${s}`] ?? 0).toLocaleString()}</td>
+                      <td className="py-1 pr-3 text-right tabular-nums">{(stats.byBandStatus[`band3_${s}`] ?? 0).toLocaleString()}</td>
+                      <td className="py-1 pl-3 text-right tabular-nums font-bold text-zinc-900 dark:text-zinc-100">{(stats.totals[s] ?? 0).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-2 text-[10px] text-zinc-400">stats는 page 1 로드 시만 fetch (DB I/O 절약).</div>
+          </div>
+        )}
 
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
           <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">

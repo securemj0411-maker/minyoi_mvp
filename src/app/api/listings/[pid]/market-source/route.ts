@@ -4,6 +4,7 @@
 // 보안: 사용자 본인 reveal 매물만 조회 가능 (mvp_pack_reveals 통한 권한 체크).
 
 import { NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/auth-users";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -37,16 +38,19 @@ export async function GET(
   if (!Number.isFinite(pid)) return NextResponse.json({ error: "invalid pid" }, { status: 400 });
 
   const userRef = userRefForAuthUser(auth.user.id);
+  const isAdmin = isAdminUser(auth.user);
 
   try {
-    // 1. 권한 체크 — 사용자가 이 매물을 reveal 받았는지 확인
-    const revealRes = await restFetch(
-      `${tableUrl("mvp_pack_reveals")}?select=pid,user_ref&pid=eq.${pid}&user_ref=eq.${encodeURIComponent(userRef)}&limit=1`,
-      { headers: serviceHeaders() },
-    );
-    const revealRows = (await revealRes.json()) as Array<{ pid: number }>;
-    if (revealRows.length === 0) {
-      return NextResponse.json({ error: "not your reveal" }, { status: 403 });
+    // 1. 권한 체크 — 일반 사용자는 본인이 reveal 받은 매물만. admin은 우회.
+    if (!isAdmin) {
+      const revealRes = await restFetch(
+        `${tableUrl("mvp_pack_reveals")}?select=pid,user_ref&pid=eq.${pid}&user_ref=eq.${encodeURIComponent(userRef)}&limit=1`,
+        { headers: serviceHeaders() },
+      );
+      const revealRows = (await revealRes.json()) as Array<{ pid: number }>;
+      if (revealRows.length === 0) {
+        return NextResponse.json({ error: "not your reveal" }, { status: 403 });
+      }
     }
 
     // 2. 우리 매물 정보 + comparable_key (sku_id는 mvp_raw_listings에만 존재)
