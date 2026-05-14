@@ -174,6 +174,7 @@ function CostBadge({ value }: { value: number }) {
 function PackSelectorCard({
   selectedPack,
   selectedInventory,
+  totalPoolReady,
   minProfitManwon: _minProfitManwon,
   requestedCards,
   tokens,
@@ -187,6 +188,7 @@ function PackSelectorCard({
 }: {
   selectedPack: PackDef;
   selectedInventory?: InventorySnapshot;
+  totalPoolReady: number;
   minProfitManwon?: number;
   requestedCards: number;
   tokens: number;
@@ -395,17 +397,31 @@ function PackSelectorCard({
           </div>
         ) : null}
 
-        {/* 한눈에 보이는 결과: 매물 수 + 토큰 비용 한 줄 */}
+        {/* 한눈에 보이는 결과: 매물 funnel + 토큰 비용 한 줄 */}
         <div className="mt-3 flex items-stretch gap-2">
           <div className="flex-1 rounded-[18px] border-2 border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] px-3 py-2.5 text-center">
-            <div className="text-[10px] font-black text-[var(--brand-accent-strong)]">매칭 매물</div>
-            <div className="text-xl font-black tracking-tight text-[var(--brand-accent-strong)]">
-              {previewLoading ? "..." : previewInventory ? `${previewInventory.matchingCount}건` : "-"}
+            <div className="text-[10px] font-black text-[var(--brand-accent-strong)]">추천 가능 매물 → 내 조건</div>
+            <div className="mt-1 flex items-baseline justify-center gap-1.5">
+              <span className="text-sm font-bold text-[#5d735f]">
+                {inventoryLoading ? "..." : `${totalPoolReady}`}
+              </span>
+              <span className="text-xs text-[#9aa893]" aria-hidden>
+                →
+              </span>
+              <span className="text-xl font-black tracking-tight text-[var(--brand-accent-strong)]">
+                {previewLoading ? "..." : previewInventory ? `${previewInventory.matchingCount}` : "-"}
+              </span>
+              <span className="text-[10px] font-bold text-[#5d735f]">건</span>
+              {previewInventory && totalPoolReady > 0 && previewInventory.matchingCount > 0 ? (
+                <span className="text-[10px] font-bold text-[var(--brand-accent-strong)]">
+                  ({Math.max(1, Math.round((previewInventory.matchingCount / totalPoolReady) * 100))}%)
+                </span>
+              ) : null}
             </div>
             {previewInventory && previewInventory.matchingCount > 0 ? (
-              <div className="text-[9.5px] text-[#5d735f]">신선 {previewInventory.freshUnder2h}건</div>
+              <div className="mt-0.5 text-[9.5px] text-[#5d735f]">신선 {previewInventory.freshUnder2h}건</div>
             ) : previewInventory && previewInventory.matchingCount === 0 ? (
-              <div className="text-[9.5px] text-[#a04545]">조건 완화 권장</div>
+              <div className="mt-0.5 text-[9.5px] text-[#a04545]">조건 완화 권장</div>
             ) : null}
           </div>
           <div className="flex-1 rounded-[18px] border-2 border-[#caab78] bg-[#fff8ea] px-3 py-2.5 text-center dark:border-amber-900/60 dark:bg-amber-950/20">
@@ -500,11 +516,7 @@ function PackSelectorCard({
             </span>
           </button>
 
-          <div className="flex items-center justify-between gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
-            <div className={`rounded-full bg-[#f4eee3] px-3 py-1.5 dark:bg-zinc-800/60 ${inventoryLoading ? "animate-pulse" : ""}`}>
-              {inventoryLoading ? "재고 확인 중..." : `재고 ${usableReady}건 남음`}
-            </div>
-          </div>
+          {/* "재고 N건 남음" 박스 제거 — 위 funnel 박스에 통합됨 (band-only 옛 로직) */}
 
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e7dece] pt-2.5 text-[11px] text-zinc-500 dark:border-zinc-700/60 dark:text-zinc-400">
             <p>같은 전체 본품 기준으로만 비교</p>
@@ -632,6 +644,12 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
     for (const snap of inventory) map.set(snap.band, snap);
     return map;
   }, [inventory]);
+  // 추천 가능 매물 풀 전체 합 (band 1+2+3) — funnel 상단 표시용.
+  // selectedInventory는 선택된 band만이지만 totalPoolReady는 전체 pool ready.
+  const totalPoolReady = useMemo(
+    () => inventory.reduce((sum, snap) => sum + snap.usableReady, 0),
+    [inventory],
+  );
   const selectedPack = useMemo(
     () => PACKS.find((pack) => pack.band === bandForMinProfit(minProfitManwon)) ?? PACKS[1],
     [minProfitManwon],
@@ -824,6 +842,7 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
         <PackSelectorCard
           selectedPack={selectedPack}
           selectedInventory={selectedInventory}
+          totalPoolReady={totalPoolReady}
           minProfitManwon={minProfitManwon}
           requestedCards={requestedCards}
           tokens={tokens}
