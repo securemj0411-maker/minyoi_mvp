@@ -244,6 +244,7 @@ export function MarketSourceDebug({
                           alt={data.ourListing.name ?? "매물"}
                           width={96}
                           height={96}
+                          unoptimized
                           className="h-24 w-24 shrink-0 rounded-lg object-cover ring-2 ring-emerald-300 dark:ring-emerald-700"
                         />
                       )}
@@ -372,6 +373,7 @@ export function MarketSourceDebug({
                                 alt={c.name ?? "비교 매물"}
                                 width={40}
                                 height={40}
+                                unoptimized
                                 className="h-10 w-10 shrink-0 rounded object-cover"
                               />
                             )}

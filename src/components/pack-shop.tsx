@@ -89,6 +89,7 @@ function ShowcaseCard({
                   aria-hidden="true"
                   fill
                   sizes="(max-width: 460px) 100vw, 460px"
+                  unoptimized
                   className="object-cover object-center"
                 />
               </div>
@@ -101,6 +102,7 @@ function ShowcaseCard({
                     aria-hidden="true"
                     fill
                     sizes="(max-width: 460px) 100vw, 460px"
+                    unoptimized
                     className="rounded-[22px] object-contain object-center shadow-[0_12px_24px_rgba(34,49,39,0.12)] ring-1 ring-black/8"
                   />
                 </div>
@@ -117,6 +119,7 @@ function ShowcaseCard({
                   fill
                   sizes="(max-width: 460px) 100vw, 460px"
                   priority
+                  unoptimized
                   className="object-cover object-center"
                 />
               </div>
@@ -129,6 +132,7 @@ function ShowcaseCard({
                     fill
                     sizes="(max-width: 460px) 100vw, 460px"
                     priority
+                    unoptimized
                     className="rounded-[22px] object-contain object-center shadow-[0_12px_24px_rgba(34,49,39,0.12)] ring-1 ring-black/8 transition-opacity duration-500"
                   />
                 </div>

@@ -269,6 +269,7 @@ export default function AdminPoolBrowser() {
                       alt={item.name}
                       width={100}
                       height={100}
+                      unoptimized
                       className="h-[100px] w-[100px] shrink-0 rounded object-cover"
                     />
                   ) : (

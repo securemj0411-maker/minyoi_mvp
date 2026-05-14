@@ -482,6 +482,7 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
                   alt={item.name}
                   fill
                   sizes="64px"
+                  unoptimized
                   className="object-cover"
                 />
               ) : null}
