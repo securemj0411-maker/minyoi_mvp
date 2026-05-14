@@ -327,6 +327,23 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minParseRate: 0.85,
     minTrustedKeys: 3,
   },
+  // Wave 67: 신 사업 카테고리 — 시계 + 골프. internal_only로 진입, 측정 후 ready 결정.
+  watch: {
+    status: "internal_only",
+    label: "Watch",
+    note: "Wave 67: Casio G-Shock + Seiko 5 Sports narrow lane 진입. 모델 코드 명시 매물만 매칭, 가품/액세서리 거름.",
+    minReadyPool: 5,
+    minParseRate: 0.9,
+    minTrustedKeys: 5,
+  },
+  sport_golf: {
+    status: "internal_only",
+    label: "Golf",
+    note: "Wave 67: Titleist TSR2/TSR3 드라이버 narrow lane 진입. 헤드만/풀세트는 거름, 드라이버 본체만.",
+    minReadyPool: 5,
+    minParseRate: 0.9,
+    minTrustedKeys: 4,
+  },
 };
 
 export function categoryFromComparableKey(value: string | null | undefined): Sku["category"] | null {
@@ -343,7 +360,9 @@ export function categoryFromComparableKey(value: string | null | undefined): Sku
     family === "game_console" ||
     family === "small_appliance" ||
     family === "home_appliance" ||
-    family === "desktop"
+    family === "desktop" ||
+    family === "watch" ||
+    family === "sport_golf"
   ) {
     return family;
   }

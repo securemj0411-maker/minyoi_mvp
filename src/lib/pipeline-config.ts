@@ -36,6 +36,12 @@ export const DEFAULT_SEARCH_QUERIES = [
   // Wave 65: 7d inflow ≤2 SKU 보강. broader Roborock S8 query는 있으나 Pro Ultra variant
   // narrow query 부재로 SKU bound 7d=2. 소니 ULT900N / Bose SoundLink Mini II는 query 부재.
   "소니 ULT900N", "보스 사운드링크 미니", "로보락 S8 프로 울트라",
+  // Wave 67: 신 사업 카테고리 진입 (owner 사인오프 후) — 시계 + 골프 + 카메라 보강.
+  // Wave 58 §11.D 우선순위 기반. internal_only 시작, 측정 후 ready 결정.
+  "G-Shock", "지샥 GA-2100", "지샥 DW-5600", "지샥 풀메탈 5000",
+  "Seiko 5", "세이코 5 SRPD", "세이코 5 SBSA",
+  "타이틀리스트 TSR2", "타이틀리스트 TSR3",
+  "소니 a6400", "Sony a6400",
 ];
 
 export type PipelineRuntimeConfig = {

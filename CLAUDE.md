@@ -42,14 +42,14 @@ Bunjang API
 
 ## Category Readiness (핵심 개념)
 
-`category-readiness.ts`에서 세 상태. **갱신: 2026-05-14 (DB `mvp_category_readiness` 측정):**
-- **ready 9**: `earphone`, `smartwatch`, `tablet`, `laptop`, `desktop`, `monitor`, `speaker`, `camera`, `home_appliance` — 공개 후보팩 허용
-- **internal_only 2**: `smartphone`, `game_console` — 시세 학습만, 사용자 노출 금지
+`category-readiness.ts`에서 세 상태. **갱신: 2026-05-14 Wave 66 (DB `mvp_category_readiness` 측정):**
+- **ready 8**: `earphone`, `smartwatch`, `tablet`, `laptop`, `desktop`, `monitor`, `speaker`, `home_appliance` — 공개 후보팩 허용
+- **internal_only 3**: `smartphone`, `game_console`, `camera` — 시세 학습만, 사용자 노출 금지
 - **blocked 1**: `small_appliance` — 후보풀 진입 차단
 
 **새 카테고리는 무조건 `internal_only`로 시작.** ready 승격은 `minReadyPool / minParseRate / minTrustedKeys` 통과 후 사람 결정.
 
-⚠️ **Wave 65 (2026-05-14) 발견**: `camera`는 DB ready인데 narrow lane `body_only_exact_model` 정책상 매물 92% reject → pool=0 = effectively dormant. owner 결정 옵션 A (정확성 유지) 확정. UI에 빈 카메라 카테고리 노출 가능성 — internal_only로 되돌리거나 frontend에서 "준비중" 처리 검토.
+ℹ️ **Wave 66 (2026-05-14) camera ready→internal_only 되돌림**: narrow lane `body_only_exact_model` 정책상 매물 92% reject → pool=0 dormant 발견. 사용자에게 빈 카테고리 노출 차단 (정직성). catalog 변경 없음, DB UPDATE 1 row만.
 
 ## 새 카테고리 추가 절차
 

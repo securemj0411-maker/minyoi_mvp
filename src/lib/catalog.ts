@@ -6,7 +6,7 @@ import { GENERATED_CATALOG } from "@/lib/generated/catalog";
 export type Sku = {
   id: string;
   brand: string;
-  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance";
+  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance" | "watch" | "sport_golf";
   modelName: string;
   aliases: string[];
   mustContain: string[][];
@@ -176,6 +176,31 @@ const CAMERA_BODY_ONLY_NOISE = [
   "업자x",
   "사기꾼",
   "바디프렌드",
+];
+
+// Wave 67: 시계 narrow lane noise (오리지널 본체 매물만 매칭).
+// 가품/리퍼/액세서리/구매요청 거름. "줄/스트랩/베젤"은 액세서리만 명시될 때 거름 (본체+ 같이는 OK 위해 mustContain 우선).
+const WATCH_NOISE = [
+  "줄만", "스트랩만", "밴드만",
+  "베젤만", "유리만", "쉬라우드만",
+  "케이스만",
+  "복각", "homage", "오마주",
+  "고장", "수리필요", "부품용", "as용", "고정만",
+  "삽니다", "구매합니다", "구합니다",
+  "가품", "이미테이션", "fake",
+  "사진용", "디스플레이용", "전시용",
+];
+
+// Wave 67: 골프 narrow lane noise (드라이버 본체 매물 — 헤드만은 별개 분기).
+// 풀세트(아이언+드라이버) / 우드세트는 거름 — 드라이버 단독 매물만.
+const GOLF_DRIVER_NOISE = [
+  "풀세트", "풀 세트", "골프세트", "골프 세트",
+  "아이언세트", "아이언 세트",
+  "우드세트", "우드 세트",
+  "삽니다", "구매합니다", "구합니다",
+  "가품", "이미테이션", "fake",
+  "수리필요", "부품용", "고장",
+  "유틸",  // 유틸리티 우드 — 드라이버 아님
 ];
 
 const LAPTOP_NOISE = [
@@ -2465,6 +2490,117 @@ export const CATALOG: Sku[] = [
   ...CORE_LAPTOP_CATALOG,
   ...CORE_LAPTOP_CATALOG_PRO,
   ...GENERATED_CATALOG_WITH_GATES,
+  // Wave 67: 신 사업 카테고리 진입 — 시계 (Casio G-Shock + Seiko 5 Sports), 골프 (Titleist TSR2/TSR3), 카메라 보강 (Sony a6400).
+  // Wave 58 §11.D 우선순위 + 11 criteria 통과 후보. internal_only로 진입, 측정 후 ready 승격 결정.
+  // §12b 정확성 우선: 모델 코드/명시 토큰만 매칭. 변형 흡수만, silent 추정 X.
+  {
+    id: "watch-casio-gshock-dw5600",
+    brand: "Casio",
+    category: "watch",
+    laneKey: "watch_gshock_dw5600",
+    modelName: "Casio G-Shock DW-5600",
+    aliases: ["G-Shock DW-5600", "지샥 DW-5600", "DW5600", "스퀘어 지샥"],
+    mustContain: [["dw-5600", "dw5600"]],
+    mustNotContain: [...WATCH_NOISE, "ga-2100", "ga2100", "gmw-b5000", "gmwb5000"],
+    msrpKrw: 159000,
+    released: 1996,
+  },
+  {
+    id: "watch-casio-gshock-ga2100",
+    brand: "Casio",
+    category: "watch",
+    laneKey: "watch_gshock_ga2100",
+    modelName: "Casio G-Shock GA-2100 (CasiOak)",
+    aliases: ["G-Shock GA-2100", "지샥 GA-2100", "GA2100", "지얄오크", "카시오크"],
+    mustContain: [["ga-2100", "ga2100", "지얄오크", "카시오크"]],
+    mustNotContain: [...WATCH_NOISE, "dw-5600", "dw5600", "gmw-b5000", "gmwb5000"],
+    msrpKrw: 169000,
+    released: 2019,
+  },
+  {
+    id: "watch-casio-gshock-gmwb5000",
+    brand: "Casio",
+    category: "watch",
+    laneKey: "watch_gshock_gmwb5000",
+    modelName: "Casio G-Shock GMW-B5000 (Full Metal)",
+    aliases: ["G-Shock GMW-B5000", "지샥 풀메탈", "GMWB5000", "5000풀메탈"],
+    mustContain: [["gmw-b5000", "gmwb5000", "풀메탈 5000", "풀메탈5000"]],
+    mustNotContain: [...WATCH_NOISE, "dw-5600", "dw5600", "ga-2100", "ga2100"],
+    msrpKrw: 990000,
+    released: 2018,
+  },
+  {
+    id: "watch-seiko-5-sports-srpd",
+    brand: "Seiko",
+    category: "watch",
+    laneKey: "watch_seiko_5_sports_srpd",
+    modelName: "Seiko 5 Sports SRPD (5KX)",
+    aliases: ["Seiko 5 Sports SRPD", "세이코 5 스포츠 SRPD", "SRPD51", "SRPD55", "SRPD61", "SRPD65", "SRPD71", "SRPD79", "SRPD83", "5KX"],
+    mustContain: [
+      ["seiko 5", "세이코 5", "세이코5"],
+      ["srpd", "5kx"],
+    ],
+    mustNotContain: [...WATCH_NOISE, "sbsa", "프로스펙스", "prospex"],
+    msrpKrw: 350000,
+    released: 2019,
+  },
+  {
+    id: "watch-seiko-5-sports-sbsa",
+    brand: "Seiko",
+    category: "watch",
+    laneKey: "watch_seiko_5_sports_sbsa",
+    modelName: "Seiko 5 Sports SBSA",
+    aliases: ["Seiko 5 Sports SBSA", "세이코 5 스포츠 SBSA"],
+    mustContain: [
+      ["seiko 5", "세이코 5", "세이코5"],
+      ["sbsa"],
+    ],
+    mustNotContain: [...WATCH_NOISE, "srpd", "5kx", "프로스펙스", "prospex"],
+    msrpKrw: 450000,
+    released: 2019,
+  },
+  {
+    id: "sport-golf-titleist-tsr2-driver",
+    brand: "Titleist",
+    category: "sport_golf",
+    laneKey: "sport_golf_titleist_tsr2_driver",
+    modelName: "Titleist TSR2 Driver",
+    aliases: ["Titleist TSR2 Driver", "타이틀리스트 TSR2 드라이버"],
+    mustContain: [
+      ["tsr2", "tsr 2"],
+      ["드라이버", "driver"],
+    ],
+    mustNotContain: [...GOLF_DRIVER_NOISE, "tsr3", "tsr 3", "tsr1", "tsi", "ts3", "ts2", "헤드만", "head only"],
+    msrpKrw: 950000,
+    released: 2022,
+  },
+  {
+    id: "sport-golf-titleist-tsr3-driver",
+    brand: "Titleist",
+    category: "sport_golf",
+    laneKey: "sport_golf_titleist_tsr3_driver",
+    modelName: "Titleist TSR3 Driver",
+    aliases: ["Titleist TSR3 Driver", "타이틀리스트 TSR3 드라이버"],
+    mustContain: [
+      ["tsr3", "tsr 3"],
+      ["드라이버", "driver"],
+    ],
+    mustNotContain: [...GOLF_DRIVER_NOISE, "tsr2", "tsr 2", "tsr1", "tsi", "ts3", "ts2", "헤드만", "head only"],
+    msrpKrw: 950000,
+    released: 2022,
+  },
+  {
+    id: "camera-sony-a6400",
+    brand: "Sony",
+    category: "camera",
+    laneKey: "camera_body_only_exact_model",
+    modelName: "Sony Alpha 6400 (a6400)",
+    aliases: ["Sony a6400", "소니 a6400", "ILCE-6400", "알파 6400"],
+    mustContain: [["a6400", "ilce-6400", "ilce 6400", "알파 6400", "알파6400"], ["바디", "바디만", "body"]],
+    mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "a6300", "a6500", "a6600", "a6700"],
+    msrpKrw: 1290000,
+    released: 2019,
+  },
 ];
 
 const SKU_MAP = new Map(CATALOG.map((s) => [s.id, s]));
