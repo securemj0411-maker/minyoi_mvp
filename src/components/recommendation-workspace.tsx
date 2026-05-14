@@ -26,11 +26,11 @@ type PackOpenRequest = {
 const MIN_REQUESTED_CARDS = 2;
 const MAX_REQUESTED_CARDS = 30;
 const CARDS_PER_COST_STEP = 2;
-const MIN_PROFIT_MANWON = 2;
+const MIN_PROFIT_MANWON = 1;
 const MAX_PROFIT_MANWON = 10;
 const HIGH_PROFIT_WARNING_SESSION_KEY = "minyoi-hide-high-profit-warning-v1";
 
-// Wave 77: 고급 검색 — Risk profile preset
+// Wave 79: Risk preset (한국 부업/리셀러 현실 기반)
 type RiskProfile = "safe" | "balanced" | "aggressive";
 type AdvancedFilters = {
   priceMaxManwon: number; // 매물가 상한 (만원). 0 = 무제한
@@ -49,18 +49,18 @@ type RiskPreset = {
 const RISK_PRESETS: Record<RiskProfile, RiskPreset> = {
   safe: {
     band: 1, label: "안전", emoji: "🛡️",
-    desc: "가격 ≤30만, 차익 3만+, 신뢰도 80%+",
-    filters: { priceMaxManwon: 30, minProfitManwon: 3, minConfidencePct: 80, categories: [], maxFreshHours: 1 },
+    desc: "≤15만 · 1만+ · 80%↑ · 입문자",
+    filters: { priceMaxManwon: 15, minProfitManwon: 1, minConfidencePct: 80, categories: [], maxFreshHours: 1 },
   },
   balanced: {
     band: 2, label: "균형", emoji: "⚖️",
-    desc: "가격 ≤80만, 차익 5만+, 신뢰도 70%+",
-    filters: { priceMaxManwon: 80, minProfitManwon: 5, minConfidencePct: 70, categories: [], maxFreshHours: 2 },
+    desc: "≤30만 · 2만+ · 70%↑ · 주력 부업",
+    filters: { priceMaxManwon: 30, minProfitManwon: 2, minConfidencePct: 70, categories: [], maxFreshHours: 2 },
   },
   aggressive: {
     band: 3, label: "공격", emoji: "⚔️",
-    desc: "가격 무제한, 차익 7만+, 신뢰도 60%+",
-    filters: { priceMaxManwon: 0, minProfitManwon: 7, minConfidencePct: 60, categories: [], maxFreshHours: 6 },
+    desc: "≤80만 · 5만+ · 60%↑ · 고수익",
+    filters: { priceMaxManwon: 80, minProfitManwon: 5, minConfidencePct: 60, categories: [], maxFreshHours: 6 },
   },
 };
 const CATEGORY_OPTIONS = [
@@ -209,12 +209,12 @@ function PackSelectorCard({
 }) {
   const [warningOpen, setWarningOpen] = useState(false);
   const [hideWarningForSession, setHideWarningForSession] = useState(false);
-  // Wave 77: 고급 검색 mode
-  const [searchMode, setSearchMode] = useState<"easy" | "advanced">("easy");
+  // Wave 79: easy mode 제거 — 단일 통합 UI
   const [riskProfile, setRiskProfile] = useState<RiskProfile>("balanced");
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(RISK_PRESETS.balanced.filters);
   const [previewInventory, setPreviewInventory] = useState<PreviewInventoryResp | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
 
   // Risk preset 변경 시 filters + band 자동 적용
   function applyRiskPreset(profile: RiskProfile) {
@@ -223,9 +223,8 @@ function PackSelectorCard({
     onMinProfitChange(RISK_PRESETS[profile].filters.minProfitManwon);
   }
 
-  // 고급 mode일 때 inventory pre-check (debounced)
+  // Inventory pre-check (debounced) — 항상 활성
   useEffect(() => {
-    if (searchMode !== "advanced") return;
     const timer = setTimeout(async () => {
       setPreviewLoading(true);
       try {
@@ -245,7 +244,7 @@ function PackSelectorCard({
       } catch {} finally { setPreviewLoading(false); }
     }, 350);
     return () => clearTimeout(timer);
-  }, [searchMode, riskProfile, advancedFilters]);
+  }, [riskProfile, advancedFilters]);
 
   function toggleCategory(id: string) {
     setAdvancedFilters(f => ({
@@ -256,10 +255,12 @@ function PackSelectorCard({
   const usableReady = selectedInventory?.usableReady ?? 0;
   const maxSelectableCards = selectableCardLimit(usableReady);
   const selectedCount = clampRequestedCards(requestedCards, maxSelectableCards);
-  // Wave 78: 고급 모드면 dynamic cost (filter 가중치), 쉬운 모드면 base × steps
-  const activeFilters: CostFilters | null = searchMode === "advanced"
-    ? { minProfitManwon: advancedFilters.minProfitManwon, minConfidencePct: advancedFilters.minConfidencePct, priceMaxManwon: advancedFilters.priceMaxManwon }
-    : null;
+  // Wave 79: 단일 모드 — 항상 dynamic cost 적용
+  const activeFilters: CostFilters = {
+    minProfitManwon: advancedFilters.minProfitManwon,
+    minConfidencePct: advancedFilters.minConfidencePct,
+    priceMaxManwon: advancedFilters.priceMaxManwon,
+  };
   const costBreakdown = computeCostBreakdown(selectedPack.band, selectedCount, activeFilters);
   const totalCost = costBreakdown.totalCost;
   const loginRequired = !isAuthenticated;

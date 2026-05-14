@@ -14,9 +14,12 @@ export type CostFilters = {
 };
 
 function profitMult(p: number): number {
-  if (p >= 10) return 2.0;
-  if (p >= 7) return 1.5;
-  if (p >= 5) return 1.2;
+  // Wave 79: 한국 부업/리셀 현실 — 1~5만이 흔함, 10만+ 희소
+  if (p >= 10) return 2.5;
+  if (p >= 7) return 2.0;
+  if (p >= 5) return 1.5;
+  if (p >= 3) return 1.2;
+  if (p >= 2) return 1.1;
   return 1.0;
 }
 
@@ -28,11 +31,12 @@ function confMult(c: number): number {
 }
 
 function priceMult(maxManwon: number): number {
-  // 0 = 무제한, 더 비싼 매물 발견 가능 → 더 비쌈
-  if (maxManwon === 0) return 1.5;
-  if (maxManwon > 200) return 1.5;
-  if (maxManwon > 80) return 1.2;
-  if (maxManwon > 30) return 1.0;
+  // Wave 79: 입문자/주력/공격/전업 4-tier
+  // 0 = 무제한 (전업 영역, 매우 희소)
+  if (maxManwon === 0) return 2.0;
+  if (maxManwon > 80) return 1.5;
+  if (maxManwon > 30) return 1.2;
+  if (maxManwon > 15) return 1.0;
   return 0.8;
 }
 

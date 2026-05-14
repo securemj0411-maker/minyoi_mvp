@@ -53,8 +53,9 @@ export const DEFAULT_SEARCH_QUERIES = [
   // 시계 Seiko 변형 (한국 매물 부족 — 다양한 검색어로 시도):
   "세이코 5KX", "Seiko 5 SRPD", "세이코 SRPD",
   // 카메라 변형 (body-only 표기 다양):
+  // Wave 86 boost diag: ILCE-7C 단독 query → 94% noise (액자/은화/디카 흡수) → 폐기.
   "Sony A7M3", "Sony A7 III", "ILCE-7M3",
-  "Sony A7C 바디", "ILCE-7C",
+  "Sony A7C 바디",
   "캐논 R6M2", "EOS R6 Mark II", "캐논 알육막투",
 ];
 
