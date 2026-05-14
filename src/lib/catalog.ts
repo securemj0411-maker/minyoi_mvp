@@ -1622,10 +1622,10 @@ export const CATALOG: Sku[] = [
     laneKey: "camera_body_only_exact_model",
     modelName: "Canon EOS R6 Mark II",
     aliases: ["Canon EOS R6 Mark II", "캐논 EOS R6 Mark II", "알육막투", "R6M2"],
-    // Wave 86: body 명시 변형 흡수 (의미 완화 X). "본체"/"본체만"/"바디셋"/"풀박스" 추가.
-    // 풀박스는 Bunjang 카메라 관행상 body+박스+동봉품 (렌즈 미포함이 default).
-    mustContain: [["eos r6 mark ii", "r6 mark ii", "r6m2", "알육막투"], ["바디", "바디만", "바디셋", "body", "본체", "본체만", "풀박스", "풀박"]],
-    mustNotContain: [...CAMERA_BODY_ONLY_NOISE],
+    // Wave 86: body 요구 제거 (R6 Mark II 매물 다수가 "바디" 명시 없음). 대신
+    // mustNotContain에 lens kit 패턴 + R6 Mark III/R5/R5 Mark II 격리 강화.
+    mustContain: [["eos r6 mark ii", "r6 mark ii", "r6m2", "알육막투"]],
+    mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "r6 mark iii", "r6mark3", "r6m3", "알육막삼", "+ rf ", "+ ef ", "+ 24-", "+ 70-", "+ 28-", "+ 85", "+ 35", "+ 70 200", "+ 24 105", "+ 24 70"],
     msrpKrw: 3199000,
     released: 2022,
   },
@@ -1636,9 +1636,9 @@ export const CATALOG: Sku[] = [
     laneKey: "camera_body_only_exact_model",
     modelName: "Sony A7 III",
     aliases: ["Sony A7 III", "Sony A7M3", "소니 A7M3", "ILCE-7M3"],
-    // Wave 86: body 명시 변형 흡수.
-    mustContain: [["a7m3", "a7 iii", "a7 3", "ilce 7m3"], ["바디", "바디만", "바디셋", "body", "본체", "본체만", "풀박스", "풀박"]],
-    mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "a7m2", "a7m4", "a7r3", "a7r iii", "a7s3", "a7s iii"],
+    // Wave 86: body 요구 제거. A7R/A7S/A7C 모든 변형 격리 강화.
+    mustContain: [["a7m3", "a7 iii", "a7 3", "ilce 7m3"]],
+    mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "a7m2", "a7m4", "a7r3", "a7rm3", "a7r iii", "a7r3", "a7s3", "a7s iii", "a7s ii", "a7sm3", "a7c", "a7c2", "a7c ll", "a7cr", "a7c ii", "ilce-7cm2", "ilce 7cm2", "ilce-7sm2", "ilce 7sm2", "+ rf", "+ ef", "+ 28-75", "+ 24-", "+ 70-", "케이지"],
     msrpKrw: 2499000,
     released: 2018,
   },
@@ -1649,9 +1649,9 @@ export const CATALOG: Sku[] = [
     laneKey: "camera_body_only_exact_model",
     modelName: "Sony A7C",
     aliases: ["Sony A7C", "소니 A7C", "ILCE-7C"],
-    // Wave 86: body 명시 변형 흡수.
-    mustContain: [["a7c", "ilce 7c"], ["바디", "바디만", "바디셋", "body", "본체", "본체만", "풀박스", "풀박"]],
-    mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "a7c2", "7cm2", "ilce 7cm2"],
+    // Wave 86: body 요구 제거 + A7C II/A7CR/A7M3/A7S 격리 강화.
+    mustContain: [["a7c", "ilce 7c"]],
+    mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "a7c2", "a7cr", "a7c ll", "a7c2 ", "a7c ii", "7cm2", "ilce 7cm2", "ilce-7cm2", "a7m3", "a7m4", "a7s2", "a7s3", "ilce 7sm2", "ilce-7sm2", "+ rf", "+ ef", "+ 28-", "+ 24-", "+ 70-", "케이지"],
     msrpKrw: 2199000,
     released: 2020,
   },
@@ -2545,11 +2545,13 @@ export const CATALOG: Sku[] = [
     laneKey: "watch_seiko_5_sports_srpd",
     modelName: "Seiko 5 Sports SRPD (5KX)",
     aliases: ["Seiko 5 Sports SRPD", "세이코 5 스포츠 SRPD", "SRPD51", "SRPD55", "SRPD61", "SRPD65", "SRPD71", "SRPD79", "SRPD83", "5KX"],
+    // Wave 86: mustContain 완화 — "세이코"만 명시되고 "5" 명시 안 한 매물 다수.
+    // SRPD prefix는 대부분 Seiko 5 Sports 전용이지만 일부 Presage 변형 (SRPD97/99/07 등) 존재 → mustNotContain 강화.
     mustContain: [
-      ["seiko 5", "세이코 5", "세이코5"],
+      ["세이코", "seiko"],
       ["srpd", "5kx"],
     ],
-    mustNotContain: [...WATCH_NOISE, "sbsa", "프로스펙스", "prospex"],
+    mustNotContain: [...WATCH_NOISE, "sbsa", "프로스펙스", "prospex", "프레사지", "presage", "astron", "스노우플레이크", "snowflake", "드레스워치", "skx", "ssk", "킹세이코", "그랜드세이코", "grand seiko"],
     msrpKrw: 350000,
     released: 2019,
   },

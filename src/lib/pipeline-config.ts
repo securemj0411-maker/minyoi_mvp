@@ -47,7 +47,8 @@ export const DEFAULT_SEARCH_QUERIES = [
   // (DW-5600 57건만 충분, GA-2100 33건 중 28건 review로 parser 약함, GMW-B5000 11건, Seiko 1건,
   // 카메라 3 SKU 합쳐 5건). 변형 query 추가로 표본 늘림.
   // 시계 G-Shock 변형:
-  "카시오크", "지얄오크", "DW-5600BB", "DW5600 풀박스",
+  // Wave 86 boost diag: "카시오크" 단독 query → 97% noise (카시오 탱크/Edifice/Exilim 디카 흡수) → 폐기.
+  "지얄오크", "DW-5600BB", "DW5600 풀박스",
   "지샥 풀메탈", "GMW-B5000", "GMW B5000",
   // 시계 Seiko 변형 (한국 매물 부족 — 다양한 검색어로 시도):
   "세이코 5KX", "Seiko 5 SRPD", "세이코 SRPD",
