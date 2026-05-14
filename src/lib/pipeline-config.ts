@@ -33,6 +33,9 @@ export const DEFAULT_SEARCH_QUERIES = [
   "보스 QC 울트라", "보스 QC45",
   "WH-CH520",
   "LG 그램 17",
+  // Wave 65: 7d inflow ≤2 SKU 보강. broader Roborock S8 query는 있으나 Pro Ultra variant
+  // narrow query 부재로 SKU bound 7d=2. 소니 ULT900N / Bose SoundLink Mini II는 query 부재.
+  "소니 ULT900N", "보스 사운드링크 미니", "로보락 S8 프로 울트라",
 ];
 
 export type PipelineRuntimeConfig = {

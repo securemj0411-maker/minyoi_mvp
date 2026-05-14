@@ -160,6 +160,18 @@ function parseLaptopReleaseYear(text: string) {
   ]);
   if (fullYear?.[1]) return Number(fullYear[1]);
 
+  // v32+: Intel "N세대" → release year mapping (laptop context only).
+  // Gen 13 = 2023 (Raptor Lake), Gen 12 = 2022, Gen 11 = 2021, ... — Intel official launch years.
+  // Note: 이 함수는 laptop category에서만 호출되므로 iPad "5세대" 같은 다른 카테고리 충돌 없음.
+  const intelGen = lower.match(/(\d{1,2})\s*세대/);
+  if (intelGen?.[1]) {
+    const gen = Number(intelGen[1]);
+    const intelGenToYear: Record<number, number> = {
+      8: 2018, 9: 2019, 10: 2020, 11: 2021, 12: 2022, 13: 2023, 14: 2024,
+    };
+    if (intelGenToYear[gen]) return intelGenToYear[gen];
+  }
+
   const shortYear = firstMatch(lower, [
     /(?:^|[^0-9])([0-2][0-9])\s*(?:년형|년식)(?:[^0-9]|$)/,
     /\b(?:early|mid|late)\s*([0-2][0-9])\b/,
