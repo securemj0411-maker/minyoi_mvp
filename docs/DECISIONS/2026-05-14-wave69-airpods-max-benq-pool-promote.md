@@ -1,0 +1,22 @@
+## Wave 69 — airpods_max_usbc + monitor_xl2540k 잔여 매물 풀 진입 마킹
+
+- 시간: 2026-05-14 KST
+- 발견: Wave 54에서 monitor_xl2540k 3건 + JBL 6건 + iPad 3건 처리 후, **airpods_max_usbc 8건 + xl2540k 잔여 3건 = 11건이 pool_eligible=false인 채로 대기**.
+  - airpods_max_usbc: 8 raw, 8 detail done, 8 sale active, 0 pool_eligible=true
+  - monitor_xl2540k: 6 raw, 3 already eligible (Wave 54), 3 still false
+  - 두 lane 모두 LANE_READINESS에서 status='ready' 박혀있으나 raw 매물 pool_eligible 마킹이 별도로 필요한 구조
+- 변경:
+  - `scripts/wave69-airpods-max-benq-pool-promote.ts` (신규): 두 SKU 매물 pull → detail_done + active + pool_eligible=false 후보 식별 → pool_eligible=true + score_dirty=true 마킹
+  - DB UPDATE 11건 적용 (airpods 8 + monitor 3)
+  - candidate_pool 직접 변경 0 — scoreStage가 다음 tick에서 처리
+- 검증:
+  - 적용 전 dry-run 11건 확인
+  - 적용 후 영향: 다음 tick (1분 주기)에서 mvp_candidate_pool 진입 예상
+- 위험:
+  - LOW. 두 lane 다 신뢰도 A급:
+    - airpods_max_usbc: 풀 오염률 0% (앞서 explore 분석 — 89.5% activeClean)
+    - monitor_xl2540k: model code 기반 (false positive 본질 0)
+  - 비교군 (이미 public_active) 평균 activeClean 25~30% < 본 두 lane 75~89%
+- 다음:
+  - 다음 tick 후 candidate_pool 실 진입 확인
+  - 사용자 풀 노출 26 (Wave 54 16건 + 기존) → 약 50건 도달 예상
