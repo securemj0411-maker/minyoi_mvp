@@ -28,6 +28,15 @@ async function loadEnv(p) {
 await loadEnv(path.join(appDir, ".env.local"));
 await loadEnv(path.join(appDir, ".env"));
 
+// Wave 90: 해결 마킹 로드 (reports/feedback-resolutions.json)
+let resolutions = {};
+try {
+  const raw = await readFile(path.join(appDir, "docs/feedback-resolutions.json"), "utf-8");
+  resolutions = (JSON.parse(raw)?.resolutions) ?? {};
+} catch {
+  // 파일 없으면 빈 객체
+}
+
 function restUrl() {
   const raw = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!raw) throw new Error("SUPABASE_URL 필요");
@@ -120,20 +129,35 @@ const FEEDBACK_LABEL = {
   watching: "🔍 검증중",
 };
 
+// Wave 90: 해결/미해결 분리
+const unresolved = feedbacks.filter((fb) => !resolutions[String(fb.pid)]);
+const resolved = feedbacks.filter((fb) => resolutions[String(fb.pid)]);
+
 reportLines.push("# 사용자 reveal feedback 일괄 검토");
 reportLines.push("");
 reportLines.push(`- generated_at: ${new Date().toISOString()}`);
 reportLines.push(`- feedback rows: ${feedbacks.length}`);
+reportLines.push(`- ⏳ 미해결: ${unresolved.length}건`);
+reportLines.push(`- ✅ 해결됨: ${resolved.length}건`);
 reportLines.push(`- unique pids: ${pids.length}`);
 if (since) reportLines.push(`- since: ${since}`);
 if (userRefFilter) reportLines.push(`- user_ref filter: ${userRefFilter}`);
 reportLines.push("");
 reportLines.push("---");
 reportLines.push("");
+reportLines.push("# ⏳ 미해결 (이게 이번 작업 대상)");
+reportLines.push("");
 
-// 매물별 출력
+// 매물별 출력 — 미해결 먼저
 let idx = 0;
-for (const fb of feedbacks) {
+for (const fb of [...unresolved, ...resolved]) {
+  const isResolved = Boolean(resolutions[String(fb.pid)]);
+  if (isResolved && idx === unresolved.length) {
+    reportLines.push("---");
+    reportLines.push("");
+    reportLines.push("# ✅ 해결됨 (참고만)");
+    reportLines.push("");
+  }
   idx += 1;
   const pid = Number(fb.pid);
   const listing = listingMap.get(pid) || {};
@@ -142,8 +166,16 @@ for (const fb of feedbacks) {
   const compKey = parsed.comparable_key || null;
   const market = compKey ? marketMap.get(compKey) : null;
 
-  reportLines.push(`## ${idx}. pid ${pid} — ${listing.name || raw.name || "(name 없음)"}`);
+  const resolution = resolutions[String(pid)];
+  const statusEmoji = resolution ? "✅" : "⏳";
+  reportLines.push(`## ${statusEmoji} ${idx}. pid ${pid} — ${listing.name || raw.name || "(name 없음)"}`);
   reportLines.push("");
+  if (resolution) {
+    reportLines.push(`- **✅ 해결됨**: ${resolution.summary}`);
+    reportLines.push(`- resolved_at: ${resolution.resolved_at}`);
+    reportLines.push(`- commits: ${resolution.commits.map((c) => `\`${c}\``).join(", ")}`);
+    reportLines.push("");
+  }
   reportLines.push(`- **사용자 코멘트**: ${fb.note}`);
   reportLines.push(`- feedback type: ${FEEDBACK_LABEL[fb.feedback_type] || fb.feedback_type}`);
   reportLines.push(`- updated_at: ${fb.updated_at}`);

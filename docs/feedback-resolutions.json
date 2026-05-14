@@ -1,0 +1,11 @@
+{
+  "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
+  "_updated_at": "2026-05-14T20:50:00.000Z",
+  "resolutions": {
+    "406566033": {
+      "resolved_at": "2026-05-14T20:30:00.000Z",
+      "summary": "iPad Pro 12.9 2세대 chip a10x 매핑 추가 + comparable_key에 generation 추가 (parser v36). 같은 세대만 한 그룹으로 시세 계산 → false positive 차익 제거.",
+      "commits": ["8421506"]
+    }
+  }
+}
