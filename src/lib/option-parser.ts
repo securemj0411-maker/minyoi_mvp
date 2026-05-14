@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
 
 import type { Sku } from "@/lib/catalog";
+// Wave 92: 신규 카테고리 (shoe/bag/bike) parser는 별도 모듈에서 dispatch.
+import { parseFashionMobility } from "@/lib/parsers/wave92-fashion-mobility";
 
 export type ParsedListingOptions = {
   parserVersion: string;
@@ -1120,6 +1122,11 @@ function criticalUnknowns(category: Sku["category"] | null, comparableKey: strin
 }
 
 export function parseListingOptions(input: ParseInput): ParsedListingOptions {
+  const category0 = input.category ?? null;
+  // Wave 92: shoe/bag/bike는 별도 모듈로 dispatch.
+  if (category0 === "shoe" || category0 === "bag" || category0 === "bike") {
+    return parseFashionMobility(input);
+  }
   const title = input.title ?? "";
   const description = input.description ?? "";
   const text = `${title}\n${description.slice(0, 1200)}`;

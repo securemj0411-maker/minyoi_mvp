@@ -1,6 +1,6 @@
-// Wave 91 (2026-05-15): shoes catalog SKUs — body-only, resale ≤200만.
-// 출처: agent research /tmp/wave91-shoes-research.json.
-
+// Wave 91 (2026-05-15): 신발 catalog SKUs — body-only, resale ≤200만.
+// Wave 92 patch: cross-color disambiguation (Jordan 1/Dunk/Yeezy 변형 mustNotContain).
+//
 import type { Sku } from "@/lib/catalog";
 
 export const SHOE_CATALOG: Sku[] = [
@@ -15,7 +15,7 @@ export const SHOE_CATALOG: Sku[] = [
       ["시카고", "chicago", "로스트앤파운드", "lost and found", "로앤파", "lost & found", "리이매진드", "reimagined"],
     ],
     mustNotContain: [
-      "미러", "짭", "샘플", "sample", "사이즈 미상", "한짝", "파손", "키즈", "유아", "삽니다", "구합니다", "td",
+      "미러", "짭", "샘플", "sample", "사이즈 미상", "한짝", "파손", "키즈", "유아", "삽니다", "구합니다", "td", "black toe", "bred toe", "royal", "satin", "shadow", "unc", "univ blue", "university blue", "그레이", "로얄", "로열", "브레드토", "브토", "블랙토", "사틴", "새틴", "섀도우", "쉐도우", "유니버시티 블루", "유니블", "유엔씨", "캐롤라이나",
     ],
     msrpKrw: 239000,
     released: 2022,
@@ -32,7 +32,7 @@ export const SHOE_CATALOG: Sku[] = [
       ["로얄", "로열", "royal", "블랙토", "black toe"],
     ],
     mustNotContain: [
-      "미드", "mid", "low", "로우", "리이매진드", "리매진", "리믹스", "리믹스드", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
+      "미드", "mid", "low", "로우", "리이매진드", "리매진", "리믹스", "리믹스드", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "bred toe", "chicago", "lost & found", "lost and found", "reimagined", "satin", "shadow", "unc", "univ blue", "university blue", "그레이", "로스트앤파운드", "로앤파", "브레드토", "브토", "사틴", "새틴", "섀도우", "쉐도우", "시카고", "유니버시티 블루", "유니블", "유엔씨", "캐롤라이나",
     ],
     msrpKrw: 199000,
     released: 2017,
@@ -49,7 +49,7 @@ export const SHOE_CATALOG: Sku[] = [
       ["브레드토", "bred toe", "브토"],
     ],
     mustNotContain: [
-      "satin", "새틴", "low", "로우", "mid", "미드", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
+      "satin", "새틴", "low", "로우", "mid", "미드", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "black toe", "chicago", "lost & found", "lost and found", "reimagined", "royal", "shadow", "unc", "univ blue", "university blue", "그레이", "로스트앤파운드", "로앤파", "로얄", "로열", "리이매진드", "블랙토", "사틴", "섀도우", "쉐도우", "시카고", "유니버시티 블루", "유니블", "유엔씨", "캐롤라이나",
     ],
     msrpKrw: 199000,
     released: 2018,
@@ -66,7 +66,7 @@ export const SHOE_CATALOG: Sku[] = [
       ["unc", "유엔씨", "university blue", "유니버시티 블루", "유니블", "univ blue", "캐롤라이나"],
     ],
     mustNotContain: [
-      "로우", "low", "mid", "미드", "토", "toe", "satin", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
+      "로우", "low", "mid", "미드", "토", "toe", "satin", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "black toe", "bred toe", "chicago", "lost & found", "lost and found", "reimagined", "royal", "shadow", "그레이", "로스트앤파운드", "로앤파", "로얄", "로열", "리이매진드", "브레드토", "브토", "블랙토", "사틴", "새틴", "섀도우", "쉐도우", "시카고",
     ],
     msrpKrw: 199000,
     released: 2021,
@@ -83,7 +83,7 @@ export const SHOE_CATALOG: Sku[] = [
       ["섀도우", "shadow", "쉐도우", "그레이"],
     ],
     mustNotContain: [
-      "로우", "low", "mid", "미드", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
+      "로우", "low", "mid", "미드", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "black toe", "bred toe", "chicago", "lost & found", "lost and found", "reimagined", "royal", "satin", "unc", "univ blue", "university blue", "로스트앤파운드", "로앤파", "로얄", "로열", "리이매진드", "브레드토", "브토", "블랙토", "사틴", "새틴", "시카고", "유니버시티 블루", "유니블", "유엔씨", "캐롤라이나",
     ],
     msrpKrw: 199000,
     released: 2021,
@@ -101,7 +101,7 @@ export const SHOE_CATALOG: Sku[] = [
       ["브레드", "bred", "블랙레드"],
     ],
     mustNotContain: [
-      "로우", "low", "mid", "미드", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
+      "로우", "low", "mid", "미드", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "black toe", "bred toe", "chicago", "lost & found", "lost and found", "reimagined", "royal", "shadow", "unc", "univ blue", "university blue", "그레이", "로스트앤파운드", "로앤파", "로얄", "로열", "리이매진드", "브레드토", "브토", "블랙토", "섀도우", "쉐도우", "시카고", "유니버시티 블루", "유니블", "유엔씨", "캐롤라이나",
     ],
     msrpKrw: 239000,
     released: 2023,
@@ -172,7 +172,7 @@ export const SHOE_CATALOG: Sku[] = [
       ["브레드", "bred", "리이매진드", "reimagined", "리매진"],
     ],
     mustNotContain: [
-      "오레오", "오리오", "oreo", "black cat", "블랙캣", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
+      "오레오", "오리오", "oreo", "black cat", "블랙캣", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "military", "밀리터리",
     ],
     msrpKrw: 249000,
     released: 2024,
@@ -190,7 +190,7 @@ export const SHOE_CATALOG: Sku[] = [
       ["블랙", "black"],
     ],
     mustNotContain: [
-      "블루", "blue", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
+      "블루", "blue", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "bred", "reimagined", "리매진", "리이매진드", "브레드",
     ],
     msrpKrw: 269000,
     released: 2024,
@@ -465,7 +465,7 @@ export const SHOE_CATALOG: Sku[] = [
       ["og", "오지"],
     ],
     mustNotContain: [
-      "wales bonner", "웨일즈보너", "edison", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
+      "wales bonner", "웨일즈보너", "edison", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "wb", "웨일즈 보너",
     ],
     msrpKrw: 139000,
     released: 2023,
@@ -482,7 +482,7 @@ export const SHOE_CATALOG: Sku[] = [
       ["웨일즈보너", "웨일즈 보너", "wales bonner", "wb"],
     ],
     mustNotContain: [
-      "cream", "크림", "silver", "실버", "metallic", "메탈릭", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
+      "cream", "크림", "silver", "실버", "metallic", "메탈릭", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "og", "오지",
     ],
     msrpKrw: 230000,
     released: 2022,
