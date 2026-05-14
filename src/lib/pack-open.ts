@@ -168,11 +168,18 @@ type ListingMeta = {
   sku_id: string | null;
   sku_name: string;
   thumbnail_url: string | null;
+  // Wave 82: raw listing 부가 데이터 (savedDetail용)
+  _raw?: RawSkuMeta;
 };
 
 type RawSkuMeta = {
   pid: number;
   sku_id: string | null;
+  description_preview: string | null;
+  num_faved: number | null;
+  free_shipping: boolean | null;
+  shop_review_rating: number | null;
+  shop_review_count: number | null;
 };
 
 type SourceHealthRow = {
@@ -315,15 +322,18 @@ async function fetchListings(pids: number[]): Promise<Map<number, ListingMeta>> 
   if (pids.length === 0) return new Map();
   const pidFilter = pids.join(",");
   const listingCols = "pid,name,url,price,sku_name,thumbnail_url";
-  const rawCols = "pid,sku_id";
+  const rawCols = "pid,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count";
   const [listingRes, rawRes] = await Promise.all([
     callSupabase(`/mvp_listings?select=${listingCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
     callSupabase(`/mvp_raw_listings?select=${rawCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
   ]);
   const rows = (await listingRes.json()) as Omit<ListingMeta, "sku_id">[];
   const rawRows = (await rawRes.json()) as RawSkuMeta[];
-  const skuByPid = new Map(rawRows.map((row) => [Number(row.pid), row.sku_id]));
-  return new Map(rows.map((row) => [Number(row.pid), { ...row, sku_id: skuByPid.get(Number(row.pid)) ?? null }]));
+  const rawByPid = new Map(rawRows.map((row) => [Number(row.pid), row]));
+  return new Map(rows.map((row) => {
+    const raw = rawByPid.get(Number(row.pid));
+    return [Number(row.pid), { ...row, sku_id: raw?.sku_id ?? null, _raw: raw }];
+  }));
 }
 
 async function assertRevealAccess(userRef: string, pid: number): Promise<void> {
@@ -736,6 +746,20 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       const verifiedAtMs = new Date(liveVerifiedAt).getTime();
       const freshSeconds = Math.max(0, Math.floor((Date.now() - verifiedAtMs) / 1000));
 
+      // Wave 82: savedDetail 채움. mvp_raw_listings 컬럼에 이미 저장된 데이터
+      // (description_preview / num_faved / free_shipping / shop_review_*).
+      // 기존엔 type 선언만 있고 populate 안 돼서 verdict chip 다수 미발동.
+      const rawMeta = meta._raw;
+      const savedDetail = rawMeta
+        ? {
+            descriptionPreview: rawMeta.description_preview ?? "",
+            favoriteCount: rawMeta.num_faved,
+            freeShipping: Boolean(rawMeta.free_shipping),
+            sellerName: null,
+            sellerReviewRating: rawMeta.shop_review_rating,
+            sellerReviewCount: rawMeta.shop_review_count ?? 0,
+          }
+        : undefined;
       reveals.push({
         pid: candidate.pid,
         name: meta.name,
@@ -751,6 +775,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         velocityBasis: velocityBasisForCandidate(candidate.comparable_key, velocityStats, readinessMap),
         lastVerifiedAt: liveVerifiedAt,
         freshSeconds,
+        savedDetail,
       });
     }
 
