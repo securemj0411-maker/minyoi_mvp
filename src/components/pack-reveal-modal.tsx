@@ -242,7 +242,9 @@ function savedRatingLabel(value: number | null | undefined) {
   return value.toFixed(1);
 }
 
-function SavedDetailMini({ card }: { card: RevealCard }) {
+// Wave 80: SavedDetailMini 미사용 (찜/리뷰/판매자 설명 직접 노출 법적 위험으로 제거).
+// _SavedDetailMini로 명시 — 차후 필요 시 재활용.
+function _SavedDetailMini({ card }: { card: RevealCard }) {
   const detail = card.savedDetail;
   if (!detail) return null;
   const description = detail.descriptionPreview.trim();
@@ -375,7 +377,7 @@ function RevealCardItem({
   onPreviewGuide: (card: RevealCard, side: PreviewSide) => void;
 }) {
   const [shown, setShown] = useState(false);
-  const [feedback, setFeedback] = useState<RevealFeedbackType | null>(null);
+  const [, setFeedback] = useState<RevealFeedbackType | null>(null);
   const [note, setNote] = useState("");
   const [noteSaved, setNoteSaved] = useState(false);
   useEffect(() => {
@@ -383,41 +385,13 @@ function RevealCardItem({
     return () => window.clearTimeout(id);
   }, [delay]);
 
-  const feedbackOptions: { type: RevealFeedbackType; label: string }[] = [
-    { type: "interested", label: "관심" },
-    { type: "bought", label: "매수함" },
-    { type: "missed_sold", label: "이미 팔림" },
-    { type: "bad_pick", label: "별로" },
-  ];
-  const quickTags: { label: string; feedbackType: RevealFeedbackType }[] = [
-    { label: "단품 의심", feedbackType: "bad_pick" },
-    { label: "가격 비교 틀림", feedbackType: "bad_pick" },
-    { label: "사진 애매", feedbackType: "bad_pick" },
-    { label: "판매자 위험", feedbackType: "bad_pick" },
-    { label: "이미 팔림", feedbackType: "missed_sold" },
-  ];
-
-  function handleFeedback(type: RevealFeedbackType) {
-    setFeedback(type);
-    setNoteSaved(false);
-    onFeedback(card.pid, type, note);
-  }
-
+  // Wave 80: 신고 코멘트 저장 — bad_pick 피드백 type으로 통합 (서버 schema 그대로)
   function handleSaveNote() {
     const cleanNote = note.trim();
     if (!cleanNote) return;
-    setFeedback((current) => current ?? "watching");
+    setFeedback("bad_pick");
     setNoteSaved(true);
-    onFeedback(card.pid, feedback ?? "watching", cleanNote);
-  }
-
-  function handleQuickTag(label: string, feedbackType: RevealFeedbackType) {
-    const tag = `[${label}]`;
-    const nextNote = note.includes(tag) ? note : `${tag}${note.trim() ? ` ${note.trim()}` : ""}`.slice(0, 500);
-    setNote(nextNote);
-    setFeedback(feedbackType);
-    setNoteSaved(true);
-    onFeedback(card.pid, feedbackType, nextNote);
+    onFeedback(card.pid, "bad_pick", cleanNote);
   }
 
   return (
@@ -440,22 +414,7 @@ function RevealCardItem({
             이미지 없음
           </div>
         )}
-        <div className="absolute right-3 top-3 flex flex-col gap-1.5">
-          <button
-            type="button"
-            onClick={() => onPreviewListing(card, previewSide)}
-            className="rounded-lg bg-white px-3 py-2 text-xs font-black text-zinc-900 shadow-lg shadow-black/20 transition hover:bg-emerald-50 hover:text-emerald-700"
-          >
-            상세 비교
-          </button>
-          <button
-            type="button"
-            onClick={() => onPreviewGuide(card, previewSide)}
-            className="rounded-lg border border-white/70 bg-[rgba(255,253,249,0.92)] px-3 py-2 text-xs font-black text-[var(--brand-accent-strong)] shadow-lg shadow-black/10 backdrop-blur-sm transition hover:bg-white"
-          >
-            공략 보기
-          </button>
-        </div>
+        {/* Wave 80: 상세 비교 / 공략 보기 floating overlay 제거 — 사진 가림 → 하단 버튼 영역으로 이동 */}
       </div>
 
       <div className="min-w-0 space-y-2">
@@ -464,14 +423,21 @@ function RevealCardItem({
             <div className="line-clamp-2 text-sm font-black leading-5 text-zinc-900 dark:text-zinc-50">
               {card.name}
             </div>
-            <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="text-lg font-black tabular-nums text-[var(--brand-accent)]">
-                  {profitRange(card.expectedProfitMin, card.expectedProfitMax)}
-                </span>
-              <span className="text-sm font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
-                매입 {krw(card.price)}
+            {/* Wave 80: 가격 정보 그룹화 — 매입/시세 인접 + 차익 강조 */}
+            <div className="mt-1.5 flex items-baseline gap-2">
+              <span className="text-lg font-black tabular-nums text-[var(--brand-accent)]">
+                {profitRange(card.expectedProfitMin, card.expectedProfitMax)}
               </span>
-              <span className="text-xs font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
+              <span className="text-[11px] font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
+            </div>
+            <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
+              <span>매입 {krw(card.price)}</span>
+              {card.marketBasis?.medianPrice ? (
+                <>
+                  <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                  <span className="text-zinc-500 dark:text-zinc-300">시세 {krw(card.marketBasis.medianPrice)}</span>
+                </>
+              ) : null}
             </div>
           </div>
           <div className="hidden shrink-0 rounded-lg bg-zinc-50 px-2 py-1 text-right dark:bg-zinc-800 sm:block">
@@ -490,43 +456,18 @@ function RevealCardItem({
 
         <SkuListingFlowMini card={card} />
 
-        <SavedDetailMini card={card} />
+        {/* Wave 80: SavedDetailMini (찜/리뷰/리뷰N개/판매자 설명문) 제거 — 번개장터 데이터 직접 노출 법적 위험. 원본은 "번개장터 열기" 버튼으로 확인. */}
 
-        <div className="grid grid-cols-4 gap-1.5">
-          {feedbackOptions.map((option) => (
-            <button
-              key={option.type}
-              type="button"
-              onClick={() => handleFeedback(option.type)}
-              className={`rounded-lg border px-2 py-2 text-[11px] font-bold transition ${
-                feedback === option.type
-                  ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
-                  : "border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-800"
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap gap-1.5">
-          {quickTags.map((tag) => (
-            <button
-              key={tag.label}
-              type="button"
-              onClick={() => handleQuickTag(tag.label, tag.feedbackType)}
-              className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-1 text-[10px] font-bold text-zinc-500 transition hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:border-zinc-800 dark:bg-zinc-800/60 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-            >
-              {tag.label}
-            </button>
-          ))}
-        </div>
-
+        {/* Wave 80: 개별 피드백 버튼 (관심/매수함/이미 팔림/별로) + quickTags (단품 의심 등) 제거.
+            단일 "추천 상품이 이상해요" 신고 버튼 + 코멘트 폼으로 대체. */}
         <details className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs dark:border-zinc-800 dark:bg-zinc-800/50">
           <summary className="cursor-pointer font-bold text-zinc-500 dark:text-zinc-300">
-            코멘트 {noteSaved ? "저장됨" : ""}
+            ⚠️ 추천 상품이 이상해요 — 신고 {noteSaved ? "· 접수됨" : ""}
           </summary>
           <div className="mt-2 space-y-2">
+            <div className="text-[10.5px] leading-[1.5] text-zinc-500 dark:text-zinc-400">
+              어떤 점이 이상한지 알려주세요. 다음 추천 품질 향상에 사용됩니다.
+            </div>
             <textarea
               id={`reveal-note-${card.pid}`}
               value={note}
@@ -535,8 +476,8 @@ function RevealCardItem({
                 setNoteSaved(false);
               }}
               maxLength={500}
-              rows={2}
-              placeholder="예: 사진상 구성품 애매함 / 단품 의심 / 사고 싶음"
+              rows={3}
+              placeholder="예) 단품 의심 · 가격 비교 틀린 듯 · 사진 애매 · 판매자 위험 · 이미 팔린 것 같음"
               className="w-full resize-none rounded-lg border border-[#ddd6ca] bg-white px-3 py-2 text-xs leading-5 text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
             />
             <div className="flex items-center justify-between gap-2">
