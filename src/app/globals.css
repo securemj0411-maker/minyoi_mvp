@@ -13,6 +13,12 @@
 .dark {
   --background: #09090b;
   --foreground: #f4f4f5;
+  /* Wave 70: brand tokens dark variants. 89곳 var(--brand-*) 사용처가
+   * dark에서도 light green 그대로였던 문제. */
+  --brand-accent: #7a9580;
+  --brand-accent-strong: #d4ddd6;
+  --brand-accent-soft: #1f2a23;
+  --brand-cream: #18181b;
 }
 
 @theme inline {
@@ -31,6 +37,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-synthesis-weight: none;
   text-rendering: optimizeLegibility;
+  /* Wave 71: 모바일 좌우 쏠림 fix. showcase-swipe-in animation translateX(72px)
+   * 같은 internal animation 등이 body까지 새는 경우 차단. overflow-x: clip은
+   * sticky nav 보존하면서 horizontal scroll만 막음. */
+  overflow-x: clip;
 }
 
 button,
@@ -139,4 +149,63 @@ a {
 
 .dark .hover\:border-zinc-400:hover {
   border-color: #71717a !important;
+}
+
+/* Wave 70: dark mode 일괄 fix. how-it-works/plans/legal/pack-shop 등에서
+ * 하드코딩된 cream/beige hex 컬러가 dark variant 없어 흰색 노출되던 문제.
+ * 컴포넌트 일일이 수정 대신 globals.css에서 한 번에 처리. */
+
+/* cream / beige backgrounds → dark elevated surface */
+.dark .bg-\[\#fffbf4\],
+.dark .bg-\[\#fffaf1\],
+.dark .bg-\[\#fff4e4\],
+.dark .bg-\[\#fff7ec\] {
+  background-color: #18181b !important;
+}
+
+.dark .bg-\[\#f3eee5\],
+.dark .bg-\[\#f4eee3\],
+.dark .bg-\[\#f1ebe2\],
+.dark .bg-\[\#f3ead8\] {
+  background-color: #27272a !important;
+}
+
+/* warm cream borders → dark neutral border */
+.dark .border-\[\#ddd4c7\],
+.dark .border-\[\#e5dccf\],
+.dark .border-\[\#e4dacb\],
+.dark .border-\[\#d8decd\],
+.dark .border-\[\#d7d1c5\],
+.dark .border-\[\#e3d5ba\],
+.dark .border-\[\#e2d9cb\],
+.dark .border-\[\#ece3d6\] {
+  border-color: #3f3f46 !important;
+}
+
+/* dark green/brown text → light foreground */
+.dark .text-\[\#344136\],
+.dark .text-\[\#314238\],
+.dark .text-\[\#223127\],
+.dark .text-\[\#1f2822\] {
+  color: #f4f4f5 !important;
+}
+
+.dark .text-\[\#556252\],
+.dark .text-\[\#5a6658\],
+.dark .text-\[\#566252\],
+.dark .text-\[\#6a6f62\],
+.dark .text-\[\#7a6b60\],
+.dark .text-\[\#6c5840\] {
+  color: #a1a1aa !important;
+}
+
+/* divide-* warm cream → dark border */
+.dark .divide-\[\#ece3d6\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #3f3f46 !important;
+}
+
+/* hover variants of the cream backgrounds */
+.dark .hover\:bg-\[\#fffbf4\]:hover,
+.dark .hover\:bg-\[\#fffaf1\]:hover {
+  background-color: #27272a !important;
 }

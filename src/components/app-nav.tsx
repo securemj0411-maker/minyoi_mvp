@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CreditIcon from "@/components/credit-icon";
 import { displayNameForUser, isAdminUser } from "@/lib/auth-users";
+import { hasClientAdminOverride, setClientAdminOverride } from "@/lib/client-admin-override";
 import { loadClientCredits } from "@/lib/client-credits";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
@@ -152,7 +153,10 @@ export default function AppNav() {
   const [infiniteCredits, setInfiniteCredits] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const admin = isAdminUser(user);
+  const [adminOverride, setAdminOverride] = useState(false);
+  const adminClickCountRef = useRef(0);
+  const adminClickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const admin = isAdminUser(user) || adminOverride;
   const userName = useMemo(() => displayNameForUser(user), [user]);
   const userInitial = useMemo(() => (userName || "U").trim().charAt(0).toUpperCase(), [userName]);
 
@@ -202,6 +206,26 @@ export default function AppNav() {
   }, [refreshCredits]);
 
   useEffect(() => {
+    setAdminOverride(hasClientAdminOverride());
+  }, []);
+
+  const handleAdminDotClick = useCallback(() => {
+    if (adminClickTimerRef.current) clearTimeout(adminClickTimerRef.current);
+    adminClickCountRef.current += 1;
+    if (adminClickCountRef.current >= 5) {
+      adminClickCountRef.current = 0;
+      const next = !hasClientAdminOverride();
+      setClientAdminOverride(next);
+      setAdminOverride(next);
+      if (typeof window !== "undefined") window.alert(`운영자 모드 ${next ? "ON" : "OFF"}`);
+      return;
+    }
+    adminClickTimerRef.current = setTimeout(() => {
+      adminClickCountRef.current = 0;
+    }, 1500);
+  }, []);
+
+  useEffect(() => {
     if (!menuOpen) return;
     const handlePointerDown = (event: PointerEvent) => {
       if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
@@ -229,7 +253,14 @@ export default function AppNav() {
   return (
     <nav className="sticky top-0 z-40 border-b border-[#e2d9cb] bg-[#f8f4ec]/92 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
       <div className="mx-auto grid max-w-[1380px] grid-cols-[auto_1fr] items-center gap-3 px-4 py-3 sm:px-6 md:grid-cols-[1fr_auto_1fr] lg:px-8">
-        <Link href="/" className="flex items-center gap-2 md:justify-self-start">
+        <div className="flex items-center gap-2 md:justify-self-start">
+          <button
+            type="button"
+            onClick={handleAdminDotClick}
+            aria-label="admin-toggle"
+            className={`h-2 w-2 rounded-full transition-colors ${adminOverride ? "bg-emerald-500" : "bg-[#d6cdbc] dark:bg-zinc-700"}`}
+          />
+          <Link href="/" className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-sm font-black text-white shadow-md shadow-emerald-500/20">
             M
           </div>
@@ -238,6 +269,7 @@ export default function AppNav() {
             Beta
           </span>
         </Link>
+        </div>
 
         <div className="hidden items-center justify-self-center gap-1 md:flex">
           {navLinks.map((link) => (

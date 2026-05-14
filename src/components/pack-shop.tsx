@@ -75,7 +75,7 @@ function ShowcaseCard({
       onPointerLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
-      className={`mx-auto w-full max-w-[460px] rounded-[28px] border border-[#e7dece] bg-[linear-gradient(180deg,#fffaf1_0%,#f7efdf_100%)] p-3 shadow-[0_18px_36px_rgba(34,49,39,0.08)] dark:border-zinc-800 dark:bg-zinc-950/50 ${className}`}
+      className={`mx-auto w-full max-w-[460px] rounded-[28px] border border-[#e7dece] bg-[linear-gradient(180deg,#fffaf1_0%,#f7efdf_100%)] p-3 shadow-[0_18px_36px_rgba(34,49,39,0.08)] dark:border-zinc-800 dark:bg-[linear-gradient(180deg,#18181b_0%,#0f0f12_100%)] ${className}`}
     >
       <div className="overflow-hidden rounded-[24px] border border-[#eadfce] bg-[#fffdf8] dark:border-zinc-800 dark:bg-zinc-900/70">
         <div className="relative aspect-[16/9] overflow-hidden bg-[#eee7da]">
