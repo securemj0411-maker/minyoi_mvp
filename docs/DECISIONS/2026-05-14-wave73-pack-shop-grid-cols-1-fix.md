@@ -1,0 +1,23 @@
+## Wave 73 — pack-shop grid 컬럼 content-sized → grid-cols-1 명시
+
+- 시간: 2026-05-14 KST
+- 발견: Wave 72 후에도 모바일 카루셀 우측 삐져나감 신고. user DevTools inspect 결과:
+  - 동일 viewport에서 어떤 카드는 290px (안정), 다른 카드는 380px / 432px (overflow)
+  - 즉 카드 너비가 이미지마다 다름 → grid 컬럼이 content-sized
+- 원인: Tailwind `grid` 클래스만으로는 `display: grid`만 추가됨. `grid-template-columns` 명시 안 하면 column이 content-sized auto. 큰 자연 width 이미지가 컬럼을 늘려 카드를 viewport 밖으로 밀어버림.
+- 변경:
+  - `src/components/pack-shop.tsx`:
+    - line 248: hero grid `grid` → `grid grid-cols-1` + flex column에 `min-w-0` 추가
+    - line 291: trust points grid `grid gap-2 sm:grid-cols-3` → `grid grid-cols-1 gap-2 sm:grid-cols-3`
+    - line 302: KPI cards grid `grid gap-2 sm:grid-cols-2` → `grid grid-cols-1 gap-2 sm:grid-cols-2`
+    - line 338: section grid `grid gap-4 xl:grid-cols-3` → `grid grid-cols-1 gap-4 xl:grid-cols-3`
+  - `grid-cols-1`은 `grid-template-columns: repeat(1, minmax(0, 1fr))` 출력 → minmax(0, 1fr)이 column shrink 허용 → content overflow 방지.
+  - `min-w-0`은 flex column 내부에서 children이 부모 너비 초과 못 하게 강제.
+- 검증:
+  - npx tsc --noEmit clean
+  - npm run test:core 139/139 pass
+- 위험:
+  - LOW: CSS only 변경. layout 의도는 동일 (mobile=1col, desktop=multi-col).
+  - 모바일에서 카드가 항상 viewport 안에 들어가도록 강제됨.
+- 다음:
+  - production 배포 후 모바일 chrome에서 카루셀 회전 시 카드 너비 일정 (290 또는 viewport-based) 확인

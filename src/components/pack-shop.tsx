@@ -245,8 +245,8 @@ export default function PackShop({ showcases, kpis }: { showcases: LandingShowca
     <main className="min-h-screen bg-[#f6f1e8] dark:bg-zinc-950">
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8">
         <section className="overflow-hidden rounded-[34px] border border-[#ddd4c7] bg-[#fffbf4] shadow-[0_24px_60px_rgba(34,49,39,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="grid gap-6 overflow-hidden px-6 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-9 xl:grid-cols-[minmax(0,1fr)_410px] xl:px-10 xl:py-9 2xl:grid-cols-[minmax(0,1.04fr)_430px] 2xl:px-12 2xl:py-10">
-            <div className="flex flex-col">
+          <div className="grid grid-cols-1 gap-6 overflow-hidden px-6 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-9 xl:grid-cols-[minmax(0,1fr)_410px] xl:px-10 xl:py-9 2xl:grid-cols-[minmax(0,1.04fr)_430px] 2xl:px-12 2xl:py-10">
+            <div className="flex min-w-0 flex-col">
               <div>
                 <div className="inline-flex rounded-full border border-[#cfd9c9] bg-[#edf3eb] px-3 py-1.5 text-xs font-black text-[#4f6f58]">
                   AI 검증 추천
@@ -288,7 +288,7 @@ export default function PackShop({ showcases, kpis }: { showcases: LandingShowca
                     어떻게 작동하나요?
                   </Link>
                 </div>
-                <div className="mt-5 grid gap-2 sm:grid-cols-3">
+                <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
                   {trustPoints.map((point) => (
                     <span
                       key={point}
@@ -299,7 +299,7 @@ export default function PackShop({ showcases, kpis }: { showcases: LandingShowca
                     </span>
                   ))}
                 </div>
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <div className="rounded-[22px] border border-[#e4dacb] bg-[#fffaf1] px-4 py-3">
                     <div className="text-[11px] font-black text-[#6a7267]">추천 평균 차익</div>
                     <div className="mt-1 text-[22px] font-black leading-none text-[#1f2d24]">
@@ -335,7 +335,7 @@ export default function PackShop({ showcases, kpis }: { showcases: LandingShowca
           </div>
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-3">
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           <div className="rounded-[28px] border border-[#ddd4c7] bg-[#fffbf4] px-6 py-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-[22px] border border-[#d8decd] bg-[#fffaf1]">
               <LandingCardIcon type="start" />
