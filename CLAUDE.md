@@ -88,9 +88,9 @@ Bunjang API
 ## 함정 (사고 예방)
 
 - **Next.js 16** — 학습 데이터와 다름. `node_modules/next/dist/docs/` 확인 (AGENTS.md).
-- **팩 오픈 race condition** — `spendUserCredits` + `openPack`이 분리돼 더블스펜드/환불실패 위험. 이 영역 수정 시 [packs/open/route.ts](src/app/api/packs/open/route.ts) + [pack-open.ts](src/lib/pack-open.ts) + [user-credits.ts](src/lib/user-credits.ts) 함께. 권장 해결: Supabase RPC로 원자화.
-- **RLS 정책 미흡** — `enable row level security`만 있고 POLICY 없으면 기본 DENY. service_role 우회 중이지만 클라이언트 직접 쿼리 추가 전 점검 필수.
-- **`/api/debug/reset-db`** — 14개 테이블 비움. `NODE_ENV` 가드 없음. 호출 전 환경 확인.
+- **팩 오픈 atomic RPC** — Wave 60 (2026-05-14) 점검 완료: `spend_and_record_pack_open` SECURITY DEFINER RPC가 spend + record 통합. `commit_mvp_pool_reveal` / `reserve_mvp_pool_candidates` / `release_mvp_pool_reservation` / `invalidate_mvp_pool_entry` 4 RPC도 SECURITY DEFINER. **race 해소됨**. 단 RPC 변경 시 5종 정합성 동시 검증 필수.
+- **RLS 정책** — Wave 60 (2026-05-14) 점검: 28 production 테이블 중 23 DENY_ALL (RLS on / policy 0, service_role 우회) + 4 user-facing POLICY_DEFINED (mvp_listings anon SELECT true, pack_opens·pack_reveals·reveal_feedback anon ALL false). 신규 테이블 추가 시 RLS 활성 + 의도된 policy 박는 게 default — 임시 backup table도 RLS 켜고 service_role rollback 우회로 사용.
+- **`/api/debug/reset-db`** — Wave 60 점검 완료: 4중 가드 (`NODE_ENV=production && ALLOW_DEBUG_RESET!=1` → 403 / `requireDebugAdmin` / `confirm="RESET"` 리터럴 / `DEBUG_RESET_SECRET` env 필수). 14개 테이블 비움이지만 사고 가능성 매우 낮음.
 - **God file 금지** — `pipeline.ts`/`tick-pipeline.ts`에 더 쌓지 말고 작은 모듈로 분리.
 - **report-*.ts 양산 금지** — 398개 이미 있음. 새로 만들 거면 공통 베이스부터.
 - **mining v1/v2 수정 금지** — v3만 사용.

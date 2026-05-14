@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v31";
+const PARSER_VERSION = "option-parser-v32";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -153,12 +153,18 @@ function parseLaptopReleaseYear(text: string) {
     /\b(20(?:0[8-9]|1[0-9]|2[0-6]))\s*(?:년형|년식|형|model)(?:[^0-9a-z가-힣]|$)/,
     /\b(?:early|mid|late)\s*(20(?:0[8-9]|1[0-9]|2[0-6]))\b/,
     /\b(20(?:0[8-9]|1[0-9]|2[0-6]))\s*(?:맥북|macbook|에어|프로|air|pro)\b/,
+    // v32: reverse order — "맥북프로 2019", "맥북에어 m1 2020", "맥북프로2017", "맥북 프로 16인치 2019"
+    // \b가 한글 boundary로 안 먹어서 explicit char class 사용. 사이 token은 chip/inch 등 최대 15자.
+    // "2025년 2월 구매" 같은 purchase year context는 brand에서 멀어서 자동 회피.
+    /(?:맥북|macbook|에어|프로|air|pro|gram|그램)[a-z0-9\s./()\-인치]{0,15}?(20(?:0[8-9]|1[0-9]|2[0-6]))(?:[^0-9]|$)/,
   ]);
   if (fullYear?.[1]) return Number(fullYear[1]);
 
   const shortYear = firstMatch(lower, [
     /(?:^|[^0-9])([0-2][0-9])\s*(?:년형|년식)(?:[^0-9]|$)/,
     /\b(?:early|mid|late)\s*([0-2][0-9])\b/,
+    // v32: "19년" / "20년" — short year + 년 suffix
+    /(?:^|[^0-9])([0-2][0-9])\s*년(?:[^0-9형식]|$)/,
   ]);
   if (!shortYear?.[1]) return null;
   const twoDigit = Number(shortYear[1]);

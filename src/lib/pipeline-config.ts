@@ -10,8 +10,11 @@ export const DEFAULT_SEARCH_QUERIES = [
   "갤럭시탭 S8", "갤럭시탭 S9", "갤럭시탭 S10",
   // Wave 54/56: narrow tech/home lane validation queries. These start as
   // gather traffic; query cadence can downrank low-yield lanes after evidence.
-  "벤큐 XL2540K", "LG 27US550", "LG 27GL650F", "LG 39GX900A",
-  "JBL Flip 6", "JBL 플립6",
+  // Wave 59-A cleanup: removed "LG 39GX900A" (median price 200만+ → 자본 천장 위반,
+  // Wave 58 §11.C 폐기 결정), "JBL 플립6" (한글 변형 raw 0 / Wave 56·57 측정),
+  // "Bose QC" (영어 단독 raw 0 / Wave 57 측정).
+  "벤큐 XL2540K", "LG 27US550", "LG 27GL650F",
+  "JBL Flip 6",
   "닌텐도 스위치 OLED", "스위치 OLED",
   "플스5 디스크", "PS5 디스크", "플스5 디지털", "PS5 디지털", "PS5 슬림",
   "다이슨 V12", "다이슨 V15", "로보락 S8", "Roborock S8",
@@ -19,9 +22,17 @@ export const DEFAULT_SEARCH_QUERIES = [
   // were 0 in Wave 55/56 audit; only synthetic wave*_boost: tags existed).
   // start as queryFamily=unknown → gather + 5m default. Yield-based downrank
   // applies once evidence accumulates.
-  "보스 QC", "Bose QC",
+  "보스 QC",
   "WH-1000XM", "소니 헤드폰",
   "맥미니", "아이맥", "맥 스튜디오", "Mac Studio",
+  // Wave 61: 기존 catalog narrow lane 중 자연 inflow 0~3 SKU 보강 (카메라/헤드폰/이어폰/LG그램).
+  // 사업 카테고리 신규 아님 — 이미 등록된 catalog SKU에 mining query만 채움.
+  "소니 A7M3", "소니 A7C", "캐논 R6 Mark II",
+  "비츠 솔로4", "비츠 스튜디오 프로",
+  "갤럭시 버즈 3 프로",
+  "보스 QC 울트라", "보스 QC45",
+  "WH-CH520",
+  "LG 그램 17",
 ];
 
 export type PipelineRuntimeConfig = {
