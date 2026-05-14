@@ -37,7 +37,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v38";
+const PARSER_VERSION = "option-parser-v39";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -457,10 +457,12 @@ function parseTabletGeneration(text: string, model: string | null) {
   if (genWithMarker?.[1]) return Number(genWithMarker[1]);
 
   if (model === "ipad_pro") {
+    // Wave 90: chip prefix (m4, m2, m1, a14, a17 등) 다음 숫자가 generation으로 잘못
+    // 캡처되는 버그 fix. 사용자 코멘트로 발견 (pid 402181838 "프로 m4 13인치" → 4).
+    // negative lookahead로 직전이 m/M/a/A/c/C/i/I (chip prefix) 면 캡처 안 함.
     const match = firstMatch(lower, [
-      // 세대 marker 없을 때만 → 모델명 "프로/pro" 인접 단일 digit 사용 (decimal 회피 위해 [^.0-9] 경계)
-      /(?:아이패드\s*)?(?:프로|pro)\s+(?:[^0-9.]{0,12}?)?(\d)(?:[^0-9.]|$)/,
-      /(?:^|[^0-9.])(\d)(?:[^0-9.]{0,12})?(?:프로|pro)/,
+      /(?:아이패드\s*)?(?:프로|pro)\s+(?:[^0-9.]{0,12}?)?(?<![maciMACI])(\d)(?:[^0-9.]|$)/,
+      /(?:^|[^0-9.])(?<![maciMACI])(\d)(?:[^0-9.]{0,12})?(?:프로|pro)/,
     ]);
     return match ? Number(match[1]) : null;
   }
@@ -784,7 +786,10 @@ function parseAirpodsNoiseControl(model: string | null, text: string) {
     /노캔\s*(?:x|없|아님|아니|안됨|안\s*됨|미지원)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)\s*(?:x|없|아님|아니|안됨|안\s*됨|미지원)|anc\s*(?:x|no|없|미지원)/.test(lower) ||
     /노캔이되는모델은아니|노캔안되는|노캔없는|노캔x|노캔❌|노캔ㄴㄴ|노캔노노|노캔아님|노캔아니|노캔착각|노클x|ancx/.test(rawCompact) ||
     /노캔이되는모델은아니|노캔안되는|노캔없는|노캔x|노캔아님|노캔아니|노캔착각|노클x|ancx/.test(compact) ||
-    /일반\s*모델|일반형|기본\s*모델|기본모델|유선\s*충전|유선충전|mxp63/.test(lower)
+    /일반\s*모델|일반형|기본\s*모델|기본모델|유선\s*충전|유선충전|mxp63/.test(lower) ||
+    // Wave 90: "비노캔" 키워드 추가 (사용자 코멘트로 발견 — pid 403846241)
+    /비\s*노캔|비노캔|비\s*노이즈\s*캔슬|비노이즈캔슬/.test(lower) ||
+    /비\s*노캔|비노캔|비\s*노이즈\s*캔슬|비노이즈캔슬/.test(rawLower)
   ) {
     return "no_anc";
   }
