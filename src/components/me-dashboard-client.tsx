@@ -3,15 +3,17 @@
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import AdminPoolBrowser from "@/components/admin-pool-browser";
 import RecommendationWorkspace from "@/components/recommendation-workspace";
 import UserRevealDashboard from "@/components/user-reveal-dashboard";
+import { isAdminUser } from "@/lib/auth-users";
 import { MODEL_GUIDES } from "@/lib/model-guides";
 import type { InventorySnapshot } from "@/lib/pack-open";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 type DashboardSection = "dashboard-recommend" | "dashboard-guides" | "dashboard-history";
-type DashboardView = "work" | "guides";
+type DashboardView = "work" | "guides" | "admin-pool";
 
 function GuideLibraryView() {
   return (
@@ -230,12 +232,28 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
                 <span>나의 상품</span>
                 <span className="text-zinc-400">↘</span>
               </button>
+              {isAdminUser(user) && (
+                <button
+                  type="button"
+                  onClick={() => setActiveView("admin-pool")}
+                  className={`flex min-w-max items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm font-black transition dark:text-zinc-100 dark:hover:bg-zinc-800 lg:w-full ${
+                    activeView === "admin-pool"
+                      ? "border-[#c8d8c4] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
+                      : "border-transparent text-[#344136] hover:bg-[var(--brand-accent-soft)]"
+                  }`}
+                >
+                  <span>🔧 운영자: 풀 전체</span>
+                  <span className="text-zinc-400">↘</span>
+                </button>
+              )}
             </div>
           </div>
         </aside>
 
         {activeView === "guides" ? (
           <GuideLibraryView />
+        ) : activeView === "admin-pool" ? (
+          <AdminPoolBrowser />
         ) : (
           <div className="grid gap-5 px-4 py-6 lg:col-start-2 lg:px-5 lg:py-8 xl:grid-cols-[minmax(360px,440px)_minmax(0,1fr)] xl:items-start">
             <section id="dashboard-recommend" className="xl:sticky xl:top-24 xl:self-start">
