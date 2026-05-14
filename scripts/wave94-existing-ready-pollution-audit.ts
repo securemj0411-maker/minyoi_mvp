@@ -18,6 +18,13 @@ const READY_CATEGORIES = new Set([
   "speaker", "home_appliance", "sport_golf", "watch",
 ]);
 
+// Wave 95: LANE_READINESS ready narrow lane (Wave 93에서 승격된 shoe/bag/bike narrow)
+const READY_LANE_KEYS = new Set([
+  "shoe_salomon_xt6_black",
+  "bike_trek_emonda_sl5",
+  "bike_merida_bignine",
+]);
+
 const POLLUTION_HINTS = {
   fake_anxiety: /정품\s*보증|감정\s*가능|감정\s*문의|정가품\s*문의|레플|st급|미러급|특\s*a\s*급|sa\s*급|이미테이션|짭|짝퉁|복각|오라리/i,
   parts_only: /한짝|왼발만|오른발만|박스만|더스트백만|스트랩만|영수증만|프레임만|포크만|휠셋만|안장만|단품|부품|배터리만|충전기만|렌즈만|바디캡만/,
@@ -137,8 +144,11 @@ function audit(sku: Sku, passed: Array<{ item: SearchItem; parsed: ParsedListing
 async function main() {
   console.log("Wave 94 — 기존 ready 카테고리 pollution audit");
   console.log("현재 사용자 노출 중인 매물의 진짜 오염도 측정\n");
-  // CATALOG에서 ready 카테고리만 추출 + sport_golf/watch 같은 narrow lane도 포함 (LANE_READINESS ready)
-  const targetSkus = CATALOG.filter((s) => READY_CATEGORIES.has(s.category));
+  // CATALOG에서 ready 카테고리 SKU + LANE_READINESS ready narrow lane SKU
+  const targetSkus = CATALOG.filter((s) =>
+    READY_CATEGORIES.has(s.category) ||
+    (s.laneKey != null && READY_LANE_KEYS.has(s.laneKey))
+  );
   console.log(`대상 SKU: ${targetSkus.length}개 (${[...new Set(targetSkus.map((s) => s.category))].join(", ")})\n`);
 
   const audits: Audit[] = [];
