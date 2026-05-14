@@ -2405,6 +2405,22 @@ export async function sourceHealthStage(): Promise<StageStats> {
 }
 
 async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<number, ParsedListingRow>) {
+  // Wave 90: 시세 집계에서 risk_hits>0 매물 제외 (사용자 지적 — 분실/도난/침수 매물이
+  // 시세 평균 끌어내림). mvp_listing_analysis batch fetch로 risk_hits 가져옴.
+  // analysis row 없는 매물 (아직 score 안 된 새 매물) → 일단 포함 (default safe).
+  const safeByPid = new Map<number, boolean>();
+  if (rows.length > 0) {
+    const pids = rows.map((r) => r.pid);
+    for (const chunk of chunkArray(pids, REST_READ_CHUNK_SIZE)) {
+      const res = await restFetch(
+        `${tableUrl("mvp_listing_analysis")}?select=pid,risk_hits&pid=in.(${chunk.join(",")})`,
+        { headers: serviceHeaders() },
+      );
+      const analyses = (await res.json()) as Array<{ pid: number; risk_hits: number }>;
+      for (const a of analyses) safeByPid.set(Number(a.pid), Number(a.risk_hits ?? 0) === 0);
+    }
+  }
+
   const byKey = new Map<string, {
     rows: ScorableRawRow[];
     activeRows: ScorableRawRow[];
@@ -2415,6 +2431,8 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   for (const row of rows) {
     const parsed = parsedByPid.get(row.pid);
     if (!parsed?.comparable_key || Number(parsed.parse_confidence ?? 0) < 0.65 || parsed.needs_review) continue;
+    // risk_hits>0 매물 제외 (analysis 없으면 default safe)
+    if (safeByPid.has(row.pid) && safeByPid.get(row.pid) === false) continue;
     const key = parsed.comparable_key;
     if (!byKey.has(key)) byKey.set(key, { rows: [], activeRows: [], soldRows: [], disappearedRows: [], skuId: row.sku_id });
     const group = byKey.get(key)!;

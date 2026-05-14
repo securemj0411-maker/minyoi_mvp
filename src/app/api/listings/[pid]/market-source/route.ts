@@ -101,12 +101,23 @@ export async function GET(
         .filter((p) => Number.isFinite(p) && p !== pid)
         .slice(0, MAX_COMPARABLES);
       if (sameKeyPids.length > 0) {
-        const rawListRes = await restFetch(
-          `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=in.(${sameKeyPids.join(",")})&order=last_seen_at.desc`,
-          { headers: serviceHeaders() },
-        );
+        // Wave 90: listing_type=normal + risk_hits=0 필터 추가 (사용자 지적 — 사기/parts/위험 매물 시세 왜곡 차단).
+        // analysis fetch는 별도 (raw_listings에 risk_hits 컬럼 없음 → mvp_listing_analysis join).
+        const [rawListRes, analysisRes] = await Promise.all([
+          restFetch(
+            `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=in.(${sameKeyPids.join(",")})&listing_type=eq.normal&order=last_seen_at.desc`,
+            { headers: serviceHeaders() },
+          ),
+          restFetch(
+            `${tableUrl("mvp_listing_analysis")}?select=pid,risk_hits&pid=in.(${sameKeyPids.join(",")})`,
+            { headers: serviceHeaders() },
+          ),
+        ]);
         const rawRows = (await rawListRes.json()) as Array<Record<string, unknown>>;
-        comparables = rawRows.map((row) => ({
+        const analysisRows = (await analysisRes.json()) as Array<{ pid: number; risk_hits: number }>;
+        const riskByPid = new Map(analysisRows.map((r) => [Number(r.pid), Number(r.risk_hits ?? 0)]));
+        const safeRows = rawRows.filter((r) => (riskByPid.get(Number(r.pid)) ?? 0) === 0);
+        comparables = safeRows.map((row) => ({
           pid: Number(row.pid),
           name: String(row.name ?? ""),
           price: Number(row.price ?? 0),
@@ -123,12 +134,24 @@ export async function GET(
     // 5. fallback — comparable_key 없거나 매물 0개면 sku_id 기준으로
     let comparableSource: "comparable_key" | "sku_id" | "none" = "comparable_key";
     if (comparables.length === 0 && skuId) {
+      // Wave 90: sku_id fallback도 listing_type=normal + risk_hits=0 필터.
       const skuRawRes = await restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query&sku_id=eq.${encodeURIComponent(skuId)}&pid=not.eq.${pid}&order=last_seen_at.desc&limit=${MAX_COMPARABLES}`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query&sku_id=eq.${encodeURIComponent(skuId)}&pid=not.eq.${pid}&listing_type=eq.normal&order=last_seen_at.desc&limit=${MAX_COMPARABLES + 10}`,
         { headers: serviceHeaders() },
       );
-      const rows = (await skuRawRes.json()) as Array<Record<string, unknown>>;
-      comparables = rows.map((row) => ({
+      const rawSkuRows = (await skuRawRes.json()) as Array<Record<string, unknown>>;
+      const skuPids = rawSkuRows.map((r) => Number(r.pid));
+      let safeRows = rawSkuRows;
+      if (skuPids.length > 0) {
+        const analysisRes = await restFetch(
+          `${tableUrl("mvp_listing_analysis")}?select=pid,risk_hits&pid=in.(${skuPids.join(",")})`,
+          { headers: serviceHeaders() },
+        );
+        const analysisRows = (await analysisRes.json()) as Array<{ pid: number; risk_hits: number }>;
+        const riskByPid = new Map(analysisRows.map((r) => [Number(r.pid), Number(r.risk_hits ?? 0)]));
+        safeRows = rawSkuRows.filter((r) => (riskByPid.get(Number(r.pid)) ?? 0) === 0).slice(0, MAX_COMPARABLES);
+      }
+      comparables = safeRows.map((row) => ({
         pid: Number(row.pid),
         name: String(row.name ?? ""),
         price: Number(row.price ?? 0),
