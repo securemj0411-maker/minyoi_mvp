@@ -33,7 +33,10 @@ export function sellerRepresentativePrices(rows: SellerPricedRow[]) {
 }
 
 export function madTrim(values: number[]) {
-  if (values.length < 8) {
+  // Wave 90 (2026-05-15): threshold 8 → 5. 사용자 코멘트로 발견 (pid 398109917 iPad mini,
+  // 407677847 Apple Watch Series 9): 매물 7건 이하인 SKU는 outlier trim 안 됨 →
+  // 어그로 매물 (₩410만 등) 시세 평균 왜곡. 5건이면 통계적으로 madTrim 의미 있음.
+  if (values.length < 5) {
     return { values, medianValue: median(values), mad: 0, removed: 0 };
   }
   const medianValue = median(values);

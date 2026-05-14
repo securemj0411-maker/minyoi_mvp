@@ -2632,6 +2632,17 @@ async function markRawLifecycleState(row: LifecycleClaimRow, status: LifecycleSt
   }
   if (detailSaleStatus != null) patch.sale_status = detailSaleStatus;
   await patchRows("mvp_raw_listings", `pid=eq.${row.pid}`, patch);
+
+  // Wave 90 (2026-05-15): listing_state가 active 외 상태로 전환되면 candidate_pool에서
+  // 자동 invalidate. 사용자 코멘트로 발견 (pid 407655201, 407614793, 407507382 등):
+  // disappeared/missing_suspect 상태인 매물이 풀에 남아 있어 사용자에게 노출됨.
+  // 이전엔 sold_confirmed만 호출처에서 별도 invalidate 호출 → 일관성 부재.
+  // 단일 진입점 markRawLifecycleState에 추가하면 어디서 호출되든 일관됨 (idempotent).
+  // missing_suspect는 임시 상태 (active 복귀 가능) — 일단 invalidate, active 복귀하면
+  // candidate-pool-builder가 다음 score tick에 재진입.
+  if (status === "sold_confirmed" || status === "disappeared" || status === "archived" || status === "missing_suspect") {
+    await invalidatePoolEntries([{ pid: Number(row.pid), reason: `lifecycle_state_${status}` }]).catch(() => undefined);
+  }
 }
 
 async function insertLifecycleObservation(row: LifecycleClaimRow, status: LifecycleStatus, result: string, detailSaleStatus?: string | null) {

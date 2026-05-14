@@ -2443,7 +2443,12 @@ export const CATALOG: Sku[] = [
     modelName: "Apple Watch Ultra",
     aliases: ["애플워치 울트라", "Apple Watch Ultra"],
     mustContain: [["애플워치", "apple watch", "applewatch"], ["울트라", "ultra"]],
-    mustNotContain: ["울트라 2", "ultra 2", "울트라2", "ultra2"],
+    // Wave 90 (2026-05-15): Ultra 3 차단 추가. 사용자 코멘트로 발견 — Ultra 3 매물이
+    // Ultra 1로 잘못 매핑되어 시세 비교에 섞임. Ultra 3 출시 시 별도 SKU 분리 필요.
+    mustNotContain: [
+      "울트라 2", "ultra 2", "울트라2", "ultra2",
+      "울트라 3", "ultra 3", "울트라3", "ultra3",
+    ],
     msrpKrw: 1149000,
     released: 2022,
   },
@@ -2462,6 +2467,8 @@ export const CATALOG: Sku[] = [
       "ultra 1",
       "울트라1",
       "ultra1",
+      // Wave 90: Ultra 3 차단 추가
+      "울트라 3", "ultra 3", "울트라3", "ultra3",
       "se",
       "series 9",
       "series 10",
