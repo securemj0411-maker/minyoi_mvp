@@ -37,10 +37,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-synthesis-weight: none;
   text-rendering: optimizeLegibility;
-  /* Wave 75: 모바일 좌우 쏠림 강한 fix. iOS Safari에서 overflow-x: clip이
-   * 일부 케이스 미작동 → max-width + overflow-x: hidden 조합으로 강제. */
+  /* Wave 75 → 2026-05-15: 모바일 좌우 쏠림 fix. 이전엔 overflow-x: hidden 강제
+   * 였으나 sticky 자식 요소(공략집 TOC) 동작이 일부 브라우저에서 깨졌음.
+   * overflow-x: clip 으로 변경 — iOS 15.4+ / Chrome 90+ / Safari 16+ 지원,
+   * 대부분 사용자 환경 OK. clip 미지원 매우 옛 브라우저는 hidden fallback. */
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow-x: hidden; /* fallback */
+  overflow-x: clip;
 }
 
 button,

@@ -224,6 +224,26 @@ export default function AdminPoolBrowser() {
 
       {error && <div className="rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300">에러: {error}</div>}
 
+      {/* 첫 로딩 스켈레톤 — data 없을 때만 (refresh 시에는 기존 data 유지) */}
+      {loading && !data && (
+        <div className="grid gap-3 md:grid-cols-2">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex animate-pulse gap-3 rounded-lg border border-[#e3ddd2] bg-[#fffdf9] p-3 dark:border-zinc-800 dark:bg-zinc-900"
+            >
+              <div className="h-[100px] w-[100px] shrink-0 rounded bg-zinc-200 dark:bg-zinc-800" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="h-3.5 w-4/5 rounded bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-5 w-2/3 rounded bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-3 w-3/4 rounded bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-3 w-1/2 rounded bg-zinc-200 dark:bg-zinc-800" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {data && (
         <>
           <div className="grid gap-3 md:grid-cols-2">
@@ -244,7 +264,13 @@ export default function AdminPoolBrowser() {
                 <div className="flex gap-3">
                   {item.thumbnailUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.thumbnailUrl} alt="" className="h-[100px] w-[100px] shrink-0 rounded object-cover" />
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-[100px] w-[100px] shrink-0 rounded object-cover"
+                    />
                   ) : (
                     <div className="h-[100px] w-[100px] shrink-0 rounded bg-zinc-200 dark:bg-zinc-800" />
                   )}

@@ -478,6 +478,9 @@ function SectionView({ section }: { section: Section }) {
 export default function PlaybookOverview() {
   const [activeId, setActiveId] = useState<string>(SECTIONS[0]?.id ?? "");
   const containerRef = useRef<HTMLDivElement | null>(null);
+  // Mobile horizontal TOC scroll container — active chip이 viewport 밖이면 자동 가운데로.
+  const tocScrollRef = useRef<HTMLDivElement | null>(null);
+  const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   // Sticky TOC 활성 표시 — IntersectionObserver
   useEffect(() => {
@@ -518,6 +521,26 @@ export default function PlaybookOverview() {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // activeId 변경 시 horizontal TOC scroll container 안에서 chip 가운데 정렬.
+  // Mobile에서 chip이 viewport 밖이면 자동으로 보이는 위치로 이동.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const container = tocScrollRef.current;
+    const chip = chipRefs.current[activeId];
+    if (!container || !chip) return;
+    const containerRect = container.getBoundingClientRect();
+    const chipRect = chip.getBoundingClientRect();
+    // chip이 container 가시 영역 밖이면 가운데 정렬로 scroll
+    const outOfView =
+      chipRect.left < containerRect.left + 16 ||
+      chipRect.right > containerRect.right - 16;
+    if (outOfView) {
+      const targetScrollLeft =
+        chip.offsetLeft - container.clientWidth / 2 + chip.clientWidth / 2;
+      container.scrollTo({ left: targetScrollLeft, behavior: "smooth" });
+    }
+  }, [activeId]);
+
   return (
     <div ref={containerRef} className="space-y-5">
       <div className="rounded-[28px] border border-[#e2d9cb] bg-[#fffaf6] p-5 shadow-[0_18px_36px_rgba(34,49,39,0.06)] dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
@@ -551,12 +574,15 @@ export default function PlaybookOverview() {
           aria-label="공략집 목차"
           className="border-y border-[#e2d9cb] bg-[#f8f4ec] px-4 py-2 shadow-[0_8px_18px_rgba(34,49,39,0.06)] dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-2xl sm:border sm:px-3"
         >
-          <div className="flex gap-1.5 overflow-x-auto pb-1">
+          <div ref={tocScrollRef} className="flex gap-1.5 overflow-x-auto pb-1">
             {SECTIONS.map((s) => {
               const active = activeId === s.id;
               return (
                 <button
                   key={s.id}
+                  ref={(el) => {
+                    chipRefs.current[s.id] = el;
+                  }}
                   type="button"
                   onClick={() => scrollTo(s.id)}
                   className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-black transition ${
