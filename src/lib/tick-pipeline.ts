@@ -2761,6 +2761,11 @@ export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMod
             oldComparableKey: row.comparable_key,
             parserVersion: row.parser_version,
           });
+        } else if (nextStatus === "missing_suspect" || nextStatus === "disappeared") {
+          // Wave 90: 사용자 코멘트로 발견 (pid 407655201, 407507382 등): 이미 missing_suspect/
+          // disappeared 상태인 매물이 풀에 잔류 → 사용자 노출. status 변경 없으면 markRawLifecycleState
+          // 호출 안 돼서 invalidate 안 됨. 명시적으로 invalidate 보장 (idempotent).
+          await invalidatePoolEntries([{ pid: row.pid, reason: `lifecycle_${nextStatus}_persist` }]).catch(() => undefined);
         }
         continue;
       }

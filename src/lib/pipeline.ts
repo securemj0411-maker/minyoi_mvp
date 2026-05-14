@@ -395,6 +395,15 @@ function multiModelHits(title: string): string[] {
     if (new RegExp(`갤럭시워치${n}|갤워치${n}|galaxywatch${n}|워치${n}`).test(compact)) add(`galaxywatch_${n}`);
   }
 
+  // Wave 90 (사용자 코멘트로 발견 — pid 407569227 "갤럭시북3 + 갤럭시탭 S9+ 세트"):
+  // 다중 카테고리 매물 (노트북+태블릿/맥북+iPad 등) 인식. 풀에 들어가면 시세 왜곡.
+  if (compact.includes("갤럭시북") || normalized.includes("galaxybook")) add("galaxy_book");
+  if (compact.includes("갤럭시탭") || normalized.includes("galaxy tab") || normalized.includes("galaxytab")) add("galaxy_tab");
+  if (compact.includes("맥북") || normalized.includes("macbook")) add("macbook");
+  if (compact.includes("아이패드") || normalized.includes("ipad")) add("ipad");
+  if (compact.includes("아이폰") || normalized.includes("iphone")) add("iphone");
+  if (compact.includes("갤럭시s") || /galaxy\s*s\d/.test(normalized)) add("galaxy_s");
+
   return hits.length >= 2 ? hits : [];
 }
 
