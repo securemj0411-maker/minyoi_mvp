@@ -149,10 +149,11 @@ function envQueries(): string[] {
     return queries;
   }
   const categoryQueries = buildCategorySweepQueries();
-  // dedupe (env로 동일 키 박았을 경우 대비)
+  // dedupe + category sweep을 FRONT에 배치 (tickSearchBudgetMs 안에서 우선 수행).
+  // 첫 번째 wave 88 deploy 시 category sweep이 budget timeout으로 미실행되는 issue 발견 → 우선순위 fix.
   const seen = new Set<string>();
   const merged: string[] = [];
-  for (const q of [...queries, ...categoryQueries]) {
+  for (const q of [...categoryQueries, ...queries]) {
     if (!seen.has(q)) {
       seen.add(q);
       merged.push(q);
