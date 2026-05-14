@@ -345,7 +345,7 @@ async function assertRevealAccess(userRef: string, pid: number): Promise<void> {
   if (rows.length === 0) throw new Error("reveal not found for user");
 }
 
-async function fetchLatestMarketStats(comparableKeys: (string | null)[]): Promise<Map<string, MarketPriceRow>> {
+export async function fetchLatestMarketStats(comparableKeys: (string | null)[]): Promise<Map<string, MarketPriceRow>> {
   const unique = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
   if (unique.length === 0) return new Map();
   const cols = [
@@ -374,7 +374,7 @@ async function fetchLatestMarketStats(comparableKeys: (string | null)[]): Promis
   return latest;
 }
 
-async function fetchLatestMarketVelocity(comparableKeys: (string | null)[]): Promise<Map<string, MarketVelocityRow>> {
+export async function fetchLatestMarketVelocity(comparableKeys: (string | null)[]): Promise<Map<string, MarketVelocityRow>> {
   const unique = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
   if (unique.length === 0) return new Map();
   const cols = [
@@ -440,7 +440,7 @@ function excludedExamplesForKey(comparableKey: string | null) {
   return ["부품용", "구성품 일부", "다중상품/선택가"];
 }
 
-function marketBasisForCandidate(
+export function marketBasisForCandidate(
   comparableKey: string | null,
   skuName: string,
   marketStats: Map<string, MarketPriceRow>,
@@ -465,7 +465,7 @@ function marketBasisForCandidate(
   };
 }
 
-function velocityBasisForCandidate(
+export function velocityBasisForCandidate(
   comparableKey: string | null,
   velocityStats: Map<string, MarketVelocityRow>,
   readinessMap: Awaited<ReturnType<typeof loadCategoryReadinessMap>>,

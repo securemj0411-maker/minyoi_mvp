@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
-import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
+import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type RevealItem = {
@@ -32,6 +32,10 @@ type RevealItem = {
   linkClickedAt: string | null;
   feedbackType: string | null;
   feedbackNote: string | null;
+  // Wave 89: 모달에 카드팩과 동일한 시세/velocity/flow 표시
+  marketBasis: RevealMarketBasis | null;
+  velocityBasis: RevealVelocityBasis | null;
+  skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
 };
 
 type DashboardResponse = {
@@ -188,6 +192,9 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
         linkClickedAt: null,
         feedbackType: null,
         feedbackNote: null,
+        marketBasis: card.marketBasis,
+        velocityBasis: card.velocityBasis,
+        skuListingFlow: card.skuListingFlow ?? null,
       }));
       setItems((prevItems) => {
         if (query || sort !== "latest") return prevItems;
@@ -205,6 +212,22 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
   const modalResult: RevealResult | null = useMemo(() => {
     if (!selectedItem) return null;
     const revealedAtMs = new Date(selectedItem.revealedAt).getTime();
+    // Wave 89: marketBasis/velocityBasis/skuListingFlow는 서버에서 실시간 fetch한 값 사용.
+    // 서버 fetch 실패하면 fallback (comparableKey만 있는 빈 marketBasis).
+    const marketBasis = selectedItem.marketBasis ?? {
+      comparableKey: selectedItem.comparableKey,
+      label: selectedItem.skuName ?? selectedItem.name,
+      p25Price: null,
+      medianPrice: null,
+      p75Price: null,
+      sampleCount: 0,
+      activeSampleCount: 0,
+      soldSampleCount: 0,
+      disappearedSampleCount: 0,
+      confidence: null,
+      computedAt: null,
+      excludedExamples: [],
+    };
     const revealCard: RevealCard = {
       pid: selectedItem.pid,
       name: selectedItem.name,
@@ -216,21 +239,8 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
       expectedProfitMin: selectedItem.expectedProfitMin,
       expectedProfitMax: selectedItem.expectedProfitMax,
       confidence: selectedItem.confidence,
-      marketBasis: {
-        comparableKey: selectedItem.comparableKey,
-        label: selectedItem.skuName ?? selectedItem.name,
-        p25Price: null,
-        medianPrice: null,
-        p75Price: null,
-        sampleCount: 0,
-        activeSampleCount: 0,
-        soldSampleCount: 0,
-        disappearedSampleCount: 0,
-        confidence: null,
-        computedAt: null,
-        excludedExamples: [],
-      },
-      velocityBasis: null,
+      marketBasis,
+      velocityBasis: selectedItem.velocityBasis,
       lastVerifiedAt: selectedItem.revealedAt,
       freshSeconds: Number.isFinite(revealedAtMs) && currentTimeMs > 0 ? Math.max(0, Math.floor((currentTimeMs - revealedAtMs) / 1000)) : 0,
       savedDetail: {
@@ -241,6 +251,7 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
         sellerReviewRating: selectedItem.sellerReviewRating,
         sellerReviewCount: selectedItem.sellerReviewCount,
       },
+      skuListingFlow: selectedItem.skuListingFlow ?? undefined,
     };
     return {
       result: "success",

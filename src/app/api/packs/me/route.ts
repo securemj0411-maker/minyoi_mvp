@@ -1,9 +1,21 @@
 import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
+import { loadCategoryReadinessMap } from "@/lib/category-readiness";
+import {
+  fetchLatestMarketStats,
+  fetchLatestMarketVelocity,
+  marketBasisForCandidate,
+  velocityBasisForCandidate,
+} from "@/lib/pack-open";
+import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
+
+// Wave 89: terminal state (sold/disappeared) 매물은 기본 숨김.
+// "팔린 매물 보기" 토글로 켤 수 있음 (?includeTerminal=1).
+const TERMINAL_STATES = new Set(["sold", "disappeared"]);
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -86,6 +98,10 @@ type RevealItem = {
   linkClickedAt: string | null;
   feedbackType: string | null;
   feedbackNote: string | null;
+  // Wave 89: 다시 보기 모달에도 시세/velocity/flow 보이게 추가.
+  marketBasis: RevealMarketBasis | null;
+  velocityBasis: RevealVelocityBasis | null;
+  skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
 };
 
 async function loadJson<T>(url: string): Promise<T> {
@@ -194,6 +210,7 @@ export async function GET(req: Request) {
 
   const pidList = pids.join(",");
   const packOpenList = packOpenIds.join(",");
+  const includeTerminal = url.searchParams.get("includeTerminal") === "1";
   const [rawRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
       `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status&pid=in.(${pidList})`,
@@ -216,10 +233,48 @@ export async function GET(req: Request) {
   const bandByOpenId = new Map(packOpenRows.map((row) => [Number(row.id), Number(row.band_requested)]));
   const comparableKeyByPid = new Map(parsedRows.map((row) => [Number(row.pid), row.comparable_key ?? null]));
 
+  // Wave 89: 시세/velocity/skuListingFlow를 다시 보기 모달에도 표시.
+  // comparable_key별로 market_price/velocity 한 번에 batch fetch.
+  const comparableKeys = [...new Set(parsedRows.map((row) => row.comparable_key).filter((k): k is string => Boolean(k)))];
+  const [marketStats, velocityStats, readinessMap] = await Promise.all([
+    fetchLatestMarketStats(comparableKeys),
+    fetchLatestMarketVelocity(comparableKeys),
+    loadCategoryReadinessMap(),
+  ]);
+
+  // skuListingFlow batch (7일 raw_listings count by sku_id)
+  const skuIds = [...new Set(rawRows.map((row) => row.sku_id).filter((s): s is string => Boolean(s)))];
+  const flowBySkuId = new Map<string, { count24h: number; avgPerDay7d: number }>();
+  if (skuIds.length > 0) {
+    try {
+      const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const encoded = skuIds.map((s) => encodeURIComponent(s)).join(",");
+      const flowRows = await loadJson<Array<{ sku_id: string; created_at: string }>>(
+        `${tableUrl("mvp_raw_listings")}?select=sku_id,created_at&sku_id=in.(${encoded})&created_at=gte.${since7d}&limit=20000`,
+      );
+      const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
+      const agg = new Map<string, { count24h: number; total7d: number }>();
+      for (const row of flowRows) {
+        const entry = agg.get(row.sku_id) ?? { count24h: 0, total7d: 0 };
+        entry.total7d += 1;
+        if (new Date(row.created_at).getTime() >= cutoff24h) entry.count24h += 1;
+        agg.set(row.sku_id, entry);
+      }
+      for (const [skuId, { count24h, total7d }] of agg) {
+        flowBySkuId.set(skuId, { count24h, avgPerDay7d: Math.round((total7d / 7) * 10) / 10 });
+      }
+    } catch (err) {
+      console.error("packs/me skuListingFlow fetch failed (non-fatal)", { err: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
   const items = reveals
     .map((reveal): RevealItem => {
       const raw = rawByPid.get(Number(reveal.pid));
       const feedback = feedbackByPid.get(Number(reveal.pid));
+      const comparableKey = comparableKeyByPid.get(Number(reveal.pid)) ?? null;
+      const skuName = raw?.sku_name ?? null;
+      const skuId = raw?.sku_id ?? null;
       return {
         pid: Number(reveal.pid),
         name: raw?.name ?? `PID ${reveal.pid}`,
@@ -232,10 +287,10 @@ export async function GET(req: Request) {
         sellerName: null,
         sellerReviewRating: raw?.shop_review_rating == null ? null : Number(raw.shop_review_rating),
         sellerReviewCount: Number(raw?.shop_review_count ?? 0),
-        skuId: raw?.sku_id ?? null,
+        skuId,
         thumbnailUrl: raw?.thumbnail_url ?? null,
-        skuName: raw?.sku_name ?? null,
-        comparableKey: comparableKeyByPid.get(Number(reveal.pid)) ?? null,
+        skuName,
+        comparableKey,
         listingState: raw?.listing_state ?? "unknown",
         saleStatus: raw?.sale_status ?? "",
         expectedProfitMin: Number(reveal.expected_profit_min ?? 0),
@@ -246,8 +301,12 @@ export async function GET(req: Request) {
         linkClickedAt: reveal.link_clicked_at,
         feedbackType: feedback?.feedback_type ?? null,
         feedbackNote: feedback?.note ?? null,
+        marketBasis: comparableKey ? marketBasisForCandidate(comparableKey, skuName ?? "", marketStats) : null,
+        velocityBasis: velocityBasisForCandidate(comparableKey, velocityStats, readinessMap),
+        skuListingFlow: skuId ? flowBySkuId.get(skuId) ?? null : null,
       };
     })
+    .filter((item) => includeTerminal || !TERMINAL_STATES.has(item.listingState))
     .filter((item) => matchesSearch(item, query))
     .sort(compareItems(sort));
 
