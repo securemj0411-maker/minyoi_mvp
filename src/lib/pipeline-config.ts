@@ -42,6 +42,19 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Seiko 5", "세이코 5 SRPD", "세이코 5 SBSA",
   "타이틀리스트 TSR2", "타이틀리스트 TSR3",
   "소니 a6400", "Sony a6400",
+  // Wave 86: 시계/카메라 표본 부족 SKU 집중 mining boost. parser 강화 + ready 승격 목표.
+  // 골프(Wave 67)는 충분한 표본으로 sport_golf ready 승격 (49+18건). 시계/카메라는 표본 부족
+  // (DW-5600 57건만 충분, GA-2100 33건 중 28건 review로 parser 약함, GMW-B5000 11건, Seiko 1건,
+  // 카메라 3 SKU 합쳐 5건). 변형 query 추가로 표본 늘림.
+  // 시계 G-Shock 변형:
+  "카시오크", "지얄오크", "DW-5600BB", "DW5600 풀박스",
+  "지샥 풀메탈", "GMW-B5000", "GMW B5000",
+  // 시계 Seiko 변형 (한국 매물 부족 — 다양한 검색어로 시도):
+  "세이코 5KX", "Seiko 5 SRPD", "세이코 SRPD",
+  // 카메라 변형 (body-only 표기 다양):
+  "Sony A7M3", "Sony A7 III", "ILCE-7M3",
+  "Sony A7C 바디", "ILCE-7C",
+  "캐논 R6M2", "EOS R6 Mark II", "캐논 알육막투",
 ];
 
 export type PipelineRuntimeConfig = {

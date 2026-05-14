@@ -1622,7 +1622,9 @@ export const CATALOG: Sku[] = [
     laneKey: "camera_body_only_exact_model",
     modelName: "Canon EOS R6 Mark II",
     aliases: ["Canon EOS R6 Mark II", "캐논 EOS R6 Mark II", "알육막투", "R6M2"],
-    mustContain: [["eos r6 mark ii", "r6 mark ii", "r6m2", "알육막투"], ["바디", "바디만", "body"]],
+    // Wave 86: body 명시 변형 흡수 (의미 완화 X). "본체"/"본체만"/"바디셋"/"풀박스" 추가.
+    // 풀박스는 Bunjang 카메라 관행상 body+박스+동봉품 (렌즈 미포함이 default).
+    mustContain: [["eos r6 mark ii", "r6 mark ii", "r6m2", "알육막투"], ["바디", "바디만", "바디셋", "body", "본체", "본체만", "풀박스", "풀박"]],
     mustNotContain: [...CAMERA_BODY_ONLY_NOISE],
     msrpKrw: 3199000,
     released: 2022,
@@ -1634,7 +1636,8 @@ export const CATALOG: Sku[] = [
     laneKey: "camera_body_only_exact_model",
     modelName: "Sony A7 III",
     aliases: ["Sony A7 III", "Sony A7M3", "소니 A7M3", "ILCE-7M3"],
-    mustContain: [["a7m3", "a7 iii", "a7 3", "ilce 7m3"], ["바디", "바디만", "바디셋", "body"]],
+    // Wave 86: body 명시 변형 흡수.
+    mustContain: [["a7m3", "a7 iii", "a7 3", "ilce 7m3"], ["바디", "바디만", "바디셋", "body", "본체", "본체만", "풀박스", "풀박"]],
     mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "a7m2", "a7m4", "a7r3", "a7r iii", "a7s3", "a7s iii"],
     msrpKrw: 2499000,
     released: 2018,
@@ -1646,7 +1649,8 @@ export const CATALOG: Sku[] = [
     laneKey: "camera_body_only_exact_model",
     modelName: "Sony A7C",
     aliases: ["Sony A7C", "소니 A7C", "ILCE-7C"],
-    mustContain: [["a7c", "ilce 7c"], ["바디", "바디만", "body"]],
+    // Wave 86: body 명시 변형 흡수.
+    mustContain: [["a7c", "ilce 7c"], ["바디", "바디만", "바디셋", "body", "본체", "본체만", "풀박스", "풀박"]],
     mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "a7c2", "7cm2", "ilce 7cm2"],
     msrpKrw: 2199000,
     released: 2020,
