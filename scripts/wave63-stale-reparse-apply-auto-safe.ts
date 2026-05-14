@@ -12,7 +12,7 @@ import { restFetch, serviceHeaders } from "@/lib/supabase-rest";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const appDir = path.join(__dirname, "..");
-const STALE_VERSIONS = ["option-parser-v24", "option-parser-v26", "option-parser-v27", "option-parser-v28", "option-parser-v29", "option-parser-v30", "option-parser-v31"];
+const STALE_VERSIONS = ["option-parser-v24", "option-parser-v26", "option-parser-v27", "option-parser-v28", "option-parser-v29", "option-parser-v30", "option-parser-v31", "option-parser-v32", "option-parser-v33", "option-parser-v34"];
 const PAGE_SIZE = 500;
 const HARD_LIMIT = 20_000;
 const APPLY = process.argv.includes("--apply=1");

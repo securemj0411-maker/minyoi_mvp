@@ -217,6 +217,24 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "Nintendo Switch OLED",
     note: "OLED 단독 narrow lane. v1/Lite/Switch 2/PS는 catalog로 차단.",
   },
+  // Wave 75: Wave 67 신 SKU 측정 결과 ready 승격 (parseRate ≥ 90% + NRfalse ≥ 5).
+  watch_gshock_dw5600: {
+    status: "ready",
+    label: "Casio G-Shock DW-5600",
+    note: "Wave 67/74: 모델 코드 DW-5600 strict. 56 raw, parseRate 91% (NRfalse 51) 측정 후 승격.",
+  },
+  sport_golf_titleist_tsr2_driver: {
+    status: "ready",
+    label: "Titleist TSR2 Driver",
+    note: "Wave 67/74: TSR2 + 드라이버 strict. 47 raw, parseRate 100% 측정 후 승격.",
+  },
+  sport_golf_titleist_tsr3_driver: {
+    status: "ready",
+    label: "Titleist TSR3 Driver",
+    note: "Wave 67/74: TSR3 + 드라이버 strict. 18 raw, parseRate 100% 측정 후 승격.",
+  },
+  // 미진입 (측정 불충분): watch_gshock_ga2100 (NRtrue 28건, 옛 parser version), watch_gshock_gmwb5000 (parseRate 55%),
+  // watch_seiko_5_sports_srpd (1건), watch_seiko_5_sports_sbsa (0건), camera_sony_a6400 (production 0건)
 };
 
 export type CategoryReadinessConfig = {

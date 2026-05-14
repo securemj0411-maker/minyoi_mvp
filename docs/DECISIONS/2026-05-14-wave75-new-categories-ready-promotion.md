@@ -1,0 +1,26 @@
+## Wave 75 — 신 카테고리 3 lane ready 승격 + 121건 풀 마킹
+
+- 시간: 2026-05-14 KST
+- 발견: Wave 67/74 후 측정 결과:
+  - ✅ G-Shock DW-5600: 56 raw, parseRate 91% (NRfalse 51), READY 통과
+  - ✅ Titleist TSR2: 47 raw, parseRate 100%, READY 통과
+  - ✅ Titleist TSR3: 18 raw, parseRate 100%, READY 통과
+  - 🟡 GA-2100/GMW-B5000/SRPD: 옛 parser version 결과 (v35 reparse 후 정상화 예상)
+  - 🔴 SBSA/Sony a6400: production raw 0건
+- 변경:
+  - `src/lib/category-readiness.ts` LANE_READINESS에 3 신 lane 추가 (status: ready):
+    - watch_gshock_dw5600
+    - sport_golf_titleist_tsr2_driver
+    - sport_golf_titleist_tsr3_driver
+  - `scripts/wave75-promote-new-categories-pool.ts` (신규): 3 SKU 매물 121건 pool_eligible=true + score_dirty=true 마킹
+  - tick fire 1회로 12건 즉시 풀 진입 확인 (다음 tick들에서 추가 진입)
+- 검증:
+  - parseRate ≥ 90% + NRfalse ≥ 5 기준 통과
+  - tick fire 즉시 효과 측정 (poolUpserted 12)
+- 위험:
+  - LOW: 모든 SKU strict mustContain (model code) → false positive 본질 0%
+  - 시계 가품 risk는 미드레인지 한정으로 낮음, 골프 변형(헤드만/풀세트)은 mustNotContain으로 격리됨
+- 다음:
+  - 1~2시간 후 풀 진입 누계 측정
+  - GA-2100 v35 reparse 효과 측정 (옛 parser version 매물이 v35로 reparse되면 NRfalse 증가 예상)
+  - SBSA/a6400은 별도 wave (supply-side 결정)
