@@ -62,6 +62,27 @@ export const DEFAULT_SEARCH_QUERIES = [
   "소니 A7CR", "Sony A7CR", "ILCE-7CR",
 ];
 
+// Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
+// 일괄 흡수. 127개 narrow query polling → 10개 카테고리 sweep으로 호출 91%↓, 매물 편향 0,
+// 신규 SKU 자동 발견. order=date page 0 + catalog ruleMatch가 광고/타깃 매물 분리.
+// L2 leaf ID 사용 (L1 600 단독은 0건 반환). bunjang.ts CATEGORY_QUERY_PREFIX 라우팅.
+export const DEFAULT_CATEGORY_SWEEPS: { id: string; title: string }[] = [
+  { id: "600700", title: "휴대폰" },         // 아이폰/갤럭시 전 모델
+  { id: "600710", title: "태블릿" },         // 아이패드/갤럭시탭
+  { id: "600720", title: "워치/밴드" },      // 애플워치/갤럭시워치
+  { id: "600100", title: "PC/노트북" },      // 맥북/LG그램
+  { id: "600300", title: "카메라/DSLR" },    // 소니 A7M3/A7C/A7C II/A7CR, 캐논 R6
+  { id: "600500", title: "오디오/영상" },    // 에어팟/Beats/Bose/Sony WH/JBL
+  { id: "600600", title: "게임/타이틀" },    // PS5/스위치
+  { id: "421",    title: "시계" },           // G-Shock/세이코
+  { id: "610",    title: "가전제품" },       // 다이슨/로보락
+  { id: "700600", title: "골프" },           // 타이틀리스트
+];
+
+function buildCategorySweepQueries(): string[] {
+  return DEFAULT_CATEGORY_SWEEPS.map((entry) => `category:${entry.id}`);
+}
+
 export type PipelineRuntimeConfig = {
   searchQueries: string[];
   pagesPerQuery: number;
@@ -118,12 +139,26 @@ function envBool(name: string, fallback: boolean): boolean {
 
 function envQueries(): string[] {
   const raw = process.env.PIPELINE_SEARCH_QUERIES;
-  if (!raw) return DEFAULT_SEARCH_QUERIES;
-  const queries = raw
-    .split(",")
-    .map((query) => query.trim())
-    .filter(Boolean);
-  return queries.length > 0 ? queries : DEFAULT_SEARCH_QUERIES;
+  const baseQueries = raw
+    ? raw.split(",").map((q) => q.trim()).filter(Boolean)
+    : DEFAULT_SEARCH_QUERIES;
+  const queries = baseQueries.length > 0 ? baseQueries : DEFAULT_SEARCH_QUERIES;
+
+  // Wave 88: category sweep 자동 포함. PIPELINE_DISABLE_CATEGORY_SWEEP=1로 끌 수 있음 (PoC/rollback용).
+  if (envBool("PIPELINE_DISABLE_CATEGORY_SWEEP", false)) {
+    return queries;
+  }
+  const categoryQueries = buildCategorySweepQueries();
+  // dedupe (env로 동일 키 박았을 경우 대비)
+  const seen = new Set<string>();
+  const merged: string[] = [];
+  for (const q of [...queries, ...categoryQueries]) {
+    if (!seen.has(q)) {
+      seen.add(q);
+      merged.push(q);
+    }
+  }
+  return merged;
 }
 
 export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {

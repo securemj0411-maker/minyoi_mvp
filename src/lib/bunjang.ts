@@ -110,16 +110,37 @@ function timeoutSignal(ms: number) {
   return AbortSignal.timeout(Math.max(1_000, ms));
 }
 
+// Wave 88: query string이 "category:<id>" prefix를 가지면 카테고리 sweep 모드로 전환.
+// f_category_id=<id> 파라미터 사용, q는 생략, req_ref=category.
+// 검증: 휴대폰/시계/골프/카메라/오디오 등 11개 L2 ID 동작 확인 (2026-05-15).
+// 광고/매입글은 catalog mustNotContain + ruleMatch가 자동 reject (사업 신뢰).
+export const CATEGORY_QUERY_PREFIX = "category:";
+
+export function isCategoryQuery(query: string): boolean {
+  return query.startsWith(CATEGORY_QUERY_PREFIX);
+}
+
+export function parseCategoryQuery(query: string): string | null {
+  if (!isCategoryQuery(query)) return null;
+  return query.slice(CATEGORY_QUERY_PREFIX.length).trim() || null;
+}
+
 export async function searchPage(query: string, page: number, options: SearchPageOptions = {}): Promise<SearchItem[]> {
   const order = options.order ?? "score";
   const limit = Math.max(1, Math.min(96, Math.round(options.limit ?? 30)));
+  const categoryId = parseCategoryQuery(query);
   const url = new URL(`${API_BASE}/api/1/find_v2.json`);
-  url.searchParams.set("q", query);
+  if (categoryId) {
+    url.searchParams.set("f_category_id", categoryId);
+    url.searchParams.set("req_ref", "category");
+  } else {
+    url.searchParams.set("q", query);
+    url.searchParams.set("req_ref", "search");
+  }
   url.searchParams.set("order", order);
   url.searchParams.set("page", String(page));
   url.searchParams.set("n", String(limit));
   url.searchParams.set("stat_device", "w");
-  url.searchParams.set("req_ref", "search");
   url.searchParams.set("stat_category_required", "1");
   url.searchParams.set("version", "4");
 

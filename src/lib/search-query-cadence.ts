@@ -27,13 +27,33 @@ export type CadenceDecision = {
   keepFresh: boolean;
 };
 
+// Wave 88: "category:<L2 id>" sweep query → 카테고리 family 직접 매핑.
+// bunjang.ts CATEGORY_QUERY_PREFIX와 같이 사용.
+const CATEGORY_SWEEP_FAMILY: Record<string, string> = {
+  "600100": "laptop",
+  "600300": "camera",
+  "600500": "earphone",       // 오디오/영상 — 헤드폰/이어폰/스피커 흡수
+  "600600": "game_console",
+  "600700": "smartphone",
+  "600710": "tablet",
+  "600720": "smartwatch",
+  "421":    "watch",
+  "610":    "home_appliance",
+  "700600": "sport_golf",
+};
+
 export function queryFamily(query: string): string {
-  const q = String(query ?? "").toLowerCase();
-  if (q.includes("에어팟")) return "earphone";
-  if (q.includes("워치")) return "smartwatch";
-  if (q.includes("아이폰") || q.includes("갤럭시 s")) return "smartphone";
-  if (q.includes("아이패드") || q.includes("갤럭시탭")) return "tablet";
-  if (q.includes("맥북")) return "laptop";
+  const q = String(query ?? "");
+  if (q.startsWith("category:")) {
+    const id = q.slice("category:".length).trim();
+    return CATEGORY_SWEEP_FAMILY[id] ?? "unknown";
+  }
+  const lower = q.toLowerCase();
+  if (lower.includes("에어팟")) return "earphone";
+  if (lower.includes("워치")) return "smartwatch";
+  if (lower.includes("아이폰") || lower.includes("갤럭시 s")) return "smartphone";
+  if (lower.includes("아이패드") || lower.includes("갤럭시탭")) return "tablet";
+  if (lower.includes("맥북")) return "laptop";
   return "unknown";
 }
 
@@ -63,6 +83,17 @@ export function decideCadence(
   row: QueryYieldRow,
   readiness: { status: CategoryReadinessStatus } | null,
 ): CadenceDecision {
+  // Wave 88: category sweep query는 yield와 무관하게 5m harvest 고정.
+  // 광범위한 매물 흡수가 목적이라 readyRate 낮아도 downrank하면 안 됨.
+  if (row.query.startsWith("category:")) {
+    return {
+      cadenceMinutes: 5,
+      cadence: "5m",
+      reason: "category_sweep_breadth_collect",
+      mode: "harvest",
+      keepFresh: true,
+    };
+  }
   const readyRate = row.observed ? row.poolReady / row.observed : 0;
   const poolRate = row.observed ? row.poolAny / row.observed : 0;
   const changeRate = row.observed ? row.changed / row.observed : 0;
