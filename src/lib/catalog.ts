@@ -223,11 +223,106 @@ const LAPTOP_NOISE = [
   "침수",
 ];
 
+// Wave 94 (2026-05-15): pollution audit 발견 패턴 강화.
+// 카테고리별로 자동 spread (GENERATED_CATALOG_WITH_GATES 패턴 확장).
+
+// 이어폰/헤드폰: 케이스/실리콘/거치대 단품 매물 reject 강화
+// Wave 94 iter2: audit에서 "에어팟2 케이스 기본 베이지" / "버즈3 프로 케이스 1회 사용" 같은
+// 매물 발견 → 좀 더 broad한 패턴 추가.
+const EARPHONE_NOISE_W94 = [
+  "실리콘 케이스", "보호 케이스", "케이스 단품", "케이스 1회",
+  "투명 케이스", "하드 케이스", "젤리 케이스", "범퍼 케이스",
+  "케이스 기본", "케이스 신상", "케이스 미사용", "케이스 미사용품",
+  "케이스 미개봉",
+  "에어팟 케이스", "에어팟 1,2세대 케이스", "에어팟 1/2 케이스",
+  "버즈 케이스", "버즈3 케이스", "버즈3 프로 케이스", "버즈3프로 케이스",
+  "버즈3,버즈3프로 케이스", "버즈프로 케이스", "버즈 프로 케이스",
+  "갤럭시 버즈 케이스", "케이맥스",
+  "이어캡", "이어탭", "이어 캡", "이어 탭", "earcap",
+  "필름", "강화유리",
+  "유닛 판매", "오른쪽 유닛", "왼쪽 유닛", "유닛 단품",
+  "본체만 판매 X", "본체만 분리",
+  "스트랩만", "넥스트랩만", "넥 스트랩만",
+  "구매원함", "구매원합니다", "구매희망",
+];
+
+// 스마트워치: 케이스/밴드/필름 단품 매물 reject 강화
+const SMARTWATCH_NOISE_W94 = [
+  "강화유리", "액정보호", "보호 케이스", "보호케이스", "필름",
+  "투명 케이스", "하드 케이스", "젤리 케이스", "범퍼", "스킨",
+  "밴드만", "메탈 밴드", "밀레니즈 밴드", "스포츠 밴드 단품",
+  "스트랩만", "줄만", "버클만",
+  "충전기만", "충전 거치대만", "거치대만",
+  "구매원함", "구매원합니다", "구매희망",
+];
+
+// 모니터: 거치대/스탠드/암 단품 매물 reject (현재 NOISE 없음)
+// Wave 94 iter2: "27gp850 모니터 거치대" 같이 모델명만 + 거치대 reject 강화.
+const MONITOR_NOISE_W94 = [
+  "거치대만", "거치대 단품", "모니터 거치대",
+  "스탠드만", "스탠드 단품",
+  "암 단품", "모니터 암", "vesa 마운트만",
+  "vesa 어댑터", "리모컨만", "전원선만", "케이블만",
+  "벽걸이 brackets",
+  "구매원함", "구매원합니다", "구매희망",
+  "삽니다", "구합니다",
+];
+
+// 가전 (로보락/다이슨 등): 악세사리/키트/소모품 reject (현재 NOISE 없음)
+// Wave 94 iter2: 사기 매물 패턴 reject.
+const HOME_APPLIANCE_NOISE_W94 = [
+  "악세사리", "악세서리", "엑세서리",
+  "키트", "kit", "키트 미개봉",
+  "물걸레", "물 걸레", "걸레 패드",
+  "필터", "filter", "필터만", "필터 교체",
+  "브러시만", "brush", "롤러브러시", "사이드 브러시",
+  "소모품", "소모품 세트",
+  "충전 받침", "도크만", "도크 단품",
+  "리모컨만", "전원선만", "배터리만",
+  "구매원함", "구매원합니다", "구매희망",
+  "전문사기조직", "사기 신고", "사기조직",
+];
+
+// 시계 (워치): 구매원함 + 케이스 단품 reject 추가
+const WATCH_NOISE_W94 = [
+  "구매원함", "구매원합니다", "구매희망",
+  "유리 단품", "쉴드 단품",
+  "보호 케이스", "케이스 단품",
+  "필름", "강화유리",
+];
+
+// 태블릿: 짭펜슬/구형 세대 reject 강화
+const TABLET_NOISE_W94 = [
+  "짭펜슬", "정품 펜슬 아님", "정품 펜슬 X",
+  "비공식 펜슬", "호환 펜슬만",
+];
+
+// 스피커: 케이스/충전기/벽걸이 단품 reject 강화
+const SPEAKER_NOISE_W94 = [
+  "하드 케이스 단품", "스킨만", "보호 커버만",
+  "스트랩 단품",
+  "충전 도크만", "충전 받침만",
+];
+
+// Wave 94: 카테고리별 NOISE를 GENERATED_CATALOG SKU에 자동 spread.
+// 기존 mustNotContain은 union으로 보존 (intent loss 없음).
+const CATEGORY_NOISE_MAP_W94: Partial<Record<Sku["category"], readonly string[]>> = {
+  laptop: LAPTOP_NOISE,
+  earphone: EARPHONE_NOISE_W94,
+  smartwatch: SMARTWATCH_NOISE_W94,
+  monitor: MONITOR_NOISE_W94,
+  home_appliance: HOME_APPLIANCE_NOISE_W94,
+  watch: WATCH_NOISE_W94,
+  tablet: TABLET_NOISE_W94,
+  speaker: SPEAKER_NOISE_W94,
+};
+
 const GENERATED_CATALOG_WITH_GATES: Sku[] = GENERATED_CATALOG.map((sku) => {
-  if (sku.category !== "laptop") return sku;
+  const noise = CATEGORY_NOISE_MAP_W94[sku.category];
+  if (!noise) return sku;
   return {
     ...sku,
-    mustNotContain: [...new Set([...sku.mustNotContain, ...LAPTOP_NOISE])],
+    mustNotContain: [...new Set([...sku.mustNotContain, ...noise])],
   };
 });
 
@@ -2656,7 +2751,15 @@ export const CATALOG: Sku[] = [
   ...BIKE_CATALOG,
 ];
 
-const SKU_MAP = new Map(CATALOG.map((s) => [s.id, s]));
+// Wave 94: CATALOG 전체 SKU에도 카테고리별 NOISE 자동 spread (GENERATED + CORE + Wave 91 신규 다 포함).
+// 이미 박힌 mustNotContain은 union으로 보존.
+const CATALOG_WITH_NOISE_W94: Sku[] = CATALOG.map((sku) => {
+  const noise = CATEGORY_NOISE_MAP_W94[sku.category];
+  if (!noise) return sku;
+  return { ...sku, mustNotContain: [...new Set([...sku.mustNotContain, ...noise])] };
+});
+
+const SKU_MAP = new Map(CATALOG_WITH_NOISE_W94.map((s) => [s.id, s]));
 export function skuById(id: string): Sku | undefined {
   return SKU_MAP.get(id);
 }
@@ -2760,7 +2863,7 @@ export function ruleMatch(title: string, description = ""): Sku | null {
   const titleDirect = directSpecificMatch(titleNorm);
   if (titleDirect) return requiresCombinedLaneVeto(titleDirect) && !skuMatches(titleDirect, combined) ? null : titleDirect;
 
-  const titleCandidates = CATALOG.filter((s) => skuMatches(s, titleNorm));
+  const titleCandidates = CATALOG_WITH_NOISE_W94.filter((s) => skuMatches(s, titleNorm));
   const titleChoice = chooseUniqueCandidate(titleCandidates);
   if (titleChoice) return requiresCombinedLaneVeto(titleChoice) && !skuMatches(titleChoice, combined) ? null : titleChoice;
   if (titleCandidates.length > 1) return null;
@@ -2768,6 +2871,6 @@ export function ruleMatch(title: string, description = ""): Sku | null {
   const combinedDirect = directSpecificMatch(combined);
   if (combinedDirect) return combinedDirect;
 
-  const descCandidates = CATALOG.filter((s) => skuMatches(s, combined));
+  const descCandidates = CATALOG_WITH_NOISE_W94.filter((s) => skuMatches(s, combined));
   return chooseUniqueCandidate(descCandidates);
 }

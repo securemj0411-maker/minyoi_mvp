@@ -477,7 +477,13 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
             <div className="aspect-square overflow-hidden rounded-lg bg-[#f1eadf] dark:bg-zinc-800">
               {item.thumbnailUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                <img
+                  src={item.thumbnailUrl}
+                  alt={item.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                />
               ) : null}
             </div>
             <div className="min-w-0">
