@@ -28,6 +28,7 @@
     "review:user-feedback": "node scripts/review-user-feedback.mjs",
     "mark:resolved": "node scripts/mark-feedback-resolved.mjs",
     "patrol:pool": "node scripts/patrol-pool-quality.mjs",
+    "analyze:catalog-coverage": "node scripts/analyze-catalog-coverage.mjs",
     "report:category-expansion": "node scripts/report-category-expansion.mjs",
     "report:monitor-parser": "tsx scripts/report-monitor-parser.ts",
     "report:game-console-narrowing": "tsx scripts/report-game-console-narrowing.ts",

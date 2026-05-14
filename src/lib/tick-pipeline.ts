@@ -3399,9 +3399,15 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const prices = pricesByMarket.get(marketKey) ?? [];
     const coarsePrices = pricesBySku.get(skuId) ?? [];
     const hasTrustedMarket = trustedMedian != null;
-    const fallbackMedian = prices.length >= 5
-      ? median(prices)
-      : (coarsePrices.length >= 5 ? median(coarsePrices) : (skuMsrp.get(skuId) ?? 300000) * 0.5);
+    // Wave 90 (2026-05-15): catalog gap 분석 결과 (broad SKU 42 변형 / 가격 ratio 20x)로
+    // root cause 발견. MSRP × 0.5 fallback + sku_id coarse 평균 둘 다 부정확.
+    // 정확한 시세 source 우선순위:
+    //   1. trustedMedian (mvp_market_price_daily의 comparable_key 기준 daily aggregate) — 가장 정확
+    //   2. prices ≥ 5 (marketGroupKey 기준 batch median, parsed OK면 comparable_key) — 정확
+    //   3. coarsePrices (sku_id 기준 broad 평균) — broad SKU 부정확 → 폐기
+    //   4. MSRP × 0.5 fallback — false positive 양산 → 폐기
+    // sample 부족 SKU는 sku_median=0 → bandFromProfit null → 풀 진입 차단 (정확성 우선 §12b)
+    const fallbackMedian = prices.length >= 5 ? median(prices) : 0;
     const skuMedian = hasTrustedMarket ? trustedMedian : fallbackMedian;
     const priceGap = skuMedian <= 0 ? 0 : Math.max(0, Math.min(1, (skuMedian - row.price) / skuMedian));
     const velocity = percentileRank(favsByMarket.get(marketKey) ?? [], row.num_faved);
