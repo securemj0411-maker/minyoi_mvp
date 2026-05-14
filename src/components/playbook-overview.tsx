@@ -233,16 +233,16 @@ const SECTIONS: Section[] = [
   {
     id: "vs-search",
     number: 8,
-    title: "네, 직접 다 찾을 수 있어요. 한 번 해보세요",
-    short: "직접 vs 미뇨이",
+    title: "직접 검색과 비교 — 같은 매물, 다른 시간",
+    short: "직접 검색 비교",
     blocks: [
       {
         kind: "intro",
-        text: "번개장터·중고나라·당근에서 직접 검색하면 매물 다 나옵니다. 우리도 거기서 가져옵니다. 단 한 번 30분만 직접 해보세요. 왜 우리가 필요한지 알게 됩니다.",
+        text: "미뇨이는 번개장터·중고나라·당근의 공개 매물을 기반으로 추천합니다. 같은 데이터를 직접 검색할 수도 있고, 미리 분류·검증된 결과를 받을 수도 있습니다. 차이는 결정까지 드는 시간입니다.",
       },
       {
         kind: "p",
-        text: "예를 들어 \"에어팟 프로 2 자급제\" 검색 첫 페이지 50건을 직접 분류해 보면:",
+        text: "예시 — \"에어팟 프로 2 자급제\" 검색 첫 페이지 50건을 직접 분류하면 다음과 같이 나뉩니다:",
       },
       {
         kind: "list",
@@ -257,7 +257,7 @@ const SECTIONS: Section[] = [
       },
       {
         kind: "p",
-        text: "여기서 시세 비교 + 판매자 등급 일일이 확인하면 +20분. 그 사이 진짜 좋은 매물 2~3개는 이미 팔립니다.",
+        text: "여기서 시세 비교 + 판매자 등급을 일일이 확인하면 약 20분이 추가됩니다. 인기 매물은 등록 후 30분 ~ 몇 시간 안에 거래가 완료되는 경우가 많아, 그 사이 시세 우위 매물 일부는 거래가 마감됩니다.",
       },
       {
         kind: "table",
@@ -267,25 +267,21 @@ const SECTIONS: Section[] = [
           { cells: ["시세 비교", "10분", "자동"] },
           { cells: ["판매자 등급 확인", "5분", "자동"] },
           { cells: ["남은 매물 결정", "5분", "5분"] },
-          {
-            tone: "warn",
-            cells: ["그 사이 진짜 좋은 매물 거래 완료", "2~3개", "0개"],
-          },
         ],
       },
       {
         kind: "callout",
         tone: "highlight",
-        text: "30분 vs 5분. 직접 한 번 해보세요. 다시 돌아오게 됩니다.",
+        text: "같은 검색 결과를 두고 결정까지 약 25분 차이가 납니다.",
       },
       {
         kind: "callout",
         tone: "good",
-        text: "그리고 30분 안에 팔리는 매물은 직접 검색으로 못 잡습니다. 등장한 순간 알 수가 없어요. 미뇨이 알람은 등록 즉시 알려줍니다. 시간이 곧 가격입니다.",
+        text: "등록 후 30분 안에 거래 완료되는 매물은 알람 없이는 잡기 어렵습니다. 시세보다 낮은 매물은 다른 사용자도 동시에 발견하므로, 실시간 알람으로 결정 시간을 확보하는 것이 차이를 만듭니다.",
       },
       {
         kind: "p",
-        text: "단 미뇨이는 모든 매물을 보여주진 않아요 — 확실한 것만 추천하는 방식입니다. 정확도 우선 정책이라 일부 매물은 \"확신 안 서면 안 보여줌\" 으로 처리합니다.",
+        text: "미뇨이는 모든 매물을 보여주지 않습니다. 정확도 우선 정책에 따라 확신이 서지 않는 매물은 \"안 보여줌\"으로 처리합니다. 보여주는 추천에 대한 신뢰를 우선합니다.",
       },
     ],
   },
@@ -537,40 +533,54 @@ export default function PlaybookOverview() {
         </p>
       </div>
 
-      {/* Sticky TOC */}
-      <nav
-        aria-label="공략집 목차"
-        className="sticky top-[64px] z-30 -mx-4 border-y border-[#e2d9cb] bg-[#f8f4ec]/95 px-4 py-2 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/95 sm:-mx-0 sm:rounded-2xl sm:border sm:px-3"
+      {/*
+        Sticky TOC — stacking context 깨지지 않게 backdrop-blur / margin trick 제거.
+        position: sticky 인라인 style 강제 (Tailwind 빌드 quirk fallback).
+        isolation: isolate 로 자체 stacking context. z-30 < layout root nav z-40 보장.
+      */}
+      <div
+        className="-mx-4 sm:mx-0"
+        style={{
+          position: "sticky",
+          top: 64,
+          zIndex: 30,
+          isolation: "isolate",
+        }}
       >
-        <div className="flex gap-1.5 overflow-x-auto pb-1">
-          {SECTIONS.map((s) => {
-            const active = activeId === s.id;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => scrollTo(s.id)}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-black transition ${
-                  active
-                    ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] dark:bg-emerald-500 dark:text-zinc-950"
-                    : "border-[#ddd4c7] bg-[#fbf8f2] text-[#344136] hover:border-[#c8d8c4] hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                }`}
-              >
-                <span
-                  className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
+        <nav
+          aria-label="공략집 목차"
+          className="border-y border-[#e2d9cb] bg-[#f8f4ec] px-4 py-2 shadow-[0_8px_18px_rgba(34,49,39,0.06)] dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-2xl sm:border sm:px-3"
+        >
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {SECTIONS.map((s) => {
+              const active = activeId === s.id;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => scrollTo(s.id)}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-black transition ${
                     active
-                      ? "bg-white/20 text-[var(--brand-cream)]"
-                      : "bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-emerald-400"
+                      ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] dark:bg-emerald-500 dark:text-zinc-950"
+                      : "border-[#ddd4c7] bg-[#fbf8f2] text-[#344136] hover:border-[#c8d8c4] hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                   }`}
                 >
-                  {s.number}
-                </span>
-                <span>{s.short}</span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+                  <span
+                    className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
+                      active
+                        ? "bg-white/20 text-[var(--brand-cream)]"
+                        : "bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-emerald-400"
+                    }`}
+                  >
+                    {s.number}
+                  </span>
+                  <span>{s.short}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
 
       <div className="space-y-4">
         {SECTIONS.map((s) => (

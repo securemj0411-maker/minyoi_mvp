@@ -194,20 +194,20 @@ export default function HowItWorksPage() {
           </div>
         </section>
 
-        {/* Why Minyoi — 직접 검색 vs 미뇨이 비교. 도발적 톤 + 시간 게임 강조. */}
+        {/* Why Minyoi — 직접 검색 vs 미뇨이 시간 비교 (공식적 톤, 사실 기반). */}
         <section className="rounded-[34px] border border-[#ddd4c7] bg-[#fffbf4] px-6 py-8 shadow-[0_18px_42px_rgba(34,49,39,0.08)] sm:px-8 sm:py-10">
           <div className="text-xs font-black uppercase tracking-[0.22em] text-[#5d735f]">
-            왜 미뇨이를 써야 하나
+            직접 검색과 비교
           </div>
           <h2 className="mt-3 break-keep text-2xl font-black tracking-tight text-[#223127] [text-wrap:balance] sm:text-4xl">
-            네, 번개장터에서 직접 다 찾을 수 있어요.
+            번개장터에서도 같은 매물을 찾을 수 있습니다.
             <br />
-            <span className="text-[#4f6f58]">한 번 직접 해보세요. 30분 후에 다시 옵니다.</span>
+            <span className="text-[#4f6f58]">차이는 매물을 거르는 데 드는 시간입니다.</span>
           </h2>
           <p className="mt-4 max-w-3xl break-keep text-sm leading-7 text-[#5a6658] sm:text-[15px]">
-            번개장터·중고나라·당근에서 직접 검색하면 매물 다 나옵니다. 우리도 거기서 가져옵니다.
-            <strong className="font-black text-[#344136]"> 단 한 번 30분만 직접 해보세요.</strong>
-            왜 우리가 필요한지 알게 됩니다.
+            미뇨이는 번개장터·중고나라·당근의 공개 매물을 기반으로 추천합니다.
+            같은 데이터를 직접 검색할 수도 있고, 미뇨이가 미리 분류·검증한 결과를 받을 수도 있습니다.
+            아래는 같은 검색으로 결정까지 가는 데 드는 시간 차이입니다.
           </p>
 
           {/* 직접 검색 30분 시나리오 */}
@@ -243,10 +243,9 @@ export default function HowItWorksPage() {
                 ))}
               </div>
               <p className="mt-4 text-sm leading-6 text-[#586356]">
-                결국 본품 21건. 시세 비교 + 판매자 등급 일일이 확인하면 +20분.
-                <strong className="font-black text-[#a04a3c]">
-                  {" "}그 사이 진짜 좋은 매물 2~3개는 이미 팔립니다.
-                </strong>
+                결국 본품 21건. 시세 비교 + 판매자 등급을 일일이 확인하면 약 20분이 추가됩니다.
+                인기 매물은 등록 후 30분 ~ 몇 시간 안에 거래가 완료되는 경우가 많아,
+                그 사이 시세 우위 매물 일부는 거래가 마감됩니다.
               </p>
             </article>
 
@@ -277,7 +276,7 @@ export default function HowItWorksPage() {
                 ))}
               </ul>
               <p className="mt-4 text-sm leading-6 text-[#334235]">
-                남은 5분으로 결정만. <strong className="font-black">같은 검색, 25분 차이.</strong>
+                남은 5분으로 결정에 집중. 같은 검색 결과를 두고 결정까지 약 25분 차이가 납니다.
               </p>
             </article>
           </div>
@@ -304,14 +303,14 @@ export default function HowItWorksPage() {
             </table>
           </div>
 
-          {/* 알람 메시지 */}
+          {/* 알람 메시지 — 사실 기반, 톤 차분. */}
           <div className="mt-6 rounded-[22px] border-l-4 border-[var(--brand-accent-strong)] bg-[var(--brand-accent-soft)] px-5 py-4">
             <p className="text-sm font-black leading-7 text-[#223127] sm:text-base">
-              그리고 30분 안에 팔리는 매물을 직접 검색으로 잡을 수 있나요? 불가능합니다.
+              등록 후 30분 안에 거래 완료되는 매물은 알람 없이는 잡기 어렵습니다.
             </p>
             <p className="mt-2 text-sm leading-6 text-[#344136]">
-              인기 매물은 등록 후 30분 ~ 몇 시간 안에 거래 완료됩니다. 직접 검색은 등장한 순간 알 수 없어요.
-              미뇨이 알람은 등록 즉시 알려줍니다. <strong className="font-black">시간이 곧 가격입니다.</strong>
+              시세보다 낮은 매물은 다른 사용자도 동시에 발견하기 때문에, 등장한 시점부터 거래 완료까지의 간격이 매우 짧은 경우가 많습니다.
+              미뇨이의 실시간 알람은 등록 즉시 알려주어 결정 시간을 확보합니다.
             </p>
           </div>
 
@@ -320,13 +319,13 @@ export default function HowItWorksPage() {
               href="/me"
               className="inline-flex items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-6 py-3.5 text-base font-black text-[var(--brand-cream)] shadow-[0_14px_28px_rgba(49,66,56,0.16)] transition hover:bg-[#29382f]"
             >
-              지금 5분으로 비교해보기
+              추천 보러 가기
             </Link>
             <Link
               href="/plans"
               className="inline-flex items-center justify-center rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] px-5 py-3.5 text-sm font-black text-[#344136] transition hover:bg-[var(--brand-accent-soft)]"
             >
-              알람 받는 플랜 보기
+              알람 플랜 보기
             </Link>
           </div>
         </section>
