@@ -164,6 +164,10 @@ function ShowcaseCard({
             {activeItem?.skuLabel ?? "실거래 기준 상품"}
           </div>
 
+          <div className="mt-2 text-[11px] leading-[1.5] text-zinc-400 dark:text-zinc-500">
+            ⓘ AI 시세 기반 추정 — 수익 보장 X. 실제 거래는 매입 협상·판매 시점·시세 변동에 따라 달라집니다.
+          </div>
+
           {items.length > 1 ? (
             <div className="mt-4 flex items-center justify-center gap-2">
               {items.map((item, index) => (

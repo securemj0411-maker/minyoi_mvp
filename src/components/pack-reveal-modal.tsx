@@ -1004,6 +1004,11 @@ export default function PackRevealModal({
                 <div className="mt-1">
                   같은 전체 본품 기준으로만 비교. 단품/본체만/케이스만은 제외.
                 </div>
+                <div className="mt-2 border-t border-[#ebe2cf] pt-2 text-[11px] leading-[1.5] text-[#7a8478] dark:border-zinc-700/60 dark:text-zinc-500">
+                  ⓘ AI 기반 시세 추천 — 수익 보장 X. 표시된 차익은 <b>해당 가격에 정상 판매됐을 때 추정 수익</b>이며,
+                  실제 거래는 매입가 협상·판매 시점·시세 변동·구성품 차이로 달라질 수 있습니다.
+                  최종 판단은 본인.
+                </div>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
                 <span>최근 검증 시점이 오래된 카드는 상품이 사라졌을 수 있어요. 빠르게 확인해주세요.</span>

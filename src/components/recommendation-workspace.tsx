@@ -224,6 +224,9 @@ function PackSelectorCard({
               <span>{MAX_PROFIT_MANWON}만원+</span>
             </div>
           </div>
+          <div className="mt-2 text-[10.5px] leading-[1.45] text-[#7a8478] dark:text-zinc-500">
+            ⓘ 표시 수익은 시세 기반 추정 (해당 가격에 정상 판매 시). AI 추천이며 수익 보장 X — 매입가 협상·판매 시점·구성품에 따라 달라집니다.
+          </div>
         </div>
       </div>
 
