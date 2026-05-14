@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdminPoolBrowser from "@/components/admin-pool-browser";
+import PlaybookOverview from "@/components/playbook-overview";
 import RecommendationWorkspace from "@/components/recommendation-workspace";
 import UserRevealDashboard from "@/components/user-reveal-dashboard";
 import { isAdminUser } from "@/lib/auth-users";
@@ -20,15 +21,17 @@ type DashboardView = "recommend" | "history" | "guides" | "admin-pool";
 function GuideLibraryView() {
   return (
     <section className="px-4 py-6 lg:px-8 lg:py-8">
-      <div className="rounded-[28px] border border-[#e2d9cb] bg-[#fffaf6] p-5 shadow-[0_18px_36px_rgba(34,49,39,0.06)] dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+      <PlaybookOverview />
+
+      <div className="mt-8 rounded-[28px] border border-[#e2d9cb] bg-[#fffaf6] p-5 shadow-[0_18px_36px_rgba(34,49,39,0.06)] dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
-              Guide Library
+              Model Guides
             </p>
-            <h1 className="mt-2 text-2xl font-black tracking-tight text-[#223127] dark:text-white sm:text-3xl">
-              공략집
-            </h1>
+            <h2 className="mt-2 text-2xl font-black tracking-tight text-[#223127] dark:text-white sm:text-3xl">
+              모델별 공략
+            </h2>
             <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#687366] dark:text-zinc-400">
               추천 상품을 보기 전에 확인할 모델별 옵션 축과 리셀 체크포인트입니다.
               같은 이름처럼 보여도 옵션이 다르면 다른 상품으로 봅니다.
