@@ -132,6 +132,7 @@ function PackSelectorCard({
   infiniteCredits,
   onOpen,
   busy,
+  inventoryLoading,
   isAuthenticated,
   onMinProfitChange,
   onRequestedCardsChange,
@@ -144,6 +145,7 @@ function PackSelectorCard({
   infiniteCredits: boolean;
   onOpen: (pack: PackDef, requestedCards: number) => void;
   busy: boolean;
+  inventoryLoading: boolean;
   isAuthenticated: boolean;
   onMinProfitChange: (value: number) => void;
   onRequestedCardsChange: (requestedCards: number) => void;
@@ -156,8 +158,8 @@ function PackSelectorCard({
   const totalCost = totalCostFor(selectedPack, selectedCount);
   const loginRequired = !isAuthenticated;
   const insufficient = !infiniteCredits && tokens < totalCost;
-  const sold = usableReady < MIN_REQUESTED_CARDS;
-  const disabled = busy || loginRequired || insufficient || sold;
+  const sold = !inventoryLoading && usableReady < MIN_REQUESTED_CARDS;
+  const disabled = busy || inventoryLoading || loginRequired || insufficient || sold;
 
   function handleOpenClick() {
     if (disabled) return;
@@ -266,29 +268,31 @@ function PackSelectorCard({
             <span className="inline-flex items-center justify-center gap-2">
               {busy
                 ? "처리 중..."
-                : loginRequired
-                  ? "로그인하고 검색"
-                  : sold
-                    ? "추천 없음"
-                    : insufficient
-                      ? (
-                          <>
-                            <span>부족</span>
-                            <CostBadge value={totalCost} />
-                          </>
-                        )
-                      : (
-                          <>
-                            <span>검색하기</span>
-                            <CostBadge value={totalCost} />
-                          </>
-                        )}
+                : inventoryLoading
+                  ? "재고 확인 중..."
+                  : loginRequired
+                    ? "로그인하고 검색"
+                    : sold
+                      ? "추천 없음"
+                      : insufficient
+                        ? (
+                            <>
+                              <span>부족</span>
+                              <CostBadge value={totalCost} />
+                            </>
+                          )
+                        : (
+                            <>
+                              <span>검색하기</span>
+                              <CostBadge value={totalCost} />
+                            </>
+                          )}
             </span>
           </button>
 
           <div className="flex items-center justify-between gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
-            <div className="rounded-full bg-[#f4eee3] px-3 py-1.5 dark:bg-zinc-800/60">
-              재고 {usableReady}건 남음
+            <div className={`rounded-full bg-[#f4eee3] px-3 py-1.5 dark:bg-zinc-800/60 ${inventoryLoading ? "animate-pulse" : ""}`}>
+              {inventoryLoading ? "재고 확인 중..." : `재고 ${usableReady}건 남음`}
             </div>
           </div>
 
@@ -359,6 +363,8 @@ type Props = {
 
 export default function RecommendationWorkspace({ initialInventory }: Props) {
   const [inventory, setInventory] = useState<InventorySnapshot[]>(initialInventory);
+  // Wave 74: CSR 전환 — initialInventory가 비었으면 mount 후 client fetch 동안 skeleton.
+  const [inventoryLoading, setInventoryLoading] = useState(initialInventory.length === 0);
   const [tokens, setTokens] = useState<number>(0);
   const [infiniteCredits, setInfiniteCredits] = useState(false);
   const [userRef, setUserRef] = useState<string>(() => getOrCreateUserRef());
@@ -430,8 +436,15 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
       if (Array.isArray(data?.inventory)) setInventory(data.inventory);
     } catch {
       // ignore
+    } finally {
+      setInventoryLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    // Wave 74: 페이지 mount 시 inventory client fetch (CSR).
+    if (initialInventory.length === 0) void refreshInventory();
+  }, [initialInventory.length, refreshInventory]);
 
   const openPack = useCallback(
     async (pack: PackDef, requestedCardsInput: number) => {
@@ -605,6 +618,7 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
           infiniteCredits={infiniteCredits}
           onOpen={openPack}
           busy={loading}
+          inventoryLoading={inventoryLoading}
           isAuthenticated={Boolean(authUser)}
           onMinProfitChange={setMinProfitManwon}
           onRequestedCardsChange={setRequestedCards}
