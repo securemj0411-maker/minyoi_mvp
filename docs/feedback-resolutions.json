@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-14T22:02:51.365Z",
+  "_updated_at": "2026-05-14T22:36:04.262Z",
   "resolutions": {
     "358002617": {
       "resolved_at": "2026-05-14T21:27:26.329Z",
@@ -58,11 +58,25 @@
         "ddcbaa9"
       ]
     },
+    "404986580": {
+      "resolved_at": "2026-05-14T22:36:03.538Z",
+      "summary": "Wave 90 ABCD",
+      "commits": [
+        "e1046cf"
+      ]
+    },
     "405103487": {
       "resolved_at": "2026-05-14T21:05:00.000Z",
       "summary": "iPad Pro 12.9 4세대 — parser v36 동일 fix. reparse 후 4_gen|a12z로 분리.",
       "commits": [
         "8421506"
+      ]
+    },
+    "405689770": {
+      "resolved_at": "2026-05-14T22:36:03.908Z",
+      "summary": "Wave 90 ABCD",
+      "commits": [
+        "e1046cf"
       ]
     },
     "406074278": {
@@ -79,6 +93,13 @@
         "8421506"
       ]
     },
+    "406633480": {
+      "resolved_at": "2026-05-14T22:36:04.256Z",
+      "summary": "Wave 90 ABCD",
+      "commits": [
+        "e1046cf"
+      ]
+    },
     "407486890": {
       "resolved_at": "2026-05-14T21:09:55.686Z",
       "summary": "iPad Pro 12.9 3세대 — parser v36 fix 적용 대상. 새 매물 들어오면 자동 분리. 기존 매물 reparse 필요 (npm run reparse:listings). 사용자 추가 제안 (애플펜슬 번들 정책 변경)은 별도 wave. | 번들 매물 풀 진입 허용 (parser v38) — needs_review 트리거에서 tabletBundlePriceReview 제거. 번들도 차익 매물로 노출. 액세서리 메타 뱃지는 후속 wave.",
@@ -92,6 +113,13 @@
       "summary": "맥북 15 2018 i7 — 동일 MSRP fallback 폐기 fix. 사용자 별도 발견 (삭제된 매물 보임): lifecycle-worker deleted 검사 부재 — 별도 wave.",
       "commits": [
         "2761586"
+      ]
+    },
+    "407569227": {
+      "resolved_at": "2026-05-14T22:36:03.325Z",
+      "summary": "Wave 90 ABCD",
+      "commits": [
+        "e1046cf"
       ]
     },
     "407614793": {
@@ -125,7 +153,7 @@
   },
   "_pending_separate_wave": {
     "358002617": "갤럭시탭 S8 Ultra outlier — sample 부족 (active 2건). 시간이 해결. 별도 작업 X.",
-    "lifecycle_deleted": "Bunjang에서 삭제된 매물 lifecycle-worker가 감지 못 함. 검사 추가 필요.",
+    "lifecycle_deleted_DONE": "Wave 90 commit e1046cf — markRawLifecycleState status 변경 안 돼도 missing_suspect/disappeared면 명시적 invalidatePoolEntries 호출. 풀 잔류 매물 즉시 정리.",
     "bundle_ui_badge": "Wave 90 v38에서 풀 진입 허용 완료. 후속: parsedJson.bundle_accessories 추출 + 카드 UI 뱃지 (🎁 애플펜슬 포함 등) 추가."
   }
 }
