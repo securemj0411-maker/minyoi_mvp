@@ -57,6 +57,9 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Sony A7M3", "Sony A7 III", "ILCE-7M3",
   "Sony A7C 바디",
   "캐논 R6M2", "EOS R6 Mark II", "캐논 알육막투",
+  // Wave 87: A7C broad noise 해소 — A7C II / A7CR 별도 SKU 분리 후 query 추가.
+  "소니 A7C II", "Sony A7C II", "A7C2", "ILCE-7CM2",
+  "소니 A7CR", "Sony A7CR", "ILCE-7CR",
 ];
 
 export type PipelineRuntimeConfig = {

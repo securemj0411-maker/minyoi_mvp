@@ -1656,6 +1656,32 @@ export const CATALOG: Sku[] = [
     released: 2020,
   },
   {
+    // Wave 87: A7C II (2023.10) — A7C 후속, 33MP, ILCE-7CM2. A7C broad noise 해소.
+    id: "camera-sony-a7c-ii",
+    brand: "Sony",
+    category: "camera",
+    laneKey: "camera_body_only_exact_model",
+    modelName: "Sony A7C II",
+    aliases: ["Sony A7C II", "소니 A7C II", "Sony A7C2", "소니 A7C2", "A7C ll", "ILCE-7CM2"],
+    mustContain: [["a7c2", "a7c ii", "a7c ll", "ilce 7cm2"]],
+    mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "a7cr", "ilce 7cr", "a7c rangefinder", "a7m3", "a7m4", "a7s2", "a7s3", "ilce 7sm2", "+ rf", "+ ef", "+ 28-", "+ 24-", "+ 70-", "케이지"],
+    msrpKrw: 2999000,
+    released: 2023,
+  },
+  {
+    // Wave 87: A7CR (2023.10) — A7C 라인 고해상 61MP variant, ILCE-7CR.
+    id: "camera-sony-a7cr",
+    brand: "Sony",
+    category: "camera",
+    laneKey: "camera_body_only_exact_model",
+    modelName: "Sony A7CR",
+    aliases: ["Sony A7CR", "소니 A7CR", "ILCE-7CR"],
+    mustContain: [["a7cr", "ilce 7cr"]],
+    mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "a7c2", "a7c ii", "ilce 7cm2", "a7r", "a7r5", "a7r v", "a7r iv", "a7m3", "a7m4", "+ rf", "+ ef", "+ 28-", "+ 24-", "+ 70-", "케이지"],
+    msrpKrw: 4290000,
+    released: 2023,
+  },
+  {
     id: "camera-sony-a5100",
     brand: "Sony",
     category: "camera",

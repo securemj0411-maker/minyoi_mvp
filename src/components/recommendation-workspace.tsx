@@ -25,7 +25,6 @@ type PackOpenRequest = {
 
 const MIN_REQUESTED_CARDS = 2;
 const MAX_REQUESTED_CARDS = 30;
-const CARDS_PER_COST_STEP = 2;
 const MIN_PROFIT_MANWON = 1;
 const MAX_PROFIT_MANWON = 10;
 const HIGH_PROFIT_WARNING_SESSION_KEY = "minyoi-hide-high-profit-warning-v1";
@@ -148,10 +147,6 @@ function bandForMinProfit(value: number): PackBand {
   return 1;
 }
 
-function minProfitLabel(value: number) {
-  return value >= MAX_PROFIT_MANWON ? `${MAX_PROFIT_MANWON}만원+` : `${value}만원+`;
-}
-
 function selectableCardLimit(usableReady: number) {
   const capped = Math.min(MAX_REQUESTED_CARDS, Math.max(usableReady, MIN_REQUESTED_CARDS));
   return capped % 2 === 0 ? capped : capped - 1;
@@ -161,10 +156,6 @@ function clampRequestedCards(value: number, maxCards = MAX_REQUESTED_CARDS) {
   const rounded = Number.isFinite(value) ? Math.round(value) : MIN_REQUESTED_CARDS;
   const capped = Math.max(MIN_REQUESTED_CARDS, Math.min(maxCards, rounded));
   return capped % 2 === 0 ? capped : capped - 1;
-}
-
-function totalCostFor(pack: PackDef, requestedCards: number) {
-  return Math.ceil(requestedCards / CARDS_PER_COST_STEP) * pack.cost;
 }
 
 function needsHighProfitWarning(pack: PackDef) {
@@ -183,7 +174,7 @@ function CostBadge({ value }: { value: number }) {
 function PackSelectorCard({
   selectedPack,
   selectedInventory,
-  minProfitManwon,
+  minProfitManwon: _minProfitManwon,
   requestedCards,
   tokens,
   infiniteCredits,
@@ -196,7 +187,7 @@ function PackSelectorCard({
 }: {
   selectedPack: PackDef;
   selectedInventory?: InventorySnapshot;
-  minProfitManwon: number;
+  minProfitManwon?: number;
   requestedCards: number;
   tokens: number;
   infiniteCredits: boolean;
@@ -297,80 +288,55 @@ function PackSelectorCard({
           AI 추천 상품 찾기
         </h2>
         <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
-          {searchMode === "easy" ? "원하는 최소 수익과 추천 수를 고릅니다." : "검색 프로필을 고르고 세부 조건을 조정합니다."}
+          프로필을 고르고 세부 조건은 슬라이더로 조정합니다.
         </p>
       </div>
 
-      {/* Wave 77: 검색 mode 토글 */}
-      <div className="mt-3 inline-flex rounded-full border border-[#d8d2c4] bg-[#fffbf2] p-0.5 text-xs font-black dark:border-zinc-700 dark:bg-zinc-900">
-        <button
-          type="button"
-          onClick={() => setSearchMode("easy")}
-          className={`rounded-full px-3.5 py-1.5 transition ${searchMode === "easy" ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)]" : "text-[#6b7269] dark:text-zinc-400"}`}
-        >
-          ✨ 쉬운 모드
-        </button>
-        <button
-          type="button"
-          onClick={() => setSearchMode("advanced")}
-          className={`rounded-full px-3.5 py-1.5 transition ${searchMode === "advanced" ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)]" : "text-[#6b7269] dark:text-zinc-400"}`}
-        >
-          🛠️ 고급 검색
-        </button>
-      </div>
+      {/* Wave 79: 통합 UI — easy/advanced 토글 제거 */}
+      <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
+        {/* Risk profile preset */}
+        <div className="grid grid-cols-3 gap-1.5">
+          {(Object.keys(RISK_PRESETS) as RiskProfile[]).map((profile) => {
+            const preset = RISK_PRESETS[profile];
+            const active = riskProfile === profile;
+            return (
+              <button
+                key={profile}
+                type="button"
+                onClick={() => applyRiskPreset(profile)}
+                className={`rounded-2xl border px-2 py-2 text-center transition ${active ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]" : "border-[#e0d6c5] bg-white text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"}`}
+              >
+                <div className="text-base leading-none">{preset.emoji}</div>
+                <div className="mt-0.5 text-xs font-black">{preset.label}</div>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-1.5 text-center text-[11px] text-[#7a8478] dark:text-zinc-500">{RISK_PRESETS[riskProfile].desc}</div>
 
-      {searchMode === "advanced" ? (
-        <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
-          {/* Risk profile preset */}
-          <div className="rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
-            <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">검색 프로필</div>
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {(Object.keys(RISK_PRESETS) as RiskProfile[]).map((profile) => {
-                const preset = RISK_PRESETS[profile];
-                const active = riskProfile === profile;
-                return (
-                  <button
-                    key={profile}
-                    type="button"
-                    onClick={() => applyRiskPreset(profile)}
-                    className={`rounded-2xl border px-2 py-2 text-center transition ${active ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]" : "border-[#e0d6c5] bg-white text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"}`}
-                  >
-                    <div className="text-base">{preset.emoji}</div>
-                    <div className="mt-0.5 text-xs font-black">{preset.label}</div>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="mt-2 text-[11px] text-[#7a8478] dark:text-zinc-500">{RISK_PRESETS[riskProfile].desc}</div>
-          </div>
-
-          {/* 매물가격 상한 */}
-          <div className="mt-3 rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
-            <div className="flex items-end justify-between">
-              <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">매입가격 상한</div>
-              <div className="text-base font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-                {advancedFilters.priceMaxManwon === 0 ? "무제한" : `${advancedFilters.priceMaxManwon}만원 이하`}
-              </div>
+        {/* 압축 슬라이더 그룹 — 4개 한 박스 */}
+        <div className="mt-3 space-y-2.5 rounded-[18px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
+          {/* 매입가격 */}
+          <div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-black text-[#59665b] dark:text-zinc-300">💰 매입가</span>
+              <span className="font-black text-zinc-900 dark:text-zinc-50">
+                {advancedFilters.priceMaxManwon === 0 ? "무제한" : `≤${advancedFilters.priceMaxManwon}만원`}
+              </span>
             </div>
             <input
-              type="range" min={0} max={300} step={5}
+              type="range" min={0} max={150} step={5}
               value={advancedFilters.priceMaxManwon}
               onChange={(e) => setAdvancedFilters(f => ({ ...f, priceMaxManwon: Number(e.target.value) }))}
               disabled={busy}
-              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 accent-[var(--brand-accent)] disabled:opacity-50 dark:bg-zinc-700"
+              className="mt-1 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 accent-[var(--brand-accent)] disabled:opacity-50 dark:bg-zinc-700"
             />
-            <div className="mt-1 flex justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
-              <span>무제한</span><span>300만</span>
-            </div>
           </div>
-
-          {/* 최소 차익 */}
-          <div className="mt-3 rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
-            <div className="flex items-end justify-between">
-              <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">최소 차익</div>
-              <div className="text-base font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-                {advancedFilters.minProfitManwon}만원+
-              </div>
+          {/* 차익 */}
+          <div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-black text-[#59665b] dark:text-zinc-300">💵 차익</span>
+              <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minProfitManwon}만원+</span>
             </div>
             <input
               type="range" min={MIN_PROFIT_MANWON} max={MAX_PROFIT_MANWON} step={1}
@@ -381,145 +347,95 @@ function PackSelectorCard({
                 onMinProfitChange(v);
               }}
               disabled={busy}
-              className={`mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 ${rangeAccentClass(selectedPack.band)} disabled:opacity-50 dark:bg-zinc-700`}
+              className={`mt-1 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 ${rangeAccentClass(selectedPack.band)} disabled:opacity-50 dark:bg-zinc-700`}
             />
           </div>
-
           {/* 신뢰도 */}
-          <div className="mt-3 rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
-            <div className="flex items-end justify-between">
-              <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">최소 신뢰도</div>
-              <div className="text-base font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-                {advancedFilters.minConfidencePct}%+
-              </div>
+          <div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-black text-[#59665b] dark:text-zinc-300">🎯 신뢰도</span>
+              <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minConfidencePct}%+</span>
             </div>
             <input
               type="range" min={50} max={95} step={5}
               value={advancedFilters.minConfidencePct}
               onChange={(e) => setAdvancedFilters(f => ({ ...f, minConfidencePct: Number(e.target.value) }))}
               disabled={busy}
-              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 accent-[var(--brand-accent)] disabled:opacity-50 dark:bg-zinc-700"
+              className="mt-1 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 accent-[var(--brand-accent)] disabled:opacity-50 dark:bg-zinc-700"
             />
           </div>
+        </div>
 
-          {/* 회전일수 (비활성) */}
-          <div className="mt-3 rounded-[20px] bg-[#f6efe4]/60 p-3 dark:bg-zinc-950/30">
-            <div className="flex items-end justify-between">
-              <div className="text-sm font-black text-zinc-400 dark:text-zinc-600">현금화 일수 (회전)</div>
-              <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-black text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500">곧 활성화</span>
-            </div>
-            <div className="mt-1 text-[11px] text-zinc-400">데이터 누적 중 — 회전 통계 신뢰도 ≥80% 도달 후 오픈</div>
+        {/* 카테고리 collapsible */}
+        <button
+          type="button"
+          onClick={() => setShowCategories(s => !s)}
+          className="mt-2 flex w-full items-center justify-between rounded-[16px] bg-[#f6efe4] px-3 py-2 text-xs font-black text-[#59665b] hover:bg-[#efe7d6] dark:bg-zinc-950/40 dark:text-zinc-300"
+        >
+          <span>📦 카테고리 {advancedFilters.categories.length === 0 ? "(전체)" : `(${advancedFilters.categories.length}개 선택)`}</span>
+          <span className="text-[10px]">{showCategories ? "▲" : "▼"}</span>
+        </button>
+        {showCategories ? (
+          <div className="mt-1.5 flex flex-wrap gap-1 rounded-[16px] bg-[#fbf7ef] p-2 dark:bg-zinc-950/30">
+            {CATEGORY_OPTIONS.map((opt) => {
+              const active = advancedFilters.categories.includes(opt.id);
+              const count = previewInventory?.byCategory[opt.id];
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => toggleCategory(opt.id)}
+                  disabled={busy}
+                  className={`rounded-full border px-2 py-0.5 text-[10.5px] font-black transition ${active ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]" : "border-[#d8d2c4] bg-white text-zinc-500 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"}`}
+                >
+                  {opt.label}{count ? <span className="ml-0.5 opacity-60">·{count}</span> : null}
+                </button>
+              );
+            })}
           </div>
+        ) : null}
 
-          {/* 카테고리 (선택) */}
-          <div className="mt-3 rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
-            <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">카테고리 (선택, 비우면 전체)</div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {CATEGORY_OPTIONS.map((opt) => {
-                const active = advancedFilters.categories.includes(opt.id);
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => toggleCategory(opt.id)}
-                    disabled={busy}
-                    className={`rounded-full border px-2.5 py-1 text-[11px] font-black transition ${active ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]" : "border-[#d8d2c4] bg-white text-zinc-500 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"}`}
-                  >
-                    {opt.label}
-                    {previewInventory && previewInventory.byCategory[opt.id] ? (
-                      <span className="ml-1 text-[10px] opacity-70">{previewInventory.byCategory[opt.id]}</span>
-                    ) : null}
-                  </button>
-                );
-              })}
+        {/* 한눈에 보이는 결과: 매물 수 + 토큰 비용 한 줄 */}
+        <div className="mt-3 flex items-stretch gap-2">
+          <div className="flex-1 rounded-[18px] border-2 border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] px-3 py-2.5 text-center">
+            <div className="text-[10px] font-black text-[var(--brand-accent-strong)]">매칭 매물</div>
+            <div className="text-xl font-black tracking-tight text-[var(--brand-accent-strong)]">
+              {previewLoading ? "..." : previewInventory ? `${previewInventory.matchingCount}건` : "-"}
             </div>
+            {previewInventory && previewInventory.matchingCount > 0 ? (
+              <div className="text-[9.5px] text-[#5d735f]">신선 {previewInventory.freshUnder2h}건</div>
+            ) : previewInventory && previewInventory.matchingCount === 0 ? (
+              <div className="text-[9.5px] text-[#a04545]">조건 완화 권장</div>
+            ) : null}
           </div>
-
-          {/* Inventory pre-check + Cost 계산기 */}
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <div className="rounded-[20px] border-2 border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] p-3 text-center">
-              <div className="text-[11px] font-black text-[var(--brand-accent-strong)]">조건 매칭 매물</div>
-              <div className="mt-1 text-2xl font-black tracking-tight text-[var(--brand-accent-strong)]">
-                {previewLoading ? "..." : previewInventory ? `${previewInventory.matchingCount}건` : "-"}
-              </div>
-              {previewInventory && previewInventory.matchingCount > 0 ? (
-                <div className="mt-1 text-[10px] text-[#5d735f]">신선 {previewInventory.freshUnder2h}건</div>
-              ) : null}
-              {previewInventory && previewInventory.matchingCount === 0 ? (
-                <div className="mt-1 text-[10px] text-[#a04545]">조건 완화 권장</div>
-              ) : null}
+          <div className="flex-1 rounded-[18px] border-2 border-[#caab78] bg-[#fff8ea] px-3 py-2.5 text-center dark:border-amber-900/60 dark:bg-amber-950/20">
+            <div className="text-[10px] font-black text-[#7b5724] dark:text-amber-200">카드 1매</div>
+            <div className="inline-flex items-baseline gap-0.5 text-xl font-black text-[#7b5724] dark:text-amber-200">
+              {costBreakdown.perCardStep}<span className="text-[10px]">토큰</span>
             </div>
-            <div className="rounded-[20px] border-2 border-[#caab78] bg-[#fff8ea] p-3 text-center dark:border-amber-900/60 dark:bg-amber-950/20">
-              <div className="text-[11px] font-black text-[#7b5724] dark:text-amber-200">카드 1매 비용</div>
-              <div className="mt-1 inline-flex items-baseline gap-0.5 text-2xl font-black tracking-tight text-[#7b5724] dark:text-amber-200">
-                {costBreakdown.perCardStep}
-                <span className="text-xs">토큰</span>
-              </div>
-              <div className="mt-1 text-[10px] leading-[1.4] text-[#9a7f4f] dark:text-amber-200/70">
-                {costBreakdown.base}×{costBreakdown.profitMult}×{costBreakdown.confidenceMult}×{costBreakdown.priceMult} = {costBreakdown.rawPerCardStep.toFixed(2)}
-              </div>
+            <div className="text-[9.5px] text-[#9a7f4f] dark:text-amber-200/70">
+              {costBreakdown.base}×{costBreakdown.profitMult}×{costBreakdown.confidenceMult}×{costBreakdown.priceMult}
             </div>
-          </div>
-
-          {/* Cost breakdown 자세히 (펼치기) */}
-          <details className="mt-2 rounded-[16px] bg-[#f6efe4] px-3 py-2 dark:bg-zinc-950/40">
-            <summary className="cursor-pointer text-[11px] font-black text-[#59665b] dark:text-zinc-400">
-              💡 가격 계산 방식 보기
-            </summary>
-            <div className="mt-2 space-y-1 text-[11px] text-[#647064] dark:text-zinc-400">
-              <div>· 기본 (Risk): <b>{costBreakdown.base}</b> ({RISK_PRESETS[riskProfile].emoji} {RISK_PRESETS[riskProfile].label})</div>
-              <div>· 차익 가중치: ×<b>{costBreakdown.profitMult}</b> ({advancedFilters.minProfitManwon}만원+)</div>
-              <div>· 신뢰도 가중치: ×<b>{costBreakdown.confidenceMult}</b> ({advancedFilters.minConfidencePct}%+)</div>
-              <div>· 가격대 가중치: ×<b>{costBreakdown.priceMult}</b> ({advancedFilters.priceMaxManwon === 0 ? "무제한" : `≤${advancedFilters.priceMaxManwon}만원`})</div>
-              <div className="pt-1 font-black text-[#3a4a3f] dark:text-zinc-300">
-                = 카드 2매당 {costBreakdown.perCardStep} 토큰 (raw {costBreakdown.rawPerCardStep.toFixed(2)} → 반올림)
-              </div>
-              <div className="pt-1 text-[10px] text-[#7a8478]">까다로운 조건일수록 매물이 희소 → 토큰 비용 ↑</div>
-            </div>
-          </details>
-
-          <div className="mt-2 text-[10.5px] leading-[1.45] text-[#7a8478] dark:text-zinc-500">
-            ⓘ 표시 수익은 시세 기반 추정 (해당 가격에 정상 판매 시). AI 추천이며 수익 보장 X — 매입가 협상·판매 시점·구성품에 따라 달라집니다.
           </div>
         </div>
-      ) : (
 
-      <div className="mt-4 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
-        <div className="rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">최소 예상 수익</div>
-              <div className="mt-1 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-                {minProfitLabel(minProfitManwon)}
-              </div>
-            </div>
-            <div className="rounded-full bg-[#fffaf1] px-3 py-1 text-[11px] font-black text-[#5d735f] dark:bg-zinc-900 dark:text-zinc-300">
-              빠른 필터
-            </div>
-          </div>
-          <div className="mt-3">
-            <input
-              type="range"
-              min={MIN_PROFIT_MANWON}
-              max={MAX_PROFIT_MANWON}
-              step={1}
-              value={minProfitManwon}
-              onChange={(event) => onMinProfitChange(Number(event.target.value))}
-              disabled={busy}
-              aria-label="최소 예상 수익 조절"
-              className={`h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 ${rangeAccentClass(selectedPack.band)} disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-700`}
-            />
-            <div className="mt-1.5 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
-              <span>{MIN_PROFIT_MANWON}만원+</span>
-              <span>{MAX_PROFIT_MANWON}만원+</span>
+        {/* 자세한 정보 collapsible */}
+        <details className="mt-2 rounded-[14px] bg-[#f6efe4] px-3 py-1.5 dark:bg-zinc-950/40">
+          <summary className="cursor-pointer text-[10.5px] font-black text-[#59665b] dark:text-zinc-400">
+            💡 자세한 정보
+          </summary>
+          <div className="mt-2 space-y-1 text-[10.5px] text-[#647064] dark:text-zinc-400">
+            <div className="font-black text-[#3a4a3f] dark:text-zinc-300">계산식:</div>
+            <div>· 기본 ({RISK_PRESETS[riskProfile].emoji} {RISK_PRESETS[riskProfile].label}): <b>{costBreakdown.base}</b></div>
+            <div>· 차익 ×<b>{costBreakdown.profitMult}</b> · 신뢰도 ×<b>{costBreakdown.confidenceMult}</b> · 가격 ×<b>{costBreakdown.priceMult}</b></div>
+            <div>= 카드 2매당 <b>{costBreakdown.perCardStep}</b> 토큰 (raw {costBreakdown.rawPerCardStep.toFixed(2)})</div>
+            <div className="pt-1 text-[10px] text-zinc-500">현금화 일수 (회전): <span className="rounded-full bg-zinc-200 px-1.5 text-[9px] dark:bg-zinc-800">곧 활성화</span></div>
+            <div className="pt-1 text-[10px] text-[#7a8478] dark:text-zinc-500">
+              ⓘ AI 시세 추정. 수익 보장 X — 매입 협상·판매 시점·구성품에 따라 달라집니다.
             </div>
           </div>
-          <div className="mt-2 text-[10.5px] leading-[1.45] text-[#7a8478] dark:text-zinc-500">
-            ⓘ 표시 수익은 시세 기반 추정 (해당 가격에 정상 판매 시). AI 추천이며 수익 보장 X — 매입가 협상·판매 시점·구성품에 따라 달라집니다.
-          </div>
-        </div>
+        </details>
       </div>
-      )}
 
       <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
         <div className="space-y-2.5">

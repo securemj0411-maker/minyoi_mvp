@@ -32,11 +32,17 @@ const BOOST_QUERIES: { query: string; targetSkuId: string; family: "watch" | "ca
   { query: "ILCE-7M3", targetSkuId: "camera-sony-a7m3", family: "camera" },
   { query: "소니 A7C", targetSkuId: "camera-sony-a7c", family: "camera" },
   { query: "Sony A7C 바디", targetSkuId: "camera-sony-a7c", family: "camera" },
-  { query: "ILCE-7C", targetSkuId: "camera-sony-a7c", family: "camera" },
   { query: "캐논 R6 Mark II", targetSkuId: "camera-canon-eos-r6-mark-ii", family: "camera" },
   { query: "EOS R6 Mark II", targetSkuId: "camera-canon-eos-r6-mark-ii", family: "camera" },
   { query: "캐논 R6M2", targetSkuId: "camera-canon-eos-r6-mark-ii", family: "camera" },
   { query: "캐논 알육막투", targetSkuId: "camera-canon-eos-r6-mark-ii", family: "camera" },
+  // Wave 87 신규 SKU
+  { query: "소니 A7C II", targetSkuId: "camera-sony-a7c-ii", family: "camera" },
+  { query: "Sony A7C II", targetSkuId: "camera-sony-a7c-ii", family: "camera" },
+  { query: "A7C2", targetSkuId: "camera-sony-a7c-ii", family: "camera" },
+  { query: "ILCE-7CM2", targetSkuId: "camera-sony-a7c-ii", family: "camera" },
+  { query: "소니 A7CR", targetSkuId: "camera-sony-a7cr", family: "camera" },
+  { query: "Sony A7CR", targetSkuId: "camera-sony-a7cr", family: "camera" },
 ];
 
 type QueryResult = {
@@ -99,7 +105,8 @@ async function diagnoseQuery(query: string, targetSkuId: string, family: "watch"
           });
           if (parsed.needsReview) {
             parserReview += 1;
-            const reason = parsed.unknownParts?.join(",") || "needs_review";
+            const unknownParts = (parsed.parsedJson?.unknown_parts as string[] | undefined) ?? [];
+            const reason = unknownParts.length > 0 ? unknownParts.join(",") : "needs_review";
             const entry = reviewReasons.get(reason) ?? { count: 0, samples: [] };
             entry.count += 1;
             if (entry.samples.length < 3) entry.samples.push(item.name.slice(0, 60));
