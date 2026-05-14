@@ -1645,13 +1645,18 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
               needs_review: parsed.needsReview,
             },
           }]);
-          await seedLifecycleChecks([{
-            pid: Number(claim.pid),
-            priorityTier: lifecycleTierForParsed(parsed),
-          }]);
         } catch (err) {
+          // observations/invalidations은 best-effort. 실패해도 queue는 진행.
           console.error("option parse side-write failed", err);
         }
+        // Wave 92 root fix: seedLifecycleChecks는 critical. 이전엔 위 try/catch 안에 있어서
+        // 실패가 swallow되고 markQueueDone이 진행 → 영구 lifecycle 누락 (사용자 코멘트로 발견,
+        // pid 407321422). seed를 try 밖으로 빼서 실패 시 outer catch (markQueueFailed) 진입 →
+        // 다음 tick에 detail 재시도 보장.
+        await seedLifecycleChecks([{
+          pid: Number(claim.pid),
+          priorityTier: lifecycleTierForParsed(parsed),
+        }]);
         await markQueueDone(claim.queue_id);
         stats.enriched += 1;
       } catch (err) {
@@ -3289,31 +3294,6 @@ export async function housekeeperStage(): Promise<StageStats> {
 
   stats.upserted = expiredPool.length;
   stats.queued = staleQueue.length;
-
-  // Wave 92: lifecycle seeding gap self-heal. detail-worker side-write try/catch가 seedLifecycleChecks
-  // 실패를 swallow → markQueueDone 진행 → 영구 누락 (active+done인데 lifecycle row 없음). 사용자 코멘트로 발견
-  // (pid 407321422). active+done raw 중 lifecycle row 없는 것 찾아 재seed (idempotent — insertIgnoreRows).
-  try {
-    const sampleRes = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid&listing_state=eq.active&listing_type=eq.normal&detail_status=eq.done&order=updated_at.desc&limit=2000`,
-      { headers: serviceHeaders() },
-    );
-    const samplePids = ((await sampleRes.json()) as { pid: number }[]).map((r) => Number(r.pid));
-    if (samplePids.length > 0) {
-      const lifeRes = await restFetch(
-        `${tableUrl("mvp_lifecycle_checks")}?select=pid&pid=in.(${samplePids.join(",")})`,
-        { headers: serviceHeaders() },
-      );
-      const lifePids = new Set(((await lifeRes.json()) as { pid: number }[]).map((r) => Number(r.pid)));
-      const missing = samplePids.filter((p) => !lifePids.has(p));
-      if (missing.length > 0) {
-        await seedLifecycleChecks(missing.map((pid) => ({ pid, priorityTier: "exploration" as LifecyclePriorityTier })));
-        console.warn(`[housekeeper] lifecycle seeding gap healed: ${missing.length} pids`);
-      }
-    }
-  } catch (err) {
-    console.error("housekeeper lifecycle self-heal failed", err);
-  }
 
   // P2-1: 1시간 cooldown으로 query cadence 자동 재평가.
   // cooldown 체크는 registry에서 가장 최근 last_evaluated_at을 보고 결정(멀티 인스턴스 안전).
