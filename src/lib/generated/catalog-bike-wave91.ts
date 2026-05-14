@@ -1,6 +1,4 @@
-// Wave 91 (2026-05-15): bikes catalog SKUs — body-only, resale ≤200만.
-// 출처: agent research /tmp/wave91-bikes-research.json.
-
+// Wave 91/93 V2 — bike catalog (resale ≤200만). pollution 정밀화.
 import type { Sku } from "@/lib/catalog";
 
 export const BIKE_CATALOG: Sku[] = [
@@ -12,9 +10,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["tcr advanced 2", "티씨알 어드밴스 2", "자이언트 tcr"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "프레임만", "포크만", "휠셋만", "안장만", "스템만", "헬멧", "사고", "수리", "프레임 깨짐", "크랙", "도색만", "부품만",
+      "프레임만", "포크만", "휠셋만", "안장만", "스템만", "헬멧", "사고", "수리", "프레임 깨짐", "크랙", "도색만", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 2990000,
     released: 2024,
@@ -28,9 +27,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["tcr advanced pro", "티씨알 어드밴스 프로", "advanced pro"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "수리", "프레임 깨짐", "크랙", "부품만", "ultegra disc 신품",
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "수리", "프레임 깨짐", "크랙", "부품만", "ultegra disc 신품", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 4500000,
     released: 2024,
@@ -44,9 +44,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["defy advanced 2", "디파이 어드밴스 2", "자이언트 defy", "디파이 어드밴스드"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "수리", "크랙", "부품만",
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "수리", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 2900000,
     released: 2024,
@@ -60,9 +61,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["defy advanced 1", "디파이 어드밴스 1", "디파이 어드밴스드 1"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 3990000,
     released: 2024,
@@ -76,9 +78,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["domane al4", "도마니 al 4", "도마네 al4", "domane al 4"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 2200000,
     released: 2024,
@@ -92,9 +95,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["domane al2", "도마니 al 2", "도마네 al2", "domane al 2"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 1450000,
     released: 2024,
@@ -108,9 +112,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["emonda sl4", "emonda sl 4", "에몬다 sl4", "에몬다 sl 4"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "프레임셋", "부품만",
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "프레임셋", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 2950000,
     released: 2024,
@@ -121,16 +126,18 @@ export const BIKE_CATALOG: Sku[] = [
     brand: "Trek",
     category: "bike",
     modelName: "Emonda SL5",
+    // Wave 93 promoted ready (n=39, 2.6% pollution)
     aliases: [],
     mustContain: [
       ["emonda sl5", "emonda sl 5", "에몬다 sl5", "에몬다 sl 5"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "프레임셋", "부품만",
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "프레임셋", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 3500000,
     released: 2024,
-    laneKey: "bike_road_exact_model",
+    laneKey: "bike_trek_emonda_sl5",
   },
   {
     id: "bike-specialized-allez",
@@ -140,9 +147,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["allez", "알레", "알레즈"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "allez sprint", "알레 스프린트", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "allez sprint", "알레 스프린트", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 1500000,
     released: 2024,
@@ -156,9 +164,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["tarmac sl6", "tarmac sl 6", "타막 sl6", "타막 sl 6"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "sl7", "sl8", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "s-works", "에스웍스", "부품만",
+      "sl7", "sl8", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "s-works", "에스웍스", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 3500000,
     released: 2024,
@@ -172,9 +181,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["caad optimo", "캐드 옵티모", "옵티모"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "caad13", "caad 13", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "caad13", "caad 13", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 1300000,
     released: 2024,
@@ -188,9 +198,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["caad13", "caad 13", "캐드 13", "캐드13"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "caad optimo", "옵티모", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "caad optimo", "옵티모", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 2400000,
     released: 2024,
@@ -204,9 +215,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["marlin 5", "마린 5", "trek marlin 5"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "marlin 6", "marlin 7", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "marlin 6", "marlin 7", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 500000,
     released: 2024,
@@ -220,9 +232,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["marlin 6", "마린 6", "trek marlin 6"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "marlin 5", "marlin 7", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "marlin 5", "marlin 7", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 600000,
     released: 2024,
@@ -236,9 +249,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["marlin 7", "마린 7", "trek marlin 7"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "marlin 5", "marlin 6", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "marlin 5", "marlin 6", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 700000,
     released: 2024,
@@ -252,9 +266,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["talon", "탈론", "자이언트 탈론"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "talon e+", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "전기",
+      "talon e+", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "전기", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 750000,
     released: 2024,
@@ -268,9 +283,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["xtc advanced", "xtc 어드밴스", "자이언트 xtc"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "xtc sl", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "xtc sl", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 2500000,
     released: 2024,
@@ -281,16 +297,18 @@ export const BIKE_CATALOG: Sku[] = [
     brand: "Merida",
     category: "bike",
     modelName: "Big Nine",
+    // Wave 93 promoted ready (n=15, 0% pollution)
     aliases: [],
     mustContain: [
       ["big nine", "빅나인", "big.nine", "메리다 big"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "xt edition", "team", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "xt edition", "team", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 900000,
     released: 2024,
-    laneKey: "bike_mtb_exact_model",
+    laneKey: "bike_merida_bignine",
   },
   {
     id: "bike-merida-bigseven",
@@ -300,9 +318,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["big seven", "빅세븐", "big.seven", "메리다 big seven"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "xt edition", "team", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "xt edition", "team", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 800000,
     released: 2024,
@@ -316,9 +335,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["scultura", "스컬트라"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "limited", "team", "5000", "6000", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "limited", "team", "5000", "6000", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 1500000,
     released: 2024,
@@ -332,9 +352,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["reacto", "리액토"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "6000", "5000", "limited", "team", "8000", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "6000", "5000", "limited", "team", "8000", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 2000000,
     released: 2024,
@@ -348,9 +369,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["escape 3", "에스케이프 3"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "escape r", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "escape r", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 550000,
     released: 2024,
@@ -364,9 +386,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["escape 2", "에스케이프 2"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "escape r", "escape 3", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "escape r", "escape 3", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 650000,
     released: 2024,
@@ -380,9 +403,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["fx 2", "trek fx 2", "fx2 디스크", "트렉 fx 2"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "fx 3", "fx 4", "fx sport", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "fx 3", "fx 4", "fx sport", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 800000,
     released: 2024,
@@ -396,9 +420,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["fx 3", "trek fx 3", "fx3 디스크", "트렉 fx 3"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "fx 2", "fx 4", "fx sport", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "fx 2", "fx 4", "fx sport", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 1100000,
     released: 2024,
@@ -412,9 +437,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["cannondale quick", "캐논데일 퀵", "quick disc"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "quick neo", "quickcd", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "전기",
+      "quick neo", "quickcd", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "전기", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 800000,
     released: 2024,
@@ -428,9 +454,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["sirrus", "시러스"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "sirrus x", "sirrus carbon", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "sirrus x", "sirrus carbon", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 850000,
     released: 2024,
@@ -444,9 +471,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["sirrus x", "시러스 x"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "sirrus carbon", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "sirrus carbon", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 1200000,
     released: 2024,
@@ -460,9 +488,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["brompton c", "브롬톤 c", "c line", "c-line"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "t line", "p line", "electric", "전동", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "도난", "부품만",
+      "t line", "p line", "electric", "전동", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "도난", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "휠셋만", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 2300000,
     released: 2024,
@@ -476,9 +505,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["brompton a", "브롬톤 a", "a line", "a-line"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "c line", "t line", "p line", "electric", "전동", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "도난", "부품만",
+      "c line", "t line", "p line", "electric", "전동", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "도난", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "휠셋만", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 1500000,
     released: 2024,
@@ -492,9 +522,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["tern link", "턴 link", "tern 링크"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "verge", "byb", "gsd", "vektron", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "부품만", "전동",
+      "verge", "byb", "gsd", "vektron", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "부품만", "전동", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "휠셋만", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 750000,
     released: 2024,
@@ -508,9 +539,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["tern verge", "턴 verge", "버지"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "link", "byb", "gsd", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "부품만", "전동",
+      "link", "byb", "gsd", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "부품만", "전동", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "휠셋만", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 1500000,
     released: 2024,
@@ -524,9 +556,10 @@ export const BIKE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["dahon mu", "다혼 mu", "다혼 뮤"],
+      ["자전거", "bike", "bicycle", "사이클", "cycling", "로드", "road", "mtb", "산악", "하이브리드", "hybrid", "폴딩", "folding", "픽시", "fixie", "그래블", "gravel", "시마노", "shimano", "sram", "스램", "변속기", "디스크 브레이크", "유압", "기계식", "콤프", "comp", "kom", "pro", "advanced", "sport", "sl ", "slr", "tcr", "caad", "tarmac", "domane", "emonda", "scultura", "reacto", "marlin", "talon", "xtc", "defy", "allez", "fx", "sirrus", "quick", "26인치", "27인치", "27.5인치", "29인치", "26\"", "27\"", "29\"", "프레임 사이즈", "frame size", "20단", "21단", "22단", "11s", "12s", "10s", "카본", "알루미늄", "크로몰리", "carbon", "aluminum"],
     ],
     mustNotContain: [
-      "dahon speed", "dahon vitesse", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "부품만",
+      "dahon speed", "dahon vitesse", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "부품만", "핸들바", "대차", "튜닝용", "교체용", "휠만", "타이어만", "포장만", "구성품 빼기", "휠셋만", "스템만", "드레일러만", "수영복", "반팔", "팬츠", "푸퍼", "패딩", "스니커즈", "옷", "피규어", "아크릴 스탠드", "굿즈", "키링", "스티커", "낚시대", "캐디백", "골프", "바이크 헬멧만", "장갑만", "시계", "watch", "rolex", "브레게", "넥타이핀", "벨트", "지갑", "수영", "전기자전거", "e-bike", "ebike", "이바이크", "전기 자전거", "전동", "e bike", "e-bikes", "전기바이크",
     ],
     msrpKrw: 700000,
     released: 2024,

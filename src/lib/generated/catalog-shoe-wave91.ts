@@ -659,7 +659,7 @@ export const SHOE_CATALOG: Sku[] = [
     ],
     msrpKrw: 245000,
     released: 2021,
-    laneKey: "shoe_limited_exact_model",
+    laneKey: "shoe_salomon_xt6_black",
   },
   {
     id: "shoe-salomon-xt-6-mindful-2",

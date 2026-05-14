@@ -92,6 +92,23 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "PlayStation 5 (Standard)",
     note: "PS5 Disc/Digital Standard 단독 narrow lane. Slim/Pro/PSVR/Switch는 catalog mustNotContain으로 차단.",
   },
+  // Wave 93 (2026-05-15): pollution audit 통과 narrow lane 3개. shoe/bag/bike 카테고리는
+  // internal_only 유지 (broad coverage 부족). 단 아래 SKU는 결정론 충분 + 표본 양호로 ready 승격.
+  shoe_salomon_xt6_black: {
+    status: "ready",
+    label: "Salomon XT-6 Black",
+    note: "Wave 93: n=31, pollution 0%, median ₩156k. 본품만 정책 + cross-color reject 정밀. description 짧지만 결정론 충분 (사이즈+컨디션). MM6/Margiela 콜라보 + 키즈 사이즈 차단.",
+  },
+  bike_trek_emonda_sl5: {
+    status: "ready",
+    label: "Trek Emonda SL5",
+    note: "Wave 93: n=39, pollution 2.6%, median ₩1,710k. 카테고리 토큰 (자전거/sram/시마노 등) + 부품/전기자전거 reject 적용. 프레임 사이즈/사고 여부 UI 가이드 필수.",
+  },
+  bike_merida_bignine: {
+    status: "ready",
+    label: "Merida Big Nine MTB",
+    note: "Wave 93: n=15, pollution 0%, median ₩750k. MTB hardtail. e-BIG.NINE/team 등급은 mustNotContain 차단. 프레임 사이즈/사고 여부 UI 가이드 필수.",
+  },
   ipad_pro_11_m4_256_wifi: {
     status: "ready",
     label: "iPad Pro 11\" M4 256GB Wi-Fi",
