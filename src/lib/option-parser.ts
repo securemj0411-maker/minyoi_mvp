@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v32";
+const PARSER_VERSION = "option-parser-v33";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -913,6 +913,16 @@ function comparableParts(input: {
   if (category === "camera") {
     return ["camera", family, model, "body_only", "no_lens"];
   }
+  // Wave 67/68: 시계 + 골프 narrow lane.
+  // 모델 코드가 catalog mustContain[0]에서 strict 매칭 (DW-5600/GA-2100/SRPD/TSR3 등).
+  // 색상/무브먼트/플렉스/로프트는 동일 모델 내 시세 영향 작음 → 추가 axis 불필요.
+  // 차후 사업 결정 시 로프트/플렉스 sub-lane 분리 가능 (sport_golf).
+  if (category === "watch") {
+    return [family, model];
+  }
+  if (category === "sport_golf") {
+    return [family, model];
+  }
   return [family, model];
 }
 
@@ -991,6 +1001,10 @@ function confidence(input: {
   } else if (input.category === "home_appliance") {
     // Wave 19: home_appliance narrow lane (Dyson V12 등). catalog ruleMatch + mustNotContain로
     // V10/V11/V15 등 다른 모델 분리. desktop과 동일 +0.35.
+    score += 0.35;
+  } else if (input.category === "watch" || input.category === "sport_golf") {
+    // Wave 67/68: 시계/골프 narrow lane. catalog mustContain strict (모델 코드 + WATCH_NOISE/GOLF_DRIVER_NOISE)
+    // 로 변형 격리. 모델 매칭 = 신뢰. camera/speaker/desktop/home_appliance와 동일 +0.35.
     score += 0.35;
   }
   return cap01(score);
