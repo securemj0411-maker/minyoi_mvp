@@ -1,24 +1,17 @@
 // Wave 46 — AI cache retention live housekeeper.
-// Wave 59 — R3 contentHash 더블체크 path 추가.
-//
-// Reads `public.mvp_listing_ai_cache_retention_v1` (Wave 35 view) and DELETEs:
-//   R1 stale_by_age (>30d)
-//   R2 raw_row_gone (FK CASCADE sentinel)
-//   R3 raw_updated_after_classify (proxy → contentHash 재계산 후 mismatch만 DELETE)
-//
-// R3 안전장치 (Wave 59): view는 raw.source_updated_at > cache.classified_at + 14d 라는
-// proxy 기준으로 후보를 잡음. 본 코드는 그 후보 pid 각각에 대해 cache.content_hash와
-// raw row 기반 재계산 hash를 비교, **일치하면 DELETE 안 함**, mismatch만 DELETE.
-// production code(`pipeline.ts:contentHash`)는 PipelineRow full 입력이지만 housekeeper는
-// 핵심 fingerprint(name + price + description_preview)만으로 false-positive 차단.
-// contentHash 전체 재계산은 detail/parsed/sku 동기 fetch 필요해 housekeeper 비용 큼.
+// Wave 59 — R3 contentHash 더블체크 path 추가 (prefix-8 raw subset).
+// Wave 63 — R3 정밀 hash 정합: production `contentHash()` 재사용으로 PipelineRow
+// 전체 재구성 후 비교. raw + parsed 결합으로 name/price/skuName/descriptionPreview
+// + parser metadata 전체 재현. `scoreFlags`만 미보존 → [] 대입 (한계: AI 호출 당시
+// flags 있던 row는 변경 없어도 mismatch → 보수적으로 보존, false-negative 허용).
 
-import { createHash } from "node:crypto";
 import { restFetch, serviceHeaders } from "@/lib/supabase-rest";
+import { contentHash, type PipelineRow } from "@/lib/pipeline";
 
 const RETENTION_VIEW = "mvp_listing_ai_cache_retention_v1";
 const CACHE_TABLE = "mvp_listing_ai_classifications";
 const RAW_TABLE = "mvp_raw_listings";
+const PARSED_TABLE = "mvp_listing_parsed";
 const DELETE_CHUNK = 100;
 const R3_VERIFY_CHUNK = 50;
 
@@ -73,17 +66,21 @@ async function deletePids(pids: number[]): Promise<number> {
   return deleted;
 }
 
-// R3 fingerprint — production contentHash의 raw subset (name+price+description_preview).
-// production cache.content_hash가 PipelineRow full input이라 정확 매칭은 어렵지만,
-// 이 raw fingerprint가 cache write 당시 raw 시점 hash와 동일하면 raw refresh 없음 → fresh.
-function rawFingerprint(name: string, price: number | null, descriptionPreview: string): string {
-  return createHash("sha256")
-    .update(JSON.stringify({ name, price, descriptionPreview }))
-    .digest("hex");
-}
-
 type CacheRow = { pid: number; content_hash: string };
-type RawSnapshot = { pid: number; name: string; price: number | null; description_preview: string };
+type RawSnapshot = {
+  pid: number;
+  name: string;
+  price: number | null;
+  description_preview: string;
+  sku_name: string | null;
+};
+type ParsedSnapshot = {
+  pid: number;
+  comparable_key: string | null;
+  parse_confidence: number | null;
+  needs_review: boolean | null;
+  parsed_json: Record<string, unknown> | null;
+};
 
 async function fetchCacheRows(pids: number[]): Promise<Map<number, CacheRow>> {
   const out = new Map<number, CacheRow>();
@@ -104,56 +101,124 @@ async function fetchRawSnapshots(pids: number[]): Promise<Map<number, RawSnapsho
   if (pids.length === 0) return out;
   for (let i = 0; i < pids.length; i += R3_VERIFY_CHUNK) {
     const chunk = pids.slice(i, i + R3_VERIFY_CHUNK);
-    const url = `${baseUrl()}/rest/v1/${RAW_TABLE}?select=pid,name,price,description_preview&pid=in.(${chunk.join(",")})`;
+    const url = `${baseUrl()}/rest/v1/${RAW_TABLE}?select=pid,name,price,description_preview,sku_name&pid=in.(${chunk.join(",")})`;
     const res = await restFetch(url, { headers: serviceHeaders() });
     if (!res.ok) throw new Error(`r3 raw fetch failed ${res.status}`);
-    const rows = (await res.json()) as Array<{ pid: number | string; name: string; price: number | null; description_preview: string }>;
+    const rows = (await res.json()) as Array<{ pid: number | string; name: string; price: number | null; description_preview: string; sku_name: string | null }>;
     for (const r of rows) {
       out.set(Number(r.pid), {
         pid: Number(r.pid),
         name: r.name ?? "",
         price: r.price ?? null,
         description_preview: r.description_preview ?? "",
+        sku_name: r.sku_name ?? null,
       });
     }
   }
   return out;
 }
 
-// R3 double-check: production cache hash는 PipelineRow full input 이라 raw subset
-// fingerprint와 직접 비교 불가. 대신 cache row 자체의 content_hash가 raw-only
-// fingerprint와 다른 경우(=현 raw로 다시 만든 raw fingerprint가 cache write 당시 raw
-// fingerprint와 다른지)를 추정. 단순 string equality는 안 됨 — production은 parser
-// metadata 등 추가 fields 포함.
-//
-// 본 wave 의 보수적 접근: R3 후보 pid에 대해 cache row의 content_hash 와 현 raw 시점의
-// "raw subset hash" 의 prefix 길이 8 매칭 여부 비교. **일치하지 않는 경우만 DELETE 후보**.
-// production hash 는 raw subset 외 parser 필드 포함이지만, raw 가 바뀌면 prefix 도
-// 바뀔 가능성이 높음. false negative (DELETE 못 함)는 허용, false positive (잘못 DELETE)는
-// 위험. 따라서 prefix 매칭으로 raw 변화 의심 표시 후 별도 dry-run / manual review 권장.
-//
-// **본 wave 의 안전 기본값**: R3 DELETE skip, 후보만 보고. dry-run 측정 후 다음 wave에서
-// 정밀 hash 알고리즘 정합 시 actual DELETE 활성.
+async function fetchParsedSnapshots(pids: number[]): Promise<Map<number, ParsedSnapshot>> {
+  const out = new Map<number, ParsedSnapshot>();
+  if (pids.length === 0) return out;
+  for (let i = 0; i < pids.length; i += R3_VERIFY_CHUNK) {
+    const chunk = pids.slice(i, i + R3_VERIFY_CHUNK);
+    const url = `${baseUrl()}/rest/v1/${PARSED_TABLE}?select=pid,comparable_key,parse_confidence,needs_review,parsed_json&pid=in.(${chunk.join(",")})`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    if (!res.ok) throw new Error(`r3 parsed fetch failed ${res.status}`);
+    const rows = (await res.json()) as Array<{
+      pid: number | string;
+      comparable_key: string | null;
+      parse_confidence: number | null;
+      needs_review: boolean | null;
+      parsed_json: Record<string, unknown> | null;
+    }>;
+    for (const r of rows) {
+      out.set(Number(r.pid), {
+        pid: Number(r.pid),
+        comparable_key: r.comparable_key,
+        parse_confidence: r.parse_confidence,
+        needs_review: r.needs_review,
+        parsed_json: r.parsed_json,
+      });
+    }
+  }
+  return out;
+}
+
+// Reconstruct PipelineRow subset matching production `contentHash()` inputs.
+// `scoreFlags` is not persisted anywhere → defaults to [] (known limitation).
+// Other input fields (name, price, skuName, descriptionPreview, parser metadata)
+// are fully recoverable from raw + parsed tables.
+function reconstructHashRow(raw: RawSnapshot, parsed: ParsedSnapshot | undefined): PipelineRow {
+  const parsedJson = parsed?.parsed_json ?? null;
+  const unknownParts = Array.isArray(parsedJson?.unknownParts)
+    ? (parsedJson!.unknownParts as unknown[]).map(String)
+    : [];
+  const criticalUnknown = Array.isArray(parsedJson?.criticalUnknown)
+    ? (parsedJson!.criticalUnknown as unknown[]).map(String)
+    : [];
+  const escrowKind = typeof parsedJson?.escrowKind === "string" ? (parsedJson!.escrowKind as string) : null;
+  return {
+    pid: String(raw.pid),
+    url: "",
+    name: raw.name,
+    price: raw.price ?? 0,
+    skuId: "",
+    skuName: raw.sku_name ?? "",
+    skuMedian: 0,
+    descriptionPreview: raw.description_preview,
+    priceGap: 0,
+    numFaved: 0,
+    velocity: 0,
+    reviewRating: null,
+    reviewCount: 0,
+    safety: 0,
+    riskHits: 0,
+    score: 0,
+    scoreFlags: [],
+    parseConfidence: parsed?.parse_confidence ?? null,
+    parserNeedsReview: parsed?.needs_review ?? null,
+    comparableKey: parsed?.comparable_key ?? null,
+    parserUnknownParts: unknownParts,
+    parserCriticalUnknown: criticalUnknown,
+    aiEscrowKind: escrowKind,
+    shippingFee: 0,
+    shippingFeeGeneral: null,
+    shippingSource: "",
+    estimatedBuyCost: 0,
+    grossResellGap: 0,
+    netGapAfterShipping: 0,
+  };
+}
+
+// R3 precise verify (Wave 63): reconstruct full PipelineRow subset from raw +
+// parsed, run identical production `contentHash()`. Exact equality → fresh.
+// Mismatch → stale candidate. scoreFlags=[] known limitation; rows with flags
+// at AI call time will mismatch and be kept conservatively (false-negative OK,
+// false-positive DELETE blocked unless r3DeleteEnabled).
 async function verifyR3Stale(pids: number[]): Promise<{ stale: number[]; fresh: number[] }> {
   if (pids.length === 0) return { stale: [], fresh: [] };
-  const [cacheMap, rawMap] = await Promise.all([fetchCacheRows(pids), fetchRawSnapshots(pids)]);
+  const [cacheMap, rawMap, parsedMap] = await Promise.all([
+    fetchCacheRows(pids),
+    fetchRawSnapshots(pids),
+    fetchParsedSnapshots(pids),
+  ]);
   const stale: number[] = [];
   const fresh: number[] = [];
   for (const pid of pids) {
     const cache = cacheMap.get(pid);
     const raw = rawMap.get(pid);
     if (!cache || !raw) {
-      fresh.push(pid); // missing data → conservative: treat as fresh, skip DELETE
+      fresh.push(pid); // missing data → conservative: treat as fresh
       continue;
     }
-    // raw subset fingerprint 와 cache.content_hash 의 첫 8 chars 비교.
-    // 일치 → raw 변화 없음 (proxy false positive) → fresh.
-    // 불일치 → raw 변경 의심 → stale 후보.
-    const rawHash = rawFingerprint(raw.name, raw.price, raw.description_preview);
-    if (rawHash.slice(0, 8) === cache.content_hash.slice(0, 8)) {
-      fresh.push(pid);
+    const reconstructed = reconstructHashRow(raw, parsedMap.get(pid));
+    const reconstructedHash = contentHash(reconstructed);
+    if (reconstructedHash === cache.content_hash) {
+      fresh.push(pid); // exact match → raw + parser + sku unchanged → safe to keep
     } else {
-      stale.push(pid);
+      stale.push(pid); // mismatch → either raw/parser/sku changed OR scoreFlags differed
     }
   }
   return { stale, fresh };

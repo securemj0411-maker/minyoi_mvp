@@ -294,9 +294,16 @@ const loadLandingKpisCached = unstable_cache(
       };
     }
 
-    const averageProfit =
-      rows.reduce((sum, row) => sum + (Number(row.expected_profit_min ?? 0) + Number(row.expected_profit_max ?? 0)) / 2, 0) /
-      rows.length;
+    // Wave 64: trimmed mean (상하 10% 절사) — outlier (한두 개 고가 카메라/GPU)가
+    // 평균 왜곡시키는 문제 해결. 라벨은 "평균"으로 유지.
+    const midpoints = rows
+      .map((row) => (Number(row.expected_profit_min ?? 0) + Number(row.expected_profit_max ?? 0)) / 2)
+      .sort((a, b) => a - b);
+    const trimCount = Math.floor(midpoints.length * 0.1);
+    const trimmed = midpoints.slice(trimCount, midpoints.length - trimCount);
+    const averageProfit = trimmed.length > 0
+      ? trimmed.reduce((sum, v) => sum + v, 0) / trimmed.length
+      : midpoints.reduce((sum, v) => sum + v, 0) / midpoints.length;
     const maxProfit = rows.reduce((max, row) => Math.max(max, Number(row.expected_profit_max ?? 0)), 0);
 
     return {

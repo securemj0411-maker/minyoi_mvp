@@ -1,0 +1,22 @@
+## Wave 63 — auto_safe stale rows v32 reparse 적용
+
+- 시간: 2026-05-14
+- 발견: Wave 50 dry-run 결과 v24~v31 옛 파서 매물이 production에 다수 존재. v32 reparse 후 결과가 동일한 (auto_safe) 매물은 위험 0으로 일괄 갱신 가능.
+- 변경:
+  - `scripts/wave63-stale-reparse-apply-auto-safe.ts` (신규): 옛 파서 매물 pull → v32 reparse → comparable_key + needs_review 둘 다 동일할 때만 parser_version 업데이트.
+  - `scripts/report-recent-cron-parser-audit.ts`: v31 reference를 v32로 업데이트 (stale_parser 인식 기준).
+  - 5회 pass 실행하여 수렴 확인 (마지막 pass auto_safe_updated=0).
+- 적용 결과 (누적):
+  - 약 14,668건 parser_version stale → v32 갱신
+  - 잔여 ~1,939건 (key_diff 1,464 + nr_flip 253 + 등): v32에서 결과 변화 → 별도 owner-review wave 필요
+- 검증:
+  - audit 재측정: v32_clean 198 → 260 (parsed 클린 33% 증가)
+  - unknown_ram 3 → 1, unknown_ssd 3 → 1
+  - parser_gap 4 → 3
+  - npx tsc --noEmit clean
+- 위험:
+  - 위험 0: comparable_key + needs_review 모두 동일한 row만 갱신. 의미 변화 0.
+  - candidate_pool, mvp_listings, pack_opens 영향 0.
+- 다음:
+  - 잔여 1,939건 needs-owner-review 별도 wave (key change/nr flip 검토 후 sign-off)
+  - audit 계속 모니터링하며 새 patch 발굴

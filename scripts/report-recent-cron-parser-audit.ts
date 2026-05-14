@@ -224,7 +224,7 @@ function replay(row: RawRow, parsed?: ParsedRow): ReplayRow {
   });
   const reasons: string[] = [];
   if (!parsed) reasons.push("missing_db_parsed");
-  if (parsed?.parser_version && !parsed.parser_version.includes("v31")) reasons.push(`stale_parser:${parsed.parser_version}`);
+  if (parsed?.parser_version && !parsed.parser_version.includes("v32")) reasons.push(`stale_parser:${parsed.parser_version}`);
   if ((parsed?.comparable_key ?? null) !== (out.comparableKey ?? null)) reasons.push("db_key_differs_from_v31_replay");
   if (Boolean(parsed?.needs_review) !== out.needsReview) reasons.push("db_needs_review_differs_from_v31_replay");
   if (classified.listingType !== "normal") reasons.push(`classified_${classified.listingType}`);
@@ -258,8 +258,8 @@ function statusGroup(row: ReplayRow) {
   if (row.reasons.includes("missing_db_parsed")) return "missing_parsed";
   if (row.reasons.some((reason) => reason.startsWith("stale_parser:")) || row.reasons.includes("db_key_differs_from_v31_replay") || row.reasons.includes("db_needs_review_differs_from_v31_replay")) return "stale_or_backfill_needed";
   if (row.listingType !== "normal") return "classified_hold";
-  if (row.replayNeedsReview || !row.replayKey) return "v31_parser_gap_or_policy_review";
-  return "v31_clean";
+  if (row.replayNeedsReview || !row.replayKey) return "v32_parser_gap_or_policy_review";
+  return "v32_clean";
 }
 
 async function main() {
@@ -321,9 +321,9 @@ async function main() {
 
   for (const row of replayRows) {
     const text = `${row.query} ${row.title}`.toLowerCase();
-    if (poolPids.has(row.pid) && statusGroup(row) !== "v31_clean") samplePush(samples.poolRiskRows, row);
+    if (poolPids.has(row.pid) && statusGroup(row) !== "v32_clean") samplePush(samples.poolRiskRows, row);
     if (statusGroup(row) === "stale_or_backfill_needed") samplePush(samples.staleOrBackfillNeeded, row);
-    if (statusGroup(row) === "v31_parser_gap_or_policy_review") samplePush(samples.v31ParserGapOrPolicyReview, row);
+    if (statusGroup(row) === "v32_parser_gap_or_policy_review") samplePush(samples.v31ParserGapOrPolicyReview, row);
     if (/맥북|macbook/.test(text)) samplePush(samples.macbookRows, row, 20);
     if (/아이패드|ipad/.test(text)) samplePush(samples.ipadRows, row, 20);
     if (/ps5|플스5|플레이스테이션5/.test(text)) samplePush(samples.ps5Rows, row, 20);
@@ -346,8 +346,8 @@ async function main() {
     samples,
     interpretation: [
       "stale_or_backfill_needed means current v31 replay disagrees with stored DB parsing; this is a reparse/backfill issue, not necessarily a parser code gap.",
-      "v31_parser_gap_or_policy_review means the current parser still routes the row to needs_review/missing comparable key or policy hold.",
-      "poolRiskRows are recent candidate_pool rows whose current replay is not v31_clean; these should be inspected before public promotion.",
+      "v32_parser_gap_or_policy_review means the current parser still routes the row to needs_review/missing comparable key or policy hold.",
+      "poolRiskRows are recent candidate_pool rows whose current replay is not v32_clean; these should be inspected before public promotion.",
     ],
   };
 

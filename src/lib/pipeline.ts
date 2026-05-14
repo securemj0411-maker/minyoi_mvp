@@ -1096,7 +1096,12 @@ async function upsertRows(table: string, rows: unknown[]): Promise<void> {
   }
 }
 
-function contentHash(row: PipelineRow): string {
+// Wave 63: exported for housekeeper R3 precise verify. AI cache freshness check
+// reconstructs PipelineRow subset from DB and calls this identical function.
+// scoreFlags is the only non-persisted input — housekeeper passes [] as a known
+// limitation; rows that had non-empty flags at AI call time will mismatch even
+// when raw/parser unchanged. Conservative: those are kept (not deleted).
+export function contentHash(row: PipelineRow): string {
   return createHash("sha256")
     .update(JSON.stringify({
       promptVersion: AI_CLASSIFIER_PROMPT_VERSION,
