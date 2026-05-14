@@ -124,7 +124,23 @@ export function MarketSourceDebug({ pid, ourPrice }: { pid: number; ourPrice: nu
         <span>{open ? "▲" : "▼"}</span>
       </button>
       {open && (
-        <div className="space-y-3 border-t border-zinc-200 px-3 py-3 text-xs dark:border-zinc-800">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="space-y-3 border-t border-zinc-200 px-3 py-3 text-xs dark:border-zinc-800
+                     lg:fixed lg:right-0 lg:top-0 lg:bottom-0 lg:z-[80] lg:w-[480px] lg:max-w-[44vw]
+                     lg:overflow-y-auto lg:border-t-0 lg:border-l lg:bg-white lg:p-4 lg:shadow-2xl
+                     lg:dark:bg-zinc-900"
+        >
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="ml-auto hidden rounded-md border border-zinc-300 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 lg:block"
+          >
+            닫기 ✕
+          </button>
+          <div className="hidden lg:block lg:text-[11px] lg:font-bold lg:text-zinc-500 lg:dark:text-zinc-300">
+            📊 시세 근거 — pid {pid}
+          </div>
           {loading && <div className="text-zinc-500">불러오는 중...</div>}
           {error && <div className="text-rose-600 dark:text-rose-400">에러: {error}</div>}
           {data && (
