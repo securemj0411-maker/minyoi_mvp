@@ -447,6 +447,7 @@ function parseTabletGenerationChip(text: string, model: string | null, screenSiz
   }
 
   if (model === "ipad_air") {
+    if (generation === 4) return "a14"; // iPad Air 4 = A14 Bionic (2020, only Air with A14)
     if (generation === 5) return "m1";
     if (generation === 6) return "m2";
     if (generation === 7) return "m3";
