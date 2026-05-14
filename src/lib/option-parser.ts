@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v34";
+const PARSER_VERSION = "option-parser-v35";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -648,6 +648,15 @@ function modelFromSku(skuId?: string | null, skuName?: string | null) {
   if (id === "camera_nikon_z9") return "z9";
   if (id === "camera_canon_eos_6d") return "eos_6d";
   if (id === "camera_fujifilm_x_t4") return "x_t4";
+  // Wave 67/74: 신 사업 카테고리 mapping. 짧고 정밀한 model name으로 confidence 안정화.
+  if (id === "camera_sony_a6400") return "a6400";
+  if (id === "watch_casio_gshock_dw5600") return "gshock_dw5600";
+  if (id === "watch_casio_gshock_ga2100") return "gshock_ga2100";
+  if (id === "watch_casio_gshock_gmwb5000") return "gshock_gmwb5000";
+  if (id === "watch_seiko_5_sports_srpd") return "seiko5_srpd";
+  if (id === "watch_seiko_5_sports_sbsa") return "seiko5_sbsa";
+  if (id === "sport_golf_titleist_tsr2_driver") return "titleist_tsr2_driver";
+  if (id === "sport_golf_titleist_tsr3_driver") return "titleist_tsr3_driver";
   return name || id || null;
 }
 
@@ -670,6 +679,16 @@ function familyFrom(category: Sku["category"] | null, model: string | null) {
     if (model.startsWith("z")) return "nikon";
     if (model.startsWith("x_")) return "fujifilm";
     return "camera";
+  }
+  // Wave 67/74: 신 사업 카테고리 brand 매핑.
+  if (category === "watch") {
+    if (model.startsWith("gshock") || model.includes("casio")) return "casio";
+    if (model.startsWith("seiko")) return "seiko";
+    return "watch";
+  }
+  if (category === "sport_golf") {
+    if (model.startsWith("titleist")) return "titleist";
+    return "sport_golf";
   }
   return category;
 }

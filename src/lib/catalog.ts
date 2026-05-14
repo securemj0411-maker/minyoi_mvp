@@ -2690,7 +2690,7 @@ function chooseUniqueCandidate(candidates: Sku[]): Sku | null {
   // one lane SKU matched alongside broad siblings, prefer the lane instead of
   // dropping the listing as ambiguous. Keep true multi-lane collisions blocked.
   const laneCandidates = candidates.filter(
-    (sku) => Boolean(sku.laneKey) && ["laptop", "tablet", "smartphone"].includes(sku.category),
+    (sku) => Boolean(sku.laneKey) && ["laptop", "tablet", "smartphone", "watch", "sport_golf"].includes(sku.category),
   );
   if (laneCandidates.length === 1) return laneCandidates[0];
 
@@ -2698,7 +2698,7 @@ function chooseUniqueCandidate(candidates: Sku[]): Sku | null {
 }
 
 function requiresCombinedLaneVeto(sku: Sku | null): sku is Sku {
-  return sku !== null && Boolean(sku.laneKey) && ["laptop", "tablet", "smartphone"].includes(sku.category);
+  return sku !== null && Boolean(sku.laneKey) && ["laptop", "tablet", "smartphone", "watch", "sport_golf"].includes(sku.category);
 }
 
 export function ruleMatch(title: string, description = ""): Sku | null {

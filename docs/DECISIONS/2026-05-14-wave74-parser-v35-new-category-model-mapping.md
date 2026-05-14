@@ -1,0 +1,38 @@
+## Wave 74 — option-parser v34→v35: 신 카테고리 model name + brand mapping 보강
+
+- 시간: 2026-05-14 KST
+- 발견: Wave 67 신 카테고리 성과 측정에서:
+  - GA-2100: 33 raw 중 28건 needs_review=true, parseRate 15%, conf 0.45
+  - 원인: `modelFromSku` hardcoded mapping에 신 SKU 누락 → fallback `slug(skuName)` 사용 → "Casio G-Shock GA-2100 (CasiOak)" → `casio_g_shock_ga_2100_casioak` (긴 model name)
+  - 결과: confidence 함수가 watch 카테고리 분기 적용 안 되거나 base 0.45만
+  - a6400: production raw 0건. 또는 ruleMatch에서 broader SKU 충돌
+- 변경:
+  - `src/lib/option-parser.ts`:
+    - PARSER_VERSION v34→v35
+    - `modelFromSku`에 8개 신 SKU mapping 추가:
+      - watch_casio_gshock_dw5600 → "gshock_dw5600"
+      - watch_casio_gshock_ga2100 → "gshock_ga2100"
+      - watch_casio_gshock_gmwb5000 → "gshock_gmwb5000"
+      - watch_seiko_5_sports_srpd → "seiko5_srpd"
+      - watch_seiko_5_sports_sbsa → "seiko5_sbsa"
+      - sport_golf_titleist_tsr2_driver → "titleist_tsr2_driver"
+      - sport_golf_titleist_tsr3_driver → "titleist_tsr3_driver"
+      - camera_sony_a6400 → "a6400"
+    - `familyFrom`에 watch/sport_golf brand mapping (casio/seiko/titleist)
+  - `src/lib/catalog.ts` `chooseUniqueCandidate`:
+    - lane disambiguation eligibility에 watch + sport_golf 추가
+    - camera는 기존 동작 유지 (broader SKU 충돌 위험으로 제외)
+- 검증:
+  - 10 매물 테스트 모두 정상 매칭 + needs_review=false + conf 0.80
+    - GA-2100: `casio|gshock_ga2100` (이전 `watch|casio_g_shock_ga_2100_casioak`)
+    - TSR3: `titleist|titleist_tsr3_driver`
+    - a6400 body: `camera|sony|a6400|body_only|no_lens` (이전 sku=null)
+    - SBSA: `seiko|seiko5_sbsa` 매칭 성공
+  - npm run test:core 139/139 pass (회귀 0)
+  - npx tsc --noEmit clean
+- 위험:
+  - LOW: model name 정밀화 + brand mapping 추가, 모두 deterministic
+  - 옛 매물의 comparable_key가 v35 reparse 시 다르게 매핑됨 (Wave 63 같은 reparse wave 필요)
+- 다음:
+  - 신 매물 (Wave 74 이후)부터 자동 적용
+  - 옛 매물 reparse는 별도 wave (key 변경이라 owner-review classification 일부 발생 예상)
