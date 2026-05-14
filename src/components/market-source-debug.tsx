@@ -385,13 +385,13 @@ export function MarketSourceDebug({ pid, ourPrice }: { pid: number; ourPrice: nu
                 value={note}
                 onChange={(e) => { setNote(e.target.value); setNoteSaved(false); }}
                 disabled={!userRef}
-                maxLength={500}
-                rows={2}
+                maxLength={5000}
+                rows={3}
                 placeholder="시세 비교 OK / 단품 의심 / 가격 비교 틀린 듯 / 사진 애매 / 이거 좋은 추천 ..."
-                className="w-full resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs leading-5 text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-emerald-400 dark:focus:ring-emerald-900"
+                className="w-full resize-y rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs leading-5 text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-emerald-400 dark:focus:ring-emerald-900"
               />
               <div className="mt-1.5 flex items-center justify-between">
-                <div className="text-[10px] text-zinc-400">{note.length}/500</div>
+                <div className="text-[10px] text-zinc-400">{note.length}/5000</div>
                 <button
                   type="button"
                   onClick={handleSaveNote}

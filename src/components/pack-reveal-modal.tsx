@@ -481,13 +481,13 @@ function RevealCardItem({
                 setNote(event.target.value);
                 setNoteSaved(false);
               }}
-              maxLength={500}
+              maxLength={5000}
               rows={3}
               placeholder="예) 시세 비교 OK / 단품 의심 / 가격 비교 틀린 듯 / 사진 애매 / 이거 좋은 추천 / 이미 팔린 것 같음 등 자유"
               className="w-full resize-none rounded-lg border border-[#ddd6ca] bg-white px-3 py-2 text-xs leading-5 text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
             />
             <div className="flex items-center justify-between gap-2">
-              <div className="text-[10px] text-zinc-400">{note.length}/500</div>
+              <div className="text-[10px] text-zinc-400">{note.length}/5000</div>
               <button
                 type="button"
                 onClick={handleSaveNote}
