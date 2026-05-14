@@ -961,10 +961,10 @@ function observationEventType(item: SearchItem, existing: RawListingRow | undefi
 
 function searchOptionsForMode(mode: SearchStageOptions["mode"]) {
   // Wave 78: 실측 결과 (source_updated_at 기준) 번개 진짜 cadence는 평균 4-10/min,
-  // peak 11-12시도 max 32/min. 우리 74 query 5분 window 내 query당 new ≈ 1-3건.
-  // limit=96은 99.7% dedup → limit=50으로 다운로드 -48% (안전마진 5배 유지).
+  // peak 11-12시도 max 32/min. 5분 cadence + 74 query → query당 5min window new ≈ 1-3건.
+  // limit=96 → 50 (Wave 78) → 30 (Wave 79, tick 5분 전환 동반). 다운로드 -69%, 안전마진 6-30x.
   // env override: PIPELINE_FRESH_PAGE_LIMIT.
-  const fresh = Math.max(10, Math.min(96, Number(process.env.PIPELINE_FRESH_PAGE_LIMIT ?? 50)));
+  const fresh = Math.max(10, Math.min(96, Number(process.env.PIPELINE_FRESH_PAGE_LIMIT ?? 30)));
   if (mode === "fresh" || mode === "deep") {
     return { order: "date" as const, limit: fresh };
   }
