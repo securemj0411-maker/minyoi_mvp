@@ -1,7 +1,14 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-14T21:09:55.689Z",
+  "_updated_at": "2026-05-14T21:27:26.343Z",
   "resolutions": {
+    "358002617": {
+      "resolved_at": "2026-05-14T21:27:26.329Z",
+      "summary": "Wave 90 근본 fix 3종 (lifecycle auto-invalidate + Apple Watch Ultra 3 차단 + madTrim 8→5)",
+      "commits": [
+        "c75998f"
+      ]
+    },
     "394439158": {
       "resolved_at": "2026-05-14T21:01:00.000Z",
       "summary": "맥북 16 2019 i7 — MSRP × 0.5 fallback 폐기 (pipeline.ts:986). sample <5건이면 sku_median=0 → bandFromProfit null → 풀 진입 차단. broad SKU false positive 양산 root 제거. LAUNCH_PLAN §12b 정확성 우선 정책 준수.",
@@ -23,11 +30,25 @@
         "2761586"
       ]
     },
+    "398109917": {
+      "resolved_at": "2026-05-14T21:27:23.245Z",
+      "summary": "Wave 90 근본 fix 3종 (lifecycle auto-invalidate + Apple Watch Ultra 3 차단 + madTrim 8→5)",
+      "commits": [
+        "c75998f"
+      ]
+    },
     "405103487": {
       "resolved_at": "2026-05-14T21:05:00.000Z",
       "summary": "iPad Pro 12.9 4세대 — parser v36 동일 fix. reparse 후 4_gen|a12z로 분리.",
       "commits": [
         "8421506"
+      ]
+    },
+    "406074278": {
+      "resolved_at": "2026-05-14T21:27:23.980Z",
+      "summary": "Wave 90 근본 fix 3종 (lifecycle auto-invalidate + Apple Watch Ultra 3 차단 + madTrim 8→5)",
+      "commits": [
+        "c75998f"
       ]
     },
     "406566033": {
@@ -50,6 +71,27 @@
       "summary": "맥북 15 2018 i7 — 동일 MSRP fallback 폐기 fix. 사용자 별도 발견 (삭제된 매물 보임): lifecycle-worker deleted 검사 부재 — 별도 wave.",
       "commits": [
         "2761586"
+      ]
+    },
+    "407614793": {
+      "resolved_at": "2026-05-14T21:27:22.230Z",
+      "summary": "Wave 90 근본 fix 3종 (lifecycle auto-invalidate + Apple Watch Ultra 3 차단 + madTrim 8→5)",
+      "commits": [
+        "c75998f"
+      ]
+    },
+    "407655201": {
+      "resolved_at": "2026-05-14T21:27:20.703Z",
+      "summary": "Wave 90 근본 fix 3종 (lifecycle auto-invalidate + Apple Watch Ultra 3 차단 + madTrim 8→5)",
+      "commits": [
+        "c75998f"
+      ]
+    },
+    "407677847": {
+      "resolved_at": "2026-05-14T21:27:25.171Z",
+      "summary": "Wave 90 근본 fix 3종 (lifecycle auto-invalidate + Apple Watch Ultra 3 차단 + madTrim 8→5)",
+      "commits": [
+        "c75998f"
       ]
     },
     "407687887": {
