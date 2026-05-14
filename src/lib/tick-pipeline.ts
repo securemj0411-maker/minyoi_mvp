@@ -2437,6 +2437,9 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // parser가 conditionNotes에 "new_or_open_box" 마킹. 풀 진입은 별개 (싸게 올라온 새상품도 차익 OK).
     const conditionNotes = (parsed.parsed_json?.condition_notes as string[] | undefined) ?? [];
     if (conditionNotes.includes("new_or_open_box")) continue;
+    // Wave 91 (사용자 코멘트 pid 407135933): 배터리 효율 75% 매물이 일반 시세에 끼면 위험.
+    // low_battery_health 매물은 시세 비교군에서 제외 (풀 진입은 OK, 싸면 차익 매물).
+    if (conditionNotes.includes("low_battery_health")) continue;
     const key = parsed.comparable_key;
     if (!byKey.has(key)) byKey.set(key, { rows: [], activeRows: [], soldRows: [], disappearedRows: [], skuId: row.sku_id });
     const group = byKey.get(key)!;

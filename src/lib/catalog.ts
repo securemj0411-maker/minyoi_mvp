@@ -2330,6 +2330,12 @@ export const CATALOG: Sku[] = [
       "studio3",
       "studio 2",
       "studio2",
+      // Wave 91: "Studio Pro 3" 같은 모호한 매물 격리 (실존 모델 아님 — Studio 3 Wireless 또는 오기재).
+      // 사용자 코멘트로 발견 (pid 334750861 "비츠 스튜디오 프로3").
+      "프로3",
+      "프로 3",
+      "pro 3",
+      "pro3",
       "솔로",
       "solo 4",
       "solo4",

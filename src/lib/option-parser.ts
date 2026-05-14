@@ -37,7 +37,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v39";
+const PARSER_VERSION = "option-parser-v40";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -468,8 +468,9 @@ function parseTabletGeneration(text: string, model: string | null) {
   }
   if (model === "ipad_mini") {
     if (/\ba\s*17\b|a17\s*pro|a17pro/.test(lower)) return 7;
+    // Wave 91: \s+ → \s* (공백 없이 "미니6" 같은 매물도 캡처). 사용자 코멘트로 발견 (pid 367574084 "아이패드 미니6 256 셀룰러").
     const match = firstMatch(lower, [
-      /(?:아이패드\s*)?(?:미니|mini)\s+(?:[^0-9.]{0,12}?)?(\d)(?:[^0-9.]|$)/,
+      /(?:아이패드\s*)?(?:미니|mini)\s*(?:[^0-9.]{0,12}?)?(\d)(?:[^0-9.]|$)/,
       /(?:^|[^0-9.])(\d)(?:[^0-9.]{0,12})?(?:미니|mini)/,
     ]);
     return match ? Number(match[1]) : null;
@@ -873,7 +874,8 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
     score += delta;
   };
 
-  if (/미개봉|새상품|새 제품|새제품|단순개봉/.test(lower)) add("new_or_open_box", 0.15);
+  // Wave 91 (사용자 요청 pid 368060006): 미개봉/새상품 detection 변형 흡수.
+  if (/미개봉|미\s*개봉|새상품|새 제품|새제품|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*미개봉|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|새\s*것|새거|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower)) add("new_or_open_box", 0.15);
   if (/풀박스|풀박|풀구성|풀세트|구성품\s*전부/.test(lower)) add("full_set", 0.05);
   if (/s급|상태\s*좋|상태좋|깨끗|깔끔/.test(lower)) add("good_condition", 0.05);
   if (/사용감|기스|스크래치|찍힘|생활기스|흠집/.test(lower)) add("cosmetic_wear", -0.1);
@@ -1139,7 +1141,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const monitorBrand = category === "monitor" ? (parseMonitorBrand(title) ?? parseMonitorBrand(text)) : null;
   const monitorModelCode = category === "monitor" ? (parseMonitorModelCode(title) ?? parseMonitorModelCode(text)) : null;
   const monitorModelHint = monitorModelCode ? (MONITOR_MODEL_HINTS[monitorModelCode] ?? null) : null;
-  const model = category === "monitor" ? (monitorModelCode ?? "generic_monitor") : modelFromSku(input.skuId, input.skuName);
+  let model = category === "monitor" ? (monitorModelCode ?? "generic_monitor") : modelFromSku(input.skuId, input.skuName);
   const family = familyFrom(category, model);
   const storageGb = parseStorageGb(title, category) ?? parseLooseDeviceStorageGb(title, category) ?? parseStorageGb(text, category);
   const titleMemory = parseRamAndSsd(title, category);
@@ -1190,6 +1192,12 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     ? (parseAirpodsConnector(title) ?? parseAirpodsConnector(description) ?? defaultAirpodsConnector(model, text))
     : null;
   const airpodsNoiseControl = category === "earphone" ? parseAirpodsNoiseControl(model, text) : null;
+  // Wave 91: parser evidence overrides catalog classification.
+  // 사용자 코멘트로 발견 (pid 408077307 "에어팟4세대(노캔X)"): catalog가 "노캔" 토큰만 보고
+  // airpods-4-anc로 분류했지만, parser는 정확히 "노캔X" = no_anc로 인식. catalog 분류 정정.
+  if (model === "airpods_4_anc" && airpodsNoiseControl === "no_anc") {
+    model = "airpods_4";
+  }
   const airpodsMaxGeneration = category === "earphone" ? parseAirpodsMaxGeneration(model, text) : null;
   const airpodsMaxFullProductContext =
     category === "earphone" && model?.includes("airpods_max")

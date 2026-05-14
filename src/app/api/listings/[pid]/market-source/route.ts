@@ -120,15 +120,16 @@ export async function GET(
         const analysisRows = (await analysisRes.json()) as Array<{ pid: number; risk_hits: number }>;
         const parsedRowsForCond = (await parsedRes2.json()) as Array<{ pid: number; parsed_json: Record<string, unknown> | null }>;
         const riskByPid = new Map(analysisRows.map((r) => [Number(r.pid), Number(r.risk_hits ?? 0)]));
-        const isNewByPid = new Map<number, boolean>();
+        const excludeByPid = new Map<number, boolean>();
         for (const p of parsedRowsForCond) {
           const notes = (p.parsed_json?.condition_notes as string[] | undefined) ?? [];
-          isNewByPid.set(Number(p.pid), notes.includes("new_or_open_box"));
+          // Wave 91: low_battery_health도 시세 비교군에서 제외 (tick-pipeline와 동일).
+          excludeByPid.set(Number(p.pid), notes.includes("new_or_open_box") || notes.includes("low_battery_health"));
         }
         const safeRows = rawRows.filter((r) => {
           const pid = Number(r.pid);
           if ((riskByPid.get(pid) ?? 0) > 0) return false;
-          if (isNewByPid.get(pid) === true) return false;
+          if (excludeByPid.get(pid) === true) return false;
           return true;
         });
         comparables = safeRows.map((row) => ({
