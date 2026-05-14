@@ -55,36 +55,37 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Wave 72: 모바일 jitter 수정 — translateX 제거하고 fade-only로 변경.
+   이전 translateX(-52px ↔ +24px ↔ +18px) 애니메이션이 3.5초 주기로 회전하면서
+   카드 + 텍스트가 좌우로 jitter되어 페이지 전체 흔들림처럼 보였음. */
 @keyframes showcase-swipe-in {
   from {
     opacity: 0;
-    transform: translateX(24px) scale(0.97);
+    transform: scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: scale(1);
   }
 }
 
 @keyframes showcase-swipe-out {
   from {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: scale(1);
   }
   to {
     opacity: 0;
-    transform: translateX(-52px) scale(0.98);
+    transform: scale(0.98);
   }
 }
 
 @keyframes showcase-content-in {
   from {
     opacity: 0;
-    transform: translateX(18px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
   }
 }
 
