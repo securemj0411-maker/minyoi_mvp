@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v33";
+const PARSER_VERSION = "option-parser-v34";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -145,6 +145,45 @@ function parseLgGramModelNumber(text: string) {
   const lower = normalize(text).toLowerCase();
   const match = lower.match(/\b(17zd90su|17zd90s|17z90s)(?!p)[a-z0-9-]*\b/);
   return match?.[1] ?? null;
+}
+
+// v33+: Apple silicon chip + (model, screen) tuple → unique release year mapping.
+// §12b 준수: chip 단독 추정 X. (model, chip, screen)이 unique한 조합만 매핑.
+// 예: "M1 맥북에어" → 2020 (M1 Air는 2020만), "M2 맥북에어 13" → 2022 (M2 Air 13는 2022만).
+// "M3 맥북프로" 같은 다년식 chip은 leave unknown.
+function appleChipToReleaseYear(
+  family: string | null,
+  model: string | null,
+  chip: string | null,
+  screenSizeIn: number | null,
+): number | null {
+  if (!chip || family !== "macbook") return null;
+  const c = chip.toLowerCase();
+  if (model === "macbook_air") {
+    // Air는 chip 출시 연도와 1대1 매핑 (Air는 항상 1세대 chip만 받음)
+    if (c === "m1") return 2020; // M1 Air 2020만
+    if (c === "m2") {
+      if (screenSizeIn === 13) return 2022;
+      if (screenSizeIn === 15) return 2023;
+      // size 미상이면 leave unknown
+    }
+    if (c === "m3") return 2024; // M3 Air 13/15 모두 2024
+    if (c === "m4") return 2025; // M4 Air 2025
+  }
+  if (model === "macbook_pro") {
+    // Pro는 13" base chip vs 14"/16" Pro/Max chip로 분리
+    if (c === "m1") {
+      if (screenSizeIn === 13) return 2020; // M1 MBP 13는 2020만
+      // 14"/16"는 M1 Pro/Max만 (chip 명시 다름)
+    }
+    if (c === "m1_pro" || c === "m1_max") return 2021; // 14"/16" 2021
+    if (c === "m2") {
+      if (screenSizeIn === 13) return 2022; // M2 MBP 13는 2022만
+    }
+    if (c === "m2_pro" || c === "m2_max") return 2023; // 14"/16" 2023
+    // M3/M4 Pro/Max는 다년식 가능 (2023~2024) → leave unknown
+  }
+  return null;
 }
 
 function parseLaptopReleaseYear(text: string) {
@@ -1056,7 +1095,8 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const parsedReleaseYear = category === "laptop"
     ? (parseLaptopReleaseYear(title) ?? parseLaptopReleaseYear(text))
     : null;
-  const releaseYear = category === "laptop"
+  // releaseYear는 chip + screen 결정 후 재할당 (appleChipToReleaseYear fallback 포함)
+  let releaseYear = category === "laptop"
     ? (parsedReleaseYear ?? laptopModelHint?.releaseYear ?? null)
     : null;
   const parsedScreenSizeIn = category === "laptop"
@@ -1080,6 +1120,10 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const laptopMemoryDefault = defaultLaptopMemory(category, model, chip, screenSizeIn, text);
   const ramGb = parsedRamGb ?? laptopMemoryDefault.ramGb;
   const ssdGb = parsedSsdGb ?? laptopMemoryDefault.ssdGb;
+  // v33+: releaseYear chip-based fallback (deterministic (model, chip, screen) tuples).
+  if (releaseYear == null && category === "laptop") {
+    releaseYear = appleChipToReleaseYear(family, model, chip, screenSizeIn);
+  }
   const batteryHealth = parseBatteryHealth(text);
   const batteryCycles = parseBatteryCycles(text);
   const connectivity = parseConnectivity(title) ?? parseConnectivity(description) ?? defaultConnectivity(model) ?? (category === "tablet" ? "wifi" : null);

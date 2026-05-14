@@ -25,19 +25,19 @@
     ]
   },
   {
+    "pid": "407793263",
+    "name": "소니 A6400 번들렌즈 카메라 풀세트 + 가방/충전기/샌디스크",
+    "price": 890000,
+    "reject_reasons": [
+      "reject_lens_kit"
+    ]
+  },
+  {
     "pid": "406619601",
     "name": "소니 a6400 미러리스 카메라 16-50mm 렌즈킷 포함 신품급",
     "price": 970000,
     "reject_reasons": [
       "missing_any_바디_body_풀박스",
-      "reject_lens_kit"
-    ]
-  },
-  {
-    "pid": "407793263",
-    "name": "소니 A6400 번들렌즈 카메라 풀세트 + 가방/충전기/샌디스크",
-    "price": 890000,
-    "reject_reasons": [
       "reject_lens_kit"
     ]
   },
@@ -218,21 +218,21 @@
     ]
   },
   {
+    "pid": "403344371",
+    "name": "[소니용] A6400/A6500/A6100용 플레이트팝니다.",
+    "price": 10000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_model_a6500"
+    ]
+  },
+  {
     "pid": "403340125",
     "name": "[소니용] A6400/A6500/A6100용 플레이트팝니다.",
     "price": 10000,
     "reject_reasons": [
       "price_too_low",
       "missing_any_바디_body_풀박스",
-      "reject_wrong_model_a6500"
-    ]
-  },
-  {
-    "pid": "403344371",
-    "name": "[소니용] A6400/A6500/A6100용 플레이트팝니다.",
-    "price": 10000,
-    "reject_reasons": [
-      "price_too_low",
       "reject_wrong_model_a6500"
     ]
   },
@@ -261,14 +261,6 @@
     ]
   },
   {
-    "pid": "401771203",
-    "name": "소니 A6400 + 시그마 18-50mm F2.8 세트",
-    "price": 1350000,
-    "reject_reasons": [
-      "reject_lens_kit"
-    ]
-  },
-  {
     "pid": "401407330",
     "name": "[소니용] A6400/A6500/A6100용 바디케이스팝니다.",
     "price": 15000,
@@ -284,6 +276,14 @@
     "reject_reasons": [
       "price_too_low",
       "reject_wrong_model_a6500"
+    ]
+  },
+  {
+    "pid": "401771203",
+    "name": "소니 A6400 + 시그마 18-50mm F2.8 세트",
+    "price": 1350000,
+    "reject_reasons": [
+      "reject_lens_kit"
     ]
   },
   {
@@ -333,17 +333,17 @@
     ]
   },
   {
-    "pid": "400272334",
-    "name": "소니 A6400 실버 + 구번들렌즈 2천컷",
-    "price": 750000,
+    "pid": "400868044",
+    "name": "소니 A6400 실버 + 시그마 70mm F2.8 DG 마크로",
+    "price": 1200000,
     "reject_reasons": [
       "reject_lens_kit"
     ]
   },
   {
-    "pid": "400868044",
-    "name": "소니 A6400 실버 + 시그마 70mm F2.8 DG 마크로",
-    "price": 1200000,
+    "pid": "400272334",
+    "name": "소니 A6400 실버 + 구번들렌즈 2천컷",
+    "price": 750000,
     "reject_reasons": [
       "reject_lens_kit"
     ]
@@ -1191,20 +1191,20 @@
     ]
   },
   {
+    "pid": "390169399",
+    "name": "소니 a6400 + fe55.8za 렌즈",
+    "price": 900000,
+    "reject_reasons": [
+      "missing_any_바디_body_풀박스"
+    ]
+  },
+  {
     "pid": "391552087",
     "name": "소니 A6400 + 16-50mm 렌즈 싸게 판매합니다",
     "price": 750000,
     "reject_reasons": [
       "missing_any_바디_body_풀박스",
       "reject_lens_kit"
-    ]
-  },
-  {
-    "pid": "390169399",
-    "name": "소니 a6400 + fe55.8za 렌즈",
-    "price": 900000,
-    "reject_reasons": [
-      "missing_any_바디_body_풀박스"
     ]
   },
   {
@@ -1249,6 +1249,22 @@
       "price_too_low",
       "missing_a6400_ilce_s_6400_알파_",
       "missing_any_바디_body_풀박스"
+    ]
+  },
+  {
+    "pid": "390017004",
+    "name": "신형 신품급 A6400 미러리스 카메라 + SEL1650 2 렌즈 민트",
+    "price": 1010000,
+    "reject_reasons": [
+      "reject_lens_kit"
+    ]
+  },
+  {
+    "pid": "392694525",
+    "name": "판완 ㅠ",
+    "price": 950000,
+    "reject_reasons": [
+      "reject_lens_kit"
     ]
   }
 ]

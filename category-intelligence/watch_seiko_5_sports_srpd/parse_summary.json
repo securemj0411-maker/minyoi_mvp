@@ -2,46 +2,61 @@
   "version": 1,
   "lane_key": "watch_seiko_5_sports_srpd",
   "category": "watch",
-  "generated_at": "2026-05-14T02:26:17.426Z",
+  "generated_at": "2026-05-14T03:27:09.788Z",
   "method": "mine-narrow-lane-v1",
   "queries": [
     "세이코 5 SRPD",
     "Seiko 5 SRPD",
     "세이코 5KX",
+    "Seiko 5 Sports",
+    "세이코 5 스포츠",
     "SRPD55",
     "SRPD51",
     "SRPD61",
-    "SRPD79"
+    "SRPD79",
+    "SRPD83"
   ],
-  "pages": 6,
+  "pages": 8,
   "price_range_krw": [
     100000,
     700000
   ],
   "target_parse_ready": 120,
-  "total_fetched": 26,
+  "total_fetched": 99,
   "parse_ready_count": 4,
-  "rejected_count": 22,
+  "rejected_count": 95,
   "target_reached": false,
   "reject_breakdown": [
     {
-      "reason": "missing_seiko_s_5_세이코_s_5_세이코5",
-      "count": 17
+      "reason": "missing_srpd_5kx",
+      "count": 78
     },
     {
-      "reason": "missing_srpd_5kx",
-      "count": 6
+      "reason": "missing_seiko_s_5_세이코_s_5_세이코5",
+      "count": 24
     },
     {
       "reason": "reject_fake",
-      "count": 2
-    },
-    {
-      "reason": "price_too_low",
-      "count": 1
+      "count": 6
     },
     {
       "reason": "price_too_high",
+      "count": 4
+    },
+    {
+      "reason": "price_too_low",
+      "count": 2
+    },
+    {
+      "reason": "reject_buying_post",
+      "count": 1
+    },
+    {
+      "reason": "reject_wrong_model_sbsa",
+      "count": 1
+    },
+    {
+      "reason": "reject_broken",
       "count": 1
     }
   ],

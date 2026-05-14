@@ -473,7 +473,9 @@ test("MacBook purchase year does not fragment Apple Silicon generation", () => {
     title: "맥북 에어 M2 13인치 8GB 256GB",
     description: "2025년 2월 구매했고 풀박스입니다.",
   });
-  assert.equal(parsed.comparableKey, "macbook|macbook_air|m2_gen|m2|13in|8gb_ram|256gb_ssd");
+  // v34: (model, chip, screen) tuple로 deterministic year 추론. M2 Air 13" = 2022 confirmed.
+  // purchase year "2025"는 brand 멀어서 회피 (Wave 61 patch). Apple Silicon 정확성 향상.
+  assert.equal(parsed.comparableKey, "macbook|macbook_air|2022y|m2|13in|8gb_ram|256gb_ssd");
 });
 
 test("MacBook Pro M1 Pro chip creates deterministic generation axis", () => {
@@ -482,7 +484,8 @@ test("MacBook Pro M1 Pro chip creates deterministic generation axis", () => {
     skuId: "macbook_pro",
     title: "맥북 프로 m1 pro 16인치 16gb 512gb 효율98% 실버",
   });
-  assert.equal(parsed.comparableKey, "macbook|macbook_pro|m1pro_gen|m1_pro|16in|16gb_ram|512gb_ssd");
+  // v34: M1 Pro chip은 14"/16" MacBook Pro 2021만 → 2021y 정밀화.
+  assert.equal(parsed.comparableKey, "macbook|macbook_pro|2021y|m1_pro|16in|16gb_ram|512gb_ssd");
   assert.equal(parsed.needsReview, false);
 });
 

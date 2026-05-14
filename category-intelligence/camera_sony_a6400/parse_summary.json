@@ -2,24 +2,27 @@
   "version": 1,
   "lane_key": "camera_sony_a6400",
   "category": "camera",
-  "generated_at": "2026-05-14T02:27:54.327Z",
+  "generated_at": "2026-05-14T03:26:13.893Z",
   "method": "mine-narrow-lane-v1",
   "queries": [
     "소니 a6400",
     "Sony a6400",
     "ILCE-6400",
     "알파 6400",
-    "a6400 바디"
+    "a6400 바디",
+    "a6400 미러리스",
+    "소니 a6400 풀박",
+    "소니 a6400 단품"
   ],
-  "pages": 6,
+  "pages": 8,
   "price_range_krw": [
     400000,
     1500000
   ],
   "target_parse_ready": 120,
-  "total_fetched": 180,
+  "total_fetched": 182,
   "parse_ready_count": 33,
-  "rejected_count": 147,
+  "rejected_count": 149,
   "target_reached": false,
   "reject_breakdown": [
     {
@@ -28,7 +31,7 @@
     },
     {
       "reason": "reject_lens_kit",
-      "count": 79
+      "count": 81
     },
     {
       "reason": "price_too_low",

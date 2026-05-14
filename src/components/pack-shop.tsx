@@ -105,7 +105,7 @@ function ShowcaseCard({
             </div>
           ) : null}
           {activeItem ? (
-            <div key={`image-${activeItem.pid}-${transitionId}`} className="showcase-swipe-in absolute inset-0">
+            <div key={`image-${activeItem.pid}-${transitionId}`} className={`absolute inset-0 ${transitionId > 0 ? "showcase-swipe-in" : ""}`}>
               <div className="absolute inset-0 scale-[1.03] opacity-82 blur-[2px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -141,7 +141,7 @@ function ShowcaseCard({
           </div>
         </div>
 
-        <div key={`content-${activeItem?.pid ?? "empty"}-${transitionId}`} className="showcase-content-in p-4">
+        <div key={`content-${activeItem?.pid ?? "empty"}-${transitionId}`} className={`p-4 ${transitionId > 0 ? "showcase-content-in" : ""}`}>
           <div className="truncate text-[20px] font-black leading-tight text-zinc-900 dark:text-zinc-50 sm:text-[22px]">
             {activeItem?.name ?? "실거래 예시 상품"}
           </div>

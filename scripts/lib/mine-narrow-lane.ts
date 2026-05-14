@@ -1412,8 +1412,8 @@ const LANES: Record<LaneKey, LaneConfig> = {
   watch_seiko_5_sports_srpd: {
     laneKey: "watch_seiko_5_sports_srpd",
     category: "watch",
-    queries: ["세이코 5 SRPD", "Seiko 5 SRPD", "세이코 5KX", "SRPD55", "SRPD51", "SRPD61", "SRPD79"],
-    pages: 6,
+    queries: ["세이코 5 SRPD", "Seiko 5 SRPD", "세이코 5KX", "Seiko 5 Sports", "세이코 5 스포츠", "SRPD55", "SRPD51", "SRPD61", "SRPD79", "SRPD83"],
+    pages: 8,
     targetParseReady: 120,
     priceMin: 100_000,
     priceMax: 700_000,
@@ -1505,8 +1505,8 @@ const LANES: Record<LaneKey, LaneConfig> = {
   camera_sony_a6400: {
     laneKey: "camera_sony_a6400",
     category: "camera",
-    queries: ["소니 a6400", "Sony a6400", "ILCE-6400", "알파 6400", "a6400 바디"],
-    pages: 6,
+    queries: ["소니 a6400", "Sony a6400", "ILCE-6400", "알파 6400", "a6400 바디", "a6400 미러리스", "소니 a6400 풀박", "소니 a6400 단품"],
+    pages: 8,
     targetParseReady: 120,
     priceMin: 400_000,
     priceMax: 1_500_000,

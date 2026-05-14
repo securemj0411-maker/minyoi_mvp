@@ -5,10 +5,13 @@
     "세이코 5 SRPD",
     "Seiko 5 SRPD",
     "세이코 5KX",
+    "Seiko 5 Sports",
+    "세이코 5 스포츠",
     "SRPD55",
     "SRPD51",
     "SRPD61",
-    "SRPD79"
+    "SRPD79",
+    "SRPD83"
   ],
   "accept_all": [
     "seiko\\s*5|세이코\\s*5|세이코5",

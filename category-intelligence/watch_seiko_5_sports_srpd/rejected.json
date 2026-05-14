@@ -32,17 +32,17 @@
     ]
   },
   {
-    "pid": "383423191",
-    "name": "[세이코] SRPD65K4 오토매틱 나토 스트랩 손목시계",
-    "price": 310000,
+    "pid": "383416215",
+    "name": "[세이코] SRPD65K3 오토매틱 가죽 손목시계",
+    "price": 430000,
     "reject_reasons": [
       "missing_seiko_s_5_세이코_s_5_세이코5"
     ]
   },
   {
-    "pid": "383416215",
-    "name": "[세이코] SRPD65K3 오토매틱 가죽 손목시계",
-    "price": 430000,
+    "pid": "383423191",
+    "name": "[세이코] SRPD65K4 오토매틱 나토 스트랩 손목시계",
+    "price": 310000,
     "reject_reasons": [
       "missing_seiko_s_5_세이코_s_5_세이코5"
     ]
@@ -173,9 +173,610 @@
     ]
   },
   {
+    "pid": "407039060",
+    "name": "세이코 SEIKO 5 스포츠 SRPL54K 슈퍼카 2025년 한정판",
+    "price": 530000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "406468590",
+    "name": "[미사용 민트 풀박스] 세이코 5 스포츠 블랙썬더(흑번개) SZEN008",
+    "price": 318000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "404797042",
+    "name": "인하) 세이코 5 스포츠매틱 빈티지",
+    "price": 150000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "404815495",
+    "name": "세이코5스포츠..오토매틱 필드워치",
+    "price": 180000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "403304189",
+    "name": "세이코 5 스포츠 오토매틱",
+    "price": 220000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "403484760",
+    "name": "세이코5..스포츠..오토매틱시계입니다.",
+    "price": 145000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "402885757",
+    "name": "세이코5 스포츠 블랙 다이버 시계 오토매틱",
+    "price": 175000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "398787578",
+    "name": "세이코 5 스포츠 블루 다이버 오토매틱 시계",
+    "price": 270000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "397119673",
+    "name": "SEIKO 5 Sports Automatic Divers Watch",
+    "price": 450000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "395624871",
+    "name": "세이코 5 스포츠 펩시 리미티드 에디션(SSK047)",
+    "price": 1800000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "394646319",
+    "name": "세이코5  73's 빈티지 스포츠다이버 시계(오버홀 제품)",
+    "price": 950000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "393112187",
+    "name": "세이코5 스포츠 블랑팡 오토매틱 데이데이트",
+    "price": 160000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "390482579",
+    "name": "세이코 5 스포츠 오토매틱 블랙 메탈 시계",
+    "price": 480000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "388870234",
+    "name": "세이코 5 스포츠 오토매틱 다이버 스타일 (스테인리스 브레이슬릿 포함)",
+    "price": 190000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "385475698",
+    "name": "세이코 5 스포츠",
+    "price": 135000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "382097759",
+    "name": "[SEIKO] 세이코5 SRPJ89K1 스포츠 오토매틱 가죽 남자시계",
+    "price": 320000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "383266480",
+    "name": "세이코5 스포츠 복각 한정판 SRPK17",
+    "price": 650000,
+    "reject_reasons": [
+      "missing_srpd_5kx",
+      "reject_fake"
+    ]
+  },
+  {
+    "pid": "384223484",
+    "name": "[세이코] SSK031K1 세이코 5 스포츠 GMT 손목시계",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "384223040",
+    "name": "[세이코] SSK029K1 세이코 5 스포츠 GMT 손목시계",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "384222509",
+    "name": "[세이코] SSK021K1 세이코 5 스포츠 GMT 손목시계",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "384221747",
+    "name": "[세이코] SSK001K1 세이코 5 스포츠 GMT 손목시계",
+    "price": 500000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "384226834",
+    "name": "[세이코] SSK044K1 세이코 5 스포츠 GMT 손목시계",
+    "price": 610000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "384224759",
+    "name": "[세이코] SSK036K1 세이코 5 스포츠 GMT 손목시계",
+    "price": 515000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "384226060",
+    "name": "[세이코] SSK043K1 세이코 5 스포츠 GMT 손목시계",
+    "price": 615000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "384224334",
+    "name": "[세이코] SSK033K1 세이코 5 스포츠 GMT 손목시계",
+    "price": 560000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "383829588",
+    "name": "[세이코] SRPG29K1 세이코 5 스포츠 필드 손목시계",
+    "price": 310000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "383824823",
+    "name": "[세이코] SRPG37K1 세이코 5 스포츠 필드 손목시계",
+    "price": 330000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "383824110",
+    "name": "[세이코] SRPG31K1 세이코 5 스포츠 필드 손목시계",
+    "price": 280000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "383825846",
+    "name": "[세이코] SRPG33K1 세이코 5 스포츠 필드 손목시계",
+    "price": 300000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "383831214",
+    "name": "[세이코] SRPG27K1 세이코 5 스포츠 필드 손목시계",
+    "price": 330000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "383833981",
+    "name": "[세이코] SRPK97K1 세이코 5 스포츠 레트로 컬러 콜렉션 손목시계",
+    "price": 370000,
+    "reject_reasons": [
+      "missing_srpd_5kx",
+      "reject_fake"
+    ]
+  },
+  {
+    "pid": "383832987",
+    "name": "[세이코] SRPK89K1 세이코 5 스포츠 레트로 컬러 콜렉션 손목시계",
+    "price": 400000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "380512295",
+    "name": "Seiko sports5  7s36-0080 블루다이얼 오토 (중고)",
+    "price": 250000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "380626392",
+    "name": "세이코 5 70'빈티지 스포츠 오토매틱 시계(오버홀제품)",
+    "price": 350000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "379166659",
+    "name": "70s 세이코 5 스포츠 7019-6040 이너 링 터틀 케이스 오토매틱",
+    "price": 280000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "377236956",
+    "name": "1970년대 제조 세이코5 7019 스포츠 오토매틱",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "367323650",
+    "name": "70년대 )세이코5 스포츠 오토매틱 빈티지 시계  레어 6119-8450",
+    "price": 275000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "365399710",
+    "name": "세이코5 오토매틱 스포츠 시계",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "359726189",
+    "name": "(색상상관x)세이코5 스포츠 오토매틱 시계구합니다(시스루백)",
+    "price": 100000,
+    "reject_reasons": [
+      "missing_srpd_5kx",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "353593718",
+    "name": "세이코 5 스포츠",
+    "price": 450000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "350584617",
+    "name": "빈티지 세이코 5 스포츠 70m 5126-6030 렐리 시계",
+    "price": 400000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "346584560",
+    "name": "[SEIKO] 세이코5 SRPK91K1 스포츠 오토매틱 메탈 남자시계",
+    "price": 400000,
+    "reject_reasons": [
+      "missing_srpd_5kx",
+      "reject_fake"
+    ]
+  },
+  {
+    "pid": "346226712",
+    "name": "인하) Grinicci. 그리니찌  세이코 5 빈티지 스포츠매틱시계",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "345392443",
+    "name": "세이코 5 스포츠 7S26 02T0 블랙메탈 오토매틱",
+    "price": 80000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "335941630",
+    "name": "세이코5 시계 스포츠 오토매틱 남성용 스틸",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "322033522",
+    "name": "[SEIKO] 세이코 5 SRPJ85K1 오토매틱 스포츠 필드워치 시계",
+    "price": 330000,
+    "reject_reasons": [
+      "missing_srpd_5kx",
+      "reject_fake"
+    ]
+  },
+  {
+    "pid": "322911520",
+    "name": "세이코 5 스포츠 오토매틱 시계 골드/블랙 100M 방수 23 보석",
+    "price": 368000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "286427794",
+    "name": "세이코 Seiko 5 스포츠 SRPH33 필드스트리트 시계 (교환가능)",
+    "price": 390000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "273390815",
+    "name": "세이코5 오토매틱 스포츠매틱 시계, 세이코빈티지",
+    "price": 230000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "263708183",
+    "name": "세이코5 스포츠  시계",
+    "price": 260000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "407182027",
+    "name": "[새상품/풀박스/NOS] 세이코 스포츠 SRPB25K1 (단종 모델)",
+    "price": 350000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "233918951",
+    "name": "세이코5 스포츠 빈티지 71's  스피드타이머 오토매틱",
+    "price": 450000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "401957144",
+    "name": "세이코 빈티지 스포츠 150 쿼츠 시계",
+    "price": 500000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "211342403",
+    "name": "세이코 5  시계 빈티지 69's 스포츠 오토매틱 남성용",
+    "price": 300000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "210762847",
+    "name": "세이코5 시계 68's 빈티지 스포츠 오토매틱 가죽(O.H제품)",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "362382734",
+    "name": "세이코 월드타임 쿼츠 스포츠 150",
+    "price": 1099998,
+    "reject_reasons": [
+      "price_too_high",
+      "missing_seiko_s_5_세이코_s_5_세이코5",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "208870789",
+    "name": "빈티지 세이코 5 스포츠매틱 남성 자동 메탈 시계",
+    "price": 264000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "406768367",
+    "name": "세이코 5 스포츠 오토매틱 손목시계 판매합니다",
+    "price": 120000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "405842575",
+    "name": "세이코 5 스포츠 오토매틱 시계",
+    "price": 143000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "406016386",
+    "name": "세이코5 스포츠 오토매틱 시계 청판/홍판",
+    "price": 115000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "404899423",
+    "name": "세이코 5 스포츠 SNZH57 (세이코 패덤즈) 판매합니다.",
+    "price": 230000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "402866698",
+    "name": "세이코5 스포츠 오토매틱 청판 메탈시계",
+    "price": 150000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "404378217",
+    "name": "세이코5 스포츠 필드 스터일 오토매틱 남성 손목시계 SBSA201",
+    "price": 220000,
+    "reject_reasons": [
+      "missing_srpd_5kx",
+      "reject_wrong_model_sbsa"
+    ]
+  },
+  {
+    "pid": "401447842",
+    "name": "세이코 검판 오토매틱 5다이버 스포츠 시계팝니다",
+    "price": 150000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "399739475",
+    "name": "세이코5 스포츠 오토매틱 시계(세이코 블랑팡)",
+    "price": 170000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "397231087",
+    "name": "세이코5 스포츠 x 허프",
+    "price": 550000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "395723516",
+    "name": "세이코 5 스포츠 오토매틱 시계",
+    "price": 185000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "394983063",
+    "name": "세이코5 스포츠 오토매틱 메탈 시계",
+    "price": 190000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "395178952",
+    "name": "세이코 스포츠 5 필드워치 SNZG15 만수르형 워치",
+    "price": 130000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5",
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "386247870",
+    "name": "세이코5 스포츠  오토매틱",
+    "price": 280000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
+    "pid": "383359263",
+    "name": "세이코 5 스포츠   7S36 04MO  최종가격",
+    "price": 200000,
+    "reject_reasons": [
+      "missing_srpd_5kx",
+      "reject_broken"
+    ]
+  },
+  {
+    "pid": "300173313",
+    "name": "1971 빈티지 세이코 5 스포츠 7019-6040 오토매틱시계",
+    "price": 260000,
+    "reject_reasons": [
+      "missing_srpd_5kx"
+    ]
+  },
+  {
     "pid": "401516551",
     "name": "세이코srpd61 상태a  박스풀셋 팝니다.",
     "price": 249000,
+    "reject_reasons": [
+      "missing_seiko_s_5_세이코_s_5_세이코5"
+    ]
+  },
+  {
+    "pid": "383427065",
+    "name": "[세이코] SRPD83K1 오토매틱 나일론 나토 밴드 손목시계",
+    "price": 370000,
     "reject_reasons": [
       "missing_seiko_s_5_세이코_s_5_세이코5"
     ]
