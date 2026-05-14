@@ -1,0 +1,535 @@
+// Wave 91 (2026-05-15): bikes catalog SKUs — body-only, resale ≤200만.
+// 출처: agent research /tmp/wave91-bikes-research.json.
+
+import type { Sku } from "@/lib/catalog";
+
+export const BIKE_CATALOG: Sku[] = [
+  {
+    id: "bike-giant-tcr-advanced-2",
+    brand: "Giant",
+    category: "bike",
+    modelName: "TCR Advanced 2 KOM",
+    aliases: [],
+    mustContain: [
+      ["tcr advanced 2", "티씨알 어드밴스 2", "자이언트 tcr"],
+    ],
+    mustNotContain: [
+      "프레임만", "포크만", "휠셋만", "안장만", "스템만", "헬멧", "사고", "수리", "프레임 깨짐", "크랙", "도색만", "부품만",
+    ],
+    msrpKrw: 2990000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-giant-tcr-advanced-pro",
+    brand: "Giant",
+    category: "bike",
+    modelName: "TCR Advanced Pro",
+    aliases: [],
+    mustContain: [
+      ["tcr advanced pro", "티씨알 어드밴스 프로", "advanced pro"],
+    ],
+    mustNotContain: [
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "수리", "프레임 깨짐", "크랙", "부품만", "ultegra disc 신품",
+    ],
+    msrpKrw: 4500000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-giant-defy-advanced-2",
+    brand: "Giant",
+    category: "bike",
+    modelName: "Defy Advanced 2",
+    aliases: [],
+    mustContain: [
+      ["defy advanced 2", "디파이 어드밴스 2", "자이언트 defy", "디파이 어드밴스드"],
+    ],
+    mustNotContain: [
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "수리", "크랙", "부품만",
+    ],
+    msrpKrw: 2900000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-giant-defy-advanced-1",
+    brand: "Giant",
+    category: "bike",
+    modelName: "Defy Advanced 1",
+    aliases: [],
+    mustContain: [
+      ["defy advanced 1", "디파이 어드밴스 1", "디파이 어드밴스드 1"],
+    ],
+    mustNotContain: [
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 3990000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-trek-domane-al4",
+    brand: "Trek",
+    category: "bike",
+    modelName: "Domane AL4",
+    aliases: [],
+    mustContain: [
+      ["domane al4", "도마니 al 4", "도마네 al4", "domane al 4"],
+    ],
+    mustNotContain: [
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 2200000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-trek-domane-al2",
+    brand: "Trek",
+    category: "bike",
+    modelName: "Domane AL2 Disc",
+    aliases: [],
+    mustContain: [
+      ["domane al2", "도마니 al 2", "도마네 al2", "domane al 2"],
+    ],
+    mustNotContain: [
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 1450000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-trek-emonda-sl4",
+    brand: "Trek",
+    category: "bike",
+    modelName: "Emonda SL4 Disc",
+    aliases: [],
+    mustContain: [
+      ["emonda sl4", "emonda sl 4", "에몬다 sl4", "에몬다 sl 4"],
+    ],
+    mustNotContain: [
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "프레임셋", "부품만",
+    ],
+    msrpKrw: 2950000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-trek-emonda-sl5",
+    brand: "Trek",
+    category: "bike",
+    modelName: "Emonda SL5",
+    aliases: [],
+    mustContain: [
+      ["emonda sl5", "emonda sl 5", "에몬다 sl5", "에몬다 sl 5"],
+    ],
+    mustNotContain: [
+      "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "프레임셋", "부품만",
+    ],
+    msrpKrw: 3500000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-specialized-allez",
+    brand: "Specialized",
+    category: "bike",
+    modelName: "Allez E5",
+    aliases: [],
+    mustContain: [
+      ["allez", "알레", "알레즈"],
+    ],
+    mustNotContain: [
+      "allez sprint", "알레 스프린트", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 1500000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-specialized-tarmac-sl6",
+    brand: "Specialized",
+    category: "bike",
+    modelName: "Tarmac SL6 Sport",
+    aliases: [],
+    mustContain: [
+      ["tarmac sl6", "tarmac sl 6", "타막 sl6", "타막 sl 6"],
+    ],
+    mustNotContain: [
+      "sl7", "sl8", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "s-works", "에스웍스", "부품만",
+    ],
+    msrpKrw: 3500000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-cannondale-caad-optimo",
+    brand: "Cannondale",
+    category: "bike",
+    modelName: "CAAD Optimo",
+    aliases: [],
+    mustContain: [
+      ["caad optimo", "캐드 옵티모", "옵티모"],
+    ],
+    mustNotContain: [
+      "caad13", "caad 13", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 1300000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-cannondale-caad13",
+    brand: "Cannondale",
+    category: "bike",
+    modelName: "CAAD13 Disc 105",
+    aliases: [],
+    mustContain: [
+      ["caad13", "caad 13", "캐드 13", "캐드13"],
+    ],
+    mustNotContain: [
+      "caad optimo", "옵티모", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 2400000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-trek-marlin-5",
+    brand: "Trek",
+    category: "bike",
+    modelName: "Marlin 5",
+    aliases: [],
+    mustContain: [
+      ["marlin 5", "마린 5", "trek marlin 5"],
+    ],
+    mustNotContain: [
+      "marlin 6", "marlin 7", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 500000,
+    released: 2024,
+    laneKey: "bike_mtb_exact_model",
+  },
+  {
+    id: "bike-trek-marlin-6",
+    brand: "Trek",
+    category: "bike",
+    modelName: "Marlin 6",
+    aliases: [],
+    mustContain: [
+      ["marlin 6", "마린 6", "trek marlin 6"],
+    ],
+    mustNotContain: [
+      "marlin 5", "marlin 7", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 600000,
+    released: 2024,
+    laneKey: "bike_mtb_exact_model",
+  },
+  {
+    id: "bike-trek-marlin-7",
+    brand: "Trek",
+    category: "bike",
+    modelName: "Marlin 7",
+    aliases: [],
+    mustContain: [
+      ["marlin 7", "마린 7", "trek marlin 7"],
+    ],
+    mustNotContain: [
+      "marlin 5", "marlin 6", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 700000,
+    released: 2024,
+    laneKey: "bike_mtb_exact_model",
+  },
+  {
+    id: "bike-giant-talon",
+    brand: "Giant",
+    category: "bike",
+    modelName: "Talon",
+    aliases: [],
+    mustContain: [
+      ["talon", "탈론", "자이언트 탈론"],
+    ],
+    mustNotContain: [
+      "talon e+", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "전기",
+    ],
+    msrpKrw: 750000,
+    released: 2024,
+    laneKey: "bike_mtb_exact_model",
+  },
+  {
+    id: "bike-giant-xtc-advanced",
+    brand: "Giant",
+    category: "bike",
+    modelName: "XTC Advanced",
+    aliases: [],
+    mustContain: [
+      ["xtc advanced", "xtc 어드밴스", "자이언트 xtc"],
+    ],
+    mustNotContain: [
+      "xtc sl", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 2500000,
+    released: 2024,
+    laneKey: "bike_mtb_exact_model",
+  },
+  {
+    id: "bike-merida-bignine",
+    brand: "Merida",
+    category: "bike",
+    modelName: "Big Nine",
+    aliases: [],
+    mustContain: [
+      ["big nine", "빅나인", "big.nine", "메리다 big"],
+    ],
+    mustNotContain: [
+      "xt edition", "team", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 900000,
+    released: 2024,
+    laneKey: "bike_mtb_exact_model",
+  },
+  {
+    id: "bike-merida-bigseven",
+    brand: "Merida",
+    category: "bike",
+    modelName: "Big Seven",
+    aliases: [],
+    mustContain: [
+      ["big seven", "빅세븐", "big.seven", "메리다 big seven"],
+    ],
+    mustNotContain: [
+      "xt edition", "team", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 800000,
+    released: 2024,
+    laneKey: "bike_mtb_exact_model",
+  },
+  {
+    id: "bike-merida-scultura",
+    brand: "Merida",
+    category: "bike",
+    modelName: "Scultura",
+    aliases: [],
+    mustContain: [
+      ["scultura", "스컬트라"],
+    ],
+    mustNotContain: [
+      "limited", "team", "5000", "6000", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 1500000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-merida-reacto",
+    brand: "Merida",
+    category: "bike",
+    modelName: "Reacto",
+    aliases: [],
+    mustContain: [
+      ["reacto", "리액토"],
+    ],
+    mustNotContain: [
+      "6000", "5000", "limited", "team", "8000", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 2000000,
+    released: 2024,
+    laneKey: "bike_road_exact_model",
+  },
+  {
+    id: "bike-giant-escape-3",
+    brand: "Giant",
+    category: "bike",
+    modelName: "Escape 3 Disc",
+    aliases: [],
+    mustContain: [
+      ["escape 3", "에스케이프 3"],
+    ],
+    mustNotContain: [
+      "escape r", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 550000,
+    released: 2024,
+    laneKey: "bike_hybrid_exact_model",
+  },
+  {
+    id: "bike-giant-escape-2",
+    brand: "Giant",
+    category: "bike",
+    modelName: "Escape 2 Disc",
+    aliases: [],
+    mustContain: [
+      ["escape 2", "에스케이프 2"],
+    ],
+    mustNotContain: [
+      "escape r", "escape 3", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 650000,
+    released: 2024,
+    laneKey: "bike_hybrid_exact_model",
+  },
+  {
+    id: "bike-trek-fx-2",
+    brand: "Trek",
+    category: "bike",
+    modelName: "FX 2 Disc",
+    aliases: [],
+    mustContain: [
+      ["fx 2", "trek fx 2", "fx2 디스크", "트렉 fx 2"],
+    ],
+    mustNotContain: [
+      "fx 3", "fx 4", "fx sport", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 800000,
+    released: 2024,
+    laneKey: "bike_hybrid_exact_model",
+  },
+  {
+    id: "bike-trek-fx-3",
+    brand: "Trek",
+    category: "bike",
+    modelName: "FX 3 Disc",
+    aliases: [],
+    mustContain: [
+      ["fx 3", "trek fx 3", "fx3 디스크", "트렉 fx 3"],
+    ],
+    mustNotContain: [
+      "fx 2", "fx 4", "fx sport", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 1100000,
+    released: 2024,
+    laneKey: "bike_hybrid_exact_model",
+  },
+  {
+    id: "bike-cannondale-quick",
+    brand: "Cannondale",
+    category: "bike",
+    modelName: "Quick",
+    aliases: [],
+    mustContain: [
+      ["cannondale quick", "캐논데일 퀵", "quick disc"],
+    ],
+    mustNotContain: [
+      "quick neo", "quickcd", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만", "전기",
+    ],
+    msrpKrw: 800000,
+    released: 2024,
+    laneKey: "bike_hybrid_exact_model",
+  },
+  {
+    id: "bike-specialized-sirrus",
+    brand: "Specialized",
+    category: "bike",
+    modelName: "Sirrus",
+    aliases: [],
+    mustContain: [
+      ["sirrus", "시러스"],
+    ],
+    mustNotContain: [
+      "sirrus x", "sirrus carbon", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 850000,
+    released: 2024,
+    laneKey: "bike_hybrid_exact_model",
+  },
+  {
+    id: "bike-specialized-sirrus-x",
+    brand: "Specialized",
+    category: "bike",
+    modelName: "Sirrus X",
+    aliases: [],
+    mustContain: [
+      ["sirrus x", "시러스 x"],
+    ],
+    mustNotContain: [
+      "sirrus carbon", "프레임만", "포크만", "휠셋만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 1200000,
+    released: 2024,
+    laneKey: "bike_hybrid_exact_model",
+  },
+  {
+    id: "bike-brompton-c-line",
+    brand: "Brompton",
+    category: "bike",
+    modelName: "C Line",
+    aliases: [],
+    mustContain: [
+      ["brompton c", "브롬톤 c", "c line", "c-line"],
+    ],
+    mustNotContain: [
+      "t line", "p line", "electric", "전동", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "도난", "부품만",
+    ],
+    msrpKrw: 2300000,
+    released: 2024,
+    laneKey: "bike_folding_exact_model",
+  },
+  {
+    id: "bike-brompton-a-line",
+    brand: "Brompton",
+    category: "bike",
+    modelName: "A Line",
+    aliases: [],
+    mustContain: [
+      ["brompton a", "브롬톤 a", "a line", "a-line"],
+    ],
+    mustNotContain: [
+      "c line", "t line", "p line", "electric", "전동", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "도난", "부품만",
+    ],
+    msrpKrw: 1500000,
+    released: 2024,
+    laneKey: "bike_folding_exact_model",
+  },
+  {
+    id: "bike-tern-link",
+    brand: "Tern",
+    category: "bike",
+    modelName: "Link",
+    aliases: [],
+    mustContain: [
+      ["tern link", "턴 link", "tern 링크"],
+    ],
+    mustNotContain: [
+      "verge", "byb", "gsd", "vektron", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "부품만", "전동",
+    ],
+    msrpKrw: 750000,
+    released: 2024,
+    laneKey: "bike_folding_exact_model",
+  },
+  {
+    id: "bike-tern-verge",
+    brand: "Tern",
+    category: "bike",
+    modelName: "Verge",
+    aliases: [],
+    mustContain: [
+      ["tern verge", "턴 verge", "버지"],
+    ],
+    mustNotContain: [
+      "link", "byb", "gsd", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "부품만", "전동",
+    ],
+    msrpKrw: 1500000,
+    released: 2024,
+    laneKey: "bike_folding_exact_model",
+  },
+  {
+    id: "bike-dahon-mu",
+    brand: "Dahon",
+    category: "bike",
+    modelName: "Mu",
+    aliases: [],
+    mustContain: [
+      ["dahon mu", "다혼 mu", "다혼 뮤"],
+    ],
+    mustNotContain: [
+      "dahon speed", "dahon vitesse", "프레임만", "포크만", "안장만", "헬멧", "사고", "크랙", "부품만",
+    ],
+    msrpKrw: 700000,
+    released: 2024,
+    laneKey: "bike_folding_exact_model",
+  },
+];

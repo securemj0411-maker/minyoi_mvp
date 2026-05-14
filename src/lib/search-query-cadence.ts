@@ -40,6 +40,10 @@ const CATEGORY_SWEEP_FAMILY: Record<string, string> = {
   "421":    "watch",
   "610":    "home_appliance",
   "700600": "sport_golf",
+  // Wave 91 (2026-05-15)
+  "405":    "shoe",
+  "430":    "bag",
+  "700350": "bike",           // 자전거 sub (700 broad는 골프/수영/발레 등 noise → 700350 narrow)
 };
 
 export function queryFamily(query: string): string {

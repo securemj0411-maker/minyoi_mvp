@@ -362,6 +362,32 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minParseRate: 0.9,
     minTrustedKeys: 4,
   },
+  // Wave 91 (2026-05-15): 일반인 친화 + 차익 가능 카테고리 진입. internal_only로 시작.
+  // 측정 후 ready 승격 결정.
+  shoe: {
+    status: "internal_only",
+    label: "Shoes",
+    note: "Wave 91: 한정판 스니커즈 (Jordan/Yeezy/Dunk/NB). resale ≤200만, 본품만. 가품 위험 ↑↑ (Panda/Travis Scott 등).",
+    minReadyPool: 10,
+    minParseRate: 0.85,
+    minTrustedKeys: 5,
+  },
+  bag: {
+    status: "internal_only",
+    label: "Bags",
+    note: "Wave 91: 입문 명품 + 빈티지 (LV/구찌/MCM/프라다). resale ≤200만 cap. 가품 위험 매우 높음 — internal_only 유지 권장.",
+    minReadyPool: 10,
+    minParseRate: 0.85,
+    minTrustedKeys: 5,
+  },
+  bike: {
+    status: "internal_only",
+    label: "Bicycles",
+    note: "Wave 91: 자전거 (Giant/Trek/Cannondale/Specialized/Brompton). resale ≤200만. 도난자전거/사고차 risk → 시리얼/영수증 가이드 필요.",
+    minReadyPool: 8,
+    minParseRate: 0.8,
+    minTrustedKeys: 4,
+  },
 };
 
 export function categoryFromComparableKey(value: string | null | undefined): Sku["category"] | null {

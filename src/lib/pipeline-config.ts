@@ -77,12 +77,15 @@ export const DEFAULT_CATEGORY_SWEEPS: { id: string; title: string }[] = [
   { id: "421",    title: "시계" },           // G-Shock/세이코
   { id: "610",    title: "가전제품" },       // 다이슨/로보락
   { id: "700600", title: "골프" },           // 타이틀리스트
-  // Wave 90 (2026-05-15): 일반인 친화 + 셀러 시세 인식 약 카테고리 확장.
-  // 측정 (wave89-all-roots-sample): 990 인플로 14k건/일, 910 28k건/일, 800 5k건/일.
-  // catalog narrow SKU 추가 wave는 후속. 일단 raw 흡수 시작 (ruleMatch fail은 pool 진입 X — 안전).
-  { id: "990",    title: "예술/희귀/수집품" }, // 포켓몬 띠부씰/한정카드/지포라이터/스티커
-  { id: "910",    title: "스타굿즈" },         // 한정 굿즈/피규어/아크릴/일러스트
-  { id: "800",    title: "생활/주방용품" },    // 스타벅스 시즌 텀블러/콜라보 한정
+  // Wave 91 (2026-05-15): 일반인 친화 + 차익 가능 카테고리. 35 sub × 100 매물 측정 결과 기반.
+  // 신발 405: 한정판 스니커즈 매물 24만건, median 15만, 회전 0.6h — sweet spot.
+  // 가방 430: 명품 빈티지 셀러 시세 인식 약, median 15만 (200만 cap으로 입문 명품만).
+  // 스포츠 700: 자전거 차익 ↑ (셀러 시세 인식 매우 약함), 등산 매물 多.
+  { id: "405",    title: "신발" },           // 한정판 스니커즈 (Jordan/Yeezy/Dunk/NB)
+  { id: "430",    title: "가방/지갑" },      // 입문 명품 + 빈티지 (LV/구찌/MCM)
+  { id: "700350", title: "자전거" },         // 자이언트/트렉/캐논데일/브롬톤 (700 broad는 골프 외 99% noise)
+  // Wave 91: 910/990 제거 — 마니아 시장, 일반인 친화 X (wave89-all-roots 분석 결과).
+  // 800 (생활/주방)는 측정 부족으로 일단 보류 (wave92 추가 검토).
 ];
 
 function buildCategorySweepQueries(): string[] {

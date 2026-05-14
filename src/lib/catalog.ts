@@ -2,11 +2,15 @@
 // 카탈로그 SKU 19개 + generated mining catalog + normalize + ruleMatch.
 
 import { GENERATED_CATALOG } from "@/lib/generated/catalog";
+// Wave 91 (2026-05-15): 일반인 친화 카테고리 확장 (신발/가방/자전거). 모두 본품만, resale ≤200만.
+import { SHOE_CATALOG } from "@/lib/generated/catalog-shoe-wave91";
+import { BAG_CATALOG } from "@/lib/generated/catalog-bag-wave91";
+import { BIKE_CATALOG } from "@/lib/generated/catalog-bike-wave91";
 
 export type Sku = {
   id: string;
   brand: string;
-  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance" | "watch" | "sport_golf";
+  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance" | "watch" | "sport_golf" | "shoe" | "bag" | "bike";
   modelName: string;
   aliases: string[];
   mustContain: string[][];
@@ -2638,6 +2642,11 @@ export const CATALOG: Sku[] = [
     msrpKrw: 1290000,
     released: 2019,
   },
+  // Wave 91 (2026-05-15): 일반인 친화 카테고리 확장 — 신발 39 + 가방 34 + 자전거 33 = 106 SKU.
+  // 모두 resale ≤200만 (자본 천장 준수). 본품만 정책. 셀러 시세 인식 약한 모델 우선.
+  ...SHOE_CATALOG,
+  ...BAG_CATALOG,
+  ...BIKE_CATALOG,
 ];
 
 const SKU_MAP = new Map(CATALOG.map((s) => [s.id, s]));
