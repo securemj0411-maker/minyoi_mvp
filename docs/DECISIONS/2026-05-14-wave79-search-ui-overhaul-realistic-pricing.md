@@ -1,0 +1,34 @@
+## Wave 79 — 검색 UI 통합 + Risk preset/가중치 현실화 + UX 압축
+
+- 시간: 2026-05-14 KST
+- 발견: user 피드백 — (1) 균형 매입 80만은 비현실적 (한국 부업/리셀러 sweet spot은 15~30만), (2) 쉬운/고급 토글 불필요 (단일 통합 UI 선호), (3) 카테고리 13개 chip 펼쳐져서 화면 너무 김.
+- 변경:
+  - `src/lib/pack-cost.ts` (가중치 현실화):
+    - profitMult: 1만+→1.0 / 2만+→1.1 / 3만+→1.2 / 5만+→1.5 / 7만+→2.0 / 10만+→2.5
+    - priceMult: ≤15만→0.8 / ≤30만→1.0 / ≤80만→1.2 / >80만→1.5 / 무제한→2.0
+    - confMult: 동일 유지
+  - `src/components/recommendation-workspace.tsx`:
+    - **Risk preset 현실화**:
+      - 안전: ≤15만 / 1만+ / 80%+ / ≤1h (입문자)
+      - 균형: ≤30만 / 2만+ / 70%+ / ≤2h (주력 부업, sweet spot)
+      - 공격: ≤80만 / 5만+ / 60%+ / ≤6h (고수익)
+    - **easy/advanced 토글 제거** — 단일 통합 UI
+    - **MIN_PROFIT_MANWON 2→1** (현실 부업 1만+ 차익도 흔함)
+    - **압축 슬라이더 그룹**: 4개 슬라이더 한 박스에 (이모지 + label + slider 1줄씩)
+    - **카테고리 collapsible**: "카테고리 (전체) / N개 선택" 헤더 → 클릭 펼침
+    - **inventory + cost 한 줄**: grid 2-col compact card
+    - **자세한 정보 details**: 계산식 + 회전일수 라벨 펼치기
+    - 회전일수 박스 자체 제거 (자세한 정보 안에 라벨로 축약)
+  - `scripts/wave86-watch-camera-boost-diag.ts`: pre-existing type error 수정 (`parsed.unknownParts` → `parsedJson.unknown_parts`)
+- 검증:
+  - npx tsc --noEmit clean
+  - npm run test:core 139/139 pass
+  - npm run build OK
+  - eslint: 1 pre-existing error (line 656, 내 코드 외)
+- 위험:
+  - LOW: 가격대 변경은 새 사용자만 영향. 기존 매물 풀 그대로.
+  - cost 공식 변경으로 일부 검색은 더 비싸짐 (의도된 가중치).
+- 다음:
+  - 사용자 반응 모니터링
+  - 회전일수 활성화 (별도 wave)
+  - 카테고리 multiplier (희소 카테고리 +) 검토
