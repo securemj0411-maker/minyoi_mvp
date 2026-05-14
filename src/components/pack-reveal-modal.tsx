@@ -126,6 +126,72 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
   );
 }
 
+// Wave 82: 카드 소견 — rule-based 짧은 평가 chip. 기존 데이터(판매자 리뷰/회전/신뢰도/
+// 매물 유입/찜/설명 신호) 조건 만족 시 라벨 표시. AI L2 호출 없음.
+type Verdict = { label: string; tone: "good" | "warn" | "info" };
+
+function verdictsForCard(card: RevealCard): Verdict[] {
+  const out: Verdict[] = [];
+  const detail = card.savedDetail;
+  const velocity = card.velocityBasis;
+  const flow = card.skuListingFlow;
+
+  if (detail?.sellerReviewRating != null && detail.sellerReviewRating >= 4.5 && detail.sellerReviewCount >= 5) {
+    out.push({ label: "판매자 리뷰 좋음", tone: "good" });
+  } else if (detail && detail.sellerReviewCount === 0) {
+    out.push({ label: "신규 판매자", tone: "warn" });
+  }
+
+  if (velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0) {
+    if (velocity.medianHoursToSold <= 72) out.push({ label: "회전 빠름 (3일내)", tone: "good" });
+    else if (velocity.medianHoursToSold >= 336) out.push({ label: "회전 늦음", tone: "warn" });
+  }
+
+  if (card.confidence >= 0.8) out.push({ label: "시세 신뢰 높음", tone: "good" });
+  else if (card.confidence < 0.5) out.push({ label: "시세 신뢰 낮음", tone: "warn" });
+
+  if (flow && flow.avgPerDay7d > 0 && flow.count24h >= flow.avgPerDay7d * 1.3) {
+    out.push({ label: "매물 활발", tone: "info" });
+  }
+
+  if (detail?.favoriteCount != null && detail.favoriteCount >= 10) {
+    out.push({ label: "관심도 ↑", tone: "info" });
+  }
+
+  const desc = detail?.descriptionPreview ?? "";
+  if (/미개봉|미사용|새상품|풀박스|풀구성|거의\s*새것/.test(desc)) {
+    out.push({ label: "상태 좋음", tone: "good" });
+  } else if (/하자|기스\s*심|찍힘\s*심|수리이력|충전\s*안됨|배터리\s*효율\s*낮/.test(desc)) {
+    out.push({ label: "사용감 주의", tone: "warn" });
+  }
+
+  if (detail?.freeShipping) out.push({ label: "무료배송", tone: "info" });
+
+  return out.slice(0, 4);
+}
+
+function VerdictBadgesMini({ card }: { card: RevealCard }) {
+  const verdicts = verdictsForCard(card);
+  if (verdicts.length === 0) return null;
+  const toneClass: Record<Verdict["tone"], string> = {
+    good: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200",
+    warn: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200",
+    info: "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-200",
+  };
+  return (
+    <div className="flex flex-wrap gap-1">
+      {verdicts.map((v) => (
+        <span
+          key={v.label}
+          className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${toneClass[v.tone]}`}
+        >
+          {v.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function SkuListingFlowMini({ card }: { card: RevealCard }) {
   const flow = card.skuListingFlow;
   if (!flow) return null;
@@ -415,6 +481,8 @@ function RevealCardItem({
             </div>
           </div>
         </div>
+
+        <VerdictBadgesMini card={card} />
 
         <MarketBasisMini card={card} />
 
