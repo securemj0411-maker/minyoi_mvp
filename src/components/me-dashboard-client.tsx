@@ -2,7 +2,7 @@
 
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import AdminPoolBrowser from "@/components/admin-pool-browser";
 import RecommendationWorkspace from "@/components/recommendation-workspace";
 import UserRevealDashboard from "@/components/user-reveal-dashboard";
@@ -12,8 +12,10 @@ import type { InventorySnapshot } from "@/lib/pack-open";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
-type DashboardSection = "dashboard-recommend" | "dashboard-guides" | "dashboard-history";
-type DashboardView = "work" | "guides" | "admin-pool";
+// Wave 90 (2026-05-15): view를 단일 활성 view로 분리. 이전엔 "work" view 안에
+// recommend + history 섹션이 같이 mount돼서 /me 들어올 때마다 둘 다 fetch.
+// 이제 각 view 클릭 시 그것만 mount → DB I/O 절약.
+type DashboardView = "recommend" | "history" | "guides" | "admin-pool";
 
 function GuideLibraryView() {
   return (
@@ -75,20 +77,7 @@ function GuideLibraryView() {
 export default function MeDashboardClient({ initialInventory }: { initialInventory: InventorySnapshot[] }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<DashboardSection>("dashboard-recommend");
-  const [activeView, setActiveView] = useState<DashboardView>("work");
-
-  const scrollToSection = useCallback((id: string) => {
-    if (typeof document === "undefined") return;
-    const section = document.getElementById(id);
-    section?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
-
-  const showWorkSection = useCallback((id: DashboardSection) => {
-    setActiveView("work");
-    setActiveSection(id);
-    window.requestAnimationFrame(() => scrollToSection(id));
-  }, [scrollToSection]);
+  const [activeView, setActiveView] = useState<DashboardView>("recommend");
 
   useEffect(() => {
     let mounted = true;
@@ -125,30 +114,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
     };
   }, []);
 
-  useEffect(() => {
-    if (activeView !== "work") return;
-    if (typeof IntersectionObserver === "undefined") return;
-    const sectionIds: DashboardSection[] = ["dashboard-recommend", "dashboard-history"];
-    const sections = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter((section): section is HTMLElement => Boolean(section));
-    if (sections.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible && sectionIds.includes(visible.target.id as DashboardSection)) {
-          setActiveSection(visible.target.id as DashboardSection);
-        }
-      },
-      { rootMargin: "-20% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, [user, activeView]);
+  // Wave 90: IntersectionObserver(스크롤 추적) 제거 — 각 view 단독 mount라 의미 X
 
   if (loading) {
     return (
@@ -196,56 +162,28 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
               <div className="mt-1 text-sm font-black text-[#223127] dark:text-zinc-100">작업 메뉴</div>
             </div>
             <div className="flex gap-1 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
-              <button
-                type="button"
-                onClick={() => showWorkSection("dashboard-recommend")}
-                className={`flex min-w-max items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm font-black transition dark:text-zinc-100 dark:hover:bg-zinc-800 lg:w-full ${
-                  activeView === "work" && activeSection === "dashboard-recommend"
-                    ? "border-[#c8d8c4] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
-                    : "border-transparent text-[#344136] hover:bg-[var(--brand-accent-soft)]"
-                }`}
-              >
-                <span>추천 상품 받기</span>
-                <span className="text-zinc-400">↘</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveView("guides")}
-                className={`flex min-w-max items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm font-black transition dark:text-zinc-100 dark:hover:bg-zinc-800 lg:w-full ${
-                  activeView === "guides"
-                    ? "border-[#c8d8c4] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
-                    : "border-transparent text-[#344136] hover:bg-[var(--brand-accent-soft)]"
-                }`}
-              >
-                <span>공략집</span>
-                <span className="text-zinc-400">↘</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => showWorkSection("dashboard-history")}
-                className={`flex min-w-max items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm font-black transition dark:text-zinc-100 dark:hover:bg-zinc-800 lg:w-full ${
-                  activeView === "work" && activeSection === "dashboard-history"
-                    ? "border-[#c8d8c4] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
-                    : "border-transparent text-[#344136] hover:bg-[var(--brand-accent-soft)]"
-                }`}
-              >
-                <span>나의 상품</span>
-                <span className="text-zinc-400">↘</span>
-              </button>
-              {isAdminUser(user) && (
-                <button
-                  type="button"
-                  onClick={() => setActiveView("admin-pool")}
-                  className={`flex min-w-max items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm font-black transition dark:text-zinc-100 dark:hover:bg-zinc-800 lg:w-full ${
-                    activeView === "admin-pool"
-                      ? "border-[#c8d8c4] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
-                      : "border-transparent text-[#344136] hover:bg-[var(--brand-accent-soft)]"
-                  }`}
-                >
-                  <span>🔧 운영자: 풀 전체</span>
-                  <span className="text-zinc-400">↘</span>
-                </button>
-              )}
+              {(["recommend", "history", "guides", ...(isAdminUser(user) ? (["admin-pool"] as const) : [])] as const).map((v) => {
+                const label = v === "recommend" ? "추천 상품 받기"
+                  : v === "history" ? "나의 상품"
+                  : v === "guides" ? "공략집"
+                  : "🔧 운영자: 풀 전체";
+                const active = activeView === v;
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setActiveView(v)}
+                    className={`flex min-w-max items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm font-black transition dark:text-zinc-100 dark:hover:bg-zinc-800 lg:w-full ${
+                      active
+                        ? "border-[#c8d8c4] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
+                        : "border-transparent text-[#344136] hover:bg-[var(--brand-accent-soft)]"
+                    }`}
+                  >
+                    <span>{label}</span>
+                    <span className="text-zinc-400">↘</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </aside>
@@ -254,16 +192,15 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           <GuideLibraryView />
         ) : activeView === "admin-pool" ? (
           <AdminPoolBrowser />
+        ) : activeView === "recommend" ? (
+          <section className="px-4 py-6 lg:col-start-2 lg:px-5 lg:py-8">
+            <RecommendationWorkspace initialInventory={initialInventory} />
+          </section>
         ) : (
-          <div className="grid gap-5 px-4 py-6 lg:col-start-2 lg:px-5 lg:py-8 xl:grid-cols-[minmax(360px,440px)_minmax(0,1fr)] xl:items-start">
-            <section id="dashboard-recommend" className="xl:sticky xl:top-24 xl:self-start">
-              <RecommendationWorkspace initialInventory={initialInventory} />
-            </section>
-
-            <section id="dashboard-history" className="min-w-0">
-              <UserRevealDashboard userRef={userRefForAuthUser(user.id)} />
-            </section>
-          </div>
+          // history
+          <section className="min-w-0 px-4 py-6 lg:col-start-2 lg:px-5 lg:py-8">
+            <UserRevealDashboard userRef={userRefForAuthUser(user.id)} />
+          </section>
         )}
       </div>
     </main>
