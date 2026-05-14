@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
@@ -474,15 +475,14 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
                 : "grid grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 transition hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-950/40 dark:hover:border-emerald-900 dark:hover:bg-emerald-950/20 lg:grid-cols-[56px_minmax(0,1fr)_auto]"
             }
           >
-            <div className="aspect-square overflow-hidden rounded-lg bg-[#f1eadf] dark:bg-zinc-800">
+            <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f1eadf] dark:bg-zinc-800">
               {item.thumbnailUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={item.thumbnailUrl}
                   alt={item.name}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="64px"
+                  className="object-cover"
                 />
               ) : null}
             </div>

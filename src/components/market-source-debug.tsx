@@ -5,6 +5,7 @@
 // 상단: 검토 중인 매물 prominent 카드 / 본문: 시세/comparable / 하단 sticky: 코멘트 입력.
 // 코멘트는 mvp_reveal_feedback.note에 watching 타입으로 upsert.
 
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -238,10 +239,11 @@ export function MarketSourceDebug({
                   <div className="rounded-xl border-2 border-emerald-400 bg-emerald-50 p-3 dark:border-emerald-700 dark:bg-emerald-950/30">
                     <div className="flex gap-3">
                       {data.ourListing.thumbnailUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={data.ourListing.thumbnailUrl.replace("{res}", "400")}
-                          alt=""
+                          alt={data.ourListing.name ?? "매물"}
+                          width={96}
+                          height={96}
                           className="h-24 w-24 shrink-0 rounded-lg object-cover ring-2 ring-emerald-300 dark:ring-emerald-700"
                         />
                       )}
@@ -365,10 +367,11 @@ export function MarketSourceDebug({
                             }`}
                           >
                             {c.thumbnailUrl && (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
+                              <Image
                                 src={c.thumbnailUrl.replace("{res}", "200")}
-                                alt=""
+                                alt={c.name ?? "비교 매물"}
+                                width={40}
+                                height={40}
                                 className="h-10 w-10 shrink-0 rounded object-cover"
                               />
                             )}

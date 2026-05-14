@@ -4,6 +4,7 @@
 // 페이지네이션 (1, 2, 3, ...) + 카드 list + 시세 근거 디버그 토글.
 // 운영자가 팩 결제 없이 풀 전체 검증 가능.
 
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { MarketSourceDebug } from "@/components/market-source-debug";
 
@@ -263,12 +264,11 @@ export default function AdminPoolBrowser() {
                 )}
                 <div className="flex gap-3">
                   {item.thumbnailUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={item.thumbnailUrl}
                       alt={item.name}
-                      loading="lazy"
-                      decoding="async"
+                      width={100}
+                      height={100}
                       className="h-[100px] w-[100px] shrink-0 rounded object-cover"
                     />
                   ) : (

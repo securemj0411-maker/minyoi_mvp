@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { LandingKpis, LandingShowcase } from "@/lib/landing-showcases";
@@ -82,23 +83,25 @@ function ShowcaseCard({
           {previousItem ? (
             <div key={`previous-image-${previousItem.pid}-${transitionId}`} className="showcase-swipe-out absolute inset-0">
               <div className="absolute inset-0 scale-[1.03] opacity-82 blur-[2px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={previousItem.imageUrl}
                   alt=""
                   aria-hidden="true"
-                  className="h-full w-full object-cover object-center"
+                  fill
+                  sizes="(max-width: 460px) 100vw, 460px"
+                  className="object-cover object-center"
                 />
               </div>
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,251,244,0.08),rgba(238,231,218,0.22))]" />
               <div className="absolute inset-0 p-3 sm:p-4">
-                <div className="flex h-full w-full items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                <div className="relative h-full w-full">
+                  <Image
                     src={previousItem.imageUrl}
                     alt=""
                     aria-hidden="true"
-                    className="max-h-full max-w-full rounded-[22px] object-contain object-center shadow-[0_12px_24px_rgba(34,49,39,0.12)] ring-1 ring-black/8"
+                    fill
+                    sizes="(max-width: 460px) 100vw, 460px"
+                    className="rounded-[22px] object-contain object-center shadow-[0_12px_24px_rgba(34,49,39,0.12)] ring-1 ring-black/8"
                   />
                 </div>
               </div>
@@ -107,22 +110,26 @@ function ShowcaseCard({
           {activeItem ? (
             <div key={`image-${activeItem.pid}-${transitionId}`} className={`absolute inset-0 ${transitionId > 0 ? "showcase-swipe-in" : ""}`}>
               <div className="absolute inset-0 scale-[1.03] opacity-82 blur-[2px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={activeItem.imageUrl}
                   alt=""
                   aria-hidden="true"
-                  className="h-full w-full object-cover object-center"
+                  fill
+                  sizes="(max-width: 460px) 100vw, 460px"
+                  priority
+                  className="object-cover object-center"
                 />
               </div>
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,251,244,0.08),rgba(238,231,218,0.22))]" />
               <div className="absolute inset-0 p-3 sm:p-4">
-                <div className="flex h-full w-full items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                <div className="relative h-full w-full">
+                  <Image
                     src={activeItem.imageUrl}
                     alt={activeItem.name}
-                    className="max-h-full max-w-full rounded-[22px] object-contain object-center shadow-[0_12px_24px_rgba(34,49,39,0.12)] ring-1 ring-black/8 transition-opacity duration-500"
+                    fill
+                    sizes="(max-width: 460px) 100vw, 460px"
+                    priority
+                    className="rounded-[22px] object-contain object-center shadow-[0_12px_24px_rgba(34,49,39,0.12)] ring-1 ring-black/8 transition-opacity duration-500"
                   />
                 </div>
               </div>
