@@ -145,40 +145,9 @@ export async function GET(
       }
     }
 
-    // 5. fallback — comparable_key 없거나 매물 0개면 sku_id 기준으로
-    let comparableSource: "comparable_key" | "sku_id" | "none" = "comparable_key";
-    if (comparables.length === 0 && skuId) {
-      // Wave 90: sku_id fallback도 listing_type=normal + risk_hits=0 필터.
-      const skuRawRes = await restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query&sku_id=eq.${encodeURIComponent(skuId)}&pid=not.eq.${pid}&listing_type=eq.normal&order=last_seen_at.desc&limit=${MAX_COMPARABLES + 10}`,
-        { headers: serviceHeaders() },
-      );
-      const rawSkuRows = (await skuRawRes.json()) as Array<Record<string, unknown>>;
-      const skuPids = rawSkuRows.map((r) => Number(r.pid));
-      let safeRows = rawSkuRows;
-      if (skuPids.length > 0) {
-        const analysisRes = await restFetch(
-          `${tableUrl("mvp_listing_analysis")}?select=pid,risk_hits&pid=in.(${skuPids.join(",")})`,
-          { headers: serviceHeaders() },
-        );
-        const analysisRows = (await analysisRes.json()) as Array<{ pid: number; risk_hits: number }>;
-        const riskByPid = new Map(analysisRows.map((r) => [Number(r.pid), Number(r.risk_hits ?? 0)]));
-        safeRows = rawSkuRows.filter((r) => (riskByPid.get(Number(r.pid)) ?? 0) === 0).slice(0, MAX_COMPARABLES);
-      }
-      comparables = safeRows.map((row) => ({
-        pid: Number(row.pid),
-        name: String(row.name ?? ""),
-        price: Number(row.price ?? 0),
-        thumbnailUrl: (row.thumbnail_url as string | null) ?? null,
-        saleStatus: (row.sale_status as string | null) ?? null,
-        listingState: (row.listing_state as string | null) ?? null,
-        lastSeenAt: (row.last_seen_at as string | null) ?? null,
-        sourceQuery: (row.query as string | null) ?? null,
-        bunjangUrl: `https://m.bunjang.co.kr/products/${Number(row.pid)}`,
-      }));
-      comparableSource = "sku_id";
-    }
-    if (comparables.length === 0) comparableSource = "none";
+    // §12b 정확성 우선: sku_id fallback 제거 (broad SKU 풀 = 다른 세대/사이즈 섞임).
+    // comparable_key 매물 0개면 "비교군 없음"으로 정직하게 표시.
+    const comparableSource: "comparable_key" | "none" = comparables.length > 0 ? "comparable_key" : "none";
 
     // 6. 실시간 통계 (현재 fetch한 active 매물 기준)
     const activePrices = comparables
