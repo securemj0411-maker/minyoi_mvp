@@ -5,7 +5,7 @@
 // 상단: 검토 중인 매물 prominent 카드 / 본문: 시세/comparable / 하단 sticky: 코멘트 입력.
 // 코멘트는 mvp_reveal_feedback.note에 watching 타입으로 upsert.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -100,6 +100,8 @@ export function MarketSourceDebug({
   const [note, setNote] = useState(initialNote ?? "");
   const [noteSaved, setNoteSaved] = useState(false);
   const [noteLoading, setNoteLoading] = useState(false);
+  // Wave 90: drag select 시 모달 닫히는 버그 방지 — backdrop에서 mousedown 시작한 경우에만 close
+  const mouseDownOnBackdropRef = useRef(false);
 
   // user fetch 한 번 (코멘트 저장에 user_ref 필요)
   useEffect(() => {
@@ -194,9 +196,20 @@ export function MarketSourceDebug({
       {open && (
         <div
           className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4"
-          onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+          onMouseDown={(e) => {
+            mouseDownOnBackdropRef.current = e.target === e.currentTarget;
+          }}
+          onMouseUp={(e) => {
+            if (mouseDownOnBackdropRef.current && e.target === e.currentTarget) {
+              e.stopPropagation();
+              setOpen(false);
+            }
+            mouseDownOnBackdropRef.current = false;
+          }}
         >
           <div
+            onMouseDown={(e) => e.stopPropagation()}
+            onMouseUp={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             className="relative flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-900"
           >
