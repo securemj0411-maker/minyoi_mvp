@@ -433,6 +433,37 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
         </div>
       ) : null}
 
+      {loading && items.length === 0 ? (
+        // 첫 로딩 스켈레톤 — items 비어있을 때만 표시. 검색/페이지 전환 시에는 기존 items 유지.
+        <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2" : "mt-4 grid gap-2"}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <article
+              key={`skeleton-${i}`}
+              className={
+                viewMode === "grid"
+                  ? "grid animate-pulse grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 dark:border-zinc-800 dark:bg-zinc-950/40"
+                  : "grid animate-pulse grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 dark:border-zinc-800 dark:bg-zinc-950/40"
+              }
+              aria-hidden
+            >
+              <div className="aspect-square rounded-lg bg-[#ece3d6] dark:bg-zinc-800" />
+              <div className="min-w-0 space-y-2 py-1">
+                <div className="h-3.5 w-4/5 rounded bg-[#ece3d6] dark:bg-zinc-800" />
+                <div className="h-3 w-2/3 rounded bg-[#ece3d6] dark:bg-zinc-800" />
+                <div className="h-3 w-1/3 rounded bg-[#ece3d6] dark:bg-zinc-800" />
+                {viewMode === "grid" ? (
+                  <div className="mt-1 flex gap-2 pt-1">
+                    <div className="h-7 w-16 rounded bg-[#ece3d6] dark:bg-zinc-800" />
+                    <div className="h-7 w-16 rounded bg-[#ece3d6] dark:bg-zinc-800" />
+                    <div className="h-7 w-16 rounded bg-[#ece3d6] dark:bg-zinc-800" />
+                  </div>
+                ) : null}
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : null}
+
       <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2" : "mt-4 grid gap-2"}>
         {items.map((item) => (
           <article
