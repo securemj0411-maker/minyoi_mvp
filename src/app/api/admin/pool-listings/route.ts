@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
   const statusFilter = (url.searchParams.get("status") ?? "ready").trim();
   const bandFilter = url.searchParams.get("band");
   const categoryFilter = url.searchParams.get("category");
+  const skuFilter = url.searchParams.get("sku")?.trim() || null;
   const sort = url.searchParams.get("sort") ?? "profit_high";
 
   // Sort options
@@ -55,6 +56,21 @@ export async function GET(req: NextRequest) {
   let filter = `status=eq.${encodeURIComponent(statusFilter)}`;
   if (bandFilter) filter += `&profit_band=eq.${Number(bandFilter)}`;
   if (categoryFilter) filter += `&category=eq.${encodeURIComponent(categoryFilter)}`;
+
+  // SKU filter — mvp_candidate_pool에는 sku_id 컬럼 없음 → mvp_raw_listings에서 pid pre-filter
+  let skuPids: number[] | null = null;
+  if (skuFilter) {
+    const skuRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid&sku_id=eq.${encodeURIComponent(skuFilter)}&limit=5000`,
+      { headers: serviceHeaders() },
+    );
+    skuPids = ((await skuRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+    if (skuPids.length === 0) {
+      return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
+    }
+    // PostgREST in 필터 — 너무 많으면 URL 한계. 일단 5000 limit.
+    filter += `&pid=in.(${skuPids.join(",")})`;
+  }
 
   try {
     // 1. Total count (Prefer: count=exact 헤더)
@@ -156,8 +172,13 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    // 4. Stats — band × status breakdown (page=1 호출 시만 계산해 DB I/O 절약)
-    let stats: { byBandStatus: Record<string, number>; totals: Record<string, number>; totalAll: number } | null = null;
+    // 4. Stats — band × status breakdown + bySku (page=1 호출 시만, sku filter 무관)
+    let stats: {
+      byBandStatus: Record<string, number>;
+      totals: Record<string, number>;
+      totalAll: number;
+      bySku: Array<{ sku_id: string; sku_name: string | null; ready_count: number }>;
+    } | null = null;
     if (page === 1) {
       const bands = [1, 2, 3];
       const statuses = ["ready", "invalidated", "spent"];
@@ -178,7 +199,38 @@ export async function GET(req: NextRequest) {
         totals[r.status] = (totals[r.status] ?? 0) + r.count;
         totalAll += r.count;
       }
-      stats = { byBandStatus, totals, totalAll };
+
+      // bySku breakdown — ready 매물만 (검토 대상)
+      const readyPoolRes = await restFetch(
+        `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.ready&limit=5000`,
+        { headers: serviceHeaders() },
+      );
+      const readyPids = ((await readyPoolRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+      const skuCount = new Map<string, { name: string | null; count: number }>();
+      if (readyPids.length > 0) {
+        // chunk fetch
+        const chunkSize = 500;
+        for (let i = 0; i < readyPids.length; i += chunkSize) {
+          const chunk = readyPids.slice(i, i + chunkSize);
+          const rawRes = await restFetch(
+            `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name&pid=in.(${chunk.join(",")})`,
+            { headers: serviceHeaders() },
+          );
+          const rows = (await rawRes.json()) as Array<{ sku_id: string | null; sku_name: string | null }>;
+          for (const r of rows) {
+            const sku = r.sku_id ?? "(no_sku)";
+            const entry = skuCount.get(sku) ?? { name: r.sku_name, count: 0 };
+            entry.count += 1;
+            if (!entry.name && r.sku_name) entry.name = r.sku_name;
+            skuCount.set(sku, entry);
+          }
+        }
+      }
+      const bySku = [...skuCount.entries()]
+        .map(([sku_id, { name, count }]) => ({ sku_id, sku_name: name, ready_count: count }))
+        .sort((a, b) => b.ready_count - a.ready_count);
+
+      stats = { byBandStatus, totals, totalAll, bySku };
     }
 
     return NextResponse.json({

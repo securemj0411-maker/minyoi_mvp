@@ -48,6 +48,7 @@ type Resp = {
     byBandStatus: Record<string, number>;
     totals: Record<string, number>;
     totalAll: number;
+    bySku: Array<{ sku_id: string; sku_name: string | null; ready_count: number }>;
   } | null;
 };
 
@@ -85,6 +86,7 @@ export default function AdminPoolBrowser() {
   const [pageSize] = useState(20);
   const [status, setStatus] = useState("ready");
   const [band, setBand] = useState<string>("");
+  const [sku, setSku] = useState<string>("");
   const [sort, setSort] = useState("profit_high");
 
   const fetchPage = useCallback(async () => {
@@ -93,6 +95,7 @@ export default function AdminPoolBrowser() {
     try {
       const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), status, sort });
       if (band) params.set("band", band);
+      if (sku) params.set("sku", sku);
       const res = await fetch(`/api/admin/pool-listings?${params}`, { credentials: "include" });
       if (!res.ok) {
         const body = (await res.json().catch(() => null)) as { error?: string } | null;
@@ -107,7 +110,7 @@ export default function AdminPoolBrowser() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, status, band, sort]);
+  }, [page, pageSize, status, band, sku, sort]);
 
   useEffect(() => {
     void fetchPage();
@@ -203,6 +206,16 @@ export default function AdminPoolBrowser() {
           <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
             {SORT_OPTIONS.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
           </select>
+          {stats && stats.bySku.length > 0 && (
+            <select value={sku} onChange={(e) => { setSku(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
+              <option value="">SKU 전체 ({stats.bySku.length}종)</option>
+              {stats.bySku.map((s) => (
+                <option key={s.sku_id} value={s.sku_id}>
+                  {s.sku_name ?? s.sku_id} — {s.ready_count}건
+                </option>
+              ))}
+            </select>
+          )}
           <button onClick={fetchPage} disabled={loading} className="rounded-md border border-zinc-300 bg-white px-3 py-1 font-semibold hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700">
             {loading ? "..." : "↻ 새로고침"}
           </button>
