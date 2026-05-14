@@ -196,6 +196,12 @@ export default function AppNav() {
   }, [refreshCredits]);
 
   useEffect(() => {
+    const handler = () => { void refreshCredits(); };
+    window.addEventListener("minyoi:credits-changed", handler);
+    return () => window.removeEventListener("minyoi:credits-changed", handler);
+  }, [refreshCredits]);
+
+  useEffect(() => {
     if (!menuOpen) return;
     const handlePointerDown = (event: PointerEvent) => {
       if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);

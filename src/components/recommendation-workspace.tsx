@@ -465,6 +465,9 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
         const openData = (await res.json()) as PackOpenApiResult;
         if (typeof openData.tokensRemaining === "number") setTokens(openData.tokensRemaining);
         if (typeof openData.infiniteCredits === "boolean") setInfiniteCredits(openData.infiniteCredits);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("minyoi:credits-changed"));
+        }
         if (openData.result === "success") {
           dispatchPackRevealsUpdated({
             band: pack.band,
