@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v37";
+const PARSER_VERSION = "option-parser-v38";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -1249,9 +1249,13 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   });
   const variantKey = parts ? parts.slice(2).join(" / ") : null;
   const criticalUnknown = criticalUnknowns(category, comparableKey);
+  // Wave 90 v38: 번들 매물 정책 변경 (사용자 결정).
+  // 이전: tablet 번들 (+애플펜슬/매직키보드/케이스) → needs_review → 풀 진입 차단
+  // 변경: 번들 매물도 풀 진입 OK. 시세 비교는 순정 매물 기준 그대로.
+  // 이유: 번들 = 액세서리 +α 보너스이고 시세보다 싸면 무조건 좋은 거. 차단할 이유 없음.
+  // parsedJson.tablet_bundle_price_review는 그대로 박혀서 후속 UI 뱃지 표시 가능.
   const needsReview = parseConfidence < 0.65
     || criticalUnknown.length > 0
-    || tabletBundlePriceReview
     || airpodsMaxGeneration === "unknown_generation"
     || (airpodsMaxGeneration === "max_lightning" && !airpodsMaxFullProductContext)
     || (category === "monitor" && !monitorModelCode)

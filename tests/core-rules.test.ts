@@ -1124,7 +1124,9 @@ test("iPad Pro bare screen size near generation becomes precise comparable key",
     title: "아이패드 프로 5세대 m1 12.9 128기가 셀룰러 풀박+애펜2",
   });
   assert.equal(parsed.comparableKey, "ipad|ipad_pro|5_gen|m1|12_9in|128gb|cellular");
-  assert.equal(parsed.needsReview, true);
+  // Wave 90 v38: bundle 매물 풀 진입 허용 정책 (needs_review 트리거에서 제거).
+  // parsedJson.tablet_bundle_price_review는 정보로 보존 (UI 뱃지용).
+  assert.equal(parsed.needsReview, false);
   assert.equal(parsed.parsedJson.tablet_bundle_price_review, true);
 });
 
@@ -1154,7 +1156,8 @@ test("iPad Pro generic comparable key includes chip axis and bundle rows stay re
     description: "아이패드 프로 3세대 11인치 M1 칩 128gb 셀룰러 모델과 애플펜슬 2세대 함께 판매합니다.",
   });
   assert.equal(bundled.comparableKey, "ipad|ipad_pro|3_gen|m1|11in|128gb|cellular");
-  assert.equal(bundled.needsReview, true);
+  // Wave 90 v38: bundle 풀 진입 허용
+  assert.equal(bundled.needsReview, false);
   assert.equal(bundled.parsedJson.tablet_bundle_price_review, true);
 });
 
