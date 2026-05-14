@@ -1,0 +1,29 @@
+## Wave 78 — 동적 토큰 cost (filter 가중치 기반) — UI + Server 동시 적용
+
+- 시간: 2026-05-14 KST
+- 발견: 사용자 요청 — 가치 높은 매물 (큰 차익, 높은 신뢰도, 빠른 회전 등)일수록 더 많은 크레딧 차감. 실시간 계산기 + 가중치 표시.
+- 변경:
+  - `src/lib/pack-cost.ts` (신규): UI + server 공유 cost 공식
+    - `costPerCardStep = base × profitMult × confidenceMult × priceMult`
+    - profitMult: 3만+ → 1.0 / 5만+ → 1.2 / 7만+ → 1.5 / 10만+ → 2.0
+    - confidenceMult: 60% → 1.0 / 75% → 1.2 / 85% → 1.5 / 95% → 2.0
+    - priceMult: ≤30만 → 0.8 / ≤80만 → 1.0 / ≤200만 → 1.2 / 무제한 → 1.5
+    - velocityMult: 1.0 (회전 데이터 누적 후 활성화)
+    - export `computeCostBreakdown(band, requestedCards, filters)` + `computeTokenCost(...)`
+  - `src/app/api/packs/open/route.ts`: filter 받아서 `computeTokenCost` 호출 (서버 검증)
+    - filter 미전달 시 fallback = base × steps (쉬운 모드 backward compat)
+  - `src/components/recommendation-workspace.tsx`:
+    - 고급 모드일 때 `activeFilters`로 dynamic cost 계산
+    - "카드 1매 비용" 박스 + 가격 계산 자세히 펼치기 (breakdown 표시)
+    - openPack에 filter 같이 전달
+- 검증:
+  - npx tsc --noEmit clean
+  - npm run test:core 139/139 pass
+  - npm run build 성공
+- 위험:
+  - LOW: cost 공식 server/UI 동일 → race condition 없음. fallback 보장.
+  - 사용자 가격 인식 변화 — A/B 모니터링 필요 (Phase 2)
+- 다음 (Phase 2):
+  - 가중치 튜닝 (사용자 데이터 기반)
+  - 회전일수 활성화 → velocityMult 추가
+  - 카테고리별 multiplier (희소 카테고리 ↑)

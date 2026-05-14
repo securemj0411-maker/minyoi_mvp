@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { reportCriticalIncident } from "@/lib/operational-notifier";
 import { openPack, type PackBand } from "@/lib/pack-open";
+import { computeTokenCost, type CostFilters } from "@/lib/pack-cost";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -13,12 +14,6 @@ export const maxDuration = 60;
 const MAX_USER_REF = 64;
 const MIN_REQUESTED_CARDS = 2;
 const MAX_REQUESTED_CARDS = 30;
-const CARDS_PER_COST_STEP = 2;
-const BASE_COST_BY_BAND: Record<PackBand, number> = {
-  1: 1,
-  2: 2,
-  3: 3,
-};
 
 const RATE_LIMIT_MAX = Math.max(1, Number(process.env.PACKS_OPEN_RATE_LIMIT_MAX ?? 5));
 const RATE_LIMIT_WINDOW_SECONDS = Math.max(1, Number(process.env.PACKS_OPEN_RATE_LIMIT_WINDOW_SECONDS ?? 10));
@@ -33,8 +28,20 @@ function clampRequestedCards(value: number) {
   return capped % 2 === 0 ? capped : capped - 1;
 }
 
-function tokenCostFor(band: PackBand, requestedCards: number) {
-  return Math.ceil(requestedCards / CARDS_PER_COST_STEP) * BASE_COST_BY_BAND[band];
+function parseFilters(payload: Record<string, unknown>): CostFilters | null {
+  const f = payload.filters as Record<string, unknown> | undefined;
+  if (!f) return null;
+  const minProfitManwon = Number(f.minProfitManwon ?? NaN);
+  const minConfidencePct = Number(f.minConfidencePct ?? NaN);
+  const priceMaxManwon = Number(f.priceMaxManwon ?? NaN);
+  if (!Number.isFinite(minProfitManwon) || !Number.isFinite(minConfidencePct) || !Number.isFinite(priceMaxManwon)) {
+    return null;
+  }
+  return {
+    minProfitManwon: Math.max(0, Math.min(100, minProfitManwon)),
+    minConfidencePct: Math.max(0, Math.min(100, minConfidencePct)),
+    priceMaxManwon: Math.max(0, Math.min(10000, priceMaxManwon)),
+  };
 }
 
 export async function POST(req: Request) {
@@ -86,7 +93,8 @@ export async function POST(req: Request) {
 
   const requestedCards = Number(payload.requestedCards ?? 2);
   const sanitizedRequestedCards = clampRequestedCards(requestedCards);
-  const tokenCost = tokenCostFor(band, sanitizedRequestedCards);
+  const filters = parseFilters(payload);  // Wave 78: 동적 cost — 고급 모드에서만 filter 전달, 없으면 base × steps만
+  const tokenCost = computeTokenCost(band, sanitizedRequestedCards, filters);
   const infinite = isAdminUser(auth.user);
 
   try {

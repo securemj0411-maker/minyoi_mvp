@@ -6,6 +6,7 @@ import CreditIcon from "@/components/credit-icon";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { loadClientCredits } from "@/lib/client-credits";
 import { dispatchPackRevealsUpdated } from "@/lib/pack-events";
+import { computeCostBreakdown, type CostFilters } from "@/lib/pack-cost";
 import type { InventorySnapshot, PackBand, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { getOrCreateUserRef, userRefForAuthUser } from "@/lib/user-ref";
@@ -199,7 +200,7 @@ function PackSelectorCard({
   requestedCards: number;
   tokens: number;
   infiniteCredits: boolean;
-  onOpen: (pack: PackDef, requestedCards: number) => void;
+  onOpen: (pack: PackDef, requestedCards: number, filters?: CostFilters | null) => void;
   busy: boolean;
   inventoryLoading: boolean;
   isAuthenticated: boolean;
@@ -255,7 +256,12 @@ function PackSelectorCard({
   const usableReady = selectedInventory?.usableReady ?? 0;
   const maxSelectableCards = selectableCardLimit(usableReady);
   const selectedCount = clampRequestedCards(requestedCards, maxSelectableCards);
-  const totalCost = totalCostFor(selectedPack, selectedCount);
+  // Wave 78: 고급 모드면 dynamic cost (filter 가중치), 쉬운 모드면 base × steps
+  const activeFilters: CostFilters | null = searchMode === "advanced"
+    ? { minProfitManwon: advancedFilters.minProfitManwon, minConfidencePct: advancedFilters.minConfidencePct, priceMaxManwon: advancedFilters.priceMaxManwon }
+    : null;
+  const costBreakdown = computeCostBreakdown(selectedPack.band, selectedCount, activeFilters);
+  const totalCost = costBreakdown.totalCost;
   const loginRequired = !isAuthenticated;
   const insufficient = !infiniteCredits && tokens < totalCost;
   const sold = !inventoryLoading && usableReady < MIN_REQUESTED_CARDS;
@@ -271,7 +277,7 @@ function PackSelectorCard({
         return;
       }
     }
-    onOpen(selectedPack, selectedCount);
+    onOpen(selectedPack, selectedCount, activeFilters);
   }
 
   function handleConfirmHighProfitSearch() {
@@ -279,7 +285,7 @@ function PackSelectorCard({
       window.sessionStorage.setItem(HIGH_PROFIT_WARNING_SESSION_KEY, "1");
     }
     setWarningOpen(false);
-    onOpen(selectedPack, selectedCount);
+    onOpen(selectedPack, selectedCount, activeFilters);
   }
 
   return (
@@ -428,21 +434,48 @@ function PackSelectorCard({
             </div>
           </div>
 
-          {/* Inventory pre-check */}
-          <div className="mt-3 rounded-[20px] border-2 border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] p-3 text-center">
-            <div className="text-[11px] font-black text-[var(--brand-accent-strong)]">조건 매칭 매물</div>
-            <div className="mt-1 text-3xl font-black tracking-tight text-[var(--brand-accent-strong)]">
-              {previewLoading ? "..." : previewInventory ? `${previewInventory.matchingCount}건` : "-"}
-            </div>
-            {previewInventory && previewInventory.matchingCount > 0 ? (
-              <div className="mt-1 text-[11px] text-[#5d735f]">
-                신선 (2시간 내) {previewInventory.freshUnder2h}건
+          {/* Inventory pre-check + Cost 계산기 */}
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="rounded-[20px] border-2 border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] p-3 text-center">
+              <div className="text-[11px] font-black text-[var(--brand-accent-strong)]">조건 매칭 매물</div>
+              <div className="mt-1 text-2xl font-black tracking-tight text-[var(--brand-accent-strong)]">
+                {previewLoading ? "..." : previewInventory ? `${previewInventory.matchingCount}건` : "-"}
               </div>
-            ) : null}
-            {previewInventory && previewInventory.matchingCount === 0 ? (
-              <div className="mt-1 text-[11px] text-[#a04545]">조건 완화 추천 — 가격 상한 ↑ 또는 신뢰도 ↓</div>
-            ) : null}
+              {previewInventory && previewInventory.matchingCount > 0 ? (
+                <div className="mt-1 text-[10px] text-[#5d735f]">신선 {previewInventory.freshUnder2h}건</div>
+              ) : null}
+              {previewInventory && previewInventory.matchingCount === 0 ? (
+                <div className="mt-1 text-[10px] text-[#a04545]">조건 완화 권장</div>
+              ) : null}
+            </div>
+            <div className="rounded-[20px] border-2 border-[#caab78] bg-[#fff8ea] p-3 text-center dark:border-amber-900/60 dark:bg-amber-950/20">
+              <div className="text-[11px] font-black text-[#7b5724] dark:text-amber-200">카드 1매 비용</div>
+              <div className="mt-1 inline-flex items-baseline gap-0.5 text-2xl font-black tracking-tight text-[#7b5724] dark:text-amber-200">
+                {costBreakdown.perCardStep}
+                <span className="text-xs">토큰</span>
+              </div>
+              <div className="mt-1 text-[10px] leading-[1.4] text-[#9a7f4f] dark:text-amber-200/70">
+                {costBreakdown.base}×{costBreakdown.profitMult}×{costBreakdown.confidenceMult}×{costBreakdown.priceMult} = {costBreakdown.rawPerCardStep.toFixed(2)}
+              </div>
+            </div>
           </div>
+
+          {/* Cost breakdown 자세히 (펼치기) */}
+          <details className="mt-2 rounded-[16px] bg-[#f6efe4] px-3 py-2 dark:bg-zinc-950/40">
+            <summary className="cursor-pointer text-[11px] font-black text-[#59665b] dark:text-zinc-400">
+              💡 가격 계산 방식 보기
+            </summary>
+            <div className="mt-2 space-y-1 text-[11px] text-[#647064] dark:text-zinc-400">
+              <div>· 기본 (Risk): <b>{costBreakdown.base}</b> ({RISK_PRESETS[riskProfile].emoji} {RISK_PRESETS[riskProfile].label})</div>
+              <div>· 차익 가중치: ×<b>{costBreakdown.profitMult}</b> ({advancedFilters.minProfitManwon}만원+)</div>
+              <div>· 신뢰도 가중치: ×<b>{costBreakdown.confidenceMult}</b> ({advancedFilters.minConfidencePct}%+)</div>
+              <div>· 가격대 가중치: ×<b>{costBreakdown.priceMult}</b> ({advancedFilters.priceMaxManwon === 0 ? "무제한" : `≤${advancedFilters.priceMaxManwon}만원`})</div>
+              <div className="pt-1 font-black text-[#3a4a3f] dark:text-zinc-300">
+                = 카드 2매당 {costBreakdown.perCardStep} 토큰 (raw {costBreakdown.rawPerCardStep.toFixed(2)} → 반올림)
+              </div>
+              <div className="pt-1 text-[10px] text-[#7a8478]">까다로운 조건일수록 매물이 희소 → 토큰 비용 ↑</div>
+            </div>
+          </details>
 
           <div className="mt-2 text-[10.5px] leading-[1.45] text-[#7a8478] dark:text-zinc-500">
             ⓘ 표시 수익은 시세 기반 추정 (해당 가격에 정상 판매 시). AI 추천이며 수익 보장 X — 매입가 협상·판매 시점·구성품에 따라 달라집니다.
@@ -707,14 +740,15 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
   }, [initialInventory.length, refreshInventory]);
 
   const openPack = useCallback(
-    async (pack: PackDef, requestedCardsInput: number) => {
+    async (pack: PackDef, requestedCardsInput: number, filters?: CostFilters | null) => {
       if (loading) return;
       if (!authUser) {
         window.location.href = "/login";
         return;
       }
       const requestedCards = clampRequestedCards(requestedCardsInput);
-      const tokenCost = totalCostFor(pack, requestedCards);
+      // Wave 78: filter 있으면 dynamic cost, 없으면 base × steps
+      const tokenCost = computeCostBreakdown(pack.band, requestedCards, filters ?? null).totalCost;
       if (!infiniteCredits && tokens < tokenCost) return;
       setLastRequest({ pack, requestedCards, tokenCost });
       setActiveBand(pack.band);
@@ -735,6 +769,7 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
           body: JSON.stringify({
             band: pack.band,
             requestedCards,
+            ...(filters ? { filters } : {}),
           }),
         });
         const openData = (await res.json()) as PackOpenApiResult;
