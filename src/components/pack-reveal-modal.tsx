@@ -190,15 +190,29 @@ function SavedDetailMini({ card }: { card: RevealCard }) {
   );
 }
 
-function LoadingStage() {
-  // Wave 73: 진행률 게이지 + 단계 동기화. 실제 server progress feed 없어 시각용
-  // ease-out curve로 0→90% 약 4초간 채움 (loading=false 시 unmount → 100% 도달 불필요).
-  // 90% 도달 후엔 hold (server 응답 더 지연돼도 멈춘 듯 안 보이게 점진적 0.5%씩 추가).
+function LoadingStage({ completing = false }: { completing?: boolean }) {
+  // Wave 76: 게이지/% 동기화 + 완료 시 100% 도달. 이전엔 transition-[width] lag로
+  // 바와 텍스트 desync, server 응답 시 중간 % 상태에서 갑자기 카드 reveal 됐음.
+  // completing=true면 현재 pct에서 100%로 ~350ms 사이 ease-in.
   const [pct, setPct] = useState(5);
   useEffect(() => {
+    let rafId = 0;
+    if (completing) {
+      const startPct = pct;
+      const FINISH_MS = 350;
+      const startedAt = performance.now();
+      const tick = () => {
+        const elapsed = performance.now() - startedAt;
+        const t = Math.min(1, elapsed / FINISH_MS);
+        const eased = 1 - Math.pow(1 - t, 2);
+        setPct(startPct + (100 - startPct) * eased);
+        if (t < 1) rafId = window.requestAnimationFrame(tick);
+      };
+      rafId = window.requestAnimationFrame(tick);
+      return () => window.cancelAnimationFrame(rafId);
+    }
     const startedAt = performance.now();
     const TARGET_MS = 4000;
-    let rafId = 0;
     const tick = () => {
       const elapsed = performance.now() - startedAt;
       if (elapsed < TARGET_MS) {
@@ -207,7 +221,7 @@ function LoadingStage() {
         const eased = 1 - Math.pow(1 - t, 3);
         setPct(5 + eased * 85);
       } else {
-        // 4s 이후엔 분당 ~3% 정도 천천히 증가, 최대 95%
+        // 4s 이후엔 90~95% 천천히 증가
         const overshoot = (elapsed - TARGET_MS) / 1000;
         setPct(Math.min(95, 90 + overshoot * 0.5));
       }
@@ -215,7 +229,8 @@ function LoadingStage() {
     };
     rafId = window.requestAnimationFrame(tick);
     return () => window.cancelAnimationFrame(rafId);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [completing]);
 
   // 단계 라벨은 게이지 % 임계값 기반 (시간 기반 X → 게이지와 항상 일치)
   const stepIndex = pct < 25 ? 0 : pct < 50 ? 1 : pct < 75 ? 2 : 3;
@@ -236,7 +251,7 @@ function LoadingStage() {
         <div className="mt-2 text-center text-xl font-black text-zinc-900 dark:text-zinc-50">AI가 상품을 분석중입니다</div>
         <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[var(--brand-accent)] to-[var(--brand-accent-strong)] transition-[width] duration-200 ease-out"
+            className="h-full rounded-full bg-gradient-to-r from-[var(--brand-accent)] to-[var(--brand-accent-strong)]"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -654,6 +669,25 @@ export default function PackRevealModal({
   const [previewSide, setPreviewSide] = useState<PreviewSide>("right");
   const consumedInitialPreviewSeedRef = useRef<string | number | null>(null);
 
+  // Wave 76: loading 종료 후 LoadingStage를 잠깐 더 보여줘서 100% 도달 + smooth
+  // 카드 reveal. 이전엔 응답 도착 시 중간 % 상태에서 갑자기 카드 노출됐음.
+  const [displayLoading, setDisplayLoading] = useState(loading);
+  const [completing, setCompleting] = useState(false);
+  useEffect(() => {
+    if (loading) {
+      setDisplayLoading(true);
+      setCompleting(false);
+      return;
+    }
+    if (!displayLoading) return;
+    setCompleting(true);
+    const id = window.setTimeout(() => {
+      setDisplayLoading(false);
+      setCompleting(false);
+    }, 500);
+    return () => window.clearTimeout(id);
+  }, [loading, displayLoading]);
+
   const closePreviewPanel = useCallback(() => {
     setPreviewCard(null);
     setPreviewMode("listing");
@@ -791,9 +825,9 @@ export default function PackRevealModal({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
-          {loading ? <LoadingStage /> : null}
+          {displayLoading ? <LoadingStage completing={completing} /> : null}
 
-          {!loading && result?.result === "success" ? (
+          {!displayLoading && result?.result === "success" ? (
             <div className="space-y-4">
               <div>
                 <div className="grid gap-3 md:grid-cols-2">
@@ -869,7 +903,7 @@ export default function PackRevealModal({
             </div>
           ) : null}
 
-          {!loading && result?.result === "refunded" ? (
+          {!displayLoading && result?.result === "refunded" ? (
             <div className="space-y-4 py-6">
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
                 <div className="text-base font-bold">검증 실패 — 크레딧 {result.tokensRefunded}개 환불됨</div>
@@ -894,7 +928,7 @@ export default function PackRevealModal({
             </div>
           ) : null}
 
-          {!loading && result?.result === "unavailable" ? (
+          {!displayLoading && result?.result === "unavailable" ? (
             <div className="space-y-4 py-6">
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-700 dark:bg-zinc-800/40">
                 <div className="text-base font-bold">현재 재고 부족</div>
