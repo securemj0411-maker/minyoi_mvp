@@ -85,9 +85,9 @@ const marketMap = new Map();
 for (const chunk of pidChunks) {
   const ids = chunk.join(",");
   const [lis, par, raw] = await Promise.all([
-    fetchJson(`/mvp_listings?select=pid,name,price,sku_id,sku_name,sku_median&pid=in.(${ids})`),
+    fetchJson(`/mvp_listings?select=pid,name,price,sku_name,sku_median&pid=in.(${ids})`),
     fetchJson(`/mvp_listing_parsed?select=pid,comparable_key,parse_confidence,needs_review&pid=in.(${ids})`),
-    fetchJson(`/mvp_raw_listings?select=pid,thumbnail_url,sale_status,listing_state,last_seen_at,source_query&pid=in.(${ids})`),
+    fetchJson(`/mvp_raw_listings?select=pid,sku_id,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=in.(${ids})`),
   ]);
   for (const r of lis) listingMap.set(Number(r.pid), r);
   for (const r of par) parsedMap.set(Number(r.pid), r);
@@ -152,11 +152,11 @@ for (const fb of feedbacks) {
   reportLines.push("**매물 정보:**");
   reportLines.push(`- 매입가: ${krw(listing.price)}`);
   reportLines.push(`- 시세 (sku_median 저장값): ${krw(listing.sku_median)}`);
-  reportLines.push(`- SKU: \`${listing.sku_id || "—"}\` (${listing.sku_name || "—"})`);
+  reportLines.push(`- SKU: \`${raw.sku_id || "—"}\` (${listing.sku_name || "—"})`);
   reportLines.push(`- comparable_key: \`${compKey || "—"}\``);
   reportLines.push(`- parse confidence: ${parsed.parse_confidence != null ? (parsed.parse_confidence * 100).toFixed(0) + "%" : "—"}${parsed.needs_review ? " ⚠️ needs_review" : ""}`);
   reportLines.push(`- 상태: ${raw.sale_status || "—"} / listing_state ${raw.listing_state || "—"}`);
-  reportLines.push(`- source query: \`${raw.source_query || "—"}\``);
+  reportLines.push(`- query: \`${raw.query || "—"}\``);
   if (market) {
     reportLines.push("");
     reportLines.push("**market_price_daily (집계):**");

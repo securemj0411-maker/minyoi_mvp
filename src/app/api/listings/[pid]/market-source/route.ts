@@ -49,10 +49,10 @@ export async function GET(
       return NextResponse.json({ error: "not your reveal" }, { status: 403 });
     }
 
-    // 2. 우리 매물 정보 + comparable_key
+    // 2. 우리 매물 정보 + comparable_key (sku_id는 mvp_raw_listings에만 존재)
     const [listingRes, parsedRes, rawRes] = await Promise.all([
       restFetch(
-        `${tableUrl("mvp_listings")}?select=pid,name,price,sku_id,sku_name,sku_median&pid=eq.${pid}`,
+        `${tableUrl("mvp_listings")}?select=pid,name,price,sku_name,sku_median&pid=eq.${pid}`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -60,7 +60,7 @@ export async function GET(
         { headers: serviceHeaders() },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,thumbnail_url,sale_status,listing_state,last_seen_at,source_query&pid=eq.${pid}`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=eq.${pid}`,
         { headers: serviceHeaders() },
       ),
     ]);
@@ -71,7 +71,7 @@ export async function GET(
     if (!listing) return NextResponse.json({ error: "listing not found" }, { status: 404 });
 
     const comparableKey = (parsed?.comparable_key as string | null) ?? null;
-    const skuId = (listing.sku_id as string | null) ?? null;
+    const skuId = (raw?.sku_id as string | null) ?? null;
 
     // 3. market_price_daily 시세 통계 (comparable_key 기준)
     let marketStats: Record<string, unknown> | null = null;
@@ -98,7 +98,7 @@ export async function GET(
         .slice(0, MAX_COMPARABLES);
       if (sameKeyPids.length > 0) {
         const rawListRes = await restFetch(
-          `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,source_query&pid=in.(${sameKeyPids.join(",")})&order=last_seen_at.desc`,
+          `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=in.(${sameKeyPids.join(",")})&order=last_seen_at.desc`,
           { headers: serviceHeaders() },
         );
         const rawRows = (await rawListRes.json()) as Array<Record<string, unknown>>;
@@ -110,7 +110,7 @@ export async function GET(
           saleStatus: (row.sale_status as string | null) ?? null,
           listingState: (row.listing_state as string | null) ?? null,
           lastSeenAt: (row.last_seen_at as string | null) ?? null,
-          sourceQuery: (row.source_query as string | null) ?? null,
+          sourceQuery: (row.query as string | null) ?? null,
           bunjangUrl: `https://m.bunjang.co.kr/products/${Number(row.pid)}`,
         }));
       }
@@ -120,7 +120,7 @@ export async function GET(
     let comparableSource: "comparable_key" | "sku_id" | "none" = "comparable_key";
     if (comparables.length === 0 && skuId) {
       const skuRawRes = await restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,source_query&sku_id=eq.${encodeURIComponent(skuId)}&pid=not.eq.${pid}&order=last_seen_at.desc&limit=${MAX_COMPARABLES}`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query&sku_id=eq.${encodeURIComponent(skuId)}&pid=not.eq.${pid}&order=last_seen_at.desc&limit=${MAX_COMPARABLES}`,
         { headers: serviceHeaders() },
       );
       const rows = (await skuRawRes.json()) as Array<Record<string, unknown>>;
@@ -132,7 +132,7 @@ export async function GET(
         saleStatus: (row.sale_status as string | null) ?? null,
         listingState: (row.listing_state as string | null) ?? null,
         lastSeenAt: (row.last_seen_at as string | null) ?? null,
-        sourceQuery: (row.source_query as string | null) ?? null,
+        sourceQuery: (row.query as string | null) ?? null,
         bunjangUrl: `https://m.bunjang.co.kr/products/${Number(row.pid)}`,
       }));
       comparableSource = "sku_id";
