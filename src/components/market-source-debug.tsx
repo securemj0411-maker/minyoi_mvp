@@ -81,13 +81,23 @@ function saleStatusLabel(s: string | null) {
   return s;
 }
 
-export function MarketSourceDebug({ pid, ourPrice }: { pid: number; ourPrice: number }) {
+export function MarketSourceDebug({
+  pid,
+  ourPrice,
+  initialNote,
+  onCommentSaved,
+}: {
+  pid: number;
+  ourPrice: number;
+  initialNote?: string;
+  onCommentSaved?: (pid: number, note: string) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<MarketSourceResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userRef, setUserRef] = useState<string | null>(null);
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(initialNote ?? "");
   const [noteSaved, setNoteSaved] = useState(false);
   const [noteLoading, setNoteLoading] = useState(false);
 
@@ -161,12 +171,13 @@ export function MarketSourceDebug({ pid, ourPrice }: { pid: number; ourPrice: nu
         throw new Error(body?.error ?? `HTTP ${res.status}`);
       }
       setNoteSaved(true);
+      onCommentSaved?.(pid, note.trim());
     } catch (err) {
       setError(err instanceof Error ? err.message : "코멘트 저장 실패");
     } finally {
       setNoteLoading(false);
     }
-  }, [userRef, note, pid]);
+  }, [userRef, note, pid, onCommentSaved]);
 
   const sorted = data?.comparables ? [...data.comparables].sort((a, b) => a.price - b.price) : [];
 

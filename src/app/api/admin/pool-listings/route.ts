@@ -3,8 +3,10 @@
 // page-based pagination으로 DB I/O 최소화 (한 번에 20건만 조회).
 
 import { NextResponse, type NextRequest } from "next/server";
-import { requireDebugAdmin } from "@/lib/debug-admin";
+import { isAdminUser } from "@/lib/auth-users";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,8 +29,10 @@ type PoolRow = {
 };
 
 export async function GET(req: NextRequest) {
-  const adminCheck = await requireDebugAdmin(req);
-  if (!adminCheck.ok) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
+  const auth = await requireSupabaseUser(req);
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!isAdminUser(auth.user)) return NextResponse.json({ error: "admin only" }, { status: 403 });
+  const userRef = userRefForAuthUser(auth.user.id);
 
   const url = new URL(req.url);
   const page = Math.max(1, Number(url.searchParams.get("page") ?? "1") || 1);
@@ -83,8 +87,8 @@ export async function GET(req: NextRequest) {
     const pids = poolRows.map((r) => Number(r.pid));
     const pidsCsv = pids.join(",");
 
-    // 3. Join with listings + raw + parsed (한 batch에 한꺼번에)
-    const [listingsRes, rawRes, parsedRes] = await Promise.all([
+    // 3. Join with listings + raw + parsed + user feedback (한 batch에 한꺼번에)
+    const [listingsRes, rawRes, parsedRes, feedbackRes] = await Promise.all([
       restFetch(
         `${tableUrl("mvp_listings")}?select=pid,name,price,sku_name,sku_median,thumbnail_url,url&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
@@ -97,21 +101,32 @@ export async function GET(req: NextRequest) {
         `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
+      restFetch(
+        `${tableUrl("mvp_reveal_feedback")}?select=pid,note,feedback_type,updated_at&user_ref=eq.${encodeURIComponent(userRef)}&pid=in.(${pidsCsv})`,
+        { headers: serviceHeaders() },
+      ),
     ]);
 
     const listingsMap = new Map<number, Record<string, unknown>>();
     const rawMap = new Map<number, Record<string, unknown>>();
     const parsedMap = new Map<number, Record<string, unknown>>();
+    const feedbackMap = new Map<number, Record<string, unknown>>();
     for (const r of (await listingsRes.json()) as Array<Record<string, unknown>>) listingsMap.set(Number(r.pid), r);
     for (const r of (await rawRes.json()) as Array<Record<string, unknown>>) rawMap.set(Number(r.pid), r);
     for (const r of (await parsedRes.json()) as Array<Record<string, unknown>>) parsedMap.set(Number(r.pid), r);
+    for (const r of (await feedbackRes.json()) as Array<Record<string, unknown>>) feedbackMap.set(Number(r.pid), r);
 
     const items = poolRows.map((pool) => {
       const pid = Number(pool.pid);
       const l = listingsMap.get(pid) || {};
       const r = rawMap.get(pid) || {};
       const p = parsedMap.get(pid) || {};
+      const fb = feedbackMap.get(pid);
+      const note = (fb?.note as string | undefined) ?? "";
       return {
+        hasComment: note.trim().length > 0,
+        commentPreview: note.slice(0, 100),
+        commentUpdatedAt: (fb?.updated_at as string | undefined) ?? null,
         pid,
         name: l.name as string ?? "",
         price: Number(l.price ?? 0),

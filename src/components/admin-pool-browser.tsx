@@ -33,6 +33,9 @@ type PoolItem = {
   exposureCount: number;
   maxExposure: number;
   lastVerifiedAt: string;
+  hasComment: boolean;
+  commentPreview: string;
+  commentUpdatedAt: string | null;
 };
 
 type Resp = {
@@ -109,6 +112,21 @@ export default function AdminPoolBrowser() {
   useEffect(() => {
     void fetchPage();
   }, [fetchPage]);
+
+  // 코멘트 실시간 갱신 — MarketSourceDebug 저장 callback에서 호출
+  const handleCommentSaved = useCallback((pid: number, savedNote: string) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        items: prev.items.map((it) =>
+          it.pid === pid
+            ? { ...it, hasComment: savedNote.trim().length > 0, commentPreview: savedNote.slice(0, 100), commentUpdatedAt: new Date().toISOString() }
+            : it,
+        ),
+      };
+    });
+  }, []);
 
   const totalPages = data?.totalPages ?? 1;
   const pageNumbers = (() => {
@@ -197,7 +215,19 @@ export default function AdminPoolBrowser() {
         <>
           <div className="grid gap-3 md:grid-cols-2">
             {data.items.map((item) => (
-              <article key={item.pid} className="rounded-lg border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <article
+                key={item.pid}
+                className={`relative rounded-lg border bg-[#fffdf9] p-3 shadow-sm dark:bg-zinc-900 ${
+                  item.hasComment
+                    ? "border-emerald-400 ring-2 ring-emerald-200 dark:border-emerald-700 dark:ring-emerald-900/40"
+                    : "border-[#e3ddd2] dark:border-zinc-800"
+                }`}
+              >
+                {item.hasComment && (
+                  <div className="absolute right-2 top-2 z-10 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white shadow-md">
+                    ✅ 코멘트
+                  </div>
+                )}
                 <div className="flex gap-3">
                   {item.thumbnailUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -229,8 +259,18 @@ export default function AdminPoolBrowser() {
                     </a>
                   </div>
                 </div>
+                {item.hasComment && item.commentPreview && (
+                  <div className="mt-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[11px] text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
+                    <div className="line-clamp-2">💬 {item.commentPreview}</div>
+                  </div>
+                )}
                 <div className="mt-2">
-                  <MarketSourceDebug pid={item.pid} ourPrice={item.price} />
+                  <MarketSourceDebug
+                    pid={item.pid}
+                    ourPrice={item.price}
+                    initialNote={item.commentPreview}
+                    onCommentSaved={handleCommentSaved}
+                  />
                 </div>
               </article>
             ))}
