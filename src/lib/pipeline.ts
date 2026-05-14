@@ -981,12 +981,16 @@ export async function runPipeline(pagesPerQuery?: number, options: PipelineOptio
     favsBySku.get(r.skuId)!.push(r.numFaved);
   }
 
-  // SKU 중앙값이 적으면 MSRP*0.5 fallback
-  const skuMsrpMap = new Map(CATALOG.map((s) => [s.id, s.msrpKrw]));
+  // Wave 90 (2026-05-15): MSRP × 0.5 fallback 폐기.
+  // 사용자 코멘트 검토 결과 (pid 394439158, 407687887, 394738416 등 맥북 broad SKU 3건):
+  // broad SKU `macbook-pro` (M1/M2/2019 i7/i9/A1278/A1502 다 한 그룹) + 5건 미만 →
+  // MSRP ₩4.25M × 0.5 = ₩2.125M로 sku_median 채워짐 → 차익 ₩900k+ false positive.
+  // 정확성 우선 정책 (LAUNCH_PLAN §12b): 시세 부족 매물은 풀 진입 차단이 default.
+  // sample 5건 미만이면 0 반환 → bandFromProfit null → candidate-pool-builder가 거부.
   function skuMedianFor(skuId: string): number {
     const prices = pricesBySku.get(skuId) ?? [];
     if (prices.length >= 5) return median(prices);
-    return (skuMsrpMap.get(skuId) ?? 300000) * 0.5;
+    return 0; // sample 부족 → 풀 진입 차단 (정확성 > 풀 사이즈)
   }
 
   // 5. 점수 계산 + 배송비 결정

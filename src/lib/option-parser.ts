@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v36";
+const PARSER_VERSION = "option-parser-v37";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -986,6 +986,17 @@ function comparableParts(input: {
   }
   if (category === "camera") {
     return ["camera", family, model, "body_only", "no_lens"];
+  }
+  // Wave 90 v37: desktop comparable_key에 RAM/SSD 추가.
+  // 사용자 코멘트로 발견 (pid 396321711 iMac M3 24"): 8GB/256GB 매물이 16GB/1TB 매물과
+  // 한 그룹으로 묶여 시세 왜곡. comparable_key가 desktop|apple_imac_m3_24만 있어 옵션 무시됨.
+  if (category === "desktop") {
+    return [
+      family,
+      model,
+      input.ramGb ? `${input.ramGb}gb_ram` : "unknown_ram",
+      input.ssdGb ? `${input.ssdGb}gb_ssd` : "unknown_ssd",
+    ];
   }
   // Wave 67/68: 시계 + 골프 narrow lane.
   // 모델 코드가 catalog mustContain[0]에서 strict 매칭 (DW-5600/GA-2100/SRPD/TSR3 등).

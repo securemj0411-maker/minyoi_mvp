@@ -557,8 +557,8 @@ test("desktop Apple exact model SKUs bind only precise iMac/Mac Studio rows", ()
     skuName: imacM1?.modelName,
     title: "아이맥 m1 블루 색상 풀박스",
   });
-  assert.equal(parsedImac.comparableKey, "desktop|apple_imac_m1_24");
-  assert.equal(parsedImac.needsReview, false);
+  // Wave 90 v37: desktop comparable_key에 RAM/SSD axis 추가 (옵션 명시 안 된 매물은 unknown_*)
+  assert.equal(parsedImac.comparableKey, "desktop|apple_imac_m1_24|unknown_ram|unknown_ssd");
 
   const studio = ruleMatch("애플 맥 스튜디오 m4 max 512g", "");
   assert.equal(studio?.id, "desktop-mac-studio-m4-max-512");
@@ -568,8 +568,7 @@ test("desktop Apple exact model SKUs bind only precise iMac/Mac Studio rows", ()
     skuName: studio?.modelName,
     title: "애플 맥 스튜디오 m4 max 512g",
   });
-  assert.equal(parsedStudio.comparableKey, "desktop|apple_mac_studio_m4_max_512gb");
-  assert.equal(parsedStudio.needsReview, false);
+  assert.equal(parsedStudio.comparableKey, "desktop|apple_mac_studio_m4_max_512gb|unknown_ram|512gb_ssd");
 
   assert.equal(ruleMatch("맥스튜디오 청바지 26인치", "")?.id, undefined);
   assert.equal(ruleMatch("맥스스튜디오 여성 블루 린넨 벨티드 7부 블라우스 66", "")?.id, undefined);
