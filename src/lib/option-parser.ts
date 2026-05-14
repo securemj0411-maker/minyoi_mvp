@@ -35,7 +35,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v35";
+const PARSER_VERSION = "option-parser-v36";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -484,16 +484,25 @@ function parseTabletGenerationChip(text: string, model: string | null, screenSiz
   const generation = parseTabletGeneration(text, model);
   if (!generation) return null;
 
+  // Wave 90 (2026-05-15): iPad Pro 12.9 1st~4th + 11 1st~2nd 추가 매핑.
+  // 기존엔 5세대(M1)부터만 chip 매핑되고 1~4세대는 chip null → comparable_key에 chip
+  // 안 들어가서 모든 세대가 한 그룹으로 묶이는 시세 왜곡. 사용자 코멘트로 발견.
   if (model === "ipad_pro") {
     if (screenSizeIn === 11) {
-      if (generation === 3) return "m1";
-      if (generation === 4) return "m2";
-      if (generation === 5) return "m4";
+      if (generation === 1) return "a12x"; // 11" 1st (2018)
+      if (generation === 2) return "a12z"; // 11" 2nd (2020)
+      if (generation === 3) return "m1";   // 11" 3rd (2021)
+      if (generation === 4) return "m2";   // 11" 4th (2022)
+      if (generation === 5) return "m4";   // 11" 5th (2024)
     }
     if (screenSizeIn === 12.9 || screenSizeIn === 13) {
-      if (generation === 5) return "m1";
-      if (generation === 6) return "m2";
-      if (generation === 7) return "m4";
+      if (generation === 1) return "a9x";  // 12.9" 1st (2015)
+      if (generation === 2) return "a10x"; // 12.9" 2nd (2017)
+      if (generation === 3) return "a12x"; // 12.9" 3rd (2018)
+      if (generation === 4) return "a12z"; // 12.9" 4th (2020)
+      if (generation === 5) return "m1";   // 12.9" 5th (2021)
+      if (generation === 6) return "m2";   // 12.9" 6th (2022)
+      if (generation === 7) return "m4";   // 13" 7th (2024) — Apple은 12.9→13으로 명칭 변경
     }
   }
 
@@ -908,6 +917,7 @@ function comparableParts(input: {
   monitorRefreshRate: number | null;
   monitorPanelType: string | null;
   monitorShape: string | null;
+  tabletGeneration?: number | null;
 }) {
   const { category, family, model } = input;
   if (!category || !family || !model) return null;
@@ -915,10 +925,16 @@ function comparableParts(input: {
     return [family, model, input.storageGb ? `${input.storageGb}gb` : "unknown_storage"];
   }
   if (category === "tablet") {
+    // Wave 90: comparable_key에 generation 추가. 기존엔 chip만으로 식별했는데
+    // chip 추출 fail (1~4세대) 또는 chip 매핑 미존재 시 모든 세대가 한 그룹으로
+    // 묶이는 시세 왜곡 발생 (사용자 코멘트로 발견 — iPad Pro 12.9 2세대가 신세대 시세 적용됨).
+    // generation 추출되면 key에 박고, 안 되면 omit (기존 동작 유지로 풀 진입 영향 최소화).
     const chipAxis = tabletChipAxis(model, input.chip);
+    const generation = input.tabletGeneration;
     return [
       family,
       model,
+      ...(generation ? [`${generation}_gen`] : []),
       ...(chipAxis ? [chipAxis] : []),
       input.screenSizeIn ? `${input.screenSizeIn}in` : "unknown_screen",
       input.storageGb ? `${input.storageGb}gb` : "unknown_storage",
@@ -1170,6 +1186,8 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     : null;
   const { conditionScore, conditionNotes } = conditionFromText(text, batteryHealth, batteryCycles);
   const tabletBundlePriceReview = category === "tablet" && hasTabletBundlePriceReview(text);
+  // Wave 90: tablet generation을 comparableParts에 전달 (세대별 시세 분리)
+  const tabletGeneration = category === "tablet" ? parseTabletGeneration(text, model) : null;
   const parts = comparableParts({
     category,
     family,
@@ -1191,6 +1209,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     monitorRefreshRate,
     monitorPanelType,
     monitorShape,
+    tabletGeneration,
   });
   const comparableKey = parts?.map(slug).join("|") ?? null;
   const parseConfidence = confidence({

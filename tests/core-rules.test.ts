@@ -1124,7 +1124,7 @@ test("iPad Pro bare screen size near generation becomes precise comparable key",
     skuId: "ipad_pro",
     title: "아이패드 프로 5세대 m1 12.9 128기가 셀룰러 풀박+애펜2",
   });
-  assert.equal(parsed.comparableKey, "ipad|ipad_pro|m1|12_9in|128gb|cellular");
+  assert.equal(parsed.comparableKey, "ipad|ipad_pro|5_gen|m1|12_9in|128gb|cellular");
   assert.equal(parsed.needsReview, true);
   assert.equal(parsed.parsedJson.tablet_bundle_price_review, true);
 });
@@ -1135,7 +1135,7 @@ test("iPad Pro compact generation title keeps 11-inch split", () => {
     skuId: "ipad_pro",
     title: "아이패드 프로4세대 11 128GB 스그",
   });
-  assert.equal(parsed.comparableKey, "ipad|ipad_pro|m2|11in|128gb|wifi");
+  assert.equal(parsed.comparableKey, "ipad|ipad_pro|4_gen|m2|11in|128gb|wifi");
   assert.equal(parsed.needsReview, false);
 });
 
@@ -1145,7 +1145,7 @@ test("iPad Pro generic comparable key includes chip axis and bundle rows stay re
     skuId: "ipad-pro",
     title: "Ipad Pro11 3세대/256GB/Wifi/m1칩",
   });
-  assert.equal(clean.comparableKey, "ipad|ipad_pro|m1|11in|256gb|wifi");
+  assert.equal(clean.comparableKey, "ipad|ipad_pro|3_gen|m1|11in|256gb|wifi");
   assert.equal(clean.needsReview, false);
 
   const bundled = parseListingOptions({
@@ -1154,7 +1154,7 @@ test("iPad Pro generic comparable key includes chip axis and bundle rows stay re
     title: "아이패드프로3세대 11 m1 셀룰러 + 애플펜슬2",
     description: "아이패드 프로 3세대 11인치 M1 칩 128gb 셀룰러 모델과 애플펜슬 2세대 함께 판매합니다.",
   });
-  assert.equal(bundled.comparableKey, "ipad|ipad_pro|m1|11in|128gb|cellular");
+  assert.equal(bundled.comparableKey, "ipad|ipad_pro|3_gen|m1|11in|128gb|cellular");
   assert.equal(bundled.needsReview, true);
   assert.equal(bundled.parsedJson.tablet_bundle_price_review, true);
 });
@@ -1179,14 +1179,14 @@ test("iPad mini generation and A17 Pro chip infer mini screen generation", () =>
     skuId: "ipad_mini",
     title: "아이패드 미니 스페이스 그레이 5세대 64기가",
   });
-  assert.equal(mini5.comparableKey, "ipad|ipad_mini|7_9in|64gb|wifi");
+  assert.equal(mini5.comparableKey, "ipad|ipad_mini|5_gen|7_9in|64gb|wifi");
 
   const miniA17 = parseListingOptions({
     category: "tablet",
     skuId: "ipad_mini",
     title: "아이패드 미니 a17 256기가",
   });
-  assert.equal(miniA17.comparableKey, "ipad|ipad_mini|8_3in|256gb|wifi");
+  assert.equal(miniA17.comparableKey, "ipad|ipad_mini|7_gen|8_3in|256gb|wifi");
 });
 
 test("Galaxy Tab FE and Wi-Fi variants do not mix with base or GPS", () => {
