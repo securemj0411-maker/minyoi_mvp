@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-14T22:36:04.262Z",
+  "_updated_at": "2026-05-14T22:58:54.680Z",
   "resolutions": {
     "358002617": {
       "resolved_at": "2026-05-14T21:27:26.329Z",
@@ -87,10 +87,11 @@
       ]
     },
     "406566033": {
-      "resolved_at": "2026-05-14T20:30:00.000Z",
-      "summary": "iPad Pro 12.9 2세대 chip a10x 매핑 + comparable_key에 generation 추가 (parser v36). 같은 세대만 한 그룹으로 시세 계산.",
+      "resolved_at": "2026-05-14T22:58:54.676Z",
+      "summary": "iPad Pro 12.9 2세대 chip a10x 매핑 + comparable_key에 generation 추가 (parser v36). 같은 세대만 한 그룹으로 시세 계산. | 디버그 모달 sku_id fallback 제거 + 10,407건 score_dirty 일괄 마킹 (stale sku_median 재계산 트리거). 비교군 없으면 정직하게 '없음' 표시.",
       "commits": [
-        "8421506"
+        "8421506",
+        "a07c9db"
       ]
     },
     "406633480": {
