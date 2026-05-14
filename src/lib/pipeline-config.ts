@@ -186,7 +186,9 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     aiReviewConcurrency: envIntAny(["PIPELINE_AI_REVIEW_CONCURRENCY", "AI_REVIEW_CONCURRENCY"], 5, 1, maxAiReviewConcurrency),
     maxAiReviewConcurrency,
     staleRunMinutes: envInt("PIPELINE_STALE_RUN_MINUTES", 3, 1, 60),
-    tickSearchBudgetMs: envInt("PIPELINE_TICK_SEARCH_BUDGET_MS", 15_000, 1_000, 120_000),
+    // Wave 88 follow-up: 15s → 25s. 127 narrow + 10 category sweep을 한 tick에 다 처리.
+    // Vercel maxDuration 60s 안에 search(25s) + score(10s) + DB write(~5s) = 40s 여유.
+    tickSearchBudgetMs: envInt("PIPELINE_TICK_SEARCH_BUDGET_MS", 25_000, 1_000, 120_000),
     tickDetailBudgetMs: envInt("PIPELINE_TICK_DETAIL_BUDGET_MS", 20_000, 1_000, 120_000),
     tickScoreBudgetMs: envInt("PIPELINE_TICK_SCORE_BUDGET_MS", 10_000, 1_000, 120_000),
     tickDetailBatchSize: envInt("PIPELINE_TICK_DETAIL_BATCH_SIZE", 20, 1, 200),

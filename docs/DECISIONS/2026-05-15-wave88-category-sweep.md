@@ -67,6 +67,23 @@ CLAUDE.md 6 필드 포맷.
 3. **categoryId page 1+ 깊이**: 휴대폰 같은 busy 카테고리 peak time 누락 방지
 4. **carbon-blind 카테고리 추가**: gear (700) / fashion (310) 같은 카테고리에 우리 SKU 있는지 탐색
 
+## 0.4 follow-up 패치 (2026-05-15 02:50 KST)
+
+- 시간: 2026-05-15 02:50 KST
+- 발견: 02:40 첫 sweep tick 측정 후 4가지 후속 작업 식별 — (1) tick budget 15s 빠듯, (2) 레거시 query 17개 starved, (3)(4) 1주 후 재측정 도구 부재.
+- 변경:
+  - `pipeline-config.ts` `tickSearchBudgetMs` default 15s → **25s** (Vercel 60s 한계 내 search 25s + score 10s + DB 5s = 40s 여유).
+  - DB UPDATE: 레거시 17개 query `enabled=false` (`wave-*_boost:*` 13개, `internal_acquisition:*` 1개, `카시오크`/`ILCE-7C`/`LG 39GX900A` 3개). 모두 envQueries 미포함 or Wave 86/59 명시 폐기. reason='wave88_legacy_disable'.
+  - `scripts/wave88-narrow-vs-category-overlap.ts` 신규: pid 단위 overlap 측정 → deprecate 후보 자동 식별 (overlap≥95%).
+  - `scripts/wave88-low-sample-sku-tracking.ts` 신규: 14개 저표본 SKU (카메라 5 + 시계 4 + 골프 2 + 저volume 3) 누적 추적. cat vs narrow 출처 분리.
+- 검증:
+  - `npx tsc --noEmit` clean
+  - Baseline 측정 (`wave88-low-sample-sku-tracking-latest.json`): 카메라 5 SKU 7d 합 10건 (모두 narrow 출처), 시계 G-Shock 그룹 7d 122건 (Wave 86 ready 충분), 골프 0건, sweep 02:40 시작이라 cat 기여 아직 0.
+- 위험: 없음 (default 값 조정 + DB UPDATE 17 row + 측정 도구 신규).
+- 다음:
+  - 1주 후 (~2026-05-22) 두 스크립트 재실행 → narrow query deprecate 후보 확정 + 카메라 자연 누적 재측정
+  - tickSearchBudgetMs 25s 적용 후 starved query 회복 확인 (~다음 tick 1~2회)
+
 ## 3. 거론 금지
 
 - 닌텐도 Switch OLED — Wave 87 §0.1 보류 유지.
