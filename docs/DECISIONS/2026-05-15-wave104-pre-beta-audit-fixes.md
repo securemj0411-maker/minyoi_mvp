@@ -536,6 +536,29 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 다음: QStash 등록 후 1시간 watchdog logs 확인. 다른 운영 readiness 영역 (DB connection pool / rate limit 분포 / observability) audit.
 - commit: 05b2049
 
+## 28. #27 정정 — collect는 false alarm, tick이 흡수
+
+- 시간: 2026-05-16 07:45 KST
+- MJ 지적 + 재검증 결과:
+  - QStash dashboard 7개 schedule 등록됨 (lifecycle / housekeeper / pool-warmer / market / deep-crawl / detail / tick).
+  - mvp_raw_listings 24h **26,339건 신규 insert (분당 28건)** — 신규 매물 수집 정상.
+  - 코드 확인: `runTickPipeline` (tick-pipeline.ts:3684) 가 `searchStage` 자체 호출 → tick 1-2분마다 search + detail + score 다 함.
+- **#27 잘못 진단 정정**: "/api/cron/collect 0회 = critical" 잘못. collect cron route 는 사실상 unused (tick이 searchStage 흡수). 별도 호출 안 해도 매물 수집 정상.
+- 변경 (`src/lib/cron-watchdog.ts`):
+  - WATCHDOG_TARGETS 에서 collect 제거 (false alarm 차단).
+  - landing-showcases / housekeeper-ai-cache-prune / compliance-retention 3개는 그대로 추적 (재검증 — 이 3개는 다른 cron이 흡수 X, 진짜 stale).
+- 검증:
+  - landing-showcases: `refreshLandingShowcaseCache` 가 `/api/cron/landing-showcases` 에서만 호출 → 진짜 stale.
+  - housekeeper-ai-cache-prune: `runAiCachePrune` 가 별도 cron만 호출 → 진짜 stale.
+  - compliance-retention: 별도 cron만 호출 → 진짜 stale.
+- 위험: 정정 fix는 안전. 단 #27 의 "MJ QStash 등록" 액션도 정정 — collect 등록 불필요. landing-showcases / ai-cache-prune / compliance-retention 3개만 등록.
+- **MJ 액션 정정 (3개만)**:
+  - /api/cron/landing-showcases — 10분 주기 (랜딩 캐시)
+  - /api/cron/housekeeper-ai-cache-prune — 6시간 주기 (AI cache 정리)
+  - /api/cron/compliance-retention — 24시간 주기 (개인정보 retention)
+- 다음: 다른 운영 readiness 영역 진단 (DB connection pool / rate limit 분포 / observability).
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
