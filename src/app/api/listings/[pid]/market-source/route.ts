@@ -4,10 +4,7 @@
 // 보안: 사용자 본인 reveal 매물만 조회 가능 (mvp_pack_reveals 통한 권한 체크).
 
 import { NextResponse } from "next/server";
-import { isAdminUser } from "@/lib/auth-users";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
-import { requireSupabaseUser } from "@/lib/supabase-server-auth";
-import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,33 +24,17 @@ type Comparable = {
 };
 
 export async function GET(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ pid: string }> },
 ) {
-  const auth = await requireSupabaseUser(req);
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-
+  // 2026-05-15: auth/권한 체크 제거. 베타 풀 페이지(/peek-pool-7f3kz9)에서도
+  // 시세 근거 보기 가능하도록 public read-only. pid 알면 누구나 접근.
   const { pid: pidStr } = await params;
   const pid = Number(pidStr);
   if (!Number.isFinite(pid)) return NextResponse.json({ error: "invalid pid" }, { status: 400 });
 
-  const userRef = userRefForAuthUser(auth.user.id);
-  const isAdmin = isAdminUser(auth.user);
-
   try {
-    // 1. 권한 체크 — 일반 사용자는 본인이 reveal 받은 매물만. admin은 우회.
-    if (!isAdmin) {
-      const revealRes = await restFetch(
-        `${tableUrl("mvp_pack_reveals")}?select=pid,user_ref&pid=eq.${pid}&user_ref=eq.${encodeURIComponent(userRef)}&limit=1`,
-        { headers: serviceHeaders() },
-      );
-      const revealRows = (await revealRes.json()) as Array<{ pid: number }>;
-      if (revealRows.length === 0) {
-        return NextResponse.json({ error: "not your reveal" }, { status: 403 });
-      }
-    }
-
-    // 2. 우리 매물 정보 + comparable_key (sku_id는 mvp_raw_listings에만 존재)
+    // 우리 매물 정보 + comparable_key (sku_id는 mvp_raw_listings에만 존재)
     const [listingRes, parsedRes, rawRes] = await Promise.all([
       restFetch(
         `${tableUrl("mvp_listings")}?select=pid,name,price,sku_name,sku_median&pid=eq.${pid}`,
