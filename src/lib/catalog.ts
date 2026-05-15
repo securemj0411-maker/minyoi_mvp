@@ -362,6 +362,9 @@ const SPEAKER_NOISE_W94 = [
 // Wave 94: 카테고리별 NOISE를 GENERATED_CATALOG SKU에 자동 spread.
 // 기존 mustNotContain은 union으로 보존 (intent loss 없음).
 const CATEGORY_NOISE_MAP_W94: Partial<Record<Sku["category"], readonly string[]>> = {
+  // Wave 114d (2026-05-15): smartphone 카테고리 누락 fix. GENERATED_CATALOG의 galaxy-s23 등
+  // broad smartphone SKU가 PHONE_NOISE spread 안 받아 통신사/번호이동/할부 매물 흡수 중.
+  smartphone: PHONE_NOISE,
   laptop: LAPTOP_NOISE,
   earphone: EARPHONE_NOISE_W94,
   smartwatch: SMARTWATCH_NOISE_W94,

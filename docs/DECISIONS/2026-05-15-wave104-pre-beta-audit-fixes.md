@@ -808,6 +808,29 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 45. systemic sweep 종합 + 남은 patterns
+
+- 시간: 2026-05-16 12:00 KST
+- 추가 진단:
+  - **comparable_key 일관성**: macbook_pro 414 / ipad_pro 191 variant — 옵션 조합 폭발 (정상). 진짜 duplicate X.
+  - **broad sku_name 카드 UX**: `marketBasisLabel` (pack-open.ts:428) 이미 generation/chip 포함. pack-reveal-modal 표시 (line 183), 단 user-reveal-dashboard 카드엔 raw `item.name` 만 (별도 wave — server response 변경).
+  - **broad sku_id collision**: narrow `macbook-air-m3-13-256` 가 RAM/SSD 다른 8 variant 매칭. 시세 비교는 comparable_key 단위 (서로 다른 그룹) → mixing X. UX 헷갈림만 (catalog 정밀화 별도 wave).
+
+### 정확도 sweep 종합 (#40~#44)
+
+- 풀 매물 변화: 199 → 126 (37% ↓)
+- code gate: 9개 unknown_X + 8개 condition_note + carrier null + thin sample
+- market aggregate sample 제외 확장 (new/applecare/low_battery)
+- 정확도 시스템 강화 완료.
+
+### 남은 systemic 후보 (별도 wave)
+
+- catalog mustContain 정밀화 (narrow SKU RAM/SSD 옵션 매칭 강화)
+- listing_type 옛 매물 reparse RPC
+- broad sku_name 카드 UX (server response 변경)
+- AI L2 활성화 (정확도 ↑ but 비용)
+- comparable_key normalize (다른 표기 같은 매물)
+
 ## 44. trustedMedian gate 강화 — low confidence + thin sample 차단
 
 - 시간: 2026-05-16 11:50 KST

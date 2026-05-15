@@ -2535,7 +2535,12 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
               : soldMedian != null && sold.count >= 1
                 ? soldMedian
                 : activeMedian != null
-                  ? activeMedian
+                  // 2026-05-15: sold 0건 + 호가만 → 호가 × 0.92 (한국 중고시장 평균 네고율 5~15% 중간값 추정).
+                  // 호가 100%는 비현실적 — 셀러 부른 가격이고 실거래는 보통 낮음. 보수적 추정 (정확성 > recall, LAUNCH_PLAN §12b).
+                  // TODO (2026-05-29 이후, 베타 데이터 1~2주 누적 후): 실제 거래 vs 호가 차이 측정해서 카테고리별 factor로 교체.
+                  // 측정 방법 — 사용자 카드 클릭 → 번개장터 가서 거래 시도 결과 telegram 피드백 → A/B 데이터로 0.92 검증.
+                  // 카테고리별 추정치: 휴대폰 ~0.95 (네고율 5%), 가전/노트북 ~0.88 (네고율 12%), 패션 ~0.80 (네고율 20%).
+                  ? Math.round(activeMedian * 0.92)
                   : disappearedMedian != null && disappeared.count >= 8
                     ? Math.round(disappearedMedian * 0.9)
                     : disappearedMedian;
