@@ -99,6 +99,28 @@ CLAUDE.md 6 필드 포맷.
   - Galaxy S 일반(Ultra 아닌) 자급제 narrow lane 추가 검토 (s23/24/25, plus). 매물 153건.
   - iPhone Pro Max 128/512GB self lane도 매물 측정 후 추가 검토.
 
+## 2.3 Galaxy S 일반(Ultra 아닌) 256GB 자급제 narrow lane 신설
+
+- 시간: 2026-05-15
+- 발견: 매물 측정 s23 자급제 55, s24 자급제 46, s25 자급제 38. 총 139건. 기존 ultra/plus narrow는 있지만 일반은 broad로 흡수.
+- 변경:
+  - **[mvp/src/lib/catalog.ts](mvp/src/lib/catalog.ts)** 3 SKU 추가:
+    - `galaxy-s23-256-self` (laneKey `galaxy_s23_256_self`)
+    - `galaxy-s24-256-self` (laneKey `galaxy_s24_256_self`)
+    - `galaxy-s25-256-self` (laneKey `galaxy_s25_256_self`)
+  - mustNotContain에 `울트라/ultra/플러스/plus/FE/팬에디션` + 인접 세대 차단
+  - **[mvp/src/lib/category-readiness.ts](mvp/src/lib/category-readiness.ts)** LANE_READINESS 3 lane `ready` 등록
+- 검증: scripts/test-narrow-w108.ts
+  - "갤럭시 s23 256기가 자급제" → `galaxy-s23-256-self` ✓
+  - "갤럭시 s24 256기가 자급제" → `galaxy-s24-256-self` ✓
+  - "갤럭시 s25 256gb 자급제 신품" → `galaxy-s25-256-self` ✓
+  - FP 검증:
+    - "갤럭시 s23 울트라 256gb / 자급제" → `galaxy-s23-ultra-256-self` ✓ (Ultra narrow 우선)
+    - "갤럭시 s24 플러스 256gb / 자급제" → `galaxy-s24-plus` (broad, Plus narrow 미존재) ✓
+    - "갤럭시 s25 256기가 SKT" → `galaxy-s25` (broad, 통신사 명시) ✓ precision 보존
+- 위험: 낮음. mustNotContain 강력 + Ultra/Plus narrow 우선 보장.
+- 다음: galaxy-s24-plus 자급제 narrow 추가 검토 (매물 14건, 적음).
+
 ## 3. 거론 금지
 
 - 카테고리 자체 ready 승격 (smartphone/game_console/camera) — LAUNCH_PLAN 원칙 12b/13 위반. 정확성 trade-off 큼.
