@@ -893,11 +893,12 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
     add("applecare_premium", 0.05);
   }
 
-  // 2026-05-15 (사용자 코멘트 pid 407555096 / 407486890):
+  // 2026-05-15 (사용자 코멘트 pid 407555096 / 407486890 / "아이패드 프로 m4 13인치 / 애플펜슬 프로 / 키보드"):
   // 단품 매물의 시세 비교군에 액세서리 번들이 끼면 평균을 끌어올림.
   // 본품 + 명시적 액세서리 패턴만 잡음 (false positive 위험 최소화).
+  // 연결어에 슬래시/가운뎃점/콤마/+/및/와/과/함께/포함/세트 포함 (실제 title 변형 흡수).
   // pool 진입은 허용 (액세서리 포함된 매물이 단품 시세보다 싸면 명백한 꿀).
-  const accessoryBundlePattern = /(?:\+\s*|및\s*|와\s*|과\s*|함께\s*|포함\s*|세트\s*)(?:애플\s?펜슬|애플펜슬\s?프로|매직\s?키보드|스마트\s?키보드|스마트\s?커버|스마트\s?폴리오|폴리오\s?커버|매직\s?마우스|매직\s?트랙패드|애플\s?케이블)|(?:애플\s?펜슬|애플펜슬\s?프로|매직\s?키보드|스마트\s?키보드|스마트\s?폴리오|매직\s?마우스)\s*(?:포함|세트|같이|번들|와\s*함께|증정)/i;
+  const accessoryBundlePattern = /(?:[+/·,]\s*|및\s*|와\s*|과\s*|함께\s*|포함\s*|세트\s*)(?:애플\s?펜슬|애플펜슬\s?프로|매직\s?키보드|스마트\s?키보드|스마트\s?커버|스마트\s?폴리오|폴리오\s?커버|매직\s?마우스|매직\s?트랙패드|애플\s?케이블|키보드\b)|(?:애플\s?펜슬|애플펜슬\s?프로|매직\s?키보드|스마트\s?키보드|스마트\s?폴리오|매직\s?마우스)\s*(?:포함|세트|같이|번들|와\s*함께|증정|등\s*(?:팝|판매))/i;
   if (accessoryBundlePattern.test(lower)) {
     add("accessory_bundle", 0.05);
   }
@@ -921,7 +922,7 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   const matchedDevices = Object.entries(DEVICE_SIGNATURES)
     .filter(([, re]) => re.test(lower))
     .map(([k]) => k);
-  const hasStrongConnector = /(?:\+|및|와\s|과\s|함께|세트|번들|같이|증정|together)/i.test(lower);
+  const hasStrongConnector = /(?:[+/·]|및|와\s|과\s|함께|세트|번들|같이|증정|together|등\s*(?:팝|판매))/i.test(lower);
   if (matchedDevices.length >= 2 && hasStrongConnector) {
     add("multi_device_bundle", 0);
   }
