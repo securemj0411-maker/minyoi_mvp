@@ -352,7 +352,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 검증: tsc clean.
 - 위험: 일부 사용자가 미지원 보고 가입 안 할 수 있음 — 의도된 결과 (실망 후 이탈보다 사전 배제가 신뢰).
 - 다음: 다른 page (랜딩 / / 요금제) 의 카테고리 언급 audit. 별도 wave에서 source 다양화 진행.
-- commit: pending
+- commit: bfa3f7b
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
