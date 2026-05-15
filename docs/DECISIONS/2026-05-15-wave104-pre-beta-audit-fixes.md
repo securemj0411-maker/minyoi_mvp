@@ -808,6 +808,22 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 54. base 옵션 default 추정 금지 운영 원칙 (LAUNCH_PLAN 12b 강조)
+
+- 시간: 2026-05-16 14:45 KST
+- MJ 지시: "base 추정 하지말자. 다른 거 다 박혀 있긴 한데 다 없애야 하나? 운영 철학 로그 박아야 다른 세션에서 안 그럴 텐데"
+- 진단:
+  - 기존 code `defaultLaptopMemory` (option-parser.ts:880) — 이미 안전.
+    - `baseSignal = /기본형|기본\s*모델|깡통|베이스\s*모델|base\s*model/.test(lower)` 매칭 매물만 default 적용.
+    - 명시 안 한 매물 = `{ramGb: null, ssdGb: null}` (정상 unknown).
+  - 다른 base 추정 코드 0 (iPad chip / iPhone storage / watch size 다 OK).
+- 코드 fix 불필요. 운영 원칙만 SoT 강조.
+- LAUNCH_PLAN.md 12b 에 sub-rule 추가 (`base/default 옵션 추정 금지`):
+  - "맥북에어 m3 13" 만 적힌 매물 = base 8GB 가정 X → unknown 유지 → 풀 진입 X.
+  - 예외: "기본형/깡통/노옵션/베이스 모델" 명시 매물만 default OK.
+  - 사유: 명시 안 한 매물 = 옵션 모름 → recall 손해 < 잘못된 시세 비교 risk.
+- 효과: 다른 세션 (Claude / 사람) 이 같은 실수 반복 차단.
+
 ## 53. iPad Air/Mini/Pro 옛 chip 매핑 추가 (tablet 27.5% root)
 
 - 시간: 2026-05-16 14:25 KST
