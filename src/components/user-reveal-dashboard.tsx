@@ -351,7 +351,7 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
           onClick={() => openItem(item, "listing")}
           className={`${actionBase} bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] hover:bg-[#29382f]`}
         >
-          다시 보기
+          상품 보기
         </button>
         <button
           type="button"
@@ -360,14 +360,6 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
         >
           공략 보기
         </button>
-        <a
-          href={item.url}
-          target="_blank"
-          rel="noreferrer"
-          className={`${actionBase} border border-[#d5dfd2] bg-[#fffaf1] text-[var(--brand-accent-strong)] hover:border-[#b9c9b9] hover:bg-[#edf3ea] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800`}
-        >
-          상품 보기
-        </a>
       </div>
     );
   }
