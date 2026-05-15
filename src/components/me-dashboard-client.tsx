@@ -165,7 +165,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
             </div>
           </aside>
           {/* Main content skeleton — 추천 카드 grid 자리 */}
-          <section className="px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
+          <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             <div className="space-y-4">
               <div className="h-6 w-48 animate-pulse rounded bg-[#e7dece] dark:bg-zinc-800" />
               <div className="h-4 w-72 max-w-full animate-pulse rounded bg-[#e7dece] dark:bg-zinc-800" />
@@ -264,12 +264,12 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
         ) : activeView === "admin-pool" ? (
           <AdminPoolBrowser />
         ) : activeView === "recommend" ? (
-          <section className="px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
+          <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             <RecommendationWorkspace initialInventory={initialInventory} />
           </section>
         ) : (
           // history
-          <section className="min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
+          <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             <UserRevealDashboard userRef={userRefForAuthUser(user.id)} />
           </section>
         )}
