@@ -4,6 +4,9 @@
 import { GENERATED_CATALOG } from "@/lib/generated/catalog";
 // Wave 91 (2026-05-15): 일반인 친화 카테고리 확장 (신발/가방/자전거). 모두 본품만, resale ≤200만.
 import { SHOE_CATALOG } from "@/lib/generated/catalog-shoe-wave91";
+// Wave 133 (2026-05-16): 신발 broad SKU 5개 (에어포스 1, 덩크 로우, NB 530, NB 992, 삼바 OG).
+// 사용자 요청 "조던/에어포스 리셀러 환장 카테고리". raw 매물 3,993건 중 SKU 매칭 1.3% 발견 → broad 신설.
+import { SHOE_BROAD_CATALOG } from "@/lib/generated/catalog-shoe-broad-wave133";
 import { BAG_CATALOG } from "@/lib/generated/catalog-bag-wave91";
 import { BIKE_CATALOG } from "@/lib/generated/catalog-bike-wave91";
 
@@ -3750,37 +3753,28 @@ export const CATALOG: Sku[] = [
     released: 2019,
   },
   {
-    id: "airpods-pro-2-lightning",
+    // 2026-05-16 (사용자 코멘트 #110 + Apple 공식 확인): AirPods Pro 2 Lightning(2022) vs USB-C(2023)
+    // 정가 동일 359K, 차이는 IP54 방진 + Vision Pro 무손실 (사실상 무의미) + 충전 단자만.
+    // catalog 분리 의미 없음 → 단일 SKU 통합. 시세 sample 합쳐 정확도 ↑.
+    // 옛 두 SKU (airpods-pro-2-lightning + airpods-pro-2-usbc) 통합. parser/comparable_key 도 connector token 무시.
+    id: "airpods-pro-2",
     brand: "Apple",
     category: "earphone",
-    modelName: "AirPods Pro 2nd gen (Lightning)",
-    aliases: ["에어팟 프로 2세대 라이트닝", "AirPods Pro 2 Lightning"],
+    modelName: "AirPods Pro 2nd gen (Lightning + USB-C 통합)",
+    aliases: ["에어팟 프로 2세대", "AirPods Pro 2", "AirPods Pro 2nd gen"],
     mustContain: [
       ["에어팟", "airpods"],
       ["프로", "pro"],
       ["2세대", "2 세대", "2nd", " 2 ", "프로 2", "프로2"],
     ],
-    mustNotContain: ["max", "맥스", "usb-c", "usbc", "c타입", "타입c", "씨타입", "타입씨"],
+    mustNotContain: [
+      "max", "맥스",
+      "3세대", "3 세대", "3rd", "프로 3", "프로3",
+      "1세대", "1 세대", "1st", "프로 1", "프로1",
+    ],
     msrpKrw: 359000,
     released: 2022,
-    confusionNote: "라이트닝(8핀) 모델 2022년. USB-C/C타입 명시되면 별도 SKU (Pro 2 USB-C, 2023).",
-  },
-  {
-    id: "airpods-pro-2-usbc",
-    brand: "Apple",
-    category: "earphone",
-    modelName: "AirPods Pro 2nd gen (USB-C)",
-    aliases: ["에어팟 프로 2세대 USB-C", "AirPods Pro 2 USB-C"],
-    mustContain: [
-      ["에어팟", "airpods"],
-      ["프로", "pro"],
-      ["2세대", "2 세대", "2nd", "프로 2", "프로2"],
-      ["usb-c", "usbc", "c타입", "타입c", "씨타입", "타입씨"],
-    ],
-    mustNotContain: ["라이트닝", "lightning", "max", "맥스"],
-    msrpKrw: 359000,
-    released: 2023,
-    confusionNote: "USB-C 모델 2023년. 라이트닝(8핀) 명시되면 별도 SKU (Pro 2 Lightning, 2022). 가격 ~30K 더 비쌈.",
+    confusionNote: "Lightning(2022) + USB-C(2023) 통합 SKU. 기능 차이는 IP54 방진 + Vision Pro 무손실 (사실상 무의미). 시세 동일 처리.",
   },
   {
     id: "airpods-4-anc",
@@ -4725,6 +4719,7 @@ export const CATALOG: Sku[] = [
   // Wave 91 (2026-05-15): 일반인 친화 카테고리 확장 — 신발 39 + 가방 34 + 자전거 33 = 106 SKU.
   // 모두 resale ≤200만 (자본 천장 준수). 본품만 정책. 셀러 시세 인식 약한 모델 우선.
   ...SHOE_CATALOG,
+  ...SHOE_BROAD_CATALOG,
   ...BAG_CATALOG,
   ...BIKE_CATALOG,
 ];
