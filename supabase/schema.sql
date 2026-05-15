@@ -1530,17 +1530,21 @@ begin
     from public.mvp_candidate_pool pp
     join eligible_categories ec
       on ec.pool_category = coalesce(pp.category, public.mvp_category_from_comparable_key(pp.comparable_key))
+    -- 2026-05-15: 외부 경쟁 낮은 매물 우선 (num_faved + source_updated_at).
+    -- 미뇨이 가치 = "발견 안 된 알짜 매물" → 찜 많은 hot 매물 후순위.
+    left join public.mvp_raw_listings r on r.pid = pp.pid
     where pp.profit_band = p_band
       and (pp.status = 'ready' or (pp.status = 'reserved' and pp.reserved_until < now()))
       and pp.exposure_count < pp.max_exposure
       and not exists (
-        select 1 from public.mvp_pack_reveals r
-        where r.user_ref = p_user_ref and r.pid = pp.pid
+        select 1 from public.mvp_pack_reveals pr
+        where pr.user_ref = p_user_ref and pr.pid = pp.pid
       )
     order by pp.exposure_count asc,
+             least(coalesce(r.num_faved, 0), 50) asc,
              pp.confidence desc,
              pp.score desc,
-             pp.last_verified_at desc
+             coalesce(r.source_updated_at, pp.last_verified_at) desc
     limit greatest(1, least(coalesce(p_limit, 5), 50)) * 8
     for update skip locked
   ), candidates as (
