@@ -211,17 +211,22 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
   return (
     <main className="min-h-screen bg-[#f6f1e8] dark:bg-zinc-950">
       <div className="grid min-h-screen lg:grid-cols-[220px_minmax(0,1fr)]">
-        <aside className="border-b border-[#e2d9cb] bg-[#f8f4ec] dark:border-zinc-800 dark:bg-zinc-950 lg:sticky lg:top-[65px] lg:row-span-2 lg:h-[calc(100dvh-65px)] lg:border-b-0 lg:border-r xl:row-span-1">
-          <div className="px-4 py-4 lg:px-4 lg:py-5">
-            <div className="px-2 pb-3">
+        <aside className="sticky top-[65px] z-30 border-b border-[#e2d9cb] bg-[#f8f4ec]/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:top-[65px] lg:row-span-2 lg:h-[calc(100dvh-65px)] lg:border-b-0 lg:border-r lg:bg-[#f8f4ec] lg:backdrop-blur-none xl:row-span-1">
+          <div className="px-3 py-2 lg:px-4 lg:py-5">
+            <div className="hidden px-2 pb-3 lg:block">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
                 My Dashboard
               </p>
               <div className="mt-1 text-sm font-black text-[#223127] dark:text-zinc-100">작업 메뉴</div>
             </div>
-            <div className="flex gap-1 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
+            <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 lg:mx-0 lg:block lg:space-y-1 lg:overflow-visible lg:px-0 lg:pb-0">
               {(["recommend", "history", "guides", ...(isPro ? (["hotdeal-alerts"] as const) : []), ...(isAdminUser(user) ? (["admin-pool"] as const) : [])] as const).map((v) => {
-                const label = v === "recommend" ? "추천 상품 받기"
+                const label = v === "recommend" ? "추천 받기"
+                  : v === "history" ? "나의 상품"
+                  : v === "guides" ? "공략집"
+                  : v === "hotdeal-alerts" ? "핫딜 알림"
+                  : "운영자";
+                const lgLabel = v === "recommend" ? "추천 상품 받기"
                   : v === "history" ? "나의 상품"
                   : v === "guides" ? "공략집"
                   : v === "hotdeal-alerts" ? "핫딜 알림"
@@ -232,14 +237,15 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
                     key={v}
                     type="button"
                     onClick={() => setActiveView(v)}
-                    className={`flex min-w-max items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm font-black transition dark:text-zinc-100 dark:hover:bg-zinc-800 lg:w-full ${
+                    className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-black transition lg:w-full lg:justify-between lg:rounded-xl lg:border lg:px-3 lg:py-2 lg:text-sm dark:text-zinc-100 dark:hover:bg-zinc-800 ${
                       active
-                        ? "border-[#c8d8c4] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
-                        : "border-transparent text-[#344136] hover:bg-[var(--brand-accent-soft)]"
+                        ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] lg:border-[#c8d8c4] lg:bg-[var(--brand-accent-soft)] lg:text-[var(--brand-accent-strong)]"
+                        : "bg-transparent text-[#344136] hover:bg-[var(--brand-accent-soft)] lg:border-transparent"
                     }`}
                   >
-                    <span>{label}</span>
-                    <span className="text-zinc-400">↘</span>
+                    <span className="lg:hidden">{label}</span>
+                    <span className="hidden lg:inline">{lgLabel}</span>
+                    <span className="hidden text-zinc-400 lg:inline">↘</span>
                   </button>
                 );
               })}
