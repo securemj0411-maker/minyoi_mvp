@@ -808,6 +808,26 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 38. iPad 12.9 generation 누락 root cause + 옛 parser reparse 트리거
+
+- 시간: 2026-05-16 10:10 KST
+- 베타테스터 보고: "12.9 2018 모델을 2020으로 보여줌". 진단:
+  - parser 코드 (option-parser.ts:457) `parseTabletGeneration` 정확 — `(\d)세대` 매칭 + ipad 12.9 → chip 매핑 (line 504-511).
+  - **잠재 버그 발견**: parsed_json 에 generation 누락된 매물 6건 (comparable_key=`ipad|ipad_pro|12_9in|128gb|wifi`, generation 없음).
+    - 매물 이름엔 명확히 "4세대/5세대/6세대" 박힘.
+    - parser_version=v31. 현재 코드 = v41. **v32 generation fix 전 매물 잔존**.
+  - 6건 다 이미 다른 이유 (sold/missing/disappeared) 로 invalidated — 사용자 영향 X.
+- root cause: parser 업그레이드 (v31 → v41) 후 옛 매물 reparse 안 됨. v32 의 line 456 코멘트 "v32: 세대 명시 토큰을 먼저 우선 매칭" — fix 적용된 매물만 정확.
+- 검증:
+  - parser_version 분포: v41 6,247 / v40 5,109 / v35 7,217 / v32 498 / v31 89 / 기타 소량
+  - ready 풀 옛 parser 매물: v40 106 / v35 22 / v32 1 (총 23건이 generation/chip 추출 fix 누락 가능)
+- fix:
+  - SQL UPDATE 로 ready 풀의 v32~v39 매물 (총 23건) `score_dirty=true` 마킹 → 다음 tick 사이클 (1-2분) 에서 자동 reparse 트리거.
+  - v40 106건은 fix 누락 가능성 작음 (최근 버전) → score_dirty 마킹 X.
+- 위험:
+  - reparse 후에도 generation 못 잡으면 parser regex 추가 보강 필요. tick logs 확인.
+- 다음: catalog 정확도 audit (사용자 요청 — 애플/삼성/Sony 모델별 연식 정확도). listing_type 재분류 backfill (옛 매물 buying/accessory 재분류).
+
 ## 37. MJ 코멘트 20개 review + ready 풀 misclassified 8건 invalidate
 
 - 시간: 2026-05-16 09:55 KST
