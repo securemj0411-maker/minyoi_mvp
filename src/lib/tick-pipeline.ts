@@ -3471,6 +3471,26 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       .filter((key): key is string => Boolean(key))
   );
 
+  // 2026-05-15: 미개봉/새상품 매물 시세 = 다나와 reference price (쿠팡/네이버 등 합산 최저가).
+  // 중고 시세와 비교하면 호가 부풀려 풀에서 빠짐 → 진짜 꿀 매물 놓침.
+  // reference price 있으면 미개봉 매물의 skuMedian = 그 가격, 없으면 기존 중고 시세 fallback.
+  const referencePricesByKey = await (async () => {
+    try {
+      const refRes = await restFetch(
+        `${tableUrl("mvp_reference_prices")}?select=comparable_key,effective_price&effective_price=not.is.null`,
+        { headers: serviceHeaders() }
+      );
+      const refRows = (await refRes.json()) as Array<{ comparable_key: string; effective_price: number | null }>;
+      const map = new Map<string, number>();
+      for (const r of refRows) {
+        if (r.effective_price && r.effective_price > 0) map.set(r.comparable_key, r.effective_price);
+      }
+      return map;
+    } catch {
+      return new Map<string, number>();
+    }
+  })();
+
   const pricesByMarket = new Map<string, number[]>();
   const favsByMarket = new Map<string, number[]>();
   const pricesBySku = new Map<string, number[]>();
@@ -3539,7 +3559,15 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     // Wave 106 (MJ 코멘트 #3 갤럭시 워치7): outlier 1건이 평균 끌어올림 — madTrim 적용으로
     // ±3 MAD 벗어난 outlier 제거. 5건 이상이면 trim, 미만이면 raw median (madTrim 자체가 5건 미만은 trim X).
     const fallbackMedian = prices.length >= 5 ? madTrim(prices).medianValue : 0;
-    const skuMedian = hasTrustedMarket ? trustedMedian : fallbackMedian;
+    // 2026-05-15: 미개봉/새상품 매물의 시세 = 다나와 reference_price (쿠팡/네이버 등 새 가격) 우선.
+    // 베타테스터 통찰: 업자/일반인 모두 미개봉 선호 → 미개봉 매물 시세 정확해야.
+    // 중고 시세와 비교하면 호가 부풀어져 풀에서 빠짐 (진짜 꿀 매물 놓침).
+    const conditionNotesScore = (parsedJsonObject(parsed)?.condition_notes as string[] | undefined) ?? [];
+    const isNewItem = conditionNotesScore.includes("new_or_open_box");
+    const referencePrice = comparableKey && isNewItem ? referencePricesByKey.get(comparableKey) : null;
+    const skuMedian = referencePrice != null && referencePrice > 0
+      ? referencePrice
+      : hasTrustedMarket ? trustedMedian : fallbackMedian;
     const priceGap = skuMedian <= 0 ? 0 : Math.max(0, Math.min(1, (skuMedian - row.price) / skuMedian));
     const velocity = percentileRank(favsByMarket.get(marketKey) ?? [], row.num_faved);
     const safetyBase = row.shop_review_rating == null ? 0.5 : Math.max(0, Math.min(1, Number(row.shop_review_rating) / 5));
