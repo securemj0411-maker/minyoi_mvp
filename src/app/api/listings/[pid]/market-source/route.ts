@@ -1,9 +1,13 @@
 // Wave 90 (2026-05-15): 시세 근거 디버그 API.
 // 사용자 매물 (reveal 됐던 매물) 대상으로 시세 산정의 근거 매물 list + 통계 반환.
 // 목적: 사용자가 매물 검증 시 "이 시세가 어떤 매물 기준으로 계산됐는지" 확인 가능하게.
-// 보안: 사용자 본인 reveal 매물만 조회 가능 (mvp_pack_reveals 통한 권한 체크).
+//
+// 2026-05-15 update: auth/권한 체크 제거. 베타 풀 페이지(/peek-pool-7f3kz9)에서도 호출 가능.
+// pid 알면 누구나 접근. 의도된 변경 (시세 투명성).
+// 2026-05-16: rate limit 추가. pid enumeration abuse 차단. IP 기반 60 req / 60s.
 
 import { NextResponse } from "next/server";
+import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 export const runtime = "nodejs";
@@ -24,7 +28,7 @@ type Comparable = {
 };
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ pid: string }> },
 ) {
   // 2026-05-15: auth/권한 체크 제거. 베타 풀 페이지(/peek-pool-7f3kz9)에서도
@@ -32,6 +36,19 @@ export async function GET(
   const { pid: pidStr } = await params;
   const pid = Number(pidStr);
   if (!Number.isFinite(pid)) return NextResponse.json({ error: "invalid pid" }, { status: 400 });
+
+  // 2026-05-16: rate limit. pid enumeration abuse 차단 (시세 근거 fetch는 쿼리 무거움).
+  const rate = await checkRateLimit({
+    bucketKey: `market-source:${clientIpKey(req)}`,
+    maxRequests: 60,
+    windowSeconds: 60,
+  });
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: "rate_limited", retryAfter: rate.retryAfterSeconds },
+      { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
+    );
+  }
 
   try {
     // 우리 매물 정보 + comparable_key (sku_id는 mvp_raw_listings에만 존재)
