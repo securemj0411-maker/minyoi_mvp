@@ -15,6 +15,20 @@ export type MemberRow = {
   isBetaTester: boolean;
   betaGrantedAt: string | null;
   creditRowExists: boolean;
+  planKey: string;
+  planStatus: string | null;
+  planEndAt: string | null;
+  planCancelAtEnd: boolean;
+  dailyUsedCount: number | null;
+  lastPaymentAt: string | null;
+  lastPaymentAmount: number | null;
+};
+
+const PLAN_BADGE: Record<string, { label: string; cls: string }> = {
+  free: { label: "Free", cls: "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-400" },
+  starter: { label: "Starter", cls: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300" },
+  plus: { label: "Plus", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" },
+  pro: { label: "Pro", cls: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300" },
 };
 
 function fmt(value: string | null | undefined): string {

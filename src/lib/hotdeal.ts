@@ -293,16 +293,15 @@ async function markReservationSent(id: number, ok: boolean, error: string | null
 // Admin shadow — 모든 admin 사용자(텔레그램 연결됨)한테 복사 발송.
 // selected 사용자 본인이 admin이면 중복 X.
 async function sendAdminShadow(selectedUserRef: string, pid: number, content: AlertContent & { selectedUserRef: string }): Promise<number> {
-  // admin email로 user 찾기 → user_ref → telegram chat_id.
-  // mvp_user_credits에 auth_user_id가 있으니 거기서 join. 또는 mvp_telegram_bindings의 auth_user_id로 admin check 필요.
-  // 단순화: telegram_bindings 전체 가져와서 코드에서 admin email check.
+  // admin은 모든 핫딜 alert를 [ADMIN SHADOW] 사본으로 받음 (선출 여부 무관).
+  // 선출된 본인이 admin이면 user-format(teaser)와 admin shadow(full detail) 둘 다 받음 — 의도된 동작 (운영자 감시).
   const { data: usersRes } = await fetchAdminTelegramTargets();
   let count = 0;
   for (const target of usersRes) {
-    if (target.user_ref === selectedUserRef) continue; // 본인 중복 방지
+    const isSelf = target.user_ref === selectedUserRef;
     const ok = await sendTelegramMessage(target.chat_id, buildAlertText(pid, content, {
       adminShadow: true,
-      selectedHint: `user_ref=${selectedUserRef.slice(0, 8)}…`,
+      selectedHint: isSelf ? "본인 선출됨" : `user_ref=${selectedUserRef.slice(0, 8)}…`,
     }), {
       parseMode: "MarkdownV2",
       replyMarkup: buildAlertReplyMarkup(pid),

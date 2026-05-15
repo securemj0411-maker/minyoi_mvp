@@ -33,6 +33,17 @@ type CreditRow = {
   updated_at: string;
 };
 
+type PlanRow = {
+  auth_user_id: string;
+  plan_key: string;
+  status: string;
+  cancel_at_period_end: boolean;
+  current_period_end: string | null;
+  daily_used_count: number;
+  last_payment_at: string | null;
+  last_payment_amount: number | null;
+};
+
 async function fetchAuthUsers(): Promise<AuthUser[]> {
   const base = (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "");
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -61,6 +72,15 @@ async function fetchAllCredits(): Promise<CreditRow[]> {
   return (await res.json()) as CreditRow[];
 }
 
+async function fetchAllPlans(): Promise<PlanRow[]> {
+  const res = await fetch(
+    `${tableUrl("mvp_user_plans")}?select=auth_user_id,plan_key,status,cancel_at_period_end,current_period_end,daily_used_count,last_payment_at,last_payment_amount&limit=10000`,
+    { headers: serviceHeaders(), cache: "no-store" },
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as PlanRow[];
+}
+
 function nicknameOf(user: AuthUser): string {
   const meta = user.user_metadata ?? user.raw_user_meta_data ?? {};
   return meta.nickname || meta.name || meta.full_name || meta.preferred_username || "";
@@ -70,12 +90,14 @@ export default async function MembersPage() {
   const auth = await requireSupabaseUserFromCookies();
   if (!auth.ok || !isAdminUser(auth.user)) notFound();
 
-  const [users, credits] = await Promise.all([fetchAuthUsers(), fetchAllCredits()]);
+  const [users, credits, plans] = await Promise.all([fetchAuthUsers(), fetchAllCredits(), fetchAllPlans()]);
   const creditMap = new Map(credits.map((c) => [c.auth_user_id, c]));
+  const planMap = new Map(plans.map((p) => [p.auth_user_id, p]));
 
   const rows: MemberRow[] = users
     .map((u) => {
       const credit = creditMap.get(u.id) ?? null;
+      const plan = planMap.get(u.id) ?? null;
       return {
         authUserId: u.id,
         email: u.email ?? null,
@@ -89,11 +111,20 @@ export default async function MembersPage() {
         isBetaTester: Boolean(credit?.is_beta_tester),
         betaGrantedAt: credit?.beta_tester_granted_at ?? null,
         creditRowExists: credit != null,
+        planKey: plan?.plan_key ?? "free",
+        planStatus: plan?.status ?? null,
+        planEndAt: plan?.current_period_end ?? null,
+        planCancelAtEnd: plan?.cancel_at_period_end ?? false,
+        dailyUsedCount: plan?.daily_used_count ?? null,
+        lastPaymentAt: plan?.last_payment_at ?? null,
+        lastPaymentAmount: plan?.last_payment_amount ?? null,
       };
     })
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-  const totalPro = rows.filter((r) => r.proUntil && new Date(r.proUntil) > new Date()).length;
+  const totalPro = rows.filter((r) => r.planKey === "pro" && r.planStatus === "active").length;
+  const totalPlus = rows.filter((r) => r.planKey === "plus" && r.planStatus === "active").length;
+  const totalStarter = rows.filter((r) => r.planKey === "starter" && r.planStatus === "active").length;
   const totalBeta = rows.filter((r) => r.isBetaTester).length;
   const totalActive7d = rows.filter((r) => r.lastSignInAt && Date.now() - new Date(r.lastSignInAt).getTime() < 7 * 24 * 3600 * 1000).length;
 
@@ -103,7 +134,9 @@ export default async function MembersPage() {
         <div className="text-xs font-bold text-amber-700 dark:text-amber-300">⚙ 운영자 — 회원 목록</div>
         <h1 className="text-xl font-black text-gray-900 dark:text-gray-100 sm:text-2xl">전체 {rows.length}명</h1>
         <div className="flex flex-wrap gap-3 text-xs text-gray-600 dark:text-gray-400">
-          <span>Pro 활성: <b className="text-amber-700 dark:text-amber-400">{totalPro}</b></span>
+          <span>Pro: <b className="text-amber-700 dark:text-amber-400">{totalPro}</b></span>
+          <span>Plus: <b className="text-emerald-700 dark:text-emerald-400">{totalPlus}</b></span>
+          <span>Starter: <b className="text-sky-700 dark:text-sky-400">{totalStarter}</b></span>
           <span>베타 체험단: <b className="text-purple-700 dark:text-purple-400">{totalBeta}</b></span>
           <span>최근 7일 로그인: <b className="text-emerald-700 dark:text-emerald-400">{totalActive7d}</b></span>
         </div>
