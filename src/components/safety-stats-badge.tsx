@@ -173,7 +173,28 @@ export default function SafetyStatsBadge() {
     })();
   }, []);
 
-  if (!stats || stats.total_blocked_7d === 0) return null;
+  // 2026-05-16 (사용자 코멘트): 데이터 로드 전 빈 상태 → 갑자기 카드 등장 = jarring.
+  // skeleton placeholder — frame 첫 paint 부터 보이고 숫자만 fade-in.
+  if (!stats) {
+    return (
+      <div className="mb-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
+        <div className="flex w-full items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700/80 dark:text-emerald-400/80">
+              <ShieldIcon />
+              <span>회원님 보호</span>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="inline-block h-7 w-20 animate-pulse rounded bg-emerald-200/80 dark:bg-emerald-900/60" />
+              <span className="text-sm font-bold text-emerald-800/70 dark:text-emerald-300/70">이번 주 차단된 매물</span>
+            </div>
+          </div>
+          <span className="flex items-center gap-1 rounded-full bg-emerald-600/40 px-3 py-1 text-[10px] font-black text-white/70">상세<ChevronDownIcon open={false} /></span>
+        </div>
+      </div>
+    );
+  }
+  if (stats.total_blocked_7d === 0) return null;
 
   const total = stats.total_blocked_7d;
   // 그룹 합 (헤더 표시 여부 결정용)

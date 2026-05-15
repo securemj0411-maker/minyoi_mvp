@@ -43,6 +43,8 @@ type RawRow = {
   listing_type: string | null;
   sku_id: string | null;
   sku_name: string | null;
+  // Wave 140: 번개 detail 의 product.condition (셀러 명시 metadata).
+  bunjang_condition_label?: string | null;
 };
 
 const catalogById = new Map(CATALOG.map((sku) => [sku.id, sku]));
@@ -52,7 +54,7 @@ function categoryFor(row: RawRow): Sku["category"] | null {
 }
 
 async function loadRows(limit: number, offset: number): Promise<RawRow[]> {
-  const cols = "pid,name,price,description_preview,listing_type,sku_id,sku_name";
+  const cols = "pid,name,price,description_preview,listing_type,sku_id,sku_name,bunjang_condition_label";
   const res = await restFetch(
     `/mvp_raw_listings?select=${cols}&detail_status=eq.done&order=detail_enriched_at.desc&limit=${limit}&offset=${offset}`,
     { headers: serviceHeaders() },
@@ -72,7 +74,7 @@ async function loadLegacyRows(limit: number, currentVersion: string): Promise<Ra
   if (parsed.length === 0) return [];
   const pids = parsed.map((row) => row.pid);
   // step 2: 그 pid 들의 raw row fetch (PostgREST in.() 최대 1000건)
-  const cols = "pid,name,price,description_preview,listing_type,sku_id,sku_name";
+  const cols = "pid,name,price,description_preview,listing_type,sku_id,sku_name,bunjang_condition_label";
   const rawRes = await restFetch(
     `/mvp_raw_listings?select=${cols}&detail_status=eq.done&pid=in.(${pids.join(",")})`,
     { headers: serviceHeaders() },
@@ -116,7 +118,7 @@ async function handleReparse(req: NextRequest) {
   const shouldReclassify = req.nextUrl.searchParams.get("reclassify") === "1";
   const legacyOnly = req.nextUrl.searchParams.get("legacy") === "1";
   // legacy=1 이면 parser_version != CURRENT 옛 매물만 reparse. CURRENT 는 option-parser PARSER_VERSION 과 일치해야 함.
-  const CURRENT_PARSER_VERSION = "option-parser-v43";
+  const CURRENT_PARSER_VERSION = "option-parser-v44";
   const rows = legacyOnly
     ? await loadLegacyRows(limit, CURRENT_PARSER_VERSION)
     : await loadRows(limit, offset);
@@ -170,6 +172,8 @@ async function handleReparse(req: NextRequest) {
       skuId: sku?.id ?? row.sku_id,
       skuName: sku?.modelName ?? row.sku_name,
       category: sku?.category ?? categoryFor(row),
+      // Wave 140: 옛 매물도 bunjang_condition_label (있으면) 활용. 없으면 null → conditionNotes 기반 fallback.
+      bunjangConditionLabel: row.bunjang_condition_label ?? null,
     });
     summary.parserVersion = parsed.parserVersion;
     if (parsed.needsReview) summary.needsReview += 1;

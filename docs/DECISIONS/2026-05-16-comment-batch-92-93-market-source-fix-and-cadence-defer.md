@@ -76,6 +76,14 @@
 - 검증: `npm run test:core` 139/139 pass.
 - 위험: API 호출 부하 약간 증가 (raw fetch row 30 → 80). UI 카드 더 많아짐 = 사용자 정보 풍부.
 
+## 부수 — 옛 "all" condition_class daily row delete
+
+- 시간: 2026-05-16
+- 발견: 옛 mvp_market_price_daily 의 condition_class = "all" row 1559개 잔존 (wave 130 추가 전 박힌 시점). market-worker 새 호출 시 cc 별 row 새로 생성하지만 옛 "all" row stuck.
+- 변경: `DELETE FROM mvp_market_price_daily WHERE condition_class = 'all'` — 1559 row 제거.
+- 검증: 잔여 row 524 (모두 5 cc 분리: normal 174 / clean 155 / mint 94 / worn 86 / low_batt 15).
+- 위험: 옛 "all" row 잃음. 단 새 cc 별 row 가 더 정확. 사용자 결정 (즉시 delete).
+
 ## 운영 원칙 재확인
 
 사용자 명시: "보류나 이런거 다 로그에 적어야 한다". 보류 결정도 decision log 박는 게 정책. 까먹지 말 것.

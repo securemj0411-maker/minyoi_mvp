@@ -120,7 +120,8 @@ export async function GET(req: NextRequest) {
         { headers: serviceHeaders() },
       ),
       restFetch(
-        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review&pid=in.(${pidsCsv})`,
+        // 2026-05-16 (사용자 코멘트 #120): condition_class 추가 — 운영자풀 시세 출처 표시 위해.
+        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -160,6 +161,7 @@ export async function GET(req: NextRequest) {
         comparableKey: (p.comparable_key as string | null) ?? null,
         parseConfidence: p.parse_confidence != null ? Number(p.parse_confidence) : null,
         needsReview: Boolean(p.needs_review),
+        conditionClass: (p.condition_class as string | null) ?? null,
         saleStatus: (r.sale_status as string | null) ?? null,
         listingState: (r.listing_state as string | null) ?? null,
         lastSeenAt: (r.last_seen_at as string | null) ?? null,

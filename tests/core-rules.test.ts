@@ -160,7 +160,7 @@ test("earphone full set with both units stays normal", () => {
     145_000,
   );
   assert.equal(result.listingType, "normal");
-  assert.equal(result.sku?.id, "airpods-pro-2-usbc");
+  assert.equal(result.sku?.id, "airpods-pro-2");
 });
 
 test("earphone charging case only is excluded as parts", () => {
@@ -194,7 +194,7 @@ test("earphone full set with included case wording stays normal", () => {
     150_000,
   );
   assert.equal(result.listingType, "normal");
-  assert.equal(result.sku?.id, "airpods-pro-2-lightning");
+  assert.equal(result.sku?.id, "airpods-pro-2");
 });
 
 test("earphone fullbox with missing left or right unit is excluded as parts", () => {
@@ -1309,7 +1309,7 @@ test("pool policy gives one shared skip reason for blocked flags", () => {
       riskHits: 0,
       thumbnailUrl: "https://example.test/1.jpg",
       categoryCanEnterPool: true,
-      comparableKey: "airpods|airpods_pro_2_usbc|usbc",
+      comparableKey: "airpods|airpods_pro_2",
       needsReview: false,
       confidence,
       scoreFlags: ["risk_keyword_review"],
@@ -1349,7 +1349,7 @@ test("pool policy blocks AI second-opinion hold even when candidate otherwise lo
       riskHits: 0,
       thumbnailUrl: "https://example.test/airpods.jpg",
       categoryCanEnterPool: true,
-      comparableKey: "airpods|airpods_pro_2_usbc|usbc",
+      comparableKey: "airpods|airpods_pro_2",
       needsReview: false,
       confidence,
       scoreFlags: ["ai_second_opinion_hold", "ai_normal"],

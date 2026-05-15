@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import { MarketSourceDebug } from "@/components/market-source-debug";
+import { CATALOG } from "@/lib/catalog";
 
 type PoolItem = {
   pid: number;
@@ -21,6 +22,8 @@ type PoolItem = {
   comparableKey: string | null;
   parseConfidence: number | null;
   needsReview: boolean;
+  // 2026-05-16 (사용자 코멘트 #120): 시세 출처 표시 (다나와 새 가격 / 번개 S급 / 번개 중고 매물)
+  conditionClass: string | null;
   saleStatus: string | null;
   listingState: string | null;
   lastSeenAt: string | null;
@@ -293,6 +296,20 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
                       {item.skuName ?? "—"} · {item.poolStatus} · {relAge(item.lastVerifiedAt)} · 노출 {item.exposureCount}/{item.maxExposure}
                     </div>
+                    {/* 2026-05-16 (사용자 코멘트 #120): 시세 출처 표시 — pack-reveal-modal 과 동일 패턴. */}
+                    {item.conditionClass === "unopened" ? (
+                      <div className="text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                        📍 다나와 새 가격 기준 (이 매물 미개봉)
+                      </div>
+                    ) : item.conditionClass === "mint" ? (
+                      <div className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                        📍 번개 S급 매물 median
+                      </div>
+                    ) : item.conditionClass ? (
+                      <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                        📍 번개 중고 매물 median ({item.conditionClass})
+                      </div>
+                    ) : null}
                     <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
                       <span className="font-mono">{item.skuId ?? "—"}</span> · query: {item.query ?? "—"}
                     </div>
@@ -306,9 +323,21 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     <div className="line-clamp-2">💬 {item.commentPreview}</div>
                   </div>
                 )}
+                {/* 2026-05-16 (사용자 코멘트 #110 후속): 헷갈림 안내 (catalog Sku.confusionNote). admin pool 도 표시. */}
+                {(() => {
+                  const note = item.skuId
+                    ? CATALOG.find((sku) => sku.id === item.skuId)?.confusionNote
+                    : null;
+                  return note ? (
+                    <div className="mt-2 rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-[11px] leading-snug text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+                      <span className="mr-1">💡</span>
+                      {note}
+                    </div>
+                  ) : null;
+                })()}
                 {/* 2026-05-15: 시세 30일 그래프. comparableKey 있으면 자동 표시. */}
                 <div className="mt-2">
-                  <MarketHistoryChart comparableKey={item.comparableKey} currentPrice={item.price} />
+                  <MarketHistoryChart comparableKey={item.comparableKey} currentPrice={item.price} lazy />
                 </div>
                 <div className="mt-2">
                   <MarketSourceDebug

@@ -668,6 +668,15 @@ function RevealCardItem({
 
         <VerdictBadgesMini card={card} />
 
+        {/* 2026-05-16 (사용자 코멘트 #110 후속): 헷갈림 안내 — Lightning vs USB-C 가격 동일 같은 사실. */}
+        {/* catalog Sku.confusionNote 그대로 표시. 사용자가 매물 보고 헷갈리면 즉시 답. */}
+        {card.confusionNote ? (
+          <div className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] leading-snug text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+            <span className="mr-1">💡</span>
+            {card.confusionNote}
+          </div>
+        ) : null}
+
         <MarketBasisMini card={card} />
 
         {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}

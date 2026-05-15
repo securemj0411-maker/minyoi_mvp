@@ -26,13 +26,26 @@ function krwShort(value: number): string {
   return `${Math.round(value / 1000)}천`;
 }
 
-export default function MarketHistoryChart({ comparableKey, currentPrice, conditionClass }: { comparableKey: string | null; currentPrice?: number | null; conditionClass?: string | null }) {
+export default function MarketHistoryChart({
+  comparableKey,
+  currentPrice,
+  conditionClass,
+  lazy = false,
+}: {
+  comparableKey: string | null;
+  currentPrice?: number | null;
+  conditionClass?: string | null;
+  // 2026-05-16 (사용자 코멘트): admin pool 처럼 한 페이지에 chart 10+ 개면 rate limit (30/60s/IP) 즉시 초과.
+  // lazy=true → "시세 보기" 버튼 클릭 시만 fetch. admin-pool-browser 에서 사용.
+  lazy?: boolean;
+}) {
   const [data, setData] = useState<Point[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [opened, setOpened] = useState(!lazy);
 
   useEffect(() => {
-    if (!comparableKey) return;
+    if (!comparableKey || !opened) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -52,10 +65,21 @@ export default function MarketHistoryChart({ comparableKey, currentPrice, condit
     return () => {
       cancelled = true;
     };
-  }, [comparableKey, conditionClass]);
+  }, [comparableKey, conditionClass, opened]);
 
   if (!comparableKey) {
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">모델 분류 미완료 — 시세 그래프 없음</div>;
+  }
+  if (lazy && !opened) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpened(true)}
+        className="w-full rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-left text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
+      >
+        📊 시세 30일 추이 보기
+      </button>
+    );
   }
   if (loading) {
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-400 dark:bg-zinc-900">시세 history 불러오는 중…</div>;

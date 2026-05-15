@@ -1,4 +1,5 @@
 import { fetchDetail } from "@/lib/bunjang";
+import { CATALOG } from "@/lib/catalog";
 import { categoryFromComparableKey, loadCategoryReadinessMap } from "@/lib/category-readiness";
 import {
   canPermanentlyInvalidateSoldOut,
@@ -25,6 +26,9 @@ export type RevealCard = {
   price: number;
   skuId?: string | null;
   skuName: string;
+  // 2026-05-16 (사용자 코멘트 #110 후속): 헷갈림 안내 (예: "Lightning vs USB-C 가격 동일").
+  // catalog Sku.confusionNote 그대로. UI 에서 카드 하단 expandable 표시.
+  confusionNote?: string | null;
   thumbnailUrl: string | null;
   expectedProfitMin: number;
   expectedProfitMax: number;
@@ -929,6 +933,10 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
             sellerReviewCount: rawMeta.shop_review_count ?? 0,
           }
         : undefined;
+      // 2026-05-16: catalog confusionNote (헷갈림 안내) — UI 카드에 표시.
+      const skuConfusionNote = meta.sku_id
+        ? CATALOG.find((sku) => sku.id === meta.sku_id)?.confusionNote ?? null
+        : null;
       reveals.push({
         pid: candidate.pid,
         name: meta.name,
@@ -936,6 +944,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         price: meta.price,
         skuId: meta.sku_id,
         skuName: meta.sku_name,
+        confusionNote: skuConfusionNote,
         thumbnailUrl: meta.thumbnail_url,
         expectedProfitMin: candidate.expected_profit_min,
         expectedProfitMax: candidate.expected_profit_max,
