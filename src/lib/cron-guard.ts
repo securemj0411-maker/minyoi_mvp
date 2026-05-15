@@ -13,7 +13,8 @@ export type CronWorkerMode =
   | "collect"
   | "compliance_retention"
   | "housekeeper_ai_cache_prune"
-  | "hotdeal_worker";
+  | "hotdeal_worker"
+  | "reference_price_refresh";
 
 type CronGuardSkipReason = "cooldown" | "same_worker_running" | "source_health_unhealthy";
 

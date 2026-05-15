@@ -1401,20 +1401,22 @@ const CORE_LAPTOP_CATALOG_PRO: Sku[] = [
     laneKey: "macbook_pro_14_m3_18_512",
     modelName: "MacBook Pro 14\" M3 18GB 512GB",
     aliases: ["맥북 프로 14 M3 18 512", "MacBook Pro 14 M3 18GB 512GB"],
+    // Wave 106 #48: 18GB RAM + 512GB SSD 명시 강화. mustContain 에 "18gb" 추가.
+    // "8gb" mustNotContain 못 박는 이유 = "18gb" 와 substring 충돌.
+    // 8GB base 매물은 mustContain "18gb" 매칭 실패로 reject 됨.
     mustContain: [
       ["맥북", "macbook"],
       ["프로", "pro"],
       ["m3"],
       ["14인치", "14 인치", "14형", "14\""],
+      ["18gb", "18 gb", "18기가", "18램"],
+      ["512gb", "512 gb", "512기가"],
     ],
     mustNotContain: [
       "에어", "air",
       "16인치", "16형",
       "(m1)", "(m2)", "(m4)",
       " m1 ", " m2 ", " m4 ",
-      // 8GB exclusion intentionally omitted: tokenHit is substring-based and would
-      // self-reject "18gb"/"18 gb"/"18기가". 8GB base units are filtered by the
-      // lane mining regex and the candidate-pool price range (1.5M~3M).
       "16gb", "16 gb",
       "24gb",
       "36gb",
@@ -1887,19 +1889,28 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
     laneKey: "macbook_air_m3_13_256",
     modelName: "MacBook Air M3 13\" 256GB",
     aliases: ["맥북 에어 M3 13 256", "MacBook Air M3 13\" 256GB"],
+    // Wave 106 #48: m2 패턴 따라 8GB/256GB base only 강제 (RAM/SSD 옵션 정밀화).
+    // 옛: variant 8개 매칭 (16gb/512gb 매물도 통과 → 카드에 잘못된 모델 표시).
     mustContain: [
       ["맥북", "macbook"],
       ["에어", "air"],
       ["m3"],
       ["13인치", "13 인치", "13형", "13\""],
+      ["8gb", "8 gb", "8기가", "8램", "8g", "기본형", "기본 모델", "깡통", "노옵션", "노 옵션"],
     ],
     mustNotContain: [
       "프로", "pro",
       "15인치", "15형",
       "(m1)", "(m2)", "(m4)",
       " m1 ", " m2 ", " m4 ",
+      "16gb", "16 gb", "16기가", "16램",
+      "24gb", "24 gb", "24기가", "24램",
+      "512gb", "512 gb", "512기가",
+      "1tb", "1 tb", "1테라",
       "메인보드", "로직보드", "상판", "하판",
       "액정만", "배터리만", "키보드만",
+      "빈박스", "박스만", "보호필름", "필름", "케이스만", "파우치",
+      "교환", "교신",
       "부품", "고장", "침수",
       "매입", "삽니다",
     ],

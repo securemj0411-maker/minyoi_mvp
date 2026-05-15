@@ -808,6 +808,33 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 48. catalog 정밀화 (m3 narrow SKU mustContain) + normalize 진단
+
+- 시간: 2026-05-16 12:50 KST
+- MJ 지시: A (catalog 정밀화) + C (normalize) 진행.
+
+### 48a. catalog narrow SKU 정밀화 (A)
+
+- 진단: variant 매칭 ≥ 3 narrow SKU 3개 발견:
+  - macbook-air-m2-13-256: 3 variant (mustContain 8gb/256 명시 박혀있음 ✅)
+  - **macbook-air-m3-13-256: 8 variant** (RAM/SSD 명시 X — too loose)
+  - **macbook-pro-14-m3-18-512: 10 variant** (RAM/SSD 명시 X — too loose)
+- fix (`catalog.ts`):
+  - **macbook-air-m3-13-256**: m2 패턴 따라 mustContain 에 8GB 명시 + mustNotContain 에 16/24gb / 512gb / 1tb 추가.
+  - **macbook-pro-14-m3-18-512**: mustContain 에 18GB + 512GB 명시. 8GB exclusion 은 substring 충돌 (18gb 매칭 깨짐) 이라 omit (lane mining + price range 가 잡음).
+- backfill: m3 macbook 매물 130건 score_dirty=true 마킹 → 다음 tick reparse + 새 catalog 적용.
+
+### 48b. comparable_key normalize 진단 (C)
+
+- 검토: 같은 매물 다른 표기로 다른 comparable_key 박힐 가능성.
+- 결과: parser (option-parser.ts) 가 이미 normalize 박혀있음:
+  - text → lowercase + 공백 정리 + alias 매칭
+  - "12.9" / "12.9인치" / "12.9형" 같은 표기 → screen_size 12.9 단일
+  - "스페이스 그레이" / "스그" / "공간 회색" 색깔 = comparable_key 에 안 들어감 (의도 — 색상 시세 영향 작음)
+- **추가 normalize 작업 가치 작음** (parser 가 이미 처리). 별도 wave 보류.
+
+- commit: pending
+
 ## 47. #43c 정정 (carrier null 차단 revert) + 남은 작업 plan
 
 - 시간: 2026-05-16 12:30 KST
