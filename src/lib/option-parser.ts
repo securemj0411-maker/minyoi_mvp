@@ -309,7 +309,8 @@ function parseLooseDeviceStorageGb(text: string, category: Sku["category"] | nul
 
 function parseRamAndSsd(text: string, category: Sku["category"] | null) {
   const lower = normalize(text).toLowerCase();
-  const ramPattern = "4|6|8|16|24|32|36|48|64|96|128";
+  // Wave 109b (2026-05-15): 18 추가 — MacBook Pro M3/M4 Pro의 base RAM. 매물 명시 다수.
+  const ramPattern = "4|6|8|12|16|18|24|32|36|48|64|96|128";
   const pair = lower.match(new RegExp(`(?:^|[^0-9])(${ramPattern})\\s*\\/\\s*(128|250|256|500|512|1\\s*t|1\\s*tb|2\\s*t|2\\s*tb|4\\s*t|4\\s*tb|1테라|2테라|4테라)(?:[^0-9]|$)`));
   const pairWithUnits = lower.match(new RegExp(`(?:^|[^0-9])(${ramPattern})\\s*(?:gb|g|기가)?\\s*\\/\\s*(128|250|256|500|512|1\\s*t|1\\s*tb|2\\s*t|2\\s*tb|4\\s*t|4\\s*tb|1테라|2테라|4테라)\\s*(?:gb|g|기가|t|tb|테라)?(?:[^0-9]|$)`));
   const looseLaptopPair = category === "laptop"
@@ -581,8 +582,15 @@ function parseLaptopScreenSizeIn(text: string) {
 }
 
 function parseWatchSizeMm(text: string) {
-  const match = normalize(text).toLowerCase().match(/\b(40|41|42|43|44|45|46|47|49)\s*m{1,2}\b/);
-  return match ? Number(match[1]) : null;
+  const lower = normalize(text).toLowerCase();
+  // 1. 정확한 "Xmm" 표기 (최우선)
+  const withMm = lower.match(/\b(40|41|42|43|44|45|46|47|49)\s*m{1,2}\b/);
+  if (withMm) return Number(withMm[1]);
+  // Wave 109b (2026-05-15): 워치 모델명 12자 이내 size 숫자 단독 — "애플워치9 45" / "갤럭시워치 7 40" 같은 매물.
+  // false positive risk: 모델명 컨텍스트 안에서만 잡음. battery/cycle 등 noise는 모델명 직후 안 옴.
+  const watchContext = lower.match(/(?:애플\s?워치|applewatch|갤럭시\s?워치|galaxywatch)[a-z0-9\s]{0,12}?\b(40|41|42|43|44|45|46|47|49)\b/);
+  if (watchContext) return Number(watchContext[1]);
+  return null;
 }
 
 function parseChip(text: string) {
@@ -816,6 +824,18 @@ function defaultWatchSizeMm(model: string | null) {
 function defaultConnectivity(model: string | null) {
   if (!model) return null;
   if (model.includes("applewatch_ultra") || model.includes("galaxywatch_ultra")) return "cellular";
+  // Wave 109 (2026-05-15): Apple Watch SE/Series, Galaxy Watch 6/7 — cellular 명시 없으면 GPS default.
+  // 한국 reseller 시장에서 GPS 모델이 95%+ (Cellular는 별도 통신사 plan 필요 + 매물 표기 명시).
+  // 정책 12c "모델코드 기반 정확성 보강" 해석. 시세 영향 작음 (모집단 95% GPS → 평균 GPS 수렴).
+  // unknown_connectivity 800건 → cellular 명시 매물 외 GPS 분류 → narrow lane 진입 가능.
+  if (
+    model.includes("applewatch_se") ||
+    model.includes("applewatch_series") ||
+    model.includes("galaxywatch_6") ||
+    model.includes("galaxywatch_7")
+  ) {
+    return "gps";
+  }
   return null;
 }
 
