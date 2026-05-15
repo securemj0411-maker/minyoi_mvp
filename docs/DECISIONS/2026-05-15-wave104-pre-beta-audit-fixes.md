@@ -557,7 +557,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
   - /api/cron/housekeeper-ai-cache-prune — 6시간 주기 (AI cache 정리)
   - /api/cron/compliance-retention — 24시간 주기 (개인정보 retention)
 - 다음: 다른 운영 readiness 영역 진단 (DB connection pool / rate limit 분포 / observability).
-- commit: pending
+- commit: 42998f1
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
