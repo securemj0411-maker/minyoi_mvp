@@ -57,7 +57,7 @@ export const PLANS: Record<PlanKey, PlanDefinition> = {
       "월 80 크레딧 지급",
       "하루 5회 추천 열람",
       "신선도 슬라이더 사용",
-      "우선순위 추천 풀 접근",
+      "베타 피드백 우선 반영",
     ],
   },
   pro: {
@@ -73,6 +73,7 @@ export const PLANS: Record<PlanKey, PlanDefinition> = {
       "월 200 크레딧 지급",
       "하루 20회 추천 열람",
       "전체 필터 자유 조작",
+      "🔥 핫딜 텔레그램 알림 (Pro 전용)",
       "사용 패턴 리포트 (예정)",
     ],
   },

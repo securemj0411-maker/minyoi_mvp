@@ -295,6 +295,30 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: 다음 텔레그램 실패 발생 시 logs 보면 정확한 원인 알 수 있음. 그동안 reservations 테이블의 notification_error 컬럼이 enum-like 카테고리로 그룹핑 가능.
 - commit: 2891b51
 
+## 19. 핫딜 권한 = Pro 전용 (RPC root fix + 거짓 광고 제거)
+
+- 시간: 2026-05-16 05:50 KST
+- 발견: 베타 readiness 점검 중 발견.
+  - **RPC ↔ UI 정책 mismatch**: UI (`me-dashboard-client.tsx`) 는 `isPro || isAdmin` 만 메뉴 노출. RPC (`claim_next_hotdeal_for_alert`) 는 legacy `mvp_user_credits.pro_until` 만 봄 → pro_until=null 이면 통과 → free/starter/plus 모두 dispatch 가능. Wave 104 H1 (`getProStatus` user_plans 기반화) 적용 후 RPC만 누락.
+  - **plus features "우선순위 추천 풀 접근" 거짓 광고**: 코드 grep 결과 실제 구현 X. plan-config 텍스트뿐.
+- MJ 정책 결정: **핫딜 = Pro 전용.** admin은 별도 (자기 시스템 검증 필요).
+- 변경:
+  - `supabase/migrations/20260515000700_hotdeal_pro_only_eligibility.sql` 신규:
+    - `mvp_admin_users` 테이블 신규 (auth_user_id PK + email + note). RLS deny-all + service_role only.
+    - MJ admin row 등록 (cd77f148-... / danshinadarina@gmail.com).
+    - `claim_next_hotdeal_for_alert` 보강 — eligible 조건: `(user_plans.plan_key='pro' AND active AND not expired) OR exists in mvp_admin_users`. legacy `pro_until` 의존 제거.
+  - `src/lib/plan-config.ts`:
+    - Pro features 에 "🔥 핫딜 텔레그램 알림 (Pro 전용)" 명시 추가.
+    - Plus features의 "우선순위 추천 풀 접근" 제거 (거짓 광고). "베타 피드백 우선 반영" 으로 교체.
+  - UI 그대로 (이미 `isPro || isAdmin`).
+- 검증: tsc clean. prod migration 적용 success. eligible 시뮬: MJ (plus plan + admin) → is_pro_active=false but is_admin=true → pass.
+- 위험:
+  - 기존 binding 1명 (MJ) admin이라 영향 없음.
+  - 미래 starter/plus 사용자가 핫딜 못 받게 되는 게 의도된 결과.
+  - 다른 사용자가 Pro 결제했다가 만료 → status='expired' 또는 current_period_end < now 되면 즉시 핫딜 X (Wave 104 H2 자동 free 다운그레이드와 일관).
+- 다음: 다른 정책 mismatch / 거짓 광고 audit (예: starter "베타 피드백 우선 반영" 도 실제 매커니즘 검증 필요).
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
