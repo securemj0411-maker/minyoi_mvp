@@ -8,6 +8,7 @@
 
 import type { User } from "@supabase/supabase-js";
 import { isAdminUser } from "@/lib/auth-users";
+import { hasAdminShadowFromCookies } from "@/lib/admin-shadow-mode";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 export type ProStatus = {
@@ -18,7 +19,8 @@ export type ProStatus = {
 };
 
 export async function getProStatus(user: User, userRef: string): Promise<ProStatus> {
-  if (isAdminUser(user)) {
+  // Wave 106: admin이라도 shadow mode 켜져있으면 일반인처럼 처리 (auto-Pro override 해제).
+  if (isAdminUser(user) && !(await hasAdminShadowFromCookies())) {
     return { isPro: true, isAdmin: true, proUntil: null, source: "admin" };
   }
   try {

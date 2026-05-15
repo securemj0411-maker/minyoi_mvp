@@ -10,6 +10,7 @@ import PlaybookOverview from "@/components/playbook-overview";
 import RecommendationWorkspace from "@/components/recommendation-workspace";
 import UserRevealDashboard from "@/components/user-reveal-dashboard";
 import { isAdminUser } from "@/lib/auth-users";
+import { hasAdminShadowClient } from "@/lib/admin-shadow-mode";
 import { MODEL_GUIDES } from "@/lib/model-guides";
 import type { InventorySnapshot } from "@/lib/pack-open";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -93,6 +94,13 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<DashboardView>(initialViewFromUrl);
   const [isPro, setIsPro] = useState<boolean>(false);
+  const [shadowMode, setShadowMode] = useState<boolean>(false);
+
+  useEffect(() => {
+    setShadowMode(hasAdminShadowClient());
+  }, []);
+
+  const effectiveAdmin = isAdminUser(user) && !shadowMode;
 
   useEffect(() => {
     let mounted = true;
@@ -216,16 +224,19 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           `lg:col-start-2`가 일부 브라우저 implicit-grid 처리로 빈 column 만들어
           content가 오른쪽으로 치우치는 보고 있었음 → mobile에선 grid 비활성. */}
       <div className="flex min-h-screen flex-col lg:grid lg:grid-cols-[220px_minmax(0,1fr)]">
-        <aside className="sticky top-[60px] z-30 border-b border-[#e2d9cb] bg-[#f8f4ec]/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:top-[60px] lg:row-span-2 lg:h-[calc(100dvh-60px)] lg:border-b-0 lg:border-r lg:bg-[#f8f4ec] lg:backdrop-blur-none xl:row-span-1">
-          <div className="px-3 py-2 lg:px-4 lg:py-5">
+        {/* Mobile: 메뉴 높이를 52px 로 고정. playbook-overview.tsx 의 sticky TOC `top-[112px]`
+            (60px nav + 52px 메뉴) 가정과 정확히 맞춰서 5px 갭 방지. 줄바꿈은 구조상
+            (overflow-x-auto + shrink-0 + whitespace-nowrap) 이미 차단됨. */}
+        <aside className="sticky top-[60px] z-30 h-[52px] border-b border-[#e2d9cb] bg-[#f8f4ec]/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:top-[60px] lg:row-span-2 lg:h-[calc(100dvh-60px)] lg:border-b-0 lg:border-r lg:bg-[#f8f4ec] lg:backdrop-blur-none xl:row-span-1">
+          <div className="flex h-full items-center px-3 py-1 lg:block lg:h-auto lg:px-4 lg:py-5">
             <div className="hidden px-2 pb-3 lg:block">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
                 My Dashboard
               </p>
               <div className="mt-1 text-sm font-black text-[#223127] dark:text-zinc-100">작업 메뉴</div>
             </div>
-            <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 lg:mx-0 lg:block lg:space-y-1 lg:overflow-visible lg:px-0 lg:pb-0">
-              {(["recommend", "history", "guides", ...(isPro || isAdminUser(user) ? (["hotdeal-alerts"] as const) : []), ...(isAdminUser(user) ? (["admin-pool"] as const) : [])] as const).map((v) => {
+            <div className="-mx-1 flex w-full items-center gap-1.5 overflow-x-auto px-1 lg:mx-0 lg:block lg:w-auto lg:space-y-1 lg:overflow-visible lg:px-0">
+              {(["recommend", "history", "guides", ...(isPro || effectiveAdmin ? (["hotdeal-alerts"] as const) : []), ...(effectiveAdmin ? (["admin-pool"] as const) : [])] as const).map((v) => {
                 const label = v === "recommend" ? "추천 받기"
                   : v === "history" ? "나의 상품"
                   : v === "guides" ? "공략집"

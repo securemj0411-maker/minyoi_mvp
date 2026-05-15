@@ -1,4 +1,5 @@
 import type { User } from "@supabase/supabase-js";
+import { hasAdminShadowFromRequest, hasAdminShadowFromCookies } from "@/lib/admin-shadow-mode";
 
 // P1-13: admin email을 env에서 우선 읽고, 코드 하드코딩은 fallback으로만 유지.
 // 운영 중 권한 추가/회수가 배포 없이 가능해진다 (ADMIN_EMAILS env 갱신 → Vercel 환경변수 핫스왑).
@@ -37,6 +38,19 @@ export function isAdminEmail(email: string | null | undefined): boolean {
 
 export function isAdminUser(user: Pick<User, "email"> | null | undefined): boolean {
   return isAdminEmail(user?.email);
+}
+
+// Wave 106: admin shadow mode 적용된 effective admin 여부. admin이라도 shadow cookie=1이면 false.
+// API route에서 req 받으면 sync 검사 가능 (header cookie 직접 read).
+export function isEffectiveAdmin(user: Pick<User, "email"> | null | undefined, req: Request): boolean {
+  if (!isAdminUser(user)) return false;
+  return !hasAdminShadowFromRequest(req);
+}
+
+// Server component (req 없을 때) — next/headers cookies() 사용. async.
+export async function isEffectiveAdminAsync(user: Pick<User, "email"> | null | undefined): Promise<boolean> {
+  if (!isAdminUser(user)) return false;
+  return !(await hasAdminShadowFromCookies());
 }
 
 function cleanMetadataText(value: unknown) {

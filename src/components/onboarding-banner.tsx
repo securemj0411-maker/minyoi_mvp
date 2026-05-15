@@ -62,7 +62,7 @@ export default function OnboardingBanner({ onStart }: { onStart?: () => void }) 
             첫 5크레딧 받았어요
           </h3>
           <p className="mt-1 text-xs font-semibold leading-6 text-[#5a6658] dark:text-zinc-300">
-            "추천 상품 받기"에서 <strong>안전</strong> 또는 <strong>균형</strong> 프로필로 시작해보세요.
+            “추천 상품 받기”에서 <strong>안전</strong> 또는 <strong>균형</strong> 프로필로 시작해보세요.
             매번 크레딧이 줄어들고, 다 쓰면 요금제로 충전할 수 있어요.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">

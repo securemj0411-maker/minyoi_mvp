@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAdminUser } from "@/lib/auth-users";
+import { isEffectiveAdmin } from "@/lib/auth-users";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { claimUserCredits, getUserCreditsReadOnly } from "@/lib/user-credits";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
   const userRef = userRefForAuthUser(auth.user.id);
 
-  if (!isAdminUser(auth.user)) {
+  if (!isEffectiveAdmin(auth.user, req)) {
     const rate = await checkRateLimit({
       bucketKey: `credits.me:user:${userRef}`,
       maxRequests: RATE_LIMIT_MAX,

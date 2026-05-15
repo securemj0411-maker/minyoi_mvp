@@ -8,6 +8,7 @@ import { AccountPanel } from "@/components/account-panel";
 import CreditIcon from "@/components/credit-icon";
 import { displayNameForUser, isAdminUser } from "@/lib/auth-users";
 import { hasClientAdminOverride, setClientAdminOverride } from "@/lib/client-admin-override";
+import { hasAdminShadowClient, setAdminShadowClient } from "@/lib/admin-shadow-mode";
 import { loadClientCredits } from "@/lib/client-credits";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
@@ -184,9 +185,12 @@ export default function AppNav() {
   const [accountSheetOpen, setAccountSheetOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [adminOverride, setAdminOverride] = useState(false);
+  const [adminShadow, setAdminShadow] = useState(false);
   const adminClickCountRef = useRef(0);
   const adminClickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const admin = isAdminUser(user) || adminOverride;
+  const realAdmin = isAdminUser(user);
+  // Wave 106: admin이지만 shadow mode면 일반 user UI. non-admin이지만 adminOverride면 admin UI.
+  const admin = (realAdmin && !adminShadow) || (!realAdmin && adminOverride);
   const userName = useMemo(() => displayNameForUser(user), [user]);
   const userInitial = useMemo(() => (userName || "U").trim().charAt(0).toUpperCase(), [userName]);
 
@@ -237,6 +241,7 @@ export default function AppNav() {
 
   useEffect(() => {
     setAdminOverride(hasClientAdminOverride());
+    setAdminShadow(hasAdminShadowClient());
   }, []);
 
   const handleAdminDotClick = useCallback(() => {
@@ -244,16 +249,28 @@ export default function AppNav() {
     adminClickCountRef.current += 1;
     if (adminClickCountRef.current >= 5) {
       adminClickCountRef.current = 0;
-      const next = !hasClientAdminOverride();
-      setClientAdminOverride(next);
-      setAdminOverride(next);
-      if (typeof window !== "undefined") window.alert(`운영자 모드 ${next ? "ON" : "OFF"}`);
+      if (realAdmin) {
+        // Wave 106: 실제 admin이 5번 클릭 → shadow mode toggle (일반인 가장).
+        const next = !hasAdminShadowClient();
+        setAdminShadowClient(next);
+        setAdminShadow(next);
+        if (typeof window !== "undefined") {
+          window.alert(`Shadow Mode ${next ? "ON (일반인 가장 — rate limit / 플랜 게이팅 / 무한 크레딧 해제)" : "OFF (운영자 복귀)"}`);
+          window.location.reload(); // server-side cookie 검사 반영
+        }
+      } else {
+        // non-admin → 기존 client-only admin UI 가장 (Wave 69).
+        const next = !hasClientAdminOverride();
+        setClientAdminOverride(next);
+        setAdminOverride(next);
+        if (typeof window !== "undefined") window.alert(`운영자 모드 ${next ? "ON" : "OFF"}`);
+      }
       return;
     }
     adminClickTimerRef.current = setTimeout(() => {
       adminClickCountRef.current = 0;
     }, 1500);
-  }, []);
+  }, [realAdmin]);
 
   useEffect(() => {
     if (!menuOpen) return;

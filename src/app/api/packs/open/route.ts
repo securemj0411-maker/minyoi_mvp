@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAdminUser } from "@/lib/auth-users";
+import { isEffectiveAdmin } from "@/lib/auth-users";
 import { reportCriticalIncident } from "@/lib/operational-notifier";
 import { openPack, type PackBand } from "@/lib/pack-open";
 import { computeTokenCost, type CostFilters } from "@/lib/pack-cost";
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "user ref does not match session" }, { status: 403 });
   }
 
-  if (!isAdminUser(auth.user)) {
+  if (!isEffectiveAdmin(auth.user, req)) {
     const rate = await checkRateLimit({
       bucketKey: `packs.open:user:${userRef}`,
       maxRequests: RATE_LIMIT_MAX,
@@ -96,7 +96,7 @@ export async function POST(req: Request) {
   const sanitizedRequestedCards = clampRequestedCards(requestedCards);
   const filters = parseFilters(payload);  // Wave 78: 동적 cost — 고급 모드에서만 filter 전달, 없으면 base × steps만
   const tokenCost = computeTokenCost(band, sanitizedRequestedCards, filters);
-  const infinite = isAdminUser(auth.user);
+  const infinite = isEffectiveAdmin(auth.user, req);
 
   // 일일 열람 한도 차감 (admin 제외).
   // 한도 초과면 즉시 차단. openPack이 unavailable로 끝나면 환불.

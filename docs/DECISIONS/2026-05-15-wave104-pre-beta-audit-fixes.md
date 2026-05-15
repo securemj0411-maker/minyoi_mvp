@@ -150,7 +150,21 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 위험: localStorage 차단 사용자는 매번 노출. 일반인은 거의 없음 → 영향 미미.
 - 다음: 공략집 sticky 충돌 (메뉴 가변 높이 측정).
 
-### 보너스: audit false positive (총 2건)
+## 10. 공략집 sticky TOC + 대시보드 메뉴 갭 fix
+
+- 시간: 2026-05-16 03:45 KST
+- 발견: audit. `playbook-overview.tsx:567` sticky TOC `top-[112px]` (60px nav + 52px 가정) vs 대시보드 메뉴 (`me-dashboard-client.tsx:227`) 자연 높이 ~47px → **5px 갭**. audit이 우려한 "메뉴 줄바꿈 충돌"은 실제로 발생 X — 메뉴는 `overflow-x-auto + shrink-0 + whitespace-nowrap` 으로 줄바꿈 구조상 차단됨. 진짜 이슈는 갭이고 충돌이 아님.
+- 변경 (`me-dashboard-client.tsx:227-235`):
+  - aside 모바일 높이 `h-[52px]` 명시 (lg:는 기존 `lg:h-[calc(100dvh-60px)]` 유지).
+  - 내부 div: `flex h-full items-center px-3 py-1 lg:block lg:h-auto lg:px-4 lg:py-5` — 모바일에선 flex로 버튼 row 수직 중앙 정렬, lg+에선 기존 block 레이아웃.
+  - 버튼 row container: `flex w-full items-center` 추가, `pb-0.5` 제거 (52px 고정에 불필요).
+  - 결과: 메뉴 정확히 52px → TOC `top-[112px]` (60+52) 와 픽셀 단위 정확히 맞음.
+- 검증: tsc clean.
+- 위험: lg+ 데스크탑 사이드바는 `lg:h-auto`로 기존 동작 유지 (lg:h-[calc(100dvh-60px)] override). 모바일에서 메뉴 자체 높이 52px 고정이라 향후 누가 버튼 padding 늘리면 잘릴 수 있음 — 그 때 둘 다 늘리면 됨 (TOC top과 함께).
+- 다음: med severity 항목 (빈 풀 retry CTA, telegram bot 미설정 시 메뉴 자동 숨김, billing err.message leak 등).
+- commit: pending
+
+### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
 - `pack-shop.tsx` 랜딩 main 패딩 X 보고됐으나 inner div (line 262) `px-4 sm:px-6 lg:px-8` 박혀있음. 시각적 동일. 스킵.
