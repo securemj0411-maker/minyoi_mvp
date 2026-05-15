@@ -303,7 +303,9 @@ export const MODEL_GUIDES: ModelGuide[] = [
       manualReviewSignals: ["unknown_connector", "unknown_generation", "색상만 표기"],
     },
     match: {
+      skuIds: ["airpods-max"],
       aliases: ["airpods max", "에어팟 맥스", "에어팟맥스"],
+      comparableKeys: ["earphone|airpods_max"],
       familyHints: ["airpods"],
     },
     sections: [
@@ -324,6 +326,8 @@ export const MODEL_GUIDES: ModelGuide[] = [
         type: "confusion_points",
         title: "자주 헷갈리는 포인트",
         items: [
+          "**\"AirPods Max 2\" = USB-C 모델** (Apple 공식 명칭은 그냥 \"AirPods Max (USB-C)\"이지만 매물에선 \"2세대\"/\"Max 2\"로 자주 부름).",
+          "**\"AirPods Max\" 또는 \"맥스 1세대\" = Lightning 모델** (2020-12 출시 원본).",
           "1세대 또는 2세대처럼 혼합 표현이 들어간 매물은 바로 확정하지 않습니다.",
           "케이스만, 이어패드만, 충전 케이블만 올라오는 부품성 매물이 많습니다.",
         ],
@@ -348,6 +352,84 @@ export const MODEL_GUIDES: ModelGuide[] = [
     sources: [
       { sourceType: "official", label: "Apple AirPods Max 공식 제품 페이지", url: "https://www.apple.com/airpods-max/" },
       { sourceType: "internal_rule", label: "AirPods Max generation review gate" },
+    ],
+  },
+  // Wave 127 (2026-05-16): airpods-max-usbc 별도 guide. 사용자 코멘트 (pid 384785809):
+  // "맥스2랑 맥스랑 같은거임?" — 매물 표시 명확화 필요.
+  {
+    guideKey: "guide:earphone:airpods-max-usbc",
+    category: "earphone",
+    family: "airpods",
+    model: "airpods_max_usbc",
+    variantScope: "usbc-fullset",
+    title: "AirPods Max (USB-C) = 매물 \"Max 2\" 동일 모델",
+    summary: "AirPods Max USB-C 모델 (2024-09 출시, msrp ₩769,000). 매물에선 \"맥스 2\" / \"2세대\"로 자주 부르지만 Apple 공식은 \"AirPods Max (USB-C)\" 단일 명칭. Lightning 1세대 (2020-12)와 시세 다름 — 시세 축 분리 필수.",
+    quickFacts: ["USB-C 모델", "= 매물 \"Max 2\"", "Lightning 1세대와 분리"],
+    parserHints: {
+      mustSplitAxes: ["connector"],
+      positiveSignals: ["airpods max", "에어팟맥스", "usb-c", "usbc", "c타입", "타입c", "맥스 2", "맥스2"],
+      ambiguousSignals: ["미개봉", "새상품", "2세대", "신형"],
+      negativeSignals: ["라이트닝", "lightning", "8핀", "케이스만", "이어패드만"],
+      partsSignals: ["이어패드", "케이블", "케이스"],
+      manualReviewSignals: ["unknown_connector"],
+    },
+    match: {
+      skuIds: ["airpods-max-usbc"],
+      aliases: ["airpods max usb-c", "에어팟 맥스 usb-c", "에어팟맥스 c타입", "맥스 2", "맥스2"],
+      comparableKeys: ["earphone|airpods_max_usbc", "earphone|airpods_max|usbc"],
+      familyHints: ["airpods"],
+    },
+    sections: [
+      {
+        type: "overview",
+        title: "모델 개요",
+        items: [
+          "**Apple 공식 명칭은 \"AirPods Max (USB-C)\".** 매물에선 \"맥스 2\" / \"2세대\"로 부르는 경우 많음 — 같은 모델임.",
+          "2024-09 출시. msrp ₩769,000 (Lightning 1세대 ₩712,000보다 약간 높음).",
+          "헤드폰 자체 변화 거의 없음 (스타터 동일, 케이블만 USB-C 변경 + 색상 옵션 변경).",
+        ],
+      },
+      {
+        type: "option_axes",
+        title: "같이 봐야 하는 옵션 축",
+        items: [
+          "**USB-C 명시** (\"C타입\" / \"usbc\" / \"맥스 2\") = 이 모델.",
+          "**라이트닝 명시** = 별도 모델 (airpods-max), 시세 축 다름.",
+          "**미개봉/새상품/풀박스** — 가격대 다름.",
+        ],
+      },
+      {
+        type: "confusion_points",
+        title: "사용자가 자주 헷갈리는 포인트",
+        items: [
+          "\"**Max 2**\" 매물 = USB-C 모델 (별도 hardware 아니라 커넥터 변경 + 색상).",
+          "\"**Max 2세대**\" = 같은 USB-C 모델 (Apple 공식 \"2세대\" 표시 X but 매물 셀러 부름).",
+          "Lightning vs USB-C 가격 차이 ~₩100K (USB-C가 더 높음, 신형).",
+          "색상 신규 (\"스타라이트\", \"미드나이트\" 등) = USB-C 모델만 있음.",
+        ],
+      },
+      {
+        type: "resell_checkpoints",
+        title: "리셀 체크포인트",
+        items: [
+          "USB-C/C타입/맥스 2 명시 매물만 이 lane.",
+          "라이트닝 매물 섞이면 시세 왜곡 큼 — 셀러에게 확인 필수.",
+          "새 색상 (스카이 블루, 오렌지, 퍼플, 미드나이트, 스타라이트)이면 USB-C 거의 확정.",
+        ],
+      },
+      {
+        type: "our_filter_rules",
+        title: "우리 시스템 기준",
+        items: [
+          "USB-C/C타입/맥스 2 명시 매물만 흡수 (mustContain group).",
+          "라이트닝 명시 매물은 별도 lane (airpods-max).",
+          "단순 \"에어팟 맥스\" 단독 (커넥터 미명시)는 broad airpods-max로 흐름 (Lightning 1세대 가정).",
+        ],
+      },
+    ],
+    sources: [
+      { sourceType: "official", label: "Apple AirPods Max (USB-C) 공식 페이지", url: "https://www.apple.com/airpods-max/" },
+      { sourceType: "internal_rule", label: "airpods-max-usbc mustContain USB-C 강제" },
     ],
   },
   {

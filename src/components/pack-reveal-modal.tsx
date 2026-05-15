@@ -205,9 +205,14 @@ function verdictsForCard(card: RevealCard): Verdict[] {
     out.push({ label: "신규 판매자", tone: "warn" });
   }
 
+  // 2026-05-15 Wave 124: 빠름/늦음 추상 → 실제 일수 (사용자 피드백). "아 며칠내로 팔리는구나" 직관.
   if (velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0) {
-    if (velocity.medianHoursToSold <= 72) out.push({ label: "회전 빠름 (3일내)", tone: "good" });
-    else if (velocity.medianHoursToSold >= 336) out.push({ label: "회전 늦음", tone: "warn" });
+    const hrs = velocity.medianHoursToSold;
+    const tone: Verdict["tone"] = hrs <= 72 ? "good" : hrs >= 336 ? "warn" : "info";
+    const label = hrs < 24
+      ? `${Math.max(1, Math.round(hrs))}시간 회전`
+      : `평균 ${Math.round((hrs / 24) * 10) / 10}일 회전`;
+    out.push({ label, tone });
   }
 
   if (card.confidence >= 0.8) out.push({ label: "시세 신뢰 높음", tone: "good" });
