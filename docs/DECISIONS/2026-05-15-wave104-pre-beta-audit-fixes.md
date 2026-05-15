@@ -43,6 +43,20 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: 다음 pool-warmer 실행 (5분 내) 시 텔레그램 핑 확인. 안 오면 Vercel logs `[hotdeal stage]` 검색.
 - commit: 2bfa6e5, e8758fc
 
+## 4. start-verify + billing/subscribe rate limit
+
+- 시간: 2026-05-16 01:50 KST
+- 발견: audit. 두 endpoint rate limit 0:
+  - `/api/me/telegram/start-verify`: bot이 무한 호출하면 verify code spam + supabase upsert 폭증.
+  - `/api/billing/subscribe`: 같은 paymentKey 재호출 시 H3 (subscribe RPC idempotency 없음)와 결합되면 크레딧 이중 grant.
+- 변경: 두 route 모두 기존 `checkRateLimit` 패턴 (packs/open과 동일) 적용.
+  - start-verify: 분당 5회 (bucket: `telegram.start-verify:user:<userRef>`)
+  - subscribe: 분당 3회 (bucket: `billing.subscribe:user:<userRef>`)
+  - 초과 시 429 + retry_after. admin은 isAdminUser 체크로 면제.
+- 검증: tsc clean, 139/139 test pass.
+- 위험: 정상 사용자가 한도 초과할 가능성 매우 낮음 (start-verify 5번/분 = UI에서 드물게 누름, subscribe 3번/분 = 결제는 1~2회면 끝).
+- 다음: H3 (subscribe RPC payment_key UNIQUE 인덱스 + 중복 가드) 별도 처리 필요. rate limit는 1차 방어, idempotency가 진짜 fix.
+
 ## 보너스: audit false positive
 
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 이미 `checkCronAuth` 박혀있음. 스킵.
