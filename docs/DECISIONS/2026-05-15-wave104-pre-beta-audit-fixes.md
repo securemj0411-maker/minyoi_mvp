@@ -506,6 +506,36 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 다음: 운영 readiness audit (cron monitoring / alert / observability) 또는 사용자 첫 가입 → 첫 팩 흐름 e2e UX walkthrough.
 - commit: 820a452
 
+## 27. 운영 readiness audit — cron 4개 silent fail 발견 + watchdog 보강
+
+- 시간: 2026-05-16 07:30 KST
+- 검토: cron-watchdog (Wave 104 #?에서 박힌 시스템) + 24h 실제 cron 실행 빈도 측정.
+- 발견 (CRITICAL):
+  - **`/api/cron/collect` 7일 동안 1회 실행 (5/10 마지막) — 신규 매물 수집 사실상 멈춤.** deep-crawl (60분 주기) 이 일부 매물 가져오긴 함 → 풀이 245건 유지되긴 했지만 신규 cadence 매우 약함. 베타 사용자 들어왔을 때 "어제도 같은 매물" 시야 → 사이트 죽은 줄 알고 이탈.
+  - `/api/cron/landing-showcases` 24h 0회 — 랜딩 캐시 stale.
+  - `/api/cron/housekeeper-ai-cache-prune` 24h 0회 — AI cache 무한 누적 비용 risk.
+  - `/api/cron/compliance-retention` 24h 0회 — 개인정보 retention 정책 미실행 legal risk.
+  - watchdog WATCHDOG_TARGETS 에 이 4개 추적 누락 → silent fail.
+- 정상 작동 (24h):
+  - tick: 242, detail-worker: 396, lifecycle-worker: 176, pool-warmer: 49, housekeeper: 49, market-worker: 24, deep-crawl: 34. 모두 expected 주기 내.
+- root cause 추정: QStash schedule 미등록/삭제. **MJ 외부 작업 영역 — 코드 fix 불가능.**
+- 변경 (`src/lib/cron-watchdog.ts`):
+  - WATCHDOG_TARGETS 에 4개 추가:
+    - collect (5분 주기 / 20분 alert)
+    - landing-showcases (10분 / 30분 alert)
+    - housekeeper-ai-cache-prune (6시간 / 18시간 alert)
+    - compliance-retention (24시간 / 48시간 alert)
+  - hotdeal-worker는 Wave 104 #3 inline integration 으로 별도 호출 X — 추적 제외 (의도).
+- 검증: tsc clean. 다음 tick (2분 내) 에서 watchdog이 4개 stale 감지 → 텔레그램 alert (cooldown 30분 적용) 발송 예상.
+- **MJ 액션 필요**: QStash dashboard 에서 4개 schedule 등록/재활성:
+  - /api/cron/collect — 5분 주기
+  - /api/cron/landing-showcases — 10분 주기
+  - /api/cron/housekeeper-ai-cache-prune — 6시간 주기
+  - /api/cron/compliance-retention — 24시간 주기
+- 위험: 등록 후에도 호출 200 OK인지 확인 필요 (auth 헤더, env 등). watchdog alert 안 오면 회복.
+- 다음: QStash 등록 후 1시간 watchdog logs 확인. 다른 운영 readiness 영역 (DB connection pool / rate limit 분포 / observability) audit.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

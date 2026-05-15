@@ -354,7 +354,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["아이폰 11 프로 128 자급제", "iPhone 11 Pro 128 SIM-Free"],
     mustContain: [
       ["아이폰 11 프로", "아이폰11프로", "iphone 11 pro"],
-      ["128gb", "128 gb", "128기가", "128g"],
+      ["128gb", "128 gb", "128기가", "128g", "128"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -387,7 +387,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["아이폰 12 프로 128 자급제", "iPhone 12 Pro 128 SIM-Free"],
     mustContain: [
       ["아이폰 12 프로", "아이폰12프로", "iphone 12 pro"],
-      ["128gb", "128 gb", "128기가", "128g"],
+      ["128gb", "128 gb", "128기가", "128g", "128"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -430,7 +430,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["아이폰 13 프로 128 자급제", "iPhone 13 Pro 128 SIM-Free"],
     mustContain: [
       ["아이폰 13 프로", "아이폰13프로", "iphone 13 pro"],
-      ["128gb", "128 gb", "128기가", "128g"],
+      ["128gb", "128 gb", "128기가", "128g", "128"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -483,7 +483,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["아이폰 14 프로 128 자급제", "iPhone 14 Pro 128 SIM-Free"],
     mustContain: [
       ["아이폰 14 프로", "아이폰14프로", "iphone 14 pro"],
-      ["128gb", "128 gb", "128기가", "128g"],
+      ["128gb", "128 gb", "128기가", "128g", "128"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -536,7 +536,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["아이폰 15 프로 128 자급제", "iPhone 15 Pro 128 SIM-Free"],
     mustContain: [
       ["아이폰 15 프로", "아이폰15프로", "iphone 15 pro"],
-      ["128gb", "128 gb", "128기가", "128g"],
+      ["128gb", "128 gb", "128기가", "128g", "128"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -580,7 +580,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["아이폰 15 256 자급제", "iPhone 15 256 SIM-Free"],
     mustContain: [
       ["아이폰 15", "아이폰15", "iphone 15"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -611,7 +611,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["아이폰 16 256 자급제", "iPhone 16 256 SIM-Free"],
     mustContain: [
       ["아이폰 16", "아이폰16", "iphone 16"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -654,7 +654,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["아이폰 16 프로 128 자급제", "iPhone 16 Pro 128 SIM-Free"],
     mustContain: [
       ["아이폰 16 프로", "아이폰16프로", "iphone 16 pro"],
-      ["128gb", "128 gb", "128기가", "128g"],
+      ["128gb", "128 gb", "128기가", "128g", "128"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -697,7 +697,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["아이폰 15 프로맥스 256 자급제", "iPhone 15 Pro Max 256 SIM-Free"],
     mustContain: [
       ["아이폰 15 프로맥스", "아이폰15프로맥스", "아이폰 15 프로 맥스", "iphone 15 pro max"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -727,7 +727,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["아이폰 16 프로맥스 256 자급제", "iPhone 16 Pro Max 256 SIM-Free"],
     mustContain: [
       ["아이폰 16 프로맥스", "아이폰16프로맥스", "아이폰 16 프로 맥스", "iphone 16 pro max"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -779,7 +779,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["갤럭시 S24 울트라 256 자급제", "Galaxy S24 Ultra 256 SIM-Free"],
     mustContain: [
       ["갤럭시 s24 울트라", "갤럭시s24울트라", "galaxy s24 ultra", "s24 ultra"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -821,7 +821,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["갤럭시 S23 256 자급제", "Galaxy S23 256 SIM-Free"],
     mustContain: [
       ["갤럭시 s23", "갤럭시s23", "galaxy s23"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -852,7 +852,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["갤럭시 S24 256 자급제", "Galaxy S24 256 SIM-Free"],
     mustContain: [
       ["갤럭시 s24", "갤럭시s24", "galaxy s24"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -882,7 +882,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["갤럭시 S25 256 자급제", "Galaxy S25 256 SIM-Free"],
     mustContain: [
       ["갤럭시 s25", "갤럭시s25", "galaxy s25"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -935,7 +935,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["갤럭시 S25 울트라 256 자급제", "Galaxy S25 Ultra 256 SIM-Free"],
     mustContain: [
       ["갤럭시 s25 울트라", "갤럭시s25울트라", "galaxy s25 ultra", "s25 ultra"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -965,7 +965,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     aliases: ["갤럭시 S23 울트라 256 자급제", "Galaxy S23 Ultra 256 SIM-Free"],
     mustContain: [
       ["갤럭시 s23 울트라", "갤럭시s23울트라", "galaxy s23 ultra", "s23 ultra"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["자급제", "자급", "공기계", "언락"],
     ],
     mustNotContain: [
@@ -1108,7 +1108,7 @@ const CORE_TABLET_CATALOG: Sku[] = [
       ["아이패드", "ipad"],
       ["프로", "pro"],
       ["m2"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["11인치", "11 인치", "11형", "11\"", "11″"],
     ],
     mustNotContain: [
@@ -1136,7 +1136,7 @@ const CORE_TABLET_CATALOG: Sku[] = [
       ["아이패드", "ipad"],
       ["프로", "pro"],
       ["m4"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["13인치", "13 인치", "13형", "13\"", "13″"],
     ],
     mustNotContain: [
@@ -1163,7 +1163,7 @@ const CORE_TABLET_CATALOG: Sku[] = [
       ["아이패드", "ipad"],
       ["프로", "pro"],
       ["m2"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["13인치", "13 인치", "13형", "13\"", "12.9인치", "12.9 인치"],
     ],
     mustNotContain: [
@@ -1200,7 +1200,7 @@ const CORE_TABLET_CATALOG: Sku[] = [
       ["아이패드", "ipad"],
       ["에어", "air"],
       ["m2"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["11인치", "11 인치", "11형", "11\"", "11″"],
     ],
     mustNotContain: [
@@ -1228,7 +1228,7 @@ const CORE_TABLET_CATALOG: Sku[] = [
       ["아이패드", "ipad"],
       ["에어", "air"],
       ["m3"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["11인치", "11 인치", "11형", "11\""],
     ],
     mustNotContain: [
@@ -1265,7 +1265,7 @@ const CORE_TABLET_CATALOG: Sku[] = [
       ["아이패드", "ipad"],
       ["미니", "mini"],
       ["a17", "7세대", "7 세대", "ipad mini 7", "미니 7", "미니7"],
-      ["128gb", "128 gb", "128기가", "128g"],
+      ["128gb", "128 gb", "128기가", "128g", "128"],
     ],
     mustNotContain: [
       "프로", "pro", "에어", "air",
@@ -1428,7 +1428,7 @@ const CORE_TABLET_CATALOG: Sku[] = [
       ["갤럭시탭", "갤탭", "galaxy tab", "tab"],
       ["s10", "s 10"],
       ["울트라", "ultra"],
-      ["256gb", "256 gb", "256기가", "256g"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
       ["자급제", "자급", "wifi", "와이파이"],
     ],
     mustNotContain: [
@@ -3054,6 +3054,12 @@ const NORMALIZATIONS: [RegExp, string][] = [
   [/galaxy\s*s\s?(\d{1,2})\s*plus/gi, " galaxy s$1 plus "],
   [/갤럭시\s*z\s*(플립|폴드)\s?(\d{1,2})/gi, " 갤럭시 z$1 $2 "],
   [/galaxy\s*z\s*(flip|fold)\s?(\d{1,2})/gi, " galaxy z$1 $2 "],
+  // Wave 111b: iPad 인치 normalize — "아이패드 프로 13 M4" 같이 인치 명시 없는 매물도 매칭.
+  // iPad mini는 8.3인치 (별도). Pro/Air만 11/13 적용.
+  [/(아이패드\s*(?:프로|에어))\s*13(?!\d|\.|인치)/gi, " $1 13인치 "],
+  [/(아이패드\s*(?:프로|에어))\s*11(?!\d|\.|인치)/gi, " $1 11인치 "],
+  [/(ipad\s*(?:pro|air))\s*13(?!\d|\.|in)/gi, " $1 13in "],
+  [/(ipad\s*(?:pro|air))\s*11(?!\d|\.|in)/gi, " $1 11in "],
 ];
 
 export function normalize(text: string): string {

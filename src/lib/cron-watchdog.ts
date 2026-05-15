@@ -20,6 +20,10 @@ type WatchdogTarget = {
   alertAfterMinutes: number; // 이 시간 이상 안 돌면 alert
 };
 
+// Wave 106: collect / landing-showcases / housekeeper-ai-cache-prune / compliance-retention 추가.
+// 측정 결과 4개 worker 가 24h 0회 실행 (silent fail) 발견. 새 매물 수집 + 랜딩 캐시 +
+// AI cache 정리 + 개인정보 retention 모두 critical 운영 기능. watchdog 추적 의무.
+// hotdeal-worker는 Wave 104 #3 inline integration 후 별도 호출 X — 추적 제외 (의도).
 const WATCHDOG_TARGETS: WatchdogTarget[] = [
   { name: "lifecycle-worker", requestPath: "/api/cron/lifecycle-worker", expectedMinutes: 7, alertAfterMinutes: 21 },
   { name: "tick", requestPath: "/api/cron/tick", expectedMinutes: 2, alertAfterMinutes: 10 },
@@ -28,6 +32,10 @@ const WATCHDOG_TARGETS: WatchdogTarget[] = [
   { name: "pool-warmer", requestPath: "/api/cron/pool-warmer", expectedMinutes: 30, alertAfterMinutes: 90 },
   { name: "deep-crawl", requestPath: "/api/cron/deep-crawl", expectedMinutes: 60, alertAfterMinutes: 180 },
   { name: "housekeeper", requestPath: "/api/cron/housekeeper", expectedMinutes: 30, alertAfterMinutes: 90 },
+  { name: "collect", requestPath: "/api/cron/collect", expectedMinutes: 5, alertAfterMinutes: 20 },
+  { name: "landing-showcases", requestPath: "/api/cron/landing-showcases", expectedMinutes: 10, alertAfterMinutes: 30 },
+  { name: "housekeeper-ai-cache-prune", requestPath: "/api/cron/housekeeper-ai-cache-prune", expectedMinutes: 360, alertAfterMinutes: 1080 },
+  { name: "compliance-retention", requestPath: "/api/cron/compliance-retention", expectedMinutes: 1440, alertAfterMinutes: 2880 },
 ];
 
 const COOLDOWN_MINUTES = 30;
