@@ -361,10 +361,24 @@ const SPEAKER_NOISE_W94 = [
 
 // Wave 94: 카테고리별 NOISE를 GENERATED_CATALOG SKU에 자동 spread.
 // 기존 mustNotContain은 union으로 보존 (intent loss 없음).
+// Wave 114d (2026-05-15): smartphone broad용 통신사 NOISE (parts 토큰 제외).
+// PHONE_NOISE 전체를 smartphone에 spread하면 "백글라스/액정" 같은 parts 토큰이 broad SKU mustNotContain에 들어가서
+// → catalog ruleMatch null → categoryScopedNoise (pipeline.ts phonePartsSignal) 도달 못 함 → parts 분류 깨짐.
+// 통신사/번호이동/매입 token만 spread해서 안전.
+const SMARTPHONE_BROAD_NOISE_W114D = [
+  "번호이동", "번호 이동",
+  "약정승계", "약정 승계",
+  "할부승계", "할부 승계", "할부 잔여", "할부잔여",
+  "개통폰",
+  "kt 약정", "skt 약정", "skt 완납", "kt 완납",
+  "lgu+ 약정", "유플 약정",
+  "매입", "삽니다", "구합니다", "구해봅니다", "구매함", "최고가",
+  "대여", "렌탈",
+];
+
 const CATEGORY_NOISE_MAP_W94: Partial<Record<Sku["category"], readonly string[]>> = {
-  // Wave 114d (2026-05-15): smartphone 카테고리 누락 fix. GENERATED_CATALOG의 galaxy-s23 등
-  // broad smartphone SKU가 PHONE_NOISE spread 안 받아 통신사/번호이동/할부 매물 흡수 중.
-  smartphone: PHONE_NOISE,
+  // Wave 114d (2026-05-15): smartphone broad에 통신사/매입 noise만 spread (parts 토큰 제외).
+  smartphone: SMARTPHONE_BROAD_NOISE_W114D,
   laptop: LAPTOP_NOISE,
   earphone: EARPHONE_NOISE_W94,
   smartwatch: SMARTWATCH_NOISE_W94,
