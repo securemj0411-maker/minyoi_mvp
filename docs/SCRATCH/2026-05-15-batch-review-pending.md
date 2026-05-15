@@ -23,6 +23,14 @@ mvp_collect_runs 조회 결과 다음 worker가 24h~48h 0회 호출:
 
 ⚠️ watchdog fix 반영 후에도 이 4개는 진짜 alert 계속 옴 (cooldown 30분). 등록 안 하면 매 30분 1회씩 텔레그램 spam.
 
+### -0.9. (Iteration 7 발견) 베타 권한/요금제 boundary
+1. **베타 테스터 무한 크레딧 정책 모호**: CLAUDE.md "베타 테스터는 admin 권한 일부" → 코드에선 plan.dailyOpenLimit 그대로 적용 (무한 X). 정책 문서화 또는 코드 통일 필요.
+2. **Mock Toss paymentKey idempotency 없음**: `subscribe_mvp_plan` RPC에 last_payment_key 중복 체크 없음. 동시 요청 시 크레딧 2배 grant 가능 (이론). 실제 위험은 낮음 (random 36^9 충돌 거의 0) but production toss 전환 전 idempotency token 추가 권장.
+3. **/api/billing/me에 isBetaTester 미반환**: type엔 있는데 응답에 안 박힘. client UI 게이팅 누락 (현재는 admin 페이지에서만 사용).
+4. **mvp_user_plans free user implicit**: Free 사용자는 row 없음. paid만 row 1개 + unique constraint. 정상 동작이지만 암묵적.
+
+→ 결정 필요: (a) 베타 정책 명확화, (b) paymentKey idempotency DB migration, (c) isBetaTester client API 노출.
+
 ### -0.8. (Iteration 6 발견) API 보안 보류
 - `/api/debug/agent-bridge`, `/api/debug/reset-db` error.message leak: admin 4중 가드라 priority 낮음. 별도 wave에서 generic error message로 통일.
 - `/api/packs/preview-inventory` default rate limit 60/10s: 다른 packs endpoint (5-30/10s) 대비 높음. UX 영향 있어 사용자 결정 필요.
