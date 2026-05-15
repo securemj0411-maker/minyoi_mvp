@@ -37,12 +37,12 @@ const tests: { name: string; desc?: string; expected: string | null; reason: str
   { name: "갤럭시S24FE 256", expected: "galaxy-s24-fe", reason: "S24 FE" },
 
   // ===== MacBook chip 세대 격리 =====
-  { name: "맥북에어 13 m3 256", expected: "macbook-air-m3-13-256", reason: "M3 narrow" },
+  { name: "맥북에어 13 m3 256 기본형", expected: "macbook-air-m3-13-256", reason: "M3 narrow + 기본형 (RAM 강제 LAUNCH_PLAN 1.6e)" },
   { name: "맥북에어 13 m4 256", expected: "macbook-air", reason: "M4는 narrow X → broad" },
   { name: "맥북에어 13 m2 256", expected: "macbook-air-m2-13-256", reason: "M2 narrow" },
   { name: "맥북에어 13 m1 256", expected: "macbook-air", reason: "M1 narrow X" },
   { name: "맥북에어 15 m3 256", expected: "macbook-air", reason: "15인치는 narrow X" },
-  { name: "맥북프로 14 m3 18 512", expected: "macbook-pro-14-m3-18-512", reason: "narrow" },
+  { name: "맥북프로 14 m3 18gb 512gb", expected: "macbook-pro-14-m3-18-512", reason: "narrow (18GB/512GB 명시 강제)" },
   { name: "맥북프로 16 m3 18 512", expected: "macbook-pro", reason: "16인치는 narrow X" },
 
   // ===== iPad Pro/Air 인치/세대 격리 =====
