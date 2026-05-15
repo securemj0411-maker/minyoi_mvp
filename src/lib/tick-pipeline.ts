@@ -2655,9 +2655,14 @@ async function markPoolVerified(pid: number) {
 
 async function claimLifecycleChecks(mode: LifecycleClaimMode = "default"): Promise<LifecycleClaimRow[]> {
   const config = loadPipelineRuntimeConfig();
+  // 2026-05-15 (사용자 코멘트 pid 401500642 / 404643880 / 404436811):
+  // lifecycle backlog 14k 누적으로 missing 매물이 시세 비교군에 잔존. batch cap 30 → 80으로
+  // 늘려 처리 throughput 증가. RPC는 priority_tier(pool 우선) + next_check_at(가장 오래된 거 우선)
+  // 정렬이라 batch 늘려도 pool tier가 먼저 잡힘. detail fetch 시간 부담은 cron maxDuration 60s로
+  // 보호되며 budget guard 있음.
   const batchSize = mode === "terminal_recheck"
     ? config.terminalLifecycleRecheckBatchSize
-    : Math.min(30, config.tickDetailBatchSize);
+    : Math.min(80, config.tickDetailBatchSize);
   const rpcName = mode === "terminal_recheck"
     ? "claim_mvp_terminal_lifecycle_rechecks"
     : "claim_mvp_lifecycle_checks";
@@ -2879,6 +2884,26 @@ export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMod
   }
 
   stats.upserted = await enqueueMarketKeyInvalidations(marketInvalidations);
+
+  // 2026-05-15 (사용자 코멘트 pid 401500642 / 404643880 / 404436811):
+  // lifecycle worker capacity 부족으로 missing_suspect 매물이 14k backlog 누적되어
+  // 시세 비교군에 잔존. 매 lifecycle tick 끝에 stale 매물(12h+, consec_missing 2+)을
+  // 자동 disappeared 전환 + 풀 invalidate. RPC가 무거우면 limit 1000으로 보호.
+  try {
+    const drainRes = await restFetch(rpcUrl("drain_stale_missing_suspect"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({ p_stale_hours: 12, p_max_rows: 1000 }),
+    });
+    const drainRows = (await drainRes.json()) as Array<{ drained_count?: number; pool_invalidated_count?: number }>;
+    const drained = Number(drainRows[0]?.drained_count ?? 0);
+    if (drained > 0) {
+      stats.timingsMs = { ...(stats.timingsMs ?? {}), stale_missing_drained: drained, stale_pool_invalidated: Number(drainRows[0]?.pool_invalidated_count ?? 0) };
+    }
+  } catch {
+    // best-effort. lifecycle main path는 이미 끝났으니 swallow.
+  }
+
   return stats;
 }
 

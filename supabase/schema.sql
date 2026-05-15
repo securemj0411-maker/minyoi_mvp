@@ -2187,3 +2187,63 @@ $$;
 
 revoke all on function public.refund_mvp_daily_quota(text, uuid) from public;
 grant execute on function public.refund_mvp_daily_quota(text, uuid) to service_role;
+
+-- 2026-05-15: lifecycle stale drain (사용자 코멘트 401500642/404643880/404436811).
+-- lifecycle worker backlog 14k 누적으로 missing 매물이 시세에 잔존. tick 끝에서 호출.
+create or replace function public.drain_stale_missing_suspect(
+  p_stale_hours integer default 12,
+  p_max_rows integer default 1000
+)
+returns table (drained_count integer, pool_invalidated_count integer)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_pids bigint[];
+  v_pool integer;
+begin
+  select coalesce(array_agg(c.pid), '{}'::bigint[]) into v_pids
+  from (
+    select pid from public.mvp_lifecycle_checks
+    where status = 'missing_suspect'
+      and consecutive_missing_count >= 2
+      and last_checked_at < now() - make_interval(hours => greatest(1, coalesce(p_stale_hours, 12)))
+    limit greatest(1, least(coalesce(p_max_rows, 1000), 5000))
+  ) c;
+
+  if array_length(v_pids, 1) is null then
+    drained_count := 0; pool_invalidated_count := 0;
+    return next; return;
+  end if;
+
+  update public.mvp_raw_listings
+  set listing_state = 'disappeared',
+      disappeared_at = now(),
+      updated_at = now()
+  where pid = any(v_pids) and listing_state = 'missing_suspect';
+
+  update public.mvp_lifecycle_checks
+  set status = 'disappeared',
+      state_reason = 'auto_stale_drain',
+      updated_at = now()
+  where pid = any(v_pids) and status = 'missing_suspect';
+
+  with pool_drain as (
+    update public.mvp_candidate_pool
+    set status = 'invalidated',
+        invalidated_reason = 'lifecycle_stale_drain',
+        updated_at = now()
+    where pid = any(v_pids) and status in ('ready', 'reserved')
+    returning pid
+  )
+  select count(*) into v_pool from pool_drain;
+
+  drained_count := array_length(v_pids, 1);
+  pool_invalidated_count := coalesce(v_pool, 0);
+  return next;
+end;
+$$;
+
+revoke all on function public.drain_stale_missing_suspect(integer, integer) from public;
+grant execute on function public.drain_stale_missing_suspect(integer, integer) to service_role;
