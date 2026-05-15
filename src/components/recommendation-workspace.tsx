@@ -221,6 +221,7 @@ function PackSelectorCard({
   tokens,
   infiniteCredits,
   isPro,
+  planUsage,
   onOpen,
   busy,
   inventoryLoading,
@@ -236,6 +237,7 @@ function PackSelectorCard({
   tokens: number;
   infiniteCredits: boolean;
   isPro: boolean;
+  planUsage: { monthlyCredits: number; dailyUsed: number; dailyLimit: number } | null;
   onOpen: (pack: PackDef, requestedCards: number, filters?: CostFilters | null) => void;
   busy: boolean;
   inventoryLoading: boolean;
@@ -571,6 +573,39 @@ function PackSelectorCard({
             </div>
           </div>
 
+          {/* 한도 경고 — 80% 이상일 때만 표시 (월/일 둘 중 하나라도). admin/Pro unlimited는 X. */}
+          {(() => {
+            if (!planUsage || infiniteCredits) return null;
+            const { monthlyCredits, dailyUsed, dailyLimit } = planUsage;
+            const monthlyTotal = monthlyCredits;
+            const monthlyUsed = monthlyTotal > 0 ? Math.max(0, monthlyTotal - tokens) : 0;
+            const monthlyPct = monthlyTotal > 0 ? (monthlyUsed / monthlyTotal) * 100 : 0;
+            const dailyPct = dailyLimit > 0 ? (dailyUsed / dailyLimit) * 100 : 0;
+            const monthWarn = monthlyTotal > 0 && monthlyPct >= 80;
+            const dailyWarn = dailyLimit > 0 && dailyPct >= 80;
+            if (!monthWarn && !dailyWarn) return null;
+            const monthCritical = monthlyPct >= 100;
+            const dailyCritical = dailyPct >= 100;
+            const anyCritical = monthCritical || dailyCritical;
+            return (
+              <div
+                className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-[11px] font-black ${
+                  anyCritical
+                    ? "border border-red-300 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300"
+                    : "border border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
+                }`}
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  <span>{anyCritical ? "한도 도달" : "한도 임박"}</span>
+                </span>
+                <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] tabular-nums">
+                  {monthWarn ? <span>월 {monthlyUsed}/{monthlyTotal}</span> : null}
+                  {dailyWarn ? <span>오늘 {dailyUsed}/{dailyLimit}</span> : null}
+                </span>
+              </div>
+            );
+          })()}
+
           <button
             type="button"
             onClick={handleOpenClick}
@@ -677,6 +712,7 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
   const [tokens, setTokens] = useState<number>(0);
   const [infiniteCredits, setInfiniteCredits] = useState(false);
   const [isPro, setIsPro] = useState(false);
+  const [planUsage, setPlanUsage] = useState<{ monthlyCredits: number; dailyUsed: number; dailyLimit: number } | null>(null);
   const [userRef, setUserRef] = useState<string>(() => getOrCreateUserRef());
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [minProfitManwon, setMinProfitManwon] = useState<number>(4);
@@ -697,15 +733,20 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
     setInfiniteCredits(credits.infinite);
   }, []);
 
-  // Wave 93b: 신선도 슬라이더 minimum 결정용 — Pro plan 또는 admin이면 1시간까지 가능.
+  // Wave 93b: plan 정보 fetch (신선도 slider min + 사용량 한도 경고).
   useEffect(() => {
-    if (!authUser) { setIsPro(false); return; }
+    if (!authUser) { setIsPro(false); setPlanUsage(null); return; }
     let cancelled = false;
     fetch("/api/billing/me", { cache: "no-store" })
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (cancelled || !data) return;
         setIsPro(Boolean(data.isAdmin) || data.planKey === "pro");
+        setPlanUsage({
+          monthlyCredits: Number(data.monthlyCredits ?? 0),
+          dailyUsed: Number(data.dailyUsed ?? 0),
+          dailyLimit: Number(data.dailyLimit ?? 0),
+        });
       })
       .catch(() => {});
     return () => { cancelled = true; };
@@ -950,6 +991,7 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
           tokens={tokens}
           infiniteCredits={infiniteCredits}
           isPro={isPro || infiniteCredits}
+          planUsage={planUsage}
           onOpen={openPack}
           busy={loading}
           inventoryLoading={inventoryLoading}
