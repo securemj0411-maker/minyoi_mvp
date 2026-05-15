@@ -319,6 +319,23 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: 다른 정책 mismatch / 거짓 광고 audit (예: starter "베타 피드백 우선 반영" 도 실제 매커니즘 검증 필요).
 - commit: d0fc41a
 
+## 20. plan-config 거짓 광고 3개 일괄 제거
+
+- 시간: 2026-05-16 06:00 KST
+- 발견: #19 후속 audit. 4개 features grep 검증:
+  - **"신선도 슬라이더 사용" (Plus)**: maxFreshHours 필터 코드 있음 (packs/open + preview-inventory). 단 plan 게이팅 X (모든 사용자 사용 가능). → 텍스트 부분 사실, 명확화.
+  - **"전체 필터 자유 조작" (Pro)**: ❌ 코드 게이팅 X. 거짓.
+  - **"내 대시보드 사용 기록" (Starter)**: ❌ 모든 plan 기본 기능. 거짓.
+  - **"베타 피드백 우선 반영" (Starter, Plus)**: ❌ 매커니즘 X. 텍스트뿐. 거짓.
+- 변경 (`src/lib/plan-config.ts`):
+  - **Starter** features: "내 대시보드 사용 기록" + "베타 피드백 우선 반영" 제거 → "월 자동 갱신 (Free 는 1회 지급)" 추가 (실제 차별).
+  - **Plus** features: "베타 피드백 우선 반영" 제거. "신선도 슬라이더 사용" → "신선도 슬라이더 (최근 N시간 매물만 보기)" 명확화.
+  - **Pro** features: "전체 필터 자유 조작" 제거. 핫딜 알림 + 사용 패턴 리포트 (예정) 만 남음 — Pro hook은 핫딜이 강력해서 OK.
+- 검증: tsc clean.
+- 위험: 없음 (광고 정직화). 단 신선도 슬라이더는 Plus 게이팅 별도 결정 사항 (현재 모든 사용자 가능 — 정책으로 박을지 사용자 결정).
+- 다음: 매물 source 다양성 / 풀 충분성 진단 (베타 사용자가 실제 어떤 카테고리 보게 되는가). memory: Wave 90 후속.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

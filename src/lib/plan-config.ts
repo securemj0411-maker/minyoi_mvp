@@ -39,8 +39,7 @@ export const PLANS: Record<PlanKey, PlanDefinition> = {
     features: [
       "월 30 크레딧 지급",
       "하루 2회 추천 열람",
-      "내 대시보드 사용 기록",
-      "베타 피드백 우선 반영",
+      "월 자동 갱신 (Free 는 1회 지급)",
     ],
   },
   plus: {
@@ -56,8 +55,7 @@ export const PLANS: Record<PlanKey, PlanDefinition> = {
     features: [
       "월 80 크레딧 지급",
       "하루 5회 추천 열람",
-      "신선도 슬라이더 사용",
-      "베타 피드백 우선 반영",
+      "신선도 슬라이더 (최근 N시간 매물만 보기)",
     ],
   },
   pro: {
@@ -72,7 +70,6 @@ export const PLANS: Record<PlanKey, PlanDefinition> = {
     features: [
       "월 200 크레딧 지급",
       "하루 20회 추천 열람",
-      "전체 필터 자유 조작",
       "🔥 핫딜 텔레그램 알림 (Pro 전용)",
       "사용 패턴 리포트 (예정)",
     ],
