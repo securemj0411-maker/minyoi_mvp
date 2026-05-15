@@ -49,5 +49,45 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `open failed: ${await res.text().catch(() => "")}` }, { status: 500 });
   }
   const rows = (await res.json()) as Array<{ pid: number }>;
+
+  // 핫딜 reveal도 mvp_pack_reveals에 박아 "나의 상품"에 자연스럽게 노출.
+  // pack_open_id NULL + source='hotdeal'. expected_profit / confidence는 queue 정보로.
+  if (rows.length > 0) {
+    const pids = rows.map((r) => r.pid);
+    const queueRes = await restFetch(
+      `${tableUrl("mvp_hotdeal_queue")}?select=pid,profit_amount&pid=in.(${pids.join(",")})`,
+      { headers: serviceHeaders() },
+    );
+    const queueByPid = new Map(((await queueRes.json()) as Array<{ pid: number; profit_amount: number }>).map((r) => [Number(r.pid), Number(r.profit_amount)]));
+
+    // 이미 reveal row 있는 pid는 skip (re-open 시 중복 방지).
+    const existingRes = await restFetch(
+      `${tableUrl("mvp_pack_reveals")}?select=pid&user_ref=eq.${encodeURIComponent(userRef)}&pid=in.(${pids.join(",")})`,
+      { headers: serviceHeaders() },
+    );
+    const existing = new Set(((await existingRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid)));
+    const fresh = pids.filter((p) => !existing.has(p));
+
+    if (fresh.length > 0) {
+      await restFetch(`${tableUrl("mvp_pack_reveals")}`, {
+        method: "POST",
+        headers: { ...serviceHeaders(), Prefer: "resolution=ignore-duplicates,return=minimal" },
+        body: JSON.stringify(fresh.map((pid) => {
+          const profit = queueByPid.get(pid) ?? 0;
+          return {
+            pid,
+            user_ref: userRef,
+            pack_open_id: null,
+            source: "hotdeal",
+            expected_profit_min: profit,
+            expected_profit_max: profit,
+            confidence: 0.9,
+            revealed_at: now,
+          };
+        })),
+      }).catch(() => undefined);
+    }
+  }
+
   return NextResponse.json({ opened: rows.length, pids: rows.map((r) => r.pid) });
 }
