@@ -808,6 +808,28 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 39. catalog/parser 정확도 audit (사용자 요청)
+
+- 시간: 2026-05-16 10:25 KST
+- 사용자 요청: "아이패드/아이폰/맥북/애플 외 모델 시세 정확히 잡는지, 파싱 모델/연식/모델명 catalog 다 제대로 됐는지 검토"
+- 검토:
+  - production 매물의 comparable_key 패턴 (parser_version=v41 기준):
+    - iPad: `ipad|ipad_pro|5_gen|m1|12_9in|256gb|wifi` 등 generation+chip+screen+storage+conn 다 박힘 ✅
+    - iPhone: `iphone|iphone_15_pro_max|256gb`, `_16_pro`, `_13_pro_max` 등 generation+variant 다 박힘 ✅
+    - MacBook: 87.9% generation key 잡힘 (v41) ✅
+    - Apple Watch: `applewatch_se2|44mm|gps`, `_series7|45mm`, `_ultra2|49mm` 명확 ✅
+    - Galaxy Tab: `galaxy_tab_s10_ultra|14_6in|256gb|cellular`, `_s9_fe_plus|12_4in` 다 박힘 ✅
+    - Galaxy Watch: `galaxywatch_7|44mm|gps`, `_6|40mm|cellular` 박힘 ✅
+- **catalog/parser 정확도 결론: 다 정확.** 추가 fix 불필요.
+- 내 첫 진단 정규식 (`series_\d|gen_\d`) false negative — `applewatch_se2`, `_ultra2` 같이 model token 에 generation 직접 박힌 건 못 잡음. 실 데이터 sample로 확인 후 정정.
+- 진짜 잠재 issue (catalog 깊이 보강 — 별도 wave):
+  - **Special edition 구분 X**: Beats Solo 4 Jennie edition vs 일반 → 같은 SKU 로 묶여 시세 mixed (MJ 코멘트 #2). catalog `beats_solo_4` 1개 SKU.
+  - 일부 모델의 minor variant (예: AirPods Max USB-C vs Lightning, Apple Watch Series 9 41mm 알루미늄/스테인리스) 은 이미 박혀있음.
+- 다음:
+  - 별도 wave: special edition catalog 보강 (Beats Jennie / Apple Watch hermès / 등).
+  - 별도 wave: outlier trimmed mean (코멘트 #3).
+  - 별도 wave: 외부 손상 differential 비교 (코멘트 #4/#12).
+
 ## 38. iPad 12.9 generation 누락 root cause + 옛 parser reparse 트리거
 
 - 시간: 2026-05-16 10:10 KST

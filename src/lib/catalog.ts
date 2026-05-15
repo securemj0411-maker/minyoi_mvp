@@ -2168,6 +2168,27 @@ export const CATALOG: Sku[] = [
     released: 2023,
   },
   {
+    // Wave 112 (2026-05-15): Apple iMac M4 24" (2024-10). msrp 1,990k base. Bunjang
+    // 30분 sweep null sample에서 "아이맥 m4 256 기본형" 1건 발견. catalog 누락.
+    // M1/M2/M3 + 27"/21" (Intel) 격리.
+    id: "desktop-imac-m4-24",
+    brand: "Apple",
+    category: "desktop",
+    laneKey: "desktop_imac_m4_24",
+    modelName: "Apple iMac M4 24\"",
+    aliases: ["iMac M4", "아이맥 M4", "iMac M4 24", "아이맥 M4 24", "아이맥 24인치 M4"],
+    mustContain: [["imac", "아이맥"], ["m4"]],
+    mustNotContain: [
+      "m1", "m2", "m3", "intel", "인텔",
+      "27인치", "27\"", "27in", "21인치", "21.5", "21\"", "21in", "retina 5k", "5k retina",
+      "mac studio", "맥스튜디오", "mac pro", "맥프로", "mac mini", "맥미니", "macbook", "맥북",
+      "스탠드만", "어댑터만", "케이블만", "박스만", "케이스만", "부품용", "파손", "고장", "수리이력", "액정파손", "메인보드",
+      "매입", "삽니다", "구해요", "구매합니다", "구합니다",
+    ],
+    msrpKrw: 1990000,
+    released: 2024,
+  },
+  {
     // Apple Mac Studio M4 Max 512GB (2025). Query "맥스튜디오" is polluted by
     // MAXSTUDIO apparel; only exact Mac Studio + M4 Max + 512 rows may bind.
     id: "desktop-mac-studio-m4-max-512",
