@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-15T05:03:56.979Z",
+  "_updated_at": "2026-05-15T05:14:40.466Z",
   "resolutions": {
     "334750861": {
       "resolved_at": "2026-05-14T23:21:16.219Z",
@@ -94,11 +94,12 @@
       ]
     },
     "401500642": {
-      "resolved_at": "2026-05-15T05:03:56.699Z",
-      "summary": "parser v39 (chip prefix lookahead + 비노캔 키워드) + reparse | v31 parser 옛 매물 + 시세 175만원 부풀림 진단. PARSER_VERSION v40→v41로 올림 (새 정규식 stamp). reparse 시 accessory_bundle 라벨 박혀 시세 집계 제외. 추가: missing_suspect 6h+ 시세 제외 (이 매물 본인이 missing_suspect라 시세 기여도 차단).",
+      "resolved_at": "2026-05-15T05:14:40.176Z",
+      "summary": "parser v39 (chip prefix lookahead + 비노캔 키워드) + reparse | v31 parser 옛 매물 + 시세 175만원 부풀림 진단. PARSER_VERSION v40→v41로 올림 (새 정규식 stamp). reparse 시 accessory_bundle 라벨 박혀 시세 집계 제외. 추가: missing_suspect 6h+ 시세 제외 (이 매물 본인이 missing_suspect라 시세 기여도 차단). | lifecycle backlog 근본 fix — SQL one-shot drain (21건) + batch size 30→80 + drain_stale_missing_suspect RPC tick 자동 호출. 본 매물도 disappeared 전환 + 풀 invalidate 완료.",
       "commits": [
         "ddcbaa9",
-        "1d2c604"
+        "1d2c604",
+        "f1a4397"
       ]
     },
     "401749290": {
@@ -130,17 +131,19 @@
       ]
     },
     "404436811": {
-      "resolved_at": "2026-05-15T05:03:56.976Z",
-      "summary": "삭제/숨겨진 매물 시세 비교군 끼는 문제. missing_suspect 6h+ skip + PARSER_VERSION bump (옛 v40 라벨 누락 매물 reparse 대상). 비교군 17건 중 다수가 v40 옛 라벨로 applecare/accessory 누락이라 reparse 필요.",
+      "resolved_at": "2026-05-15T05:14:40.463Z",
+      "summary": "삭제/숨겨진 매물 시세 비교군 끼는 문제. missing_suspect 6h+ skip + PARSER_VERSION bump (옛 v40 라벨 누락 매물 reparse 대상). 비교군 17건 중 다수가 v40 옛 라벨로 applecare/accessory 누락이라 reparse 필요. | 삭제/숨겨진 매물 시세 비교군 문제. lifecycle backlog 14k → batch 30→80 + auto stale drain RPC. 비교군의 옛 stale 매물 정리 + 다음 cycle 시세 정상화 예상.",
       "commits": [
-        "1d2c604"
+        "1d2c604",
+        "f1a4397"
       ]
     },
     "404643880": {
-      "resolved_at": "2026-05-15T05:03:56.838Z",
-      "summary": "missing_suspect 24h+인데 disappeared 전환 안 됨. tick-pipeline에 last_missing_at>6h skip 추가로 시세 비교군에서 즉시 제외. lifecycle worker 동작 자체는 별도 wave.",
+      "resolved_at": "2026-05-15T05:14:40.322Z",
+      "summary": "missing_suspect 24h+인데 disappeared 전환 안 됨. tick-pipeline에 last_missing_at>6h skip 추가로 시세 비교군에서 즉시 제외. lifecycle worker 동작 자체는 별도 wave. | lifecycle backlog 근본 fix. 본 매물 disappeared 전환 + 풀 invalidate. 이후 stale 매물 자동 drain (12h+ missing_suspect).",
       "commits": [
-        "1d2c604"
+        "1d2c604",
+        "f1a4397"
       ]
     },
     "404986580": {
