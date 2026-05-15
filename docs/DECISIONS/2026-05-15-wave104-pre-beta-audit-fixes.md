@@ -787,6 +787,27 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 다음: MJ 결정에 따라 Wave 107 시작 또는 베타 launch.
 - commit: d19f3a1
 
+## 36. #35 정정 — dark mode 토글 이미 박혀있음
+
+- 시간: 2026-05-16 09:45 KST
+- MJ 지적: "다크모드는 이미 됐는데" — 정정.
+- 재검증:
+  - `src/components/app-nav.tsx:15` `type ThemeMode = "system" | "light" | "dark"`
+  - localStorage 저장/로드 (line 34) + system 모드 + prefers-color-scheme 매칭 (line 25, 86, 93)
+  - html element dark class toggle + data-theme attribute
+  - toggle UI 박혀있음 (line 102+)
+  - `src/components/dashboard.tsx:183` 도 동일 pattern
+- 잘못 진단: 내가 `dark.*toggle` / `theme.*toggle` 같은 좁은 grep 패턴 → 못 찾음. 코드 더 깊게 봤어야.
+- 정정: **dark mode 토글 = 이미 완료. Wave 108 후보에서 제거.** 대신 accessibility (aria-label) 만 남음.
+- 다음 wave 후보 정리 (수정):
+
+| Wave | 영역 | 가치 | 작업량 |
+|---|---|---|---|
+| 107 | source 다양화 (신발/가방/스포츠) | ⭐⭐⭐ 비즈니스 핵심 | 1-2일 |
+| 108 | accessibility (aria-label / role / 키보드 nav) | ⭐⭐ UX | 0.5일 |
+| 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
+| 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
