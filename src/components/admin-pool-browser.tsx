@@ -79,7 +79,7 @@ const SORT_OPTIONS = [
   { v: "latest", label: "최신 검증순" },
 ];
 
-export default function AdminPoolBrowser() {
+export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings" }: { endpoint?: string } = {}) {
   const [data, setData] = useState<Resp | null>(null);
   const [stats, setStats] = useState<Resp["stats"]>(null);
   const [loading, setLoading] = useState(false);
@@ -98,7 +98,7 @@ export default function AdminPoolBrowser() {
       const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), status, sort });
       if (band) params.set("band", band);
       if (sku) params.set("sku", sku);
-      const res = await fetch(`/api/admin/pool-listings?${params}`, { credentials: "include" });
+      const res = await fetch(`${endpoint}?${params}`, { credentials: "include" });
       if (!res.ok) {
         const body = (await res.json().catch(() => null)) as { error?: string } | null;
         throw new Error(body?.error ?? `HTTP ${res.status}`);
@@ -112,7 +112,7 @@ export default function AdminPoolBrowser() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, status, band, sku, sort]);
+  }, [page, pageSize, status, band, sku, sort, endpoint]);
 
   useEffect(() => {
     void fetchPage();

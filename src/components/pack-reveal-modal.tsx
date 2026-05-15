@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { MarketSourceDebug } from "@/components/market-source-debug";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
@@ -519,6 +520,10 @@ function RevealCardItem({
         <VerdictBadgesMini card={card} />
 
         <MarketBasisMini card={card} />
+
+        {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
+        {/* "시세 어떤 기준으로 잡나" 시각화. history 부족하면 자동 hide. */}
+        <MarketHistoryChart comparableKey={card.marketBasis?.comparableKey ?? null} currentPrice={card.price} />
 
         <VelocityBasisMini card={card} />
 
