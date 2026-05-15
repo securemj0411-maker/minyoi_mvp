@@ -141,7 +141,7 @@ export default function AdminPoolBrowser() {
   })();
 
   return (
-    <section className="space-y-4 px-4 py-6 lg:px-8 lg:py-8">
+    <section className="space-y-4 px-3 py-4 sm:px-4 sm:py-6 lg:px-8 lg:py-8">
       <div className="rounded-2xl border border-[#e2d9cb] bg-[#fffaf6] p-5 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

@@ -260,12 +260,12 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
         ) : activeView === "admin-pool" ? (
           <AdminPoolBrowser />
         ) : activeView === "recommend" ? (
-          <section className="px-4 py-6 lg:col-start-2 lg:px-5 lg:py-8">
+          <section className="px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             <RecommendationWorkspace initialInventory={initialInventory} />
           </section>
         ) : (
           // history
-          <section className="min-w-0 px-4 py-6 lg:col-start-2 lg:px-5 lg:py-8">
+          <section className="min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             <UserRevealDashboard userRef={userRefForAuthUser(user.id)} />
           </section>
         )}

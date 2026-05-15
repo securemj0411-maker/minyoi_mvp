@@ -19,7 +19,7 @@ export default function HotdealAlertsView() {
   }, []);
 
   return (
-    <section className="px-4 py-6 lg:px-8 lg:py-8">
+    <section className="px-3 py-4 sm:px-4 sm:py-6 lg:px-8 lg:py-8">
       <div className="mx-auto max-w-2xl space-y-6">
         <header>
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
