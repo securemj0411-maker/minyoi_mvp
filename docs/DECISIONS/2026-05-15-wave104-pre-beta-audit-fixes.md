@@ -193,6 +193,18 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: 비슷한 패턴 다른 RPC 점검 (`spend_and_record_pack_open` 은 atomic이라 OK 확인됨, Wave 60).
 - commit: 9242498
 
+## 13. pack-reveal-modal unavailable 케이스 retry CTA + 안내
+
+- 시간: 2026-05-16 04:25 KST
+- 발견: audit. `pack-reveal-modal.tsx:1065` `result === "unavailable"` (재고 부족) 분기에 "닫기" 버튼만 있고 재시도 CTA 없음. `result === "refunded"` (라인 1040) 에는 "닫기" + "다시 시도" 둘 다 있는데 일관성 깨짐. 사용자가 재고 부족 보고 닫으면 다시 추천 카드 누르고 풀 다시 열어야 하는 dead-end. unavailable은 atomic RPC에서 amount=0 처리라 토큰 차감 X → 재시도 안전.
+- 변경 (`src/components/pack-reveal-modal.tsx:1065-1080`):
+  - "잠시 후 새 매물이 풀에 들어올 수 있어요. 다시 시도하거나 다른 등급을 열어보세요." 안내 문구 추가.
+  - "닫기" + "다시 시도" 두 버튼 (refunded와 동일 패턴, onRetry 그대로 재사용).
+- 검증: tsc clean.
+- 위험: 사용자가 unavailable 받고 다시 시도 → 또 unavailable 가능성 있음. 풀 충원이 5분 cron이라 즉각 새 매물 나오는 건 아님. 그래도 닫기만 있는 것보다 "다른 등급 시도" 힌트가 명시되어 의도 명확.
+- 다음: med severity 항목 (plan cancel button touch target, dark mode admin pool 등).
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

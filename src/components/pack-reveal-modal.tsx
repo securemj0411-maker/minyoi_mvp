@@ -1067,14 +1067,26 @@ export default function PackRevealModal({
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-700 dark:bg-zinc-800/40">
                 <div className="text-base font-bold">현재 재고 부족</div>
                 <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{result.reason}</p>
+                {/* Wave 106: dead-end 방지. unavailable은 토큰 차감 X (atomic RPC amount=0)이라
+                    재시도 안전. 새 매물이 풀에 들어왔을 가능성 + 다른 등급도 시도 가능. */}
+                <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                  잠시 후 새 매물이 풀에 들어올 수 있어요. 다시 시도하거나 다른 등급을 열어보세요.
+                </p>
               </div>
-              <div className="flex justify-end">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+                  className="rounded-lg border border-zinc-200 px-4 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                 >
                   닫기
+                </button>
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-500/30 hover:bg-emerald-700"
+                >
+                  다시 시도
                 </button>
               </div>
             </div>
