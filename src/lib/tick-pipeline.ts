@@ -127,6 +127,8 @@ type ScorableRawRow = RawListingRow & {
   seller_uid: string | null;
   // Wave 132 (2026-05-16): 댓글 수 — detail-worker가 detail.commentCount 박음. candidate-pool-builder gate에서 사용.
   num_comment: number | null;
+  // Wave 137 (2026-05-16): 수량 — qty > 1 = 대량 판매업자. pool 진입 차단 gate.
+  qty: number | null;
 };
 
 type ParsedListingRow = {
@@ -1537,6 +1539,8 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
             sold_detected_at: now,
             // Wave 132 (2026-05-16): sold-out 매물도 num_comment 박음 (시세 sample 분석 시 활용).
             num_comment: detail.commentCount ?? null,
+            // Wave 137: sold-out 매물도 qty 박음 (대량 판매업자 분석).
+            qty: detail.qty ?? null,
             detail_status: "done",
             detail_enriched_at: now,
             detail_error: null,
@@ -1606,6 +1610,8 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           // Wave 132 (2026-05-16): detail API의 commentCount를 persistent column에 저장.
           // 사업 정책: 댓글 >= 8 = 흥정/호가 괴리 → pool 진입 차단 (candidate-pool-builder gate).
           num_comment: detail.commentCount ?? null,
+          // Wave 137 (2026-05-16): 수량 — qty > 1 = 대량 판매업자 (1:1 거래 X) → pool 진입 차단.
+          qty: detail.qty ?? null,
           detail_status: "done",
           detail_enriched_at: now,
           detail_error: null,
@@ -1781,7 +1787,7 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   // raw upsert / detail enrichment / market invalidation 시점에 dirty=true로 마킹.
   const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
   // Wave 132: num_comment 추가 — candidate-pool-builder가 >= 8 차단.
-  const baseColumns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status,num_comment";
+  const baseColumns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status,num_comment,qty";
   const columns = scoreDirtyAvailable ? `${baseColumns},pool_eligible` : baseColumns;
   const dirtyFilter = scoreDirtyAvailable ? "&score_dirty=eq.true" : "";
   const url = `${tableUrl("mvp_raw_listings")}?select=${columns}${dirtyFilter}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&order=last_seen_at.desc&limit=${limit}`;
@@ -1814,7 +1820,7 @@ async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Prom
 
 async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
   // Wave 132: num_comment 추가 (시세 sample 분석 시 활용 가능).
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty";
   const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&order=detail_enriched_at.desc.nullslast,last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
@@ -1824,7 +1830,7 @@ async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<
   const unique = [...new Set(pids.filter(Number.isFinite))].slice(0, limit);
   if (unique.length === 0) return [];
   // Wave 132: num_comment 추가.
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty";
   const rows: ScorableRawRow[] = [];
   for (const chunk of chunkArray(unique, PARSED_PID_READ_CHUNK_SIZE)) {
     const remaining = limit - rows.length;
@@ -3805,6 +3811,8 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       aiEscrowKind,
       // Wave 132 (2026-05-16): row.num_comment를 PipelineRow에 박음 → candidate-pool-builder가 >= 8 gate에서 사용.
       numComment: row.num_comment ?? null,
+      // Wave 137 (2026-05-16): row.qty → candidate-pool-builder qty > 1 gate.
+      qty: row.qty ?? null,
       ...shipping,
     });
   }

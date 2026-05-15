@@ -904,6 +904,8 @@ export type PipelineRow = {
   aiEscrowKind?: string | null;
   // Wave 132 (2026-05-16): 댓글 수 — candidate-pool-builder가 >= 8 차단 gate 사용.
   numComment?: number | null;
+  // Wave 137 (2026-05-16): 수량 — qty > 1 = 대량 판매업자. candidate-pool-builder 차단.
+  qty?: number | null;
   shippingFee: number;
   shippingFeeGeneral: number | null;
   shippingSource: string;

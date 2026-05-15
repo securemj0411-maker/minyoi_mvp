@@ -26,6 +26,12 @@ const MAX_POOL_PRICE_KRW = 2_000_000;
 // NULL = detail 아직 미수집 매물 (gate 통과 — 다음 tick에서 enrich 후 재평가).
 const MAX_POOL_NUM_COMMENT = 8;
 
+// Wave 137 (2026-05-16): 수량 상한 — Wave 136 audit 발견.
+// product.qty > 1 = 대량 판매업자 (예: 냉장고 88개, 게이밍PC 35개). 일반 사용자 1:1 거래 X.
+// qty = 1 = 일반 매물. qty > 1 즉시 pool 진입 차단.
+// NULL = detail 미수집 (통과 — 다음 tick 재평가).
+const MAX_POOL_QTY = 1;
+
 // Wave 129 (2026-05-16): parse_confidence threshold 명시 — 사업 보고서 L1.
 // "AI normalization 매칭 confidence < 0.85면 매물 풀에서 제외".
 // 우리 정책 (LAUNCH_PLAN 12b precision-first):
@@ -55,6 +61,9 @@ export type PoolCandidateInput = {
   // 흥정/문의 댓글 많음 = 호가-실거래 괴리 큼 → 추천 의미 없음.
   // NULL = detail 아직 미수집 (검증 못 했으므로 일단 통과).
   numComment?: number | null;
+  // Wave 137 (2026-05-16): 수량 — qty > 1 = 대량 판매업자 (1:1 거래 X) → pool 진입 차단.
+  // Wave 136 audit 발견 (qty 88/35/26 = 대량 판매업자, qty 1 = 일반 매물).
+  qty?: number | null;
 };
 
 export type PoolParsedInput = {
@@ -132,6 +141,14 @@ export function buildCandidatePoolRows(input: {
     if (row.numComment != null && Number.isFinite(row.numComment) && row.numComment >= MAX_POOL_NUM_COMMENT) {
       skipped += 1;
       invalidations.push({ pid, reason: `num_comment_above_${MAX_POOL_NUM_COMMENT}` });
+      continue;
+    }
+
+    // Wave 137 (2026-05-16): 수량 > 1 매물 풀 진입 차단 (Wave 136 audit 발견).
+    // qty > 1 = 대량 판매업자 (1:1 거래 X). 일반 사용자 추천 의미 없음.
+    if (row.qty != null && Number.isFinite(row.qty) && row.qty > MAX_POOL_QTY) {
+      skipped += 1;
+      invalidations.push({ pid, reason: `qty_above_${MAX_POOL_QTY}` });
       continue;
     }
 

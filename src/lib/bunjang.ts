@@ -43,6 +43,8 @@ export type DetailData = {
   viewCount: number | null;
   favoriteCount: number | null;
   commentCount: number | null;
+  // Wave 137 (2026-05-16): 수량 — qty > 1 = 대량 판매업자 (1:1 거래 X) → pool 진입 차단.
+  qty: number | null;
   shopReviewRating: number | null;
   shopReviewCount: number;
   shopUid: string | null;
@@ -224,6 +226,8 @@ export async function fetchDetail(pid: string): Promise<DetailData | null> {
       // 사용자 본 매물 pid 402009410 → buntalkCount=15 / commentCount=0, pid 398031598 → buntalkCount=8 / commentCount=0.
       // commentCount 응답 type은 "흥정/호가 괴리" 신호 — pool 진입 차단 기준 (>= 8).
       commentCount: firstNumber(metricsData.buntalkCount, metricsData.commentCount, metricsData.comments, metricsData.numComments, product?.commentCount, product?.numComments),
+      // Wave 137 (2026-05-16): 수량 — Wave 136 audit 발견. qty > 1 = 대량 판매업자.
+      qty: toInt(product?.qty),
       shopReviewRating: product?.inspectionStatus != null || shop?.reviewRating != null
         ? Number(shop?.reviewRating ?? 0) || null
         : null,

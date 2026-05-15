@@ -148,6 +148,54 @@ async function main() {
     return;
   }
 
+  // Wave 136 (2026-05-16) --audit <pid,…> 모드: 모든 field 매핑 raw response와 비교 audit.
+  // Wave 132 commentCount→buntalkCount 같은 wrong path 재발 방지.
+  const auditArg = process.argv.find((a) => a.startsWith("--audit="));
+  if (auditArg) {
+    const pids = auditArg.slice("--audit=".length).split(",").map(Number).filter(Number.isFinite);
+    console.log("=== Wave 136 bunjang field 매핑 audit ===\n");
+    for (const pid of pids) {
+      const url = `https://api.bunjang.co.kr/api/pms/v1/products/${pid}/detail/web`;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.log(`pid=${pid} HTTP ${res.status} — skip`);
+          continue;
+        }
+        const json: any = await res.json();
+        const data = json?.data ?? {};
+        const product = data?.product ?? {};
+        const shop = data?.shop ?? {};
+        const metrics = product?.metrics ?? {};
+        console.log(`pid=${pid}`);
+        console.log("  metrics.*       :", Object.keys(metrics));
+        console.log("    values:", JSON.stringify(metrics));
+        console.log("  shop.* (관련만)  :", Object.keys(shop).filter((k) => /review|follow|sales|proshop|official|join|uid/i.test(k)));
+        console.log("    shop sample:", JSON.stringify({
+          uid: shop.uid,
+          reviewRating: shop.reviewRating,
+          reviewCount: shop.reviewCount,
+          followerCount: shop.followerCount,
+          salesCount: shop.salesCount,
+          isOfficialSeller: shop.isOfficialSeller,
+          joinDate: shop.joinDate,
+          proshop: shop.proshop,
+        }, null, 2));
+        console.log("  product 관련 key:", Object.keys(product).filter((k) => /view|fav|count|num|trade|status|sale/i.test(k)));
+        console.log("  ALL product keys:", Object.keys(product));
+        console.log("  inspectionStatus =", product.inspectionStatus);
+        console.log("  condition/productCondition/status =",
+          { condition: product.condition, productCondition: product.productCondition, status: product.status });
+        console.log("  qty/originPrice/careType =",
+          { qty: product.qty, originPrice: product.originPrice, careType: product.careType });
+        console.log("");
+      } catch (err) {
+        console.log(`pid=${pid} error:`, err);
+      }
+    }
+    return;
+  }
+
   console.log("Wave 132 backfill: loading pool pids…");
   const pids = await loadPoolPids();
   console.log(`Pool 매물 ${pids.length}건 — 댓글수 fetch 시작 (concurrency=${CONCURRENCY})`);

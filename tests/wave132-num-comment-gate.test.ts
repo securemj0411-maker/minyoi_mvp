@@ -112,3 +112,68 @@ describe("Wave 132 — num_comment >= 8 pool gate", () => {
     assert.equal(ncSkip, undefined, "undefined도 통과");
   });
 });
+
+// Wave 137 (2026-05-16): qty > 1 pool 진입 차단 (대량 판매업자).
+// Wave 136 audit 발견: product.qty 88/35/26 = 대량 판매업자, 1 = 일반 매물.
+describe("Wave 137 — qty > 1 pool gate (대량 판매업자 차단)", () => {
+  it("qty 1 → pool 통과 (일반 매물)", () => {
+    const result = buildCandidatePoolRows({
+      rows: [{ ...baseRow, qty: 1 }],
+      parsedByPid: baseParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+    });
+    const qtySkip = result.invalidations.find((i) => i.reason.startsWith("qty_above"));
+    assert.equal(qtySkip, undefined, "qty 1 = 일반 매물 → 통과");
+  });
+
+  it("qty 2 → pool 차단 (다수 보유)", () => {
+    const result = buildCandidatePoolRows({
+      rows: [{ ...baseRow, qty: 2 }],
+      parsedByPid: baseParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+    });
+    const qtySkip = result.invalidations.find((i) => i.reason.startsWith("qty_above"));
+    assert.ok(qtySkip, "qty 2 = 차단되어야");
+  });
+
+  it("qty 88 (대량 판매업자) → pool 차단", () => {
+    const result = buildCandidatePoolRows({
+      rows: [{ ...baseRow, qty: 88 }],
+      parsedByPid: baseParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+    });
+    const qtySkip = result.invalidations.find((i) => i.reason.startsWith("qty_above"));
+    assert.ok(qtySkip, "qty 88 = 대량 판매업자 차단");
+  });
+
+  it("qty null (detail 미수집) → 통과 (다음 tick 재평가)", () => {
+    const result = buildCandidatePoolRows({
+      rows: [{ ...baseRow, qty: null }],
+      parsedByPid: baseParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+    });
+    const qtySkip = result.invalidations.find((i) => i.reason.startsWith("qty_above"));
+    assert.equal(qtySkip, undefined, "NULL은 통과");
+  });
+
+  it("qty undefined (PoolCandidateInput 옵셔널) → 통과", () => {
+    const row = { ...baseRow };
+    const result = buildCandidatePoolRows({
+      rows: [row],
+      parsedByPid: baseParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+    });
+    const qtySkip = result.invalidations.find((i) => i.reason.startsWith("qty_above"));
+    assert.equal(qtySkip, undefined, "undefined도 통과");
+  });
+});
