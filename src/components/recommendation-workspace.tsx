@@ -1,8 +1,19 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import CreditIcon from "@/components/credit-icon";
+import {
+  CoinsIcon,
+  LightbulbIcon,
+  PackageIcon,
+  ScaleIcon,
+  ShieldIcon,
+  SwordsIcon,
+  TargetIcon,
+  WalletIcon,
+  ZapIcon,
+} from "@/components/icons";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { loadClientCredits } from "@/lib/client-credits";
 import { dispatchPackRevealsUpdated } from "@/lib/pack-events";
@@ -72,22 +83,22 @@ type RiskPreset = {
   band: PackBand;
   filters: AdvancedFilters;
   label: string;
-  emoji: string;
+  Icon: (props: { className?: string }) => ReactElement;
   desc: string;
 };
 const RISK_PRESETS: Record<RiskProfile, RiskPreset> = {
   safe: {
-    band: 1, label: "안전", emoji: "🛡️",
+    band: 1, label: "안전", Icon: ShieldIcon,
     desc: "15만원 이하 · 차익 1만원 이상 · 신뢰도 80% 이상",
     filters: { priceMaxManwon: 15, minProfitManwon: 1, minConfidencePct: 80, categories: [], maxFreshHours: 0 },
   },
   balanced: {
-    band: 2, label: "균형", emoji: "⚖️",
+    band: 2, label: "균형", Icon: ScaleIcon,
     desc: "30만원 이하 · 차익 2만원 이상 · 신뢰도 70% 이상",
     filters: { priceMaxManwon: 30, minProfitManwon: 2, minConfidencePct: 70, categories: [], maxFreshHours: 0 },
   },
   aggressive: {
-    band: 3, label: "공격", emoji: "⚔️",
+    band: 3, label: "공격", Icon: SwordsIcon,
     desc: "80만원 이하 · 차익 5만원 이상 · 신뢰도 60% 이상",
     filters: { priceMaxManwon: 80, minProfitManwon: 5, minConfidencePct: 60, categories: [], maxFreshHours: 0 },
   },
@@ -342,10 +353,10 @@ function PackSelectorCard({
                 key={profile}
                 type="button"
                 onClick={() => applyRiskPreset(profile)}
-                className={`rounded-2xl border px-2 py-2 text-center transition ${active ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]" : "border-[#e0d6c5] bg-white text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"}`}
+                className={`flex flex-col items-center justify-center rounded-2xl border px-2 py-2 transition ${active ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]" : "border-[#e0d6c5] bg-white text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"}`}
               >
-                <div className="text-base leading-none">{preset.emoji}</div>
-                <div className="mt-0.5 text-xs font-black">{preset.label}</div>
+                <preset.Icon className="h-4 w-4" />
+                <div className="mt-1 text-xs font-black">{preset.label}</div>
               </button>
             );
           })}
@@ -357,7 +368,7 @@ function PackSelectorCard({
           {/* 매입가 */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-black text-[#59665b] dark:text-zinc-300">💰 매입가</span>
+              <span className="inline-flex items-center gap-1 font-black text-[#59665b] dark:text-zinc-300"><WalletIcon className="h-3.5 w-3.5" /> 매입가</span>
               <span className="font-black text-zinc-900 dark:text-zinc-50">
                 {advancedFilters.priceMaxManwon === 0 ? "무제한" : `${advancedFilters.priceMaxManwon}만원 이하`}
               </span>
@@ -379,8 +390,8 @@ function PackSelectorCard({
             return (
               <div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-black text-[#59665b] dark:text-zinc-300">
-                    ⚡ 신선도
+                  <span className="inline-flex items-center gap-1 font-black text-[#59665b] dark:text-zinc-300">
+                    <ZapIcon className="h-3.5 w-3.5" /> 신선도
                     {!isPro && (
                       <span className="ml-1.5 rounded-full bg-[#fff4d6] px-1.5 py-0.5 text-[9px] font-black text-[#7b5724] dark:bg-amber-900/30 dark:text-amber-300">
                         3시간 미만은 Pro
@@ -417,7 +428,7 @@ function PackSelectorCard({
             <div className="space-y-2 border-t border-[#e8dec9] pt-2 dark:border-zinc-700/40">
               <div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-black text-[#59665b] dark:text-zinc-300">💵 차익</span>
+                  <span className="inline-flex items-center gap-1 font-black text-[#59665b] dark:text-zinc-300"><CoinsIcon className="h-3.5 w-3.5" /> 차익</span>
                   <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minProfitManwon}만원 이상</span>
                 </div>
                 <input
@@ -440,7 +451,7 @@ function PackSelectorCard({
               </div>
               <div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-black text-[#59665b] dark:text-zinc-300">🎯 신뢰도</span>
+                  <span className="inline-flex items-center gap-1 font-black text-[#59665b] dark:text-zinc-300"><TargetIcon className="h-3.5 w-3.5" /> 신뢰도</span>
                   <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minConfidencePct}% 이상</span>
                 </div>
                 <input
@@ -476,7 +487,7 @@ function PackSelectorCard({
           onClick={() => setShowCategories(s => !s)}
           className="mt-2 flex w-full items-center justify-between rounded-[16px] bg-[#f6efe4] px-3 py-2 text-xs font-black text-[#59665b] hover:bg-[#efe7d6] dark:bg-zinc-950/40 dark:text-zinc-300"
         >
-          <span>📦 카테고리 {advancedFilters.categories.length === 0 ? "(전체)" : `(${advancedFilters.categories.length}개 선택)`}</span>
+          <span className="inline-flex items-center gap-1.5"><PackageIcon className="h-3.5 w-3.5" /> 카테고리 {advancedFilters.categories.length === 0 ? "(전체)" : `(${advancedFilters.categories.length}개 선택)`}</span>
           <span className="text-[10px]">{showCategories ? "▲" : "▼"}</span>
         </button>
         {showCategories ? (
@@ -502,11 +513,11 @@ function PackSelectorCard({
         {/* 자세한 정보 collapsible */}
         <details className="mt-2 rounded-[14px] bg-[#f6efe4] px-3 py-1.5 dark:bg-zinc-950/40">
           <summary className="cursor-pointer text-[10.5px] font-black text-[#59665b] dark:text-zinc-400">
-            💡 자세한 정보
+            <span className="inline-flex items-center gap-1.5"><LightbulbIcon className="h-3.5 w-3.5" /> 자세한 정보</span>
           </summary>
           <div className="mt-2 space-y-1 text-[10.5px] text-[#647064] dark:text-zinc-400">
             <div className="font-black text-[#3a4a3f] dark:text-zinc-300">계산식:</div>
-            <div>· 기본 ({RISK_PRESETS[riskProfile].emoji} {RISK_PRESETS[riskProfile].label}): <b>{costBreakdown.base}</b></div>
+            <div>· 기본 ({RISK_PRESETS[riskProfile].label}): <b>{costBreakdown.base}</b></div>
             <div>· 차익 ×<b>{costBreakdown.profitMult}</b> · 신뢰도 ×<b>{costBreakdown.confidenceMult}</b> · 가격 ×<b>{costBreakdown.priceMult}</b></div>
             <div>= 카드 2매당 <b>{costBreakdown.perCardStep}</b> 토큰 (raw {costBreakdown.rawPerCardStep.toFixed(2)})</div>
             <div className="pt-1 text-[10px] text-zinc-500">현금화 일수 (회전): <span className="rounded-full bg-zinc-200 px-1.5 text-[9px] dark:bg-zinc-800">곧 활성화</span></div>
