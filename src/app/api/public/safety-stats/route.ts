@@ -21,9 +21,11 @@ export async function GET() {
 
     // Wave 139 (2026-05-16): 도매/사기 그룹 차단 카운터 추가 (Wave 132/137/138a/138b).
     // 사용자 retention: "와, 이 사이트 진짜 사기/업자도 걸러내는구나" UI 신뢰 시그널.
+    // 2026-05-16 (사용자 코멘트 후속): 폰 치우침 → generalize + 차단 사유 더 보강 (차익 미달, 매물 사라짐, 시세 신뢰).
     const [
       priceDummyRes, fakeLockRes, carrierRes, poolInvalidateRes,
       wholesalerCommentRes, wholesalerQtyRes, sellerMultiRes, multiIdFraudRes,
+      profitLowRes, lifecycleGoneRes, thinMarketRes, statMissingRes, suspiciousPriceRes,
     ] = await Promise.all([
       // 1) 가격 dummy (셀러 거래 거부 표시 매물)
       restFetch(
@@ -65,6 +67,31 @@ export async function GET() {
         rpc("mvp_candidate_pool", `select=pid&invalidated_reason=like.multi_id_fraud*&updated_at=gte.${since7d}`),
         { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
       ),
+      // 9) 차익 미달 (profit_below_pack_band) — 가장 큰 카테고리. 모든 카테고리.
+      restFetch(
+        rpc("mvp_candidate_pool", `select=pid&invalidated_reason=eq.profit_below_pack_band&updated_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 10) 매물 사라짐/거래 종료 (lifecycle_* + pool_warmer_*_inactive). 모든 카테고리.
+      restFetch(
+        rpc("mvp_candidate_pool", `select=pid&or=(invalidated_reason.like.lifecycle_*,invalidated_reason.like.pool_warmer_*_inactive,invalidated_reason.like.pool_sweep_*_inactive)&updated_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 11) 시세 표본 부족 (wave99_thin_market + wave106_low_confidence_thin_sample)
+      restFetch(
+        rpc("mvp_candidate_pool", `select=pid&or=(invalidated_reason.eq.wave99_thin_market_n_lt_5,invalidated_reason.eq.wave106_low_confidence_thin_sample)&updated_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 12) 시세 신뢰 부족 (blocked_coarse_market_price + blocked_market_stat_missing)
+      restFetch(
+        rpc("mvp_candidate_pool", `select=pid&or=(invalidated_reason.eq.blocked_coarse_market_price,invalidated_reason.eq.blocked_market_stat_missing)&updated_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 13) 의심 가격 매물 (blocked_deep_discount + blocked_extreme_discount review)
+      restFetch(
+        rpc("mvp_candidate_pool", `select=pid&or=(invalidated_reason.eq.blocked_deep_discount_review,invalidated_reason.eq.blocked_extreme_discount_review)&updated_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
     ]);
 
     const parseCount = (res: Response): number => {
@@ -83,6 +110,12 @@ export async function GET() {
     const sellerMulti = parseCount(sellerMultiRes);
     const multiIdFraud = parseCount(multiIdFraudRes);
     const wholesalerTotal = wholesalerComment + wholesalerQty + sellerMulti + multiIdFraud;
+    // 2026-05-16: generalize 항목 (모든 카테고리 적용)
+    const profitLow = parseCount(profitLowRes);
+    const lifecycleGone = parseCount(lifecycleGoneRes);
+    const thinMarket = parseCount(thinMarketRes);
+    const statMissing = parseCount(statMissingRes);
+    const suspiciousPrice = parseCount(suspiciousPriceRes);
 
     const safetyTotal = priceDummy + fakeLock + carrier;
     const totalBlocked7d = safetyTotal + poolInvalidate;
@@ -102,6 +135,12 @@ export async function GET() {
         wholesaler_qty_7d: wholesalerQty,
         seller_multi_listings_7d: sellerMulti,
         multi_id_fraud_group_7d: multiIdFraud,
+        // 2026-05-16: generalize breakdown (모든 카테고리)
+        profit_low_7d: profitLow,
+        lifecycle_gone_7d: lifecycleGone,
+        thin_market_7d: thinMarket,
+        stat_missing_7d: statMissing,
+        suspicious_price_7d: suspiciousPrice,
         // 메타
         period_start: since7d,
         period_end: new Date().toISOString(),

@@ -7,7 +7,7 @@
 // - 사이즈 추출 못 하면 needs_review (사용자 체형/발 매칭 위험).
 // - 자전거 사고/크랙은 즉시 reject (가격 시세 무의미).
 
-import type { ParsedListingOptions } from "@/lib/option-parser";
+import type { ParsedListingOptions, ConditionClass } from "@/lib/option-parser";
 import type { Sku } from "@/lib/catalog";
 
 // option-parser.ts의 ParseInput과 동일 (모듈 내부 타입이라 재정의).
@@ -227,6 +227,10 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     raw_sku_name: input.skuName ?? null,
   };
   let needsReview = false;
+  // Wave 134 (2026-05-16): shoe condition_tier → condition_class 매핑.
+  // 이전: 모든 신발 conditionClass = "normal" (Wave 130까지 미구현).
+  // 변경: s_grade → unopened / a_grade → mint / b_grade → clean / c_grade → worn / reject → flawed.
+  let conditionClassResult: ConditionClass = "normal";
 
   if (category === "shoe") {
     const opt = parseShoeOptions(text);
@@ -253,6 +257,15 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     if (opt.conditionTier) {
       partsForKey.push(opt.conditionTier);
       parseConfidence += 0.15;
+      // Wave 134: condition_tier → condition_class 매핑.
+      const tierMap: Record<string, ConditionClass> = {
+        s_grade: "unopened",
+        a_grade: "mint",
+        b_grade: "clean",
+        c_grade: "worn",
+        reject: "flawed",
+      };
+      conditionClassResult = tierMap[opt.conditionTier] ?? "normal";
     } else {
       partsForKey.push("unknown_condition");
       unknownParts.push("unknown_condition");
@@ -260,6 +273,10 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     if (opt.boxStatus) {
       partsForKey.push(opt.boxStatus);
       parseConfidence += 0.05;
+      // Wave 134: 박스 미개봉이면 condition tier 없어도 unopened 가능성.
+      if (opt.boxStatus === "with_box" && opt.conditionTier === "s_grade") {
+        conditionClassResult = "unopened";
+      }
     }
   } else if (category === "bag") {
     const opt = parseBagOptions(text);
@@ -367,8 +384,8 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     conditionScore: 0.5,
     conditionNotes: [],
     // Wave 130 (2026-05-16): fashion/mobility는 condition_notes 추출 미구현 → default normal.
-    // 후속 wave에서 신발/가방 마모/사용감 keyword 추가 시 conditionClass 정밀화.
-    conditionClass: "normal",
+    // Wave 134 (2026-05-16): 신발 condition_tier → condition_class 매핑 추가. 가방/자전거는 normal 유지.
+    conditionClass: conditionClassResult,
     parseConfidence,
     needsReview,
     parsedJson: {
