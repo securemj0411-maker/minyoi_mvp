@@ -438,6 +438,24 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 단 "Mock 결제" 명확화만 필요했음 → fix.
 - 다른 페이지 (account, admin 등) 추가 audit 권장 (사용자 진입 후 페이지).
 
+## 24. recommendation-workspace 거짓 카테고리 6개 disabled 처리
+
+- 시간: 2026-05-16 06:50 KST
+- 검토 (사용자 진입 후 페이지 — me-dashboard / account-panel / recommendation-workspace / onboarding-banner / user-reveal-dashboard) 결과:
+  - account-panel / me-dashboard / onboarding-banner / user-reveal-dashboard: 거짓 광고 0 ✅
+  - **recommendation-workspace `CATEGORY_OPTIONS` 13개 중 6개 거짓** (DB ready pool 0건):
+    - monitor (0) / camera (0, Wave 66 internal_only 되돌림) / smartphone (0, internal_only) / watch (일반시계, 0) / home_appliance (0, small_appliance 차단) / sport_golf (0)
+  - 사용자가 가입 후 이 카테고리 선택 → 추천 0건 → 신뢰 깨짐.
+- MJ 정책 결정: disabled 처리 (옵션은 보이되 클릭 차단 + "(준비중)"). 향후 source 다양화 잊지 않게 코드에 남김.
+- 변경 (`src/components/recommendation-workspace.tsx`):
+  - `CATEGORY_OPTIONS` 각 항목에 `disabled: boolean` 필드 추가.
+  - 6개 거짓 카테고리 disabled=true 마킹 + 코멘트로 사유 (Wave 66 / internal_only / 차단 등).
+  - render 코드: disabled면 클릭 X + dashed border + 회색 + line-through + "(준비중)" 라벨 + tooltip "추후 source 다양화로 추가 예정".
+- 검증: tsc clean.
+- 위험: 사용자가 disabled 보고 "왜 시계/카메라 안 되지?" 의문 → tooltip + "(준비중)" 으로 안내. 정직성 우선.
+- 다음: source 다양화 wave 진행 시 disabled=false로 활성. 새 카테고리 (신발/가방 등) 추가 시 동일 패턴.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

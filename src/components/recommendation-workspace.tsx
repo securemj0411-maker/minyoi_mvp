@@ -103,20 +103,23 @@ const RISK_PRESETS: Record<RiskProfile, RiskPreset> = {
     filters: { priceMaxManwon: 80, minProfitManwon: 5, minConfidencePct: 60, categories: [], maxFreshHours: 0 },
   },
 };
+// Wave 106: disabled 카테고리는 ready pool 0건이라 실제 추천 불가.
+// 옵션은 그대로 두고 "(준비중)" 표시 + 클릭 차단. 사용자에게 "어떤 카테고리 추가될지" 기대치 set.
+// 향후 source 다양화 wave에서 ready 매물 들어오면 disabled=false로 활성.
 const CATEGORY_OPTIONS = [
-  { id: "earphone", label: "이어폰" },
-  { id: "smartwatch", label: "워치(스마트)" },
-  { id: "watch", label: "시계" },
-  { id: "monitor", label: "모니터" },
-  { id: "speaker", label: "스피커" },
-  { id: "camera", label: "카메라" },
-  { id: "desktop", label: "데스크탑" },
-  { id: "laptop", label: "노트북" },
-  { id: "tablet", label: "태블릿" },
-  { id: "smartphone", label: "스마트폰" },
-  { id: "game_console", label: "게임기" },
-  { id: "home_appliance", label: "가전" },
-  { id: "sport_golf", label: "골프" },
+  { id: "earphone", label: "이어폰", disabled: false },
+  { id: "smartwatch", label: "워치(스마트)", disabled: false },
+  { id: "tablet", label: "태블릿", disabled: false },
+  { id: "laptop", label: "노트북", disabled: false },
+  { id: "game_console", label: "게임기", disabled: false },
+  { id: "desktop", label: "데스크탑", disabled: false },
+  { id: "speaker", label: "스피커", disabled: false }, // 빈약 (3건) but ready
+  { id: "monitor", label: "모니터", disabled: true },
+  { id: "camera", label: "카메라", disabled: true }, // Wave 66 internal_only 되돌림
+  { id: "smartphone", label: "스마트폰", disabled: true }, // internal_only
+  { id: "watch", label: "시계", disabled: true },
+  { id: "home_appliance", label: "가전", disabled: true }, // small_appliance 차단
+  { id: "sport_golf", label: "골프", disabled: true },
 ];
 
 type PreviewInventoryResp = {
@@ -510,15 +513,23 @@ function PackSelectorCard({
             {CATEGORY_OPTIONS.map((opt) => {
               const active = advancedFilters.categories.includes(opt.id);
               const count = previewInventory?.byCategory[opt.id];
+              const isDisabled = busy || opt.disabled;
               return (
                 <button
                   key={opt.id}
                   type="button"
-                  onClick={() => toggleCategory(opt.id)}
-                  disabled={busy}
-                  className={`rounded-full border px-2 py-0.5 text-[10.5px] font-black transition ${active ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]" : "border-[#d8d2c4] bg-white text-zinc-500 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"}`}
+                  onClick={() => { if (!opt.disabled) toggleCategory(opt.id); }}
+                  disabled={isDisabled}
+                  title={opt.disabled ? "아직 추천 매물이 없는 카테고리예요. 추후 source 다양화로 추가 예정." : undefined}
+                  className={`rounded-full border px-2 py-0.5 text-[10.5px] font-black transition ${
+                    opt.disabled
+                      ? "cursor-not-allowed border-dashed border-[#dcd5c8] bg-[#f3ede2] text-zinc-400 line-through dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-600"
+                      : active
+                        ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
+                        : "border-[#d8d2c4] bg-white text-zinc-500 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+                  }`}
                 >
-                  {opt.label}{count ? <span className="ml-0.5 opacity-60">·{count}</span> : null}
+                  {opt.label}{opt.disabled ? <span className="ml-0.5 no-underline opacity-70">(준비중)</span> : count ? <span className="ml-0.5 opacity-60">·{count}</span> : null}
                 </button>
               );
             })}
