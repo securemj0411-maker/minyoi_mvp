@@ -173,7 +173,7 @@ function PendingVerifyView({ verify, onCancel }: {
     <div className="rounded-2xl border border-[#c8d8c4] bg-[var(--brand-accent-soft)] p-5 dark:border-zinc-700 dark:bg-zinc-900">
       <div className="text-sm font-black text-[#223127] dark:text-zinc-100">연결 준비됨</div>
       <p className="mt-1 text-xs font-semibold leading-6 text-[#5a6658] dark:text-zinc-400">
-        아래 버튼을 누르면 텔레그램 봇이 열려요. <strong>"START" 한 번만</strong> 누르면 자동으로 연결됩니다.
+        아래 버튼을 누르면 텔레그램 봇이 열려요. <strong>“START” 한 번만</strong> 누르면 자동으로 연결됩니다.
       </p>
 
       <div className="mt-4 flex gap-2">

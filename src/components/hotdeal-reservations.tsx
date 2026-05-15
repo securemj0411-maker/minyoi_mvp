@@ -234,7 +234,7 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen, onPurchas
               차익 ₩{profitWan.toLocaleString("ko-KR")}만 ({pct}%)
             </h3>
             <p className="mt-1 text-xs font-semibold text-[#5a6658] dark:text-zinc-400">
-              매물 정보는 "열기" 후 공개됩니다.
+              매물 정보는 “열기” 후 공개됩니다.
             </p>
           </div>
         </div>

@@ -27,8 +27,8 @@ async function main() {
   const candidates: number[] = [];
   for (const sku of READY_SKUS) {
     const res = await restFetch(`${base}/rest/v1/mvp_raw_listings?select=pid,name,detail_status,pool_eligible,sale_status,listing_state&sku_id=eq.${sku}&order=first_seen_at.desc&limit=200`, { headers: serviceHeaders() });
-    const rows = await res.json();
-    const eligible = rows.filter((r: any) =>
+    const rows = (await res.json()) as Array<{ pid: number; detail_status?: string; pool_eligible?: boolean; sale_status?: string; listing_state?: string }>;
+    const eligible = rows.filter((r) =>
       r.detail_status === "done" &&
       r.pool_eligible !== true &&
       (r.sale_status === "SELLING" || r.sale_status === "selling" || r.listing_state === "active")

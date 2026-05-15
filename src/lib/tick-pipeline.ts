@@ -3367,6 +3367,26 @@ export async function housekeeperStage(): Promise<StageStats> {
   stats.upserted = expiredPool.length;
   stats.queued = staleQueue.length;
 
+  // Wave 104 H2: 만료 plan 자동 free 다운그레이드. current_period_end < now인 paid plan → free.
+  // cancel_at_period_end=true 사용자도 동일 처리 (취소 예약 → 만료 시 free).
+  try {
+    const expireRes = await restFetch(rpcUrl("expire_mvp_plans"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({}),
+    });
+    if (expireRes.ok) {
+      const rows = (await expireRes.json().catch(() => [])) as Array<{ expired_count?: number }>;
+      const expiredCount = Number(rows[0]?.expired_count ?? 0);
+      if (expiredCount > 0) {
+        stats.timingsMs = { ...(stats.timingsMs ?? {}), plans_expired: expiredCount };
+        console.log(`[housekeeper] expired ${expiredCount} paid plans → free`);
+      }
+    }
+  } catch (err) {
+    console.error("expire_mvp_plans failed", err);
+  }
+
   // P2-1: 1시간 cooldown으로 query cadence 자동 재평가.
   // cooldown 체크는 registry에서 가장 최근 last_evaluated_at을 보고 결정(멀티 인스턴스 안전).
   // override 만료도 같이 처리.

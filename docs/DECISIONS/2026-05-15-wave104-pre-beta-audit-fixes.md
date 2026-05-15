@@ -92,6 +92,23 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 위험: 기존 mvp_payment_events에 payment_key 중복 row가 있으면 UNIQUE 인덱스 생성 실패. prod 데이터 확인했고 mock paymentKey는 timestamp 기반이라 자연 unique → 문제 없음.
 - 다음: H2 (만료 자동 다운그레이드 cron) 별도 fix.
 
+## 7. Billing H2 — 만료 자동 다운그레이드 (housekeeper inline)
+
+- 시간: 2026-05-16 02:45 KST
+- 발견: audit. `current_period_end` 지난 paid plan 사용자가 영원히 'active' 상태로 남음. cancel_at_period_end=true 사용자도 만료 시 free 다운 안 됨. 풀 사이즈 산정 + 일일 한도 enforcement 모두 broken.
+- 변경:
+  - `expire_mvp_plans()` RPC 신규 (migration 20260515000400):
+    - plan_key in (starter/plus/pro) AND current_period_end < now() → free, status='expired', daily_used=0 reset.
+    - returns expired_count.
+    - REVOKE EXECUTE FROM public/anon (service_role only).
+  - `housekeeperStage` (src/lib/tick-pipeline.ts:3367) inline 호출 추가. 1시간 주기 housekeeper cron이 자연 trigger. 별도 schedule 불필요.
+  - 만료된 카운트는 `stats.timingsMs.plans_expired`에 기록 + console.log.
+- 검증: tsc clean, 139/139 test pass.
+- 위험:
+  - status='expired' 인 row를 다시 paid로 결제 시 H3 idempotent fix가 ON CONFLICT (user_ref) DO UPDATE로 처리 → 정상 재구독 가능.
+  - getProStatus는 `status !== 'expired'` 체크로 expired 사용자 정확히 free 반환.
+- 다음: 핵심 user flow 항목으로 이동 (로그인 콜백 에러, onboarding, pack reveal 메모 cap mismatch, 핫딜 reveal band fallback).
+
 ## 보너스: audit false positive
 
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 이미 `checkCronAuth` 박혀있음. 스킵.

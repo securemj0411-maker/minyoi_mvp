@@ -49,9 +49,9 @@ export default function HotdealAlertsView() {
           <ol className="mt-3 space-y-2 text-xs font-semibold leading-6 text-[#5a6658] dark:text-zinc-400">
             <li><strong>1.</strong> 텔레그램 봇 연결 (위에서)</li>
             <li><strong>2.</strong> 핫딜 매물 발견 시 가중치 랜덤으로 1명에게 알림</li>
-            <li><strong>3.</strong> 알림 받으면 정해진 시간 안에 "열기" 버튼으로 매물 확인</li>
+            <li><strong>3.</strong> 알림 받으면 정해진 시간 안에 “열기” 버튼으로 매물 확인</li>
             <li><strong>4.</strong> 시간 안에 응답 안 하면 다른 사용자에게 기회</li>
-            <li><strong>5.</strong> 거래 후 "샀어요/포기" 응답으로 정확도 향상에 기여</li>
+            <li><strong>5.</strong> 거래 후 “샀어요/포기” 응답으로 정확도 향상에 기여</li>
           </ol>
         </details>
       </div>
