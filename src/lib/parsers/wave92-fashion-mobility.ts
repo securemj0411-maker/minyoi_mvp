@@ -25,20 +25,32 @@ export type ConditionTier = "s_grade" | "a_grade" | "b_grade" | "c_grade" | "rej
 
 // 컨디션 표현 텍스트 → 정량 grade.
 // 셀러 표기는 1단계 깎음 (관용적 인플레 보정).
+// Wave 146 (2026-05-16): 신발 매물 흔한 표현 다수 추가 (이전 normal 65% → 30%대 예상).
 export function parseConditionTier(text: string): ConditionTier {
   const t = text.toLowerCase();
-  // 부적격 (reject)
-  if (/파손|크랙|찢어짐|구멍|얼룩 심함|변색 심함|곰팡이|악취|냄새 심함|손상|수리 필요/.test(t)) return "reject";
+  // 부적격 (reject) — 명시 손상
+  if (/파손|크랙|찢어짐|구멍|얼룩\s*심함|변색\s*심함|곰팡이|악취|냄새\s*심함|손상|수리\s*필요|수선\s*필요|찌그러짐|변형\s*심함|밑창\s*벗겨/.test(t)) return "reject";
   // S급 (객관적 새상품 신호) — 셀러 표기와 무관
-  if (/미개봉|봉인|택그대로|tag\s*on|tagon|새상품(?!\s*[abc])|민트|한번도\s*안\s*(신음|입음|멤|탐|사용)|미사용/.test(t)) return "s_grade";
+  if (
+    /미개봉|봉인|택\s*그대로|tag\s*on|tagon|새상품(?!\s*[abc])|민트|미사용|한\s*번도\s*안\s*(신음|입음|멤|탐|사용)|신은?\s*적\s*없|신어본\s*적\s*없|착용해본\s*적\s*없|박스\s*그대로|박스채로|포장\s*그대로|포장\s*그대로|박스\s*개봉\s*안|풀박\s*새상품/.test(t)
+  ) return "s_grade";
   // 셀러 표기 — 1단계 깎음
-  if (/[sS]급|[sS]\s*그레이드|급s급|특s급/.test(text)) return "a_grade";
-  if (/[aA]급|[aA]\s*그레이드/.test(text)) return "b_grade";
+  if (/[sS]급|[sS]\s*그레이드|급[sS]급|특[sS]급|특[aA]급|최상급|탑급|s\+/.test(text)) return "a_grade";
+  if (/[aA]급|[aA]\s*그레이드|상태\s*최상/.test(text)) return "b_grade";
   if (/[bB]급|[bB]\s*그레이드/.test(text)) return "c_grade";
-  // 사용감 표현
-  if (/거의\s*(새|안\s*신|안\s*입|안\s*들|안\s*탐)|1\s*[~-]?\s*2\s*번\s*(신|입|들|탐)/.test(t)) return "a_grade";
-  if (/사용감\s*적|약간\s*사용|잔기스|컨디션\s*좋/.test(t)) return "b_grade";
-  if (/사용감\s*있|많이\s*사용|보풀|색바램|변색/.test(t)) return "c_grade";
+  // A급 (거의 새거): 실착 1-3회 / 한두번 / 시착만 / 사이즈 미스
+  if (
+    /거의\s*(새|안\s*신|안\s*입|안\s*들|안\s*탐)|1\s*[~-]?\s*2\s*번\s*(신|입|들|탐)|한\s*두?\s*번\s*(신|입|착)|한두번|시착\s*(만|함)|착용\s*해?\s*본다고|사이즈\s*(미스|실패|안\s*맞|틀)|실착\s*[1-3]\s*회|단\s*[1-3]\s*회|구매\s*후\s*[1-3]\s*회|보관용|보관만\s*했|잠깐\s*(신|착용|시\s*신|밖에\s*안)/.test(t)
+  ) return "a_grade";
+  // B급 (사용감 적음): 4-9회 단독 착용 / 상태 양호 / 컨디션 좋 / 9-10/10
+  // boundary 중요: "15회"는 c급, "5회"만 b급
+  if (
+    /사용감\s*적|약간\s*사용|잔기스|컨디션\s*좋|상태\s*양호|상태양호|상태\s*좋|상태좋|상태\s*우수|컨디션\s*우수|excellent|9\s*\/\s*10|10\s*\/\s*10|(?:^|[^0-9])[4-9]\s*회\s*[가-힣\s]{0,5}?(신|착|입)|깨끗|깔끔|관리\s*잘/.test(t)
+  ) return "b_grade";
+  // C급 (사용감 많음): 사용감 있/오염/스크레치/10회+ 착용
+  if (
+    /사용감\s*있|사용감\s*좀\s*있|많이\s*사용|보풀|색바램|변색|약간의?\s*오염|약간의?\s*얼룩|약간의?\s*스크\w*|앞코\s*스크\w*|미드솔\s*오염|밑창\s*닳|밑창\s*마모|(?:^|[^0-9])[1-9][0-9]\s*회\s*[가-힣\s]{0,5}?(신|착|입)|발자국/.test(t)
+  ) return "c_grade";
   return null;
 }
 

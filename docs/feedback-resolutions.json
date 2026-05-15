@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-15T23:24:53.878Z",
+  "_updated_at": "2026-05-15T23:47:34.564Z",
   "resolutions": {
     "318408095": {
       "resolved_at": "2026-05-15T23:22:25.326Z",
@@ -9,25 +9,11 @@
         "60549ae"
       ]
     },
-    "334403685": {
-      "resolved_at": "2026-05-15T23:23:50.578Z",
-      "summary": "N4 + Wave 141: 풀박스X + 미개봉X → mint condition_class (배터리 100% + 사용흔적 분리)",
-      "commits": [
-        "a3fb884"
-      ]
-    },
     "334750861": {
       "resolved_at": "2026-05-14T23:21:16.219Z",
       "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
       "commits": [
         "61d0dbb"
-      ]
-    },
-    "334814973": {
-      "resolved_at": "2026-05-15T23:23:50.755Z",
-      "summary": "N4: mint(사용감 거의 없음) → 다나와 시세 X → 번개 S급 시세 적용 (unopened 분리)",
-      "commits": [
-        "a3fb884"
       ]
     },
     "341712686": {
@@ -49,13 +35,6 @@
       "summary": "#121: parser regex 보강 (\"새것/새거\" 단독 매칭 제거 — 스트랩 같은 부속품 \"새거\" false positive 차단)",
       "commits": [
         "9168d96"
-      ]
-    },
-    "352131281": {
-      "resolved_at": "2026-05-15T23:23:50.182Z",
-      "summary": "Wave 141: condition_class 3-layer 학습 (기스 + 배터리 93% 같은 모호 매물 AI 분류 강화)",
-      "commits": [
-        "60880d8"
       ]
     },
     "358002617": {
@@ -261,13 +240,6 @@
       "summary": "parser v39 (chip prefix lookahead + 비노캔 키워드) + reparse",
       "commits": [
         "ddcbaa9"
-      ]
-    },
-    "403851792": {
-      "resolved_at": "2026-05-15T23:23:38.150Z",
-      "summary": "N4 + Wave 141: condition_class unopened/mint 분리 + 3-layer AI 학습 (정규식+AI L2+모호 매물 AI)",
-      "commits": [
-        "a3fb884"
       ]
     },
     "404302435": {
