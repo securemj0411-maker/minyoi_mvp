@@ -162,7 +162,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 검증: tsc clean.
 - 위험: lg+ 데스크탑 사이드바는 `lg:h-auto`로 기존 동작 유지 (lg:h-[calc(100dvh-60px)] override). 모바일에서 메뉴 자체 높이 52px 고정이라 향후 누가 버튼 padding 늘리면 잘릴 수 있음 — 그 때 둘 다 늘리면 됨 (TOC top과 함께).
 - 다음: med severity 항목 (빈 풀 retry CTA, telegram bot 미설정 시 메뉴 자동 숨김, billing err.message leak 등).
-- commit: pending
+- commit: 1dd309c
 
 ## 11. billing endpoints err.message 누출 fix
 
@@ -820,7 +820,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
   - sample 부족 SKU 자동 차단 (정확성 우선 §12b).
 - ready 풀 34건 즉시 invalidate (`wave106_low_confidence_thin_sample`).
 - 영향: 풀 160 → 126 (21% ↓). 정확도 ↑.
-- commit: pending
+- commit: 1dd309c
 
 ## 43. aggressive 정확도 sweep — sample inflation + bundle/new + carrier null
 
