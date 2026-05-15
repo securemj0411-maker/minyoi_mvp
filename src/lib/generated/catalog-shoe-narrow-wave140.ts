@@ -32,43 +32,31 @@ const COLLAB_BLOCK = [
 ];
 
 export const SHOE_WAVE140_CATALOG: Sku[] = [
-  // ─── 컨버스 척70 하이 (별도 모델, msrp 110k) ──────────
+  // ─── 컨버스 척70 하이 broad (variant 컬러 다양, msrp 가격 안정) ──
+  // 측정 결과 (Iter 6): 컬러별 분리 SKU 시 매물 컬러 너무 다양해서 0건 매칭.
+  // 일반 컬러 (파치먼트/러쉬블루/미드나잇/헤리티지 블루) variant 가격 차이 작음 → broad 정책.
+  // collab (스투시/CDG/골프왕/다크쉐도우)만 차단.
   {
-    id: "shoe-converse-chuck70-high-black",
+    id: "shoe-converse-chuck70-high-broad",
     brand: "Converse",
     category: "shoe",
-    modelName: "Converse Chuck 70 High Black",
-    aliases: ["컨버스 척70 하이 블랙", "Chuck 70 High Black"],
+    modelName: "Converse Chuck 70 High (Broad)",
+    aliases: ["컨버스 척70 하이", "Chuck 70 High", "Chuck 1970s High"],
     mustContain: [
-      ["컨버스", "converse", "척", "chuck"],
-      ["70", "척70", "chuck70"],
-      ["하이", "high", "hi top", "하이탑", "hi"],
-      ["블랙", "black"],
+      ["컨버스", "converse", "척테일러", "chuck taylor", "척", "chuck"],
+      ["70", "척70", "chuck70", "ct70", "1970", "1970s"],
+      ["하이", "high", "hi top", "하이탑", "hi "],
     ],
     mustNotContain: [
-      "화이트", "white", "빈티지", "vintage",
-      "low", "로우",
-      ...COMMON_BLOCK,
-      ...COLLAB_BLOCK,
-    ],
-    msrpKrw: 115000,
-    released: 2013,
-  },
-  {
-    id: "shoe-converse-chuck70-high-white",
-    brand: "Converse",
-    category: "shoe",
-    modelName: "Converse Chuck 70 High White",
-    aliases: ["컨버스 척70 하이 화이트", "Chuck 70 High White"],
-    mustContain: [
-      ["컨버스", "converse", "척", "chuck"],
-      ["70", "척70", "chuck70"],
-      ["하이", "high", "hi top", "하이탑", "hi"],
-      ["화이트", "white"],
-    ],
-    mustNotContain: [
-      "블랙", "black", "빈티지", "vintage",
-      "low", "로우",
+      "low", "로우", "쇼츠", "shoreline",
+      // 콜라보 (가격 다름)
+      "다크쉐도우", "dark shadow", "터보다크", "turbo dark",
+      "골프왕", "golf wang", "tyler the creator", "타일러",
+      "스투시", "stussy",
+      "cdg", "꼼데", "comme des garcons", "play",
+      "스케치에디션", "sketch edition",
+      "uv 팩", "uv 변색",
+      "잭퍼셀", "jack purcell",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],
