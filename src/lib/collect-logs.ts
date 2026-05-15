@@ -217,6 +217,80 @@ export async function markStaleCollectRuns(maxAgeMinutes = 3): Promise<number> {
   return rows.length;
 }
 
+// 2026-05-16: 4개 cron route (compliance-retention, housekeeper-ai-cache-prune,
+// landing-showcases, reference-price-refresh)가 mvp_collect_runs에 안 박혀서 watchdog
+// false positive 발생. 공통 helper로 통일.
+//
+// 사용 예:
+//   const meta = buildCronRequestMeta(req, authOk, authReason, "compliance-retention");
+//   const run = await startCollectRun(meta);
+//   try { ... await finishCollectRunMinimal(run.id, run.startedAt, { upserted: count }); }
+//   catch (err) { await failCollectRun(run.id, run.startedAt, err); }
+export function buildCronRequestMeta(
+  req: { method: string; headers: Headers; nextUrl: { pathname: string; search: string; searchParams: URLSearchParams } },
+  authOk: boolean,
+  authReason: string,
+  mode: string,
+): CollectRunRequestMeta {
+  const h = req.headers;
+  const ua = h.get("user-agent");
+  const xff = h.get("x-forwarded-for");
+  const requestIp = (xff ? xff.split(",")[0]?.trim() : null) ?? h.get("x-real-ip") ?? h.get("cf-connecting-ip") ?? h.get("x-vercel-forwarded-for");
+  const trunc = (s: string | null, n = 500): string | null => (!s ? null : s.length > n ? `${s.slice(0, n)}...` : s);
+  return {
+    triggerSource: (h.get("x-qstash-schedule-id") ?? ua ?? mode).slice(0, 120),
+    requestMethod: req.method,
+    requestPath: `${req.nextUrl.pathname}${req.nextUrl.search}`,
+    requestHost: h.get("host"),
+    requestIp,
+    requestUserAgent: trunc(ua),
+    requestReferer: trunc(h.get("referer")),
+    requestOrigin: trunc(h.get("origin")),
+    requestVercelId: h.get("x-vercel-id"),
+    requestCountry: h.get("x-vercel-ip-country"),
+    waitMode: true,
+    authOk,
+    authReason,
+    responseMode: "sync_wait",
+    requestMeta: {
+      qstashScheduleId: h.get("x-qstash-schedule-id"),
+      qstashMessageId: h.get("upstash-message-id"),
+      forwardedProto: h.get("x-forwarded-proto"),
+      forwardedHost: h.get("x-forwarded-host"),
+      vercelDeploymentUrl: h.get("x-vercel-deployment-url"),
+      mode,
+      query: Object.fromEntries(req.nextUrl.searchParams.entries()),
+    },
+  };
+}
+
+// PipelineResult 필드가 작업과 무관한 cron (compliance, ai-cache-prune 등)을 위한 minimal wrapper.
+// 작업별 의미 있는 카운트만 채우고 나머지는 0. 추가 메타는 stageStats로.
+export async function finishCollectRunMinimal(
+  id: string | null,
+  startedAt: string,
+  partial: Partial<PipelineResult>,
+  stageStats?: Record<string, unknown>,
+): Promise<void> {
+  const filled: PipelineResult = {
+    collected: 0,
+    titleNormal: 0,
+    enriched: 0,
+    scored: 0,
+    aiReviewRequested: 0,
+    aiCacheHits: 0,
+    aiApiCalls: 0,
+    aiUnavailable: 0,
+    aiFiltered: 0,
+    aiKeptNormal: 0,
+    aiKeptLowConfidence: 0,
+    normal: 0,
+    upserted: 0,
+    ...partial,
+  };
+  await finishCollectRun(id, startedAt, filled, stageStats);
+}
+
 export async function startCollectRun(meta: CollectRunRequestMeta): Promise<{ id: string | null; startedAt: string }> {
   const startedAt = new Date().toISOString();
   const row = await insertRun({

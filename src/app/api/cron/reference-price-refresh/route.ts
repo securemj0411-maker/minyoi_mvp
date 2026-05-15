@@ -6,6 +6,12 @@
 // QStash schedule: 0 19 * * * (UTC 19시 = KST 새벽 4시)
 
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  buildCronRequestMeta,
+  failCollectRun,
+  finishCollectRunMinimal,
+  startCollectRun,
+} from "@/lib/collect-logs";
 import { checkCronAuth } from "@/lib/cron-auth";
 import { acquireCronGuard, cronGuardSkipBody } from "@/lib/cron-guard";
 import { scrapeBatch, type ScrapedPrice } from "@/lib/reference-price-scraper";
@@ -111,6 +117,11 @@ async function handle(req: NextRequest) {
   const guard = acquireCronGuard("reference_price_refresh", req);
   if (!guard.allowed) return NextResponse.json(cronGuardSkipBody(guard));
 
+  // 2026-05-16: collect-logs 박기. 미박으면 watchdog false positive
+  // (5/15 22:51 KST 알림이 그 케이스 — DB엔 정상 reference price 박혔는데 mvp_collect_runs엔 0건).
+  const meta = buildCronRequestMeta(req, authOk, authReason, "reference-price-refresh");
+  const run = await startCollectRun(meta);
+
   const startedAt = Date.now();
   try {
     const candidates = await loadTopCandidates();
@@ -141,6 +152,14 @@ async function handle(req: NextRequest) {
 
     await syncListingSkuMedian();
 
+    await finishCollectRunMinimal(run.id, run.startedAt, { upserted: successCount, collected: items.length }, {
+      mode: "reference-price-refresh",
+      total: items.length,
+      success: successCount,
+      fail: failCount,
+      durationMs: Date.now() - startedAt,
+    });
+
     return NextResponse.json({
       ok: true,
       total: items.length,
@@ -151,6 +170,7 @@ async function handle(req: NextRequest) {
     });
   } catch (err) {
     console.error("[ref-price-refresh] error", err);
+    await failCollectRun(run.id, run.startedAt, err);
     return NextResponse.json(
       { error: "ref_price_refresh_failed", message: err instanceof Error ? err.message : String(err) },
       { status: 500 },

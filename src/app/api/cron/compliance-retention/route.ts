@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  buildCronRequestMeta,
+  failCollectRun,
+  finishCollectRunMinimal,
+  startCollectRun,
+} from "@/lib/collect-logs";
+import {
   RAW_TEXT_ACTIVE_RETENTION_DAYS,
   RAW_TEXT_DEAD_RETENTION_DAYS,
   RAW_TEXT_RETENTION_BATCH_LIMIT,
@@ -44,12 +50,16 @@ async function handleComplianceRetention(req: NextRequest) {
     return NextResponse.json(cronGuardSkipBody(guard));
   }
 
+  // 2026-05-16: collect-logs 박기. 미박으면 watchdog false positive.
+  const meta = buildCronRequestMeta(req, authOk, authReason, "compliance-retention");
+  const run = await startCollectRun(meta);
+
   const params = req.nextUrl.searchParams;
   const dryRun = parseBoolParam(params.get("dry_run"));
   const activeDays = parseIntParam(params.get("active_days"), RAW_TEXT_ACTIVE_RETENTION_DAYS, 1, 3650);
   const deadDays = parseIntParam(params.get("dead_days"), RAW_TEXT_DEAD_RETENTION_DAYS, 1, 3650);
   const batchLimit = parseIntParam(params.get("batch_limit"), RAW_TEXT_RETENTION_BATCH_LIMIT, 1, 50000);
-  const startedAt = new Date().toISOString();
+  const startedAt = run.startedAt;
 
   try {
     const result: RawTextRetentionResult = await runRawTextRetention({
@@ -71,6 +81,14 @@ async function handleComplianceRetention(req: NextRequest) {
       steps: result.steps,
     });
 
+    await finishCollectRunMinimal(run.id, run.startedAt, { upserted: totalCount }, {
+      mode: "compliance-retention",
+      dryRun: result.dryRun,
+      params: { activeDays, deadDays, batchLimit },
+      hasFailure,
+      steps: result.steps as unknown as Record<string, unknown>,
+    });
+
     return NextResponse.json(
       {
         ok: !hasFailure,
@@ -86,6 +104,7 @@ async function handleComplianceRetention(req: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("[compliance-retention] route caught", { startedAt, message });
+    await failCollectRun(run.id, run.startedAt, err);
     return NextResponse.json(
       {
         ok: false,
