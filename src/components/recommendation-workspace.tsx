@@ -247,6 +247,19 @@ function PackSelectorCard({
 }) {
   const [warningOpen, setWarningOpen] = useState(false);
   const [hideWarningForSession, setHideWarningForSession] = useState(false);
+
+  // Wave 104: 고수익 경고 모달 Esc 닫기 + body scroll lock (다른 모달과 일관성).
+  useEffect(() => {
+    if (!warningOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setWarningOpen(false); };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [warningOpen]);
   // Wave 79: easy mode 제거 — 단일 통합 UI
   const [riskProfile, setRiskProfile] = useState<RiskProfile>("balanced");
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(RISK_PRESETS.balanced.filters);

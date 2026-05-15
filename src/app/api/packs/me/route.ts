@@ -31,7 +31,8 @@ type RevealSort = "latest" | "oldest" | "price_low" | "price_high" | "profit_low
 
 type RevealRow = {
   pid: number;
-  pack_open_id: number;
+  pack_open_id: number | null;
+  source?: string | null;
   expected_profit_min: number;
   expected_profit_max: number;
   confidence: number;
@@ -191,7 +192,7 @@ export async function GET(req: Request) {
   const query = normalizeSearch(url.searchParams.get("q") ?? "");
   const encodedUserRef = encodeURIComponent(userRef);
   const reveals = await loadJson<RevealRow[]>(
-    `${tableUrl("mvp_pack_reveals")}?select=pid,pack_open_id,expected_profit_min,expected_profit_max,confidence,link_clicked_at,revealed_at&user_ref=eq.${encodedUserRef}&order=revealed_at.desc&limit=${MAX_REVEAL_SCAN}`,
+    `${tableUrl("mvp_pack_reveals")}?select=pid,pack_open_id,source,expected_profit_min,expected_profit_max,confidence,link_clicked_at,revealed_at&user_ref=eq.${encodedUserRef}&order=revealed_at.desc&limit=${MAX_REVEAL_SCAN}`,
   );
   const pids = [...new Set(reveals.map((row) => Number(row.pid)).filter(Number.isFinite))];
   const packOpenIds = [...new Set(reveals.map((row) => Number(row.pack_open_id)).filter(Number.isFinite))];
@@ -232,6 +233,23 @@ export async function GET(req: Request) {
   const feedbackByPid = new Map(feedbackRows.map((row) => [Number(row.pid), row]));
   const bandByOpenId = new Map(packOpenRows.map((row) => [Number(row.id), Number(row.band_requested)]));
   const comparableKeyByPid = new Map(parsedRows.map((row) => [Number(row.pid), row.comparable_key ?? null]));
+
+  // Wave 104: 핫딜 reveal (source=hotdeal, pack_open_id=null)은 mvp_hotdeal_queue에서 band fetch.
+  const hotdealPids = reveals.filter((r) => r.source === "hotdeal").map((r) => Number(r.pid));
+  const bandByHotdealPid = new Map<number, number>();
+  if (hotdealPids.length > 0) {
+    try {
+      const hotRows = await loadJson<Array<{ pid: number; band: number | null }>>(
+        `${tableUrl("mvp_hotdeal_queue")}?select=pid,band&pid=in.(${hotdealPids.join(",")})`,
+      );
+      for (const row of hotRows) {
+        const b = Number(row.band ?? 0);
+        if (Number.isFinite(b) && b > 0) bandByHotdealPid.set(Number(row.pid), b);
+      }
+    } catch (err) {
+      console.error("packs/me hotdeal band fetch failed (non-fatal)", { err: err instanceof Error ? err.message : String(err) });
+    }
+  }
 
   // Wave 89: 시세/velocity/skuListingFlow를 다시 보기 모달에도 표시.
   // comparable_key별로 market_price/velocity 한 번에 batch fetch.
@@ -296,7 +314,9 @@ export async function GET(req: Request) {
         expectedProfitMin: Number(reveal.expected_profit_min ?? 0),
         expectedProfitMax: Number(reveal.expected_profit_max ?? 0),
         confidence: Number(reveal.confidence ?? 0),
-        band: bandByOpenId.get(Number(reveal.pack_open_id)) ?? 2,
+        band: reveal.source === "hotdeal"
+          ? (bandByHotdealPid.get(Number(reveal.pid)) ?? 3)
+          : (bandByOpenId.get(Number(reveal.pack_open_id)) ?? 2),
         revealedAt: reveal.revealed_at,
         linkClickedAt: reveal.link_clicked_at,
         feedbackType: feedback?.feedback_type ?? null,

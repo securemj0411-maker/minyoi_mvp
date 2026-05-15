@@ -145,6 +145,19 @@ export function MarketSourceDebug({
     // 단순화: 별도 endpoint 없어서 prefetch 생략. 사용자가 입력한 후 저장 시 upsert.
   }, [open, userRef]);
 
+  // Wave 104: Esc 닫기 + body scroll lock (다른 모달과 일관성).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
   const handleToggle = useCallback(() => {
     if (!open && !data && !loading) void fetchData();
     setOpen((v) => !v);

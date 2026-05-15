@@ -109,6 +109,35 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
   - getProStatus는 `status !== 'expired'` 체크로 expired 사용자 정확히 free 반환.
 - 다음: 핵심 user flow 항목으로 이동 (로그인 콜백 에러, onboarding, pack reveal 메모 cap mismatch, 핫딜 reveal band fallback).
 
-## 보너스: audit false positive
+## 8. 핵심 user flow + UI batch fix (4건)
 
-- `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 이미 `checkCronAuth` 박혀있음. 스킵.
+- 시간: 2026-05-16 03:05 KST
+- 발견: audit (path 1/3/5 + Mobile/UI).
+
+### 8a. 로그인 콜백 에러 silent
+- `/auth/callback` route가 실패 시 `?auth=missing-code|missing-env|exchange-failed`로 redirect하지만 auth-form이 param 무시 → 사용자가 "왜 다시 login 화면?" 모름.
+- 변경: `auth-form.tsx`에 `authErrorMessage()` 한국어 매핑 + `useState(() => ...)` 초기값으로 메시지 표시. 기존 `{message}` 렌더링 그대로 활용.
+
+### 8b. pack reveal 검증 메모 cap mismatch
+- client `maxLength={5000}` / server `note?.slice(0, 500)` → 사용자가 길게 쓰고 저장 누르면 silent truncate (4500자 사라짐).
+- 변경: `pack-open.ts:598` server cap 500 → 5000으로 일치. 메모는 빈도 낮아 DB bloat 위험 미미.
+
+### 8c. 핫딜 reveal band fallback 잘못
+- `/api/me/hotdeal/open`이 `pack_open_id=null + source='hotdeal'`로 reveal insert. `/api/packs/me`가 `bandByOpenId.get(null)` undefined → fallback band 2 표시 (실제 band 3 매물인데).
+- 변경: `packs/me/route.ts`에서:
+  - reveals query에 `source` 추가
+  - source='hotdeal' pid 모아서 `mvp_hotdeal_queue.band` batch fetch
+  - rendering 시 `source === 'hotdeal'` 분기로 hotdeal band 사용 (fallback 3)
+
+### 8d. market-source-debug + 고수익 경고 모달 Esc 미지원
+- 두 모달 다 backdrop click만 있고 keydown listener 없음. 다른 모달 (pack-reveal, mobile drawer)과 일관성 깨짐.
+- 변경:
+  - `market-source-debug.tsx`: useEffect로 Esc keydown + body scroll lock 추가
+  - `recommendation-workspace.tsx` warningOpen: 동일 패턴 추가
+- 검증: tsc clean, 139/139 test pass.
+- 다음: 신규 가입 onboarding (별도 wave — UI 디자인 필요), 공략집 sticky 충돌 (메뉴 가변 높이 fix — 측정 필요).
+
+### 보너스: audit false positive (총 2건)
+- `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
+- `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
+- `pack-shop.tsx` 랜딩 main 패딩 X 보고됐으나 inner div (line 262) `px-4 sm:px-6 lg:px-8` 박혀있음. 시각적 동일. 스킵.

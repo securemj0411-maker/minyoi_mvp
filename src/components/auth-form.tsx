@@ -31,6 +31,21 @@ function KakaoIcon() {
   );
 }
 
+// Wave 104: auth callback 실패 메시지 한국어 매핑.
+function authErrorMessage(authParam: string | null): string | null {
+  if (!authParam) return null;
+  switch (authParam) {
+    case "missing-code":
+      return "카카오 로그인이 취소되었거나 인증 코드를 받지 못했어요. 다시 시도해주세요.";
+    case "missing-env":
+      return "사이트 설정 문제로 로그인할 수 없어요. 잠시 후 다시 시도해주세요.";
+    case "exchange-failed":
+      return "로그인 처리 중 오류가 났어요. 한 번 더 시도해주세요.";
+    default:
+      return null;
+  }
+}
+
 export default function AuthForm({ mode }: Props) {
   const supabase = getSupabaseBrowserClient();
   const searchParams = useSearchParams();
@@ -40,7 +55,7 @@ export default function AuthForm({ mode }: Props) {
   );
   const isSignup = mode === "signup";
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(() => authErrorMessage(searchParams.get("auth")));
 
   async function signInWithKakao() {
     if (!supabase || busy) return;
