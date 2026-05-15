@@ -3815,6 +3815,10 @@ export const CATALOG: Sku[] = [
       ["솔로 4", "solo 4", "솔로4", "solo4"],
     ],
     mustNotContain: [
+      // Wave 126 (2026-05-16): Jennie Edition 차단 (사용자 코멘트 #15/#45).
+      // 일반 Solo 4 ~170K vs Jennie Special Edition ~600K. 시세 왜곡 큼.
+      "제니", "jennie", "제니 에디션", "제니에디션", "jennie edition",
+      "스페셜 에디션", "스페셜에디션", "special edition",
       "솔로 3",
       "solo 3",
       "솔로3",

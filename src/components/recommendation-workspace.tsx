@@ -127,6 +127,10 @@ type PreviewInventoryResp = {
   matchingCount: number;
   freshUnder2h: number;
   byCategory: Record<string, number>;
+  // 2026-05-15 Wave 124: 매칭 매물의 평균 회전 (median_hours_to_sold) + 평균 차익. 자본 묶임 두려움 해체 + 신뢰 시그널.
+  velocityMedianDays?: number | null;
+  velocitySampleCount?: number;
+  medianProfitWon?: number | null;
 };
 
 type PackOpenApiResult = (RevealResult & {
@@ -546,7 +550,36 @@ function PackSelectorCard({
             <div>· 기본 ({RISK_PRESETS[riskProfile].label}): <b>{costBreakdown.base}</b></div>
             <div>· 차익 ×<b>{costBreakdown.profitMult}</b> · 신뢰도 ×<b>{costBreakdown.confidenceMult}</b> · 가격 ×<b>{costBreakdown.priceMult}</b></div>
             <div>= 카드 2매당 <b>{costBreakdown.perCardStep}</b> 토큰 (raw {costBreakdown.rawPerCardStep.toFixed(2)})</div>
-            <div className="pt-1 text-[10px] text-zinc-500">현금화 일수 (회전): <span className="rounded-full bg-zinc-200 px-1.5 text-[9px] dark:bg-zinc-800">곧 활성화</span></div>
+            <div className="pt-1 text-[10px] text-zinc-500">
+              현금화 일수 (회전): {(() => {
+                const days = previewInventory?.velocityMedianDays;
+                const cnt = previewInventory?.velocitySampleCount ?? 0;
+                if (days == null || cnt < 3) {
+                  return <span className="rounded-full bg-zinc-200 px-1.5 text-[9px] dark:bg-zinc-800">데이터 부족</span>;
+                }
+                const fast = days < 1;
+                const display = fast ? `~${Math.max(1, Math.round(days * 24))}시간` : `~${days}일`;
+                return (
+                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${fast ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"}`}>
+                    {fast ? "⚡ " : ""}{display} ({cnt}개 SKU)
+                  </span>
+                );
+              })()}
+            </div>
+            <div className="pt-1 text-[10px] text-zinc-500">
+              평균 차익 (median): {(() => {
+                const won = previewInventory?.medianProfitWon;
+                if (won == null || won <= 0) {
+                  return <span className="rounded-full bg-zinc-200 px-1.5 text-[9px] dark:bg-zinc-800">데이터 부족</span>;
+                }
+                const display = won >= 10000 ? `~${Math.round(won / 10000)}만원` : `~${won.toLocaleString()}원`;
+                return (
+                  <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[9px] font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                    💰 {display}
+                  </span>
+                );
+              })()}
+            </div>
             <div className="pt-1 text-[10px] text-[#7a8478] dark:text-zinc-500">
               ⓘ AI 시세 추정. 수익 보장 X — 매입 협상·판매 시점·구성품에 따라 달라집니다.
             </div>
@@ -571,6 +604,27 @@ function PackSelectorCard({
                           : `(현재 가능 ~${totalPoolReady}건)`}
                   </span>
                 </div>
+                {/* 2026-05-15 Wave 124: 자본 묶임 두려움 해체 — 평균 회전 + 평균 차익 chip prominent. */}
+                {previewInventory && (previewInventory.medianProfitWon || previewInventory.velocityMedianDays) ? (
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                    {previewInventory.medianProfitWon != null && previewInventory.medianProfitWon > 0 ? (
+                      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                        💰 평균 차익 {previewInventory.medianProfitWon >= 10000
+                          ? `~${Math.round(previewInventory.medianProfitWon / 10000)}만원`
+                          : `~${previewInventory.medianProfitWon.toLocaleString()}원`}
+                      </span>
+                    ) : null}
+                    {previewInventory.velocityMedianDays != null && (previewInventory.velocitySampleCount ?? 0) >= 3 ? (
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${previewInventory.velocityMedianDays < 1
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                        : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"}`}>
+                        {previewInventory.velocityMedianDays < 1
+                          ? `⚡ ~${Math.max(1, Math.round(previewInventory.velocityMedianDays * 24))}시간 회전`
+                          : `~${previewInventory.velocityMedianDays}일 회전`}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
                 <div className="mt-1 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
                   {selectedCount}
                   <span className="ml-1 text-base text-zinc-500 dark:text-zinc-400">건</span>

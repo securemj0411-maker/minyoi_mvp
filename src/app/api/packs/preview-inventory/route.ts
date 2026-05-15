@@ -49,6 +49,12 @@ type PoolRow = {
   last_verified_at: string;
   exposure_count: number | null;
   max_exposure: number | null;
+  comparable_key: string | null;
+};
+
+type VelocityRow = {
+  comparable_key: string;
+  median_hours_to_sold: number | null;
 };
 
 type RawRow = {
@@ -74,7 +80,7 @@ export async function GET(req: Request) {
     const filters = parseFilters(url);
 
     // Pool 후보 query (status=ready + 가용 노출 + filter 적용 가능한 컬럼들)
-    let poolQuery = `${tableUrl("mvp_candidate_pool")}?select=pid,profit_band,status,category,expected_profit_min,confidence,last_verified_at,exposure_count,max_exposure&status=eq.ready`;
+    let poolQuery = `${tableUrl("mvp_candidate_pool")}?select=pid,profit_band,status,category,expected_profit_min,confidence,last_verified_at,exposure_count,max_exposure,comparable_key&status=eq.ready`;
     if (filters.band) poolQuery += `&profit_band=eq.${filters.band}`;
     if (filters.minProfit != null) poolQuery += `&expected_profit_min=gte.${filters.minProfit}`;
     if (filters.minConfidence != null) poolQuery += `&confidence=gte.${filters.minConfidence}`;
@@ -140,12 +146,63 @@ export async function GET(req: Request) {
       return (now - t) < 2 * 60 * 60 * 1000;
     }).length;
 
+    // 2026-05-15 Wave 124: 신규 사용자 친화도 — 회전 기간 + 평균 차익 UI 전면화.
+    // 회전: 매칭 매물 comparable_key 별 median_hours_to_sold (mvp_market_velocity_daily) 평균.
+    // 차익: 매칭 매물의 expected_profit_min median (직접 pool row 에서). 외부 의견 "백테스트 데이터" 시작점.
+    const matchingPool = filters.priceMax != null
+      ? usable.filter(r => byCategory[r.category ?? "unknown"] != null)
+      : usable;
+    let medianProfitWon: number | null = null;
+    if (matchingPool.length > 0) {
+      const profits = matchingPool
+        .map(r => r.expected_profit_min)
+        .filter((v): v is number => typeof v === "number" && v > 0)
+        .sort((a, b) => a - b);
+      if (profits.length > 0) {
+        medianProfitWon = profits[Math.floor(profits.length / 2)];
+      }
+    }
+    let velocityMedianDays: number | null = null;
+    let velocitySampleCount = 0;
+    const comparableKeys = [...new Set(
+      matchingPool
+        .map(r => r.comparable_key)
+        .filter((k): k is string => Boolean(k))
+    )];
+    if (comparableKeys.length > 0) {
+      const encoded = comparableKeys.map((k) => encodeURIComponent(k)).join(",");
+      const velocityRes = await restFetch(
+        `${tableUrl("mvp_market_velocity_daily")}?select=comparable_key,median_hours_to_sold&comparable_key=in.(${encoded})&confidence=in.(high,medium)&order=date.desc,computed_at.desc&limit=${Math.max(100, comparableKeys.length * 5)}`,
+        { headers: serviceHeaders() },
+      );
+      if (velocityRes.ok) {
+        const velocityRows = (await velocityRes.json()) as VelocityRow[];
+        // comparable_key 별 최신 1개만 (이미 desc 정렬)
+        const latestByKey = new Map<string, number>();
+        for (const row of velocityRows) {
+          if (latestByKey.has(row.comparable_key)) continue;
+          if (row.median_hours_to_sold == null) continue;
+          latestByKey.set(row.comparable_key, row.median_hours_to_sold);
+        }
+        const values = [...latestByKey.values()];
+        if (values.length > 0) {
+          values.sort((a, b) => a - b);
+          const medianHours = values[Math.floor(values.length / 2)];
+          velocityMedianDays = Math.round((medianHours / 24) * 10) / 10;
+          velocitySampleCount = values.length;
+        }
+      }
+    }
+
     return NextResponse.json({
       band: filters.band,
       filters,
       matchingCount: priceFilteredCount,
       freshUnder2h,
       byCategory,
+      velocityMedianDays,
+      velocitySampleCount,
+      medianProfitWon,
       fetchedAt: new Date().toISOString(),
     });
   } catch (err) {

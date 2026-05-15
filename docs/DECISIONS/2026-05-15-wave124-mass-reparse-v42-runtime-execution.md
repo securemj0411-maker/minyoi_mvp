@@ -1,79 +1,94 @@
-# Wave 117 — display_defect 보강 + parts_only 신설 + mass reparse v42
+# Wave 124 — mass reparse v42 runtime execution
 
-## 1. display_defect regex 보강
+> 코드 변경 없음. Wave 117~123 시리즈에서 박힌 PARSER_VERSION v42 + parts_only + display_defect 보강 + reparse-listings cron-auth 등 모두 이미 commit됨 (HEAD 46587f5 Wave 123). 이번 wave 는 **DB 운영 액션** (옛 매물 mass reparse) + 측정 결과 박는 용도.
 
-- 시간: 2026-05-15
-- 발견: 사용자 요청 "리셀 업자 친화 매물 발굴" 차원 진단. 30일 smartphone 매물 중 description "액정 깨짐|화면 깨짐|노액|디스플레이 깨짐" 키워드 매칭 ~210건 발견. 기존 display_defect regex (`잔상|번인|burn in|녹조|흑점|멍|터치 불량`) 가 "깨짐|파손" 키워드 미포함 → 풀 차단 안 됨.
-- 변경: `src/lib/option-parser.ts:983` regex 확장 — `액정 깨짐|화면 깨짐|디스플레이 깨짐|액정 파손|화면 파손|디스플레이 파손|노액|액정 나감|화면 나감` 추가.
-- 검증:
-  - mass reparse 후 `display_defect` 마킹: **97 → 881건** (9x 증가).
-  - `npm run test:core` 139/139 pass.
-- 위험: false positive — "잔상 없음" 같은 부정 표현은 line 982 noDisplayDefect 가드로 이미 처리. 신규 추가 키워드도 직접 손상 표현이라 안전.
+## 1. 배경
 
-## 2. parts_only condition_note 신설
+- 컨텍스트 시작 시 `mvp_listing_parsed.parser_version` 분포: v35 7,217 / v41 6,464 / v40 5,109 / v32 498 / 잡것 311. **v42 0건.**
+- dev server 가 v42 코드 사용 중인데 (HEAD 46587f5), DB에 v42 매물 0건 = 옛 매물 정리 안 됨.
+- needs_review 49.1% (9,628 / 19,599) — 절반 가까이.
+- score_dirty 트리거는 score 재계산만 — parser 재실행 X. 별도 매커니즘 필요.
 
-- 시간: 2026-05-15
-- 발견: parser 가 `부품용|파트만|리퍼 부품` 등 키워드는 narrow lane reject (mining 평가용)로만 사용. condition_notes 에 박지 않아 풀 차단 정책 (POOL_BLOCK_NOTES) 안 걸림.
-- 변경:
-  - `src/lib/option-parser.ts:986` 새 줄 — `parts_only` condition_note 추가. regex: `부품용|파트만|리퍼 부품|단자만|힌지 부품|수리용|셀러용|업자용|보상판매용`.
-  - `src/lib/candidate-pool-builder.ts:120` POOL_BLOCK_NOTES에 `parts_only` 추가.
-  - `src/lib/tick-pipeline.ts:2490` 시세 sample exclude에 `parts_only` 추가.
-- 검증: mass reparse 후 `parts_only` 마킹 **70건**. 모두 풀 차단 + 시세 sample 제외.
-- 위험: 리셀 업자가 부품용 매물을 일부러 사고 싶은 경우 풀에서 안 보임. **별도 lane (리셀 업자 친화)** 신설 시 별도 builder 가 다시 흡수 — POOL_BLOCK_NOTES 코멘트에 명시.
-
-## 3. PARSER_VERSION v41 → v42
+## 2. 운영 액션
 
 - 시간: 2026-05-15
-- 변경: `src/lib/option-parser.ts:40` `option-parser-v41` → `option-parser-v42`.
-- 사유: regex 보강 + parts_only 추가 → 결과 schema 변경. mass reparse 트리거 위해 버전 bump.
+- 액션: `/api/debug/reparse-listings?legacy=1&limit=1000` 25회 호출 (CLI loop, cron-auth Bearer).
+- 처리량: 1000건 / 12초. 19개 batch 후 옛 매물 0건 (정상 종료).
+- 결과:
+  | parser_version | 시작 | 끝 |
+  |---|---|---|
+  | option-parser-v42 | 0 | **19,304** |
+  | wave92-fashion-mobility-v1 | 202 | 263 (별 parser, 의도 stuck) |
+  | option-parser-v35 | 7,217 | 29 (skipped/pending) |
+  | option-parser-v41 | 6,464 | 12 (skipped/pending) |
+  | option-parser-v40 | 5,109 | 5 (skipped/pending) |
+  | option-parser-v32 | 498 | 2 (skipped/pending) |
+  | 기타 v31/v33/v34/v38/v39 | 109 | 0 |
 
-## 4. Reparse endpoint cron-auth 옵션 + legacy filter
-
-- 시간: 2026-05-15
-- 발견: `score_dirty=true` 마킹은 score 만 재계산, parser 재실행 X. 옛 v24~v41 매물 19,599건 정리 매커니즘 부재 (wave63 스크립트는 dry-run 위주).
-- 변경:
-  - `src/app/api/debug/reparse-listings/route.ts` `loadLegacyRows()` 신설 — `parser_version != CURRENT` 매물만 batch fetch (parser_version asc, pid asc).
-  - `?legacy=1` query 활성 시 loadLegacyRows 사용.
-  - `handleReparse()` 진입에 `checkCronAuth(req)` 가드 추가 — admin 외 cron-auth (Bearer CRON_SECRET) 도 허용 (CLI 자동화용). reparse 는 destructive 아님 (parsed_json 재생성, raw 안 건드림) 라 안전.
-- 검증:
-  - shell loop으로 `?legacy=1&limit=1000` 25회 호출 (`for i in {1..25}; do curl ...; done`). 19개 batch 진행 후 옛 매물 0개 (정상 종료).
-  - 1000건/12초. 19,000건 / ~4분.
-  - 호출 1회 결과 예: `{total:998, needsReview:299, skuRecovered:666, parserVersion:"option-parser-v42"}`.
-
-## 5. Mass reparse 효과 측정
+## 3. 효과 측정
 
 - 시간: 2026-05-15
-- 결과: **needs_review 49.1% → 20.1%** (-29%p, 절대값 -5,748건).
-- 카테고리별:
+- 전체 needs_review: **49.1% → 20.1%** (-29%p, -5,748건).
+- 카테고리별 (v42 매물만):
   | category | total | needs_review | pct |
   |---|---|---|---|
   | smartphone | 4,293 | 404 | 9.4% |
   | earphone | 3,897 | 723 | 18.6% |
   | tablet | 3,714 | 742 | 20.0% |
   | smartwatch | 2,449 | 150 | 6.1% |
-  | laptop | 2,051 | 694 | 33.8% |
+  | laptop | 2,051 | 694 | **33.8%** |
   | game_console | 302 | 0 | 0.0% |
   | other | 1,558 | 126 | 8.1% |
   | unmatched (sku_id null) | 1,041 | 1,041 | 100.0% |
+- condition_notes 신규 마킹:
+  - parts_only **70건** (신설, 풀 차단 + 시세 sample 제외)
+  - display_defect 97 → **881건** (regex 보강 9x, "액정 깨짐|화면 깨짐|노액|디스플레이 깨짐|파손|나감" 추가 효과)
+  - screen_replaced 228건 유지
 
-## 6. 정리 안 된 295건 (의도)
-
-- 시간: 2026-05-15
-- 잔존 분포:
-  - `wave92-fashion-mobility-v1`: 263건 — fashion (가방/신발/자전거) 별도 parser. option-parser 로 reparse 시 wrong (semantic 다름). **건들지 않음.**
-  - `option-parser-v32~v41` (detail_status=skipped/pending): 32건 — score 계산에서도 빠지는 매물. reparse 의의 적음.
-- 위험: 미래에 fashion lane 별도 reparse 매커니즘 필요할 수 있음. 별 wave.
-
-## 7. 미해결 (다음 wave)
-
-- **자동 reparse cron** — future parser 변경 (v42 → v43+) 시 자동 정리. cron-auth 추가됐으니 QStash schedule 만 등록하면 OK.
-- **리셀 업자 친화 lane 신설** — 깨진/하자/부품용 매물 별도 lane. Production 30일 smartphone 깨진/하자 ~310건/월, 정상가 대비 50% 가격. 별 wave에서 lane 구조 + builder 신설.
-
-## 8. iPad Mini test fix
+## 4. 정리 안 된 295건 (의도)
 
 - 시간: 2026-05-15
-- 발견: `tests/core-rules.test.ts:1184/1191` iPad Mini 5/A17 expected `comparableKey` 가 chip 누락 형태 (옛 가정). 이전 세션에서 `parseTabletGenerationChip` 가 iPad Mini chip 매핑 (`mini 5 → a12`, `mini 7 → a17_pro`) 추가 후 test 안 돌림.
+- 잔존:
+  - `wave92-fashion-mobility-v1` 263건 — fashion (가방/신발/자전거) 별도 parser. option-parser 로 reparse 시 wrong (semantic 다름). 건들지 않음.
+  - `option-parser v32~v41` (detail_status=skipped/pending) 32건 — score 계산에서도 빠지는 매물. reparse 의의 적음.
+
+## 5. tests fix
+
+- 시간: 2026-05-15
+- 발견: `tests/core-rules.test.ts:1184/1191` iPad Mini 5/A17 expected `comparableKey` 가 chip 누락 형태 (옛 가정). Wave 117d/118 이후 `parseTabletGenerationChip` 의 iPad Mini chip 매핑 (`mini 5 → a12`, `mini 7 → a17_pro`) 추가됐는데 test fail 1건 잔존.
 - 변경: 두 expected 에 chip token 추가:
   - `'ipad|ipad_mini|5_gen|a12|7_9in|64gb|wifi'`
   - `'ipad|ipad_mini|7_gen|a17_pro|8_3in|256gb|wifi'`
-- 검증: `npm run test:core` 139/139 pass.
+- 검증: `npm run test:core` 138 → 139 pass.
+
+## 6. 미해결 (다음 wave)
+
+- **자동 reparse cron** — future parser 변경 (v42 → v43+) 시 자동 정리. cron-auth 이미 박힘 (Wave 117 시리즈). QStash schedule 만 등록하면 OK.
+- **리셀 업자 친화 lane 신설** — 깨진/하자/부품용 매물 별도 lane. Production 30일 smartphone 깨진/하자 ~310건/월, 정상가 대비 50% 가격. 별 wave에서 lane 구조 + 별도 builder 신설.
+
+## 7. 위험
+
+- **fashion (wave92) 매물 263건** — fashion parser 가 v2/v3 등으로 업그레이드되면 별도 reparse 필요. 현재 매커니즘에 없음. 별 wave.
+- **mass reparse 가 sku_id 없던 raw 666건의 sku_id 회복** — score 계산에서도 sku_id 영향 받음. 다음 tick 후 score 재계산 시 차이 발생 가능 (긍정: 비교군 정확. 부정: 옛 score 와 다름).
+
+## 8. 추천 페이지 회전 + 평균 차익 chip 활성화
+
+- 시간: 2026-05-15
+- 발견: 외부 의견 수용 — "회전 기간 UI 전면화 + 백테스트 데이터 = 자본 묶임 두려움 해체. 신규 사용자 친화도 향상". 리셀 lane 신설 보류 (전업 리셀러 Phase 2).
+- 변경:
+  - `src/app/api/packs/preview-inventory/route.ts`:
+    - `PoolRow.comparable_key` 추가 (select 절 + type)
+    - matchingPool 추출 → `velocityMedianDays`, `velocitySampleCount`, `medianProfitWon` 계산
+    - `mvp_market_velocity_daily` join (high/medium confidence 만). comparable_key 별 최신 1개 → median.
+    - response 에 3 필드 추가
+  - `src/components/recommendation-workspace.tsx`:
+    - `PreviewInventoryResp` 3 필드 확장
+    - "자세한 정보 ▼" 안 회전 chip placeholder 활성화 (line 549) + 평균 차익 chip 신규 추가
+    - **prominent 위치**: "추천 상품 수" 박스 헤더 아래 chip 박스 추가 (line 607~) — 클릭 안 해도 보임
+- 검증:
+  - `curl /api/packs/preview-inventory?band=2&priceMax=500000` → `velocityMedianDays:0.1, velocitySampleCount:5, medianProfitWon:55637`
+  - UI: 24h 미만 → "⚡ ~2시간", 24h 이상 → "X일". 차익 1만원+ → "X만원". sample 3 미만 → "데이터 부족" fallback.
+- 위험:
+  - velocity sample 작음 (band 별 5~8 SKU). representative X. 단 사용자에게 "(N개 SKU 기준)" 명시. 자세한 정보 안 caveat 유지.
+  - velocity clock_basis = `first_seen_to_sold_detected`. "사용자 매입 후 재판매까지" 와 다름 (proxy).
+  - 평균 차익은 mvp_candidate_pool.expected_profit_min 기반 (시세 추정). 실제 매입가 협상에 따라 다름.
