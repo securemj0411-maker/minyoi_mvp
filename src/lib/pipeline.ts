@@ -288,14 +288,15 @@ function partsHits(title: string, desc: string): string[] {
   ) {
     hits.push("title_unit_only");
   }
-  // Wave 116 (2026-05-15): "본체" 단독 매물은 본품 의미 (예: "에어팟 4세대 본체 노캔o").
-  // 이전엔 "본체" 포함만 보고 parts 분류 → AirPods 4 매물 1,316건 중 699건 sku_id null.
-  // "본체만/단품/판매/팝니다" 같이 명시되어야 진짜 부품 매물.
+  // Wave 116b (2026-05-15) REVERTED: "본체" 단독 매물은 본품 vs 본체만(부품) 둘 다 가능.
+  // 가격 측정: AirPods 본체 매물 다수 2~7만원 (정상품 시세 15-30만원의 1/3 이하) → 진짜 본체만.
+  // LAUNCH_PLAN 12b 정책 충실 — 명시 안 한 매물 reject default.
+  // 본품 인정 조건: 풀박/풀박스/풀세트/풀구성/구성품 명시 매물만 (안전).
   if (
     !fullSizeHeadphone
     && !isGameConsoleFullUnitText(normalizedText)
-    && /본체\s*(?:만|단품|판매|팝니다|구매|구합니다|삽니다)/.test(compactTitle.replace(/\s+/g, ""))
-    && !containsAny(text, ["양쪽", "풀박", "풀박스", "풀세트", "풀구성"]).length
+    && compactTitle.includes("본체")
+    && !containsAny(text, ["양쪽", "풀박", "풀박스", "풀세트", "풀구성", "구성품"]).length
   ) {
     hits.push("title_case_only");
   }
