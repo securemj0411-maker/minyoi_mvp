@@ -238,6 +238,8 @@ function PackSelectorCard({
   const [previewInventory, setPreviewInventory] = useState<PreviewInventoryResp | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
+  // Wave 93b: CTA를 위로 끌어올리기 위해 차익+신뢰도는 default 접힘.
+  const [showAdvancedSliders, setShowAdvancedSliders] = useState(false);
 
   // Risk preset 변경 시 filters + band 자동 적용
   function applyRiskPreset(profile: RiskProfile) {
@@ -348,9 +350,9 @@ function PackSelectorCard({
         </div>
         <div className="mt-1.5 text-center text-[11px] text-[#7a8478] dark:text-zinc-500">{RISK_PRESETS[riskProfile].desc}</div>
 
-        {/* 압축 슬라이더 그룹 — 4개 한 박스 */}
-        <div className="mt-3 space-y-2.5 rounded-[18px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
-          {/* 매입가격 — filled bar = 0원~선택값 검색 범위 시각화 */}
+        {/* 압축 슬라이더 그룹 — 매입가 + 신선도는 항상, 차익 + 신뢰도는 자세히 옵션 안에. */}
+        <div className="mt-3 space-y-2 rounded-[18px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
+          {/* 매입가 */}
           <div>
             <div className="flex items-center justify-between text-xs">
               <span className="font-black text-[#59665b] dark:text-zinc-300">💰 매입가</span>
@@ -366,59 +368,9 @@ function PackSelectorCard({
               style={sliderTrackStyle(advancedFilters.priceMaxManwon, 0, 150, "#4f6f58")}
               className="mt-1 h-2 w-full cursor-pointer appearance-none rounded-full accent-[var(--brand-accent)] disabled:opacity-50"
             />
-            <div className="mt-0.5 flex justify-between text-[9px] font-bold text-[#9aa893]">
-              <span>0</span>
-              <span>150만원</span>
-            </div>
           </div>
-          {/* 차익 */}
-          <div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-black text-[#59665b] dark:text-zinc-300">💵 차익</span>
-              <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minProfitManwon}만원 이상</span>
-            </div>
-            <input
-              type="range" min={MIN_PROFIT_MANWON} max={MAX_PROFIT_MANWON} step={1}
-              value={advancedFilters.minProfitManwon}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                setAdvancedFilters(f => ({ ...f, minProfitManwon: v }));
-                onMinProfitChange(v);
-              }}
-              disabled={busy}
-              style={sliderTrackStyle(
-                advancedFilters.minProfitManwon,
-                MIN_PROFIT_MANWON,
-                MAX_PROFIT_MANWON,
-                selectedPack.band === 3 ? "#caab78" : "#4f6f58",
-              )}
-              className={`mt-1 h-2 w-full cursor-pointer appearance-none rounded-full ${rangeAccentClass(selectedPack.band)} disabled:opacity-50`}
-            />
-            <div className="mt-0.5 flex justify-between text-[9px] font-bold text-[#9aa893]">
-              <span>{MIN_PROFIT_MANWON}만원</span>
-              <span>{MAX_PROFIT_MANWON}만원+</span>
-            </div>
-          </div>
-          {/* 신뢰도 */}
-          <div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-black text-[#59665b] dark:text-zinc-300">🎯 신뢰도</span>
-              <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minConfidencePct}% 이상</span>
-            </div>
-            <input
-              type="range" min={50} max={95} step={5}
-              value={advancedFilters.minConfidencePct}
-              onChange={(e) => setAdvancedFilters(f => ({ ...f, minConfidencePct: Number(e.target.value) }))}
-              disabled={busy}
-              style={sliderTrackStyle(advancedFilters.minConfidencePct, 50, 95, "#4f6f58")}
-              className="mt-1 h-2 w-full cursor-pointer appearance-none rounded-full accent-[var(--brand-accent)] disabled:opacity-50"
-            />
-            <div className="mt-0.5 flex justify-between text-[9px] font-bold text-[#9aa893]">
-              <span>50%</span>
-              <span>95%</span>
-            </div>
-          </div>
-          {/* 신선도 — Plus 플랜 이상 사용 가능. infiniteCredits 또는 admin = unlock 가정 (실 플랜 정보 추가 시 갱신). */}
+
+          {/* 신선도 — Plus/Pro 사용 가능 */}
           <div>
             <div className="flex items-center justify-between text-xs">
               <span className="font-black text-[#59665b] dark:text-zinc-300">
@@ -447,16 +399,64 @@ function PackSelectorCard({
               )}
               className="mt-1 h-2 w-full cursor-pointer appearance-none rounded-full accent-[var(--brand-accent)] disabled:cursor-not-allowed disabled:opacity-50"
             />
-            <div className="mt-0.5 flex justify-between text-[9px] font-bold text-[#9aa893]">
-              <span>최근 1시간</span>
-              <span>무제한</span>
-            </div>
-            {!infiniteCredits && (
-              <p className="mt-1.5 rounded-md bg-[#fffaf1] px-2 py-1 text-[10px] font-bold leading-4 text-[#7b5724] dark:bg-zinc-800 dark:text-zinc-400">
-                실시간 신선 매물 필터는 Plus·Pro 플랜에서 사용 가능합니다.
-              </p>
-            )}
           </div>
+
+          {/* 자세히 옵션 — 차익 + 신뢰도 (default 접힘) */}
+          <button
+            type="button"
+            onClick={() => setShowAdvancedSliders((s) => !s)}
+            className="mt-1 flex w-full items-center justify-between rounded-md px-1 py-1 text-[11px] font-black text-[#7a8478] hover:text-[#59665b] dark:text-zinc-500 dark:hover:text-zinc-300"
+          >
+            <span>자세히 옵션 (차익 · 신뢰도)</span>
+            <span>{showAdvancedSliders ? "▲" : "▼"}</span>
+          </button>
+          {showAdvancedSliders && (
+            <div className="space-y-2 border-t border-[#e8dec9] pt-2 dark:border-zinc-700/40">
+              <div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-black text-[#59665b] dark:text-zinc-300">💵 차익</span>
+                  <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minProfitManwon}만원 이상</span>
+                </div>
+                <input
+                  type="range" min={MIN_PROFIT_MANWON} max={MAX_PROFIT_MANWON} step={1}
+                  value={advancedFilters.minProfitManwon}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    setAdvancedFilters(f => ({ ...f, minProfitManwon: v }));
+                    onMinProfitChange(v);
+                  }}
+                  disabled={busy}
+                  style={sliderTrackStyle(
+                    advancedFilters.minProfitManwon,
+                    MIN_PROFIT_MANWON,
+                    MAX_PROFIT_MANWON,
+                    selectedPack.band === 3 ? "#caab78" : "#4f6f58",
+                  )}
+                  className={`mt-1 h-2 w-full cursor-pointer appearance-none rounded-full ${rangeAccentClass(selectedPack.band)} disabled:opacity-50`}
+                />
+              </div>
+              <div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-black text-[#59665b] dark:text-zinc-300">🎯 신뢰도</span>
+                  <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minConfidencePct}% 이상</span>
+                </div>
+                <input
+                  type="range" min={50} max={95} step={5}
+                  value={advancedFilters.minConfidencePct}
+                  onChange={(e) => setAdvancedFilters(f => ({ ...f, minConfidencePct: Number(e.target.value) }))}
+                  disabled={busy}
+                  style={sliderTrackStyle(advancedFilters.minConfidencePct, 50, 95, "#4f6f58")}
+                  className="mt-1 h-2 w-full cursor-pointer appearance-none rounded-full accent-[var(--brand-accent)] disabled:opacity-50"
+                />
+              </div>
+            </div>
+          )}
+
+          {!infiniteCredits && (
+            <p className="rounded-md bg-[#fffaf1] px-2 py-1 text-[10px] font-bold leading-4 text-[#7b5724] dark:bg-zinc-800 dark:text-zinc-400">
+              실시간 신선 매물 필터는 Plus·Pro 플랜에서 사용 가능합니다.
+            </p>
+          )}
         </div>
 
         {/* 카테고리 collapsible */}
