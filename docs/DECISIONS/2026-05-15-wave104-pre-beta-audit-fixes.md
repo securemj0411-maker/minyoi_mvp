@@ -742,6 +742,51 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 다음: source 다양화 / launch smoke / PWA manifest / loading.tsx (모두 trivial 또는 큰 작업).
 - commit: 1eaa1b4
 
+## 35. Wave 106 마무리 정리 + MJ 액션 + 다음 wave 후보
+
+- 시간: 2026-05-16 09:35 KST
+- 검토 (남은 영역 — 진행 가치 vs 복잡도):
+  - **dark mode 토글**: localStorage state + html class toggle + hydration mismatch risk. trade-off 있어 별도 wave 권장.
+  - **PWA manifest**: 모바일 홈 화면 추가 기능. 베타 단계 영향 작음. 별도 wave.
+  - **loading.tsx**: 페이지 transition 빈 화면 보강. trivial.
+  - **accessibility (aria-label / role)**: 11개만 박힘. 스크린 리더 사용자 영향. 별도 wave (큰 작업).
+  - **source 다양화 (Wave 90 후속)**: 1-2일 큰 wave. 별도 wave.
+  - **observability dashboard**: 운영자용 monitoring UI. 별도 wave.
+  - **외부 monitoring (Sentry 등)**: 별도 wave.
+- Wave 106 결정: **여기서 마무리**. trade-off 없는 fix 다 박았음. 남은 건 별도 wave에서 우선순위 결정.
+
+### Wave 106 종합 (#16~#35, 20개 항목)
+
+| 영역 | 항목 # | 효과 |
+|---|---|---|
+| 핫딜 시스템 | 16, 17, 18, 19 | enqueue silent fail / 응답 폐기 + TTL reroute / API description 보존 / Pro 전용 권한 |
+| Marketing 정직성 | 20, 21, 23, 24, 25 | 거짓 광고 제거 / 카테고리 정직 공시 / Mock 결제 명확화 / 거짓 카테고리 disabled / admin·legal·checkout audit |
+| 보류 결정 기록 | 22 | 6건 일괄 박음 |
+| UX 일관성 | 26 | 에러/빈상태 sweep + client raw error fix |
+| 운영 readiness | 27, 28, 29 | watchdog 보강 (정정 포함) + rate limit 5개 누락 fix |
+| e2e walkthrough | 30 | 가입→결제→핫딜 흐름 검증 + err.message 6개 sweep |
+| 신선도/데이터 | 31, 32 | landing/prune/compliance 정정 / 회원 탈퇴 흐름 신규 |
+| SEO / 인프라 | 33, 34 | metadata + robots + sitemap / error/404/global-error + viewport |
+
+### MJ 액션 정리 (남은 외부 작업)
+
+1. (선택) QStash 등록 — 베타 단계 trivial. 정식 launch 시점에 compliance-retention 만 권장 (개인정보보호법 위해).
+2. (선택) 정식 launch 시 Toss 실제 결제 연동 + 베타 plan migration.
+3. (선택) source 다양화 wave 진행 (별도 wave 작업).
+
+### 다음 wave 후보 (우선순위 순)
+
+| Wave | 영역 | 가치 | 작업량 |
+|---|---|---|---|
+| 107 | source 다양화 (신발/가방/스포츠) | ⭐⭐⭐ 비즈니스 핵심 | 1-2일 |
+| 108 | dark mode 토글 + accessibility | ⭐⭐ UX | 0.5일 |
+| 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
+| 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
+
+- 위험: Wave 106 fix 들이 베타 단계 사용자에게 즉시 valuable. 단 source 다양화 (Wave 107) 안 하면 Apple 외 사용자 이탈 risk.
+- 다음: MJ 결정에 따라 Wave 107 시작 또는 베타 launch.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
