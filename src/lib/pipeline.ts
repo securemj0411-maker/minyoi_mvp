@@ -35,6 +35,8 @@ const PARTS_KEYWORDS = [
   "부품용", "본체만", "유닛만", "좌측", "우측", "한쪽", "한짝", "한 쪽", "한알", "낱개", "단품",
   "케이스만", "충전케이스만", "충전 케이스만", "액정만", "배터리만",
   "교체용", "호환", "익스텐션", "연장",
+  // Wave 111e: 스타일러스/S펜만 매물 parts 인식. brand-less normalize 부작용 차단.
+  "스타일러스", "s펜만", "s 펜만", "에스펜만",
   ...GENERATED_NOISE_RULES.parts,
 ];
 const DAMAGED_KEYWORDS = [

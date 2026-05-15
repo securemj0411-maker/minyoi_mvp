@@ -77,6 +77,11 @@ const PHONE_NOISE = [
   "색상교환",
   "교환하실분",
   "교환하실 분",
+  // Wave 111e: brand-less normalize 부작용 차단 — 스타일러스/S펜만 매물이 broad SKU에 흡수되는 것 방지.
+  "스타일러스",
+  "s펜만",
+  "s 펜만",
+  "에스펜만",
 ];
 
 const TABLET_NOISE = [
