@@ -835,7 +835,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
   - 매물 이름이 모호한 사용자 (예: "아이패드 12.9 256G" 만) 는 풀 진입 안 됨 → 손해. 단 정확성 우선.
 - **사용자 질문 답**: lifecycle 7분 정상 작동. 위 6건은 자연 sold/missing turnover. 진짜 issue = parser unknown_chip 매물 풀 진입 → 시세 mixed = 잘못된 카드 표시. code fix 로 차단.
 - 다음: catalog 깊이 audit (special edition / 색상 변형 / connectivity).
-- commit: pending
+- commit: e52a9cf
 
 ## 39. catalog/parser 정확도 audit (사용자 요청)
 
