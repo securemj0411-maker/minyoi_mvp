@@ -92,35 +92,59 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
       ) : null}
 
       <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 dark:border-zinc-800">
-        <table className="w-full min-w-[1100px] text-sm">
+        <table className="w-full min-w-[1500px] text-sm">
           <thead className="bg-gray-50 dark:bg-zinc-900">
             <tr className="border-b border-gray-200 text-left text-xs font-bold text-gray-600 dark:border-zinc-800 dark:text-gray-400">
               <th className="px-3 py-2">닉네임</th>
               <th className="px-3 py-2">이메일</th>
+              <th className="px-3 py-2">플랜</th>
+              <th className="px-3 py-2">플랜 만료</th>
+              <th className="px-3 py-2 text-right">일일 사용</th>
+              <th className="px-3 py-2">최근 결제</th>
               <th className="px-3 py-2">가입일</th>
               <th className="px-3 py-2">마지막 로그인</th>
               <th className="px-3 py-2 text-right">크레딧</th>
-              <th className="px-3 py-2 text-right">무료 토큰</th>
-              <th className="px-3 py-2">Pro 만료</th>
               <th className="px-3 py-2">베타 체험단</th>
               <th className="px-3 py-2">provider</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => {
-              const proActive = row.proUntil && new Date(row.proUntil) > new Date();
+              const planActive = row.planStatus === "active";
+              const badge = PLAN_BADGE[row.planKey] ?? PLAN_BADGE.free;
               const pending = pendingIds.has(row.authUserId);
               return (
                 <tr key={row.authUserId} className="border-b border-gray-100 hover:bg-amber-50/40 dark:border-zinc-900 dark:hover:bg-amber-950/20">
                   <td className="px-3 py-2 font-semibold">{row.nickname || "—"}</td>
                   <td className="px-3 py-2 font-mono text-xs">{row.email ?? "—"}</td>
+                  <td className="px-3 py-2">
+                    <span className={`inline-flex h-5 items-center rounded px-1.5 text-[11px] font-bold ${badge.cls}`}>
+                      {badge.label}
+                    </span>
+                    {row.planStatus && row.planStatus !== "active" ? (
+                      <span className="ml-1 text-[10px] text-gray-500">{row.planStatus}</span>
+                    ) : null}
+                    {row.planCancelAtEnd ? (
+                      <div className="mt-0.5 text-[10px] text-orange-600 dark:text-orange-400">해지 예약</div>
+                    ) : null}
+                  </td>
+                  <td className={`px-3 py-2 font-mono text-xs ${planActive ? "text-gray-700 dark:text-gray-300" : "text-gray-400"}`}>
+                    {fmt(row.planEndAt)}
+                  </td>
+                  <td className="px-3 py-2 text-right font-mono text-xs">{row.dailyUsedCount ?? "—"}</td>
+                  <td className="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400">
+                    {row.lastPaymentAt ? (
+                      <div>
+                        <div>{fmt(row.lastPaymentAt)}</div>
+                        {row.lastPaymentAmount ? (
+                          <div className="text-[10px] text-gray-500">₩{row.lastPaymentAmount.toLocaleString("ko-KR")}</div>
+                        ) : null}
+                      </div>
+                    ) : "—"}
+                  </td>
                   <td className="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400">{fmt(row.createdAt)}</td>
                   <td className="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400">{fmt(row.lastSignInAt)}</td>
                   <td className="px-3 py-2 text-right font-mono">{row.balance ?? "—"}</td>
-                  <td className="px-3 py-2 text-right font-mono text-xs">{row.freeGrantTokens ?? "—"}</td>
-                  <td className={`px-3 py-2 font-mono text-xs ${proActive ? "font-bold text-amber-700 dark:text-amber-400" : "text-gray-400"}`}>
-                    {fmt(row.proUntil)}
-                  </td>
                   <td className="px-3 py-2">
                     <button
                       type="button"
