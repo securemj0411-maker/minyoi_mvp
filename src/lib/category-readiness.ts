@@ -167,6 +167,28 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "iPhone 14 Pro 256GB (자급제)",
     note: "Pro Max 아닌 일반 Pro 256GB 자급제. 13/15세대, Pro Max, 128/512/1TB, 통신사 차단.",
   },
+  // Wave 120 (2026-05-15): 추가 narrow self lane (Galaxy S21/S22 256, iPhone 13/14 256).
+  // 매물 14일 추정: S21 256 277건, S22 256 300건, iPhone 14 256 36건, iPhone 13 256 23건.
+  galaxy_s21_256_self: {
+    status: "ready",
+    label: "Galaxy S21 256GB (자급제)",
+    note: "S20/S22, Ultra/Plus/FE, 128/512/1TB, 통신사 차단.",
+  },
+  galaxy_s22_256_self: {
+    status: "ready",
+    label: "Galaxy S22 256GB (자급제)",
+    note: "S21/S23/S24, Ultra/Plus/FE, 128/512/1TB, 통신사 차단.",
+  },
+  iphone_13_256gb_self: {
+    status: "ready",
+    label: "iPhone 13 256GB (자급제)",
+    note: "Pro/Pro Max/mini, 12/14세대, 128/512/1TB, 통신사 차단.",
+  },
+  iphone_14_256gb_self: {
+    status: "ready",
+    label: "iPhone 14 256GB (자급제)",
+    note: "Pro/Pro Max/Plus, 13/15세대, 128/512/1TB, 통신사 차단.",
+  },
   // Wave 108: Galaxy S 일반(Ultra/Plus 아닌) 256GB 자급제 narrow lane.
   galaxy_s23_256_self: {
     status: "ready",
