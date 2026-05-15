@@ -691,7 +691,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
   - admin 자기 탈퇴 차단 박았지만 실수로 admin email인 사용자가 삭제 시도 시 403. 의도된 동작.
   - auth.users delete admin API 실패 시 (네트워크 등) public 데이터만 정리되고 auth row 잔존. 사용자가 다시 로그인하면 빈 사용자 상태로 돌아옴 (자동 grant 흐름으로 새 5크레딧). 부정적 UX 가능성 있지만 데이터 누출은 X.
 - 다음: 별도 wave에서 (a) auth.users delete 실패 시 retry queue 또는 (b) source 다양화 또는 (c) launch 직전 final smoke.
-- commit: pending
+- commit: 11b7535
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
