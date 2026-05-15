@@ -785,7 +785,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 
 - 위험: Wave 106 fix 들이 베타 단계 사용자에게 즉시 valuable. 단 source 다양화 (Wave 107) 안 하면 Apple 외 사용자 이탈 risk.
 - 다음: MJ 결정에 따라 Wave 107 시작 또는 베타 launch.
-- commit: pending
+- commit: d19f3a1
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
