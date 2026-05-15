@@ -13,7 +13,10 @@ import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MAX_COMPARABLES = 30;
+// 2026-05-16 (사용자 코멘트 #96 pid 407759980): 비교군 list 에 active 만 보이고 sold 안 보임.
+// raw 에 sale_status/listing_state 있는데 limit 30 으로 잘림 → active 가 다 차지하면 sold 0건.
+// limit 80 으로 늘려 active + sold + disappeared 다 표시. UI 가 saleStatus 표시 이미 있음.
+const MAX_COMPARABLES = 80;
 
 type Comparable = {
   pid: number;
@@ -104,8 +107,9 @@ export async function GET(
     // Strategy A: comparable_key 기준 (정확). listing_parsed에서 pid 가져와 raw_listings join.
     let comparables: Comparable[] = [];
     if (comparableKey) {
+      // listing_parsed limit 더 크게 — sold 매물도 비교군에 들어갈 자리 확보 (#96).
       const sameKeyPidsRes = await restFetch(
-        `${tableUrl("mvp_listing_parsed")}?select=pid&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&limit=${MAX_COMPARABLES + 5}`,
+        `${tableUrl("mvp_listing_parsed")}?select=pid&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&limit=${MAX_COMPARABLES + 20}`,
         { headers: serviceHeaders() },
       );
       const sameKeyPids = ((await sameKeyPidsRes.json()) as Array<{ pid: number }>)
@@ -124,19 +128,38 @@ export async function GET(
             { headers: serviceHeaders() },
           ),
           restFetch(
-            `${tableUrl("mvp_listing_parsed")}?select=pid,parsed_json&pid=in.(${sameKeyPids.join(",")})`,
+            `${tableUrl("mvp_listing_parsed")}?select=pid,parsed_json,condition_class&pid=in.(${sameKeyPids.join(",")})`,
             { headers: serviceHeaders() },
           ),
         ]);
         const rawRows = (await rawListRes.json()) as Array<Record<string, unknown>>;
         const analysisRows = (await analysisRes.json()) as Array<{ pid: number; risk_hits: number }>;
-        const parsedRowsForCond = (await parsedRes2.json()) as Array<{ pid: number; parsed_json: Record<string, unknown> | null }>;
+        const parsedRowsForCond = (await parsedRes2.json()) as Array<{ pid: number; parsed_json: Record<string, unknown> | null; condition_class: string | null }>;
         const riskByPid = new Map(analysisRows.map((r) => [Number(r.pid), Number(r.risk_hits ?? 0)]));
         const excludeByPid = new Map<number, boolean>();
+        // 2026-05-16 (사용자 코멘트 #92 pid 406610698): 비교군 UI 제외 list 가 tick-pipeline 시세 sample
+        // 제외 list 와 불일치 — 시세 계산은 정확한데 사용자 디버깅 화면에는 그 매물 그대로 표시 = 헷갈림.
+        // tick-pipeline.ts:2469~2493 와 동기화 — 8가지 condition_notes 다 제외.
+        const COMPARABLE_EXCLUDE_NOTES = [
+          "new_or_open_box", "low_battery_health", "applecare_premium",
+          "accessory_bundle", "full_set", "multi_device_bundle",
+          "display_defect", "screen_replaced", "faceid_issue", "parts_only",
+        ];
+        // 2026-05-16 (사용자 코멘트 #95 pid 406094154): 본 매물 = "사용감 많음" (worn) 인데 비교군에 mint 매물.
+        // wave 130 condition_class 시세 분리는 작동하지만 비교군 UI 가 condition 무관 다 표시 = 사용자 헷갈림.
+        // 본 매물 condition_class 와 같은 class 매물만 비교군 list 표시. null 이면 필터 안 함 (옛 매물 호환).
         for (const p of parsedRowsForCond) {
           const notes = (p.parsed_json?.condition_notes as string[] | undefined) ?? [];
-          // Wave 91: low_battery_health도 시세 비교군에서 제외 (tick-pipeline와 동일).
-          excludeByPid.set(Number(p.pid), notes.includes("new_or_open_box") || notes.includes("low_battery_health"));
+          if (COMPARABLE_EXCLUDE_NOTES.some((n) => notes.includes(n))) {
+            excludeByPid.set(Number(p.pid), true);
+            continue;
+          }
+          // condition_class 분리: 본 매물 cc != null && 비교 매물 cc != 본 매물 cc → exclude.
+          if (conditionClass != null && p.condition_class != null && p.condition_class !== conditionClass) {
+            excludeByPid.set(Number(p.pid), true);
+            continue;
+          }
+          excludeByPid.set(Number(p.pid), false);
         }
         const safeRows = rawRows.filter((r) => {
           const pid = Number(r.pid);
