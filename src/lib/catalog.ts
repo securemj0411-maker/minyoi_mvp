@@ -21,6 +21,12 @@ export type Sku = {
   // lane (e.g. "ps5_disc_digital_standard") whose readiness in
   // `LANE_READINESS` overrides the broader category gate.
   laneKey?: string;
+  // Wave 128 (2026-05-16): 사용자 친화 혼동 주의 메모.
+  // pack reveal modal / admin pool / 추천 카드에 표시 (셀러에게 정확히 설명 도움).
+  // 예: "Max 2 = USB-C 별칭. Lightning 1세대와 분리.",
+  //     "S25 Edge = 별도 모델 (얇음, 512GB 단일).",
+  //     "AirPods 4 ANC = 일반 4와 별도 (가격 +20K)."
+  confusionNote?: string;
 };
 
 // Wave 122 (2026-05-15): 모든 카테고리 공통 noise 패턴 (Wave 121 audit 결과).
@@ -1446,6 +1452,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", ...PHONE_NOISE],
     msrpKrw: 1499000,
     released: 2025,
+    confusionNote: "Edge = 별도 모델 (2025-05 신상, 얇은 폼팩터, 512GB 단일). 일반 S25 (256/512), S25 Plus, Ultra, FE 다 별도.",
   },
   // Wave 108 (2026-05-15): Galaxy S 일반 (Ultra/Plus 아닌) 256GB 자급제 narrow lane.
   // 매물 측정: s23 자급제 55, s24 자급제 46, s25 자급제 38. 총 139건.
@@ -1761,6 +1768,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     mustNotContain: ["울트라", "ultra", "플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 850000,
     released: 2023,
+    confusionNote: "FE (Fan Edition) = 저가 라인 (msrp ₩850K). 일반 S23 (1.2M), Ultra (1.6M), Plus 다 별도. 가격 ~30% 낮음.",
   },
   {
     id: "galaxy-s24-fe",
@@ -3266,6 +3274,7 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 360000,
     released: 2017,
+    confusionNote: "1세대 (2017). LCD 6.2인치, 분리 가능 조이콘. OLED (2021)/Lite (2019)/Switch 2 (2025)와 별도.",
   },
   {
     id: "switch-lite",
@@ -3289,6 +3298,7 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 270000,
     released: 2019,
+    confusionNote: "Lite (2019) = 휴대용 전용 (TV 연결 X, 조이콘 분리 X). 일반 Switch와 시세 다름 (₩90K↓).",
   },
   // Wave 111i (2026-05-15): Nintendo Switch 2 (2025-06-05 신상) broad + narrow.
   {
@@ -3311,6 +3321,7 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 599000,
     released: 2025,
+    confusionNote: "2025-06 신상. 7.9인치 LCD HDR, NVIDIA T239 chip, 256GB 기본. 1세대/Lite/OLED와 완전 별도 (호환성 일부만).",
   },
   // narrow lane: switch_oled (Switch 2/Lite/일반 스위치/PS5/액세서리 차단)
   {
@@ -3337,6 +3348,7 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 414000,
     released: 2021,
+    confusionNote: "OLED (2021-10). 7인치 OLED 화면, 본체 white/red. 일반 Switch(2017)와 가격 ~₩100K 차이. Switch 2/Lite와 별도.",
   },
   // ─── PlayStation 5 Slim (Disc/Digital, 2023-11) ─────
   // narrow lane: ps5_slim (Standard/Pro/PSVR/Switch/액세서리 차단)
@@ -3415,6 +3427,7 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 990000,
     released: 2024,
+    confusionNote: "PS5 Pro 신상 (2024-11). GPU 67% 더 강력, 8K 지원. 일반 PS5 / Slim과 별도 모델, ~₩300K↑.",
   },
   // ─── AirPods ─────────────────────────────────────────
   {
@@ -3476,6 +3489,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["max", "맥스", "usb-c", "usbc", "c타입", "타입c", "씨타입", "타입씨"],
     msrpKrw: 359000,
     released: 2022,
+    confusionNote: "라이트닝(8핀) 모델 2022년. USB-C/C타입 명시되면 별도 SKU (Pro 2 USB-C, 2023).",
   },
   {
     id: "airpods-pro-2-usbc",
@@ -3492,6 +3506,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["라이트닝", "lightning", "max", "맥스"],
     msrpKrw: 359000,
     released: 2023,
+    confusionNote: "USB-C 모델 2023년. 라이트닝(8핀) 명시되면 별도 SKU (Pro 2 Lightning, 2022). 가격 ~30K 더 비쌈.",
   },
   {
     id: "airpods-4-anc",
@@ -3509,6 +3524,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["프로", "pro", "max", "1세대", "2세대", "3세대", ...HEADPHONE_NOISE],
     msrpKrw: 249000,
     released: 2024,
+    confusionNote: "ANC (노이즈 캔슬링) 탑재 4세대. 일반 AirPods 4 (ANC 없음, ~₩199K)와 별도 — 가격 ~₩50K↑.",
   },
   {
     id: "airpods-pro-3",
@@ -3534,6 +3550,7 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 369000,
     released: 2025,
+    confusionNote: "Pro 3세대 (2025-09). USB-C only (Lightning 모델 없음). Pro 2 (2022/2023)와 별도.",
   },
   {
     id: "airpods-max",
@@ -3545,6 +3562,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["usb-c", "usbc", "c타입", "타입c"],
     msrpKrw: 769000,
     released: 2020,
+    confusionNote: "Lightning 1세대 (2020-12). 매물 \"맥스 1세대\" 또는 단순 \"맥스\" = 이 모델. USB-C/Max 2는 별도 SKU.",
   },
   {
     id: "airpods-max-usbc",
@@ -3553,6 +3571,7 @@ export const CATALOG: Sku[] = [
     laneKey: "airpods_max_usbc",
     modelName: "AirPods Max (USB-C, 2024)",
     aliases: ["에어팟 맥스 USB-C", "AirPods Max USB-C", "에어팟맥스 USB-C"],
+    confusionNote: "매물 \"맥스 2\" / \"2세대\" 부르는 게 이 모델 (Apple 공식은 \"USB-C\"). Lightning 1세대 (2020-12)와 시세 다름.",
     mustContain: [
       ["에어팟", "airpods"],
       ["맥스", "max"],
@@ -3605,6 +3624,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["xm5", "xm4", "ult900n", "ch520", ...HEADPHONE_NOISE],
     msrpKrw: 599000,
     released: 2025,
+    confusionNote: "XM6 신상 (2025). 디자인 약간 변경, 폴딩 메커니즘 복귀. XM5 (2022) ~₩100K 더 비쌈. WF-1000XM6 (이어버드)는 별도 모델.",
   },
   {
     id: "sony-wh-ult900n",
@@ -3684,6 +3704,7 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 459000,
     released: 2023,
+    confusionNote: "QC Ultra **Earbuds** (이어버드 in-ear). QC Ultra **Headphones** (오버이어, msrp ₩599K)와 별도 모델. 시세 ~₩140K 차이.",
   },
   {
     id: "bose-qc-ultra-headphones",
@@ -3903,6 +3924,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["프로", "pro", " 4 ", "버즈4", "buds4", " 2 ", "버즈2", "buds2", "라이브", "live", "1세대", "2세대"],
     msrpKrw: 219000,
     released: 2024,
+    confusionNote: "Buds 3 일반 (오픈형, msrp ₩219K). Buds 3 Pro (인이어 + ANC, msrp ₩319K)와 별도 — ~₩100K 차이.",
   },
   {
     id: "galaxy-buds-3-pro",
@@ -4010,6 +4032,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["se3", "se 3", "ultra"],
     msrpKrw: 359000,
     released: 2022,
+    confusionNote: "SE 2세대 (2022). 외형 SE3와 거의 동일하지만 SE2는 4G LTE까지 (5G 없음). Nike 에디션 동일 HW, 시세 동일.",
   },
   {
     id: "applewatch-se3",
@@ -4020,6 +4043,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["애플워치", "apple watch", "applewatch"], ["se3", "se 3", "se 3세대", "se 3rd"]],
     mustNotContain: ["se2", "se 2", "ultra"],
     msrpKrw: 359000,
+    confusionNote: "SE 3세대 (2025). 외형 SE2와 거의 동일하지만 5G 추가. 매물 외형으로 SE2/SE3 구분 어려움 — \"세대\" 명시 확인 필수.",
     released: 2025,
   },
   {
@@ -4093,6 +4117,7 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 1149000,
     released: 2022,
+    confusionNote: "Ultra 1세대 (2022). 49mm 티타늄. Ultra 2 (2023, S9 chip)/Ultra 3 (2025, S11 chip)와 별도. 시세 ~₩200K씩 차이.",
   },
   // Wave 117d (2026-05-15): Apple Watch Series 11 (2025-09 신상) + Ultra 3 (2025-09 신상)
   // + Series 3/4/5/6 옛 모델 catalog 추가. 14일 매물: Series 11 (136), Ultra 3 (125), Series 4 (115), Series 6 (54), Series 3 (49), Series 5 (21).
@@ -4123,6 +4148,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["울트라 2", "ultra 2", "울트라2", "ultra2", "울트라 1", "ultra 1"],
     msrpKrw: 1199000,
     released: 2025,
+    confusionNote: "Ultra 3 신상 (2025-09). S11 chip, 위성 통신 추가. Ultra 1/2와 외형 거의 동일 (49mm 티타늄). 시세 ~₩200K 차이.",
   },
   {
     id: "applewatch-series3",
@@ -4211,6 +4237,7 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 1149000,
     released: 2023,
+    confusionNote: "Ultra 2 (2023). S9 chip, 더블탭 제스처 추가. Ultra 1과 외형 동일 (모두 49mm 티타늄). 시세 ~₩150K 더 비쌈.",
   },
 
   // ─── Galaxy Watch ─────────────────────────────────────

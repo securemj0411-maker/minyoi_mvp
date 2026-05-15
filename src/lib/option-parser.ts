@@ -37,7 +37,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v42";
+const PARSER_VERSION = "option-parser-v43";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -171,6 +171,7 @@ function appleChipToReleaseYear(
     }
     if (c === "m3") return 2024; // M3 Air 13/15 모두 2024
     if (c === "m4") return 2025; // M4 Air 2025
+    if (c === "m5") return 2026; // M5 Air 2026 (가정 — Apple 발표 기준)
   }
   if (model === "macbook_pro") {
     // Pro는 13" base chip vs 14"/16" Pro/Max chip로 분리
@@ -184,6 +185,7 @@ function appleChipToReleaseYear(
     }
     if (c === "m2_pro" || c === "m2_max") return 2023; // 14"/16" 2023
     // M3/M4 Pro/Max는 다년식 가능 (2023~2024) → leave unknown
+    if (c === "m5" || c === "m5_pro" || c === "m5_max") return 2025; // M5 Pro/Max 2025
   }
   return null;
 }
@@ -624,9 +626,12 @@ function parseChip(text: string) {
     /\bultra\s*([579])\b/,
   ]);
   if (coreUltra?.[1]) return `ultra${coreUltra[1]}`;
+  // 2026-05-15 Wave 124: \b → lookbehind/lookahead. \b는 "맥북프로14m5"의 "4m" 사이에서 안 잡힘 (둘 다 word char).
+  // lookbehind (?<![a-z]): 앞에 영문 없으면 OK (숫자/한글/공백/start). lookahead (?![a-z0-9]): 뒤에 영문/숫자 없음.
+  // "맥북프로14m5 미개봉" → m5 매칭. "맥북에어m4" → m4 매칭. "m5pro" → m5 + pro 매칭. "m12" → fail (숫자 lookahead).
   const match = firstMatch(lower, [
-    /\b(m[1-5])\s*(ultra|max|pro)?\b/,
-    /\b(i[3579])\s*(?:-| )?(\d{4,5}[a-z]*)?\b/,
+    /(?<![a-z])(m[1-5])\s*(ultra|max|pro|max)?(?![a-z0-9])/i,
+    /(?<![a-z])(i[3579])\s*(?:-| )?(\d{4,5}[a-z]*)?(?![a-z0-9])/i,
   ]);
   if (!match) return null;
   return slug([match[1], match[2]].filter(Boolean).join(" "));
