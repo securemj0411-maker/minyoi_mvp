@@ -354,6 +354,53 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: 다른 page (랜딩 / / 요금제) 의 카테고리 언급 audit. 별도 wave에서 source 다양화 진행.
 - commit: bfa3f7b
 
+## 22. 보류 결정 일괄 기록 (이번 세션 누적)
+
+- 시간: 2026-05-16 06:25 KST
+- 기록 누락 sweep — 이번 세션에서 결정했지만 결정 로그에 안 박힌 보류 항목들 일괄 정리. memory rule (`feedback_decision_log_required.md`) 위반 차단.
+
+### 22a. 신선도 슬라이더 plan 게이팅 — 보류
+
+- 발견 (#19, #20): `maxFreshHours` 필터 코드 (`packs/open` + `packs/preview-inventory`) 가 plan 게이팅 X — 모든 사용자 (free 포함) 사용 가능. plan-config 에선 Plus features 로 광고 → mismatch.
+- 임시 처리: features 텍스트만 "신선도 슬라이더 (최근 N시간 매물만 보기)" 로 명확화. 코드 게이팅 안 박음.
+- 보류 사유: Plus 이상 게이팅 박는 건 정책 결정 (free/starter 사용자 화남 risk). MJ 답변 대기.
+- 후속: MJ 결정 시 (a) 게이팅 박기 또는 (b) features 텍스트 제거 (모든 사용자 동일).
+
+### 22b. source 다양화 (신발/가방/의류 등) — 별도 wave 보류
+
+- 발견 (#21): Apple 편향 77% (245 ready 중 189 Apple). 비-Apple 카테고리 (신발/가방/의류/스포츠) 0건. memory: Wave 90 후속 미진행 확인.
+- 임시 처리: how-it-works 페이지에 "지원 예정 (X)" 빨간 배지로 정직 공시. 사용자 기대 set.
+- 보류 사유: catalog SKU 추가 + mining + parser + readiness = 1-2일 큰 wave. 베타 launch 일정 영향. MJ 결정: 일단 Apple 풀로 베타 시작 + launch 후 데이터 보면서 우선순위 결정.
+- 후속: 별도 wave (예: Wave 107 source 다양화) 신규 박음. 신발/가방 1개 SKU 시범 추가 → mining 가능성 검증부터.
+
+### 22c. MJ user_plans plan_key='plus' 잔재 — 보류
+
+- 발견 (#19): MJ admin 의 user_plans row 가 plan_key='plus' 박혀 있음 (test 결제 잔재 추정). 정책 변경 후 admin 별도 처리 (mvp_admin_users) 라 영향 X.
+- 임시 처리: 그대로 둠 (admin이라 어차피 isPro=true 강제, 핫딜도 admin 자격으로 받음).
+- 보류 사유: 사용자 의도 불분명. test 잔재면 cleanup 가능하지만 destructive 액션이라 MJ 컨펌 필요.
+- 후속: MJ 답변 시 plan_key='pro' update 또는 row delete.
+
+### 22d. /api/me/hotdeal/decide 410 deprecation — 옛 client cache risk
+
+- 발견 (#17): 옛 client (모바일 cache) 가 /decide 호출하면 410 받고 UI 에러.
+- 임시 처리: 410 Gone 응답 + sanitized 한국어 메시지.
+- 보류 사유: 옛 client cache 만료 시점 (며칠) 까진 일부 사용자가 410 볼 수 있음. monitoring 만으로 충분.
+- 후속: 1주 후 logs 확인. 410 호출이 0이면 route 자체 삭제 가능.
+
+### 22e. 다른 endpoint err.message 누출 audit — 별도 wave
+
+- 발견 (#11): billing 3개 endpoint 누출 fix 했지만 telegram/, packs/, me/ 도 동일 패턴 가능성 (memory: `project_security_error_message_leak_review.md`).
+- 임시 처리: billing 만 fix.
+- 보류 사유: 별도 audit wave 권장 (memory 박힌 사항). 작업량 큼.
+- 후속: 별도 wave (예: Wave 108 endpoint err sanitize sweep) 신규.
+
+### 22f. 옛 reservation #1 notification_sent=false 미해석 — 추가 진단 보류
+
+- 발견 (#16, #18): pid 407359580 reservation 이 notification_sent=false + error=null. #18 fix (description 보존) 박았지만 옛 row는 그대로.
+- 임시 처리: 미래 실패는 description 박힘. 옛 row 1건은 그대로 둠.
+- 보류 사유: 옛 row 1건 디버그 가치 낮음. 새 패턴 발생 시 #18 코드로 잡힘.
+- 후속: 새 fail 발생 + 명확한 패턴 보이면 추가 진단.
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
