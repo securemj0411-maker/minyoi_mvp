@@ -5,6 +5,7 @@ import { openPack, type PackBand } from "@/lib/pack-open";
 import { computeTokenCost, type CostFilters } from "@/lib/pack-cost";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { consumeDailyQuota, getUserPlanState, refundDailyQuota } from "@/lib/user-plan";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -97,6 +98,39 @@ export async function POST(req: Request) {
   const tokenCost = computeTokenCost(band, sanitizedRequestedCards, filters);
   const infinite = isAdminUser(auth.user);
 
+  // 일일 열람 한도 차감 (admin 제외).
+  // 한도 초과면 즉시 차단. openPack이 unavailable로 끝나면 환불.
+  let quotaConsumed = false;
+  if (!infinite) {
+    const planState = await getUserPlanState(auth.user, userRef);
+    const dailyLimit = planState.plan.dailyOpenLimit;
+    if (dailyLimit === 0) {
+      return NextResponse.json(
+        { error: "no_plan", message: "요금제를 먼저 선택해주세요.", dailyUsed: 0, dailyLimit: 0 },
+        { status: 402 },
+      );
+    }
+    if (dailyLimit > 0) {
+      const consume = await consumeDailyQuota({
+        user: auth.user,
+        userRef,
+        limit: dailyLimit,
+      });
+      if (!consume.ok) {
+        return NextResponse.json(
+          {
+            error: "daily_limit_reached",
+            message: `오늘 ${consume.limit}회 한도를 모두 사용하셨어요. 내일 다시 열어보세요.`,
+            dailyUsed: consume.used,
+            dailyLimit: consume.limit,
+          },
+          { status: 429 },
+        );
+      }
+      quotaConsumed = true;
+    }
+  }
+
   try {
     const maxFreshHoursRaw = Number((payload.filters as Record<string, unknown> | undefined)?.maxFreshHours ?? 0);
     const maxFreshHours = Number.isFinite(maxFreshHoursRaw) ? Math.max(0, Math.min(720, maxFreshHoursRaw)) : 0;
@@ -114,13 +148,21 @@ export async function POST(req: Request) {
     if (result.result === "success") {
       return NextResponse.json(result);
     }
-    // unavailable/refunded: 크레딧 차감 없음 (atomic RPC에서 amount=0으로 처리)
+    // unavailable/refunded: 크레딧 차감 없음 (atomic RPC에서 amount=0으로 처리).
+    // 일일 quota도 환불 — 사용자가 한도만 손해보지 않게.
+    if (quotaConsumed && (result.result === "unavailable" || result.result === "refunded")) {
+      await refundDailyQuota(auth.user, userRef);
+    }
     return NextResponse.json({
       ...result,
       tokensRemaining: undefined,
       infiniteCredits: infinite,
     });
   } catch (err) {
+    // 예외 시에도 quota 환불 (best-effort).
+    if (quotaConsumed) {
+      await refundDailyQuota(auth.user, userRef);
+    }
     const message = err instanceof Error ? err.message : "unknown error";
     console.error("pack_open threw", { userRef, band, requestedCards: sanitizedRequestedCards, err: message });
     await reportCriticalIncident({

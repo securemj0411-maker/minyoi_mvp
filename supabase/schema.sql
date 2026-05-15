@@ -1906,3 +1906,284 @@ revoke all on function public.prune_raw_listings_dead_text(integer, integer, boo
 revoke execute on function public.prune_raw_listings_dead_text(integer, integer, boolean) from anon;
 revoke execute on function public.prune_raw_listings_dead_text(integer, integer, boolean) from authenticated;
 grant execute on function public.prune_raw_listings_dead_text(integer, integer, boolean) to service_role;
+
+-- =====================================================================
+-- 요금제/구독/일일 한도 (2026-05-15 추가)
+-- Starter (30크/월, 일2회) / Plus (80크/월, 일5회) / Pro (200크/월, 일20회)
+-- mock Toss 결제 — 실제 결제 연동 전까지 mvp_payment_events에 mock 기록.
+-- =====================================================================
+
+create table if not exists public.mvp_user_plans (
+  user_ref text primary key,
+  auth_user_id uuid not null unique,
+  plan_key text not null default 'free' check (plan_key in ('free','starter','plus','pro')),
+  status text not null default 'active' check (status in ('active','cancelled')),
+  cancel_at_period_end boolean not null default false,
+  current_period_start timestamptz not null default now(),
+  current_period_end timestamptz,
+  daily_used_count integer not null default 0 check (daily_used_count >= 0),
+  daily_reset_on date not null default current_date,
+  last_payment_at timestamptz,
+  last_payment_amount integer,
+  last_payment_key text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists mvp_user_plans_auth_user_idx
+  on public.mvp_user_plans(auth_user_id);
+
+create table if not exists public.mvp_payment_events (
+  id bigserial primary key,
+  user_ref text not null,
+  auth_user_id uuid not null,
+  event_type text not null check (event_type in ('subscribe','renew','cancel','reactivate')),
+  plan_key text not null,
+  amount integer not null default 0,
+  payment_method text not null default 'toss_mock',
+  payment_key text,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists mvp_payment_events_user_idx
+  on public.mvp_payment_events(user_ref, created_at desc);
+
+alter table public.mvp_user_plans enable row level security;
+alter table public.mvp_payment_events enable row level security;
+
+-- credit_ledger event_type 확장 (plan_grant)
+alter table public.mvp_credit_ledger drop constraint if exists mvp_credit_ledger_event_type_check;
+alter table public.mvp_credit_ledger add constraint mvp_credit_ledger_event_type_check
+  check (event_type in ('free_grant','pack_spend','pack_refund','plan_grant'));
+
+create or replace function public.subscribe_mvp_plan(
+  p_user_ref text,
+  p_auth_user_id uuid,
+  p_plan_key text,
+  p_credits integer,
+  p_amount integer,
+  p_payment_key text,
+  p_period_days integer default 30
+)
+returns table (
+  plan_key text,
+  balance integer,
+  current_period_end timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_ref text;
+  v_now timestamptz := now();
+  v_period_end timestamptz;
+  v_balance integer;
+begin
+  v_user_ref := nullif(left(trim(coalesce(p_user_ref,'')), 64), '');
+  if v_user_ref is null then raise exception 'missing user ref'; end if;
+  if p_plan_key not in ('starter','plus','pro') then
+    raise exception 'invalid plan: %', p_plan_key;
+  end if;
+
+  v_period_end := v_now + make_interval(days => greatest(1, coalesce(p_period_days, 30)));
+
+  insert into public.mvp_user_plans (
+    user_ref, auth_user_id, plan_key, status, cancel_at_period_end,
+    current_period_start, current_period_end,
+    daily_used_count, daily_reset_on,
+    last_payment_at, last_payment_amount, last_payment_key, updated_at
+  ) values (
+    v_user_ref, p_auth_user_id, p_plan_key, 'active', false,
+    v_now, v_period_end,
+    0, current_date,
+    v_now, p_amount, p_payment_key, v_now
+  )
+  on conflict (user_ref) do update set
+    auth_user_id = excluded.auth_user_id,
+    plan_key = excluded.plan_key,
+    status = 'active',
+    cancel_at_period_end = false,
+    current_period_start = v_now,
+    current_period_end = v_period_end,
+    daily_used_count = 0,
+    daily_reset_on = current_date,
+    last_payment_at = v_now,
+    last_payment_amount = p_amount,
+    last_payment_key = p_payment_key,
+    updated_at = v_now;
+
+  insert into public.mvp_user_credits (user_ref, auth_user_id, balance, free_grant_tokens, free_granted_at)
+  values (v_user_ref, p_auth_user_id, greatest(0, coalesce(p_credits,0)), 0, null)
+  on conflict (user_ref) do update set
+    balance = public.mvp_user_credits.balance + greatest(0, coalesce(p_credits,0)),
+    auth_user_id = excluded.auth_user_id,
+    updated_at = now()
+  returning public.mvp_user_credits.balance into v_balance;
+
+  insert into public.mvp_credit_ledger (user_ref, auth_user_id, event_type, amount, balance_after, metadata)
+  values (v_user_ref, p_auth_user_id, 'plan_grant', greatest(0, coalesce(p_credits,0)), v_balance,
+          jsonb_build_object('source','subscribe_mvp_plan','plan',p_plan_key,'payment_key',p_payment_key));
+
+  insert into public.mvp_payment_events (user_ref, auth_user_id, event_type, plan_key, amount, payment_method, payment_key, metadata)
+  values (v_user_ref, p_auth_user_id, 'subscribe', p_plan_key, coalesce(p_amount,0), 'toss_mock', p_payment_key,
+          jsonb_build_object('credits',p_credits,'period_days',p_period_days));
+
+  plan_key := p_plan_key;
+  balance := v_balance;
+  current_period_end := v_period_end;
+  return next;
+end;
+$$;
+
+revoke all on function public.subscribe_mvp_plan(text, uuid, text, integer, integer, text, integer) from public;
+revoke execute on function public.subscribe_mvp_plan(text, uuid, text, integer, integer, text, integer) from anon;
+revoke execute on function public.subscribe_mvp_plan(text, uuid, text, integer, integer, text, integer) from authenticated;
+grant execute on function public.subscribe_mvp_plan(text, uuid, text, integer, integer, text, integer) to service_role;
+
+create or replace function public.cancel_mvp_plan(p_user_ref text, p_auth_user_id uuid)
+returns table (plan_key text, status text, cancel_at_period_end boolean, current_period_end timestamptz)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_ref text;
+begin
+  v_user_ref := nullif(left(trim(coalesce(p_user_ref,'')), 64), '');
+  if v_user_ref is null then raise exception 'missing user ref'; end if;
+
+  update public.mvp_user_plans p
+  set cancel_at_period_end = true, updated_at = now()
+  where p.user_ref = v_user_ref and p.auth_user_id = p_auth_user_id
+  returning p.plan_key, p.status, p.cancel_at_period_end, p.current_period_end
+  into plan_key, status, cancel_at_period_end, current_period_end;
+
+  if plan_key is null then raise exception 'no active plan'; end if;
+
+  insert into public.mvp_payment_events (user_ref, auth_user_id, event_type, plan_key, amount, payment_method, metadata)
+  values (v_user_ref, p_auth_user_id, 'cancel', plan_key, 0, 'toss_mock', jsonb_build_object('cancel_at_period_end', true));
+
+  return next;
+end;
+$$;
+
+revoke all on function public.cancel_mvp_plan(text, uuid) from public;
+grant execute on function public.cancel_mvp_plan(text, uuid) to service_role;
+
+create or replace function public.reactivate_mvp_plan(p_user_ref text, p_auth_user_id uuid)
+returns table (plan_key text, cancel_at_period_end boolean)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_ref text;
+begin
+  v_user_ref := nullif(left(trim(coalesce(p_user_ref,'')), 64), '');
+  if v_user_ref is null then raise exception 'missing user ref'; end if;
+
+  update public.mvp_user_plans p
+  set cancel_at_period_end = false, updated_at = now()
+  where p.user_ref = v_user_ref and p.auth_user_id = p_auth_user_id
+  returning p.plan_key, p.cancel_at_period_end
+  into plan_key, cancel_at_period_end;
+
+  if plan_key is null then raise exception 'no plan'; end if;
+
+  insert into public.mvp_payment_events (user_ref, auth_user_id, event_type, plan_key, amount, payment_method, metadata)
+  values (v_user_ref, p_auth_user_id, 'reactivate', plan_key, 0, 'toss_mock', '{}'::jsonb);
+
+  return next;
+end;
+$$;
+
+revoke all on function public.reactivate_mvp_plan(text, uuid) from public;
+grant execute on function public.reactivate_mvp_plan(text, uuid) to service_role;
+
+-- 일일 한도 차감 (pack open에서 호출). 어제 reset이면 0부터.
+-- p_limit: -1 = 무제한, 0 = 차단 (no plan), >0 = 한도.
+create or replace function public.consume_mvp_daily_quota(
+  p_user_ref text,
+  p_auth_user_id uuid,
+  p_limit integer
+)
+returns table (ok boolean, used integer, daily_limit integer, message text)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_ref text;
+  v_today date := current_date;
+  v_current integer;
+begin
+  v_user_ref := nullif(left(trim(coalesce(p_user_ref,'')), 64), '');
+  if v_user_ref is null then raise exception 'missing user ref'; end if;
+
+  if p_limit < 0 then
+    ok := true; used := 0; daily_limit := -1; message := 'unlimited';
+    return next; return;
+  end if;
+  if p_limit = 0 then
+    ok := false; used := 0; daily_limit := 0; message := 'no_plan';
+    return next; return;
+  end if;
+
+  insert into public.mvp_user_plans (user_ref, auth_user_id, plan_key, status, daily_used_count, daily_reset_on)
+  values (v_user_ref, p_auth_user_id, 'free', 'active', 0, v_today)
+  on conflict (user_ref) do nothing;
+
+  update public.mvp_user_plans p
+  set daily_used_count = 0, daily_reset_on = v_today, updated_at = now()
+  where p.user_ref = v_user_ref and p.daily_reset_on <> v_today;
+
+  select daily_used_count into v_current
+  from public.mvp_user_plans where user_ref = v_user_ref;
+
+  if v_current >= p_limit then
+    ok := false; used := v_current; daily_limit := p_limit; message := 'daily_limit_reached';
+    return next; return;
+  end if;
+
+  update public.mvp_user_plans p
+  set daily_used_count = daily_used_count + 1, updated_at = now()
+  where p.user_ref = v_user_ref
+  returning p.daily_used_count into v_current;
+
+  ok := true; used := v_current; daily_limit := p_limit; message := 'ok';
+  return next;
+end;
+$$;
+
+revoke all on function public.consume_mvp_daily_quota(text, uuid, integer) from public;
+grant execute on function public.consume_mvp_daily_quota(text, uuid, integer) to service_role;
+
+create or replace function public.refund_mvp_daily_quota(p_user_ref text, p_auth_user_id uuid)
+returns table (used integer)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_ref text;
+begin
+  v_user_ref := nullif(left(trim(coalesce(p_user_ref,'')), 64), '');
+  if v_user_ref is null then raise exception 'missing user ref'; end if;
+
+  update public.mvp_user_plans p
+  set daily_used_count = greatest(0, daily_used_count - 1),
+      updated_at = now()
+  where p.user_ref = v_user_ref
+    and p.auth_user_id = p_auth_user_id
+    and p.daily_reset_on = current_date
+  returning p.daily_used_count into used;
+
+  if used is null then used := 0; end if;
+  return next;
+end;
+$$;
+
+revoke all on function public.refund_mvp_daily_quota(text, uuid) from public;
+grant execute on function public.refund_mvp_daily_quota(text, uuid) to service_role;

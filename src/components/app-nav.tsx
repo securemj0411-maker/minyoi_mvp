@@ -58,6 +58,15 @@ function MoonIcon() {
   );
 }
 
+function SystemIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="14" rx="2" />
+      <path d="M8 21h8M12 18v3" />
+    </svg>
+  );
+}
+
 function ThemeToggle({
   className = "",
   variant = "full",
@@ -123,24 +132,27 @@ function ThemeToggle({
     );
   }
 
+  const items: Array<[ThemeMode, string, React.ReactNode]> = [
+    ["system", "시스템", <SystemIcon key="sys" />],
+    ["light", "라이트", <SunIcon key="sun" />],
+    ["dark", "다크", <MoonIcon key="moon" />],
+  ];
   return (
-    <div className={`rounded-xl border border-[#ddd4c7] bg-[#fbf8f2] p-0.5 text-[11px] font-semibold shadow-[0_8px_18px_rgba(45,57,48,0.06)] dark:border-zinc-700 dark:bg-zinc-900 ${className}`}>
-      {[
-        ["system", "시스템"],
-        ["light", "라이트"],
-        ["dark", "다크"],
-      ].map(([value, label]) => (
+    <div className={`flex items-stretch gap-0.5 rounded-xl border border-[#ddd4c7] bg-[#fbf8f2] p-0.5 shadow-[0_8px_18px_rgba(45,57,48,0.06)] dark:border-zinc-700 dark:bg-zinc-900 ${className}`}>
+      {items.map(([value, label, icon]) => (
         <button
           key={value}
           type="button"
-          onClick={() => setTheme(value as ThemeMode)}
-          className={`rounded-lg px-2.5 py-1.5 transition ${
+          onClick={() => setTheme(value)}
+          aria-label={label}
+          title={label}
+          className={`flex flex-1 items-center justify-center rounded-lg py-2 transition ${
             theme === value
               ? "bg-[var(--brand-accent)] text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] dark:bg-zinc-100 dark:text-zinc-950"
               : "text-[#5f675e] hover:bg-[var(--brand-accent-soft)] dark:text-zinc-400 dark:hover:bg-zinc-800"
           }`}
         >
-          {label}
+          {icon}
         </button>
       ))}
     </div>

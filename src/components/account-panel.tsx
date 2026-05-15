@@ -145,26 +145,10 @@ export function AccountPanel({
 
   return (
     <div className={wrap}>
+      {/* 카드 1 — 크레딧 (월 + 일일 사용량) */}
       <div className={card}>
-        <div className="flex items-center justify-between">
-          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">현재 플랜</div>
-          {cancelled ? (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800">취소 예약</span>
-          ) : isPaidPlan ? (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800">활성</span>
-          ) : null}
-        </div>
-        <div className="mt-1 flex items-end justify-between gap-2">
-          <div className="text-base font-black text-[#223127] dark:text-zinc-100">{planLabel}</div>
-          {plan?.currentPeriodEnd ? (
-            <div className="text-[11px] font-bold text-[#7a8478]">
-              {cancelled ? "종료 " : "갱신 "}{formatPeriodEnd(plan.currentPeriodEnd)}
-            </div>
-          ) : null}
-        </div>
-
-        {/* 월 크레딧 사용량 */}
-        <div className="mt-3">
+        <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">크레딧 사용</div>
+        <div className="mt-2">
           <div className="flex items-center justify-between text-[11px] font-bold text-[#5d735f] dark:text-emerald-400">
             <span>월 크레딧</span>
             <span className="tabular-nums text-[#223127] dark:text-zinc-100">
@@ -175,8 +159,6 @@ export function AccountPanel({
             <UsageBar used={monthlyUsed} total={monthlyTotal} unlimited={unlimited || monthlyTotal === 0} />
           </div>
         </div>
-
-        {/* 일일 사용량 */}
         <div className="mt-3">
           <div className="flex items-center justify-between text-[11px] font-bold text-[#8b6914] dark:text-amber-400">
             <span>오늘 열람</span>
@@ -193,39 +175,54 @@ export function AccountPanel({
         </div>
       </div>
 
-      {/* 액션 */}
-      <div className="flex flex-col gap-1.5">
-        {isPaidPlan ? (
-          cancelled ? (
-            <button
-              type="button"
-              onClick={handleReactivate}
-              disabled={busy}
-              className="flex w-full items-center justify-between rounded-xl bg-[#edf3eb] px-3 py-2.5 text-sm font-black text-[#2c3f31] hover:bg-[#dfe9dc] disabled:opacity-60 dark:bg-emerald-950/30 dark:text-emerald-200"
-            >
-              <span>구독 재활성화</span>
-              <span className="text-emerald-700">↺</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={busy}
-              className="flex w-full items-center justify-between rounded-xl bg-red-50 px-3 py-2.5 text-sm font-bold text-[#a04545] hover:bg-red-100 disabled:opacity-60 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40"
-            >
-              <span>{busy ? "처리 중…" : "구독 취소"}</span>
-              <span>×</span>
-            </button>
-          )
-        ) : null}
-        <Link
-          href="/plans"
-          onClick={onCloseAfterAction}
-          className="flex w-full items-center justify-between rounded-xl bg-[#fffaf1] px-3 py-2.5 text-sm font-bold text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-        >
-          <span>{isPaidPlan ? "다른 플랜 보기" : "요금제 보기"}</span>
-          <span className="text-zinc-400">↗</span>
-        </Link>
+      {/* 카드 2 — 플랜 (라벨 + 변경 + 구독취소/재활성) */}
+      <div className={card}>
+        <div className="flex items-center justify-between">
+          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">현재 플랜</div>
+          {cancelled ? (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800 dark:bg-amber-950/60 dark:text-amber-200">취소 예약</span>
+          ) : isPaidPlan ? (
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">활성</span>
+          ) : null}
+        </div>
+        <div className="mt-1 flex items-end justify-between gap-2">
+          <div className="text-base font-black text-[#223127] dark:text-zinc-100">{planLabel}</div>
+          {plan?.currentPeriodEnd ? (
+            <div className="text-[11px] font-bold text-[#7a8478]">
+              {cancelled ? "종료 " : "갱신 "}{formatPeriodEnd(plan.currentPeriodEnd)}
+            </div>
+          ) : null}
+        </div>
+        <div className="mt-3 flex items-center gap-1.5">
+          <Link
+            href="/plans"
+            onClick={onCloseAfterAction}
+            className="flex flex-1 items-center justify-center rounded-lg bg-[var(--brand-accent-strong)] px-3 py-2 text-xs font-black text-[var(--brand-cream)] transition hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-950"
+          >
+            {isPaidPlan ? "변경" : "요금제 보기"}
+          </Link>
+          {isPaidPlan ? (
+            cancelled ? (
+              <button
+                type="button"
+                onClick={handleReactivate}
+                disabled={busy}
+                className="flex flex-1 items-center justify-center rounded-lg bg-[#edf3eb] px-3 py-2 text-xs font-black text-[#2c3f31] hover:bg-[#dfe9dc] disabled:opacity-60 dark:bg-emerald-950/30 dark:text-emerald-200"
+              >
+                재활성화
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={busy}
+                className="flex flex-1 items-center justify-center rounded-lg bg-red-50 px-3 py-2 text-xs font-black text-[#a04545] hover:bg-red-100 disabled:opacity-60 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40"
+              >
+                {busy ? "처리 중…" : "구독 취소"}
+              </button>
+            )
+          ) : null}
+        </div>
       </div>
 
       {message ? (

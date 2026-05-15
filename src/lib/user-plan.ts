@@ -122,6 +122,18 @@ export async function reactivateUserPlan(user: User, userRef: string): Promise<v
   });
 }
 
+export async function refundDailyQuota(user: User, userRef: string): Promise<void> {
+  try {
+    await restFetch(rpcUrl("refund_mvp_daily_quota"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({ p_user_ref: userRef, p_auth_user_id: user.id }),
+    });
+  } catch {
+    // best-effort. swallow.
+  }
+}
+
 export async function consumeDailyQuota(input: {
   user: User;
   userRef: string;
