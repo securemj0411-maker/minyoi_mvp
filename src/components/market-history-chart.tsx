@@ -59,7 +59,9 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-400 dark:bg-zinc-900">시세 history 불러오는 중…</div>;
   }
   if (error) {
-    return <div className="rounded-md bg-red-50 px-3 py-2 text-[11px] text-red-700">시세 history 오류: {error}</div>;
+    // 2026-05-16: rate limit 429 친절한 메시지로 변환. 외부 시스템 노출 차단.
+    const friendly = error.includes("429") ? "잠시 후 다시 시도해주세요 (요청 너무 빠름)" : "시세 history 불러오기 실패";
+    return <div className="rounded-md bg-red-50 px-3 py-2 text-[11px] text-red-700">{friendly}</div>;
   }
   if (!data || data.length === 0) {
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">시세 누적 중 — 아직 history 없어요 (매물 처음 등록)</div>;
@@ -85,10 +87,13 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
 
   const allPrices: number[] = [];
   for (const p of data) {
-    if (p.active != null) allPrices.push(p.active);
-    if (p.sold != null) allPrices.push(p.sold);
+    if (p.active != null && p.active > 0 && p.active < 100_000_000) allPrices.push(p.active);
+    if (p.sold != null && p.sold > 0 && p.sold < 100_000_000) allPrices.push(p.sold);
   }
-  if (currentPrice != null) allPrices.push(currentPrice);
+  // 2026-05-16: placeholder price (999999999, 111111111 등) 매물은 chart 표시 안 함.
+  // currentPrice가 placeholder면 그래프 끌어올려 다른 점이 안 보임.
+  const showCurrentPrice = currentPrice != null && currentPrice > 0 && currentPrice < 100_000_000;
+  if (showCurrentPrice) allPrices.push(currentPrice as number);
 
   if (allPrices.length === 0) {
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500">표본 부족 (가격 데이터 없음)</div>;
@@ -173,8 +178,8 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
         {/* sold 라인 (blue) */}
         {soldPath ? <path d={soldPath} fill="none" stroke="#3b82f6" strokeWidth="1.5" /> : null}
         {/* 현재 매물 가격 horizontal line — 가장 위에 그림 */}
-        {currentPrice != null ? (
-          <line x1={padX} y1={y(currentPrice)} x2={width - padR} y2={y(currentPrice)} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,3" />
+        {showCurrentPrice ? (
+          <line x1={padX} y1={y(currentPrice as number)} x2={width - padR} y2={y(currentPrice as number)} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,3" />
         ) : null}
 
         {/* 우측 끝 라벨 — 호가(emerald) / 거래가(blue) / 내 매물(red) 각각 점 + 가격 박스 */}
@@ -194,12 +199,12 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
             </text>
           </>
         ) : null}
-        {currentPrice != null ? (
+        {showCurrentPrice ? (
           <>
-            <circle cx={width - padR} cy={y(currentPrice)} r="3.5" fill="#ef4444" stroke="white" strokeWidth="1" />
-            <rect x={width - padR + 3} y={y(currentPrice) - 7} width="50" height="13" rx="3" fill="#ef4444" />
-            <text x={width - padR + 28} y={y(currentPrice) + 3} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">
-              {krwShort(currentPrice)}
+            <circle cx={width - padR} cy={y(currentPrice as number)} r="3.5" fill="#ef4444" stroke="white" strokeWidth="1" />
+            <rect x={width - padR + 3} y={y(currentPrice as number) - 7} width="50" height="13" rx="3" fill="#ef4444" />
+            <text x={width - padR + 28} y={y(currentPrice as number) + 3} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">
+              {krwShort(currentPrice as number)}
             </text>
           </>
         ) : null}
