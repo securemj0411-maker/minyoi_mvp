@@ -1,8 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+
+// Wave 93b: 로그인 후 redirect — ?next= 파라미터 안전 처리.
+// 외부 URL/오픈 리다이렉트 방지: 반드시 "/"로 시작하고 "//" 또는 "://" 포함 금지.
+function safeNextPath(raw: string | null): string {
+  if (!raw) return "/me";
+  if (!raw.startsWith("/")) return "/me";
+  if (raw.startsWith("//")) return "/me";
+  if (raw.includes("://")) return "/me";
+  return raw;
+}
 
 type AuthMode = "login" | "signup";
 
@@ -22,6 +33,8 @@ function KakaoIcon() {
 
 export default function AuthForm({ mode }: Props) {
   const supabase = getSupabaseBrowserClient();
+  const searchParams = useSearchParams();
+  const nextPath = safeNextPath(searchParams.get("next"));
   const hasSupabasePublicEnv = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
@@ -33,7 +46,7 @@ export default function AuthForm({ mode }: Props) {
     if (!supabase || busy) return;
     setBusy(true);
     setMessage(null);
-    const redirectTo = `${window.location.origin}/auth/callback?next=/me`;
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "kakao",
       options: {
@@ -95,6 +108,24 @@ export default function AuthForm({ mode }: Props) {
         </Link>
         <span className="font-bold text-zinc-400">이메일 가입 중단</span>
       </div>
+
+      {/* FAQ: 왜 카카오만 받나 — 본인 인증 + 한정 수량 분배 정책 */}
+      <details className="mt-5 rounded-xl border border-[#e7dece] bg-[#fffaf1] px-4 py-3 text-sm font-semibold text-[#5a6658] dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300">
+        <summary className="cursor-pointer text-[13px] font-black text-[#344136] dark:text-zinc-100">
+          카카오 외 다른 로그인은 안 되나요?
+        </summary>
+        <div className="mt-3 space-y-2 text-xs leading-6">
+          <p>
+            미뇨이는 <strong className="font-black">엄선한 리셀 중고 제품을 하루 정해진 수량만</strong> 추천합니다.
+            누구나 만들 수 있는 구글·이메일 계정으로는 한 명이 여러 계정을 만들어 추천 매물을 독점할 수 있어
+            다른 사용자에게 돌아가는 기회가 줄어듭니다.
+          </p>
+          <p>
+            그래서 본인 인증이 가능한 카카오 계정만 받고 있습니다. 카카오 이외 가입 수단을 막아야
+            <strong className="font-black"> 공정한 분배</strong>가 가능해서 양해 부탁드립니다.
+          </p>
+        </div>
+      </details>
     </div>
   );
 }

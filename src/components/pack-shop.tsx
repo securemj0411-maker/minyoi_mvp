@@ -10,6 +10,7 @@ const trustPoints = [
   "다시 확인 후 추천",
   "검증 실패 시 환불",
   "같은 본품끼리만 비교",
+  "택배비 포함 수익 계산",
 ];
 
 function krw(value: number) {

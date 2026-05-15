@@ -521,6 +521,7 @@ function PackSelectorCard({
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e7dece] pt-2.5 text-[11px] text-zinc-500 dark:border-zinc-700/60 dark:text-zinc-400">
             <p>같은 전체 본품 기준으로만 비교</p>
             <p>검증 실패 시 자동 환불</p>
+            <p>택배비 포함 수익 계산</p>
           </div>
         </div>
       </div>

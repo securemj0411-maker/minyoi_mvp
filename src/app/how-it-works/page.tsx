@@ -314,6 +314,16 @@ export default function HowItWorksPage() {
             </p>
           </div>
 
+          {/* 택배비 명시 — 사용자 결제 결정 직결 */}
+          <div className="mt-3 rounded-[22px] border-l-4 border-[#caab78] bg-[#fff8ea] px-5 py-4 dark:border-amber-900/60 dark:bg-amber-950/20">
+            <p className="text-sm font-black leading-7 text-[#7b5724] dark:text-amber-200 sm:text-base">
+              예상 수익은 택배비를 포함해서 계산합니다.
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[#9a7f4f] dark:text-amber-200/80">
+              사용자가 별도로 배송비를 빼서 계산할 필요가 없습니다. 카드에 표시된 수익이 곧 손에 남는 실 수익입니다.
+            </p>
+          </div>
+
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/me"
