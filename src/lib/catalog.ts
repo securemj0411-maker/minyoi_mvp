@@ -26,6 +26,7 @@ export type Sku = {
 // Wave 122 (2026-05-15): 모든 카테고리 공통 noise 패턴 (Wave 121 audit 결과).
 // 휴대폰 audit에서 발견 — 다른 카테고리 (laptop/tablet/earphone/smartwatch/speaker)도 동일 noise 가능.
 // 사용자 통찰: "다른 brand까지 빠짐없이 모두 같은 패턴 차단"
+// Wave 122b: 전체 brand audit 결과 추가 발견 — 사은품 증정/룰렛 이벤트/광고 prefix.
 const COMMON_PRODUCT_NOISE = [
   // 케이지/촬영용 액세서리 (NEEWER/스몰리그)
   "케이지", "케이지 킷", "케이지킷", "케이지 키트", "케이지키트",
@@ -36,6 +37,15 @@ const COMMON_PRODUCT_NOISE = [
   "단독 행사", "단독행사", "행사중", "개인결제창", "결제창",
   // 교신 매물 (교환 의미)
   "교신", "교신원함", "교신원합니다", "교신원해요", "교환원해용",
+  // Wave 122b: 사은품/이벤트/광고 prefix
+  // 주의: 대괄호 token은 normalize에서 제거되어 일반 token으로 변환 → 정상 매물에 false positive
+  // (예: "[풀박스]" → " 풀박스 " → "풀박스" 명시한 정상 매물도 reject). 대괄호 token 사용 X.
+  "사은품 증정", "사은품증정", "사은품 드림",
+  "룰렛 이벤트", "룰렛이벤트",
+  "리뷰 이벤트", "리뷰이벤트",
+  "쿠폰 증정", "쿠폰증정",
+  "마우스 증정", "마우스증정",
+  "포장스티커안뜯은", "포장 스티커 안뜯은",
 ];
 
 const PHONE_NOISE = [

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
+import { checkCronAuth } from "@/lib/cron-auth";
 import { requireDebugAdmin } from "@/lib/debug-admin";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import { classifyListing } from "@/lib/pipeline";
@@ -102,8 +103,13 @@ async function patchRawRows(rows: { pid: number; sku_id: string | null; sku_name
 }
 
 async function handleReparse(req: NextRequest) {
-  const auth = await requireDebugAdmin(req);
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  // 2026-05-15 Wave 117: cron-auth (Bearer CRON_SECRET) 도 허용. 옛 매물 batch reparse CLI 자동화용.
+  // reparse 는 destructive 아님 (parsed_json 재생성, raw 안 건드림) — admin 외에도 cron-auth OK.
+  const cronAuth = checkCronAuth(req);
+  if (!cronAuth.authOk) {
+    const auth = await requireDebugAdmin(req);
+    if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
 
   const limit = boundedInt(req.nextUrl.searchParams.get("limit"), 200, 1, 1000);
   const offset = boundedInt(req.nextUrl.searchParams.get("offset"), 0, 0, 100000);
