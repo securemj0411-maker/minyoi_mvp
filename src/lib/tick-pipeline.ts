@@ -4,6 +4,7 @@ import { evaluatePhase2Escrow, isPhase2EscrowEnabled } from "@/lib/ai-l2-escrow"
 import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
 import {
+  decayTrimmedSellerMarket,
   madTrim,
   percentileRank,
   trimmedSellerMarket,
@@ -2589,11 +2590,21 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
 
   const today = kstDateString();
   // Wave 130: byKey iter — comparable_key는 group.comparableKey에서, condition_class는 group.conditionClass에서.
+  // Wave 131 (2026-05-16): exponential decay weight 시세 산정에 wire-up — 사업 보고서 L5.
+  //   "30일 데이터 단순 평균 X. 최근 7일 weight 3x." (보고서 권장).
+  //   observedAt = source_updated_at (셀러가 매물 갱신한 시각). null이면 last_seen_at fallback.
+  //   옛 매물 = 안 팔리는 매물 = 호가 inflated → decay weight ↓ → 시세 정확도 ↑.
+  const toSellerPriced = (r: ScorableRawRow) => ({
+    pid: r.pid,
+    price: r.price,
+    seller_uid: r.seller_uid,
+    observedAt: r.source_updated_at ?? r.last_seen_at ?? null,
+  });
   const marketRows = [...byKey.values()].map((group) => {
     const comparableKey = group.comparableKey;
-    const active = trimmedSellerMarket(group.activeRows);
-    const sold = trimmedSellerMarket(group.soldRows);
-    const disappeared = trimmedSellerMarket(group.disappearedRows);
+    const active = decayTrimmedSellerMarket(group.activeRows.map(toSellerPriced));
+    const sold = decayTrimmedSellerMarket(group.soldRows.map(toSellerPriced));
+    const disappeared = decayTrimmedSellerMarket(group.disappearedRows.map(toSellerPriced));
     const activeMedian = active.median;
     const soldMedian = sold.median;
     const disappearedMedian = disappeared.median;

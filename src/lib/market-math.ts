@@ -128,6 +128,99 @@ export function trimmedSellerMarket(rows: SellerPricedRow[]) {
   };
 }
 
+/**
+ * Wave 131 (2026-05-16): exponential decay weight를 시세 산정에 wire-up — 사업 보고서 L5 temporal.
+ * Wave 129에서 decayWeightedMedian 함수만 작성했고, 이번 wave에서 trimmedSellerMarket 산정 로직에 박음.
+ *
+ * 차이점 (vs trimmedSellerMarket):
+ * - seller 대표 매물: 가장 최근 observedAt의 매물 선택 (옛 호가는 제외)
+ * - 최종 median: 일반 median 대신 weightedMedian (weight = exponentialDecayWeight(ageDays))
+ * - p25/p75: weighted (weight 누적 25%/75% 기준)
+ * - madTrim 동일 (outlier 제거)
+ *
+ * 사업 가치: 옛 호가 (30일+ 매물 = 안 팔리는 매물 = 호가 inflated) weight ↓.
+ * 최근 7일 매물 weight 3x → 시세가 최근 거래 트렌드 반영.
+ */
+type SellerRepresentative = {
+  price: number;
+  ageDays: number | null;
+};
+
+function sellerRepresentativesWithAge(rows: SellerPricedRow[]): SellerRepresentative[] {
+  const now = Date.now();
+  const bySeller = new Map<string, SellerRepresentative[]>();
+  for (const row of rows) {
+    const sellerKey = row.seller_uid?.trim()
+      ? `seller:${row.seller_uid.trim()}`
+      : `pid:${row.pid}`;
+    let ageDays: number | null = null;
+    if (row.ageDays != null && Number.isFinite(row.ageDays)) {
+      ageDays = Math.max(0, row.ageDays);
+    } else if (row.observedAt) {
+      const t = new Date(row.observedAt).getTime();
+      if (Number.isFinite(t)) ageDays = Math.max(0, (now - t) / 86_400_000);
+    }
+    const list = bySeller.get(sellerKey) ?? [];
+    list.push({ price: row.price, ageDays });
+    bySeller.set(sellerKey, list);
+  }
+  // 각 seller당 1개 대표: 가장 최근 매물 (ageDays가 작은 거). ageDays 없으면 가격 median.
+  return [...bySeller.values()].map((items) => {
+    const withAge = items.filter((x) => x.ageDays != null);
+    if (withAge.length === 0) {
+      // 옛 동작 fallback: ageDays 없으면 가격 median + ageDays null
+      return { price: Math.round(median(items.map((x) => x.price))), ageDays: null };
+    }
+    withAge.sort((a, b) => (a.ageDays ?? Infinity) - (b.ageDays ?? Infinity));
+    return withAge[0]; // 가장 최근 매물
+  });
+}
+
+function weightedQuantile(items: Array<{ value: number; weight: number }>, q: number): number {
+  if (items.length === 0) return 0;
+  const sorted = [...items].sort((a, b) => a.value - b.value);
+  const total = sorted.reduce((s, x) => s + Math.max(0, x.weight), 0);
+  if (total <= 0) return quantile(sorted.map((x) => x.value), q);
+  const target = total * q;
+  let cumulative = 0;
+  for (const item of sorted) {
+    cumulative += Math.max(0, item.weight);
+    if (cumulative >= target) return item.value;
+  }
+  return sorted[sorted.length - 1].value;
+}
+
+export function decayTrimmedSellerMarket(rows: SellerPricedRow[]) {
+  const representatives = sellerRepresentativesWithAge(rows);
+  // outlier 제거 — 가격 기반 madTrim (옛 동작 그대로 outlier 보호)
+  const prices = representatives.map((r) => r.price);
+  const trimmedPrices = madTrim(prices);
+  const allowedSet = new Set<number>();
+  // madTrim이 values 그대로 return하면 모두 통과. trim된 경우 removed > 0.
+  // 단순 처리: trimmedPrices.values를 multiset으로. 중복 가격 처리 위해 카운트.
+  const priceCount = new Map<number, number>();
+  for (const v of trimmedPrices.values) priceCount.set(v, (priceCount.get(v) ?? 0) + 1);
+  const allowedItems: Array<{ value: number; weight: number }> = [];
+  for (const rep of representatives) {
+    const remaining = priceCount.get(rep.price) ?? 0;
+    if (remaining > 0) {
+      priceCount.set(rep.price, remaining - 1);
+      const weight = rep.ageDays != null ? exponentialDecayWeight(rep.ageDays) : 1.0;
+      allowedItems.push({ value: rep.price, weight });
+      allowedSet.add(rep.price);
+    }
+  }
+  const values = allowedItems.map((x) => x.value);
+  return {
+    values,
+    count: values.length,
+    median:
+      values.length > 0 ? Math.round(weightedMedian(allowedItems)) : null,
+    p25: values.length > 0 ? Math.round(weightedQuantile(allowedItems, 0.25)) : null,
+    p75: values.length > 0 ? Math.round(weightedQuantile(allowedItems, 0.75)) : null,
+  };
+}
+
 export function percentileRank(values: number[], value: number) {
   if (values.length <= 1) return 0.5;
   const belowOrEqual = values.filter((v) => v <= value).length;
