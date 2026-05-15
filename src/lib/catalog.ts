@@ -46,6 +46,14 @@ const COMMON_PRODUCT_NOISE = [
   "쿠폰 증정", "쿠폰증정",
   "마우스 증정", "마우스증정",
   "포장스티커안뜯은", "포장 스티커 안뜯은",
+  // Wave 124 (2026-05-15): 전체 카테고리 audit 추가 발견 — 부품/스킨 token (catalog level 차단 OK).
+  // 주의: K-pop 굿즈 (포카/포토카드/특전/엔시티) 은 pipeline.ts:467 categoryScopedNoise에서 처리 (catalog mustNotContain 추가 X)
+  // 이유: catalog reject되면 ruleMatch null → categoryScopedNoise 도달 못 함 → accessory 분류 실패
+  "메탈스티커", "메탈 스티커",  // 사은품 스티커
+  "스킨 스티커", "스킨스티커",  // 스위치 등 스킨 액세서리
+  "본체화면만", "화면만",  // 부품 (본품 X), "디스플레이만"은 monitor 정상 매물 false positive 우려라 제외
+  "조이스틱 핸들",  // 게임기 액세서리
+  "박스만 판매", "박스 단독", "박스 단품",  // 박스 단독 매물 (본체 X)
 ];
 
 const PHONE_NOISE = [
