@@ -808,6 +808,30 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 53. iPad Air/Mini/Pro 옛 chip 매핑 추가 (tablet 27.5% root)
+
+- 시간: 2026-05-16 14:25 KST
+- tablet sample 30건 분석 결과:
+  - **chip 매핑 누락 다수**:
+    - iPad Air 1/2/3 chip 매핑 X (옛 모델 = a7/a8x/a12)
+    - iPad Mini 1-7 chip 매핑 **0개** (전체 누락)
+    - iPad Pro 10.5/9.7 (1st gen) chip 매핑 누락
+- fix (option-parser.ts):
+  - `parseTabletGenerationChip` 에 옛 모델 chip 매핑 추가:
+    - iPad Air 1=a7 / 2=a8x / 3=a12 / 4=a14 / 5=m1 / 6=m2 / 7=m3
+    - iPad Mini 1=a5 / 2=a7 / 3=a7 / 4=a8 / 5=a12 / 6=a15 / 7=a17_pro
+    - iPad Pro 10.5=a10x / 9.7=a9x
+  - `tabletChipAxis` 에 ipad_mini 추가 (옛엔 ipad_pro/air 만 → mini comparable_key 에 chip axis 안 들어감).
+- backfill: tablet needs_review + unknown 매물 456건 reparse 트리거.
+
+### Wave 116 누적 (#51~#53)
+- laptop char class 한글: 505건 reparse
+- smartwatch char class 한글: 131건 reparse
+- tablet iPad chip 매핑: 456건 reparse
+- 총 **1,092건 옛 매물 새 regex 적용** → unknown 토큰 해결 → 풀 진입 가능
+
+- commit: pending
+
 ## 52. char class 한글 누락 systemic sweep — smartwatch size 추가 fix
 
 - 시간: 2026-05-16 14:10 KST

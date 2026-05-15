@@ -513,20 +513,39 @@ function parseTabletGenerationChip(text: string, model: string | null, screenSiz
       if (generation === 6) return "m2";   // 12.9" 6th (2022)
       if (generation === 7) return "m4";   // 13" 7th (2024) — Apple은 12.9→13으로 명칭 변경
     }
+    // Wave 106 #53: 옛 iPad Pro 10.5"/9.7" (단종) chip 매핑 추가.
+    if (screenSizeIn === 10.5) return "a10x"; // iPad Pro 10.5" (2017, 1st & only)
+    if (screenSizeIn === 9.7) return "a9x";   // iPad Pro 9.7" (2016, 1st & only)
   }
 
   if (model === "ipad_air") {
-    if (generation === 4) return "a14"; // iPad Air 4 = A14 Bionic (2020, only Air with A14)
-    if (generation === 5) return "m1";
-    if (generation === 6) return "m2";
-    if (generation === 7) return "m3";
+    // Wave 106 #53: iPad Air 1/2/3 옛 모델 chip 매핑 추가.
+    if (generation === 1) return "a7";   // Air 1 (2013)
+    if (generation === 2) return "a8x";  // Air 2 (2014)
+    if (generation === 3) return "a12";  // Air 3 (2019)
+    if (generation === 4) return "a14";  // Air 4 (2020)
+    if (generation === 5) return "m1";   // Air 5 (2022)
+    if (generation === 6) return "m2";   // Air 6 (2024)
+    if (generation === 7) return "m3";   // Air 7 (2025)
+  }
+
+  if (model === "ipad_mini") {
+    // Wave 106 #53: iPad Mini chip 매핑 0개 → 전체 추가.
+    if (generation === 1) return "a5";       // Mini 1 (2012)
+    if (generation === 2) return "a7";       // Mini 2 (2013)
+    if (generation === 3) return "a7";       // Mini 3 (2014)
+    if (generation === 4) return "a8";       // Mini 4 (2015)
+    if (generation === 5) return "a12";      // Mini 5 (2019)
+    if (generation === 6) return "a15";      // Mini 6 (2021)
+    if (generation === 7) return "a17_pro";  // Mini 7 (2024)
   }
 
   return null;
 }
 
 function tabletChipAxis(model: string | null, chip: string | null) {
-  if (model === "ipad_pro" || model === "ipad_air") return chip ?? "unknown_chip";
+  // Wave 106 #53: ipad_mini 추가 (옛 모델 chip 매핑 추가됨).
+  if (model === "ipad_pro" || model === "ipad_air" || model === "ipad_mini") return chip ?? "unknown_chip";
   return null;
 }
 
