@@ -340,6 +340,11 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "ambush", "앰부쉬", "co.jp", "civilist", "유타", "utah", "syracuse",
       // 다른 모델
       "high", "하이", "미드", "mid", "sky", "스카이",
+      // Wave 137: 한정 컬러/SP 변형 차단 (가격 매우 다름)
+      "잭팟", "jackpot", "말라카이트", "malachite",
+      "플럼", "plum", "라이트 스모크 그레이",
+      "sp", "스페셜 박스", "special box",
+      "retro",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],
@@ -360,6 +365,10 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       "미니", "mini", "탈", "tall", "얼티멋", "ultimate",
+      // Wave 137: 변형 차단
+      "웨더하이브리드", "weather hybrid", "하이브리드",
+      "쇼트 ii", "short ii", "쇼트2", "short 2",
+      "플랫폼", "platform",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],
@@ -379,6 +388,12 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     mustNotContain: [
       "숏", "short", "탈", "tall", "얼티멋", "ultimate",
       "fluff", "플러프",
+      // Wave 137: 변형 모델 차단 (가격 다름)
+      "울트라 미니", "ultra mini", "울트라미니",
+      "플랫폼 미니", "platform mini", "플랫폼미니", "플랫폼",
+      "디스켓", "disquette", "디퍼", "dipper", "디스코",
+      "웨더하이브리드", "weather hybrid", "하이브리드",
+      "디퍼 레그워머", "레그워머", "legwarmer",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],
@@ -420,6 +435,20 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "체리", "cherry", "화이트", "white", "옐로우", "yellow",
       "2976", "첼시", "chelsea", "1461",
       "키즈", "주니어",
+      // Wave 137: 변형 모델 차단 (가격 다름)
+      "트윈지퍼", "twin zipper", "지퍼",
+      "쥬얼리", "jewel", "큐트",
+      "인페르노", "inferno",
+      "플로라", "flora", "꽃",
+      "smooth", "스무스",  // 1460 smooth = 기본 모델은 OK인데 "1460 스무스 + 다른 컬러" variant 차단
+      "쿼드", "quad",
+      "vegan", "비건",
+      "마돌리", "molly", "맥스",  // 파스칼 맥스 등
+      "보이드", "void",
+      "메가", "mega",  // 메가 레이스
+      "dmxl", "xl ", "엑스라지",
+      "코어", "core",  // 코어 색상 (한정)
+      "스튜디오", "studio",  // 할 스튜디오 등
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],
@@ -440,6 +469,14 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     mustNotContain: [
       "블랙", "black", "화이트", "white",
       "2976", "첼시", "1461",
+      // Wave 137: 변형 차단
+      "트윈지퍼", "twin zipper", "지퍼",
+      "쥬얼리", "jewel",
+      "인페르노", "inferno",
+      "플로라", "flora",
+      "쿼드", "quad",
+      "vegan", "비건",
+      "vintage", "빈티지",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],
@@ -459,6 +496,12 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     mustNotContain: [
       "1460", "1461",
       "키즈",
+      // Wave 137: 첼시 variant 차단 (가격 다름)
+      "플라워", "flower", "꽃무늬",
+      "퀴어", "queer", "프라이드", "pride",
+      "vegan", "비건",
+      "플랫폼", "platform",
+      "벡스", "vex",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],

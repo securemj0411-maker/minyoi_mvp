@@ -45,6 +45,7 @@ export function parseConditionTier(text: string): ConditionTier {
 // ─── 신발 ────────────────────────────────────────────────────────────
 
 // 신발 사이즈 추출 (230~309mm). 부적격: 키즈/유아 사이즈.
+// Wave 137 (2026-05-16): UK 사이즈 → mm 변환 추가 (닥마/호카/나이키 매물 흔함).
 export function parseShoeSizeMm(text: string): number | null {
   // "270mm", "270 사이즈", "사이즈 270", "270" (3자리 숫자)
   // 키즈 차단: 150~220 범위는 제외
@@ -59,6 +60,21 @@ export function parseShoeSizeMm(text: string): number | null {
       const n = Number(m[1]);
       if (n >= 230 && n <= 309) return n;
     }
+  }
+  // Wave 137: UK 사이즈 → mm 변환 (닥마식 기준, ±10mm 오차 OK)
+  // UK 3=220, UK 4=230, UK 5=240, UK 6=250, UK 7=260, UK 8=270, UK 9=280, UK 10=290, UK 11=300
+  // 정수 UK만 — 6.5, 7.5 등 부동소수점은 무시 (정확도 우선)
+  // 명시 anchored: "UK 6", "UK6", "uk6" (반드시 "uk" 다음 정수)
+  const ukMatch = text.match(/(?:^|[^a-z0-9])uk\s*([3-9]|1[0-2])(?![\d.])/i);
+  if (ukMatch) {
+    const uk = Number(ukMatch[1]);
+    const UK_TO_MM: Record<number, number> = {
+      3: 220, 4: 230, 5: 240, 6: 250, 7: 260,
+      8: 270, 9: 280, 10: 290, 11: 300, 12: 310,
+    };
+    const mm = UK_TO_MM[uk];
+    if (mm !== undefined && mm >= 230 && mm <= 309) return mm;
+    // UK 3 = 220mm (키즈 경계). 안전상 230~309만 통과.
   }
   return null;
 }
