@@ -164,6 +164,22 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: med severity 항목 (빈 풀 retry CTA, telegram bot 미설정 시 메뉴 자동 숨김, billing err.message leak 등).
 - commit: pending
 
+## 11. billing endpoints err.message 누출 fix
+
+- 시간: 2026-05-16 03:55 KST
+- 발견: audit. `src/app/api/billing/{subscribe,cancel,me}/route.ts` 셋 다 catch 블록에서 `err.message` 그대로 client에 노출.
+  - `restFetch` (`src/lib/supabase-rest.ts:128`) throw 메시지: `Supabase REST failed 400 POST <RPC URL>: <postgres json body>` 형태 → RPC 이름 + postgres `code/message/details/hint` 그대로 client에 노출. RPC raise 메시지에 테이블/컬럼/제약 이름 들어가면 schema 추정 가능.
+- 변경: 셋 다 동일 패턴.
+  - `console.error("[billing/<endpoint>] error", { ...context, err })` — 서버 로그는 raw 유지 (디버깅).
+  - client 응답: `{ error: "<endpoint>_failed", message: "<한국어 generic>" }` — 안전한 string만.
+  - subscribe: 500 + "결제 처리 중 오류가 났어요. 잠시 후 다시 시도해주세요."
+  - cancel: 400 + "요청 처리 중 오류가 났어요. 잠시 후 다시 시도해주세요."
+  - me: 500 + "플랜 정보를 불러오지 못했어요."
+- 검증: tsc clean.
+- 위험: 사용자가 보던 raw postgres 에러 메시지 (예: "payment_key already used") → generic 한국어로 바뀜. UX 살짝 떨어지지만 보안 우선. duplicate payment 케이스는 idempotency RPC (Wave 104 H3) 가 200으로 처리해서 catch 블록 안 옴 — 영향 미미.
+- 다음: 다른 endpoint (telegram/, packs/, me/) 도 동일 audit 필요 (memory: 별도 wave 권장).
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

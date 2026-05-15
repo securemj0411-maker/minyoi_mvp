@@ -26,7 +26,11 @@ export async function GET(req: Request) {
       isAdmin: state.isAdmin,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "plan load failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Wave 106: raw err.message 누출 차단 (subscribe/route.ts 와 동일 이유).
+    console.error("[billing/me] error", { userRef, err });
+    return NextResponse.json(
+      { error: "plan_load_failed", message: "플랜 정보를 불러오지 못했어요." },
+      { status: 500 },
+    );
   }
 }

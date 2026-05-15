@@ -69,7 +69,12 @@ export async function POST(req: Request) {
       monthlyCredits: plan.monthlyCredits,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "subscribe failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Wave 106: raw err.message 누출 차단. restFetch throw는 "Supabase REST failed 400 POST <RPC>: {pg body}"
+    // 형태로 RPC 이름 + postgres schema/제약 메시지 그대로 노출. 서버 로그만 raw, client는 generic.
+    console.error("[billing/subscribe] error", { userRef, planKey, err });
+    return NextResponse.json(
+      { error: "subscribe_failed", message: "결제 처리 중 오류가 났어요. 잠시 후 다시 시도해주세요." },
+      { status: 500 },
+    );
   }
 }
