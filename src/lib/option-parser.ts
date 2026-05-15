@@ -197,7 +197,10 @@ function parseLaptopReleaseYear(text: string) {
     // v32: reverse order — "맥북프로 2019", "맥북에어 m1 2020", "맥북프로2017", "맥북 프로 16인치 2019"
     // \b가 한글 boundary로 안 먹어서 explicit char class 사용. 사이 token은 chip/inch 등 최대 15자.
     // "2025년 2월 구매" 같은 purchase year context는 brand에서 멀어서 자동 회피.
-    /(?:맥북|macbook|에어|프로|air|pro|gram|그램)[a-z0-9\s./()\-인치]{0,15}?(20(?:0[8-9]|1[0-9]|2[0-6]))(?:[^0-9]|$)/,
+    // Wave 106 #51: char class 에 한글 (가-힣) 추가 — "맥북에어 2020", "맥북 프로 m2 2020" 같이
+    // 사이 토큰에 한글 (에어/프로/실버 등) 들어간 매물 매칭. 옛 char class 한글 누락이 root cause —
+    // production 매물 50건 sample 확인 결과 다수 release_year=null 이라 unknown_chip/generation 박힘.
+    /(?:맥북|macbook|에어|프로|air|pro|gram|그램)[a-z0-9가-힣\s./()\-]{0,15}?(20(?:0[8-9]|1[0-9]|2[0-6]))(?:[^0-9]|$)/,
   ]);
   if (fullYear?.[1]) return Number(fullYear[1]);
 

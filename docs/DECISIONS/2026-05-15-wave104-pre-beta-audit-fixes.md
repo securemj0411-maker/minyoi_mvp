@@ -808,6 +808,26 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 51. parser regex root bug — char class 한글 누락 (laptop release_year)
+
+- 시간: 2026-05-16 13:55 KST
+- MJ 지시: "지금 다 하라" (Wave 116 시작)
+- needs_review unknown 매물 50건 sample 분석:
+  - **모두 release_year=null** ← 진짜 root cause
+  - 매물 이름엔 명확히 "2020/2018/2016/2011" 박혀있음
+  - parser 가 year 추출 실패
+- root bug 발견: `parseLaptopReleaseYear` (option-parser.ts:191) 패턴 4 char class:
+  - 옛: `[a-z0-9\s./()\-인치]{0,15}?` — **한글 (가-힣) 누락**
+  - "맥북에어 2020 13인치 실버" 매칭 시도: "맥북" 매칭 → 다음 "에" (한글) → char class 에 일반 한글 X → **매칭 실패**
+  - 사이 토큰에 한글 (에어/프로/실버 등) 들어간 매물 다 못 잡음
+- 1줄 fix:
+  - char class `[a-z0-9가-힣\s./()\-]` 한글 추가
+  - 패턴 매칭 정상화 → release_year 잡힘 → laptopGenerationKey `${year}y` 박음 → unknown_generation 해결
+- backfill: laptop needs_review + unknown_X 매물 505건 score_dirty=true 트리거
+- 효과: 다음 tick reparse 시 절반 이상 (200~300건) generation 잡힐 예상.
+- 다음 systemic: tablet / smartwatch / smartphone / earphone 도 동일 한글 char class 버그 있나 sweep.
+- commit: pending
+
 ## 50. production sweep — parser 누락 옵션 카테고리별 진단
 
 - 시간: 2026-05-16 13:30 KST
