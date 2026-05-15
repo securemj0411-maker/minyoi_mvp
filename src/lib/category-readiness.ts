@@ -166,6 +166,17 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "Galaxy S25 256GB (자급제)",
     note: "Galaxy S25 일반 256GB 자급제. s23/s24/s26, Ultra/Plus/FE, 통신사 차단.",
   },
+  // Wave 110: iPhone 15/16 일반(Pro 아닌) 256GB 자급제 narrow lane.
+  iphone_15_256gb_self: {
+    status: "ready",
+    label: "iPhone 15 256GB (자급제)",
+    note: "iPhone 15 일반 256GB 자급제. 14/16세대, Pro/Pro Max/Plus, 통신사 차단.",
+  },
+  iphone_16_256gb_self: {
+    status: "ready",
+    label: "iPhone 16 256GB (자급제)",
+    note: "iPhone 16 일반 256GB 자급제. 15/17세대, Pro/Pro Max/Plus/16e, 통신사 차단.",
+  },
   ipad_air_m2_11_256_wifi: {
     status: "ready",
     label: "iPad Air M2 11\" 256GB Wi-Fi",
