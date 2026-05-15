@@ -282,6 +282,7 @@ export default function AppNav() {
   ];
 
   return (
+    <>
     <nav className="sticky top-0 z-40 border-b border-[#e2d9cb] bg-[#f8f4ec]/92 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
       <div className="mx-auto grid max-w-[1380px] grid-cols-[auto_1fr_auto] items-center gap-2 px-3 py-3 sm:px-6 md:grid-cols-[1fr_auto_1fr] md:gap-3 md:px-4 lg:px-8">
         {/* 왼쪽: mobile = 햄버거, desktop = 로고 + admin dot */}
@@ -431,9 +432,10 @@ export default function AppNav() {
           )}
         </div>
       </div>
+    </nav>
 
-      {/* Mobile drawer */}
-      {mobileDrawerOpen && (
+    {/* Mobile drawer — nav 밖에 위치 (nav의 backdrop-blur stacking context를 escape) */}
+    {mobileDrawerOpen && (
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
@@ -543,6 +545,6 @@ export default function AppNav() {
           </aside>
         </div>
       )}
-    </nav>
+    </>
   );
 }
