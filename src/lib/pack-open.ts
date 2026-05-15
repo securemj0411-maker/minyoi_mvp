@@ -928,7 +928,13 @@ export type InventorySnapshot = {
 
 export async function loadInventory(): Promise<InventorySnapshot[]> {
   const cols = "profit_band,status,last_verified_at,category,comparable_key,exposure_count,max_exposure";
-  const res = await callSupabase(`/mvp_candidate_pool?select=${cols}`, { headers: authHeaders() });
+  // PostgREST default limit=1000. mvp_candidate_pool 1,600+ rows (invalidated 포함) 라
+  // 일부 ready 매물 누락됨 → 화면 inventory 카운트가 절반으로 나옴. limit 명시 + status
+  // filter로 active 매물만 가져옴 (invalidated 제외해서 query 가벼움).
+  const res = await callSupabase(
+    `/mvp_candidate_pool?select=${cols}&status=in.(ready,reserved,spent)&limit=5000`,
+    { headers: authHeaders() },
+  );
   const rows = (await res.json()) as {
     profit_band: number;
     status: string;
