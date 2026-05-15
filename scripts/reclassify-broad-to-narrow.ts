@@ -28,7 +28,15 @@ async function main() {
   const HDR: Record<string, string> = { apikey: KEY, authorization: `Bearer ${KEY}` };
 
   // 기존 broad SKU 매물 30일
-  const broadSkus = ["macbook-air", "macbook-pro", "ipad-pro", "ipad-air", "ipad-mini", "iphone-15", "iphone-16", "galaxy-s25", "galaxy-s26"];
+  const broadSkus = [
+    "macbook-air", "macbook-pro",
+    "ipad-pro", "ipad-air", "ipad-mini",
+    "iphone-13", "iphone-14", "iphone-15", "iphone-16",
+    "iphone-13-pro", "iphone-14-pro", "iphone-15-pro", "iphone-16-pro",
+    "iphone-15-pro-max", "iphone-16-pro-max",
+    "galaxy-s23", "galaxy-s24", "galaxy-s25", "galaxy-s26",
+    "galaxy-s23-ultra", "galaxy-s24-ultra", "galaxy-s25-ultra", "galaxy-s26-ultra",
+  ];
   
   console.log(`[1/3] fetching broad SKU matter (30d): ${broadSkus.join(",")}`);
   const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();

@@ -150,6 +150,23 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "iPhone 16 Pro Max 256GB (자급제)",
     note: "iPhone 16 Pro Max 자급제 narrow lane. 15/17세대, 128/512/1TB, 통신사 차단.",
   },
+  // Wave 114 (2026-05-15): iPhone Pro 256GB 자급제 narrow lane 3개. broad audit에서 발견.
+  // Pro 시리즈는 128/256/512/1TB 옵션 4개. 256은 중간 옵션이라 매물 dense.
+  iphone_15_pro_256gb_self: {
+    status: "ready",
+    label: "iPhone 15 Pro 256GB (자급제)",
+    note: "Pro Max 아닌 일반 Pro 256GB 자급제. 14/16세대, Pro Max, 128/512/1TB, 통신사 차단.",
+  },
+  iphone_16_pro_256gb_self: {
+    status: "ready",
+    label: "iPhone 16 Pro 256GB (자급제)",
+    note: "Pro Max 아닌 일반 Pro 256GB 자급제. 15/17세대, Pro Max, 128/512/1TB, 통신사 차단.",
+  },
+  iphone_14_pro_256gb_self: {
+    status: "ready",
+    label: "iPhone 14 Pro 256GB (자급제)",
+    note: "Pro Max 아닌 일반 Pro 256GB 자급제. 13/15세대, Pro Max, 128/512/1TB, 통신사 차단.",
+  },
   // Wave 108: Galaxy S 일반(Ultra/Plus 아닌) 256GB 자급제 narrow lane.
   galaxy_s23_256_self: {
     status: "ready",
