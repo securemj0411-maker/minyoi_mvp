@@ -94,6 +94,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<DashboardView>(initialViewFromUrl);
   const [isPro, setIsPro] = useState<boolean>(false);
+  const [isBetaTester, setIsBetaTester] = useState<boolean>(false);
   const [shadowMode, setShadowMode] = useState<boolean>(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
 
@@ -139,14 +140,17 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
     };
   }, []);
 
-  // Wave 93b: Pro 여부 fetch (메뉴 게이팅).
+  // Wave 93b: Pro 여부 fetch (메뉴 게이팅). 2026-05-15: isBetaTester 같이 가져옴.
   useEffect(() => {
-    if (!user) { setIsPro(false); return; }
+    if (!user) { setIsPro(false); setIsBetaTester(false); return; }
     let cancelled = false;
     fetch("/api/me/subscription", { cache: "no-store" })
       .then((r) => r.ok ? r.json() : null)
-      .then((data: { isPro?: boolean } | null) => {
-        if (!cancelled && data) setIsPro(Boolean(data.isPro));
+      .then((data: { isPro?: boolean; isBetaTester?: boolean } | null) => {
+        if (!cancelled && data) {
+          setIsPro(Boolean(data.isPro));
+          setIsBetaTester(Boolean(data.isBetaTester));
+        }
       })
       .catch(() => {});
     return () => { cancelled = true; };
@@ -263,7 +267,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
               <div className="mt-1 text-sm font-black text-[#223127] dark:text-zinc-100">작업 메뉴</div>
             </div>
             <div className={`-mx-1 flex w-full items-center gap-1.5 overflow-x-auto px-1 lg:mx-0 lg:block lg:w-auto lg:space-y-1 lg:overflow-visible lg:px-0 ${sidebarCollapsed ? "lg:hidden" : ""}`}>
-              {(["recommend", "history", "guides", ...(isPro || effectiveAdmin ? (["hotdeal-alerts"] as const) : []), ...(effectiveAdmin ? (["admin-pool"] as const) : [])] as const).map((v) => {
+              {(["recommend", "history", "guides", ...(isPro || effectiveAdmin ? (["hotdeal-alerts"] as const) : []), ...(effectiveAdmin || isBetaTester ? (["admin-pool"] as const) : [])] as const).map((v) => {
                 const label = v === "recommend" ? "추천 받기"
                   : v === "history" ? "나의 상품"
                   : v === "guides" ? "공략집"
