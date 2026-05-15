@@ -504,7 +504,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 추가 fix 불필요.
 
 - 다음: 운영 readiness audit (cron monitoring / alert / observability) 또는 사용자 첫 가입 → 첫 팩 흐름 e2e UX walkthrough.
-- commit: pending
+- commit: 820a452
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
