@@ -3,9 +3,26 @@ import AppFooter from "@/components/app-footer";
 import AppNav from "@/components/app-nav";
 import "./globals.css";
 
+// Wave 106: SEO 보강. 한국어 자연어 + 키워드 (중고 / 리셀 / AI / 번개장터 / 시세 / 가격 차익).
+// 정직 톤 — "보장" 어휘 X, "추천" 위주.
+const SITE_NAME = "미뇨이";
+const TAGLINE = "중고 리셀 추천 — AI가 시세 비교해주는 가격 차익 매물";
+const DESCRIPTION = "번개장터 매물의 시세를 AI가 비교해서, 가격 차익이 큰 상품만 추천해드립니다. 옵션 같은 본품끼리만 비교하고, 공개 직전 판매 상태를 다시 확인합니다.";
+
 export const metadata: Metadata = {
-  title: "미뇨이 MVP",
-  description: "중고 리셀갭 후보 대시보드",
+  title: { default: SITE_NAME, template: `%s — ${SITE_NAME}` },
+  description: DESCRIPTION,
+  keywords: ["중고", "리셀", "리셀러", "번개장터", "시세", "가격 차익", "AI 추천", "중고 거래", "에어팟", "애플워치", "아이패드"],
+  applicationName: SITE_NAME,
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — ${TAGLINE}`,
+    description: DESCRIPTION,
+  },
+  twitter: { card: "summary_large_image", title: `${SITE_NAME} — ${TAGLINE}`, description: DESCRIPTION },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
 export default function RootLayout({

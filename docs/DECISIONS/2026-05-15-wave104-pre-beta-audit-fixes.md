@@ -693,6 +693,35 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 다음: 별도 wave에서 (a) auth.users delete 실패 시 retry queue 또는 (b) source 다양화 또는 (c) launch 직전 final smoke.
 - commit: 11b7535
 
+## 33. SEO 보강 + DB index 진단
+
+- 시간: 2026-05-16 09:05 KST
+- 검토:
+  - **DB index** (mvp_user_plans / mvp_user_credits / mvp_pack_reveals / mvp_candidate_pool / mvp_telegram_bindings / mvp_pack_opens):
+    - mvp_candidate_pool: band_status, category_status, reserved partial ✅
+    - mvp_pack_reveals: user+revealed_at, user+source, user_ref+pid unique ✅
+    - mvp_telegram_bindings: chat_id unique partial, telegram_user_id unique partial ✅
+    - mvp_user_credits / mvp_user_plans: auth_user_id unique + idx ✅
+    - **추가 fix 0건**.
+  - **SEO**:
+    - layout.tsx metadata = "미뇨이 MVP" / "중고 리셀갭 후보 대시보드" — 너무 plain, 키워드 부족.
+    - robots.txt / sitemap.ts **0건** — 검색 엔진 indexing 불가능.
+    - 개별 페이지 metadata 0.
+- 변경:
+  - `src/app/layout.tsx`:
+    - metadata 강화 — title template (`%s — 미뇨이`), description 한국어 자연어 + keywords (중고/리셀/번개장터/시세/AI 추천 + Apple 모델), OG, twitter, robots.
+  - `src/app/robots.ts` 신규 — public 페이지 9개 allow + /api/me/debug/admin/billing/checkout/사용자 데이터 disallow + sitemap 링크.
+  - `src/app/sitemap.ts` 신규 — 8개 public 페이지 (/, /how-it-works, /plans, /login, legal 4개) priority/changeFrequency.
+  - `src/app/how-it-works/page.tsx` metadata: "어떻게 작동하나요?" + 매커니즘 설명.
+  - `src/app/plans/layout.tsx` 신규 (plans는 client라 별도 layout): "요금제" + 가격 정보 + mock 결제 명시.
+- 검증:
+  - tsc: .next/dev/types route validator 일시 cache mismatch (런타임 무관, dev hot reload로 해결).
+- 위험:
+  - mock 결제 단계 사이트가 검색 노출되면 사용자가 정식 서비스로 오해 가능 — robots /billing/checkout disallow 박음.
+  - 단 `/` 메인은 allow → 검색 엔진이 발견 가능 → 사용자 가입 spam risk → rate limit (Wave 106 #29) 으로 보강됨.
+- 다음: launch 직전 final smoke walkthrough 또는 source 다양화 wave 또는 비즈니스 측면 (마케팅 / 첫 사용자 모집).
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

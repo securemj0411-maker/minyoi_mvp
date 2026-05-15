@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+// Wave 106: SEO — how-it-works 별도 metadata.
+export const metadata: Metadata = {
+  title: "어떻게 작동하나요?",
+  description: "미뇨이가 중고 매물을 검증하고 추천하는 방식 — 옵션 비교, 시세 계산, 라이브 검증, 사람별 분산 공개. 거짓 보장 없이 매커니즘 그대로 공개합니다.",
+};
 
 const principles = [
   {
