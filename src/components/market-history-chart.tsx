@@ -117,16 +117,20 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
 
   return (
     <div className="rounded-md bg-white px-2 py-2 dark:bg-zinc-900">
-      <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center justify-between gap-2 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
         <span>시세 30일 추이</span>
-        <span className="flex items-center gap-2">
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 justify-end">
           <span className="inline-flex items-center gap-1">
             <span className="inline-block h-1.5 w-3 rounded bg-emerald-500" />
-            판매중 호가
+            호가
           </span>
           <span className="inline-flex items-center gap-1">
             <span className="inline-block h-1.5 w-3 rounded bg-blue-500" />
-            팔린 가격
+            거래가
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-block h-[2px] w-3 bg-red-500" style={{ borderTop: "2px dashed #ef4444", background: "transparent" }} />
+            <span className="text-red-600 dark:text-red-400">내 매물</span>
           </span>
         </span>
       </div>
@@ -137,24 +141,31 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
         {/* min/max 라벨 */}
         <text x={4} y={padY + 4} fontSize="9" fill="#9ca3af">{krwShort(maxP)}</text>
         <text x={4} y={height - padY} fontSize="9" fill="#9ca3af">{krwShort(minP)}</text>
-        {/* 현재 매물 가격 horizontal line */}
-        {currentPrice != null && currentPrice >= minP && currentPrice <= maxP ? (
-          <>
-            <line x1={padX} y1={y(currentPrice)} x2={width - padX} y2={y(currentPrice)} stroke="#f59e0b" strokeWidth="1" strokeDasharray="3,2" />
-            <text x={width - padX + 2} y={y(currentPrice) + 3} fontSize="9" fill="#d97706" fontWeight="bold">내가 보는 매물</text>
-          </>
-        ) : null}
-        {/* active 라인 (emerald) */}
+        {/* active 라인 (emerald) — 먼저 그려서 currentPrice line이 위에 오게 */}
         {activePath ? <path d={activePath} fill="none" stroke="#10b981" strokeWidth="1.5" /> : null}
         {/* sold 라인 (blue) */}
         {soldPath ? <path d={soldPath} fill="none" stroke="#3b82f6" strokeWidth="1.5" /> : null}
+        {/* 현재 매물 가격 horizontal line — 가장 위에 그림, 강조 */}
+        {currentPrice != null ? (
+          <>
+            <line x1={padX} y1={y(currentPrice)} x2={width - padX} y2={y(currentPrice)} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,3" />
+            {/* 우측 끝에 큰 마커 + 가격 라벨 */}
+            <circle cx={width - padX} cy={y(currentPrice)} r="3.5" fill="#ef4444" stroke="white" strokeWidth="1" />
+            <rect x={width - padX - 48} y={y(currentPrice) - 16} width="46" height="13" rx="3" fill="#ef4444" />
+            <text x={width - padX - 25} y={y(currentPrice) - 6} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">
+              매입 {krwShort(currentPrice)}
+            </text>
+          </>
+        ) : null}
       </svg>
       <div className="mt-1 flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
         <span>
           {latestActive != null ? `최근 호가 ${krwShort(latestActive)}` : ""}
           {latestSold != null ? ` · 최근 거래가 ${krwShort(latestSold)}` : ""}
         </span>
-        <span>총 거래 {totalSoldCount}건 / 30일</span>
+        <span>
+          {totalSoldCount > 0 ? `총 거래 ${totalSoldCount}건 / 30일` : "거래 0건 — 호가 추정"}
+        </span>
       </div>
     </div>
   );
