@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-15T05:14:40.466Z",
+  "_updated_at": "2026-05-15T06:52:23.872Z",
   "resolutions": {
     "334750861": {
       "resolved_at": "2026-05-14T23:21:16.219Z",
@@ -23,6 +23,13 @@
         "c75998f"
       ]
     },
+    "366962219": {
+      "resolved_at": "2026-05-15T06:52:23.089Z",
+      "summary": "'(구매희망)' 구매글 reject. BUYING_KEYWORDS 변형 흡수.",
+      "commits": [
+        "c0ecc85"
+      ]
+    },
     "367574084": {
       "resolved_at": "2026-05-14T23:21:16.273Z",
       "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
@@ -42,6 +49,13 @@
       "summary": "다이슨 V12 — 단일 sample 시세 게이트 추가. confidence=low + sold=0 + active<3 매물은 trustedMarketMedian=null로 차단. skuMedian=0 → pool 차단. Wave 13의 active>=2 통과 기준 강화.",
       "commits": [
         "cb85bc2"
+      ]
+    },
+    "376448871": {
+      "resolved_at": "2026-05-15T06:52:22.801Z",
+      "summary": "충전케이스 단품 매물 reject. 기존엔 충전케이스 자동 제외였으나 본품 신호 없으면 case-only로 판단하도록 변경.",
+      "commits": [
+        "c0ecc85"
       ]
     },
     "378521048": {
@@ -86,6 +100,13 @@
         "c75998f"
       ]
     },
+    "398736849": {
+      "resolved_at": "2026-05-15T06:52:23.445Z",
+      "summary": "타이틀리스트 골프채 카테고리 blocked. loft 옵션 분리 안 됨 + 일반인 친화 X. sport_golf + lane 2개 모두 blocked. 풀 7건 invalidate.",
+      "commits": [
+        "242db46"
+      ]
+    },
     "400051960": {
       "resolved_at": "2026-05-15T02:21:57.028Z",
       "summary": "200만원 가격 상한 정책 도입 (candidate-pool-builder MAX_POOL_PRICE_KRW=2_000_000). 운영자 결정. 200만원 초과 매물 pool 진입 차단 + 기존 4건 DB invalidated.",
@@ -116,6 +137,20 @@
         "ddcbaa9"
       ]
     },
+    "402628847": {
+      "resolved_at": "2026-05-15T06:52:23.304Z",
+      "summary": "액정 깨진 매물 시세 집계 제외. tick-pipeline에 display_defect/screen_replaced/faceid_issue/refurbished_or_repaired/repair_or_defect_signal 5개 라벨 skip 추가. 풀 진입은 별개 (싸게 올라온 defect 매물도 사용자 판단).",
+      "commits": [
+        "c0ecc85"
+      ]
+    },
+    "403382671": {
+      "resolved_at": "2026-05-15T06:52:23.589Z",
+      "summary": "아이패드 + 애플펜슬+폴리오 세트 — accessory_bundle 라벨 (/, ·, ,, 구분자 흡수 commit 6417d2d). reparse 후 시세 집계 제외.",
+      "commits": [
+        "6417d2d"
+      ]
+    },
     "403663126": {
       "resolved_at": "2026-05-15T02:15:45.692Z",
       "summary": "운영자 결정: 시계 카테고리 전체 blocked. DW-5600 lane도 차단.",
@@ -128,6 +163,13 @@
       "summary": "parser v39 (chip prefix lookahead + 비노캔 키워드) + reparse",
       "commits": [
         "ddcbaa9"
+      ]
+    },
+    "404302435": {
+      "resolved_at": "2026-05-15T06:52:22.951Z",
+      "summary": "'제품 사요' 구매글 reject. BUYING_KEYWORDS에 사요/사고싶어요/구매희망 변형 추가.",
+      "commits": [
+        "c0ecc85"
       ]
     },
     "404436811": {
@@ -158,6 +200,13 @@
       "summary": "iPad Pro 12.9 4세대 — parser v36 동일 fix. reparse 후 4_gen|a12z로 분리.",
       "commits": [
         "8421506"
+      ]
+    },
+    "405366644": {
+      "resolved_at": "2026-05-15T06:52:22.660Z",
+      "summary": "에어팟 케이스 단품 매물 reject 강화. isEarbudProtectiveCaseOnlyTitle에 브랜드/캐릭터 케이스 패턴 (모스키노/샤넬/디즈니/카카오프렌즈 등) 추가 — title에 본품 + 브랜드 케이스 명시 시 accessory 분류.",
+      "commits": [
+        "c0ecc85"
       ]
     },
     "405627929": {
@@ -210,6 +259,13 @@
         "ee14d6f"
       ]
     },
+    "406850830": {
+      "resolved_at": "2026-05-15T06:52:23.731Z",
+      "summary": "아이패드 + 애플펜슬 2세대 — accessory_bundle 처리. 이전 commit 6417d2d.",
+      "commits": [
+        "6417d2d"
+      ]
+    },
     "407135933": {
       "resolved_at": "2026-05-14T23:21:16.386Z",
       "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
@@ -222,6 +278,13 @@
       "summary": "단순 질문 답: 아이패드 에어 5 = M2 칩 5세대 (2022, ipad_air_5). 코드 변경 불필요.",
       "commits": [
         "cb85bc2"
+      ]
+    },
+    "407302607": {
+      "resolved_at": "2026-05-15T06:52:23.870Z",
+      "summary": "운영정책 위반 매물 — lifecycle 정상화로 자동 disappeared 처리 예상 (drain RPC + 7분 cron schedule).",
+      "commits": [
+        "f1a4397"
       ]
     },
     "407321422": {
