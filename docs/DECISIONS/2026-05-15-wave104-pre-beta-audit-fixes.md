@@ -336,6 +336,24 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: 매물 source 다양성 / 풀 충분성 진단 (베타 사용자가 실제 어떤 카테고리 보게 되는가). memory: Wave 90 후속.
 - commit: 96977f5
 
+## 21. how-it-works 지원 카테고리 공시 정확화 + 비-Apple 카테고리 정직 표시
+
+- 시간: 2026-05-16 06:15 KST
+- 발견: 카테고리 분포 진단 결과 — Apple 편향 77% (airpods 69 + ipad 44 + applewatch 44 + macbook 32 = 189 / 245 ready). how-it-works 페이지 supportRows 가 outdated:
+  - tablet status="비공개 검증" → 실제는 지원 (51건 ready)
+  - laptop status="보류" → 실제는 지원 (32건 ready)
+  - game_console / desktop / speaker / smartphone 누락
+  - 신발/가방/의류 등 미지원 카테고리 명시 X — 비-Apple 사용자가 가입 후 실망 risk
+- 정책 결정 (MJ): source 다양화는 별도 wave (큰 작업) — 일단 베타 시작은 Apple 풀로. 그러나 사용자 기대 set 위해 정직한 공시 박음.
+- 변경 (`src/app/how-it-works/page.tsx`):
+  - supportRows DB 실측 기반 갱신 (각 카테고리에 실제 매물 수 명시).
+  - 신발/가방/의류 "지원 예정 (X)" 새 status 추가 + 빨간 톤 배지로 명시 — 비-Apple 사용자가 가입 전 알 수 있게.
+  - status 색깔 처리에 "지원 예정" 케이스 분기 추가.
+- 검증: tsc clean.
+- 위험: 일부 사용자가 미지원 보고 가입 안 할 수 있음 — 의도된 결과 (실망 후 이탈보다 사전 배제가 신뢰).
+- 다음: 다른 page (랜딩 / / 요금제) 의 카테고리 언급 audit. 별도 wave에서 source 다양화 진행.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

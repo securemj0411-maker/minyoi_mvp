@@ -18,12 +18,16 @@ const principles = [
   },
 ];
 
+// Wave 106: DB 실측 기반 (2026-05-15 ready pool 245건). Apple 편향 77% 정직 공시.
 const supportRows = [
-  { category: "이어폰", status: "지금 지원", note: "AirPods 중심으로 공개 가능" },
-  { category: "스마트워치", status: "지금 지원", note: "Apple Watch, Galaxy Watch 중심" },
-  { category: "스마트폰", status: "비공개 검증", note: "표본과 위험 신호 검수 중" },
-  { category: "태블릿", status: "비공개 검증", note: "storage/screen/cellular 보강 중" },
-  { category: "노트북", status: "보류", note: "RAM/SSD/chip 오차 위험이 큼" },
+  { category: "이어폰", status: "지금 지원", note: "AirPods · Sony WH · Beats · Bose 중심 (97건)" },
+  { category: "태블릿", status: "지금 지원", note: "iPad Pro/Air/mini · Galaxy Tab (51건)" },
+  { category: "스마트워치", status: "지금 지원", note: "Apple Watch · Galaxy Watch (47건)" },
+  { category: "노트북", status: "지금 지원", note: "MacBook Air/Pro · LG Gram (32건)" },
+  { category: "게임 콘솔", status: "지금 지원", note: "PS5 · Switch (소량)" },
+  { category: "데스크탑 / 스피커", status: "지금 지원", note: "표본 작아 추천 빈도 낮음" },
+  { category: "스마트폰", status: "비공개 검증", note: "자급제 vs 통신사 구분 정확도 보강 중" },
+  { category: "신발 · 가방 · 의류", status: "지원 예정 (X)", note: "현재 미지원 — 추후 wave에서 source 다양화 예정" },
 ];
 
 const engineSteps = [
@@ -386,7 +390,9 @@ export default function HowItWorksPage() {
                         ? "bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
                         : row.status === "비공개 검증"
                           ? "bg-[#f4eee3] text-[#6a6f62]"
-                          : "bg-[#f1ebe2] text-[#7a6b60]"
+                          : row.status.startsWith("지원 예정")
+                            ? "bg-red-50 text-red-700"
+                            : "bg-[#f1ebe2] text-[#7a6b60]"
                     }`}
                   >
                     {row.status}
