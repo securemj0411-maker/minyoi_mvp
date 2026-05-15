@@ -60,6 +60,45 @@ CLAUDE.md 6 필드 포맷.
   - FP spot check: narrow lane으로 진입한 매물 sample 10개 직접 확인 (title + description) — 실제 자급제 매물인지.
   - 효과 확인 시 추가 narrow lane 신설 (galaxy_s24_256_self, iphone_15_256_self 등 매물 충분한 lane).
 
+## 2.1 Critical bug fix — normalize "울트라 2" 매칭이 256/512 분리
+
+- 시간: 2026-05-15 (Wave 108 직후 발견)
+- 발견: 신규 narrow lane 테스트 중 Galaxy S Ultra 256 자급제 매물이 promotion 안 됨. 디버그 결과:
+  - "갤럭시 s23 울트라 256기가 자급제" → normalize 결과 "갤럭시 s23 울트라 **2 56기가** 자급제"
+  - 원인: NORMALIZATIONS rule `[/울트라\s*2/gi, " 울트라 2 "]`가 "울트라 256"의 "2"를 매칭 → 강제 공백 삽입 → 256 분리
+  - 결과: 기존 등록된 `galaxy_s23_ultra_256_self`, `galaxy_s24_ultra_256_self`, `galaxy_s25_ultra_256_self` 모두 매칭 0건
+  - **이게 production narrow lane ready 0건의 근본 원인 일부**
+- 변경: **[mvp/src/lib/catalog.ts:2869-2871](mvp/src/lib/catalog.ts:2869)**
+  - `[/울트라\s*2/gi, " 울트라 2 "]` → `[/울트라\s*2(?!\d)/gi, " 울트라 2 "]`
+  - `[/ultra\s*2/gi, " ultra 2 "]` → `[/ultra\s*2(?!\d)/gi, " ultra 2 "]`
+  - `[/se\s*([123])/gi, " se$1 "]` → `[/se\s*([123])(?!\d)/gi, " se$1 "]` (안전화)
+- 검증: scripts/test-narrow-w108.ts:
+  - "갤럭시 s23 울트라 256기가 자급제" → `galaxy-s23-ultra-256-self` ✓
+  - "갤럭시 s24 울트라 256기가 / 자급제 풀박스" → `galaxy-s24-ultra-256-self` ✓
+  - "갤럭시 s25 울트라 256gb 블루 / 자급제 단말기" → `galaxy-s25-ultra-256-self` ✓
+- 위험: 매우 낮음. lookahead만 추가, 기존 의도된 매칭 ("울트라 2" 단독 = Apple Watch Ultra 2)는 그대로 유지.
+- 다음: production 영향 측정 시 Galaxy S Ultra narrow lane ready 매물 다수 진입 예상.
+
+## 2.2 iPhone Pro Max 256GB 자급제 narrow lane 신설
+
+- 시간: 2026-05-15
+- 발견: 측정에서 iphone-15-pro-max 자급제 명시 매물 37건, iphone-16-pro-max 52건 = 89건. narrow lane 없어서 broad로 흡수.
+- 변경:
+  - **[mvp/src/lib/catalog.ts:624-693](mvp/src/lib/catalog.ts:624)** 새 SKU 2개:
+    - `iphone-15-pro-max-256-self` (laneKey `iphone_15_pro_max_256gb_self`)
+    - `iphone-16-pro-max-256-self` (laneKey `iphone_16_pro_max_256gb_self`)
+  - mustContain 3그룹: 모델명 + 256GB + 자급제
+  - mustNotContain: 인접 세대 (14/16 vs 15/17), 타 용량 (128/512/1TB), 통신사 약정, PHONE_NOISE
+  - **[mvp/src/lib/category-readiness.ts](mvp/src/lib/category-readiness.ts)** LANE_READINESS에 두 lane `ready` 등록
+- 검증: scripts/test-narrow-w108.ts:
+  - "아이폰 15 프로맥스 256기가 자급제" → `iphone-15-pro-max-256-self` ✓
+  - "아이폰 16 프로맥스 256gb / 자급제 모델 박스풀구성" → `iphone-16-pro-max-256-self` ✓ (description promotion)
+  - "아이폰 16 프로맥스 256기가 SKT" → broad (자급제 X) ✓ precision 보존
+- 위험: false positive 가능 — 자급제 fuzzy 문맥. spot check 1시간 후 측정 권장.
+- 다음:
+  - Galaxy S 일반(Ultra 아닌) 자급제 narrow lane 추가 검토 (s23/24/25, plus). 매물 153건.
+  - iPhone Pro Max 128/512GB self lane도 매물 측정 후 추가 검토.
+
 ## 3. 거론 금지
 
 - 카테고리 자체 ready 승격 (smartphone/game_console/camera) — LAUNCH_PLAN 원칙 12b/13 위반. 정확성 trade-off 큼.

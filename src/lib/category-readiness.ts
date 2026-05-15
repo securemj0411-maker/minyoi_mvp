@@ -139,6 +139,17 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "iPhone 16 Pro 128GB (자급제)",
     note: "iphone_15_pro_128gb_self의 16세대 sibling. Pro Max/15/17/통신사 차단.",
   },
+  // Wave 108 (2026-05-15): iPhone Pro Max 256GB 자급제 narrow lane. 매물 89건 (15: 37, 16: 52).
+  iphone_15_pro_max_256gb_self: {
+    status: "ready",
+    label: "iPhone 15 Pro Max 256GB (자급제)",
+    note: "iphone_15_pro_128gb_self의 Pro Max 256GB sibling. 14/16세대, 128/512/1TB, 통신사 차단.",
+  },
+  iphone_16_pro_max_256gb_self: {
+    status: "ready",
+    label: "iPhone 16 Pro Max 256GB (자급제)",
+    note: "iPhone 16 Pro Max 자급제 narrow lane. 15/17세대, 128/512/1TB, 통신사 차단.",
+  },
   ipad_air_m2_11_256_wifi: {
     status: "ready",
     label: "iPad Air M2 11\" 256GB Wi-Fi",
