@@ -401,6 +401,44 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 보류 사유: 옛 row 1건 디버그 가치 낮음. 새 패턴 발생 시 #18 코드로 잡힘.
 - 후속: 새 fail 발생 + 명확한 패턴 보이면 추가 진단.
 
+## 23. 페이지 marketing 약속 audit (랜딩 + /plans + how-it-works)
+
+- 시간: 2026-05-16 06:35 KST
+- 검토 범위: 사용자 가입 전 첫 접점 3개 페이지의 marketing 약속 vs 실제 코드 동작 일치 검증.
+
+### 23a. 랜딩 (`pack-shop.tsx`) trustPoints 4개 검증 — 모두 작동
+
+| 약속 | 코드 검증 | 상태 |
+|---|---|---|
+| "다시 확인 후 추천" | pool-warmer last_verified_at 갱신 + lifecycle terminal_recheck mode | ✅ |
+| "검증 실패 시 환불" | pack-open.ts result:"refunded" + atomic RPC amount=0 + daily quota refund | ✅ |
+| "같은 본품끼리만 비교" | comparable_key 매커니즘 (option-parser + ruleMatch) | ✅ |
+| "택배비 포함 수익 계산" | candidates.ts estimated_buy_cost + net_gap_after_shipping 계산 | ✅ |
+
+Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명시). 강한 보장 어휘 0건. 거짓 광고 0.
+
+### 23b. `/plans` "Mock 결제" 모호함 fix
+
+- 발견: `/plans` hero 의 "Mock 결제 / 베타 검증" 배지가 사용자에게 "실제 청구 들어가나? 안 들어가나?" 모호. `subscribe_mvp_plan` RPC 가 paymentKey 받고 user_plans 활성화하지만 토스 실제 연동 X (mock paymentKey만). 사용자가 "구독" 버튼 누르면 → 진짜 청구 X 인데 plan 활성화 → 혼란 risk.
+- 변경 (`src/app/plans/page.tsx:83-95`):
+  - hero p 텍스트 아래에 amber 안내 박스 추가: "⚠️ 베타 기간엔 mock 결제로 운영됩니다. 실제 결제는 안 들어가고, plan 만 활성화돼서 기능을 체험하실 수 있어요. 정식 토스 연동은 정식 출시 때."
+  - 배지 "Mock 결제 / 베타 검증" → "Mock 결제 (청구 X) / 베타 한정" 명확화.
+- 검증: tsc clean.
+- 위험: 일부 사용자가 "그럼 실제 출시 때 다시 결제해야 하나?" 의문. 정식 launch 시 별도 안내 + migration 필요 (현재 박은 plan row를 어떻게 처리?).
+- 다음: 정식 launch 시점에 (a) 토스 연동 wave + (b) 베타 plan row migration 정책 결정.
+
+### 23c. how-it-works supportRows — #21 에서 이미 fix
+
+- 동일 audit 범위인데 #21 에서 별도 처리됨. 중복 fix X.
+
+### 23d. 검토 결과 종합
+
+- 거짓 marketing 0 (정직 톤 일관).
+- 단 "Mock 결제" 명확화만 필요했음 → fix.
+- 다른 페이지 (account, admin 등) 추가 audit 권장 (사용자 진입 후 페이지).
+
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

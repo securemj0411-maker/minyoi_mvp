@@ -83,11 +83,14 @@ export default function PlansPage() {
               <p className="mt-4 max-w-2xl break-keep text-sm leading-6 text-[#596558] sm:text-[15px] dark:text-zinc-300">
                 월 크레딧 + 일일 열람 한도로 운영합니다. 가입 시 무료 크레딧 5개가 지급되고, 더 자주 돌리고 싶을 때 유료 플랜으로 올리세요.
               </p>
+              <p className="mt-3 max-w-2xl break-keep rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold leading-5 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+                ⚠️ 베타 기간엔 <strong>mock 결제</strong>로 운영됩니다. 실제 결제는 안 들어가고, plan 만 활성화돼서 기능을 체험하실 수 있어요. 정식 토스 연동은 정식 출시 때.
+              </p>
               <div className="mt-5 grid gap-2 sm:grid-cols-3">
                 {[
                   { label: "무료 5크레딧 지급", note: "가입 시" },
                   { label: "언제든 취소", note: "남은 기간 사용" },
-                  { label: "Mock 결제", note: "베타 검증" },
+                  { label: "Mock 결제 (청구 X)", note: "베타 한정" },
                 ].map((item) => (
                   <div key={item.label} className="rounded-2xl border border-[#ddd4c7] bg-[#fffaf1] px-3 py-2 text-xs font-black text-[#556252]">
                     <div>{item.label}</div>
