@@ -1264,7 +1264,7 @@ const CORE_TABLET_CATALOG: Sku[] = [
     mustContain: [
       ["아이패드", "ipad"],
       ["미니", "mini"],
-      ["a17", "7세대", "7 세대", "ipad mini 7", "미니 7", "미니7"],
+      ["a17", "7세대", "7 세대", "ipad mini 7", "미니 7", "미니7", "7미니", "아이패드 7미니", "아이패드7미니"],
       ["128gb", "128 gb", "128기가", "128g", "128"],
     ],
     mustNotContain: [
@@ -3060,6 +3060,14 @@ const NORMALIZATIONS: [RegExp, string][] = [
   [/(아이패드\s*(?:프로|에어))\s*11(?!\d|\.|인치)/gi, " $1 11인치 "],
   [/(ipad\s*(?:pro|air))\s*13(?!\d|\.|in)/gi, " $1 13in "],
   [/(ipad\s*(?:pro|air))\s*11(?!\d|\.|in)/gi, " $1 11in "],
+  // Wave 111c: iPad mini 7 표기 변형 normalize.
+  // "아이패드7 미니" / "아이패드 7미니" / "아이패드 미니 7" / "아이패드미니7" → "아이패드 미니 7"
+  [/아이패드\s*7\s+미니/g, " 아이패드 미니 7 "],
+  [/아이패드\s+7미니/g, " 아이패드 미니 7 "],
+  [/아이패드\s*미니\s*7\b/g, " 아이패드 미니 7 "],
+  [/아이패드미니\s*7\b/g, " 아이패드 미니 7 "],
+  [/ipad\s*7\s+mini/gi, " ipad mini 7 "],
+  [/ipad\s+7mini/gi, " ipad mini 7 "],
 ];
 
 export function normalize(text: string): string {
