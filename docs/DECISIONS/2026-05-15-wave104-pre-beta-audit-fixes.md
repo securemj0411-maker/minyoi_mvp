@@ -534,7 +534,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
   - /api/cron/compliance-retention — 24시간 주기
 - 위험: 등록 후에도 호출 200 OK인지 확인 필요 (auth 헤더, env 등). watchdog alert 안 오면 회복.
 - 다음: QStash 등록 후 1시간 watchdog logs 확인. 다른 운영 readiness 영역 (DB connection pool / rate limit 분포 / observability) audit.
-- commit: pending
+- commit: 05b2049
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
