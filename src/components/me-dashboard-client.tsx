@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdminPoolBrowser from "@/components/admin-pool-browser";
 import HotdealAlertsView from "@/components/hotdeal-alerts-view";
+import OnboardingBanner from "@/components/onboarding-banner";
 import PlaybookOverview from "@/components/playbook-overview";
 import RecommendationWorkspace from "@/components/recommendation-workspace";
 import UserRevealDashboard from "@/components/user-reveal-dashboard";
@@ -265,6 +266,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           <AdminPoolBrowser />
         ) : activeView === "recommend" ? (
           <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
+            <OnboardingBanner onStart={() => setActiveView("recommend")} />
             <RecommendationWorkspace initialInventory={initialInventory} />
           </section>
         ) : (

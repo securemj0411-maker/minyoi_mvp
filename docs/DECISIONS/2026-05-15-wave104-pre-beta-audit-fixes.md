@@ -137,6 +137,19 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 검증: tsc clean, 139/139 test pass.
 - 다음: 신규 가입 onboarding (별도 wave — UI 디자인 필요), 공략집 sticky 충돌 (메뉴 가변 높이 fix — 측정 필요).
 
+## 9. 신규 가입 onboarding 배너
+
+- 시간: 2026-05-16 03:25 KST
+- 발견: audit Path 2. 신규 가입 후 /me 진입 시 onboarding 0건. "5크레딧 받았어요" 안내 없음 → 사용자가 어떻게 시작할지 모름.
+- 변경 (`src/components/onboarding-banner.tsx` 신규):
+  - 표시 조건: freeGrantedAt < 24h ago AND localStorage `minyoi-onboarding-dismissed-v1` 미dismiss AND admin 아님 (infinite credits).
+  - 배너 내용: 환영 라벨 + "크레딧 N개" 배지 + "첫 5크레딧 받았어요" 헤더 + 시작 가이드 (안전/균형 preset 추천) + [추천 받기 시작] CTA + [나중에] dismiss + X 닫기 버튼.
+  - dismiss는 localStorage 기록 (v1 prefix로 다음 캠페인 redo 가능).
+  - me-dashboard-client.tsx의 recommend view 상단에만 mount (다른 view에선 노이즈 X).
+- 검증: tsc clean, 139/139 test pass.
+- 위험: localStorage 차단 사용자는 매번 노출. 일반인은 거의 없음 → 영향 미미.
+- 다음: 공략집 sticky 충돌 (메뉴 가변 높이 측정).
+
 ### 보너스: audit false positive (총 2건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
