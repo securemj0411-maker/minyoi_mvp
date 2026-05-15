@@ -87,6 +87,12 @@ export const DEFAULT_SEARCH_QUERIES = [
   "아디다스 토바코", "Adidas Tobacco", "토바코 그루엔",
   "아디다스 가젤 OG", "아디다스 가젤", "Adidas Gazelle",
   "뉴발란스 327 ms327", "ws327",
+  // Wave 140: 신규 5개 SKU query
+  "컨버스 척70 하이", "Chuck 70 High",
+  "호카 본디 7", "Hoka Bondi 7",
+  "에어포스 1 트리플 레드", "AF1 트리플 레드",
+  "컨버스 잭퍼셀", "Jack Purcell",
+  "나이키 페가수스 터보", "Pegasus Turbo",
   // 기타 인기
   "아식스 젤 1130", "Asics Gel 1130",
   "온 클라우드 5", "On Cloud 5",

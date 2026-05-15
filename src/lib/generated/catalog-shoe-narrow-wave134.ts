@@ -108,6 +108,7 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "본디 x", "본디x", "bondi x", "bondix",
       "본디 7", "본디7", "bondi 7",
       "본디 sr", "bondi sr", "본디 l", "bondi l",
+      "본디 6", "본디6", "bondi 6", "본디 5", "본디 4",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],

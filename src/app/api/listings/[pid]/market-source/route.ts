@@ -210,6 +210,7 @@ export async function GET(
         skuName: (listing.sku_name as string | null) ?? null,
         skuMedian: Number(listing.sku_median ?? 0),
         comparableKey,
+        conditionClass,
         parseConfidence: Number(parsed?.parse_confidence ?? 0) || null,
         needsReview: Boolean(parsed?.needs_review),
         thumbnailUrl: (raw?.thumbnail_url as string | null) ?? null,

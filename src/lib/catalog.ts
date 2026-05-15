@@ -12,6 +12,8 @@ import { SHOE_NARROW_CATALOG } from "@/lib/generated/catalog-shoe-narrow-wave134
 import { SHOE_BROAD_CATALOG } from "@/lib/generated/catalog-shoe-broad-wave133";
 // Wave 138 (2026-05-16): 신규 broad 3개 (NB 327, 토바코, 가젤 OG) — Iter 1 needs_review 분석 발굴.
 import { SHOE_BROAD_WAVE138_CATALOG } from "@/lib/generated/catalog-shoe-broad-wave138";
+// Wave 140 (2026-05-16): 신규 5개 narrow (척70 하이 black/white, 본디 7, AF1 트리플 레드, 잭퍼셀, 페가수스 터보).
+import { SHOE_WAVE140_CATALOG } from "@/lib/generated/catalog-shoe-narrow-wave140";
 import { BAG_CATALOG } from "@/lib/generated/catalog-bag-wave91";
 import { BIKE_CATALOG } from "@/lib/generated/catalog-bike-wave91";
 
@@ -4727,6 +4729,7 @@ export const CATALOG: Sku[] = [
   ...SHOE_NARROW_CATALOG,
   ...SHOE_BROAD_CATALOG,
   ...SHOE_BROAD_WAVE138_CATALOG,
+  ...SHOE_WAVE140_CATALOG,
   ...BAG_CATALOG,
   ...BIKE_CATALOG,
 ];

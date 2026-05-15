@@ -31,6 +31,7 @@ type MarketSourceResponse = {
     skuName: string | null;
     skuMedian: number;
     comparableKey: string | null;
+    conditionClass: string | null;
     parseConfidence: number | null;
     needsReview: boolean;
     thumbnailUrl: string | null;
@@ -274,7 +275,12 @@ export function MarketSourceDebug({
                           </span>
                           <span className="text-zinc-300 dark:text-zinc-600">·</span>
                           <span className="text-[12px] font-semibold text-zinc-500 dark:text-zinc-400">
-                            기록 시세 {krw(data.ourListing.skuMedian)}
+                            {data.ourListing.conditionClass === "unopened"
+                              ? "다나와 새상품 시세"
+                              : data.ourListing.conditionClass === "clean"
+                                ? "번개 S급 시세"
+                                : "번개 중고 시세"}{" "}
+                            {krw(data.ourListing.skuMedian)}
                           </span>
                         </div>
                         <div className="mt-1 text-[11px] text-zinc-600 dark:text-zinc-400">
