@@ -3939,6 +3939,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       sellerUid: row.seller_uid ?? null,
       // Wave 138b (2026-05-16): description hash → multi-ID 사기 그룹 차단 gate.
       descriptionHash: row.description_hash ?? null,
+      // Wave 145 (2026-05-16): 셀러 신뢰도 → 가품 floor v2 tier 2 gate.
+      shopReviewCount: row.shop_review_count ?? null,
+      shopReviewRating: row.shop_review_rating ?? null,
       ...shipping,
     });
   }

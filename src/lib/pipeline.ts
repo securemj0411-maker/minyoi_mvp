@@ -910,6 +910,9 @@ export type PipelineRow = {
   sellerUid?: string | null;
   // Wave 138b (2026-05-16): description hash — 다중 ID 사기 그룹 탐지.
   descriptionHash?: string | null;
+  // Wave 145 (2026-05-16): 셀러 신뢰도 → 가품 floor v2 tier 2 gate.
+  shopReviewCount?: number | null;
+  shopReviewRating?: number | null;
   shippingFee: number;
   shippingFeeGeneral: number | null;
   shippingSource: string;

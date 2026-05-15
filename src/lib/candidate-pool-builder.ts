@@ -81,6 +81,10 @@ export type PoolCandidateInput = {
   // Wave 138b (2026-05-16): description hash — 다중 ID 사기 그룹 탐지.
   // DB 발견: 동일 description 27건이 7명 셀러 ID로 분산 (복붙 = 부캐).
   descriptionHash?: string | null;
+  // Wave 145 (2026-05-16): 셀러 신뢰도 — 가품 detection v2 강화.
+  // 신뢰도 낮은 셀러 (review_count < 5 OR rating < 4.5) + msrp * 0.25 이하 = 가품 의심.
+  shopReviewCount?: number | null;
+  shopReviewRating?: number | null;
 };
 
 export type PoolParsedInput = {
@@ -255,8 +259,12 @@ export function buildCandidatePoolRows(input: {
     //   shop_review_count 높아도 가품 가능 → msrp 기준 차단이 가장 안전.
     // 한정판 매물도 fair: skuMedian이 msrp보다 크면 시세 기준.
     // 신발/가방만 적용 (제조 진입장벽 낮음). 전자기기는 fake 적음.
+    // Wave 145 (2026-05-16): v2 강화 — 셀러 신뢰도 + 가격 floor 결합.
+    //   tier 1: price < ref * 0.15 (85% 할인) → 가품 확실 (review 무관)
+    //   tier 2: price < ref * 0.25 (75% 할인) + 셀러 review_count < 5 OR rating < 4.5 → 가품 의심
     const FAKE_FLOOR_CATEGORIES = new Set<string>(["shoe", "bag"]);
-    const FAKE_FLOOR_RATIO = 0.15;
+    const FAKE_FLOOR_RATIO_T1 = 0.15;
+    const FAKE_FLOOR_RATIO_T2 = 0.25;
     if (
       sku?.msrpKrw &&
       row.price > 0 &&
@@ -264,9 +272,19 @@ export function buildCandidatePoolRows(input: {
       FAKE_FLOOR_CATEGORIES.has(category)
     ) {
       const referencePrice = Math.max(sku.msrpKrw, row.skuMedian ?? 0);
-      if (row.price < referencePrice * FAKE_FLOOR_RATIO) {
+      // Tier 1: 절대 가품 (review 무관)
+      if (row.price < referencePrice * FAKE_FLOOR_RATIO_T1) {
         skipped += 1;
-        invalidations.push({ pid, reason: `fake_suspect_price_below_${Math.round(FAKE_FLOOR_RATIO * 100)}pct` });
+        invalidations.push({ pid, reason: `fake_suspect_t1_below_${Math.round(FAKE_FLOOR_RATIO_T1 * 100)}pct` });
+        continue;
+      }
+      // Tier 2 (Wave 145): 25% 이하 + 셀러 신뢰도 낮음
+      const reviewCount = row.shopReviewCount ?? null;
+      const reviewRating = row.shopReviewRating ?? null;
+      const lowSellerTrust = (reviewCount != null && reviewCount < 5) || (reviewRating != null && reviewRating < 4.5);
+      if (row.price < referencePrice * FAKE_FLOOR_RATIO_T2 && lowSellerTrust) {
+        skipped += 1;
+        invalidations.push({ pid, reason: `fake_suspect_t2_unverified_seller_below_${Math.round(FAKE_FLOOR_RATIO_T2 * 100)}pct` });
         continue;
       }
     }
