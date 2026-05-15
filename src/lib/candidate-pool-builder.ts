@@ -249,6 +249,28 @@ export function buildCandidatePoolRows(input: {
     const sku = input.catalogById.get(row.skuId ?? "");
     const category = parsed?.category ?? sku?.category ?? null;
 
+    // Wave 141 (2026-05-16): 시세 floor 가품 detection — 신발/가방 카테고리.
+    // 패턴: price < max(msrp, skuMedian) * 0.15 (85% 이상 할인) → 가품 확실
+    // 발견 (Iter 3): 990v5 msrp 269k → 9k (3.3%), 2976 9k (3.8%), 327 10k (7.2%) 등
+    //   shop_review_count 높아도 가품 가능 → msrp 기준 차단이 가장 안전.
+    // 한정판 매물도 fair: skuMedian이 msrp보다 크면 시세 기준.
+    // 신발/가방만 적용 (제조 진입장벽 낮음). 전자기기는 fake 적음.
+    const FAKE_FLOOR_CATEGORIES = new Set<string>(["shoe", "bag"]);
+    const FAKE_FLOOR_RATIO = 0.15;
+    if (
+      sku?.msrpKrw &&
+      row.price > 0 &&
+      category &&
+      FAKE_FLOOR_CATEGORIES.has(category)
+    ) {
+      const referencePrice = Math.max(sku.msrpKrw, row.skuMedian ?? 0);
+      if (row.price < referencePrice * FAKE_FLOOR_RATIO) {
+        skipped += 1;
+        invalidations.push({ pid, reason: `fake_suspect_price_below_${Math.round(FAKE_FLOOR_RATIO * 100)}pct` });
+        continue;
+      }
+    }
+
     // Wave 106 #47 정정: smartphone carrier null 차단 revert.
     // Wave 115/115b 가 catalog narrow lane 에 자급제 동의어 박아 ("정상해지/확정기변/노옵션/
     // 타통신사/유심꽂고/무약정") narrow lane 통과 = 자급제 의미 부여.
