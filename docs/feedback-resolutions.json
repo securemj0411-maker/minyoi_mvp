@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-15T03:46:48.428Z",
+  "_updated_at": "2026-05-15T03:52:33.118Z",
   "resolutions": {
     "334750861": {
       "resolved_at": "2026-05-14T23:21:16.219Z",
@@ -185,6 +185,13 @@
         "e1046cf"
       ]
     },
+    "406747021": {
+      "resolved_at": "2026-05-15T03:52:32.894Z",
+      "summary": "batteryHealth >= 100 단독으로 new_or_open_box 마킹 (Apple 기기 사실상 새제품). 명시 키워드 없어도 시세 집계 제외.",
+      "commits": [
+        "ee14d6f"
+      ]
+    },
     "407135933": {
       "resolved_at": "2026-05-14T23:21:16.386Z",
       "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
@@ -262,6 +269,13 @@
       "summary": "맥북 M2 2022 — 동일 MSRP fallback 폐기 fix. 추가로 unknown_screen parser 약점은 후속 wave에서 (M2 chip + 13/16 size 매핑 보강).",
       "commits": [
         "2761586"
+      ]
+    },
+    "407879893": {
+      "resolved_at": "2026-05-15T03:52:33.114Z",
+      "summary": "multi_device_bundle detector — 9 device signature 중 2개 이상 + 강한 연결어(+/세트/번들/함께) 동반시 라벨. 시세 집계 제외 + pool 진입 차단.",
+      "commits": [
+        "ee14d6f"
       ]
     },
     "408077307": {
