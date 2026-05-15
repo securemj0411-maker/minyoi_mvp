@@ -556,11 +556,17 @@ async function retryAsync<T>(
 function lifecycleDelayMs(tier: LifecyclePriorityTier, status: LifecycleStatus = "active") {
   if (status === "sold_confirmed" || status === "disappeared" || status === "archived") return 7 * 24 * 60 * 60 * 1000;
   if (status === "missing_suspect") return 2 * 60 * 60 * 1000;
+  // 2026-05-15: 점검 주기 완화 (worker capacity 부족으로 backlog 14k 누적 발견).
+  // - pool / near_pool: 사용자 노출 매물이라 그대로 (정확성 필수)
+  // - exploration: 12h → 72h (시세 학습 후보군, 매일 점검 불필요)
+  // - market_sample: 24h → 168h (시세 표본, 7일에 1번 충분)
+  // - 기타 general: 48h → 168h (낮은 priority)
+  // 결과: 필요 처리량 분당 35 → 분당 ~25로 감소. capacity 안에 fit.
   if (tier === "pool") return 60 * 60 * 1000;
   if (tier === "near_pool") return 4 * 60 * 60 * 1000;
-  if (tier === "exploration") return 12 * 60 * 60 * 1000;
-  if (tier === "market_sample") return 24 * 60 * 60 * 1000;
-  return 48 * 60 * 60 * 1000;
+  if (tier === "exploration") return 72 * 60 * 60 * 1000;
+  if (tier === "market_sample") return 7 * 24 * 60 * 60 * 1000;
+  return 7 * 24 * 60 * 60 * 1000;
 }
 
 function lifecycleNextCheckAt(tier: LifecyclePriorityTier, status: LifecycleStatus = "active") {
