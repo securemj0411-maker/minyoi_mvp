@@ -280,7 +280,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
   - decide 통계 의존하는 분석 코드 있으면 깨짐 — 현재 없음 확인.
   - `mvp_hotdeal_reservations.decision` 컬럼은 그대로 유지 (DB 데이터 손실 X). 옛 데이터 ('purchased'/'rejected') 도 그대로.
 - 다음: 옛 reservation #1 의 notification_sent=false + error=null 버그 (sendTelegramMessage error 로그 누락) 별도 fix.
-- commit: pending
+- commit: cfa7a52
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
