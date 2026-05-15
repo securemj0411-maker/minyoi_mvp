@@ -808,6 +808,36 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 50. production sweep — parser 누락 옵션 카테고리별 진단
+
+- 시간: 2026-05-16 13:30 KST
+- MJ 지시: "사후처리 X, sweep 해서 학습한 다음 parser 할 것 찾아라"
+- production 매물 카테고리별 needs_review % + unknown 토큰 sweep:
+
+| 카테고리 | total | needs_review % | 누락 axis |
+|---|---|---|---|
+| **laptop** | 10,080 | **35.1%** (3,535) | chip / generation / ram / screen / ssd |
+| **tablet** | 10,722 | **27.5%** (2,950) | chip / screen / storage |
+| smartwatch | 4,984 | 10.5% | connectivity / size |
+| earphone | 525 | 9.3% | anc / connector |
+| smartphone | 3,351 | 7.8% | storage |
+| desktop | 16 | 50% (작은 표본) | ram / ssd |
+| monitor | 7 | unknown_shape 7건 | shape |
+
+- laptop sample 분석 (unknown 408건):
+  - ram 178건: "맥북에어 m2 13인치 256gb" (RAM 명시 X — base 8GB 추정 가능)
+  - chip 125건: "맥북에어 2020 13인치" (chip 명시 X — year+model 만)
+  - generation 57건: "2020 i5 16g" (Intel year 매핑 약함)
+  - ssd 48건: "m3 ram16 +에케플" (SSD 명시 X — base 256 추정 가능)
+
+- 진짜 큰 fix (별도 wave 권장):
+  - **Intel chip year 매핑** (2010-2019 macbook i5/i7 → 세대 추론)
+  - **base 옵션 default 추정** (M3 base = 8GB/256GB / Air vs Pro 차별)
+  - **needs_review 3,535건 sample regex sweep** → 한국어 표현 / 줄임말 / 변형 30+ 추가
+
+- 현재 Wave 106 sweep 한계: parser regex 보강은 30+ 패턴 추가 + sample 매물 검증 필요. 1-2일 작업.
+- 다음 wave 후보: **Wave 116 parser regex 보강** (laptop 우선 — 가장 큰 ROI).
+
 ## 49. Beats Solo 4 Jennie special edition catalog 분리 (MJ 코멘트 #2)
 
 - 시간: 2026-05-16 13:10 KST
