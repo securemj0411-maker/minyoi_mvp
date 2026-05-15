@@ -89,7 +89,24 @@ CLAUDE.md 6 필드 포맷.
 | iphone-air-256-self | 1 | Wave 111f (narrow) |
 | **총** | **71건** | |
 
-## 6. 거론 금지
+## 6. Wave 113b — MacBook 인치 표기 NORMALIZATIONS (commit ec32944)
+
+- 시간: 2026-05-15 (Wave 113 후속)
+- 발견: macbook-air broad 145건 reclassify 후 audit. "맥북에어13 M3 실버 256GB sss급" 매물 → broad만 매칭, narrow lane "13인치" 토큰 매칭 실패. **근본 원인**: 모델명+숫자 붙어쓴 "맥북에어13"의 "13"이 catalog mustContain ["13인치", "13 인치", "13형", `13"`] 어느 것에도 안 들어감.
+- 변경: **[mvp/src/lib/catalog.ts](mvp/src/lib/catalog.ts)** NORMALIZATIONS 10 rule 추가 (Wave 111 iPhone Pro 동일 패턴):
+  ```typescript
+  [/맥북\s*에어\s*13(?!\d|\.|인치|in)/g, " 맥북 에어 13인치 "],
+  [/맥북\s*에어\s*15(?!\d|\.|인치|in)/g, " 맥북 에어 15인치 "],
+  [/맥북\s*프로\s*13|14|16(?!\d|\.|인치|in)/g, " 맥북 프로 N인치 "],
+  // macbook air/pro 13/14/15/16 영문 동일 변형
+  ```
+- 검증:
+  - 139/139 test pass
+  - 4건 audit 매물 narrow lane 진입 (M3 매물 ✓, M4 매물 broad ✓)
+  - **production 2건 broad → narrow 재배치** (macbook-air→m3-13-256 1건, galaxy-s25→galaxy-s25-fe 1건 보너스)
+- 위험: 매우 낮음. 변형 흡수 (의미 완화 X). lookahead로 이중 변환 차단.
+
+## 7. 거론 금지
 
 - Pool ready 폭증 — cron tick + pool-warmer 주기 후 (즉시 X). 24h 후 측정 권고.
 - macbook M3/M4 narrow lane storage/RAM 미강제 — 정책상 chip+size만. 추후 narrow strengthening 검토.
