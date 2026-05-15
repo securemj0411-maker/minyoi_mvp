@@ -2295,6 +2295,28 @@ export const CATALOG: Sku[] = [
     released: 2020,
   },
   // ─── Nintendo Switch OLED (2021-10) ─────────────────
+  // Wave 111i (2026-05-15): Nintendo Switch 2 (2025-06-05 신상) broad + narrow.
+  {
+    id: "switch-2",
+    brand: "Nintendo",
+    category: "game_console",
+    modelName: "Nintendo Switch 2",
+    aliases: ["Nintendo Switch 2", "닌텐도 스위치 2", "스위치 2"],
+    mustContain: [
+      ["닌텐도", "nintendo", "스위치", "switch"],
+      ["스위치 2", "스위치2", "switch 2", "switch2"],
+    ],
+    mustNotContain: [
+      "oled", "올레드", "라이트", "lite",
+      "ps5", "ps4",
+      "컨트롤러만", "조이콘만", "게임만", "게임 팩", "게임 카드",
+      "충전기만", "케이스만",
+      "부품", "고장",
+      "매입", "삽니다",
+    ],
+    msrpKrw: 599000,
+    released: 2025,
+  },
   // narrow lane: switch_oled (Switch 2/Lite/일반 스위치/PS5/액세서리 차단)
   {
     id: "switch-oled",
