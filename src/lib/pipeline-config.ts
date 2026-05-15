@@ -60,6 +60,33 @@ export const DEFAULT_SEARCH_QUERIES = [
   // Wave 87: A7C broad noise 해소 — A7C II / A7CR 별도 SKU 분리 후 query 추가.
   "소니 A7C II", "Sony A7C II", "A7C2", "ILCE-7CM2",
   "소니 A7CR", "Sony A7CR", "ILCE-7CR",
+  // Wave 134 (2026-05-16): 신발 narrow SKU 30개 mining boost.
+  // 사용자 명령 "표본 존나 크게". Bunjang rate limit 없음 (probe 검증).
+  // 카테고리 sweep (category:405)은 신규 매물 일괄 capture, narrow query는 모델별 깊이 mining.
+  // 호카
+  "호카 본디 8", "호카 본디 9", "호카 본디 X", "Hoka Bondi",
+  "호카 클리프턴 9", "호카 클리프턴 10", "Hoka Clifton",
+  // 나이키
+  "페가수스 39", "페가수스 40", "페가수스 41", "Nike Pegasus",
+  "에어포스 1 화이트", "에어포스 1 블랙", "에어포스 1 트리플",
+  "덩크 로우 판다", "덩크 로우",
+  // 어그
+  "어그 클래식 숏", "어그 클래식 미니", "어그 클래식 탈", "UGG Classic",
+  // 닥터마틴
+  "닥터마틴 1460 블랙", "닥터마틴 1460 체리", "닥터마틴 첼시", "닥터마틴 2976",
+  // 푸마
+  "푸마 팔레르모", "푸마 팔레르모 블랙", "푸마 팔레르모 화이트",
+  // 컨버스
+  "컨버스 척70", "컨버스 척테일러 70",
+  // 뉴발란스
+  "뉴발란스 990v5", "뉴발란스 990v6", "뉴발란스 992", "뉴발란스 993", "뉴발란스 1906",
+  "뉴발란스 530", "뉴발란스 327",
+  // 아디다스
+  "아디다스 삼바", "Adidas Samba", "아디다스 가젤 인도어",
+  // 기타 인기
+  "아식스 젤 1130", "Asics Gel 1130",
+  "온 클라우드 5", "On Cloud 5",
+  "브룩스 고스트", "Brooks Ghost",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
