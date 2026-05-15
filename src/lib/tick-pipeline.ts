@@ -2510,16 +2510,25 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     const activeMedian = active.median;
     const soldMedian = sold.median;
     const disappearedMedian = disappeared.median;
+    // 2026-05-15 (사용자 베타테스터 보고): sold ≥ 5 미만이면 active 100% fallback 됐었음.
+    // 예: iPad 10세대 sold=4, active=22 → blended가 active median(38만)만 박힘 → 실제 거래가(35만) 무시.
+    // 수정: sold 1건 이상이면 거래가 반영 (50/50). sold 많을수록 weight 증가.
     const blendedMedian =
       soldMedian != null && sold.count >= 8 && activeMedian != null && active.count >= 5
         ? Math.round((soldMedian * 0.7) + (activeMedian * 0.3))
-        : soldMedian != null && sold.count >= 5
-          ? soldMedian
-          : activeMedian != null
-            ? activeMedian
-            : disappearedMedian != null && disappeared.count >= 8
-              ? Math.round(disappearedMedian * 0.9)
-              : disappearedMedian;
+        : soldMedian != null && sold.count >= 5 && activeMedian != null
+          ? Math.round((soldMedian * 0.6) + (activeMedian * 0.4))
+          : soldMedian != null && sold.count >= 5
+            ? soldMedian
+            : soldMedian != null && sold.count >= 1 && activeMedian != null
+              ? Math.round((soldMedian * 0.5) + (activeMedian * 0.5))
+              : soldMedian != null && sold.count >= 1
+                ? soldMedian
+                : activeMedian != null
+                  ? activeMedian
+                  : disappearedMedian != null && disappeared.count >= 8
+                    ? Math.round(disappearedMedian * 0.9)
+                    : disappearedMedian;
     const confidenceBasis = sold.count >= 8 ? sold.count : active.count;
     const confidence = confidenceBasis >= 20 ? "high" : confidenceBasis >= 8 ? "medium" : "low";
     return {
