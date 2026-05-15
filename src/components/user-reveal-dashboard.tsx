@@ -132,7 +132,9 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
       setTotalPages(Math.max(1, Number(nextData.totalPages ?? 1)));
       if (Number.isFinite(nextData.page) && nextData.page !== page) setPage(nextData.page);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "내 후보 로드 실패");
+      // Wave 106: raw err.message 노출 차단. 서버에서 박힌 sanitized error code도 한국어로 정규화.
+      console.error("[user-reveal-dashboard] load failed", err);
+      setError("내 후보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
     } finally {
       if (!options?.silent) setLoading(false);
     }

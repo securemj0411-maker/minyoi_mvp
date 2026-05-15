@@ -469,6 +469,43 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 위험: 없음.
 - 다음: marketing 정직성 audit 마무리. 다음 검토 영역 = 에러/빈 상태/만료 메시지 일관성 (사용자 막힘 지점) 또는 운영 readiness (cron monitoring/alert).
 
+## 26. 에러/빈상태/만료 메시지 sweep audit + client component fix
+
+- 시간: 2026-05-16 07:15 KST
+- 검토 범위: 사용자가 막힐 수 있는 메시지 일관성 — err.message 노출, 빈 상태, 만료 안내.
+
+### 26a. /api/packs/* 6개 endpoint err.message 누출 — 잘못 진단 정정
+
+- 발견 (잘못): grep으로 `err.message` 매칭 6개 endpoint (reveals/click, feedback, detail, inventory, preview-inventory, open). Wave 106 #11 (billing) 패턴과 동일하다고 판단했으나 실제 코드 확인 결과 **이미 sanitize 박혀있음**:
+  - `const message = err instanceof Error ? err.message : "unknown error";` 변수만 만들고 `console.error` 만 raw 박음.
+  - Response 에 들어가는 건 sanitized code: `"click_record_failed"`, `"feedback_record_failed"`, `"detail_load_failed"`, `"inventory_load_failed"`, `"preview_inventory_failed"`, `"pack_open_failed"`.
+- 정정: **fix 불필요**. 처음부터 안전.
+- memory 업데이트 권장: `project_security_error_message_leak_review.md` 에 "billing 외 packs/*는 이미 sanitize됨" 추가 가능.
+
+### 26b. client component error 표시 raw 노출 fix (3개)
+
+- 발견:
+  - `src/components/pack-reveal-modal.tsx:831` `setPreviewError(err.message)` — fetch error를 그대로 사용자에게.
+  - `src/components/pack-reveal-modal.tsx:862` `setPreviewGuideError(err.message)` — 동일.
+  - `src/components/user-reveal-dashboard.tsx:135` `setError(err.message)` — 내 후보 로드 실패 시.
+- 변경: 셋 다 동일 패턴.
+  - `console.error("[component] context", err)` — 디버깅용 raw 보존.
+  - 사용자 표시: "X을(를) 불러오지 못했어요. 잠시 후 다시 시도해주세요." 한국어 friendly fallback.
+- 검증: tsc clean.
+- 위험: 디버깅 시 사용자 화면에서 정확한 원인 못 봄 → console로 가능. trade-off 작음.
+
+### 26c. 만료/빈상태 메시지 일관성 — OK
+
+- `auth-form.tsx`: Wave 104 #8a 에서 이미 한국어 friendly map 박힘.
+- `hotdeal-reservations.tsx`: "지금 받은 핫딜이 없어요. 새 핫딜이 나오면 텔레그램으로 즉시 알려드려요." (친절).
+- `telegram-connect-panel.tsx`: 만료 메시지 "만료됨 — 취소 후 다시 시도하세요." (명확).
+- `pack-reveal-modal.tsx`: 검증 실패 + unavailable 둘 다 한국어 친절 (Wave 106 #13).
+- `user-reveal-dashboard.tsx:539`: "검색 결과가 없습니다." / "아직 본 추천 상품이 없습니다." (친절).
+- 추가 fix 불필요.
+
+- 다음: 운영 readiness audit (cron monitoring / alert / observability) 또는 사용자 첫 가입 → 첫 팩 흐름 e2e UX walkthrough.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

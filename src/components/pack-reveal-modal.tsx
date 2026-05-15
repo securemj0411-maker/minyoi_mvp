@@ -828,7 +828,9 @@ export default function PackRevealModal({
         setPreviewDetail(detail);
       })
       .catch((err) => {
-        setPreviewError(err instanceof Error ? err.message : "상세 정보 요청 실패");
+        // Wave 106: raw err.message 노출 차단. 서버 에러 코드도 한국어 friendly 로 정규화.
+        console.error("[pack-reveal-modal] preview detail load failed", err);
+        setPreviewError("상세 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
       })
       .finally(() => setPreviewLoading(false));
   }, [onLoadDetail]);
@@ -859,7 +861,8 @@ export default function PackRevealModal({
         setPreviewGuide(guide);
       })
       .catch((err) => {
-        setPreviewGuideError(err instanceof Error ? err.message : "공략 정보 요청 실패");
+        console.error("[pack-reveal-modal] preview guide load failed", err);
+        setPreviewGuideError("공략 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
       })
       .finally(() => setPreviewGuideLoading(false));
   }, [onLoadGuide]);
