@@ -40,7 +40,7 @@ async function main() {
   const r = await fetch(
     `${URL_BASE}/mvp_raw_listings?select=pid,name,description_preview,sku_id` +
     `&or=(${skuFilter})&listing_state=eq.active&first_seen_at=gte.${since}` +
-    `&or=(name.ilike.*정상해지*,name.ilike.*확정기변*,description_preview.ilike.*정상해지*,description_preview.ilike.*확정기변*)` +
+    `&or=(name.ilike.*정상해지*,name.ilike.*확정기변*,name.ilike.*전 통신사*,name.ilike.*타통신사*,name.ilike.*유심 꽂고*,name.ilike.*유심꽂고*,name.ilike.*무약정*,description_preview.ilike.*정상해지*,description_preview.ilike.*확정기변*,description_preview.ilike.*전 통신사*,description_preview.ilike.*타통신사*,description_preview.ilike.*유심 꽂고*,description_preview.ilike.*유심꽂고*,description_preview.ilike.*무약정*)` +
     `&limit=1000`,
     { headers: HDR },
   );
