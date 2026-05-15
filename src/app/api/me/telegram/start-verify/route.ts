@@ -60,7 +60,9 @@ export async function POST(req: Request) {
     }]),
   });
   if (!upsertRes.ok) {
-    return NextResponse.json({ error: `upsert failed: ${await upsertRes.text().catch(() => "")}` }, { status: 500 });
+    // Wave 106: raw postgres response 누출 차단.
+    console.error("[telegram/start-verify] upsert failed", { status: upsertRes.status, body: await upsertRes.text().catch(() => "") });
+    return NextResponse.json({ error: "verify_init_failed", message: "인증 코드 생성에 실패했어요. 잠시 후 다시 시도해주세요." }, { status: 500 });
   }
 
   return NextResponse.json({

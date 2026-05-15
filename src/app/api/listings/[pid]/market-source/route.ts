@@ -195,7 +195,11 @@ export async function GET(
       liveStats,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Wave 106: raw err.message 누출 차단.
+    console.error("[market-source] error", err);
+    return NextResponse.json(
+      { error: "market_source_failed", message: "시세 정보를 불러오지 못했어요." },
+      { status: 500 },
+    );
   }
 }

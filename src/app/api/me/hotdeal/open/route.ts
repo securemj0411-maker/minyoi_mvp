@@ -67,7 +67,9 @@ export async function POST(req: Request) {
     }),
   });
   if (!res.ok) {
-    return NextResponse.json({ error: `open failed: ${await res.text().catch(() => "")}` }, { status: 500 });
+    // Wave 106: raw postgres response 누출 차단.
+    console.error("[hotdeal/open] PATCH failed", { status: res.status, body: await res.text().catch(() => "") });
+    return NextResponse.json({ error: "open_failed", message: "핫딜을 열지 못했어요." }, { status: 500 });
   }
   const rows = (await res.json()) as Array<{ pid: number }>;
 

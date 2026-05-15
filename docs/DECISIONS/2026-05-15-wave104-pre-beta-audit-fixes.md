@@ -601,6 +601,50 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 다음: observability dashboard (별도 wave) 또는 e2e UX walkthrough.
 - commit: 1a1745f
 
+## 30. e2e UX walkthrough audit + err.message 누출 6개 일괄 fix
+
+- 시간: 2026-05-16 08:15 KST
+- 검토 (가입 → 첫 팩 → 결제 → 핫딜 흐름):
+  - **가입**: supabase auth (외부) + /me 첫 진입 시 AppNav가 `/api/credits/me` 호출 → `claimUserCredits` RPC → 첫 5크레딧 grant. 흐름 자연스러움.
+  - **첫 팩**: pack-open atomic RPC (Wave 60 검증). spend + record 통합 → race 없음.
+  - **결제**: subscribe RPC + idempotency (Wave 104 H3) + Pro 즉시 활성 (Wave 104 H1). #29 직전 smoke test 통과.
+  - **핫딜**: admin_users (#19) + 정책 변경 (#17) + sku_id fix (#16). 24개 알림 정상 발송 검증됨.
+  - 사용자 가입 → 첫 팩 → 결제 → 핫딜 흐름 모두 작동.
+
+### 30a. 발견 — err.message 누출 6개 endpoint (Wave 106 #11에서 빠뜨린 것 + 후속)
+
+| Endpoint | 패턴 | 위험 |
+|---|---|---|
+| `credits/me` | `const message = err.message; ...{ error: message }` | 사용자 첫 진입 critical |
+| `listings/[pid]/market-source` | 동일 | 매물 디테일 시 |
+| `admin/pool-listings` | 동일 | admin 전용이지만 일관성 |
+| `me/hotdeal/open` | `\`open failed: ${await res.text()}\`` template literal | postgres response body 그대로 |
+| `me/telegram/disconnect` | 동일 | 동일 |
+| `me/telegram/start-verify` | 동일 | 동일 |
+
+### 30b. 변경
+
+- 6개 동일 패턴: `console.error("[endpoint] context", err)` (raw 보존) + sanitized client response (`{ error: "<code>", message: "<한국어>" }`).
+- credits/me: "크레딧 정보를 불러오지 못했어요."
+- market-source: "시세 정보를 불러오지 못했어요."
+- pool-listings: "풀 목록을 불러오지 못했어요."
+- hotdeal/open: "핫딜을 열지 못했어요."
+- telegram/disconnect: "텔레그램 연결 해제에 실패했어요."
+- telegram/start-verify: "인증 코드 생성에 실패했어요. 잠시 후 다시 시도해주세요."
+
+### 30c. 검증
+
+- tsc clean.
+- 위험: 없음. console.error 로 raw 보존 → 디버깅 가능. memory `project_security_error_message_leak_review.md` 의 별도 wave 권장 사항 일부 해소 (총 9개 endpoint sanitize 됐음 — billing 3 + credits/me + market-source + pool-listings + hotdeal/open + telegram disconnect/start-verify).
+
+### 30d. e2e walkthrough 결론
+
+- 사용자 가입 → 첫 팩 → 결제 → 핫딜 흐름 정상.
+- 발견된 dead-end / 막힘 지점 0 (이전 wave에서 #13 retry CTA / #17 정책 변경 / #21 카테고리 공시 / #24 disabled 거짓 카테고리 등 다 fix됨).
+- 추가 fix 필요한 sweep = err.message 누출 6개 (이번에 박음).
+- 다음: marketing/legal/onboarding 측면은 더 audit할 항목 적음. observability dashboard (별도 wave) 또는 사용자 첫 가입 흐름 실제 시뮬 (real account).
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

@@ -43,7 +43,11 @@ export async function GET(req: Request) {
       userRef,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "credit load failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Wave 106: raw err.message 누출 차단 (#11 패턴 동일).
+    console.error("[credits/me] error", { userRef, err });
+    return NextResponse.json(
+      { error: "credit_load_failed", message: "크레딧 정보를 불러오지 못했어요." },
+      { status: 500 },
+    );
   }
 }

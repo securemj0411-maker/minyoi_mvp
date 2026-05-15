@@ -52,7 +52,9 @@ export async function POST(req: Request) {
     },
   );
   if (!res.ok) {
-    return NextResponse.json({ error: `disconnect failed: ${await res.text().catch(() => "")}` }, { status: 500 });
+    // Wave 106: raw postgres response 누출 차단.
+    console.error("[telegram/disconnect] PATCH failed", { status: res.status, body: await res.text().catch(() => "") });
+    return NextResponse.json({ error: "disconnect_failed", message: "텔레그램 연결 해제에 실패했어요." }, { status: 500 });
   }
   return NextResponse.json({ ok: true });
 }

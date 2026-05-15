@@ -248,7 +248,11 @@ export async function GET(req: NextRequest) {
       stats,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Wave 106: raw err.message 누출 차단 (admin 페이지지만 일관성).
+    console.error("[admin/pool-listings] error", err);
+    return NextResponse.json(
+      { error: "pool_listings_failed", message: "풀 목록을 불러오지 못했어요." },
+      { status: 500 },
+    );
   }
 }
