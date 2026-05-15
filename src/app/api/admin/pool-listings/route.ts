@@ -49,6 +49,8 @@ export async function GET(req: NextRequest) {
     profit_low: "expected_profit_max.asc",
     confidence_high: "confidence.desc",
     latest: "last_verified_at.desc",
+    // Wave 100: 매물이 풀에 진입한 시점 기준 (added_at). 최신 매물부터.
+    newest_added: "added_at.desc",
   };
   const order = orderClauseMap[sort] ?? "expected_profit_max.desc";
 

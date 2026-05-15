@@ -72,6 +72,7 @@ const STATUS_OPTIONS = [
 ];
 
 const SORT_OPTIONS = [
+  { v: "newest_added", label: "최신순 (풀 진입)" },
   { v: "profit_high", label: "차익 높은순" },
   { v: "profit_low", label: "차익 낮은순" },
   { v: "confidence_high", label: "신뢰도 높은순" },
