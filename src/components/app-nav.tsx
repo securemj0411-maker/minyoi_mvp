@@ -146,12 +146,29 @@ function ThemeToggle({
   );
 }
 
+function HamburgerIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+      <path d="M6 6l12 12M6 18L18 6" />
+    </svg>
+  );
+}
+
 export default function AppNav() {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [tokens, setTokens] = useState(0);
   const [infiniteCredits, setInfiniteCredits] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [adminOverride, setAdminOverride] = useState(false);
   const adminClickCountRef = useRef(0);
@@ -234,6 +251,20 @@ export default function AppNav() {
     return () => window.removeEventListener("pointerdown", handlePointerDown);
   }, [menuOpen]);
 
+  // mobile drawer: route 변경 시 자동 close, Esc 닫기, body scroll lock.
+  useEffect(() => { setMobileDrawerOpen(false); }, [pathname]);
+  useEffect(() => {
+    if (!mobileDrawerOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileDrawerOpen(false); };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [mobileDrawerOpen]);
+
   const handleSignOut = useCallback(async () => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
@@ -252,24 +283,38 @@ export default function AppNav() {
 
   return (
     <nav className="sticky top-0 z-40 border-b border-[#e2d9cb] bg-[#f8f4ec]/92 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
-      <div className="mx-auto grid max-w-[1380px] grid-cols-[auto_1fr] items-center gap-3 px-4 py-3 sm:px-6 md:grid-cols-[1fr_auto_1fr] lg:px-8">
+      <div className="mx-auto grid max-w-[1380px] grid-cols-[auto_1fr_auto] items-center gap-2 px-3 py-3 sm:px-6 md:grid-cols-[1fr_auto_1fr] md:gap-3 md:px-4 lg:px-8">
+        {/* 왼쪽: mobile = 햄버거, desktop = 로고 + admin dot */}
         <div className="flex items-center gap-2 md:justify-self-start">
+          <button
+            type="button"
+            onClick={() => setMobileDrawerOpen(true)}
+            aria-label="메뉴 열기"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#344136] transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800 md:hidden"
+          >
+            <HamburgerIcon />
+          </button>
           <button
             type="button"
             onClick={handleAdminDotClick}
             aria-label="admin-toggle"
-            className={`h-2 w-2 rounded-full transition-colors ${adminOverride ? "bg-emerald-500" : "bg-[#d6cdbc] dark:bg-zinc-700"}`}
+            className={`hidden h-2 w-2 rounded-full transition-colors md:block ${adminOverride ? "bg-emerald-500" : "bg-[#d6cdbc] dark:bg-zinc-700"}`}
           />
-          <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-sm font-black text-white shadow-md shadow-emerald-500/20">
-            M
-          </div>
-          <span className="font-black tracking-tight text-[#223127] dark:text-white">미뇨이</span>
-          <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:ring-emerald-900">
-            Beta
-          </span>
-        </Link>
+          <Link href="/" className="hidden items-center gap-2 md:flex">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-sm font-black text-white shadow-md shadow-emerald-500/20">
+              M
+            </div>
+            <span className="font-black tracking-tight text-[#223127] dark:text-white">미뇨이</span>
+            <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:ring-emerald-900">
+              Beta
+            </span>
+          </Link>
         </div>
+
+        {/* 가운데: mobile = "미뇨이" 텍스트, desktop = nav links */}
+        <Link href="/" className="flex items-center justify-self-center md:hidden">
+          <span className="text-base font-black tracking-tight text-[#223127] dark:text-white">미뇨이</span>
+        </Link>
 
         <div className="hidden items-center justify-self-center gap-1 md:flex">
           {navLinks.map((link) => (
@@ -288,9 +333,27 @@ export default function AppNav() {
         </div>
 
         <div className="flex items-center justify-self-end gap-1.5">
+          {/* mobile 전용: 로그인 시 대시보드 / 비로그인 시 로그인 */}
+          {user ? (
+            <Link
+              href="/me"
+              className="inline-flex h-9 items-center rounded-xl bg-[var(--brand-accent-strong)] px-3 text-xs font-black text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] transition hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-950 md:hidden"
+            >
+              대시보드
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex h-9 items-center rounded-xl border border-[#ddd4c7] bg-[#fbf8f2] px-3 text-xs font-black text-[#344136] shadow-[0_8px_18px_rgba(45,57,48,0.06)] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:hidden"
+            >
+              로그인
+            </Link>
+          )}
+
+          {/* desktop 전용: 기존 credits + account menu */}
           {user ? (
             <>
-              <div className="flex h-9 items-center gap-1.5 rounded-xl border border-[#cfd9c9] bg-[#edf4e8] px-2.5 shadow-[0_8px_16px_rgba(92,116,95,0.10)] dark:border-zinc-700/70 dark:bg-zinc-900">
+              <div className="hidden h-9 items-center gap-1.5 rounded-xl border border-[#cfd9c9] bg-[#edf4e8] px-2.5 shadow-[0_8px_16px_rgba(92,116,95,0.10)] dark:border-zinc-700/70 dark:bg-zinc-900 md:flex">
                 <CreditIcon size={20} className="shrink-0 drop-shadow-[0_1px_1px_rgba(63,42,10,0.25)]" />
                 <span className="text-xs font-black leading-none tabular-nums text-[#223127] dark:text-zinc-100">
                   {infiniteCredits ? "∞" : tokens}
@@ -299,12 +362,12 @@ export default function AppNav() {
               {admin ? (
                 <Link
                   href="/plans"
-                  className="hidden h-9 items-center rounded-xl border border-[#cfd9c9] bg-[#fbf8f2] px-2.5 text-xs font-black leading-none text-[#344136] shadow-[0_8px_18px_rgba(45,57,48,0.06)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 sm:inline-flex"
+                  className="hidden h-9 items-center rounded-xl border border-[#cfd9c9] bg-[#fbf8f2] px-2.5 text-xs font-black leading-none text-[#344136] shadow-[0_8px_18px_rgba(45,57,48,0.06)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:inline-flex"
                 >
                   충전하기
                 </Link>
               ) : null}
-              <div ref={menuRef} className="relative">
+              <div ref={menuRef} className="relative hidden md:block">
                 <button
                   type="button"
                   onClick={() => setMenuOpen((prev) => !prev)}
@@ -360,7 +423,7 @@ export default function AppNav() {
               <ThemeToggle variant="compact" className="hidden md:flex" />
               <Link
                 href="/login"
-                className="rounded-xl border border-[#ddd4c7] bg-[#fbf8f2] px-3 py-1.5 text-xs font-black text-[#344136] shadow-[0_8px_18px_rgba(45,57,48,0.06)] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                className="hidden rounded-xl border border-[#ddd4c7] bg-[#fbf8f2] px-3 py-1.5 text-xs font-black text-[#344136] shadow-[0_8px_18px_rgba(45,57,48,0.06)] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:inline-flex"
               >
                 카카오 로그인
               </Link>
@@ -368,6 +431,118 @@ export default function AppNav() {
           )}
         </div>
       </div>
+
+      {/* Mobile drawer */}
+      {mobileDrawerOpen && (
+        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setMobileDrawerOpen(false)}
+          />
+          <aside className="absolute inset-y-0 left-0 flex w-[78%] max-w-[320px] flex-col bg-[#f8f4ec] shadow-[0_24px_64px_rgba(34,49,39,0.24)] dark:bg-zinc-950">
+            {/* drawer header */}
+            <div className="flex items-center justify-between border-b border-[#e2d9cb] px-4 py-3 dark:border-zinc-800">
+              <Link href="/" onClick={() => setMobileDrawerOpen(false)} className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-sm font-black text-white shadow-md shadow-emerald-500/20">
+                  M
+                </div>
+                <span className="font-black tracking-tight text-[#223127] dark:text-white">미뇨이</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setMobileDrawerOpen(false)}
+                aria-label="메뉴 닫기"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            {/* nav links */}
+            <div className="flex-1 overflow-y-auto px-3 py-4">
+              <div className="space-y-1">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-black transition ${
+                      isActive(pathname, link.href)
+                        ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950"
+                        : "text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    }`}
+                  >
+                    <span>{link.label}</span>
+                    <span className="text-zinc-400">↗</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* bottom: account + credits + theme + actions */}
+            <div className="border-t border-[#e2d9cb] p-3 dark:border-zinc-800">
+              {user ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-900">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-sm font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
+                      {userInitial}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-black text-[#223127] dark:text-zinc-100">{userName}</div>
+                      {user.email ? (
+                        <div className="truncate text-xs font-semibold text-[#6b7269] dark:text-zinc-400">{user.email}</div>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl bg-[#edf4e8] px-3 py-2.5 dark:bg-zinc-900">
+                    <span className="text-xs font-black text-[#5d735f] dark:text-emerald-400">크레딧</span>
+                    <div className="flex items-center gap-1.5">
+                      <CreditIcon size={20} className="shrink-0" />
+                      <span className="text-sm font-black tabular-nums text-[#223127] dark:text-zinc-100">
+                        {infiniteCredits ? "∞" : tokens}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-900">
+                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#5d735f] dark:text-emerald-400">화면 모드</div>
+                    <ThemeToggle className="mt-2 w-full" />
+                  </div>
+                  <Link
+                    href="/plans"
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className="flex w-full items-center justify-between rounded-xl bg-[#fffaf1] px-3 py-2.5 text-sm font-bold text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  >
+                    <span>{admin ? "충전하기" : "요금제 관리"}</span>
+                    <span className="text-zinc-400">↗</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => { setMobileDrawerOpen(false); void handleSignOut(); }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-bold text-[#a04545] hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+                  >
+                    <span>로그아웃</span>
+                    <span>↗</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className="flex w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-sm font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950"
+                  >
+                    카카오 로그인
+                  </Link>
+                  <div className="rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-900">
+                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#5d735f] dark:text-emerald-400">화면 모드</div>
+                    <ThemeToggle className="mt-2 w-full" />
+                  </div>
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
+      )}
     </nav>
   );
 }
