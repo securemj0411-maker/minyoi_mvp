@@ -73,7 +73,7 @@ export const DEFAULT_SEARCH_QUERIES = [
 export const DEFAULT_CATEGORY_SWEEPS: { id: string; title: string; pageCount?: number }[] = [
   { id: "600700", title: "휴대폰", pageCount: 2 },     // Wave 101: fresh 47%, touched 134, page 1 추가
   { id: "600710", title: "태블릿", pageCount: 2 },     // Wave 101: fresh 18%, touched 139, page 1 추가
-  { id: "600720", title: "워치/밴드" },                 // touched 71 — page 0 안 차서 page 1 무의미
+  { id: "600720", title: "워치/밴드", pageCount: 2 },   // Wave 101.1: fresh 18%, touched 71. page 1이 빈 응답이라도 capture 손실 zero 안전마진
   { id: "600100", title: "PC/노트북" },                 // fresh 72%, touched 95 — 충분
   { id: "600300", title: "카메라/DSLR" },               // fresh 87%, touched 82 — 충분
   { id: "600500", title: "오디오/영상", pageCount: 2 }, // Wave 101: fresh 47%, touched 137, page 1 추가

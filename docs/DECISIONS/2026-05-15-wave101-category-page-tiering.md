@@ -63,8 +63,25 @@ CLAUDE.md 6 필드 포맷.
     GROUP BY query ORDER BY touched DESC;
     ```
 
+## 1.1 Wave 101.1 — 워치/밴드 600720 추가 (over-optimization 정정)
+
+- 시간: 2026-05-15 (Wave 101 직후)
+- 발견: owner 지적 — "fresh % 18% 카테고리에서 page 1을 빼는 건 위험. touched 71이라 page 1이 빈 응답이라도 capture 손실 zero. 빠뜨려서 놓치면 안 됨." (over-optimization 우려)
+- 변경:
+  - **[mvp/src/lib/pipeline-config.ts:76](mvp/src/lib/pipeline-config.ts:76)** 600720 워치/밴드에 `pageCount: 2` 추가.
+  - 5분 cron quota 1,536 → 1,632 fetch (+6.3% from Wave 101 baseline).
+- 검증:
+  - `npx tsc --noEmit` clean
+  - `npm run test:core` 139/139 pass
+- 위험:
+  - 매우 낮음. page 1이 빈 응답이면 API call 1회 추가 + 0 row write.
+  - 매물량이 96건 이상이면 page 1에서 추가 fresh capture (이게 owner 의도).
+- 다음:
+  - 30분~1시간 후 측정 시 워치/밴드 `new_30m` 변화 확인.
+  - 빈 응답 95%+면 그때 revert 검토 (over-optimization과 safety margin tradeoff 재평가).
+
 ## 2. 거론 금지
 
-- pageCount: 3 이상 (page 2 추가) — 측정 없이 무리. Wave 101 측정 후 결정.
-- 워치/밴드 600720 page 2 — touched 71 → page 0도 못 채우는 매물량. 효과 zero.
+- pageCount: 3 이상 (page 2 추가) — 측정 없이 무리. Wave 101.1 측정 후 결정.
+- 70%+ fresh 카테고리 (PC/노트북, 카메라, 게임기, 시계, 가전, 골프, 신발, 가방, 자전거) page 2 — fresh capture 충분, quota 낭비.
 - broad consolidation (전체 카테고리 동일 page 차등) — fresh capture와 API quota tradeoff 무시한 단순화.
