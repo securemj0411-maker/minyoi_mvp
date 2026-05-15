@@ -106,13 +106,28 @@ export function buildCandidatePoolRows(input: {
 
     // 2026-05-15 (사용자 코멘트 pid 407879893): multi_device_bundle 매물 풀 차단.
     // 예: "아이폰17 + 애플워치 SE3" — 양쪽 카테고리 시세 어느 쪽과도 정확히 비교 불가.
-    // 단품 시세 대비 차익 계산이 무의미 (가격이 두 device 합산이라 항상 비싸 보임 OR
-    // 한쪽 SKU로 잘못 분류돼 양쪽 풀 침투 위험).
-    // applecare_premium/accessory_bundle은 pool 허용(꿀)이지만, 본품 둘은 다름.
+    //
+    // Wave 106 (사용자 정확도 우선 정책 강화): 옛 정책은 accessory_bundle / new_or_open_box /
+    // applecare_premium 매물 "풀 허용(꿀)" 이었지만 사용자 입장에서:
+    //   - bundle 매물 = 액세서리 가격 합산이라 차익 inflated 또는 비교 어려움
+    //   - new_or_open_box (미개봉) = 정상 중고 시세와 다른 그룹 → 사용자 카드에서 잘못된 차익
+    //   - applecare_premium = 애플케어 가치 미반영 → 정상 시세 대비 비싸 보여 차익 작게 표시
+    // 사용자 정확도 직격이라 풀 진입도 차단. 시세 sample 제외 (tick-pipeline.ts:2484 line) 와 일관.
     const preCheckNotes = (input.parsedByPid.get(pid)?.parsed_json?.condition_notes as string[] | undefined) ?? [];
-    if (preCheckNotes.includes("multi_device_bundle")) {
+    const POOL_BLOCK_NOTES = [
+      "multi_device_bundle",
+      "accessory_bundle",
+      "new_or_open_box",
+      "applecare_premium",
+      "low_battery_health",
+      "display_defect",
+      "screen_replaced",
+      "faceid_issue",
+    ];
+    const noteHit = POOL_BLOCK_NOTES.find((n) => preCheckNotes.includes(n));
+    if (noteHit) {
       skipped += 1;
-      invalidations.push({ pid, reason: "multi_device_bundle" });
+      invalidations.push({ pid, reason: `condition_note_${noteHit}` });
       continue;
     }
 
@@ -131,6 +146,15 @@ export function buildCandidatePoolRows(input: {
     const parsed = input.parsedByPid.get(pid);
     const sku = input.catalogById.get(row.skuId ?? "");
     const category = parsed?.category ?? sku?.category ?? null;
+
+    // Wave 106: smartphone carrier 미명시 매물 풀 진입 차단 (자급제 vs 통신사 시세 차이 큼).
+    // 자급제 명시 안 된 매물 = 통신사 매물일 가능성 → 자급제 시세 (비싸게) 와 비교 시 차익 inflated.
+    // 정확성 우선 §12b — 명시 안 된 매물 풀 진입 X.
+    if (category === "smartphone" && !parsed?.carrier) {
+      skipped += 1;
+      invalidations.push({ pid, reason: "smartphone_carrier_not_specified" });
+      continue;
+    }
 
     // Wave 106: comparable_key 에 critical_unknown 토큰 박힌 매물 풀 진입 차단 (systemic).
     // option-parser.ts:criticalUnknown 정의 — 카테고리별 critical:

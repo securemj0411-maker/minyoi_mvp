@@ -2484,6 +2484,13 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     if (conditionNotes.includes("display_defect")) continue;
     if (conditionNotes.includes("screen_replaced")) continue;
     if (conditionNotes.includes("faceid_issue")) continue;
+    // Wave 106 (베타테스터 시세 inflated root cause): 새상품/미개봉 + 애플케어 프리미엄 +
+    // 배터리 100% 새것 같은 매물은 정상 중고 시세 baseline 와 다른 그룹.
+    // sample 에 들어가면 active_median 끌어올려서 다른 정상 매물의 sku_median 잘못 계산.
+    // market-source-debug 비교군 fetch 단에선 이미 제외 (Wave 91 line 124) — daily aggregate 도 일관 적용.
+    if (conditionNotes.includes("new_or_open_box")) continue;
+    if (conditionNotes.includes("applecare_premium")) continue;
+    if (conditionNotes.includes("low_battery_health")) continue;
     // 2026-05-15 (사용자 코멘트 pid 404436811 / 404643880 / 401500642):
     // missing_suspect 매물이 6시간+ 안 보이면 사실상 사라진 상태. lifecycle worker가
     // disappeared로 전환 안 했더라도 시세 비교군에서 빼서 옛 매물 잔존 왜곡 방지.

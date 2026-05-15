@@ -808,6 +808,50 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 43. aggressive 정확도 sweep — sample inflation + bundle/new + carrier null
+
+- 시간: 2026-05-16 11:30 KST
+- MJ 강조 ("제발 더 많이, 더 높은 정확도"): aggressive systemic sweep.
+
+### 43a. market aggregate sample inflation root cause
+
+- 진단: ready 풀 199건 중 정확도 위협 매물 분포:
+  - bundle 20건 / new_or_open_box 36건 / applecare 1건 = **57건 (29%) 잠재 inflation**
+- root: `tick-pipeline.ts:2484` market_price_daily aggregate 가 sample 제외 — accessory_bundle / multi_device_bundle / display_defect / screen_replaced / faceid_issue 만 (Wave 90).
+  - **누락**: new_or_open_box (미개봉 — 정상 중고 시세보다 비쌈), applecare_premium (애플케어 프리미엄), low_battery_health (배터리 노후 — 정상보다 쌈).
+  - sample 에 들어가면 active_median 끌어올림 → 다른 정상 매물 sku_median 잘못 계산 → 사용자 카드에 잘못된 차익 표시.
+- code fix: tick-pipeline.ts:2487-2492 — `new_or_open_box / applecare_premium / low_battery_health` 추가 sample 제외.
+
+### 43b. condition_note 풀 진입 systemic gate (옛 정책 변경)
+
+- 옛 정책 (Wave 90): "applecare_premium / accessory_bundle 은 pool 허용(꿀)" — bundle 매물도 사용자 옵션.
+- **사용자 정확도 우선 정책 강화**: bundle / new / applecare / damaged 매물은 정상 중고와 시세 비교 어려움 → 사용자 카드에 잘못된 차익. 풀 진입도 차단.
+- code fix: candidate-pool-builder.ts — `POOL_BLOCK_NOTES` 8개 정의:
+  - multi_device_bundle / accessory_bundle / new_or_open_box / applecare_premium / low_battery_health / display_defect / screen_replaced / faceid_issue
+  - `find()` 매칭 → reason='condition_note_<note>' skip.
+- ready 풀 38건 즉시 invalidate (`wave106_inflated_sample_systemic`).
+
+### 43c. smartphone carrier 미명시 풀 차단
+
+- ready 풀 smartphone 5건 중 carrier=null 1건 (402445004) — 자급제 vs 통신사 mixed risk.
+- SQL invalidate + code gate 추가:
+  - `if (category === "smartphone" && !parsed?.carrier)` skip (`smartphone_carrier_not_specified`).
+- 자급제 명시 안 된 매물 = 통신사 매물 가능성 → 자급제 시세 (비쌈) 비교 시 차익 inflated.
+
+### 43d. 영향
+
+- 풀 매물 199 → 161 (38건 ↓ 19% 차감) + 1건 (smartphone) = 160건.
+- 사용자 정확도 ↑ but 풀 매물 수 ↓.
+- trade-off — 사용자 명시 정확도 우선 정책에 따라 진행.
+
+### 43e. 다음 systemic 후보 (보류)
+
+- comparable_key 일관성 — 동일 매물 다른 표기로 다른 key 박힐 가능성.
+- broad sku_name 카드 UX — generation 명시 표시.
+- 시세 sample 부족 SKU AI L2 review trigger.
+
+- commit: pending
+
 ## 42. systemic 검토 — critical_unknown 9개 토큰 일괄 차단 + trim path 검증
 
 - 시간: 2026-05-16 11:10 KST
