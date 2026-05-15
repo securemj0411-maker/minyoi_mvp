@@ -57,6 +57,26 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 위험: 정상 사용자가 한도 초과할 가능성 매우 낮음 (start-verify 5번/분 = UI에서 드물게 누름, subscribe 3번/분 = 결제는 1~2회면 끝).
 - 다음: H3 (subscribe RPC payment_key UNIQUE 인덱스 + 중복 가드) 별도 처리 필요. rate limit는 1차 방어, idempotency가 진짜 fix.
 
+## 5. Billing H1 — Pro 결제해도 기능 못 받음 (치명상)
+
+- 시간: 2026-05-16 02:10 KST
+- 발견: audit. `subscribe_mvp_plan` RPC가 `mvp_user_plans` 만 update, `mvp_user_credits.pro_until`은 안 건드림. 그러나 `getProStatus` (src/lib/user-subscription.ts) 가 `pro_until` 만 읽음 → 결제해도 isPro=false → 핫딜 알림 메뉴 안 보임 + 신선도 슬라이더 1~2시간 잠김. 환불 분쟁 직격타.
+- 변경: `getProStatus` 재작성. source of truth = `mvp_user_plans.plan_key`. 우선순위:
+  1. admin → auto-Pro (테스트/운영 편의, source="admin")
+  2. mvp_user_plans.plan_key === 'pro' AND (current_period_end null or future) AND status !== 'expired' (source="subscription")
+  3. legacy fallback: mvp_user_credits.pro_until > now (admin 수동 박기 back-compat, source="legacy_pro_until")
+  4. 그 외 → isPro=false
+- cancelAtPeriodEnd 정책: status='cancelled'여도 current_period_end 안이면 Pro 유지 (mid-cycle 취소 시 정상). expired는 false.
+- 검증: tsc clean, 139/139 test pass.
+- 위험:
+  - `/api/me/subscription` 호출이 supabase REST 1회 → 2회로 증가 (legacy fallback 분기). 정상 케이스(plan='pro')는 1회로 끝.
+  - claim_next_hotdeal_for_alert RPC는 여전히 `uc.pro_until is null or > now` 조건 (lax). 실제 Pro 게이팅은 UI 메뉴 차단으로 1차 방어. 정식 fix는 RPC를 mvp_user_plans 기반으로 재작성 (별도 wave).
+- 다음:
+  - start-verify route에 Pro check 추가 (defense in depth, free 사용자 직접 POST 차단).
+  - claim_next_hotdeal_for_alert RPC를 mvp_user_plans 조인 기반으로 재작성.
+  - H2 (만료 자동 다운그레이드 cron) 별도 fix.
+  - H3 (subscribe RPC payment_key UNIQUE + 중복 가드) 별도 fix.
+
 ## 보너스: audit false positive
 
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 이미 `checkCronAuth` 박혀있음. 스킵.
