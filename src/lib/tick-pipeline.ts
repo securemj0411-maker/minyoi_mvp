@@ -2445,6 +2445,10 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // Wave 91 (사용자 코멘트 pid 407135933): 배터리 효율 75% 매물이 일반 시세에 끼면 위험.
     // low_battery_health 매물은 시세 비교군에서 제외 (풀 진입은 OK, 싸면 차익 매물).
     if (conditionNotes.includes("low_battery_health")) continue;
+    // 2026-05-15 (사용자 코멘트 pid 397748787): 풀세트/풀박스/풀구성 매물(액세서리·매직마우스 포함)은
+    // 단품 시세와 비교 시 평균을 끌어올림. full_set 라벨 매물은 시세 집계에서 제외.
+    // 풀 진입은 별개 — 풀세트가 단품 시세보다 싸면 좋은 차익 매물 (그대로 노출).
+    if (conditionNotes.includes("full_set")) continue;
     const key = parsed.comparable_key;
     if (!byKey.has(key)) byKey.set(key, { rows: [], activeRows: [], soldRows: [], disappearedRows: [], skuId: row.sku_id });
     const group = byKey.get(key)!;

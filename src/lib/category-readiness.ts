@@ -236,9 +236,11 @@ export const LANE_READINESS: LaneReadinessMap = {
   },
   // Wave 75: Wave 67 신 SKU 측정 결과 ready 승격 (parseRate ≥ 90% + NRfalse ≥ 5).
   watch_gshock_dw5600: {
-    status: "ready",
+    // 2026-05-15: 운영자 결정 — 시계 카테고리 전체 차단 (모델 다양성/한정판 구분 어려움).
+    // 카테고리 watch=blocked + lane도 blocked로 통일.
+    status: "blocked",
     label: "Casio G-Shock DW-5600",
-    note: "Wave 67/74: 모델 코드 DW-5600 strict. 56 raw, parseRate 91% (NRfalse 51) 측정 후 승격.",
+    note: "Wave 67/74 ready 승격됐으나 2026-05-15 운영자 결정으로 차단 (시계 카테고리 전체).",
   },
   sport_golf_titleist_tsr2_driver: {
     status: "ready",
