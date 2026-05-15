@@ -9,6 +9,10 @@
 // - 같은 worker 30분 cooldown (mvp_cron_locks의 watchdog_alert_<name> mode 활용)
 //
 // tick worker 자체가 멈추면 못 잡음 — 그건 외부 모니터링(UptimeRobot 등)이 필요.
+//
+// 2026-05-15 fix: target별 lookback window 동적 결정 (alertAfterMinutes × 1.5).
+// 이전엔 전체 6시간 fixed lookback이었어서 24h 주기 worker (reference-price-refresh,
+// compliance-retention 등) false positive 발생.
 
 import { reportCriticalIncident } from "@/lib/operational-notifier";
 import { restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -39,21 +43,29 @@ const WATCHDOG_TARGETS: WatchdogTarget[] = [
 
 const COOLDOWN_MINUTES = 30;
 
-async function loadLastRunByWorker(): Promise<Map<string, Date>> {
-  // mvp_collect_runs는 큰 테이블이라 최근 6시간만 봄 (충분히 backstop)
-  const sinceIso = new Date(Date.now() - 6 * 3600 * 1000).toISOString();
-  const url = `${tableUrl("mvp_collect_runs")}?select=request_path,started_at&started_at=gte.${encodeURIComponent(sinceIso)}&order=started_at.desc&limit=2000`;
-  const res = await restFetch(url, { method: "GET", headers: serviceHeaders() });
-  const rows = (await res.json()) as Array<{ request_path: string | null; started_at: string }>;
-  const map = new Map<string, Date>();
-  for (const row of rows) {
-    if (!row.request_path) continue;
-    const existing = map.get(row.request_path);
-    const cur = new Date(row.started_at);
-    if (!existing || cur > existing) map.set(row.request_path, cur);
+function lookbackMinutesForTarget(target: WatchdogTarget): number {
+  // alertAfterMinutes × 1.5 (최소 6시간, 최대 48시간).
+  // - 1440분(24h) 주기 worker는 ~45h lookback → 정상 호출 1-2회 잡힘.
+  // - 2분 주기 worker는 minimum 6h lookback → 충분.
+  return Math.max(360, Math.min(Math.round(target.alertAfterMinutes * 1.5), 48 * 60));
+}
+
+async function loadLastRunForTarget(target: WatchdogTarget): Promise<Date | null> {
+  const lookbackMinutes = lookbackMinutesForTarget(target);
+  const sinceIso = new Date(Date.now() - lookbackMinutes * 60_000).toISOString();
+  // PostgREST `like` pattern: * in place of %.
+  // request_path은 "/api/cron/X?wait=1" 형태라 prefix matching.
+  const filterValue = `like.${target.requestPath}*`;
+  const url = `${tableUrl("mvp_collect_runs")}?select=started_at&request_path=${encodeURIComponent(filterValue)}&started_at=gte.${encodeURIComponent(sinceIso)}&order=started_at.desc&limit=1`;
+  try {
+    const res = await restFetch(url, { method: "GET", headers: serviceHeaders() });
+    if (!res.ok) return null;
+    const rows = (await res.json()) as Array<{ started_at: string }>;
+    if (rows.length === 0) return null;
+    return new Date(rows[0].started_at);
+  } catch {
+    return null;
   }
-  // request_path는 "/api/cron/lifecycle-worker?wait=1" 같은 형태. prefix matching 위해 별도 처리.
-  return map;
 }
 
 async function tryAcquireAlertCooldown(workerName: string): Promise<boolean> {
@@ -88,27 +100,31 @@ export async function checkCronWatchdog(): Promise<{
   let alertsSent = 0;
 
   try {
-    const lastRunMap = await loadLastRunByWorker();
+    // target별 lookback 동적 (24h 주기 worker도 정확히 잡힘). 병렬 fetch (10개 쿼리 동시).
+    const targetsWithLastRun = await Promise.all(
+      WATCHDOG_TARGETS.map(async (target) => ({
+        target,
+        lastRun: await loadLastRunForTarget(target),
+      })),
+    );
+
     const now = Date.now();
 
-    for (const target of WATCHDOG_TARGETS) {
-      // request_path는 "/api/cron/X?wait=1" 형태 — prefix 매칭
-      let lastRun: Date | null = null;
-      for (const [path, time] of lastRunMap.entries()) {
-        if (path.startsWith(target.requestPath)) {
-          if (!lastRun || time > lastRun) lastRun = time;
-        }
-      }
-
+    for (const { target, lastRun } of targetsWithLastRun) {
       if (!lastRun) {
-        // 6시간 안에 한 번도 안 돔 — 무조건 stale
-        stale.push({ worker: target.name, minutesSinceLast: 360 });
+        // lookback window 안에 한 번도 안 돔 → stale.
+        const lookback = lookbackMinutesForTarget(target);
+        stale.push({ worker: target.name, minutesSinceLast: lookback });
         const acquired = await tryAcquireAlertCooldown(target.name);
         if (acquired) {
           await reportCriticalIncident({
             source: "cron_watchdog",
-            summary: `[${target.name}] 6시간+ 안 돔 (예상 ${target.expectedMinutes}분 주기)`,
-            context: { worker: target.name, expectedMinutes: target.expectedMinutes },
+            summary: `[${target.name}] ${Math.floor(lookback / 60)}시간+ 안 돔 (예상 ${target.expectedMinutes}분 주기)`,
+            context: {
+              worker: target.name,
+              expectedMinutes: target.expectedMinutes,
+              lookbackMinutes: lookback,
+            },
           });
           alertsSent += 1;
         }
