@@ -71,24 +71,26 @@
 - **fashion (wave92) 매물 263건** — fashion parser 가 v2/v3 등으로 업그레이드되면 별도 reparse 필요. 현재 매커니즘에 없음. 별 wave.
 - **mass reparse 가 sku_id 없던 raw 666건의 sku_id 회복** — score 계산에서도 sku_id 영향 받음. 다음 tick 후 score 재계산 시 차이 발생 가능 (긍정: 비교군 정확. 부정: 옛 score 와 다름).
 
-## 8. 추천 페이지 회전 + 평균 차익 chip 활성화
+## 8. 추천 페이지 평균 차익 chip + 개별 매물 회전 chip 정밀화
 
 - 시간: 2026-05-15
 - 발견: 외부 의견 수용 — "회전 기간 UI 전면화 + 백테스트 데이터 = 자본 묶임 두려움 해체. 신규 사용자 친화도 향상". 리셀 lane 신설 보류 (전업 리셀러 Phase 2).
-- 변경:
+- 1차 시도 (revert): 추천 페이지에 회전 chip (그룹 평균 medianHoursToSold) 추가 시도. 측정 결과 sample 작음 (band 별 5~8 SKU, ~2시간 비현실적) → 사용자 피드백 "버려" → revert. 그룹 평균은 representative X.
+- 최종 변경:
   - `src/app/api/packs/preview-inventory/route.ts`:
-    - `PoolRow.comparable_key` 추가 (select 절 + type)
-    - matchingPool 추출 → `velocityMedianDays`, `velocitySampleCount`, `medianProfitWon` 계산
-    - `mvp_market_velocity_daily` join (high/medium confidence 만). comparable_key 별 최신 1개 → median.
-    - response 에 3 필드 추가
+    - matchingPool 추출 → `medianProfitWon` 계산 (mvp_candidate_pool.expected_profit_min median)
+    - response 에 1 필드 추가
   - `src/components/recommendation-workspace.tsx`:
-    - `PreviewInventoryResp` 3 필드 확장
-    - "자세한 정보 ▼" 안 회전 chip placeholder 활성화 (line 549) + 평균 차익 chip 신규 추가
-    - **prominent 위치**: "추천 상품 수" 박스 헤더 아래 chip 박스 추가 (line 607~) — 클릭 안 해도 보임
+    - `PreviewInventoryResp` `medianProfitWon` 추가
+    - "자세한 정보 ▼" 안 평균 차익 chip
+    - **prominent 위치**: "추천 상품 수" 박스 헤더 아래 chip 박스 — 클릭 안 해도 보임
+  - `src/components/pack-reveal-modal.tsx:208-216` (사용자 피드백 — "빠름/늦음 추상이 아니라 평균 일수"):
+    - 옛: `"회전 빠름 (3일내)"` / `"회전 늦음"` (추상 톤)
+    - 새: 24h 미만 → `"X시간 회전"`, 24h 이상 → `"평균 X.X일 회전"` (실제 일수)
+    - tone: 72h 이하 good / 336h 이상 warn / 그 사이 info
 - 검증:
-  - `curl /api/packs/preview-inventory?band=2&priceMax=500000` → `velocityMedianDays:0.1, velocitySampleCount:5, medianProfitWon:55637`
-  - UI: 24h 미만 → "⚡ ~2시간", 24h 이상 → "X일". 차익 1만원+ → "X만원". sample 3 미만 → "데이터 부족" fallback.
+  - `curl /api/packs/preview-inventory?band=2&priceMax=500000` → `medianProfitWon:55785` 확인.
+  - UI: 차익 1만원+ → "X만원". 데이터 부족 → fallback.
 - 위험:
-  - velocity sample 작음 (band 별 5~8 SKU). representative X. 단 사용자에게 "(N개 SKU 기준)" 명시. 자세한 정보 안 caveat 유지.
-  - velocity clock_basis = `first_seen_to_sold_detected`. "사용자 매입 후 재판매까지" 와 다름 (proxy).
   - 평균 차익은 mvp_candidate_pool.expected_profit_min 기반 (시세 추정). 실제 매입가 협상에 따라 다름.
+  - 개별 매물 chip 의 medianHoursToSold 도 clock_basis = first_seen_to_sold_detected. "사용자 매입 후 재판매까지" 와 다른 proxy. 단 매물별 데이터 (그룹 평균 X) 라 정직함.
