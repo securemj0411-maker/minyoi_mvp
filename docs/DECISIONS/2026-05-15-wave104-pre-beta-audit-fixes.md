@@ -334,7 +334,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 검증: tsc clean.
 - 위험: 없음 (광고 정직화). 단 신선도 슬라이더는 Plus 게이팅 별도 결정 사항 (현재 모든 사용자 가능 — 정책으로 박을지 사용자 결정).
 - 다음: 매물 source 다양성 / 풀 충분성 진단 (베타 사용자가 실제 어떤 카테고리 보게 되는가). memory: Wave 90 후속.
-- commit: pending
+- commit: 96977f5
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
