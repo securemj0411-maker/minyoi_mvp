@@ -827,7 +827,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
   - madTrim 자체가 5건 미만은 trim 안 함 → 동일 동작 보존.
   - 정상 매물 1건이 트림될 가능성 (MAD threshold = 3 × 1.4826 × MAD) — 통계적으로 보수적 임계값이라 false positive 작음.
 - 다음: 외부 손상 / 액정 깨짐 differential 비교 (MJ 코멘트 #4/#12) 또는 special edition catalog 보강 (#2).
-- commit: pending
+- commit: 178ec9a
 
 ## 40. iPad 12.9 2018→2020 진짜 root cause + unknown_chip 풀 진입 차단
 

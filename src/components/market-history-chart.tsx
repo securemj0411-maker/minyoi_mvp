@@ -137,7 +137,7 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
           </span>
         </span>
       </div>
-      <svg viewBox={`0 0 ${width} ${height}`} className="mt-1 h-[130px] w-full">
+      <svg viewBox={`0 0 ${width} ${height}`} className="mt-1 h-[150px] w-full">
         {/* y 가이드 */}
         <line x1={padX} y1={padTop} x2={padX} y2={height - padBottom} stroke="#e5e7eb" strokeWidth="0.5" />
         <line x1={padX} y1={height - padBottom} x2={width - padR} y2={height - padBottom} stroke="#e5e7eb" strokeWidth="0.5" />
