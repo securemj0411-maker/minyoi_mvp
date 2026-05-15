@@ -215,7 +215,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 검증: tsc clean.
 - 위험: 시각적으로 살짝 커짐. mobile에서 rhythm 미세 변화. 기능 영향 X.
 - 다음: 다른 cancel/destructive UI (account-panel.tsx의 "탭해서 변경" 등) 점검 권장. 현재 로깅만.
-- commit: pending
+- commit: 8e8787b
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
