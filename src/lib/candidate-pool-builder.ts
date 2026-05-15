@@ -20,6 +20,12 @@ import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/prof
 // 일반 사용자 결제 부담 + 단일 매물 risk + 한정판/고가 모델 노이즈 차단.
 const MAX_POOL_PRICE_KRW = 2_000_000;
 
+// Wave 132 (2026-05-16): 댓글 수 상한 — 사용자 정책.
+// "댓글 8개 이상 = 흥정 호가 괴리 큼. 추천해봤자 의미 없음 → pool 진입 X".
+// num_comment는 detail-worker가 patchRows("mvp_raw_listings", {num_comment: detail.commentCount})로 박음.
+// NULL = detail 아직 미수집 매물 (gate 통과 — 다음 tick에서 enrich 후 재평가).
+const MAX_POOL_NUM_COMMENT = 8;
+
 // Wave 129 (2026-05-16): parse_confidence threshold 명시 — 사업 보고서 L1.
 // "AI normalization 매칭 confidence < 0.85면 매물 풀에서 제외".
 // 우리 정책 (LAUNCH_PLAN 12b precision-first):
@@ -45,6 +51,10 @@ export type PoolCandidateInput = {
   score: number;
   scoreFlags: string[];
   saleStatus?: string | null;
+  // Wave 132 (2026-05-16): 댓글 수 — 8개 이상이면 pool 진입 차단 (사용자 정책).
+  // 흥정/문의 댓글 많음 = 호가-실거래 괴리 큼 → 추천 의미 없음.
+  // NULL = detail 아직 미수집 (검증 못 했으므로 일단 통과).
+  numComment?: number | null;
 };
 
 export type PoolParsedInput = {
@@ -114,6 +124,14 @@ export function buildCandidatePoolRows(input: {
     if (Number.isFinite(row.price) && row.price > MAX_POOL_PRICE_KRW) {
       skipped += 1;
       invalidations.push({ pid, reason: "price_above_pool_max" });
+      continue;
+    }
+
+    // Wave 132 (2026-05-16): 댓글 수 >= 8 매물 풀 진입 차단 (사용자 정책).
+    // 흥정/문의 많음 = 호가-실거래 괴리 → 추천 의미 없음. NULL은 통과 (detail 미수집 → 다음 tick에서 재평가).
+    if (row.numComment != null && Number.isFinite(row.numComment) && row.numComment >= MAX_POOL_NUM_COMMENT) {
+      skipped += 1;
+      invalidations.push({ pid, reason: `num_comment_above_${MAX_POOL_NUM_COMMENT}` });
       continue;
     }
 

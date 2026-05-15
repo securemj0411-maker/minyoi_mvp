@@ -902,6 +902,8 @@ export type PipelineRow = {
   parserUnknownParts?: string[];
   parserCriticalUnknown?: string[];
   aiEscrowKind?: string | null;
+  // Wave 132 (2026-05-16): 댓글 수 — candidate-pool-builder가 >= 8 차단 gate 사용.
+  numComment?: number | null;
   shippingFee: number;
   shippingFeeGeneral: number | null;
   shippingSource: string;
