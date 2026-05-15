@@ -4,6 +4,7 @@ import { evaluatePhase2Escrow, isPhase2EscrowEnabled } from "@/lib/ai-l2-escrow"
 import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
 import {
+  madTrim,
   median,
   percentileRank,
   trimmedSellerMarket,
@@ -3521,7 +3522,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     //   3. coarsePrices (sku_id 기준 broad 평균) — broad SKU 부정확 → 폐기
     //   4. MSRP × 0.5 fallback — false positive 양산 → 폐기
     // sample 부족 SKU는 sku_median=0 → bandFromProfit null → 풀 진입 차단 (정확성 우선 §12b)
-    const fallbackMedian = prices.length >= 5 ? median(prices) : 0;
+    // Wave 106 (MJ 코멘트 #3 갤럭시 워치7): outlier 1건이 평균 끌어올림 — madTrim 적용으로
+    // ±3 MAD 벗어난 outlier 제거. 5건 이상이면 trim, 미만이면 raw median (madTrim 자체가 5건 미만은 trim X).
+    const fallbackMedian = prices.length >= 5 ? madTrim(prices).medianValue : 0;
     const skuMedian = hasTrustedMarket ? trustedMedian : fallbackMedian;
     const priceGap = skuMedian <= 0 ? 0 : Math.max(0, Math.min(1, (skuMedian - row.price) / skuMedian));
     const velocity = percentileRank(favsByMarket.get(marketKey) ?? [], row.num_faved);

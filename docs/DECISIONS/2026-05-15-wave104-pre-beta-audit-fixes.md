@@ -808,6 +808,27 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 41. fallbackMedian outlier trim 누락 fix (MJ 코멘트 #3)
+
+- 시간: 2026-05-16 10:55 KST
+- MJ 코멘트 #3 (갤럭시 워치7 18건 비교군): "아웃라이어 한명이 평균 존나 올리는거 같은데 우리 아웃라이어 상하위 떼고 평균내는거 아니였음??"
+- 검토:
+  - `market-math.ts:35` `madTrim` 함수 박혀있음 (MAD 기반 outlier 제거, 5건 이상이면 trim).
+  - `tick-pipeline.ts:3524` `fallbackMedian = prices.length >= 5 ? median(prices) : 0` — **plain median, MAD trim 안 적용** ❌
+  - trustedMedian (mvp_market_price_daily) 는 daily aggregate 단계에서 trim 됐을 가능성 있지만, fallback path 는 raw median.
+- Fix:
+  - `tick-pipeline.ts:3524` `median(prices)` → `madTrim(prices).medianValue` 변경.
+  - import 에 `madTrim` 추가.
+- 효과:
+  - trustedMarket 없는 매물의 fallback 시세 = MAD trim 후 median.
+  - outlier 1건이 평균 끌어올리는 케이스 (MJ 코멘트 갤럭시 워치7 ₩340k vs 다른 145-200k) 차단.
+- 검증: tsc 별개 컴포넌트 에러 (market-history-chart.tsx — 내 변경 무관, 다른 작업 잔재).
+- 위험:
+  - madTrim 자체가 5건 미만은 trim 안 함 → 동일 동작 보존.
+  - 정상 매물 1건이 트림될 가능성 (MAD threshold = 3 × 1.4826 × MAD) — 통계적으로 보수적 임계값이라 false positive 작음.
+- 다음: 외부 손상 / 액정 깨짐 differential 비교 (MJ 코멘트 #4/#12) 또는 special edition catalog 보강 (#2).
+- commit: pending
+
 ## 40. iPad 12.9 2018→2020 진짜 root cause + unknown_chip 풀 진입 차단
 
 - 시간: 2026-05-16 10:40 KST

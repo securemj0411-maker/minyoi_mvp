@@ -72,14 +72,16 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
     );
   }
 
-  // 좌표 계산. 우측은 가격 라벨 공간 확보를 위해 padR 더 크게.
+  // 좌표 계산. 우측은 가격 라벨 공간 확보 위해 padR 더 크게.
+  // 하단 padBottom은 sold 날짜 X축 라벨 공간.
   const width = 360;
-  const height = 130;
+  const height = 150;
   const padX = 28;
   const padR = 60;
-  const padY = 14;
+  const padTop = 14;
+  const padBottom = 28;
   const innerW = width - padX - padR;
-  const innerH = height - padY * 2;
+  const innerH = height - padTop - padBottom;
 
   const allPrices: number[] = [];
   for (const p of data) {
@@ -100,7 +102,7 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
     return padX + (idx / Math.max(1, data!.length - 1)) * innerW;
   }
   function y(price: number) {
-    return padY + innerH - ((price - minP) / rangeP) * innerH;
+    return padTop + innerH - ((price - minP) / rangeP) * innerH;
   }
 
   const activePath = data
@@ -137,11 +139,35 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
       </div>
       <svg viewBox={`0 0 ${width} ${height}`} className="mt-1 h-[130px] w-full">
         {/* y 가이드 */}
-        <line x1={padX} y1={padY} x2={padX} y2={height - padY} stroke="#e5e7eb" strokeWidth="0.5" />
-        <line x1={padX} y1={height - padY} x2={width - padR} y2={height - padY} stroke="#e5e7eb" strokeWidth="0.5" />
+        <line x1={padX} y1={padTop} x2={padX} y2={height - padBottom} stroke="#e5e7eb" strokeWidth="0.5" />
+        <line x1={padX} y1={height - padBottom} x2={width - padR} y2={height - padBottom} stroke="#e5e7eb" strokeWidth="0.5" />
         {/* min/max 라벨 */}
-        <text x={4} y={padY + 4} fontSize="9" fill="#9ca3af">{krwShort(maxP)}</text>
-        <text x={4} y={height - padY} fontSize="9" fill="#9ca3af">{krwShort(minP)}</text>
+        <text x={4} y={padTop + 4} fontSize="9" fill="#9ca3af">{krwShort(maxP)}</text>
+        <text x={4} y={height - padBottom} fontSize="9" fill="#9ca3af">{krwShort(minP)}</text>
+        {/* 거래 날짜 X축 라벨 — sold 있는 날만 표시 (호가는 매일 누적이라 의미 X) */}
+        {(() => {
+          const soldDays = data
+            .map((p, i) => (p.sold != null ? { i, date: p.date } : null))
+            .filter((v): v is { i: number; date: string } => v !== null);
+          // 너무 많으면 일부만 (균등 sampling, max 6개)
+          const maxLabels = 6;
+          const shown = soldDays.length <= maxLabels
+            ? soldDays
+            : soldDays.filter((_, idx) => idx % Math.ceil(soldDays.length / maxLabels) === 0).slice(0, maxLabels);
+          return shown.map((s) => {
+            const xPos = x(s.i);
+            const month = Number(s.date.slice(5, 7));
+            const day = Number(s.date.slice(8, 10));
+            return (
+              <g key={s.date}>
+                <line x1={xPos} y1={height - padBottom} x2={xPos} y2={height - padBottom + 3} stroke="#3b82f6" strokeWidth="1" />
+                <text x={xPos} y={height - padBottom + 13} fontSize="9" fill="#3b82f6" textAnchor="middle">
+                  {month}/{day}
+                </text>
+              </g>
+            );
+          });
+        })()}
         {/* active 라인 (emerald) */}
         {activePath ? <path d={activePath} fill="none" stroke="#10b981" strokeWidth="1.5" /> : null}
         {/* sold 라인 (blue) */}
