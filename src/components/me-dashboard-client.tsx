@@ -95,10 +95,25 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
   const [activeView, setActiveView] = useState<DashboardView>(initialViewFromUrl);
   const [isPro, setIsPro] = useState<boolean>(false);
   const [shadowMode, setShadowMode] = useState<boolean>(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
 
   useEffect(() => {
     setShadowMode(hasAdminShadowClient());
+    try {
+      setSidebarCollapsed(window.localStorage.getItem("me_sidebar_collapsed") === "1");
+    } catch {}
   }, []);
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        if (next) window.localStorage.setItem("me_sidebar_collapsed", "1");
+        else window.localStorage.removeItem("me_sidebar_collapsed");
+      } catch {}
+      return next;
+    });
+  };
 
   const effectiveAdmin = isAdminUser(user) && !shadowMode;
 
@@ -223,19 +238,29 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           lg+ = 2 col grid. 이전에 mobile에서도 `grid` 박혀 있어서 child의
           `lg:col-start-2`가 일부 브라우저 implicit-grid 처리로 빈 column 만들어
           content가 오른쪽으로 치우치는 보고 있었음 → mobile에선 grid 비활성. */}
-      <div className="flex min-h-screen flex-col lg:grid lg:grid-cols-[220px_minmax(0,1fr)]">
+      <div className={`flex min-h-screen flex-col lg:grid ${sidebarCollapsed ? "lg:grid-cols-[44px_minmax(0,1fr)]" : "lg:grid-cols-[220px_minmax(0,1fr)]"} transition-[grid-template-columns] duration-200`}>
         {/* Mobile: 메뉴 높이를 52px 로 고정. playbook-overview.tsx 의 sticky TOC `top-[112px]`
             (60px nav + 52px 메뉴) 가정과 정확히 맞춰서 5px 갭 방지. 줄바꿈은 구조상
             (overflow-x-auto + shrink-0 + whitespace-nowrap) 이미 차단됨. */}
         <aside className="sticky top-[60px] z-30 h-[52px] border-b border-[#e2d9cb] bg-[#f8f4ec]/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:top-[60px] lg:row-span-2 lg:h-[calc(100dvh-60px)] lg:border-b-0 lg:border-r lg:bg-[#f8f4ec] lg:backdrop-blur-none xl:row-span-1">
-          <div className="flex h-full items-center px-3 py-1 lg:block lg:h-auto lg:px-4 lg:py-5">
-            <div className="hidden px-2 pb-3 lg:block">
+          <div className="flex h-full items-center px-3 py-1 lg:block lg:h-auto lg:px-2 lg:py-3">
+            {/* desktop only: collapse toggle 버튼 */}
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="hidden lg:flex h-7 w-7 items-center justify-center rounded-md text-[#5a6658] hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 mx-auto lg:mb-2"
+              aria-label={sidebarCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
+              title={sidebarCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
+            >
+              <span className="text-base font-black leading-none">{sidebarCollapsed ? "›" : "‹"}</span>
+            </button>
+            <div className={`hidden px-2 pb-3 lg:block ${sidebarCollapsed ? "lg:hidden" : ""}`}>
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
                 My Dashboard
               </p>
               <div className="mt-1 text-sm font-black text-[#223127] dark:text-zinc-100">작업 메뉴</div>
             </div>
-            <div className="-mx-1 flex w-full items-center gap-1.5 overflow-x-auto px-1 lg:mx-0 lg:block lg:w-auto lg:space-y-1 lg:overflow-visible lg:px-0">
+            <div className={`-mx-1 flex w-full items-center gap-1.5 overflow-x-auto px-1 lg:mx-0 lg:block lg:w-auto lg:space-y-1 lg:overflow-visible lg:px-0 ${sidebarCollapsed ? "lg:hidden" : ""}`}>
               {(["recommend", "history", "guides", ...(isPro || effectiveAdmin ? (["hotdeal-alerts"] as const) : []), ...(effectiveAdmin ? (["admin-pool"] as const) : [])] as const).map((v) => {
                 const label = v === "recommend" ? "추천 받기"
                   : v === "history" ? "나의 상품"
