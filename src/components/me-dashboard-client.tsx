@@ -149,7 +149,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
         <div className="grid min-h-screen lg:grid-cols-[220px_minmax(0,1fr)]">
           {/* Sidebar skeleton — layout 점프 방지 */}
           <aside className="border-b border-[#e2d9cb] bg-[#f8f4ec] dark:border-zinc-800 dark:bg-zinc-950 lg:border-b-0 lg:border-r">
-            <div className="px-4 py-4 lg:px-4 lg:py-5">
+            <div className="px-3 py-2 lg:px-4 lg:py-5">
               <div className="space-y-2 px-2 pb-3">
                 <div className="h-2.5 w-24 animate-pulse rounded bg-[#e7dece] dark:bg-zinc-800" />
                 <div className="h-4 w-32 animate-pulse rounded bg-[#e7dece] dark:bg-zinc-800" />
@@ -165,7 +165,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
             </div>
           </aside>
           {/* Main content skeleton — 추천 카드 grid 자리 */}
-          <section className="px-4 py-6 lg:col-start-2 lg:px-5 lg:py-8">
+          <section className="px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             <div className="space-y-4">
               <div className="h-6 w-48 animate-pulse rounded bg-[#e7dece] dark:bg-zinc-800" />
               <div className="h-4 w-72 max-w-full animate-pulse rounded bg-[#e7dece] dark:bg-zinc-800" />
