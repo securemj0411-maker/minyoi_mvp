@@ -4,24 +4,25 @@
 
 ## 보류 항목
 
-### -1. (Iteration 2 발견 🚨) **4개 cron 완전 미작동** — 가장 시급
-mvp_collect_runs 조회 결과 다음 worker가 24h~48h 0회 호출:
-- `landing-showcases` (10분 주기 — 24h 0회): 랜딩 캐시 갱신 안 됨 → 사이트 노출 stale 가능성
-- `housekeeper-ai-cache-prune` (6h 주기 — 48h 0회): AI cache 누적
-- `compliance-retention` (1d 주기 — 48h 0회): retention/cleanup 누락
-- `reference-price-refresh` (1d 주기 — 0회): 다나와 reference price 갱신 안 됨
+### -1. (Iteration 2 발견) ~~4개 cron 미등록~~ — **2026-05-16 베타 보류 결정**
 
-원인 추정: QStash schedule 미등록 또는 잘못된 endpoint/secret.
+**사용자 결정 (2026-05-16)**: 베타 단계 4 cron 모두 QStash 등록 보류.
 
-→ 사용자 액션 필수: QStash console에서 4개 schedule 확인:
-- `landing-showcases`: `*/10 * * * *`
-- `housekeeper-ai-cache-prune`: `0 */6 * * *`
-- `compliance-retention`: `0 18 * * *` (또는 적당히)
-- `reference-price-refresh`: `0 19 * * *`
+| Cron | 안 돌면 영향 | 베타 risk | 재등록 trigger |
+|---|---|---|---|
+| `landing-showcases` (10분) | 랜딩 caches stale | 사용자 7명이라 영향 작음 | 사용자 100명+ |
+| `housekeeper-ai-cache-prune` (6h) | AI cache DB 누적 | cache 작아서 영향 거의 없음 | DB 사이즈 큰 폭 증가 시 |
+| `compliance-retention` (1d) | raw_text 보관기간 초과 | **법적 risk 시작 (수주 후)** | 사용자 늘기 전 또는 compliance audit 요청 시 |
+| `reference-price-refresh` (1d) | 다나와 시세 stale | 1주 받아들임. 5/15 1번 run됨 | 시세 정확도 issue 발견 시 |
 
-각 endpoint: `https://minyoi-mvp.vercel.app/api/cron/<name>?wait=1` + `Authorization: Bearer minyoi-cron-2026`.
+**조치**:
+- ✅ cron-watchdog에서 4개 모두 추적 제거 (텔레그램 alert spam 차단)
+- ✅ Decision log 박음: `docs/DECISIONS/2026-05-16-cron-4-suspended.md`
 
-⚠️ watchdog fix 반영 후에도 이 4개는 진짜 alert 계속 옴 (cooldown 30분). 등록 안 하면 매 30분 1회씩 텔레그램 spam.
+**재등록 시 plan**:
+1. compliance-retention 가장 먼저 (법적, 1주 안)
+2. reference-price-refresh (시세 정확도)
+3. landing-showcases / housekeeper-ai-cache-prune (사용자 성장 시)
 
 ### -0.9. (Iteration 7 발견) 베타 권한/요금제 boundary
 1. **베타 테스터 무한 크레딧 정책 모호**: CLAUDE.md "베타 테스터는 admin 권한 일부" → 코드에선 plan.dailyOpenLimit 그대로 적용 (무한 X). 정책 문서화 또는 코드 통일 필요.
