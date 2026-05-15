@@ -282,6 +282,19 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: 옛 reservation #1 의 notification_sent=false + error=null 버그 (sendTelegramMessage error 로그 누락) 별도 fix.
 - commit: cfa7a52
 
+## 18. 핫딜 telegram 발송 실패 silent 버그 fix
+
+- 시간: 2026-05-16 05:25 KST
+- 발견: 옛 reservation #1 의 `notification_sent=false` + `notification_error=null` 디버깅 중. `sendHotdealAlert` (hotdeal.ts:288) 가 boolean만 반환 → telegram API의 실제 description ("Bad Request: chat not found", "Forbidden: bot was blocked by the user", "Bad Request: can't parse entities") 다 버림 → 호출부에서 모든 실패를 일괄 `"telegram_send_failed"` 로 박음. 디버깅 시 어떤 카테고리 실패인지 알 수 없음. `sendAdminShadow` 도 같은 패턴 (silent — admin 본인 텔레그램 끊겨도 모름).
+- 변경 (`src/lib/hotdeal.ts`):
+  - `sendHotdealAlert` 반환 타입 `boolean` → `{ ok: boolean; description: string | null }`. 실패 시 telegram API description 전달.
+  - dispatch 호출부: 실패 시 `console.warn` + `markReservationSent` 의 error 인수에 description 박음 (200자 cap).
+  - `sendAdminShadow` 실패 시도 `console.warn` 추가.
+- 검증: tsc clean.
+- 위험: 없음. 성공 케이스 동작 동일. 실패 케이스 디버깅 정보 추가만.
+- 다음: 다음 텔레그램 실패 발생 시 logs 보면 정확한 원인 알 수 있음. 그동안 reservations 테이블의 notification_error 컬럼이 enum-like 카테고리로 그룹핑 가능.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

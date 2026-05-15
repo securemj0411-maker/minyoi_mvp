@@ -170,7 +170,7 @@ export async function dispatchAvailableHotdeals(): Promise<{ claimed: number; se
     claimed += 1;
 
     const meta = listingsByPid.get(item.pid) ?? { name: item.sku_name ?? "(no title)", price: 0, sku_median: 0 };
-    const ok = await sendHotdealAlert(claim.chat_id, item.pid, {
+    const result = await sendHotdealAlert(claim.chat_id, item.pid, {
       title: meta.name,
       price: meta.price,
       skuMedian: meta.sku_median,
@@ -179,12 +179,14 @@ export async function dispatchAvailableHotdeals(): Promise<{ claimed: number; se
       band: item.band,
       expiresAt: claim.expires_at,
     });
-    if (ok) {
+    if (result.ok) {
       sent += 1;
       await markReservationSent(claim.reservation_id, true, null);
     } else {
       failed += 1;
-      await markReservationSent(claim.reservation_id, false, "telegram_send_failed");
+      // Wave 106: telegram API description 보존 (이전엔 모든 실패가 "telegram_send_failed" 일괄 박힘 → 디버그 불가능).
+      console.warn("[hotdeal dispatch] telegram fail", { pid: item.pid, chat_id: claim.chat_id, description: result.description });
+      await markReservationSent(claim.reservation_id, false, result.description?.slice(0, 200) ?? "telegram_send_failed");
     }
 
     // Admin shadow: 운영자한테도 동일 알림 (selected 사용자 X일 때만 — 본인이 selected면 중복 X).
@@ -285,13 +287,13 @@ function buildAlertReplyMarkup(pid: number) {
   };
 }
 
-async function sendHotdealAlert(chatId: number, pid: number, content: AlertContent): Promise<boolean> {
+async function sendHotdealAlert(chatId: number, pid: number, content: AlertContent): Promise<{ ok: boolean; description: string | null }> {
   const text = buildAlertText(pid, content);
   const res = await sendTelegramMessage(chatId, text, {
     parseMode: "MarkdownV2",
     replyMarkup: buildAlertReplyMarkup(pid),
   });
-  return res.ok;
+  return { ok: res.ok, description: res.ok ? null : (res.description ?? "unknown_telegram_error") };
 }
 
 async function markReservationSent(id: number, ok: boolean, error: string | null) {
@@ -325,7 +327,12 @@ async function sendAdminShadow(selectedUserRef: string, pid: number, content: Al
       parseMode: "MarkdownV2",
       replyMarkup: buildAlertReplyMarkup(pid),
     });
-    if (ok.ok) count += 1;
+    if (ok.ok) {
+      count += 1;
+    } else {
+      // Wave 106: admin shadow 실패도 로그 (이전엔 silent — 운영자 본인 텔레그램 끊겨도 모름).
+      console.warn("[hotdeal admin shadow] telegram fail", { pid, chat_id: target.chat_id, description: ok.description });
+    }
   }
   return count;
 }

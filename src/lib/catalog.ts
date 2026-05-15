@@ -2881,6 +2881,24 @@ function requiresCombinedLaneVeto(sku: Sku | null): sku is Sku {
   return sku !== null && Boolean(sku.laneKey) && ["laptop", "tablet", "smartphone", "watch", "sport_golf"].includes(sku.category);
 }
 
+// Wave 108 (2026-05-15): title-only ruleMatch가 broad SKU 우선 잡고 narrow lane 무시하는 문제 fix.
+// 이전: title이 "갤럭시 s23 울트라 256gb 블랙" (자급제 명시 description만) → broad 매칭하고 즉시 return,
+// narrow lane(_self)이 description의 자급제 token 못 봄 → narrow ready 0건.
+// 변경: title에서 broad만 잡혔으면 description 포함 combined로 narrow lane 재시도. 1개 narrow 매칭 시 narrow 우선.
+// 정책 위반 X — narrow mustContain (자급제 + 용량) 둘 다 명시되어야 매칭 (precision 보존).
+const NARROW_PROMOTE_CATEGORIES = new Set(["smartphone", "laptop", "tablet", "watch", "sport_golf", "game_console"]);
+
+function tryNarrowLanePromotion(broad: Sku, combined: string, titleNorm: string): Sku | null {
+  if (broad.laneKey) return null; // 이미 narrow
+  if (!NARROW_PROMOTE_CATEGORIES.has(broad.category)) return null;
+  if (combined === titleNorm) return null; // description 없으면 의미 X
+  const narrowCandidates = CATALOG_WITH_NOISE_W94.filter(
+    (s) => Boolean(s.laneKey) && s.category === broad.category && skuMatches(s, combined),
+  );
+  if (narrowCandidates.length === 1) return narrowCandidates[0];
+  return null;
+}
+
 export function ruleMatch(title: string, description = ""): Sku | null {
   const titleNorm = normalize(title);
   const combined = normalize(`${title} ${stripLinkLikeText(description).slice(0, 200)}`);
@@ -2889,7 +2907,14 @@ export function ruleMatch(title: string, description = ""): Sku | null {
 
   const titleCandidates = CATALOG_WITH_NOISE_W94.filter((s) => skuMatches(s, titleNorm));
   const titleChoice = chooseUniqueCandidate(titleCandidates);
-  if (titleChoice) return requiresCombinedLaneVeto(titleChoice) && !skuMatches(titleChoice, combined) ? null : titleChoice;
+  if (titleChoice) {
+    // Wave 108: title이 broad만 잡혔으면 narrow lane 재시도
+    const narrowPromoted = tryNarrowLanePromotion(titleChoice, combined, titleNorm);
+    if (narrowPromoted) {
+      return requiresCombinedLaneVeto(narrowPromoted) && !skuMatches(narrowPromoted, combined) ? null : narrowPromoted;
+    }
+    return requiresCombinedLaneVeto(titleChoice) && !skuMatches(titleChoice, combined) ? null : titleChoice;
+  }
   if (titleCandidates.length > 1) return null;
 
   const combinedDirect = directSpecificMatch(combined);
