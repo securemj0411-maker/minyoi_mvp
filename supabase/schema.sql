@@ -2139,18 +2139,23 @@ begin
   set daily_used_count = 0, daily_reset_on = v_today, updated_at = now()
   where p.user_ref = v_user_ref and p.daily_reset_on <> v_today;
 
-  select daily_used_count into v_current
-  from public.mvp_user_plans where user_ref = v_user_ref;
-
-  if v_current >= p_limit then
-    ok := false; used := v_current; daily_limit := p_limit; message := 'daily_limit_reached';
-    return next; return;
-  end if;
-
+  -- Wave 106: atomic conditional update — race fix (TOCTOU 차단).
   update public.mvp_user_plans p
   set daily_used_count = daily_used_count + 1, updated_at = now()
   where p.user_ref = v_user_ref
+    and p.daily_used_count < p_limit
+    and p.daily_reset_on = v_today
   returning p.daily_used_count into v_current;
+
+  if not found then
+    select daily_used_count into v_current
+    from public.mvp_user_plans where user_ref = v_user_ref;
+    ok := false;
+    used := coalesce(v_current, 0);
+    daily_limit := p_limit;
+    message := 'daily_limit_reached';
+    return next; return;
+  end if;
 
   ok := true; used := v_current; daily_limit := p_limit; message := 'ok';
   return next;

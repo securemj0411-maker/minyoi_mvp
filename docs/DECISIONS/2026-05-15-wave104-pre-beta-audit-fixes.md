@@ -180,6 +180,19 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: 다른 endpoint (telegram/, packs/, me/) 도 동일 audit 필요 (memory: 별도 wave 권장).
 - commit: 5e8bfe3
 
+## 12. consume_mvp_daily_quota race fix (TOCTOU)
+
+- 시간: 2026-05-16 04:10 KST
+- 발견: audit. `consume_mvp_daily_quota` (schema.sql:2107) 가 SELECT → IF check → UPDATE 분리 구조. 동시 두 요청이 SELECT를 같이 통과 → 둘 다 IF (current < limit) true → 둘 다 UPDATE → daily_used_count = limit + 1 가능. 무료 사용자 1회 한도 → 2회 사용. 1팩 = ~1.09USD 비용 누출.
+- 변경:
+  - `supabase/migrations/20260515000500_consume_daily_quota_atomic.sql` 신규 — atomic conditional UPDATE: `WHERE daily_used_count < p_limit AND daily_reset_on = v_today`. postgres가 row lock + WHERE 재평가 직렬화 → race 차단. UPDATE not found → reject.
+  - prod에 supabase MCP로 즉시 적용 (idempotent `create or replace`).
+  - schema.sql 동기화.
+- 검증: prod apply success. 기존 caller (`packs/open/route.ts:114`) 시그니처 동일 — code 변경 불필요.
+- 위험: 매우 낮음. RPC return shape 동일. 기존 정상 흐름 영향 X. 단 race로 잠시 limit 초과 잡혔던 user는 이제 정확히 limit에서 막힘.
+- 다음: 비슷한 패턴 다른 RPC 점검 (`spend_and_record_pack_open` 은 atomic이라 OK 확인됨, Wave 60).
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
