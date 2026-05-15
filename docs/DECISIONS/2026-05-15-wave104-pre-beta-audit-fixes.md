@@ -217,6 +217,21 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: 다른 cancel/destructive UI (account-panel.tsx의 "탭해서 변경" 등) 점검 권장. 현재 로깅만.
 - commit: 8e8787b
 
+## 15. admin-pool-browser dark mode 누락 5라인 fix
+
+- 시간: 2026-05-16 04:45 KST
+- 발견: audit. `admin-pool-browser.tsx` 38개 dark: variant는 있지만 5라인 누락. dark bg에서 text가 거의 안 보임. admin (MJ) 본인 화면이지만 dark mode 사용자라면 매번 운영 진단 시 답답함.
+- 변경 (5 라인):
+  - `:155` 필터 결과 카운트 → `dark:text-zinc-400`
+  - `:171` 테이블 헤더 → `dark:text-zinc-400`
+  - `:194` stats 부연 → `dark:text-zinc-500`
+  - `:292` item meta 라인 → `dark:text-zinc-400`
+  - `:295` item id/query 라인 → `dark:text-zinc-500`
+- 검증: tsc clean, awk grep으로 잔여 dark 누락 0 확인.
+- 위험: 없음 (visual only).
+- 다음: 다른 admin 화면 동일 audit (admin shadow report 등).
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

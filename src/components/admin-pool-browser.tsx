@@ -152,7 +152,7 @@ export default function AdminPoolBrowser() {
             </p>
           </div>
           {data && (
-            <div className="text-right text-xs text-zinc-500">
+            <div className="text-right text-xs text-zinc-500 dark:text-zinc-400">
               필터 결과 {data.total.toLocaleString()}건 / {data.totalPages}페이지
             </div>
           )}
@@ -168,7 +168,7 @@ export default function AdminPoolBrowser() {
             <div className="overflow-x-auto">
               <table className="w-full text-[11px]">
                 <thead>
-                  <tr className="text-left text-zinc-500">
+                  <tr className="text-left text-zinc-500 dark:text-zinc-400">
                     <th className="py-1 pr-3"></th>
                     <th className="py-1 pr-3 text-right">band 1</th>
                     <th className="py-1 pr-3 text-right">band 2</th>
@@ -191,7 +191,7 @@ export default function AdminPoolBrowser() {
                 </tbody>
               </table>
             </div>
-            <div className="mt-2 text-[10px] text-zinc-400">stats는 page 1 로드 시만 fetch (DB I/O 절약).</div>
+            <div className="mt-2 text-[10px] text-zinc-400 dark:text-zinc-500">stats는 page 1 로드 시만 fetch (DB I/O 절약).</div>
           </div>
         )}
 
@@ -289,10 +289,10 @@ export default function AdminPoolBrowser() {
                       <span>· 시세 {krw(item.skuMedian)}</span>
                       <span>· 신뢰 {(item.confidence * 100).toFixed(0)}%</span>
                     </div>
-                    <div className="text-[11px] text-zinc-500">
+                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
                       {item.skuName ?? "—"} · {item.poolStatus} · {relAge(item.lastVerifiedAt)} · 노출 {item.exposureCount}/{item.maxExposure}
                     </div>
-                    <div className="text-[10px] text-zinc-400">
+                    <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
                       <span className="font-mono">{item.skuId ?? "—"}</span> · query: {item.query ?? "—"}
                     </div>
                     <a href={item.bunjangUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-[11px] font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
