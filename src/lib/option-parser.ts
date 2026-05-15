@@ -918,7 +918,18 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   };
 
   // Wave 91 (사용자 요청 pid 368060006): 미개봉/새상품 detection 변형 흡수.
-  const explicitNewSignal = /미개봉|미\s*개봉|새상품|새 제품|새제품|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*미개봉|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|새\s*것|새거|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower);
+  // 2026-05-16 (Iteration 5 audit): false positive 차단. sampling 결과 5,068건 중 ~27% false positive 발견.
+  // 패턴:
+  //   - "새상품과 같은 상태" / "새상품 같은" — 실사용인데 새상품 비교 표현
+  //   - "거의 새거" / "거의새거" — 실사용 매물
+  //   - "실사용 X번" — 사용 매물 명시
+  //   - "사용 얼마 안" — 실사용 매물
+  //   - "새 것 같은" / "새거 같은" / "새상품급" — 새상품 아님
+  const newSignalNegativePattern = /새\s*(?:상품|제품|것|거)\s*(?:과\s*)?(?:같은|처럼|급|레벨|수준|상태)/i.test(lower) ||
+    /거의\s*새/i.test(lower) ||
+    /실사용\s*\d+\s*번/i.test(lower) ||
+    /사용\s*얼마\s*(?:안|않)/i.test(lower);
+  const explicitNewSignal = !newSignalNegativePattern && /미개봉|미\s*개봉|새상품|새 제품|새제품|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*미개봉|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|새\s*것|새거|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower);
   if (explicitNewSignal) add("new_or_open_box", 0.15);
   // 2026-05-15 (사용자 코멘트 pid 406747021): 배터리 효율 100% 매물은 사실상 새제품
   // (Apple 기기는 한 번 사용 시작하면 빠르게 99% 미만으로 떨어짐). 단품 시세 비교군에 끼면 평균 끌어올림.
