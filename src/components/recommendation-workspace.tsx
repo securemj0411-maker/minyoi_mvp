@@ -401,15 +401,7 @@ function PackSelectorCard({
             />
           </div>
 
-          {/* 자세히 옵션 — 차익 + 신뢰도 (default 접힘) */}
-          <button
-            type="button"
-            onClick={() => setShowAdvancedSliders((s) => !s)}
-            className="mt-1 flex w-full items-center justify-between rounded-md px-1 py-1 text-[11px] font-black text-[#7a8478] hover:text-[#59665b] dark:text-zinc-500 dark:hover:text-zinc-300"
-          >
-            <span>자세히 옵션 (차익 · 신뢰도)</span>
-            <span>{showAdvancedSliders ? "▲" : "▼"}</span>
-          </button>
+          {/* 자세히 옵션 — 차익 + 신뢰도. 확장 시 sliders 위쪽, 토글은 하단에 위치 (UI 깔끔). */}
           {showAdvancedSliders && (
             <div className="space-y-2 border-t border-[#e8dec9] pt-2 dark:border-zinc-700/40">
               <div>
@@ -451,6 +443,14 @@ function PackSelectorCard({
               </div>
             </div>
           )}
+          <button
+            type="button"
+            onClick={() => setShowAdvancedSliders((s) => !s)}
+            className="flex w-full items-center justify-between rounded-md px-1 py-1 text-[11px] font-black text-[#7a8478] hover:text-[#59665b] dark:text-zinc-500 dark:hover:text-zinc-300"
+          >
+            <span>{showAdvancedSliders ? "자세히 옵션 닫기" : "자세히 옵션 (차익 · 신뢰도)"}</span>
+            <span>{showAdvancedSliders ? "▲" : "▼"}</span>
+          </button>
 
           {!infiniteCredits && (
             <p className="rounded-md bg-[#fffaf1] px-2 py-1 text-[10px] font-bold leading-4 text-[#7b5724] dark:bg-zinc-800 dark:text-zinc-400">
@@ -488,44 +488,6 @@ function PackSelectorCard({
           </div>
         ) : null}
 
-        {/* 한눈에 보이는 결과: 매물 funnel + 토큰 비용 한 줄 */}
-        <div className="mt-3 flex items-stretch gap-2">
-          <div className="flex-1 rounded-[18px] border-2 border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] px-3 py-2.5 text-center">
-            <div className="text-[10px] font-black text-[var(--brand-accent-strong)]">추천 가능 매물 → 내 조건</div>
-            <div className="mt-1 flex items-baseline justify-center gap-1.5">
-              <span className="text-sm font-bold text-[#5d735f]">
-                {inventoryLoading ? "..." : `${totalPoolReady}`}
-              </span>
-              <span className="text-xs text-[#9aa893]" aria-hidden>
-                →
-              </span>
-              <span className="text-xl font-black tracking-tight text-[var(--brand-accent-strong)]">
-                {previewLoading ? "..." : previewInventory ? `${previewInventory.matchingCount}` : "-"}
-              </span>
-              <span className="text-[10px] font-bold text-[#5d735f]">건</span>
-              {previewInventory && totalPoolReady > 0 && previewInventory.matchingCount > 0 ? (
-                <span className="text-[10px] font-bold text-[var(--brand-accent-strong)]">
-                  ({Math.max(1, Math.round((previewInventory.matchingCount / totalPoolReady) * 100))}%)
-                </span>
-              ) : null}
-            </div>
-            {previewInventory && previewInventory.matchingCount > 0 ? (
-              <div className="mt-0.5 text-[9.5px] text-[#5d735f]">신선 {previewInventory.freshUnder2h}건</div>
-            ) : previewInventory && previewInventory.matchingCount === 0 ? (
-              <div className="mt-0.5 text-[9.5px] text-[#a04545]">조건 완화 권장</div>
-            ) : null}
-          </div>
-          <div className="flex-1 rounded-[18px] border-2 border-[#caab78] bg-[#fff8ea] px-3 py-2.5 text-center dark:border-amber-900/60 dark:bg-amber-950/20">
-            <div className="text-[10px] font-black text-[#7b5724] dark:text-amber-200">카드 1매</div>
-            <div className="inline-flex items-baseline gap-0.5 text-xl font-black text-[#7b5724] dark:text-amber-200">
-              {costBreakdown.perCardStep}<span className="text-[10px]">토큰</span>
-            </div>
-            <div className="text-[9.5px] text-[#9a7f4f] dark:text-amber-200/70">
-              {costBreakdown.base}×{costBreakdown.profitMult}×{costBreakdown.confidenceMult}×{costBreakdown.priceMult}
-            </div>
-          </div>
-        </div>
-
         {/* 자세한 정보 collapsible */}
         <details className="mt-2 rounded-[14px] bg-[#f6efe4] px-3 py-1.5 dark:bg-zinc-950/40">
           <summary className="cursor-pointer text-[10.5px] font-black text-[#59665b] dark:text-zinc-400">
@@ -549,7 +511,18 @@ function PackSelectorCard({
           <div className="rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
             <div className="flex items-end justify-between gap-4">
               <div className="min-w-0">
-                <div className="text-sm font-black text-[#59665b] dark:text-zinc-300">추천 상품 수</div>
+                <div className="flex items-baseline gap-1.5 text-sm font-black text-[#59665b] dark:text-zinc-300">
+                  <span>추천 상품 수</span>
+                  <span className="text-[11px] font-bold text-[#7a8478] dark:text-zinc-500">
+                    {previewLoading
+                      ? "(확인 중…)"
+                      : previewInventory
+                        ? `(현재 가능 ~${previewInventory.matchingCount}건)`
+                        : inventoryLoading
+                          ? "(확인 중…)"
+                          : `(현재 가능 ~${totalPoolReady}건)`}
+                  </span>
+                </div>
                 <div className="mt-1 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
                   {selectedCount}
                   <span className="ml-1 text-base text-zinc-500 dark:text-zinc-400">건</span>
