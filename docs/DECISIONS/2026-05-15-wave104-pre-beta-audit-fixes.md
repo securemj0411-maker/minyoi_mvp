@@ -645,6 +645,22 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 다음: marketing/legal/onboarding 측면은 더 audit할 항목 적음. observability dashboard (별도 wave) 또는 사용자 첫 가입 흐름 실제 시뮬 (real account).
 - commit: 2f0e571
 
+## 31. #28 추가 정정 — landing-showcases / prune / compliance 베타 단계 무시 OK
+
+- 시간: 2026-05-16 08:30 KST
+- MJ 지적 + 코드 재검증.
+- 잘못 진단:
+  - #27/#28 에서 "landing-showcases / housekeeper-ai-cache-prune / compliance-retention 24h 0회 = critical, MJ QStash 등록 필요" 라고 박음.
+  - 실제 코드 흐름:
+    - `getLandingShowcases()` (landing-showcases.ts:319): DB cache 테이블 → 부족하면 `loadFallbackShowcasesCached()` (`unstable_cache` revalidate 1시간 + 실시간 DB fetch). **cron 안 돌아도 fallback이 자동 갱신.** 사용자 보는 카드 stale X.
+    - `housekeeper-ai-cache-prune`: AI 분류 캐시 정리 (베타 단계 trivial — 디스크/비용 천천히 누적, 사용자 영향 0).
+    - `compliance-retention`: 개인정보 보유 정책 (개인정보보호법). 베타 사용자 1명 (MJ) 이라 영향 X, 정식 launch 직전 박으면 됨.
+- 정정: **3개 다 베타 단계 무시해도 OK. MJ 액션 불필요.**
+- watchdog 보강 fix (#27/#28의 코드 변경) 자체는 그대로 OK — 진짜로 안 도는 건 사실, 추적해서 알림 받는 게 미래에 가치.
+- 위험: 내가 critical 이라고 잘못 framing 한 게 사용자 혼란 유발.
+- 다음: 정식 launch 시점에 compliance-retention 만 등록 권장. 나머지 2개는 사용자 늘어나면 (Pro user 100+) 검토.
+- commit: pending (이 정정 박음)
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
