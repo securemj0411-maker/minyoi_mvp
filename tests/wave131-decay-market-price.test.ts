@@ -118,4 +118,41 @@ describe("Wave 131 — decay-weighted market price", () => {
     assert.equal(result.p25, null);
     assert.equal(result.p75, null);
   });
+
+  // Wave 135 (2026-05-16): launch event weightMultiplier 검증.
+  // event_date 이전 매물은 weightMultiplier 0.3 → 시세 영향 최소화.
+  it("decayTrimmedSellerMarket: weightMultiplier 0.3 적용 시 옛 baseline 무시 (launch event reset)", () => {
+    const now = Date.now();
+    const recent = (daysAgo: number) =>
+      new Date(now - daysAgo * 86_400_000).toISOString();
+    // event_date 이전 매물 (pre-launch) 3건 + 이후 매물 (post-launch) 4건
+    // pre-launch는 비싼 옛 baseline, post-launch는 신모델 출시 후 가격 하락
+    const rows = [
+      // pre-launch (multiplier 0.3 적용 → weight ↓)
+      { pid: 1, price: 300000, seller_uid: "a", observedAt: recent(5), weightMultiplier: 0.3 },
+      { pid: 2, price: 310000, seller_uid: "b", observedAt: recent(6), weightMultiplier: 0.3 },
+      { pid: 3, price: 320000, seller_uid: "c", observedAt: recent(7), weightMultiplier: 0.3 },
+      // post-launch (multiplier 1 default)
+      { pid: 4, price: 200000, seller_uid: "d", observedAt: recent(1), weightMultiplier: 1 },
+      { pid: 5, price: 210000, seller_uid: "e", observedAt: recent(1), weightMultiplier: 1 },
+      { pid: 6, price: 210000, seller_uid: "f", observedAt: recent(2), weightMultiplier: 1 },
+      { pid: 7, price: 220000, seller_uid: "g", observedAt: recent(2), weightMultiplier: 1 },
+    ];
+    const result = decayTrimmedSellerMarket(rows);
+    // pre-launch는 weight 낮춰 → 시세는 post-launch 기반
+    assert.ok(result.median != null && result.median <= 220000,
+      `launch event reset 후 시세는 post-launch 기반이어야. median: ${result.median}`);
+  });
+
+  it("decayTrimmedSellerMarket: weightMultiplier 없으면 기본 동작 (backward compat)", () => {
+    const now = Date.now();
+    const rows = [
+      { pid: 1, price: 100000, seller_uid: "a", observedAt: new Date(now - 86_400_000).toISOString() },
+      { pid: 2, price: 110000, seller_uid: "b", observedAt: new Date(now - 86_400_000 * 2).toISOString() },
+      { pid: 3, price: 120000, seller_uid: "c", observedAt: new Date(now - 86_400_000 * 3).toISOString() },
+    ];
+    const result = decayTrimmedSellerMarket(rows);
+    assert.equal(result.count, 3);
+    assert.ok(result.median != null);
+  });
 });

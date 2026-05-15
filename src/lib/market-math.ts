@@ -6,6 +6,10 @@ export type SellerPricedRow = {
   // 최근 매물 weight ↑. observedAt(ISO string) 또는 ageDays(numeric) 제공.
   observedAt?: string | null;
   ageDays?: number | null;
+  // Wave 135 (2026-05-16): launch event reset — 매물별 weight 추가 multiplier.
+  // event_date 이전 매물은 0.3x 등. final weight = decay(ageDays) * weightMultiplier.
+  // 사업 보고서 L5b — 신모델 launch 시점 옛 baseline 무시.
+  weightMultiplier?: number | null;
 };
 
 export function median(values: number[]) {
@@ -144,6 +148,8 @@ export function trimmedSellerMarket(rows: SellerPricedRow[]) {
 type SellerRepresentative = {
   price: number;
   ageDays: number | null;
+  // Wave 135: launch event multiplier carry-through.
+  weightMultiplier: number;
 };
 
 function sellerRepresentativesWithAge(rows: SellerPricedRow[]): SellerRepresentative[] {
@@ -160,19 +166,23 @@ function sellerRepresentativesWithAge(rows: SellerPricedRow[]): SellerRepresenta
       const t = new Date(row.observedAt).getTime();
       if (Number.isFinite(t)) ageDays = Math.max(0, (now - t) / 86_400_000);
     }
+    const wm = row.weightMultiplier != null && Number.isFinite(row.weightMultiplier)
+      ? Math.max(0, Math.min(1, row.weightMultiplier))
+      : 1;
     const list = bySeller.get(sellerKey) ?? [];
-    list.push({ price: row.price, ageDays });
+    list.push({ price: row.price, ageDays, weightMultiplier: wm });
     bySeller.set(sellerKey, list);
   }
   // 각 seller당 1개 대표: 가장 최근 매물 (ageDays가 작은 거). ageDays 없으면 가격 median.
   return [...bySeller.values()].map((items) => {
     const withAge = items.filter((x) => x.ageDays != null);
     if (withAge.length === 0) {
-      // 옛 동작 fallback: ageDays 없으면 가격 median + ageDays null
-      return { price: Math.round(median(items.map((x) => x.price))), ageDays: null };
+      // 옛 동작 fallback: ageDays 없으면 가격 median + ageDays null + 평균 multiplier
+      const avgWm = items.reduce((s, x) => s + x.weightMultiplier, 0) / Math.max(1, items.length);
+      return { price: Math.round(median(items.map((x) => x.price))), ageDays: null, weightMultiplier: avgWm };
     }
     withAge.sort((a, b) => (a.ageDays ?? Infinity) - (b.ageDays ?? Infinity));
-    return withAge[0]; // 가장 최근 매물
+    return withAge[0]; // 가장 최근 매물 (그 매물의 weightMultiplier 사용)
   });
 }
 
@@ -205,7 +215,9 @@ export function decayTrimmedSellerMarket(rows: SellerPricedRow[]) {
     const remaining = priceCount.get(rep.price) ?? 0;
     if (remaining > 0) {
       priceCount.set(rep.price, remaining - 1);
-      const weight = rep.ageDays != null ? exponentialDecayWeight(rep.ageDays) : 1.0;
+      const decayWeight = rep.ageDays != null ? exponentialDecayWeight(rep.ageDays) : 1.0;
+      // Wave 135: launch event multiplier 적용. final weight = decay × multiplier.
+      const weight = decayWeight * rep.weightMultiplier;
       allowedItems.push({ value: rep.price, weight });
       allowedSet.add(rep.price);
     }

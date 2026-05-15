@@ -2510,7 +2510,51 @@ export async function sourceHealthStage(): Promise<StageStats> {
   return stats;
 }
 
+// Wave 135 (2026-05-16): launch event load — 영향 comparable_key + event_date 매핑.
+// 시세 산정 시 event_date 이전 매물에 weight multiplier (default 0.3) 적용.
+// 사업 보고서 L5b — 신모델 launch 시점 옛 baseline 무시.
+type LaunchEvent = {
+  affected_comparable_key: string;
+  event_date: string; // ISO date 'YYYY-MM-DD'
+  pre_event_weight: number;
+  effective_until: string | null;
+};
+async function loadLaunchEvents(): Promise<LaunchEvent[]> {
+  try {
+    const url = `${tableUrl("mvp_launch_events")}?select=affected_comparable_key,event_date,pre_event_weight,effective_until&order=event_date.desc&limit=500`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    if (!res.ok) return [];
+    const rows = (await res.json()) as LaunchEvent[];
+    const today = kstDateString();
+    // effective_until 지난 event 제외 (still in effect만)
+    return rows.filter((r) => !r.effective_until || r.effective_until >= today);
+  } catch (err) {
+    console.warn("loadLaunchEvents failed (non-fatal)", err);
+    return [];
+  }
+}
+
+// 매물 observedAt이 launch event event_date 이전이면 multiplier 반환. 없으면 1.
+function launchEventMultiplier(
+  comparableKey: string,
+  observedAt: string | null,
+  events: LaunchEvent[],
+): number {
+  if (!observedAt || events.length === 0) return 1;
+  let multiplier = 1;
+  for (const ev of events) {
+    if (ev.affected_comparable_key !== comparableKey) continue;
+    // observedAt (ISO datetime) vs event_date (YYYY-MM-DD) — string 비교 OK (ISO 정렬됨)
+    if (observedAt < ev.event_date) {
+      multiplier = Math.min(multiplier, ev.pre_event_weight); // 가장 강한 reset
+    }
+  }
+  return multiplier;
+}
+
 async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<number, ParsedListingRow>) {
+  // Wave 135: launch event 로드 (없으면 모든 multiplier 1 = no-op).
+  const launchEvents = await loadLaunchEvents();
   // Wave 90: 시세 집계에서 risk_hits>0 매물 제외 (사용자 지적 — 분실/도난/침수 매물이
   // 시세 평균 끌어내림). mvp_listing_analysis batch fetch로 risk_hits 가져옴.
   // analysis row 없는 매물 (아직 score 안 된 새 매물) → 일단 포함 (default safe).
@@ -2608,17 +2652,23 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   //   "30일 데이터 단순 평균 X. 최근 7일 weight 3x." (보고서 권장).
   //   observedAt = source_updated_at (셀러가 매물 갱신한 시각). null이면 last_seen_at fallback.
   //   옛 매물 = 안 팔리는 매물 = 호가 inflated → decay weight ↓ → 시세 정확도 ↑.
-  const toSellerPriced = (r: ScorableRawRow) => ({
-    pid: r.pid,
-    price: r.price,
-    seller_uid: r.seller_uid,
-    observedAt: r.source_updated_at ?? r.last_seen_at ?? null,
-  });
+  // Wave 135: 각 매물의 launch event multiplier 사전 계산 (comparable_key + observedAt 기반).
+  const toSellerPriced = (r: ScorableRawRow, comparableKey: string) => {
+    const observedAt = r.source_updated_at ?? r.last_seen_at ?? null;
+    return {
+      pid: r.pid,
+      price: r.price,
+      seller_uid: r.seller_uid,
+      observedAt,
+      weightMultiplier: launchEventMultiplier(comparableKey, observedAt, launchEvents),
+    };
+  };
   const marketRows = [...byKey.values()].map((group) => {
     const comparableKey = group.comparableKey;
-    const active = decayTrimmedSellerMarket(group.activeRows.map(toSellerPriced));
-    const sold = decayTrimmedSellerMarket(group.soldRows.map(toSellerPriced));
-    const disappeared = decayTrimmedSellerMarket(group.disappearedRows.map(toSellerPriced));
+    // Wave 135: comparableKey를 toSellerPriced에 전달 → launch event multiplier 적용.
+    const active = decayTrimmedSellerMarket(group.activeRows.map((r) => toSellerPriced(r, comparableKey)));
+    const sold = decayTrimmedSellerMarket(group.soldRows.map((r) => toSellerPriced(r, comparableKey)));
+    const disappeared = decayTrimmedSellerMarket(group.disappearedRows.map((r) => toSellerPriced(r, comparableKey)));
     const activeMedian = active.median;
     const soldMedian = sold.median;
     const disappearedMedian = disappeared.median;
