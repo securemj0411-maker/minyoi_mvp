@@ -3734,11 +3734,38 @@ export async function runPoolWarmerPipeline(): Promise<TickResult> {
 
   const search = emptyStats();
   const detail = await timedStage(stageDurationsMs, "pool_warmer", () => poolWarmerStage(Date.now() + config.tickDetailBudgetMs));
+
+  // Wave 93b: pool-warmer가 ready 매물을 추가한 직후 hotdeal enqueue + dispatch.
+  // 별도 cron 불필요 — 기존 5분 주기에 piggyback. 새 ready 매물이 들어오는 자연스러운 시점.
+  const hotdealStats = await timedStage(stageDurationsMs, "hotdeal", async () => {
+    const stats = emptyStats();
+    try {
+      const { enqueueHotdealsFromPool, dispatchAvailableHotdeals } = await import("@/lib/hotdeal");
+      const enq = await enqueueHotdealsFromPool();
+      const dis = await dispatchAvailableHotdeals();
+      stats.upserted = enq.enqueued;
+      stats.scored = dis.sent;
+      stats.aiFiltered = dis.admin_shadowed;
+      stats.timingsMs = {
+        hotdeal_scanned: enq.scanned,
+        hotdeal_enqueued: enq.enqueued,
+        hotdeal_skipped_existing: enq.skipped_existing,
+        hotdeal_claimed: dis.claimed,
+        hotdeal_sent: dis.sent,
+        hotdeal_failed: dis.failed,
+        hotdeal_admin_shadow: dis.admin_shadowed,
+      };
+    } catch (err) {
+      console.error("[hotdeal stage] failed", err);
+    }
+    return stats;
+  });
+
   const score = emptyStats();
-  const total = mergeStats([search, detail, score]);
+  const total = mergeStats([search, detail, hotdealStats, score]);
   return {
     ...total,
-    stages: { search, detail, score },
+    stages: { search, detail, hotdeal: hotdealStats, score },
     stageDurationsMs,
   };
 }

@@ -217,8 +217,8 @@ function isEarbudProtectiveCaseOnlyTitle(normalizedTitle: string, compactTitle: 
     /(?:케이스|case|커버)(?:단독|단품|만|판매|팝니다|새상품|미개봉|급처|처분)?$/i.test(compactTitle) ||
     /(?:단독|단품|만).{0,8}(?:케이스|case|커버)|(?:케이스|case|커버).{0,8}(?:단독|단품|만|새상품|미개봉)/i.test(normalizedTitle) ||
     // 2026-05-15 (사용자 코멘트 pid 405366644 "모스키노 에어팟 프로 1세대 케이스"):
-    // 브랜드/디자인 케이스 매물. title에 본품 이름 + 케이스만 있고 가격/구성품 신호 없으면 accessory.
-    /(?:모스키노|moschino|샤넬|chanel|디올|루이비통|nike|adidas|버버리|burberry|guess|마크제이콥스|kakaofriends|카카오프렌즈|라인프렌즈|디즈니|disney|미키|미니언즈|짱구|뽀로로|산리오|sanrio|헬로키티|hellokitty).{0,30}(?:케이스|case|커버)|(?:케이스|case|커버).{0,30}(?:모스키노|moschino|샤넬|chanel|디올|루이비통|nike|adidas|버버리|burberry|guess|마크제이콥스|kakaofriends|카카오프렌즈|라인프렌즈|디즈니|disney|미키|미니언즈|짱구|뽀로로|산리오|sanrio|헬로키티|hellokitty)/i.test(normalizedTitle)
+    // 명백한 브랜드 디자인 케이스 매물만 잡음 (false positive 위험 축소 — 14개 → 5개).
+    /(?:모스키노|moschino|샤넬|chanel|디올|카카오프렌즈|kakaofriends).{0,30}(?:케이스|case|커버)|(?:케이스|case|커버).{0,30}(?:모스키노|moschino|샤넬|chanel|디올|카카오프렌즈|kakaofriends)/i.test(normalizedTitle)
   );
 }
 

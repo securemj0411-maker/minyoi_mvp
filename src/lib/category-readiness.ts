@@ -245,12 +245,12 @@ export const LANE_READINESS: LaneReadinessMap = {
   sport_golf_titleist_tsr2_driver: {
     status: "blocked",
     label: "Titleist TSR2 Driver",
-    note: "2026-05-15 (사용자 코멘트 pid 398736849): loft 9도/11도 옵션 분리 안 됨 — 옵션 parser 보강 전 차단. 일반인 친화 X (niche).",
+    note: "Wave 90 1차 후보. 2026-05-15: loft 옵션 parser 보강 전 사용자 노출 차단. 카테고리 internal_only라 시세 학습은 계속.",
   },
   sport_golf_titleist_tsr3_driver: {
     status: "blocked",
     label: "Titleist TSR3 Driver",
-    note: "2026-05-15: 동일 (loft 옵션 분리 불가). 카테고리 전체 차단 결정.",
+    note: "동일 (loft 옵션 parser 보강 전 사용자 노출 차단).",
   },
   // 미진입 (측정 불충분): watch_gshock_ga2100 (NRtrue 28건, 옛 parser version), watch_gshock_gmwb5000 (parseRate 55%),
   // watch_seiko_5_sports_srpd (1건), watch_seiko_5_sports_sbsa (0건), camera_sony_a6400 (production 0건)
@@ -374,9 +374,9 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minTrustedKeys: 5,
   },
   sport_golf: {
-    status: "blocked",
+    status: "internal_only",
     label: "Golf",
-    note: "2026-05-15 (사용자 코멘트 pid 398736849): loft 9도/11도 옵션 parser 미보강. 일반인 친화 X — 시계와 동일 결정.",
+    note: "Wave 90 source 다양화 1차 후보. 2026-05-15: loft 옵션 parser 보강 전 사용자 노출 보류, 시세 학습만 허용.",
     minReadyPool: 5,
     minParseRate: 0.9,
     minTrustedKeys: 4,
