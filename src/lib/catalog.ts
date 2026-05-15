@@ -1430,9 +1430,27 @@ const CORE_TABLET_CATALOG: Sku[] = [
     modelName: "iPad 10th gen",
     aliases: ["아이패드 10세대", "아이패드10세대", "iPad 10th gen"],
     mustContain: [["아이패드", "ipad"], ["10세대", "10 세대", "10th", "ipad 10"]],
-    mustNotContain: ["프로", "pro", "에어", "air", "미니", "mini", ...TABLET_NOISE],
+    mustNotContain: ["프로", "pro", "에어", "air", "미니", "mini", "11세대", "11 세대", "11th", "a16", ...TABLET_NOISE],
     msrpKrw: 680000,
     released: 2022,
+  },
+  // Wave 111g (2026-05-15): iPad A16 (11세대) Apple 2024-10 신상.
+  {
+    id: "ipad-11",
+    brand: "Apple",
+    category: "tablet",
+    modelName: "iPad 11th gen (A16)",
+    aliases: ["아이패드 11세대", "아이패드11세대", "iPad 11th gen", "iPad A16"],
+    mustContain: [["아이패드", "ipad"], ["11세대", "11 세대", "11th", "ipad 11", "a16"]],
+    mustNotContain: [
+      "아이패드 프로", "아이패드프로", "ipad pro",
+      "에어", "air", "미니", "mini",
+      "10세대", "10 세대", "10th",
+      "a17", "a18",
+      ...TABLET_NOISE,
+    ],
+    msrpKrw: 459000,
+    released: 2024,
   },
   {
     id: "galaxy-tab-s8",
