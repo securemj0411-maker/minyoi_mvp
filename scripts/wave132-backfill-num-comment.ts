@@ -129,6 +129,25 @@ async function main() {
     return;
   }
 
+  // --raw <pid,pid,…> 모드: bunjang API raw JSON 직접 fetch + comment 관련 key 찾기
+  const rawArg = process.argv.find((a) => a.startsWith("--raw="));
+  if (rawArg) {
+    const pids = rawArg.slice("--raw=".length).split(",").map(Number).filter(Number.isFinite);
+    for (const pid of pids) {
+      const url = `https://api.bunjang.co.kr/api/pms/v3/products-detail/${pid}?viewerUid=-1`;
+      const res = await fetch(url);
+      const json: any = await res.json();
+      const data = json?.data ?? {};
+      const product = data?.product ?? {};
+      const metrics = product?.metrics ?? {};
+      console.log(`\npid=${pid}`);
+      console.log("  product keys:", Object.keys(product).filter((k) => /comm|chat|inquir|talk|reply/i.test(k)));
+      console.log("  metrics keys:", Object.keys(metrics).filter((k) => /comm|chat|inquir|talk|reply/i.test(k)));
+      console.log("  metrics ALL:", JSON.stringify(metrics, null, 2));
+    }
+    return;
+  }
+
   console.log("Wave 132 backfill: loading pool pids…");
   const pids = await loadPoolPids();
   console.log(`Pool 매물 ${pids.length}건 — 댓글수 fetch 시작 (concurrency=${CONCURRENCY})`);

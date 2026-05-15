@@ -219,7 +219,11 @@ export async function fetchDetail(pid: string): Promise<DetailData | null> {
         null,
       viewCount: firstNumber(metricsData.viewCount, metricsData.views, metricsData.numViews, product?.viewCount, product?.numViews),
       favoriteCount: firstNumber(metricsData.favoriteCount, metricsData.favorites, metricsData.numFaved, product?.favoriteCount, product?.numFaved),
-      commentCount: firstNumber(metricsData.commentCount, metricsData.comments, metricsData.numComments, product?.commentCount, product?.numComments),
+      // Wave 132 (2026-05-16): 사용자 검증으로 발견 — 번개장터 UI "댓글 N개" = metrics.buntalkCount (번개톡/채팅 문의수).
+      // metrics.commentCount는 다른 필드로 거의 항상 0. 옛 매핑 5 path 모두 wrong field 보고 있었음.
+      // 사용자 본 매물 pid 402009410 → buntalkCount=15 / commentCount=0, pid 398031598 → buntalkCount=8 / commentCount=0.
+      // commentCount 응답 type은 "흥정/호가 괴리" 신호 — pool 진입 차단 기준 (>= 8).
+      commentCount: firstNumber(metricsData.buntalkCount, metricsData.commentCount, metricsData.comments, metricsData.numComments, product?.commentCount, product?.numComments),
       shopReviewRating: product?.inspectionStatus != null || shop?.reviewRating != null
         ? Number(shop?.reviewRating ?? 0) || null
         : null,
