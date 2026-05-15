@@ -132,15 +132,27 @@ export function buildCandidatePoolRows(input: {
     const sku = input.catalogById.get(row.skuId ?? "");
     const category = parsed?.category ?? sku?.category ?? null;
 
-    // Wave 106: comparable_key 에 unknown_chip / unknown_generation 박힌 매물 풀 진입 차단.
-    // 베타테스터 보고 — "12.9 2018 모델을 2020으로 보여줌" root cause:
-    //   parser가 generation 못 잡으면 unknown_chip 박음 → comparable_key가 broad →
-    //   같은 unknown_chip 그룹의 다른 generation (5/6세대) 시세와 mixed → 잘못된 sku_median.
-    // 정확성 우선 (§12b) — generation 식별 안 되면 풀 진입 X (자연 turnover까지 대기).
+    // Wave 106: comparable_key 에 critical_unknown 토큰 박힌 매물 풀 진입 차단 (systemic).
+    // option-parser.ts:criticalUnknown 정의 — 카테고리별 critical:
+    //   tablet: unknown_chip, unknown_screen, unknown_storage, unknown_connectivity
+    //   laptop: unknown_generation, unknown_chip, unknown_ram, unknown_ssd
+    //   smartphone: unknown_storage
+    //   smartwatch: unknown_size
+    //   earphone: unknown_connector, unknown_anc
+    //   desktop: unknown_ram, unknown_ssd (Wave 106 추가)
+    // unknown_X 박힌 매물 풀 진입 시 같은 unknown 그룹 내 다른 변형과 시세 mixed →
+    // 사용자 카드에 잘못된 sku_median (베타테스터 보고 #40 패턴).
+    // 정확성 우선 (§12b): 식별 안 되는 옵션 매물은 풀 진입 X.
+    // unknown_connectivity 만 less critical (wifi/cellular 가격 차이 작음) — 차단 안 함.
     const comparableKeyEarly = parsed?.comparable_key ?? "";
-    if (comparableKeyEarly.includes("unknown_chip") || comparableKeyEarly.includes("unknown_generation")) {
+    const CRITICAL_UNKNOWN_TOKENS = [
+      "unknown_chip", "unknown_generation", "unknown_storage", "unknown_screen",
+      "unknown_ram", "unknown_ssd", "unknown_size", "unknown_connector", "unknown_anc",
+    ];
+    const unknownHit = CRITICAL_UNKNOWN_TOKENS.find((t) => comparableKeyEarly.includes(t));
+    if (unknownHit) {
       skipped += 1;
-      invalidations.push({ pid, reason: "comparable_key_unknown_chip_or_generation" });
+      invalidations.push({ pid, reason: `comparable_key_${unknownHit}` });
       continue;
     }
 

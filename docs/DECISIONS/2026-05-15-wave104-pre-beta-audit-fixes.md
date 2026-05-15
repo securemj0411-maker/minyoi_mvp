@@ -808,6 +808,52 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 42. systemic 검토 — critical_unknown 9개 토큰 일괄 차단 + trim path 검증
+
+- 시간: 2026-05-16 11:10 KST
+- MJ 지적 ("수동으로 무식하게 하지말고 유기적/능동적으로"): 방금 fix들 (#40 unknown_chip, #41 fallbackMedian) 의 systemic 확장.
+
+### 42a. critical_unknown 9개 토큰 풀 진입 차단 (#40 systemic 확장)
+
+- #40 fix 는 unknown_chip + unknown_generation 만 차단 (fragment).
+- option-parser.ts:criticalUnknown 정의 — 카테고리별 critical token 9개:
+  - tablet: unknown_chip, unknown_screen, unknown_storage, unknown_connectivity
+  - laptop: unknown_generation, unknown_chip, unknown_ram, unknown_ssd
+  - smartphone: unknown_storage
+  - smartwatch: unknown_size
+  - earphone: unknown_connector, unknown_anc
+  - desktop (코드 누락이지만 실제 critical): unknown_ram, unknown_ssd
+- 같은 패턴 — unknown_X 박힌 매물 풀 진입 시 다른 변형과 시세 mixed → 잘못된 sku_median.
+- ready 풀 진단:
+  - unknown_connector 3건 (AirPods Max)
+  - unknown_ram 6건 (iMac M3)
+  - 총 9건 즉시 invalidate (unknown_connectivity 12건은 less critical — wifi/cellular 가격 차이 작음, 차단 X)
+- code fix (`candidate-pool-builder.ts`):
+  - `CRITICAL_UNKNOWN_TOKENS` 배열로 9개 토큰 정의.
+  - `find()` 로 매칭 → reason='comparable_key_<token>' 박음.
+
+### 42b. trustedMedian path trim 검증 (#41 systemic 확장)
+
+- #41 fix 는 fallbackMedian 만 trim 적용. trustedMedian path 도 같은 issue 있는지?
+- 검증 — `mvp_market_price_daily.blended_median_price` 계산 (`tick-pipeline.ts:2507-2532`):
+  - `trimmedSellerMarket` 호출 → `madTrim` 적용된 seller-representative median ✅
+  - `blendedMedian` = sold/active 가중 평균 (trim된 median 사용)
+- **결론: trustedMedian path 는 이미 trim 박힘.** #41 의 fallbackMedian 만 누락이었음. 추가 fix X.
+
+### 42c. 검증
+
+- tsc cache 일시 (런타임 무관).
+- ready 풀 9건 invalidate.
+- 신규 매물부터는 candidate-pool-builder gate 에서 자동 차단.
+
+### 42d. 다음 systemic 후보 (보류)
+
+- **listing_type 자동 reparse 매커니즘** — 코드 keyword 추가 시 옛 매물 자동 update 매커니즘 X. 자연 turnover (며칠) 로 해결 vs RPC 신규 (별도 wave).
+- **broad sku_name 카드 UX** — "iPad Pro" 만 카드 표시 → 사용자가 generation 모름 → 헷갈림 (베타테스터 패턴). 카드 UI 보강 (큰 작업, 별도 wave).
+- **외부 손상 / 액정 깨짐 differential** — condition_score 차별 비교 (별도 wave).
+
+- commit: pending
+
 ## 41. fallbackMedian outlier trim 누락 fix (MJ 코멘트 #3)
 
 - 시간: 2026-05-16 10:55 KST
