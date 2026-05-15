@@ -94,8 +94,8 @@ export default function SafetyStatsMarquee() {
       className="w-full overflow-hidden border-b border-emerald-100 bg-emerald-50/80 py-1.5 dark:border-emerald-900 dark:bg-emerald-950/40"
       aria-label="오늘 차단된 의심 매물 통계"
     >
-      <div className="marquee-track flex whitespace-nowrap text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
-        {/* duplicate for seamless loop */}
+      <div className="safety-marquee-track flex whitespace-nowrap text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+        {/* duplicate for seamless loop. CSS는 globals.css 의 .safety-marquee-track 클래스. */}
         <span className="mx-6 flex items-center gap-1.5">
           <ShieldIcon />
           <span>{fullText}</span>
@@ -105,30 +105,6 @@ export default function SafetyStatsMarquee() {
           <span>{fullText}</span>
         </span>
       </div>
-      <style jsx>{`
-        .marquee-track {
-          animation: marqueeScroll 60s linear infinite;
-          will-change: transform;
-        }
-        @keyframes marqueeScroll {
-          from {
-            transform: translateX(0);
-          }
-          to {
-            transform: translateX(-50%);
-          }
-        }
-        /* 호버 시 정지 (사용자가 텍스트 읽기 편하게) */
-        .marquee-track:hover {
-          animation-play-state: paused;
-        }
-        /* 모션 민감 사용자 배려 */
-        @media (prefers-reduced-motion: reduce) {
-          .marquee-track {
-            animation: none;
-          }
-        }
-      `}</style>
     </div>
   );
 }

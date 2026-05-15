@@ -221,3 +221,21 @@ a {
 .dark .hover\:bg-\[\#fffaf1\]:hover {
   background-color: #27272a !important;
 }
+
+/* Wave 139d (2026-05-16): safety-stats-marquee 우→좌 흐름. styled-jsx 없이 plain CSS. */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.safety-marquee-track {
+  animation: marquee-scroll 60s linear infinite;
+  will-change: transform;
+}
+.safety-marquee-track:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .safety-marquee-track {
+    animation: none;
+  }
+}
