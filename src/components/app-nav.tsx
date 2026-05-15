@@ -170,6 +170,7 @@ export default function AppNav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [accountSheetOpen, setAccountSheetOpen] = useState(false);
+  const [subscription, setSubscription] = useState<{ isPro: boolean; isAdmin: boolean; proUntil: string | null; source: string } | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [adminOverride, setAdminOverride] = useState(false);
   const adminClickCountRef = useRef(0);
@@ -222,6 +223,17 @@ export default function AppNav() {
     window.addEventListener("minyoi:credits-changed", handler);
     return () => window.removeEventListener("minyoi:credits-changed", handler);
   }, [refreshCredits]);
+
+  // Subscription status fetch (account sheet에 plan 표시).
+  useEffect(() => {
+    if (!user) { setSubscription(null); return; }
+    let cancelled = false;
+    fetch("/api/me/subscription", { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (!cancelled && data) setSubscription(data); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user]);
 
   useEffect(() => {
     setAdminOverride(hasClientAdminOverride());
@@ -513,11 +525,7 @@ export default function AppNav() {
                       </span>
                     </div>
                   </div>
-                  <div className="rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-900">
-                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#5d735f] dark:text-emerald-400">화면 모드</div>
-                    <ThemeToggle className="mt-2 w-full" />
-                  </div>
-                  {/* 계정 chip — 클릭 시 bottom sheet */}
+                  {/* 계정 chip — 클릭 시 bottom sheet (이메일/플랜/화면모드/충전/로그아웃) */}
                   <button
                     type="button"
                     onClick={() => setAccountSheetOpen(true)}
@@ -584,13 +592,40 @@ export default function AppNav() {
               ) : null}
             </div>
           </div>
+          {/* 구독 플랜 표시 */}
+          <div className="mt-3 flex items-center justify-between rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-950/50">
+            <span className="text-[11px] font-black uppercase tracking-[0.16em] text-[#5d735f] dark:text-emerald-400">현재 플랜</span>
+            {subscription?.isAdmin ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--brand-accent-strong)] px-2.5 py-1 text-[11px] font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
+                운영자 (Pro 전권)
+              </span>
+            ) : subscription?.isPro ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-black text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                Pro
+                {subscription.proUntil ? (
+                  <span className="text-[10px] font-semibold opacity-70">
+                    · {new Date(subscription.proUntil).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })}까지
+                  </span>
+                ) : null}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#ddd4c7] bg-white px-2.5 py-1 text-[11px] font-black text-[#7a8478] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+                Starter
+              </span>
+            )}
+          </div>
+          {/* 화면 모드 */}
+          <div className="mt-2 rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-950/50">
+            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#5d735f] dark:text-emerald-400">화면 모드</div>
+            <ThemeToggle className="mt-2 w-full" />
+          </div>
           <div className="mt-3 space-y-1.5">
             <Link
               href="/plans"
               onClick={() => { setAccountSheetOpen(false); setMobileDrawerOpen(false); }}
               className="flex w-full items-center justify-between rounded-xl bg-[#f6efe4] px-3 py-3 text-sm font-bold text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
-              <span>{admin ? "충전하기" : "요금제 관리"}</span>
+              <span>{admin ? "충전하기" : subscription?.isPro ? "요금제 관리" : "Pro 업그레이드"}</span>
               <span className="text-zinc-400">↗</span>
             </Link>
             <button
