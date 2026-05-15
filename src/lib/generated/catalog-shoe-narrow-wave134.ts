@@ -33,6 +33,12 @@ const COMMON_BLOCK = [
 // Wave 136: 신발 카테고리 공통 collab/한정판 차단 (LAUNCH_PLAN 12b: Precision > Recall)
 // 실제 매물에서 narrow에 끼어든 collab들 (시세 왜곡 원인) — 명시 매물 reject default
 const COLLAB_BLOCK = [
+  // Wave 139: 추가 collab
+  "billie eilish", "빌리 아일리시", "billie",
+  "tyler the creator", "타일러 더 크리에이터", "골프 왕",
+  "drake", "드레이크", "nocta", "녹타",
+  "rhude", "루드",
+  "casablanca", "카사블랑카",
   // 디자이너/스트릿
   "off-white", "off white", "오프화이트", "오프-화이트",
   "travis", "트래비스", "trvis",
@@ -421,6 +427,12 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "디스켓", "disquette", "디퍼", "dipper", "디스코",
       "웨더하이브리드", "weather hybrid", "하이브리드",
       "디퍼 레그워머", "레그워머", "legwarmer",
+      // Wave 139: 추가 변형 차단
+      "미니 ii", "mini ii", "미니2", "mini 2", "미니투",
+      "클리어 미니", "clear mini",
+      "스웨이드 레더 미니", "스웨이드 레더",
+      "그레니", "grani",
+      "넵튠", "neptune",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],
@@ -476,6 +488,11 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "dmxl", "xl ", "엑스라지",
       "코어", "core",  // 코어 색상 (한정)
       "스튜디오", "studio",  // 할 스튜디오 등
+      // Wave 139: 추가 변형
+      "스터드", "stud", "wanama",
+      "워크", "work boot",  // workboot 변형
+      "톨", "tall",
+      "j ",  // 1460 J (키즈/주니어)
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],
@@ -534,6 +551,12 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "mie", "made in england", "메이드 인 잉글랜드",
       "vintage", "빈티지",
       "버클", "buckle",
+      // Wave 139: 추가 변형
+      "2076",  // 별도 모델 (2976과 다름)
+      "하이", "hi top", "하이탑", "high",
+      "옥스포드", "oxford",
+      "메리제인", "mary jane",
+      "스무스 vintage", "스무스 빈티지",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],

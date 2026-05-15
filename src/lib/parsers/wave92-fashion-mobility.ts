@@ -84,6 +84,31 @@ export function parseShoeSizeMm(text: string): number | null {
     const mm = Math.round(cm * 10);
     if (mm >= 220 && mm <= 309) return mm;
   }
+  // Wave 139 (2026-05-16): EU 사이즈 → mm 변환 (어그/닥마/유럽 브랜드 매물 흔함)
+  // 35-46 → 220-300mm. 명시 "EU 38" / "eu39" / "유로 40" 또는 어그 매물 "(35)" 같은 단독 표기.
+  // 보수적: "EU" prefix 있을 때만 (false positive 차단). 단독 35-46은 미국/유럽 미구분.
+  const euMatch = text.match(/(?:eu|유로|유럽|europe)\s*(3[5-9]|4[0-6])\b/i);
+  if (euMatch) {
+    const eu = Number(euMatch[1]);
+    const EU_TO_MM: Record<number, number> = {
+      35: 220, 36: 230, 37: 235, 38: 240, 39: 245,
+      40: 250, 41: 260, 42: 265, 43: 275, 44: 280, 45: 285, 46: 290,
+    };
+    const mm = EU_TO_MM[eu];
+    if (mm !== undefined && mm >= 220 && mm <= 309) return mm;
+  }
+  // Wave 139: US 사이즈 → mm 변환 (보수적 unisex 매핑, "US" prefix 명시 필요)
+  // US 5-13 → mm. 남/녀 미구분 = 남성 기준 (정확도 우선, ±10mm 오차 받아들임).
+  const usMatch = text.match(/(?:us|미국)\s*([5-9]|1[0-3])\b/i);
+  if (usMatch) {
+    const us = Number(usMatch[1]);
+    const US_TO_MM: Record<number, number> = {
+      5: 230, 6: 240, 7: 250, 8: 260, 9: 270,
+      10: 280, 11: 290, 12: 300, 13: 310,
+    };
+    const mm = US_TO_MM[us];
+    if (mm !== undefined && mm >= 220 && mm <= 309) return mm;
+  }
   return null;
 }
 
