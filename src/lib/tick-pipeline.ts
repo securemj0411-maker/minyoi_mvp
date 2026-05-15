@@ -2930,6 +2930,7 @@ export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMod
         state_reason: "lifecycle_exception",
       });
     }
+    })); // Promise.all wave 끝
   }
 
   stats.upserted = await enqueueMarketKeyInvalidations(marketInvalidations);
