@@ -943,12 +943,19 @@ type AiClassification = {
   confidence: AiConfidence;
   reason: string;
   riskKeywords: string[];
+  // Wave 141 (2026-05-16): AI condition_class 분류 — 정규식 못 잡는 모호 매물의 description 종합 판단.
+  // mint/clean/normal/worn/low_batt/flawed 중 하나. null이면 AI도 판단 불가.
+  conditionClass: AiConditionClass | null;
+  conditionReason: string;
   model: string;
   inputTokens: number | null;
   outputTokens: number | null;
   costUsd: number | null;
   cached?: boolean;
 };
+
+// Wave 141 (2026-05-16): AI 분류 가능한 condition class (option-parser.ts의 ConditionClass와 동일).
+type AiConditionClass = "mint" | "clean" | "normal" | "worn" | "low_batt" | "flawed";
 type AiReviewStats = {
   requested: number;
   cacheHits: number;
@@ -1266,6 +1273,9 @@ async function fetchAiCache(row: PipelineRow, hash: string): Promise<AiClassific
     confidence: cached.confidence,
     reason: cached.reason ?? "",
     riskKeywords: cached.risk_keywords ?? [],
+    // Wave 141: cache row에 condition 정보 없음 (옛 cache). 신규 AI 호출만 condition 반환.
+    conditionClass: null,
+    conditionReason: "",
     model: cached.model ?? "cache",
     inputTokens: null,
     outputTokens: null,
@@ -1303,6 +1313,12 @@ function parseAiClassification(raw: unknown): AiClassification | null {
   const allowedTypes: AiListingType[] = ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "commercial", "unknown"];
   const allowedDecisions: AiDecision[] = ["pass", "hold", "reject"];
   const allowedConfidence: AiConfidence[] = ["high", "medium", "low"];
+  // Wave 141: condition_class 파싱.
+  const allowedConditions: AiConditionClass[] = ["mint", "clean", "normal", "worn", "low_batt", "flawed"];
+  const rawCondition = String(obj.condition_class ?? obj.conditionClass ?? "");
+  const conditionClass: AiConditionClass | null = allowedConditions.includes(rawCondition as AiConditionClass)
+    ? (rawCondition as AiConditionClass)
+    : null;
   return {
     listingType: allowedTypes.includes(listingType) ? listingType : "unknown",
     decision: allowedDecisions.includes(decision) ? decision : null,
@@ -1311,11 +1327,78 @@ function parseAiClassification(raw: unknown): AiClassification | null {
     riskKeywords: Array.isArray(obj.risk_keywords)
       ? obj.risk_keywords.map(String).slice(0, 8)
       : (Array.isArray(obj.riskKeywords) ? obj.riskKeywords.map(String).slice(0, 8) : []),
+    conditionClass,
+    conditionReason: String(obj.condition_reason ?? obj.conditionReason ?? "").slice(0, 200),
     model: AI_CLASSIFIER_MODEL,
     inputTokens: null,
     outputTokens: null,
     costUsd: null,
   };
+}
+
+/**
+ * Wave 141 (2026-05-16): 모호 매물 condition_class AI 분류 (B 옵션).
+ * 정규식 conditionFromText가 못 잡는 매물에만 호출 (월 ~$9 비용).
+ * 호출 조건: condition_score 0.55~0.75 (애매 영역) + 명확한 condition_notes 없음.
+ *
+ * Input: 매물 title + description
+ * Output: condition_class (mint/clean/normal/worn/low_batt/flawed)
+ *
+ * AI L2 review (의심 매물용)와 별개 — 모든 detail 처리 매물 중 condition 모호한 것만.
+ * gpt-4.1-mini, 출력 30 토큰, 매물당 ~$0.0002.
+ */
+export async function classifyConditionWithAi(
+  title: string,
+  description: string,
+): Promise<AiConditionClass | null> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return null;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5_000);
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json",
+      },
+      signal: controller.signal,
+      body: jsonBody({
+        model: AI_CLASSIFIER_MODEL,
+        temperature: 0,
+        response_format: { type: "json_object" },
+        max_tokens: 60,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You classify a Korean secondhand listing's actual condition based on its description. Return only JSON: {\"condition_class\": \"<class>\"}. Six classes: mint (unopened/sealed/battery 100%/never used), clean (S-급/full-set/AppleCare/cycle≤50/거의 새것), normal (typical used, no notable damage signal), worn (cosmetic_wear/사용감/잔기스/case 끼면 안 보임/예민하지 않은 분께 추천), low_batt (battery <85% explicit), flawed (any functional defect — 흰점/번인/잔상/카메라 issue/물 침수/유리 깨짐/액정 손상/강아지 깨물/낙상 etc, even if seller claims '정상 작동'). Read context, not just keywords. Seller self-grading (특S급/리퍼급/SS급) does NOT decide. flawed wins over seller's '정상' claim if defect is described.",
+          },
+          {
+            role: "user",
+            content: JSON.stringify({
+              title: title.slice(0, 100),
+              description: description.slice(0, 500),
+              allowed: ["mint", "clean", "normal", "worn", "low_batt", "flawed"],
+            }),
+          },
+        ],
+      }),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const content = json.choices?.[0]?.message?.content;
+    if (typeof content !== "string") return null;
+    const parsed = JSON.parse(content);
+    const cls = String(parsed.condition_class ?? "");
+    const allowed: AiConditionClass[] = ["mint", "clean", "normal", "worn", "low_batt", "flawed"];
+    return allowed.includes(cls as AiConditionClass) ? (cls as AiConditionClass) : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null> {
@@ -1340,7 +1423,7 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
           {
             role: "system",
             content:
-              "You are a conservative second-opinion reviewer for Korean secondhand resale candidates. Return only JSON with decision, listing_type, confidence, reason, risk_keywords. decision must be pass, hold, or reject. pass is allowed only when the listing is clearly a full working unit, the SKU/options match, it is currently sellable, and no unresolved risk remains. If there is any doubt, choose hold. Reject clear counterfeit/parts/buying/callout/damaged/accessory/multi/commercial listings. Positive bias is forbidden.",
+              "You are a conservative second-opinion reviewer for Korean secondhand resale candidates. Return only JSON with decision, listing_type, confidence, reason, risk_keywords, condition_class, condition_reason. decision must be pass, hold, or reject. pass is allowed only when the listing is clearly a full working unit, the SKU/options match, it is currently sellable, and no unresolved risk remains. If there is any doubt, choose hold. Reject clear counterfeit/parts/buying/callout/damaged/accessory/multi/commercial listings. Positive bias is forbidden. condition_class: classify the item's actual condition from the description (read context, not just keywords). Six levels: mint (unopened/sealed/battery 100%), clean (S-급/full-set/AppleCare/거의 새것 with battery 95%+), normal (typical used, no notable signals), worn (cosmetic_wear/사용감/잔기스 mentioned), low_batt (battery <85% explicit), flawed (any functional defect like 흰점/번인/잔상/카메라 issue/물에 빠짐/유리 깨짐/액정 손상 — even if seller claims it still works, flawed wins). Seller self-grading (특S급/리퍼급/SS급) does not override description evidence — read the actual condition text.",
           },
           {
             role: "user",
@@ -1348,6 +1431,9 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
               allowed_decision: ["pass", "hold", "reject"],
               allowed_listing_type: ["normal", "counterfeit", "parts", "buying", "callout", "damaged", "accessory", "multi", "commercial", "unknown"],
               allowed_confidence: ["high", "medium", "low"],
+              // Wave 141 (2026-05-16): condition_class — description 종합 판단 (정규식 못 잡는 문맥 케이스).
+              allowed_condition_class: ["mint", "clean", "normal", "worn", "low_batt", "flawed"],
+              condition_policy: "Read the description as a human would. flawed wins over seller's '정상 작동' claim if any defect is described (흰점/잔상/번인/액정 깨짐/카메라 문제/물 침수/충격/낙상/도장 까짐). Seller grading words (특S급/리퍼급/SS급) do NOT decide — only actual described state matters. If the seller says '5번 정도 들었어요' or 'cycle 30회' with no damage signal, that is mint/clean. If '예민하지 않은 분께 추천' or 'case 끼면 안 보임' appears, that is actually worn (seller is hedging). low_batt only if battery percent <85 is explicit. Output the single best class.",
               policy: "This is not a primary classifier. It is an escrow check for candidates that rules already found suspicious or unusually profitable. If the listing explicitly says fake/replica/Taobao/counterfeit, classify counterfeit and reject. If it is only a charging case/body/unit/one side/protective case/cover/pouch/accessory, classify parts or accessory and reject. If it is a buying post, classify buying and reject. If the title lists multiple different models/SKUs or selectable models with one price, classify multi and reject. If it is a commercial/dealer-style listing — stock liquidation (재고정리), first-come specials (선착순특가), telco bundle deals (완납폰/제휴카드/유심 그대로/통신사 특가), bait-style new-product clearance with multiple model options — classify commercial and reject. If status, SKU, options, condition, or sellability is not clear enough, choose hold. Only choose pass with high confidence.",
               parser_policy: "Parser metadata is context, not permission to rescue a listing. If model identity is missing, SKU/options conflict, or parser critical unknowns remain unresolved from the text, choose hold. AI pass must not override deterministic sold/inactive, buying, damaged, counterfeit, accessory-only, or category-readiness blocks.",
               listing: {

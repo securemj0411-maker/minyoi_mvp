@@ -92,7 +92,26 @@ export default function SafetyStatsMarquee() {
     })();
   }, []);
 
-  if (!stats || (stats.total_blocked_7d ?? 0) === 0) return null;
+  // 2026-05-16 (사용자 코멘트): 데이터 로드 전 빈 상태 → 갑자기 숫자 등장 = jarring.
+  // skeleton placeholder — frame 은 첫 paint 부터 보이고 숫자만 fade-in.
+  if (!stats) {
+    return (
+      <div className="border-b border-emerald-100 bg-emerald-50/60 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-1.5">
+          <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800/70 dark:text-emerald-300/70">
+            <span className="text-emerald-600/70 dark:text-emerald-400/70"><ShieldIcon /></span>
+            <span>오늘 미뇨이 AI가 차단한 상품 수:</span>
+            <span className="inline-block h-3 w-12 animate-pulse rounded bg-emerald-200/80 align-middle dark:bg-emerald-900/60" />
+          </span>
+          <span className="flex items-center gap-0.5 rounded-full bg-emerald-600/40 px-2 py-0.5 text-[9px] font-black text-white/70">
+            상세
+            <ChevronDownIcon open={false} />
+          </span>
+        </div>
+      </div>
+    );
+  }
+  if ((stats.total_blocked_7d ?? 0) === 0) return null;
 
   const total = stats.total_blocked_7d;
   const collectionStageTotal = stats.collection_stage_total_7d ?? 0;

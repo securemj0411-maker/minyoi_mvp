@@ -24,6 +24,7 @@ import { notifyOperationalAlerts, type OperationalAlert } from "@/lib/operationa
 import { extractConditionClass, parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import {
   applyAiReview,
+  classifyConditionWithAi,
   classifyListing,
   parseShippingFromDescription,
   parseShippingFromTrade,
@@ -1564,6 +1565,8 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
             qty: detail.qty ?? null,
             // Wave 138b: sold-out 매물도 description hash (다중 ID 분석).
             description_hash: computeDescriptionHash(detail.description),
+            // Wave 140: sold-out 매물도 bunjang condition label 저장.
+            bunjang_condition_label: detail.conditionLabel ?? null,
             detail_status: "done",
             detail_enriched_at: now,
             detail_error: null,
@@ -1611,6 +1614,9 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           skuId: sku?.id ?? null,
           skuName: sku?.modelName ?? null,
           category: sku?.category ?? null,
+          // Wave 140: 번개 detail 의 product.condition (셀러 명시) → parser condition_class strong override.
+          bunjangConditionLabel: detail.conditionLabel ?? null,
+          // 2026-05-16: 번개 detail의 product.condition (셀러 명시) → parser condition_class strong override.
         });
         const existingParsed = existingParsedByPid.get(Number(claim.pid));
         const now = new Date().toISOString();
@@ -1637,6 +1643,8 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           qty: detail.qty ?? null,
           // Wave 138b (2026-05-16): description hash — 다중 ID 사기 그룹 탐지.
           description_hash: computeDescriptionHash(detail.description),
+          // Wave 140 (2026-05-16 사용자 코멘트 #122): 번개 detail의 product.condition 저장. parser condition_class weight.
+          bunjang_condition_label: detail.conditionLabel ?? null,
           detail_status: "done",
           detail_enriched_at: now,
           detail_error: null,
@@ -1667,6 +1675,19 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
               last_seen_at: now,
               updated_at: now,
             }]);
+          }
+          // Wave 141 B (2026-05-16): 모호 매물 condition AI 분류 — 정규식 fail 매물에만 호출 (월 ~$9).
+          // 조건: condition_score 모호(0.55~0.75) + 명확한 condition_notes 없음 + bunjang label 없음
+          // → AI 호출 → 결과로 conditionClass override.
+          const ambiguousCondition = parsed.conditionScore >= 0.55 && parsed.conditionScore <= 0.75;
+          const hasStrongSignal = parsed.conditionNotes.some((n) =>
+            ["new_or_open_box", "display_defect", "screen_replaced", "faceid_issue",
+             "water_damage", "parts_only", "low_battery_health"].includes(n));
+          if (ambiguousCondition && !hasStrongSignal && !detail.conditionLabel) {
+            const aiClass = await classifyConditionWithAi(claim.name, detail.description).catch(() => null);
+            if (aiClass) {
+              parsed.conditionClass = aiClass;
+            }
           }
           await upsertRows("mvp_listing_parsed", [toParsedListingRow(claim.pid, parsed)], "pid");
           if (existingParsed?.comparable_key && existingParsed.comparable_key !== parsed.comparableKey) {

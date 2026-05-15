@@ -105,9 +105,25 @@ type ParseInput = {
   skuId?: string | null;
   skuName?: string | null;
   category?: Sku["category"] | null;
+  // Wave 140 (2026-05-16 사용자 코멘트 #122): 번개 detail API 의 product.condition.
+  // "사용감 많음" / "사용감 적음" / "사용감 없음" / "거의 새것" / "새상품" 등.
+  // 셀러가 직접 선택한 metadata — description 자연어 false positive 보다 신뢰도 높음.
+  bunjangConditionLabel?: string | null;
 };
 
-const PARSER_VERSION = "option-parser-v43";
+// Wave 140 (2026-05-16): 번개 condition label → condition_class strong override.
+// 셀러 명시 metadata 라 description 자연어보다 우선 (LAUNCH_PLAN 12b 정합 — 명시만).
+function bunjangLabelToConditionClass(label: string | null | undefined): ConditionClass | null {
+  if (!label) return null;
+  const l = label.toLowerCase().replace(/\s+/g, "");
+  if (/사용감많음|많이사용/.test(l)) return "worn";
+  if (/사용감없음|사용감거의없음|거의새것|새것같|새상품급/.test(l)) return "clean";
+  if (/사용감적음|상태좋|좋음/.test(l)) return "normal";
+  if (/새상품|미개봉/.test(l)) return "unopened";
+  return null;
+}
+
+const PARSER_VERSION = "option-parser-v44";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -823,16 +839,16 @@ function parseAirpodsConnector(text: string) {
 function defaultAirpodsConnector(model: string | null, text: string) {
   const lower = normalize(text).toLowerCase();
   if (!model?.includes("airpods")) return null;
+  // 2026-05-16: airpods_pro_2 통합 (Lightning + USB-C 한 SKU). connector default 안 박음 — 시세 단일 sample.
+  if (model === "airpods_pro_2" || model.startsWith("airpods_pro_2_")) return null;
   if (
-    model.includes("airpods_pro_2_usbc") ||
     model.includes("airpods_4") ||
     model.includes("airpods_pro_3")
   ) return "usbc";
   if (
     model.includes("airpods_2") ||
     model.includes("airpods_3") ||
-    model.includes("airpods_pro_1") ||
-    model.includes("airpods_pro_2_lightning")
+    model.includes("airpods_pro_1")
   ) return "lightning";
   if (model.includes("airpods_max")) {
     if (/202[4-6]|c타입|타입c|usb\s*-?\s*c|usbc|ctype|c핀|c\s*핀|미드나이트|스타라이트|퍼플|오렌지|\ba3184\b|\bmww\d{2}/.test(lower)) return "usbc";
@@ -1010,7 +1026,10 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
     /사용\s*얼마\s*(?:안|않)/i.test(lower) ||
     /(?:구입|구매|받은|개봉)\s*(?:후|뒤|지|한지)\s*[0-9]+\s*(?:주|일|개월|년|달|시간)\s*(?:정도\s*|쯤\s*|만\s*)?사용/i.test(lower) ||
     /[0-9]+\s*(?:주|일|개월|년|달)\s*(?:정도\s*|쯤\s*)?사용\s*했/i.test(lower);
-  const explicitNewSignal = !newSignalNegativePattern && /미개봉|미\s*개봉|새상품|새 제품|새제품|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*미개봉|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|새\s*것|새거|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower);
+  // 2026-05-16 (사용자 코멘트 #121 pid 350167397): "스트랩(새거)" 가 본체 "새거"로 false positive.
+  // "새것/새거/새 것" 단독 매칭 제거 — 액세서리/구성품 context 에서 자주 false positive.
+  // 본체 미개봉만 잡으려면 명확한 키워드 (미개봉/새상품/박스 미개봉/포장 안 뜯음/brand new) 만 유지.
+  const explicitNewSignal = !newSignalNegativePattern && /미개봉|미\s*개봉|새상품|새 제품|새제품|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*미개봉|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower);
   if (explicitNewSignal) add("new_or_open_box", 0.15);
   // 2026-05-15 (사용자 코멘트 pid 406747021): 배터리 효율 100% 매물은 사실상 새제품
   // (Apple 기기는 한 번 사용 시작하면 빠르게 99% 미만으로 떨어짐). 단품 시세 비교군에 끼면 평균 끌어올림.
@@ -1087,6 +1106,50 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   if (/선약|선택\s*약정|확정\s*기변|확정기변|정상\s*해지|정상해지/.test(lower)) add("carrier_status_disclosed", 0.03);
   if (/(할부|미납|요금).{0,12}(남|있|미납)|(?:남은|잔여).{0,8}할부/.test(compact)) add("installment_risk", -0.25);
 
+  // Wave 141 (2026-05-16): 정규식 보강 — 사용자 통찰로 발견된 새 패턴 5종.
+  // sample 100건 학습 결과 정규식이 못 잡는 케이스 다수 발견.
+  //
+  // 1) display_defect 강화 — "흰점/흰 영역/데드픽셀" (옛 잔상/번인은 잡았으나 이거 미수집).
+  //    예: "화면 흰 영역 생겼는데 터치는 문제 없음" → 셀러 우호 표현인데 실제는 flawed.
+  const noWhitePixel = /(?:흰\s*점|흰\s*영역|흰\s*스팟|데드\s*픽셀|dead\s*pixel|황변)\s*(?:없|없음|없습니다|아님|아닙니다)/.test(lower);
+  if (!noWhitePixel && /흰\s*점\s*(?:있|생|보|발견)|흰\s*영역|흰\s*스팟|데드\s*픽셀|dead\s*pixel|화면\s*황변|액정\s*황변/.test(lower)) {
+    add("display_defect", -0.2);
+  }
+
+  // 2) damage signal — "강아지가 깨물/떨어뜨려/낙상/충격" (옛 침수만 잡음, 일반 손상 미수집).
+  //    예: "강아지가 깨물어서 깨졌지만 정상작동" → flawed 명백한데 셀러는 정상 강조.
+  if (/강아지\s*가?\s*(?:깨물|물어)|떨어뜨려\s*(?:깨|금|손상|파손)|떨어진\s*적|낙상|충격\s*받|박살|도장\s*까짐/.test(lower)) {
+    add("repair_or_defect_signal", -0.2);
+  }
+
+  // 3) mint signal 강화 — "사이클 N회 (N≤50)" 명시 추출.
+  //    옛 cycles 인자가 있지만 description 안의 "사이클 21회" 같은 표현은 missed.
+  //    예: "사이클 21회로 거의 새것" → mint 신호 강함.
+  const cycleMatch = lower.match(/사이클\s*(?:수?\s*[:\s]*)?(\d{1,3})\s*회/);
+  if (cycleMatch) {
+    const cycleNum = Number(cycleMatch[1]);
+    if (Number.isFinite(cycleNum)) {
+      if (cycleNum <= 50) add("good_condition", 0.07); // 신선 매물 강한 신호
+      else if (cycleNum > 500) add("high_battery_cycles", -0.05); // 추가 보강 (옛 cycles 인자 보완)
+    }
+  }
+
+  // 4) flawed 강화 — "정상 작동" + "유리 깨짐/금/액정 깨짐" 동시 매칭.
+  //    옛 패턴은 "깨짐 없음" negation은 잡지만, 셀러가 "깨졌지만 정상" 같이 양립 표현 미잡음.
+  //    예: "앞유리 조금 금갔어요 근데 방수기능 됩니다" → 셀러 정상 강조, 실제 flawed.
+  const visibleDamageWithFunctional = /(?:유리\s*(?:깨|금|크랙)|액정\s*(?:깨|금|크랙)|화면\s*(?:깨|금|크랙)|크랙\s*있|금\s*갔|금\s*있).{0,40}(?:정상|이상\s*없|잘\s*됨|작동|기능)/.test(lower) ||
+    /(?:정상\s*작동|이상\s*없).{0,40}(?:유리\s*(?:깨|금|크랙)|액정\s*(?:깨|금|크랙)|화면\s*(?:깨|금|크랙)|크랙\s*있|금\s*갔|금\s*있)/.test(lower);
+  if (visibleDamageWithFunctional) {
+    add("display_defect", -0.15); // 셀러 우호 표현이라도 visible damage는 flawed로
+  }
+
+  // 5) worn signal — 셀러 우회 표현 "예민하지 않은 분께/케이스 끼면 안 보임".
+  //    셀러가 "사용감"이라고 직접 안 적고 우회. 실제는 worn 매물.
+  //    예: "찍힘, 눌림 있어요 외관에 예민하지 않은 분께 추천" → worn 우회 표현.
+  if (/(?:예민하지\s*않은|민감하지\s*않은|꼼꼼하지\s*않은).{0,12}(?:분|사용자|구매자|유저)|케이스\s*끼면\s*(?:안\s*보|티\s*안)|필름\s*붙이면\s*(?:안\s*보|티\s*안)/.test(lower)) {
+    add("cosmetic_wear", -0.05);
+  }
+
   return {
     conditionScore: cap01(score),
     conditionNotes: [...new Set(notes)],
@@ -1159,6 +1222,11 @@ function comparableParts(input: {
   }
   if (category === "earphone") {
     if (!model.includes("airpods")) {
+      return [family, model];
+    }
+    // 2026-05-16: airpods_pro_2 통합 — connector token 안 박음 (Lightning/USB-C 시세 합쳐 정확도 ↑).
+    const isAirpodsPro2 = model === "airpods_pro_2" || model.startsWith("airpods_pro_2_");
+    if (isAirpodsPro2) {
       return [family, model];
     }
     const parts = [family, model, input.airpodsConnector ?? "unknown_connector"];
@@ -1469,6 +1537,12 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     || (category === "monitor" && !monitorModelCode)
     || !comparableKey;
 
+  // Wave 140 (사용자 코멘트 #122): 번개 detail label 우선 — 셀러 명시 metadata.
+  // description 자연어 ("스트랩 새거" 같은 false positive) 보다 신뢰도 높음.
+  // bunjang label 매칭 시 condition_class 강제 override. 매칭 X 면 conditionNotes 기반 결정.
+  const bunjangOverride = bunjangLabelToConditionClass(input.bunjangConditionLabel);
+  const finalConditionClass = bunjangOverride ?? extractConditionClass(conditionNotes);
+
   return {
     parserVersion: PARSER_VERSION,
     contentHash: hashText(`${title}\n${description.slice(0, 1200)}`),
@@ -1489,7 +1563,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     connectivity,
     conditionScore,
     conditionNotes,
-    conditionClass: extractConditionClass(conditionNotes),
+    conditionClass: finalConditionClass,
     parseConfidence,
     needsReview,
     parsedJson: {
@@ -1516,7 +1590,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       tablet_bundle_price_review: tabletBundlePriceReview,
       condition_notes: conditionNotes,
       // Wave 130 (2026-05-16): condition class 박음 — 시세 산정/조회 시 grouping key.
-      condition_class: extractConditionClass(conditionNotes),
+      condition_class: finalConditionClass,
     },
   };
 }
