@@ -15,7 +15,8 @@ export const dynamic = "force-dynamic";
 
 const MAX_DAYS = 90;
 const DEFAULT_DAYS = 30;
-const VALID_CCS = new Set(["mint", "clean", "normal", "worn", "low_batt", "flawed", "all"]);
+// 2026-05-16 (N4): unopened (박스 안 뜯음) 별도 클래스 추가. mint와 분리.
+const VALID_CCS = new Set(["unopened", "mint", "clean", "normal", "worn", "low_batt", "flawed", "all"]);
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -65,7 +66,8 @@ export async function GET(req: NextRequest) {
       if (!byDate.has(r.date)) byDate.set(r.date, []);
       byDate.get(r.date)!.push(r);
     }
-    const fallbackOrder = ccFilter ? [ccFilter, "normal", "all", "clean", "worn", "mint"] : ["all", "normal"];
+    // 2026-05-16 (N4): unopened는 mint와 분리. fallback: unopened → mint → clean → normal → all.
+    const fallbackOrder = ccFilter ? [ccFilter, "mint", "normal", "all", "clean", "worn"] : ["all", "normal"];
     const picked: typeof rows = [];
     for (const [, dateRows] of byDate) {
       let chosen = null;

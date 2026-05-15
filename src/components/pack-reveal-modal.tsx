@@ -259,10 +259,14 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
           </span>
         )}
         {/* 2026-05-16 (사용자 코멘트 id 104/107/109): 시세 출처 명시 강화. */}
-        {/* mint = 미개봉 매물이라 다나와 새 가격 + 번개 mint 매물 기준 (둘이 다른 source). */}
-        {market.conditionClass === "mint" ? (
+        {/* 2026-05-16 (N4): unopened (박스 안 뜯음) vs mint (S급 사용감 거의 없음) 분리. */}
+        {market.conditionClass === "unopened" ? (
           <span className="text-amber-700 dark:text-amber-300 font-bold">
-            📍 다나와 새 가격 + 번개 미개봉 매물 기준
+            📍 다나와 새 가격 기준 (이 매물 미개봉)
+          </span>
+        ) : market.conditionClass === "mint" ? (
+          <span className="text-emerald-700 dark:text-emerald-300 font-bold">
+            📍 번개 S급 매물 {market.sampleCount}건 median
           </span>
         ) : (
           <span className="text-zinc-400 dark:text-zinc-500">

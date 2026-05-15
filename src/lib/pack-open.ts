@@ -503,9 +503,11 @@ function excludedExamplesForKey(comparableKey: string | null) {
 
 // Wave 130 (2026-05-16): condition_class 별 시세 표시. 사업 보고서 L2 — "끼리 비교" retention.
 // 같은 SKU+옵션 매물의 condition별 시세 spread 15~40% (mint 550K vs worn 430K 등).
+// 2026-05-16 (N4): unopened (박스 안 뜯음) vs mint (사용감 거의 없는 S급) 분리.
 const CONDITION_LABEL: Record<string, string> = {
-  mint: "새상품/미개봉",
-  clean: "S급/풀세트",
+  unopened: "미개봉/새상품",
+  mint: "S급 (사용감 거의 없음)",
+  clean: "A급/풀세트",
   normal: "일반",
   worn: "사용감",
   low_batt: "배터리 저하",
@@ -517,7 +519,9 @@ const CONDITION_FALLBACK_ORDER: Record<string, string[]> = {
   // 매물 condition별 fallback 순서 (sample 부족 시 다음 class로).
   // 정확성 우선: mint는 가까운 clean→normal로, worn은 normal로 fallback.
   // low_batt는 일반 시세와 다르므로 fallback 시도 안 함 (sample 적으면 그냥 표시).
-  mint: ["mint", "clean", "normal", "all"],
+  // unopened는 다나와 reference_price 우선이지만 sample 부족 시 mint로 fallback (가장 비슷한 등급).
+  unopened: ["unopened", "mint", "clean", "all"],
+  mint: ["mint", "unopened", "clean", "normal", "all"],
   clean: ["clean", "normal", "mint", "all"],
   normal: ["normal", "clean", "worn", "all"],
   worn: ["worn", "normal", "all"],

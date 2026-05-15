@@ -41,8 +41,12 @@ export type ParsedListingOptions = {
 // - clean: S급/풀세트/애플케어 (프리미엄)
 // - worn: 사용감/기스/스크래치 (시장 평균보다 약간 낮음)
 // - normal: 마킹 없거나 일반 사용 (default)
+// 2026-05-16 (N4 사용자 코멘트 id 104/109): "민트랑 새상품 미개봉은 다르다".
+// unopened (박스 안 뜯음, 다나와 새 가격 비교) vs mint (실사용 거의 없음 S급, 중고 시세 비교) 분리.
+// Wave 130까지는 new_or_open_box → mint 합쳐졌었음. N4에서 unopened 별도 클래스로 분리.
 export type ConditionClass =
   | "flawed"
+  | "unopened"
   | "mint"
   | "low_batt"
   | "clean"
@@ -79,8 +83,10 @@ export function extractConditionClass(conditionNotes: readonly string[]): Condit
   for (const n of FLAWED_NOTES) {
     if (set.has(n)) return "flawed";
   }
-  // 2순위: 새상품/미개봉 (가장 비싼 클래스)
-  if (set.has("new_or_open_box")) return "mint";
+  // 2026-05-16 (N4): new_or_open_box → unopened (별도 클래스, 가장 비싼).
+  // 이전: mint와 합쳐졌으나 사용자 의도 = "미개봉은 mint와 다르다" → 분리.
+  // unopened = 박스 안 뜯음. 시세는 다나와 reference_price 사용. mint와 시세 grouping 분리.
+  if (set.has("new_or_open_box")) return "unopened";
   // 3순위: 배터리 저하 (별도 트래킹 — 가격 영향 큼)
   if (set.has("low_battery_health")) return "low_batt";
   // 4순위: S급/풀세트/애플케어 (프리미엄)

@@ -25,17 +25,19 @@ describe("Wave 130 — extractConditionClass", () => {
     assert.equal(extractConditionClass(["multi_device_bundle"]), "flawed");
   });
 
-  it("returns 'mint' for new_or_open_box (after flawed check)", () => {
-    assert.equal(extractConditionClass(["new_or_open_box"]), "mint");
+  it("returns 'unopened' for new_or_open_box (after flawed check)", () => {
+    // 2026-05-16 (N4 사용자 코멘트 id 104/109): unopened (박스 안 뜯음) 별도 클래스.
+    // 이전: new_or_open_box → mint 합쳐졌으나 사용자 의도 = "민트랑 새상품 미개봉은 다르다".
+    assert.equal(extractConditionClass(["new_or_open_box"]), "unopened");
   });
 
   it("returns 'low_batt' for low_battery_health (3rd priority)", () => {
     assert.equal(extractConditionClass(["low_battery_health"]), "low_batt");
   });
 
-  it("mint beats low_batt", () => {
+  it("unopened beats low_batt", () => {
     // 새상품인데 배터리 저하는 비현실적이지만 우선순위 검증
-    assert.equal(extractConditionClass(["new_or_open_box", "low_battery_health"]), "mint");
+    assert.equal(extractConditionClass(["new_or_open_box", "low_battery_health"]), "unopened");
   });
 
   it("returns 'clean' for good_condition/full_set/applecare_premium", () => {

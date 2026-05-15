@@ -91,7 +91,8 @@ export async function GET(
       );
       const rows = (await statsRes.json()) as Array<Record<string, unknown>>;
       const target = conditionClass ?? "normal";
-      const fallback = [target, "normal", "all", "clean", "worn", "mint"];
+      // 2026-05-16 (N4): unopened (박스 안 뜯음) 별도 클래스. fallback: unopened → mint → clean.
+      const fallback = [target, "mint", "normal", "all", "clean", "worn"];
       for (const cls of fallback) {
         const candidate = rows.find((r) => r.condition_class === cls);
         if (candidate) {
