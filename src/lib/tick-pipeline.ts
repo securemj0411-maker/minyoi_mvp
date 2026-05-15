@@ -2462,6 +2462,12 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // 단품 시세와 비교 시 평균을 끌어올림. full_set 라벨 매물은 시세 집계에서 제외.
     // 풀 진입은 별개 — 풀세트가 단품 시세보다 싸면 좋은 차익 매물 (그대로 노출).
     if (conditionNotes.includes("full_set")) continue;
+    // 2026-05-15 (사용자 코멘트 pid 408124976): 애플케어/AC+/삼성케어 보증 매물은
+    // 보증 프리미엄으로 단품보다 비쌈 → 시세 집계 제외. pool 진입은 허용 (보증 포함인데도 싸면 꿀).
+    if (conditionNotes.includes("applecare_premium")) continue;
+    // 2026-05-15 (사용자 코멘트 pid 407555096 / 407486890): 본품 + 애플펜슬/매직키보드/폴리오 등
+    // 액세서리 번들 매물은 단품 시세 비교군에서 제외. pool 진입은 허용 (번들이 단품 시세보다 싸면 꿀).
+    if (conditionNotes.includes("accessory_bundle")) continue;
     const key = parsed.comparable_key;
     if (!byKey.has(key)) byKey.set(key, { rows: [], activeRows: [], soldRows: [], disappearedRows: [], skuId: row.sku_id });
     const group = byKey.get(key)!;

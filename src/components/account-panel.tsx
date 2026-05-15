@@ -175,8 +175,12 @@ export function AccountPanel({
         </div>
       </div>
 
-      {/* 카드 2 — 플랜 (라벨 + 변경 + 구독취소/재활성) */}
-      <div className={card}>
+      {/* 카드 2 — 플랜 (정보만. 카드 전체 클릭 → /plans 페이지에서 관리) */}
+      <Link
+        href="/plans"
+        onClick={onCloseAfterAction}
+        className={`block ${card} group cursor-pointer transition hover:bg-[var(--brand-accent-soft)] dark:hover:bg-zinc-800`}
+      >
         <div className="flex items-center justify-between">
           <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">현재 플랜</div>
           {cancelled ? (
@@ -185,45 +189,19 @@ export function AccountPanel({
             <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">활성</span>
           ) : null}
         </div>
-        <div className="mt-1 flex items-end justify-between gap-2">
-          <div className="text-base font-black text-[#223127] dark:text-zinc-100">{planLabel}</div>
-          {plan?.currentPeriodEnd ? (
-            <div className="text-[11px] font-bold text-[#7a8478]">
-              {cancelled ? "종료 " : "갱신 "}{formatPeriodEnd(plan.currentPeriodEnd)}
-            </div>
-          ) : null}
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 truncate text-base font-black text-[#223127] dark:text-zinc-100">{planLabel}</div>
+          <span className="shrink-0 text-zinc-400 transition group-hover:translate-x-0.5 group-hover:text-[var(--brand-accent-strong)]">→</span>
         </div>
-        <div className="mt-3 flex items-center gap-1.5">
-          <Link
-            href="/plans"
-            onClick={onCloseAfterAction}
-            className="flex flex-1 items-center justify-center rounded-lg bg-[var(--brand-accent-strong)] px-3 py-2 text-xs font-black text-[var(--brand-cream)] transition hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-950"
-          >
-            {isPaidPlan ? "변경" : "요금제 보기"}
-          </Link>
-          {isPaidPlan ? (
-            cancelled ? (
-              <button
-                type="button"
-                onClick={handleReactivate}
-                disabled={busy}
-                className="flex flex-1 items-center justify-center rounded-lg bg-[#edf3eb] px-3 py-2 text-xs font-black text-[#2c3f31] hover:bg-[#dfe9dc] disabled:opacity-60 dark:bg-emerald-950/30 dark:text-emerald-200"
-              >
-                재활성화
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={busy}
-                className="flex flex-1 items-center justify-center rounded-lg bg-red-50 px-3 py-2 text-xs font-black text-[#a04545] hover:bg-red-100 disabled:opacity-60 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40"
-              >
-                {busy ? "처리 중…" : "구독 취소"}
-              </button>
-            )
-          ) : null}
+        {plan?.currentPeriodEnd ? (
+          <div className="mt-1 text-[11px] font-bold text-[#7a8478]">
+            {cancelled ? "종료 " : "갱신 "}{formatPeriodEnd(plan.currentPeriodEnd)}
+          </div>
+        ) : null}
+        <div className="mt-1.5 text-[11px] font-semibold text-[#7a8478] dark:text-zinc-500">
+          {isPaidPlan ? "탭해서 변경 · 구독 취소" : "탭해서 요금제 보기"}
         </div>
-      </div>
+      </Link>
 
       {message ? (
         <div className="rounded-xl bg-[#f1ebe1] px-3 py-2 text-[11px] font-bold text-[#3a4f40] dark:bg-zinc-900 dark:text-zinc-300">

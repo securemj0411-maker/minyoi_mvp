@@ -114,6 +114,67 @@ function saleStatusLabel(value: string) {
   return value;
 }
 
+// 2026-05-15 (사용자 코멘트 pid 405627929 — "왜 신뢰 100%? 리뷰도 없는데?"):
+// 신뢰도 점수가 어떤 근거로 나왔는지 사용자에게 보여줌. 클릭 시 펼침.
+// 모델 정확도(파서 매칭) + 시세 표본 + 시세 신뢰 등급 + 회전 속도 + 위험 키워드.
+function ConfidenceBreakdown({ card }: { card: RevealCard }) {
+  const market = card.marketBasis;
+  const velocity = card.velocityBasis;
+  const sample = market?.sampleCount ?? 0;
+  const sold = market?.soldSampleCount ?? 0;
+  const marketConf = market?.confidence ?? null;
+  const marketConfLabel =
+    marketConf === "high" ? "높음" : marketConf === "medium" ? "보통" : marketConf === "low" ? "낮음" : "—";
+
+  const lines: { label: string; value: string; tone?: "good" | "warn" }[] = [
+    {
+      label: "모델 매칭",
+      value: market?.label ? `${market.label} (자동 분류)` : "분류 불완전",
+      tone: market?.label ? "good" : "warn",
+    },
+    {
+      label: "시세 표본",
+      value: sample > 0 ? `${sample}건 (판매 ${sold}건)` : "표본 부족",
+      tone: sample >= 8 ? "good" : sample > 0 ? undefined : "warn",
+    },
+    { label: "시세 신뢰", value: marketConfLabel, tone: marketConf === "high" ? "good" : marketConf === "low" ? "warn" : undefined },
+  ];
+
+  if (velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0) {
+    const days = Math.round(velocity.medianHoursToSold / 24);
+    lines.push({
+      label: "평균 회전",
+      value: days <= 0 ? "1일 이내" : `약 ${days}일`,
+      tone: days <= 3 ? "good" : days >= 14 ? "warn" : undefined,
+    });
+  }
+
+  return (
+    <div className="mt-2 space-y-1.5 rounded-md bg-white p-2 text-left text-[11px] leading-4 dark:bg-zinc-900">
+      <div className="text-[10px] font-bold text-zinc-400">신뢰도 산출 근거</div>
+      {lines.map((line) => (
+        <div key={line.label} className="flex items-center justify-between gap-2">
+          <span className="text-zinc-500 dark:text-zinc-400">{line.label}</span>
+          <span
+            className={`font-bold tabular-nums ${
+              line.tone === "good"
+                ? "text-emerald-700 dark:text-emerald-300"
+                : line.tone === "warn"
+                  ? "text-amber-700 dark:text-amber-300"
+                  : "text-zinc-700 dark:text-zinc-200"
+            }`}
+          >
+            {line.value}
+          </span>
+        </div>
+      ))}
+      <div className="pt-1 text-[10px] leading-[1.4] text-zinc-400">
+        시세 표본이 많고 같은 모델끼리 정확히 비교됐을 때 점수가 올라가요. 표본 부족 / 분류 불완전 / 새상품·번들 같은 왜곡 매물 비중이 높으면 점수가 내려갑니다.
+      </div>
+    </div>
+  );
+}
+
 function MarketBasisMini({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
   return (
@@ -441,12 +502,18 @@ function RevealCardItem({
               ) : null}
             </div>
           </div>
-          <div className="hidden shrink-0 rounded-lg bg-zinc-50 px-2 py-1 text-right dark:bg-zinc-800 sm:block">
-            <div className="text-[10px] font-bold text-zinc-400">신뢰</div>
-            <div className="text-sm font-black text-zinc-800 dark:text-zinc-100">
-              {Math.round(card.confidence * 100)}%
-            </div>
-          </div>
+          <details className="group hidden shrink-0 rounded-lg bg-zinc-50 px-2 py-1 text-right dark:bg-zinc-800 sm:block sm:min-w-[64px]">
+            <summary className="cursor-pointer list-none">
+              <div className="flex items-center justify-end gap-1 text-[10px] font-bold text-zinc-400">
+                <span>신뢰</span>
+                <span className="text-zinc-300 transition group-open:rotate-180 dark:text-zinc-500">▾</span>
+              </div>
+              <div className="text-sm font-black text-zinc-800 dark:text-zinc-100">
+                {Math.round(card.confidence * 100)}%
+              </div>
+            </summary>
+            <ConfidenceBreakdown card={card} />
+          </details>
         </div>
 
         <VerdictBadgesMini card={card} />

@@ -877,6 +877,23 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   // Wave 91 (사용자 요청 pid 368060006): 미개봉/새상품 detection 변형 흡수.
   if (/미개봉|미\s*개봉|새상품|새 제품|새제품|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*미개봉|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|새\s*것|새거|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower)) add("new_or_open_box", 0.15);
   if (/풀박스|풀박|풀구성|풀세트|구성품\s*전부/.test(lower)) add("full_set", 0.05);
+
+  // 2026-05-15 (사용자 코멘트 pid 408124976): 애플케어/AC+/삼성케어 매물은
+  // 보증 프리미엄으로 단품 시세 대비 비쌈 → 시세 집계에서 제외.
+  // pool 진입은 허용 (보증 포함인데 단품 시세보다 싸면 명백한 꿀).
+  if (/애플\s?케어|애케플|애캐플|apple\s?care|ac\+|ac\s?플러스|삼성\s?케어|samsung\s?care/i.test(lower)) {
+    add("applecare_premium", 0.05);
+  }
+
+  // 2026-05-15 (사용자 코멘트 pid 407555096 / 407486890):
+  // 단품 매물의 시세 비교군에 액세서리 번들이 끼면 평균을 끌어올림.
+  // 본품 + 명시적 액세서리 패턴만 잡음 (false positive 위험 최소화).
+  // pool 진입은 허용 (액세서리 포함된 매물이 단품 시세보다 싸면 명백한 꿀).
+  const accessoryBundlePattern = /(?:\+\s*|및\s*|와\s*|과\s*|함께\s*|포함\s*|세트\s*)(?:애플\s?펜슬|애플펜슬\s?프로|매직\s?키보드|스마트\s?키보드|스마트\s?커버|스마트\s?폴리오|폴리오\s?커버|매직\s?마우스|매직\s?트랙패드|애플\s?케이블)|(?:애플\s?펜슬|애플펜슬\s?프로|매직\s?키보드|스마트\s?키보드|스마트\s?폴리오|매직\s?마우스)\s*(?:포함|세트|같이|번들|와\s*함께|증정)/i;
+  if (accessoryBundlePattern.test(lower)) {
+    add("accessory_bundle", 0.05);
+  }
+
   if (/s급|상태\s*좋|상태좋|깨끗|깔끔/.test(lower)) add("good_condition", 0.05);
   if (/사용감|기스|스크래치|찍힘|생활기스|흠집/.test(lower)) add("cosmetic_wear", -0.1);
   if (/수리|교체|하자|고장|불량|파손|깨짐/.test(defectRiskText)) add("repair_or_defect_signal", -0.2);
