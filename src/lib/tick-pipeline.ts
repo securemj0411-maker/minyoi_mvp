@@ -2051,12 +2051,16 @@ function trustedMarketMedian(stat: MarketPriceRow | undefined) {
   //
   // Wave 106 (사용자 정확도 우선 강화): low confidence + total sample < 5 차단.
   // madTrim 이 5건 미만은 trim 안 하므로 sample 작으면 outlier 1건이 median 끌어올림.
-  // 기존 active<3 보다 strict — low 매물 32건 풀에서 빠짐.
-  if (stat.confidence === "low") {
-    const active = stat.active_sample_count ?? 0;
-    const sold = stat.sold_sample_count ?? 0;
-    if (sold + active < 5) return null;
-  }
+  //
+  // 2026-05-16 (사용자 코멘트 id 106 pid 408078170 / id 109 pid 408117001):
+  // "비교매물 1개로 시세가 망함? 5개인가 3개 비교군이 있어야".
+  // wave 130 condition_class 분리 후 sample 더 작아짐 (1-2건 자주 발생).
+  // confidence 무관 total<3 강제 차단 — sample 1-2건은 outlier 1건이 시세 결정 = 위험.
+  const active = stat.active_sample_count ?? 0;
+  const sold = stat.sold_sample_count ?? 0;
+  const total = active + sold;
+  if (total < 3) return null;
+  if (stat.confidence === "low" && total < 5) return null;
   const value = Number(stat.blended_median_price ?? stat.active_median_price ?? 0);
   return value > 0 ? value : null;
 }

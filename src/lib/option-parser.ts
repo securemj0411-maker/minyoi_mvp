@@ -994,10 +994,16 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   //   - "실사용 X번" — 사용 매물 명시
   //   - "사용 얼마 안" — 실사용 매물
   //   - "새 것 같은" / "새거 같은" / "새상품급" — 새상품 아님
+  // 2026-05-16 (사용자 코멘트 id 107 pid 407909846): "새상품 구입 후 2주 정도 사용" — false positive.
+  //   - "구입/구매 후 X (시간단위) 사용" 명시 매물은 실사용. new_or_open_box 차단.
+  //   - condition_class 는 별도 로직 (mint/clean 가능).
+  //   - 다나와 reference_price 매핑 차단 → 진짜 중고 시세로 비교.
   const newSignalNegativePattern = /새\s*(?:상품|제품|것|거)\s*(?:과\s*)?(?:같은|처럼|급|레벨|수준|상태)/i.test(lower) ||
     /거의\s*새/i.test(lower) ||
     /실사용\s*\d+\s*번/i.test(lower) ||
-    /사용\s*얼마\s*(?:안|않)/i.test(lower);
+    /사용\s*얼마\s*(?:안|않)/i.test(lower) ||
+    /(?:구입|구매|받은|개봉)\s*(?:후|뒤|지|한지)\s*[0-9]+\s*(?:주|일|개월|년|달|시간)\s*(?:정도\s*|쯤\s*|만\s*)?사용/i.test(lower) ||
+    /[0-9]+\s*(?:주|일|개월|년|달)\s*(?:정도\s*|쯤\s*)?사용\s*했/i.test(lower);
   const explicitNewSignal = !newSignalNegativePattern && /미개봉|미\s*개봉|새상품|새 제품|새제품|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*미개봉|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|새\s*것|새거|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower);
   if (explicitNewSignal) add("new_or_open_box", 0.15);
   // 2026-05-15 (사용자 코멘트 pid 406747021): 배터리 효율 100% 매물은 사실상 새제품
