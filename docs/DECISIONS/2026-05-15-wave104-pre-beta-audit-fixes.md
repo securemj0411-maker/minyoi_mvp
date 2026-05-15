@@ -191,7 +191,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 검증: prod apply success. 기존 caller (`packs/open/route.ts:114`) 시그니처 동일 — code 변경 불필요.
 - 위험: 매우 낮음. RPC return shape 동일. 기존 정상 흐름 영향 X. 단 race로 잠시 limit 초과 잡혔던 user는 이제 정확히 limit에서 막힘.
 - 다음: 비슷한 패턴 다른 RPC 점검 (`spend_and_record_pack_open` 은 atomic이라 OK 확인됨, Wave 60).
-- commit: pending
+- commit: 9242498
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
