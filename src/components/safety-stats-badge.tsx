@@ -209,7 +209,7 @@ export default function SafetyStatsBadge() {
               {total.toLocaleString("ko-KR")}건
             </span>
             <span className="text-sm font-bold text-emerald-800 dark:text-emerald-300/80">
-              이번 주 차단된 매물
+              오늘 차단된 매물
             </span>
           </div>
         </div>
