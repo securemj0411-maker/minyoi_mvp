@@ -189,6 +189,17 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "iPhone 14 256GB (자급제)",
     note: "Pro/Pro Max/Plus, 13/15세대, 128/512/1TB, 통신사 차단.",
   },
+  // Wave 123 (2026-05-15): MacBook Air M4 + Pro 14 M4 narrow lane.
+  macbook_air_m4_13_256: {
+    status: "ready",
+    label: "MacBook Air M4 13\" 256GB",
+    note: "M4 base 16GB/256GB. M1/M2/M3, 15인치, 24GB/32GB, 512+ 차단.",
+  },
+  macbook_pro_14_m4_256: {
+    status: "ready",
+    label: "MacBook Pro 14\" M4 256GB (base)",
+    note: "M4 base 16GB/256GB. M1/M2/M3, M4 Pro/Max, 16인치, 24GB/32GB+, 512+ 차단.",
+  },
   // Wave 108: Galaxy S 일반(Ultra/Plus 아닌) 256GB 자급제 narrow lane.
   galaxy_s23_256_self: {
     status: "ready",
