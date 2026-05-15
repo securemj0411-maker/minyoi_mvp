@@ -599,7 +599,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 위험: 정상 사용자 한도 도달 risk 낮음 (각 limit 충분히 여유).
 
 - 다음: observability dashboard (별도 wave) 또는 e2e UX walkthrough.
-- commit: pending
+- commit: 1a1745f
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
