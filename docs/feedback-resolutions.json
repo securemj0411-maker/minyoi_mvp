@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-15T02:23:44.966Z",
+  "_updated_at": "2026-05-15T03:46:48.428Z",
   "resolutions": {
     "334750861": {
       "resolved_at": "2026-05-14T23:21:16.219Z",
@@ -142,6 +142,13 @@
         "8421506"
       ]
     },
+    "405627929": {
+      "resolved_at": "2026-05-15T03:46:48.422Z",
+      "summary": "신뢰도 박스를 클릭 가능한 details로 변환. 모델 매칭/시세 표본/판매 수/시세 신뢰 등급/평균 회전 breakdown 노출 + 1줄 설명.",
+      "commits": [
+        "7364b24"
+      ]
+    },
     "405689770": {
       "resolved_at": "2026-05-14T22:36:03.908Z",
       "summary": "Wave 90 ABCD",
@@ -200,11 +207,12 @@
       ]
     },
     "407486890": {
-      "resolved_at": "2026-05-14T21:09:55.686Z",
-      "summary": "iPad Pro 12.9 3세대 — parser v36 fix 적용 대상. 새 매물 들어오면 자동 분리. 기존 매물 reparse 필요 (npm run reparse:listings). 사용자 추가 제안 (애플펜슬 번들 정책 변경)은 별도 wave. | 번들 매물 풀 진입 허용 (parser v38) — needs_review 트리거에서 tabletBundlePriceReview 제거. 번들도 차익 매물로 노출. 액세서리 메타 뱃지는 후속 wave.",
+      "resolved_at": "2026-05-15T03:46:48.205Z",
+      "summary": "iPad Pro 12.9 3세대 — parser v36 fix 적용 대상. 새 매물 들어오면 자동 분리. 기존 매물 reparse 필요 (npm run reparse:listings). 사용자 추가 제안 (애플펜슬 번들 정책 변경)은 별도 wave. | 번들 매물 풀 진입 허용 (parser v38) — needs_review 트리거에서 tabletBundlePriceReview 제거. 번들도 차익 매물로 노출. 액세서리 메타 뱃지는 후속 wave. | 액세서리 번들 매물 시세 비교군 제외 (accessory_bundle 라벨). 풀 진입은 허용.",
       "commits": [
         "8421506",
-        "eca28e0"
+        "eca28e0",
+        "7364b24"
       ]
     },
     "407507382": {
@@ -212,6 +220,13 @@
       "summary": "맥북 15 2018 i7 — 동일 MSRP fallback 폐기 fix. 사용자 별도 발견 (삭제된 매물 보임): lifecycle-worker deleted 검사 부재 — 별도 wave.",
       "commits": [
         "2761586"
+      ]
+    },
+    "407555096": {
+      "resolved_at": "2026-05-15T03:46:47.905Z",
+      "summary": "액세서리 번들 (애플펜슬/매직키보드/스마트폴리오) 매물 condition_notes='accessory_bundle' 라벨 + tick-pipeline 시세 집계 제외.",
+      "commits": [
+        "7364b24"
       ]
     },
     "407569227": {
@@ -268,6 +283,13 @@
       "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
       "commits": [
         "61d0dbb"
+      ]
+    },
+    "408124976": {
+      "resolved_at": "2026-05-15T03:46:47.526Z",
+      "summary": "애플케어/AC+/삼성케어 매물 condition_notes='applecare_premium' 라벨 + tick-pipeline 시세 집계 제외. pool 진입은 허용 (보증 포함인데도 단품 시세보다 싸면 꿀).",
+      "commits": [
+        "7364b24"
       ]
     }
   },
