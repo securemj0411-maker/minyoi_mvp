@@ -104,6 +104,13 @@ export async function enqueueHotdealsFromPool(): Promise<{ scanned: number; enqu
   return { scanned: poolRows.length, enqueued: fresh.length, skipped_existing: existing.size };
 }
 
+type ClaimResultRaw = {
+  out_reservation_id: number;
+  out_user_ref: string;
+  out_chat_id: number;
+  out_attempt_no: number;
+  out_expires_at: string;
+};
 type ClaimResult = {
   reservation_id: number;
   user_ref: string;
@@ -184,8 +191,16 @@ async function claimNext(pid: number): Promise<ClaimResult | null> {
     body: jsonBody({ p_pid: pid, p_window_seconds: HOTDEAL_RESERVE_WINDOW_SECONDS }),
   });
   if (!res.ok) return null;
-  const rows = (await res.json()) as ClaimResult[];
-  return rows[0] ?? null;
+  const rows = (await res.json()) as ClaimResultRaw[];
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    reservation_id: r.out_reservation_id,
+    user_ref: r.out_user_ref,
+    chat_id: r.out_chat_id,
+    attempt_no: r.out_attempt_no,
+    expires_at: r.out_expires_at,
+  };
 }
 
 async function fetchListingMeta(pids: number[]) {
