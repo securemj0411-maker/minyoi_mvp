@@ -90,7 +90,8 @@ export async function GET(req: Request) {
     const poolRes = await restFetch(poolQuery, { headers: serviceHeaders() });
     if (!poolRes.ok) {
       const body = await poolRes.text().catch(() => "");
-      return NextResponse.json({ error: `pool query failed: ${poolRes.status}: ${body.slice(0, 200)}` }, { status: 500 });
+      console.error("preview-inventory pool query failed", { status: poolRes.status, body: body.slice(0, 500) });
+      return NextResponse.json({ error: "pool_query_failed" }, { status: 500 });
     }
     const poolRows = (await poolRes.json()) as PoolRow[];
 
@@ -149,6 +150,7 @@ export async function GET(req: Request) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("preview-inventory failed", { err: message });
+    return NextResponse.json({ error: "preview_inventory_failed" }, { status: 500 });
   }
 }

@@ -33,6 +33,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ inventory, fetchedAt: new Date().toISOString() });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("packs/inventory failed", { err: message });
+    return NextResponse.json({ error: "inventory_load_failed" }, { status: 500 });
   }
 }

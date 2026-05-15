@@ -49,6 +49,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("reveal_feedback failed", { err: message, userRef, pid });
+    return NextResponse.json({ error: "feedback_record_failed" }, { status: 500 });
   }
 }

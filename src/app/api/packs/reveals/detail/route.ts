@@ -35,7 +35,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ detail });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";
-    const status = message.includes("not found") ? 404 : 500;
-    return NextResponse.json({ error: message }, { status });
+    const notFound = message.includes("not found");
+    console.error("reveal_detail failed", { err: message, userRef, pid });
+    return NextResponse.json({ error: notFound ? "not_found" : "detail_load_failed" }, { status: notFound ? 404 : 500 });
   }
 }

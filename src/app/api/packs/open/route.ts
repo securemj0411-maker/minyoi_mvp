@@ -125,6 +125,6 @@ export async function POST(req: Request) {
       summary: `openPack 예외 (크레딧 미차감 상태)`,
       context: { userRef, band, requestedCards: sanitizedRequestedCards, error: message },
     });
-    return NextResponse.json({ result: "error", message }, { status: 500 });
+    return NextResponse.json({ result: "error", message: "pack_open_failed" }, { status: 500 });
   }
 }
