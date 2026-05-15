@@ -632,7 +632,7 @@ export function classifyListing(title: string, desc: string, price: number): Cla
   const accessoryWords = /(case|케이스|폰케이스|그립톡|스마트톡|맥세이프|파인우븐|슬림아머|슈피겐|어반소피스티케이션|모란카노|tyreus|디월렛|다이어리|보호필름|강화유리|필름)/i;
   const accessoryTitleSignal = accessoryWords.test(normalizedTitle);
   const accessoryStandaloneTextSignal =
-    /(?:case|케이스|폰케이스|그립톡|스마트톡|맥세이프|파인우븐|슬림아머|슈피겐|어반소피스티케이션|모란카노|tyreus|디월렛|다이어리|보호필름|강화유리|필름).{0,12}(?:단독|단품|만|판매|팝니다|새상품|미개봉|급처|처분)|(?:단독|단품|만|판매|팝니다).{0,12}(?:case|케이스|폰케이스|그립톡|스마트톡|맥세이프|보호필름|강화유리|필름)/i.test(normalizedText);
+    /(?:case|케이스|폰케이스|그립톡|스마트톡|맥세이프|파인우븐|슬림아머|슈피겐|어반소피스티케이션|모란카노|tyreus|디월렛|다이어리|보호필름|강화유리|필름).{0,12}(?:단독|단품|만|판매|팝니다|새상품|미개봉|급처|처분|입니다|이에요|에요)|(?:단독|단품|만|판매|팝니다).{0,12}(?:case|케이스|폰케이스|그립톡|스마트톡|맥세이프|보호필름|강화유리|필름)/i.test(normalizedText);
   const includedAccessoryTextSignal =
     /(?:케이스|박스|충전기|케이블|필름|스트랩|밴드).{0,18}(?:포함|같이|드려요|드립니다|드림|있|있음|붙여|보관)|(?:본품|본체|풀박|풀박스|기기|제품).{0,24}(?:케이스|박스|충전기|케이블|필름|스트랩|밴드)/.test(normalizedText);
 

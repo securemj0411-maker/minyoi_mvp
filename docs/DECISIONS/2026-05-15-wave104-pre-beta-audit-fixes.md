@@ -808,6 +808,28 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 52. char class 한글 누락 systemic sweep — smartwatch size 추가 fix
+
+- 시간: 2026-05-16 14:10 KST
+- #51 발견 후 systemic 확장: option-parser 의 모든 `[a-z0-9...]` char class grep.
+- 발견:
+  - line 148 LG Gram model number: 영문 only OK
+  - line 386 monitor model code: 영문 only OK
+  - line 410 monitor screen size: 영문 only OK
+  - line 441 ips panel: 영문 only OK
+  - **line 594 watch context (apple/galaxy watch) size 매칭**: `[a-z0-9\s]` 한글 누락 ❌
+- 매물 예: "애플워치 ultra 알루미늄 49mm" — "애플워치" 매칭 → " ultra 알루미늄 " (한글 "알루미늄") → char class 한글 X → **매칭 실패** → unknown_size
+- fix: line 594 char class `[a-z0-9가-힣\s]` 한글 추가.
+- backfill: smartwatch needs_review + unknown_size 매물 131건 reparse 트리거.
+- 효과: smartwatch unknown_size 매물 절반 이상 size 잡힘 예상.
+
+### 누적 (#51 + #52 systemic char class fix)
+- laptop release_year 한글 추가: 505건 reparse 트리거
+- smartwatch size 한글 추가: 131건 reparse 트리거
+- 총 636건 옛 매물 새 regex 적용 → unknown 토큰 해결 → 풀 진입 가능
+
+- commit: pending
+
 ## 51. parser regex root bug — char class 한글 누락 (laptop release_year)
 
 - 시간: 2026-05-16 13:55 KST

@@ -591,7 +591,8 @@ function parseWatchSizeMm(text: string) {
   if (withMm) return Number(withMm[1]);
   // Wave 109b (2026-05-15): 워치 모델명 12자 이내 size 숫자 단독 — "애플워치9 45" / "갤럭시워치 7 40" 같은 매물.
   // false positive risk: 모델명 컨텍스트 안에서만 잡음. battery/cycle 등 noise는 모델명 직후 안 옴.
-  const watchContext = lower.match(/(?:애플\s?워치|applewatch|갤럭시\s?워치|galaxywatch)[a-z0-9\s]{0,12}?\b(40|41|42|43|44|45|46|47|49)\b/);
+  // Wave 106 #51b: char class 에 한글 (가-힣) 추가 — "애플워치 ultra 알루미늄 49mm" 같이 한글 토큰 (알루미늄/스테인리스/스타라이트) 사이에 있는 매물 매칭.
+  const watchContext = lower.match(/(?:애플\s?워치|applewatch|갤럭시\s?워치|galaxywatch)[a-z0-9가-힣\s]{0,12}?\b(40|41|42|43|44|45|46|47|49)\b/);
   if (watchContext) return Number(watchContext[1]);
   return null;
 }
