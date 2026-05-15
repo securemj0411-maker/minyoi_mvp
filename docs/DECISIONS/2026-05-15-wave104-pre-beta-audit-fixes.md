@@ -833,7 +833,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
   - "스페이스 그레이" / "스그" / "공간 회색" 색깔 = comparable_key 에 안 들어감 (의도 — 색상 시세 영향 작음)
 - **추가 normalize 작업 가치 작음** (parser 가 이미 처리). 별도 wave 보류.
 
-- commit: pending
+- commit: fc6ce6f
 
 ## 47. #43c 정정 (carrier null 차단 revert) + 남은 작업 plan
 
