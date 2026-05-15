@@ -224,7 +224,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
               <div className="mt-1 text-sm font-black text-[#223127] dark:text-zinc-100">작업 메뉴</div>
             </div>
             <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 lg:mx-0 lg:block lg:space-y-1 lg:overflow-visible lg:px-0 lg:pb-0">
-              {(["recommend", "history", "guides", ...(isPro ? (["hotdeal-alerts"] as const) : []), ...(isAdminUser(user) ? (["admin-pool"] as const) : [])] as const).map((v) => {
+              {(["recommend", "history", "guides", ...(isPro || isAdminUser(user) ? (["hotdeal-alerts"] as const) : []), ...(isAdminUser(user) ? (["admin-pool"] as const) : [])] as const).map((v) => {
                 const label = v === "recommend" ? "추천 받기"
                   : v === "history" ? "나의 상품"
                   : v === "guides" ? "공략집"
