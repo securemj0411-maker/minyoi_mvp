@@ -1,0 +1,76 @@
+Started: 2026-05-15T17:43:00.866Z
+Loading 100 active pids from DB...
+Loaded 100 pids.
+
+>>> Starting Phase 1: concurrency 1 (baseline)
+
+=== Phase 1: concurrency 1 (baseline) ===
+Total: 100 / Elapsed: 11.2s / Throughput: 8.96 req/s
+Latency — avg: 112ms / P50: 74ms / P95: 379ms / P99: 483ms
+Status distribution: { '200': 100 }
+Error rate: 0% (0/100)
+Rate limited (429): 0% (0/100)
+5xx rate: 0% (0/100)
+Cool down 30s before next phase...
+
+>>> Starting Phase 2: concurrency 3
+
+=== Phase 2: concurrency 3 ===
+Total: 100 / Elapsed: 1.8s / Throughput: 54.61 req/s
+Latency — avg: 45ms / P50: 30ms / P95: 192ms / P99: 199ms
+Status distribution: { '200': 100 }
+Error rate: 0% (0/100)
+Rate limited (429): 0% (0/100)
+5xx rate: 0% (0/100)
+Cool down 30s before next phase...
+
+>>> Starting Phase 3: concurrency 5
+
+=== Phase 3: concurrency 5 ===
+Total: 100 / Elapsed: 1.3s / Throughput: 75.24 req/s
+Latency — avg: 47ms / P50: 31ms / P95: 172ms / P99: 196ms
+Status distribution: { '200': 100 }
+Error rate: 0% (0/100)
+Rate limited (429): 0% (0/100)
+5xx rate: 0% (0/100)
+Cool down 30s before next phase...
+
+>>> Starting Phase 4: concurrency 10
+
+=== Phase 4: concurrency 10 ===
+Total: 100 / Elapsed: 0.7s / Throughput: 151.98 req/s
+Latency — avg: 49ms / P50: 33ms / P95: 174ms / P99: 176ms
+Status distribution: { '200': 100 }
+Error rate: 0% (0/100)
+Rate limited (429): 0% (0/100)
+5xx rate: 0% (0/100)
+Cool down 60s before next phase...
+
+>>> Starting Phase 5: concurrency 20
+
+=== Phase 5: concurrency 20 ===
+Total: 100 / Elapsed: 0.3s / Throughput: 328.95 req/s
+Latency — avg: 43ms / P50: 32ms / P95: 95ms / P99: 100ms
+Status distribution: { '200': 100 }
+Error rate: 0% (0/100)
+Rate limited (429): 0% (0/100)
+5xx rate: 0% (0/100)
+Cool down 60s before next phase...
+
+>>> Starting Phase 6: concurrency 30 (aggressive)
+
+=== Phase 6: concurrency 30 (aggressive) ===
+Total: 100 / Elapsed: 10.6s / Throughput: 9.41 req/s
+Latency — avg: 1256ms / P50: 1364ms / P95: 3259ms / P99: 3832ms
+Status distribution: { '200': 100 }
+Error rate: 0% (0/100)
+Rate limited (429): 0% (0/100)
+5xx rate: 0% (0/100)
+
+
+결과 저장: scripts/probe-bunjang-rate-limit-results.json
+
+
+=== 권장 결론 ===
+✅ 시나리오 A: 모든 phase에서 429 < 10%. 매우 lenient.
+   → batch 400 + concurrency 10 즉시 적용 가능 (throughput 5배).

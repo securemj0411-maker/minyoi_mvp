@@ -177,14 +177,48 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
 }
 
 function MarketBasisMini({ card }: { card: RevealCard }) {
+  // Wave 129 (2026-05-16): source breakdown 표시 — 사업 보고서 L3 (multi-source ground truth).
+  // 보고서: "시세 자체보다 시세의 출처를 보여주는 게 retention factor".
+  // 번개장터 sold/active/disappeared + 신뢰도 + 표본 수 표시.
   const market = card.marketBasis;
+  if (!market) return null;
+  const confidence = market.confidence ?? "low";
+  const confidenceLabel = confidence === "high" ? "🟢 높음" : confidence === "medium" ? "🟡 보통" : "🔴 낮음";
   return (
-    <div className="flex flex-wrap items-center gap-1.5 text-[11px] leading-4 text-[#6c756c] dark:text-zinc-400">
-      <span className="font-bold text-zinc-700 dark:text-zinc-200">{market?.label ?? card.skuName}</span>
-      <span>·</span>
-      <span>{marketSampleLabel(card)}</span>
-      <span>·</span>
-      <span>시세 {market?.medianPrice ? krw(market.medianPrice) : "-"}</span>
+    <div className="rounded-lg border border-[#e2d9cb] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+          📊 시세 근거
+        </div>
+        <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+          {confidenceLabel}
+        </span>
+      </div>
+      <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs">
+        <span className="font-black text-zinc-800 dark:text-zinc-100">
+          {market.label ?? card.skuName}
+        </span>
+        <span className="text-zinc-300">·</span>
+        <span className="font-bold tabular-nums text-zinc-700 dark:text-zinc-300">
+          중앙 {market.medianPrice ? krw(market.medianPrice) : "-"}
+        </span>
+      </div>
+      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
+          💰 거래완료 {market.soldSampleCount.toLocaleString("ko-KR")}건
+        </span>
+        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
+          📋 판매중 {market.activeSampleCount.toLocaleString("ko-KR")}건
+        </span>
+        {market.disappearedSampleCount > 0 && (
+          <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
+            🚫 만료 {market.disappearedSampleCount.toLocaleString("ko-KR")}건
+          </span>
+        )}
+        <span className="text-zinc-400 dark:text-zinc-500">
+          출처: 번개장터 + 다나와 reference
+        </span>
+      </div>
     </div>
   );
 }
@@ -288,18 +322,53 @@ function SkuListingFlowMini({ card }: { card: RevealCard }) {
 function VelocityBasisMini({ card }: { card: RevealCard }) {
   const velocity = card.velocityBasis;
   if (!velocity) return null;
+  // Wave 129 (2026-05-16): 회전 기간 hero 수준 강조 (사업 보고서 L6 — "사용자가 가장 두려워하는 게 안 팔리는 거").
+  // 보고서 인용: "회전 기간이 떡상점수보다 더 retention-critical한 지표".
+  // 큰 글씨 + 색 + 빠른 회전 시 강조 badge.
+  const hours = velocity.medianHoursToSold;
+  const isFastTurn = hours != null && hours > 0 && hours <= 48; // 2일 안에 팔림
+  const isSlowTurn = hours != null && hours > 168; // 7일+ 안 팔림
+  const turnLabel = velocityHoursLabel(hours);
   return (
-    <div className="rounded-lg border border-[#d8e2d7] bg-[var(--brand-accent-soft)] px-3 py-2 text-[11px] leading-4 text-[var(--brand-accent-strong)] dark:border-zinc-800 dark:bg-zinc-800/60 dark:text-zinc-100">
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="font-black">관측 판매속도</span>
+    <div className={`rounded-lg border-2 px-4 py-3 ${
+      isFastTurn
+        ? "border-emerald-500 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/40"
+        : isSlowTurn
+          ? "border-amber-400 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30"
+          : "border-[#d8e2d7] bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-800/60"
+    }`}>
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
+          📦 평균 판매 회전
+        </div>
         <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--brand-accent-strong)] ring-1 ring-[#d8e2d7] dark:bg-zinc-900/50 dark:text-zinc-100 dark:ring-zinc-700">
           {velocity.confidence}
         </span>
-        <span>중앙 {velocityHoursLabel(velocity.medianHoursToSold)}</span>
-        <span>7일 {velocity.sold7dCount.toLocaleString("ko-KR")}건</span>
       </div>
-      <div className="mt-1 text-[10px] text-[#58705d] dark:text-zinc-300/70">
-        판매 관측 {velocity.observedSoldSampleCount.toLocaleString("ko-KR")}건 · 활성 {velocity.activeSampleCount.toLocaleString("ko-KR")}건
+      <div className="mt-1 flex items-baseline gap-2">
+        <span className={`text-3xl font-black tabular-nums ${
+          isFastTurn
+            ? "text-emerald-700 dark:text-emerald-300"
+            : isSlowTurn
+              ? "text-amber-700 dark:text-amber-300"
+              : "text-[#223127] dark:text-white"
+        }`}>
+          {turnLabel}
+        </span>
+        {isFastTurn && (
+          <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white">
+            ⚡ 빠른 회전
+          </span>
+        )}
+        {isSlowTurn && (
+          <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-white">
+            ⚠️ 느린 회전
+          </span>
+        )}
+      </div>
+      <div className="mt-2 text-[11px] text-[#58705d] dark:text-zinc-300/80">
+        최근 7일 <span className="font-bold">{velocity.sold7dCount.toLocaleString("ko-KR")}건</span> 판매됨
+        · 관측 {velocity.observedSoldSampleCount.toLocaleString("ko-KR")}건 · 활성 {velocity.activeSampleCount.toLocaleString("ko-KR")}건
       </div>
     </div>
   );

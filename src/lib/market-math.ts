@@ -2,6 +2,10 @@ export type SellerPricedRow = {
   pid: number;
   price: number;
   seller_uid: string | null;
+  // Wave 129 (2026-05-16): exponential decay 가중 (사업 보고서 L5).
+  // 최근 매물 weight ↑. observedAt(ISO string) 또는 ageDays(numeric) 제공.
+  observedAt?: string | null;
+  ageDays?: number | null;
 };
 
 export function median(values: number[]) {
@@ -9,6 +13,64 @@ export function median(values: number[]) {
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+/**
+ * Wave 129 (2026-05-16): exponential decay weight 계산 — 사업 보고서 L5 temporal adjustment.
+ * - 최근 7일 weight 3x (보고서 권장)
+ * - 30일까지 부드러운 decay (반감기 ~10일)
+ * - 30일+ 데이터도 살리되 weight ↓
+ *
+ * 공식: weight = 3 * exp(-ageDays / 10)
+ *   ageDays=0  → weight 3.0
+ *   ageDays=7  → weight 1.49 (~1.5x 가중)
+ *   ageDays=10 → weight 1.10
+ *   ageDays=20 → weight 0.41
+ *   ageDays=30 → weight 0.15
+ */
+export function exponentialDecayWeight(ageDays: number): number {
+  if (!Number.isFinite(ageDays) || ageDays < 0) return 1.0;
+  return 3 * Math.exp(-ageDays / 10);
+}
+
+/**
+ * 가중 중앙값 (weighted median).
+ * 일반 median과 다름: weight 누적 50%에 해당하는 value.
+ */
+export function weightedMedian(items: Array<{ value: number; weight: number }>): number {
+  if (items.length === 0) return 0;
+  const sorted = [...items].sort((a, b) => a.value - b.value);
+  const totalWeight = sorted.reduce((sum, x) => sum + Math.max(0, x.weight), 0);
+  if (totalWeight <= 0) return median(sorted.map((x) => x.value));
+  const halfWeight = totalWeight / 2;
+  let cumulative = 0;
+  for (const item of sorted) {
+    cumulative += Math.max(0, item.weight);
+    if (cumulative >= halfWeight) return item.value;
+  }
+  return sorted[sorted.length - 1].value;
+}
+
+/**
+ * 시세 산정용 — observedAt이 있으면 decay weight 적용 + weightedMedian.
+ * 없으면 일반 median (backward compatible).
+ */
+export function decayWeightedMedian(rows: Array<{ price: number; observedAt?: string | null; ageDays?: number | null }>): number {
+  const now = Date.now();
+  const items: Array<{ value: number; weight: number }> = [];
+  for (const row of rows) {
+    if (!Number.isFinite(row.price)) continue;
+    let ageDays: number | null = null;
+    if (row.ageDays != null && Number.isFinite(row.ageDays)) {
+      ageDays = row.ageDays;
+    } else if (row.observedAt) {
+      const t = new Date(row.observedAt).getTime();
+      if (Number.isFinite(t)) ageDays = (now - t) / 86_400_000;
+    }
+    const weight = ageDays != null ? exponentialDecayWeight(ageDays) : 1.0;
+    items.push({ value: row.price, weight });
+  }
+  return weightedMedian(items);
 }
 
 export function quantile(values: number[], q: number) {

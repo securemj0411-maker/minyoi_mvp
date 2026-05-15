@@ -8,6 +8,7 @@ import HotdealAlertsView from "@/components/hotdeal-alerts-view";
 import OnboardingBanner from "@/components/onboarding-banner";
 import PlaybookOverview from "@/components/playbook-overview";
 import RecommendationWorkspace from "@/components/recommendation-workspace";
+import SafetyStatsBadge from "@/components/safety-stats-badge";
 import UserRevealDashboard from "@/components/user-reveal-dashboard";
 import { isAdminUser } from "@/lib/auth-users";
 import { hasAdminShadowClient } from "@/lib/admin-shadow-mode";
@@ -309,6 +310,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
         ) : activeView === "recommend" ? (
           <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             <OnboardingBanner onStart={() => setActiveView("recommend")} />
+            <SafetyStatsBadge />
             <RecommendationWorkspace initialInventory={initialInventory} />
           </section>
         ) : (

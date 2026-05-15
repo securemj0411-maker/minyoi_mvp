@@ -20,6 +20,17 @@ import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/prof
 // 일반 사용자 결제 부담 + 단일 매물 risk + 한정판/고가 모델 노이즈 차단.
 const MAX_POOL_PRICE_KRW = 2_000_000;
 
+// Wave 129 (2026-05-16): parse_confidence threshold 명시 — 사업 보고서 L1.
+// "AI normalization 매칭 confidence < 0.85면 매물 풀에서 제외".
+// 우리 정책 (LAUNCH_PLAN 12b precision-first):
+// - HIGH (0.85+): 사용자 ready pool 진입 가능 (보고서 권장)
+// - MEDIUM (0.65~0.85): pool 진입 OK, AI L2 review 대상
+// - LOW (<0.65): pool 진입 차단 (시세 학습만)
+// - needs_review=true: 무조건 차단
+export const PARSE_CONFIDENCE_HIGH = 0.85;
+export const PARSE_CONFIDENCE_MEDIUM = 0.65;
+export const PARSE_CONFIDENCE_LOW = 0.55;
+
 export type PoolCandidateInput = {
   pid: number | string;
   price: number;

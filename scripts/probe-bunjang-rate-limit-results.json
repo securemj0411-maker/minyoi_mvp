@@ -1,0 +1,135 @@
+{
+  "startedAt": "2026-05-15T17:43:00.866Z",
+  "finishedAt": "2026-05-15T17:46:57.682Z",
+  "stoppedAt": null,
+  "stopReason": null,
+  "completedAllPhases": true,
+  "phases": [
+    {
+      "label": "Phase 1: concurrency 1 (baseline)",
+      "concurrency": 1,
+      "totalCalls": 100,
+      "elapsedMs": 11166,
+      "throughputRps": 8.96,
+      "avgLatencyMs": 112,
+      "p50LatencyMs": 74,
+      "p95LatencyMs": 379,
+      "p99LatencyMs": 483,
+      "statusDistribution": {
+        "200": 100
+      },
+      "errorCount": 0,
+      "errorRate": 0,
+      "rateLimitCount": 0,
+      "rateLimitRate": 0,
+      "fivexxCount": 0,
+      "fivexxRate": 0,
+      "retryAfters": []
+    },
+    {
+      "label": "Phase 2: concurrency 3",
+      "concurrency": 3,
+      "totalCalls": 100,
+      "elapsedMs": 1831,
+      "throughputRps": 54.61,
+      "avgLatencyMs": 45,
+      "p50LatencyMs": 30,
+      "p95LatencyMs": 192,
+      "p99LatencyMs": 199,
+      "statusDistribution": {
+        "200": 100
+      },
+      "errorCount": 0,
+      "errorRate": 0,
+      "rateLimitCount": 0,
+      "rateLimitRate": 0,
+      "fivexxCount": 0,
+      "fivexxRate": 0,
+      "retryAfters": []
+    },
+    {
+      "label": "Phase 3: concurrency 5",
+      "concurrency": 5,
+      "totalCalls": 100,
+      "elapsedMs": 1329,
+      "throughputRps": 75.24,
+      "avgLatencyMs": 47,
+      "p50LatencyMs": 31,
+      "p95LatencyMs": 172,
+      "p99LatencyMs": 196,
+      "statusDistribution": {
+        "200": 100
+      },
+      "errorCount": 0,
+      "errorRate": 0,
+      "rateLimitCount": 0,
+      "rateLimitRate": 0,
+      "fivexxCount": 0,
+      "fivexxRate": 0,
+      "retryAfters": []
+    },
+    {
+      "label": "Phase 4: concurrency 10",
+      "concurrency": 10,
+      "totalCalls": 100,
+      "elapsedMs": 658,
+      "throughputRps": 151.98,
+      "avgLatencyMs": 49,
+      "p50LatencyMs": 33,
+      "p95LatencyMs": 174,
+      "p99LatencyMs": 176,
+      "statusDistribution": {
+        "200": 100
+      },
+      "errorCount": 0,
+      "errorRate": 0,
+      "rateLimitCount": 0,
+      "rateLimitRate": 0,
+      "fivexxCount": 0,
+      "fivexxRate": 0,
+      "retryAfters": []
+    },
+    {
+      "label": "Phase 5: concurrency 20",
+      "concurrency": 20,
+      "totalCalls": 100,
+      "elapsedMs": 304,
+      "throughputRps": 328.95,
+      "avgLatencyMs": 43,
+      "p50LatencyMs": 32,
+      "p95LatencyMs": 95,
+      "p99LatencyMs": 100,
+      "statusDistribution": {
+        "200": 100
+      },
+      "errorCount": 0,
+      "errorRate": 0,
+      "rateLimitCount": 0,
+      "rateLimitRate": 0,
+      "fivexxCount": 0,
+      "fivexxRate": 0,
+      "retryAfters": []
+    },
+    {
+      "label": "Phase 6: concurrency 30 (aggressive)",
+      "concurrency": 30,
+      "totalCalls": 100,
+      "elapsedMs": 10630,
+      "throughputRps": 9.41,
+      "avgLatencyMs": 1256,
+      "p50LatencyMs": 1364,
+      "p95LatencyMs": 3259,
+      "p99LatencyMs": 3832,
+      "statusDistribution": {
+        "200": 100
+      },
+      "errorCount": 0,
+      "errorRate": 0,
+      "rateLimitCount": 0,
+      "rateLimitRate": 0,
+      "fivexxCount": 0,
+      "fivexxRate": 0,
+      "retryAfters": []
+    }
+  ]
+}

@@ -200,6 +200,20 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "MacBook Pro 14\" M4 256GB (base)",
     note: "M4 base 16GB/256GB. M1/M2/M3, M4 Pro/Max, 16인치, 24GB/32GB+, 512+ 차단.",
   },
+  // Wave 124: 옛 Intel macbook narrow lane 일괄 (Pro 16/15/13, Air 13). M1~M5 차단, Intel only 분리.
+  // RAM/SSD 다양 매물 수용 (옛 Intel = 명시 안 한 매물 다수). 시세 분포 변동성 받아들임.
+  macbook_pro_16_2019: { status: "ready", label: "MacBook Pro 16\" 2019 (Intel)", note: "Intel i7/i9. M1 16 Pro = 2021 → 2019 명시면 Intel only." },
+  macbook_pro_15_2019: { status: "ready", label: "MacBook Pro 15\" 2019 (Intel)", note: "Intel only. 15\" Pro Apple Silicon X." },
+  macbook_pro_15_2018: { status: "ready", label: "MacBook Pro 15\" 2018 (Intel)", note: "Intel only. 15\" Pro Apple Silicon X." },
+  macbook_pro_15_2017: { status: "ready", label: "MacBook Pro 15\" 2017 (Intel)", note: "Intel only. A1707." },
+  macbook_pro_13_2019: { status: "ready", label: "MacBook Pro 13\" 2019 (Intel)", note: "Intel only. A2159/A1989." },
+  macbook_pro_13_2017: { status: "ready", label: "MacBook Pro 13\" 2017 (Intel)", note: "Intel only. A1706/A1708." },
+  macbook_pro_13_2016: { status: "ready", label: "MacBook Pro 13\" 2016 (Intel)", note: "Intel only." },
+  macbook_pro_13_2015: { status: "ready", label: "MacBook Pro 13\" 2015 (Intel)", note: "Intel only. A1502." },
+  macbook_pro_13_2013: { status: "ready", label: "MacBook Pro 13\" 2013 (Intel)", note: "Intel only. A1502." },
+  macbook_air_13_2018: { status: "ready", label: "MacBook Air 13\" 2018 (Intel)", note: "Intel only. A1932. Air M1 = 2020." },
+  macbook_air_13_2017: { status: "ready", label: "MacBook Air 13\" 2017 (Intel)", note: "Intel only. A1466." },
+  macbook_air_13_2015: { status: "ready", label: "MacBook Air 13\" 2015 (Intel)", note: "Intel only. A1466." },
   // Wave 108: Galaxy S 일반(Ultra/Plus 아닌) 256GB 자급제 narrow lane.
   galaxy_s23_256_self: {
     status: "ready",

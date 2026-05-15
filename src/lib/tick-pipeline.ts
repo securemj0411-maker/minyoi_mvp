@@ -2695,14 +2695,17 @@ async function markPoolVerified(pid: number) {
 
 async function claimLifecycleChecks(mode: LifecycleClaimMode = "default"): Promise<LifecycleClaimRow[]> {
   const config = loadPipelineRuntimeConfig();
-  // 2026-05-15 (사용자 코멘트 pid 401500642 / 404643880 / 404436811):
-  // lifecycle backlog 14k 누적으로 missing 매물이 시세 비교군에 잔존. batch cap 30 → 80으로
-  // 늘려 처리 throughput 증가. RPC는 priority_tier(pool 우선) + next_check_at(가장 오래된 거 우선)
-  // 정렬이라 batch 늘려도 pool tier가 먼저 잡힘. detail fetch 시간 부담은 cron maxDuration 60s로
-  // 보호되며 budget guard 있음.
+  // 2026-05-16: Bunjang rate limit probe 결과 600 calls 전부 200 응답 (429 0건).
+  // c=20에서 throughput 329 req/s까지 lenient. 우리 cron 주기 7분 기준 batch 400은 매우 안전.
+  // batch cap 80 → 400 (5배). Promise.all wave concurrency 10으로 처리 → 8초 안 완료 (maxDuration 90s 한도의 9%).
+  // 측정 후 추가 늘림 가능 (probe 시나리오 A 결과).
+  //
+  // 2026-05-15 (이전 wave): backlog 14k 누적 → batch 30 → 80. 7분 cron + batch 80 = 686 calls/h.
+  // 지금: batch 400 + c=10 → 3,429 calls/h (5x). backlog 2,659 → 45분 안 해소.
+  const LIFECYCLE_BATCH_HARDCODE = 400;
   const batchSize = mode === "terminal_recheck"
     ? config.terminalLifecycleRecheckBatchSize
-    : Math.min(80, config.tickDetailBatchSize);
+    : LIFECYCLE_BATCH_HARDCODE;
   const rpcName = mode === "terminal_recheck"
     ? "claim_mvp_terminal_lifecycle_rechecks"
     : "claim_mvp_lifecycle_checks";
@@ -2795,7 +2798,13 @@ export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMod
   stats.timingsMs = { claim_mode_terminal_recheck: mode === "terminal_recheck" ? 1 : 0 };
   const marketInvalidations: MarketKeyInvalidationEvent[] = [];
 
-  for (const row of claims) {
+  // 2026-05-16: Bunjang rate limit probe 결과 c=20까지 매우 lenient (probe 600 calls 다 200 응답).
+  // sequential for → Promise.all wave concurrency 10. throughput 10배. backlog 45분 해소 예상.
+  // c=10은 conservative pick (probe c=20 OK였지만 DB write 부담 고려 + 안전 마진 50%).
+  const LIFECYCLE_CONCURRENCY = 10;
+  for (let waveStart = 0; waveStart < claims.length; waveStart += LIFECYCLE_CONCURRENCY) {
+    const wave = claims.slice(waveStart, waveStart + LIFECYCLE_CONCURRENCY);
+    await Promise.all(wave.map(async (row) => {
     if (Date.now() >= deadlineMs - DETAIL_STAGE_SAFETY_MARGIN_MS) {
       stats.timedOut = true;
       await patchLifecycle(row.pid, {
@@ -2803,7 +2812,7 @@ export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMod
         next_check_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
         state_reason: "lifecycle_budget_guard",
       });
-      continue;
+      return;
     }
 
     if (shouldSkipLifecycleForHealth(row, healthStatus)) {
@@ -2813,7 +2822,7 @@ export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMod
         next_check_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
         state_reason: `source_health_${healthStatus}`,
       });
-      continue;
+      return;
     }
 
     try {
@@ -2855,7 +2864,7 @@ export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMod
           // 호출 안 돼서 invalidate 안 됨. 명시적으로 invalidate 보장 (idempotent).
           await invalidatePoolEntries([{ pid: row.pid, reason: `lifecycle_${nextStatus}_persist` }]).catch(() => undefined);
         }
-        continue;
+        return;
       }
 
       if (isSoldOut(signals) && canPermanentlyInvalidateSoldOut(signals, healthStatus)) {
@@ -2883,7 +2892,7 @@ export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMod
           parserVersion: row.parser_version,
         });
         stats.poolSkipped += 1;
-        continue;
+        return;
       }
 
       await patchLifecycle(row.pid, {
