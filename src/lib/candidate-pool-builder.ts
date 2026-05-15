@@ -41,6 +41,7 @@ export type PoolParsedInput = {
   comparable_key: string | null;
   parse_confidence: number | null;
   needs_review: boolean | null;
+  parsed_json?: Record<string, unknown> | null;
 };
 
 export type CandidatePoolBuildResult = {
@@ -100,6 +101,18 @@ export function buildCandidatePoolRows(input: {
     if (Number.isFinite(row.price) && row.price > MAX_POOL_PRICE_KRW) {
       skipped += 1;
       invalidations.push({ pid, reason: "price_above_pool_max" });
+      continue;
+    }
+
+    // 2026-05-15 (사용자 코멘트 pid 407879893): multi_device_bundle 매물 풀 차단.
+    // 예: "아이폰17 + 애플워치 SE3" — 양쪽 카테고리 시세 어느 쪽과도 정확히 비교 불가.
+    // 단품 시세 대비 차익 계산이 무의미 (가격이 두 device 합산이라 항상 비싸 보임 OR
+    // 한쪽 SKU로 잘못 분류돼 양쪽 풀 침투 위험).
+    // applecare_premium/accessory_bundle은 pool 허용(꿀)이지만, 본품 둘은 다름.
+    const preCheckNotes = (input.parsedByPid.get(pid)?.parsed_json?.condition_notes as string[] | undefined) ?? [];
+    if (preCheckNotes.includes("multi_device_bundle")) {
+      skipped += 1;
+      invalidations.push({ pid, reason: "multi_device_bundle" });
       continue;
     }
 

@@ -2468,6 +2468,10 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // 2026-05-15 (사용자 코멘트 pid 407555096 / 407486890): 본품 + 애플펜슬/매직키보드/폴리오 등
     // 액세서리 번들 매물은 단품 시세 비교군에서 제외. pool 진입은 허용 (번들이 단품 시세보다 싸면 꿀).
     if (conditionNotes.includes("accessory_bundle")) continue;
+    // 2026-05-15 (사용자 코멘트 pid 407879893): 본품 + 다른 카테고리 본품 묶인 매물
+    // (예: 아이폰17 + 애플워치 SE3). 단품 시세 비교군 제외 + pool 진입도 차단해야 하지만
+    // (양쪽 카테고리 동시 진입 위험), 일단 시세 집계만 skip. pool 차단은 별도 wave에서.
+    if (conditionNotes.includes("multi_device_bundle")) continue;
     const key = parsed.comparable_key;
     if (!byKey.has(key)) byKey.set(key, { rows: [], activeRows: [], soldRows: [], disappearedRows: [], skuId: row.sku_id });
     const group = byKey.get(key)!;

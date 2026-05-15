@@ -875,7 +875,15 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   };
 
   // Wave 91 (사용자 요청 pid 368060006): 미개봉/새상품 detection 변형 흡수.
-  if (/미개봉|미\s*개봉|새상품|새 제품|새제품|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*미개봉|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|새\s*것|새거|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower)) add("new_or_open_box", 0.15);
+  const explicitNewSignal = /미개봉|미\s*개봉|새상품|새 제품|새제품|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*미개봉|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|새\s*것|새거|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower);
+  if (explicitNewSignal) add("new_or_open_box", 0.15);
+  // 2026-05-15 (사용자 코멘트 pid 406747021): 배터리 효율 100% 매물은 사실상 새제품
+  // (Apple 기기는 한 번 사용 시작하면 빠르게 99% 미만으로 떨어짐). 단품 시세 비교군에 끼면 평균 끌어올림.
+  // 명시적 새상품 키워드 없이 batteryHealth=100 단독으로도 new_or_open_box 마킹.
+  // pool 진입은 허용 (배터리 100%인데 단품 시세보다 싸면 명백한 꿀).
+  if (!explicitNewSignal && batteryHealth != null && batteryHealth >= 100) {
+    add("new_or_open_box", 0.1);
+  }
   if (/풀박스|풀박|풀구성|풀세트|구성품\s*전부/.test(lower)) add("full_set", 0.05);
 
   // 2026-05-15 (사용자 코멘트 pid 408124976): 애플케어/AC+/삼성케어 매물은
@@ -892,6 +900,30 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   const accessoryBundlePattern = /(?:\+\s*|및\s*|와\s*|과\s*|함께\s*|포함\s*|세트\s*)(?:애플\s?펜슬|애플펜슬\s?프로|매직\s?키보드|스마트\s?키보드|스마트\s?커버|스마트\s?폴리오|폴리오\s?커버|매직\s?마우스|매직\s?트랙패드|애플\s?케이블)|(?:애플\s?펜슬|애플펜슬\s?프로|매직\s?키보드|스마트\s?키보드|스마트\s?폴리오|매직\s?마우스)\s*(?:포함|세트|같이|번들|와\s*함께|증정)/i;
   if (accessoryBundlePattern.test(lower)) {
     add("accessory_bundle", 0.05);
+  }
+
+  // 2026-05-15 (사용자 코멘트 pid 407879893): 다른 카테고리 본품이 함께 묶인 매물
+  // (예: "아이폰17 + 애플워치 SE3 40mm"). 단품 시세 비교군에 들어가면 평균 왜곡,
+  // 더 심각하게는 양쪽 카테고리 pool에 동시 진입할 위험.
+  // 정확성 우선 — title/desc에 명시적 device signature 2개 이상이 강한 연결어(+/세트/번들/같이/함께/와)와 동반될 때만.
+  // 액세서리(애플펜슬·매직키보드 등)는 accessory_bundle이 따로 잡음. 여기는 본품끼리만.
+  const DEVICE_SIGNATURES: Record<string, RegExp> = {
+    iphone: /아이폰\s?\d{1,2}|iphone\s?\d{1,2}/i,
+    ipad: /아이패드(?:\s?(?:프로|에어|미니))?(?:\s?(?:\d{1,2}|m\d))/i,
+    macbook: /맥북(?:\s?(?:에어|프로))/i,
+    apple_watch: /애플\s?워치|apple\s?watch/i,
+    airpods: /에어팟(?:\s?(?:프로|맥스|\d))?|airpods/i,
+    galaxy_phone: /갤럭시\s?(?:s|z|note|폴드|플립)\s?\d{1,2}|galaxy\s?(?:s|z|note|fold|flip)\s?\d{1,2}/i,
+    galaxy_tab: /갤럭시\s?탭|galaxy\s?tab/i,
+    galaxy_watch: /갤럭시\s?워치\s?\d|galaxy\s?watch\s?\d/i,
+    galaxy_buds: /갤럭시\s?버즈|galaxy\s?buds/i,
+  };
+  const matchedDevices = Object.entries(DEVICE_SIGNATURES)
+    .filter(([, re]) => re.test(lower))
+    .map(([k]) => k);
+  const hasStrongConnector = /(?:\+|및|와\s|과\s|함께|세트|번들|같이|증정|together)/i.test(lower);
+  if (matchedDevices.length >= 2 && hasStrongConnector) {
+    add("multi_device_bundle", 0);
   }
 
   if (/s급|상태\s*좋|상태좋|깨끗|깔끔/.test(lower)) add("good_condition", 0.05);
