@@ -9,7 +9,7 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { searchPage, type SearchItem } from "@/lib/bunjang";
-import { ruleMatch, skuById, CATALOG, type Sku } from "@/lib/catalog";
+import { ruleMatch, type Sku } from "@/lib/catalog";
 import { parseListingOptions } from "@/lib/option-parser";
 import { SHOE_CATALOG } from "@/lib/generated/catalog-shoe-wave91";
 import { BAG_CATALOG } from "@/lib/generated/catalog-bag-wave91";

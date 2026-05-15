@@ -104,7 +104,7 @@ async function main() {
   let waveNew = { results: [] };
   try {
     waveNew = JSON.parse(await readFile("reports/wave89-consumer-category-sample-latest.json", "utf-8"));
-  } catch (err) {
+  } catch {
     console.log("  wave89 JSON missing, skipping merge");
   }
 

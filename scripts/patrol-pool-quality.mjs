@@ -116,7 +116,7 @@ console.log(`[4/4] running 5 diagnostic rules...`);
 
 const issues = []; // { pid, sku_id, comparable_key, name, rules: [{ rule, severity, detail }] }
 const generationKeywords = /(\d)\s*세대|gen\s*(\d)/i;
-const ramSsdKeywords = /(\d{2,4})\s*gb\s*ram|(\d{3,4})\s*gb\s*ssd|램\s*(\d{2,4})|ssd\s*(\d{3,4})/i;
+const _ramSsdKeywords = /(\d{2,4})\s*gb\s*ram|(\d{3,4})\s*gb\s*ssd|램\s*(\d{2,4})|ssd\s*(\d{3,4})/i;
 
 for (const pid of poolPids) {
   const l = lMap.get(pid);

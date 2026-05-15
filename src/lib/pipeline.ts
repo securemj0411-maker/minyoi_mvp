@@ -8,7 +8,7 @@ import { createHash } from "node:crypto";
 import { shouldReviewByPolicy } from "@/lib/ai-l2-policy";
 import { applyEscrowTransition } from "@/lib/ai-l2-escrow";
 import { collectSearchItems, fetchDetail } from "@/lib/bunjang";
-import { CATALOG, normalize, ruleMatch, skuById, type Sku } from "@/lib/catalog";
+import { normalize, ruleMatch, skuById, type Sku } from "@/lib/catalog";
 import { parseGameConsoleListing } from "@/lib/game-console-parser";
 import { GENERATED_NOISE_RULES } from "@/lib/generated/noise-rules";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";

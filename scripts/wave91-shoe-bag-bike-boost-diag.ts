@@ -6,7 +6,7 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { searchPage, type SearchItem } from "@/lib/bunjang";
-import { ruleMatch, skuById } from "@/lib/catalog";
+import { ruleMatch } from "@/lib/catalog";
 import { parseListingOptions } from "@/lib/option-parser";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

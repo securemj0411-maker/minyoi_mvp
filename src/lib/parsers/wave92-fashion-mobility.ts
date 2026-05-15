@@ -191,7 +191,7 @@ function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");
 }
 
-function modelFromSku(skuId: string | null | undefined, skuName: string | null | undefined): string | null {
+function modelFromSku(skuId: string | null | undefined, _skuName: string | null | undefined): string | null {
   // skuId 예: shoe-nike-jordan-1-high-chicago → jordan_1_high_chicago
   if (!skuId) return null;
   const parts = skuId.split("-").slice(2); // brand 빼고

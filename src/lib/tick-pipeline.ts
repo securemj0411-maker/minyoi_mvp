@@ -3461,7 +3461,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     favsByMarket.get(marketKey)!.push(row.num_faved);
   }
 
-  const skuMsrp = new Map(CATALOG.map((sku) => [sku.id, sku.msrpKrw]));
+  const _skuMsrp = new Map(CATALOG.map((sku) => [sku.id, sku.msrpKrw]));
   const now = new Date().toISOString();
   const scoredRows: PipelineRow[] = [];
 
@@ -3502,7 +3502,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const marketStat = comparableKey ? marketStatsByKey.get(comparableKey) : undefined;
     const trustedMedian = trustedMarketMedian(marketStat);
     const prices = pricesByMarket.get(marketKey) ?? [];
-    const coarsePrices = pricesBySku.get(skuId) ?? [];
+    const _coarsePrices = pricesBySku.get(skuId) ?? [];
     const hasTrustedMarket = trustedMedian != null;
     // Wave 90 (2026-05-15): catalog gap 분석 결과 (broad SKU 42 변형 / 가격 ratio 20x)로
     // root cause 발견. MSRP × 0.5 fallback + sku_id coarse 평균 둘 다 부정확.

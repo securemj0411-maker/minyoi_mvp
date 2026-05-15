@@ -80,7 +80,6 @@ function ThemeToggle({
 
   useEffect(() => {
     const nextTheme = loadTheme();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate mismatch를 막기 위해 마운트 뒤 저장된 테마를 1회 반영한다.
     setTheme(nextTheme);
     setThemeReady(true);
     setPrefersDark(window.matchMedia("(prefers-color-scheme: dark)").matches);

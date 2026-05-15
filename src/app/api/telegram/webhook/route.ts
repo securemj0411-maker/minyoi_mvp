@@ -7,7 +7,7 @@
 
 import { NextResponse } from "next/server";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
-import { escapeMd, getWebhookSecret, sendTelegramMessage } from "@/lib/telegram-bot";
+import { getWebhookSecret, sendTelegramMessage } from "@/lib/telegram-bot";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

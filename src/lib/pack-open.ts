@@ -595,7 +595,7 @@ export async function submitRevealFeedback(input: {
       user_ref: input.userRef,
       pid: input.pid,
       feedback_type: input.feedbackType,
-      note: input.note?.slice(0, 500) ?? "",
+      note: input.note?.slice(0, 5000) ?? "",
       source: "reveal_modal",
       updated_at: new Date().toISOString(),
     }),
@@ -993,7 +993,6 @@ export async function loadInventory(): Promise<InventorySnapshot[]> {
       if (exposureAvailable) {
         bucket.usableReady += 1;
       }
-      const category = categoryFromPool(row);
       const verified = new Date(row.last_verified_at).getTime();
       if (Number.isFinite(verified) && now - verified < freshnessMsForBand(band)) {
         bucket.freshUnder2h += 1;
