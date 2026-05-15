@@ -9,6 +9,7 @@ import {
 } from "@/lib/collect-logs";
 import { checkCronAuth } from "@/lib/cron-auth";
 import { acquireCronGuard, cronGuardSkipBody } from "@/lib/cron-guard";
+import { checkCronWatchdog } from "@/lib/cron-watchdog";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runSearchScorePipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
@@ -119,6 +120,12 @@ async function handleTick(req: NextRequest) {
     await finishCollectRun(run.id, run.startedAt, toPipelineResult(result), {
       stages: result.stages,
       stageDurationsMs: result.stageDurationsMs,
+    });
+    // 2026-05-15: cron watchdog — 다른 worker가 안 돌면 telegram alert.
+    // 8시간 갭 (5/13 22시 ~ 5/14 06시 lifecycle-worker 멈춤) 같은 사고 미연 방지.
+    // fire-and-forget, error swallow (tick 결과에 영향 X).
+    checkCronWatchdog().catch((err) => {
+      console.error("[cron-watchdog] failed", err instanceof Error ? err.message : String(err));
     });
     return NextResponse.json({
       ok: true,
