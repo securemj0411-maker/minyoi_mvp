@@ -456,6 +456,19 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 다음: source 다양화 wave 진행 시 disabled=false로 활성. 새 카테고리 (신발/가방 등) 추가 시 동일 패턴.
 - commit: e129601
 
+## 25. admin / billing-checkout / legal 페이지 audit — 추가 fix 0건
+
+- 시간: 2026-05-16 07:00 KST
+- 검토 범위: /admin/*, /cauleexxyz..., /billing/checkout, /terms, /privacy, /refund-policy, /youth-policy, /signup, /login.
+- 결과:
+  - **admin 페이지 (운영 전용)**: marketing 텍스트 0. 검토 가치 낮음.
+  - **/billing/checkout**: mock 안내 매우 명확 — "결제 주기 30일 (자동 갱신 없음, 베타)" + "결제 수단 토스페이먼츠 (Mock)" + "베타 기간 동안 실제 결제는 발생하지 않습니다. ...크레딧과 일일 한도가 즉시 반영됩니다" + 취소 안내. /plans (#23b) 와 일관.
+  - **legal (terms/privacy/refund-policy/youth-policy)**: 거짓 광고 0. terms 에 "추천 정보는 참고용이며, 실제 거래 결과와 수익을 보장하지 않습니다" 정직 disclaimer 박혀있음.
+  - **signup / login**: 거짓 광고 0.
+- 변경: 없음 (검토만).
+- 위험: 없음.
+- 다음: marketing 정직성 audit 마무리. 다음 검토 영역 = 에러/빈 상태/만료 메시지 일관성 (사용자 막힘 지점) 또는 운영 readiness (cron monitoring/alert).
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

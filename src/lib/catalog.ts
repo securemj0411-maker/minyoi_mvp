@@ -3039,6 +3039,21 @@ const NORMALIZATIONS: [RegExp, string][] = [
   [/갤럭시\s*탭/g, " 갤럭시탭 "],
   [/갤\s*탭/g, " 갤탭 "],
   [/air\s*pods/gi, " airpods "],
+  // Wave 111 (2026-05-15): 모델명-suffix 공백 비대칭 정규화. iPhone 15 Pro lane이 49% 매칭에 그친 근본 원인.
+  // "아이폰 15프로" / "아이폰15 프로" / "iphone 15pro" 같은 매물 표기를 "아이폰 15 프로"로 통일.
+  // 영향: Galaxy S Ultra / Plus, iPad Pro/Air/Mini 동일 패턴 해결.
+  [/아이폰\s*(\d{1,2}e?)\s*프로\s?맥스/g, " 아이폰 $1 프로맥스 "],
+  [/iphone\s*(\d{1,2}e?)\s*pro\s?max/gi, " iphone $1 pro max "],
+  [/아이폰\s*(\d{1,2}e?)\s*프로(?!\s?맥)/g, " 아이폰 $1 프로 "],
+  [/iphone\s*(\d{1,2}e?)\s*pro(?!\s?max)/gi, " iphone $1 pro "],
+  [/아이폰\s*(\d{1,2}e?)\s*플러스/g, " 아이폰 $1 플러스 "],
+  [/iphone\s*(\d{1,2}e?)\s*plus/gi, " iphone $1 plus "],
+  [/갤럭시\s*s\s?(\d{1,2})\s*울트라/gi, " 갤럭시 s$1 울트라 "],
+  [/galaxy\s*s\s?(\d{1,2})\s*ultra/gi, " galaxy s$1 ultra "],
+  [/갤럭시\s*s\s?(\d{1,2})\s*플러스/gi, " 갤럭시 s$1 플러스 "],
+  [/galaxy\s*s\s?(\d{1,2})\s*plus/gi, " galaxy s$1 plus "],
+  [/갤럭시\s*z\s*(플립|폴드)\s?(\d{1,2})/gi, " 갤럭시 z$1 $2 "],
+  [/galaxy\s*z\s*(flip|fold)\s?(\d{1,2})/gi, " galaxy z$1 $2 "],
 ];
 
 export function normalize(text: string): string {
