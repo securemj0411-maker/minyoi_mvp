@@ -13,7 +13,7 @@ function computeDescriptionHash(description: string | null | undefined): string 
 import { loadCategoryReadinessMap, loadLaneReadinessMap } from "@/lib/category-readiness";
 import { evaluatePhase2Escrow, isPhase2EscrowEnabled } from "@/lib/ai-l2-escrow";
 import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
-import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
+import { CATALOG, ruleMatch, skuById, type Sku } from "@/lib/catalog";
 import {
   decayTrimmedSellerMarket,
   madTrim,
@@ -2774,6 +2774,23 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
       weightMultiplier: launchEventMultiplier(comparableKey, observedAt, launchEvents),
     };
   };
+  // Wave 142 (2026-05-16): 시세 집계 전 가품 매물 제외 (신발/가방 카테고리).
+  // pool 진입 (Wave 141)뿐 아니라 시세 계산 자체에서도 가품 매물 제외 —
+  // 안 그러면 시세 평균이 가품 매물(9k~20k)에 끌어내려져서 일반 매물도 fake_suspect로 차단됨 (악순환).
+  // 발견: samba_og_broad min_price 13k, 990v5 min 9k 등 — msrp의 5% 매물 다수.
+  const FAKE_FLOOR_CATEGORIES_MARKET = new Set<string>(["shoe", "bag"]);
+  const FAKE_FLOOR_RATIO_MARKET = 0.15;
+  for (const group of byKey.values()) {
+    if (!group.skuId) continue;
+    const sku = skuById(group.skuId);
+    if (!sku?.msrpKrw) continue;
+    if (!FAKE_FLOOR_CATEGORIES_MARKET.has(sku.category)) continue;
+    const floor = sku.msrpKrw * FAKE_FLOOR_RATIO_MARKET;
+    group.activeRows = group.activeRows.filter((r) => r.price >= floor);
+    group.soldRows = group.soldRows.filter((r) => r.price >= floor);
+    group.disappearedRows = group.disappearedRows.filter((r) => r.price >= floor);
+  }
+
   const marketRows = [...byKey.values()].map((group) => {
     const comparableKey = group.comparableKey;
     // Wave 135: comparableKey를 toSellerPriced에 전달 → launch event multiplier 적용.
