@@ -250,7 +250,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 검증: tsc clean. 다음 pool-warmer cron tick (5분 내)에서 24개 후보 enqueue + dispatch 예상.
 - 위험: mvp_raw_listings 추가 fetch 1회 (HOTDEAL_ENQUEUE_LIMIT * 3 = 300 PIDs). 부하 미미.
 - 다음: 발송 확인. 옛 reservation `notification_sent=false` + `notification_error=null` 버그 (sendTelegramMessage error 로그 누락) 별도 fix.
-- commit: pending
+- commit: ad9e7db
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
