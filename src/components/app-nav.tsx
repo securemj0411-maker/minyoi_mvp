@@ -169,6 +169,7 @@ export default function AppNav() {
   const [infiniteCredits, setInfiniteCredits] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [accountSheetOpen, setAccountSheetOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [adminOverride, setAdminOverride] = useState(false);
   const adminClickCountRef = useRef(0);
@@ -252,10 +253,17 @@ export default function AppNav() {
   }, [menuOpen]);
 
   // mobile drawer: route 변경 시 자동 close, Esc 닫기, body scroll lock.
-  useEffect(() => { setMobileDrawerOpen(false); }, [pathname]);
   useEffect(() => {
-    if (!mobileDrawerOpen) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileDrawerOpen(false); };
+    setMobileDrawerOpen(false);
+    setAccountSheetOpen(false);
+  }, [pathname]);
+  useEffect(() => {
+    if (!mobileDrawerOpen && !accountSheetOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (accountSheetOpen) setAccountSheetOpen(false);
+      else setMobileDrawerOpen(false);
+    };
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -263,7 +271,7 @@ export default function AppNav() {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [mobileDrawerOpen]);
+  }, [mobileDrawerOpen, accountSheetOpen]);
 
   const handleSignOut = useCallback(async () => {
     const supabase = getSupabaseBrowserClient();
@@ -481,21 +489,10 @@ export default function AppNav() {
               </div>
             </div>
 
-            {/* bottom: account + credits + theme + actions */}
+            {/* bottom: 크레딧 + 화면 모드 + 계정 chip (chip 클릭 시 bottom sheet) */}
             <div className="border-t border-[#e2d9cb] p-3 dark:border-zinc-800">
               {user ? (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3 rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-900">
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-sm font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
-                      {userInitial}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-black text-[#223127] dark:text-zinc-100">{userName}</div>
-                      {user.email ? (
-                        <div className="truncate text-xs font-semibold text-[#6b7269] dark:text-zinc-400">{user.email}</div>
-                      ) : null}
-                    </div>
-                  </div>
                   <div className="flex items-center justify-between rounded-xl bg-[#edf4e8] px-3 py-2.5 dark:bg-zinc-900">
                     <span className="text-xs font-black text-[#5d735f] dark:text-emerald-400">크레딧</span>
                     <div className="flex items-center gap-1.5">
@@ -509,21 +506,20 @@ export default function AppNav() {
                     <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#5d735f] dark:text-emerald-400">화면 모드</div>
                     <ThemeToggle className="mt-2 w-full" />
                   </div>
-                  <Link
-                    href="/plans"
-                    onClick={() => setMobileDrawerOpen(false)}
-                    className="flex w-full items-center justify-between rounded-xl bg-[#fffaf1] px-3 py-2.5 text-sm font-bold text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                  >
-                    <span>{admin ? "충전하기" : "요금제 관리"}</span>
-                    <span className="text-zinc-400">↗</span>
-                  </Link>
+                  {/* 계정 chip — 클릭 시 bottom sheet */}
                   <button
                     type="button"
-                    onClick={() => { setMobileDrawerOpen(false); void handleSignOut(); }}
-                    className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-bold text-[#a04545] hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+                    onClick={() => setAccountSheetOpen(true)}
+                    className="flex w-full items-center gap-3 rounded-xl bg-[#fffaf1] px-3 py-2.5 text-left transition hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-900 dark:hover:bg-zinc-800"
                   >
-                    <span>로그아웃</span>
-                    <span>↗</span>
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-sm font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
+                      {userInitial}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-black text-[#223127] dark:text-zinc-100">{userName}</div>
+                      <div className="text-[11px] font-semibold text-[#7a8478] dark:text-zinc-500">계정 관리</div>
+                    </div>
+                    <span className="text-zinc-400">▴</span>
                   </button>
                 </div>
               ) : (
@@ -545,6 +541,48 @@ export default function AppNav() {
           </aside>
         </div>
       )}
+
+    {/* Mobile account bottom sheet — 계정 chip 누르면 아래에서 위로 슬라이드 */}
+    {accountSheetOpen && user && (
+      <div className="fixed inset-0 z-[60] md:hidden" role="dialog" aria-modal="true">
+        <div
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          onClick={() => setAccountSheetOpen(false)}
+        />
+        <div className="absolute inset-x-0 bottom-0 rounded-t-3xl bg-[#fffaf1] p-4 pb-6 shadow-[0_-12px_32px_rgba(34,49,39,0.18)] dark:bg-zinc-950">
+          <div className="mx-auto h-1.5 w-12 rounded-full bg-[#ddd4c7] dark:bg-zinc-700" />
+          <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#f6efe4] px-3 py-3 dark:bg-zinc-900">
+            <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-base font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
+              {userInitial}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-base font-black text-[#223127] dark:text-zinc-100">{userName}</div>
+              {user.email ? (
+                <div className="truncate text-xs font-semibold text-[#6b7269] dark:text-zinc-400">{user.email}</div>
+              ) : null}
+            </div>
+          </div>
+          <div className="mt-3 space-y-1.5">
+            <Link
+              href="/plans"
+              onClick={() => { setAccountSheetOpen(false); setMobileDrawerOpen(false); }}
+              className="flex w-full items-center justify-between rounded-xl bg-[#f6efe4] px-3 py-3 text-sm font-bold text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              <span>{admin ? "충전하기" : "요금제 관리"}</span>
+              <span className="text-zinc-400">↗</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => { setAccountSheetOpen(false); setMobileDrawerOpen(false); void handleSignOut(); }}
+              className="flex w-full items-center justify-between rounded-xl bg-red-50 px-3 py-3 text-sm font-bold text-[#a04545] hover:bg-red-100 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40"
+            >
+              <span>로그아웃</span>
+              <span>↗</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }
