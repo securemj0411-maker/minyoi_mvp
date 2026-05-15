@@ -639,6 +639,19 @@ export function classifyListing(title: string, desc: string, price: number): Cla
   if (soldOutTextHits(title, desc).length > 0) return { listingType: "callout", sku: null };
   if (buyingHits(title, desc).length > 0) return { listingType: "buying", sku: null };
   if (price <= 0 || price < 5000) return { listingType: "callout", sku: null };
+  // Wave 121 (2026-05-15): 셀러 dummy 가격 거부 표시 차단.
+  // 9999999999 / 123456789 / 111110111 / 555555555 같이 가격을 비현실적으로 입력해 거래 거부 표시.
+  // 패턴: 모든 자릿수가 같거나 (999/111/555) 연속 숫자 (12345/123123) — 10,000,000원 이상에서만 발동
+  // (정상 휴대폰 가격 최대 ~3,000,000원).
+  if (price >= 10_000_000) {
+    const priceStr = price.toString();
+    const allSame = /^(\d)\1+$/.test(priceStr); // 9999999999 / 1111111
+    const sequential = /^(\d+)\1+$/.test(priceStr); // 123123123 / 555555
+    const startsWith9 = /^9{3,}/.test(priceStr); // 999999999
+    if (allSame || sequential || startsWith9) {
+      return { listingType: "callout", sku: null };
+    }
+  }
   if (calloutHits(title, desc).length > 0) return { listingType: "callout", sku: null };
   if (containsAny(text, COMMERCIAL_STRONG_KEYWORDS).length > 0) return { listingType: "commercial", sku: null };
   const monitorNoise = monitorPreSkuNoise(title, desc, price);
