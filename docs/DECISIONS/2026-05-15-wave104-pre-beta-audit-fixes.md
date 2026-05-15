@@ -454,7 +454,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 검증: tsc clean.
 - 위험: 사용자가 disabled 보고 "왜 시계/카메라 안 되지?" 의문 → tooltip + "(준비중)" 으로 안내. 정직성 우선.
 - 다음: source 다양화 wave 진행 시 disabled=false로 활성. 새 카테고리 (신발/가방 등) 추가 시 동일 패턴.
-- commit: pending
+- commit: e129601
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
