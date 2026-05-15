@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { loadClientPlan, type ClientPlanState } from "@/lib/client-billing";
+import { useCallback, useEffect, useState } from "react";
+import { cancelClientPlan, loadClientPlan, type ClientPlanState } from "@/lib/client-billing";
 import { PLANS, formatKrw, type PlanKey } from "@/lib/plan-config";
 
 const ORDER: PlanKey[] = ["starter", "plus", "pro"];
@@ -30,23 +30,43 @@ function PricingMark() {
 export default function PlansPage() {
   const [current, setCurrent] = useState<ClientPlanState | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    let active = true;
-    loadClientPlan()
-      .then((state) => {
-        if (active) {
-          setCurrent(state);
-          setLoaded(true);
-        }
-      })
-      .catch(() => {
-        if (active) setLoaded(true);
-      });
-    return () => {
-      active = false;
-    };
+  const refresh = useCallback(async () => {
+    const state = await loadClientPlan().catch(() => null);
+    setCurrent(state);
+    setLoaded(true);
   }, []);
+
+  useEffect(() => { void refresh(); }, [refresh]);
+
+  async function handleCancel() {
+    if (busy || !current) return;
+    if (!window.confirm("구독을 취소할까요? 결제한 기간이 끝날 때까지는 계속 사용할 수 있습니다.")) return;
+    setBusy(true);
+    setMessage(null);
+    try {
+      await cancelClientPlan("cancel");
+      setMessage("취소 예약됐어요. 기간 종료 시 무료 플랜으로 전환됩니다.");
+      await refresh();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "취소 실패");
+    } finally { setBusy(false); }
+  }
+
+  async function handleReactivate() {
+    if (busy || !current) return;
+    setBusy(true);
+    setMessage(null);
+    try {
+      await cancelClientPlan("reactivate");
+      setMessage("구독을 다시 활성화했어요.");
+      await refresh();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "재활성 실패");
+    } finally { setBusy(false); }
+  }
 
   return (
     <main className="min-h-screen bg-[#f6f1e8] px-4 py-8 dark:bg-zinc-950">
@@ -87,17 +107,50 @@ export default function PlansPage() {
         </section>
 
         {loaded && current && current.planKey !== "free" ? (
-          <section className="rounded-[24px] border border-[#cfd9c9] bg-[#edf4e8] px-5 py-4 text-sm text-[#2f3d31] dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-100">
-            현재 이용중인 플랜: <strong className="font-black">{current.planName}</strong>
-            {current.cancelAtPeriodEnd ? (
-              <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-black text-amber-800">취소 예약됨</span>
+          <section className="rounded-[24px] border border-[#cfd9c9] bg-[#edf4e8] px-5 py-4 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-[#2f3d31] dark:text-emerald-100">
+                <span>현재 이용중인 플랜:</span>
+                <strong className="font-black">{current.planName}</strong>
+                {current.cancelAtPeriodEnd ? (
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-black text-amber-800 dark:bg-amber-950/60 dark:text-amber-200">취소 예약됨</span>
+                ) : (
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-black text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">활성</span>
+                )}
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <Link
+                  href="/me?tab=account"
+                  className="inline-flex rounded-full border border-[#9fb49c] bg-[#fffaf1] px-3 py-1 text-xs font-black text-[#3a4f40] hover:bg-white dark:border-emerald-700 dark:bg-zinc-900 dark:text-emerald-200"
+                >
+                  사용량 보기
+                </Link>
+                {current.cancelAtPeriodEnd ? (
+                  <button
+                    type="button"
+                    onClick={handleReactivate}
+                    disabled={busy}
+                    className="inline-flex rounded-full border border-emerald-400 bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800 hover:bg-emerald-200 disabled:opacity-60 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                  >
+                    {busy ? "처리 중…" : "구독 재활성화"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    disabled={busy}
+                    className="inline-flex rounded-full border border-red-300 bg-red-50 px-3 py-1 text-xs font-black text-red-700 hover:bg-red-100 disabled:opacity-60 dark:border-red-700 dark:bg-red-950/30 dark:text-red-300"
+                  >
+                    {busy ? "처리 중…" : "구독 취소"}
+                  </button>
+                )}
+              </div>
+            </div>
+            {message ? (
+              <div className="mt-3 rounded-xl bg-white/60 px-3 py-2 text-[12px] font-bold text-[#3a4f40] dark:bg-zinc-900/60 dark:text-emerald-100">
+                {message}
+              </div>
             ) : null}
-            <Link
-              href="/me?tab=account"
-              className="ml-3 inline-flex rounded-full border border-[#9fb49c] bg-[#fffaf1] px-3 py-1 text-xs font-black text-[#3a4f40] hover:bg-white"
-            >
-              사용량 보기
-            </Link>
           </section>
         ) : null}
 

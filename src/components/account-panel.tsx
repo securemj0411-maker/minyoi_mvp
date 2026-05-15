@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
-  cancelClientPlan,
   loadClientPlan,
   type ClientPlanState,
 } from "@/lib/client-billing";
@@ -74,8 +73,6 @@ export function AccountPanel({
 }) {
   const [plan, setPlan] = useState<ClientPlanState | null>(null);
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -84,46 +81,13 @@ export function AccountPanel({
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+  useEffect(() => { void refresh(); }, [refresh]);
 
   useEffect(() => {
     const handler = () => { void refresh(); };
     window.addEventListener("minyoi:credits-changed", handler);
     return () => window.removeEventListener("minyoi:credits-changed", handler);
   }, [refresh]);
-
-  async function handleCancel() {
-    if (busy) return;
-    if (!window.confirm("구독을 취소할까요? 결제한 기간이 끝날 때까지는 계속 사용할 수 있습니다.")) return;
-    setBusy(true);
-    setMessage(null);
-    try {
-      await cancelClientPlan("cancel");
-      setMessage("취소 예약됐어요. 기간 종료 시 무료 플랜으로 전환됩니다.");
-      await refresh();
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : "취소 실패");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleReactivate() {
-    if (busy) return;
-    setBusy(true);
-    setMessage(null);
-    try {
-      await cancelClientPlan("reactivate");
-      setMessage("구독을 다시 활성화했어요.");
-      await refresh();
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : "재활성 실패");
-    } finally {
-      setBusy(false);
-    }
-  }
 
   const wrap =
     variant === "desktop"
@@ -203,11 +167,6 @@ export function AccountPanel({
         </div>
       </Link>
 
-      {message ? (
-        <div className="rounded-xl bg-[#f1ebe1] px-3 py-2 text-[11px] font-bold text-[#3a4f40] dark:bg-zinc-900 dark:text-zinc-300">
-          {message}
-        </div>
-      ) : null}
     </div>
   );
 }
