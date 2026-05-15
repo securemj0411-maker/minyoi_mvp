@@ -288,7 +288,15 @@ function partsHits(title: string, desc: string): string[] {
   ) {
     hits.push("title_unit_only");
   }
-  if (!fullSizeHeadphone && !isGameConsoleFullUnitText(normalizedText) && compactTitle.includes("본체") && !containsAny(text, ["양쪽", "풀박", "풀박스", "풀세트", "풀구성"]).length) {
+  // Wave 116 (2026-05-15): "본체" 단독 매물은 본품 의미 (예: "에어팟 4세대 본체 노캔o").
+  // 이전엔 "본체" 포함만 보고 parts 분류 → AirPods 4 매물 1,316건 중 699건 sku_id null.
+  // "본체만/단품/판매/팝니다" 같이 명시되어야 진짜 부품 매물.
+  if (
+    !fullSizeHeadphone
+    && !isGameConsoleFullUnitText(normalizedText)
+    && /본체\s*(?:만|단품|판매|팝니다|구매|구합니다|삽니다)/.test(compactTitle.replace(/\s+/g, ""))
+    && !containsAny(text, ["양쪽", "풀박", "풀박스", "풀세트", "풀구성"]).length
+  ) {
     hits.push("title_case_only");
   }
   if (
