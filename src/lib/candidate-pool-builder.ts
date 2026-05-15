@@ -32,6 +32,12 @@ const MAX_POOL_NUM_COMMENT = 8;
 // NULL = detail 미수집 (통과 — 다음 tick 재평가).
 const MAX_POOL_QTY = 1;
 
+// Wave 138 (2026-05-16): 같은 seller_uid 다수 매물 차단 — qty 위장 업자 탐지.
+// DB 발견: 1명 셀러가 같은 매물명 46/45/40/36건 반복 등록 (qty=1로 분산).
+// 정책: 셀러당 pool 매물 1개만 허용 (가장 score 높은 매물). 나머지 차단.
+// MAX_POOL_LISTINGS_PER_SELLER = 1 = strict 1매물 정책.
+const MAX_POOL_LISTINGS_PER_SELLER = 1;
+
 // Wave 129 (2026-05-16): parse_confidence threshold 명시 — 사업 보고서 L1.
 // "AI normalization 매칭 confidence < 0.85면 매물 풀에서 제외".
 // 우리 정책 (LAUNCH_PLAN 12b precision-first):
@@ -64,6 +70,9 @@ export type PoolCandidateInput = {
   // Wave 137 (2026-05-16): 수량 — qty > 1 = 대량 판매업자 (1:1 거래 X) → pool 진입 차단.
   // Wave 136 audit 발견 (qty 88/35/26 = 대량 판매업자, qty 1 = 일반 매물).
   qty?: number | null;
+  // Wave 138 (2026-05-16): seller_uid — 같은 셀러가 다수 매물 등록 시 차단 (qty 위장 업자).
+  // DB 발견: 1명 셀러가 같은 매물명 46/45/40/36건 반복 등록 패턴.
+  sellerUid?: string | null;
 };
 
 export type PoolParsedInput = {
@@ -116,12 +125,21 @@ export function buildCandidatePoolRows(input: {
   categoryReadiness: CategoryReadinessMap;
   laneReadiness?: LaneReadinessMap;
   now: string;
+  // Wave 138 (2026-05-16): pool에 이미 있는 셀러별 매물 수 (tick-pipeline이 사전 fetch).
+  // 같은 seller_uid가 이미 N개 매물 가지면 추가 매물 차단.
+  existingPoolSellerCounts?: Map<string, number>;
 }): CandidatePoolBuildResult {
   const entries: Record<string, unknown>[] = [];
   const invalidations: { pid: number; reason: string }[] = [];
   let skipped = 0;
 
-  for (const row of input.rows) {
+  // Wave 138: 이번 batch 안에서 seller별 counter (외부 existing 합산).
+  // 가장 score 높은 매물부터 통과시켜야 정확. rows를 score 내림차순 sort.
+  const existingSellerCounts = input.existingPoolSellerCounts ?? new Map<string, number>();
+  const batchSellerCounts = new Map<string, number>();
+  const sortedRows = [...input.rows].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+
+  for (const row of sortedRows) {
     const pid = Number(row.pid);
     if (row.poolEligible === false) {
       skipped += 1;
@@ -150,6 +168,20 @@ export function buildCandidatePoolRows(input: {
       skipped += 1;
       invalidations.push({ pid, reason: `qty_above_${MAX_POOL_QTY}` });
       continue;
+    }
+
+    // Wave 138 (2026-05-16): 같은 seller_uid 다수 매물 차단 — qty 위장 업자 탐지.
+    // DB 발견 패턴: 1명 셀러가 같은 매물 46/45/40/36건 반복 등록 (qty=1 분산).
+    // 정책: 셀러당 pool 매물 1개만 허용 (score 가장 높은 것). 나머지 차단.
+    if (row.sellerUid) {
+      const existingCount = existingSellerCounts.get(row.sellerUid) ?? 0;
+      const batchCount = batchSellerCounts.get(row.sellerUid) ?? 0;
+      if (existingCount + batchCount >= MAX_POOL_LISTINGS_PER_SELLER) {
+        skipped += 1;
+        invalidations.push({ pid, reason: `seller_above_${MAX_POOL_LISTINGS_PER_SELLER}_listings` });
+        continue;
+      }
+      batchSellerCounts.set(row.sellerUid, batchCount + 1);
     }
 
     // 2026-05-15 (사용자 코멘트 pid 407879893): multi_device_bundle 매물 풀 차단.

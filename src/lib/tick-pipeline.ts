@@ -2521,6 +2521,35 @@ export async function sourceHealthStage(): Promise<StageStats> {
   return stats;
 }
 
+// Wave 138 (2026-05-16): pool에 이미 있는 seller_uid별 매물 수 — buildCandidatePoolRows에 전달.
+// 같은 셀러 다수 매물 추가 진입 차단 (qty 위장 업자 탐지).
+async function loadExistingPoolSellerCounts(): Promise<Map<string, number>> {
+  try {
+    // pool ready 매물의 pid 가져온 후 raw_listings.seller_uid join (PostgREST 단순 query)
+    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.ready&limit=5000`;
+    const poolRes = await restFetch(poolUrl, { headers: serviceHeaders() });
+    const poolRows = (await poolRes.json()) as Array<{ pid: number }>;
+    const pids = poolRows.map((r) => Number(r.pid)).filter(Number.isFinite);
+    if (pids.length === 0) return new Map();
+
+    const counts = new Map<string, number>();
+    // chunk fetch
+    for (const chunk of chunkArray(pids, 500)) {
+      const rawUrl = `${tableUrl("mvp_raw_listings")}?select=seller_uid&pid=in.(${chunk.join(",")})&seller_uid=not.is.null`;
+      const rawRes = await restFetch(rawUrl, { headers: serviceHeaders() });
+      const rawRows = (await rawRes.json()) as Array<{ seller_uid: string | null }>;
+      for (const r of rawRows) {
+        if (!r.seller_uid) continue;
+        counts.set(r.seller_uid, (counts.get(r.seller_uid) ?? 0) + 1);
+      }
+    }
+    return counts;
+  } catch (err) {
+    console.warn("loadExistingPoolSellerCounts failed", err);
+    return new Map();
+  }
+}
+
 // Wave 135 (2026-05-16): launch event load — 영향 comparable_key + event_date 매핑.
 // 시세 산정 시 event_date 이전 매물에 weight multiplier (default 0.3) 적용.
 // 사업 보고서 L5b — 신모델 launch 시점 옛 baseline 무시.
@@ -3818,6 +3847,8 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       numComment: row.num_comment ?? null,
       // Wave 137 (2026-05-16): row.qty → candidate-pool-builder qty > 1 gate.
       qty: row.qty ?? null,
+      // Wave 138 (2026-05-16): seller_uid → seller-level pool gate (다수 매물 차단).
+      sellerUid: row.seller_uid ?? null,
       ...shipping,
     });
   }
@@ -3881,6 +3912,13 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     ...topCountTimings("score_analysis_diff", analysisDiffCounts),
   };
 
+  // Wave 138 (2026-05-16): pool에 이미 있는 seller_uid별 매물 수 fetch.
+  // 새 매물이 같은 셀러 매물 추가 진입 시도 시 차단 (qty 위장 업자 탐지).
+  const existingPoolSellerCounts = await loadExistingPoolSellerCounts().catch((err) => {
+    console.warn("loadExistingPoolSellerCounts failed (non-fatal)", err);
+    return new Map<string, number>();
+  });
+
   const poolBuild = buildCandidatePoolRows({
     rows: aiReview.rows,
     parsedByPid,
@@ -3888,6 +3926,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     categoryReadiness,
     laneReadiness,
     now,
+    existingPoolSellerCounts,
   });
   const poolEntries = poolBuild.entries;
   await upsertRows("mvp_candidate_pool", poolEntries, "pid");

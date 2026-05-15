@@ -906,6 +906,8 @@ export type PipelineRow = {
   numComment?: number | null;
   // Wave 137 (2026-05-16): 수량 — qty > 1 = 대량 판매업자. candidate-pool-builder 차단.
   qty?: number | null;
+  // Wave 138 (2026-05-16): seller_uid — 같은 셀러 다수 매물 차단 (qty 위장 업자).
+  sellerUid?: string | null;
   shippingFee: number;
   shippingFeeGeneral: number | null;
   shippingSource: string;

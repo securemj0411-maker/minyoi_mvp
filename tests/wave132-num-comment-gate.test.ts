@@ -177,3 +177,82 @@ describe("Wave 137 — qty > 1 pool gate (대량 판매업자 차단)", () => {
     assert.equal(qtySkip, undefined, "undefined도 통과");
   });
 });
+
+// Wave 138 (2026-05-16): 같은 seller_uid 다수 매물 차단 (qty 위장 업자 탐지).
+describe("Wave 138 — seller-level pool gate", () => {
+  const sellerParsed = new Map([
+    [1, { category: "earphone" as const, comparable_key: "earphone|test", parse_confidence: 0.9, needs_review: false, parsed_json: {}, condition_class: "normal" }],
+    [2, { category: "earphone" as const, comparable_key: "earphone|test", parse_confidence: 0.9, needs_review: false, parsed_json: {}, condition_class: "normal" }],
+    [3, { category: "earphone" as const, comparable_key: "earphone|test", parse_confidence: 0.9, needs_review: false, parsed_json: {}, condition_class: "normal" }],
+  ]);
+
+  it("같은 셀러 1개만 → 통과", () => {
+    const result = buildCandidatePoolRows({
+      rows: [{ ...baseRow, sellerUid: "seller-a" }],
+      parsedByPid: sellerParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+    });
+    const sellerSkip = result.invalidations.find((i) => i.reason.startsWith("seller_above"));
+    assert.equal(sellerSkip, undefined, "1매물 → 통과");
+  });
+
+  it("같은 셀러 batch 3개 → 1개만 통과, 2개 차단", () => {
+    const result = buildCandidatePoolRows({
+      rows: [
+        { ...baseRow, pid: 1, sellerUid: "seller-a", score: 50 },
+        { ...baseRow, pid: 2, sellerUid: "seller-a", score: 70 },  // 가장 높음 → 통과
+        { ...baseRow, pid: 3, sellerUid: "seller-a", score: 60 },
+      ],
+      parsedByPid: sellerParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+    });
+    const sellerSkips = result.invalidations.filter((i) => i.reason.startsWith("seller_above"));
+    assert.equal(sellerSkips.length, 2, `2개 차단되어야. skips: ${JSON.stringify(sellerSkips)}`);
+  });
+
+  it("같은 셀러 이미 pool 1개 → 신규 매물 차단", () => {
+    const existing = new Map<string, number>([["seller-a", 1]]);
+    const result = buildCandidatePoolRows({
+      rows: [{ ...baseRow, sellerUid: "seller-a" }],
+      parsedByPid: sellerParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+      existingPoolSellerCounts: existing,
+    });
+    const sellerSkip = result.invalidations.find((i) => i.reason.startsWith("seller_above"));
+    assert.ok(sellerSkip, "existing 1 + 신규 = 차단");
+  });
+
+  it("다른 셀러 다수 → 모두 통과 (셀러별 1개씩)", () => {
+    const result = buildCandidatePoolRows({
+      rows: [
+        { ...baseRow, pid: 1, sellerUid: "seller-a" },
+        { ...baseRow, pid: 2, sellerUid: "seller-b" },
+        { ...baseRow, pid: 3, sellerUid: "seller-c" },
+      ],
+      parsedByPid: sellerParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+    });
+    const sellerSkips = result.invalidations.filter((i) => i.reason.startsWith("seller_above"));
+    assert.equal(sellerSkips.length, 0, "다른 셀러는 차단 안 됨");
+  });
+
+  it("sellerUid null → gate 통과 (정보 없음)", () => {
+    const result = buildCandidatePoolRows({
+      rows: [{ ...baseRow, sellerUid: null }],
+      parsedByPid: sellerParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+    });
+    const sellerSkip = result.invalidations.find((i) => i.reason.startsWith("seller_above"));
+    assert.equal(sellerSkip, undefined, "null = 통과");
+  });
+});
