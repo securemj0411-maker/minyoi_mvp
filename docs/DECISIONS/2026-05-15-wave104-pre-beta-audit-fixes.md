@@ -722,6 +722,26 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 다음: launch 직전 final smoke walkthrough 또는 source 다양화 wave 또는 비즈니스 측면 (마케팅 / 첫 사용자 모집).
 - commit: 6be293e
 
+## 34. error/not-found/global-error 핸들러 + viewport metadata
+
+- 시간: 2026-05-16 09:20 KST
+- 검토 (PWA / error / loading 인프라):
+  - viewport / theme-color metadata: 0 (모바일 브라우저 색 default)
+  - PWA manifest: 0 (홈 화면 추가 X — 베타 단계 trivial)
+  - **error.tsx / not-found.tsx / global-error.tsx: 0** ← critical (에러 시 generic Next.js 화면 노출, 신뢰 깨짐)
+  - loading.tsx: 0 (페이지 transition 빈 화면 — UX 저하)
+- 우선순위: error 핸들러 critical (사용자가 에러 만나면 즉시 신뢰 ↓), 나머지는 trivial.
+- 변경:
+  - `src/app/not-found.tsx` 신규 — 404 페이지 (큰 "404" 표시 + 친절 안내 + 메인/대시보드 링크).
+  - `src/app/error.tsx` 신규 — 페이지 레벨 에러 boundary ("다시 시도" + reset() + 메인 + error.digest 표시 + console.error 디버깅).
+  - `src/app/global-error.tsx` 신규 — root layout 자체 에러 핸들러 (자체 html/body, inline style, "다시 시도" + 디버깅 코드).
+  - `src/app/layout.tsx` viewport export 추가 — width: device-width, initialScale 1, maxScale 5, theme-color (light: #f6f1e8 / dark: #0a0a0a).
+- 검증:
+  - tsc: .next/dev/types route validator cache mismatch 일시 (런타임 무관, dev hot reload로 해결 — 기존 #33 SEO와 동일 패턴).
+- 위험: error/global-error 가 추가됐어도 useEffect 안에 console.error만. 외부 monitoring (Sentry 등) 연동은 별도 wave.
+- 다음: source 다양화 / launch smoke / PWA manifest / loading.tsx (모두 trivial 또는 큰 작업).
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

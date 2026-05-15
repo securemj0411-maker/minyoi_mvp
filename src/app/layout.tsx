@@ -1,7 +1,18 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import AppFooter from "@/components/app-footer";
 import AppNav from "@/components/app-nav";
 import "./globals.css";
+
+// Wave 106: 모바일 viewport + theme color (브라우저 상단 색).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f1e8" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+};
 
 // Wave 106: SEO 보강. 한국어 자연어 + 키워드 (중고 / 리셀 / AI / 번개장터 / 시세 / 가격 차익).
 // 정직 톤 — "보장" 어휘 X, "추천" 위주.
