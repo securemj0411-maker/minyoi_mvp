@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-15T23:47:34.564Z",
+  "_updated_at": "2026-05-15T23:56:03.667Z",
   "resolutions": {
     "318408095": {
       "resolved_at": "2026-05-15T23:22:25.326Z",
@@ -9,11 +9,25 @@
         "60549ae"
       ]
     },
+    "334403685": {
+      "resolved_at": "2026-05-15T23:56:03.386Z",
+      "summary": "v45 regex fix + reparse: unopened→clean. \"풀박X + 배터리 100%\" 사용자 의도 = mint",
+      "commits": [
+        "v45-reparse"
+      ]
+    },
     "334750861": {
       "resolved_at": "2026-05-14T23:21:16.219Z",
       "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
       "commits": [
         "61d0dbb"
+      ]
+    },
+    "334814973": {
+      "resolved_at": "2026-05-15T23:56:03.424Z",
+      "summary": "v45 regex fix + reparse: unopened→clean. \"정품 스트랩... 새제품\" 액세서리 false positive 제거",
+      "commits": [
+        "v45-reparse"
       ]
     },
     "341712686": {
@@ -93,6 +107,13 @@
         "c0ecc85"
       ]
     },
+    "377887597": {
+      "resolved_at": "2026-05-15T23:56:03.616Z",
+      "summary": "v45 reparse: cc=worn. 외부 손상 (화면 줄/모서리 찍힘) → cosmetic_wear → worn 비교군",
+      "commits": [
+        "v45-reparse"
+      ]
+    },
     "378521048": {
       "resolved_at": "2026-05-15T02:23:44.962Z",
       "summary": "iMac M3 RAM/SSD axis (parser v37). 동일 fix 적용 대상. reparse 대기.",
@@ -105,6 +126,13 @@
       "summary": "Wave 127: AirPods Max USB-C 별도 모델 가이드 (Max 2 = USB-C 명시)",
       "commits": [
         "fc8d772"
+      ]
+    },
+    "389833231": {
+      "resolved_at": "2026-05-15T23:56:03.561Z",
+      "summary": "v45 reparse: cc=worn (cosmetic_wear). 비교군 worn 만 보임 — mint와 분리 fix",
+      "commits": [
+        "v45-reparse"
       ]
     },
     "394439158": {
@@ -142,6 +170,13 @@
         "c75998f"
       ]
     },
+    "398116411": {
+      "resolved_at": "2026-05-15T23:56:03.663Z",
+      "summary": "v45 reparse: cc=worn. 매물 description 자동 분류 OK",
+      "commits": [
+        "v45-reparse"
+      ]
+    },
     "398736849": {
       "resolved_at": "2026-05-15T06:52:23.445Z",
       "summary": "타이틀리스트 골프채 카테고리 blocked. loft 옵션 분리 안 됨 + 일반인 친화 X. sport_golf + lane 2개 모두 blocked. 풀 7건 invalidate.",
@@ -154,6 +189,13 @@
       "summary": "N4 + Wave 141: 미개봉 새제품 → unopened condition_class (다나와 시세)",
       "commits": [
         "a3fb884"
+      ]
+    },
+    "399098831": {
+      "resolved_at": "2026-05-15T23:56:03.518Z",
+      "summary": "사용자 POSITIVE: \"상태 필터 잘 작동\". v45 reparse 후 flawed 정확 분류 (display_defect)",
+      "commits": [
+        "v45-reparse"
       ]
     },
     "399177378": {
@@ -240,6 +282,13 @@
       "summary": "parser v39 (chip prefix lookahead + 비노캔 키워드) + reparse",
       "commits": [
         "ddcbaa9"
+      ]
+    },
+    "403851792": {
+      "resolved_at": "2026-05-15T23:56:03.466Z",
+      "summary": "v45 regex fix + reparse: unopened→clean. batteryHealth=100 단독 unopened 마킹 정책 폐기",
+      "commits": [
+        "v45-reparse"
       ]
     },
     "404302435": {

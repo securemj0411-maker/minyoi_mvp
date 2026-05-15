@@ -68,7 +68,7 @@ const FLAWED_NOTES = [
   "installment_risk",
 ] as const;
 
-const CLEAN_NOTES = ["good_condition", "full_set", "applecare_premium"] as const;
+const CLEAN_NOTES = ["good_condition", "full_set", "applecare_premium", "battery_perfect"] as const;
 
 /**
  * Wave 130: condition_notes[] → ConditionClass (single label).
@@ -123,7 +123,7 @@ function bunjangLabelToConditionClass(label: string | null | undefined): Conditi
   return null;
 }
 
-const PARSER_VERSION = "option-parser-v44";
+const PARSER_VERSION = "option-parser-v45";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -1028,15 +1028,20 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
     /[0-9]+\s*(?:주|일|개월|년|달)\s*(?:정도\s*|쯤\s*)?사용\s*했/i.test(lower);
   // 2026-05-16 (사용자 코멘트 #121 pid 350167397): "스트랩(새거)" 가 본체 "새거"로 false positive.
   // "새것/새거/새 것" 단독 매칭 제거 — 액세서리/구성품 context 에서 자주 false positive.
-  // 본체 미개봉만 잡으려면 명확한 키워드 (미개봉/새상품/박스 미개봉/포장 안 뜯음/brand new) 만 유지.
-  const explicitNewSignal = !newSignalNegativePattern && /미개봉|미\s*개봉|새상품|새 제품|새제품|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*미개봉|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower);
+  // 본체 미개봉만 잡으려면 명확한 키워드 (미개봉/박스 미개봉/포장 안 뜯음/brand new) 만 유지.
+  // 2026-05-16 (사용자 코멘트 id 115/116/82 — pid 334814973/334403685/403851792):
+  //   "정품 스트랩... 새제품" / "새 제품입니다" 셀러 인플레 / 액세서리 context false positive 다수.
+  //   "새상품/새 제품/새제품" 단독 매칭 제거. "박스 새상품 미개봉" 같은 명시 키워드만 유지.
+  //   "새상품" 단어가 본체 unopened 신호인 케이스가 액세서리/인플레 false positive 보다 적음.
+  const explicitNewSignal = !newSignalNegativePattern && /미개봉|미\s*개봉|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*(?:미개봉|새상품)|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower);
   if (explicitNewSignal) add("new_or_open_box", 0.15);
-  // 2026-05-15 (사용자 코멘트 pid 406747021): 배터리 효율 100% 매물은 사실상 새제품
-  // (Apple 기기는 한 번 사용 시작하면 빠르게 99% 미만으로 떨어짐). 단품 시세 비교군에 끼면 평균 끌어올림.
-  // 명시적 새상품 키워드 없이 batteryHealth=100 단독으로도 new_or_open_box 마킹.
-  // pool 진입은 허용 (배터리 100%인데 단품 시세보다 싸면 명백한 꿀).
+  // 2026-05-16 (사용자 코멘트 id 82/115 pid 403851792/334403685): batteryHealth=100 단독 unopened 마킹 제거.
+  //   기존 정책 (Wave 91): Apple 100% = 새제품 가정. 시세 sample 평균 끌어올림 차단 의도.
+  //   문제: 셀러 "새 제품입니다" 인플레 + 100% / "풀박X 100%" 사용 매물 false positive 다수.
+  //   사용자 의도: 명시적 unopened 키워드 (미개봉/박스 미개봉) 없으면 clean (mint) 까지만 분류.
+  //   시세 sample 분리는 별도 mechanism (condition_class 별 grouping — Wave 130).
   if (!explicitNewSignal && batteryHealth != null && batteryHealth >= 100) {
-    add("new_or_open_box", 0.1);
+    add("battery_perfect", 0.05);
   }
   if (/풀박스|풀박|풀구성|풀세트|구성품\s*전부/.test(lower)) add("full_set", 0.05);
 

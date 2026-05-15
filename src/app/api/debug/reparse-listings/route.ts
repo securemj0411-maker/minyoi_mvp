@@ -118,7 +118,7 @@ async function handleReparse(req: NextRequest) {
   const shouldReclassify = req.nextUrl.searchParams.get("reclassify") === "1";
   const legacyOnly = req.nextUrl.searchParams.get("legacy") === "1";
   // legacy=1 이면 parser_version != CURRENT 옛 매물만 reparse. CURRENT 는 option-parser PARSER_VERSION 과 일치해야 함.
-  const CURRENT_PARSER_VERSION = "option-parser-v44";
+  const CURRENT_PARSER_VERSION = "option-parser-v45";
   const rows = legacyOnly
     ? await loadLegacyRows(limit, CURRENT_PARSER_VERSION)
     : await loadRows(limit, offset);
