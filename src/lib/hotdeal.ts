@@ -131,6 +131,14 @@ type ClaimResult = {
 };
 
 export async function dispatchAvailableHotdeals(): Promise<{ claimed: number; sent: number; failed: number; admin_shadowed: number }> {
+  // Wave 106: TTL 만료된 pending reservation 정리 + queue.status='reserved' → 'available' 복원.
+  // 사용자가 응답 안 한 매물이 다음 사용자에게 자동 reroute되도록 best-effort 호출.
+  await restFetch(rpcUrl("expire_stale_hotdeal_reservations"), {
+    method: "POST",
+    headers: serviceHeaders(),
+    body: jsonBody({}),
+  }).catch(() => undefined);
+
   // available queue 가져오기.
   const queueRes = await restFetch(
     `${tableUrl("mvp_hotdeal_queue")}?select=pid,sku_name,profit_margin,profit_amount,band&status=eq.available&order=profit_margin.desc&limit=${HOTDEAL_DISPATCH_LIMIT}`,

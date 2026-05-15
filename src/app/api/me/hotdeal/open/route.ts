@@ -89,5 +89,20 @@ export async function POST(req: Request) {
     }
   }
 
+  // Wave 106: 카드 까는 순간 = consumed. "샀어요/포기" 응답 메커니즘 폐기.
+  // 사용자 정책: 까면 끝, 시간 내 안 까면 다른 사람한테 자동 reroute.
+  // queue.status='consumed' 박아서 다른 사용자에게 reroute 차단.
+  if (rows.length > 0) {
+    const pids = rows.map((r) => r.pid);
+    await restFetch(
+      `${tableUrl("mvp_hotdeal_queue")}?pid=in.(${pids.join(",")})&status=in.(reserved,available)`,
+      {
+        method: "PATCH",
+        headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+        body: JSON.stringify({ status: "consumed", consumed_at: now, updated_at: now }),
+      },
+    ).catch(() => undefined);
+  }
+
   return NextResponse.json({ opened: rows.length, pids: rows.map((r) => r.pid) });
 }

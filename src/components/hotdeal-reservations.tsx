@@ -110,22 +110,7 @@ export default function HotdealReservations({ initialPid }: { initialPid: number
     }
   }
 
-  async function decide(pid: number, decision: "purchased" | "rejected") {
-    setBusyPids((s) => new Set(s).add(pid));
-    try {
-      const r = await fetch("/api/me/hotdeal/decide", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pid, decision }),
-      });
-      if (!r.ok) throw new Error(`${r.status}`);
-      await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setBusyPids((s) => { const n = new Set(s); n.delete(pid); return n; });
-    }
-  }
+  // Wave 106: "샀어요/포기" 응답 폐기. 카드 열기 = 자동 consumed. decide 함수 삭제.
 
   if (loading) {
     return (
@@ -174,22 +159,18 @@ export default function HotdealReservations({ initialPid }: { initialPid: number
           remainingMs={new Date(r.expiresAt).getTime() - now}
           busy={busyPids.has(r.pid)}
           onOpen={() => openOne(r.pid)}
-          onPurchased={() => decide(r.pid, "purchased")}
-          onRejected={() => decide(r.pid, "rejected")}
         />
       ))}
     </div>
   );
 }
 
-function ReservationCard({ item, highlight, remainingMs, busy, onOpen, onPurchased, onRejected }: {
+function ReservationCard({ item, highlight, remainingMs, busy, onOpen }: {
   item: Reservation;
   highlight: boolean;
   remainingMs: number;
   busy: boolean;
   onOpen: () => void;
-  onPurchased: () => void;
-  onRejected: () => void;
 }) {
   const isOpened = item.decision === "opened";
   const expired = remainingMs <= 0;
@@ -313,32 +294,16 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen, onPurchas
         {expired ? (
           <span className="text-xs font-semibold text-[#7a8577] dark:text-zinc-500">기회 종료</span>
         ) : (
-          <div className="flex gap-2">
-            <a
-              href={lst.bunjangUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-9 rounded-lg border border-[#ddd4c7] px-3 text-xs font-bold leading-9 text-[#556252] transition hover:bg-[#f5ede0] dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            >
-              번장에서 거래
-            </a>
-            <button
-              type="button"
-              onClick={onRejected}
-              disabled={busy}
-              className="h-9 rounded-lg border border-[#ddd4c7] px-3 text-xs font-bold text-[#556252] transition hover:bg-[#f5ede0] disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            >
-              포기
-            </button>
-            <button
-              type="button"
-              onClick={onPurchased}
-              disabled={busy}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-xs font-black text-white transition hover:bg-emerald-700 disabled:opacity-50"
-            >
-              <CheckCircleIcon className="h-3.5 w-3.5" /> 샀어요
-            </button>
-          </div>
+          // Wave 106: 응답 버튼 ("샀어요/포기") 제거. 카드 까는 순간 = consumed.
+          // 번장 직링크만 제공 — 매물 보고 살지 말지는 본인 결정, 추가 응답 없음.
+          <a
+            href={lst.bunjangUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-flex h-9 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-xs font-black text-white transition hover:bg-emerald-700 ${busy ? "pointer-events-none opacity-50" : ""}`}
+          >
+            <CheckCircleIcon className="h-3.5 w-3.5" /> 번장에서 거래
+          </a>
         )}
       </div>
     </article>

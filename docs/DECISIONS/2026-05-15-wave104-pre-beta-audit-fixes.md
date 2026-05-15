@@ -252,6 +252,36 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: 발송 확인. 옛 reservation `notification_sent=false` + `notification_error=null` 버그 (sendTelegramMessage error 로그 누락) 별도 fix.
 - commit: ad9e7db
 
+## 17. 핫딜 정책 변경 — "샀어요/포기" 응답 폐기 + TTL reroute fix
+
+- 시간: 2026-05-16 05:10 KST
+- 발견: 사용자 정책 결정. "샀어요/포기" 응답 메커니즘 무의미.
+  - 정직성 가정: 사용자가 카드 까면 매물 정보 다 봄 → 번장 직거래 가능 → "샀어요" 누를 동기 0
+  - "포기"도 무의미: 비용 X (크레딧 차감 X)인데 굳이 누를 이유 없음
+  - 추가 발견: TTL 만료 시 자동 reroute 안 됨 — `claim_next_hotdeal_for_alert` 가 `decision='pending'` 만 체크 (expires_at 무시) + queue.status='reserved' 영구 잔존 → 매물 죽음.
+- 새 정책:
+  - 카드 까는 순간 = consumed (queue + reservation 둘 다 종료)
+  - TTL 만료 = 다른 사용자에게 자동 reroute
+  - 응답 버튼 ("샀어요/포기") 제거. UI엔 "번장에서 거래" 직링크만.
+- 변경:
+  - `src/app/api/me/hotdeal/open/route.ts`: open 성공 후 queue.status='consumed' batch update (reroute 차단).
+  - `src/app/api/me/hotdeal/decide/route.ts`: 410 Gone 으로 deprecate (옛 client cache 호출 시 안전).
+  - `src/components/hotdeal-reservations.tsx`: decide 함수 + 샀어요/포기 버튼 + onPurchased/onRejected props 제거. "번장에서 거래" 링크만 남김.
+  - `supabase/migrations/20260515000600_hotdeal_expired_reroute.sql` 신규:
+    - `expire_stale_hotdeal_reservations()` 신규 RPC — expired pending → 'expired' 마킹 + queue.status='reserved' → 'available' 복원 (active pending 없는 경우만).
+    - `claim_next_hotdeal_for_alert` 보강 — pending 체크에 `expires_at >= now()` 조건 추가 (이중 안전), eligible user 조회에서도 expired 사용자는 reroute 가능.
+  - `src/lib/hotdeal.ts:dispatchAvailableHotdeals`: 시작 시 `expire_stale_hotdeal_reservations` RPC best-effort 호출.
+- 검증: tsc clean. prod migration 적용 success. 다음 pool-warmer cron tick에서:
+  1. expired pending reservation들 자동 정리
+  2. queue.status='reserved' 매물 → 'available' 복원
+  3. 새 사용자에게 reroute
+- 위험:
+  - 옛 client (모바일 cache) 가 /decide 호출하면 410 받고 UI에서 에러. 새로고침 시 새 UI 받아 정상화.
+  - decide 통계 의존하는 분석 코드 있으면 깨짐 — 현재 없음 확인.
+  - `mvp_hotdeal_reservations.decision` 컬럼은 그대로 유지 (DB 데이터 손실 X). 옛 데이터 ('purchased'/'rejected') 도 그대로.
+- 다음: 옛 reservation #1 의 notification_sent=false + error=null 버그 (sendTelegramMessage error 로그 누락) 별도 fix.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
