@@ -67,17 +67,17 @@ type RiskPreset = {
 const RISK_PRESETS: Record<RiskProfile, RiskPreset> = {
   safe: {
     band: 1, label: "안전", emoji: "🛡️",
-    desc: "≤15만 · 1만+ · 80%↑ · 입문자",
+    desc: "15만원 이하 · 차익 1만원 이상 · 신뢰도 80% 이상 · 최근 1시간 이내",
     filters: { priceMaxManwon: 15, minProfitManwon: 1, minConfidencePct: 80, categories: [], maxFreshHours: 1 },
   },
   balanced: {
     band: 2, label: "균형", emoji: "⚖️",
-    desc: "≤30만 · 2만+ · 70%↑ · 주력 부업",
+    desc: "30만원 이하 · 차익 2만원 이상 · 신뢰도 70% 이상 · 최근 2시간 이내",
     filters: { priceMaxManwon: 30, minProfitManwon: 2, minConfidencePct: 70, categories: [], maxFreshHours: 2 },
   },
   aggressive: {
     band: 3, label: "공격", emoji: "⚔️",
-    desc: "≤80만 · 5만+ · 60%↑ · 고수익",
+    desc: "80만원 이하 · 차익 5만원 이상 · 신뢰도 60% 이상 · 최근 6시간 이내",
     filters: { priceMaxManwon: 80, minProfitManwon: 5, minConfidencePct: 60, categories: [], maxFreshHours: 6 },
   },
 };
@@ -342,7 +342,7 @@ function PackSelectorCard({
             <div className="flex items-center justify-between text-xs">
               <span className="font-black text-[#59665b] dark:text-zinc-300">💰 매입가</span>
               <span className="font-black text-zinc-900 dark:text-zinc-50">
-                {advancedFilters.priceMaxManwon === 0 ? "무제한" : `0 ~ ${advancedFilters.priceMaxManwon}만원`}
+                {advancedFilters.priceMaxManwon === 0 ? "무제한" : `${advancedFilters.priceMaxManwon}만원 이하`}
               </span>
             </div>
             <input
@@ -362,7 +362,7 @@ function PackSelectorCard({
           <div>
             <div className="flex items-center justify-between text-xs">
               <span className="font-black text-[#59665b] dark:text-zinc-300">💵 차익</span>
-              <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minProfitManwon}만원+</span>
+              <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minProfitManwon}만원 이상</span>
             </div>
             <input
               type="range" min={MIN_PROFIT_MANWON} max={MAX_PROFIT_MANWON} step={1}
@@ -390,7 +390,7 @@ function PackSelectorCard({
           <div>
             <div className="flex items-center justify-between text-xs">
               <span className="font-black text-[#59665b] dark:text-zinc-300">🎯 신뢰도</span>
-              <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minConfidencePct}%+</span>
+              <span className="font-black text-zinc-900 dark:text-zinc-50">{advancedFilters.minConfidencePct}% 이상</span>
             </div>
             <input
               type="range" min={50} max={95} step={5}
@@ -417,7 +417,7 @@ function PackSelectorCard({
                 )}
               </span>
               <span className="font-black text-zinc-900 dark:text-zinc-50">
-                {advancedFilters.maxFreshHours === 0 ? "무제한" : `최근 ${advancedFilters.maxFreshHours}시간`}
+                {advancedFilters.maxFreshHours === 0 ? "무제한" : `최근 ${advancedFilters.maxFreshHours}시간 이내`}
               </span>
             </div>
             <input
