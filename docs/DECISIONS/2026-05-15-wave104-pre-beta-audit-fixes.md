@@ -230,7 +230,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 검증: tsc clean, awk grep으로 잔여 dark 누락 0 확인.
 - 위험: 없음 (visual only).
 - 다음: 다른 admin 화면 동일 audit (admin shadow report 등).
-- commit: pending
+- commit: 1a4e57d
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
