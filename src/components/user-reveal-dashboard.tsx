@@ -230,6 +230,11 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
       confidence: null,
       computedAt: null,
       excludedExamples: [],
+      // Wave 130 (2026-05-16): condition별 시세 분리 — 사업 보고서 L2. fallback marketBasis empty default.
+      conditionClass: null,
+      conditionLabel: null,
+      fallbackUsed: false,
+      otherConditions: [],
     };
     const revealCard: RevealCard = {
       pid: selectedItem.pid,

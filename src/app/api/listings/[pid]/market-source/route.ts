@@ -58,7 +58,8 @@ export async function GET(
         { headers: serviceHeaders() },
       ),
       restFetch(
-        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review&pid=eq.${pid}`,
+        // Wave 130 (2026-05-16): condition_class 추가 — 시세 stats를 매칭 condition으로 조회.
+        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class&pid=eq.${pid}`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -73,17 +74,30 @@ export async function GET(
     if (!listing) return NextResponse.json({ error: "listing not found" }, { status: 404 });
 
     const comparableKey = (parsed?.comparable_key as string | null) ?? null;
+    const conditionClass = (parsed?.condition_class as string | null) ?? null;
     const skuId = (raw?.sku_id as string | null) ?? null;
 
     // 3. market_price_daily 시세 통계 (comparable_key 기준)
+    // Wave 130 (2026-05-16): condition_class별 시세 분리 — 매물 condition에 매칭되는 시세 우선.
     let marketStats: Record<string, unknown> | null = null;
     if (comparableKey) {
+      // 모든 condition_class row 가져온 후 매물 condition 우선 매칭. fallback: normal → all → 아무거나.
       const statsRes = await restFetch(
-        `${tableUrl("mvp_market_price_daily")}?select=comparable_key,blended_median_price,active_median_price,p25_price,p75_price,active_sample_count,sold_sample_count,disappeared_sample_count,confidence,computed_at&comparable_key=eq.${encodeURIComponent(comparableKey)}&order=computed_at.desc&limit=1`,
+        `${tableUrl("mvp_market_price_daily")}?select=comparable_key,condition_class,blended_median_price,active_median_price,p25_price,p75_price,active_sample_count,sold_sample_count,disappeared_sample_count,confidence,computed_at&comparable_key=eq.${encodeURIComponent(comparableKey)}&order=date.desc,computed_at.desc&limit=12`,
         { headers: serviceHeaders() },
       );
       const rows = (await statsRes.json()) as Array<Record<string, unknown>>;
-      marketStats = rows[0] ?? null;
+      const target = conditionClass ?? "normal";
+      const fallback = [target, "normal", "all", "clean", "worn", "mint"];
+      for (const cls of fallback) {
+        const candidate = rows.find((r) => r.condition_class === cls);
+        if (candidate) {
+          marketStats = candidate;
+          break;
+        }
+      }
+      // fallback 다 실패 시 첫 row (있다면)
+      marketStats = marketStats ?? (rows[0] ?? null);
     }
 
     // 4. comparable 매물 list — 같은 comparable_key 또는 sku_id 기반 fetch

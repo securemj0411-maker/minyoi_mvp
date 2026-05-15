@@ -178,17 +178,25 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
 
 function MarketBasisMini({ card }: { card: RevealCard }) {
   // Wave 129 (2026-05-16): source breakdown 표시 — 사업 보고서 L3 (multi-source ground truth).
-  // 보고서: "시세 자체보다 시세의 출처를 보여주는 게 retention factor".
-  // 번개장터 sold/active/disappeared + 신뢰도 + 표본 수 표시.
+  //   보고서: "시세 자체보다 시세의 출처를 보여주는 게 retention factor".
+  // Wave 130 (2026-05-16): condition별 시세 분리 — 사업 보고서 L2 (끼리 비교 retention).
+  //   같은 SKU+옵션이라도 condition별 시세 spread 15~40%. 매물 condition에 맞는 시세 우선 표시.
+  //   otherConditions로 비교 가능 ("내 매물(worn) vs mint 시세" 등).
   const market = card.marketBasis;
   if (!market) return null;
   const confidence = market.confidence ?? "low";
   const confidenceLabel = confidence === "high" ? "🟢 높음" : confidence === "medium" ? "🟡 보통" : "🔴 낮음";
+  const hasCondition = market.conditionClass && market.conditionClass !== "all";
   return (
     <div className="rounded-lg border border-[#e2d9cb] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="flex items-baseline justify-between gap-2">
         <div className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
           📊 시세 근거
+          {hasCondition && market.conditionLabel && (
+            <span className="ml-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+              {market.conditionLabel}
+            </span>
+          )}
         </div>
         <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
           {confidenceLabel}
@@ -202,6 +210,11 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
         <span className="font-bold tabular-nums text-zinc-700 dark:text-zinc-300">
           중앙 {market.medianPrice ? krw(market.medianPrice) : "-"}
         </span>
+        {market.fallbackUsed && (
+          <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500">
+            (인접 등급 fallback)
+          </span>
+        )}
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-zinc-500 dark:text-zinc-400">
         <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
@@ -219,6 +232,26 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
           출처: 번개장터 + 다나와 reference
         </span>
       </div>
+      {/* Wave 130: 다른 condition 시세 비교 — "내 매물(worn) 시세 vs 다른 등급" — 사업 보고서 L2 끼리 비교. */}
+      {market.otherConditions && market.otherConditions.length > 0 && (
+        <div className="mt-2 border-t border-zinc-100 pt-2 dark:border-zinc-800">
+          <div className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            동일 모델 다른 등급 시세
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px]">
+            {market.otherConditions.slice(0, 4).map((oc) => (
+              <span
+                key={oc.conditionClass}
+                className="rounded-md bg-zinc-50 px-1.5 py-0.5 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400"
+              >
+                <span className="font-bold">{oc.label}</span>
+                <span className="ml-1 tabular-nums">{oc.medianPrice ? krw(oc.medianPrice) : "-"}</span>
+                <span className="ml-1 text-zinc-400 dark:text-zinc-500">({oc.sampleCount}건)</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

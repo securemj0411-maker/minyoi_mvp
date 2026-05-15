@@ -225,7 +225,8 @@ export async function GET(req: Request) {
         )
       : Promise.resolve([] as PackOpenRow[]),
     loadJson<ParsedRow[]>(
-      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key&pid=in.(${pidList})`,
+      // Wave 130 (2026-05-16): condition_class 추가 — 매물별 condition에 맞는 시세 표시.
+      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class&pid=in.(${pidList})`,
     ),
   ]);
 
@@ -233,6 +234,10 @@ export async function GET(req: Request) {
   const feedbackByPid = new Map(feedbackRows.map((row) => [Number(row.pid), row]));
   const bandByOpenId = new Map(packOpenRows.map((row) => [Number(row.id), Number(row.band_requested)]));
   const comparableKeyByPid = new Map(parsedRows.map((row) => [Number(row.pid), row.comparable_key ?? null]));
+  // Wave 130: 매물별 condition_class — marketBasisForCandidate에 전달해서 매칭 시세 우선 표시.
+  const conditionClassByPid = new Map(
+    parsedRows.map((row) => [Number(row.pid), (row as ParsedRow & { condition_class?: string | null }).condition_class ?? null]),
+  );
 
   // Wave 104: 핫딜 reveal (source=hotdeal, pack_open_id=null)은 mvp_hotdeal_queue에서 band fetch.
   const hotdealPids = reveals.filter((r) => r.source === "hotdeal").map((r) => Number(r.pid));
@@ -321,7 +326,15 @@ export async function GET(req: Request) {
         linkClickedAt: reveal.link_clicked_at,
         feedbackType: feedback?.feedback_type ?? null,
         feedbackNote: feedback?.note ?? null,
-        marketBasis: comparableKey ? marketBasisForCandidate(comparableKey, skuName ?? "", marketStats) : null,
+        // Wave 130 (2026-05-16): 매물 condition_class 전달 → 매칭되는 시세 우선 표시 (사업 보고서 L2).
+        marketBasis: comparableKey
+          ? marketBasisForCandidate(
+              comparableKey,
+              skuName ?? "",
+              marketStats,
+              conditionClassByPid.get(Number(reveal.pid)) ?? null,
+            )
+          : null,
         velocityBasis: velocityBasisForCandidate(comparableKey, velocityStats, readinessMap),
         skuListingFlow: skuId ? flowBySkuId.get(skuId) ?? null : null,
       };

@@ -76,6 +76,18 @@ export type RevealMarketBasis = {
   confidence: string | null;
   computedAt: string | null;
   excludedExamples: string[];
+  // Wave 130 (2026-05-16): condition별 시세 분리 — 사업 보고서 L2 retention.
+  // 매물 condition에 매칭되는 시세 우선. fallback 시 fallbackUsed=true.
+  conditionClass: string | null;
+  conditionLabel: string | null;
+  fallbackUsed: boolean;
+  // 같은 SKU+옵션 매물의 다른 condition 시세 (UI에서 "내 condition vs 전체" 비교용).
+  otherConditions: Array<{
+    conditionClass: string;
+    label: string;
+    medianPrice: number | null;
+    sampleCount: number;
+  }>;
 };
 
 export type RevealListingDetail = {
@@ -156,6 +168,8 @@ type ReservedRow = {
   score: number;
   confidence: number;
   comparable_key: string | null;
+  // Wave 130 (2026-05-16): 매물 condition_class — pack open 시 condition별 시세 매칭에 사용.
+  condition_class: string | null;
   exposure_count: number;
   max_exposure: number;
   last_verified_at: string;
@@ -191,6 +205,8 @@ type SourceHealthRow = {
 
 type MarketPriceRow = {
   comparable_key: string;
+  // Wave 130: condition_class — DB PK 일부. condition별 시세 분리.
+  condition_class: string;
   active_median_price: number | null;
   sold_median_price: number | null;
   blended_median_price: number | null;
@@ -348,11 +364,46 @@ async function assertRevealAccess(userRef: string, pid: number): Promise<void> {
   if (rows.length === 0) throw new Error("reveal not found for user");
 }
 
-export async function fetchLatestMarketStats(comparableKeys: (string | null)[]): Promise<Map<string, MarketPriceRow>> {
+// Wave 130 (2026-05-16): condition별 시세 분리. Map 구조:
+//   comparable_key → (condition_class → MarketPriceRow)
+// 사업 보고서 L2: 같은 SKU+옵션 매물이라도 condition별 시세 spread 15~40% — 끼리 비교 retention.
+export type MarketStatsByCondition = Map<string, MarketPriceRow>;
+export type MarketStatsMap = Map<string, MarketStatsByCondition>;
+
+/**
+ * Wave 130 (2026-05-16): mvp_candidate_pool에서 condition_class batch fetch.
+ * RPC reserve_mvp_pool_candidates가 condition_class를 return하지 않으므로 별도 fetch.
+ * (RPC 시그니처 변경은 race condition 5종 검증 필요 — CLAUDE.md 정책. 안전하게 별도 query.)
+ */
+export async function fetchPoolConditionClassByPids(pids: number[]): Promise<Map<number, string>> {
+  if (pids.length === 0) return new Map();
+  const unique = [...new Set(pids.filter((p) => Number.isFinite(p)))];
+  if (unique.length === 0) return new Map();
+  const map = new Map<number, string>();
+  try {
+    const res = await callSupabase(
+      `/mvp_candidate_pool?select=pid,condition_class&pid=in.(${unique.join(",")})`,
+      { headers: authHeaders() },
+    );
+    const payload = await res.json().catch(() => null);
+    const rows = Array.isArray(payload)
+      ? (payload as Array<{ pid: number; condition_class: string | null }>)
+      : [];
+    for (const row of rows) map.set(Number(row.pid), row.condition_class ?? "normal");
+  } catch (err) {
+    // Wave 130: condition_class fetch 실패는 critical 아님 — 'normal' default로 fallback.
+    // 시세 매칭 정확도만 살짝 떨어짐 (모든 매물 normal class로 표시).
+    console.warn("fetchPoolConditionClassByPids failed (non-fatal, fallback to normal)", err);
+  }
+  return map;
+}
+
+export async function fetchLatestMarketStats(comparableKeys: (string | null)[]): Promise<MarketStatsMap> {
   const unique = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
   if (unique.length === 0) return new Map();
   const cols = [
     "comparable_key",
+    "condition_class",
     "active_median_price",
     "sold_median_price",
     "blended_median_price",
@@ -365,16 +416,23 @@ export async function fetchLatestMarketStats(comparableKeys: (string | null)[]):
     "computed_at",
   ].join(",");
   const encoded = unique.map((key) => encodeURIComponent(key)).join(",");
+  // Wave 130: condition별 row 모두 fetch — comparable_key 당 최대 6 class (mint/clean/normal/worn/low_batt + 'all' legacy).
+  // limit 늘려서 모든 condition 가져오게.
   const res = await callSupabase(
-    `/mvp_market_price_daily?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(100, unique.length * 5)}`,
+    `/mvp_market_price_daily?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(200, unique.length * 12)}`,
     { headers: authHeaders() },
   );
   const rows = (await res.json()) as MarketPriceRow[];
-  const latest = new Map<string, MarketPriceRow>();
+  const map: MarketStatsMap = new Map();
+  // 같은 comparable_key + condition_class 조합에서 가장 최신 row만 보존 (order by date desc).
   for (const row of rows) {
-    if (!latest.has(row.comparable_key)) latest.set(row.comparable_key, row);
+    const byCondition = map.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
+    if (!byCondition.has(row.condition_class)) {
+      byCondition.set(row.condition_class, row);
+    }
+    map.set(row.comparable_key, byCondition);
   }
-  return latest;
+  return map;
 }
 
 export async function fetchLatestMarketVelocity(comparableKeys: (string | null)[]): Promise<Map<string, MarketVelocityRow>> {
@@ -443,15 +501,107 @@ function excludedExamplesForKey(comparableKey: string | null) {
   return ["부품용", "구성품 일부", "다중상품/선택가"];
 }
 
+// Wave 130 (2026-05-16): condition_class 별 시세 표시. 사업 보고서 L2 — "끼리 비교" retention.
+// 같은 SKU+옵션 매물의 condition별 시세 spread 15~40% (mint 550K vs worn 430K 등).
+const CONDITION_LABEL: Record<string, string> = {
+  mint: "새상품/미개봉",
+  clean: "S급/풀세트",
+  normal: "일반",
+  worn: "사용감",
+  low_batt: "배터리 저하",
+  flawed: "손상",
+  all: "전체",
+};
+
+const CONDITION_FALLBACK_ORDER: Record<string, string[]> = {
+  // 매물 condition별 fallback 순서 (sample 부족 시 다음 class로).
+  // 정확성 우선: mint는 가까운 clean→normal로, worn은 normal로 fallback.
+  // low_batt는 일반 시세와 다르므로 fallback 시도 안 함 (sample 적으면 그냥 표시).
+  mint: ["mint", "clean", "normal", "all"],
+  clean: ["clean", "normal", "mint", "all"],
+  normal: ["normal", "clean", "worn", "all"],
+  worn: ["worn", "normal", "all"],
+  low_batt: ["low_batt", "all"],
+  all: ["all", "normal", "clean", "worn", "mint"],
+};
+
+const MIN_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
+
+/**
+ * Wave 130: 매물 condition_class에 가장 잘 맞는 시세 row 선택.
+ * 우선 정확 매칭, sample < 3이면 정해진 fallback 순서로 다른 class 시도.
+ * Returns: { row, conditionClass, fallbackUsed }
+ */
+function selectMarketRowByCondition(
+  byCondition: MarketStatsByCondition | undefined,
+  targetConditionClass: string | null,
+): { row: MarketPriceRow | undefined; conditionClass: string | null; fallbackUsed: boolean } {
+  if (!byCondition || byCondition.size === 0) {
+    return { row: undefined, conditionClass: null, fallbackUsed: false };
+  }
+  const target = targetConditionClass ?? "normal";
+  const order = CONDITION_FALLBACK_ORDER[target] ?? [target, "normal", "all"];
+  for (let i = 0; i < order.length; i++) {
+    const cls = order[i];
+    const candidate = byCondition.get(cls);
+    if (!candidate) continue;
+    const samples =
+      Number(candidate.active_sample_count ?? 0) +
+      Number(candidate.sold_sample_count ?? 0) +
+      Number(candidate.disappeared_sample_count ?? 0);
+    if (samples >= MIN_SAMPLE_COUNT_FOR_CONFIDENCE || i === order.length - 1) {
+      return {
+        row: candidate,
+        conditionClass: cls,
+        fallbackUsed: i > 0,
+      };
+    }
+  }
+  // 모든 class에서 sample 부족 → 그래도 target class row 있으면 반환
+  const fallback = byCondition.get(target) ?? byCondition.values().next().value;
+  return {
+    row: fallback,
+    conditionClass: target,
+    fallbackUsed: !byCondition.has(target),
+  };
+}
+
 export function marketBasisForCandidate(
   comparableKey: string | null,
   skuName: string,
-  marketStats: Map<string, MarketPriceRow>,
+  marketStats: MarketStatsMap,
+  conditionClass: string | null = null,
 ): RevealMarketBasis {
-  const stat = comparableKey ? marketStats.get(comparableKey) : undefined;
+  const byCondition = comparableKey ? marketStats.get(comparableKey) : undefined;
+  const { row: stat, conditionClass: actualCondition, fallbackUsed } = selectMarketRowByCondition(
+    byCondition,
+    conditionClass,
+  );
   const activeSampleCount = Number(stat?.active_sample_count ?? 0);
   const soldSampleCount = Number(stat?.sold_sample_count ?? 0);
   const disappearedSampleCount = Number(stat?.disappeared_sample_count ?? 0);
+
+  // Wave 130: 다른 condition 시세 (UI에서 비교용 — "내 condition vs 전체" 표시).
+  const otherConditions: RevealMarketBasis["otherConditions"] = [];
+  if (byCondition && actualCondition) {
+    for (const [cls, row] of byCondition.entries()) {
+      if (cls === actualCondition || cls === "flawed") continue;
+      const samples =
+        Number(row.active_sample_count ?? 0) +
+        Number(row.sold_sample_count ?? 0) +
+        Number(row.disappeared_sample_count ?? 0);
+      if (samples < MIN_SAMPLE_COUNT_FOR_CONFIDENCE) continue;
+      otherConditions.push({
+        conditionClass: cls,
+        label: CONDITION_LABEL[cls] ?? cls,
+        medianPrice: row.blended_median_price ?? row.active_median_price ?? null,
+        sampleCount: samples,
+      });
+    }
+    // 가격 높은 순 정렬 (UI에서 mint→clean→normal→worn 자연 순서)
+    otherConditions.sort((a, b) => (b.medianPrice ?? 0) - (a.medianPrice ?? 0));
+  }
+
   return {
     comparableKey,
     label: marketBasisLabel(comparableKey, skuName),
@@ -465,6 +615,10 @@ export function marketBasisForCandidate(
     confidence: stat?.confidence ?? null,
     computedAt: stat?.computed_at ?? null,
     excludedExamples: excludedExamplesForKey(comparableKey),
+    conditionClass: actualCondition,
+    conditionLabel: actualCondition ? CONDITION_LABEL[actualCondition] ?? actualCondition : null,
+    fallbackUsed,
+    otherConditions,
   };
 }
 
@@ -699,11 +853,16 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
   }
 
   try {
-    const [listingMap, marketStats, velocityStats, readinessMap] = await Promise.all([
-      fetchListings(reserved.map((r) => r.pid)),
+    // Wave 130 (2026-05-16): reserve RPC가 condition_class를 return하지 않음 (RPC 변경 시 race
+    // condition 5종 검증 필요 — CLAUDE.md 정책). 안전하게 별도 batch fetch로 pool entry의
+    // condition_class lookup map만 만든다. Reserved 상태라 다음 query 시점까지 안정 (TTL 5분).
+    const reservedPids = reserved.map((r) => r.pid);
+    const [listingMap, marketStats, velocityStats, readinessMap, poolConditionMap] = await Promise.all([
+      fetchListings(reservedPids),
       fetchLatestMarketStats(reserved.map((r) => r.comparable_key)),
       fetchLatestMarketVelocity(reserved.map((r) => r.comparable_key)),
       loadCategoryReadinessMap(),
+      fetchPoolConditionClassByPids(reservedPids),
     ]);
     const sourceHealth = await loadLatestSourceHealth();
     const reveals: RevealCard[] = [];
@@ -777,7 +936,13 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         expectedProfitMin: candidate.expected_profit_min,
         expectedProfitMax: candidate.expected_profit_max,
         confidence: candidate.confidence,
-        marketBasis: marketBasisForCandidate(candidate.comparable_key, meta.sku_name, marketStats),
+        // Wave 130 (2026-05-16): 매물 condition_class lookup → 매칭되는 condition별 시세 우선 표시.
+        marketBasis: marketBasisForCandidate(
+          candidate.comparable_key,
+          meta.sku_name,
+          marketStats,
+          poolConditionMap.get(candidate.pid) ?? null,
+        ),
         velocityBasis: velocityBasisForCandidate(candidate.comparable_key, velocityStats, readinessMap),
         lastVerifiedAt: liveVerifiedAt,
         freshSeconds,

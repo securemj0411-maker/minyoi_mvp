@@ -24,10 +24,74 @@ export type ParsedListingOptions = {
   connectivity: string | null;
   conditionScore: number;
   conditionNotes: string[];
+  // Wave 130 (2026-05-16): condition_notes로부터 derive된 단일 등급 (5-class).
+  // 시세 산정/조회 시 condition별 grouping에 사용. 사업 보고서 L2 retention factor.
+  // 같은 SKU+옵션 매물이라도 condition별 시세 spread 15~40% 측정됨 (airpods_max|usbc: mint 550K vs worn 430K).
+  conditionClass: ConditionClass;
   parseConfidence: number;
   needsReview: boolean;
   parsedJson: Record<string, unknown>;
 };
+
+// Wave 130 (2026-05-16): condition class 5단계. 같은 SKU+옵션 매물에서 condition별 시세 분리용.
+// 우선순위 (높은 → 낮은): flawed > mint > low_batt > clean > worn > normal
+// - flawed: 손상/문제 매물 (시세 산정 및 풀 진입 모두 차단 — 현재 정책 유지)
+// - mint: 새상품/미개봉/배터리 100%
+// - low_batt: 배터리 <85% (가격 영향 큼, 별도 트래킹)
+// - clean: S급/풀세트/애플케어 (프리미엄)
+// - worn: 사용감/기스/스크래치 (시장 평균보다 약간 낮음)
+// - normal: 마킹 없거나 일반 사용 (default)
+export type ConditionClass =
+  | "flawed"
+  | "mint"
+  | "low_batt"
+  | "clean"
+  | "worn"
+  | "normal";
+
+const FLAWED_NOTES = [
+  "display_defect",
+  "screen_replaced",
+  "faceid_issue",
+  "camera_issue",
+  "sim_or_carrier_issue",
+  "water_damage",
+  "locked_or_lost_signal",
+  "parts_only",
+  "multi_device_bundle",
+  "repair_or_defect_signal",
+  "refurbished_or_repaired",
+  "installment_risk",
+] as const;
+
+const CLEAN_NOTES = ["good_condition", "full_set", "applecare_premium"] as const;
+
+/**
+ * Wave 130: condition_notes[] → ConditionClass (single label).
+ * 우선순위 처리: flawed가 하나라도 있으면 flawed (시세/풀 차단 대상).
+ * 명시적 신호가 없으면 normal로 default. accessory_bundle은 condition이 아니라
+ * "본품+액세서리 묶음"이라 시세 sample에서 제외되지만 condition_class에는 영향 X.
+ */
+export function extractConditionClass(conditionNotes: readonly string[]): ConditionClass {
+  if (!Array.isArray(conditionNotes) || conditionNotes.length === 0) return "normal";
+  const set = new Set(conditionNotes);
+  // 1순위: 손상/문제 — 시세/풀 모두 차단 (현재 정책 유지)
+  for (const n of FLAWED_NOTES) {
+    if (set.has(n)) return "flawed";
+  }
+  // 2순위: 새상품/미개봉 (가장 비싼 클래스)
+  if (set.has("new_or_open_box")) return "mint";
+  // 3순위: 배터리 저하 (별도 트래킹 — 가격 영향 큼)
+  if (set.has("low_battery_health")) return "low_batt";
+  // 4순위: S급/풀세트/애플케어 (프리미엄)
+  for (const n of CLEAN_NOTES) {
+    if (set.has(n)) return "clean";
+  }
+  // 5순위: 사용감/기스
+  if (set.has("cosmetic_wear")) return "worn";
+  // default
+  return "normal";
+}
 
 type ParseInput = {
   title: string;
@@ -1413,6 +1477,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     connectivity,
     conditionScore,
     conditionNotes,
+    conditionClass: extractConditionClass(conditionNotes),
     parseConfidence,
     needsReview,
     parsedJson: {
@@ -1438,6 +1503,8 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       critical_unknown: criticalUnknown,
       tablet_bundle_price_review: tabletBundlePriceReview,
       condition_notes: conditionNotes,
+      // Wave 130 (2026-05-16): condition class 박음 — 시세 산정/조회 시 grouping key.
+      condition_class: extractConditionClass(conditionNotes),
     },
   };
 }
@@ -1578,6 +1645,9 @@ export function toParsedListingRow(pid: number | string, parsed: ParsedListingOp
     connectivity: parsed.connectivity,
     condition_score: parsed.conditionScore,
     condition_notes: parsed.conditionNotes,
+    // Wave 130 (2026-05-16): condition_class 컬럼 — DB schema migration 후 사용.
+    // 시세 산정 시 (comparable_key, condition_class) 복합 키로 grouping.
+    condition_class: parsed.conditionClass,
     parse_confidence: parsed.parseConfidence,
     needs_review: parsed.needsReview,
     parsed_json: parsed.parsedJson,

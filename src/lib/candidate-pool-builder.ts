@@ -53,6 +53,8 @@ export type PoolParsedInput = {
   parse_confidence: number | null;
   needs_review: boolean | null;
   parsed_json?: Record<string, unknown> | null;
+  // Wave 130 (2026-05-16): condition_class — pool entry에 박아서 시세/profit 계산 시 조회.
+  condition_class?: string | null;
 };
 
 export type CandidatePoolBuildResult = {
@@ -225,6 +227,9 @@ export function buildCandidatePoolRows(input: {
       score: row.score,
       confidence,
       comparable_key: comparableKey,
+      // Wave 130 (2026-05-16): 매물 condition_class — pack open 시 condition별 시세 매칭에 사용.
+      // parsed.condition_class가 없으면 normal (default).
+      condition_class: parsed?.condition_class ?? "normal",
       max_exposure: poolMaxExposure(band),
       last_verified_at: input.now,
       updated_at: input.now,

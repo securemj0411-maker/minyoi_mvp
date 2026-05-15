@@ -47,10 +47,14 @@ type ParsedRow = {
   pid: number;
   comparable_key: string | null;
   category: string | null;
+  // Wave 130 (2026-05-16): condition_class 추가 — landing showcase 시세 매칭에 사용.
+  condition_class: string | null;
 };
 
 type MarketPriceRow = {
   comparable_key: string;
+  // Wave 130: condition_class — PK 일부.
+  condition_class: string;
   blended_median_price: number | null;
   active_median_price: number | null;
   sold_median_price: number | null;
@@ -203,7 +207,8 @@ async function loadLiveSoldShowcases(limit: number): Promise<LandingShowcase[]> 
   if (pids.length === 0) return [FALLBACK_SHOWCASE];
 
   const parsedRes = await restFetch(
-    `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,category&pid=in.(${pids.join(",")})&comparable_key=not.is.null`,
+    // Wave 130 (2026-05-16): condition_class 컬럼 추가 — 매물 condition별 시세 매칭.
+    `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,category,condition_class&pid=in.(${pids.join(",")})&comparable_key=not.is.null`,
     { headers: serviceHeaders() },
   );
   const parsedRows = (await parsedRes.json()) as ParsedRow[];
@@ -215,6 +220,8 @@ async function loadLiveSoldShowcases(limit: number): Promise<LandingShowcase[]> 
         {
           comparableKey: String(row.comparable_key),
           category: row.category?.trim() || "other",
+          // Wave 130 (2026-05-16): condition_class 박음 — landing showcase 시세 매칭에 사용.
+          conditionClass: row.condition_class ?? "normal",
         },
       ]),
   );
@@ -223,14 +230,18 @@ async function loadLiveSoldShowcases(limit: number): Promise<LandingShowcase[]> 
 
   const encodedKeys = comparableKeys.map((key) => encodeURIComponent(key)).join(",");
   const marketRes = await restFetch(
-    `${tableUrl("mvp_market_price_daily")}?select=comparable_key,blended_median_price,active_median_price,sold_median_price,active_sample_count,sold_sample_count,disappeared_sample_count,confidence&comparable_key=in.(${encodedKeys})&order=date.desc,computed_at.desc&limit=${Math.max(100, comparableKeys.length * 4)}`,
+    // Wave 130 (2026-05-16): condition_class 별 시세 분리 fetch — 매물 condition에 매칭되는 시세 선택.
+    `${tableUrl("mvp_market_price_daily")}?select=comparable_key,condition_class,blended_median_price,active_median_price,sold_median_price,active_sample_count,sold_sample_count,disappeared_sample_count,confidence&comparable_key=in.(${encodedKeys})&order=date.desc,computed_at.desc&limit=${Math.max(200, comparableKeys.length * 12)}`,
     { headers: serviceHeaders() },
   );
   const marketRows = (await marketRes.json()) as MarketPriceRow[];
-  const marketByKey = new Map<string, MarketPriceRow>();
+  // Wave 130: (comparable_key, condition_class) 복합 키로 group.
+  const marketByKeyCondition = new Map<string, Map<string, MarketPriceRow>>();
   for (const row of marketRows) {
-    if (!row.comparable_key || marketByKey.has(row.comparable_key)) continue;
-    marketByKey.set(row.comparable_key, row);
+    if (!row.comparable_key) continue;
+    const byCond = marketByKeyCondition.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
+    if (!byCond.has(row.condition_class)) byCond.set(row.condition_class, row);
+    marketByKeyCondition.set(row.comparable_key, byCond);
   }
 
   const showcases: ShowcaseCandidate[] = [];
@@ -239,7 +250,20 @@ async function loadLiveSoldShowcases(limit: number): Promise<LandingShowcase[]> 
     const parsed = parsedByPid.get(Number(row.pid));
     const comparableKey = parsed?.comparableKey;
     if (!comparableKey || seenKeys.has(comparableKey)) continue;
-    const market = marketByKey.get(comparableKey);
+    // Wave 130: 매물 condition_class 매칭 우선, fallback chain (target → normal → all → first).
+    const byCond = marketByKeyCondition.get(comparableKey);
+    if (!byCond) continue;
+    // Wave 130: 매물 condition_class — parsedByPid에서 lookup (O(1)).
+    const conditionClass = parsed?.conditionClass ?? "normal";
+    const fallback = [conditionClass, "normal", "all", "clean", "worn", "mint"];
+    let market: MarketPriceRow | undefined = undefined;
+    for (const cls of fallback) {
+      const cand = byCond.get(cls);
+      if (cand) {
+        market = cand;
+        break;
+      }
+    }
     if (!market) continue;
     const marketPrice = Number(market.blended_median_price ?? market.active_median_price ?? market.sold_median_price ?? 0);
     const buyPrice = Number(row.price ?? 0);

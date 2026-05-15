@@ -366,6 +366,9 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     connectivity: null,
     conditionScore: 0.5,
     conditionNotes: [],
+    // Wave 130 (2026-05-16): fashion/mobility는 condition_notes 추출 미구현 → default normal.
+    // 후속 wave에서 신발/가방 마모/사용감 keyword 추가 시 conditionClass 정밀화.
+    conditionClass: "normal",
     parseConfidence,
     needsReview,
     parsedJson: {
