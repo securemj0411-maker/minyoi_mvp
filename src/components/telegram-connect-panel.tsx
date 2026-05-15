@@ -99,7 +99,7 @@ export default function TelegramConnectPanel() {
   if (!status?.botConfigured) {
     return (
       <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm font-bold text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
-        텔레그램 봇이 아직 설정되지 않았어요. 운영자에게 문의해주세요. (TELEGRAM_BOT_USERNAME 환경변수 필요)
+        텔레그램 봇이 아직 설정되지 않았어요. 운영자에게 문의해주세요. (HOTDEAL_TELEGRAM_BOT_USERNAME 환경변수 필요)
       </div>
     );
   }

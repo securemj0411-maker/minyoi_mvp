@@ -1,5 +1,6 @@
-// Wave 93a: Telegram bot 연동 helper.
-// 봇 토큰은 @BotFather에서 발급, env TELEGRAM_BOT_TOKEN. webhook secret으로 위변조 방지.
+// Wave 93a: Telegram bot 연동 helper (사용자 핫딜 알림 전용).
+// 기존 TELEGRAM_BOT_TOKEN은 운영자 알림용 — 충돌 방지를 위해 HOTDEAL_ prefix.
+// 봇 토큰은 @BotFather에서 발급. webhook secret으로 위변조 방지.
 
 const API_BASE = "https://api.telegram.org";
 
@@ -10,15 +11,15 @@ export type TelegramMessageOptions = {
 };
 
 export function getBotToken(): string | null {
-  return process.env.TELEGRAM_BOT_TOKEN ?? null;
+  return process.env.HOTDEAL_TELEGRAM_BOT_TOKEN ?? null;
 }
 
 export function getBotUsername(): string | null {
-  return process.env.TELEGRAM_BOT_USERNAME ?? null;
+  return process.env.HOTDEAL_TELEGRAM_BOT_USERNAME ?? null;
 }
 
 export function getWebhookSecret(): string | null {
-  return process.env.TELEGRAM_WEBHOOK_SECRET ?? null;
+  return process.env.HOTDEAL_TELEGRAM_WEBHOOK_SECRET ?? null;
 }
 
 // MarkdownV2 escape — 모든 특수문자 \\ 처리.
