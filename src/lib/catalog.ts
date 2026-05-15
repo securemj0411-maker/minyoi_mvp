@@ -4010,6 +4010,21 @@ export const CATALOG: Sku[] = [
       "earphone",
       "soundlink",
       "사운드링크",
+      // 2026-05-16 (사용자 코멘트 id 108 pid 399464822): 한정판/스페셜 에디션은 일반 시세보다 비쌈.
+      // 같은 SKU 비교군에 끼면 평균 끌어올림. 일반 QC Ultra 시세에서 제외.
+      // 한정판 mining 부족 + 시세 별도라 internal 처리 (별도 SKU는 wave 보강 후).
+      "다이아몬드 60주년",
+      "60주년 다이아몬드",
+      "다이아몬드 에디션",
+      "60주년 에디션",
+      "한정판",
+      "limited edition",
+      "anniversary",
+      // 2세대 분리 — 사용자 코멘트 "2세대 우드샌드" — 가격대 다름.
+      "qc 울트라 2세대",
+      "qc ultra 2세대",
+      "ultra 2nd gen",
+      "ultra gen 2",
       ...HEADPHONE_NOISE,
     ],
     msrpKrw: 599000,
