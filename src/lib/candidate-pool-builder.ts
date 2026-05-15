@@ -107,19 +107,16 @@ export function buildCandidatePoolRows(input: {
     // 2026-05-15 (사용자 코멘트 pid 407879893): multi_device_bundle 매물 풀 차단.
     // 예: "아이폰17 + 애플워치 SE3" — 양쪽 카테고리 시세 어느 쪽과도 정확히 비교 불가.
     //
-    // Wave 106 (사용자 정확도 우선 정책 강화): 옛 정책은 accessory_bundle / new_or_open_box /
-    // applecare_premium 매물 "풀 허용(꿀)" 이었지만 사용자 입장에서:
-    //   - bundle 매물 = 액세서리 가격 합산이라 차익 inflated 또는 비교 어려움
-    //   - new_or_open_box (미개봉) = 정상 중고 시세와 다른 그룹 → 사용자 카드에서 잘못된 차익
-    //   - applecare_premium = 애플케어 가치 미반영 → 정상 시세 대비 비싸 보여 차익 작게 표시
-    // 사용자 정확도 직격이라 풀 진입도 차단. 시세 sample 제외 (tick-pipeline.ts:2484 line) 와 일관.
+    // Wave 106 정책 정정 (#46): MJ 명시 — bundle/미개봉/애플케어는 풀 허용 (꿀 매물).
+    //   - "본품 시세보다 싸면 무조건 핫딜". 풀 차단 시 핫딜 매물 X.
+    //   - 시세 sample 에서만 제외 (tick-pipeline.ts:2484+ Wave 106 #43c) → 시세 정확.
+    //   - 미개봉은 별도 카테고리 추후 박을 예정.
+    // 진짜 풀 차단해야 할 것:
+    //   - multi_device_bundle (양쪽 카테고리 어느 쪽과도 비교 불가)
+    //   - display_defect / screen_replaced / faceid_issue (사용자가 사면 명확한 손해)
     const preCheckNotes = (input.parsedByPid.get(pid)?.parsed_json?.condition_notes as string[] | undefined) ?? [];
     const POOL_BLOCK_NOTES = [
       "multi_device_bundle",
-      "accessory_bundle",
-      "new_or_open_box",
-      "applecare_premium",
-      "low_battery_health",
       "display_defect",
       "screen_replaced",
       "faceid_issue",
