@@ -456,7 +456,7 @@ function SectionView({ section }: { section: Section }) {
   return (
     <section
       id={section.id}
-      className="scroll-mt-[180px] rounded-2xl border border-[#e7dece] bg-[#fffbf4] p-4 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6 lg:scroll-mt-[140px]"
+      className="scroll-mt-[170px] rounded-2xl border border-[#e7dece] bg-[#fffbf4] p-4 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6 lg:scroll-mt-[120px]"
     >
       <div className="flex items-start gap-3">
         <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-accent-soft)] text-sm font-black text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-emerald-400">
@@ -562,9 +562,9 @@ export default function PlaybookOverview() {
         isolation: isolate 로 자체 stacking context. z-30 < layout root nav z-40 보장.
       */}
       <div
-        // Mobile: dashboard menu sticky (top:65 + 약 52px) 아래로 → top-[117px].
-        // Desktop(lg+): dashboard 사이드바라 layout 헤더 바로 아래(top:64).
-        className="sticky top-[117px] z-20 -mx-4 lg:top-[64px] lg:mx-0"
+        // Mobile: nav (60px) + dashboard menu (~52px) 아래로 → top-[112px].
+        // Desktop(lg+): nav (60px) 바로 아래.
+        className="sticky top-[112px] z-20 -mx-4 lg:top-[60px] lg:mx-0"
         style={{ isolation: "isolate" }}
       >
         <nav

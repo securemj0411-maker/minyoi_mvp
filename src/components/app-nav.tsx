@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AccountPanel } from "@/components/account-panel";
 import CreditIcon from "@/components/credit-icon";
 import { displayNameForUser, isAdminUser } from "@/lib/auth-users";
 import { hasClientAdminOverride, setClientAdminOverride } from "@/lib/client-admin-override";
@@ -170,7 +171,6 @@ export default function AppNav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [accountSheetOpen, setAccountSheetOpen] = useState(false);
-  const [subscription, setSubscription] = useState<{ isPro: boolean; isAdmin: boolean; proUntil: string | null; source: string } | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [adminOverride, setAdminOverride] = useState(false);
   const adminClickCountRef = useRef(0);
@@ -223,17 +223,6 @@ export default function AppNav() {
     window.addEventListener("minyoi:credits-changed", handler);
     return () => window.removeEventListener("minyoi:credits-changed", handler);
   }, [refreshCredits]);
-
-  // Subscription status fetch (account sheet에 plan 표시).
-  useEffect(() => {
-    if (!user) { setSubscription(null); return; }
-    let cancelled = false;
-    fetch("/api/me/subscription", { cache: "no-store" })
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (!cancelled && data) setSubscription(data); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [user]);
 
   useEffect(() => {
     setAdminOverride(hasClientAdminOverride());
@@ -304,9 +293,9 @@ export default function AppNav() {
   return (
     <>
     <nav className="sticky top-0 z-40 border-b border-[#e2d9cb] bg-[#f8f4ec]/92 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
-      <div className="mx-auto grid max-w-[1380px] grid-cols-[auto_1fr_auto] items-center gap-2 px-3 py-3 sm:px-6 md:grid-cols-[1fr_auto_1fr] md:gap-3 md:px-4 lg:px-8">
+      <div className="mx-auto grid max-w-[1380px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-3 sm:px-6 md:gap-3 md:px-4 lg:px-8">
         {/* 왼쪽: mobile = 햄버거, desktop = 로고 + admin dot */}
-        <div className="flex items-center gap-2 md:justify-self-start">
+        <div className="flex items-center gap-2 justify-self-start">
           <button
             type="button"
             onClick={() => setMobileDrawerOpen(true)}
@@ -411,22 +400,18 @@ export default function AppNav() {
 	                        <div className="mt-0.5 truncate text-xs font-semibold text-[#6b7269] dark:text-zinc-400">{user.email}</div>
 	                      ) : null}
 	                    </div>
-                    <div className="rounded-xl px-3 py-2 text-sm text-[#5f675e] dark:text-zinc-300">
-                      <div className="font-semibold text-[#223127] dark:text-zinc-100">요금제</div>
-                      <div className="mt-1 text-xs text-[#6b7269] dark:text-zinc-400">Beta 무료 이용중</div>
+                    <div className="px-2 py-1">
+                      <AccountPanel
+                        tokens={tokens}
+                        infiniteCredits={infiniteCredits}
+                        variant="desktop"
+                        onCloseAfterAction={() => setMenuOpen(false)}
+                      />
                     </div>
                     <div className="rounded-xl px-3 py-2">
                       <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">화면 모드</div>
                       <ThemeToggle className="mt-2 w-full" />
                     </div>
-                    <Link
-                      href="/plans"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-[#344136] transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
-                    >
-                      <span>{admin ? "충전하기" : "요금제 관리"}</span>
-                      <span className="text-zinc-400">↗</span>
-                    </Link>
                     <button
                       type="button"
                       onClick={handleSignOut}
@@ -592,42 +577,21 @@ export default function AppNav() {
               ) : null}
             </div>
           </div>
-          {/* 구독 플랜 표시 */}
-          <div className="mt-3 flex items-center justify-between rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-950/50">
-            <span className="text-[11px] font-black uppercase tracking-[0.16em] text-[#5d735f] dark:text-emerald-400">현재 플랜</span>
-            {subscription?.isAdmin ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--brand-accent-strong)] px-2.5 py-1 text-[11px] font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
-                운영자 (Pro 전권)
-              </span>
-            ) : subscription?.isPro ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-black text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                Pro
-                {subscription.proUntil ? (
-                  <span className="text-[10px] font-semibold opacity-70">
-                    · {new Date(subscription.proUntil).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })}까지
-                  </span>
-                ) : null}
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 rounded-full border border-[#ddd4c7] bg-white px-2.5 py-1 text-[11px] font-black text-[#7a8478] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-                Starter
-              </span>
-            )}
+          {/* 계정 사용량 + 액션 */}
+          <div className="mt-3">
+            <AccountPanel
+              tokens={tokens}
+              infiniteCredits={infiniteCredits}
+              variant="mobile"
+              onCloseAfterAction={() => { setAccountSheetOpen(false); setMobileDrawerOpen(false); }}
+            />
           </div>
           {/* 화면 모드 */}
-          <div className="mt-2 rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-950/50">
+          <div className="mt-3 rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-950/50">
             <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#5d735f] dark:text-emerald-400">화면 모드</div>
             <ThemeToggle className="mt-2 w-full" />
           </div>
-          <div className="mt-3 space-y-1.5">
-            <Link
-              href="/plans"
-              onClick={() => { setAccountSheetOpen(false); setMobileDrawerOpen(false); }}
-              className="flex w-full items-center justify-between rounded-xl bg-[#f6efe4] px-3 py-3 text-sm font-bold text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >
-              <span>{admin ? "충전하기" : subscription?.isPro ? "요금제 관리" : "Pro 업그레이드"}</span>
-              <span className="text-zinc-400">↗</span>
-            </Link>
+          <div className="mt-3">
             <button
               type="button"
               onClick={() => { setAccountSheetOpen(false); setMobileDrawerOpen(false); void handleSignOut(); }}

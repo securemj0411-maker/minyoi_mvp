@@ -211,7 +211,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
   return (
     <main className="min-h-screen bg-[#f6f1e8] dark:bg-zinc-950">
       <div className="grid min-h-screen lg:grid-cols-[220px_minmax(0,1fr)]">
-        <aside className="sticky top-[65px] z-30 border-b border-[#e2d9cb] bg-[#f8f4ec]/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:top-[65px] lg:row-span-2 lg:h-[calc(100dvh-65px)] lg:border-b-0 lg:border-r lg:bg-[#f8f4ec] lg:backdrop-blur-none xl:row-span-1">
+        <aside className="sticky top-[60px] z-30 border-b border-[#e2d9cb] bg-[#f8f4ec]/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:top-[60px] lg:row-span-2 lg:h-[calc(100dvh-60px)] lg:border-b-0 lg:border-r lg:bg-[#f8f4ec] lg:backdrop-blur-none xl:row-span-1">
           <div className="px-3 py-2 lg:px-4 lg:py-5">
             <div className="hidden px-2 pb-3 lg:block">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
