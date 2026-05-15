@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import AppFooter from "@/components/app-footer";
 import AppNav from "@/components/app-nav";
+import SafetyStatsMarquee from "@/components/safety-stats-marquee";
 import "./globals.css";
 
 // Wave 106: 모바일 viewport + theme color (브라우저 상단 색).
@@ -56,6 +57,8 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <AppNav />
+        {/* Wave 139d (2026-05-16): 네비 바 아래 marquee — "오늘 미뇨이 AI가 차단한 의심 매물 X건" 우→좌 흐름. */}
+        <SafetyStatsMarquee />
         <div className="flex-1">{children}</div>
         <AppFooter />
       </body>
