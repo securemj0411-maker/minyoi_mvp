@@ -808,6 +808,25 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 37. MJ 코멘트 20개 review + ready 풀 misclassified 8건 invalidate
+
+- 시간: 2026-05-16 09:55 KST
+- 검토: MJ가 admin-pool-browser → market-source-debug 모달에서 박은 코멘트 20개 분석.
+- 결과 — 이미 해결된 것 7건:
+  - #5/#13/#16/#19 매물 sold/missing/disappeared → invalidated ✅
+  - #15 비교군 매물 사라진 거 (대상 매물은 active) ✅
+  - #17 신뢰 100% 의문 → `ConfidenceBreakdown` 컴포넌트 추가됨 (pack-reveal-modal:121-177) ✅
+  - #20 MacBook Pro M4 → sku_median=0 → invalidated ✅
+- 미해결 critical: listing_type 재분류 누락 — 코드는 박혔는데 옛 매물 reparse X.
+  - pipeline.ts:23-26 "구매희망/사요/사고싶어요/구해요" buying 키워드 추가
+  - pipeline.ts:212-219 충전케이스 case-only 판단 로직 추가
+  - 단 listing_type 재분류는 collect/detail-worker 시점 일회성 → 옛 매물 잔존.
+- 즉시 fix: ready 풀 SQL keyword 매칭으로 misclassified 8건 invalidate:
+  - accessory_case 4건 / buying 2건 / accessory_charging_case 1건 / accessory_stand 1건
+  - invalidated_reason='wave106_misclass_buying_accessory'
+- 위험: 일부 false positive (본품+케이스 부속) 가능. 단 case 매물이 비교군 들어가는 게 더 큰 문제 → safer.
+- 다음 (남은 critical): #4 외부 손상 / #3 outlier / #1 기본형 / #20 애케플 / iPad 12.9 broad SKU 잠재 버그 / catalog 정확도 audit.
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
