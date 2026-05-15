@@ -443,13 +443,24 @@ export default function AppNav() {
     </nav>
 
     {/* Mobile drawer — nav 밖에 위치 (nav의 backdrop-blur stacking context를 escape) */}
-    {mobileDrawerOpen && (
-        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setMobileDrawerOpen(false)}
-          />
-          <aside className="absolute inset-y-0 left-0 flex w-[78%] max-w-[320px] flex-col bg-[#f8f4ec] shadow-[0_24px_64px_rgba(34,49,39,0.24)] dark:bg-zinc-950">
+    {/* 항상 mount + 클래스 토글로 부드럽게 transition (slide + fade) */}
+    <div
+        className={`fixed inset-0 z-50 md:hidden ${mobileDrawerOpen ? "" : "pointer-events-none"}`}
+        role="dialog"
+        aria-modal="true"
+        aria-hidden={!mobileDrawerOpen}
+      >
+        <div
+          className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+            mobileDrawerOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setMobileDrawerOpen(false)}
+        />
+        <aside
+          className={`absolute inset-y-0 left-0 flex w-[78%] max-w-[320px] flex-col bg-[#f8f4ec] shadow-[0_24px_64px_rgba(34,49,39,0.24)] transition-transform duration-300 ease-out dark:bg-zinc-950 ${
+            mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
             {/* drawer header */}
             <div className="flex items-center justify-between border-b border-[#e2d9cb] px-4 py-3 dark:border-zinc-800">
               <Link href="/" onClick={() => setMobileDrawerOpen(false)} className="flex items-center gap-2">
@@ -540,16 +551,27 @@ export default function AppNav() {
             </div>
           </aside>
         </div>
-      )}
 
     {/* Mobile account bottom sheet — 계정 chip 누르면 아래에서 위로 슬라이드 */}
-    {accountSheetOpen && user && (
-      <div className="fixed inset-0 z-[60] md:hidden" role="dialog" aria-modal="true">
+    {/* 항상 mount + 클래스 토글로 부드럽게 transition */}
+    {user && (
+      <div
+        className={`fixed inset-0 z-[60] md:hidden ${accountSheetOpen ? "" : "pointer-events-none"}`}
+        role="dialog"
+        aria-modal="true"
+        aria-hidden={!accountSheetOpen}
+      >
         <div
-          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+            accountSheetOpen ? "opacity-100" : "opacity-0"
+          }`}
           onClick={() => setAccountSheetOpen(false)}
         />
-        <div className="absolute inset-x-0 bottom-0 rounded-t-3xl bg-[#fffaf1] p-4 pb-6 shadow-[0_-12px_32px_rgba(34,49,39,0.18)] dark:bg-zinc-950">
+        <div
+          className={`absolute inset-x-0 bottom-0 rounded-t-3xl bg-[#fffaf1] p-4 pb-6 shadow-[0_-12px_32px_rgba(34,49,39,0.18)] transition-transform duration-300 ease-out dark:bg-zinc-950 ${
+            accountSheetOpen ? "translate-y-0" : "translate-y-full"
+          }`}
+        >
           <div className="mx-auto h-1.5 w-12 rounded-full bg-[#ddd4c7] dark:bg-zinc-700" />
           <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#f6efe4] px-3 py-3 dark:bg-zinc-900">
             <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-base font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
