@@ -2598,6 +2598,18 @@ export const CATALOG: Sku[] = [
     msrpKrw: 990000,
     released: 2023,
   },
+  // Wave 118c (2026-05-15): Mac Mini M4 추가 (2024-10 신상, 14일 매물 13건).
+  {
+    id: "desktop-mac-mini-m4",
+    brand: "Apple",
+    category: "desktop",
+    modelName: "Apple Mac mini M4",
+    aliases: ["Mac mini M4", "맥미니 M4", "맥미니M4", "Apple Mac mini M4"],
+    mustContain: [["mac mini", "맥미니", "맥 미니"], ["m4"]],
+    mustNotContain: ["m1", "m2", "m3", "m4 pro", "m4pro", "m4 max", "m4max", "mac studio", "맥스튜디오", "imac", "아이맥", "macbook", "맥북", "부품", "고장", "매입", "삽니다"],
+    msrpKrw: 990000,
+    released: 2024,
+  },
   // ─── Home appliance narrow-lane Wave 19: Dyson V12 Detect Slim ───
   {
     // Dyson V12 Detect Slim (Korea SKU). msrp 약 890k. 중고 시세 350~700k 추정.
@@ -3074,6 +3086,30 @@ export const CATALOG: Sku[] = [
     msrpKrw: 498000,
     released: 2023,
   },
+  // Wave 118c (2026-05-15): PS5 Pro 신상 catalog 추가 (2024-11 출시, 14일 매물 11건).
+  {
+    id: "ps5-pro",
+    brand: "Sony",
+    category: "game_console",
+    modelName: "PlayStation 5 Pro",
+    aliases: ["PS5 Pro", "PS5 프로", "플스5 프로", "플레이스테이션 5 프로"],
+    mustContain: [
+      ["ps5", "플스5", "플스 5", "플레이스테이션 5"],
+      ["pro", "프로"],
+    ],
+    mustNotContain: [
+      "슬림", "slim",
+      "psvr", "psvr2", "vr2", "ps vr",
+      "switch", "닌텐도", "nintendo",
+      "ps4", "ps3",
+      "컨트롤러만", "듀얼센스만", "패드만", "케이스만", "스탠드만",
+      "거치대만", "케이블만", "어댑터만", "충전기만",
+      "게임만", "디스크만", "보드만",
+      "부품", "고장", "수리이력", "삽니다", "구합니다", "매입",
+    ],
+    msrpKrw: 990000,
+    released: 2024,
+  },
   // ─── AirPods ─────────────────────────────────────────
   {
     id: "airpods-2",
@@ -3321,6 +3357,27 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 79000,
     released: 2022,
+  },
+  {
+    // Wave 118c (2026-05-15): Bose QC Ultra Earbuds (이어버드 — Headphones와 별도 모델, 2023-10 출시).
+    id: "bose-qc-ultra-earbuds",
+    brand: "Bose",
+    category: "earphone",
+    modelName: "Bose QuietComfort Ultra Earbuds",
+    aliases: ["보스 QC 울트라 이어버드", "Bose QC Ultra Earbuds", "Bose QuietComfort Ultra Earbuds"],
+    mustContain: [
+      ["보스", "bose"],
+      ["quietcomfort ultra", "qc ultra", "qc 울트라", "quietcomfort 울트라", "qcultra"],
+      ["이어버드", "earbuds"],
+    ],
+    mustNotContain: [
+      "headphone", "헤드폰", "헤드셋",
+      "qc35", "qc 35", "qc45", "qc 45", "qc15", "qc 15", "qc20", "qc 20",
+      "soundlink", "사운드링크",
+      ...HEADPHONE_NOISE,
+    ],
+    msrpKrw: 459000,
+    released: 2023,
   },
   {
     id: "bose-qc-ultra-headphones",
