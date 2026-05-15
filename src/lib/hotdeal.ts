@@ -223,26 +223,38 @@ type AlertContent = {
 };
 
 function buildAlertText(pid: number, c: AlertContent, opts: { adminShadow?: boolean; selectedHint?: string } = {}): string {
+  // 일반 사용자: teaser만 (차익 정도 + 만료시간). 매물 정보는 미뇨이에서 "열기" 후 공개.
+  // admin shadow: 전체 정보 (감시 목적이라 노출 OK).
   const profitWan = Math.round(c.profitAmount / 10000);
-  const priceWan = Math.round(c.price / 10000);
-  const marketWan = Math.round(c.skuMedian / 10000);
   const pct = Math.round(c.profitMargin * 100);
   const expires = new Date(c.expiresAt);
   const minLeft = Math.max(0, Math.round((expires.getTime() - Date.now()) / 60000));
-  const safeName = escapeMd(c.title.slice(0, 80));
-  const lines = [
-    opts.adminShadow ? "👁 *\\[ADMIN SHADOW\\]*" : "🔥 *핫딜 매물*",
-    `*${safeName}*`,
+
+  if (opts.adminShadow) {
+    const priceWan = Math.round(c.price / 10000);
+    const marketWan = Math.round(c.skuMedian / 10000);
+    const safeName = escapeMd(c.title.slice(0, 80));
+    return [
+      "👁 *\\[ADMIN SHADOW\\]*",
+      `*${safeName}*`,
+      "",
+      `매입가  · ${escapeMd(`₩${priceWan.toLocaleString("ko-KR")}만`)}`,
+      `시세    · ${escapeMd(`₩${marketWan.toLocaleString("ko-KR")}만`)}`,
+      `차익    · *${escapeMd(`₩${profitWan.toLocaleString("ko-KR")}만 (${pct}%)`)}*`,
+      c.band !== null ? `band    · ${c.band}` : "",
+      opts.selectedHint ? `_선출: ${escapeMd(opts.selectedHint)}_` : "",
+      `⏱ ${minLeft}분`,
+    ].filter(Boolean).join("\n");
+  }
+
+  return [
+    "🔥 *핫딜 매물 도착*",
     "",
-    `매입가  · ${escapeMd(`₩${priceWan.toLocaleString("ko-KR")}만`)}`,
-    `시세    · ${escapeMd(`₩${marketWan.toLocaleString("ko-KR")}만`)}`,
-    `차익    · *${escapeMd(`₩${profitWan.toLocaleString("ko-KR")}만 (${pct}%)`)}*`,
-    c.band !== null ? `band    · ${c.band}` : "",
+    `차익  · *${escapeMd(`₩${profitWan.toLocaleString("ko-KR")}만 (${pct}%)`)}*`,
+    c.band !== null ? `band  · ${c.band}` : "",
     "",
-    opts.selectedHint ? `_선출: ${escapeMd(opts.selectedHint)}_` : "",
-    `⏱ ${minLeft}분 안에 응답`,
-  ].filter(Boolean);
-  return lines.join("\n");
+    `⏱ ${minLeft}분 안에 미뇨이에서 *열어* 매물 확인`,
+  ].filter(Boolean).join("\n");
 }
 
 function buildAlertReplyMarkup(pid: number) {

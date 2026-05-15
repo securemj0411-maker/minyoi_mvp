@@ -13,6 +13,7 @@ type Reservation = {
   expiresAt: string;
   openedAt: string | null;
   decision: "pending" | "opened" | "purchased" | "rejected" | "expired";
+  // 열기 전엔 null (서버가 차단). 열린 후에만 매물 정보 포함.
   listing: {
     name: string;
     skuName: string | null;
@@ -20,7 +21,7 @@ type Reservation = {
     skuMedian: number;
     thumbnailUrl: string | null;
     bunjangUrl: string;
-  };
+  } | null;
   deal: {
     profitAmount: number;
     profitMargin: number;
@@ -195,6 +196,66 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen, onPurchas
   const profitWan = Math.round(item.deal.profitAmount / 10000);
   const pct = Math.round(item.deal.profitMargin * 100);
 
+  // 열기 전 OR 서버가 listing 차단: 매물 정보 잠금. 차익 정도만 teaser.
+  const lst = item.listing;
+  if (!isOpened || !lst) {
+    if (expired && !lst) {
+      // 만료됐고 정보도 없으면 minimal expired card.
+      return (
+        <article className="rounded-2xl border border-[#eee5d8] bg-[#faf5ec] p-5 opacity-60 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-red-600 dark:text-red-400">만료된 핫딜 (기회 종료)</span>
+            <span className="text-xs font-semibold text-[#7a8577] dark:text-zinc-500">
+              차익 ₩{profitWan.toLocaleString("ko-KR")}만 ({pct}%)
+            </span>
+          </div>
+        </article>
+      );
+    }
+    return (
+      <article
+        className={`overflow-hidden rounded-2xl border p-5 transition ${
+          highlight
+            ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-soft)] ring-2 ring-[var(--brand-accent-strong)] dark:border-emerald-400 dark:bg-emerald-950/30 dark:ring-emerald-400"
+            : "border-[#e2d9cb] bg-[#fffaf6] dark:border-zinc-800 dark:bg-zinc-900"
+        }`}
+      >
+        <div className="flex items-start gap-4">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-100 to-amber-200 text-orange-600 dark:from-orange-900/40 dark:to-amber-900/40 dark:text-orange-300">
+            <FlameIcon className="h-9 w-9" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-orange-600 dark:text-orange-300">
+              <FlameIcon className="h-3.5 w-3.5" />
+              <span>핫딜 도착</span>
+              {item.deal.band !== null && <span className="text-[#7a8577] dark:text-zinc-500">band {item.deal.band}</span>}
+            </div>
+            <h3 className="mt-1 text-base font-black leading-6 text-[#223127] dark:text-zinc-100">
+              차익 ₩{profitWan.toLocaleString("ko-KR")}만 ({pct}%)
+            </h3>
+            <p className="mt-1 text-xs font-semibold text-[#5a6658] dark:text-zinc-400">
+              매물 정보는 "열기" 후 공개됩니다.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#eee5d8] pt-3 dark:border-zinc-800">
+          <div className="text-xs font-black text-[#5a6658] dark:text-zinc-400">
+            {fmtMin(remainingMs)} 남음
+          </div>
+          <button
+            type="button"
+            onClick={onOpen}
+            disabled={busy}
+            className="h-10 rounded-xl bg-[var(--brand-accent-strong)] px-6 text-sm font-black text-[var(--brand-cream)] transition disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-950"
+          >
+            {busy ? "여는 중…" : "열기"}
+          </button>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <article
       className={`overflow-hidden rounded-2xl border p-5 transition ${
@@ -204,10 +265,10 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen, onPurchas
       }`}
     >
       <div className="flex items-start gap-4">
-        {item.listing.thumbnailUrl ? (
+        {lst.thumbnailUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={item.listing.thumbnailUrl}
+            src={lst.thumbnailUrl}
             alt=""
             className="h-20 w-20 shrink-0 rounded-xl object-cover"
           />
@@ -219,20 +280,20 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen, onPurchas
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-orange-600 dark:text-orange-300">
             <FlameIcon className="h-3.5 w-3.5" />
-            <span>{item.listing.skuName ?? "핫딜"}</span>
+            <span>{lst.skuName ?? "핫딜"}</span>
             {item.deal.band !== null && <span className="text-[#7a8577] dark:text-zinc-500">band {item.deal.band}</span>}
           </div>
           <h3 className="mt-1 line-clamp-2 text-base font-black leading-6 text-[#223127] dark:text-zinc-100">
-            {item.listing.name}
+            {lst.name}
           </h3>
           <div className="mt-2 grid grid-cols-3 gap-2 text-xs font-bold">
             <div>
               <div className="text-[10px] uppercase tracking-wide text-[#7a8577] dark:text-zinc-500">매입</div>
-              <div className="mt-0.5 text-[#223127] dark:text-zinc-200">₩{fmtWan(item.listing.price)}</div>
+              <div className="mt-0.5 text-[#223127] dark:text-zinc-200">₩{fmtWan(lst.price)}</div>
             </div>
             <div>
               <div className="text-[10px] uppercase tracking-wide text-[#7a8577] dark:text-zinc-500">시세</div>
-              <div className="mt-0.5 text-[#223127] dark:text-zinc-200">₩{fmtWan(item.listing.skuMedian)}</div>
+              <div className="mt-0.5 text-[#223127] dark:text-zinc-200">₩{fmtWan(lst.skuMedian)}</div>
             </div>
             <div>
               <div className="text-[10px] uppercase tracking-wide text-[#7a8577] dark:text-zinc-500">차익</div>
@@ -251,29 +312,10 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen, onPurchas
 
         {expired ? (
           <span className="text-xs font-semibold text-[#7a8577] dark:text-zinc-500">기회 종료</span>
-        ) : !isOpened ? (
-          <div className="flex gap-2">
-            <a
-              href={item.listing.bunjangUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-9 rounded-lg border border-[#ddd4c7] px-3 text-xs font-bold leading-9 text-[#556252] transition hover:bg-[#f5ede0] dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            >
-              번장에서 보기
-            </a>
-            <button
-              type="button"
-              onClick={onOpen}
-              disabled={busy}
-              className="h-9 rounded-lg bg-[var(--brand-accent-strong)] px-4 text-xs font-black text-[var(--brand-cream)] transition disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-950"
-            >
-              {busy ? "여는 중…" : "열기"}
-            </button>
-          </div>
         ) : (
           <div className="flex gap-2">
             <a
-              href={item.listing.bunjangUrl}
+              href={lst.bunjangUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="h-9 rounded-lg border border-[#ddd4c7] px-3 text-xs font-bold leading-9 text-[#556252] transition hover:bg-[#f5ede0] dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"

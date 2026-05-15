@@ -53,6 +53,9 @@ export async function GET(req: Request) {
     reservations: reservations.map((r) => {
       const l = listings.get(r.pid);
       const q = queueByPid.get(r.pid);
+      const opened = r.decision === "opened" || r.decision === "purchased";
+      // pre-open: 매물 정보 (제목/이미지/매입가/시세/번장 링크) 숨김. 차익 정도만 teaser.
+      // network tab에서 봐도 정보 안 새도록 서버에서 차단.
       return {
         id: r.id,
         pid: r.pid,
@@ -61,14 +64,16 @@ export async function GET(req: Request) {
         expiresAt: r.expires_at,
         openedAt: r.opened_at,
         decision: r.decision,
-        listing: {
-          name: (l?.name as string | undefined) ?? "(no title)",
-          skuName: (l?.sku_name as string | null) ?? null,
-          price: Number(l?.price ?? 0),
-          skuMedian: Number(l?.sku_median ?? 0),
-          thumbnailUrl: (l?.thumbnail_url as string | null) ?? null,
-          bunjangUrl: `https://m.bunjang.co.kr/products/${r.pid}`,
-        },
+        listing: opened
+          ? {
+              name: (l?.name as string | undefined) ?? "(no title)",
+              skuName: (l?.sku_name as string | null) ?? null,
+              price: Number(l?.price ?? 0),
+              skuMedian: Number(l?.sku_median ?? 0),
+              thumbnailUrl: (l?.thumbnail_url as string | null) ?? null,
+              bunjangUrl: `https://m.bunjang.co.kr/products/${r.pid}`,
+            }
+          : null,
         deal: {
           profitAmount: Number(q?.profit_amount ?? 0),
           profitMargin: Number(q?.profit_margin ?? 0),
