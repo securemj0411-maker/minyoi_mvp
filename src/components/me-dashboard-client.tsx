@@ -210,7 +210,11 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
 
   return (
     <main className="min-h-screen bg-[#f6f1e8] dark:bg-zinc-950">
-      <div className="grid min-h-screen lg:grid-cols-[220px_minmax(0,1fr)]">
+      {/* mobile = flex stack (sidebar chip bar 위, content 아래).
+          lg+ = 2 col grid. 이전에 mobile에서도 `grid` 박혀 있어서 child의
+          `lg:col-start-2`가 일부 브라우저 implicit-grid 처리로 빈 column 만들어
+          content가 오른쪽으로 치우치는 보고 있었음 → mobile에선 grid 비활성. */}
+      <div className="flex min-h-screen flex-col lg:grid lg:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="sticky top-[60px] z-30 border-b border-[#e2d9cb] bg-[#f8f4ec]/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:top-[60px] lg:row-span-2 lg:h-[calc(100dvh-60px)] lg:border-b-0 lg:border-r lg:bg-[#f8f4ec] lg:backdrop-blur-none xl:row-span-1">
           <div className="px-3 py-2 lg:px-4 lg:py-5">
             <div className="hidden px-2 pb-3 lg:block">
