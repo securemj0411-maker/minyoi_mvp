@@ -97,6 +97,33 @@ export const DEFAULT_SEARCH_QUERIES = [
   "아식스 젤 1130", "Asics Gel 1130",
   "온 클라우드 5", "On Cloud 5",
   "브룩스 고스트", "Brooks Ghost",
+  // Wave 144 (2026-05-16 iter 7): mining query 확장 — 인기 모델 sample 누적 가속.
+  "살로몬 XT-6", "Salomon XT-6",
+  "살로몬 ACS", "Salomon ACS Pro",
+  "호카 마하", "Hoka Mach",
+  "호카 카본 X", "Hoka Carbon X",
+  "나이키 줌X", "Nike Zoom X", "베이퍼플라이", "Vaporfly",
+  "나이키 코르테즈", "Nike Cortez",
+  "나이키 블레이저", "Nike Blazer",
+  "아디다스 슈퍼스타", "Adidas Superstar",
+  "아디다스 스탠스미스", "Stan Smith",
+  "아디다스 컨트리 OG", "Country OG",
+  "아디다스 스페지알", "Adidas Spezial",
+  "반스 올드스쿨", "Vans Old Skool",
+  "반스 클래식 슬립온", "Vans Classic Slip-On",
+  "메종 마르지엘라 GAT", "Margiela GAT", "마르지엘라 저먼",
+  // 어그 추가 variants
+  "어그 클래식 울트라 미니", "UGG Ultra Mini",
+  "어그 클래식 미니 II", "UGG Mini II",
+  "어그 디스켓 미니", "UGG Disquette",
+  // 닥마 변형
+  "닥터마틴 1461", "Dr Martens 1461",
+  "닥터마틴 자돈", "Dr Martens Jadon",
+  "닥터마틴 윙팁",
+  // 호카 더
+  "호카 챌린저 ATR", "Hoka Challenger ATR",
+  "호카 라잇", "Hoka Light",
+  "호카 시스카이", "Hoka Skyflow",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
