@@ -3,7 +3,7 @@
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AccountPanel } from "@/components/account-panel";
 import CreditIcon from "@/components/credit-icon";
 import { displayNameForUser, isAdminUser } from "@/lib/auth-users";
@@ -132,7 +132,7 @@ function ThemeToggle({
     );
   }
 
-  const items: Array<[ThemeMode, string, React.ReactNode]> = [
+  const items: Array<[ThemeMode, string, ReactNode]> = [
     ["system", "시스템", <SystemIcon key="sys" />],
     ["light", "라이트", <SunIcon key="sun" />],
     ["dark", "다크", <MoonIcon key="moon" />],
