@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-15T02:21:57.634Z",
+  "_updated_at": "2026-05-15T02:23:44.966Z",
   "resolutions": {
     "334750861": {
       "resolved_at": "2026-05-14T23:21:16.219Z",
@@ -40,6 +40,13 @@
     "369164122": {
       "resolved_at": "2026-05-15T02:21:57.395Z",
       "summary": "다이슨 V12 — 단일 sample 시세 게이트 추가. confidence=low + sold=0 + active<3 매물은 trustedMarketMedian=null로 차단. skuMedian=0 → pool 차단. Wave 13의 active>=2 통과 기준 강화.",
+      "commits": [
+        "cb85bc2"
+      ]
+    },
+    "378521048": {
+      "resolved_at": "2026-05-15T02:23:44.962Z",
+      "summary": "iMac M3 RAM/SSD axis (parser v37). 동일 fix 적용 대상. reparse 대기.",
       "commits": [
         "cb85bc2"
       ]
@@ -91,6 +98,13 @@
       "summary": "parser v39 (chip prefix lookahead + 비노캔 키워드) + reparse",
       "commits": [
         "ddcbaa9"
+      ]
+    },
+    "401749290": {
+      "resolved_at": "2026-05-15T02:23:44.746Z",
+      "summary": "iMac M3 RAM/SSD axis (parser v37, commit cf9b1eb). 새 매물부터 자동 정확. 옛 매물 reparse 필요 — npm run reparse:listings (CRON_SECRET 정확히).",
+      "commits": [
+        "cb85bc2"
       ]
     },
     "402181838": {
