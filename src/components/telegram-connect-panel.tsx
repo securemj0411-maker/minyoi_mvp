@@ -168,20 +168,10 @@ function PendingVerifyView({ verify, onCancel }: {
 
   return (
     <div className="rounded-2xl border border-[#c8d8c4] bg-[var(--brand-accent-soft)] p-5 dark:border-zinc-700 dark:bg-zinc-900">
-      <div className="text-sm font-black text-[#223127] dark:text-zinc-100">연결 코드 발급됨</div>
-      <p className="mt-1 text-xs font-semibold text-[#5a6658] dark:text-zinc-400">
-        아래 버튼을 누르면 텔레그램이 열려요. <strong>"START" 버튼을 눌러주세요.</strong>
+      <div className="text-sm font-black text-[#223127] dark:text-zinc-100">연결 준비됨</div>
+      <p className="mt-1 text-xs font-semibold leading-6 text-[#5a6658] dark:text-zinc-400">
+        아래 버튼을 누르면 텔레그램 봇이 열려요. <strong>"START" 한 번만</strong> 누르면 자동으로 연결됩니다.
       </p>
-
-      <div className="mt-4 rounded-xl border-2 border-dashed border-[#a9be9f] bg-white p-4 text-center dark:border-zinc-600 dark:bg-zinc-950">
-        <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#7a8577] dark:text-zinc-500">코드</div>
-        <div className="mt-1 font-mono text-2xl font-black tracking-[0.3em] text-[var(--brand-accent-strong)] dark:text-emerald-300">
-          {verify.code}
-        </div>
-        <div className="mt-2 text-[11px] font-bold text-[#7a8577] dark:text-zinc-500">
-          {secLeft > 0 ? `${Math.floor(secLeft / 60)}:${String(secLeft % 60).padStart(2, "0")} 남음` : "만료됨 — 다시 발급하세요"}
-        </div>
-      </div>
 
       <div className="mt-4 flex gap-2">
         {verify.deepLink && (
@@ -202,8 +192,11 @@ function PendingVerifyView({ verify, onCancel }: {
           취소
         </button>
       </div>
+
       <p className="mt-3 text-[11px] font-semibold text-[#7a8577] dark:text-zinc-500">
-        연결되면 이 화면이 자동으로 갱신돼요 (5초마다 확인 중).
+        {secLeft > 0
+          ? `${Math.floor(secLeft / 60)}:${String(secLeft % 60).padStart(2, "0")} 안에 START 누르세요. 연결되면 자동 갱신됩니다.`
+          : "만료됨 — 취소 후 다시 시도하세요."}
       </p>
     </div>
   );
