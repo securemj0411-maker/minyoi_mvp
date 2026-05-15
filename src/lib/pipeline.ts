@@ -908,6 +908,8 @@ export type PipelineRow = {
   qty?: number | null;
   // Wave 138 (2026-05-16): seller_uid — 같은 셀러 다수 매물 차단 (qty 위장 업자).
   sellerUid?: string | null;
+  // Wave 138b (2026-05-16): description hash — 다중 ID 사기 그룹 탐지.
+  descriptionHash?: string | null;
   shippingFee: number;
   shippingFeeGeneral: number | null;
   shippingSource: string;

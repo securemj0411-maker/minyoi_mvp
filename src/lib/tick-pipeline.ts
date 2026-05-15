@@ -1,4 +1,15 @@
+import { createHash } from "node:crypto";
+
 import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
+
+// Wave 138b (2026-05-16): description SHA256 (500자) — 다중 ID 사기 그룹 탐지.
+// 같은 hash + 다른 seller_uid 2+ = 부캐 그룹 (DB 발견 27건/7셀러 패턴).
+// 50자 미만은 의미 없음 (default text — null 반환).
+function computeDescriptionHash(description: string | null | undefined): string | null {
+  const txt = (description ?? "").slice(0, 500).trim();
+  if (txt.length < 50) return null;
+  return createHash("sha256").update(txt).digest("hex").slice(0, 32);
+}
 import { loadCategoryReadinessMap, loadLaneReadinessMap } from "@/lib/category-readiness";
 import { evaluatePhase2Escrow, isPhase2EscrowEnabled } from "@/lib/ai-l2-escrow";
 import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
@@ -129,6 +140,8 @@ type ScorableRawRow = RawListingRow & {
   num_comment: number | null;
   // Wave 137 (2026-05-16): 수량 — qty > 1 = 대량 판매업자. pool 진입 차단 gate.
   qty: number | null;
+  // Wave 138b (2026-05-16): description hash — 다중 ID 사기 그룹 탐지.
+  description_hash: string | null;
 };
 
 type ParsedListingRow = {
@@ -1546,6 +1559,8 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
             num_comment: detail.commentCount ?? null,
             // Wave 137: sold-out 매물도 qty 박음 (대량 판매업자 분석).
             qty: detail.qty ?? null,
+            // Wave 138b: sold-out 매물도 description hash (다중 ID 분석).
+            description_hash: computeDescriptionHash(detail.description),
             detail_status: "done",
             detail_enriched_at: now,
             detail_error: null,
@@ -1617,6 +1632,8 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           num_comment: detail.commentCount ?? null,
           // Wave 137 (2026-05-16): 수량 — qty > 1 = 대량 판매업자 (1:1 거래 X) → pool 진입 차단.
           qty: detail.qty ?? null,
+          // Wave 138b (2026-05-16): description hash — 다중 ID 사기 그룹 탐지.
+          description_hash: computeDescriptionHash(detail.description),
           detail_status: "done",
           detail_enriched_at: now,
           detail_error: null,
@@ -1792,7 +1809,7 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   // raw upsert / detail enrichment / market invalidation 시점에 dirty=true로 마킹.
   const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
   // Wave 132: num_comment 추가 — candidate-pool-builder가 >= 8 차단.
-  const baseColumns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status,num_comment,qty";
+  const baseColumns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status,num_comment,qty,description_hash";
   const columns = scoreDirtyAvailable ? `${baseColumns},pool_eligible` : baseColumns;
   const dirtyFilter = scoreDirtyAvailable ? "&score_dirty=eq.true" : "";
   const url = `${tableUrl("mvp_raw_listings")}?select=${columns}${dirtyFilter}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&order=last_seen_at.desc&limit=${limit}`;
@@ -1825,7 +1842,7 @@ async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Prom
 
 async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
   // Wave 132: num_comment 추가 (시세 sample 분석 시 활용 가능).
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty,description_hash";
   const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&order=detail_enriched_at.desc.nullslast,last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
@@ -1835,7 +1852,7 @@ async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<
   const unique = [...new Set(pids.filter(Number.isFinite))].slice(0, limit);
   if (unique.length === 0) return [];
   // Wave 132: num_comment 추가.
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty";
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty,description_hash";
   const rows: ScorableRawRow[] = [];
   for (const chunk of chunkArray(unique, PARSED_PID_READ_CHUNK_SIZE)) {
     const remaining = limit - rows.length;
@@ -2519,6 +2536,36 @@ export async function sourceHealthStage(): Promise<StageStats> {
   stats.detailFailed = detailFailed;
   if (hysteresis.status !== "healthy") stats.poolSkipped = 1;
   return stats;
+}
+
+// Wave 138b (2026-05-16): 다중 ID 사기 그룹 hash set load.
+// 같은 description_hash + 다른 seller_uid 2+ = 부캐 그룹 → 그 hash 매물 모두 차단.
+// 전체 active raw_listings 기준 hash → seller_uid SET → size 2+ filter.
+async function loadFraudGroupHashes(): Promise<Set<string>> {
+  try {
+    // PostgREST direct group by 어려움 — raw fetch + in-memory aggregate.
+    // hash + seller_uid 조합으로 fetch, 짧은 description 제외 (NULL).
+    const url = `${tableUrl("mvp_raw_listings")}?select=description_hash,seller_uid&description_hash=not.is.null&seller_uid=not.is.null&listing_state=eq.active&limit=20000`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    const rows = (await res.json()) as Array<{ description_hash: string; seller_uid: string }>;
+    // hash → unique seller set
+    const hashToSellers = new Map<string, Set<string>>();
+    for (const r of rows) {
+      if (!r.description_hash || !r.seller_uid) continue;
+      const set = hashToSellers.get(r.description_hash) ?? new Set<string>();
+      set.add(r.seller_uid);
+      hashToSellers.set(r.description_hash, set);
+    }
+    // size 2+ filter
+    const fraudHashes = new Set<string>();
+    for (const [hash, sellers] of hashToSellers.entries()) {
+      if (sellers.size >= 2) fraudHashes.add(hash);
+    }
+    return fraudHashes;
+  } catch (err) {
+    console.warn("loadFraudGroupHashes failed (non-fatal)", err);
+    return new Set();
+  }
 }
 
 // Wave 138 (2026-05-16): pool에 이미 있는 seller_uid별 매물 수 — buildCandidatePoolRows에 전달.
@@ -3849,6 +3896,8 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       qty: row.qty ?? null,
       // Wave 138 (2026-05-16): seller_uid → seller-level pool gate (다수 매물 차단).
       sellerUid: row.seller_uid ?? null,
+      // Wave 138b (2026-05-16): description hash → multi-ID 사기 그룹 차단 gate.
+      descriptionHash: row.description_hash ?? null,
       ...shipping,
     });
   }
@@ -3914,10 +3963,17 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
 
   // Wave 138 (2026-05-16): pool에 이미 있는 seller_uid별 매물 수 fetch.
   // 새 매물이 같은 셀러 매물 추가 진입 시도 시 차단 (qty 위장 업자 탐지).
-  const existingPoolSellerCounts = await loadExistingPoolSellerCounts().catch((err) => {
-    console.warn("loadExistingPoolSellerCounts failed (non-fatal)", err);
-    return new Map<string, number>();
-  });
+  // Wave 138b: 다중 ID 사기 그룹 hash set (같은 description + 다른 셀러 2+).
+  const [existingPoolSellerCounts, fraudGroupHashes] = await Promise.all([
+    loadExistingPoolSellerCounts().catch((err) => {
+      console.warn("loadExistingPoolSellerCounts failed (non-fatal)", err);
+      return new Map<string, number>();
+    }),
+    loadFraudGroupHashes().catch((err) => {
+      console.warn("loadFraudGroupHashes failed (non-fatal)", err);
+      return new Set<string>();
+    }),
+  ]);
 
   const poolBuild = buildCandidatePoolRows({
     rows: aiReview.rows,
@@ -3927,6 +3983,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     laneReadiness,
     now,
     existingPoolSellerCounts,
+    fraudGroupHashes,
   });
   const poolEntries = poolBuild.entries;
   await upsertRows("mvp_candidate_pool", poolEntries, "pid");

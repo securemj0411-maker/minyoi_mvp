@@ -12,6 +12,12 @@ type SafetyStats = {
   fake_or_lock_7d: number;
   carrier_mismatch_7d: number;
   pool_invalidated_7d: number;
+  // Wave 139 (2026-05-16): 도매 업자/사기 그룹 차단 카운터
+  wholesaler_total_7d?: number;
+  wholesaler_comment_7d?: number;
+  wholesaler_qty_7d?: number;
+  seller_multi_listings_7d?: number;
+  multi_id_fraud_group_7d?: number;
 };
 
 export default function SafetyStatsBadge() {
@@ -84,6 +90,48 @@ export default function SafetyStatsBadge() {
               </span>
             </div>
           )}
+          {/* Wave 139 (2026-05-16): 도매 업자/사기 그룹 차단 — retention "사기도 걸러내는 사이트" 시그널 */}
+          {(stats.wholesaler_total_7d ?? 0) > 0 && (
+            <>
+              <div className="mt-2 border-t border-emerald-200 pt-2 dark:border-emerald-900">
+                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                  🏭 도매 업자 / 사기 그룹 차단
+                </div>
+              </div>
+              {(stats.wholesaler_comment_7d ?? 0) > 0 && (
+                <div className="flex justify-between gap-2">
+                  <span className="text-emerald-800 dark:text-emerald-300/90">💬 호가-실거래 괴리 (댓글 ≥ 8)</span>
+                  <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                    {(stats.wholesaler_comment_7d ?? 0).toLocaleString("ko-KR")}건
+                  </span>
+                </div>
+              )}
+              {(stats.wholesaler_qty_7d ?? 0) > 0 && (
+                <div className="flex justify-between gap-2">
+                  <span className="text-emerald-800 dark:text-emerald-300/90">📦 대량 보유 매물 (수량 &gt; 1)</span>
+                  <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                    {(stats.wholesaler_qty_7d ?? 0).toLocaleString("ko-KR")}건
+                  </span>
+                </div>
+              )}
+              {(stats.seller_multi_listings_7d ?? 0) > 0 && (
+                <div className="flex justify-between gap-2">
+                  <span className="text-emerald-800 dark:text-emerald-300/90">🔁 위장 업자 (같은 셀러 여러 매물)</span>
+                  <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                    {(stats.seller_multi_listings_7d ?? 0).toLocaleString("ko-KR")}건
+                  </span>
+                </div>
+              )}
+              {(stats.multi_id_fraud_group_7d ?? 0) > 0 && (
+                <div className="flex justify-between gap-2">
+                  <span className="text-emerald-800 dark:text-emerald-300/90">🎭 부캐 사기 그룹 (다중 ID)</span>
+                  <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                    {(stats.multi_id_fraud_group_7d ?? 0).toLocaleString("ko-KR")}건
+                  </span>
+                </div>
+              )}
+            </>
+          )}
           {stats.pool_invalidated_7d > 0 && (
             <div className="flex justify-between gap-2">
               <span className="text-emerald-800 dark:text-emerald-300/90">📉 시세 부적합/만료 매물</span>
@@ -93,7 +141,7 @@ export default function SafetyStatsBadge() {
             </div>
           )}
           <div className="mt-1 text-[10px] text-emerald-700/70 dark:text-emerald-400/70">
-            가품, 잠금, 통신사 약정, 셀러 거래 거부 매물을 사전 차단했습니다.
+            가품 · 잠금 · 통신사 약정 · 셀러 거래 거부 · 도매 업자 · 부캐 사기 그룹을 사전 차단했습니다.
           </div>
         </div>
       )}

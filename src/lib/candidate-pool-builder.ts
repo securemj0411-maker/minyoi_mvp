@@ -38,6 +38,11 @@ const MAX_POOL_QTY = 1;
 // MAX_POOL_LISTINGS_PER_SELLER = 1 = strict 1매물 정책.
 const MAX_POOL_LISTINGS_PER_SELLER = 1;
 
+// Wave 138b (2026-05-16): 같은 description hash + 다른 seller 2+ = 다중 ID 사기 그룹.
+// 같은 사람이 부캐 N개 운영하면서 동일 description 복붙. DB 발견 27건/7셀러 패턴.
+// MIN_SELLERS_FOR_FRAUD_GROUP = 2 = 같은 hash에 다른 셀러 2명 이상이면 사기 그룹.
+const MIN_SELLERS_FOR_FRAUD_GROUP = 2;
+
 // Wave 129 (2026-05-16): parse_confidence threshold 명시 — 사업 보고서 L1.
 // "AI normalization 매칭 confidence < 0.85면 매물 풀에서 제외".
 // 우리 정책 (LAUNCH_PLAN 12b precision-first):
@@ -73,6 +78,9 @@ export type PoolCandidateInput = {
   // Wave 138 (2026-05-16): seller_uid — 같은 셀러가 다수 매물 등록 시 차단 (qty 위장 업자).
   // DB 발견: 1명 셀러가 같은 매물명 46/45/40/36건 반복 등록 패턴.
   sellerUid?: string | null;
+  // Wave 138b (2026-05-16): description hash — 다중 ID 사기 그룹 탐지.
+  // DB 발견: 동일 description 27건이 7명 셀러 ID로 분산 (복붙 = 부캐).
+  descriptionHash?: string | null;
 };
 
 export type PoolParsedInput = {
@@ -128,6 +136,9 @@ export function buildCandidatePoolRows(input: {
   // Wave 138 (2026-05-16): pool에 이미 있는 셀러별 매물 수 (tick-pipeline이 사전 fetch).
   // 같은 seller_uid가 이미 N개 매물 가지면 추가 매물 차단.
   existingPoolSellerCounts?: Map<string, number>;
+  // Wave 138b (2026-05-16): pool + raw_listings의 description_hash별 unique seller set.
+  // 같은 hash + 다른 셀러 2+ = 다중 ID 사기 그룹 → 그 hash 매물 모두 차단.
+  fraudGroupHashes?: Set<string>;
 }): CandidatePoolBuildResult {
   const entries: Record<string, unknown>[] = [];
   const invalidations: { pid: number; reason: string }[] = [];
@@ -137,6 +148,8 @@ export function buildCandidatePoolRows(input: {
   // 가장 score 높은 매물부터 통과시켜야 정확. rows를 score 내림차순 sort.
   const existingSellerCounts = input.existingPoolSellerCounts ?? new Map<string, number>();
   const batchSellerCounts = new Map<string, number>();
+  // Wave 138b: fraud group hash set (외부 사전 계산). 같은 hash 다른 셀러 2+ 인 hash들.
+  const fraudGroupHashes = input.fraudGroupHashes ?? new Set<string>();
   const sortedRows = [...input.rows].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
 
   for (const row of sortedRows) {
@@ -182,6 +195,15 @@ export function buildCandidatePoolRows(input: {
         continue;
       }
       batchSellerCounts.set(row.sellerUid, batchCount + 1);
+    }
+
+    // Wave 138b (2026-05-16): 다중 ID 사기 그룹 차단 — description hash 다른 셀러 2+.
+    // DB 발견: 동일 description text 27건이 7명 셀러 ID로 분산 (복붙 = 부캐 그룹).
+    // tick-pipeline이 사전 계산한 fraudGroupHashes set 활용.
+    if (row.descriptionHash && fraudGroupHashes.has(row.descriptionHash)) {
+      skipped += 1;
+      invalidations.push({ pid, reason: `multi_id_fraud_group_${MIN_SELLERS_FOR_FRAUD_GROUP}_sellers` });
+      continue;
     }
 
     // 2026-05-15 (사용자 코멘트 pid 407879893): multi_device_bundle 매물 풀 차단.

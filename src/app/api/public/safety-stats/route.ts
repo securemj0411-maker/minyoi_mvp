@@ -19,8 +19,12 @@ export async function GET() {
     const since7d = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
     const since30d = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
 
-    // 4가지 위험 차단 source (각각 head=true count 사용 — body fetch X)
-    const [priceDummyRes, fakeLockRes, carrierRes, poolInvalidateRes] = await Promise.all([
+    // Wave 139 (2026-05-16): 도매/사기 그룹 차단 카운터 추가 (Wave 132/137/138a/138b).
+    // 사용자 retention: "와, 이 사이트 진짜 사기/업자도 걸러내는구나" UI 신뢰 시그널.
+    const [
+      priceDummyRes, fakeLockRes, carrierRes, poolInvalidateRes,
+      wholesalerCommentRes, wholesalerQtyRes, sellerMultiRes, multiIdFraudRes,
+    ] = await Promise.all([
       // 1) 가격 dummy (셀러 거래 거부 표시 매물)
       restFetch(
         rpc("mvp_raw_listings", `select=pid&price=gte.10000000&first_seen_at=gte.${since7d}`),
@@ -36,14 +40,33 @@ export async function GET() {
         rpc("mvp_raw_listings", `select=pid&first_seen_at=gte.${since7d}&or=(name.ilike.*kt%20약정*,name.ilike.*skt%20완납*,name.ilike.*할부%20잔여*,name.ilike.*개통폰*)`),
         { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
       ),
-      // 4) pool invalidate (lifecycle/profit/시세 confidence)
+      // 4) pool invalidate (lifecycle/profit/시세 confidence) — Wave 132/137/138 reason 모두 포함
       restFetch(
         rpc("mvp_candidate_pool", `select=pid&invalidated_reason=not.is.null&updated_at=gte.${since7d}`),
         { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
       ),
+      // 5) Wave 132: 댓글 ≥ 8 차단 (호가-실거래 괴리 = 흥정 사기)
+      restFetch(
+        rpc("mvp_candidate_pool", `select=pid&invalidated_reason=like.num_comment_above*&updated_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 6) Wave 137: qty > 1 차단 (대량 판매업자)
+      restFetch(
+        rpc("mvp_candidate_pool", `select=pid&invalidated_reason=like.qty_above*&updated_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 7) Wave 138a: 같은 셀러 다수 매물 차단 (qty 위장 업자)
+      restFetch(
+        rpc("mvp_candidate_pool", `select=pid&invalidated_reason=like.seller_above*&updated_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 8) Wave 138b: 다중 ID 사기 그룹 차단 (같은 description + 다른 셀러)
+      restFetch(
+        rpc("mvp_candidate_pool", `select=pid&invalidated_reason=like.multi_id_fraud*&updated_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
     ]);
 
-    // PostgREST count는 Content-Range header에 박혀있음. 형식: "0-X/total"
     const parseCount = (res: Response): number => {
       const range = res.headers.get("content-range") ?? "";
       const totalStr = range.split("/")[1];
@@ -54,6 +77,12 @@ export async function GET() {
     const fakeLock = parseCount(fakeLockRes);
     const carrier = parseCount(carrierRes);
     const poolInvalidate = parseCount(poolInvalidateRes);
+    // Wave 139: 도매/사기 그룹 4종
+    const wholesalerComment = parseCount(wholesalerCommentRes);
+    const wholesalerQty = parseCount(wholesalerQtyRes);
+    const sellerMulti = parseCount(sellerMultiRes);
+    const multiIdFraud = parseCount(multiIdFraudRes);
+    const wholesalerTotal = wholesalerComment + wholesalerQty + sellerMulti + multiIdFraud;
 
     const safetyTotal = priceDummy + fakeLock + carrier;
     const totalBlocked7d = safetyTotal + poolInvalidate;
@@ -67,6 +96,12 @@ export async function GET() {
         fake_or_lock_7d: fakeLock,
         carrier_mismatch_7d: carrier,
         pool_invalidated_7d: poolInvalidate,
+        // Wave 139 (2026-05-16): 도매 업자/사기 그룹 breakdown
+        wholesaler_total_7d: wholesalerTotal,
+        wholesaler_comment_7d: wholesalerComment,
+        wholesaler_qty_7d: wholesalerQty,
+        seller_multi_listings_7d: sellerMulti,
+        multi_id_fraud_group_7d: multiIdFraud,
         // 메타
         period_start: since7d,
         period_end: new Date().toISOString(),
