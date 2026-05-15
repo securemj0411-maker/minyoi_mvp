@@ -127,6 +127,19 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
   const marketConfLabel =
     marketConf === "high" ? "높음" : marketConf === "medium" ? "보통" : marketConf === "low" ? "낮음" : "—";
 
+  // Wave 134 (2026-05-16): condition별 시세 표본 분리 표시 — 사업 보고서 L2 retention 강화.
+  // 같은 SKU+옵션 매물이라도 condition별 시세 spread 15~40% (Wave 130 측정).
+  // 사용자가 "내 매물 condition은 N건 vs 다른 등급 N건" 답 받음 = 신뢰 시그널.
+  const matchedConditionLabel = market?.conditionLabel ?? null;
+  const otherConditions = market?.otherConditions ?? [];
+  const sampleTone: "good" | "warn" | undefined = sample >= 8 ? "good" : sample > 0 ? undefined : "warn";
+  // 내 매물 condition 표본 — Wave 130 marketBasis는 매칭된 condition row의 표본 수 (fallback chain 후)
+  const matchedSampleText = sample > 0
+    ? matchedConditionLabel
+      ? `내 등급(${matchedConditionLabel}) ${sample}건 (판매 ${sold})`
+      : `${sample}건 (판매 ${sold}건)`
+    : "표본 부족";
+
   const lines: { label: string; value: string; tone?: "good" | "warn" }[] = [
     {
       label: "모델 매칭",
@@ -135,8 +148,8 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
     },
     {
       label: "시세 표본",
-      value: sample > 0 ? `${sample}건 (판매 ${sold}건)` : "표본 부족",
-      tone: sample >= 8 ? "good" : sample > 0 ? undefined : "warn",
+      value: matchedSampleText,
+      tone: sampleTone,
     },
     { label: "시세 신뢰", value: marketConfLabel, tone: marketConf === "high" ? "good" : marketConf === "low" ? "warn" : undefined },
   ];
@@ -169,6 +182,23 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
           </span>
         </div>
       ))}
+      {/* Wave 134 (2026-05-16): condition별 표본 분리 — 사용자에게 "다른 등급은 표본 얼마인지" 가시화.
+          marketBasis.otherConditions는 Wave 130에서 이미 채워짐. sample ≥ 3 만 표시 (fetchLatestMarketStats 정책). */}
+      {otherConditions.length > 0 && (
+        <div className="mt-1 border-t border-zinc-100 pt-1.5 dark:border-zinc-800">
+          <div className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            다른 등급 표본
+          </div>
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            {otherConditions.slice(0, 4).map((oc) => (
+              <span key={oc.conditionClass} className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <span className="font-bold text-zinc-600 dark:text-zinc-300">{oc.label}</span>{" "}
+                <span className="tabular-nums">{oc.sampleCount}건</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="pt-1 text-[10px] leading-[1.4] text-zinc-400">
         시세 표본이 많고 같은 모델끼리 정확히 비교됐을 때 점수가 올라가요. 표본 부족 / 분류 불완전 / 새상품·번들 같은 왜곡 매물 비중이 높으면 점수가 내려갑니다.
       </div>
