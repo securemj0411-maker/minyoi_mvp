@@ -131,6 +131,19 @@ export function buildCandidatePoolRows(input: {
     const parsed = input.parsedByPid.get(pid);
     const sku = input.catalogById.get(row.skuId ?? "");
     const category = parsed?.category ?? sku?.category ?? null;
+
+    // Wave 106: comparable_key 에 unknown_chip / unknown_generation 박힌 매물 풀 진입 차단.
+    // 베타테스터 보고 — "12.9 2018 모델을 2020으로 보여줌" root cause:
+    //   parser가 generation 못 잡으면 unknown_chip 박음 → comparable_key가 broad →
+    //   같은 unknown_chip 그룹의 다른 generation (5/6세대) 시세와 mixed → 잘못된 sku_median.
+    // 정확성 우선 (§12b) — generation 식별 안 되면 풀 진입 X (자연 turnover까지 대기).
+    const comparableKeyEarly = parsed?.comparable_key ?? "";
+    if (comparableKeyEarly.includes("unknown_chip") || comparableKeyEarly.includes("unknown_generation")) {
+      skipped += 1;
+      invalidations.push({ pid, reason: "comparable_key_unknown_chip_or_generation" });
+      continue;
+    }
+
     const readiness = evaluatePoolGate(
       { sku, category },
       { categoryReadiness: input.categoryReadiness, laneReadiness: input.laneReadiness },

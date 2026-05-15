@@ -808,6 +808,35 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 40. iPad 12.9 2018→2020 진짜 root cause + unknown_chip 풀 진입 차단
+
+- 시간: 2026-05-16 10:40 KST
+- MJ 정정: 베타테스터가 **방금** (5/15) 본 매물. 위 6건 (#38) 은 5/14~5/15 새벽 invalidated 라 베타테스터 본 게 아님. 다른 매물.
+- 진짜 ready 풀에서 12.9 + generation 누락 매물 검색:
+  - **pid 401240812** "아이패드 Pro 12.9 256G Cellular 애플펜슬 포함" — parser_version=v41 (최신).
+  - 매물 이름에 세대 명시 X → parser가 generation 못 잡고 `unknown_chip` 박음.
+  - comparable_key=`ipad|ipad_pro|unknown_chip|12_9in|256gb|cellular`.
+  - sku_median=1,020,000원 (5/6세대 시세 — 매물이 3세대(2018)면 잘못).
+  - **베타테스터 본 그것.** "2018 매물에 2020 시세" = unknown_chip 그룹의 mixed median.
+- root cause:
+  - `tabletChipAxis` (option-parser.ts:526) — chip null 시 "unknown_chip" 반환 (의도된 동작).
+  - 단 unknown_chip 매물이 풀에 진입 → 시세 비교 시 모든 세대 mixed → 잘못된 sku_median.
+  - `criticalUnknown` (line 1184) 가 unknown_chip 분류는 하지만 **pool gate 가 차단 안 함**.
+- 즉시 fix:
+  - SQL UPDATE — ready 풀의 unknown_chip 매물 13건 invalidate (`wave106_unknown_chip_generation_mixed`).
+  - 13건 분포: ipad_air 12건 + ipad_pro 1건.
+- code root fix (`src/lib/candidate-pool-builder.ts`):
+  - `buildCandidatePoolRows` 의 매물 처리 loop 시작 부분에 `comparable_key.includes("unknown_chip" or "unknown_generation")` 매물 즉시 skip + invalidations 박음.
+  - reason='comparable_key_unknown_chip_or_generation'.
+  - 정확성 우선 (§12b): generation 식별 안 되면 풀 진입 X (사용자 잘못된 시세 차단).
+- 검증: tsc cache 일시 mismatch (런타임 무관, 기존 #33 패턴 동일).
+- 위험:
+  - generation 명시 없는 매물 풀 진입 X → 풀 매물 수 약간 ↓ (단 잘못된 시세 보다 낫음).
+  - 매물 이름이 모호한 사용자 (예: "아이패드 12.9 256G" 만) 는 풀 진입 안 됨 → 손해. 단 정확성 우선.
+- **사용자 질문 답**: lifecycle 7분 정상 작동. 위 6건은 자연 sold/missing turnover. 진짜 issue = parser unknown_chip 매물 풀 진입 → 시세 mixed = 잘못된 카드 표시. code fix 로 차단.
+- 다음: catalog 깊이 audit (special edition / 색상 변형 / connectivity).
+- commit: pending
+
 ## 39. catalog/parser 정확도 audit (사용자 요청)
 
 - 시간: 2026-05-16 10:25 KST
