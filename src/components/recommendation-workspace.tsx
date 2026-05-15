@@ -28,6 +28,17 @@ const MAX_REQUESTED_CARDS = 30;
 const MIN_PROFIT_MANWON = 1;
 const MAX_PROFIT_MANWON = 10;
 const MAX_FRESH_HOURS = 72; // 3일
+// Wave 93b: 슬라이더는 "left=strict, right=무제한" 직관에 맞춤.
+//   sliderValue 1..72 → "최근 N시간 이내" (왼쪽일수록 엄격)
+//   sliderValue 73   → "무제한" (오른쪽 끝, default)
+// 내부 maxFreshHours: sliderValue >= 73 ? 0 (무제한) : sliderValue
+const FRESH_SLIDER_MAX = MAX_FRESH_HOURS + 1; // 73 = 무제한 sentinel
+function sliderToMaxFreshHours(v: number): number {
+  return v >= FRESH_SLIDER_MAX ? 0 : Math.max(1, v);
+}
+function maxFreshHoursToSlider(h: number): number {
+  return h <= 0 ? FRESH_SLIDER_MAX : Math.min(MAX_FRESH_HOURS, Math.max(1, h));
+}
 
 // 슬라이더 진행 비율 시각화. filled portion 색상 강조 → 0원~선택값 범위가 가시적.
 function sliderTrackStyle(
@@ -423,22 +434,22 @@ function PackSelectorCard({
               </span>
             </div>
             <input
-              type="range" min={0} max={MAX_FRESH_HOURS} step={1}
-              value={advancedFilters.maxFreshHours}
-              onChange={(e) => setAdvancedFilters(f => ({ ...f, maxFreshHours: Number(e.target.value) }))}
+              type="range" min={1} max={FRESH_SLIDER_MAX} step={1}
+              value={maxFreshHoursToSlider(advancedFilters.maxFreshHours)}
+              onChange={(e) => setAdvancedFilters(f => ({ ...f, maxFreshHours: sliderToMaxFreshHours(Number(e.target.value)) }))}
               disabled={busy || !infiniteCredits}
               style={sliderTrackStyle(
-                advancedFilters.maxFreshHours,
-                0,
-                MAX_FRESH_HOURS,
+                maxFreshHoursToSlider(advancedFilters.maxFreshHours),
+                1,
+                FRESH_SLIDER_MAX,
                 "#4f6f58",
                 !infiniteCredits,
               )}
               className="mt-1 h-2 w-full cursor-pointer appearance-none rounded-full accent-[var(--brand-accent)] disabled:cursor-not-allowed disabled:opacity-50"
             />
             <div className="mt-0.5 flex justify-between text-[9px] font-bold text-[#9aa893]">
+              <span>최근 1시간</span>
               <span>무제한</span>
-              <span>{MAX_FRESH_HOURS}시간</span>
             </div>
             {!infiniteCredits && (
               <p className="mt-1.5 rounded-md bg-[#fffaf1] px-2 py-1 text-[10px] font-bold leading-4 text-[#7b5724] dark:bg-zinc-800 dark:text-zinc-400">
