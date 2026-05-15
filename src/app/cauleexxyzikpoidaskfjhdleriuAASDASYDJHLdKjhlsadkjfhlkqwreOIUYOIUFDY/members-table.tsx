@@ -36,10 +36,28 @@ function fmt(value: string | null | undefined): string {
   return value.slice(0, 16).replace("T", " ");
 }
 
+type PlanFilter = "all" | "free" | "starter" | "plus" | "pro";
+type BetaFilter = "all" | "beta" | "non-beta";
+
 export default function MembersTable({ initialRows }: { initialRows: MemberRow[] }) {
   const [rows, setRows] = useState<MemberRow[]>(initialRows);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [planFilter, setPlanFilter] = useState<PlanFilter>("all");
+  const [betaFilter, setBetaFilter] = useState<BetaFilter>("all");
+
+  const filteredRows = rows.filter((row) => {
+    if (search.trim()) {
+      const s = search.trim().toLowerCase();
+      const haystack = `${row.email ?? ""} ${row.nickname}`.toLowerCase();
+      if (!haystack.includes(s)) return false;
+    }
+    if (planFilter !== "all" && row.planKey !== planFilter) return false;
+    if (betaFilter === "beta" && !row.isBetaTester) return false;
+    if (betaFilter === "non-beta" && row.isBetaTester) return false;
+    return true;
+  });
 
   async function toggleBeta(row: MemberRow) {
     if (!row.creditRowExists) {
@@ -91,7 +109,52 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
         </div>
       ) : null}
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 dark:border-zinc-800">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="이메일 / 닉네임 검색..."
+          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 dark:border-zinc-700 dark:bg-zinc-900 dark:placeholder:text-gray-500 sm:max-w-xs"
+        />
+        <div className="flex flex-wrap gap-1.5 text-xs">
+          {(["all", "free", "starter", "plus", "pro"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setPlanFilter(v)}
+              className={`rounded-md px-2 py-1 font-bold transition ${
+                planFilter === v
+                  ? "bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900"
+                  : "border border-gray-300 bg-white text-gray-600 hover:border-gray-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-400"
+              }`}
+            >
+              {v === "all" ? "플랜 전체" : v[0].toUpperCase() + v.slice(1)}
+            </button>
+          ))}
+          <span className="mx-1 inline-block w-px self-stretch bg-gray-200 dark:bg-zinc-700" />
+          {(["all", "beta", "non-beta"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setBetaFilter(v)}
+              className={`rounded-md px-2 py-1 font-bold transition ${
+                betaFilter === v
+                  ? "bg-purple-600 text-white"
+                  : "border border-gray-300 bg-white text-gray-600 hover:border-purple-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-400"
+              }`}
+            >
+              {v === "all" ? "베타 전체" : v === "beta" ? "베타 ✓" : "베타 ✗"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+        {filteredRows.length}건 표시 (전체 {rows.length})
+      </div>
+
+      <div className="mt-2 overflow-x-auto rounded-xl border border-gray-200 dark:border-zinc-800">
         <table className="w-full min-w-[1500px] text-sm">
           <thead className="bg-gray-50 dark:bg-zinc-900">
             <tr className="border-b border-gray-200 text-left text-xs font-bold text-gray-600 dark:border-zinc-800 dark:text-gray-400">
@@ -109,7 +172,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
+            {filteredRows.map((row) => {
               const planActive = row.planStatus === "active";
               const badge = PLAN_BADGE[row.planKey] ?? PLAN_BADGE.free;
               const pending = pendingIds.has(row.authUserId);

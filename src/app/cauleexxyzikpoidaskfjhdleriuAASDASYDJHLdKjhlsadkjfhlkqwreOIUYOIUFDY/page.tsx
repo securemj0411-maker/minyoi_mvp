@@ -81,6 +81,26 @@ async function fetchAllPlans(): Promise<PlanRow[]> {
   return (await res.json()) as PlanRow[];
 }
 
+async function countRows(table: string, filter: string): Promise<number> {
+  const res = await fetch(
+    `${tableUrl(table)}?select=id&${filter}&limit=1`,
+    { headers: { ...serviceHeaders(), Prefer: "count=exact" }, cache: "no-store" },
+  );
+  if (!res.ok) return 0;
+  const range = res.headers.get("content-range") ?? "0-0/0";
+  return Number(range.split("/")[1] ?? 0);
+}
+
+function kstTodayStartIso(): string {
+  const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" });
+  return new Date(`${fmt.format(new Date())}T00:00:00+09:00`).toISOString();
+}
+
+function kstMonthStartIso(): string {
+  const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" });
+  return new Date(`${fmt.format(new Date()).slice(0, 7)}-01T00:00:00+09:00`).toISOString();
+}
+
 function nicknameOf(user: AuthUser): string {
   const meta = user.user_metadata ?? user.raw_user_meta_data ?? {};
   return meta.nickname || meta.name || meta.full_name || meta.preferred_username || "";
@@ -90,9 +110,32 @@ export default async function MembersPage() {
   const auth = await requireSupabaseUserFromCookies();
   if (!auth.ok || !isAdminUser(auth.user)) notFound();
 
-  const [users, credits, plans] = await Promise.all([fetchAuthUsers(), fetchAllCredits(), fetchAllPlans()]);
+  const todayIso = kstTodayStartIso();
+  const monthIso = kstMonthStartIso();
+
+  const [
+    users, credits, plans,
+    packOpensToday, revealsToday, clicksToday,
+  ] = await Promise.all([
+    fetchAuthUsers(),
+    fetchAllCredits(),
+    fetchAllPlans(),
+    countRows("mvp_pack_opens", `opened_at=gte.${todayIso}&result=eq.success`),
+    countRows("mvp_pack_reveals", `revealed_at=gte.${todayIso}`),
+    countRows("mvp_pack_reveals", `link_clicked_at=gte.${todayIso}`),
+  ]);
+
   const creditMap = new Map(credits.map((c) => [c.auth_user_id, c]));
   const planMap = new Map(plans.map((p) => [p.auth_user_id, p]));
+
+  const revenueToday = plans
+    .filter((p) => p.last_payment_at && p.last_payment_at >= todayIso)
+    .reduce((sum, p) => sum + (p.last_payment_amount ?? 0), 0);
+  const revenueMonth = plans
+    .filter((p) => p.last_payment_at && p.last_payment_at >= monthIso)
+    .reduce((sum, p) => sum + (p.last_payment_amount ?? 0), 0);
+  const activeSubs = plans.filter((p) => p.status === "active" && p.plan_key !== "free").length;
+  const newSignupsToday = users.filter((u) => u.created_at >= todayIso).length;
 
   const rows: MemberRow[] = users
     .map((u) => {
@@ -142,7 +185,35 @@ export default async function MembersPage() {
         </div>
       </div>
 
+      <section className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
+        <KpiCard label="오늘 매출" value={`₩${revenueToday.toLocaleString("ko-KR")}`} accent="amber" />
+        <KpiCard label="이번달 매출" value={`₩${revenueMonth.toLocaleString("ko-KR")}`} accent="amber" />
+        <KpiCard label="활성 구독자" value={activeSubs} accent="emerald" sub={`Pro ${totalPro} · Plus ${totalPlus} · Starter ${totalStarter}`} />
+        <KpiCard label="오늘 신규 가입" value={newSignupsToday} accent="rose" />
+        <KpiCard label="오늘 팩 열기" value={packOpensToday} accent="sky" />
+        <KpiCard label="오늘 공개" value={revealsToday} accent="sky" />
+        <KpiCard label="오늘 번개장터 클릭" value={clicksToday} accent="sky" sub={revealsToday > 0 ? `CTR ${Math.round((clicksToday / revealsToday) * 100)}%` : undefined} />
+        <KpiCard label="베타 체험단" value={totalBeta} accent="purple" sub={`최근 7일 로그인 ${totalActive7d}`} />
+      </section>
+
       <MembersTable initialRows={rows} />
     </main>
+  );
+}
+
+function KpiCard({ label, value, accent, sub }: { label: string; value: string | number; accent: "amber" | "emerald" | "purple" | "sky" | "rose"; sub?: string }) {
+  const styles: Record<typeof accent, string> = {
+    amber: "border-amber-200 bg-amber-50/60 dark:border-amber-900/40 dark:bg-amber-950/20",
+    emerald: "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/40 dark:bg-emerald-950/20",
+    purple: "border-purple-200 bg-purple-50/60 dark:border-purple-900/40 dark:bg-purple-950/20",
+    sky: "border-sky-200 bg-sky-50/60 dark:border-sky-900/40 dark:bg-sky-950/20",
+    rose: "border-rose-200 bg-rose-50/60 dark:border-rose-900/40 dark:bg-rose-950/20",
+  };
+  return (
+    <div className={`rounded-xl border p-3 ${styles[accent]}`}>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{label}</div>
+      <div className="mt-1 text-lg font-black text-gray-900 dark:text-gray-100 sm:text-xl">{value}</div>
+      {sub ? <div className="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">{sub}</div> : null}
+    </div>
   );
 }
