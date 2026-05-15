@@ -852,7 +852,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - **broad sku_name 카드 UX** — "iPad Pro" 만 카드 표시 → 사용자가 generation 모름 → 헷갈림 (베타테스터 패턴). 카드 UI 보강 (큰 작업, 별도 wave).
 - **외부 손상 / 액정 깨짐 differential** — condition_score 차별 비교 (별도 wave).
 
-- commit: pending
+- commit: 9c7e49f
 
 ## 41. fallbackMedian outlier trim 누락 fix (MJ 코멘트 #3)
 
