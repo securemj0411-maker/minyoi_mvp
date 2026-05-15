@@ -116,6 +116,8 @@ export type PackOpenInput = {
   tokensSpent: number;
   requestedCards?: number;
   consumeInventory?: boolean;
+  // Wave 93b: freshness filter — 0 또는 undefined면 무제한.
+  maxFreshHours?: number;
 };
 
 export type RevealFeedbackType = "interested" | "bought" | "missed_sold" | "bad_pick" | "watching";
@@ -253,7 +255,7 @@ async function callSupabase(path: string, init: RequestInit = {}): Promise<Respo
   }
 }
 
-async function rpcReservePool(band: PackBand, userRef: string, limit: number): Promise<ReservedRow[]> {
+async function rpcReservePool(band: PackBand, userRef: string, limit: number, maxFreshSeconds: number): Promise<ReservedRow[]> {
   const res = await callSupabase("/rpc/reserve_mvp_pool_candidates", {
     method: "POST",
     headers: authHeaders(),
@@ -262,6 +264,7 @@ async function rpcReservePool(band: PackBand, userRef: string, limit: number): P
       p_user_ref: userRef,
       p_limit: limit,
       p_lease_seconds: 300,
+      p_max_fresh_seconds: maxFreshSeconds,
     }),
   });
   return (await res.json()) as ReservedRow[];
@@ -683,7 +686,10 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     };
   }
 
-  const reserved = await rpcReservePool(input.band, input.userRef, reserveLimit);
+  const maxFreshSec = input.maxFreshHours && input.maxFreshHours > 0
+    ? Math.round(input.maxFreshHours * 3600)
+    : 0;
+  const reserved = await rpcReservePool(input.band, input.userRef, reserveLimit, maxFreshSec);
   if (reserved.length === 0) {
     return {
       result: "unavailable",

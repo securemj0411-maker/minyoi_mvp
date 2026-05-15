@@ -98,11 +98,14 @@ export async function POST(req: Request) {
   const infinite = isAdminUser(auth.user);
 
   try {
+    const maxFreshHoursRaw = Number((payload.filters as Record<string, unknown> | undefined)?.maxFreshHours ?? 0);
+    const maxFreshHours = Number.isFinite(maxFreshHoursRaw) ? Math.max(0, Math.min(720, maxFreshHoursRaw)) : 0;
     const result = await openPack({
       band,
       userRef,
       authUserId: auth.user.id,
       isInfiniteCredits: infinite,
+      maxFreshHours,
       tokensSpent: tokenCost,
       requestedCards: sanitizedRequestedCards,
       consumeInventory: !infinite,

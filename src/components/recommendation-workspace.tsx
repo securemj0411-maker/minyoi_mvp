@@ -67,18 +67,18 @@ type RiskPreset = {
 const RISK_PRESETS: Record<RiskProfile, RiskPreset> = {
   safe: {
     band: 1, label: "안전", emoji: "🛡️",
-    desc: "15만원 이하 · 차익 1만원 이상 · 신뢰도 80% 이상 · 최근 1시간 이내",
-    filters: { priceMaxManwon: 15, minProfitManwon: 1, minConfidencePct: 80, categories: [], maxFreshHours: 1 },
+    desc: "15만원 이하 · 차익 1만원 이상 · 신뢰도 80% 이상",
+    filters: { priceMaxManwon: 15, minProfitManwon: 1, minConfidencePct: 80, categories: [], maxFreshHours: 0 },
   },
   balanced: {
     band: 2, label: "균형", emoji: "⚖️",
-    desc: "30만원 이하 · 차익 2만원 이상 · 신뢰도 70% 이상 · 최근 2시간 이내",
-    filters: { priceMaxManwon: 30, minProfitManwon: 2, minConfidencePct: 70, categories: [], maxFreshHours: 2 },
+    desc: "30만원 이하 · 차익 2만원 이상 · 신뢰도 70% 이상",
+    filters: { priceMaxManwon: 30, minProfitManwon: 2, minConfidencePct: 70, categories: [], maxFreshHours: 0 },
   },
   aggressive: {
     band: 3, label: "공격", emoji: "⚔️",
-    desc: "80만원 이하 · 차익 5만원 이상 · 신뢰도 60% 이상 · 최근 6시간 이내",
-    filters: { priceMaxManwon: 80, minProfitManwon: 5, minConfidencePct: 60, categories: [], maxFreshHours: 6 },
+    desc: "80만원 이하 · 차익 5만원 이상 · 신뢰도 60% 이상",
+    filters: { priceMaxManwon: 80, minProfitManwon: 5, minConfidencePct: 60, categories: [], maxFreshHours: 0 },
   },
 };
 const CATEGORY_OPTIONS = [
@@ -268,10 +268,12 @@ function PackSelectorCard({
   const maxSelectableCards = selectableCardLimit(usableReady);
   const selectedCount = clampRequestedCards(requestedCards, maxSelectableCards);
   // Wave 79: 단일 모드 — 항상 dynamic cost 적용
-  const activeFilters: CostFilters = {
+  // Wave 93b: maxFreshHours 추가 (RPC에 전달, hard 필터 일관성).
+  const activeFilters: CostFilters & { maxFreshHours?: number } = {
     minProfitManwon: advancedFilters.minProfitManwon,
     minConfidencePct: advancedFilters.minConfidencePct,
     priceMaxManwon: advancedFilters.priceMaxManwon,
+    maxFreshHours: advancedFilters.maxFreshHours,
   };
   const costBreakdown = computeCostBreakdown(selectedPack.band, selectedCount, activeFilters);
   const totalCost = costBreakdown.totalCost;
