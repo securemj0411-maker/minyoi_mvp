@@ -643,7 +643,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 발견된 dead-end / 막힘 지점 0 (이전 wave에서 #13 retry CTA / #17 정책 변경 / #21 카테고리 공시 / #24 disabled 거짓 카테고리 등 다 fix됨).
 - 추가 fix 필요한 sweep = err.message 누출 6개 (이번에 박음).
 - 다음: marketing/legal/onboarding 측면은 더 audit할 항목 적음. observability dashboard (별도 wave) 또는 사용자 첫 가입 흐름 실제 시뮬 (real account).
-- commit: pending
+- commit: 2f0e571
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
