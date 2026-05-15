@@ -64,32 +64,43 @@ export const DEFAULT_SEARCH_QUERIES = [
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
 // 일괄 흡수. 127개 narrow query polling → 10개 카테고리 sweep으로 호출 91%↓, 매물 편향 0,
-// 신규 SKU 자동 발견. order=date page 0 + catalog ruleMatch가 광고/타깃 매물 분리.
+// 신규 SKU 자동 발견. order=date page 0 + catalog ruleMatch가 광고/taget 매물 분리.
 // L2 leaf ID 사용 (L1 600 단독은 0건 반환). bunjang.ts CATEGORY_QUERY_PREFIX 라우팅.
-export const DEFAULT_CATEGORY_SWEEPS: { id: string; title: string }[] = [
-  { id: "600700", title: "휴대폰" },         // 아이폰/갤럭시 전 모델
-  { id: "600710", title: "태블릿" },         // 아이패드/갤럭시탭
-  { id: "600720", title: "워치/밴드" },      // 애플워치/갤럭시워치
-  { id: "600100", title: "PC/노트북" },      // 맥북/LG그램
-  { id: "600300", title: "카메라/DSLR" },    // 소니 A7M3/A7C/A7C II/A7CR, 캐논 R6
-  { id: "600500", title: "오디오/영상" },    // 에어팟/Beats/Bose/Sony WH/JBL
-  { id: "600600", title: "게임/타이틀" },    // PS5/스위치
-  { id: "421",    title: "시계" },           // G-Shock/세이코
-  { id: "610",    title: "가전제품" },       // 다이슨/로보락
-  { id: "700600", title: "골프" },           // 타이틀리스트
-  // Wave 91 (2026-05-15): 일반인 친화 + 차익 가능 카테고리. 35 sub × 100 매물 측정 결과 기반.
-  // 신발 405: 한정판 스니커즈 매물 24만건, median 15만, 회전 0.6h — sweet spot.
-  // 가방 430: 명품 빈티지 셀러 시세 인식 약, median 15만 (200만 cap으로 입문 명품만).
-  // 스포츠 700: 자전거 차익 ↑ (셀러 시세 인식 매우 약함), 등산 매물 多.
-  { id: "405",    title: "신발" },           // 한정판 스니커즈 (Jordan/Yeezy/Dunk/NB)
-  { id: "430",    title: "가방/지갑" },      // 입문 명품 + 빈티지 (LV/구찌/MCM)
-  { id: "700350", title: "자전거" },         // 자이언트/트렉/캐논데일/브롬톤 (700 broad는 골프 외 99% noise)
-  // Wave 91: 910/990 제거 — 마니아 시장, 일반인 친화 X (wave89-all-roots 분석 결과).
-  // 800 (생활/주방)는 측정 부족으로 일단 보류 (wave92 추가 검토).
+//
+// Wave 101 (2026-05-15): pageCount 차등. 30분 raw 측정 결과 fresh hit rate가 카테고리별
+// 큰 차이 (휴대폰/태블릿/오디오 18~47% vs 자전거/가방 93%). page 0의 96건이 다 신규 못 채우는
+// 카테고리는 page 1 추가 → 더 깊은 신규 매물 capture. touched < 96 카테고리는 무의미라 제외.
+export const DEFAULT_CATEGORY_SWEEPS: { id: string; title: string; pageCount?: number }[] = [
+  { id: "600700", title: "휴대폰", pageCount: 2 },     // Wave 101: fresh 47%, touched 134, page 1 추가
+  { id: "600710", title: "태블릿", pageCount: 2 },     // Wave 101: fresh 18%, touched 139, page 1 추가
+  { id: "600720", title: "워치/밴드" },                 // touched 71 — page 0 안 차서 page 1 무의미
+  { id: "600100", title: "PC/노트북" },                 // fresh 72%, touched 95 — 충분
+  { id: "600300", title: "카메라/DSLR" },               // fresh 87%, touched 82 — 충분
+  { id: "600500", title: "오디오/영상", pageCount: 2 }, // Wave 101: fresh 47%, touched 137, page 1 추가
+  { id: "600600", title: "게임/타이틀" },               // fresh 73%, touched 98 — 충분
+  { id: "421",    title: "시계" },                      // fresh 64%, touched 96 — 충분
+  { id: "610",    title: "가전제품" },                  // fresh 86%, touched 105 — 충분
+  { id: "700600", title: "골프" },                      // fresh 88%, touched 100 — 충분
+  // Wave 91: 일반인 친화 + 차익 가능. 35 sub × 100 매물 측정 결과 기반.
+  { id: "405",    title: "신발" },                      // fresh 88%, touched 98 — 충분
+  { id: "430",    title: "가방/지갑" },                 // fresh 90%, touched 103 — 충분
+  { id: "700350", title: "자전거" },                    // fresh 93%, touched 73 — 충분
 ];
 
 function buildCategorySweepQueries(): string[] {
   return DEFAULT_CATEGORY_SWEEPS.map((entry) => `category:${entry.id}`);
+}
+
+// Wave 101: query string → custom page index array. override 없으면 caller가 standard pages 사용.
+// 5분당 quota 1,248건 (13 × 96) → 1,536건 (16 × 96) +23%. fresh % 낮은 3 카테고리만 page 1 추가.
+export function getCategoryPageOverrides(): Record<string, number[]> {
+  const map: Record<string, number[]> = {};
+  for (const entry of DEFAULT_CATEGORY_SWEEPS) {
+    if (entry.pageCount && entry.pageCount > 1) {
+      map[`category:${entry.id}`] = Array.from({ length: entry.pageCount }, (_, i) => i);
+    }
+  }
+  return map;
 }
 
 export type PipelineRuntimeConfig = {

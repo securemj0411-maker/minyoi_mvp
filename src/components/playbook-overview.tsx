@@ -456,7 +456,7 @@ function SectionView({ section }: { section: Section }) {
   return (
     <section
       id={section.id}
-      className="scroll-mt-[140px] rounded-2xl border border-[#e7dece] bg-[#fffbf4] p-5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6"
+      className="scroll-mt-[180px] rounded-2xl border border-[#e7dece] bg-[#fffbf4] p-4 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6 lg:scroll-mt-[140px]"
     >
       <div className="flex items-start gap-3">
         <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-accent-soft)] text-sm font-black text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-emerald-400">
@@ -543,14 +543,14 @@ export default function PlaybookOverview() {
 
   return (
     <div ref={containerRef} className="space-y-5">
-      <div className="rounded-[28px] border border-[#e2d9cb] bg-[#fffaf6] p-5 shadow-[0_18px_36px_rgba(34,49,39,0.06)] dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+      <div className="rounded-[24px] border border-[#e2d9cb] bg-[#fffaf6] p-4 shadow-[0_18px_36px_rgba(34,49,39,0.06)] dark:border-zinc-800 dark:bg-zinc-900 sm:p-6 lg:rounded-[28px]">
         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
           Playbook
         </p>
-        <h2 className="mt-2 text-2xl font-black tracking-tight text-[#223127] dark:text-white sm:text-3xl">
+        <h2 className="mt-1.5 text-xl font-black tracking-tight text-[#223127] dark:text-white sm:text-2xl lg:text-3xl">
           중고 거래 공략집
         </h2>
-        <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#687366] dark:text-zinc-400">
+        <p className="mt-2 max-w-2xl text-xs font-semibold leading-6 text-[#687366] dark:text-zinc-400 sm:text-sm">
           미뇨이를 활용해 같은 매물도 다르게 보고, 시간 게임에서 우위를 가지는 법.
           모델별 상세는 아래 카드에서 따로 확인하세요.
         </p>
@@ -562,13 +562,10 @@ export default function PlaybookOverview() {
         isolation: isolate 로 자체 stacking context. z-30 < layout root nav z-40 보장.
       */}
       <div
-        className="-mx-4 sm:mx-0"
-        style={{
-          position: "sticky",
-          top: 64,
-          zIndex: 30,
-          isolation: "isolate",
-        }}
+        // Mobile: dashboard menu sticky (top:65 + 약 52px) 아래로 → top-[117px].
+        // Desktop(lg+): dashboard 사이드바라 layout 헤더 바로 아래(top:64).
+        className="sticky top-[117px] z-20 -mx-4 lg:top-[64px] lg:mx-0"
+        style={{ isolation: "isolate" }}
       >
         <nav
           aria-label="공략집 목차"

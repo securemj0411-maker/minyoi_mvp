@@ -18,7 +18,7 @@ import {
   resolveShipping,
   type PipelineRow,
 } from "@/lib/pipeline";
-import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
+import { loadPipelineRuntimeConfig, getCategoryPageOverrides } from "@/lib/pipeline-config";
 import {
   decideCadence,
   queryFamily,
@@ -1026,8 +1026,14 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
   const timingsMs: Record<string, number> = {};
   stats.timingsMs = timingsMs;
   const seen = new Map<string, SearchItem>();
-  const pages = options.pages ?? searchPagesForTick(config.pagesPerQuery, config.deepCrawlMaxPage);
+  const defaultPages = options.pages ?? searchPagesForTick(config.pagesPerQuery, config.deepCrawlMaxPage);
   const mode = options.mode ?? "mixed";
+  // Wave 101: deep mode 일 때만 override 비활성 (deep-crawl rotation 보존).
+  // tick fresh mode 호출 (runSearchScorePipeline)도 options.pages=[0] 명시지만,
+  // 카테고리별 fresh hit 보강이 필요하므로 override 적용.
+  const categoryPageOverrides = options.mode !== "deep"
+    ? getCategoryPageOverrides()
+    : {};
 
   // P2-1: registry 기반 cadence gate.
   // env의 PIPELINE_SEARCH_QUERIES가 source-of-truth (운영자가 query 추가/삭제는 env로).
@@ -1050,7 +1056,8 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
   searchLoop:
   for (const query of dueQueries) {
     let pagesAttempted = false;
-    for (const page of pages) {
+    const pagesForQuery = categoryPageOverrides[query] ?? defaultPages;
+    for (const page of pagesForQuery) {
       if (Date.now() >= deadlineMs) {
         stats.timedOut = true;
         break searchLoop;
