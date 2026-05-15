@@ -5,19 +5,42 @@ import assert from "node:assert/strict";
 import { parseConditionTier } from "@/lib/parsers/wave92-fashion-mobility";
 
 describe("Wave 146 — parseConditionTier 신발 표현 확장", () => {
-  // S급 — 객관적 새상품
-  it("S급: 박스 그대로", () => {
-    assert.equal(parseConditionTier("박스 그대로 풀구성"), "s_grade");
-    assert.equal(parseConditionTier("박스채로 드려요"), "s_grade");
+  // 객관 S급 (검증 가능 표현만)
+  it("객관 S급: 미개봉 명시", () => {
+    assert.equal(parseConditionTier("(미개봉) 어그 클래식"), "s_grade");
+    assert.equal(parseConditionTier("봉인 그대로"), "s_grade");
   });
 
-  it("S급: 신어본 적 없음", () => {
-    assert.equal(parseConditionTier("신어본 적 없는 새상품"), "s_grade");
-    assert.equal(parseConditionTier("신은 적 없음"), "s_grade");
+  it("객관 S급: 택 부착/달림", () => {
+    assert.equal(parseConditionTier("택 달린 풀박스"), "s_grade");
+    assert.equal(parseConditionTier("택 그대로"), "s_grade");
+    assert.equal(parseConditionTier("택 부착 새상품"), "s_grade");
+    assert.equal(parseConditionTier("택 있음"), "s_grade");
   });
 
-  it("S급: 풀박 새상품", () => {
-    assert.equal(parseConditionTier("풀박 새상품"), "s_grade");
+  it("객관 S급: kream 인증 (박스컷/나코탭/크림 택)", () => {
+    assert.equal(parseConditionTier("박스컷 나코탭 달린"), "s_grade");
+    assert.equal(parseConditionTier("크림 택 있습니다"), "s_grade");
+    assert.equal(parseConditionTier("크림 인증서"), "s_grade");
+  });
+
+  // Wave 147: 셀러 주장 → mint (a_grade)로 깎음
+  it("셀러 주장 → A급 (mint): 박스 그대로 / 박스채로", () => {
+    assert.equal(parseConditionTier("박스 그대로 풀구성"), "a_grade");
+    assert.equal(parseConditionTier("박스채로 드려요"), "a_grade");
+  });
+
+  it("셀러 주장 → A급: 신어본 적 없음 / 신은 적 없음", () => {
+    assert.equal(parseConditionTier("신어본 적 없는 새상품"), "a_grade");
+    assert.equal(parseConditionTier("신은 적 없음"), "a_grade");
+    assert.equal(parseConditionTier("한 번도 신지 않은"), "a_grade");
+  });
+
+  it("셀러 주장 → A급: 미사용/미착용/풀박 새상품", () => {
+    assert.equal(parseConditionTier("미사용 새상품"), "a_grade");
+    assert.equal(parseConditionTier("미착용 새상품"), "a_grade");
+    assert.equal(parseConditionTier("풀박 새상품"), "a_grade");
+    assert.equal(parseConditionTier("새상품 그대로 보관"), "a_grade");
   });
 
   // A급 — 거의 새거
