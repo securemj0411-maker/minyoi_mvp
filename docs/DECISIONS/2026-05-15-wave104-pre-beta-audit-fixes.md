@@ -808,6 +808,20 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 44. trustedMedian gate 강화 — low confidence + thin sample 차단
+
+- 시간: 2026-05-16 11:50 KST
+- 진단:
+  - ready 풀 160건 중 low confidence 77건 (48%) — sample 부족.
+  - low + total_sample < 5 가 32건 — outlier 위험 (madTrim 5건 미만은 trim X).
+- 옛 gate (Wave 90): low + sold=0 + active<3 만 차단. active 3-4 매물 통과 → outlier 1건이 median 끌어올림.
+- code fix (`tick-pipeline.ts:trustedMarketMedian`):
+  - 차단 조건 강화: `sold + active < 5` → trusted return null → skuMedian=0 → 풀 진입 차단.
+  - sample 부족 SKU 자동 차단 (정확성 우선 §12b).
+- ready 풀 34건 즉시 invalidate (`wave106_low_confidence_thin_sample`).
+- 영향: 풀 160 → 126 (21% ↓). 정확도 ↑.
+- commit: pending
+
 ## 43. aggressive 정확도 sweep — sample inflation + bundle/new + carrier null
 
 - 시간: 2026-05-16 11:30 KST

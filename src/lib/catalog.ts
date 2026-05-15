@@ -82,6 +82,24 @@ const PHONE_NOISE = [
   "s펜만",
   "s 펜만",
   "에스펜만",
+  // Wave 114d (2026-05-15): broad SKU도 통신사 약정/번호이동/할부 매물 reject.
+  // 자급제 narrow lane은 이미 mustNotContain에 있음. broad는 누락 — precision 약점.
+  // production audit 1건 발견: "[개통폰] 아이폰15 타통신사 -> KT 번호이동" → iphone-15 broad 흡수
+  "번호이동",
+  "번호 이동",
+  "약정승계",
+  "약정 승계",
+  "할부승계",
+  "할부 승계",
+  "할부 잔여",
+  "할부잔여",
+  "개통폰",
+  "kt 약정",
+  "skt 약정",
+  "skt 완납",
+  "kt 완납",
+  "lgu+ 약정",
+  "유플 약정",
 ];
 
 const TABLET_NOISE = [
