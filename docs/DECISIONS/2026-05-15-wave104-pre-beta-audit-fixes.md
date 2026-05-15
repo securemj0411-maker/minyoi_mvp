@@ -203,7 +203,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 검증: tsc clean.
 - 위험: 사용자가 unavailable 받고 다시 시도 → 또 unavailable 가능성 있음. 풀 충원이 5분 cron이라 즉각 새 매물 나오는 건 아님. 그래도 닫기만 있는 것보다 "다른 등급 시도" 힌트가 명시되어 의도 명확.
 - 다음: med severity 항목 (plan cancel button touch target, dark mode admin pool 등).
-- commit: pending
+- commit: c62c815
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
