@@ -20,7 +20,7 @@ async function loadEnv(p: string) {
 }
 
 // 우리 catalog 운영 brand 키워드 (광범위 sweep)
-const KEYWORDS = [
+const _KEYWORDS = [
   "맥북", "macbook", "아이맥", "imac", "맥미니", "mac mini", "맥프로", "맥 스튜디오", "mac studio",
   "아이폰", "iphone", "갤럭시", "galaxy", "갤럭시북",
   "아이패드", "ipad", "갤럭시탭", "갤탭",

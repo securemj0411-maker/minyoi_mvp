@@ -5,7 +5,6 @@ import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
 import {
   madTrim,
-  median,
   percentileRank,
   trimmedSellerMarket,
 } from "@/lib/market-math";
