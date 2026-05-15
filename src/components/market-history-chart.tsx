@@ -72,12 +72,13 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
     );
   }
 
-  // 좌표 계산
+  // 좌표 계산. 우측은 가격 라벨 공간 확보를 위해 padR 더 크게.
   const width = 360;
-  const height = 110;
+  const height = 130;
   const padX = 28;
+  const padR = 60;
   const padY = 14;
-  const innerW = width - padX * 2;
+  const innerW = width - padX - padR;
   const innerH = height - padY * 2;
 
   const allPrices: number[] = [];
@@ -134,26 +135,45 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
           </span>
         </span>
       </div>
-      <svg viewBox={`0 0 ${width} ${height}`} className="mt-1 h-[110px] w-full">
+      <svg viewBox={`0 0 ${width} ${height}`} className="mt-1 h-[130px] w-full">
         {/* y 가이드 */}
         <line x1={padX} y1={padY} x2={padX} y2={height - padY} stroke="#e5e7eb" strokeWidth="0.5" />
-        <line x1={padX} y1={height - padY} x2={width - padX} y2={height - padY} stroke="#e5e7eb" strokeWidth="0.5" />
+        <line x1={padX} y1={height - padY} x2={width - padR} y2={height - padY} stroke="#e5e7eb" strokeWidth="0.5" />
         {/* min/max 라벨 */}
         <text x={4} y={padY + 4} fontSize="9" fill="#9ca3af">{krwShort(maxP)}</text>
         <text x={4} y={height - padY} fontSize="9" fill="#9ca3af">{krwShort(minP)}</text>
-        {/* active 라인 (emerald) — 먼저 그려서 currentPrice line이 위에 오게 */}
+        {/* active 라인 (emerald) */}
         {activePath ? <path d={activePath} fill="none" stroke="#10b981" strokeWidth="1.5" /> : null}
         {/* sold 라인 (blue) */}
         {soldPath ? <path d={soldPath} fill="none" stroke="#3b82f6" strokeWidth="1.5" /> : null}
-        {/* 현재 매물 가격 horizontal line — 가장 위에 그림, 강조 */}
+        {/* 현재 매물 가격 horizontal line — 가장 위에 그림 */}
+        {currentPrice != null ? (
+          <line x1={padX} y1={y(currentPrice)} x2={width - padR} y2={y(currentPrice)} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,3" />
+        ) : null}
+
+        {/* 우측 끝 라벨 — 호가(emerald) / 거래가(blue) / 내 매물(red) 각각 점 + 가격 박스 */}
+        {latestActive != null ? (
+          <>
+            <circle cx={width - padR} cy={y(latestActive)} r="3" fill="#10b981" stroke="white" strokeWidth="1" />
+            <text x={width - padR + 5} y={y(latestActive) + 3} fontSize="9" fill="#059669" fontWeight="bold">
+              {krwShort(latestActive)}
+            </text>
+          </>
+        ) : null}
+        {latestSold != null ? (
+          <>
+            <circle cx={width - padR} cy={y(latestSold)} r="3" fill="#3b82f6" stroke="white" strokeWidth="1" />
+            <text x={width - padR + 5} y={y(latestSold) + 3} fontSize="9" fill="#2563eb" fontWeight="bold">
+              {krwShort(latestSold)}
+            </text>
+          </>
+        ) : null}
         {currentPrice != null ? (
           <>
-            <line x1={padX} y1={y(currentPrice)} x2={width - padX} y2={y(currentPrice)} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,3" />
-            {/* 우측 끝에 큰 마커 + 가격 라벨 */}
-            <circle cx={width - padX} cy={y(currentPrice)} r="3.5" fill="#ef4444" stroke="white" strokeWidth="1" />
-            <rect x={width - padX - 48} y={y(currentPrice) - 16} width="46" height="13" rx="3" fill="#ef4444" />
-            <text x={width - padX - 25} y={y(currentPrice) - 6} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">
-              매입 {krwShort(currentPrice)}
+            <circle cx={width - padR} cy={y(currentPrice)} r="3.5" fill="#ef4444" stroke="white" strokeWidth="1" />
+            <rect x={width - padR + 3} y={y(currentPrice) - 7} width="50" height="13" rx="3" fill="#ef4444" />
+            <text x={width - padR + 28} y={y(currentPrice) + 3} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">
+              {krwShort(currentPrice)}
             </text>
           </>
         ) : null}
