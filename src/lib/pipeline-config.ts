@@ -83,6 +83,10 @@ export const DEFAULT_SEARCH_QUERIES = [
   "뉴발란스 530", "뉴발란스 327",
   // 아디다스
   "아디다스 삼바", "Adidas Samba", "아디다스 가젤 인도어",
+  // Wave 138: 신규 broad 3개 query
+  "아디다스 토바코", "Adidas Tobacco", "토바코 그루엔",
+  "아디다스 가젤 OG", "아디다스 가젤", "Adidas Gazelle",
+  "뉴발란스 327 ms327", "ws327",
   // 기타 인기
   "아식스 젤 1130", "Asics Gel 1130",
   "온 클라우드 5", "On Cloud 5",

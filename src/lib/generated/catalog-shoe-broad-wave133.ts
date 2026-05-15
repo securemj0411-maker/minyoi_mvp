@@ -47,10 +47,21 @@ export const SHOE_BROAD_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       // 콜라보/한정판
-      "wales bonner", "웨일즈 보너", "pharrell", "퍼렐", "humanrace", "휴먼레이스",
+      "wales bonner", "웨일즈 보너", "웨일스 보너", "pharrell", "퍼렐", "humanrace", "휴먼레이스",
       "kith", "키스", "sporty rich",
+      // Wave 138: 한정 컬러 차단 (broad지만 가격 큰 한정 컬러는 분리)
+      "원더 화이트 코어 블랙", "원더 화이트", "코어 블랙 한정",
+      "스칼렛", "scarlet",
+      "그린 스웨이드", "green suede 한정",
+      "흰초", "흰초 새상품",  // 한정 컬러
+      "messi", "메시", "messi inspired",
+      "humanrace 한정",
+      "anatomy", "아나토미",
+      "프링글스", "pringles",
+      "wensleydale",
       // 다른 시리즈
-      "rose", "vegan", "비건", "decon", "데콘",
+      "rose", "vegan", "비건", "decon", "데콘", "spezial", "스페지알",
+      "rm", "rose mary", "edition",
       // 가품
       "짭", "가품", "레플리카", "replica", "fake", "미러", "샘플", "sample", "1:1", "11급",
       // 키즈

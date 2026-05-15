@@ -44,21 +44,22 @@ export function parseConditionTier(text: string): ConditionTier {
 
 // ─── 신발 ────────────────────────────────────────────────────────────
 
-// 신발 사이즈 추출 (230~309mm). 부적격: 키즈/유아 사이즈.
-// Wave 137 (2026-05-16): UK 사이즈 → mm 변환 추가 (닥마/호카/나이키 매물 흔함).
+// 신발 사이즈 추출 (220~309mm). 부적격: 진짜 키즈/유아 (130~215).
+// Wave 137 (2026-05-16): UK 사이즈 → mm 변환 추가.
+// Wave 138 (2026-05-16): 사이즈 범위 220~309 확장 (여성 220/225 일반 사이즈).
 export function parseShoeSizeMm(text: string): number | null {
   // "270mm", "270 사이즈", "사이즈 270", "270" (3자리 숫자)
-  // 키즈 차단: 150~220 범위는 제외
+  // 진짜 키즈 차단: 130~215 범위는 제외 (220+는 여성 일반)
   const patterns: RegExp[] = [
-    /(?:사이즈|size|싸이즈)\s*[:\-]?\s*(2[3-9]\d|30\d)(?!\d)/i,
-    /(2[3-9]\d|30\d)\s*(?:mm|사이즈|size|싸이즈)/i,
-    /\b(2[3-9]\d|30\d)\b(?![\d.])/, // bare 3-digit
+    /(?:사이즈|size|싸이즈)\s*[:\-]?\s*(2[2-9]\d|30\d)(?!\d)/i,
+    /(2[2-9]\d|30\d)\s*(?:mm|사이즈|size|싸이즈)/i,
+    /\b(2[2-9]\d|30\d)\b(?![\d.])/, // bare 3-digit
   ];
   for (const re of patterns) {
     const m = text.match(re);
     if (m) {
       const n = Number(m[1]);
-      if (n >= 230 && n <= 309) return n;
+      if (n >= 220 && n <= 309) return n;
     }
   }
   // Wave 137: UK 사이즈 → mm 변환 (닥마식 기준, ±10mm 오차 OK)
@@ -73,8 +74,15 @@ export function parseShoeSizeMm(text: string): number | null {
       8: 270, 9: 280, 10: 290, 11: 300, 12: 310,
     };
     const mm = UK_TO_MM[uk];
-    if (mm !== undefined && mm >= 230 && mm <= 309) return mm;
-    // UK 3 = 220mm (키즈 경계). 안전상 230~309만 통과.
+    if (mm !== undefined && mm >= 220 && mm <= 309) return mm;
+  }
+  // Wave 138: cm 표기 → mm 변환 (예: "26cm" → 260, "25.5cm" → 255)
+  // 230~309mm 범위만 (23~30.9cm)
+  const cmMatch = text.match(/\b(2[2-9](?:\.\d)?|30(?:\.\d)?)\s*cm\b/i);
+  if (cmMatch) {
+    const cm = Number(cmMatch[1]);
+    const mm = Math.round(cm * 10);
+    if (mm >= 220 && mm <= 309) return mm;
   }
   return null;
 }

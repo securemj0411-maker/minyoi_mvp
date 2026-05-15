@@ -10,6 +10,8 @@ import { SHOE_CATALOG } from "@/lib/generated/catalog-shoe-wave91";
 import { SHOE_NARROW_CATALOG } from "@/lib/generated/catalog-shoe-narrow-wave134";
 // NB 530 + AF1 + 덩크 일부 = variant 가격 차이 작아 Wave 133 broad 유지하되, 핵심 conflict 제거.
 import { SHOE_BROAD_CATALOG } from "@/lib/generated/catalog-shoe-broad-wave133";
+// Wave 138 (2026-05-16): 신규 broad 3개 (NB 327, 토바코, 가젤 OG) — Iter 1 needs_review 분석 발굴.
+import { SHOE_BROAD_WAVE138_CATALOG } from "@/lib/generated/catalog-shoe-broad-wave138";
 import { BAG_CATALOG } from "@/lib/generated/catalog-bag-wave91";
 import { BIKE_CATALOG } from "@/lib/generated/catalog-bike-wave91";
 
@@ -4724,6 +4726,7 @@ export const CATALOG: Sku[] = [
   ...SHOE_CATALOG,
   ...SHOE_NARROW_CATALOG,
   ...SHOE_BROAD_CATALOG,
+  ...SHOE_BROAD_WAVE138_CATALOG,
   ...BAG_CATALOG,
   ...BIKE_CATALOG,
 ];

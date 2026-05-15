@@ -22,9 +22,9 @@ describe("Wave 137 — parseShoeSizeMm UK conversion", () => {
     assert.equal(parseShoeSizeMm("호카 본디 UK10 새상품"), 290);
   });
 
-  it("UK3 → 220mm (키즈 경계, 차단)", () => {
-    assert.equal(parseShoeSizeMm("닥터마틴 플로라 첼시UK3((무배))"), null);
-    // 220mm는 키즈 경계라 차단
+  it("UK3 → 220mm (Wave 138 범위 확장, 여성 일반)", () => {
+    assert.equal(parseShoeSizeMm("닥터마틴 플로라 첼시UK3((무배))"), 220);
+    // Wave 138: 220은 여성 일반 사이즈, 차단 안 함
   });
 
   it("UK 7.5 → 무시 (부동소수점)", () => {
