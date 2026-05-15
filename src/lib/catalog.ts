@@ -3391,6 +3391,20 @@ const NORMALIZATIONS: [RegExp, string][] = [
   [/아이패드미니\s*7\b/g, " 아이패드 미니 7 "],
   [/ipad\s*7\s+mini/gi, " ipad mini 7 "],
   [/ipad\s+7mini/gi, " ipad mini 7 "],
+  // Wave 113 (2026-05-15): MacBook 모델명+인치 공백 비대칭 normalize.
+  // "맥북에어13" / "맥북 에어13" / "맥북에어 13" → "맥북 에어 13인치"
+  // 발견: macbook-air broad 145건 reclassify 후 audit, 모델명+숫자 붙은 매물이
+  // narrow lane mustContain "13인치" 매칭 못 함 → broad만 흡수. 변형 흡수.
+  [/맥북\s*에어\s*13(?!\d|\.|인치|in)/g, " 맥북 에어 13인치 "],
+  [/맥북\s*에어\s*15(?!\d|\.|인치|in)/g, " 맥북 에어 15인치 "],
+  [/맥북\s*프로\s*13(?!\d|\.|인치|in)/g, " 맥북 프로 13인치 "],
+  [/맥북\s*프로\s*14(?!\d|\.|인치|in)/g, " 맥북 프로 14인치 "],
+  [/맥북\s*프로\s*16(?!\d|\.|인치|in)/g, " 맥북 프로 16인치 "],
+  [/macbook\s*air\s*13(?!\d|\.|in)/gi, " macbook air 13in "],
+  [/macbook\s*air\s*15(?!\d|\.|in)/gi, " macbook air 15in "],
+  [/macbook\s*pro\s*13(?!\d|\.|in)/gi, " macbook pro 13in "],
+  [/macbook\s*pro\s*14(?!\d|\.|in)/gi, " macbook pro 14in "],
+  [/macbook\s*pro\s*16(?!\d|\.|in)/gi, " macbook pro 16in "],
 ];
 
 export function normalize(text: string): string {
