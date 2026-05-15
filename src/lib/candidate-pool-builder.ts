@@ -15,6 +15,11 @@ import {
 } from "@/lib/pool-policy.mjs";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 
+// 2026-05-15 (사용자 코멘트 pid 400051960): 풀 진입 가격 상한.
+// "200만원 이상은 안 하기로 했는데 왜 나옴" 정책 결정 반영.
+// 일반 사용자 결제 부담 + 단일 매물 risk + 한정판/고가 모델 노이즈 차단.
+const MAX_POOL_PRICE_KRW = 2_000_000;
+
 export type PoolCandidateInput = {
   pid: number | string;
   price: number;
@@ -88,6 +93,13 @@ export function buildCandidatePoolRows(input: {
     if (row.poolEligible === false) {
       skipped += 1;
       invalidations.push({ pid, reason: "pool_eligible_false" });
+      continue;
+    }
+
+    // 2026-05-15: 200만원 이상 매물 풀 차단 (정책).
+    if (Number.isFinite(row.price) && row.price > MAX_POOL_PRICE_KRW) {
+      skipped += 1;
+      invalidations.push({ pid, reason: "price_above_pool_max" });
       continue;
     }
 

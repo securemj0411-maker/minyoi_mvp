@@ -1957,9 +1957,15 @@ function aiEscrowKindForParserMetadata(
 
 function trustedMarketMedian(stat: MarketPriceRow | undefined) {
   if (!stat) return null;
-  // Wave 13: confidence=low + active_sample_count>=2 도 trusted median으로 받음.
-  // sample 8+ 도달 어려운 가전/IT narrow lane이 fallback msrp*0.5에 갇히는 문제 해소.
-  if (stat.confidence === "low" && (stat.active_sample_count ?? 0) < 2) return null;
+  // 2026-05-15 (사용자 코멘트 pid 369164122 다이슨 V12): confidence=low + sold=0 +
+  // active<3 매물은 "비교 매물 없는데 시세 있음" 문제 유발. sample 부족 시세는
+  // 신뢰 못 함 → trusted 차단 → skuMedian=0 → pool 진입 차단 (정확성 우선 §12b).
+  // 가전/IT narrow lane recall은 손해. broad는 AI L2 또는 사람 검수가 담당.
+  if (stat.confidence === "low") {
+    const active = stat.active_sample_count ?? 0;
+    const sold = stat.sold_sample_count ?? 0;
+    if (sold === 0 && active < 3) return null;
+  }
   const value = Number(stat.blended_median_price ?? stat.active_median_price ?? 0);
   return value > 0 ? value : null;
 }
