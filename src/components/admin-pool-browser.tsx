@@ -89,7 +89,7 @@ export default function AdminPoolBrowser() {
   const [status, setStatus] = useState("ready");
   const [band, setBand] = useState<string>("");
   const [sku, setSku] = useState<string>("");
-  const [sort, setSort] = useState("profit_high");
+  const [sort, setSort] = useState("newest_added");
 
   const fetchPage = useCallback(async () => {
     setLoading(true);
