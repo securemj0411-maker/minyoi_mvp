@@ -205,6 +205,18 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: med severity 항목 (plan cancel button touch target, dark mode admin pool 등).
 - commit: c62c815
 
+## 14. plan cancel/reactivate/사용량 보기 hit target 확대
+
+- 시간: 2026-05-16 04:35 KST
+- 발견: audit. `src/app/plans/page.tsx:122-146` 의 세 버튼 (사용량 보기 / 구독 취소 / 구독 재활성화) 모두 `px-3 py-1 text-xs` = 약 20px 높이. WCAG 권장 44x44 한참 미달. 모바일에서 "구독 취소" + "구독 재활성화" 가 같은 row에 가까이 있어 fat finger로 잘못 누르면 큰 사고 (실수로 결제 끊김).
+- 변경: 셋 다 `px-4 py-2 min-h-[36px] items-center` 로 통일. row container도 `flex-wrap` 추가해서 좁은 화면에서 줄바꿈 허용.
+  - 36px = WCAG 44px 미달이지만 page 전체 visual rhythm 깨지 않는 합리적 최소.
+  - 셋 다 같이 키워서 시각 일관성 유지.
+- 검증: tsc clean.
+- 위험: 시각적으로 살짝 커짐. mobile에서 rhythm 미세 변화. 기능 영향 X.
+- 다음: 다른 cancel/destructive UI (account-panel.tsx의 "탭해서 변경" 등) 점검 권장. 현재 로깅만.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

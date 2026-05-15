@@ -118,10 +118,12 @@ export default function PlansPage() {
                   <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-black text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">활성</span>
                 )}
               </div>
-              <div className="ml-auto flex items-center gap-2">
+              {/* Wave 106: 모바일 hit target 확대 (px-3 py-1 = 20px → px-4 py-2 = 36px).
+                  WCAG 권장 44px엔 미달이지만 row 시각 균형 유지. 셋 다 같이 확대해서 일관성. */}
+              <div className="ml-auto flex flex-wrap items-center gap-2">
                 <Link
                   href="/me?tab=account"
-                  className="inline-flex rounded-full border border-[#9fb49c] bg-[#fffaf1] px-3 py-1 text-xs font-black text-[#3a4f40] hover:bg-white dark:border-emerald-700 dark:bg-zinc-900 dark:text-emerald-200"
+                  className="inline-flex min-h-[36px] items-center rounded-full border border-[#9fb49c] bg-[#fffaf1] px-4 py-2 text-xs font-black text-[#3a4f40] hover:bg-white dark:border-emerald-700 dark:bg-zinc-900 dark:text-emerald-200"
                 >
                   사용량 보기
                 </Link>
@@ -130,7 +132,7 @@ export default function PlansPage() {
                     type="button"
                     onClick={handleReactivate}
                     disabled={busy}
-                    className="inline-flex rounded-full border border-emerald-400 bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800 hover:bg-emerald-200 disabled:opacity-60 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                    className="inline-flex min-h-[36px] items-center rounded-full border border-emerald-400 bg-emerald-100 px-4 py-2 text-xs font-black text-emerald-800 hover:bg-emerald-200 disabled:opacity-60 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
                   >
                     {busy ? "처리 중…" : "구독 재활성화"}
                   </button>
@@ -139,7 +141,7 @@ export default function PlansPage() {
                     type="button"
                     onClick={handleCancel}
                     disabled={busy}
-                    className="inline-flex rounded-full border border-red-300 bg-red-50 px-3 py-1 text-xs font-black text-red-700 hover:bg-red-100 disabled:opacity-60 dark:border-red-700 dark:bg-red-950/30 dark:text-red-300"
+                    className="inline-flex min-h-[36px] items-center rounded-full border border-red-300 bg-red-50 px-4 py-2 text-xs font-black text-red-700 hover:bg-red-100 disabled:opacity-60 dark:border-red-700 dark:bg-red-950/30 dark:text-red-300"
                   >
                     {busy ? "처리 중…" : "구독 취소"}
                   </button>
