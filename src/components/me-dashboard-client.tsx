@@ -79,10 +79,19 @@ function GuideLibraryView() {
   );
 }
 
+const VALID_VIEWS: DashboardView[] = ["recommend", "history", "guides", "hotdeal-alerts", "admin-pool"];
+
+function initialViewFromUrl(): DashboardView {
+  if (typeof window === "undefined") return "recommend";
+  const v = new URLSearchParams(window.location.search).get("view");
+  return (VALID_VIEWS as string[]).includes(v ?? "") ? (v as DashboardView) : "recommend";
+}
+
 export default function MeDashboardClient({ initialInventory }: { initialInventory: InventorySnapshot[] }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeView, setActiveView] = useState<DashboardView>("recommend");
+  const [activeView, setActiveView] = useState<DashboardView>(initialViewFromUrl);
+  const [isPro, setIsPro] = useState<boolean>(false);
 
   useEffect(() => {
     let mounted = true;
@@ -105,6 +114,19 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
       mounted = false;
     };
   }, []);
+
+  // Wave 93b: Pro 여부 fetch (메뉴 게이팅).
+  useEffect(() => {
+    if (!user) { setIsPro(false); return; }
+    let cancelled = false;
+    fetch("/api/me/subscription", { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data: { isPro?: boolean } | null) => {
+        if (!cancelled && data) setIsPro(Boolean(data.isPro));
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user]);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -198,11 +220,11 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
               <div className="mt-1 text-sm font-black text-[#223127] dark:text-zinc-100">작업 메뉴</div>
             </div>
             <div className="flex gap-1 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
-              {(["recommend", "history", "guides", "hotdeal-alerts", ...(isAdminUser(user) ? (["admin-pool"] as const) : [])] as const).map((v) => {
+              {(["recommend", "history", "guides", ...(isPro ? (["hotdeal-alerts"] as const) : []), ...(isAdminUser(user) ? (["admin-pool"] as const) : [])] as const).map((v) => {
                 const label = v === "recommend" ? "추천 상품 받기"
                   : v === "history" ? "나의 상품"
                   : v === "guides" ? "공략집"
-                  : v === "hotdeal-alerts" ? "🔥 핫딜 알림"
+                  : v === "hotdeal-alerts" ? "핫딜 알림"
                   : "🔧 운영자: 풀 전체";
                 const active = activeView === v;
                 return (

@@ -1,5 +1,6 @@
 "use client";
 
+import { FlameIcon } from "@/components/icons";
 import TelegramConnectPanel from "@/components/telegram-connect-panel";
 
 // Wave 93a: 핫딜 알림 메뉴 view.
@@ -13,8 +14,11 @@ export default function HotdealAlertsView() {
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
             Hot Deal Alerts
           </p>
-          <h2 className="mt-2 text-2xl font-black tracking-tight text-[#223127] dark:text-white sm:text-3xl">
-            🔥 핫딜 알림
+          <h2 className="mt-2 flex items-center gap-3 text-2xl font-black tracking-tight text-[#223127] dark:text-white sm:text-3xl">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-orange-100 to-amber-200 text-orange-600 dark:from-orange-900/40 dark:to-amber-900/40 dark:text-orange-300">
+              <FlameIcon className="h-6 w-6" />
+            </span>
+            핫딜 알림
           </h2>
           <p className="mt-2 text-sm font-semibold leading-6 text-[#5a6658] dark:text-zinc-400">
             큰 차익이 나는 매물이 풀에 들어오면 텔레그램으로 즉시 알려드려요.
@@ -36,7 +40,7 @@ export default function HotdealAlertsView() {
         </div>
 
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 text-xs font-bold leading-6 text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
-          🚧 현재 Wave 93a — 텔레그램 연동만 가능. 핫딜 큐 + 알림 발송 기능은 곧 추가됩니다.
+          현재 Wave 93a — 텔레그램 연동만 가능. 핫딜 큐 + 알림 발송 기능은 곧 추가됩니다.
         </div>
       </div>
     </section>

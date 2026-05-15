@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { BellIcon, CheckCircleIcon, PauseIcon, SendIcon } from "@/components/icons";
 
 // Wave 93a: 텔레그램 연동 UI.
 // 1. 미연결 상태: 봇 정보 + "연결 코드 받기" 버튼
@@ -131,7 +132,9 @@ function NotConnectedView({ botUsername, onStart, actionLoading }: {
   return (
     <div className="rounded-2xl border border-[#e2d9cb] bg-[#fffaf6] p-5 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-start gap-3">
-        <div className="rounded-xl bg-[var(--brand-accent-soft)] p-2 text-2xl">🔔</div>
+        <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-emerald-300">
+          <BellIcon className="h-5 w-5" />
+        </div>
         <div className="flex-1">
           <div className="text-base font-black text-[#223127] dark:text-zinc-100">텔레그램 알림 연결</div>
           <p className="mt-1 text-sm font-semibold leading-6 text-[#5a6658] dark:text-zinc-400">
@@ -179,9 +182,10 @@ function PendingVerifyView({ verify, onCancel }: {
             href={verify.deepLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-11 flex-1 items-center justify-center rounded-xl bg-[#0088cc] px-4 text-sm font-black text-white transition hover:bg-[#0077b3]"
+            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#0088cc] px-4 text-sm font-black text-white transition hover:bg-[#0077b3]"
           >
-            텔레그램 열기 →
+            <SendIcon className="h-4 w-4" />
+            텔레그램 열기
           </a>
         )}
         <button
@@ -212,13 +216,19 @@ function ConnectedView({ status, onDisconnect, actionLoading }: {
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-2xl">✅</span>
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+              <CheckCircleIcon className="h-4 w-4" />
+            </span>
             <span className="text-base font-black text-[#223127] dark:text-zinc-100">연결됨</span>
           </div>
           <div className="mt-2 space-y-1 text-xs font-semibold text-[#5a6658] dark:text-zinc-400">
             <div>텔레그램: {status.telegramUsername ? `@${status.telegramUsername}` : `chat ${status.chatId}`}</div>
             <div>연결: {fmtKst(status.verifiedAt)}</div>
-            {status.paused && <div className="font-black text-amber-700 dark:text-amber-400">⏸ 알림 일시 중지 (텔레그램에서 /resume)</div>}
+            {status.paused && (
+              <div className="flex items-center gap-1.5 font-black text-amber-700 dark:text-amber-400">
+                <PauseIcon className="h-3.5 w-3.5" /> 알림 일시 중지 (텔레그램에서 /resume)
+              </div>
+            )}
           </div>
         </div>
         <button

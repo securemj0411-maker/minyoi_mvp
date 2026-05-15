@@ -637,10 +637,19 @@ export function classifyListing(title: string, desc: string, price: number): Cla
   if (accessoryTitleHits(title).length > 0) return { listingType: "accessory", sku: null };
 
   // 2026-05-15: fake/clone 매물 차단 (차이팟, 짝퉁, 복제품, 레플리카, 가품 등).
-  // catalog mustNotContain에 없어 ruleMatch가 정품으로 매칭하던 매물.
-  // ListingType enum에 "counterfeit" 추가 (AI side와 통일). DB check constraint도 동시 갱신 필요.
-  if (/차이팟|짝퉁|복제품|레플리카|이미테이션|\bfake\b|가품/i.test(`${title} ${desc}`)) {
-    return { listingType: "callout", sku: null };
+  // Wave 93b: negation 처리 추가 — "가품일 경우 환불 / 100% 정품 / 정품만 판매" 같은 정상 매물 보호.
+  // (calloutHits의 동일 negation 로직을 여기서도 적용 — 가품/짝퉁/레플 키워드만 negation 대상.)
+  const fakeRaw = `${title} ${desc}`;
+  const fakeMatch = fakeRaw.match(/(차이팟|짝퉁|복제품|레플리카|이미테이션|\bfake\b|가품)/i);
+  if (fakeMatch) {
+    const hit = fakeMatch[1].toLowerCase();
+    const negationPattern = /(가품|짝퉁|레플리카|레플|비정품|복제품|이미테이션|\bfake\b).{0,12}(?:일\s*경우|이면|시).{0,20}(?:환불|보상)|(?:가품|짝퉁|레플|비정품|복제품|이미테이션)\s*(?:아닙니다|아님)|정품만\s*판매|100%\s*정품/i;
+    const isNegated =
+      (hit === "가품" || hit === "짝퉁" || hit.includes("레플") || hit === "복제품" || hit === "이미테이션" || hit === "fake") &&
+      negationPattern.test(nrm(fakeRaw));
+    if (!isNegated) {
+      return { listingType: "callout", sku: null };
+    }
   }
 
   const multiHits = containsAny(title, MULTI_KEYWORDS);

@@ -7,6 +7,7 @@ const LEGACY_ADMIN_EMAILS = new Set([
   "danshinadarina@gmail.com",
   "mj1270411@gmail.com",
   "mj12270411@gmail.com",
+  "caulee1227@gmail.com",
 ]);
 
 function envAdminEmails(): Set<string> {
