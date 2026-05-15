@@ -209,6 +209,7 @@ function PackSelectorCard({
   requestedCards,
   tokens,
   infiniteCredits,
+  isPro,
   onOpen,
   busy,
   inventoryLoading,
@@ -223,6 +224,7 @@ function PackSelectorCard({
   requestedCards: number;
   tokens: number;
   infiniteCredits: boolean;
+  isPro: boolean;
   onOpen: (pack: PackDef, requestedCards: number, filters?: CostFilters | null) => void;
   busy: boolean;
   inventoryLoading: boolean;
@@ -370,36 +372,45 @@ function PackSelectorCard({
             />
           </div>
 
-          {/* 신선도 — Plus/Pro 사용 가능 */}
-          <div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-black text-[#59665b] dark:text-zinc-300">
-                ⚡ 신선도
-                {!infiniteCredits && (
-                  <span className="ml-1.5 rounded-full bg-[#fff4d6] px-1.5 py-0.5 text-[9px] font-black text-[#7b5724] dark:bg-amber-900/30 dark:text-amber-300">
-                    Plus 이상
+          {/* 신선도 — 누구나 조정 가능, 단 3시간 미만은 Pro 전용 */}
+          {/* slider min: Pro/admin = 1, 그 외 = 3 (3시간 미만은 못 잡음) */}
+          {(() => {
+            const freshSliderMin = isPro ? 1 : 3;
+            return (
+              <div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-black text-[#59665b] dark:text-zinc-300">
+                    ⚡ 신선도
+                    {!isPro && (
+                      <span className="ml-1.5 rounded-full bg-[#fff4d6] px-1.5 py-0.5 text-[9px] font-black text-[#7b5724] dark:bg-amber-900/30 dark:text-amber-300">
+                        3시간 미만은 Pro
+                      </span>
+                    )}
                   </span>
-                )}
-              </span>
-              <span className="font-black text-zinc-900 dark:text-zinc-50">
-                {advancedFilters.maxFreshHours === 0 ? "무제한" : `최근 ${advancedFilters.maxFreshHours}시간 이내`}
-              </span>
-            </div>
-            <input
-              type="range" min={1} max={FRESH_SLIDER_MAX} step={1}
-              value={maxFreshHoursToSlider(advancedFilters.maxFreshHours)}
-              onChange={(e) => setAdvancedFilters(f => ({ ...f, maxFreshHours: sliderToMaxFreshHours(Number(e.target.value)) }))}
-              disabled={busy || !infiniteCredits}
-              style={sliderTrackStyle(
-                maxFreshHoursToSlider(advancedFilters.maxFreshHours),
-                1,
-                FRESH_SLIDER_MAX,
-                "#4f6f58",
-                !infiniteCredits,
-              )}
-              className="mt-1 h-2 w-full cursor-pointer appearance-none rounded-full accent-[var(--brand-accent)] disabled:cursor-not-allowed disabled:opacity-50"
-            />
-          </div>
+                  <span className="font-black text-zinc-900 dark:text-zinc-50">
+                    {advancedFilters.maxFreshHours === 0 ? "무제한" : `최근 ${advancedFilters.maxFreshHours}시간 이내`}
+                  </span>
+                </div>
+                <input
+                  type="range" min={freshSliderMin} max={FRESH_SLIDER_MAX} step={1}
+                  value={Math.max(freshSliderMin, maxFreshHoursToSlider(advancedFilters.maxFreshHours))}
+                  onChange={(e) => {
+                    const raw = Number(e.target.value);
+                    const clamped = Math.max(freshSliderMin, raw);
+                    setAdvancedFilters(f => ({ ...f, maxFreshHours: sliderToMaxFreshHours(clamped) }));
+                  }}
+                  disabled={busy}
+                  style={sliderTrackStyle(
+                    Math.max(freshSliderMin, maxFreshHoursToSlider(advancedFilters.maxFreshHours)),
+                    freshSliderMin,
+                    FRESH_SLIDER_MAX,
+                    "#4f6f58",
+                  )}
+                  className="mt-1 h-2 w-full cursor-pointer appearance-none rounded-full accent-[var(--brand-accent)] disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+            );
+          })()}
 
           {/* 자세히 옵션 — 차익 + 신뢰도. 확장 시 sliders 위쪽, 토글은 하단에 위치 (UI 깔끔). */}
           {showAdvancedSliders && (
@@ -452,9 +463,9 @@ function PackSelectorCard({
             <span>{showAdvancedSliders ? "▲" : "▼"}</span>
           </button>
 
-          {!infiniteCredits && (
+          {!isPro && (
             <p className="rounded-md bg-[#fffaf1] px-2 py-1 text-[10px] font-bold leading-4 text-[#7b5724] dark:bg-zinc-800 dark:text-zinc-400">
-              실시간 신선 매물 필터는 Plus·Pro 플랜에서 사용 가능합니다.
+              신선도 3시간 미만은 Pro 플랜부터 조정 가능합니다.
             </p>
           )}
         </div>
@@ -654,6 +665,7 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
   const [inventoryLoading, setInventoryLoading] = useState(initialInventory.length === 0);
   const [tokens, setTokens] = useState<number>(0);
   const [infiniteCredits, setInfiniteCredits] = useState(false);
+  const [isPro, setIsPro] = useState(false);
   const [userRef, setUserRef] = useState<string>(() => getOrCreateUserRef());
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [minProfitManwon, setMinProfitManwon] = useState<number>(4);
@@ -673,6 +685,20 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
     setTokens(credits.tokens);
     setInfiniteCredits(credits.infinite);
   }, []);
+
+  // Wave 93b: 신선도 슬라이더 minimum 결정용 — Pro plan 또는 admin이면 1시간까지 가능.
+  useEffect(() => {
+    if (!authUser) { setIsPro(false); return; }
+    let cancelled = false;
+    fetch("/api/billing/me", { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (cancelled || !data) return;
+        setIsPro(Boolean(data.isAdmin) || data.planKey === "pro");
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [authUser]);
 
   useEffect(() => {
     const anonymousRef = getOrCreateUserRef();
@@ -912,6 +938,7 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
           requestedCards={requestedCards}
           tokens={tokens}
           infiniteCredits={infiniteCredits}
+          isPro={isPro || infiniteCredits}
           onOpen={openPack}
           busy={loading}
           inventoryLoading={inventoryLoading}
