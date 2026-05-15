@@ -4,8 +4,11 @@
 import { GENERATED_CATALOG } from "@/lib/generated/catalog";
 // Wave 91 (2026-05-15): 일반인 친화 카테고리 확장 (신발/가방/자전거). 모두 본품만, resale ≤200만.
 import { SHOE_CATALOG } from "@/lib/generated/catalog-shoe-wave91";
-// Wave 133 (2026-05-16): 신발 broad SKU 5개 (에어포스 1, 덩크 로우, NB 530, NB 992, 삼바 OG).
-// 사용자 요청 "조던/에어포스 리셀러 환장 카테고리". raw 매물 3,993건 중 SKU 매칭 1.3% 발견 → broad 신설.
+// Wave 133 (2026-05-16): broad SKU 5개 신설 → Wave 134에서 narrow 30개로 교체 (variant 가격 차이 +151%).
+// import { SHOE_BROAD_CATALOG } from "@/lib/generated/catalog-shoe-broad-wave133"; // 폐기.
+// Wave 134 (2026-05-16): 신발 narrow SKU 30개 (세대/컬러/한정판 분리). 정확매칭 §12b.
+import { SHOE_NARROW_CATALOG } from "@/lib/generated/catalog-shoe-narrow-wave134";
+// NB 530 + AF1 + 덩크 일부 = variant 가격 차이 작아 Wave 133 broad 유지하되, 핵심 conflict 제거.
 import { SHOE_BROAD_CATALOG } from "@/lib/generated/catalog-shoe-broad-wave133";
 import { BAG_CATALOG } from "@/lib/generated/catalog-bag-wave91";
 import { BIKE_CATALOG } from "@/lib/generated/catalog-bike-wave91";
@@ -4719,6 +4722,7 @@ export const CATALOG: Sku[] = [
   // Wave 91 (2026-05-15): 일반인 친화 카테고리 확장 — 신발 39 + 가방 34 + 자전거 33 = 106 SKU.
   // 모두 resale ≤200만 (자본 천장 준수). 본품만 정책. 셀러 시세 인식 약한 모델 우선.
   ...SHOE_CATALOG,
+  ...SHOE_NARROW_CATALOG,
   ...SHOE_BROAD_CATALOG,
   ...BAG_CATALOG,
   ...BIKE_CATALOG,
