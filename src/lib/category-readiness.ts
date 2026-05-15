@@ -177,6 +177,22 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "iPhone 16 256GB (자급제)",
     note: "iPhone 16 일반 256GB 자급제. 15/17세대, Pro/Pro Max/Plus/16e, 통신사 차단.",
   },
+  // Wave 111f (2026-05-15): 신상 모델 narrow lane.
+  iphone_air_256gb_self: {
+    status: "ready",
+    label: "iPhone Air 256GB (자급제)",
+    note: "Apple 2025 신상 iPhone Air. iPhone 15/16/Pro 차단.",
+  },
+  iphone_air_512gb_self: {
+    status: "ready",
+    label: "iPhone Air 512GB (자급제)",
+    note: "iPhone Air 512GB sibling.",
+  },
+  galaxy_z_flip_7_256_self: {
+    status: "ready",
+    label: "Galaxy Z Flip 7 256GB (자급제)",
+    note: "Samsung 2025-07 신상. Z Flip 5/6, 폴드, 통신사 차단.",
+  },
   ipad_air_m2_11_256_wifi: {
     status: "ready",
     label: "iPad Air M2 11\" 256GB Wi-Fi",
