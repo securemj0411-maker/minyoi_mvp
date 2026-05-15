@@ -46,11 +46,12 @@ body {
   overflow-x: clip;
 }
 
-html {
-  /* 2026-05-15: vertical scrollbar 공간 항상 reserve. 페이지 로드 후 콘텐츠가
-   * 늘어나거나 view 전환으로 스크롤바 나타날 때 레이아웃이 좌우로 점프하는 문제 방지.
-   * 사용자 보고: /me에서 view 전환 시 콘텐츠가 "오른쪽으로 치우침". */
-  scrollbar-gutter: stable;
+/* 2026-05-15: scrollbar-gutter: stable 시도했으나 iOS overlay scrollbar에서 우측 갭이
+ * 시각적 shift를 유발 (사용자 보고). hover capable (데스크탑/마우스)만 적용. */
+@media (hover: hover) and (pointer: fine) {
+  html {
+    scrollbar-gutter: stable;
+  }
 }
 
 button,
