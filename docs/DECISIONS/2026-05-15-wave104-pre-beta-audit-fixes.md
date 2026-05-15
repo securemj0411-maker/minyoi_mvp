@@ -808,6 +808,33 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 47. #43c 정정 (carrier null 차단 revert) + 남은 작업 plan
+
+- 시간: 2026-05-16 12:30 KST
+- MJ 지적: "자급제는 정상해지/언락 등 다른 신호로도 잡는 패치 이미 박혀있음. 보고 말해라."
+- 검증 — git log:
+  - **Wave 115 (1bcd49a)**: catalog narrow lane 23개 self token 그룹에 자급제 동의어 추가 ("정상해지/확정기변/노옵션").
+  - **Wave 115b (5935398)**: "전 통신사/타통신사/유심꽂고/무약정" 추가 확장.
+  - 매커니즘: catalog narrow lane mustContain 통과 = 자급제 의미. parser 의 `parseCarrier` (option-parser.ts:643) 는 옛 그대로 ("자급제/skt/kt/유플" 만).
+- **#43c 잘못 박은 거 확정**: narrow lane 통과한 진짜 자급제 매물도 `parsed.carrier=null` 가능 (catalog 신호만 있고 parser 미지원). 내 차단이 자급제 매물 빼냄.
+- 변경:
+  - `candidate-pool-builder.ts` carrier null gate revert.
+  - SQL: invalidate 1건 (pid 402445004) ready 복원.
+- 위험: 진짜 통신사 매물 (carrier null + narrow lane 통과 X) 도 풀 진입. 단 narrow lane 통과 자체가 자급제 신호 충족으로 간주 (정책 by Wave 115).
+- 다음 작업 (MJ 지시):
+  - **A. catalog 정밀화 (narrow SKU mustContain)** = 진행. 단 측정/누락 검토 필요. 현 narrow SKU 중 옵션 매칭 too loose 한 거 sample 진단 후.
+  - **B. AI 분류기 활성화** = 보류 (별도 wave).
+  - **C. comparable_key normalize** = 진행. 같은 매물 다른 표기 묶기.
+
+### 보류 항목 (#22 형식 정리)
+
+#### 47b. AI 분류기 활성화 — 보류
+
+- 발견: AI L2 (Haiku) 비용 시뮬 월 $0.13~$0.88 (Wave 91). 매물 정상/위조/부품 분류 검증.
+- 임시 처리: env `AI_L2_POLICY_ENABLED=0` 그대로.
+- 보류 사유: 비용 작지만 활성화 시 cron 부하 + cache FK migration 필요 (Wave 91 부록 C).
+- 후속: 별도 wave (Wave 110 후보).
+
 ## 45. systemic sweep 종합 + 남은 patterns
 
 - 시간: 2026-05-16 12:00 KST

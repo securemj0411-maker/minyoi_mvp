@@ -144,16 +144,14 @@ export function buildCandidatePoolRows(input: {
     const sku = input.catalogById.get(row.skuId ?? "");
     const category = parsed?.category ?? sku?.category ?? null;
 
-    // Wave 106: smartphone carrier 미명시 매물 풀 진입 차단 (자급제 vs 통신사 시세 차이 큼).
-    // 자급제 명시 안 된 매물 = 통신사 매물일 가능성 → 자급제 시세 (비싸게) 와 비교 시 차익 inflated.
-    // 정확성 우선 §12b — 명시 안 된 매물 풀 진입 X.
-    if (category === "smartphone" && !parsed?.carrier) {
-      skipped += 1;
-      invalidations.push({ pid, reason: "smartphone_carrier_not_specified" });
-      continue;
-    }
+    // Wave 106 #47 정정: smartphone carrier null 차단 revert.
+    // Wave 115/115b 가 catalog narrow lane 에 자급제 동의어 박아 ("정상해지/확정기변/노옵션/
+    // 타통신사/유심꽂고/무약정") narrow lane 통과 = 자급제 의미 부여.
+    // 단 parser 의 parseCarrier 는 옛 그대로 ("자급제" 만 매칭) → narrow lane 통과한 진짜 자급제
+    // 매물도 carrier=null 가능 → #43c 차단이 자급제 매물 빼냄.
+    // 차단 정책 자체 폐기. narrow lane 가 자급제 의미 보장.
 
-    // Wave 106: comparable_key 에 critical_unknown 토큰 박힌 매물 풀 진입 차단 (systemic).
+// Wave 106: comparable_key 에 critical_unknown 토큰 박힌 매물 풀 진입 차단 (systemic).
     // option-parser.ts:criticalUnknown 정의 — 카테고리별 critical:
     //   tablet: unknown_chip, unknown_screen, unknown_storage, unknown_connectivity
     //   laptop: unknown_generation, unknown_chip, unknown_ram, unknown_ssd
