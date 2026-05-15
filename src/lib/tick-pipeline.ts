@@ -2460,6 +2460,9 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     if (!parsed?.comparable_key || Number(parsed.parse_confidence ?? 0) < 0.65 || parsed.needs_review) continue;
     // risk_hits>0 매물 제외 (analysis 없으면 default safe)
     if (safeByPid.has(row.pid) && safeByPid.get(row.pid) === false) continue;
+    // 2026-05-16: placeholder price 제외 (999999999, 111111111 등 "교환원함"/"분실"/"판매완료" 류).
+    // 14건 발견 (mvp_listings 0.12%). 진짜 호가 아니라 시세 집계에 끼면 평균 끌어올림.
+    if (row.price >= 100_000_000 || row.price <= 0) continue;
     // Wave 90 (사용자 지적): 새상품/미개봉 매물은 시세 평균에서 제외 (다른 condition).
     // parser가 conditionNotes에 "new_or_open_box" 마킹. 풀 진입은 별개 (싸게 올라온 새상품도 차익 OK).
     const conditionNotes = (parsed.parsed_json?.condition_notes as string[] | undefined) ?? [];
@@ -3496,6 +3499,10 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const favsByMarket = new Map<string, number[]>();
   const pricesBySku = new Map<string, number[]>();
   for (const row of rows) {
+    // 2026-05-16: placeholder price (999999999, 111111111 등) 매물의 가격을 시세 fallback sample에서 제외.
+    // 14건 발견 — "교환원함" / "분실" / "판매완료" 셀러가 가격 placeholder 박은 경우.
+    // madTrim 이 outlier 제거하지만 sample 적으면 미흡.
+    if (row.price >= 100_000_000 || row.price <= 0) continue;
     const skuId = row.sku_id ?? "";
     const marketKey = marketGroupKey(row, parsedByPid.get(row.pid));
     if (!pricesByMarket.has(marketKey)) pricesByMarket.set(marketKey, []);
@@ -3569,7 +3576,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const skuMedian = referencePrice != null && referencePrice > 0
       ? referencePrice
       : hasTrustedMarket ? trustedMedian : fallbackMedian;
-    const priceGap = skuMedian <= 0 ? 0 : Math.max(0, Math.min(1, (skuMedian - row.price) / skuMedian));
+    // 2026-05-16: placeholder price 매물 (999999999, 111111111 등)은 priceGap 0 강제 → score 0 → 풀 진입 차단.
+    const isPlaceholderPrice = row.price >= 100_000_000 || row.price <= 0;
+    const priceGap = isPlaceholderPrice || skuMedian <= 0 ? 0 : Math.max(0, Math.min(1, (skuMedian - row.price) / skuMedian));
     const velocity = percentileRank(favsByMarket.get(marketKey) ?? [], row.num_faved);
     const safetyBase = row.shop_review_rating == null ? 0.5 : Math.max(0, Math.min(1, Number(row.shop_review_rating) / 5));
     const sellerSafety = Math.max(0, Math.min(1, safetyBase + (row.shop_review_count >= 100 ? 0.05 : 0)));
