@@ -293,7 +293,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 검증: tsc clean.
 - 위험: 없음. 성공 케이스 동작 동일. 실패 케이스 디버깅 정보 추가만.
 - 다음: 다음 텔레그램 실패 발생 시 logs 보면 정확한 원인 알 수 있음. 그동안 reservations 테이블의 notification_error 컬럼이 enum-like 카테고리로 그룹핑 가능.
-- commit: pending
+- commit: 2891b51
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
