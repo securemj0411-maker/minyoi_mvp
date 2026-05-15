@@ -49,6 +49,8 @@ type PoolRow = {
   last_verified_at: string;
   exposure_count: number | null;
   max_exposure: number | null;
+  // Wave 133 (2026-05-16): condition_class — 평균 차익 chip을 condition별 분리 표시.
+  condition_class: string | null;
 };
 
 type RawRow = {
@@ -74,7 +76,8 @@ export async function GET(req: Request) {
     const filters = parseFilters(url);
 
     // Pool 후보 query (status=ready + 가용 노출 + filter 적용 가능한 컬럼들)
-    let poolQuery = `${tableUrl("mvp_candidate_pool")}?select=pid,profit_band,status,category,expected_profit_min,confidence,last_verified_at,exposure_count,max_exposure&status=eq.ready`;
+    // Wave 133 (2026-05-16): condition_class 추가 — 평균 차익 chip을 condition별 분리.
+    let poolQuery = `${tableUrl("mvp_candidate_pool")}?select=pid,profit_band,status,category,expected_profit_min,confidence,last_verified_at,exposure_count,max_exposure,condition_class&status=eq.ready`;
     if (filters.band) poolQuery += `&profit_band=eq.${filters.band}`;
     if (filters.minProfit != null) poolQuery += `&expected_profit_min=gte.${filters.minProfit}`;
     if (filters.minConfidence != null) poolQuery += `&confidence=gte.${filters.minConfidence}`;
@@ -156,6 +159,32 @@ export async function GET(req: Request) {
       }
     }
 
+    // Wave 133 (2026-05-16): condition별 평균 차익 분리 — 사업 보고서 L2 retention factor.
+    // 같은 SKU+옵션 매물이라도 condition별 시세 spread 15~40% (Wave 130 측정).
+    // 사용자가 "이 추천 매물이 어느 등급인지" 답 받으려면 condition별 평균 차익 표시 필요.
+    // 예: "mint +90K / clean +75K / normal +60K / worn +45K".
+    const profitByCondition: Record<string, { median: number; count: number }> = {};
+    if (matchingPool.length > 0) {
+      const byCondition = new Map<string, number[]>();
+      for (const r of matchingPool) {
+        const cls = r.condition_class ?? "normal";
+        if (cls === "flawed") continue; // flawed는 풀 진입 안 되지만 안전장치
+        const profit = r.expected_profit_min;
+        if (typeof profit !== "number" || profit <= 0) continue;
+        const arr = byCondition.get(cls) ?? [];
+        arr.push(profit);
+        byCondition.set(cls, arr);
+      }
+      for (const [cls, profits] of byCondition.entries()) {
+        if (profits.length < 3) continue; // sample 부족하면 표시 X (정확성 우선)
+        profits.sort((a, b) => a - b);
+        profitByCondition[cls] = {
+          median: profits[Math.floor(profits.length / 2)],
+          count: profits.length,
+        };
+      }
+    }
+
     return NextResponse.json({
       band: filters.band,
       filters,
@@ -163,6 +192,8 @@ export async function GET(req: Request) {
       freshUnder2h,
       byCategory,
       medianProfitWon,
+      // Wave 133: condition별 평균 차익. UI에서 "mint +90K / worn +45K" 분리 표시.
+      profitByCondition,
       fetchedAt: new Date().toISOString(),
     });
   } catch (err) {

@@ -129,6 +129,9 @@ type PreviewInventoryResp = {
   byCategory: Record<string, number>;
   // 2026-05-15 Wave 124: 매칭 매물의 평균 차익 (median). 신뢰 시그널.
   medianProfitWon?: number | null;
+  // Wave 133 (2026-05-16): condition별 평균 차익 분리 — 사업 보고서 L2 retention factor.
+  // 같은 SKU+옵션 매물이라도 condition별 시세 spread 15~40%. "내가 사는 매물이 어느 등급인지" 가시화.
+  profitByCondition?: Record<string, { median: number; count: number }>;
 };
 
 type PackOpenApiResult = (RevealResult & {
@@ -587,6 +590,7 @@ function PackSelectorCard({
                   </span>
                 </div>
                 {/* 2026-05-15 Wave 124: 평균 차익 chip prominent. 회전 chip 은 sample 작아 그룹 평균 의미 X (개별 매물 chip 으로 충분). */}
+                {/* Wave 133 (2026-05-16): condition별 평균 차익 분리 chip — 사용자에게 "내 매물이 어느 등급" 가시화. */}
                 {previewInventory && previewInventory.medianProfitWon != null && previewInventory.medianProfitWon > 0 ? (
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
                     <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
@@ -594,6 +598,34 @@ function PackSelectorCard({
                         ? `~${Math.round(previewInventory.medianProfitWon / 10000)}만원`
                         : `~${previewInventory.medianProfitWon.toLocaleString()}원`}
                     </span>
+                    {/* Wave 133: condition별 분리 (sample ≥ 3 만). 가격 높은 순. */}
+                    {previewInventory.profitByCondition && Object.keys(previewInventory.profitByCondition).length > 1 ? (() => {
+                      const CONDITION_LABEL: Record<string, string> = {
+                        mint: "새상품/미개봉",
+                        clean: "S급/풀세트",
+                        normal: "일반",
+                        worn: "사용감",
+                        low_batt: "배터리 저하",
+                      };
+                      const ORDER = ["mint", "clean", "normal", "worn", "low_batt"];
+                      const entries = ORDER
+                        .filter((cls) => previewInventory.profitByCondition![cls])
+                        .map((cls) => ({
+                          cls,
+                          label: CONDITION_LABEL[cls] ?? cls,
+                          median: previewInventory.profitByCondition![cls].median,
+                          count: previewInventory.profitByCondition![cls].count,
+                        }));
+                      return entries.map((e) => (
+                        <span
+                          key={e.cls}
+                          className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                        >
+                          {e.label} {e.median >= 10000 ? `+${Math.round(e.median / 10000)}만` : `+${e.median.toLocaleString()}`}
+                          <span className="ml-0.5 text-zinc-400 dark:text-zinc-500">({e.count})</span>
+                        </span>
+                      ));
+                    })() : null}
                   </div>
                 ) : null}
                 <div className="mt-1 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
