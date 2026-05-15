@@ -317,7 +317,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
   - 미래 starter/plus 사용자가 핫딜 못 받게 되는 게 의도된 결과.
   - 다른 사용자가 Pro 결제했다가 만료 → status='expired' 또는 current_period_end < now 되면 즉시 핫딜 X (Wave 104 H2 자동 free 다운그레이드와 일관).
 - 다음: 다른 정책 mismatch / 거짓 광고 audit (예: starter "베타 피드백 우선 반영" 도 실제 매커니즘 검증 필요).
-- commit: pending
+- commit: d0fc41a
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
