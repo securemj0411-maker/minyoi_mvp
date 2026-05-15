@@ -659,7 +659,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - watchdog 보강 fix (#27/#28의 코드 변경) 자체는 그대로 OK — 진짜로 안 도는 건 사실, 추적해서 알림 받는 게 미래에 가치.
 - 위험: 내가 critical 이라고 잘못 framing 한 게 사용자 혼란 유발.
 - 다음: 정식 launch 시점에 compliance-retention 만 등록 권장. 나머지 2개는 사용자 늘어나면 (Pro user 100+) 검토.
-- commit: pending (이 정정 박음)
+- commit: d374f54
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
