@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-15T02:15:45.702Z",
+  "_updated_at": "2026-05-15T02:21:57.634Z",
   "resolutions": {
     "334750861": {
       "resolved_at": "2026-05-14T23:21:16.219Z",
@@ -37,6 +37,13 @@
         "61d0dbb"
       ]
     },
+    "369164122": {
+      "resolved_at": "2026-05-15T02:21:57.395Z",
+      "summary": "다이슨 V12 — 단일 sample 시세 게이트 추가. confidence=low + sold=0 + active<3 매물은 trustedMarketMedian=null로 차단. skuMedian=0 → pool 차단. Wave 13의 active>=2 통과 기준 강화.",
+      "commits": [
+        "cb85bc2"
+      ]
+    },
     "394439158": {
       "resolved_at": "2026-05-14T21:01:00.000Z",
       "summary": "맥북 16 2019 i7 — MSRP × 0.5 fallback 폐기 (pipeline.ts:986). sample <5건이면 sku_median=0 → bandFromProfit null → 풀 진입 차단. broad SKU false positive 양산 root 제거. LAUNCH_PLAN §12b 정확성 우선 정책 준수.",
@@ -70,6 +77,13 @@
       "summary": "Wave 90 근본 fix 3종 (lifecycle auto-invalidate + Apple Watch Ultra 3 차단 + madTrim 8→5)",
       "commits": [
         "c75998f"
+      ]
+    },
+    "400051960": {
+      "resolved_at": "2026-05-15T02:21:57.028Z",
+      "summary": "200만원 가격 상한 정책 도입 (candidate-pool-builder MAX_POOL_PRICE_KRW=2_000_000). 운영자 결정. 200만원 초과 매물 pool 진입 차단 + 기존 4건 DB invalidated.",
+      "commits": [
+        "cb85bc2"
       ]
     },
     "401500642": {
@@ -155,6 +169,13 @@
       "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
       "commits": [
         "61d0dbb"
+      ]
+    },
+    "407142233": {
+      "resolved_at": "2026-05-15T02:21:57.630Z",
+      "summary": "단순 질문 답: 아이패드 에어 5 = M2 칩 5세대 (2022, ipad_air_5). 코드 변경 불필요.",
+      "commits": [
+        "cb85bc2"
       ]
     },
     "407321422": {
