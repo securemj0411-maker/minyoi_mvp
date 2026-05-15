@@ -2478,6 +2478,14 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // (예: 아이폰17 + 애플워치 SE3). 단품 시세 비교군 제외 + pool 진입도 차단해야 하지만
     // (양쪽 카테고리 동시 진입 위험), 일단 시세 집계만 skip. pool 차단은 별도 wave에서.
     if (conditionNotes.includes("multi_device_bundle")) continue;
+    // 2026-05-15 (사용자 코멘트 pid 402628847 "액정 깨진 제품 비교군에 끼면 안 됨"):
+    // defect 라벨(액정 깨짐 / 화면 깨짐 / 페이스 ID 불량 / 잔상·번인 / 리퍼·수리)이 있는 매물은
+    // 정상 단품 시세 비교군에서 제외. 풀 진입은 별개 (싸게 올라온 defect 매물도 사용자가 판단).
+    if (conditionNotes.includes("display_defect")) continue;
+    if (conditionNotes.includes("screen_replaced")) continue;
+    if (conditionNotes.includes("faceid_issue")) continue;
+    if (conditionNotes.includes("refurbished_or_repaired")) continue;
+    if (conditionNotes.includes("repair_or_defect_signal")) continue;
     // 2026-05-15 (사용자 코멘트 pid 404436811 / 404643880 / 401500642):
     // missing_suspect 매물이 6시간+ 안 보이면 사실상 사라진 상태. lifecycle worker가
     // disappeared로 전환 안 했더라도 시세 비교군에서 빼서 옛 매물 잔존 왜곡 방지.

@@ -30,7 +30,14 @@ type TelegramUpdate = {
 
 function verifySecret(req: Request): boolean {
   const expected = getWebhookSecret();
-  if (!expected) return true; // dev: secret 없으면 통과 (운영 시 반드시 설정)
+  if (!expected) {
+    // production에서 secret 미설정이면 강제 거부 (위변조 방지). dev에서만 통과.
+    if (process.env.NODE_ENV === "production") {
+      console.error("[telegram/webhook] HOTDEAL_TELEGRAM_WEBHOOK_SECRET missing in production — rejecting");
+      return false;
+    }
+    return true;
+  }
   return req.headers.get("x-telegram-bot-api-secret-token") === expected;
 }
 

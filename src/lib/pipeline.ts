@@ -20,6 +20,9 @@ const BUYING_KEYWORDS = [
   "구합니다", "구해요", "삽니다", "급구", "매입", "최고가", "전국출장", "구매합니다",
   "구매만 합니다", "매입전문", "매입업체", "출장매입", "매입합니다", "구매원함", "매입문의",
   "구합니", "구해봅니다", "구해 봅니다", "구매함",
+  // 2026-05-15 (사용자 코멘트 pid 404302435 "제품 사요", pid 366962219 "구매희망"):
+  // 기존 키워드가 명령형(구매합니다/삽니다)만 잡아 변형 형태 누락. 풀에 구매글 침투.
+  "사요", "사고싶어요", "사고 싶어요", "구매희망", "구매 희망",
   ...GENERATED_NOISE_RULES.buying,
 ];
 const CALLOUT_KEYWORDS = [
@@ -204,13 +207,18 @@ function hasCompleteEarphoneSetSignal(normalized: string, compact: string): bool
 function isEarbudProtectiveCaseOnlyTitle(normalizedTitle: string, compactTitle: string, normalizedText = normalizedTitle, compactText = compactTitle): boolean {
   if (!isEarphoneLikeText(normalizedTitle) || isFullSizeHeadphoneText(normalizedTitle)) return false;
   if (!/(케이스|case|커버)/i.test(normalizedTitle)) return false;
-  if (/(충전\s*케이스|충전케이스)/.test(normalizedTitle)) return false;
+  // 2026-05-15 (사용자 코멘트 pid 376448871 "에어팟 프로2 8핀 충전 케이스"): 충전케이스 단독 매물도
+  // 본품 비교군에 끼면 안 됨. 기존엔 단순 제외였는데 → "충전" 신호 있어도 본품 신호 없으면 case-only로 판단.
+  // 단 description에 "유닛/이어버드도 있음/풀세트" 명시되면 다른 path (충전케이스 + 본품 분실) 잡힘.
   if (hasCompleteEarphoneSetSignal(normalizedText, compactText)) return false;
   if (/(풀박|풀박스|풀세트|풀구성|본품전체|구성품전부)/.test(compactText)) return false;
 
   return (
     /(?:케이스|case|커버)(?:단독|단품|만|판매|팝니다|새상품|미개봉|급처|처분)?$/i.test(compactTitle) ||
-    /(?:단독|단품|만).{0,8}(?:케이스|case|커버)|(?:케이스|case|커버).{0,8}(?:단독|단품|만|새상품|미개봉)/i.test(normalizedTitle)
+    /(?:단독|단품|만).{0,8}(?:케이스|case|커버)|(?:케이스|case|커버).{0,8}(?:단독|단품|만|새상품|미개봉)/i.test(normalizedTitle) ||
+    // 2026-05-15 (사용자 코멘트 pid 405366644 "모스키노 에어팟 프로 1세대 케이스"):
+    // 브랜드/디자인 케이스 매물. title에 본품 이름 + 케이스만 있고 가격/구성품 신호 없으면 accessory.
+    /(?:모스키노|moschino|샤넬|chanel|디올|루이비통|nike|adidas|버버리|burberry|guess|마크제이콥스|kakaofriends|카카오프렌즈|라인프렌즈|디즈니|disney|미키|미니언즈|짱구|뽀로로|산리오|sanrio|헬로키티|hellokitty).{0,30}(?:케이스|case|커버)|(?:케이스|case|커버).{0,30}(?:모스키노|moschino|샤넬|chanel|디올|루이비통|nike|adidas|버버리|burberry|guess|마크제이콥스|kakaofriends|카카오프렌즈|라인프렌즈|디즈니|disney|미키|미니언즈|짱구|뽀로로|산리오|sanrio|헬로키티|hellokitty)/i.test(normalizedTitle)
   );
 }
 
