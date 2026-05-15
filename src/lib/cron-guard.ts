@@ -80,6 +80,7 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   compliance_retention: 60_000,
   housekeeper_ai_cache_prune: 30 * 60_000,
   hotdeal_worker: 60_000,
+  reference_price_refresh: 60 * 60_000,
 };
 
 const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
@@ -95,6 +96,7 @@ const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
   compliance_retention: 2 * 60_000,
   housekeeper_ai_cache_prune: 2 * 60_000,
   hotdeal_worker: 60_000,
+  reference_price_refresh: 2 * 60_000,
 };
 
 const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([
