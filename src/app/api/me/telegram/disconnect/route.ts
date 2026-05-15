@@ -21,6 +21,7 @@ export async function POST(req: Request) {
       headers: { ...serviceHeaders(), Prefer: "return=minimal" },
       body: JSON.stringify({
         chat_id: null,
+        telegram_user_id: null,
         telegram_username: null,
         verified_at: null,
         verify_code: null,

@@ -48,13 +48,14 @@ export async function POST(req: Request) {
   if (message?.text) {
     const text = message.text.trim();
     const chatId = message.chat.id;
+    const telegramUserId = message.from?.id ?? null;
     const username = message.from?.username ?? null;
 
     // /start verify_<code> handler.
     const startMatch = text.match(/^\/start\s+verify_([A-Z0-9]{6})$/i);
     if (startMatch) {
       const code = startMatch[1].toUpperCase();
-      await handleVerify(code, chatId, username);
+      await handleVerify(code, chatId, telegramUserId, username);
       return NextResponse.json({ ok: true });
     }
 
@@ -85,16 +86,47 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true });
 }
 
-async function handleVerify(code: string, chatId: number, username: string | null) {
+async function handleVerify(code: string, chatId: number, telegramUserId: number | null, username: string | null) {
   const now = new Date().toISOString();
-  // verify_code 매칭 + 만료 체크. PATCH 시 row 1개만 업데이트되도록 verify_code 일치 + 미만료 필터.
-  const res = await restFetch(
-    `${tableUrl("mvp_telegram_bindings")}?verify_code=eq.${encodeURIComponent(code)}&verify_code_expires_at=gte.${encodeURIComponent(now)}`,
+
+  // 1. verify_code 매칭 row 찾기 (만료 전).
+  const codeRes = await restFetch(
+    `${tableUrl("mvp_telegram_bindings")}?select=user_ref&verify_code=eq.${encodeURIComponent(code)}&verify_code_expires_at=gte.${encodeURIComponent(now)}&limit=1`,
+    { headers: serviceHeaders() },
+  );
+  const codeRows = (await codeRes.json().catch(() => [])) as Array<{ user_ref: string }>;
+  const targetUserRef = codeRows[0]?.user_ref;
+  if (!targetUserRef) {
+    await sendTelegramMessage(chatId, "❌ 연결 코드가 만료되었거나 잘못됐어요.\n\n/me 대시보드에서 새 코드를 받아주세요.");
+    return;
+  }
+
+  // 2. 어뷰즈 방어: 같은 chat_id 또는 telegram_user_id가 다른 user_ref에 이미 매핑돼있으면 거절.
+  // (한 텔레그램 계정 = 한 미뇨이 계정. 가중치 어뷰즈 방지.)
+  const dupParts: string[] = [`chat_id.eq.${chatId}`];
+  if (telegramUserId !== null) dupParts.push(`telegram_user_id.eq.${telegramUserId}`);
+  const dupRes = await restFetch(
+    `${tableUrl("mvp_telegram_bindings")}?select=user_ref&or=(${dupParts.join(",")})&user_ref=neq.${encodeURIComponent(targetUserRef)}&limit=1`,
+    { headers: serviceHeaders() },
+  );
+  const dupRows = (await dupRes.json().catch(() => [])) as Array<{ user_ref: string }>;
+  if (dupRows.length > 0) {
+    await sendTelegramMessage(
+      chatId,
+      "❌ 이 텔레그램 계정은 이미 다른 미뇨이 계정에 연결되어 있어요.\n\n먼저 그쪽 계정의 /me → 핫딜 알림에서 '연결 해제'를 눌러주세요.",
+    );
+    return;
+  }
+
+  // 3. PATCH로 chat_id, telegram_user_id 저장. UNIQUE 제약 위반 시 409로 떨어짐 (race condition 안전망).
+  const patchRes = await restFetch(
+    `${tableUrl("mvp_telegram_bindings")}?user_ref=eq.${encodeURIComponent(targetUserRef)}`,
     {
       method: "PATCH",
       headers: { ...serviceHeaders(), Prefer: "return=representation" },
       body: JSON.stringify({
         chat_id: chatId,
+        telegram_user_id: telegramUserId,
         telegram_username: username,
         verified_at: now,
         verify_code: null,
@@ -103,9 +135,8 @@ async function handleVerify(code: string, chatId: number, username: string | nul
       }),
     },
   );
-  const rows = (await res.json().catch(() => [])) as Array<{ user_ref: string }>;
-  if (rows.length === 0) {
-    await sendTelegramMessage(chatId, "❌ 연결 코드가 만료되었거나 잘못됐어요.\n\n/me 대시보드에서 새 코드를 받아주세요.");
+  if (!patchRes.ok) {
+    await sendTelegramMessage(chatId, "❌ 연결 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
     return;
   }
   await sendTelegramMessage(
