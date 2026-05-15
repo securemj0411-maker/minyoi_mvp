@@ -6,6 +6,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import MarketHistoryChart from "@/components/market-history-chart";
 import { MarketSourceDebug } from "@/components/market-source-debug";
 
 type PoolItem = {
@@ -305,6 +306,10 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     <div className="line-clamp-2">💬 {item.commentPreview}</div>
                   </div>
                 )}
+                {/* 2026-05-15: 시세 30일 그래프. comparableKey 있으면 자동 표시. */}
+                <div className="mt-2">
+                  <MarketHistoryChart comparableKey={item.comparableKey} currentPrice={item.price} />
+                </div>
                 <div className="mt-2">
                   <MarketSourceDebug
                     pid={item.pid}
