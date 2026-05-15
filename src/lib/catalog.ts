@@ -2668,6 +2668,59 @@ export const CATALOG: Sku[] = [
     released: 2020,
   },
   // ─── Nintendo Switch OLED (2021-10) ─────────────────
+  // Wave 117b (2026-05-15): Nintendo Switch 1세대 broad + Switch Lite catalog 추가.
+  // 매물 측정: 14일 Switch v1 339건 / Switch Lite 19건. 다 sku_id null이었음.
+  // 3DS/2DS/DS (옛 휴대용) + 네트워크 스위치 격리.
+  {
+    id: "switch-v1",
+    brand: "Nintendo",
+    category: "game_console",
+    modelName: "Nintendo Switch (1st gen, 2017)",
+    aliases: ["Nintendo Switch", "닌텐도 스위치", "스위치 1세대", "스위치1"],
+    mustContain: [
+      ["닌텐도 스위치", "닌텐도스위치", "nintendo switch", "스위치1", "스위치 1세대"],
+    ],
+    mustNotContain: [
+      // 다른 Switch 모델 격리
+      "oled", "올레드",
+      "스위치 2", "스위치2", "switch 2", "switch2",
+      "라이트", "lite",
+      // 옛 휴대용 게임기 격리 (3DS / DS / 2DS는 별도 카테고리)
+      "3ds", "ds xl", "dsxl", "2ds", "nds", " ds ",
+      // 네트워크 스위치 격리 (dell s5232f-on 같은 IT 장비)
+      "dell", "cisco", "sfp", "포트", "네트워크",
+      // 게임/액세서리 단품
+      "컨트롤러만", "조이콘만", "게임만", "게임 팩", "게임 카드", "게임팩",
+      "충전기만", "케이스만", "독만", "도크만",
+      "부품", "고장",
+      "매입", "삽니다", "구해요", "구합니다",
+    ],
+    msrpKrw: 360000,
+    released: 2017,
+  },
+  {
+    id: "switch-lite",
+    brand: "Nintendo",
+    category: "game_console",
+    modelName: "Nintendo Switch Lite",
+    aliases: ["Nintendo Switch Lite", "닌텐도 스위치 라이트", "스위치 라이트", "스위치라이트"],
+    mustContain: [
+      ["닌텐도", "nintendo", "스위치", "switch"],
+      ["라이트", "lite"],
+    ],
+    mustNotContain: [
+      "oled", "올레드",
+      "스위치 2", "스위치2", "switch 2", "switch2",
+      "3ds", "ds xl", "dsxl", "2ds", "nds", " ds ",
+      "dell", "cisco", "sfp", "포트", "네트워크",
+      "컨트롤러만", "조이콘만", "게임만", "게임 팩", "게임팩",
+      "충전기만", "케이스만",
+      "부품", "고장",
+      "매입", "삽니다", "구해요", "구합니다",
+    ],
+    msrpKrw: 270000,
+    released: 2019,
+  },
   // Wave 111i (2026-05-15): Nintendo Switch 2 (2025-06-05 신상) broad + narrow.
   {
     id: "switch-2",
@@ -3177,10 +3230,46 @@ export const CATALOG: Sku[] = [
       "earbuds",
       "earphone",
       "닥터드레 ep",
+      // Wave 106 #49: Jennie special edition 분리 (MJ 코멘트 #2 — 가격 270~600k vs 일반 175-200k mixed).
+      "제니",
+      "jennie",
+      "스페셜 에디션",
+      "special edition",
+      "스페셜에디션",
+      "specialedition",
       ...HEADPHONE_NOISE,
     ],
     msrpKrw: 249000,
     released: 2024,
+  },
+  {
+    // Wave 106 #49: Beats Solo 4 Jennie special edition (BLACKPINK).
+    // 일반 Solo 4 (175-200k) 와 가격 그룹 다름 (270-600k). 같은 SKU 시세 mixed 차단.
+    id: "beats-solo4-jennie",
+    brand: "Beats",
+    category: "earphone",
+    modelName: "Beats Solo 4 (Jennie Edition)",
+    aliases: ["비츠 솔로 4 제니", "Beats Solo 4 Jennie"],
+    mustContain: [
+      ["비츠", "beats"],
+      ["솔로 4", "solo 4", "솔로4", "solo4"],
+      ["제니", "jennie", "스페셜 에디션", "special edition", "스페셜에디션", "specialedition"],
+    ],
+    mustNotContain: [
+      "솔로 3", "solo 3", "솔로3", "solo3",
+      "솔로 2", "solo 2", "솔로2", "solo2",
+      "솔로 프로", "solo pro", "solopro",
+      "스튜디오 프로", "studio pro", "스튜디오프로", "studiopro",
+      "스튜디오 3", "studio 3", "studio3",
+      "비츠 fit", "beats fit", "fit pro",
+      "비츠 flex", "beats flex",
+      "파워비츠", "powerbeats",
+      "이어버드", "earbuds", "earphone",
+      "닥터드레 ep",
+      ...HEADPHONE_NOISE,
+    ],
+    msrpKrw: 349000,
+    released: 2025,
   },
   {
     id: "galaxy-buds-3-pro",

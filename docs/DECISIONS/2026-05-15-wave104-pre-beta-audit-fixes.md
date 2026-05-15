@@ -808,6 +808,16 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 | 109 | observability dashboard (운영자) | ⭐⭐ 운영 | 1일 |
 | 110 | 외부 monitoring (Sentry) + PWA manifest | ⭐ trivial | 0.5일 |
 
+## 49. Beats Solo 4 Jennie special edition catalog 분리 (MJ 코멘트 #2)
+
+- 시간: 2026-05-16 13:10 KST
+- MJ 코멘트 #2 (pid 318408095): Jennie 에디션 가격 ₩270~600k vs 일반 ₩175-200k 큰 차이. 같은 SKU `beats-solo4` 로 묶여 시세 mixed.
+- fix:
+  - catalog `beats-solo4` mustNotContain 에 "제니/jennie/스페셜 에디션" 추가.
+  - 신규 SKU `beats-solo4-jennie` 추가 (Jennie 매물 별도 매칭, msrpKrw 349k).
+- backfill: Beats Solo 4 매물 22건 score_dirty → 다음 tick 재분류.
+- 효과: Jennie 매물이 일반 시세 끌어올리던 거 차단.
+
 ## 48. catalog 정밀화 (m3 narrow SKU mustContain) + normalize 진단
 
 - 시간: 2026-05-16 12:50 KST
