@@ -178,7 +178,7 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 검증: tsc clean.
 - 위험: 사용자가 보던 raw postgres 에러 메시지 (예: "payment_key already used") → generic 한국어로 바뀜. UX 살짝 떨어지지만 보안 우선. duplicate payment 케이스는 idempotency RPC (Wave 104 H3) 가 200으로 처리해서 catch 블록 안 옴 — 영향 미미.
 - 다음: 다른 endpoint (telegram/, packs/, me/) 도 동일 audit 필요 (memory: 별도 wave 권장).
-- commit: pending
+- commit: 5e8bfe3
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
