@@ -426,6 +426,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 검증: tsc clean.
 - 위험: 일부 사용자가 "그럼 실제 출시 때 다시 결제해야 하나?" 의문. 정식 launch 시 별도 안내 + migration 필요 (현재 박은 plan row를 어떻게 처리?).
 - 다음: 정식 launch 시점에 (a) 토스 연동 wave + (b) 베타 plan row migration 정책 결정.
+- commit: 1d7f7cc
 
 ### 23c. how-it-works supportRows — #21 에서 이미 fix
 
@@ -436,8 +437,6 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 거짓 marketing 0 (정직 톤 일관).
 - 단 "Mock 결제" 명확화만 필요했음 → fix.
 - 다른 페이지 (account, admin 등) 추가 audit 권장 (사용자 진입 후 페이지).
-
-- commit: pending
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
