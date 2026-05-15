@@ -850,7 +850,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - broad sku_name 카드 UX — generation 명시 표시.
 - 시세 sample 부족 SKU AI L2 review trigger.
 
-- commit: pending
+- commit: 9f5cef5
 
 ## 42. systemic 검토 — critical_unknown 9개 토큰 일괄 차단 + trim path 검증
 
