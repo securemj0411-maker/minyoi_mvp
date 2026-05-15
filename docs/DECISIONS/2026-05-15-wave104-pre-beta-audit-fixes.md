@@ -720,7 +720,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
   - mock 결제 단계 사이트가 검색 노출되면 사용자가 정식 서비스로 오해 가능 — robots /billing/checkout disallow 박음.
   - 단 `/` 메인은 allow → 검색 엔진이 발견 가능 → 사용자 가입 spam risk → rate limit (Wave 106 #29) 으로 보강됨.
 - 다음: launch 직전 final smoke walkthrough 또는 source 다양화 wave 또는 비즈니스 측면 (마케팅 / 첫 사용자 모집).
-- commit: pending
+- commit: 6be293e
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
