@@ -34,7 +34,7 @@ const WATCHDOG_TARGETS: WatchdogTarget[] = [
   { name: "landing-showcases", requestPath: "/api/cron/landing-showcases", expectedMinutes: 10, alertAfterMinutes: 30 },
   { name: "housekeeper-ai-cache-prune", requestPath: "/api/cron/housekeeper-ai-cache-prune", expectedMinutes: 360, alertAfterMinutes: 1080 },
   { name: "compliance-retention", requestPath: "/api/cron/compliance-retention", expectedMinutes: 1440, alertAfterMinutes: 2880 },
-  { name: "reference-price-refresh", requestPath: "/api/cron/reference-price-refresh", expectedMinutes: 1440, alertAfterMinutes: 2880 },
+  { name: "reference-price-refresh", requestPath: "/api/cron/reference-price-refresh", expectedMinutes: 1440, alertAfterMinutes: 1800 },
 ];
 
 const COOLDOWN_MINUTES = 30;
