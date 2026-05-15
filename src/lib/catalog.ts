@@ -4123,8 +4123,11 @@ const NORMALIZATIONS: [RegExp, string][] = [
   [/(?<!갤럭시\s)(?<![가-힣a-z0-9])s\s?(\d{2})\s*플러스/gi, " 갤럭시 s$1 플러스 "],
   [/(?<!galaxy\s)(?<![가-힣a-z0-9])s\s?(\d{2})\s*ultra/gi, " galaxy s$1 ultra "],
   [/(?<!galaxy\s)(?<![가-힣a-z0-9])s\s?(\d{2})\s*plus/gi, " galaxy s$1 plus "],
-  [/(?<!갤럭시\s)(?<!갤럭시\sz)(?<![가-힣a-z])플립\s?(\d{1,2})/g, " 갤럭시 z플립 $1 "],
-  [/(?<!갤럭시\s)(?<!갤럭시\sz)(?<![가-힣a-z])폴드\s?(\d{1,2})/g, " 갤럭시 z폴드 $1 "],
+  // Wave 118b (2026-05-15): catalog token 보호 + brand lookbehind.
+  // (?<=\s) — 단어 시작 변환 X (catalog token "플립6" 자체는 normalize 영향 X).
+  // (?<!jbl\s)(?<!sony\s) — JBL/Sony 매물 보존.
+  [/(?<=\s)(?<!갤럭시\s)(?<!갤럭시\sz)(?<!jbl\s)(?<!sony\s)(?<!bose\s)플립\s?(\d{1,2})/gi, " 갤럭시 z플립 $1 "],
+  [/(?<=\s)(?<!갤럭시\s)(?<!갤럭시\sz)(?<!jbl\s)(?<!sony\s)(?<!bose\s)폴드\s?(\d{1,2})/gi, " 갤럭시 z폴드 $1 "],
   // Wave 111c: iPad mini 7 표기 변형 normalize.
   // "아이패드7 미니" / "아이패드 7미니" / "아이패드 미니 7" / "아이패드미니7" → "아이패드 미니 7"
   [/아이패드\s*7\s+미니/g, " 아이패드 미니 7 "],
