@@ -740,7 +740,7 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
   - tsc: .next/dev/types route validator cache mismatch 일시 (런타임 무관, dev hot reload로 해결 — 기존 #33 SEO와 동일 패턴).
 - 위험: error/global-error 가 추가됐어도 useEffect 안에 console.error만. 외부 monitoring (Sentry 등) 연동은 별도 wave.
 - 다음: source 다양화 / launch smoke / PWA manifest / loading.tsx (모두 trivial 또는 큰 작업).
-- commit: pending
+- commit: 1eaa1b4
 
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
