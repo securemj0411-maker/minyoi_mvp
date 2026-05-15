@@ -1,13 +1,32 @@
 "use client";
 
-// Wave 139d (2026-05-16): 메인 페이지 네비게이션 바 아래 marquee.
-// "오늘 미뇨이 AI가 차단한 의심 매물 X건 — 부품 단품 N · 액세서리만 N · ..." 우→좌 흐름.
-// 사용자 명령: "네비게이션 바로 밑에 우→좌 흐르는 문구 — 사이트 신뢰 시그널".
+// Wave 139d (2026-05-16): 메인 페이지 nav 아래 얇은 toggle bar.
+// "오늘 미뇨이 AI가 차단한 상품 수: N건  [상세 ▼]"
+// 사용자 코멘트:
+//   - "글이 너무 길잖아 그냥 예쁘게 ... 그냥 /me처럼 해줘 상세보기 할수잇도록"
+//   - "근데 /me쪽은 너무 세로가 두껍고 이건 가벼운느낌으로 대신 상세 누르기 가능"
+// 평소: 한 줄 (높이 ~32px) — nav 바 아래 얇은 띠.
+// 클릭: 같은 카테고리 breakdown 펼침 (/me badge 재사용 패턴).
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 type SafetyStats = {
   total_blocked_7d: number;
+  fake_or_lock_7d?: number;
+  carrier_mismatch_7d?: number;
+  suspicious_price_7d?: number;
+  price_dummy_7d?: number;
+  pool_invalidated_7d?: number;
+  profit_low_7d?: number;
+  lifecycle_gone_7d?: number;
+  thin_market_7d?: number;
+  stat_missing_7d?: number;
+  wholesaler_total_7d?: number;
+  wholesaler_comment_7d?: number;
+  wholesaler_qty_7d?: number;
+  seller_multi_listings_7d?: number;
+  multi_id_fraud_group_7d?: number;
+  collection_stage_total_7d?: number;
   listing_parts_7d?: number;
   listing_damaged_7d?: number;
   listing_accessory_7d?: number;
@@ -16,32 +35,49 @@ type SafetyStats = {
   listing_buying_7d?: number;
   listing_multi_7d?: number;
   needs_review_7d?: number;
-  wholesaler_qty_7d?: number;
-  seller_multi_listings_7d?: number;
-  multi_id_fraud_group_7d?: number;
-  wholesaler_comment_7d?: number;
-  fake_or_lock_7d?: number;
-  suspicious_price_7d?: number;
-  profit_low_7d?: number;
-  lifecycle_gone_7d?: number;
-  thin_market_7d?: number;
-  stat_missing_7d?: number;
 };
+
+const ICON_CLASS = "h-3 w-3 flex-shrink-0";
 
 function ShieldIcon() {
   return (
-    <svg className="h-3.5 w-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={ICON_CLASS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   );
 }
 
-function fmt(n: number | undefined | null): string {
-  return (n ?? 0).toLocaleString("ko-KR");
+function ChevronDownIcon({ open }: { open: boolean }) {
+  return (
+    <svg className={`h-2.5 w-2.5 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+function StatRow({ label, count }: { label: string; count: number }) {
+  if (count <= 0) return null;
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-emerald-800/85 dark:text-emerald-300/85">{label}</span>
+      <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+        {count.toLocaleString("ko-KR")}건
+      </span>
+    </div>
+  );
+}
+
+function GroupHeader({ label }: { label: string }) {
+  return (
+    <div className="mt-1.5 border-t border-emerald-200/60 pt-1.5 text-[9px] font-black uppercase tracking-wider text-emerald-700 dark:border-emerald-900/60 dark:text-emerald-400">
+      {label}
+    </div>
+  );
 }
 
 export default function SafetyStatsMarquee() {
   const [stats, setStats] = useState<SafetyStats | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -58,53 +94,95 @@ export default function SafetyStatsMarquee() {
 
   if (!stats || (stats.total_blocked_7d ?? 0) === 0) return null;
 
-  // breakdown 텍스트 만들기 (각 카테고리 0 이상만 포함)
-  const items: string[] = [];
-  const push = (label: string, n: number | undefined) => {
-    const v = n ?? 0;
-    if (v > 0) items.push(`${label} ${fmt(v)}건`);
-  };
-  push("부품·단품만", stats.listing_parts_7d);
-  push("액세서리·구성품만", stats.listing_accessory_7d);
-  push("손상·파손", stats.listing_damaged_7d);
-  push("광고·매크로", stats.listing_callout_7d);
-  push("상업·전문 판매업자", stats.listing_commercial_7d);
-  push("매입 요청 글", stats.listing_buying_7d);
-  push("다중 상품 묶음", stats.listing_multi_7d);
-  push("모델 식별 실패", stats.needs_review_7d);
-  push("위조·도난·잠금", stats.fake_or_lock_7d);
-  // price_dummy_7d 는 type에 없는 컬럼이라 카운트 X (필요시 추가). profit_low 만 한 번.
-  push("차익 미달 매물", stats.profit_low_7d);
-  push("비정상 할인 의심", stats.suspicious_price_7d);
-  push("거래 종료·사라짐", stats.lifecycle_gone_7d);
-  push("시세 표본 부족", stats.thin_market_7d);
-  push("시세 미산정", stats.stat_missing_7d);
-  push("흥정 호가 매물", stats.wholesaler_comment_7d);
-  push("대량 재고 매물", stats.wholesaler_qty_7d);
-  push("동일 셀러 중복", stats.seller_multi_listings_7d);
-  push("다중 ID 사기 그룹", stats.multi_id_fraud_group_7d);
-
-  const headline = `오늘 미뇨이 AI가 차단한 의심 매물 ${fmt(stats.total_blocked_7d)}건`;
-  const tail = items.join(" · ");
-  // 한 번 흐름 후 반복되어 자연스럽게 보이도록 동일 텍스트를 두 번 연결
-  const fullText = `${headline}  —  ${tail}`;
+  const total = stats.total_blocked_7d;
+  const collectionStageTotal = stats.collection_stage_total_7d ?? 0;
+  const parserMissTotal = stats.needs_review_7d ?? 0;
+  const productRiskTotal =
+    (stats.fake_or_lock_7d ?? 0) + (stats.carrier_mismatch_7d ?? 0) + (stats.suspicious_price_7d ?? 0);
+  const marketMismatchTotal =
+    (stats.price_dummy_7d ?? 0) + (stats.profit_low_7d ?? 0) +
+    (stats.lifecycle_gone_7d ?? 0) + (stats.thin_market_7d ?? 0) + (stats.stat_missing_7d ?? 0);
+  const wholesalerTotal = stats.wholesaler_total_7d ?? 0;
 
   return (
-    <div
-      className="w-full overflow-hidden border-b border-emerald-100 bg-emerald-50/80 py-1.5 dark:border-emerald-900 dark:bg-emerald-950/40"
-      aria-label="오늘 차단된 의심 매물 통계"
-    >
-      <div className="safety-marquee-track flex whitespace-nowrap text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
-        {/* duplicate for seamless loop. CSS는 globals.css 의 .safety-marquee-track 클래스. */}
-        <span className="mx-6 flex items-center gap-1.5">
-          <ShieldIcon />
-          <span>{fullText}</span>
+    <div className="border-b border-emerald-100 bg-emerald-50/60 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+      <button
+        type="button"
+        onClick={() => setShowDetail((s) => !s)}
+        className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-1.5 text-left transition-colors hover:bg-emerald-100/60 dark:hover:bg-emerald-900/30"
+        aria-expanded={showDetail}
+      >
+        <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+          <span className="text-emerald-600 dark:text-emerald-400"><ShieldIcon /></span>
+          <span>오늘 미뇨이 AI가 차단한 상품 수:</span>
+          <span className="font-mono tabular-nums text-emerald-700 dark:text-emerald-300">
+            {total.toLocaleString("ko-KR")}건
+          </span>
         </span>
-        <span className="mx-6 flex items-center gap-1.5" aria-hidden="true">
-          <ShieldIcon />
-          <span>{fullText}</span>
+        <span className="flex items-center gap-0.5 rounded-full bg-emerald-600/90 px-2 py-0.5 text-[9px] font-black text-white">
+          {showDetail ? "접기" : "상세"}
+          <ChevronDownIcon open={showDetail} />
         </span>
-      </div>
+      </button>
+      {showDetail && (
+        <div className="mx-auto max-w-6xl border-t border-emerald-200/70 bg-emerald-50/40 px-4 py-2.5 text-[10px] dark:border-emerald-900/70 dark:bg-emerald-950/20">
+          <div className="grid gap-x-6 gap-y-0.5 md:grid-cols-2 lg:grid-cols-3">
+            {collectionStageTotal > 0 && (
+              <div className="space-y-0.5">
+                <GroupHeader label="매물 분류 단계 차단" />
+                <StatRow label="부품·단품만 판매" count={stats.listing_parts_7d ?? 0} />
+                <StatRow label="액세서리·구성품만" count={stats.listing_accessory_7d ?? 0} />
+                <StatRow label="손상·파손 매물" count={stats.listing_damaged_7d ?? 0} />
+                <StatRow label="광고·홍보·매크로" count={stats.listing_callout_7d ?? 0} />
+                <StatRow label="상업·전문 판매업자" count={stats.listing_commercial_7d ?? 0} />
+                <StatRow label="매입 요청 글" count={stats.listing_buying_7d ?? 0} />
+                <StatRow label="다중 상품 묶음" count={stats.listing_multi_7d ?? 0} />
+              </div>
+            )}
+            {(parserMissTotal > 0 || marketMismatchTotal > 0) && (
+              <div className="space-y-0.5">
+                {parserMissTotal > 0 && (
+                  <>
+                    <GroupHeader label="모델 식별 실패" />
+                    <StatRow label="모델·옵션 식별 불충분" count={parserMissTotal} />
+                  </>
+                )}
+                {marketMismatchTotal > 0 && (
+                  <>
+                    <GroupHeader label="거래·시세 불일치" />
+                    <StatRow label="거래 거부 표시 가격" count={stats.price_dummy_7d ?? 0} />
+                    <StatRow label="차익 미달 매물" count={stats.profit_low_7d ?? 0} />
+                    <StatRow label="거래 종료·사라진 매물" count={stats.lifecycle_gone_7d ?? 0} />
+                    <StatRow label="시세 표본 부족" count={stats.thin_market_7d ?? 0} />
+                    <StatRow label="시세 미산정 매물" count={stats.stat_missing_7d ?? 0} />
+                  </>
+                )}
+              </div>
+            )}
+            {(productRiskTotal > 0 || wholesalerTotal > 0) && (
+              <div className="space-y-0.5">
+                {productRiskTotal > 0 && (
+                  <>
+                    <GroupHeader label="상품 위험" />
+                    <StatRow label="위조품·도난·잠금" count={stats.fake_or_lock_7d ?? 0} />
+                    <StatRow label="사용 권한·잔여 채무" count={stats.carrier_mismatch_7d ?? 0} />
+                    <StatRow label="비정상 할인 의심" count={stats.suspicious_price_7d ?? 0} />
+                  </>
+                )}
+                {wholesalerTotal > 0 && (
+                  <>
+                    <GroupHeader label="업자·사기 그룹" />
+                    <StatRow label="흥정 위주 호가" count={stats.wholesaler_comment_7d ?? 0} />
+                    <StatRow label="대량 재고 매물" count={stats.wholesaler_qty_7d ?? 0} />
+                    <StatRow label="동일 셀러 중복" count={stats.seller_multi_listings_7d ?? 0} />
+                    <StatRow label="다중 ID 의심 그룹" count={stats.multi_id_fraud_group_7d ?? 0} />
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
