@@ -1181,14 +1181,14 @@ test("iPad mini generation and A17 Pro chip infer mini screen generation", () =>
     skuId: "ipad_mini",
     title: "아이패드 미니 스페이스 그레이 5세대 64기가",
   });
-  assert.equal(mini5.comparableKey, "ipad|ipad_mini|5_gen|7_9in|64gb|wifi");
+  assert.equal(mini5.comparableKey, "ipad|ipad_mini|5_gen|a12|7_9in|64gb|wifi");
 
   const miniA17 = parseListingOptions({
     category: "tablet",
     skuId: "ipad_mini",
     title: "아이패드 미니 a17 256기가",
   });
-  assert.equal(miniA17.comparableKey, "ipad|ipad_mini|7_gen|8_3in|256gb|wifi");
+  assert.equal(miniA17.comparableKey, "ipad|ipad_mini|7_gen|a17_pro|8_3in|256gb|wifi");
 });
 
 test("Galaxy Tab FE and Wi-Fi variants do not mix with base or GPS", () => {

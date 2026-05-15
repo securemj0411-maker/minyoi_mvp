@@ -59,6 +59,26 @@ async function loadRows(limit: number, offset: number): Promise<RawRow[]> {
   return (await res.json()) as RawRow[];
 }
 
+// 2026-05-15 Wave 117: parser_version != CURRENT 옛 매물만 batch reparse.
+// score_dirty 트리거는 score 만 재계산, parser 재실행 X — 옛 v24~v40 매물 정리 위해 별도 path.
+async function loadLegacyRows(limit: number, currentVersion: string): Promise<RawRow[]> {
+  // step 1: mvp_listing_parsed 에서 옛 parser_version pid limit개 (오래된 버전부터)
+  const parsedRes = await restFetch(
+    `/mvp_listing_parsed?select=pid,parser_version&parser_version=neq.${encodeURIComponent(currentVersion)}&order=parser_version.asc,pid.asc&limit=${limit}`,
+    { headers: serviceHeaders() },
+  );
+  const parsed = (await parsedRes.json()) as Array<{ pid: number; parser_version: string }>;
+  if (parsed.length === 0) return [];
+  const pids = parsed.map((row) => row.pid);
+  // step 2: 그 pid 들의 raw row fetch (PostgREST in.() 최대 1000건)
+  const cols = "pid,name,price,description_preview,listing_type,sku_id,sku_name";
+  const rawRes = await restFetch(
+    `/mvp_raw_listings?select=${cols}&detail_status=eq.done&pid=in.(${pids.join(",")})`,
+    { headers: serviceHeaders() },
+  );
+  return (await rawRes.json()) as RawRow[];
+}
+
 async function upsertParsed(rows: Record<string, unknown>[]) {
   if (rows.length === 0) return;
   await restFetch("/mvp_listing_parsed?on_conflict=pid", {
@@ -88,7 +108,12 @@ async function handleReparse(req: NextRequest) {
   const limit = boundedInt(req.nextUrl.searchParams.get("limit"), 200, 1, 1000);
   const offset = boundedInt(req.nextUrl.searchParams.get("offset"), 0, 0, 100000);
   const shouldReclassify = req.nextUrl.searchParams.get("reclassify") === "1";
-  const rows = await loadRows(limit, offset);
+  const legacyOnly = req.nextUrl.searchParams.get("legacy") === "1";
+  // legacy=1 이면 parser_version != CURRENT 옛 매물만 reparse. CURRENT 는 option-parser PARSER_VERSION 과 일치해야 함.
+  const CURRENT_PARSER_VERSION = "option-parser-v42";
+  const rows = legacyOnly
+    ? await loadLegacyRows(limit, CURRENT_PARSER_VERSION)
+    : await loadRows(limit, offset);
   const summary = {
     total: rows.length,
     needsReview: 0,

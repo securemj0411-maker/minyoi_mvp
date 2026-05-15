@@ -115,11 +115,14 @@ export function buildCandidatePoolRows(input: {
     //   - multi_device_bundle (양쪽 카테고리 어느 쪽과도 비교 불가)
     //   - display_defect / screen_replaced / faceid_issue (사용자가 사면 명확한 손해)
     const preCheckNotes = (input.parsedByPid.get(pid)?.parsed_json?.condition_notes as string[] | undefined) ?? [];
+    // 2026-05-15 Wave 117: parts_only 추가 (부품용/수리용/셀러용 명시 매물).
+    // 일반 사용자 풀 차단 — 리셀 업자 lane 신설 시 해당 lane 전용 builder 가 별도 풀로 흡수.
     const POOL_BLOCK_NOTES = [
       "multi_device_bundle",
       "display_defect",
       "screen_replaced",
       "faceid_issue",
+      "parts_only",
     ];
     const noteHit = POOL_BLOCK_NOTES.find((n) => preCheckNotes.includes(n));
     if (noteHit) {

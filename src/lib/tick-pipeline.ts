@@ -2487,6 +2487,7 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     if (conditionNotes.includes("display_defect")) continue;
     if (conditionNotes.includes("screen_replaced")) continue;
     if (conditionNotes.includes("faceid_issue")) continue;
+    if (conditionNotes.includes("parts_only")) continue;
     // Wave 106 (베타테스터 시세 inflated root cause): 새상품/미개봉 + 애플케어 프리미엄 +
     // 배터리 100% 새것 같은 매물은 정상 중고 시세 baseline 와 다른 그룹.
     // sample 에 들어가면 active_median 끌어올려서 다른 정상 매물의 sku_median 잘못 계산.

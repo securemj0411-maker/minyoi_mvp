@@ -23,6 +23,21 @@ export type Sku = {
   laneKey?: string;
 };
 
+// Wave 122 (2026-05-15): 모든 카테고리 공통 noise 패턴 (Wave 121 audit 결과).
+// 휴대폰 audit에서 발견 — 다른 카테고리 (laptop/tablet/earphone/smartwatch/speaker)도 동일 noise 가능.
+// 사용자 통찰: "다른 brand까지 빠짐없이 모두 같은 패턴 차단"
+const COMMON_PRODUCT_NOISE = [
+  // 케이지/촬영용 액세서리 (NEEWER/스몰리그)
+  "케이지", "케이지 킷", "케이지킷", "케이지 키트", "케이지키트",
+  // 콜라보 굿즈 / 캐릭터 굿즈 / 아이돌 응원 굿즈
+  "콜라보 에디션", "콜라보에디션", "에디션 패키지", "에디션패키지",
+  "네임보드", "우치와", "키링", "테디베어",
+  // 광고/업자 매물
+  "단독 행사", "단독행사", "행사중", "개인결제창", "결제창",
+  // 교신 매물 (교환 의미)
+  "교신", "교신원함", "교신원합니다", "교신원해요", "교환원해용",
+];
+
 const PHONE_NOISE = [
   "케이스",
   "case",
@@ -80,16 +95,12 @@ const PHONE_NOISE = [
   // Wave 120 (2026-05-15): iPhone broad audit 발견 — 교환/빈박스 매물 reject 강화.
   "교환원함", "교환원합니다", "교환해요", "교환해주실분", "교환해주실 분",
   "빈박스", "박스만",
-  // Wave 121 (2026-05-15): narrow self lane outlier 패턴 분석 결과 — 케이스/액세서리/광고 noise.
-  // 케이지 킷 (촬영용 액세서리)
-  "케이지", "케이지 킷", "케이지킷", "케이지 키트", "케이지키트", "rig",
-  // 콜라보 굿즈 / 키링 / 인형 / 네임보드
-  "콜라보 에디션", "콜라보에디션", "에디션 패키지", "에디션패키지",
-  "네임보드", "우치와", "키링", "인형", "테디베어",
-  // 광고/업자 매물
-  "단독 행사", "단독행사", "행사중", "개인결제창", "결제창", "고객님",
-  // 교신/교환 매물 (Wave 120 보강)
-  "교신", "교신원함", "교신원합니다", "교신원해요", "교환원해용",
+  // Wave 121/122: COMMON_PRODUCT_NOISE 통합 (모든 카테고리 동일 패턴).
+  ...COMMON_PRODUCT_NOISE,
+  // 휴대폰 전용: 인형 (어반 소피스티케이션 테디베어 같은 굿즈 — phone에서만)
+  "인형",
+  // 휴대폰 전용: 고객님 (광고/업자 매물)
+  "고객님",
   // 가격 거부 표시 (셀러가 99999999 / 12345678 같은 dummy 가격 입력)
   // 가격은 pipeline에서 검증 (catalog mustNotContain은 text only)
   // Wave 111e: brand-less normalize 부작용 차단 — 스타일러스/S펜만 매물이 broad SKU에 흡수되는 것 방지.
@@ -137,6 +148,8 @@ const TABLET_NOISE = [
   "구합니다",
   "대여",
   "렌탈",
+  // Wave 122: 공통 noise 패턴 (케이지/콜라보/광고/교신)
+  ...COMMON_PRODUCT_NOISE,
 ];
 
 const HEADPHONE_NOISE = [
@@ -158,6 +171,8 @@ const HEADPHONE_NOISE = [
   "삽니다",
   "구합니다",
   "매입",
+  // Wave 122: 공통 noise 패턴
+  ...COMMON_PRODUCT_NOISE,
 ];
 
 const SPEAKER_NOISE = [
@@ -190,6 +205,8 @@ const SPEAKER_NOISE = [
   "삽니다",
   "구합니다",
   "매입",
+  // Wave 122: 공통 noise 패턴
+  ...COMMON_PRODUCT_NOISE,
 ];
 
 const CAMERA_BODY_ONLY_NOISE = [
@@ -282,6 +299,8 @@ const LAPTOP_NOISE = [
   "사생활 필름",
   "사생활 보호필름",
   "사생활 보호 필름",
+  // Wave 122: 공통 noise 패턴
+  ...COMMON_PRODUCT_NOISE,
 ];
 
 // Wave 94 (2026-05-15): pollution audit 발견 패턴 강화.
@@ -311,6 +330,7 @@ const EARPHONE_NOISE_W94 = [
   "본체만 판매 X", "본체만 분리",
   "스트랩만", "넥스트랩만", "넥 스트랩만",
   "구매원함", "구매원합니다", "구매희망",
+  ...COMMON_PRODUCT_NOISE,
 ];
 
 // 스마트워치: 케이스/밴드/필름 단품 매물 reject 강화
@@ -321,6 +341,7 @@ const SMARTWATCH_NOISE_W94 = [
   "스트랩만", "줄만", "버클만",
   "충전기만", "충전 거치대만", "거치대만",
   "구매원함", "구매원합니다", "구매희망",
+  ...COMMON_PRODUCT_NOISE,
 ];
 
 // 모니터: 거치대/스탠드/암 단품 매물 reject (현재 NOISE 없음)
@@ -365,6 +386,7 @@ const TABLET_NOISE_W94 = [
   // Wave 95: 거치대 NK 등 액세서리
   "거치대 nk", "거치대 nk32", "아이패드 거치대",
   "태블릿 거치대",
+  ...COMMON_PRODUCT_NOISE,
 ];
 
 // 스피커: 케이스/충전기/벽걸이 단품 reject 강화
@@ -372,6 +394,7 @@ const SPEAKER_NOISE_W94 = [
   "하드 케이스 단품", "스킨만", "보호 커버만",
   "스트랩 단품",
   "충전 도크만", "충전 받침만",
+  ...COMMON_PRODUCT_NOISE,
 ];
 
 // Wave 94: 카테고리별 NOISE를 GENERATED_CATALOG SKU에 자동 spread.
@@ -389,6 +412,7 @@ const SMARTPHONE_BROAD_NOISE_W114D = [
   "lgu+ 약정", "유플 약정",
   "매입", "삽니다", "구합니다", "구해봅니다", "구매함", "최고가",
   "대여", "렌탈",
+  ...COMMON_PRODUCT_NOISE,
 ];
 
 const CATEGORY_NOISE_MAP_W94: Partial<Record<Sku["category"], readonly string[]>> = {

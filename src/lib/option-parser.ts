@@ -37,7 +37,7 @@ type ParseInput = {
   category?: Sku["category"] | null;
 };
 
-const PARSER_VERSION = "option-parser-v41";
+const PARSER_VERSION = "option-parser-v42";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -980,7 +980,10 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   if (!notRefurbished && /리퍼|리퍼폰|리퍼\s*교체|부분\s*수리|사설\s*수리|사설수리/.test(lower)) add("refurbished_or_repaired", -0.15);
   if (/(액정|디스플레이|화면).{0,16}(교체|수리)|(?:교체|수리).{0,16}(액정|디스플레이|화면)/.test(defectRiskText)) add("screen_replaced", -0.12);
   const noDisplayDefect = /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없)|번인\s*(?:없|없음|없습니다)/.test(lower);
-  if (!noDisplayDefect && /잔상|번인|burn\s*in|녹조|흑점|멍|터치\s*불량|터치불량/.test(lower)) add("display_defect", -0.25);
+  if (!noDisplayDefect && /잔상|번인|burn\s*in|녹조|흑점|멍|터치\s*불량|터치불량|액정\s*깨짐|화면\s*깨짐|디스플레이\s*깨짐|액정\s*파손|화면\s*파손|디스플레이\s*파손|노액|액정\s*나감|화면\s*나감/.test(lower)) add("display_defect", -0.25);
+  // 2026-05-15 Wave 117: 부품용/수리용/셀러용 매물은 일반 사용자가 사면 손해 (정상 사용 불가). 풀 차단 + 시세 sample 제외.
+  // 리셀 업자 lane 신설 시 별도 builder가 다시 살림 (POOL_BLOCK_NOTES 라인 코멘트 참조).
+  if (/부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만|힌지\s*부품|수리\s*용|수리용|셀러\s*용|셀러용|업자\s*용|업자용|보상\s*판매용|보상판매용/.test(lower)) add("parts_only", -0.4);
   const noFaceIdIssue = /(페이스\s*아이디|face\s*id|faceid).{0,30}(문제\s*(?:없|없음|없고|없습니다)|정상|잘\s*됨|작동)|기능에\s*아무\s*문제\s*없/.test(lower);
   if (!noFaceIdIssue && /(페이스\s*아이디|face\s*id|faceid).{0,20}(안됨|불가|고장|불량|문제|수리)|(?:안됨|불가|고장|불량|문제|수리).{0,20}(페이스\s*아이디|face\s*id|faceid)/.test(lower)) add("faceid_issue", -0.25);
   if (/(카메라|전면|후면).{0,20}(안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량)|(?:안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량).{0,20}(카메라|전면|후면)/.test(lower)) add("camera_issue", -0.2);
