@@ -2472,6 +2472,14 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // (예: 아이폰17 + 애플워치 SE3). 단품 시세 비교군 제외 + pool 진입도 차단해야 하지만
     // (양쪽 카테고리 동시 진입 위험), 일단 시세 집계만 skip. pool 차단은 별도 wave에서.
     if (conditionNotes.includes("multi_device_bundle")) continue;
+    // 2026-05-15 (사용자 코멘트 pid 404436811 / 404643880 / 401500642):
+    // missing_suspect 매물이 6시간+ 안 보이면 사실상 사라진 상태. lifecycle worker가
+    // disappeared로 전환 안 했더라도 시세 비교군에서 빼서 옛 매물 잔존 왜곡 방지.
+    // 1~6시간 missing은 짧은 hiccup 가능성 있어 유지.
+    if (row.listing_state === "missing_suspect" && row.last_missing_at) {
+      const missingMs = Date.now() - new Date(row.last_missing_at).getTime();
+      if (missingMs > 6 * 3600 * 1000) continue;
+    }
     const key = parsed.comparable_key;
     if (!byKey.has(key)) byKey.set(key, { rows: [], activeRows: [], soldRows: [], disappearedRows: [], skuId: row.sku_id });
     const group = byKey.get(key)!;
