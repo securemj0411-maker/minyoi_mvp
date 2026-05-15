@@ -661,6 +661,38 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 다음: 정식 launch 시점에 compliance-retention 만 등록 권장. 나머지 2개는 사용자 늘어나면 (Pro user 100+) 검토.
 - commit: d374f54
 
+## 32. 회원 탈퇴 흐름 신규 (개인정보보호법 의무)
+
+- 시간: 2026-05-16 08:50 KST
+- 검토 (사용자 권리 + 개인정보):
+  - **회원 탈퇴 endpoint 0건** — grep 결과 0 (delete/withdraw/탈퇴 매칭 X). 한국 개인정보보호법 의무 위반.
+  - **debug route 보안**: 4중 가드 (NODE_ENV + ALLOW_DEBUG_RESET + requireDebugAdmin + DEBUG_RESET_SECRET) — OK ✅.
+  - **PII 처리**: 11개 테이블 (mvp_telegram_bindings, mvp_user_credits, mvp_user_plans, mvp_admin_users, mvp_user_candidate_actions, mvp_credit_ledger, mvp_payment_events, mvp_pack_opens, mvp_pack_reveals, mvp_reveal_feedback, mvp_hotdeal_reservations) 에 user_ref/auth_user_id 분산. cascade FK 0건 (auth.users delete 자동 정리 X).
+- 정책 결정: **익명화 + 삭제 혼합**.
+  - 개인 식별 row (telegram, credits, plans, admin, actions): row 삭제.
+  - 통계/회계 row (credit_ledger, payment_events, pack_opens, pack_reveals, reveal_feedback, hotdeal_reservations): user_ref → `deleted_<random>`, auth_user_id → null.
+  - 이유: 회계 보존 의무 (payment_events) + 통계 / 매물 행동 분석 가치 보존 + 사용자 식별 X.
+- 변경:
+  - `supabase/migrations/20260515000800_delete_user_account.sql` 신규 — `delete_user_account(p_user_ref, p_auth_user_id)` RPC. 11개 테이블 처리. anonymized_count + deleted_count 반환.
+  - prod에 supabase MCP 직접 적용 (idempotent `create or replace`).
+  - `src/app/api/me/account/delete/route.ts` 신규 — POST endpoint:
+    - confirm 토큰 ("탈퇴") 정확히 입력 검증.
+    - admin 자기 탈퇴 차단.
+    - 분당 1회 rate limit.
+    - RPC 호출 후 supabase auth.users admin API 로 auth row 삭제 (best-effort).
+  - `src/app/me/account/delete/page.tsx` 신규 — 별도 페이지 (실수 방지):
+    - 탈퇴 시 일어나는 일 4개 명시 (즉시 삭제 / 익명화 / 환불 X / 재가입 시 새 사용자).
+    - confirm 입력란 ("탈퇴" 정확히).
+    - 빨간 톤 위험 영역 + 취소/진행 버튼.
+    - 진행 후 자동 signOut + 메인 redirect.
+  - `src/components/account-panel.tsx` — "회원 탈퇴" 작은 회색 링크 추가 (account-panel 하단).
+- 검증: tsc clean. prod migration 적용 success. 실제 탈퇴 테스트는 정식 사용자 등장 후.
+- 위험:
+  - admin 자기 탈퇴 차단 박았지만 실수로 admin email인 사용자가 삭제 시도 시 403. 의도된 동작.
+  - auth.users delete admin API 실패 시 (네트워크 등) public 데이터만 정리되고 auth row 잔존. 사용자가 다시 로그인하면 빈 사용자 상태로 돌아옴 (자동 grant 흐름으로 새 5크레딧). 부정적 UX 가능성 있지만 데이터 누출은 X.
+- 다음: 별도 wave에서 (a) auth.users delete 실패 시 retry queue 또는 (b) source 다양화 또는 (c) launch 직전 final smoke.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

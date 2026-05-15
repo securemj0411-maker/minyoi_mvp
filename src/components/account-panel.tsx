@@ -167,6 +167,15 @@ export function AccountPanel({
         </div>
       </Link>
 
+      {/* Wave 106: 회원 탈퇴 entry — 한국 개인정보보호법 의무 + 사용자 권리. 별도 페이지로 분리해 실수 방지. */}
+      <div className="mt-3 border-t border-[#eee5d8] pt-2 dark:border-zinc-800">
+        <Link
+          href="/me/account/delete"
+          className="inline-flex items-center gap-1 text-[11px] font-bold text-zinc-400 transition hover:text-red-600 dark:text-zinc-600 dark:hover:text-red-400"
+        >
+          회원 탈퇴
+        </Link>
+      </div>
     </div>
   );
 }
