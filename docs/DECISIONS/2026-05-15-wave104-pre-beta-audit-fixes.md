@@ -232,6 +232,26 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
 - 다음: 다른 admin 화면 동일 audit (admin shadow report 등).
 - commit: 1a4e57d
 
+## 16. 핫딜 enqueue 0건 — mvp_listings sku_id 컬럼 부재 fix (CRITICAL)
+
+- 시간: 2026-05-16 04:55 KST
+- 발견: 사용자 보고 — 텔레그램 핫딜 알림 안 옴. 진단 결과:
+  - mvp_telegram_bindings: MJ binding 정상 (@yewon1227, 2026-05-15 09:06)
+  - mvp_candidate_pool: ready band-3 매물 63개, 그 중 24개가 margin ≥ 30% 충족 (eligible)
+  - mvp_hotdeal_queue: 24h 내 enqueue 0건 (1건만 있고 consumed)
+  - mvp_collect_runs.stage_stats.hotdeal: 모든 필드 0
+  - **stage_durationsMs.hotdeal: 130ms 정도로 빠르게 끝남 → silent 실패**
+- 근본 원인: `enqueueHotdealsFromPool` (src/lib/hotdeal.ts:48) 가 `mvp_listings?select=pid,price,sku_median,sku_id,sku_name` 호출. **mvp_listings 에는 sku_id 컬럼이 없음** (sku_id 는 mvp_hotdeal_queue / mvp_listing_observations / mvp_raw_listings 에만 존재). PostgREST가 400 → restFetch throw → outer try/catch 가 console.error만 찍고 stats 빈 채 반환.
+- 변경 (`src/lib/hotdeal.ts:29-51`):
+  - `ListingMeta` 에서 sku_id 제거.
+  - mvp_listings select에서 sku_id 제거 (price, sku_median, sku_name 만).
+  - sku_id 는 별도 mvp_raw_listings select로 보강 (디버깅/통계용. 메시지 본체엔 영향 없음).
+  - 후보 객체 sku_id = `skuIds.get(pid) ?? null`.
+- 검증: tsc clean. 다음 pool-warmer cron tick (5분 내)에서 24개 후보 enqueue + dispatch 예상.
+- 위험: mvp_raw_listings 추가 fetch 1회 (HOTDEAL_ENQUEUE_LIMIT * 3 = 300 PIDs). 부하 미미.
+- 다음: 발송 확인. 옛 reservation `notification_sent=false` + `notification_error=null` 버그 (sendTelegramMessage error 로그 누락) 별도 fix.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.

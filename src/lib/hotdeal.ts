@@ -30,8 +30,12 @@ type ListingMeta = {
   pid: number;
   price: number;
   sku_median: number;
-  sku_id: string | null;
   sku_name: string | null;
+};
+
+type RawSkuMeta = {
+  pid: number;
+  sku_id: string | null;
 };
 
 export async function enqueueHotdealsFromPool(): Promise<{ scanned: number; enqueued: number; skipped_existing: number }> {
@@ -42,13 +46,20 @@ export async function enqueueHotdealsFromPool(): Promise<{ scanned: number; enqu
   const poolRows = (await poolRes.json()) as CandidateRow[];
   if (poolRows.length === 0) return { scanned: 0, enqueued: 0, skipped_existing: 0 };
 
-  // mvp_listings에서 price + sku_median + sku_name lookup.
+  // mvp_listings 에서 price + sku_median + sku_name. (sku_id 컬럼은 mvp_listings에 없음 — Wave 106 fix)
   const pids = poolRows.map((r) => r.pid);
   const lstRes = await restFetch(
-    `${tableUrl("mvp_listings")}?select=pid,price,sku_median,sku_id,sku_name&pid=in.(${pids.join(",")})`,
+    `${tableUrl("mvp_listings")}?select=pid,price,sku_median,sku_name&pid=in.(${pids.join(",")})`,
     { headers: serviceHeaders() },
   );
   const listings = new Map(((await lstRes.json()) as ListingMeta[]).map((l) => [Number(l.pid), l]));
+
+  // sku_id 는 mvp_raw_listings 에서 보강 (디버깅/통계용. 메시지 본체엔 영향 없음).
+  const rawRes = await restFetch(
+    `${tableUrl("mvp_raw_listings")}?select=pid,sku_id&pid=in.(${pids.join(",")})`,
+    { headers: serviceHeaders() },
+  );
+  const skuIds = new Map(((await rawRes.json()) as RawSkuMeta[]).map((r) => [Number(r.pid), r.sku_id ?? null]));
 
   const candidates = poolRows
     .map((p) => {
@@ -59,7 +70,7 @@ export async function enqueueHotdealsFromPool(): Promise<{ scanned: number; enqu
       return {
         pid: p.pid,
         comparable_key: p.comparable_key,
-        sku_id: l.sku_id,
+        sku_id: skuIds.get(p.pid) ?? null,
         sku_name: l.sku_name,
         band: p.profit_band,
         profit_amount,
