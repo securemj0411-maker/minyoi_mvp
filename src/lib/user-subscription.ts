@@ -14,6 +14,7 @@ import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 export type ProStatus = {
   isPro: boolean;
   isAdmin: boolean;
+  isBetaTester: boolean;
   proUntil: string | null;
   source: "admin" | "subscription" | "legacy_pro_until" | "none";
 };
@@ -21,7 +22,7 @@ export type ProStatus = {
 export async function getProStatus(user: User, userRef: string): Promise<ProStatus> {
   // Wave 106: admin이라도 shadow mode 켜져있으면 일반인처럼 처리 (auto-Pro override 해제).
   if (isAdminUser(user) && !(await hasAdminShadowFromCookies())) {
-    return { isPro: true, isAdmin: true, proUntil: null, source: "admin" };
+    return { isPro: true, isAdmin: true, isBetaTester: false, proUntil: null, source: "admin" };
   }
   try {
     // 1차: mvp_user_plans (실제 결제 시스템).
@@ -35,27 +36,29 @@ export async function getProStatus(user: User, userRef: string): Promise<ProStat
       current_period_end: string | null;
     }>;
     const row = planRows[0];
+
+    // 2차: mvp_user_credits (pro_until legacy + is_beta_tester 같이 조회).
+    const creditRes = await restFetch(
+      `${tableUrl("mvp_user_credits")}?select=pro_until,is_beta_tester&user_ref=eq.${encodeURIComponent(userRef)}&auth_user_id=eq.${user.id}&limit=1`,
+      { headers: serviceHeaders() },
+    );
+    const creditRows = (await creditRes.json()) as Array<{ pro_until: string | null; is_beta_tester: boolean | null }>;
+    const isBetaTester = Boolean(creditRows[0]?.is_beta_tester);
+    const proUntil = creditRows[0]?.pro_until ?? null;
+
     if (row && row.plan_key === "pro") {
       const periodEnd = row.current_period_end;
       const inWindow = !periodEnd || new Date(periodEnd) > new Date();
-      // status가 'cancelled'여도 current_period_end 안이면 Pro 유지 (cancelAtPeriodEnd 정책).
       if (inWindow && row.status !== "expired") {
-        return { isPro: true, isAdmin: false, proUntil: periodEnd, source: "subscription" };
+        return { isPro: true, isAdmin: false, isBetaTester, proUntil: periodEnd, source: "subscription" };
       }
     }
 
-    // 2차 fallback: legacy mvp_user_credits.pro_until (admin 수동 박기 등).
-    const creditRes = await restFetch(
-      `${tableUrl("mvp_user_credits")}?select=pro_until&user_ref=eq.${encodeURIComponent(userRef)}&auth_user_id=eq.${user.id}&limit=1`,
-      { headers: serviceHeaders() },
-    );
-    const creditRows = (await creditRes.json()) as Array<{ pro_until: string | null }>;
-    const proUntil = creditRows[0]?.pro_until ?? null;
     if (proUntil && new Date(proUntil) > new Date()) {
-      return { isPro: true, isAdmin: false, proUntil, source: "legacy_pro_until" };
+      return { isPro: true, isAdmin: false, isBetaTester, proUntil, source: "legacy_pro_until" };
     }
-    return { isPro: false, isAdmin: false, proUntil: null, source: "none" };
+    return { isPro: false, isAdmin: false, isBetaTester, proUntil: null, source: "none" };
   } catch {
-    return { isPro: false, isAdmin: false, proUntil: null, source: "none" };
+    return { isPro: false, isAdmin: false, isBetaTester: false, proUntil: null, source: "none" };
   }
 }

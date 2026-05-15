@@ -1,5 +1,14 @@
 [
   {
+    "pid": "373411521",
+    "name": "매입 중고폰 파손폰 아이폰 미개봉 자급제 공기계 유심기변용 새폰 박스폰",
+    "price": 979000,
+    "reject_reasons": [
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_buying_post"
+    ]
+  },
+  {
     "pid": "361849284",
     "name": "매입 아이패드 미니 에어 프로 M1 M2 M3 M4 11 13 인치 세대",
     "price": 4090000,
@@ -10,30 +19,11 @@
     ]
   },
   {
-    "pid": "373411521",
-    "name": "매입 중고폰 파손폰 아이폰 미개봉 자급제 공기계 유심기변용 새폰 박스폰",
-    "price": 979000,
-    "reject_reasons": [
-      "missing__아이폰_iphone_s_13_s_",
-      "reject_buying_post"
-    ]
-  },
-  {
     "pid": "323396828",
     "name": "(자급제)아이폰13 128기가 배터리효율 98프로 단순사용 ,퓰박스",
     "price": 480000,
     "reject_reasons": [
       "missing__아이폰_iphone_s_13_s_"
-    ]
-  },
-  {
-    "pid": "361850209",
-    "name": "매입 맥북 프로 에어 13 14 15 16 인치 M1 M2 M3 M4",
-    "price": 5120000,
-    "reject_reasons": [
-      "price_too_high",
-      "missing__아이폰_iphone_s_13_s_",
-      "reject_buying_post"
     ]
   },
   {
@@ -49,6 +39,15 @@
       "reject_wrong_model_16",
       "reject_broken_or_parts",
       "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "408009729",
+    "name": "Airpods Pro2",
+    "price": 171000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing__아이폰_iphone_s_13_s_"
     ]
   },
   {
@@ -95,6 +94,27 @@
     ]
   },
   {
+    "pid": "384907445",
+    "name": "파손폰매입 중고폰매입 고장폰 아이폰파손 불량폰 파손폰11 12 13 14",
+    "price": 780000,
+    "reject_reasons": [
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_model_16",
+      "reject_broken_or_parts",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "361850209",
+    "name": "매입 맥북 프로 에어 13 14 15 16 인치 M1 M2 M3 M4",
+    "price": 5120000,
+    "reject_reasons": [
+      "price_too_high",
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_buying_post"
+    ]
+  },
+  {
     "pid": "184755896",
     "name": "삽니다 아이폰 x, xs, 8, 11, 12, 13, 등 다 삽니다",
     "price": 55555,
@@ -115,19 +135,30 @@
     ]
   },
   {
-    "pid": "394158623",
-    "name": "[미사용/새상품] 아이폰16프로 재고정리 할인 [13,14,15,17]",
-    "price": 370000,
+    "pid": "405878593",
+    "name": "[미사용/새상품]아이폰17E 재고정리 할인 [13,14,15,16,프로]",
+    "price": 50000,
     "reject_reasons": [
+      "price_too_low",
       "missing__아이폰_iphone_s_13_s_",
-      "reject_wrong_model_16",
       "reject_carrier_locked_generic"
     ]
   },
   {
-    "pid": "394159868",
-    "name": "[미사용/새상품]아이폰17에어 재고정리 할인[13,14,15,16,프로]",
-    "price": 410000,
+    "pid": "394153402",
+    "name": "[미사용/새상품] 아이폰15 재고정리 할인 [13,14,16,17,프로]",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_model_15",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "394160573",
+    "name": "[미사용/새상품] 아이폰17프로 재고정리 할인 [13,14,15,16]",
+    "price": 590000,
     "reject_reasons": [
       "missing__아이폰_iphone_s_13_s_",
       "reject_carrier_locked_generic"
@@ -145,9 +176,19 @@
     ]
   },
   {
+    "pid": "394159506",
+    "name": "[미사용/새상품] 아이폰17 재고정리 할인 [13,14,15,16,프로]",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
     "pid": "394161073",
     "name": "[미사용/새상품]아이폰17프로맥스 재고정리 할인 [13,14,15,16]",
-    "price": 930000,
+    "price": 890000,
     "reject_reasons": [
       "missing__아이폰_iphone_s_13_s_",
       "reject_wrong_model_pro_max",
@@ -155,95 +196,43 @@
     ]
   },
   {
-    "pid": "323637784",
-    "name": "특가 아이폰17 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
-    "price": 230000,
+    "pid": "394155965",
+    "name": "[미사용/새상품] 아이폰15프로 재고정리 할인 [13,14,16,17]",
+    "price": 390000,
     "reject_reasons": [
-      "price_too_low",
       "missing__아이폰_iphone_s_13_s_",
-      "reject_wrong_storage_256",
+      "reject_wrong_model_15",
       "reject_carrier_locked_generic"
     ]
   },
   {
-    "pid": "407502305",
-    "name": "(미개봉) 맥북 프로 14 M5칩 24GB 메모리 1TB 스페이스 그레이",
-    "price": 2550000,
-    "reject_reasons": [
-      "price_too_high",
-      "missing__아이폰_iphone_s_13_s_",
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "405878593",
-    "name": "[미사용/새상품]아이폰17E 재고정리 할인 [13,14,15,16,프로]",
-    "price": 50000,
-    "reject_reasons": [
-      "price_too_low",
-      "missing__아이폰_iphone_s_13_s_",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "394159506",
-    "name": "[미사용/새상품] 아이폰17 재고정리 할인 [13,14,15,16,프로]",
-    "price": 110000,
-    "reject_reasons": [
-      "price_too_low",
-      "missing__아이폰_iphone_s_13_s_",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "394160573",
-    "name": "[미사용/새상품] 아이폰17프로 재고정리 할인 [13,14,15,16]",
-    "price": 610000,
+    "pid": "394158930",
+    "name": "[미사용/새상품]아이폰16프로맥스 재고정리 할인 [13,14,15,17]",
+    "price": 890000,
     "reject_reasons": [
       "missing__아이폰_iphone_s_13_s_",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "345096784",
-    "name": "특가 아이폰16프로 미사용 선착순 한정판매 맥스/13/14/15/17",
-    "price": 490000,
-    "reject_reasons": [
-      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_model_pro_max",
       "reject_wrong_model_16",
-      "reject_wrong_storage_256",
       "reject_carrier_locked_generic"
     ]
   },
   {
-    "pid": "355383202",
-    "name": "특가 아이폰17에어 미사용 선착순 한정판매 프로/13/14/15/16",
-    "price": 530000,
+    "pid": "394159868",
+    "name": "[미사용/새상품]아이폰17에어 재고정리 할인[13,14,15,16,프로]",
+    "price": 390000,
     "reject_reasons": [
       "missing__아이폰_iphone_s_13_s_",
-      "reject_wrong_storage_256",
       "reject_carrier_locked_generic"
     ]
   },
   {
-    "pid": "355383741",
-    "name": "특가 아이폰17프로 미사용 선착순 한정판매 맥스/13/14/15/16",
-    "price": 730000,
-    "reject_reasons": [
-      "missing__아이폰_iphone_s_13_s_",
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "323636975",
-    "name": "특가 아이폰16 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
-    "price": 180000,
+    "pid": "394157319",
+    "name": "[미사용/새상품] 아이폰16 재고정리 할인 [13,14,15,17,프로]",
+    "price": 90000,
     "reject_reasons": [
       "price_too_low",
       "missing__아이폰_iphone_s_13_s_",
       "reject_wrong_model_16",
-      "reject_wrong_storage_256",
       "reject_carrier_locked_generic"
     ]
   },
@@ -256,41 +245,6 @@
       "missing__아이폰_iphone_s_13_s_",
       "reject_carrier_skt",
       "reject_carrier_lg"
-    ]
-  },
-  {
-    "pid": "405871865",
-    "name": "특가 아이폰16e 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
-    "price": 90000,
-    "reject_reasons": [
-      "price_too_low",
-      "missing__아이폰_iphone_s_13_s_",
-      "reject_wrong_model_16",
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "85739178",
-    "name": "삽니다)아이폰파손 아이폰12프로 아이폰13 아이폰14 XS X 매입합니다",
-    "price": 740000,
-    "reject_reasons": [
-      "missing__아이폰_iphone_s_13_s_",
-      "reject_wrong_model_12",
-      "reject_wrong_model_14",
-      "reject_broken_or_parts",
-      "reject_buying_post"
-    ]
-  },
-  {
-    "pid": "405877777",
-    "name": "특가 아이폰17e 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
-    "price": 90000,
-    "reject_reasons": [
-      "price_too_low",
-      "missing__아이폰_iphone_s_13_s_",
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
     ]
   },
   {
@@ -316,24 +270,83 @@
     ]
   },
   {
-    "pid": "323645070",
-    "name": "특가 아이폰17프로맥스 미사용 선착순 한정판매 13/14/15/16/애플",
-    "price": 990000,
+    "pid": "394158623",
+    "name": "[미사용/새상품] 아이폰16프로 재고정리 할인 [13,14,15,17]",
+    "price": 490000,
     "reject_reasons": [
       "missing__아이폰_iphone_s_13_s_",
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_256",
+      "reject_wrong_model_16",
       "reject_carrier_locked_generic"
     ]
   },
   {
-    "pid": "394157319",
-    "name": "[미사용/새상품] 아이폰16 재고정리 할인 [13,14,15,17,프로]",
+    "pid": "85739178",
+    "name": "삽니다)아이폰파손 아이폰12프로 아이폰13 아이폰14 XS X 매입합니다",
+    "price": 740000,
+    "reject_reasons": [
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_model_12",
+      "reject_wrong_model_14",
+      "reject_broken_or_parts",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "405871865",
+    "name": "특가 아이폰16e 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
     "price": 90000,
     "reject_reasons": [
       "price_too_low",
       "missing__아이폰_iphone_s_13_s_",
       "reject_wrong_model_16",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "355382900",
+    "name": "특가 아이폰15프로 미사용 선착순 한정판매 맥스/13/14/16/17",
+    "price": 330000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_model_15",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "345100432",
+    "name": "특가 아이폰16플러스 미사용 선착순 한정판매 프로/13/14/15/17",
+    "price": 310000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_model_16",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "355383989",
+    "name": "특가 아이폰15 미사용 선착순 한정판매 프로/맥스/13/14/16/17",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_model_15",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "323637784",
+    "name": "특가 아이폰17 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
+    "price": 230000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_storage_256",
       "reject_carrier_locked_generic"
     ]
   },
@@ -348,12 +361,44 @@
     ]
   },
   {
+    "pid": "355383202",
+    "name": "특가 아이폰17에어 미사용 선착순 한정판매 프로/13/14/15/16",
+    "price": 530000,
+    "reject_reasons": [
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "323636975",
+    "name": "특가 아이폰16 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
+    "price": 180000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_model_16",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
     "pid": "334511109",
     "name": "바로출발~! 아이폰6S   32G 64G 128G 팝니다",
-    "price": 174500,
+    "price": 219500,
     "reject_reasons": [
       "price_too_low",
       "missing__아이폰_iphone_s_13_s_"
+    ]
+  },
+  {
+    "pid": "355383741",
+    "name": "특가 아이폰17프로 미사용 선착순 한정판매 맥스/13/14/15/16",
+    "price": 730000,
+    "reject_reasons": [
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
     ]
   },
   {
@@ -366,6 +411,17 @@
     ]
   },
   {
+    "pid": "405877777",
+    "name": "특가 아이폰17e 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
     "pid": "398926382",
     "name": "단순개봉 새상품급 아이폰13 128GB 블랙 배터리100% 공기계 자급제",
     "price": 465000,
@@ -374,12 +430,37 @@
     ]
   },
   {
-    "pid": "407256911",
-    "name": "애플 맥북 프로 13\" 2017",
-    "price": 440000,
+    "pid": "323645070",
+    "name": "특가 아이폰17프로맥스 미사용 선착순 한정판매 13/14/15/16/애플",
+    "price": 990000,
     "reject_reasons": [
       "missing__아이폰_iphone_s_13_s_",
-      "reject_wrong_storage_512_1tb"
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "345096784",
+    "name": "특가 아이폰16프로 미사용 선착순 한정판매 맥스/13/14/15/17",
+    "price": 490000,
+    "reject_reasons": [
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_model_16",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "345096011",
+    "name": "특가 아이폰16프로맥스 미사용 선착순 한정판매 12/13/14/15/17",
+    "price": 830000,
+    "reject_reasons": [
+      "missing__아이폰_iphone_s_13_s_",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_model_16",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
     ]
   },
   {
@@ -423,12 +504,13 @@
     ]
   },
   {
-    "pid": "405025128",
-    "name": "애플 아이폰 13 Pro 시에라블루 1테라",
-    "price": 600000,
+    "pid": "349065456",
+    "name": "리퍼 자급제 배터리 100% 아이폰13프로맥스 256기가 실버 해외판X",
+    "price": 1100000,
     "reject_reasons": [
-      "reject_wrong_storage_512_1tb",
-      "reject_accessory_only"
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
     ]
   },
   {
@@ -439,6 +521,15 @@
       "reject_wrong_model_pro_max",
       "reject_wrong_storage_512_1tb",
       "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "405025128",
+    "name": "애플 아이폰 13 Pro 시에라블루 1테라",
+    "price": 600000,
+    "reject_reasons": [
+      "reject_wrong_storage_512_1tb",
+      "reject_accessory_only"
     ]
   },
   {
@@ -457,16 +548,6 @@
     "reject_reasons": [
       "reject_wrong_model_pro_max",
       "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "349065456",
-    "name": "리퍼 자급제 배터리 100% 아이폰13프로맥스 256기가 실버 해외판X",
-    "price": 1100000,
-    "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
     ]
   },
   {
@@ -504,22 +585,22 @@
     ]
   },
   {
-    "pid": "336997713",
-    "name": "리퍼 자급제 미사용 아이폰13프로맥스 256기가 시에라블루 풀박스",
-    "price": 1200000,
-    "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
     "pid": "336997124",
     "name": "리퍼 자급제 미사용 아이폰13프로맥스 512기가 그래파이트 풀박스",
     "price": 1150000,
     "reject_reasons": [
       "reject_wrong_model_pro_max",
       "reject_wrong_storage_512_1tb",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "336997713",
+    "name": "리퍼 자급제 미사용 아이폰13프로맥스 256기가 시에라블루 풀박스",
+    "price": 1200000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
       "reject_carrier_locked_generic"
     ]
   }

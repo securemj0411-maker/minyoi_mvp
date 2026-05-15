@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/auth-users";
 import { submitRevealFeedback, type RevealFeedbackType } from "@/lib/pack-open";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -7,6 +9,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const MAX_USER_REF = 64;
+// Wave 106: 평점 조작 spam 차단. 분당 30회 = 정상 사용자가 한 번에 다 응답해도 충분.
+const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_WINDOW_SECONDS = 60;
 const FEEDBACK_TYPES = new Set<RevealFeedbackType>([
   "interested",
   "bought",
@@ -43,6 +48,20 @@ export async function POST(req: Request) {
   }
   if (!Number.isFinite(pid)) return NextResponse.json({ error: "invalid pid" }, { status: 400 });
   if (!isFeedbackType(feedbackType)) return NextResponse.json({ error: "invalid feedback type" }, { status: 400 });
+
+  if (!isAdminUser(auth.user)) {
+    const rate = await checkRateLimit({
+      bucketKey: `reveals.feedback:user:${userRef}`,
+      maxRequests: RATE_LIMIT_MAX,
+      windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
+    });
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: "rate_limited", message: "응답이 너무 잦아요. 잠시 후 다시 시도해주세요.", retryAfter: rate.retryAfterSeconds },
+        { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
+      );
+    }
+  }
 
   try {
     await submitRevealFeedback({ userRef, pid, feedbackType, note });

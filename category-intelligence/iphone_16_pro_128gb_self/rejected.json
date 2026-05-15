@@ -9,9 +9,18 @@
     ]
   },
   {
-    "pid": "361850209",
-    "name": "매입 맥북 프로 에어 13 14 15 16 인치 M1 M2 M3 M4",
-    "price": 5120000,
+    "pid": "408009729",
+    "name": "Airpods Pro2",
+    "price": 171000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip"
+    ]
+  },
+  {
+    "pid": "361846772",
+    "name": "노트북 매입 삼성 갤럭시북 2 3 4 5 울트라 프로 360 플렉스 이온",
+    "price": 5090000,
     "reject_reasons": [
       "price_too_high",
       "missing_아이폰_s_16_s_프로_pro_ip",
@@ -29,16 +38,6 @@
     ]
   },
   {
-    "pid": "361846772",
-    "name": "노트북 매입 삼성 갤럭시북 2 3 4 5 울트라 프로 360 플렉스 이온",
-    "price": 5090000,
-    "reject_reasons": [
-      "price_too_high",
-      "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_buying_post"
-    ]
-  },
-  {
     "pid": "401932759",
     "name": "중고아이폰 파손아이폰 고장아이폰 아이폰부품아이폰17 아이폰16 아이폰15",
     "price": 777000,
@@ -51,24 +50,23 @@
     ]
   },
   {
-    "pid": "128627723",
-    "name": "파손아이폰 삽니다 아이폰12 13 14 15 16",
-    "price": 884000,
+    "pid": "361850209",
+    "name": "매입 맥북 프로 에어 13 14 15 16 인치 M1 M2 M3 M4",
+    "price": 5120000,
     "reject_reasons": [
+      "price_too_high",
       "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_broken_or_parts",
       "reject_buying_post"
     ]
   },
   {
-    "pid": "323637784",
-    "name": "특가 아이폰17 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
-    "price": 230000,
+    "pid": "394160573",
+    "name": "[미사용/새상품] 아이폰17프로 재고정리 할인 [13,14,15,16]",
+    "price": 590000,
     "reject_reasons": [
       "price_too_low",
       "missing_아이폰_s_16_s_프로_pro_ip",
       "reject_wrong_model_17",
-      "reject_wrong_storage_256",
       "reject_carrier_locked_generic"
     ]
   },
@@ -89,13 +87,13 @@
     ]
   },
   {
-    "pid": "394157319",
-    "name": "[미사용/새상품] 아이폰16 재고정리 할인 [13,14,15,17,프로]",
-    "price": 90000,
+    "pid": "85739178",
+    "name": "삽니다)아이폰파손 아이폰12프로 아이폰13 아이폰14 XS X 매입합니다",
+    "price": 740000,
     "reject_reasons": [
-      "price_too_low",
       "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_carrier_locked_generic"
+      "reject_broken_or_parts",
+      "reject_buying_post"
     ]
   },
   {
@@ -123,9 +121,69 @@
     ]
   },
   {
-    "pid": "405878593",
-    "name": "[미사용/새상품]아이폰17E 재고정리 할인 [13,14,15,16,프로]",
-    "price": 50000,
+    "pid": "306550241",
+    "name": "아이폰SE (Se1) 16G 32G 64G 128G 실버 스페이스그레이",
+    "price": 107000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_carrier_skt",
+      "reject_carrier_lg"
+    ]
+  },
+  {
+    "pid": "394158930",
+    "name": "[미사용/새상품]아이폰16프로맥스 재고정리 할인 [13,14,15,17]",
+    "price": 890000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "394158623",
+    "name": "[미사용/새상품] 아이폰16프로 재고정리 할인 [13,14,15,17]",
+    "price": 490000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "306550857",
+    "name": "아이폰6S 16G 32G 64G 128G 실버 스페이스그레이",
+    "price": 117000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_carrier_skt",
+      "reject_carrier_lg"
+    ]
+  },
+  {
+    "pid": "405085639",
+    "name": "잉어킹 프로모 매입 16만원 (아메리카노 1잔 무료쿠폰증정)",
+    "price": 160000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "394157319",
+    "name": "[미사용/새상품] 아이폰16 재고정리 할인 [13,14,15,17,프로]",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "394159506",
+    "name": "[미사용/새상품] 아이폰17 재고정리 할인 [13,14,15,16,프로]",
+    "price": 90000,
     "reject_reasons": [
       "price_too_low",
       "missing_아이폰_s_16_s_프로_pro_ip",
@@ -134,20 +192,9 @@
     ]
   },
   {
-    "pid": "394160573",
-    "name": "[미사용/새상품] 아이폰17프로 재고정리 할인 [13,14,15,16]",
-    "price": 610000,
-    "reject_reasons": [
-      "price_too_low",
-      "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_wrong_model_17",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "85739178",
-    "name": "삽니다)아이폰파손 아이폰12프로 아이폰13 아이폰14 XS X 매입합니다",
-    "price": 740000,
+    "pid": "128627723",
+    "name": "파손아이폰 삽니다 아이폰12 13 14 15 16",
+    "price": 884000,
     "reject_reasons": [
       "missing_아이폰_s_16_s_프로_pro_ip",
       "reject_broken_or_parts",
@@ -155,25 +202,45 @@
     ]
   },
   {
-    "pid": "405877777",
-    "name": "특가 아이폰17e 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
-    "price": 90000,
+    "pid": "394159868",
+    "name": "[미사용/새상품]아이폰17에어 재고정리 할인[13,14,15,16,프로]",
+    "price": 390000,
     "reject_reasons": [
       "price_too_low",
       "missing_아이폰_s_16_s_프로_pro_ip",
       "reject_wrong_model_17",
-      "reject_wrong_storage_256",
       "reject_carrier_locked_generic"
     ]
   },
   {
     "pid": "394161073",
     "name": "[미사용/새상품]아이폰17프로맥스 재고정리 할인 [13,14,15,16]",
-    "price": 930000,
+    "price": 890000,
     "reject_reasons": [
       "missing_아이폰_s_16_s_프로_pro_ip",
       "reject_wrong_model_pro_max",
       "reject_wrong_model_17",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "394153402",
+    "name": "[미사용/새상품] 아이폰15 재고정리 할인 [13,14,16,17,프로]",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_wrong_model_15",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "345096011",
+    "name": "특가 아이폰16프로맥스 미사용 선착순 한정판매 12/13/14/15/17",
+    "price": 830000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256",
       "reject_carrier_locked_generic"
     ]
   },
@@ -190,77 +257,15 @@
     ]
   },
   {
-    "pid": "345096784",
-    "name": "특가 아이폰16프로 미사용 선착순 한정판매 맥스/13/14/15/17",
-    "price": 490000,
-    "reject_reasons": [
-      "price_too_low",
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "405871865",
-    "name": "특가 아이폰16e 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
+    "pid": "405877777",
+    "name": "특가 아이폰17e 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
     "price": 90000,
     "reject_reasons": [
       "price_too_low",
       "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_wrong_model_16_base_or_plus",
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "355383741",
-    "name": "특가 아이폰17프로 미사용 선착순 한정판매 맥스/13/14/15/16",
-    "price": 730000,
-    "reject_reasons": [
-      "missing_아이폰_s_16_s_프로_pro_ip",
       "reject_wrong_model_17",
       "reject_wrong_storage_256",
       "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "256647635",
-    "name": "아이폰5s 16G 32G 64G  스페이스그레이 실버",
-    "price": 97000,
-    "reject_reasons": [
-      "price_too_low",
-      "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_carrier_skt",
-      "reject_carrier_kt"
-    ]
-  },
-  {
-    "pid": "405085639",
-    "name": "잉어킹 프로모 매입 16만원 (아메리카노 1잔 무료쿠폰증정)",
-    "price": 160000,
-    "reject_reasons": [
-      "price_too_low",
-      "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_buying_post"
-    ]
-  },
-  {
-    "pid": "306550857",
-    "name": "아이폰6S 16G 32G 64G 128G 실버 스페이스그레이",
-    "price": 117000,
-    "reject_reasons": [
-      "price_too_low",
-      "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_carrier_skt",
-      "reject_carrier_lg"
-    ]
-  },
-  {
-    "pid": "334511109",
-    "name": "바로출발~! 아이폰6S   32G 64G 128G 팝니다",
-    "price": 174500,
-    "reject_reasons": [
-      "price_too_low",
-      "missing_아이폰_s_16_s_프로_pro_ip"
     ]
   },
   {
@@ -283,38 +288,25 @@
     ]
   },
   {
-    "pid": "407014670",
-    "name": "아이폰 16 128GB 울트라마린 미개봉 자급제",
-    "price": 910000,
-    "reject_reasons": [
-      "missing_아이폰_s_16_s_프로_pro_ip"
-    ]
-  },
-  {
-    "pid": "399616914",
-    "name": "아이폰 se3 128기가 미드나이트 자급제 판매",
-    "price": 208000,
-    "reject_reasons": [
-      "price_too_low",
-      "missing_아이폰_s_16_s_프로_pro_ip"
-    ]
-  },
-  {
-    "pid": "333969957",
-    "name": "아이폰16e 블랙 128G 자급제",
-    "price": 777,
+    "pid": "405871865",
+    "name": "특가 아이폰16e 미사용 선착순 한정판매 프로/맥스/13/14/15/17",
+    "price": 90000,
     "reject_reasons": [
       "price_too_low",
       "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_wrong_model_16_base_or_plus"
+      "reject_wrong_model_16_base_or_plus",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
     ]
   },
   {
-    "pid": "394158623",
-    "name": "[미사용/새상품] 아이폰16프로 재고정리 할인 [13,14,15,17]",
-    "price": 370000,
+    "pid": "355383741",
+    "name": "특가 아이폰17프로 미사용 선착순 한정판매 맥스/13/14/15/16",
+    "price": 730000,
     "reject_reasons": [
-      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_wrong_model_17",
+      "reject_wrong_storage_256",
       "reject_carrier_locked_generic"
     ]
   },
@@ -342,6 +334,113 @@
     ]
   },
   {
+    "pid": "355383989",
+    "name": "특가 아이폰15 미사용 선착순 한정판매 프로/맥스/13/14/16/17",
+    "price": 90000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_wrong_model_15",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "323637784",
+    "name": "특가 아이폰17 미사용 선착순 한정판매 프로/맥스/13/14/15/16",
+    "price": 230000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_wrong_model_17",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "345100432",
+    "name": "특가 아이폰16플러스 미사용 선착순 한정판매 프로/13/14/15/17",
+    "price": 310000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_wrong_model_16_base_or_plus",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "345096784",
+    "name": "특가 아이폰16프로 미사용 선착순 한정판매 맥스/13/14/15/17",
+    "price": 490000,
+    "reject_reasons": [
+      "price_too_low",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "334511109",
+    "name": "바로출발~! 아이폰6S   32G 64G 128G 팝니다",
+    "price": 219500,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip"
+    ]
+  },
+  {
+    "pid": "355382900",
+    "name": "특가 아이폰15프로 미사용 선착순 한정판매 맥스/13/14/16/17",
+    "price": 330000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_wrong_model_15",
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "407014670",
+    "name": "아이폰 16 128GB 울트라마린 미개봉 자급제",
+    "price": 910000,
+    "reject_reasons": [
+      "missing_아이폰_s_16_s_프로_pro_ip"
+    ]
+  },
+  {
+    "pid": "394155965",
+    "name": "[미사용/새상품] 아이폰15프로 재고정리 할인 [13,14,16,17]",
+    "price": 390000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_wrong_model_15",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
+    "pid": "256647635",
+    "name": "아이폰5s 16G 32G 64G  스페이스그레이 실버",
+    "price": 97000,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_carrier_skt",
+      "reject_carrier_kt"
+    ]
+  },
+  {
+    "pid": "333969957",
+    "name": "아이폰16e 블랙 128G 자급제",
+    "price": 777,
+    "reject_reasons": [
+      "price_too_low",
+      "missing_아이폰_s_16_s_프로_pro_ip",
+      "reject_wrong_model_16_base_or_plus"
+    ]
+  },
+  {
     "pid": "405869614",
     "name": "[미사용/새상품]아이폰16E 재고정리 할인 [13,14,15,17,프로]",
     "price": 50000,
@@ -353,9 +452,9 @@
     ]
   },
   {
-    "pid": "394159506",
-    "name": "[미사용/새상품] 아이폰17 재고정리 할인 [13,14,15,16,프로]",
-    "price": 110000,
+    "pid": "405878593",
+    "name": "[미사용/새상품]아이폰17E 재고정리 할인 [13,14,15,16,프로]",
+    "price": 50000,
     "reject_reasons": [
       "price_too_low",
       "missing_아이폰_s_16_s_프로_pro_ip",
@@ -364,58 +463,29 @@
     ]
   },
   {
-    "pid": "394159868",
-    "name": "[미사용/새상품]아이폰17에어 재고정리 할인[13,14,15,16,프로]",
-    "price": 410000,
+    "pid": "407971190",
+    "name": "[단순개봉 새상품] 아이폰16프로 256GB 데저트 티타늄 자급제 팔아요",
+    "price": 1250000,
     "reject_reasons": [
-      "price_too_low",
-      "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_wrong_model_17",
-      "reject_carrier_locked_generic"
+      "reject_wrong_storage_256",
+      "reject_refurbished_only"
     ]
   },
   {
-    "pid": "406909075",
-    "name": "아이폰16프로 256 검은색 자급제자급제",
-    "price": 1380000,
+    "pid": "408009817",
+    "name": "아이폰 16프로 블랙 256기가 새제품 자급제",
+    "price": 1334000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_refurbished_only"
+    ]
+  },
+  {
+    "pid": "407697283",
+    "name": "아이폰16pro 256GB 자급제 (데저트티타늄)",
+    "price": 1100000,
     "reject_reasons": [
       "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "406806568",
-    "name": "아이폰 16프로 256기가 블랙 애플케어O 자급제",
-    "price": 1600000,
-    "reject_reasons": [
-      "reject_wrong_storage_256",
-      "reject_refurbished_only"
-    ]
-  },
-  {
-    "pid": "407565048",
-    "name": "아이폰 16프로 256 블랙티타늄 자급제 배터리100",
-    "price": 1300000,
-    "reject_reasons": [
-      "reject_wrong_storage_256",
-      "reject_refurbished_only"
-    ]
-  },
-  {
-    "pid": "407476499",
-    "name": "아이폰 16프로 256 데저트티타늄 자급제 배터리100 싸이클 1",
-    "price": 1300000,
-    "reject_reasons": [
-      "reject_wrong_storage_256",
-      "reject_refurbished_only"
-    ]
-  },
-  {
-    "pid": "405453774",
-    "name": "아이폰 16프로 256 데저트티타늄 자급제",
-    "price": 1350000,
-    "reject_reasons": [
-      "reject_wrong_storage_256",
-      "reject_refurbished_only"
     ]
   },
   {
@@ -429,6 +499,23 @@
     ]
   },
   {
+    "pid": "406909075",
+    "name": "아이폰16프로 256 검은색 자급제자급제",
+    "price": 1380000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "408136095",
+    "name": "(교신가능)아이폰16 Pro 블랙 256GB 자급제 팝니다",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_carrier_locked_generic"
+    ]
+  },
+  {
     "pid": "290014815",
     "name": "삽니다)아이폰16프로 아이폰16프로맥스 자급제 미개봉 유심기변 출장매입",
     "price": 2000000,
@@ -436,6 +523,23 @@
       "price_too_high",
       "reject_wrong_model_pro_max",
       "reject_buying_post"
+    ]
+  },
+  {
+    "pid": "407808978",
+    "name": "자급제 아이폰 16프로 화이트 티탄늄 256GB 모델",
+    "price": 1230000,
+    "reject_reasons": [
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "407476499",
+    "name": "아이폰 16프로 256 데저트티타늄 자급제 배터리100 싸이클 1",
+    "price": 1350000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_refurbished_only"
     ]
   },
   {
@@ -464,47 +568,11 @@
     ]
   },
   {
-    "pid": "405879768",
-    "name": "자급제 아이폰16 프로 256GB 새제품",
-    "price": 1350000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
     "pid": "405880042",
     "name": "자급제 아이폰16 프로 256GB 새제품",
     "price": 1350000,
     "reject_reasons": [
       "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "306550241",
-    "name": "아이폰SE (Se1) 16G 32G 64G 128G 실버 스페이스그레이",
-    "price": 107000,
-    "reject_reasons": [
-      "price_too_low",
-      "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_carrier_skt",
-      "reject_carrier_lg"
-    ]
-  },
-  {
-    "pid": "405586244",
-    "name": "아이폰 16 Pro 자급제, 블랙 티타늄, 256GB 단순개봉 새제품",
-    "price": 1340000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "351492079",
-    "name": "아이폰16프로 256GB 자급제 공기계",
-    "price": 950000,
-    "reject_reasons": [
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
     ]
   },
   {
@@ -724,21 +792,21 @@
     ]
   },
   {
-    "pid": "355240887",
-    "name": "자급제 아이폰16PRO 데저트골드 256GB",
-    "price": 1100000,
-    "reject_reasons": [
-      "reject_wrong_storage_256",
-      "reject_accessory_only"
-    ]
-  },
-  {
     "pid": "355551057",
     "name": "(자급제) 미개봉 아이폰16promax 256 화이트",
     "price": 1590000,
     "reject_reasons": [
       "reject_wrong_model_pro_max",
       "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "355240887",
+    "name": "자급제 아이폰16PRO 데저트골드 256GB",
+    "price": 1100000,
+    "reject_reasons": [
+      "reject_wrong_storage_256",
+      "reject_accessory_only"
     ]
   },
   {
@@ -763,16 +831,6 @@
     "price": 1350000,
     "reject_reasons": [
       "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "407502305",
-    "name": "(미개봉) 맥북 프로 14 M5칩 24GB 메모리 1TB 스페이스 그레이",
-    "price": 2550000,
-    "reject_reasons": [
-      "price_too_high",
-      "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_wrong_storage_512_1tb"
     ]
   },
   {
@@ -840,13 +898,11 @@
     ]
   },
   {
-    "pid": "348996352",
-    "name": "[풀박스X]아이폰 16 Pro Max/자급제/모든 통신사 호환/당일발송",
-    "price": 1300000,
+    "pid": "350105637",
+    "name": "(미개봉) 아이폰16pro 256 데저트 자급제 미개봉",
+    "price": 1450000,
     "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
+      "reject_wrong_storage_256"
     ]
   },
   {
@@ -871,16 +927,6 @@
     "price": 1190000,
     "reject_reasons": [
       "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "407653363",
-    "name": "아이폰16프로맥스 512GB 블랙티타늄 SS급 자급제",
-    "price": 1540000,
-    "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_512_1tb",
-      "reject_refurbished_only"
     ]
   },
   {
@@ -1063,28 +1109,19 @@
     ]
   },
   {
-    "pid": "329888349",
-    "name": "아이폰 16pro 256 자급제 미개봉 새상품",
-    "price": 1470000,
+    "pid": "333538978",
+    "name": "아이폰 16pro 256기가 화이트 자급제 미개봉",
+    "price": 1440000,
     "reject_reasons": [
       "reject_wrong_storage_256"
     ]
   },
   {
-    "pid": "290006311",
-    "name": "아이폰16프로 256기가 데저트 자급제 미개봉 판매합니다",
-    "price": 1450000,
+    "pid": "333488621",
+    "name": "아이폰16pro 256기가 화이트 자급제 미개봉",
+    "price": 1440000,
     "reject_reasons": [
       "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "407243956",
-    "name": "아이폰 16 프로맥스 1TB 데저트티타늄 자급제",
-    "price": 1550000,
-    "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_512_1tb"
     ]
   },
   {
@@ -1097,35 +1134,6 @@
       "reject_wrong_model_pro_max",
       "reject_wrong_model_17",
       "reject_buying_post"
-    ]
-  },
-  {
-    "pid": "406099946",
-    "name": "자급제 아이폰16 프로맥스 512GB 새제품 (박스개봉품) 내추럴 티타늄",
-    "price": 1850000,
-    "reject_reasons": [
-      "price_too_high",
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "406100666",
-    "name": "자급제 아이폰16 프로맥스 512GB 새제품 (박스개봉품) 데저트 티타늄",
-    "price": 1850000,
-    "reject_reasons": [
-      "price_too_high",
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "357029820",
-    "name": "공지&리뷰 필독 아이폰16pro 재고소진시 종료 정책 4/2 한정",
-    "price": 120000,
-    "reject_reasons": [
-      "price_too_low",
-      "reject_carrier_locked_generic"
     ]
   },
   {
@@ -1184,6 +1192,16 @@
     ]
   },
   {
+    "pid": "406100115",
+    "name": "자급제 아이폰16 프로맥스 512GB 새제품 (박스개봉품) 화이트 티타늄",
+    "price": 1850000,
+    "reject_reasons": [
+      "price_too_high",
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_512_1tb"
+    ]
+  },
+  {
     "pid": "350993213",
     "name": "아이폰16프로맥스 256 화이트 자급제",
     "price": 1450000,
@@ -1212,18 +1230,18 @@
     ]
   },
   {
-    "pid": "335200320",
-    "name": "아이폰 16 프로맥스 256 화이트 자급제 미개봉",
-    "price": 1700000,
+    "pid": "343539570",
+    "name": "아이폰16프로맥스 256기가 자급제판매합니다",
+    "price": 1200000,
     "reject_reasons": [
       "reject_wrong_model_pro_max",
       "reject_wrong_storage_256"
     ]
   },
   {
-    "pid": "343539570",
-    "name": "아이폰16프로맥스 256기가 자급제판매합니다",
-    "price": 1200000,
+    "pid": "335200320",
+    "name": "아이폰 16 프로맥스 256 화이트 자급제 미개봉",
+    "price": 1700000,
     "reject_reasons": [
       "reject_wrong_model_pro_max",
       "reject_wrong_storage_256"
@@ -1240,12 +1258,12 @@
     ]
   },
   {
-    "pid": "329683504",
-    "name": "아이폰16 프로맥스 화이트 256기가 자급제",
-    "price": 1630000,
+    "pid": "357029820",
+    "name": "공지&리뷰 필독 아이폰16pro 재고소진시 종료 정책 4/2 한정",
+    "price": 120000,
     "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_256"
+      "price_too_low",
+      "reject_carrier_locked_generic"
     ]
   },
   {
@@ -1259,9 +1277,9 @@
     ]
   },
   {
-    "pid": "358282398",
-    "name": "아이폰16프로맥스 1TB 미개봉 자급제폰 판매합니다",
-    "price": 2100000,
+    "pid": "358282432",
+    "name": "아이폰16프로맥스 512G 미개봉 자급제폰 판매합니다",
+    "price": 1880000,
     "reject_reasons": [
       "price_too_high",
       "reject_wrong_model_pro_max",
@@ -1269,9 +1287,9 @@
     ]
   },
   {
-    "pid": "358282432",
-    "name": "아이폰16프로맥스 512G 미개봉 자급제폰 판매합니다",
-    "price": 1880000,
+    "pid": "358282398",
+    "name": "아이폰16프로맥스 1TB 미개봉 자급제폰 판매합니다",
+    "price": 2100000,
     "reject_reasons": [
       "price_too_high",
       "reject_wrong_model_pro_max",
@@ -1383,511 +1401,30 @@
     ]
   },
   {
-    "pid": "335809253",
-    "name": "아이폰16프로맥스 화이트티타늄 256G 미개봉 자급제 새상품",
+    "pid": "338871803",
+    "name": "자급제 미개봉 아이폰16프로맥스 256기가 블랙",
+    "price": 1650000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "337081243",
+    "name": "아이폰 16프로맥스 256기가 자급제 블랙 티타늄 (미개봉)",
+    "price": 1660000,
+    "reject_reasons": [
+      "reject_wrong_model_pro_max",
+      "reject_wrong_storage_256"
+    ]
+  },
+  {
+    "pid": "335782013",
+    "name": "미개봉 자급제 아이폰 16프로맥스 블랙 티타늄 256G",
     "price": 777,
     "reject_reasons": [
       "price_too_low",
       "reject_wrong_model_pro_max"
-    ]
-  },
-  {
-    "pid": "335873235",
-    "name": "아이폰16프로맥스 512기가 블랙 미개봉자급제팝니다",
-    "price": 1830000,
-    "reject_reasons": [
-      "price_too_high",
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "334369776",
-    "name": "미개봉 자급제 아이폰16프로맥스 256G 블랙 티타늄",
-    "price": 777,
-    "reject_reasons": [
-      "price_too_low",
-      "reject_wrong_model_pro_max"
-    ]
-  },
-  {
-    "pid": "334370019",
-    "name": "미개봉 자급제 아이폰16프로맥스 256G 데저트 티타늄",
-    "price": 777,
-    "reject_reasons": [
-      "price_too_low",
-      "reject_wrong_model_pro_max"
-    ]
-  },
-  {
-    "pid": "334680924",
-    "name": "아이폰16프로맥스512  네추럴티타늄 자급제 새제품",
-    "price": 1920000,
-    "reject_reasons": [
-      "price_too_high",
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_512_1tb",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "333969664",
-    "name": "아이폰 16프로맥스 블랙 티타늄 256G 자급제 + 애플케어플러스",
-    "price": 777,
-    "reject_reasons": [
-      "price_too_low",
-      "reject_wrong_model_pro_max"
-    ]
-  },
-  {
-    "pid": "325769174",
-    "name": "아이폰16프로맥스 256기가 미개봉 자급제 삽니다",
-    "price": 1550000,
-    "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_256",
-      "reject_buying_post"
-    ]
-  },
-  {
-    "pid": "192031411",
-    "name": "아이폰17 16프로 맥스 갤럭시 S26 울트라 폴드7 울트라 자급제사요",
-    "price": 1850000,
-    "reject_reasons": [
-      "price_too_high",
-      "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_wrong_model_pro_max",
-      "reject_wrong_model_17",
-      "reject_wrong_storage_256",
-      "reject_wrong_storage_512_1tb",
-      "reject_buying_post"
-    ]
-  },
-  {
-    "pid": "256280267",
-    "name": "자급제 미개봉 아이폰16프로맥스 256기가 네츄럴,블랙 팝니다",
-    "price": 1658000,
-    "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "244549605",
-    "name": "아이폰16프로맥스256  자급제 새제품 미개봉",
-    "price": 1750000,
-    "reject_reasons": [
-      "price_too_high",
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "192030540",
-    "name": "아이폰17 16 프로맥스 S26 울트라 플립7 패드 자급제 미개봉삽니다",
-    "price": 1790000,
-    "reject_reasons": [
-      "price_too_high",
-      "missing_아이폰_s_16_s_프로_pro_ip",
-      "reject_wrong_model_pro_max",
-      "reject_wrong_model_17",
-      "reject_wrong_storage_256",
-      "reject_wrong_storage_512_1tb",
-      "reject_buying_post"
-    ]
-  },
-  {
-    "pid": "407202741",
-    "name": "Apple 아이폰 16 Pro 자급제 블랙 256GB",
-    "price": 1350000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "407038873",
-    "name": "[배터리 성능 100%/사이클0회] 아이폰16프로 256GB 자급제 판매",
-    "price": 1250000,
-    "reject_reasons": [
-      "reject_wrong_storage_256",
-      "reject_refurbished_only"
-    ]
-  },
-  {
-    "pid": "405952276",
-    "name": "아이폰16프로 1테라 자급제 블랙",
-    "price": 1600000,
-    "reject_reasons": [
-      "reject_wrong_storage_512_1tb",
-      "reject_carrier_locked_generic",
-      "reject_refurbished_only"
-    ]
-  },
-  {
-    "pid": "406124350",
-    "name": "아이폰 16프로 256기가 자급제 새상품 급 판매합니다.",
-    "price": 1300000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "403671216",
-    "name": "아이폰 16pro 512기가 자급제폰",
-    "price": 1280000,
-    "reject_reasons": [
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "403104641",
-    "name": "아이폰16프로 512기가 자급제",
-    "price": 1330000,
-    "reject_reasons": [
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "403719072",
-    "name": "아이폰 16프로 265 데저트티타늄 자급제박스포함 싸이클0",
-    "price": 1370000,
-    "reject_reasons": [
-      "reject_refurbished_only"
-    ]
-  },
-  {
-    "pid": "402585888",
-    "name": "아이폰16프로256 화이트 자급제 배터리92%",
-    "price": 1060000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "402641943",
-    "name": "아이폰16 프로 256 자급제 화이트 티타늄 팝니다. 91%",
-    "price": 1100000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "402908377",
-    "name": "아이폰 16프로 256 데저트티타늄 자급제 미사용품",
-    "price": 1300000,
-    "reject_reasons": [
-      "reject_wrong_storage_256",
-      "reject_refurbished_only"
-    ]
-  },
-  {
-    "pid": "401086240",
-    "name": "아이폰16프로 256gb 자급제 화이트",
-    "price": 950000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "402073064",
-    "name": "아이폰16프로 256 자급제 화이트 티타늄 팝니다. 97%",
-    "price": 1200000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "400187094",
-    "name": "아이폰16프로 512GB 블랙 자급제 SS급 풀박스",
-    "price": 1240000,
-    "reject_reasons": [
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "399121692",
-    "name": "A급 자급제 풀박스 아이폰 16프로 256 내츄럴티타늄배터리 100%",
-    "price": 1200000,
-    "reject_reasons": [
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "397833074",
-    "name": "아이폰16 프로 256기가.자급제,거의새제품급.블랙",
-    "price": 1250000,
-    "reject_reasons": [
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "397588950",
-    "name": "아이폰 16프로 1테라 내추럴티타늄 자급제",
-    "price": 1420000,
-    "reject_reasons": [
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "396880931",
-    "name": "아이폰 16프로 1TB 블랙티타늄 자급제",
-    "price": 1490000,
-    "reject_reasons": [
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "395930855",
-    "name": "아이폰 16프로 256 자급제 배터리99",
-    "price": 1181000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "395549148",
-    "name": "아이폰16프로 블랙티타늄 자급제 256gb",
-    "price": 1040000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "396205159",
-    "name": "아이폰16프로256 데저트 단순개봉 싸이클3회 자급제",
-    "price": 1280000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "395983533",
-    "name": "애플 아이폰16 Pro Max 1TB 자급제 무음 카메라 보증ㅇ",
-    "price": 1680000,
-    "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "394118970",
-    "name": "아이폰16 프로 맥스 256GB 자급제 무음카메라 보증남음 100%",
-    "price": 1400000,
-    "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "394228753",
-    "name": "아이폰16프로 블랙티타늄 512 자급제",
-    "price": 1150000,
-    "reject_reasons": [
-      "reject_wrong_model_17",
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "393793809",
-    "name": "아이폰 16 프로 1테라 데저트 자급제",
-    "price": 1400000,
-    "reject_reasons": [
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "394195890",
-    "name": "아이폰 16프로 1TB 자급제 블랙티타늄 상태A급",
-    "price": 1111,
-    "reject_reasons": [
-      "price_too_low",
-      "reject_wrong_storage_512_1tb",
-      "reject_broken_or_parts"
-    ]
-  },
-  {
-    "pid": "393673364",
-    "name": "아이폰 16프로 자급제 256GB 화이트 티타늄 풀박스",
-    "price": 1090000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "393244996",
-    "name": "S급 풀박) 아이폰 16프로 256기가 블랙 자급제",
-    "price": 1065000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "393232752",
-    "name": "아이폰16프로 256 티타늄 s급판매합니다 자급제",
-    "price": 1045000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "392124149",
-    "name": "아이폰 16 프로 256 블랙 자급제 풀박스",
-    "price": 930000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "393354487",
-    "name": "업자아닙니다. 아이폰 16 PRO 256GB 배터리 효율 100% 자급제",
-    "price": 1200000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "393866722",
-    "name": "아이폰 16 Pro 화이트 512GB 자급제 + 애케플 + 배터리 93%",
-    "price": 1350000,
-    "reject_reasons": [
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "391485406",
-    "name": "아이폰16 프로 1테라 데저트 자급제 풀박스",
-    "price": 1360000,
-    "reject_reasons": [
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "393544311",
-    "name": "아이폰 16 프로 256 자급제 내추럴티타늄 애케플 + 에어팟 프로3",
-    "price": 1300000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "390607917",
-    "name": "[풀박스] 아이폰 16 프로 512GB 블랙 (자급제)",
-    "price": 1450000,
-    "reject_reasons": [
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "390103860",
-    "name": "아이폰16프로 자급제 256기가",
-    "price": 780000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "389324505",
-    "name": "아이폰16프로 256 화이트 자급제 배터리90%",
-    "price": 1120000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "393321934",
-    "name": "아이폰16프로256기가 애케플 박스포함 자급제 싸게팝니다.(데저트티타늄)",
-    "price": 1280000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "389321898",
-    "name": "아이폰16프로256 화이트 배터리100% 자급제",
-    "price": 1150000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "389323115",
-    "name": "아이폰16프로 256기가 화이트 배터리100% 자급제",
-    "price": 1130000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "380510909",
-    "name": "아이폰 16프로 자급제 블랙 티타늄 256 풀박스 북미(미국) 무음카메라",
-    "price": 1000000,
-    "reject_reasons": [
-      "reject_wrong_storage_256",
-      "reject_carrier_locked_generic"
-    ]
-  },
-  {
-    "pid": "402846755",
-    "name": "아이폰16 프로맥스 256 블랙 자급제",
-    "price": 1280000,
-    "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "406100115",
-    "name": "자급제 아이폰16 프로맥스 512GB 새제품 (박스개봉품) 화이트 티타늄",
-    "price": 1850000,
-    "reject_reasons": [
-      "price_too_high",
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "400217543",
-    "name": "아이폰 16프로맥스 512 자급제",
-    "price": 1380000,
-    "reject_reasons": [
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "396280141",
-    "name": "S급 아이폰16프로 블랙 256기가 풀박스",
-    "price": 1000000,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
-    ]
-  },
-  {
-    "pid": "393066417",
-    "name": "아이폰16프로 1TB 화이트 배터리100% S급 풀박",
-    "price": 1600000,
-    "reject_reasons": [
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "389096611",
-    "name": "아이폰16프로맥스 1테라 홍콩판 자급제 듀얼심 무음카메라",
-    "price": 1710000,
-    "reject_reasons": [
-      "price_too_high",
-      "reject_wrong_model_pro_max",
-      "reject_wrong_storage_512_1tb"
-    ]
-  },
-  {
-    "pid": "377002807",
-    "name": "아이폰16pro 256 화이트 s급 풀박",
-    "price": 1382970,
-    "reject_reasons": [
-      "reject_wrong_storage_256"
     ]
   }
 ]

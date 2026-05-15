@@ -2,12 +2,19 @@
 // body: { pids: number[] | "all" } — 단일/복수/전체.
 
 import { NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/auth-users";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Wave 106: spam 차단. 카드 까는 endpoint = queue.status='consumed' 처리 → spam 시 다른 사용자에게
+// reroute 차단됨. 분당 10회 = 정상 사용자 한 번에 다 까는 케이스 충분히 커버.
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_SECONDS = 60;
 
 type OpenBody = { pids?: number[] | "all" };
 
@@ -23,6 +30,20 @@ export async function POST(req: Request) {
   }
 
   const userRef = userRefForAuthUser(auth.user.id);
+
+  if (!isAdminUser(auth.user)) {
+    const rate = await checkRateLimit({
+      bucketKey: `hotdeal.open:user:${userRef}`,
+      maxRequests: RATE_LIMIT_MAX,
+      windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
+    });
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: "rate_limited", message: "너무 자주 열고 있어요. 잠시 후 다시 시도해주세요.", retryAfter: rate.retryAfterSeconds },
+        { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
+      );
+    }
+  }
   const now = new Date().toISOString();
 
   let filter: string;

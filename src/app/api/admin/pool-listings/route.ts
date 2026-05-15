@@ -4,6 +4,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
+import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -31,7 +32,10 @@ type PoolRow = {
 export async function GET(req: NextRequest) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  if (!isAdminUser(auth.user)) return NextResponse.json({ error: "admin only" }, { status: 403 });
+  // 2026-05-15: 운영자 또는 베타 체험단으로 등록된 사용자 모두 접근 허용.
+  const isAdmin = isAdminUser(auth.user);
+  const isBeta = isAdmin ? false : await isBetaTesterAuthId(auth.user.id);
+  if (!isAdmin && !isBeta) return NextResponse.json({ error: "admin only" }, { status: 403 });
   const userRef = userRefForAuthUser(auth.user.id);
 
   const url = new URL(req.url);

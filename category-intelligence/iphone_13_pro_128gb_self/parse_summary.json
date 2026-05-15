@@ -2,7 +2,7 @@
   "version": 1,
   "lane_key": "iphone_13_pro_128gb_self",
   "category": "smartphone",
-  "generated_at": "2026-05-12T11:37:58.136Z",
+  "generated_at": "2026-05-15T09:54:49.800Z",
   "method": "mine-narrow-lane-v1",
   "queries": [
     "아이폰 13 프로 128 자급제",
@@ -10,59 +10,63 @@
     "iphone 13 pro 128 자급제",
     "아이폰 13 프로 자급제"
   ],
-  "pages": 10,
+  "pages": 5,
   "price_range_krw": [
     350000,
     1200000
   ],
   "target_parse_ready": 200,
-  "total_fetched": 60,
+  "total_fetched": 67,
   "parse_ready_count": 6,
-  "rejected_count": 54,
+  "rejected_count": 61,
   "target_reached": false,
   "reject_breakdown": [
     {
       "reason": "missing__아이폰_iphone_s_13_s_",
-      "count": 35
+      "count": 42
     },
     {
       "reason": "reject_carrier_locked_generic",
-      "count": 20
+      "count": 27
     },
     {
       "reason": "reject_wrong_storage_256",
-      "count": 18
+      "count": 22
     },
     {
       "reason": "price_too_low",
-      "count": 16
+      "count": 21
     },
     {
       "reason": "reject_wrong_model_pro_max",
-      "count": 12
-    },
-    {
-      "reason": "reject_buying_post",
-      "count": 9
-    },
-    {
-      "reason": "reject_wrong_storage_512_1tb",
-      "count": 8
+      "count": 14
     },
     {
       "reason": "reject_wrong_model_16",
-      "count": 7
+      "count": 11
     },
     {
-      "reason": "price_too_high",
-      "count": 4
+      "reason": "reject_buying_post",
+      "count": 10
     },
     {
-      "reason": "reject_wrong_model_12",
-      "count": 3
+      "reason": "reject_wrong_storage_512_1tb",
+      "count": 6
+    },
+    {
+      "reason": "reject_wrong_model_15",
+      "count": 5
     },
     {
       "reason": "reject_broken_or_parts",
+      "count": 4
+    },
+    {
+      "reason": "price_too_high",
+      "count": 3
+    },
+    {
+      "reason": "reject_wrong_model_12",
       "count": 3
     },
     {
@@ -80,10 +84,6 @@
     {
       "reason": "reject_carrier_lg",
       "count": 2
-    },
-    {
-      "reason": "reject_wrong_model_15",
-      "count": 1
     },
     {
       "reason": "reject_refurbished_only",

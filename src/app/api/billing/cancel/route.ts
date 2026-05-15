@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/auth-users";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { cancelUserPlan, reactivateUserPlan } from "@/lib/user-plan";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Wave 106: 구독 취소/재활성 spam 차단. 분당 5회 = 정상 사용자 충분 (실수 1-2번이 max).
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_SECONDS = 60;
 
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
@@ -18,6 +24,20 @@ export async function POST(req: Request) {
   }
   const action = String(body.action ?? "cancel").toLowerCase();
   const userRef = userRefForAuthUser(auth.user.id);
+
+  if (!isAdminUser(auth.user)) {
+    const rate = await checkRateLimit({
+      bucketKey: `billing.cancel:user:${userRef}`,
+      maxRequests: RATE_LIMIT_MAX,
+      windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
+    });
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: "rate_limited", message: "요청이 너무 잦아요. 잠시 후 다시 시도해주세요.", retryAfter: rate.retryAfterSeconds },
+        { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
+      );
+    }
+  }
 
   try {
     if (action === "reactivate") {

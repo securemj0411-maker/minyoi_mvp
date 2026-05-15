@@ -2,7 +2,7 @@
   "version": 1,
   "lane_key": "iphone_16_pro_128gb_self",
   "category": "smartphone",
-  "generated_at": "2026-05-12T10:49:06.514Z",
+  "generated_at": "2026-05-15T09:46:58.448Z",
   "method": "mine-narrow-lane-v1",
   "queries": [
     "아이폰 16 프로 128 자급제",
@@ -10,71 +10,71 @@
     "iphone 16 pro 128 자급제",
     "아이폰 16 프로 자급제"
   ],
-  "pages": 10,
+  "pages": 4,
   "price_range_krw": [
     700000,
     1700000
   ],
   "target_parse_ready": 200,
-  "total_fetched": 233,
-  "parse_ready_count": 25,
-  "rejected_count": 208,
+  "total_fetched": 176,
+  "parse_ready_count": 22,
+  "rejected_count": 154,
   "target_reached": false,
   "reject_breakdown": [
     {
       "reason": "reject_wrong_storage_256",
-      "count": 119
+      "count": 89
     },
     {
       "reason": "reject_wrong_model_pro_max",
-      "count": 66
-    },
-    {
-      "reason": "reject_wrong_storage_512_1tb",
-      "count": 50
-    },
-    {
-      "reason": "price_too_high",
-      "count": 39
+      "count": 49
     },
     {
       "reason": "missing_아이폰_s_16_s_프로_pro_ip",
-      "count": 38
+      "count": 40
     },
     {
       "reason": "price_too_low",
+      "count": 31
+    },
+    {
+      "reason": "price_too_high",
       "count": 30
     },
     {
       "reason": "reject_carrier_locked_generic",
-      "count": 27
+      "count": 28
+    },
+    {
+      "reason": "reject_wrong_storage_512_1tb",
+      "count": 25
     },
     {
       "reason": "reject_buying_post",
-      "count": 23
+      "count": 20
     },
     {
       "reason": "reject_wrong_model_17",
-      "count": 16
-    },
-    {
-      "reason": "reject_refurbished_only",
-      "count": 9
-    },
-    {
-      "reason": "reject_broken_or_parts",
-      "count": 4
+      "count": 13
     },
     {
       "reason": "reject_wrong_model_15",
-      "count": 3
+      "count": 7
     },
     {
       "reason": "reject_wrong_model_16_base_or_plus",
+      "count": 4
+    },
+    {
+      "reason": "reject_broken_or_parts",
       "count": 3
     },
     {
       "reason": "reject_carrier_skt",
+      "count": 3
+    },
+    {
+      "reason": "reject_refurbished_only",
       "count": 3
     },
     {

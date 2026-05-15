@@ -559,6 +559,48 @@ Hero 톤도 정직 ("AI 시세 기반 추정 — 수익 보장 X" disclosure 명
 - 다음: 다른 운영 readiness 영역 진단 (DB connection pool / rate limit 분포 / observability).
 - commit: 42998f1
 
+## 29. 운영 readiness audit 2 — rate limit 누락 5개 endpoint 일괄 적용
+
+- 시간: 2026-05-16 08:00 KST
+- 검토 (DB pool / rate limit / observability):
+  - **DB pool**: restFetch 8s timeout + 3 retry + supabase PgBouncer 자동 관리. 추가 fix 0.
+  - **observability**: reportCriticalIncident (텔레그램 alert) + watchdog (#27/#28). 별도 dashboard 없음 — 운영자 본인이 supabase logs / cron logs 봐야 (별도 wave 가능).
+  - **rate limit**: 23개 user-facing endpoint 중 7개만 박혀있음 (billing/subscribe, credits/me, telegram/start-verify, packs/inventory + me + open + preview-inventory). 16개 누락 중 critical 5개 발견.
+
+### 29a. Critical 누락 5개
+
+| Endpoint | 위험 | 박은 limit |
+|---|---|---|
+| `me/hotdeal/open` | 카드 까는 endpoint = queue.status='consumed' 처리 → spam 시 핫딜 burn | 분 10회 / user |
+| `packs/reveals/feedback` | 평점 조작 spam → 분석 데이터 오염 | 분 30회 / user |
+| `packs/reveals/click` | click spam → 분석 데이터 오염 | 분 60회 / user |
+| `billing/cancel` | 구독 취소/재활성 spam (실수/봇) | 분 5회 / user |
+| `me/telegram/disconnect` | disconnect spam | 분 5회 / user |
+
+### 29b. 박지 않은 endpoint (의도된 X 또는 영향 작음)
+
+- `auth/signup`: 410 Gone deprecated — 호출되어도 410 반환. 추가 limit 불필요.
+- `me/hotdeal/decide`: Wave 106 #17 에서 410 deprecated. 동일.
+- `admin/*`: 운영자 본인 호출이라 limit 박으면 답답.
+- `me/subscription`, `me/telegram/status`, `billing/me`, `packs/me`, `me/hotdeal/reservations`: read-only — fetch spam은 generic Vercel rate limit 으로 충분.
+- `listings/[pid]/market-source`: read-only.
+- `telegram/webhook`: secret 검증 (Wave 104 #1) 으로 spam 차단.
+
+### 29c. 변경
+
+- 5개 endpoint 동일 패턴: admin 예외 + checkRateLimit + 429 반환.
+- 모든 limit 한국어 친절 메시지 (이미 박힌 7개와 일관).
+- bucketKey naming: `<endpoint>:user:${userRef}`.
+
+### 29d. 검증
+
+- tsc clean.
+- admin 예외 처리: MJ 본인 운영 영향 X.
+- 위험: 정상 사용자 한도 도달 risk 낮음 (각 limit 충분히 여유).
+
+- 다음: observability dashboard (별도 wave) 또는 e2e UX walkthrough.
+- commit: pending
+
 ### 보너스: audit false positive (총 3건)
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 `checkCronAuth` 박혀있음. 스킵.
 - `pack-reveal-modal.tsx`에 닫기 버튼 없음 보고됐으나 실 코드 (line 944-952) "닫기" 버튼 + Esc keydown (line 872) 둘 다 있음. 스킵.
