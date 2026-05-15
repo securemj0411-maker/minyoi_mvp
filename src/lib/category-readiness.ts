@@ -225,6 +225,17 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "iPad Air M3 11\" 256GB Wi-Fi",
     note: "M3 신모델 (2025) narrow lane. M1/M2/M4, 13인치, 셀룰러는 catalog로 차단.",
   },
+  // Wave 119 (2026-05-15): iPad Air 13" narrow lane (M2/M3 sibling). 14일 매물 87건.
+  ipad_air_m2_13_256_wifi: {
+    status: "ready",
+    label: "iPad Air M2 13\" 256GB Wi-Fi",
+    note: "iPad Air M2 13인치 sibling lane. M1/M3/M4, 11인치, 셀룰러 차단.",
+  },
+  ipad_air_m3_13_256_wifi: {
+    status: "ready",
+    label: "iPad Air M3 13\" 256GB Wi-Fi",
+    note: "iPad Air M3 (2025) 13인치 sibling lane. M1/M2/M4, 11인치, 셀룰러 차단.",
+  },
   galaxy_tab_s10_ultra_256_self: {
     status: "ready",
     label: "Galaxy Tab S10 Ultra 256GB (자급제)",
