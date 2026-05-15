@@ -244,16 +244,18 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
             (overflow-x-auto + shrink-0 + whitespace-nowrap) 이미 차단됨. */}
         <aside className="sticky top-[60px] z-30 h-[52px] border-b border-[#e2d9cb] bg-[#f8f4ec]/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:top-[60px] lg:row-span-2 lg:h-[calc(100dvh-60px)] lg:border-b-0 lg:border-r lg:bg-[#f8f4ec] lg:backdrop-blur-none xl:row-span-1">
           <div className="flex h-full items-center px-3 py-1 lg:block lg:h-auto lg:px-2 lg:py-3">
-            {/* desktop only: collapse toggle 버튼 */}
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              className="hidden lg:flex h-7 w-7 items-center justify-center rounded-md text-[#5a6658] hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 mx-auto lg:mb-2"
-              aria-label={sidebarCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
-              title={sidebarCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
-            >
-              <span className="text-base font-black leading-none">{sidebarCollapsed ? "›" : "‹"}</span>
-            </button>
+            {/* desktop only: collapse toggle 버튼 — 우측 정렬 (saas 표준 패턴) */}
+            <div className="hidden lg:flex lg:justify-end lg:mb-1.5">
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-[#5a6658] hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                aria-label={sidebarCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
+                title={sidebarCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
+              >
+                <span className="text-sm font-black leading-none">{sidebarCollapsed ? "»" : "«"}</span>
+              </button>
+            </div>
             <div className={`hidden px-2 pb-3 lg:block ${sidebarCollapsed ? "lg:hidden" : ""}`}>
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
                 My Dashboard
