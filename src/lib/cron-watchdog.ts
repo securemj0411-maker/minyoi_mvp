@@ -27,6 +27,12 @@ type WatchdogTarget = {
 // Wave 106: 운영 readiness audit. 진짜 stale 3개만 추가 추적.
 // - landing-showcases / ai-cache-prune / compliance-retention: 별도 cron에서만 호출 (다른 cron 흡수 X). 24h 0회 = 진짜 stale.
 // - collect / hotdeal-worker는 다른 cron 흡수 (tick:searchStage / pool-warmer:hotdeal stage) → 추적 제외 (의도).
+//
+// 2026-05-16 (베타 우선순위 정책): landing-showcases + housekeeper-ai-cache-prune watchdog 추적 제거.
+// - landing-showcases: 베타 traffic 7명. 랜딩 stale 영향 작음. QStash 등록 안 해도 OK.
+// - housekeeper-ai-cache-prune: 베타 traffic 작아 cache 누적도 작음. QStash 등록 안 해도 OK.
+// - compliance-retention: 법적 책무. 추적 유지 + QStash 등록 권장.
+// - reference-price-refresh: 시세 정확도. 사용자 선택. 추적 유지.
 const WATCHDOG_TARGETS: WatchdogTarget[] = [
   { name: "lifecycle-worker", requestPath: "/api/cron/lifecycle-worker", expectedMinutes: 7, alertAfterMinutes: 21 },
   { name: "tick", requestPath: "/api/cron/tick", expectedMinutes: 2, alertAfterMinutes: 10 },
@@ -35,8 +41,8 @@ const WATCHDOG_TARGETS: WatchdogTarget[] = [
   { name: "pool-warmer", requestPath: "/api/cron/pool-warmer", expectedMinutes: 30, alertAfterMinutes: 90 },
   { name: "deep-crawl", requestPath: "/api/cron/deep-crawl", expectedMinutes: 60, alertAfterMinutes: 180 },
   { name: "housekeeper", requestPath: "/api/cron/housekeeper", expectedMinutes: 30, alertAfterMinutes: 90 },
-  { name: "landing-showcases", requestPath: "/api/cron/landing-showcases", expectedMinutes: 10, alertAfterMinutes: 30 },
-  { name: "housekeeper-ai-cache-prune", requestPath: "/api/cron/housekeeper-ai-cache-prune", expectedMinutes: 360, alertAfterMinutes: 1080 },
+  // landing-showcases: 베타 단계 추적 제외 (영향 작음).
+  // housekeeper-ai-cache-prune: 베타 단계 추적 제외 (cache 작음).
   { name: "compliance-retention", requestPath: "/api/cron/compliance-retention", expectedMinutes: 1440, alertAfterMinutes: 2880 },
   { name: "reference-price-refresh", requestPath: "/api/cron/reference-price-refresh", expectedMinutes: 1440, alertAfterMinutes: 1800 },
 ];
