@@ -575,8 +575,13 @@ function lifecycleDelayMs(tier: LifecyclePriorityTier, status: LifecycleStatus =
   // - market_sample: 24h → 168h (시세 표본, 7일에 1번 충분)
   // - 기타 general: 48h → 168h (낮은 priority)
   // 결과: 필요 처리량 분당 35 → 분당 ~25로 감소. capacity 안에 fit.
-  if (tier === "pool") return 60 * 60 * 1000;
-  if (tier === "near_pool") return 4 * 60 * 60 * 1000;
+  //
+  // 2026-05-16 (사용자 코멘트 id 111 pid 408149902): "이거 팔렸는데 lifecycle 병목있나??".
+  // 진단: pool tier next_check_at 60분이라 매물 sold 후 최대 60분 stale 가능.
+  // lifecycle 5x throughput 적용 후 capacity 충분 (시간당 ~1,500-3,000건). pool 60분 → 15분.
+  // near_pool 4h → 1h. 사용자 노출 매물 stale window 1/4로.
+  if (tier === "pool") return 15 * 60 * 1000;
+  if (tier === "near_pool") return 60 * 60 * 1000;
   if (tier === "exploration") return 72 * 60 * 60 * 1000;
   if (tier === "market_sample") return 7 * 24 * 60 * 60 * 1000;
   return 7 * 24 * 60 * 60 * 1000;
