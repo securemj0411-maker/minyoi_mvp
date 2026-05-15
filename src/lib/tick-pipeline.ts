@@ -9,7 +9,7 @@ import {
   trimmedSellerMarket,
 } from "@/lib/market-math";
 import { notifyOperationalAlerts, type OperationalAlert } from "@/lib/operational-notifier";
-import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
+import { extractConditionClass, parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import {
   applyAiReview,
   classifyListing,
@@ -133,6 +133,9 @@ type ParsedListingRow = {
   comparable_key: string | null;
   parse_confidence: number | null;
   condition_score: number | null;
+  // Wave 130 (2026-05-16): condition_class column — DB migration 추가.
+  // 시세 산정 시 (comparable_key, condition_class) 복합 키로 grouping.
+  condition_class: string | null;
   needs_review: boolean | null;
   parsed_json: Record<string, unknown> | null;
 };
@@ -172,6 +175,8 @@ type ExistingSearchSellerRow = {
 type MarketPriceRow = {
   date: string;
   comparable_key: string;
+  // Wave 130 (2026-05-16): condition_class — PK 일부. condition별 시세 분리.
+  condition_class: string;
   active_median_price: number | null;
   sold_median_price: number | null;
   blended_median_price: number | null;
@@ -181,6 +186,9 @@ type MarketPriceRow = {
   confidence: "high" | "medium" | "low";
   computed_at: string;
 };
+
+// Wave 130: comparable_key → (condition_class → row) 이중 map.
+type MarketPriceStatsMap = Map<string, Map<string, MarketPriceRow>>;
 
 type CollectRunHealthRow = {
   status: string;
@@ -1444,11 +1452,14 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
 
 async function claimDetailQueue(): Promise<QueueClaimRow[]> {
   const config = loadPipelineRuntimeConfig();
+  // 2026-05-16: Bunjang rate limit probe 시나리오 A 결과 (lifecycle 5x 성공) → detail-worker도 같은 패턴.
+  // detail queue 10,224 pending (Iteration 2 발견). batch 20 → 400 hardcode.
+  const DETAIL_BATCH_HARDCODE = 400;
   const res = await restFetch(rpcUrl("claim_mvp_detail_queue"), {
     method: "POST",
     headers: serviceHeaders(),
     body: jsonBody({
-      p_batch_size: config.tickDetailBatchSize,
+      p_batch_size: DETAIL_BATCH_HARDCODE,
       p_lease_seconds: config.tickDetailLeaseSeconds,
     }),
   });
@@ -1487,18 +1498,24 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
     const existingParsedByPid = await loadParsedRows(claims.map((claim) => Number(claim.pid)));
     const marketInvalidations: MarketKeyInvalidationEvent[] = [];
 
-    for (const claim of claims) {
+    // 2026-05-16: lifecycle 5x 성공 패턴 detail-worker에도 적용. queue 10,224 pending → 5x throughput.
+    // sequential for → Promise.all wave concurrency 10. probe 시나리오 A로 c=10 안전 검증됨.
+    const DETAIL_CONCURRENCY = 10;
+    let detailDeadlineHit = false;
+    for (let waveStart = 0; waveStart < claims.length; waveStart += DETAIL_CONCURRENCY) {
       if (Date.now() >= deadlineMs) {
-        stats.timedOut = true;
-        return stats;
+        detailDeadlineHit = true;
+        break;
       }
+      const wave = claims.slice(waveStart, waveStart + DETAIL_CONCURRENCY);
+      await Promise.all(wave.map(async (claim) => {
       try {
         const detail = await fetchDetail(String(claim.pid));
         if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
         if (!detail) {
           stats.detailFailed += 1;
           await markQueueFailed(claim.queue_id, "detail api returned null");
-          continue;
+          return;
         }
         const soldSignals = detectSoldOut(detail, claim.price, { title: claim.name });
         if (hasStrongSoldOutSignal(soldSignals)) {
@@ -1552,7 +1569,7 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           await markQueueDone(claim.queue_id);
           stats.enriched += 1;
           stats.poolSkipped += 1;
-          continue;
+          return;
         }
         const { listingType, sku } = classifyListing(claim.name, detail.description, claim.price);
         const storageListingType = rawListingTypeForStorage(listingType);
@@ -1676,6 +1693,10 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
         stats.detailFailed += 1;
         await markQueueFailed(claim.queue_id, err instanceof Error ? err.message : String(err));
       }
+      })); // Promise.all wave 닫기
+    } // outer for waveStart loop 닫기
+    if (detailDeadlineHit) {
+      stats.timedOut = true;
     }
     stats.upserted += await enqueueMarketKeyInvalidations(marketInvalidations);
   }
@@ -1808,7 +1829,8 @@ async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListing
   if (pids.length === 0) return new Map();
   const unique = [...new Set(pids.filter(Number.isFinite))];
   if (unique.length === 0) return new Map();
-  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,needs_review,parsed_json";
+  // Wave 130: condition_class 컬럼 fetch — 시세 산정 grouping key.
+  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,needs_review,parsed_json";
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
     const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&pid=in.(${chunk.join(",")})`;
@@ -1821,7 +1843,8 @@ async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListing
 async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: number): Promise<Map<number, ParsedListingRow>> {
   const unique = [...new Set(comparableKeys.filter(Boolean))].slice(0, limit);
   if (unique.length === 0) return new Map();
-  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,needs_review,parsed_json";
+  // Wave 130: condition_class 컬럼 fetch — 시세 산정 grouping key.
+  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,needs_review,parsed_json";
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_KEY_READ_CHUNK_SIZE)) {
     const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
@@ -1857,6 +1880,8 @@ async function ensureParsedRows(rows: ScorableRawRow[], parsedByPid: Map<number,
       comparable_key: (row.comparable_key as string | null) ?? null,
       parse_confidence: (row.parse_confidence as number | null) ?? null,
       condition_score: (row.condition_score as number | null) ?? null,
+      // Wave 130: condition_class — option-parser가 채움. 시세 grouping key.
+      condition_class: (row.condition_class as string | null) ?? null,
       needs_review: (row.needs_review as boolean | null) ?? null,
       parsed_json: (row.parsed_json as Record<string, unknown> | null) ?? null,
     });
@@ -1864,12 +1889,14 @@ async function ensureParsedRows(rows: ScorableRawRow[], parsedByPid: Map<number,
   return parsedByPid;
 }
 
-async function loadMarketPriceStats(comparableKeys: string[]): Promise<Map<string, MarketPriceRow>> {
+// Wave 130 (2026-05-16): condition별 시세 분리 fetch. comparable_key 당 최대 6 row (mint/clean/normal/worn/low_batt + legacy 'all').
+async function loadMarketPriceStats(comparableKeys: string[]): Promise<MarketPriceStatsMap> {
   const unique = [...new Set(comparableKeys.filter(Boolean))];
   if (unique.length === 0) return new Map();
   const columns = [
     "date",
     "comparable_key",
+    "condition_class",
     "active_median_price",
     "sold_median_price",
     "blended_median_price",
@@ -1880,14 +1907,51 @@ async function loadMarketPriceStats(comparableKeys: string[]): Promise<Map<strin
     "computed_at",
   ].join(",");
   const encoded = unique.map((key) => encodeURIComponent(key)).join(",");
-  const url = `${tableUrl("mvp_market_price_daily")}?select=${columns}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(1000, unique.length * 5)}`;
+  // limit 늘림 — comparable_key당 condition class 6개 + 며칠치.
+  const url = `${tableUrl("mvp_market_price_daily")}?select=${columns}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(2000, unique.length * 12)}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   const rows = (await res.json()) as MarketPriceRow[];
-  const latest = new Map<string, MarketPriceRow>();
+  const result: MarketPriceStatsMap = new Map();
   for (const row of rows) {
-    if (!latest.has(row.comparable_key)) latest.set(row.comparable_key, row);
+    const byCond = result.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
+    if (!byCond.has(row.condition_class)) byCond.set(row.condition_class, row);
+    result.set(row.comparable_key, byCond);
   }
-  return latest;
+  return result;
+}
+
+// Wave 130: 매물 condition_class에 가장 적합한 시세 row 선택. sample 부족 시 fallback chain 적용.
+// 시세 산정 (tick-pipeline) 용 — pack-open의 selectMarketRowByCondition과 같은 정책.
+const SCORE_CONDITION_FALLBACK: Record<string, string[]> = {
+  mint: ["mint", "clean", "normal", "all"],
+  clean: ["clean", "normal", "mint", "all"],
+  normal: ["normal", "clean", "worn", "all"],
+  worn: ["worn", "normal", "all"],
+  low_batt: ["low_batt", "all"],
+  flawed: ["flawed", "all"],
+  all: ["all", "normal", "clean", "worn", "mint"],
+};
+
+function pickMarketStatByCondition(
+  byCondition: Map<string, MarketPriceRow> | undefined,
+  conditionClass: string | null,
+): MarketPriceRow | undefined {
+  if (!byCondition || byCondition.size === 0) return undefined;
+  const target = conditionClass ?? "normal";
+  const order = SCORE_CONDITION_FALLBACK[target] ?? [target, "normal", "all"];
+  // 우선순위 따라 sample 충분한 row 선택 (3건+). 부족하면 다음 class.
+  for (let i = 0; i < order.length; i++) {
+    const cls = order[i];
+    const cand = byCondition.get(cls);
+    if (!cand) continue;
+    const samples =
+      Number(cand.active_sample_count ?? 0) +
+      Number(cand.sold_sample_count ?? 0) +
+      Number(cand.disappeared_sample_count ?? 0);
+    if (samples >= 3 || i === order.length - 1) return cand;
+  }
+  // 마지막 fallback — 어떤 row라도 반환
+  return byCondition.values().next().value;
 }
 
 async function loadPendingMarketInvalidations(limit = 200): Promise<MarketKeyInvalidationRow[]> {
@@ -2448,7 +2512,26 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     }
   }
 
+  // Wave 130 (2026-05-16): condition_class별 시세 분리 — 사업 보고서 L2 retention factor.
+  // 같은 SKU+옵션 매물이라도 condition별 시세 spread 15~40% 측정됨.
+  // 예: airpods_max|usbc mint 550K vs worn 430K, airpods_4_anc mint 210K vs normal 150K.
+  //
+  // 변경 (Wave 90/91/106 기존 hard filter 정책 통합):
+  // - 차단 유지 (시세 sample 제외):
+  //   * flawed class (display_defect/screen_replaced/faceid_issue/parts_only/water_damage/locked 등)
+  //   * accessory_bundle (본품+액세서리 — 단품 시세와 비교 noisy)
+  //   * multi_device_bundle (다른 카테고리 본품 묶임)
+  // - condition별 grouping (각각 별도 시세):
+  //   * mint (new_or_open_box) — 새상품 시세
+  //   * clean (good_condition/full_set/applecare_premium) — 프리미엄 시세
+  //   * worn (cosmetic_wear) — 사용감 매물 시세
+  //   * low_batt (low_battery_health) — 배터리 저하 시세
+  //   * normal — 마킹 없거나 일반 사용 매물 (default)
+  //
+  // grouping key: `${comparable_key}|${condition_class}`. upsert 시 PK (date, comparable_key, condition_class).
   const byKey = new Map<string, {
+    comparableKey: string;
+    conditionClass: string;
     rows: ScorableRawRow[];
     activeRows: ScorableRawRow[];
     soldRows: ScorableRawRow[];
@@ -2463,41 +2546,17 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // 2026-05-16: placeholder price 제외 (999999999, 111111111 등 "교환원함"/"분실"/"판매완료" 류).
     // 14건 발견 (mvp_listings 0.12%). 진짜 호가 아니라 시세 집계에 끼면 평균 끌어올림.
     if (row.price >= 100_000_000 || row.price <= 0) continue;
-    // Wave 90 (사용자 지적): 새상품/미개봉 매물은 시세 평균에서 제외 (다른 condition).
-    // parser가 conditionNotes에 "new_or_open_box" 마킹. 풀 진입은 별개 (싸게 올라온 새상품도 차익 OK).
+
     const conditionNotes = (parsed.parsed_json?.condition_notes as string[] | undefined) ?? [];
-    if (conditionNotes.includes("new_or_open_box")) continue;
-    // Wave 91 (사용자 코멘트 pid 407135933): 배터리 효율 75% 매물이 일반 시세에 끼면 위험.
-    // low_battery_health 매물은 시세 비교군에서 제외 (풀 진입은 OK, 싸면 차익 매물).
-    if (conditionNotes.includes("low_battery_health")) continue;
-    // 2026-05-15 (사용자 코멘트 pid 397748787): 풀세트/풀박스/풀구성 매물(액세서리·매직마우스 포함)은
-    // 단품 시세와 비교 시 평균을 끌어올림. full_set 라벨 매물은 시세 집계에서 제외.
-    // 풀 진입은 별개 — 풀세트가 단품 시세보다 싸면 좋은 차익 매물 (그대로 노출).
-    if (conditionNotes.includes("full_set")) continue;
-    // 2026-05-15 (사용자 코멘트 pid 408124976): 애플케어/AC+/삼성케어 보증 매물은
-    // 보증 프리미엄으로 단품보다 비쌈 → 시세 집계 제외. pool 진입은 허용 (보증 포함인데도 싸면 꿀).
-    if (conditionNotes.includes("applecare_premium")) continue;
-    // 2026-05-15 (사용자 코멘트 pid 407555096 / 407486890): 본품 + 애플펜슬/매직키보드/폴리오 등
-    // 액세서리 번들 매물은 단품 시세 비교군에서 제외. pool 진입은 허용 (번들이 단품 시세보다 싸면 꿀).
+    // Wave 130: flawed class (손상/문제 매물) 시세 산정 차단 — 현재 정책 유지.
+    // condition_class column이 채워져 있으면 그대로, 아니면 condition_notes에서 즉시 derive.
+    const conditionClass = parsed.condition_class ?? extractConditionClass(conditionNotes);
+    if (conditionClass === "flawed") continue;
+    // Wave 130: bundle 매물은 단품 시세와 비교 noisy → 차단 유지 (Wave 90 정책).
+    // accessory_bundle/multi_device_bundle은 condition_class와 별도 — bundle 자체가 noise.
     if (conditionNotes.includes("accessory_bundle")) continue;
-    // 2026-05-15 (사용자 코멘트 pid 407879893): 본품 + 다른 카테고리 본품 묶인 매물
-    // (예: 아이폰17 + 애플워치 SE3). 단품 시세 비교군 제외 + pool 진입도 차단해야 하지만
-    // (양쪽 카테고리 동시 진입 위험), 일단 시세 집계만 skip. pool 차단은 별도 wave에서.
     if (conditionNotes.includes("multi_device_bundle")) continue;
-    // 2026-05-15 (사용자 코멘트 pid 402628847 "액정 깨진 제품 비교군에 끼면 안 됨"):
-    // 명확한 손상 매물 3개만 시세 집계 제외. 풀 진입은 별개.
-    // refurbished_or_repaired와 repair_or_defect_signal은 빼고 (시세 표본 보호 — 애플 공식 리퍼 등 정상 매물 포함 가능성).
-    if (conditionNotes.includes("display_defect")) continue;
-    if (conditionNotes.includes("screen_replaced")) continue;
-    if (conditionNotes.includes("faceid_issue")) continue;
-    if (conditionNotes.includes("parts_only")) continue;
-    // Wave 106 (베타테스터 시세 inflated root cause): 새상품/미개봉 + 애플케어 프리미엄 +
-    // 배터리 100% 새것 같은 매물은 정상 중고 시세 baseline 와 다른 그룹.
-    // sample 에 들어가면 active_median 끌어올려서 다른 정상 매물의 sku_median 잘못 계산.
-    // market-source-debug 비교군 fetch 단에선 이미 제외 (Wave 91 line 124) — daily aggregate 도 일관 적용.
-    if (conditionNotes.includes("new_or_open_box")) continue;
-    if (conditionNotes.includes("applecare_premium")) continue;
-    if (conditionNotes.includes("low_battery_health")) continue;
+
     // 2026-05-15 (사용자 코멘트 pid 404436811 / 404643880 / 401500642):
     // missing_suspect 매물이 6시간+ 안 보이면 사실상 사라진 상태. lifecycle worker가
     // disappeared로 전환 안 했더라도 시세 비교군에서 빼서 옛 매물 잔존 왜곡 방지.
@@ -2506,8 +2565,20 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
       const missingMs = Date.now() - new Date(row.last_missing_at).getTime();
       if (missingMs > 6 * 3600 * 1000) continue;
     }
-    const key = parsed.comparable_key;
-    if (!byKey.has(key)) byKey.set(key, { rows: [], activeRows: [], soldRows: [], disappearedRows: [], skuId: row.sku_id });
+    // Wave 130: grouping key = (comparable_key, condition_class). 같은 SKU+옵션이라도
+    // condition별 별도 시세 산정.
+    const key = `${parsed.comparable_key}|${conditionClass}`;
+    if (!byKey.has(key)) {
+      byKey.set(key, {
+        comparableKey: parsed.comparable_key,
+        conditionClass,
+        rows: [],
+        activeRows: [],
+        soldRows: [],
+        disappearedRows: [],
+        skuId: row.sku_id,
+      });
+    }
     const group = byKey.get(key)!;
     group.rows.push(row);
     const effectiveState = isActiveSaleStatus(row.sale_status) ? row.listing_state : "sold_confirmed";
@@ -2517,7 +2588,9 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   }
 
   const today = kstDateString();
-  const marketRows = [...byKey.entries()].map(([comparableKey, group]) => {
+  // Wave 130: byKey iter — comparable_key는 group.comparableKey에서, condition_class는 group.conditionClass에서.
+  const marketRows = [...byKey.values()].map((group) => {
+    const comparableKey = group.comparableKey;
     const active = trimmedSellerMarket(group.activeRows);
     const sold = trimmedSellerMarket(group.soldRows);
     const disappeared = trimmedSellerMarket(group.disappearedRows);
@@ -2553,6 +2626,8 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     return {
       date: today,
       comparable_key: comparableKey,
+      // Wave 130: condition_class — PK 일부. condition별 별도 row.
+      condition_class: group.conditionClass,
       ...marketKeyMeta(comparableKey, group.skuId),
       active_median_price: activeMedian,
       sold_median_price: soldMedian,
@@ -2567,7 +2642,8 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     };
   });
 
-  await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key");
+  // Wave 130: PK (date, comparable_key, condition_class) — condition별 별도 upsert.
+  await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key,condition_class");
   return {
     keyCount: marketRows.length,
     sampleCount: marketRows.reduce((sum, row) => sum + row.active_sample_count + row.sold_sample_count + row.disappeared_sample_count, 0),
@@ -3561,7 +3637,10 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     }
     const marketKey = marketGroupKey(row, parsed);
     const comparableKey = preciseComparableKey(parsed);
-    const marketStat = comparableKey ? marketStatsByKey.get(comparableKey) : undefined;
+    // Wave 130 (2026-05-16): 매물 condition_class에 매칭되는 시세 row 선택 (sample 부족 시 fallback).
+    // 사업 보고서 L2: 같은 SKU+옵션도 condition별 시세 spread 15~40% — 정확성 ↑.
+    const byCondition = comparableKey ? marketStatsByKey.get(comparableKey) : undefined;
+    const marketStat = pickMarketStatByCondition(byCondition, parsed?.condition_class ?? null);
     const trustedMedian = trustedMarketMedian(marketStat);
     const prices = pricesByMarket.get(marketKey) ?? [];
     const _coarsePrices = pricesBySku.get(skuId) ?? [];
