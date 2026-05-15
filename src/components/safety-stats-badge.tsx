@@ -28,6 +28,16 @@ type SafetyStats = {
   thin_market_7d?: number;
   stat_missing_7d?: number;
   suspicious_price_7d?: number;
+  // 2026-05-16 (2차): 수집 단계 + 파싱 단계 차단 (진짜 큰 카테고리)
+  collection_stage_total_7d?: number;
+  listing_parts_7d?: number;
+  listing_damaged_7d?: number;
+  listing_accessory_7d?: number;
+  listing_callout_7d?: number;
+  listing_commercial_7d?: number;
+  listing_buying_7d?: number;
+  listing_multi_7d?: number;
+  needs_review_7d?: number;
 };
 
 // ─── SVG icons (inline Lucide-style, 14x14) ─────────────────────────────
@@ -87,6 +97,24 @@ function TrendingDownIcon() {
     <svg className={ICON_CLASS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
       <polyline points="17 18 23 18 23 12" />
+    </svg>
+  );
+}
+
+function FilterIcon() {
+  return (
+    <svg className={ICON_CLASS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </svg>
+  );
+}
+
+function HelpIcon() {
+  return (
+    <svg className={ICON_CLASS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
   );
 }
@@ -161,6 +189,8 @@ export default function SafetyStatsBadge() {
     (stats.thin_market_7d ?? 0) +
     (stats.stat_missing_7d ?? 0);
   const wholesalerTotal = stats.wholesaler_total_7d ?? 0;
+  const collectionStageTotal = stats.collection_stage_total_7d ?? 0;
+  const parserMissTotal = stats.needs_review_7d ?? 0;
 
   return (
     <div className="mb-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
@@ -190,7 +220,61 @@ export default function SafetyStatsBadge() {
       </button>
       {showDetail && (
         <div className="mt-3 grid gap-1.5 border-t border-emerald-200 pt-3 text-[11px] dark:border-emerald-900">
-          {/* ─── 그룹 1: 상품 위험 (위조·도난·잠금·의심 할인) ─────────────── */}
+          {/* ─── 그룹 1: 매물 분류 단계 (수집 시점 차단) — 가장 큰 카테고리 ─────── */}
+          {collectionStageTotal > 0 && (
+            <>
+              <GroupHeader icon={<FilterIcon />} label="매물 분류 단계 차단" />
+              <StatRow
+                icon={<FilterIcon />}
+                label="부품·단품만 판매 매물"
+                count={stats.listing_parts_7d ?? 0}
+              />
+              <StatRow
+                icon={<FilterIcon />}
+                label="액세서리·구성품만 매물"
+                count={stats.listing_accessory_7d ?? 0}
+              />
+              <StatRow
+                icon={<FilterIcon />}
+                label="손상·파손 매물"
+                count={stats.listing_damaged_7d ?? 0}
+              />
+              <StatRow
+                icon={<FilterIcon />}
+                label="광고·홍보·매크로 매물"
+                count={stats.listing_callout_7d ?? 0}
+              />
+              <StatRow
+                icon={<FilterIcon />}
+                label="상업·전문 판매업자 매물"
+                count={stats.listing_commercial_7d ?? 0}
+              />
+              <StatRow
+                icon={<FilterIcon />}
+                label="매입 요청 글 (판매 아님)"
+                count={stats.listing_buying_7d ?? 0}
+              />
+              <StatRow
+                icon={<FilterIcon />}
+                label="다중 상품 묶음 매물"
+                count={stats.listing_multi_7d ?? 0}
+              />
+            </>
+          )}
+
+          {/* ─── 그룹 2: 분류 신뢰 부족 (파싱 단계) ─────────────── */}
+          {parserMissTotal > 0 && (
+            <>
+              <GroupHeader icon={<HelpIcon />} label="모델 식별 실패" />
+              <StatRow
+                icon={<HelpIcon />}
+                label="모델·옵션 식별 불충분 매물"
+                count={parserMissTotal}
+              />
+            </>
+          )}
+
+          {/* ─── 그룹 3: 상품 위험 (위조·도난·잠금·의심 할인) ─────────────── */}
           {productRiskTotal > 0 && (
             <>
               <GroupHeader icon={<AlertTriangleIcon />} label="상품 위험" />
@@ -273,7 +357,7 @@ export default function SafetyStatsBadge() {
           )}
 
           <div className="mt-2 text-[10px] leading-[1.5] text-emerald-700/70 dark:text-emerald-400/70">
-            위조·도난·잠금, 거래 거부 가격, 시세 검증 실패, 대량 재고 업자, 다중 ID 사기 그룹 등을 사전 차단했습니다.
+            부품·액세서리만 매물 · 손상·파손 · 광고·매크로 · 위조·도난·잠금 · 거래 거부 가격 · 시세 검증 실패 · 대량 재고 업자 · 다중 ID 사기 그룹 등을 수집·분류·풀 진입 단계에서 사전 차단했습니다.
           </div>
         </div>
       )}

@@ -22,10 +22,16 @@ export async function GET() {
     // Wave 139 (2026-05-16): 도매/사기 그룹 차단 카운터 추가 (Wave 132/137/138a/138b).
     // 사용자 retention: "와, 이 사이트 진짜 사기/업자도 걸러내는구나" UI 신뢰 시그널.
     // 2026-05-16 (사용자 코멘트 후속): 폰 치우침 → generalize + 차단 사유 더 보강 (차익 미달, 매물 사라짐, 시세 신뢰).
+    // 2026-05-16 (2차 후속): listing_type/needs_review 추가 — 진짜 차단 source ~35K (지금 표시 ~2.4K의 15배).
     const [
       priceDummyRes, fakeLockRes, carrierRes, poolInvalidateRes,
       wholesalerCommentRes, wholesalerQtyRes, sellerMultiRes, multiIdFraudRes,
       profitLowRes, lifecycleGoneRes, thinMarketRes, statMissingRes, suspiciousPriceRes,
+      // 수집 단계 차단 (listing_type)
+      listingPartsRes, listingDamagedRes, listingAccessoryRes,
+      listingCalloutRes, listingCommercialRes, listingBuyingRes, listingMultiRes,
+      // 파싱 단계 차단 (needs_review)
+      needsReviewRes,
     ] = await Promise.all([
       // 1) 가격 dummy (셀러 거래 거부 표시 매물)
       restFetch(
@@ -92,6 +98,46 @@ export async function GET() {
         rpc("mvp_candidate_pool", `select=pid&or=(invalidated_reason.eq.blocked_deep_discount_review,invalidated_reason.eq.blocked_extreme_discount_review)&updated_at=gte.${since7d}`),
         { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
       ),
+      // 14) 수집 단계 차단 — listing_type=parts (부품만 매물)
+      restFetch(
+        rpc("mvp_raw_listings", `select=pid&listing_type=eq.parts&first_seen_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 15) listing_type=damaged (손상 매물)
+      restFetch(
+        rpc("mvp_raw_listings", `select=pid&listing_type=eq.damaged&first_seen_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 16) listing_type=accessory (액세서리/구성품만)
+      restFetch(
+        rpc("mvp_raw_listings", `select=pid&listing_type=eq.accessory&first_seen_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 17) listing_type=callout (광고/매크로/홍보)
+      restFetch(
+        rpc("mvp_raw_listings", `select=pid&listing_type=eq.callout&first_seen_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 18) listing_type=commercial (업자/상업 매물)
+      restFetch(
+        rpc("mvp_raw_listings", `select=pid&listing_type=eq.commercial&first_seen_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 19) listing_type=buying (매입 글)
+      restFetch(
+        rpc("mvp_raw_listings", `select=pid&listing_type=eq.buying&first_seen_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 20) listing_type=multi (다중 상품 묶음)
+      restFetch(
+        rpc("mvp_raw_listings", `select=pid&listing_type=eq.multi&first_seen_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
+      // 21) needs_review (파싱 단계 — 모델 식별 실패. listing_parsed JOIN)
+      restFetch(
+        rpc("mvp_listing_parsed", `select=pid&needs_review=eq.true&parsed_at=gte.${since7d}`),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      ),
     ]);
 
     const parseCount = (res: Response): number => {
@@ -116,9 +162,23 @@ export async function GET() {
     const thinMarket = parseCount(thinMarketRes);
     const statMissing = parseCount(statMissingRes);
     const suspiciousPrice = parseCount(suspiciousPriceRes);
+    // 2026-05-16 (2차): 수집 단계 차단 (listing_type)
+    const listingParts = parseCount(listingPartsRes);
+    const listingDamaged = parseCount(listingDamagedRes);
+    const listingAccessory = parseCount(listingAccessoryRes);
+    const listingCallout = parseCount(listingCalloutRes);
+    const listingCommercial = parseCount(listingCommercialRes);
+    const listingBuying = parseCount(listingBuyingRes);
+    const listingMulti = parseCount(listingMultiRes);
+    const collectionStageTotal = listingParts + listingDamaged + listingAccessory +
+      listingCallout + listingCommercial + listingBuying + listingMulti;
+    // 2026-05-16 (2차): 파싱 단계 차단
+    const needsReview = parseCount(needsReviewRes);
 
     const safetyTotal = priceDummy + fakeLock + carrier;
-    const totalBlocked7d = safetyTotal + poolInvalidate;
+    // 2026-05-16 (2차): 진짜 차단 total — 수집 + 파싱 + 풀 단계 모두 합산.
+    // 사용자 코멘트: "invalidate도 차단이고, 진짜 차단 수 훨씬 큼".
+    const totalBlocked7d = safetyTotal + collectionStageTotal + needsReview + poolInvalidate;
 
     return NextResponse.json({
       stats: {
@@ -141,6 +201,16 @@ export async function GET() {
         thin_market_7d: thinMarket,
         stat_missing_7d: statMissing,
         suspicious_price_7d: suspiciousPrice,
+        // 2026-05-16 (2차): 수집 단계 + 파싱 단계 차단 (진짜 큰 카테고리)
+        collection_stage_total_7d: collectionStageTotal,
+        listing_parts_7d: listingParts,
+        listing_damaged_7d: listingDamaged,
+        listing_accessory_7d: listingAccessory,
+        listing_callout_7d: listingCallout,
+        listing_commercial_7d: listingCommercial,
+        listing_buying_7d: listingBuying,
+        listing_multi_7d: listingMulti,
+        needs_review_7d: needsReview,
         // 메타
         period_start: since7d,
         period_end: new Date().toISOString(),
