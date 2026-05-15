@@ -77,6 +77,21 @@ audit (4 parallel agents) 결과 punch list 중 high severity 항목 순차 fix.
   - H2 (만료 자동 다운그레이드 cron) 별도 fix.
   - H3 (subscribe RPC payment_key UNIQUE + 중복 가드) 별도 fix.
 
+## 6. Billing H3 — subscribe RPC 멱등성 (이중 청구 차단)
+
+- 시간: 2026-05-16 02:30 KST
+- 발견: audit. `subscribe_mvp_plan` RPC가 멱등성 없음. 같은 paymentKey 두 번 호출 (네트워크 race / 사용자 새로고침) 시 RPC 두 번 실행 → 크레딧 두 번 grant + payment_events 중복 row. #4 rate limit는 spam 차단용 (분당 3회), 정상 race condition은 통과.
+- 변경 (`supabase/migrations/20260515000300_subscribe_mvp_plan_idempotent.sql`):
+  1. `mvp_payment_events.payment_key` UNIQUE 인덱스 (partial — null 허용). DB level race condition 안전망 (concurrent insert 자동 차단).
+  2. RPC 시작에 early return 가드:
+     - payment_key가 이미 mvp_payment_events에 있으면:
+       - 동일 user_ref면 기존 결과 반환 (idempotent — 사용자가 같은 응답 받음, 중복 처리 X)
+       - 다른 user_ref면 raise exception (key 도용 방지)
+- 적용: supabase MCP apply_migration 즉시 prod 적용 + migration 파일 commit.
+- 검증: tsc clean (RPC는 SQL이라 tsc 무관). 실 결제 두 번 호출 테스트는 별도 (mock 단계라 위험 X).
+- 위험: 기존 mvp_payment_events에 payment_key 중복 row가 있으면 UNIQUE 인덱스 생성 실패. prod 데이터 확인했고 mock paymentKey는 timestamp 기반이라 자연 unique → 문제 없음.
+- 다음: H2 (만료 자동 다운그레이드 cron) 별도 fix.
+
 ## 보너스: audit false positive
 
 - `/api/cron/landing-showcases` auth 누락 보고됐으나 실 코드 (route.ts:10-13) 에 이미 `checkCronAuth` 박혀있음. 스킵.

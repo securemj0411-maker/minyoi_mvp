@@ -104,7 +104,7 @@ export async function GET(req: Request) {
 
     // priceMax 필터 — JOIN 대신 raw 별도 query (PostgREST embedded resource는 제한적)
     let priceFilteredCount = usable.length;
-    let byCategory: Record<string, number> = {};
+    const byCategory: Record<string, number> = {};
     if (filters.priceMax != null && usable.length > 0) {
       const pids = usable.map(r => r.pid);
       const chunks: number[][] = [];

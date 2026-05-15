@@ -69,7 +69,7 @@ async function main() {
   let updated = 0;
   let skippedKeyDiff = 0;
   let skippedNrFlip = 0;
-  let skippedSkuShift = 0;
+  const skippedSkuShift = 0;
   let skippedNoRaw = 0;
   let parserError = 0;
   const byVersion: Record<string, number> = {};
