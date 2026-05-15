@@ -258,9 +258,17 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
             🚫 만료 {market.disappearedSampleCount.toLocaleString("ko-KR")}건
           </span>
         )}
-        <span className="text-zinc-400 dark:text-zinc-500">
-          출처: 번개장터 + 다나와 reference
-        </span>
+        {/* 2026-05-16 (사용자 코멘트 id 104/107/109): 시세 출처 명시 강화. */}
+        {/* mint = 미개봉 매물이라 다나와 새 가격 + 번개 mint 매물 기준 (둘이 다른 source). */}
+        {market.conditionClass === "mint" ? (
+          <span className="text-amber-700 dark:text-amber-300 font-bold">
+            📍 다나와 새 가격 + 번개 미개봉 매물 기준
+          </span>
+        ) : (
+          <span className="text-zinc-400 dark:text-zinc-500">
+            📍 번개 중고 매물 {market.sampleCount}건 median
+          </span>
+        )}
       </div>
       {/* Wave 130: 다른 condition 시세 비교 — "내 매물(worn) 시세 vs 다른 등급" — 사업 보고서 L2 끼리 비교. */}
       {market.otherConditions && market.otherConditions.length > 0 && (
@@ -660,7 +668,12 @@ function RevealCardItem({
 
         {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
         {/* "시세 어떤 기준으로 잡나" 시각화. history 부족하면 자동 hide. */}
-        <MarketHistoryChart comparableKey={card.marketBasis?.comparableKey ?? null} currentPrice={card.price} />
+        {/* 2026-05-16 (코멘트 id 105): conditionClass 전달 → 그래프도 같은 condition 매물 기준. */}
+        <MarketHistoryChart
+          comparableKey={card.marketBasis?.comparableKey ?? null}
+          currentPrice={card.price}
+          conditionClass={card.marketBasis?.conditionClass ?? null}
+        />
 
         <VelocityBasisMini card={card} />
 

@@ -26,7 +26,7 @@ function krwShort(value: number): string {
   return `${Math.round(value / 1000)}천`;
 }
 
-export default function MarketHistoryChart({ comparableKey, currentPrice }: { comparableKey: string | null; currentPrice?: number | null }) {
+export default function MarketHistoryChart({ comparableKey, currentPrice, conditionClass }: { comparableKey: string | null; currentPrice?: number | null; conditionClass?: string | null }) {
   const [data, setData] = useState<Point[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,9 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetch(`/api/market/history?ck=${encodeURIComponent(comparableKey)}&days=30`, { cache: "no-store" })
+    // 2026-05-16 (사용자 코멘트 id 105): cc 옵션으로 condition_class 매칭 데이터만 fetch.
+    const ccQuery = conditionClass ? `&cc=${encodeURIComponent(conditionClass)}` : "";
+    fetch(`/api/market/history?ck=${encodeURIComponent(comparableKey)}&days=30${ccQuery}`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: HistoryResp) => {
         if (!cancelled) setData(j.points ?? []);
@@ -50,7 +52,7 @@ export default function MarketHistoryChart({ comparableKey, currentPrice }: { co
     return () => {
       cancelled = true;
     };
-  }, [comparableKey]);
+  }, [comparableKey, conditionClass]);
 
   if (!comparableKey) {
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">모델 분류 미완료 — 시세 그래프 없음</div>;
