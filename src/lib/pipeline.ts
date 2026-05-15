@@ -636,6 +636,13 @@ export function classifyListing(title: string, desc: string, price: number): Cla
   if (damagedHits(title, desc).length > 0) return { listingType: "damaged", sku: null };
   if (accessoryTitleHits(title).length > 0) return { listingType: "accessory", sku: null };
 
+  // 2026-05-15: fake/clone 매물 차단 (차이팟, 짝퉁, 복제품, 레플리카, 가품 등).
+  // catalog mustNotContain에 없어 ruleMatch가 정품으로 매칭하던 매물.
+  // ListingType enum에 "counterfeit" 추가 (AI side와 통일). DB check constraint도 동시 갱신 필요.
+  if (/차이팟|짝퉁|복제품|레플리카|이미테이션|\bfake\b|가품/i.test(`${title} ${desc}`)) {
+    return { listingType: "callout", sku: null };
+  }
+
   const multiHits = containsAny(title, MULTI_KEYWORDS);
   if (/\b[2-9]\s*개\b/.test(title)) multiHits.push("N개");
   multiHits.push(...multiModelHits(title));

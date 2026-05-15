@@ -970,15 +970,18 @@ export async function loadInventory(): Promise<InventorySnapshot[]> {
     else if (row.status === "spent") bucket.spent += 1;
     else if (row.status === "invalidated") bucket.invalidated += 1;
     if (row.status === "ready") {
-      const category = categoryFromPool(row);
-      const config = category ? readiness[category] : undefined;
-      const categoryReady = category ? readyByCategory.get(category) ?? 0 : 0;
+      // 2026-05-15: 카테고리 readiness 게이트 제거.
+      // pool 진입 자체가 evaluatePoolGate() 통과 (lane readiness 우선) 후 OK,
+      // 여기서 다시 카테고리 게이트 보면 narrow lane 매물 (LANE_READINESS=ready
+      // 이지만 카테고리는 internal_only) 198건이 inventory에서 누락됨.
+      // pool ready = 사용자 노출 가능 매물. exposure 한도만 추가 확인.
       const exposure = Number(row.exposure_count ?? 0);
       const maxExposure = Number(row.max_exposure ?? 0);
       const exposureAvailable = !Number.isFinite(maxExposure) || maxExposure <= 0 || exposure < maxExposure;
-      if (config?.status === "ready" && categoryReady >= config.minReadyPool && exposureAvailable) {
+      if (exposureAvailable) {
         bucket.usableReady += 1;
       }
+      const category = categoryFromPool(row);
       const verified = new Date(row.last_verified_at).getTime();
       if (Number.isFinite(verified) && now - verified < freshnessMsForBand(band)) {
         bucket.freshUnder2h += 1;
