@@ -1058,8 +1058,22 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     modelName: "Galaxy S25",
     aliases: ["갤럭시 S25", "갤럭시S25", "Galaxy S25"],
     mustContain: [["갤럭시 s25", "갤럭시s25", "galaxy s25", "s25"]],
-    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", "gs25", ...PHONE_NOISE],
+    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", "엣지", "edge", "gs25", ...PHONE_NOISE],
     msrpKrw: 1150000,
+    released: 2025,
+  },
+  // Wave 114 (2026-05-15): Galaxy S25 Edge (2025-05 출시, 신모델 얇은 디자인).
+  // 매물 측정: 7일 broad galaxy-s25 sample 분석 결과 "갤럭시s25엣지 512gb 자급제" 등 5건+ 흡수 중.
+  // S25 Edge는 일반 S25와 별도 모델 (얇은 폼팩터, 카메라 다름). catalog 누락이었음.
+  {
+    id: "galaxy-s25-edge",
+    brand: "Samsung",
+    category: "smartphone",
+    modelName: "Galaxy S25 Edge",
+    aliases: ["갤럭시 S25 엣지", "갤럭시S25엣지", "Galaxy S25 Edge"],
+    mustContain: [["갤럭시 s25 엣지", "갤럭시s25엣지", "galaxy s25 edge", "s25 엣지", "s25 edge"]],
+    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", ...PHONE_NOISE],
+    msrpKrw: 1499000,
     released: 2025,
   },
   // Wave 108 (2026-05-15): Galaxy S 일반 (Ultra/Plus 아닌) 256GB 자급제 narrow lane.
