@@ -34,8 +34,13 @@ export function parseConditionTier(text: string): ConditionTier {
   const t = text.toLowerCase();
   // 부적격 (reject) — 신발 자체 손상만 (박스만 손상은 제외)
   // Wave 157: "박스 (약간) 찌그러짐/손상" 등 박스만 손상은 reject 아님
+  // Wave 166 (2026-05-17): negation 처리 + 디자인 의도 제외
   const isBoxOnlyDamage = /박스\s*(?:약간\s*)?(?:찌그러짐|손상)|박스\s*배송\s*손상|박스\s*컷|박스만\s*손상/.test(t);
-  if (!isBoxOnlyDamage && /파손|크랙(?!\s*가)|찢어짐|(?<!신발\s*)구멍|얼룩\s*심함|변색\s*심함|곰팡이|악취|냄새\s*심함|(?<!박스\s*)손상(?!\s*없)|수리\s*필요|수선\s*필요|찌그러짐|변형\s*심함|밑창\s*벗겨|본드로\s*붙여|깔창\s*분실|내부\s*깔창\s*분실|튿어짐\s*있어서|찢어짐\s*있어서|가수분해|작은\s*구멍/.test(t)) return "reject";
+  // negation 패턴 — "찢어짐 없습니다" / "구멍 없" / "크랙 없" 등
+  const hasNegation = /(?:찢어짐|구멍|크랙|하자|손상)(?:이나|이|가|도)?\s*(?:눈에\s*띄는\s*큰\s*)?(?:없|x|X)|찢어짐\s*없|구멍\s*없|크랙\s*없|하자\s*없|손상\s*없/.test(t);
+  // 디자인 의도 — 통풍구멍/의도된 크랙/크랙이 가면
+  const isDesignIntent = /통풍\s*구멍|크랙이?\s*가면|크랙이?\s*가서|크랙이?\s*나면|소재\s*특성|소장\s*가치/.test(t);
+  if (!isBoxOnlyDamage && !hasNegation && !isDesignIntent && /파손|크랙(?!\s*가)|찢어짐|얼룩\s*심함|변색\s*심함|곰팡이|악취|냄새\s*심함|수리\s*필요|수선\s*필요|찌그러짐|변형\s*심함|밑창\s*벗겨|본드로\s*붙여|깔창\s*분실|내부\s*깔창\s*분실|튿어짐\s*있어서|찢어짐\s*있어서|가수분해|작은\s*구멍/.test(t)) return "reject";
   // Wave 157: 객관 S급 검사 전 C/B 신호 우선 — 모순 매물 (객관 S표현 + 사용감) 처리.
   // 사용감 명시되면 그게 더 신뢰 (LAUNCH_PLAN §12b precision).
   const hasCSignal = /사용감(?:\s*있|\s*많|\s*좀\s*있|이?\s*많|은?\s*많|이?\s*있|은?\s*있)|착용감\s*있|약간의?\s*오염|얼룩|스크래치|스크레치|기스\s*있|튿어짐|갈라짐|헤짐|로고\s*지워|많이\s*신|많이\s*사용|뒷굽\s*사용|밑창\s*닳|밑창\s*마모|뒤꿈치\s*닳|구멍\s*하나/.test(t);
@@ -45,6 +50,13 @@ export function parseConditionTier(text: string): ConditionTier {
     !hasCSignal &&
     /미개봉|봉인|택\s*달[린림힌]|택\s*부착|택\s*그대로|택째\s*그대로|tag\s*on|tagon|박스컷|나코탭|kream\s*택|크림\s*택|크림\s*인증|풀박스\s*\+?\s*택|박스\s*\+?\s*택|박스\s*및\s*택째\s*그대로|박스째\s*그대로|택\s*있/.test(t)
   ) return "s_grade";
+  // Wave 166: 명시 횟수 매물 우선 (모순 매물 처리)
+  // "10번 정도 착용 + 거의 새상품" 같이 모순 표현에서 명시 횟수 (10번)가 더 정확.
+  // 10+ 회 = c_grade, 4-9회 = b_grade를 셀러 표기보다 우선.
+  const explicitHighCount = /(?:^|[^0-9])[1-9][0-9]\s*(?:번|회)\s*[가-힣\s]{0,5}?(?:신|착|입)/.test(t);
+  if (explicitHighCount) return "c_grade";
+  const explicitMidCount = /(?:^|[^0-9])[4-9]\s*(?:번|회)\s*[가-힣\s]{0,5}?(?:신|착|입)/.test(t);
+  if (explicitMidCount) return "b_grade";
   // 셀러 표기 — 1단계 깎음
   if (/[sS]급|[sS]\s*그레이드|급[sS]급|특[sS]급|특[aA]급|최상급|탑급|s\+/.test(text)) return "a_grade";
   if (/[aA]급|[aA]\s*그레이드|상태\s*최상/.test(text)) return "b_grade";

@@ -1,0 +1,49 @@
+// 2026-05-17 v46 cleanup: condition_notes 정책 한 곳에 박음 (drift 차단).
+//
+// 이전: FLAWED_NOTES (option-parser:56), POOL_BLOCK_NOTES (candidate-pool-builder:306),
+// COMPARABLE_EXCLUDE_NOTES (market-source/route.ts:144) 3 곳에 hardcode.
+// 한쪽 update 하면 다른쪽 잊음 — 사용자 #92 코멘트가 정확히 이 drift 지적.
+//
+// 정책:
+// - FLAWED_NOTES: parser 가 flawed 분류하는 신호 (option-parser.ts:56 export — 13종)
+// - POOL_BLOCK_NOTES ⊂ FLAWED_NOTES — pool 진입 차단 (사용자 손해 명확 5종)
+// - COMPARABLE_EXCLUDE_NOTES ⊃ POOL_BLOCK_NOTES — 비교군 UI 제외 (pool block + premium/noise tier 별도 grouping)
+
+import { FLAWED_NOTES } from "@/lib/option-parser";
+
+// Pool 진입 차단 5종 — FLAWED 중 "사용자가 사면 명확한 손해" subset.
+// 나머지 FLAWED (water_damage, camera_issue, sim_or_carrier_issue, locked_or_lost_signal,
+// repair_or_defect_signal, refurbished_or_repaired, installment_risk) 은 condition_class=flawed
+// 자체로 시세 sample 차단되어 풀 진입 score 0 → 자연 차단.
+export const POOL_BLOCK_NOTES = [
+  "multi_device_bundle",
+  "display_defect",
+  "screen_replaced",
+  "faceid_issue",
+  "parts_only",
+] as const;
+
+// 비교군 UI 제외 = POOL_BLOCK + premium/noise tier (별도 grouping 으로 시세 분리됨).
+// new_or_open_box / low_battery_health = condition_class 별도 (unopened / low_batt) 시세 grouping.
+// applecare_premium / full_set = 프리미엄 (시세 비싸짐). accessory_bundle = noise.
+export const COMPARABLE_EXCLUDE_NOTES = [
+  ...POOL_BLOCK_NOTES,
+  "new_or_open_box",
+  "low_battery_health",
+  "applecare_premium",
+  "accessory_bundle",
+  "full_set",
+] as const;
+
+// Runtime guard: POOL_BLOCK_NOTES ⊂ FLAWED_NOTES.
+// 만약 누가 POOL_BLOCK 에 FLAWED 아닌 신호 박으면 dev mode 에서 console warning.
+if (process.env.NODE_ENV !== "production") {
+  for (const note of POOL_BLOCK_NOTES) {
+    if (!(FLAWED_NOTES as readonly string[]).includes(note)) {
+      console.warn(
+        `[condition-policy] POOL_BLOCK_NOTES "${note}" 가 FLAWED_NOTES 에 없음. ` +
+          `정책 의도: POOL_BLOCK ⊂ FLAWED. option-parser FLAWED_NOTES 에 추가하거나 POOL_BLOCK 에서 제거.`,
+      );
+    }
+  }
+}

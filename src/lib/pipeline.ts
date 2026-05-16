@@ -31,14 +31,42 @@ const CALLOUT_KEYWORDS = [
   "이미테이션", "정품아님", "정품 아님", "비정품", "차이팟",
   ...GENERATED_NOISE_RULES.callout,
 ];
+// 2026-05-17 (사용자 5-iteration 검토): "단품"/"호환"/"낱개" 단독 substring 매칭 제거.
+// 정상 매물 desc 에 "기기 단품" / "통신사 호환" / "낱개 구매 가능" 같이 빈번 = false positive 2,484건+.
+// strict context 는 partsContextualHits() 에서 별도 처리.
 const PARTS_KEYWORDS = [
-  "부품용", "본체만", "유닛만", "좌측", "우측", "한쪽", "한짝", "한 쪽", "한알", "낱개", "단품",
+  "부품용", "본체만", "유닛만", "좌측", "우측", "한쪽", "한짝", "한 쪽", "한알",
   "케이스만", "충전케이스만", "충전 케이스만", "액정만", "배터리만",
-  "교체용", "호환", "익스텐션", "연장",
+  "교체용", "익스텐션", "연장",
   // Wave 111e: 스타일러스/S펜만 매물 parts 인식. brand-less normalize 부작용 차단.
   "스타일러스", "s펜만", "s 펜만", "에스펜만",
   ...GENERATED_NOISE_RULES.parts,
 ];
+
+// 2026-05-17: 본질 fix — "단품"/"호환"/"낱개" + parts context 만 매칭.
+// 정상 매물 ("기기 단품" / "통신사 호환" / "구성품 단품" 같이 본품 의미 표현) false positive 차단.
+function partsContextualHits(text: string): string[] {
+  const hits: string[] = [];
+  // "단품" — 본체/유닛/부품 context (정상 매물의 "기기 단품" / "구성품 단품" 제외).
+  // 2026-05-17: "케이스" 제외 — 케이스 단품은 accessory 분류로 따로 처리됨. 여기서 잡으면 conflict.
+  if (/(?:왼쪽|오른쪽|좌측|우측|한쪽|한짝|유닛|이어버드|이어\s*버드|본체|본품|배터리|액정|디스플레이|스타일러스|s\s*펜|에스펜).{0,8}(?:단품|만\s*판매|만\s*팝)/i.test(text)) {
+    hits.push("단품_부품_context");
+  }
+  // "호환" — 부품/단품/교체 context 와 결합 시만 (정상 매물의 "통신사 호환" / "기기 호환" 제외)
+  if (/(?:호환).{0,8}(?:부품|단품|교체|어댑터|배터리|케이블만|충전기만)|(?:부품|단품|교체|어댑터).{0,8}(?:호환)/i.test(text)) {
+    hits.push("호환_부품_context");
+  }
+  // "낱개" — 명확한 낱개 판매 (정상 옵션 "낱개 구매 가능" 제외)
+  if (/낱개.{0,4}(?:만\s*판매|판매)|(?:판매).{0,4}낱개/i.test(text)) {
+    hits.push("낱개_판매_context");
+  }
+  // 본체 단독 — 에어팟/버즈 매물에 "본체" 만 적힌 케이스 (사용자 #1 요청)
+  if (/(?:에어팟|버즈|이어팟|airpods|galaxy\s*buds)\s*(?:프로\s*\d|\d+\s*세대|max)?\s*(?:본체|본체만)\b/i.test(text)
+      && !/(?:본체.{0,8}(?:풀박|풀세트|구성품|충전기|케이블|박스))/i.test(text)) {
+    hits.push("에어팟_본체_only");
+  }
+  return hits;
+}
 const DAMAGED_KEYWORDS = [
   "고장", "작동안됨", "작동 안됨", "안켜짐", "안 켜짐",
   "먹통", "충전안됨", "충전 안됨", "충전이 안됨", "충전이 안되는",
@@ -249,7 +277,8 @@ export function isSideOnlyEarbudListing(title: string, desc = ""): boolean {
 
 function partsHits(title: string, desc: string): string[] {
   const text = `${title}\n${desc}`;
-  let hits = containsAny(text, PARTS_KEYWORDS);
+  // 2026-05-17: PARTS_KEYWORDS substring + contextual hits 둘 다 검사 (본질 fix).
+  let hits = [...containsAny(text, PARTS_KEYWORDS), ...partsContextualHits(text)];
   const compactTitle = nrm(title).replace(/\s+/g, "");
   const normalizedTitle = nrm(title);
   const compactText = nrm(text).replace(/\s+/g, "");
@@ -343,15 +372,22 @@ function damagedHits(title: string, desc: string): string[] {
     if (hit.includes("멍") && /멍\s*(?:없|없음|없습니다|아님|아닙니다)|멍없/.test(normalized)) return false;
     if (hit === "침수" && /침수(?:폰)?\s*(?:없|없음|없습니다|아님|일절\s*취급하지|취급하지\s*않)|침수\s*라벨\s*(?:정상|깨끗)/.test(normalized)) return false;
     if ((hit === "분실폰" || hit === "도난폰") && /분실\s*도난\s*침수폰?\s*일절\s*취급하지|분실\s*(?:없|없음|신고\s*없)|도난\s*(?:없|없음)/.test(normalized)) return false;
+    // 2026-05-17: "수리이력" 정상 매물 "수리이력 없음" 표현 빈번 — exclude.
+    if (hit === "수리이력" && /수리이력\s*(?:없|없음|없습니다|아님|아닙니다|x)|수리\s*이력\s*없/.test(normalized)) return false;
     return true;
   });
   const compactText = nrm(text).replace(/\s+/g, "");
 
+  // 2026-05-17 (사용자 5-iteration #4): "하자" negation context 대폭 확장.
+  // 정상 매물 표현 false positive: "하자는 생활기스" / "하자나 오염없" / "심각한 하자 없" / "큰 하자 없" / "하자 사용감 없" 등.
   const hasNegatedOrContingentDefect =
-    /(하자없|하자전혀없|하자없이|무하자|하자는없|하자없습|하자없습니다|하자도없|큰하자없|큰하자가없|기능하자없|기능하자없고|하자전혀없이|하자x)/i.test(compactText) ||
-    /(택배|배송|보내면|보낼\s*경우).{0,24}(하자|파손|문제).{0,16}(발생할\s*수|생길\s*수|우려|위험)|(?:하자|파손|문제).{0,16}(발생할\s*수|생길\s*수|우려|위험).{0,24}(택배|배송|보내면|보낼\s*경우)/.test(normalized);
+    /(하자없|하자전혀없|하자없이|무하자|하자는없|하자없습|하자없습니다|하자도없|큰하자없|큰하자가없|기능하자없|기능하자없고|하자전혀없이|하자x|하자나오염없|하자나기스없|하자흠집|하자거의없|하자약간|하자미세|하자크게는없|하자크진않|하자크지않|하자많지않|하자있는제품은명시|심각한하자(?:흠집|없)|심각하지않|심각한문제없)/i.test(compactText) ||
+    /(택배|배송|보내면|보낼\s*경우).{0,24}(하자|파손|문제).{0,16}(발생할\s*수|생길\s*수|우려|위험)|(?:하자|파손|문제).{0,16}(발생할\s*수|생길\s*수|우려|위험).{0,24}(택배|배송|보내면|보낼\s*경우)/.test(normalized) ||
+    /(하자|파손|기스|찍힘)\s*(?:는|가|이|나|등)?\s*(?:사용|생활|미세|약간|적|거의|매우)/.test(normalized);
 
-  if (compactText.includes("하자") && !hasNegatedOrContingentDefect) {
+  // 2026-05-17: "하자" 단독 매칭 → explicit damage context 만 (정상 매물의 negation 표현 차단).
+  if (compactText.includes("하자") && !hasNegatedOrContingentDefect
+      && /(?:심각한?\s*하자|큰\s*하자|하자\s*있|하자\s*발견|하자\s*발생|하자있|기능\s*하자.{0,8}(?:있|발견|발생)|기능적?\s*하자|기능\s*문제|기능상\s*하자)/i.test(normalized)) {
     hits.push("하자");
   }
   if (compactText.includes("불량") && !/(불량없|불량없이|불량이슈로없습니다|불량품은판매하지|기능불량시.*(?:환불|반품)|불량시.*(?:환불|반품))/.test(compactText)) {
