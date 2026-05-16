@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-15T23:56:03.667Z",
+  "_updated_at": "2026-05-16T00:27:35.956Z",
   "resolutions": {
     "318408095": {
       "resolved_at": "2026-05-15T23:22:25.326Z",
@@ -49,6 +49,13 @@
       "summary": "#121: parser regex 보강 (\"새것/새거\" 단독 매칭 제거 — 스트랩 같은 부속품 \"새거\" false positive 차단)",
       "commits": [
         "9168d96"
+      ]
+    },
+    "352131281": {
+      "resolved_at": "2026-05-16T00:27:35.916Z",
+      "summary": "v46 conservative ordering: cosmetic_wear + good_condition → worn (기존 clean). 사용자 \"한 단계 다운그래이드\" 의도 일치",
+      "commits": [
+        "v46-conservative"
       ]
     },
     "358002617": {
@@ -425,6 +432,13 @@
       "summary": "#92: market-source 비교군 8 condition_notes (\"세트\" 등) 제외 동기화",
       "commits": [
         "9168d96"
+      ]
+    },
+    "406614375": {
+      "resolved_at": "2026-05-16T00:27:35.952Z",
+      "summary": "v46 conservative: new_or_open_box + cosmetic_wear mixed → worn (기존 unopened). 이전 batch 보류 풀림",
+      "commits": [
+        "v46-conservative"
       ]
     },
     "406633480": {

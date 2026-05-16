@@ -76,26 +76,29 @@ const CLEAN_NOTES = ["good_condition", "full_set", "applecare_premium", "battery
  * 명시적 신호가 없으면 normal로 default. accessory_bundle은 condition이 아니라
  * "본품+액세서리 묶음"이라 시세 sample에서 제외되지만 condition_class에는 영향 X.
  */
+// 2026-05-16 v46: conservative ordering — negative signal always wins.
+// 기존: flawed > unopened > low_batt > clean > worn > normal (positive 신호 우선)
+// 문제: cosmetic_wear + good_condition 동시 → clean 으로 정확도 손실 (pid 352131281 케이스)
+// 새: flawed > low_batt > worn > unopened > clean > normal (negative 우선, positive 중엔 강한 거)
+// 사용자 정책: "둘 중 낮은 등급" — description 자체 multi-signal 도 같은 원칙.
 export function extractConditionClass(conditionNotes: readonly string[]): ConditionClass {
   if (!Array.isArray(conditionNotes) || conditionNotes.length === 0) return "normal";
   const set = new Set(conditionNotes);
-  // 1순위: 손상/문제 — 시세/풀 모두 차단 (현재 정책 유지)
+  // 1순위: 손상/문제 — 강한 negative, 항상 우선
   for (const n of FLAWED_NOTES) {
     if (set.has(n)) return "flawed";
   }
-  // 2026-05-16 (N4): new_or_open_box → unopened (별도 클래스, 가장 비싼).
-  // 이전: mint와 합쳐졌으나 사용자 의도 = "미개봉은 mint와 다르다" → 분리.
-  // unopened = 박스 안 뜯음. 시세는 다나와 reference_price 사용. mint와 시세 grouping 분리.
-  if (set.has("new_or_open_box")) return "unopened";
-  // 3순위: 배터리 저하 (별도 트래킹 — 가격 영향 큼)
+  // 2순위: 배터리 저하 — special (가격 modifier, condition_class 와 별개로 가격 영향 큼)
   if (set.has("low_battery_health")) return "low_batt";
-  // 4순위: S급/풀세트/애플케어 (프리미엄)
+  // 3순위: 사용감/기스 — negative description 신호. positive 신호 (clean/unopened) 있어도 우선.
+  // 이유: 셀러가 "기스 있어요" 라고 명시 = 정직. positive 신호는 인플레 가능. 보수적 선택.
+  if (set.has("cosmetic_wear")) return "worn";
+  // 4순위: new_or_open_box — positive 중 가장 강한 신호 (박스 미개봉)
+  if (set.has("new_or_open_box")) return "unopened";
+  // 5순위: S급/풀세트/애플케어/배터리100 (프리미엄 positive)
   for (const n of CLEAN_NOTES) {
     if (set.has(n)) return "clean";
   }
-  // 5순위: 사용감/기스
-  if (set.has("cosmetic_wear")) return "worn";
-  // default
   return "normal";
 }
 
@@ -111,8 +114,8 @@ type ParseInput = {
   bunjangConditionLabel?: string | null;
 };
 
-// Wave 140 (2026-05-16): 번개 condition label → condition_class strong override.
-// 셀러 명시 metadata 라 description 자연어보다 우선 (LAUNCH_PLAN 12b 정합 — 명시만).
+// Wave 140 (2026-05-16): 번개 condition label → condition_class 매핑.
+// 2026-05-16 v46: 더 이상 strong override 아님. resolveConditionClass 에서 conservative 결합.
 function bunjangLabelToConditionClass(label: string | null | undefined): ConditionClass | null {
   if (!label) return null;
   const l = label.toLowerCase().replace(/\s+/g, "");
@@ -123,7 +126,32 @@ function bunjangLabelToConditionClass(label: string | null | undefined): Conditi
   return null;
 }
 
-const PARSER_VERSION = "option-parser-v45";
+// 2026-05-16 v46: condition_class ranking — 낮을수록 낮은 등급.
+// low_batt 는 special (가격 modifier, ordering 밖).
+const CONDITION_RANK: Record<Exclude<ConditionClass, "low_batt">, number> = {
+  flawed: 0,
+  worn: 1,
+  normal: 2,
+  clean: 3,
+  unopened: 4,
+};
+
+// 2026-05-16 v46: metadata + description 결합. 사용자 정책 "보수적 (낮은 등급) 우선".
+//   - meta 없음 → notes 만
+//   - notes == normal (무신호) → meta 신뢰
+//   - low_batt 한쪽 있음 → low_batt (가격 modifier, 항상 우선)
+//   - 둘 다 신호 → worse-of (낮은 rank)
+export function resolveConditionClass(
+  fromMeta: ConditionClass | null,
+  fromNotes: ConditionClass,
+): ConditionClass {
+  if (!fromMeta) return fromNotes;
+  if (fromMeta === "low_batt" || fromNotes === "low_batt") return "low_batt";
+  if (fromNotes === "normal") return fromMeta;
+  return CONDITION_RANK[fromMeta] <= CONDITION_RANK[fromNotes] ? fromMeta : fromNotes;
+}
+
+const PARSER_VERSION = "option-parser-v46";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -1542,11 +1570,24 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     || (category === "monitor" && !monitorModelCode)
     || !comparableKey;
 
-  // Wave 140 (사용자 코멘트 #122): 번개 detail label 우선 — 셀러 명시 metadata.
-  // description 자연어 ("스트랩 새거" 같은 false positive) 보다 신뢰도 높음.
-  // bunjang label 매칭 시 condition_class 강제 override. 매칭 X 면 conditionNotes 기반 결정.
+  // Wave 140 (사용자 코멘트 #122) + 2026-05-16 v46 (사용자 정책 변경):
+  // 메타데이터 (셀러 명시) vs description (자연어) 충돌 시 — "보수적 (낮은 등급) 우선".
+  //
+  // 정책 매트릭스:
+  //   - metadata 없음 → description 만 (extractConditionClass)
+  //   - description == normal (무신호) → metadata 신뢰 (#122 효과 유지 — 짧은 본문 매물)
+  //   - 둘 다 신호 있음 → worseOf (낮은 등급)
+  //   - low_batt 한쪽 있으면 → low_batt (special, 가격 modifier)
+  //
+  // 예시:
+  //   - 메타 "사용감 없음" + 본문 "액정 깨짐" → flawed (description 우선)
+  //   - 메타 "사용감 많음" + 본문 "새상품" 셀러 인플레 → worn (metadata 우선)
+  //   - 메타 "사용감 없음" + 본문 무신호 → clean (metadata)
+  //   - 메타 "미개봉" + 본문 무신호 → unopened (metadata)
+  //   - 메타 NULL + 본문 "박스 미개봉" → unopened (description)
   const bunjangOverride = bunjangLabelToConditionClass(input.bunjangConditionLabel);
-  const finalConditionClass = bunjangOverride ?? extractConditionClass(conditionNotes);
+  const notesClass = extractConditionClass(conditionNotes);
+  const finalConditionClass = resolveConditionClass(bunjangOverride, notesClass);
 
   return {
     parserVersion: PARSER_VERSION,
