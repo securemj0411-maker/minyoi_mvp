@@ -85,6 +85,10 @@ export type PoolCandidateInput = {
   // 신뢰도 낮은 셀러 (review_count < 5 OR rating < 4.5) + msrp * 0.25 이하 = 가품 의심.
   shopReviewCount?: number | null;
   shopReviewRating?: number | null;
+  // Wave 148 (2026-05-16): 광고/소매 매물 차단 — description 검사.
+  // 사이즈 다중 표기 / "행사할인특가" / "[구매하기]" 같은 광고문 매물 = 개인 거래 아님.
+  // 시세 부정확 + 가품 risk + 카드 추천 부적합.
+  descriptionPreview?: string | null;
 };
 
 export type PoolParsedInput = {
@@ -169,6 +173,32 @@ export function buildCandidatePoolRows(input: {
       skipped += 1;
       invalidations.push({ pid, reason: "price_above_pool_max" });
       continue;
+    }
+
+    // Wave 148 (2026-05-16): 광고/소매 매물 차단 — description 광고문 패턴.
+    // 발견: 81건 광고 매물 (25명 셀러). "행사할인특가" / "[구매하기]" / 사이즈 다중 표기.
+    // 광고 매물 = 개인 거래 X, 시세 부정확, 가품 risk.
+    if (row.descriptionPreview && typeof row.descriptionPreview === "string") {
+      const desc = row.descriptionPreview;
+      const AD_PATTERNS = [
+        /\[구매하기\]/,
+        /요청\s*사항에\s*(원하|색상|사이즈)/,
+        /배송\s*평균\s*\d/,
+        /배송\s*기간\s*평균/,
+        /주문\s*방법/,
+        /행사\s*할인\s*특가/,
+        /행사\s*기간/,
+        // 사이즈 다중 표기 (4+ 사이즈 콤마 구분) — 재고 보유 광고 매물
+        /\b2[2-9]\d\s*[,\/]\s*2[2-9]\d\s*[,\/]\s*2[2-9]\d\s*[,\/]\s*2[2-9]\d/,
+        // 가격 변동 공지
+        /행사\s*기간\s*후\s*금액/,
+        /가격\s*변동\s*있을/,
+      ];
+      if (AD_PATTERNS.some((re) => re.test(desc))) {
+        skipped += 1;
+        invalidations.push({ pid, reason: "ad_or_retail_listing" });
+        continue;
+      }
     }
 
     // Wave 132 (2026-05-16): 댓글 수 >= 8 매물 풀 진입 차단 (사용자 정책).

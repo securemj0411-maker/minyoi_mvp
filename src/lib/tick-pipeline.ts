@@ -3942,6 +3942,8 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       // Wave 145 (2026-05-16): 셀러 신뢰도 → 가품 floor v2 tier 2 gate.
       shopReviewCount: row.shop_review_count ?? null,
       shopReviewRating: row.shop_review_rating ?? null,
+      // Wave 148 (2026-05-16): description → 광고/소매 매물 차단 gate.
+      descriptionPreview: row.description_preview ?? null,
       ...shipping,
     });
   }
