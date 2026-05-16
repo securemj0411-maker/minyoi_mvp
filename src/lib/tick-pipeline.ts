@@ -1501,11 +1501,16 @@ async function markQueueDone(queueId: string) {
   });
 }
 
-async function markQueueFailed(queueId: string, error: string) {
+// 2026-05-17 v46 cleanup: exponential backoff — 영구 실패 매물 (잠긴 매물 등) 매 5분 재시도 waste 차단.
+// attempts 는 claim_mvp_detail_queue RPC 가 자동 +1 박음. failed && attempts < max_attempts 시 재시도.
+// max_attempts=3 default 라 attempts=3 도달하면 RPC 가 자연 차단 — backoff 는 attempts 1~max 사이 매물에 적용.
+const RETRY_BACKOFF_MIN: Record<number, number> = { 1: 5, 2: 15, 3: 60 };
+async function markQueueFailed(queueId: string, error: string, attempts: number = 1) {
+  const minutes = RETRY_BACKOFF_MIN[attempts] ?? 60;
   await patchRows("mvp_detail_queue", `id=eq.${encodeURIComponent(queueId)}`, {
     status: "failed",
     locked_until: null,
-    available_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+    available_at: new Date(Date.now() + minutes * 60 * 1000).toISOString(),
     last_error: error.slice(0, 500),
     updated_at: new Date().toISOString(),
   });

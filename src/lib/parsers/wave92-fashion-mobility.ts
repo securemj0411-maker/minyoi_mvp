@@ -46,7 +46,9 @@ export function parseConditionTier(text: string): ConditionTier {
   if (!isBoxOnlyDamage && !hasNegation && !isDesignIntent && !isGradeExplanation && /파손(?!\s*오염\s*등)|크랙(?!\s*가)(?!\s*,?\s*스카치)|찢어짐|얼룩\s*심함|변색\s*심함|곰팡이|악취|냄새\s*심함|수리\s*필요|수선\s*필요|찌그러짐|변형\s*심함|밑창\s*벗겨|본드로\s*붙여|깔창\s*분실|내부\s*깔창\s*분실|튿어짐\s*있어서|찢어짐\s*있어서|가수분해|작은\s*구멍/.test(t)) return "reject";
   // Wave 157: 객관 S급 검사 전 C/B 신호 우선 — 모순 매물 (객관 S표현 + 사용감) 처리.
   // 사용감 명시되면 그게 더 신뢰 (LAUNCH_PLAN §12b precision).
-  const hasCSignal = /사용감(?:\s*있|\s*많|\s*좀\s*있|이?\s*많|은?\s*많|이?\s*있|은?\s*있|\s*및|\s*,|\s*\.)|착용감\s*있|약간의?\s*오염|얼룩|스크래치|스크레치|기스\s*있|튿어짐|갈라짐|헤짐|로고\s*지워|많이\s*신|많이\s*사용|뒷굽\s*사용|밑창\s*닳|밑창\s*마모|뒤꿈치\s*닳|구멍\s*하나|작은\s*하자|미세한?\s*하자|미세한?\s*오염|미세한?\s*얼룩|미처\s*확인못한/.test(t);
+  // Wave 168: 셀러 안전 disclaimer ("있을수 있으며 / 있을 수 있") 제외 — 매물 자체 상태 표현 아님
+  const isSellerDisclaimer = /있을수?\s*있으?며|있을\s*수?\s*있\s*으니|있을\s*수?\s*있습니다|있을\s*수?\s*있고|있을\s*수?\s*있어요|중고상품\s*특성상.*있을/.test(t);
+  const hasCSignal = !isSellerDisclaimer && /사용감(?:\s*있|\s*많|\s*좀\s*있|이?\s*많|은?\s*많|이?\s*있|은?\s*있)|착용감\s*있|약간의?\s*오염|얼룩|스크래치|스크레치|기스\s*있|튿어짐|갈라짐|헤짐|로고\s*지워|많이\s*신|많이\s*사용|뒷굽\s*사용|밑창\s*닳|밑창\s*마모|뒤꿈치\s*닳|구멍\s*하나/.test(t);
   // 객관 S급 (s_grade) — 셀러 주장 아닌 객관 명시 신호 (kream 정품인증/택 부착 등)
   // Wave 157: 사용감 신호 없을 때만 s_grade 인정. 있으면 fall-through → C로 분류.
   if (
