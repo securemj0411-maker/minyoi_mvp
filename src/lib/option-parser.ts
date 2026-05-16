@@ -53,7 +53,8 @@ export type ConditionClass =
   | "worn"
   | "normal";
 
-const FLAWED_NOTES = [
+// 2026-05-17 v46 cleanup: export — condition-policy.ts 가 POOL_BLOCK_NOTES subset 검증에 사용.
+export const FLAWED_NOTES = [
   "display_defect",
   "screen_replaced",
   "faceid_issue",

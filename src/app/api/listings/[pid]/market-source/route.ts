@@ -9,6 +9,7 @@
 import { NextResponse } from "next/server";
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -138,14 +139,8 @@ export async function GET(
         const parsedRowsForCond = (await parsedRes2.json()) as Array<{ pid: number; parsed_json: Record<string, unknown> | null; condition_class: string | null }>;
         const riskByPid = new Map(analysisRows.map((r) => [Number(r.pid), Number(r.risk_hits ?? 0)]));
         const excludeByPid = new Map<number, boolean>();
-        // 2026-05-16 (사용자 코멘트 #92 pid 406610698): 비교군 UI 제외 list 가 tick-pipeline 시세 sample
-        // 제외 list 와 불일치 — 시세 계산은 정확한데 사용자 디버깅 화면에는 그 매물 그대로 표시 = 헷갈림.
-        // tick-pipeline.ts:2469~2493 와 동기화 — 8가지 condition_notes 다 제외.
-        const COMPARABLE_EXCLUDE_NOTES = [
-          "new_or_open_box", "low_battery_health", "applecare_premium",
-          "accessory_bundle", "full_set", "multi_device_bundle",
-          "display_defect", "screen_replaced", "faceid_issue", "parts_only",
-        ];
+        // 2026-05-17 v46 cleanup: COMPARABLE_EXCLUDE_NOTES condition-policy.ts 단일 source 로 옮김 (drift 차단).
+        // 사용자 코멘트 #92 (pid 406610698) 가 정확히 이 drift 지적 — 시세 sample 제외 list 와 비교군 UI 제외 list 가 불일치.
         // 2026-05-16 (사용자 코멘트 #95 pid 406094154): 본 매물 = "사용감 많음" (worn) 인데 비교군에 mint 매물.
         // wave 130 condition_class 시세 분리는 작동하지만 비교군 UI 가 condition 무관 다 표시 = 사용자 헷갈림.
         // 본 매물 condition_class 와 같은 class 매물만 비교군 list 표시. null 이면 필터 안 함 (옛 매물 호환).

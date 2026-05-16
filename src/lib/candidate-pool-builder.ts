@@ -14,6 +14,7 @@ import {
   poolSkipReason,
 } from "@/lib/pool-policy.mjs";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
+import { POOL_BLOCK_NOTES } from "@/lib/condition-policy";
 
 // 2026-05-15 (사용자 코멘트 pid 400051960): 풀 진입 가격 상한.
 // "200만원 이상은 안 하기로 했는데 왜 나옴" 정책 결정 반영.
@@ -301,15 +302,8 @@ export function buildCandidatePoolRows(input: {
     //   - multi_device_bundle (양쪽 카테고리 어느 쪽과도 비교 불가)
     //   - display_defect / screen_replaced / faceid_issue (사용자가 사면 명확한 손해)
     const preCheckNotes = (input.parsedByPid.get(pid)?.parsed_json?.condition_notes as string[] | undefined) ?? [];
-    // 2026-05-15 Wave 117: parts_only 추가 (부품용/수리용/셀러용 명시 매물).
-    // 일반 사용자 풀 차단 — 리셀 업자 lane 신설 시 해당 lane 전용 builder 가 별도 풀로 흡수.
-    const POOL_BLOCK_NOTES = [
-      "multi_device_bundle",
-      "display_defect",
-      "screen_replaced",
-      "faceid_issue",
-      "parts_only",
-    ];
+    // 2026-05-17 v46 cleanup: POOL_BLOCK_NOTES 가 condition-policy.ts 단일 source 로 옮김 (drift 차단).
+    // 정책: FLAWED 중 "사용자 손해 명확" 5종 subset. 나머지 FLAWED 는 시세 sample 차단 자체로 score 0 → 자연 차단.
     const noteHit = POOL_BLOCK_NOTES.find((n) => preCheckNotes.includes(n));
     if (noteHit) {
       skipped += 1;
