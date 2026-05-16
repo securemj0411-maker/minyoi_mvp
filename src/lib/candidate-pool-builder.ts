@@ -357,6 +357,18 @@ export function buildCandidatePoolRows(input: {
         invalidations.push({ pid, reason: `fake_suspect_t3_few_images_short_desc_unverified` });
         continue;
       }
+      // Tier 4 (Wave 155): 매우 새 셀러 (review < 3) + 매물 시세 정확히 일치 (광고 inflate 가격 가품)
+      // 가품 셀러가 정상 가격에 가까이 올려서 t1/t2/t3 우회. review 검증 강화.
+      const veryNewSeller = reviewCount != null && reviewCount < 3 && (reviewRating == null || reviewRating < 5.0);
+      if (
+        row.price < referencePrice * 0.40 &&
+        veryNewSeller &&
+        fewImages
+      ) {
+        skipped += 1;
+        invalidations.push({ pid, reason: `fake_suspect_t4_very_new_seller_few_images` });
+        continue;
+      }
     }
 
     // Wave 106 #47 정정: smartphone carrier null 차단 revert.
