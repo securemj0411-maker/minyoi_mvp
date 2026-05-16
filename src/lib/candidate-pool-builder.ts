@@ -179,8 +179,8 @@ export function buildCandidatePoolRows(input: {
     }
 
     // Wave 148 (2026-05-16): 광고/소매 매물 차단 — description 광고문 패턴.
-    // 발견: 81건 광고 매물 (25명 셀러). "행사할인특가" / "[구매하기]" / 사이즈 다중 표기.
-    // 광고 매물 = 개인 거래 X, 시세 부정확, 가품 risk.
+    // Wave 153 (2026-05-16): 중국/외국 가품 셀러 한국어 패턴 추가 (12개).
+    // 발견 (Iter 13): 30건 sample 중 거의 100% 중국 셀러 가품 패턴 — 동일 desc 무한 복붙.
     if (row.descriptionPreview && typeof row.descriptionPreview === "string") {
       const desc = row.descriptionPreview;
       const AD_PATTERNS = [
@@ -196,6 +196,23 @@ export function buildCandidatePoolRows(input: {
         // 가격 변동 공지
         /행사\s*기간\s*후\s*금액/,
         /가격\s*변동\s*있을/,
+        // Wave 153: 중국/외국 셀러 가품 한국어 패턴 (12개)
+        /안심[이]?\s*하게\s*주문/,
+        /즐거운\s*쇼핑\s*되세요/,
+        /주문\s*확인\s*후\s*영업일\s*기준/,
+        /배송주기\s*[1-9]/,
+        /최대한\s*빨리\s*발송하겠습니다/,
+        /다른\s*문의사항이\s*있으시면\s*연락/,
+        /수령\s*후\s*불만족\s*시\s*환불/,
+        /본\s*제품은\s*100%/,
+        /별도\s*문의\s*없으시면\s*바로안전결제/,
+        // 중국식 번호 표기 (1、 2、 3、)
+        /[1-9]、/,
+        // "재고 보유" / "재고 많음"
+        /재고\s*많/,
+        /재고\s*보유/,
+        // 5+ 사이즈 다중 (Wave 148 4+에서 더 strict)
+        /\b2[2-9]\d\s*[,\/]\s*2[2-9]\d\s*[,\/]\s*2[2-9]\d\s*[,\/]\s*2[2-9]\d\s*[,\/]\s*2[2-9]\d/,
       ];
       if (AD_PATTERNS.some((re) => re.test(desc))) {
         skipped += 1;
