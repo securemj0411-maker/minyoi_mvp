@@ -151,7 +151,9 @@ export function resolveConditionClass(
   return CONDITION_RANK[fromMeta] <= CONDITION_RANK[fromNotes] ? fromMeta : fromNotes;
 }
 
-const PARSER_VERSION = "option-parser-v46";
+// 2026-05-16 v46 cleanup: export — reparse-listings/route.ts 등 다른 곳에서 import.
+// 이전: route.ts 에 별도 const 박혀서 silent drift 위험 (수동 sync 필요).
+export const PARSER_VERSION = "option-parser-v46";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -1635,8 +1637,8 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       critical_unknown: criticalUnknown,
       tablet_bundle_price_review: tabletBundlePriceReview,
       condition_notes: conditionNotes,
-      // Wave 130 (2026-05-16): condition class 박음 — 시세 산정/조회 시 grouping key.
-      condition_class: finalConditionClass,
+      // 2026-05-16 v46 cleanup: condition_class 는 mvp_listing_parsed.condition_class column 에만 박음.
+      // parsed_json 안 중복 저장 제거 (denormalization 클루지 차단 — 향후 drift 위험 0).
     },
   };
 }

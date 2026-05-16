@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
 import { checkCronAuth } from "@/lib/cron-auth";
 import { requireDebugAdmin } from "@/lib/debug-admin";
-import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
+import { parseListingOptions, toParsedListingRow, PARSER_VERSION } from "@/lib/option-parser";
 import { classifyListing } from "@/lib/pipeline";
 import { boundedInt } from "@/lib/pipeline-config";
 
@@ -117,10 +117,9 @@ async function handleReparse(req: NextRequest) {
   const offset = boundedInt(req.nextUrl.searchParams.get("offset"), 0, 0, 100000);
   const shouldReclassify = req.nextUrl.searchParams.get("reclassify") === "1";
   const legacyOnly = req.nextUrl.searchParams.get("legacy") === "1";
-  // legacy=1 이면 parser_version != CURRENT 옛 매물만 reparse. CURRENT 는 option-parser PARSER_VERSION 과 일치해야 함.
-  const CURRENT_PARSER_VERSION = "option-parser-v46";
+  // 2026-05-16 v46 cleanup: option-parser.PARSER_VERSION import — silent drift 차단 (이전 별도 const).
   const rows = legacyOnly
-    ? await loadLegacyRows(limit, CURRENT_PARSER_VERSION)
+    ? await loadLegacyRows(limit, PARSER_VERSION)
     : await loadRows(limit, offset);
   const summary = {
     total: rows.length,
