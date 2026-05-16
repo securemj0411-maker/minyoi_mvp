@@ -1549,60 +1549,65 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
         const soldSignals = detectSoldOut(detail, claim.price, { title: claim.name });
         if (hasStrongSoldOutSignal(soldSignals)) {
           const now = new Date().toISOString();
-          await patchRows("mvp_raw_listings", `pid=eq.${claim.pid}`, {
-            description_preview: detail.description.slice(0, 500),
-            sale_status: detail.saleStatus,
-            trade_data: detail.tradeData,
-            trades_data: detail.tradesData,
-            image_url_template: detail.imageUrlTemplate,
-            image_count: detail.imageCount,
-            thumbnail_url: detail.thumbnailUrl,
-            seller_uid: detail.shopUid,
-            seller_source: "bunjang",
-            listing_state: "sold_confirmed",
-            sold_detected_at: now,
-            // Wave 132 (2026-05-16): sold-out 매물도 num_comment 박음 (시세 sample 분석 시 활용).
-            num_comment: detail.commentCount ?? null,
-            // Wave 137: sold-out 매물도 qty 박음 (대량 판매업자 분석).
-            qty: detail.qty ?? null,
-            // Wave 138b: sold-out 매물도 description hash (다중 ID 분석).
-            description_hash: computeDescriptionHash(detail.description),
-            // Wave 140: sold-out 매물도 bunjang condition label 저장.
-            bunjang_condition_label: detail.conditionLabel ?? null,
-            detail_status: "done",
-            detail_enriched_at: now,
-            detail_error: null,
-            updated_at: now,
-          });
-          await insertObservationsWithPayloads([{
-            pid: Number(claim.pid),
-            observed_at: now,
-            event_type: "state_changed",
-            price: claim.price,
-            name: claim.name,
-            num_faved: claim.num_faved,
-            sale_status: detail.saleStatus,
-            listing_state: "sold_confirmed",
-            seller_uid: detail.shopUid,
-            source: "tick_detail",
-            raw_json: {
-              sold_signals: soldSignals,
-              reason: "detail_stage_strong_sold_signal",
-            },
-          }]);
-          await patchLifecycle(Number(claim.pid), {
-            status: "sold_confirmed",
-            last_checked_at: now,
-            last_check_result: "sold",
-            consecutive_missing_count: 0,
-            consecutive_error_count: 0,
-            next_check_at: lifecycleNextCheckAt("general", "sold_confirmed"),
-            last_error: null,
-            detail_status_code: 200,
-            transition_confidence: 0.95,
-            state_reason: `detail_stage_${describeSignals(soldSignals)}`,
-          }).catch(() => undefined);
-          await invalidatePoolEntries([{ pid: Number(claim.pid), reason: `detail_stage_${describeSignals(soldSignals)}` }]);
+          // 2026-05-16 v46: sold-out 처리 5 sequential round → Promise.all parallel + queue done sequential.
+          // 4 round → 2 round. 800 매물 batch 의 sold ~5-10% (40-80건) 처리 latency 절감.
+          // ordering 안전: 4 작업 서로 다른 table — race condition 없음. queue done 만 마지막 (다 끝나야 retry 차단).
+          await Promise.all([
+            patchRows("mvp_raw_listings", `pid=eq.${claim.pid}`, {
+              description_preview: detail.description.slice(0, 500),
+              sale_status: detail.saleStatus,
+              trade_data: detail.tradeData,
+              trades_data: detail.tradesData,
+              image_url_template: detail.imageUrlTemplate,
+              image_count: detail.imageCount,
+              thumbnail_url: detail.thumbnailUrl,
+              seller_uid: detail.shopUid,
+              seller_source: "bunjang",
+              listing_state: "sold_confirmed",
+              sold_detected_at: now,
+              // Wave 132 (2026-05-16): sold-out 매물도 num_comment 박음 (시세 sample 분석 시 활용).
+              num_comment: detail.commentCount ?? null,
+              // Wave 137: sold-out 매물도 qty 박음 (대량 판매업자 분석).
+              qty: detail.qty ?? null,
+              // Wave 138b: sold-out 매물도 description hash (다중 ID 분석).
+              description_hash: computeDescriptionHash(detail.description),
+              // Wave 140: sold-out 매물도 bunjang condition label 저장.
+              bunjang_condition_label: detail.conditionLabel ?? null,
+              detail_status: "done",
+              detail_enriched_at: now,
+              detail_error: null,
+              updated_at: now,
+            }),
+            insertObservationsWithPayloads([{
+              pid: Number(claim.pid),
+              observed_at: now,
+              event_type: "state_changed",
+              price: claim.price,
+              name: claim.name,
+              num_faved: claim.num_faved,
+              sale_status: detail.saleStatus,
+              listing_state: "sold_confirmed",
+              seller_uid: detail.shopUid,
+              source: "tick_detail",
+              raw_json: {
+                sold_signals: soldSignals,
+                reason: "detail_stage_strong_sold_signal",
+              },
+            }]),
+            patchLifecycle(Number(claim.pid), {
+              status: "sold_confirmed",
+              last_checked_at: now,
+              last_check_result: "sold",
+              consecutive_missing_count: 0,
+              consecutive_error_count: 0,
+              next_check_at: lifecycleNextCheckAt("general", "sold_confirmed"),
+              last_error: null,
+              detail_status_code: 200,
+              transition_confidence: 0.95,
+              state_reason: `detail_stage_${describeSignals(soldSignals)}`,
+            }).catch(() => undefined),
+            invalidatePoolEntries([{ pid: Number(claim.pid), reason: `detail_stage_${describeSignals(soldSignals)}` }]),
+          ]);
           await markQueueDone(claim.queue_id);
           stats.enriched += 1;
           stats.poolSkipped += 1;
