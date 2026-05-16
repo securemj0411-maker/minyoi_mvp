@@ -31,7 +31,7 @@ import {
   resolveShipping,
   type PipelineRow,
 } from "@/lib/pipeline";
-import { loadPipelineRuntimeConfig, getCategoryPageOverrides } from "@/lib/pipeline-config";
+import { loadPipelineRuntimeConfig, getCategoryPageOverrides, boundedInt } from "@/lib/pipeline-config";
 import {
   decideCadence,
   queryFamily,
@@ -1480,7 +1480,8 @@ async function claimDetailQueue(): Promise<QueueClaimRow[]> {
   // detail queue 10,224 pending (Iteration 2 발견). batch 20 → 400 hardcode.
   // 2026-05-16 (Wave 135): batch 400 실측 25-27s / maxDuration 90s 28% 사용 = 여유 3배.
   // 800 + c=15로 step up. 시간당 8,000 → 16,000 calls. 신발 reset 4,025건 15분 안 해소.
-  const DETAIL_BATCH_HARDCODE = 800;
+  // 2026-05-16 v46: env override (TICK_DETAIL_BATCH) — 운영자 throttle 가능. default 800 유지.
+  const DETAIL_BATCH_HARDCODE = boundedInt(process.env.TICK_DETAIL_BATCH ?? null, 800, 50, 2000);
   const res = await restFetch(rpcUrl("claim_mvp_detail_queue"), {
     method: "POST",
     headers: serviceHeaders(),
@@ -1527,7 +1528,8 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
     // 2026-05-16: lifecycle 5x 성공 패턴 detail-worker에도 적용. queue 10,224 pending → 5x throughput.
     // sequential for → Promise.all wave concurrency 10. probe 시나리오 A로 c=10 안전 검증됨.
     // 2026-05-16 (Wave 135): c=10 → 15. probe c=20까지 OK (329 req/s + 429 0건). c=15는 안전 마진 큼.
-    const DETAIL_CONCURRENCY = 15;
+    // 2026-05-16 v46: env override (TICK_DETAIL_CONCURRENCY) — 운영자 throttle 가능. default 15.
+    const DETAIL_CONCURRENCY = boundedInt(process.env.TICK_DETAIL_CONCURRENCY ?? null, 15, 1, 30);
     let detailDeadlineHit = false;
     for (let waveStart = 0; waveStart < claims.length; waveStart += DETAIL_CONCURRENCY) {
       if (Date.now() >= deadlineMs) {
