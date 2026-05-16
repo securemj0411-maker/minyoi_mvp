@@ -1548,7 +1548,7 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
         if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
         if (!detail) {
           stats.detailFailed += 1;
-          await markQueueFailed(claim.queue_id, "detail api returned null");
+          await markQueueFailed(claim.queue_id, "detail api returned null", claim.attempts);
           return;
         }
         const soldSignals = detectSoldOut(detail, claim.price, { title: claim.name });
@@ -1763,7 +1763,7 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
         stats.enriched += 1;
       } catch (err) {
         stats.detailFailed += 1;
-        await markQueueFailed(claim.queue_id, err instanceof Error ? err.message : String(err));
+        await markQueueFailed(claim.queue_id, err instanceof Error ? err.message : String(err), claim.attempts);
       }
       })); // Promise.all wave 닫기
     } // outer for waveStart loop 닫기
