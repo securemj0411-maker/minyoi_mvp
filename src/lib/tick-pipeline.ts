@@ -2791,6 +2791,55 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     group.disappearedRows = group.disappearedRows.filter((r) => r.price >= floor);
   }
 
+  // Wave 163 (2026-05-16): 시세 집계에서 광고 매물 제외 (사용자 지적).
+  // 발견: NB 327 광고 76건 (avg 206k) vs 정상 81건 (avg 69k) — 광고가 시세 3배 끌어올림.
+  // Wave 148 광고 차단 패턴을 시세에도 적용. raw_listings.description_preview 검사.
+  // pid → description map 미리 만들기 (rows 전체에서 한 번만).
+  const AD_PATTERNS_MARKET = [
+    /\[구매하기\]/,
+    /요청\s*사항에\s*(원하|색상|사이즈)/,
+    /배송\s*평균\s*\d/,
+    /배송\s*기간\s*평균/,
+    /주문\s*방법/,
+    /행사\s*할인\s*특가/,
+    /행사\s*기간/,
+    /행사\s*기간\s*후\s*금액/,
+    /가격\s*변동\s*있을/,
+    /안심[이]?\s*하게\s*주문/,
+    /즐거운\s*쇼핑\s*되세요/,
+    /주문\s*확인\s*후\s*영업일\s*기준/,
+    /배송주기\s*[1-9]/,
+    /최대한\s*빨리\s*발송하겠습니다/,
+    /다른\s*문의사항이\s*있으시면\s*연락/,
+    /수령\s*후\s*불만족\s*시\s*환불/,
+    /본\s*제품은\s*100%/,
+    /별도\s*문의\s*없으시면\s*바로안전결제/,
+    /[1-9]、/,
+    /\b2[2-9]\d\s*[,\/]\s*2[2-9]\d\s*[,\/]\s*2[2-9]\d\s*[,\/]\s*2[2-9]\d/,
+    /100\s*배\s*환불/,
+    /만에하나\s*가품/,
+    /정품임을\s*자신/,
+    /해외(?:에서)?\s*대량\s*병행수입/,
+  ];
+  const adPidSet = new Set<number>();
+  for (const row of rows) {
+    if (!row.description_preview) continue;
+    if (AD_PATTERNS_MARKET.some((re) => re.test(row.description_preview!))) {
+      adPidSet.add(row.pid);
+    }
+  }
+  if (adPidSet.size > 0) {
+    for (const group of byKey.values()) {
+      // shoe/bag 카테고리만 적용 (전자기기는 광고 매물 적음)
+      if (!group.skuId) continue;
+      const sku = skuById(group.skuId);
+      if (!sku || !FAKE_FLOOR_CATEGORIES_MARKET.has(sku.category)) continue;
+      group.activeRows = group.activeRows.filter((r) => !adPidSet.has(r.pid));
+      group.soldRows = group.soldRows.filter((r) => !adPidSet.has(r.pid));
+      group.disappearedRows = group.disappearedRows.filter((r) => !adPidSet.has(r.pid));
+    }
+  }
+
   const marketRows = [...byKey.values()].map((group) => {
     const comparableKey = group.comparableKey;
     // Wave 135: comparableKey를 toSellerPriced에 전달 → launch event multiplier 적용.
