@@ -3944,6 +3944,8 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       shopReviewRating: row.shop_review_rating ?? null,
       // Wave 148 (2026-05-16): description → 광고/소매 매물 차단 gate.
       descriptionPreview: row.description_preview ?? null,
+      // Wave 152 (2026-05-16): 이미지 수 → 가품 floor tier 3.
+      imageCount: row.image_count ?? null,
       ...shipping,
     });
   }

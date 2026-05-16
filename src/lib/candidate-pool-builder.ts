@@ -89,6 +89,9 @@ export type PoolCandidateInput = {
   // 사이즈 다중 표기 / "행사할인특가" / "[구매하기]" 같은 광고문 매물 = 개인 거래 아님.
   // 시세 부정확 + 가품 risk + 카드 추천 부적합.
   descriptionPreview?: string | null;
+  // Wave 152 (2026-05-16): 가품 detection v3 — 이미지 수 + desc 길이.
+  // 가품 셀러 패턴: 이미지 1장 (재고 사진) + 짧은 desc + 신뢰도 X.
+  imageCount?: number | null;
 };
 
 export type PoolParsedInput = {
@@ -290,11 +293,15 @@ export function buildCandidatePoolRows(input: {
     // 한정판 매물도 fair: skuMedian이 msrp보다 크면 시세 기준.
     // 신발/가방만 적용 (제조 진입장벽 낮음). 전자기기는 fake 적음.
     // Wave 145 (2026-05-16): v2 강화 — 셀러 신뢰도 + 가격 floor 결합.
+    // Wave 152 (2026-05-16): v3 강화 — 이미지 수 + desc 길이 신호 추가.
     //   tier 1: price < ref * 0.15 (85% 할인) → 가품 확실 (review 무관)
     //   tier 2: price < ref * 0.25 (75% 할인) + 셀러 review_count < 5 OR rating < 4.5 → 가품 의심
+    //   tier 3 (NEW): price < ref * 0.30 + image_count <= 1 + desc < 50자 + 셀러 신뢰도 낮음 → 가품 의심
+    //     - 가품 셀러 전형 패턴: 재고 사진 1장 + 짧은 desc + review 거의 없음
     const FAKE_FLOOR_CATEGORIES = new Set<string>(["shoe", "bag"]);
     const FAKE_FLOOR_RATIO_T1 = 0.15;
     const FAKE_FLOOR_RATIO_T2 = 0.25;
+    const FAKE_FLOOR_RATIO_T3 = 0.30;
     if (
       sku?.msrpKrw &&
       row.price > 0 &&
@@ -308,13 +315,29 @@ export function buildCandidatePoolRows(input: {
         invalidations.push({ pid, reason: `fake_suspect_t1_below_${Math.round(FAKE_FLOOR_RATIO_T1 * 100)}pct` });
         continue;
       }
-      // Tier 2 (Wave 145): 25% 이하 + 셀러 신뢰도 낮음
       const reviewCount = row.shopReviewCount ?? null;
       const reviewRating = row.shopReviewRating ?? null;
       const lowSellerTrust = (reviewCount != null && reviewCount < 5) || (reviewRating != null && reviewRating < 4.5);
+      // Tier 2 (Wave 145): 25% 이하 + 셀러 신뢰도 낮음
       if (row.price < referencePrice * FAKE_FLOOR_RATIO_T2 && lowSellerTrust) {
         skipped += 1;
         invalidations.push({ pid, reason: `fake_suspect_t2_unverified_seller_below_${Math.round(FAKE_FLOOR_RATIO_T2 * 100)}pct` });
+        continue;
+      }
+      // Tier 3 (Wave 152): 30% 이하 + 이미지 1장 + desc 50자 미만 + 셀러 신뢰도 낮음
+      // = 재고 사진 1장 + 광고문 짧은 desc + 새 셀러 = 가품 셀러 전형
+      const imageCount = row.imageCount ?? null;
+      const descLength = row.descriptionPreview?.length ?? 0;
+      const fewImages = imageCount != null && imageCount <= 1;
+      const shortDesc = descLength > 0 && descLength < 50;
+      if (
+        row.price < referencePrice * FAKE_FLOOR_RATIO_T3 &&
+        lowSellerTrust &&
+        fewImages &&
+        shortDesc
+      ) {
+        skipped += 1;
+        invalidations.push({ pid, reason: `fake_suspect_t3_few_images_short_desc_unverified` });
         continue;
       }
     }
