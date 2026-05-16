@@ -2571,28 +2571,19 @@ export async function sourceHealthStage(): Promise<StageStats> {
 
 // Wave 138b (2026-05-16): 다중 ID 사기 그룹 hash set load.
 // 같은 description_hash + 다른 seller_uid 2+ = 부캐 그룹 → 그 hash 매물 모두 차단.
-// 전체 active raw_listings 기준 hash → seller_uid SET → size 2+ filter.
+//
+// 2026-05-17 v46 cleanup: 20K row fetch + JS aggregate → DB function (get_fraud_group_hashes).
+// 이전: PostgREST 가 GROUP BY HAVING 못 해서 raw fetch + in-memory. 매 score-stage run 마다 20K row.
+// 새: DB 안에서 GROUP BY HAVING — 작은 set 반환. 100배 빠름.
 async function loadFraudGroupHashes(): Promise<Set<string>> {
   try {
-    // PostgREST direct group by 어려움 — raw fetch + in-memory aggregate.
-    // hash + seller_uid 조합으로 fetch, 짧은 description 제외 (NULL).
-    const url = `${tableUrl("mvp_raw_listings")}?select=description_hash,seller_uid&description_hash=not.is.null&seller_uid=not.is.null&listing_state=eq.active&limit=20000`;
-    const res = await restFetch(url, { headers: serviceHeaders() });
-    const rows = (await res.json()) as Array<{ description_hash: string; seller_uid: string }>;
-    // hash → unique seller set
-    const hashToSellers = new Map<string, Set<string>>();
-    for (const r of rows) {
-      if (!r.description_hash || !r.seller_uid) continue;
-      const set = hashToSellers.get(r.description_hash) ?? new Set<string>();
-      set.add(r.seller_uid);
-      hashToSellers.set(r.description_hash, set);
-    }
-    // size 2+ filter
-    const fraudHashes = new Set<string>();
-    for (const [hash, sellers] of hashToSellers.entries()) {
-      if (sellers.size >= 2) fraudHashes.add(hash);
-    }
-    return fraudHashes;
+    const res = await restFetch(rpcUrl("get_fraud_group_hashes"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({}),
+    });
+    const rows = (await res.json()) as Array<{ description_hash: string }>;
+    return new Set(rows.map((r) => r.description_hash).filter(Boolean));
   } catch (err) {
     console.warn("loadFraudGroupHashes failed (non-fatal)", err);
     return new Set();
