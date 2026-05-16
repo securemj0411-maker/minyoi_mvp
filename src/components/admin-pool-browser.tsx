@@ -284,7 +284,9 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     <div className="line-clamp-2 text-[13px] font-bold text-zinc-900 dark:text-zinc-100">{item.name}</div>
                     <div className="flex items-baseline gap-2">
                       <span className="text-base font-black tabular-nums text-emerald-700 dark:text-emerald-400">
-                        +{krw(item.expectedProfitMin)}~{krw(item.expectedProfitMax)}
+                        {item.expectedProfitMin === item.expectedProfitMax
+                          ? `+${krw(item.expectedProfitMax)}`
+                          : `+${krw(item.expectedProfitMin)}~${krw(item.expectedProfitMax)}`}
                       </span>
                       <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">band {item.band}</span>
                     </div>

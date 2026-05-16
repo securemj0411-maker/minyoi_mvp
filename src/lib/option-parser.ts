@@ -134,7 +134,8 @@ const CONDITION_RANK: Record<Exclude<ConditionClass, "low_batt">, number> = {
   worn: 1,
   normal: 2,
   clean: 3,
-  unopened: 4,
+  mint: 4,
+  unopened: 5,
 };
 
 // 2026-05-16 v46: metadata + description 결합. 사용자 정책 "보수적 (낮은 등급) 우선".

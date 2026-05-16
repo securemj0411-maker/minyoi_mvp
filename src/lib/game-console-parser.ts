@@ -196,10 +196,14 @@ export function parseGameConsoleListing(title: string, description = "", price =
   const effectiveAccessoryOnly = accessoryOnly && !bodyOnly && !protectedBodyListing;
   if (effectiveAccessoryOnly) addReason("accessory_only_signal");
 
+  // 2026-05-17 (사용자 5-iteration #3): "디스크" 단독 매칭 제거 — PS5 본품 "디스크 에디션/디스크 버전" false positive 차단.
+  // 게임 디스크는 "게임 디스크" / "디스크 N장" 같이 명시된 표현만 매칭. PS5/플스 본품 의미는 normal 유지.
+  // 게임 title keyword 도 "에디션/한정판/콘솔/본체/풀세트" 결합 시 본품 (예: "스위치 OLED 동물의숲 에디션") → titleOnly 제외.
   const titleOnly =
-    /(타이틀|칩|팩|소프트|게임\s*카드|게임카드|카트리지|cd|디스크).{0,16}(판매|팝니다|일괄|세트|종)|(?:판매|팝니다|일괄|세트|종).{0,16}(타이틀|칩|팩|소프트|게임\s*카드|게임카드|카트리지|cd|디스크)/.test(text) ||
-    /(nds|3ds|psp|ps\s*vita|ps2|ps3|ps4|ps5).{0,24}(게임|타이틀|소프트|디스크|cd)/.test(text) ||
-    /(포켓몬스터|파타퐁|트라이앵글\s*스트래티지|슈퍼마리오|젤다의\s*전설|몬스터헌터|동물의\s*숲|커비|스플래툰|마리오\s*파티|브라더스|레전드\s*za)/.test(text);
+    /(타이틀|칩|팩|소프트|게임\s*카드|게임카드|카트리지|cd).{0,16}(판매|팝니다|일괄|세트|종)|(?:판매|팝니다|일괄|세트|종).{0,16}(타이틀|칩|팩|소프트|게임\s*카드|게임카드|카트리지|cd)/.test(text) ||
+    (/(?:게임\s*디스크|게임디스크|디스크\s*[1-9]\s*(?:장|개)|[1-9]\s*(?:장|개)\s*디스크)/.test(text) && !/(?:디스크\s*에디션|디스크\s*버전|디스크에디션|디스크버전)/.test(text)) ||
+    /(nds|3ds|psp|ps\s*vita|ps2|ps3|ps4|ps5).{0,24}(게임|타이틀|소프트|cd)/.test(text) ||
+    (/(포켓몬스터|파타퐁|트라이앵글\s*스트래티지|슈퍼마리오|젤다의\s*전설|몬스터헌터|동물의\s*숲|커비|스플래툰|마리오\s*파티|브라더스|레전드\s*za)/.test(text) && !/(에디션|한정판|콘솔|본체|풀세트|풀박스|풀구성)/.test(text));
   if (titleOnly && !bodySignal) addReason("game_title_signal");
 
   const bundleRisk =

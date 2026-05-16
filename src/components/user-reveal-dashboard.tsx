@@ -496,7 +496,9 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
                 <span>{item.listingState}</span>
               </div>
               <div className="mt-1 text-xs font-black text-emerald-700 dark:text-emerald-300">
-                +{item.expectedProfitMin.toLocaleString("ko-KR")}~{item.expectedProfitMax.toLocaleString("ko-KR")}원
+                {item.expectedProfitMin === item.expectedProfitMax
+                  ? `+${item.expectedProfitMax.toLocaleString("ko-KR")}원`
+                  : `+${item.expectedProfitMin.toLocaleString("ko-KR")}~${item.expectedProfitMax.toLocaleString("ko-KR")}원`}
               </div>
               {item.feedbackType ? (
                 <div className="mt-1 truncate text-[11px] text-zinc-500 dark:text-zinc-400">
