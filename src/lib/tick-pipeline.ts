@@ -2840,6 +2840,15 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     /모든\s*사이즈가?\s*구비/,
     /안심하고\s*구매하세요/,
     /택[·.]\s*비닐\s*그대로\s*보관/,
+    // Wave 165: 이모지 + 광고 형식 (가품 셀러 전형)
+    /📢\s*판매\s*상품/,
+    /✔️\s*정품\s*100\s*%\s*보장/,
+    /🚚\s*주문\s*시\s*당일\s*발송/,
+    /📸\s*모든\s*상품은\s*실보유\s*실사진/,
+    /전상품\s*100\s*%\s*정품/,
+    /크림\s*계정\s*다수\s*총\s*[0-9]+\s*건/,
+    /정품\s*100\s*%\s*보장.*컨디션\s*[sSaA]급/,
+    /✔[️]?\s*정품\s*100\s*%\s*보장/,
   ];
   const adPidSet = new Set<number>();
   for (const row of rows) {
