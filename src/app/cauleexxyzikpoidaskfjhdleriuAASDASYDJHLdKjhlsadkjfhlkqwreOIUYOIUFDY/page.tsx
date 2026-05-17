@@ -173,7 +173,7 @@ export default async function MembersPage() {
 
   return (
     <main className="mx-auto max-w-[1500px] p-4 sm:p-6">
-      {/* Wave 182: 운영자 페이지 nav — 회원 / 손해 신고. */}
+      {/* Wave 188: 운영자 페이지 nav — 회원 / 손해 신고 / 신고 통계 (3 페이지 통일). */}
       <nav className="mb-4 flex flex-wrap items-center gap-2 text-xs">
         <span className="rounded-full bg-amber-100 px-2.5 py-1 font-black text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
           ⚙ 회원 목록 (현재)
@@ -183,6 +183,12 @@ export default async function MembersPage() {
           className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 font-black text-amber-900 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
         >
           🔍 사용자 신고 검수
+        </a>
+        <a
+          href="./feedback-stats"
+          className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 font-black text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-100"
+        >
+          📊 신고 통계
         </a>
       </nav>
 
