@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
+import { ConditionChip } from "@/components/condition-chip";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
@@ -663,7 +664,11 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
               ) : null}
             </div>
             <div className="min-w-0">
-              <div className="truncate text-sm font-bold text-[#223127] dark:text-zinc-100">{item.name}</div>
+              <div className="flex items-start gap-1.5">
+                <div className="min-w-0 flex-1 truncate text-sm font-bold text-[#223127] dark:text-zinc-100">{item.name}</div>
+                {/* 2026-05-17: 매물 등급 chip (S/A/B/C) — 운영자풀/사용자 reveal 통일. */}
+                <ConditionChip conditionClass={item.marketBasis?.conditionClass ?? null} />
+              </div>
               <div className="mt-1 flex flex-wrap gap-1 text-[11px] font-semibold text-[#6b7269] dark:text-zinc-400">
                 <span>{krw(item.price)}</span>
                 <span>·</span>
