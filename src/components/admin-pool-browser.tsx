@@ -10,6 +10,7 @@ import MarketHistoryChart from "@/components/market-history-chart";
 import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
+import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
 import { CATALOG } from "@/lib/catalog";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 
@@ -53,6 +54,14 @@ type PoolItem = {
   numFaved: number | null;
   numComment: number | null;
   scoreFlags: string[];
+  // Wave 187 (2026-05-17): L6 Liquidity 곡선 입력 — comparable_key 별 velocity + price 분포.
+  velocityP25Hours: number | null;
+  velocityMedianHours: number | null;
+  velocityP75Hours: number | null;
+  velocitySoldSampleCount: number | null;
+  marketP25Price: number | null;
+  marketMedianPrice: number | null;
+  marketP75Price: number | null;
 };
 
 type Resp = {
@@ -366,19 +375,33 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       {item.skuName ?? "—"} · {item.poolStatus} · {relAge(item.lastVerifiedAt)} · 노출 {item.exposureCount}/{item.maxExposure}
                     </div>
                     {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 5축 잔여 위험 신호 시각화. 운영자풀은 showDetail. */}
-                    <RiskScoreBar
-                      scoreFlags={item.scoreFlags}
-                      descriptionPreview={item.descriptionPreview}
-                      conditionClass={item.conditionClass}
-                      categorySlug={item.category}
-                      price={item.price}
-                      skuMedian={item.skuMedian}
-                      confidence={item.confidence}
-                      sellerReviewRating={item.sellerReviewRating}
-                      sellerReviewCount={item.sellerReviewCount}
-                      photoCount={item.imageCount}
-                      showDetail
-                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <RiskScoreBar
+                        scoreFlags={item.scoreFlags}
+                        descriptionPreview={item.descriptionPreview}
+                        conditionClass={item.conditionClass}
+                        categorySlug={item.category}
+                        price={item.price}
+                        skuMedian={item.skuMedian}
+                        confidence={item.confidence}
+                        sellerReviewRating={item.sellerReviewRating}
+                        sellerReviewCount={item.sellerReviewCount}
+                        photoCount={item.imageCount}
+                        showDetail
+                      />
+                      {/* Wave 187 (2026-05-17): L6 Liquidity 곡선 compact chip — pack-reveal 과 동일 utility 재사용. */}
+                      <LiquidityCurveMini
+                        price={item.price}
+                        p25Price={item.marketP25Price}
+                        medianPrice={item.marketMedianPrice}
+                        p75Price={item.marketP75Price}
+                        p25Hours={item.velocityP25Hours}
+                        medianHours={item.velocityMedianHours}
+                        p75Hours={item.velocityP75Hours}
+                        soldSampleCount={item.velocitySoldSampleCount}
+                        compact
+                      />
+                    </div>
                     {/* 2026-05-17 Phase 2: verdict chips (근거 강조) — 가능한 input 만 buildVerdicts. */}
                     {(() => {
                       const verdicts = buildVerdicts({

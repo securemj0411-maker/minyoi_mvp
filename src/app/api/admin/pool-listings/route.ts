@@ -172,6 +172,52 @@ export async function GET(req: NextRequest) {
       ),
     ]);
 
+    // Wave 187 (2026-05-17): L6 Liquidity 곡선 입력 — comparable_key 별 velocity + price 분포.
+    // mvp_market_velocity_daily 는 condition='all' 만 박혀있음 → 일단 'all' fetch (Wave 183 한계 동일).
+    // 가장 최근 row per comparable_key 만 사용 (client-side picking).
+    const parsedRowsForKeys = (await parsedRes.clone().json()) as Array<{ pid: number; comparable_key: string | null }>;
+    const comparableKeys = Array.from(new Set(parsedRowsForKeys.map((r) => r.comparable_key).filter((k): k is string => !!k)));
+    const velocityMap = new Map<string, { p25Hours: number | null; medianHours: number | null; p75Hours: number | null; soldSampleCount: number; date: string }>();
+    const priceMap = new Map<string, { p25Price: number | null; medianPrice: number | null; p75Price: number | null; date: string }>();
+    if (comparableKeys.length > 0) {
+      const keysCsv = comparableKeys.map((k) => `"${k}"`).join(",");
+      const [velocityRes, priceRes] = await Promise.all([
+        restFetch(
+          `${tableUrl("mvp_market_velocity_daily")}?select=comparable_key,p25_hours_to_sold,median_hours_to_sold,p75_hours_to_sold,observed_sold_sample_count,date&comparable_key=in.(${keysCsv})&condition_class=eq.all&order=date.desc&limit=2000`,
+          { headers: serviceHeaders() },
+        ),
+        restFetch(
+          `${tableUrl("mvp_market_price_daily")}?select=comparable_key,p25_price,blended_median_price,p75_price,date&comparable_key=in.(${keysCsv})&order=date.desc&limit=2000`,
+          { headers: serviceHeaders() },
+        ),
+      ]);
+      const vRows = (await velocityRes.json()) as Array<{ comparable_key: string; p25_hours_to_sold: number | null; median_hours_to_sold: number | null; p75_hours_to_sold: number | null; observed_sold_sample_count: number; date: string }>;
+      const pRows = (await priceRes.json()) as Array<{ comparable_key: string; p25_price: number | null; blended_median_price: number | null; p75_price: number | null; date: string }>;
+      for (const r of vRows) {
+        const existing = velocityMap.get(r.comparable_key);
+        if (!existing || r.date > existing.date) {
+          velocityMap.set(r.comparable_key, {
+            p25Hours: r.p25_hours_to_sold != null ? Number(r.p25_hours_to_sold) : null,
+            medianHours: r.median_hours_to_sold != null ? Number(r.median_hours_to_sold) : null,
+            p75Hours: r.p75_hours_to_sold != null ? Number(r.p75_hours_to_sold) : null,
+            soldSampleCount: Number(r.observed_sold_sample_count ?? 0),
+            date: r.date,
+          });
+        }
+      }
+      for (const r of pRows) {
+        const existing = priceMap.get(r.comparable_key);
+        if (!existing || r.date > existing.date) {
+          priceMap.set(r.comparable_key, {
+            p25Price: r.p25_price != null ? Number(r.p25_price) : null,
+            medianPrice: r.blended_median_price != null ? Number(r.blended_median_price) : null,
+            p75Price: r.p75_price != null ? Number(r.p75_price) : null,
+            date: r.date,
+          });
+        }
+      }
+    }
+
     const listingsMap = new Map<number, Record<string, unknown>>();
     const rawMap = new Map<number, Record<string, unknown>>();
     const parsedMap = new Map<number, Record<string, unknown>>();
@@ -188,6 +234,9 @@ export async function GET(req: NextRequest) {
       const p = parsedMap.get(pid) || {};
       const fb = feedbackMap.get(pid);
       const note = (fb?.note as string | undefined) ?? "";
+      const comparableKey = (p.comparable_key as string | null) ?? null;
+      const velocity = comparableKey ? velocityMap.get(comparableKey) ?? null : null;
+      const priceStats = comparableKey ? priceMap.get(comparableKey) ?? null : null;
       return {
         hasComment: note.trim().length > 0,
         commentPreview: note.slice(0, 100),
@@ -218,6 +267,14 @@ export async function GET(req: NextRequest) {
         numFaved: l.num_faved != null ? Number(l.num_faved) : null,
         numComment: l.num_comment != null ? Number(l.num_comment) : null,
         scoreFlags: Array.isArray(p.score_flags) ? p.score_flags as string[] : [],
+        // Wave 187: L6 Liquidity 곡선 입력 — comparable_key 별 velocity + price 분포 (latest row).
+        velocityP25Hours: velocity?.p25Hours ?? null,
+        velocityMedianHours: velocity?.medianHours ?? null,
+        velocityP75Hours: velocity?.p75Hours ?? null,
+        velocitySoldSampleCount: velocity?.soldSampleCount ?? null,
+        marketP25Price: priceStats?.p25Price ?? null,
+        marketMedianPrice: priceStats?.medianPrice ?? null,
+        marketP75Price: priceStats?.p75Price ?? null,
         // pool-specific
         band: pool.profit_band,
         poolStatus: pool.status,
