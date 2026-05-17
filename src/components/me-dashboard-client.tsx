@@ -342,6 +342,16 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
               </button>
             </div>
             <UserRevealDashboard userRef={userRefForAuthUser(user.id)} />
+            {/* 2026-05-17 (사용자 요청): 목록 밑에도 "더 찾아보기" 버튼 (상단 버튼만 있으면 스크롤 후 보이지 않음). */}
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setSeekMoreOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-accent-strong)] px-5 py-2.5 text-sm font-black text-[var(--brand-cream)] shadow-sm transition hover:opacity-90"
+              >
+                🔍 더 찾아보기
+              </button>
+            </div>
             {/* 2026-05-17 phase 1b: 더 찾아보기 모달 — RecommendationWorkspace 모달 안에서 호출. */}
             {seekMoreOpen && (
               <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/60 p-3 sm:p-6" onClick={() => setSeekMoreOpen(false)}>
