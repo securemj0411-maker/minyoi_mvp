@@ -1699,7 +1699,7 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
              "water_damage", "parts_only", "low_battery_health"].includes(n));
           const bunjangLabelMapped = bunjangLabelToConditionClass(detail.conditionLabel);
           if (ambiguousCondition && !hasStrongSignal && bunjangLabelMapped === null) {
-            const aiClass = await classifyConditionWithAi(claim.name, detail.description).catch(() => null);
+            const aiClass = await classifyConditionWithAi(Number(claim.pid), claim.name, detail.description).catch(() => null);
             if (aiClass) {
               parsed.conditionClass = aiClass;
             }

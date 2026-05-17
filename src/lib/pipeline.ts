@@ -13,7 +13,7 @@ import { parseGameConsoleListing } from "@/lib/game-console-parser";
 import { GENERATED_NOISE_RULES } from "@/lib/generated/noise-rules";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { soldOutTextHits } from "@/lib/sold-out";
-import { jsonBody } from "@/lib/supabase-rest";
+import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 // ─── 분류 키워드 ─────────────────────────────────────────────────────────────
 const BUYING_KEYWORDS = [
@@ -1408,6 +1408,7 @@ function parseAiClassification(raw: unknown): AiClassification | null {
  * gpt-4.1-mini, 출력 30 토큰, 매물당 ~$0.0002.
  */
 export async function classifyConditionWithAi(
+  pid: number,
   title: string,
   description: string,
 ): Promise<AiConditionClass | null> {
@@ -1428,12 +1429,12 @@ export async function classifyConditionWithAi(
         model: AI_CLASSIFIER_MODEL,
         temperature: 0,
         response_format: { type: "json_object" },
-        max_tokens: 60,
+        max_tokens: 100,
         messages: [
           {
             role: "system",
             content:
-              "You classify a Korean secondhand listing's actual condition based on its description. Return only JSON: {\"condition_class\": \"<class>\"}. Six classes: mint (unopened/sealed/battery 100%/never used), clean (S-급/full-set/AppleCare/cycle≤50/거의 새것), normal (typical used, no notable damage signal), worn (cosmetic_wear/사용감/잔기스/case 끼면 안 보임/예민하지 않은 분께 추천), low_batt (battery <85% explicit), flawed (any functional defect — 흰점/번인/잔상/카메라 issue/물 침수/유리 깨짐/액정 손상/강아지 깨물/낙상 etc, even if seller claims '정상 작동'). Read context, not just keywords. Seller self-grading (특S급/리퍼급/SS급) does NOT decide. flawed wins over seller's '정상' claim if defect is described.",
+              "You classify a Korean secondhand listing's actual condition based on its description. Return only JSON: {\"condition_class\": \"<class>\", \"reason\": \"<korean 1줄, 80자 이내>\"}. Six classes: mint (unopened/sealed/battery 100%/never used), clean (S-급/full-set/AppleCare/cycle≤50/거의 새것), normal (typical used, no notable damage signal), worn (cosmetic_wear/사용감/잔기스/case 끼면 안 보임/예민하지 않은 분께 추천), low_batt (battery <85% explicit), flawed (any functional defect — 흰점/번인/잔상/카메라 issue/물 침수/유리 깨짐/액정 손상/강아지 깨물/낙상 etc, even if seller claims '정상 작동'). Read context, not just keywords. Seller self-grading (특S급/리퍼급/SS급) does NOT decide. flawed wins over seller's '정상' claim if defect is described.",
           },
           {
             role: "user",
@@ -1452,12 +1453,51 @@ export async function classifyConditionWithAi(
     if (typeof content !== "string") return null;
     const parsed = JSON.parse(content);
     const cls = String(parsed.condition_class ?? "");
+    const reason = String(parsed.reason ?? parsed.condition_reason ?? "").slice(0, 200);
     const allowed: AiConditionClass[] = ["mint", "clean", "normal", "worn", "low_batt", "flawed"];
-    return allowed.includes(cls as AiConditionClass) ? (cls as AiConditionClass) : null;
+    if (!allowed.includes(cls as AiConditionClass)) return null;
+    // Wave 158 (2026-05-17 사용자 코멘트 #158): 호출 결과 + 비용 추적 박음.
+    // FK = mvp_listings(pid). detail done 시점에 매물 없을 수도 있어 try-catch — cache lose 감수.
+    // gpt-4.1-mini pricing: input $0.15/1M, output $0.60/1M.
+    const usage = json.usage ?? {};
+    const inputTokens = Number(usage.prompt_tokens ?? 0);
+    const outputTokens = Number(usage.completion_tokens ?? 0);
+    const costUsd = (inputTokens * 0.15 + outputTokens * 0.60) / 1_000_000;
+    void persistConditionAiResult(pid, cls, reason, AI_CLASSIFIER_MODEL, costUsd, inputTokens, outputTokens);
+    return cls as AiConditionClass;
   } catch {
     return null;
   } finally {
     clearTimeout(timeout);
+  }
+}
+
+async function persistConditionAiResult(
+  pid: number,
+  conditionClass: string,
+  reason: string,
+  model: string,
+  costUsd: number,
+  inputTokens: number,
+  outputTokens: number,
+): Promise<void> {
+  try {
+    await restFetch(`${tableUrl("mvp_listing_ai_classifications")}?on_conflict=pid`, {
+      method: "POST",
+      headers: { ...serviceHeaders(), Prefer: "resolution=merge-duplicates,return=minimal" },
+      body: jsonBody({
+        pid,
+        condition_class: conditionClass,
+        condition_reason: reason,
+        model,
+        cost_usd: costUsd,
+        input_tokens: inputTokens,
+        output_tokens: outputTokens,
+        classified_at: new Date().toISOString(),
+      }),
+    });
+  } catch {
+    // FK violation 등은 silent skip — AI 분류 결과 자체는 mvp_listing_parsed 에 박힘.
   }
 }
 
