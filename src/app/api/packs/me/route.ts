@@ -211,7 +211,9 @@ export async function GET(req: Request) {
 
   const pidList = pids.join(",");
   const packOpenList = packOpenIds.join(",");
-  const includeTerminal = url.searchParams.get("includeTerminal") === "1";
+  // 2026-05-17 (사용자 요청): 기본 true — 판매완료/사라진 매물도 표시. "?includeTerminal=0" 박으면 숨김.
+  const includeTerminalRaw = url.searchParams.get("includeTerminal");
+  const includeTerminal = includeTerminalRaw !== "0";
   const [rawRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
       `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status&pid=in.(${pidList})`,
@@ -339,7 +341,10 @@ export async function GET(req: Request) {
         skuListingFlow: skuId ? flowBySkuId.get(skuId) ?? null : null,
       };
     })
-    .filter((item) => includeTerminal || !TERMINAL_STATES.has(item.listingState))
+    // 2026-05-17 (사용자 요청): terminal 매물 (sold/disappeared) 기본 표시.
+    // 이전: 기본 숨김 → 사용자가 "갑자기 사라진" 느낌, 손해본 인상.
+    // 이제: 명시적으로 "판매완료" 라벨 박아서 표시. ?includeTerminal=0 으로만 숨김 가능.
+    .filter((item) => includeTerminal !== false ? true : !TERMINAL_STATES.has(item.listingState))
     .filter((item) => matchesSearch(item, query))
     .sort(compareItems(sort));
 

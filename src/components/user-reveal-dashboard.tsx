@@ -81,6 +81,23 @@ function timeLabel(value: string) {
   }
 }
 
+// 2026-05-17 (사용자 요청): listing_state 영어 enum → 한국어 명시 라벨.
+// 사용자 우려 "갑자기 사라지면 손해본 느낌" — terminal 매물은 "판매완료" / "사라짐" 명시 표시.
+function listingStateLabel(state: string): { label: string; tone: "active" | "sold" | "gone" | "unknown" } {
+  const s = (state ?? "").toLowerCase();
+  if (s === "sold" || s === "sold_confirmed") return { label: "판매완료", tone: "sold" };
+  if (s === "disappeared") return { label: "매물 사라짐", tone: "gone" };
+  if (s === "active") return { label: "판매중", tone: "active" };
+  return { label: state || "상태 미확인", tone: "unknown" };
+}
+
+function listingStateChipClass(tone: "active" | "sold" | "gone" | "unknown"): string {
+  if (tone === "sold") return "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200";
+  if (tone === "gone") return "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200";
+  if (tone === "active") return "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300";
+  return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300";
+}
+
 function storedDescriptionPreview(value: string) {
   const clean = value.trim();
   if (!clean) return "저장된 상세 설명이 아직 없습니다.";
@@ -627,7 +644,11 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
       ) : null}
 
       <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2" : "mt-4 grid gap-2"}>
-        {items.map((item) => (
+        {items.map((item) => {
+          // 2026-05-17 (사용자 요청): 판매완료/사라진 매물은 시각적으로 dim 표시 (사라지지 않게).
+          const stateInfo = listingStateLabel(item.listingState);
+          const isTerminal = stateInfo.tone === "sold" || stateInfo.tone === "gone";
+          return (
           <article
             key={item.pid}
             onClick={selectMode ? () => togglePid(item.pid) : undefined}
@@ -638,7 +659,9 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
             } ${
               selectMode && selectedPids.has(item.pid)
                 ? "border-rose-400 bg-rose-50 ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/30"
-                : "border-[#e5dccf] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:hover:border-emerald-900 dark:hover:bg-emerald-950/20"
+                : isTerminal
+                  ? "border-zinc-200 bg-zinc-50/70 opacity-75 dark:border-zinc-800 dark:bg-zinc-900/40"
+                  : "border-[#e5dccf] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:hover:border-emerald-900 dark:hover:bg-emerald-950/20"
             } ${selectMode ? "cursor-pointer" : ""}`}
           >
             {/* 2026-05-17: 선택 모드 체크박스 */}
@@ -682,8 +705,18 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
                 ) : null}
                 <span className="text-zinc-300 dark:text-zinc-600">·</span>
                 <span>{timeLabel(item.revealedAt)}</span>
-                <span>·</span>
-                <span>{item.listingState}</span>
+                {/* 2026-05-17 (사용자 요청): listing_state 명시 표시. terminal 매물도 사라지지 않게. */}
+                {(() => {
+                  const { label, tone } = listingStateLabel(item.listingState);
+                  return (
+                    <>
+                      <span>·</span>
+                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${listingStateChipClass(tone)}`}>
+                        {label}
+                      </span>
+                    </>
+                  );
+                })()}
               </div>
               <div className="mt-1 flex flex-wrap items-baseline gap-1.5">
                 <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-black tabular-nums text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
@@ -745,7 +778,8 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
             </div>
             {viewMode === "list" ? <div className="self-center"><ActionButtons item={item} /></div> : null}
           </article>
-        ))}
+          );
+        })}
       </div>
 
       {!loading && totalPages > 1 ? (
