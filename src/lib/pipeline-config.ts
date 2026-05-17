@@ -334,7 +334,11 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     // 전 카테고리 14K+ 매물 중 시세 daily 박힘 비율 1.7-3.3% 머무름. 신발 ready 승급(Wave 172) +
     // trustedMedian total≥2 완화(Wave 173) 했는데도 시세 daily 36 row만 → pool 0건.
     // 한 tick 4-5초 → 15-20초로 늘어남 (maxDuration 60초 한도 안).
-    marketStatsLimit: envInt("PIPELINE_MARKET_STATS_LIMIT", 3000, 100, 10000),
+    // Wave 184 (2026-05-17): 3000 → 8000. incremental lookback 28h 안 매물 6.7K 측정.
+    //   PostgREST max-rows=1000 cap → loadMarketStatRows 가 pagination 으로 chunk 페치.
+    //   8000 / 1000 = 8 chunks max. lookback 안 6.7K 다 cover + 마진.
+    //   1 chunk ≈ 5s → 8 chunks ≈ 40s + group/upsert. maxDuration 90 안에 들어옴.
+    marketStatsLimit: envInt("PIPELINE_MARKET_STATS_LIMIT", 8000, 100, 20000),
     deepCrawlMaxPage: envInt("PIPELINE_DEEP_CRAWL_MAX_PAGE", 3, 1, 30),
     sellerSearchRefreshMs: envInt("PIPELINE_SELLER_SEARCH_REFRESH_MS", 3 * 60 * 60 * 1000, 10 * 60 * 1000, 24 * 60 * 60 * 1000),
     rawTouchCoalesceActiveSeenOnly: envBool("RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY", false),

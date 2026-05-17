@@ -1894,12 +1894,62 @@ async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Prom
   return pids.length;
 }
 
+// Wave 184 (2026-05-17): incremental market-worker — last_seen_at lookback filter 추가.
+//
+// 변경 이유 (사용자 통찰):
+//   "매일 18K 매물 다시 group 하는 게 비효율 — 어제 시세 row 이미 박혔는데
+//    왜 또 group? 오늘 active/변경된 매물만 처리하면 되는 거 아님?"
+//
+// 변경 전 (Wave 132): order=detail_enriched_at.desc.nullslast,last_seen_at.desc&limit=3000
+//   → PostgREST max-rows=1000 cap 으로 1000 row 만 페치. eligible 18K 중 5% 만 처리.
+//   → 옛 매물 (low detail_enriched 우선순위) 영구 누락.
+//
+// 변경 후 (Wave 184): last_seen_at >= NOW() - LOOKBACK 매물만 페치.
+//   - active 매물 search cadence 5~10분이라 lookback 24h 면 거의 다 갱신됨.
+//   - 4시간 cushion 추가 (28h) — search outage 안전 마진.
+//   - 1000 cap 안에 충분히 들어옴 (오늘 변경 매물 보통 1K~3K).
+//   - 옛 (lookback 밖) 매물의 시세 row 는 어제 박힌 그대로 historical 유지.
+//   - sold/disappeared 전환은 invalidation queue (mvp_market_key_invalidation) 가
+//     자동 trigger → loadMarketStatRowsByPids 분기로 별도 targeted upsert (영향 없음).
+//
+// 의존성 영향 (조사 완료):
+//   - pack-open marketBasis: 최신 1 row 읽기 → 오늘 row 박히면 OK
+//   - market-history-chart: 30일 range → 옛 row 그대로 유지, 영향 X
+//   - candidate-pool-builder skuMedian: 최신 row → 동일
+//   - dirty_marked_rows + score stage: 유지 (recomputedKeys 만 dirty mark)
+//   - lifecycle invalidation queue (sold/disappeared): 별 경로, 영향 X
+//
+// Lookback 결정:
+//   - 24h 이상 가능. 1d 가 사용자 "그날 데이터만" 통찰과 정확히 일치.
+//   - 너무 짧으면 outage 시 누락. 너무 길면 의미 사라짐.
+//   - env override 가능 (PIPELINE_MARKET_STATS_LOOKBACK_HOURS).
+const DEFAULT_MARKET_STATS_LOOKBACK_HOURS = 28;
+// Supabase PostgREST max-rows=1000 강제 cap → 한 GET 당 1000 row max.
+// 28h lookback 안 매물 6.7K+ (측정) — 1000 cap 으로 5.7K 누락 위험.
+// → pagination 으로 chunk 페치 후 합쳐서 group/upsert. lifecycle 의 chunk wave 패턴.
+const MARKET_STATS_PAGE_SIZE = 1000;
 async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
   // Wave 132: num_comment 추가 (시세 sample 분석 시 활용 가능).
   const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty,description_hash";
-  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&or=(listing_type.eq.normal,listing_type_override.eq.normal)&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&order=detail_enriched_at.desc.nullslast,last_seen_at.desc&limit=${limit}`;
-  const res = await restFetch(url, { headers: serviceHeaders() });
-  return (await res.json()) as ScorableRawRow[];
+  const lookbackHours = Math.max(
+    1,
+    Math.min(168, Number(process.env.PIPELINE_MARKET_STATS_LOOKBACK_HOURS ?? DEFAULT_MARKET_STATS_LOOKBACK_HOURS) || DEFAULT_MARKET_STATS_LOOKBACK_HOURS),
+  );
+  const sinceIso = new Date(Date.now() - lookbackHours * 3600 * 1000).toISOString();
+  // order 도 last_seen_at.desc 단일로 변경 — detail_enriched 우선 정책이 옛 매물 누락 원인.
+  const baseUrl = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&or=(listing_type.eq.normal,listing_type_override.eq.normal)&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&last_seen_at=gte.${encodeURIComponent(sinceIso)}&order=last_seen_at.desc`;
+  // Wave 184: pagination — PostgREST 1000 cap 우회. limit param 까지 chunk 별 페치 후 합침.
+  // chunk 가 PAGE_SIZE 미만이면 더 없음 → break.
+  const rows: ScorableRawRow[] = [];
+  for (let offset = 0; offset < limit; offset += MARKET_STATS_PAGE_SIZE) {
+    const pageLimit = Math.min(MARKET_STATS_PAGE_SIZE, limit - offset);
+    const url = `${baseUrl}&limit=${pageLimit}&offset=${offset}`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    const chunk = (await res.json()) as ScorableRawRow[];
+    rows.push(...chunk);
+    if (chunk.length < pageLimit) break;
+  }
+  return rows;
 }
 
 async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<ScorableRawRow[]> {
