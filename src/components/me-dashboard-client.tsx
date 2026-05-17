@@ -15,7 +15,8 @@ import PreviewMaskedDashboard from "@/components/preview-masked-dashboard";
 import { isAdminUser } from "@/lib/auth-users";
 import { hasAdminShadowClient } from "@/lib/admin-shadow-mode";
 import { MODEL_GUIDES } from "@/lib/model-guides";
-import type { InventorySnapshot } from "@/lib/pack-open";
+import { dispatchPackRevealsUpdated } from "@/lib/pack-events";
+import type { InventorySnapshot, PackBand, PackOpenResult, RevealCard } from "@/lib/pack-open";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -194,10 +195,13 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           body: JSON.stringify({}),
         });
         if (!res.ok || cancelled) return;
-        const data = await res.json() as { result?: string };
-        if (data.result === "success") {
+        const data = (await res.json()) as PackOpenResult | { result?: string; error?: string };
+        if (data && (data as PackOpenResult).result === "success") {
           // dashboard refresh — UserRevealDashboard 가 PACK_REVEALS_UPDATED_EVENT listen 함.
-          window.dispatchEvent(new CustomEvent("pack-reveals-updated", { detail: { reveals: [] } }));
+          // 2026-05-17 fix: canonical event name + 실제 reveals + band 전달 (이전엔 wrong event name + empty array → 핸들러 early return → 첫 화면에 안 보임).
+          const success = data as Extract<PackOpenResult, { result: "success" }>;
+          const reveals: RevealCard[] = Array.isArray(success.reveals) ? success.reveals : [];
+          dispatchPackRevealsUpdated({ band: 2 as PackBand, reveals });
         }
       } catch (err) {
         console.error("[me-dashboard] welcome failed", err);
