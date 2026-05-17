@@ -7,6 +7,7 @@ import ModelGuidePanel from "@/components/model-guide-panel";
 import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
+import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 
@@ -711,6 +712,19 @@ function RevealCardItem({
 
         <VelocityBasisMini card={card} />
 
+        {/* Wave 183 (2026-05-17): Liquidity 곡선 — 가격대별 회전 추정 (자본 묶임 두려움 해소).
+            사업 보고서 L6 — "회전 기간이 떡상점수보다 retention-critical". */}
+        <LiquidityCurveMini
+          price={card.price}
+          p25Price={card.marketBasis?.p25Price ?? null}
+          medianPrice={card.marketBasis?.medianPrice ?? null}
+          p75Price={card.marketBasis?.p75Price ?? null}
+          p25Hours={card.velocityBasis?.p25HoursToSold ?? null}
+          medianHours={card.velocityBasis?.medianHoursToSold ?? null}
+          p75Hours={card.velocityBasis?.p75HoursToSold ?? null}
+          soldSampleCount={card.velocityBasis?.observedSoldSampleCount ?? null}
+        />
+
         <SkuListingFlowMini card={card} />
 
         {/* Wave 90 (2026-05-15): 시세 근거 디버그 패널 — 사용자가 검증할 때
@@ -794,14 +808,14 @@ function RevealCardItem({
             type="button"
             onClick={() => onReportLoss(card)}
             disabled={alreadyReportedLoss}
-            title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "정보 오류 신고하고 토큰 +3 받기 (24h 검수)"}
+            title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하고 토큰 +3 받기 (24h 검수)"}
             className={`flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black leading-none transition ${
               alreadyReportedLoss
                 ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
                 : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
             }`}
           >
-            {alreadyReportedLoss ? "✅ 신고 완료 — 검수 중" : "🔍 정보 오류 신고하고 토큰 +3 받기"}
+            {alreadyReportedLoss ? "✅ 신고 완료 — 검수 중" : "🎁 토큰 +3 받기 · 부정확 정보 신고"}
           </button>
         )}
       </div>
