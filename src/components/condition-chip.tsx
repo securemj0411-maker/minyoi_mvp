@@ -20,28 +20,28 @@ type ChipStyle = {
 
 const CHIP_STYLES: Record<string, ChipStyle> = {
   unopened: {
-    label: "미개봉",
+    label: "미개봉/새상품",
     bg: "bg-amber-100 dark:bg-amber-900/40",
     text: "text-amber-800 dark:text-amber-200",
     desc: "박스 안 뜯음. 다나와 새상품 시세 기준.",
   },
   mint: {
-    label: "민트급",
+    label: "S급",
     bg: "bg-emerald-100 dark:bg-emerald-900/40",
     text: "text-emerald-800 dark:text-emerald-200",
-    desc: "S급. 사용감 거의 없음, 풀구성품.",
+    desc: "실사용 거의 없음 (AI 판정 — 사이클 적음 / 거의 새것).",
   },
   clean: {
-    label: "민트급",
-    bg: "bg-emerald-100 dark:bg-emerald-900/40",
-    text: "text-emerald-800 dark:text-emerald-200",
-    desc: "S급. 사용감 거의 없음, 풀구성품 / 배터리 100% / 애플케어.",
+    label: "A급",
+    bg: "bg-teal-100 dark:bg-teal-900/40",
+    text: "text-teal-800 dark:text-teal-200",
+    desc: "셀러 명시 프리미엄 — 풀세트 / AppleCare / 배터리 100% / S급 표현. 셀러 인플레 가능성 (보수적 분류).",
   },
   normal: {
     label: "일반",
     bg: "bg-zinc-100 dark:bg-zinc-800",
     text: "text-zinc-700 dark:text-zinc-300",
-    desc: "일반 중고. 명시적 신호 없음 (default).",
+    desc: "명시적 신호 없음 (default).",
   },
   worn: {
     label: "사용감",
@@ -53,13 +53,13 @@ const CHIP_STYLES: Record<string, ChipStyle> = {
     label: "훼손",
     bg: "bg-rose-100 dark:bg-rose-900/40",
     text: "text-rose-800 dark:text-rose-200",
-    desc: "액정 깨짐 / 떨어뜨림 / 작동 결함 / 부품용. 풀 차단 대상.",
+    desc: "액정 깨짐 / 낙상 / 작동 결함 / 부품용. 풀 차단 대상.",
   },
   low_batt: {
     label: "배터리 저하",
     bg: "bg-yellow-100 dark:bg-yellow-900/40",
     text: "text-yellow-800 dark:text-yellow-200",
-    desc: "배터리 효율 < 85% 명시. 가격 modifier (별도 grouping).",
+    desc: "배터리 효율 < 85% 명시. 가격 modifier.",
   },
 };
 
@@ -100,7 +100,7 @@ export function ConditionChip({ conditionClass, showHelp = false }: Props) {
                   📋 매물 등급 분류
                 </div>
                 <div className="space-y-1.5 text-[10px]">
-                  {(["unopened", "clean", "normal", "worn", "flawed", "low_batt"] as const).map((k) => {
+                  {(["unopened", "mint", "clean", "normal", "worn", "flawed", "low_batt"] as const).map((k) => {
                     const s = CHIP_STYLES[k];
                     return (
                       <div key={k} className="flex gap-2">
