@@ -21,7 +21,7 @@ import {
   trimmedSellerMarket,
 } from "@/lib/market-math";
 import { notifyOperationalAlerts, type OperationalAlert } from "@/lib/operational-notifier";
-import { extractConditionClass, parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
+import { bunjangLabelToConditionClass, extractConditionClass, parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import {
   applyAiReview,
   classifyConditionWithAi,
@@ -1689,13 +1689,16 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
             }]);
           }
           // Wave 141 B (2026-05-16): 모호 매물 condition AI 분류 — 정규식 fail 매물에만 호출 (월 ~$9).
-          // 조건: condition_score 모호(0.55~0.75) + 명확한 condition_notes 없음 + bunjang label 없음
+          // 조건: condition_score 모호(0.55~0.75) + 명확한 condition_notes 없음 + bunjang label "매핑 불가"
           // → AI 호출 → 결과로 conditionClass override.
+          // 2026-05-17 (사용자 코멘트 #158): 이전 조건 `!detail.conditionLabel` 은 영어 enum truthy 때문에
+          //   매핑 실패한 label 매물도 AI skip 됐음. 매핑 가능 (= metadata 신뢰) 시만 AI skip 으로 수정.
           const ambiguousCondition = parsed.conditionScore >= 0.55 && parsed.conditionScore <= 0.75;
           const hasStrongSignal = parsed.conditionNotes.some((n) =>
             ["new_or_open_box", "display_defect", "screen_replaced", "faceid_issue",
              "water_damage", "parts_only", "low_battery_health"].includes(n));
-          if (ambiguousCondition && !hasStrongSignal && !detail.conditionLabel) {
+          const bunjangLabelMapped = bunjangLabelToConditionClass(detail.conditionLabel);
+          if (ambiguousCondition && !hasStrongSignal && bunjangLabelMapped === null) {
             const aiClass = await classifyConditionWithAi(claim.name, detail.description).catch(() => null);
             if (aiClass) {
               parsed.conditionClass = aiClass;

@@ -117,13 +117,25 @@ type ParseInput = {
 
 // Wave 140 (2026-05-16): 번개 condition label → condition_class 매핑.
 // 2026-05-16 v46: 더 이상 strong override 아님. resolveConditionClass 에서 conservative 결합.
-function bunjangLabelToConditionClass(label: string | null | undefined): ConditionClass | null {
+// 2026-05-17 v47: bunjang detail API 실제 응답은 **영어 enum** (DAMAGED/HEAVILY_USED/USED/LIGHTLY_USED/LIKE_NEW/NEW).
+//   이전엔 한글 정규식만 매칭 → 3,798건 metadata 전부 무시 + AI trigger도 skip (`!detail.conditionLabel`).
+//   영어 enum 매핑 추가 + 한글 fallback 보존 (legacy/edge).
+export function bunjangLabelToConditionClass(label: string | null | undefined): ConditionClass | null {
   if (!label) return null;
-  const l = label.toLowerCase().replace(/\s+/g, "");
-  if (/사용감많음|많이사용/.test(l)) return "worn";
-  if (/사용감없음|사용감거의없음|거의새것|새것같|새상품급/.test(l)) return "clean";
-  if (/사용감적음|상태좋|좋음/.test(l)) return "normal";
-  if (/새상품|미개봉/.test(l)) return "unopened";
+  // 영어 enum (bunjang detail API 실제 응답)
+  const upper = label.trim().toUpperCase().replace(/\s+/g, "_");
+  if (upper === "DAMAGED") return "flawed";
+  if (upper === "HEAVILY_USED") return "worn";
+  if (upper === "USED") return "worn"; // 15건만, 명시 "사용감 있음" — 보수적
+  if (upper === "LIGHTLY_USED") return "normal";
+  if (upper === "LIKE_NEW") return "clean";
+  if (upper === "NEW") return "unopened";
+  // 한글 fallback (legacy/edge)
+  const lk = label.toLowerCase().replace(/\s+/g, "");
+  if (/사용감많음|많이사용/.test(lk)) return "worn";
+  if (/사용감없음|사용감거의없음|거의새것|새것같|새상품급/.test(lk)) return "clean";
+  if (/사용감적음|상태좋|좋음/.test(lk)) return "normal";
+  if (/새상품|미개봉/.test(lk)) return "unopened";
   return null;
 }
 
@@ -155,7 +167,7 @@ export function resolveConditionClass(
 
 // 2026-05-16 v46 cleanup: export — reparse-listings/route.ts 등 다른 곳에서 import.
 // 이전: route.ts 에 별도 const 박혀서 silent drift 위험 (수동 sync 필요).
-export const PARSER_VERSION = "option-parser-v46";
+export const PARSER_VERSION = "option-parser-v47";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
