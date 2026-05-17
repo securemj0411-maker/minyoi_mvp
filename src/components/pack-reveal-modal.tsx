@@ -41,6 +41,11 @@ type Props = {
   onLinkClicked: (pid: number) => void;
   onFeedback: (pid: number, feedbackType: RevealFeedbackType, note?: string) => void;
   onLoadDetail: (pid: number) => Promise<RevealListingDetail>;
+  // Wave 182b (2026-05-17): 손해 신고 — 카드 list 에서 빼고 모달 안 1곳에만 박음.
+  // optional — pack 열기 흐름 (새 매물 받기) 에서는 안 박힘. user-reveal-dashboard "상품 보기" 에서만 전달.
+  onReportLoss?: (card: RevealCard) => void;
+  // optional: 이 매물 이미 신고됨 — 버튼 비활성화.
+  alreadyReportedLoss?: boolean;
   onLoadGuide?: (card: RevealCard) => Promise<ModelGuide | null>;
   renderGuidePanel?: (args: {
     card: RevealCard;
@@ -559,6 +564,8 @@ function RevealCardItem({
   onFeedback,
   onPreviewListing,
   onPreviewGuide,
+  onReportLoss,
+  alreadyReportedLoss,
 }: {
   card: RevealCard;
   delay: number;
@@ -567,6 +574,8 @@ function RevealCardItem({
   onFeedback: (pid: number, feedbackType: RevealFeedbackType, note?: string) => void;
   onPreviewListing: (card: RevealCard, side: PreviewSide) => void;
   onPreviewGuide: (card: RevealCard, side: PreviewSide) => void;
+  onReportLoss?: (card: RevealCard) => void;
+  alreadyReportedLoss?: boolean;
 }) {
   const [shown, setShown] = useState(false);
   const [, setFeedback] = useState<RevealFeedbackType | null>(null);
@@ -776,6 +785,24 @@ function RevealCardItem({
             번개장터 열기
           </a>
         </div>
+
+        {/* Wave 182b (2026-05-17): 손해 신고 — 매물 모달 안 1곳에만. 카드 list 에선 빠짐.
+            onReportLoss prop 있을 때만 표시 (= user-reveal-dashboard "상품 보기" 흐름). */}
+        {onReportLoss && (
+          <button
+            type="button"
+            onClick={() => onReportLoss(card)}
+            disabled={alreadyReportedLoss}
+            title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "손해 봤어요 (토큰 +3 즉시 보상 + 24h 검수)"}
+            className={`flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black leading-none transition ${
+              alreadyReportedLoss
+                ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
+                : "border-rose-300 bg-rose-50 text-rose-800 hover:border-rose-400 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200"
+            }`}
+          >
+            {alreadyReportedLoss ? "🚨 신고됨" : "🚨 이 매물 받고 손해 봤어요"}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -947,6 +974,8 @@ export default function PackRevealModal({
   onLinkClicked,
   onFeedback,
   onLoadDetail,
+  onReportLoss,
+  alreadyReportedLoss,
   onLoadGuide,
   renderGuidePanel,
   onRetry,
@@ -1159,6 +1188,8 @@ export default function PackRevealModal({
                       onFeedback={onFeedback}
                       onPreviewListing={handlePreviewListing}
                       onPreviewGuide={handlePreviewGuide}
+                      onReportLoss={onReportLoss}
+                      alreadyReportedLoss={alreadyReportedLoss}
                     />
                   ))}
                 </div>

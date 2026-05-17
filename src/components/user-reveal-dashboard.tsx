@@ -501,8 +501,10 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   }, [page, totalPages]);
 
   function ActionButtons({ item }: { item: RevealItem }) {
+    // Wave 182b (2026-05-17): 카드 list 에서 손해 신고 버튼 제거 — 사용자 피드백
+    //   "모든 카드에 박혀있으니까 거슬려; 한곳에 한개만"
+    // → 매물 상세 모달 (PackRevealModal) 안 1곳에만 박음 (매물 컨텍스트 자연스러움).
     const actionBase = "inline-flex h-9 min-w-[76px] items-center justify-center rounded-lg px-3 text-xs font-black leading-none transition";
-    const alreadyReported = item.feedbackType === "loss_report";
     return (
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <button
@@ -518,24 +520,6 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           className={`${actionBase} border border-[#d5dfd2] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] hover:border-[#b9c9b9] hover:bg-[#edf3ea]`}
         >
           공략 보기
-        </button>
-        {/* Wave 182: 손해 신고 — 토큰 +3 즉시 보상 + 운영자 24h 검수. */}
-        <button
-          type="button"
-          onClick={() => {
-            setLossReportItem(item);
-            setLossReportNote("");
-            setLossReportResult(null);
-          }}
-          disabled={alreadyReported}
-          title={alreadyReported ? "이미 신고됨 — 운영자 검수 진행 중" : "손해 봤어요 (토큰 +3 즉시 보상)"}
-          className={`${actionBase} border ${
-            alreadyReported
-              ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
-              : "border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300"
-          }`}
-        >
-          {alreadyReported ? "🚨 신고됨" : "🚨 손해 봤어요"}
         </button>
       </div>
     );
@@ -1047,6 +1031,19 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           setSelectedItem(null);
           setSelectedPreviewMode("listing");
           setSelectedPreviewSeed(null);
+        }}
+        // Wave 182b: 손해 신고 — 매물 상세 모달 안 1곳에만 박음. 카드 list 에선 빠짐.
+        alreadyReportedLoss={selectedItem?.feedbackType === "loss_report"}
+        onReportLoss={() => {
+          if (!selectedItem) return;
+          const itemRef = selectedItem;
+          // 매물 상세 모달 닫고 신고 모달 열기 (z-index 충돌 차단).
+          setSelectedItem(null);
+          setSelectedPreviewMode("listing");
+          setSelectedPreviewSeed(null);
+          setLossReportItem(itemRef);
+          setLossReportNote("");
+          setLossReportResult(null);
         }}
       />
     </section>
