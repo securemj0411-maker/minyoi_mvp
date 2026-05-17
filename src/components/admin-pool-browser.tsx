@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip } from "@/components/condition-chip";
+import { RiskScoreBar } from "@/components/risk-score-bar";
 import { CATALOG } from "@/lib/catalog";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 
@@ -43,6 +44,15 @@ type PoolItem = {
   hasComment: boolean;
   commentPreview: string;
   commentUpdatedAt: string | null;
+  // 2026-05-17 Phase 0 L4 — RiskScoreBar 입력.
+  descriptionPreview: string | null;
+  sellerReviewRating: number | null;
+  sellerReviewCount: number | null;
+  imageCount: number | null;
+  freeShipping: boolean;
+  numFaved: number | null;
+  numComment: number | null;
+  scoreFlags: string[];
 };
 
 type Resp = {
@@ -355,6 +365,20 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
                       {item.skuName ?? "—"} · {item.poolStatus} · {relAge(item.lastVerifiedAt)} · 노출 {item.exposureCount}/{item.maxExposure}
                     </div>
+                    {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 5축 잔여 위험 신호 시각화. 운영자풀은 showDetail. */}
+                    <RiskScoreBar
+                      scoreFlags={item.scoreFlags}
+                      descriptionPreview={item.descriptionPreview}
+                      conditionClass={item.conditionClass}
+                      categorySlug={item.category}
+                      price={item.price}
+                      skuMedian={item.skuMedian}
+                      confidence={item.confidence}
+                      sellerReviewRating={item.sellerReviewRating}
+                      sellerReviewCount={item.sellerReviewCount}
+                      photoCount={item.imageCount}
+                      showDetail
+                    />
                     {/* 2026-05-17 Phase 2: verdict chips (근거 강조) — 가능한 input 만 buildVerdicts. */}
                     {(() => {
                       const verdicts = buildVerdicts({

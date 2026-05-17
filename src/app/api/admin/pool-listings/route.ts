@@ -150,9 +150,10 @@ export async function GET(req: NextRequest) {
     const pidsCsv = pids.join(",");
 
     // 3. Join with listings + raw + parsed + user feedback (한 batch에 한꺼번에)
+    // 2026-05-17 Phase 0 L4: RiskScoreBar 입력 — description_preview / shop_review_* / image_count / score_flags 추가.
     const [listingsRes, rawRes, parsedRes, feedbackRes] = await Promise.all([
       restFetch(
-        `${tableUrl("mvp_listings")}?select=pid,name,price,sku_name,sku_median,thumbnail_url,url&pid=in.(${pidsCsv})`,
+        `${tableUrl("mvp_listings")}?select=pid,name,price,sku_name,sku_median,thumbnail_url,url,description_preview,shop_review_rating,shop_review_count,image_count,free_shipping,num_faved,num_comment&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -161,7 +162,8 @@ export async function GET(req: NextRequest) {
       ),
       restFetch(
         // 2026-05-16 (사용자 코멘트 #120): condition_class 추가 — 운영자풀 시세 출처 표시 위해.
-        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class&pid=in.(${pidsCsv})`,
+        // 2026-05-17 Phase 0 L4: score_flags 추가 — RiskScoreBar 의 fraud / battery axis 신호.
+        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,score_flags&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -207,6 +209,15 @@ export async function GET(req: NextRequest) {
         lastSeenAt: (r.last_seen_at as string | null) ?? null,
         query: (r.query as string | null) ?? null,
         sellerUid: (r.seller_uid as string | null) ?? null,
+        // 2026-05-17 Phase 0 L4 — RiskScoreBar 입력.
+        descriptionPreview: (l.description_preview as string | null) ?? null,
+        sellerReviewRating: l.shop_review_rating != null ? Number(l.shop_review_rating) : null,
+        sellerReviewCount: l.shop_review_count != null ? Number(l.shop_review_count) : null,
+        imageCount: l.image_count != null ? Number(l.image_count) : null,
+        freeShipping: Boolean(l.free_shipping),
+        numFaved: l.num_faved != null ? Number(l.num_faved) : null,
+        numComment: l.num_comment != null ? Number(l.num_comment) : null,
+        scoreFlags: Array.isArray(p.score_flags) ? p.score_flags as string[] : [],
         // pool-specific
         band: pool.profit_band,
         poolStatus: pool.status,

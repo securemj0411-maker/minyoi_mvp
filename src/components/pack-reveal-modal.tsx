@@ -6,6 +6,7 @@ import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip } from "@/components/condition-chip";
+import { RiskScoreBar } from "@/components/risk-score-bar";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 
@@ -654,6 +655,18 @@ function RevealCardItem({
             <ConfidenceBreakdown card={card} />
           </details>
         </div>
+
+        {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 5축 잔여 위험 시각화. pack-reveal = showDetail. */}
+        <RiskScoreBar
+          descriptionPreview={card.savedDetail?.descriptionPreview ?? null}
+          conditionClass={card.marketBasis?.conditionClass ?? null}
+          price={card.price}
+          skuMedian={card.marketBasis?.medianPrice ?? null}
+          confidence={card.confidence}
+          sellerReviewRating={card.savedDetail?.sellerReviewRating ?? null}
+          sellerReviewCount={card.savedDetail?.sellerReviewCount ?? null}
+          showDetail
+        />
 
         <VerdictBadgesMini card={card} />
 

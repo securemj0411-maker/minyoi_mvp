@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ConditionChip } from "@/components/condition-chip";
+import { RiskScoreBar } from "@/components/risk-score-bar";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
@@ -734,6 +735,19 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
                     </span>
                   ) : null;
                 })()}
+              </div>
+              {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 좁은 영역이라 compact (chip 만). */}
+              <div className="mt-1">
+                <RiskScoreBar
+                  descriptionPreview={item.descriptionPreview}
+                  conditionClass={item.marketBasis?.conditionClass ?? null}
+                  price={item.price}
+                  skuMedian={item.marketBasis?.medianPrice ?? null}
+                  confidence={item.confidence}
+                  sellerReviewRating={item.sellerReviewRating}
+                  sellerReviewCount={item.sellerReviewCount}
+                  compact
+                />
               </div>
               {/* 2026-05-17 Phase 2: verdict chips (근거 강조) — RevealItem 가진 데이터 활용. */}
               {(() => {
