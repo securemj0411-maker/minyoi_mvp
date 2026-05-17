@@ -1452,6 +1452,10 @@ function confidence(input: {
     // Wave 67/68: 시계/골프 narrow lane. catalog mustContain strict (모델 코드 + WATCH_NOISE/GOLF_DRIVER_NOISE)
     // 로 변형 격리. 모델 매칭 = 신뢰. camera/speaker/desktop/home_appliance와 동일 +0.35.
     score += 0.35;
+  } else if (input.category === "drone") {
+    // Wave 184 (2026-05-17): 새 카테고리 drone (DJI/GoPro). catalog narrow lane 으로
+    // 변형 격리 (Fly More Combo 등). 모델 매칭 = 신뢰. 단일 옵션 모델 다수.
+    score += 0.35;
   }
   return cap01(score);
 }

@@ -393,6 +393,30 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "Apple Watch Series 10 Hermès",
     note: "Wave 142: S10 Hermès Edition 본품 narrow lane (42건, median ₩962k). 일반 S10 대비 시세 ~+₩300~400K. 가죽 밴드 별매/parts/buying 차단. 일반 S10 SKU와는 mustNotContain 양방향 격리.",
   },
+  // Wave 184 (2026-05-17): 새 카테고리 "drone" narrow lane 22개 — DJI/GoPro.
+  // 모두 본체 only (Fly More Combo 등 별도 매물 차단). 짝퉁 거의 없음 (DJI 활성화 + GoPro 정품 등록).
+  dji_mini_2: { status: "ready", label: "DJI Mini 2", note: "Wave 184: 본체 only. Fly More Combo 매물은 mustNotContain 으로 격리." },
+  dji_mini_3_pro: { status: "ready", label: "DJI Mini 3 Pro", note: "Wave 184: 본체 only." },
+  dji_mini_4_pro: { status: "ready", label: "DJI Mini 4 Pro", note: "Wave 184: 본체 only. 2024 신모델." },
+  dji_mavic_3: { status: "ready", label: "DJI Mavic 3", note: "Wave 184: 본체 only." },
+  dji_mavic_3_pro: { status: "ready", label: "DJI Mavic 3 Pro", note: "Wave 184: 본체 only." },
+  dji_mavic_3_classic: { status: "ready", label: "DJI Mavic 3 Classic", note: "Wave 184: 본체 only." },
+  dji_air_2s: { status: "ready", label: "DJI Air 2S", note: "Wave 184: 본체 only." },
+  dji_air_3: { status: "ready", label: "DJI Air 3", note: "Wave 184: 본체 only." },
+  dji_air_3s: { status: "ready", label: "DJI Air 3S", note: "Wave 184: 본체 only. 2024 신모델." },
+  dji_avata: { status: "ready", label: "DJI Avata (FPV)", note: "Wave 184: 본체 only." },
+  dji_avata_2: { status: "ready", label: "DJI Avata 2", note: "Wave 184: 본체 only. 2024 신모델." },
+  dji_osmo_action_3: { status: "ready", label: "DJI Osmo Action 3", note: "Wave 184: 단일 옵션." },
+  dji_osmo_action_4: { status: "ready", label: "DJI Osmo Action 4", note: "Wave 184: 단일 옵션." },
+  dji_osmo_action_5_pro: { status: "ready", label: "DJI Osmo Action 5 Pro", note: "Wave 184: 단일 옵션. 2024 신모델." },
+  dji_osmo_pocket_2: { status: "ready", label: "DJI Osmo Pocket 2", note: "Wave 184: 단일 옵션." },
+  dji_osmo_pocket_3: { status: "ready", label: "DJI Osmo Pocket 3", note: "Wave 184: 단일 옵션. 2023 인기." },
+  gopro_hero_9: { status: "ready", label: "GoPro Hero 9 Black", note: "Wave 184: 단일 옵션." },
+  gopro_hero_10: { status: "ready", label: "GoPro Hero 10 Black", note: "Wave 184: 단일 옵션." },
+  gopro_hero_11: { status: "ready", label: "GoPro Hero 11 Black", note: "Wave 184: 단일 옵션." },
+  gopro_hero_12: { status: "ready", label: "GoPro Hero 12 Black", note: "Wave 184: 단일 옵션." },
+  gopro_hero_13: { status: "ready", label: "GoPro Hero 13 Black", note: "Wave 184: 단일 옵션. 2024 신모델." },
+  gopro_max: { status: "ready", label: "GoPro Max (360)", note: "Wave 184: 단일 옵션. 360도 카메라." },
 };
 
 export type CategoryReadinessConfig = {
@@ -478,6 +502,16 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minReadyPool: 10,
     minParseRate: 0.9,
     minTrustedKeys: 10,
+  },
+  // Wave 184 (2026-05-17): 새 카테고리 "drone" — DJI 드론 + 액션캠/포켓 + GoPro.
+  // narrow lane 22개 모두 LANE_READINESS=ready 로 등록 (catalog narrow lane 정확).
+  drone: {
+    status: "internal_only",
+    label: "Drone & Action Cam",
+    note: "DJI 드론 (Mini/Mavic/Air/Avata) + DJI Osmo Action/Pocket + GoPro Hero. 짝퉁 거의 없음 (DJI 활성화 + GoPro 정품 등록). narrow lane 22개 LANE_READINESS=ready 로 풀 진입.",
+    minReadyPool: 6,
+    minParseRate: 0.9,
+    minTrustedKeys: 5,
   },
   game_console: {
     status: "internal_only",

@@ -367,6 +367,31 @@ describe("Wave 182 chunk 6: Sony LinkBuds + Bose 700/Earbuds II + Galaxy Buds 2/
   });
 });
 
+describe("Wave 184: 새 카테고리 drone (DJI 드론 + DJI 액션캠 + GoPro)", () => {
+  it("dji-mini-2", () => check("DJI Mini 2", "정상.", "dji-mini-2", []));
+  it("dji-mini-3-pro", () => check("DJI Mini 3 Pro", "정상.", "dji-mini-3-pro", []));
+  it("dji-mini-4-pro", () => check("DJI Mini 4 Pro", "정상.", "dji-mini-4-pro", []));
+  it("dji-mavic-3", () => check("DJI Mavic 3 본체", "정상.", "dji-mavic-3", []));
+  it("dji-mavic-3-pro", () => check("DJI Mavic 3 Pro", "정상.", "dji-mavic-3-pro", []));
+  it("dji-mavic-3-classic", () => check("DJI Mavic 3 Classic", "정상.", "dji-mavic-3-classic", []));
+  it("dji-air-2s", () => check("DJI Air 2S", "정상.", "dji-air-2s", []));
+  it("dji-air-3", () => check("DJI Air 3", "정상.", "dji-air-3", []));
+  it("dji-air-3s", () => check("DJI Air 3S", "정상.", "dji-air-3s", []));
+  it("dji-avata", () => check("DJI Avata 본체", "정상.", "dji-avata", []));
+  it("dji-avata-2", () => check("DJI Avata 2", "정상.", "dji-avata-2", []));
+  it("dji-osmo-action-3", () => check("DJI Osmo Action 3", "정상.", "dji-osmo-action-3", []));
+  it("dji-osmo-action-4", () => check("DJI Osmo Action 4", "정상.", "dji-osmo-action-4", []));
+  it("dji-osmo-action-5-pro", () => check("DJI Osmo Action 5 Pro", "정상.", "dji-osmo-action-5-pro", []));
+  it("dji-osmo-pocket-2", () => check("DJI Osmo Pocket 2", "정상.", "dji-osmo-pocket-2", []));
+  it("dji-osmo-pocket-3", () => check("DJI Osmo Pocket 3", "정상.", "dji-osmo-pocket-3", []));
+  it("gopro-hero-9", () => check("GoPro Hero 9 Black", "정상.", "gopro-hero-9", []));
+  it("gopro-hero-10", () => check("GoPro Hero 10 Black", "정상.", "gopro-hero-10", []));
+  it("gopro-hero-11", () => check("GoPro Hero 11 Black", "정상.", "gopro-hero-11", []));
+  it("gopro-hero-12", () => check("GoPro Hero 12 Black", "정상.", "gopro-hero-12", []));
+  it("gopro-hero-13", () => check("GoPro Hero 13 Black", "정상.", "gopro-hero-13", []));
+  it("gopro-max", () => check("GoPro Max 360", "정상.", "gopro-max", []));
+});
+
 describe("Wave 183: 헤어 기기 (home_appliance 확장)", () => {
   it("dyson-supersonic-hd08", () => {
     check("다이슨 슈퍼소닉 HD08 핑크", "정상.", "dyson-supersonic-hd08", []);
