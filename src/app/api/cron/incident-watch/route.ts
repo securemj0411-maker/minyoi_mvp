@@ -12,7 +12,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { checkCronAuth } from "@/lib/cron-auth";
 import { reportCriticalIncident } from "@/lib/operational-notifier";
-import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+
+// Wave 193 (2026-05-17): dedup — 같은 사고 24h 안 한 번만 알림 + 회복 시 1회 알림.
+const DEDUP_WINDOW_HOURS = 24;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -165,32 +168,122 @@ export async function GET(req: NextRequest) {
   });
 
   const incidents = summary.filter((s) => !s.ok);
+  const okKeys = new Set(summary.filter((s) => s.ok).map((s) => s.name));
 
-  // 사고 1개 이상 — 텔레그램 알림. 여러 개면 한 메시지에 묶음.
+  // Wave 193: dedup — incident_log fetch + 24h 안 알림이면 skip + 회복 detect.
+  const dedupWindowMs = DEDUP_WINDOW_HOURS * 3600 * 1000;
+  const now = Date.now();
+  const logRes = await restFetch(
+    `${tableUrl("mvp_incident_log")}?select=incident_key,last_alert_at,resolved_at`,
+    { headers: serviceHeaders() },
+  );
+  const logRows = (await logRes.json()) as Array<{ incident_key: string; last_alert_at: string; resolved_at: string | null }>;
+  const logMap = new Map(logRows.map((r) => [r.incident_key, r]));
+
+  // 새 알림 보낼 incident (24h 안 알림 안 박혔거나, 이전에 resolved 된 후 다시 발생).
+  const incidentsToAlert = incidents.filter((i) => {
+    const log = logMap.get(i.name);
+    if (!log) return true;                                       // 첫 발생
+    if (log.resolved_at) return true;                            // 회복 후 재발생
+    const lastAlertMs = new Date(log.last_alert_at).getTime();
+    return Number.isFinite(lastAlertMs) && (now - lastAlertMs) >= dedupWindowMs;
+  });
+
+  // 회복된 incident (이전에 active 였는데 이번에 ok). 회복 알림 1회 + resolved_at 박음.
+  const recovered = logRows.filter((log) => log.resolved_at == null && okKeys.has(log.incident_key));
+
   let notifyResult = null;
-  if (incidents.length > 0) {
-    const summaryLine = incidents
+  let recoveredNotify: unknown = null;
+
+  // 1. 새 알림
+  if (incidentsToAlert.length > 0) {
+    const summaryLine = incidentsToAlert
       .map((i) => `${i.severity === "critical" ? "🚨" : "⚠️"} ${i.detail}`)
       .join(" | ");
-    const context: Record<string, unknown> = {};
-    for (const i of incidents) {
-      if (i.context) context[i.name] = i.context;
+    const ctx: Record<string, unknown> = {};
+    for (const i of incidentsToAlert) {
+      if (i.context) ctx[i.name] = i.context;
     }
     notifyResult = await reportCriticalIncident({
       source: "incident-watch",
       summary: summaryLine,
-      context,
+      context: ctx,
     });
-    console.log("[cron/incident-watch] alert sent", { count: incidents.length, notifyResult });
+
+    // incident_log upsert (each incident).
+    for (const i of incidentsToAlert) {
+      const existing = logMap.get(i.name);
+      const row = {
+        incident_key: i.name,
+        severity: i.severity,
+        last_alert_at: new Date(now).toISOString(),
+        last_detail: i.detail.slice(0, 500),
+        last_context: i.context ?? null,
+        // 회복 후 재발 시 resolved_at 초기화 + alert_count 누적.
+        ...(existing ? { resolved_at: null, alert_count: 0 } : { first_alert_at: new Date(now).toISOString(), alert_count: 1 }),
+        updated_at: new Date(now).toISOString(),
+      };
+      try {
+        await restFetch(
+          `${tableUrl("mvp_incident_log")}?on_conflict=incident_key`,
+          {
+            method: "POST",
+            headers: { ...serviceHeaders(), Prefer: "resolution=merge-duplicates,return=minimal" },
+            body: jsonBody(row),
+          },
+        );
+      } catch (err) {
+        console.error("[cron/incident-watch] log upsert failed", { incident: i.name, err });
+      }
+    }
+    console.log("[cron/incident-watch] new alert sent", {
+      total: incidents.length,
+      sent: incidentsToAlert.length,
+      skipped_dedup: incidents.length - incidentsToAlert.length,
+    });
+  } else if (incidents.length > 0) {
+    console.log("[cron/incident-watch] all incidents within dedup window — skipped", { count: incidents.length });
   } else {
     console.log("[cron/incident-watch] all checks ok", { summary });
+  }
+
+  // 2. 회복 알림
+  if (recovered.length > 0) {
+    const summaryLine = recovered
+      .map((r) => `✅ 회복 — ${r.incident_key}`)
+      .join(" | ");
+    recoveredNotify = await reportCriticalIncident({
+      source: "incident-watch (회복)",
+      summary: summaryLine,
+      context: { recovered_keys: recovered.map((r) => r.incident_key) },
+    });
+
+    // resolved_at 박음.
+    for (const r of recovered) {
+      try {
+        await restFetch(
+          `${tableUrl("mvp_incident_log")}?incident_key=eq.${encodeURIComponent(r.incident_key)}`,
+          {
+            method: "PATCH",
+            headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+            body: jsonBody({ resolved_at: new Date(now).toISOString(), updated_at: new Date(now).toISOString() }),
+          },
+        );
+      } catch (err) {
+        console.error("[cron/incident-watch] resolved update failed", { incident: r.incident_key, err });
+      }
+    }
   }
 
   return NextResponse.json({
     ok: incidents.length === 0,
     incidentCount: incidents.length,
+    sentCount: incidentsToAlert.length,
+    dedupSkipped: incidents.length - incidentsToAlert.length,
+    recoveredCount: recovered.length,
     checks: summary,
     notify: notifyResult,
+    recoveredNotify,
     checkedAt: new Date().toISOString(),
   });
 }
