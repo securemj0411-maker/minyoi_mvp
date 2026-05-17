@@ -367,6 +367,40 @@ describe("Wave 182 chunk 6: Sony LinkBuds + Bose 700/Earbuds II + Galaxy Buds 2/
   });
 });
 
+describe("Wave 183: 헤어 기기 (home_appliance 확장)", () => {
+  it("dyson-supersonic-hd08", () => {
+    check("다이슨 슈퍼소닉 HD08 핑크", "정상.", "dyson-supersonic-hd08", []);
+  });
+
+  it("dyson-supersonic-origin", () => {
+    check("다이슨 슈퍼소닉 오리진 HD13", "정상.", "dyson-supersonic-origin", []);
+  });
+
+  it("dyson-airwrap-hs05", () => {
+    check("다이슨 에어랩 멀티스타일러", "Complete HS05", "dyson-airwrap-hs05", []);
+  });
+
+  it("dyson-airwrap-id", () => {
+    check("다이슨 에어랩 i.d. 코안다 2x", "HS08", "dyson-airwrap-id", []);
+  });
+
+  it("dyson-corrale-hs07", () => {
+    check("다이슨 코랄 HS07 무선 고데기", "정상.", "dyson-corrale-hs07", []);
+  });
+
+  it("cyaars-glampam", () => {
+    check("시아루스 글램팜", "정상.", "cyaars-glampam", []);
+  });
+
+  it("panasonic-eh-na0j", () => {
+    check("파나소닉 EH-NA0J 나노이", "정상.", "panasonic-eh-na0j", []);
+  });
+
+  it("babyliss-pro-2174u", () => {
+    check("바비리스 프로 2174U 파마기", "정상.", "babyliss-pro-2174u", []);
+  });
+});
+
 describe("Wave 182 Phase 4: Galaxy Book 시리즈", () => {
   it("galaxy-book-4", () => {
     check("갤럭시북 4 15.6인치 16GB 512GB", "Intel Core 5", "galaxy-book-4", []);

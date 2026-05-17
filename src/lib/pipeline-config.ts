@@ -167,6 +167,17 @@ export const DEFAULT_SEARCH_QUERIES = [
   "갤럭시 북 4 울트라", "Galaxy Book 4 Ultra",
   "갤럭시 북 5", "갤럭시북 5", "Galaxy Book 5",
   "갤럭시 북 5 프로", "Galaxy Book 5 Pro",
+  // Wave 183 (2026-05-17): 헤어 기기 (Dyson / 시아루스 / Panasonic / BaByliss).
+  "다이슨 슈퍼소닉", "Dyson Supersonic",
+  "다이슨 슈퍼소닉 오리진", "Supersonic Origin",
+  "다이슨 에어랩", "Dyson Airwrap",
+  "다이슨 에어랩 i.d.", "Airwrap iD", "Airwrap 코안다",
+  "다이슨 코랄", "Dyson Corrale",
+  "시아루스 글램팜", "Glampam",
+  "시아루스 매직 ProV", "Magic ProV",
+  "파나소닉 나노이", "Panasonic 나노이",
+  "EH-NA0J", "EH-NA9C", "EH-NA98",
+  "바비리스 프로 2174", "BaByliss Pro",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
