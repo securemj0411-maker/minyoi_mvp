@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     }
 
     if (/^\/start\b/.test(text)) {
-      await sendTelegramMessage(chatId, "안녕하세요! 미뇨이 핫딜 알림 봇입니다.\n\n/me 대시보드에서 '🔥 핫딜 알림' 메뉴로 들어가 연결 코드를 받으세요.");
+      await sendTelegramMessage(chatId, "안녕하세요! 차익잡이 핫딜 알림 봇입니다.\n\n/me 대시보드에서 '🔥 핫딜 알림' 메뉴로 들어가 연결 코드를 받으세요.");
       return NextResponse.json({ ok: true });
     }
 
@@ -109,7 +109,7 @@ async function handleVerify(code: string, chatId: number, telegramUserId: number
   }
 
   // 2. 어뷰즈 방어: 같은 chat_id 또는 telegram_user_id가 다른 user_ref에 이미 매핑돼있으면 거절.
-  // (한 텔레그램 계정 = 한 미뇨이 계정. 가중치 어뷰즈 방지.)
+  // (한 텔레그램 계정 = 한 차익잡이 계정. 가중치 어뷰즈 방지.)
   const dupParts: string[] = [`chat_id.eq.${chatId}`];
   if (telegramUserId !== null) dupParts.push(`telegram_user_id.eq.${telegramUserId}`);
   const dupRes = await restFetch(
@@ -120,7 +120,7 @@ async function handleVerify(code: string, chatId: number, telegramUserId: number
   if (dupRows.length > 0) {
     await sendTelegramMessage(
       chatId,
-      "❌ 이 텔레그램 계정은 이미 다른 미뇨이 계정에 연결되어 있어요.\n\n먼저 그쪽 계정의 /me → 핫딜 알림에서 '연결 해제'를 눌러주세요.",
+      "❌ 이 텔레그램 계정은 이미 다른 차익잡이 계정에 연결되어 있어요.\n\n먼저 그쪽 계정의 /me → 핫딜 알림에서 '연결 해제'를 눌러주세요.",
     );
     return;
   }
@@ -148,7 +148,7 @@ async function handleVerify(code: string, chatId: number, telegramUserId: number
   }
   await sendTelegramMessage(
     chatId,
-    `✅ 연결 완료\\!\n\n앞으로 핫딜 매물이 나오면 여기로 알림이 와요\\. \n알림 받으면 정해진 시간 내에 미뇨이에서 매물을 확인하세요\\.\n\n중지: /pause`,
+    `✅ 연결 완료\\!\n\n앞으로 핫딜 매물이 나오면 여기로 알림이 와요\\. \n알림 받으면 정해진 시간 내에 차익잡이에서 매물을 확인하세요\\.\n\n중지: /pause`,
     { parseMode: "MarkdownV2" },
   );
 }

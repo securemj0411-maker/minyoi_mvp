@@ -268,7 +268,7 @@ function Navbar() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-sm font-black text-white shadow-md shadow-emerald-500/30">
             M
           </div>
-          <span className="font-black tracking-tight text-zinc-900 dark:text-white">미뇨이</span>
+          <span className="font-black tracking-tight text-zinc-900 dark:text-white">차익잡이</span>
           <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:ring-emerald-900">
             Beta
           </span>

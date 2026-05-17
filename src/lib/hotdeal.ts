@@ -251,7 +251,7 @@ type AlertContent = {
 };
 
 function buildAlertText(pid: number, c: AlertContent, opts: { adminShadow?: boolean; selectedHint?: string } = {}): string {
-  // 일반 사용자: teaser만 (차익 정도 + 만료시간). 매물 정보는 미뇨이에서 "열기" 후 공개.
+  // 일반 사용자: teaser만 (차익 정도 + 만료시간). 매물 정보는 차익잡이에서 "열기" 후 공개.
   // admin shadow: 전체 정보 (감시 목적이라 노출 OK).
   // 2026-05-17 (사용자 코멘트 #157): 만원 round 제거 → 운영자풀과 동일하게 원 단위 정확 표시.
   // 차익은 이미 enqueue 시점에 net (수수료/배송비/buffer 차감) 으로 저장됨.
@@ -283,14 +283,14 @@ function buildAlertText(pid: number, c: AlertContent, opts: { adminShadow?: bool
     `차익  · *${escapeMd(`+₩${profitKrw} (${pct}%)`)}*`,
     c.band !== null ? `band  · ${c.band}` : "",
     "",
-    `⏱ ${minLeft}분 안에 미뇨이에서 *열어* 매물 확인`,
+    `⏱ ${minLeft}분 안에 차익잡이에서 *열어* 매물 확인`,
   ].filter(Boolean).join("\n");
 }
 
 function buildAlertReplyMarkup(pid: number) {
   return {
     inline_keyboard: [[{
-      text: "🔍 미뇨이에서 열기",
+      text: "🔍 차익잡이에서 열기",
       url: `${process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://minyoi-mvp.vercel.app"}/me?view=hotdeal-alerts&pid=${pid}`,
     }]],
   };

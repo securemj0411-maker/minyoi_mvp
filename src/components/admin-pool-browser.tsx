@@ -10,6 +10,7 @@ import MarketHistoryChart from "@/components/market-history-chart";
 import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip } from "@/components/condition-chip";
 import { CATALOG } from "@/lib/catalog";
+import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 
 type PoolItem = {
   pid: number;
@@ -354,6 +355,29 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
                       {item.skuName ?? "—"} · {item.poolStatus} · {relAge(item.lastVerifiedAt)} · 노출 {item.exposureCount}/{item.maxExposure}
                     </div>
+                    {/* 2026-05-17 Phase 2: verdict chips (근거 강조) — 가능한 input 만 buildVerdicts. */}
+                    {(() => {
+                      const verdicts = buildVerdicts({
+                        price: item.price,
+                        skuMedian: item.skuMedian,
+                        expectedProfitMin: item.expectedProfitMin,
+                        expectedProfitMax: item.expectedProfitMax,
+                        confidence: item.confidence,
+                        lastSeenAt: item.lastSeenAt,
+                      });
+                      return verdicts.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {verdicts.map((v) => (
+                            <span
+                              key={v.label}
+                              className={`rounded-full border px-1.5 py-0.5 text-[9px] font-black ${VERDICT_TONE_CLASS[v.tone]}`}
+                            >
+                              {v.label}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null;
+                    })()}
                     {/* 2026-05-16 (사용자 코멘트 #120): 시세 출처 표시 — pack-reveal-modal 과 동일 패턴. */}
                     {item.conditionClass === "unopened" ? (
                       <div className="text-[10px] font-bold text-amber-700 dark:text-amber-300">

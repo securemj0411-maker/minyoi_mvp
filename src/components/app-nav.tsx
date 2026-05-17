@@ -342,16 +342,16 @@ export default function AppNav() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-sm font-black text-white shadow-md shadow-emerald-500/20">
               M
             </div>
-            <span className="font-black tracking-tight text-[#223127] dark:text-white">미뇨이</span>
+            <span className="font-black tracking-tight text-[#223127] dark:text-white">차익잡이</span>
             <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:ring-emerald-900">
               Beta
             </span>
           </Link>
         </div>
 
-        {/* 가운데: mobile = "미뇨이" 텍스트, desktop = nav links */}
+        {/* 가운데: mobile = "차익잡이" 텍스트, desktop = nav links */}
         <Link href="/" className="flex items-center justify-self-center md:hidden">
-          <span className="text-base font-black tracking-tight text-[#223127] dark:text-white">미뇨이</span>
+          <span className="text-base font-black tracking-tight text-[#223127] dark:text-white">차익잡이</span>
         </Link>
 
         <div className="hidden items-center justify-self-center gap-1 md:flex">
@@ -492,7 +492,7 @@ export default function AppNav() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-sm font-black text-white shadow-md shadow-emerald-500/20">
                   M
                 </div>
-                <span className="font-black tracking-tight text-[#223127] dark:text-white">미뇨이</span>
+                <span className="font-black tracking-tight text-[#223127] dark:text-white">차익잡이</span>
               </Link>
               <button
                 type="button"

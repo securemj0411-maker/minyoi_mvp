@@ -480,7 +480,7 @@ export default async function StatusPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">미뇨이 진행 현황</h1>
+        <h1 className="text-2xl font-bold text-slate-900">차익잡이 진행 현황</h1>
         <p className="mt-1 text-sm text-slate-600">
           상품 라인별 결정론 정확도와 단계, 운영 상태를 한 화면에서.
         </p>

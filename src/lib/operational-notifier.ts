@@ -62,7 +62,7 @@ function formatAlertLine(alert: OperationalAlert) {
 function buildMessage(context: NotifyContext, event: NotifyResult["event"], alertsToSend: OperationalAlert[]) {
   if (event === "recovered") {
     return [
-      "[미뇨이] 운영 알림 회복",
+      "[차익잡이] 운영 알림 회복",
       `source: ${context.source}`,
       `status: ${context.previousStatus ?? "-"} -> ${context.status}`,
       `reason: ${context.reason}`,
@@ -71,7 +71,7 @@ function buildMessage(context: NotifyContext, event: NotifyResult["event"], aler
   }
 
   return [
-    "[미뇨이] 운영 알림",
+    "[차익잡이] 운영 알림",
     `source: ${context.source}`,
     `status: ${context.previousStatus ?? "-"} -> ${context.status}`,
     `reason: ${context.reason}`,
@@ -131,7 +131,7 @@ export async function reportCriticalIncident(
   input: CriticalIncidentInput,
 ): Promise<CriticalIncidentResult> {
   const lines = [
-    "[미뇨이] 운영 사고",
+    "[차익잡이] 운영 사고",
     `source: ${input.source}`,
     `summary: ${input.summary}`,
     `at: ${kstTime(new Date().toISOString())}`,
@@ -162,7 +162,7 @@ export async function notifyOperationalAlerts(context: NotifyContext): Promise<N
 
 export async function sendOperationalTestAlert() {
   const message = [
-    "[미뇨이] 운영 알림 테스트",
+    "[차익잡이] 운영 알림 테스트",
     "Telegram 연결이 정상입니다.",
     `checked: ${kstTime(new Date().toISOString())}`,
   ].join("\n");

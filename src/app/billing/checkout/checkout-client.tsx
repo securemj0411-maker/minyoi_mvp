@@ -83,12 +83,12 @@ export default function CheckoutClient() {
 
           <div className="px-5 pb-2 pt-5 sm:px-7">
             <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#6b7269]">결제 요청</div>
-            <h1 className="mt-1 text-2xl font-black tracking-tight text-[#1a1f1c] dark:text-zinc-50">미뇨이 {plan.name} 플랜</h1>
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-[#1a1f1c] dark:text-zinc-50">차익잡이 {plan.name} 플랜</h1>
             <p className="mt-1 text-sm text-[#5d6358] dark:text-zinc-400">{plan.tagline}</p>
           </div>
 
           <div className="mx-5 mt-5 grid gap-3 rounded-2xl border border-[#eee5d8] bg-[#fafaf7] p-4 text-sm dark:border-zinc-800 dark:bg-zinc-950/40 sm:mx-7">
-            <Row label="구독 상품" value={`미뇨이 ${plan.name}`} />
+            <Row label="구독 상품" value={`차익잡이 ${plan.name}`} />
             <Row label="포함 크레딧" value={`${plan.monthlyCredits}개 / 월`} />
             <Row label="일일 열람 한도" value={`${plan.dailyOpenLimit}회 / 일`} />
             <Row label="결제 주기" value="30일 (자동 갱신 없음, 베타)" />

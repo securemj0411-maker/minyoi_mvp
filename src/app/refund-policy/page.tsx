@@ -4,7 +4,7 @@ const sections = [
   {
     heading: "1. 기본 원칙",
     body: [
-      "미뇨이는 현재 MVP 단계의 추천/모니터링 서비스이며, 실제 결제와 환불 조건은 향후 정식 운영 정책에 따라 확정됩니다.",
+      "차익잡이는 현재 MVP 단계의 추천/모니터링 서비스이며, 실제 결제와 환불 조건은 향후 정식 운영 정책에 따라 확정됩니다.",
       "본 페이지는 환불정책 구조 검토용 mock 문서로, 실제 운영 전 전자상거래 및 소비자보호 기준에 맞춰 최종 문안으로 교체됩니다.",
     ],
   },
@@ -35,7 +35,7 @@ export default function RefundPolicyPage() {
   return (
     <LegalPageShell
       eyebrow="환불정책"
-      title="미뇨이 환불정책"
+      title="차익잡이 환불정책"
       updatedAt="2026.05.12"
       sections={sections}
     />

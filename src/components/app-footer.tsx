@@ -21,9 +21,9 @@ export default function AppFooter() {
 
         <div className="grid gap-3 text-[13px] leading-6 sm:grid-cols-2 xl:grid-cols-3">
           <div>
-            <div className="font-black text-[#223127] dark:text-zinc-100">미뇨이</div>
+            <div className="font-black text-[#223127] dark:text-zinc-100">차익잡이</div>
             <div className="mt-2">
-              상호명: 미뇨이
+              상호명: 차익잡이
               <br />
               대표자: 이민제
               <br />
@@ -51,7 +51,7 @@ export default function AppFooter() {
             <div className="mt-2">
               주소: 서울특별시 강남구 테헤란로 000, 0층
               <br />
-              서비스명: 미뇨이 MVP
+              서비스명: 차익잡이 MVP
               <br />
               중고 상품 추천 및 모니터링 서비스
             </div>

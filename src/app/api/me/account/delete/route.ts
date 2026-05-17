@@ -102,7 +102,7 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: true,
-    message: "회원 탈퇴가 완료됐어요. 그동안 미뇨이를 이용해주셔서 감사합니다.",
+    message: "회원 탈퇴가 완료됐어요. 그동안 차익잡이를 이용해주셔서 감사합니다.",
     anonymized,
     deleted,
   });

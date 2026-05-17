@@ -4,7 +4,7 @@ import Link from "next/link";
 // Wave 106: SEO — how-it-works 별도 metadata.
 export const metadata: Metadata = {
   title: "어떻게 작동하나요?",
-  description: "미뇨이가 중고 매물을 검증하고 추천하는 방식 — 옵션 비교, 시세 계산, 라이브 검증, 사람별 분산 공개. 거짓 보장 없이 매커니즘 그대로 공개합니다.",
+  description: "차익잡이가 중고 매물을 검증하고 추천하는 방식 — 옵션 비교, 시세 계산, 라이브 검증, 사람별 분산 공개. 거짓 보장 없이 매커니즘 그대로 공개합니다.",
 };
 
 const principles = [
@@ -62,7 +62,7 @@ const aiRules = [
   "AI가 애매하게 답하면 통과가 아니라 보류가 먼저입니다.",
 ];
 
-// 직접 검색 시나리오 vs 미뇨이 (도발적 비교). 가상 데이터 아님 — 실제 검색 패턴 기반.
+// 직접 검색 시나리오 vs 차익잡이 (도발적 비교). 가상 데이터 아님 — 실제 검색 패턴 기반.
 const directSearchBreakdown = [
   { kind: "부품용 / 액정만 / 메인보드", count: 5, tone: "warn" as const },
   { kind: "케이스만 / 충전기만", count: 8, tone: "warn" as const },
@@ -86,7 +86,7 @@ function ServiceFlowVisual() {
   return (
     <div className="rounded-[30px] border border-[#e5dccf] bg-[#fffaf1] p-4 shadow-[0_18px_42px_rgba(34,49,39,0.08)]">
       <div className="relative overflow-hidden rounded-[24px] border border-[#d8decd] bg-[linear-gradient(180deg,#f7fbf4_0%,#fffaf1_100%)] px-4 py-5">
-        <svg viewBox="0 0 520 230" className="h-auto w-full" role="img" aria-label="미뇨이 추천 엔진 흐름">
+        <svg viewBox="0 0 520 230" className="h-auto w-full" role="img" aria-label="차익잡이 추천 엔진 흐름">
           <defs>
             <linearGradient id="flowLine" x1="0" x2="1" y1="0" y2="0">
               <stop offset="0%" stopColor="#9fb49c" />
@@ -205,7 +205,7 @@ export default function HowItWorksPage() {
           </div>
         </section>
 
-        {/* Why Minyoi — 직접 검색 vs 미뇨이 시간 비교 (공식적 톤, 사실 기반). */}
+        {/* Why Minyoi — 직접 검색 vs 차익잡이 시간 비교 (공식적 톤, 사실 기반). */}
         <section className="rounded-[34px] border border-[#ddd4c7] bg-[#fffbf4] px-6 py-8 shadow-[0_18px_42px_rgba(34,49,39,0.08)] sm:px-8 sm:py-10">
           <div className="text-xs font-black uppercase tracking-[0.22em] text-[#5d735f]">
             직접 검색과 비교
@@ -216,8 +216,8 @@ export default function HowItWorksPage() {
             <span className="text-[#4f6f58]">차이는 매물을 거르는 데 드는 시간입니다.</span>
           </h2>
           <p className="mt-4 max-w-3xl break-keep text-sm leading-7 text-[#5a6658] sm:text-[15px]">
-            미뇨이는 번개장터·중고나라·당근의 공개 매물을 기반으로 추천합니다.
-            같은 데이터를 직접 검색할 수도 있고, 미뇨이가 미리 분류·검증한 결과를 받을 수도 있습니다.
+            차익잡이는 번개장터·중고나라·당근의 공개 매물을 기반으로 추천합니다.
+            같은 데이터를 직접 검색할 수도 있고, 차익잡이가 미리 분류·검증한 결과를 받을 수도 있습니다.
             아래는 같은 검색으로 결정까지 가는 데 드는 시간 차이입니다.
           </p>
 
@@ -263,7 +263,7 @@ export default function HowItWorksPage() {
             <article className="rounded-[24px] border border-[#c8d8c4] bg-[var(--brand-accent-soft)] px-5 py-5">
               <div className="flex items-center gap-2">
                 <span className="rounded-md bg-[var(--brand-accent-strong)] px-2 py-1 text-[10px] font-black uppercase tracking-wider text-[var(--brand-cream)]">
-                  미뇨이 — 5분
+                  차익잡이 — 5분
                 </span>
               </div>
               <h3 className="mt-3 text-lg font-black text-[#223127] sm:text-xl">
@@ -299,7 +299,7 @@ export default function HowItWorksPage() {
                 <tr>
                   <th className="px-4 py-2.5 font-black">단계</th>
                   <th className="px-4 py-2.5 font-black">직접 검색</th>
-                  <th className="px-4 py-2.5 font-black">미뇨이</th>
+                  <th className="px-4 py-2.5 font-black">차익잡이</th>
                 </tr>
               </thead>
               <tbody>
@@ -321,7 +321,7 @@ export default function HowItWorksPage() {
             </p>
             <p className="mt-2 text-sm leading-6 text-[#344136]">
               시세보다 낮은 매물은 다른 사용자도 동시에 발견하기 때문에, 등장한 시점부터 거래 완료까지의 간격이 매우 짧은 경우가 많습니다.
-              미뇨이의 실시간 알람은 등록 즉시 알려주어 결정 시간을 확보합니다.
+              차익잡이의 실시간 알람은 등록 즉시 알려주어 결정 시간을 확보합니다.
             </p>
           </div>
 

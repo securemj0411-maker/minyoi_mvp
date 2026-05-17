@@ -36,7 +36,7 @@ export default function YouthPolicyPage() {
   return (
     <LegalPageShell
       eyebrow="청소년보호정책"
-      title="미뇨이 청소년보호정책"
+      title="차익잡이 청소년보호정책"
       updatedAt="2026.05.12"
       sections={sections}
     />
