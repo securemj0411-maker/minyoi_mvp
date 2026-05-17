@@ -37,7 +37,16 @@ export type VerdictInput = {
 const POSITIVE_DESC_RE = /미개봉|미사용|새상품|풀박스|풀구성|거의\s*새것/;
 const NEGATIVE_DESC_RE = /하자|기스\s*심|찍힘\s*심|수리이력|충전\s*안됨|배터리\s*효율\s*낮/;
 
-// 2026-05-17: chip 우선순위 — 강한 부정 > 가격 매력 > 시장 활성 > 셀러 > quality
+// Wave 196 (2026-05-17): 카테고리별 강한 긍정 신호 — description regex 로 추출.
+// 사용자: "D verdict chip 더 풍부하게" → 매물 카드 차별화 ↑.
+const BATTERY_100_RE = /배터리[^가-힣]{0,4}(?:정품|효율|상태)?[^가-힣]{0,2}100\s*%|배터리[^\d]{0,5}\b100\b\s*%?|효율[^가-힣]{0,2}100\s*%/;
+const APPLECARE_RE = /애플\s*케어|AppleCare|apple\s*care/i;
+const FULL_BOX_RE = /풀\s*박스|풀\s*구성|박스[^가-힣]{0,3}케이블[^가-힣]{0,3}충전|풀\s*세트/;
+const SEALED_RE = /(?:미\s*개봉|봉인|밀봉)(?:\s*상태)?|새\s*상품\s*박스/;
+const RECENT_PURCHASE_RE = /([1-9]|1[0-2])\s*개월\s*전\s*구매|이번\s*달\s*구매|지난\s*달\s*구매|최근\s*구매|얼마\s*전\s*구매/;
+const SERIAL_PUBLIC_RE = /시리얼[^가-힣]{0,3}(공개|첨부|사진|확인\s*가능)|S\/N[^가-힣]{0,3}공개/i;
+
+// 2026-05-17: chip 우선순위 — 강한 부정 > 가격 매력 > 시장 활성 > 카테고리 강한 긍정 > 셀러 > quality
 // max 6개 표시 (이전 4 → 6).
 const MAX_VERDICTS = 6;
 
@@ -59,6 +68,28 @@ export function buildVerdicts(input: VerdictInput): Verdict[] {
       out.push({ label: `시세보다 -${Math.round(discount * 100)}%`, tone: "good" });
     } else if (discount >= 0.15) {
       out.push({ label: `시세보다 -${Math.round(discount * 100)}%`, tone: "info" });
+    }
+  }
+
+  // Wave 196: 카테고리 강한 긍정 신호 — description regex (우선순위 ↑ 매력 다음).
+  if (input.descriptionPreview) {
+    if (BATTERY_100_RE.test(input.descriptionPreview)) {
+      out.push({ label: "🔋 배터리 100%", tone: "good" });
+    }
+    if (APPLECARE_RE.test(input.descriptionPreview)) {
+      out.push({ label: "🛡️ AppleCare", tone: "good" });
+    }
+    if (FULL_BOX_RE.test(input.descriptionPreview)) {
+      out.push({ label: "📦 풀구성", tone: "good" });
+    }
+    if (SEALED_RE.test(input.descriptionPreview)) {
+      out.push({ label: "🔒 미개봉 봉인", tone: "good" });
+    }
+    if (RECENT_PURCHASE_RE.test(input.descriptionPreview)) {
+      out.push({ label: "🆕 최근 구매", tone: "info" });
+    }
+    if (SERIAL_PUBLIC_RE.test(input.descriptionPreview)) {
+      out.push({ label: "🆔 시리얼 공개", tone: "info" });
     }
   }
 
@@ -113,6 +144,19 @@ export function buildVerdicts(input: VerdictInput): Verdict[] {
     out.push({ label: "시세 신뢰 낮음", tone: "warn" });
   } else if (input.confidence != null && input.confidence >= 0.8) {
     out.push({ label: "시세 신뢰 높음", tone: "good" });
+  }
+
+  // Wave 196: sample 부족 명시 (Wave 183/187 한계 보완 — 사용자 신뢰 ↑).
+  // marketConfidenceLabel == 'low' 가 이미 위에서 박혔으면 중복 방지 (above 우선).
+  if (input.marketSampleCount != null && input.marketSampleCount > 0 && input.marketSampleCount < 5
+      && input.marketConfidenceLabel !== "low" && (input.confidence ?? 1) >= 0.5) {
+    out.push({ label: `시세 sample 부족 (${input.marketSampleCount}건)`, tone: "warn" });
+  }
+
+  // Wave 196: 우수 셀러 (별점 + 후기 수 둘 다 높음).
+  if (input.sellerReviewRating != null && input.sellerReviewRating >= 4.8
+      && (input.sellerReviewCount ?? 0) >= 50) {
+    out.push({ label: `🏆 우수 셀러 (${input.sellerReviewCount}건)`, tone: "good" });
   }
 
   // 7. 매물 quality (positive description 신호)
