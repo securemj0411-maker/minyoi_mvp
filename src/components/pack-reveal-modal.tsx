@@ -299,69 +299,47 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
   );
 }
 
-// Wave 82: 카드 소견 — rule-based 짧은 평가 chip. 기존 데이터(판매자 리뷰/회전/신뢰도/
-// 매물 유입/찜/설명 신호) 조건 만족 시 라벨 표시. AI L2 호출 없음.
-type Verdict = { label: string; tone: "good" | "warn" | "info" };
+// 2026-05-17: 공통 utility (src/lib/listing-verdicts.ts) 호출로 변경.
+// chip 라벨 결정 로직 단일 source — 3 화면 통일 (drift 차단).
+// 새 chip 4종 추가: 시세보다 -N%, 수요 매우높음/높음/보통, 방금 등록, 시세 sample N건.
+// max 4 → 6 으로 확장.
+import { buildVerdicts, type Verdict, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 
 function verdictsForCard(card: RevealCard): Verdict[] {
-  const out: Verdict[] = [];
   const detail = card.savedDetail;
   const velocity = card.velocityBasis;
   const flow = card.skuListingFlow;
-
-  if (detail?.sellerReviewRating != null && detail.sellerReviewRating >= 4.5 && detail.sellerReviewCount >= 5) {
-    out.push({ label: "판매자 리뷰 좋음", tone: "good" });
-  } else if (detail && detail.sellerReviewCount === 0) {
-    out.push({ label: "신규 판매자", tone: "warn" });
-  }
-
-  // 2026-05-15 Wave 124: 빠름/늦음 추상 → 실제 일수 (사용자 피드백). "아 며칠내로 팔리는구나" 직관.
-  if (velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0) {
-    const hrs = velocity.medianHoursToSold;
-    const tone: Verdict["tone"] = hrs <= 72 ? "good" : hrs >= 336 ? "warn" : "info";
-    const label = hrs < 24
-      ? `${Math.max(1, Math.round(hrs))}시간 회전`
-      : `평균 ${Math.round((hrs / 24) * 10) / 10}일 회전`;
-    out.push({ label, tone });
-  }
-
-  if (card.confidence >= 0.8) out.push({ label: "시세 신뢰 높음", tone: "good" });
-  else if (card.confidence < 0.5) out.push({ label: "시세 신뢰 낮음", tone: "warn" });
-
-  if (flow && flow.avgPerDay7d > 0 && flow.count24h >= flow.avgPerDay7d * 1.3) {
-    out.push({ label: "매물 활발", tone: "info" });
-  }
-
-  if (detail?.favoriteCount != null && detail.favoriteCount >= 10) {
-    out.push({ label: "관심도 ↑", tone: "info" });
-  }
-
-  const desc = detail?.descriptionPreview ?? "";
-  if (/미개봉|미사용|새상품|풀박스|풀구성|거의\s*새것/.test(desc)) {
-    out.push({ label: "상태 좋음", tone: "good" });
-  } else if (/하자|기스\s*심|찍힘\s*심|수리이력|충전\s*안됨|배터리\s*효율\s*낮/.test(desc)) {
-    out.push({ label: "사용감 주의", tone: "warn" });
-  }
-
-  if (detail?.freeShipping) out.push({ label: "무료배송", tone: "info" });
-
-  return out.slice(0, 4);
+  const market = card.marketBasis;
+  return buildVerdicts({
+    price: card.price,
+    skuMedian: market?.medianPrice ?? null,
+    expectedProfitMin: card.expectedProfitMin,
+    expectedProfitMax: card.expectedProfitMax,
+    confidence: card.confidence,
+    marketSampleCount: market?.sampleCount ?? null,
+    marketConfidenceLabel: (market?.confidence as "high" | "medium" | "low" | null) ?? null,
+    medianHoursToSold: velocity?.medianHoursToSold ?? null,
+    soldSampleCount: market?.soldSampleCount ?? null,
+    flowCount24h: flow?.count24h ?? null,
+    flowAvgPerDay7d: flow?.avgPerDay7d ?? null,
+    sellerReviewRating: detail?.sellerReviewRating ?? null,
+    sellerReviewCount: detail?.sellerReviewCount ?? null,
+    freeShipping: detail?.freeShipping ?? null,
+    favoriteCount: detail?.favoriteCount ?? null,
+    lastSeenAt: null, // RevealCard 에 직접 안 박힘 (별도 fetch 필요 — 보류)
+    descriptionPreview: detail?.descriptionPreview ?? null,
+  });
 }
 
 function VerdictBadgesMini({ card }: { card: RevealCard }) {
   const verdicts = verdictsForCard(card);
   if (verdicts.length === 0) return null;
-  const toneClass: Record<Verdict["tone"], string> = {
-    good: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200",
-    warn: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200",
-    info: "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-200",
-  };
   return (
     <div className="flex flex-wrap gap-1">
       {verdicts.map((v) => (
         <span
           key={v.label}
-          className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${toneClass[v.tone]}`}
+          className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${VERDICT_TONE_CLASS[v.tone]}`}
         >
           {v.label}
         </span>
