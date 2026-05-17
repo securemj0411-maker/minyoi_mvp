@@ -1,6 +1,6 @@
 {
   "_schema": "pid → { resolved_at, summary, commits[] }. AI agent가 사용자 코멘트 review 시 매칭해서 해결/미해결 분리 표시.",
-  "_updated_at": "2026-05-16T00:27:35.956Z",
+  "_updated_at": "2026-05-17T02:09:36.977Z",
   "resolutions": {
     "318408095": {
       "resolved_at": "2026-05-15T23:22:25.326Z",
@@ -590,6 +590,13 @@
         "55f8447"
       ]
     },
+    "408047887": {
+      "resolved_at": "2026-05-17T02:09:36.938Z",
+      "summary": "repair_or_defect_signal regex mitigator 추가 — 하자(없는수준), 하자 없음 등 negative context 차단. flawed false positive fix",
+      "commits": [
+        "v46-repair-mitigator"
+      ]
+    },
     "408077307": {
       "resolved_at": "2026-05-14T23:21:16.167Z",
       "summary": "Wave 91 5종 fix (노캔X parser override + Studio Pro 3 격리 + iPad mini 세대 캡처 + low_battery 시세 제외 + 미개봉 변형 흡수) | Wave 91 5종 fix (노캔X parser override / Studio Pro 3 격리 / mini 세대 캡처 / low_battery 시세 제외 / 미개봉 변형)",
@@ -609,6 +616,13 @@
       "summary": "lifecycle backlog stale — cron 정상화 + 자체 drain. 일회성.",
       "commits": [
         "cc2791c"
+      ]
+    },
+    "408107338": {
+      "resolved_at": "2026-05-17T02:09:36.974Z",
+      "summary": "v46 conservative ordering 정확 작동 확인 — \"미개봉\" + \"미세 생활기스\" → cosmetic_wear 우선 → cc=worn. 사용자 의도 (배터리 89% 실사용) 일치",
+      "commits": [
+        "v46-verified"
       ]
     },
     "408116585": {

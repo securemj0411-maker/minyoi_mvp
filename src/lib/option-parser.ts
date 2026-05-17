@@ -1132,7 +1132,10 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
 
   if (/s급|상태\s*좋|상태좋|깨끗|깔끔/.test(lower)) add("good_condition", 0.05);
   if (/사용감|기스|스크래치|찍힘|생활기스|흠집/.test(lower)) add("cosmetic_wear", -0.1);
-  if (/수리|교체|하자|고장|불량|파손|깨짐/.test(defectRiskText)) add("repair_or_defect_signal", -0.2);
+  // 2026-05-17 (사용자 코멘트 id 146 pid 408047887): "하자는 채팅주시면 알려드리겠습니다 (없는수준)" false positive.
+  // 셀러가 "하자 없음" 명시했는데 "하자" 단어만 잡고 flawed 분류 잘못. mitigator 추가 — 다른 negative 신호 (display/faceid/water 등) 와 같은 패턴.
+  const noRepairOrDefect = /\(\s*없는\s*수준\s*\)|하자.{0,20}(?:없|아닙|아님)|고장.{0,20}없|불량.{0,20}없|파손.{0,20}없|깨짐.{0,20}없|문제.{0,20}없|수리.{0,20}(?:없|이력\s*없|한\s*적\s*없)|교체.{0,20}(?:없|이력\s*없|한\s*적\s*없)/.test(lower);
+  if (!noRepairOrDefect && /수리|교체|하자|고장|불량|파손|깨짐/.test(defectRiskText)) add("repair_or_defect_signal", -0.2);
   if (batteryHealth != null && batteryHealth < 85) add("low_battery_health", -0.15);
   if (cycles != null && cycles > 500) add("high_battery_cycles", -0.1);
 
