@@ -20,7 +20,7 @@ import { BIKE_CATALOG } from "@/lib/generated/catalog-bike-wave91";
 export type Sku = {
   id: string;
   brand: string;
-  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance" | "watch" | "sport_golf" | "shoe" | "bag" | "bike" | "drone";
+  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance" | "watch" | "sport_golf" | "shoe" | "bag" | "bike" | "drone" | "perfume";
   modelName: string;
   aliases: string[];
   mustContain: string[][];
@@ -6142,6 +6142,192 @@ export const CATALOG: Sku[] = [
     mustContain: [["gopro", "고프로"], ["max", "맥스"]],
     mustNotContain: ["hero", "히어로", "케이스만", "배터리만", "충전기만", "마운트만", "고장", "파손", "수리", "매입", "삽니다"],
     msrpKrw: 599000, released: 2019,
+  },
+  // ─── Wave 185 (2026-05-17): 새 카테고리 "perfume" — 명품 향수 22 SKU ───
+  // 인기 브랜드 (Jo Malone / Le Labo / Diptyque / Tom Ford / Maison Margiela Replica / Memo Paris) 인기 향.
+  // 짝퉁 일부 있으나 명품 가방보다 낮음. mustNotContain: "분주", "소분", "리필", "샘플", "vial", "빈병", "공병".
+  // Jo Malone
+  {
+    id: "jo-malone-wood-sage-sea-salt-100", brand: "Jo Malone", category: "perfume", laneKey: "jo_malone_wood_sage_sea_salt_100",
+    modelName: "Jo Malone Wood Sage & Sea Salt 100ml",
+    aliases: ["Jo Malone Wood Sage", "조말론 우드세이지 시솔트"],
+    mustContain: [["jo malone", "조말론"], ["wood sage", "우드세이지", "우드 세이지"], ["100ml", "100 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "50ml", "200ml", "매입", "삽니다"],
+    msrpKrw: 230000, released: 2014,
+  },
+  {
+    id: "jo-malone-lime-basil-mandarin-100", brand: "Jo Malone", category: "perfume", laneKey: "jo_malone_lime_basil_mandarin_100",
+    modelName: "Jo Malone Lime Basil & Mandarin 100ml",
+    aliases: ["Jo Malone Lime Basil", "조말론 라임바질 만다린"],
+    mustContain: [["jo malone", "조말론"], ["lime basil", "라임바질", "라임 바질"], ["100ml", "100 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "50ml", "200ml", "매입", "삽니다"],
+    msrpKrw: 230000, released: 1999,
+  },
+  {
+    id: "jo-malone-english-pear-freesia-100", brand: "Jo Malone", category: "perfume", laneKey: "jo_malone_english_pear_freesia_100",
+    modelName: "Jo Malone English Pear & Freesia 100ml",
+    aliases: ["Jo Malone English Pear", "조말론 잉글리쉬페어 프리지아"],
+    mustContain: [["jo malone", "조말론"], ["english pear", "잉글리쉬페어", "잉글리쉬 페어"], ["100ml", "100 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "50ml", "200ml", "매입", "삽니다"],
+    msrpKrw: 230000, released: 2010,
+  },
+  {
+    id: "jo-malone-blackberry-bay-100", brand: "Jo Malone", category: "perfume", laneKey: "jo_malone_blackberry_bay_100",
+    modelName: "Jo Malone Blackberry & Bay 100ml",
+    aliases: ["Jo Malone Blackberry Bay", "조말론 블랙베리 베이"],
+    mustContain: [["jo malone", "조말론"], ["blackberry", "블랙베리"], ["100ml", "100 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "50ml", "200ml", "매입", "삽니다"],
+    msrpKrw: 230000, released: 2012,
+  },
+  {
+    id: "jo-malone-peony-blush-suede-100", brand: "Jo Malone", category: "perfume", laneKey: "jo_malone_peony_blush_suede_100",
+    modelName: "Jo Malone Peony & Blush Suede 100ml",
+    aliases: ["Jo Malone Peony Blush", "조말론 피오니 블러쉬"],
+    mustContain: [["jo malone", "조말론"], ["peony", "피오니"], ["100ml", "100 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "50ml", "200ml", "매입", "삽니다"],
+    msrpKrw: 230000, released: 2014,
+  },
+  // Le Labo
+  {
+    id: "le-labo-santal-33-50", brand: "Le Labo", category: "perfume", laneKey: "le_labo_santal_33_50",
+    modelName: "Le Labo Santal 33 50ml",
+    aliases: ["Le Labo Santal 33 50ml", "르라보 산탈 33 50ml"],
+    mustContain: [["le labo", "르라보", "르 라보"], ["santal 33", "산탈 33", "산탈33", "santal33"], ["50ml", "50 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "100ml", "15ml", "매입", "삽니다"],
+    msrpKrw: 290000, released: 2011,
+  },
+  {
+    id: "le-labo-santal-33-100", brand: "Le Labo", category: "perfume", laneKey: "le_labo_santal_33_100",
+    modelName: "Le Labo Santal 33 100ml",
+    aliases: ["Le Labo Santal 33 100ml", "르라보 산탈 33 100ml"],
+    mustContain: [["le labo", "르라보", "르 라보"], ["santal 33", "산탈 33", "산탈33", "santal33"], ["100ml", "100 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "50ml", "15ml", "매입", "삽니다"],
+    msrpKrw: 450000, released: 2011,
+  },
+  {
+    id: "le-labo-noir-29-50", brand: "Le Labo", category: "perfume", laneKey: "le_labo_noir_29_50",
+    modelName: "Le Labo The Noir 29 50ml",
+    aliases: ["Le Labo The Noir 29", "르라보 더 누아 29"],
+    mustContain: [["le labo", "르라보", "르 라보"], ["the noir 29", "누아 29", "noir29", "더누아 29"], ["50ml", "50 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "100ml", "매입", "삽니다"],
+    msrpKrw: 290000, released: 2015,
+  },
+  // Diptyque
+  {
+    id: "diptyque-philosykos-75", brand: "Diptyque", category: "perfume", laneKey: "diptyque_philosykos_75",
+    modelName: "Diptyque Philosykos 75ml",
+    aliases: ["Diptyque Philosykos", "딥디크 필로시코스"],
+    mustContain: [["diptyque", "딥디크"], ["philosykos", "필로시코스"], ["75ml", "75 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "50ml", "100ml", "매입", "삽니다"],
+    msrpKrw: 220000, released: 1996,
+  },
+  {
+    id: "diptyque-do-son-75", brand: "Diptyque", category: "perfume", laneKey: "diptyque_do_son_75",
+    modelName: "Diptyque Do Son 75ml",
+    aliases: ["Diptyque Do Son", "딥디크 도손"],
+    mustContain: [["diptyque", "딥디크"], ["do son", "도손", "도 손"], ["75ml", "75 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "50ml", "100ml", "매입", "삽니다"],
+    msrpKrw: 220000, released: 2005,
+  },
+  {
+    id: "diptyque-eau-capitale-75", brand: "Diptyque", category: "perfume", laneKey: "diptyque_eau_capitale_75",
+    modelName: "Diptyque Eau Capitale 75ml",
+    aliases: ["Diptyque Eau Capitale", "딥디크 오 카피탈"],
+    mustContain: [["diptyque", "딥디크"], ["eau capitale", "오 카피탈", "오카피탈"], ["75ml", "75 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "50ml", "100ml", "매입", "삽니다"],
+    msrpKrw: 250000, released: 2019,
+  },
+  // Tom Ford
+  {
+    id: "tom-ford-black-orchid-50", brand: "Tom Ford", category: "perfume", laneKey: "tom_ford_black_orchid_50",
+    modelName: "Tom Ford Black Orchid 50ml",
+    aliases: ["Tom Ford Black Orchid", "톰포드 블랙 오키드"],
+    mustContain: [["tom ford", "톰포드", "톰 포드"], ["black orchid", "블랙 오키드", "블랙오키드"], ["50ml", "50 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다"],
+    msrpKrw: 230000, released: 2006,
+  },
+  {
+    id: "tom-ford-tobacco-vanille-50", brand: "Tom Ford", category: "perfume", laneKey: "tom_ford_tobacco_vanille_50",
+    modelName: "Tom Ford Tobacco Vanille 50ml",
+    aliases: ["Tom Ford Tobacco Vanille", "톰포드 토바코 바닐라"],
+    mustContain: [["tom ford", "톰포드", "톰 포드"], ["tobacco vanille", "토바코 바닐라", "토바코바닐라"], ["50ml", "50 ml"]],
+    // Wave 185 fix: 신발 (shoe-adidas-tobacco-broad) 와 격리 — "아디다스/adidas/신발/운동화" 박기.
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다", "아디다스", "adidas", "신발", "운동화", "스니커즈"],
+    msrpKrw: 380000, released: 2007,
+  },
+  {
+    id: "tom-ford-lost-cherry-50", brand: "Tom Ford", category: "perfume", laneKey: "tom_ford_lost_cherry_50",
+    modelName: "Tom Ford Lost Cherry 50ml",
+    aliases: ["Tom Ford Lost Cherry", "톰포드 로스트 체리"],
+    mustContain: [["tom ford", "톰포드", "톰 포드"], ["lost cherry", "로스트 체리", "로스트체리"], ["50ml", "50 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다"],
+    msrpKrw: 480000, released: 2018,
+  },
+  {
+    id: "tom-ford-oud-wood-50", brand: "Tom Ford", category: "perfume", laneKey: "tom_ford_oud_wood_50",
+    modelName: "Tom Ford Oud Wood 50ml",
+    aliases: ["Tom Ford Oud Wood", "톰포드 우드 우드"],
+    mustContain: [["tom ford", "톰포드", "톰 포드"], ["oud wood", "우드 우드", "우드우드", "oud", "우드"], ["50ml", "50 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다"],
+    msrpKrw: 380000, released: 2007,
+  },
+  // Maison Margiela Replica
+  {
+    id: "replica-jazz-club-100", brand: "Maison Margiela", category: "perfume", laneKey: "replica_jazz_club_100",
+    modelName: "Replica Jazz Club 100ml",
+    aliases: ["Replica Jazz Club", "메종 마르지엘라 재즈클럽", "Margiela Jazz Club"],
+    mustContain: [["margiela", "마르지엘라", "replica"], ["jazz club", "재즈클럽", "재즈 클럽"], ["100ml", "100 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "200ml", "매입", "삽니다"],
+    msrpKrw: 170000, released: 2013,
+  },
+  {
+    id: "replica-by-the-fireplace-100", brand: "Maison Margiela", category: "perfume", laneKey: "replica_by_the_fireplace_100",
+    modelName: "Replica By the Fireplace 100ml",
+    aliases: ["Replica By the Fireplace", "메종 마르지엘라 바이 더 파이어플레이스", "파이어플레이스"],
+    mustContain: [["margiela", "마르지엘라", "replica"], ["fireplace", "파이어플레이스", "바이 더 파이어"], ["100ml", "100 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "200ml", "매입", "삽니다"],
+    msrpKrw: 170000, released: 2015,
+  },
+  {
+    id: "replica-beach-walk-100", brand: "Maison Margiela", category: "perfume", laneKey: "replica_beach_walk_100",
+    modelName: "Replica Beach Walk 100ml",
+    aliases: ["Replica Beach Walk", "메종 마르지엘라 비치워크"],
+    mustContain: [["margiela", "마르지엘라", "replica"], ["beach walk", "비치워크", "비치 워크"], ["100ml", "100 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "200ml", "매입", "삽니다"],
+    msrpKrw: 170000, released: 2012,
+  },
+  {
+    id: "replica-when-the-rain-stops-100", brand: "Maison Margiela", category: "perfume", laneKey: "replica_when_the_rain_stops_100",
+    modelName: "Replica When the Rain Stops 100ml",
+    aliases: ["Replica When the Rain Stops", "메종 마르지엘라 비온뒤", "When the Rain Stops"],
+    mustContain: [["margiela", "마르지엘라", "replica"], ["when the rain", "비 온 뒤", "비온뒤", "when the rain stops"], ["100ml", "100 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "200ml", "매입", "삽니다"],
+    msrpKrw: 170000, released: 2018,
+  },
+  // Memo Paris
+  {
+    id: "memo-russian-leather-75", brand: "Memo Paris", category: "perfume", laneKey: "memo_russian_leather_75",
+    modelName: "Memo Russian Leather 75ml",
+    aliases: ["Memo Russian Leather", "메모 러시안 레더"],
+    mustContain: [["memo paris", "memo", "메모"], ["russian leather", "러시안 레더", "러시안레더"], ["75ml", "75 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "200ml", "매입", "삽니다", "irish", "italian", "아이리쉬", "이탈리안"],
+    msrpKrw: 350000, released: 2014,
+  },
+  {
+    id: "memo-irish-leather-75", brand: "Memo Paris", category: "perfume", laneKey: "memo_irish_leather_75",
+    modelName: "Memo Irish Leather 75ml",
+    aliases: ["Memo Irish Leather", "메모 아이리쉬 레더"],
+    mustContain: [["memo paris", "memo", "메모"], ["irish leather", "아이리쉬 레더", "아이리쉬레더"], ["75ml", "75 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "200ml", "매입", "삽니다", "russian", "italian", "러시안", "이탈리안"],
+    msrpKrw: 350000, released: 2015,
+  },
+  {
+    id: "memo-italian-leather-75", brand: "Memo Paris", category: "perfume", laneKey: "memo_italian_leather_75",
+    modelName: "Memo Italian Leather 75ml",
+    aliases: ["Memo Italian Leather", "메모 이탈리안 레더"],
+    mustContain: [["memo paris", "memo", "메모"], ["italian leather", "이탈리안 레더", "이탈리안레더"], ["75ml", "75 ml"]],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "200ml", "매입", "삽니다", "russian", "irish", "러시안", "아이리쉬"],
+    msrpKrw: 350000, released: 2019,
   },
   // Wave 91 (2026-05-15): 일반인 친화 카테고리 확장 — 신발 39 + 가방 34 + 자전거 33 = 106 SKU.
   // 모두 resale ≤200만 (자본 천장 준수). 본품만 정책. 셀러 시세 인식 약한 모델 우선.

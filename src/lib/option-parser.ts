@@ -1456,6 +1456,10 @@ function confidence(input: {
     // Wave 184 (2026-05-17): 새 카테고리 drone (DJI/GoPro). catalog narrow lane 으로
     // 변형 격리 (Fly More Combo 등). 모델 매칭 = 신뢰. 단일 옵션 모델 다수.
     score += 0.35;
+  } else if (input.category === "perfume") {
+    // Wave 185 (2026-05-17): 새 카테고리 perfume. catalog narrow lane (브랜드 + 향 + 용량) 으로 정확.
+    // 짝퉁 일부 있으나 명품 가방보다 낮음. 사용자 매물 확인 시 정확.
+    score += 0.35;
   }
   return cap01(score);
 }

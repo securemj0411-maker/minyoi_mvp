@@ -62,11 +62,16 @@ export const SHOE_BROAD_WAVE138_CATALOG: Sku[] = [
       "wales bonner", "웨일스 보너",
       "kith", "키스 ",
       // 가품
-      "짭", "가품", "레플리카", "replica", "fake", "미러", "샘플", "sample", "1:1", "11급",
+      "짭", "가품", "레플리카", "fake", "미러", "샘플", "sample", "1:1", "11급",
       // 키즈/단품/매입
       "td", "ps", "키즈", "유아", "아동", "toddler", "kids",
       "한짝", "한쪽만", "사이즈 미상", "파손",
       "삽니다", "구합니다", "매입",
+      // Wave 185 (2026-05-17): 향수 (Tom Ford Tobacco Vanille 등) 격리.
+      "tom ford", "톰포드", "톰 포드",
+      "향수", "perfume", "오 드 퍼퓸", "edp", "edt",
+      "ml", " ml",  // 향수는 ml 단위. 신발에는 없음.
+      // 옛 mustNotContain "replica" 있었지만 Wave 185 향수 "Replica" (Maison Margiela) 와 격리하려면 제거하고 명시 격리.
     ],
     msrpKrw: 159000,
     released: 1972,

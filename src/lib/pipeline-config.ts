@@ -201,6 +201,28 @@ export const DEFAULT_SEARCH_QUERIES = [
   "GoPro Hero 12", "고프로 히어로 12",
   "GoPro Hero 13", "고프로 히어로 13",
   "GoPro Max", "고프로 맥스",
+  // Wave 185 (2026-05-17): 새 카테고리 "perfume" — 명품 향수 22 SKU.
+  "조말론 우드세이지", "Jo Malone Wood Sage",
+  "조말론 라임바질", "Jo Malone Lime Basil",
+  "조말론 잉글리쉬페어", "Jo Malone English Pear",
+  "조말론 블랙베리", "Jo Malone Blackberry",
+  "조말론 피오니", "Jo Malone Peony",
+  "르라보 산탈 33", "Le Labo Santal 33",
+  "르라보 누아 29", "Le Labo Noir 29",
+  "딥디크 필로시코스", "Diptyque Philosykos",
+  "딥디크 도손", "Diptyque Do Son",
+  "딥디크 오 카피탈", "Diptyque Eau Capitale",
+  "톰포드 블랙 오키드", "Tom Ford Black Orchid",
+  "톰포드 토바코 바닐라", "Tom Ford Tobacco Vanille",
+  "톰포드 로스트 체리", "Tom Ford Lost Cherry",
+  "톰포드 우드 우드", "Tom Ford Oud Wood",
+  "Replica Jazz Club", "재즈클럽 향수",
+  "Replica By the Fireplace", "파이어플레이스 향수",
+  "Replica Beach Walk", "비치워크 향수",
+  "Replica When the Rain Stops",
+  "Memo Russian Leather", "메모 러시안 레더",
+  "Memo Irish Leather", "메모 아이리쉬 레더",
+  "Memo Italian Leather", "메모 이탈리안 레더",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

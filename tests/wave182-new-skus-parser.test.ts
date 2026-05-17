@@ -367,6 +367,16 @@ describe("Wave 182 chunk 6: Sony LinkBuds + Bose 700/Earbuds II + Galaxy Buds 2/
   });
 });
 
+describe("Wave 185: 새 카테고리 perfume (명품 향수)", () => {
+  it("jo-malone-wood-sage-sea-salt-100", () => check("조말론 우드세이지 시솔트 100ml", "정상.", "jo-malone-wood-sage-sea-salt-100", []));
+  it("le-labo-santal-33-50", () => check("르라보 산탈 33 50ml", "정상.", "le-labo-santal-33-50", []));
+  it("le-labo-santal-33-100", () => check("르라보 산탈 33 100ml", "정상.", "le-labo-santal-33-100", []));
+  it("diptyque-philosykos-75", () => check("Diptyque Philosykos 75ml", "정상.", "diptyque-philosykos-75", []));
+  it("tom-ford-tobacco-vanille-50", () => check("Tom Ford Tobacco Vanille 50ml", "정상.", "tom-ford-tobacco-vanille-50", []));
+  it("replica-jazz-club-100", () => check("Replica Jazz Club 100ml", "정상.", "replica-jazz-club-100", []));
+  it("memo-russian-leather-75", () => check("Memo Russian Leather 75ml", "정상.", "memo-russian-leather-75", []));
+});
+
 describe("Wave 184: 새 카테고리 drone (DJI 드론 + DJI 액션캠 + GoPro)", () => {
   it("dji-mini-2", () => check("DJI Mini 2", "정상.", "dji-mini-2", []));
   it("dji-mini-3-pro", () => check("DJI Mini 3 Pro", "정상.", "dji-mini-3-pro", []));

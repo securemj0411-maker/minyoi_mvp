@@ -417,6 +417,29 @@ export const LANE_READINESS: LaneReadinessMap = {
   gopro_hero_12: { status: "ready", label: "GoPro Hero 12 Black", note: "Wave 184: 단일 옵션." },
   gopro_hero_13: { status: "ready", label: "GoPro Hero 13 Black", note: "Wave 184: 단일 옵션. 2024 신모델." },
   gopro_max: { status: "ready", label: "GoPro Max (360)", note: "Wave 184: 단일 옵션. 360도 카메라." },
+  // Wave 185 (2026-05-17): 새 카테고리 "perfume" narrow lane 22개.
+  jo_malone_wood_sage_sea_salt_100: { status: "ready", label: "Jo Malone Wood Sage & Sea Salt 100ml", note: "Wave 185" },
+  jo_malone_lime_basil_mandarin_100: { status: "ready", label: "Jo Malone Lime Basil & Mandarin 100ml", note: "Wave 185" },
+  jo_malone_english_pear_freesia_100: { status: "ready", label: "Jo Malone English Pear & Freesia 100ml", note: "Wave 185" },
+  jo_malone_blackberry_bay_100: { status: "ready", label: "Jo Malone Blackberry & Bay 100ml", note: "Wave 185" },
+  jo_malone_peony_blush_suede_100: { status: "ready", label: "Jo Malone Peony & Blush Suede 100ml", note: "Wave 185" },
+  le_labo_santal_33_50: { status: "ready", label: "Le Labo Santal 33 50ml", note: "Wave 185" },
+  le_labo_santal_33_100: { status: "ready", label: "Le Labo Santal 33 100ml", note: "Wave 185" },
+  le_labo_noir_29_50: { status: "ready", label: "Le Labo The Noir 29 50ml", note: "Wave 185" },
+  diptyque_philosykos_75: { status: "ready", label: "Diptyque Philosykos 75ml", note: "Wave 185" },
+  diptyque_do_son_75: { status: "ready", label: "Diptyque Do Son 75ml", note: "Wave 185" },
+  diptyque_eau_capitale_75: { status: "ready", label: "Diptyque Eau Capitale 75ml", note: "Wave 185" },
+  tom_ford_black_orchid_50: { status: "ready", label: "Tom Ford Black Orchid 50ml", note: "Wave 185" },
+  tom_ford_tobacco_vanille_50: { status: "ready", label: "Tom Ford Tobacco Vanille 50ml", note: "Wave 185" },
+  tom_ford_lost_cherry_50: { status: "ready", label: "Tom Ford Lost Cherry 50ml", note: "Wave 185" },
+  tom_ford_oud_wood_50: { status: "ready", label: "Tom Ford Oud Wood 50ml", note: "Wave 185" },
+  replica_jazz_club_100: { status: "ready", label: "Replica Jazz Club 100ml", note: "Wave 185" },
+  replica_by_the_fireplace_100: { status: "ready", label: "Replica By the Fireplace 100ml", note: "Wave 185" },
+  replica_beach_walk_100: { status: "ready", label: "Replica Beach Walk 100ml", note: "Wave 185" },
+  replica_when_the_rain_stops_100: { status: "ready", label: "Replica When the Rain Stops 100ml", note: "Wave 185" },
+  memo_russian_leather_75: { status: "ready", label: "Memo Russian Leather 75ml", note: "Wave 185" },
+  memo_irish_leather_75: { status: "ready", label: "Memo Irish Leather 75ml", note: "Wave 185" },
+  memo_italian_leather_75: { status: "ready", label: "Memo Italian Leather 75ml", note: "Wave 185" },
 };
 
 export type CategoryReadinessConfig = {
@@ -509,6 +532,16 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     status: "internal_only",
     label: "Drone & Action Cam",
     note: "DJI 드론 (Mini/Mavic/Air/Avata) + DJI Osmo Action/Pocket + GoPro Hero. 짝퉁 거의 없음 (DJI 활성화 + GoPro 정품 등록). narrow lane 22개 LANE_READINESS=ready 로 풀 진입.",
+    minReadyPool: 6,
+    minParseRate: 0.9,
+    minTrustedKeys: 5,
+  },
+  // Wave 185 (2026-05-17): 새 카테고리 "perfume" — 명품 향수 (Jo Malone / Le Labo / Diptyque / Tom Ford / Replica / Memo).
+  // narrow lane 22개 (브랜드 × 향 × 용량). mustNotContain "분주/소분/샘플/공병" 차단.
+  perfume: {
+    status: "internal_only",
+    label: "Perfume",
+    note: "명품 향수 narrow lane (브랜드 + 향 + 용량). 짝퉁 일부 있으나 명품 가방보다 낮음. mustNotContain '분주/소분/리필/샘플/vial/빈병/공병' 으로 noise 차단.",
     minReadyPool: 6,
     minParseRate: 0.9,
     minTrustedKeys: 5,
