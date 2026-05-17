@@ -139,7 +139,8 @@ export type PackOpenInput = {
   maxFreshHours?: number;
 };
 
-export type RevealFeedbackType = "interested" | "bought" | "missed_sold" | "bad_pick" | "watching";
+// Wave 182 (2026-05-17): loss_report 추가 — 사용자 손해 신고. 즉시 토큰 3개 보상 + 운영자 검수 큐 진입.
+export type RevealFeedbackType = "interested" | "bought" | "missed_sold" | "bad_pick" | "watching" | "loss_report";
 
 export type PackOpenSuccess = {
   result: "success";

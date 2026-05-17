@@ -12,6 +12,7 @@ import RecommendationWorkspace from "@/components/recommendation-workspace";
 import SafetyStatsBadge from "@/components/safety-stats-badge";
 import UserRevealDashboard from "@/components/user-reveal-dashboard";
 import PreviewMaskedDashboard from "@/components/preview-masked-dashboard";
+import { SavedMoneyCounter } from "@/components/saved-money-counter";
 import { isAdminUser } from "@/lib/auth-users";
 import { hasAdminShadowClient } from "@/lib/admin-shadow-mode";
 import { MODEL_GUIDES } from "@/lib/model-guides";
@@ -348,6 +349,8 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
         ) : (
           // 2026-05-17: history (default) — recommend view 폐기, 모달로 대체.
           <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
+            {/* Wave 182: Saved Money Counter — 안 잃은 돈 + 번 돈 (loss aversion ×2.5). */}
+            <SavedMoneyCounter />
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-base font-black text-[#223127] dark:text-zinc-100">📦 나의 상품</h2>
               <button

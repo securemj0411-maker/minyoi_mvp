@@ -173,6 +173,19 @@ export default async function MembersPage() {
 
   return (
     <main className="mx-auto max-w-[1500px] p-4 sm:p-6">
+      {/* Wave 182: 운영자 페이지 nav — 회원 / 손해 신고. */}
+      <nav className="mb-4 flex flex-wrap items-center gap-2 text-xs">
+        <span className="rounded-full bg-amber-100 px-2.5 py-1 font-black text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+          ⚙ 회원 목록 (현재)
+        </span>
+        <a
+          href="./loss-reports"
+          className="rounded-full border border-rose-300 bg-rose-50 px-2.5 py-1 font-black text-rose-800 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200"
+        >
+          🚨 손해 신고 검수
+        </a>
+      </nav>
+
       <div className="flex flex-col gap-1 border-b border-amber-200 pb-3 dark:border-amber-900/60">
         <div className="text-xs font-bold text-amber-700 dark:text-amber-300">⚙ 운영자 — 회원 목록</div>
         <h1 className="text-xl font-black text-gray-900 dark:text-gray-100 sm:text-2xl">전체 {rows.length}명</h1>

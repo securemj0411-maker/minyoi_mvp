@@ -126,6 +126,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   const [selectedPids, setSelectedPids] = useState<Set<number>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  // Wave 182: 손해 신고 모달 state.
+  const [lossReportItem, setLossReportItem] = useState<RevealItem | null>(null);
+  const [lossReportNote, setLossReportNote] = useState("");
+  const [lossReportSubmitting, setLossReportSubmitting] = useState(false);
+  const [lossReportResult, setLossReportResult] = useState<{ ok: boolean; message: string; compensation?: number } | null>(null);
 
   const loadItems = useCallback(async (options?: { silent?: boolean }) => {
     if (!userRef) return;
@@ -428,6 +433,58 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     void fetchWithAuth("/api/packs/reveals/feedback", { pid, feedbackType, note }).catch(() => undefined);
   }
 
+  // Wave 182: 손해 신고 — 별도 endpoint (즉시 토큰 보상 + 운영자 검수 큐).
+  async function submitLossReport() {
+    if (!lossReportItem || !userRef) return;
+    const note = lossReportNote.trim();
+    if (note.length < 5) {
+      setLossReportResult({ ok: false, message: "어떤 손해였는지 5자 이상 적어주세요." });
+      return;
+    }
+    setLossReportSubmitting(true);
+    setLossReportResult(null);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const { data: sessionData } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error("로그인이 필요해요.");
+      const res = await fetch("/api/packs/reveals/loss-report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "x-user-ref": userRef,
+        },
+        body: JSON.stringify({ pid: lossReportItem.pid, note }),
+      });
+      const json = (await res.json()) as { ok?: boolean; message?: string; compensationTokens?: number; error?: string };
+      if (!res.ok || !json.ok) {
+        setLossReportResult({
+          ok: false,
+          message: json.message ?? "신고 접수에 실패했어요. 잠시 후 다시 시도해주세요.",
+        });
+      } else {
+        setLossReportResult({
+          ok: true,
+          message: json.message ?? "신고 접수됨.",
+          compensation: json.compensationTokens ?? 0,
+        });
+      }
+    } catch (err) {
+      console.error("[loss-report] submit failed", err);
+      setLossReportResult({ ok: false, message: "신고 접수에 실패했어요." });
+    } finally {
+      setLossReportSubmitting(false);
+    }
+  }
+
+  function closeLossReportModal() {
+    setLossReportItem(null);
+    setLossReportNote("");
+    setLossReportResult(null);
+    setLossReportSubmitting(false);
+  }
+
   function openItem(item: RevealItem, mode: "listing" | "guide") {
     previewSeedCounterRef.current += 1;
     setSelectedItem(item);
@@ -445,6 +502,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
   function ActionButtons({ item }: { item: RevealItem }) {
     const actionBase = "inline-flex h-9 min-w-[76px] items-center justify-center rounded-lg px-3 text-xs font-black leading-none transition";
+    const alreadyReported = item.feedbackType === "loss_report";
     return (
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <button
@@ -460,6 +518,24 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           className={`${actionBase} border border-[#d5dfd2] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] hover:border-[#b9c9b9] hover:bg-[#edf3ea]`}
         >
           공략 보기
+        </button>
+        {/* Wave 182: 손해 신고 — 토큰 +3 즉시 보상 + 운영자 24h 검수. */}
+        <button
+          type="button"
+          onClick={() => {
+            setLossReportItem(item);
+            setLossReportNote("");
+            setLossReportResult(null);
+          }}
+          disabled={alreadyReported}
+          title={alreadyReported ? "이미 신고됨 — 운영자 검수 진행 중" : "손해 봤어요 (토큰 +3 즉시 보상)"}
+          className={`${actionBase} border ${
+            alreadyReported
+              ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
+              : "border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300"
+          }`}
+        >
+          {alreadyReported ? "🚨 신고됨" : "🚨 손해 봤어요"}
         </button>
       </div>
     );
@@ -507,6 +583,85 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           </div>
         </div>
       </div>
+
+      {/* Wave 182: 손해 신고 모달 — 사유 입력 + 즉시 토큰 +3 보상 안내. */}
+      {lossReportItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeLossReportModal}>
+          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl dark:bg-zinc-900" onClick={(e) => e.stopPropagation()}>
+            {lossReportResult?.ok ? (
+              <>
+                <div className="flex items-center gap-2 text-base font-black text-emerald-700 dark:text-emerald-300">
+                  ✅ 신고 접수됨
+                </div>
+                <div className="mt-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-200">
+                  {lossReportResult.message}
+                </div>
+                {lossReportResult.compensation && lossReportResult.compensation > 0 ? (
+                  <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
+                    🪙 토큰 +{lossReportResult.compensation}개 즉시 지급
+                  </div>
+                ) : null}
+                <div className="mt-3 text-[11px] text-zinc-500 dark:text-zinc-400">
+                  운영자가 24시간 안에 매물을 검토하고 알고리즘에 반영합니다. 비슷한 매물은 다른 사용자에게 가지 않도록 보정됩니다.
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={closeLossReportModal}
+                    className="rounded-lg bg-[var(--brand-accent-strong)] px-4 py-2 text-sm font-black text-[var(--brand-cream)]"
+                  >
+                    확인
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-base font-black text-zinc-900 dark:text-zinc-100">
+                  🚨 손해 신고
+                </div>
+                <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                  매물: <span className="font-bold">{lossReportItem.name}</span>
+                </div>
+                <div className="mt-3 text-[12px] leading-relaxed text-zinc-700 dark:text-zinc-300">
+                  어떤 손해를 입었는지 알려주세요. 즉시 토큰 <b>3개 보상</b> + 24시간 안에 운영자 검토 후 알고리즘 보정.
+                </div>
+                <textarea
+                  value={lossReportNote}
+                  onChange={(e) => setLossReportNote(e.target.value)}
+                  placeholder="예: 받았는데 배터리 효율 65% / 사진과 달리 액정 크랙 / 셀러가 답장 안 함 + 매물 사라짐"
+                  rows={4}
+                  className="mt-3 w-full rounded-lg border border-zinc-300 bg-white p-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                  maxLength={1000}
+                />
+                <div className="mt-1 text-[10px] text-zinc-400">{lossReportNote.length}/1000</div>
+                {lossReportResult?.message && !lossReportResult.ok ? (
+                  <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+                    {lossReportResult.message}
+                  </div>
+                ) : null}
+                <div className="mt-4 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={closeLossReportModal}
+                    disabled={lossReportSubmitting}
+                    className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-bold text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="button"
+                    onClick={submitLossReport}
+                    disabled={lossReportSubmitting || lossReportNote.trim().length < 5}
+                    className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-black text-white hover:bg-rose-700 disabled:opacity-50"
+                  >
+                    {lossReportSubmitting ? "신고 중..." : "신고하고 토큰 +3 받기"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 전체 삭제 confirm 모달 */}
       {showDeleteAllConfirm && (
@@ -839,13 +994,38 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       ) : null}
 
       {!loading && total === 0 ? (
-        <div className="mt-4 rounded-xl bg-[#fffaf1] p-4 text-center text-xs text-[#6b7269] dark:bg-zinc-950 dark:text-zinc-400">
-          {query
-            ? "검색 결과가 없습니다."
-            : welcomePending
-              ? "추천 매물을 준비하고 있어요. 잠시만 기다려주세요…"
-              : "아직 본 추천 상품이 없습니다."}
-        </div>
+        query ? (
+          <div className="mt-4 rounded-xl bg-[#fffaf1] p-4 text-center text-xs text-[#6b7269] dark:bg-zinc-950 dark:text-zinc-400">
+            검색 결과가 없습니다.
+          </div>
+        ) : welcomePending ? (
+          // 2026-05-17 fix: 작은 1줄 텍스트 → 큰 안내 박스 + 스켈레톤 grid. 사용자 보고
+          // "갑자기 스켈레톤 없어지고 작은 글씨 보여서 당황" → 페이지 로딩 스켈레톤과
+          // 자연스럽게 이어지게 콘텐츠 영역도 스켈레톤 + 가시적 spinner + 안내.
+          <div className="mt-6 space-y-5">
+            <div className="rounded-2xl border border-[#e2d9cb] bg-[#fffaf1] px-5 py-5 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="inline-flex items-center gap-2.5 text-base font-black text-[#223127] dark:text-zinc-100 sm:text-lg">
+                <svg className="h-5 w-5 animate-spin text-[#5d735f] dark:text-emerald-400" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                가입 환영 매물 준비 중
+              </div>
+              <p className="mt-2 text-sm font-semibold leading-6 text-[#5a6658] dark:text-zinc-400">
+                첫 추천 매물 4개를 골라서 가져오고 있어요. 잠시만 기다려주세요.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-48 animate-pulse rounded-2xl bg-[#f1eadf] dark:bg-zinc-800/60" />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-xl bg-[#fffaf1] p-4 text-center text-xs text-[#6b7269] dark:bg-zinc-950 dark:text-zinc-400">
+            아직 본 추천 상품이 없습니다.
+          </div>
+        )
       ) : null}
       <PackRevealModal
         open={Boolean(selectedItem && modalResult)}
