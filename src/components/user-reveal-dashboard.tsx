@@ -131,6 +131,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   const [selectedPids, setSelectedPids] = useState<Set<number>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  // Wave 200 (2026-05-18): terminal (sold/disappeared) 매물 기본 hide — 사용자 "삭제된 매물 왜 보이냐" 요청.
+  const [hideTerminal, setHideTerminal] = useState(true);
   // Wave 182c: 정보 오류 신고 모달 state (loss_report 는 보류, inaccurate_report 박힘).
   // state 이름은 호환 위해 lossReport* 유지 — 의미는 inaccurate_report.
   const [lossReportItem, setLossReportItem] = useState<RevealItem | null>(null);
@@ -846,8 +848,40 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         </div>
       ) : null}
 
+      {/* Wave 200 (2026-05-18): terminal 매물 toggle — 기본 hide, 클릭으로 보기. */}
+      {(() => {
+        const terminalCount = items.filter((i) => {
+          const tone = listingStateLabel(i.listingState).tone;
+          return tone === "sold" || tone === "gone";
+        }).length;
+        if (terminalCount === 0) return null;
+        return (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[11px] dark:border-zinc-800 dark:bg-zinc-900/40">
+            <span className="text-zinc-700 dark:text-zinc-300">
+              ⚠️ 판매완료/사라진 매물 <b>{terminalCount}건</b> 발견 — 시세/차익 정보가 stale.
+            </span>
+            <button
+              type="button"
+              onClick={() => setHideTerminal((v) => !v)}
+              className={`rounded-full px-2.5 py-1 text-[10px] font-black transition ${
+                hideTerminal
+                  ? "bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-200"
+                  : "bg-amber-500 text-white hover:bg-amber-600"
+              }`}
+            >
+              {hideTerminal ? `보기 (${terminalCount})` : "숨기기"}
+            </button>
+          </div>
+        );
+      })()}
+
       <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2" : "mt-4 grid gap-2"}>
-        {items.map((item) => {
+        {items.filter((item) => {
+          // Wave 200: terminal 매물 hide (기본). toggle 풀면 표시.
+          if (!hideTerminal) return true;
+          const tone = listingStateLabel(item.listingState).tone;
+          return !(tone === "sold" || tone === "gone");
+        }).map((item) => {
           // 2026-05-17 (사용자 요청): 판매완료/사라진 매물은 시각적으로 dim 표시 (사라지지 않게).
           const stateInfo = listingStateLabel(item.listingState);
           const isTerminal = stateInfo.tone === "sold" || stateInfo.tone === "gone";
@@ -898,12 +932,15 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 <ConditionChip conditionClass={item.marketBasis?.conditionClass ?? null} />
               </div>
               {/* 2026-05-17: 매입 · 시세 표시 (대시보드 패턴 통일 — 운영자풀/preview 와 동일). */}
-              <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-[11px] font-semibold text-[#6b7269] dark:text-zinc-400">
-                <span>매입 <span className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.price)}</span></span>
+              {/* Wave 200 (2026-05-18): terminal 매물 시 strike-through — 정보 stale 명시. */}
+              <div className={`mt-1 flex flex-wrap items-baseline gap-x-2 text-[11px] font-semibold ${
+                isTerminal ? "text-zinc-400 line-through decoration-zinc-400 dark:text-zinc-500" : "text-[#6b7269] dark:text-zinc-400"
+              }`}>
+                <span>매입 <span className={`font-black tabular-nums ${isTerminal ? "" : "text-[#223127] dark:text-zinc-100"}`}>{krw(item.price)}</span></span>
                 {item.marketBasis?.medianPrice && item.marketBasis.medianPrice > 0 ? (
                   <>
-                    <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                    <span>시세 <span className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.marketBasis.medianPrice)}</span></span>
+                    <span className="text-zinc-300 dark:text-zinc-600 no-underline">·</span>
+                    <span>시세 <span className={`font-black tabular-nums ${isTerminal ? "" : "text-[#223127] dark:text-zinc-100"}`}>{krw(item.marketBasis.medianPrice)}</span></span>
                   </>
                 ) : null}
                 {/* Wave 182 Phase 3 (2026-05-17): base option fallback 정직성 표시. 옵션 명시 X → SKU 기본 옵션 가정 시세. */}
@@ -948,7 +985,12 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   </>
                 ) : (
                   <>
-                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-black tabular-nums text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                    {/* Wave 200: terminal 매물 시 차익 strike-through (정보 stale). */}
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-black tabular-nums ${
+                      isTerminal
+                        ? "bg-zinc-100 text-zinc-400 line-through dark:bg-zinc-800 dark:text-zinc-500"
+                        : "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                    }`}>
                       {item.expectedProfitMin === item.expectedProfitMax
                         ? `+${item.expectedProfitMax.toLocaleString("ko-KR")}원`
                         : `+${item.expectedProfitMin.toLocaleString("ko-KR")}~${item.expectedProfitMax.toLocaleString("ko-KR")}원`}
@@ -958,7 +1000,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                       const avg = (item.expectedProfitMin + item.expectedProfitMax) / 2;
                       const pct = Math.round((avg / item.price) * 100);
                       return Number.isFinite(pct) ? (
-                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-black tabular-nums ${
+                          isTerminal
+                            ? "bg-zinc-100 text-zinc-400 line-through dark:bg-zinc-800 dark:text-zinc-500"
+                            : "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+                        }`}>
                           +{pct}%
                         </span>
                       ) : null;
