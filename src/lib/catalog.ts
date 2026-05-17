@@ -1187,19 +1187,7 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     msrpKrw: 950000,
     released: 2021,
   },
-  // iPhone SE 시리즈 — 1세대 (2016), 2세대 (2020), 3세대 (2022).
-  // "아이폰 SE" 단독 매물도 가능 (모호) — 별도 broad SKU 운영.
-  {
-    id: "iphone-se",
-    brand: "Apple",
-    category: "smartphone",
-    modelName: "iPhone SE (1st gen)",
-    aliases: ["아이폰 SE", "아이폰SE", "iPhone SE"],
-    mustContain: [["아이폰 se", "아이폰se", "iphone se"]],
-    mustNotContain: ["se2", "se 2", "2세대", "se3", "se 3", "3세대", "se4", "se 4", "se5", "se 5", "프로", "pro", "맥스", "max", "플러스", "plus", ...PHONE_NOISE],
-    msrpKrw: 590000,
-    released: 2016,
-  },
+  // iPhone SE 시리즈 — 2세대 (2020), 3세대 (2022). 1세대 (2016) 제거: 9년 정책.
   {
     id: "iphone-se2",
     brand: "Apple",
@@ -2319,34 +2307,7 @@ const CORE_TABLET_CATALOG: Sku[] = [
     released: 2024,
   },
   // Wave 142 (2026-05-17): iPad Magic Keyboard narrow lane (accessory 다양화).
-  // 단독 매물 43건 / median 330k / p25=225k p75=360k. 11인치/13인치 표기 불명확한 매물 25건 多
-  // → 단일 SKU "magic-keyboard-ipad" 로 통합. broad iPad SKU 와 mustContain 분리 (매직키보드 단어 필수).
-  {
-    id: "magic-keyboard-ipad",
-    brand: "Apple",
-    category: "tablet",
-    laneKey: "magic_keyboard_ipad",
-    modelName: "Apple Magic Keyboard for iPad",
-    aliases: ["매직 키보드", "Magic Keyboard for iPad", "아이패드 매직키보드"],
-    mustContain: [
-      ["매직 키보드", "매직키보드", "magic keyboard"],
-      ["아이패드", "ipad", "에어", "air", "프로", "pro", "미니", "mini"],
-    ],
-    mustNotContain: [
-      "맥북", "macbook", "imac", "아이맥",
-      "단품", "부품", "고장", "수리", "as 필요", "케이스만",
-      "삽니다", "구해요", "매입",
-      "스마트 키보드", "스마트키보드", "smart keyboard",
-      "폴리오", "folio",
-      "구합니다",
-      // 본품 + 키보드 번들 매물 차단 — iPad 본품 옵션 token (키보드 단독 매물에는 안 들어감)
-      "256gb", "128gb", "512gb", "64gb", "1tb",
-      "wifi", "wi-fi", "셀룰러", "cellular", "lte",
-    ],
-    msrpKrw: 449000,
-    released: 2020,
-    confusionNote: "Apple Magic Keyboard for iPad 단일 SKU. iPad Pro/Air 11/12.9/13인치 다 호환. Smart Keyboard Folio (저가) 와 분리.",
-  },
+  // magic-keyboard-ipad SKU 제거 (액세서리 — Wave 182 catalog 정비).
   {
     id: "galaxy-tab-s8",
     brand: "Samsung",
@@ -2784,69 +2745,7 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
     msrpKrw: 1790000,
     released: 2017,
   },
-  {
-    id: "macbook-pro-13-2015",
-    brand: "Apple",
-    category: "laptop",
-    laneKey: "macbook_pro_13_2015",
-    modelName: "MacBook Pro 13\" 2015 (Intel)",
-    aliases: ["맥북 프로 13 2015", "A1502"],
-    mustContain: [
-      ["맥북", "macbook"], ["프로", "pro"],
-      ["13인치", "13 인치", "13형", "13\"", "13in"],
-      ["2015", "2015년형", "a1502"],
-    ],
-    mustNotContain: [
-      "에어", " air ", "14인치", "14 인치", "14형", "15인치", "15 인치", "15형", "16인치", "16형",
-      "2016", "2017", "2018", "2019",
-      "m1", "m2", "m3", "m4", "m5",
-      ...LAPTOP_NOISE,
-    ],
-    msrpKrw: 1690000,
-    released: 2015,
-  },
-  {
-    id: "macbook-pro-13-2016",
-    brand: "Apple",
-    category: "laptop",
-    laneKey: "macbook_pro_13_2016",
-    modelName: "MacBook Pro 13\" 2016 (Intel)",
-    aliases: ["맥북 프로 13 2016", "A1706", "A1708"],
-    mustContain: [
-      ["맥북", "macbook"], ["프로", "pro"],
-      ["13인치", "13 인치", "13형", "13\"", "13in"],
-      ["2016", "2016년형"],
-    ],
-    mustNotContain: [
-      "에어", " air ", "14인치", "14 인치", "14형", "15인치", "15 인치", "15형", "16인치", "16형",
-      "2015", "2017", "2018", "2019",
-      "m1", "m2", "m3", "m4", "m5",
-      ...LAPTOP_NOISE,
-    ],
-    msrpKrw: 1690000,
-    released: 2016,
-  },
-  {
-    id: "macbook-pro-13-2013",
-    brand: "Apple",
-    category: "laptop",
-    laneKey: "macbook_pro_13_2013",
-    modelName: "MacBook Pro 13\" 2013 (Intel)",
-    aliases: ["맥북 프로 13 2013", "A1502"],
-    mustContain: [
-      ["맥북", "macbook"], ["프로", "pro"],
-      ["13인치", "13 인치", "13형", "13\"", "13in"],
-      ["2013", "2013년형"],
-    ],
-    mustNotContain: [
-      "에어", " air ", "14인치", "14 인치", "14형", "15인치", "15 인치", "15형", "16인치", "16형",
-      "2014", "2015", "2016", "2017",
-      "m1", "m2", "m3", "m4", "m5",
-      ...LAPTOP_NOISE,
-    ],
-    msrpKrw: 1390000,
-    released: 2013,
-  },
+  // macbook-pro-13 2013/2015/2016 제거 (Wave 182 9년 정책).
   {
     id: "macbook-air-13-2018",
     brand: "Apple",
@@ -2889,27 +2788,7 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
     msrpKrw: 1290000,
     released: 2017,
   },
-  {
-    id: "macbook-air-13-2015",
-    brand: "Apple",
-    category: "laptop",
-    laneKey: "macbook_air_13_2015",
-    modelName: "MacBook Air 13\" 2015 (Intel)",
-    aliases: ["맥북 에어 13 2015", "A1466"],
-    mustContain: [
-      ["맥북", "macbook"], ["에어", "air"],
-      ["13인치", "13 인치", "13형", "13\"", "13in"],
-      ["2015", "2015년형"],
-    ],
-    mustNotContain: [
-      "프로", " pro", "11인치", "11 인치", "12인치", "12 인치", "15인치", "15 인치", "15형", "16인치",
-      "2016", "2017", "2018",
-      "m1", "m2", "m3", "m4", "m5",
-      ...LAPTOP_NOISE,
-    ],
-    msrpKrw: 1190000,
-    released: 2015,
-  },
+  // macbook-air-13-2015 제거 (Wave 182 9년 정책).
   {
     id: "lg-gram-17-2024",
     brand: "LG",
@@ -3158,31 +3037,7 @@ export const CATALOG: Sku[] = [
     msrpKrw: 219000,
     released: 2022,
   },
-  {
-    // Wave 20 second pivot: Bose SoundLink Mini II (Marshall Emberton II 150k median 압축으로 pool 미달).
-    // msrp 219k (2015 모델). 중고 시세 50~130k → distribution wider → bandFromProfit 1~2 통과 가능.
-    // SoundLink Flex/Revolve/Color/Micro 변형은 mustNotContain로 분리.
-    id: "speaker-bose-soundlink-mini-ii",
-    brand: "Bose",
-    category: "speaker",
-    laneKey: "speaker_bose_soundlink_mini_ii",
-    modelName: "Bose SoundLink Mini II",
-    aliases: ["Bose SoundLink Mini II", "보스 사운드링크 미니 II", "Bose SoundLink Mini 2", "보스 사운드링크 미니 2", "사운드링크 미니2"],
-    mustContain: [["bose", "보스"], ["soundlink mini ii", "soundlink mini 2", "soundlinkmini2", "사운드링크 미니 ii", "사운드링크 미니 2", "사운드링크미니2", "사운드링크미니 2"]],
-    mustNotContain: [
-      ...SPEAKER_NOISE,
-      // SoundLink 다른 변형 분리
-      "flex", "플렉스", "revolve", "color", "micro", "마이크로",
-      // Mini I (1세대) 격리 — 미니 II만 lane
-      "mini i ", "soundlink mini i ", "사운드링크 미니 i ",
-      // 사운드바
-      "soundbar", "사운드바",
-      // 헤드폰/이어폰
-      "qc", "quietcomfort", "qc ultra",
-    ],
-    msrpKrw: 219000,
-    released: 2015,
-  },
+  // speaker-bose-soundlink-mini-ii 제거 (Wave 182 9년 정책, 2015 모델).
   {
     id: "speaker-jbl-boombox-2",
     brand: "JBL",
@@ -3449,18 +3304,7 @@ export const CATALOG: Sku[] = [
     msrpKrw: 4290000,
     released: 2023,
   },
-  {
-    id: "camera-sony-a5100",
-    brand: "Sony",
-    category: "camera",
-    laneKey: "camera_body_only_exact_model",
-    modelName: "Sony A5100",
-    aliases: ["Sony A5100", "소니 A5100", "ILCE-5100"],
-    mustContain: [["a5100", "ilce 5100"], ["바디", "바디만", "body"]],
-    mustNotContain: [...CAMERA_BODY_ONLY_NOISE],
-    msrpKrw: 698000,
-    released: 2014,
-  },
+  // camera-sony-a5100 제거 (Wave 182 9년 정책, 2014).
   {
     id: "camera-canon-eos-m6",
     brand: "Canon",
@@ -3485,18 +3329,7 @@ export const CATALOG: Sku[] = [
     msrpKrw: 6998000,
     released: 2021,
   },
-  {
-    id: "camera-canon-eos-6d",
-    brand: "Canon",
-    category: "camera",
-    laneKey: "camera_body_only_exact_model",
-    modelName: "Canon EOS 6D",
-    aliases: ["Canon EOS 6D", "캐논 EOS 6D"],
-    mustContain: [["eos 6d", "캐논 6d"], ["바디", "바디만", "body"]],
-    mustNotContain: [...CAMERA_BODY_ONLY_NOISE],
-    msrpKrw: 2490000,
-    released: 2012,
-  },
+  // camera-canon-eos-6d 제거 (Wave 182 9년 정책, 2012).
   {
     id: "camera-fujifilm-x-t4",
     brand: "Fujifilm",
@@ -4074,43 +3907,7 @@ export const CATALOG: Sku[] = [
     msrpKrw: 599000,
     released: 2023,
   },
-  {
-    id: "bose-qc45-headphones",
-    brand: "Bose",
-    category: "earphone",
-    laneKey: "bose_qc45",
-    modelName: "Bose QuietComfort 45 Headphones",
-    aliases: ["보스 QC45 헤드폰", "Bose QC45 Headphones", "Bose QuietComfort 45 Headphones"],
-    mustContain: [
-      ["보스", "bose"],
-      ["qc 45", "qc45", "quietcomfort 45"],
-      ["헤드폰", "headphone", "헤드셋"],
-    ],
-    mustNotContain: [
-      "qc35",
-      "qc 35",
-      "qc15",
-      "qc 15",
-      "qc20",
-      "qc 20",
-      "qc ultra",
-      "qc 울트라",
-      "quietcomfort 35",
-      "quietcomfort 울트라",
-      "quietcomfort ultra",
-      "quietcomfort earbuds",
-      "qc 이어버드",
-      "qc earbuds",
-      "이어버드",
-      "earbuds",
-      "earphone",
-      "soundlink",
-      "사운드링크",
-      ...HEADPHONE_NOISE,
-    ],
-    msrpKrw: 449000,
-    released: 2021,
-  },
+  // bose-qc45-headphones 제거 (Wave 182 중복 — bose-qc45 SKU와 동일 제품. id 짧은 것 유지).
   {
     id: "beats-studio-pro",
     brand: "Beats",
