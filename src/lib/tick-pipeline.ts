@@ -3992,8 +3992,11 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
         // Wave 175 (2026-05-17): 신발 한정 — fallbackMedian > 0 (batch median 계산됨)이면
         // market_stat_missing 박지 X. Wave 174에서 신발 batch threshold 2로 완화한 효과를
         // pool-policy block flag가 무효화하던 사각지대 차단.
-        const hasShoeFallback = parsed?.category === "shoe" && fallbackMedian > 0;
-        if (!hasShoeFallback) scoreFlags.push("market_stat_missing");
+        // Wave 175b (2026-05-17): referencePrice (unopened 매물 다나와 시세) 사용도 포함 —
+        // skuMedian > 0이면 시세 source 무엇이든 시세 있음. 검증 시점 priceGap > 0 매물 18건
+        // (unopened referencePrice case) 차단 발견.
+        const hasShoeUsableMedian = parsed?.category === "shoe" && skuMedian > 0;
+        if (!hasShoeUsableMedian) scoreFlags.push("market_stat_missing");
       } else if (marketStat.confidence === "low") scoreFlags.push("market_confidence_low");
     }
     if (parseConfidence > 0 && parseConfidence < 0.65) scoreFlags.push("option_parse_review");
