@@ -95,6 +95,10 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
   const [band, setBand] = useState<string>("");
   const [sku, setSku] = useState<string>("");
   const [sort, setSort] = useState("newest_added");
+  // Wave 176 (2026-05-17): 검색 — searchDraft는 input 입력 buffer, searchQuery는 실제 fetch 파라미터.
+  // Enter 또는 🔍 버튼 클릭 시 draft → query 적용 (typing 마다 fetch 안 함, UX 부담 ↓).
+  const [searchDraft, setSearchDraft] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchPage = useCallback(async () => {
     setLoading(true);
@@ -103,6 +107,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
       const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), status, sort });
       if (band) params.set("band", band);
       if (sku) params.set("sku", sku);
+      if (searchQuery) params.set("q", searchQuery);
       const res = await fetch(`${endpoint}?${params}`, { credentials: "include" });
       if (!res.ok) {
         const body = (await res.json().catch(() => null)) as { error?: string } | null;
@@ -117,7 +122,19 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, status, band, sku, sort, endpoint]);
+  }, [page, pageSize, status, band, sku, sort, searchQuery, endpoint]);
+
+  // Wave 176: Enter / 🔍 버튼 / X 클릭 시 draft → query 적용 + 페이지 리셋.
+  const applySearch = useCallback(() => {
+    setSearchQuery(searchDraft.trim());
+    setPage(1);
+  }, [searchDraft]);
+
+  const clearSearch = useCallback(() => {
+    setSearchDraft("");
+    setSearchQuery("");
+    setPage(1);
+  }, []);
 
   useEffect(() => {
     void fetchPage();
@@ -200,7 +217,43 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
           </div>
         )}
 
-        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+        {/* Wave 176 (2026-05-17): 매물명/SKU명/comparable_key/pid 통합 검색. Enter 또는 🔍 클릭. */}
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+          <div className="relative flex items-center">
+            <input
+              type="search"
+              value={searchDraft}
+              onChange={(e) => setSearchDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") applySearch(); }}
+              placeholder="🔍 매물명/SKU/pid 검색 (예: 327, Gazelle, shoe|nb)"
+              className="w-72 rounded-md border border-zinc-300 bg-white px-2 py-1 pr-7 dark:border-zinc-700 dark:bg-zinc-800"
+            />
+            {searchDraft && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                title="검색 지우기"
+                className="absolute right-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={applySearch}
+            disabled={loading}
+            className="rounded-md border border-emerald-700 bg-emerald-700 px-3 py-1 font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+          >
+            검색
+          </button>
+          {searchQuery && (
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+              검색: &quot;{searchQuery}&quot;
+            </span>
+          )}
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2 text-xs">
           <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
             {STATUS_OPTIONS.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
           </select>

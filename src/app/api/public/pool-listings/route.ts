@@ -33,6 +33,8 @@ export async function GET(req: NextRequest) {
   const bandFilter = url.searchParams.get("band");
   const categoryFilter = url.searchParams.get("category");
   const skuFilter = url.searchParams.get("sku")?.trim() || null;
+  // Wave 176 (2026-05-17): 검색어 — admin route와 동일 (peek-pool도 검색).
+  const searchQuery = url.searchParams.get("q")?.trim() || null;
   const sort = url.searchParams.get("sort") ?? "profit_high";
 
   const orderClauseMap: Record<string, string> = {
@@ -59,6 +61,39 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
     }
     filter += `&pid=in.(${skuPids.join(",")})`;
+  }
+
+  // Wave 176: 검색어 ILIKE (name + sku_name + comparable_key) + pid 정확 매칭.
+  let searchPids: number[] | null = null;
+  if (searchQuery) {
+    const escaped = encodeURIComponent(`*${searchQuery}*`);
+    const [nameRes, parsedRes] = await Promise.all([
+      restFetch(
+        `${tableUrl("mvp_listings")}?select=pid&or=(name.ilike.${escaped},sku_name.ilike.${escaped})&limit=5000`,
+        { headers: serviceHeaders() },
+      ),
+      restFetch(
+        `${tableUrl("mvp_listing_parsed")}?select=pid&comparable_key=ilike.${escaped}&limit=5000`,
+        { headers: serviceHeaders() },
+      ),
+    ]);
+    const pidsFromListings = ((await nameRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+    const pidsFromParsed = ((await parsedRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+    const pidExact = Number(searchQuery);
+    const pidExactArr = Number.isFinite(pidExact) && pidExact > 0 ? [pidExact] : [];
+    searchPids = Array.from(new Set([...pidsFromListings, ...pidsFromParsed, ...pidExactArr]));
+    if (searchPids.length === 0) {
+      return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
+    }
+    if (skuPids) {
+      const skuSet = new Set(skuPids);
+      searchPids = searchPids.filter((p) => skuSet.has(p));
+      if (searchPids.length === 0) {
+        return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
+      }
+      filter = filter.replace(/&pid=in\.\([^)]+\)/, "");
+    }
+    filter += `&pid=in.(${searchPids.join(",")})`;
   }
 
   try {

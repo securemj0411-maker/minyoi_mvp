@@ -45,6 +45,9 @@ export async function GET(req: NextRequest) {
   const bandFilter = url.searchParams.get("band");
   const categoryFilter = url.searchParams.get("category");
   const skuFilter = url.searchParams.get("sku")?.trim() || null;
+  // Wave 176 (2026-05-17): 검색어 — 매물명/SKU명/comparable_key/pid 통합 검색.
+  // 운영자가 특정 매물/모델 찾을 때 (예: "327", "Gazelle", "shoe|nb_327").
+  const searchQuery = url.searchParams.get("q")?.trim() || null;
   const sort = url.searchParams.get("sort") ?? "profit_high";
 
   // Sort options
@@ -76,6 +79,43 @@ export async function GET(req: NextRequest) {
     }
     // PostgREST in 필터 — 너무 많으면 URL 한계. 일단 5000 limit.
     filter += `&pid=in.(${skuPids.join(",")})`;
+  }
+
+  // Wave 176 (2026-05-17): 검색어 — listings(name/sku_name) + parsed(comparable_key) + 정확 pid 매칭.
+  // ILIKE %query% 패턴. SKU filter와 함께 박힐 수 있어 intersect 처리.
+  let searchPids: number[] | null = null;
+  if (searchQuery) {
+    const escaped = encodeURIComponent(`*${searchQuery}*`); // PostgREST ilike 와일드카드는 `*`
+    const [nameRes, parsedRes] = await Promise.all([
+      restFetch(
+        `${tableUrl("mvp_listings")}?select=pid&or=(name.ilike.${escaped},sku_name.ilike.${escaped})&limit=5000`,
+        { headers: serviceHeaders() },
+      ),
+      restFetch(
+        `${tableUrl("mvp_listing_parsed")}?select=pid&comparable_key=ilike.${escaped}&limit=5000`,
+        { headers: serviceHeaders() },
+      ),
+    ]);
+    const pidsFromListings = ((await nameRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+    const pidsFromParsed = ((await parsedRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+    const pidExact = Number(searchQuery);
+    const pidExactArr = Number.isFinite(pidExact) && pidExact > 0 ? [pidExact] : [];
+    searchPids = Array.from(new Set([...pidsFromListings, ...pidsFromParsed, ...pidExactArr]));
+    if (searchPids.length === 0) {
+      return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
+    }
+    // skuPids 와 intersect (둘 다 적용 시 AND 의미)
+    if (skuPids) {
+      const skuSet = new Set(skuPids);
+      searchPids = searchPids.filter((p) => skuSet.has(p));
+      if (searchPids.length === 0) {
+        return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
+      }
+      // 기존 skuPids in 필터를 덮어쓰지 않고 search 결과로 더 좁힘.
+      // PostgREST는 같은 컬럼 중복 in 필터를 잘 못 처리 → filter 재구성.
+      filter = filter.replace(/&pid=in\.\([^)]+\)/, "");
+    }
+    filter += `&pid=in.(${searchPids.join(",")})`;
   }
 
   try {
