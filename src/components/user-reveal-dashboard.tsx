@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
+import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -675,6 +676,40 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
                   ? `+${item.expectedProfitMax.toLocaleString("ko-KR")}원`
                   : `+${item.expectedProfitMin.toLocaleString("ko-KR")}~${item.expectedProfitMax.toLocaleString("ko-KR")}원`}
               </div>
+              {/* 2026-05-17 Phase 2: verdict chips (근거 강조) — RevealItem 가진 데이터 활용. */}
+              {(() => {
+                const verdicts = buildVerdicts({
+                  price: item.price,
+                  skuMedian: item.marketBasis?.medianPrice ?? null,
+                  expectedProfitMin: item.expectedProfitMin,
+                  expectedProfitMax: item.expectedProfitMax,
+                  confidence: item.confidence,
+                  marketSampleCount: item.marketBasis?.sampleCount ?? null,
+                  marketConfidenceLabel: (item.marketBasis?.confidence as "high" | "medium" | "low" | null) ?? null,
+                  medianHoursToSold: item.velocityBasis?.medianHoursToSold ?? null,
+                  soldSampleCount: item.marketBasis?.soldSampleCount ?? null,
+                  flowCount24h: item.skuListingFlow?.count24h ?? null,
+                  flowAvgPerDay7d: item.skuListingFlow?.avgPerDay7d ?? null,
+                  sellerReviewRating: item.sellerReviewRating,
+                  sellerReviewCount: item.sellerReviewCount,
+                  freeShipping: item.freeShipping,
+                  favoriteCount: item.favoriteCount,
+                  lastSeenAt: item.revealedAt,
+                  descriptionPreview: item.descriptionPreview,
+                });
+                return verdicts.length > 0 ? (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {verdicts.map((v) => (
+                      <span
+                        key={v.label}
+                        className={`rounded-full border px-1.5 py-0.5 text-[9px] font-black ${VERDICT_TONE_CLASS[v.tone]}`}
+                      >
+                        {v.label}
+                      </span>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
               {item.feedbackType ? (
                 <div className="mt-1 truncate text-[11px] text-zinc-500 dark:text-zinc-400">
                   피드백: {item.feedbackType}{item.feedbackNote ? ` · ${item.feedbackNote}` : ""}
