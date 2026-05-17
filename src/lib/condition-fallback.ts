@@ -45,13 +45,20 @@ export function conditionFallbackChain(target: ConditionClass | null | undefined
  * @param byCondition condition_class → row map
  * @param target 매물 condition_class
  * @param getSamples row 에서 sample 수 추출 (sample 부족 fallback 트리거)
- * @param minSamples 충분한 sample 기준 (default 3)
+ * @param minSamples 충분한 sample 기준 (default 1)
+ *
+ * Wave 193 (2026-05-18): default 3 → 1. 사용자 보고 — clean 매물 (S급 battery_perfect)
+ *   에 normal 시세 (110K) fallback 으로 표시. 실제 clean 시세 184K 인데 sample 1건 이라
+ *   minSamples=3 미달 → normal 매칭 + 시세 역전 bias (normal 3건 우연히 저가).
+ *   변경: minSamples 1 로 낮춤. condition-specific 시세 우선. fallbackUsed=false 로
+ *   "정확 매칭" 명시 (UI 의 "인접 등급 fallback" 라벨 차단). outlier 위험은 UI 신뢰도
+ *   표시 (sample count) 로 사용자 인지.
  */
 export function pickByConditionFallback<T>(
   byCondition: Map<ConditionClass, T> | undefined,
   target: ConditionClass | null | undefined,
   getSamples: (row: T) => number,
-  minSamples = 3,
+  minSamples = 1,
 ): { row: T | undefined; conditionClass: ConditionClass | null; fallbackUsed: boolean } {
   if (!byCondition || byCondition.size === 0) {
     return { row: undefined, conditionClass: null, fallbackUsed: false };
