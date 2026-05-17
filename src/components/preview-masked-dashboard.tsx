@@ -30,7 +30,8 @@ type IconComponent = (props: SVGProps<SVGSVGElement>) => React.ReactElement;
 type PreviewItem = {
   slot: number;
   maskedName: string;
-  // 2026-05-17 보안: thumbnailUrl 제거 (서버 차단). frontend = SVG icon fallback 만.
+  // 2026-05-17: blurredImage = 서버 sharp 처리된 base64 (원본 URL 노출 X). DevTools 우회 불가.
+  blurredImage: string | null;
   category: string;
   conditionClass: string | null;
   price: number;
@@ -190,9 +191,17 @@ export default function PreviewMaskedDashboard() {
                   className="block rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-4 transition hover:border-[var(--brand-accent)] hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-700"
                 >
                   <div className="flex items-start gap-3">
-                    {/* 2026-05-17 보안: 원본 image URL 차단 (DevTools 우회 risk). SVG icon + gradient만. */}
+                    {/* 2026-05-17 보안: 서버 sharp blur 된 base64 — 원본 URL 노출 X. DevTools 우회 불가. */}
                     <div className={`relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br ${gradient} text-zinc-500 dark:text-zinc-400`}>
-                      <CategoryIcon width={36} height={36} />
+                      {item.blurredImage ? (
+                        <img
+                          src={item.blurredImage}
+                          alt={item.category}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <CategoryIcon width={36} height={36} />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
@@ -202,8 +211,9 @@ export default function PreviewMaskedDashboard() {
                         </span>
                         <ConditionChip conditionClass={item.conditionClass} />
                       </div>
-                      {/* 매물명 — 숫자만 마스킹 (단어 그대로). 진짜 매물 느낌 유지. */}
-                      <div className="mt-1 truncate text-sm font-bold text-[#223127] dark:text-zinc-100">
+                      {/* 매물명 — 서버에서 마스킹 ("갤** S** 울**") + CSS blur 시각 효과.
+                          데이터는 이미 마스킹 (DevTools 봐도 마스킹 string), blur 는 visual 강조. */}
+                      <div className="mt-1 select-none truncate text-sm font-bold text-[#223127] blur-[2px] dark:text-zinc-100">
                         {item.maskedName}
                       </div>
                       {/* 매입 · 시세 (대시보드 패턴) */}

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 // 2026-05-17: 비로그인 사용자용 마스킹 매물 preview API.
@@ -17,6 +18,26 @@ export const revalidate = 0;
 
 const CACHE_SECONDS = 60;
 const PREVIEW_COUNT = 5;
+
+// 2026-05-17: 진짜 thumbnail 서버 사이드 blur 처리.
+// 원본 URL 노출 X → blur 된 base64 data URL 만 클라이언트 전송. DevTools 우회 차단.
+// sharp blur sigma=20 (강한 블러 — 식별 불가능 + 사진 느낌 유지).
+async function fetchAndBlurImage(url: string | null | undefined): Promise<string | null> {
+  if (!url) return null;
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    const blurred = await sharp(buf)
+      .resize(160, 160, { fit: "cover" })
+      .blur(20)
+      .jpeg({ quality: 60 })
+      .toBuffer();
+    return `data:image/jpeg;base64,${blurred.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
 
 // 2026-05-17: 매물명 마스킹 강화 — 사용자 보안 우려.
 // 단어별 첫 글자만 보이고 나머지 * 처리 (식별 불가능 + 카테고리 느낌만 유지).
@@ -92,14 +113,19 @@ export async function GET() {
     const raws = (await rawRes.json()) as RawRow[];
     const rawByPid = new Map<number, RawRow>(raws.map((r) => [r.pid, r]));
 
-    // 응답 — 매물명 부분 마스킹 + 실제 thumbnail (UI에서 CSS blur 약하게 적용).
+    // 2026-05-17: 서버 사이드 blur — 진짜 thumbnail fetch + sharp blur(20) + base64.
+    // 원본 URL 클라이언트 노출 X. DevTools 봐도 blur 된 data URL 만 보임.
+    const blurredImages = await Promise.all(
+      selected.map((row) => fetchAndBlurImage(rawByPid.get(row.pid)?.thumbnail_url)),
+    );
+
     const items = selected.map((row, idx) => {
       const raw = rawByPid.get(row.pid);
       return {
         slot: idx + 1,
         maskedName: maskName(raw?.name ?? ""),
-        // 2026-05-17 보안: 원본 thumbnailUrl 응답 차단 (CSS blur 만이면 DevTools 우회 가능).
-        // frontend = SVG icon + gradient fallback. 진짜 이미지 식별 risk 0.
+        // 진짜 사진 blur 처리 base64 (원본 URL X) — DevTools 우회 불가.
+        blurredImage: blurredImages[idx],
         category: row.category ?? "other",
         conditionClass: row.condition_class,
         price: raw?.price ?? 0,
