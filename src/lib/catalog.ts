@@ -59,15 +59,30 @@ export type Sku = {
 // Wave 188 internal test (2026-05-18): 모든 신규 카테고리 (drone/perfume/kickboard/lego/home_appliance 헤어 기기)
 // 공통 false positive 차단 — 굿즈/액세서리 단품/케이스/거치대/가품.
 // production sweep 결과 오염률 50% 발견 → 일관 적용으로 10~15% 목표.
+// Wave 188 follow-up (2026-05-18): production sweep 재실행 → 발견된 추가 패턴 보강
+//  - "포토카트" (오타), "포카 2종" (포카 세트 형태)
+//  - "노즐 툴", "툴 키트" (Dyson 슈퍼소닉 액세서리 단품)
+//  - "필터 키트", "ND 필터", "ND16/64/256", "K&F" (DJI 드론 액세서리 100% FP)
+//  - "HS01 풀세트" (Airwrap 구형 — 다른 SKU)
 const WAVE188_NEW_CATEGORY_NOISE = [
   // 굿즈 / 콜라보 (포토카드 / 박보검 다이슨 콜라보 등)
   "포토카드", "포카", "특전", "굿즈", "한정 굿즈", "박보검",
+  "포토카트", "포카 2종", "포카 세트", "포카2종", "포토카드 2종",
   // 가품 / 카피 브랜드
   "휙", "다이슨 저렴이", "다이슨 짝퉁", "이미테이션", "정품 아님", "lepin", "카피", "복제",
   // 액세서리 단품 (공통)
   "거치대", "스탠드만", "벽거치", "케이스만", "정품 케이스", "박스만",
   "충전기만", "어댑터만", "케이블만", "배터리만",
   "필름만", "보호 필름만", "보호 필름 단품",
+  // Dyson 슈퍼소닉 — 노즐/툴 단품 (본품 X)
+  "노즐 툴", "노즐 툴 세트", "툴 세트", "툴 키트", "툴만",
+  // DJI 드론 — ND/필터 키트 단품 (본품 X)
+  "필터 키트", "nd 필터", "nd16", "nd64", "nd256", "k&f", "k & f", "kf concept",
+];
+
+// DJI/GoPro drone-class 필터 액세서리 단품 (본품 X). drone SKU spread 용.
+const DRONE_FILTER_ACCESSORY_NOISE = [
+  "필터만", "필터 단품", "렌즈 필터", "보호 필터", "uv 필터", "cpl", "2in1 필터", "필터 세트",
 ];
 
 const COMMON_PRODUCT_NOISE = [
@@ -4157,23 +4172,20 @@ export const CATALOG: Sku[] = [
       ["헤어드라이어", "드라이어", "본체", "본품", "풀세트", "hd08", "hd15"],
     ],
     // Wave 188 internal test (2026-05-18): production sweep 으로 발견한 false positive 차단.
+    // Wave 188 follow-up: sweep 재실행 결과 HD08 FP 65% (12/26). "노즐 툴 세트" / "박보검 포토카드 2종" 잡음.
+    // → WAVE188_NEW_CATEGORY_NOISE spread 추가.
     mustNotContain: [
       "origin", "오리진", "에어랩", "airwrap", "코랄", "corrale",
       "이미테이션", "정품 아님", "가품",
       // 액세서리/부품 단품
-      "노즐만", "노즐 세트", "노즐 툴", "툴 세트", "툴 일괄",
-      "필터만", "디퓨저만", "어댑터만",
-      "거치대", "거치 대", "스탠드만", "벽거치",
-      "케이스만", "정품 케이스",
-      "박스만", "충전기만", "부품",
-      // 가품 / 카피 브랜드
-      "휙", "다이슨 저렴이", "다이슨 짝퉁",
-      // 굿즈 (포토카드 등)
-      "포토카드", "포카", "특전", "굿즈", "박보검",
+      "노즐만", "노즐 세트", "툴 일괄",
+      "필터만", "디퓨저만",
+      "거치 대", "7구 거치",
       // 트래블판 (해외 spec) — 한국 본품 시세와 분리
       "트래블", "travel",
       "수리", "고장", "충전 안됨", "침수",
       "매입", "삽니다", "구합니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 550000,
     released: 2018,
@@ -4211,23 +4223,24 @@ export const CATALOG: Sku[] = [
       ["본체", "본품", "풀세트", "컴플리트", "complete", "멀티스타일러", "스타일러"],
     ],
     // Wave 188 internal test (2026-05-18): production sweep 추가 false positive 차단.
+    // Wave 188 follow-up: sweep 재실행 결과 HS05 FP 37% (8/24). "HS01 풀세트" (구형 — 별 SKU), "휙 다이슨 저렴이" 잡음.
+    // → HS01 / HS02 / HS03 / HS04 구형 차단 + WAVE188_NEW_CATEGORY_NOISE spread 추가.
     mustNotContain: [
       "i.d.", " id ", "iD", "코안다", "co-anda", "coanda", "2x", "hs08",
       "오리진", "origin", "hs09",
+      // Wave 188 follow-up: 구형 (HS01/02/03/04) — 다른 시세 라인이므로 차단
+      "hs01", "hs02", "hs03", "hs04",
       "슈퍼소닉", "supersonic", "코랄", "corrale",
       "이미테이션", "정품 아님", "가품",
       // 액세서리/어태치먼트 단품
-      "어태치먼트만", "노즐만", "디퓨저만", "어댑터만",
-      "거치대", "스탠드만", "벽거치", "7구 거치",
+      "어태치먼트만", "노즐만", "디퓨저만",
+      "7구 거치",
       "롱배럴 단품", "롱배럴만", "양방향 롱배럴 40mm 미사용", "양방향 롱배럴 단품",
       "브러쉬", "브러시", "스무딩",
-      "박스만", "케이스만", "충전기만", "부품",
-      // 가품
-      "휙", "다이슨 저렴이", "다이슨 짝퉁",
-      // 굿즈
-      "포토카드", "포카", "특전", "굿즈",
+      "부품",
       "수리", "고장", "침수",
       "매입", "삽니다", "구합니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 699000,
     released: 2022,
@@ -6109,7 +6122,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Mini 2",
     aliases: ["DJI Mini 2", "디제이아이 미니 2"],
     mustContain: [["dji", "디제이아이"], ["mini 2", "mini2", "미니 2", "미니2"]],
-    mustNotContain: ["mini 3", "mini 4", "mini se", "mavic", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["mini 3", "mini 4", "mini se", "mavic", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...DRONE_FILTER_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2020,
   },
   {
@@ -6118,16 +6131,25 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Mini 3 Pro",
     aliases: ["DJI Mini 3 Pro", "DJI 미니 3 프로"],
     mustContain: [["dji", "디제이아이"], ["mini 3", "mini3", "미니 3", "미니3"], ["pro", "프로"]],
-    mustNotContain: ["mini 4", "mavic", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["mini 4", "mavic", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...DRONE_FILTER_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1099000, released: 2022,
   },
   {
+    // Wave 188 follow-up (2026-05-18): production sweep FP 100% (2/2). 모든 매물이 ND/K&F 필터 키트 단품.
+    // → 필터 액세서리 단품 직접 차단 + WAVE188 spread (이미 k&f / nd 필터 / 필터 키트 포함).
     id: "dji-mini-4-pro",
     brand: "DJI", category: "drone", laneKey: "dji_mini_4_pro",
     modelName: "DJI Mini 4 Pro",
     aliases: ["DJI Mini 4 Pro", "DJI 미니 4 프로"],
     mustContain: [["dji", "디제이아이"], ["mini 4", "mini4", "미니 4", "미니4"], ["pro", "프로"]],
-    mustNotContain: ["mini 3", "mini 2", "mavic", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: [
+      "mini 3", "mini 2", "mavic", "air", "avata",
+      "fly more", "콤보", "combo",
+      "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만",
+      "고장", "추락", "파손", "수리", "매입", "삽니다",
+      ...DRONE_FILTER_ACCESSORY_NOISE,
+      ...WAVE188_NEW_CATEGORY_NOISE,
+    ],
     msrpKrw: 1199000, released: 2024,
   },
   {
@@ -6136,7 +6158,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Mavic 3",
     aliases: ["DJI Mavic 3", "DJI 매빅 3"],
     mustContain: [["dji", "디제이아이"], ["mavic 3", "mavic3", "매빅 3", "매빅3"]],
-    mustNotContain: ["mavic 3 pro", "mavic 3 classic", "mavic 3 cine", "mavic3pro", "mavic3classic", "매빅 3 프로", "매빅 3 클래식", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["mavic 3 pro", "mavic 3 classic", "mavic 3 cine", "mavic3pro", "mavic3classic", "매빅 3 프로", "매빅 3 클래식", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...DRONE_FILTER_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 2399000, released: 2021,
   },
   {
@@ -6145,7 +6167,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Mavic 3 Pro",
     aliases: ["DJI Mavic 3 Pro", "DJI 매빅 3 프로"],
     mustContain: [["dji", "디제이아이"], ["mavic 3", "mavic3", "매빅 3", "매빅3"], ["pro", "프로"]],
-    mustNotContain: ["mavic 3 classic", "mavic 3 cine", "매빅 3 클래식", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["mavic 3 classic", "mavic 3 cine", "매빅 3 클래식", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...DRONE_FILTER_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 3099000, released: 2023,
   },
   {
@@ -6154,7 +6176,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Mavic 3 Classic",
     aliases: ["DJI Mavic 3 Classic", "DJI 매빅 3 클래식"],
     mustContain: [["dji", "디제이아이"], ["mavic 3", "mavic3", "매빅 3", "매빅3"], ["classic", "클래식"]],
-    mustNotContain: ["mavic 3 pro", "mavic 3 cine", "매빅 3 프로", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["mavic 3 pro", "mavic 3 cine", "매빅 3 프로", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...DRONE_FILTER_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1899000, released: 2022,
   },
   {
@@ -6165,7 +6187,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["dji", "디제이아이"], ["air 2s", "air2s", "에어 2s", "에어2s"]],
     // Wave 184 fix: "air 2 " (trailing space) 박지 X — tokenHit trim 후 "air 2" 자기차단.
     // dji-air-2 (Mavic Air 2) 는 별도 모델명 매칭 X (catalog 없음). air 3/3s 만 격리.
-    mustNotContain: ["air 3", "air 3s", "에어 3", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["air 3", "air 3s", "에어 3", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...DRONE_FILTER_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1199000, released: 2021,
   },
   {
@@ -6174,7 +6196,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Air 3",
     aliases: ["DJI Air 3", "DJI 에어 3"],
     mustContain: [["dji", "디제이아이"], ["air 3", "air3", "에어 3", "에어3"]],
-    mustNotContain: ["air 3s", "air3s", "에어 3s", "air 2s", "에어 2s", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["air 3s", "air3s", "에어 3s", "air 2s", "에어 2s", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...DRONE_FILTER_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1499000, released: 2023,
   },
   {
@@ -6183,7 +6205,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Air 3S",
     aliases: ["DJI Air 3S", "DJI 에어 3S"],
     mustContain: [["dji", "디제이아이"], ["air 3s", "air3s", "에어 3s", "에어3s"]],
-    mustNotContain: ["air 2s", "에어 2s", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["air 2s", "에어 2s", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...DRONE_FILTER_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1599000, released: 2024,
   },
   {
@@ -6193,7 +6215,7 @@ export const CATALOG: Sku[] = [
     aliases: ["DJI Avata", "DJI 아바타"],
     // Wave 185 internal test (2026-05-18): DJI 명시 mustContain — "아바타" 단독 (영화 / PS5 게임) false positive 차단.
     mustContain: [["dji", "디제이아이"], ["dji avata", "dji 아바타", "디제이아이 아바타"]],
-    mustNotContain: ["avata 2", "아바타 2", "mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", "영화", "포스터", "아트카드", "ps5", "ps4", "프론티어", "판도라", "필름", "굿즈", "티켓", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["avata 2", "아바타 2", "mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", "영화", "포스터", "아트카드", "ps5", "ps4", "프론티어", "판도라", "필름", "굿즈", "티켓", ...DRONE_FILTER_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1099000, released: 2022,
   },
   {
@@ -6202,7 +6224,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Avata 2",
     aliases: ["DJI Avata 2", "DJI 아바타 2"],
     mustContain: [["dji", "디제이아이"], ["avata 2", "avata2", "dji 아바타 2", "디제이아이 아바타 2"]],
-    mustNotContain: ["mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", "영화", "포스터", "아트카드", "ps5", "ps4", "프론티어", "판도라", "필름", "굿즈", "티켓", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", "영화", "포스터", "아트카드", "ps5", "ps4", "프론티어", "판도라", "필름", "굿즈", "티켓", ...DRONE_FILTER_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1299000, released: 2024,
   },
   // DJI 액션캠 / 포켓
