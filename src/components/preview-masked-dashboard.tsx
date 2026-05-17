@@ -3,6 +3,7 @@
 // 2026-05-17: 비로그인 사용자 메인 페이지 — 마스킹된 매물 5개 + 로그인 CTA.
 // 사용자 의도: 즉시 가치 인식 ("와 이게 돈 되는 거구나") + curiosity gap → 가입 motivation.
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ConditionChip } from "@/components/condition-chip";
@@ -10,6 +11,7 @@ import { ConditionChip } from "@/components/condition-chip";
 type PreviewItem = {
   slot: number;
   maskedName: string;
+  thumbnailUrl: string | null;
   category: string;
   conditionClass: string | null;
   price: number;
@@ -133,9 +135,20 @@ export default function PreviewMaskedDashboard() {
                   className="block rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-4 transition hover:border-[var(--brand-accent)] hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-700"
                 >
                   <div className="flex items-start gap-3">
-                    {/* 카테고리별 emoji + gradient (실제 이미지 X — 마스킹). */}
-                    <div className={`relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br ${icon.gradient}`}>
-                      <span className="text-4xl">{icon.emoji}</span>
+                    {/* 진짜 thumbnail + 약한 blur (구글 이미지 검색 방해, 사용자는 매물 인식 가능). */}
+                    <div className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br ${icon.gradient}`}>
+                      {item.thumbnailUrl ? (
+                        <Image
+                          src={item.thumbnailUrl}
+                          alt={item.category}
+                          fill
+                          sizes="80px"
+                          unoptimized
+                          className="object-cover blur-[4px]"
+                        />
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center text-4xl">{icon.emoji}</span>
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">

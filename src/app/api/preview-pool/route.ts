@@ -40,6 +40,7 @@ type RawRow = {
   pid: number;
   name: string;
   price: number;
+  thumbnail_url: string | null;
 };
 
 export async function GET() {
@@ -79,19 +80,20 @@ export async function GET() {
       });
     }
 
-    // 매물명 + 가격 fetch.
+    // 매물명 + 가격 + 썸네일 fetch.
     const pids = selected.map((r) => r.pid);
-    const rawUrl = `${tableUrl("mvp_listings")}?select=pid,name,price&pid=in.(${pids.join(",")})`;
+    const rawUrl = `${tableUrl("mvp_listings")}?select=pid,name,price,thumbnail_url&pid=in.(${pids.join(",")})`;
     const rawRes = await restFetch(rawUrl, { headers });
     const raws = (await rawRes.json()) as RawRow[];
     const rawByPid = new Map<number, RawRow>(raws.map((r) => [r.pid, r]));
 
-    // 응답 — 마스킹된 정보만.
+    // 응답 — 매물명 부분 마스킹 + 실제 thumbnail (UI에서 CSS blur 약하게 적용).
     const items = selected.map((row, idx) => {
       const raw = rawByPid.get(row.pid);
       return {
         slot: idx + 1,
         maskedName: maskName(raw?.name ?? ""),
+        thumbnailUrl: raw?.thumbnail_url ?? null,
         category: row.category ?? "other",
         conditionClass: row.condition_class,
         price: raw?.price ?? 0,
