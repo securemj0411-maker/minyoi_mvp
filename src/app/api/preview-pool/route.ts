@@ -195,7 +195,8 @@ export async function GET() {
     const [marketRes, velocityRes] = comparableKeys.length > 0
       ? await Promise.all([
         restFetch(
-          `${tableUrl("mvp_market_price_daily")}?select=comparable_key,sold_sample_count&comparable_key=in.(${comparableKeys.map(encodeURIComponent).join(",")})&order=date.desc&limit=${comparableKeys.length * 8}`,
+          // 2026-05-17: date + condition_class 별로 row 분산되므로 select 에 date 포함 + 합산 처리.
+          `${tableUrl("mvp_market_price_daily")}?select=comparable_key,condition_class,sold_sample_count,date&comparable_key=in.(${comparableKeys.map(encodeURIComponent).join(",")})&order=date.desc&limit=${comparableKeys.length * 10}`,
           { headers },
         ),
         restFetch(
@@ -206,12 +207,21 @@ export async function GET() {
       : [null, null];
     const soldByKey = new Map<string, number>();
     if (marketRes) {
-      const rows = (await marketRes.json()) as Array<{ comparable_key: string; sold_sample_count: number | null }>;
+      // 2026-05-17 fix: 같은 comparable_key + 최신 date 의 모든 condition_class sold 합산.
+      // 이전: 첫 row 만 사용 → condition 별 분산으로 threshold (3) 못 넘김.
+      // 새: latest date 의 4-5 condition row 합산 → 진짜 SKU 수요 표현.
+      const rows = (await marketRes.json()) as Array<{ comparable_key: string; sold_sample_count: number | null; date: string }>;
+      const latestByKey = new Map<string, { date: string; total: number }>();
       for (const r of rows) {
-        if (!soldByKey.has(r.comparable_key) && r.sold_sample_count != null) {
-          soldByKey.set(r.comparable_key, r.sold_sample_count);
+        if (r.sold_sample_count == null) continue;
+        const cur = latestByKey.get(r.comparable_key);
+        if (!cur || r.date > cur.date) {
+          latestByKey.set(r.comparable_key, { date: r.date, total: r.sold_sample_count });
+        } else if (r.date === cur.date) {
+          cur.total += r.sold_sample_count;
         }
       }
+      for (const [k, v] of latestByKey) soldByKey.set(k, v.total);
     }
     const velocityByKey = new Map<string, number>();
     if (velocityRes) {
