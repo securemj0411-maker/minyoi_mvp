@@ -120,6 +120,10 @@ export default function AdminClassificationBrowser() {
         alert(`override 실패: ${(j as { error?: string }).error ?? r.status}`);
         return;
       }
+      const j = (await r.json()) as { skuRecalculated?: string | null; override?: string | null };
+      if (j.override === "normal" && j.skuRecalculated == null) {
+        alert("⚠️ catalog 매칭 실패 — sku_id 재계산 안 됨. 풀 진입 안 함. catalog.ts에 SKU 등록 필요.");
+      }
       await fetchData();
     } finally {
       setOverrideBusy(null);
