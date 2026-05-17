@@ -35,6 +35,10 @@ type RevealRow = {
   source?: string | null;
   expected_profit_min: number;
   expected_profit_max: number;
+  // Wave 190 (2026-05-18): 시세 갱신 시 자동 sync 되는 current profit + 무효화 timestamp.
+  current_profit_min: number | null;
+  current_profit_max: number | null;
+  market_invalidated_at: string | null;
   confidence: number;
   link_clicked_at: string | null;
   revealed_at: string;
@@ -201,7 +205,7 @@ export async function GET(req: Request) {
   const query = normalizeSearch(url.searchParams.get("q") ?? "");
   const encodedUserRef = encodeURIComponent(userRef);
   const reveals = await loadJson<RevealRow[]>(
-    `${tableUrl("mvp_pack_reveals")}?select=pid,pack_open_id,source,expected_profit_min,expected_profit_max,confidence,link_clicked_at,revealed_at&user_ref=eq.${encodedUserRef}&order=revealed_at.desc&limit=${MAX_REVEAL_SCAN}`,
+    `${tableUrl("mvp_pack_reveals")}?select=pid,pack_open_id,source,expected_profit_min,expected_profit_max,current_profit_min,current_profit_max,market_invalidated_at,confidence,link_clicked_at,revealed_at&user_ref=eq.${encodedUserRef}&order=revealed_at.desc&limit=${MAX_REVEAL_SCAN}`,
   );
   const pids = [...new Set(reveals.map((row) => Number(row.pid)).filter(Number.isFinite))];
   const packOpenIds = [...new Set(reveals.map((row) => Number(row.pack_open_id)).filter(Number.isFinite))];
@@ -319,6 +323,9 @@ export async function GET(req: Request) {
       const skuName = raw?.sku_name ?? null;
       const skuId = raw?.sku_id ?? null;
       // Wave 189 (2026-05-18): 실시간 marketBasis 계산 후 marketGapKrw / marketStale 박음.
+      // Wave 190 (2026-05-18): DB 의 current_profit_* / market_invalidated_at 우선 사용.
+      //   market-worker 후 RPC `recompute_reveal_current_profits` 가 자동 갱신 (Wave 191).
+      //   DB column null 이면 (옛 reveal / 아직 cron 미실행) marketBasis 실시간 계산 fallback.
       const computedMarketBasis = comparableKey
         ? marketBasisForCandidate(
             comparableKey,
@@ -328,9 +335,14 @@ export async function GET(req: Request) {
           )
         : null;
       const priceNum = Number(raw?.price ?? 0);
-      const medianPrice = computedMarketBasis?.medianPrice ?? null;
-      const marketGapKrw = medianPrice != null && priceNum > 0 ? medianPrice - priceNum : null;
-      const marketStale = marketGapKrw != null && marketGapKrw < 0;
+      const dbCurrentProfit = reveal.current_profit_min ?? null;
+      const dbMarketInvalidatedAt = reveal.market_invalidated_at ?? null;
+      const fallbackMedian = computedMarketBasis?.medianPrice ?? null;
+      const fallbackGap = fallbackMedian != null && priceNum > 0 ? fallbackMedian - priceNum : null;
+      const marketGapKrw = dbCurrentProfit != null ? dbCurrentProfit : fallbackGap;
+      const marketStale = dbMarketInvalidatedAt != null
+        ? true
+        : (marketGapKrw != null && marketGapKrw < 0);
       return {
         pid: Number(reveal.pid),
         name: raw?.name ?? `PID ${reveal.pid}`,

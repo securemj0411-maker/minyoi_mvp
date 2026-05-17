@@ -3036,6 +3036,28 @@ export async function marketStatsStage(): Promise<StageStats> {
     console.error("mark raw score dirty by comparable keys failed", err);
     return 0;
   });
+  // Wave 191 (2026-05-18): reveal row 의 current_profit 자동 재계산.
+  //   recomputedKeys 의 comparable_key 가 reveal 매물의 키와 매칭되면 그 reveal 의
+  //   current_profit_min/max + market_invalidated_at 갱신. 시세 < 매입가 → 추천 무효 자동 박힘.
+  //   snapshot (expected_profit_*) 는 reveal 시점 historical 그대로 유지.
+  //   RPC `recompute_reveal_current_profits` (Wave 190 migration) — single batch query.
+  let revealRecomputeStats = { updated: 0, invalidated: 0 };
+  if (recomputedKeys.length > 0) {
+    try {
+      const recRes = await restFetch(rpcUrl("recompute_reveal_current_profits"), {
+        method: "POST",
+        headers: serviceHeaders(),
+        body: jsonBody({ p_comparable_keys: recomputedKeys }),
+      });
+      const recRows = (await recRes.json().catch(() => [])) as Array<{ updated_count?: number; invalidated_count?: number }>;
+      revealRecomputeStats = {
+        updated: Number(recRows[0]?.updated_count ?? 0),
+        invalidated: Number(recRows[0]?.invalidated_count ?? 0),
+      };
+    } catch (err) {
+      console.error("recompute_reveal_current_profits failed (non-fatal)", { err: err instanceof Error ? err.message : String(err) });
+    }
+  }
   stats.scored = rows.length;
   stats.upserted = result.keyCount;
   stats.poolUpserted = result.sampleCount;
@@ -3044,6 +3066,8 @@ export async function marketStatsStage(): Promise<StageStats> {
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
     market_score_dirty_marked_rows: markedDirty,
+    reveal_current_profit_updated: revealRecomputeStats.updated,
+    reveal_current_profit_invalidated: revealRecomputeStats.invalidated,
   };
   return stats;
 }
