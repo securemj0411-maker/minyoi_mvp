@@ -101,6 +101,11 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
   const [selectedPreviewSeed, setSelectedPreviewSeed] = useState<string | null>(null);
   const [currentTimeMs, setCurrentTimeMs] = useState(0);
   const previewSeedCounterRef = useRef(0);
+  // 2026-05-17: 매물 선택 + 삭제 (선택/전체 모드).
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedPids, setSelectedPids] = useState<Set<number>>(new Set());
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
   const loadItems = useCallback(async (options?: { silent?: boolean }) => {
     if (!userRef) return;
@@ -286,6 +291,62 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
     });
   }
 
+  // 2026-05-17: 매물 삭제 handlers.
+  function togglePid(pid: number) {
+    setSelectedPids((prev) => {
+      const next = new Set(prev);
+      if (next.has(pid)) next.delete(pid);
+      else next.add(pid);
+      return next;
+    });
+  }
+
+  function selectAllVisible() {
+    setSelectedPids(new Set(items.map((i) => i.pid)));
+  }
+
+  function clearSelection() {
+    setSelectedPids(new Set());
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelectedPids(new Set());
+  }
+
+  async function deleteSelected() {
+    if (selectedPids.size === 0 || deleting) return;
+    setDeleting(true);
+    try {
+      const res = await fetchWithAuth("/api/packs/reveals/delete", { pids: Array.from(selectedPids) });
+      if (!res.ok) throw new Error("삭제 실패");
+      exitSelectMode();
+      await loadItems({ silent: true });
+    } catch (err) {
+      console.error("[user-reveal-dashboard] delete failed", err);
+      setError("삭제에 실패했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  async function deleteAll() {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      const res = await fetchWithAuth("/api/packs/reveals/delete", { all: true });
+      if (!res.ok) throw new Error("전체 삭제 실패");
+      setShowDeleteAllConfirm(false);
+      exitSelectMode();
+      await loadItems({ silent: true });
+    } catch (err) {
+      console.error("[user-reveal-dashboard] delete all failed", err);
+      setError("전체 삭제에 실패했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function handleLoadDetail(pid: number): Promise<RevealListingDetail> {
     const fallbackItem = selectedItem?.pid === pid ? selectedItem : items.find((item) => item.pid === pid);
     try {
@@ -378,10 +439,107 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
           <div className="text-sm font-black text-[#223127] dark:text-zinc-100">최근 본 추천 상품</div>
           <div className="mt-1 text-xs text-[#6b7269] dark:text-zinc-400">현재 로그인 계정 기준 추천 기록만 검색합니다.</div>
         </div>
-        <div className="rounded-full bg-[#eef6ec] px-3 py-1 text-xs font-black text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-zinc-200">
-          {loading ? "로딩" : `${total.toLocaleString("ko-KR")}건`}
+        <div className="flex items-center gap-2">
+          {/* 2026-05-17: 선택 모드 토글 + 전체 삭제. */}
+          {!selectMode ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setSelectMode(true)}
+                disabled={items.length === 0}
+                className="rounded-full border border-[#ddd4c7] bg-white px-3 py-1 text-xs font-bold text-[#344136] hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+              >
+                ☑️ 선택
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteAllConfirm(true)}
+                disabled={total === 0 || deleting}
+                className="rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-40 dark:border-rose-900 dark:bg-zinc-900 dark:text-rose-300"
+              >
+                🗑️ 전체 삭제
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={exitSelectMode}
+              className="rounded-full border border-zinc-300 bg-white px-3 py-1 text-xs font-bold text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+            >
+              취소
+            </button>
+          )}
+          <div className="rounded-full bg-[#eef6ec] px-3 py-1 text-xs font-black text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-zinc-200">
+            {loading ? "로딩" : `${total.toLocaleString("ko-KR")}건`}
+          </div>
         </div>
       </div>
+
+      {/* 전체 삭제 confirm 모달 */}
+      {showDeleteAllConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowDeleteAllConfirm(false)}>
+          <div className="m-4 w-full max-w-md rounded-2xl bg-white p-5 shadow-xl dark:bg-zinc-900" onClick={(e) => e.stopPropagation()}>
+            <div className="text-base font-black text-zinc-900 dark:text-zinc-100">전체 삭제 하시겠어요?</div>
+            <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              내 모든 추천 상품 기록 {total.toLocaleString("ko-KR")}건이 삭제됩니다. (복구 불가)
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteAllConfirm(false)}
+                className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-bold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={deleteAll}
+                disabled={deleting}
+                className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-black text-white hover:bg-rose-700 disabled:opacity-50"
+              >
+                {deleting ? "삭제 중..." : "전체 삭제"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 선택 모드 하단 floating actions bar */}
+      {selectMode && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white p-3 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+          <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+            <div className="text-sm font-bold text-zinc-700 dark:text-zinc-200">
+              {selectedPids.size}개 선택됨
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={selectAllVisible}
+                disabled={items.length === 0}
+                className="rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+              >
+                현재 페이지 전체
+              </button>
+              <button
+                type="button"
+                onClick={clearSelection}
+                disabled={selectedPids.size === 0}
+                className="rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+              >
+                선택 해제
+              </button>
+              <button
+                type="button"
+                onClick={deleteSelected}
+                disabled={selectedPids.size === 0 || deleting}
+                className="rounded-full bg-rose-600 px-4 py-1.5 text-xs font-black text-white hover:bg-rose-700 disabled:opacity-50"
+              >
+                {deleting ? "삭제 중..." : `🗑️ ${selectedPids.size}개 삭제`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error ? <div className="mt-4 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-700">{error}</div> : null}
 
@@ -468,12 +626,29 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
         {items.map((item) => (
           <article
             key={item.pid}
-            className={
+            onClick={selectMode ? () => togglePid(item.pid) : undefined}
+            className={`relative ${
               viewMode === "grid"
-                ? "grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 transition hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-950/40 dark:hover:border-emerald-900 dark:hover:bg-emerald-950/20"
-                : "grid grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 transition hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-950/40 dark:hover:border-emerald-900 dark:hover:bg-emerald-950/20 lg:grid-cols-[56px_minmax(0,1fr)_auto]"
-            }
+                ? "grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-xl border bg-[#fffdf9] p-2 transition dark:bg-zinc-950/40"
+                : "grid grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-xl border bg-[#fffdf9] p-2 transition dark:bg-zinc-950/40 lg:grid-cols-[56px_minmax(0,1fr)_auto]"
+            } ${
+              selectMode && selectedPids.has(item.pid)
+                ? "border-rose-400 bg-rose-50 ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/30"
+                : "border-[#e5dccf] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:hover:border-emerald-900 dark:hover:bg-emerald-950/20"
+            } ${selectMode ? "cursor-pointer" : ""}`}
           >
+            {/* 2026-05-17: 선택 모드 체크박스 */}
+            {selectMode && (
+              <div className="absolute left-2 top-2 z-10">
+                <input
+                  type="checkbox"
+                  checked={selectedPids.has(item.pid)}
+                  onChange={() => togglePid(item.pid)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-5 w-5 rounded border-2 border-rose-400 accent-rose-600"
+                />
+              </div>
+            )}
             <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f1eadf] dark:bg-zinc-800">
               {item.thumbnailUrl ? (
                 <Image
