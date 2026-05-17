@@ -281,7 +281,10 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     terminalLifecycleRecheckCooldownMs: envInt("PIPELINE_TERMINAL_LIFECYCLE_RECHECK_COOLDOWN_MS", 30 * 60 * 1000, 60 * 1000, 24 * 60 * 60 * 1000),
     terminalLifecycleRecheckPreserveStatus: envBool("PIPELINE_TERMINAL_LIFECYCLE_RECHECK_PRESERVE_STATUS", false),
     tickDetailLeaseSeconds: envInt("PIPELINE_TICK_DETAIL_LEASE_SECONDS", 90, 10, 900),
-    tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 150, 10, 2000),
+    // Wave 159j (2026-05-17): 150 → 800. score_dirty backlog 119K건 처리 매우 느림 (13h 추정).
+    // budget 10초 안에서 처리 가능 (단순 DB read + score + write, detail 호출 X).
+    // 매물당 ~12ms 가정 → 800건/9.6초.
+    tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 800, 10, 2000),
     // Wave 174 (2026-05-17): 800 → 3000 — Wave 156 신발 sweep 깊게 (2,182건 매물) 이후
     // 전 카테고리 14K+ 매물 중 시세 daily 박힘 비율 1.7-3.3% 머무름. 신발 ready 승급(Wave 172) +
     // trustedMedian total≥2 완화(Wave 173) 했는데도 시세 daily 36 row만 → pool 0건.
