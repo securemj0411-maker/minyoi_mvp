@@ -464,6 +464,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   garmin_forerunner_265: { status: "ready", label: "Garmin Forerunner 265", note: "Wave 187" },
   garmin_forerunner_955: { status: "ready", label: "Garmin Forerunner 955", note: "Wave 187" },
   garmin_forerunner_965: { status: "ready", label: "Garmin Forerunner 965", note: "Wave 187" },
+  garmin_forerunner_970: { status: "ready", label: "Garmin Forerunner 970", note: "Wave 189 신모델 2025" },
   garmin_instinct_2: { status: "ready", label: "Garmin Instinct 2", note: "Wave 187" },
   garmin_venu_3: { status: "ready", label: "Garmin Venu 3", note: "Wave 187" },
   garmin_epix_pro: { status: "ready", label: "Garmin Epix Pro", note: "Wave 187" },

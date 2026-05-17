@@ -1006,7 +1006,7 @@ function defaultWatchSizeMm(model: string | null) {
   if (model.includes("applewatch_ultra")) return 49;
   if (model.includes("galaxywatch_ultra")) return 47;
   // Wave 187 (2026-05-18): 가민 워치 size default (narrow lane 모델별 명확).
-  if (model === "garmin_fenix_7" || model === "garmin_fenix_8" || model === "garmin_forerunner_955" || model === "garmin_forerunner_965" || model === "garmin_epix_pro") return 47;
+  if (model === "garmin_fenix_7" || model === "garmin_fenix_8" || model === "garmin_forerunner_955" || model === "garmin_forerunner_965" || model === "garmin_forerunner_970" || model === "garmin_epix_pro") return 47;
   if (model === "garmin_fenix_7s") return 42;
   if (model === "garmin_fenix_7x") return 51;
   if (model === "garmin_forerunner_265") return 46;

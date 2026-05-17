@@ -50,6 +50,14 @@ export type Sku = {
     connectivity?: "wifi" | "cellular" | "gps" | "bluetooth";
     carrier?: "unlocked" | "skt" | "kt" | "lgu";
   };
+  // Wave 196 (2026-05-18): SKU 별 search query optional override.
+  //   진단 (Wave 187) — 신발 카테고리 (SKU 별 specific query 30+) fresh_28h 80~92%,
+  //   다른 카테고리 (broad query "맥북에어") 10~25%. broad 검색은 인기 모델 위주 결과 →
+  //   옛 모델 매물 page 뒤로 밀려 last_seen 갱신 X → market-worker lookback (Wave 184) 밖 →
+  //   시세 sample 부족 → 시세 부정확 (사용자 매물 카드 frustration 근본 원인).
+  //   policy: 박힌 SKU 는 그 값. 안 박혔으면 aliases 자동 fallback (buildCatalogSearchQueries
+  //   helper 가 처리). noise 가능성 있는 SKU 는 빈 배열 [] 박아서 명시 차단.
+  searchQueries?: string[];
 };
 
 // Wave 122 (2026-05-15): 모든 카테고리 공통 noise 패턴 (Wave 121 audit 결과).
@@ -5960,8 +5968,18 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Forerunner 965",
     aliases: ["Garmin Forerunner 965", "가민 포러너 965"],
     mustContain: [["garmin", "가민"], ["forerunner 965", "포러너 965", "fr 965", "fr965"]],
-    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 955", "포러너 265", "포러너 955", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 955", "forerunner 970", "포러너 265", "포러너 955", "포러너 970", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 899000, released: 2023,
+  },
+  // Wave 189 (2026-05-18): Forerunner 970 신모델 (2025.05 출시) catalog 누락 발견. raw 76건 중 본품 다수.
+  {
+    id: "garmin-forerunner-970",
+    brand: "Garmin", category: "smartwatch", laneKey: "garmin_forerunner_970",
+    modelName: "Garmin Forerunner 970",
+    aliases: ["Garmin Forerunner 970", "가민 포러너 970"],
+    mustContain: [["garmin", "가민"], ["forerunner 970", "포러너 970", "fr 970", "fr970"]],
+    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 955", "forerunner 965", "포러너 265", "포러너 955", "포러너 965", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    msrpKrw: 999000, released: 2025,
   },
   {
     id: "garmin-instinct-2",
@@ -6760,6 +6778,28 @@ export function skuById(id: string): Sku | undefined {
   return SKU_MAP.get(id);
 }
 
+// Wave 196 (2026-05-18): catalog SKU 의 search query 자동 매핑.
+//   각 SKU 의 `searchQueries` (수동) 또는 `aliases` (자동 fallback) 를 모아 dedupe.
+//   pipeline-config.ts 의 envQueries() 가 DEFAULT_SEARCH_QUERIES 와 병합.
+//   효과: 신발 (specific query 30+) fresh_28h 80%+ 처럼 다른 카테고리도 SKU 별 매물 cover ↑.
+//   policy: searchQueries 빈 배열 []  명시 → noise 위험 SKU 자동 매핑 차단 (Wave 86 ILCE-7C 94% noise 학습).
+//   undefined → aliases 자동 매핑. searchQueries 있으면 aliases 무시.
+export function buildCatalogSearchQueries(): string[] {
+  const seen = new Set<string>();
+  for (const sku of CATALOG) {
+    const list = sku.searchQueries ?? sku.aliases;
+    if (!Array.isArray(list)) continue;
+    for (const raw of list) {
+      const q = typeof raw === "string" ? raw.trim() : "";
+      if (!q) continue;
+      // alias 짧으면 noise 위험 (예: "X" 단독). 4자 미만 skip.
+      if (q.length < 4) continue;
+      seen.add(q);
+    }
+  }
+  return [...seen];
+}
+
 const NORMALIZATIONS: [RegExp, string][] = [
   [/usb[\s\-_]*c/gi, " usbc "],
   [/c[\s\-_]*type/gi, " usbc "],
@@ -6851,6 +6891,19 @@ const NORMALIZATIONS: [RegExp, string][] = [
   [/macbook\s*pro\s*13(?!\d|\.|in)/gi, " macbook pro 13in "],
   [/macbook\s*pro\s*14(?!\d|\.|in)/gi, " macbook pro 14in "],
   [/macbook\s*pro\s*16(?!\d|\.|in)/gi, " macbook pro 16in "],
+  // Wave 189 (2026-05-18): production sweep 결과 garmin/gopro raw 138건 중 detail_queue 진입 0건.
+  // 원인: "피닉스7x" / "고프로 12" 같은 공백/축약 표기를 catalog mustContain이 매칭 못 함.
+  // 정규화로 공통 표기 통일.
+  // Garmin Fenix 시리즈: "피닉스7x" / "페닉스 7s" / "fenix8" → "피닉스 7x" / "fenix 8"
+  [/(피닉스|페닉스)\s*(7s|7x|7|8|6s|6x|6)/gi, " 페닉스 $2 "],
+  [/fenix\s*(7s|7x|7|8|6s|6x|6)/gi, " fenix $1 "],
+  // Garmin Forerunner: "포러너970" / "fr 965" → "포러너 970" / "fr 965"
+  [/(포러너|forerunner)\s*(\d{3})/gi, " $1 $2 "],
+  [/\bfr\s*(\d{3})/gi, " fr $1 "],
+  // GoPro Hero 시리즈: "고프로 12" / "gopro12" → "고프로 히어로 12" (12 단독 매물에서 SKU 분리 가능)
+  // 조건: "고프로/gopro" 뒤 9~13 숫자만 (다른 의미 "고프로 12개월" 매물 보호 위해 word boundary).
+  [/(고프로|gopro)\s*(9|10|11|12|13)(?!\d)/gi, " $1 히어로 $2 hero $2 "],
+  [/(고프로|gopro)\s*맥스/gi, " $1 맥스 max "],
 ];
 
 export function normalize(text: string): string {
