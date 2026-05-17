@@ -64,6 +64,7 @@ type PoolRow = {
   expected_profit_min: number;
   expected_profit_max: number;
   profit_band: number;
+  confidence: number | null;
   category: string | null;
   condition_class: string | null;
 };
@@ -79,6 +80,8 @@ type RawRow = {
 type RawListingMeta = {
   pid: number;
   sku_id: string | null;
+  free_shipping: boolean | null;
+  last_seen_at: string | null;
 };
 
 export async function GET() {
@@ -86,7 +89,7 @@ export async function GET() {
     const headers = serviceHeaders();
 
     // ready 매물 fetch — band desc + profit desc. filter (price/sku 다양화) 위해 더 많이 가져옴.
-    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,category,condition_class&status=eq.ready&order=profit_band.desc,expected_profit_max.desc&limit=200`;
+    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class&status=eq.ready&order=profit_band.desc,expected_profit_max.desc&limit=200`;
     const poolRes = await restFetch(poolUrl, { headers });
     const pool = (await poolRes.json()) as PoolRow[];
 
@@ -104,7 +107,7 @@ export async function GET() {
         { headers },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id&pid=in.(${poolPids.join(",")})`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,free_shipping,last_seen_at&pid=in.(${poolPids.join(",")})`,
         { headers },
       ),
     ]);
@@ -112,6 +115,7 @@ export async function GET() {
     const rawListings = (await rawListingRes.json()) as RawListingMeta[];
     const rawByPid = new Map<number, RawRow>(raws.map((r) => [r.pid, r]));
     const skuByPid = new Map<number, string | null>(rawListings.map((r) => [r.pid, r.sku_id]));
+    const metaByPid = new Map<number, RawListingMeta>(rawListings.map((r) => [r.pid, r]));
 
     // 2026-05-17: 가격 tier 분리 — 10만 이하 2개 + 10-30만 3개. SKU 다양화 유지.
     // pickFromTier 가 carry-over: cumulative usedSkus/categories.
@@ -166,8 +170,25 @@ export async function GET() {
       selected.map((row) => fetchAndBlurImage(rawByPid.get(row.pid)?.thumbnail_url)),
     );
 
+    // confidence: pool.confidence (0~1) → high (>=0.8) / medium (>=0.6) / low.
+    function confLabel(c: number | null): "high" | "medium" | "low" {
+      if (c == null || !Number.isFinite(c)) return "low";
+      if (c >= 0.8) return "high";
+      if (c >= 0.6) return "medium";
+      return "low";
+    }
+
+    // fresh: last_seen_at 24시간 이내면 "신규".
+    function isFresh(iso: string | null | undefined): boolean {
+      if (!iso) return false;
+      const t = new Date(iso).getTime();
+      if (!Number.isFinite(t)) return false;
+      return Date.now() - t < 24 * 60 * 60 * 1000;
+    }
+
     const items = selected.map((row, idx) => {
       const raw = rawByPid.get(row.pid);
+      const meta = metaByPid.get(row.pid);
       return {
         slot: idx + 1,
         maskedName: maskName(raw?.name ?? ""),
@@ -180,6 +201,10 @@ export async function GET() {
         expectedProfitMin: row.expected_profit_min,
         expectedProfitMax: row.expected_profit_max,
         profitBand: row.profit_band,
+        // 2026-05-17: 신뢰 시그널 chips (dashboard 패턴).
+        confidence: confLabel(row.confidence),
+        freeShipping: meta?.free_shipping ?? false,
+        isFresh: isFresh(meta?.last_seen_at),
       };
     });
 

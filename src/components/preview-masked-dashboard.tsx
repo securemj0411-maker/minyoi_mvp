@@ -39,6 +39,10 @@ type PreviewItem = {
   expectedProfitMin: number;
   expectedProfitMax: number;
   profitBand: number;
+  // 2026-05-17: 신뢰 시그널 (dashboard 패턴).
+  confidence: "high" | "medium" | "low";
+  freeShipping: boolean;
+  isFresh: boolean;
 };
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -239,6 +243,28 @@ export default function PreviewMaskedDashboard() {
                             </span>
                           ) : null;
                         })()}
+                      </div>
+                      {/* 2026-05-17: 신뢰 시그널 chips (dashboard 패턴) */}
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                        {item.isFresh && (
+                          <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
+                            🆕 신규
+                          </span>
+                        )}
+                        {item.freeShipping && (
+                          <span className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold text-sky-800 dark:bg-sky-900/40 dark:text-sky-200">
+                            무료배송
+                          </span>
+                        )}
+                        {item.confidence === "high" ? (
+                          <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
+                            시세 신뢰 높음
+                          </span>
+                        ) : item.confidence === "medium" ? (
+                          <span className="rounded-full bg-yellow-100 px-1.5 py-0.5 text-[10px] font-bold text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200">
+                            시세 신뢰 보통
+                          </span>
+                        ) : null}
                       </div>
                     </div>
                   </div>
