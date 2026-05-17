@@ -941,6 +941,17 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   <>
                     <span className="text-zinc-300 dark:text-zinc-600 no-underline">·</span>
                     <span>시세 <span className={`font-black tabular-nums ${isTerminal ? "" : "text-[#223127] dark:text-zinc-100"}`}>{krw(item.marketBasis.medianPrice)}</span></span>
+                    {/* Wave 195 (2026-05-18): 시세 출처 라벨 — 모달 (pack-reveal-modal) 패턴 카드 이식.
+                        unopened = 다나와 새 가격 (Wave 201 anchor), mint = 번개 S급, 그 외 = 번개 중고. */}
+                    {!isTerminal && item.marketBasis.conditionClass === "unopened" ? (
+                      <span className="ml-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:bg-amber-950/30 dark:text-amber-300" title="다나와 새 가격 anchor — 이 매물 미개봉">
+                        📍 다나와
+                      </span>
+                    ) : !isTerminal && item.marketBasis.conditionClass === "mint" ? (
+                      <span className="ml-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-black text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300" title="번개 S급 매물 median">
+                        📍 번개 S급
+                      </span>
+                    ) : null}
                   </>
                 ) : null}
                 {/* Wave 182 Phase 3 (2026-05-17): base option fallback 정직성 표시. 옵션 명시 X → SKU 기본 옵션 가정 시세. */}
