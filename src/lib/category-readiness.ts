@@ -456,6 +456,17 @@ export const LANE_READINESS: LaneReadinessMap = {
   ninebot_f40: { status: "ready", label: "Segway Ninebot F40", note: "Wave 186" },
   ninebot_f30: { status: "ready", label: "Segway Ninebot F30", note: "Wave 186" },
   ninebot_e45: { status: "ready", label: "Segway Ninebot E45", note: "Wave 186" },
+  // Wave 187 (2026-05-18): 가민 워치 (smartwatch 확장) — Fenix / Forerunner / Instinct / Venu / Epix.
+  garmin_fenix_7: { status: "ready", label: "Garmin Fenix 7 (47mm)", note: "Wave 187" },
+  garmin_fenix_7s: { status: "ready", label: "Garmin Fenix 7S (42mm)", note: "Wave 187" },
+  garmin_fenix_7x: { status: "ready", label: "Garmin Fenix 7X (51mm)", note: "Wave 187" },
+  garmin_fenix_8: { status: "ready", label: "Garmin Fenix 8 (AMOLED)", note: "Wave 187 신모델 2024" },
+  garmin_forerunner_265: { status: "ready", label: "Garmin Forerunner 265", note: "Wave 187" },
+  garmin_forerunner_955: { status: "ready", label: "Garmin Forerunner 955", note: "Wave 187" },
+  garmin_forerunner_965: { status: "ready", label: "Garmin Forerunner 965", note: "Wave 187" },
+  garmin_instinct_2: { status: "ready", label: "Garmin Instinct 2", note: "Wave 187" },
+  garmin_venu_3: { status: "ready", label: "Garmin Venu 3", note: "Wave 187" },
+  garmin_epix_pro: { status: "ready", label: "Garmin Epix Pro", note: "Wave 187" },
 };
 
 export type CategoryReadinessConfig = {

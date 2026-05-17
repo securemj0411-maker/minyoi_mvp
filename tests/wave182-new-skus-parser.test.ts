@@ -367,6 +367,19 @@ describe("Wave 182 chunk 6: Sony LinkBuds + Bose 700/Earbuds II + Galaxy Buds 2/
   });
 });
 
+describe("Wave 187: 가민 워치 (smartwatch 확장)", () => {
+  it("garmin-fenix-7", () => check("가민 페닉스 7", "47mm.", "garmin-fenix-7", []));
+  it("garmin-fenix-7s", () => check("가민 페닉스 7S", "42mm.", "garmin-fenix-7s", []));
+  it("garmin-fenix-7x", () => check("가민 페닉스 7X", "51mm.", "garmin-fenix-7x", []));
+  it("garmin-fenix-8", () => check("가민 페닉스 8", "AMOLED.", "garmin-fenix-8", []));
+  it("garmin-forerunner-265", () => check("가민 포러너 265", "정상.", "garmin-forerunner-265", []));
+  it("garmin-forerunner-955", () => check("가민 포러너 955", "정상.", "garmin-forerunner-955", []));
+  it("garmin-forerunner-965", () => check("가민 포러너 965", "정상.", "garmin-forerunner-965", []));
+  it("garmin-instinct-2", () => check("가민 인스팅트 2", "정상.", "garmin-instinct-2", []));
+  it("garmin-venu-3", () => check("가민 비누 3", "정상.", "garmin-venu-3", []));
+  it("garmin-epix-pro", () => check("가민 에픽스 프로", "Gen 2.", "garmin-epix-pro", []));
+});
+
 describe("Wave 186: 새 카테고리 kickboard (전동킥보드/스쿠터)", () => {
   it("xiaomi-mi-scooter-pro-2", () => check("샤오미 미 스쿠터 프로 2 킥보드", "정상.", "xiaomi-mi-scooter-pro-2", []));
   it("xiaomi-mi-scooter-3", () => check("샤오미 미 스쿠터 3 전동킥보드", "정상.", "xiaomi-mi-scooter-3", []));

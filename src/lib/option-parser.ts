@@ -864,6 +864,8 @@ function modelFromSku(skuId?: string | null, skuName?: string | null) {
   if (id === "watch_seiko_5_sports_sbsa") return "seiko5_sbsa";
   if (id === "sport_golf_titleist_tsr2_driver") return "titleist_tsr2_driver";
   if (id === "sport_golf_titleist_tsr3_driver") return "titleist_tsr3_driver";
+  // Wave 187 (2026-05-18): 가민 워치 (smartwatch). narrow lane id 그대로 model 로 사용 (size/connectivity default 매핑 위해).
+  if (id.startsWith("garmin_")) return id;
   return name || id || null;
 }
 
@@ -1003,6 +1005,12 @@ function defaultWatchSizeMm(model: string | null) {
   if (!model) return null;
   if (model.includes("applewatch_ultra")) return 49;
   if (model.includes("galaxywatch_ultra")) return 47;
+  // Wave 187 (2026-05-18): 가민 워치 size default (narrow lane 모델별 명확).
+  if (model === "garmin_fenix_7" || model === "garmin_fenix_8" || model === "garmin_forerunner_955" || model === "garmin_forerunner_965" || model === "garmin_epix_pro") return 47;
+  if (model === "garmin_fenix_7s") return 42;
+  if (model === "garmin_fenix_7x") return 51;
+  if (model === "garmin_forerunner_265") return 46;
+  if (model === "garmin_instinct_2" || model === "garmin_venu_3") return 45;
   return null;
 }
 
@@ -1021,6 +1029,8 @@ function defaultConnectivity(model: string | null) {
   ) {
     return "gps";
   }
+  // Wave 187 (2026-05-18): 가민 워치 — 모두 GPS default (운동 시계 핵심).
+  if (model.startsWith("garmin_")) return "gps";
   return null;
 }
 

@@ -233,6 +233,17 @@ export const DEFAULT_SEARCH_QUERIES = [
   "닌봇 F40", "Ninebot F40",
   "닌봇 F30", "Ninebot F30",
   "닌봇 E45", "Ninebot E45",
+  // Wave 187 (2026-05-18): 가민 워치 (운동 시계).
+  "가민 페닉스 7", "Garmin Fenix 7",
+  "가민 페닉스 7s", "Fenix 7S",
+  "가민 페닉스 7x", "Fenix 7X",
+  "가민 페닉스 8", "Garmin Fenix 8",
+  "가민 포러너 265", "Forerunner 265",
+  "가민 포러너 955", "Forerunner 955",
+  "가민 포러너 965", "Forerunner 965",
+  "가민 인스팅트 2", "Instinct 2",
+  "가민 비누 3", "Venu 3",
+  "가민 에픽스 프로", "Epix Pro",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
