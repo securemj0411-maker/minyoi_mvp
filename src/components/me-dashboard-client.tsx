@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdminPoolBrowser from "@/components/admin-pool-browser";
+import AdminClassificationBrowser from "@/components/admin-classification-browser";
 import HotdealAlertsView from "@/components/hotdeal-alerts-view";
 import OnboardingBanner from "@/components/onboarding-banner";
 import PlaybookOverview from "@/components/playbook-overview";
@@ -21,7 +22,7 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 // recommend + history 섹션이 같이 mount돼서 /me 들어올 때마다 둘 다 fetch.
 // 이제 각 view 클릭 시 그것만 mount → DB I/O 절약.
 // Wave 93a: hotdeal-alerts (텔레그램 알림) 메뉴 추가.
-type DashboardView = "recommend" | "history" | "guides" | "hotdeal-alerts" | "admin-pool";
+type DashboardView = "recommend" | "history" | "guides" | "hotdeal-alerts" | "admin-pool" | "admin-classification";
 
 function GuideLibraryView() {
   return (
@@ -82,7 +83,7 @@ function GuideLibraryView() {
   );
 }
 
-const VALID_VIEWS: DashboardView[] = ["recommend", "history", "guides", "hotdeal-alerts", "admin-pool"];
+const VALID_VIEWS: DashboardView[] = ["recommend", "history", "guides", "hotdeal-alerts", "admin-pool", "admin-classification"];
 
 function initialViewFromUrl(): DashboardView {
   if (typeof window === "undefined") return "recommend";
@@ -268,16 +269,18 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
               <div className="mt-1 text-sm font-black text-[#223127] dark:text-zinc-100">작업 메뉴</div>
             </div>
             <div className={`-mx-1 flex w-full items-center gap-1.5 overflow-x-auto px-1 lg:mx-0 lg:block lg:w-auto lg:space-y-1 lg:overflow-visible lg:px-0 ${sidebarCollapsed ? "lg:hidden" : ""}`}>
-              {(["recommend", "history", "guides", ...(isPro || effectiveAdmin ? (["hotdeal-alerts"] as const) : []), ...(effectiveAdmin || isBetaTester ? (["admin-pool"] as const) : [])] as const).map((v) => {
+              {(["recommend", "history", "guides", ...(isPro || effectiveAdmin ? (["hotdeal-alerts"] as const) : []), ...(effectiveAdmin || isBetaTester ? (["admin-pool"] as const) : []), ...(effectiveAdmin ? (["admin-classification"] as const) : [])] as const).map((v) => {
                 const label = v === "recommend" ? "추천 받기"
                   : v === "history" ? "나의 상품"
                   : v === "guides" ? "공략집"
                   : v === "hotdeal-alerts" ? "핫딜 알림"
+                  : v === "admin-classification" ? "분류 검증"
                   : "운영자";
                 const lgLabel = v === "recommend" ? "추천 상품 받기"
                   : v === "history" ? "나의 상품"
                   : v === "guides" ? "공략집"
                   : v === "hotdeal-alerts" ? "핫딜 알림"
+                  : v === "admin-classification" ? "🔧 운영자: 분류 검증"
                   : "🔧 운영자: 풀 전체";
                 const active = activeView === v;
                 return (
@@ -307,6 +310,8 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           <HotdealAlertsView />
         ) : activeView === "admin-pool" ? (
           <AdminPoolBrowser />
+        ) : activeView === "admin-classification" ? (
+          <AdminClassificationBrowser />
         ) : activeView === "recommend" ? (
           <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             <OnboardingBanner onStart={() => setActiveView("recommend")} />
