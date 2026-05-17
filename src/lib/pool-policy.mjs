@@ -34,10 +34,11 @@ export function bandFromProfit(profitMin, profitMax) {
   return null;
 }
 
-export function poolMaxExposure(band) {
-  if (band === 3) return 1;
-  if (band === 2) return 2;
-  return 3;
+// Wave 179 (2026-05-17 사용자 코멘트): band 시스템 폐기됨. 1매물 = 1명에게만 노출 (희소성/정확성).
+// 이전: band 3→1 / band 2→2 / band 1→3 (band에 따라 2~3명까지 공유)
+// 새: 무조건 1 (band 무관)
+export function poolMaxExposure(_band) {
+  return 1;
 }
 
 export function computePoolConfidence(parseConfidence, scoreFlags = []) {
