@@ -324,3 +324,45 @@ describe("Wave 182 chunk 5: 옛 인기 모델 (mini 5, iPad 7/8, Z Flip/Fold 3, 
     );
   });
 });
+
+describe("Wave 182 chunk 6: Sony LinkBuds + Bose 700/Earbuds II + Galaxy Buds 2/Live + Galaxy Tab S6", () => {
+  it("sony-linkbuds", () => {
+    check("소니 LinkBuds WF-L900", "도넛 디자인.", "sony-linkbuds", []);
+  });
+
+  it("sony-linkbuds-s", () => {
+    check("소니 LinkBuds S WF-LS900N", "정상.", "sony-linkbuds-s", []);
+  });
+
+  it("sony-linkbuds-fit", () => {
+    check("소니 LinkBuds Fit WF-LS910N", "정상.", "sony-linkbuds-fit", []);
+  });
+
+  it("bose-700-headphones", () => {
+    check("Bose 700 헤드폰 블랙", "정상.", "bose-700-headphones", []);
+  });
+
+  it("bose-qc-earbuds-ii", () => {
+    check("Bose QC 이어버드 II", "정상.", "bose-qc-earbuds-ii", []);
+  });
+
+  it("galaxy-buds-2", () => {
+    check("갤럭시 버즈 2 라벤더", "정상.", "galaxy-buds-2", []);
+  });
+
+  it("galaxy-buds-2-pro", () => {
+    check("갤럭시 버즈 2 프로 그래파이트", "정상.", "galaxy-buds-2-pro", []);
+  });
+
+  it("galaxy-buds-live", () => {
+    check("갤럭시 버즈 라이브 미스틱 브론즈", "정상.", "galaxy-buds-live", []);
+  });
+
+  it("galaxy-tab-s6", () => {
+    check("갤럭시탭 S6 128GB Wi-Fi", "정상.", "galaxy-tab-s6", []);
+  });
+
+  it("galaxy-tab-s6-lite", () => {
+    check("갤럭시탭 S6 Lite 64GB Wi-Fi", "정상.", "galaxy-tab-s6-lite", []);
+  });
+});

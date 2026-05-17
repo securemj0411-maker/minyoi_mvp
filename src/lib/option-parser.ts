@@ -1023,6 +1023,9 @@ function defaultTabletScreenSizeIn(model: string | null) {
   if (/^ipad_pro_12_9_/.test(model)) return 12.9;
   if (/^ipad_air_(?:4|5)_/.test(model)) return 10.9;
   if (/^ipad_mini_/.test(model)) return 8.3;
+  // Wave 182 chunk 6 (2026-05-17): Galaxy Tab S6 (2019.8, 10.5") + S6 Lite (2020.5, 10.4") 추가.
+  if (model === "galaxy_tab_s6") return 10.5;
+  if (model === "galaxy_tab_s6_lite") return 10.4;
   if (model === "galaxy_tab_s7" || model === "galaxy_tab_s8" || model === "galaxy_tab_s9") return 11;
   if (model === "galaxy_tab_s9_fe") return 10.9;
   if (model === "galaxy_tab_s9_fe_plus") return 12.4;

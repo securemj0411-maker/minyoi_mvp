@@ -150,6 +150,17 @@ export const DEFAULT_SEARCH_QUERIES = [
   "갤럭시 Z플립3", "갤럭시 Z폴드3", "Z Flip 3", "Z Fold 3",
   // Galaxy Watch 3 + Active 2
   "갤럭시 워치 3", "갤럭시 워치 액티브 2", "Galaxy Watch Active 2",
+  // Wave 182 chunk 6 (2026-05-17): Sony LinkBuds, Bose 700/Earbuds II, Galaxy Buds 2/Live, Galaxy Tab S6.
+  "소니 LinkBuds", "Sony LinkBuds", "링크버즈",
+  "소니 LinkBuds S", "LinkBuds S",
+  "소니 LinkBuds Fit", "LinkBuds Fit",
+  "보스 700", "Bose 700", "Bose NC 700",
+  "보스 QC 이어버드 II", "Bose QC Earbuds II",
+  "갤럭시 버즈 2", "갤버즈 2", "Galaxy Buds 2",
+  "갤럭시 버즈 2 프로", "Galaxy Buds 2 Pro",
+  "갤럭시 버즈 라이브", "Galaxy Buds Live",
+  "갤럭시탭 S6", "갤탭 S6", "Galaxy Tab S6",
+  "갤럭시탭 S6 라이트", "Galaxy Tab S6 Lite",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
