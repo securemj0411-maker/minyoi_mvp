@@ -244,6 +244,19 @@ export const DEFAULT_SEARCH_QUERIES = [
   "가민 인스팅트 2", "Instinct 2",
   "가민 비누 3", "Venu 3",
   "가민 에픽스 프로", "Epix Pro",
+  // Wave 188 (2026-05-18): 레고 한정판 (UCS / 모듈러 / Technic / Ideas / Architecture).
+  "레고 밀레니엄 팰콘", "LEGO 75192",
+  "레고 AT-AT", "LEGO 75313",
+  "레고 레이저 크레스트", "LEGO 75331",
+  "레고 X-윙 UCS", "LEGO 75355",
+  "레고 부티크 호텔", "LEGO 10297",
+  "레고 재즈 클럽", "LEGO 10312",
+  "레고 자연사 박물관", "LEGO 10326",
+  "레고 페라리 다이토나", "LEGO 42143",
+  "레고 람보르기니 시안", "LEGO 42115",
+  "레고 센트럴 퍼크", "LEGO 21319",
+  "레고 A-프레임 캐빈", "LEGO 21338",
+  "레고 백악관", "LEGO 21054",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

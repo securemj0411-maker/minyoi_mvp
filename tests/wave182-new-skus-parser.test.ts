@@ -367,6 +367,16 @@ describe("Wave 182 chunk 6: Sony LinkBuds + Bose 700/Earbuds II + Galaxy Buds 2/
   });
 });
 
+describe("Wave 188: 레고 한정판 (새 카테고리 lego)", () => {
+  it("lego-75192-millennium-falcon", () => check("LEGO 75192 밀레니엄 팰콘 UCS", "정상.", "lego-75192-millennium-falcon", []));
+  it("lego-75313-at-at", () => check("LEGO 75313 AT-AT UCS", "정상.", "lego-75313-at-at", []));
+  it("lego-75355-x-wing", () => check("LEGO 75355 X-Wing", "정상.", "lego-75355-x-wing", []));
+  it("lego-10297-boutique-hotel", () => check("LEGO 10297 부티크 호텔", "정상.", "lego-10297-boutique-hotel", []));
+  it("lego-10312-jazz-club", () => check("LEGO 10312 재즈 클럽", "정상.", "lego-10312-jazz-club", []));
+  it("lego-42143-ferrari-daytona", () => check("LEGO 42143 페라리 다이토나", "정상.", "lego-42143-ferrari-daytona", []));
+  it("lego-21319-central-perk", () => check("LEGO 21319 센트럴 퍼크 Friends", "정상.", "lego-21319-central-perk", []));
+});
+
 describe("Wave 187: 가민 워치 (smartwatch 확장)", () => {
   it("garmin-fenix-7", () => check("가민 페닉스 7", "47mm.", "garmin-fenix-7", []));
   it("garmin-fenix-7s", () => check("가민 페닉스 7S", "42mm.", "garmin-fenix-7s", []));

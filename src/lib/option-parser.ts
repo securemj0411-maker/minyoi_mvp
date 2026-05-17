@@ -1471,7 +1471,9 @@ function confidence(input: {
     score += 0.35;
   } else if (input.category === "kickboard") {
     // Wave 186 (2026-05-18): 새 카테고리 kickboard (전동킥보드/스쿠터). 한국 인기 — 샤오미 Mi Scooter / 세그웨이 닌봇.
-    // narrow lane (모델 + 세대) 으로 시세 정확. 단일 옵션 모델 다수.
+    score += 0.35;
+  } else if (input.category === "lego") {
+    // Wave 188 (2026-05-18): 새 카테고리 lego (한정판 / UCS / 모듈러). 세트 번호로 고유 식별.
     score += 0.35;
   }
   return cap01(score);

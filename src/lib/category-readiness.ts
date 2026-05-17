@@ -467,6 +467,19 @@ export const LANE_READINESS: LaneReadinessMap = {
   garmin_instinct_2: { status: "ready", label: "Garmin Instinct 2", note: "Wave 187" },
   garmin_venu_3: { status: "ready", label: "Garmin Venu 3", note: "Wave 187" },
   garmin_epix_pro: { status: "ready", label: "Garmin Epix Pro", note: "Wave 187" },
+  // Wave 188 (2026-05-18): 레고 한정판 12 SKU.
+  lego_75192_millennium_falcon: { status: "ready", label: "LEGO 75192 Millennium Falcon UCS", note: "Wave 188" },
+  lego_75313_at_at: { status: "ready", label: "LEGO 75313 AT-AT UCS", note: "Wave 188" },
+  lego_75331_razor_crest: { status: "ready", label: "LEGO 75331 Razor Crest UCS", note: "Wave 188" },
+  lego_75355_x_wing: { status: "ready", label: "LEGO 75355 X-Wing UCS", note: "Wave 188" },
+  lego_10297_boutique_hotel: { status: "ready", label: "LEGO 10297 Boutique Hotel", note: "Wave 188" },
+  lego_10312_jazz_club: { status: "ready", label: "LEGO 10312 Jazz Club", note: "Wave 188" },
+  lego_10326_natural_history_museum: { status: "ready", label: "LEGO 10326 Natural History Museum", note: "Wave 188" },
+  lego_42143_ferrari_daytona: { status: "ready", label: "LEGO 42143 Ferrari Daytona", note: "Wave 188" },
+  lego_42115_lamborghini_sian: { status: "ready", label: "LEGO 42115 Lamborghini Sián", note: "Wave 188" },
+  lego_21319_central_perk: { status: "ready", label: "LEGO 21319 Central Perk", note: "Wave 188" },
+  lego_21338_a_frame_cabin: { status: "ready", label: "LEGO 21338 A-Frame Cabin", note: "Wave 188" },
+  lego_21054_white_house: { status: "ready", label: "LEGO 21054 White House", note: "Wave 188" },
 };
 
 export type CategoryReadinessConfig = {
@@ -559,6 +572,15 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     status: "internal_only",
     label: "Drone & Action Cam",
     note: "DJI 드론 (Mini/Mavic/Air/Avata) + DJI Osmo Action/Pocket + GoPro Hero. 짝퉁 거의 없음 (DJI 활성화 + GoPro 정품 등록). narrow lane 22개 LANE_READINESS=ready 로 풀 진입.",
+    minReadyPool: 6,
+    minParseRate: 0.9,
+    minTrustedKeys: 5,
+  },
+  // Wave 188 (2026-05-18): 새 카테고리 "lego" — 한정판/UCS/모듈러 (세트 번호 고유 식별).
+  lego: {
+    status: "internal_only",
+    label: "LEGO (한정판)",
+    note: "한정판 / UCS / 모듈러 빌딩 / Technic / Ideas / Architecture. 세트 번호로 narrow lane 분리. 짝퉁 (LEPIN 카피) mustNotContain 차단. 미개봉 시세 +30~50%.",
     minReadyPool: 6,
     minParseRate: 0.9,
     minTrustedKeys: 5,

@@ -20,7 +20,7 @@ import { BIKE_CATALOG } from "@/lib/generated/catalog-bike-wave91";
 export type Sku = {
   id: string;
   brand: string;
-  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance" | "watch" | "sport_golf" | "shoe" | "bag" | "bike" | "drone" | "perfume" | "kickboard";
+  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance" | "watch" | "sport_golf" | "shoe" | "bag" | "bike" | "drone" | "perfume" | "kickboard" | "lego";
   modelName: string;
   aliases: string[];
   mustContain: string[][];
@@ -6285,6 +6285,105 @@ export const CATALOG: Sku[] = [
     mustContain: [["gopro", "고프로"], ["max", "맥스"]],
     mustNotContain: ["hero", "히어로", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
     msrpKrw: 599000, released: 2019,
+  },
+  // ─── Wave 188 (2026-05-18): 새 카테고리 "lego" — 한정판/UCS/모듈러 12 SKU ───
+  // 세트 번호로 고유 식별. condition (미개봉 vs 개봉) 시세 핵심 — condition_class 가 처리.
+  // 짝퉁 (LEPIN 등 카피본) mustNotContain 으로 차단. 미사용 미개봉 시세 +30~50%.
+  {
+    id: "lego-75192-millennium-falcon", brand: "LEGO", category: "lego", laneKey: "lego_75192_millennium_falcon",
+    modelName: "LEGO 75192 Millennium Falcon (UCS)",
+    aliases: ["LEGO 75192", "레고 밀레니엄 팰콘", "Millennium Falcon UCS"],
+    mustContain: [["75192", "lego 75192", "레고 75192"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "미니피겨만", "매입", "삽니다"],
+    msrpKrw: 1190000, released: 2017,
+  },
+  {
+    id: "lego-75313-at-at", brand: "LEGO", category: "lego", laneKey: "lego_75313_at_at",
+    modelName: "LEGO 75313 AT-AT (UCS)",
+    aliases: ["LEGO 75313", "레고 AT-AT UCS"],
+    mustContain: [["75313", "lego 75313", "레고 75313"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    msrpKrw: 1090000, released: 2021,
+  },
+  {
+    id: "lego-75331-razor-crest", brand: "LEGO", category: "lego", laneKey: "lego_75331_razor_crest",
+    modelName: "LEGO 75331 The Razor Crest (UCS)",
+    aliases: ["LEGO 75331", "레고 레이저 크레스트", "Razor Crest UCS"],
+    mustContain: [["75331", "lego 75331", "레고 75331"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    msrpKrw: 850000, released: 2022,
+  },
+  {
+    id: "lego-75355-x-wing", brand: "LEGO", category: "lego", laneKey: "lego_75355_x_wing",
+    modelName: "LEGO 75355 X-Wing Starfighter (UCS)",
+    aliases: ["LEGO 75355", "레고 X-윙 UCS"],
+    mustContain: [["75355", "lego 75355", "레고 75355"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    msrpKrw: 350000, released: 2023,
+  },
+  {
+    id: "lego-10297-boutique-hotel", brand: "LEGO", category: "lego", laneKey: "lego_10297_boutique_hotel",
+    modelName: "LEGO 10297 Boutique Hotel (Modular)",
+    aliases: ["LEGO 10297", "레고 부티크 호텔"],
+    mustContain: [["10297", "lego 10297", "레고 10297"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    msrpKrw: 350000, released: 2022,
+  },
+  {
+    id: "lego-10312-jazz-club", brand: "LEGO", category: "lego", laneKey: "lego_10312_jazz_club",
+    modelName: "LEGO 10312 Jazz Club (Modular)",
+    aliases: ["LEGO 10312", "레고 재즈 클럽"],
+    mustContain: [["10312", "lego 10312", "레고 10312"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    msrpKrw: 320000, released: 2023,
+  },
+  {
+    id: "lego-10326-natural-history-museum", brand: "LEGO", category: "lego", laneKey: "lego_10326_natural_history_museum",
+    modelName: "LEGO 10326 Natural History Museum (Modular)",
+    aliases: ["LEGO 10326", "레고 자연사 박물관"],
+    mustContain: [["10326", "lego 10326", "레고 10326"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    msrpKrw: 380000, released: 2024,
+  },
+  {
+    id: "lego-42143-ferrari-daytona", brand: "LEGO", category: "lego", laneKey: "lego_42143_ferrari_daytona",
+    modelName: "LEGO 42143 Ferrari Daytona SP3 (Technic)",
+    aliases: ["LEGO 42143", "레고 페라리 다이토나"],
+    mustContain: [["42143", "lego 42143", "레고 42143"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    msrpKrw: 590000, released: 2022,
+  },
+  {
+    id: "lego-42115-lamborghini-sian", brand: "LEGO", category: "lego", laneKey: "lego_42115_lamborghini_sian",
+    modelName: "LEGO 42115 Lamborghini Sián (Technic)",
+    aliases: ["LEGO 42115", "레고 람보르기니 시안"],
+    mustContain: [["42115", "lego 42115", "레고 42115"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    msrpKrw: 549000, released: 2020,
+  },
+  {
+    id: "lego-21319-central-perk", brand: "LEGO", category: "lego", laneKey: "lego_21319_central_perk",
+    modelName: "LEGO 21319 Central Perk (Friends, Ideas)",
+    aliases: ["LEGO 21319", "레고 센트럴 퍼크", "Friends Central Perk"],
+    mustContain: [["21319", "lego 21319", "레고 21319"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    msrpKrw: 99000, released: 2019,
+  },
+  {
+    id: "lego-21338-a-frame-cabin", brand: "LEGO", category: "lego", laneKey: "lego_21338_a_frame_cabin",
+    modelName: "LEGO 21338 A-Frame Cabin (Ideas)",
+    aliases: ["LEGO 21338", "레고 A-프레임 캐빈"],
+    mustContain: [["21338", "lego 21338", "레고 21338"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    msrpKrw: 209000, released: 2023,
+  },
+  {
+    id: "lego-21054-white-house", brand: "LEGO", category: "lego", laneKey: "lego_21054_white_house",
+    modelName: "LEGO 21054 The White House (Architecture)",
+    aliases: ["LEGO 21054", "레고 백악관"],
+    mustContain: [["21054", "lego 21054", "레고 21054"]],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    msrpKrw: 130000, released: 2020,
   },
   // ─── Wave 186 (2026-05-18): 새 카테고리 "kickboard" — 전동킥보드/스쿠터 9 SKU ───
   // 한국 인기: 샤오미 Mi Scooter (Pro 2 / 3 / 4 / 4 Pro / 4 Ultra) + 세그웨이 닌봇 (Max G2 / F40 / F30 / E45).
