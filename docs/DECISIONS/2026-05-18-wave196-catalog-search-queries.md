@@ -1,6 +1,18 @@
 # Wave 196 (2026-05-18) catalog SKU → search query 자동 매핑
 
 > **상태: HIGH visibility 근본 fix.** Wave 187 (lifecycle batch) + Wave 184 (market-worker incremental) 의 의도된 후속. 시세 정확도 근본 layer.
+>
+> **⚠️ 다른 세션 주의 — 이미 박힘. 중복 작업 금지**:
+> - `Sku` 타입에 `searchQueries?: string[]` optional 필드 **이미 추가됨** ([catalog.ts](../../src/lib/catalog.ts) line 53-60 부근)
+> - `buildCatalogSearchQueries()` helper **이미 export됨** ([catalog.ts:6780](../../src/lib/catalog.ts:6780))
+> - `pipeline-config.ts envQueries()` 가 **이미 catalog query 병합 중** ([pipeline-config.ts](../../src/lib/pipeline-config.ts) — 첫 import + line 374 부근)
+> - env `PIPELINE_DISABLE_CATALOG_QUERIES=1` 로 rollback 가능
+> - **catalog data (SKU 의 searchQueries 직접 채우기) 는 별 작업** — 본 wave 의 자동 fallback (aliases 사용) 이 충분히 cover. 필요 시에만 SKU 마다 명시.
+>
+> **재진행 trigger** (이 wave 박힌 후 다시 손댈 필요 있는 경우):
+> - 신규 카테고리 SKU 추가 시 자동 cover (aliases 박혀있으면)
+> - noise 발견 SKU 만 `searchQueries: []` 명시 차단
+> - search budget timeout 측정 후 부족하면 query 우선순위 조정 (별 wave)
 
 ## 사용자 요구
 

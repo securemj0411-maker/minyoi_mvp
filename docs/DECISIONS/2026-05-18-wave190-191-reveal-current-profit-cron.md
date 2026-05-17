@@ -1,6 +1,29 @@
 # Wave 190 + 191 (2026-05-18) reveal current_profit 자동 재계산 — 근본 fix Layer A+B+C
 
 > **중요도: HIGH.** Wave 189 (표면 UI fix) 의 근본. DB level 자동 sync — 다른 API/시스템도 stale 값 안 봄.
+>
+> **⚠️ 다른 세션 주의 — 이미 박힘. 중복 작업 금지**:
+> - `mvp_pack_reveals` schema 에 **이미 4 컬럼 추가됨**:
+>   - `current_profit_min integer NULL`
+>   - `current_profit_max integer NULL`
+>   - `market_invalidated_at timestamptz NULL`
+>   - `last_market_recompute_at timestamptz NULL`
+>   - migration `wave190_reveal_current_profit_columns` 적용 완료
+>   - partial index `mvp_pack_reveals_market_invalidated_idx` 도 박힘
+> - RPC `public.recompute_reveal_current_profits(p_comparable_keys text[])` **이미 존재**
+>   - migration `wave191_recompute_reveal_current_profits_rpc` 적용 완료
+>   - SECURITY DEFINER, search_path public
+> - `tick-pipeline.ts marketStatsStage` 끝에 **RPC 호출 hook 박힘** ([L3035 부근](../../src/lib/tick-pipeline.ts:3035) `markRawScoreDirtyByComparableKeys` 다음)
+> - `api/packs/me/route.ts` 가 **current_profit_min / market_invalidated_at 우선 읽음**, snapshot fallback
+>
+> **다시 박지 마세요**:
+> - schema column 다시 추가 X (이미 nullable 박혀있음)
+> - 같은 의도의 RPC 재정의 금지 (이미 있음, 덮어쓰면 정책 충돌)
+> - marketStatsStage 의 hook 중복 호출 금지
+>
+> **확장 가능한 부분 (별 wave)**:
+> - Layer E (pool entry expected_profit 자동 갱신) — 현재 score_dirty + scoreStage 자동 처리 중. 추가 cron 박지 말 것
+> - 무효화 status 라벨 UI 노출은 [Wave 189](2026-05-18-wave189-reveal-realtime-market-gap.md) 의 marketStale 분기 + [Wave 194](2026-05-18-wave194-current-profit-priority-ui.md) 의 "↓ 시세 갱신" 라벨 활용
 
 ## 사용자 의도
 
