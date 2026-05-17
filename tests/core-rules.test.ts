@@ -496,7 +496,9 @@ test("MacBook missing-box wording does not become box-only accessory", () => {
     1_100_000,
   );
   assert.equal(withMissingBox.listingType, "normal");
-  assert.equal(withMissingBox.sku?.id, "macbook-air");
+  // Wave 182 Phase 2: macbook-air-m3-15-256 narrow lane 추가 → disambiguation으로 narrow 우선.
+  // (옛: macbook-air broad SKU 매칭. 새: narrow가 더 정확해서 우선).
+  assert.equal(withMissingBox.sku?.id, "macbook-air-m3-15-256");
 
   assert.notEqual(
     classifyListing("맥북에어 박스만 판매", "빈 박스 단품입니다.", 20_000).listingType,
