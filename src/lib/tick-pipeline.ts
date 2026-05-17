@@ -22,6 +22,7 @@ import {
 } from "@/lib/market-math";
 import { notifyOperationalAlerts, type OperationalAlert } from "@/lib/operational-notifier";
 import { bunjangLabelToConditionClass, extractConditionClass, parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
+import { pickByConditionFallback } from "@/lib/condition-fallback";
 import {
   applyAiReview,
   classifyConditionWithAi,
@@ -2012,43 +2013,17 @@ async function loadMarketPriceStats(comparableKeys: string[]): Promise<MarketPri
   return result;
 }
 
-// Wave 130: 매물 condition_class에 가장 적합한 시세 row 선택. sample 부족 시 fallback chain 적용.
-// 시세 산정 (tick-pipeline) 용 — pack-open의 selectMarketRowByCondition과 같은 정책.
-// Wave 159f (2026-05-17): unopened 누락 + flawed/low_batt fallback 너무 짧음 fix.
-// iPhone 14 case (사용자 코멘트 pid 408329098): flawed 매물인데 unopened 시세 ₩1,287K fallback으로 박힘.
-// 원인: byCondition.values().next().value (Map 첫 entry — 임의 condition) 마지막 fallback이 unopened 잡음.
-// fix: 모든 fallback chain 보강 + 마지막 fallback 안전화 (normal/worn/clean만, unopened/mint 금지).
-const SCORE_CONDITION_FALLBACK: Record<string, string[]> = {
-  unopened: ["unopened", "mint", "clean", "normal", "all"],
-  mint: ["mint", "clean", "normal", "all"],
-  clean: ["clean", "normal", "mint", "all"],
-  normal: ["normal", "clean", "worn", "all"],
-  worn: ["worn", "normal", "all"],
-  low_batt: ["low_batt", "worn", "normal", "all"],
-  flawed: ["flawed", "worn", "low_batt", "normal", "all"],
-  all: ["all", "normal", "clean", "worn", "mint"],
-};
-
+// Wave 159h (2026-05-17): condition-fallback shared module 사용 (DRY).
 function pickMarketStatByCondition(
   byCondition: Map<string, MarketPriceRow> | undefined,
   conditionClass: string | null,
 ): MarketPriceRow | undefined {
-  if (!byCondition || byCondition.size === 0) return undefined;
-  const target = conditionClass ?? "normal";
-  const order = SCORE_CONDITION_FALLBACK[target] ?? [target, "normal", "worn", "clean", "all"];
-  // 우선순위 따라 sample 충분한 row 선택 (3건+). 부족하면 다음 class.
-  for (let i = 0; i < order.length; i++) {
-    const cls = order[i];
-    const cand = byCondition.get(cls);
-    if (!cand) continue;
-    const samples =
-      Number(cand.active_sample_count ?? 0) +
-      Number(cand.sold_sample_count ?? 0) +
-      Number(cand.disappeared_sample_count ?? 0);
-    if (samples >= 3 || i === order.length - 1) return cand;
-  }
-  // Wave 159f: 안전 fallback — unopened/mint 시세 절대 잡지 않음 (다나와 새 가격이 worn/flawed 매물 시세로 박히는 사고 차단).
-  return byCondition.get("normal") ?? byCondition.get("worn") ?? byCondition.get("clean") ?? undefined;
+  const { row } = pickByConditionFallback(
+    byCondition,
+    conditionClass,
+    (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0) + Number(r.disappeared_sample_count ?? 0),
+  );
+  return row;
 }
 
 async function loadPendingMarketInvalidations(limit = 200): Promise<MarketKeyInvalidationRow[]> {

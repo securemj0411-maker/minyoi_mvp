@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { conditionFallbackChain } from "@/lib/condition-fallback";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 const LANDING_SHOWCASE_LIMIT = 10;
@@ -254,10 +255,9 @@ async function loadLiveSoldShowcases(limit: number): Promise<LandingShowcase[]> 
     const byCond = marketByKeyCondition.get(comparableKey);
     if (!byCond) continue;
     // Wave 130: 매물 condition_class — parsedByPid에서 lookup (O(1)).
-    // Wave 159g (2026-05-17): mint 제거 — flawed/worn 매물이 mint 시세 잘못 잡아 차익 부풀려지는 사고 차단.
-    // unopened도 너무 비싸서 fallback 금지 (다나와 새 가격 박힘 위험).
+    // Wave 159h (2026-05-17): shared module conditionFallbackChain 사용 (DRY).
     const conditionClass = parsed?.conditionClass ?? "normal";
-    const fallback = [conditionClass, "normal", "all", "clean", "worn"];
+    const fallback = conditionFallbackChain(conditionClass);
     let market: MarketPriceRow | undefined = undefined;
     for (const cls of fallback) {
       const cand = byCond.get(cls);

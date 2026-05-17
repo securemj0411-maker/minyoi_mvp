@@ -7,6 +7,7 @@
 // 2026-05-16: rate limit 추가. pid enumeration abuse 차단. IP 기반 60 req / 60s.
 
 import { NextResponse } from "next/server";
+import { conditionFallbackChain } from "@/lib/condition-fallback";
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
@@ -92,18 +93,8 @@ export async function GET(
       );
       const rows = (await statsRes.json()) as Array<Record<string, unknown>>;
       const target = conditionClass ?? "normal";
-      // Wave 159g (2026-05-17): condition별 fallback chain 분리.
-      // 이전: target에 무관하게 mint/unopened 우선 → flawed/worn 매물에 다나와 새 가격 잘못 박힘.
-      const FALLBACK_BY_CC: Record<string, string[]> = {
-        unopened: ["unopened", "mint", "clean", "normal", "all"],
-        mint: ["mint", "unopened", "clean", "normal", "all"],
-        clean: ["clean", "normal", "mint", "all"],
-        normal: ["normal", "clean", "worn", "all"],
-        worn: ["worn", "normal", "all"],
-        low_batt: ["low_batt", "worn", "normal", "all"],
-        flawed: ["flawed", "worn", "low_batt", "normal", "all"],
-      };
-      const fallback = FALLBACK_BY_CC[target] ?? [target, "normal", "all", "clean", "worn"];
+      // Wave 159h (2026-05-17): shared module conditionFallbackChain 사용 (DRY).
+      const fallback = conditionFallbackChain(target);
       for (const cls of fallback) {
         const candidate = rows.find((r) => r.condition_class === cls);
         if (candidate) {

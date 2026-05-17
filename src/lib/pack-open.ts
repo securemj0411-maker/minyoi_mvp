@@ -1,6 +1,7 @@
 import { fetchDetail } from "@/lib/bunjang";
 import { CATALOG } from "@/lib/catalog";
 import { categoryFromComparableKey, loadCategoryReadinessMap } from "@/lib/category-readiness";
+import { pickByConditionFallback } from "@/lib/condition-fallback";
 import {
   canPermanentlyInvalidateSoldOut,
   detectSoldOut,
@@ -519,65 +520,18 @@ const CONDITION_LABEL: Record<string, string> = {
   all: "전체",
 };
 
-// Wave 159g (2026-05-17): tick-pipeline의 SCORE_CONDITION_FALLBACK과 동기화.
-// flawed 키 누락 + low_batt fallback 짧음 → flawed/low_batt 매물에 임의 condition 잡힘 위험.
-// pid 408329098 (iPhone 14 리퍼) 사례에서 발견된 동일 버그가 pack-open에도 존재.
-const CONDITION_FALLBACK_ORDER: Record<string, string[]> = {
-  unopened: ["unopened", "mint", "clean", "normal", "all"],
-  mint: ["mint", "unopened", "clean", "normal", "all"],
-  clean: ["clean", "normal", "mint", "all"],
-  normal: ["normal", "clean", "worn", "all"],
-  worn: ["worn", "normal", "all"],
-  low_batt: ["low_batt", "worn", "normal", "all"],
-  flawed: ["flawed", "worn", "low_batt", "normal", "all"],
-  all: ["all", "normal", "clean", "worn", "mint"],
-};
-
 const MIN_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
 
-/**
- * Wave 130: 매물 condition_class에 가장 잘 맞는 시세 row 선택.
- * 우선 정확 매칭, sample < 3이면 정해진 fallback 순서로 다른 class 시도.
- * Returns: { row, conditionClass, fallbackUsed }
- */
+// Wave 159h (2026-05-17): condition-fallback shared module 사용 (DRY).
 function selectMarketRowByCondition(
   byCondition: MarketStatsByCondition | undefined,
   targetConditionClass: string | null,
 ): { row: MarketPriceRow | undefined; conditionClass: string | null; fallbackUsed: boolean } {
-  if (!byCondition || byCondition.size === 0) {
-    return { row: undefined, conditionClass: null, fallbackUsed: false };
-  }
-  const target = targetConditionClass ?? "normal";
-  const order = CONDITION_FALLBACK_ORDER[target] ?? [target, "normal", "all"];
-  for (let i = 0; i < order.length; i++) {
-    const cls = order[i];
-    const candidate = byCondition.get(cls);
-    if (!candidate) continue;
-    const samples =
-      Number(candidate.active_sample_count ?? 0) +
-      Number(candidate.sold_sample_count ?? 0) +
-      Number(candidate.disappeared_sample_count ?? 0);
-    if (samples >= MIN_SAMPLE_COUNT_FOR_CONFIDENCE || i === order.length - 1) {
-      return {
-        row: candidate,
-        conditionClass: cls,
-        fallbackUsed: i > 0,
-      };
-    }
-  }
-  // 모든 class에서 sample 부족 → target 있으면 target, 없으면 안전 fallback (normal/worn/clean).
-  // Wave 159g: 이전엔 byCondition.values().next().value (Map 첫 entry — unopened/mint 임의 잡힘 위험).
-  // unopened/mint 시세가 worn/flawed 매물에 잘못 박혀 차익 부풀려지는 사고 차단.
-  const safeFallback =
-    byCondition.get(target) ??
-    byCondition.get("normal") ??
-    byCondition.get("worn") ??
-    byCondition.get("clean");
-  return {
-    row: safeFallback,
-    conditionClass: safeFallback ? (byCondition.has(target) ? target : "normal") : target,
-    fallbackUsed: !byCondition.has(target),
-  };
+  return pickByConditionFallback(
+    byCondition,
+    targetConditionClass,
+    (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0) + Number(r.disappeared_sample_count ?? 0),
+  );
 }
 
 export function marketBasisForCandidate(

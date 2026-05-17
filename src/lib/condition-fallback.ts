@@ -1,0 +1,70 @@
+// Wave 159h (2026-05-17): 시세 fallback chain shared module.
+// 이전 (Wave 159f/g): tick-pipeline / pack-open / landing-showcases / market-history / market-source 4곳에
+// 동일 매핑 중복 → DRY 위반 + 정합성 risk.
+// 이 module 에 통합. 미래 정책 변경 시 한 곳만 수정.
+//
+// 정책 (사용자 메모리 안전결제 의무 + 차익 부풀려짐 방지):
+// - flawed/low_batt 같은 손상/저성능 매물에 unopened (다나와 새 가격) / mint 시세가 임의 fallback X
+// - sample 부족 시 같은/낮은 condition 시세로 보수적 fallback
+// - 임의 첫 entry fallback 절대 금지 (Map.values().next().value 사고 차단)
+
+export type ConditionClass = string;
+
+export const CONDITION_FALLBACK_CHAIN: Record<string, string[]> = {
+  unopened: ["unopened", "mint", "clean", "normal", "all"],
+  mint: ["mint", "unopened", "clean", "normal", "all"],
+  clean: ["clean", "normal", "mint", "all"],
+  normal: ["normal", "clean", "worn", "all"],
+  worn: ["worn", "normal", "all"],
+  low_batt: ["low_batt", "worn", "normal", "all"],
+  flawed: ["flawed", "worn", "low_batt", "normal", "all"],
+  all: ["all", "normal", "clean", "worn", "mint"],
+};
+
+// 안전 마지막 fallback: target/normal/worn/clean 순. unopened/mint 절대 잡지 않음.
+export const SAFE_FINAL_FALLBACK: ConditionClass[] = ["normal", "worn", "clean"];
+
+/**
+ * 매물 condition_class 에 대한 fallback chain 반환.
+ * 정의되지 않은 condition 이면 보수적 default ([target, "normal", "worn", "clean", "all"]).
+ */
+export function conditionFallbackChain(target: ConditionClass | null | undefined): string[] {
+  const key = target ?? "normal";
+  return CONDITION_FALLBACK_CHAIN[key] ?? [key, "normal", "worn", "clean", "all"];
+}
+
+/**
+ * Map<condition_class, T> 에서 target 우선 + fallback chain 으로 row 선택.
+ * sample 부족 시 다음 condition 으로 진행.
+ *
+ * @param byCondition condition_class → row map
+ * @param target 매물 condition_class
+ * @param getSamples row 에서 sample 수 추출 (sample 부족 fallback 트리거)
+ * @param minSamples 충분한 sample 기준 (default 3)
+ */
+export function pickByConditionFallback<T>(
+  byCondition: Map<ConditionClass, T> | undefined,
+  target: ConditionClass | null | undefined,
+  getSamples: (row: T) => number,
+  minSamples = 3,
+): { row: T | undefined; conditionClass: ConditionClass | null; fallbackUsed: boolean } {
+  if (!byCondition || byCondition.size === 0) {
+    return { row: undefined, conditionClass: null, fallbackUsed: false };
+  }
+  const order = conditionFallbackChain(target);
+  for (let i = 0; i < order.length; i++) {
+    const cls = order[i];
+    const cand = byCondition.get(cls);
+    if (!cand) continue;
+    const samples = getSamples(cand);
+    if (samples >= minSamples || i === order.length - 1) {
+      return { row: cand, conditionClass: cls, fallbackUsed: i > 0 };
+    }
+  }
+  // 안전 fallback: normal/worn/clean 순. unopened/mint 임의 잡지 않음.
+  for (const cls of SAFE_FINAL_FALLBACK) {
+    const cand = byCondition.get(cls);
+    if (cand) return { row: cand, conditionClass: cls, fallbackUsed: true };
+  }
+  return { row: undefined, conditionClass: null, fallbackUsed: false };
+}
