@@ -208,12 +208,9 @@ export const LANE_READINESS: LaneReadinessMap = {
   macbook_pro_15_2017: { status: "ready", label: "MacBook Pro 15\" 2017 (Intel)", note: "Intel only. A1707." },
   macbook_pro_13_2019: { status: "ready", label: "MacBook Pro 13\" 2019 (Intel)", note: "Intel only. A2159/A1989." },
   macbook_pro_13_2017: { status: "ready", label: "MacBook Pro 13\" 2017 (Intel)", note: "Intel only. A1706/A1708." },
-  macbook_pro_13_2016: { status: "ready", label: "MacBook Pro 13\" 2016 (Intel)", note: "Intel only." },
-  macbook_pro_13_2015: { status: "ready", label: "MacBook Pro 13\" 2015 (Intel)", note: "Intel only. A1502." },
-  macbook_pro_13_2013: { status: "ready", label: "MacBook Pro 13\" 2013 (Intel)", note: "Intel only. A1502." },
+  // Wave 182 (2026-05-17): 9년 정책 — macbook_pro_13_2013/2015/2016, macbook_air_13_2015 SKU 제거.
   macbook_air_13_2018: { status: "ready", label: "MacBook Air 13\" 2018 (Intel)", note: "Intel only. A1932. Air M1 = 2020." },
   macbook_air_13_2017: { status: "ready", label: "MacBook Air 13\" 2017 (Intel)", note: "Intel only. A1466." },
-  macbook_air_13_2015: { status: "ready", label: "MacBook Air 13\" 2015 (Intel)", note: "Intel only. A1466." },
   // Wave 108: Galaxy S 일반(Ultra/Plus 아닌) 256GB 자급제 narrow lane.
   galaxy_s23_256_self: {
     status: "ready",
@@ -385,11 +382,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   // watch_seiko_5_sports_srpd (1건), watch_seiko_5_sports_sbsa (0건), camera_sony_a6400 (production 0건)
   // Wave 142 (2026-05-17): 액세서리/luxury narrow lane 3개 신설 (사용자 원래 의도 = 상품 다양화).
   // 정밀 검토 후 표본 충분한 lane만 ready (애플펜슬 단독 0건 → drop).
-  magic_keyboard_ipad: {
-    status: "ready",
-    label: "Apple Magic Keyboard for iPad",
-    note: "Wave 142: iPad 매직키보드 단독 narrow lane (43건 단독, median ₩330k, p25 ₩225k / p75 ₩360k). Smart Keyboard Folio / 맥북용 / 단품/부품/케이스만 매물은 catalog mustNotContain으로 차단. 11인치 vs 13인치 표기 불명확 매물 25건 多 → 단일 SKU 통합.",
-  },
+  // Wave 182 (2026-05-17): magic_keyboard_ipad SKU 제거 (액세서리 — catalog 정비).
   applewatch_s8_hermes: {
     status: "ready",
     label: "Apple Watch Series 8 Hermès",

@@ -677,6 +677,8 @@ function parseTabletGenerationChip(text: string, model: string | null, screenSiz
 
 function tabletChipAxis(model: string | null, chip: string | null) {
   // Wave 106 #53: ipad_mini 추가 (옛 모델 chip 매핑 추가됨).
+  // Wave 182 (2026-05-17): narrow id (ipad_mini_6_64_wifi 등)는 model이 narrow → broader case 안 들어감 → chip axis null.
+  // narrow id 자체가 unique 식별자라 chip axis 안 박혀도 OK (기존 ipad-mini-7-128-wifi 패턴 동일).
   if (model === "ipad_pro" || model === "ipad_air" || model === "ipad_mini") return chip ?? "unknown_chip";
   return null;
 }
@@ -707,18 +709,30 @@ function parseBareTabletScreenSizeIn(text: string, model: string | null) {
   return null;
 }
 
+// Wave 182 (2026-05-17): narrow tablet SKU id → broader model (ipad_pro/ipad_air/ipad_mini).
+// parseTabletScreenSizeIn / tabletChipAxis 에서 chip/screen 추론 시 broader case 활용.
+// model 자체는 narrow 유지 (comparable_key 정확성 — 기존 test 호환).
+function broaderTabletModel(model: string | null): string | null {
+  if (!model) return null;
+  if (model.startsWith("ipad_mini")) return "ipad_mini";
+  if (model.startsWith("ipad_air")) return "ipad_air";
+  if (model.startsWith("ipad_pro")) return "ipad_pro";
+  return model;
+}
+
 function parseTabletScreenSizeIn(text: string, model: string | null) {
   const explicit = parseScreenSizeIn(text);
   if (explicit) return explicit;
-  const bare = parseBareTabletScreenSizeIn(text, model);
+  const broader = broaderTabletModel(model);
+  const bare = parseBareTabletScreenSizeIn(text, broader);
   if (bare) return bare;
 
-  const generation = parseTabletGeneration(text, model);
-  if (model === "ipad_mini") {
+  const generation = parseTabletGeneration(text, broader);
+  if (broader === "ipad_mini") {
     if (generation && generation <= 5) return 7.9;
     if (generation && generation >= 6) return 8.3;
   }
-  if (model === "ipad_air") {
+  if (broader === "ipad_air") {
     if (generation === 1 || generation === 2) return 9.7;
     if (generation === 3) return 10.5;
     if (generation === 4 || generation === 5) return 10.9;
@@ -1002,11 +1016,16 @@ function defaultTabletScreenSizeIn(model: string | null) {
   if (model === "ipad_10") return 10.9;
   if (/^ipad_(?:pro|air)_11_/.test(model)) return 11;
   if (/^ipad_(?:pro|air)_13_/.test(model)) return 13;
+  // Wave 182 (2026-05-17): iPad Pro 12.9 M1 + iPad Air 4/5 narrow lane 추가.
+  if (/^ipad_pro_12_9_/.test(model)) return 12.9;
+  if (/^ipad_air_(?:4|5)_/.test(model)) return 10.9;
   if (/^ipad_mini_/.test(model)) return 8.3;
-  if (model === "galaxy_tab_s8" || model === "galaxy_tab_s9") return 11;
+  if (model === "galaxy_tab_s7" || model === "galaxy_tab_s8" || model === "galaxy_tab_s9") return 11;
   if (model === "galaxy_tab_s9_fe") return 10.9;
   if (model === "galaxy_tab_s9_fe_plus") return 12.4;
   if (model === "galaxy_tab_s10_fe_plus") return 13.1;
+  // Wave 182 (2026-05-17): Galaxy Tab S7 변형 추가.
+  if (model === "galaxy_tab_s7_plus" || model === "galaxy_tab_s7_fe") return 12.4;
   if (model === "galaxy_tab_s8_plus" || model === "galaxy_tab_s9_plus" || model === "galaxy_tab_s10_plus") return 12.4;
   if (model === "galaxy_tab_s8_ultra" || model === "galaxy_tab_s9_ultra" || model === "galaxy_tab_s10_ultra") return 14.6;
   return null;
