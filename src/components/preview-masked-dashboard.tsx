@@ -207,7 +207,9 @@ export default function PreviewMaskedDashboard() {
                         <CategoryIcon width={36} height={36} />
                       )}
                     </div>
-                    <div className="min-w-0 flex-1">
+                    {/* 2026-05-17: PC 에서는 info 와 신뢰 chip 좌우 분리 (모바일은 stack). */}
+                    <div className="flex min-w-0 flex-1 flex-col items-start gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+                      <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#5d735f] dark:text-emerald-400">
                           <CategoryIcon width={12} height={12} />
@@ -244,24 +246,25 @@ export default function PreviewMaskedDashboard() {
                           ) : null;
                         })()}
                       </div>
-                      {/* 2026-05-17: 신뢰 시그널 chips (dashboard 패턴) */}
-                      <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                      </div>
+                      {/* 2026-05-17: 신뢰 시그널 chips — PC = 우측 column, 모바일 = info 아래 */}
+                      <div className="flex flex-wrap items-center gap-1 lg:flex-col lg:items-end lg:justify-center lg:gap-1.5">
                         {item.isFresh && (
-                          <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
+                          <span className="whitespace-nowrap rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
                             🆕 신규
                           </span>
                         )}
                         {item.freeShipping && (
-                          <span className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold text-sky-800 dark:bg-sky-900/40 dark:text-sky-200">
+                          <span className="whitespace-nowrap rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold text-sky-800 dark:bg-sky-900/40 dark:text-sky-200">
                             무료배송
                           </span>
                         )}
                         {item.confidence === "high" ? (
-                          <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
+                          <span className="whitespace-nowrap rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
                             시세 신뢰 높음
                           </span>
                         ) : item.confidence === "medium" ? (
-                          <span className="rounded-full bg-yellow-100 px-1.5 py-0.5 text-[10px] font-bold text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200">
+                          <span className="whitespace-nowrap rounded-full bg-yellow-100 px-1.5 py-0.5 text-[10px] font-bold text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200">
                             시세 신뢰 보통
                           </span>
                         ) : null}
