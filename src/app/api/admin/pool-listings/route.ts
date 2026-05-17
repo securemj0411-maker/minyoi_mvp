@@ -149,9 +149,11 @@ export async function GET(req: NextRequest) {
     const pids = poolRows.map((r) => Number(r.pid));
     const pidsCsv = pids.join(",");
 
-    // 3. Join with listings + raw + parsed + user feedback (한 batch에 한꺼번에)
+    // 3. Join with listings + raw + parsed + analysis + user feedback (한 batch에 한꺼번에)
     // 2026-05-17 Phase 0 L4: RiskScoreBar 입력 — description_preview / shop_review_* / image_count / score_flags 추가.
-    const [listingsRes, rawRes, parsedRes, feedbackRes] = await Promise.all([
+    // Wave 190 (2026-05-17) FIX: score_flags 는 mvp_listing_parsed 에 없음 (mvp_listing_analysis 가 정식 location).
+    // 이전 (Wave 184): parsed 에서 score_flags fetch 시도 → 항상 빈 배열 → RiskScoreBar fraud axis 일부 미작동.
+    const [listingsRes, rawRes, parsedRes, analysisRes, feedbackRes] = await Promise.all([
       restFetch(
         `${tableUrl("mvp_listings")}?select=pid,name,price,sku_name,sku_median,thumbnail_url,url,description_preview,shop_review_rating,shop_review_count,image_count,free_shipping,num_faved,num_comment&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
@@ -162,9 +164,15 @@ export async function GET(req: NextRequest) {
       ),
       restFetch(
         // 2026-05-16 (사용자 코멘트 #120): condition_class 추가 — 운영자풀 시세 출처 표시 위해.
-        // 2026-05-17 Phase 0 L4: score_flags 추가 — RiskScoreBar 의 fraud / battery axis 신호.
         // Wave 182 Phase 3 (2026-05-17): parsed_json 추가 — option_base_assumed UI 표시.
-        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,score_flags,parsed_json&pid=in.(${pidsCsv})`,
+        // Wave 190: score_flags 제거 — mvp_listing_analysis 가 정식 location.
+        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,parsed_json&pid=in.(${pidsCsv})`,
+        { headers: serviceHeaders() },
+      ),
+      // Wave 190 (2026-05-17): score_flags 정식 fetch — mvp_listing_analysis 에서.
+      // RiskScoreBar 의 ai_escrow_held / ai_escrow_pending / extreme_discount_review 등 신호 정확하게 잡힘.
+      restFetch(
+        `${tableUrl("mvp_listing_analysis")}?select=pid,score_flags,risk_hits&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -222,10 +230,12 @@ export async function GET(req: NextRequest) {
     const listingsMap = new Map<number, Record<string, unknown>>();
     const rawMap = new Map<number, Record<string, unknown>>();
     const parsedMap = new Map<number, Record<string, unknown>>();
+    const analysisMap = new Map<number, Record<string, unknown>>();
     const feedbackMap = new Map<number, Record<string, unknown>>();
     for (const r of (await listingsRes.json()) as Array<Record<string, unknown>>) listingsMap.set(Number(r.pid), r);
     for (const r of (await rawRes.json()) as Array<Record<string, unknown>>) rawMap.set(Number(r.pid), r);
     for (const r of (await parsedRes.json()) as Array<Record<string, unknown>>) parsedMap.set(Number(r.pid), r);
+    for (const r of (await analysisRes.json()) as Array<Record<string, unknown>>) analysisMap.set(Number(r.pid), r);
     for (const r of (await feedbackRes.json()) as Array<Record<string, unknown>>) feedbackMap.set(Number(r.pid), r);
 
     const items = poolRows.map((pool) => {
@@ -233,6 +243,7 @@ export async function GET(req: NextRequest) {
       const l = listingsMap.get(pid) || {};
       const r = rawMap.get(pid) || {};
       const p = parsedMap.get(pid) || {};
+      const a = analysisMap.get(pid) || {};
       const fb = feedbackMap.get(pid);
       const note = (fb?.note as string | undefined) ?? "";
       const comparableKey = (p.comparable_key as string | null) ?? null;
@@ -267,7 +278,8 @@ export async function GET(req: NextRequest) {
         freeShipping: Boolean(l.free_shipping),
         numFaved: l.num_faved != null ? Number(l.num_faved) : null,
         numComment: l.num_comment != null ? Number(l.num_comment) : null,
-        scoreFlags: Array.isArray(p.score_flags) ? p.score_flags as string[] : [],
+        // Wave 190 (2026-05-17) FIX: score_flags 는 mvp_listing_analysis 에서 (parsed 에 없는 컬럼).
+        scoreFlags: Array.isArray(a.score_flags) ? a.score_flags as string[] : [],
         // Wave 182 Phase 3 (2026-05-17): base option fallback — UI "기본 옵션 가정" 표시.
         optionBaseAssumed: (() => {
           const pj = p.parsed_json as Record<string, unknown> | null | undefined;
