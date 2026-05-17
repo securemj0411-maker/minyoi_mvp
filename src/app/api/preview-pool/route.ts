@@ -118,14 +118,16 @@ export async function GET() {
     const skuByPid = new Map<number, string | null>(rawListings.map((r) => [r.pid, r.sku_id]));
     const metaByPid = new Map<number, RawListingMeta>(rawListings.map((r) => [r.pid, r]));
 
-    // 2026-05-17: 가격 tier 분리 — 10만 이하 2개 + 10-30만 3개. SKU 다양화 유지.
-    // pickFromTier 가 carry-over: cumulative usedSkus/categories.
+    // 2026-05-17: 가격 tier 분리 — 10만 이하 2개 + 10-30만 3개. SKU + category + condition_class 다양화.
+    // pickFromTier 가 carry-over: cumulative usedSkus/categories/usedConditions.
     const usedSkus = new Set<string>();
     const usedCategories = new Set<string>();
+    const usedConditions = new Set<string>();
     const selected: PoolRow[] = [];
 
-    function pickFromTier(maxPriceKrw: number, target: number, allowCategoryDup: boolean) {
+    function pickFromTier(maxPriceKrw: number, target: number) {
       const tierPicked: PoolRow[] = [];
+      // 1차 — sku + category + condition_class 다 dedup (가장 strict)
       for (const row of pool) {
         if (tierPicked.length >= target) break;
         if (selected.some((s) => s.pid === row.pid)) continue;
@@ -134,13 +136,33 @@ export async function GET() {
         const sku = skuByPid.get(row.pid);
         if (sku && usedSkus.has(sku)) continue;
         const cat = row.category ?? "other";
-        if (!allowCategoryDup && usedCategories.has(cat)) continue;
+        if (usedCategories.has(cat)) continue;
+        const cc = row.condition_class ?? "normal";
+        if (usedConditions.has(cc)) continue;
         tierPicked.push(row);
         if (sku) usedSkus.add(sku);
         usedCategories.add(cat);
+        usedConditions.add(cc);
       }
-      // tier 못 채우면 카테고리 중복 허용 한 번 더 시도.
-      if (tierPicked.length < target && !allowCategoryDup) {
+      // 2차 — condition_class 중복 허용 (sku/category 만 유지)
+      if (tierPicked.length < target) {
+        for (const row of pool) {
+          if (tierPicked.length >= target) break;
+          if (selected.some((s) => s.pid === row.pid)) continue;
+          if (tierPicked.some((s) => s.pid === row.pid)) continue;
+          const raw = rawByPid.get(row.pid);
+          if (!raw || raw.price > maxPriceKrw) continue;
+          const sku = skuByPid.get(row.pid);
+          if (sku && usedSkus.has(sku)) continue;
+          const cat = row.category ?? "other";
+          if (usedCategories.has(cat)) continue;
+          tierPicked.push(row);
+          if (sku) usedSkus.add(sku);
+          usedCategories.add(cat);
+        }
+      }
+      // 3차 — sku 만 dedup (category 도 중복 허용, fallback)
+      if (tierPicked.length < target) {
         for (const row of pool) {
           if (tierPicked.length >= target) break;
           if (selected.some((s) => s.pid === row.pid)) continue;
@@ -156,8 +178,8 @@ export async function GET() {
       selected.push(...tierPicked);
     }
 
-    pickFromTier(TIER_A_MAX_KRW, TIER_A_COUNT, false);
-    pickFromTier(TIER_B_MAX_KRW, TIER_B_COUNT, false);
+    pickFromTier(TIER_A_MAX_KRW, TIER_A_COUNT);
+    pickFromTier(TIER_B_MAX_KRW, TIER_B_COUNT);
 
     if (selected.length === 0) {
       return NextResponse.json({ items: [] }, {
