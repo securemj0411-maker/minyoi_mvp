@@ -126,9 +126,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   const [selectedPids, setSelectedPids] = useState<Set<number>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
-  // Wave 182: 손해 신고 모달 state.
+  // Wave 182c: 정보 오류 신고 모달 state (loss_report 는 보류, inaccurate_report 박힘).
+  // state 이름은 호환 위해 lossReport* 유지 — 의미는 inaccurate_report.
   const [lossReportItem, setLossReportItem] = useState<RevealItem | null>(null);
   const [lossReportNote, setLossReportNote] = useState("");
+  const [lossReportCategory, setLossReportCategory] = useState<string | null>(null);
   const [lossReportSubmitting, setLossReportSubmitting] = useState(false);
   const [lossReportResult, setLossReportResult] = useState<{ ok: boolean; message: string; compensation?: number } | null>(null);
 
@@ -433,12 +435,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     void fetchWithAuth("/api/packs/reveals/feedback", { pid, feedbackType, note }).catch(() => undefined);
   }
 
-  // Wave 182: 손해 신고 — 별도 endpoint (즉시 토큰 보상 + 운영자 검수 큐).
+  // Wave 182c: 정보 오류 신고 — inaccurate_report endpoint (즉시 토큰 +3 + 운영자 검수 큐).
   async function submitLossReport() {
     if (!lossReportItem || !userRef) return;
-    const note = lossReportNote.trim();
-    if (note.length < 5) {
-      setLossReportResult({ ok: false, message: "어떤 손해였는지 5자 이상 적어주세요." });
+    if (!lossReportCategory) {
+      setLossReportResult({ ok: false, message: "어떤 오류인지 카테고리를 골라주세요." });
       return;
     }
     setLossReportSubmitting(true);
@@ -448,14 +449,18 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       const { data: sessionData } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
       const token = sessionData.session?.access_token;
       if (!token) throw new Error("로그인이 필요해요.");
-      const res = await fetch("/api/packs/reveals/loss-report", {
+      const res = await fetch("/api/packs/reveals/inaccurate-report", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
           "x-user-ref": userRef,
         },
-        body: JSON.stringify({ pid: lossReportItem.pid, note }),
+        body: JSON.stringify({
+          pid: lossReportItem.pid,
+          category: lossReportCategory,
+          note: lossReportNote.trim(),
+        }),
       });
       const json = (await res.json()) as { ok?: boolean; message?: string; compensationTokens?: number; error?: string };
       if (!res.ok || !json.ok) {
@@ -471,7 +476,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         });
       }
     } catch (err) {
-      console.error("[loss-report] submit failed", err);
+      console.error("[inaccurate-report] submit failed", err);
       setLossReportResult({ ok: false, message: "신고 접수에 실패했어요." });
     } finally {
       setLossReportSubmitting(false);
@@ -481,9 +486,19 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   function closeLossReportModal() {
     setLossReportItem(null);
     setLossReportNote("");
+    setLossReportCategory(null);
     setLossReportResult(null);
     setLossReportSubmitting(false);
   }
+
+  // Wave 182c: 카테고리 옵션 (API VALID_CATEGORIES 와 sync).
+  const INACCURATE_CATEGORIES = [
+    { value: "price", label: "💰 시세 부정확", hint: "표시된 시세가 실제와 다름" },
+    { value: "info", label: "📋 매물 정보 다름", hint: "옵션/색상/용량/모델 다름" },
+    { value: "sold", label: "🚫 이미 판매됨", hint: "들어가니 판매완료/사라짐" },
+    { value: "fake_price", label: "🎣 가짜 가격 의심", hint: "사진/설명과 가격 매치 안 됨" },
+    { value: "other", label: "✏️ 기타", hint: "위 카테고리 외" },
+  ];
 
   function openItem(item: RevealItem, mode: "listing" | "guide") {
     previewSeedCounterRef.current += 1;
@@ -568,7 +583,9 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         </div>
       </div>
 
-      {/* Wave 182: 손해 신고 모달 — 사유 입력 + 즉시 토큰 +3 보상 안내. */}
+      {/* Wave 182c: 정보 오류 신고 모달 — 카테고리 chip + optional 사유 + 즉시 토큰 +3.
+          이전 (182): "손해 신고 — 5자 이상 사유 필수". 임계값 높아 신고 어려움.
+          현재: 카테고리만 골라도 제출 가능 (사유 optional). 사용자 자연 수집 → algorithm 보정 source. */}
       {lossReportItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeLossReportModal}>
           <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl dark:bg-zinc-900" onClick={(e) => e.stopPropagation()}>
@@ -586,7 +603,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   </div>
                 ) : null}
                 <div className="mt-3 text-[11px] text-zinc-500 dark:text-zinc-400">
-                  운영자가 24시간 안에 매물을 검토하고 알고리즘에 반영합니다. 비슷한 매물은 다른 사용자에게 가지 않도록 보정됩니다.
+                  운영자가 24시간 안에 검토하고 알고리즘에 반영합니다. 비슷한 매물의 시세/정보가 자동 보정됩니다.
                 </div>
                 <div className="mt-4 flex justify-end">
                   <button
@@ -601,25 +618,49 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             ) : (
               <>
                 <div className="text-base font-black text-zinc-900 dark:text-zinc-100">
-                  🚨 손해 신고
+                  🔍 정보 오류 신고
                 </div>
                 <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
                   매물: <span className="font-bold">{lossReportItem.name}</span>
                 </div>
                 <div className="mt-3 text-[12px] leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  어떤 손해를 입었는지 알려주세요. 즉시 토큰 <b>3개 보상</b> + 24시간 안에 운영자 검토 후 알고리즘 보정.
+                  어떤 오류를 발견했나요? 카테고리만 골라도 신고 가능 — 즉시 토큰 <b>3개 보상</b>.
                 </div>
+
+                {/* 카테고리 chip — 클릭으로 선택 */}
+                <div className="mt-3 grid grid-cols-1 gap-1.5">
+                  {INACCURATE_CATEGORIES.map((cat) => {
+                    const active = lossReportCategory === cat.value;
+                    return (
+                      <button
+                        key={cat.value}
+                        type="button"
+                        onClick={() => setLossReportCategory(cat.value)}
+                        className={`flex items-center justify-between gap-2 rounded-lg border-2 px-3 py-2 text-left text-xs font-bold transition ${
+                          active
+                            ? "border-amber-500 bg-amber-50 text-amber-900 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-100"
+                            : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-600"
+                        }`}
+                      >
+                        <span>{cat.label}</span>
+                        <span className="text-[10px] font-normal text-zinc-500 dark:text-zinc-400">{cat.hint}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* optional 사유 */}
                 <textarea
                   value={lossReportNote}
                   onChange={(e) => setLossReportNote(e.target.value)}
-                  placeholder="예: 받았는데 배터리 효율 65% / 사진과 달리 액정 크랙 / 셀러가 답장 안 함 + 매물 사라짐"
-                  rows={4}
-                  className="mt-3 w-full rounded-lg border border-zinc-300 bg-white p-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                  placeholder="자세한 상황 (선택) — 예: 표시 시세 87만인데 실제 매물 60만대"
+                  rows={2}
+                  className="mt-3 w-full rounded-lg border border-zinc-300 bg-white p-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
                   maxLength={1000}
                 />
-                <div className="mt-1 text-[10px] text-zinc-400">{lossReportNote.length}/1000</div>
+
                 {lossReportResult?.message && !lossReportResult.ok ? (
-                  <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+                  <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200">
                     {lossReportResult.message}
                   </div>
                 ) : null}
@@ -635,8 +676,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   <button
                     type="button"
                     onClick={submitLossReport}
-                    disabled={lossReportSubmitting || lossReportNote.trim().length < 5}
-                    className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-black text-white hover:bg-rose-700 disabled:opacity-50"
+                    disabled={lossReportSubmitting || !lossReportCategory}
+                    className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-black text-white hover:bg-amber-700 disabled:opacity-50"
                   >
                     {lossReportSubmitting ? "신고 중..." : "신고하고 토큰 +3 받기"}
                   </button>
@@ -1033,7 +1074,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           setSelectedPreviewSeed(null);
         }}
         // Wave 182b: 손해 신고 — 매물 상세 모달 안 1곳에만 박음. 카드 list 에선 빠짐.
-        alreadyReportedLoss={selectedItem?.feedbackType === "loss_report"}
+        // Wave 182c: 이미 inaccurate_report 박힌 매물은 비활성. (loss_report 보류 → 체크 안 함)
+        alreadyReportedLoss={selectedItem?.feedbackType === "inaccurate_report"}
         onReportLoss={() => {
           if (!selectedItem) return;
           const itemRef = selectedItem;

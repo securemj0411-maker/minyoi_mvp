@@ -786,21 +786,22 @@ function RevealCardItem({
           </a>
         </div>
 
-        {/* Wave 182b (2026-05-17): 손해 신고 — 매물 모달 안 1곳에만. 카드 list 에선 빠짐.
+        {/* Wave 182c (2026-05-17): 정보 오류 신고 — 매수 전 자연 수집 (임계값 낮음).
+            loss_report (매수 후 손해) 는 보류 — 일단 inaccurate_report 만 노출.
             onReportLoss prop 있을 때만 표시 (= user-reveal-dashboard "상품 보기" 흐름). */}
         {onReportLoss && (
           <button
             type="button"
             onClick={() => onReportLoss(card)}
             disabled={alreadyReportedLoss}
-            title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "손해 봤어요 (토큰 +3 즉시 보상 + 24h 검수)"}
+            title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "정보 오류 신고하고 토큰 +3 받기 (24h 검수)"}
             className={`flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black leading-none transition ${
               alreadyReportedLoss
                 ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
-                : "border-rose-300 bg-rose-50 text-rose-800 hover:border-rose-400 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200"
+                : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
             }`}
           >
-            {alreadyReportedLoss ? "🚨 신고됨" : "🚨 이 매물 받고 손해 봤어요"}
+            {alreadyReportedLoss ? "✅ 신고 완료 — 검수 중" : "🔍 정보 오류 신고하고 토큰 +3 받기"}
           </button>
         )}
       </div>

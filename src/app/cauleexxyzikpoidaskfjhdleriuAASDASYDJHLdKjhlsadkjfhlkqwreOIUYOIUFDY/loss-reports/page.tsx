@@ -23,19 +23,20 @@ export default async function LossReportsAdminPage() {
           >
             ⚙ 회원 목록
           </a>
-          <span className="rounded-full bg-rose-100 px-2.5 py-1 font-black text-rose-800 dark:bg-rose-900/40 dark:text-rose-200">
-            🚨 손해 신고 검수 (현재)
+          <span className="rounded-full bg-amber-100 px-2.5 py-1 font-black text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
+            🔍 사용자 신고 검수 (현재)
           </span>
         </nav>
         <header className="mb-6 border-b border-[#e2d9cb] pb-4 dark:border-zinc-800">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
-            Admin · loss_reports
+            Admin · feedback_reports
           </p>
           <h1 className="mt-1 text-2xl font-black tracking-tight text-[#223127] dark:text-white">
-            🚨 손해 신고 검수
+            🔍 사용자 신고 검수
           </h1>
           <p className="mt-1 text-xs text-[#687366] dark:text-zinc-400">
-            사용자가 매물 매수 후 손해 신고한 건. 즉시 토큰 3개 보상 박힘. 24시간 안에 검토 + 응답 권장.
+            🔍 정보 오류 (시세/매물 정보/판매됨/가짜 가격) + 🚨 손해 신고 (보류) 통합 검수.
+            즉시 토큰 +3 박힘 — 24시간 안에 검토 + 응답 권장.
           </p>
         </header>
         <LossReportsClient />

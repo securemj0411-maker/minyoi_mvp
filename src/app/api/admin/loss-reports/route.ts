@@ -14,7 +14,7 @@ type FeedbackRow = {
   id: number;
   user_ref: string;
   pid: number;
-  feedback_type: string;
+  feedback_type: string; // 'loss_report' | 'inaccurate_report'
   note: string;
   source: string;
   admin_status: string | null;
@@ -44,7 +44,9 @@ export async function GET(req: NextRequest) {
   const limit = Math.max(1, Math.min(200, Number(url.searchParams.get("limit") ?? "100") || 100));
 
   try {
-    let filter = "feedback_type=eq.loss_report";
+    // Wave 182c (2026-05-17): loss_report (보류) + inaccurate_report (정보 오류 신고) 둘 다 처리.
+    // 운영자 페이지 한 곳에서 모두 검수.
+    let filter = "feedback_type=in.(loss_report,inaccurate_report)";
     if (statusFilter === "pending") filter += "&admin_status=is.null";
     else if (statusFilter === "resolved") filter += "&admin_status=eq.resolved";
     else if (statusFilter === "dismissed") filter += "&admin_status=eq.dismissed";
@@ -81,6 +83,7 @@ export async function GET(req: NextRequest) {
         id: r.id,
         userRef: r.user_ref,
         pid: r.pid,
+        feedbackType: r.feedback_type, // Wave 182c: loss vs inaccurate 구분
         note: r.note,
         source: r.source,
         adminStatus: r.admin_status ?? "pending",

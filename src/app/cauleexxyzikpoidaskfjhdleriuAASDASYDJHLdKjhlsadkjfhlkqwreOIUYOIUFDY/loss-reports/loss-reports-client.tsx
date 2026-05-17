@@ -9,6 +9,8 @@ type LossReportItem = {
   id: number;
   userRef: string;
   pid: number;
+  // Wave 182c: feedback_type 구분 ('loss_report' 보류 | 'inaccurate_report' 박힘).
+  feedbackType: "loss_report" | "inaccurate_report" | string;
   note: string;
   source: string;
   adminStatus: "pending" | "resolved" | "dismissed";
@@ -183,7 +185,17 @@ export default function LossReportsClient() {
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="line-clamp-2 text-sm font-black text-zinc-900 dark:text-zinc-100">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {/* Wave 182c: feedback_type 구분 chip */}
+                      <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-black ${
+                        item.feedbackType === "inaccurate_report"
+                          ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+                          : "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200"
+                      }`}>
+                        {item.feedbackType === "inaccurate_report" ? "🔍 정보 오류" : "🚨 손해 신고"}
+                      </span>
+                    </div>
+                    <div className="line-clamp-2 mt-1 text-sm font-black text-zinc-900 dark:text-zinc-100">
                       {item.listing?.name ?? `pid ${item.pid}`}
                     </div>
                     <div className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">

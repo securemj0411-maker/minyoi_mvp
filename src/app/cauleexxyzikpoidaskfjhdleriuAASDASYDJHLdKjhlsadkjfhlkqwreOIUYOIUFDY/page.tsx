@@ -180,9 +180,9 @@ export default async function MembersPage() {
         </span>
         <a
           href="./loss-reports"
-          className="rounded-full border border-rose-300 bg-rose-50 px-2.5 py-1 font-black text-rose-800 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200"
+          className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 font-black text-amber-900 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
         >
-          🚨 손해 신고 검수
+          🔍 사용자 신고 검수
         </a>
       </nav>
 
