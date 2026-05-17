@@ -371,7 +371,7 @@ function laptopGenerationKey(
   if (modelNumber) return modelNumber;
   // Wave 182 Phase 4 (2026-05-17): Intel Core/Ultra chip (Arrow Lake 등) generation 매핑 추가.
   // m1~m9 (Apple Silicon) + core5/7/9 (Intel Arrow Lake) + ultra5/7/9 (Intel Core Ultra).
-  if (chip && /^(m[1-9]|core[579]|ultra[579])(?:_[a-z]+|[a-z]*)?$/i.test(chip)) {
+  if (chip && /^(m[1-9]|core[3579]|ultra[3579])(?:_[a-z]+|[a-z]*)?$/i.test(chip)) {
     return `${chip.toLowerCase().replaceAll("_", "")}_gen`;
   }
   return null;
@@ -777,10 +777,10 @@ function parseChip(text: string) {
   ]);
   if (coreUltra?.[1]) return `ultra${coreUltra[1]}`;
   // Wave 182 Phase 4 (2026-05-17): Intel Core 5/7/9 (Arrow Lake, 2024+) — Galaxy Book 4/5 등.
-  // 옛 i3/i5/i7/i9 와 구분 — "i5/i7/i9" 표기 X, "Core 5" / "코어 5" 표기.
+  // Wave 188 (2026-05-18): "코어 3", "코어3" 도 추가 (Intel Core 3 low-end). i3/i5/i7/i9 와 구분.
   const intelCore = firstMatch(lower, [
-    /(?:인텔\s*)?core\s*([579])(?!\d|\s*ultra)/i,
-    /(?:인텔\s*)?코어\s*([579])(?!\d|\s*울트라)/,
+    /(?:인텔\s*)?core\s*([3579])(?!\d|\s*ultra)/i,
+    /(?:인텔\s*)?코어\s*([3579])(?!\d|\s*울트라)/,
   ]);
   if (intelCore?.[1]) return `core${intelCore[1]}`;
   // 2026-05-15 Wave 124: \b → lookbehind/lookahead. \b는 "맥북프로14m5"의 "4m" 사이에서 안 잡힘 (둘 다 word char).

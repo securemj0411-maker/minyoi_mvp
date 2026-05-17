@@ -4131,12 +4131,28 @@ export const CATALOG: Sku[] = [
     laneKey: "dyson_supersonic_hd08",
     modelName: "Dyson Supersonic (HD08)",
     aliases: ["Dyson Supersonic", "다이슨 슈퍼소닉", "Dyson HD08"],
-    mustContain: [["다이슨", "dyson"], ["슈퍼소닉", "supersonic", "hd08", "hd15"]],
+    // mustContain 강화: "헤어드라이어" / "드라이어" 명시 매물만 본품으로 인정.
+    mustContain: [
+      ["다이슨", "dyson"],
+      ["슈퍼소닉", "supersonic", "hd08", "hd15"],
+      ["헤어드라이어", "드라이어", "본체", "본품", "풀세트", "hd08", "hd15"],
+    ],
+    // Wave 188 internal test (2026-05-18): production sweep 으로 발견한 false positive 차단.
     mustNotContain: [
       "origin", "오리진", "에어랩", "airwrap", "코랄", "corrale",
       "이미테이션", "정품 아님", "가품",
-      "노즐만", "필터만", "디퓨저만", "어댑터만", "거치대만",
+      // 액세서리/부품 단품
+      "노즐만", "노즐 세트", "노즐 툴", "툴 세트", "툴 일괄",
+      "필터만", "디퓨저만", "어댑터만",
+      "거치대", "거치 대", "스탠드만", "벽거치",
+      "케이스만", "정품 케이스",
       "박스만", "충전기만", "부품",
+      // 가품 / 카피 브랜드
+      "휙", "다이슨 저렴이", "다이슨 짝퉁",
+      // 굿즈 (포토카드 등)
+      "포토카드", "포카", "특전", "굿즈", "박보검",
+      // 트래블판 (해외 spec) — 한국 본품 시세와 분리
+      "트래블", "travel",
       "수리", "고장", "충전 안됨", "침수",
       "매입", "삽니다", "구합니다",
     ],
@@ -4169,16 +4185,28 @@ export const CATALOG: Sku[] = [
     laneKey: "dyson_airwrap_hs05",
     modelName: "Dyson Airwrap Multi-styler Complete (HS05)",
     aliases: ["Dyson Airwrap", "다이슨 에어랩", "Airwrap Multi-styler", "에어랩 멀티스타일러"],
-    mustContain: [["다이슨", "dyson"], ["에어랩", "airwrap"]],
-    // Wave 185 internal test (2026-05-18): 부품/액세서리 + 신모델 (Origin/i.d.) false positive 차단.
+    // mustContain 강화: "본체 / 본품 / 풀세트 / 컴플리트 / 멀티스타일러 / 스타일러 (단독 토큰)" 명시 매물만.
+    mustContain: [
+      ["다이슨", "dyson"],
+      ["에어랩", "airwrap"],
+      ["본체", "본품", "풀세트", "컴플리트", "complete", "멀티스타일러", "스타일러"],
+    ],
+    // Wave 188 internal test (2026-05-18): production sweep 추가 false positive 차단.
     mustNotContain: [
       "i.d.", " id ", "iD", "코안다", "co-anda", "coanda", "2x", "hs08",
       "오리진", "origin", "hs09",
       "슈퍼소닉", "supersonic", "코랄", "corrale",
       "이미테이션", "정품 아님", "가품",
-      "어태치먼트만", "노즐만", "디퓨저만", "어댑터만", "거치대만",
-      "브러쉬", "브러시", "스무딩", "스타일러만",
+      // 액세서리/어태치먼트 단품
+      "어태치먼트만", "노즐만", "디퓨저만", "어댑터만",
+      "거치대", "스탠드만", "벽거치", "7구 거치",
+      "롱배럴 단품", "롱배럴만", "양방향 롱배럴 40mm 미사용", "양방향 롱배럴 단품",
+      "브러쉬", "브러시", "스무딩",
       "박스만", "케이스만", "충전기만", "부품",
+      // 가품
+      "휙", "다이슨 저렴이", "다이슨 짝퉁",
+      // 굿즈
+      "포토카드", "포카", "특전", "굿즈",
       "수리", "고장", "침수",
       "매입", "삽니다", "구합니다",
     ],
@@ -6209,7 +6237,15 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Osmo Pocket 3",
     aliases: ["DJI Osmo Pocket 3", "DJI 오즈모 포켓 3"],
     mustContain: [["dji", "디제이아이"], ["osmo pocket 3", "osmopocket3", "오즈모 포켓 3", "포켓 3", "포켓3"]],
-    mustNotContain: ["pocket 2", "포켓 2", "포켓2", "pocket 4", "포켓 4", "포켓4", "action", "액션", "nano", "나노", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
+    // Wave 188 internal test (2026-05-18): 액세서리 (마운트 홀더 / 케이지 / brdrc) false positive 차단.
+    mustNotContain: [
+      "pocket 2", "포켓 2", "포켓2", "pocket 4", "포켓 4", "포켓4",
+      "action", "액션", "nano", "나노",
+      "마운트만", "마운트 홀더", "홀더만", "brdrc", "케이지", "케이지 킷",
+      "필름만", "보호 필름",
+      "배터리만", "충전기만", "케이스만",
+      "고장", "파손", "수리", "매입", "삽니다",
+    ],
     msrpKrw: 769000, released: 2023,
   },
   // Wave 185 internal test (2026-05-18): DJI 신모델 3개 — 매물 sweep 에서 발견.
