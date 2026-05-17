@@ -615,13 +615,19 @@ function RevealCardItem({
               {card.name}
             </div>
             {/* Wave 80: 가격 정보 그룹화 — 매입/시세 인접 + 차익 강조 */}
-            <div className="mt-1.5 flex items-baseline gap-2">
+            <div className="mt-1.5 flex items-baseline flex-wrap gap-2">
               <span className="text-lg font-black tabular-nums text-[var(--brand-accent)]">
                 {profitRange(card.expectedProfitMin, card.expectedProfitMax)}
               </span>
+              {/* 2026-05-17 (사용자 요청): 나의 상품 모달에도 운영자풀과 동일 band chip 표시. */}
+              {card.band != null && (
+                <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                  band {card.band}
+                </span>
+              )}
               <span className="text-[11px] font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
-              {/* 2026-05-17 (사용자 요청): 매물 등급 chip. 일반 사용자 — showHelp 없음. */}
-              <ConditionChip conditionClass={card.marketBasis?.conditionClass ?? null} />
+              {/* 2026-05-17 (사용자 요청): 매물 등급 chip. 운영자풀과 동일 — showHelp 활성. */}
+              <ConditionChip conditionClass={card.marketBasis?.conditionClass ?? null} showHelp />
             </div>
             <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
               <span>매입 {krw(card.price)}</span>

@@ -254,6 +254,8 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
       expectedProfitMin: selectedItem.expectedProfitMin,
       expectedProfitMax: selectedItem.expectedProfitMax,
       confidence: selectedItem.confidence,
+      // 2026-05-17: 모달 카드에 band chip 표시 (운영자풀과 동일 UX).
+      band: (selectedItem.band ?? null) as 1 | 2 | 3 | null,
       marketBasis,
       velocityBasis: selectedItem.velocityBasis,
       lastVerifiedAt: selectedItem.revealedAt,

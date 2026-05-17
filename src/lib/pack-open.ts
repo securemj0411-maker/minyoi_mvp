@@ -34,6 +34,8 @@ export type RevealCard = {
   expectedProfitMin: number;
   expectedProfitMax: number;
   confidence: number;
+  // 2026-05-17 (사용자 요청): 나의 상품 "상품 보기" 모달에 운영자풀과 동일 band chip 표시.
+  band?: 1 | 2 | 3 | null;
   marketBasis: RevealMarketBasis;
   velocityBasis: RevealVelocityBasis | null;
   lastVerifiedAt: string;
@@ -909,6 +911,8 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         expectedProfitMin: candidate.expected_profit_min,
         expectedProfitMax: candidate.expected_profit_max,
         confidence: candidate.confidence,
+        // 2026-05-17 (사용자 요청): 모달 카드에 band chip 표시.
+        band: (candidate.profit_band as 1 | 2 | 3) ?? null,
         // Wave 130 (2026-05-16): 매물 condition_class lookup → 매칭되는 condition별 시세 우선 표시.
         marketBasis: marketBasisForCandidate(
           candidate.comparable_key,
