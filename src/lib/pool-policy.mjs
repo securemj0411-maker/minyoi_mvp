@@ -36,9 +36,10 @@ export function bandFromProfit(profitMin, profitMax) {
 
 // Wave 179 (2026-05-17 사용자 코멘트): band 시스템 폐기됨. 1매물 = 1명에게만 노출 (희소성/정확성).
 // 이전: band 3→1 / band 2→2 / band 1→3 (band에 따라 2~3명까지 공유)
-// 새: 무조건 1 (band 무관)
+// 2026-05-17: 일률 5 (사용자 결정) — 풀 5배 효율 + 신규 가입자 풀 부족 차단.
+// 랜덤 selection 이라 같은 매물 보일 확률 ~1/N (낮음, UX 영향 미미).
 export function poolMaxExposure(_band) {
-  return 1;
+  return 5;
 }
 
 export function computePoolConfidence(parseConfidence, scoreFlags = []) {
