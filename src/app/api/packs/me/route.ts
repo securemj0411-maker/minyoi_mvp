@@ -105,6 +105,13 @@ type RevealItem = {
   skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
   // Wave 182 Phase 3 (2026-05-17): base option fallback metadata — "기본 옵션 가정" UI badge.
   optionBaseAssumed: string[] | null;
+  // Wave 189 (2026-05-18): 실시간 시세 vs 매입가 차이 — reveal snapshot (expected_profit_*) 의
+  //   stale 문제 표면 fix. marketBasis.medianPrice (실시간) - price (매입가) 단순 raw diff.
+  //   음수 = "현재 시세 < 매입가 = 추천 무효 (시세 갱신)". UI 가 이 값으로 badge 분기.
+  //   sellFee/shipping 차감 안 함 — 정확한 "기대 수익" 이 아니라 raw 시세 차이 신호.
+  //   historical expected_profit (reveal 시점) 는 그대로 유지 — UI 분기 시 둘 다 활용 가능.
+  marketGapKrw: number | null;
+  marketStale: boolean;  // true = 현재 시세 < 매입가 (사용자 손해 위험 신호)
 };
 
 async function loadJson<T>(url: string): Promise<T> {
@@ -311,6 +318,19 @@ export async function GET(req: Request) {
       const comparableKey = comparableKeyByPid.get(Number(reveal.pid)) ?? null;
       const skuName = raw?.sku_name ?? null;
       const skuId = raw?.sku_id ?? null;
+      // Wave 189 (2026-05-18): 실시간 marketBasis 계산 후 marketGapKrw / marketStale 박음.
+      const computedMarketBasis = comparableKey
+        ? marketBasisForCandidate(
+            comparableKey,
+            skuName ?? "",
+            marketStats,
+            conditionClassByPid.get(Number(reveal.pid)) ?? null,
+          )
+        : null;
+      const priceNum = Number(raw?.price ?? 0);
+      const medianPrice = computedMarketBasis?.medianPrice ?? null;
+      const marketGapKrw = medianPrice != null && priceNum > 0 ? medianPrice - priceNum : null;
+      const marketStale = marketGapKrw != null && marketGapKrw < 0;
       return {
         pid: Number(reveal.pid),
         name: raw?.name ?? `PID ${reveal.pid}`,
@@ -340,18 +360,14 @@ export async function GET(req: Request) {
         feedbackType: feedback?.feedback_type ?? null,
         feedbackNote: feedback?.note ?? null,
         // Wave 130 (2026-05-16): 매물 condition_class 전달 → 매칭되는 시세 우선 표시 (사업 보고서 L2).
-        marketBasis: comparableKey
-          ? marketBasisForCandidate(
-              comparableKey,
-              skuName ?? "",
-              marketStats,
-              conditionClassByPid.get(Number(reveal.pid)) ?? null,
-            )
-          : null,
+        marketBasis: computedMarketBasis,
         velocityBasis: velocityBasisForCandidate(comparableKey, velocityStats, readinessMap),
         skuListingFlow: skuId ? flowBySkuId.get(skuId) ?? null : null,
         // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
         optionBaseAssumed: optionBaseAssumedByPid.get(Number(reveal.pid)) ?? null,
+        // Wave 189 (2026-05-18): 실시간 시세 - 매입가.
+        marketGapKrw,
+        marketStale,
       };
     })
     // 2026-05-17 (사용자 요청): terminal 매물 (sold/disappeared) 기본 표시.

@@ -42,6 +42,9 @@ type RevealItem = {
   skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
   // Wave 182 Phase 3 (2026-05-17): base option fallback — "기본 옵션 가정" UI badge.
   optionBaseAssumed: string[] | null;
+  // Wave 189 (2026-05-18): 실시간 시세 - 매입가. marketStale=true = 추천 무효 (시세 갱신).
+  marketGapKrw: number | null;
+  marketStale: boolean;
 };
 
 type DashboardResponse = {
@@ -245,6 +248,10 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         skuListingFlow: card.skuListingFlow ?? null,
         // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
         optionBaseAssumed: card.optionBaseAssumed ?? null,
+        // Wave 189 (2026-05-18): optimistic add — marketGap 은 silent reload 후 server response 로 정확값.
+        //   여기선 fresh reveal 직후라 medianPrice 가 거의 매입가 ≥ → stale 아님 가정.
+        marketGapKrw: card.marketBasis?.medianPrice != null && card.price > 0 ? card.marketBasis.medianPrice - card.price : null,
+        marketStale: false,
       }));
       setItems((prevItems) => {
         if (query || sort !== "latest") return prevItems;
@@ -926,22 +933,38 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   );
                 })()}
               </div>
+              {/* Wave 189 (2026-05-18): marketStale=true (현재 시세 < 매입가) 면 "추천 무효" badge 우선 표시.
+                  사용자 frustration — 차익 +로 표시되는데 시세가 매입보다 낮음 모순. snapshot vs 실시간
+                  시세 mismatch (재계산 cron 없음). 표면 fix: API 가 marketGapKrw 박아서 UI 분기. */}
               <div className="mt-1 flex flex-wrap items-baseline gap-1.5">
-                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-black tabular-nums text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                  {item.expectedProfitMin === item.expectedProfitMax
-                    ? `+${item.expectedProfitMax.toLocaleString("ko-KR")}원`
-                    : `+${item.expectedProfitMin.toLocaleString("ko-KR")}~${item.expectedProfitMax.toLocaleString("ko-KR")}원`}
-                </span>
-                {(() => {
-                  if (!item.price || item.price <= 0) return null;
-                  const avg = (item.expectedProfitMin + item.expectedProfitMax) / 2;
-                  const pct = Math.round((avg / item.price) * 100);
-                  return Number.isFinite(pct) ? (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
-                      +{pct}%
+                {item.marketStale && item.marketGapKrw != null ? (
+                  <>
+                    <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-black tabular-nums text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
+                      {item.marketGapKrw.toLocaleString("ko-KR")}원
                     </span>
-                  ) : null;
-                })()}
+                    <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-rose-900 dark:bg-rose-900/60 dark:text-rose-100">
+                      ⚠️ 시세 갱신 — 추천 무효
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-black tabular-nums text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                      {item.expectedProfitMin === item.expectedProfitMax
+                        ? `+${item.expectedProfitMax.toLocaleString("ko-KR")}원`
+                        : `+${item.expectedProfitMin.toLocaleString("ko-KR")}~${item.expectedProfitMax.toLocaleString("ko-KR")}원`}
+                    </span>
+                    {(() => {
+                      if (!item.price || item.price <= 0) return null;
+                      const avg = (item.expectedProfitMin + item.expectedProfitMax) / 2;
+                      const pct = Math.round((avg / item.price) * 100);
+                      return Number.isFinite(pct) ? (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                          +{pct}%
+                        </span>
+                      ) : null;
+                    })()}
+                  </>
+                )}
               </div>
               {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 좁은 영역이라 compact (chip 만). */}
               <div className="mt-1">
