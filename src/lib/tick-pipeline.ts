@@ -2110,7 +2110,7 @@ function aiEscrowKindForParserMetadata(
   return null;
 }
 
-function trustedMarketMedian(stat: MarketPriceRow | undefined) {
+function trustedMarketMedian(stat: MarketPriceRow | undefined, category?: Sku["category"] | null) {
   if (!stat) return null;
   // 2026-05-15 (사용자 코멘트 pid 369164122 다이슨 V12): confidence=low + sold=0 +
   // active<3 매물은 "비교 매물 없는데 시세 있음" 문제 유발. sample 부족 시세는
@@ -2123,11 +2123,22 @@ function trustedMarketMedian(stat: MarketPriceRow | undefined) {
   // "비교매물 1개로 시세가 망함? 5개인가 3개 비교군이 있어야".
   // wave 130 condition_class 분리 후 sample 더 작아짐 (1-2건 자주 발생).
   // confidence 무관 total<3 강제 차단 — sample 1-2건은 outlier 1건이 시세 결정 = 위험.
+  //
+  // Wave 173 (2026-05-17): 신발 카테고리 ready 승급 직후 — daily aggregate 전부 low
+  // confidence + avg sample 1.44건이라 위 gate에서 skuMedian=0 → pool 진입 0건 차단됨.
+  // 사용자 결정: 신발 한정 total ≥ 2 허용 (즉시 노출 vs precision trade-off 수용).
+  // outlier 보호 safety nets — Wave 171 ceiling(msrp×5) / 4 tier 가품 floor /
+  // 72 광고 차단 / Wave 138 셀러당 1 pool entry / pool ceiling 동일 — 작동 중.
+  // sample 1건은 outlier=시세라 여전히 차단. 2건+부터 trust.
   const active = stat.active_sample_count ?? 0;
   const sold = stat.sold_sample_count ?? 0;
   const total = active + sold;
-  if (total < 3) return null;
-  if (stat.confidence === "low" && total < 5) return null;
+  if (category === "shoe") {
+    if (total < 2) return null;
+  } else {
+    if (total < 3) return null;
+    if (stat.confidence === "low" && total < 5) return null;
+  }
   const value = Number(stat.blended_median_price ?? stat.active_median_price ?? 0);
   return value > 0 ? value : null;
 }
@@ -3924,7 +3935,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     // 사업 보고서 L2: 같은 SKU+옵션도 condition별 시세 spread 15~40% — 정확성 ↑.
     const byCondition = comparableKey ? marketStatsByKey.get(comparableKey) : undefined;
     const marketStat = pickMarketStatByCondition(byCondition, parsed?.condition_class ?? null);
-    const trustedMedian = trustedMarketMedian(marketStat);
+    const trustedMedian = trustedMarketMedian(marketStat, parsed?.category);
     const prices = pricesByMarket.get(marketKey) ?? [];
     const _coarsePrices = pricesBySku.get(skuId) ?? [];
     const hasTrustedMarket = trustedMedian != null;
