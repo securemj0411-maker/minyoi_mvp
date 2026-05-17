@@ -40,6 +40,7 @@ type RawRow = {
   pid: number;
   name: string;
   price: number;
+  sku_median: number | null;
   thumbnail_url: string | null;
 };
 
@@ -80,9 +81,9 @@ export async function GET() {
       });
     }
 
-    // 매물명 + 가격 + 썸네일 fetch.
+    // 매물명 + 가격 + 시세 + 썸네일 fetch.
     const pids = selected.map((r) => r.pid);
-    const rawUrl = `${tableUrl("mvp_listings")}?select=pid,name,price,thumbnail_url&pid=in.(${pids.join(",")})`;
+    const rawUrl = `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url&pid=in.(${pids.join(",")})`;
     const rawRes = await restFetch(rawUrl, { headers });
     const raws = (await rawRes.json()) as RawRow[];
     const rawByPid = new Map<number, RawRow>(raws.map((r) => [r.pid, r]));
@@ -97,6 +98,7 @@ export async function GET() {
         category: row.category ?? "other",
         conditionClass: row.condition_class,
         price: raw?.price ?? 0,
+        skuMedian: raw?.sku_median ?? null,
         expectedProfitMin: row.expected_profit_min,
         expectedProfitMax: row.expected_profit_max,
         profitBand: row.profit_band,

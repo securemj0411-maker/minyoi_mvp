@@ -35,6 +35,7 @@ type PreviewItem = {
   category: string;
   conditionClass: string | null;
   price: number;
+  skuMedian: number | null;
   expectedProfitMin: number;
   expectedProfitMax: number;
   profitBand: number;
@@ -108,6 +109,15 @@ function krw(value: number) {
 function profitLabel(min: number, max: number): string {
   if (Math.round(min) === Math.round(max)) return `+${Math.round(min).toLocaleString("ko-KR")}원`;
   return `+${Math.round(min).toLocaleString("ko-KR")}~${Math.round(max).toLocaleString("ko-KR")}원`;
+}
+
+// 수익률 % — 매입 대비 차익 비율 (대시보드 통일 패턴).
+function profitPctLabel(price: number, profitMin: number, profitMax: number): string | null {
+  if (!Number.isFinite(price) || price <= 0) return null;
+  const avg = (profitMin + profitMax) / 2;
+  const pct = Math.round((avg / price) * 100);
+  if (!Number.isFinite(pct)) return null;
+  return `+${pct}%`;
 }
 
 export default function PreviewMaskedDashboard() {
@@ -210,14 +220,29 @@ export default function PreviewMaskedDashboard() {
                       <div className="mt-1 truncate text-sm font-bold text-[#223127] dark:text-zinc-100">
                         {item.maskedName}
                       </div>
-                      {/* 가격 / 차익 — min === max 면 단일 표시 (사용자 지적). */}
-                      <div className="mt-2 flex flex-wrap items-baseline gap-2 text-xs">
-                        <span className="text-[#6b7269] dark:text-zinc-400">매입</span>
-                        <span className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.price)}</span>
-                        <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                      {/* 매입 · 시세 (대시보드 패턴) */}
+                      <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 text-[11px] font-semibold text-[#6b7269] dark:text-zinc-400">
+                        <span>매입 <span className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.price)}</span></span>
+                        {item.skuMedian && item.skuMedian > 0 ? (
+                          <>
+                            <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                            <span>시세 <span className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.skuMedian)}</span></span>
+                          </>
+                        ) : null}
+                      </div>
+                      {/* 차익 (원) + 수익률 (%) */}
+                      <div className="mt-1.5 flex flex-wrap items-baseline gap-1.5">
                         <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-black tabular-nums text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                           {profitLabel(item.expectedProfitMin, item.expectedProfitMax)}
                         </span>
+                        {(() => {
+                          const pct = profitPctLabel(item.price, item.expectedProfitMin, item.expectedProfitMax);
+                          return pct ? (
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                              {pct}
+                            </span>
+                          ) : null;
+                        })()}
                       </div>
                     </div>
                   </div>
