@@ -155,10 +155,10 @@ describe("Wave 182 chunk 4: Air 15 + iPad Pro M1 + iPad Air 4", () => {
     );
   });
 
-  // TODO Wave 182 디버그: ipad-pro-12-9-m1-128-wifi narrow가 매칭하는데 ruleMatch가
-  // ipad-pro broad만 반환. chooseUniqueCandidate disambiguation 작동 안 함 — 별도 wave에서 root fix.
-  // 단 broad ipad-pro 매칭은 풀 진입 가능 (시세 분리만 부정확).
-  it.skip("ipad-pro-12-9-m1-128-wifi (TODO: disambiguation 디버그)", () => {
+  // Wave 182 root fix (2026-05-17): catalog normalize 가 "12.9" → "13인치" 변환 (Wave 114c).
+  // 옛 narrow SKU mustContain "12.9" 만 박혀서 변환 후 매칭 fail + mustNotContain "13인치" 자기자신 차단.
+  // Fix: mustContain 에 "13인치" 추가 + mustNotContain "13인치" 제거. m1 chip 으로 m2/m4 narrow 격리.
+  it("ipad-pro-12-9-m1-128-wifi", () => {
     check(
       "아이패드 프로 12.9인치 M1 128GB Wi-Fi",
       "2021. 5세대. 정상.",

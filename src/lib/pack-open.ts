@@ -54,6 +54,9 @@ export type RevealCard = {
     sellerReviewRating: number | null;
     sellerReviewCount: number;
   };
+  // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
+  // null/[] 이면 옵션 명시 매물. 값 있으면 "기본 옵션 가정" UI badge 표시.
+  optionBaseAssumed?: string[] | null;
 };
 
 export type RevealVelocityBasis = {
@@ -385,6 +388,32 @@ export type MarketStatsMap = Map<string, MarketStatsByCondition>;
  * RPC reserve_mvp_pool_candidates가 condition_class를 return하지 않으므로 별도 fetch.
  * (RPC 시그니처 변경은 race condition 5종 검증 필요 — CLAUDE.md 정책. 안전하게 별도 query.)
  */
+// Wave 182 Phase 3 (2026-05-17): option_base_assumed by pid (mvp_listing_parsed.parsed_json).
+// pack-reveal-modal + user-reveal-dashboard 에 "기본 옵션 가정" UI badge 표시.
+export async function fetchOptionBaseAssumedByPids(pids: number[]): Promise<Map<number, string[]>> {
+  if (pids.length === 0) return new Map();
+  const unique = [...new Set(pids.filter((p) => Number.isFinite(p)))];
+  if (unique.length === 0) return new Map();
+  const map = new Map<number, string[]>();
+  try {
+    const res = await callSupabase(
+      `/mvp_listing_parsed?select=pid,parsed_json&pid=in.(${unique.join(",")})`,
+      { headers: authHeaders() },
+    );
+    const payload = await res.json().catch(() => null);
+    const rows = Array.isArray(payload)
+      ? (payload as Array<{ pid: number; parsed_json: Record<string, unknown> | null }>)
+      : [];
+    for (const row of rows) {
+      const arr = row.parsed_json?.option_base_assumed;
+      if (Array.isArray(arr) && arr.length > 0) map.set(Number(row.pid), arr as string[]);
+    }
+  } catch (err) {
+    console.warn("fetchOptionBaseAssumedByPids failed (non-fatal)", err);
+  }
+  return map;
+}
+
 export async function fetchPoolConditionClassByPids(pids: number[]): Promise<Map<number, string>> {
   if (pids.length === 0) return new Map();
   const unique = [...new Set(pids.filter((p) => Number.isFinite(p)))];
@@ -830,12 +859,13 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     // condition 5종 검증 필요 — CLAUDE.md 정책). 안전하게 별도 batch fetch로 pool entry의
     // condition_class lookup map만 만든다. Reserved 상태라 다음 query 시점까지 안정 (TTL 5분).
     const reservedPids = reserved.map((r) => r.pid);
-    const [listingMap, marketStats, velocityStats, readinessMap, poolConditionMap] = await Promise.all([
+    const [listingMap, marketStats, velocityStats, readinessMap, poolConditionMap, optionBaseAssumedMap] = await Promise.all([
       fetchListings(reservedPids),
       fetchLatestMarketStats(reserved.map((r) => r.comparable_key)),
       fetchLatestMarketVelocity(reserved.map((r) => r.comparable_key)),
       loadCategoryReadinessMap(),
       fetchPoolConditionClassByPids(reservedPids),
+      fetchOptionBaseAssumedByPids(reservedPids),
     ]);
     const sourceHealth = await loadLatestSourceHealth();
     const reveals: RevealCard[] = [];
@@ -927,6 +957,8 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         lastVerifiedAt: liveVerifiedAt,
         freshSeconds,
         savedDetail,
+        // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
+        optionBaseAssumed: optionBaseAssumedMap.get(candidate.pid) ?? null,
       });
     }
 

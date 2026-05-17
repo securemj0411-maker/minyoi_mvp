@@ -40,6 +40,8 @@ type RevealItem = {
   marketBasis: RevealMarketBasis | null;
   velocityBasis: RevealVelocityBasis | null;
   skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
+  // Wave 182 Phase 3 (2026-05-17): base option fallback — "기본 옵션 가정" UI badge.
+  optionBaseAssumed: string[] | null;
 };
 
 type DashboardResponse = {
@@ -241,6 +243,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         marketBasis: card.marketBasis,
         velocityBasis: card.velocityBasis,
         skuListingFlow: card.skuListingFlow ?? null,
+        // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
+        optionBaseAssumed: card.optionBaseAssumed ?? null,
       }));
       setItems((prevItems) => {
         if (query || sort !== "latest") return prevItems;
@@ -893,6 +897,18 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   <>
                     <span className="text-zinc-300 dark:text-zinc-600">·</span>
                     <span>시세 <span className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.marketBasis.medianPrice)}</span></span>
+                  </>
+                ) : null}
+                {/* Wave 182 Phase 3 (2026-05-17): base option fallback 정직성 표시. 옵션 명시 X → SKU 기본 옵션 가정 시세. */}
+                {item.optionBaseAssumed && item.optionBaseAssumed.length > 0 ? (
+                  <>
+                    <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                    <span
+                      title={`이 매물은 ${item.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}
+                      className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                    >
+                      기본 옵션 가정
+                    </span>
                   </>
                 ) : null}
                 <span className="text-zinc-300 dark:text-zinc-600">·</span>

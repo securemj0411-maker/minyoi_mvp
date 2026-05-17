@@ -103,6 +103,8 @@ type RevealItem = {
   marketBasis: RevealMarketBasis | null;
   velocityBasis: RevealVelocityBasis | null;
   skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
+  // Wave 182 Phase 3 (2026-05-17): base option fallback metadata — "기본 옵션 가정" UI badge.
+  optionBaseAssumed: string[] | null;
 };
 
 async function loadJson<T>(url: string): Promise<T> {
@@ -228,7 +230,8 @@ export async function GET(req: Request) {
       : Promise.resolve([] as PackOpenRow[]),
     loadJson<ParsedRow[]>(
       // Wave 130 (2026-05-16): condition_class 추가 — 매물별 condition에 맞는 시세 표시.
-      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class&pid=in.(${pidList})`,
+      // Wave 182 Phase 3 (2026-05-17): parsed_json 추가 — option_base_assumed UI badge 표시.
+      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,parsed_json&pid=in.(${pidList})`,
     ),
   ]);
 
@@ -239,6 +242,14 @@ export async function GET(req: Request) {
   // Wave 130: 매물별 condition_class — marketBasisForCandidate에 전달해서 매칭 시세 우선 표시.
   const conditionClassByPid = new Map(
     parsedRows.map((row) => [Number(row.pid), (row as ParsedRow & { condition_class?: string | null }).condition_class ?? null]),
+  );
+  // Wave 182 Phase 3 (2026-05-17): option_base_assumed by pid — "기본 옵션 가정" UI badge.
+  const optionBaseAssumedByPid = new Map<number, string[] | null>(
+    parsedRows.map((row) => {
+      const pj = (row as ParsedRow & { parsed_json?: Record<string, unknown> | null }).parsed_json;
+      const arr = pj?.option_base_assumed;
+      return [Number(row.pid), Array.isArray(arr) ? arr as string[] : null];
+    }),
   );
 
   // Wave 104: 핫딜 reveal (source=hotdeal, pack_open_id=null)은 mvp_hotdeal_queue에서 band fetch.
@@ -339,6 +350,8 @@ export async function GET(req: Request) {
           : null,
         velocityBasis: velocityBasisForCandidate(comparableKey, velocityStats, readinessMap),
         skuListingFlow: skuId ? flowBySkuId.get(skuId) ?? null : null,
+        // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
+        optionBaseAssumed: optionBaseAssumedByPid.get(Number(reveal.pid)) ?? null,
       };
     })
     // 2026-05-17 (사용자 요청): terminal 매물 (sold/disappeared) 기본 표시.

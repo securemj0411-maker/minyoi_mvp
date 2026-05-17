@@ -650,6 +650,15 @@ function RevealCardItem({
                   <span className="text-zinc-500 dark:text-zinc-300">시세 {krw(card.marketBasis.medianPrice)}</span>
                 </>
               ) : null}
+              {/* Wave 182 Phase 3 (2026-05-17): base option fallback 정직성 표시. */}
+              {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
+                <span
+                  title={`이 매물은 ${card.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}
+                  className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                >
+                  기본 옵션 가정
+                </span>
+              ) : null}
             </div>
           </div>
           <details className="group hidden shrink-0 rounded-lg bg-zinc-50 px-2 py-1 text-right dark:bg-zinc-800 sm:block sm:min-w-[64px]">
