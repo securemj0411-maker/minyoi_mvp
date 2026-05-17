@@ -3689,6 +3689,105 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
     msrpKrw: 1990000,
     released: 2024,
   },
+  // Wave 182 Phase 4 (2026-05-17): Galaxy Book 시리즈 (Samsung 노트북 한국 인기).
+  // 옵션 변동 큼 (RAM/SSD/screen 다양) — base option fallback (SKU_BASE_OPTIONS) 으로 풀 진입 가능.
+  // catalog mustContain 은 모델명 + chip variant. mustNotContain 은 다른 변형 격리.
+  {
+    id: "galaxy-book-4",
+    brand: "Samsung",
+    category: "laptop",
+    laneKey: "galaxy_book_4",
+    modelName: "Samsung Galaxy Book 4 (15.6\")",
+    aliases: ["갤럭시북 4", "갤럭시 북 4", "Galaxy Book 4"],
+    // mustContain: 갤럭시 북 + 4 결합 명시 (모델명 + 세대 숫자 분리 매칭 회피).
+    mustContain: [["갤럭시 북 4", "갤럭시북 4", "갤럭시북4", "galaxy book 4"]],
+    // mustNotContain: 다른 변형 (Pro/Ultra/Edge/360 + 다른 세대) 격리. 단일 숫자 X (Core 5 등에 false hit).
+    mustNotContain: [
+      "프로", "pro", "ultra", "울트라", "edge", "엣지", "360",
+      "갤럭시 북 5", "갤럭시북 5", "galaxy book 5", "갤럭시 북 3", "갤럭시북 3",
+      "액정만", "메인보드", "부품", "고장", "침수",
+      "매입", "삽니다",
+    ],
+    msrpKrw: 1290000,
+    released: 2024,
+  },
+  {
+    id: "galaxy-book-4-pro",
+    brand: "Samsung",
+    category: "laptop",
+    laneKey: "galaxy_book_4_pro",
+    modelName: "Samsung Galaxy Book 4 Pro (14\")",
+    aliases: ["갤럭시북 4 프로", "갤럭시 북 4 프로", "Galaxy Book 4 Pro"],
+    mustContain: [
+      ["갤럭시 북 4 프로", "갤럭시북 4 프로", "갤럭시북4 프로", "galaxy book 4 pro"],
+    ],
+    // mustNotContain: "ultra"/"울트라" 단독 박지 X — chip "Core Ultra"의 ultra 자기차단. 모델명 결합으로 격리.
+    mustNotContain: [
+      "갤럭시 북 4 울트라", "갤럭시북 4 울트라", "galaxy book 4 ultra",
+      "360", "edge", "엣지",
+      "갤럭시 북 5", "갤럭시북 5", "galaxy book 5",
+      "액정만", "메인보드", "부품", "고장", "침수",
+      "매입", "삽니다",
+    ],
+    msrpKrw: 1990000,
+    released: 2024,
+  },
+  {
+    id: "galaxy-book-4-ultra",
+    brand: "Samsung",
+    category: "laptop",
+    laneKey: "galaxy_book_4_ultra",
+    modelName: "Samsung Galaxy Book 4 Ultra (16\", RTX 4050/4070)",
+    aliases: ["갤럭시북 4 울트라", "갤럭시 북 4 울트라", "Galaxy Book 4 Ultra"],
+    mustContain: [
+      ["갤럭시 북 4 울트라", "갤럭시북 4 울트라", "galaxy book 4 ultra"],
+    ],
+    mustNotContain: [
+      "프로", "pro", "edge", "엣지", "360",
+      "갤럭시 북 5", "갤럭시북 5", "galaxy book 5",
+      "액정만", "메인보드", "부품", "고장", "침수",
+      "매입", "삽니다",
+    ],
+    msrpKrw: 3290000,
+    released: 2024,
+  },
+  {
+    id: "galaxy-book-5",
+    brand: "Samsung",
+    category: "laptop",
+    laneKey: "galaxy_book_5",
+    modelName: "Samsung Galaxy Book 5 (15.6\")",
+    aliases: ["갤럭시북 5", "갤럭시 북 5", "Galaxy Book 5"],
+    mustContain: [["갤럭시 북 5", "갤럭시북 5", "갤럭시북5", "galaxy book 5"]],
+    mustNotContain: [
+      "프로", "pro", "ultra", "울트라", "edge", "엣지", "360",
+      "갤럭시 북 4", "갤럭시북 4", "galaxy book 4",
+      "갤럭시 북 6", "갤럭시북 6", "galaxy book 6",
+      "액정만", "메인보드", "부품", "고장", "침수",
+      "매입", "삽니다",
+    ],
+    msrpKrw: 1390000,
+    released: 2025,
+  },
+  {
+    id: "galaxy-book-5-pro",
+    brand: "Samsung",
+    category: "laptop",
+    laneKey: "galaxy_book_5_pro",
+    modelName: "Samsung Galaxy Book 5 Pro",
+    aliases: ["갤럭시북 5 프로", "갤럭시 북 5 프로", "Galaxy Book 5 Pro"],
+    mustContain: [["갤럭시 북 5 프로", "갤럭시북 5 프로", "galaxy book 5 pro"]],
+    // mustNotContain: "ultra"/"울트라" 단독 박지 X — chip "Core Ultra"의 ultra 자기차단. 모델명 결합으로 격리.
+    mustNotContain: [
+      "갤럭시 북 5 울트라", "갤럭시북 5 울트라", "galaxy book 5 ultra",
+      "360", "edge", "엣지",
+      "갤럭시 북 4", "갤럭시북 4", "galaxy book 4",
+      "액정만", "메인보드", "부품", "고장", "침수",
+      "매입", "삽니다",
+    ],
+    msrpKrw: 2090000,
+    released: 2025,
+  },
 ];
 
 export const CATALOG: Sku[] = [

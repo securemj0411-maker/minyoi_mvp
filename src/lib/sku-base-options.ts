@@ -159,6 +159,14 @@ export const SKU_BASE_OPTIONS: Record<string, SkuBaseOptions> = {
   // 단 narrow lane 이 이미 RAM 명시 (예: macbook-pro-14-m4-256 은 16GB) — base 자동 적용.
   // 별도 baseOptions 박지 X (narrow 명시로 충분).
 
+  // ─── Galaxy Book (RAM + SSD) ───────────────────────────────
+  // Samsung 한국 출시 base: 대부분 16GB + 512GB (Ultra 도 동일).
+  "galaxy-book-4": { ramGb: 16, ssdGb: 512 },
+  "galaxy-book-4-pro": { ramGb: 16, ssdGb: 512 },
+  "galaxy-book-4-ultra": { ramGb: 16, ssdGb: 512 },
+  "galaxy-book-5": { ramGb: 16, ssdGb: 512 },
+  "galaxy-book-5-pro": { ramGb: 16, ssdGb: 512 },
+
   // ─── desktop Apple Silicon (RAM + SSD) ─────────────────────
   "desktop-mac-mini-m2-256": { ramGb: 8, ssdGb: 256 },
   "desktop-mac-mini-m4": { ramGb: 16, ssdGb: 256 },

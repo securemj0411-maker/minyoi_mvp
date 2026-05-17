@@ -366,3 +366,25 @@ describe("Wave 182 chunk 6: Sony LinkBuds + Bose 700/Earbuds II + Galaxy Buds 2/
     check("갤럭시탭 S6 Lite 64GB Wi-Fi", "정상.", "galaxy-tab-s6-lite", []);
   });
 });
+
+describe("Wave 182 Phase 4: Galaxy Book 시리즈", () => {
+  it("galaxy-book-4", () => {
+    check("갤럭시북 4 15.6인치 16GB 512GB", "Intel Core 5", "galaxy-book-4", []);
+  });
+
+  it("galaxy-book-4-pro", () => {
+    check("갤럭시북 4 프로 14인치 16GB 512GB", "Core Ultra 7", "galaxy-book-4-pro", []);
+  });
+
+  it("galaxy-book-4-ultra", () => {
+    check("갤럭시북 4 울트라 16인치 RTX 4070", "Core Ultra 9", "galaxy-book-4-ultra", []);
+  });
+
+  it("galaxy-book-5", () => {
+    check("갤럭시북 5 15.6인치", "Intel Core 5", "galaxy-book-5", []);
+  });
+
+  it("galaxy-book-5-pro", () => {
+    check("갤럭시북 5 프로 14인치", "Core Ultra 5", "galaxy-book-5-pro", []);
+  });
+});

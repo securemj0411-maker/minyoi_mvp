@@ -161,6 +161,12 @@ export const DEFAULT_SEARCH_QUERIES = [
   "갤럭시 버즈 라이브", "Galaxy Buds Live",
   "갤럭시탭 S6", "갤탭 S6", "Galaxy Tab S6",
   "갤럭시탭 S6 라이트", "Galaxy Tab S6 Lite",
+  // Wave 182 Phase 4 (2026-05-17): Galaxy Book 시리즈.
+  "갤럭시 북 4", "갤럭시북 4", "Galaxy Book 4",
+  "갤럭시 북 4 프로", "Galaxy Book 4 Pro",
+  "갤럭시 북 4 울트라", "Galaxy Book 4 Ultra",
+  "갤럭시 북 5", "갤럭시북 5", "Galaxy Book 5",
+  "갤럭시 북 5 프로", "Galaxy Book 5 Pro",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

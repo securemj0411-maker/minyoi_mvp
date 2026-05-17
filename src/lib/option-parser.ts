@@ -369,7 +369,11 @@ function laptopGenerationKey(
 ) {
   if (releaseYear) return `${releaseYear}y`;
   if (modelNumber) return modelNumber;
-  if (chip && /^m[1-9](?:_[a-z]+|[a-z]*)?$/i.test(chip)) return `${chip.toLowerCase().replaceAll("_", "")}_gen`;
+  // Wave 182 Phase 4 (2026-05-17): Intel Core/Ultra chip (Arrow Lake 등) generation 매핑 추가.
+  // m1~m9 (Apple Silicon) + core5/7/9 (Intel Arrow Lake) + ultra5/7/9 (Intel Core Ultra).
+  if (chip && /^(m[1-9]|core[579]|ultra[579])(?:_[a-z]+|[a-z]*)?$/i.test(chip)) {
+    return `${chip.toLowerCase().replaceAll("_", "")}_gen`;
+  }
   return null;
 }
 
@@ -772,6 +776,13 @@ function parseChip(text: string) {
     /\bultra\s*([579])\b/,
   ]);
   if (coreUltra?.[1]) return `ultra${coreUltra[1]}`;
+  // Wave 182 Phase 4 (2026-05-17): Intel Core 5/7/9 (Arrow Lake, 2024+) — Galaxy Book 4/5 등.
+  // 옛 i3/i5/i7/i9 와 구분 — "i5/i7/i9" 표기 X, "Core 5" / "코어 5" 표기.
+  const intelCore = firstMatch(lower, [
+    /(?:인텔\s*)?core\s*([579])(?!\d|\s*ultra)/i,
+    /(?:인텔\s*)?코어\s*([579])(?!\d|\s*울트라)/,
+  ]);
+  if (intelCore?.[1]) return `core${intelCore[1]}`;
   // 2026-05-15 Wave 124: \b → lookbehind/lookahead. \b는 "맥북프로14m5"의 "4m" 사이에서 안 잡힘 (둘 다 word char).
   // lookbehind (?<![a-z]): 앞에 영문 없으면 OK (숫자/한글/공백/start). lookahead (?![a-z0-9]): 뒤에 영문/숫자 없음.
   // "맥북프로14m5 미개봉" → m5 매칭. "맥북에어m4" → m4 매칭. "m5pro" → m5 + pro 매칭. "m12" → fail (숫자 lookahead).
