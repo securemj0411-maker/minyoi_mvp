@@ -71,6 +71,16 @@ export default function LossReportsClient() {
   const articleRefs = useRef<Map<number, HTMLElement>>(new Map());
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
+  // Wave 198b (2026-05-18): 첫 진입 자동 도움말 — localStorage 로 1회만 표시.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const seen = window.localStorage.getItem("minyoi.admin.lossReports.shortcutSeen");
+    if (!seen) {
+      setHelpOpen(true);
+      window.localStorage.setItem("minyoi.admin.lossReports.shortcutSeen", "1");
+    }
+  }, []);
+
   const fetchList = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -197,6 +207,32 @@ export default function LossReportsClient() {
 
   return (
     <div className="space-y-4">
+      {/* Wave 198b (2026-05-18): 상단 항상 보이는 단축키 hint banner. */}
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] dark:border-blue-900/40 dark:bg-blue-950/30">
+        <div className="flex flex-wrap items-center gap-2 text-blue-900 dark:text-blue-100">
+          <span className="font-black">⌨️ 키보드 단축키:</span>
+          <kbd className="rounded border border-blue-300 bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold dark:border-blue-800 dark:bg-zinc-900">j</kbd>
+          <span>다음</span>
+          <kbd className="rounded border border-blue-300 bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold dark:border-blue-800 dark:bg-zinc-900">k</kbd>
+          <span>이전</span>
+          <kbd className="rounded border border-blue-300 bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold dark:border-blue-800 dark:bg-zinc-900">e</kbd>
+          <span>응답</span>
+          <kbd className="rounded border border-blue-300 bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold dark:border-blue-800 dark:bg-zinc-900">r</kbd>
+          <span>보정완료</span>
+          <kbd className="rounded border border-blue-300 bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold dark:border-blue-800 dark:bg-zinc-900">d</kbd>
+          <span>기각</span>
+          <kbd className="rounded border border-blue-300 bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold dark:border-blue-800 dark:bg-zinc-900">?</kbd>
+          <span>도움말</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setHelpOpen(true)}
+          className="rounded-full bg-blue-600 px-2.5 py-1 text-[10px] font-black text-white hover:bg-blue-700"
+        >
+          자세히 보기
+        </button>
+      </div>
+
       {/* 상단 stats + filter */}
       <div className="flex flex-wrap items-center gap-2">
         {(["pending", "resolved", "dismissed", "all"] as StatusFilter[]).map((s) => {
