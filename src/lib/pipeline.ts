@@ -188,7 +188,9 @@ function accessoryTitleHits(title: string): string[] {
   // 2026-05-17 (사용자 iter 3 추가): 본품 + 밴드/스트랩 옵션 매물 false positive 차단.
   // 예: "애플워치 울트라 티타늄밀레니즈" / "애플워치10 46mm 에르메스 + 킬림 누아 + 오랑쥬실리콘".
   // 본품 키워드 (애플워치 + 사이즈 mm) 가 title 에 있으면 밴드 keyword 는 옵션 표현 → accessory X.
-  const isWatchBodyListing = /(애플워치|applewatch|갤럭시\s*워치|galaxy\s*watch).{0,30}(?:\b(?:38|40|41|42|44|45|46|47|49)\s*mm\b|울트라|ultra|시리즈\s*\d|series\s*\d|\bse\s*\d?\b|\d+\s*세대)/i.test(tn);
+  // Wave 159l (2026-05-17): "애플워치9 풀박스" / "애플워치10 에르메스" 같이 시리즈/mm 없이 모델 숫자 직접
+  // 표기 매물도 본품 명시로 인정 (false positive 차단). "애플워치9" "갤럭시워치6" 등.
+  const isWatchBodyListing = /(애플워치|applewatch|갤럭시\s*워치|galaxy\s*watch)\s*(?:ultra|울트라|se|\d+)|(애플워치|applewatch|갤럭시\s*워치|galaxy\s*watch).{0,30}(?:\b(?:38|40|41|42|44|45|46|47|49)\s*mm\b|울트라|ultra|시리즈\s*\d|series\s*\d|\bse\s*\d?\b|\d+\s*세대)/i.test(tn);
   if (isWatchBodyListing) {
     hits = hits.filter((hit) => !["밀레니즈", "밀레니즈 루프", "링크브레이슬릿", "링크 브레이슬릿", "링블", "에르메스", "메탈밴드", "나토밴드", "가죽스트랩", "스포츠밴드", "퀵체인지 스트랩", "싱글투어", "싱글 투어", "d버클", "메탈스트랩", "나토 스트랩", "시계줄"].includes(hit));
   }
