@@ -28,7 +28,7 @@ const TIER_B_COUNT = 3;
 
 // 2026-05-17: 진짜 thumbnail 서버 사이드 blur 처리.
 // 원본 URL 노출 X → blur 된 base64 data URL 만 클라이언트 전송. DevTools 우회 차단.
-// sharp blur sigma=20 (강한 블러 — 식별 불가능 + 사진 느낌 유지).
+// sharp blur sigma=10 (적당한 블러 — 사진 인식 OK + 정확 식별 어려움).
 async function fetchAndBlurImage(url: string | null | undefined): Promise<string | null> {
   if (!url) return null;
   try {
@@ -37,8 +37,8 @@ async function fetchAndBlurImage(url: string | null | undefined): Promise<string
     const buf = Buffer.from(await res.arrayBuffer());
     const blurred = await sharp(buf)
       .resize(160, 160, { fit: "cover" })
-      .blur(20)
-      .jpeg({ quality: 60 })
+      .blur(10)
+      .jpeg({ quality: 70 })
       .toBuffer();
     return `data:image/jpeg;base64,${blurred.toString("base64")}`;
   } catch {
