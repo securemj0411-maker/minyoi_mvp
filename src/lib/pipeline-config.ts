@@ -192,6 +192,9 @@ export type PipelineRuntimeConfig = {
   terminalLifecycleRecheckPreserveStatus: boolean;
   tickDetailLeaseSeconds: number;
   tickScoreLimit: number;
+  // Wave 159k (2026-05-17): score-stage에서 AI condition 호출 daily limit.
+  // default 0 = 비활성 (현재 detail-worker만 trigger). 운영자가 env 변경해서 enable.
+  scoreAiConditionDailyLimit: number;
   marketStatsLimit: number;
   deepCrawlMaxPage: number;
   sellerSearchRefreshMs: number;
@@ -285,6 +288,11 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     // budget 10초 안에서 처리 가능 (단순 DB read + score + write, detail 호출 X).
     // 매물당 ~12ms 가정 → 800건/9.6초.
     tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 800, 10, 2000),
+    // Wave 159k (2026-05-17): score-stage condition AI 호출 daily limit.
+    // 0 = 비활성 (default). 측정 결과 11,243건 trigger 대상이지만 실제 호출 0건.
+    // 운영자가 enable 시 PIPELINE_SCORE_AI_CONDITION_DAILY_LIMIT=500 같이 박음.
+    // cost: 매물당 ~$0.0002 → 500/day = $0.10/day = $3/month.
+    scoreAiConditionDailyLimit: envInt("PIPELINE_SCORE_AI_CONDITION_DAILY_LIMIT", 0, 0, 10000),
     // Wave 174 (2026-05-17): 800 → 3000 — Wave 156 신발 sweep 깊게 (2,182건 매물) 이후
     // 전 카테고리 14K+ 매물 중 시세 daily 박힘 비율 1.7-3.3% 머무름. 신발 ready 승급(Wave 172) +
     // trustedMedian total≥2 완화(Wave 173) 했는데도 시세 daily 36 row만 → pool 0건.

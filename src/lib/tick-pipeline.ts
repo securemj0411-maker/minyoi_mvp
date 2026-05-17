@@ -3891,6 +3891,26 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const now = new Date().toISOString();
   const scoredRows: PipelineRow[] = [];
 
+  // Wave 159k (2026-05-17): score-stage condition AI 호출 daily limit.
+  // 측정 결과 detail-worker만으로는 AI condition 호출 0건 (11K trigger 대상 매물 모두 미작동).
+  // env PIPELINE_SCORE_AI_CONDITION_DAILY_LIMIT > 0 일 때 활성. default 0 = 비활성.
+  let conditionAiCallsLeft = 0;
+  if (config.scoreAiConditionDailyLimit > 0) {
+    try {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const countRes = await restFetch(
+        `${tableUrl("mvp_listing_ai_classifications")}?select=pid&condition_class=not.is.null&classified_at=gte.${todayStart.toISOString()}&limit=1`,
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" } },
+      );
+      const range = countRes.headers.get("content-range") ?? "0-0/0";
+      const todayCount = Number(range.split("/")[1] ?? 0);
+      conditionAiCallsLeft = Math.max(0, config.scoreAiConditionDailyLimit - todayCount);
+    } catch {
+      conditionAiCallsLeft = 0;
+    }
+  }
+
   let needsReviewSkipped = 0;
   let phase2EscrowSelected = 0;
   const phase2EscrowFlagByPid = new Map<string, "ai_escrow_pending">();
@@ -3923,6 +3943,24 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       phase2EscrowSelected += 1;
       phase2EscrowFlagByPid.set(String(row.pid), escrow.flag);
     }
+    // Wave 159k (2026-05-17): score-stage condition AI 호출 (env enable 시).
+    // 매물별 trigger: ambiguous(0.55~0.75) + description 보유. daily limit 초과 시 skip.
+    // detail-worker가 처리 못한 기존 매물 backfill 효과.
+    if (
+      conditionAiCallsLeft > 0
+      && parsed
+      && parsed.condition_score != null
+      && parsed.condition_score >= 0.55
+      && parsed.condition_score <= 0.75
+      && row.description_preview
+    ) {
+      const aiClass = await classifyConditionWithAi(Number(row.pid), row.name ?? "", row.description_preview).catch(() => null);
+      if (aiClass) {
+        parsed.condition_class = aiClass;
+        conditionAiCallsLeft -= 1;
+      }
+    }
+
     const marketKey = marketGroupKey(row, parsed);
     const comparableKey = preciseComparableKey(parsed);
     // Wave 130 (2026-05-16): 매물 condition_class에 매칭되는 시세 row 선택 (sample 부족 시 fallback).
