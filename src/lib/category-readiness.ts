@@ -440,6 +440,8 @@ export const LANE_READINESS: LaneReadinessMap = {
   memo_russian_leather_75: { status: "ready", label: "Memo Russian Leather 75ml", note: "Wave 185" },
   memo_irish_leather_75: { status: "ready", label: "Memo Irish Leather 75ml", note: "Wave 185" },
   memo_italian_leather_75: { status: "ready", label: "Memo Italian Leather 75ml", note: "Wave 185" },
+  // Wave 185 internal test (2026-05-18): Dyson Airwrap Origin 신모델 추가.
+  dyson_airwrap_origin: { status: "ready", label: "Dyson Airwrap Origin", note: "Wave 185 internal test: 저가형 Airwrap 2024.11 신모델." },
 };
 
 export type CategoryReadinessConfig = {

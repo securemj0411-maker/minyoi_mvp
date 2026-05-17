@@ -4170,17 +4170,38 @@ export const CATALOG: Sku[] = [
     modelName: "Dyson Airwrap Multi-styler Complete (HS05)",
     aliases: ["Dyson Airwrap", "다이슨 에어랩", "Airwrap Multi-styler", "에어랩 멀티스타일러"],
     mustContain: [["다이슨", "dyson"], ["에어랩", "airwrap"]],
+    // Wave 185 internal test (2026-05-18): 부품/액세서리 + 신모델 (Origin/i.d.) false positive 차단.
     mustNotContain: [
       "i.d.", " id ", "iD", "코안다", "co-anda", "coanda", "2x", "hs08",
+      "오리진", "origin", "hs09",
       "슈퍼소닉", "supersonic", "코랄", "corrale",
       "이미테이션", "정품 아님", "가품",
       "어태치먼트만", "노즐만", "디퓨저만", "어댑터만", "거치대만",
+      "브러쉬", "브러시", "스무딩", "스타일러만",
       "박스만", "케이스만", "충전기만", "부품",
       "수리", "고장", "침수",
       "매입", "삽니다", "구합니다",
     ],
     msrpKrw: 699000,
     released: 2022,
+  },
+  // Wave 185 internal test (2026-05-18): Dyson Airwrap Origin (저가형 신모델, 2024.11) 추가.
+  {
+    id: "dyson-airwrap-origin",
+    brand: "Dyson", category: "home_appliance", laneKey: "dyson_airwrap_origin",
+    modelName: "Dyson Airwrap Origin",
+    aliases: ["Dyson Airwrap Origin", "다이슨 에어랩 오리진"],
+    mustContain: [["다이슨", "dyson"], ["에어랩", "airwrap"], ["오리진", "origin"]],
+    mustNotContain: [
+      "i.d.", "iD", "코안다", "co-anda", "coanda", "2x", "hs08",
+      "슈퍼소닉", "supersonic", "코랄", "corrale",
+      "이미테이션", "정품 아님", "가품",
+      "브러쉬", "어태치먼트만", "노즐만", "박스만", "충전기만", "부품",
+      "수리", "고장", "침수",
+      "매입", "삽니다",
+    ],
+    msrpKrw: 449000,
+    released: 2024,
   },
   {
     id: "dyson-airwrap-id",
@@ -6029,8 +6050,9 @@ export const CATALOG: Sku[] = [
     brand: "DJI", category: "drone", laneKey: "dji_avata",
     modelName: "DJI Avata (FPV)",
     aliases: ["DJI Avata", "DJI 아바타"],
-    mustContain: [["dji", "디제이아이"], ["avata", "아바타"]],
-    mustNotContain: ["avata 2", "아바타 2", "mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다"],
+    // Wave 185 internal test (2026-05-18): DJI 명시 mustContain — "아바타" 단독 (영화 / PS5 게임) false positive 차단.
+    mustContain: [["dji", "디제이아이"], ["dji avata", "dji 아바타", "디제이아이 아바타"]],
+    mustNotContain: ["avata 2", "아바타 2", "mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", "영화", "포스터", "아트카드", "ps5", "ps4", "프론티어", "판도라", "필름", "굿즈", "티켓"],
     msrpKrw: 1099000, released: 2022,
   },
   {
@@ -6038,8 +6060,8 @@ export const CATALOG: Sku[] = [
     brand: "DJI", category: "drone", laneKey: "dji_avata_2",
     modelName: "DJI Avata 2",
     aliases: ["DJI Avata 2", "DJI 아바타 2"],
-    mustContain: [["dji", "디제이아이"], ["avata 2", "avata2", "아바타 2", "아바타2"]],
-    mustNotContain: ["mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다"],
+    mustContain: [["dji", "디제이아이"], ["avata 2", "avata2", "dji 아바타 2", "디제이아이 아바타 2"]],
+    mustNotContain: ["mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", "영화", "포스터", "아트카드", "ps5", "ps4", "프론티어", "판도라", "필름", "굿즈", "티켓"],
     msrpKrw: 1299000, released: 2024,
   },
   // DJI 액션캠 / 포켓
@@ -6095,7 +6117,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Hero 9 Black",
     aliases: ["GoPro Hero 9", "고프로 히어로 9", "Hero 9 Black"],
     mustContain: [["gopro", "고프로"], ["hero 9", "hero9", "히어로 9", "히어로9"]],
-    mustNotContain: ["hero 10", "hero 11", "hero 12", "hero 13", "히어로 10", "히어로 11", "히어로 12", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero 10", "hero 11", "hero 12", "hero 13", "히어로 10", "히어로 11", "히어로 12", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
     msrpKrw: 549000, released: 2020,
   },
   {
@@ -6104,7 +6126,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Hero 10 Black",
     aliases: ["GoPro Hero 10", "고프로 히어로 10", "Hero 10 Black"],
     mustContain: [["gopro", "고프로"], ["hero 10", "hero10", "히어로 10", "히어로10"]],
-    mustNotContain: ["hero 9", "hero 11", "hero 12", "hero 13", "히어로 9", "히어로 11", "히어로 12", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero 9", "hero 11", "hero 12", "hero 13", "히어로 9", "히어로 11", "히어로 12", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
     msrpKrw: 649000, released: 2021,
   },
   {
@@ -6113,7 +6135,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Hero 11 Black",
     aliases: ["GoPro Hero 11", "고프로 히어로 11", "Hero 11 Black"],
     mustContain: [["gopro", "고프로"], ["hero 11", "hero11", "히어로 11", "히어로11"]],
-    mustNotContain: ["hero 9", "hero 10", "hero 12", "hero 13", "히어로 9", "히어로 10", "히어로 12", "히어로 13", "mini", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero 9", "hero 10", "hero 12", "hero 13", "히어로 9", "히어로 10", "히어로 12", "히어로 13", "mini", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
     msrpKrw: 649000, released: 2022,
   },
   {
@@ -6122,7 +6144,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Hero 12 Black",
     aliases: ["GoPro Hero 12", "고프로 히어로 12", "Hero 12 Black"],
     mustContain: [["gopro", "고프로"], ["hero 12", "hero12", "히어로 12", "히어로12"]],
-    mustNotContain: ["hero 9", "hero 10", "hero 11", "hero 13", "히어로 9", "히어로 10", "히어로 11", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero 9", "hero 10", "hero 11", "hero 13", "히어로 9", "히어로 10", "히어로 11", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
     msrpKrw: 599000, released: 2023,
   },
   {
@@ -6131,7 +6153,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Hero 13 Black",
     aliases: ["GoPro Hero 13", "고프로 히어로 13", "Hero 13 Black"],
     mustContain: [["gopro", "고프로"], ["hero 13", "hero13", "히어로 13", "히어로13"]],
-    mustNotContain: ["hero 9", "hero 10", "hero 11", "hero 12", "히어로 9", "히어로 10", "히어로 11", "히어로 12", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero 9", "hero 10", "hero 11", "hero 12", "히어로 9", "히어로 10", "히어로 11", "히어로 12", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
     msrpKrw: 599000, released: 2024,
   },
   {
@@ -6140,7 +6162,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Max (360)",
     aliases: ["GoPro Max", "고프로 맥스", "GoPro 360"],
     mustContain: [["gopro", "고프로"], ["max", "맥스"]],
-    mustNotContain: ["hero", "히어로", "케이스만", "배터리만", "충전기만", "마운트만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero", "히어로", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
     msrpKrw: 599000, released: 2019,
   },
   // ─── Wave 185 (2026-05-17): 새 카테고리 "perfume" — 명품 향수 22 SKU ───
@@ -6243,7 +6265,8 @@ export const CATALOG: Sku[] = [
     modelName: "Tom Ford Black Orchid 50ml",
     aliases: ["Tom Ford Black Orchid", "톰포드 블랙 오키드"],
     mustContain: [["tom ford", "톰포드", "톰 포드"], ["black orchid", "블랙 오키드", "블랙오키드"], ["50ml", "50 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다"],
+    // Wave 185 internal test (2026-05-18): Tom Ford 신발 (첼시부츠/스니커즈/캠브리지/로퍼/옥스포드) false positive 차단.
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다", "스니커즈", "첼시", "부츠", "캠브리지", "로퍼", "오포드", "옥스포드", "신발", "운동화"],
     msrpKrw: 230000, released: 2006,
   },
   {
@@ -6260,7 +6283,7 @@ export const CATALOG: Sku[] = [
     modelName: "Tom Ford Lost Cherry 50ml",
     aliases: ["Tom Ford Lost Cherry", "톰포드 로스트 체리"],
     mustContain: [["tom ford", "톰포드", "톰 포드"], ["lost cherry", "로스트 체리", "로스트체리"], ["50ml", "50 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다", "스니커즈", "첼시", "부츠", "캠브리지", "로퍼", "오포드", "옥스포드", "신발", "운동화"],
     msrpKrw: 480000, released: 2018,
   },
   {
@@ -6268,7 +6291,7 @@ export const CATALOG: Sku[] = [
     modelName: "Tom Ford Oud Wood 50ml",
     aliases: ["Tom Ford Oud Wood", "톰포드 우드 우드"],
     mustContain: [["tom ford", "톰포드", "톰 포드"], ["oud wood", "우드 우드", "우드우드", "oud", "우드"], ["50ml", "50 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다", "스니커즈", "첼시", "부츠", "캠브리지", "로퍼", "오포드", "옥스포드", "신발", "운동화"],
     msrpKrw: 380000, released: 2007,
   },
   // Maison Margiela Replica
