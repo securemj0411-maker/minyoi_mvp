@@ -587,14 +587,12 @@ function RevealCardItem({
 
   return (
     <div
-      className={`rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] transition-all duration-700 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 ${
+      className={`grid gap-3 transition-all duration-700 lg:grid-cols-2 ${
         shown ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
       }`}
     >
-      {/* 2026-05-17: lg = 2 column outer (좌: 이미지+메타 / 우: 시세 영역). 모바일은 자연 stack. */}
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-        {/* 좌측 column — image + 메타 */}
-        <div className="grid gap-3 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
+      {/* 좌측 카드 — 매물 정보 (image + 메타 + verdicts + 노트 + 버튼) */}
+      <div className="grid gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
       <div className="relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]">
         {card.thumbnailUrl ? (
           <Image
@@ -612,7 +610,6 @@ function RevealCardItem({
         {/* Wave 80: 상세 비교 / 공략 보기 floating overlay 제거 — 사진 가림 → 하단 버튼 영역으로 이동 */}
       </div>
 
-      {/* 좌측 column 안 메타 영역 */}
       <div className="min-w-0 space-y-2">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -669,11 +666,14 @@ function RevealCardItem({
           </div>
         ) : null}
       </div>
-      {/* 좌측 column (image + 메타 grid) 끝 */}
       </div>
+      {/* 좌측 카드 닫음 — 우측 카드 = 시세 영역 별도. */}
 
-        {/* 2026-05-17: 우측 column (lg) — 시세 영역 시각 강조. 모바일은 자연 stack. */}
-        <div className="min-w-0 space-y-2">
+      {/* 우측 카드 — 시세 영역 (lg 에서 옆에. 모바일은 stack). */}
+      <div className="space-y-2 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40">
+        <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
+          📊 시세 분석
+        </div>
         <MarketBasisMini card={card} />
 
         {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
@@ -693,12 +693,11 @@ function RevealCardItem({
             "이 시세가 어떤 매물 기준인지" 즉시 확인 가능. comparable_key + market_price_daily
             + 같은 SKU 매물 N건 list (가격순) + 번장 링크. */}
         <MarketSourceDebug pid={card.pid} ourPrice={card.price} />
-        </div>
-        {/* 우측 column (시세 영역) 끝 */}
       </div>
-      {/* outer lg 2-column wrapper 끝. 아래 = full width (노트 + 버튼). */}
+      {/* 우측 카드 (시세 분석) 닫음. */}
 
-      <div className="mt-3 min-w-0 space-y-2">
+      {/* 노트 + 버튼 영역 — full width (lg:col-span-2). */}
+      <div className="space-y-2 lg:col-span-2">
         {/* Wave 80: SavedDetailMini (찜/리뷰/리뷰N개/판매자 설명문) 제거 — 번개장터 데이터 직접 노출 법적 위험. 원본은 "번개장터 열기" 버튼으로 확인. */}
 
         {/* Wave 80: 개별 피드백 버튼 (관심/매수함/이미 팔림/별로) + quickTags (단품 의심 등) 제거.
@@ -1132,7 +1131,9 @@ export default function PackRevealModal({
           {!displayLoading && result?.result === "success" ? (
             <div className="space-y-4">
               <div>
-                <div className="grid gap-3 md:grid-cols-2">
+                {/* 2026-05-17: 각 RevealCardItem 자체가 lg:grid-cols-2 (listing card + market card).
+                    outer grid 는 1 column — 한 줄에 1 매물 (= 2 카드 옆에). */}
+                <div className="grid gap-4">
                   {result.reveals.map((card, idx) => (
                     <RevealCardItem
                       key={card.pid}
