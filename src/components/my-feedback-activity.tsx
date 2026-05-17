@@ -25,6 +25,8 @@ type RecentReport = {
   adminRespondedAt: string | null;
   compensationTokens: number;
   createdAt: string;
+  userSeenAt: string | null;     // Wave 194
+  unread: boolean;                // Wave 194
   listing: {
     name: string | null;
     price: number | null;
@@ -37,6 +39,7 @@ type ActivityResponse = {
   thisMonth: Stats;
   allTime: Stats;
   recentReports: RecentReport[];
+  unreadCount: number;            // Wave 194
   monthLabel: string;
 };
 
@@ -71,6 +74,8 @@ export function MyFeedbackActivity() {
   const [error, setError] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [filter, setFilter] = useState<StatusFilter>("all");
+  // Wave 194: 첫 진입 toast — unreadCount > 0이면 5초 표시.
+  const [toastVisible, setToastVisible] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,7 +94,16 @@ export function MyFeedbackActivity() {
         });
         if (!res.ok) throw new Error(`status_${res.status}`);
         const json = (await res.json()) as ActivityResponse;
-        if (!cancelled) setData(json);
+        if (!cancelled) {
+          setData(json);
+          // Wave 194: 첫 fetch 후 unreadCount > 0 → 5초 toast 표시.
+          if (json.unreadCount > 0) {
+            setToastVisible(true);
+            setTimeout(() => {
+              if (!cancelled) setToastVisible(false);
+            }, 5000);
+          }
+        }
       } catch (err) {
         if (!cancelled) setError("피드백 활동을 불러오지 못했어요.");
         console.error("[my-feedback-activity] failed", err);
@@ -114,10 +128,39 @@ export function MyFeedbackActivity() {
 
   return (
     <>
+      {/* Wave 194: 첫 진입 toast — 미확인 운영자 응답 있으면 5초 floating. */}
+      {toastVisible && data.unreadCount > 0 && (
+        <div className="fixed bottom-4 left-1/2 z-[60] w-[calc(100vw-32px)] max-w-md -translate-x-1/2 rounded-xl border-2 border-rose-300 bg-rose-50 px-4 py-3 shadow-2xl dark:border-rose-900/60 dark:bg-rose-950/80">
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-[12px] font-bold text-rose-900 dark:text-rose-100">
+              <span className="mr-1">🔔</span>
+              운영자가 회원님 신고에 응답했어요 ({data.unreadCount}건)
+              <div className="mt-1 text-[11px] font-normal text-rose-800/80 dark:text-rose-200/80">
+                아래 [내 피드백 활동] → 응답 {data.unreadCount}건 확인 클릭.
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setToastVisible(false)}
+              className="shrink-0 text-rose-700 hover:text-rose-900 dark:text-rose-300"
+              aria-label="알림 닫기"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mb-4 rounded-xl border-2 border-[#d5dfd2] bg-[#f3f7f1] p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20">
         <div className="mb-2 flex items-baseline justify-between gap-2">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
+          <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
             🔍 내 피드백 활동
+            {/* Wave 194: 미확인 운영자 응답 배지. */}
+            {data.unreadCount > 0 && (
+              <span className="inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white">
+                🔴 {data.unreadCount}
+              </span>
+            )}
           </span>
           <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
             {data.monthLabel}
@@ -170,10 +213,34 @@ export function MyFeedbackActivity() {
 
             <button
               type="button"
-              onClick={() => setDetailOpen(true)}
-              className="mt-2 w-full rounded-lg border border-[#d5dfd2] bg-white px-3 py-1.5 text-[11px] font-black text-[#5d735f] hover:bg-[#edf3ea] dark:border-emerald-900/40 dark:bg-zinc-900 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
+              onClick={async () => {
+                setDetailOpen(true);
+                // Wave 194: 모달 열면 자동 mark-seen (운영자 응답 확인 처리).
+                if (data.unreadCount > 0) {
+                  try {
+                    const supabase = getSupabaseBrowserClient();
+                    if (!supabase) return;
+                    const { data: sessionData } = await supabase.auth.getSession();
+                    const token = sessionData.session?.access_token;
+                    if (!token) return;
+                    await fetch("/api/packs/me/feedback-mark-seen", {
+                      method: "POST",
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    // 로컬 데이터 즉시 갱신 (re-fetch 없이 unread 표시 사라지게).
+                    setData((prev) => prev ? { ...prev, unreadCount: 0 } : prev);
+                  } catch (err) {
+                    console.error("[my-feedback-activity] mark-seen failed", err);
+                  }
+                }
+              }}
+              className={`mt-2 w-full rounded-lg border px-3 py-1.5 text-[11px] font-black transition ${
+                data.unreadCount > 0
+                  ? "border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
+                  : "border-[#d5dfd2] bg-white text-[#5d735f] hover:bg-[#edf3ea] dark:border-emerald-900/40 dark:bg-zinc-900 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
+              }`}
             >
-              자세히 보기 →
+              {data.unreadCount > 0 ? `🔴 운영자 응답 ${data.unreadCount}건 확인 →` : "자세히 보기 →"}
             </button>
           </>
         )}
@@ -266,10 +333,18 @@ export function MyFeedbackActivity() {
                           <span className="font-black text-zinc-500">내 신고:</span> {report.note}
                         </div>
                         {report.adminResponseNote && (
-                          <div className="mt-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-                            <span className="font-black">운영자 응답:</span> {report.adminResponseNote}
+                          <div className={`mt-1 rounded border px-2 py-1 text-[11px] dark:bg-emerald-950/30 dark:text-emerald-200 ${
+                            report.unread
+                              ? "border-rose-300 bg-rose-50 text-rose-900 ring-2 ring-rose-400 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-100 dark:ring-rose-600"
+                              : "border-emerald-200 bg-emerald-50 text-emerald-900"
+                          }`}>
+                            <span className="font-black">
+                              {report.unread && "🆕 "}운영자 응답:
+                            </span> {report.adminResponseNote}
                             {report.adminRespondedAt && (
-                              <div className="mt-0.5 text-[9px] text-emerald-700 dark:text-emerald-400">
+                              <div className={`mt-0.5 text-[9px] ${
+                                report.unread ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-400"
+                              }`}>
                                 {timeLabel(report.adminRespondedAt)} ({relAge(report.adminRespondedAt)})
                               </div>
                             )}

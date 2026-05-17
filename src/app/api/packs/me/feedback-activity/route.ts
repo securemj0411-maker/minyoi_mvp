@@ -27,6 +27,8 @@ type FeedbackRow = {
   admin_responded_at: string | null;
   compensation_granted_tokens: number;
   created_at: string;
+  // Wave 194 (2026-05-17): unread 표시 — admin_responded_at > user_seen_at = 미확인 운영자 응답.
+  user_seen_at: string | null;
 };
 
 type Stats = {
@@ -66,7 +68,8 @@ export async function GET(req: Request) {
 
   try {
     // 1. 전체 기간 신고 fetch (max 200건, 최근 신고가 가장 활용도 ↑)
-    const allUrl = `${tableUrl("mvp_reveal_feedback")}?select=id,pid,note,admin_status,admin_response_note,admin_responded_at,compensation_granted_tokens,created_at&user_ref=eq.${encodeURIComponent(userRef)}&feedback_type=eq.inaccurate_report&order=created_at.desc&limit=200`;
+    // Wave 194: user_seen_at 추가 — unread 계산.
+    const allUrl = `${tableUrl("mvp_reveal_feedback")}?select=id,pid,note,admin_status,admin_response_note,admin_responded_at,compensation_granted_tokens,created_at,user_seen_at&user_ref=eq.${encodeURIComponent(userRef)}&feedback_type=eq.inaccurate_report&order=created_at.desc&limit=200`;
     const allRes = await restFetch(allUrl, { headers: serviceHeaders() });
     const allRows = (await allRes.json()) as FeedbackRow[];
 
@@ -87,6 +90,14 @@ export async function GET(req: Request) {
       listingMap = new Map(listings.map((l) => [Number(l.pid), { name: l.name, price: l.price, thumbnail_url: l.thumbnail_url }]));
     }
 
+    // Wave 194: unread = 운영자가 응답했고 사용자가 아직 안 봤음.
+    const isUnread = (r: FeedbackRow): boolean => {
+      if (!r.admin_responded_at) return false;
+      if (!r.user_seen_at) return true;
+      return new Date(r.admin_responded_at).getTime() > new Date(r.user_seen_at).getTime();
+    };
+    const unreadCount = allRows.filter(isUnread).length;
+
     const recentReports = recentRows.map((r) => {
       const listing = listingMap.get(Number(r.pid)) ?? null;
       return {
@@ -98,6 +109,9 @@ export async function GET(req: Request) {
         adminRespondedAt: r.admin_responded_at,
         compensationTokens: r.compensation_granted_tokens,
         createdAt: r.created_at,
+        // Wave 194: unread 표시.
+        userSeenAt: r.user_seen_at,
+        unread: isUnread(r),
         listing: listing
           ? {
               name: listing.name,
@@ -113,6 +127,7 @@ export async function GET(req: Request) {
       thisMonth,
       allTime,
       recentReports,
+      unreadCount,
       monthLabel: `${monthStart.getUTCFullYear()}년 ${monthStart.getUTCMonth() + 1}월`,
     });
   } catch (err) {
