@@ -18,8 +18,13 @@ export const revalidate = 0;
 
 const CACHE_SECONDS = 60;
 const PREVIEW_COUNT = 5;
-// 2026-05-17: 사용자 진입장벽 ↓ — 비로그인 preview 매물 매입가 30만원 이하만.
-const MAX_PRICE_KRW = 300_000;
+// 2026-05-17: 진입장벽 ↓ — 가격 tier 분리.
+// tier A: 10만 이하 2개 (저렴한 hook — "와 진짜 싼 매물도 있네")
+// tier B: 30만 이하 3개 (실제 매물 분위기)
+const TIER_A_MAX_KRW = 100_000;
+const TIER_A_COUNT = 2;
+const TIER_B_MAX_KRW = 300_000;
+const TIER_B_COUNT = 3;
 
 // 2026-05-17: 진짜 thumbnail 서버 사이드 blur 처리.
 // 원본 URL 노출 X → blur 된 base64 data URL 만 클라이언트 전송. DevTools 우회 차단.
@@ -91,11 +96,11 @@ export async function GET() {
       });
     }
 
-    // 매물 정보 fetch — 가격 filter + sku_id 다양화 위해 pool 전체 분량 join.
+    // 매물 정보 fetch — 30만 이하 만 (tier B max). pool 전체 join.
     const poolPids = pool.map((r) => r.pid);
     const [rawRes, rawListingRes] = await Promise.all([
       restFetch(
-        `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url&pid=in.(${poolPids.join(",")})&price=lte.${MAX_PRICE_KRW}`,
+        `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url&pid=in.(${poolPids.join(",")})&price=lte.${TIER_B_MAX_KRW}`,
         { headers },
       ),
       restFetch(
@@ -107,35 +112,47 @@ export async function GET() {
     const rawListings = (await rawListingRes.json()) as RawListingMeta[];
     const rawByPid = new Map<number, RawRow>(raws.map((r) => [r.pid, r]));
     const skuByPid = new Map<number, string | null>(rawListings.map((r) => [r.pid, r.sku_id]));
-    const eligiblePids = new Set(raws.map((r) => r.pid)); // price <= MAX filter 통과
 
-    // 2026-05-17: 다양화 — 카테고리 + sku_id 둘 다 dedup. 같은 SKU 1개만, 카테고리도 다양.
-    const byCategory = new Map<string, PoolRow>();
+    // 2026-05-17: 가격 tier 분리 — 10만 이하 2개 + 10-30만 3개. SKU 다양화 유지.
+    // pickFromTier 가 carry-over: cumulative usedSkus/categories.
     const usedSkus = new Set<string>();
-    for (const row of pool) {
-      if (!eligiblePids.has(row.pid)) continue; // price > 30만 제외
-      const sku = skuByPid.get(row.pid);
-      if (sku && usedSkus.has(sku)) continue; // 같은 SKU 중복 제외
-      const cat = row.category ?? "other";
-      if (byCategory.has(cat)) continue; // 같은 카테고리 1개만
-      byCategory.set(cat, row);
-      if (sku) usedSkus.add(sku);
-      if (byCategory.size >= PREVIEW_COUNT) break;
-    }
-    let selected = Array.from(byCategory.values());
-    // 카테고리 5종 미만이면 SKU 중복만 피하면서 채움.
-    if (selected.length < PREVIEW_COUNT) {
+    const usedCategories = new Set<string>();
+    const selected: PoolRow[] = [];
+
+    function pickFromTier(maxPriceKrw: number, target: number, allowCategoryDup: boolean) {
+      const tierPicked: PoolRow[] = [];
       for (const row of pool) {
-        if (selected.length >= PREVIEW_COUNT) break;
-        if (!eligiblePids.has(row.pid)) continue;
+        if (tierPicked.length >= target) break;
         if (selected.some((s) => s.pid === row.pid)) continue;
+        const raw = rawByPid.get(row.pid);
+        if (!raw || raw.price > maxPriceKrw) continue;
         const sku = skuByPid.get(row.pid);
         if (sku && usedSkus.has(sku)) continue;
-        selected.push(row);
+        const cat = row.category ?? "other";
+        if (!allowCategoryDup && usedCategories.has(cat)) continue;
+        tierPicked.push(row);
         if (sku) usedSkus.add(sku);
+        usedCategories.add(cat);
       }
+      // tier 못 채우면 카테고리 중복 허용 한 번 더 시도.
+      if (tierPicked.length < target && !allowCategoryDup) {
+        for (const row of pool) {
+          if (tierPicked.length >= target) break;
+          if (selected.some((s) => s.pid === row.pid)) continue;
+          if (tierPicked.some((s) => s.pid === row.pid)) continue;
+          const raw = rawByPid.get(row.pid);
+          if (!raw || raw.price > maxPriceKrw) continue;
+          const sku = skuByPid.get(row.pid);
+          if (sku && usedSkus.has(sku)) continue;
+          tierPicked.push(row);
+          if (sku) usedSkus.add(sku);
+        }
+      }
+      selected.push(...tierPicked);
     }
-    selected = selected.slice(0, PREVIEW_COUNT);
+
+    pickFromTier(TIER_A_MAX_KRW, TIER_A_COUNT, false);
+    pickFromTier(TIER_B_MAX_KRW, TIER_B_COUNT, false);
 
     if (selected.length === 0) {
       return NextResponse.json({ items: [] }, {
