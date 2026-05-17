@@ -105,7 +105,7 @@ function storedDescriptionPreview(value: string) {
   return clean.length >= 180 ? `${clean.replace(/\s+$/g, "")}\n\n...` : clean;
 }
 
-export default function UserRevealDashboard({ userRef }: { userRef: string }) {
+export default function UserRevealDashboard({ userRef, welcomePending = false }: { userRef: string; welcomePending?: boolean }) {
   const [items, setItems] = useState<RevealItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -829,7 +829,11 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
 
       {!loading && total === 0 ? (
         <div className="mt-4 rounded-xl bg-[#fffaf1] p-4 text-center text-xs text-[#6b7269] dark:bg-zinc-950 dark:text-zinc-400">
-          {query ? "검색 결과가 없습니다." : "아직 본 추천 상품이 없습니다."}
+          {query
+            ? "검색 결과가 없습니다."
+            : welcomePending
+              ? "추천 매물을 준비하고 있어요. 잠시만 기다려주세요…"
+              : "아직 본 추천 상품이 없습니다."}
         </div>
       ) : null}
       <PackRevealModal

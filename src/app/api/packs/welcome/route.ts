@@ -19,7 +19,9 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const WELCOME_BAND = 2;
-const WELCOME_CARDS = 5;
+// 2026-05-17 fix: openPack 이 홀수 requestedCards 를 (n-1) 짝수로 내림 (pack-open.ts:800).
+// 5 요청 → 4 카드. 사용자 합의 4 수용 → WELCOME_CARDS=4 (스펙·실제 일치, 무의미한 5→4 마법 제거).
+const WELCOME_CARDS = 4;
 
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);

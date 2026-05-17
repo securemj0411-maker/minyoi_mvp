@@ -2,7 +2,7 @@
 
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AdminPoolBrowser from "@/components/admin-pool-browser";
 import AdminClassificationBrowser from "@/components/admin-classification-browser";
 import HotdealAlertsView from "@/components/hotdeal-alerts-view";
@@ -104,6 +104,12 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   // 2026-05-17: "더 찾아보기" 모달 — 추천 받기 기능을 모달 안에서 호출 (별도 페이지 아님).
   const [seekMoreOpen, setSeekMoreOpen] = useState(false);
+  // 2026-05-17 fix: welcome 호출 중 표시 — 빈 상태 flash 차단 ("상품 없음" 깜빡임 방지).
+  const [welcomePending, setWelcomePending] = useState<boolean>(true);
+  // 2026-05-17 fix: welcome useEffect double-fire 가드 — Supabase 가 loadUser + onAuthStateChange
+  // 양쪽에서 setUser 호출하면서 user reference 두 번 바뀌어 useEffect 두 번 실행 → 두 번 POST →
+  // existing.length 체크 race → openPack 두 번 → 4 × 2 = 8 reveal 박힘.
+  const welcomeRequestedRef = useRef<string | null>(null);
 
   useEffect(() => {
     setShadowMode(hasAdminShadowClient());
@@ -176,25 +182,30 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
     };
   }, []);
 
-  // 2026-05-17: 신규 가입자 welcome — dashboard 첫 진입 시 자동 5 매물 reserve.
+  // 2026-05-17: 신규 가입자 welcome — dashboard 첫 진입 시 자동 매물 reserve (4 카드).
   // 사용자 의도: "가치를 확실히 인식시켜야". 가입 직후 빈 dashboard → 자동 매물.
   // /api/packs/welcome 이 reveal count 0 일 때만 reserve (once-only).
+  // 2026-05-17 fix: ref 가드로 user.id 별 1회만 POST. 이전엔 user reference 두 번 바뀌면서
+  // useEffect 두 번 fire → race condition → 8 reveal 박힘.
   useEffect(() => {
     if (!user) return;
+    if (welcomeRequestedRef.current === user.id) return; // 이미 이 user 로 호출함
+    welcomeRequestedRef.current = user.id;
     let cancelled = false;
     (async () => {
       try {
         const supabase = getSupabaseBrowserClient();
-        if (!supabase) return;
+        if (!supabase) { setWelcomePending(false); return; }
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
-        if (!token) return;
+        if (!token) { setWelcomePending(false); return; }
         const res = await fetch("/api/packs/welcome", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
           body: JSON.stringify({}),
         });
-        if (!res.ok || cancelled) return;
+        if (cancelled) return;
+        if (!res.ok) { setWelcomePending(false); return; }
         const data = (await res.json()) as PackOpenResult | { result?: string; error?: string };
         if (data && (data as PackOpenResult).result === "success") {
           // dashboard refresh — UserRevealDashboard 가 PACK_REVEALS_UPDATED_EVENT listen 함.
@@ -205,6 +216,8 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
         }
       } catch (err) {
         console.error("[me-dashboard] welcome failed", err);
+      } finally {
+        if (!cancelled) setWelcomePending(false);
       }
     })();
     return () => { cancelled = true; };
@@ -345,7 +358,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
                 🔍 더 찾아보기
               </button>
             </div>
-            <UserRevealDashboard userRef={userRefForAuthUser(user.id)} />
+            <UserRevealDashboard userRef={userRefForAuthUser(user.id)} welcomePending={welcomePending} />
             {/* 2026-05-17 (사용자 요청): 목록 밑에도 "더 찾아보기" 버튼 (상단 버튼만 있으면 스크롤 후 보이지 않음). */}
             <div className="mt-6 flex justify-center">
               <button
