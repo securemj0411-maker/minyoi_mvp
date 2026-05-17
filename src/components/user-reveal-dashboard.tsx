@@ -189,6 +189,17 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     return () => window.clearTimeout(timeout);
   }, [loadItems]);
 
+  // 2026-05-17 fix: welcomePending true → false 전환 시 silent reload.
+  // 이유: welcome dispatch event 가 listener 등록 전에 fire 되거나 미스 됐을 때 fallback.
+  // pending false 됐는데 화면 비어있으면 사용자가 새로고침해야 됨 → 자동 reload 로 차단.
+  const prevWelcomePendingRef = useRef<boolean>(welcomePending);
+  useEffect(() => {
+    if (prevWelcomePendingRef.current && !welcomePending) {
+      void loadItems({ silent: true });
+    }
+    prevWelcomePendingRef.current = welcomePending;
+  }, [welcomePending, loadItems]);
+
   useEffect(() => {
     function handlePackRevealsUpdated(event: Event) {
       const detail = (event as CustomEvent<PackRevealsUpdatedDetail>).detail;

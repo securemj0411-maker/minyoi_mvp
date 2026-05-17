@@ -187,29 +187,30 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
   // /api/packs/welcome 이 reveal count 0 일 때만 reserve (once-only).
   // 2026-05-17 fix: ref 가드로 user.id 별 1회만 POST. 이전엔 user reference 두 번 바뀌면서
   // useEffect 두 번 fire → race condition → 8 reveal 박힘.
+  // 2026-05-17 fix #2: cancelled flag 제거. cleanup 이 fire 되면 cancelled=true → finally 의
+  // setWelcomePending(false) skip → 무한 로딩. fetch 는 그래도 진행돼서 DB 엔 4개 박혔지만
+  // 화면은 "준비 중" 무한 표시. unmount 후 setState 는 React 가 silent ignore — 그냥 호출.
   useEffect(() => {
     if (!user) return;
     if (welcomeRequestedRef.current === user.id) return; // 이미 이 user 로 호출함
     welcomeRequestedRef.current = user.id;
-    let cancelled = false;
     (async () => {
       try {
         const supabase = getSupabaseBrowserClient();
-        if (!supabase) { setWelcomePending(false); return; }
+        if (!supabase) return;
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
-        if (!token) { setWelcomePending(false); return; }
+        if (!token) return;
         const res = await fetch("/api/packs/welcome", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
           body: JSON.stringify({}),
         });
-        if (cancelled) return;
-        if (!res.ok) { setWelcomePending(false); return; }
+        if (!res.ok) return;
         const data = (await res.json()) as PackOpenResult | { result?: string; error?: string };
         if (data && (data as PackOpenResult).result === "success") {
           // dashboard refresh — UserRevealDashboard 가 PACK_REVEALS_UPDATED_EVENT listen 함.
-          // 2026-05-17 fix: canonical event name + 실제 reveals + band 전달 (이전엔 wrong event name + empty array → 핸들러 early return → 첫 화면에 안 보임).
+          // 2026-05-17 fix: canonical event name + 실제 reveals + band 전달.
           const success = data as Extract<PackOpenResult, { result: "success" }>;
           const reveals: RevealCard[] = Array.isArray(success.reveals) ? success.reveals : [];
           dispatchPackRevealsUpdated({ band: 2 as PackBand, reveals });
@@ -217,10 +218,9 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
       } catch (err) {
         console.error("[me-dashboard] welcome failed", err);
       } finally {
-        if (!cancelled) setWelcomePending(false);
+        setWelcomePending(false); // 무조건 풀음 — pending true 잠금 차단.
       }
     })();
-    return () => { cancelled = true; };
   }, [user]);
 
   // Wave 90: IntersectionObserver(스크롤 추적) 제거 — 각 view 단독 mount라 의미 X
