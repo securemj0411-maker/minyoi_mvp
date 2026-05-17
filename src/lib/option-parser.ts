@@ -167,7 +167,7 @@ export function resolveConditionClass(
 
 // 2026-05-16 v46 cleanup: export — reparse-listings/route.ts 등 다른 곳에서 import.
 // 이전: route.ts 에 별도 const 박혀서 silent drift 위험 (수동 sync 필요).
-export const PARSER_VERSION = "option-parser-v47";
+export const PARSER_VERSION = "option-parser-v48";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -1135,7 +1135,11 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   // 2026-05-17 (사용자 코멘트 id 146 pid 408047887): "하자는 채팅주시면 알려드리겠습니다 (없는수준)" false positive.
   // 셀러가 "하자 없음" 명시했는데 "하자" 단어만 잡고 flawed 분류 잘못. mitigator 추가 — 다른 negative 신호 (display/faceid/water 등) 와 같은 패턴.
   // 2026-05-17 (사용자 코멘트 id 148 pid 295882994): "거래 후 최초 원초적 하자(택배취급문제 등)를 제외하고는 환불 불가" 정상 거래 조건 표현이 flawed로 잘못 분류. negation 확장.
-  const noRepairOrDefect = /\(\s*없는\s*수준\s*\)|하자.{0,20}(?:없|아닙|아님)|고장.{0,20}없|불량.{0,20}없|파손.{0,20}없|깨짐.{0,20}없|문제.{0,20}없|수리.{0,20}(?:없|이력\s*없|한\s*적\s*없)|교체.{0,20}(?:없|이력\s*없|한\s*적\s*없)|하자.{0,30}(?:제외|환불|책임\s*없)|원초적\s*하자|택배\s*취급(?:문제|상\s*문제)|택배취급문제|하자.{0,8}(?:있는\s*제품은\s*명시|있을\s*경우\s*환불|있는\s*경우)|하자나\s*오염\s*없|하자나\s*기스\s*없|하자\s*거의\s*없|하자\s*약간|하자\s*미세|심각한\s*하자\s*없|심각한\s*문제\s*없/.test(lower);
+  // 2026-05-17 (사용자 코멘트 id 146/148 + Wave 159i 자율 사이클): 정상 매물이 repair_or_defect_signal로 잘못 분류되는 false positive 차단.
+  // - "정품 배터리 교체" — 셀러가 공식 정품 배터리로 교체 = 정상 (수리 의미 아님)
+  // - "잔상이나 화면 하자 없" — 부정형 정상 표현
+  // - "전기능 이상없" / "기능 문제 없" — 정상 작동 명시
+  const noRepairOrDefect = /\(\s*없는\s*수준\s*\)|하자.{0,20}(?:없|아닙|아님)|고장.{0,20}없|불량.{0,20}없|파손.{0,20}없|깨짐.{0,20}없|문제.{0,20}없|수리.{0,20}(?:없|이력\s*없|한\s*적\s*없)|교체.{0,20}(?:없|이력\s*없|한\s*적\s*없)|하자.{0,30}(?:제외|환불|책임\s*없)|원초적\s*하자|택배\s*취급(?:문제|상\s*문제)|택배취급문제|하자.{0,8}(?:있는\s*제품은\s*명시|있을\s*경우\s*환불|있는\s*경우)|하자나\s*오염\s*없|하자나\s*기스\s*없|하자\s*거의\s*없|하자\s*약간|하자\s*미세|심각한\s*하자\s*없|심각한\s*문제\s*없|정품\s*배터리\s*교체|정품배터리교체|배터리\s*(?:100\s*%|100%)\s*정품|잔상이나\s*(?:화면|디스플레이|액정)?\s*(?:하자|기스|손상).{0,8}없|전\s*기능\s*(?:이상|문제)\s*없|전기능\s*(?:이상|문제)\s*없|기능\s*(?:상\s*)?(?:이상|문제)\s*없|기능\s*문제\s*없|기능\s*정상|모든\s*기능\s*(?:정상|이상\s*없|문제\s*없)/.test(lower);
   if (!noRepairOrDefect && /수리|교체|하자|고장|불량|파손|깨짐/.test(defectRiskText)) add("repair_or_defect_signal", -0.2);
   if (batteryHealth != null && batteryHealth < 85) add("low_battery_health", -0.15);
   if (cycles != null && cycles > 500) add("high_battery_cycles", -0.1);
@@ -1143,7 +1147,8 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   const notRefurbished = /리퍼\s*(?:제품\s*)?(?:아님|아닙니다|아닌|아니고|아니며)/.test(lower);
   if (!notRefurbished && /리퍼|리퍼폰|리퍼\s*교체|부분\s*수리|사설\s*수리|사설수리/.test(lower)) add("refurbished_or_repaired", -0.15);
   if (/(액정|디스플레이|화면).{0,16}(교체|수리)|(?:교체|수리).{0,16}(액정|디스플레이|화면)/.test(defectRiskText)) add("screen_replaced", -0.12);
-  const noDisplayDefect = /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없)|번인\s*(?:없|없음|없습니다)/.test(lower);
+  // Wave 159i (2026-05-17 자율 사이클): "잔상이나 화면하자 없어요" 같은 부정형 정상 표현 보강.
+  const noDisplayDefect = /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없)|번인\s*(?:없|없음|없습니다)|잔상이나\s*(?:화면|디스플레이|액정)\s*(?:하자|기스|손상|문제).{0,8}없|잔상\s*,?\s*(?:파손|깨짐|기스|손상)\s*(?:,|및)?\s*(?:화면|디스플레이|액정)?\s*기스\s*없|잔상\s*,?\s*멍\s*없/.test(lower);
   if (!noDisplayDefect && /잔상|번인|burn\s*in|녹조|흑점|멍|터치\s*불량|터치불량|액정\s*깨짐|화면\s*깨짐|디스플레이\s*깨짐|액정\s*파손|화면\s*파손|디스플레이\s*파손|노액|액정\s*나감|화면\s*나감/.test(lower)) add("display_defect", -0.25);
   // 2026-05-15 Wave 117: 부품용/수리용/셀러용 매물은 일반 사용자가 사면 손해 (정상 사용 불가). 풀 차단 + 시세 sample 제외.
   // 리셀 업자 lane 신설 시 별도 builder가 다시 살림 (POOL_BLOCK_NOTES 라인 코멘트 참조).
