@@ -985,27 +985,48 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   </>
                 ) : (
                   <>
-                    {/* Wave 200: terminal 매물 시 차익 strike-through (정보 stale). */}
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-black tabular-nums ${
-                      isTerminal
-                        ? "bg-zinc-100 text-zinc-400 line-through dark:bg-zinc-800 dark:text-zinc-500"
-                        : "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                    }`}>
-                      {item.expectedProfitMin === item.expectedProfitMax
-                        ? `+${item.expectedProfitMax.toLocaleString("ko-KR")}원`
-                        : `+${item.expectedProfitMin.toLocaleString("ko-KR")}~${item.expectedProfitMax.toLocaleString("ko-KR")}원`}
-                    </span>
+                    {/* Wave 200: terminal 매물 시 차익 strike-through (정보 stale).
+                        Wave 194 (2026-05-18): current_profit 박혀있으면 그 값 우선 표시. snapshot 과
+                        다르면 부가 라벨 ("추천 당시 +57K → 현재 +10K"). 사용자 frustration —
+                        snapshot 만 표시되면 시세 변동 후 진짜 차익 알 수 없음. marketStale=false (양수
+                        case) 에도 mismatch 발생 가능. current null = Wave 191 cron 미실행 → snapshot 표시. */}
+                    {(() => {
+                      const hasCurrent = item.marketGapKrw != null;
+                      const displayProfit = hasCurrent ? item.marketGapKrw! : item.expectedProfitMax;
+                      const snapshotProfit = item.expectedProfitMax;
+                      const profitDiverged = hasCurrent && Math.abs(displayProfit - snapshotProfit) >= 5000;
+                      const sign = displayProfit >= 0 ? "+" : "";
+                      return (
+                        <>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-black tabular-nums ${
+                            isTerminal
+                              ? "bg-zinc-100 text-zinc-400 line-through dark:bg-zinc-800 dark:text-zinc-500"
+                              : "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                          }`}>
+                            {item.expectedProfitMin === item.expectedProfitMax || hasCurrent
+                              ? `${sign}${displayProfit.toLocaleString("ko-KR")}원`
+                              : `+${item.expectedProfitMin.toLocaleString("ko-KR")}~${item.expectedProfitMax.toLocaleString("ko-KR")}원`}
+                          </span>
+                          {profitDiverged && !isTerminal && (
+                            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300" title={`추천 당시 +${snapshotProfit.toLocaleString("ko-KR")}원 → 현재 ${sign}${displayProfit.toLocaleString("ko-KR")}원`}>
+                              ↓ 시세 갱신
+                            </span>
+                          )}
+                        </>
+                      );
+                    })()}
                     {(() => {
                       if (!item.price || item.price <= 0) return null;
-                      const avg = (item.expectedProfitMin + item.expectedProfitMax) / 2;
-                      const pct = Math.round((avg / item.price) * 100);
+                      const profitForPct = item.marketGapKrw ?? ((item.expectedProfitMin + item.expectedProfitMax) / 2);
+                      const pct = Math.round((profitForPct / item.price) * 100);
+                      const sign = profitForPct >= 0 ? "+" : "";
                       return Number.isFinite(pct) ? (
                         <span className={`rounded-full px-2 py-0.5 text-xs font-black tabular-nums ${
                           isTerminal
                             ? "bg-zinc-100 text-zinc-400 line-through dark:bg-zinc-800 dark:text-zinc-500"
                             : "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
                         }`}>
-                          +{pct}%
+                          {sign}{pct}%
                         </span>
                       ) : null;
                     })()}
