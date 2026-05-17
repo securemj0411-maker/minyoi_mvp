@@ -3949,7 +3949,13 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     // sample 부족 SKU는 sku_median=0 → bandFromProfit null → 풀 진입 차단 (정확성 우선 §12b)
     // Wave 106 (MJ 코멘트 #3 갤럭시 워치7): outlier 1건이 평균 끌어올림 — madTrim 적용으로
     // ±3 MAD 벗어난 outlier 제거. 5건 이상이면 trim, 미만이면 raw median (madTrim 자체가 5건 미만은 trim X).
-    const fallbackMedian = prices.length >= 5 ? madTrim(prices).medianValue : 0;
+    //
+    // Wave 174 (2026-05-17): 신발 한정 batch median threshold 5 → 2 — Wave 173 trustedMedian
+    // 완화에도 신발 시세 daily coverage 1.7%라 priceGap=0 → pool 0건. 같은 batch 안 동일
+    // marketKey 매물 2건+ 시 batch median 사용. outlier 위험은 Wave 171 ceiling(msrp×5) +
+    // 가품 floor 4 tier + 광고 차단 72 patterns + 셀러당 1 pool entry safety nets로 차단.
+    const fallbackThreshold = parsed?.category === "shoe" ? 2 : 5;
+    const fallbackMedian = prices.length >= fallbackThreshold ? madTrim(prices).medianValue : 0;
     // 2026-05-15: 미개봉/새상품 매물의 시세 = 다나와 reference_price (쿠팡/네이버 등 새 가격) 우선.
     // 베타테스터 통찰: 업자/일반인 모두 미개봉 선호 → 미개봉 매물 시세 정확해야.
     // 중고 시세와 비교하면 호가 부풀어져 풀에서 빠짐 (진짜 꿀 매물 놓침).

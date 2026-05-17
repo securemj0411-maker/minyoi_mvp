@@ -282,7 +282,11 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     terminalLifecycleRecheckPreserveStatus: envBool("PIPELINE_TERMINAL_LIFECYCLE_RECHECK_PRESERVE_STATUS", false),
     tickDetailLeaseSeconds: envInt("PIPELINE_TICK_DETAIL_LEASE_SECONDS", 90, 10, 900),
     tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 150, 10, 2000),
-    marketStatsLimit: envInt("PIPELINE_MARKET_STATS_LIMIT", 800, 100, 10000),
+    // Wave 174 (2026-05-17): 800 → 3000 — Wave 156 신발 sweep 깊게 (2,182건 매물) 이후
+    // 전 카테고리 14K+ 매물 중 시세 daily 박힘 비율 1.7-3.3% 머무름. 신발 ready 승급(Wave 172) +
+    // trustedMedian total≥2 완화(Wave 173) 했는데도 시세 daily 36 row만 → pool 0건.
+    // 한 tick 4-5초 → 15-20초로 늘어남 (maxDuration 60초 한도 안).
+    marketStatsLimit: envInt("PIPELINE_MARKET_STATS_LIMIT", 3000, 100, 10000),
     deepCrawlMaxPage: envInt("PIPELINE_DEEP_CRAWL_MAX_PAGE", 3, 1, 30),
     sellerSearchRefreshMs: envInt("PIPELINE_SELLER_SEARCH_REFRESH_MS", 3 * 60 * 60 * 1000, 10 * 60 * 1000, 24 * 60 * 60 * 1000),
     rawTouchCoalesceActiveSeenOnly: envBool("RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY", false),
