@@ -92,10 +92,13 @@ export default function MarketHistoryChart({
   if (!data || data.length === 0) {
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">시세 누적 중 — 아직 history 없어요 (매물 처음 등록)</div>;
   }
-  if (data.length < 3) {
+  // 2026-05-17 fix: 임계값 3 → 2 낮춤. 시스템 fresh start (5/16) 라 history 누적
+  // 부족 — 사용자 대다수 매물 "그래프 없음" 텍스트만 봄. 2 점이면 라인 가능.
+  // data.length === 1 (단일 시점) 만 텍스트 fallback.
+  if (data.length < 2) {
     return (
       <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
-        시세 데이터 {data.length}일 — 3일 이상 누적되면 그래프 표시 (이후 자동 업데이트)
+        시세 누적 1일째 — 내일부터 추이 그래프 자동 표시
       </div>
     );
   }
