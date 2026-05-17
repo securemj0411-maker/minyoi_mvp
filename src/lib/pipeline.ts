@@ -185,6 +185,13 @@ function accessoryTitleHits(title: string): string[] {
   if (/후지\s*필름|fujifilm/i.test(tn)) {
     hits = hits.filter((hit) => hit !== "필름");
   }
+  // 2026-05-17 (사용자 iter 3 추가): 본품 + 밴드/스트랩 옵션 매물 false positive 차단.
+  // 예: "애플워치 울트라 티타늄밀레니즈" / "애플워치10 46mm 에르메스 + 킬림 누아 + 오랑쥬실리콘".
+  // 본품 키워드 (애플워치 + 사이즈 mm) 가 title 에 있으면 밴드 keyword 는 옵션 표현 → accessory X.
+  const isWatchBodyListing = /(애플워치|applewatch|갤럭시\s*워치|galaxy\s*watch).{0,30}(?:\b(?:38|40|41|42|44|45|46|47|49)\s*mm\b|울트라|ultra|시리즈\s*\d|series\s*\d|\bse\s*\d?\b|\d+\s*세대)/i.test(tn);
+  if (isWatchBodyListing) {
+    hits = hits.filter((hit) => !["밀레니즈", "밀레니즈 루프", "링크브레이슬릿", "링크 브레이슬릿", "링블", "에르메스", "메탈밴드", "나토밴드", "가죽스트랩", "스포츠밴드", "퀵체인지 스트랩", "싱글투어", "싱글 투어", "d버클", "메탈스트랩", "나토 스트랩", "시계줄"].includes(hit));
+  }
   const fullSetTokens = ["풀세트", "풀구성", "풀박스"];
   const productToken = "(에어팟|airpods|소니|sony|보스|bose|비츠|beats|젠하이저|sennheiser|헤드폰|헤드셋|맥스|max|wh|xm|qc)";
   const accessoryToken = "(케이스|파우치|거치대|충전선|케이블|이어쿠션|이어패드|헤드쿠션|스마트케이스|커버)";
@@ -576,11 +583,16 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
     if (sku.id === "iphone-16" && /(아이폰16e|iphone16e|iphone\s*16e)/i.test(compactTitle)) {
       return "unknown";
     }
-    const boxOnlySignal = !fullBoxSignal && /(빈박스|박스만|박스판매|박스팝니다|박스구함|박스삽니다|아이폰박스|갤럭시박스)/.test(compactText);
-    if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 50_000)) {
+    // 2026-05-17 (사용자 iter 3): "박스만 뜯" / "박스만 풀" 새상품 표현 exclude (mint 신호).
+    const boxOnlyOpened = /(박스만\s*뜯|박스만\s*풀|박스만\s*개봉|박스\s*뜯어만|박스\s*개봉만|뜯어만\s*본)/i.test(textN);
+    const boxOnlySignal = !fullBoxSignal && !boxOnlyOpened
+      && /(빈박스|박스만|박스판매|박스팝니다|박스구함|박스삽니다|아이폰박스|갤럭시박스)/.test(compactText);
+    if (boxOnlySignal || (!fullBoxSignal && !boxOnlyOpened && titleN.includes("박스") && price > 0 && price < 50_000)) {
       return "accessory";
     }
-    const phoneAccessorySignal = /(case|케이스|폰케이스|그립톡|스마트톡|맥세이프|파인우븐|슬림아머|슈피겐|어반소피스티케이션|모란카노|tyreus|토라스|torras|switcheasy|스위치이지|브리즈피|와일드플라워|wildflower|디월렛|다이어리|청량\s*글라스|청량글라스|보호필름|강화유리|필름|줄이어폰|이어폰|충전기|어댑터|beats)/i.test(textN);
+    // 2026-05-17 (사용자 iter 3): "악세사리 포함" / "악세서리 동봉" = 본품 + 액세서리 묶음 (본품 매물). accessory X.
+    const accessoryIncludedAsBundle = /(악세사리|악세서리|액세서리).{0,8}(포함|동봉|같이|드림|드립니다|함께|첨부)/i.test(textN);
+    const phoneAccessorySignal = !accessoryIncludedAsBundle && /(case|케이스|폰케이스|그립톡|스마트톡|맥세이프|파인우븐|슬림아머|슈피겐|어반소피스티케이션|모란카노|tyreus|토라스|torras|switcheasy|스위치이지|브리즈피|와일드플라워|wildflower|디월렛|다이어리|청량\s*글라스|청량글라스|보호필름|강화유리|필름|줄이어폰|이어폰|충전기|어댑터|beats)/i.test(textN);
     if (phoneAccessorySignal && price > 0 && price < 150_000) {
       return "accessory";
     }
@@ -594,8 +606,10 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
   }
 
   if (sku.category === "smartwatch") {
-    const boxOnlySignal = !fullBoxSignal && /(박스만|박스판매|박스팝니다|박스구함|박스삽니다|애플워치박스|갤럭시워치박스)/.test(compactText);
-    if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 50_000)) {
+    // 2026-05-17: "박스만 뜯" 새상품 표현 exclude (mint 신호, accessory X).
+    const boxOnlyOpenedSw = /(박스만\s*뜯|박스만\s*풀|박스만\s*개봉|뜯어만\s*본)/i.test(textN);
+    const boxOnlySignal = !fullBoxSignal && !boxOnlyOpenedSw && /(박스만|박스판매|박스팝니다|박스구함|박스삽니다|애플워치박스|갤럭시워치박스)/.test(compactText);
+    if (boxOnlySignal || (!fullBoxSignal && !boxOnlyOpenedSw && titleN.includes("박스") && price > 0 && price < 50_000)) {
       return "accessory";
     }
     if (/(충전독|충전\s*독|충전기|케이블|스트랩|밴드|브레이슬릿|루프|시계줄|필름|강화유리|커버|거치대|스탠드)/.test(titleN)) {
@@ -612,7 +626,9 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
       /(애플\s*펜슬|애플펜슬|apple\s*pencil|s펜|s\s*pen)/i.test(titleN) &&
       !/(아이패드|ipad|갤럭시\s*탭|갤럭시탭|갤탭|galaxy\s*tab).{0,8}(?:\+|와|과|랑|및|포함)/i.test(titleN);
 
-    if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 60_000)) return "accessory";
+    // 2026-05-17: "박스만 뜯" 새상품 표현 exclude.
+    const boxOnlyOpenedTb = /(박스만\s*뜯|박스만\s*풀|박스만\s*개봉|뜯어만\s*본)/i.test(textN);
+    if (boxOnlySignal || (!fullBoxSignal && !boxOnlyOpenedTb && titleN.includes("박스") && price > 0 && price < 60_000)) return "accessory";
     if (strongTabletAccessory && (!hasTabletStorage || price < 500_000)) return "accessory";
     if (pencilOnly && price < 250_000) return "accessory";
   }
@@ -622,7 +638,9 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
   const boxMissingSignal = /(?:박스|상자)(?:는|가|은)?(?:없|없음|없습니다|미포함|제외)|(?:박스|상자)(?:없이|없는)/.test(compactText);
   const boxOnlySignal = !fullBoxSignal && !boxMissingSignal && /(박스만|박스판매|박스팝니다|박스구함|박스삽니다|맥북박스|맥북에어박스|맥북프로박스)/.test(compactText);
 
-  if (boxOnlySignal || (!fullBoxSignal && titleN.includes("박스") && price > 0 && price < 100_000)) {
+  // 2026-05-17: "박스만 뜯" 새상품 표현 exclude.
+  const boxOnlyOpenedLp = /(박스만\s*뜯|박스만\s*풀|박스만\s*개봉|뜯어만\s*본)/i.test(textN);
+  if (boxOnlySignal || (!fullBoxSignal && !boxOnlyOpenedLp && titleN.includes("박스") && price > 0 && price < 100_000)) {
     return "accessory";
   }
 
