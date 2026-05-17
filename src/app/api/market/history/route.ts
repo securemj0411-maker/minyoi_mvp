@@ -67,7 +67,20 @@ export async function GET(req: NextRequest) {
       byDate.get(r.date)!.push(r);
     }
     // 2026-05-16 (N4): unopened는 mint와 분리. fallback: unopened → mint → clean → normal → all.
-    const fallbackOrder = ccFilter ? [ccFilter, "mint", "normal", "all", "clean", "worn"] : ["all", "normal"];
+    // Wave 159g (2026-05-17): condition별 fallback chain 분리 — mint/unopened 무조건 우선이면
+    // flawed/worn 매물에 다나와 새 가격 잘못 박혀 차트 부풀려짐.
+    const FALLBACK_BY_CC: Record<string, string[]> = {
+      unopened: ["unopened", "mint", "clean", "normal", "all"],
+      mint: ["mint", "unopened", "clean", "normal", "all"],
+      clean: ["clean", "normal", "mint", "all"],
+      normal: ["normal", "clean", "worn", "all"],
+      worn: ["worn", "normal", "all"],
+      low_batt: ["low_batt", "worn", "normal", "all"],
+      flawed: ["flawed", "worn", "low_batt", "normal", "all"],
+    };
+    const fallbackOrder = ccFilter
+      ? (FALLBACK_BY_CC[ccFilter] ?? [ccFilter, "normal", "all", "clean", "worn"])
+      : ["all", "normal"];
     const picked: typeof rows = [];
     for (const [, dateRows] of byDate) {
       let chosen = null;

@@ -254,8 +254,10 @@ async function loadLiveSoldShowcases(limit: number): Promise<LandingShowcase[]> 
     const byCond = marketByKeyCondition.get(comparableKey);
     if (!byCond) continue;
     // Wave 130: 매물 condition_class — parsedByPid에서 lookup (O(1)).
+    // Wave 159g (2026-05-17): mint 제거 — flawed/worn 매물이 mint 시세 잘못 잡아 차익 부풀려지는 사고 차단.
+    // unopened도 너무 비싸서 fallback 금지 (다나와 새 가격 박힘 위험).
     const conditionClass = parsed?.conditionClass ?? "normal";
-    const fallback = [conditionClass, "normal", "all", "clean", "worn", "mint"];
+    const fallback = [conditionClass, "normal", "all", "clean", "worn"];
     let market: MarketPriceRow | undefined = undefined;
     for (const cls of fallback) {
       const cand = byCond.get(cls);

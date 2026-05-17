@@ -18,6 +18,8 @@ export const revalidate = 0;
 
 const CACHE_SECONDS = 60;
 const PREVIEW_COUNT = 5;
+// 2026-05-17: 사용자 진입장벽 ↓ — 비로그인 preview 매물 매입가 30만원 이하만.
+const MAX_PRICE_KRW = 300_000;
 
 // 2026-05-17: 진짜 thumbnail 서버 사이드 blur 처리.
 // 원본 URL 노출 X → blur 된 base64 data URL 만 클라이언트 전송. DevTools 우회 차단.
@@ -69,12 +71,17 @@ type RawRow = {
   thumbnail_url: string | null;
 };
 
+type RawListingMeta = {
+  pid: number;
+  sku_id: string | null;
+};
+
 export async function GET() {
   try {
     const headers = serviceHeaders();
 
-    // ready 매물 fetch — band 2~3 (높은 차익 우선), 카테고리 균등 분포 위해 더 많이 가져옴.
-    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,category,condition_class&status=eq.ready&order=profit_band.desc,expected_profit_max.desc&limit=80`;
+    // ready 매물 fetch — band desc + profit desc. filter (price/sku 다양화) 위해 더 많이 가져옴.
+    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,category,condition_class&status=eq.ready&order=profit_band.desc,expected_profit_max.desc&limit=200`;
     const poolRes = await restFetch(poolUrl, { headers });
     const pool = (await poolRes.json()) as PoolRow[];
 
@@ -84,19 +91,49 @@ export async function GET() {
       });
     }
 
-    // 카테고리 다양화 — 카테고리별 1개씩, 최대 PREVIEW_COUNT.
+    // 매물 정보 fetch — 가격 filter + sku_id 다양화 위해 pool 전체 분량 join.
+    const poolPids = pool.map((r) => r.pid);
+    const [rawRes, rawListingRes] = await Promise.all([
+      restFetch(
+        `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url&pid=in.(${poolPids.join(",")})&price=lte.${MAX_PRICE_KRW}`,
+        { headers },
+      ),
+      restFetch(
+        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id&pid=in.(${poolPids.join(",")})`,
+        { headers },
+      ),
+    ]);
+    const raws = (await rawRes.json()) as RawRow[];
+    const rawListings = (await rawListingRes.json()) as RawListingMeta[];
+    const rawByPid = new Map<number, RawRow>(raws.map((r) => [r.pid, r]));
+    const skuByPid = new Map<number, string | null>(rawListings.map((r) => [r.pid, r.sku_id]));
+    const eligiblePids = new Set(raws.map((r) => r.pid)); // price <= MAX filter 통과
+
+    // 2026-05-17: 다양화 — 카테고리 + sku_id 둘 다 dedup. 같은 SKU 1개만, 카테고리도 다양.
     const byCategory = new Map<string, PoolRow>();
+    const usedSkus = new Set<string>();
     for (const row of pool) {
+      if (!eligiblePids.has(row.pid)) continue; // price > 30만 제외
+      const sku = skuByPid.get(row.pid);
+      if (sku && usedSkus.has(sku)) continue; // 같은 SKU 중복 제외
       const cat = row.category ?? "other";
-      if (!byCategory.has(cat)) byCategory.set(cat, row);
+      if (byCategory.has(cat)) continue; // 같은 카테고리 1개만
+      byCategory.set(cat, row);
+      if (sku) usedSkus.add(sku);
       if (byCategory.size >= PREVIEW_COUNT) break;
     }
     let selected = Array.from(byCategory.values());
-    // 카테고리 5종 미만이면 나머지 채움 (랜덤).
+    // 카테고리 5종 미만이면 SKU 중복만 피하면서 채움.
     if (selected.length < PREVIEW_COUNT) {
-      const remaining = pool.filter((r) => !selected.some((s) => s.pid === r.pid));
-      const shuffled = remaining.sort(() => Math.random() - 0.5);
-      selected = [...selected, ...shuffled.slice(0, PREVIEW_COUNT - selected.length)];
+      for (const row of pool) {
+        if (selected.length >= PREVIEW_COUNT) break;
+        if (!eligiblePids.has(row.pid)) continue;
+        if (selected.some((s) => s.pid === row.pid)) continue;
+        const sku = skuByPid.get(row.pid);
+        if (sku && usedSkus.has(sku)) continue;
+        selected.push(row);
+        if (sku) usedSkus.add(sku);
+      }
     }
     selected = selected.slice(0, PREVIEW_COUNT);
 
@@ -105,13 +142,6 @@ export async function GET() {
         headers: { "Cache-Control": `public, max-age=${CACHE_SECONDS}, s-maxage=${CACHE_SECONDS}` },
       });
     }
-
-    // 매물명 + 가격 + 시세 + 썸네일 fetch.
-    const pids = selected.map((r) => r.pid);
-    const rawUrl = `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url&pid=in.(${pids.join(",")})`;
-    const rawRes = await restFetch(rawUrl, { headers });
-    const raws = (await rawRes.json()) as RawRow[];
-    const rawByPid = new Map<number, RawRow>(raws.map((r) => [r.pid, r]));
 
     // 2026-05-17: 서버 사이드 blur — 진짜 thumbnail fetch + sharp blur(20) + base64.
     // 원본 URL 클라이언트 노출 X. DevTools 봐도 blur 된 data URL 만 보임.

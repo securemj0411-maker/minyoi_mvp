@@ -92,8 +92,18 @@ export async function GET(
       );
       const rows = (await statsRes.json()) as Array<Record<string, unknown>>;
       const target = conditionClass ?? "normal";
-      // 2026-05-16 (N4): unopened (박스 안 뜯음) 별도 클래스. fallback: unopened → mint → clean.
-      const fallback = [target, "mint", "normal", "all", "clean", "worn"];
+      // Wave 159g (2026-05-17): condition별 fallback chain 분리.
+      // 이전: target에 무관하게 mint/unopened 우선 → flawed/worn 매물에 다나와 새 가격 잘못 박힘.
+      const FALLBACK_BY_CC: Record<string, string[]> = {
+        unopened: ["unopened", "mint", "clean", "normal", "all"],
+        mint: ["mint", "unopened", "clean", "normal", "all"],
+        clean: ["clean", "normal", "mint", "all"],
+        normal: ["normal", "clean", "worn", "all"],
+        worn: ["worn", "normal", "all"],
+        low_batt: ["low_batt", "worn", "normal", "all"],
+        flawed: ["flawed", "worn", "low_batt", "normal", "all"],
+      };
+      const fallback = FALLBACK_BY_CC[target] ?? [target, "normal", "all", "clean", "worn"];
       for (const cls of fallback) {
         const candidate = rows.find((r) => r.condition_class === cls);
         if (candidate) {
@@ -101,8 +111,12 @@ export async function GET(
           break;
         }
       }
-      // fallback 다 실패 시 첫 row (있다면)
-      marketStats = marketStats ?? (rows[0] ?? null);
+      // Wave 159g: fallback 실패 시 normal/worn/clean 안전 fallback. unopened/mint 임의 잡지 않음.
+      marketStats = marketStats
+        ?? rows.find((r) => r.condition_class === "normal")
+        ?? rows.find((r) => r.condition_class === "worn")
+        ?? rows.find((r) => r.condition_class === "clean")
+        ?? null;
     }
 
     // 4. comparable 매물 list — 같은 comparable_key 또는 sku_id 기반 fetch
