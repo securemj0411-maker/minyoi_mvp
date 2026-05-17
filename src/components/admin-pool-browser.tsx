@@ -290,6 +290,8 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                           : `+${krw(item.expectedProfitMin)}~${krw(item.expectedProfitMax)}`}
                       </span>
                       <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">band {item.band}</span>
+                      {/* 2026-05-17 (사용자 요청): 매물 등급 chip + ? 분류 정책 모달. 운영자풀 = showHelp. */}
+                      <ConditionChip conditionClass={item.conditionClass} showHelp />
                     </div>
                     <div className="flex flex-wrap gap-x-2 text-zinc-700 dark:text-zinc-300">
                       <span>매입 {krw(item.price)}</span>

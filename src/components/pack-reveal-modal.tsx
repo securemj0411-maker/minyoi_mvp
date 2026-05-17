@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { MarketSourceDebug } from "@/components/market-source-debug";
+import { ConditionChip } from "@/components/condition-chip";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 
@@ -641,6 +642,8 @@ function RevealCardItem({
                 {profitRange(card.expectedProfitMin, card.expectedProfitMax)}
               </span>
               <span className="text-[11px] font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
+              {/* 2026-05-17 (사용자 요청): 매물 등급 chip. 일반 사용자 — showHelp 없음. */}
+              <ConditionChip conditionClass={card.marketBasis?.conditionClass ?? null} />
             </div>
             <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
               <span>매입 {krw(card.price)}</span>
