@@ -168,3 +168,16 @@ export async function sendOperationalTestAlert() {
   ].join("\n");
   return sendTelegramMessage(message);
 }
+
+// Wave 195 (2026-05-17): 운영자 daily brief — 사이트 상태 요약 (사고 아님).
+export type OperatorBriefInput = {
+  title: string;       // 예: "[차익잡이] 운영 brief"
+  lines: string[];     // 각 라인 (집계 결과)
+};
+
+export type OperatorBriefResult = Omit<NotifyResult, "event">;
+
+export async function sendOperatorBrief(input: OperatorBriefInput): Promise<OperatorBriefResult> {
+  const message = [input.title, ...input.lines, `checked: ${kstTime(new Date().toISOString())}`].join("\n");
+  return sendTelegramMessage(message, { timeoutMs: 5000 });
+}
