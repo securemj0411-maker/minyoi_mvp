@@ -178,6 +178,29 @@ export const DEFAULT_SEARCH_QUERIES = [
   "파나소닉 나노이", "Panasonic 나노이",
   "EH-NA0J", "EH-NA9C", "EH-NA98",
   "바비리스 프로 2174", "BaByliss Pro",
+  // Wave 184 (2026-05-17): 새 카테고리 "drone" — DJI 드론 + DJI 액션캠 + GoPro.
+  "DJI Mini 2", "DJI 미니 2",
+  "DJI Mini 3 Pro", "DJI 미니 3 프로",
+  "DJI Mini 4 Pro", "DJI 미니 4 프로",
+  "DJI Mavic 3", "DJI 매빅 3",
+  "DJI Mavic 3 Pro",
+  "DJI Mavic 3 Classic",
+  "DJI Air 2S", "DJI 에어 2S",
+  "DJI Air 3", "DJI 에어 3",
+  "DJI Air 3S",
+  "DJI Avata", "DJI 아바타",
+  "DJI Avata 2",
+  "DJI Osmo Action 3", "DJI 오즈모 액션",
+  "DJI Osmo Action 4",
+  "DJI Osmo Action 5 Pro",
+  "DJI Osmo Pocket 2", "DJI 오즈모 포켓",
+  "DJI Osmo Pocket 3",
+  "GoPro Hero 9", "고프로 히어로 9",
+  "GoPro Hero 10", "고프로 히어로 10",
+  "GoPro Hero 11", "고프로 히어로 11",
+  "GoPro Hero 12", "고프로 히어로 12",
+  "GoPro Hero 13", "고프로 히어로 13",
+  "GoPro Max", "고프로 맥스",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
@@ -239,6 +262,8 @@ export type PipelineRuntimeConfig = {
   staleRunMinutes: number;
   tickSearchBudgetMs: number;
   tickDetailBudgetMs: number;
+  // Wave 187 B2: lifecycle 전용 budget (route maxDuration 90s 활용).
+  lifecycleBudgetMs: number;
   tickScoreBudgetMs: number;
   tickDetailBatchSize: number;
   terminalLifecycleRecheckBatchSize: number;
@@ -332,6 +357,12 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     // Vercel maxDuration 60s 안에 search(25s) + score(10s) + DB write(~5s) = 40s 여유.
     tickSearchBudgetMs: envInt("PIPELINE_TICK_SEARCH_BUDGET_MS", 25_000, 1_000, 120_000),
     tickDetailBudgetMs: envInt("PIPELINE_TICK_DETAIL_BUDGET_MS", 20_000, 1_000, 120_000),
+    // Wave 187 B2 (2026-05-17): lifecycle 전용 budget. tickDetailBudgetMs (20s) 공유 시
+    //   batch 800 매물 처리에 timeout (claimed 800 / enriched 139). budget 늘려서 cycle 처리량 ↑.
+    //   60s 결정 이유: lifecycle-worker route 가 lifecycle + terminal_recheck 둘 다 호출.
+    //   maxDuration 90s 안에 lifecycle 60s + terminal_recheck 30s 안전 분배.
+    //   실측 75s budget 시 batch 800 → enriched 621 (78%). 60s 시 ~466 enriched 예상.
+    lifecycleBudgetMs: envInt("PIPELINE_LIFECYCLE_BUDGET_MS", 60_000, 1_000, 120_000),
     tickScoreBudgetMs: envInt("PIPELINE_TICK_SCORE_BUDGET_MS", 10_000, 1_000, 120_000),
     tickDetailBatchSize: envInt("PIPELINE_TICK_DETAIL_BATCH_SIZE", 20, 1, 200),
     terminalLifecycleRecheckBatchSize: envInt("PIPELINE_TERMINAL_LIFECYCLE_RECHECK_BATCH_SIZE", 10, 1, 50),

@@ -3120,7 +3120,11 @@ async function claimLifecycleChecks(mode: LifecycleClaimMode = "default"): Promi
   //
   // 2026-05-15 (이전 wave): backlog 14k 누적 → batch 30 → 80. 7분 cron + batch 80 = 686 calls/h.
   // 지금: batch 400 + c=10 → 3,429 calls/h (5x). backlog 2,659 → 45분 안 해소.
-  const LIFECYCLE_BATCH_HARDCODE = 400;
+  // Wave 187 B2 (2026-05-17): batch 400 → 800. lifecycle 이 last_seen_at 도 갱신 (B1) 하면서
+  //   market-worker incremental (Wave 184) 의 28h lookback 안에 더 많은 active 매물이 들어와야 함.
+  //   현재 batch 400 + 7분 주기 = 시간당 ~3,429 매물 sweep. active 151K cover ≈ 44시간 (2일+) → 28h 부족.
+  //   batch 800 으로 ≈ 22시간 (28h 안에 거의 다 cover). probe c=20 lenient 결과 안전.
+  const LIFECYCLE_BATCH_HARDCODE = 800;
   const batchSize = mode === "terminal_recheck"
     ? config.terminalLifecycleRecheckBatchSize
     : LIFECYCLE_BATCH_HARDCODE;
@@ -3149,8 +3153,18 @@ async function patchLifecycle(pid: number, payload: Record<string, unknown>) {
 
 async function markRawLifecycleState(row: LifecycleClaimRow, status: LifecycleStatus, detailSaleStatus?: string | null) {
   const now = new Date().toISOString();
+  // Wave 187 B1 (2026-05-17): last_seen_at 동시 갱신.
+  //   진단 — 전체 카테고리 active 매물 fresh_28h 비율 10~25% (신발만 80%+).
+  //   원인 — search-worker broad query 가 매물 많은 SKU 의 일부만 페치 (page 1+ 매물 누락).
+  //         lifecycle 이 매물 detail 가져와도 raw_listings.last_seen_at 갱신 안 함 → market-worker 28h
+  //         lookback (Wave 184) 에서 누락 → 시세 산정 안 됨 (i3 macbook 케이스).
+  //   fix — markRawLifecycleState 진입점에서 last_seen_at = now 같이 patch. lifecycle 가 detail fetch 한
+  //         시점이라 "최근 본 매물" 의 의미와 동일.
+  //   safe — search 가 박는 last_seen_at 과 동일 timestamp / idempotent. coalesce policy 영향 X (lifecycle 호출
+  //         시점은 next_check_at 만료 후라 빈도 controlled).
   const patch: Record<string, unknown> = {
     listing_state: status,
+    last_seen_at: now,
     updated_at: now,
   };
   if (status === "sold_confirmed") patch.sold_detected_at = now;
@@ -4392,7 +4406,9 @@ export async function runLifecycleWorkerPipeline(options: { terminalRecheck?: bo
   const mode: LifecycleClaimMode = options.terminalRecheck ? "terminal_recheck" : "default";
 
   const search = emptyStats();
-  const detail = await timedStage(stageDurationsMs, "lifecycle", () => lifecycleStage(Date.now() + config.tickDetailBudgetMs, mode));
+  // Wave 187 B2 (2026-05-17): tickDetailBudgetMs (20s) → lifecycleBudgetMs (75s) 전용 budget.
+  //   route maxDuration 90s 활용 — batch 800/1000 처리 시 timeout 차단.
+  const detail = await timedStage(stageDurationsMs, "lifecycle", () => lifecycleStage(Date.now() + config.lifecycleBudgetMs, mode));
   stageDurationsMs.lifecycleMode = options.terminalRecheck ? 1 : 0;
   const score = emptyStats();
   const total = mergeStats([search, detail, score]);
