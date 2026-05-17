@@ -427,6 +427,20 @@ function suspiciousModelText(title: string, desc: string): boolean {
   return /에어팟프로[34]|airpodspro[34]/i.test(text);
 }
 
+// 2026-05-17: description에 가격(만 단위) 3개 이상 + 옵션(사이즈/색상) 동반 → multi.
+// "만원/만오천" 같은 일반 표현은 제외. "300만원" 같은 원가 비교도 1~2개 정도라 3개 threshold면 안전.
+function descriptionMultiHits(desc: string): boolean {
+  if (!desc) return false;
+  const text = String(desc);
+  // "XX만" 패턴 — 만 뒤에 원/세/일 없는 경우만 (가격으로 사용)
+  const priceMatches = text.match(/\d{2,4}\s*만(?![원세일년])/g) ?? [];
+  if (priceMatches.length < 3) return false;
+  // 옵션 (사이즈/색상/세대 등) 단어가 같이 있어야 false positive 줄임
+  const optionPattern = /\d{1,3}\s*mm|블랙|화이트|골드|실버|로즈|블루|레드|퍼플|그린|핑크|네이비|티타늄|알루미늄|\d+세대|\d+gb|\d+tb|와이파이|wifi|셀룰러|cellular|gps|s\/m|m\/l|ml\b|sm\b|ll\b/i;
+  const optionCount = (text.match(new RegExp(optionPattern.source, "gi")) ?? []).length;
+  return optionCount >= 3;
+}
+
 function multiModelHits(title: string): string[] {
   const raw = String(title ?? "").toLowerCase();
   const normalized = nrm(title);
@@ -744,6 +758,10 @@ export function classifyListing(title: string, desc: string, price: number): Cla
   const multiHits = containsAny(title, MULTI_KEYWORDS);
   if (/\b[2-9]\s*개\b/.test(title)) multiHits.push("N개");
   multiHits.push(...multiModelHits(title));
+  // 2026-05-17 (사용자 코멘트 pid 364899054): description에 가격+옵션 3개 이상 (42mm 60만 / 46mm 62만 / 46mm 64만)
+  // = 명백 다중상품 (단일 가격 1개 매물 X). title 기반 multiModelHits 못 잡는 case.
+  // false positive 위험: "원가 100만 → 80만 처분" 같은 케이스 — 만 2개. 3개 이상이면 정상 매물 거의 없음.
+  if (descriptionMultiHits(desc)) multiHits.push("desc_multi_prices");
   if (multiHits.length > 0) return { listingType: "multi", sku: null };
 
   const sku = ruleMatch(title, desc);
