@@ -446,6 +446,16 @@ export const LANE_READINESS: LaneReadinessMap = {
   dji_osmo_pocket_4: { status: "ready", label: "DJI Osmo Pocket 4", note: "Wave 185 internal test: 2025 신모델, 매물 4건 발견." },
   dji_osmo_action_6: { status: "ready", label: "DJI Osmo Action 6", note: "Wave 185 internal test: 2025 신모델." },
   dji_osmo_nano: { status: "ready", label: "DJI Osmo Nano", note: "Wave 185 internal test: 2025 신모델, 컴팩트 액션캠." },
+  // Wave 186 (2026-05-18): 새 카테고리 "kickboard" narrow lane 9개.
+  xiaomi_mi_scooter_pro_2: { status: "ready", label: "Xiaomi Mi Scooter Pro 2", note: "Wave 186" },
+  xiaomi_mi_scooter_3: { status: "ready", label: "Xiaomi Mi Scooter 3", note: "Wave 186" },
+  xiaomi_mi_scooter_4: { status: "ready", label: "Xiaomi Mi Scooter 4", note: "Wave 186" },
+  xiaomi_mi_scooter_4_pro: { status: "ready", label: "Xiaomi Mi Scooter 4 Pro", note: "Wave 186" },
+  xiaomi_mi_scooter_4_ultra: { status: "ready", label: "Xiaomi Mi Scooter 4 Ultra", note: "Wave 186" },
+  ninebot_max_g2: { status: "ready", label: "Segway Ninebot Max G2", note: "Wave 186" },
+  ninebot_f40: { status: "ready", label: "Segway Ninebot F40", note: "Wave 186" },
+  ninebot_f30: { status: "ready", label: "Segway Ninebot F30", note: "Wave 186" },
+  ninebot_e45: { status: "ready", label: "Segway Ninebot E45", note: "Wave 186" },
 };
 
 export type CategoryReadinessConfig = {
@@ -538,6 +548,15 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     status: "internal_only",
     label: "Drone & Action Cam",
     note: "DJI 드론 (Mini/Mavic/Air/Avata) + DJI Osmo Action/Pocket + GoPro Hero. 짝퉁 거의 없음 (DJI 활성화 + GoPro 정품 등록). narrow lane 22개 LANE_READINESS=ready 로 풀 진입.",
+    minReadyPool: 6,
+    minParseRate: 0.9,
+    minTrustedKeys: 5,
+  },
+  // Wave 186 (2026-05-18): 새 카테고리 "kickboard" — 전동킥보드/스쿠터 (샤오미 Mi Scooter / 세그웨이 닌봇).
+  kickboard: {
+    status: "internal_only",
+    label: "Electric Scooter (전동킥보드)",
+    note: "한국 인기 전동킥보드. 짝퉁 거의 없음 (정품 등록). 단일 옵션 (색상/배터리 변형 시세 동일). narrow lane 9개 LANE_READINESS=ready.",
     minReadyPool: 6,
     minParseRate: 0.9,
     minTrustedKeys: 5,

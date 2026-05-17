@@ -20,7 +20,7 @@ import { BIKE_CATALOG } from "@/lib/generated/catalog-bike-wave91";
 export type Sku = {
   id: string;
   brand: string;
-  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance" | "watch" | "sport_golf" | "shoe" | "bag" | "bike" | "drone" | "perfume";
+  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance" | "watch" | "sport_golf" | "shoe" | "bag" | "bike" | "drone" | "perfume" | "kickboard";
   modelName: string;
   aliases: string[];
   mustContain: string[][];
@@ -6193,6 +6193,90 @@ export const CATALOG: Sku[] = [
     mustContain: [["gopro", "고프로"], ["max", "맥스"]],
     mustNotContain: ["hero", "히어로", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
     msrpKrw: 599000, released: 2019,
+  },
+  // ─── Wave 186 (2026-05-18): 새 카테고리 "kickboard" — 전동킥보드/스쿠터 9 SKU ───
+  // 한국 인기: 샤오미 Mi Scooter (Pro 2 / 3 / 4 / 4 Pro / 4 Ultra) + 세그웨이 닌봇 (Max G2 / F40 / F30 / E45).
+  // 짝퉁 거의 없음 (정품 등록 + 시리얼). 단일 옵션 (배터리/색상 변형 시세 동일).
+  {
+    id: "xiaomi-mi-scooter-pro-2",
+    brand: "Xiaomi", category: "kickboard", laneKey: "xiaomi_mi_scooter_pro_2",
+    modelName: "Xiaomi Mi Electric Scooter Pro 2",
+    aliases: ["Xiaomi Mi Pro 2", "샤오미 미 스쿠터 프로 2", "샤오미 Pro 2"],
+    mustContain: [["샤오미", "xiaomi", "mi "], ["프로 2", "pro 2", "pro2"], ["스쿠터", "scooter", "킥보드", "전동킥보드"]],
+    mustNotContain: ["pro 3", "pro 4", "프로 3", "프로 4", "m365", "1s", "ultra", "울트라", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 599000, released: 2020,
+  },
+  {
+    id: "xiaomi-mi-scooter-3",
+    brand: "Xiaomi", category: "kickboard", laneKey: "xiaomi_mi_scooter_3",
+    modelName: "Xiaomi Mi Electric Scooter 3",
+    aliases: ["Xiaomi Mi Scooter 3", "샤오미 미 스쿠터 3"],
+    mustContain: [["샤오미", "xiaomi", "mi "], ["스쿠터 3", "scooter 3", "scooter3"], ["킥보드", "전동킥보드", "scooter", "스쿠터"]],
+    mustNotContain: ["pro", "프로", "scooter 4", "스쿠터 4", "ultra", "울트라", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 499000, released: 2021,
+  },
+  {
+    id: "xiaomi-mi-scooter-4",
+    brand: "Xiaomi", category: "kickboard", laneKey: "xiaomi_mi_scooter_4",
+    modelName: "Xiaomi Mi Electric Scooter 4",
+    aliases: ["Xiaomi Mi Scooter 4", "샤오미 미 스쿠터 4"],
+    mustContain: [["샤오미", "xiaomi", "mi "], ["스쿠터 4", "scooter 4", "scooter4"], ["킥보드", "전동킥보드", "scooter", "스쿠터"]],
+    mustNotContain: ["pro", "프로", "ultra", "울트라", "scooter 3", "스쿠터 3", "scooter 5", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 599000, released: 2022,
+  },
+  {
+    id: "xiaomi-mi-scooter-4-pro",
+    brand: "Xiaomi", category: "kickboard", laneKey: "xiaomi_mi_scooter_4_pro",
+    modelName: "Xiaomi Mi Electric Scooter 4 Pro",
+    aliases: ["Xiaomi Mi Scooter 4 Pro", "샤오미 미 스쿠터 4 프로"],
+    mustContain: [["샤오미", "xiaomi", "mi "], ["스쿠터 4", "scooter 4", "scooter4"], ["프로", "pro"]],
+    mustNotContain: ["ultra", "울트라", "scooter 3", "scooter 5", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 699000, released: 2023,
+  },
+  {
+    id: "xiaomi-mi-scooter-4-ultra",
+    brand: "Xiaomi", category: "kickboard", laneKey: "xiaomi_mi_scooter_4_ultra",
+    modelName: "Xiaomi Mi Electric Scooter 4 Ultra",
+    aliases: ["Xiaomi Mi Scooter 4 Ultra", "샤오미 미 스쿠터 4 울트라"],
+    mustContain: [["샤오미", "xiaomi", "mi "], ["스쿠터 4", "scooter 4", "scooter4"], ["ultra", "울트라"]],
+    mustNotContain: ["pro 2", "프로 2", "scooter 3", "scooter 5", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 899000, released: 2024,
+  },
+  {
+    id: "ninebot-max-g2",
+    brand: "Segway-Ninebot", category: "kickboard", laneKey: "ninebot_max_g2",
+    modelName: "Segway Ninebot KickScooter Max G2",
+    aliases: ["Segway Ninebot Max G2", "세그웨이 닌봇 맥스 G2", "Ninebot Max G2"],
+    mustContain: [["닌봇", "ninebot", "세그웨이", "segway"], ["max g2", "맥스 g2", "max-g2", "g2"]],
+    mustNotContain: ["max g30", "맥스 g30", "g30", "f30", "f40", "f25", "e45", "e25", "e22", "es1", "es2", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 1290000, released: 2023,
+  },
+  {
+    id: "ninebot-f40",
+    brand: "Segway-Ninebot", category: "kickboard", laneKey: "ninebot_f40",
+    modelName: "Segway Ninebot KickScooter F40",
+    aliases: ["Segway Ninebot F40", "닌봇 F40"],
+    mustContain: [["닌봇", "ninebot", "세그웨이", "segway"], ["f40"]],
+    mustNotContain: ["f30", "f25", "max", "맥스", "e45", "e25", "e22", "es1", "es2", "g2", "g30", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 899000, released: 2022,
+  },
+  {
+    id: "ninebot-f30",
+    brand: "Segway-Ninebot", category: "kickboard", laneKey: "ninebot_f30",
+    modelName: "Segway Ninebot KickScooter F30",
+    aliases: ["Segway Ninebot F30", "닌봇 F30"],
+    mustContain: [["닌봇", "ninebot", "세그웨이", "segway"], ["f30"]],
+    mustNotContain: ["f40", "f25", "max", "맥스", "e45", "e25", "e22", "es1", "es2", "g2", "g30", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 699000, released: 2021,
+  },
+  {
+    id: "ninebot-e45",
+    brand: "Segway-Ninebot", category: "kickboard", laneKey: "ninebot_e45",
+    modelName: "Segway Ninebot KickScooter E45",
+    aliases: ["Segway Ninebot E45", "닌봇 E45"],
+    mustContain: [["닌봇", "ninebot", "세그웨이", "segway"], ["e45"]],
+    mustNotContain: ["e25", "e22", "es1", "es2", "f30", "f40", "max", "맥스", "g2", "g30", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 599000, released: 2020,
   },
   // ─── Wave 185 (2026-05-17): 새 카테고리 "perfume" — 명품 향수 22 SKU ───
   // 인기 브랜드 (Jo Malone / Le Labo / Diptyque / Tom Ford / Maison Margiela Replica / Memo Paris) 인기 향.

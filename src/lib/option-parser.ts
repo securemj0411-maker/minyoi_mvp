@@ -1458,7 +1458,10 @@ function confidence(input: {
     score += 0.35;
   } else if (input.category === "perfume") {
     // Wave 185 (2026-05-17): 새 카테고리 perfume. catalog narrow lane (브랜드 + 향 + 용량) 으로 정확.
-    // 짝퉁 일부 있으나 명품 가방보다 낮음. 사용자 매물 확인 시 정확.
+    score += 0.35;
+  } else if (input.category === "kickboard") {
+    // Wave 186 (2026-05-18): 새 카테고리 kickboard (전동킥보드/스쿠터). 한국 인기 — 샤오미 Mi Scooter / 세그웨이 닌봇.
+    // narrow lane (모델 + 세대) 으로 시세 정확. 단일 옵션 모델 다수.
     score += 0.35;
   }
   return cap01(score);

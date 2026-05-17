@@ -223,6 +223,16 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Memo Russian Leather", "메모 러시안 레더",
   "Memo Irish Leather", "메모 아이리쉬 레더",
   "Memo Italian Leather", "메모 이탈리안 레더",
+  // Wave 186 (2026-05-18): 새 카테고리 "kickboard" — 전동킥보드/스쿠터.
+  "샤오미 미 스쿠터 프로 2", "Xiaomi Mi Pro 2",
+  "샤오미 미 스쿠터 3", "Mi Scooter 3",
+  "샤오미 미 스쿠터 4", "Mi Scooter 4",
+  "샤오미 미 스쿠터 4 프로", "Mi Scooter 4 Pro",
+  "샤오미 미 스쿠터 4 울트라", "Mi Scooter 4 Ultra",
+  "세그웨이 닌봇 맥스 G2", "Ninebot Max G2",
+  "닌봇 F40", "Ninebot F40",
+  "닌봇 F30", "Ninebot F30",
+  "닌봇 E45", "Ninebot E45",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

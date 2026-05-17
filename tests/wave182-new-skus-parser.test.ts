@@ -367,6 +367,18 @@ describe("Wave 182 chunk 6: Sony LinkBuds + Bose 700/Earbuds II + Galaxy Buds 2/
   });
 });
 
+describe("Wave 186: 새 카테고리 kickboard (전동킥보드/스쿠터)", () => {
+  it("xiaomi-mi-scooter-pro-2", () => check("샤오미 미 스쿠터 프로 2 킥보드", "정상.", "xiaomi-mi-scooter-pro-2", []));
+  it("xiaomi-mi-scooter-3", () => check("샤오미 미 스쿠터 3 전동킥보드", "정상.", "xiaomi-mi-scooter-3", []));
+  it("xiaomi-mi-scooter-4", () => check("샤오미 미 스쿠터 4 킥보드", "정상.", "xiaomi-mi-scooter-4", []));
+  it("xiaomi-mi-scooter-4-pro", () => check("샤오미 미 스쿠터 4 프로", "전동킥보드.", "xiaomi-mi-scooter-4-pro", []));
+  it("xiaomi-mi-scooter-4-ultra", () => check("샤오미 미 스쿠터 4 울트라", "전동킥보드.", "xiaomi-mi-scooter-4-ultra", []));
+  it("ninebot-max-g2", () => check("세그웨이 닌봇 맥스 G2", "정상.", "ninebot-max-g2", []));
+  it("ninebot-f40", () => check("세그웨이 닌봇 F40", "정상.", "ninebot-f40", []));
+  it("ninebot-f30", () => check("닌봇 F30", "정상.", "ninebot-f30", []));
+  it("ninebot-e45", () => check("닌봇 E45", "정상.", "ninebot-e45", []));
+});
+
 describe("Wave 185: 새 카테고리 perfume (명품 향수)", () => {
   it("jo-malone-wood-sage-sea-salt-100", () => check("조말론 우드세이지 시솔트 100ml", "정상.", "jo-malone-wood-sage-sea-salt-100", []));
   it("le-labo-santal-33-50", () => check("르라보 산탈 33 50ml", "정상.", "le-labo-santal-33-50", []));
