@@ -11,6 +11,7 @@ import PlaybookOverview from "@/components/playbook-overview";
 import RecommendationWorkspace from "@/components/recommendation-workspace";
 import SafetyStatsBadge from "@/components/safety-stats-badge";
 import UserRevealDashboard from "@/components/user-reveal-dashboard";
+import PreviewMaskedDashboard from "@/components/preview-masked-dashboard";
 import { isAdminUser } from "@/lib/auth-users";
 import { hasAdminShadowClient } from "@/lib/admin-shadow-mode";
 import { MODEL_GUIDES } from "@/lib/model-guides";
@@ -217,28 +218,10 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
     );
   }
 
+  // 2026-05-17: 비로그인 사용자 = 마스킹 매물 preview (메인 페이지 hook).
+  // 옛 "로그인 필요" 페이지 폐기. PreviewMaskedDashboard 가 자체 SEO + CTA 박음.
   if (!user) {
-    return (
-      <main className="min-h-screen bg-[#f6f1e8] px-4 py-8 dark:bg-zinc-950">
-        <div className="mx-auto max-w-5xl rounded-[32px] border border-[#ddd4c7] bg-[#fffbf4] p-8 shadow-[0_20px_48px_rgba(34,49,39,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-xs font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
-            My Dashboard
-          </p>
-          <h1 className="mt-2 text-2xl font-black tracking-tight text-[#223127] dark:text-white">로그인이 필요해요</h1>
-          <p className="mt-3 text-sm text-[#5a6658] dark:text-zinc-400">
-            추천 상품 기록과 피드백은 로그인 계정 기준으로 모아봅니다.
-          </p>
-          <div className="mt-6 flex gap-2">
-            <Link href="/login" className="rounded-xl bg-[var(--brand-accent-strong)] px-4 py-2 text-sm font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
-              로그인
-            </Link>
-            <Link href="/" className="rounded-xl border border-[#ddd4c7] px-4 py-2 text-sm font-bold text-[#556252] dark:border-zinc-700 dark:text-zinc-300">
-              홈으로
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
+    return <PreviewMaskedDashboard />;
   }
 
   return (
