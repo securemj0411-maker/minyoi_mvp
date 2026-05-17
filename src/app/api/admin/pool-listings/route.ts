@@ -187,13 +187,15 @@ export async function GET(req: NextRequest) {
     // Wave 187 (2026-05-17): L6 Liquidity 곡선 입력 — comparable_key 별 velocity + price 분포.
     // mvp_market_velocity_daily 는 condition='all' 만 박혀있음 → 일단 'all' fetch (Wave 183 한계 동일).
     // 가장 최근 row per comparable_key 만 사용 (client-side picking).
-    const parsedRowsForKeys = (await parsedRes.clone().json()) as Array<{ pid: number; comparable_key: string | null }>;
+    // Wave 201 (2026-05-18): reference_prices 도 fetch — unopened 매물 시 anchor 우선.
+    const parsedRowsForKeys = (await parsedRes.clone().json()) as Array<{ pid: number; comparable_key: string | null; condition_class: string | null }>;
     const comparableKeys = Array.from(new Set(parsedRowsForKeys.map((r) => r.comparable_key).filter((k): k is string => !!k)));
     const velocityMap = new Map<string, { p25Hours: number | null; medianHours: number | null; p75Hours: number | null; soldSampleCount: number; date: string }>();
     const priceMap = new Map<string, { p25Price: number | null; medianPrice: number | null; p75Price: number | null; date: string }>();
+    const refPriceMap = new Map<string, number>();
     if (comparableKeys.length > 0) {
       const keysCsv = comparableKeys.map((k) => `"${k}"`).join(",");
-      const [velocityRes, priceRes] = await Promise.all([
+      const [velocityRes, priceRes, refRes] = await Promise.all([
         restFetch(
           `${tableUrl("mvp_market_velocity_daily")}?select=comparable_key,p25_hours_to_sold,median_hours_to_sold,p75_hours_to_sold,observed_sold_sample_count,date&comparable_key=in.(${keysCsv})&condition_class=eq.all&order=date.desc&limit=2000`,
           { headers: serviceHeaders() },
@@ -202,7 +204,16 @@ export async function GET(req: NextRequest) {
           `${tableUrl("mvp_market_price_daily")}?select=comparable_key,p25_price,blended_median_price,p75_price,date&comparable_key=in.(${keysCsv})&order=date.desc&limit=2000`,
           { headers: serviceHeaders() },
         ),
+        // Wave 201: reference_prices fetch — unopened anchor.
+        restFetch(
+          `${tableUrl("mvp_reference_prices")}?select=comparable_key,effective_price&comparable_key=in.(${keysCsv})&effective_price=not.is.null&limit=500`,
+          { headers: serviceHeaders() },
+        ),
       ]);
+      const refRows = (await refRes.json()) as Array<{ comparable_key: string; effective_price: number }>;
+      for (const row of refRows) {
+        if (row.effective_price > 0) refPriceMap.set(row.comparable_key, Number(row.effective_price));
+      }
       const vRows = (await velocityRes.json()) as Array<{ comparable_key: string; p25_hours_to_sold: number | null; median_hours_to_sold: number | null; p75_hours_to_sold: number | null; observed_sold_sample_count: number; date: string }>;
       const pRows = (await priceRes.json()) as Array<{ comparable_key: string; p25_price: number | null; blended_median_price: number | null; p75_price: number | null; date: string }>;
       for (const r of vRows) {
@@ -295,9 +306,10 @@ export async function GET(req: NextRequest) {
         velocityMedianHours: velocity?.medianHours ?? null,
         velocityP75Hours: velocity?.p75Hours ?? null,
         velocitySoldSampleCount: velocity?.soldSampleCount ?? null,
-        marketP25Price: priceStats?.p25Price ?? null,
-        marketMedianPrice: priceStats?.medianPrice ?? null,
-        marketP75Price: priceStats?.p75Price ?? null,
+        // Wave 201 (2026-05-18): unopened 매물 시 reference_prices anchor 우선 (다나와 새 가격).
+        ...(p.condition_class === "unopened" && comparableKey && refPriceMap.has(comparableKey)
+          ? { marketP25Price: null, marketMedianPrice: refPriceMap.get(comparableKey)!, marketP75Price: null }
+          : { marketP25Price: priceStats?.p25Price ?? null, marketMedianPrice: priceStats?.medianPrice ?? null, marketP75Price: priceStats?.p75Price ?? null }),
         // pool-specific
         band: pool.profit_band,
         poolStatus: pool.status,

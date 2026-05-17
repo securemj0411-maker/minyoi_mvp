@@ -474,6 +474,27 @@ export async function fetchLatestMarketStats(comparableKeys: (string | null)[]):
   return map;
 }
 
+// Wave 201 (2026-05-18): unopened 매물 시세 anchor — mvp_reference_prices.effective_price.
+// 사용자: "새상품이면 다나와 시세를 보여줘야지 뭘 고민하는건데"
+// 기존: unopened condition 도 mvp_market_price_daily 의 sold/active median 사용 → 번개 중고 미개봉 거래가.
+// 새: unopened 시 reference_prices anchor (다나와/공식) 우선.
+export async function fetchReferencePrices(comparableKeys: (string | null)[]): Promise<Map<string, number>> {
+  const unique = [...new Set(comparableKeys.filter((k): k is string => Boolean(k)))];
+  if (unique.length === 0) return new Map();
+  const encoded = unique.map((k) => encodeURIComponent(k)).join(",");
+  const res = await callSupabase(
+    `/mvp_reference_prices?select=comparable_key,effective_price&comparable_key=in.(${encoded})&effective_price=not.is.null&limit=${Math.max(100, unique.length * 2)}`,
+    { headers: authHeaders() },
+  );
+  const parsed = await res.json();
+  const rows = Array.isArray(parsed) ? (parsed as Array<{ comparable_key: string; effective_price: number }>) : [];
+  const map = new Map<string, number>();
+  for (const row of rows) {
+    if (row.effective_price > 0) map.set(row.comparable_key, Number(row.effective_price));
+  }
+  return map;
+}
+
 export async function fetchLatestMarketVelocity(comparableKeys: (string | null)[]): Promise<Map<string, MarketVelocityRow>> {
   const unique = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
   if (unique.length === 0) return new Map();
@@ -573,6 +594,8 @@ export function marketBasisForCandidate(
   skuName: string,
   marketStats: MarketStatsMap,
   conditionClass: string | null = null,
+  // Wave 201 (2026-05-18): unopened 매물 anchor — reference_prices.effective_price 우선.
+  referencePrices?: Map<string, number>,
 ): RevealMarketBasis {
   const byCondition = comparableKey ? marketStats.get(comparableKey) : undefined;
   const { row: stat, conditionClass: actualCondition, fallbackUsed } = selectMarketRowByCondition(
@@ -604,17 +627,24 @@ export function marketBasisForCandidate(
     otherConditions.sort((a, b) => (b.medianPrice ?? 0) - (a.medianPrice ?? 0));
   }
 
+  // Wave 201 (2026-05-18): unopened 매물 시세 = reference_prices.effective_price (다나와/공식 anchor).
+  // 사용자 정정: 미개봉 매물은 번개 중고 sold median이 아니라 다나와 새 가격 표시해야 함.
+  const refPrice = (actualCondition === "unopened" && comparableKey && referencePrices?.get(comparableKey)) || null;
+  const useRefAnchor = refPrice != null && refPrice > 0;
+  const medianPriceFinal = useRefAnchor ? refPrice : (stat?.blended_median_price ?? stat?.active_median_price ?? null);
+
   return {
     comparableKey,
     label: marketBasisLabel(comparableKey, skuName),
-    p25Price: stat?.p25_price ?? null,
-    medianPrice: stat?.blended_median_price ?? stat?.active_median_price ?? null,
-    p75Price: stat?.p75_price ?? null,
+    p25Price: useRefAnchor ? null : (stat?.p25_price ?? null),
+    medianPrice: medianPriceFinal,
+    p75Price: useRefAnchor ? null : (stat?.p75_price ?? null),
     sampleCount: activeSampleCount + soldSampleCount + disappearedSampleCount,
     activeSampleCount,
     soldSampleCount,
     disappearedSampleCount,
-    confidence: stat?.confidence ?? null,
+    // ref anchor 신뢰는 medium (단일 값이라 "high" 비호환).
+    confidence: useRefAnchor ? "medium" : (stat?.confidence ?? null),
     computedAt: stat?.computed_at ?? null,
     excludedExamples: excludedExamplesForKey(comparableKey),
     conditionClass: actualCondition,
@@ -859,13 +889,15 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     // condition 5종 검증 필요 — CLAUDE.md 정책). 안전하게 별도 batch fetch로 pool entry의
     // condition_class lookup map만 만든다. Reserved 상태라 다음 query 시점까지 안정 (TTL 5분).
     const reservedPids = reserved.map((r) => r.pid);
-    const [listingMap, marketStats, velocityStats, readinessMap, poolConditionMap, optionBaseAssumedMap] = await Promise.all([
+    // Wave 201 (2026-05-18): reference_prices fetch — unopened 매물 anchor (다나와 새 가격).
+    const [listingMap, marketStats, velocityStats, readinessMap, poolConditionMap, optionBaseAssumedMap, referencePrices] = await Promise.all([
       fetchListings(reservedPids),
       fetchLatestMarketStats(reserved.map((r) => r.comparable_key)),
       fetchLatestMarketVelocity(reserved.map((r) => r.comparable_key)),
       loadCategoryReadinessMap(),
       fetchPoolConditionClassByPids(reservedPids),
       fetchOptionBaseAssumedByPids(reservedPids),
+      fetchReferencePrices(reserved.map((r) => r.comparable_key)),
     ]);
     const sourceHealth = await loadLatestSourceHealth();
     const reveals: RevealCard[] = [];
@@ -947,11 +979,13 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         // 2026-05-17 (사용자 요청): 모달 카드에 band chip 표시.
         band: (candidate.profit_band as 1 | 2 | 3) ?? null,
         // Wave 130 (2026-05-16): 매물 condition_class lookup → 매칭되는 condition별 시세 우선 표시.
+        // Wave 201 (2026-05-18): unopened 매물 → reference_prices anchor 우선.
         marketBasis: marketBasisForCandidate(
           candidate.comparable_key,
           meta.sku_name,
           marketStats,
           poolConditionMap.get(candidate.pid) ?? null,
+          referencePrices,
         ),
         velocityBasis: velocityBasisForCandidate(candidate.comparable_key, velocityStats, readinessMap),
         lastVerifiedAt: liveVerifiedAt,
