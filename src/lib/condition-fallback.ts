@@ -10,11 +10,16 @@
 
 export type ConditionClass = string;
 
+// Wave 178 (2026-05-17): 사용자 코멘트 pid 258306715 "새상품이랑 민트급은 다른거아니야??".
+// 옛 chain은 mint → unopened, clean → mint 처럼 "위로 fallback" 허용 → mint 매물이
+// unopened (다나와 새 가격) 시세로 부풀어지고 clean 매물이 mint 시세로 부풀어짐.
+// 정책: 시세 추정은 보수적 (precision > recall) — 위로 fallback 차단, 같거나 아래로만.
+// unopened/mint 매물 자체는 그대로 (위가 없음, 아래로 fallback 자연).
 export const CONDITION_FALLBACK_CHAIN: Record<string, string[]> = {
-  unopened: ["unopened", "mint", "clean", "normal", "all"],
-  mint: ["mint", "unopened", "clean", "normal", "all"],
-  clean: ["clean", "normal", "mint", "all"],
-  normal: ["normal", "clean", "worn", "all"],
+  unopened: ["unopened", "mint", "clean", "normal", "all"],   // 가장 premium — 아래로만 자연 fallback
+  mint: ["mint", "clean", "normal", "all"],                    // ❌ Wave 178: unopened 제거 (위로 차단)
+  clean: ["clean", "normal", "worn", "all"],                   // ❌ Wave 178: mint 제거 (위로 차단)
+  normal: ["normal", "clean", "worn", "all"],                  // normal↔clean 가까움 — 양쪽 fallback 유지
   worn: ["worn", "normal", "all"],
   low_batt: ["low_batt", "worn", "normal", "all"],
   flawed: ["flawed", "worn", "low_batt", "normal", "all"],

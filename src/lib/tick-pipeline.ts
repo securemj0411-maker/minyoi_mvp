@@ -2856,6 +2856,10 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     /크림\s*계정\s*다수\s*총\s*[0-9]+\s*건/,
     /정품\s*100\s*%\s*보장.*컨디션\s*[sSaA]급/,
     /✔[️]?\s*정품\s*100\s*%\s*보장/,
+    // Wave 177 (2026-05-17): 개인 결제창 사기 매물 (사용자 코멘트 pid 406085654).
+    /개인\s*결제창/,
+    /[가-힣A-Za-z]+\*+[가-힣A-Za-z]?\s*고객님/,
+    /고객님\s*(?:개인|전용)\s*(?:결제|페이지|링크)/,
   ];
   const adPidSet = new Set<number>();
   for (const row of rows) {
