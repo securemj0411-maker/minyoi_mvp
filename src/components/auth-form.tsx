@@ -53,9 +53,16 @@ export default function AuthForm({ mode }: Props) {
   const hasSupabasePublicEnv = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
+  // Wave 180 (2026-05-17): 운영자 테스트용 임시 email auth 토글.
+  // .env.local 에 NEXT_PUBLIC_ENABLE_EMAIL_AUTH=1 박혀 있을 때만 노출.
+  // prod (vercel) 에 env 안 박으면 자동으로 카카오 only — 정책 (본인 인증 카카오 only) 유지.
+  const emailAuthEnabled = process.env.NEXT_PUBLIC_ENABLE_EMAIL_AUTH === "1";
   const isSignup = mode === "signup";
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(() => authErrorMessage(searchParams.get("auth")));
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailBusy, setEmailBusy] = useState(false);
 
   async function signInWithKakao() {
     if (!supabase || busy) return;
@@ -72,6 +79,53 @@ export default function AuthForm({ mode }: Props) {
     if (error) {
       setMessage(error.message);
       setBusy(false);
+    }
+  }
+
+  async function handleEmailSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!supabase || emailBusy) return;
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
+      setMessage("이메일과 비밀번호를 모두 입력하세요.");
+      return;
+    }
+    if (password.length < 6) {
+      setMessage("비밀번호는 6자 이상이어야 해요.");
+      return;
+    }
+    setEmailBusy(true);
+    setMessage(null);
+    if (isSignup) {
+      const { data, error } = await supabase.auth.signUp({
+        email: trimmedEmail,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        },
+      });
+      if (error) {
+        setMessage(error.message);
+        setEmailBusy(false);
+        return;
+      }
+      if (data.session) {
+        window.location.href = nextPath;
+        return;
+      }
+      setMessage("가입 완료. 받은 이메일의 인증 링크를 눌러주세요. (Supabase 설정에 따라 자동 로그인일 수도 있어요)");
+      setEmailBusy(false);
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password,
+      });
+      if (error) {
+        setMessage(error.message);
+        setEmailBusy(false);
+        return;
+      }
+      window.location.href = nextPath;
     }
   }
 
@@ -111,6 +165,52 @@ export default function AuthForm({ mode }: Props) {
         </button>
       </div>
 
+      {emailAuthEnabled ? (
+        <>
+          <div className="mt-6 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-[#9aa39d]">
+            <span className="h-px flex-1 bg-[#e7dece] dark:bg-zinc-700" />
+            <span>또는 이메일 (테스트용)</span>
+            <span className="h-px flex-1 bg-[#e7dece] dark:bg-zinc-700" />
+          </div>
+          <form className="mt-4 space-y-3" onSubmit={handleEmailSubmit}>
+            <label className="block">
+              <span className="text-xs font-black text-[#445247] dark:text-zinc-200">이메일</span>
+              <input
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={emailBusy}
+                required
+                className="mt-1 block h-10 w-full rounded-lg border border-[#ddd4c7] bg-white px-3 text-sm font-bold text-[#223127] outline-none focus:border-[#5d735f] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                placeholder="you@example.com"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-black text-[#445247] dark:text-zinc-200">비밀번호 (6자 이상)</span>
+              <input
+                type="password"
+                autoComplete={isSignup ? "new-password" : "current-password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={emailBusy}
+                required
+                minLength={6}
+                className="mt-1 block h-10 w-full rounded-lg border border-[#ddd4c7] bg-white px-3 text-sm font-bold text-[#223127] outline-none focus:border-[#5d735f] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                placeholder="••••••"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={emailBusy}
+              className="flex h-11 w-full items-center justify-center rounded-xl bg-[#223127] px-4 text-sm font-black text-white shadow-sm transition hover:bg-[#344136] disabled:cursor-not-allowed disabled:bg-zinc-400"
+            >
+              {emailBusy ? "처리 중…" : isSignup ? "이메일로 가입" : "이메일로 로그인"}
+            </button>
+          </form>
+        </>
+      ) : null}
+
       {message ? (
         <div className="mt-4 rounded-xl bg-[var(--brand-accent-soft)] px-3 py-2 text-xs font-bold text-[#445247] dark:bg-zinc-800 dark:text-zinc-300">
           {message}
@@ -121,7 +221,16 @@ export default function AuthForm({ mode }: Props) {
         <Link href="/" className="font-bold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
           홈으로 돌아가기
         </Link>
-        <span className="font-bold text-zinc-400">이메일 가입 중단</span>
+        {emailAuthEnabled ? (
+          <Link
+            href={isSignup ? "/login" : "/signup"}
+            className="font-bold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+          >
+            {isSignup ? "이미 가입했나요? 로그인" : "처음이세요? 가입하기"}
+          </Link>
+        ) : (
+          <span className="font-bold text-zinc-400">이메일 가입 중단</span>
+        )}
       </div>
 
       {/* FAQ: 왜 카카오만 받나 — 본인 인증 + 한정 수량 분배 정책 */}
