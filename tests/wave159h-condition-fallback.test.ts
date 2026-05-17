@@ -54,6 +54,26 @@ describe("Wave 159h — conditionFallbackChain", () => {
     assert.ok(!SAFE_FINAL_FALLBACK.includes("unopened"));
     assert.ok(!SAFE_FINAL_FALLBACK.includes("mint"));
   });
+
+  // Wave 178 (2026-05-17 사용자 정책): "위로 fallback 차단, 같거나 아래로만".
+  // 사용자 코멘트 pid 258306715 "새상품이랑 민트급은 다른거아니야??".
+  it("Wave 178: mint chain 에 unopened 없음 (mint 매물이 새 가격 X)", () => {
+    const chain = conditionFallbackChain("mint");
+    assert.ok(!chain.includes("unopened"), "mint → unopened 위로 fallback 금지");
+  });
+
+  it("Wave 178: clean chain 에 mint/unopened 없음 (clean 매물이 mint/새 가격 X)", () => {
+    const chain = conditionFallbackChain("clean");
+    assert.ok(!chain.includes("mint"), "clean → mint 위로 fallback 금지");
+    assert.ok(!chain.includes("unopened"), "clean → unopened 위로 fallback 금지");
+  });
+
+  it("Wave 178: normal 은 clean/worn 양방향 (가까운 condition 양쪽 허용)", () => {
+    const chain = conditionFallbackChain("normal");
+    assert.ok(chain.includes("clean") && chain.includes("worn"), "normal ↔ clean/worn 양방향");
+    assert.ok(!chain.includes("mint"), "normal → mint 위로 fallback 금지");
+    assert.ok(!chain.includes("unopened"), "normal → unopened 위로 fallback 금지");
+  });
 });
 
 describe("Wave 159h — pickByConditionFallback", () => {
