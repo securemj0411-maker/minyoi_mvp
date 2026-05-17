@@ -618,13 +618,13 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             ) : (
               <>
                 <div className="text-base font-black text-zinc-900 dark:text-zinc-100">
-                  🔍 정보 오류 신고
+                  🎁 토큰 +3 받기 · 부정확 정보 신고
                 </div>
                 <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
                   매물: <span className="font-bold">{lossReportItem.name}</span>
                 </div>
                 <div className="mt-3 text-[12px] leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  어떤 오류를 발견했나요? 카테고리만 골라도 신고 가능 — 즉시 토큰 <b>3개 보상</b>.
+                  어떤 부정확 정보를 발견했나요? 카테고리만 골라도 신고 가능 — 즉시 토큰 <b>3개 보상</b>.
                 </div>
 
                 {/* 카테고리 chip — 클릭으로 선택 */}
