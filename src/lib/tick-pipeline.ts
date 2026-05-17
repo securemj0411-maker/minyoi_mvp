@@ -1851,7 +1851,7 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   const baseColumns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status,num_comment,qty,description_hash";
   const columns = scoreDirtyAvailable ? `${baseColumns},pool_eligible` : baseColumns;
   const dirtyFilter = scoreDirtyAvailable ? "&score_dirty=eq.true" : "";
-  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}${dirtyFilter}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=eq.active&order=last_seen_at.desc&limit=${limit}`;
+  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}${dirtyFilter}&detail_status=eq.done&or=(listing_type.eq.normal,listing_type_override.eq.normal)&sku_id=not.is.null&listing_state=eq.active&order=last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
 }
@@ -1882,7 +1882,7 @@ async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Prom
 async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
   // Wave 132: num_comment 추가 (시세 sample 분석 시 활용 가능).
   const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty,description_hash";
-  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&order=detail_enriched_at.desc.nullslast,last_seen_at.desc&limit=${limit}`;
+  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&or=(listing_type.eq.normal,listing_type_override.eq.normal)&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&order=detail_enriched_at.desc.nullslast,last_seen_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as ScorableRawRow[];
 }
@@ -1896,7 +1896,7 @@ async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<
   for (const chunk of chunkArray(unique, PARSED_PID_READ_CHUNK_SIZE)) {
     const remaining = limit - rows.length;
     if (remaining <= 0) break;
-    const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&pid=in.(${chunk.join(",")})&detail_status=eq.done&listing_type=eq.normal&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&limit=${Math.min(remaining, chunk.length)}`;
+    const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&pid=in.(${chunk.join(",")})&detail_status=eq.done&or=(listing_type.eq.normal,listing_type_override.eq.normal)&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&limit=${Math.min(remaining, chunk.length)}`;
     const res = await restFetch(url, { headers: serviceHeaders() });
     rows.push(...((await res.json()) as ScorableRawRow[]));
   }
@@ -3988,8 +3988,13 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     if (row.description_preview.trim().length < 20) scoreFlags.push("weak_description");
     if (!hasTrustedMarket) {
       scoreFlags.push("coarse_market_price");
-      if (!comparableKey || !marketStat) scoreFlags.push("market_stat_missing");
-      else if (marketStat.confidence === "low") scoreFlags.push("market_confidence_low");
+      if (!comparableKey || !marketStat) {
+        // Wave 175 (2026-05-17): 신발 한정 — fallbackMedian > 0 (batch median 계산됨)이면
+        // market_stat_missing 박지 X. Wave 174에서 신발 batch threshold 2로 완화한 효과를
+        // pool-policy block flag가 무효화하던 사각지대 차단.
+        const hasShoeFallback = parsed?.category === "shoe" && fallbackMedian > 0;
+        if (!hasShoeFallback) scoreFlags.push("market_stat_missing");
+      } else if (marketStat.confidence === "low") scoreFlags.push("market_confidence_low");
     }
     if (parseConfidence > 0 && parseConfidence < 0.65) scoreFlags.push("option_parse_review");
     if (parsed?.needs_review) scoreFlags.push("option_needs_review");

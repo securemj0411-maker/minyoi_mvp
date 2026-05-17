@@ -456,6 +456,22 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
   if (criticalUnknown.length > 0) needsReview = true;
   if (parseConfidence < 0.55) needsReview = true;
 
+  // Wave 175 (2026-05-17): condition_class → conditionScore 매핑.
+  // 옛 코드는 0.5 hardcode — 신발 매물 2,189건 전부 conditionScore < 0.65 →
+  // tick scoreStage 'condition_review' flag → pool 차단. mint/clean도 박힘.
+  // 다른 카테고리 parser는 condition_notes 기반 score 박는 로직 있음.
+  // 신발/가방/자전거는 condition_notes 미구현 → class 기반 fallback.
+  const conditionScoreMap: Record<ConditionClass, number> = {
+    unopened: 1.0,
+    mint: 0.95,
+    clean: 0.85,
+    normal: 0.75,
+    worn: 0.55,
+    flawed: 0.35,
+    low_batt: 0.4,
+  };
+  const conditionScore = conditionScoreMap[conditionClassResult] ?? 0.5;
+
   return {
     parserVersion: PARSER_VERSION_W92,
     contentHash: hashText(text),
@@ -474,7 +490,7 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     batteryCycles: null,
     carrier: null,
     connectivity: null,
-    conditionScore: 0.5,
+    conditionScore,
     conditionNotes: [],
     // Wave 130 (2026-05-16): fashion/mobility는 condition_notes 추출 미구현 → default normal.
     // Wave 134 (2026-05-16): 신발 condition_tier → condition_class 매핑 추가. 가방/자전거는 normal 유지.
