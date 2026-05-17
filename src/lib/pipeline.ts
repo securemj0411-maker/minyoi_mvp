@@ -612,7 +612,10 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
     if (boxOnlySignal || (!fullBoxSignal && !boxOnlyOpenedSw && titleN.includes("박스") && price > 0 && price < 50_000)) {
       return "accessory";
     }
-    if (/(충전독|충전\s*독|충전기|케이블|스트랩|밴드|브레이슬릿|루프|시계줄|필름|강화유리|커버|거치대|스탠드)/.test(titleN)) {
+    // 2026-05-17: 본품 표현 (애플워치 + 사이즈 mm/울트라/시리즈/SE) 있으면 accessory 분류 X.
+    // "애플워치 울트라 티타늄밀레니즈" / "애플워치10 46mm + 에르메스" 같은 본품 + 옵션 매물 false positive 차단.
+    const watchBodyContext = /(애플워치|applewatch|갤럭시\s*워치|galaxy\s*watch).{0,30}(?:\d+\s*mm|울트라|ultra|시리즈\s*\d|series\s*\d|\bse\b|\d+\s*세대|밀레니즈|에르메스|hermes|티타늄|titanium)/i.test(titleN);
+    if (!watchBodyContext && /(충전독|충전\s*독|충전기|케이블|스트랩|밴드|브레이슬릿|루프|시계줄|필름|강화유리|커버|거치대|스탠드)/.test(titleN)) {
       return "accessory";
     }
   }
