@@ -161,3 +161,52 @@ E 옵션 (fallback chain + UI 표시) 가 가장 균형. 풀 늘리되 사용자
 
 - A/E 박을 때 비교 키 시세 가치 흐려짐. 추천 정확도 risk.
 - C/D만 가면 1~2주 ready 그대로 200대.
+
+---
+
+## Phase 1 (broader fallback) REVERTED — 2026-05-17
+
+### 사용자 지적
+
+> "fallback이 그 모델 중에서도 옵션 제일 아랫옵션으로 아랫 용량 아랫 옵션으로 생각하고 fallback하는거면 인정. 근데 단순히 하는거면 절대 노 인정."
+
+### 실제 박힌 동작 (정확도 위반)
+
+```
+"macbook|macbook_pro|2023y|m3|14in" broader key 안:
+  8GB/256GB 매물 (~200만)
+  16GB/512GB 매물 (~240만)
+  32GB/1TB 매물 (~320만)
+→ madTrim median ≈ 240만 (단순 mixed)
+```
+
+**8GB/256 매물 매입가 180만** 일 때:
+- 정확 시세: 200만 → 차익 20만
+- broader median: 240만 → 차익 60만 → **"꿀매물!" 잘못된 추천**
+
+**§12b 정확성 절대 우선 명백 위반**. revert 진행.
+
+### Revert 내용
+
+- `git revert 1754875` (commit 7385f18 push 예정)
+- 폐기: `src/lib/market-key-fallback.ts`, `tests/wave181-market-key-fallback.test.ts`
+- 원복: `src/lib/tick-pipeline.ts` Wave 179b 만 유지 (condition fallback)
+- 원복: `src/components/admin-pool-browser.tsx` "계산된 시세" badge 제거
+
+### 다음 방향 — 카테고리 확장 우선 (옵션 D)
+
+D 옵션이 사용자 지적과 일치: 정확도 손해 0, 정확한 catalog 추가로 풀 늘림.
+
+타깃 (진단 데이터 기반):
+1. **bag** parsed 410/24h → catalog 0 → 풀 0. 루이비통/샤넬/고야사키 등 narrow lane
+2. **bike** parsed 79/24h → catalog 0 → 풀 0. 시마노/트렉 등
+3. **monitor / desktop / home_appliance** 시세 trusted 0 — 새 lane catalog + mining
+4. **laptop**: macbook 외 LG그램/갤럭시북/레노보 narrow lane 추가
+
+각 추가는:
+- catalog mustContain / mustNotContain 정확히 박기
+- option-parser 옵션 추출 보강
+- mining v3 로 query plan 검증
+- 측정 후 LANE_READINESS=ready
+
+big lift but 정확도 보장. 다음 wave 에서 우선순위 정해서 1개씩 박기.
