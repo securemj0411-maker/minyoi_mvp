@@ -18,13 +18,13 @@ export const revalidate = 0;
 const CACHE_SECONDS = 60;
 const PREVIEW_COUNT = 5;
 
-// 매물명 마스킹 — 첫 4자만 보이고 나머지 ***** 처리.
-// 구글 이미지 검색 우회 + 사용자 호기심 유발.
+// 매물명 마스킹 — 숫자만 별표 처리 (세대/용량/사이즈 식별 차단).
+// 단어는 그대로 — "진짜 active 매물 느낌" 유지 (사용자 신뢰 ↑).
+// 예: "갤럭시 S24 울트라 512GB 풀박스" → "갤럭시 S** 울트라 ***GB 풀박스"
+//     "애플워치 울트라 2 49mm 티타늄" → "애플워치 울트라 * **mm 티타늄"
 function maskName(name: string): string {
   if (!name) return "*****";
-  const trimmed = name.trim();
-  if (trimmed.length <= 4) return `${trimmed}*****`;
-  return `${trimmed.slice(0, 4)}***** *****`;
+  return name.trim().replace(/\d+/g, (m) => "*".repeat(m.length));
 }
 
 type PoolRow = {

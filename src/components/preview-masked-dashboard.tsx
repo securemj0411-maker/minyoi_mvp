@@ -157,8 +157,8 @@ export default function PreviewMaskedDashboard() {
                         </span>
                         <ConditionChip conditionClass={item.conditionClass} />
                       </div>
-                      {/* 매물명 마스킹 (XXX 처리, blur X — 사용자 피드백). */}
-                      <div className="mt-1 select-none truncate text-sm font-bold text-zinc-400 dark:text-zinc-500">
+                      {/* 매물명 — 숫자만 마스킹 (단어 그대로). 진짜 매물 느낌 유지. */}
+                      <div className="mt-1 truncate text-sm font-bold text-[#223127] dark:text-zinc-100">
                         {item.maskedName}
                       </div>
                       {/* 가격 / 차익 — 정확 표시 (hook) */}
