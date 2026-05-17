@@ -259,3 +259,68 @@ describe("Wave 182 chunk 4: Galaxy Tab S7 / Galaxy S20 / Galaxy Note", () => {
     );
   });
 });
+
+describe("Wave 182 chunk 5: 옛 인기 모델 (mini 5, iPad 7/8, Z Flip/Fold 3, Watch 3/Active 2)", () => {
+  it("ipad-mini-5-64-wifi", () => {
+    check(
+      "아이패드 미니 5 64GB Wi-Fi",
+      "A12 칩. 정상.",
+      "ipad-mini-5-64-wifi",
+      ["ipad_mini", "64gb", "wifi"],
+    );
+  });
+
+  it("ipad-7", () => {
+    check(
+      "아이패드 7세대 32GB Wi-Fi",
+      "정상.",
+      "ipad-7",
+      [],
+    );
+  });
+
+  it("ipad-8", () => {
+    check(
+      "아이패드 8세대 32GB Wi-Fi",
+      "정상.",
+      "ipad-8",
+      [],
+    );
+  });
+
+  it("galaxy-z-flip-3", () => {
+    check(
+      "갤럭시 Z플립3 256GB",
+      "정상.",
+      "galaxy-z-flip-3",
+      ["256gb"],
+    );
+  });
+
+  it("galaxy-z-fold-3", () => {
+    check(
+      "갤럭시 Z폴드3 256GB",
+      "정상.",
+      "galaxy-z-fold-3",
+      ["256gb"],
+    );
+  });
+
+  it("galaxywatch-3", () => {
+    check(
+      "갤럭시 워치 3 44mm",
+      "정상.",
+      "galaxywatch-3",
+      [],
+    );
+  });
+
+  it("galaxywatch-active-2", () => {
+    check(
+      "갤럭시 워치 액티브 2 44mm",
+      "정상.",
+      "galaxywatch-active-2",
+      [],
+    );
+  });
+});

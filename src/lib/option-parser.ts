@@ -1014,6 +1014,9 @@ function defaultConnectivity(model: string | null) {
 function defaultTabletScreenSizeIn(model: string | null) {
   if (!model) return null;
   if (model === "ipad_10") return 10.9;
+  if (model === "ipad_11") return 11;
+  // Wave 182 (2026-05-17): iPad 7/8/9 일반 (Pro/Air/Mini 아닌) — 10.2".
+  if (model === "ipad_7" || model === "ipad_8" || model === "ipad_9") return 10.2;
   if (/^ipad_(?:pro|air)_11_/.test(model)) return 11;
   if (/^ipad_(?:pro|air)_13_/.test(model)) return 13;
   // Wave 182 (2026-05-17): iPad Pro 12.9 M1 + iPad Air 4/5 narrow lane 추가.

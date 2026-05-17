@@ -1904,6 +1904,18 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
   },
   // Wave 118 (2026-05-15): Galaxy Z Flip/Fold + Watch + Buds 행렬 완성.
   // 매물 측정 (14일): Watch 4 (261), Watch 5 (125), Z Flip 5/6 (각 47/46), Z Flip 4 (30), Z Fold 7 (30), Buds 3 (26), Z Fold 6 (11).
+  // Wave 182 Phase 2 chunk 5 (2026-05-17): Galaxy Z Flip 3 (2021.8) — 누락된 옛 인기.
+  {
+    id: "galaxy-z-flip-3",
+    brand: "Samsung",
+    category: "smartphone",
+    modelName: "Galaxy Z Flip 3",
+    aliases: ["갤럭시 Z 플립 3", "갤럭시Z플립3", "Galaxy Z Flip 3"],
+    mustContain: [["갤럭시 z 플립 3", "갤럭시z플립3", "갤럭시 z플립3", "z flip 3", "zflip3", "z플립3"]],
+    mustNotContain: ["z flip 4", "z플립4", "z flip 5", "z플립5", "z flip 6", "z플립6", "z flip 7", "z플립7", "폴드", "fold", ...PHONE_NOISE],
+    msrpKrw: 1259000,
+    released: 2021,
+  },
   {
     id: "galaxy-z-flip-4",
     brand: "Samsung",
@@ -1936,6 +1948,18 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     mustNotContain: ["z flip 4", "z플립4", "z flip 5", "z플립5", "z flip 7", "z플립7", "폴드", "fold", ...PHONE_NOISE],
     msrpKrw: 1499000,
     released: 2024,
+  },
+  // Wave 182 Phase 2 chunk 5: Galaxy Z Fold 3 (2021.8) — 누락된 옛 인기.
+  {
+    id: "galaxy-z-fold-3",
+    brand: "Samsung",
+    category: "smartphone",
+    modelName: "Galaxy Z Fold 3",
+    aliases: ["갤럭시 Z 폴드 3", "갤럭시Z폴드3", "Galaxy Z Fold 3"],
+    mustContain: [["갤럭시 z 폴드 3", "갤럭시z폴드3", "갤럭시 z폴드3", "z fold 3", "zfold3", "z폴드3"]],
+    mustNotContain: ["z fold 4", "z폴드4", "z fold 5", "z폴드5", "z fold 6", "z폴드6", "z fold 7", "z폴드7", "플립", "flip", ...PHONE_NOISE],
+    msrpKrw: 1999000,
+    released: 2021,
   },
   {
     id: "galaxy-z-fold-4",
@@ -2439,6 +2463,32 @@ const CORE_TABLET_CATALOG: Sku[] = [
     msrpKrw: 750000,
     released: 2024,
   },
+  // Wave 182 Phase 2 chunk 5 (2026-05-17): iPad mini 5 (A12, 2019.3) — 옛 인기, 9년 정책 OK.
+  {
+    id: "ipad-mini-5-64-wifi",
+    brand: "Apple",
+    category: "tablet",
+    laneKey: "ipad_mini_5_64_wifi",
+    modelName: "iPad mini 5 (A12) 64GB Wi-Fi",
+    aliases: ["아이패드 미니 5 64", "iPad mini 5 64GB Wi-Fi", "아이패드 미니 A12"],
+    mustContain: [
+      ["아이패드", "ipad"],
+      ["미니", "mini"],
+      ["a12", "5세대", "5 세대", "ipad mini 5", "미니 5", "미니5", "5미니"],
+      ["64gb", "64 gb", "64기가", "64g"],
+    ],
+    mustNotContain: [
+      "아이패드 프로", "아이패드프로", "ipad pro", "에어", "air",
+      "미니 4", "mini 4", "미니 6", "mini 6", "미니6", "6세대", "a15",
+      "미니 7", "mini 7", "미니7", "7세대", "a17",
+      "셀룰러", "cellular", "유심", "esim",
+      "128gb", "128 gb", "128기가",
+      "256gb", "256 gb", "256기가",
+      ...TABLET_NOISE,
+    ],
+    msrpKrw: 499000,
+    released: 2019,
+  },
   {
     // Wave 182 Phase 2 (2026-05-17): iPad mini 6 (A15, 2021.9) — Wave 179b stale 차익 사건 모델.
     // 출시 4.7년 / msrp 749,000 / base 64GB Wi-Fi.
@@ -2533,6 +2583,29 @@ const CORE_TABLET_CATALOG: Sku[] = [
     released: 2022,
   },
   // Wave 119 (2026-05-15): iPad 9세대 (2021) broad — 14일 매물 32건.
+  // Wave 182 Phase 2 chunk 5 (2026-05-17): iPad 7th (2019.9) / 8th gen (2020.9) — 9년 정책 OK.
+  {
+    id: "ipad-7",
+    brand: "Apple",
+    category: "tablet",
+    modelName: "iPad 7th gen",
+    aliases: ["아이패드 7세대", "아이패드7세대", "iPad 7th gen"],
+    mustContain: [["아이패드", "ipad"], ["7세대", "7 세대", "7th", "ipad 7"]],
+    mustNotContain: ["프로", "pro", "에어", "air", "미니", "mini", "8세대", "8 세대", "8th", "9세대", "9 세대", "9th", "10세대", "10 세대", "11세대", ...TABLET_NOISE],
+    msrpKrw: 429000,
+    released: 2019,
+  },
+  {
+    id: "ipad-8",
+    brand: "Apple",
+    category: "tablet",
+    modelName: "iPad 8th gen",
+    aliases: ["아이패드 8세대", "아이패드8세대", "iPad 8th gen"],
+    mustContain: [["아이패드", "ipad"], ["8세대", "8 세대", "8th", "ipad 8"]],
+    mustNotContain: ["프로", "pro", "에어", "air", "미니", "mini", "7세대", "7 세대", "7th", "9세대", "9 세대", "9th", "10세대", "10 세대", "11세대", ...TABLET_NOISE],
+    msrpKrw: 449000,
+    released: 2020,
+  },
   {
     id: "ipad-9",
     brand: "Apple",
@@ -5181,6 +5254,35 @@ export const CATALOG: Sku[] = [
 
   // ─── Galaxy Watch ─────────────────────────────────────
   // Wave 118: Galaxy Watch 4/5 추가 (매물 14일 261+125 = 386건).
+  // Wave 182 Phase 2 chunk 5 (2026-05-17): Watch 3 (2020.8) + Watch Active 2 (2019.9) — 옛 인기.
+  {
+    id: "galaxywatch-3",
+    brand: "Samsung",
+    category: "smartwatch",
+    modelName: "Galaxy Watch 3",
+    aliases: ["갤럭시 워치 3", "갤워치 3", "Galaxy Watch 3"],
+    mustContain: [
+      ["갤럭시 워치", "갤워치", "galaxy watch", "갤럭시워치"],
+      [" 3 ", "워치3", "워치 3"],
+    ],
+    mustNotContain: [" 4 ", "워치4", " 5 ", "워치5", " 6 ", "워치6", " 7 ", "워치7", "ultra", "울트라", "active", "액티브"],
+    msrpKrw: 459000,
+    released: 2020,
+  },
+  {
+    id: "galaxywatch-active-2",
+    brand: "Samsung",
+    category: "smartwatch",
+    modelName: "Galaxy Watch Active 2",
+    aliases: ["갤럭시 워치 액티브 2", "갤워치 액티브 2", "Galaxy Watch Active 2"],
+    mustContain: [
+      ["갤럭시 워치", "갤워치", "galaxy watch", "갤럭시워치"],
+      ["액티브 2", "active 2", "active2", "액티브2"],
+    ],
+    mustNotContain: [" 3 ", "워치3", " 4 ", "워치4", " 5 ", "워치5", " 6 ", "워치6", " 7 ", "워치7", "ultra", "울트라", "액티브 1", "active 1"],
+    msrpKrw: 329000,
+    released: 2019,
+  },
   {
     id: "galaxywatch-4",
     brand: "Samsung",

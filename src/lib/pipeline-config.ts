@@ -124,6 +124,32 @@ export const DEFAULT_SEARCH_QUERIES = [
   "호카 챌린저 ATR", "Hoka Challenger ATR",
   "호카 라잇", "Hoka Light",
   "호카 시스카이", "Hoka Skyflow",
+  // Wave 182 Phase 2 (2026-05-17): 새 catalog SKU 33+7 mining query 보강.
+  // 사용자 지적 "파서랑 마이닝 다 보강해야댐". collect cron 이 새 SKU 매물 가져올 수 있게.
+  // — MacBook Pro 14/16 M-series
+  "맥북 프로 14 M1 Pro", "맥북 프로 14 M2 Pro", "맥북 프로 14 M3 Max", "맥북 프로 14 M4 Pro",
+  "맥북 프로 16 M1 Pro", "맥북 프로 16 M3 Pro", "맥북 프로 16 M4 Pro",
+  "MacBook Pro 14 M1 Pro", "MacBook Pro 16 M1 Pro",
+  // MacBook Air M1 13 + 15in
+  "맥북 에어 M1", "MacBook Air M1", "맥북에어 M1",
+  "맥북 에어 15", "MacBook Air 15",
+  // iPad Pro M1 (2021)
+  "아이패드 프로 11 M1", "아이패드 프로 12.9 M1", "iPad Pro M1",
+  // iPad Air 4/5
+  "아이패드 에어 4", "아이패드 에어 5", "iPad Air 4", "iPad Air 5",
+  // iPad mini 5/6
+  "아이패드 미니 5", "아이패드 미니 6", "iPad mini 5", "iPad mini 6",
+  // iPad 7/8
+  "아이패드 7세대", "아이패드 8세대", "iPad 7th", "iPad 8th",
+  // Galaxy Tab S7
+  "갤럭시탭 S7", "갤탭 S7",
+  // Galaxy S20 + Note 20U/10
+  "갤럭시 S20", "갤럭시 S20 울트라", "Galaxy S20",
+  "갤럭시 노트20 울트라", "갤럭시 노트10", "Note 10",
+  // Galaxy Z Flip/Fold 3
+  "갤럭시 Z플립3", "갤럭시 Z폴드3", "Z Flip 3", "Z Fold 3",
+  // Galaxy Watch 3 + Active 2
+  "갤럭시 워치 3", "갤럭시 워치 액티브 2", "Galaxy Watch Active 2",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
