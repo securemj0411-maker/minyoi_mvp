@@ -665,16 +665,18 @@ function RevealCardItem({
             {card.confusionNote}
           </div>
         ) : null}
-      </div>
-      </div>
-      {/* 좌측 카드 닫음 — 우측 카드 = 시세 영역 별도. */}
 
-      {/* 우측 카드 — 시세 영역 (lg 에서 옆에. 모바일은 stack). */}
+        {/* 시세 근거 (요약) — 좌측 카드. 그래프는 우측 카드. */}
+        <MarketBasisMini card={card} />
+      </div>
+      </div>
+      {/* 좌측 카드 닫음 — 우측 카드 = 시세 그래프 + 디테일. */}
+
+      {/* 우측 카드 — 시세 그래프 + 회전/유입/디버그 (시각 강조). */}
       <div className="space-y-2 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40">
         <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
-          📊 시세 분석
+          📊 시세 그래프 · 시장 분석
         </div>
-        <MarketBasisMini card={card} />
 
         {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
         {/* "시세 어떤 기준으로 잡나" 시각화. history 부족하면 자동 hide. */}

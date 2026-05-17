@@ -417,9 +417,9 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     </div>
                   ) : null;
                 })()}
-                {/* 2026-05-15: 시세 30일 그래프. comparableKey 있으면 자동 표시. */}
+                {/* 2026-05-17: 사용자 지적 "운영자풀 시세 그래프 안 보임" — lazy 제거, 자동 로드. */}
                 <div className="mt-2">
-                  <MarketHistoryChart comparableKey={item.comparableKey} currentPrice={item.price} lazy />
+                  <MarketHistoryChart comparableKey={item.comparableKey} currentPrice={item.price} />
                 </div>
                 <div className="mt-2">
                   <MarketSourceDebug
