@@ -23,6 +23,7 @@ import {
 import { notifyOperationalAlerts, type OperationalAlert } from "@/lib/operational-notifier";
 import { bunjangLabelToConditionClass, extractConditionClass, parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import { conditionFallbackChain, pickByConditionFallback } from "@/lib/condition-fallback";
+import { pickPricesByBroaderChain } from "@/lib/market-key-fallback";
 import {
   applyAiReview,
   classifyConditionWithAi,
@@ -3988,14 +3989,48 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const targetCondition = parsed?.condition_class ?? "normal";
     const condFallback = conditionFallbackChain(targetCondition);
     let prices: number[] = [];
+    // Wave 181 (2026-05-17): broader market key fallback. condition-fallback chain
+    // 안 ANY cond에 narrow marketKey 표본 < threshold면 broader marketKey (RAM/SSD 등
+    // narrow segment trim) 단위로 또 fallback. fallback 사용 시 broaderMarketFallback=true.
+    // 풀 부족 진단 결과 (laptop 384 lane 중 시세 trusted 4개 = 1%) 해소용.
+    // 정확성 손해: 다른 RAM/SSD 조합 가격 섞임. UI 카드에 "계산된 시세" 표시 (Phase 2) 로 정직히 알림.
+    let broaderMarketFallback = false;
+    let chosenMarketKey = marketKey;
     for (const cond of condFallback) {
-      const key = `${marketKey}|${cond}`;
-      const candidate = pricesByMarketCondition.get(key) ?? [];
-      if (candidate.length >= (parsed?.category === "shoe" ? 2 : 5)) {
-        prices = candidate;
+      const narrowKey = `${marketKey}|${cond}`;
+      // Build a Map<broaderKey, number[]> filtered by current condition tier from pricesByMarketCondition.
+      // We need to call pickPricesByBroaderChain with prices keyed on a structure where
+      // composite key = `${broaderMarketKey}|${cond}`. So we rebuild a small Map per cond.
+      const candidatesForCond = new Map<string, number[]>();
+      for (const [compositeKey, list] of pricesByMarketCondition) {
+        const sepIdx = compositeKey.lastIndexOf("|");
+        if (sepIdx < 0) continue;
+        const candCond = compositeKey.slice(sepIdx + 1);
+        if (candCond !== cond) continue;
+        const candKey = compositeKey.slice(0, sepIdx);
+        candidatesForCond.set(candKey, list);
+      }
+      const fallbackThresholdForLookup = parsed?.category === "shoe" ? 2 : 5;
+      const picked = pickPricesByBroaderChain(marketKey, candidatesForCond, fallbackThresholdForLookup);
+      if (picked.prices.length >= fallbackThresholdForLookup) {
+        prices = picked.prices;
+        broaderMarketFallback = picked.broader;
+        chosenMarketKey = picked.key;
         break;
       }
-      if (candidate.length > prices.length) prices = candidate; // 마지막 fallback용
+      // 마지막 fallback용 (threshold 미달이지만 best available)
+      if (picked.prices.length > prices.length) {
+        prices = picked.prices;
+        broaderMarketFallback = picked.broader;
+        chosenMarketKey = picked.key;
+      }
+      // (narrow lookup도 보조 비교 — 옛 동작 호환)
+      const candidate = pricesByMarketCondition.get(narrowKey) ?? [];
+      if (candidate.length > prices.length && candidate.length >= fallbackThresholdForLookup) {
+        prices = candidate;
+        broaderMarketFallback = false;
+        chosenMarketKey = marketKey;
+      }
     }
     const _coarsePrices = pricesBySku.get(skuId) ?? [];
     const hasTrustedMarket = trustedMedian != null;
@@ -4055,9 +4090,18 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
         // Wave 175b (2026-05-17): referencePrice (unopened 매물 다나와 시세) 사용도 포함 —
         // skuMedian > 0이면 시세 source 무엇이든 시세 있음. 검증 시점 priceGap > 0 매물 18건
         // (unopened referencePrice case) 차단 발견.
+        // Wave 181 (2026-05-17): broader market fallback도 동일 — fallbackMedian > 0 이면
+        // 시세 source 있음 (broader key). market_stat_missing 박지 X.
         const hasShoeUsableMedian = parsed?.category === "shoe" && skuMedian > 0;
-        if (!hasShoeUsableMedian) scoreFlags.push("market_stat_missing");
+        const hasBroaderFallbackMedian = broaderMarketFallback && skuMedian > 0;
+        if (!hasShoeUsableMedian && !hasBroaderFallbackMedian) scoreFlags.push("market_stat_missing");
       } else if (marketStat.confidence === "low") scoreFlags.push("market_confidence_low");
+    }
+    // Wave 181 (2026-05-17): broader market fallback 사용 시 정직성 flag.
+    // pool-policy.mjs BLOCK_FLAGS에 없으므로 풀 진입은 허용. UI 카드에 "계산된 시세" 표시 용도.
+    // 다른 RAM/SSD/screen 조합 가격 섞여 정확성 약간 손해 — 사용자에게 명시.
+    if (broaderMarketFallback) {
+      scoreFlags.push("market_broader_fallback");
     }
     if (parseConfidence > 0 && parseConfidence < 0.65) scoreFlags.push("option_parse_review");
     if (parsed?.needs_review) scoreFlags.push("option_needs_review");

@@ -357,10 +357,21 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       {/* 2026-05-17 (사용자 요청): 매물 등급 chip + ? 분류 정책 모달. 운영자풀 = showHelp. */}
                       <ConditionChip conditionClass={item.conditionClass} showHelp />
                     </div>
-                    <div className="flex flex-wrap gap-x-2 text-zinc-700 dark:text-zinc-300">
+                    <div className="flex flex-wrap items-center gap-x-2 text-zinc-700 dark:text-zinc-300">
                       <span>매입 {krw(item.price)}</span>
                       <span>· 시세 {krw(item.skuMedian)}</span>
                       <span>· 신뢰 {(item.confidence * 100).toFixed(0)}%</span>
+                      {/* Wave 181 (2026-05-17): broader market fallback 시 정직성 표시. 풀 부족 진단 후
+                          narrow comparable_key 시세 부족 시 broader (model/year 단위) median 사용 — 정확성
+                          약간 손해. 사용자에게 명시. */}
+                      {item.scoreFlags?.includes("market_broader_fallback") ? (
+                        <span
+                          title="이 매물의 정확한 옵션 (RAM/SSD/screen 등) 시세 표본이 부족해서, 비슷한 모델 시세 평균값을 사용했어요. 실제 매물 시세와 차이날 수 있어요."
+                          className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                        >
+                          계산된 시세
+                        </span>
+                      ) : null}
                     </div>
                     <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
                       {item.skuName ?? "—"} · {item.poolStatus} · {relAge(item.lastVerifiedAt)} · 노출 {item.exposureCount}/{item.maxExposure}
