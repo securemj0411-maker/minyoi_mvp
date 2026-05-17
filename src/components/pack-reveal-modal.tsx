@@ -608,7 +608,10 @@ function RevealCardItem({
         {/* Wave 80: 상세 비교 / 공략 보기 floating overlay 제거 — 사진 가림 → 하단 버튼 영역으로 이동 */}
       </div>
 
-      <div className="min-w-0 space-y-2">
+      {/* 2026-05-17: PC 에서 2 column 분리 — 좌측 메타 / 우측 시세 영역 (시각 CTA 강화).
+          "정확한 시세를 안전하게 잡아주는구나" 시각적 신뢰 build. */}
+      <div className="min-w-0 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+        <div className="min-w-0 space-y-2">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="line-clamp-2 text-sm font-black leading-5 text-zinc-900 dark:text-zinc-50">
@@ -663,7 +666,10 @@ function RevealCardItem({
             {card.confusionNote}
           </div>
         ) : null}
+        </div>
 
+        {/* 2026-05-17: 우측 column (lg) — 시세 영역 시각 강조. 모바일은 자연 stack. */}
+        <div className="min-w-0 space-y-2">
         <MarketBasisMini card={card} />
 
         {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
@@ -683,7 +689,11 @@ function RevealCardItem({
             "이 시세가 어떤 매물 기준인지" 즉시 확인 가능. comparable_key + market_price_daily
             + 같은 SKU 매물 N건 list (가격순) + 번장 링크. */}
         <MarketSourceDebug pid={card.pid} ourPrice={card.price} />
+        </div>
+        {/* 2026-05-17: lg grid wrapper 닫음. 아래 = full width (노트 + 버튼). */}
+      </div>
 
+      <div className="min-w-0 space-y-2">
         {/* Wave 80: SavedDetailMini (찜/리뷰/리뷰N개/판매자 설명문) 제거 — 번개장터 데이터 직접 노출 법적 위험. 원본은 "번개장터 열기" 버튼으로 확인. */}
 
         {/* Wave 80: 개별 피드백 버튼 (관심/매수함/이미 팔림/별로) + quickTags (단품 의심 등) 제거.
