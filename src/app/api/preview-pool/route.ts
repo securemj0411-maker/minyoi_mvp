@@ -67,6 +67,7 @@ type PoolRow = {
   confidence: number | null;
   category: string | null;
   condition_class: string | null;
+  comparable_key: string | null;
 };
 
 type RawRow = {
@@ -89,7 +90,7 @@ export async function GET() {
     const headers = serviceHeaders();
 
     // ready 매물 fetch — band desc + profit desc. filter (price/sku 다양화) 위해 더 많이 가져옴.
-    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class&status=eq.ready&order=profit_band.desc,expected_profit_max.desc&limit=200`;
+    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key&status=eq.ready&order=profit_band.desc,expected_profit_max.desc&limit=200`;
     const poolRes = await restFetch(poolUrl, { headers });
     const pool = (await poolRes.json()) as PoolRow[];
 
@@ -186,6 +187,42 @@ export async function GET() {
       return Date.now() - t < 24 * 60 * 60 * 1000;
     }
 
+    // 2026-05-17 Phase 3: selected 5개 매물에 한해서 market_price_daily + velocity fetch.
+    // 사용자 의도 "근거 chip" — sold count (수요), medianHoursToSold (회전).
+    const comparableKeys = selected
+      .map((r) => r.comparable_key)
+      .filter((k): k is string => !!k);
+    const [marketRes, velocityRes] = comparableKeys.length > 0
+      ? await Promise.all([
+        restFetch(
+          `${tableUrl("mvp_market_price_daily")}?select=comparable_key,sold_sample_count&comparable_key=in.(${comparableKeys.map(encodeURIComponent).join(",")})&order=date.desc&limit=${comparableKeys.length * 8}`,
+          { headers },
+        ),
+        restFetch(
+          `${tableUrl("mvp_market_velocity")}?select=comparable_key,median_hours_to_sold&comparable_key=in.(${comparableKeys.map(encodeURIComponent).join(",")})`,
+          { headers },
+        ).catch(() => null),
+      ])
+      : [null, null];
+    const soldByKey = new Map<string, number>();
+    if (marketRes) {
+      const rows = (await marketRes.json()) as Array<{ comparable_key: string; sold_sample_count: number | null }>;
+      for (const r of rows) {
+        if (!soldByKey.has(r.comparable_key) && r.sold_sample_count != null) {
+          soldByKey.set(r.comparable_key, r.sold_sample_count);
+        }
+      }
+    }
+    const velocityByKey = new Map<string, number>();
+    if (velocityRes) {
+      try {
+        const rows = (await velocityRes.json()) as Array<{ comparable_key: string; median_hours_to_sold: number | null }>;
+        for (const r of rows) {
+          if (r.median_hours_to_sold != null) velocityByKey.set(r.comparable_key, r.median_hours_to_sold);
+        }
+      } catch {}
+    }
+
     const items = selected.map((row, idx) => {
       const raw = rawByPid.get(row.pid);
       const meta = metaByPid.get(row.pid);
@@ -205,6 +242,9 @@ export async function GET() {
         confidence: confLabel(row.confidence),
         freeShipping: meta?.free_shipping ?? false,
         isFresh: isFresh(meta?.last_seen_at),
+        // 2026-05-17 Phase 3: 근거 chip 데이터 (buildVerdicts input).
+        soldSampleCount: row.comparable_key ? (soldByKey.get(row.comparable_key) ?? null) : null,
+        medianHoursToSold: row.comparable_key ? (velocityByKey.get(row.comparable_key) ?? null) : null,
       };
     });
 

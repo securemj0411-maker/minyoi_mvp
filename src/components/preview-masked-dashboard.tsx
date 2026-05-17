@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ConditionChip } from "@/components/condition-chip";
+import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 import {
   BagIcon,
   BikeIcon,
@@ -43,6 +44,9 @@ type PreviewItem = {
   confidence: "high" | "medium" | "low";
   freeShipping: boolean;
   isFresh: boolean;
+  // 2026-05-17 Phase 3: 근거 chip 데이터.
+  soldSampleCount: number | null;
+  medianHoursToSold: number | null;
 };
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -247,28 +251,33 @@ export default function PreviewMaskedDashboard() {
                         })()}
                       </div>
                       </div>
-                      {/* 2026-05-17: 신뢰 시그널 chips — PC = 우측 column, 모바일 = info 아래 */}
-                      <div className="flex flex-wrap items-center gap-1 lg:flex-col lg:items-end lg:justify-center lg:gap-1.5">
-                        {item.isFresh && (
-                          <span className="whitespace-nowrap rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
-                            🆕 신규
-                          </span>
-                        )}
-                        {item.freeShipping && (
-                          <span className="whitespace-nowrap rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold text-sky-800 dark:bg-sky-900/40 dark:text-sky-200">
-                            무료배송
-                          </span>
-                        )}
-                        {item.confidence === "high" ? (
-                          <span className="whitespace-nowrap rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
-                            시세 신뢰 높음
-                          </span>
-                        ) : item.confidence === "medium" ? (
-                          <span className="whitespace-nowrap rounded-full bg-yellow-100 px-1.5 py-0.5 text-[10px] font-bold text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200">
-                            시세 신뢰 보통
-                          </span>
-                        ) : null}
-                      </div>
+                      {/* 2026-05-17 Phase 3: buildVerdicts 통합 — pack-reveal/admin-pool/user-reveal 와 통일.
+                          비로그인 사용자에 안전한 데이터만 input (셀러 정보/desc 노출 X). */}
+                      {(() => {
+                        const verdicts = buildVerdicts({
+                          price: item.price,
+                          skuMedian: item.skuMedian,
+                          expectedProfitMin: item.expectedProfitMin,
+                          expectedProfitMax: item.expectedProfitMax,
+                          marketConfidenceLabel: item.confidence,
+                          soldSampleCount: item.soldSampleCount,
+                          medianHoursToSold: item.medianHoursToSold,
+                          freeShipping: item.freeShipping,
+                          lastSeenAt: item.isFresh ? new Date(Date.now() - 30 * 60 * 1000).toISOString() : null,
+                        });
+                        return verdicts.length > 0 ? (
+                          <div className="flex flex-wrap items-center gap-1 lg:flex-col lg:items-end lg:justify-center lg:gap-1.5">
+                            {verdicts.map((v) => (
+                              <span
+                                key={v.label}
+                                className={`whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${VERDICT_TONE_CLASS[v.tone]}`}
+                              >
+                                {v.label}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                   </div>
                 </Link>
