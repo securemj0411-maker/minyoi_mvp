@@ -24,6 +24,7 @@ type CandidateRow = {
   profit_band: number | null;
   comparable_key: string | null;
   expected_profit_min: number | null;
+  expected_profit_max: number | null;
 };
 
 type ListingMeta = {
@@ -40,7 +41,8 @@ type RawSkuMeta = {
 
 export async function enqueueHotdealsFromPool(): Promise<{ scanned: number; enqueued: number; skipped_existing: number }> {
   // candidate_pool 'ready' 매물 (실제 풀 통과) 중 profit_band ≥ MIN_BAND.
-  const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,profit_band,comparable_key,expected_profit_min&status=eq.ready&profit_band=gte.${HOTDEAL_MIN_BAND}&order=profit_band.desc,expected_profit_min.desc&limit=${HOTDEAL_ENQUEUE_LIMIT * 3}`;
+  // 2026-05-17 (사용자 코멘트 #157): expected_profit_max도 select — 운영자풀과 동일한 net 차익 사용 위해.
+  const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,profit_band,comparable_key,expected_profit_min,expected_profit_max&status=eq.ready&profit_band=gte.${HOTDEAL_MIN_BAND}&order=profit_band.desc,expected_profit_min.desc&limit=${HOTDEAL_ENQUEUE_LIMIT * 3}`;
   const poolRes = await restFetch(poolUrl, { headers: serviceHeaders() });
   if (!poolRes.ok) return { scanned: 0, enqueued: 0, skipped_existing: 0 };
   const poolRows = (await poolRes.json()) as CandidateRow[];
@@ -65,7 +67,12 @@ export async function enqueueHotdealsFromPool(): Promise<{ scanned: number; enqu
     .map((p) => {
       const l = listings.get(p.pid);
       if (!l || l.price <= 0 || l.sku_median <= 0) return null;
-      const profit_amount = l.sku_median - l.price;
+      // 2026-05-17 (사용자 코멘트 #157): raw `sku_median - price` 대신 운영자풀이 사용하는
+      // `expected_profit_min` (net = 수수료/배송비/buffer 차감 후) 사용.
+      // pool snapshot이 비어있는 옛 매물은 raw fallback (boot-strap 안전장치).
+      const profit_amount = p.expected_profit_min != null && p.expected_profit_min > 0
+        ? p.expected_profit_min
+        : Math.max(0, l.sku_median - l.price);
       const profit_margin = profit_amount / l.sku_median;
       return {
         pid: p.pid,
@@ -246,22 +253,24 @@ type AlertContent = {
 function buildAlertText(pid: number, c: AlertContent, opts: { adminShadow?: boolean; selectedHint?: string } = {}): string {
   // 일반 사용자: teaser만 (차익 정도 + 만료시간). 매물 정보는 미뇨이에서 "열기" 후 공개.
   // admin shadow: 전체 정보 (감시 목적이라 노출 OK).
-  const profitWan = Math.round(c.profitAmount / 10000);
+  // 2026-05-17 (사용자 코멘트 #157): 만원 round 제거 → 운영자풀과 동일하게 원 단위 정확 표시.
+  // 차익은 이미 enqueue 시점에 net (수수료/배송비/buffer 차감) 으로 저장됨.
+  const profitKrw = Math.round(c.profitAmount).toLocaleString("ko-KR");
   const pct = Math.round(c.profitMargin * 100);
   const expires = new Date(c.expiresAt);
   const minLeft = Math.max(0, Math.round((expires.getTime() - Date.now()) / 60000));
 
   if (opts.adminShadow) {
-    const priceWan = Math.round(c.price / 10000);
-    const marketWan = Math.round(c.skuMedian / 10000);
+    const priceKrw = Math.round(c.price).toLocaleString("ko-KR");
+    const marketKrw = Math.round(c.skuMedian).toLocaleString("ko-KR");
     const safeName = escapeMd(c.title.slice(0, 80));
     return [
       "👁 *\\[ADMIN SHADOW\\]*",
       `*${safeName}*`,
       "",
-      `매입가  · ${escapeMd(`₩${priceWan.toLocaleString("ko-KR")}만`)}`,
-      `시세    · ${escapeMd(`₩${marketWan.toLocaleString("ko-KR")}만`)}`,
-      `차익    · *${escapeMd(`₩${profitWan.toLocaleString("ko-KR")}만 (${pct}%)`)}*`,
+      `매입가  · ${escapeMd(`₩${priceKrw}`)}`,
+      `시세    · ${escapeMd(`₩${marketKrw}`)}`,
+      `차익    · *${escapeMd(`+₩${profitKrw} (${pct}%)`)}*`,
       c.band !== null ? `band    · ${c.band}` : "",
       opts.selectedHint ? `_선출: ${escapeMd(opts.selectedHint)}_` : "",
       `⏱ ${minLeft}분`,
@@ -271,7 +280,7 @@ function buildAlertText(pid: number, c: AlertContent, opts: { adminShadow?: bool
   return [
     "🔥 *핫딜 매물 도착*",
     "",
-    `차익  · *${escapeMd(`₩${profitWan.toLocaleString("ko-KR")}만 (${pct}%)`)}*`,
+    `차익  · *${escapeMd(`+₩${profitKrw} (${pct}%)`)}*`,
     c.band !== null ? `band  · ${c.band}` : "",
     "",
     `⏱ ${minLeft}분 안에 미뇨이에서 *열어* 매물 확인`,
