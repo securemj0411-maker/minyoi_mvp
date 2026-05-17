@@ -85,10 +85,11 @@ function GuideLibraryView() {
 
 const VALID_VIEWS: DashboardView[] = ["recommend", "history", "guides", "hotdeal-alerts", "admin-pool", "admin-classification"];
 
+// 2026-05-17: default view = "history" (나의 상품). 추천 받기 메뉴 폐기 — "더 찾아보기" 버튼으로 통합.
 function initialViewFromUrl(): DashboardView {
-  if (typeof window === "undefined") return "recommend";
+  if (typeof window === "undefined") return "history";
   const v = new URLSearchParams(window.location.search).get("view");
-  return (VALID_VIEWS as string[]).includes(v ?? "") ? (v as DashboardView) : "recommend";
+  return (VALID_VIEWS as string[]).includes(v ?? "") ? (v as DashboardView) : "history";
 }
 
 export default function MeDashboardClient({ initialInventory }: { initialInventory: InventorySnapshot[] }) {
@@ -269,15 +270,14 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
               <div className="mt-1 text-sm font-black text-[#223127] dark:text-zinc-100">작업 메뉴</div>
             </div>
             <div className={`-mx-1 flex w-full items-center gap-1.5 overflow-x-auto px-1 lg:mx-0 lg:block lg:w-auto lg:space-y-1 lg:overflow-visible lg:px-0 ${sidebarCollapsed ? "lg:hidden" : ""}`}>
-              {(["recommend", "history", "guides", ...(isPro || effectiveAdmin ? (["hotdeal-alerts"] as const) : []), ...(effectiveAdmin || isBetaTester ? (["admin-pool"] as const) : []), ...(effectiveAdmin ? (["admin-classification"] as const) : [])] as const).map((v) => {
-                const label = v === "recommend" ? "추천 받기"
-                  : v === "history" ? "나의 상품"
+              {/* 2026-05-17: "recommend" 메뉴 제거 — "나의 상품" 1 페이지 통합 + "더 찾아보기" 버튼으로 흡수. */}
+              {(["history", "guides", ...(isPro || effectiveAdmin ? (["hotdeal-alerts"] as const) : []), ...(effectiveAdmin || isBetaTester ? (["admin-pool"] as const) : []), ...(effectiveAdmin ? (["admin-classification"] as const) : [])] as const).map((v) => {
+                const label = v === "history" ? "나의 상품"
                   : v === "guides" ? "공략집"
                   : v === "hotdeal-alerts" ? "핫딜 알림"
                   : v === "admin-classification" ? "분류 검증"
                   : "운영자";
-                const lgLabel = v === "recommend" ? "추천 상품 받기"
-                  : v === "history" ? "나의 상품"
+                const lgLabel = v === "history" ? "나의 상품"
                   : v === "guides" ? "공략집"
                   : v === "hotdeal-alerts" ? "핫딜 알림"
                   : v === "admin-classification" ? "🔧 운영자: 분류 검증"
@@ -314,13 +314,32 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           <AdminClassificationBrowser />
         ) : activeView === "recommend" ? (
           <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
+            {/* 2026-05-17: 추천 받기 메뉴 폐기 후 url param 으로만 진입. "나의 상품으로 돌아가기" 버튼. */}
+            <button
+              type="button"
+              onClick={() => setActiveView("history")}
+              className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-bold text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+            >
+              ← 나의 상품으로
+            </button>
             <OnboardingBanner onStart={() => setActiveView("recommend")} />
             <SafetyStatsBadge />
             <RecommendationWorkspace initialInventory={initialInventory} />
           </section>
         ) : (
-          // history
+          // history (default)
           <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
+            {/* 2026-05-17: "더 찾아보기" 버튼 — 추천 받기 페이지 통합. */}
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-base font-black text-[#223127] dark:text-zinc-100">📦 나의 상품</h2>
+              <button
+                type="button"
+                onClick={() => setActiveView("recommend")}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-accent-strong)] px-4 py-2 text-xs font-black text-[var(--brand-cream)] shadow-sm transition hover:opacity-90"
+              >
+                🔍 더 찾아보기
+              </button>
+            </div>
             <UserRevealDashboard userRef={userRefForAuthUser(user.id)} />
           </section>
         )}
