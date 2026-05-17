@@ -56,6 +56,20 @@ export type Sku = {
 // 휴대폰 audit에서 발견 — 다른 카테고리 (laptop/tablet/earphone/smartwatch/speaker)도 동일 noise 가능.
 // 사용자 통찰: "다른 brand까지 빠짐없이 모두 같은 패턴 차단"
 // Wave 122b: 전체 brand audit 결과 추가 발견 — 사은품 증정/룰렛 이벤트/광고 prefix.
+// Wave 188 internal test (2026-05-18): 모든 신규 카테고리 (drone/perfume/kickboard/lego/home_appliance 헤어 기기)
+// 공통 false positive 차단 — 굿즈/액세서리 단품/케이스/거치대/가품.
+// production sweep 결과 오염률 50% 발견 → 일관 적용으로 10~15% 목표.
+const WAVE188_NEW_CATEGORY_NOISE = [
+  // 굿즈 / 콜라보 (포토카드 / 박보검 다이슨 콜라보 등)
+  "포토카드", "포카", "특전", "굿즈", "한정 굿즈", "박보검",
+  // 가품 / 카피 브랜드
+  "휙", "다이슨 저렴이", "다이슨 짝퉁", "이미테이션", "정품 아님", "lepin", "카피", "복제",
+  // 액세서리 단품 (공통)
+  "거치대", "스탠드만", "벽거치", "케이스만", "정품 케이스", "박스만",
+  "충전기만", "어댑터만", "케이블만", "배터리만",
+  "필름만", "보호 필름만", "보호 필름 단품",
+];
+
 const COMMON_PRODUCT_NOISE = [
   // 케이지/촬영용 액세서리 (NEEWER/스몰리그)
   "케이지", "케이지 킷", "케이지킷", "케이지 키트", "케이지키트",
@@ -3707,6 +3721,7 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
       "갤럭시 북 5", "갤럭시북 5", "galaxy book 5", "갤럭시 북 3", "갤럭시북 3",
       "액정만", "메인보드", "부품", "고장", "침수",
       "매입", "삽니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 1290000,
     released: 2024,
@@ -3728,6 +3743,7 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
       "갤럭시 북 5", "갤럭시북 5", "galaxy book 5",
       "액정만", "메인보드", "부품", "고장", "침수",
       "매입", "삽니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 1990000,
     released: 2024,
@@ -3747,6 +3763,7 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
       "갤럭시 북 5", "갤럭시북 5", "galaxy book 5",
       "액정만", "메인보드", "부품", "고장", "침수",
       "매입", "삽니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 3290000,
     released: 2024,
@@ -3765,6 +3782,7 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
       "갤럭시 북 6", "갤럭시북 6", "galaxy book 6",
       "액정만", "메인보드", "부품", "고장", "침수",
       "매입", "삽니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 1390000,
     released: 2025,
@@ -3784,6 +3802,7 @@ const CORE_LAPTOP_CATALOG: Sku[] = [
       "갤럭시 북 4", "갤럭시북 4", "galaxy book 4",
       "액정만", "메인보드", "부품", "고장", "침수",
       "매입", "삽니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 2090000,
     released: 2025,
@@ -4223,10 +4242,10 @@ export const CATALOG: Sku[] = [
     mustNotContain: [
       "i.d.", "iD", "코안다", "co-anda", "coanda", "2x", "hs08",
       "슈퍼소닉", "supersonic", "코랄", "corrale",
-      "이미테이션", "정품 아님", "가품",
-      "브러쉬", "어태치먼트만", "노즐만", "박스만", "충전기만", "부품",
+      "브러쉬", "어태치먼트만", "노즐만", "롱배럴 단품",
       "수리", "고장", "침수",
       "매입", "삽니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 449000,
     released: 2024,
@@ -4262,13 +4281,13 @@ export const CATALOG: Sku[] = [
     laneKey: "dyson_corrale_hs07",
     modelName: "Dyson Corrale (HS07, 무선 고데기)",
     aliases: ["Dyson Corrale", "다이슨 코랄", "Dyson HS07"],
-    mustContain: [["다이슨", "dyson"], ["코랄", "corrale", "hs07"]],
+    mustContain: [["다이슨", "dyson"], ["코랄", "corrale", "hs07"], ["본체", "본품", "풀세트", "무선 고데기", "고데기"]],
     mustNotContain: [
       "슈퍼소닉", "supersonic", "에어랩", "airwrap",
-      "이미테이션", "정품 아님", "가품",
-      "케이스만", "박스만", "충전기만", "어댑터만", "부품",
+      "플레이트만", "플레이트 단품", "노즐만",
       "수리", "고장", "침수",
       "매입", "삽니다", "구합니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 599000,
     released: 2020,
@@ -4282,9 +4301,9 @@ export const CATALOG: Sku[] = [
     aliases: ["시아루스 글램팜", "글램팜", "Glampam"],
     mustContain: [["시아루스", "cyaars"], ["글램팜", "glampam"]],
     mustNotContain: [
-      "케이스만", "박스만", "충전기만", "어댑터만", "부품",
       "수리", "고장", "침수",
       "매입", "삽니다", "구합니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 250000,
     released: 2021,
@@ -4299,9 +4318,9 @@ export const CATALOG: Sku[] = [
     mustContain: [["시아루스", "cyaars"], ["매직", "magic"], ["prov", "pro v", "프로 v", "프로v"]],
     mustNotContain: [
       "글램팜", "glampam", "인피니티", "infinity",
-      "케이스만", "박스만", "충전기만", "부품",
       "수리", "고장", "침수",
       "매입", "삽니다", "구합니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 199000,
     released: 2022,
@@ -4316,9 +4335,9 @@ export const CATALOG: Sku[] = [
     mustContain: [["파나소닉", "panasonic"], ["eh-na0j", "eh na0j", "ehna0j", "na0j"]],
     mustNotContain: [
       "eh-na9c", "na9c", "eh-na98", "na98", "eh-na2j", "na2j",
-      "케이스만", "박스만", "충전기만", "어댑터만", "부품",
       "수리", "고장", "침수",
       "매입", "삽니다", "구합니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 280000,
     released: 2021,
@@ -4333,9 +4352,9 @@ export const CATALOG: Sku[] = [
     mustContain: [["파나소닉", "panasonic"], ["eh-na9c", "eh na9c", "ehna9c", "na9c"]],
     mustNotContain: [
       "eh-na0j", "na0j", "eh-na98", "na98", "eh-na2j", "na2j",
-      "케이스만", "박스만", "충전기만", "부품",
       "수리", "고장", "침수",
       "매입", "삽니다", "구합니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 199000,
     released: 2019,
@@ -4353,6 +4372,7 @@ export const CATALOG: Sku[] = [
       "케이스만", "박스만", "충전기만", "부품",
       "수리", "고장", "침수",
       "매입", "삽니다", "구합니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 179000,
     released: 2018,
@@ -4369,6 +4389,7 @@ export const CATALOG: Sku[] = [
       "케이스만", "박스만", "충전기만", "부품",
       "수리", "고장", "침수",
       "매입", "삽니다", "구합니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 130000,
     released: 2020,
@@ -5872,7 +5893,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Fenix 7 (47mm)",
     aliases: ["Garmin Fenix 7", "가민 페닉스 7", "가민 피닉스 7"],
     mustContain: [["garmin", "가민"], ["fenix 7", "페닉스 7", "피닉스 7", "fenix7"]],
-    mustNotContain: ["fenix 7s", "fenix 7x", "페닉스 7s", "페닉스 7x", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["fenix 7s", "fenix 7x", "페닉스 7s", "페닉스 7x", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1099000, released: 2022,
   },
   {
@@ -5881,7 +5902,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Fenix 7S (42mm)",
     aliases: ["Garmin Fenix 7S", "가민 페닉스 7S"],
     mustContain: [["garmin", "가민"], ["fenix 7s", "페닉스 7s", "피닉스 7s", "fenix7s"]],
-    mustNotContain: ["fenix 7x", "페닉스 7x", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["fenix 7x", "페닉스 7x", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1099000, released: 2022,
   },
   {
@@ -5890,7 +5911,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Fenix 7X (51mm)",
     aliases: ["Garmin Fenix 7X", "가민 페닉스 7X"],
     mustContain: [["garmin", "가민"], ["fenix 7x", "페닉스 7x", "피닉스 7x", "fenix7x"]],
-    mustNotContain: ["fenix 7s", "페닉스 7s", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["fenix 7s", "페닉스 7s", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1299000, released: 2022,
   },
   {
@@ -5899,7 +5920,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Fenix 8 (47mm AMOLED)",
     aliases: ["Garmin Fenix 8", "가민 페닉스 8"],
     mustContain: [["garmin", "가민"], ["fenix 8", "페닉스 8", "피닉스 8", "fenix8"]],
-    mustNotContain: ["fenix 7", "fenix 6", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["fenix 7", "fenix 6", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1499000, released: 2024,
   },
   {
@@ -5908,7 +5929,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Forerunner 265 (46mm)",
     aliases: ["Garmin Forerunner 265", "가민 포러너 265"],
     mustContain: [["garmin", "가민"], ["forerunner 265", "포러너 265", "fr 265", "fr265"]],
-    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 745", "forerunner 955", "forerunner 965", "포러너 245", "포러너 255", "포러너 955", "포러너 965", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 745", "forerunner 955", "forerunner 965", "포러너 245", "포러너 255", "포러너 955", "포러너 965", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2023,
   },
   {
@@ -5917,7 +5938,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Forerunner 955",
     aliases: ["Garmin Forerunner 955", "가민 포러너 955"],
     mustContain: [["garmin", "가민"], ["forerunner 955", "포러너 955", "fr 955", "fr955"]],
-    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 965", "포러너 265", "포러너 965", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 965", "포러너 265", "포러너 965", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 799000, released: 2022,
   },
   {
@@ -5926,7 +5947,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Forerunner 965",
     aliases: ["Garmin Forerunner 965", "가민 포러너 965"],
     mustContain: [["garmin", "가민"], ["forerunner 965", "포러너 965", "fr 965", "fr965"]],
-    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 955", "포러너 265", "포러너 955", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 955", "포러너 265", "포러너 955", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 899000, released: 2023,
   },
   {
@@ -5935,7 +5956,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Instinct 2",
     aliases: ["Garmin Instinct 2", "가민 인스팅트 2"],
     mustContain: [["garmin", "가민"], ["instinct 2", "인스팅트 2", "instinct2"]],
-    mustNotContain: ["instinct 3", "instinct crossover", "인스팅트 3", "fenix", "페닉스", "forerunner", "포러너", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["instinct 3", "instinct crossover", "인스팅트 3", "fenix", "페닉스", "forerunner", "포러너", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 399000, released: 2022,
   },
   {
@@ -5944,7 +5965,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Venu 3",
     aliases: ["Garmin Venu 3", "가민 비누 3"],
     mustContain: [["garmin", "가민"], ["venu 3", "비누 3", "venu3"]],
-    mustNotContain: ["venu 2", "venu sq", "비누 2", "fenix", "페닉스", "forerunner", "포러너", "instinct", "epix", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["venu 2", "venu sq", "비누 2", "fenix", "페닉스", "forerunner", "포러너", "instinct", "epix", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2023,
   },
   {
@@ -5953,7 +5974,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Epix Pro (Gen 2)",
     aliases: ["Garmin Epix Pro", "가민 에픽스 프로"],
     mustContain: [["garmin", "가민"], ["epix pro", "에픽스 프로", "epix"], ["pro", "프로", "gen 2", "gen2"]],
-    mustNotContain: ["fenix", "페닉스", "forerunner", "포러너", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["fenix", "페닉스", "forerunner", "포러너", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1199000, released: 2023,
   },
   ...CORE_SMARTPHONE_CATALOG,
@@ -6088,7 +6109,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Mini 2",
     aliases: ["DJI Mini 2", "디제이아이 미니 2"],
     mustContain: [["dji", "디제이아이"], ["mini 2", "mini2", "미니 2", "미니2"]],
-    mustNotContain: ["mini 3", "mini 4", "mini se", "mavic", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["mini 3", "mini 4", "mini se", "mavic", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2020,
   },
   {
@@ -6097,7 +6118,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Mini 3 Pro",
     aliases: ["DJI Mini 3 Pro", "DJI 미니 3 프로"],
     mustContain: [["dji", "디제이아이"], ["mini 3", "mini3", "미니 3", "미니3"], ["pro", "프로"]],
-    mustNotContain: ["mini 4", "mavic", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["mini 4", "mavic", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1099000, released: 2022,
   },
   {
@@ -6106,7 +6127,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Mini 4 Pro",
     aliases: ["DJI Mini 4 Pro", "DJI 미니 4 프로"],
     mustContain: [["dji", "디제이아이"], ["mini 4", "mini4", "미니 4", "미니4"], ["pro", "프로"]],
-    mustNotContain: ["mini 3", "mini 2", "mavic", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["mini 3", "mini 2", "mavic", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "프로펠러만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1199000, released: 2024,
   },
   {
@@ -6115,7 +6136,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Mavic 3",
     aliases: ["DJI Mavic 3", "DJI 매빅 3"],
     mustContain: [["dji", "디제이아이"], ["mavic 3", "mavic3", "매빅 3", "매빅3"]],
-    mustNotContain: ["mavic 3 pro", "mavic 3 classic", "mavic 3 cine", "mavic3pro", "mavic3classic", "매빅 3 프로", "매빅 3 클래식", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["mavic 3 pro", "mavic 3 classic", "mavic 3 cine", "mavic3pro", "mavic3classic", "매빅 3 프로", "매빅 3 클래식", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 2399000, released: 2021,
   },
   {
@@ -6124,7 +6145,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Mavic 3 Pro",
     aliases: ["DJI Mavic 3 Pro", "DJI 매빅 3 프로"],
     mustContain: [["dji", "디제이아이"], ["mavic 3", "mavic3", "매빅 3", "매빅3"], ["pro", "프로"]],
-    mustNotContain: ["mavic 3 classic", "mavic 3 cine", "매빅 3 클래식", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["mavic 3 classic", "mavic 3 cine", "매빅 3 클래식", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 3099000, released: 2023,
   },
   {
@@ -6133,7 +6154,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Mavic 3 Classic",
     aliases: ["DJI Mavic 3 Classic", "DJI 매빅 3 클래식"],
     mustContain: [["dji", "디제이아이"], ["mavic 3", "mavic3", "매빅 3", "매빅3"], ["classic", "클래식"]],
-    mustNotContain: ["mavic 3 pro", "mavic 3 cine", "매빅 3 프로", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["mavic 3 pro", "mavic 3 cine", "매빅 3 프로", "mini", "air", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1899000, released: 2022,
   },
   {
@@ -6144,7 +6165,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["dji", "디제이아이"], ["air 2s", "air2s", "에어 2s", "에어2s"]],
     // Wave 184 fix: "air 2 " (trailing space) 박지 X — tokenHit trim 후 "air 2" 자기차단.
     // dji-air-2 (Mavic Air 2) 는 별도 모델명 매칭 X (catalog 없음). air 3/3s 만 격리.
-    mustNotContain: ["air 3", "air 3s", "에어 3", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["air 3", "air 3s", "에어 3", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1199000, released: 2021,
   },
   {
@@ -6153,7 +6174,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Air 3",
     aliases: ["DJI Air 3", "DJI 에어 3"],
     mustContain: [["dji", "디제이아이"], ["air 3", "air3", "에어 3", "에어3"]],
-    mustNotContain: ["air 3s", "air3s", "에어 3s", "air 2s", "에어 2s", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["air 3s", "air3s", "에어 3s", "air 2s", "에어 2s", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1499000, released: 2023,
   },
   {
@@ -6162,7 +6183,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Air 3S",
     aliases: ["DJI Air 3S", "DJI 에어 3S"],
     mustContain: [["dji", "디제이아이"], ["air 3s", "air3s", "에어 3s", "에어3s"]],
-    mustNotContain: ["air 2s", "에어 2s", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["air 2s", "에어 2s", "mini", "mavic", "avata", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1599000, released: 2024,
   },
   {
@@ -6172,7 +6193,7 @@ export const CATALOG: Sku[] = [
     aliases: ["DJI Avata", "DJI 아바타"],
     // Wave 185 internal test (2026-05-18): DJI 명시 mustContain — "아바타" 단독 (영화 / PS5 게임) false positive 차단.
     mustContain: [["dji", "디제이아이"], ["dji avata", "dji 아바타", "디제이아이 아바타"]],
-    mustNotContain: ["avata 2", "아바타 2", "mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", "영화", "포스터", "아트카드", "ps5", "ps4", "프론티어", "판도라", "필름", "굿즈", "티켓"],
+    mustNotContain: ["avata 2", "아바타 2", "mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", "영화", "포스터", "아트카드", "ps5", "ps4", "프론티어", "판도라", "필름", "굿즈", "티켓", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1099000, released: 2022,
   },
   {
@@ -6181,7 +6202,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Avata 2",
     aliases: ["DJI Avata 2", "DJI 아바타 2"],
     mustContain: [["dji", "디제이아이"], ["avata 2", "avata2", "dji 아바타 2", "디제이아이 아바타 2"]],
-    mustNotContain: ["mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", "영화", "포스터", "아트카드", "ps5", "ps4", "프론티어", "판도라", "필름", "굿즈", "티켓"],
+    mustNotContain: ["mini", "mavic", "air", "fly more", "콤보", "combo", "배터리만", "프롭만", "충전기만", "케이스만", "고장", "추락", "파손", "수리", "매입", "삽니다", "영화", "포스터", "아트카드", "ps5", "ps4", "프론티어", "판도라", "필름", "굿즈", "티켓", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1299000, released: 2024,
   },
   // DJI 액션캠 / 포켓
@@ -6191,7 +6212,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Osmo Action 3",
     aliases: ["DJI Osmo Action 3", "DJI 오즈모 액션 3"],
     mustContain: [["dji", "디제이아이"], ["osmo action 3", "osmoaction3", "오즈모 액션 3"]],
-    mustNotContain: ["action 4", "action 5", "액션 4", "액션 5", "pocket", "포켓", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["action 4", "action 5", "액션 4", "액션 5", "pocket", "포켓", "마운트만", "배터리만", "충전기만", "케이스만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 499000, released: 2022,
   },
   {
@@ -6200,7 +6221,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Osmo Action 4",
     aliases: ["DJI Osmo Action 4", "DJI 오즈모 액션 4"],
     mustContain: [["dji", "디제이아이"], ["osmo action 4", "osmoaction4", "오즈모 액션 4"]],
-    mustNotContain: ["action 3", "action 5", "액션 3", "액션 5", "pocket", "포켓", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["action 3", "action 5", "액션 3", "액션 5", "pocket", "포켓", "마운트만", "배터리만", "충전기만", "케이스만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 519000, released: 2023,
   },
   {
@@ -6209,7 +6230,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Osmo Action 5 Pro",
     aliases: ["DJI Osmo Action 5 Pro", "DJI 오즈모 액션 5 프로"],
     mustContain: [["dji", "디제이아이"], ["osmo action 5", "osmoaction5", "오즈모 액션 5"], ["pro", "프로"]],
-    mustNotContain: ["action 3", "action 4", "action 6", "액션 3", "액션 4", "액션 6", "pocket", "포켓", "nano", "나노", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["action 3", "action 4", "action 6", "액션 3", "액션 4", "액션 6", "pocket", "포켓", "nano", "나노", "마운트만", "배터리만", "충전기만", "케이스만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 559000, released: 2024,
   },
   // Wave 185 internal test (2026-05-18): DJI Osmo Action 6 신모델 (2025).
@@ -6219,7 +6240,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Osmo Action 6",
     aliases: ["DJI Osmo Action 6", "DJI 오즈모 액션 6"],
     mustContain: [["dji", "디제이아이"], ["osmo action 6", "osmoaction6", "오즈모 액션 6", "오즈모액션6", "액션6"]],
-    mustNotContain: ["action 3", "action 4", "action 5", "액션 3", "액션 4", "액션 5", "pocket", "포켓", "nano", "나노", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["action 3", "action 4", "action 5", "액션 3", "액션 4", "액션 5", "pocket", "포켓", "nano", "나노", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2025,
   },
   {
@@ -6228,7 +6249,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Osmo Pocket 2",
     aliases: ["DJI Osmo Pocket 2", "DJI 오즈모 포켓 2"],
     mustContain: [["dji", "디제이아이"], ["osmo pocket 2", "osmopocket2", "오즈모 포켓 2", "포켓 2", "포켓2"]],
-    mustNotContain: ["pocket 3", "포켓 3", "포켓3", "action", "액션", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["pocket 3", "포켓 3", "포켓3", "action", "액션", "마운트만", "배터리만", "충전기만", "케이스만", "마운트 홀더", "홀더만", "brdrc", "케이지", "케이지 킷", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 439000, released: 2020,
   },
   {
@@ -6245,6 +6266,7 @@ export const CATALOG: Sku[] = [
       "필름만", "보호 필름",
       "배터리만", "충전기만", "케이스만",
       "고장", "파손", "수리", "매입", "삽니다",
+      ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 769000, released: 2023,
   },
@@ -6255,7 +6277,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Osmo Pocket 4",
     aliases: ["DJI Osmo Pocket 4", "DJI 오즈모 포켓 4"],
     mustContain: [["dji", "디제이아이"], ["osmo pocket 4", "osmopocket4", "오즈모 포켓 4", "포켓 4", "포켓4"]],
-    mustNotContain: ["pocket 2", "포켓 2", "포켓2", "pocket 3", "포켓 3", "포켓3", "action", "액션", "nano", "나노", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["pocket 2", "포켓 2", "포켓2", "pocket 3", "포켓 3", "포켓3", "action", "액션", "nano", "나노", "마운트만", "배터리만", "충전기만", "케이스만", "마운트 홀더", "홀더만", "brdrc", "케이지", "케이지 킷", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 899000, released: 2025,
   },
   {
@@ -6264,7 +6286,7 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Osmo Nano",
     aliases: ["DJI Osmo Nano", "DJI 오즈모 나노"],
     mustContain: [["dji", "디제이아이"], ["osmo nano", "osmonano", "오즈모 나노", "나노 액션캠"]],
-    mustNotContain: ["pocket", "포켓", "action", "액션 3", "액션 4", "액션 5", "액션 6", "mavic", "mini", "air", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["pocket", "포켓", "action", "액션 3", "액션 4", "액션 5", "액션 6", "mavic", "mini", "air", "마운트만", "배터리만", "충전기만", "케이스만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 459000, released: 2025,
   },
   // GoPro
@@ -6274,7 +6296,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Hero 9 Black",
     aliases: ["GoPro Hero 9", "고프로 히어로 9", "Hero 9 Black"],
     mustContain: [["gopro", "고프로"], ["hero 9", "hero9", "히어로 9", "히어로9"]],
-    mustNotContain: ["hero 10", "hero 11", "hero 12", "hero 13", "히어로 10", "히어로 11", "히어로 12", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero 10", "hero 11", "hero 12", "hero 13", "히어로 10", "히어로 11", "히어로 12", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 549000, released: 2020,
   },
   {
@@ -6283,7 +6305,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Hero 10 Black",
     aliases: ["GoPro Hero 10", "고프로 히어로 10", "Hero 10 Black"],
     mustContain: [["gopro", "고프로"], ["hero 10", "hero10", "히어로 10", "히어로10"]],
-    mustNotContain: ["hero 9", "hero 11", "hero 12", "hero 13", "히어로 9", "히어로 11", "히어로 12", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero 9", "hero 11", "hero 12", "hero 13", "히어로 9", "히어로 11", "히어로 12", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 649000, released: 2021,
   },
   {
@@ -6292,7 +6314,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Hero 11 Black",
     aliases: ["GoPro Hero 11", "고프로 히어로 11", "Hero 11 Black"],
     mustContain: [["gopro", "고프로"], ["hero 11", "hero11", "히어로 11", "히어로11"]],
-    mustNotContain: ["hero 9", "hero 10", "hero 12", "hero 13", "히어로 9", "히어로 10", "히어로 12", "히어로 13", "mini", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero 9", "hero 10", "hero 12", "hero 13", "히어로 9", "히어로 10", "히어로 12", "히어로 13", "mini", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 649000, released: 2022,
   },
   {
@@ -6301,7 +6323,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Hero 12 Black",
     aliases: ["GoPro Hero 12", "고프로 히어로 12", "Hero 12 Black"],
     mustContain: [["gopro", "고프로"], ["hero 12", "hero12", "히어로 12", "히어로12"]],
-    mustNotContain: ["hero 9", "hero 10", "hero 11", "hero 13", "히어로 9", "히어로 10", "히어로 11", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero 9", "hero 10", "hero 11", "hero 13", "히어로 9", "히어로 10", "히어로 11", "히어로 13", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2023,
   },
   {
@@ -6310,7 +6332,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Hero 13 Black",
     aliases: ["GoPro Hero 13", "고프로 히어로 13", "Hero 13 Black"],
     mustContain: [["gopro", "고프로"], ["hero 13", "hero13", "히어로 13", "히어로13"]],
-    mustNotContain: ["hero 9", "hero 10", "hero 11", "hero 12", "히어로 9", "히어로 10", "히어로 11", "히어로 12", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero 9", "hero 10", "hero 11", "hero 12", "히어로 9", "히어로 10", "히어로 11", "히어로 12", "max", "맥스", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2024,
   },
   {
@@ -6319,7 +6341,7 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Max (360)",
     aliases: ["GoPro Max", "고프로 맥스", "GoPro 360"],
     mustContain: [["gopro", "고프로"], ["max", "맥스"]],
-    mustNotContain: ["hero", "히어로", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["hero", "히어로", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2019,
   },
   // ─── Wave 188 (2026-05-18): 새 카테고리 "lego" — 한정판/UCS/모듈러 12 SKU ───
@@ -6330,7 +6352,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 75192 Millennium Falcon (UCS)",
     aliases: ["LEGO 75192", "레고 밀레니엄 팰콘", "Millennium Falcon UCS"],
     mustContain: [["75192", "lego 75192", "레고 75192"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "미니피겨만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "미니피겨만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1190000, released: 2017,
   },
   {
@@ -6338,7 +6360,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 75313 AT-AT (UCS)",
     aliases: ["LEGO 75313", "레고 AT-AT UCS"],
     mustContain: [["75313", "lego 75313", "레고 75313"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1090000, released: 2021,
   },
   {
@@ -6346,7 +6368,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 75331 The Razor Crest (UCS)",
     aliases: ["LEGO 75331", "레고 레이저 크레스트", "Razor Crest UCS"],
     mustContain: [["75331", "lego 75331", "레고 75331"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 850000, released: 2022,
   },
   {
@@ -6354,7 +6376,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 75355 X-Wing Starfighter (UCS)",
     aliases: ["LEGO 75355", "레고 X-윙 UCS"],
     mustContain: [["75355", "lego 75355", "레고 75355"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 350000, released: 2023,
   },
   {
@@ -6362,7 +6384,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 10297 Boutique Hotel (Modular)",
     aliases: ["LEGO 10297", "레고 부티크 호텔"],
     mustContain: [["10297", "lego 10297", "레고 10297"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 350000, released: 2022,
   },
   {
@@ -6370,7 +6392,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 10312 Jazz Club (Modular)",
     aliases: ["LEGO 10312", "레고 재즈 클럽"],
     mustContain: [["10312", "lego 10312", "레고 10312"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 320000, released: 2023,
   },
   {
@@ -6378,7 +6400,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 10326 Natural History Museum (Modular)",
     aliases: ["LEGO 10326", "레고 자연사 박물관"],
     mustContain: [["10326", "lego 10326", "레고 10326"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 380000, released: 2024,
   },
   {
@@ -6386,7 +6408,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 42143 Ferrari Daytona SP3 (Technic)",
     aliases: ["LEGO 42143", "레고 페라리 다이토나"],
     mustContain: [["42143", "lego 42143", "레고 42143"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 590000, released: 2022,
   },
   {
@@ -6394,7 +6416,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 42115 Lamborghini Sián (Technic)",
     aliases: ["LEGO 42115", "레고 람보르기니 시안"],
     mustContain: [["42115", "lego 42115", "레고 42115"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 549000, released: 2020,
   },
   {
@@ -6402,7 +6424,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 21319 Central Perk (Friends, Ideas)",
     aliases: ["LEGO 21319", "레고 센트럴 퍼크", "Friends Central Perk"],
     mustContain: [["21319", "lego 21319", "레고 21319"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 99000, released: 2019,
   },
   {
@@ -6410,7 +6432,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 21338 A-Frame Cabin (Ideas)",
     aliases: ["LEGO 21338", "레고 A-프레임 캐빈"],
     mustContain: [["21338", "lego 21338", "레고 21338"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 209000, released: 2023,
   },
   {
@@ -6418,7 +6440,7 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 21054 The White House (Architecture)",
     aliases: ["LEGO 21054", "레고 백악관"],
     mustContain: [["21054", "lego 21054", "레고 21054"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다"],
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 130000, released: 2020,
   },
   // ─── Wave 186 (2026-05-18): 새 카테고리 "kickboard" — 전동킥보드/스쿠터 9 SKU ───
@@ -6430,7 +6452,7 @@ export const CATALOG: Sku[] = [
     modelName: "Xiaomi Mi Electric Scooter Pro 2",
     aliases: ["Xiaomi Mi Pro 2", "샤오미 미 스쿠터 프로 2", "샤오미 Pro 2"],
     mustContain: [["샤오미", "xiaomi", "mi "], ["프로 2", "pro 2", "pro2"], ["스쿠터", "scooter", "킥보드", "전동킥보드"]],
-    mustNotContain: ["pro 3", "pro 4", "프로 3", "프로 4", "m365", "1s", "ultra", "울트라", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["pro 3", "pro 4", "프로 3", "프로 4", "m365", "1s", "ultra", "울트라", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2020,
   },
   {
@@ -6439,7 +6461,7 @@ export const CATALOG: Sku[] = [
     modelName: "Xiaomi Mi Electric Scooter 3",
     aliases: ["Xiaomi Mi Scooter 3", "샤오미 미 스쿠터 3"],
     mustContain: [["샤오미", "xiaomi", "mi "], ["스쿠터 3", "scooter 3", "scooter3"], ["킥보드", "전동킥보드", "scooter", "스쿠터"]],
-    mustNotContain: ["pro", "프로", "scooter 4", "스쿠터 4", "ultra", "울트라", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["pro", "프로", "scooter 4", "스쿠터 4", "ultra", "울트라", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 499000, released: 2021,
   },
   {
@@ -6448,7 +6470,7 @@ export const CATALOG: Sku[] = [
     modelName: "Xiaomi Mi Electric Scooter 4",
     aliases: ["Xiaomi Mi Scooter 4", "샤오미 미 스쿠터 4"],
     mustContain: [["샤오미", "xiaomi", "mi "], ["스쿠터 4", "scooter 4", "scooter4"], ["킥보드", "전동킥보드", "scooter", "스쿠터"]],
-    mustNotContain: ["pro", "프로", "ultra", "울트라", "scooter 3", "스쿠터 3", "scooter 5", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["pro", "프로", "ultra", "울트라", "scooter 3", "스쿠터 3", "scooter 5", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2022,
   },
   {
@@ -6457,7 +6479,7 @@ export const CATALOG: Sku[] = [
     modelName: "Xiaomi Mi Electric Scooter 4 Pro",
     aliases: ["Xiaomi Mi Scooter 4 Pro", "샤오미 미 스쿠터 4 프로"],
     mustContain: [["샤오미", "xiaomi", "mi "], ["스쿠터 4", "scooter 4", "scooter4"], ["프로", "pro"]],
-    mustNotContain: ["ultra", "울트라", "scooter 3", "scooter 5", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["ultra", "울트라", "scooter 3", "scooter 5", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 699000, released: 2023,
   },
   {
@@ -6466,7 +6488,7 @@ export const CATALOG: Sku[] = [
     modelName: "Xiaomi Mi Electric Scooter 4 Ultra",
     aliases: ["Xiaomi Mi Scooter 4 Ultra", "샤오미 미 스쿠터 4 울트라"],
     mustContain: [["샤오미", "xiaomi", "mi "], ["스쿠터 4", "scooter 4", "scooter4"], ["ultra", "울트라"]],
-    mustNotContain: ["pro 2", "프로 2", "scooter 3", "scooter 5", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["pro 2", "프로 2", "scooter 3", "scooter 5", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 899000, released: 2024,
   },
   {
@@ -6475,7 +6497,7 @@ export const CATALOG: Sku[] = [
     modelName: "Segway Ninebot KickScooter Max G2",
     aliases: ["Segway Ninebot Max G2", "세그웨이 닌봇 맥스 G2", "Ninebot Max G2"],
     mustContain: [["닌봇", "ninebot", "세그웨이", "segway"], ["max g2", "맥스 g2", "max-g2", "g2"]],
-    mustNotContain: ["max g30", "맥스 g30", "g30", "f30", "f40", "f25", "e45", "e25", "e22", "es1", "es2", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["max g30", "맥스 g30", "g30", "f30", "f40", "f25", "e45", "e25", "e22", "es1", "es2", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1290000, released: 2023,
   },
   {
@@ -6484,7 +6506,7 @@ export const CATALOG: Sku[] = [
     modelName: "Segway Ninebot KickScooter F40",
     aliases: ["Segway Ninebot F40", "닌봇 F40"],
     mustContain: [["닌봇", "ninebot", "세그웨이", "segway"], ["f40"]],
-    mustNotContain: ["f30", "f25", "max", "맥스", "e45", "e25", "e22", "es1", "es2", "g2", "g30", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["f30", "f25", "max", "맥스", "e45", "e25", "e22", "es1", "es2", "g2", "g30", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 899000, released: 2022,
   },
   {
@@ -6493,7 +6515,7 @@ export const CATALOG: Sku[] = [
     modelName: "Segway Ninebot KickScooter F30",
     aliases: ["Segway Ninebot F30", "닌봇 F30"],
     mustContain: [["닌봇", "ninebot", "세그웨이", "segway"], ["f30"]],
-    mustNotContain: ["f40", "f25", "max", "맥스", "e45", "e25", "e22", "es1", "es2", "g2", "g30", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["f40", "f25", "max", "맥스", "e45", "e25", "e22", "es1", "es2", "g2", "g30", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 699000, released: 2021,
   },
   {
@@ -6502,7 +6524,7 @@ export const CATALOG: Sku[] = [
     modelName: "Segway Ninebot KickScooter E45",
     aliases: ["Segway Ninebot E45", "닌봇 E45"],
     mustContain: [["닌봇", "ninebot", "세그웨이", "segway"], ["e45"]],
-    mustNotContain: ["e25", "e22", "es1", "es2", "f30", "f40", "max", "맥스", "g2", "g30", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["e25", "e22", "es1", "es2", "f30", "f40", "max", "맥스", "g2", "g30", "배터리만", "타이어만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2020,
   },
   // ─── Wave 185 (2026-05-17): 새 카테고리 "perfume" — 명품 향수 22 SKU ───
@@ -6514,7 +6536,7 @@ export const CATALOG: Sku[] = [
     modelName: "Jo Malone Wood Sage & Sea Salt 100ml",
     aliases: ["Jo Malone Wood Sage", "조말론 우드세이지 시솔트"],
     mustContain: [["jo malone", "조말론"], ["wood sage", "우드세이지", "우드 세이지"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "50ml", "200ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 230000, released: 2014,
   },
   {
@@ -6522,7 +6544,7 @@ export const CATALOG: Sku[] = [
     modelName: "Jo Malone Lime Basil & Mandarin 100ml",
     aliases: ["Jo Malone Lime Basil", "조말론 라임바질 만다린"],
     mustContain: [["jo malone", "조말론"], ["lime basil", "라임바질", "라임 바질"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "50ml", "200ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 230000, released: 1999,
   },
   {
@@ -6530,7 +6552,7 @@ export const CATALOG: Sku[] = [
     modelName: "Jo Malone English Pear & Freesia 100ml",
     aliases: ["Jo Malone English Pear", "조말론 잉글리쉬페어 프리지아"],
     mustContain: [["jo malone", "조말론"], ["english pear", "잉글리쉬페어", "잉글리쉬 페어"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "50ml", "200ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 230000, released: 2010,
   },
   {
@@ -6538,7 +6560,7 @@ export const CATALOG: Sku[] = [
     modelName: "Jo Malone Blackberry & Bay 100ml",
     aliases: ["Jo Malone Blackberry Bay", "조말론 블랙베리 베이"],
     mustContain: [["jo malone", "조말론"], ["blackberry", "블랙베리"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "50ml", "200ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 230000, released: 2012,
   },
   {
@@ -6546,7 +6568,7 @@ export const CATALOG: Sku[] = [
     modelName: "Jo Malone Peony & Blush Suede 100ml",
     aliases: ["Jo Malone Peony Blush", "조말론 피오니 블러쉬"],
     mustContain: [["jo malone", "조말론"], ["peony", "피오니"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "50ml", "200ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 230000, released: 2014,
   },
   // Le Labo
@@ -6555,7 +6577,7 @@ export const CATALOG: Sku[] = [
     modelName: "Le Labo Santal 33 50ml",
     aliases: ["Le Labo Santal 33 50ml", "르라보 산탈 33 50ml"],
     mustContain: [["le labo", "르라보", "르 라보"], ["santal 33", "산탈 33", "산탈33", "santal33"], ["50ml", "50 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "100ml", "15ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "100ml", "15ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 290000, released: 2011,
   },
   {
@@ -6563,7 +6585,7 @@ export const CATALOG: Sku[] = [
     modelName: "Le Labo Santal 33 100ml",
     aliases: ["Le Labo Santal 33 100ml", "르라보 산탈 33 100ml"],
     mustContain: [["le labo", "르라보", "르 라보"], ["santal 33", "산탈 33", "산탈33", "santal33"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "50ml", "15ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "50ml", "15ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 450000, released: 2011,
   },
   {
@@ -6571,7 +6593,7 @@ export const CATALOG: Sku[] = [
     modelName: "Le Labo The Noir 29 50ml",
     aliases: ["Le Labo The Noir 29", "르라보 더 누아 29"],
     mustContain: [["le labo", "르라보", "르 라보"], ["the noir 29", "누아 29", "noir29", "더누아 29"], ["50ml", "50 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "100ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "100ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 290000, released: 2015,
   },
   // Diptyque
@@ -6580,7 +6602,7 @@ export const CATALOG: Sku[] = [
     modelName: "Diptyque Philosykos 75ml",
     aliases: ["Diptyque Philosykos", "딥디크 필로시코스"],
     mustContain: [["diptyque", "딥디크"], ["philosykos", "필로시코스"], ["75ml", "75 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "50ml", "100ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "50ml", "100ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 220000, released: 1996,
   },
   {
@@ -6588,7 +6610,7 @@ export const CATALOG: Sku[] = [
     modelName: "Diptyque Do Son 75ml",
     aliases: ["Diptyque Do Son", "딥디크 도손"],
     mustContain: [["diptyque", "딥디크"], ["do son", "도손", "도 손"], ["75ml", "75 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "50ml", "100ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "50ml", "100ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 220000, released: 2005,
   },
   {
@@ -6596,7 +6618,7 @@ export const CATALOG: Sku[] = [
     modelName: "Diptyque Eau Capitale 75ml",
     aliases: ["Diptyque Eau Capitale", "딥디크 오 카피탈"],
     mustContain: [["diptyque", "딥디크"], ["eau capitale", "오 카피탈", "오카피탈"], ["75ml", "75 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "50ml", "100ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "50ml", "100ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 250000, released: 2019,
   },
   // Tom Ford
@@ -6606,7 +6628,7 @@ export const CATALOG: Sku[] = [
     aliases: ["Tom Ford Black Orchid", "톰포드 블랙 오키드"],
     mustContain: [["tom ford", "톰포드", "톰 포드"], ["black orchid", "블랙 오키드", "블랙오키드"], ["50ml", "50 ml"]],
     // Wave 185 internal test (2026-05-18): Tom Ford 신발 (첼시부츠/스니커즈/캠브리지/로퍼/옥스포드) false positive 차단.
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다", "스니커즈", "첼시", "부츠", "캠브리지", "로퍼", "오포드", "옥스포드", "신발", "운동화"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "100ml", "매입", "삽니다", "스니커즈", "첼시", "부츠", "캠브리지", "로퍼", "오포드", "옥스포드", "신발", "운동화", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 230000, released: 2006,
   },
   {
@@ -6615,7 +6637,7 @@ export const CATALOG: Sku[] = [
     aliases: ["Tom Ford Tobacco Vanille", "톰포드 토바코 바닐라"],
     mustContain: [["tom ford", "톰포드", "톰 포드"], ["tobacco vanille", "토바코 바닐라", "토바코바닐라"], ["50ml", "50 ml"]],
     // Wave 185 fix: 신발 (shoe-adidas-tobacco-broad) 와 격리 — "아디다스/adidas/신발/운동화" 박기.
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다", "아디다스", "adidas", "신발", "운동화", "스니커즈"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "100ml", "매입", "삽니다", "아디다스", "adidas", "신발", "운동화", "스니커즈", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 380000, released: 2007,
   },
   {
@@ -6623,7 +6645,7 @@ export const CATALOG: Sku[] = [
     modelName: "Tom Ford Lost Cherry 50ml",
     aliases: ["Tom Ford Lost Cherry", "톰포드 로스트 체리"],
     mustContain: [["tom ford", "톰포드", "톰 포드"], ["lost cherry", "로스트 체리", "로스트체리"], ["50ml", "50 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다", "스니커즈", "첼시", "부츠", "캠브리지", "로퍼", "오포드", "옥스포드", "신발", "운동화"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "100ml", "매입", "삽니다", "스니커즈", "첼시", "부츠", "캠브리지", "로퍼", "오포드", "옥스포드", "신발", "운동화", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 480000, released: 2018,
   },
   {
@@ -6631,7 +6653,7 @@ export const CATALOG: Sku[] = [
     modelName: "Tom Ford Oud Wood 50ml",
     aliases: ["Tom Ford Oud Wood", "톰포드 우드 우드"],
     mustContain: [["tom ford", "톰포드", "톰 포드"], ["oud wood", "우드 우드", "우드우드", "oud", "우드"], ["50ml", "50 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "100ml", "매입", "삽니다", "스니커즈", "첼시", "부츠", "캠브리지", "로퍼", "오포드", "옥스포드", "신발", "운동화"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "100ml", "매입", "삽니다", "스니커즈", "첼시", "부츠", "캠브리지", "로퍼", "오포드", "옥스포드", "신발", "운동화", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 380000, released: 2007,
   },
   // Maison Margiela Replica
@@ -6640,7 +6662,7 @@ export const CATALOG: Sku[] = [
     modelName: "Replica Jazz Club 100ml",
     aliases: ["Replica Jazz Club", "메종 마르지엘라 재즈클럽", "Margiela Jazz Club"],
     mustContain: [["margiela", "마르지엘라", "replica"], ["jazz club", "재즈클럽", "재즈 클럽"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "200ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 170000, released: 2013,
   },
   {
@@ -6648,7 +6670,7 @@ export const CATALOG: Sku[] = [
     modelName: "Replica By the Fireplace 100ml",
     aliases: ["Replica By the Fireplace", "메종 마르지엘라 바이 더 파이어플레이스", "파이어플레이스"],
     mustContain: [["margiela", "마르지엘라", "replica"], ["fireplace", "파이어플레이스", "바이 더 파이어"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "200ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 170000, released: 2015,
   },
   {
@@ -6656,7 +6678,7 @@ export const CATALOG: Sku[] = [
     modelName: "Replica Beach Walk 100ml",
     aliases: ["Replica Beach Walk", "메종 마르지엘라 비치워크"],
     mustContain: [["margiela", "마르지엘라", "replica"], ["beach walk", "비치워크", "비치 워크"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "200ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 170000, released: 2012,
   },
   {
@@ -6664,7 +6686,7 @@ export const CATALOG: Sku[] = [
     modelName: "Replica When the Rain Stops 100ml",
     aliases: ["Replica When the Rain Stops", "메종 마르지엘라 비온뒤", "When the Rain Stops"],
     mustContain: [["margiela", "마르지엘라", "replica"], ["when the rain", "비 온 뒤", "비온뒤", "when the rain stops"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "30ml", "200ml", "매입", "삽니다"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 170000, released: 2018,
   },
   // Memo Paris
@@ -6673,7 +6695,7 @@ export const CATALOG: Sku[] = [
     modelName: "Memo Russian Leather 75ml",
     aliases: ["Memo Russian Leather", "메모 러시안 레더"],
     mustContain: [["memo paris", "memo", "메모"], ["russian leather", "러시안 레더", "러시안레더"], ["75ml", "75 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "200ml", "매입", "삽니다", "irish", "italian", "아이리쉬", "이탈리안"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "200ml", "매입", "삽니다", "irish", "italian", "아이리쉬", "이탈리안", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 350000, released: 2014,
   },
   {
@@ -6681,7 +6703,7 @@ export const CATALOG: Sku[] = [
     modelName: "Memo Irish Leather 75ml",
     aliases: ["Memo Irish Leather", "메모 아이리쉬 레더"],
     mustContain: [["memo paris", "memo", "메모"], ["irish leather", "아이리쉬 레더", "아이리쉬레더"], ["75ml", "75 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "200ml", "매입", "삽니다", "russian", "italian", "러시안", "이탈리안"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "200ml", "매입", "삽니다", "russian", "italian", "러시안", "이탈리안", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 350000, released: 2015,
   },
   {
@@ -6689,7 +6711,7 @@ export const CATALOG: Sku[] = [
     modelName: "Memo Italian Leather 75ml",
     aliases: ["Memo Italian Leather", "메모 이탈리안 레더"],
     mustContain: [["memo paris", "memo", "메모"], ["italian leather", "이탈리안 레더", "이탈리안레더"], ["75ml", "75 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "200ml", "매입", "삽니다", "russian", "irish", "러시안", "아이리쉬"],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "200ml", "매입", "삽니다", "russian", "irish", "러시안", "아이리쉬", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 350000, released: 2019,
   },
   // Wave 91 (2026-05-15): 일반인 친화 카테고리 확장 — 신발 39 + 가방 34 + 자전거 33 = 106 SKU.
