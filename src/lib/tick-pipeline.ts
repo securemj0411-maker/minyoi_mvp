@@ -22,7 +22,7 @@ import {
 } from "@/lib/market-math";
 import { notifyOperationalAlerts, type OperationalAlert } from "@/lib/operational-notifier";
 import { bunjangLabelToConditionClass, extractConditionClass, parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
-import { pickByConditionFallback } from "@/lib/condition-fallback";
+import { conditionFallbackChain, pickByConditionFallback } from "@/lib/condition-fallback";
 import {
   applyAiReview,
   classifyConditionWithAi,
@@ -3874,6 +3874,11 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   })();
 
   const pricesByMarket = new Map<string, number[]>();
+  // Wave 179b (2026-05-17 사용자 코멘트 iPad mini 6 stale): broad SKU mixed batch median 차단.
+  // 이전: marketKey 하나에 모든 condition + 다른 세대/옵션 매물 가격 섞임 → median 부풀려짐.
+  // 새: marketKey + condition_class 분리. 매물 자체 condition 매칭만 batch median.
+  // sample 부족 시 condition_fallback.ts chain 따라 (위로 차단, 같거나 아래로).
+  const pricesByMarketCondition = new Map<string, number[]>();
   const favsByMarket = new Map<string, number[]>();
   const pricesBySku = new Map<string, number[]>();
   for (const row of rows) {
@@ -3882,12 +3887,17 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     // madTrim 이 outlier 제거하지만 sample 적으면 미흡.
     if (row.price >= 100_000_000 || row.price <= 0) continue;
     const skuId = row.sku_id ?? "";
-    const marketKey = marketGroupKey(row, parsedByPid.get(row.pid));
+    const parsedRow = parsedByPid.get(row.pid);
+    const marketKey = marketGroupKey(row, parsedRow);
+    const condClass = parsedRow?.condition_class ?? "normal";
+    const compositeKey = `${marketKey}|${condClass}`;
     if (!pricesByMarket.has(marketKey)) pricesByMarket.set(marketKey, []);
     if (!favsByMarket.has(marketKey)) favsByMarket.set(marketKey, []);
     if (!pricesBySku.has(skuId)) pricesBySku.set(skuId, []);
+    if (!pricesByMarketCondition.has(compositeKey)) pricesByMarketCondition.set(compositeKey, []);
     pricesBySku.get(skuId)!.push(row.price);
-    pricesByMarket.get(marketKey)!.push(row.price);
+    pricesByMarket.get(marketKey)!.push(row.price); // legacy (favsByMarket용 sample size)
+    pricesByMarketCondition.get(compositeKey)!.push(row.price);
     favsByMarket.get(marketKey)!.push(row.num_faved);
   }
 
@@ -3972,7 +3982,21 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const byCondition = comparableKey ? marketStatsByKey.get(comparableKey) : undefined;
     const marketStat = pickMarketStatByCondition(byCondition, parsed?.condition_class ?? null);
     const trustedMedian = trustedMarketMedian(marketStat, parsed?.category);
-    const prices = pricesByMarket.get(marketKey) ?? [];
+    // Wave 179b (2026-05-17 사용자 코멘트): 매물 condition 매칭 batch median 우선.
+    // 같은 marketKey + condition_class 매물끼리만 batch (broad SKU mixed 차단).
+    // sample 부족 시 condition-fallback chain (worn → normal → all, mint/unopened 위로 X).
+    const targetCondition = parsed?.condition_class ?? "normal";
+    const condFallback = conditionFallbackChain(targetCondition);
+    let prices: number[] = [];
+    for (const cond of condFallback) {
+      const key = `${marketKey}|${cond}`;
+      const candidate = pricesByMarketCondition.get(key) ?? [];
+      if (candidate.length >= (parsed?.category === "shoe" ? 2 : 5)) {
+        prices = candidate;
+        break;
+      }
+      if (candidate.length > prices.length) prices = candidate; // 마지막 fallback용
+    }
     const _coarsePrices = pricesBySku.get(skuId) ?? [];
     const hasTrustedMarket = trustedMedian != null;
     // Wave 90 (2026-05-15): catalog gap 분석 결과 (broad SKU 42 변형 / 가격 ratio 20x)로
