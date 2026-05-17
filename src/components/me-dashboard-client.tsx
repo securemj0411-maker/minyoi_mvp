@@ -175,6 +175,37 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
     };
   }, []);
 
+  // 2026-05-17: 신규 가입자 welcome — dashboard 첫 진입 시 자동 5 매물 reserve.
+  // 사용자 의도: "가치를 확실히 인식시켜야". 가입 직후 빈 dashboard → 자동 매물.
+  // /api/packs/welcome 이 reveal count 0 일 때만 reserve (once-only).
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const supabase = getSupabaseBrowserClient();
+        if (!supabase) return;
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) return;
+        const res = await fetch("/api/packs/welcome", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        if (!res.ok || cancelled) return;
+        const data = await res.json() as { result?: string };
+        if (data.result === "success") {
+          // dashboard refresh — UserRevealDashboard 가 PACK_REVEALS_UPDATED_EVENT listen 함.
+          window.dispatchEvent(new CustomEvent("pack-reveals-updated", { detail: { reveals: [] } }));
+        }
+      } catch (err) {
+        console.error("[me-dashboard] welcome failed", err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
   // Wave 90: IntersectionObserver(스크롤 추적) 제거 — 각 view 단독 mount라 의미 X
 
   if (loading) {
