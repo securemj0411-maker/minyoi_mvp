@@ -13,6 +13,7 @@ import SafetyStatsBadge from "@/components/safety-stats-badge";
 import UserRevealDashboard from "@/components/user-reveal-dashboard";
 import PreviewMaskedDashboard from "@/components/preview-masked-dashboard";
 import { SavedMoneyCounter } from "@/components/saved-money-counter";
+import { MyFeedbackActivity } from "@/components/my-feedback-activity";
 import { isAdminUser } from "@/lib/auth-users";
 import { hasAdminShadowClient } from "@/lib/admin-shadow-mode";
 import { MODEL_GUIDES } from "@/lib/model-guides";
@@ -351,6 +352,8 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             {/* Wave 182: Saved Money Counter — 안 잃은 돈 + 번 돈 (loss aversion ×2.5). */}
             <SavedMoneyCounter />
+            {/* Wave 185: 내 피드백 활동 — 사용자 신고 결과 가시화 (compound retention loop). */}
+            <MyFeedbackActivity />
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-base font-black text-[#223127] dark:text-zinc-100">📦 나의 상품</h2>
               <button
