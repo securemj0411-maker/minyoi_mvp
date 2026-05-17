@@ -671,17 +671,36 @@ export default function UserRevealDashboard({ userRef }: { userRef: string }) {
                 {/* 2026-05-17: 매물 등급 chip (S/A/B/C) — 운영자풀/사용자 reveal 통일. */}
                 <ConditionChip conditionClass={item.marketBasis?.conditionClass ?? null} />
               </div>
-              <div className="mt-1 flex flex-wrap gap-1 text-[11px] font-semibold text-[#6b7269] dark:text-zinc-400">
-                <span>{krw(item.price)}</span>
-                <span>·</span>
+              {/* 2026-05-17: 매입 · 시세 표시 (대시보드 패턴 통일 — 운영자풀/preview 와 동일). */}
+              <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-[11px] font-semibold text-[#6b7269] dark:text-zinc-400">
+                <span>매입 <span className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.price)}</span></span>
+                {item.marketBasis?.medianPrice && item.marketBasis.medianPrice > 0 ? (
+                  <>
+                    <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                    <span>시세 <span className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.marketBasis.medianPrice)}</span></span>
+                  </>
+                ) : null}
+                <span className="text-zinc-300 dark:text-zinc-600">·</span>
                 <span>{timeLabel(item.revealedAt)}</span>
                 <span>·</span>
                 <span>{item.listingState}</span>
               </div>
-              <div className="mt-1 text-xs font-black text-emerald-700 dark:text-emerald-300">
-                {item.expectedProfitMin === item.expectedProfitMax
-                  ? `+${item.expectedProfitMax.toLocaleString("ko-KR")}원`
-                  : `+${item.expectedProfitMin.toLocaleString("ko-KR")}~${item.expectedProfitMax.toLocaleString("ko-KR")}원`}
+              <div className="mt-1 flex flex-wrap items-baseline gap-1.5">
+                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-black tabular-nums text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                  {item.expectedProfitMin === item.expectedProfitMax
+                    ? `+${item.expectedProfitMax.toLocaleString("ko-KR")}원`
+                    : `+${item.expectedProfitMin.toLocaleString("ko-KR")}~${item.expectedProfitMax.toLocaleString("ko-KR")}원`}
+                </span>
+                {(() => {
+                  if (!item.price || item.price <= 0) return null;
+                  const avg = (item.expectedProfitMin + item.expectedProfitMax) / 2;
+                  const pct = Math.round((avg / item.price) * 100);
+                  return Number.isFinite(pct) ? (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                      +{pct}%
+                    </span>
+                  ) : null;
+                })()}
               </div>
               {/* 2026-05-17 Phase 2: verdict chips (근거 강조) — RevealItem 가진 데이터 활용. */}
               {(() => {
