@@ -442,6 +442,10 @@ export const LANE_READINESS: LaneReadinessMap = {
   memo_italian_leather_75: { status: "ready", label: "Memo Italian Leather 75ml", note: "Wave 185" },
   // Wave 185 internal test (2026-05-18): Dyson Airwrap Origin 신모델 추가.
   dyson_airwrap_origin: { status: "ready", label: "Dyson Airwrap Origin", note: "Wave 185 internal test: 저가형 Airwrap 2024.11 신모델." },
+  // Wave 185 internal test (2026-05-18): DJI 신모델 (Pocket 4 / Action 6 / Osmo Nano).
+  dji_osmo_pocket_4: { status: "ready", label: "DJI Osmo Pocket 4", note: "Wave 185 internal test: 2025 신모델, 매물 4건 발견." },
+  dji_osmo_action_6: { status: "ready", label: "DJI Osmo Action 6", note: "Wave 185 internal test: 2025 신모델." },
+  dji_osmo_nano: { status: "ready", label: "DJI Osmo Nano", note: "Wave 185 internal test: 2025 신모델, 컴팩트 액션캠." },
 };
 
 export type CategoryReadinessConfig = {

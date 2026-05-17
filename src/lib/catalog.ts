@@ -6089,8 +6089,18 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Osmo Action 5 Pro",
     aliases: ["DJI Osmo Action 5 Pro", "DJI 오즈모 액션 5 프로"],
     mustContain: [["dji", "디제이아이"], ["osmo action 5", "osmoaction5", "오즈모 액션 5"], ["pro", "프로"]],
-    mustNotContain: ["action 3", "action 4", "액션 3", "액션 4", "pocket", "포켓", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["action 3", "action 4", "action 6", "액션 3", "액션 4", "액션 6", "pocket", "포켓", "nano", "나노", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
     msrpKrw: 559000, released: 2024,
+  },
+  // Wave 185 internal test (2026-05-18): DJI Osmo Action 6 신모델 (2025).
+  {
+    id: "dji-osmo-action-6",
+    brand: "DJI", category: "drone", laneKey: "dji_osmo_action_6",
+    modelName: "DJI Osmo Action 6",
+    aliases: ["DJI Osmo Action 6", "DJI 오즈모 액션 6"],
+    mustContain: [["dji", "디제이아이"], ["osmo action 6", "osmoaction6", "오즈모 액션 6", "오즈모액션6", "액션6"]],
+    mustNotContain: ["action 3", "action 4", "action 5", "액션 3", "액션 4", "액션 5", "pocket", "포켓", "nano", "나노", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 599000, released: 2025,
   },
   {
     id: "dji-osmo-pocket-2",
@@ -6107,8 +6117,27 @@ export const CATALOG: Sku[] = [
     modelName: "DJI Osmo Pocket 3",
     aliases: ["DJI Osmo Pocket 3", "DJI 오즈모 포켓 3"],
     mustContain: [["dji", "디제이아이"], ["osmo pocket 3", "osmopocket3", "오즈모 포켓 3", "포켓 3", "포켓3"]],
-    mustNotContain: ["pocket 2", "포켓 2", "포켓2", "action", "액션", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
+    mustNotContain: ["pocket 2", "포켓 2", "포켓2", "pocket 4", "포켓 4", "포켓4", "action", "액션", "nano", "나노", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
     msrpKrw: 769000, released: 2023,
+  },
+  // Wave 185 internal test (2026-05-18): DJI 신모델 3개 — 매물 sweep 에서 발견.
+  {
+    id: "dji-osmo-pocket-4",
+    brand: "DJI", category: "drone", laneKey: "dji_osmo_pocket_4",
+    modelName: "DJI Osmo Pocket 4",
+    aliases: ["DJI Osmo Pocket 4", "DJI 오즈모 포켓 4"],
+    mustContain: [["dji", "디제이아이"], ["osmo pocket 4", "osmopocket4", "오즈모 포켓 4", "포켓 4", "포켓4"]],
+    mustNotContain: ["pocket 2", "포켓 2", "포켓2", "pocket 3", "포켓 3", "포켓3", "action", "액션", "nano", "나노", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 899000, released: 2025,
+  },
+  {
+    id: "dji-osmo-nano",
+    brand: "DJI", category: "drone", laneKey: "dji_osmo_nano",
+    modelName: "DJI Osmo Nano",
+    aliases: ["DJI Osmo Nano", "DJI 오즈모 나노"],
+    mustContain: [["dji", "디제이아이"], ["osmo nano", "osmonano", "오즈모 나노", "나노 액션캠"]],
+    mustNotContain: ["pocket", "포켓", "action", "액션 3", "액션 4", "액션 5", "액션 6", "mavic", "mini", "air", "마운트만", "배터리만", "충전기만", "케이스만", "고장", "파손", "수리", "매입", "삽니다"],
+    msrpKrw: 459000, released: 2025,
   },
   // GoPro
   {
