@@ -153,13 +153,16 @@ export async function GET(req: NextRequest) {
     // 2026-05-17 Phase 0 L4: RiskScoreBar 입력 — description_preview / shop_review_* / image_count / score_flags 추가.
     // Wave 190 (2026-05-17) FIX: score_flags 는 mvp_listing_parsed 에 없음 (mvp_listing_analysis 가 정식 location).
     // 이전 (Wave 184): parsed 에서 score_flags fetch 시도 → 항상 빈 배열 → RiskScoreBar fraud axis 일부 미작동.
+    // Wave 199 (2026-05-18) FIX: shop_review_* / free_shipping / num_faved / num_comment 는
+    // mvp_listings 에 없음 (Wave 184 박을 때 위치 잘못 추정). → mvp_raw_listings 로 이동.
+    // description_preview / image_count 는 두 테이블 모두 있음 → listings 유지.
     const [listingsRes, rawRes, parsedRes, analysisRes, feedbackRes] = await Promise.all([
       restFetch(
-        `${tableUrl("mvp_listings")}?select=pid,name,price,sku_name,sku_median,thumbnail_url,url,description_preview,shop_review_rating,shop_review_count,image_count,free_shipping,num_faved,num_comment&pid=in.(${pidsCsv})`,
+        `${tableUrl("mvp_listings")}?select=pid,name,price,sku_name,sku_median,thumbnail_url,url,description_preview,image_count&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sale_status,listing_state,last_seen_at,query,seller_uid&pid=in.(${pidsCsv})`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sale_status,listing_state,last_seen_at,query,seller_uid,shop_review_rating,shop_review_count,free_shipping,num_faved,num_comment&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -272,12 +275,13 @@ export async function GET(req: NextRequest) {
         sellerUid: (r.seller_uid as string | null) ?? null,
         // 2026-05-17 Phase 0 L4 — RiskScoreBar 입력.
         descriptionPreview: (l.description_preview as string | null) ?? null,
-        sellerReviewRating: l.shop_review_rating != null ? Number(l.shop_review_rating) : null,
-        sellerReviewCount: l.shop_review_count != null ? Number(l.shop_review_count) : null,
+        // Wave 199: shop_review_* / free_shipping / num_* 는 mvp_raw_listings 에서.
+        sellerReviewRating: r.shop_review_rating != null ? Number(r.shop_review_rating) : null,
+        sellerReviewCount: r.shop_review_count != null ? Number(r.shop_review_count) : null,
         imageCount: l.image_count != null ? Number(l.image_count) : null,
-        freeShipping: Boolean(l.free_shipping),
-        numFaved: l.num_faved != null ? Number(l.num_faved) : null,
-        numComment: l.num_comment != null ? Number(l.num_comment) : null,
+        freeShipping: Boolean(r.free_shipping),
+        numFaved: r.num_faved != null ? Number(r.num_faved) : null,
+        numComment: r.num_comment != null ? Number(r.num_comment) : null,
         // Wave 190 (2026-05-17) FIX: score_flags 는 mvp_listing_analysis 에서 (parsed 에 없는 컬럼).
         scoreFlags: Array.isArray(a.score_flags) ? a.score_flags as string[] : [],
         // Wave 182 Phase 3 (2026-05-17): base option fallback — UI "기본 옵션 가정" 표시.
