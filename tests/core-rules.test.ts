@@ -559,8 +559,14 @@ test("desktop Apple exact model SKUs bind only precise iMac/Mac Studio rows", ()
     skuName: imacM1?.modelName,
     title: "아이맥 m1 블루 색상 풀박스",
   });
-  // Wave 90 v37: desktop comparable_key에 RAM/SSD axis 추가 (옵션 명시 안 된 매물은 unknown_*)
-  assert.equal(parsedImac.comparableKey, "desktop|apple_imac_m1_24|unknown_ram|unknown_ssd");
+  // Wave 90 v37: desktop comparable_key에 RAM/SSD axis 추가.
+  // Wave 182 Phase 3 (2026-05-17): base option fallback — SKU_BASE_OPTIONS 박힌 SKU 는 가장 낮은 옵션 가정.
+  // imac M1 base = 8GB / 256GB (Apple 공식). parsedJson.option_base_assumed = ["ram", "ssd"].
+  assert.equal(parsedImac.comparableKey, "desktop|apple_imac_m1_24|8gb_ram|256gb_ssd");
+  assert.deepEqual(
+    (parsedImac.parsedJson as { option_base_assumed?: string[] | null }).option_base_assumed,
+    ["ram", "ssd"],
+  );
 
   const studio = ruleMatch("애플 맥 스튜디오 m4 max 512g", "");
   assert.equal(studio?.id, "desktop-mac-studio-m4-max-512");
@@ -570,7 +576,8 @@ test("desktop Apple exact model SKUs bind only precise iMac/Mac Studio rows", ()
     skuName: studio?.modelName,
     title: "애플 맥 스튜디오 m4 max 512g",
   });
-  assert.equal(parsedStudio.comparableKey, "desktop|apple_mac_studio_m4_max_512gb|unknown_ram|512gb_ssd");
+  // Mac Studio M4 Max base = 36GB + 512GB. 매물 텍스트에 "512g" 명시 → ssdGb 512. RAM 명시 X → base 36GB.
+  assert.equal(parsedStudio.comparableKey, "desktop|apple_mac_studio_m4_max_512gb|36gb_ram|512gb_ssd");
 
   assert.equal(ruleMatch("맥스튜디오 청바지 26인치", "")?.id, undefined);
   assert.equal(ruleMatch("맥스스튜디오 여성 블루 린넨 벨티드 7부 블라우스 66", "")?.id, undefined);

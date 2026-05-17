@@ -54,6 +54,8 @@ type PoolItem = {
   numFaved: number | null;
   numComment: number | null;
   scoreFlags: string[];
+  // Wave 182 Phase 3 (2026-05-17): base option fallback metadata (옵션 명시 X → 가장 낮은 옵션 가정).
+  optionBaseAssumed: string[] | null;
   // Wave 187 (2026-05-17): L6 Liquidity 곡선 입력 — comparable_key 별 velocity + price 분포.
   velocityP25Hours: number | null;
   velocityMedianHours: number | null;
@@ -366,10 +368,20 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       {/* 2026-05-17 (사용자 요청): 매물 등급 chip + ? 분류 정책 모달. 운영자풀 = showHelp. */}
                       <ConditionChip conditionClass={item.conditionClass} showHelp />
                     </div>
-                    <div className="flex flex-wrap gap-x-2 text-zinc-700 dark:text-zinc-300">
+                    <div className="flex flex-wrap items-center gap-x-2 text-zinc-700 dark:text-zinc-300">
                       <span>매입 {krw(item.price)}</span>
                       <span>· 시세 {krw(item.skuMedian)}</span>
                       <span>· 신뢰 {(item.confidence * 100).toFixed(0)}%</span>
+                      {/* Wave 182 Phase 3 (2026-05-17): base option fallback 정직성 표시.
+                          매물 텍스트에 옵션 명시 X → SKU 기본 옵션 가정. 시세는 base 기준 (보수적). */}
+                      {item.optionBaseAssumed && item.optionBaseAssumed.length > 0 ? (
+                        <span
+                          title={`이 매물은 ${item.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}
+                          className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                        >
+                          기본 옵션 가정
+                        </span>
+                      ) : null}
                     </div>
                     <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
                       {item.skuName ?? "—"} · {item.poolStatus} · {relAge(item.lastVerifiedAt)} · 노출 {item.exposureCount}/{item.maxExposure}

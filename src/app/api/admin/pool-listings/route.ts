@@ -163,7 +163,8 @@ export async function GET(req: NextRequest) {
       restFetch(
         // 2026-05-16 (사용자 코멘트 #120): condition_class 추가 — 운영자풀 시세 출처 표시 위해.
         // 2026-05-17 Phase 0 L4: score_flags 추가 — RiskScoreBar 의 fraud / battery axis 신호.
-        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,score_flags&pid=in.(${pidsCsv})`,
+        // Wave 182 Phase 3 (2026-05-17): parsed_json 추가 — option_base_assumed UI 표시.
+        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,score_flags,parsed_json&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -267,6 +268,12 @@ export async function GET(req: NextRequest) {
         numFaved: l.num_faved != null ? Number(l.num_faved) : null,
         numComment: l.num_comment != null ? Number(l.num_comment) : null,
         scoreFlags: Array.isArray(p.score_flags) ? p.score_flags as string[] : [],
+        // Wave 182 Phase 3 (2026-05-17): base option fallback — UI "기본 옵션 가정" 표시.
+        optionBaseAssumed: (() => {
+          const pj = p.parsed_json as Record<string, unknown> | null | undefined;
+          const arr = pj?.option_base_assumed;
+          return Array.isArray(arr) ? arr as string[] : null;
+        })(),
         // Wave 187: L6 Liquidity 곡선 입력 — comparable_key 별 velocity + price 분포 (latest row).
         velocityP25Hours: velocity?.p25Hours ?? null,
         velocityMedianHours: velocity?.medianHours ?? null,

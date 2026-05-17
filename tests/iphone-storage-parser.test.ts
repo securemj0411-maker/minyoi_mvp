@@ -57,13 +57,21 @@ test("storage: 1테라 in description only", () => {
   );
 });
 
-test("storage: no explicit token → null (silent inference forbidden)", () => {
-  // Title/desc 어디에도 storage 명시 없음. silent inference 금지 정책 회귀 가드.
-  assert.equal(parse("아이폰15프로맥스 화이트", "자급제 입니다").storageGb, null);
+test("storage: no explicit token → SKU base option fallback (Wave 182 Phase 3)", () => {
+  // Wave 182 (2026-05-17) §12b 정책 변경: base 가정 허용 (가장 낮은 옵션 + UI 표시).
+  // iPhone 15 Pro Max 는 Apple 이 128GB 안 만듦 → SKU_BASE_OPTIONS 의 base = 256GB.
+  // 안전성: base 시세 = 가장 낮은 옵션 → priceGap underestimate → false positive 0.
+  const result = parse("아이폰15프로맥스 화이트", "자급제 입니다");
+  assert.equal(result.storageGb, 256);
+  // option_base_assumed 에 "storage" 박혀 있어야 UI 표시 가능.
+  assert.deepEqual((result.parsedJson as { option_base_assumed?: string[] | null }).option_base_assumed, ["storage"]);
 });
 
-test("storage: typo 126gb does not match 128 (precision over recall)", () => {
-  assert.equal(parse("아이폰 16e 126gb 풀박스").storageGb, null);
+test("storage: typo 126gb → SKU base fallback (Wave 182 Phase 3)", () => {
+  // 126gb 라는 typo 는 parser 가 인식 X → SKU base (iPhone 16e = 128GB) 가정.
+  // 매물의 진짜 storage 가 256GB 였더라도 base 128 시세로 비교 → priceGap 보수적.
+  const result = parse("아이폰 16e 126gb 풀박스", "", "iphone-16e", "iPhone 16e");
+  assert.equal(result.storageGb, 128);
 });
 
 test("storage: 2테라", () => {

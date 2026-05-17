@@ -37,6 +37,19 @@ export type Sku = {
   //     "S25 Edge = 별도 모델 (얇음, 512GB 단일).",
   //     "AirPods 4 ANC = 일반 4와 별도 (가격 +20K)."
   confusionNote?: string;
+  // Wave 182 (2026-05-17): base option fallback.
+  // 매물 텍스트에 옵션 (RAM/SSD/storage/size/connectivity 등) 명시 안 됐을 때 가장 낮은 옵션 가정.
+  // base 시세는 항상 underestimate → priceGap 보수적 → false positive 발생 X (§12b 안전).
+  // 단 SKU 가 자급제/storage 명시 변형이면 이미 옵션 확정 → baseOptions 박지 X.
+  // 박은 SKU 만 parser 가 base fallback 적용 (옛 동작 호환).
+  baseOptions?: {
+    storageGb?: number;       // smartphone / tablet
+    ramGb?: number;           // laptop / desktop
+    ssdGb?: number;           // laptop / desktop
+    watchSizeMm?: number;     // smartwatch
+    connectivity?: "wifi" | "cellular" | "gps" | "bluetooth";
+    carrier?: "unlocked" | "skt" | "kt" | "lgu";
+  };
 };
 
 // Wave 122 (2026-05-15): 모든 카테고리 공통 noise 패턴 (Wave 121 audit 결과).

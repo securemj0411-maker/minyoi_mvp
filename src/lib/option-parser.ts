@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import type { Sku } from "@/lib/catalog";
 // Wave 92: 신규 카테고리 (shoe/bag/bike) parser는 별도 모듈에서 dispatch.
 import { parseFashionMobility } from "@/lib/parsers/wave92-fashion-mobility";
+// Wave 182 Phase 3 (2026-05-17): base option fallback (옵션 명시 X → 가장 낮은 옵션 가정).
+import { baseOptionsFor } from "@/lib/sku-base-options";
 
 export type ParsedListingOptions = {
   parserVersion: string;
@@ -1558,20 +1560,58 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const tabletBundlePriceReview = category === "tablet" && hasTabletBundlePriceReview(text);
   // Wave 90: tablet generation을 comparableParts에 전달 (세대별 시세 분리)
   const tabletGeneration = category === "tablet" ? parseTabletGeneration(text, model) : null;
+
+  // Wave 182 Phase 3 (2026-05-17): base option fallback.
+  // SKU 가 sku-base-options.ts 에 등록되어 있고 매물 텍스트에 옵션 명시 X 면 가장 낮은 옵션 가정.
+  // 안전성 (§12b): base 옵션 = 가장 낮은 옵션 → 시세 underestimate → priceGap 보수적 → false positive 0.
+  // recall loss 만 발생 (진짜 고옵션 매물이 base 시세로 비교돼 안 추천) — OK.
+  const baseOpts = baseOptionsFor(input.skuId);
+  const optionBaseAssumed: string[] = [];
+  const finalStorageGb = (() => {
+    if (storageGb != null) return storageGb;
+    if (baseOpts?.storageGb != null) { optionBaseAssumed.push("storage"); return baseOpts.storageGb; }
+    return null;
+  })();
+  const finalRamGb = (() => {
+    if (ramGb != null) return ramGb;
+    if (baseOpts?.ramGb != null) { optionBaseAssumed.push("ram"); return baseOpts.ramGb; }
+    return null;
+  })();
+  const finalSsdGb = (() => {
+    if (ssdGb != null) return ssdGb;
+    if (baseOpts?.ssdGb != null) { optionBaseAssumed.push("ssd"); return baseOpts.ssdGb; }
+    return null;
+  })();
+  const finalWatchSizeMm = (() => {
+    if (watchSizeMm != null) return watchSizeMm;
+    if (baseOpts?.watchSizeMm != null) { optionBaseAssumed.push("watch_size"); return baseOpts.watchSizeMm; }
+    return null;
+  })();
+  const finalConnectivity = (() => {
+    if (connectivity != null) return connectivity;
+    if (baseOpts?.connectivity != null) { optionBaseAssumed.push("connectivity"); return baseOpts.connectivity; }
+    return null;
+  })();
+  const finalCarrier = (() => {
+    if (carrier != null) return carrier;
+    if (baseOpts?.carrier != null) { optionBaseAssumed.push("carrier"); return baseOpts.carrier; }
+    return null;
+  })();
+
   const parts = comparableParts({
     category,
     family,
     model,
     releaseYear,
     laptopModelNumber,
-    storageGb,
-    ramGb,
-    ssdGb,
+    storageGb: finalStorageGb,
+    ramGb: finalRamGb,
+    ssdGb: finalSsdGb,
     screenSizeIn,
     chip,
-    connectivity,
-    carrier,
-    watchSizeMm,
+    connectivity: finalConnectivity,
+    carrier: finalCarrier,
+    watchSizeMm: finalWatchSizeMm,
     airpodsConnector,
     airpodsNoiseControl,
     monitorModelCode,
@@ -1587,14 +1627,14 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     model,
     releaseYear,
     laptopModelNumber,
-    storageGb,
-    ramGb,
-    ssdGb,
+    storageGb: finalStorageGb,
+    ramGb: finalRamGb,
+    ssdGb: finalSsdGb,
     screenSizeIn,
     chip,
-    connectivity,
-    carrier,
-    watchSizeMm,
+    connectivity: finalConnectivity,
+    carrier: finalCarrier,
+    watchSizeMm: finalWatchSizeMm,
     airpodsConnector,
     airpodsNoiseControl,
     airpodsMaxGeneration,
@@ -1647,23 +1687,26 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     model,
     variantKey,
     comparableKey,
-    storageGb,
-    ramGb,
-    ssdGb,
+    storageGb: finalStorageGb,
+    ramGb: finalRamGb,
+    ssdGb: finalSsdGb,
     screenSizeIn,
     chip,
     releaseYear,
     batteryHealth,
     batteryCycles,
-    carrier,
-    connectivity,
+    carrier: finalCarrier,
+    connectivity: finalConnectivity,
     conditionScore,
     conditionNotes,
     conditionClass: finalConditionClass,
     parseConfidence,
     needsReview,
     parsedJson: {
-      watch_size_mm: watchSizeMm,
+      watch_size_mm: finalWatchSizeMm,
+      // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
+      // 옵션 명시 X → SKU baseOptions 의 가장 낮은 옵션 가정. UI 에서 "기본 옵션 가정" 표시.
+      option_base_assumed: optionBaseAssumed.length > 0 ? optionBaseAssumed : null,
       airpods_connector: airpodsConnector,
       airpods_noise_control: airpodsNoiseControl,
       airpods_max_generation: airpodsMaxGeneration,
