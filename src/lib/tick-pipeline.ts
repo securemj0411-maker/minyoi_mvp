@@ -1668,6 +1668,20 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
         await patchRows("mvp_candidate_pool", `pid=eq.${claim.pid}`, {
           last_verified_at: now,
         }).catch(() => undefined);
+        // Wave 159e (2026-05-17): 재분류 결과 listing_type 이 normal 이 아니면 candidate_pool 에서 invalidate.
+        // 이전: detail-worker 가 listing_type=multi/accessory/... 로 재분류해도 풀 그대로 남음. (운영자 코멘트 pid 364899054 다중상품인데 ready 풀에 있음.)
+        // 운영자 override='normal' 이 박혀있으면 invalidate skip (override 의도 보존).
+        if (storageListingType !== "normal") {
+          const overrideRow = await restFetch(
+            `${tableUrl("mvp_raw_listings")}?select=listing_type_override&pid=eq.${claim.pid}&limit=1`,
+            { headers: serviceHeaders() },
+          ).then((r) => r.ok ? r.json() as Promise<Array<{ listing_type_override: string | null }>> : Promise.resolve([]))
+            .catch(() => [] as Array<{ listing_type_override: string | null }>);
+          const overrideValue = overrideRow[0]?.listing_type_override ?? null;
+          if (overrideValue !== "normal") {
+            await invalidatePoolEntries([{ pid: Number(claim.pid), reason: `reclassified_${storageListingType}` }]).catch(() => undefined);
+          }
+        }
         try {
           if (detail.shopUid) {
             stats.sellerUpserted += await upsertSellerRows([{

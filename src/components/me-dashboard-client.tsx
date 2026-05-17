@@ -100,6 +100,8 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
   const [isBetaTester, setIsBetaTester] = useState<boolean>(false);
   const [shadowMode, setShadowMode] = useState<boolean>(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  // 2026-05-17: "더 찾아보기" 모달 — 추천 받기 기능을 모달 안에서 호출 (별도 페이지 아님).
+  const [seekMoreOpen, setSeekMoreOpen] = useState(false);
 
   useEffect(() => {
     setShadowMode(hasAdminShadowClient());
@@ -312,35 +314,39 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           <AdminPoolBrowser />
         ) : activeView === "admin-classification" ? (
           <AdminClassificationBrowser />
-        ) : activeView === "recommend" ? (
-          <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
-            {/* 2026-05-17: 추천 받기 메뉴 폐기 후 url param 으로만 진입. "나의 상품으로 돌아가기" 버튼. */}
-            <button
-              type="button"
-              onClick={() => setActiveView("history")}
-              className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-bold text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-            >
-              ← 나의 상품으로
-            </button>
-            <OnboardingBanner onStart={() => setActiveView("recommend")} />
-            <SafetyStatsBadge />
-            <RecommendationWorkspace initialInventory={initialInventory} />
-          </section>
         ) : (
-          // history (default)
+          // 2026-05-17: history (default) — recommend view 폐기, 모달로 대체.
           <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
-            {/* 2026-05-17: "더 찾아보기" 버튼 — 추천 받기 페이지 통합. */}
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-base font-black text-[#223127] dark:text-zinc-100">📦 나의 상품</h2>
               <button
                 type="button"
-                onClick={() => setActiveView("recommend")}
+                onClick={() => setSeekMoreOpen(true)}
                 className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-accent-strong)] px-4 py-2 text-xs font-black text-[var(--brand-cream)] shadow-sm transition hover:opacity-90"
               >
                 🔍 더 찾아보기
               </button>
             </div>
             <UserRevealDashboard userRef={userRefForAuthUser(user.id)} />
+            {/* 2026-05-17 phase 1b: 더 찾아보기 모달 — RecommendationWorkspace 모달 안에서 호출. */}
+            {seekMoreOpen && (
+              <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/60 p-3 sm:p-6" onClick={() => setSeekMoreOpen(false)}>
+                <div className="relative w-full max-w-4xl rounded-2xl bg-[#fffbf4] p-4 shadow-2xl dark:bg-zinc-950 sm:p-6" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    onClick={() => setSeekMoreOpen(false)}
+                    aria-label="닫기"
+                    className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-zinc-100 text-lg font-black text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
+                  >
+                    ✕
+                  </button>
+                  <div className="mb-3 text-base font-black text-[#223127] dark:text-zinc-100">🔍 더 찾아보기</div>
+                  <OnboardingBanner onStart={() => undefined} />
+                  <SafetyStatsBadge />
+                  <RecommendationWorkspace initialInventory={initialInventory} />
+                </div>
+              </div>
+            )}
           </section>
         )}
       </div>
