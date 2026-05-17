@@ -16,17 +16,21 @@ const RATE_LIMIT_WINDOW_SECONDS = 60;
 const MAX_PIDS_PER_REQUEST = 500;
 
 export async function POST(req: Request) {
-  const userResult = await requireSupabaseUser(req);
-  if (!userResult.ok) {
-    return NextResponse.json({ error: userResult.error }, { status: userResult.status });
-  }
-  const userRef = userRefForAuthUser(userResult.user.id);
+  const auth = await requireSupabaseUser(req);
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const userRef = userRefForAuthUser(auth.user.id);
   const encodedUserRef = encodeURIComponent(userRef);
 
-  const rateLimitKey = `packs-reveals-delete:${userRef}`;
-  const rate = checkRateLimit(rateLimitKey, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_SECONDS);
+  const rate = await checkRateLimit({
+    bucketKey: `reveals.delete:user:${userRef}`,
+    maxRequests: RATE_LIMIT_MAX,
+    windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
+  });
   if (!rate.allowed) {
-    return NextResponse.json({ error: "rate_limited", retryAfterSeconds: rate.retryAfterSeconds }, { status: 429 });
+    return NextResponse.json(
+      { error: "rate_limited", message: "삭제 요청이 너무 잦아요. 잠시 후 다시 시도해주세요.", retryAfter: rate.retryAfterSeconds },
+      { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
+    );
   }
 
   let body: { pids?: unknown; all?: unknown };
