@@ -205,6 +205,14 @@ const HEADPHONE_NOISE = [
   "삽니다",
   "구합니다",
   "매입",
+  // Wave 179 (2026-05-17): 사용자 코멘트 pid 343583659 — 에어팟/이어폰 한쪽 단품 본품 시세로 흡수.
+  // 명시 패턴만 (false positive 차단): "왼쪽만"은 OK, 단독 "왼쪽"은 정상 매물도 사용 → 제외.
+  "왼쪽만", "오른쪽만", "좌측만", "우측만",
+  "왼쪽 유닛", "오른쪽 유닛", "좌 유닛", "우 유닛",
+  "한쪽만", "한쪽 구매", "한쪽 판매", "한쪽 유닛",
+  "유닛만", "유닛 판매", "유닛입니다",
+  "본체와 호환",  // "A2968 본체와 호환" — 이건 본체 아닌 부품 시그널
+  "충전 케이스만", "충전케이스만",
   // Wave 122: 공통 noise 패턴
   ...COMMON_PRODUCT_NOISE,
 ];
@@ -3784,7 +3792,11 @@ export const CATALOG: Sku[] = [
     modelName: "AirPods Pro 1st gen",
     aliases: ["에어팟 프로 1세대", "AirPods Pro 1"],
     mustContain: [["에어팟", "airpods"], ["프로", "pro"], ["1세대", "1 세대", "1st"]],
-    mustNotContain: ["2세대", "2nd", "max", "맥스", "usb-c", "usbc", "c타입", "타입c"],
+    // Wave 179 (2026-05-17): HEADPHONE_NOISE 추가 — 단품/유닛/케이스만 차단 일관성.
+    mustNotContain: [
+      "2세대", "2nd", "max", "맥스", "usb-c", "usbc", "c타입", "타입c",
+      ...HEADPHONE_NOISE,
+    ],
     msrpKrw: 329000,
     released: 2019,
   },
@@ -3807,6 +3819,8 @@ export const CATALOG: Sku[] = [
       "max", "맥스",
       "3세대", "3 세대", "3rd", "프로 3", "프로3",
       "1세대", "1 세대", "1st", "프로 1", "프로1",
+      // Wave 179 (2026-05-17): 단품/유닛/케이스만 차단 (HEADPHONE_NOISE).
+      ...HEADPHONE_NOISE,
     ],
     msrpKrw: 359000,
     released: 2022,
