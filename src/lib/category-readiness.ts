@@ -383,6 +383,23 @@ export const LANE_READINESS: LaneReadinessMap = {
   },
   // 미진입 (측정 불충분): watch_gshock_ga2100 (NRtrue 28건, 옛 parser version), watch_gshock_gmwb5000 (parseRate 55%),
   // watch_seiko_5_sports_srpd (1건), watch_seiko_5_sports_sbsa (0건), camera_sony_a6400 (production 0건)
+  // Wave 142 (2026-05-17): 액세서리/luxury narrow lane 3개 신설 (사용자 원래 의도 = 상품 다양화).
+  // 정밀 검토 후 표본 충분한 lane만 ready (애플펜슬 단독 0건 → drop).
+  magic_keyboard_ipad: {
+    status: "ready",
+    label: "Apple Magic Keyboard for iPad",
+    note: "Wave 142: iPad 매직키보드 단독 narrow lane (43건 단독, median ₩330k, p25 ₩225k / p75 ₩360k). Smart Keyboard Folio / 맥북용 / 단품/부품/케이스만 매물은 catalog mustNotContain으로 차단. 11인치 vs 13인치 표기 불명확 매물 25건 多 → 단일 SKU 통합.",
+  },
+  applewatch_s8_hermes: {
+    status: "ready",
+    label: "Apple Watch Series 8 Hermès",
+    note: "Wave 142: S8 Hermès Edition 본품 narrow lane (29건, median ₩528k). 가죽 밴드 별매 (밴드만/스트랩만) + parts/buying 차단. 일반 S8 SKU와는 mustNotContain 양방향 격리.",
+  },
+  applewatch_s10_hermes: {
+    status: "ready",
+    label: "Apple Watch Series 10 Hermès",
+    note: "Wave 142: S10 Hermès Edition 본품 narrow lane (42건, median ₩962k). 일반 S10 대비 시세 ~+₩300~400K. 가죽 밴드 별매/parts/buying 차단. 일반 S10 SKU와는 mustNotContain 양방향 격리.",
+  },
 };
 
 export type CategoryReadinessConfig = {

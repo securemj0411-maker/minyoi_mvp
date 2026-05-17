@@ -2310,6 +2310,35 @@ const CORE_TABLET_CATALOG: Sku[] = [
     msrpKrw: 459000,
     released: 2024,
   },
+  // Wave 142 (2026-05-17): iPad Magic Keyboard narrow lane (accessory 다양화).
+  // 단독 매물 43건 / median 330k / p25=225k p75=360k. 11인치/13인치 표기 불명확한 매물 25건 多
+  // → 단일 SKU "magic-keyboard-ipad" 로 통합. broad iPad SKU 와 mustContain 분리 (매직키보드 단어 필수).
+  {
+    id: "magic-keyboard-ipad",
+    brand: "Apple",
+    category: "tablet",
+    laneKey: "magic_keyboard_ipad",
+    modelName: "Apple Magic Keyboard for iPad",
+    aliases: ["매직 키보드", "Magic Keyboard for iPad", "아이패드 매직키보드"],
+    mustContain: [
+      ["매직 키보드", "매직키보드", "magic keyboard"],
+      ["아이패드", "ipad", "에어", "air", "프로", "pro", "미니", "mini"],
+    ],
+    mustNotContain: [
+      "맥북", "macbook", "imac", "아이맥",
+      "단품", "부품", "고장", "수리", "as 필요", "케이스만",
+      "삽니다", "구해요", "매입",
+      "스마트 키보드", "스마트키보드", "smart keyboard",
+      "폴리오", "folio",
+      "구합니다",
+      // 본품 + 키보드 번들 매물 차단 — iPad 본품 옵션 token (키보드 단독 매물에는 안 들어감)
+      "256gb", "128gb", "512gb", "64gb", "1tb",
+      "wifi", "wi-fi", "셀룰러", "cellular", "lte",
+    ],
+    msrpKrw: 449000,
+    released: 2020,
+    confusionNote: "Apple Magic Keyboard for iPad 단일 SKU. iPad Pro/Air 11/12.9/13인치 다 호환. Smart Keyboard Folio (저가) 와 분리.",
+  },
   {
     id: "galaxy-tab-s8",
     brand: "Samsung",
@@ -4360,7 +4389,8 @@ export const CATALOG: Sku[] = [
       ["애플워치", "apple watch", "applewatch"],
       ["시리즈 8", "series 8", " 8 ", "s8", "워치8", "워치 8"],
     ],
-    mustNotContain: ["se", "ultra", "시리즈 7", "시리즈 9", "시리즈 10", "series 7", "series 9", "series 10"],
+    // Wave 142 (2026-05-17): Hermes Edition 별도 SKU 격리 (applewatch-series8-hermes).
+    mustNotContain: ["se", "ultra", "시리즈 7", "시리즈 9", "시리즈 10", "series 7", "series 9", "series 10", "에르메스", "hermes"],
     msrpKrw: 599000,
     released: 2022,
   },
@@ -4388,7 +4418,8 @@ export const CATALOG: Sku[] = [
       ["애플워치", "apple watch", "applewatch"],
       ["시리즈 10", "series 10", " 10 ", "s10", "워치10", "워치 10"],
     ],
-    mustNotContain: ["se", "ultra", "시리즈 7", "시리즈 8", "시리즈 9", "series 7", "series 8", "series 9"],
+    // Wave 142 (2026-05-17): Hermes Edition 별도 SKU 격리 (applewatch-series10-hermes).
+    mustNotContain: ["se", "ultra", "시리즈 7", "시리즈 8", "시리즈 9", "series 7", "series 8", "series 9", "에르메스", "hermes"],
     msrpKrw: 599000,
     released: 2024,
   },
@@ -4528,6 +4559,53 @@ export const CATALOG: Sku[] = [
     msrpKrw: 1149000,
     released: 2023,
     confusionNote: "Ultra 2 (2023). S9 chip, 더블탭 제스처 추가. Ultra 1과 외형 동일 (모두 49mm 티타늄). 시세 ~₩150K 더 비쌈.",
+  },
+  // Wave 142 (2026-05-17): Apple Watch Hermes Edition narrow lane.
+  // 단독 표본: S10 = 42건 median 962k / S8 = 29건 median 528k.
+  // 일반 Series 8/10 SKU와는 mustNotContain "에르메스/hermes" 로 격리.
+  {
+    id: "applewatch-series8-hermes",
+    brand: "Apple",
+    category: "smartwatch",
+    laneKey: "applewatch_s8_hermes",
+    modelName: "Apple Watch Series 8 Hermès",
+    aliases: ["애플워치 8 에르메스", "Apple Watch Series 8 Hermes"],
+    mustContain: [
+      ["애플워치", "apple watch", "applewatch", "에플워치"],
+      ["시리즈 8", "series 8", " 8 ", "s8", "워치8", "워치 8", "애플워치8"],
+      ["에르메스", "hermes"],
+    ],
+    mustNotContain: [
+      "se", "ultra",
+      "시리즈 7", "시리즈 9", "시리즈 10", "series 7", "series 9", "series 10",
+      "밴드만", "스트랩만", "케이스만", "충전기만",
+      "부품", "고장", "매입", "삽니다",
+    ],
+    msrpKrw: 1799000,
+    released: 2022,
+    confusionNote: "Apple Watch Series 8 Hermès Edition (45mm 실버 다수). 일반 S8 대비 시세 ~+₩200K. 가죽 밴드 별매 매물 (밴드만) 차단.",
+  },
+  {
+    id: "applewatch-series10-hermes",
+    brand: "Apple",
+    category: "smartwatch",
+    laneKey: "applewatch_s10_hermes",
+    modelName: "Apple Watch Series 10 Hermès",
+    aliases: ["애플워치 10 에르메스", "Apple Watch Series 10 Hermes"],
+    mustContain: [
+      ["애플워치", "apple watch", "applewatch", "에플워치"],
+      ["시리즈 10", "series 10", " 10 ", "s10", "워치10", "워치 10", "애플워치10"],
+      ["에르메스", "hermes"],
+    ],
+    mustNotContain: [
+      "se", "ultra",
+      "시리즈 7", "시리즈 8", "시리즈 9", "series 7", "series 8", "series 9",
+      "밴드만", "스트랩만", "케이스만", "충전기만",
+      "부품", "고장", "매입", "삽니다",
+    ],
+    msrpKrw: 1899000,
+    released: 2024,
+    confusionNote: "Apple Watch Series 10 Hermès Edition (2024). 일반 S10 대비 시세 ~+₩300~400K. 가죽 밴드 별매 매물 차단.",
   },
 
   // ─── Galaxy Watch ─────────────────────────────────────

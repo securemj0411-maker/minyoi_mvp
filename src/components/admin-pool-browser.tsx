@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import { MarketSourceDebug } from "@/components/market-source-debug";
+import { ConditionChip } from "@/components/condition-chip";
 import { CATALOG } from "@/lib/catalog";
 
 type PoolItem = {
