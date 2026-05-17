@@ -218,7 +218,8 @@ export async function GET() {
       ? await Promise.all([
         restFetch(
           // 2026-05-17: date + condition_class 별로 row 분산되므로 select 에 date 포함 + 합산 처리.
-          `${tableUrl("mvp_market_price_daily")}?select=comparable_key,condition_class,sold_sample_count,date&comparable_key=in.(${comparableKeys.map(encodeURIComponent).join(",")})&order=date.desc&limit=${comparableKeys.length * 10}`,
+          // sold + active 합산 = 시장 거래량 (사용자: "번개에 많이 올라오는걸로 수요").
+          `${tableUrl("mvp_market_price_daily")}?select=comparable_key,condition_class,sold_sample_count,active_sample_count,date&comparable_key=in.(${comparableKeys.map(encodeURIComponent).join(",")})&order=date.desc&limit=${comparableKeys.length * 10}`,
           { headers },
         ),
         restFetch(
@@ -227,23 +228,29 @@ export async function GET() {
         ).catch(() => null),
       ])
       : [null, null];
-    const soldByKey = new Map<string, number>();
+    const demandByKey = new Map<string, number>();
     if (marketRes) {
-      // 2026-05-17 fix: 같은 comparable_key + 최신 date 의 모든 condition_class sold 합산.
-      // 이전: 첫 row 만 사용 → condition 별 분산으로 threshold (3) 못 넘김.
-      // 새: latest date 의 4-5 condition row 합산 → 진짜 SKU 수요 표현.
-      const rows = (await marketRes.json()) as Array<{ comparable_key: string; sold_sample_count: number | null; date: string }>;
+      // 2026-05-17 v2: 사용자 정책 "번개에 많이 올라오는 = 수요". sold + active 합산.
+      // sold detection 안정성 의존 X. active = 현재 매물 수 (시장 활성도). 합치면 robust.
+      // latest date 의 모든 condition_class row 합산.
+      const rows = (await marketRes.json()) as Array<{
+        comparable_key: string;
+        sold_sample_count: number | null;
+        active_sample_count: number | null;
+        date: string;
+      }>;
       const latestByKey = new Map<string, { date: string; total: number }>();
       for (const r of rows) {
-        if (r.sold_sample_count == null) continue;
+        const sample = (r.sold_sample_count ?? 0) + (r.active_sample_count ?? 0);
+        if (sample <= 0) continue;
         const cur = latestByKey.get(r.comparable_key);
         if (!cur || r.date > cur.date) {
-          latestByKey.set(r.comparable_key, { date: r.date, total: r.sold_sample_count });
+          latestByKey.set(r.comparable_key, { date: r.date, total: sample });
         } else if (r.date === cur.date) {
-          cur.total += r.sold_sample_count;
+          cur.total += sample;
         }
       }
-      for (const [k, v] of latestByKey) soldByKey.set(k, v.total);
+      for (const [k, v] of latestByKey) demandByKey.set(k, v.total);
     }
     const velocityByKey = new Map<string, number>();
     if (velocityRes) {
@@ -275,7 +282,7 @@ export async function GET() {
         freeShipping: meta?.free_shipping ?? false,
         isFresh: isFresh(meta?.last_seen_at),
         // 2026-05-17 Phase 3: 근거 chip 데이터 (buildVerdicts input).
-        soldSampleCount: row.comparable_key ? (soldByKey.get(row.comparable_key) ?? null) : null,
+        soldSampleCount: row.comparable_key ? (demandByKey.get(row.comparable_key) ?? null) : null,
         medianHoursToSold: row.comparable_key ? (velocityByKey.get(row.comparable_key) ?? null) : null,
       };
     });

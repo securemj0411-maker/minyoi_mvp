@@ -62,13 +62,15 @@ export function buildVerdicts(input: VerdictInput): Verdict[] {
     }
   }
 
-  // 3. 시장 활성 — 수요 등급화 (binary → 4단계)
+  // 3. 시장 활성 — 수요 등급화. 2026-05-17: active + sold 합산 기준 (사용자: "번개에 많이 올라오는 = 수요").
+  // 이전: sold 만 (detection 안정성 의존 → SKU 절반 누락). 새: total sample (active+sold) — robust.
+  // threshold 조정: 30/10/3 → 50/20/8 (active 포함하면 N 커짐).
   if (input.soldSampleCount != null) {
-    if (input.soldSampleCount >= 30) {
+    if (input.soldSampleCount >= 50) {
       out.push({ label: "🔥 수요 매우높음", tone: "good" });
-    } else if (input.soldSampleCount >= 10) {
+    } else if (input.soldSampleCount >= 20) {
       out.push({ label: "수요 높음", tone: "good" });
-    } else if (input.soldSampleCount >= 3) {
+    } else if (input.soldSampleCount >= 8) {
       out.push({ label: "수요 보통", tone: "info" });
     }
   }
