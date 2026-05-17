@@ -219,8 +219,11 @@ export async function GET() {
       },
     });
   } catch (err) {
+    // Wave 184 (2026-05-17): public endpoint — err.message 노출 차단.
+    // 이전: err.message 가 response 에 직접 박혀 DB schema / internal path leak 가능.
+    console.error("[public/safety-stats] failed", { err: err instanceof Error ? err.message : String(err) });
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "fetch failed" },
+      { error: "safety_stats_failed", message: "안전 지표를 불러오지 못했어요. 잠시 후 다시 시도해주세요." },
       { status: 500 },
     );
   }
