@@ -151,51 +151,11 @@ score_flags 분포 (analyzed 1530건):
 
 C/D만으로는 시간 걸림. 사용자 결정 필요.
 
-## 사용자 결정 — E 옵션 확정
+## 사용자 결정 필요
 
-> "E: fallback + UI '계산된 시세' 표시"
+E 옵션 (fallback chain + UI 표시) 가 가장 균형. 풀 늘리되 사용자한테 정직히 "이 시세는 broader category median" 표시.
 
-## 구현 (Phase 1 — 코드 + admin UI)
-
-### 새 파일
-
-- **`src/lib/market-key-fallback.ts`**:
-  - `broaderMarketKeyChain(comparableKey)`: narrow → broader keys chain. 마지막 segment 부터 trim (RAM → SSD → screen → year 순). family + model (앞 2 segment) 은 보존.
-  - `pickPricesByBroaderChain(key, pricesByKey, threshold)`: 첫 broader key 중 threshold 만족하는 것 선택. `broader: boolean` 반환.
-
-- **`tests/wave181-market-key-fallback.test.ts`**: 10/10 pass.
-
-### 수정
-
-- **`src/lib/tick-pipeline.ts`**:
-  - Wave 179b `pricesByMarketCondition` Map 안에서 broader chain fallback lookup 추가.
-  - narrow marketKey 표본 < threshold 면 broader marketKey (RAM/SSD trim) 단위로 fallback.
-  - fallback 사용 시 `broaderMarketFallback = true` → `score_flags` 에 `market_broader_fallback` 추가.
-  - `market_stat_missing` skip 조건에 broader fallback 도 포함 (Wave 175 신발 패턴 확장).
-
-- **`src/components/admin-pool-browser.tsx`**:
-  - score_flags 에 `market_broader_fallback` 있으면 매물 카드 "매입 / 시세 / 신뢰" 줄에 **"계산된 시세"** amber badge + tooltip.
-
-### Pool policy
-
-- `market_broader_fallback` 은 `pool-policy.mjs` BLOCK_FLAGS 에 없음 → 풀 진입 허용. UI 표시 용도만.
-
-### 효과 예상
-
-- laptop 384 lane 중 시세 trusted = 4 (1%) → broader fallback 활성화 후 model/year 단위 시세 사용 → 풀 진입 가능.
-- 잠재 +50~100 ready 즉시 (다음 tick).
-
-### Phase 2 (다음 wave 181b)
-
-- `RevealMarketBasis` 에 `broaderFallbackUsed: boolean` 추가
-- `/api/packs/me` + pack-open payload 확장
-- **pack-reveal-modal** + **user-reveal-dashboard** 에 "계산된 시세" badge 박기 (3화면 일관성)
-
-## 검증
-
-- `npx tsc --noEmit` clean
-- `npm run test:core` 338/338 pass
-- 24h 후 측정: ready count + broader fallback 사용률 + 사용자 false positive rate.
+또는 C+D 병행 + 시간 기다림 (즉시 효과 포기).
 
 ## 위험
 
