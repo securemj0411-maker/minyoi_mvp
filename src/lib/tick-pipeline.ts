@@ -2783,15 +2783,18 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   // 발견: samba_og_broad min_price 13k, 990v5 min 9k 등 — msrp의 5% 매물 다수.
   const FAKE_FLOOR_CATEGORIES_MARKET = new Set<string>(["shoe", "bag"]);
   const FAKE_FLOOR_RATIO_MARKET = 0.15;
+  // Wave 171: price ceiling outlier 시세 제외 (msrp의 5배 초과 = 콜라보/한정/inflate)
+  const FAKE_CEILING_RATIO_MARKET = 5;
   for (const group of byKey.values()) {
     if (!group.skuId) continue;
     const sku = skuById(group.skuId);
     if (!sku?.msrpKrw) continue;
     if (!FAKE_FLOOR_CATEGORIES_MARKET.has(sku.category)) continue;
     const floor = sku.msrpKrw * FAKE_FLOOR_RATIO_MARKET;
-    group.activeRows = group.activeRows.filter((r) => r.price >= floor);
-    group.soldRows = group.soldRows.filter((r) => r.price >= floor);
-    group.disappearedRows = group.disappearedRows.filter((r) => r.price >= floor);
+    const ceiling = sku.msrpKrw * FAKE_CEILING_RATIO_MARKET;
+    group.activeRows = group.activeRows.filter((r) => r.price >= floor && r.price <= ceiling);
+    group.soldRows = group.soldRows.filter((r) => r.price >= floor && r.price <= ceiling);
+    group.disappearedRows = group.disappearedRows.filter((r) => r.price >= floor && r.price <= ceiling);
   }
 
   // Wave 163 (2026-05-16): 시세 집계에서 광고 매물 제외 (사용자 지적).

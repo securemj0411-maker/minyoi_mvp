@@ -343,6 +343,11 @@ export function buildCandidatePoolRows(input: {
     const FAKE_FLOOR_RATIO_T1 = 0.15;
     const FAKE_FLOOR_RATIO_T2 = 0.25;
     const FAKE_FLOOR_RATIO_T3 = 0.30;
+    // Wave 171 (2026-05-17): price ceiling outlier 차단 (msrp의 5배 초과).
+    // 콜라보/한정판은 별도 catalog narrow SKU (wave91). broad에 콜라보 가격 매물 흡수 시 차단.
+    // 발견: NB 992 broad에 236만원 매물 (msrp 24.9만의 9.5배) — 콜라보/한정/inflate 추정.
+    // false positive 보호: 한정판은 별도 narrow SKU로 분리됐으므로 broad SKU에 outlier = 잘못된 매물.
+    const FAKE_CEILING_RATIO = 5;
     if (
       sku?.msrpKrw &&
       row.price > 0 &&
@@ -350,6 +355,13 @@ export function buildCandidatePoolRows(input: {
       FAKE_FLOOR_CATEGORIES.has(category)
     ) {
       const referencePrice = Math.max(sku.msrpKrw, row.skuMedian ?? 0);
+      // Wave 171: price ceiling outlier (msrp의 5배 초과 = 콜라보/한정/inflate)
+      // broad SKU에 한정판 가격 매물 흡수 차단. 한정판은 별도 narrow catalog SKU.
+      if (row.price > sku.msrpKrw * FAKE_CEILING_RATIO) {
+        skipped += 1;
+        invalidations.push({ pid, reason: `outlier_above_${FAKE_CEILING_RATIO}x_msrp` });
+        continue;
+      }
       // Tier 1: 절대 가품 (review 무관)
       if (row.price < referencePrice * FAKE_FLOOR_RATIO_T1) {
         skipped += 1;
