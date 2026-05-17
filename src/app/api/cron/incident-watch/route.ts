@@ -168,7 +168,8 @@ export async function GET(req: NextRequest) {
   });
 
   const incidents = summary.filter((s) => !s.ok);
-  const okKeys = new Set(summary.filter((s) => s.ok).map((s) => s.name));
+  // Wave 185 build fix (2026-05-17): Set<string> 명시 — log.incident_key 가 일반 string 이므로 narrow union 충돌 회피.
+  const okKeys = new Set<string>(summary.filter((s) => s.ok).map((s) => s.name));
 
   // Wave 193: dedup — incident_log fetch + 24h 안 알림이면 skip + 회복 detect.
   const dedupWindowMs = DEDUP_WINDOW_HOURS * 3600 * 1000;
