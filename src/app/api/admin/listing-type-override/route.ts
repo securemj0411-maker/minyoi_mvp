@@ -4,6 +4,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
+import { ruleMatch } from "@/lib/catalog";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 
@@ -46,6 +47,27 @@ export async function POST(req: NextRequest) {
   const reason = String(body.reason ?? "").slice(0, 200);
 
   const now = new Date().toISOString();
+
+  // override='normal' 박을 때 sku_id가 null이면 scoreStage가 fetch 못 함 (sku_id=not.is.null 조건).
+  // ruleMatch로 sku_id/sku_name 재계산해서 같이 박음.
+  let skuPatch: { sku_id?: string | null; sku_name?: string | null } = {};
+  if (override === "normal") {
+    const detailRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid,name,description_preview,sku_id&pid=eq.${pid}&limit=1`,
+      { headers: serviceHeaders() },
+    );
+    if (detailRes.ok) {
+      const rows = (await detailRes.json()) as Array<{ pid: number; name: string | null; description_preview: string | null; sku_id: string | null }>;
+      const row = rows[0];
+      if (row && (row.sku_id == null || row.sku_id === "")) {
+        const sku = ruleMatch(row.name ?? "", row.description_preview ?? "");
+        if (sku) {
+          skuPatch = { sku_id: sku.id, sku_name: sku.modelName };
+        }
+      }
+    }
+  }
+
   const patchPayload = override == null
     ? {
         listing_type_override: null,
@@ -62,6 +84,7 @@ export async function POST(req: NextRequest) {
         listing_type_override_reason: reason || null,
         score_dirty: true,
         updated_at: now,
+        ...skuPatch,
       };
 
   const res = await restFetch(`${tableUrl("mvp_raw_listings")}?pid=eq.${pid}`, {
@@ -74,5 +97,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "patch_failed", detail: text.slice(0, 200) }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, pid, override, by: adminEmail, at: now });
+  return NextResponse.json({
+    ok: true,
+    pid,
+    override,
+    by: adminEmail,
+    at: now,
+    skuRecalculated: skuPatch.sku_id ?? null,
+  });
 }
