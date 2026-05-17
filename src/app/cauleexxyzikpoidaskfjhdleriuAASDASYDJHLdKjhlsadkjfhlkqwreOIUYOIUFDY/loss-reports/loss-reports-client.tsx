@@ -3,7 +3,7 @@
 // Wave 182 (2026-05-17): 운영자 손해 신고 검수 client.
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type LossReportItem = {
   id: number;
@@ -65,6 +65,11 @@ export default function LossReportsClient() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [responseDraft, setResponseDraft] = useState("");
   const [saving, setSaving] = useState(false);
+  // Wave 198 (2026-05-17): keyboard shortcut state.
+  const [focusedIdx, setFocusedIdx] = useState<number>(0);  // 현재 focus 신고 index (filter 적용 후)
+  const [helpOpen, setHelpOpen] = useState(false);
+  const articleRefs = useRef<Map<number, HTMLElement>>(new Map());
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const fetchList = useCallback(async () => {
     setLoading(true);
@@ -111,6 +116,85 @@ export default function LossReportsClient() {
     }
   }
 
+  // Wave 198 (2026-05-17): keyboard shortcut — 운영자 검수 속도 ↑.
+  // j/k navigate, e edit response, r resolve, d dismiss, Esc cancel, ? help.
+  const filteredItems = data?.items.filter((i) => filter === "all" || i.adminStatus === filter) ?? [];
+
+  useEffect(() => {
+    // filter 변경 시 focus reset
+    setFocusedIdx(0);
+  }, [filter]);
+
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      // 입력 중 (textarea/input focused) 일 때 Esc 외 무시.
+      const target = e.target as HTMLElement | null;
+      const inInput = target && (target.tagName === "TEXTAREA" || target.tagName === "INPUT");
+      if (inInput && e.key !== "Escape") return;
+
+      if (e.key === "?") {
+        e.preventDefault();
+        setHelpOpen((v) => !v);
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (editingId != null) {
+          setEditingId(null);
+          setResponseDraft("");
+        } else if (helpOpen) {
+          setHelpOpen(false);
+        }
+        return;
+      }
+      if (filteredItems.length === 0) return;
+      const current = filteredItems[focusedIdx] ?? filteredItems[0];
+
+      if (e.key === "j" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setFocusedIdx((i) => Math.min(filteredItems.length - 1, i + 1));
+      } else if (e.key === "k" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setFocusedIdx((i) => Math.max(0, i - 1));
+      } else if (e.key === "e" && current) {
+        e.preventDefault();
+        setEditingId(current.id);
+        setResponseDraft(current.adminResponseNote ?? "");
+        // 다음 tick 에 textarea focus
+        setTimeout(() => textareaRef.current?.focus(), 0);
+      } else if (e.key === "r" && current && !saving) {
+        e.preventDefault();
+        // 응답 textarea 박혀있고 draft 5자+ → 즉시 resolve.
+        if (editingId === current.id && responseDraft.trim().length >= 5) {
+          void updateStatus(current, "resolved");
+        } else {
+          // 응답 안 박혀있으면 e (edit) 먼저 권장.
+          setEditingId(current.id);
+          setResponseDraft(current.adminResponseNote ?? "");
+          setTimeout(() => textareaRef.current?.focus(), 0);
+        }
+      } else if (e.key === "d" && current && !saving) {
+        e.preventDefault();
+        // 기각 — 응답 없어도 OK (운영자가 의도적으로 기각).
+        if (window.confirm(`pid ${current.pid} 신고 기각?`)) {
+          void updateStatus(current, "dismissed", responseDraft);
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredItems, focusedIdx, editingId, responseDraft, saving, helpOpen]);
+
+  // focused 신고 scroll into view
+  useEffect(() => {
+    if (filteredItems.length === 0) return;
+    const item = filteredItems[focusedIdx];
+    if (!item) return;
+    const el = articleRefs.current.get(item.id);
+    el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [focusedIdx, filteredItems]);
+
   return (
     <div className="space-y-4">
       {/* 상단 stats + filter */}
@@ -155,13 +239,21 @@ export default function LossReportsClient() {
         </div>
       )}
 
-      {data?.items.map((item) => {
+      {filteredItems.map((item, idx) => {
         const isPending = item.adminStatus === "pending";
         const isEditing = editingId === item.id;
+        const isFocused = idx === focusedIdx;
         return (
           <article
             key={item.id}
-            className={`rounded-xl border-2 bg-white p-4 shadow-sm dark:bg-zinc-900 ${
+            ref={(el) => {
+              if (el) articleRefs.current.set(item.id, el);
+              else articleRefs.current.delete(item.id);
+            }}
+            onClick={() => setFocusedIdx(idx)}
+            className={`cursor-pointer rounded-xl border-2 bg-white p-4 shadow-sm transition dark:bg-zinc-900 ${
+              isFocused ? "ring-2 ring-blue-400 dark:ring-blue-500" : ""
+            } ${
               isPending
                 ? "border-rose-300 dark:border-rose-900/60"
                 : item.adminStatus === "resolved"
@@ -260,6 +352,7 @@ export default function LossReportsClient() {
                 {isEditing ? (
                   <div className="mt-3 space-y-2">
                     <textarea
+                      ref={(el) => { if (isEditing) textareaRef.current = el; }}
                       value={responseDraft}
                       onChange={(e) => setResponseDraft(e.target.value)}
                       placeholder="예: 위험 신호 (배터리 미공개 + 시세 -40%) 시스템이 놓침. 알고리즘 보정 완료. 비슷한 매물 N건 미리 차단됨."
@@ -313,6 +406,49 @@ export default function LossReportsClient() {
           </article>
         );
       })}
+
+      {/* Wave 198: keyboard shortcut floating button + help modal. */}
+      <button
+        type="button"
+        onClick={() => setHelpOpen(true)}
+        className="fixed bottom-4 right-4 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-sm font-black text-white shadow-lg hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        title="단축키 (?)"
+        aria-label="키보드 단축키 보기"
+      >
+        ?
+      </button>
+      {helpOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setHelpOpen(false)}>
+          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl dark:bg-zinc-900" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-baseline justify-between">
+              <h3 className="text-base font-black text-zinc-900 dark:text-zinc-100">⌨️ 키보드 단축키</h3>
+              <button type="button" onClick={() => setHelpOpen(false)} className="text-sm text-zinc-500 hover:text-zinc-700">닫기 ✕</button>
+            </div>
+            <div className="space-y-1.5 text-[12px]">
+              {[
+                ["j / ↓", "다음 신고로"],
+                ["k / ↑", "이전 신고로"],
+                ["e", "응답 입력 (textarea focus)"],
+                ["r", "✅ 보정 완료 (응답 5자+ 입력 후)"],
+                ["d", "❌ 기각 (confirm 박힘)"],
+                ["Esc", "응답 입력 취소 / 모달 닫기"],
+                ["?", "단축키 도움말 toggle"],
+              ].map(([key, desc]) => (
+                <div key={key} className="flex items-baseline gap-3">
+                  <kbd className="rounded border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+                    {key}
+                  </kbd>
+                  <span className="text-zinc-700 dark:text-zinc-300">{desc}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 border-t border-zinc-200 pt-2 text-[10px] text-zinc-500 dark:border-zinc-700">
+              현재 focus 신고 = 파란 ring. 클릭으로도 focus 변경 가능.
+              textarea 입력 중에는 Esc 외 단축키 비활성 (입력 우선).
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
