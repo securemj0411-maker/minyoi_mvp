@@ -169,7 +169,9 @@ export function resolveConditionClass(
 
 // 2026-05-16 v46 cleanup: export — reparse-listings/route.ts 등 다른 곳에서 import.
 // 이전: route.ts 에 별도 const 박혀서 silent drift 위험 (수동 sync 필요).
-export const PARSER_VERSION = "option-parser-v48";
+// Wave 202 (2026-05-18) v49: 액세서리 generation 노이즈 제거 + model 분기 우선 (iPad Air/Pro/Mini).
+// 이전: "에어 4 + 애플펜슬 2세대" → 2_gen|a8x 잘못 매칭 (액세서리 "2세대"가 generation 으로 캡처).
+export const PARSER_VERSION = "option-parser-v49";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -591,39 +593,56 @@ function parseMonitorShape(text: string) {
   return null;
 }
 
+// Wave 202 (2026-05-18) FIX: 액세서리의 generation 표기 ("애플펜슬 2세대" 등) 가
+// tablet generation 으로 잘못 매칭되는 버그 fix. 사용자 보고:
+// "아이패드 에어 4 + 애플펜슬 2세대" → 2_gen|a8x 잘못 박힘 (실제 Air 4 = a14).
+function stripAccessoryGenerationMarker(text: string): string {
+  return text.replace(
+    /(?:애플\s*펜슬|애플펜슬|팬슬|애펜|apple\s*pencil|pencil|매직\s*키보드|매직키보드|magic\s*keyboard|폴리오|smart\s*folio)\s*\d+\s*세대?/gi,
+    "",
+  );
+}
+
 function parseTabletGeneration(text: string, model: string | null) {
   if (!model) return null;
   const lower = normalize(text).toLowerCase();
-  // v32: 세대 명시 토큰을 먼저 우선 매칭. "12.9 5세대" 같은 케이스에서 "1" (decimal 일부) 잘못 캡처 방지.
-  const genWithMarker = lower.match(/(\d)\s*세대/);
-  if (genWithMarker?.[1]) return Number(genWithMarker[1]);
+  // Wave 202: 액세서리 generation 제거 후 매칭 (예: "애플펜슬 2세대" 같은 노이즈 차단).
+  const cleaned = stripAccessoryGenerationMarker(lower);
 
+  // Wave 202: model 분기 우선 (정확한 모델 매칭이 "X세대" marker 보다 우선).
+  // 이전: "X세대" 우선 → "애플펜슬 2세대" 매칭 → 잘못된 generation 박힘.
   if (model === "ipad_pro") {
     // Wave 90: chip prefix (m4, m2, m1, a14, a17 등) 다음 숫자가 generation으로 잘못
     // 캡처되는 버그 fix. 사용자 코멘트로 발견 (pid 402181838 "프로 m4 13인치" → 4).
     // negative lookahead로 직전이 m/M/a/A/c/C/i/I (chip prefix) 면 캡처 안 함.
-    const match = firstMatch(lower, [
+    const match = firstMatch(cleaned, [
       /(?:아이패드\s*)?(?:프로|pro)\s+(?:[^0-9.]{0,12}?)?(?<![maciMACI])(\d)(?:[^0-9.]|$)/,
       /(?:^|[^0-9.])(?<![maciMACI])(\d)(?:[^0-9.]{0,12})?(?:프로|pro)/,
     ]);
-    return match ? Number(match[1]) : null;
+    if (match) return Number(match[1]);
   }
   if (model === "ipad_mini") {
-    if (/\ba\s*17\b|a17\s*pro|a17pro/.test(lower)) return 7;
+    if (/\ba\s*17\b|a17\s*pro|a17pro/.test(cleaned)) return 7;
     // Wave 91: \s+ → \s* (공백 없이 "미니6" 같은 매물도 캡처). 사용자 코멘트로 발견 (pid 367574084 "아이패드 미니6 256 셀룰러").
-    const match = firstMatch(lower, [
+    const match = firstMatch(cleaned, [
       /(?:아이패드\s*)?(?:미니|mini)\s*(?:[^0-9.]{0,12}?)?(\d)(?:[^0-9.]|$)/,
       /(?:^|[^0-9.])(\d)(?:[^0-9.]{0,12})?(?:미니|mini)/,
     ]);
-    return match ? Number(match[1]) : null;
+    if (match) return Number(match[1]);
   }
   if (model === "ipad_air") {
-    const match = firstMatch(lower, [
+    const match = firstMatch(cleaned, [
       /(?:아이패드\s*)?(?:에어|air)\s*(\d)(?:[^0-9.]|$)/,
       /(?:^|[^0-9.])(\d)\s*(?:에어|air)/,
     ]);
-    return match ? Number(match[1]) : null;
+    if (match) return Number(match[1]);
   }
+
+  // Fallback: model 분기에서 못 잡은 경우만 "X세대" marker 사용.
+  // 액세서리 제거된 cleaned 텍스트에서 검색 (안전).
+  const genWithMarker = cleaned.match(/(\d)\s*세대/);
+  if (genWithMarker?.[1]) return Number(genWithMarker[1]);
+
   return null;
 }
 
