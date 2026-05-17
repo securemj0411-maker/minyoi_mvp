@@ -18,13 +18,17 @@ export const revalidate = 0;
 const CACHE_SECONDS = 60;
 const PREVIEW_COUNT = 5;
 
-// 매물명 마스킹 — 숫자만 별표 처리 (세대/용량/사이즈 식별 차단).
-// 단어는 그대로 — "진짜 active 매물 느낌" 유지 (사용자 신뢰 ↑).
-// 예: "갤럭시 S24 울트라 512GB 풀박스" → "갤럭시 S** 울트라 ***GB 풀박스"
-//     "애플워치 울트라 2 49mm 티타늄" → "애플워치 울트라 * **mm 티타늄"
+// 2026-05-17: 매물명 마스킹 강화 — 사용자 보안 우려.
+// 단어별 첫 글자만 보이고 나머지 * 처리 (식별 불가능 + 카테고리 느낌만 유지).
+// 예: "갤럭시 S24 울트라 512GB 자급제 풀박스" → "갤** S** 울** 5**** 자** 풀**"
+//     "애플워치 울트라 2 49mm 티타늄" → "애** 울** * 4*** 티**"
+// DevTools 우회 차단 — 서버에서만 마스킹된 string 전송.
 function maskName(name: string): string {
   if (!name) return "*****";
-  return name.trim().replace(/\d+/g, (m) => "*".repeat(m.length));
+  return name.trim().split(/\s+/).map((w) => {
+    if (w.length <= 1) return w;
+    return w.charAt(0) + "*".repeat(Math.min(w.length - 1, 4));
+  }).join(" ");
 }
 
 type PoolRow = {
@@ -94,7 +98,8 @@ export async function GET() {
       return {
         slot: idx + 1,
         maskedName: maskName(raw?.name ?? ""),
-        thumbnailUrl: raw?.thumbnail_url ?? null,
+        // 2026-05-17 보안: 원본 thumbnailUrl 응답 차단 (CSS blur 만이면 DevTools 우회 가능).
+        // frontend = SVG icon + gradient fallback. 진짜 이미지 식별 risk 0.
         category: row.category ?? "other",
         conditionClass: row.condition_class,
         price: raw?.price ?? 0,

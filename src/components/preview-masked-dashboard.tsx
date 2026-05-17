@@ -3,7 +3,6 @@
 // 2026-05-17: 비로그인 사용자 메인 페이지 — 마스킹된 매물 5개 + 로그인 CTA.
 // 사용자 의도: 즉시 가치 인식 ("와 이게 돈 되는 거구나") + curiosity gap → 가입 motivation.
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ConditionChip } from "@/components/condition-chip";
@@ -31,7 +30,7 @@ type IconComponent = (props: SVGProps<SVGSVGElement>) => React.ReactElement;
 type PreviewItem = {
   slot: number;
   maskedName: string;
-  thumbnailUrl: string | null;
+  // 2026-05-17 보안: thumbnailUrl 제거 (서버 차단). frontend = SVG icon fallback 만.
   category: string;
   conditionClass: string | null;
   price: number;
@@ -191,22 +190,9 @@ export default function PreviewMaskedDashboard() {
                   className="block rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-4 transition hover:border-[var(--brand-accent)] hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-700"
                 >
                   <div className="flex items-start gap-3">
-                    {/* 진짜 thumbnail + 약한 blur (구글 이미지 검색 방해, 사용자는 매물 인식 가능). */}
-                    <div className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br ${gradient}`}>
-                      {item.thumbnailUrl ? (
-                        <Image
-                          src={item.thumbnailUrl}
-                          alt={item.category}
-                          fill
-                          sizes="80px"
-                          unoptimized
-                          className="object-cover blur-[4px]"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-zinc-500 dark:text-zinc-400">
-                          <CategoryIcon width={32} height={32} />
-                        </div>
-                      )}
+                    {/* 2026-05-17 보안: 원본 image URL 차단 (DevTools 우회 risk). SVG icon + gradient만. */}
+                    <div className={`relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br ${gradient} text-zinc-500 dark:text-zinc-400`}>
+                      <CategoryIcon width={36} height={36} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
