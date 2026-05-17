@@ -1,3 +1,6 @@
+// Wave 196 (2026-05-18): catalog SKU 별 search query 자동 매핑 helper.
+import { buildCatalogSearchQueries } from "@/lib/catalog";
+
 export const DEFAULT_SEARCH_QUERIES = [
   "에어팟", "에어팟 프로", "에어팟 프로2", "에어팟 4세대", "에어팟 맥스",
   "애플워치", "애플워치 se", "애플워치 9", "애플워치 10", "애플워치 울트라",
@@ -372,11 +375,19 @@ function envQueries(): string[] {
     return queries;
   }
   const categoryQueries = buildCategorySweepQueries();
+  // Wave 196 (2026-05-18): catalog SKU 별 search query 자동 매핑.
+  //   각 SKU 의 searchQueries 또는 aliases (자동 fallback) 를 query list 에 병합.
+  //   효과: broad query ("맥북에어") 만 있던 카테고리에 SKU 별 specific query 자동 추가 →
+  //   매물 cover ↑ → last_seen 신선도 ↑ → market-worker 시세 sample 다양화.
+  //   신발 카테고리 (이미 specific query 30+ 박혀있어 fresh 80~92%) 패턴 다른 카테고리 자동 적용.
+  //   env override: PIPELINE_DISABLE_CATALOG_QUERIES=1 로 rollback 가능.
+  const catalogQueries = envBool("PIPELINE_DISABLE_CATALOG_QUERIES", false) ? [] : buildCatalogSearchQueries();
   // dedupe + category sweep을 FRONT에 배치 (tickSearchBudgetMs 안에서 우선 수행).
   // 첫 번째 wave 88 deploy 시 category sweep이 budget timeout으로 미실행되는 issue 발견 → 우선순위 fix.
   const seen = new Set<string>();
   const merged: string[] = [];
-  for (const q of [...categoryQueries, ...queries]) {
+  // 우선순위: category sweep > DEFAULT > catalog-derived (catalog 은 보충적, 시간 부족하면 후순위).
+  for (const q of [...categoryQueries, ...queries, ...catalogQueries]) {
     if (!seen.has(q)) {
       seen.add(q);
       merged.push(q);
