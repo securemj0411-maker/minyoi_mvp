@@ -53,10 +53,8 @@ export default function AuthForm({ mode }: Props) {
   const hasSupabasePublicEnv = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
-  // Wave 180 (2026-05-17): 운영자 테스트용 임시 email auth 토글.
-  // .env.local 에 NEXT_PUBLIC_ENABLE_EMAIL_AUTH=1 박혀 있을 때만 노출.
-  // prod (vercel) 에 env 안 박으면 자동으로 카카오 only — 정책 (본인 인증 카카오 only) 유지.
-  const emailAuthEnabled = process.env.NEXT_PUBLIC_ENABLE_EMAIL_AUTH === "1";
+  // Wave 180 (2026-05-17): 이메일 가입/로그인 항상 노출 (env 토글 제거).
+  // prod (Vercel) 에서도 바로 보임 — 운영자 테스트 편의 우선.
   const isSignup = mode === "signup";
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(() => authErrorMessage(searchParams.get("auth")));
@@ -165,51 +163,47 @@ export default function AuthForm({ mode }: Props) {
         </button>
       </div>
 
-      {emailAuthEnabled ? (
-        <>
-          <div className="mt-6 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-[#9aa39d]">
-            <span className="h-px flex-1 bg-[#e7dece] dark:bg-zinc-700" />
-            <span>또는 이메일 (테스트용)</span>
-            <span className="h-px flex-1 bg-[#e7dece] dark:bg-zinc-700" />
-          </div>
-          <form className="mt-4 space-y-3" onSubmit={handleEmailSubmit}>
-            <label className="block">
-              <span className="text-xs font-black text-[#445247] dark:text-zinc-200">이메일</span>
-              <input
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={emailBusy}
-                required
-                className="mt-1 block h-10 w-full rounded-lg border border-[#ddd4c7] bg-white px-3 text-sm font-bold text-[#223127] outline-none focus:border-[#5d735f] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                placeholder="you@example.com"
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs font-black text-[#445247] dark:text-zinc-200">비밀번호 (6자 이상)</span>
-              <input
-                type="password"
-                autoComplete={isSignup ? "new-password" : "current-password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={emailBusy}
-                required
-                minLength={6}
-                className="mt-1 block h-10 w-full rounded-lg border border-[#ddd4c7] bg-white px-3 text-sm font-bold text-[#223127] outline-none focus:border-[#5d735f] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                placeholder="••••••"
-              />
-            </label>
-            <button
-              type="submit"
-              disabled={emailBusy}
-              className="flex h-11 w-full items-center justify-center rounded-xl bg-[#223127] px-4 text-sm font-black text-white shadow-sm transition hover:bg-[#344136] disabled:cursor-not-allowed disabled:bg-zinc-400"
-            >
-              {emailBusy ? "처리 중…" : isSignup ? "이메일로 가입" : "이메일로 로그인"}
-            </button>
-          </form>
-        </>
-      ) : null}
+      <div className="mt-6 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-[#9aa39d]">
+        <span className="h-px flex-1 bg-[#e7dece] dark:bg-zinc-700" />
+        <span>또는 이메일</span>
+        <span className="h-px flex-1 bg-[#e7dece] dark:bg-zinc-700" />
+      </div>
+      <form className="mt-4 space-y-3" onSubmit={handleEmailSubmit}>
+        <label className="block">
+          <span className="text-xs font-black text-[#445247] dark:text-zinc-200">이메일</span>
+          <input
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={emailBusy}
+            required
+            className="mt-1 block h-10 w-full rounded-lg border border-[#ddd4c7] bg-white px-3 text-sm font-bold text-[#223127] outline-none focus:border-[#5d735f] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            placeholder="you@example.com"
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs font-black text-[#445247] dark:text-zinc-200">비밀번호 (6자 이상)</span>
+          <input
+            type="password"
+            autoComplete={isSignup ? "new-password" : "current-password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={emailBusy}
+            required
+            minLength={6}
+            className="mt-1 block h-10 w-full rounded-lg border border-[#ddd4c7] bg-white px-3 text-sm font-bold text-[#223127] outline-none focus:border-[#5d735f] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            placeholder="••••••"
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={emailBusy}
+          className="flex h-11 w-full items-center justify-center rounded-xl bg-[#223127] px-4 text-sm font-black text-white shadow-sm transition hover:bg-[#344136] disabled:cursor-not-allowed disabled:bg-zinc-400"
+        >
+          {emailBusy ? "처리 중…" : isSignup ? "이메일로 가입" : "이메일로 로그인"}
+        </button>
+      </form>
 
       {message ? (
         <div className="mt-4 rounded-xl bg-[var(--brand-accent-soft)] px-3 py-2 text-xs font-bold text-[#445247] dark:bg-zinc-800 dark:text-zinc-300">
@@ -221,16 +215,12 @@ export default function AuthForm({ mode }: Props) {
         <Link href="/" className="font-bold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
           홈으로 돌아가기
         </Link>
-        {emailAuthEnabled ? (
-          <Link
-            href={isSignup ? "/login" : "/signup"}
-            className="font-bold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-          >
-            {isSignup ? "이미 가입했나요? 로그인" : "처음이세요? 가입하기"}
-          </Link>
-        ) : (
-          <span className="font-bold text-zinc-400">이메일 가입 중단</span>
-        )}
+        <Link
+          href={isSignup ? "/login" : "/signup"}
+          className="font-bold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+        >
+          {isSignup ? "이미 가입했나요? 로그인" : "처음이세요? 가입하기"}
+        </Link>
       </div>
 
       {/* FAQ: 왜 카카오만 받나 — 본인 인증 + 한정 수량 분배 정책 */}
