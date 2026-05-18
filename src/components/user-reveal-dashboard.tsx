@@ -244,7 +244,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   const [lossReportNote, setLossReportNote] = useState("");
   const [lossReportCategory, setLossReportCategory] = useState<string | null>(null);
   const [lossReportSubmitting, setLossReportSubmitting] = useState(false);
-  const [lossReportResult, setLossReportResult] = useState<{ ok: boolean; message: string; compensation?: number } | null>(null);
+  const [lossReportResult, setLossReportResult] = useState<{ ok: boolean; message: string; compensation?: number; pendingCompensation?: number } | null>(null);
 
   const loadItems = useCallback(async (options?: { silent?: boolean; page?: number; query?: string; sort?: RevealSort }) => {
     if (!userRef) return;
@@ -622,7 +622,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     void fetchWithAuth("/api/packs/reveals/feedback", { pid, feedbackType, note }).catch(() => undefined);
   }
 
-  // Wave 182c: 정보 오류 신고 — inaccurate_report endpoint (즉시 토큰 +3 + 운영자 검수 큐).
+  // Wave 182c/Wave 245: 정보 오류 신고 — inaccurate_report endpoint (운영자 승인 시 토큰 +3).
   async function submitLossReport() {
     if (!lossReportItem || !userRef) return;
     if (!lossReportCategory) {
@@ -649,7 +649,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           note: lossReportNote.trim(),
         }),
       });
-      const json = (await res.json()) as { ok?: boolean; message?: string; compensationTokens?: number; error?: string };
+      const json = (await res.json()) as { ok?: boolean; message?: string; compensationTokens?: number; pendingCompensationTokens?: number; error?: string };
       if (!res.ok || !json.ok) {
         setLossReportResult({
           ok: false,
@@ -660,6 +660,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           ok: true,
           message: json.message ?? "신고 접수됨.",
           compensation: json.compensationTokens ?? 0,
+          pendingCompensation: json.pendingCompensationTokens ?? 0,
         });
         const reportNote = lossReportNote.trim() || "정보 오류 신고";
         setItems((prev) => prev.map((item) => (
@@ -709,11 +710,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     const end = Math.min(totalPages, start + 4);
     return Array.from({ length: end - start + 1 }, (_, idx) => start + idx);
   }, [page, totalPages]);
-  const visibleItems = useMemo(() => items.filter((item) => {
-    if (!hideTerminal) return true;
-    return !isUserFacingClosed(item);
-  }), [hideTerminal, items]);
-  const dashboardSummary = useMemo(() => {
+  const visibleItems = hideTerminal ? items.filter((item) => !isUserFacingClosed(item)) : items;
+  const dashboardSummary = (() => {
     const terminalCount = items.filter((item) => isUserFacingClosed(item)).length;
     const marketClosedCount = items.filter((item) => item.marketStale && listingStateLabel(item.listingState).tone !== "sold").length;
     const activeItems = visibleItems.filter((item) => !isUserFacingClosed(item));
@@ -727,24 +725,31 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       marketClosedCount,
       avgProfit,
     };
-  }, [items, visibleItems]);
+  })();
+  const hasReveals = total > 0 || items.length > 0;
+  const shouldShowListTools = hasReveals || query.length > 0;
   useEffect(() => {
     if (!hideTerminal || selectedPids.size === 0) return;
-    const visiblePidSet = new Set(visibleItems.map((item) => item.pid));
+    const visiblePidSet = new Set(items.filter((item) => !isUserFacingClosed(item)).map((item) => item.pid));
     setSelectedPids((prev) => {
       const next = new Set(Array.from(prev).filter((pid) => visiblePidSet.has(pid)));
       return next.size === prev.size ? prev : next;
     });
-  }, [hideTerminal, selectedPids.size, visibleItems]);
+  }, [hideTerminal, items, selectedPids.size]);
 
   return (
-    <section id="my-reveals-list" className="rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] p-4 shadow-sm scroll-mt-4 dark:border-zinc-800 dark:bg-zinc-900 sm:p-5">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+    <section id="my-reveals-list" className="rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] p-3 shadow-sm scroll-mt-4 dark:border-zinc-800 dark:bg-zinc-900 sm:p-5">
+      <div className="flex flex-col gap-2 sm:gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="text-base font-black text-[#223127] dark:text-zinc-100">내 추천 보관함</div>
-          <div className="mt-1 text-xs font-semibold text-[#6b7269] dark:text-zinc-400">현재 시세와 판매 상태를 다시 맞춘 추천 기록입니다.</div>
+          <div className="flex flex-wrap items-center gap-2 text-base font-black text-[#223127] dark:text-zinc-100">
+            <span>내 추천 보관함</span>
+            <span className="rounded-full bg-[#eef6ec] px-2 py-0.5 text-[11px] font-black text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-zinc-200 sm:hidden">
+              {loading ? "로딩" : `${total.toLocaleString("ko-KR")}건`}
+            </span>
+          </div>
+          <div className="mt-1 hidden text-xs font-semibold text-[#6b7269] dark:text-zinc-400 sm:block">현재 시세와 판매 상태를 다시 맞춘 추천 기록입니다.</div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="hidden items-center gap-2 sm:flex">
           {/* 2026-05-17: 선택 모드 토글 + 전체 삭제. */}
           {!selectMode ? (
             <>
@@ -780,40 +785,15 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         </div>
       </div>
 
-      <details className="group mt-3 rounded-xl border border-[#e5dccf] bg-white/75 px-3 py-2 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/40 sm:hidden">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 [&::-webkit-details-marker]:hidden">
-          <div className="min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-[#8a8276] dark:text-zinc-500">
-              요약
-            </div>
-            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs font-black tabular-nums text-[#223127] dark:text-zinc-100">
-              <span>판매중 {dashboardSummary.activeCount.toLocaleString("ko-KR")}건</span>
-              <span className="text-[#b45d19] dark:text-amber-200">평균 {signedKrw(dashboardSummary.avgProfit)}</span>
-              {dashboardSummary.marketClosedCount > 0 ? (
-                <span className="text-zinc-500 dark:text-zinc-300">마감 {dashboardSummary.marketClosedCount.toLocaleString("ko-KR")}건</span>
-              ) : null}
-            </div>
-          </div>
-          <span className="shrink-0 rounded-full bg-[#eef6ec] px-2.5 py-1 text-[11px] font-black text-[var(--brand-accent-strong)] transition group-open:bg-[#dfeedd] dark:bg-zinc-800 dark:text-zinc-200">
-            <span className="group-open:hidden">펼치기</span>
-            <span className="hidden group-open:inline">접기</span>
-          </span>
-        </summary>
-        <div className="mt-2 grid grid-cols-3 gap-1.5 border-t border-[#eee6d9] pt-2 text-center dark:border-zinc-800">
-          <div className="rounded-lg bg-[#f7f2e9] px-2 py-1.5 dark:bg-zinc-900">
-            <div className="text-[9px] font-bold text-[#8a8276] dark:text-zinc-500">표시</div>
-            <div className="text-sm font-black tabular-nums text-[#223127] dark:text-zinc-100">{dashboardSummary.visibleCount.toLocaleString("ko-KR")}</div>
-          </div>
-          <div className="rounded-lg bg-emerald-50 px-2 py-1.5 dark:bg-emerald-950/20">
-            <div className="text-[9px] font-bold text-emerald-700 dark:text-emerald-300">판매중</div>
-            <div className="text-sm font-black tabular-nums text-emerald-800 dark:text-emerald-200">{dashboardSummary.activeCount.toLocaleString("ko-KR")}</div>
-          </div>
-          <div className="rounded-lg bg-zinc-50 px-2 py-1.5 dark:bg-zinc-900">
-            <div className="text-[9px] font-bold text-zinc-500 dark:text-zinc-500">마감</div>
-            <div className="text-sm font-black tabular-nums text-zinc-700 dark:text-zinc-200">{dashboardSummary.marketClosedCount.toLocaleString("ko-KR")}</div>
-          </div>
+      {hasReveals ? (
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-[#e5dccf] bg-white/70 px-2.5 py-1.5 text-[11px] font-black tabular-nums text-[#223127] dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-100 sm:hidden">
+          <span>판매중 {dashboardSummary.activeCount.toLocaleString("ko-KR")}건</span>
+          <span className="text-[#b45d19] dark:text-amber-200">평균 {signedKrw(dashboardSummary.avgProfit)}</span>
+          {dashboardSummary.marketClosedCount > 0 ? (
+            <span className="text-zinc-500 dark:text-zinc-300">마감 {dashboardSummary.marketClosedCount.toLocaleString("ko-KR")}건</span>
+          ) : null}
         </div>
-      </details>
+      ) : null}
 
       <div className="mt-4 hidden gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-[#e5dccf] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
@@ -847,7 +827,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         </div>
       </div>
 
-      {/* Wave 182c: 정보 오류 신고 모달 — 카테고리 chip + optional 사유 + 즉시 토큰 +3.
+      {/* Wave 182c: 정보 오류 신고 모달 — 카테고리 chip + optional 사유 + 승인 시 토큰 +3.
           이전 (182): "손해 신고 — 5자 이상 사유 필수". 임계값 높아 신고 어려움.
           현재: 카테고리만 골라도 제출 가능 (사유 optional). 사용자 자연 수집 → algorithm 보정 source. */}
       {lossReportItem && (
@@ -863,7 +843,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 </div>
                 {lossReportResult.compensation && lossReportResult.compensation > 0 ? (
                   <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
-                    토큰 +{lossReportResult.compensation}개 즉시 지급
+                    토큰 +{lossReportResult.compensation}개 지급 완료
+                  </div>
+                ) : lossReportResult.pendingCompensation && lossReportResult.pendingCompensation > 0 ? (
+                  <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+                    승인되면 토큰 +{lossReportResult.pendingCompensation}개 지급
                   </div>
                 ) : null}
                 <div className="mt-3 text-[11px] text-zinc-500 dark:text-zinc-400">
@@ -882,13 +866,13 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             ) : (
               <>
                 <div className="text-base font-black text-zinc-900 dark:text-zinc-100">
-                  토큰 +3 받기 · 정보 오류 신고
+                  정보 오류 신고
                 </div>
                 <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
                   매물: <span className="font-bold">{lossReportItem.name}</span>
                 </div>
                 <div className="mt-3 text-[12px] leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  어떤 부정확 정보를 발견했나요? 카테고리만 골라도 신고 가능 — 즉시 토큰 <b>3개 보상</b>.
+                  어떤 부정확 정보를 발견했나요? 운영자가 확인 후 적절하면 토큰 <b>3개</b>가 지급됩니다.
                 </div>
 
                 {/* 카테고리 chip — 클릭으로 선택 */}
@@ -943,7 +927,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                     disabled={lossReportSubmitting || !lossReportCategory}
                     className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-black text-white hover:bg-amber-700 disabled:opacity-50"
                   >
-                    {lossReportSubmitting ? "신고 중..." : "신고하고 토큰 +3 받기"}
+                    {lossReportSubmitting ? "신고 중..." : "신고하기"}
                   </button>
                 </div>
               </>
@@ -1020,44 +1004,125 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       {error ? <div className="mt-4 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-700">{error}</div> : null}
 
-      <div className="mt-4 grid gap-2 lg:grid-cols-[minmax(220px,1fr)_160px_140px]">
-        <input
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="상품명, PID, 모델명 검색"
-          className="h-11 rounded-xl border border-[#ddd4c7] bg-white px-3 text-sm font-semibold text-[#223127] outline-none transition placeholder:text-[#9a9389] focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
-        />
-        <select
-          value={sort}
-          onChange={(event) => {
-            setPage(1);
-            setSort(event.target.value as RevealSort);
-          }}
-          className="h-11 rounded-xl border border-[#ddd4c7] bg-white px-3 text-sm font-black text-[#344136] outline-none transition focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
-        >
-          {SORT_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <div className="grid h-11 grid-cols-2 rounded-xl border border-[#ddd4c7] bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950">
-          <button
-            type="button"
-            onClick={() => setViewMode("grid")}
-            className={`rounded-lg text-xs font-black transition ${viewMode === "grid" ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)]" : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"}`}
-          >
-            카드
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode("list")}
-            className={`rounded-lg text-xs font-black transition ${viewMode === "list" ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)]" : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"}`}
-          >
-            목록
-          </button>
-        </div>
-      </div>
+      {shouldShowListTools ? (
+        <>
+          <details className="mt-2 rounded-lg border border-[#e5dccf] bg-white/75 px-2.5 py-1.5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[11px] font-black text-[#4f6a52] dark:text-emerald-200 [&::-webkit-details-marker]:hidden">
+              <span>검색/정렬</span>
+              <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "최신순"} · {viewMode === "grid" ? "카드" : "목록"}</span>
+            </summary>
+            <div className="mt-2 grid gap-2 border-t border-[#eee6d9] pt-2 dark:border-zinc-800">
+              <input
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder="상품명, PID, 모델명 검색"
+                className="h-10 rounded-lg border border-[#ddd4c7] bg-white px-3 text-xs font-semibold text-[#223127] outline-none transition placeholder:text-[#9a9389] focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              />
+              <div className="grid grid-cols-[minmax(0,1fr)_112px] gap-2">
+                <select
+                  value={sort}
+                  onChange={(event) => {
+                    setPage(1);
+                    setSort(event.target.value as RevealSort);
+                  }}
+                  className="h-10 rounded-lg border border-[#ddd4c7] bg-white px-2 text-xs font-black text-[#344136] outline-none transition focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="grid h-10 grid-cols-2 rounded-lg border border-[#ddd4c7] bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("grid")}
+                    className={`rounded-md text-[11px] font-black transition ${viewMode === "grid" ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)]" : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"}`}
+                  >
+                    카드
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("list")}
+                    className={`rounded-md text-[11px] font-black transition ${viewMode === "list" ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)]" : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"}`}
+                  >
+                    목록
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {!selectMode ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setSelectMode(true)}
+                      disabled={items.length === 0}
+                      className="rounded-full border border-[#ddd4c7] bg-white px-3 py-1 text-[11px] font-bold text-[#344136] hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                    >
+                      선택
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteAllConfirm(true)}
+                      disabled={total === 0 || deleting}
+                      className="rounded-full border border-rose-200 bg-white px-3 py-1 text-[11px] font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-40 dark:border-rose-900 dark:bg-zinc-900 dark:text-rose-300"
+                    >
+                      전체 삭제
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={exitSelectMode}
+                    className="rounded-full border border-zinc-300 bg-white px-3 py-1 text-[11px] font-bold text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                  >
+                    취소
+                  </button>
+                )}
+              </div>
+            </div>
+          </details>
+
+          <div className="mt-4 hidden gap-2 sm:grid lg:grid-cols-[minmax(220px,1fr)_160px_140px]">
+            <input
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="상품명, PID, 모델명 검색"
+              className="h-11 rounded-xl border border-[#ddd4c7] bg-white px-3 text-sm font-semibold text-[#223127] outline-none transition placeholder:text-[#9a9389] focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+            />
+            <select
+              value={sort}
+              onChange={(event) => {
+                setPage(1);
+                setSort(event.target.value as RevealSort);
+              }}
+              className="h-11 rounded-xl border border-[#ddd4c7] bg-white px-3 text-sm font-black text-[#344136] outline-none transition focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <div className="grid h-11 grid-cols-2 rounded-xl border border-[#ddd4c7] bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={`rounded-lg text-xs font-black transition ${viewMode === "grid" ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)]" : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"}`}
+              >
+                카드
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={`rounded-lg text-xs font-black transition ${viewMode === "list" ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)]" : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"}`}
+              >
+                목록
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
 
       {!loading && total > 0 ? (
         <div className="mt-3 flex items-center justify-between gap-2 text-xs text-[#6b7269] dark:text-zinc-400">

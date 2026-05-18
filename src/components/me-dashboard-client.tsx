@@ -1,7 +1,6 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import AdminPoolBrowser from "@/components/admin-pool-browser";
 import AdminClassificationBrowser from "@/components/admin-classification-browser";
@@ -353,8 +352,6 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             {/* Wave 182: Saved Money Counter — 안 잃은 돈 + 번 돈 (loss aversion ×2.5). */}
             <SavedMoneyCounter />
-            {/* Wave 185: 내 피드백 활동 — 사용자 신고 결과 가시화 (compound retention loop). */}
-            <MyFeedbackActivity />
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="flex items-center gap-1.5 text-base font-black text-[#223127] dark:text-zinc-100">
                 <PackageIcon className="h-4 w-4" />
@@ -370,6 +367,8 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
               </button>
             </div>
             <UserRevealDashboard userRef={userRefForAuthUser(user.id)} welcomePending={welcomePending} />
+            {/* Wave 246: 모바일 첫 진입에서는 상품/준비중 CTA가 먼저 보여야 한다. 피드백 활동은 보관함 아래로 이동. */}
+            <MyFeedbackActivity />
             {/* 2026-05-17 (사용자 요청): 목록 밑에도 "더 찾아보기" 버튼 (상단 버튼만 있으면 스크롤 후 보이지 않음). */}
             <div className="mt-6 flex justify-center">
               <button

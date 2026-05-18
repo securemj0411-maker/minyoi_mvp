@@ -1401,14 +1401,14 @@ function ModalActionFooter({
               type="button"
               onClick={() => onReportLoss(card)}
               disabled={alreadyReportedLoss}
-              title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하고 토큰 +3 받기 (24h 검수)"}
+              title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하기 — 승인 시 토큰 +3"}
               className={`shrink-0 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition ${
                 alreadyReportedLoss
                   ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
                   : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
               }`}
             >
-              {alreadyReportedLoss ? "신고됨" : "오류 신고 +3"}
+              {alreadyReportedLoss ? "신고됨" : "오류 신고"}
             </button>
           )}
         </div>
@@ -1495,14 +1495,14 @@ function ModalActionFooter({
           type="button"
           onClick={() => onReportLoss(card)}
           disabled={alreadyReportedLoss}
-          title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하고 토큰 +3 받기 (24h 검수)"}
+          title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하기 — 승인 시 토큰 +3"}
           className={`mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black leading-none transition ${
             alreadyReportedLoss
               ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
               : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
           }`}
         >
-          {alreadyReportedLoss ? "신고 완료 — 검수 중" : "토큰 +3 받기 · 정보 오류 신고"}
+          {alreadyReportedLoss ? "신고 완료 — 검수 중" : "정보 오류 신고 · 승인 시 +3"}
         </button>
       )}
       </div>

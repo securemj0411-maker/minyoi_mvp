@@ -42,7 +42,7 @@ export default async function LossReportsAdminPage() {
           </h1>
           <p className="mt-1 text-xs text-[#687366] dark:text-zinc-400">
             🔍 정보 오류 (시세/매물 정보/판매됨/가짜 가격) + 🚨 손해 신고 (보류) 통합 검수.
-            즉시 토큰 +3 박힘 — 24시간 안에 검토 + 응답 권장.
+            승인하면 토큰 +3 지급 — 24시간 안에 검토 + 응답 권장.
           </p>
         </header>
         <LossReportsClient />

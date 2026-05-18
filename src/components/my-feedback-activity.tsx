@@ -127,7 +127,7 @@ export function MyFeedbackActivity() {
   }, []);
 
   if (loading) {
-    return <div className="mb-4 h-24 animate-pulse rounded-xl bg-[#efe7d7] dark:bg-zinc-800" />;
+    return <div className="mb-4 hidden h-24 animate-pulse rounded-xl bg-[#efe7d7] dark:bg-zinc-800 sm:block" />;
   }
   if (error || !data) {
     // 조용히 hide.
@@ -137,6 +137,9 @@ export function MyFeedbackActivity() {
   const { thisMonth, allTime } = data;
   const hasAny = allTime.totalCount > 0;
   if (!hasAny && emptyHidden) return null;
+  const shellClassName = hasAny
+    ? "mb-4 rounded-xl border-2 border-[#d5dfd2] bg-[#f3f7f1] p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20"
+    : "mb-4 hidden rounded-xl border-2 border-[#d5dfd2] bg-[#f3f7f1] p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:block";
 
   function hideEmptyForWeek() {
     const until = Date.now() + HIDE_FOR_MS;
@@ -169,7 +172,7 @@ export function MyFeedbackActivity() {
         </div>
       )}
 
-      <div className="mb-4 rounded-xl border-2 border-[#d5dfd2] bg-[#f3f7f1] p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+      <div className={shellClassName}>
         <div className="mb-2 flex items-start justify-between gap-2">
           <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
             <SearchIcon className="h-3.5 w-3.5" />
@@ -349,7 +352,7 @@ export function MyFeedbackActivity() {
                                   ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
                                   : "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
                             }`}>
-                              {report.adminStatus === "resolved" ? "보정 완료"
+                              {report.adminStatus === "resolved" ? "승인 완료"
                                 : report.adminStatus === "dismissed" ? "기각"
                                 : "대기 중"}
                             </span>

@@ -1,20 +1,20 @@
 // Wave 182c (2026-05-17): 정보 오류 신고 + 토큰 +3 보상.
 // loss_report (매물 받고 손해) 보다 임계값 낮음 — 매수 전에도 "이 정보 이상함" 즉시 신고 가능.
 // 사용자 피드백 자연 수집 + 토큰 보상으로 유인 → feedback-resolutions polling source.
+// Wave 245 (2026-05-18): 보상은 신고 즉시가 아니라 운영자 승인(resolved) 시점에 지급.
 //
 // 흐름:
-// 1. 사용자가 매물 상세 모달에서 "정보 오류 신고하고 토큰 +3 받기" 클릭
+// 1. 사용자가 매물 상세 모달에서 "정보 오류 신고" 클릭
 // 2. 카테고리 선택 (시세 부정확 / 매물 정보 다름 / 이미 판매됨 / 가짜 가격 의심 / 기타)
 //    + optional 사유 (자유 입력)
 // 3. mvp_reveal_feedback type-scoped upsert (feedback_type='inaccurate_report')
-//    - admin_status='pending', compensation_granted_tokens=3
-// 4. refundUserCredits(amount=3, metadata={ reason: 'inaccurate_report', category, pid })
-// 5. 응답: "토큰 3개 즉시 지급. 24시간 안에 검토합니다."
+//    - admin_status='pending', compensation_granted_tokens=0
+// 4. 운영자가 /cau.../loss-reports 에서 승인하면 RPC가 토큰 +3을 원자적으로 지급
+// 5. 응답: "신고 접수. 승인되면 토큰 3개 지급."
 //
 // 중복 신고 차단: 같은 (user_ref, pid) 이미 inaccurate_report 박혀있으면 토큰 미지급.
 
 import { NextResponse } from "next/server";
-import { refundUserCredits } from "@/lib/user-credits";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl, jsonBody } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -92,13 +92,22 @@ export async function POST(req: Request) {
     const dupRes = await restFetch(dupCheckUrl, { headers: serviceHeaders() });
     const dupRows = (await dupRes.json()) as Array<{ id: number }>;
     const isDuplicate = dupRows.length > 0;
+    if (isDuplicate) {
+      return NextResponse.json({
+        ok: true,
+        duplicate: true,
+        compensationTokens: 0,
+        pendingCompensationTokens: 0,
+        tokensAfter: null,
+        message: "이미 신고된 매물입니다. 운영자 검토 진행 중입니다.",
+      });
+    }
 
     // 2. 카테고리 prefix 박힌 note (운영자가 보기 쉽게).
     const categoryLabel = CATEGORY_LABEL[category] ?? category;
     const combinedNote = note ? `[${categoryLabel}] ${note}` : `[${categoryLabel}]`;
 
     // 3. type-scoped upsert. This must not erase bought/watching/bad_pick state.
-    const compensation = isDuplicate ? 0 : COMPENSATION_TOKENS;
     const upsertBody = jsonBody({
       user_ref: userRef,
       pid,
@@ -106,7 +115,7 @@ export async function POST(req: Request) {
       note: combinedNote,
       source: "reveal_modal",
       admin_status: "pending",
-      compensation_granted_tokens: compensation,
+      compensation_granted_tokens: 0,
       updated_at: new Date().toISOString(),
     });
     const upsertRes = await restFetch(
@@ -123,26 +132,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "feedback_record_failed" }, { status: 500 });
     }
 
-    // 4. 보상 토큰 지급
-    let tokensAfter: number | null = null;
-    if (!isDuplicate) {
-      const refund = await refundUserCredits({
-        user: auth.user,
-        userRef,
-        amount: COMPENSATION_TOKENS,
-        metadata: { reason: "inaccurate_report", category, pid, source: "inaccurate_report_api" },
-      });
-      tokensAfter = refund.tokens;
-    }
-
     return NextResponse.json({
       ok: true,
-      duplicate: isDuplicate,
-      compensationTokens: compensation,
-      tokensAfter,
-      message: isDuplicate
-        ? "이미 신고된 매물입니다. 운영자 검토 진행 중입니다."
-        : `신고 접수됨. 즉시 토큰 ${COMPENSATION_TOKENS}개 지급. 24시간 안에 운영자가 확인합니다.`,
+      duplicate: false,
+      compensationTokens: 0,
+      pendingCompensationTokens: COMPENSATION_TOKENS,
+      tokensAfter: null,
+      message: `신고 접수됨. 운영자가 확인 후 적절하면 토큰 ${COMPENSATION_TOKENS}개를 지급합니다.`,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";

@@ -156,7 +156,7 @@ export default function FeedbackStatsClient() {
       {/* 총합 KPI 카드 */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiCard label="총 신고" value={stats.total} accent="amber" />
-        <KpiCard label="✅ 보정 완료" value={stats.byStatus.resolved} accent="emerald" sub={`보정률 ${stats.resolveRate}%`} />
+        <KpiCard label="✅ 승인 완료" value={stats.byStatus.resolved} accent="emerald" sub={`승인률 ${stats.resolveRate}%`} />
         <KpiCard label="⏳ 검토 대기" value={stats.byStatus.pending} accent="rose" sub={`응답률 ${stats.responseRate}%`} />
         <KpiCard label="🪙 토큰 지급" value={stats.totalTokens} accent="sky" />
       </div>

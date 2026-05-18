@@ -127,7 +127,7 @@ export default function LossReportsClient() {
   }
 
   // Wave 198 (2026-05-17): keyboard shortcut — 운영자 검수 속도 ↑.
-  // j/k navigate, e edit response, r resolve, d dismiss, Esc cancel, ? help.
+  // j/k navigate, e edit response, r approve+grant, d dismiss, Esc cancel, ? help.
   const filteredItems = data?.items.filter((i) => filter === "all" || i.adminStatus === filter) ?? [];
 
   useEffect(() => {
@@ -174,7 +174,7 @@ export default function LossReportsClient() {
         setTimeout(() => textareaRef.current?.focus(), 0);
       } else if (e.key === "r" && current && !saving) {
         e.preventDefault();
-        // 응답 textarea 박혀있고 draft 5자+ → 즉시 resolve.
+        // 응답 textarea 박혀있고 draft 5자+ → 승인 + 토큰 지급.
         if (editingId === current.id && responseDraft.trim().length >= 5) {
           void updateStatus(current, "resolved");
         } else {
@@ -218,7 +218,7 @@ export default function LossReportsClient() {
           <kbd className="rounded border border-blue-300 bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold dark:border-blue-800 dark:bg-zinc-900">e</kbd>
           <span>응답</span>
           <kbd className="rounded border border-blue-300 bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold dark:border-blue-800 dark:bg-zinc-900">r</kbd>
-          <span>보정완료</span>
+          <span>승인/지급</span>
           <kbd className="rounded border border-blue-300 bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold dark:border-blue-800 dark:bg-zinc-900">d</kbd>
           <span>기각</span>
           <kbd className="rounded border border-blue-300 bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold dark:border-blue-800 dark:bg-zinc-900">?</kbd>
@@ -248,7 +248,7 @@ export default function LossReportsClient() {
                   : "border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
               }`}
             >
-              {s === "pending" ? "⏳ 검토 대기" : s === "resolved" ? "✅ 보정 완료" : s === "dismissed" ? "❌ 기각" : "전체"}
+              {s === "pending" ? "⏳ 검토 대기" : s === "resolved" ? "✅ 승인/지급" : s === "dismissed" ? "❌ 기각" : "전체"}
               {count != null && (
                 <span className="ml-1.5 rounded-full bg-white/30 px-1.5 py-0.5 text-[10px]">
                   {count}
@@ -342,7 +342,7 @@ export default function LossReportsClient() {
                             : "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
                       }`}
                     >
-                      {item.adminStatus === "pending" ? "⏳ 검토 대기" : item.adminStatus === "resolved" ? "✅ 보정 완료" : "❌ 기각"}
+                      {item.adminStatus === "pending" ? "⏳ 검토 대기" : item.adminStatus === "resolved" ? "✅ 승인/지급" : "❌ 기각"}
                     </span>
                     {item.compensationGrantedTokens > 0 && (
                       <div className="mt-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
@@ -419,7 +419,7 @@ export default function LossReportsClient() {
                         disabled={saving || responseDraft.trim().length < 5}
                         className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-black text-white hover:bg-emerald-700 disabled:opacity-50"
                       >
-                        ✅ 보정 완료
+                        ✅ 승인하고 토큰 지급
                       </button>
                     </div>
                   </div>
@@ -465,7 +465,7 @@ export default function LossReportsClient() {
                 ["j / ↓", "다음 신고로"],
                 ["k / ↑", "이전 신고로"],
                 ["e", "응답 입력 (textarea focus)"],
-                ["r", "✅ 보정 완료 (응답 5자+ 입력 후)"],
+                ["r", "✅ 승인 + 토큰 지급 (응답 5자+ 입력 후)"],
                 ["d", "❌ 기각 (confirm 박힘)"],
                 ["Esc", "응답 입력 취소 / 모달 닫기"],
                 ["?", "단축키 도움말 toggle"],

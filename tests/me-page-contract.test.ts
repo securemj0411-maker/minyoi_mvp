@@ -134,10 +134,6 @@ test("/me modal exposes transaction state feedback actions", () => {
   assert.match(modal, /문의했어요/);
   assert.match(modal, /매수했어요/);
   assert.match(modal, /포기했어요/);
-  assert.match(modal, /sm:hidden/);
-  assert.match(modal, /hidden sm:block/);
-  assert.match(modal, /bottom-\[calc\(100%\+8px\)\]/);
-  assert.match(modal, /오류 신고 \+3/);
   assert.match(dashboard, /currentFeedbackType=\{\s*selectedItem\?\.transactionFeedbackType/);
   assert.match(dashboard, /거래 상태 · \{TRANSACTION_FEEDBACK_LABEL/);
   assert.match(feedbackRoute, /"contacted"/);
@@ -189,4 +185,30 @@ test("/me keeps report feedback separate from transaction progress", () => {
   assert.match(dashboard, /reportFeedbackType/);
   assert.match(dashboard, /alreadyReportedLoss=\{selectedItem\?\.reportFeedbackType === "inaccurate_report"/);
   assert.doesNotMatch(dashboard, /피드백: \{item\.feedbackType\}/);
+});
+
+test("report compensation is granted by admin approval, not immediately", () => {
+  const inaccurateReport = source("src/app/api/packs/reveals/inaccurate-report/route.ts");
+  const lossReport = source("src/app/api/packs/reveals/loss-report/route.ts");
+  const adminRoute = source("src/app/api/admin/loss-reports/route.ts");
+  const adminClient = source("src/app/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY/loss-reports/loss-reports-client.tsx");
+  const dashboard = source("src/components/user-reveal-dashboard.tsx");
+  const migration = source("supabase/migrations/20260518105624_admin_report_compensation_review.sql");
+  const schema = source("supabase/schema.sql");
+
+  assert.doesNotMatch(inaccurateReport, /refundUserCredits/);
+  assert.doesNotMatch(lossReport, /refundUserCredits/);
+  assert.match(inaccurateReport, /compensation_granted_tokens: 0/);
+  assert.match(lossReport, /compensation_granted_tokens: 0/);
+  assert.match(inaccurateReport, /pendingCompensationTokens: COMPENSATION_TOKENS/);
+  assert.match(lossReport, /pendingCompensationTokens: COMPENSATION_TOKENS/);
+  assert.match(adminRoute, /rpcUrl\("review_mvp_reveal_feedback_report"\)/);
+  assert.match(adminRoute, /p_compensation_tokens: REPORT_COMPENSATION_TOKENS/);
+  assert.match(adminRoute, /or=\(admin_status\.is\.null,admin_status\.eq\.pending\)/);
+  assert.match(adminClient, /승인하고 토큰 지급/);
+  assert.match(dashboard, /승인되면 토큰 \+\{lossReportResult\.pendingCompensation\}개 지급/);
+  assert.match(migration, /for update/);
+  assert.match(migration, /balance = balance \+ v_grant/);
+  assert.match(migration, /compensation_granted_tokens/);
+  assert.match(schema, /review_mvp_reveal_feedback_report/);
 });

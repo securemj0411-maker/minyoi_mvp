@@ -1,10 +1,10 @@
 // Wave 182 (2026-05-17): 운영자 손해 신고 검수 API.
 // GET: 신고 목록 (pending → resolved → dismissed 순)
-// PATCH: 신고 status + 응답 메시지 update.
+// PATCH: 신고 status + 응답 메시지 update. resolved 전환 시 승인 보상 토큰을 원자적으로 지급.
 
 import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
-import { restFetch, serviceHeaders, tableUrl, jsonBody } from "@/lib/supabase-rest";
+import { restFetch, rpcUrl, serviceHeaders, tableUrl, jsonBody } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 
 export const runtime = "nodejs";
@@ -33,6 +33,7 @@ type ListingMetaRow = {
 };
 
 const VALID_STATUSES = new Set(["pending", "resolved", "dismissed"]);
+const REPORT_COMPENSATION_TOKENS = 3;
 
 export async function GET(req: NextRequest) {
   const auth = await requireSupabaseUser(req);
@@ -47,7 +48,7 @@ export async function GET(req: NextRequest) {
     // Wave 182c (2026-05-17): loss_report (보류) + inaccurate_report (정보 오류 신고) 둘 다 처리.
     // 운영자 페이지 한 곳에서 모두 검수.
     let filter = "feedback_type=in.(loss_report,inaccurate_report)";
-    if (statusFilter === "pending") filter += "&admin_status=is.null";
+    if (statusFilter === "pending") filter += "&or=(admin_status.is.null,admin_status.eq.pending)";
     else if (statusFilter === "resolved") filter += "&admin_status=eq.resolved";
     else if (statusFilter === "dismissed") filter += "&admin_status=eq.dismissed";
     // statusFilter === "all" → 모두
@@ -137,15 +138,15 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const updateRes = await restFetch(
-      `${tableUrl("mvp_reveal_feedback")}?id=eq.${id}`,
+      rpcUrl("review_mvp_reveal_feedback_report"),
       {
-        method: "PATCH",
-        headers: { ...serviceHeaders(), Prefer: "return=representation" },
+        method: "POST",
+        headers: serviceHeaders(),
         body: jsonBody({
-          admin_status: status,
-          admin_response_note: responseNote.slice(0, 2000),
-          admin_responded_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          p_report_id: id,
+          p_admin_status: status,
+          p_admin_response_note: responseNote.slice(0, 2000),
+          p_compensation_tokens: REPORT_COMPENSATION_TOKENS,
         }),
       },
     );
