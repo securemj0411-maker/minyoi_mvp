@@ -808,7 +808,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
   } satisfies Record<RecommendationFeatureTone, string>;
 
   return (
-    <details className={`group rounded-xl border border-[#d8e2d7] bg-[#f5faf3] p-2.5 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:p-3 lg:col-span-2 ${className}`}>
+    <details className={`group rounded-2xl border border-[#d6e2d3] bg-[linear-gradient(180deg,#f8fcf5_0%,#eef7eb_100%)] p-3 shadow-[0_12px_28px_rgba(49,66,56,0.08)] dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:p-3.5 lg:col-span-2 ${className}`}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
@@ -821,13 +821,13 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
               : featureCards.slice(0, 2).map((feature) => feature.title).join(" · ")}
           </div>
         </div>
-        <span className="shrink-0 rounded-full border border-[#c8d8c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#4f6a52] transition group-open:bg-[#e4f0e1] dark:border-emerald-900/60 dark:bg-zinc-900 dark:text-emerald-200">
+        <span className="shrink-0 rounded-full border border-[#b9d0b4] bg-white/90 px-2.5 py-1 text-[11px] font-black text-[#4f6a52] shadow-sm transition group-open:bg-[#e4f0e1] dark:border-emerald-900/60 dark:bg-zinc-900 dark:text-emerald-200">
           근거 보기
         </span>
       </summary>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {featureCards.map((feature) => (
-          <div key={`${feature.title}-${feature.body}`} className={`rounded-lg border px-3 py-2.5 ${toneClass[feature.tone]}`}>
+          <div key={`${feature.title}-${feature.body}`} className={`rounded-xl border px-3 py-2.5 shadow-sm ${toneClass[feature.tone]}`}>
             <div className="flex items-center gap-2 text-xs font-black">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/75 text-current shadow-sm dark:bg-zinc-900/55">
                 {feature.icon}
@@ -844,7 +844,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
         <MarketBasisMini card={card} />
       </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        <div className="rounded-lg border border-emerald-100 bg-white/80 px-3 py-2.5 dark:border-emerald-900/50 dark:bg-zinc-900/45">
+        <div className="rounded-xl border border-emerald-100 bg-white/85 px-3 py-2.5 shadow-sm dark:border-emerald-900/50 dark:bg-zinc-900/45">
           <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">좋은 점</div>
           <div className="mt-1.5 flex flex-wrap gap-1">
             {goodSignals.length > 0 ? goodSignals.map((signal) => (
@@ -856,7 +856,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
             )}
           </div>
         </div>
-        <div className="rounded-lg border border-amber-100 bg-white/80 px-3 py-2.5 dark:border-amber-900/50 dark:bg-zinc-900/45">
+        <div className="rounded-xl border border-amber-100 bg-white/85 px-3 py-2.5 shadow-sm dark:border-amber-900/50 dark:bg-zinc-900/45">
           <div className="text-[11px] font-black text-amber-800 dark:text-amber-200">확인할 점</div>
           <div className="mt-1.5 flex flex-wrap gap-1">
             {watchSignals.length > 0 ? watchSignals.map((signal) => (
@@ -869,7 +869,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
           </div>
         </div>
       </div>
-      <details className="mt-2 rounded-lg border border-white/70 bg-white/70 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
+      <details className="mt-2 rounded-xl border border-white/80 bg-white/75 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
         <summary className="cursor-pointer text-[11px] font-black text-[#4f6a52] dark:text-emerald-200">
           계산 기준 보기
         </summary>
@@ -906,7 +906,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
 
 function ProductSafetyPanel({ card, className = "" }: { card: RevealCard; className?: string }) {
   return (
-    <div className={`rounded-xl border border-[#d8e2d7] bg-[#f7fbf5] p-2.5 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:p-3 lg:col-span-2 ${className}`}>
+    <div className={`rounded-2xl border border-[#d6e2d3] bg-[linear-gradient(180deg,#fbfdf8_0%,#f0f8ed_100%)] p-3 shadow-[0_12px_28px_rgba(49,66,56,0.07)] dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:p-3.5 lg:col-span-2 ${className}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <div className="text-sm font-black text-[#223127] dark:text-zinc-100">
@@ -1107,80 +1107,80 @@ function RevealCardItem({
       }`}
     >
       {/* 좌측 카드 — 매물 정보 (image + 메타 + verdicts + 노트 + 버튼) */}
-      <div className="order-1 grid gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
-      <RevealProductImage card={card} />
+      <div className="order-1 grid gap-3 overflow-hidden rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf6ee_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.09)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-zinc-900 dark:ring-zinc-800/70 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
+        <RevealProductImage card={card} />
 
-      <div className="min-w-0 w-full space-y-2">
-        <div className="flex w-full items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="line-clamp-2 text-sm font-black leading-5 text-zinc-900 dark:text-zinc-50">
-              {card.name}
-            </div>
-            <div className={`mt-2 w-full border-l-[3px] px-2.5 py-1.5 ${
-              isMarketInvalidated
-                ? "border-rose-400 text-rose-500 dark:border-rose-500 dark:text-rose-400"
-                : "border-[#00c471] text-[#00c471] dark:border-[#5dffae] dark:text-[#5dffae]"
-            }`}>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className={`text-[11px] font-semibold ${
-                  isMarketInvalidated ? "text-rose-600 dark:text-rose-300" : "text-zinc-500 dark:text-zinc-400"
-                }`}>
-                  현재 차익
-                </span>
-                <span className={`text-xs font-bold leading-tight tabular-nums sm:text-sm ${
-                  isMarketInvalidated ? "text-rose-700 dark:text-rose-200" : "text-[#00a862] dark:text-[#5dffae]"
-                }`}>
-                  {displayProfitRange(card)}
-                </span>
-                {currentPct != null ? (
-                  <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
-                    {currentPct >= 0 ? "+" : ""}{currentPct}%
-                  </span>
-                ) : null}
-                {isMarketInvalidated ? (
-                  <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black text-rose-900 dark:bg-rose-900/60 dark:text-rose-100">
-                    판매완료 처리
-                  </span>
-                ) : null}
+        <div className="min-w-0 w-full space-y-2.5">
+          <div className="flex w-full items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="line-clamp-2 text-[15px] font-black leading-5 text-[#18251c] dark:text-zinc-50">
+                {card.name}
               </div>
-              <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[11px] font-bold tabular-nums text-zinc-700 dark:text-zinc-200 sm:text-xs">
-                <span>매입 {krw(card.price)}</span>
-                {card.marketBasis?.medianPrice ? (
-                  <>
-                    <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                    <span className="text-zinc-500 dark:text-zinc-300">시세 {krw(card.marketBasis.medianPrice)}</span>
-                    {sourceBadge ? (
-                      sourceBadge.tone === "reference"
-                        ? <DanawaSourceBadge label={sourceBadge.label} />
-                        : <BunjangSourceBadge label={sourceBadge.label} />
-                    ) : null}
-                  </>
-                ) : null}
-                <span className="text-[11px] font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
-                {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
-                  <span
-                    title={`이 매물은 ${card.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}
-                    className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                  >
-                    기본 옵션 가정
+              <div className={`mt-2 w-full border-l-[3px] px-2.5 py-1.5 ${
+                isMarketInvalidated
+                  ? "border-rose-400 text-rose-500 dark:border-rose-500 dark:text-rose-400"
+                  : "border-[#00c471] text-[#00c471] dark:border-[#5dffae] dark:text-[#5dffae]"
+              }`}>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className={`text-[11px] font-semibold ${
+                    isMarketInvalidated ? "text-rose-600 dark:text-rose-300" : "text-zinc-500 dark:text-zinc-400"
+                  }`}>
+                    현재 차익
                   </span>
-                ) : null}
+                  <span className={`text-xs font-bold leading-tight tabular-nums sm:text-sm ${
+                    isMarketInvalidated ? "text-rose-700 dark:text-rose-200" : "text-[#00a862] dark:text-[#5dffae]"
+                  }`}>
+                    {displayProfitRange(card)}
+                  </span>
+                  {currentPct != null ? (
+                    <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
+                      {currentPct >= 0 ? "+" : ""}{currentPct}%
+                    </span>
+                  ) : null}
+                  {isMarketInvalidated ? (
+                    <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black text-rose-900 dark:bg-rose-900/60 dark:text-rose-100">
+                      판매완료 처리
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[11px] font-bold tabular-nums text-zinc-700 dark:text-zinc-200 sm:text-xs">
+                  <span>매입 {krw(card.price)}</span>
+                  {card.marketBasis?.medianPrice ? (
+                    <>
+                      <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                      <span className="text-zinc-500 dark:text-zinc-300">시세 {krw(card.marketBasis.medianPrice)}</span>
+                      {sourceBadge ? (
+                        sourceBadge.tone === "reference"
+                          ? <DanawaSourceBadge label={sourceBadge.label} />
+                          : <BunjangSourceBadge label={sourceBadge.label} />
+                      ) : null}
+                    </>
+                  ) : null}
+                  <span className="text-[11px] font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
+                  {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
+                    <span
+                      title={`이 매물은 ${card.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}
+                      className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                    >
+                      기본 옵션 가정
+                    </span>
+                  ) : null}
+                </div>
               </div>
             </div>
+            <details className="group hidden shrink-0 rounded-full border border-[#d9e5d7] bg-[#f4faf1] px-3 py-1 text-right shadow-sm dark:border-zinc-700 dark:bg-zinc-800 sm:block sm:min-w-[72px]">
+              <summary className="cursor-pointer list-none">
+                <div className="flex items-center justify-end gap-1 text-[10px] font-bold text-zinc-400">
+                  <span>신뢰</span>
+                  <span className="text-zinc-300 transition group-open:rotate-180 dark:text-zinc-500">▾</span>
+                </div>
+                <div className="text-sm font-black text-[#314238] dark:text-zinc-100">
+                  {Math.round(card.confidence * 100)}%
+                </div>
+              </summary>
+              <ConfidenceBreakdown card={card} />
+            </details>
           </div>
-          <details className="group hidden shrink-0 rounded-lg bg-zinc-50 px-2 py-1 text-right dark:bg-zinc-800 sm:block sm:min-w-[64px]">
-            <summary className="cursor-pointer list-none">
-              <div className="flex items-center justify-end gap-1 text-[10px] font-bold text-zinc-400">
-                <span>신뢰</span>
-                <span className="text-zinc-300 transition group-open:rotate-180 dark:text-zinc-500">▾</span>
-              </div>
-              <div className="text-sm font-black text-zinc-800 dark:text-zinc-100">
-                {Math.round(card.confidence * 100)}%
-              </div>
-            </summary>
-            <ConfidenceBreakdown card={card} />
-          </details>
-        </div>
 
         <div className="hidden sm:block">
           <VerdictBadgesMini card={card} />
@@ -1206,9 +1206,14 @@ function RevealCardItem({
       <ProductSafetyPanel card={card} className="order-3 lg:order-4" />
 
       {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
-      <div className="order-4 space-y-2 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 lg:order-2">
-        <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
-          시세 그래프 · 시장 분석
+      <div className="order-4 space-y-2 rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.08)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-zinc-900 dark:ring-zinc-800/70 lg:order-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
+            시세 그래프 · 시장 분석
+          </div>
+          <span className="rounded-full bg-[#eef6ec] px-2 py-0.5 text-[10px] font-black text-[#4f6a52] ring-1 ring-[#d8e2d7] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
+            실시간 근거
+          </span>
         </div>
 
         {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
