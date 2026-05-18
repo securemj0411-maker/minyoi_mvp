@@ -7,7 +7,6 @@ import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { ConditionPhotoBadge } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
-import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
 import { BunjangLogo, BunjangSourceBadge, DanawaLogo, DanawaSourceBadge } from "@/components/market-brand-logo";
 import { CheckCircleIcon, ScaleIcon, ShieldIcon, TargetIcon, WalletIcon } from "@/components/icons";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
@@ -779,28 +778,50 @@ function saleSpeedDisplay(card: RevealCard) {
   };
 }
 
-function VelocitySummaryInline({ card }: { card: RevealCard }) {
+function VelocityBasisMini({ card }: { card: RevealCard }) {
   const speed = saleSpeedDisplay(card);
   return (
-    <div className={`mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border px-2.5 py-2 text-[11px] leading-4 ${
+    <div className={`mt-2 rounded-xl border-2 px-4 py-3 ${
       speed.isFast
-        ? "border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100"
+        ? "border-emerald-500 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/40"
         : speed.isSlow
-          ? "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/25 dark:text-amber-100"
-          : "border-[#d8e2d7] bg-[#f8fbf4] text-[#24342a] dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-100"
+          ? "border-amber-400 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30"
+          : "border-[#d8e2d7] bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-800/60"
     }`}>
-      <span className="font-black text-[#4f6a52] dark:text-emerald-300">판매 속도</span>
-      <span className="font-black tabular-nums">
-        비슷한 상품은 보통 {speed.label} 안에 팔려요
-      </span>
-      <span className="rounded-full bg-white/75 px-1.5 py-0.5 text-[10px] font-black text-[#58705d] ring-1 ring-[#d8e2d7] dark:bg-zinc-900/60 dark:text-zinc-300 dark:ring-zinc-700">
-        {speed.confidenceLabel}
-      </span>
-      <span className="text-[10px] font-semibold text-[#6d786b] dark:text-zinc-400">
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
+          비슷한 상품은 보통
+        </div>
+        <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--brand-accent-strong)] ring-1 ring-[#d8e2d7] dark:bg-zinc-900/50 dark:text-zinc-100 dark:ring-zinc-700">
+          {speed.confidenceLabel}
+        </span>
+      </div>
+      <div className="mt-1 flex flex-wrap items-baseline gap-2">
+        <span className={`text-2xl font-black leading-tight tabular-nums sm:text-3xl ${
+          speed.isFast
+            ? "text-emerald-700 dark:text-emerald-300"
+            : speed.isSlow
+              ? "text-amber-700 dark:text-amber-300"
+              : "text-[#223127] dark:text-white"
+        }`}>
+          {speed.label} 안에 팔렸어요
+        </span>
+        {speed.isFast ? (
+          <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white">
+            빨리 팔리는 편
+          </span>
+        ) : null}
+        {speed.isSlow ? (
+          <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-white">
+            오래 걸리는 편
+          </span>
+        ) : null}
+      </div>
+      <div className="mt-2 text-[11px] text-[#58705d] dark:text-zinc-300/80">
         {speed.isFallback
-          ? "표본 부족 · 임시 2일 기준"
-          : `최근 7일 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`}
-      </span>
+          ? "판매속도 표본이 아직 부족해서 UI 확인용으로 임시 2일 기준을 보여줘요."
+          : `최근 7일 동안 비슷한 상품이 ${speed.sold7dCount.toLocaleString("ko-KR")}건 팔렸어요.`}
+      </div>
     </div>
   );
 }
@@ -1244,7 +1265,7 @@ function RevealCardItem({
                     </span>
                   ) : null}
                 </div>
-                <VelocitySummaryInline card={card} />
+                <VelocityBasisMini card={card} />
               </div>
               <RecommendationReasonPanel
                 card={card}
@@ -1307,20 +1328,6 @@ function RevealCardItem({
           referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
         />
         <MarketGraphTrustLine card={card} />
-
-        {/* Wave 183 (2026-05-17): Liquidity 곡선 — 가격대별 회전 추정 (자본 묶임 두려움 해소).
-            사업 보고서 L6 — "회전 기간이 떡상점수보다 retention-critical". */}
-        <LiquidityCurveMini
-          price={card.price}
-          p25Price={card.marketBasis?.p25Price ?? null}
-          medianPrice={card.marketBasis?.medianPrice ?? null}
-          p75Price={card.marketBasis?.p75Price ?? null}
-          p25Hours={card.velocityBasis?.p25HoursToSold ?? null}
-          medianHours={card.velocityBasis?.medianHoursToSold ?? UI_TEST_FALLBACK_VELOCITY_HOURS}
-          p75Hours={card.velocityBasis?.p75HoursToSold ?? null}
-          soldSampleCount={card.velocityBasis?.observedSoldSampleCount ?? 0}
-          uiTestFallback={!card.velocityBasis || (card.velocityBasis.sold7dCount <= 0 || card.velocityBasis.medianHoursToSold == null)}
-        />
 
         <SkuListingFlowMini card={card} />
       </div>
