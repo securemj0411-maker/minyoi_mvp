@@ -5,7 +5,7 @@
 //
 // 표시:
 // - 이번 달 번 돈: 본인 'bought' 표시 매물의 차익 (최소값 보수)
-// - 안 잃은 돈: 미뇨이가 차단한 위험 매물 × 평균 손해율 (사이트 전체, 보수적 추정)
+// - 안 잃은 돈: 득템잡이가 차단한 위험 매물 × 평균 손해율 (사이트 전체, 보수적 추정)
 
 import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -99,7 +99,7 @@ export function SavedMoneyCounter() {
             ₩{krw(data.savedThisMonthSiteWideKrw)}원
           </div>
           <div className="mt-1 text-[10px] text-emerald-700/80 dark:text-emerald-300/80">
-            미뇨이가 차단한 위험 매물 <b>{data.blockedCountThisMonth.toLocaleString()}건</b> 기반 추정 (사이트 전체)
+            득템잡이가 차단한 위험 매물 <b>{data.blockedCountThisMonth.toLocaleString()}건</b> 기반 추정 (사이트 전체)
           </div>
         </div>
 

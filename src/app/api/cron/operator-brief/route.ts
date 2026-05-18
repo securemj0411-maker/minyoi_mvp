@@ -139,7 +139,7 @@ export async function GET(req: NextRequest) {
     ];
 
     const notifyResult = await sendOperatorBrief({
-      title: "[차익잡이] 운영 brief",
+      title: "[득템잡이] 운영 brief",
       lines,
     });
 

@@ -139,7 +139,7 @@ export default function AuthForm({ mode }: Props) {
     <div className="w-full max-w-md rounded-[32px] border border-[#ddd4c7] bg-[#fffbf4] p-6 shadow-[0_20px_48px_rgba(34,49,39,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
       <div>
         <p className="text-xs font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
-          차익잡이
+          득템잡이
         </p>
         <h1 className="mt-2 text-2xl font-black tracking-tight text-[#223127] dark:text-white">
           {isSignup ? "카카오로 시작하기" : "로그인"}
@@ -230,7 +230,7 @@ export default function AuthForm({ mode }: Props) {
         </summary>
         <div className="mt-3 space-y-2 text-xs leading-6">
           <p>
-            차익잡이는 <strong className="font-black">엄선한 리셀 중고 제품을 하루 정해진 수량만</strong> 추천합니다.
+            득템잡이는 <strong className="font-black">엄선한 리셀 중고 제품을 하루 정해진 수량만</strong> 추천합니다.
             누구나 만들 수 있는 구글·이메일 계정으로는 한 명이 여러 계정을 만들어 추천 매물을 독점할 수 있어
             다른 사용자에게 돌아가는 기회가 줄어듭니다.
           </p>

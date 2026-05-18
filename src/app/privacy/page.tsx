@@ -35,7 +35,7 @@ export default function PrivacyPage() {
   return (
     <LegalPageShell
       eyebrow="개인정보처리방침"
-      title="차익잡이 개인정보처리방침"
+      title="득템잡이 개인정보처리방침"
       updatedAt="2026.05.12"
       sections={sections}
     />

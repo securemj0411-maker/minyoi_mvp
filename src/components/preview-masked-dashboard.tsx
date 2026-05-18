@@ -150,7 +150,7 @@ export default function PreviewMaskedDashboard() {
     <main className="min-h-screen bg-[#f6f1e8] dark:bg-zinc-950">
       {/* SEO hidden — 옛 landing 키워드 보존. */}
       <div className="sr-only">
-        <h1>차익잡이 — 중고 매물 AI 차익 분석</h1>
+        <h1>득템잡이 — 중고 매물 AI 차익 분석</h1>
         <p>중고 거래 가격 차이 자동 분석. 시세보다 싼 매물 자동 추천. 일반인도 편하게 돈 벌 수 있는 AI 사이트.</p>
         <p>스마트폰, 태블릿, 노트북, 애플워치, 에어팟, 카메라, 신발, 가방 등 카테고리 매물 시세 비교.</p>
       </div>
@@ -306,7 +306,7 @@ export default function PreviewMaskedDashboard() {
               href="/intro"
               className="rounded-full border border-[#ddd4c7] bg-white px-5 py-2 text-sm font-bold text-[#344136] hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
             >
-              차익잡이 소개
+              득템잡이 소개
             </Link>
           </div>
         </div>

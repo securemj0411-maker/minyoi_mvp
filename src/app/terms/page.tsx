@@ -4,7 +4,7 @@ const sections = [
   {
     heading: "제1조 목적",
     body: [
-      "본 약관은 차익잡이가 제공하는 중고 상품 추천 및 모니터링 서비스의 이용 조건, 절차, 권리와 의무를 정하는 것을 목적으로 합니다.",
+      "본 약관은 득템잡이가 제공하는 중고 상품 추천 및 모니터링 서비스의 이용 조건, 절차, 권리와 의무를 정하는 것을 목적으로 합니다.",
       "현재 페이지는 MVP 검토용 mock 약관이며, 실제 유료 서비스 운영 전 정식 약관으로 교체될 예정입니다.",
     ],
   },
@@ -35,7 +35,7 @@ export default function TermsPage() {
   return (
     <LegalPageShell
       eyebrow="이용약관"
-      title="차익잡이 이용약관"
+      title="득템잡이 이용약관"
       updatedAt="2026.05.12"
       sections={sections}
     />

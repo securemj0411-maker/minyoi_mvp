@@ -62,7 +62,7 @@ function formatAlertLine(alert: OperationalAlert) {
 function buildMessage(context: NotifyContext, event: NotifyResult["event"], alertsToSend: OperationalAlert[]) {
   if (event === "recovered") {
     return [
-      "[차익잡이] 운영 알림 회복",
+      "[득템잡이] 운영 알림 회복",
       `source: ${context.source}`,
       `status: ${context.previousStatus ?? "-"} -> ${context.status}`,
       `reason: ${context.reason}`,
@@ -71,7 +71,7 @@ function buildMessage(context: NotifyContext, event: NotifyResult["event"], aler
   }
 
   return [
-    "[차익잡이] 운영 알림",
+    "[득템잡이] 운영 알림",
     `source: ${context.source}`,
     `status: ${context.previousStatus ?? "-"} -> ${context.status}`,
     `reason: ${context.reason}`,
@@ -131,7 +131,7 @@ export async function reportCriticalIncident(
   input: CriticalIncidentInput,
 ): Promise<CriticalIncidentResult> {
   const lines = [
-    "[차익잡이] 운영 사고",
+    "[득템잡이] 운영 사고",
     `source: ${input.source}`,
     `summary: ${input.summary}`,
     `at: ${kstTime(new Date().toISOString())}`,
@@ -162,7 +162,7 @@ export async function notifyOperationalAlerts(context: NotifyContext): Promise<N
 
 export async function sendOperationalTestAlert() {
   const message = [
-    "[차익잡이] 운영 알림 테스트",
+    "[득템잡이] 운영 알림 테스트",
     "Telegram 연결이 정상입니다.",
     `checked: ${kstTime(new Date().toISOString())}`,
   ].join("\n");
@@ -171,7 +171,7 @@ export async function sendOperationalTestAlert() {
 
 // Wave 195 (2026-05-17): 운영자 daily brief — 사이트 상태 요약 (사고 아님).
 export type OperatorBriefInput = {
-  title: string;       // 예: "[차익잡이] 운영 brief"
+  title: string;       // 예: "[득템잡이] 운영 brief"
   lines: string[];     // 각 라인 (집계 결과)
 };
 

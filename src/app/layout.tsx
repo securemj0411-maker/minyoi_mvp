@@ -18,7 +18,7 @@ export const viewport: Viewport = {
 
 // Wave 106: SEO 보강. 한국어 자연어 + 키워드 (중고 / 리셀 / AI / 번개장터 / 시세 / 가격 차익).
 // 정직 톤 — "보장" 어휘 X, "추천" 위주.
-const SITE_NAME = "차익잡이";
+const SITE_NAME = "득템잡이";
 const TAGLINE = "중고 리셀 추천 — AI가 시세 비교해주는 가격 차익 매물";
 const DESCRIPTION = "번개장터 매물의 시세를 AI가 비교해서, 가격 차익이 큰 상품만 추천해드립니다. 옵션 같은 본품끼리만 비교하고, 공개 직전 판매 상태를 다시 확인합니다.";
 
@@ -58,7 +58,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <AppNav />
-        {/* Wave 139d (2026-05-16): 네비 바 아래 marquee — "오늘 차익잡이 AI가 차단한 의심 매물 X건" 우→좌 흐름. */}
+        {/* Wave 139d (2026-05-16): 네비 바 아래 marquee — "오늘 득템잡이 AI가 차단한 의심 매물 X건" 우→좌 흐름. */}
         <SafetyStatsMarquee />
         <div className="flex-1">{children}</div>
         <AppFooter />

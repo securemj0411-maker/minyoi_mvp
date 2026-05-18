@@ -1,7 +1,7 @@
 "use client";
 
 // Wave 139d (2026-05-16): 메인 페이지 nav 아래 얇은 toggle bar.
-// "오늘 차익잡이 AI가 차단한 상품 수: N건  [상세 ▼]"
+// "오늘 득템잡이 AI가 차단한 상품 수: N건  [상세 ▼]"
 // 사용자 코멘트:
 //   - "글이 너무 길잖아 그냥 예쁘게 ... 그냥 /me처럼 해줘 상세보기 할수잇도록"
 //   - "근데 /me쪽은 너무 세로가 두껍고 이건 가벼운느낌으로 대신 상세 누르기 가능"
@@ -129,7 +129,7 @@ export default function SafetyStatsMarquee() {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-1.5">
           <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800/70 dark:text-emerald-300/70">
             <span className="text-emerald-600/70 dark:text-emerald-400/70"><ShieldIcon /></span>
-            <span>오늘 차익잡이가 차단한 매물:</span>
+            <span>오늘 득템잡이가 차단한 매물:</span>
             <span className="inline-block h-3 w-12 animate-pulse rounded bg-emerald-200/80 align-middle dark:bg-emerald-900/60" />
           </span>
           <span className="flex items-center gap-0.5 rounded-full bg-emerald-600/40 px-2 py-0.5 text-[9px] font-black text-white/70">
@@ -162,7 +162,7 @@ export default function SafetyStatsMarquee() {
           aria-expanded={showDetail}
         >
           <span className="text-emerald-600 dark:text-emerald-400"><ShieldIcon /></span>
-          <span className="truncate">오늘 차익잡이가 차단한 매물:</span>
+          <span className="truncate">오늘 득템잡이가 차단한 매물:</span>
           <span className="font-mono tabular-nums text-emerald-700 dark:text-emerald-300">
             {total.toLocaleString("ko-KR")}건
           </span>

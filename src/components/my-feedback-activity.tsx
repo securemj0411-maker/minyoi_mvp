@@ -401,7 +401,7 @@ export function MyFeedbackActivity() {
             </div>
 
             <div className="mt-3 border-t border-zinc-200 pt-2 text-[10px] text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-              회원님 신고는 미뇨이 알고리즘 보정 데이터로 들어가요. 비슷한 매물이 다른 사용자에게 잘못 가지 않도록 시스템이 자동 학습합니다.
+              회원님 신고는 득템잡이 알고리즘 보정 데이터로 들어가요. 비슷한 매물이 다른 사용자에게 잘못 가지 않도록 시스템이 자동 학습합니다.
             </div>
           </div>
         </div>

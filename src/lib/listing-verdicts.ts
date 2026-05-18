@@ -1,5 +1,5 @@
 // 2026-05-17: 매물 카드 chip 공통 utility.
-// 미뇨이 차별화 = "근거 있는 추천" — chip 으로 왜 좋은지 명시.
+// 득템잡이 차별화 = "근거 있는 추천" — chip 으로 왜 좋은지 명시.
 // 3 화면 통일 (pack-reveal-modal / admin-pool-browser / preview-masked-dashboard) — drift 차단.
 
 export type VerdictTone = "good" | "warn" | "info";

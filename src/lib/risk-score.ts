@@ -1,5 +1,5 @@
 // 2026-05-17 Phase 0 L4 가시화 — 매물 카드에 5축 risk score 박는 utility.
-// 미뇨이 차별화 = "보호받음" — 풀 통과 매물의 *잔여 risk*를 사용자에게 시각화.
+// 득템잡이 차별화 = "보호받음" — 풀 통과 매물의 *잔여 risk*를 사용자에게 시각화.
 // (POOL_BLOCK_FLAGS 로 hard block 된 매물은 풀에 없음. 통과해도 약한 신호 남아있을 수 있음.)
 //
 // 3 화면 통일 (admin-pool-browser / pack-reveal-modal / user-reveal-dashboard) — drift 차단.

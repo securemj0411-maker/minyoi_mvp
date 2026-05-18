@@ -1,7 +1,7 @@
 "use client";
 
 // 2026-05-17 Phase 0 L4 가시화 — 매물 카드에 5축 잔여 risk 시각화.
-// 미뇨이 차별화 = "보호받음 감정" — POOL_BLOCK 통과 매물의 잔여 신호를 사용자에게 명시.
+// 득템잡이 차별화 = "보호받음 감정" — POOL_BLOCK 통과 매물의 잔여 신호를 사용자에게 명시.
 // 3 화면 공유 (admin-pool-browser / pack-reveal-modal / user-reveal-dashboard).
 
 import { useState } from "react";
@@ -99,7 +99,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                   ))}
                 </div>
                 <div className="mt-2 border-t border-zinc-200 pt-2 text-[9px] text-zinc-500 dark:border-zinc-700">
-                  미뇨이는 hard-block 필터 (POOL_BLOCK_FLAGS) 통과한 매물만 풀에 박힙니다. 위 점수는 <b>통과한 매물의 잔여 신호</b> — 0 이라도 100% 안전 보장은 아니지만, 신호 강하면 사용자가 한 번 더 셀러 문의 권고.
+                  득템잡이는 hard-block 필터 (POOL_BLOCK_FLAGS) 통과한 매물만 풀에 박힙니다. 위 점수는 <b>통과한 매물의 잔여 신호</b> — 0 이라도 100% 안전 보장은 아니지만, 신호 강하면 사용자가 한 번 더 셀러 문의 권고.
                 </div>
               </div>
             </>
