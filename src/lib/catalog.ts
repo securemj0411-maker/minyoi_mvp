@@ -89,8 +89,25 @@ const WAVE188_NEW_CATEGORY_NOISE = [
 ];
 
 // DJI/GoPro drone-class 필터 액세서리 단품 (본품 X). drone SKU spread 용.
+// Wave 192 (2026-05-18): production sweep 발견 추가 액세서리 — "스마트 조종기", "컨트롤러", "볼타 그립" 등.
+//   잘못 매칭된 매물이 시세 sample로 들어가 median 비현실적 낮음 (dji-mini-2 312k, dji-mini-4-pro 44k).
 const DRONE_FILTER_ACCESSORY_NOISE = [
   "필터만", "필터 단품", "렌즈 필터", "보호 필터", "uv 필터", "cpl", "2in1 필터", "필터 세트",
+  // 조종기/컨트롤러/리모컨 단품
+  "스마트 조종기", "조종기 단품", "조종기만", "컨트롤러 단품", "컨트롤러만",
+  "rc 컨트롤러", "rc-n1", "rc-n2", "rc2", "smart controller",
+  "리모컨만", "리모컨 단품",
+  // 그립/홀더/마운트 (GoPro/액션캠 액세서리)
+  "볼타", "그립 단품", "셀카봉만", "셀카봉 단품", "삼각대만",
+  "헬멧 마운트", "마운트 단품", "흡착 마운트",
+];
+
+// Garmin 워치 액세서리 (마운트/스트랩/케이스 단품) — 본품 X.
+const GARMIN_ACCESSORY_NOISE = [
+  "바이크 마운트", "자전거 마운트", "핸들바 마운트", "퀵 릴리즈 마운트",
+  "쿼터 마운트", "마운트 어댑터", "마운트 키트",
+  "충전 케이블", "충전 거치대", "충전 도크", "도크만",
+  "스트랩 단품", "밴드 단품", "실리콘 스트랩", "메탈 스트랩", "가죽 스트랩",
 ];
 
 const COMMON_PRODUCT_NOISE = [
@@ -5914,7 +5931,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Fenix 7 (47mm)",
     aliases: ["Garmin Fenix 7", "가민 페닉스 7", "가민 피닉스 7"],
     mustContain: [["garmin", "가민"], ["fenix 7", "페닉스 7", "피닉스 7", "fenix7"]],
-    mustNotContain: ["fenix 7s", "fenix 7x", "페닉스 7s", "페닉스 7x", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["fenix 7s", "fenix 7x", "페닉스 7s", "페닉스 7x", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...GARMIN_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1099000, released: 2022,
   },
   {
@@ -5923,7 +5940,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Fenix 7S (42mm)",
     aliases: ["Garmin Fenix 7S", "가민 페닉스 7S"],
     mustContain: [["garmin", "가민"], ["fenix 7s", "페닉스 7s", "피닉스 7s", "fenix7s"]],
-    mustNotContain: ["fenix 7x", "페닉스 7x", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["fenix 7x", "페닉스 7x", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...GARMIN_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1099000, released: 2022,
   },
   {
@@ -5932,7 +5949,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Fenix 7X (51mm)",
     aliases: ["Garmin Fenix 7X", "가민 페닉스 7X"],
     mustContain: [["garmin", "가민"], ["fenix 7x", "페닉스 7x", "피닉스 7x", "fenix7x"]],
-    mustNotContain: ["fenix 7s", "페닉스 7s", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["fenix 7s", "페닉스 7s", "fenix 8", "fenix 6", "fenix 5", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...GARMIN_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1299000, released: 2022,
   },
   {
@@ -5941,7 +5958,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Fenix 8 (47mm AMOLED)",
     aliases: ["Garmin Fenix 8", "가민 페닉스 8"],
     mustContain: [["garmin", "가민"], ["fenix 8", "페닉스 8", "피닉스 8", "fenix8"]],
-    mustNotContain: ["fenix 7", "fenix 6", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["fenix 7", "fenix 6", "epix", "forerunner", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...GARMIN_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1499000, released: 2024,
   },
   {
@@ -5950,7 +5967,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Forerunner 265 (46mm)",
     aliases: ["Garmin Forerunner 265", "가민 포러너 265"],
     mustContain: [["garmin", "가민"], ["forerunner 265", "포러너 265", "fr 265", "fr265"]],
-    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 745", "forerunner 955", "forerunner 965", "포러너 245", "포러너 255", "포러너 955", "포러너 965", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 745", "forerunner 955", "forerunner 965", "포러너 245", "포러너 255", "포러너 955", "포러너 965", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...GARMIN_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2023,
   },
   {
@@ -5959,7 +5976,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Forerunner 955",
     aliases: ["Garmin Forerunner 955", "가민 포러너 955"],
     mustContain: [["garmin", "가민"], ["forerunner 955", "포러너 955", "fr 955", "fr955"]],
-    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 965", "포러너 265", "포러너 965", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 965", "포러너 265", "포러너 965", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...GARMIN_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 799000, released: 2022,
   },
   {
@@ -5968,7 +5985,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Forerunner 965",
     aliases: ["Garmin Forerunner 965", "가민 포러너 965"],
     mustContain: [["garmin", "가민"], ["forerunner 965", "포러너 965", "fr 965", "fr965"]],
-    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 955", "forerunner 970", "포러너 265", "포러너 955", "포러너 970", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 955", "forerunner 970", "포러너 265", "포러너 955", "포러너 970", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...GARMIN_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 899000, released: 2023,
   },
   // Wave 189 (2026-05-18): Forerunner 970 신모델 (2025.05 출시) catalog 누락 발견. raw 76건 중 본품 다수.
@@ -5978,7 +5995,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Forerunner 970",
     aliases: ["Garmin Forerunner 970", "가민 포러너 970"],
     mustContain: [["garmin", "가민"], ["forerunner 970", "포러너 970", "fr 970", "fr970"]],
-    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 955", "forerunner 965", "포러너 265", "포러너 955", "포러너 965", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["forerunner 245", "forerunner 255", "forerunner 265", "forerunner 745", "forerunner 955", "forerunner 965", "포러너 265", "포러너 955", "포러너 965", "fenix", "페닉스", "instinct", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...GARMIN_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 999000, released: 2025,
   },
   {
@@ -5987,7 +6004,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Instinct 2",
     aliases: ["Garmin Instinct 2", "가민 인스팅트 2"],
     mustContain: [["garmin", "가민"], ["instinct 2", "인스팅트 2", "instinct2"]],
-    mustNotContain: ["instinct 3", "instinct crossover", "인스팅트 3", "fenix", "페닉스", "forerunner", "포러너", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["instinct 3", "instinct crossover", "인스팅트 3", "fenix", "페닉스", "forerunner", "포러너", "venu", "epix", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...GARMIN_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 399000, released: 2022,
   },
   {
@@ -5996,7 +6013,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Venu 3",
     aliases: ["Garmin Venu 3", "가민 비누 3"],
     mustContain: [["garmin", "가민"], ["venu 3", "비누 3", "venu3"]],
-    mustNotContain: ["venu 2", "venu sq", "비누 2", "fenix", "페닉스", "forerunner", "포러너", "instinct", "epix", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["venu 2", "venu sq", "비누 2", "fenix", "페닉스", "forerunner", "포러너", "instinct", "epix", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...GARMIN_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 599000, released: 2023,
   },
   {
@@ -6005,7 +6022,7 @@ export const CATALOG: Sku[] = [
     modelName: "Garmin Epix Pro (Gen 2)",
     aliases: ["Garmin Epix Pro", "가민 에픽스 프로"],
     mustContain: [["garmin", "가민"], ["epix pro", "에픽스 프로", "epix"], ["pro", "프로", "gen 2", "gen2"]],
-    mustNotContain: ["fenix", "페닉스", "forerunner", "포러너", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["fenix", "페닉스", "forerunner", "포러너", "instinct", "venu", "vivoactive", "케이스만", "스트랩만", "배터리만", "충전기만", "고장", "파손", "수리", "매입", "삽니다", ...GARMIN_ACCESSORY_NOISE, ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 1199000, released: 2023,
   },
   ...CORE_SMARTPHONE_CATALOG,
