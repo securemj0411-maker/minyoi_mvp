@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ConditionChip } from "@/components/condition-chip";
+import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
@@ -1225,6 +1226,20 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   </div>
                 ) : null;
               })()}
+              {!isTerminal && item.velocityBasis ? (
+                <div className="mt-2">
+                  <LiquidityCurveMini
+                    price={item.price}
+                    p25Price={item.marketBasis?.p25Price ?? null}
+                    medianPrice={item.marketBasis?.medianPrice ?? null}
+                    p75Price={item.marketBasis?.p75Price ?? null}
+                    p25Hours={item.velocityBasis.p25HoursToSold}
+                    medianHours={item.velocityBasis.medianHoursToSold}
+                    p75Hours={item.velocityBasis.p75HoursToSold}
+                    soldSampleCount={item.velocityBasis.observedSoldSampleCount}
+                  />
+                </div>
+              ) : null}
               {item.feedbackType ? (
                 <div className="mt-1 truncate text-[11px] text-zinc-500 dark:text-zinc-400">
                   피드백: {item.feedbackType}{item.feedbackNote ? ` · ${item.feedbackNote}` : ""}

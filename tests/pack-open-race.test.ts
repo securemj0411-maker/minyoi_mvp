@@ -66,7 +66,7 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-function fakeReserved(pid: number) {
+function fakeReserved(pid: number, comparableKey = `k-${pid}`) {
   return {
     pid,
     profit_band: 1,
@@ -74,7 +74,7 @@ function fakeReserved(pid: number) {
     expected_profit_max: 5000,
     score: 1,
     confidence: 0.8,
-    comparable_key: "k",
+    comparable_key: comparableKey,
     exposure_count: 0,
     max_exposure: 5,
     last_verified_at: new Date().toISOString(),
@@ -96,6 +96,10 @@ function fakeListing(pid: number) {
 function buildHandler(opts: {
   inventory?: Array<{ band: number; usableReady: number }>;
   reserved: number[];
+  reservedKeys?: Record<number, string | null>;
+  existingRevealPids?: number[];
+  comparableKeyByPid?: Record<number, string | null>;
+  skuIdByPid?: Record<number, string | null>;
   failRevealWrite?: boolean;
 } = { reserved: [] }) {
   return async (call: FetchCall): Promise<Response> => {
@@ -119,7 +123,23 @@ function buildHandler(opts: {
       ]);
     }
     if (call.url.includes("/rpc/reserve_mvp_pool_candidates")) {
-      return jsonResponse(opts.reserved.map(fakeReserved));
+      return jsonResponse(opts.reserved.map((pid) => fakeReserved(pid, opts.reservedKeys?.[pid] ?? `k-${pid}`)));
+    }
+    if (call.url.includes("/mvp_pack_reveals?select=pid") && call.method === "GET") {
+      return jsonResponse((opts.existingRevealPids ?? []).map((pid) => ({ pid })));
+    }
+    if (call.url.includes("/mvp_listing_parsed?select=pid,comparable_key")) {
+      const pids = (call.url.match(/pid=in\.\(([^)]*)\)/)?.[1] ?? "")
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => Number.isFinite(n));
+      return jsonResponse(pids.map((pid) => ({
+        pid,
+        comparable_key: opts.comparableKeyByPid?.[pid] ?? `k-${pid}`,
+      })));
+    }
+    if (call.url.includes("/mvp_listing_parsed?select=pid,parsed_json")) {
+      return jsonResponse([]);
     }
     if (call.url.includes("/mvp_listings?select=")) {
       const pids = (call.url.match(/pid=in\.\(([^)]*)\)/)?.[1] ?? "")
@@ -133,7 +153,7 @@ function buildHandler(opts: {
         .split(",")
         .map((s) => Number(s.trim()))
         .filter((n) => Number.isFinite(n));
-      return jsonResponse(pids.map((pid) => ({ pid, sku_id: "airpods-pro-2-usbc" })));
+      return jsonResponse(pids.map((pid) => ({ pid, sku_id: opts.skuIdByPid?.[pid] ?? `sku-${pid}` })));
     }
     if (call.url.includes("/mvp_market_price_daily")) {
       return jsonResponse([]);
@@ -199,6 +219,54 @@ test("openPack records one audit row and commits exactly revealed pids on succes
   }
 });
 
+test("openPack skips prior and same-pack comparable key duplicates", async () => {
+  process.env.SUPABASE_URL = "https://stub.supabase.co";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "stub-key";
+
+  const stub = stubFetch();
+  try {
+    stub.setHandler(buildHandler({
+      reserved: [101, 102, 103, 104],
+      existingRevealPids: [900],
+      comparableKeyByPid: {
+        900: "ipad-pro-11-m5-256-unopened",
+      },
+      reservedKeys: {
+        101: "ipad-pro-11-m5-256-unopened",
+        102: "sony-ult-wear-black",
+        103: "sony-ult-wear-black",
+        104: "airpods-max-usbc-midnight",
+      },
+    }));
+
+    const result = await openPack({
+      band: 1,
+      userRef: "user-dedupe",
+      authUserId: "auth-dedupe",
+      isInfiniteCredits: false,
+      tokensSpent: 1,
+      requestedCards: 2,
+    });
+
+    assert.equal(result.result, "success");
+    if (result.result !== "success") return;
+    assert.deepEqual(result.reveals.map((r) => r.pid), [102, 104]);
+
+    const commitPids = stub.calls
+      .filter((c) => c.url.includes("/rpc/commit_mvp_pool_reveal"))
+      .map((c) => (c.body as { p_pid: number }).p_pid);
+    assert.deepEqual(commitPids, [102, 104]);
+
+    const releasePids = stub.calls
+      .filter((c) => c.url.includes("/rpc/release_mvp_pool_reservation"))
+      .map((c) => (c.body as { p_pid: number }).p_pid)
+      .sort((a, b) => a - b);
+    assert.deepEqual(releasePids, [101, 103]);
+  } finally {
+    stub.restore();
+  }
+});
+
 test("concurrent openPack invocations each finalize exactly once", async () => {
   process.env.SUPABASE_URL = "https://stub.supabase.co";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "stub-key";
@@ -209,7 +277,7 @@ test("concurrent openPack invocations each finalize exactly once", async () => {
     stub.setHandler(async (call) => {
       if (call.url.includes("/rpc/reserve_mvp_pool_candidates")) {
         const pids = [nextPid++, nextPid++, nextPid++, nextPid++];
-        return jsonResponse(pids.map(fakeReserved));
+        return jsonResponse(pids.map((pid) => fakeReserved(pid)));
       }
       return buildHandler({ reserved: [] })(call);
     });

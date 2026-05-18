@@ -17,6 +17,7 @@ import {
 } from "@/lib/pipeline";
 
 const TIMEOUT_MS = 30_000;
+const USER_REVEAL_DEDUPE_LIMIT = 1000;
 
 export type PackBand = 1 | 2 | 3;
 
@@ -214,6 +215,12 @@ type RawSkuMeta = {
   shop_review_count: number | null;
 };
 
+type UserRevealDedupe = {
+  pids: Set<number>;
+  comparableKeys: Set<string>;
+  skuIds: Set<string>;
+};
+
 type SourceHealthRow = {
   status: SourceHealthStatus;
   checked_at: string;
@@ -324,6 +331,36 @@ async function rpcReleaseReservation(pid: number): Promise<void> {
     headers: authHeaders(),
     body: JSON.stringify({ p_pid: pid }),
   });
+}
+
+async function loadUserRevealDedupe(userRef: string): Promise<UserRevealDedupe> {
+  const revealRes = await callSupabase(
+    `/mvp_pack_reveals?select=pid&user_ref=eq.${encodeURIComponent(userRef)}&order=revealed_at.desc&limit=${USER_REVEAL_DEDUPE_LIMIT}`,
+    { headers: authHeaders() },
+  );
+  const revealRows = (await revealRes.json()) as Array<{ pid: number }>;
+  const pids = Array.from(new Set(revealRows.map((row) => Number(row.pid)).filter(Number.isFinite)));
+  const dedupe: UserRevealDedupe = {
+    pids: new Set(pids),
+    comparableKeys: new Set(),
+    skuIds: new Set(),
+  };
+  if (pids.length === 0) return dedupe;
+
+  const pidList = pids.join(",");
+  const [parsedRes, rawRes] = await Promise.all([
+    callSupabase(`/mvp_listing_parsed?select=pid,comparable_key&pid=in.(${pidList})`, { headers: authHeaders() }),
+    callSupabase(`/mvp_raw_listings?select=pid,sku_id&pid=in.(${pidList})`, { headers: authHeaders() }),
+  ]);
+  const parsedRows = (await parsedRes.json()) as Array<{ comparable_key: string | null }>;
+  const rawRows = (await rawRes.json()) as Array<{ sku_id: string | null }>;
+  for (const row of parsedRows) {
+    if (row.comparable_key) dedupe.comparableKeys.add(row.comparable_key);
+  }
+  for (const row of rawRows) {
+    if (row.sku_id) dedupe.skuIds.add(row.sku_id);
+  }
+  return dedupe;
 }
 
 function freshnessMsForBand(band: PackBand) {
@@ -1097,7 +1134,16 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
   const maxFreshSec = input.maxFreshHours && input.maxFreshHours > 0
     ? Math.round(input.maxFreshHours * 3600)
     : 0;
-  const reserved = await rpcReservePool(input.band, input.userRef, reserveLimit, maxFreshSec);
+  const [reserved, userDedupe] = await Promise.all([
+    rpcReservePool(input.band, input.userRef, reserveLimit, maxFreshSec),
+    loadUserRevealDedupe(input.userRef).catch((err) => {
+      console.error("pack_open user dedupe load failed (non-fatal)", {
+        userRef: input.userRef,
+        err: err instanceof Error ? err.message : String(err),
+      });
+      return { pids: new Set<number>(), comparableKeys: new Set<string>(), skuIds: new Set<string>() };
+    }),
+  ]);
   if (reserved.length === 0) {
     return {
       result: "unavailable",
@@ -1125,18 +1171,32 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     const reveals: RevealCard[] = [];
     const attemptedPids: number[] = [];
     const releasePids: number[] = [];
+    const seenComparableKeys = new Set(userDedupe.comparableKeys);
+    const seenSkuIds = new Set(userDedupe.skuIds);
 
     for (const candidate of reserved) {
       if (reveals.length >= targetCards) {
         releasePids.push(candidate.pid);
         continue;
       }
-      attemptedPids.push(candidate.pid);
+      if (userDedupe.pids.has(candidate.pid)) {
+        releasePids.push(candidate.pid);
+        continue;
+      }
+      if (candidate.comparable_key && seenComparableKeys.has(candidate.comparable_key)) {
+        releasePids.push(candidate.pid);
+        continue;
+      }
       const meta = listingMap.get(candidate.pid);
       if (!meta) {
         await rpcInvalidate(candidate.pid, "missing_listing_meta");
         continue;
       }
+      if (!candidate.comparable_key && meta.sku_id && seenSkuIds.has(meta.sku_id)) {
+        releasePids.push(candidate.pid);
+        continue;
+      }
+      attemptedPids.push(candidate.pid);
       if (isSideOnlyEarbudListing(meta.name)) {
         await rpcInvalidate(candidate.pid, "pack_open_side_only_earbud_title");
         continue;
@@ -1216,6 +1276,8 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
         optionBaseAssumed: optionBaseAssumedMap.get(candidate.pid) ?? null,
       });
+      if (candidate.comparable_key) seenComparableKeys.add(candidate.comparable_key);
+      if (meta.sku_id) seenSkuIds.add(meta.sku_id);
     }
 
     for (const pid of releasePids) {
