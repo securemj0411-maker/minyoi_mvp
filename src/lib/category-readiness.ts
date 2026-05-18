@@ -603,6 +603,28 @@ export const LANE_READINESS: LaneReadinessMap = {
   fog_fear_of_god_self: { status: "ready", label: "Fear of God 자체 (8th/디스턴스 러너/캘리포니아 뮬)", note: "Wave 210" },
   champion_trainer: { status: "ready", label: "Champion Trainer/Slipper", note: "Wave 210 입문" },
   tommy_hilfiger_bag: { status: "ready", label: "Tommy Hilfiger Bag", note: "Wave 210 bag" },
+  // Wave 211 (2026-05-19): 나이키 Air Max 시리즈 + Blazer + Sacai collab
+  nike_airmax_1: { status: "ready", label: "Nike Air Max 1", note: "Wave 211" },
+  nike_airmax_90: { status: "ready", label: "Nike Air Max 90", note: "Wave 211 — 매물 다수 (faved 30!)" },
+  nike_airmax_95: { status: "ready", label: "Nike Air Max 95", note: "Wave 211 — 매물 매우 다수" },
+  nike_airmax_97: { status: "ready", label: "Nike Air Max 97", note: "Wave 211 — 매물 매우 다수 (faved 36)" },
+  nike_blazer_broad: { status: "ready", label: "Nike Blazer (Mid 77/SB/Vintage)", note: "Wave 211" },
+  nike_sakai_collab: { status: "ready", label: "Nike × Sacai", note: "Wave 211 collab — 매물 다수" },
+  // Wave 212 (2026-05-19): 아디다스 추가 13 SKU — 매물 폭발적 (셔링백 faved 252~255 압도적)
+  adidas_shering: { status: "ready", label: "Adidas Shering Hobo Bag (시그니처)", note: "Wave 212 — 매물 1위 faved 252~255!" },
+  adidas_cross_mini: { status: "ready", label: "Adidas Mini Cross/힙색/웨이스트", note: "Wave 212" },
+  adidas_campus: { status: "ready", label: "Adidas Campus (00s/Japan)", note: "Wave 212" },
+  adidas_spezial: { status: "ready", label: "Adidas Spezial", note: "Wave 212" },
+  adidas_forum: { status: "ready", label: "Adidas Forum (Low/Mid)", note: "Wave 212" },
+  adidas_sl72: { status: "ready", label: "Adidas SL72 (vintage)", note: "Wave 212" },
+  adidas_stansmith_broad: { status: "ready", label: "Adidas Stan Smith (broad)", note: "Wave 212" },
+  adidas_superstar_broad: { status: "ready", label: "Adidas Superstar (broad)", note: "Wave 212" },
+  adidas_ultraboost: { status: "ready", label: "Adidas Ultra Boost", note: "Wave 212" },
+  adidas_adilette: { status: "ready", label: "Adidas Adilette (슬리퍼)", note: "Wave 212" },
+  adidas_football: { status: "ready", label: "Adidas Football (F50/Predator/Copa/X)", note: "Wave 212" },
+  adidas_adizero: { status: "ready", label: "Adidas Adizero (러닝)", note: "Wave 212" },
+  adidas_balenciaga_collab: { status: "ready", label: "Adidas × Balenciaga (한정)", note: "Wave 212 collab" },
+  adidas_rafsimons_collab: { status: "ready", label: "Adidas × Raf Simons", note: "Wave 212 collab" },
 };
 
 export type CategoryReadinessConfig = {

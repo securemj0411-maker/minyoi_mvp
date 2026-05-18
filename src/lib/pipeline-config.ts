@@ -396,6 +396,28 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Fear of God 8th", "FOG 디스턴스 러너", "캘리포니아 뮬",
   "Champion 트레이너", "챔피온 트레이너",
   "Tommy Hilfiger 가방", "타미힐피거 크로스백",
+  // Wave 211 — 나이키 Air Max + Blazer + Sacai
+  "Nike Air Max 1", "나이키 에어맥스 1",
+  "Nike Air Max 90", "나이키 에어맥스 90",
+  "Nike Air Max 95", "나이키 에어맥스 95",
+  "Nike Air Max 97", "나이키 에어맥스 97",
+  "Nike Blazer Mid", "나이키 블레이저",
+  "Nike Sacai", "나이키 사카이", "Sacai Vaporwaffle",
+  // Wave 212 — 아디다스 추가 (셔링백/캠퍼스/스페지알/포럼 등)
+  "Adidas 셔링백", "아디다스 셔링백", "Adidas Hobo",
+  "Adidas Cross", "아디다스 미니 크로스백", "아디다스 힙색",
+  "Adidas Campus", "아디다스 캠퍼스",
+  "Adidas Spezial", "아디다스 스페지알",
+  "Adidas Forum", "아디다스 포럼",
+  "Adidas SL72", "아디다스 SL72",
+  "Adidas Stan Smith", "아디다스 스탠스미스",
+  "Adidas Superstar", "아디다스 슈퍼스타",
+  "Adidas Ultraboost", "아디다스 울트라부스트",
+  "Adidas Adilette", "아디다스 아딜렛",
+  "Adidas F50", "아디다스 프레데터", "아디다스 코파", "Adidas Crazyfast",
+  "Adidas Adizero", "아디다스 아디제로",
+  "Adidas Balenciaga", "발렌시아가 아디다스",
+  "Adidas Raf Simons", "아디다스 라프시몬스",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
