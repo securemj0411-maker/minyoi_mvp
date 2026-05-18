@@ -1932,6 +1932,24 @@ async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Prom
 //   - 너무 짧으면 outage 시 누락. 너무 길면 의미 사라짐.
 //   - env override 가능 (PIPELINE_MARKET_STATS_LOOKBACK_HOURS).
 const DEFAULT_MARKET_STATS_LOOKBACK_HOURS = 28;
+
+// Wave 218 (2026-05-19): placeholder 가격 탐지 헬퍼.
+//   기존: row.price >= 100_000_000 || row.price <= 0 만 차단.
+//   문제: 99,999,999 / 77,777,777 / 11,111,111 / 9,999,999 / 999,999 / 111,111 등
+//         "같은 자리수 반복" placeholder 가 빠짐. 사용자 지적 + 측정 (active 44건):
+//         shoe-stussy-nike-collab max 99,999,999 (CV 10.73 — 시세 망가짐)
+//   정책: ^(\d)\1{4,}$ 5자리+ 같은 숫자 = placeholder. 1004 (천사) / 1234 / 4321 sequential.
+//   영향: upsertMarketPriceDaily + score-stage fallback + score gap 3곳 동일 헬퍼.
+function isPlaceholderPrice(price: number | null | undefined): boolean {
+  if (!Number.isFinite(price ?? NaN)) return true;
+  const p = Number(price);
+  if (p <= 0) return true;
+  if (p >= 100_000_000) return true; // 1억+
+  const s = String(Math.floor(p));
+  if (s.length >= 5 && /^(\d)\1+$/.test(s)) return true; // 11111 / 99999 / 1111111 / 99999999
+  if (p === 1004 || p === 1234 || p === 4321 || p === 12345) return true; // 의도적 sequential
+  return false;
+}
 // Supabase PostgREST max-rows=1000 강제 cap → 한 GET 당 1000 row max.
 // 28h lookback 안 매물 6.7K+ (측정) — 1000 cap 으로 5.7K 누락 위험.
 // → pagination 으로 chunk 페치 후 합쳐서 group/upsert. lifecycle 의 chunk wave 패턴.
@@ -2832,8 +2850,8 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // risk_hits>0 매물 제외 (analysis 없으면 default safe)
     if (safeByPid.has(row.pid) && safeByPid.get(row.pid) === false) continue;
     // 2026-05-16: placeholder price 제외 (999999999, 111111111 등 "교환원함"/"분실"/"판매완료" 류).
-    // 14건 발견 (mvp_listings 0.12%). 진짜 호가 아니라 시세 집계에 끼면 평균 끌어올림.
-    if (row.price >= 100_000_000 || row.price <= 0) continue;
+    // Wave 218 (2026-05-19): isPlaceholderPrice 헬퍼 — 같은 자리수 반복 패턴 추가.
+    if (isPlaceholderPrice(row.price)) continue;
 
     const conditionNotes = (parsed.parsed_json?.condition_notes as string[] | undefined) ?? [];
     // Wave 130: flawed class (손상/문제 매물) 시세 산정 차단 — 현재 정책 유지.
@@ -4086,9 +4104,8 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const pricesBySku = new Map<string, number[]>();
   for (const row of rows) {
     // 2026-05-16: placeholder price (999999999, 111111111 등) 매물의 가격을 시세 fallback sample에서 제외.
-    // 14건 발견 — "교환원함" / "분실" / "판매완료" 셀러가 가격 placeholder 박은 경우.
-    // madTrim 이 outlier 제거하지만 sample 적으면 미흡.
-    if (row.price >= 100_000_000 || row.price <= 0) continue;
+    // Wave 218 (2026-05-19): isPlaceholderPrice 헬퍼 사용 (같은 자리수 반복 5+ 패턴 포함).
+    if (isPlaceholderPrice(row.price)) continue;
     const skuId = row.sku_id ?? "";
     const parsedRow = parsedByPid.get(row.pid);
     const marketKey = marketGroupKey(row, parsedRow);
@@ -4229,8 +4246,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       ? referencePrice
       : hasTrustedMarket ? trustedMedian : fallbackMedian;
     // 2026-05-16: placeholder price 매물 (999999999, 111111111 등)은 priceGap 0 강제 → score 0 → 풀 진입 차단.
-    const isPlaceholderPrice = row.price >= 100_000_000 || row.price <= 0;
-    const priceGap = isPlaceholderPrice || skuMedian <= 0 ? 0 : Math.max(0, Math.min(1, (skuMedian - row.price) / skuMedian));
+    // Wave 218 (2026-05-19): isPlaceholderPrice 헬퍼 사용 (같은 자리수 반복 5+ 패턴 포함).
+    const placeholder = isPlaceholderPrice(row.price);
+    const priceGap = placeholder || skuMedian <= 0 ? 0 : Math.max(0, Math.min(1, (skuMedian - row.price) / skuMedian));
     const velocity = percentileRank(favsByMarket.get(marketKey) ?? [], row.num_faved);
     const safetyBase = row.shop_review_rating == null ? 0.5 : Math.max(0, Math.min(1, Number(row.shop_review_rating) / 5));
     const sellerSafety = Math.max(0, Math.min(1, safetyBase + (row.shop_review_count >= 100 ? 0.05 : 0)));
