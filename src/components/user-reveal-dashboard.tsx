@@ -1253,35 +1253,6 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         </div>
       ) : null}
 
-      {/* Wave 205 (2026-05-18): terminal 매물은 기본 표시. 사용자가 원하면 숨길 수만 있다. */}
-      {(() => {
-        const terminalCount = items.filter((item) => isUserFacingClosed(item)).length;
-        if (terminalCount === 0) return null;
-        return (
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[11px] shadow-sm dark:border-zinc-800 dark:bg-zinc-950/40">
-            <span className="text-zinc-700 dark:text-zinc-300">
-              판매완료된 상품 <b>{terminalCount}건</b>을 기록으로 남겨뒀어요.
-              {dashboardSummary.marketClosedCount > 0 ? (
-                <span className="ml-1 text-zinc-500 dark:text-zinc-400">
-                  시세상 차익이 사라진 상품 {dashboardSummary.marketClosedCount}건 포함.
-                </span>
-              ) : null}
-            </span>
-            <button
-              type="button"
-              onClick={() => setHideTerminal((v) => !v)}
-              className={`rounded-full px-2.5 py-1 text-[10px] font-black transition ${
-                hideTerminal
-                  ? "bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-200"
-                  : "bg-amber-500 text-white hover:bg-amber-600"
-              }`}
-            >
-              {hideTerminal ? `보기 (${terminalCount})` : "숨기기"}
-            </button>
-          </div>
-        );
-      })()}
-
       <div className={viewMode === "grid" ? "mt-3 grid gap-0 sm:mt-4 sm:gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "mt-3 grid gap-0 sm:mt-4 sm:gap-2"}>
         {visibleItems.map((item) => {
           // 2026-05-18: 판매완료/삭제/숨김 계열은 동일한 판매완료 tombstone으로 표시.
@@ -1507,6 +1478,29 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           );
         })}
       </div>
+
+      {/* Wave 303 (2026-05-19): terminal 기록 안내는 첫 화면 CTA를 밀지 않도록 목록 아래 보조 컨트롤로만 둔다. */}
+      {dashboardSummary.terminalCount > 0 ? (
+        <div className="mx-3 mt-3 flex items-center justify-between gap-2 border-t border-[#e5dccf] pt-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 sm:mx-0">
+          <span className="min-w-0 truncate">
+            {hideTerminal
+              ? `판매완료 기록 ${dashboardSummary.terminalCount.toLocaleString("ko-KR")}건 숨김`
+              : `판매완료 기록 ${dashboardSummary.terminalCount.toLocaleString("ko-KR")}건 포함`}
+            {dashboardSummary.marketClosedCount > 0 ? (
+              <span className="hidden sm:inline">
+                {" "}· 시세 마감 {dashboardSummary.marketClosedCount.toLocaleString("ko-KR")}건
+              </span>
+            ) : null}
+          </span>
+          <button
+            type="button"
+            onClick={() => setHideTerminal((v) => !v)}
+            className="shrink-0 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[10px] font-black text-zinc-600 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
+            {hideTerminal ? "기록 보기" : "기록 접기"}
+          </button>
+        </div>
+      ) : null}
 
       {!loading && totalPages > 1 ? (
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
