@@ -309,6 +309,10 @@ export const DEFAULT_SEARCH_QUERIES = [
   "꼼데가르송 PVC", "CDG PVC", "꼼데가르송 가방",
   "Stussy 컨버스", "스투시 컨버스", "Converse Stussy 척70",
   "폴로 빅포니 토트백", "Polo Big Pony Tote",
+  // Wave 201 — 꼼데 추가 collab
+  "NB 꼼데", "뉴발란스 꼼데가르송", "준야 와타나베 NB", "Junya NB",
+  "Vans CDG", "반스 꼼데가르송",
+  "Salomon CDG", "살로몬 꼼데가르송", "꼼데 XT-6",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

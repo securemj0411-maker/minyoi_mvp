@@ -517,6 +517,10 @@ export const LANE_READINESS: LaneReadinessMap = {
   cdg_pvc_bag: { status: "ready", label: "CDG PVC Bag (시그니처)", note: "Wave 200 Tier 3 bag — faved 51" },
   stussy_converse_collab: { status: "ready", label: "Converse × Stüssy (척테일러)", note: "Wave 200 Tier 3 shoe collab" },
   polo_big_pony_tote: { status: "ready", label: "Polo Big Pony Tote (시그니처)", note: "Wave 200 Tier 3 bag" },
+  // Wave 201 (2026-05-18): 꼼데가르송 collab 분리
+  cdg_newbalance_collab: { status: "ready", label: "NB × CDG Junya Watanabe", note: "Wave 201 collab shoe" },
+  cdg_vans_collab: { status: "ready", label: "Vans × CDG", note: "Wave 201 collab shoe" },
+  cdg_salomon_collab: { status: "ready", label: "Salomon × CDG", note: "Wave 201 collab shoe — XT-6/Alpine" },
 };
 
 export type CategoryReadinessConfig = {

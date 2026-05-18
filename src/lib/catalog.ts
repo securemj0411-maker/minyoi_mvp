@@ -7107,6 +7107,35 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["RRL", "더블 알엘", "purple label", "퍼플라벨", "키즈", "kids", "복각", "rep ", "replica"],
     msrpKrw: 199000, released: 2020,
   },
+  // Wave 201 (2026-05-18): 꼼데가르송 collab 추가 분리 — NB / Vans / Salomon.
+  // 사용자 정책 "전수조사" — 각 collab별 narrow SKU로 시세 분리.
+  {
+    id: "shoe-cdg-newbalance-collab",
+    brand: "New Balance x CDG Junya Watanabe", category: "shoe", laneKey: "cdg_newbalance_collab",
+    modelName: "NB × CDG Junya Watanabe (collab)",
+    aliases: ["NB CDG", "뉴발란스 꼼데가르송", "준야 와타나베 NB", "CDG Junya"],
+    mustContain: [["꼼데", "cdg", "comme des garcons", "준야", "junya"], ["뉴발란스", "new balance", "newbalance", "nb "]],
+    mustNotContain: ["nike", "나이키", "vans", "반스", "salomon", "살로몬", "키즈", "kids", "복각", "rep ", "replica"],
+    msrpKrw: 250000, released: 2021,
+  },
+  {
+    id: "shoe-cdg-vans-collab",
+    brand: "Vans x CDG", category: "shoe", laneKey: "cdg_vans_collab",
+    modelName: "Vans × CDG (collab)",
+    aliases: ["Vans CDG", "반스 꼼데가르송", "Vans 꼼데"],
+    mustContain: [["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["vans", "반스"]],
+    mustNotContain: ["nike", "나이키", "newbalance", "뉴발란스", "salomon", "살로몬", "키즈", "kids", "복각", "rep ", "replica"],
+    msrpKrw: 150000, released: 2020,
+  },
+  {
+    id: "shoe-cdg-salomon-collab",
+    brand: "Salomon x CDG", category: "shoe", laneKey: "cdg_salomon_collab",
+    modelName: "Salomon × CDG (collab)",
+    aliases: ["Salomon CDG", "살로몬 꼼데가르송", "CDG XT-6", "CDG XA Alpine"],
+    mustContain: [["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["salomon", "살로몬"]],
+    mustNotContain: ["nike", "나이키", "newbalance", "뉴발란스", "vans", "반스", "키즈", "kids", "복각", "rep ", "replica"],
+    msrpKrw: 500000, released: 2022,
+  },
 ];
 
 // Wave 94: CATALOG 전체 SKU에도 카테고리별 NOISE 자동 spread (GENERATED + CORE + Wave 91 신규 다 포함).
