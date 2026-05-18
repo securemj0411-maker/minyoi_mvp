@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ConditionChip } from "@/components/condition-chip";
-import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
@@ -37,7 +36,7 @@ type RevealItem = {
   linkClickedAt: string | null;
   feedbackType: string | null;
   feedbackNote: string | null;
-  // Wave 89: 모달에 카드팩과 동일한 시세/velocity/flow 표시
+  // Wave 216: /me 목록은 marketBasis 중심. velocity/flow는 상품 보기 상세 호출 때 lazy-fill.
   marketBasis: RevealMarketBasis | null;
   velocityBasis: RevealVelocityBasis | null;
   skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
@@ -56,6 +55,12 @@ type DashboardResponse = {
   pageSize: number;
   total: number;
   totalPages: number;
+};
+
+type RevealDetailResponse = {
+  detail?: RevealListingDetail;
+  analysis?: Partial<Pick<RevealItem, "marketBasis" | "velocityBasis" | "skuListingFlow" | "optionBaseAssumed">>;
+  error?: string;
 };
 
 type RevealSort = "latest" | "oldest" | "price_low" | "price_high" | "profit_low" | "profit_high";
@@ -303,8 +308,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   const modalResult: RevealResult | null = useMemo(() => {
     if (!selectedItem) return null;
     const revealedAtMs = new Date(selectedItem.revealedAt).getTime();
-    // Wave 89: marketBasis/velocityBasis/skuListingFlow는 서버에서 실시간 fetch한 값 사용.
-    // 서버 fetch 실패하면 fallback (comparableKey만 있는 빈 marketBasis).
+    // Wave 216: 목록 응답은 가볍게 받고, 상품 보기 상세 호출 후 velocity/flow를 채운다.
+    // 상세 분석 fetch 전에는 fallback (comparableKey만 있는 빈 marketBasis).
     const marketBasis = selectedItem.marketBasis ?? {
       comparableKey: selectedItem.comparableKey,
       label: selectedItem.skuName ?? selectedItem.name,
@@ -438,8 +443,19 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     const fallbackItem = selectedItem?.pid === pid ? selectedItem : items.find((item) => item.pid === pid);
     try {
       const res = await fetchWithAuth("/api/packs/reveals/detail", { pid });
-      const detailData = (await res.json()) as { detail?: RevealListingDetail; error?: string };
+      const detailData = (await res.json()) as RevealDetailResponse;
       if (!res.ok || !detailData.detail) throw new Error(detailData.error ?? "상세 정보 요청 실패");
+      if (detailData.analysis) {
+        const applyAnalysis = (item: RevealItem): RevealItem => ({
+          ...item,
+          marketBasis: detailData.analysis?.marketBasis ?? item.marketBasis,
+          velocityBasis: detailData.analysis?.velocityBasis ?? item.velocityBasis,
+          skuListingFlow: detailData.analysis?.skuListingFlow ?? item.skuListingFlow,
+          optionBaseAssumed: detailData.analysis?.optionBaseAssumed ?? item.optionBaseAssumed,
+        });
+        setItems((prev) => prev.map((item) => (item.pid === pid ? applyAnalysis(item) : item)));
+        setSelectedItem((prev) => (prev?.pid === pid ? applyAnalysis(prev) : prev));
+      }
       return detailData.detail;
     } catch (err) {
       if (!fallbackItem) throw err;
@@ -1226,20 +1242,6 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   </div>
                 ) : null;
               })()}
-              {!isTerminal && item.velocityBasis ? (
-                <div className="mt-2">
-                  <LiquidityCurveMini
-                    price={item.price}
-                    p25Price={item.marketBasis?.p25Price ?? null}
-                    medianPrice={item.marketBasis?.medianPrice ?? null}
-                    p75Price={item.marketBasis?.p75Price ?? null}
-                    p25Hours={item.velocityBasis.p25HoursToSold}
-                    medianHours={item.velocityBasis.medianHoursToSold}
-                    p75Hours={item.velocityBasis.p75HoursToSold}
-                    soldSampleCount={item.velocityBasis.observedSoldSampleCount}
-                  />
-                </div>
-              ) : null}
               {item.feedbackType ? (
                 <div className="mt-1 truncate text-[11px] text-zinc-500 dark:text-zinc-400">
                   피드백: {item.feedbackType}{item.feedbackNote ? ` · ${item.feedbackNote}` : ""}

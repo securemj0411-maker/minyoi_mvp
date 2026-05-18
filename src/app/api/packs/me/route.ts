@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { fetchDetail } from "@/lib/bunjang";
-import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import {
   fetchReferencePrices,
   fetchLatestMarketStats,
-  fetchLatestMarketVelocity,
   marketBasisForCandidate,
-  velocityBasisForCandidate,
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -115,7 +112,7 @@ type RevealItem = {
   linkClickedAt: string | null;
   feedbackType: string | null;
   feedbackNote: string | null;
-  // Wave 89: 다시 보기 모달에도 시세/velocity/flow 보이게 추가.
+  // Wave 216: 목록 응답은 market/current profit 중심. velocity/flow는 상품 보기에서 lazy-fill.
   marketBasis: RevealMarketBasis | null;
   velocityBasis: RevealVelocityBasis | null;
   skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
@@ -475,41 +472,14 @@ export async function GET(req: Request) {
     }
   }
 
-  // Wave 89: 시세/velocity/skuListingFlow를 다시 보기 모달에도 표시.
-  // comparable_key별로 market_price/velocity 한 번에 batch fetch.
+  // Wave 216: /me 목록은 가볍게 유지한다. 회전 곡선/유입량은 사용자가 "상품 보기"를
+  // 눌렀을 때 /api/packs/reveals/detail 단일 매물 응답에서 lazy-load 한다.
+  // 목록에서는 현재 시세/차익에 필요한 market/reference 가격만 batch fetch.
   const comparableKeys = [...new Set(parsedRows.map((row) => row.comparable_key).filter((k): k is string => Boolean(k)))];
-  const [marketStats, velocityStats, readinessMap, referencePrices] = await Promise.all([
+  const [marketStats, referencePrices] = await Promise.all([
     fetchLatestMarketStats(comparableKeys),
-    fetchLatestMarketVelocity(comparableKeys),
-    loadCategoryReadinessMap(),
     fetchReferencePrices(comparableKeys),
   ]);
-
-  // skuListingFlow batch (7일 raw_listings count by sku_id)
-  const skuIds = [...new Set(rawRows.map((row) => row.sku_id).filter((s): s is string => Boolean(s)))];
-  const flowBySkuId = new Map<string, { count24h: number; avgPerDay7d: number }>();
-  if (skuIds.length > 0) {
-    try {
-      const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const encoded = skuIds.map((s) => encodeURIComponent(s)).join(",");
-      const flowRows = await loadJson<Array<{ sku_id: string; created_at: string }>>(
-        `${tableUrl("mvp_raw_listings")}?select=sku_id,created_at&sku_id=in.(${encoded})&created_at=gte.${since7d}&limit=20000`,
-      );
-      const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
-      const agg = new Map<string, { count24h: number; total7d: number }>();
-      for (const row of flowRows) {
-        const entry = agg.get(row.sku_id) ?? { count24h: 0, total7d: 0 };
-        entry.total7d += 1;
-        if (new Date(row.created_at).getTime() >= cutoff24h) entry.count24h += 1;
-        agg.set(row.sku_id, entry);
-      }
-      for (const [skuId, { count24h, total7d }] of agg) {
-        flowBySkuId.set(skuId, { count24h, avgPerDay7d: Math.round((total7d / 7) * 10) / 10 });
-      }
-    } catch (err) {
-      console.error("packs/me skuListingFlow fetch failed (non-fatal)", { err: err instanceof Error ? err.message : String(err) });
-    }
-  }
 
   const items = reveals
     .map((reveal): RevealItem => {
@@ -572,8 +542,8 @@ export async function GET(req: Request) {
         feedbackNote: feedback?.note ?? null,
         // Wave 130 (2026-05-16): 매물 condition_class 전달 → 매칭되는 시세 우선 표시 (사업 보고서 L2).
         marketBasis: computedMarketBasis,
-        velocityBasis: velocityBasisForCandidate(comparableKey, velocityStats, readinessMap),
-        skuListingFlow: skuId ? flowBySkuId.get(skuId) ?? null : null,
+        velocityBasis: null,
+        skuListingFlow: null,
         // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
         optionBaseAssumed: optionBaseAssumedByPid.get(Number(reveal.pid)) ?? null,
         // Wave 213 (2026-05-18): 실시간 순현재차익 min/max.
