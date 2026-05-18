@@ -11,6 +11,7 @@ export const revalidate = 0;
 
 const RATE_LIMIT_MAX = Math.max(1, Number(process.env.PACKS_PREVIEW_RATE_LIMIT_MAX ?? 60));
 const RATE_LIMIT_WINDOW_SECONDS = Math.max(1, Number(process.env.PACKS_PREVIEW_RATE_LIMIT_WINDOW_SECONDS ?? 10));
+const MIN_ADVANCED_PRICE_MAX_KRW = 150_000;
 
 type Filters = {
   band?: 1 | 2 | 3 | null;
@@ -29,9 +30,12 @@ function parseFilters(url: URL): Filters {
   const minConfidence = url.searchParams.get("minConfidence");
   const categories = url.searchParams.get("categories");
   const maxFreshHours = url.searchParams.get("maxFreshHours");
+  const parsedPriceMax = priceMax ? Number(priceMax) : null;
   return {
     band: validBand,
-    priceMax: priceMax ? Number(priceMax) : null,
+    priceMax: parsedPriceMax != null && Number.isFinite(parsedPriceMax) && parsedPriceMax > 0
+      ? Math.max(MIN_ADVANCED_PRICE_MAX_KRW, parsedPriceMax)
+      : null,
     minProfit: minProfit ? Number(minProfit) : null,
     minConfidence: minConfidence ? Number(minConfidence) : null,
     categories: categories ? categories.split(",").filter(Boolean) : null,

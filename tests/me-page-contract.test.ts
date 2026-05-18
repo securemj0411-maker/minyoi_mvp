@@ -157,6 +157,8 @@ test("/me seek-more modal starts with personalization and hides duplicate safety
   assert.match(workspace, /추천 상품 수만 고르면 됩니다/);
   assert.match(workspace, /고급 검색/);
   assert.match(workspace, /showAdvancedSearch \? \(/);
+  assert.match(workspace, /const MIN_PRICE_MAX_MANWON = 15/);
+  assert.match(workspace, /type="range" min=\{MIN_PRICE_MAX_MANWON\} max=\{MAX_PRICE_MAX_MANWON\} step=\{5\}/);
   assert.doesNotMatch(workspace, /1\. 매입 가능한 최대 예산/);
   assert.doesNotMatch(workspace, /2\. 어떤 스타일인가요/);
   assert.doesNotMatch(workspace, /프로필을 고르고 세부 조건은 슬라이더로 조정합니다/);
@@ -173,6 +175,8 @@ test("pack open applies seek-more filters on the actual reveal path", () => {
   assert.match(openRoute, /const filters = parseFilters\(payload\)/);
   assert.match(openRoute, /filters,\s*\n\s*tokensSpent/);
   assert.match(packOpen, /function candidateMatchesOpenFilters/);
+  assert.match(packOpen, /const MIN_ADVANCED_PRICE_MAX_MANWON = 15/);
+  assert.match(packOpen, /Math\.max\(MIN_ADVANCED_PRICE_MAX_MANWON, rawPriceMaxManwon\)/);
   assert.match(packOpen, /meta\.price\) > criteria\.maxPriceKrw/);
   assert.match(packOpen, /candidate\.expected_profit_min\) < criteria\.minProfitKrw/);
   assert.match(packOpen, /candidate\.confidence\) < criteria\.minConfidence/);

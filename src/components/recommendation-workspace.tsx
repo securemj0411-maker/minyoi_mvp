@@ -70,6 +70,8 @@ function sliderTrackStyle(
   };
 }
 const HIGH_PROFIT_WARNING_SESSION_KEY = "minyoi-hide-high-profit-warning-v1";
+const MIN_PRICE_MAX_MANWON = 15;
+const MAX_PRICE_MAX_MANWON = 150;
 
 // Wave 79: Risk preset (한국 부업/리셀러 현실 기반)
 type RiskProfile = "safe" | "balanced" | "aggressive";
@@ -143,6 +145,11 @@ function budgetOption(value: BuyerBudget) {
 
 function styleOption(value: BuyerStyle) {
   return STYLE_OPTIONS.find((option) => option.value === value) ?? STYLE_OPTIONS[1];
+}
+
+function clampAdvancedPriceMax(value: number) {
+  if (!Number.isFinite(value)) return MIN_PRICE_MAX_MANWON;
+  return Math.min(MAX_PRICE_MAX_MANWON, Math.max(MIN_PRICE_MAX_MANWON, value));
 }
 
 function riskProfileForStyle(style: BuyerStyle): RiskProfile {
@@ -400,6 +407,18 @@ function PackSelectorCard({
     window.setTimeout(() => setPersonalizationStep("style"), 120);
   }
 
+  function toggleAdvancedSearch() {
+    setShowAdvancedSearch((value) => {
+      if (!value) {
+        setAdvancedFilters((filters) => ({
+          ...filters,
+          priceMaxManwon: clampAdvancedPriceMax(filters.priceMaxManwon),
+        }));
+      }
+      return !value;
+    });
+  }
+
   const needsPersonalization = !personalization || editingPersonalization;
   const activeBudgetOption = personalization ? budgetOption(personalization.budget) : budgetOption(draftBudget);
   const activeStyleOption = personalization ? styleOption(personalization.style) : styleOption(draftStyle);
@@ -655,12 +674,12 @@ function PackSelectorCard({
 	            >
 	              수정
 	            </button>
-	            <button
-	              type="button"
-	              onClick={() => setShowAdvancedSearch((value) => !value)}
-	              className="rounded-full border border-[#d8d2c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#59665b] transition hover:border-[#b9c9b9] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-	            >
-	              {showAdvancedSearch ? "고급 닫기" : "고급 검색"}
+		            <button
+		              type="button"
+		              onClick={toggleAdvancedSearch}
+		              className="rounded-full border border-[#d8d2c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#59665b] transition hover:border-[#b9c9b9] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+		            >
+		              {showAdvancedSearch ? "고급 닫기" : "고급 검색"}
 		            </button>
 		        </div>
 		      </div>
@@ -695,15 +714,20 @@ function PackSelectorCard({
             <div className="flex items-center justify-between text-xs">
               <span className="inline-flex items-center gap-1 font-black text-[#59665b] dark:text-zinc-300"><WalletIcon className="h-3.5 w-3.5" /> 매입가</span>
               <span className="font-black text-zinc-900 dark:text-zinc-50">
-                {advancedFilters.priceMaxManwon === 0 ? "무제한" : `${advancedFilters.priceMaxManwon}만원 이하`}
+                {`${clampAdvancedPriceMax(advancedFilters.priceMaxManwon)}만원 이하`}
               </span>
             </div>
             <input
-              type="range" min={0} max={150} step={5}
-              value={advancedFilters.priceMaxManwon}
-              onChange={(e) => setAdvancedFilters(f => ({ ...f, priceMaxManwon: Number(e.target.value) }))}
+              type="range" min={MIN_PRICE_MAX_MANWON} max={MAX_PRICE_MAX_MANWON} step={5}
+              value={clampAdvancedPriceMax(advancedFilters.priceMaxManwon)}
+              onChange={(e) => setAdvancedFilters(f => ({ ...f, priceMaxManwon: clampAdvancedPriceMax(Number(e.target.value)) }))}
               disabled={busy}
-              style={sliderTrackStyle(advancedFilters.priceMaxManwon, 0, 150, "#4f6f58")}
+              style={sliderTrackStyle(
+                clampAdvancedPriceMax(advancedFilters.priceMaxManwon),
+                MIN_PRICE_MAX_MANWON,
+                MAX_PRICE_MAX_MANWON,
+                "#4f6f58",
+              )}
               className="mt-1 h-2 w-full cursor-pointer appearance-none rounded-full accent-[var(--brand-accent)] disabled:opacity-50"
             />
           </div>

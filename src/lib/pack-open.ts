@@ -157,6 +157,8 @@ export type PackOpenFilters = {
   maxFreshHours?: number;
 };
 
+const MIN_ADVANCED_PRICE_MAX_MANWON = 15;
+
 // Wave 182 (2026-05-17): loss_report 추가 — 사용자 손해 신고. 즉시 토큰 3개 보상 + 운영자 검수 큐 진입.
 // Wave 182c (2026-05-17): inaccurate_report 추가 — 매수 전 "정보 오류" 즉시 신고 (임계값 낮춤, feedback polling).
 //   loss_report 는 일단 보류 (UI 노출 X) — 운영 검수 + 사용자 행동 데이터 누적 후 재개 검토.
@@ -304,10 +306,11 @@ function openFilterCriteria(filters: PackOpenFilters | null | undefined): OpenFi
     const normalized = categoryFromComparableKey(raw) ?? raw.trim().toLowerCase();
     if (normalized) categories.add(normalized);
   }
+  const rawPriceMaxManwon = Math.max(0, finiteNumber(filters?.priceMaxManwon));
   return {
     minProfitKrw: Math.max(0, finiteNumber(filters?.minProfitManwon)) * 10_000,
     minConfidence: Math.max(0, Math.min(100, finiteNumber(filters?.minConfidencePct))) / 100,
-    maxPriceKrw: Math.max(0, finiteNumber(filters?.priceMaxManwon)) * 10_000,
+    maxPriceKrw: (rawPriceMaxManwon > 0 ? Math.max(MIN_ADVANCED_PRICE_MAX_MANWON, rawPriceMaxManwon) : 0) * 10_000,
     categories,
   };
 }
