@@ -27,9 +27,10 @@ import {
 
 type Props = LiquidityCurveInput & {
   compact?: boolean; // true = chip 만 (좁은 영역)
+  uiTestFallback?: boolean;
 };
 
-export function LiquidityCurveMini({ compact = false, ...input }: Props) {
+export function LiquidityCurveMini({ compact = false, uiTestFallback = false, ...input }: Props) {
   const curve = buildLiquidityCurve(input);
   const positionClass = LIQUIDITY_POSITION_CLASS[curve.position];
   const positionLabel = LIQUIDITY_POSITION_LABEL[curve.position];
@@ -38,7 +39,7 @@ export function LiquidityCurveMini({ compact = false, ...input }: Props) {
     curve.estimatedHours != null &&
     Number.isFinite(curve.estimatedHours) &&
     curve.estimatedHours > 0 &&
-    (curve.soldSampleCount ?? 0) > 0;
+    ((curve.soldSampleCount ?? 0) > 0 || uiTestFallback);
 
   if (compact || curve.position === "unknown") {
     return (
@@ -46,7 +47,9 @@ export function LiquidityCurveMini({ compact = false, ...input }: Props) {
         className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${positionClass}`}
         title={curve.confident
           ? `이 가격이면 비슷한 상품이 보통 ${estimated} 안에 팔렸어요. 기준 ${curve.soldSampleCount}건`
-          : "판매 속도 데이터가 부족해서 추정이 불확실해요."}
+          : uiTestFallback
+            ? "판매속도 표본이 부족해서 UI 확인용 2일 기준으로 보여줘요."
+            : "판매 속도 데이터가 부족해서 추정이 불확실해요."}
       >
         {hasSaleSpeedEstimate ? `${positionLabel} · ${estimated}` : "판매 속도 표본 부족"}
       </span>
@@ -117,7 +120,9 @@ export function LiquidityCurveMini({ compact = false, ...input }: Props) {
       )}
 
       <div className="mt-1.5 text-[9px] text-zinc-500 dark:text-zinc-400">
-        {curve.confident
+        {uiTestFallback
+          ? "판매속도 표본이 부족해 UI 확인용 2일 기준으로 보여줘요."
+          : curve.confident
           ? `비슷한 상품 판매 ${curve.soldSampleCount}건을 보고 추정했어요. 실제 판매 시간은 달라질 수 있어요.`
           : `비슷한 상품 판매 기록이 ${curve.soldSampleCount ?? 0}건이라 아직 참고용이에요.`}
       </div>

@@ -129,7 +129,10 @@ export function liquidityHoursLabel(hours: number | null): string {
     return `${h}시간`;
   }
   const days = hours / 24;
-  if (days < 10) return `${days.toFixed(1)}일`;
+  if (days < 10) {
+    const roundedDays = Math.round(days * 10) / 10;
+    return `${Number.isInteger(roundedDays) ? roundedDays : roundedDays.toFixed(1)}일`;
+  }
   return `${Math.round(days)}일`;
 }
 

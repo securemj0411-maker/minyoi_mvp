@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
@@ -81,6 +82,8 @@ type RecommendationFeatureCard = {
   body: string;
   tone: RecommendationFeatureTone;
 };
+
+const UI_TEST_FALLBACK_VELOCITY_HOURS = 48;
 
 const TRANSACTION_STATUS_LABEL: Record<TransactionFeedbackType, string> = {
   contacted: "문의함",
@@ -753,36 +756,28 @@ function SkuListingFlowMini({ card }: { card: RevealCard }) {
 
 function VelocityBasisMini({ card }: { card: RevealCard }) {
   const velocity = card.velocityBasis;
-  if (!velocity) return null;
   // Wave 129 (2026-05-16): 회전 기간 hero 수준 강조 (사업 보고서 L6 — "사용자가 가장 두려워하는 게 안 팔리는 거").
   // 보고서 인용: "회전 기간이 떡상점수보다 더 retention-critical한 지표".
   // 큰 글씨 + 색 + 빠른 회전 시 강조 badge.
-  const hours = velocity.medianHoursToSold;
-  const hasTurnEstimate = hours != null && Number.isFinite(hours) && hours > 0 && velocity.sold7dCount > 0;
+  // 2026-05-19: 판매속도 표본이 없을 때도 상세 UI 검수를 위해 2일 fallback을 노출한다.
+  // 실제 sold 표본이 생기면 아래 fallback은 자동으로 무시된다.
+  const hasRealTurnEstimate =
+    velocity?.medianHoursToSold != null &&
+    Number.isFinite(velocity.medianHoursToSold) &&
+    velocity.medianHoursToSold > 0 &&
+    velocity.sold7dCount > 0;
+  const hours = hasRealTurnEstimate ? velocity.medianHoursToSold : UI_TEST_FALLBACK_VELOCITY_HOURS;
+  const isFallbackEstimate = !hasRealTurnEstimate;
   const isFastTurn = hours != null && hours > 0 && hours <= 48; // 2일 안에 팔림
   const isSlowTurn = hours != null && hours > 168; // 7일+ 안 팔림
   const turnLabel = velocityHoursLabel(hours);
-  const confidenceLabel = velocity.confidence === "high" ? "신뢰 높음" : velocity.confidence === "medium" ? "신뢰 보통" : "참고용";
-  if (!hasTurnEstimate) {
-    return (
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
-        <div className="flex items-baseline justify-between gap-2">
-          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
-            판매 속도
-          </div>
-          <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase text-zinc-500 ring-1 ring-zinc-200 dark:bg-zinc-900/50 dark:text-zinc-300 dark:ring-zinc-700">
-            참고용
-          </span>
-        </div>
-        <div className="mt-1 text-sm font-bold text-zinc-700 dark:text-zinc-200">
-          비슷한 상품 판매 기록이 아직 부족해요.
-        </div>
-        <div className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
-          최근 7일 판매 {velocity.sold7dCount.toLocaleString("ko-KR")}건 · 현재 판매중 {velocity.activeSampleCount.toLocaleString("ko-KR")}건
-        </div>
-      </div>
-    );
-  }
+  const confidenceLabel = isFallbackEstimate
+    ? "UI 테스트"
+    : velocity?.confidence === "high"
+      ? "신뢰 높음"
+      : velocity?.confidence === "medium"
+        ? "신뢰 보통"
+        : "참고용";
   return (
     <div className={`rounded-lg border-2 px-4 py-3 ${
       isFastTurn
@@ -821,8 +816,16 @@ function VelocityBasisMini({ card }: { card: RevealCard }) {
         )}
       </div>
       <div className="mt-2 text-[11px] text-[#58705d] dark:text-zinc-300/80">
-        최근 7일 동안 비슷한 상품이 <span className="font-bold">{velocity.sold7dCount.toLocaleString("ko-KR")}건</span> 팔렸고,
-        현재 판매중인 비슷한 상품은 {velocity.activeSampleCount.toLocaleString("ko-KR")}건이에요.
+        {isFallbackEstimate ? (
+          <>
+            판매속도 표본이 아직 부족해서 UI 확인용으로 임시 2일 기준을 보여줘요.
+          </>
+        ) : (
+          <>
+            최근 7일 동안 비슷한 상품이 <span className="font-bold">{velocity?.sold7dCount.toLocaleString("ko-KR")}건</span> 팔렸고,
+            현재 판매중인 비슷한 상품은 {velocity?.activeSampleCount.toLocaleString("ko-KR")}건이에요.
+          </>
+        )}
       </div>
     </div>
   );
@@ -1338,9 +1341,10 @@ function RevealCardItem({
           medianPrice={card.marketBasis?.medianPrice ?? null}
           p75Price={card.marketBasis?.p75Price ?? null}
           p25Hours={card.velocityBasis?.p25HoursToSold ?? null}
-          medianHours={card.velocityBasis?.medianHoursToSold ?? null}
+          medianHours={card.velocityBasis?.medianHoursToSold ?? UI_TEST_FALLBACK_VELOCITY_HOURS}
           p75Hours={card.velocityBasis?.p75HoursToSold ?? null}
-          soldSampleCount={card.velocityBasis?.observedSoldSampleCount ?? null}
+          soldSampleCount={card.velocityBasis?.observedSoldSampleCount ?? 0}
+          uiTestFallback={!card.velocityBasis || (card.velocityBasis.sold7dCount <= 0 || card.velocityBasis.medianHoursToSold == null)}
         />
 
         <SkuListingFlowMini card={card} />
@@ -1915,13 +1919,13 @@ export default function PackRevealModal({
         <div className="sticky top-0 z-10 shrink-0 border-b border-[#e2dbcf] bg-[#fffdf9]/95 px-3 py-2 text-[var(--brand-accent-strong)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-4">
           <div className="flex min-h-9 items-center justify-between gap-3">
             <div className="min-w-0">
-              <a
+              <Link
                 href="/"
                 aria-label="득템잡이 홈으로 이동"
                 className="inline-flex min-h-8 items-center rounded-lg px-1 text-base font-black tracking-tight text-[var(--brand-accent-strong)] transition hover:bg-[#eef6ec] dark:text-zinc-100 dark:hover:bg-zinc-800"
               >
                 득템잡이
-              </a>
+              </Link>
             </div>
             {!loading ? (
               <button
