@@ -1087,24 +1087,24 @@ function RevealCardItem({
             <div className="line-clamp-2 text-sm font-black leading-5 text-zinc-900 dark:text-zinc-50">
               {card.name}
             </div>
-            <div className={`mt-2 w-full rounded-xl border px-2.5 py-2 sm:px-3 ${
+            <div className={`mt-2 w-full rounded-xl border px-2.5 py-2 shadow-[inset_3px_0_0_currentColor] sm:px-3 ${
               isMarketInvalidated
-                ? "border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-950/25"
-                : "border-emerald-100 bg-emerald-50/70 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+                ? "border-rose-200 bg-white/70 text-rose-500 dark:border-rose-900/60 dark:bg-zinc-900/70 dark:text-rose-400"
+                : "border-[#e7e1d6] bg-white/70 text-[#00c471] dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-[#5dffae]"
             }`}>
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className={`text-[10px] font-black uppercase tracking-[0.16em] ${
-                  isMarketInvalidated ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300"
+                <span className={`text-[11px] font-semibold ${
+                  isMarketInvalidated ? "text-rose-600 dark:text-rose-300" : "text-zinc-500 dark:text-zinc-400"
                 }`}>
                   현재 차익
                 </span>
-                <span className={`text-xl font-black leading-tight tabular-nums sm:text-2xl ${
-                  isMarketInvalidated ? "text-rose-800 dark:text-rose-200" : "text-emerald-800 dark:text-emerald-200"
+                <span className={`text-lg font-bold leading-tight tabular-nums sm:text-xl ${
+                  isMarketInvalidated ? "text-rose-700 dark:text-rose-200" : "text-[#00a862] dark:text-[#5dffae]"
                 }`}>
                   {displayProfitRange(card)}
                 </span>
                 {currentPct != null ? (
-                  <span className="rounded-full bg-white/80 px-1.5 py-0.5 text-[11px] font-black tabular-nums text-amber-800 ring-1 ring-amber-100 dark:bg-zinc-900/50 dark:text-amber-200 dark:ring-amber-900/50">
+                  <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
                     {currentPct >= 0 ? "+" : ""}{currentPct}%
                   </span>
                 ) : null}

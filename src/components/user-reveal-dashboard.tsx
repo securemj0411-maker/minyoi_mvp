@@ -1365,7 +1365,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   );
                 })()}
               </div>
-              <div className="mt-2 flex flex-wrap items-center gap-1.5 rounded-lg border border-emerald-100 bg-emerald-50/70 px-2.5 py-2 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 rounded-lg border border-[#e7e1d6] bg-white/70 px-2.5 py-2 shadow-[inset_3px_0_0_#00c471] dark:border-zinc-800 dark:bg-zinc-900/70 dark:shadow-[inset_3px_0_0_#2ee891]">
                 {/* Wave 194 (2026-05-18): current_profit 박혀있으면 그 값 우선 표시. snapshot 과
                     다르면 부가 라벨 ("추천 당시 +57K → 현재 +10K"). marketStale=true는 Wave 224에서
                     이 블록에 오기 전에 판매완료 tombstone으로 접는다. */}
@@ -1379,14 +1379,14 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   const pct = profitPercent(item);
                   return (
                     <>
-                      <span className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">
+                      <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
                         현재 차익
                       </span>
-                      <span className="text-lg font-black tabular-nums text-emerald-800 dark:text-emerald-200">
+                      <span className="text-lg font-bold tabular-nums text-[#00a862] dark:text-[#5dffae]">
                         {signedProfitRange(displayProfitMin, displayProfitMax)}
                       </span>
                       {pct != null ? (
-                        <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 ring-1 ring-amber-100 dark:bg-zinc-900/50 dark:text-amber-200 dark:ring-amber-900/50">
+                        <span className="rounded-full bg-[#f7f3ea] px-2 py-0.5 text-xs font-bold tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
                           {pct >= 0 ? "+" : ""}{pct}%
                         </span>
                       ) : null}
