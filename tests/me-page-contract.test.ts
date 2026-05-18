@@ -68,6 +68,18 @@ test("/me modal keeps market evidence compact before the graph on mobile", () =>
   assert.ok(graphIndex >= 0 && trustIndex > graphIndex);
 });
 
+test("/me market graph labels Bunjang-sourced prices explicitly", () => {
+  const chart = source("src/components/market-history-chart.tsx");
+
+  assert.match(chart, /번개장터 시세 30일 추이/);
+  assert.match(chart, /번개장터 호가/);
+  assert.match(chart, /번개장터 거래가/);
+  assert.match(chart, /번개장터 거래 0건 — 호가 추정/);
+  assert.match(chart, /다나와 · 번개 미개봉 추이/);
+  assert.match(chart, /번개 미개봉 호가/);
+  assert.match(chart, /번개 미개봉 거래가/);
+});
+
 test("/me reveal profit block stays compact so the graph remains visible", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
 

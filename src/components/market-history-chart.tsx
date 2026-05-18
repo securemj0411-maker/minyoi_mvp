@@ -206,9 +206,9 @@ export default function MarketHistoryChart({
   const latestActive = data[data.length - 1]?.active;
   const latestSold = data[data.length - 1]?.sold;
   const totalSoldCount = data.reduce((sum, p) => sum + p.soldCount, 0);
-  const title = priceSource === "reference" ? "미개봉 시세 추이" : "시세 30일 추이";
-  const activeLabel = priceSource === "reference" ? "미개봉 호가" : "호가";
-  const soldLabel = priceSource === "reference" ? "미개봉 거래가" : "거래가";
+  const title = priceSource === "reference" ? "다나와 · 번개 미개봉 추이" : "번개장터 시세 30일 추이";
+  const activeLabel = priceSource === "reference" ? "번개 미개봉 호가" : "번개장터 호가";
+  const soldLabel = priceSource === "reference" ? "번개 미개봉 거래가" : "번개장터 거래가";
   const referenceLineY = showReferencePrice ? y(referencePrice as number) : null;
   const referenceLabelRectY = referenceLineY == null
     ? null
@@ -326,7 +326,7 @@ export default function MarketHistoryChart({
           {latestSold != null ? ` · 최근 ${soldLabel} ${krwShort(latestSold)}` : ""}
         </span>
         <span>
-          {totalSoldCount > 0 ? `총 거래 ${totalSoldCount}건 / 30일` : "거래 0건 — 호가 추정"}
+          {totalSoldCount > 0 ? `번개장터 거래 ${totalSoldCount}건 / 30일` : "번개장터 거래 0건 — 호가 추정"}
         </span>
       </div>
     </div>
