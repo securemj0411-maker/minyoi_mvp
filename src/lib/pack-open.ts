@@ -860,9 +860,12 @@ async function insertReveals(
         user_ref: userRef,
         expected_profit_min: card.expectedProfitMin,
         expected_profit_max: card.expectedProfitMax,
-        current_profit_min: card.marketBasis.medianPrice == null ? null : Math.round(card.marketBasis.medianPrice - card.price),
-        current_profit_max: card.marketBasis.medianPrice == null ? null : Math.round(card.marketBasis.medianPrice - card.price),
-        market_invalidated_at: card.marketBasis.medianPrice != null && card.marketBasis.medianPrice - card.price < 0
+        // Wave 213: current_profit_* must be net expected profit, not raw market-price gap.
+        // Reveal cards are created from mvp_candidate_pool, whose expected_profit_* already
+        // includes buyer shipping, selling fee, resell shipping, and safety buffer.
+        current_profit_min: Math.round(card.expectedProfitMin),
+        current_profit_max: Math.round(card.expectedProfitMax),
+        market_invalidated_at: card.expectedProfitMin < 0
           ? new Date().toISOString()
           : null,
         confidence: card.confidence,

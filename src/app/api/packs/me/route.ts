@@ -13,6 +13,7 @@ import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { detectSoldOut, describeSignals, isSoldOut } from "@/lib/sold-out";
+import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -57,6 +58,9 @@ type RawRow = {
   name: string;
   url: string;
   price: number;
+  shipping_fee: number | null;
+  shipping_fee_general: number | null;
+  estimated_buy_cost: number | null;
   num_faved: number;
   free_shipping: boolean;
   description_preview: string;
@@ -112,13 +116,12 @@ type RevealItem = {
   skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
   // Wave 182 Phase 3 (2026-05-17): base option fallback metadata — "기본 옵션 가정" UI badge.
   optionBaseAssumed: string[] | null;
-  // Wave 189 (2026-05-18): 실시간 시세 vs 매입가 차이 — reveal snapshot (expected_profit_*) 의
-  //   stale 문제 표면 fix. marketBasis.medianPrice (실시간) - price (매입가) 단순 raw diff.
-  //   음수 = "현재 시세 < 매입가 = 추천 무효 (시세 갱신)". UI 가 이 값으로 badge 분기.
-  //   sellFee/shipping 차감 안 함 — 정확한 "기대 수익" 이 아니라 raw 시세 차이 신호.
-  //   historical expected_profit (reveal 시점) 는 그대로 유지 — UI 분기 시 둘 다 활용 가능.
+  // Wave 213 (2026-05-18): request-time current net profit.
+  // 운영자풀과 같은 비용 모델(매입 배송비, 판매수수료, 재배송비, 안전버퍼)을 차감한다.
+  // 값은 signed로 둔다. 음수면 "시세 갱신 — 추천 무효"를 즉시 보여준다.
   marketGapKrw: number | null;
-  marketStale: boolean;  // true = 현재 시세 < 매입가 (사용자 손해 위험 신호)
+  marketGapKrwMax: number | null;
+  marketStale: boolean;  // true = 현재 순익 min < 0 (사용자 손해 위험 신호)
 };
 
 async function loadJson<T>(url: string): Promise<T> {
@@ -167,7 +170,7 @@ function matchesSearch(item: RevealItem, query: string) {
 
 function compareItems(sort: RevealSort) {
   const lowProfit = (item: RevealItem) => item.marketGapKrw ?? item.expectedProfitMin;
-  const highProfit = (item: RevealItem) => item.marketGapKrw ?? item.expectedProfitMax;
+  const highProfit = (item: RevealItem) => item.marketGapKrwMax ?? item.marketGapKrw ?? item.expectedProfitMax;
   return (a: RevealItem, b: RevealItem) => {
     if (sort === "oldest") return Date.parse(a.revealedAt) - Date.parse(b.revealedAt);
     if (sort === "price_low") return a.price - b.price || Date.parse(b.revealedAt) - Date.parse(a.revealedAt);
@@ -175,6 +178,36 @@ function compareItems(sort: RevealSort) {
     if (sort === "profit_low") return lowProfit(a) - lowProfit(b) || Date.parse(b.revealedAt) - Date.parse(a.revealedAt);
     if (sort === "profit_high") return highProfit(b) - highProfit(a) || Date.parse(b.revealedAt) - Date.parse(a.revealedAt);
     return Date.parse(b.revealedAt) - Date.parse(a.revealedAt);
+  };
+}
+
+function positiveNumber(value: unknown): number | null {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function nonNegativeNumber(value: unknown): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+function currentNetProfitFromMarketPrice(raw: RawRow | undefined, marketPrice: number | null | undefined) {
+  if (!raw) return null;
+  const market = positiveNumber(marketPrice);
+  const price = positiveNumber(raw.price);
+  if (market == null || price == null) return null;
+
+  const shippingFee = nonNegativeNumber(raw.shipping_fee);
+  const generalShippingFee = raw.shipping_fee_general == null
+    ? shippingFee
+    : nonNegativeNumber(raw.shipping_fee_general);
+  const estimatedBuyCost = positiveNumber(raw.estimated_buy_cost) ?? price + shippingFee;
+  const buyCostMax = price + generalShippingFee;
+  const sellFee = Math.round(market * SELLING_FEE_RATE);
+
+  return {
+    min: Math.round(market - buyCostMax - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER),
+    max: Math.round(market - estimatedBuyCost - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER),
   };
 }
 
@@ -307,12 +340,13 @@ async function syncVisibleCurrentProfits(items: RevealItem[]) {
   }>();
   for (const item of items) {
     if (!Number.isFinite(item.pid) || item.marketGapKrw == null) continue;
-    const gap = Math.round(item.marketGapKrw);
+    const min = Math.round(item.marketGapKrw);
+    const max = Math.round(item.marketGapKrwMax ?? item.marketGapKrw);
     byPid.set(item.pid, {
       pid: item.pid,
-      current_profit_min: gap,
-      current_profit_max: gap,
-      market_invalidated: gap < 0,
+      current_profit_min: min,
+      current_profit_max: max,
+      market_invalidated: min < 0,
     });
   }
   const updates = [...byPid.values()];
@@ -377,7 +411,7 @@ export async function GET(req: Request) {
   const packOpenList = packOpenIds.join(",");
   const [rawRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status&pid=in.(${pidList})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,shipping_fee,shipping_fee_general,estimated_buy_cost,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status&pid=in.(${pidList})`,
     ),
     loadJson<FeedbackRow[]>(
       `${tableUrl("mvp_reveal_feedback")}?select=pid,feedback_type,note&user_ref=eq.${encodedUserRef}&pid=in.(${pidList})`,
@@ -471,7 +505,7 @@ export async function GET(req: Request) {
       const comparableKey = comparableKeyByPid.get(Number(reveal.pid)) ?? null;
       const skuName = raw?.sku_name ?? null;
       const skuId = raw?.sku_id ?? null;
-      // Wave 189 (2026-05-18): 실시간 marketBasis 계산 후 marketGapKrw / marketStale 박음.
+      // Wave 213 (2026-05-18): 실시간 marketBasis 계산 후 순현재차익 min/max 산출.
       // Wave 208 (2026-05-18): /me display는 request-time marketBasis를 source of truth로 사용.
       // DB current_profit_*는 cron lag/cache 값이라, 있더라도 stale할 수 있다. 사용자가 /me를
       // 새로고침하면 그 시점의 latest market/reference median 기준으로 차익을 다시 보여준다.
@@ -484,12 +518,13 @@ export async function GET(req: Request) {
             referencePrices,
           )
         : null;
-      const priceNum = Number(raw?.price ?? 0);
-      const dbCurrentProfit = reveal.current_profit_min ?? null;
+      const dbCurrentProfitMin = reveal.current_profit_min ?? null;
+      const dbCurrentProfitMax = reveal.current_profit_max ?? null;
       const dbMarketInvalidatedAt = reveal.market_invalidated_at ?? null;
       const fallbackMedian = computedMarketBasis?.medianPrice ?? null;
-      const fallbackGap = fallbackMedian != null && priceNum > 0 ? fallbackMedian - priceNum : null;
-      const marketGapKrw = fallbackGap != null ? fallbackGap : dbCurrentProfit;
+      const currentNetProfit = currentNetProfitFromMarketPrice(raw, fallbackMedian);
+      const marketGapKrw = currentNetProfit?.min ?? dbCurrentProfitMin;
+      const marketGapKrwMax = currentNetProfit?.max ?? dbCurrentProfitMax ?? marketGapKrw;
       const marketStale = marketGapKrw != null
         ? marketGapKrw < 0
         : dbMarketInvalidatedAt != null;
@@ -527,8 +562,9 @@ export async function GET(req: Request) {
         skuListingFlow: skuId ? flowBySkuId.get(skuId) ?? null : null,
         // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
         optionBaseAssumed: optionBaseAssumedByPid.get(Number(reveal.pid)) ?? null,
-        // Wave 189 (2026-05-18): 실시간 시세 - 매입가.
+        // Wave 213 (2026-05-18): 실시간 순현재차익 min/max.
         marketGapKrw,
+        marketGapKrwMax,
         marketStale,
       };
     })

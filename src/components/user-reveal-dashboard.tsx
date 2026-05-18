@@ -42,8 +42,9 @@ type RevealItem = {
   skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
   // Wave 182 Phase 3 (2026-05-17): base option fallback — "기본 옵션 가정" UI badge.
   optionBaseAssumed: string[] | null;
-  // Wave 189 (2026-05-18): 실시간 시세 - 매입가. marketStale=true = 추천 무효 (시세 갱신).
+  // Wave 213 (2026-05-18): 실시간 순현재차익 min/max. marketStale=true = 추천 무효 (시세 갱신).
   marketGapKrw: number | null;
+  marketGapKrwMax: number | null;
   marketStale: boolean;
 };
 
@@ -108,19 +109,34 @@ function storedDescriptionPreview(value: string) {
   return clean.length >= 180 ? `${clean.replace(/\s+$/g, "")}\n\n...` : clean;
 }
 
-function currentProfitOrSnapshot(item: RevealItem) {
-  return item.marketGapKrw ?? item.expectedProfitMax;
-}
-
 function signedKrw(value: number) {
   const rounded = Math.round(value);
   const sign = rounded >= 0 ? "+" : "";
   return `${sign}${rounded.toLocaleString("ko-KR")}원`;
 }
 
+function signedProfitRange(min: number, max: number) {
+  const roundedMin = Math.round(min);
+  const roundedMax = Math.round(max);
+  if (roundedMin === roundedMax) return signedKrw(roundedMax);
+  return `${signedKrw(roundedMin)}~${signedKrw(roundedMax)}`;
+}
+
+function currentProfitMinOrSnapshot(item: RevealItem) {
+  return item.marketGapKrw ?? item.expectedProfitMin;
+}
+
+function currentProfitMaxOrSnapshot(item: RevealItem) {
+  return item.marketGapKrwMax ?? item.marketGapKrw ?? item.expectedProfitMax;
+}
+
+function currentProfitAverage(item: RevealItem) {
+  return Math.round((currentProfitMinOrSnapshot(item) + currentProfitMaxOrSnapshot(item)) / 2);
+}
+
 function profitPercent(item: RevealItem) {
   if (!item.price || item.price <= 0) return null;
-  const profit = currentProfitOrSnapshot(item);
+  const profit = currentProfitAverage(item);
   const pct = Math.round((profit / item.price) * 100);
   return Number.isFinite(pct) ? pct : null;
 }
@@ -265,9 +281,10 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         skuListingFlow: card.skuListingFlow ?? null,
         // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
         optionBaseAssumed: card.optionBaseAssumed ?? null,
-        // Wave 189/211: optimistic add도 실제 gap 기준으로 stale 판단. silent reload 후 server response가 source of truth.
-        marketGapKrw: card.marketBasis?.medianPrice != null && card.price > 0 ? card.marketBasis.medianPrice - card.price : null,
-        marketStale: card.marketBasis?.medianPrice != null && card.price > 0 ? card.marketBasis.medianPrice - card.price < 0 : false,
+        // Wave 213: optimistic add도 pool의 net expected profit을 사용한다. silent reload 후 server response가 source of truth.
+        marketGapKrw: Math.round(card.expectedProfitMin),
+        marketGapKrwMax: Math.round(card.expectedProfitMax),
+        marketStale: card.expectedProfitMin < 0,
       }));
       setItems((prevItems) => {
         if (query || sort !== "latest") return prevItems;
@@ -315,8 +332,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       skuId: selectedItem.skuId,
       skuName: selectedItem.skuName ?? selectedItem.name,
       thumbnailUrl: selectedItem.thumbnailUrl,
-      expectedProfitMin: currentProfitOrSnapshot(selectedItem),
-      expectedProfitMax: currentProfitOrSnapshot(selectedItem),
+      expectedProfitMin: currentProfitMinOrSnapshot(selectedItem),
+      expectedProfitMax: currentProfitMaxOrSnapshot(selectedItem),
       confidence: selectedItem.confidence,
       // 2026-05-17: 모달 카드에 band chip 표시 (운영자풀과 동일 UX).
       band: (selectedItem.band ?? null) as 1 | 2 | 3 | null,
@@ -552,7 +569,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     const activeItems = visibleItems.filter((item) => listingStateLabel(item.listingState).tone !== "sold");
     const staleCount = activeItems.filter((item) => item.marketStale).length;
     const avgProfit = activeItems.length > 0
-      ? Math.round(activeItems.reduce((sum, item) => sum + currentProfitOrSnapshot(item), 0) / activeItems.length)
+      ? Math.round(activeItems.reduce((sum, item) => sum + currentProfitAverage(item), 0) / activeItems.length)
       : 0;
     return {
       visibleCount: visibleItems.length,
@@ -1114,7 +1131,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                       현재 차익
                     </span>
                     <span className="text-lg font-black tabular-nums text-rose-800 dark:text-rose-200">
-                      {signedKrw(item.marketGapKrw)}
+                      {signedProfitRange(currentProfitMinOrSnapshot(item), currentProfitMaxOrSnapshot(item))}
                     </span>
                     <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black text-rose-900 dark:bg-rose-900/60 dark:text-rose-100">
                       추천 무효
@@ -1129,9 +1146,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                         case) 에도 mismatch 발생 가능. current null = Wave 191 cron 미실행 → snapshot 표시. */}
                     {(() => {
                       const hasCurrent = item.marketGapKrw != null;
-                      const displayProfit = hasCurrent ? item.marketGapKrw! : item.expectedProfitMax;
-                      const snapshotProfit = item.expectedProfitMax;
-                      const profitDiverged = hasCurrent && Math.abs(displayProfit - snapshotProfit) >= 5000;
+                      const displayProfitMin = currentProfitMinOrSnapshot(item);
+                      const displayProfitMax = currentProfitMaxOrSnapshot(item);
+                      const displayProfitAvg = Math.round((displayProfitMin + displayProfitMax) / 2);
+                      const snapshotProfitAvg = Math.round((item.expectedProfitMin + item.expectedProfitMax) / 2);
+                      const profitDiverged = hasCurrent && Math.abs(displayProfitAvg - snapshotProfitAvg) >= 5000;
                       const pct = profitPercent(item);
                       return (
                         <>
@@ -1141,9 +1160,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                           <span className={`text-lg font-black tabular-nums ${
                             isTerminal ? "text-zinc-400 line-through dark:text-zinc-500" : "text-emerald-800 dark:text-emerald-200"
                           }`}>
-                            {item.expectedProfitMin === item.expectedProfitMax || hasCurrent
-                              ? signedKrw(displayProfit)
-                              : `+${item.expectedProfitMin.toLocaleString("ko-KR")}~${item.expectedProfitMax.toLocaleString("ko-KR")}원`}
+                            {signedProfitRange(displayProfitMin, displayProfitMax)}
                           </span>
                           {pct != null ? (
                             <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 ring-1 ring-amber-100 dark:bg-zinc-900/50 dark:text-amber-200 dark:ring-amber-900/50">
@@ -1151,7 +1168,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                             </span>
                           ) : null}
                           {profitDiverged && !isTerminal && (
-                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/30 dark:text-amber-300" title={`추천 당시 +${snapshotProfit.toLocaleString("ko-KR")}원 → 현재 ${signedKrw(displayProfit)}`}>
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/30 dark:text-amber-300" title={`추천 당시 ${signedProfitRange(item.expectedProfitMin, item.expectedProfitMax)} → 현재 ${signedProfitRange(displayProfitMin, displayProfitMax)}`}>
                               ↓ 시세 갱신
                             </span>
                           )}
@@ -1179,8 +1196,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 const verdicts = buildVerdicts({
                   price: item.price,
                   skuMedian: item.marketBasis?.medianPrice ?? null,
-                  expectedProfitMin: currentProfitOrSnapshot(item),
-                  expectedProfitMax: currentProfitOrSnapshot(item),
+                  expectedProfitMin: currentProfitMinOrSnapshot(item),
+                  expectedProfitMax: currentProfitMaxOrSnapshot(item),
                   confidence: item.confidence,
                   marketSampleCount: item.marketBasis?.sampleCount ?? null,
                   marketConfidenceLabel: (item.marketBasis?.confidence as "high" | "medium" | "low" | null) ?? null,

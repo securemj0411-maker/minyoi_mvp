@@ -102,22 +102,14 @@ function profitRange(min: number, max: number) {
   return `${signedKrw(min)} ~ ${signedKrw(max)}`;
 }
 
-function currentMarketGap(card: RevealCard) {
-  const median = card.marketBasis?.medianPrice;
-  if (median == null || !Number.isFinite(Number(median)) || !Number.isFinite(Number(card.price)) || card.price <= 0) return null;
-  return Math.round(Number(median) - Number(card.price));
-}
-
 function currentProfitPercent(card: RevealCard) {
   if (!card.price || card.price <= 0) return null;
-  const gap = currentMarketGap(card) ?? card.expectedProfitMax;
-  const pct = Math.round((gap / card.price) * 100);
+  const profit = Math.round((card.expectedProfitMin + card.expectedProfitMax) / 2);
+  const pct = Math.round((profit / card.price) * 100);
   return Number.isFinite(pct) ? pct : null;
 }
 
 function displayProfitRange(card: RevealCard) {
-  const gap = currentMarketGap(card);
-  if (gap != null) return signedKrw(gap);
   return profitRange(card.expectedProfitMin, card.expectedProfitMax);
 }
 
@@ -355,12 +347,11 @@ function verdictsForCard(card: RevealCard): Verdict[] {
   const velocity = card.velocityBasis;
   const flow = card.skuListingFlow;
   const market = card.marketBasis;
-  const currentGap = currentMarketGap(card);
   return buildVerdicts({
     price: card.price,
     skuMedian: market?.medianPrice ?? null,
-    expectedProfitMin: currentGap ?? card.expectedProfitMin,
-    expectedProfitMax: currentGap ?? card.expectedProfitMax,
+    expectedProfitMin: card.expectedProfitMin,
+    expectedProfitMax: card.expectedProfitMax,
     confidence: card.confidence,
     marketSampleCount: market?.sampleCount ?? null,
     marketConfidenceLabel: (market?.confidence as "high" | "medium" | "low" | null) ?? null,
@@ -621,8 +612,7 @@ function RevealCardItem({
   const [, setFeedback] = useState<RevealFeedbackType | null>(null);
   const [note, setNote] = useState("");
   const [noteSaved, setNoteSaved] = useState(false);
-  const displayGap = currentMarketGap(card);
-  const isMarketInvalidated = displayGap != null && displayGap < 0;
+  const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) < 0;
   const sourceBadge = marketSourceBadge(card);
   const currentPct = currentProfitPercent(card);
   useEffect(() => {
