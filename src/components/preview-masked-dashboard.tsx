@@ -5,28 +5,15 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ConditionChip } from "@/components/condition-chip";
-import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
+import { ConditionPhotoBadge } from "@/components/condition-chip";
 import {
-  BagIcon,
-  BikeIcon,
-  CameraIcon,
+  CheckCircleIcon,
   FlameIcon,
-  HeadphoneIcon,
-  LaptopIcon,
-  MonitorIcon,
   PackageIcon,
   SearchIcon,
-  ShoeIcon,
-  SmartphoneIcon,
-  SpeakerIcon,
-  TabletIcon,
+  TrophyIcon,
   UnlockIcon,
-  WatchIcon,
 } from "@/components/icons";
-import type { SVGProps } from "react";
-
-type IconComponent = (props: SVGProps<SVGSVGElement>) => React.ReactElement;
 
 type PreviewItem = {
   slot: number;
@@ -44,69 +31,21 @@ type PreviewItem = {
   confidence: "high" | "medium" | "low";
   freeShipping: boolean;
   isFresh: boolean;
+  sellerReviewRating: number | null;
+  sellerReviewCount: number | null;
   // 2026-05-17 Phase 3: 근거 chip 데이터.
   soldSampleCount: number | null;
   medianHoursToSold: number | null;
 };
 
-const CATEGORY_LABEL: Record<string, string> = {
-  smartphone: "스마트폰",
-  tablet: "태블릿",
-  laptop: "노트북",
-  smartwatch: "스마트워치",
-  earphone: "이어폰",
-  headphone: "헤드폰",
-  camera: "카메라",
-  monitor: "모니터",
-  desktop: "데스크탑",
-  speaker: "스피커",
-  home_appliance: "가전",
-  small_appliance: "소형가전",
-  sport_golf: "골프용품",
-  shoe: "신발",
-  bag: "가방",
-  bike: "자전거",
-  other: "기타",
-};
+type PreviewSignalTone = "seller" | "speed" | "market" | "verified";
+type PreviewSignal = { label: string; tone: PreviewSignalTone; icon: "trophy" | "check" };
 
-const CATEGORY_SVG: Record<string, IconComponent> = {
-  smartphone: SmartphoneIcon,
-  tablet: TabletIcon,
-  laptop: LaptopIcon,
-  smartwatch: WatchIcon,
-  earphone: HeadphoneIcon,
-  headphone: HeadphoneIcon,
-  camera: CameraIcon,
-  monitor: MonitorIcon,
-  desktop: MonitorIcon,
-  speaker: SpeakerIcon,
-  home_appliance: PackageIcon,
-  small_appliance: PackageIcon,
-  sport_golf: PackageIcon,
-  shoe: ShoeIcon,
-  bag: BagIcon,
-  bike: BikeIcon,
-  other: PackageIcon,
-};
-
-const CATEGORY_GRADIENT: Record<string, string> = {
-  smartphone: "from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40",
-  tablet: "from-sky-100 to-cyan-100 dark:from-sky-900/40 dark:to-cyan-900/40",
-  laptop: "from-slate-100 to-zinc-200 dark:from-slate-800 dark:to-zinc-700",
-  smartwatch: "from-rose-100 to-pink-100 dark:from-rose-900/40 dark:to-pink-900/40",
-  earphone: "from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40",
-  headphone: "from-fuchsia-100 to-purple-100 dark:from-fuchsia-900/40 dark:to-purple-900/40",
-  camera: "from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40",
-  monitor: "from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40",
-  desktop: "from-stone-100 to-neutral-200 dark:from-stone-800 dark:to-neutral-700",
-  speaker: "from-yellow-100 to-amber-100 dark:from-yellow-900/40 dark:to-amber-900/40",
-  home_appliance: "from-lime-100 to-green-100 dark:from-lime-900/40 dark:to-green-900/40",
-  small_appliance: "from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40",
-  sport_golf: "from-teal-100 to-cyan-100 dark:from-teal-900/40 dark:to-cyan-900/40",
-  shoe: "from-red-100 to-rose-100 dark:from-red-900/40 dark:to-rose-900/40",
-  bag: "from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40",
-  bike: "from-cyan-100 to-sky-100 dark:from-cyan-900/40 dark:to-sky-900/40",
-  other: "from-zinc-100 to-stone-200 dark:from-zinc-800 dark:to-stone-700",
+const SIGNAL_TONE_CLASS: Record<PreviewSignalTone, string> = {
+  seller: "border-[#cfdcca] bg-[#f8fff5] text-[#1f5f3b] dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200",
+  speed: "border-[#d7e5d0] bg-white text-[#3f6949] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200",
+  market: "border-[#e3d6bf] bg-[#fff8ea] text-[#72521a] dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-200",
+  verified: "border-[#d7e5d0] bg-[#f7fbf2] text-[#405846] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200",
 };
 
 function krw(value: number) {
@@ -126,6 +65,41 @@ function profitPctLabel(price: number, profitMin: number, profitMax: number): st
   const pct = Math.round((avg / price) * 100);
   if (!Number.isFinite(pct)) return null;
   return `+${pct}%`;
+}
+
+function compactCount(value: number): string {
+  if (value >= 1000) return `${Math.floor(value / 100) / 10}천+`;
+  if (value >= 100) return `${Math.floor(value / 100) * 100}+`;
+  return value.toLocaleString("ko-KR");
+}
+
+function daysLabel(hours: number): string {
+  if (hours < 24) return `${Math.max(1, Math.round(hours))}시간`;
+  return `${Math.round((hours / 24) * 10) / 10}일`;
+}
+
+function previewSignal(item: PreviewItem): PreviewSignal {
+  const reviews = item.sellerReviewCount ?? 0;
+  const rating = item.sellerReviewRating;
+  if (reviews >= 100) {
+    return { label: `후기 ${compactCount(reviews)} 셀러`, tone: "seller", icon: "trophy" };
+  }
+  if (rating != null && rating >= 4.9 && reviews >= 10) {
+    return { label: `평점 ${rating.toFixed(1)} 셀러`, tone: "seller", icon: "trophy" };
+  }
+  if (reviews >= 30) {
+    return { label: `후기 ${reviews.toLocaleString("ko-KR")}건`, tone: "seller", icon: "check" };
+  }
+  if (item.medianHoursToSold != null && item.medianHoursToSold > 0 && item.medianHoursToSold <= 336) {
+    return { label: `평균 ${daysLabel(item.medianHoursToSold)} 회전`, tone: "speed", icon: "check" };
+  }
+  if (item.soldSampleCount != null && item.soldSampleCount >= 20) {
+    return { label: `시장 표본 ${compactCount(item.soldSampleCount)}건`, tone: "market", icon: "check" };
+  }
+  if (item.confidence === "high") {
+    return { label: "시세 신뢰 높음", tone: "verified", icon: "check" };
+  }
+  return { label: "AI 검증 통과", tone: "verified", icon: "check" };
 }
 
 export default function PreviewMaskedDashboard() {
@@ -190,8 +164,8 @@ export default function PreviewMaskedDashboard() {
             </div>
           ) : (
             items.map((item) => {
-              const gradient = CATEGORY_GRADIENT[item.category] ?? CATEGORY_GRADIENT.other;
-              const CategoryIcon = CATEGORY_SVG[item.category] ?? CATEGORY_SVG.other;
+              const signal = previewSignal(item);
+              const SignalIcon = signal.icon === "trophy" ? TrophyIcon : CheckCircleIcon;
               return (
                 <Link
                   href="/login"
@@ -199,28 +173,23 @@ export default function PreviewMaskedDashboard() {
                   className="block rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-4 transition hover:border-[var(--brand-accent)] hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-700"
                 >
                   <div className="flex items-start gap-3">
-                    {/* 2026-05-17 보안: 서버 sharp blur 된 base64 — 원본 URL 노출 X. DevTools 우회 불가. */}
-                    <div className={`relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br ${gradient} text-zinc-500 dark:text-zinc-400`}>
+                    {/* 2026-05-17 보안: 서버 sharp blur 된 base64 — 원본 URL 노출 X. DevTools 우회 불가.
+                        2026-05-19: 카테고리 힌트 제거 — 비로그인에서는 신발/가전/워치 같은 분류를 노출하지 않음. */}
+                    <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-[#f5efe4] to-[#e7ddce] text-[#7a8478] dark:from-zinc-800 dark:to-zinc-700 dark:text-zinc-400">
+                      <ConditionPhotoBadge conditionClass={item.conditionClass} compact />
                       {item.blurredImage ? (
                         <img
                           src={item.blurredImage}
-                          alt={item.category}
+                          alt="마스킹된 추천 매물"
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <CategoryIcon width={36} height={36} />
+                        <PackageIcon width={36} height={36} />
                       )}
                     </div>
-                    {/* 2026-05-17: PC 에서는 info 와 신뢰 chip 좌우 분리 (모바일은 stack). */}
+                    {/* 2026-05-19: PC 에서는 info 와 단일 근거 chip 좌우 분리 (모바일은 stack). */}
                     <div className="flex min-w-0 flex-1 flex-col items-start gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
                       <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#5d735f] dark:text-emerald-400">
-                          <CategoryIcon width={12} height={12} />
-                          {CATEGORY_LABEL[item.category] ?? item.category}
-                        </span>
-                        <ConditionChip conditionClass={item.conditionClass} />
-                      </div>
                       {/* 매물명 — 서버에서 마스킹 ("갤** S** 울**") + 강한 CSS blur.
                           데이터는 이미 마스킹 (DevTools 안전), blur 는 시각 효과만. */}
                       <div className="mt-1 select-none truncate text-sm font-bold text-[#223127] blur-[3px] dark:text-zinc-100">
@@ -251,33 +220,10 @@ export default function PreviewMaskedDashboard() {
                         })()}
                       </div>
                       </div>
-                      {/* 2026-05-17 Phase 3: buildVerdicts 통합 — pack-reveal/admin-pool/user-reveal 와 통일.
-                          비로그인 사용자에 안전한 데이터만 input (셀러 정보/desc 노출 X). */}
-                      {(() => {
-                        const verdicts = buildVerdicts({
-                          price: item.price,
-                          skuMedian: item.skuMedian,
-                          expectedProfitMin: item.expectedProfitMin,
-                          expectedProfitMax: item.expectedProfitMax,
-                          marketConfidenceLabel: item.confidence,
-                          soldSampleCount: item.soldSampleCount,
-                          medianHoursToSold: item.medianHoursToSold,
-                          freeShipping: item.freeShipping,
-                          lastSeenAt: item.isFresh ? new Date(Date.now() - 30 * 60 * 1000).toISOString() : null,
-                        });
-                        return verdicts.length > 0 ? (
-                          <div className="flex flex-wrap items-center gap-1 lg:flex-col lg:items-end lg:justify-center lg:gap-1.5">
-                            {verdicts.map((v) => (
-                              <span
-                                key={v.label}
-                                className={`whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${VERDICT_TONE_CLASS[v.tone]}`}
-                              >
-                                {v.label}
-                              </span>
-                            ))}
-                          </div>
-                        ) : null;
-                      })()}
+                      <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-black shadow-sm ${SIGNAL_TONE_CLASS[signal.tone]}`}>
+                        <SignalIcon width={13} height={13} />
+                        {signal.label}
+                      </span>
                     </div>
                   </div>
                 </Link>

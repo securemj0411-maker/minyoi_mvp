@@ -83,6 +83,8 @@ type RawListingMeta = {
   sku_id: string | null;
   free_shipping: boolean | null;
   last_seen_at: string | null;
+  shop_review_rating: number | null;
+  shop_review_count: number | null;
 };
 
 export async function GET() {
@@ -108,7 +110,7 @@ export async function GET() {
         { headers },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,free_shipping,last_seen_at&pid=in.(${poolPids.join(",")})`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,free_shipping,last_seen_at,shop_review_rating,shop_review_count&pid=in.(${poolPids.join(",")})`,
         { headers },
       ),
     ]);
@@ -281,6 +283,8 @@ export async function GET() {
         confidence: confLabel(row.confidence),
         freeShipping: meta?.free_shipping ?? false,
         isFresh: isFresh(meta?.last_seen_at),
+        sellerReviewRating: meta?.shop_review_rating == null ? null : Number(meta.shop_review_rating),
+        sellerReviewCount: meta?.shop_review_count == null ? null : Number(meta.shop_review_count),
         // 2026-05-17 Phase 3: 근거 chip 데이터 (buildVerdicts input).
         soldSampleCount: row.comparable_key ? (demandByKey.get(row.comparable_key) ?? null) : null,
         medianHoursToSold: row.comparable_key ? (velocityByKey.get(row.comparable_key) ?? null) : null,

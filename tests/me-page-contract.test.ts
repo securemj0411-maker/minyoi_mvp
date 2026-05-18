@@ -360,6 +360,28 @@ test("guest main page makes masked listing titles strongly blurred", () => {
   assert.doesNotMatch(preview, /text-\[#223127\] blur-\[1px\]/);
 });
 
+test("guest main page hides category clues and shows one polished proof chip", () => {
+  const preview = source("src/components/preview-masked-dashboard.tsx");
+  const api = source("src/app/api/preview-pool/route.ts");
+
+  assert.doesNotMatch(preview, /CATEGORY_LABEL/);
+  assert.doesNotMatch(preview, /CATEGORY_SVG/);
+  assert.doesNotMatch(preview, /CATEGORY_GRADIENT/);
+  assert.doesNotMatch(preview, /CategoryIcon/);
+  assert.doesNotMatch(preview, /\{item\.category\}/);
+  assert.match(preview, /alt="마스킹된 추천 매물"/);
+  assert.match(preview, /<PackageIcon width=\{36\} height=\{36\} \/>/);
+  assert.match(preview, /<ConditionPhotoBadge conditionClass=\{item\.conditionClass\} compact \/>/);
+  assert.match(preview, /function previewSignal\(item: PreviewItem\): PreviewSignal/);
+  assert.match(preview, /후기 \$\{compactCount\(reviews\)\} 셀러/);
+  assert.match(preview, /평균 \$\{daysLabel\(item\.medianHoursToSold\)\} 회전/);
+  assert.match(preview, /시장 표본 \$\{compactCount\(item\.soldSampleCount\)\}건/);
+  assert.match(preview, /SIGNAL_TONE_CLASS\[signal\.tone\]/);
+  assert.match(api, /shop_review_rating,shop_review_count/);
+  assert.match(api, /sellerReviewRating/);
+  assert.match(api, /sellerReviewCount/);
+});
+
 test("/me seek-more modal starts with personalization and hides duplicate safety stats", () => {
   const meClient = source("src/components/me-dashboard-client.tsx");
   const workspace = source("src/components/recommendation-workspace.tsx");
