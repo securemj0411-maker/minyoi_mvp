@@ -332,6 +332,15 @@ export const DEFAULT_SEARCH_QUERIES = [
   "MM6 살로몬", "Salomon MM6", "MM6 X-ALP",
   "마르지엘라 글램슬램", "Margiela Glam Slam",
   "MM6", "엠엠식스",
+  // Wave 204 — 슈프림 collab 매물 압도적 발견
+  "Supreme Nike Air Force", "슈프림 에어포스", "슈프림 슈포스",
+  "Supreme Air Max", "슈프림 에어맥스",
+  "Supreme SB", "슈프림 SB 덩크",
+  "Supreme Timberland", "슈프림 팀버랜드",
+  "Supreme Dr.Martens", "슈프림 닥터마틴",
+  "Supreme Vans", "슈프림 반스",
+  "Supreme Backpack", "슈프림 백팩",
+  "Supreme 메쉬백", "Supreme 숄더백",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

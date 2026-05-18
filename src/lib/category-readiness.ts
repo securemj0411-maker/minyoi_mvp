@@ -540,6 +540,15 @@ export const LANE_READINESS: LaneReadinessMap = {
   mm6_salomon_collab: { status: "ready", label: "Salomon × MM6 (X-ALP/ACS)", note: "Wave 203 collab" },
   margiela_glam_slam: { status: "ready", label: "Margiela Glam Slam (시그니처)", note: "Wave 203 bag" },
   mm6_margiela_apparel: { status: "ready", label: "MM6 Margiela Apparel (broad)", note: "Wave 203" },
+  // Wave 204 (2026-05-18): 슈프림 collab 8 SKU — 매물 80건 sample 거의 다 슈프림.
+  supreme_nike_airforce1_collab: { status: "ready", label: "Supreme × Nike Air Force 1 (collab)", note: "Wave 204 — 매물 20+건 압도적" },
+  supreme_nike_airmax_collab: { status: "ready", label: "Supreme × Nike Air Max (collab)", note: "Wave 204" },
+  supreme_nike_sb_collab: { status: "ready", label: "Supreme × Nike SB (덩크/블레이저/AF2)", note: "Wave 204" },
+  supreme_timberland_collab: { status: "ready", label: "Supreme × Timberland", note: "Wave 204" },
+  supreme_drmartens_collab: { status: "ready", label: "Supreme × Dr.Martens", note: "Wave 204" },
+  supreme_vans_collab: { status: "ready", label: "Supreme × Vans", note: "Wave 204" },
+  supreme_backpack: { status: "ready", label: "Supreme Backpack (FW/SS)", note: "Wave 204 bag" },
+  supreme_shoulder_bag: { status: "ready", label: "Supreme Shoulder/Mesh/Side", note: "Wave 204 bag" },
 };
 
 export type CategoryReadinessConfig = {
