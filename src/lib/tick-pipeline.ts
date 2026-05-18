@@ -2,6 +2,10 @@ import { createHash } from "node:crypto";
 
 import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
 
+// Wave 132b (2026-05-16 04:38 KST): 번개 UI 댓글 수가 metrics.buntalkCount임을 확인.
+// 이 시각 이전에 이미 detail_status=done이었던 row는 num_comment가 비어 있을 수 있어 재상세수집한다.
+const BUNTALK_COUNT_FIX_DEPLOYED_AT_MS = Date.UTC(2026, 4, 15, 19, 38, 30);
+
 // Wave 138b (2026-05-16): description SHA256 (500자) — 다중 ID 사기 그룹 탐지.
 // 같은 hash + 다른 seller_uid 2+ = 부캐 그룹 (DB 발견 27건/7셀러 패턴).
 // 50자 미만은 의미 없음 (default text — null 반환).
@@ -88,6 +92,7 @@ type RawListingRow = {
   source_updated_at: string | null;
   listing_state: string;
   sale_status?: string | null;
+  num_comment: number | null;
   missing_count: number;
   last_missing_at: string | null;
 };
@@ -716,7 +721,7 @@ async function loadExistingRaw(pids: number[]): Promise<Map<number, RawListingRo
   if (unique.length === 0) return new Map();
   const rows: RawListingRow[] = [];
   for (const chunk of chunkArray(unique, RAW_EXISTING_READ_CHUNK_SIZE)) {
-    const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,seller_uid,thumbnail_url,listing_type,sku_id,sku_name,detail_status,detail_enriched_at,detail_error,last_seen_at,last_changed_at,source_updated_at,listing_state,missing_count,last_missing_at&pid=in.(${chunk.join(",")})`;
+    const url = `${tableUrl("mvp_raw_listings")}?select=pid,name,price,num_faved,free_shipping,url,seller_uid,thumbnail_url,listing_type,sku_id,sku_name,detail_status,detail_enriched_at,detail_error,last_seen_at,last_changed_at,source_updated_at,listing_state,sale_status,num_comment,missing_count,last_missing_at&pid=in.(${chunk.join(",")})`;
     const res = await restFetch(url, { headers: serviceHeaders() });
     rows.push(...((await res.json()) as RawListingRow[]));
   }
@@ -812,6 +817,12 @@ function needsDetailRefresh(item: SearchItem, existing: RawListingRow | undefine
   if (!existing) return true;
   if (isCurrentTitleTriageSkip(existing)) return existing.name !== item.name;
   if (!existing.detail_enriched_at) return true;
+  const detailEnrichedAt = new Date(existing.detail_enriched_at).getTime();
+  const needsBuntalkBackfill =
+    existing.num_comment == null &&
+    Number.isFinite(detailEnrichedAt) &&
+    detailEnrichedAt < BUNTALK_COUNT_FIX_DEPLOYED_AT_MS;
+  if (needsBuntalkBackfill) return true;
   return existing.name !== item.name;
 }
 

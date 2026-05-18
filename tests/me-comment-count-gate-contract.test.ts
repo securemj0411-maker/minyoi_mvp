@@ -31,10 +31,22 @@ test("pack open re-checks high-comment candidates before reveal commit", () => {
 
   assert.match(packOpen, /const MAX_PACK_OPEN_NUM_COMMENT = 8/);
   assert.match(packOpen, /num_comment/);
-  assert.match(packOpen, /isPackOpenCommentBlocked\(meta\._raw\?\.num_comment/);
-  assert.match(packOpen, /invalidateHighCommentCandidate\(candidate\.pid, Number\(meta\._raw\?\.num_comment\), "raw_num_comment"\)/);
+  assert.match(packOpen, /const rawCommentCount = meta\._raw\?\.num_comment \?\? null/);
+  assert.match(packOpen, /isPackOpenCommentBlocked\(rawCommentCount\)/);
+  assert.match(packOpen, /invalidateHighCommentCandidate\(candidate\.pid, Number\(rawCommentCount\), "raw_num_comment"\)/);
+  assert.match(packOpen, /const shouldLiveVerify = !isFresh \|\| !hasRawCommentCount\(rawCommentCount\)/);
   assert.match(packOpen, /isPackOpenCommentBlocked\(detail\?\.commentCount/);
   assert.match(packOpen, /invalidateHighCommentCandidate\(candidate\.pid, Number\(detail\?\.commentCount\), "detail_comment_count"\)/);
+  assert.match(packOpen, /patchRawCommentCount\(candidate\.pid, detail\.commentCount\)/);
   assert.match(packOpen, /pool_eligible: false/);
   assert.match(packOpen, /rpcInvalidate\(pid, `pack_open_\$\{source\}_\$\{reason\}`\)/);
+});
+
+test("old detail rows with missing comment count are re-enriched before future scoring", () => {
+  const pipeline = source("src/lib/tick-pipeline.ts");
+
+  assert.match(pipeline, /BUNTALK_COUNT_FIX_DEPLOYED_AT_MS/);
+  assert.match(pipeline, /detailEnrichedAt < BUNTALK_COUNT_FIX_DEPLOYED_AT_MS/);
+  assert.match(pipeline, /existing\.num_comment == null/);
+  assert.match(pipeline, /detail_status,detail_enriched_at,detail_error,last_seen_at,last_changed_at,source_updated_at,listing_state,sale_status,num_comment/);
 });

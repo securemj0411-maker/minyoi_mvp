@@ -482,6 +482,11 @@ function isPackOpenCommentBlocked(value: number | null | undefined) {
   return Number.isFinite(n) && n >= MAX_PACK_OPEN_NUM_COMMENT;
 }
 
+function hasRawCommentCount(value: number | null | undefined) {
+  const n = Number(value);
+  return Number.isFinite(n);
+}
+
 async function invalidateHighCommentCandidate(pid: number, commentCount: number, source: "raw_num_comment" | "detail_comment_count") {
   const reason = `num_comment_above_${MAX_PACK_OPEN_NUM_COMMENT}`;
   await Promise.allSettled([
@@ -497,6 +502,17 @@ async function invalidateHighCommentCandidate(pid: number, commentCount: number,
     }),
     rpcInvalidate(pid, `pack_open_${source}_${reason}`),
   ]);
+}
+
+async function patchRawCommentCount(pid: number, commentCount: number): Promise<void> {
+  await callSupabase(`/mvp_raw_listings?pid=eq.${pid}`, {
+    method: "PATCH",
+    headers: authHeaders("return=minimal"),
+    body: JSON.stringify({
+      num_comment: commentCount,
+      updated_at: new Date().toISOString(),
+    }),
+  });
 }
 
 async function loadLatestSourceHealth(): Promise<SourceHealthStatus> {
@@ -1320,8 +1336,9 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         await rpcInvalidate(candidate.pid, "missing_listing_meta");
         continue;
       }
-      if (isPackOpenCommentBlocked(meta._raw?.num_comment ?? null)) {
-        await invalidateHighCommentCandidate(candidate.pid, Number(meta._raw?.num_comment), "raw_num_comment");
+      const rawCommentCount = meta._raw?.num_comment ?? null;
+      if (isPackOpenCommentBlocked(rawCommentCount)) {
+        await invalidateHighCommentCandidate(candidate.pid, Number(rawCommentCount), "raw_num_comment");
         continue;
       }
       if (!candidateMatchesOpenFilters(candidate, meta, criteria)) {
@@ -1342,7 +1359,8 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       const isFresh = Number.isFinite(lastVerified) && Date.now() - lastVerified < freshnessMs;
 
       let liveVerifiedAt = candidate.last_verified_at;
-      if (!isFresh) {
+      const shouldLiveVerify = !isFresh || !hasRawCommentCount(rawCommentCount);
+      if (shouldLiveVerify) {
         const { detail, signals } = await verifyAndCheckSold(candidate.pid, meta.price, meta.name);
         if (isSoldOut(signals)) {
           if (canPermanentlyInvalidateSoldOut(signals, sourceHealth)) {
@@ -1355,6 +1373,9 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         if (isPackOpenCommentBlocked(detail?.commentCount ?? null)) {
           await invalidateHighCommentCandidate(candidate.pid, Number(detail?.commentCount), "detail_comment_count");
           continue;
+        }
+        if (detail?.commentCount != null) {
+          await patchRawCommentCount(candidate.pid, detail.commentCount);
         }
         const liveType = classifyListing(meta.name, detail?.description ?? "", meta.price).listingType;
         if (liveType !== "normal") {
