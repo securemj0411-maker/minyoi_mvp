@@ -71,7 +71,9 @@ export const FLAWED_NOTES = [
   "installment_risk",
 ] as const;
 
-const CLEAN_NOTES = ["good_condition", "full_set", "applecare_premium", "battery_perfect"] as const;
+// Wave 203 (2026-05-18): "battery_high_health" 추가 — 95~99% 배터리 객관적 신호.
+// 100% 만 박힌 battery_perfect 보다 약하지만 사용감 적은 매물 강한 객관 증거.
+const CLEAN_NOTES = ["good_condition", "full_set", "applecare_premium", "battery_perfect", "battery_high_health"] as const;
 
 /**
  * Wave 130: condition_notes[] → ConditionClass (single label).
@@ -171,7 +173,10 @@ export function resolveConditionClass(
 // 이전: route.ts 에 별도 const 박혀서 silent drift 위험 (수동 sync 필요).
 // Wave 202 (2026-05-18) v49: 액세서리 generation 노이즈 제거 + model 분기 우선 (iPad Air/Pro/Mini).
 // 이전: "에어 4 + 애플펜슬 2세대" → 2_gen|a8x 잘못 매칭 (액세서리 "2세대"가 generation 으로 캡처).
-export const PARSER_VERSION = "option-parser-v49";
+// Wave 203 (2026-05-18) v50: 셀러 "미개봉" + 배터리 measure 모순 감지 — 거짓 unopened 차단.
+//   진짜 미개봉이면 배터리 % measure 불가능 (박스 안 뜯음). 셀러 거짓말 false positive 차단.
+//   + battery 95~99% "battery_high_health" 신호 추가 (객관적 clean 증거).
+export const PARSER_VERSION = "option-parser-v50";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -1144,7 +1149,14 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   //   "정품 스트랩... 새제품" / "새 제품입니다" 셀러 인플레 / 액세서리 context false positive 다수.
   //   "새상품/새 제품/새제품" 단독 매칭 제거. "박스 새상품 미개봉" 같은 명시 키워드만 유지.
   //   "새상품" 단어가 본체 unopened 신호인 케이스가 액세서리/인플레 false positive 보다 적음.
-  const explicitNewSignal = !newSignalNegativePattern && /미개봉|미\s*개봉|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*(?:미개봉|새상품)|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower);
+  // Wave 203 (2026-05-18): 사용자 통찰 — "미개봉인데 어떻게 97%? 상식적으로 모순".
+  //   진짜 미개봉이면 배터리 % / 사이클 measure 불가능 (박스 안 뜯음 = 한 번도 안 켜).
+  //   셀러가 "미개봉" 박았는데 배터리/사이클 measure 명시 = 거짓 미개봉.
+  //   → 자연어 new 신호 무시 (객관적 measurement 가 자연어 false positive 차단).
+  const hasMeasuredUsage = (batteryHealth != null && batteryHealth > 0) || (cycles != null && cycles > 0);
+  const explicitNewSignal = !newSignalNegativePattern
+    && !hasMeasuredUsage
+    && /미개봉|미\s*개봉|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*(?:미개봉|새상품)|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower);
   if (explicitNewSignal) add("new_or_open_box", 0.15);
   // 2026-05-16 (사용자 코멘트 id 82/115 pid 403851792/334403685): batteryHealth=100 단독 unopened 마킹 제거.
   //   기존 정책 (Wave 91): Apple 100% = 새제품 가정. 시세 sample 평균 끌어올림 차단 의도.
@@ -1153,6 +1165,11 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   //   시세 sample 분리는 별도 mechanism (condition_class 별 grouping — Wave 130).
   if (!explicitNewSignal && batteryHealth != null && batteryHealth >= 100) {
     add("battery_perfect", 0.05);
+  }
+  // Wave 203 (2026-05-18): battery 95~99% 객관적 신호 — 사용감 적은 매물 강한 증거.
+  // 사용자 통찰: "객관적 measure 값이 자연어보다 강해야 한다".
+  if (batteryHealth != null && batteryHealth >= 95 && batteryHealth < 100) {
+    add("battery_high_health", 0.05);
   }
   if (/풀박스|풀박|풀구성|풀세트|구성품\s*전부/.test(lower)) add("full_set", 0.05);
 
