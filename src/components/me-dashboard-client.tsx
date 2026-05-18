@@ -14,6 +14,7 @@ import UserRevealDashboard from "@/components/user-reveal-dashboard";
 import PreviewMaskedDashboard from "@/components/preview-masked-dashboard";
 import { SavedMoneyCounter } from "@/components/saved-money-counter";
 import { MyFeedbackActivity } from "@/components/my-feedback-activity";
+import { PackageIcon, SearchIcon } from "@/components/icons";
 import { isAdminUser } from "@/lib/auth-users";
 import { hasAdminShadowClient } from "@/lib/admin-shadow-mode";
 import { MODEL_GUIDES } from "@/lib/model-guides";
@@ -355,13 +356,17 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
             {/* Wave 185: 내 피드백 활동 — 사용자 신고 결과 가시화 (compound retention loop). */}
             <MyFeedbackActivity />
             <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-base font-black text-[#223127] dark:text-zinc-100">📦 나의 상품</h2>
+              <h2 className="flex items-center gap-1.5 text-base font-black text-[#223127] dark:text-zinc-100">
+                <PackageIcon className="h-4 w-4" />
+                나의 상품
+              </h2>
               <button
                 type="button"
                 onClick={() => setSeekMoreOpen(true)}
                 className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-accent-strong)] px-4 py-2 text-xs font-black text-[var(--brand-cream)] shadow-sm transition hover:opacity-90"
               >
-                🔍 더 찾아보기
+                <SearchIcon className="h-3.5 w-3.5" />
+                더 찾아보기
               </button>
             </div>
             <UserRevealDashboard userRef={userRefForAuthUser(user.id)} welcomePending={welcomePending} />
@@ -372,7 +377,8 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
                 onClick={() => setSeekMoreOpen(true)}
                 className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-accent-strong)] px-5 py-2.5 text-sm font-black text-[var(--brand-cream)] shadow-sm transition hover:opacity-90"
               >
-                🔍 더 찾아보기
+                <SearchIcon className="h-4 w-4" />
+                더 찾아보기
               </button>
             </div>
             {/* 2026-05-17 phase 1b: 더 찾아보기 모달 — RecommendationWorkspace 모달 안에서 호출. */}
@@ -387,7 +393,10 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
                   >
                     ✕
                   </button>
-                  <div className="mb-3 text-base font-black text-[#223127] dark:text-zinc-100">🔍 더 찾아보기</div>
+                  <div className="mb-3 flex items-center gap-1.5 text-base font-black text-[#223127] dark:text-zinc-100">
+                    <SearchIcon className="h-4 w-4" />
+                    더 찾아보기
+                  </div>
                   <OnboardingBanner onStart={() => undefined} />
                   <SafetyStatsBadge />
                   <RecommendationWorkspace

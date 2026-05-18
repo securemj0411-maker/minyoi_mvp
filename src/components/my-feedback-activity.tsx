@@ -6,6 +6,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { BellIcon, CoinsIcon, SearchIcon } from "@/components/icons";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type Stats = {
@@ -67,6 +68,14 @@ function relAge(iso: string | null): string {
 }
 
 type StatusFilter = "all" | "pending" | "resolved" | "dismissed";
+const EMPTY_FEEDBACK_HIDE_KEY = "minyoi-hide-empty-feedback-activity-until";
+const HIDE_FOR_MS = 7 * 24 * 60 * 60 * 1000;
+
+function isHiddenUntilActive(key: string) {
+  if (typeof window === "undefined") return false;
+  const until = Number(window.localStorage.getItem(key) ?? 0);
+  return Number.isFinite(until) && until > Date.now();
+}
 
 export function MyFeedbackActivity() {
   const [data, setData] = useState<ActivityResponse | null>(null);
@@ -76,8 +85,10 @@ export function MyFeedbackActivity() {
   const [filter, setFilter] = useState<StatusFilter>("all");
   // Wave 194: 첫 진입 toast — unreadCount > 0이면 5초 표시.
   const [toastVisible, setToastVisible] = useState(false);
+  const [emptyHidden, setEmptyHidden] = useState(false);
 
   useEffect(() => {
+    setEmptyHidden(isHiddenUntilActive(EMPTY_FEEDBACK_HIDE_KEY));
     let cancelled = false;
     async function load() {
       setLoading(true);
@@ -125,6 +136,13 @@ export function MyFeedbackActivity() {
 
   const { thisMonth, allTime } = data;
   const hasAny = allTime.totalCount > 0;
+  if (!hasAny && emptyHidden) return null;
+
+  function hideEmptyForWeek() {
+    const until = Date.now() + HIDE_FOR_MS;
+    window.localStorage.setItem(EMPTY_FEEDBACK_HIDE_KEY, String(until));
+    setEmptyHidden(true);
+  }
 
   return (
     <>
@@ -133,7 +151,7 @@ export function MyFeedbackActivity() {
         <div className="fixed bottom-4 left-1/2 z-[60] w-[calc(100vw-32px)] max-w-md -translate-x-1/2 rounded-xl border-2 border-rose-300 bg-rose-50 px-4 py-3 shadow-2xl dark:border-rose-900/60 dark:bg-rose-950/80">
           <div className="flex items-start justify-between gap-2">
             <div className="text-[12px] font-bold text-rose-900 dark:text-rose-100">
-              <span className="mr-1">🔔</span>
+              <BellIcon className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
               운영자가 회원님 신고에 응답했어요 ({data.unreadCount}건)
               <div className="mt-1 text-[11px] font-normal text-rose-800/80 dark:text-rose-200/80">
                 아래 [내 피드백 활동] → 응답 {data.unreadCount}건 확인 클릭.
@@ -152,25 +170,37 @@ export function MyFeedbackActivity() {
       )}
 
       <div className="mb-4 rounded-xl border-2 border-[#d5dfd2] bg-[#f3f7f1] p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-        <div className="mb-2 flex items-baseline justify-between gap-2">
+        <div className="mb-2 flex items-start justify-between gap-2">
           <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
-            🔍 내 피드백 활동
+            <SearchIcon className="h-3.5 w-3.5" />
+            내 피드백 활동
             {/* Wave 194: 미확인 운영자 응답 배지. */}
             {data.unreadCount > 0 && (
               <span className="inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white">
-                🔴 {data.unreadCount}
+                {data.unreadCount}
               </span>
             )}
           </span>
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-            {data.monthLabel}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              {data.monthLabel}
+            </span>
+            {!hasAny ? (
+              <button
+                type="button"
+                onClick={hideEmptyForWeek}
+                className="rounded-full border border-[#d5dfd2] bg-white px-2 py-0.5 text-[10px] font-bold text-zinc-500 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+              >
+                7일 숨김
+              </button>
+            ) : null}
+          </div>
         </div>
 
         {!hasAny ? (
           // 빈 상태 — 신고 권장 메시지
           <div className="text-[12px] leading-relaxed text-zinc-700 dark:text-zinc-300">
-            아직 신고한 매물이 없어요. 시세/매물 정보가 다르면 매물 상세에서 <b className="text-amber-700 dark:text-amber-300">[🔍 정보 오류 신고]</b> 클릭 → 즉시 <b>토큰 +3</b> 보상 + 24시간 안에 운영자가 검토합니다.
+            아직 신고한 매물이 없어요. 시세/매물 정보가 다르면 매물 상세에서 <b className="text-amber-700 dark:text-amber-300">[정보 오류 신고]</b> 클릭 → 즉시 <b>토큰 +3</b> 보상 + 24시간 안에 운영자가 검토합니다.
             <div className="mt-1 text-[10px] text-zinc-500 dark:text-zinc-400">
               회원님 신고가 알고리즘 보정 데이터로 들어가요.
             </div>
@@ -188,17 +218,18 @@ export function MyFeedbackActivity() {
                 <div className="text-base font-black tabular-nums text-emerald-900 dark:text-emerald-100">
                   {thisMonth.resolvedCount}
                 </div>
-                <div className="text-[9px] font-bold text-emerald-800 dark:text-emerald-300">✅ 보정</div>
+                <div className="text-[9px] font-bold text-emerald-800 dark:text-emerald-300">보정</div>
               </div>
               <div className="rounded-lg bg-amber-100 px-2 py-2 dark:bg-amber-900/40">
                 <div className="text-base font-black tabular-nums text-amber-900 dark:text-amber-100">
                   {thisMonth.pendingCount}
                 </div>
-                <div className="text-[9px] font-bold text-amber-800 dark:text-amber-300">⏳ 대기</div>
+                <div className="text-[9px] font-bold text-amber-800 dark:text-amber-300">대기</div>
               </div>
               <div className="rounded-lg bg-zinc-100 px-2 py-2 dark:bg-zinc-800">
-                <div className="text-base font-black tabular-nums text-zinc-700 dark:text-zinc-200">
-                  🪙 {thisMonth.tokensReceived}
+                <div className="flex items-center justify-center gap-1 text-base font-black tabular-nums text-zinc-700 dark:text-zinc-200">
+                  <CoinsIcon className="h-3.5 w-3.5" />
+                  {thisMonth.tokensReceived}
                 </div>
                 <div className="text-[9px] font-bold text-zinc-600 dark:text-zinc-400">토큰</div>
               </div>
@@ -207,7 +238,7 @@ export function MyFeedbackActivity() {
             {/* 누적 (allTime) — thisMonth 와 다르면 표시 */}
             {allTime.totalCount > thisMonth.totalCount && (
               <div className="mt-2 text-[10px] text-zinc-600 dark:text-zinc-400">
-                📊 누적: 신고 <b>{allTime.totalCount}건</b> · 보정 <b className="text-emerald-700 dark:text-emerald-300">{allTime.resolvedCount}건</b> · 토큰 <b>+{allTime.tokensReceived}</b>
+                누적: 신고 <b>{allTime.totalCount}건</b> · 보정 <b className="text-emerald-700 dark:text-emerald-300">{allTime.resolvedCount}건</b> · 토큰 <b>+{allTime.tokensReceived}</b>
               </div>
             )}
 
@@ -240,7 +271,7 @@ export function MyFeedbackActivity() {
                   : "border-[#d5dfd2] bg-white text-[#5d735f] hover:bg-[#edf3ea] dark:border-emerald-900/40 dark:bg-zinc-900 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
               }`}
             >
-              {data.unreadCount > 0 ? `🔴 운영자 응답 ${data.unreadCount}건 확인 →` : "자세히 보기 →"}
+              {data.unreadCount > 0 ? `운영자 응답 ${data.unreadCount}건 확인 →` : "자세히 보기 →"}
             </button>
           </>
         )}
@@ -252,7 +283,7 @@ export function MyFeedbackActivity() {
           <div className="my-8 w-full max-w-2xl rounded-2xl bg-white p-5 shadow-xl dark:bg-zinc-900" onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex items-baseline justify-between">
               <h3 className="text-base font-black text-zinc-900 dark:text-zinc-100">
-                🔍 내 피드백 신고 ({data.allTime.totalCount}건)
+                내 피드백 신고 ({data.allTime.totalCount}건)
               </h3>
               <button
                 type="button"
@@ -267,9 +298,9 @@ export function MyFeedbackActivity() {
             <div className="mb-3 flex flex-wrap gap-1.5">
               {(["all", "pending", "resolved", "dismissed"] as StatusFilter[]).map((s) => {
                 const label = s === "all" ? `전체 (${data.allTime.totalCount})`
-                  : s === "pending" ? `⏳ 대기 (${data.allTime.pendingCount})`
-                  : s === "resolved" ? `✅ 보정 (${data.allTime.resolvedCount})`
-                  : `❌ 기각 (${data.allTime.dismissedCount})`;
+                  : s === "pending" ? `대기 (${data.allTime.pendingCount})`
+                  : s === "resolved" ? `보정 (${data.allTime.resolvedCount})`
+                  : `기각 (${data.allTime.dismissedCount})`;
                 return (
                   <button
                     key={s}

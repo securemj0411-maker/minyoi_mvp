@@ -127,6 +127,24 @@ function ChevronDownIcon({ open }: { open: boolean }) {
   );
 }
 
+function XIcon() {
+  return (
+    <svg className="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
+const SAFETY_BADGE_HIDE_KEY = "minyoi-hide-safety-stats-badge-until";
+const HIDE_FOR_MS = 7 * 24 * 60 * 60 * 1000;
+
+function isHiddenUntilActive(key: string) {
+  if (typeof window === "undefined") return false;
+  const until = Number(window.localStorage.getItem(key) ?? 0);
+  return Number.isFinite(until) && until > Date.now();
+}
+
 // ─── breakdown row builder ────────────────────────────────────────────
 type Row = { icon: ReactNode; label: string; count: number };
 
@@ -159,8 +177,13 @@ function GroupHeader({ icon, label }: { icon: ReactNode; label: string }) {
 export default function SafetyStatsBadge() {
   const [stats, setStats] = useState<SafetyStats | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
+    if (isHiddenUntilActive(SAFETY_BADGE_HIDE_KEY)) {
+      setHidden(true);
+      return;
+    }
     void (async () => {
       try {
         const res = await fetch("/api/public/safety-stats", { cache: "no-store" });
@@ -173,8 +196,14 @@ export default function SafetyStatsBadge() {
     })();
   }, []);
 
+  function hideForWeek() {
+    window.localStorage.setItem(SAFETY_BADGE_HIDE_KEY, String(Date.now() + HIDE_FOR_MS));
+    setHidden(true);
+  }
+
   // 2026-05-16 (사용자 코멘트): 데이터 로드 전 빈 상태 → 갑자기 카드 등장 = jarring.
   // skeleton placeholder — frame 첫 paint 부터 보이고 숫자만 fade-in.
+  if (hidden) return null;
   if (!stats) {
     return (
       <div className="mb-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
@@ -214,11 +243,20 @@ export default function SafetyStatsBadge() {
   const parserMissTotal = stats.needs_review_7d ?? 0;
 
   return (
-    <div className="mb-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
+    <div className="relative mb-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
+      <button
+        type="button"
+        onClick={hideForWeek}
+        className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-1 text-[10px] font-bold text-emerald-800 transition hover:bg-white dark:bg-zinc-900/70 dark:text-emerald-200"
+        aria-label="차단 통계 7일 숨김"
+      >
+        <XIcon />
+        숨김
+      </button>
       <button
         type="button"
         onClick={() => setShowDetail((s) => !s)}
-        className="flex w-full items-center justify-between gap-3 text-left"
+        className="flex w-full items-center justify-between gap-3 pr-14 text-left"
       >
         <div>
           <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">

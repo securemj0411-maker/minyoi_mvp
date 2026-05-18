@@ -717,14 +717,14 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             {lossReportResult?.ok ? (
               <>
                 <div className="flex items-center gap-2 text-base font-black text-emerald-700 dark:text-emerald-300">
-                  ✅ 신고 접수됨
+                  신고 접수됨
                 </div>
                 <div className="mt-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-200">
                   {lossReportResult.message}
                 </div>
                 {lossReportResult.compensation && lossReportResult.compensation > 0 ? (
                   <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
-                    🪙 토큰 +{lossReportResult.compensation}개 즉시 지급
+                    토큰 +{lossReportResult.compensation}개 즉시 지급
                   </div>
                 ) : null}
                 <div className="mt-3 text-[11px] text-zinc-500 dark:text-zinc-400">
@@ -743,7 +743,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             ) : (
               <>
                 <div className="text-base font-black text-zinc-900 dark:text-zinc-100">
-                  🎁 토큰 +3 받기 · 부정확 정보 신고
+                  토큰 +3 받기 · 정보 오류 신고
                 </div>
                 <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
                   매물: <span className="font-bold">{lossReportItem.name}</span>

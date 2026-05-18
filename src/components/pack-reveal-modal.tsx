@@ -271,32 +271,39 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
   //   같은 SKU+옵션이라도 condition별 시세 spread 15~40%. 매물 condition에 맞는 시세 우선 표시.
   //   otherConditions로 비교 가능 ("내 매물(worn) vs mint 시세" 등).
   const market = card.marketBasis;
+  const [expanded, setExpanded] = useState(false);
   if (!market) return null;
   const confidence = market.confidence ?? "low";
-  const confidenceLabel = confidence === "high" ? "🟢 높음" : confidence === "medium" ? "🟡 보통" : "🔴 낮음";
+  const confidenceLabel = confidence === "high" ? "높음" : confidence === "medium" ? "보통" : "낮음";
+  const confidenceClass = confidence === "high"
+    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+    : confidence === "medium"
+      ? "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+      : "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200";
   const hasCondition = market.conditionClass && market.conditionClass !== "all";
+  const sourceLabel = market.priceSource === "reference"
+    ? "다나와 새 가격 기준"
+    : market.conditionClass === "mint"
+      ? "번개 S급 매물 기준"
+      : "번개 중고 매물 기준";
   return (
     <div className="rounded-lg border border-[#e2d9cb] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="flex items-baseline justify-between gap-2">
         <div className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
-          📊 시세 근거
+          시세 근거
           {hasCondition && market.conditionLabel && (
             <span className="ml-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
               {market.conditionLabel}
             </span>
           )}
         </div>
-        <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${confidenceClass}`}>
           {confidenceLabel}
         </span>
       </div>
       <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs">
         <span className="font-black text-zinc-800 dark:text-zinc-100">
           {market.label ?? card.skuName}
-        </span>
-        <span className="text-zinc-300">·</span>
-        <span className="font-bold tabular-nums text-zinc-700 dark:text-zinc-300">
-          중앙 {market.medianPrice ? krw(market.medianPrice) : "-"}
         </span>
         {market.fallbackUsed && (
           <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500">
@@ -305,56 +312,62 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
         )}
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-zinc-500 dark:text-zinc-400">
-        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
-          💰 거래완료 {market.soldSampleCount.toLocaleString("ko-KR")}건
-        </span>
-        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
-          📋 판매중 {market.activeSampleCount.toLocaleString("ko-KR")}건
-        </span>
-        {market.disappearedSampleCount > 0 && (
-          <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
-            🚫 만료 {market.disappearedSampleCount.toLocaleString("ko-KR")}건
-          </span>
-        )}
-        {/* 2026-05-16 (사용자 코멘트 id 104/107/109): 시세 출처 명시 강화. */}
-        {/* 2026-05-16 (N4): unopened (박스 안 뜯음) vs mint (S급 사용감 거의 없음) 분리. */}
-        {market.priceSource === "reference" ? (
-          <span className="inline-flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-300">
+        <span className="inline-flex items-center gap-1 font-bold text-zinc-600 dark:text-zinc-300">
+          {market.priceSource === "reference" ? (
             <DanawaLogo className="h-4 w-4 rounded-[4px]" />
-            다나와 새 가격 기준 (이 매물 미개봉)
-          </span>
-        ) : market.conditionClass === "mint" ? (
-          <span className="inline-flex items-center gap-1 font-bold text-zinc-700 dark:text-zinc-200">
+          ) : (
             <BunjangLogo className="h-4 w-4 rounded-[4px]" />
-            번개 S급 매물 {market.sampleCount}건 median
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 text-zinc-400 dark:text-zinc-500">
-            <BunjangLogo className="h-4 w-4 rounded-[4px]" />
-            번개 중고 매물 {market.sampleCount}건 median
-          </span>
-        )}
+          )}
+          {sourceLabel}
+        </span>
+        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
+          표본 {market.sampleCount.toLocaleString("ko-KR")}건
+        </span>
+        <button
+          type="button"
+          onClick={() => setExpanded((value) => !value)}
+          className="rounded-full border border-zinc-200 bg-white px-1.5 py-0.5 font-bold text-zinc-500 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+        >
+          {expanded ? "접기" : "근거 자세히"}
+        </button>
       </div>
-      {/* Wave 130: 다른 condition 시세 비교 — "내 매물(worn) 시세 vs 다른 등급" — 사업 보고서 L2 끼리 비교. */}
-      {market.otherConditions && market.otherConditions.length > 0 && (
+      {expanded ? (
         <div className="mt-2 border-t border-zinc-100 pt-2 dark:border-zinc-800">
-          <div className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-            동일 모델 다른 등급 시세
-          </div>
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px]">
-            {market.otherConditions.slice(0, 4).map((oc) => (
-              <span
-                key={oc.conditionClass}
-                className="rounded-md bg-zinc-50 px-1.5 py-0.5 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400"
-              >
-                <span className="font-bold">{oc.label}</span>
-                <span className="ml-1 tabular-nums">{oc.medianPrice ? krw(oc.medianPrice) : "-"}</span>
-                <span className="ml-1 text-zinc-400 dark:text-zinc-500">({oc.sampleCount}건)</span>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
+              거래완료 {market.soldSampleCount.toLocaleString("ko-KR")}건
+            </span>
+            <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
+              판매중 {market.activeSampleCount.toLocaleString("ko-KR")}건
+            </span>
+            {market.disappearedSampleCount > 0 && (
+              <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
+                만료 {market.disappearedSampleCount.toLocaleString("ko-KR")}건
               </span>
-            ))}
+            )}
           </div>
+          {/* Wave 130: 다른 condition 시세 비교 — "내 매물(worn) 시세 vs 다른 등급" — 사업 보고서 L2 끼리 비교. */}
+          {market.otherConditions && market.otherConditions.length > 0 && (
+            <>
+              <div className="mt-2 text-[9px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                동일 모델 다른 등급 시세
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px]">
+                {market.otherConditions.slice(0, 4).map((oc) => (
+                  <span
+                    key={oc.conditionClass}
+                    className="rounded-md bg-zinc-50 px-1.5 py-0.5 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400"
+                  >
+                    <span className="font-bold">{oc.label}</span>
+                    <span className="ml-1 tabular-nums">{oc.medianPrice ? krw(oc.medianPrice) : "-"}</span>
+                    <span className="ml-1 text-zinc-400 dark:text-zinc-500">({oc.sampleCount}건)</span>
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -958,7 +971,7 @@ function ModalActionFooter({
               : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
           }`}
         >
-          {alreadyReportedLoss ? "✅ 신고 완료 — 검수 중" : "🎁 토큰 +3 받기 · 부정확 정보 신고"}
+          {alreadyReportedLoss ? "신고 완료 — 검수 중" : "토큰 +3 받기 · 정보 오류 신고"}
         </button>
       )}
     </div>
