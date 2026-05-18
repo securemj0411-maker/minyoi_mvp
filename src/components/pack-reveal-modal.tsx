@@ -108,6 +108,13 @@ function currentMarketGap(card: RevealCard) {
   return Math.round(Number(median) - Number(card.price));
 }
 
+function currentProfitPercent(card: RevealCard) {
+  if (!card.price || card.price <= 0) return null;
+  const gap = currentMarketGap(card) ?? card.expectedProfitMax;
+  const pct = Math.round((gap / card.price) * 100);
+  return Number.isFinite(pct) ? pct : null;
+}
+
 function displayProfitRange(card: RevealCard) {
   const gap = currentMarketGap(card);
   if (gap != null) return signedKrw(gap);
@@ -147,6 +154,11 @@ function saleStatusLabel(value: string) {
   if (value === "SOLD_OUT" || value === "SOLD") return "판매완료";
   if (!value) return "상태 미확인";
   return value;
+}
+
+function countLabel(value: number | null | undefined) {
+  if (value == null || !Number.isFinite(Number(value))) return "-";
+  return Number(value).toLocaleString("ko-KR");
 }
 
 // 2026-05-15 (사용자 코멘트 pid 405627929 — "왜 신뢰 100%? 리뷰도 없는데?"):
@@ -612,6 +624,7 @@ function RevealCardItem({
   const displayGap = currentMarketGap(card);
   const isMarketInvalidated = displayGap != null && displayGap < 0;
   const sourceBadge = marketSourceBadge(card);
+  const currentPct = currentProfitPercent(card);
   useEffect(() => {
     const id = window.setTimeout(() => setShown(true), delay);
     return () => window.clearTimeout(id);
@@ -657,52 +670,66 @@ function RevealCardItem({
             <div className="line-clamp-2 text-sm font-black leading-5 text-zinc-900 dark:text-zinc-50">
               {card.name}
             </div>
-            {/* Wave 80: 가격 정보 그룹화 — 매입/시세 인접 + 차익 강조 */}
-            <div className="mt-1.5 flex items-baseline flex-wrap gap-2">
-              <span className={`text-lg font-black tabular-nums ${isMarketInvalidated ? "text-rose-700 dark:text-rose-300" : "text-[var(--brand-accent)]"}`}>
-                {displayProfitRange(card)}
-              </span>
-              {isMarketInvalidated ? (
-                <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-black text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
-                  시세 갱신 — 추천 무효
+            <div className={`mt-2 rounded-xl border px-3 py-2 ${
+              isMarketInvalidated
+                ? "border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-950/25"
+                : "border-emerald-100 bg-emerald-50/70 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+            }`}>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className={`text-[10px] font-black uppercase tracking-[0.16em] ${
+                  isMarketInvalidated ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300"
+                }`}>
+                  현재 차익
                 </span>
-              ) : null}
-              {/* 2026-05-17 (사용자 요청): 나의 상품 모달에도 운영자풀과 동일 band chip 표시. */}
-              {card.band != null && (
-                <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                  band {card.band}
+                <span className={`text-2xl font-black tabular-nums ${
+                  isMarketInvalidated ? "text-rose-800 dark:text-rose-200" : "text-emerald-800 dark:text-emerald-200"
+                }`}>
+                  {displayProfitRange(card)}
                 </span>
-              )}
-              <span className="text-[11px] font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
-              {/* 2026-05-17 (사용자 요청): 매물 등급 chip. 운영자풀과 동일 — showHelp 활성. */}
-              <ConditionChip conditionClass={card.marketBasis?.conditionClass ?? null} showHelp />
-            </div>
-            <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
-              <span>매입 {krw(card.price)}</span>
-              {card.marketBasis?.medianPrice ? (
-                <>
-                  <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                  <span className="text-zinc-500 dark:text-zinc-300">시세 {krw(card.marketBasis.medianPrice)}</span>
-                  {sourceBadge ? (
-                    <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-black ${
-                      sourceBadge.tone === "reference"
-                        ? "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300"
-                        : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300"
-                    }`}>
-                      {sourceBadge.label}
-                    </span>
-                  ) : null}
-                </>
-              ) : null}
-              {/* Wave 182 Phase 3 (2026-05-17): base option fallback 정직성 표시. */}
-              {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
-                <span
-                  title={`이 매물은 ${card.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}
-                  className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                >
-                  기본 옵션 가정
-                </span>
-              ) : null}
+                {currentPct != null ? (
+                  <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 ring-1 ring-amber-100 dark:bg-zinc-900/50 dark:text-amber-200 dark:ring-amber-900/50">
+                    {currentPct >= 0 ? "+" : ""}{currentPct}%
+                  </span>
+                ) : null}
+                {isMarketInvalidated ? (
+                  <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black text-rose-900 dark:bg-rose-900/60 dark:text-rose-100">
+                    추천 무효
+                  </span>
+                ) : null}
+              </div>
+              <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
+                <span>매입 {krw(card.price)}</span>
+                {card.marketBasis?.medianPrice ? (
+                  <>
+                    <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                    <span className="text-zinc-500 dark:text-zinc-300">시세 {krw(card.marketBasis.medianPrice)}</span>
+                    {sourceBadge ? (
+                      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-black ${
+                        sourceBadge.tone === "reference"
+                          ? "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300"
+                          : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300"
+                      }`}>
+                        {sourceBadge.label}
+                      </span>
+                    ) : null}
+                  </>
+                ) : null}
+                {card.band != null ? (
+                  <span className="rounded-full bg-white/70 px-1.5 py-0.5 text-[10px] font-bold text-zinc-600 ring-1 ring-zinc-100 dark:bg-zinc-900/50 dark:text-zinc-300 dark:ring-zinc-800">
+                    band {card.band}
+                  </span>
+                ) : null}
+                <span className="text-[11px] font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
+                <ConditionChip conditionClass={card.marketBasis?.conditionClass ?? null} showHelp />
+                {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
+                  <span
+                    title={`이 매물은 ${card.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}
+                    className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                  >
+                    기본 옵션 가정
+                  </span>
+                ) : null}
+              </div>
             </div>
           </div>
           <details className="group hidden shrink-0 rounded-lg bg-zinc-50 px-2 py-1 text-right dark:bg-zinc-800 sm:block sm:min-w-[64px]">
@@ -948,23 +975,32 @@ function ListingPreviewPanel({
 }) {
   const imageUrls = detail?.imageUrls.length ? detail.imageUrls : card.thumbnailUrl ? [card.thumbnailUrl] : [];
   const isSold = detail?.saleStatus === "SOLD_OUT" || detail?.saleStatus === "SOLD";
+  const sellerRating = detail?.seller.reviewRating != null && Number.isFinite(Number(detail.seller.reviewRating))
+    ? Number(detail.seller.reviewRating).toFixed(1)
+    : null;
+  const metrics = [
+    { label: "조회", value: countLabel(detail?.metrics.viewCount) },
+    { label: "찜", value: countLabel(detail?.metrics.favoriteCount) },
+    { label: "댓글", value: countLabel(detail?.metrics.commentCount) },
+    { label: "배송", value: detail?.shippingSummary || "-" },
+  ];
 
   return (
     <div className="flex max-h-[calc(100vh-24px)] overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-[rgba(49,66,56,0.16)] dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex min-h-0 w-full flex-col">
-      <div className="flex items-start justify-between gap-3 border-b border-zinc-200 p-3 dark:border-zinc-800">
-        <div className="min-w-0">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">상세/판매 상태</div>
-          <div className="mt-1 truncate text-sm font-black text-zinc-900 dark:text-zinc-50">{card.name}</div>
+        <div className="flex items-start justify-between gap-3 border-b border-zinc-200 bg-white/80 p-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
+          <div className="min-w-0">
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[#6f7f70] dark:text-emerald-300">실시간 상품 확인</div>
+            <div className="mt-1 line-clamp-2 text-sm font-black leading-5 text-zinc-900 dark:text-zinc-50">{card.name}</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 rounded-lg border border-zinc-200 bg-white px-2 py-1 text-xs font-bold text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+          >
+            닫기
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-lg border border-zinc-200 px-2 py-1 text-xs font-bold text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
-        >
-          닫기
-        </button>
-      </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {loading ? (
@@ -984,23 +1020,65 @@ function ListingPreviewPanel({
         {!loading && !error ? (
           <div>
             <div className="grid grid-cols-3 gap-1 bg-zinc-100 p-1 dark:bg-zinc-950">
-              {imageUrls.slice(0, 3).map((src, index) => (
+              {imageUrls.length > 0 ? imageUrls.slice(0, 3).map((src, index) => (
                 <div key={`${src}-${index}`} className="relative aspect-square overflow-hidden rounded-lg bg-zinc-200 dark:bg-zinc-800">
                   <Image
                     src={src}
                     alt={`${card.name} ${index + 1}`}
                     fill
                     sizes="(min-width: 1024px) 140px, 30vw"
-                    className="object-cover"
+                    className={`object-cover ${isSold ? "grayscale" : ""}`}
                   />
+                  {isSold && index === 0 ? (
+                    <div className="absolute inset-x-2 bottom-2 rounded-full bg-black/65 px-2 py-1 text-center text-[10px] font-black text-white">
+                      판매완료
+                    </div>
+                  ) : null}
                 </div>
-              ))}
+              )) : (
+                <div className="col-span-3 flex aspect-[3/1] items-center justify-center rounded-lg bg-zinc-200 text-xs font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                  이미지 없음
+                </div>
+              )}
             </div>
 
             <div className="space-y-3 p-4">
-              <div className={`rounded-xl border p-3 ${isSold ? "border-red-200 bg-red-50 text-red-900 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-100" : "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-100"}`}>
+              <div className={`rounded-xl border p-3 ${isSold ? "border-zinc-200 bg-zinc-50 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-100" : "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-100"}`}>
                 <div className="text-[10px] font-bold uppercase tracking-widest opacity-70">현재 상태</div>
-                <div className="mt-1 text-lg font-black">{saleStatusLabel(detail?.saleStatus ?? "")}</div>
+                <div className="mt-1 flex flex-wrap items-baseline justify-between gap-2">
+                  <div className="text-2xl font-black">{saleStatusLabel(detail?.saleStatus ?? "")}</div>
+                  <div className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                    isSold ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-100" : "bg-emerald-600 text-white"
+                  }`}>
+                    {isSold ? "추천 기록 보관" : "열람 가능"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {metrics.map((metric) => (
+                  <div key={metric.label} className="rounded-lg border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/40">
+                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">{metric.label}</div>
+                    <div className="mt-1 truncate text-sm font-black text-zinc-800 dark:text-zinc-100">{metric.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">판매자</div>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-bold text-zinc-700 dark:text-zinc-200">
+                  <span className="max-w-full truncate">{detail?.seller.name || "판매자 정보 없음"}</span>
+                  {sellerRating ? (
+                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+                      ★{sellerRating}
+                    </span>
+                  ) : null}
+                  {detail?.seller.reviewCount ? (
+                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                      후기 {detail.seller.reviewCount.toLocaleString("ko-KR")}건
+                    </span>
+                  ) : null}
+                </div>
               </div>
 
               <div className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800/60">
@@ -1213,7 +1291,7 @@ export default function PackRevealModal({
       }}
     >
       <div
-        className="flex max-h-[84vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-[rgba(49,66,56,0.16)] dark:border-zinc-800 dark:bg-zinc-900"
+        className="flex max-h-[88vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-[rgba(49,66,56,0.16)] dark:border-zinc-800 dark:bg-zinc-900"
         onClick={(e) => e.stopPropagation()}
       >
         <div className={`sticky top-0 z-10 shrink-0 overflow-hidden border-b border-[#e2dbcf] bg-gradient-to-br p-4 text-[var(--brand-accent-strong)] ${BAND_THEME[band]}`}>
@@ -1223,9 +1301,14 @@ export default function PackRevealModal({
               <p className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest ${BAND_PILL_THEME[band]}`}>
                 {BAND_LABEL[band]}
               </p>
-              <h2 className="mt-1 text-lg font-black tracking-tight">
-                {loading ? "추천 상품 검증 중" : result?.result === "success" ? "추천 완료" : "검증 결과"}
+              <h2 className="mt-1 text-lg font-black tracking-tight sm:text-xl">
+                {loading ? "추천 상품 검증 중" : result?.result === "success" ? "추천 리포트" : "검증 결과"}
               </h2>
+              {!loading && result?.result === "success" ? (
+                <div className="mt-1 text-xs font-semibold text-[#5f6f61] dark:text-zinc-300">
+                  현재 차익, 판매 상태, 시세 근거를 같은 기준으로 확인합니다.
+                </div>
+              ) : null}
             </div>
             {!loading ? (
               <button

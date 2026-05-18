@@ -112,6 +112,19 @@ function currentProfitOrSnapshot(item: RevealItem) {
   return item.marketGapKrw ?? item.expectedProfitMax;
 }
 
+function signedKrw(value: number) {
+  const rounded = Math.round(value);
+  const sign = rounded >= 0 ? "+" : "";
+  return `${sign}${rounded.toLocaleString("ko-KR")}원`;
+}
+
+function profitPercent(item: RevealItem) {
+  if (!item.price || item.price <= 0) return null;
+  const profit = currentProfitOrSnapshot(item);
+  const pct = Math.round((profit / item.price) * 100);
+  return Number.isFinite(pct) ? pct : null;
+}
+
 export default function UserRevealDashboard({ userRef, welcomePending = false }: { userRef: string; welcomePending?: boolean }) {
   const [items, setItems] = useState<RevealItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -534,6 +547,21 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     if (!hideTerminal) return true;
     return listingStateLabel(item.listingState).tone !== "sold";
   }), [hideTerminal, items]);
+  const dashboardSummary = useMemo(() => {
+    const terminalCount = items.filter((item) => listingStateLabel(item.listingState).tone === "sold").length;
+    const activeItems = visibleItems.filter((item) => listingStateLabel(item.listingState).tone !== "sold");
+    const staleCount = activeItems.filter((item) => item.marketStale).length;
+    const avgProfit = activeItems.length > 0
+      ? Math.round(activeItems.reduce((sum, item) => sum + currentProfitOrSnapshot(item), 0) / activeItems.length)
+      : 0;
+    return {
+      visibleCount: visibleItems.length,
+      activeCount: activeItems.length,
+      terminalCount,
+      staleCount,
+      avgProfit,
+    };
+  }, [items, visibleItems]);
   useEffect(() => {
     if (!hideTerminal || selectedPids.size === 0) return;
     const visiblePidSet = new Set(visibleItems.map((item) => item.pid));
@@ -547,20 +575,20 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     // Wave 182b (2026-05-17): 카드 list 에서 손해 신고 버튼 제거 — 사용자 피드백
     //   "모든 카드에 박혀있으니까 거슬려; 한곳에 한개만"
     // → 매물 상세 모달 (PackRevealModal) 안 1곳에만 박음 (매물 컨텍스트 자연스러움).
-    const actionBase = "inline-flex h-9 min-w-[76px] items-center justify-center rounded-lg px-3 text-xs font-black leading-none transition";
+    const actionBase = "inline-flex h-9 min-w-[82px] items-center justify-center rounded-lg px-3 text-xs font-black leading-none transition";
     return (
-      <div className="mt-2 flex flex-wrap items-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={() => openItem(item, "listing")}
-          className={`${actionBase} bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] hover:bg-[#29382f]`}
+          className={`${actionBase} flex-1 bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)] hover:bg-[#29382f] sm:flex-none`}
         >
           상품 보기
         </button>
         <button
           type="button"
           onClick={() => openItem(item, "guide")}
-          className={`${actionBase} border border-[#d5dfd2] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] hover:border-[#b9c9b9] hover:bg-[#edf3ea]`}
+          className={`${actionBase} flex-1 border border-[#d5dfd2] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] hover:border-[#b9c9b9] hover:bg-[#edf3ea] sm:flex-none`}
         >
           공략 보기
         </button>
@@ -569,11 +597,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   }
 
   return (
-    <section className="rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <section className="rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="text-sm font-black text-[#223127] dark:text-zinc-100">최근 본 추천 상품</div>
-          <div className="mt-1 text-xs text-[#6b7269] dark:text-zinc-400">현재 로그인 계정 기준 추천 기록만 검색합니다.</div>
+          <div className="text-base font-black text-[#223127] dark:text-zinc-100">내 추천 보관함</div>
+          <div className="mt-1 text-xs font-semibold text-[#6b7269] dark:text-zinc-400">현재 시세와 판매 상태를 다시 맞춘 추천 기록입니다.</div>
         </div>
         <div className="flex items-center gap-2">
           {/* 2026-05-17: 선택 모드 토글 + 전체 삭제. */}
@@ -608,6 +636,38 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           <div className="rounded-full bg-[#eef6ec] px-3 py-1 text-xs font-black text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-zinc-200">
             {loading ? "로딩" : `${total.toLocaleString("ko-KR")}건`}
           </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-[#e5dccf] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
+          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#8a8276] dark:text-zinc-500">표시 중</div>
+          <div className="mt-1 text-xl font-black tabular-nums text-[#223127] dark:text-zinc-100">{dashboardSummary.visibleCount.toLocaleString("ko-KR")}건</div>
+          {dashboardSummary.terminalCount > 0 ? (
+            <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+              판매완료 {dashboardSummary.terminalCount.toLocaleString("ko-KR")}건 포함
+            </div>
+          ) : null}
+        </div>
+        <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">판매중</div>
+          <div className="mt-1 text-xl font-black tabular-nums text-emerald-800 dark:text-emerald-200">{dashboardSummary.activeCount.toLocaleString("ko-KR")}건</div>
+        </div>
+        <div className="rounded-xl border border-amber-100 bg-amber-50/70 px-3 py-2.5 dark:border-amber-900/50 dark:bg-amber-950/20">
+          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-700 dark:text-amber-300">평균 차익</div>
+          <div className="mt-1 text-xl font-black tabular-nums text-amber-900 dark:text-amber-100">{signedKrw(dashboardSummary.avgProfit)}</div>
+        </div>
+        <div className={`rounded-xl border px-3 py-2.5 ${
+          dashboardSummary.staleCount > 0
+            ? "border-rose-100 bg-rose-50/80 dark:border-rose-900/50 dark:bg-rose-950/20"
+            : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950/40"
+        }`}>
+          <div className={`text-[10px] font-black uppercase tracking-[0.16em] ${
+            dashboardSummary.staleCount > 0 ? "text-rose-700 dark:text-rose-300" : "text-zinc-500 dark:text-zinc-500"
+          }`}>추천 무효</div>
+          <div className={`mt-1 text-xl font-black tabular-nums ${
+            dashboardSummary.staleCount > 0 ? "text-rose-800 dark:text-rose-200" : "text-zinc-700 dark:text-zinc-300"
+          }`}>{dashboardSummary.staleCount.toLocaleString("ko-KR")}건</div>
         </div>
       </div>
 
@@ -784,12 +844,12 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       {error ? <div className="mt-4 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-700">{error}</div> : null}
 
-      <div className="mt-4 grid gap-2 lg:grid-cols-[minmax(180px,1fr)_150px_132px]">
+      <div className="mt-4 grid gap-2 lg:grid-cols-[minmax(220px,1fr)_160px_140px]">
         <input
           value={searchInput}
           onChange={(event) => setSearchInput(event.target.value)}
           placeholder="상품명, PID, 모델명 검색"
-          className="h-11 rounded-xl border border-[#ddd4c7] bg-[#fffaf1] px-3 text-sm font-semibold text-[#223127] outline-none transition placeholder:text-[#9a9389] focus:border-[var(--brand-accent)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+          className="h-11 rounded-xl border border-[#ddd4c7] bg-white px-3 text-sm font-semibold text-[#223127] outline-none transition placeholder:text-[#9a9389] focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
         />
         <select
           value={sort}
@@ -797,7 +857,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             setPage(1);
             setSort(event.target.value as RevealSort);
           }}
-          className="h-11 rounded-xl border border-[#ddd4c7] bg-[#fffaf1] px-3 text-sm font-black text-[#344136] outline-none transition focus:border-[var(--brand-accent)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+          className="h-11 rounded-xl border border-[#ddd4c7] bg-white px-3 text-sm font-black text-[#344136] outline-none transition focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
         >
           {SORT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -805,7 +865,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             </option>
           ))}
         </select>
-        <div className="grid h-11 grid-cols-2 rounded-xl border border-[#ddd4c7] bg-[#fffaf1] p-1 dark:border-zinc-700 dark:bg-zinc-950">
+        <div className="grid h-11 grid-cols-2 rounded-xl border border-[#ddd4c7] bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950">
           <button
             type="button"
             onClick={() => setViewMode("grid")}
@@ -871,7 +931,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         }).length;
         if (terminalCount === 0) return null;
         return (
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[11px] dark:border-zinc-800 dark:bg-zinc-900/40">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[11px] shadow-sm dark:border-zinc-800 dark:bg-zinc-950/40">
             <span className="text-zinc-700 dark:text-zinc-300">
               판매완료된 상품 <b>{terminalCount}건</b>을 기록으로 남겨뒀어요.
             </span>
@@ -902,8 +962,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 onClick={selectMode ? () => togglePid(item.pid) : undefined}
                 className={`relative ${
                   viewMode === "grid"
-                    ? "grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-zinc-50/80 p-2 transition dark:border-zinc-800 dark:bg-zinc-900/50"
-                    : "grid grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-zinc-50/80 p-2 transition dark:border-zinc-800 dark:bg-zinc-900/50 lg:grid-cols-[56px_minmax(0,1fr)]"
+                    ? "grid grid-cols-[72px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-zinc-50/80 p-2.5 transition dark:border-zinc-800 dark:bg-zinc-900/50"
+                    : "grid grid-cols-[60px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-zinc-50/80 p-2.5 transition dark:border-zinc-800 dark:bg-zinc-900/50 lg:grid-cols-[60px_minmax(0,1fr)]"
                 } ${
                   selectMode && selectedPids.has(item.pid)
                     ? "border-rose-400 bg-rose-50 ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/30"
@@ -951,8 +1011,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             onClick={selectMode ? () => togglePid(item.pid) : undefined}
             className={`relative ${
               viewMode === "grid"
-                ? "grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-xl border bg-[#fffdf9] p-2 transition dark:bg-zinc-950/40"
-                : "grid grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-xl border bg-[#fffdf9] p-2 transition dark:bg-zinc-950/40 lg:grid-cols-[56px_minmax(0,1fr)_auto]"
+                ? "grid grid-cols-[76px_minmax(0,1fr)] gap-3 rounded-xl border bg-[#fffdf9] p-2.5 transition dark:bg-zinc-950/40"
+                : "grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-xl border bg-[#fffdf9] p-2.5 transition dark:bg-zinc-950/40 lg:grid-cols-[64px_minmax(0,1fr)_auto]"
             } ${
               selectMode && selectedPids.has(item.pid)
                 ? "border-rose-400 bg-rose-50 ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/30"
@@ -987,7 +1047,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             </div>
             <div className="min-w-0">
               <div className="flex items-start gap-1.5">
-                <div className="min-w-0 flex-1 truncate text-sm font-bold text-[#223127] dark:text-zinc-100">{item.name}</div>
+                <div className="min-w-0 flex-1 truncate text-[15px] font-black leading-5 text-[#223127] dark:text-zinc-100">{item.name}</div>
                 {/* 2026-05-17: 매물 등급 chip (S/A/B/C) — 운영자풀/사용자 reveal 통일. */}
                 <ConditionChip conditionClass={item.marketBasis?.conditionClass ?? null} />
               </div>
@@ -1043,14 +1103,21 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
               {/* Wave 189 (2026-05-18): marketStale=true (현재 시세 < 매입가) 면 "추천 무효" badge 우선 표시.
                   사용자 frustration — 차익 +로 표시되는데 시세가 매입보다 낮음 모순. snapshot vs 실시간
                   시세 mismatch (재계산 cron 없음). 표면 fix: API 가 marketGapKrw 박아서 UI 분기. */}
-              <div className="mt-1 flex flex-wrap items-baseline gap-1.5">
+              <div className={`mt-2 flex flex-wrap items-center gap-1.5 rounded-lg border px-2.5 py-2 ${
+                item.marketStale
+                  ? "border-rose-200 bg-rose-50 dark:border-rose-900/50 dark:bg-rose-950/20"
+                  : "border-emerald-100 bg-emerald-50/70 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+              }`}>
                 {item.marketStale && item.marketGapKrw != null ? (
                   <>
-                    <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-black tabular-nums text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
-                      {item.marketGapKrw.toLocaleString("ko-KR")}원
+                    <span className="text-[10px] font-black uppercase tracking-[0.14em] text-rose-700 dark:text-rose-300">
+                      현재 차익
                     </span>
-                    <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-rose-900 dark:bg-rose-900/60 dark:text-rose-100">
-                      ⚠️ 시세 갱신 — 추천 무효
+                    <span className="text-lg font-black tabular-nums text-rose-800 dark:text-rose-200">
+                      {signedKrw(item.marketGapKrw)}
+                    </span>
+                    <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black text-rose-900 dark:bg-rose-900/60 dark:text-rose-100">
+                      추천 무효
                     </span>
                   </>
                 ) : (
@@ -1065,40 +1132,31 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                       const displayProfit = hasCurrent ? item.marketGapKrw! : item.expectedProfitMax;
                       const snapshotProfit = item.expectedProfitMax;
                       const profitDiverged = hasCurrent && Math.abs(displayProfit - snapshotProfit) >= 5000;
-                      const sign = displayProfit >= 0 ? "+" : "";
+                      const pct = profitPercent(item);
                       return (
                         <>
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-black tabular-nums ${
-                            isTerminal
-                              ? "bg-zinc-100 text-zinc-400 line-through dark:bg-zinc-800 dark:text-zinc-500"
-                              : "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                          <span className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">
+                            현재 차익
+                          </span>
+                          <span className={`text-lg font-black tabular-nums ${
+                            isTerminal ? "text-zinc-400 line-through dark:text-zinc-500" : "text-emerald-800 dark:text-emerald-200"
                           }`}>
                             {item.expectedProfitMin === item.expectedProfitMax || hasCurrent
-                              ? `${sign}${displayProfit.toLocaleString("ko-KR")}원`
+                              ? signedKrw(displayProfit)
                               : `+${item.expectedProfitMin.toLocaleString("ko-KR")}~${item.expectedProfitMax.toLocaleString("ko-KR")}원`}
                           </span>
+                          {pct != null ? (
+                            <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 ring-1 ring-amber-100 dark:bg-zinc-900/50 dark:text-amber-200 dark:ring-amber-900/50">
+                              {pct >= 0 ? "+" : ""}{pct}%
+                            </span>
+                          ) : null}
                           {profitDiverged && !isTerminal && (
-                            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300" title={`추천 당시 +${snapshotProfit.toLocaleString("ko-KR")}원 → 현재 ${sign}${displayProfit.toLocaleString("ko-KR")}원`}>
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/30 dark:text-amber-300" title={`추천 당시 +${snapshotProfit.toLocaleString("ko-KR")}원 → 현재 ${signedKrw(displayProfit)}`}>
                               ↓ 시세 갱신
                             </span>
                           )}
                         </>
                       );
-                    })()}
-                    {(() => {
-                      if (!item.price || item.price <= 0) return null;
-                      const profitForPct = item.marketGapKrw ?? ((item.expectedProfitMin + item.expectedProfitMax) / 2);
-                      const pct = Math.round((profitForPct / item.price) * 100);
-                      const sign = profitForPct >= 0 ? "+" : "";
-                      return Number.isFinite(pct) ? (
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-black tabular-nums ${
-                          isTerminal
-                            ? "bg-zinc-100 text-zinc-400 line-through dark:bg-zinc-800 dark:text-zinc-500"
-                            : "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
-                        }`}>
-                          {sign}{pct}%
-                        </span>
-                      ) : null;
                     })()}
                   </>
                 )}
@@ -1121,8 +1179,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 const verdicts = buildVerdicts({
                   price: item.price,
                   skuMedian: item.marketBasis?.medianPrice ?? null,
-                  expectedProfitMin: item.expectedProfitMin,
-                  expectedProfitMax: item.expectedProfitMax,
+                  expectedProfitMin: currentProfitOrSnapshot(item),
+                  expectedProfitMax: currentProfitOrSnapshot(item),
                   confidence: item.confidence,
                   marketSampleCount: item.marketBasis?.sampleCount ?? null,
                   marketConfidenceLabel: (item.marketBasis?.confidence as "high" | "medium" | "low" | null) ?? null,
