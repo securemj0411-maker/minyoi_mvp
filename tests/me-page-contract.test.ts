@@ -100,6 +100,9 @@ test("/me shows every condition grade as a photo badge and removes duplicate pla
 
   assert.match(chip, /export function ConditionPhotoBadge/);
   assert.match(chip, /PHOTO_BADGE_STYLES/);
+  assert.match(chip, /mark: "S"/);
+  assert.match(chip, /markClassName/);
+  assert.match(chip, /rounded-\[10px\]/);
   assert.match(chip, /unopened:[\s\S]*compactLabel: "미개봉"/);
   assert.match(chip, /mint:[\s\S]*compactLabel: "S급"/);
   assert.match(chip, /clean:[\s\S]*compactLabel: "A급"/);
