@@ -699,7 +699,7 @@ function fixedSafetyCtaClass(tone: RiskTone) {
 
 function RevealProductImage({ card }: { card: RevealCard }) {
   return (
-    <div className="relative -mx-3 h-[145px] w-[calc(100%+1.5rem)] overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-800 sm:mx-0 sm:h-[132px] sm:w-[132px] sm:rounded-lg lg:h-[150px] lg:w-[150px]">
+    <div className="relative left-1/2 h-[145px] w-screen -translate-x-1/2 overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-800 sm:left-auto sm:mx-0 sm:h-[132px] sm:w-[132px] sm:translate-x-0 sm:rounded-lg lg:h-[150px] lg:w-[150px]">
       <ConditionPhotoBadge conditionClass={card.marketBasis?.conditionClass ?? null} />
       {card.thumbnailUrl ? (
         <>

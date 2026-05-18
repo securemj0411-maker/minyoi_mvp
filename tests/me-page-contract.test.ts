@@ -148,7 +148,8 @@ test("/me mobile reveal card keeps safety signals out of the middle content", ()
   assert.match(modal, /triggerLabel=\{safetyScore\.label\}/);
   assert.doesNotMatch(revealSection, /grid-cols-\[104px_minmax/);
   assert.match(modal, /function RevealProductImage/);
-  assert.match(modal, /-mx-3 h-\[145px\] w-\[calc\(100%\+1\.5rem\)\]/);
+  assert.match(modal, /left-1\/2 h-\[145px\] w-screen -translate-x-1\/2/);
+  assert.match(modal, /sm:left-auto sm:mx-0 sm:h-\[132px\] sm:w-\[132px\] sm:translate-x-0/);
   assert.match(modal, /rounded-none/);
   assert.match(modal, /p-0 sm:p-2/);
   assert.match(modal, /scale-\[1\.08\] rounded-none object-contain object-center/);
