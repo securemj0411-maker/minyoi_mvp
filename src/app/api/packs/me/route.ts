@@ -91,9 +91,11 @@ const FEEDBACK_DISPLAY_PRIORITY: Record<string, number> = {
   inaccurate_report: 90,
   loss_report: 80,
   bought: 70,
+  contacted: 65,
   watching: 60,
   interested: 50,
   missed_sold: 40,
+  passed: 35,
   bad_pick: 30,
 };
 

@@ -42,6 +42,7 @@ type Props = {
   onClose: () => void;
   onLinkClicked: (pid: number) => void;
   onFeedback: (pid: number, feedbackType: RevealFeedbackType, note?: string) => void;
+  currentFeedbackType?: string | null;
   onLoadDetail: (pid: number) => Promise<RevealListingDetail>;
   // Wave 182b (2026-05-17): 손해 신고 — 카드 list 에서 빼고 모달 안 1곳에만 박음.
   // optional — pack 열기 흐름 (새 매물 받기) 에서는 안 박힘. user-reveal-dashboard "상품 보기" 에서만 전달.
@@ -60,6 +61,27 @@ type Props = {
 };
 
 type PreviewSide = "left" | "right";
+type TransactionFeedbackType = Extract<RevealFeedbackType, "contacted" | "bought" | "passed">;
+
+const TRANSACTION_STATUS_LABEL: Record<TransactionFeedbackType, string> = {
+  contacted: "문의함",
+  bought: "매수함",
+  passed: "포기함",
+};
+
+const TRANSACTION_ACTIONS: Array<{
+  type: TransactionFeedbackType;
+  label: string;
+  note: string;
+}> = [
+  { type: "contacted", label: "문의했어요", note: "판매자에게 문의함" },
+  { type: "bought", label: "매수했어요", note: "매수 완료" },
+  { type: "passed", label: "포기했어요", note: "이 매물은 진행하지 않음" },
+];
+
+function isTransactionFeedbackType(value: string | null | undefined): value is TransactionFeedbackType {
+  return value === "contacted" || value === "bought" || value === "passed";
+}
 
 const LOADING_STEPS = [
   "AI가 추천 상품을 끌어오고 있습니다...",
@@ -1144,17 +1166,63 @@ function ModalActionFooter({
   card,
   onPreviewGuide,
   onLinkClicked,
+  onFeedback,
+  currentFeedbackType,
   onReportLoss,
   alreadyReportedLoss,
 }: {
   card: RevealCard;
   onPreviewGuide: (card: RevealCard, side: PreviewSide) => void;
   onLinkClicked: (pid: number) => void;
+  onFeedback: (pid: number, feedbackType: RevealFeedbackType, note?: string) => void;
+  currentFeedbackType?: string | null;
   onReportLoss?: (card: RevealCard) => void;
   alreadyReportedLoss?: boolean;
 }) {
+  const [localStatus, setLocalStatus] = useState<TransactionFeedbackType | null>(
+    isTransactionFeedbackType(currentFeedbackType) ? currentFeedbackType : null,
+  );
+
+  useEffect(() => {
+    setLocalStatus(isTransactionFeedbackType(currentFeedbackType) ? currentFeedbackType : null);
+  }, [currentFeedbackType, card.pid]);
+
+  function handleTransactionFeedback(type: TransactionFeedbackType, note: string) {
+    setLocalStatus(type);
+    onFeedback(card.pid, type, note);
+  }
+
   return (
     <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-3 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
+      <div className="mb-2 rounded-xl border border-[#e1dacd] bg-white/85 p-2 dark:border-zinc-800 dark:bg-zinc-950/40">
+        <div className="mb-1.5 flex items-center justify-between gap-2">
+          <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#758174] dark:text-zinc-400">
+            거래 상태
+          </span>
+          <span className="text-[11px] font-bold text-[var(--brand-accent-strong)] dark:text-zinc-200">
+            {localStatus ? TRANSACTION_STATUS_LABEL[localStatus] : "아직 진행 전"}
+          </span>
+        </div>
+        <div className="grid grid-cols-3 gap-1.5">
+          {TRANSACTION_ACTIONS.map((action) => {
+            const active = localStatus === action.type;
+            return (
+              <button
+                key={action.type}
+                type="button"
+                onClick={() => handleTransactionFeedback(action.type, action.note)}
+                className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
+                  active
+                    ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
+                    : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                }`}
+              >
+                {action.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
       <div className="grid grid-cols-2 gap-2">
         <button
           type="button"
@@ -1205,6 +1273,7 @@ export default function PackRevealModal({
   onClose,
   onLinkClicked,
   onFeedback,
+  currentFeedbackType,
   onLoadDetail,
   onReportLoss,
   alreadyReportedLoss,
@@ -1514,6 +1583,8 @@ export default function PackRevealModal({
             card={result.reveals[0]}
             onPreviewGuide={handlePreviewGuide}
             onLinkClicked={onLinkClicked}
+            onFeedback={onFeedback}
+            currentFeedbackType={currentFeedbackType}
             onReportLoss={onReportLoss}
             alreadyReportedLoss={alreadyReportedLoss}
           />

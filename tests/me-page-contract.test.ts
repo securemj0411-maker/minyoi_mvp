@@ -111,3 +111,26 @@ test("/me delete action soft-hides reveals without deleting feedback history", (
   assert.match(migration, /mvp_pack_reveals_visible_user_idx/);
   assert.match(schema, /hidden_at timestamptz/);
 });
+
+test("/me modal exposes transaction state feedback actions", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const dashboard = source("src/components/user-reveal-dashboard.tsx");
+  const feedbackRoute = source("src/app/api/packs/reveals/feedback/route.ts");
+  const migration = source("supabase/migrations/20260518103520_reveal_feedback_transaction_states.sql");
+  const packOpen = source("src/lib/pack-open.ts");
+  const meRoute = source("src/app/api/packs/me/route.ts");
+
+  assert.match(modal, /거래 상태/);
+  assert.match(modal, /문의했어요/);
+  assert.match(modal, /매수했어요/);
+  assert.match(modal, /포기했어요/);
+  assert.match(dashboard, /currentFeedbackType=\{selectedItem\?\.feedbackType \?\? null\}/);
+  assert.match(feedbackRoute, /"contacted"/);
+  assert.match(feedbackRoute, /"passed"/);
+  assert.match(migration, /'contacted'/);
+  assert.match(migration, /'passed'/);
+  assert.match(packOpen, /\| "contacted"/);
+  assert.match(packOpen, /\| "passed"/);
+  assert.match(meRoute, /contacted: 65/);
+  assert.match(meRoute, /passed: 35/);
+});

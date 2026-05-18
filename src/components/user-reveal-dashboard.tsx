@@ -554,6 +554,12 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
   function handleFeedback(pid: number, feedbackType: RevealFeedbackType, note?: string) {
     if (!userRef) return;
+    setItems((prev) => prev.map((item) => (
+      item.pid === pid ? { ...item, feedbackType, feedbackNote: note ?? item.feedbackNote } : item
+    )));
+    setSelectedItem((prev) => (
+      prev?.pid === pid ? { ...prev, feedbackType, feedbackNote: note ?? prev.feedbackNote } : prev
+    ));
     void fetchWithAuth("/api/packs/reveals/feedback", { pid, feedbackType, note }).catch(() => undefined);
   }
 
@@ -1354,6 +1360,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         }}
         onLinkClicked={handleLinkClicked}
         onFeedback={handleFeedback}
+        currentFeedbackType={selectedItem?.feedbackType ?? null}
         onLoadDetail={handleLoadDetail}
         onRetry={() => {
           setSelectedItem(null);

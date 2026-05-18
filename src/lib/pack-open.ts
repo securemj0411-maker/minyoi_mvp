@@ -149,7 +149,16 @@ export type PackOpenInput = {
 // Wave 182 (2026-05-17): loss_report 추가 — 사용자 손해 신고. 즉시 토큰 3개 보상 + 운영자 검수 큐 진입.
 // Wave 182c (2026-05-17): inaccurate_report 추가 — 매수 전 "정보 오류" 즉시 신고 (임계값 낮춤, feedback polling).
 //   loss_report 는 일단 보류 (UI 노출 X) — 운영 검수 + 사용자 행동 데이터 누적 후 재개 검토.
-export type RevealFeedbackType = "interested" | "bought" | "missed_sold" | "bad_pick" | "watching" | "loss_report" | "inaccurate_report";
+export type RevealFeedbackType =
+  | "interested"
+  | "bought"
+  | "missed_sold"
+  | "bad_pick"
+  | "watching"
+  | "contacted"
+  | "passed"
+  | "loss_report"
+  | "inaccurate_report";
 
 export type PackOpenSuccess = {
   result: "success";
