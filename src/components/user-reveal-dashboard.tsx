@@ -708,7 +708,42 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         </div>
       </div>
 
-      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <details className="group mt-3 rounded-xl border border-[#e5dccf] bg-white/75 px-3 py-2 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/40 sm:hidden">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 [&::-webkit-details-marker]:hidden">
+          <div className="min-w-0">
+            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-[#8a8276] dark:text-zinc-500">
+              요약
+            </div>
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs font-black tabular-nums text-[#223127] dark:text-zinc-100">
+              <span>판매중 {dashboardSummary.activeCount.toLocaleString("ko-KR")}건</span>
+              <span className="text-[#b45d19] dark:text-amber-200">평균 {signedKrw(dashboardSummary.avgProfit)}</span>
+              {dashboardSummary.marketClosedCount > 0 ? (
+                <span className="text-zinc-500 dark:text-zinc-300">마감 {dashboardSummary.marketClosedCount.toLocaleString("ko-KR")}건</span>
+              ) : null}
+            </div>
+          </div>
+          <span className="shrink-0 rounded-full bg-[#eef6ec] px-2.5 py-1 text-[11px] font-black text-[var(--brand-accent-strong)] transition group-open:bg-[#dfeedd] dark:bg-zinc-800 dark:text-zinc-200">
+            <span className="group-open:hidden">펼치기</span>
+            <span className="hidden group-open:inline">접기</span>
+          </span>
+        </summary>
+        <div className="mt-2 grid grid-cols-3 gap-1.5 border-t border-[#eee6d9] pt-2 text-center dark:border-zinc-800">
+          <div className="rounded-lg bg-[#f7f2e9] px-2 py-1.5 dark:bg-zinc-900">
+            <div className="text-[9px] font-bold text-[#8a8276] dark:text-zinc-500">표시</div>
+            <div className="text-sm font-black tabular-nums text-[#223127] dark:text-zinc-100">{dashboardSummary.visibleCount.toLocaleString("ko-KR")}</div>
+          </div>
+          <div className="rounded-lg bg-emerald-50 px-2 py-1.5 dark:bg-emerald-950/20">
+            <div className="text-[9px] font-bold text-emerald-700 dark:text-emerald-300">판매중</div>
+            <div className="text-sm font-black tabular-nums text-emerald-800 dark:text-emerald-200">{dashboardSummary.activeCount.toLocaleString("ko-KR")}</div>
+          </div>
+          <div className="rounded-lg bg-zinc-50 px-2 py-1.5 dark:bg-zinc-900">
+            <div className="text-[9px] font-bold text-zinc-500 dark:text-zinc-500">마감</div>
+            <div className="text-sm font-black tabular-nums text-zinc-700 dark:text-zinc-200">{dashboardSummary.marketClosedCount.toLocaleString("ko-KR")}</div>
+          </div>
+        </div>
+      </details>
+
+      <div className="mt-4 hidden gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-[#e5dccf] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
           <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#8a8276] dark:text-zinc-500">표시 중</div>
           <div className="mt-1 text-xl font-black tabular-nums text-[#223127] dark:text-zinc-100">{dashboardSummary.visibleCount.toLocaleString("ko-KR")}건</div>

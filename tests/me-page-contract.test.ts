@@ -42,3 +42,12 @@ test("/me user modal explains recommendation trust in plain language", () => {
   assert.match(modal, /상태가 다른 매물을 섞어 시세를 부풀리지 않아요/);
   assert.doesNotMatch(modal, />\s*band \{card\.band\}/);
 });
+
+test("/me keeps dashboard summary compact on mobile", () => {
+  const dashboard = source("src/components/user-reveal-dashboard.tsx");
+
+  assert.match(dashboard, /sm:hidden/);
+  assert.match(dashboard, /판매중 \{dashboardSummary\.activeCount/);
+  assert.match(dashboard, /평균 \{signedKrw\(dashboardSummary\.avgProfit\)\}/);
+  assert.match(dashboard, /hidden gap-2 sm:grid/);
+});
