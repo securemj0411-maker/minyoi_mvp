@@ -79,7 +79,7 @@ test("/me modal keeps market evidence compact before the graph on mobile", () =>
   assert.match(modal, /compactSourceLabel/);
   assert.match(modal, /표본 \{market\.sampleCount\.toLocaleString/);
   assert.match(modal, /신뢰 \{confidenceLabel\}/);
-  assert.match(modal, /className=\"order-2 space-y-2/);
+  assert.match(modal, /className=\"order-2 mx-3 space-y-2/);
   assert.match(modal, /lg:order-2/);
   assert.match(modal, /hidden sm:inline-flex/);
   assert.match(modal, /그래프 기준 보기/);
@@ -152,8 +152,9 @@ test("/me mobile reveal card keeps safety signals out of the middle content", ()
   assert.match(modal, /sm:left-auto sm:mx-0 sm:h-\[132px\] sm:w-\[132px\] sm:translate-x-0/);
   assert.match(modal, /rounded-none/);
   assert.match(modal, /p-0 sm:p-2/);
-  assert.match(modal, /rounded-none object-cover object-center/);
-  assert.match(modal, /sm:rounded-md sm:object-contain/);
+  assert.match(modal, /scale-\[1\.08\] rounded-none object-contain object-center/);
+  assert.match(modal, /sm:scale-100 sm:rounded-md/);
+  assert.doesNotMatch(modal, /rounded-none object-cover object-center/);
   assert.match(modal, /hidden text-xs font-semibold leading-5/);
   assert.match(modal, /추가 신호 \{hiddenMobileCount\}개/);
   assert.match(modal, /bg-\[#00c471\]/);
@@ -187,7 +188,9 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(modal, /sm:max-h-\[88vh\]/);
   assert.match(modal, /sm:rounded-2xl sm:border/);
   assert.match(modal, /px-2\.5 py-1\.5/);
-  assert.match(modal, /overflow-y-auto px-3 pb-24 pt-0 sm:p-4 sm:pb-28/);
+  assert.match(modal, /overflow-y-auto px-0 pb-24 pt-0 sm:p-4 sm:pb-28/);
+  assert.match(modal, /min-w-0 w-full space-y-2\.5 px-3 sm:px-0/);
+  assert.match(modal, /order-2 mx-3 space-y-2 rounded-2xl/);
   assert.match(modal, /flex min-h-8 items-center/);
   assert.match(modal, /-mx-\[10px\] mt-1 grid grid-cols-2 overflow-hidden bg-\[#d9e1d6\]/);
   assert.match(modal, /min-h-\[62px\] border-0 px-3 py-2 shadow-none sm:min-h-\[62px\] sm:rounded-lg sm:border/);

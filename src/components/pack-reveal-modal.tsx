@@ -719,7 +719,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
                 alt={card.name}
                 fill
                 sizes="(max-width: 639px) 100vw, (max-width: 1023px) 132px, 150px"
-                className="rounded-none object-cover object-center drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)] sm:rounded-md sm:object-contain"
+                className="scale-[1.08] rounded-none object-contain object-center drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)] sm:scale-100 sm:rounded-md"
               />
             </div>
           </div>
@@ -1368,7 +1368,7 @@ function RevealCardItem({
       <div className="order-1 grid gap-3 overflow-hidden rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent sm:rounded-2xl sm:border sm:border-[#dfd6c9] sm:bg-[linear-gradient(180deg,#fffdf9_0%,#fbf6ee_100%)] sm:p-3 sm:shadow-[0_16px_34px_rgba(49,66,56,0.09)] sm:ring-1 sm:ring-white/70 sm:dark:border-zinc-800 sm:dark:bg-none sm:dark:bg-zinc-900 sm:dark:ring-zinc-800/70 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
         <RevealProductImage card={card} />
 
-        <div className="min-w-0 w-full space-y-2.5">
+        <div className="min-w-0 w-full space-y-2.5 px-3 sm:px-0">
           <div className="flex w-full items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="line-clamp-2 text-[17px] font-black leading-6 text-[#18251c] dark:text-zinc-50">
@@ -1466,7 +1466,7 @@ function RevealCardItem({
       {/* 좌측 카드 닫음 — 우측 카드 = 시세 그래프 + 디테일. */}
 
       {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
-      <div className="order-2 space-y-2 rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.08)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-none dark:bg-zinc-900 dark:ring-zinc-800/70 lg:order-2">
+      <div className="order-2 mx-3 space-y-2 rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.08)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-none dark:bg-zinc-900 dark:ring-zinc-800/70 sm:mx-0 lg:order-2">
         <div className="flex items-center justify-between gap-2">
           <div className="text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
             시세 그래프 · 시장 분석
@@ -2074,10 +2074,10 @@ export default function PackRevealModal({
         <div
           key={activeRevealPid ?? "empty"}
           ref={scrollAreaRef}
-          className="min-h-0 flex-1 overflow-y-auto px-3 pb-24 pt-0 sm:p-4 sm:pb-28"
+          className="min-h-0 flex-1 overflow-y-auto px-0 pb-24 pt-0 sm:p-4 sm:pb-28"
         >
           {displayLoading ? (
-            <div className="space-y-4">
+            <div className="space-y-4 px-3 sm:px-0">
               <LoadingStage completing={completing} />
               <div className="animate-pulse">
                 <RevealResultSkeleton />
