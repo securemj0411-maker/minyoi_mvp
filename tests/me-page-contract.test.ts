@@ -173,7 +173,9 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(modal, /flex min-h-8 items-center/);
   assert.match(modal, /aria-label="상세 닫기"/);
   assert.match(modal, />←<\/span>/);
-  assert.match(modal, />\s*추천 상세\s*<\/div>/);
+  assert.doesNotMatch(modal, />\s*추천 상세\s*<\/div>/);
+  assert.match(modal, /min-w-0 flex-1" aria-hidden="true"/);
+  assert.match(modal, /inline-flex h-9 shrink-0 items-center rounded-xl bg-\[var\(--brand-accent-strong\)\] px-3/);
   assert.match(modal, />\s*대시보드\s*<\/button>/);
   assert.doesNotMatch(modal, /득템잡이 홈으로 이동/);
   assert.doesNotMatch(modal, /<span className="sm:hidden">뒤로<\/span>/);

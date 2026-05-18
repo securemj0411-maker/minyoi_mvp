@@ -2054,14 +2054,12 @@ export default function PackRevealModal({
             ) : (
               <span className="h-8 w-8" aria-hidden="true" />
             )}
-            <div className="min-w-0 flex-1 text-center text-[11px] font-black uppercase tracking-[0.16em] text-[#7a8478] dark:text-zinc-400">
-              추천 상세
-            </div>
+            <div className="min-w-0 flex-1" aria-hidden="true" />
             {!loading ? (
               <button
                 type="button"
                 onClick={handleClose}
-                className="shrink-0 rounded-full border border-[#d7d1c5] bg-white/80 px-3 py-1.5 text-xs font-black text-[var(--brand-accent-strong)] shadow-sm backdrop-blur transition hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                className="inline-flex h-9 shrink-0 items-center rounded-xl bg-[var(--brand-accent-strong)] px-3 text-xs font-black text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] transition hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-950"
               >
                 대시보드
               </button>
