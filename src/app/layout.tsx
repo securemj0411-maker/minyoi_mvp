@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import AppFooter from "@/components/app-footer";
 import AppNav from "@/components/app-nav";
 import SafetyStatsMarquee from "@/components/safety-stats-marquee";
+import SiteHelpFaq from "@/components/site-help-faq";
 import "./globals.css";
 
 // Wave 106: 모바일 viewport + theme color (브라우저 상단 색).
@@ -61,6 +62,7 @@ export default function RootLayout({
         <SafetyStatsMarquee />
         <div className="flex-1">{children}</div>
         <AppFooter />
+        <SiteHelpFaq />
       </body>
     </html>
   );
