@@ -386,6 +386,38 @@ async function assertRevealAccess(userRef: string, pid: number): Promise<void> {
 export type MarketStatsByCondition = Map<string, MarketPriceRow>;
 export type MarketStatsMap = Map<string, MarketStatsByCondition>;
 
+type TtlEntry<T> = {
+  value: T;
+  expiresAt: number;
+};
+
+const MARKET_STATS_CACHE_TTL_MS = ttlFromEnv("PACK_MARKET_STATS_CACHE_TTL_MS", 5 * 60 * 1000);
+const MARKET_VELOCITY_CACHE_TTL_MS = ttlFromEnv("PACK_MARKET_VELOCITY_CACHE_TTL_MS", 5 * 60 * 1000);
+const REFERENCE_PRICE_CACHE_TTL_MS = ttlFromEnv("PACK_REFERENCE_PRICE_CACHE_TTL_MS", 10 * 60 * 1000);
+
+const marketStatsCache = new Map<string, TtlEntry<MarketStatsByCondition>>();
+const marketVelocityCache = new Map<string, TtlEntry<MarketVelocityRow | null>>();
+const referencePriceCache = new Map<string, TtlEntry<number | null>>();
+
+function ttlFromEnv(name: string, fallbackMs: number) {
+  const raw = Number(process.env[name]);
+  return Number.isFinite(raw) && raw >= 0 ? raw : fallbackMs;
+}
+
+function readTtl<T>(cache: Map<string, TtlEntry<T>>, key: string, now: number): T | undefined {
+  const entry = cache.get(key);
+  if (!entry) return undefined;
+  if (entry.expiresAt <= now) {
+    cache.delete(key);
+    return undefined;
+  }
+  return entry.value;
+}
+
+function writeTtl<T>(cache: Map<string, TtlEntry<T>>, key: string, value: T, ttlMs: number, now: number) {
+  cache.set(key, { value, expiresAt: now + ttlMs });
+}
+
 /**
  * Wave 130 (2026-05-16): mvp_candidate_pool에서 condition_class batch fetch.
  * RPC reserve_mvp_pool_candidates가 condition_class를 return하지 않으므로 별도 fetch.
@@ -443,6 +475,19 @@ export async function fetchPoolConditionClassByPids(pids: number[]): Promise<Map
 export async function fetchLatestMarketStats(comparableKeys: (string | null)[]): Promise<MarketStatsMap> {
   const unique = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
   if (unique.length === 0) return new Map();
+  const now = Date.now();
+  const map: MarketStatsMap = new Map();
+  const missing: string[] = [];
+  for (const key of unique) {
+    const cached = readTtl(marketStatsCache, key, now);
+    if (cached) {
+      map.set(key, cached);
+    } else {
+      missing.push(key);
+    }
+  }
+  if (missing.length === 0) return map;
+
   const cols = [
     "comparable_key",
     "condition_class",
@@ -457,22 +502,27 @@ export async function fetchLatestMarketStats(comparableKeys: (string | null)[]):
     "confidence",
     "computed_at",
   ].join(",");
-  const encoded = unique.map((key) => encodeURIComponent(key)).join(",");
+  const encoded = missing.map((key) => encodeURIComponent(key)).join(",");
   // Wave 130: condition별 row 모두 fetch — comparable_key 당 최대 6 class (mint/clean/normal/worn/low_batt + 'all' legacy).
   // limit 늘려서 모든 condition 가져오게.
   const res = await callSupabase(
-    `/mvp_market_price_daily?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(200, unique.length * 12)}`,
+    `/mvp_market_price_daily?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(200, missing.length * 12)}`,
     { headers: authHeaders() },
   );
   const rows = (await res.json()) as MarketPriceRow[];
-  const map: MarketStatsMap = new Map();
+  const fetched: MarketStatsMap = new Map();
   // 같은 comparable_key + condition_class 조합에서 가장 최신 row만 보존 (order by date desc).
   for (const row of rows) {
-    const byCondition = map.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
+    const byCondition = fetched.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
     if (!byCondition.has(row.condition_class)) {
       byCondition.set(row.condition_class, row);
     }
-    map.set(row.comparable_key, byCondition);
+    fetched.set(row.comparable_key, byCondition);
+  }
+  for (const key of missing) {
+    const byCondition = fetched.get(key) ?? new Map<string, MarketPriceRow>();
+    writeTtl(marketStatsCache, key, byCondition, MARKET_STATS_CACHE_TTL_MS, now);
+    map.set(key, byCondition);
   }
   return map;
 }
@@ -484,6 +534,7 @@ export async function fetchLatestMarketStats(comparableKeys: (string | null)[]):
 export async function fetchReferencePrices(comparableKeys: (string | null)[]): Promise<Map<string, number>> {
   const unique = [...new Set(comparableKeys.filter((k): k is string => Boolean(k)))];
   if (unique.length === 0) return new Map();
+  const now = Date.now();
   const queryKeys = new Set(unique);
   // Wave 207: historical AirPods Pro 2 rows use the unified key, while the
   // reference scraper originally stored connector-specific keys only.
@@ -491,23 +542,45 @@ export async function fetchReferencePrices(comparableKeys: (string | null)[]): P
     queryKeys.add("airpods|airpods_pro_2_usbc|usbc");
     queryKeys.add("airpods|airpods_pro_2_lightning|lightning");
   }
-  const encoded = [...queryKeys].map((k) => encodeURIComponent(k)).join(",");
-  const res = await callSupabase(
-    `/mvp_reference_prices?select=comparable_key,effective_price&comparable_key=in.(${encoded})&effective_price=not.is.null&limit=${Math.max(100, queryKeys.size * 2)}`,
-    { headers: authHeaders() },
-  );
-  const parsed = await res.json();
-  const rows = Array.isArray(parsed) ? (parsed as Array<{ comparable_key: string; effective_price: number }>) : [];
   const map = new Map<string, number>();
-  for (const row of rows) {
-    if (row.effective_price > 0) map.set(row.comparable_key, Number(row.effective_price));
+  const missing: string[] = [];
+  for (const key of queryKeys) {
+    const cached = readTtl(referencePriceCache, key, now);
+    if (cached === undefined) {
+      missing.push(key);
+    } else if (cached != null && cached > 0) {
+      map.set(key, cached);
+    }
+  }
+  if (missing.length > 0) {
+    const encoded = missing.map((k) => encodeURIComponent(k)).join(",");
+    const res = await callSupabase(
+      `/mvp_reference_prices?select=comparable_key,effective_price&comparable_key=in.(${encoded})&effective_price=not.is.null&limit=${Math.max(100, missing.length * 2)}`,
+      { headers: authHeaders() },
+    );
+    const parsed = await res.json();
+    const rows = Array.isArray(parsed) ? (parsed as Array<{ comparable_key: string; effective_price: number }>) : [];
+    const fetched = new Map<string, number>();
+    for (const row of rows) {
+      if (row.effective_price > 0) {
+        const price = Number(row.effective_price);
+        fetched.set(row.comparable_key, price);
+        map.set(row.comparable_key, price);
+      }
+    }
+    for (const key of missing) {
+      writeTtl(referencePriceCache, key, fetched.get(key) ?? null, REFERENCE_PRICE_CACHE_TTL_MS, now);
+    }
   }
   if (!map.has("airpods|airpods_pro_2") && unique.includes("airpods|airpods_pro_2")) {
     const aliasPrice =
       map.get("airpods|airpods_pro_2_usbc|usbc") ??
       map.get("airpods|airpods_pro_2_lightning|lightning") ??
       null;
-    if (aliasPrice != null && aliasPrice > 0) map.set("airpods|airpods_pro_2", aliasPrice);
+    if (aliasPrice != null && aliasPrice > 0) {
+      map.set("airpods|airpods_pro_2", aliasPrice);
+      writeTtl(referencePriceCache, "airpods|airpods_pro_2", aliasPrice, REFERENCE_PRICE_CACHE_TTL_MS, now);
+    }
   }
   return map;
 }
@@ -515,6 +588,19 @@ export async function fetchReferencePrices(comparableKeys: (string | null)[]): P
 export async function fetchLatestMarketVelocity(comparableKeys: (string | null)[]): Promise<Map<string, MarketVelocityRow>> {
   const unique = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
   if (unique.length === 0) return new Map();
+  const now = Date.now();
+  const latest = new Map<string, MarketVelocityRow>();
+  const missing: string[] = [];
+  for (const key of unique) {
+    const cached = readTtl(marketVelocityCache, key, now);
+    if (cached === undefined) {
+      missing.push(key);
+    } else if (cached) {
+      latest.set(key, cached);
+    }
+  }
+  if (missing.length === 0) return latest;
+
   const cols = [
     "comparable_key",
     "category",
@@ -529,15 +615,20 @@ export async function fetchLatestMarketVelocity(comparableKeys: (string | null)[
     "clock_basis",
     "computed_at",
   ].join(",");
-  const encoded = unique.map((key) => encodeURIComponent(key)).join(",");
+  const encoded = missing.map((key) => encodeURIComponent(key)).join(",");
   const res = await callSupabase(
-    `/mvp_market_velocity_daily?select=${cols}&comparable_key=in.(${encoded})&confidence=in.(high,medium)&order=date.desc,computed_at.desc&limit=${Math.max(100, unique.length * 5)}`,
+    `/mvp_market_velocity_daily?select=${cols}&comparable_key=in.(${encoded})&confidence=in.(high,medium)&order=date.desc,computed_at.desc&limit=${Math.max(100, missing.length * 5)}`,
     { headers: authHeaders() },
   );
   const rows = (await res.json()) as MarketVelocityRow[];
-  const latest = new Map<string, MarketVelocityRow>();
+  const fetched = new Map<string, MarketVelocityRow>();
   for (const row of rows) {
-    if (!latest.has(row.comparable_key)) latest.set(row.comparable_key, row);
+    if (!fetched.has(row.comparable_key)) fetched.set(row.comparable_key, row);
+  }
+  for (const key of missing) {
+    const row = fetched.get(key) ?? null;
+    writeTtl(marketVelocityCache, key, row, MARKET_VELOCITY_CACHE_TTL_MS, now);
+    if (row) latest.set(key, row);
   }
   return latest;
 }

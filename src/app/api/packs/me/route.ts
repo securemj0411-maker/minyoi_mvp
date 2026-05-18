@@ -166,12 +166,14 @@ function matchesSearch(item: RevealItem, query: string) {
 }
 
 function compareItems(sort: RevealSort) {
+  const lowProfit = (item: RevealItem) => item.marketGapKrw ?? item.expectedProfitMin;
+  const highProfit = (item: RevealItem) => item.marketGapKrw ?? item.expectedProfitMax;
   return (a: RevealItem, b: RevealItem) => {
     if (sort === "oldest") return Date.parse(a.revealedAt) - Date.parse(b.revealedAt);
     if (sort === "price_low") return a.price - b.price || Date.parse(b.revealedAt) - Date.parse(a.revealedAt);
     if (sort === "price_high") return b.price - a.price || Date.parse(b.revealedAt) - Date.parse(a.revealedAt);
-    if (sort === "profit_low") return a.expectedProfitMin - b.expectedProfitMin || Date.parse(b.revealedAt) - Date.parse(a.revealedAt);
-    if (sort === "profit_high") return b.expectedProfitMax - a.expectedProfitMax || Date.parse(b.revealedAt) - Date.parse(a.revealedAt);
+    if (sort === "profit_low") return lowProfit(a) - lowProfit(b) || Date.parse(b.revealedAt) - Date.parse(a.revealedAt);
+    if (sort === "profit_high") return highProfit(b) - highProfit(a) || Date.parse(b.revealedAt) - Date.parse(a.revealedAt);
     return Date.parse(b.revealedAt) - Date.parse(a.revealedAt);
   };
 }
