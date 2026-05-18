@@ -174,6 +174,10 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   assert.match(modal, /className="group flex w-full min-w-0 gap-3/);
   assert.match(modal, /h-\[86px\] w-\[86px\]/);
   assert.match(modal, /pb-24[\s\S]*sm:pb-28/);
+  assert.match(modal, /const scrollAreaRef = useRef<HTMLDivElement \| null>\(null\)/);
+  assert.match(modal, /const activeRevealPid = result\?\.result === "success" \? result\.reveals\[0\]\?\.pid \?\? null : null/);
+  assert.match(modal, /scrollAreaRef\.current\?\.scrollTo\(\{ top: 0, behavior: "smooth" \}\)/);
+  assert.match(modal, /ref=\{scrollAreaRef\}/);
   assert.ok(relatedIndex >= 0 && footerIndex > relatedIndex && fixedCtaIndex > footerIndex);
   assert.doesNotMatch(modal, /최근 검증 시점이 오래된 카드/);
   assert.doesNotMatch(modal, />\s*돌아가기\s*</);

@@ -1648,6 +1648,8 @@ export default function PackRevealModal({
   const [previewGuideError, setPreviewGuideError] = useState<string | null>(null);
   const [previewSide, setPreviewSide] = useState<PreviewSide>("right");
   const consumedInitialPreviewSeedRef = useRef<string | number | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+  const activeRevealPid = result?.result === "success" ? result.reveals[0]?.pid ?? null : null;
 
   // Wave 76: loading 종료 후 LoadingStage를 잠깐 더 보여줘서 100% 도달 + smooth
   // 카드 reveal. 이전엔 응답 도착 시 중간 % 상태에서 갑자기 카드 노출됐음.
@@ -1765,6 +1767,11 @@ export default function PackRevealModal({
     onLoadDetail,
   ]);
 
+  useEffect(() => {
+    if (!open || activeRevealPid == null) return;
+    scrollAreaRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [open, activeRevealPid]);
+
   if (!open) return null;
 
   return (
@@ -1807,7 +1814,7 @@ export default function PackRevealModal({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-3 pb-24 sm:p-4 sm:pb-28">
+        <div ref={scrollAreaRef} className="min-h-0 flex-1 overflow-y-auto p-3 pb-24 sm:p-4 sm:pb-28">
           {displayLoading ? (
             <div className="space-y-4">
               <LoadingStage completing={completing} />
