@@ -121,6 +121,57 @@ function marketSampleLabel(card: RevealCard) {
   return "표본 부족";
 }
 
+function SkeletonLine({ className = "" }: { className?: string }) {
+  return <div className={`rounded-full bg-zinc-200/80 dark:bg-zinc-800 ${className}`} />;
+}
+
+function RevealResultSkeleton() {
+  return (
+    <div className="grid gap-3 lg:grid-cols-2" aria-hidden="true">
+      <div className="grid gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
+        <div className="aspect-square rounded-lg bg-zinc-200/80 dark:bg-zinc-800 sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]" />
+        <div className="min-w-0 space-y-3">
+          <SkeletonLine className="h-4 w-4/5" />
+          <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-3 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+            <SkeletonLine className="h-3 w-20 bg-emerald-200/80 dark:bg-emerald-900/60" />
+            <SkeletonLine className="mt-2 h-7 w-36 bg-emerald-200/80 dark:bg-emerald-900/60" />
+            <SkeletonLine className="mt-2 h-3 w-52" />
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <SkeletonLine className="h-5 w-16" />
+            <SkeletonLine className="h-5 w-20" />
+            <SkeletonLine className="h-5 w-14" />
+          </div>
+          <div className="rounded-lg border border-[#e2d9cb] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40">
+            <SkeletonLine className="h-3 w-24" />
+            <SkeletonLine className="mt-2 h-4 w-4/5" />
+            <SkeletonLine className="mt-2 h-3 w-2/3" />
+          </div>
+        </div>
+      </div>
+      <div className="space-y-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
+        <SkeletonLine className="h-3 w-36" />
+        <div className="h-[190px] rounded-md bg-white p-3 dark:bg-zinc-900">
+          <div className="flex h-full items-end gap-2">
+            {[56, 82, 48, 68, 92, 74, 60].map((height, idx) => (
+              <div
+                key={idx}
+                className="flex-1 rounded-t bg-zinc-200/80 dark:bg-zinc-800"
+                style={{ height: `${height}%` }}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="rounded-lg border border-[#d8e2d7] bg-[var(--brand-accent-soft)] px-4 py-3 dark:border-zinc-800 dark:bg-zinc-800/60">
+          <SkeletonLine className="h-3 w-32 bg-emerald-200/80 dark:bg-emerald-900/60" />
+          <SkeletonLine className="mt-2 h-7 w-48 bg-emerald-200/80 dark:bg-emerald-900/60" />
+          <SkeletonLine className="mt-2 h-3 w-5/6" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // 2026-05-15 (사용자 코멘트 pid 405627929 — "왜 신뢰 100%? 리뷰도 없는데?"):
 // 신뢰도 점수가 어떤 근거로 나왔는지 사용자에게 보여줌. 클릭 시 펼침.
 // 모델 정확도(파서 매칭) + 시세 표본 + 시세 신뢰 등급 + 회전 속도 + 위험 키워드.
@@ -1094,7 +1145,14 @@ export default function PackRevealModal({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
-          {displayLoading ? <LoadingStage completing={completing} /> : null}
+          {displayLoading ? (
+            <div className="space-y-4">
+              <LoadingStage completing={completing} />
+              <div className="animate-pulse">
+                <RevealResultSkeleton />
+              </div>
+            </div>
+          ) : null}
 
           {!displayLoading && result?.result === "success" ? (
             <div className="space-y-4">

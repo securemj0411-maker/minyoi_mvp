@@ -26,6 +26,36 @@ function krwShort(value: number): string {
   return `${Math.round(value / 1000)}천`;
 }
 
+function ChartSkeleton() {
+  return (
+    <div className="animate-pulse rounded-md bg-white px-2 py-2 dark:bg-zinc-900" aria-busy="true">
+      <div className="flex items-center justify-between gap-2">
+        <div className="h-3 w-24 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+        <div className="flex gap-2">
+          <div className="h-3 w-10 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-3 w-10 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-3 w-12 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+        </div>
+      </div>
+      <div className="mt-2 h-[150px] rounded bg-zinc-50 p-3 dark:bg-zinc-950/40">
+        <div className="flex h-full items-end gap-2">
+          {[48, 70, 58, 84, 66, 90, 74].map((height, idx) => (
+            <div
+              key={idx}
+              className="flex-1 rounded-t bg-zinc-200 dark:bg-zinc-800"
+              style={{ height: `${height}%` }}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="mt-2 flex items-center justify-between">
+        <div className="h-3 w-28 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+        <div className="h-3 w-24 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+      </div>
+    </div>
+  );
+}
+
 export default function MarketHistoryChart({
   comparableKey,
   currentPrice,
@@ -82,7 +112,7 @@ export default function MarketHistoryChart({
     );
   }
   if (loading) {
-    return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-400 dark:bg-zinc-900">시세 history 불러오는 중…</div>;
+    return <ChartSkeleton />;
   }
   if (error) {
     // 2026-05-16: rate limit 429 친절한 메시지로 변환. 외부 시스템 노출 차단.

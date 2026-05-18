@@ -2946,28 +2946,30 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     const disappearedMedian = disappeared.median;
     // 2026-05-15 (사용자 베타테스터 보고): sold ≥ 5 미만이면 active 100% fallback 됐었음.
     // 예: iPad 10세대 sold=4, active=22 → blended가 active median(38만)만 박힘 → 실제 거래가(35만) 무시.
-    // 수정: sold 1건 이상이면 거래가 반영 (50/50). sold 많을수록 weight 증가.
-    const blendedMedian =
-      soldMedian != null && sold.count >= 8 && activeMedian != null && active.count >= 5
-        ? Math.round((soldMedian * 0.7) + (activeMedian * 0.3))
-        : soldMedian != null && sold.count >= 5 && activeMedian != null
-          ? Math.round((soldMedian * 0.6) + (activeMedian * 0.4))
-          : soldMedian != null && sold.count >= 5
-            ? soldMedian
-            : soldMedian != null && sold.count >= 1 && activeMedian != null
-              ? Math.round((soldMedian * 0.5) + (activeMedian * 0.5))
-              : soldMedian != null && sold.count >= 1
-                ? soldMedian
-                : activeMedian != null
-                  // 2026-05-15: sold 0건 + 호가만 → 호가 × 0.92 (한국 중고시장 평균 네고율 5~15% 중간값 추정).
-                  // 호가 100%는 비현실적 — 셀러 부른 가격이고 실거래는 보통 낮음. 보수적 추정 (정확성 > recall, LAUNCH_PLAN §12b).
-                  // TODO (2026-05-29 이후, 베타 데이터 1~2주 누적 후): 실제 거래 vs 호가 차이 측정해서 카테고리별 factor로 교체.
-                  // 측정 방법 — 사용자 카드 클릭 → 번개장터 가서 거래 시도 결과 telegram 피드백 → A/B 데이터로 0.92 검증.
-                  // 카테고리별 추정치: 휴대폰 ~0.95 (네고율 5%), 가전/노트북 ~0.88 (네고율 12%), 패션 ~0.80 (네고율 20%).
-                  ? Math.round(activeMedian * 0.92)
-                  : disappearedMedian != null && disappeared.count >= 8
-                    ? Math.round(disappearedMedian * 0.9)
-                    : disappearedMedian;
+    // 2026-05-18 Wave 221: sold 1건을 50%로 섞으면 저가 거래 1건이 시세를 붕괴시킴.
+    // sold 표본이 적을수록 active anchor를 더 강하게 유지하고, sold 표본이 쌓이면 거래가 가중치를 높인다.
+    const blendedMedian = (() => {
+      if (soldMedian != null && activeMedian != null) {
+        if (sold.count >= 8 && active.count >= 5) return Math.round((soldMedian * 0.7) + (activeMedian * 0.3));
+        if (sold.count >= 5) return Math.round((soldMedian * 0.6) + (activeMedian * 0.4));
+        if (sold.count >= 3) return Math.round((soldMedian * 0.45) + (activeMedian * 0.55));
+        if (sold.count >= 1 && active.count >= 5) return Math.round((soldMedian * 0.3) + (activeMedian * 0.7));
+        if (sold.count >= 1 && active.count >= 3) return Math.round((soldMedian * 0.25) + (activeMedian * 0.75));
+        if (sold.count >= 1) return Math.round((soldMedian * 0.4) + (activeMedian * 0.6));
+      }
+      if (soldMedian != null && sold.count >= 1) return soldMedian;
+      if (activeMedian != null) {
+        // 2026-05-15: sold 0건 + 호가만 → 호가 × 0.92 (한국 중고시장 평균 네고율 5~15% 중간값 추정).
+        // 호가 100%는 비현실적 — 셀러 부른 가격이고 실거래는 보통 낮음. 보수적 추정 (정확성 > recall, LAUNCH_PLAN §12b).
+        // TODO (2026-05-29 이후, 베타 데이터 1~2주 누적 후): 실제 거래 vs 호가 차이 측정해서 카테고리별 factor로 교체.
+        // 측정 방법 — 사용자 카드 클릭 → 번개장터 가서 거래 시도 결과 telegram 피드백 → A/B 데이터로 0.92 검증.
+        // 카테고리별 추정치: 휴대폰 ~0.95 (네고율 5%), 가전/노트북 ~0.88 (네고율 12%), 패션 ~0.80 (네고율 20%).
+        return Math.round(activeMedian * 0.92);
+      }
+      return disappearedMedian != null && disappeared.count >= 8
+        ? Math.round(disappearedMedian * 0.9)
+        : disappearedMedian;
+    })();
     const confidenceBasis = sold.count >= 8 ? sold.count : active.count;
     const confidence = confidenceBasis >= 20 ? "high" : confidenceBasis >= 8 ? "medium" : "low";
     return {

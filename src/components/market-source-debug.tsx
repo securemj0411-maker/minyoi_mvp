@@ -87,6 +87,64 @@ function saleStatusLabel(s: string | null) {
   return s;
 }
 
+function MarketSourceDebugSkeleton() {
+  const line = (className: string) => <div className={`rounded-full bg-zinc-200 dark:bg-zinc-800 ${className}`} />;
+  return (
+    <div className="animate-pulse space-y-3" aria-busy="true">
+      <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+        <div className="flex gap-3">
+          <div className="h-24 w-24 shrink-0 rounded-lg bg-emerald-100 dark:bg-emerald-900/50" />
+          <div className="min-w-0 flex-1 space-y-2">
+            {line("h-3 w-32 bg-emerald-100 dark:bg-emerald-900/50")}
+            {line("h-4 w-4/5")}
+            {line("h-5 w-56")}
+            {line("h-3 w-44")}
+            {line("h-3 w-64 max-w-full")}
+          </div>
+        </div>
+      </div>
+      <div className="rounded-md bg-zinc-50 px-2 py-2 dark:bg-zinc-800/50">
+        <div className="flex flex-wrap gap-2">
+          {line("h-3 w-20")}
+          {line("h-3 w-28")}
+          {line("h-3 w-32")}
+        </div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-md bg-white p-3 ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800">
+          {line("h-3 w-40")}
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div key={idx} className="h-3 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            ))}
+          </div>
+        </div>
+        <div className="rounded-md bg-white p-3 ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800">
+          {line("h-3 w-36")}
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} className="h-3 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        {line("h-3 w-72 max-w-full")}
+        {Array.from({ length: 3 }).map((_, idx) => (
+          <div key={idx} className="flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-2 py-1.5 dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="h-10 w-10 shrink-0 rounded bg-zinc-200 dark:bg-zinc-800" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              {line("h-3 w-4/5")}
+              {line("h-3 w-2/3")}
+            </div>
+            {line("h-4 w-16")}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function MarketSourceDebug({
   pid,
   ourPrice,
@@ -253,7 +311,7 @@ export function MarketSourceDebug({
 
             {/* Body — scrollable */}
             <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3 text-xs">
-              {loading && <div className="text-zinc-500">불러오는 중...</div>}
+              {loading && !data && <MarketSourceDebugSkeleton />}
               {error && <div className="rounded border border-rose-300 bg-rose-50 px-3 py-2 text-rose-700 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300">에러: {error}</div>}
               {data && (
                 <>
