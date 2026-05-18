@@ -8098,6 +8098,64 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "신발", "운동화", "discovery channel"],
     msrpKrw: 119000, released: 2018,
   },
+  // Wave 215 (2026-05-19): Yeezy 신발 + BAPE STA + Stussy 8 Ball — 매물 검증.
+  // Yeezy: 신발 매물 매우 많음 (Boost 350 21 / Slide 8 / Foam 8). 가품 risk 큼 — mustNotContain 강력.
+  {
+    id: "shoe-yeezy-boost-350",
+    brand: "Yeezy x Adidas", category: "shoe", laneKey: "yeezy_boost_350",
+    modelName: "Yeezy Boost 350 (V1/V2)",
+    aliases: ["Yeezy Boost 350", "이지 부스트 350", "Yeezy 350"],
+    mustContain: [["yeezy", "이지"], ["350", "boost 350"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "이지페이", "이지카", "이지쉐어", "이지팟", "이지에어웨이", "boost 500", "boost 700", "slide", "슬라이드", "foam", "폼"],
+    msrpKrw: 290000, released: 2015,
+  },
+  {
+    id: "shoe-yeezy-boost-500-700",
+    brand: "Yeezy x Adidas", category: "shoe", laneKey: "yeezy_boost_500_700",
+    modelName: "Yeezy Boost 500 / 700",
+    aliases: ["Yeezy Boost 500", "Yeezy Boost 700", "이지 부스트 500", "이지 부스트 700"],
+    mustContain: [["yeezy", "이지"], ["boost 500", "boost 700", "500", "700"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "이지페이", "이지카", "boost 350", "350", "slide", "슬라이드", "foam", "폼"],
+    msrpKrw: 320000, released: 2017,
+  },
+  {
+    id: "shoe-yeezy-slide",
+    brand: "Yeezy x Adidas", category: "shoe", laneKey: "yeezy_slide",
+    modelName: "Yeezy Slide",
+    aliases: ["Yeezy Slide", "이지 슬라이드", "이지슬라이드"],
+    mustContain: [["yeezy", "이지"], ["slide", "슬라이드"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "이지페이", "이지카", "boost", "350", "500", "700", "foam", "폼"],
+    msrpKrw: 110000, released: 2019,
+  },
+  {
+    id: "shoe-yeezy-foam-runner",
+    brand: "Yeezy x Adidas", category: "shoe", laneKey: "yeezy_foam_runner",
+    modelName: "Yeezy Foam Runner",
+    aliases: ["Yeezy Foam Runner", "이지 폼 러너", "이지 폼", "Foam RNR"],
+    mustContain: [["yeezy", "이지"], ["foam", "폼 러너", "폼러너"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "이지페이", "이지카", "boost", "350", "500", "700", "slide", "슬라이드"],
+    msrpKrw: 110000, released: 2020,
+  },
+  // BAPE STA — 신발 한정
+  {
+    id: "shoe-bape-sta",
+    brand: "A Bathing Ape (BAPE)", category: "shoe", laneKey: "bape_sta",
+    modelName: "BAPE STA (Bapesta 시그니처 신발)",
+    aliases: ["BAPE STA", "Bapesta", "베이프스타", "베이프 스타"],
+    mustContain: [["bape", "베이프"], ["sta", "스타"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "샤크 후드", "shark hoodie", "후드", "hoodie", "티셔츠"],
+    msrpKrw: 390000, released: 2002,
+  },
+  // Stussy 8 Ball Knit — 한정
+  {
+    id: "clothing-stussy-8ball-knit",
+    brand: "Stussy", category: "clothing", laneKey: "stussy_8ball_knit",
+    modelName: "Stüssy 8 Ball Knit Sweater (한정)",
+    aliases: ["Stussy 8 Ball Knit", "스투시 8볼 니트", "8 Ball Knit"],
+    mustContain: [["stussy", "스투시", "stüssy"], ["8 ball", "8ball", "8볼"], ["knit", "니트", "sweater", "스웨터"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "nike", "나이키", "converse", "컨버스", "dior"],
+    msrpKrw: 290000, released: 2018,
+  },
 ];
 
 // Wave 94: CATALOG 전체 SKU에도 카테고리별 NOISE 자동 spread (GENERATED + CORE + Wave 91 신규 다 포함).

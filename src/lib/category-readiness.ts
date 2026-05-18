@@ -635,6 +635,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   patagonia_apparel: { status: "ready", label: "Patagonia (Retro X/다운/Snap-T)", note: "Wave 214 outdoor" },
   mlb_apparel: { status: "ready", label: "MLB Cap/Apparel", note: "Wave 214" },
   discovery_apparel: { status: "ready", label: "Discovery Expedition", note: "Wave 214 outdoor" },
+  // Wave 215 (2026-05-19): Yeezy + BAPE STA + Stussy 8 Ball
+  yeezy_boost_350: { status: "ready", label: "Yeezy Boost 350 (V1/V2)", note: "Wave 215 — Yeezy 매물 521건 압도적" },
+  yeezy_boost_500_700: { status: "ready", label: "Yeezy Boost 500/700", note: "Wave 215" },
+  yeezy_slide: { status: "ready", label: "Yeezy Slide", note: "Wave 215" },
+  yeezy_foam_runner: { status: "ready", label: "Yeezy Foam Runner", note: "Wave 215" },
+  bape_sta: { status: "ready", label: "BAPE STA (Bapesta 신발)", note: "Wave 215" },
+  stussy_8ball_knit: { status: "ready", label: "Stüssy 8 Ball Knit", note: "Wave 215" },
 };
 
 export type CategoryReadinessConfig = {
@@ -829,10 +836,12 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
   // Wave 198 (2026-05-18): 새 카테고리 "clothing" — Polo / TNF / Stüssy.
   // 사용자 정책: broad 사이즈 무관, collab narrow 분리, 가품 floor 0.30 (의류 시장 가품 ↑).
   // production 14d sweep: Polo 419건 / TNF 153건 / Stüssy 195건. Nike×Stussy collab 109건 (56%) — narrow 필수.
+  // Wave 215 (2026-05-19): 사용자 명시 "ready 바로 되게 다 준비" → internal_only → ready 승격.
+  //   Wave 198~214 catalog 26 의류 SKU + lane 다 ready 등록. 가품 floor 0.30 + AD 패턴 14종 + collab narrow 분리 완료.
   clothing: {
-    status: "internal_only",
+    status: "ready",
     label: "Clothing",
-    note: "Wave 198: 의류 (Polo/TNF/Stüssy). broad 사이즈 무관, collab narrow 분리 (Supreme×TNF / Nike×Stussy / Dior×Stussy). 가품 floor 0.30 (의류 시장 가품 risk ↑). 시즌 매물 변동 큼 (5월 패딩 비시즌).",
+    note: "Wave 215 ready 승격 (2026-05-19): 의류 26 SKU + lane 다 ready. Polo/TNF/Stüssy/Supreme/Margiela/CDG/Lacoste/Acne/Carhartt/Lululemon/Kitsuné/BAPE/마뗑킴/Reebok/Arcteryx/Fila/Patagonia/MLB/Discovery 박음. broad 사이즈 무관, collab narrow 분리. 가품 floor 0.30 + AD 14종.",
     minReadyPool: 8,
     minParseRate: 0.85,
     minTrustedKeys: 5,

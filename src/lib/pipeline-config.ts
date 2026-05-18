@@ -428,6 +428,13 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Patagonia Retro X", "파타고니아 레트로", "Patagonia 다운",
   "MLB 모자", "MLB Cap",
   "Discovery Expedition", "디스커버리 익스페디션",
+  // Wave 215 — Yeezy + BAPE STA + Stussy 8 Ball
+  "Yeezy Boost 350", "이지 부스트 350", "Yeezy 350",
+  "Yeezy Boost 500", "Yeezy Boost 700",
+  "Yeezy Slide", "이지 슬라이드",
+  "Yeezy Foam Runner", "이지 폼 러너",
+  "BAPE STA", "Bapesta", "베이프스타",
+  "Stussy 8 Ball Knit", "스투시 8볼 니트",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

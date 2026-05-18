@@ -59,6 +59,19 @@ const KEYWORDS = [
   "Raf Simons", "라프시몬스",
   // Wave 202 collab
   "Levis", "리바이스",
+  // Wave 214 의류 mainstream
+  "BAPE", "베이프", "A Bathing Ape", "Ape Head", "샤크 후드",
+  "Matin Kim", "마뗑킴", "마틴킴",
+  "Reebok 트랙수트", "리복 트랙수트", "Reebok Apparel",
+  "Arc'teryx", "아크테릭스", "Arc'teryx Beta",
+  "Fila 트랙수트", "휠라 트랙수트",
+  "Patagonia", "파타고니아", "Retro X",
+  "MLB 모자", "MLB Cap",
+  "Discovery Expedition", "디스커버리 익스페디션",
+  // Wave 215 신발 한정
+  "Yeezy", "이지 부스트", "Yeezy Boost", "Yeezy Slide", "이지 슬라이드", "Yeezy Foam",
+  "BAPE STA", "Bapesta", "베이프스타",
+  "Stussy 8 Ball Knit", "8볼 니트",
 ];
 
 type RawRow = {

@@ -154,6 +154,10 @@ export function queryFamily(query: string): string {
     lower.includes("크록스") || lower.includes("crocs") ||
     lower.includes("바야밴드") || lower.includes("bayaband") ||
     (lower.includes("아크네") && (lower.includes("트리플로") || lower.includes("triplo") || lower.includes("베르틴") || lower.includes("bertin"))) ||
+    // Wave 215: Yeezy / BAPE STA
+    (lower.includes("yeezy") && !lower.includes("이지페이") && !lower.includes("이지카")) ||
+    lower.includes("이지 부스트") || lower.includes("이지 슬라이드") || lower.includes("이지 폼") ||
+    lower.includes("bape sta") || lower.includes("bapesta") || lower.includes("베이프스타") ||
     // Wave 206: 푸마 신발
     lower.includes("푸마") || lower.includes("퓨마") || lower.includes("puma ") ||
     lower.includes("스피드캣") || lower.includes("speedcat") ||
