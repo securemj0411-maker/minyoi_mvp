@@ -51,6 +51,26 @@ const FAQ_ITEMS: FaqItem[] = [
   },
 ];
 
+function HeadsetIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2.2"
+    >
+      <path d="M4 13a8 8 0 0 1 16 0" />
+      <path d="M4 13v3.5A2.5 2.5 0 0 0 6.5 19H8v-7H6.5A2.5 2.5 0 0 0 4 14.5" />
+      <path d="M20 13v3.5A2.5 2.5 0 0 1 17.5 19H16v-7h1.5a2.5 2.5 0 0 1 2.5 2.5" />
+      <path d="M16 19c0 1.1-.9 2-2 2h-2" />
+    </svg>
+  );
+}
+
 export default function SiteHelpFaq() {
   const [open, setOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -83,11 +103,11 @@ export default function SiteHelpFaq() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="도움말 열기"
+        aria-label="AI 도움말 열기"
         className="fixed bottom-4 right-4 z-[70] flex h-12 w-12 items-center justify-center rounded-full border border-[#bfd2c1] bg-[#f8fff5]/95 text-xl font-black text-[#263d2f] shadow-[0_16px_42px_rgba(31,65,45,0.26)] backdrop-blur transition hover:-translate-y-0.5 hover:border-[#82aa88] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb993] dark:border-emerald-900/70 dark:bg-zinc-900/95 dark:text-zinc-100 sm:bottom-5 sm:right-5"
       >
         <span className="absolute inset-0 rounded-full bg-emerald-300/20 blur-md" />
-        <span className="relative">?</span>
+        <HeadsetIcon className="relative h-6 w-6" />
         <span className="absolute -right-1 -top-1 rounded-full border border-white bg-[#214233] px-1.5 py-0.5 text-[9px] font-black text-white shadow-sm dark:border-zinc-950">
           AI
         </span>
@@ -106,7 +126,7 @@ export default function SiteHelpFaq() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#234332] text-xs font-black text-white shadow-[0_10px_24px_rgba(35,67,50,0.22)]">
-                    AI
+                    <HeadsetIcon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] font-black uppercase text-[#5e755f] dark:text-emerald-400">Assistant</p>
@@ -133,7 +153,7 @@ export default function SiteHelpFaq() {
               <div className="rounded-3xl border border-[#dce8d8] bg-white p-3 shadow-[0_10px_28px_rgba(34,49,39,0.07)] dark:border-zinc-800 dark:bg-zinc-900/80">
                 <div className="flex items-start gap-2.5">
                   <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e7f4e5] text-[10px] font-black text-[#234332] dark:bg-emerald-950 dark:text-emerald-300">
-                    AI
+                    <HeadsetIcon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm bg-[#f3f8ef] px-3 py-2.5 dark:bg-zinc-950">
                     <p className="text-sm font-black text-[#223127] dark:text-zinc-100">
@@ -170,7 +190,7 @@ export default function SiteHelpFaq() {
 
                 <div className="mt-3 flex items-start gap-2.5">
                   <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e7f4e5] text-[10px] font-black text-[#234332] dark:bg-emerald-950 dark:text-emerald-300">
-                    AI
+                    <HeadsetIcon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm bg-[#f3f8ef] px-3 py-2.5 dark:bg-zinc-950">
                     {isThinking ? (
