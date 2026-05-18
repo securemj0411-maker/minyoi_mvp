@@ -85,7 +85,7 @@ export function SavedMoneyCounter() {
         </span>
         {data.compensationGrantedThisMonth > 0 && (
           <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
-            손해 보상 토큰 +{data.compensationGrantedThisMonth}
+            신고 보상 토큰 +{data.compensationGrantedThisMonth}
           </span>
         )}
       </div>

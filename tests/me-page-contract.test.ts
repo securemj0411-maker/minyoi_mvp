@@ -85,3 +85,13 @@ test("reveal feedback is scoped by feedback type so reports do not overwrite use
   assert.match(meRoute, /FEEDBACK_DISPLAY_PRIORITY/);
   assert.match(meRoute, /pickDisplayFeedback/);
 });
+
+test("saved money counter includes inaccurate report token compensation", () => {
+  const route = source("src/app/api/packs/me/saved-money/route.ts");
+  const counter = source("src/components/saved-money-counter.tsx");
+
+  assert.match(route, /COMPENSATION_FEEDBACK_TYPES = \["loss_report", "inaccurate_report"\]/);
+  assert.match(route, /feedback_type=in\.\(\$\{COMPENSATION_FEEDBACK_TYPES\.join\(","\)\}\)/);
+  assert.match(counter, /신고 보상 토큰/);
+  assert.doesNotMatch(counter, /손해 보상 토큰/);
+});

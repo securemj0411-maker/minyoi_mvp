@@ -6,7 +6,7 @@
 // - savedThisMonthSiteWide: 사이트 전체 차단된 위험 매물 수 × 평균 손해율 추정
 // - blockedCount: 사이트 전체 차단 매물 수 (이번 달)
 // - boughtCount: 본인 매수 표시 수
-// - compensationGrantedThisMonth: 본인 loss_report 보상으로 받은 토큰 수
+// - compensationGrantedThisMonth: 본인 신고/손해 보상으로 받은 토큰 수
 //
 // 사용자 본인 매수가 없으면 earnedThisMonth=0 + 안내 메시지.
 
@@ -32,6 +32,8 @@ const BLOCK_FLAGS = [
   "option_parse_review",
   "market_stat_missing",
 ];
+
+const COMPENSATION_FEEDBACK_TYPES = ["loss_report", "inaccurate_report"] as const;
 
 export async function GET(req: Request) {
   const auth = await requireSupabaseUser(req);
@@ -77,9 +79,9 @@ export async function GET(req: Request) {
     const blockedCount = Number(blockedRange.split("/")[1] ?? 0);
     void blockedFlagsCsv;
 
-    // 4. 본인 loss_report 보상 토큰 합 (이번 달)
+    // 4. 본인 신고/손해 보상 토큰 합 (이번 달)
     const compensationRes = await restFetch(
-      `${tableUrl("mvp_reveal_feedback")}?select=compensation_granted_tokens&user_ref=eq.${encodeURIComponent(userRef)}&feedback_type=eq.loss_report&created_at=gte.${encodeURIComponent(monthStartIso)}`,
+      `${tableUrl("mvp_reveal_feedback")}?select=compensation_granted_tokens&user_ref=eq.${encodeURIComponent(userRef)}&feedback_type=in.(${COMPENSATION_FEEDBACK_TYPES.join(",")})&created_at=gte.${encodeURIComponent(monthStartIso)}`,
       { headers: serviceHeaders() },
     );
     const compRows = (await compensationRes.json()) as Array<{ compensation_granted_tokens: number | null }>;
