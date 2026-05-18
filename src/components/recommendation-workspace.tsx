@@ -18,7 +18,7 @@ import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-mod
 import { loadClientCredits } from "@/lib/client-credits";
 import { dispatchPackRevealsUpdated } from "@/lib/pack-events";
 import { computeCostBreakdown, type CostFilters } from "@/lib/pack-cost";
-import type { InventorySnapshot, PackBand, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
+import type { InventorySnapshot, PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { getOrCreateUserRef, userRefForAuthUser } from "@/lib/user-ref";
 
@@ -826,9 +826,11 @@ function PackSelectorCard({
 
 type Props = {
   initialInventory: InventorySnapshot[];
+  showResultModal?: boolean;
+  onSuccess?: (detail: { band: PackBand; reveals: RevealCard[] }) => void;
 };
 
-export default function RecommendationWorkspace({ initialInventory }: Props) {
+export default function RecommendationWorkspace({ initialInventory, showResultModal = true, onSuccess }: Props) {
   const [inventory, setInventory] = useState<InventorySnapshot[]>(initialInventory);
   // Wave 74: CSR 전환 — initialInventory가 비었으면 mount 후 client fetch 동안 skeleton.
   const [inventoryLoading, setInventoryLoading] = useState(initialInventory.length === 0);
@@ -952,7 +954,7 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
       const tokenCost = computeCostBreakdown(pack.band, requestedCards, filters ?? null).totalCost;
       if (!infiniteCredits && tokens < tokenCost) return;
       setLastRequest({ pack, requestedCards, tokenCost });
-      setActiveBand(pack.band);
+      if (showResultModal) setActiveBand(pack.band);
       setLoading(true);
       setResult(null);
       try {
@@ -984,12 +986,15 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
             band: pack.band,
             reveals: openData.reveals,
           });
-          setResult({
-            result: "success",
-            reveals: openData.reveals,
-            attemptedCount: openData.attemptedCount,
-            durationMs: openData.durationMs,
-          });
+          onSuccess?.({ band: pack.band, reveals: openData.reveals });
+          if (showResultModal) {
+            setResult({
+              result: "success",
+              reveals: openData.reveals,
+              attemptedCount: openData.attemptedCount,
+              durationMs: openData.durationMs,
+            });
+          }
         } else if (openData.result === "refunded") {
           const refunded = openData.tokensRefunded ?? tokenCost;
           setResult({
@@ -1025,7 +1030,7 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
         refreshInventory();
       }
     },
-    [authUser, loading, tokens, infiniteCredits, userRef, refreshCredits, refreshInventory],
+    [authUser, loading, tokens, infiniteCredits, userRef, refreshCredits, refreshInventory, showResultModal, onSuccess],
   );
 
   const handleClose = useCallback(() => {
@@ -1124,17 +1129,26 @@ export default function RecommendationWorkspace({ initialInventory }: Props) {
         />
       </section>
 
-      <PackRevealModal
-        open={activeBand !== null}
-        band={activeBand ?? 1}
-        loading={loading}
-        result={result}
-        onClose={handleClose}
-        onLinkClicked={handleLinkClicked}
-        onFeedback={handleFeedback}
-        onLoadDetail={handleLoadDetail}
-        onRetry={handleRetry}
-      />
+      {!showResultModal && result && result.result !== "success" ? (
+        <div className="mx-auto mt-3 max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-200">
+          {result.result === "refunded" ? "추천을 열지 못해 토큰을 돌려드렸어요." : "지금 조건에 맞는 새 추천이 부족해요."}
+          {result.reason ? <span className="ml-1 font-semibold">{result.reason}</span> : null}
+        </div>
+      ) : null}
+
+      {showResultModal ? (
+        <PackRevealModal
+          open={activeBand !== null}
+          band={activeBand ?? 1}
+          loading={loading}
+          result={result}
+          onClose={handleClose}
+          onLinkClicked={handleLinkClicked}
+          onFeedback={handleFeedback}
+          onLoadDetail={handleLoadDetail}
+          onRetry={handleRetry}
+        />
+      ) : null}
     </>
   );
 }

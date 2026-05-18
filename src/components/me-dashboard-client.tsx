@@ -390,7 +390,11 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
                   <div className="mb-3 text-base font-black text-[#223127] dark:text-zinc-100">🔍 더 찾아보기</div>
                   <OnboardingBanner onStart={() => undefined} />
                   <SafetyStatsBadge />
-                  <RecommendationWorkspace initialInventory={initialInventory} />
+                  <RecommendationWorkspace
+                    initialInventory={initialInventory}
+                    showResultModal={false}
+                    onSuccess={() => setSeekMoreOpen(false)}
+                  />
                 </div>
               </div>
             )}

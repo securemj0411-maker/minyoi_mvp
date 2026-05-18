@@ -174,6 +174,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   const [selectedPreviewSeed, setSelectedPreviewSeed] = useState<string | null>(null);
   const [currentTimeMs, setCurrentTimeMs] = useState(0);
   const previewSeedCounterRef = useRef(0);
+  const [newlyRevealedPids, setNewlyRevealedPids] = useState<Set<number>>(new Set());
+  const highlightClearTimerRef = useRef<number | null>(null);
   // 2026-05-17: 매물 선택 + 삭제 (선택/전체 모드).
   const [selectMode, setSelectMode] = useState(false);
   const [selectedPids, setSelectedPids] = useState<Set<number>>(new Set());
@@ -303,18 +305,32 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         marketGapKrwMax: Math.round(card.expectedProfitMax),
         marketStale: card.expectedProfitMin < 0,
       }));
+      const incomingPids = new Set(nextItems.map((item) => item.pid));
+      setSearchInput("");
+      setQuery("");
+      setSort("latest");
       setItems((prevItems) => {
-        if (query || sort !== "latest") return prevItems;
-        const incomingPids = new Set(nextItems.map((item) => item.pid));
         return [...nextItems, ...prevItems.filter((item) => !incomingPids.has(item.pid))].slice(0, PAGE_SIZE);
       });
+      setTotal((prevTotal) => Math.max(prevTotal, nextItems.length));
       setPage(1);
-      void loadItems({ silent: true });
+      setNewlyRevealedPids(incomingPids);
+      if (highlightClearTimerRef.current !== null) window.clearTimeout(highlightClearTimerRef.current);
+      highlightClearTimerRef.current = window.setTimeout(() => {
+        setNewlyRevealedPids(new Set());
+        highlightClearTimerRef.current = null;
+      }, 12_000);
+      window.setTimeout(() => {
+        document.getElementById("my-reveals-list")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 150);
     }
 
     window.addEventListener(PACK_REVEALS_UPDATED_EVENT, handlePackRevealsUpdated);
-    return () => window.removeEventListener(PACK_REVEALS_UPDATED_EVENT, handlePackRevealsUpdated);
-  }, [loadItems, query, sort]);
+    return () => {
+      window.removeEventListener(PACK_REVEALS_UPDATED_EVENT, handlePackRevealsUpdated);
+      if (highlightClearTimerRef.current !== null) window.clearTimeout(highlightClearTimerRef.current);
+    };
+  }, []);
 
   const modalResult: RevealResult | null = useMemo(() => {
     if (!selectedItem) return null;
@@ -618,7 +634,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   }, [hideTerminal, selectedPids.size, visibleItems]);
 
   return (
-    <section className="rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-5">
+    <section id="my-reveals-list" className="rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] p-4 shadow-sm scroll-mt-4 dark:border-zinc-800 dark:bg-zinc-900 sm:p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="text-base font-black text-[#223127] dark:text-zinc-100">내 추천 보관함</div>
@@ -981,6 +997,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           // 표본이 다시 쌓여 양수로 돌아오면 다음 /me 갱신 때 정상 카드로 복귀할 수 있다.
           const stateInfo = listingStateLabel(item.listingState);
           const isTerminal = isUserFacingClosed(item);
+          const isNewlyRevealed = newlyRevealedPids.has(item.pid);
           if (isTerminal) {
             const displayStateInfo = stateInfo.tone === "sold" ? stateInfo : { label: "판매완료", tone: "sold" as const };
             return (
@@ -1053,6 +1070,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             } ${
               selectMode && selectedPids.has(item.pid)
                 ? "border-rose-400 bg-rose-50 ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/30"
+                : isNewlyRevealed
+                  ? "border-rose-400 bg-rose-50/70 shadow-[0_0_0_4px_rgba(244,63,94,0.12),0_18px_38px_rgba(244,63,94,0.18)] ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/20 dark:ring-rose-700/70"
                 : isTerminal
                   ? "border-zinc-200 bg-zinc-50/70 opacity-75 dark:border-zinc-800 dark:bg-zinc-900/40"
                   : "border-[#e5dccf] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] focus-visible:border-[#8ca88c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]/30 dark:border-zinc-800 dark:hover:border-emerald-900 dark:hover:bg-emerald-950/20"
@@ -1085,6 +1104,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             <div className="min-w-0">
               <div className="flex items-start gap-1.5">
                 <div className="min-w-0 flex-1 truncate text-[15px] font-black leading-5 text-[#223127] dark:text-zinc-100">{item.name}</div>
+                {isNewlyRevealed ? (
+                  <span className="shrink-0 rounded-full bg-rose-600 px-1.5 py-0.5 text-[10px] font-black text-white shadow-sm">
+                    방금 추가
+                  </span>
+                ) : null}
                 {/* 2026-05-17: 매물 등급 chip (S/A/B/C) — 운영자풀/사용자 reveal 통일. */}
                 <ConditionChip conditionClass={item.marketBasis?.conditionClass ?? null} />
               </div>
