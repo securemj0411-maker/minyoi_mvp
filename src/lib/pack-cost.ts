@@ -11,6 +11,8 @@ export type CostFilters = {
   minProfitManwon: number;     // 슬라이더 값 (만원)
   minConfidencePct: number;    // 0~100
   priceMaxManwon: number;      // 0 = 무제한, 그 외 만원 단위
+  categories?: string[];       // empty/undefined = 전체. 비용 공식에는 반영하지 않지만 open API payload와 공유.
+  maxFreshHours?: number;      // 0/undefined = 무제한. 비용 공식에는 반영하지 않지만 open API payload와 공유.
 };
 
 function profitMult(p: number): number {

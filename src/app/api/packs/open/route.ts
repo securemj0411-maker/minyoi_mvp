@@ -35,13 +35,23 @@ function parseFilters(payload: Record<string, unknown>): CostFilters | null {
   const minProfitManwon = Number(f.minProfitManwon ?? NaN);
   const minConfidencePct = Number(f.minConfidencePct ?? NaN);
   const priceMaxManwon = Number(f.priceMaxManwon ?? NaN);
+  const maxFreshHours = Number(f.maxFreshHours ?? 0);
   if (!Number.isFinite(minProfitManwon) || !Number.isFinite(minConfidencePct) || !Number.isFinite(priceMaxManwon)) {
     return null;
   }
+  const categories = Array.isArray(f.categories)
+    ? Array.from(new Set(
+        f.categories
+          .map((value) => (typeof value === "string" ? value.trim().toLowerCase() : ""))
+          .filter((value) => /^[a-z0-9_]+$/.test(value))
+      )).slice(0, 20)
+    : [];
   return {
     minProfitManwon: Math.max(0, Math.min(100, minProfitManwon)),
     minConfidencePct: Math.max(0, Math.min(100, minConfidencePct)),
     priceMaxManwon: Math.max(0, Math.min(10000, priceMaxManwon)),
+    categories,
+    maxFreshHours: Number.isFinite(maxFreshHours) ? Math.max(0, Math.min(720, maxFreshHours)) : 0,
   };
 }
 
@@ -132,14 +142,14 @@ export async function POST(req: Request) {
   }
 
   try {
-    const maxFreshHoursRaw = Number((payload.filters as Record<string, unknown> | undefined)?.maxFreshHours ?? 0);
-    const maxFreshHours = Number.isFinite(maxFreshHoursRaw) ? Math.max(0, Math.min(720, maxFreshHoursRaw)) : 0;
+    const maxFreshHours = filters?.maxFreshHours ?? 0;
     const result = await openPack({
       band,
       userRef,
       authUserId: auth.user.id,
       isInfiniteCredits: infinite,
       maxFreshHours,
+      filters,
       tokensSpent: tokenCost,
       requestedCards: sanitizedRequestedCards,
       consumeInventory: !infinite,

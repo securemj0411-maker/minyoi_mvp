@@ -82,12 +82,12 @@ function fakeReserved(pid: number, comparableKey = `k-${pid}`) {
   };
 }
 
-function fakeListing(pid: number) {
+function fakeListing(pid: number, price = 200000) {
   return {
     pid,
     name: `airpods pro 2 (lot ${pid})`,
     url: `https://example.com/${pid}`,
-    price: 200000,
+    price,
     sku_name: "airpods_pro2",
     thumbnail_url: null,
   };
@@ -97,6 +97,7 @@ function buildHandler(opts: {
   inventory?: Array<{ band: number; usableReady: number }>;
   reserved: number[];
   reservedKeys?: Record<number, string | null>;
+  listingPrices?: Record<number, number>;
   existingRevealPids?: number[];
   comparableKeyByPid?: Record<number, string | null>;
   skuIdByPid?: Record<number, string | null>;
@@ -146,7 +147,7 @@ function buildHandler(opts: {
         .split(",")
         .map((s) => Number(s.trim()))
         .filter((n) => Number.isFinite(n));
-      return jsonResponse(pids.map(fakeListing));
+      return jsonResponse(pids.map((pid) => fakeListing(pid, opts.listingPrices?.[pid] ?? 200000)));
     }
     if (call.url.includes("/mvp_raw_listings?select=pid,sku_id")) {
       const pids = (call.url.match(/pid=in\.\(([^)]*)\)/)?.[1] ?? "")
@@ -262,6 +263,60 @@ test("openPack skips prior and same-pack comparable key duplicates", async () =>
       .map((c) => (c.body as { p_pid: number }).p_pid)
       .sort((a, b) => a - b);
     assert.deepEqual(releasePids, [101, 103]);
+  } finally {
+    stub.restore();
+  }
+});
+
+test("openPack enforces price cap filters before committing reveals", async () => {
+  process.env.SUPABASE_URL = "https://stub.supabase.co";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "stub-key";
+
+  const stub = stubFetch();
+  try {
+    stub.setHandler(buildHandler({
+      reserved: [901, 902, 903, 904],
+      listingPrices: {
+        901: 1_250_000,
+        902: 120_000,
+        903: 140_000,
+        904: 130_000,
+      },
+    }));
+
+    const result = await openPack({
+      band: 1,
+      userRef: "user-price-cap",
+      authUserId: "auth-price-cap",
+      isInfiniteCredits: false,
+      tokensSpent: 1,
+      requestedCards: 2,
+      filters: {
+        minProfitManwon: 0,
+        minConfidencePct: 0,
+        priceMaxManwon: 15,
+      },
+    });
+
+    assert.equal(result.result, "success");
+    if (result.result !== "success") return;
+    assert.deepEqual(result.reveals.map((r) => r.pid), [902, 903]);
+    assert.equal(
+      result.reveals.some((r) => r.price > 150_000),
+      false,
+      "revealed cards must respect the user's max buy price",
+    );
+
+    const commitPids = stub.calls
+      .filter((c) => c.url.includes("/rpc/commit_mvp_pool_reveal"))
+      .map((c) => (c.body as { p_pid: number }).p_pid);
+    assert.deepEqual(commitPids, [902, 903]);
+
+    const releasePids = stub.calls
+      .filter((c) => c.url.includes("/rpc/release_mvp_pool_reservation"))
+      .map((c) => (c.body as { p_pid: number }).p_pid)
+      .sort((a, b) => a - b);
+    assert.deepEqual(releasePids, [901, 904]);
   } finally {
     stub.restore();
   }

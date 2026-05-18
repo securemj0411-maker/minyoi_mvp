@@ -144,6 +144,17 @@ export type PackOpenInput = {
   consumeInventory?: boolean;
   // Wave 93b: freshness filter — 0 또는 undefined면 무제한.
   maxFreshHours?: number;
+  // Wave 261: 실제 reveal 확정 경로에서도 사용자가 고른 조건을 hard-filter.
+  // preview/token cost만 필터를 보던 상태에서 고가 매물이 섞이는 문제 방지.
+  filters?: PackOpenFilters | null;
+};
+
+export type PackOpenFilters = {
+  minProfitManwon: number;
+  minConfidencePct: number;
+  priceMaxManwon: number;
+  categories?: string[];
+  maxFreshHours?: number;
 };
 
 // Wave 182 (2026-05-17): loss_report 추가 — 사용자 손해 신고. 즉시 토큰 3개 보상 + 운영자 검수 큐 진입.
@@ -192,6 +203,7 @@ export type PackOpenResult = PackOpenSuccess | PackOpenRefunded | PackOpenUnavai
 type ReservedRow = {
   pid: number;
   profit_band: number;
+  category?: string | null;
   expected_profit_min: number;
   expected_profit_max: number;
   score: number;
@@ -271,6 +283,55 @@ type MarketVelocityRow = {
 
 function categoryFromPool(row: { category: string | null; comparable_key: string | null }) {
   return categoryFromComparableKey(row.category) ?? categoryFromComparableKey(row.comparable_key);
+}
+
+type OpenFilterCriteria = {
+  minProfitKrw: number;
+  minConfidence: number;
+  maxPriceKrw: number;
+  categories: Set<string>;
+};
+
+function finiteNumber(value: unknown, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function openFilterCriteria(filters: PackOpenFilters | null | undefined): OpenFilterCriteria {
+  const categories = new Set<string>();
+  for (const raw of filters?.categories ?? []) {
+    if (typeof raw !== "string") continue;
+    const normalized = categoryFromComparableKey(raw) ?? raw.trim().toLowerCase();
+    if (normalized) categories.add(normalized);
+  }
+  return {
+    minProfitKrw: Math.max(0, finiteNumber(filters?.minProfitManwon)) * 10_000,
+    minConfidence: Math.max(0, Math.min(100, finiteNumber(filters?.minConfidencePct))) / 100,
+    maxPriceKrw: Math.max(0, finiteNumber(filters?.priceMaxManwon)) * 10_000,
+    categories,
+  };
+}
+
+function hasOpenFilterCriteria(criteria: OpenFilterCriteria) {
+  return criteria.minProfitKrw > 0 ||
+    criteria.minConfidence > 0 ||
+    criteria.maxPriceKrw > 0 ||
+    criteria.categories.size > 0;
+}
+
+function candidateMatchesOpenFilters(
+  candidate: ReservedRow,
+  meta: ListingMeta,
+  criteria: OpenFilterCriteria,
+) {
+  if (criteria.maxPriceKrw > 0 && finiteNumber(meta.price) > criteria.maxPriceKrw) return false;
+  if (criteria.minProfitKrw > 0 && finiteNumber(candidate.expected_profit_min) < criteria.minProfitKrw) return false;
+  if (criteria.minConfidence > 0 && finiteNumber(candidate.confidence) < criteria.minConfidence) return false;
+  if (criteria.categories.size > 0) {
+    const category = categoryFromComparableKey(candidate.category) ?? categoryFromComparableKey(candidate.comparable_key);
+    if (!category || !criteria.categories.has(category)) return false;
+  }
+  return true;
 }
 
 function supabaseRest() {
@@ -1131,7 +1192,12 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
   const consumeInventory = input.consumeInventory ?? true;
   const targetCardsRaw = Math.max(2, Math.min(input.requestedCards ?? 2, 30));
   const targetCards = targetCardsRaw % 2 === 0 ? targetCardsRaw : targetCardsRaw - 1;
-  const reserveLimit = Math.min(Math.max(targetCards * 4, 12), 160);
+  const criteria = openFilterCriteria(input.filters);
+  const hasStrictOpenFilters = hasOpenFilterCriteria(criteria);
+  const reserveLimit = Math.min(
+    Math.max(targetCards * (hasStrictOpenFilters ? 8 : 4), hasStrictOpenFilters ? 24 : 12),
+    160,
+  );
   const freshnessMs = freshnessMsForBand(input.band);
   const inventory = await loadInventory().catch(() => []);
   const bandInventory = inventory.find((row) => row.band === input.band);
@@ -1202,6 +1268,10 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       const meta = listingMap.get(candidate.pid);
       if (!meta) {
         await rpcInvalidate(candidate.pid, "missing_listing_meta");
+        continue;
+      }
+      if (!candidateMatchesOpenFilters(candidate, meta, criteria)) {
+        releasePids.push(candidate.pid);
         continue;
       }
       if (!candidate.comparable_key && meta.sku_id && seenSkuIds.has(meta.sku_id)) {
@@ -1311,7 +1381,8 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
           `/mvp_raw_listings?select=sku_id,created_at&sku_id=in.(${encoded})&created_at=gte.${since7d}&limit=20000`,
           { headers: authHeaders() },
         );
-        const rows = (await res.json()) as Array<{ sku_id: string; created_at: string }>;
+        const parsed = await res.json().catch(() => null);
+        const rows = Array.isArray(parsed) ? (parsed as Array<{ sku_id: string; created_at: string }>) : [];
         const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
         const flow = new Map<string, { count24h: number; total7d: number }>();
         for (const row of rows) {

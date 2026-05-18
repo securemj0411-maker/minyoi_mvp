@@ -32,6 +32,7 @@ type PackOpenRequest = {
   pack: PackDef;
   requestedCards: number;
   tokenCost: number;
+  filters: CostFilters | null;
 };
 
 const MIN_REQUESTED_CARDS = 2;
@@ -439,10 +440,11 @@ function PackSelectorCard({
   const selectedCount = clampRequestedCards(requestedCards, maxSelectableCards);
   // Wave 79: 단일 모드 — 항상 dynamic cost 적용
   // Wave 93b: maxFreshHours 추가 (RPC에 전달, hard 필터 일관성).
-  const activeFilters: CostFilters & { maxFreshHours?: number } = {
+  const activeFilters: CostFilters = {
     minProfitManwon: advancedFilters.minProfitManwon,
     minConfidencePct: advancedFilters.minConfidencePct,
     priceMaxManwon: advancedFilters.priceMaxManwon,
+    categories: advancedFilters.categories,
     maxFreshHours: advancedFilters.maxFreshHours,
   };
   const costBreakdown = computeCostBreakdown(selectedPack.band, selectedCount, activeFilters);
@@ -1234,7 +1236,7 @@ export default function RecommendationWorkspace({ initialInventory, showResultMo
       // Wave 78: filter 있으면 dynamic cost, 없으면 base × steps
       const tokenCost = computeCostBreakdown(pack.band, requestedCards, filters ?? null).totalCost;
       if (!infiniteCredits && tokens < tokenCost) return;
-      setLastRequest({ pack, requestedCards, tokenCost });
+      setLastRequest({ pack, requestedCards, tokenCost, filters: filters ?? null });
       if (showResultModal) setActiveBand(pack.band);
       setLoading(true);
       setResult(null);
@@ -1326,7 +1328,7 @@ export default function RecommendationWorkspace({ initialInventory, showResultMo
       return;
     }
     setResult(null);
-    void openPack(lastRequest.pack, lastRequest.requestedCards);
+    void openPack(lastRequest.pack, lastRequest.requestedCards, lastRequest.filters);
   }, [lastRequest, openPack, handleClose]);
 
   const handleLinkClicked = useCallback((pid: number) => {

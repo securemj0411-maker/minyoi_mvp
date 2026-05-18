@@ -162,6 +162,23 @@ test("/me seek-more modal starts with personalization and hides duplicate safety
   assert.doesNotMatch(workspace, /프로필을 고르고 세부 조건은 슬라이더로 조정합니다/);
 });
 
+test("pack open applies seek-more filters on the actual reveal path", () => {
+  const workspace = source("src/components/recommendation-workspace.tsx");
+  const openRoute = source("src/app/api/packs/open/route.ts");
+  const packOpen = source("src/lib/pack-open.ts");
+
+  assert.match(workspace, /categories: advancedFilters\.categories/);
+  assert.match(workspace, /setLastRequest\(\{ pack, requestedCards, tokenCost, filters: filters \?\? null \}\)/);
+  assert.match(workspace, /openPack\(lastRequest\.pack, lastRequest\.requestedCards, lastRequest\.filters\)/);
+  assert.match(openRoute, /const filters = parseFilters\(payload\)/);
+  assert.match(openRoute, /filters,\s*\n\s*tokensSpent/);
+  assert.match(packOpen, /function candidateMatchesOpenFilters/);
+  assert.match(packOpen, /meta\.price\) > criteria\.maxPriceKrw/);
+  assert.match(packOpen, /candidate\.expected_profit_min\) < criteria\.minProfitKrw/);
+  assert.match(packOpen, /candidate\.confidence\) < criteria\.minConfidence/);
+  assert.match(packOpen, /criteria\.categories\.has\(category\)/);
+});
+
 test("reveal feedback is scoped by feedback type so reports do not overwrite user state", () => {
   const migration = source("supabase/migrations/20260518101901_reveal_feedback_type_scoped.sql");
   const schema = source("supabase/schema.sql");
