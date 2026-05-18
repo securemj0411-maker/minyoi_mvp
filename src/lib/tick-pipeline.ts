@@ -2117,16 +2117,23 @@ async function loadMarketPriceStats(comparableKeys: string[]): Promise<MarketPri
     "confidence",
     "computed_at",
   ].join(",");
-  const encoded = unique.map((key) => encodeURIComponent(key)).join(",");
-  // limit 늘림 — comparable_key당 condition class 6개 + 며칠치.
-  const url = `${tableUrl("mvp_market_price_daily")}?select=${columns}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(2000, unique.length * 12)}`;
-  const res = await restFetch(url, { headers: serviceHeaders() });
-  const rows = (await res.json()) as MarketPriceRow[];
+  // Wave 221 (2026-05-19): URL too long fix — comparable_keys 가 많아지면
+  //   in.(...) 리스트가 URL 한도 (~8KB) 초과 → fetch failed.
+  //   bag/clothing/shoe narrow lane 늘면서 한 번에 1000+ keys 가능.
+  //   100 chunk 단위로 분할 fetch 후 merge. production cron 도 같은 문제 회피.
+  const CHUNK_SIZE = 100;
   const result: MarketPriceStatsMap = new Map();
-  for (const row of rows) {
-    const byCond = result.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
-    if (!byCond.has(row.condition_class)) byCond.set(row.condition_class, row);
-    result.set(row.comparable_key, byCond);
+  for (let i = 0; i < unique.length; i += CHUNK_SIZE) {
+    const chunk = unique.slice(i, i + CHUNK_SIZE);
+    const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
+    const url = `${tableUrl("mvp_market_price_daily")}?select=${columns}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(2000, chunk.length * 12)}`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    const rows = (await res.json()) as MarketPriceRow[];
+    for (const row of rows) {
+      const byCond = result.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
+      if (!byCond.has(row.condition_class)) byCond.set(row.condition_class, row);
+      result.set(row.comparable_key, byCond);
+    }
   }
   return result;
 }
