@@ -123,7 +123,9 @@ export function queryFamily(query: string): string {
     lower.includes("stussy") || lower.includes("스투시") || lower.includes("stüssy") ||
     lower.includes("8 ball") || lower.includes("8ball") ||
     lower.includes("world tour") || lower.includes("월드투어") ||
-    lower.includes("라코스테") || lower.includes("lacoste")
+    lower.includes("라코스테") || lower.includes("lacoste") ||
+    // Wave 200: 꼼데가르송 (Comme des Garcons / CDG)
+    lower.includes("꼼데") || lower.includes("comme des garcons") || lower.includes("commedesgarcons") || lower.includes("cdg ")
   ) return "clothing";
   // 가방 (TNF 백팩) — bag
   if (

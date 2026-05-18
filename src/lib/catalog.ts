@@ -7068,6 +7068,45 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "케이스", "case"],
     msrpKrw: 159000, released: 2022,
   },
+  // Wave 200 (2026-05-18): Tier 3 mining — 꼼데가르송 / Stussy×Converse / Polo Big Pony.
+  // 꼼데가르송 매물 다수 (faved 30~51), Nike/NB/Vans/Salomon collab 신발 압도적 + 시그니처 PVC 가방.
+  {
+    id: "shoe-cdg-nike-collab",
+    brand: "Nike x CDG", category: "shoe", laneKey: "cdg_nike_collab",
+    modelName: "Nike × CDG Homme Plus (collab 신발)",
+    aliases: ["Nike CDG", "나이키 꼼데가르송", "CDG Nike", "꼼데 옴므플러스"],
+    mustContain: [["nike", "나이키"], ["꼼데", "cdg", "comme des garcons", "commedesgarcons"]],
+    // 폼포짓 / 블레이저 / 에어맥스 / 와플레이서 / 센스 / 에어포스 다 포함
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "newbalance", "뉴발란스", "vans", "반스", "salomon", "살로몬"],
+    msrpKrw: 300000, released: 2020,
+  },
+  {
+    id: "bag-cdg-pvc",
+    brand: "Comme des Garcons", category: "bag", laneKey: "cdg_pvc_bag",
+    modelName: "CDG PVC Bag (시그니처)",
+    aliases: ["CDG PVC", "꼼데가르송 PVC", "꼼데 PVC 가방"],
+    mustContain: [["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["pvc"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "nike", "나이키", "신발", "스니커즈"],
+    msrpKrw: 200000, released: 2018,
+  },
+  {
+    id: "shoe-stussy-converse-collab",
+    brand: "Converse x Stussy", category: "shoe", laneKey: "stussy_converse_collab",
+    modelName: "Converse × Stüssy (척테일러 70 collab)",
+    aliases: ["Stussy Converse", "스투시 컨버스", "Converse Stussy 척70"],
+    mustContain: [["stussy", "스투시", "stüssy"], ["컨버스", "converse"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "nike", "나이키", "케이스", "가방", "bag"],
+    msrpKrw: 130000, released: 2022,
+  },
+  {
+    id: "bag-polo-big-pony-tote",
+    brand: "Polo Ralph Lauren", category: "bag", laneKey: "polo_big_pony_tote",
+    modelName: "Polo Big Pony Tote Bag (시그니처)",
+    aliases: ["Polo Big Pony Tote", "폴로 빅포니 토트", "Polo Tote"],
+    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["빅포니", "빅 포니", "big pony"], ["토트", "tote"]],
+    mustNotContain: ["RRL", "더블 알엘", "purple label", "퍼플라벨", "키즈", "kids", "복각", "rep ", "replica"],
+    msrpKrw: 199000, released: 2020,
+  },
 ];
 
 // Wave 94: CATALOG 전체 SKU에도 카테고리별 NOISE 자동 spread (GENERATED + CORE + Wave 91 신규 다 포함).

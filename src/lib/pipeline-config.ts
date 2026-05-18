@@ -304,6 +304,11 @@ export const DEFAULT_SEARCH_QUERIES = [
   // Wave 199 - 폴로/TNF 신발
   "폴로 로퍼", "Polo Loafer", "폴로 모카신", "Polo Moccasin",
   "노스페이스 등산화", "TNF Hiking Boots",
+  // Wave 200 — Tier 3 mining: 꼼데가르송 / Stussy×Converse / Polo Big Pony
+  "Nike CDG", "나이키 꼼데가르송", "꼼데 옴므플러스",
+  "꼼데가르송 PVC", "CDG PVC", "꼼데가르송 가방",
+  "Stussy 컨버스", "스투시 컨버스", "Converse Stussy 척70",
+  "폴로 빅포니 토트백", "Polo Big Pony Tote",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

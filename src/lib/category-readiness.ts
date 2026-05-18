@@ -512,6 +512,11 @@ export const LANE_READINESS: LaneReadinessMap = {
   lacoste_pique_polo: { status: "ready", label: "Lacoste Pique Polo (시그니처)", note: "Wave 199 Tier 2 clothing" },
   adererror_shopper: { status: "ready", label: "ADER ERROR Shopper (시그니처)", note: "Wave 199 Tier 2 bag" },
   adererror_converse_collab: { status: "ready", label: "Converse × ADER ERROR (collab)", note: "Wave 199 Tier 2 shoe collab" },
+  // Wave 200 (2026-05-18) Tier 3 — 꼼데가르송 / Stussy×Converse / Polo Big Pony
+  cdg_nike_collab: { status: "ready", label: "Nike × CDG Homme Plus (collab)", note: "Wave 200 Tier 3 shoe collab — 매물 압도적" },
+  cdg_pvc_bag: { status: "ready", label: "CDG PVC Bag (시그니처)", note: "Wave 200 Tier 3 bag — faved 51" },
+  stussy_converse_collab: { status: "ready", label: "Converse × Stüssy (척테일러)", note: "Wave 200 Tier 3 shoe collab" },
+  polo_big_pony_tote: { status: "ready", label: "Polo Big Pony Tote (시그니처)", note: "Wave 200 Tier 3 bag" },
 };
 
 export type CategoryReadinessConfig = {
