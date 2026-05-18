@@ -2749,6 +2749,40 @@ async function loadFraudGroupHashes(): Promise<Set<string>> {
   }
 }
 
+// Wave 224 (2026-05-19): SKU 별 7d 매물 수 < 3 차단 — 사용자 정책 "매물 받쳐주는 거만".
+//   PostgREST aggregate 직접 호출 어려움 → 모든 raw_listings 매물 sku_id + first_seen_at fetch 후 client 집계.
+//   shoe/clothing/bag 카테고리 매물 (현재 12000+) 만 한정.
+async function loadLowVolumeSkuIds(threshold = 3, windowDays = 7): Promise<Set<string>> {
+  try {
+    const sinceIso = new Date(Date.now() - windowDays * 24 * 3600 * 1000).toISOString();
+    const all: Array<{ sku_id: string }> = [];
+    let offset = 0;
+    const PAGE = 1000;
+    while (true) {
+      const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&sku_id=not.is.null&first_seen_at=gte.${encodeURIComponent(sinceIso)}&listing_state=eq.active&or=(sku_id.like.shoe-%2A,sku_id.like.clothing-%2A,sku_id.like.bag-%2A)&limit=${PAGE}&offset=${offset}`;
+      const res = await restFetch(url, { headers: serviceHeaders() });
+      const rows = (await res.json()) as Array<{ sku_id: string }>;
+      all.push(...rows);
+      if (rows.length < PAGE) break;
+      offset += PAGE;
+    }
+    const countBySku = new Map<string, number>();
+    for (const r of all) {
+      if (!r.sku_id) continue;
+      countBySku.set(r.sku_id, (countBySku.get(r.sku_id) ?? 0) + 1);
+    }
+    // 7일 매물 수 < threshold 인 SKU 만 return (제외 대상).
+    const lowVolume = new Set<string>();
+    for (const [skuId, n] of countBySku) {
+      if (n < threshold) lowVolume.add(skuId);
+    }
+    return lowVolume;
+  } catch (err) {
+    console.warn("loadLowVolumeSkuIds failed (non-fatal)", err);
+    return new Set();
+  }
+}
+
 // Wave 138 (2026-05-16): pool에 이미 있는 seller_uid별 매물 수 — buildCandidatePoolRows에 전달.
 // 같은 셀러 다수 매물 추가 진입 차단 (qty 위장 업자 탐지).
 async function loadExistingPoolSellerCounts(): Promise<Map<string, number>> {
@@ -4415,13 +4449,19 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   // Wave 138 (2026-05-16): pool에 이미 있는 seller_uid별 매물 수 fetch.
   // 새 매물이 같은 셀러 매물 추가 진입 시도 시 차단 (qty 위장 업자 탐지).
   // Wave 138b: 다중 ID 사기 그룹 hash set (같은 description + 다른 셀러 2+).
-  const [existingPoolSellerCounts, fraudGroupHashes] = await Promise.all([
+  // Wave 224 (2026-05-19): SKU 별 7d 매물 수 < 3 차단 — 사용자 정책 "매물 받쳐주는 거만".
+  //   sparse SKU (LV variant / Yeezy colorway / 한정 Jordan / Hoka 모델 등) pool 진입 차단.
+  const [existingPoolSellerCounts, fraudGroupHashes, lowVolumeSkuIds] = await Promise.all([
     loadExistingPoolSellerCounts().catch((err) => {
       console.warn("loadExistingPoolSellerCounts failed (non-fatal)", err);
       return new Map<string, number>();
     }),
     loadFraudGroupHashes().catch((err) => {
       console.warn("loadFraudGroupHashes failed (non-fatal)", err);
+      return new Set<string>();
+    }),
+    loadLowVolumeSkuIds().catch((err) => {
+      console.warn("loadLowVolumeSkuIds failed (non-fatal)", err);
       return new Set<string>();
     }),
   ]);
@@ -4435,6 +4475,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     now,
     existingPoolSellerCounts,
     fraudGroupHashes,
+    lowVolumeSkuIds,
   });
   const poolEntries = poolBuild.entries;
   await upsertRows("mvp_candidate_pool", poolEntries, "pid");

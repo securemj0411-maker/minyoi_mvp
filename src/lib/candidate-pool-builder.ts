@@ -154,6 +154,10 @@ export function buildCandidatePoolRows(input: {
   // Wave 138b (2026-05-16): pool + raw_listings의 description_hash별 unique seller set.
   // 같은 hash + 다른 셀러 2+ = 다중 ID 사기 그룹 → 그 hash 매물 모두 차단.
   fraudGroupHashes?: Set<string>;
+  // Wave 224 (2026-05-19): sku별 7d 매물 수 < 3 차단 — 사용자 정책 "매물 받쳐주는 거만".
+  //   sparse SKU (Yeezy V2 colorway / LV variant / Hoka Clifton 10 등) pool 진입 차단.
+  //   tick-pipeline 가 사전 SQL 집계 후 전달.
+  lowVolumeSkuIds?: Set<string>;
 }): CandidatePoolBuildResult {
   const entries: Record<string, unknown>[] = [];
   const invalidations: { pid: number; reason: string }[] = [];
@@ -167,11 +171,20 @@ export function buildCandidatePoolRows(input: {
   const fraudGroupHashes = input.fraudGroupHashes ?? new Set<string>();
   const sortedRows = [...input.rows].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
 
+  const lowVolumeSkuIds = input.lowVolumeSkuIds ?? new Set<string>();
+
   for (const row of sortedRows) {
     const pid = Number(row.pid);
     if (row.poolEligible === false) {
       skipped += 1;
       invalidations.push({ pid, reason: "pool_eligible_false" });
+      continue;
+    }
+    // Wave 224 (2026-05-19): sparse SKU (7d 매물 수 < 3) pool 진입 차단.
+    //   사용자 정책: "매물 받쳐주는 거만. 7일 3건 미만은 절대 안 됨".
+    if (row.skuId && lowVolumeSkuIds.has(row.skuId)) {
+      skipped += 1;
+      invalidations.push({ pid, reason: "sku_low_volume_below_3_per_7d" });
       continue;
     }
 
