@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { DebugAdminGate } from "@/app/debug/debug-admin-gate";
 import { DebugAutoRefresh } from "@/app/debug/debug-auto-refresh";
 import { DebugResetPanel } from "@/app/debug/debug-reset-panel";
+import { KakaoMemoTestPanel } from "@/app/debug/kakao-memo-test-panel";
 import {
   categoryFromComparableKey,
   categoryReadinessRows,
@@ -2163,6 +2164,8 @@ export default async function DebugPage({ searchParams }: { searchParams?: Promi
         <MarketVelocityPanel stats={marketVelocity} />
 
         <WorkerAlertPanel runs={runs} />
+
+        <KakaoMemoTestPanel />
 
         {latest ? <CronTimeoutAdvice run={latest} /> : null}
 

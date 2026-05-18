@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { KAKAO_LOGIN_SCOPES } from "@/lib/kakao";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 // Wave 93b: 로그인 후 redirect — ?next= 파라미터 안전 처리.
@@ -71,7 +72,7 @@ export default function AuthForm({ mode }: Props) {
       provider: "kakao",
       options: {
         redirectTo,
-        scopes: "profile_nickname profile_image",
+        scopes: KAKAO_LOGIN_SCOPES,
       },
     });
     if (error) {
