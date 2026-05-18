@@ -1,14 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { ConditionPhotoBadge } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { BunjangLogo, BunjangSourceBadge, DanawaLogo, DanawaSourceBadge } from "@/components/market-brand-logo";
-import { CheckCircleIcon, ScaleIcon, ShieldIcon, TargetIcon, WalletIcon } from "@/components/icons";
+import { CheckCircleIcon, ScaleIcon, ShieldIcon, TargetIcon, TrophyIcon, WalletIcon } from "@/components/icons";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 import { buildRiskScore, type RiskScoreInput, type RiskTone } from "@/lib/risk-score";
@@ -165,13 +164,6 @@ function marketSourceBadge(card: RevealCard) {
   if (market.priceSource === "reference") return { label: "다나와", tone: "reference" as const };
   if (market.conditionClass === "mint") return { label: "번개 S급", tone: "mint" as const };
   return null;
-}
-
-function marketDiscountPercent(card: RevealCard) {
-  const median = card.marketBasis?.medianPrice ?? 0;
-  if (!median || median <= 0 || !card.price || card.price <= 0) return null;
-  const discount = Math.round(((median - card.price) / median) * 100);
-  return Number.isFinite(discount) ? discount : null;
 }
 
 function freshLabel(seconds: number) {
@@ -652,6 +644,7 @@ function RevealRiskScoreMini({
   containerClassName,
   triggerClassName,
   triggerLabel,
+  triggerContent,
   hideChevron,
   portalDetail,
 }: {
@@ -659,6 +652,7 @@ function RevealRiskScoreMini({
   containerClassName?: string;
   triggerClassName?: string;
   triggerLabel?: string;
+  triggerContent?: ReactNode;
   hideChevron?: boolean;
   portalDetail?: boolean;
 }) {
@@ -671,6 +665,7 @@ function RevealRiskScoreMini({
       containerClassName={containerClassName}
       triggerClassName={triggerClassName}
       triggerLabel={triggerLabel}
+      triggerContent={triggerContent}
       hideChevron={hideChevron}
       portalDetail={portalDetail}
     />
@@ -797,6 +792,43 @@ function marketEvidenceSummary(card: RevealCard) {
   return `${condition} · ${source} 기준`;
 }
 
+function marketActivityDisplay(card: RevealCard) {
+  const flow = card.skuListingFlow;
+  if (flow && flow.avgPerDay7d > 0) {
+    const ratio = flow.count24h / flow.avgPerDay7d;
+    const tone: "good" | "info" | "warn" =
+      ratio >= 1.25 ? "good" : ratio <= 0.55 ? "warn" : "info";
+    const trend = ratio >= 1.25 ? "평소보다 많음" : ratio <= 0.55 ? "오늘은 조용함" : "평소 수준";
+    return {
+      label: "오늘 물량",
+      value: `${flow.count24h.toLocaleString("ko-KR")}건`,
+      sub: `7일 평균 ${flow.avgPerDay7d.toLocaleString("ko-KR")}건/일 · ${trend}`,
+      tone,
+    };
+  }
+
+  const market = card.marketBasis;
+  const sample = market?.sampleCount ?? 0;
+  const active = market?.activeSampleCount ?? 0;
+  const sold = market?.soldSampleCount ?? 0;
+  if (sample > 0) {
+    const tone: "good" | "info" | "warn" = sample >= 30 ? "good" : sample >= 8 ? "info" : "warn";
+    return {
+      label: "시장 표본",
+      value: `${sample.toLocaleString("ko-KR")}건`,
+      sub: `판매중 ${active.toLocaleString("ko-KR")} · 거래완료 ${sold.toLocaleString("ko-KR")}`,
+      tone,
+    };
+  }
+
+  return {
+    label: "시장 표본",
+    value: "수집중",
+    sub: marketEvidenceSummary(card),
+    tone: "warn" as const,
+  };
+}
+
 function verificationDisplay(card: RevealCard) {
   if (card.freshSeconds <= 30 * 60) {
     return { value: freshLabel(card.freshSeconds), sub: "판매상태 재확인", tone: "good" as const };
@@ -805,6 +837,23 @@ function verificationDisplay(card: RevealCard) {
     return { value: freshLabel(card.freshSeconds), sub: "최근 검증", tone: "info" as const };
   }
   return { value: freshLabel(card.freshSeconds), sub: "다시 확인 권장", tone: "warn" as const };
+}
+
+function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>) {
+  const rating = card.savedDetail?.sellerReviewRating ?? null;
+  const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
+  if (rating != null && rating >= 4.8 && reviewCount > 0) {
+    return {
+      value: `평점 ${rating.toFixed(1)} 셀러`,
+      sub: `후기 ${reviewCount.toLocaleString("ko-KR")}건 · 근거 보기`,
+      Icon: TrophyIcon,
+    };
+  }
+  return {
+    value: risk.label,
+    sub: risk.tone === "safe" ? "차단 필터 통과 · 근거 보기" : "확인 포인트 있음 · 근거 보기",
+    Icon: ShieldIcon,
+  };
 }
 
 function upperFoldTileClass(tone: UpperFoldTileTone) {
@@ -832,20 +881,9 @@ function upperFoldTileClass(tone: UpperFoldTileTone) {
 function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   const speed = saleSpeedDisplay(card);
   const risk = buildRiskScore(revealRiskScoreInput(card));
-  const discount = marketDiscountPercent(card);
   const verified = verificationDisplay(card);
-  const priceTone: "good" | "info" | "warn" = discount == null
-    ? "warn"
-    : discount >= 15
-      ? "good"
-      : discount >= 5
-        ? "info"
-        : "warn";
-  const priceValue = discount == null
-    ? "확인중"
-    : discount > 0
-      ? `${discount}% 낮음`
-      : "여유 적음";
+  const activity = marketActivityDisplay(card);
+  const safety = safetyDisplay(card, risk);
   const speedTone: "good" | "info" | "warn" = speed.isSlow ? "warn" : speed.isFast ? "good" : "info";
   const tiles: Array<{
     key: string;
@@ -862,11 +900,11 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
       tone: verified.tone,
     },
     {
-      key: "price",
-      label: "시세/매물대",
-      value: priceValue,
-      sub: marketEvidenceSummary(card),
-      tone: priceTone,
+      key: "activity",
+      label: activity.label,
+      value: activity.value,
+      sub: activity.sub,
+      tone: activity.tone,
     },
     {
       key: "speed",
@@ -875,14 +913,9 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
       sub: speed.isFallback ? "표본 부족 · 임시 기준" : `최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
       tone: speedTone,
     },
-    {
-      key: "risk",
-      label: "거래 안전",
-      value: risk.label,
-      sub: risk.tone === "safe" ? "강한 차단 통과" : "확인 포인트 있음",
-      tone: risk.tone,
-    },
   ];
+  const safetyTone = upperFoldTileClass(risk.tone);
+  const SafetyIcon = safety.Icon;
   return (
     <div className="mt-2 grid grid-cols-2 gap-1.5">
       {tiles.map((tile) => {
@@ -905,6 +938,32 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
           </div>
         );
       })}
+      <RevealRiskScoreMini
+        card={card}
+        containerClassName="contents"
+        triggerClassName={`min-h-[62px] w-full rounded-lg border px-2.5 py-2 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${safetyTone.card}`}
+        triggerContent={(
+          <span className="block w-full">
+            <span className="flex items-center justify-between gap-2 text-[10px] font-black text-zinc-500 dark:text-zinc-400">
+              <span className="inline-flex items-center gap-1.5">
+                <SafetyIcon className={`h-3.5 w-3.5 ${safetyTone.value}`} />
+                거래 안전
+              </span>
+              <span className="text-[10px] font-black text-zinc-400 underline decoration-zinc-300 underline-offset-2 dark:text-zinc-500 dark:decoration-zinc-600">
+                근거 보기
+              </span>
+            </span>
+            <span className={`mt-0.5 block line-clamp-2 text-[13px] font-black leading-4 tracking-normal tabular-nums sm:text-sm ${safetyTone.value}`}>
+              {safety.value}
+            </span>
+            <span className="mt-0.5 block line-clamp-1 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+              {safety.sub}
+            </span>
+          </span>
+        )}
+        hideChevron
+        portalDetail
+      />
     </div>
   );
 }
@@ -1981,27 +2040,34 @@ export default function PackRevealModal({
         className="flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#fffdf9] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-h-[88vh] sm:max-w-6xl sm:rounded-2xl sm:border sm:border-[#ddd6ca] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.16)] sm:dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 z-10 shrink-0 border-b border-[#e2dbcf] bg-[#fffdf9]/95 px-3 py-2 text-[var(--brand-accent-strong)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-4">
-          <div className="flex min-h-9 items-center justify-between gap-3">
-            <div className="min-w-0">
-              <Link
-                href="/"
-                aria-label="득템잡이 홈으로 이동"
-                className="inline-flex min-h-8 items-center rounded-lg px-1 text-base font-black tracking-tight text-[var(--brand-accent-strong)] transition hover:bg-[#eef6ec] dark:text-zinc-100 dark:hover:bg-zinc-800"
+        <div className="sticky top-0 z-10 shrink-0 border-b border-[#e2dbcf] bg-[#fffdf9]/95 px-2.5 py-1.5 text-[var(--brand-accent-strong)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-3">
+          <div className="flex min-h-8 items-center justify-between gap-3">
+            {!loading ? (
+              <button
+                type="button"
+                onClick={handleClose}
+                aria-label="상세 닫기"
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#d7d1c5] bg-white/80 text-lg font-black leading-none text-[var(--brand-accent-strong)] shadow-sm backdrop-blur transition hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
               >
-                득템잡이
-              </Link>
+                <span aria-hidden="true">←</span>
+              </button>
+            ) : (
+              <span className="h-8 w-8" aria-hidden="true" />
+            )}
+            <div className="min-w-0 flex-1 text-center text-[11px] font-black uppercase tracking-[0.16em] text-[#7a8478] dark:text-zinc-400">
+              추천 상세
             </div>
             {!loading ? (
               <button
                 type="button"
                 onClick={handleClose}
-                className="shrink-0 rounded-lg border border-[#d7d1c5] bg-white/80 px-2.5 py-1.5 text-xs font-semibold text-[var(--brand-accent-strong)] backdrop-blur transition hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                className="shrink-0 rounded-full border border-[#d7d1c5] bg-white/80 px-3 py-1.5 text-xs font-black text-[var(--brand-accent-strong)] shadow-sm backdrop-blur transition hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
               >
-                <span className="sm:hidden">뒤로</span>
-                <span className="hidden sm:inline">닫기</span>
+                대시보드
               </button>
-            ) : null}
+            ) : (
+              <span className="h-8 w-[72px]" aria-hidden="true" />
+            )}
           </div>
         </div>
 
