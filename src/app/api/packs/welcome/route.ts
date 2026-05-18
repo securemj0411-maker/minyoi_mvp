@@ -23,6 +23,43 @@ const WELCOME_BAND = 2;
 // 5 요청 → 4 카드. 사용자 합의 4 수용 → WELCOME_CARDS=4 (스펙·실제 일치, 무의미한 5→4 마법 제거).
 const WELCOME_CARDS = 4;
 
+async function claimWelcomeGrant(userRef: string, authUserId: string) {
+  const res = await restFetch(`${tableUrl("mvp_welcome_grants")}?on_conflict=user_ref`, {
+    method: "POST",
+    headers: serviceHeaders("resolution=ignore-duplicates,return=representation"),
+    body: JSON.stringify({
+      user_ref: userRef,
+      auth_user_id: authUserId,
+      status: "pending",
+      revealed_count: 0,
+    }),
+  });
+  const rows = (await res.json()) as Array<{ user_ref: string }>;
+  return rows.length > 0;
+}
+
+async function completeWelcomeGrant(userRef: string, packOpenId: number, revealedCount: number) {
+  const now = new Date().toISOString();
+  await restFetch(`${tableUrl("mvp_welcome_grants")}?user_ref=eq.${encodeURIComponent(userRef)}`, {
+    method: "PATCH",
+    headers: serviceHeaders("return=minimal"),
+    body: JSON.stringify({
+      status: "success",
+      pack_open_id: packOpenId,
+      revealed_count: revealedCount,
+      completed_at: now,
+      updated_at: now,
+    }),
+  });
+}
+
+async function releaseWelcomeGrant(userRef: string) {
+  await restFetch(`${tableUrl("mvp_welcome_grants")}?user_ref=eq.${encodeURIComponent(userRef)}&status=eq.pending`, {
+    method: "DELETE",
+    headers: serviceHeaders("return=minimal"),
+  });
+}
+
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -48,7 +85,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ result: "already_used", reason: "사용자가 이미 매물을 받았습니다." });
     }
 
-    // 2. 5 매물 reserve (무료).
+    // 2. 서버 idempotency lock. 기존 select-then-open만으로는 동시 POST 2~3개가 모두
+    // existing=0을 보고 4개씩 reveal하는 race가 가능했다.
+    const claimed = await claimWelcomeGrant(userRef, auth.user.id);
+    if (!claimed) {
+      return NextResponse.json({ result: "already_used", reason: "welcome grant already claimed" });
+    }
+
+    // 3. 4 매물 reserve (무료).
     const packResult = await openPack({
       band: WELCOME_BAND,
       userRef,
@@ -59,8 +103,20 @@ export async function POST(req: Request) {
       consumeInventory: false,
     });
 
+    if (packResult.result === "success") {
+      await completeWelcomeGrant(userRef, packResult.packOpenId, packResult.reveals.length);
+    } else {
+      await releaseWelcomeGrant(userRef).catch((releaseErr) => {
+        console.error("[packs/welcome] release failed", {
+          userRef,
+          err: releaseErr instanceof Error ? releaseErr.message : String(releaseErr),
+        });
+      });
+    }
+
     return NextResponse.json(packResult);
   } catch (err) {
+    await releaseWelcomeGrant(userRef).catch(() => undefined);
     console.error("[packs/welcome] error", err);
     return NextResponse.json({ error: "welcome_failed" }, { status: 500 });
   }
