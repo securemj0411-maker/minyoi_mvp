@@ -449,6 +449,29 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     }
   }
 
+  async function deleteOne(pid: number) {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      const res = await fetchWithAuth("/api/packs/reveals/delete", { pids: [pid] });
+      if (!res.ok) throw new Error("삭제 실패");
+      setItems((prev) => prev.filter((item) => item.pid !== pid));
+      setSelectedPids((prev) => {
+        if (!prev.has(pid)) return prev;
+        const next = new Set(prev);
+        next.delete(pid);
+        return next;
+      });
+      setTotal((prev) => Math.max(0, prev - 1));
+      await loadItems({ silent: true });
+    } catch (err) {
+      console.error("[user-reveal-dashboard] delete one failed", err);
+      setError("숨기기에 실패했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function deleteAll() {
     if (deleting) return;
     setDeleting(true);
@@ -1045,6 +1068,19 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   <div className="mt-1 text-[11px] text-zinc-400 dark:text-zinc-500">
                     {timeLabel(item.revealedAt)}
                   </div>
+                  {!selectMode ? (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void deleteOne(item.pid);
+                      }}
+                      disabled={deleting}
+                      className="mt-2 rounded-full border border-zinc-300 bg-white px-2.5 py-1 text-[10px] font-black text-zinc-600 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      숨기기
+                    </button>
+                  ) : null}
                 </div>
               </article>
             );
