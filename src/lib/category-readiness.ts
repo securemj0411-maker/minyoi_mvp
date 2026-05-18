@@ -860,9 +860,13 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minTrustedKeys: 5,
   },
   bag: {
-    status: "internal_only",
+    // Wave 221 (2026-05-19): internal_only → ready (사용자 명시 "ready로 가야된다").
+    //   bag narrow lane 다수 박혀있음 (Stussy/CDG/Coach/Polo/Patagonia/LV/Prada/Kitsune/Bottega 등).
+    //   가품 floor 0.25 + AD pattern 차단 (Wave 196/216).
+    //   bag 매물 1229건 detail_done + parsed usable 22% — pool 진입 가능.
+    status: "ready",
     label: "Bags",
-    note: "Wave 91: 입문 명품 + 빈티지 (LV/구찌/MCM/프라다). resale ≤200만 cap. 가품 위험 매우 높음 — internal_only 유지 권장.",
+    note: "Wave 221: bag narrow lane 다수 ready. 가품 floor 0.25 + AD 차단. (이전 Wave 91 internal_only)",
     minReadyPool: 10,
     minParseRate: 0.85,
     minTrustedKeys: 5,
