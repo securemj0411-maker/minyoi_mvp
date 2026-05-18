@@ -35,6 +35,10 @@ type RevealItem = {
   linkClickedAt: string | null;
   feedbackType: string | null;
   feedbackNote: string | null;
+  transactionFeedbackType: string | null;
+  transactionFeedbackNote: string | null;
+  reportFeedbackType: string | null;
+  reportFeedbackNote: string | null;
   // Wave 216: /me 목록은 marketBasis 중심. velocity/flow는 상품 보기 상세 호출 때 lazy-fill.
   marketBasis: RevealMarketBasis | null;
   velocityBasis: RevealVelocityBasis | null;
@@ -65,6 +69,8 @@ type RevealDetailResponse = {
 
 type RevealSort = "latest" | "oldest" | "price_low" | "price_high" | "profit_low" | "profit_high";
 type RevealViewMode = "grid" | "list";
+type TransactionFeedbackType = Extract<RevealFeedbackType, "contacted" | "bought" | "passed" | "inspected" | "listed" | "resold">;
+type ReportFeedbackType = Extract<RevealFeedbackType, "loss_report" | "inaccurate_report">;
 
 const PAGE_SIZE = 20;
 
@@ -107,6 +113,33 @@ function listingStateChipClass(tone: "active" | "sold" | "unknown"): string {
   if (tone === "sold") return "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200";
   if (tone === "active") return "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300";
   return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300";
+}
+
+const TRANSACTION_FEEDBACK_LABEL: Record<TransactionFeedbackType, string> = {
+  contacted: "문의함",
+  bought: "매수함",
+  passed: "포기함",
+  inspected: "검수 완료",
+  listed: "판매 등록",
+  resold: "판매 완료",
+};
+
+const REPORT_FEEDBACK_LABEL: Record<ReportFeedbackType, string> = {
+  loss_report: "손해 신고 완료",
+  inaccurate_report: "정보 신고 완료",
+};
+
+function isTransactionFeedbackType(value: string | null | undefined): value is TransactionFeedbackType {
+  return value === "contacted"
+    || value === "bought"
+    || value === "passed"
+    || value === "inspected"
+    || value === "listed"
+    || value === "resold";
+}
+
+function isReportFeedbackType(value: string | null | undefined): value is ReportFeedbackType {
+  return value === "loss_report" || value === "inaccurate_report";
 }
 
 function isUserFacingClosed(item: RevealItem) {
@@ -156,6 +189,28 @@ function profitPercent(item: RevealItem) {
   const profit = currentProfitAverage(item);
   const pct = Math.round((profit / item.price) * 100);
   return Number.isFinite(pct) ? pct : null;
+}
+
+function applyFeedbackState(item: RevealItem, feedbackType: RevealFeedbackType, note?: string): RevealItem {
+  if (isTransactionFeedbackType(feedbackType)) {
+    return {
+      ...item,
+      feedbackType: item.reportFeedbackType ?? feedbackType,
+      feedbackNote: item.reportFeedbackType ? item.feedbackNote : note ?? item.feedbackNote,
+      transactionFeedbackType: feedbackType,
+      transactionFeedbackNote: note ?? item.transactionFeedbackNote,
+    };
+  }
+  if (isReportFeedbackType(feedbackType)) {
+    return {
+      ...item,
+      feedbackType,
+      feedbackNote: note ?? item.feedbackNote,
+      reportFeedbackType: feedbackType,
+      reportFeedbackNote: note ?? item.reportFeedbackNote,
+    };
+  }
+  return { ...item, feedbackType, feedbackNote: note ?? item.feedbackNote };
 }
 
 export default function UserRevealDashboard({ userRef, welcomePending = false }: { userRef: string; welcomePending?: boolean }) {
@@ -303,6 +358,10 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         linkClickedAt: null,
         feedbackType: null,
         feedbackNote: null,
+        transactionFeedbackType: null,
+        transactionFeedbackNote: null,
+        reportFeedbackType: null,
+        reportFeedbackNote: null,
         marketBasis: card.marketBasis,
         velocityBasis: card.velocityBasis,
         skuListingFlow: card.skuListingFlow ?? null,
@@ -555,10 +614,10 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   function handleFeedback(pid: number, feedbackType: RevealFeedbackType, note?: string) {
     if (!userRef) return;
     setItems((prev) => prev.map((item) => (
-      item.pid === pid ? { ...item, feedbackType, feedbackNote: note ?? item.feedbackNote } : item
+      item.pid === pid ? applyFeedbackState(item, feedbackType, note) : item
     )));
     setSelectedItem((prev) => (
-      prev?.pid === pid ? { ...prev, feedbackType, feedbackNote: note ?? prev.feedbackNote } : prev
+      prev?.pid === pid ? applyFeedbackState(prev, feedbackType, note) : prev
     ));
     void fetchWithAuth("/api/packs/reveals/feedback", { pid, feedbackType, note }).catch(() => undefined);
   }
@@ -602,6 +661,13 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           message: json.message ?? "신고 접수됨.",
           compensation: json.compensationTokens ?? 0,
         });
+        const reportNote = lossReportNote.trim() || "정보 오류 신고";
+        setItems((prev) => prev.map((item) => (
+          item.pid === lossReportItem.pid ? applyFeedbackState(item, "inaccurate_report", reportNote) : item
+        )));
+        setSelectedItem((prev) => (
+          prev?.pid === lossReportItem.pid ? applyFeedbackState(prev, "inaccurate_report", reportNote) : prev
+        ));
       }
     } catch (err) {
       console.error("[inaccurate-report] submit failed", err);
@@ -1269,9 +1335,18 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   );
                 })()}
               </div>
-              {item.feedbackType ? (
-                <div className="mt-1 truncate text-[11px] text-zinc-500 dark:text-zinc-400">
-                  피드백: {item.feedbackType}{item.feedbackNote ? ` · ${item.feedbackNote}` : ""}
+              {isTransactionFeedbackType(item.transactionFeedbackType) || isReportFeedbackType(item.reportFeedbackType) ? (
+                <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5">
+                  {isTransactionFeedbackType(item.transactionFeedbackType) ? (
+                    <span className="rounded-full bg-[#eef6eb] px-2 py-0.5 text-[10px] font-black text-[#3f5e45] ring-1 ring-[#d8e8d5] dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/50">
+                      거래 상태 · {TRANSACTION_FEEDBACK_LABEL[item.transactionFeedbackType]}
+                    </span>
+                  ) : null}
+                  {isReportFeedbackType(item.reportFeedbackType) ? (
+                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-800 ring-1 ring-amber-100 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/50">
+                      {REPORT_FEEDBACK_LABEL[item.reportFeedbackType]}
+                    </span>
+                  ) : null}
                 </div>
               ) : null}
             </div>
@@ -1360,7 +1435,10 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         }}
         onLinkClicked={handleLinkClicked}
         onFeedback={handleFeedback}
-        currentFeedbackType={selectedItem?.feedbackType ?? null}
+        currentFeedbackType={
+          selectedItem?.transactionFeedbackType
+          ?? (isTransactionFeedbackType(selectedItem?.feedbackType) ? selectedItem.feedbackType : null)
+        }
         onLoadDetail={handleLoadDetail}
         onRetry={() => {
           setSelectedItem(null);
@@ -1369,7 +1447,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         }}
         // Wave 182b: 손해 신고 — 매물 상세 모달 안 1곳에만 박음. 카드 list 에선 빠짐.
         // Wave 182c: 이미 inaccurate_report 박힌 매물은 비활성. (loss_report 보류 → 체크 안 함)
-        alreadyReportedLoss={selectedItem?.feedbackType === "inaccurate_report"}
+        alreadyReportedLoss={selectedItem?.reportFeedbackType === "inaccurate_report" || selectedItem?.feedbackType === "inaccurate_report"}
         onReportLoss={() => {
           if (!selectedItem) return;
           const itemRef = selectedItem;

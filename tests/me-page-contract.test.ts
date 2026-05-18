@@ -130,7 +130,8 @@ test("/me modal exposes transaction state feedback actions", () => {
   assert.match(modal, /문의했어요/);
   assert.match(modal, /매수했어요/);
   assert.match(modal, /포기했어요/);
-  assert.match(dashboard, /currentFeedbackType=\{selectedItem\?\.feedbackType \?\? null\}/);
+  assert.match(dashboard, /currentFeedbackType=\{\s*selectedItem\?\.transactionFeedbackType/);
+  assert.match(dashboard, /거래 상태 · \{TRANSACTION_FEEDBACK_LABEL/);
   assert.match(feedbackRoute, /"contacted"/);
   assert.match(feedbackRoute, /"passed"/);
   assert.match(migration, /'contacted'/);
@@ -164,4 +165,20 @@ test("/me modal supports post-buy follow-up states", () => {
   assert.match(meRoute, /resold: 76/);
   assert.match(meRoute, /listed: 74/);
   assert.match(meRoute, /inspected: 72/);
+});
+
+test("/me keeps report feedback separate from transaction progress", () => {
+  const meRoute = source("src/app/api/packs/me/route.ts");
+  const dashboard = source("src/components/user-reveal-dashboard.tsx");
+
+  assert.match(meRoute, /TRANSACTION_FEEDBACK_PRIORITY/);
+  assert.match(meRoute, /REPORT_FEEDBACK_PRIORITY/);
+  assert.match(meRoute, /transactionFeedbackByPid/);
+  assert.match(meRoute, /reportFeedbackByPid/);
+  assert.match(meRoute, /transactionFeedbackType:/);
+  assert.match(meRoute, /reportFeedbackType:/);
+  assert.match(dashboard, /applyFeedbackState/);
+  assert.match(dashboard, /reportFeedbackType/);
+  assert.match(dashboard, /alreadyReportedLoss=\{selectedItem\?\.reportFeedbackType === "inaccurate_report"/);
+  assert.doesNotMatch(dashboard, /피드백: \{item\.feedbackType\}/);
 });

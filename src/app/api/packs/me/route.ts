@@ -102,14 +102,45 @@ const FEEDBACK_DISPLAY_PRIORITY: Record<string, number> = {
   bad_pick: 30,
 };
 
-function pickDisplayFeedback(current: FeedbackRow | undefined, next: FeedbackRow) {
+const TRANSACTION_FEEDBACK_PRIORITY: Record<string, number> = {
+  resold: 60,
+  listed: 50,
+  inspected: 40,
+  bought: 30,
+  contacted: 20,
+  passed: 10,
+};
+
+const REPORT_FEEDBACK_PRIORITY: Record<string, number> = {
+  inaccurate_report: 20,
+  loss_report: 10,
+};
+
+function hasPriority(priority: Record<string, number>, feedbackType: string) {
+  return Object.prototype.hasOwnProperty.call(priority, feedbackType);
+}
+
+function pickPrioritizedFeedback(current: FeedbackRow | undefined, next: FeedbackRow, priority: Record<string, number>) {
   if (!current) return next;
-  const currentPriority = FEEDBACK_DISPLAY_PRIORITY[current.feedback_type] ?? 0;
-  const nextPriority = FEEDBACK_DISPLAY_PRIORITY[next.feedback_type] ?? 0;
+  const currentPriority = priority[current.feedback_type] ?? 0;
+  const nextPriority = priority[next.feedback_type] ?? 0;
   if (nextPriority !== currentPriority) return nextPriority > currentPriority ? next : current;
   const currentTime = Date.parse(current.updated_at ?? "");
   const nextTime = Date.parse(next.updated_at ?? "");
   return Number.isFinite(nextTime) && (!Number.isFinite(currentTime) || nextTime >= currentTime) ? next : current;
+}
+
+function pickDisplayFeedback(current: FeedbackRow | undefined, next: FeedbackRow) {
+  return pickPrioritizedFeedback(current, next, FEEDBACK_DISPLAY_PRIORITY);
+}
+
+function pickFeedbackOfKind(
+  current: FeedbackRow | undefined,
+  next: FeedbackRow,
+  priority: Record<string, number>,
+) {
+  if (!hasPriority(priority, next.feedback_type)) return current;
+  return pickPrioritizedFeedback(current, next, priority);
 }
 
 type RevealItem = {
@@ -138,6 +169,10 @@ type RevealItem = {
   linkClickedAt: string | null;
   feedbackType: string | null;
   feedbackNote: string | null;
+  transactionFeedbackType: string | null;
+  transactionFeedbackNote: string | null;
+  reportFeedbackType: string | null;
+  reportFeedbackNote: string | null;
   // Wave 216: 목록 응답은 market/current profit 중심. velocity/flow는 상품 보기에서 lazy-fill.
   marketBasis: RevealMarketBasis | null;
   velocityBasis: RevealVelocityBasis | null;
@@ -466,10 +501,16 @@ export async function GET(req: Request) {
   const rawByPid = new Map(rawRows.map((row) => [Number(row.pid), row]));
   const listingCostByPid = new Map(listingCostRows.map((row) => [Number(row.pid), row]));
   const feedbackByPid = new Map<number, FeedbackRow>();
+  const transactionFeedbackByPid = new Map<number, FeedbackRow>();
+  const reportFeedbackByPid = new Map<number, FeedbackRow>();
   for (const row of feedbackRows) {
     const pid = Number(row.pid);
     if (!Number.isFinite(pid)) continue;
     feedbackByPid.set(pid, pickDisplayFeedback(feedbackByPid.get(pid), row));
+    const transactionFeedback = pickFeedbackOfKind(transactionFeedbackByPid.get(pid), row, TRANSACTION_FEEDBACK_PRIORITY);
+    if (transactionFeedback) transactionFeedbackByPid.set(pid, transactionFeedback);
+    const reportFeedback = pickFeedbackOfKind(reportFeedbackByPid.get(pid), row, REPORT_FEEDBACK_PRIORITY);
+    if (reportFeedback) reportFeedbackByPid.set(pid, reportFeedback);
   }
   const bandByOpenId = new Map(packOpenRows.map((row) => [Number(row.id), Number(row.band_requested)]));
   const comparableKeyByPid = new Map(parsedRows.map((row) => [Number(row.pid), row.comparable_key ?? null]));
@@ -517,6 +558,8 @@ export async function GET(req: Request) {
       const raw = rawByPid.get(Number(reveal.pid));
       const listingCost = listingCostByPid.get(Number(reveal.pid));
       const feedback = feedbackByPid.get(Number(reveal.pid));
+      const transactionFeedback = transactionFeedbackByPid.get(Number(reveal.pid));
+      const reportFeedback = reportFeedbackByPid.get(Number(reveal.pid));
       const comparableKey = comparableKeyByPid.get(Number(reveal.pid)) ?? null;
       const skuName = raw?.sku_name ?? null;
       const skuId = raw?.sku_id ?? null;
@@ -571,6 +614,10 @@ export async function GET(req: Request) {
         linkClickedAt: reveal.link_clicked_at,
         feedbackType: feedback?.feedback_type ?? null,
         feedbackNote: feedback?.note ?? null,
+        transactionFeedbackType: transactionFeedback?.feedback_type ?? null,
+        transactionFeedbackNote: transactionFeedback?.note ?? null,
+        reportFeedbackType: reportFeedback?.feedback_type ?? null,
+        reportFeedbackNote: reportFeedback?.note ?? null,
         // Wave 130 (2026-05-16): 매물 condition_class 전달 → 매칭되는 시세 우선 표시 (사업 보고서 L2).
         marketBasis: computedMarketBasis,
         velocityBasis: null,
