@@ -630,6 +630,8 @@ export const LANE_READINESS: LaneReadinessMap = {
   nike_airmax_95: { status: "ready", label: "Nike Air Max 95", note: "Wave 211 — 매물 매우 다수" },
   nike_airmax_97: { status: "ready", label: "Nike Air Max 97", note: "Wave 211 — 매물 매우 다수 (faved 36)" },
   nike_blazer_broad: { status: "ready", label: "Nike Blazer (broad fallback)", note: "Wave 219: Mid/Low/Hi 분리 후 catch-all" },
+  // Wave 220 (2026-05-19): orphan sku_id cleanup — Air Force 1 Low Black 시그니처.
+  nike_airforce_1_low_black: { status: "ready", label: "Nike Air Force 1 Low Black (Triple Black)", note: "Wave 220 — orphan cleanup, 79건 매물 진입" },
   // Wave 219 (2026-05-19): Nike Blazer variant 분리 — Mid 119K / Low/Platform 99K / Hi 129K
   nike_blazer_mid: { status: "ready", label: "Nike Blazer Mid / Mid 77", note: "Wave 219" },
   nike_blazer_low: { status: "ready", label: "Nike Blazer Low / Low 77 / Platform", note: "Wave 219" },

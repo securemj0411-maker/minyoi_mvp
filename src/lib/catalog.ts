@@ -7422,6 +7422,23 @@ export const CATALOG: Sku[] = [
     msrpKrw: 290000, released: 2020,
   },
   // Wave 204 (2026-05-18): 슈프림 매물 압도적 (sample 80건 거의 다) — 6 collab + 2 가방 = 8 SKU.
+  // Wave 220 (2026-05-19): orphan sku_id cleanup — raw_listings 에 79건 박힌 'shoe-nike-airforce-1-low-black' SKU 가 catalog 에 없었음.
+  //   매물 sample: "에어포스1 트리플 블랙" / "올블랙" / "에어포스 1 블랙" / "에어포스1 블랙 스웨이드" 등 명백한 AF1 Low Black 시그니처.
+  //   catalog 박아 정상 매칭 + LANE_READINESS 등록. 가품 risk 낮음 (시그니처 모델).
+  {
+    id: "shoe-nike-airforce-1-low-black",
+    brand: "Nike", category: "shoe", laneKey: "nike_airforce_1_low_black",
+    modelName: "Nike Air Force 1 Low Black (Triple Black)",
+    aliases: ["AF1 Low Black", "에어포스1 블랙", "에어포스 1 블랙", "Air Force 1 Triple Black"],
+    mustContain: [["에어포스", "air force", "airforce", "af1"], ["블랙", "black", "검정", "올블랙", "올검", "트리플 블랙", "triple black"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      "high", "하이", "mid", "미드",
+      "supreme", "슈프림", "구찌", "gucci", "off-white", "오프화이트", "sacai", "사카이", "travis", "트래비스",
+      "white", "화이트", "트리플 화이트", "흰색", "블루", "그린", "핑크", "레드", "옐로우",
+      // 다른 색 차단 (위 black 외 colorway 매물 제외)
+    ],
+    msrpKrw: 139000, released: 1982,
+  },
   // 사용자 정책: 한정판 narrow 분리. 가품 risk 매우 큼 → mustNotContain 강력.
   {
     id: "shoe-supreme-nike-airforce1-collab",
@@ -7505,7 +7522,11 @@ export const CATALOG: Sku[] = [
     modelName: "Crocs Classic Clog (시그니처)",
     aliases: ["Crocs Classic", "크록스 클래식", "Crocs 클래식 클로그"],
     mustContain: [["crocs", "크록스"], ["클래식", "classic", "클로그", "clog"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "바야밴드", "bayaband", "크러쉬", "crush", "에코", "eco", "플랫폼", "platform", "발레 플랫", "ballet flat", "굿즈", "참이슬", "두꺼비"],
+    // Wave 220: 별모델 추가 차단 (디스코/퍼/라이트라이드/딜런/스톰프/베이 글리터/언퍼게터블/스타/별무늬)
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      "바야밴드", "bayaband", "바야 밴드", "크러쉬", "crush", "에코", "eco", "플랫폼", "platform", "발레 플랫", "ballet flat",
+      "굿즈", "참이슬", "두꺼비",
+      "디스코", "disco", "별무늬", "라이트라이드", "lite ride", "딜런", "dylan", "스톰프", "stomp", "베이 글리터", "글리터", "glitter", "퍼클로그", "퍼 클로그", "fur clog", "언퍼게터블", "스웨이드", "비건"],
     msrpKrw: 49000, released: 2002,
   },
   {
@@ -7974,10 +7995,13 @@ export const CATALOG: Sku[] = [
   {
     id: "shoe-fog-fear-of-god-self",
     brand: "Fear of God", category: "shoe", laneKey: "fog_fear_of_god_self",
-    modelName: "Fear of God 자체 라인 (8th 모크 / 로퍼 / 디스턴스 러너 / 캘리포니아 뮬 / 101 레이스업)",
-    aliases: ["Fear of God 자체", "FOG 자체", "FOG 디스턴스 러너", "캘리포니아 뮬"],
-    mustContain: [["피어 오브 갓", "피어오브갓", "피오갓", "fear of god"], ["8th", "디스턴스 러너", "distance runner", "캘리포니아", "california mule", "101 레이스업", "101 lace", "모크 니트", "mock", "로퍼", "loafer"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "nike", "나이키", "adidas", "아디다스", "essentials", "벨트백", "버켄스탁", "birkenstock"],
+    modelName: "Fear of God 신발 (캘리포니아 뮬 / 101 / 디스턴스 러너 / 로퍼)",
+    aliases: ["FOG 신발", "FOG 캘리포니아 뮬", "FOG 디스턴스 러너"],
+    // Wave 220: 의류 (8th 밀라노 티 / v넥 티) 차단 — shoe 카테고리 매물만.
+    mustContain: [["피어 오브 갓", "피어오브갓", "피오갓", "fear of god"], ["캘리포니아", "california", "디스턴스 러너", "distance runner", "101 레이스업", "101 lace", "로퍼", "loafer", "뮬", "mule", "스니커즈", "sneaker", "신발", "shoe", "샌들"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "nike", "나이키", "adidas", "아디다스", "essentials", "벨트백", "버켄스탁", "birkenstock",
+      // Wave 220: 의류 매물 차단 (티셔츠/맨투맨/후디/8th 밀라노)
+      "티셔츠", "tee ", "맨투맨", "후드", "후디", "hoodie", "v넥", "vneck", "v-neck", "밀라노"],
     msrpKrw: 600000, released: 2018,
   },
   // 챔피온 / 토미힐피거 (매물 적음 but 박음 — 가품 risk 낮음, 가격 친화)
