@@ -378,16 +378,22 @@ export default function AppNav() {
         <div className="flex items-center justify-self-end gap-1.5">
           {/* mobile 전용: 로그인 시 대시보드 / 비로그인 시 로그인 */}
           {user ? (
-            <Link
-              href="/me"
-              className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--brand-accent-strong)] px-3 text-xs font-black text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] transition hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-950 md:hidden"
-            >
-              <span>대시보드</span>
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-white/18 px-1.5 py-0.5 text-[10px] font-black tabular-nums ring-1 ring-white/20 dark:bg-zinc-950/10 dark:ring-zinc-950/10">
-                <CreditIcon size={13} className="shrink-0" />
+            <div className="flex items-center gap-1 md:hidden">
+              <Link
+                href="/me"
+                className="inline-flex h-9 items-center rounded-xl bg-[var(--brand-accent-strong)] px-3 text-xs font-black text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] transition hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-950"
+              >
+                대시보드
+              </Link>
+              <Link
+                href="/plans"
+                aria-label={`크레딧 ${infiniteCredits ? "무제한" : `${tokens}개`} 충전하기`}
+                className="inline-flex h-9 items-center gap-1 rounded-xl border border-[#cfd9c9] bg-[#edf4e8] px-2 text-xs font-black tabular-nums text-[#223127] shadow-[0_8px_14px_rgba(92,116,95,0.10)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              >
+                <CreditIcon size={16} className="shrink-0" />
                 {infiniteCredits ? "∞" : tokens}
-              </span>
-            </Link>
+              </Link>
+            </div>
           ) : (
             <Link
               href="/login"
