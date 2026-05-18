@@ -67,24 +67,6 @@ const LOADING_STEPS = [
   "리스크 신호와 단품 여부를 마지막으로 걸러내는 중...",
 ];
 
-const BAND_LABEL: Record<PackBand, string> = {
-  1: "+2~3만원 구간",
-  2: "+4~6만원 구간",
-  3: "+7만원+ 구간",
-};
-
-const BAND_THEME: Record<PackBand, string> = {
-  1: "from-[#eef4f0] via-[#f7f1e6] to-[#edf3eb]",
-  2: "from-[#edf3eb] via-[#f7f1e6] to-[#e7efe5]",
-  3: "from-[#f4efe2] via-[#f7f1e6] to-[#eef4f0]",
-};
-
-const BAND_PILL_THEME: Record<PackBand, string> = {
-  1: "bg-[#e7f0ec] text-[#4f6962] ring-1 ring-[#cad9d0]",
-  2: "bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] ring-1 ring-[#d5dfd2]",
-  3: "bg-[#f3ead8] text-[#6c5840] ring-1 ring-[#e3d5ba]",
-};
-
 function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
@@ -1085,27 +1067,25 @@ export default function PackRevealModal({
         className="flex max-h-[88vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-[rgba(49,66,56,0.16)] dark:border-zinc-800 dark:bg-zinc-900"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`sticky top-0 z-10 shrink-0 overflow-hidden border-b border-[#e2dbcf] bg-gradient-to-br p-4 text-[var(--brand-accent-strong)] ${BAND_THEME[band]}`}>
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.35),transparent_60%)]" />
-          <div className="relative flex items-center justify-between gap-3">
-            <div>
-              <p className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest ${BAND_PILL_THEME[band]}`}>
-                {BAND_LABEL[band]}
-              </p>
-              <h2 className="mt-1 text-lg font-black tracking-tight sm:text-xl">
-                {loading ? "추천 상품 검증 중" : result?.result === "success" ? "추천 리포트" : "검증 결과"}
-              </h2>
-              {!loading && result?.result === "success" ? (
-                <div className="mt-1 text-xs font-semibold text-[#5f6f61] dark:text-zinc-300">
-                  현재 차익, 판매 상태, 시세 근거를 같은 기준으로 확인합니다.
-                </div>
-              ) : null}
+        <div className="sticky top-0 z-10 shrink-0 border-b border-[#e2dbcf] bg-[#fffdf9]/95 px-3 py-2 text-[var(--brand-accent-strong)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-4">
+          <div className="flex min-h-9 items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                <h2 className="truncate text-sm font-black tracking-tight sm:text-base">
+                  {loading ? "추천 상품 검증 중" : result?.result === "success" ? "추천 리포트" : "검증 결과"}
+                </h2>
+                {!loading && result?.result === "success" ? (
+                  <span className="text-[11px] font-medium text-[#7a8478] dark:text-zinc-400">
+                    현재 차익 · 판매 상태 · 시세 근거 확인
+                  </span>
+                ) : null}
+              </div>
             </div>
             {!loading ? (
               <button
                 type="button"
                 onClick={handleClose}
-                className="rounded-lg border border-[#d7d1c5] bg-white/80 px-3 py-2 text-sm font-semibold text-[var(--brand-accent-strong)] backdrop-blur transition hover:bg-white"
+                className="shrink-0 rounded-lg border border-[#d7d1c5] bg-white/80 px-2.5 py-1.5 text-xs font-semibold text-[var(--brand-accent-strong)] backdrop-blur transition hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
               >
                 닫기
               </button>
