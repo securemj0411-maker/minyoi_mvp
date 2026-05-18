@@ -209,6 +209,11 @@ export default function MarketHistoryChart({
   const title = priceSource === "reference" ? "미개봉 시세 추이" : "시세 30일 추이";
   const activeLabel = priceSource === "reference" ? "미개봉 호가" : "호가";
   const soldLabel = priceSource === "reference" ? "미개봉 거래가" : "거래가";
+  const referenceLineY = showReferencePrice ? y(referencePrice as number) : null;
+  const referenceLabelRectY = referenceLineY == null
+    ? null
+    : Math.max(2, Math.min(height - padBottom - 14, referenceLineY - 20));
+  const referenceLabelTextY = referenceLabelRectY == null ? null : referenceLabelRectY + 10;
 
   return (
     <div className="rounded-md bg-white px-2 py-2 dark:bg-zinc-900">
@@ -306,9 +311,9 @@ export default function MarketHistoryChart({
         ) : null}
         {showReferencePrice ? (
           <>
-            <circle cx={width - padR} cy={y(referencePrice as number)} r="3.5" fill="#8b5cf6" stroke="white" strokeWidth="1" />
-            <rect x={width - padR + 3} y={y(referencePrice as number) - 22} width="50" height="13" rx="3" fill="#8b5cf6" />
-            <text x={width - padR + 28} y={y(referencePrice as number) - 12} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">
+            <circle cx={width - padR} cy={referenceLineY as number} r="3.5" fill="#8b5cf6" stroke="white" strokeWidth="1" />
+            <rect x={width - padR + 3} y={referenceLabelRectY as number} width="50" height="13" rx="3" fill="#8b5cf6" />
+            <text x={width - padR + 28} y={referenceLabelTextY as number} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">
               {krwShort(referencePrice as number)}
             </text>
           </>
