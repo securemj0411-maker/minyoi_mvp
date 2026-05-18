@@ -67,6 +67,15 @@ function profitPctLabel(price: number, profitMin: number, profitMax: number): st
   return `+${pct}%`;
 }
 
+function priceBandLabel(price: number): string {
+  if (!Number.isFinite(price) || price <= 0) return "예산 확인 중";
+  if (price <= 100_000) return "10만원 이하";
+  if (price <= 300_000) return "10~30만원";
+  if (price <= 500_000) return "30~50만원";
+  if (price <= 1_000_000) return "50~100만원";
+  return "100만원 이상";
+}
+
 function compactCount(value: number): string {
   if (value >= 1000) return `${Math.floor(value / 100) / 10}천+`;
   if (value >= 100) return `${Math.floor(value / 100) * 100}+`;
@@ -166,6 +175,7 @@ export default function PreviewMaskedDashboard() {
             items.map((item) => {
               const signal = previewSignal(item);
               const SignalIcon = signal.icon === "trophy" ? TrophyIcon : CheckCircleIcon;
+              const budgetLabel = priceBandLabel(item.price);
               return (
                 <Link
                   href="/login"
@@ -220,10 +230,15 @@ export default function PreviewMaskedDashboard() {
                         })()}
                       </div>
                       </div>
-                      <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-black shadow-sm ${SIGNAL_TONE_CLASS[signal.tone]}`}>
-                        <SignalIcon width={13} height={13} />
-                        {signal.label}
-                      </span>
+                      <div className="flex shrink-0 flex-wrap items-center gap-1.5 lg:max-w-[190px] lg:justify-end">
+                        <span className="inline-flex items-center whitespace-nowrap rounded-full border border-[#e3d6bf] bg-[#fff8ea] px-2.5 py-1 text-[11px] font-black text-[#72521a] shadow-sm dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-200">
+                          매입가 {budgetLabel}
+                        </span>
+                        <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-black shadow-sm ${SIGNAL_TONE_CLASS[signal.tone]}`}>
+                          <SignalIcon width={13} height={13} />
+                          {signal.label}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </Link>

@@ -361,7 +361,7 @@ test("guest main page makes masked listing titles strongly blurred", () => {
   assert.doesNotMatch(preview, /text-\[#223127\] blur-\[1px\]/);
 });
 
-test("guest main page hides category clues and shows one polished proof chip", () => {
+test("guest main page hides category clues and shows polished proof and budget chips", () => {
   const preview = source("src/components/preview-masked-dashboard.tsx");
   const api = source("src/app/api/preview-pool/route.ts");
 
@@ -373,6 +373,11 @@ test("guest main page hides category clues and shows one polished proof chip", (
   assert.match(preview, /alt="마스킹된 추천 매물"/);
   assert.match(preview, /<PackageIcon width=\{36\} height=\{36\} \/>/);
   assert.match(preview, /<ConditionPhotoBadge conditionClass=\{item\.conditionClass\} compact \/>/);
+  assert.match(preview, /function priceBandLabel\(price: number\): string/);
+  assert.match(preview, /if \(price <= 100_000\) return "10만원 이하"/);
+  assert.match(preview, /if \(price <= 300_000\) return "10~30만원"/);
+  assert.match(preview, /const budgetLabel = priceBandLabel\(item\.price\)/);
+  assert.match(preview, /매입가 \{budgetLabel\}/);
   assert.match(preview, /function previewSignal\(item: PreviewItem\): PreviewSignal/);
   assert.match(preview, /후기 \$\{compactCount\(reviews\)\} 셀러/);
   assert.match(preview, /평균 \$\{daysLabel\(item\.medianHoursToSold\)\} 회전/);
