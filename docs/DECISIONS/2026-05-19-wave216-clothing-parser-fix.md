@@ -84,6 +84,42 @@ FROM mvp_listing_parsed WHERE category='clothing' AND parse_confidence>=0.65 AND
 2. **그 다음 cron** (score-stage + candidate-pool-builder): clothing 매물 풀 진입 시도 (profit gate + AD floor 0.30 + spread check 통과 시)
 3. **24h+ 후 정식 측정** — 사용자 풀 clothing 노출 수
 
+## 강제 trigger 결과 (cron 1시간 대기 안 함)
+
+자연 cron 은 1시간 간격 (다음 cron 까지 46분 대기). 사용자 답답함 — `scripts/force-market-stats-wave216.ts` + `force-score-stage-wave216.ts` 신규:
+- `marketStatsStage()` 직접 호출 → priority=100 으로 박은 clothing keys 우선 처리.
+- `scoreStage(deadlineMs)` 3 회 호출 → dirty raw_listings 재계산.
+
+### 최종 측정 (Wave 216 검증)
+
+| 단계 | 이전 | 이후 |
+|------|-----|------|
+| clothing parsed usable | **0** (0/1253, 0%) | **1698** (1698/1708, 99.4%) ⭐ |
+| clothing market_price_daily keys | **0** | **119** (high confidence 대부분) ⭐ |
+| **clothing candidate_pool ready** | **0** | **146 매물** ⭐⭐⭐ |
+| 시세 sample 합계 | 0 | 약 800+ active samples |
+
+### Top profit clothing 풀 매물
+
+| 매물 | comparable_key | profit_band | 차익 |
+|------|---------------|-------------|------|
+| 슈프림 노스페이스 백팩 실버 | tnf_supreme_collab/b_grade | 3 | 308K |
+| L 아크테릭스 베타 자켓 블랙 사파이어 | arcteryx/a_grade | 3 | 242K |
+| 슈프림 x 노스페이스 마운틴 라이트 자켓 (21SS) | tnf_supreme_collab/a_grade | 3 | 241K |
+| 아크테릭스 아톰 LT 논후드 브라운 (M, 새상품급) | arcteryx/a_grade | 3 | 202K |
+| 아크테릭스 감마 라이트웨이트 자켓 (M, 새제품) | arcteryx/a_grade | 3 | 194K |
+| RRL 더블알엘 그래픽 티셔츠 | polo_rrl/unknown | 3 | 192K |
+| 90s 더블알엘 워크팬츠 | polo_rrl/unknown | 3 | 181K |
+| RRL 더블알엘 맨투맨 XL | polo_rrl/unknown | 3 | 170K |
+| 아크테릭스 감마 후드 자켓 25FW | arcteryx/unknown | 3 | 167K |
+| RRL 더블알엘 넥타이 | polo_rrl/unknown | 3 | 165K |
+
+다 **profit_band 3 (최상위)** + **차익 165K+**. 의류 풀 진짜 박힘 검증.
+
+### 남은 dirty
+
+clothing raw_listings score_dirty=true 453건 — 자연 cron (1시간 1회) 누적 처리 → 풀 더 늘 거.
+
 ## 자기 평가 (Wave 215 sloppy fix)
 
 Wave 215 는 lane / category readiness 승격 + reparse + enqueue 다 했지만 **시세 파이프라인 진단 안 했음**. 사용자 의심 받기 전:
