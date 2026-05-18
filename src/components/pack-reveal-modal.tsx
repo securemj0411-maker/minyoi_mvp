@@ -135,7 +135,49 @@ function marketBasisPlainSentence(card: RevealCard) {
     return "미개봉/새상품은 다나와 새 가격을 기준으로 보고, 번개 미개봉 거래 추이는 따로 확인해요.";
   }
   const condition = market.conditionLabel ?? "같은 상태";
-  return `같은 모델 중 ${condition}로 분류된 매물 시세를 먼저 봐요. 상태가 다른 매물과 섞지 않아요.`;
+  return `${condition}로 분류된 매물끼리 먼저 비교해요. 새상품이나 더 깨끗한 상품 시세를 섞어 수익을 부풀리지 않아요.`;
+}
+
+function uniqueCompactList(values: Array<string | null | undefined>, limit: number) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const value of values) {
+    const clean = value?.trim();
+    if (!clean || seen.has(clean)) continue;
+    seen.add(clean);
+    out.push(clean);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+function recommendationGoodSignals(card: RevealCard) {
+  const detail = card.savedDetail;
+  const market = card.marketBasis;
+  const velocity = card.velocityBasis;
+  const goodVerdicts = verdictsForCard(card).filter((v) => v.tone === "good").map((v) => v.label);
+  return uniqueCompactList([
+    Math.min(card.expectedProfitMin, card.expectedProfitMax) > 0 ? `현재 차익 ${displayProfitRange(card)}` : null,
+    detail?.sellerReviewRating != null && detail.sellerReviewRating >= 4.5
+      ? `셀러 후기 ${detail.sellerReviewRating.toFixed(1)}`
+      : null,
+    velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0 && velocity.sold7dCount > 0
+      ? `비슷한 상품 ${velocityHoursLabel(velocity.medianHoursToSold)} 안에 판매`
+      : null,
+    market?.priceSource === "reference" ? "다나와 새 가격 확인" : `${marketConditionLabel(card)} 시세로 비교`,
+    detail?.freeShipping ? "무료배송" : null,
+    ...goodVerdicts,
+  ], 4);
+}
+
+function recommendationWatchSignals(card: RevealCard) {
+  const market = card.marketBasis;
+  const warnVerdicts = verdictsForCard(card).filter((v) => v.tone === "warn").map((v) => v.label);
+  return uniqueCompactList([
+    market?.confidence === "low" ? "시세 표본은 아직 낮은 편" : null,
+    market?.conditionClass === "worn" ? "사용감은 같은 등급 시세에 반영" : null,
+    ...warnVerdicts,
+  ], 3);
 }
 
 function SkeletonLine({ className = "" }: { className?: string }) {
@@ -302,53 +344,62 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
     : market.conditionClass === "mint"
       ? "번개 S급 매물 기준"
       : `번개 ${market.conditionLabel ?? "같은 상태"} 매물 기준`;
+  const compactSourceLabel = market.priceSource === "reference"
+    ? "다나와"
+    : `번개 ${market.conditionLabel ?? "같은 상태"}`;
   return (
-    <div className="rounded-lg border border-[#e2d9cb] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40">
-      <div className="flex items-baseline justify-between gap-2">
-        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
-          시세 근거
-          {hasCondition && market.conditionLabel && (
-            <span className="ml-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
-              {market.conditionLabel}
-            </span>
-          )}
-        </div>
-        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${confidenceClass}`}>
-          {confidenceLabel}
-        </span>
-      </div>
-      <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs">
-        <span className="font-black text-zinc-800 dark:text-zinc-100">
-          {market.label ?? card.skuName}
-        </span>
-        {market.fallbackUsed && (
-          <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500">
-            (가까운 상태 기준)
+    <div className="rounded-lg border border-[#e2d9cb] bg-white px-2.5 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+        <span className="font-black text-zinc-700 dark:text-zinc-200">시세 근거</span>
+        {hasCondition && market.conditionLabel ? (
+          <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-black text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+            {market.conditionLabel}
           </span>
-        )}
-      </div>
-      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-zinc-500 dark:text-zinc-400">
-        <span className="inline-flex items-center gap-1 font-bold text-zinc-600 dark:text-zinc-300">
+        ) : null}
+        <span className="inline-flex items-center gap-1 rounded-full bg-zinc-50 px-1.5 py-0.5 dark:bg-zinc-800">
           {market.priceSource === "reference" ? (
-            <DanawaLogo className="h-4 w-4 rounded-[4px]" />
+            <DanawaLogo className="h-3.5 w-3.5 rounded-[3px]" />
           ) : (
-            <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+            <BunjangLogo className="h-3.5 w-3.5 rounded-[3px]" />
           )}
-          {sourceLabel}
+          {compactSourceLabel}
         </span>
-        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
+        <span className="rounded-full bg-zinc-50 px-1.5 py-0.5 tabular-nums dark:bg-zinc-800">
           표본 {market.sampleCount.toLocaleString("ko-KR")}건
+        </span>
+        <span className={`rounded-full px-1.5 py-0.5 ${confidenceClass}`}>
+          신뢰 {confidenceLabel}
         </span>
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="rounded-full border border-zinc-200 bg-white px-1.5 py-0.5 font-bold text-zinc-500 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+          className="ml-auto rounded-full border border-zinc-200 bg-white px-1.5 py-0.5 text-[10px] font-black text-zinc-500 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
         >
-          {expanded ? "접기" : "근거 자세히"}
+          {expanded ? "접기" : "자세히"}
         </button>
       </div>
       {expanded ? (
         <div className="mt-2 border-t border-zinc-100 pt-2 dark:border-zinc-800">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[11px]">
+            <span className="font-black text-zinc-800 dark:text-zinc-100">
+              {market.label ?? card.skuName}
+            </span>
+            {market.fallbackUsed && (
+              <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500">
+                (가까운 상태 기준)
+              </span>
+            )}
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="inline-flex items-center gap-1 font-bold text-zinc-600 dark:text-zinc-300">
+              {market.priceSource === "reference" ? (
+                <DanawaLogo className="h-4 w-4 rounded-[4px]" />
+              ) : (
+                <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+              )}
+              {sourceLabel}
+            </span>
+          </div>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-zinc-500 dark:text-zinc-400">
             <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold tabular-nums dark:bg-zinc-800">
               거래완료 {market.soldSampleCount.toLocaleString("ko-KR")}건
@@ -423,16 +474,22 @@ function verdictsForCard(card: RevealCard): Verdict[] {
 function VerdictBadgesMini({ card }: { card: RevealCard }) {
   const verdicts = verdictsForCard(card);
   if (verdicts.length === 0) return null;
+  const hiddenMobileCount = Math.max(0, verdicts.length - 3);
   return (
     <div className="flex flex-wrap gap-1">
-      {verdicts.map((v) => (
+      {verdicts.map((v, index) => (
         <span
           key={v.label}
-          className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${VERDICT_TONE_CLASS[v.tone]}`}
+          className={`${index >= 3 ? "hidden sm:inline-flex" : "inline-flex"} rounded-full border px-2 py-0.5 text-[10px] font-black ${VERDICT_TONE_CLASS[v.tone]}`}
         >
           {v.label}
         </span>
       ))}
+      {hiddenMobileCount > 0 ? (
+        <span className="inline-flex rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-black text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300 sm:hidden">
+          +{hiddenMobileCount}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -539,12 +596,14 @@ function VelocityBasisMini({ card }: { card: RevealCard }) {
   );
 }
 
-function RecommendationReasonPanel({ card }: { card: RevealCard }) {
+function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard; className?: string }) {
   const market = card.marketBasis;
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const marketSample = market?.sampleCount ?? 0;
   const soldSample = market?.soldSampleCount ?? 0;
   const condition = marketConditionLabel(card);
+  const goodSignals = recommendationGoodSignals(card);
+  const watchSignals = recommendationWatchSignals(card);
   const reasons: { icon: ReactNode; title: string; body: string }[] = [
     {
       icon: <TargetIcon className="h-4 w-4" />,
@@ -571,7 +630,7 @@ function RecommendationReasonPanel({ card }: { card: RevealCard }) {
   ];
 
   return (
-    <details className="group rounded-xl border border-[#d8e2d7] bg-[#f5faf3] p-3 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/20 lg:col-span-2">
+    <details className={`group rounded-xl border border-[#d8e2d7] bg-[#f5faf3] p-3 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/20 lg:col-span-2 ${className}`}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
@@ -581,7 +640,9 @@ function RecommendationReasonPanel({ card }: { card: RevealCard }) {
           <div className="mt-1 text-xs font-semibold leading-5 text-[#60705f] dark:text-zinc-300">
             {isMarketInvalidated
               ? "지금 기준으로는 차익이 없어 판매완료 상품처럼 정리하는 게 맞아요."
-              : `비용을 빼고도 ${displayProfitRange(card)} 정도 남는다고 봤어요.`}
+              : goodSignals.length > 0
+                ? `${goodSignals.slice(0, 2).join(" · ")}까지 같이 봤어요.`
+                : `비용을 빼고도 ${displayProfitRange(card)} 정도 남는다고 봤어요.`}
           </div>
         </div>
         <span className="shrink-0 rounded-full border border-[#c8d8c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#4f6a52] transition group-open:bg-[#e4f0e1] dark:border-emerald-900/60 dark:bg-zinc-900 dark:text-emerald-200">
@@ -589,6 +650,32 @@ function RecommendationReasonPanel({ card }: { card: RevealCard }) {
         </span>
       </summary>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className="rounded-lg border border-emerald-100 bg-white/80 px-3 py-2.5 dark:border-emerald-900/50 dark:bg-zinc-900/45">
+          <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">좋은 점</div>
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {goodSignals.length > 0 ? goodSignals.map((signal) => (
+              <span key={signal} className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+                {signal}
+              </span>
+            )) : (
+              <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">차익과 시세 기준을 함께 확인했어요.</span>
+            )}
+          </div>
+        </div>
+        <div className="rounded-lg border border-amber-100 bg-white/80 px-3 py-2.5 dark:border-amber-900/50 dark:bg-zinc-900/45">
+          <div className="text-[11px] font-black text-amber-800 dark:text-amber-200">확인할 점</div>
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {watchSignals.length > 0 ? watchSignals.map((signal) => (
+              <span key={signal} className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                {signal}
+              </span>
+            )) : (
+              <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">큰 주의 신호는 적어요.</span>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
         {reasons.map((reason) => (
           <div key={reason.title} className="rounded-lg border border-white/70 bg-white/75 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/45">
             <div className="flex items-center gap-2 text-xs font-black text-[#223127] dark:text-zinc-100">
@@ -797,7 +884,7 @@ function RevealCardItem({
       }`}
     >
       {/* 좌측 카드 — 매물 정보 (image + 메타 + verdicts + 노트 + 버튼) */}
-      <div className="grid grid-cols-[104px_minmax(0,1fr)] gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
+      <div className="order-1 grid grid-cols-[104px_minmax(0,1fr)] gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
       <div className="relative h-[104px] w-[104px] overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]">
         {card.thumbnailUrl ? (
           <Image
@@ -898,6 +985,7 @@ function RevealCardItem({
           sellerReviewRating={card.savedDetail?.sellerReviewRating ?? null}
           sellerReviewCount={card.savedDetail?.sellerReviewCount ?? null}
           showDetail
+          compact
         />
 
         <VerdictBadgesMini card={card} />
@@ -916,8 +1004,10 @@ function RevealCardItem({
       </div>
       {/* 좌측 카드 닫음 — 우측 카드 = 시세 그래프 + 디테일. */}
 
+      <RecommendationReasonPanel card={card} className="order-2 lg:order-3" />
+
       {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
-      <div className="space-y-2 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40">
+      <div className="order-3 space-y-2 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 lg:order-2">
         <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
           시세 그래프 · 시장 분석
         </div>
@@ -953,10 +1043,8 @@ function RevealCardItem({
       </div>
       {/* 우측 카드 (시세 분석) 닫음. */}
 
-      <RecommendationReasonPanel card={card} />
-
       {/* 노트 + 버튼 영역 — full width (lg:col-span-2). */}
-      <div className="space-y-2 lg:col-span-2">
+      <div className="order-4 space-y-2 lg:col-span-2">
         {/* Wave 80: SavedDetailMini (찜/리뷰/리뷰N개/판매자 설명문) 제거 — 번개장터 데이터 직접 노출 법적 위험. 원본은 "번개장터 열기" 버튼으로 확인. */}
 
         {/* Wave 80: 개별 피드백 버튼 (관심/매수함/이미 팔림/별로) + quickTags (단품 의심 등) 제거.

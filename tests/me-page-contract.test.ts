@@ -39,8 +39,23 @@ test("/me user modal explains recommendation trust in plain language", () => {
   assert.match(modal, /같은 모델로 묶었어요/);
   assert.match(modal, /기준 시세예요/);
   assert.match(modal, /비용을 빼고 계산했어요/);
+  assert.match(modal, /좋은 점/);
+  assert.match(modal, /확인할 점/);
+  assert.match(modal, /셀러 후기/);
+  assert.match(modal, /사용감은 같은 등급 시세에 반영/);
   assert.match(modal, /상태가 다른 매물을 섞어 시세를 부풀리지 않아요/);
   assert.doesNotMatch(modal, />\s*band \{card\.band\}/);
+});
+
+test("/me modal keeps market evidence compact before the graph on mobile", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+
+  assert.match(modal, /compactSourceLabel/);
+  assert.match(modal, /표본 \{market\.sampleCount\.toLocaleString/);
+  assert.match(modal, /신뢰 \{confidenceLabel\}/);
+  assert.match(modal, /className=\"order-2 lg:order-3\"/);
+  assert.match(modal, /className=\"order-3 .*lg:order-2/);
+  assert.match(modal, /hidden sm:inline-flex/);
 });
 
 test("/me keeps dashboard summary compact on mobile", () => {
