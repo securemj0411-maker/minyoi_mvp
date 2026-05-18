@@ -87,19 +87,17 @@ function timeLabel(value: string) {
   }
 }
 
-// 2026-05-17 (사용자 요청): listing_state 영어 enum → 한국어 명시 라벨.
-// 사용자 우려 "갑자기 사라지면 손해본 느낌" — terminal 매물은 "판매완료" / "사라짐" 명시 표시.
-function listingStateLabel(state: string): { label: string; tone: "active" | "sold" | "gone" | "unknown" } {
+// 2026-05-18: /me terminal rows are user-facing tombstones. Hidden/deleted/reported-like
+// disappearance is displayed as sold completed, without exposing internal removal reasons.
+function listingStateLabel(state: string): { label: string; tone: "active" | "sold" | "unknown" } {
   const s = (state ?? "").toLowerCase();
-  if (s === "sold" || s === "sold_confirmed") return { label: "판매완료", tone: "sold" };
-  if (s === "disappeared") return { label: "매물 사라짐", tone: "gone" };
+  if (s === "sold" || s === "sold_confirmed" || s === "disappeared") return { label: "판매완료", tone: "sold" };
   if (s === "active") return { label: "판매중", tone: "active" };
   return { label: state || "상태 미확인", tone: "unknown" };
 }
 
-function listingStateChipClass(tone: "active" | "sold" | "gone" | "unknown"): string {
+function listingStateChipClass(tone: "active" | "sold" | "unknown"): string {
   if (tone === "sold") return "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200";
-  if (tone === "gone") return "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200";
   if (tone === "active") return "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300";
   return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300";
 }
@@ -131,8 +129,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   const [selectedPids, setSelectedPids] = useState<Set<number>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
-  // Wave 200 (2026-05-18): terminal (sold/disappeared) 매물 기본 hide — 사용자 "삭제된 매물 왜 보이냐" 요청.
-  const [hideTerminal, setHideTerminal] = useState(true);
+  // Wave 205 (2026-05-18): terminal 매물도 개수 유지. 기본은 판매완료 tombstone 표시.
+  const [hideTerminal, setHideTerminal] = useState(false);
   // Wave 182c: 정보 오류 신고 모달 state (loss_report 는 보류, inaccurate_report 박힘).
   // state 이름은 호환 위해 lossReport* 유지 — 의미는 inaccurate_report.
   const [lossReportItem, setLossReportItem] = useState<RevealItem | null>(null);
@@ -848,17 +846,17 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         </div>
       ) : null}
 
-      {/* Wave 200 (2026-05-18): terminal 매물 toggle — 기본 hide, 클릭으로 보기. */}
+      {/* Wave 205 (2026-05-18): terminal 매물은 기본 표시. 사용자가 원하면 숨길 수만 있다. */}
       {(() => {
         const terminalCount = items.filter((i) => {
           const tone = listingStateLabel(i.listingState).tone;
-          return tone === "sold" || tone === "gone";
+          return tone === "sold";
         }).length;
         if (terminalCount === 0) return null;
         return (
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[11px] dark:border-zinc-800 dark:bg-zinc-900/40">
             <span className="text-zinc-700 dark:text-zinc-300">
-              ⚠️ 판매완료/사라진 매물 <b>{terminalCount}건</b> 발견 — 시세/차익 정보가 stale.
+              판매완료된 상품 <b>{terminalCount}건</b>을 기록으로 남겨뒀어요.
             </span>
             <button
               type="button"
@@ -877,14 +875,64 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2" : "mt-4 grid gap-2"}>
         {items.filter((item) => {
-          // Wave 200: terminal 매물 hide (기본). toggle 풀면 표시.
+          // Wave 205: terminal tombstone은 기본 표시. toggle로만 숨김.
           if (!hideTerminal) return true;
           const tone = listingStateLabel(item.listingState).tone;
-          return !(tone === "sold" || tone === "gone");
+          return tone !== "sold";
         }).map((item) => {
-          // 2026-05-17 (사용자 요청): 판매완료/사라진 매물은 시각적으로 dim 표시 (사라지지 않게).
+          // 2026-05-18: 판매완료/삭제/숨김 계열은 동일한 판매완료 tombstone으로 표시.
           const stateInfo = listingStateLabel(item.listingState);
-          const isTerminal = stateInfo.tone === "sold" || stateInfo.tone === "gone";
+          const isTerminal = stateInfo.tone === "sold";
+          if (isTerminal) {
+            return (
+              <article
+                key={item.pid}
+                onClick={selectMode ? () => togglePid(item.pid) : undefined}
+                className={`relative ${
+                  viewMode === "grid"
+                    ? "grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-zinc-50/80 p-2 transition dark:border-zinc-800 dark:bg-zinc-900/50"
+                    : "grid grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-zinc-50/80 p-2 transition dark:border-zinc-800 dark:bg-zinc-900/50 lg:grid-cols-[56px_minmax(0,1fr)]"
+                } ${
+                  selectMode && selectedPids.has(item.pid)
+                    ? "border-rose-400 bg-rose-50 ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/30"
+                    : ""
+                } ${selectMode ? "cursor-pointer" : ""}`}
+              >
+                {selectMode && (
+                  <div className="absolute left-2 top-2 z-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedPids.has(item.pid)}
+                      onChange={() => togglePid(item.pid)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-5 w-5 rounded border-2 border-rose-400 accent-rose-600"
+                    />
+                  </div>
+                )}
+                <div className="relative aspect-square overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800">
+                  <div className="absolute inset-x-3 top-4 h-2 rounded bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="absolute inset-x-3 top-8 h-2 rounded bg-zinc-200/80 dark:bg-zinc-700/80" />
+                  <div className="absolute bottom-3 left-3 h-5 w-10 rounded bg-zinc-200 dark:bg-zinc-700" />
+                </div>
+                <div className="min-w-0 self-center">
+                  <div className="flex items-start gap-1.5">
+                    <div className="min-w-0 flex-1 truncate text-sm font-black text-zinc-700 dark:text-zinc-200">
+                      판매완료된 상품
+                    </div>
+                    <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${listingStateChipClass(stateInfo.tone)}`}>
+                      {stateInfo.label}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                    추천 당시 매물이 현재 판매완료되어 더 이상 열람할 수 없어요.
+                  </div>
+                  <div className="mt-1 text-[11px] text-zinc-400 dark:text-zinc-500">
+                    {timeLabel(item.revealedAt)}
+                  </div>
+                </div>
+              </article>
+            );
+          }
           return (
           <article
             key={item.pid}
