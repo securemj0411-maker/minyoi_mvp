@@ -16,6 +16,9 @@ test("global help button opens FAQ with grade, market, risk, and feedback guidan
   assert.match(layout, /<SiteHelpFaq \/>/);
   assert.match(help, /aria-label="도움말 열기"/);
   assert.match(help, /fixed bottom-4 right-4/);
+  assert.match(help, /AI 도움말/);
+  assert.match(help, /질문을 고르면 바로 답해드릴게요/);
+  assert.match(help, /답변 준비 중/);
   assert.match(help, /자주 묻는 질문/);
   assert.match(help, /S급과 A급은 뭐가 다른가요/);
   assert.match(help, /미개봉이 S급인가요/);
