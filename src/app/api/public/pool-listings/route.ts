@@ -156,15 +156,64 @@ export async function GET(req: NextRequest) {
     const cols = "pid,profit_band,status,category,comparable_key,expected_profit_min,expected_profit_max,confidence,exposure_count,max_exposure,last_verified_at";
     let total = 0;
     let poolRows: PoolRow[] = [];
+    const hasExternalFilters = Boolean(priceBucket || skuFilter || searchQuery);
 
-    if (scopedPids) {
-      const allowedPids = new Set<number>(scopedPids);
+    if (hasExternalFilters) {
       const scopedPoolRes = await restFetch(
         `${tableUrl("mvp_candidate_pool")}?select=${cols}&${filter}&order=${order}&limit=5000`,
         { headers: serviceHeaders() },
       );
       const allBaseRows = (await scopedPoolRes.json()) as PoolRow[];
-      const allFilteredRows = allBaseRows.filter((row) => allowedPids.has(Number(row.pid)));
+      const basePids = allBaseRows.map((row) => Number(row.pid));
+      const listingMap = new Map<number, { name: string; sku_name: string | null; price: number | null }>();
+      const rawSkuMap = new Map<number, string | null>();
+      const parsedKeyMap = new Map<number, string | null>();
+      for (let i = 0; i < basePids.length; i += 500) {
+        const chunk = basePids.slice(i, i + 500);
+        const pidsParam = chunk.join(",");
+        const [listingRes, rawRes, parsedRes] = await Promise.all([
+          priceBucket || searchQuery
+            ? restFetch(`${tableUrl("mvp_listings")}?select=pid,name,sku_name,price&pid=in.(${pidsParam})`, { headers: serviceHeaders() })
+            : null,
+          skuFilter
+            ? restFetch(`${tableUrl("mvp_raw_listings")}?select=pid,sku_id&pid=in.(${pidsParam})`, { headers: serviceHeaders() })
+            : null,
+          searchQuery
+            ? restFetch(`${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key&pid=in.(${pidsParam})`, { headers: serviceHeaders() })
+            : null,
+        ]);
+        if (listingRes) {
+          const rows = (await listingRes.json()) as Array<{ pid: number; name: string | null; sku_name: string | null; price: number | null }>;
+          for (const row of rows) listingMap.set(Number(row.pid), { name: row.name ?? "", sku_name: row.sku_name, price: row.price });
+        }
+        if (rawRes) {
+          const rows = (await rawRes.json()) as Array<{ pid: number; sku_id: string | null }>;
+          for (const row of rows) rawSkuMap.set(Number(row.pid), row.sku_id);
+        }
+        if (parsedRes) {
+          const rows = (await parsedRes.json()) as Array<{ pid: number; comparable_key: string | null }>;
+          for (const row of rows) parsedKeyMap.set(Number(row.pid), row.comparable_key);
+        }
+      }
+      const query = searchQuery?.toLowerCase() ?? "";
+      const exactPid = Number(searchQuery);
+      const allFilteredRows = allBaseRows.filter((row) => {
+        const pid = Number(row.pid);
+        const listing = listingMap.get(pid);
+        if (priceBucket) {
+          const price = Number(listing?.price ?? 0);
+          if (!Number.isFinite(price) || price <= 0 || priceBucketFor(price) !== priceBucket) return false;
+        }
+        if (skuFilter && rawSkuMap.get(pid) !== skuFilter) return false;
+        if (searchQuery) {
+          const name = listing?.name.toLowerCase() ?? "";
+          const skuName = listing?.sku_name?.toLowerCase() ?? "";
+          const comparableKey = parsedKeyMap.get(pid)?.toLowerCase() ?? "";
+          const pidMatches = Number.isFinite(exactPid) && exactPid > 0 && pid === exactPid;
+          if (!pidMatches && !name.includes(query) && !skuName.includes(query) && !comparableKey.includes(query)) return false;
+        }
+        return true;
+      });
       total = allFilteredRows.length;
       poolRows = allFilteredRows.slice(offset, offset + pageSize);
     } else {

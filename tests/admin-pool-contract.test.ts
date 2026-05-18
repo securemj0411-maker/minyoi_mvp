@@ -27,8 +27,10 @@ test("admin pool exposes ready counts and filters by price bucket and category",
     assert.match(route, /byPriceBucket/);
     assert.match(route, /byCategory/);
     assert.match(route, /category=eq/);
-    assert.match(route, /const scopedPids: number\[\] \| null = pidScope \? Array\.from\(pidScope as Set<number>\) : null/);
-    assert.match(route, /allBaseRows\.filter\(\(row\) => allowedPids\.has\(Number\(row\.pid\)\)\)/);
+    assert.match(route, /const hasExternalFilters = Boolean\(priceBucket \|\| skuFilter \|\| searchQuery\)/);
+    assert.match(route, /priceBucketFor\(price\) !== priceBucket/);
+    assert.match(route, /rawSkuMap\.get\(pid\) !== skuFilter/);
+    assert.match(route, /comparableKey\.includes\(query\)/);
     assert.match(route, /allFilteredRows\.slice\(offset, offset \+ pageSize\)/);
   }
 });
