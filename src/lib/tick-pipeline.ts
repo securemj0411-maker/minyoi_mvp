@@ -200,6 +200,9 @@ type MarketPriceRow = {
   active_median_price: number | null;
   sold_median_price: number | null;
   blended_median_price: number | null;
+  // Wave 196 (2026-05-18): p25/p75 percentile — spread check (가품/특가 매물이 sample에 혼재하면 spread 큼).
+  p25_price: number | null;
+  p75_price: number | null;
   active_sample_count: number;
   sold_sample_count: number;
   disappeared_sample_count: number;
@@ -2188,6 +2191,19 @@ function trustedMarketMedian(stat: MarketPriceRow | undefined, category?: Sku["c
     if (total < 3) return null;
     if (stat.confidence === "low" && total < 5) return null;
   }
+  // Wave 196 (2026-05-18) Option γ: 신발/가방 — p75/p25 spread > 2x + confidence=low 시 시세 차단.
+  //   사용자 발견: 신발 sample에 가품/특가 매물 끼어들어 p25~p75 spread 2~3배. median 비현실적 낮음 →
+  //   정상가 매물이 시세보다 비싸 보여 profit_below_pack_band 차단.
+  //   spread 큰 시세 = 가품/정상 혼재 신호. confidence=low 결합으로 false positive 보호 (medium/high는 통과).
+  //   대상: 신발/가방만 — 가품 risk 큰 카테고리 (msrp×5 ceiling + 4 tier fake floor 와 같은 로직).
+  const FAKE_RISK_CATEGORIES = new Set<string>(["shoe", "bag"]);
+  if (category && FAKE_RISK_CATEGORIES.has(category) && stat.confidence === "low") {
+    const p25 = Number(stat.p25_price ?? 0);
+    const p75 = Number(stat.p75_price ?? 0);
+    if (p25 > 0 && p75 > 0 && p75 / p25 > 2) {
+      return null;
+    }
+  }
   const value = Number(stat.blended_median_price ?? stat.active_median_price ?? 0);
   return value > 0 ? value : null;
 }
@@ -2844,8 +2860,13 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   // pool 진입 (Wave 141)뿐 아니라 시세 계산 자체에서도 가품 매물 제외 —
   // 안 그러면 시세 평균이 가품 매물(9k~20k)에 끌어내려져서 일반 매물도 fake_suspect로 차단됨 (악순환).
   // 발견: samba_og_broad min_price 13k, 990v5 min 9k 등 — msrp의 5% 매물 다수.
+  // Wave 196 (2026-05-18) Option α: 0.15 → 0.25 강화.
+  //   사용자 발견: 신발 시세 p25~p75 spread 2~3배. 가품/특가 매물이 sample에 다수 끼어들어 median
+  //   비현실적 낮음 (예: dunk_low 230 median 30K vs msrp 129K, ratio 23%). msrp×15% 차단으론 부족.
+  //   0.25로 올려서 더 많은 저가 매물 차단 → median 정상화. 단 정상 사용감 큰 매물 (예: chuck70 230)
+  //   일부 차단 가능 — recall ↓ but precision ↑ trade-off. §12b 정확성 우선.
   const FAKE_FLOOR_CATEGORIES_MARKET = new Set<string>(["shoe", "bag"]);
-  const FAKE_FLOOR_RATIO_MARKET = 0.15;
+  const FAKE_FLOOR_RATIO_MARKET = 0.25;
   // Wave 171: price ceiling outlier 시세 제외 (msrp의 5배 초과 = 콜라보/한정/inflate)
   const FAKE_CEILING_RATIO_MARKET = 5;
   for (const group of byKey.values()) {
