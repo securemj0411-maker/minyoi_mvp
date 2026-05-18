@@ -1224,14 +1224,14 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       {loading && items.length === 0 ? (
         // 첫 로딩 스켈레톤 — items 비어있을 때만 표시. 검색/페이지 전환 시에는 기존 items 유지.
-        <div className={viewMode === "grid" ? "mt-3 grid gap-2 sm:mt-4 sm:gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "mt-3 grid gap-2 sm:mt-4"}>
+        <div className={viewMode === "grid" ? "mt-3 grid gap-0 sm:mt-4 sm:gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "mt-3 grid gap-0 sm:mt-4 sm:gap-2"}>
           {Array.from({ length: 6 }).map((_, i) => (
             <article
               key={`skeleton-${i}`}
               className={
                 viewMode === "grid"
-                  ? "grid animate-pulse grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 dark:border-zinc-800 dark:bg-zinc-950/40"
-                  : "grid animate-pulse grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 dark:border-zinc-800 dark:bg-zinc-950/40"
+                  ? "grid animate-pulse grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b border-[#e5dccf] bg-transparent px-3 py-3 dark:border-zinc-800 sm:grid-cols-[64px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-[#fffdf9] sm:p-2 dark:sm:bg-zinc-950/40"
+                  : "grid animate-pulse grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b border-[#e5dccf] bg-transparent px-3 py-3 dark:border-zinc-800 sm:grid-cols-[56px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-[#fffdf9] sm:p-2 dark:sm:bg-zinc-950/40"
               }
               aria-hidden
             >
@@ -1282,7 +1282,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         );
       })()}
 
-      <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "mt-4 grid gap-2"}>
+      <div className={viewMode === "grid" ? "mt-3 grid gap-0 sm:mt-4 sm:gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "mt-3 grid gap-0 sm:mt-4 sm:gap-2"}>
         {visibleItems.map((item) => {
           // 2026-05-18: 판매완료/삭제/숨김 계열은 동일한 판매완료 tombstone으로 표시.
           // Wave 224/234: 현재 순차익이 0원 이하이면 사용자 화면에서는 판매완료로 접는다.
@@ -1299,8 +1299,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 onClick={selectMode ? () => togglePid(item.pid) : undefined}
                 className={`relative ${
                   viewMode === "grid"
-                    ? "grid grid-cols-[72px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-zinc-50/80 p-2.5 transition dark:border-zinc-800 dark:bg-zinc-900/50"
-                    : "grid grid-cols-[60px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-zinc-50/80 p-2.5 transition dark:border-zinc-800 dark:bg-zinc-900/50 lg:grid-cols-[60px_minmax(0,1fr)]"
+                    ? "grid grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b border-zinc-200 bg-transparent px-3 py-3 transition dark:border-zinc-800 sm:grid-cols-[72px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-zinc-50/80 sm:p-2.5 dark:sm:bg-zinc-900/50"
+                    : "grid grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b border-zinc-200 bg-transparent px-3 py-3 transition dark:border-zinc-800 sm:grid-cols-[60px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-zinc-50/80 sm:p-2.5 dark:sm:bg-zinc-900/50 lg:grid-cols-[60px_minmax(0,1fr)]"
                 } ${
                   selectMode && selectedPids.has(item.pid)
                     ? "border-rose-400 bg-rose-50 ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/30"
@@ -1371,8 +1371,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             aria-label={`${item.name} 상세 보기`}
             className={`relative ${
               viewMode === "grid"
-                ? "grid grid-cols-[76px_minmax(0,1fr)] gap-3 rounded-xl border bg-[#fffdf9] p-2.5 transition dark:bg-zinc-950/40"
-                : "grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-xl border bg-[#fffdf9] p-2.5 transition dark:bg-zinc-950/40"
+                ? "grid grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b bg-transparent px-3 py-3 transition dark:bg-transparent sm:grid-cols-[76px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-[#fffdf9] sm:p-2.5 dark:sm:bg-zinc-950/40"
+                : "grid grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b bg-transparent px-3 py-3 transition dark:bg-transparent sm:grid-cols-[64px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-[#fffdf9] sm:p-2.5 dark:sm:bg-zinc-950/40"
             } ${
               selectMode && selectedPids.has(item.pid)
                 ? "border-rose-400 bg-rose-50 ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/30"
@@ -1395,22 +1395,22 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 />
               </div>
             )}
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f1eadf] dark:bg-zinc-800">
+            <div className="relative aspect-square overflow-hidden rounded-xl bg-[#f1eadf] dark:bg-zinc-800 sm:rounded-lg">
               <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
               {item.thumbnailUrl ? (
                 <Image
                   src={item.thumbnailUrl}
                   alt={item.name}
                   fill
-                  sizes="64px"
+                  sizes="(max-width: 639px) 118px, 76px"
                   unoptimized
                   className="object-cover"
                 />
               ) : null}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 self-center">
               <div className="flex items-start gap-1.5">
-                <div className="min-w-0 flex-1 truncate text-[15px] font-black leading-5 text-[#223127] dark:text-zinc-100">{item.name}</div>
+                <div className="line-clamp-2 min-w-0 flex-1 text-[16px] font-black leading-[1.25] text-[#223127] dark:text-zinc-100 sm:truncate sm:text-[15px] sm:leading-5">{item.name}</div>
                 {isNewlyRevealed ? (
                   <span className="shrink-0 rounded-full bg-rose-600 px-1.5 py-0.5 text-[10px] font-black text-white shadow-sm">
                     방금 추가
@@ -1454,7 +1454,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   );
                 })()}
               </div>
-              <div className="mt-2 flex flex-wrap items-center gap-1.5 rounded-lg border border-[#e7e1d6] bg-white/70 px-2.5 py-2 shadow-[inset_3px_0_0_#00c471] dark:border-zinc-800 dark:bg-zinc-900/70 dark:shadow-[inset_3px_0_0_#2ee891]">
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-none border-0 bg-transparent px-0 py-0 shadow-none dark:bg-transparent sm:mt-2 sm:rounded-lg sm:border sm:border-[#e7e1d6] sm:bg-white/70 sm:px-2.5 sm:py-2 sm:shadow-[inset_3px_0_0_#00c471] dark:sm:border-zinc-800 dark:sm:bg-zinc-900/70 dark:sm:shadow-[inset_3px_0_0_#2ee891]">
                 {/* Wave 194 (2026-05-18): current_profit 박혀있으면 그 값 우선 표시. snapshot 과
                     다르면 부가 라벨 ("추천 당시 +57K → 현재 +10K"). marketStale=true는 Wave 224에서
                     이 블록에 오기 전에 판매완료 tombstone으로 접는다. */}
@@ -1468,19 +1468,19 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   const pct = profitPercent(item);
                   return (
                     <>
-                      <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                        현재 차익
+                      <span className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 sm:text-[11px] sm:font-semibold">
+                        차익
                       </span>
-                      <span className="text-xs font-bold tabular-nums text-[#00a862] dark:text-[#5dffae] sm:text-sm">
+                      <span className="text-[15px] font-black tabular-nums text-[#00a862] dark:text-[#5dffae] sm:text-sm sm:font-bold">
                         {signedProfitRange(displayProfitMin, displayProfitMax)}
                       </span>
                       {pct != null ? (
-                        <span className="rounded-full bg-[#f7f3ea] px-2 py-0.5 text-xs font-bold tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
+                        <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700 sm:px-2 sm:text-xs">
                           {pct >= 0 ? "+" : ""}{pct}%
                         </span>
                       ) : null}
                       {profitDiverged && (
-                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/30 dark:text-amber-300" title={`추천 당시 ${signedProfitRange(item.expectedProfitMin, item.expectedProfitMax)} → 현재 ${signedProfitRange(displayProfitMin, displayProfitMax)}`}>
+                        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 sm:px-2" title={`추천 당시 ${signedProfitRange(item.expectedProfitMin, item.expectedProfitMax)} → 현재 ${signedProfitRange(displayProfitMin, displayProfitMax)}`}>
                           ↓ 시세 갱신
                         </span>
                       )}

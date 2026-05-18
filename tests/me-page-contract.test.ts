@@ -73,8 +73,8 @@ test("/me modal keeps market evidence compact before the graph on mobile", () =>
   assert.match(modal, /compactSourceLabel/);
   assert.match(modal, /표본 \{market\.sampleCount\.toLocaleString/);
   assert.match(modal, /신뢰 \{confidenceLabel\}/);
-  assert.match(modal, /className=\"order-2 lg:order-3\"/);
-  assert.match(modal, /className=\"order-3 .*lg:order-2/);
+  assert.match(modal, /className=\"order-2 space-y-2/);
+  assert.match(modal, /lg:order-2/);
   assert.match(modal, /hidden sm:inline-flex/);
   assert.match(modal, /그래프 기준 보기/);
   assert.ok(graphIndex >= 0 && trustIndex > graphIndex);
@@ -101,13 +101,24 @@ test("/me reveal profit block stays compact so the graph remains visible", () =>
   assert.match(modal, /text-\[#00a862\] dark:text-\[#5dffae\]/);
   assert.match(modal, /text-\[11px\] font-bold tabular-nums/);
   assert.match(dashboard, /shadow-\[inset_3px_0_0_#00c471\]/);
-  assert.match(dashboard, /text-xs font-bold tabular-nums text-\[#00a862\][\s\S]*sm:text-sm/);
+  assert.match(dashboard, /text-\[15px\] font-black tabular-nums text-\[#00a862\][\s\S]*sm:text-sm sm:font-bold/);
   assert.match(modal, /gap-x-1\.5 gap-y-0\.5 text-\[11px\]/);
   assert.doesNotMatch(modal, /text-xl font-black leading-tight tabular-nums sm:text-2xl/);
   assert.doesNotMatch(modal, /text-lg font-bold leading-tight tabular-nums sm:text-xl/);
   assert.doesNotMatch(modal, /text-base font-semibold leading-tight tabular-nums/);
   assert.doesNotMatch(modal, /text-sm font-bold leading-tight tabular-nums sm:text-base/);
   assert.doesNotMatch(modal, /text-2xl font-black tabular-nums/);
+});
+
+test("/me mobile product feed uses dense rows with larger thumbnails", () => {
+  const dashboard = source("src/components/user-reveal-dashboard.tsx");
+
+  assert.match(dashboard, /grid-cols-\[118px_minmax\(0,1fr\)\]/);
+  assert.match(dashboard, /sm:grid-cols-\[76px_minmax\(0,1fr\)\]/);
+  assert.match(dashboard, /border-x-0 border-t-0 border-b/);
+  assert.match(dashboard, /sizes="\(max-width: 639px\) 118px, 76px"/);
+  assert.match(dashboard, /line-clamp-2/);
+  assert.match(dashboard, /sm:shadow-\[inset_3px_0_0_#00c471\]/);
 });
 
 test("/me mobile reveal card keeps safety signals out of the middle content", () => {
@@ -151,7 +162,7 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(modal, /sm:rounded-2xl sm:border/);
   assert.match(modal, /href="\/"/);
   assert.match(modal, /aria-label="득템잡이 홈으로 이동"/);
-  assert.match(modal, />\s*득템잡이\s*<\/a>/);
+  assert.match(modal, />\s*득템잡이\s*<\/Link>/);
   assert.match(modal, /<span className="sm:hidden">뒤로<\/span>/);
   assert.match(dashboard, /REVEAL_DETAIL_QUERY_KEY = "reveal"/);
   assert.match(dashboard, /window\.history\.pushState\(\{ minyoiRevealPid: item\.pid \}/);

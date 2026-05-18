@@ -6822,15 +6822,75 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["RRL", "purple label", "키즈", "kids", "토들러", "스티커", "키링"],
     msrpKrw: 159000, released: 2020,
   },
+  // Wave 218 (2026-05-19): clothing-polo-rrl narrow 분리.
+  //   사용자 지적 — 한 SKU 에 티/팬츠/자켓/액세서리/스니커즈 6+ product type 묶임 → CV 1.56.
+  //   product type 별 가격대 완전 다름 (티 60K vs 자켓 280K vs 스니커즈 200K).
+  //   각 narrow lane 으로 시세 grouping 정확.
+  //   broad clothing-polo-rrl 는 catch-all 로 유지 — narrow 매칭 안 되면 fallback.
+  {
+    id: "clothing-polo-rrl-tee",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_tee",
+    modelName: "Polo RRL Tee / Sweat / Hoodie",
+    aliases: ["RRL tee", "RRL 맨투맨", "RRL 후디", "더블알엘 티"],
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["티셔츠", "tee", "맨투맨", "sweat", "후디", "hoodie", "후드", "롱슬리브", "헨리넥", "긴팔티", "반팔", "크루넥"]],
+    mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일", "스니커즈", "데님", "denim", "청바지", "벨트", "지갑", "모자", "넥타이", "키링", "클러치", "목걸이"],
+    msrpKrw: 250000, released: 2020,
+  },
+  {
+    id: "clothing-polo-rrl-denim",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_denim",
+    modelName: "Polo RRL Denim (jeans / shirt)",
+    aliases: ["RRL 데님", "RRL 청바지", "더블알엘 데님"],
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["데님", "denim", "청바지", "셀비지", "jean"]],
+    mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "벨트", "지갑", "모자"],
+    msrpKrw: 420000, released: 2020,
+  },
+  {
+    id: "clothing-polo-rrl-shirt-pants",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_shirt_pants",
+    modelName: "Polo RRL Shirt / Pants (코튼/코듀로이/워크)",
+    aliases: ["RRL 셔츠", "RRL 코듀로이", "RRL 워크팬츠"],
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["셔츠", "shirt", "코듀로이", "corduroy", "워크팬츠", "워크 팬츠", "코튼", "린넨", "퀄팅", "져지", "체크"]],
+    mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "데님", "청바지", "셀비지"],
+    msrpKrw: 350000, released: 2020,
+  },
+  {
+    id: "clothing-polo-rrl-accessory",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_accessory",
+    modelName: "Polo RRL Accessory (벨트/지갑/모자/넥타이)",
+    aliases: ["RRL 액세서리", "RRL 벨트", "RRL 지갑"],
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["벨트", "belt", "지갑", "wallet", "모자", "캡", "cap", "넥타이", "tie", "키링", "키 링", "클러치", "clutch", "장지갑", "뉴스보이"]],
+    mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "목걸이", "925"],
+    msrpKrw: 220000, released: 2020,
+  },
+  {
+    id: "shoe-polo-rrl-sneaker",
+    brand: "RRL", category: "shoe", laneKey: "polo_rrl_sneaker",
+    modelName: "Polo RRL Sneaker (캔버스/메이포트/인디고)",
+    aliases: ["RRL 스니커즈", "RRL Sneaker", "더블알엘 스니커즈"],
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["스니커즈", "sneaker", "메이포트", "캔버스", "canvas"]],
+    mustNotContain: ["키즈", "kids", "rrl 무드"],
+    msrpKrw: 280000, released: 2020,
+  },
   {
     id: "clothing-polo-rrl",
-    brand: "RRL", category: "clothing", laneKey: "polo_rrl",
-    modelName: "Polo RRL Double RL (premium)",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_broad",
+    modelName: "Polo RRL Double RL (broad)",
     aliases: ["RRL", "Double RL", "더블 알엘"],
-    // 별도 catalog — 가격대 다름 (premium)
-    mustContain: [["RRL", "rrl", "더블 알엘", "double rl"]],
-    mustNotContain: ["키즈", "kids"],
-    msrpKrw: 590000, released: 2020,
+    // Wave 218: narrow lane 5개로 분리 후 broad 는 catch-all 만.
+    // mustNotContain 으로 narrow 매칭되는 키워드 다 제외 → fallback only.
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"]],
+    mustNotContain: [
+      "키즈", "kids", "rrl 무드", "rrl 스타일",
+      // narrow lane 키워드 다 제외 (이미 그쪽으로 매칭됐어야)
+      "티셔츠", "tee", "맨투맨", "후디", "후드", "롱슬리브", "헨리넥", "긴팔티", "반팔",
+      "데님", "denim", "청바지", "셀비지",
+      "셔츠", "shirt", "코듀로이", "워크팬츠", "코튼", "린넨",
+      "벨트", "지갑", "모자", "캡", "cap", "넥타이", "키링", "클러치", "장지갑",
+      "스니커즈", "sneaker",
+      "목걸이", "925",
+    ],
+    msrpKrw: 350000, released: 2020,
   },
   // The North Face:
   {
@@ -8048,15 +8108,67 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "운동화", "스니커즈", "신발", "shoe"],
     msrpKrw: 89000, released: 2020,
   },
-  // 아크테릭스 — 매물 29건, faved 23, 등산복/outdoor
+  // 아크테릭스 — Wave 218 (2026-05-19) 모델별 narrow 분리.
+  //   사용자 지적: clothing-arcteryx CV 0.67 — Beta SL/AR 180~600K vs Gamma MX/SL 185~330K
+  //   vs Atom LT 290K vs Vertex 280K vs Squamish 190K. 모델 가격대 X 3-5.
+  //   broad clothing-arcteryx 는 catch-all 유지.
+  {
+    id: "clothing-arcteryx-beta",
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_beta",
+    modelName: "Arc'teryx Beta (SL / AR / LT) Gore-Tex 자켓",
+    aliases: ["Beta Jacket", "베타 자켓", "Beta SL", "Beta AR", "Beta LT", "Beta Globe"],
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["beta", "베타"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
+    msrpKrw: 590000, released: 1998,
+  },
+  {
+    id: "clothing-arcteryx-gamma",
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_gamma",
+    modelName: "Arc'teryx Gamma (MX / SL / LT / Lightweight) softshell",
+    aliases: ["Gamma Jacket", "감마 자켓", "Gamma MX", "Gamma SL", "Gamma LT", "Gamma Hoody"],
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["gamma", "감마"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
+    msrpKrw: 350000, released: 1998,
+  },
+  {
+    id: "clothing-arcteryx-alpha",
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_alpha",
+    modelName: "Arc'teryx Alpha (SV / AR / FL) 등반/expedition",
+    aliases: ["Alpha Jacket", "알파 자켓", "Alpha SV", "Alpha AR", "Alpha FL"],
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["alpha", "알파"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
+    msrpKrw: 850000, released: 1998,
+  },
+  {
+    id: "clothing-arcteryx-atom",
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_atom",
+    modelName: "Arc'teryx Atom (LT / SL / Heavyweight) insulated",
+    aliases: ["Atom LT", "아톰 LT", "Atom Heavyweight", "Atom Hoody"],
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["atom", "아톰"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
+    msrpKrw: 320000, released: 2010,
+  },
+  {
+    id: "clothing-arcteryx-vertex-squamish",
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_vertex_squamish",
+    modelName: "Arc'teryx Vertex Alpine / Squamish",
+    aliases: ["Vertex Alpine", "버텍스 알파인", "Squamish", "스쿼미시"],
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["vertex", "버텍스", "squamish", "스쿼미시"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
+    msrpKrw: 280000, released: 2015,
+  },
   {
     id: "clothing-arcteryx",
-    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_apparel",
-    modelName: "Arc'teryx Apparel (Beta / Gamma / Alpha / 자켓)",
-    aliases: ["Arc'teryx", "아크테릭스", "Beta Jacket", "Gamma Jacket"],
-    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "자켓", "jacket", "beta", "베타", "gamma", "감마", "alpha", "알파", "windbreaker", "윈드브레이커", "셀린", "celln"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
-    msrpKrw: 590000, released: 1989,
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_broad",
+    modelName: "Arc'teryx Apparel (broad — 모델 미식별)",
+    aliases: ["Arc'teryx", "아크테릭스"],
+    // Wave 218: narrow 5개 (Beta/Gamma/Alpha/Atom/Vertex-Squamish) 박은 후 broad 는 catch-all.
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "자켓", "jacket", "팬츠", "windbreaker", "윈드브레이커"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance",
+      // narrow 매칭되는 키워드 제외
+      "beta", "베타", "gamma", "감마", "alpha", "알파", "atom", "아톰", "vertex", "버텍스", "squamish", "스쿼미시",
+    ],
+    msrpKrw: 400000, released: 1989,
   },
   // 휠라 — 매물 27건, 친화 가격
   {

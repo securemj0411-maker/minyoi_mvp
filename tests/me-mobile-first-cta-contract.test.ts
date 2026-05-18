@@ -20,6 +20,7 @@ test("/me mobile prioritizes welcome/products before secondary activity tools", 
   assert.match(feedbackActivity, /hidden rounded-xl .*sm:block/);
   assert.match(dashboard, /shouldShowListTools/);
   assert.match(dashboard, /검색\/정렬/);
-  assert.match(dashboard, /hidden items-center gap-2 sm:flex/);
+  assert.match(dashboard, /hidden flex-col gap-2 sm:flex/);
+  assert.match(dashboard, /mx-3 flex flex-wrap .*sm:hidden/);
   assert.match(dashboard, /shouldShowListTools \? \(/);
 });
