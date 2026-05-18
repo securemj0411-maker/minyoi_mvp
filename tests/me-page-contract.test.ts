@@ -151,6 +151,15 @@ test("/me mobile reveal card keeps safety signals out of the middle content", ()
   assert.match(modal, /hidden sm:block[\s\S]*<MarketBasisMini card=\{card\} \/>/);
 });
 
+test("/me reveal detail removes nested card frames on narrow screens", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+
+  assert.match(modal, /order-1 grid gap-3 overflow-hidden rounded-none border-0 bg-transparent p-0 shadow-none ring-0/);
+  assert.match(modal, /sm:rounded-2xl sm:border sm:border-\[#dfd6c9\]/);
+  assert.match(modal, /rounded-none border-0 bg-transparent p-0 shadow-none dark:bg-transparent sm:rounded-2xl/);
+  assert.match(modal, /className="mt-2 border-t border-\[#e1dacd\] pt-2 sm:rounded-xl/);
+});
+
 test("/me reveal detail behaves like a full-screen page on mobile", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
@@ -178,8 +187,8 @@ test("/me reveal detail clears light gradients in dark mode", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
 
   assert.match(modal, /rgba\(255,253,249,0\.22\),rgba\(238,231,218,0\.30\)\)\] dark:bg-none dark:bg-zinc-950\/20/);
-  assert.match(modal, /#f8fcf5_0%,#eef7eb_100%\)\] p-3[\s\S]*dark:bg-none dark:bg-emerald-950\/20/);
-  assert.match(modal, /#fffdf9_0%,#fbf6ee_100%\)\] p-3[\s\S]*dark:bg-none dark:bg-zinc-900/);
+  assert.match(modal, /#f8fcf5_0%,#eef7eb_100%\)\] sm:p-3\.5[\s\S]*sm:dark:bg-none sm:dark:bg-emerald-950\/20/);
+  assert.match(modal, /#fffdf9_0%,#fbf6ee_100%\)\] sm:p-3[\s\S]*sm:dark:bg-none sm:dark:bg-zinc-900/);
   assert.match(modal, /#fffdf9_0%,#fbf7ef_100%\)\] p-3[\s\S]*dark:bg-none dark:bg-zinc-900/);
 });
 

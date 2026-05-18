@@ -990,7 +990,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
 
   return (
     <>
-      <section className={`rounded-2xl border border-[#d6e2d3] bg-[linear-gradient(180deg,#f8fcf5_0%,#eef7eb_100%)] p-3 shadow-[0_12px_28px_rgba(49,66,56,0.08)] dark:border-emerald-900/40 dark:bg-none dark:bg-emerald-950/20 sm:p-3.5 lg:col-span-2 ${className}`}>
+      <section className={`rounded-none border-0 bg-transparent p-0 shadow-none dark:bg-transparent sm:rounded-2xl sm:border sm:border-[#d6e2d3] sm:bg-[linear-gradient(180deg,#f8fcf5_0%,#eef7eb_100%)] sm:p-3.5 sm:shadow-[0_12px_28px_rgba(49,66,56,0.08)] sm:dark:border-emerald-900/40 sm:dark:bg-none sm:dark:bg-emerald-950/20 lg:col-span-2 ${className}`}>
         <button
           type="button"
           onClick={(e) => {
@@ -1348,7 +1348,7 @@ function RevealCardItem({
       }`}
     >
       {/* 좌측 카드 — 매물 정보 (image + 메타 + verdicts + 노트 + 버튼) */}
-      <div className="order-1 grid gap-3 overflow-hidden rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf6ee_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.09)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-none dark:bg-zinc-900 dark:ring-zinc-800/70 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
+      <div className="order-1 grid gap-3 overflow-hidden rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent sm:rounded-2xl sm:border sm:border-[#dfd6c9] sm:bg-[linear-gradient(180deg,#fffdf9_0%,#fbf6ee_100%)] sm:p-3 sm:shadow-[0_16px_34px_rgba(49,66,56,0.09)] sm:ring-1 sm:ring-white/70 sm:dark:border-zinc-800 sm:dark:bg-none sm:dark:bg-zinc-900 sm:dark:ring-zinc-800/70 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
         <RevealProductImage card={card} />
 
         <div className="min-w-0 w-full space-y-2.5">
@@ -1411,7 +1411,7 @@ function RevealCardItem({
               </div>
               <RecommendationReasonPanel
                 card={card}
-                className="mt-2 rounded-xl p-2.5 shadow-none ring-0 sm:p-3"
+                className="mt-2 border-t border-[#e1dacd] pt-2 sm:rounded-xl sm:border sm:p-3 sm:shadow-none sm:ring-0"
               />
             </div>
             <details className="group hidden shrink-0 rounded-full border border-[#d9e5d7] bg-[#f4faf1] px-3 py-1 text-right shadow-sm dark:border-zinc-700 dark:bg-zinc-800 sm:block sm:min-w-[72px]">
