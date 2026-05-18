@@ -15,6 +15,7 @@
 2. `/me` live verify에서도 detail의 `commentCount >= 8`을 확인한다.
    - 판매완료/사라짐 확인과 같은 요청 시점 검증 경로에 얹었다.
    - detail에서 새로 8개 이상이 확인되면 candidate pool을 invalidated 처리하고 보관함에서 숨긴다.
+   - 2026-05-19 보강: 댓글/번개톡 8개 이상은 PID 단위 품질 차단 신호로 보고, 현재 `/me`를 연 유저뿐 아니라 이미 reveal된 모든 보관함 row를 `hidden_at` 처리한다. 한 유저가 확인한 글로벌 리스크를 다른 유저 화면에 남겨두지 않기 위해서다.
 
 3. pack open 직전에도 raw/detail 댓글 수를 재확인한다.
    - 이미 pool에 있던 후보라도 raw `num_comment`가 8 이상이면 reveal하지 않는다.

@@ -346,7 +346,6 @@ async function patchLiveTerminalState(
 }
 
 async function hideCommentBlockedReveal(
-  userRef: string,
   item: Pick<RevealItem, "pid">,
   commentCount: number,
   source: "raw_num_comment" | "detail_comment_count",
@@ -373,7 +372,7 @@ async function hideCommentBlockedReveal(
         updated_at: now,
       }),
     }),
-    restFetch(`${tableUrl("mvp_pack_reveals")}?user_ref=eq.${encodeURIComponent(userRef)}&pid=eq.${item.pid}&hidden_at=is.null`, {
+    restFetch(`${tableUrl("mvp_pack_reveals")}?pid=eq.${item.pid}&hidden_at=is.null`, {
       method: "PATCH",
       headers: serviceHeaders("return=minimal"),
       body: JSON.stringify({
@@ -412,7 +411,7 @@ async function liveVerifyVisibleItems(userRef: string, items: RevealItem[]): Pro
         }
 
         if (isUserVisibleCommentBlocked(detail.commentCount)) {
-          await hideCommentBlockedReveal(userRef, item, Number(detail.commentCount), "detail_comment_count");
+          await hideCommentBlockedReveal(item, Number(detail.commentCount), "detail_comment_count");
           verified[index] = null;
           continue;
         }
@@ -691,7 +690,7 @@ export async function GET(req: Request) {
   if (rawCommentBlockedItems.length > 0) {
     await Promise.allSettled(
       rawCommentBlockedItems.map((item) =>
-        hideCommentBlockedReveal(userRef, item, Number(item.commentCount), "raw_num_comment"),
+        hideCommentBlockedReveal(item, Number(item.commentCount), "raw_num_comment"),
       ),
     );
   }

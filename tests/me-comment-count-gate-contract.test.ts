@@ -15,8 +15,9 @@ test("/me hides already-revealed items once comment count crosses the pool gate"
   assert.match(route, /const MAX_USER_VISIBLE_NUM_COMMENT = 8/);
   assert.match(route, /num_comment&pid=in/);
   assert.match(route, /isUserVisibleCommentBlocked\(item\.commentCount\)/);
-  assert.match(route, /hideCommentBlockedReveal\(userRef, item, Number\(item\.commentCount\), "raw_num_comment"\)/);
-  assert.match(route, /hideCommentBlockedReveal\(userRef, item, Number\(detail\.commentCount\), "detail_comment_count"\)/);
+  assert.match(route, /hideCommentBlockedReveal\(item, Number\(item\.commentCount\), "raw_num_comment"\)/);
+  assert.match(route, /hideCommentBlockedReveal\(item, Number\(detail\.commentCount\), "detail_comment_count"\)/);
+  assert.match(route, /mvp_pack_reveals"\)\}\?pid=eq\.\$\{item\.pid\}&hidden_at=is\.null/);
   assert.match(route, /hidden_reason: reason/);
   assert.match(route, /hidden_source: `packs_me_\$\{source\}`/);
   assert.match(route, /pool_eligible: false/);
