@@ -498,7 +498,11 @@ export const LANE_READINESS: LaneReadinessMap = {
   tnf_mountain_jacket: { status: "ready", label: "TNF Mountain Jacket (Gore-Tex)", note: "Wave 198" },
   tnf_denali_fleece: { status: "ready", label: "TNF Denali Fleece", note: "Wave 198" },
   tnf_purple_label: { status: "ready", label: "TNF Purple Label (일본 Nanamica)", note: "Wave 198" },
-  tnf_supreme_collab: { status: "ready", label: "Supreme × TNF (collab)", note: "Wave 198 한정판" },
+  tnf_supreme_collab: { status: "ready", label: "Supreme × TNF (broad fallback)", note: "Wave 219: product type 분리 후 catch-all" },
+  // Wave 219 (2026-05-19): Supreme × TNF product type 분리 — 자켓 380K vs 백팩 320K vs 슬리퍼 350K vs G-Shock 320K
+  tnf_supreme_backpack: { status: "ready", label: "Supreme × TNF Backpack", note: "Wave 219 (bag 카테고리)" },
+  tnf_supreme_slipper: { status: "ready", label: "Supreme × TNF Mule/Slipper", note: "Wave 219 (shoe 카테고리)" },
+  tnf_supreme_gshock: { status: "ready", label: "Supreme × TNF × G-Shock DW-6900", note: "Wave 219 한정 콜라보" },
   tnf_borealis: { status: "ready", label: "TNF Borealis Backpack", note: "Wave 198 bag" },
   tnf_hotshot: { status: "ready", label: "TNF Hot Shot Backpack", note: "Wave 198 bag" },
   tnf_bigshot: { status: "ready", label: "TNF Big Shot Backpack", note: "Wave 198 bag" },
@@ -542,7 +546,11 @@ export const LANE_READINESS: LaneReadinessMap = {
   newbalance_levis_collab: { status: "ready", label: "NB × Levi's 990v3 (collab)", note: "Wave 202 collab" },
   nike_levis_collab: { status: "ready", label: "Nike × Levi's Air Max 95 (collab)", note: "Wave 202 collab" },
   // Wave 203 (2026-05-18): 마르지엘라 mining — 매물 압도적 (80건 sample). 타비 / MM6 collab / 글램슬램.
-  margiela_tabi: { status: "ready", label: "Maison Margiela Tabi (시그니처)", note: "Wave 203 — 매물 다수" },
+  margiela_tabi: { status: "ready", label: "Margiela Tabi (broad fallback)", note: "Wave 219: product type 분리 후 catch-all" },
+  // Wave 219 (2026-05-19): Tabi product type 분리 — 부츠 100K vs 스니커즈 120~200K vs 슬리퍼 170K
+  margiela_tabi_sneaker: { status: "ready", label: "Margiela Tabi Sneaker (Low/High)", note: "Wave 219" },
+  margiela_tabi_boot: { status: "ready", label: "Margiela Tabi Boot", note: "Wave 219" },
+  margiela_tabi_slipper: { status: "ready", label: "Margiela Tabi Slipper/Espadrille", note: "Wave 219" },
   margiela_german_army: { status: "ready", label: "Margiela German Army Trainer (Replica)", note: "Wave 203" },
   mm6_salomon_collab: { status: "ready", label: "Salomon × MM6 (X-ALP/ACS)", note: "Wave 203 collab" },
   margiela_glam_slam: { status: "ready", label: "Margiela Glam Slam (시그니처)", note: "Wave 203 bag" },
@@ -570,7 +578,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   acne_bertin_boots: { status: "ready", label: "Acne Bertin Boots", note: "Wave 205 shoe" },
   acne_pvc_tote: { status: "ready", label: "Acne PVC Tote", note: "Wave 205 bag" },
   acne_musubi: { status: "ready", label: "Acne Musubi (시그니처)", note: "Wave 205 bag" },
-  acne_apparel: { status: "ready", label: "Acne Apparel (broad)", note: "Wave 205 clothing" },
+  acne_apparel: { status: "ready", label: "Acne Apparel (broad fallback)", note: "Wave 219: product type 분리 후 catch-all" },
+  // Wave 219 (2026-05-19): Acne product type 5분리 — 티 130K vs 맨투맨 230K vs 자켓 590K vs 데님 320K vs 셔츠 380K
+  acne_tee: { status: "ready", label: "Acne Tee / Long-Sleeve", note: "Wave 219" },
+  acne_sweat: { status: "ready", label: "Acne Sweat/Hoodie (Fairview)", note: "Wave 219" },
+  acne_jacket_coat: { status: "ready", label: "Acne Jacket/Coat", note: "Wave 219" },
+  acne_denim: { status: "ready", label: "Acne Denim (Jean/Shorts)", note: "Wave 219" },
+  acne_shirt: { status: "ready", label: "Acne Shirt", note: "Wave 219" },
   kitsune_tote: { status: "ready", label: "Maison Kitsuné Tote/Eco", note: "Wave 205 bag" },
   // Wave 206 (2026-05-18): 푸마 매물 폭발적 — 스피드캣/팔레르모/Open YY/스웨이드/축구화
   puma_speedcat: { status: "ready", label: "Puma Speedcat (시그니처)", note: "Wave 206 — 매물 다수 faved 11~43" },
@@ -615,7 +629,11 @@ export const LANE_READINESS: LaneReadinessMap = {
   nike_airmax_90: { status: "ready", label: "Nike Air Max 90", note: "Wave 211 — 매물 다수 (faved 30!)" },
   nike_airmax_95: { status: "ready", label: "Nike Air Max 95", note: "Wave 211 — 매물 매우 다수" },
   nike_airmax_97: { status: "ready", label: "Nike Air Max 97", note: "Wave 211 — 매물 매우 다수 (faved 36)" },
-  nike_blazer_broad: { status: "ready", label: "Nike Blazer (Mid 77/SB/Vintage)", note: "Wave 211" },
+  nike_blazer_broad: { status: "ready", label: "Nike Blazer (broad fallback)", note: "Wave 219: Mid/Low/Hi 분리 후 catch-all" },
+  // Wave 219 (2026-05-19): Nike Blazer variant 분리 — Mid 119K / Low/Platform 99K / Hi 129K
+  nike_blazer_mid: { status: "ready", label: "Nike Blazer Mid / Mid 77", note: "Wave 219" },
+  nike_blazer_low: { status: "ready", label: "Nike Blazer Low / Low 77 / Platform", note: "Wave 219" },
+  nike_blazer_high: { status: "ready", label: "Nike Blazer Hi / High", note: "Wave 219" },
   nike_sakai_collab: { status: "ready", label: "Nike × Sacai", note: "Wave 211 collab — 매물 다수" },
   // Wave 212 (2026-05-19): 아디다스 추가 13 SKU — 매물 폭발적 (셔링백 faved 252~255 압도적)
   adidas_shering: { status: "ready", label: "Adidas Shering Hobo Bag (시그니처)", note: "Wave 212 — 매물 1위 faved 252~255!" },
@@ -646,8 +664,16 @@ export const LANE_READINESS: LaneReadinessMap = {
   arcteryx_vertex_squamish: { status: "ready", label: "Arc'teryx Vertex / Squamish", note: "Wave 218 etc" },
   arcteryx_broad: { status: "ready", label: "Arc'teryx (broad fallback)", note: "Wave 218: narrow 분리 후 catch-all" },
   fila_apparel: { status: "ready", label: "Fila Apparel", note: "Wave 214 친화" },
-  patagonia_apparel: { status: "ready", label: "Patagonia (Retro X/다운/Snap-T)", note: "Wave 214 outdoor" },
-  mlb_apparel: { status: "ready", label: "MLB Cap/Apparel", note: "Wave 214" },
+  patagonia_apparel: { status: "ready", label: "Patagonia (broad fallback)", note: "Wave 219: 모델별 분리 후 catch-all" },
+  // Wave 219 (2026-05-19): Patagonia 3분리 — Retro X 199K / Down 290K / Shell 199K
+  patagonia_retro_x: { status: "ready", label: "Patagonia Retro X Fleece", note: "Wave 219" },
+  patagonia_down: { status: "ready", label: "Patagonia Down (Nano Puff)", note: "Wave 219" },
+  patagonia_shell: { status: "ready", label: "Patagonia Shell (Torrentshell)", note: "Wave 219" },
+  mlb_apparel: { status: "ready", label: "MLB Cap (broad fallback)", note: "Wave 219: collab 분리 후 catch-all" },
+  // Wave 219 (2026-05-19): MLB collab 분리 — Gucci 480K / Nike 79K / Murakami 220K vs 일반 49K
+  mlb_cap_gucci_collab: { status: "ready", label: "Gucci × MLB Cap (한정 명품)", note: "Wave 219" },
+  mlb_cap_nike_collab: { status: "ready", label: "Nike × MLB Cap", note: "Wave 219" },
+  mlb_cap_murakami_collab: { status: "ready", label: "Murakami × MLB Cap (9twenty)", note: "Wave 219" },
   discovery_apparel: { status: "ready", label: "Discovery Expedition", note: "Wave 214 outdoor" },
   // Wave 215 (2026-05-19): Yeezy + BAPE STA + Stussy 8 Ball
   yeezy_boost_350: { status: "ready", label: "Yeezy Boost 350 (V1/V2)", note: "Wave 215 — Yeezy 매물 521건 압도적" },
