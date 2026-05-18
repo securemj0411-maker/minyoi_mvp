@@ -2128,7 +2128,7 @@ export default function PackRevealModal({
         <div
           key={activeRevealPid ?? "empty"}
           ref={scrollAreaRef}
-          className="min-h-0 flex-1 overflow-y-auto px-0 pb-24 pt-0 sm:p-4 sm:pb-28"
+          className="min-h-0 flex-1 overflow-y-auto px-0 pb-3 pt-0 sm:p-4"
         >
           {displayLoading ? (
             <div className="space-y-4 px-3 sm:px-0">

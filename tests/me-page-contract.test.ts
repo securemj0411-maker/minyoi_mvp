@@ -192,7 +192,7 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(modal, /sm:max-h-\[88vh\]/);
   assert.match(modal, /sm:rounded-2xl sm:border/);
   assert.match(modal, /px-2\.5 py-1\.5/);
-  assert.match(modal, /overflow-y-auto px-0 pb-24 pt-0 sm:p-4 sm:pb-28/);
+  assert.match(modal, /overflow-y-auto px-0 pb-3 pt-0 sm:p-4/);
   assert.match(modal, /min-w-0 w-full space-y-2\.5 px-3 sm:px-0/);
   assert.match(modal, /order-2 mx-3 space-y-2 rounded-2xl/);
   assert.match(modal, /flex min-h-8 items-center/);
@@ -274,7 +274,8 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   assert.match(modal, /className="mt-2 divide-y divide-\[#eee5d8\]/);
   assert.match(modal, /className="group grid w-full min-w-0 grid-cols-\[92px_minmax/);
   assert.match(modal, /sizes="104px"/);
-  assert.match(modal, /pb-24[\s\S]*sm:pb-28/);
+  assert.doesNotMatch(modal, /pb-24[\s\S]*sm:pb-28/);
+  assert.match(modal, /overflow-y-auto px-0 pb-3 pt-0 sm:p-4/);
   assert.match(modal, /useLayoutEffect/);
   assert.match(modal, /const scrollAreaRef = useRef<HTMLDivElement \| null>\(null\)/);
   assert.match(modal, /const activeRevealPid = result\?\.result === "success" \? result\.reveals\[0\]\?\.pid \?\? null : null/);
