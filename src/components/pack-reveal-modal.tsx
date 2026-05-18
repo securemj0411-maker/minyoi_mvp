@@ -944,14 +944,14 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
             key={tile.key}
             className={`min-h-[62px] border-0 px-3 py-2 shadow-none sm:min-h-[62px] sm:rounded-lg sm:border sm:px-2.5 sm:py-2 sm:shadow-sm ${tone.card}`}
           >
-            <div className="flex items-center gap-1.5 text-[11px] font-black text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center gap-1.5 text-xs font-black text-zinc-500 dark:text-zinc-400">
               <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
               {tile.label}
             </div>
-            <div className={`mt-0.5 line-clamp-2 text-[15px] font-black leading-5 tracking-normal tabular-nums sm:text-sm ${tone.value}`}>
+            <div className={`mt-0.5 line-clamp-2 text-[17px] font-black leading-5 tracking-normal tabular-nums sm:text-sm ${tone.value}`}>
               {tile.value}
             </div>
-            <div className="mt-0.5 line-clamp-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+            <div className="mt-0.5 line-clamp-1 text-xs font-bold text-zinc-500 dark:text-zinc-400">
               {tile.sub}
             </div>
           </div>
@@ -963,7 +963,7 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
         triggerClassName={`min-h-[62px] w-full border-0 px-3 py-2 text-left shadow-none transition hover:-translate-y-0.5 hover:shadow-md sm:min-h-[62px] sm:rounded-lg sm:border sm:px-2.5 sm:py-2 sm:shadow-sm ${safetyTone.card}`}
         triggerContent={(
           <span className="block w-full">
-            <span className="flex items-center justify-between gap-2 text-[11px] font-black text-zinc-500 dark:text-zinc-400">
+            <span className="flex items-center justify-between gap-2 text-xs font-black text-zinc-500 dark:text-zinc-400">
               <span className="inline-flex items-center gap-1.5">
                 <SafetyIcon className={`h-4 w-4 ${safetyTone.value}`} />
                 거래 안전
@@ -979,10 +979,10 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
                 </span>
               </span>
             </span>
-            <span className={`mt-0.5 block line-clamp-2 text-[15px] font-black leading-5 tracking-normal tabular-nums sm:text-sm ${safetyTone.value}`}>
+            <span className={`mt-0.5 block line-clamp-2 text-[17px] font-black leading-5 tracking-normal tabular-nums sm:text-sm ${safetyTone.value}`}>
               {safety.value}
             </span>
-            <span className="mt-0.5 block line-clamp-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+            <span className="mt-0.5 block line-clamp-1 text-xs font-bold text-zinc-500 dark:text-zinc-400">
               {safety.sub}
             </span>
           </span>
@@ -1366,7 +1366,7 @@ function RevealCardItem({
         <div className="min-w-0 w-full space-y-2.5">
           <div className="flex w-full items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <div className="line-clamp-2 text-[15px] font-black leading-5 text-[#18251c] dark:text-zinc-50">
+              <div className="line-clamp-2 text-[17px] font-black leading-6 text-[#18251c] dark:text-zinc-50">
                 {card.name}
               </div>
               <div className={`mt-1.5 w-full px-0 py-0 ${
@@ -1375,18 +1375,18 @@ function RevealCardItem({
                   : "text-[#00a862] dark:text-[#5dffae]"
               }`}>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className={`text-xs font-bold ${
+                  <span className={`text-[13px] font-bold ${
                     isMarketInvalidated ? "text-rose-600 dark:text-rose-300" : "text-zinc-500 dark:text-zinc-400"
                   }`}>
                     현재 차익
                   </span>
-                  <span className={`text-[15px] font-black leading-tight tabular-nums sm:text-sm sm:font-bold ${
+                  <span className={`text-lg font-black leading-tight tabular-nums sm:text-sm sm:font-bold ${
                     isMarketInvalidated ? "text-rose-700 dark:text-rose-200" : "text-[#00a862] dark:text-[#5dffae]"
                   }`}>
                     {displayProfitRange(card)}
                   </span>
                   {currentPct != null ? (
-                    <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-xs font-black tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
+                    <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-[13px] font-black tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
                       {currentPct >= 0 ? "+" : ""}{currentPct}%
                     </span>
                   ) : null}
@@ -1396,7 +1396,7 @@ function RevealCardItem({
                     </span>
                   ) : null}
                 </div>
-                <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-xs font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
+                <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[13px] font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
                   <span>매입 {krw(card.price)}</span>
                   {card.marketBasis?.medianPrice ? (
                     <>
@@ -1409,7 +1409,7 @@ function RevealCardItem({
                       ) : null}
                     </>
                   ) : null}
-                  <span className="text-[11px] font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
+                  <span className="text-xs font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
                   {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
                     <span
                       title={`이 매물은 ${card.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}

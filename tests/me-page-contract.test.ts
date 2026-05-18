@@ -97,14 +97,15 @@ test("/me reveal profit block stays compact so the graph remains visible", () =>
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
 
   assert.doesNotMatch(modal, /border-l-\[3px\]/);
-  assert.match(modal, /text-\[15px\] font-black leading-tight tabular-nums sm:text-sm sm:font-bold/);
+  assert.match(modal, /text-lg font-black leading-tight tabular-nums sm:text-sm sm:font-bold/);
   assert.match(modal, /text-\[#00a862\] dark:text-\[#5dffae\]/);
-  assert.match(modal, /text-xs font-black tabular-nums/);
+  assert.match(modal, /text-\[13px\] font-black tabular-nums/);
   assert.doesNotMatch(dashboard, /shadow-\[inset_3px_0_0_#00c471\]/);
   assert.match(dashboard, /sm:border-emerald-200\/80 sm:bg-emerald-50\/35/);
   assert.match(dashboard, /text-\[15px\] font-black tabular-nums text-\[#00a862\][\s\S]*sm:text-sm sm:font-bold/);
-  assert.match(modal, /gap-x-1\.5 gap-y-0\.5 text-xs font-bold tabular-nums/);
+  assert.match(modal, /gap-x-1\.5 gap-y-0\.5 text-\[13px\] font-bold tabular-nums/);
   assert.doesNotMatch(modal, /text-xl font-black leading-tight tabular-nums sm:text-2xl/);
+  assert.match(modal, /line-clamp-2 text-\[17px\] font-black leading-6/);
   assert.doesNotMatch(modal, /text-lg font-bold leading-tight tabular-nums sm:text-xl/);
   assert.doesNotMatch(modal, /text-base font-semibold leading-tight tabular-nums/);
   assert.doesNotMatch(modal, /text-sm font-bold leading-tight tabular-nums sm:text-base/);
@@ -182,9 +183,9 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(modal, /flex min-h-8 items-center/);
   assert.match(modal, /-mx-\[10px\] mt-1 grid grid-cols-2 overflow-hidden bg-\[#d9e1d6\]/);
   assert.match(modal, /min-h-\[62px\] border-0 px-3 py-2 shadow-none sm:min-h-\[62px\] sm:rounded-lg sm:border/);
-  assert.match(modal, /text-\[11px\] font-black text-zinc-500/);
-  assert.match(modal, /text-\[15px\] font-black leading-5/);
-  assert.match(modal, /text-\[11px\] font-bold text-zinc-500/);
+  assert.match(modal, /text-xs font-black text-zinc-500/);
+  assert.match(modal, /text-\[17px\] font-black leading-5/);
+  assert.match(modal, /text-xs font-bold text-zinc-500/);
   assert.doesNotMatch(modal, /gap-0\.5 sm:mx-0/);
   assert.match(modal, /reviewCount >= 100/);
   assert.match(modal, /reviewCount >= 30/);
