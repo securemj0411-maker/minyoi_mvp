@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import {
+  fetchReferencePrices,
   fetchLatestMarketStats,
   fetchLatestMarketVelocity,
   marketBasisForCandidate,
@@ -283,10 +284,11 @@ export async function GET(req: Request) {
   // Wave 89: 시세/velocity/skuListingFlow를 다시 보기 모달에도 표시.
   // comparable_key별로 market_price/velocity 한 번에 batch fetch.
   const comparableKeys = [...new Set(parsedRows.map((row) => row.comparable_key).filter((k): k is string => Boolean(k)))];
-  const [marketStats, velocityStats, readinessMap] = await Promise.all([
+  const [marketStats, velocityStats, readinessMap, referencePrices] = await Promise.all([
     fetchLatestMarketStats(comparableKeys),
     fetchLatestMarketVelocity(comparableKeys),
     loadCategoryReadinessMap(),
+    fetchReferencePrices(comparableKeys),
   ]);
 
   // skuListingFlow batch (7일 raw_listings count by sku_id)
@@ -332,6 +334,7 @@ export async function GET(req: Request) {
             skuName ?? "",
             marketStats,
             conditionClassByPid.get(Number(reveal.pid)) ?? null,
+            referencePrices,
           )
         : null;
       const priceNum = Number(raw?.price ?? 0);
@@ -339,10 +342,20 @@ export async function GET(req: Request) {
       const dbMarketInvalidatedAt = reveal.market_invalidated_at ?? null;
       const fallbackMedian = computedMarketBasis?.medianPrice ?? null;
       const fallbackGap = fallbackMedian != null && priceNum > 0 ? fallbackMedian - priceNum : null;
-      const marketGapKrw = dbCurrentProfit != null ? dbCurrentProfit : fallbackGap;
-      const marketStale = dbMarketInvalidatedAt != null
-        ? true
-        : (marketGapKrw != null && marketGapKrw < 0);
+      // Wave 203 (2026-05-18): unopened + reference price is the display source of truth.
+      // current_profit RPC can lag or be based on market_price_daily, so avoid mixing a
+      // Danawa/reference median with a Bunjang-derived current_profit on /me cards.
+      const usesReferenceAnchor = Boolean(
+        computedMarketBasis?.conditionClass === "unopened" &&
+        comparableKey &&
+        referencePrices.has(comparableKey),
+      );
+      const marketGapKrw = usesReferenceAnchor
+        ? fallbackGap
+        : (dbCurrentProfit != null ? dbCurrentProfit : fallbackGap);
+      const marketStale = usesReferenceAnchor
+        ? (marketGapKrw != null && marketGapKrw < 0)
+        : (dbMarketInvalidatedAt != null ? true : (marketGapKrw != null && marketGapKrw < 0));
       return {
         pid: Number(reveal.pid),
         name: raw?.name ?? `PID ${reveal.pid}`,
