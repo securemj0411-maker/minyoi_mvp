@@ -789,6 +789,19 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     return Array.from({ length: end - start + 1 }, (_, idx) => start + idx);
   }, [page, totalPages]);
   const visibleItems = hideTerminal ? items.filter((item) => !isUserFacingClosed(item)) : items;
+  const relatedModalItems = selectedItem
+    ? items
+      .filter((item) => item.pid !== selectedItem.pid && !isUserFacingClosed(item))
+      .slice(0, 8)
+      .map((item) => ({
+        pid: item.pid,
+        name: item.name,
+        thumbnailUrl: item.thumbnailUrl,
+        expectedProfitMin: currentProfitMinOrSnapshot(item),
+        expectedProfitMax: currentProfitMaxOrSnapshot(item),
+        revealedAt: item.revealedAt,
+      }))
+    : [];
   const dashboardSummary = (() => {
     const terminalCount = items.filter((item) => isUserFacingClosed(item)).length;
     const marketClosedCount = items.filter((item) => item.marketStale && listingStateLabel(item.listingState).tone !== "sold").length;
@@ -1573,6 +1586,12 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         onClose={closeSelectedDetail}
         onLinkClicked={handleLinkClicked}
         onFeedback={handleFeedback}
+        relatedItems={relatedModalItems}
+        onOpenRelatedItem={(pid) => {
+          const nextItem = items.find((item) => item.pid === pid);
+          if (!nextItem) return;
+          openItem(nextItem, "listing", { pushUrl: true });
+        }}
         currentFeedbackType={
           selectedItem?.transactionFeedbackType
           ?? (isTransactionFeedbackType(selectedItem?.feedbackType) ? selectedItem.feedbackType : null)

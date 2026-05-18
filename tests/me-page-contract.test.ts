@@ -118,7 +118,6 @@ test("/me mobile reveal card keeps safety signals outside recommendation details
   assert.match(modal, /object-contain object-center/);
   assert.match(modal, /hidden text-xs font-semibold leading-5/);
   assert.match(modal, /추가 신호 \{hiddenMobileCount\}개/);
-  assert.match(modal, /grid-cols-\[0\.82fr_1\.18fr\]/);
   assert.match(modal, /bg-\[#00c471\]/);
   assert.match(modal, /text-sm font-black text-white/);
   assert.match(modal, /min-w-0 flex-1/);
@@ -133,6 +132,7 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
 
   assert.match(modal, /h-dvh max-h-dvh/);
+  assert.match(modal, /z-\[90\]/);
   assert.match(modal, /rounded-none border-0/);
   assert.match(modal, /sm:max-h-\[88vh\]/);
   assert.match(modal, /sm:rounded-2xl sm:border/);
@@ -141,6 +141,27 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(dashboard, /window\.history\.pushState\(\{ minyoiRevealPid: item\.pid \}/);
   assert.match(dashboard, /window\.addEventListener\("popstate", handlePopState\)/);
   assert.match(dashboard, /window\.history\.back\(\)/);
+});
+
+test("/me reveal detail keeps actions at the bottom and opens cached sibling listings with a live detail check", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const dashboard = source("src/components/user-reveal-dashboard.tsx");
+  const relatedIndex = modal.indexOf("<RelatedRevealStrip");
+  const footerIndex = modal.indexOf("<ModalActionFooter", relatedIndex);
+  const returnIndex = modal.indexOf("최근 검증 시점", footerIndex);
+
+  assert.match(modal, /function RelatedRevealStrip/);
+  assert.match(modal, /내 다른 추천 매물/);
+  assert.match(modal, /\/me 목록 캐시 기준 · 열면 다시 상태 확인/);
+  assert.match(modal, /상세를 열면서 현재 상태를 다시 확인합니다/);
+  assert.ok(relatedIndex >= 0 && footerIndex > relatedIndex && returnIndex > footerIndex);
+  assert.doesNotMatch(modal, />\s*공략 보기\s*</);
+  assert.doesNotMatch(modal, /onPreviewGuide/);
+  assert.doesNotMatch(modal, /shrink-0 border-t/);
+  assert.match(dashboard, /const relatedModalItems = selectedItem/);
+  assert.match(dashboard, /relatedItems=\{relatedModalItems\}/);
+  assert.match(dashboard, /onOpenRelatedItem=\{\(pid\) =>/);
+  assert.match(dashboard, /openItem\(nextItem, "listing", \{ pushUrl: true \}\)/);
 });
 
 test("/me shows every condition grade as a photo badge and removes duplicate plain grade chips", () => {

@@ -44,6 +44,8 @@ type Props = {
   onFeedback: (pid: number, feedbackType: RevealFeedbackType, note?: string) => void;
   currentFeedbackType?: string | null;
   onLoadDetail: (pid: number) => Promise<RevealListingDetail>;
+  relatedItems?: RelatedRevealItem[];
+  onOpenRelatedItem?: (pid: number) => void;
   // Wave 182b (2026-05-17): 손해 신고 — 카드 list 에서 빼고 모달 안 1곳에만 박음.
   // optional — pack 열기 흐름 (새 매물 받기) 에서는 안 박힘. user-reveal-dashboard "상품 보기" 에서만 전달.
   onReportLoss?: (card: RevealCard) => void;
@@ -58,6 +60,15 @@ type Props = {
     onClose: () => void;
   }) => ReactNode;
   onRetry: () => void;
+};
+
+type RelatedRevealItem = {
+  pid: number;
+  name: string;
+  thumbnailUrl: string | null;
+  expectedProfitMin: number;
+  expectedProfitMax: number;
+  revealedAt: string;
 };
 
 type PreviewSide = "left" | "right";
@@ -1316,7 +1327,6 @@ function GuidePreviewPanel({
 
 function ModalActionFooter({
   card,
-  onPreviewGuide,
   onLinkClicked,
   onFeedback,
   currentFeedbackType,
@@ -1324,7 +1334,6 @@ function ModalActionFooter({
   alreadyReportedLoss,
 }: {
   card: RevealCard;
-  onPreviewGuide: (card: RevealCard, side: PreviewSide) => void;
   onLinkClicked: (pid: number) => void;
   onFeedback: (pid: number, feedbackType: RevealFeedbackType, note?: string) => void;
   currentFeedbackType?: string | null;
@@ -1347,16 +1356,9 @@ function ModalActionFooter({
   const statusLabel = localStatus ? TRANSACTION_STATUS_LABEL[localStatus] : "진행 전";
 
   return (
-    <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-2 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-3">
+    <div className="rounded-2xl border border-[#e7dece] bg-[#fffdf9] p-2 dark:border-zinc-800 dark:bg-zinc-900 sm:p-3">
       <div className="sm:hidden">
-        <div className="grid grid-cols-[0.82fr_1.18fr] gap-2">
-          <button
-            type="button"
-            onClick={() => onPreviewGuide(card, "right")}
-            className="rounded-xl border border-[#d5dfd2] bg-[var(--brand-accent-soft)] px-3 py-2 text-center text-xs font-bold text-[var(--brand-accent-strong)] transition hover:border-[#b9c9b9] hover:bg-[#edf3ea] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
-          >
-            공략 보기
-          </button>
+        <div>
           <a
             href={card.url}
             target="_blank"
@@ -1449,69 +1451,61 @@ function ModalActionFooter({
       </div>
 
       <div className="hidden sm:block">
-      <div className="mb-2 rounded-xl border border-[#e1dacd] bg-white/85 p-2 dark:border-zinc-800 dark:bg-zinc-950/40">
-        <div className="mb-1.5 flex items-center justify-between gap-2">
-          <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#758174] dark:text-zinc-400">
-            거래 상태
-          </span>
-          <span className="text-[11px] font-bold text-[var(--brand-accent-strong)] dark:text-zinc-200">
-            {localStatus ? TRANSACTION_STATUS_LABEL[localStatus] : "아직 진행 전"}
-          </span>
-        </div>
-        <div className="grid grid-cols-3 gap-1.5">
-          {TRANSACTION_ACTIONS.map((action) => {
-            const active = localStatus === action.type;
-            return (
-              <button
-                key={action.type}
-                type="button"
-                onClick={() => handleTransactionFeedback(action.type, action.note)}
-                className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
-                  active
-                    ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
-                    : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                }`}
-              >
-                {action.label}
-              </button>
-            );
-          })}
-        </div>
-        {isPostBuyFeedbackType(localStatus) && (
-          <div className="mt-2 border-t border-[#ebe4d8] pt-2 dark:border-zinc-800">
-            <div className="mb-1.5 text-[10px] font-bold text-[#758174] dark:text-zinc-400">
-              매수 후 진행
-            </div>
-            <div className="grid grid-cols-3 gap-1.5">
-              {POST_BUY_ACTIONS.map((action) => {
-                const active = localStatus === action.type;
-                return (
-                  <button
-                    key={action.type}
-                    type="button"
-                    onClick={() => handleTransactionFeedback(action.type, action.note)}
-                    className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
-                      active
-                        ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
-                        : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                    }`}
-                  >
-                    {action.label}
-                  </button>
-                );
-              })}
-            </div>
+        <div className="mb-2 rounded-xl border border-[#e1dacd] bg-white/85 p-2 dark:border-zinc-800 dark:bg-zinc-950/40">
+          <div className="mb-1.5 flex items-center justify-between gap-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#758174] dark:text-zinc-400">
+              거래 상태
+            </span>
+            <span className="text-[11px] font-bold text-[var(--brand-accent-strong)] dark:text-zinc-200">
+              {localStatus ? TRANSACTION_STATUS_LABEL[localStatus] : "아직 진행 전"}
+            </span>
           </div>
-        )}
-      </div>
-      <div className="grid grid-cols-[0.82fr_1.18fr] gap-2">
-        <button
-          type="button"
-          onClick={() => onPreviewGuide(card, "right")}
-          className="rounded-xl border border-[#d5dfd2] bg-[var(--brand-accent-soft)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-accent-strong)] transition hover:border-[#b9c9b9] hover:bg-[#edf3ea] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
-        >
-          공략 보기
-        </button>
+          <div className="grid grid-cols-3 gap-1.5">
+            {TRANSACTION_ACTIONS.map((action) => {
+              const active = localStatus === action.type;
+              return (
+                <button
+                  key={action.type}
+                  type="button"
+                  onClick={() => handleTransactionFeedback(action.type, action.note)}
+                  className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
+                    active
+                      ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
+                      : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  {action.label}
+                </button>
+              );
+            })}
+          </div>
+          {isPostBuyFeedbackType(localStatus) && (
+            <div className="mt-2 border-t border-[#ebe4d8] pt-2 dark:border-zinc-800">
+              <div className="mb-1.5 text-[10px] font-bold text-[#758174] dark:text-zinc-400">
+                매수 후 진행
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {POST_BUY_ACTIONS.map((action) => {
+                  const active = localStatus === action.type;
+                  return (
+                    <button
+                      key={action.type}
+                      type="button"
+                      onClick={() => handleTransactionFeedback(action.type, action.note)}
+                      className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
+                        active
+                          ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
+                          : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                      }`}
+                    >
+                      {action.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
         <a
           href={card.url}
           target="_blank"
@@ -1522,25 +1516,85 @@ function ModalActionFooter({
           <BunjangLogo className="h-[18px] w-[18px] rounded-[5px]" />
           번개장터 열기
         </a>
-      </div>
-
-      {onReportLoss && (
-        <button
-          type="button"
-          onClick={() => onReportLoss(card)}
-          disabled={alreadyReportedLoss}
-          title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하기 — 승인 시 토큰 +3"}
-          className={`mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black leading-none transition ${
-            alreadyReportedLoss
-              ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
-              : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
-          }`}
-        >
-          {alreadyReportedLoss ? "신고 완료 — 검수 중" : "정보 오류 신고 · 승인 시 +3"}
-        </button>
-      )}
+        {onReportLoss && (
+          <button
+            type="button"
+            onClick={() => onReportLoss(card)}
+            disabled={alreadyReportedLoss}
+            title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하기 — 승인 시 토큰 +3"}
+            className={`mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black leading-none transition ${
+              alreadyReportedLoss
+                ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
+                : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
+            }`}
+          >
+            {alreadyReportedLoss ? "신고 완료 — 검수 중" : "정보 오류 신고 · 승인 시 +3"}
+          </button>
+        )}
       </div>
     </div>
+  );
+}
+
+function RelatedRevealStrip({
+  items,
+  onOpenRelatedItem,
+}: {
+  items: RelatedRevealItem[];
+  onOpenRelatedItem?: (pid: number) => void;
+}) {
+  const visibleItems = items.slice(0, 8);
+  if (visibleItems.length === 0 || !onOpenRelatedItem) return null;
+
+  return (
+    <section className="rounded-2xl border border-[#e7dece] bg-white/80 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-black text-[#223127] dark:text-zinc-100">내 다른 추천 매물</div>
+          <div className="mt-0.5 text-[11px] font-semibold text-[#7a8478] dark:text-zinc-400">
+            /me 목록 캐시 기준 · 열면 다시 상태 확인
+          </div>
+        </div>
+        <span className="shrink-0 rounded-full bg-[#eef6ec] px-2 py-0.5 text-[10px] font-black text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-zinc-200">
+          {visibleItems.length}개
+        </span>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {visibleItems.map((item) => (
+          <button
+            key={item.pid}
+            type="button"
+            onClick={() => onOpenRelatedItem(item.pid)}
+            className="group min-w-0 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 text-left transition hover:border-[#b8c8b5] hover:bg-[#f4fbf0] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+          >
+            <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f2eadf] dark:bg-zinc-800">
+              {item.thumbnailUrl ? (
+                <Image
+                  src={item.thumbnailUrl}
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 45vw, 160px"
+                  className="object-cover transition duration-200 group-hover:scale-[1.03]"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center px-2 text-center text-[11px] font-bold text-[#7a8478] dark:text-zinc-400">
+                  사진 없음
+                </div>
+              )}
+            </div>
+            <div className="mt-2 line-clamp-2 min-h-[2.5em] text-xs font-black leading-5 text-[#223127] dark:text-zinc-100">
+              {item.name}
+            </div>
+            <div className="mt-1 truncate text-[11px] font-black tabular-nums text-[#00a862] dark:text-[#5dffae]">
+              {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
+            </div>
+          </button>
+        ))}
+      </div>
+      <p className="mt-2 text-[11px] font-semibold leading-5 text-[#7a8478] dark:text-zinc-400">
+        오래 머무르는 동안 판매완료될 수 있어요. 다른 매물을 누르면 상세를 열면서 현재 상태를 다시 확인합니다.
+      </p>
+    </section>
   );
 }
 
@@ -1557,6 +1611,8 @@ export default function PackRevealModal({
   onFeedback,
   currentFeedbackType,
   onLoadDetail,
+  relatedItems = [],
+  onOpenRelatedItem,
   onReportLoss,
   alreadyReportedLoss,
   onLoadGuide,
@@ -1690,7 +1746,7 @@ export default function PackRevealModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-stretch justify-stretch overscroll-contain bg-[#fffdf9] p-0 dark:bg-zinc-950 sm:items-center sm:justify-center sm:bg-[rgba(31,40,34,0.48)] sm:p-6 sm:backdrop-blur-sm sm:dark:bg-[rgba(9,9,11,0.62)]"
+      className="fixed inset-0 z-[90] flex items-stretch justify-stretch overscroll-contain bg-[#fffdf9] p-0 dark:bg-zinc-950 sm:items-center sm:justify-center sm:bg-[rgba(31,40,34,0.48)] sm:p-6 sm:backdrop-blur-sm sm:dark:bg-[rgba(9,9,11,0.62)]"
       role="dialog"
       aria-modal="true"
       onClick={() => {
@@ -1793,6 +1849,20 @@ export default function PackRevealModal({
                   최종 판단은 본인.
                 </div>
               </div>
+              <RelatedRevealStrip
+                items={relatedItems}
+                onOpenRelatedItem={onOpenRelatedItem}
+              />
+              {result.reveals[0] ? (
+                <ModalActionFooter
+                  card={result.reveals[0]}
+                  onLinkClicked={onLinkClicked}
+                  onFeedback={onFeedback}
+                  currentFeedbackType={currentFeedbackType}
+                  onReportLoss={onReportLoss}
+                  alreadyReportedLoss={alreadyReportedLoss}
+                />
+              ) : null}
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
                 <span>최근 검증 시점이 오래된 카드는 상품이 사라졌을 수 있어요. 빠르게 확인해주세요.</span>
                 <button
@@ -1861,17 +1931,6 @@ export default function PackRevealModal({
             </div>
           ) : null}
         </div>
-        {!displayLoading && result?.result === "success" && result.reveals[0] ? (
-          <ModalActionFooter
-            card={result.reveals[0]}
-            onPreviewGuide={handlePreviewGuide}
-            onLinkClicked={onLinkClicked}
-            onFeedback={onFeedback}
-            currentFeedbackType={currentFeedbackType}
-            onReportLoss={onReportLoss}
-            alreadyReportedLoss={alreadyReportedLoss}
-          />
-        ) : null}
       </div>
     </div>
   );
