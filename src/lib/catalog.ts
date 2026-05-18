@@ -7558,6 +7558,53 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "스피드캣", "speedcat", "팔레르모", "palermo", "스웨이드", "suede", "농구화"],
     msrpKrw: 150000, released: 2020,
   },
+  // Wave 207 (2026-05-18): 미즈노 매물 80건+ 압도적 — 축구화/풋살화 시장 거대.
+  // 가품 risk 낮음 ⭐ (재팬/JPN 정품 식별 명확, 축구화는 가품 시장 작음).
+  {
+    id: "shoe-mizuno-morelia",
+    brand: "Mizuno", category: "shoe", laneKey: "mizuno_morelia",
+    modelName: "Mizuno Morelia (basic / II)",
+    aliases: ["Mizuno Morelia", "미즈노 모렐리아", "Morelia II"],
+    mustContain: [["mizuno", "미즈노"], ["모렐리아", "morelia"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "네오", "neo", "베타", "beta", "살라", "sala", "알파", "alpha", "모나르시다", "monarcida", "골프", "골프채", "아이언", "골프 채"],
+    msrpKrw: 130000, released: 1985,
+  },
+  {
+    id: "shoe-mizuno-morelia-neo",
+    brand: "Mizuno", category: "shoe", laneKey: "mizuno_morelia_neo",
+    modelName: "Mizuno Morelia Neo (III / IV / 베타 / 재팬)",
+    aliases: ["Mizuno Morelia Neo", "미즈노 모렐리아 네오", "모렐리아 네오 베타"],
+    mustContain: [["mizuno", "미즈노"], ["모렐리아", "morelia"], ["네오", "neo"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "살라", "sala", "알파", "alpha", "모나르시다", "monarcida", "골프", "아이언", "골프 채"],
+    msrpKrw: 200000, released: 2014,
+  },
+  {
+    id: "shoe-mizuno-alpha",
+    brand: "Mizuno", category: "shoe", laneKey: "mizuno_alpha",
+    modelName: "Mizuno Alpha (1 / 2 / 3 / 엘리트)",
+    aliases: ["Mizuno Alpha", "미즈노 알파", "알파 재팬", "알파 엘리트"],
+    mustContain: [["mizuno", "미즈노"], ["알파", "alpha"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "모렐리아", "morelia", "살라", "sala", "모나르시다", "monarcida", "골프", "아이언"],
+    msrpKrw: 180000, released: 2022,
+  },
+  {
+    id: "shoe-mizuno-monarcida",
+    brand: "Mizuno", category: "shoe", laneKey: "mizuno_monarcida",
+    modelName: "Mizuno Monarcida (보급 라인)",
+    aliases: ["Mizuno Monarcida", "미즈노 모나르시다"],
+    mustContain: [["mizuno", "미즈노"], ["모나르시다", "monarcida"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "모렐리아", "morelia", "알파", "alpha", "살라", "sala", "골프"],
+    msrpKrw: 80000, released: 2018,
+  },
+  {
+    id: "shoe-mizuno-sala",
+    brand: "Mizuno", category: "shoe", laneKey: "mizuno_sala",
+    modelName: "Mizuno Morelia Sala (풋살화)",
+    aliases: ["Mizuno Sala", "미즈노 살라", "모렐리아 살라"],
+    mustContain: [["mizuno", "미즈노"], ["살라", "sala"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "알파", "alpha", "모나르시다", "monarcida", "골프"],
+    msrpKrw: 130000, released: 2017,
+  },
 ];
 
 // Wave 94: CATALOG 전체 SKU에도 카테고리별 NOISE 자동 spread (GENERATED + CORE + Wave 91 신규 다 포함).

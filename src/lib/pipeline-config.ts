@@ -363,6 +363,12 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Puma Open YY", "푸마 오픈와이와이",
   "Puma Suede", "푸마 스웨이드", "푸마 클라이드",
   "Puma 축구화", "Puma 풋살화", "푸마 울트라", "푸마 킹",
+  // Wave 207 — 미즈노 (축구화/풋살화)
+  "미즈노 모렐리아", "Mizuno Morelia",
+  "미즈노 모렐리아 네오", "Mizuno Morelia Neo", "Morelia Neo Beta",
+  "미즈노 알파", "Mizuno Alpha", "Alpha 재팬",
+  "미즈노 모나르시다", "Mizuno Monarcida",
+  "미즈노 살라", "Mizuno Sala", "Morelia Sala",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

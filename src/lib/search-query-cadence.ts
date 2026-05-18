@@ -146,7 +146,12 @@ export function queryFamily(query: string): string {
     // Wave 206: 푸마 신발
     lower.includes("푸마") || lower.includes("퓨마") || lower.includes("puma ") ||
     lower.includes("스피드캣") || lower.includes("speedcat") ||
-    lower.includes("팔레르모") || lower.includes("palermo")
+    lower.includes("팔레르모") || lower.includes("palermo") ||
+    // Wave 207: 미즈노 축구화/풋살화
+    lower.includes("미즈노") || lower.includes("mizuno") ||
+    lower.includes("모렐리아") || lower.includes("morelia") ||
+    (lower.includes("알파") && (lower.includes("재팬") || lower.includes("jpn") || lower.includes("ag ") || lower.includes("tf "))) ||
+    lower.includes("모나르시다") || lower.includes("monarcida")
   ) return "shoe";
   // 가방 (TNF 백팩) — bag
   if (

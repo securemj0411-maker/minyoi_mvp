@@ -571,6 +571,12 @@ export const LANE_READINESS: LaneReadinessMap = {
   puma_openyy_collab: { status: "ready", label: "Puma × Open YY (한국 한정)", note: "Wave 206 collab" },
   puma_suede_classic: { status: "ready", label: "Puma Suede/Clyde/GV Special", note: "Wave 206" },
   puma_football: { status: "ready", label: "Puma Football/Futsal (Ultra/King/Future)", note: "Wave 206" },
+  // Wave 207 (2026-05-18): 미즈노 축구화/풋살화 — 매물 80건+ 폭발적, 가품 risk 낮음
+  mizuno_morelia: { status: "ready", label: "Mizuno Morelia (basic/II)", note: "Wave 207 축구화" },
+  mizuno_morelia_neo: { status: "ready", label: "Mizuno Morelia Neo (III/IV)", note: "Wave 207 — 매물 매우 다수" },
+  mizuno_alpha: { status: "ready", label: "Mizuno Alpha (1/2/3)", note: "Wave 207" },
+  mizuno_monarcida: { status: "ready", label: "Mizuno Monarcida (보급)", note: "Wave 207" },
+  mizuno_sala: { status: "ready", label: "Mizuno Morelia Sala (풋살화)", note: "Wave 207" },
 };
 
 export type CategoryReadinessConfig = {
