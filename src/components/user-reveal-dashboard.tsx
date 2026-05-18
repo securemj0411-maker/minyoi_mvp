@@ -1427,7 +1427,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   );
                 })()}
               </div>
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-none border-0 bg-transparent px-0 py-0 shadow-none dark:bg-transparent sm:mt-2 sm:rounded-lg sm:border sm:border-[#e7e1d6] sm:bg-white/70 sm:px-2.5 sm:py-2 sm:shadow-[inset_3px_0_0_#00c471] dark:sm:border-zinc-800 dark:sm:bg-zinc-900/70 dark:sm:shadow-[inset_3px_0_0_#2ee891]">
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-none border-0 bg-transparent px-0 py-0 shadow-none dark:bg-transparent sm:mt-2 sm:rounded-lg sm:border sm:border-emerald-200/80 sm:bg-emerald-50/35 sm:px-2.5 sm:py-2 dark:sm:border-emerald-900/55 dark:sm:bg-emerald-950/20">
                 {/* Wave 194 (2026-05-18): current_profit 박혀있으면 그 값 우선 표시. snapshot 과
                     다르면 부가 라벨 ("추천 당시 +57K → 현재 +10K"). marketStale=true는 Wave 224에서
                     이 블록에 오기 전에 판매완료 tombstone으로 접는다. */}

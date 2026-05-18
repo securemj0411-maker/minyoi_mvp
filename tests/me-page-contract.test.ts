@@ -96,11 +96,12 @@ test("/me reveal profit block stays compact so the graph remains visible", () =>
   const modal = source("src/components/pack-reveal-modal.tsx");
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
 
-  assert.match(modal, /border-l-\[3px\]/);
+  assert.doesNotMatch(modal, /border-l-\[3px\]/);
   assert.match(modal, /text-xs font-bold leading-tight tabular-nums sm:text-sm/);
   assert.match(modal, /text-\[#00a862\] dark:text-\[#5dffae\]/);
   assert.match(modal, /text-\[11px\] font-bold tabular-nums/);
-  assert.match(dashboard, /shadow-\[inset_3px_0_0_#00c471\]/);
+  assert.doesNotMatch(dashboard, /shadow-\[inset_3px_0_0_#00c471\]/);
+  assert.match(dashboard, /sm:border-emerald-200\/80 sm:bg-emerald-50\/35/);
   assert.match(dashboard, /text-\[15px\] font-black tabular-nums text-\[#00a862\][\s\S]*sm:text-sm sm:font-bold/);
   assert.match(modal, /gap-x-1\.5 gap-y-0\.5 text-\[11px\]/);
   assert.doesNotMatch(modal, /text-xl font-black leading-tight tabular-nums sm:text-2xl/);
@@ -118,7 +119,7 @@ test("/me mobile product feed uses dense rows with larger thumbnails", () => {
   assert.match(dashboard, /border-x-0 border-t-0 border-b/);
   assert.match(dashboard, /sizes="\(max-width: 639px\) 118px, 76px"/);
   assert.match(dashboard, /line-clamp-2/);
-  assert.match(dashboard, /sm:shadow-\[inset_3px_0_0_#00c471\]/);
+  assert.doesNotMatch(dashboard, /sm:shadow-\[inset_3px_0_0_#00c471\]/);
 });
 
 test("/me mobile reveal card keeps safety signals out of the middle content", () => {
@@ -146,7 +147,8 @@ test("/me mobile reveal card keeps safety signals out of the middle content", ()
   assert.match(modal, /bg-\[#00c471\]/);
   assert.match(modal, /text-sm font-black text-white/);
   assert.match(modal, /min-w-0 flex-1/);
-  assert.match(modal, /mt-2 w-full border-l-\[3px\]/);
+  assert.doesNotMatch(modal, /mt-2 w-full border-l-\[3px\]/);
+  assert.match(modal, /mt-2 w-full rounded-lg border px-2\.5 py-1\.5/);
   assert.doesNotMatch(modal, /<ConditionChip conditionClass=\{card\.marketBasis\?\.conditionClass \?\? null\} showHelp \/>/);
   assert.doesNotMatch(modal, /hidden sm:block[\s\S]*<RevealRiskScoreMini card=\{card\} \/>/);
   assert.doesNotMatch(modal, /<RevealRiskScoreMini card=\{card\} \/>/);

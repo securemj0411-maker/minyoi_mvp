@@ -1357,10 +1357,10 @@ function RevealCardItem({
               <div className="line-clamp-2 text-[15px] font-black leading-5 text-[#18251c] dark:text-zinc-50">
                 {card.name}
               </div>
-              <div className={`mt-2 w-full border-l-[3px] px-2.5 py-1.5 ${
+              <div className={`mt-2 w-full rounded-lg border px-2.5 py-1.5 ${
                 isMarketInvalidated
-                  ? "border-rose-400 text-rose-500 dark:border-rose-500 dark:text-rose-400"
-                  : "border-[#00c471] text-[#00c471] dark:border-[#5dffae] dark:text-[#5dffae]"
+                  ? "border-rose-200/80 bg-rose-50/40 text-rose-500 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-400"
+                  : "border-emerald-200/85 bg-emerald-50/35 text-[#00a862] dark:border-emerald-900/55 dark:bg-emerald-950/20 dark:text-[#5dffae]"
               }`}>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className={`text-[11px] font-semibold ${
