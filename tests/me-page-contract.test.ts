@@ -137,15 +137,25 @@ test("/me seek-more modal starts with personalization and hides duplicate safety
 
   assert.doesNotMatch(meClient, /SafetyStatsBadge/);
   assert.doesNotMatch(meClient, /OnboardingBanner/);
+  assert.match(meClient, /max-w-xl/);
+  assert.match(meClient, /surface="modal"/);
   assert.match(workspace, /PERSONALIZATION_STORAGE_KEY/);
-  assert.match(workspace, /매입 가능한 최대 예산/);
-  assert.match(workspace, /어떤 스타일인가요/);
+  assert.match(workspace, /type PersonalizationStep = "budget" \| "style"/);
+  assert.match(workspace, /@keyframes seekStepIn/);
+  assert.match(workspace, /매입 예산은 어느 정도가 편하세요/);
+  assert.match(workspace, /어떤 후보를 먼저 볼까요/);
+  assert.match(workspace, /질문 \{stepIndex\} \/ 2/);
   assert.match(workspace, /빨리 팔릴 것/);
   assert.match(workspace, /수익 우선/);
+  assert.match(workspace, /다음 질문/);
   assert.match(workspace, /조건 저장하고 추천 수 고르기/);
+  assert.match(workspace, /surface=\{surface\}/);
+  assert.match(workspace, /isModalSurface \? "w-full"/);
   assert.match(workspace, /추천 상품 수만 고르면 됩니다/);
   assert.match(workspace, /고급 검색/);
   assert.match(workspace, /showAdvancedSearch \? \(/);
+  assert.doesNotMatch(workspace, /1\. 매입 가능한 최대 예산/);
+  assert.doesNotMatch(workspace, /2\. 어떤 스타일인가요/);
   assert.doesNotMatch(workspace, /프로필을 고르고 세부 조건은 슬라이더로 조정합니다/);
 });
 

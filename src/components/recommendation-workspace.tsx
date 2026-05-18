@@ -111,6 +111,8 @@ type SearchPersonalization = {
   style: BuyerStyle;
   savedAt: string;
 };
+type PersonalizationStep = "budget" | "style";
+type RecommendationSurface = "card" | "modal";
 
 const PERSONALIZATION_STORAGE_KEY = "minyoi-recommendation-personalization-v1";
 
@@ -289,6 +291,7 @@ function PackSelectorCard({
   isAuthenticated,
   onMinProfitChange,
   onRequestedCardsChange,
+  surface,
 }: {
   selectedPack: PackDef;
   selectedInventory?: InventorySnapshot;
@@ -305,6 +308,7 @@ function PackSelectorCard({
   isAuthenticated: boolean;
   onMinProfitChange: (value: number) => void;
   onRequestedCardsChange: (requestedCards: number) => void;
+  surface: RecommendationSurface;
 }) {
   const [warningOpen, setWarningOpen] = useState(false);
   const [hideWarningForSession, setHideWarningForSession] = useState(false);
@@ -332,6 +336,7 @@ function PackSelectorCard({
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [personalization, setPersonalization] = useState<SearchPersonalization | null>(null);
   const [editingPersonalization, setEditingPersonalization] = useState(false);
+  const [personalizationStep, setPersonalizationStep] = useState<PersonalizationStep>("budget");
   const [draftBudget, setDraftBudget] = useState<BuyerBudget>("30");
   const [draftStyle, setDraftStyle] = useState<BuyerStyle>("balanced");
 
@@ -387,9 +392,16 @@ function PackSelectorCard({
     } catch {}
   }
 
+  function chooseBudget(value: BuyerBudget) {
+    setDraftBudget(value);
+    window.setTimeout(() => setPersonalizationStep("style"), 120);
+  }
+
   const needsPersonalization = !personalization || editingPersonalization;
   const activeBudgetOption = personalization ? budgetOption(personalization.budget) : budgetOption(draftBudget);
   const activeStyleOption = personalization ? styleOption(personalization.style) : styleOption(draftStyle);
+  const stepIndex = personalizationStep === "budget" ? 1 : 2;
+  const isModalSurface = surface === "modal";
 
   // Inventory pre-check (debounced) — 항상 활성
   useEffect(() => {
@@ -474,7 +486,13 @@ function PackSelectorCard({
 
   return (
     <>
-      <div className={`w-full max-w-[460px] overflow-hidden rounded-[28px] border p-4 shadow-[0_18px_36px_rgba(34,49,39,0.08)] transition sm:p-4.5 ${packCardClasses(selectedPack.band)}`}>
+      <style>{`
+        @keyframes seekStepIn {
+          from { opacity: 0; transform: translateX(14px) scale(0.985); }
+          to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+      `}</style>
+      <div className={isModalSurface ? "w-full" : `w-full max-w-[460px] overflow-hidden rounded-[28px] border p-4 shadow-[0_18px_36px_rgba(34,49,39,0.08)] transition sm:p-4.5 ${packCardClasses(selectedPack.band)}`}>
         <div>
           <h2 className="text-xl font-black tracking-tight text-[#223127] dark:text-zinc-50 sm:text-2xl">
             {needsPersonalization ? "내 추천 조건 맞추기" : "추천 상품 찾기"}
@@ -485,69 +503,111 @@ function PackSelectorCard({
         </div>
 
 	      {needsPersonalization ? (
-	        <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
-	          <div>
-	            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#667466] dark:text-zinc-400">
-	              1. 매입 가능한 최대 예산
-	            </div>
-	            <div className="mt-2 grid grid-cols-2 gap-2">
-	              {BUDGET_OPTIONS.map((option) => {
-	                const active = draftBudget === option.value;
-	                return (
-	                  <button
-	                    key={option.value}
-	                    type="button"
-	                    onClick={() => setDraftBudget(option.value)}
-	                    className={`rounded-2xl border px-3 py-3 text-left transition ${
-	                      active
-	                        ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] shadow-sm"
-	                        : "border-[#e0d6c5] bg-white text-[#5e675d] hover:border-[#b9c9b9] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-	                    }`}
-	                  >
-	                    <div className="text-sm font-black">{option.label}</div>
-	                    <div className="mt-1 text-[11px] font-semibold opacity-70">{option.desc}</div>
-	                  </button>
-	                );
-	              })}
-	            </div>
-	          </div>
-	          <div className="mt-4">
-	            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#667466] dark:text-zinc-400">
-	              2. 어떤 스타일인가요?
-	            </div>
-	            <div className="mt-2 space-y-2">
-	              {STYLE_OPTIONS.map((option) => {
-	                const active = draftStyle === option.value;
-	                return (
-	                  <button
-	                    key={option.value}
-	                    type="button"
-	                    onClick={() => setDraftStyle(option.value)}
-	                    className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition ${
-	                      active
-	                        ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] shadow-sm"
-	                        : "border-[#e0d6c5] bg-white text-[#5e675d] hover:border-[#b9c9b9] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-	                    }`}
-	                  >
-	                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/70 shadow-sm dark:bg-zinc-950/50">
-	                      <option.Icon className="h-4 w-4" />
-	                    </span>
-	                    <span className="min-w-0">
-	                      <span className="block text-sm font-black">{option.label}</span>
-	                      <span className="mt-0.5 block text-[11px] font-semibold opacity-70">{option.desc}</span>
-	                    </span>
-	                  </button>
-	                );
-	              })}
-	            </div>
-	          </div>
-	          <button
-	            type="button"
-	            onClick={savePersonalization}
-	            className="mt-4 w-full rounded-2xl bg-[var(--brand-accent-strong)] px-4 py-3 text-sm font-black text-[var(--brand-cream)] shadow-[0_16px_36px_rgba(49,66,56,0.20)] transition hover:bg-[#29382f]"
-	          >
-	            조건 저장하고 추천 수 고르기
-	          </button>
+	        <div className="mt-5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#667466] dark:text-zinc-400">
+                질문 {stepIndex} / 2
+              </div>
+              <div className="text-[11px] font-bold text-[#7a8478] dark:text-zinc-500">
+                {personalizationStep === "budget" ? "예산 먼저" : "성향 선택"}
+              </div>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#ebe3d4] dark:bg-zinc-800">
+              <div
+                className="h-full rounded-full bg-[var(--brand-accent-strong)] transition-all duration-300 ease-out"
+                style={{ width: personalizationStep === "budget" ? "50%" : "100%" }}
+              />
+            </div>
+
+            <div
+              key={personalizationStep}
+              className="mt-5"
+              style={{ animation: "seekStepIn 260ms ease-out" }}
+            >
+              {personalizationStep === "budget" ? (
+                <>
+                  <div className="text-[22px] font-black tracking-tight text-[#223127] dark:text-zinc-50">
+                    매입 예산은 어느 정도가 편하세요?
+                  </div>
+                  <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
+                    부담 없는 가격대부터 후보를 줄여볼게요.
+                  </p>
+                  <div className="mt-4 grid grid-cols-2 gap-2.5">
+                    {BUDGET_OPTIONS.map((option) => {
+                      const active = draftBudget === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => chooseBudget(option.value)}
+                          className={`rounded-[20px] border px-3.5 py-4 text-left transition duration-200 hover:-translate-y-0.5 ${
+                            active
+                              ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] shadow-[0_16px_30px_rgba(49,66,56,0.14)]"
+                              : "border-[#e0d6c5] bg-white/70 text-[#5e675d] hover:border-[#b9c9b9] hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300"
+                          }`}
+                        >
+                          <div className="text-sm font-black">{option.label}</div>
+                          <div className="mt-1 text-[11px] font-semibold opacity-70">{option.desc}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-[22px] font-black tracking-tight text-[#223127] dark:text-zinc-50">
+                    어떤 후보를 먼저 볼까요?
+                  </div>
+                  <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
+                    추천 정렬과 필터 강도를 이 기준으로 맞춰둘게요.
+                  </p>
+                  <div className="mt-4 space-y-2.5">
+                    {STYLE_OPTIONS.map((option) => {
+                      const active = draftStyle === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setDraftStyle(option.value)}
+                          className={`flex w-full items-center gap-3 rounded-[20px] border px-3.5 py-4 text-left transition duration-200 hover:-translate-y-0.5 ${
+                            active
+                              ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] shadow-[0_16px_30px_rgba(49,66,56,0.14)]"
+                              : "border-[#e0d6c5] bg-white/70 text-[#5e675d] hover:border-[#b9c9b9] hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300"
+                          }`}
+                        >
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/80 shadow-sm dark:bg-zinc-950/50">
+                            <option.Icon className="h-[18px] w-[18px]" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-sm font-black">{option.label}</span>
+                            <span className="mt-0.5 block text-[11px] font-semibold opacity-70">{option.desc}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="mt-5 flex items-center gap-2">
+              {personalizationStep === "style" ? (
+                <button
+                  type="button"
+                  onClick={() => setPersonalizationStep("budget")}
+                  className="h-12 rounded-2xl border border-[#d8d2c4] bg-white/70 px-4 text-sm font-black text-[#59665b] transition hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                >
+                  이전
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={personalizationStep === "budget" ? () => setPersonalizationStep("style") : savePersonalization}
+                className="h-12 flex-1 rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-sm font-black text-[var(--brand-cream)] shadow-[0_16px_36px_rgba(49,66,56,0.20)] transition hover:bg-[#29382f]"
+              >
+                {personalizationStep === "budget" ? "다음 질문" : "조건 저장하고 추천 수 고르기"}
+              </button>
+            </div>
 	        </div>
 	      ) : (
 	      <>
@@ -574,6 +634,7 @@ function PackSelectorCard({
 	                  setDraftBudget(personalization.budget);
 	                  setDraftStyle(personalization.style);
 	                }
+	                setPersonalizationStep("budget");
 	                setEditingPersonalization(true);
 	              }}
 	              className="rounded-full border border-[#d8d2c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#59665b] transition hover:border-[#b9c9b9] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
@@ -1044,10 +1105,11 @@ function PackSelectorCard({
 type Props = {
   initialInventory: InventorySnapshot[];
   showResultModal?: boolean;
+  surface?: RecommendationSurface;
   onSuccess?: (detail: { band: PackBand; reveals: RevealCard[] }) => void;
 };
 
-export default function RecommendationWorkspace({ initialInventory, showResultModal = true, onSuccess }: Props) {
+export default function RecommendationWorkspace({ initialInventory, showResultModal = true, surface = "card", onSuccess }: Props) {
   const [inventory, setInventory] = useState<InventorySnapshot[]>(initialInventory);
   // Wave 74: CSR 전환 — initialInventory가 비었으면 mount 후 client fetch 동안 skeleton.
   const [inventoryLoading, setInventoryLoading] = useState(initialInventory.length === 0);
@@ -1343,6 +1405,7 @@ export default function RecommendationWorkspace({ initialInventory, showResultMo
           isAuthenticated={Boolean(authUser)}
           onMinProfitChange={setMinProfitManwon}
           onRequestedCardsChange={setRequestedCards}
+          surface={surface}
         />
       </section>
 

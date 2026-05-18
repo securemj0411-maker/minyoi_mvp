@@ -381,7 +381,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
             {/* 2026-05-17 phase 1b: 더 찾아보기 모달 — RecommendationWorkspace 모달 안에서 호출. */}
             {seekMoreOpen && (
               <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/60 p-3 sm:p-6" onClick={() => setSeekMoreOpen(false)}>
-                <div className="relative w-full max-w-4xl rounded-2xl bg-[#fffbf4] p-4 shadow-2xl dark:bg-zinc-950 sm:p-6" onClick={(e) => e.stopPropagation()}>
+                <div className="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-[#e6dccf] bg-[#fffbf4] p-5 shadow-[0_28px_80px_rgba(34,49,39,0.26)] dark:border-zinc-800 dark:bg-zinc-950 sm:p-6" onClick={(e) => e.stopPropagation()}>
                   <button
                     type="button"
                     onClick={() => setSeekMoreOpen(false)}
@@ -397,6 +397,7 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
                   <RecommendationWorkspace
                     initialInventory={initialInventory}
                     showResultModal={false}
+                    surface="modal"
                     onSuccess={() => setSeekMoreOpen(false)}
                   />
                 </div>
