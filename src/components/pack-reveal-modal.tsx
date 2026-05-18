@@ -842,17 +842,34 @@ function verificationDisplay(card: RevealCard) {
 function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>) {
   const rating = card.savedDetail?.sellerReviewRating ?? null;
   const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
-  if (rating != null && rating >= 4.8 && reviewCount > 0) {
+  const reviewCountLabel = reviewCount.toLocaleString("ko-KR");
+  const reviewBadge =
+    reviewCount >= 100
+      ? { label: `후기 ${reviewCountLabel}+`, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/35 dark:text-emerald-200" }
+      : reviewCount >= 30
+        ? { label: `후기 ${reviewCountLabel}`, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/35 dark:text-emerald-200" }
+        : reviewCount >= 10
+          ? { label: `후기 ${reviewCountLabel}`, className: "border-[#d6e2d3] bg-white/75 text-[#4d6654] dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300" }
+          : reviewCount > 0
+            ? { label: "후기 적음", className: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200" }
+            : null;
+  if (rating != null && rating >= 4.8 && reviewCount >= 10) {
     return {
       value: `평점 ${rating.toFixed(1)} 셀러`,
-      sub: `후기 ${reviewCount.toLocaleString("ko-KR")}건 · 근거 보기`,
+      sub: reviewCount >= 30 ? "후기 수 충분 · 근거 보기" : "후기 수 확인 · 근거 보기",
       Icon: TrophyIcon,
+      badge: reviewBadge,
+      tone: "good" as const,
     };
   }
   return {
     value: risk.label,
-    sub: risk.tone === "safe" ? "차단 필터 통과 · 근거 보기" : "확인 포인트 있음 · 근거 보기",
+    sub: reviewCount > 0 && rating != null
+      ? `평점 ${rating.toFixed(1)} · 후기 ${reviewCountLabel}건은 참고만`
+      : risk.tone === "safe" ? "차단 필터 통과 · 근거 보기" : "확인 포인트 있음 · 근거 보기",
     Icon: ShieldIcon,
+    badge: reviewBadge,
+    tone: risk.tone,
   };
 }
 
@@ -914,7 +931,7 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
       tone: speedTone,
     },
   ];
-  const safetyTone = upperFoldTileClass(risk.tone);
+  const safetyTone = upperFoldTileClass(safety.tone);
   const SafetyIcon = safety.Icon;
   return (
     <div className="-mx-3 mt-1 grid grid-cols-2 gap-px sm:mx-0 sm:mt-2 sm:gap-1.5">
@@ -949,8 +966,15 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
                 <SafetyIcon className={`h-3.5 w-3.5 ${safetyTone.value}`} />
                 거래 안전
               </span>
-              <span className="text-[10px] font-black text-zinc-400 underline decoration-zinc-300 underline-offset-2 dark:text-zinc-500 dark:decoration-zinc-600">
-                근거 보기
+              <span className="inline-flex shrink-0 items-center gap-1">
+                {safety.badge ? (
+                  <span className={`rounded-full border px-1.5 py-0.5 text-[9px] font-black leading-none ${safety.badge.className}`}>
+                    {safety.badge.label}
+                  </span>
+                ) : null}
+                <span className="text-[10px] font-black text-zinc-400 underline decoration-zinc-300 underline-offset-2 dark:text-zinc-500 dark:decoration-zinc-600">
+                  근거 보기
+                </span>
               </span>
             </span>
             <span className={`mt-0.5 block line-clamp-2 text-[13px] font-black leading-4 tracking-normal tabular-nums sm:text-sm ${safetyTone.value}`}>

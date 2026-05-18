@@ -178,6 +178,13 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(modal, /flex min-h-8 items-center/);
   assert.match(modal, /-mx-3 mt-1 grid grid-cols-2 gap-px sm:mx-0 sm:mt-2 sm:gap-1\.5/);
   assert.match(modal, /min-h-\[56px\] border px-2 py-1\.5 shadow-sm sm:min-h-\[62px\] sm:rounded-lg sm:px-2\.5 sm:py-2/);
+  assert.match(modal, /reviewCount >= 100/);
+  assert.match(modal, /reviewCount >= 30/);
+  assert.match(modal, /reviewCount >= 10/);
+  assert.match(modal, /reviewCount >= 10\) \{/);
+  assert.match(modal, /후기 수 충분 · 근거 보기/);
+  assert.match(modal, /후기 적음/);
+  assert.match(modal, /safety\.badge/);
   assert.match(modal, /aria-label="상세 닫기"/);
   assert.match(modal, />←<\/span>/);
   assert.doesNotMatch(modal, />\s*추천 상세\s*<\/div>/);
