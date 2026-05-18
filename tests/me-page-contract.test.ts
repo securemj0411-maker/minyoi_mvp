@@ -143,21 +143,28 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(dashboard, /window\.history\.back\(\)/);
 });
 
-test("/me reveal detail keeps actions at the bottom and opens cached sibling listings with a live detail check", () => {
+test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached and list-shaped", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
   const relatedIndex = modal.indexOf("<RelatedRevealStrip");
   const footerIndex = modal.indexOf("<ModalActionFooter", relatedIndex);
   const returnIndex = modal.indexOf("최근 검증 시점", footerIndex);
+  const fixedCtaIndex = modal.indexOf("<FixedBunjangFooter", returnIndex);
 
   assert.match(modal, /function RelatedRevealStrip/);
+  assert.match(modal, /function FixedBunjangFooter/);
   assert.match(modal, /내 다른 추천 매물/);
   assert.match(modal, /\/me 목록 캐시 기준 · 열면 다시 상태 확인/);
+  assert.match(modal, /번개장터에서 확인하기/);
   assert.match(modal, /상세를 열면서 현재 상태를 다시 확인합니다/);
-  assert.ok(relatedIndex >= 0 && footerIndex > relatedIndex && returnIndex > footerIndex);
+  assert.match(modal, /className="mt-3 space-y-2"/);
+  assert.match(modal, /className="group flex w-full min-w-0 gap-3/);
+  assert.match(modal, /h-\[86px\] w-\[86px\]/);
+  assert.match(modal, /pb-24[\s\S]*sm:pb-28/);
+  assert.ok(relatedIndex >= 0 && footerIndex > relatedIndex && returnIndex > footerIndex && fixedCtaIndex > returnIndex);
   assert.doesNotMatch(modal, />\s*공략 보기\s*</);
   assert.doesNotMatch(modal, /onPreviewGuide/);
-  assert.doesNotMatch(modal, /shrink-0 border-t/);
+  assert.doesNotMatch(modal, /grid grid-cols-2 gap-2 sm:grid-cols-4/);
   assert.match(dashboard, /const relatedModalItems = selectedItem/);
   assert.match(dashboard, /relatedItems=\{relatedModalItems\}/);
   assert.match(dashboard, /onOpenRelatedItem=\{\(pid\) =>/);

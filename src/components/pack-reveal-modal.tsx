@@ -1327,14 +1327,12 @@ function GuidePreviewPanel({
 
 function ModalActionFooter({
   card,
-  onLinkClicked,
   onFeedback,
   currentFeedbackType,
   onReportLoss,
   alreadyReportedLoss,
 }: {
   card: RevealCard;
-  onLinkClicked: (pid: number) => void;
   onFeedback: (pid: number, feedbackType: RevealFeedbackType, note?: string) => void;
   currentFeedbackType?: string | null;
   onReportLoss?: (card: RevealCard) => void;
@@ -1358,19 +1356,7 @@ function ModalActionFooter({
   return (
     <div className="rounded-2xl border border-[#e7dece] bg-[#fffdf9] p-2 dark:border-zinc-800 dark:bg-zinc-900 sm:p-3">
       <div className="sm:hidden">
-        <div>
-          <a
-            href={card.url}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => onLinkClicked(card.pid)}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-2.5 text-center text-sm font-black text-white shadow-lg shadow-[rgba(0,196,113,0.28)] ring-1 ring-[#80e8bd]/70 transition hover:bg-[#00b267]"
-          >
-            <BunjangLogo className="h-[16px] w-[16px] rounded-[4px]" />
-            번개장터 열기
-          </a>
-        </div>
-        <div className="mt-1.5 flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5">
           <details className="group relative min-w-0 flex-1">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-lg border border-[#d8d2c6] bg-white/85 px-2.5 py-1.5 text-[11px] font-bold text-[#425247] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
               <span>거래 상태</span>
@@ -1506,16 +1492,6 @@ function ModalActionFooter({
             </div>
           )}
         </div>
-        <a
-          href={card.url}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => onLinkClicked(card.pid)}
-          className="flex items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-3 text-center text-sm font-black text-white shadow-lg shadow-[rgba(0,196,113,0.28)] ring-1 ring-[#80e8bd]/70 transition hover:bg-[#00b267]"
-        >
-          <BunjangLogo className="h-[18px] w-[18px] rounded-[5px]" />
-          번개장터 열기
-        </a>
         {onReportLoss && (
           <button
             type="button"
@@ -1532,6 +1508,29 @@ function ModalActionFooter({
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+function FixedBunjangFooter({
+  card,
+  onLinkClicked,
+}: {
+  card: RevealCard;
+  onLinkClicked: (pid: number) => void;
+}) {
+  return (
+    <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-2 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-3">
+      <a
+        href={card.url}
+        target="_blank"
+        rel="noreferrer"
+        onClick={() => onLinkClicked(card.pid)}
+        className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-3 text-center text-sm font-black text-white shadow-lg shadow-[rgba(0,196,113,0.28)] ring-1 ring-[#80e8bd]/70 transition hover:bg-[#00b267]"
+      >
+        <BunjangLogo className="h-[18px] w-[18px] rounded-[5px]" />
+        번개장터에서 확인하기
+      </a>
     </div>
   );
 }
@@ -1559,21 +1558,21 @@ function RelatedRevealStrip({
           {visibleItems.length}개
         </span>
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="mt-3 space-y-2">
         {visibleItems.map((item) => (
           <button
             key={item.pid}
             type="button"
             onClick={() => onOpenRelatedItem(item.pid)}
-            className="group min-w-0 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 text-left transition hover:border-[#b8c8b5] hover:bg-[#f4fbf0] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+            className="group flex w-full min-w-0 gap-3 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 text-left transition hover:border-[#b8c8b5] hover:bg-[#f4fbf0] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
           >
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f2eadf] dark:bg-zinc-800">
+            <div className="relative h-[86px] w-[86px] shrink-0 overflow-hidden rounded-lg bg-[#f2eadf] dark:bg-zinc-800 sm:h-[96px] sm:w-[96px]">
               {item.thumbnailUrl ? (
                 <Image
                   src={item.thumbnailUrl}
                   alt=""
                   fill
-                  sizes="(max-width: 640px) 45vw, 160px"
+                  sizes="96px"
                   className="object-cover transition duration-200 group-hover:scale-[1.03]"
                 />
               ) : (
@@ -1582,11 +1581,16 @@ function RelatedRevealStrip({
                 </div>
               )}
             </div>
-            <div className="mt-2 line-clamp-2 min-h-[2.5em] text-xs font-black leading-5 text-[#223127] dark:text-zinc-100">
-              {item.name}
-            </div>
-            <div className="mt-1 truncate text-[11px] font-black tabular-nums text-[#00a862] dark:text-[#5dffae]">
-              {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
+            <div className="min-w-0 flex-1 py-0.5">
+              <div className="line-clamp-2 text-sm font-black leading-5 text-[#223127] dark:text-zinc-100">
+                {item.name}
+              </div>
+              <div className="mt-1 truncate text-xs font-black tabular-nums text-[#00a862] dark:text-[#5dffae]">
+                {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
+              </div>
+              <div className="mt-2 text-[11px] font-semibold text-[#7a8478] dark:text-zinc-400">
+                누르면 현재 상태 다시 확인
+              </div>
             </div>
           </button>
         ))}
@@ -1784,7 +1788,7 @@ export default function PackRevealModal({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
+        <div className="min-h-0 flex-1 overflow-y-auto p-3 pb-24 sm:p-4 sm:pb-28">
           {displayLoading ? (
             <div className="space-y-4">
               <LoadingStage completing={completing} />
@@ -1856,7 +1860,6 @@ export default function PackRevealModal({
               {result.reveals[0] ? (
                 <ModalActionFooter
                   card={result.reveals[0]}
-                  onLinkClicked={onLinkClicked}
                   onFeedback={onFeedback}
                   currentFeedbackType={currentFeedbackType}
                   onReportLoss={onReportLoss}
@@ -1931,6 +1934,12 @@ export default function PackRevealModal({
             </div>
           ) : null}
         </div>
+        {!displayLoading && result?.result === "success" && result.reveals[0] ? (
+          <FixedBunjangFooter
+            card={result.reveals[0]}
+            onLinkClicked={onLinkClicked}
+          />
+        ) : null}
       </div>
     </div>
   );
