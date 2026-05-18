@@ -2,6 +2,7 @@
 // 비admin은 notFound() → URL 존재 자체 노출 X. /admin과 별개로 운영자가 회원 현황 확인 용도.
 
 import { notFound } from "next/navigation";
+import { OPS_ADMIN_FEEDBACK_STATS_PATH, OPS_ADMIN_LOSS_REPORTS_PATH } from "@/lib/admin-routes";
 import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import { serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -179,13 +180,13 @@ export default async function MembersPage() {
           ⚙ 회원 목록 (현재)
         </span>
         <a
-          href="./loss-reports"
+          href={OPS_ADMIN_LOSS_REPORTS_PATH}
           className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 font-black text-amber-900 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
         >
           🔍 사용자 신고 검수
         </a>
         <a
-          href="./feedback-stats"
+          href={OPS_ADMIN_FEEDBACK_STATS_PATH}
           className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 font-black text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-100"
         >
           📊 신고 통계

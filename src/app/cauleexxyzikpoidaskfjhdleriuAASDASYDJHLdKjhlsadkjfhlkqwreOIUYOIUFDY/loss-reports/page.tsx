@@ -2,6 +2,7 @@
 // URL obfuscation + admin auth 이중 보호 (같은 디렉토리 패턴 — members-table 옆).
 
 import { notFound } from "next/navigation";
+import { OPS_ADMIN_BASE_PATH, OPS_ADMIN_FEEDBACK_STATS_PATH } from "@/lib/admin-routes";
 import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import LossReportsClient from "./loss-reports-client";
@@ -18,7 +19,7 @@ export default async function LossReportsAdminPage() {
         {/* Wave 188: 운영자 nav 통일 (3 페이지). */}
         <nav className="mb-4 flex flex-wrap items-center gap-2 text-xs">
           <a
-            href="../"
+            href={OPS_ADMIN_BASE_PATH}
             className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 font-black text-amber-800 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
           >
             ⚙ 회원 목록
@@ -27,7 +28,7 @@ export default async function LossReportsAdminPage() {
             🔍 사용자 신고 검수 (현재)
           </span>
           <a
-            href="../feedback-stats"
+            href={OPS_ADMIN_FEEDBACK_STATS_PATH}
             className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 font-black text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-100"
           >
             📊 신고 통계

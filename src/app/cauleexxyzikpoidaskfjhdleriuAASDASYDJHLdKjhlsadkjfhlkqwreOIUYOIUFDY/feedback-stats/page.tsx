@@ -2,6 +2,7 @@
 // Wave 182c 박은 inaccurate_report 데이터 활용 — 어떤 카테고리 신고 많은지 + 어떤 매물 systemic.
 
 import { notFound } from "next/navigation";
+import { OPS_ADMIN_BASE_PATH, OPS_ADMIN_LOSS_REPORTS_PATH } from "@/lib/admin-routes";
 import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import FeedbackStatsClient from "./feedback-stats-client";
@@ -18,13 +19,13 @@ export default async function FeedbackStatsAdminPage() {
         {/* Wave 188: 운영자 nav 통일 (3 페이지). */}
         <nav className="mb-4 flex flex-wrap items-center gap-2 text-xs">
           <a
-            href="../"
+            href={OPS_ADMIN_BASE_PATH}
             className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 font-black text-amber-800 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
           >
             ⚙ 회원 목록
           </a>
           <a
-            href="../loss-reports"
+            href={OPS_ADMIN_LOSS_REPORTS_PATH}
             className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 font-black text-amber-900 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
           >
             🔍 사용자 신고 검수
