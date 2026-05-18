@@ -457,8 +457,10 @@ export const DEFAULT_CATEGORY_SWEEPS: { id: string; title: string; pageCount?: n
   { id: "610",    title: "가전제품" },                  // fresh 86%, touched 105 — 충분
   { id: "700600", title: "골프" },                      // fresh 88%, touched 100 — 충분
   // Wave 91: 일반인 친화 + 차익 가능. 35 sub × 100 매물 측정 결과 기반.
-  // Wave 156 (2026-05-16): 신발 학습용 깊은 sweep — page 0~15 (1,500매물). 오래 안 팔린 매물 다양한 패턴 (condition/가품).
-  { id: "405",    title: "신발", pageCount: 15 },        // fresh 88%, touched 98 — 깊은 sweep으로 다양한 condition 패턴 학습용
+  // Wave 288 (2026-05-19): public tick에서는 신발 deep sweep 축소.
+  // 기존 pageCount 15는 학습용 설정이었고 ready pool 최신 유입을 신발 쪽으로 과증폭했다.
+  // public freshness loop는 3페이지로 제한하고, deep 학습은 별도 job/리포트에서 돌린다.
+  { id: "405",    title: "신발", pageCount: 3 },
   { id: "430",    title: "가방/지갑" },                 // fresh 90%, touched 103 — 충분
   { id: "700350", title: "자전거" },                    // fresh 93%, touched 73 — 충분
 ];

@@ -864,7 +864,15 @@ export function categoryFromComparableKey(value: string | null | undefined): Sku
     family === "home_appliance" ||
     family === "desktop" ||
     family === "watch" ||
-    family === "sport_golf"
+    family === "sport_golf" ||
+    family === "shoe" ||
+    family === "bag" ||
+    family === "bike" ||
+    family === "drone" ||
+    family === "perfume" ||
+    family === "kickboard" ||
+    family === "lego" ||
+    family === "clothing"
   ) {
     return family;
   }

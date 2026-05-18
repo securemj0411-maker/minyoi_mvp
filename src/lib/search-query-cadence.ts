@@ -2,6 +2,8 @@
 // simulator(scripts/report-query-cadence-simulator.mjs)와 runtime housekeeper의
 // evaluateSearchQueryCadences가 같은 로직을 쓰도록 단일 소스.
 
+import { catalogCategoryForSearchQuery } from "@/lib/catalog";
+
 export type CategoryReadinessStatus = "ready" | "internal_only" | "blocked";
 
 export type QueryYieldRow = {
@@ -52,8 +54,27 @@ export function queryFamily(query: string): string {
     const id = q.slice("category:".length).trim();
     return CATEGORY_SWEEP_FAMILY[id] ?? "unknown";
   }
+  const catalogFamily = catalogCategoryForSearchQuery(q);
+  if (catalogFamily) return catalogFamily;
   const lower = q.toLowerCase();
-  if (lower.includes("에어팟")) return "earphone";
+  if (
+    lower.includes("에어팟") ||
+    lower.includes("비츠") || lower.includes("beats") ||
+    lower.includes("갤럭시 버즈") || lower.includes("갤버즈") || lower.includes("galaxy buds") ||
+    lower.includes("linkbuds") || lower.includes("링크버즈") ||
+    lower.includes("wh-") || lower.includes("wh_") || lower.includes("wh1000") || lower.includes("wh-1000") ||
+    lower.includes("ult900n") || lower.includes("ult wear") ||
+    lower.includes("소니 헤드폰") ||
+    lower.includes("보스 qc") || lower.includes("bose qc") || lower.includes("qc45") || lower.includes("qc 울트라")
+  ) return "earphone";
+  if (
+    lower.includes("jbl flip") || lower.includes("jbl 플립") ||
+    lower.includes("사운드링크") || lower.includes("soundlink")
+  ) return "speaker";
+  if (
+    lower.includes("ps5") || lower.includes("플스5") ||
+    lower.includes("닌텐도") || lower.includes("스위치") || lower.includes("switch oled")
+  ) return "game_console";
   // Wave 187 가민 — "가민 페닉스"/"forerunner" 등 → smartwatch (워치 시리즈는 별도 단어 안 들어감)
   if (
     lower.includes("가민") || lower.includes("garmin") ||
@@ -64,9 +85,29 @@ export function queryFamily(query: string): string {
     lower.includes("에픽스") || lower.includes("epix") ||
     lower.includes("워치")
   ) return "smartwatch";
-  if (lower.includes("아이폰") || lower.includes("갤럭시 s")) return "smartphone";
-  if (lower.includes("아이패드") || lower.includes("갤럭시탭")) return "tablet";
-  if (lower.includes("맥북")) return "laptop";
+  if (
+    lower.includes("g-shock") || lower.includes("지샥") ||
+    lower.includes("seiko") || lower.includes("세이코") ||
+    lower.includes("gmw-b") || lower.includes("gmw b") || lower.includes("dw-5600") || lower.includes("dw5600")
+  ) return "watch";
+  if (lower.includes("타이틀리스트") || lower.includes("titleist")) return "sport_golf";
+  if (
+    lower.includes("아이폰") || lower.includes("갤럭시 s") ||
+    lower.includes("갤럭시 z") || lower.includes("z flip") || lower.includes("z fold") ||
+    lower.includes("갤럭시 노트") || lower.includes("note ")
+  ) return "smartphone";
+  if (lower.includes("아이패드") || lower.includes("ipad") || lower.includes("갤럭시탭")) return "tablet";
+  if (lower.includes("맥북") || lower.includes("macbook") || lower.includes("lg 그램") || lower.includes("그램 17")) return "laptop";
+  if (
+    lower.includes("맥미니") || lower.includes("mac mini") ||
+    lower.includes("아이맥") || lower.includes("imac") ||
+    lower.includes("맥 스튜디오") || lower.includes("mac studio")
+  ) return "desktop";
+  if (
+    lower.includes("캐논") || lower.includes("canon") ||
+    lower.includes("sony a7") || lower.includes("소니 a7") ||
+    lower.includes("a7c2") || lower.includes("eos r") || lower.includes("ilce-")
+  ) return "camera";
   // Wave 189 (2026-05-18): 신규 카테고리 매핑 추가 (drone/lego/kickboard/perfume).
   //   queryFamily 분류 누락 → 1,054 query "unknown" 매핑 → 카테고리별 cadence 최적화 + 대시보드 정확도 손실.
   if (
@@ -89,10 +130,10 @@ export function queryFamily(query: string): string {
     lower.includes("electric scooter")
   ) return "kickboard";
   if (
-    lower.includes("조 말론") || lower.includes("jo malone") ||
-    lower.includes("르 라보") || lower.includes("le labo") ||
+    lower.includes("조 말론") || lower.includes("조말론") || lower.includes("jo malone") ||
+    lower.includes("르 라보") || lower.includes("르라보") || lower.includes("le labo") ||
     lower.includes("딥디크") || lower.includes("diptyque") ||
-    lower.includes("톰 포드") || lower.includes("tom ford") ||
+    lower.includes("톰 포드") || lower.includes("톰포드") || lower.includes("tom ford") ||
     lower.includes("replica") || lower.includes("리플리카") ||
     lower.includes("memo") || lower.includes("메모 파리") ||
     lower.includes("향수")
@@ -105,7 +146,8 @@ export function queryFamily(query: string): string {
     lower.includes("코랄") || lower.includes("corrale") ||
     lower.includes("파나소닉") || lower.includes("panasonic") ||
     lower.includes("babyliss") || lower.includes("바비리스") ||
-    lower.includes("cyaars") || lower.includes("씨아스")
+    lower.includes("cyaars") || lower.includes("씨아스") ||
+    lower.includes("로보락") || lower.includes("roborock")
   ) return "home_appliance";
   // 갤럭시 북 — laptop
   if (lower.includes("갤럭시 북") || lower.includes("galaxy book") || lower.includes("갤럭시북")) return "laptop";
@@ -114,6 +156,7 @@ export function queryFamily(query: string): string {
   // Wave 199 (2026-05-18): Tier 2 brand 추가 — 라코스테 / 아더에러.
   if (
     lower.includes("폴로") || lower.includes("ralph lauren") || lower.includes("랄프로렌") ||
+    lower.includes("polo ") ||
     lower.includes("rrl") || lower.includes("더블 알엘") ||
     lower.includes("노스페이스") || lower.includes("north face") || lower.includes("tnf") ||
     lower.includes("눕시") || lower.includes("nuptse") ||
@@ -135,6 +178,7 @@ export function queryFamily(query: string): string {
     lower.includes("bape") || lower.includes("베이프") || lower.includes("a bathing ape") ||
     lower.includes("matin kim") || lower.includes("마뗑킴") || lower.includes("마틴킴") ||
     lower.includes("arcteryx") || lower.includes("arc'teryx") || lower.includes("아크테릭스") ||
+    lower.includes("acne studios") || lower.includes("아크네 스튜디오") ||
     lower.includes("patagonia") || lower.includes("파타고니아") ||
     lower.includes("discovery expedition") || lower.includes("디스커버리 익스페디션") ||
     (lower.includes("reebok") && !lower.includes("운동화") && !lower.includes("스니커즈")) ||
@@ -184,6 +228,17 @@ export function queryFamily(query: string): string {
     lower.includes("피어 오브 갓") || lower.includes("피어오브갓") || lower.includes("피오갓") || lower.includes("fear of god") || lower.includes("fog ") ||
     lower.includes("champion") || lower.includes("챔피온")
   ) return "shoe";
+  if (
+    lower.includes("ugg") || lower.includes("어그") ||
+    lower.includes("vans") || lower.includes("반스") ||
+    lower.includes("brooks") || lower.includes("브룩스") ||
+    lower.includes("on cloud") || lower.includes("온 클라우드") || lower.includes("클라우드틸트") ||
+    lower.includes("country og") ||
+    lower.includes("margiela gat") || lower.includes("tabi") || lower.includes("타비") ||
+    lower.includes("alpha 재팬") || lower.includes("알파 재팬") ||
+    lower.includes("ws327") || lower.includes("junya nb") ||
+    lower.includes("라이프워커") || lower.includes("kiko kostadinov")
+  ) return "shoe";
   // 가방 (TNF 백팩) — bag
   if (
     lower.includes("borealis") || lower.includes("보레알리스") ||
@@ -221,6 +276,13 @@ export function queryFamily(query: string): string {
     lower.includes("로에베") || lower.includes("loewe") ||
     lower.includes("발렌시아가") || lower.includes("balenciaga") ||
     lower.includes("토트백") || lower.includes("크로스백") || lower.includes("숄더백") || lower.includes("백팩")
+  ) return "bag";
+  if (
+    lower.includes("messenger") || lower.includes("메신저") ||
+    lower.includes("tote") || lower.includes("토트") ||
+    lower.includes("glam slam") || lower.includes("글램슬램") ||
+    lower.includes("carhartt") || lower.includes("칼하트") ||
+    lower.includes("tommy hilfiger 가방") || lower.includes("acne pvc") || lower.includes("아크네 pvc")
   ) return "bag";
   return "unknown";
 }

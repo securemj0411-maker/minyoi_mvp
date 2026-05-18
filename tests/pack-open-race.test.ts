@@ -220,6 +220,44 @@ test("openPack records one audit row and commits exactly revealed pids on succes
   }
 });
 
+test("openPack interleaves reserved candidates by category before committing reveals", async () => {
+  process.env.SUPABASE_URL = "https://stub.supabase.co";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "stub-key";
+
+  const stub = stubFetch();
+  try {
+    stub.setHandler(buildHandler({
+      reserved: [201, 202, 203, 204],
+      reservedKeys: {
+        201: "shoe|dunk_low|270|a_grade",
+        202: "shoe|tobacco|280|a_grade",
+        203: "iphone|iphone_13|128gb",
+        204: "airpods|airpods_pro_2|usbc",
+      },
+    }));
+
+    const result = await openPack({
+      band: 1,
+      userRef: "user-category-balance",
+      authUserId: "auth-category-balance",
+      isInfiniteCredits: false,
+      tokensSpent: 1,
+      requestedCards: 2,
+    });
+
+    assert.equal(result.result, "success");
+    if (result.result !== "success") return;
+    assert.deepEqual(result.reveals.map((r) => r.pid), [201, 203]);
+
+    const commitPids = stub.calls
+      .filter((c) => c.url.includes("/rpc/commit_mvp_pool_reveal"))
+      .map((c) => (c.body as { p_pid: number }).p_pid);
+    assert.deepEqual(commitPids, [201, 203]);
+  } finally {
+    stub.restore();
+  }
+});
+
 test("openPack skips prior and same-pack comparable key duplicates", async () => {
   process.env.SUPABASE_URL = "https://stub.supabase.co";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "stub-key";

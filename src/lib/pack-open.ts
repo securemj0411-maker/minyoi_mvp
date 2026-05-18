@@ -287,6 +287,28 @@ function categoryFromPool(row: { category: string | null; comparable_key: string
   return categoryFromComparableKey(row.category) ?? categoryFromComparableKey(row.comparable_key);
 }
 
+function interleaveReservedByCategory(rows: ReservedRow[]) {
+  const buckets = new Map<string, ReservedRow[]>();
+  for (const row of rows) {
+    const category = categoryFromPool(row) ?? "unknown";
+    const bucket = buckets.get(category) ?? [];
+    bucket.push(row);
+    buckets.set(category, bucket);
+  }
+  const categories = Array.from(buckets.keys());
+  const interleaved: ReservedRow[] = [];
+  let remaining = rows.length;
+  while (remaining > 0) {
+    for (const category of categories) {
+      const row = buckets.get(category)?.shift();
+      if (!row) continue;
+      interleaved.push(row);
+      remaining -= 1;
+    }
+  }
+  return interleaved;
+}
+
 type OpenFilterCriteria = {
   minProfitKrw: number;
   minConfidence: number;
@@ -1237,16 +1259,17 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     // Wave 130 (2026-05-16): reserve RPC가 condition_class를 return하지 않음 (RPC 변경 시 race
     // condition 5종 검증 필요 — CLAUDE.md 정책). 안전하게 별도 batch fetch로 pool entry의
     // condition_class lookup map만 만든다. Reserved 상태라 다음 query 시점까지 안정 (TTL 5분).
-    const reservedPids = reserved.map((r) => r.pid);
+    const orderedReserved = interleaveReservedByCategory(reserved);
+    const reservedPids = orderedReserved.map((r) => r.pid);
     // Wave 201 (2026-05-18): reference_prices fetch — unopened 매물 anchor (다나와 새 가격).
     const [listingMap, marketStats, velocityStats, readinessMap, poolConditionMap, optionBaseAssumedMap, referencePrices] = await Promise.all([
       fetchListings(reservedPids),
-      fetchLatestMarketStats(reserved.map((r) => r.comparable_key)),
-      fetchLatestMarketVelocity(reserved.map((r) => r.comparable_key)),
+      fetchLatestMarketStats(orderedReserved.map((r) => r.comparable_key)),
+      fetchLatestMarketVelocity(orderedReserved.map((r) => r.comparable_key)),
       loadCategoryReadinessMap(),
       fetchPoolConditionClassByPids(reservedPids),
       fetchOptionBaseAssumedByPids(reservedPids),
-      fetchReferencePrices(reserved.map((r) => r.comparable_key)),
+      fetchReferencePrices(orderedReserved.map((r) => r.comparable_key)),
     ]);
     const sourceHealth = await loadLatestSourceHealth();
     const reveals: RevealCard[] = [];
@@ -1255,7 +1278,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     const seenComparableKeys = new Set(userDedupe.comparableKeys);
     const seenSkuIds = new Set(userDedupe.skuIds);
 
-    for (const candidate of reserved) {
+    for (const candidate of orderedReserved) {
       if (reveals.length >= targetCards) {
         releasePids.push(candidate.pid);
         continue;

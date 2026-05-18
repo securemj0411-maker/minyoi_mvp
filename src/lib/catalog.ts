@@ -8178,7 +8178,21 @@ export function skuById(id: string): Sku | undefined {
 //   policy: searchQueries 빈 배열 []  명시 → noise 위험 SKU 자동 매핑 차단 (Wave 86 ILCE-7C 94% noise 학습).
 //   undefined → aliases 자동 매핑. searchQueries 있으면 aliases 무시.
 export function buildCatalogSearchQueries(): string[] {
+  return buildCatalogSearchQueryEntries().map((entry) => entry.query);
+}
+
+export type CatalogSearchQueryEntry = {
+  query: string;
+  category: Sku["category"];
+};
+
+function normalizeCatalogSearchQuery(raw: string) {
+  return raw.trim().toLowerCase();
+}
+
+export function buildCatalogSearchQueryEntries(): CatalogSearchQueryEntry[] {
   const seen = new Set<string>();
+  const entries: CatalogSearchQueryEntry[] = [];
   for (const sku of CATALOG) {
     const list = sku.searchQueries ?? sku.aliases;
     if (!Array.isArray(list)) continue;
@@ -8187,10 +8201,27 @@ export function buildCatalogSearchQueries(): string[] {
       if (!q) continue;
       // alias 짧으면 noise 위험 (예: "X" 단독). 4자 미만 skip.
       if (q.length < 4) continue;
-      seen.add(q);
+      const key = normalizeCatalogSearchQuery(q);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      entries.push({ query: q, category: sku.category });
     }
   }
-  return [...seen];
+  return entries;
+}
+
+let catalogSearchQueryCategoryMap: Map<string, Sku["category"]> | null = null;
+
+export function catalogCategoryForSearchQuery(query: string): Sku["category"] | null {
+  if (!catalogSearchQueryCategoryMap) {
+    catalogSearchQueryCategoryMap = new Map(
+      buildCatalogSearchQueryEntries().map((entry) => [
+        normalizeCatalogSearchQuery(entry.query),
+        entry.category,
+      ]),
+    );
+  }
+  return catalogSearchQueryCategoryMap.get(normalizeCatalogSearchQuery(query)) ?? null;
 }
 
 const NORMALIZATIONS: [RegExp, string][] = [
