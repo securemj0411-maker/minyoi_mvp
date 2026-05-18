@@ -69,6 +69,12 @@ export const FLAWED_NOTES = [
   "repair_or_defect_signal",
   "refurbished_or_repaired",
   "installment_risk",
+  // Wave 204 (2026-05-18): buy-intent 매물 (구함/삽니다/매입) — 정상 거래 X (사용자 손해 명확).
+  "buying_post",
+  // Wave 207 (2026-05-18): earphone single-side (한쪽만) — 페어 단위 매물 아님 (시세 부풀림).
+  "single_side_only",
+  // Wave 208 (2026-05-18): "X용 + 액세서리" 호환 매물 — 본품 sku 매칭 잘못 (시세 부풀림).
+  "accessory_compatible_for_other_product",
 ] as const;
 
 // Wave 203 (2026-05-18): "battery_high_health" 추가 — 95~99% 배터리 객관적 신호.
@@ -176,7 +182,20 @@ export function resolveConditionClass(
 // Wave 203 (2026-05-18) v50: 셀러 "미개봉" + 배터리 measure 모순 감지 — 거짓 unopened 차단.
 //   진짜 미개봉이면 배터리 % measure 불가능 (박스 안 뜯음). 셀러 거짓말 false positive 차단.
 //   + battery 95~99% "battery_high_health" 신호 추가 (객관적 clean 증거).
-export const PARSER_VERSION = "option-parser-v50";
+// Wave 204 (2026-05-18) v51: buy-intent 매물 broad catalog 일반 차단.
+//   사용자 코멘트 #155 — "갤탭 구함" broad SKU 통과. narrow lane only → 일반화.
+//   buying_post note 신규 → FLAWED + POOL_BLOCK + COMPARABLE_EXCLUDE 모두 추가.
+// Wave 205 (2026-05-18) v52: refurbished 분리 — 공식 리퍼 vs 사설/부분 수리.
+//   사용자 코멘트 #158 — "DJI 오즈모 포켓3 리퍼 미개봉" → flawed 분류 잘못.
+//   refurbished_factory (FLAWED 아님) vs refurbished_or_repaired (FLAWED) 분리.
+// Wave 206 (2026-05-18): damage signal 변형 보강 ("떨어트림", 본체 안 닫힘).
+//   사용자 코멘트 #160 — "본체가 안닫히고 떨어트림 많음" → worn (잘못).
+// Wave 207 (2026-05-18): earphone single-side (한쪽만) 매물 차단.
+//   사용자 코멘트 #153 — "에어팟프로2세대 C타입 왼쪽" → 본체 SKU 매칭 잘못.
+// Wave 208 (2026-05-18) v53: "X용 + 액세서리" 호환 매물 일반 차단.
+//   사용자 코멘트 #157 — "DJI 오즈모 액션6 용 pov 렌즈" → 본체 매칭 잘못.
+//   drone-only catalog NOISE → parser 일반 detection.
+export const PARSER_VERSION = "option-parser-v53";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -1104,7 +1123,17 @@ function defaultLaptopMemory(category: Sku["category"] | null, model: string | n
   return { ramGb: null, ssdGb: null };
 }
 
-function conditionFromText(text: string, batteryHealth: number | null, cycles: number | null) {
+function conditionFromText(
+  text: string,
+  batteryHealth: number | null,
+  cycles: number | null,
+  category: Sku["category"] | null = null,
+) {
+  // Wave 204/207 (2026-05-18): title-only matching 위해 raw text 에서 첫 줄 분리.
+  // normalize 가 \n 을 공백으로 합치므로 정규화 후엔 title/description 구분 불가.
+  // raw text 의 \n split → 첫 줄만 normalize.
+  const rawTitle = (text ?? "").split("\n")[0] ?? "";
+  const titleNormalized = normalize(rawTitle).toLowerCase();
   const lower = normalize(text).toLowerCase();
   const compact = lower.replace(/\s+/g, "");
   const defectRiskText = lower
@@ -1173,6 +1202,39 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   }
   if (/풀박스|풀박|풀구성|풀세트|구성품\s*전부/.test(lower)) add("full_set", 0.05);
 
+  // Wave 204 (2026-05-18): buy-intent 매물 broad catalog 일반 차단.
+  // 사용자 코멘트 #155 (pid 397387660): "갤탭 s9 fe 플러스 구함" — broad SKU (galaxy-tab-s9-fe-plus) 진입.
+  // 기존: option-parser.ts:1842/1857/1880 narrow lane 3개 (ipad_pro_11_m4 / sony_wh1000xm4 / iphone_15_pro_128) 만 buying_post reject.
+  // catalog.ts mustNotContain "삽니다/매입/구합니다" 일부 SKU 에만 박힘 (drift 위험).
+  // 근본 fix: parser 일반 detection → FLAWED + POOL_BLOCK + COMPARABLE_EXCLUDE 일반화. 모든 SKU 자동 적용.
+  // title-only matching (description false positive 보수적 차단 — §12b 정확성 우선).
+  if (/(?:구함|구합니다|구해요|구해봅니다|삽니다|매입|구매\s*합니다|구매합니다|\bwtb\b|사고\s*싶어요|사고싶어요)/i.test(titleNormalized)) {
+    add("buying_post", -0.4);
+  }
+
+  // Wave 207 (2026-05-18): earphone single-side (한쪽만) 매물 차단.
+  // 사용자 코멘트 #153 (pid 343583659): "에어팟프로2세대 C타입 왼쪽, A-급" → AirPods Pro 2 본체 SKU 매칭.
+  // 무선 이어폰류는 페어 단위 시세 — 한쪽만 매물은 단품 (정상 거래 X, 시세 부풀림).
+  // 근본 fix: earphone 카테고리 single_side_only note → FLAWED + POOL_BLOCK.
+  // title-only matching (description "왼쪽 이어폰 잘 됨" 같은 정상 표현 false positive 차단).
+  if (category === "earphone") {
+    const singleSidePattern = /(?:^|[\s\[(/,])(?:왼쪽(?:만)?|오른쪽(?:만)?|좌측(?:만)?|우측(?:만)?|왼유닛|오른유닛|left\s*only|right\s*only|l\s*유닛|r\s*유닛|한\s*쪽만|한쪽만)(?:[\s\])\/,]|$)/i;
+    if (singleSidePattern.test(titleNormalized)) {
+      add("single_side_only", -0.4);
+    }
+  }
+
+  // Wave 208 (2026-05-18): 호환 액세서리 매물 일반 차단.
+  // 사용자 코멘트 #157 (pid 398121430): "DJI 오즈모 액션6 용 pov 렌즈" → Action 6 본체 SKU 매칭.
+  // 기존: catalog.ts DRONE_FILTER_ACCESSORY_NOISE drone-only — 다른 카테고리 (camera/tablet/laptop) 누락.
+  // 근본 fix: parser detection "X용 + 액세서리 부속어" → accessory_compatible note 일반화. 모든 카테고리 자동.
+  // title-only (description 의 "본체 + 케이스 포함" 같은 정상 매물 false positive 차단).
+  // 패턴: "[단어]용 + (렌즈|필터|마운트|...)" — "용" 앞 단어 결합 매칭 필수 ("용 단독" false positive 차단).
+  const accessoryCompatibilityPattern = /[가-힣A-Za-z0-9]+\s*용\s*(?:pov\s*)?(?:렌즈|필터|마운트|어댑터|거치대|충전기|배터리|케이블|보호\s*필름|보호필름|폴리오|스타일러스|손목\s*밴드|와이파이\s*동글|동글|그립|마이크|sd\s*카드|메모리\s*카드|스트랩\s*어댑터|케이스|커버|파우치|크래들|스탠드|홀더|클립|독|도크)/i;
+  if (accessoryCompatibilityPattern.test(titleNormalized)) {
+    add("accessory_compatible_for_other_product", -0.4);
+  }
+
   // 2026-05-15 (사용자 코멘트 pid 408124976): 애플케어/AC+/삼성케어 매물은
   // 보증 프리미엄으로 단품 시세 대비 비쌈 → 시세 집계에서 제외.
   // pool 진입은 허용 (보증 포함인데 단품 시세보다 싸면 명백한 꿀).
@@ -1228,8 +1290,23 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
   if (batteryHealth != null && batteryHealth < 85) add("low_battery_health", -0.15);
   if (cycles != null && cycles > 500) add("high_battery_cycles", -0.1);
 
+  // Wave 205 (2026-05-18): refurbished 분리 — 공식 리퍼 vs 사설/부분 수리.
+  // 사용자 코멘트 #158 (pid 408779051): "DJI 오즈모 포켓3 리퍼 미개봉" → flawed 분류 (잘못).
+  // 사용자 의문: "리퍼 ≠ 훼손". 공식 리퍼 = 박스 미개봉 + 1회 공식 수리 후 재판매 (정상 작동).
+  // 기존: 리퍼/사설수리/부분수리 모두 refurbished_or_repaired (FLAWED) → flawed.
+  // 근본 fix:
+  //   - 공식 리퍼 (refurbished_factory) 신규 → FLAWED 아님 (정상 작동, 시세 sample 유지)
+  //   - 사설/부분/일부/자가 수리 (refurbished_or_repaired) 유지 → FLAWED (실제 훼손 흔적)
   const notRefurbished = /리퍼\s*(?:제품\s*)?(?:아님|아닙니다|아닌|아니고|아니며)/.test(lower);
-  if (!notRefurbished && /리퍼|리퍼폰|리퍼\s*교체|부분\s*수리|사설\s*수리|사설수리/.test(lower)) add("refurbished_or_repaired", -0.15);
+  const isUnofficialOrPartialRepair = /(?:사설|부분|일부|자가)\s*수리|사설수리|부분수리|일부수리|자가수리/.test(lower);
+  const isFactoryRefurbished = !notRefurbished
+    && !isUnofficialOrPartialRepair
+    && /리퍼\s*(?:폰|제품|미개봉|박스|교체)?|리퍼폰/.test(lower);
+  if (isUnofficialOrPartialRepair) {
+    add("refurbished_or_repaired", -0.15); // FLAWED — 사설/부분/자가 수리 (훼손 흔적)
+  } else if (isFactoryRefurbished) {
+    add("refurbished_factory", -0.03); // 공식 리퍼 — 정상 작동, FLAWED 아님
+  }
   if (/(액정|디스플레이|화면).{0,16}(교체|수리)|(?:교체|수리).{0,16}(액정|디스플레이|화면)/.test(defectRiskText)) add("screen_replaced", -0.12);
   // Wave 159i (2026-05-17 자율 사이클): "잔상이나 화면하자 없어요" 같은 부정형 정상 표현 보강.
   const noDisplayDefect = /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없)|번인\s*(?:없|없음|없습니다)|잔상이나\s*(?:화면|디스플레이|액정)\s*(?:하자|기스|손상|문제).{0,8}없|잔상\s*,?\s*(?:파손|깨짐|기스|손상)\s*(?:,|및)?\s*(?:화면|디스플레이|액정)?\s*기스\s*없|잔상\s*,?\s*멍\s*없/.test(lower);
@@ -1260,7 +1337,16 @@ function conditionFromText(text: string, batteryHealth: number | null, cycles: n
 
   // 2) damage signal — "강아지가 깨물/떨어뜨려/낙상/충격" (옛 침수만 잡음, 일반 손상 미수집).
   //    예: "강아지가 깨물어서 깨졌지만 정상작동" → flawed 명백한데 셀러는 정상 강조.
-  if (/강아지\s*가?\s*(?:깨물|물어)|떨어뜨려\s*(?:깨|금|손상|파손)|떨어진\s*적|낙상|충격\s*받|박살|도장\s*까짐/.test(lower)) {
+  // Wave 206 (2026-05-18): variant 보강.
+  // 사용자 코멘트 #160 (pid 399177378 AirPods 4 ANC): "본체가 안닫히고 떨어트림 많음" → worn 분류 잘못.
+  // 누락된 변형:
+  //   - "떨어트림" (옛 "떨어뜨려" 만, "떨어트림 / 떨어트린" 변형 누락)
+  //   - "본체 안 닫힘 / 안닫힘 / 닫히지 않음" closure 불량 (이어폰 케이스 등 명백한 flawed)
+  const closureNegation = /(?:잘\s*닫|문제\s*없이\s*닫|정상\s*(?:으로\s*)?닫|닫(?:힘|함)\s*(?:정상|이상\s*없))/.test(lower);
+  const closureDefect = !closureNegation && /(?:본체|뚜껑|덮개|커버|케이스).{0,8}(?:안\s*닫|안닫|닫히지\s*(?:않|안)|닫힘\s*불량|안\s*잠|안잠)/.test(lower);
+  const dropImpactVariants = /떨어(?:뜨|트)림|떨어트(?:려|린)|툭\s*떨어|자주\s*떨어/.test(lower);
+  if (/강아지\s*가?\s*(?:깨물|물어)|떨어뜨려\s*(?:깨|금|손상|파손)|떨어진\s*적|낙상|충격\s*받|박살|도장\s*까짐/.test(lower)
+      || closureDefect || dropImpactVariants) {
     add("repair_or_defect_signal", -0.2);
   }
 
@@ -1626,7 +1712,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const monitorShape = category === "monitor"
     ? (parseMonitorShape(title) ?? parseMonitorShape(text) ?? monitorModelHint?.monitorShape ?? null)
     : null;
-  const { conditionScore, conditionNotes } = conditionFromText(text, batteryHealth, batteryCycles);
+  const { conditionScore, conditionNotes } = conditionFromText(text, batteryHealth, batteryCycles, category);
   const tabletBundlePriceReview = category === "tablet" && hasTabletBundlePriceReview(text);
   // Wave 90: tablet generation을 comparableParts에 전달 (세대별 시세 분리)
   const tabletGeneration = category === "tablet" ? parseTabletGeneration(text, model) : null;

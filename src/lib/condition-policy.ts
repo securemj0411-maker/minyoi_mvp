@@ -21,6 +21,16 @@ export const POOL_BLOCK_NOTES = [
   "screen_replaced",
   "faceid_issue",
   "parts_only",
+  // Wave 204 (2026-05-18): buy-intent 매물 — 정상 거래 X. 사용자 손해 명확.
+  // 사용자 코멘트 #155 (pid 397387660 "갤탭 s9 fe 플러스 구함") broad catalog 누락 fix.
+  "buying_post",
+  // Wave 207 (2026-05-18): earphone single-side — 페어 매물 아님 (시세 부풀림).
+  // 사용자 코멘트 #153 (pid 343583659 "에어팟프로2세대 C타입 왼쪽") AirPods 본체 SKU 매칭 fix.
+  "single_side_only",
+  // Wave 208 (2026-05-18): "X용 + 액세서리" 호환 매물 — 본품 sku 매칭 잘못 (시세 부풀림).
+  // 사용자 코멘트 #157 (pid 398121430 "DJI 오즈모 액션6 용 pov 렌즈") Action 6 본체 SKU 매칭 fix.
+  // 기존: catalog.ts DRONE_FILTER_ACCESSORY_NOISE drone-only → parser 일반 detection.
+  "accessory_compatible_for_other_product",
 ] as const;
 
 // 비교군 UI 제외 = POOL_BLOCK + premium/noise tier (별도 grouping 으로 시세 분리됨).
