@@ -20,6 +20,10 @@ type Props = RiskScoreInput & {
   showDetail?: boolean;
   // compact: true = mini-bar 없이 chip 만 (user-reveal-dashboard 좁은 영역).
   compact?: boolean;
+  containerClassName?: string;
+  triggerClassName?: string;
+  triggerLabel?: string;
+  hideChevron?: boolean;
 };
 
 function detailTriggerLabel(tone: "safe" | "caution" | "danger", hitCount: number) {
@@ -54,7 +58,15 @@ function riskActionSummary(axis: RiskAxisResult): string | null {
   return null;
 }
 
-export function RiskScoreBar({ showDetail = false, compact = false, ...input }: Props) {
+export function RiskScoreBar({
+  showDetail = false,
+  compact = false,
+  containerClassName = "",
+  triggerClassName,
+  triggerLabel,
+  hideChevron = false,
+  ...input
+}: Props) {
   const [open, setOpen] = useState(false);
   const score = buildRiskScore(input);
   const toneClass = RISK_TONE_CLASS[score.tone];
@@ -65,19 +77,19 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
     .filter((text): text is string => Boolean(text));
 
   return (
-    <span className="relative inline-flex items-center gap-1.5">
+    <span className={`relative inline-flex items-center gap-1.5 ${containerClassName}`}>
       {showDetail ? (
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black leading-none shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${toneClass}`}
+          className={triggerClassName ?? `inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black leading-none shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${toneClass}`}
           aria-expanded={open}
           aria-label={`${score.label} 상세 보기`}
           title={detailLabel}
         >
           <DetailIcon className="h-3.5 w-3.5 shrink-0" />
-          <span>{detailLabel}</span>
-          <span aria-hidden="true" className="text-[11px]">›</span>
+          <span>{triggerLabel ?? detailLabel}</span>
+          {!hideChevron ? <span aria-hidden="true" className="text-[11px]">›</span> : null}
         </button>
       ) : (
         <span

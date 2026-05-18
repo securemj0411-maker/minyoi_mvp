@@ -637,7 +637,19 @@ function VerdictBadgesMini({ card }: { card: RevealCard }) {
   );
 }
 
-function RevealRiskScoreMini({ card }: { card: RevealCard }) {
+function RevealRiskScoreMini({
+  card,
+  containerClassName,
+  triggerClassName,
+  triggerLabel,
+  hideChevron,
+}: {
+  card: RevealCard;
+  containerClassName?: string;
+  triggerClassName?: string;
+  triggerLabel?: string;
+  hideChevron?: boolean;
+}) {
   return (
     <RiskScoreBar
       descriptionPreview={card.savedDetail?.descriptionPreview ?? null}
@@ -649,6 +661,10 @@ function RevealRiskScoreMini({ card }: { card: RevealCard }) {
       sellerReviewCount={card.savedDetail?.sellerReviewCount ?? null}
       showDetail
       compact
+      containerClassName={containerClassName}
+      triggerClassName={triggerClassName}
+      triggerLabel={triggerLabel}
+      hideChevron={hideChevron}
     />
   );
 }
@@ -1622,16 +1638,25 @@ function FixedBunjangFooter({
 }) {
   return (
     <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-2 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-3">
-      <a
-        href={card.url}
-        target="_blank"
-        rel="noreferrer"
-        onClick={() => onLinkClicked(card.pid)}
-        className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-3 text-center text-sm font-black text-white shadow-lg shadow-[rgba(0,196,113,0.28)] ring-1 ring-[#80e8bd]/70 transition hover:bg-[#00b267]"
-      >
-        <BunjangLogo className="h-[18px] w-[18px] rounded-[5px]" />
-        번개장터에서 확인하기
-      </a>
+      <div className="grid grid-cols-[minmax(0,0.86fr)_minmax(0,1.18fr)] gap-2">
+        <RevealRiskScoreMini
+          card={card}
+          containerClassName="flex w-full min-w-0"
+          triggerLabel="안전 확인"
+          hideChevron
+          triggerClassName="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-[#c9dbc8] bg-[#f1f8ef] px-3 py-3 text-center text-sm font-black text-[#274633] shadow-sm ring-1 ring-white/70 transition hover:bg-[#e7f3e4] dark:border-emerald-900/55 dark:bg-emerald-950/25 dark:text-emerald-100 dark:ring-emerald-900/25"
+        />
+        <a
+          href={card.url}
+          target="_blank"
+          rel="noreferrer"
+          onClick={() => onLinkClicked(card.pid)}
+          className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-3 text-center text-sm font-black text-white shadow-lg shadow-[rgba(0,196,113,0.28)] ring-1 ring-[#80e8bd]/70 transition hover:bg-[#00b267]"
+        >
+          <BunjangLogo className="h-[18px] w-[18px] rounded-[5px]" />
+          번개장터에서 확인하기
+        </a>
+      </div>
     </div>
   );
 }

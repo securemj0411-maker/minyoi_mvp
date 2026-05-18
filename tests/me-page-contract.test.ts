@@ -183,6 +183,11 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   assert.match(modal, /function FixedBunjangFooter/);
   assert.match(modal, /내 다른 추천 매물/);
   assert.match(modal, /\/me 목록 캐시 기준 · 열면 다시 상태 확인/);
+  assert.match(modal, /grid-cols-\[minmax\(0,0\.86fr\)_minmax\(0,1\.18fr\)\]/);
+  assert.match(modal, /triggerLabel="안전 확인"/);
+  assert.match(modal, /hideChevron/);
+  assert.match(modal, /containerClassName="flex w-full min-w-0"/);
+  assert.match(modal, /triggerClassName="flex min-h-11 w-full/);
   assert.match(modal, /번개장터에서 확인하기/);
   assert.match(modal, /상세를 열면서 현재 상태를 다시 확인합니다/);
   assert.match(modal, /className="mt-3 space-y-2"/);

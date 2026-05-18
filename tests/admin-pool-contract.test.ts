@@ -44,6 +44,10 @@ test("risk score detail trigger is written as an obvious clickable question", ()
   assert.match(riskScore, /위험 신호 \$\{hitCount\}건 확인/);
   assert.match(riskScore, /AlertTriangleIcon/);
   assert.match(riskScore, /ShieldIcon/);
+  assert.match(riskScore, /containerClassName/);
+  assert.match(riskScore, /triggerClassName/);
+  assert.match(riskScore, /triggerLabel/);
+  assert.match(riskScore, /hideChevron/);
   assert.match(riskScore, /py-0\.5 text-\[10px\] font-black leading-none/);
   assert.match(riskScore, /role="dialog"/);
   assert.match(riskScore, /left-1\/2 top-\[72px\] z-\[130\]/);
