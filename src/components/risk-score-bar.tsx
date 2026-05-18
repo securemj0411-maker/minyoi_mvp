@@ -24,6 +24,7 @@ type Props = RiskScoreInput & {
   containerClassName?: string;
   triggerClassName?: string;
   triggerLabel?: string;
+  triggerContent?: ReactNode;
   hideChevron?: boolean;
   portalDetail?: boolean;
 };
@@ -66,6 +67,7 @@ export function RiskScoreBar({
   containerClassName = "",
   triggerClassName,
   triggerLabel,
+  triggerContent,
   hideChevron = false,
   portalDetail = false,
   ...input
@@ -224,9 +226,13 @@ export function RiskScoreBar({
           aria-label={`${score.label} 상세 보기`}
           title={detailLabel}
         >
-          <DetailIcon className="h-3.5 w-3.5 shrink-0" />
-          <span>{triggerLabel ?? detailLabel}</span>
-          {!hideChevron ? <span aria-hidden="true" className="text-[11px]">›</span> : null}
+          {triggerContent ?? (
+            <>
+              <DetailIcon className="h-3.5 w-3.5 shrink-0" />
+              <span>{triggerLabel ?? detailLabel}</span>
+              {!hideChevron ? <span aria-hidden="true" className="text-[11px]">›</span> : null}
+            </>
+          )}
         </button>
       ) : (
         <span
