@@ -54,13 +54,11 @@ type Props = {
     loading: boolean;
     error: string | null;
     onClose: () => void;
-    onOpenListingDetail: () => void;
   }) => ReactNode;
   onRetry: () => void;
 };
 
 type PreviewSide = "left" | "right";
-type PreviewMode = "listing" | "guide";
 
 const LOADING_STEPS = [
   "AI가 추천 상품을 끌어오고 있습니다...",
@@ -139,18 +137,6 @@ function marketSampleLabel(card: RevealCard) {
     return `표본 ${market.sampleCount.toLocaleString("ko-KR")}건`;
   }
   return "표본 부족";
-}
-
-function saleStatusLabel(value: string) {
-  if (value === "SELLING") return "판매중";
-  if (value === "SOLD_OUT" || value === "SOLD") return "판매완료";
-  if (!value) return "상태 미확인";
-  return value;
-}
-
-function countLabel(value: number | null | undefined) {
-  if (value == null || !Number.isFinite(Number(value))) return "-";
-  return Number(value).toLocaleString("ko-KR");
 }
 
 // 2026-05-15 (사용자 코멘트 pid 405627929 — "왜 신뢰 100%? 리뷰도 없는데?"):
@@ -591,23 +577,11 @@ function LoadingStage({ completing = false }: { completing?: boolean }) {
 function RevealCardItem({
   card,
   delay,
-  previewSide,
-  onLinkClicked,
   onFeedback,
-  onPreviewListing,
-  onPreviewGuide,
-  onReportLoss,
-  alreadyReportedLoss,
 }: {
   card: RevealCard;
   delay: number;
-  previewSide: PreviewSide;
-  onLinkClicked: (pid: number) => void;
   onFeedback: (pid: number, feedbackType: RevealFeedbackType, note?: string) => void;
-  onPreviewListing: (card: RevealCard, side: PreviewSide) => void;
-  onPreviewGuide: (card: RevealCard, side: PreviewSide) => void;
-  onReportLoss?: (card: RevealCard) => void;
-  alreadyReportedLoss?: boolean;
 }) {
   const [shown, setShown] = useState(false);
   const [, setFeedback] = useState<RevealFeedbackType | null>(null);
@@ -652,7 +626,7 @@ function RevealCardItem({
             이미지 없음
           </div>
         )}
-        {/* Wave 80: 상세 비교 / 공략 보기 floating overlay 제거 — 사진 가림 → 하단 버튼 영역으로 이동 */}
+        {/* Wave 80: 사진을 가리던 floating overlay 제거. 액션은 모달 하단 footer로 이동. */}
       </div>
 
       <div className="min-w-0 space-y-2">
@@ -845,52 +819,6 @@ function RevealCardItem({
           </div>
         </details>
 
-        <div className="sticky bottom-0 z-20 -mx-3 -mb-2 space-y-2 rounded-t-xl border-t border-[#e7dece] bg-[#fffdf9]/95 p-3 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() => onPreviewListing(card, previewSide)}
-              className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-xs font-bold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >
-              상세 비교
-            </button>
-            <button
-              type="button"
-              onClick={() => onPreviewGuide(card, previewSide)}
-              className="rounded-xl border border-[#d5dfd2] bg-[var(--brand-accent-soft)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-accent-strong)] transition hover:border-[#b9c9b9] hover:bg-[#edf3ea] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
-            >
-              공략 보기
-            </button>
-            <a
-              href={card.url}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => onLinkClicked(card.pid)}
-              className="block rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-cream)] shadow-lg shadow-[rgba(49,66,56,0.18)] transition hover:bg-[#29382f]"
-            >
-              번개장터 열기
-            </a>
-          </div>
-
-          {/* Wave 182c (2026-05-17): 정보 오류 신고 — 매수 전 자연 수집 (임계값 낮음).
-              loss_report (매수 후 손해) 는 보류 — 일단 inaccurate_report 만 노출.
-              onReportLoss prop 있을 때만 표시 (= user-reveal-dashboard "상품 보기" 흐름). */}
-          {onReportLoss && (
-            <button
-              type="button"
-              onClick={() => onReportLoss(card)}
-              disabled={alreadyReportedLoss}
-              title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하고 토큰 +3 받기 (24h 검수)"}
-              className={`flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black leading-none transition ${
-                alreadyReportedLoss
-                  ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
-                  : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
-              }`}
-            >
-              {alreadyReportedLoss ? "✅ 신고 완료 — 검수 중" : "🎁 토큰 +3 받기 · 부정확 정보 신고"}
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );
@@ -902,14 +830,12 @@ function GuidePreviewPanel({
   loading,
   error,
   onClose,
-  onOpenListingDetail,
 }: {
   card: RevealCard;
   guide: ModelGuide | null;
   loading: boolean;
   error: string | null;
   onClose: () => void;
-  onOpenListingDetail: () => void;
 }) {
   if (loading) {
     return (
@@ -930,10 +856,10 @@ function GuidePreviewPanel({
           <div className="p-4">
             <button
               type="button"
-              onClick={onOpenListingDetail}
+              onClick={onClose}
               className="w-full rounded-xl border border-[#d5dfd2] bg-white px-4 py-3 text-center text-sm font-bold text-[var(--brand-accent-strong)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
             >
-              상세 비교로 돌아가기
+              닫기
             </button>
           </div>
         </div>
@@ -946,157 +872,59 @@ function GuidePreviewPanel({
       guide={guide}
       cardName={card.name}
       onClose={onClose}
-      onBackToListing={onOpenListingDetail}
     />
   );
 }
 
-function ListingPreviewPanel({
+function ModalActionFooter({
   card,
-  detail,
-  loading,
-  error,
-  onClose,
+  onPreviewGuide,
   onLinkClicked,
+  onReportLoss,
+  alreadyReportedLoss,
 }: {
   card: RevealCard;
-  detail: RevealListingDetail | null;
-  loading: boolean;
-  error: string | null;
-  onClose: () => void;
+  onPreviewGuide: (card: RevealCard, side: PreviewSide) => void;
   onLinkClicked: (pid: number) => void;
+  onReportLoss?: (card: RevealCard) => void;
+  alreadyReportedLoss?: boolean;
 }) {
-  const imageUrls = detail?.imageUrls.length ? detail.imageUrls : card.thumbnailUrl ? [card.thumbnailUrl] : [];
-  const isSold = detail?.saleStatus === "SOLD_OUT" || detail?.saleStatus === "SOLD";
-  const sellerRating = detail?.seller.reviewRating != null && Number.isFinite(Number(detail.seller.reviewRating))
-    ? Number(detail.seller.reviewRating).toFixed(1)
-    : null;
-  const metrics = [
-    { label: "조회", value: countLabel(detail?.metrics.viewCount) },
-    { label: "찜", value: countLabel(detail?.metrics.favoriteCount) },
-    { label: "댓글", value: countLabel(detail?.metrics.commentCount) },
-    { label: "배송", value: detail?.shippingSummary || "-" },
-  ];
-
   return (
-    <div className="flex max-h-[calc(100vh-24px)] overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-[rgba(49,66,56,0.16)] dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex min-h-0 w-full flex-col">
-        <div className="flex items-start justify-between gap-3 border-b border-zinc-200 bg-white/80 p-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
-          <div className="min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[#6f7f70] dark:text-emerald-300">실시간 상품 확인</div>
-            <div className="mt-1 line-clamp-2 text-sm font-black leading-5 text-zinc-900 dark:text-zinc-50">{card.name}</div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="shrink-0 rounded-lg border border-zinc-200 bg-white px-2 py-1 text-xs font-bold text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-          >
-            닫기
-          </button>
-        </div>
-
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {loading ? (
-          <div className="flex h-64 items-center justify-center text-sm font-semibold text-zinc-500">
-            실제 상품 정보 불러오는 중...
-          </div>
-        ) : null}
-
-        {!loading && error ? (
-          <div className="space-y-3 border-b border-zinc-200 bg-amber-50 p-4 text-xs leading-5 text-amber-900 dark:border-zinc-800 dark:bg-amber-950/30 dark:text-amber-100">
-            <div className="font-bold">상세 정보를 가져오지 못했어요.</div>
-            <p>{error}</p>
-            <p>번개장터가 응답을 막았거나 상품 정보가 방금 바뀐 경우라 새 탭 확인이 필요합니다.</p>
-          </div>
-        ) : null}
-
-        {!loading && !error ? (
-          <div>
-            <div className="grid grid-cols-3 gap-1 bg-zinc-100 p-1 dark:bg-zinc-950">
-              {imageUrls.length > 0 ? imageUrls.slice(0, 3).map((src, index) => (
-                <div key={`${src}-${index}`} className="relative aspect-square overflow-hidden rounded-lg bg-zinc-200 dark:bg-zinc-800">
-                  <Image
-                    src={src}
-                    alt={`${card.name} ${index + 1}`}
-                    fill
-                    sizes="(min-width: 1024px) 140px, 30vw"
-                    className={`object-cover ${isSold ? "grayscale" : ""}`}
-                  />
-                  {isSold && index === 0 ? (
-                    <div className="absolute inset-x-2 bottom-2 rounded-full bg-black/65 px-2 py-1 text-center text-[10px] font-black text-white">
-                      판매완료
-                    </div>
-                  ) : null}
-                </div>
-              )) : (
-                <div className="col-span-3 flex aspect-[3/1] items-center justify-center rounded-lg bg-zinc-200 text-xs font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                  이미지 없음
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-3 p-4">
-              <div className={`rounded-xl border p-3 ${isSold ? "border-zinc-200 bg-zinc-50 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-100" : "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-100"}`}>
-                <div className="text-[10px] font-bold uppercase tracking-widest opacity-70">현재 상태</div>
-                <div className="mt-1 flex flex-wrap items-baseline justify-between gap-2">
-                  <div className="text-2xl font-black">{saleStatusLabel(detail?.saleStatus ?? "")}</div>
-                  <div className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                    isSold ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-100" : "bg-emerald-600 text-white"
-                  }`}>
-                    {isSold ? "추천 기록 보관" : "열람 가능"}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                {metrics.map((metric) => (
-                  <div key={metric.label} className="rounded-lg border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/40">
-                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">{metric.label}</div>
-                    <div className="mt-1 truncate text-sm font-black text-zinc-800 dark:text-zinc-100">{metric.value}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">판매자</div>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-bold text-zinc-700 dark:text-zinc-200">
-                  <span className="max-w-full truncate">{detail?.seller.name || "판매자 정보 없음"}</span>
-                  {sellerRating ? (
-                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
-                      ★{sellerRating}
-                    </span>
-                  ) : null}
-                  {detail?.seller.reviewCount ? (
-                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                      후기 {detail.seller.reviewCount.toLocaleString("ko-KR")}건
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800/60">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">상세 설명</div>
-                <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-zinc-700 dark:text-zinc-200">
-                  {detail?.description || "설명 없음"}
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
+    <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-3 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => onPreviewGuide(card, "right")}
+          className="rounded-xl border border-[#d5dfd2] bg-[var(--brand-accent-soft)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-accent-strong)] transition hover:border-[#b9c9b9] hover:bg-[#edf3ea] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+        >
+          공략 보기
+        </button>
         <a
           href={card.url}
           target="_blank"
           rel="noreferrer"
           onClick={() => onLinkClicked(card.pid)}
-          className="block rounded-xl bg-[var(--brand-accent-strong)] px-4 py-3 text-center text-sm font-bold text-[var(--brand-cream)] shadow-lg shadow-[rgba(49,66,56,0.18)] transition hover:bg-[#29382f]"
+          className="block rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-cream)] shadow-lg shadow-[rgba(49,66,56,0.18)] transition hover:bg-[#29382f]"
         >
-          새 탭에서 번개장터 열기 →
+          번개장터 열기
         </a>
       </div>
-      </div>
+
+      {onReportLoss && (
+        <button
+          type="button"
+          onClick={() => onReportLoss(card)}
+          disabled={alreadyReportedLoss}
+          title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하고 토큰 +3 받기 (24h 검수)"}
+          className={`mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black leading-none transition ${
+            alreadyReportedLoss
+              ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
+              : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
+          }`}
+        >
+          {alreadyReportedLoss ? "✅ 신고 완료 — 검수 중" : "🎁 토큰 +3 받기 · 부정확 정보 신고"}
+        </button>
+      )}
     </div>
   );
 }
@@ -1120,10 +948,6 @@ export default function PackRevealModal({
   onRetry,
 }: Props) {
   const [previewCard, setPreviewCard] = useState<RevealCard | null>(null);
-  const [previewMode, setPreviewMode] = useState<PreviewMode>("listing");
-  const [previewDetail, setPreviewDetail] = useState<RevealListingDetail | null>(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewGuide, setPreviewGuide] = useState<ModelGuide | null>(null);
   const [previewGuideLoading, setPreviewGuideLoading] = useState(false);
   const [previewGuideError, setPreviewGuideError] = useState<string | null>(null);
@@ -1151,10 +975,6 @@ export default function PackRevealModal({
 
   const closePreviewPanel = useCallback(() => {
     setPreviewCard(null);
-    setPreviewMode("listing");
-    setPreviewDetail(null);
-    setPreviewLoading(false);
-    setPreviewError(null);
     setPreviewGuide(null);
     setPreviewGuideLoading(false);
     setPreviewGuideError(null);
@@ -1165,36 +985,11 @@ export default function PackRevealModal({
     onClose();
   }, [closePreviewPanel, onClose]);
 
-  const handlePreviewListing = useCallback((card: RevealCard, side: PreviewSide) => {
-    setPreviewCard(card);
-    setPreviewMode("listing");
-    setPreviewSide(side);
-    setPreviewGuide(null);
-    setPreviewGuideLoading(false);
-    setPreviewGuideError(null);
-    setPreviewDetail(null);
-    setPreviewError(null);
-    setPreviewLoading(true);
-    void onLoadDetail(card.pid)
-      .then((detail) => {
-        setPreviewDetail(detail);
-      })
-      .catch((err) => {
-        // Wave 106: raw err.message 노출 차단. 서버 에러 코드도 한국어 friendly 로 정규화.
-        console.error("[pack-reveal-modal] preview detail load failed", err);
-        setPreviewError("상세 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
-      })
-      .finally(() => setPreviewLoading(false));
-  }, [onLoadDetail]);
-
   const handlePreviewGuide = useCallback((card: RevealCard, side: PreviewSide) => {
     setPreviewCard(card);
-    setPreviewMode("guide");
     setPreviewSide(side);
     setPreviewGuide(null);
     setPreviewGuideError(null);
-    setPreviewDetail(null);
-    setPreviewError(null);
 
     if (!onLoadGuide) {
       setPreviewGuide(findModelGuide({
@@ -1254,11 +1049,14 @@ export default function PackRevealModal({
     if (consumedInitialPreviewSeedRef.current === initialPreviewSeed) return;
 
     consumedInitialPreviewSeedRef.current = initialPreviewSeed;
+    // Wave 218: 상품 보기에서는 개발자용 상세 패널을 열지 않는다. 단, /me lazy
+    // market analysis는 onLoadDetail 응답에 같이 오므로 백그라운드로만 호출한다.
+    void onLoadDetail(initialPreviewCard.pid).catch((err) => {
+      console.error("[pack-reveal-modal] lazy detail analysis load failed", err);
+    });
     queueMicrotask(() => {
       if (initialPreviewMode === "guide") {
         handlePreviewGuide(initialPreviewCard, "right");
-      } else {
-        handlePreviewListing(initialPreviewCard, "right");
       }
     });
   }, [
@@ -1269,7 +1067,7 @@ export default function PackRevealModal({
     initialPreviewMode,
     initialPreviewSeed,
     handlePreviewGuide,
-    handlePreviewListing,
+    onLoadDetail,
   ]);
 
   if (!open) return null;
@@ -1329,13 +1127,7 @@ export default function PackRevealModal({
                       key={card.pid}
                       card={card}
                       delay={idx * 250}
-                      previewSide={idx % 2 === 0 ? "right" : "left"}
-                      onLinkClicked={onLinkClicked}
                       onFeedback={onFeedback}
-                      onPreviewListing={handlePreviewListing}
-                      onPreviewGuide={handlePreviewGuide}
-                      onReportLoss={onReportLoss}
-                      alreadyReportedLoss={alreadyReportedLoss}
                     />
                   ))}
                 </div>
@@ -1346,23 +1138,13 @@ export default function PackRevealModal({
                     previewSide === "left" ? "sm:left-4" : "sm:right-4"
                   }`}
                 >
-                  {previewMode === "listing" ? (
-                    <ListingPreviewPanel
-                      card={previewCard}
-                      detail={previewDetail}
-                      loading={previewLoading}
-                      error={previewError}
-                      onClose={closePreviewPanel}
-                      onLinkClicked={onLinkClicked}
-                    />
-                  ) : renderGuidePanel ? (
+                  {renderGuidePanel ? (
                     renderGuidePanel({
                       card: previewCard,
                       guide: previewGuide,
                       loading: previewGuideLoading,
                       error: previewGuideError,
                       onClose: closePreviewPanel,
-                      onOpenListingDetail: () => handlePreviewListing(previewCard, previewSide),
                     })
                   ) : (
                     <GuidePreviewPanel
@@ -1371,7 +1153,6 @@ export default function PackRevealModal({
                       loading={previewGuideLoading}
                       error={previewGuideError}
                       onClose={closePreviewPanel}
-                      onOpenListingDetail={() => handlePreviewListing(previewCard, previewSide)}
                     />
                   )}
                 </div>
@@ -1458,6 +1239,15 @@ export default function PackRevealModal({
             </div>
           ) : null}
         </div>
+        {!displayLoading && result?.result === "success" && result.reveals[0] ? (
+          <ModalActionFooter
+            card={result.reveals[0]}
+            onPreviewGuide={handlePreviewGuide}
+            onLinkClicked={onLinkClicked}
+            onReportLoss={onReportLoss}
+            alreadyReportedLoss={alreadyReportedLoss}
+          />
+        ) : null}
       </div>
     </div>
   );

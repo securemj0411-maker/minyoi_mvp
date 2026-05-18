@@ -20,12 +20,10 @@ export default function ModelGuidePanel({
   guide,
   cardName,
   onClose,
-  onBackToListing,
 }: {
   guide: ModelGuide | null;
   cardName?: string;
   onClose: () => void;
-  onBackToListing?: () => void;
 }) {
   return (
     <div className="flex max-h-[calc(100vh-24px)] overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-[rgba(49,66,56,0.16)] dark:border-zinc-800 dark:bg-zinc-900">
@@ -42,21 +40,12 @@ export default function ModelGuidePanel({
               <>
                 <div className="mt-1 truncate text-xs text-[#697469] dark:text-zinc-400">{cardName}</div>
                 <div className="mt-1 text-[11px] leading-5 text-[#7a8578] dark:text-zinc-500">
-                  이 공략은 상품명과 옵션 추정 기준으로 연결됩니다. 실제 상세 비교도 함께 확인해주세요.
+                  이 공략은 상품명과 옵션 추정 기준으로 연결됩니다. 실제 상품 설명과 함께 확인해주세요.
                 </div>
               </>
             ) : null}
           </div>
           <div className="flex items-center gap-2">
-            {onBackToListing ? (
-              <button
-                type="button"
-                onClick={onBackToListing}
-                className="rounded-lg border border-[#d9d1c4] px-2.5 py-1.5 text-xs font-bold text-[#566555] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-              >
-                상세 비교
-              </button>
-            ) : null}
             <button
               type="button"
               onClick={onClose}
@@ -130,7 +119,7 @@ export default function ModelGuidePanel({
                 아직 공략 문서를 준비 중입니다
               </div>
               <p className="mt-2">
-                이 모델은 추천은 가능하지만, 모델 공략 문서는 아직 검수 중입니다. 우선은 상세 비교와 실제 상품 설명을 함께 확인해주세요.
+                이 모델은 추천은 가능하지만, 모델 공략 문서는 아직 검수 중입니다. 우선은 실제 상품 설명을 함께 확인해주세요.
               </p>
             </div>
           )}
