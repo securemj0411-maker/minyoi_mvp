@@ -108,7 +108,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
           {open && (
             <>
               <div
-                className="fixed inset-0 z-40 bg-zinc-950/18 backdrop-blur-[1px] sm:bg-transparent sm:backdrop-blur-0"
+                className="fixed inset-0 z-[120] bg-zinc-950/24 backdrop-blur-[1px] sm:bg-transparent sm:backdrop-blur-0"
                 onClick={(e) => { e.stopPropagation(); setOpen(false); }}
               />
               <div
@@ -116,7 +116,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                 aria-modal="true"
                 aria-label="위험 신호 점검"
                 onClick={(e) => e.stopPropagation()}
-                className="fixed inset-x-3 bottom-3 z-50 max-h-[82dvh] overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-zinc-950/20 dark:border-zinc-700 dark:bg-zinc-900 sm:absolute sm:inset-auto sm:left-0 sm:top-6 sm:w-[30rem] sm:max-h-[74vh] sm:rounded-xl"
+                className="fixed left-1/2 top-1/2 z-[130] max-h-[calc(100dvh-120px)] w-[calc(100vw-28px)] max-w-[430px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-zinc-950/22 dark:border-zinc-700 dark:bg-zinc-900 sm:absolute sm:left-0 sm:top-6 sm:w-[30rem] sm:max-w-none sm:translate-x-0 sm:translate-y-0 sm:rounded-xl"
               >
                 <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
                   <div>
@@ -140,7 +140,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                     </button>
                   </div>
                 </div>
-                <div className="max-h-[calc(82dvh-70px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(74vh-76px)] sm:px-5 sm:py-4">
+                <div className="max-h-[calc(100dvh-190px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(74vh-76px)] sm:px-5 sm:py-4">
                   <div className="space-y-2.5">
                     {score.axes.map((a) => (
                       <div
@@ -155,8 +155,9 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                             {[0, 1, 2].map((lv) => (
                               <span
                                 key={lv}
+                                aria-hidden="true"
                                 className={`block h-2.5 w-5 rounded-full ${
-                                  lv <= a.level
+                                  lv < 3 - a.level
                                     ? RISK_AXIS_LEVEL_CLASS[a.level]
                                     : "bg-zinc-200 dark:bg-zinc-700"
                                 }`}
