@@ -459,9 +459,7 @@ export async function GET(req: Request) {
       // current_profit RPC can lag or be based on market_price_daily, so avoid mixing a
       // Danawa/reference median with a Bunjang-derived current_profit on /me cards.
       const usesReferenceAnchor = Boolean(
-        computedMarketBasis?.conditionClass === "unopened" &&
-        comparableKey &&
-        referencePrices.has(comparableKey),
+        computedMarketBasis?.priceSource === "reference",
       );
       const marketGapKrw = usesReferenceAnchor
         ? fallbackGap

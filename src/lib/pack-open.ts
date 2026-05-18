@@ -84,6 +84,9 @@ export type RevealMarketBasis = {
   soldSampleCount: number;
   disappearedSampleCount: number;
   confidence: string | null;
+  // Wave 207 (2026-05-18): UI source label must reflect the actual price anchor.
+  // "reference" = Danawa/official new-product anchor, "market" = Bunjang market stats.
+  priceSource: "reference" | "market";
   computedAt: string | null;
   excludedExamples: string[];
   // Wave 130 (2026-05-16): condition별 시세 분리 — 사업 보고서 L2 retention.
@@ -481,9 +484,16 @@ export async function fetchLatestMarketStats(comparableKeys: (string | null)[]):
 export async function fetchReferencePrices(comparableKeys: (string | null)[]): Promise<Map<string, number>> {
   const unique = [...new Set(comparableKeys.filter((k): k is string => Boolean(k)))];
   if (unique.length === 0) return new Map();
-  const encoded = unique.map((k) => encodeURIComponent(k)).join(",");
+  const queryKeys = new Set(unique);
+  // Wave 207: historical AirPods Pro 2 rows use the unified key, while the
+  // reference scraper originally stored connector-specific keys only.
+  if (queryKeys.has("airpods|airpods_pro_2")) {
+    queryKeys.add("airpods|airpods_pro_2_usbc|usbc");
+    queryKeys.add("airpods|airpods_pro_2_lightning|lightning");
+  }
+  const encoded = [...queryKeys].map((k) => encodeURIComponent(k)).join(",");
   const res = await callSupabase(
-    `/mvp_reference_prices?select=comparable_key,effective_price&comparable_key=in.(${encoded})&effective_price=not.is.null&limit=${Math.max(100, unique.length * 2)}`,
+    `/mvp_reference_prices?select=comparable_key,effective_price&comparable_key=in.(${encoded})&effective_price=not.is.null&limit=${Math.max(100, queryKeys.size * 2)}`,
     { headers: authHeaders() },
   );
   const parsed = await res.json();
@@ -491,6 +501,13 @@ export async function fetchReferencePrices(comparableKeys: (string | null)[]): P
   const map = new Map<string, number>();
   for (const row of rows) {
     if (row.effective_price > 0) map.set(row.comparable_key, Number(row.effective_price));
+  }
+  if (!map.has("airpods|airpods_pro_2") && unique.includes("airpods|airpods_pro_2")) {
+    const aliasPrice =
+      map.get("airpods|airpods_pro_2_usbc|usbc") ??
+      map.get("airpods|airpods_pro_2_lightning|lightning") ??
+      null;
+    if (aliasPrice != null && aliasPrice > 0) map.set("airpods|airpods_pro_2", aliasPrice);
   }
   return map;
 }
@@ -645,6 +662,7 @@ export function marketBasisForCandidate(
     disappearedSampleCount,
     // ref anchor 신뢰는 medium (단일 값이라 "high" 비호환).
     confidence: useRefAnchor ? "medium" : (stat?.confidence ?? null),
+    priceSource: useRefAnchor ? "reference" : "market",
     computedAt: stat?.computed_at ?? null,
     excludedExamples: excludedExamplesForKey(comparableKey),
     conditionClass: actualCondition,

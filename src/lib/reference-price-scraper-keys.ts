@@ -8,6 +8,7 @@ export const KEY_TO_QUERY_LIST: Array<{ comparableKey: string; label: string }> 
   { comparableKey: "airpods|airpods_4_anc|usbc", label: "에어팟 4세대 ANC" },
   { comparableKey: "airpods|airpods_max|usbc", label: "에어팟 맥스 USB-C" },
   { comparableKey: "airpods|airpods_max|lightning", label: "에어팟 맥스" },
+  { comparableKey: "airpods|airpods_pro_2", label: "에어팟 프로 2세대 USB-C" },
   { comparableKey: "airpods|airpods_pro_2_lightning|lightning", label: "에어팟 프로 2세대" },
   { comparableKey: "airpods|airpods_pro_2_usbc|usbc", label: "에어팟 프로 2세대 USB-C" },
   { comparableKey: "airpods|airpods_pro_3|usbc", label: "에어팟 프로 3세대" },

@@ -268,7 +268,7 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
         )}
         {/* 2026-05-16 (사용자 코멘트 id 104/107/109): 시세 출처 명시 강화. */}
         {/* 2026-05-16 (N4): unopened (박스 안 뜯음) vs mint (S급 사용감 거의 없음) 분리. */}
-        {market.conditionClass === "unopened" ? (
+        {market.priceSource === "reference" ? (
           <span className="text-amber-700 dark:text-amber-300 font-bold">
             📍 다나와 새 가격 기준 (이 매물 미개봉)
           </span>

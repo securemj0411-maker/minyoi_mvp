@@ -282,6 +282,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       soldSampleCount: 0,
       disappearedSampleCount: 0,
       confidence: null,
+      priceSource: "market" as const,
       computedAt: null,
       excludedExamples: [],
       // Wave 130 (2026-05-16): condition별 시세 분리 — 사업 보고서 L2. fallback marketBasis empty default.
@@ -989,9 +990,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   <>
                     <span className="text-zinc-300 dark:text-zinc-600 no-underline">·</span>
                     <span>시세 <span className={`font-black tabular-nums ${isTerminal ? "" : "text-[#223127] dark:text-zinc-100"}`}>{krw(item.marketBasis.medianPrice)}</span></span>
-                    {/* Wave 195 (2026-05-18): 시세 출처 라벨 — 모달 (pack-reveal-modal) 패턴 카드 이식.
-                        unopened = 다나와 새 가격 (Wave 201 anchor), mint = 번개 S급, 그 외 = 번개 중고. */}
-                    {!isTerminal && item.marketBasis.conditionClass === "unopened" ? (
+                    {/* Wave 207: only show Danawa when the reference anchor was actually used. */}
+                    {!isTerminal && item.marketBasis.priceSource === "reference" ? (
                       <span className="ml-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:bg-amber-950/30 dark:text-amber-300" title="다나와 새 가격 anchor — 이 매물 미개봉">
                         📍 다나와
                       </span>
