@@ -208,7 +208,6 @@ function recommendationGoodSignals(card: RevealCard) {
   const velocity = card.velocityBasis;
   const goodVerdicts = verdictsForCard(card).filter((v) => v.tone === "good").map((v) => v.label);
   return uniqueCompactList([
-    Math.min(card.expectedProfitMin, card.expectedProfitMax) > 0 ? `현재 차익 ${displayProfitRange(card)}` : null,
     detail?.sellerReviewRating != null && detail.sellerReviewRating >= 4.5
       ? `셀러 후기 ${detail.sellerReviewRating.toFixed(1)}`
       : null,
@@ -223,11 +222,9 @@ function recommendationGoodSignals(card: RevealCard) {
 
 function recommendationWatchSignals(card: RevealCard) {
   const market = card.marketBasis;
-  const warnVerdicts = verdictsForCard(card).filter((v) => v.tone === "warn").map((v) => v.label);
   return uniqueCompactList([
     market?.confidence === "low" ? "시세 표본은 아직 낮은 편" : null,
     market?.conditionClass === "worn" ? "사용감은 같은 등급 시세에 반영" : null,
-    ...warnVerdicts,
   ], 3);
 }
 
@@ -241,10 +238,9 @@ function recommendationFeatureCards(card: RevealCard): RecommendationFeatureCard
   const profitMin = Math.min(card.expectedProfitMin, card.expectedProfitMax);
   const profitMax = Math.max(card.expectedProfitMin, card.expectedProfitMax);
   if (profitMin > 0) {
-    const pct = currentProfitPercent(card);
     cards.push({
       icon: <WalletIcon className="h-4 w-4" />,
-      title: pct != null ? `현재 차익 ${pct >= 0 ? "+" : ""}${pct}%` : "차익 구간 통과",
+      title: "비용 차감 통과",
       body: `매입 ${krw(card.price)} 기준, 비용 차감 후 ${profitRange(profitMin, profitMax)} 남는 구간으로 봤어요.`,
       tone: "profit",
     });
@@ -305,7 +301,7 @@ function recommendationFeatureCards(card: RevealCard): RecommendationFeatureCard
     cards.push({
       icon: <TargetIcon className="h-4 w-4" />,
       title: market?.label ?? card.skuName,
-      body: `${marketSampleLabel(card)}과 현재 차익을 기준으로 추천 후보에 남겼어요.`,
+      body: `${marketSampleLabel(card)}과 비용 차감 기준으로 추천 후보에 남겼어요.`,
       tone: "market",
     });
   }
@@ -619,8 +615,11 @@ function VerdictBadgesMini({ card }: { card: RevealCard }) {
         </span>
       ))}
       {hiddenMobileCount > 0 ? (
-        <span className="inline-flex rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-black text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300 sm:hidden">
-          +{hiddenMobileCount}
+        <span
+          className="inline-flex rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-black text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300 sm:hidden"
+          title={`화면에 숨긴 추가 신호 ${hiddenMobileCount}개가 더 있어요`}
+        >
+          추가 신호 {hiddenMobileCount}개
         </span>
       ) : null}
     </div>
@@ -795,13 +794,6 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
         ))}
       </div>
       <div className="mt-3 grid gap-2 sm:hidden">
-        <div className="rounded-lg border border-white/70 bg-white/80 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/45">
-          <div className="mb-1.5 text-[11px] font-black text-[#4f6a52] dark:text-emerald-200">매물 신호</div>
-          <div className="mb-2">
-            <RevealRiskScoreMini card={card} />
-          </div>
-          <VerdictBadgesMini card={card} />
-        </div>
         <MarketBasisMini card={card} />
       </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -1142,7 +1134,7 @@ function RevealCardItem({
         </div>
 
         {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 5축 잔여 위험 시각화. pack-reveal = showDetail. */}
-        <div className="hidden sm:block">
+        <div>
           <RevealRiskScoreMini card={card} />
         </div>
 
