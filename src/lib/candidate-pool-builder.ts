@@ -448,7 +448,12 @@ export function buildCandidatePoolRows(input: {
       "unknown_chip", "unknown_generation", "unknown_storage", "unknown_screen",
       "unknown_ram", "unknown_ssd", "unknown_size", "unknown_connector", "unknown_anc",
     ];
-    const unknownHit = CRITICAL_UNKNOWN_TOKENS.find((t) => comparableKeyEarly.includes(t));
+    // Wave 221 (2026-05-19): "unknown_size" substring 매칭이 bag 의 "unknown_size_variant"
+    //   까지 잡아서 bag 매물 대다수 차단됨 (사용자 화남, pool 0건 진단).
+    //   bag size_variant 미명시는 critical 아님 (가방 사이즈 가격 차이 작음).
+    //   token split 정확 매칭으로 변경 — comparable_key 의 `|` 구분자 token.
+    const keyTokens = new Set(comparableKeyEarly.split("|"));
+    const unknownHit = CRITICAL_UNKNOWN_TOKENS.find((t) => keyTokens.has(t));
     if (unknownHit) {
       skipped += 1;
       invalidations.push({ pid, reason: `comparable_key_${unknownHit}` });

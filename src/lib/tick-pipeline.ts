@@ -2256,7 +2256,10 @@ function trustedMarketMedian(stat: MarketPriceRow | undefined, category?: Sku["c
   //   condition_class 별로 시세 row 분리 후 각 sample 1~2건이라 total<3 gate 차단 → skuMedian=0 → pool 진입 0건.
   //   safety nets (msrp×5 ceiling / 4 tier fake floor / 광고 차단 / seller dup) 작동 중. sample 1건만 차단.
   //   사용자 §12b 정책 영향: shoe 와 동일한 trade-off — 즉시 노출 vs precision. internal_only 카테고리라 영향 제한적.
-  const LOW_SAMPLE_ALLOWED_CATEGORIES = new Set<string>(["shoe", "drone", "lego", "kickboard", "perfume"]);
+  // Wave 222 (2026-05-19): bag/clothing 추가 — 매물 수 적어 sample<5 흔함. low confidence + samples≥2 허용.
+  //   bag 1067건 / clothing 2149건 매물이 condition별 분리 시 5 sample 미달.
+  //   사용자 "ready 진입" 우선. 정확성 trade-off 인정 (다른 가품/AD floor + condition 분리로 보완).
+  const LOW_SAMPLE_ALLOWED_CATEGORIES = new Set<string>(["shoe", "drone", "lego", "kickboard", "perfume", "bag", "clothing"]);
   if (category && LOW_SAMPLE_ALLOWED_CATEGORIES.has(category)) {
     if (total < 2) return null;
   } else {
