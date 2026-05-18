@@ -473,16 +473,16 @@ function PackSelectorCard({
   }
 
   return (
-		      <div className="contents">
-	    <div className={`w-full max-w-[460px] overflow-hidden rounded-[28px] border p-4 shadow-[0_18px_36px_rgba(34,49,39,0.08)] transition sm:p-4.5 ${packCardClasses(selectedPack.band)}`}>
-	      <div>
-	        <h2 className="text-xl font-black tracking-tight text-[#223127] dark:text-zinc-50 sm:text-2xl">
-	          {needsPersonalization ? "내 추천 조건 맞추기" : "추천 상품 찾기"}
-	        </h2>
-	        <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
-	          {needsPersonalization ? "처음 한 번만 답하면 다음부터 추천 수만 고르면 돼요." : "저장된 조건으로 맞춰두었어요. 추천 상품 수만 고르면 됩니다."}
-	        </p>
-	      </div>
+    <>
+      <div className={`w-full max-w-[460px] overflow-hidden rounded-[28px] border p-4 shadow-[0_18px_36px_rgba(34,49,39,0.08)] transition sm:p-4.5 ${packCardClasses(selectedPack.band)}`}>
+        <div>
+          <h2 className="text-xl font-black tracking-tight text-[#223127] dark:text-zinc-50 sm:text-2xl">
+            {needsPersonalization ? "내 추천 조건 맞추기" : "추천 상품 찾기"}
+          </h2>
+          <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
+            {needsPersonalization ? "처음 한 번만 답하면 다음부터 추천 수만 고르면 돼요." : "저장된 조건으로 맞춰두었어요. 추천 상품 수만 고르면 됩니다."}
+          </p>
+        </div>
 
 	      {needsPersonalization ? (
 	        <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
@@ -987,7 +987,7 @@ function PackSelectorCard({
 	      </>
 	      )}
 	    </div>
-    {warningOpen ? (
+      {warningOpen ? (
       <div
         className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(31,40,34,0.48)] p-4 backdrop-blur-sm"
         role="dialog"
@@ -1037,7 +1037,7 @@ function PackSelectorCard({
         </div>
       </div>
     ) : null}
-    </div>
+    </>
   );
 }
 
