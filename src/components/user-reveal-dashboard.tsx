@@ -709,7 +709,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           이전 (182): "손해 신고 — 5자 이상 사유 필수". 임계값 높아 신고 어려움.
           현재: 카테고리만 골라도 제출 가능 (사유 optional). 사용자 자연 수집 → algorithm 보정 source. */}
       {lossReportItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeLossReportModal}>
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/45 p-4" onClick={closeLossReportModal}>
           <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl dark:bg-zinc-900" onClick={(e) => e.stopPropagation()}>
             {lossReportResult?.ok ? (
               <>
@@ -1347,10 +1347,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         onReportLoss={() => {
           if (!selectedItem) return;
           const itemRef = selectedItem;
-          // 매물 상세 모달 닫고 신고 모달 열기 (z-index 충돌 차단).
-          setSelectedItem(null);
-          setSelectedPreviewMode("listing");
-          setSelectedPreviewSeed(null);
+          // Wave 219: 신고는 현재 상품 모달 위에 얹는다. 기존 모달을 닫으면 사용자가
+          // 어떤 상품을 신고 중인지 맥락을 잃는다.
           setLossReportItem(itemRef);
           setLossReportNote("");
           setLossReportResult(null);
