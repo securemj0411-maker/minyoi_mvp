@@ -62,9 +62,27 @@ export default function AuthForm({ mode }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailBusy, setEmailBusy] = useState(false);
+  // Wave 198 (2026-05-18): 가입 동의 — 개인정보보호법 + 전자상거래법 + 청소년보호법 필수.
+  //   필수 3개 (약관/개인정보/만14세) 동의 안 하면 가입 차단. 선택 1개 (마케팅).
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [agreeAge, setAgreeAge] = useState(false);
+  const [agreeMarketing, setAgreeMarketing] = useState(false);
+  const allRequiredAgreed = agreeTerms && agreePrivacy && agreeAge;
+  function toggleAll(next: boolean) {
+    setAgreeTerms(next);
+    setAgreePrivacy(next);
+    setAgreeAge(next);
+    setAgreeMarketing(next);
+  }
 
   async function signInWithKakao() {
     if (!supabase || busy) return;
+    // Wave 198 (2026-05-18): 가입 시 필수 동의 검증 (전자상거래법 + 개인정보보호법 + 청소년보호법).
+    if (isSignup && !allRequiredAgreed) {
+      setMessage("이용약관, 개인정보 수집·이용, 만 14세 이상 확인에 모두 동의해야 가입할 수 있어요.");
+      return;
+    }
     setBusy(true);
     setMessage(null);
     const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
@@ -91,6 +109,11 @@ export default function AuthForm({ mode }: Props) {
     }
     if (password.length < 6) {
       setMessage("비밀번호는 6자 이상이어야 해요.");
+      return;
+    }
+    // Wave 198 (2026-05-18): 가입 시 필수 동의 검증.
+    if (isSignup && !allRequiredAgreed) {
+      setMessage("이용약관, 개인정보 수집·이용, 만 14세 이상 확인에 모두 동의해야 가입할 수 있어요.");
       return;
     }
     setEmailBusy(true);
@@ -156,7 +179,7 @@ export default function AuthForm({ mode }: Props) {
         <button
           type="button"
           onClick={signInWithKakao}
-          disabled={busy}
+          disabled={busy || (isSignup && !allRequiredAgreed)}
           className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#fee500] px-4 text-sm font-black text-[#191600] shadow-sm transition hover:bg-[#f6dc00] disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
         >
           <KakaoIcon />
@@ -199,12 +222,74 @@ export default function AuthForm({ mode }: Props) {
         </label>
         <button
           type="submit"
-          disabled={emailBusy}
+          disabled={emailBusy || (isSignup && !allRequiredAgreed)}
           className="flex h-11 w-full items-center justify-center rounded-xl bg-[#223127] px-4 text-sm font-black text-white shadow-sm transition hover:bg-[#344136] disabled:cursor-not-allowed disabled:bg-zinc-400"
         >
           {emailBusy ? "처리 중…" : isSignup ? "이메일로 가입" : "이메일로 로그인"}
         </button>
       </form>
+
+      {/* Wave 198 (2026-05-18): 가입 시 필수 동의 (전자상거래법 + 개인정보보호법 + 청소년보호법).
+          필수 3개 (약관/개인정보/만14세) 동의 안 하면 가입 버튼 비활성. 선택 1개 (마케팅). */}
+      {isSignup && (
+        <div className="mt-5 rounded-xl border border-[#e7dece] bg-[#fffaf1] p-3 text-xs dark:border-zinc-700 dark:bg-zinc-800/40">
+          <label className="flex cursor-pointer items-center gap-2 border-b border-[#e7dece] pb-2 dark:border-zinc-700">
+            <input
+              type="checkbox"
+              checked={agreeTerms && agreePrivacy && agreeAge && agreeMarketing}
+              onChange={(e) => toggleAll(e.target.checked)}
+              className="h-4 w-4 cursor-pointer accent-[#5d735f]"
+            />
+            <span className="font-black text-[#223127] dark:text-zinc-100">전체 동의 (선택 항목 포함)</span>
+          </label>
+          <div className="mt-2 space-y-1.5">
+            <label className="flex cursor-pointer items-start gap-2">
+              <input
+                type="checkbox"
+                checked={agreeTerms}
+                onChange={(e) => setAgreeTerms(e.target.checked)}
+                className="mt-0.5 h-4 w-4 cursor-pointer accent-[#5d735f]"
+              />
+              <span className="flex-1 text-[#445247] dark:text-zinc-300">
+                <span className="font-black text-rose-600 dark:text-rose-400">[필수]</span> <Link href="/terms" target="_blank" className="underline hover:text-[#223127] dark:hover:text-white">이용약관</Link>에 동의합니다
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-2">
+              <input
+                type="checkbox"
+                checked={agreePrivacy}
+                onChange={(e) => setAgreePrivacy(e.target.checked)}
+                className="mt-0.5 h-4 w-4 cursor-pointer accent-[#5d735f]"
+              />
+              <span className="flex-1 text-[#445247] dark:text-zinc-300">
+                <span className="font-black text-rose-600 dark:text-rose-400">[필수]</span> <Link href="/privacy" target="_blank" className="underline hover:text-[#223127] dark:hover:text-white">개인정보 수집·이용</Link>에 동의합니다
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-2">
+              <input
+                type="checkbox"
+                checked={agreeAge}
+                onChange={(e) => setAgreeAge(e.target.checked)}
+                className="mt-0.5 h-4 w-4 cursor-pointer accent-[#5d735f]"
+              />
+              <span className="flex-1 text-[#445247] dark:text-zinc-300">
+                <span className="font-black text-rose-600 dark:text-rose-400">[필수]</span> 만 14세 이상입니다
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-2">
+              <input
+                type="checkbox"
+                checked={agreeMarketing}
+                onChange={(e) => setAgreeMarketing(e.target.checked)}
+                className="mt-0.5 h-4 w-4 cursor-pointer accent-[#5d735f]"
+              />
+              <span className="flex-1 text-[#445247] dark:text-zinc-300">
+                <span className="font-black text-zinc-500 dark:text-zinc-400">[선택]</span> 이벤트·신규 기능 안내 등 마케팅 정보 수신
+              </span>
+            </label>
+          </div>
+        </div>
+      )}
 
       {message ? (
         <div className="mt-4 rounded-xl bg-[var(--brand-accent-soft)] px-3 py-2 text-xs font-bold text-[#445247] dark:bg-zinc-800 dark:text-zinc-300">
