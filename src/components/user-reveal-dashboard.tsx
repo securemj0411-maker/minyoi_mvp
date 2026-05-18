@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
-import { ConditionChip } from "@/components/condition-chip";
+import { ConditionChip, UnopenedPhotoBadge } from "@/components/condition-chip";
 import { BunjangSourceBadge, DanawaSourceBadge } from "@/components/market-brand-logo";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
@@ -1307,6 +1307,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
               </div>
             )}
             <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f1eadf] dark:bg-zinc-800">
+              <UnopenedPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
               {item.thumbnailUrl ? (
                 <Image
                   src={item.thumbnailUrl}

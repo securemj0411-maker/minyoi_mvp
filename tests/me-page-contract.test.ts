@@ -93,6 +93,20 @@ test("/me mobile reveal card keeps secondary evidence behind recommendation deta
   assert.match(modal, /hidden sm:block[\s\S]*<MarketBasisMini card=\{card\} \/>/);
 });
 
+test("/me highlights unopened listings directly on product photos", () => {
+  const chip = source("src/components/condition-chip.tsx");
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const dashboard = source("src/components/user-reveal-dashboard.tsx");
+
+  assert.match(chip, /export function UnopenedPhotoBadge/);
+  assert.match(chip, /conditionClass !== "unopened"/);
+  assert.match(chip, /미개봉\{compact \? "" : <span className="hidden sm:inline">\/새상품<\/span>\}/);
+  assert.match(modal, /import \{ ConditionChip, UnopenedPhotoBadge \}/);
+  assert.match(modal, /<UnopenedPhotoBadge conditionClass=\{card\.marketBasis\?\.conditionClass \?\? null\} \/>/);
+  assert.match(dashboard, /import \{ ConditionChip, UnopenedPhotoBadge \}/);
+  assert.match(dashboard, /<UnopenedPhotoBadge conditionClass=\{item\.marketBasis\?\.conditionClass \?\? null\} compact \/>/);
+});
+
 test("/me keeps dashboard summary compact on mobile", () => {
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
 

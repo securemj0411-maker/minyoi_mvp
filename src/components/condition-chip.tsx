@@ -123,3 +123,25 @@ export function ConditionChip({ conditionClass, showHelp = false }: Props) {
     </span>
   );
 }
+
+export function UnopenedPhotoBadge({
+  conditionClass,
+  compact = false,
+  className = "",
+}: {
+  conditionClass: string | null | undefined;
+  compact?: boolean;
+  className?: string;
+}) {
+  if (conditionClass !== "unopened") return null;
+  return (
+    <span
+      title="미개봉/새상품으로 분류된 매물"
+      className={`pointer-events-none absolute left-1.5 top-1.5 z-10 rounded-full border border-amber-200 bg-amber-50/95 px-1.5 py-0.5 text-[9px] font-black text-amber-900 shadow-sm backdrop-blur dark:border-amber-800/70 dark:bg-amber-950/90 dark:text-amber-100 ${
+        compact ? "" : "sm:left-2 sm:top-2 sm:px-2 sm:py-1 sm:text-[10px]"
+      } ${className}`}
+    >
+      미개봉{compact ? "" : <span className="hidden sm:inline">/새상품</span>}
+    </span>
+  );
+}
