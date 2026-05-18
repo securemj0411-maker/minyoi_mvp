@@ -42,6 +42,10 @@ test("risk score detail trigger is written as an obvious clickable question", ()
   assert.match(riskScore, /왜 이 제품이 안전한가요\?/);
   assert.match(riskScore, /주의 \$\{hitCount\}건이 있어요/);
   assert.match(riskScore, /위험 신호 \$\{hitCount\}건 확인/);
+  assert.match(riskScore, /AlertTriangleIcon/);
+  assert.match(riskScore, /ShieldIcon/);
+  assert.match(riskScore, /py-0\.5 text-\[10px\] font-black leading-none/);
   assert.match(riskScore, /aria-expanded=\{open\}/);
+  assert.doesNotMatch(riskScore, /🛡️|⚠️|🚨|🔍/);
   assert.doesNotMatch(riskScore, /aria-label="위험 신호 상세 보기"[\s\S]*>\s*\?/);
 });

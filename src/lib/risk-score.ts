@@ -19,7 +19,7 @@ export type RiskScore = {
   total: number;               // 0~10
   hitCount: number;            // level >= 1 인 axis 수
   tone: RiskTone;
-  label: string;               // "🛡️ 안전" / "⚠️ 주의 N건" / "🚨 위험 N건"
+  label: string;               // "안전" / "주의 N건" / "위험 N건"
 };
 
 export type RiskScoreInput = {
@@ -154,9 +154,9 @@ function toneFor(total: number, hitCount: number): RiskTone {
 }
 
 function labelFor(tone: RiskTone, hitCount: number): string {
-  if (tone === "safe") return "🛡️ 안전";
-  if (tone === "caution") return `⚠️ 주의 ${hitCount}건`;
-  return `🚨 위험 ${hitCount}건`;
+  if (tone === "safe") return "안전";
+  if (tone === "caution") return `주의 ${hitCount}건`;
+  return `위험 ${hitCount}건`;
 }
 
 export function buildRiskScore(input: RiskScoreInput): RiskScore {

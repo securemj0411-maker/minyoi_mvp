@@ -5,6 +5,7 @@
 // 3 화면 공유 (admin-pool-browser / pack-reveal-modal / user-reveal-dashboard).
 
 import { useState } from "react";
+import { AlertTriangleIcon, ShieldIcon } from "@/components/icons";
 import {
   buildRiskScore,
   RISK_AXIS_LABEL,
@@ -21,9 +22,9 @@ type Props = RiskScoreInput & {
 };
 
 function detailTriggerLabel(tone: "safe" | "caution" | "danger", hitCount: number) {
-  if (tone === "safe") return "🛡️ 왜 이 제품이 안전한가요?";
-  if (tone === "caution") return `⚠️ 주의 ${hitCount}건이 있어요`;
-  return `🚨 위험 신호 ${hitCount}건 확인`;
+  if (tone === "safe") return "왜 이 제품이 안전한가요?";
+  if (tone === "caution") return `주의 ${hitCount}건이 있어요`;
+  return `위험 신호 ${hitCount}건 확인`;
 }
 
 export function RiskScoreBar({ showDetail = false, compact = false, ...input }: Props) {
@@ -31,6 +32,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
   const score = buildRiskScore(input);
   const toneClass = RISK_TONE_CLASS[score.tone];
   const detailLabel = detailTriggerLabel(score.tone, score.hitCount);
+  const DetailIcon = score.tone === "safe" ? ShieldIcon : AlertTriangleIcon;
 
   return (
     <span className="relative inline-flex items-center gap-1.5">
@@ -38,11 +40,12 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-black shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${toneClass}`}
+          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black leading-none shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${toneClass}`}
           aria-expanded={open}
           aria-label={`${score.label} 상세 보기`}
           title={detailLabel}
         >
+          <DetailIcon className="h-3.5 w-3.5 shrink-0" />
           <span>{detailLabel}</span>
           <span aria-hidden="true" className="text-[11px]">›</span>
         </button>
@@ -81,7 +84,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
               <div className="absolute left-0 top-5 z-50 w-80 rounded-lg border border-zinc-300 bg-white p-3 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100">
-                    🔍 위험 신호 점검
+                    위험 신호 점검
                   </div>
                   <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${toneClass}`}>
                     {score.label}
