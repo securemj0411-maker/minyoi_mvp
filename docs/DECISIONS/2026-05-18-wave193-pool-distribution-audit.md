@@ -221,7 +221,9 @@ export function bandFromProfit(profitMin: number, profitMax: number): 1 | 2 | 3 
 }
 ```
 
-**모든 카테고리 동일 20K/40K/70K 임계값** — 신발이 strict한 게 아님. 다른 카테고리 다 동일.
+**핵심**: 1/2/3 등급 분류 자체는 candidate_pool.profit_band 컬럼 + admin filter에 legacy로 남아있지만 사용자 UI 노출 X. **실제 풀 진입 게이트는 `bandFromProfit() == null` 차단 = avg profit < 20,000원 차단** 1줄짜리.
+
+**모든 카테고리 동일 20K threshold** — 신발이 strict한 게 아님.
 
 **그럼 왜 신발 profit_below_pack_band 90%+?**:
 - 신발 가격대 자체가 낮음 (24K~400K 범위, 대부분 5만~15만)
