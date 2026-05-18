@@ -858,7 +858,7 @@ function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>
   if (rating != null && rating >= 4.8 && reviewCount >= 10) {
     return {
       value: `평점 ${rating.toFixed(1)} 셀러`,
-      sub: reviewCount >= 30 ? "후기 수 충분 · 근거 보기" : "후기 수 확인 · 근거 보기",
+      sub: reviewCount >= 30 ? "후기 수 충분" : "후기 수 확인",
       Icon: TrophyIcon,
       badge: reviewBadge,
       tone: "good" as const,
@@ -868,7 +868,7 @@ function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>
     value: risk.label,
     sub: reviewCount > 0 && rating != null
       ? `평점 ${rating.toFixed(1)} · 후기 ${reviewCountLabel}건은 참고만`
-      : risk.tone === "safe" ? "차단 필터 통과 · 근거 보기" : "확인 포인트 있음 · 근거 보기",
+      : risk.tone === "safe" ? "차단 필터 통과" : "확인 포인트 있음",
     Icon: ShieldIcon,
     badge: reviewBadge,
     tone: risk.tone,
@@ -936,22 +936,22 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   const safetyTone = upperFoldTileClass(safety.tone);
   const SafetyIcon = safety.Icon;
   return (
-    <div className="-mx-[10px] mt-1 grid grid-cols-2 gap-0.5 sm:mx-0 sm:mt-2 sm:gap-1.5">
+    <div className="-mx-[10px] mt-1 grid grid-cols-2 overflow-hidden bg-[#d9e1d6] dark:bg-zinc-800 sm:mx-0 sm:mt-2 sm:gap-1.5 sm:overflow-visible sm:bg-transparent sm:dark:bg-transparent">
       {tiles.map((tile) => {
         const tone = upperFoldTileClass(tile.tone);
         return (
           <div
             key={tile.key}
-            className={`min-h-[56px] border px-2.5 py-1.5 shadow-sm sm:min-h-[62px] sm:rounded-lg sm:px-2.5 sm:py-2 ${tone.card}`}
+            className={`min-h-[62px] border-0 px-3 py-2 shadow-none sm:min-h-[62px] sm:rounded-lg sm:border sm:px-2.5 sm:py-2 sm:shadow-sm ${tone.card}`}
           >
-            <div className="flex items-center gap-1.5 text-[10px] font-black text-zinc-500 dark:text-zinc-400">
-              <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+            <div className="flex items-center gap-1.5 text-[11px] font-black text-zinc-500 dark:text-zinc-400">
+              <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
               {tile.label}
             </div>
-            <div className={`mt-0.5 line-clamp-2 text-[13px] font-black leading-4 tracking-normal tabular-nums sm:text-sm ${tone.value}`}>
+            <div className={`mt-0.5 line-clamp-2 text-[15px] font-black leading-5 tracking-normal tabular-nums sm:text-sm ${tone.value}`}>
               {tile.value}
             </div>
-            <div className="mt-0.5 line-clamp-1 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+            <div className="mt-0.5 line-clamp-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
               {tile.sub}
             </div>
           </div>
@@ -960,12 +960,12 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
       <RevealRiskScoreMini
         card={card}
         containerClassName="contents"
-        triggerClassName={`min-h-[56px] w-full border px-2.5 py-1.5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:min-h-[62px] sm:rounded-lg sm:px-2.5 sm:py-2 ${safetyTone.card}`}
+        triggerClassName={`min-h-[62px] w-full border-0 px-3 py-2 text-left shadow-none transition hover:-translate-y-0.5 hover:shadow-md sm:min-h-[62px] sm:rounded-lg sm:border sm:px-2.5 sm:py-2 sm:shadow-sm ${safetyTone.card}`}
         triggerContent={(
           <span className="block w-full">
-            <span className="flex items-center justify-between gap-2 text-[10px] font-black text-zinc-500 dark:text-zinc-400">
+            <span className="flex items-center justify-between gap-2 text-[11px] font-black text-zinc-500 dark:text-zinc-400">
               <span className="inline-flex items-center gap-1.5">
-                <SafetyIcon className={`h-3.5 w-3.5 ${safetyTone.value}`} />
+                <SafetyIcon className={`h-4 w-4 ${safetyTone.value}`} />
                 거래 안전
               </span>
               <span className="inline-flex shrink-0 items-center gap-1">
@@ -979,10 +979,10 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
                 </span>
               </span>
             </span>
-            <span className={`mt-0.5 block line-clamp-2 text-[13px] font-black leading-4 tracking-normal tabular-nums sm:text-sm ${safetyTone.value}`}>
+            <span className={`mt-0.5 block line-clamp-2 text-[15px] font-black leading-5 tracking-normal tabular-nums sm:text-sm ${safetyTone.value}`}>
               {safety.value}
             </span>
-            <span className="mt-0.5 block line-clamp-1 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+            <span className="mt-0.5 block line-clamp-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
               {safety.sub}
             </span>
           </span>
