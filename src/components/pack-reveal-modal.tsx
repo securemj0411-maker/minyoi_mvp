@@ -320,8 +320,8 @@ function SkeletonLine({ className = "" }: { className?: string }) {
 function RevealResultSkeleton() {
   return (
     <div className="grid gap-3 lg:grid-cols-2" aria-hidden="true">
-      <div className="grid grid-cols-[104px_minmax(0,1fr)] gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
-        <div className="h-[104px] w-[104px] rounded-lg bg-zinc-200/80 dark:bg-zinc-800 sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]" />
+      <div className="grid gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
+        <div className="h-[118px] w-full rounded-lg bg-zinc-200/80 dark:bg-zinc-800 sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]" />
         <div className="min-w-0 space-y-3">
           <SkeletonLine className="h-4 w-4/5" />
           <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-3 dark:border-emerald-900/40 dark:bg-emerald-950/20">
@@ -329,12 +329,12 @@ function RevealResultSkeleton() {
             <SkeletonLine className="mt-2 h-7 w-36 bg-emerald-200/80 dark:bg-emerald-900/60" />
             <SkeletonLine className="mt-2 h-3 w-52" />
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="hidden flex-wrap gap-1.5 sm:flex">
             <SkeletonLine className="h-5 w-16" />
             <SkeletonLine className="h-5 w-20" />
             <SkeletonLine className="h-5 w-14" />
           </div>
-          <div className="rounded-lg border border-[#e2d9cb] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40">
+          <div className="hidden rounded-lg border border-[#e2d9cb] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40 sm:block">
             <SkeletonLine className="h-3 w-24" />
             <SkeletonLine className="mt-2 h-4 w-4/5" />
             <SkeletonLine className="mt-2 h-3 w-2/3" />
@@ -746,14 +746,14 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
   } satisfies Record<RecommendationFeatureTone, string>;
 
   return (
-    <details className={`group rounded-xl border border-[#d8e2d7] bg-[#f5faf3] p-3 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/20 lg:col-span-2 ${className}`}>
+    <details className={`group rounded-xl border border-[#d8e2d7] bg-[#f5faf3] p-2.5 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:p-3 lg:col-span-2 ${className}`}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
             <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
             왜 이걸 추천했나요?
           </div>
-          <div className="mt-1 text-xs font-semibold leading-5 text-[#60705f] dark:text-zinc-300">
+          <div className="mt-1 hidden text-xs font-semibold leading-5 text-[#60705f] dark:text-zinc-300 sm:block">
             {isMarketInvalidated
               ? "지금 기준으로는 차익이 없어 판매완료 상품처럼 정리하는 게 맞아요."
               : featureCards.slice(0, 2).map((feature) => feature.title).join(" · ")}
@@ -777,6 +777,13 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
             </div>
           </div>
         ))}
+      </div>
+      <div className="mt-3 grid gap-2 sm:hidden">
+        <div className="rounded-lg border border-white/70 bg-white/80 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/45">
+          <div className="mb-1.5 text-[11px] font-black text-[#4f6a52] dark:text-emerald-200">매물 신호</div>
+          <VerdictBadgesMini card={card} />
+        </div>
+        <MarketBasisMini card={card} />
       </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <div className="rounded-lg border border-emerald-100 bg-white/80 px-3 py-2.5 dark:border-emerald-900/50 dark:bg-zinc-900/45">
@@ -1024,14 +1031,14 @@ function RevealCardItem({
       }`}
     >
       {/* 좌측 카드 — 매물 정보 (image + 메타 + verdicts + 노트 + 버튼) */}
-      <div className="order-1 grid grid-cols-[104px_minmax(0,1fr)] gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
-      <div className="relative h-[104px] w-[104px] overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]">
+      <div className="order-1 grid gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
+      <div className="relative h-[118px] w-full overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]">
         {card.thumbnailUrl ? (
           <Image
             src={card.thumbnailUrl}
             alt={card.name}
             fill
-            sizes="(max-width: 639px) 104px, (max-width: 1023px) 132px, 150px"
+            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 132px, 150px"
             className="object-cover"
           />
         ) : (
@@ -1116,19 +1123,23 @@ function RevealCardItem({
         </div>
 
         {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 5축 잔여 위험 시각화. pack-reveal = showDetail. */}
-        <RiskScoreBar
-          descriptionPreview={card.savedDetail?.descriptionPreview ?? null}
-          conditionClass={card.marketBasis?.conditionClass ?? null}
-          price={card.price}
-          skuMedian={card.marketBasis?.medianPrice ?? null}
-          confidence={card.confidence}
-          sellerReviewRating={card.savedDetail?.sellerReviewRating ?? null}
-          sellerReviewCount={card.savedDetail?.sellerReviewCount ?? null}
-          showDetail
-          compact
-        />
+        <div className="hidden sm:block">
+          <RiskScoreBar
+            descriptionPreview={card.savedDetail?.descriptionPreview ?? null}
+            conditionClass={card.marketBasis?.conditionClass ?? null}
+            price={card.price}
+            skuMedian={card.marketBasis?.medianPrice ?? null}
+            confidence={card.confidence}
+            sellerReviewRating={card.savedDetail?.sellerReviewRating ?? null}
+            sellerReviewCount={card.savedDetail?.sellerReviewCount ?? null}
+            showDetail
+            compact
+          />
+        </div>
 
-        <VerdictBadgesMini card={card} />
+        <div className="hidden sm:block">
+          <VerdictBadgesMini card={card} />
+        </div>
 
         {/* 2026-05-16 (사용자 코멘트 #110 후속): 헷갈림 안내 — Lightning vs USB-C 가격 동일 같은 사실. */}
         {/* catalog Sku.confusionNote 그대로 표시. 사용자가 매물 보고 헷갈리면 즉시 답. */}
@@ -1138,8 +1149,10 @@ function RevealCardItem({
           </div>
         ) : null}
 
-        {/* 시세 근거 (요약) — 좌측 카드. 그래프는 우측 카드. */}
-        <MarketBasisMini card={card} />
+        {/* 시세 근거 (요약) — desktop/tablet 카드. mobile은 "왜 이걸 추천했나요?" 안으로 접어 첫 화면 밀도를 낮춤. */}
+        <div className="hidden sm:block">
+          <MarketBasisMini card={card} />
+        </div>
       </div>
       </div>
       {/* 좌측 카드 닫음 — 우측 카드 = 시세 그래프 + 디테일. */}

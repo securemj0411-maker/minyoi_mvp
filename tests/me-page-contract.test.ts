@@ -68,6 +68,24 @@ test("/me modal keeps market evidence compact before the graph on mobile", () =>
   assert.ok(graphIndex >= 0 && trustIndex > graphIndex);
 });
 
+test("/me mobile reveal card keeps secondary evidence behind recommendation details", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const reasonIndex = modal.indexOf("function RecommendationReasonPanel");
+  const revealIndex = modal.indexOf("function RevealCardItem");
+  const mobileSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", reasonIndex);
+  const desktopSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", revealIndex);
+
+  assert.ok(reasonIndex >= 0 && revealIndex > reasonIndex);
+  assert.ok(mobileSignalIndex > reasonIndex && mobileSignalIndex < revealIndex);
+  assert.ok(desktopSignalIndex > revealIndex);
+  assert.doesNotMatch(modal, /grid-cols-\[104px_minmax/);
+  assert.match(modal, /h-\[118px\] w-full/);
+  assert.match(modal, /hidden text-xs font-semibold leading-5/);
+  assert.match(modal, /sm:hidden[\s\S]*<VerdictBadgesMini card=\{card\} \/>[\s\S]*<MarketBasisMini card=\{card\} \/>/);
+  assert.match(modal, /hidden sm:block[\s\S]*<RiskScoreBar/);
+  assert.match(modal, /hidden sm:block[\s\S]*<MarketBasisMini card=\{card\} \/>/);
+});
+
 test("/me keeps dashboard summary compact on mobile", () => {
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
 
