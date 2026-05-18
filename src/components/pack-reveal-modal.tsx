@@ -1098,7 +1098,7 @@ function RevealCardItem({
                 }`}>
                   현재 차익
                 </span>
-                <span className={`text-sm font-bold leading-tight tabular-nums sm:text-base ${
+                <span className={`text-xs font-bold leading-tight tabular-nums sm:text-sm ${
                   isMarketInvalidated ? "text-rose-700 dark:text-rose-200" : "text-[#00a862] dark:text-[#5dffae]"
                 }`}>
                   {displayProfitRange(card)}

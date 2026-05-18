@@ -85,15 +85,16 @@ test("/me reveal profit block stays compact so the graph remains visible", () =>
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
 
   assert.match(modal, /shadow-\[inset_3px_0_0_currentColor\]/);
-  assert.match(modal, /text-sm font-bold leading-tight tabular-nums sm:text-base/);
+  assert.match(modal, /text-xs font-bold leading-tight tabular-nums sm:text-sm/);
   assert.match(modal, /text-\[#00a862\] dark:text-\[#5dffae\]/);
   assert.match(modal, /text-\[11px\] font-bold tabular-nums/);
   assert.match(dashboard, /shadow-\[inset_3px_0_0_#00c471\]/);
-  assert.match(dashboard, /text-sm font-bold tabular-nums text-\[#00a862\][\s\S]*sm:text-base/);
+  assert.match(dashboard, /text-xs font-bold tabular-nums text-\[#00a862\][\s\S]*sm:text-sm/);
   assert.match(modal, /gap-x-1\.5 gap-y-0\.5 text-\[11px\]/);
   assert.doesNotMatch(modal, /text-xl font-black leading-tight tabular-nums sm:text-2xl/);
   assert.doesNotMatch(modal, /text-lg font-bold leading-tight tabular-nums sm:text-xl/);
   assert.doesNotMatch(modal, /text-base font-semibold leading-tight tabular-nums/);
+  assert.doesNotMatch(modal, /text-sm font-bold leading-tight tabular-nums sm:text-base/);
   assert.doesNotMatch(modal, /text-2xl font-black tabular-nums/);
 });
 
