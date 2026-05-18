@@ -466,6 +466,11 @@ function PackSelectorCard({
   const sold = !inventoryLoading && usableReady < MIN_REQUESTED_CARDS;
   const disabled = busy || inventoryLoading || loginRequired || insufficient || limitBlocked || sold;
   const upgradeCta = limitBlocked || insufficient;
+  const busyStatusText = busy
+    ? "조건에 맞는 매물을 찾고 있어요"
+    : inventoryLoading
+      ? "추천 가능한 매물을 확인하고 있어요"
+      : null;
 
   function handleOpenClick() {
     if (disabled) return;
@@ -494,6 +499,11 @@ function PackSelectorCard({
         @keyframes seekStepIn {
           from { opacity: 0; transform: translateX(14px) scale(0.985); }
           to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        @keyframes seekProgressSweep {
+          0% { transform: translateX(-100%); }
+          55% { transform: translateX(35%); }
+          100% { transform: translateX(160%); }
         }
       `}</style>
       <div className={isModalSurface ? "w-full" : `w-full max-w-[460px] overflow-hidden rounded-[28px] border p-4 shadow-[0_18px_36px_rgba(34,49,39,0.08)] transition sm:p-4.5 ${packCardClasses(selectedPack.band)}`}>
@@ -1015,29 +1025,61 @@ function PackSelectorCard({
               </span>
             </a>
           ) : (
-            <button
-              type="button"
-              onClick={handleOpenClick}
-              disabled={disabled}
-              className={ctaClasses(selectedPack.ctaTone, disabled)}
-            >
-              <span className="inline-flex items-center justify-center gap-2">
-                {busy
-                  ? "처리 중..."
-                  : inventoryLoading
-                    ? "재고 확인 중..."
-                    : loginRequired
-                      ? "로그인하고 검색"
-                      : sold
-                        ? "추천 없음"
-                        : (
-	                            <>
-	                              <span>검색하기</span>
-	                              <CostBadge value={totalCost} />
-	                            </>
-	                          )}
-              </span>
-            </button>
+            <>
+              {busyStatusText ? (
+                <div
+                  className="rounded-2xl border border-[#d8dccd] bg-[#f8fbf4] px-3 py-3 shadow-[0_12px_28px_rgba(63,99,67,0.10)] dark:border-emerald-900/50 dark:bg-emerald-950/20"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <div className="flex items-start gap-2.5">
+                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm">
+                      <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+                        <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-black text-[#223127] dark:text-zinc-100">
+                        {busyStatusText}
+                      </div>
+                      <div className="mt-1 text-[11px] font-semibold leading-5 text-[#667466] dark:text-emerald-100/80">
+                        시세 기준, 판매 상태, 조건 필터를 같이 확인합니다. 창을 닫지 않아도 곧 결과가 반영돼요.
+                      </div>
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#dfe9dc] dark:bg-emerald-950/60">
+                        <div
+                          className="h-full w-2/3 rounded-full bg-gradient-to-r from-transparent via-[var(--brand-accent-strong)] to-transparent"
+                          style={{ animation: "seekProgressSweep 1.35s ease-in-out infinite" }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+              <button
+                type="button"
+                onClick={handleOpenClick}
+                disabled={disabled}
+                className={ctaClasses(selectedPack.ctaTone, disabled)}
+              >
+                <span className="inline-flex items-center justify-center gap-2">
+                  {busy
+                    ? "처리 중..."
+                    : inventoryLoading
+                      ? "재고 확인 중..."
+                      : loginRequired
+                        ? "로그인하고 검색"
+                        : sold
+                          ? "추천 없음"
+                          : (
+                              <>
+                                <span>검색하기</span>
+                                <CostBadge value={totalCost} />
+                              </>
+                            )}
+                </span>
+              </button>
+            </>
           )}
 
           {/* "재고 N건 남음" 박스 제거 — 위 funnel 박스에 통합됨 (band-only 옛 로직) */}
