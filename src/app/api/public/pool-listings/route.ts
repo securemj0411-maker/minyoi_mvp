@@ -150,6 +150,7 @@ export async function GET(req: NextRequest) {
     applyPidScope(searchPids);
   }
 
+  const hasPidScope = pidScope != null;
   if (pidScope) {
     const scopedPids = [...pidScope];
     if (scopedPids.length === 0) {
@@ -159,20 +160,33 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const countRes = await restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid&${filter}&limit=1`,
-      { headers: { ...serviceHeaders(), Prefer: "count=exact" } },
-    );
-    const contentRange = countRes.headers.get("content-range") ?? "0-0/0";
-    const total = Number(contentRange.split("/")[1] ?? 0);
-
     const offset = (page - 1) * pageSize;
     const cols = "pid,profit_band,status,category,comparable_key,expected_profit_min,expected_profit_max,confidence,exposure_count,max_exposure,last_verified_at";
-    const poolRes = await restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=${cols}&${filter}&order=${order}&limit=${pageSize}&offset=${offset}`,
-      { headers: serviceHeaders() },
-    );
-    const poolRows = (await poolRes.json()) as PoolRow[];
+    let total = 0;
+    let poolRows: PoolRow[] = [];
+
+    if (hasPidScope) {
+      const scopedPoolRes = await restFetch(
+        `${tableUrl("mvp_candidate_pool")}?select=${cols}&${filter}&order=${order}&limit=5000`,
+        { headers: serviceHeaders() },
+      );
+      const allFilteredRows = (await scopedPoolRes.json()) as PoolRow[];
+      total = allFilteredRows.length;
+      poolRows = allFilteredRows.slice(offset, offset + pageSize);
+    } else {
+      const countRes = await restFetch(
+        `${tableUrl("mvp_candidate_pool")}?select=pid&${filter}&limit=1`,
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" } },
+      );
+      const contentRange = countRes.headers.get("content-range") ?? "0-0/0";
+      total = Number(contentRange.split("/")[1] ?? 0);
+
+      const poolRes = await restFetch(
+        `${tableUrl("mvp_candidate_pool")}?select=${cols}&${filter}&order=${order}&limit=${pageSize}&offset=${offset}`,
+        { headers: serviceHeaders() },
+      );
+      poolRows = (await poolRes.json()) as PoolRow[];
+    }
 
     if (poolRows.length === 0) {
       return NextResponse.json({

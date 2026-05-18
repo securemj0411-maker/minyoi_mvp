@@ -27,5 +27,7 @@ test("admin pool exposes ready counts and filters by price bucket and category",
     assert.match(route, /byPriceBucket/);
     assert.match(route, /byCategory/);
     assert.match(route, /category=eq/);
+    assert.match(route, /const hasPidScope = pidScope != null/);
+    assert.match(route, /allFilteredRows\.slice\(offset, offset \+ pageSize\)/);
   }
 });
