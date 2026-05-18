@@ -62,7 +62,7 @@ test("/me modal keeps market evidence compact before the graph on mobile", () =>
   assert.match(modal, /표본 \{market\.sampleCount\.toLocaleString/);
   assert.match(modal, /신뢰 \{confidenceLabel\}/);
   assert.match(modal, /className=\"order-2 lg:order-3\"/);
-  assert.match(modal, /className=\"order-3 .*lg:order-2/);
+  assert.match(modal, /className=\"order-4 .*lg:order-2/);
   assert.match(modal, /hidden sm:inline-flex/);
   assert.match(modal, /그래프 기준 보기/);
   assert.ok(graphIndex >= 0 && trustIndex > graphIndex);
@@ -84,7 +84,7 @@ test("/me reveal profit block stays compact so the graph remains visible", () =>
   const modal = source("src/components/pack-reveal-modal.tsx");
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
 
-  assert.match(modal, /shadow-\[inset_3px_0_0_currentColor\]/);
+  assert.match(modal, /border-l-\[3px\]/);
   assert.match(modal, /text-xs font-bold leading-tight tabular-nums sm:text-sm/);
   assert.match(modal, /text-\[#00a862\] dark:text-\[#5dffae\]/);
   assert.match(modal, /text-\[11px\] font-bold tabular-nums/);
@@ -101,17 +101,21 @@ test("/me reveal profit block stays compact so the graph remains visible", () =>
 test("/me mobile reveal card keeps safety signals outside recommendation details", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const reasonIndex = modal.indexOf("function RecommendationReasonPanel");
+  const safetyIndex = modal.indexOf("function ProductSafetyPanel");
   const revealIndex = modal.indexOf("function RevealCardItem");
   const mobileRiskIndex = modal.indexOf("<RevealRiskScoreMini card={card} />", reasonIndex);
   const mobileSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", reasonIndex);
-  const revealRiskIndex = modal.indexOf("<RevealRiskScoreMini card={card} />", revealIndex);
+  const revealRiskIndex = modal.indexOf("<ProductSafetyPanel card={card}", revealIndex);
   const desktopSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", revealIndex);
 
   assert.ok(reasonIndex >= 0 && revealIndex > reasonIndex);
-  assert.ok(!(mobileRiskIndex > reasonIndex && mobileRiskIndex < revealIndex));
+  assert.ok(safetyIndex > reasonIndex && safetyIndex < revealIndex);
+  assert.ok(mobileRiskIndex > safetyIndex && mobileRiskIndex < revealIndex);
   assert.ok(!(mobileSignalIndex > reasonIndex && mobileSignalIndex < revealIndex));
   assert.ok(revealRiskIndex > revealIndex);
   assert.ok(desktopSignalIndex > revealIndex);
+  assert.match(modal, /function ProductSafetyPanel/);
+  assert.match(modal, /안전 확인/);
   assert.doesNotMatch(modal, /grid-cols-\[104px_minmax/);
   assert.match(modal, /function RevealProductImage/);
   assert.match(modal, /h-\[145px\] w-full/);
@@ -121,7 +125,7 @@ test("/me mobile reveal card keeps safety signals outside recommendation details
   assert.match(modal, /bg-\[#00c471\]/);
   assert.match(modal, /text-sm font-black text-white/);
   assert.match(modal, /min-w-0 flex-1/);
-  assert.match(modal, /mt-2 w-full rounded-xl/);
+  assert.match(modal, /mt-2 w-full border-l-\[3px\]/);
   assert.doesNotMatch(modal, /<ConditionChip conditionClass=\{card\.marketBasis\?\.conditionClass \?\? null\} showHelp \/>/);
   assert.doesNotMatch(modal, /hidden sm:block[\s\S]*<RevealRiskScoreMini card=\{card\} \/>/);
   assert.match(modal, /hidden sm:block[\s\S]*<MarketBasisMini card=\{card\} \/>/);

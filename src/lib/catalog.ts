@@ -8006,6 +8006,98 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "발렌시아가", "베이프", "제레미"],
     msrpKrw: 350000, released: 2013,
   },
+  // Wave 214 (2026-05-19): 의류 mainstream 추가 — 사용자 명시 "옷 안 버린다".
+  // 매물량 ⭐⭐⭐ + 가품 식별 가능 + 친화 가격 brand 9개.
+
+  // 베이프 (BAPE) — 매물 118건, faved 94! 압도적
+  {
+    id: "clothing-bape-tee",
+    brand: "A Bathing Ape (BAPE)", category: "clothing", laneKey: "bape_tee",
+    modelName: "BAPE T-Shirt / Hoodie (basic Ape Head/카모)",
+    aliases: ["BAPE Tee", "베이프 티셔츠", "BAPE Hoodie", "베이프 후드", "Ape Head"],
+    mustContain: [["bape", "베이프", "a bathing ape"], ["반팔", "티셔츠", "tee ", "t-shirt", "후드", "hoodie", "맨투맨", "크루넥", "ape head"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "carbon", "샤크 후드", "shark hoodie", "yeezy", "스타워즈", "신발", "스니커즈", "운동화"],
+    msrpKrw: 199000, released: 1993,
+  },
+  {
+    id: "clothing-bape-shark-hoodie",
+    brand: "A Bathing Ape (BAPE)", category: "clothing", laneKey: "bape_shark_hoodie",
+    modelName: "BAPE Shark Hoodie (시그니처 한정)",
+    aliases: ["BAPE Shark", "베이프 샤크", "Shark Hoodie", "샤크 후드"],
+    mustContain: [["bape", "베이프", "a bathing ape"], ["샤크", "shark"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "신발", "운동화", "야구", "농구", "축구"],
+    msrpKrw: 450000, released: 2005,
+  },
+  // 마뗑킴 (Matin Kim) — 한국 디자이너, 매물 63건
+  {
+    id: "clothing-matinkim",
+    brand: "Matin Kim", category: "clothing", laneKey: "matinkim_apparel",
+    modelName: "Matin Kim Apparel (티/후드/맨투맨/자켓)",
+    aliases: ["Matin Kim", "마뗑킴", "마틴킴"],
+    mustContain: [["matin kim", "마뗑킴", "마틴킴"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "크루넥", "자켓", "jacket", "셔츠", "가디건"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "가방", "bag", "신발"],
+    msrpKrw: 119000, released: 2020,
+  },
+  // 리복 — 매물 47건, 의류 (트랙수트 / 빅로고 티)
+  {
+    id: "clothing-reebok-apparel",
+    brand: "Reebok", category: "clothing", laneKey: "reebok_apparel",
+    modelName: "Reebok Apparel (트랙수트 / 빅로고 티 / 자켓)",
+    aliases: ["Reebok Apparel", "리복 의류", "리복 트랙수트"],
+    mustContain: [["reebok", "리복"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "자켓", "jacket", "트랙수트", "trackuit", "윈드브레이커"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "운동화", "스니커즈", "신발", "shoe"],
+    msrpKrw: 89000, released: 2020,
+  },
+  // 아크테릭스 — 매물 29건, faved 23, 등산복/outdoor
+  {
+    id: "clothing-arcteryx",
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_apparel",
+    modelName: "Arc'teryx Apparel (Beta / Gamma / Alpha / 자켓)",
+    aliases: ["Arc'teryx", "아크테릭스", "Beta Jacket", "Gamma Jacket"],
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "자켓", "jacket", "beta", "베타", "gamma", "감마", "alpha", "알파", "windbreaker", "윈드브레이커", "셀린", "celln"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
+    msrpKrw: 590000, released: 1989,
+  },
+  // 휠라 — 매물 27건, 친화 가격
+  {
+    id: "clothing-fila-apparel",
+    brand: "Fila", category: "clothing", laneKey: "fila_apparel",
+    modelName: "Fila Apparel (트랙수트 / 빅로고 티)",
+    aliases: ["Fila Apparel", "휠라 의류"],
+    mustContain: [["fila", "휠라"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "자켓", "jacket", "트랙수트", "윈드브레이커"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "운동화", "스니커즈", "신발", "디스럽터"],
+    msrpKrw: 69000, released: 2018,
+  },
+  // 파타고니아 — 매물 17건, faved 19, outdoor
+  {
+    id: "clothing-patagonia",
+    brand: "Patagonia", category: "clothing", laneKey: "patagonia_apparel",
+    modelName: "Patagonia Apparel (Retro X / 다운 / 자켓)",
+    aliases: ["Patagonia", "파타고니아", "Retro X", "Snap-T"],
+    mustContain: [["patagonia", "파타고니아"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "자켓", "jacket", "다운", "down", "retro", "레트로", "fleece", "플리스", "snap-t", "신칠라", "synchilla"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "가방", "backpack"],
+    msrpKrw: 199000, released: 1973,
+  },
+  // MLB 모자 + 의류 mainstream
+  {
+    id: "clothing-mlb-cap",
+    brand: "MLB", category: "clothing", laneKey: "mlb_apparel",
+    modelName: "MLB Cap / Apparel (NY/LA 등)",
+    aliases: ["MLB Cap", "MLB 모자", "MLB Apparel"],
+    mustContain: [["mlb"], ["모자", "cap", "캡", "반팔", "티셔츠", "후드", "hoodie", "맨투맨"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "ml b", "신발", "스니커즈", "양말", "에어팟", "케이스"],
+    msrpKrw: 49000, released: 2020,
+  },
+  // 디스커버리 익스페디션 — 매물 11건, outdoor 친화
+  {
+    id: "clothing-discovery-expedition",
+    brand: "Discovery Expedition", category: "clothing", laneKey: "discovery_apparel",
+    modelName: "Discovery Expedition Apparel (자켓/패딩/플리스)",
+    aliases: ["Discovery Expedition", "디스커버리 익스페디션"],
+    mustContain: [["discovery", "디스커버리"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "자켓", "jacket", "패딩", "플리스", "fleece", "다운", "down"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "신발", "운동화", "discovery channel"],
+    msrpKrw: 119000, released: 2018,
+  },
 ];
 
 // Wave 94: CATALOG 전체 SKU에도 카테고리별 NOISE 자동 spread (GENERATED + CORE + Wave 91 신규 다 포함).

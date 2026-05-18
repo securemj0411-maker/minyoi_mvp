@@ -625,6 +625,16 @@ export const LANE_READINESS: LaneReadinessMap = {
   adidas_adizero: { status: "ready", label: "Adidas Adizero (러닝)", note: "Wave 212" },
   adidas_balenciaga_collab: { status: "ready", label: "Adidas × Balenciaga (한정)", note: "Wave 212 collab" },
   adidas_rafsimons_collab: { status: "ready", label: "Adidas × Raf Simons", note: "Wave 212 collab" },
+  // Wave 214 (2026-05-19): 의류 mainstream 9 SKU — 사용자 정책 "옷 안 버린다"
+  bape_tee: { status: "ready", label: "BAPE T-Shirt/Hoodie (Ape Head/카모)", note: "Wave 214 — 매물 118건 faved 94!" },
+  bape_shark_hoodie: { status: "ready", label: "BAPE Shark Hoodie (시그니처)", note: "Wave 214 한정" },
+  matinkim_apparel: { status: "ready", label: "Matin Kim Apparel (한국 designer)", note: "Wave 214 친화" },
+  reebok_apparel: { status: "ready", label: "Reebok Apparel (트랙수트/티)", note: "Wave 214" },
+  arcteryx_apparel: { status: "ready", label: "Arc'teryx Apparel (Beta/Gamma)", note: "Wave 214 outdoor" },
+  fila_apparel: { status: "ready", label: "Fila Apparel", note: "Wave 214 친화" },
+  patagonia_apparel: { status: "ready", label: "Patagonia (Retro X/다운/Snap-T)", note: "Wave 214 outdoor" },
+  mlb_apparel: { status: "ready", label: "MLB Cap/Apparel", note: "Wave 214" },
+  discovery_apparel: { status: "ready", label: "Discovery Expedition", note: "Wave 214 outdoor" },
 };
 
 export type CategoryReadinessConfig = {

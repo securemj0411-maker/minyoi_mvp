@@ -418,6 +418,16 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Adidas Adizero", "아디다스 아디제로",
   "Adidas Balenciaga", "발렌시아가 아디다스",
   "Adidas Raf Simons", "아디다스 라프시몬스",
+  // Wave 214 — 의류 mainstream 추가 (사용자 명시 "옷 안 버린다")
+  "BAPE", "베이프", "A Bathing Ape", "Ape Head",
+  "BAPE Shark Hoodie", "베이프 샤크 후드",
+  "Matin Kim", "마뗑킴",
+  "Reebok 트랙수트", "리복 트랙수트", "Reebok Apparel",
+  "Arc'teryx Beta", "아크테릭스 베타", "Arc'teryx Gamma",
+  "Fila 트랙수트", "휠라 트랙수트",
+  "Patagonia Retro X", "파타고니아 레트로", "Patagonia 다운",
+  "MLB 모자", "MLB Cap",
+  "Discovery Expedition", "디스커버리 익스페디션",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

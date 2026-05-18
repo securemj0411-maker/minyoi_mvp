@@ -130,7 +130,18 @@ export function queryFamily(query: string): string {
     lower.includes("룰루레몬") || lower.includes("lululemon") ||
     // Wave 203: 마르지엘라 / MM6 (의류 broad)
     lower.includes("mm6") || lower.includes("엠엠식스") ||
-    (lower.includes("마르지엘라") && !lower.includes("타비") && !lower.includes("tabi") && !lower.includes("salomon") && !lower.includes("살로몬") && !lower.includes("글램슬램"))
+    (lower.includes("마르지엘라") && !lower.includes("타비") && !lower.includes("tabi") && !lower.includes("salomon") && !lower.includes("살로몬") && !lower.includes("글램슬램")) ||
+    // Wave 214: 추가 의류 mainstream — BAPE/마뗑킴/리복 의류/아크테릭스/휠라/파타고니아/MLB/디스커버리
+    lower.includes("bape") || lower.includes("베이프") || lower.includes("a bathing ape") ||
+    lower.includes("matin kim") || lower.includes("마뗑킴") || lower.includes("마틴킴") ||
+    lower.includes("arcteryx") || lower.includes("arc'teryx") || lower.includes("아크테릭스") ||
+    lower.includes("patagonia") || lower.includes("파타고니아") ||
+    lower.includes("discovery expedition") || lower.includes("디스커버리 익스페디션") ||
+    (lower.includes("reebok") && !lower.includes("운동화") && !lower.includes("스니커즈")) ||
+    (lower.includes("리복") && !lower.includes("운동화") && !lower.includes("스니커즈")) ||
+    (lower.includes("fila") && !lower.includes("디스럽터")) ||
+    (lower.includes("휠라") && !lower.includes("디스럽터")) ||
+    lower.includes("mlb 모자") || lower.includes("mlb cap")
   ) return "clothing";
   // Wave 202: 신발 brand 매핑 (On Running / Birkenstock)
   // Wave 205: 크록스 / 아크네 신발 추가

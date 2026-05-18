@@ -904,6 +904,24 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
   );
 }
 
+function ProductSafetyPanel({ card, className = "" }: { card: RevealCard; className?: string }) {
+  return (
+    <div className={`rounded-xl border border-[#d8e2d7] bg-[#f7fbf5] p-2.5 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:p-3 lg:col-span-2 ${className}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-sm font-black text-[#223127] dark:text-zinc-100">
+            안전 확인
+          </div>
+          <div className="mt-1 hidden text-xs font-semibold leading-5 text-[#60705f] dark:text-zinc-300 sm:block">
+            추천 풀 통과 후 남은 확인 포인트만 따로 봅니다.
+          </div>
+        </div>
+        <RevealRiskScoreMini card={card} />
+      </div>
+    </div>
+  );
+}
+
 function MarketGraphTrustLine({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
   if (!market) return null;
@@ -1098,10 +1116,10 @@ function RevealCardItem({
             <div className="line-clamp-2 text-sm font-black leading-5 text-zinc-900 dark:text-zinc-50">
               {card.name}
             </div>
-            <div className={`mt-2 w-full rounded-xl border px-2.5 py-2 shadow-[inset_3px_0_0_currentColor] sm:px-3 ${
+            <div className={`mt-2 w-full border-l-[3px] px-2.5 py-1.5 ${
               isMarketInvalidated
-                ? "border-rose-200 bg-white/70 text-rose-500 dark:border-rose-900/60 dark:bg-zinc-900/70 dark:text-rose-400"
-                : "border-[#e7e1d6] bg-white/70 text-[#00c471] dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-[#5dffae]"
+                ? "border-rose-400 text-rose-500 dark:border-rose-500 dark:text-rose-400"
+                : "border-[#00c471] text-[#00c471] dark:border-[#5dffae] dark:text-[#5dffae]"
             }`}>
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className={`text-[11px] font-semibold ${
@@ -1164,11 +1182,6 @@ function RevealCardItem({
           </details>
         </div>
 
-        {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 5축 잔여 위험 시각화. pack-reveal = showDetail. */}
-        <div>
-          <RevealRiskScoreMini card={card} />
-        </div>
-
         <div className="hidden sm:block">
           <VerdictBadgesMini card={card} />
         </div>
@@ -1190,9 +1203,10 @@ function RevealCardItem({
       {/* 좌측 카드 닫음 — 우측 카드 = 시세 그래프 + 디테일. */}
 
       <RecommendationReasonPanel card={card} className="order-2 lg:order-3" />
+      <ProductSafetyPanel card={card} className="order-3 lg:order-4" />
 
       {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
-      <div className="order-3 space-y-2 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 lg:order-2">
+      <div className="order-4 space-y-2 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 lg:order-2">
         <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
           시세 그래프 · 시장 분석
         </div>
@@ -1229,7 +1243,7 @@ function RevealCardItem({
       {/* 우측 카드 (시세 분석) 닫음. */}
 
       {/* 노트 + 버튼 영역 — full width (lg:col-span-2). */}
-      <div className="order-4 space-y-2 lg:col-span-2">
+      <div className="order-5 space-y-2 lg:col-span-2">
         {/* Wave 80: SavedDetailMini (찜/리뷰/리뷰N개/판매자 설명문) 제거 — 번개장터 데이터 직접 노출 법적 위험. 원본은 "번개장터 열기" 버튼으로 확인. */}
 
         {/* Wave 80: 개별 피드백 버튼 (관심/매수함/이미 팔림/별로) + quickTags (단품 의심 등) 제거.
