@@ -845,8 +845,14 @@ function MarketGraphTrustLine({ card }: { card: RevealCard }) {
   const condition = marketConditionLabel(card);
   const source = market.priceSource === "reference" ? "다나와 기준선 + 번개 미개봉 추이" : `번개 ${condition} 매물 추이`;
   return (
-    <div className="rounded-lg border border-[#e2d9cb] bg-white/75 px-3 py-2 text-[11px] font-semibold leading-5 text-[#5f6d5f] dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-300">
-      <div className="flex flex-wrap items-center gap-1.5">
+    <details className="rounded-lg border border-[#e2d9cb] bg-white/70 px-3 py-2 text-[11px] font-semibold leading-5 text-[#5f6d5f] dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-300">
+      <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2">
+        <span className="font-black text-[#4f6a52] dark:text-emerald-200">그래프 기준 보기</span>
+        <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+          {condition} · {source}
+        </span>
+      </summary>
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
         <span className="rounded-full bg-[#e7f2e4] px-2 py-0.5 text-[10px] font-black text-[#4f6a52] dark:bg-emerald-950/50 dark:text-emerald-300">
           {condition} 기준
         </span>
@@ -855,7 +861,7 @@ function MarketGraphTrustLine({ card }: { card: RevealCard }) {
       <div className="mt-1">
         이 그래프는 같은 모델 중 비슷한 상태로 분류된 매물을 우선 사용해요. 상태가 다른 매물을 섞어 시세를 부풀리지 않아요.
       </div>
-    </div>
+    </details>
   );
 }
 
@@ -1145,7 +1151,6 @@ function RevealCardItem({
         <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
           시세 그래프 · 시장 분석
         </div>
-        <MarketGraphTrustLine card={card} />
 
         {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
         {/* "시세 어떤 기준으로 잡나" 시각화. history 부족하면 자동 hide. */}
@@ -1157,6 +1162,7 @@ function RevealCardItem({
           priceSource={card.marketBasis?.priceSource ?? null}
           referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
         />
+        <MarketGraphTrustLine card={card} />
 
         <VelocityBasisMini card={card} />
 

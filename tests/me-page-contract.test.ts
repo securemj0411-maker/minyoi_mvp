@@ -55,6 +55,8 @@ test("/me user modal explains recommendation trust in plain language", () => {
 
 test("/me modal keeps market evidence compact before the graph on mobile", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
+  const graphIndex = modal.indexOf("<MarketHistoryChart");
+  const trustIndex = modal.indexOf("<MarketGraphTrustLine");
 
   assert.match(modal, /compactSourceLabel/);
   assert.match(modal, /표본 \{market\.sampleCount\.toLocaleString/);
@@ -62,6 +64,8 @@ test("/me modal keeps market evidence compact before the graph on mobile", () =>
   assert.match(modal, /className=\"order-2 lg:order-3\"/);
   assert.match(modal, /className=\"order-3 .*lg:order-2/);
   assert.match(modal, /hidden sm:inline-flex/);
+  assert.match(modal, /그래프 기준 보기/);
+  assert.ok(graphIndex >= 0 && trustIndex > graphIndex);
 });
 
 test("/me keeps dashboard summary compact on mobile", () => {
