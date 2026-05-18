@@ -180,11 +180,12 @@ export function buildCandidatePoolRows(input: {
       invalidations.push({ pid, reason: "pool_eligible_false" });
       continue;
     }
-    // Wave 224 (2026-05-19): sparse SKU (7d 매물 수 < 3) pool 진입 차단.
-    //   사용자 정책: "매물 받쳐주는 거만. 7일 3건 미만은 절대 안 됨".
+    // Wave 224/225 (2026-05-19): sparse SKU pool 진입 차단.
+    //   Wave 225 사용자 결정 C: 2d<1 OR 7d<3 (누적 + 회전 둘 다 검사).
+    //   사용자 의도 "받쳐주는 매물 + 사용자 reveal 후 다음 매물 빨리 들어옴".
     if (row.skuId && lowVolumeSkuIds.has(row.skuId)) {
       skipped += 1;
-      invalidations.push({ pid, reason: "sku_low_volume_below_3_per_7d" });
+      invalidations.push({ pid, reason: "sku_low_volume_below_2d1_or_7d3" });
       continue;
     }
 

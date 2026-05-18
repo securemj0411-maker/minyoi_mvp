@@ -2749,32 +2749,42 @@ async function loadFraudGroupHashes(): Promise<Set<string>> {
   }
 }
 
-// Wave 224 (2026-05-19): SKU 별 7d 매물 수 < 3 차단 — 사용자 정책 "매물 받쳐주는 거만".
-//   PostgREST aggregate 직접 호출 어려움 → 모든 raw_listings 매물 sku_id + first_seen_at fetch 후 client 집계.
+// Wave 224 (2026-05-19): SKU 별 매물 빈도 < threshold 차단 — 사용자 정책 "매물 받쳐주는 거만".
+//   PostgREST aggregate 직접 호출 어려움 → 매물 sku_id + first_seen_at fetch 후 client 집계.
 //   shoe/clothing/bag 카테고리 매물 (현재 12000+) 만 한정.
-async function loadLowVolumeSkuIds(threshold = 3, windowDays = 7): Promise<Set<string>> {
+// Wave 225 (2026-05-19) 사용자 결정 C: "2d<1 OR 7d<3" 결합 — 둘 중 하나만 못 채워도 차단.
+//   누적 빈도 (7d≥3) + 최근 회전 빈도 (2d≥1) 둘 다 충족해야 통과.
+//   사용자 reveal 직후 다음 매물 답답함 차단.
+async function loadLowVolumeSkuIds(): Promise<Set<string>> {
   try {
-    const sinceIso = new Date(Date.now() - windowDays * 24 * 3600 * 1000).toISOString();
-    const all: Array<{ sku_id: string }> = [];
+    const since7dIso = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+    const since2dMs = Date.now() - 2 * 24 * 3600 * 1000;
+    const all: Array<{ sku_id: string; first_seen_at: string }> = [];
     let offset = 0;
     const PAGE = 1000;
     while (true) {
-      const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&sku_id=not.is.null&first_seen_at=gte.${encodeURIComponent(sinceIso)}&listing_state=eq.active&or=(sku_id.like.shoe-%2A,sku_id.like.clothing-%2A,sku_id.like.bag-%2A)&limit=${PAGE}&offset=${offset}`;
+      const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=not.is.null&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&or=(sku_id.like.shoe-%2A,sku_id.like.clothing-%2A,sku_id.like.bag-%2A)&limit=${PAGE}&offset=${offset}`;
       const res = await restFetch(url, { headers: serviceHeaders() });
-      const rows = (await res.json()) as Array<{ sku_id: string }>;
+      const rows = (await res.json()) as Array<{ sku_id: string; first_seen_at: string }>;
       all.push(...rows);
       if (rows.length < PAGE) break;
       offset += PAGE;
     }
-    const countBySku = new Map<string, number>();
+    const d7BySku = new Map<string, number>();
+    const d2BySku = new Map<string, number>();
     for (const r of all) {
       if (!r.sku_id) continue;
-      countBySku.set(r.sku_id, (countBySku.get(r.sku_id) ?? 0) + 1);
+      d7BySku.set(r.sku_id, (d7BySku.get(r.sku_id) ?? 0) + 1);
+      const ts = new Date(r.first_seen_at).getTime();
+      if (Number.isFinite(ts) && ts >= since2dMs) {
+        d2BySku.set(r.sku_id, (d2BySku.get(r.sku_id) ?? 0) + 1);
+      }
     }
-    // 7일 매물 수 < threshold 인 SKU 만 return (제외 대상).
+    // Wave 225: 2d<1 OR 7d<3 (둘 중 하나만 못 채워도 차단).
     const lowVolume = new Set<string>();
-    for (const [skuId, n] of countBySku) {
-      if (n < threshold) lowVolume.add(skuId);
+    for (const [skuId, d7] of d7BySku) {
+      const d2 = d2BySku.get(skuId) ?? 0;
+      if (d7 < 3 || d2 < 1) lowVolume.add(skuId);
     }
     return lowVolume;
   } catch (err) {
