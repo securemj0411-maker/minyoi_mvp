@@ -377,6 +377,15 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Salomon ACS Pro", "살로몬 ACS",
   "Salomon Speedcross", "살로몬 스피드크로스",
   "Salomon X-Ultra", "살로몬 X-Ultra GTX",
+  // Wave 209 — 아식스
+  "Asics Gel-1130", "아식스 젤 1130", "젤-1130",
+  "Asics Kayano", "아식스 카야노",
+  "Asics Nimbus", "아식스 님버스",
+  "Asics Kinetic", "아식스 키네틱",
+  "Asics Novablast", "아식스 노바블라스트",
+  "Asics Jog 100", "아식스 조그 100", "라이프워커",
+  "Kiko Asics", "키코 아식스", "Kiko Kostadinov",
+  "Cecilie Bahnsen Asics", "세실리에 반센",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

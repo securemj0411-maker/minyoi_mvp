@@ -584,6 +584,15 @@ export const LANE_READINESS: LaneReadinessMap = {
   salomon_acs_pro: { status: "ready", label: "Salomon ACS Pro/+OG", note: "Wave 208" },
   salomon_speedcross: { status: "ready", label: "Salomon Speedcross", note: "Wave 208" },
   salomon_x_ultra: { status: "ready", label: "Salomon X-Ultra GTX", note: "Wave 208" },
+  // Wave 209 (2026-05-18): 아식스 본 라인 + collab — 매물 60+건 폭발적
+  asics_gel_1130: { status: "ready", label: "Asics Gel-1130 (시그니처)", note: "Wave 209 — 매물 매우 다수" },
+  asics_gel_kayano: { status: "ready", label: "Asics Gel Kayano (14/26/27)", note: "Wave 209" },
+  asics_gel_nimbus: { status: "ready", label: "Asics Gel Nimbus", note: "Wave 209" },
+  asics_gel_kinetic: { status: "ready", label: "Asics Gel Kinetic", note: "Wave 209" },
+  asics_novablast: { status: "ready", label: "Asics Novablast/Superblast", note: "Wave 209" },
+  asics_jog_100: { status: "ready", label: "Asics Jog 100/Life Walker (입문)", note: "Wave 209" },
+  asics_kiko_collab: { status: "ready", label: "Asics × Kiko Kostadinov (collab)", note: "Wave 209" },
+  asics_cecilie_bahnsen_collab: { status: "ready", label: "Asics × Cecilie Bahnsen (한정)", note: "Wave 209 faved 41~75!" },
 };
 
 export type CategoryReadinessConfig = {
