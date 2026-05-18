@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { createPortal } from "react-dom";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
@@ -996,6 +997,7 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
 
 function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard; className?: string }) {
   const [open, setOpen] = useState(false);
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   const market = card.marketBasis;
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const marketSample = market?.sampleCount ?? 0;
@@ -1013,6 +1015,19 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
   const reasonSummary = isMarketInvalidated
     ? "지금 기준으로는 차익이 없어 판매완료 상품처럼 정리하는 게 맞아요."
     : featureCards.slice(0, 2).map((feature) => feature.title).join(" · ");
+
+  useEffect(() => {
+    setPortalRoot(document.body);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
 
   return (
     <>
@@ -1042,7 +1057,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
         </button>
       </section>
 
-      {open && (
+      {open && portalRoot ? createPortal(
         <>
           <div
             className="fixed inset-0 z-[120] bg-zinc-950/28 backdrop-blur-[1px]"
@@ -1056,7 +1071,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
             aria-modal="true"
             aria-label="추천 이유 자세히 보기"
             onClick={(e) => e.stopPropagation()}
-            className="recommendation-reason-dialog fixed left-1/2 top-[72px] z-[130] max-h-[calc(100dvh-156px)] w-[calc(100vw-28px)] max-w-[540px] -translate-x-1/2 overflow-hidden rounded-2xl border border-[#d6e2d3] bg-[#fffdf9] shadow-2xl shadow-zinc-950/24 dark:border-zinc-700 dark:bg-zinc-900 sm:top-1/2 sm:max-h-[84vh] sm:-translate-y-1/2"
+            className="recommendation-reason-dialog fixed left-1/2 top-1/2 z-[130] max-h-[min(82dvh,640px)] w-[calc(100vw-28px)] max-w-[540px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-[#d6e2d3] bg-[#fffdf9] shadow-2xl shadow-zinc-950/24 dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[84vh]"
           >
             <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
               <div className="min-w-0">
@@ -1076,7 +1091,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
                 닫기
               </button>
             </div>
-            <div className="max-h-[calc(100dvh-232px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(84vh-74px)] sm:px-5 sm:py-4">
+            <div className="max-h-[calc(min(82dvh,640px)-74px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(84vh-74px)] sm:px-5 sm:py-4">
               <div className="grid gap-2 sm:grid-cols-2">
                 {featureCards.map((feature) => (
                   <div key={`${feature.title}-${feature.body}`} className={`rounded-xl border px-3 py-2.5 shadow-sm ${toneClass[feature.tone]}`}>
@@ -1158,24 +1173,11 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
             @keyframes recommendationReasonSettle {
               from {
                 opacity: 0;
-                transform: translate(-50%, -8px);
+                transform: translate(-50%, calc(-50% + 10px));
               }
               to {
                 opacity: 1;
-                transform: translate(-50%, 0);
-              }
-            }
-
-            @media (min-width: 640px) {
-              @keyframes recommendationReasonSettle {
-                from {
-                  opacity: 0;
-                  transform: translate(-50%, calc(-50% - 6px));
-                }
-                to {
-                  opacity: 1;
-                  transform: translate(-50%, -50%);
-                }
+                transform: translate(-50%, -50%);
               }
             }
 
@@ -1183,8 +1185,9 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
               animation: recommendationReasonSettle 130ms ease-out;
             }
           `}</style>
-        </>
-      )}
+        </>,
+        portalRoot,
+      ) : null}
     </>
   );
 }
