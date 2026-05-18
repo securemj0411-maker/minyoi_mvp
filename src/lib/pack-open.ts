@@ -928,7 +928,7 @@ export async function submitRevealFeedback(input: {
   feedbackType: RevealFeedbackType;
   note?: string;
 }): Promise<void> {
-  await callSupabase("/mvp_reveal_feedback?on_conflict=user_ref,pid", {
+  await callSupabase("/mvp_reveal_feedback?on_conflict=user_ref,pid,feedback_type", {
     method: "POST",
     headers: authHeaders("resolution=merge-duplicates,return=minimal"),
     body: JSON.stringify({

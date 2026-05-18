@@ -6,7 +6,7 @@
 // 1. 사용자가 매물 상세 모달에서 "정보 오류 신고하고 토큰 +3 받기" 클릭
 // 2. 카테고리 선택 (시세 부정확 / 매물 정보 다름 / 이미 판매됨 / 가짜 가격 의심 / 기타)
 //    + optional 사유 (자유 입력)
-// 3. mvp_reveal_feedback upsert (feedback_type='inaccurate_report')
+// 3. mvp_reveal_feedback type-scoped upsert (feedback_type='inaccurate_report')
 //    - admin_status='pending', compensation_granted_tokens=3
 // 4. refundUserCredits(amount=3, metadata={ reason: 'inaccurate_report', category, pid })
 // 5. 응답: "토큰 3개 즉시 지급. 24시간 안에 검토합니다."
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
     const categoryLabel = CATEGORY_LABEL[category] ?? category;
     const combinedNote = note ? `[${categoryLabel}] ${note}` : `[${categoryLabel}]`;
 
-    // 3. upsert
+    // 3. type-scoped upsert. This must not erase bought/watching/bad_pick state.
     const compensation = isDuplicate ? 0 : COMPENSATION_TOKENS;
     const upsertBody = jsonBody({
       user_ref: userRef,
@@ -110,7 +110,7 @@ export async function POST(req: Request) {
       updated_at: new Date().toISOString(),
     });
     const upsertRes = await restFetch(
-      `${tableUrl("mvp_reveal_feedback")}?on_conflict=user_ref,pid`,
+      `${tableUrl("mvp_reveal_feedback")}?on_conflict=user_ref,pid,feedback_type`,
       {
         method: "POST",
         headers: { ...serviceHeaders(), Prefer: "resolution=merge-duplicates,return=minimal" },

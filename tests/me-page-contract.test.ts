@@ -66,3 +66,21 @@ test("/me keeps dashboard summary compact on mobile", () => {
   assert.match(dashboard, /평균 \{signedKrw\(dashboardSummary\.avgProfit\)\}/);
   assert.match(dashboard, /hidden gap-2 sm:grid/);
 });
+
+test("reveal feedback is scoped by feedback type so reports do not overwrite user state", () => {
+  const migration = source("supabase/migrations/20260518101901_reveal_feedback_type_scoped.sql");
+  const schema = source("supabase/schema.sql");
+  const packOpen = source("src/lib/pack-open.ts");
+  const inaccurateReport = source("src/app/api/packs/reveals/inaccurate-report/route.ts");
+  const lossReport = source("src/app/api/packs/reveals/loss-report/route.ts");
+  const meRoute = source("src/app/api/packs/me/route.ts");
+
+  assert.match(migration, /drop constraint if exists mvp_reveal_feedback_user_ref_pid_key/);
+  assert.match(migration, /unique \(user_ref, pid, feedback_type\)/);
+  assert.match(schema, /unique \(user_ref, pid, feedback_type\)/);
+  assert.match(packOpen, /on_conflict=user_ref,pid,feedback_type/);
+  assert.match(inaccurateReport, /on_conflict=user_ref,pid,feedback_type/);
+  assert.match(lossReport, /on_conflict=user_ref,pid,feedback_type/);
+  assert.match(meRoute, /FEEDBACK_DISPLAY_PRIORITY/);
+  assert.match(meRoute, /pickDisplayFeedback/);
+});

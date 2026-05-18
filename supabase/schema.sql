@@ -1144,14 +1144,32 @@ create table if not exists public.mvp_reveal_feedback (
     'bought',
     'missed_sold',
     'bad_pick',
-    'watching'
+    'watching',
+    'loss_report',
+    'inaccurate_report'
   )),
   note text not null default '',
   source text not null default 'reveal_modal',
+  admin_status text check (admin_status is null or admin_status in ('pending', 'approved', 'dismissed', 'resolved')),
+  admin_response_note text,
+  admin_responded_at timestamptz,
+  compensation_granted_tokens integer not null default 0,
+  user_seen_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique (user_ref, pid)
+  unique (user_ref, pid, feedback_type)
 );
+
+create index if not exists mvp_reveal_feedback_user_pid_type_idx
+  on public.mvp_reveal_feedback(user_ref, pid, feedback_type);
+
+create index if not exists mvp_reveal_feedback_admin_status_idx
+  on public.mvp_reveal_feedback(admin_status, created_at desc)
+  where feedback_type in ('loss_report', 'inaccurate_report');
+
+create index if not exists mvp_reveal_feedback_user_unread_idx
+  on public.mvp_reveal_feedback(user_ref, admin_responded_at desc)
+  where feedback_type = 'inaccurate_report' and admin_responded_at is not null;
 
 create index if not exists mvp_candidate_pool_band_status_idx
   on public.mvp_candidate_pool(profit_band, status, last_verified_at desc);

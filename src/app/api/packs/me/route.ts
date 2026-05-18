@@ -84,7 +84,28 @@ type FeedbackRow = {
   pid: number;
   feedback_type: string;
   note: string;
+  updated_at?: string | null;
 };
+
+const FEEDBACK_DISPLAY_PRIORITY: Record<string, number> = {
+  inaccurate_report: 90,
+  loss_report: 80,
+  bought: 70,
+  watching: 60,
+  interested: 50,
+  missed_sold: 40,
+  bad_pick: 30,
+};
+
+function pickDisplayFeedback(current: FeedbackRow | undefined, next: FeedbackRow) {
+  if (!current) return next;
+  const currentPriority = FEEDBACK_DISPLAY_PRIORITY[current.feedback_type] ?? 0;
+  const nextPriority = FEEDBACK_DISPLAY_PRIORITY[next.feedback_type] ?? 0;
+  if (nextPriority !== currentPriority) return nextPriority > currentPriority ? next : current;
+  const currentTime = Date.parse(current.updated_at ?? "");
+  const nextTime = Date.parse(next.updated_at ?? "");
+  return Number.isFinite(nextTime) && (!Number.isFinite(currentTime) || nextTime >= currentTime) ? next : current;
+}
 
 type RevealItem = {
   pid: number;
@@ -423,7 +444,7 @@ export async function GET(req: Request) {
       `${tableUrl("mvp_listings")}?select=pid,price,shipping_fee,shipping_fee_general,estimated_buy_cost&pid=in.(${pidList})`,
     ),
     loadJson<FeedbackRow[]>(
-      `${tableUrl("mvp_reveal_feedback")}?select=pid,feedback_type,note&user_ref=eq.${encodedUserRef}&pid=in.(${pidList})`,
+      `${tableUrl("mvp_reveal_feedback")}?select=pid,feedback_type,note,updated_at&user_ref=eq.${encodedUserRef}&pid=in.(${pidList})`,
     ),
     packOpenIds.length > 0
       ? loadJson<PackOpenRow[]>(
@@ -439,7 +460,12 @@ export async function GET(req: Request) {
 
   const rawByPid = new Map(rawRows.map((row) => [Number(row.pid), row]));
   const listingCostByPid = new Map(listingCostRows.map((row) => [Number(row.pid), row]));
-  const feedbackByPid = new Map(feedbackRows.map((row) => [Number(row.pid), row]));
+  const feedbackByPid = new Map<number, FeedbackRow>();
+  for (const row of feedbackRows) {
+    const pid = Number(row.pid);
+    if (!Number.isFinite(pid)) continue;
+    feedbackByPid.set(pid, pickDisplayFeedback(feedbackByPid.get(pid), row));
+  }
   const bandByOpenId = new Map(packOpenRows.map((row) => [Number(row.id), Number(row.band_requested)]));
   const comparableKeyByPid = new Map(parsedRows.map((row) => [Number(row.pid), row.comparable_key ?? null]));
   // Wave 130: 매물별 condition_class — marketBasisForCandidate에 전달해서 매칭 시세 우선 표시.

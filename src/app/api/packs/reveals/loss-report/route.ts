@@ -3,7 +3,7 @@
 //
 // 흐름:
 // 1. 사용자가 카드에 "손해 봤어요" 클릭 → 짧은 사유 입력
-// 2. mvp_reveal_feedback 에 feedback_type='loss_report' upsert
+// 2. mvp_reveal_feedback 에 feedback_type='loss_report' type-scoped upsert
 //    - admin_status='pending', compensation_granted_tokens=3 박힘
 // 3. refundUserCredits(amount=3, metadata={ reason: 'loss_report', pid })
 // 4. 응답: "즉시 토큰 3개 지급. 24시간 안에 운영자가 확인합니다."
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     const dupRows = (await dupRes.json()) as Array<{ id: number; compensation_granted_tokens: number; admin_status: string | null }>;
     const isDuplicate = dupRows.length > 0;
 
-    // 2. upsert 신고. on_conflict (user_ref, pid) — 기존 feedback (bad_pick 등) 있을 수도. 덮어쓰기.
+    // 2. type-scoped upsert 신고. 기존 bought/watching/bad_pick state는 보존한다.
     const compensation = isDuplicate ? 0 : COMPENSATION_TOKENS;
     const upsertBody = jsonBody({
       user_ref: userRef,
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
       updated_at: new Date().toISOString(),
     });
     const upsertRes = await restFetch(
-      `${tableUrl("mvp_reveal_feedback")}?on_conflict=user_ref,pid`,
+      `${tableUrl("mvp_reveal_feedback")}?on_conflict=user_ref,pid,feedback_type`,
       {
         method: "POST",
         headers: { ...serviceHeaders(), Prefer: "resolution=merge-duplicates,return=minimal" },
