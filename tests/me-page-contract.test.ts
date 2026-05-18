@@ -352,6 +352,14 @@ test("/me keeps dashboard summary compact on mobile", () => {
   assert.match(dashboard, /hidden gap-2 sm:grid/);
 });
 
+test("guest main page makes masked listing titles strongly blurred", () => {
+  const preview = source("src/components/preview-masked-dashboard.tsx");
+
+  assert.match(preview, /maskedName/);
+  assert.match(preview, /select-none truncate text-sm font-bold text-\[#223127\] blur-\[3px\]/);
+  assert.doesNotMatch(preview, /text-\[#223127\] blur-\[1px\]/);
+});
+
 test("/me seek-more modal starts with personalization and hides duplicate safety stats", () => {
   const meClient = source("src/components/me-dashboard-client.tsx");
   const workspace = source("src/components/recommendation-workspace.tsx");

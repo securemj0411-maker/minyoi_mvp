@@ -221,9 +221,9 @@ export default function PreviewMaskedDashboard() {
                         </span>
                         <ConditionChip conditionClass={item.conditionClass} />
                       </div>
-                      {/* 매물명 — 서버에서 마스킹 ("갤** S** 울**") + CSS blur 살짝.
+                      {/* 매물명 — 서버에서 마스킹 ("갤** S** 울**") + 강한 CSS blur.
                           데이터는 이미 마스킹 (DevTools 안전), blur 는 시각 효과만. */}
-                      <div className="mt-1 select-none truncate text-sm font-bold text-[#223127] blur-[1px] dark:text-zinc-100">
+                      <div className="mt-1 select-none truncate text-sm font-bold text-[#223127] blur-[3px] dark:text-zinc-100">
                         {item.maskedName}
                       </div>
                       {/* 매입 · 시세 (대시보드 패턴) */}
