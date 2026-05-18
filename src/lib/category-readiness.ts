@@ -521,6 +521,19 @@ export const LANE_READINESS: LaneReadinessMap = {
   cdg_newbalance_collab: { status: "ready", label: "NB × CDG Junya Watanabe", note: "Wave 201 collab shoe" },
   cdg_vans_collab: { status: "ready", label: "Vans × CDG", note: "Wave 201 collab shoe" },
   cdg_salomon_collab: { status: "ready", label: "Salomon × CDG", note: "Wave 201 collab shoe — XT-6/Alpine" },
+  // Wave 202 (2026-05-18): On Running + Birkenstock + Lululemon + Levis collab — 매물 폭발적 발견.
+  onrunning_cloud_monster: { status: "ready", label: "On Running Cloud Monster (시그니처)", note: "Wave 202 — 매물 압도적" },
+  onrunning_cloud_basic: { status: "ready", label: "On Running Cloud (5/X/Z5)", note: "Wave 202" },
+  onrunning_cloudsurfer: { status: "ready", label: "On Running Cloudsurfer", note: "Wave 202" },
+  onrunning_loewe_collab: { status: "ready", label: "Loewe × On Cloudtilt (한정)", note: "Wave 202 collab" },
+  onrunning_paf_collab: { status: "ready", label: "PAF × On Running (한정)", note: "Wave 202 collab" },
+  birkenstock_boston: { status: "ready", label: "Birkenstock Boston (시그니처)", note: "Wave 202 — 매물 다수" },
+  birkenstock_arizona: { status: "ready", label: "Birkenstock Arizona", note: "Wave 202" },
+  birkenstock_zurich: { status: "ready", label: "Birkenstock Zürich", note: "Wave 202" },
+  birkenstock_milano: { status: "ready", label: "Birkenstock Milano", note: "Wave 202" },
+  lululemon_backpack: { status: "ready", label: "Lululemon Backpack (시그니처 faved 91)", note: "Wave 202 — 매물 압도적" },
+  newbalance_levis_collab: { status: "ready", label: "NB × Levi's 990v3 (collab)", note: "Wave 202 collab" },
+  nike_levis_collab: { status: "ready", label: "Nike × Levi's Air Max 95 (collab)", note: "Wave 202 collab" },
 };
 
 export type CategoryReadinessConfig = {

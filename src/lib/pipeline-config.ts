@@ -313,6 +313,19 @@ export const DEFAULT_SEARCH_QUERIES = [
   "NB 꼼데", "뉴발란스 꼼데가르송", "준야 와타나베 NB", "Junya NB",
   "Vans CDG", "반스 꼼데가르송",
   "Salomon CDG", "살로몬 꼼데가르송", "꼼데 XT-6",
+  // Wave 202 — On Running / Birkenstock / Lululemon / Levis collab
+  "On Running Cloud Monster", "온러닝 클라우드 몬스터",
+  "On Cloud 5", "온러닝 클라우드 5",
+  "Cloudsurfer", "클라우드서퍼",
+  "Loewe On Running", "로에베 온러닝", "클라우드틸트",
+  "PAF On Running", "파프 온러닝", "포스트아카이브팩션",
+  "Birkenstock Boston", "버켄스탁 보스턴",
+  "Birkenstock Arizona", "버켄스탁 아리조나",
+  "Birkenstock Zurich", "버켄스탁 취리히",
+  "Birkenstock Milano", "버켄스탁 밀라노",
+  "Lululemon 백팩", "Lululemon Backpack", "룰루레몬 백팩",
+  "NB Levis", "뉴발란스 리바이스",
+  "Nike Levis", "나이키 리바이스",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
