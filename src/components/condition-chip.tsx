@@ -18,6 +18,13 @@ type ChipStyle = {
   desc: string;
 };
 
+type PhotoBadgeStyle = {
+  label: string;
+  compactLabel: string;
+  className: string;
+  desc: string;
+};
+
 const CHIP_STYLES: Record<string, ChipStyle> = {
   unopened: {
     label: "미개봉/새상품",
@@ -60,6 +67,51 @@ const CHIP_STYLES: Record<string, ChipStyle> = {
     bg: "bg-yellow-100 dark:bg-yellow-900/40",
     text: "text-yellow-800 dark:text-yellow-200",
     desc: "배터리 효율 < 85% 명시. 가격 modifier.",
+  },
+};
+
+const PHOTO_BADGE_STYLES: Record<string, PhotoBadgeStyle> = {
+  unopened: {
+    label: "미개봉/새상품",
+    compactLabel: "미개봉",
+    className: "border-amber-200/90 bg-gradient-to-r from-amber-100 via-yellow-50 to-white text-amber-950 shadow-[0_8px_24px_rgba(245,158,11,0.30)] ring-1 ring-white/80 dark:border-amber-700/80 dark:from-amber-400/25 dark:via-amber-200/15 dark:to-zinc-900/90 dark:text-amber-50 dark:ring-amber-100/20",
+    desc: "미개봉/새상품으로 분류된 매물",
+  },
+  mint: {
+    label: "S급",
+    compactLabel: "S급",
+    className: "border-emerald-200/90 bg-gradient-to-r from-emerald-100 via-teal-50 to-white text-emerald-950 shadow-[0_7px_20px_rgba(16,185,129,0.24)] ring-1 ring-white/70 dark:border-emerald-700/80 dark:from-emerald-400/20 dark:via-teal-300/12 dark:to-zinc-900/90 dark:text-emerald-50 dark:ring-emerald-100/15",
+    desc: "S급으로 분류된 매물",
+  },
+  clean: {
+    label: "A급/풀세트",
+    compactLabel: "A급",
+    className: "border-teal-200/90 bg-teal-50/95 text-teal-900 shadow-[0_5px_14px_rgba(20,184,166,0.16)] ring-1 ring-white/60 dark:border-teal-800/80 dark:bg-teal-950/85 dark:text-teal-100 dark:ring-teal-100/10",
+    desc: "A급/풀세트로 분류된 매물",
+  },
+  normal: {
+    label: "일반",
+    compactLabel: "일반",
+    className: "border-zinc-200/90 bg-white/90 text-zinc-700 shadow-sm ring-1 ring-white/50 dark:border-zinc-700/80 dark:bg-zinc-900/85 dark:text-zinc-200 dark:ring-white/10",
+    desc: "일반 상태로 분류된 매물",
+  },
+  worn: {
+    label: "사용감",
+    compactLabel: "사용감",
+    className: "border-orange-200/90 bg-orange-50/92 text-orange-900 shadow-sm ring-1 ring-white/45 dark:border-orange-800/80 dark:bg-orange-950/80 dark:text-orange-100 dark:ring-orange-100/10",
+    desc: "사용감 있는 매물로 분류",
+  },
+  flawed: {
+    label: "훼손",
+    compactLabel: "훼손",
+    className: "border-rose-200/90 bg-rose-50/92 text-rose-900 shadow-sm dark:border-rose-800/80 dark:bg-rose-950/85 dark:text-rose-100",
+    desc: "훼손/결함 신호가 있는 매물",
+  },
+  low_batt: {
+    label: "배터리 저하",
+    compactLabel: "배터리",
+    className: "border-yellow-200/90 bg-yellow-50/92 text-yellow-900 shadow-sm dark:border-yellow-800/80 dark:bg-yellow-950/85 dark:text-yellow-100",
+    desc: "배터리 저하 신호가 있는 매물",
   },
 };
 
@@ -124,7 +176,7 @@ export function ConditionChip({ conditionClass, showHelp = false }: Props) {
   );
 }
 
-export function UnopenedPhotoBadge({
+export function ConditionPhotoBadge({
   conditionClass,
   compact = false,
   className = "",
@@ -133,15 +185,27 @@ export function UnopenedPhotoBadge({
   compact?: boolean;
   className?: string;
 }) {
-  if (conditionClass !== "unopened") return null;
+  if (!conditionClass) return null;
+  const style = PHOTO_BADGE_STYLES[conditionClass] ?? {
+    label: conditionClass,
+    compactLabel: conditionClass,
+    className: "border-zinc-200/90 bg-white/90 text-zinc-700 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900/85 dark:text-zinc-200",
+    desc: `${conditionClass} 등급으로 분류된 매물`,
+  };
   return (
     <span
-      title="미개봉/새상품으로 분류된 매물"
-      className={`pointer-events-none absolute left-1.5 top-1.5 z-10 rounded-full border border-amber-200 bg-amber-50/95 px-1.5 py-0.5 text-[9px] font-black text-amber-900 shadow-sm backdrop-blur dark:border-amber-800/70 dark:bg-amber-950/90 dark:text-amber-100 ${
-        compact ? "" : "sm:left-2 sm:top-2 sm:px-2 sm:py-1 sm:text-[10px]"
+      title={style.desc}
+      className={`pointer-events-none absolute left-1.5 top-1.5 z-10 rounded-full border px-1.5 py-0.5 text-[9px] font-black backdrop-blur-md ${
+        style.className
+      } ${
+        compact ? "" : "sm:left-2 sm:top-2 sm:px-2.5 sm:py-1 sm:text-[10px]"
       } ${className}`}
     >
-      미개봉{compact ? "" : <span className="hidden sm:inline">/새상품</span>}
+      {compact ? style.compactLabel : style.label}
     </span>
   );
+}
+
+export function UnopenedPhotoBadge(props: Parameters<typeof ConditionPhotoBadge>[0]) {
+  return <ConditionPhotoBadge {...props} />;
 }

@@ -74,37 +74,47 @@ test("/me mobile reveal card keeps secondary evidence behind recommendation deta
   const revealIndex = modal.indexOf("function RevealCardItem");
   const mobileRiskIndex = modal.indexOf("<RevealRiskScoreMini card={card} />", reasonIndex);
   const mobileSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", reasonIndex);
-  const conditionIndex = modal.indexOf("<ConditionChip conditionClass={card.marketBasis?.conditionClass ?? null} showHelp />", revealIndex);
+  const conditionPhotoIndex = modal.indexOf("<ConditionPhotoBadge conditionClass={card.marketBasis?.conditionClass ?? null} />", revealIndex);
   const desktopSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", revealIndex);
 
   assert.ok(reasonIndex >= 0 && revealIndex > reasonIndex);
   assert.ok(mobileRiskIndex > reasonIndex && mobileRiskIndex < revealIndex);
   assert.ok(mobileSignalIndex > reasonIndex && mobileSignalIndex < revealIndex);
   assert.ok(desktopSignalIndex > revealIndex);
-  assert.ok(conditionIndex > revealIndex);
+  assert.ok(conditionPhotoIndex > revealIndex);
   assert.doesNotMatch(modal, /grid-cols-\[104px_minmax/);
   assert.match(modal, /h-\[118px\] w-full/);
   assert.match(modal, /hidden text-xs font-semibold leading-5/);
   assert.match(modal, /sm:hidden[\s\S]*<RevealRiskScoreMini card=\{card\} \/>[\s\S]*<VerdictBadgesMini card=\{card\} \/>[\s\S]*<MarketBasisMini card=\{card\} \/>/);
   assert.match(modal, /min-w-0 flex-1/);
   assert.match(modal, /mt-2 w-full rounded-xl/);
-  assert.match(modal, /<span className="text-\[11px\] font-semibold text-zinc-400">\{freshLabel\(card\.freshSeconds\)\}<\/span>\s*<ConditionChip conditionClass=\{card\.marketBasis\?\.conditionClass \?\? null\} showHelp \/>/);
+  assert.doesNotMatch(modal, /<ConditionChip conditionClass=\{card\.marketBasis\?\.conditionClass \?\? null\} showHelp \/>/);
   assert.match(modal, /hidden sm:block[\s\S]*<RevealRiskScoreMini card=\{card\} \/>/);
   assert.match(modal, /hidden sm:block[\s\S]*<MarketBasisMini card=\{card\} \/>/);
 });
 
-test("/me highlights unopened listings directly on product photos", () => {
+test("/me shows every condition grade as a photo badge and removes duplicate plain grade chips", () => {
   const chip = source("src/components/condition-chip.tsx");
   const modal = source("src/components/pack-reveal-modal.tsx");
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
 
+  assert.match(chip, /export function ConditionPhotoBadge/);
+  assert.match(chip, /PHOTO_BADGE_STYLES/);
+  assert.match(chip, /unopened:[\s\S]*compactLabel: "미개봉"/);
+  assert.match(chip, /mint:[\s\S]*compactLabel: "S급"/);
+  assert.match(chip, /clean:[\s\S]*compactLabel: "A급"/);
+  assert.match(chip, /normal:[\s\S]*compactLabel: "일반"/);
+  assert.match(chip, /worn:[\s\S]*compactLabel: "사용감"/);
+  assert.match(chip, /flawed:[\s\S]*compactLabel: "훼손"/);
+  assert.match(chip, /low_batt:[\s\S]*compactLabel: "배터리"/);
   assert.match(chip, /export function UnopenedPhotoBadge/);
-  assert.match(chip, /conditionClass !== "unopened"/);
-  assert.match(chip, /미개봉\{compact \? "" : <span className="hidden sm:inline">\/새상품<\/span>\}/);
-  assert.match(modal, /import \{ ConditionChip, UnopenedPhotoBadge \}/);
-  assert.match(modal, /<UnopenedPhotoBadge conditionClass=\{card\.marketBasis\?\.conditionClass \?\? null\} \/>/);
-  assert.match(dashboard, /import \{ ConditionChip, UnopenedPhotoBadge \}/);
-  assert.match(dashboard, /<UnopenedPhotoBadge conditionClass=\{item\.marketBasis\?\.conditionClass \?\? null\} compact \/>/);
+  assert.doesNotMatch(chip, /conditionClass !== "unopened"/);
+  assert.match(modal, /import \{ ConditionPhotoBadge \}/);
+  assert.match(modal, /<ConditionPhotoBadge conditionClass=\{card\.marketBasis\?\.conditionClass \?\? null\} \/>/);
+  assert.doesNotMatch(modal, /ConditionChip/);
+  assert.match(dashboard, /import \{ ConditionPhotoBadge \}/);
+  assert.match(dashboard, /<ConditionPhotoBadge conditionClass=\{item\.marketBasis\?\.conditionClass \?\? null\} compact \/>/);
+  assert.doesNotMatch(dashboard, /ConditionChip/);
 });
 
 test("/me keeps dashboard summary compact on mobile", () => {
@@ -114,6 +124,24 @@ test("/me keeps dashboard summary compact on mobile", () => {
   assert.match(dashboard, /판매중 \{dashboardSummary\.activeCount/);
   assert.match(dashboard, /평균 \{signedKrw\(dashboardSummary\.avgProfit\)\}/);
   assert.match(dashboard, /hidden gap-2 sm:grid/);
+});
+
+test("/me seek-more modal starts with personalization and hides duplicate safety stats", () => {
+  const meClient = source("src/components/me-dashboard-client.tsx");
+  const workspace = source("src/components/recommendation-workspace.tsx");
+
+  assert.doesNotMatch(meClient, /SafetyStatsBadge/);
+  assert.doesNotMatch(meClient, /OnboardingBanner/);
+  assert.match(workspace, /PERSONALIZATION_STORAGE_KEY/);
+  assert.match(workspace, /매입 가능한 최대 예산/);
+  assert.match(workspace, /어떤 스타일인가요/);
+  assert.match(workspace, /빨리 팔릴 것/);
+  assert.match(workspace, /수익 우선/);
+  assert.match(workspace, /조건 저장하고 추천 수 고르기/);
+  assert.match(workspace, /추천 상품 수만 고르면 됩니다/);
+  assert.match(workspace, /고급 검색/);
+  assert.match(workspace, /showAdvancedSearch \? \(/);
+  assert.doesNotMatch(workspace, /프로필을 고르고 세부 조건은 슬라이더로 조정합니다/);
 });
 
 test("reveal feedback is scoped by feedback type so reports do not overwrite user state", () => {

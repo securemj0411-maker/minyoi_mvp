@@ -103,6 +103,59 @@ const RISK_PRESETS: Record<RiskProfile, RiskPreset> = {
     filters: { priceMaxManwon: 80, minProfitManwon: 5, minConfidencePct: 60, categories: [], maxFreshHours: 0 },
   },
 };
+
+type BuyerBudget = "15" | "30" | "50" | "80";
+type BuyerStyle = "quick" | "balanced" | "profit";
+type SearchPersonalization = {
+  budget: BuyerBudget;
+  style: BuyerStyle;
+  savedAt: string;
+};
+
+const PERSONALIZATION_STORAGE_KEY = "minyoi-recommendation-personalization-v1";
+
+const BUDGET_OPTIONS: Array<{ value: BuyerBudget; label: string; desc: string; maxManwon: number }> = [
+  { value: "15", label: "15만원 이하", desc: "첫 매수 부담 작게", maxManwon: 15 },
+  { value: "30", label: "30만원 이하", desc: "부업 입문 기본값", maxManwon: 30 },
+  { value: "50", label: "50만원 이하", desc: "전자기기 넓게 보기", maxManwon: 50 },
+  { value: "80", label: "80만원 이하", desc: "고가 매물도 포함", maxManwon: 80 },
+];
+
+const STYLE_OPTIONS: Array<{
+  value: BuyerStyle;
+  label: string;
+  desc: string;
+  Icon: (props: { className?: string }) => ReactElement;
+}> = [
+  { value: "quick", label: "빨리 팔릴 것", desc: "수익은 작아도 회전이 빠른 후보", Icon: ZapIcon },
+  { value: "balanced", label: "균형", desc: "차익과 안정성을 같이 보는 기본값", Icon: ScaleIcon },
+  { value: "profit", label: "수익 우선", desc: "조금 오래 걸려도 큰 차익 후보", Icon: SwordsIcon },
+];
+
+function budgetOption(value: BuyerBudget) {
+  return BUDGET_OPTIONS.find((option) => option.value === value) ?? BUDGET_OPTIONS[1];
+}
+
+function styleOption(value: BuyerStyle) {
+  return STYLE_OPTIONS.find((option) => option.value === value) ?? STYLE_OPTIONS[1];
+}
+
+function riskProfileForStyle(style: BuyerStyle): RiskProfile {
+  if (style === "quick") return "safe";
+  if (style === "profit") return "aggressive";
+  return "balanced";
+}
+
+function filtersForPersonalization(next: SearchPersonalization): AdvancedFilters {
+  const budget = budgetOption(next.budget).maxManwon;
+  if (next.style === "quick") {
+    return { priceMaxManwon: budget, minProfitManwon: 1, minConfidencePct: 80, categories: [], maxFreshHours: 12 };
+  }
+  if (next.style === "profit") {
+    return { priceMaxManwon: budget, minProfitManwon: 5, minConfidencePct: 60, categories: [], maxFreshHours: 0 };
+  }
+  return { priceMaxManwon: budget, minProfitManwon: 2, minConfidencePct: 70, categories: [], maxFreshHours: 24 };
+}
 // Wave 106: disabled 카테고리는 ready pool 0건이라 실제 추천 불가.
 // 옵션은 그대로 두고 "(준비중)" 표시 + 클릭 차단. 사용자에게 "어떤 카테고리 추가될지" 기대치 set.
 // 향후 source 다양화 wave에서 ready 매물 들어오면 disabled=false로 활성.
@@ -276,6 +329,11 @@ function PackSelectorCard({
   const [showCategories, setShowCategories] = useState(false);
   // Wave 93b: CTA를 위로 끌어올리기 위해 차익+신뢰도는 default 접힘.
   const [showAdvancedSliders, setShowAdvancedSliders] = useState(false);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [personalization, setPersonalization] = useState<SearchPersonalization | null>(null);
+  const [editingPersonalization, setEditingPersonalization] = useState(false);
+  const [draftBudget, setDraftBudget] = useState<BuyerBudget>("30");
+  const [draftStyle, setDraftStyle] = useState<BuyerStyle>("balanced");
 
   // Risk preset 변경 시 filters + band 자동 적용
   function applyRiskPreset(profile: RiskProfile) {
@@ -283,6 +341,55 @@ function PackSelectorCard({
     setAdvancedFilters(RISK_PRESETS[profile].filters);
     onMinProfitChange(RISK_PRESETS[profile].filters.minProfitManwon);
   }
+
+  const applyPersonalizedFilters = useCallback((next: SearchPersonalization) => {
+    const filters = filtersForPersonalization(next);
+    setRiskProfile(riskProfileForStyle(next.style));
+    setAdvancedFilters(filters);
+    onMinProfitChange(filters.minProfitManwon);
+  }, [onMinProfitChange]);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(PERSONALIZATION_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Partial<SearchPersonalization>;
+      const budget = parsed.budget;
+      const style = parsed.style;
+      if (!BUDGET_OPTIONS.some((option) => option.value === budget)) return;
+      if (!STYLE_OPTIONS.some((option) => option.value === style)) return;
+      const next: SearchPersonalization = {
+        budget: budget as BuyerBudget,
+        style: style as BuyerStyle,
+        savedAt: typeof parsed.savedAt === "string" ? parsed.savedAt : new Date().toISOString(),
+      };
+      setPersonalization(next);
+      setDraftBudget(next.budget);
+      setDraftStyle(next.style);
+      applyPersonalizedFilters(next);
+    } catch {
+      window.localStorage.removeItem(PERSONALIZATION_STORAGE_KEY);
+    }
+  }, [applyPersonalizedFilters]);
+
+  function savePersonalization() {
+    const next: SearchPersonalization = {
+      budget: draftBudget,
+      style: draftStyle,
+      savedAt: new Date().toISOString(),
+    };
+    setPersonalization(next);
+    setEditingPersonalization(false);
+    setShowAdvancedSearch(false);
+    applyPersonalizedFilters(next);
+    try {
+      window.localStorage.setItem(PERSONALIZATION_STORAGE_KEY, JSON.stringify(next));
+    } catch {}
+  }
+
+  const needsPersonalization = !personalization || editingPersonalization;
+  const activeBudgetOption = personalization ? budgetOption(personalization.budget) : budgetOption(draftBudget);
+  const activeStyleOption = personalization ? styleOption(personalization.style) : styleOption(draftStyle);
 
   // Inventory pre-check (debounced) — 항상 활성
   useEffect(() => {
@@ -366,19 +473,126 @@ function PackSelectorCard({
   }
 
   return (
-    <>
-    <div className={`w-full max-w-[460px] overflow-hidden rounded-[28px] border p-4 shadow-[0_18px_36px_rgba(34,49,39,0.08)] transition sm:p-4.5 ${packCardClasses(selectedPack.band)}`}>
-      <div>
-        <h2 className="text-xl font-black tracking-tight text-[#223127] dark:text-zinc-50 sm:text-2xl">
-          AI 추천 상품 찾기
-        </h2>
-        <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
-          프로필을 고르고 세부 조건은 슬라이더로 조정합니다.
-        </p>
-      </div>
+		      <div className="contents">
+	    <div className={`w-full max-w-[460px] overflow-hidden rounded-[28px] border p-4 shadow-[0_18px_36px_rgba(34,49,39,0.08)] transition sm:p-4.5 ${packCardClasses(selectedPack.band)}`}>
+	      <div>
+	        <h2 className="text-xl font-black tracking-tight text-[#223127] dark:text-zinc-50 sm:text-2xl">
+	          {needsPersonalization ? "내 추천 조건 맞추기" : "추천 상품 찾기"}
+	        </h2>
+	        <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
+	          {needsPersonalization ? "처음 한 번만 답하면 다음부터 추천 수만 고르면 돼요." : "저장된 조건으로 맞춰두었어요. 추천 상품 수만 고르면 됩니다."}
+	        </p>
+	      </div>
 
-      {/* Wave 79: 통합 UI — easy/advanced 토글 제거 */}
-      <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
+	      {needsPersonalization ? (
+	        <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
+	          <div>
+	            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#667466] dark:text-zinc-400">
+	              1. 매입 가능한 최대 예산
+	            </div>
+	            <div className="mt-2 grid grid-cols-2 gap-2">
+	              {BUDGET_OPTIONS.map((option) => {
+	                const active = draftBudget === option.value;
+	                return (
+	                  <button
+	                    key={option.value}
+	                    type="button"
+	                    onClick={() => setDraftBudget(option.value)}
+	                    className={`rounded-2xl border px-3 py-3 text-left transition ${
+	                      active
+	                        ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] shadow-sm"
+	                        : "border-[#e0d6c5] bg-white text-[#5e675d] hover:border-[#b9c9b9] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+	                    }`}
+	                  >
+	                    <div className="text-sm font-black">{option.label}</div>
+	                    <div className="mt-1 text-[11px] font-semibold opacity-70">{option.desc}</div>
+	                  </button>
+	                );
+	              })}
+	            </div>
+	          </div>
+	          <div className="mt-4">
+	            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#667466] dark:text-zinc-400">
+	              2. 어떤 스타일인가요?
+	            </div>
+	            <div className="mt-2 space-y-2">
+	              {STYLE_OPTIONS.map((option) => {
+	                const active = draftStyle === option.value;
+	                return (
+	                  <button
+	                    key={option.value}
+	                    type="button"
+	                    onClick={() => setDraftStyle(option.value)}
+	                    className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition ${
+	                      active
+	                        ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] shadow-sm"
+	                        : "border-[#e0d6c5] bg-white text-[#5e675d] hover:border-[#b9c9b9] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+	                    }`}
+	                  >
+	                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/70 shadow-sm dark:bg-zinc-950/50">
+	                      <option.Icon className="h-4 w-4" />
+	                    </span>
+	                    <span className="min-w-0">
+	                      <span className="block text-sm font-black">{option.label}</span>
+	                      <span className="mt-0.5 block text-[11px] font-semibold opacity-70">{option.desc}</span>
+	                    </span>
+	                  </button>
+	                );
+	              })}
+	            </div>
+	          </div>
+	          <button
+	            type="button"
+	            onClick={savePersonalization}
+	            className="mt-4 w-full rounded-2xl bg-[var(--brand-accent-strong)] px-4 py-3 text-sm font-black text-[var(--brand-cream)] shadow-[0_16px_36px_rgba(49,66,56,0.20)] transition hover:bg-[#29382f]"
+	          >
+	            조건 저장하고 추천 수 고르기
+	          </button>
+	        </div>
+	      ) : (
+	      <>
+	      <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
+	        <div className="flex flex-wrap items-center justify-between gap-2">
+	          <div className="min-w-0">
+	            <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#667466] dark:text-zinc-400">
+	              내 조건
+	            </div>
+	            <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] font-black">
+	              <span className="rounded-full bg-white px-2 py-1 text-[#314238] ring-1 ring-[#e0d6c5] dark:bg-zinc-900 dark:text-zinc-100 dark:ring-zinc-700">
+	                {activeBudgetOption.label}
+	              </span>
+	              <span className="rounded-full bg-white px-2 py-1 text-[#314238] ring-1 ring-[#e0d6c5] dark:bg-zinc-900 dark:text-zinc-100 dark:ring-zinc-700">
+	                {activeStyleOption.label}
+	              </span>
+	            </div>
+	          </div>
+	          <div className="flex shrink-0 gap-1.5">
+	            <button
+	              type="button"
+	              onClick={() => {
+	                if (personalization) {
+	                  setDraftBudget(personalization.budget);
+	                  setDraftStyle(personalization.style);
+	                }
+	                setEditingPersonalization(true);
+	              }}
+	              className="rounded-full border border-[#d8d2c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#59665b] transition hover:border-[#b9c9b9] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+	            >
+	              수정
+	            </button>
+	            <button
+	              type="button"
+	              onClick={() => setShowAdvancedSearch((value) => !value)}
+	              className="rounded-full border border-[#d8d2c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#59665b] transition hover:border-[#b9c9b9] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+	            >
+	              {showAdvancedSearch ? "고급 닫기" : "고급 검색"}
+		            </button>
+		        </div>
+		      </div>
+		    </div>
+
+		      {showAdvancedSearch ? (
+	      <div className="mt-2 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
         {/* Risk profile preset */}
         <div className="grid grid-cols-3 gap-1.5">
           {(Object.keys(RISK_PRESETS) as RiskProfile[]).map((profile) => {
@@ -582,10 +796,11 @@ function PackSelectorCard({
               ⓘ AI 시세 추정. 수익 보장 X — 매입 협상·판매 시점·구성품에 따라 달라집니다.
             </div>
           </div>
-        </details>
-      </div>
+	        </details>
+	      </div>
+	      ) : null}
 
-      <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
+	      <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
         <div className="space-y-2.5">
           <div className="rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
             <div className="flex items-end justify-between gap-4">
@@ -641,12 +856,12 @@ function PackSelectorCard({
                     })() : null}
                   </div>
                 ) : null}
-                <div className="mt-1 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-                  {selectedCount}
-                  <span className="ml-1 text-base text-zinc-500 dark:text-zinc-400">건</span>
-                </div>
-              </div>
-            </div>
+	                <div className="mt-1 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+	                  {selectedCount}
+	                  <span className="ml-1 text-base text-zinc-500 dark:text-zinc-400">건</span>
+		        </div>
+		      </div>
+		    </div>
 
             <div className="mt-2.5">
               <input
@@ -751,11 +966,11 @@ function PackSelectorCard({
                       : sold
                         ? "추천 없음"
                         : (
-                            <>
-                              <span>검색하기</span>
-                              <CostBadge value={totalCost} />
-                            </>
-                          )}
+	                            <>
+	                              <span>검색하기</span>
+	                              <CostBadge value={totalCost} />
+	                            </>
+	                          )}
               </span>
             </button>
           )}
@@ -765,11 +980,13 @@ function PackSelectorCard({
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e7dece] pt-2.5 text-[11px] text-zinc-500 dark:border-zinc-700/60 dark:text-zinc-400">
             <p>같은 전체 본품 기준으로만 비교</p>
             <p>검증 실패 시 자동 환불</p>
-            <p>택배비 포함 수익 계산</p>
-          </div>
-        </div>
-      </div>
-    </div>
+	            <p>택배비 포함 수익 계산</p>
+	          </div>
+	        </div>
+	      </div>
+	      </>
+	      )}
+	    </div>
     {warningOpen ? (
       <div
         className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(31,40,34,0.48)] p-4 backdrop-blur-sm"
@@ -820,7 +1037,7 @@ function PackSelectorCard({
         </div>
       </div>
     ) : null}
-    </>
+    </div>
   );
 }
 

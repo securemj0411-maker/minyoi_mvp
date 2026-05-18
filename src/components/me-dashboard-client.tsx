@@ -5,10 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import AdminPoolBrowser from "@/components/admin-pool-browser";
 import AdminClassificationBrowser from "@/components/admin-classification-browser";
 import HotdealAlertsView from "@/components/hotdeal-alerts-view";
-import OnboardingBanner from "@/components/onboarding-banner";
 import PlaybookOverview from "@/components/playbook-overview";
 import RecommendationWorkspace from "@/components/recommendation-workspace";
-import SafetyStatsBadge from "@/components/safety-stats-badge";
 import UserRevealDashboard from "@/components/user-reveal-dashboard";
 import PreviewMaskedDashboard from "@/components/preview-masked-dashboard";
 import { SavedMoneyCounter } from "@/components/saved-money-counter";
@@ -396,8 +394,6 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
                     <SearchIcon className="h-4 w-4" />
                     더 찾아보기
                   </div>
-                  <OnboardingBanner onStart={() => undefined} />
-                  <SafetyStatsBadge />
                   <RecommendationWorkspace
                     initialInventory={initialInventory}
                     showResultModal={false}
