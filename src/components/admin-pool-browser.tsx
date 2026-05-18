@@ -615,9 +615,9 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     </div>
                   ) : null;
                 })()}
-                {/* 2026-05-17: 사용자 지적 "운영자풀 시세 그래프 안 보임" — lazy 제거, 자동 로드. */}
+                {/* 운영자풀은 카드가 많아 자동 그래프 로드 시 /api/market/history rate limit에 걸린다. */}
                 <div className="mt-2">
-                  <MarketHistoryChart comparableKey={item.comparableKey} currentPrice={item.price} />
+                  <MarketHistoryChart comparableKey={item.comparableKey} currentPrice={item.price} lazy />
                 </div>
                 <div className="mt-2">
                   <MarketSourceDebug

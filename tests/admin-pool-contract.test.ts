@@ -18,6 +18,7 @@ test("admin pool exposes ready counts and filters by price bucket and category",
   assert.match(browser, /params\.set\("priceBucket", priceBucket\)/);
   assert.match(browser, /params\.set\("category", category\)/);
   assert.match(browser, /필터 초기화/);
+  assert.match(browser, /MarketHistoryChart comparableKey=\{item\.comparableKey\} currentPrice=\{item\.price\} lazy/);
 
   for (const route of [adminRoute, publicRoute]) {
     assert.match(route, /const PRICE_BUCKETS = \[/);
