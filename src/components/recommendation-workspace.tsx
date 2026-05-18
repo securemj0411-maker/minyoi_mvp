@@ -99,12 +99,12 @@ const RISK_PRESETS: Record<RiskProfile, RiskPreset> = {
   },
   aggressive: {
     band: 3, label: "공격", Icon: SwordsIcon,
-    desc: "80만원 이하 · 차익 5만원 이상 · 신뢰도 60% 이상",
-    filters: { priceMaxManwon: 80, minProfitManwon: 5, minConfidencePct: 60, categories: [], maxFreshHours: 0 },
+    desc: "150만원 이하 · 차익 5만원 이상 · 신뢰도 60% 이상",
+    filters: { priceMaxManwon: 150, minProfitManwon: 5, minConfidencePct: 60, categories: [], maxFreshHours: 0 },
   },
 };
 
-type BuyerBudget = "15" | "30" | "50" | "80";
+type BuyerBudget = "15" | "30" | "50" | "80" | "150" | "all";
 type BuyerStyle = "quick" | "balanced" | "profit";
 type SearchPersonalization = {
   budget: BuyerBudget;
@@ -120,7 +120,9 @@ const BUDGET_OPTIONS: Array<{ value: BuyerBudget; label: string; desc: string; m
   { value: "15", label: "15만원 이하", desc: "첫 매수 부담 작게", maxManwon: 15 },
   { value: "30", label: "30만원 이하", desc: "부업 입문 기본값", maxManwon: 30 },
   { value: "50", label: "50만원 이하", desc: "전자기기 넓게 보기", maxManwon: 50 },
-  { value: "80", label: "80만원 이하", desc: "고가 매물도 포함", maxManwon: 80 },
+  { value: "80", label: "80만원 이하", desc: "태블릿/워치까지", maxManwon: 80 },
+  { value: "150", label: "150만원 이하", desc: "맥북·프로 라인 포함", maxManwon: 150 },
+  { value: "all", label: "상한 없음", desc: "고가 매물까지 전부 보기", maxManwon: 0 },
 ];
 
 const STYLE_OPTIONS: Array<{

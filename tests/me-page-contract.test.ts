@@ -145,6 +145,9 @@ test("/me seek-more modal starts with personalization and hides duplicate safety
   assert.match(workspace, /매입 예산은 어느 정도가 편하세요/);
   assert.match(workspace, /어떤 후보를 먼저 볼까요/);
   assert.match(workspace, /질문 \{stepIndex\} \/ 2/);
+  assert.match(workspace, /150만원 이하/);
+  assert.match(workspace, /상한 없음/);
+  assert.match(workspace, /맥북·프로 라인 포함/);
   assert.match(workspace, /빨리 팔릴 것/);
   assert.match(workspace, /수익 우선/);
   assert.match(workspace, /다음 질문/);
