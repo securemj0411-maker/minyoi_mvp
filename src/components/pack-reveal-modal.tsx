@@ -1804,16 +1804,13 @@ export default function PackRevealModal({
         <div className="sticky top-0 z-10 shrink-0 border-b border-[#e2dbcf] bg-[#fffdf9]/95 px-3 py-2 text-[var(--brand-accent-strong)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-4">
           <div className="flex min-h-9 items-center justify-between gap-3">
             <div className="min-w-0">
-              <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                <h2 className="truncate text-sm font-black tracking-tight sm:text-base">
-                  {loading ? "추천 상품 검증 중" : result?.result === "success" ? "추천 리포트" : "검증 결과"}
-                </h2>
-                {!loading && result?.result === "success" ? (
-                  <span className="text-[11px] font-medium text-[#7a8478] dark:text-zinc-400">
-                    현재 차익 · 판매 상태 · 시세 근거 확인
-                  </span>
-                ) : null}
-              </div>
+              <a
+                href="/"
+                aria-label="득템잡이 홈으로 이동"
+                className="inline-flex min-h-8 items-center rounded-lg px-1 text-base font-black tracking-tight text-[var(--brand-accent-strong)] transition hover:bg-[#eef6ec] dark:text-zinc-100 dark:hover:bg-zinc-800"
+              >
+                득템잡이
+              </a>
             </div>
             {!loading ? (
               <button

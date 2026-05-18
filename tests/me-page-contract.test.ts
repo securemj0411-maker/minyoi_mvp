@@ -140,6 +140,9 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(modal, /rounded-none border-0/);
   assert.match(modal, /sm:max-h-\[88vh\]/);
   assert.match(modal, /sm:rounded-2xl sm:border/);
+  assert.match(modal, /href="\/"/);
+  assert.match(modal, /aria-label="득템잡이 홈으로 이동"/);
+  assert.match(modal, />\s*득템잡이\s*<\/a>/);
   assert.match(modal, /<span className="sm:hidden">뒤로<\/span>/);
   assert.match(dashboard, /REVEAL_DETAIL_QUERY_KEY = "reveal"/);
   assert.match(dashboard, /window\.history\.pushState\(\{ minyoiRevealPid: item\.pid \}/);
