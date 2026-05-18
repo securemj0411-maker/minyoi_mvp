@@ -54,10 +54,61 @@ export function queryFamily(query: string): string {
   }
   const lower = q.toLowerCase();
   if (lower.includes("에어팟")) return "earphone";
-  if (lower.includes("워치")) return "smartwatch";
+  // Wave 187 가민 — "가민 페닉스"/"forerunner" 등 → smartwatch (워치 시리즈는 별도 단어 안 들어감)
+  if (
+    lower.includes("가민") || lower.includes("garmin") ||
+    lower.includes("페닉스") || lower.includes("피닉스") || lower.includes("fenix") ||
+    lower.includes("포러너") || lower.includes("forerunner") ||
+    lower.includes("인스팅트") || lower.includes("instinct") ||
+    lower.includes("비누") || lower.includes("venu") ||
+    lower.includes("에픽스") || lower.includes("epix") ||
+    lower.includes("워치")
+  ) return "smartwatch";
   if (lower.includes("아이폰") || lower.includes("갤럭시 s")) return "smartphone";
   if (lower.includes("아이패드") || lower.includes("갤럭시탭")) return "tablet";
   if (lower.includes("맥북")) return "laptop";
+  // Wave 189 (2026-05-18): 신규 카테고리 매핑 추가 (drone/lego/kickboard/perfume).
+  //   queryFamily 분류 누락 → 1,054 query "unknown" 매핑 → 카테고리별 cadence 최적화 + 대시보드 정확도 손실.
+  if (
+    lower.includes("dji") || lower.includes("디제이아이") ||
+    lower.includes("mini ") || lower.includes("미니 ") ||
+    lower.includes("mavic") || lower.includes("매빅") ||
+    lower.includes("avata") || lower.includes("아바타") ||
+    lower.includes("osmo") || lower.includes("오즈모") ||
+    lower.includes("gopro") || lower.includes("고프로") ||
+    lower.includes("hero") || lower.includes("히어로") ||
+    lower.includes("드론")
+  ) return "drone";
+  if (lower.includes("lego") || lower.includes("레고") || lower.includes("ucs")) return "lego";
+  if (
+    lower.includes("샤오미 미 스쿠터") || lower.includes("샤오미 스쿠터") ||
+    lower.includes("xiaomi mi scooter") || lower.includes("mi scooter") ||
+    lower.includes("ninebot") || lower.includes("닌봇") ||
+    lower.includes("세그웨이") || lower.includes("segway") ||
+    lower.includes("킥보드") || lower.includes("전동킥보드") ||
+    lower.includes("electric scooter")
+  ) return "kickboard";
+  if (
+    lower.includes("조 말론") || lower.includes("jo malone") ||
+    lower.includes("르 라보") || lower.includes("le labo") ||
+    lower.includes("딥디크") || lower.includes("diptyque") ||
+    lower.includes("톰 포드") || lower.includes("tom ford") ||
+    lower.includes("replica") || lower.includes("리플리카") ||
+    lower.includes("memo") || lower.includes("메모 파리") ||
+    lower.includes("향수")
+  ) return "perfume";
+  // Wave 189: Dyson / Panasonic / Cyaars / BaByliss 헤어 기기 → home_appliance
+  if (
+    lower.includes("다이슨") || lower.includes("dyson") ||
+    lower.includes("에어랩") || lower.includes("airwrap") ||
+    lower.includes("슈퍼소닉") || lower.includes("supersonic") ||
+    lower.includes("코랄") || lower.includes("corrale") ||
+    lower.includes("파나소닉") || lower.includes("panasonic") ||
+    lower.includes("babyliss") || lower.includes("바비리스") ||
+    lower.includes("cyaars") || lower.includes("씨아스")
+  ) return "home_appliance";
+  // 갤럭시 북 — laptop
+  if (lower.includes("갤럭시 북") || lower.includes("galaxy book") || lower.includes("갤럭시북")) return "laptop";
   return "unknown";
 }
 
