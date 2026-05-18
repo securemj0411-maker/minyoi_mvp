@@ -213,21 +213,31 @@ export function ConditionPhotoBadge({
   return (
     <span
       title={style.desc}
-      className={`pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex max-w-[calc(100%-10px)] items-center gap-1 overflow-hidden rounded-[10px] border px-1 py-0.5 text-[9px] font-black tracking-[0.02em] backdrop-blur-md ${
+      className={`pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center overflow-hidden border text-[9px] font-black tracking-[0.02em] backdrop-blur-md ${
         style.className
       } ${
-        compact ? "sm:px-2 sm:py-1 sm:text-[10px]" : "sm:left-2 sm:top-2 sm:px-2.5 sm:py-1 sm:text-[10px]"
+        compact
+          ? "rounded-[12px] p-0.5 sm:p-0.5"
+          : "max-w-[calc(100%-10px)] gap-1 rounded-[10px] px-1 py-0.5 sm:left-2 sm:top-2 sm:px-2.5 sm:py-1 sm:text-[10px]"
       } ${className}`}
     >
       <span className="pointer-events-none absolute inset-x-1 top-0 h-px bg-white/70 dark:bg-white/25" />
       <span
-        className={`relative flex h-4 min-w-[16px] items-center justify-center rounded-[6px] px-1 text-[8px] font-black leading-none ${
+        className={`relative flex items-center justify-center rounded-[7px] px-1 font-black leading-none ${
           style.markClassName
-        } ${compact ? "sm:h-5 sm:min-w-[20px] sm:text-[9px]" : "sm:h-5 sm:min-w-[20px] sm:text-[9px]"}`}
+        } ${
+          compact
+            ? "h-6 min-w-6 text-[10px] sm:h-6 sm:min-w-6 sm:text-[10px]"
+            : "h-4 min-w-[16px] text-[8px] sm:h-5 sm:min-w-[20px] sm:text-[9px]"
+        }`}
       >
         {style.mark}
       </span>
-      <span className="relative truncate leading-none">{compact ? style.compactLabel : style.label}</span>
+      {compact ? (
+        <span className="sr-only">{style.compactLabel}</span>
+      ) : (
+        <span className="relative truncate leading-none">{style.label}</span>
+      )}
     </span>
   );
 }
