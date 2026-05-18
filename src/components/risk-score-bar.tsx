@@ -11,6 +11,7 @@ import {
   RISK_AXIS_LABEL,
   RISK_AXIS_LEVEL_CLASS,
   RISK_TONE_CLASS,
+  type RiskAxisResult,
   type RiskScoreInput,
 } from "@/lib/risk-score";
 
@@ -27,12 +28,41 @@ function detailTriggerLabel(tone: "safe" | "caution" | "danger", hitCount: numbe
   return `위험 신호 ${hitCount}건 확인`;
 }
 
+function riskActionSummary(axis: RiskAxisResult): string | null {
+  const reason = axis.reason ?? "";
+  if (axis.level === 0) return null;
+  if (axis.axis === "fraud") {
+    if (reason.includes("시세")) return "가격이 시세보다 크게 낮아요. 정품 인증, 구매 영수증, 구성품 사진을 한 번 더 확인하세요.";
+    if (reason.includes("AI")) return "AI 검수 잔여 신호가 있어요. 거래 전 상품 설명과 실사진을 다시 맞춰보는 게 좋아요.";
+    return "가품/이상 거래로 이어질 수 있는 표현이 있어요. 정품 근거와 판매자 답변을 확인하세요.";
+  }
+  if (axis.axis === "lock") {
+    return "잠금/할부 가능성이 있어요. IMEI/일련번호, 정상해지 여부, 할부 잔여 여부를 물어보세요.";
+  }
+  if (axis.axis === "battery") {
+    if (reason.includes("미공개")) return "배터리 효율이 안 적혀 있어요. 효율 화면 캡처와 교체 이력을 요청하세요.";
+    return "배터리 상태가 가격에 영향을 줄 수 있어요. 효율 수치와 충전 상태를 확인하세요.";
+  }
+  if (axis.axis === "seller") {
+    if (reason.includes("후기 0")) return "후기가 0건인 신규 판매자예요. 안전결제나 직거래, 실물 인증 사진을 우선으로 보세요.";
+    return "판매자 후기가 적거나 낮아요. 최근 거래 후기와 응답 태도를 확인하고 진행하세요.";
+  }
+  if (axis.axis === "photo") {
+    if (reason.includes("1장")) return "사진이 1장뿐이에요. 다른 각도, 구성품, 시리얼/상태 사진을 더 요청하세요.";
+    return "사진 근거가 부족해요. 거래 전 실사진을 더 받아 상태를 확인하세요.";
+  }
+  return null;
+}
+
 export function RiskScoreBar({ showDetail = false, compact = false, ...input }: Props) {
   const [open, setOpen] = useState(false);
   const score = buildRiskScore(input);
   const toneClass = RISK_TONE_CLASS[score.tone];
   const detailLabel = detailTriggerLabel(score.tone, score.hitCount);
   const DetailIcon = score.tone === "safe" ? ShieldIcon : AlertTriangleIcon;
+  const actionSummaries = score.axes
+    .map((axis) => riskActionSummary(axis))
+    .filter((text): text is string => Boolean(text));
 
   return (
     <span className="relative inline-flex items-center gap-1.5">
@@ -113,6 +143,24 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                       </span>
                     </div>
                   ))}
+                </div>
+                <div className="mt-2 rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-[10px] font-semibold leading-4 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-300">
+                  <div className="mb-1 text-[10px] font-black text-zinc-900 dark:text-zinc-100">
+                    확인하면 좋아요
+                  </div>
+                  {actionSummaries.length > 0 ? (
+                    <ul className="space-y-1">
+                      {actionSummaries.map((summary) => (
+                        <li key={summary} className="pl-2 before:mr-1 before:content-['·']">
+                          {summary}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div>
+                      강한 잔여 신호는 없어요. 그래도 거래 전 실사진, 구성품, 판매완료 여부는 마지막으로 확인하세요.
+                    </div>
+                  )}
                 </div>
                 <div className="mt-2 border-t border-zinc-200 pt-2 text-[9px] text-zinc-500 dark:border-zinc-700">
                   득템잡이는 hard-block 필터 (POOL_BLOCK_FLAGS) 통과한 매물만 풀에 박힙니다. 위 점수는 <b>통과한 매물의 잔여 신호</b> — 0 이라도 100% 안전 보장은 아니지만, 신호 강하면 사용자가 한 번 더 셀러 문의 권고.
