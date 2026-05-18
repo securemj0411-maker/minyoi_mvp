@@ -21,7 +21,9 @@ type ChipStyle = {
 type PhotoBadgeStyle = {
   label: string;
   compactLabel: string;
+  mark: string;
   className: string;
+  markClassName: string;
   desc: string;
 };
 
@@ -34,14 +36,14 @@ const CHIP_STYLES: Record<string, ChipStyle> = {
   },
   mint: {
     label: "S급",
-    bg: "bg-emerald-100 dark:bg-emerald-900/40",
-    text: "text-emerald-800 dark:text-emerald-200",
+    bg: "border border-emerald-300/70 bg-gradient-to-r from-emerald-950 via-emerald-800 to-[#b78a2c] shadow-sm shadow-emerald-950/15 dark:border-emerald-300/30 dark:from-emerald-400/25 dark:via-emerald-900/70 dark:to-amber-500/25",
+    text: "text-amber-50 dark:text-emerald-50",
     desc: "실사용 거의 없음 (AI 판정 — 사이클 적음 / 거의 새것).",
   },
   clean: {
     label: "A급",
-    bg: "bg-teal-100 dark:bg-teal-900/40",
-    text: "text-teal-800 dark:text-teal-200",
+    bg: "border border-sky-200/80 bg-gradient-to-r from-white via-sky-50 to-teal-100 shadow-sm shadow-sky-900/10 dark:border-sky-300/20 dark:from-sky-400/20 dark:via-teal-900/50 dark:to-zinc-900",
+    text: "text-sky-950 dark:text-sky-50",
     desc: "셀러 명시 프리미엄 — 풀세트 / AppleCare / 배터리 100% / S급 표현. 셀러 인플레 가능성 (보수적 분류).",
   },
   normal: {
@@ -74,43 +76,57 @@ const PHOTO_BADGE_STYLES: Record<string, PhotoBadgeStyle> = {
   unopened: {
     label: "미개봉/새상품",
     compactLabel: "미개봉",
-    className: "border-amber-200/90 bg-gradient-to-r from-amber-100 via-yellow-50 to-white text-amber-950 shadow-[0_8px_24px_rgba(245,158,11,0.30)] ring-1 ring-white/80 dark:border-amber-700/80 dark:from-amber-400/25 dark:via-amber-200/15 dark:to-zinc-900/90 dark:text-amber-50 dark:ring-amber-100/20",
+    mark: "N",
+    className: "border-[#efd486]/90 bg-[linear-gradient(135deg,#fff8de_0%,#f6cf68_48%,#fffaf0_100%)] text-[#513b0c] shadow-[0_10px_26px_rgba(217,154,28,0.34)] ring-1 ring-white/80 dark:border-amber-500/60 dark:bg-[linear-gradient(135deg,#3a2608_0%,#9a6b13_48%,#21160a_100%)] dark:text-amber-50 dark:ring-amber-100/20",
+    markClassName: "bg-[#2f2410] text-[#ffe7a3] shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] dark:bg-amber-100 dark:text-[#3a2608]",
     desc: "미개봉/새상품으로 분류된 매물",
   },
   mint: {
     label: "S급",
     compactLabel: "S급",
-    className: "border-emerald-200/90 bg-gradient-to-r from-emerald-100 via-teal-50 to-white text-emerald-950 shadow-[0_7px_20px_rgba(16,185,129,0.24)] ring-1 ring-white/70 dark:border-emerald-700/80 dark:from-emerald-400/20 dark:via-teal-300/12 dark:to-zinc-900/90 dark:text-emerald-50 dark:ring-emerald-100/15",
+    mark: "S",
+    className: "border-[#ecd37b]/90 bg-[linear-gradient(135deg,#071f19_0%,#104434_47%,#e6c268_100%)] text-[#fff6d1] shadow-[0_12px_30px_rgba(8,48,35,0.40)] ring-1 ring-[#fff0aa]/55 dark:border-[#e7c769]/60 dark:bg-[linear-gradient(135deg,#031812_0%,#0b3529_50%,#b7852c_100%)] dark:text-amber-50 dark:ring-amber-100/18",
+    markClassName: "bg-[#fff0ad] text-[#12382b] shadow-[0_2px_8px_rgba(0,0,0,0.18)]",
     desc: "S급으로 분류된 매물",
   },
   clean: {
     label: "A급/풀세트",
     compactLabel: "A급",
-    className: "border-teal-200/90 bg-teal-50/95 text-teal-900 shadow-[0_5px_14px_rgba(20,184,166,0.16)] ring-1 ring-white/60 dark:border-teal-800/80 dark:bg-teal-950/85 dark:text-teal-100 dark:ring-teal-100/10",
+    mark: "A",
+    className: "border-[#bce9ff]/90 bg-[linear-gradient(135deg,#ffffff_0%,#dbf5ff_48%,#b8efe5_100%)] text-[#093a4d] shadow-[0_10px_24px_rgba(14,116,144,0.22)] ring-1 ring-white/80 dark:border-sky-400/45 dark:bg-[linear-gradient(135deg,#071d2c_0%,#0d5264_52%,#0b766e_100%)] dark:text-sky-50 dark:ring-sky-100/15",
+    markClassName: "bg-[#0d5264] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] dark:bg-sky-100 dark:text-[#083548]",
     desc: "A급/풀세트로 분류된 매물",
   },
   normal: {
     label: "일반",
     compactLabel: "일반",
-    className: "border-zinc-200/90 bg-white/90 text-zinc-700 shadow-sm ring-1 ring-white/50 dark:border-zinc-700/80 dark:bg-zinc-900/85 dark:text-zinc-200 dark:ring-white/10",
+    mark: "B",
+    className: "border-zinc-200/90 bg-[linear-gradient(135deg,#ffffff_0%,#f4f4f5_100%)] text-zinc-700 shadow-[0_7px_18px_rgba(39,39,42,0.12)] ring-1 ring-white/65 dark:border-zinc-700/80 dark:bg-[linear-gradient(135deg,#18181b_0%,#27272a_100%)] dark:text-zinc-200 dark:ring-white/10",
+    markClassName: "bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900",
     desc: "일반 상태로 분류된 매물",
   },
   worn: {
     label: "사용감",
     compactLabel: "사용감",
-    className: "border-orange-200/90 bg-orange-50/92 text-orange-900 shadow-sm ring-1 ring-white/45 dark:border-orange-800/80 dark:bg-orange-950/80 dark:text-orange-100 dark:ring-orange-100/10",
+    mark: "C",
+    className: "border-orange-200/90 bg-[linear-gradient(135deg,#fff7ed_0%,#fed7aa_100%)] text-orange-950 shadow-[0_7px_18px_rgba(194,65,12,0.14)] ring-1 ring-white/60 dark:border-orange-800/80 dark:bg-[linear-gradient(135deg,#2b1206_0%,#7c2d12_100%)] dark:text-orange-100 dark:ring-orange-100/10",
+    markClassName: "bg-orange-900 text-orange-50 dark:bg-orange-100 dark:text-orange-950",
     desc: "사용감 있는 매물로 분류",
   },
   flawed: {
     label: "훼손",
     compactLabel: "훼손",
-    className: "border-rose-200/90 bg-rose-50/92 text-rose-900 shadow-sm dark:border-rose-800/80 dark:bg-rose-950/85 dark:text-rose-100",
+    mark: "D",
+    className: "border-rose-200/90 bg-[linear-gradient(135deg,#fff1f2_0%,#fecdd3_100%)] text-rose-950 shadow-[0_7px_18px_rgba(190,18,60,0.14)] dark:border-rose-800/80 dark:bg-[linear-gradient(135deg,#2a0710_0%,#881337_100%)] dark:text-rose-100",
+    markClassName: "bg-rose-900 text-rose-50 dark:bg-rose-100 dark:text-rose-950",
     desc: "훼손/결함 신호가 있는 매물",
   },
   low_batt: {
     label: "배터리 저하",
     compactLabel: "배터리",
-    className: "border-yellow-200/90 bg-yellow-50/92 text-yellow-900 shadow-sm dark:border-yellow-800/80 dark:bg-yellow-950/85 dark:text-yellow-100",
+    mark: "B-",
+    className: "border-yellow-200/90 bg-[linear-gradient(135deg,#fefce8_0%,#fde68a_100%)] text-yellow-950 shadow-[0_7px_18px_rgba(161,98,7,0.14)] dark:border-yellow-800/80 dark:bg-[linear-gradient(135deg,#2b2105_0%,#854d0e_100%)] dark:text-yellow-100",
+    markClassName: "bg-yellow-900 text-yellow-50 dark:bg-yellow-100 dark:text-yellow-950",
     desc: "배터리 저하 신호가 있는 매물",
   },
 };
@@ -189,19 +205,29 @@ export function ConditionPhotoBadge({
   const style = PHOTO_BADGE_STYLES[conditionClass] ?? {
     label: conditionClass,
     compactLabel: conditionClass,
+    mark: "?",
     className: "border-zinc-200/90 bg-white/90 text-zinc-700 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900/85 dark:text-zinc-200",
+    markClassName: "bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900",
     desc: `${conditionClass} 등급으로 분류된 매물`,
   };
   return (
     <span
       title={style.desc}
-      className={`pointer-events-none absolute left-1.5 top-1.5 z-10 rounded-full border px-1.5 py-0.5 text-[9px] font-black backdrop-blur-md ${
+      className={`pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex max-w-[calc(100%-10px)] items-center gap-1 overflow-hidden rounded-[10px] border px-1 py-0.5 text-[9px] font-black tracking-[0.02em] backdrop-blur-md ${
         style.className
       } ${
-        compact ? "" : "sm:left-2 sm:top-2 sm:px-2.5 sm:py-1 sm:text-[10px]"
+        compact ? "sm:px-2 sm:py-1 sm:text-[10px]" : "sm:left-2 sm:top-2 sm:px-2.5 sm:py-1 sm:text-[10px]"
       } ${className}`}
     >
-      {compact ? style.compactLabel : style.label}
+      <span className="pointer-events-none absolute inset-x-1 top-0 h-px bg-white/70 dark:bg-white/25" />
+      <span
+        className={`relative flex h-4 min-w-[16px] items-center justify-center rounded-[6px] px-1 text-[8px] font-black leading-none ${
+          style.markClassName
+        } ${compact ? "sm:h-5 sm:min-w-[20px] sm:text-[9px]" : "sm:h-5 sm:min-w-[20px] sm:text-[9px]"}`}
+      >
+        {style.mark}
+      </span>
+      <span className="relative truncate leading-none">{compact ? style.compactLabel : style.label}</span>
     </span>
   );
 }

@@ -181,9 +181,11 @@ export default function AppNav() {
   const [tokens, setTokens] = useState(0);
   const [infiniteCredits, setInfiniteCredits] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [creditMenuOpen, setCreditMenuOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [accountSheetOpen, setAccountSheetOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const creditMenuRef = useRef<HTMLDivElement | null>(null);
   const [adminOverride, setAdminOverride] = useState(false);
   const [adminShadow, setAdminShadow] = useState(false);
   const adminClickCountRef = useRef(0);
@@ -273,18 +275,21 @@ export default function AppNav() {
   }, [realAdmin]);
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuOpen && !creditMenuOpen) return;
     const handlePointerDown = (event: PointerEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
+      const target = event.target as Node;
+      if (menuOpen && !menuRef.current?.contains(target)) setMenuOpen(false);
+      if (creditMenuOpen && !creditMenuRef.current?.contains(target)) setCreditMenuOpen(false);
     };
     window.addEventListener("pointerdown", handlePointerDown);
     return () => window.removeEventListener("pointerdown", handlePointerDown);
-  }, [menuOpen]);
+  }, [menuOpen, creditMenuOpen]);
 
   // mobile drawer: route 변경 시 자동 close, Esc 닫기, body scroll lock.
   useEffect(() => {
     setMobileDrawerOpen(false);
     setAccountSheetOpen(false);
+    setCreditMenuOpen(false);
   }, [pathname]);
   useEffect(() => {
     if (!mobileDrawerOpen && !accountSheetOpen) return;
@@ -375,9 +380,13 @@ export default function AppNav() {
           {user ? (
             <Link
               href="/me"
-              className="inline-flex h-9 items-center rounded-xl bg-[var(--brand-accent-strong)] px-3 text-xs font-black text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] transition hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-950 md:hidden"
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--brand-accent-strong)] px-3 text-xs font-black text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] transition hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-950 md:hidden"
             >
-              대시보드
+              <span>대시보드</span>
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-white/18 px-1.5 py-0.5 text-[10px] font-black tabular-nums ring-1 ring-white/20 dark:bg-zinc-950/10 dark:ring-zinc-950/10">
+                <CreditIcon size={13} className="shrink-0" />
+                {infiniteCredits ? "∞" : tokens}
+              </span>
             </Link>
           ) : (
             <Link
@@ -391,11 +400,62 @@ export default function AppNav() {
           {/* desktop 전용: 기존 credits + account menu */}
           {user ? (
             <>
-              <div className="hidden h-9 items-center gap-1.5 rounded-xl border border-[#cfd9c9] bg-[#edf4e8] px-2.5 shadow-[0_8px_16px_rgba(92,116,95,0.10)] dark:border-zinc-700/70 dark:bg-zinc-900 md:flex">
-                <CreditIcon size={20} className="shrink-0 drop-shadow-[0_1px_1px_rgba(63,42,10,0.25)]" />
-                <span className="text-xs font-black leading-none tabular-nums text-[#223127] dark:text-zinc-100">
-                  {infiniteCredits ? "∞" : tokens}
-                </span>
+              <div ref={creditMenuRef} className="relative hidden md:block">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCreditMenuOpen((prev) => !prev);
+                    setMenuOpen(false);
+                  }}
+                  aria-expanded={creditMenuOpen}
+                  aria-label="크레딧 충전 메뉴 열기"
+                  className="flex h-9 items-center gap-1.5 rounded-xl border border-[#cfd9c9] bg-[#edf4e8] px-2.5 shadow-[0_8px_16px_rgba(92,116,95,0.10)] transition hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700/70 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                >
+                  <CreditIcon size={20} className="shrink-0 drop-shadow-[0_1px_1px_rgba(63,42,10,0.25)]" />
+                  <span className="text-xs font-black leading-none tabular-nums text-[#223127] dark:text-zinc-100">
+                    {infiniteCredits ? "∞" : tokens}
+                  </span>
+                  <span className="text-[10px] leading-none text-[#6f7c6d] dark:text-zinc-500">{creditMenuOpen ? "▴" : "▾"}</span>
+                </button>
+                {creditMenuOpen ? (
+                  <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-64 rounded-2xl border border-[#ddd4c7] bg-[#fbf8f2] p-3 shadow-[0_20px_40px_rgba(45,57,48,0.14)] dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="rounded-xl bg-[#fffaf1] px-3 py-3 dark:bg-zinc-950/50">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">보유 크레딧</div>
+                      <div className="mt-2 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CreditIcon size={24} className="shrink-0" />
+                          <span className="text-2xl font-black tabular-nums text-[#223127] dark:text-zinc-100">
+                            {infiniteCredits ? "∞" : tokens}
+                          </span>
+                        </div>
+                        <span className="rounded-full bg-[#eef6eb] px-2 py-1 text-[10px] font-black text-[#4f6f58] dark:bg-emerald-950/30 dark:text-emerald-200">
+                          즉시 사용
+                        </span>
+                      </div>
+                      <div className="mt-2 text-[11px] font-semibold leading-5 text-[#6b7269] dark:text-zinc-400">
+                        부족하면 요금제에서 월 크레딧을 충전할 수 있어요.
+                      </div>
+                    </div>
+                    <div className="mt-2 grid gap-1.5">
+                      <Link
+                        href="/plans"
+                        onClick={() => setCreditMenuOpen(false)}
+                        className="flex items-center justify-between rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-sm font-black text-[var(--brand-cream)] transition hover:opacity-90"
+                      >
+                        <span>크레딧 충전하기</span>
+                        <span>→</span>
+                      </Link>
+                      <Link
+                        href="/plans"
+                        onClick={() => setCreditMenuOpen(false)}
+                        className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-[#344136] transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
+                      >
+                        <span>요금제 비교 / 구독 관리</span>
+                        <span className="text-zinc-400">↗</span>
+                      </Link>
+                    </div>
+                  </div>
+                ) : null}
               </div>
               {admin ? (
                 <Link
@@ -529,15 +589,20 @@ export default function AppNav() {
             <div className="border-t border-[#e2d9cb] p-3 dark:border-zinc-800">
               {user ? (
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between rounded-xl bg-[#edf4e8] px-3 py-2.5 dark:bg-zinc-900">
+                  <Link
+                    href="/plans"
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className="flex items-center justify-between rounded-xl bg-[#edf4e8] px-3 py-2.5 transition hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  >
                     <span className="text-xs font-black text-[#5d735f] dark:text-emerald-400">크레딧</span>
                     <div className="flex items-center gap-1.5">
                       <CreditIcon size={20} className="shrink-0" />
                       <span className="text-sm font-black tabular-nums text-[#223127] dark:text-zinc-100">
                         {infiniteCredits ? "∞" : tokens}
                       </span>
+                      <span className="text-[11px] font-black text-[#6f7c6d] dark:text-zinc-500">충전</span>
                     </div>
-                  </div>
+                  </Link>
                   {/* 계정 chip — 클릭 시 bottom sheet (이메일/플랜/화면모드/충전/로그아웃) */}
                   <button
                     type="button"

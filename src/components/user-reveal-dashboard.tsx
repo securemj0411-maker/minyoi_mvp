@@ -1135,7 +1135,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       {loading && items.length === 0 ? (
         // 첫 로딩 스켈레톤 — items 비어있을 때만 표시. 검색/페이지 전환 시에는 기존 items 유지.
-        <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2" : "mt-4 grid gap-2"}>
+        <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "mt-4 grid gap-2"}>
           {Array.from({ length: 6 }).map((_, i) => (
             <article
               key={`skeleton-${i}`}
@@ -1193,7 +1193,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         );
       })()}
 
-      <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2" : "mt-4 grid gap-2"}>
+      <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "mt-4 grid gap-2"}>
         {visibleItems.map((item) => {
           // 2026-05-18: 판매완료/삭제/숨김 계열은 동일한 판매완료 tombstone으로 표시.
           // Wave 224/234: 현재 순차익이 0원 이하이면 사용자 화면에서는 판매완료로 접는다.
