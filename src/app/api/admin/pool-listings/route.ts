@@ -15,6 +15,15 @@ export const dynamic = "force-dynamic";
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
 
+const PRICE_BUCKETS = [
+  { key: "lte_15", label: "15만원 이하", min: null, max: 150_000 },
+  { key: "15_30", label: "15~30만원", min: 150_000, max: 300_000 },
+  { key: "30_50", label: "30~50만원", min: 300_000, max: 500_000 },
+  { key: "50_80", label: "50~80만원", min: 500_000, max: 800_000 },
+  { key: "80_150", label: "80~150만원", min: 800_000, max: 1_500_000 },
+  { key: "gte_150", label: "150만원 이상", min: 1_500_000, max: null },
+] as const;
+
 type PoolRow = {
   pid: number;
   profit_band: number;
@@ -28,6 +37,30 @@ type PoolRow = {
   max_exposure: number;
   last_verified_at: string;
 };
+
+type PriceBucketKey = (typeof PRICE_BUCKETS)[number]["key"];
+
+function priceBucketFor(price: number): PriceBucketKey {
+  for (const bucket of PRICE_BUCKETS) {
+    if (bucket.min != null && price < bucket.min) continue;
+    if (bucket.max != null && price > bucket.max) continue;
+    return bucket.key;
+  }
+  return "gte_150";
+}
+
+function priceBucketFilter(key: string | null) {
+  const bucket = PRICE_BUCKETS.find((item) => item.key === key);
+  if (!bucket) return "";
+  const parts: string[] = [];
+  if (bucket.min != null) parts.push(`price=gt.${bucket.min}`);
+  if (bucket.max != null) parts.push(`price=lte.${bucket.max}`);
+  return parts.join("&");
+}
+
+function appendPidFilter(filter: string, pids: number[]) {
+  return `${filter}&pid=in.(${pids.join(",")})`;
+}
 
 export async function GET(req: NextRequest) {
   const auth = await requireSupabaseUser(req);
@@ -44,6 +77,7 @@ export async function GET(req: NextRequest) {
   const statusFilter = (url.searchParams.get("status") ?? "ready").trim();
   const bandFilter = url.searchParams.get("band");
   const categoryFilter = url.searchParams.get("category");
+  const priceBucket = url.searchParams.get("priceBucket");
   const skuFilter = url.searchParams.get("sku")?.trim() || null;
   // Wave 176 (2026-05-17): 검색어 — 매물명/SKU명/comparable_key/pid 통합 검색.
   // 운영자가 특정 매물/모델 찾을 때 (예: "327", "Gazelle", "shoe|nb_327").
@@ -66,6 +100,19 @@ export async function GET(req: NextRequest) {
   if (bandFilter) filter += `&profit_band=eq.${Number(bandFilter)}`;
   if (categoryFilter) filter += `&category=eq.${encodeURIComponent(categoryFilter)}`;
 
+  let pidScope: Set<number> | null = null;
+  const applyPidScope = (pids: number[]) => {
+    if (pidScope) {
+      const next = new Set<number>();
+      for (const pid of pids) {
+        if (pidScope.has(pid)) next.add(pid);
+      }
+      pidScope = next;
+      return;
+    }
+    pidScope = new Set(pids);
+  };
+
   // SKU filter — mvp_candidate_pool에는 sku_id 컬럼 없음 → mvp_raw_listings에서 pid pre-filter
   let skuPids: number[] | null = null;
   if (skuFilter) {
@@ -77,8 +124,22 @@ export async function GET(req: NextRequest) {
     if (skuPids.length === 0) {
       return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
     }
-    // PostgREST in 필터 — 너무 많으면 URL 한계. 일단 5000 limit.
-    filter += `&pid=in.(${skuPids.join(",")})`;
+    applyPidScope(skuPids);
+  }
+
+  if (priceBucket) {
+    const priceFilter = priceBucketFilter(priceBucket);
+    if (priceFilter) {
+      const priceRes = await restFetch(
+        `${tableUrl("mvp_listings")}?select=pid&${priceFilter}&limit=5000`,
+        { headers: serviceHeaders() },
+      );
+      const pricePids = ((await priceRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+      if (pricePids.length === 0) {
+        return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
+      }
+      applyPidScope(pricePids);
+    }
   }
 
   // Wave 176 (2026-05-17): 검색어 — listings(name/sku_name) + parsed(comparable_key) + 정확 pid 매칭.
@@ -104,18 +165,15 @@ export async function GET(req: NextRequest) {
     if (searchPids.length === 0) {
       return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
     }
-    // skuPids 와 intersect (둘 다 적용 시 AND 의미)
-    if (skuPids) {
-      const skuSet = new Set(skuPids);
-      searchPids = searchPids.filter((p) => skuSet.has(p));
-      if (searchPids.length === 0) {
-        return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
-      }
-      // 기존 skuPids in 필터를 덮어쓰지 않고 search 결과로 더 좁힘.
-      // PostgREST는 같은 컬럼 중복 in 필터를 잘 못 처리 → filter 재구성.
-      filter = filter.replace(/&pid=in\.\([^)]+\)/, "");
+    applyPidScope(searchPids);
+  }
+
+  if (pidScope) {
+    const scopedPids = [...pidScope];
+    if (scopedPids.length === 0) {
+      return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
     }
-    filter += `&pid=in.(${searchPids.join(",")})`;
+    filter = appendPidFilter(filter, scopedPids);
   }
 
   try {
@@ -329,6 +387,8 @@ export async function GET(req: NextRequest) {
       totals: Record<string, number>;
       totalAll: number;
       bySku: Array<{ sku_id: string; sku_name: string | null; ready_count: number }>;
+      byPriceBucket: Array<{ key: string; label: string; ready_count: number }>;
+      byCategory: Array<{ category: string; ready_count: number }>;
     } | null = null;
     if (page === 1) {
       const bands = [1, 2, 3];
@@ -353,20 +413,33 @@ export async function GET(req: NextRequest) {
 
       // bySku breakdown — ready 매물만 (검토 대상)
       const readyPoolRes = await restFetch(
-        `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.ready&limit=5000`,
+        `${tableUrl("mvp_candidate_pool")}?select=pid,category&status=eq.ready&limit=5000`,
         { headers: serviceHeaders() },
       );
-      const readyPids = ((await readyPoolRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+      const readyPoolRows = (await readyPoolRes.json()) as Array<{ pid: number; category: string | null }>;
+      const readyPids = readyPoolRows.map((r) => Number(r.pid));
+      const categoryCount = new Map<string, number>();
+      for (const row of readyPoolRows) {
+        const category = row.category ?? "unknown";
+        categoryCount.set(category, (categoryCount.get(category) ?? 0) + 1);
+      }
       const skuCount = new Map<string, { name: string | null; count: number }>();
+      const priceBucketCount = new Map<string, number>();
       if (readyPids.length > 0) {
         // chunk fetch
         const chunkSize = 500;
         for (let i = 0; i < readyPids.length; i += chunkSize) {
           const chunk = readyPids.slice(i, i + chunkSize);
-          const rawRes = await restFetch(
-            `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name&pid=in.(${chunk.join(",")})`,
-            { headers: serviceHeaders() },
-          );
+          const [rawRes, listingRes] = await Promise.all([
+            restFetch(
+              `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name&pid=in.(${chunk.join(",")})`,
+              { headers: serviceHeaders() },
+            ),
+            restFetch(
+              `${tableUrl("mvp_listings")}?select=pid,price&pid=in.(${chunk.join(",")})`,
+              { headers: serviceHeaders() },
+            ),
+          ]);
           const rows = (await rawRes.json()) as Array<{ sku_id: string | null; sku_name: string | null }>;
           for (const r of rows) {
             const sku = r.sku_id ?? "(no_sku)";
@@ -375,13 +448,28 @@ export async function GET(req: NextRequest) {
             if (!entry.name && r.sku_name) entry.name = r.sku_name;
             skuCount.set(sku, entry);
           }
+          const listingRows = (await listingRes.json()) as Array<{ price: number | null }>;
+          for (const row of listingRows) {
+            const price = Number(row.price ?? 0);
+            if (!Number.isFinite(price) || price <= 0) continue;
+            const key = priceBucketFor(price);
+            priceBucketCount.set(key, (priceBucketCount.get(key) ?? 0) + 1);
+          }
         }
       }
       const bySku = [...skuCount.entries()]
         .map(([sku_id, { name, count }]) => ({ sku_id, sku_name: name, ready_count: count }))
         .sort((a, b) => b.ready_count - a.ready_count);
+      const byPriceBucket = PRICE_BUCKETS.map((bucket) => ({
+        key: bucket.key,
+        label: bucket.label,
+        ready_count: priceBucketCount.get(bucket.key) ?? 0,
+      }));
+      const byCategory = [...categoryCount.entries()]
+        .map(([category, count]) => ({ category, ready_count: count }))
+        .sort((a, b) => b.ready_count - a.ready_count);
 
-      stats = { byBandStatus, totals, totalAll, bySku };
+      stats = { byBandStatus, totals, totalAll, bySku, byPriceBucket, byCategory };
     }
 
     return NextResponse.json({

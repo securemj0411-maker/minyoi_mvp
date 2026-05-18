@@ -1,0 +1,31 @@
+import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
+import { test } from "node:test";
+
+const ROOT = new URL("../", import.meta.url);
+
+function source(path: string) {
+  return readFileSync(new URL(path, ROOT), "utf8");
+}
+
+test("admin pool exposes ready counts and filters by price bucket and category", () => {
+  const browser = source("src/components/admin-pool-browser.tsx");
+  const adminRoute = source("src/app/api/admin/pool-listings/route.ts");
+  const publicRoute = source("src/app/api/public/pool-listings/route.ts");
+
+  assert.match(browser, /가격대별 ready/);
+  assert.match(browser, /카테고리별 ready/);
+  assert.match(browser, /params\.set\("priceBucket", priceBucket\)/);
+  assert.match(browser, /params\.set\("category", category\)/);
+  assert.match(browser, /필터 초기화/);
+
+  for (const route of [adminRoute, publicRoute]) {
+    assert.match(route, /const PRICE_BUCKETS = \[/);
+    assert.match(route, /15만원 이하/);
+    assert.match(route, /15~30만원/);
+    assert.match(route, /priceBucketFilter/);
+    assert.match(route, /byPriceBucket/);
+    assert.match(route, /byCategory/);
+    assert.match(route, /category=eq/);
+  }
+});

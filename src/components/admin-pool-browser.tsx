@@ -78,6 +78,8 @@ type Resp = {
     totals: Record<string, number>;
     totalAll: number;
     bySku: Array<{ sku_id: string; sku_name: string | null; ready_count: number }>;
+    byPriceBucket: Array<{ key: string; label: string; ready_count: number }>;
+    byCategory: Array<{ category: string; ready_count: number }>;
   } | null;
 };
 
@@ -107,6 +109,36 @@ const SORT_OPTIONS = [
   { v: "latest", label: "최신 검증순" },
 ];
 
+const CATEGORY_LABEL: Record<string, string> = {
+  earphone: "이어폰",
+  smartwatch: "스마트워치",
+  smartphone: "스마트폰",
+  tablet: "태블릿",
+  laptop: "노트북",
+  monitor: "모니터",
+  speaker: "스피커",
+  camera: "카메라",
+  game_console: "게임기",
+  desktop: "데스크탑",
+  home_appliance: "가전",
+  small_appliance: "소형가전",
+  watch: "시계",
+  sport_golf: "골프",
+  shoe: "신발",
+  bag: "가방",
+  bike: "자전거",
+  drone: "드론",
+  perfume: "향수",
+  kickboard: "킥보드",
+  lego: "레고",
+  clothing: "의류",
+  unknown: "미분류",
+};
+
+function categoryLabel(category: string) {
+  return CATEGORY_LABEL[category] ?? category;
+}
+
 export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings" }: { endpoint?: string } = {}) {
   const [data, setData] = useState<Resp | null>(null);
   const [stats, setStats] = useState<Resp["stats"]>(null);
@@ -116,6 +148,8 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
   const [pageSize] = useState(20);
   const [status, setStatus] = useState("ready");
   const [band, setBand] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
+  const [priceBucket, setPriceBucket] = useState<string>("");
   const [sku, setSku] = useState<string>("");
   const [sort, setSort] = useState("newest_added");
   // Wave 176 (2026-05-17): 검색 — searchDraft는 input 입력 buffer, searchQuery는 실제 fetch 파라미터.
@@ -129,6 +163,8 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
     try {
       const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), status, sort });
       if (band) params.set("band", band);
+      if (category) params.set("category", category);
+      if (priceBucket) params.set("priceBucket", priceBucket);
       if (sku) params.set("sku", sku);
       if (searchQuery) params.set("q", searchQuery);
       const res = await fetch(`${endpoint}?${params}`, { credentials: "include" });
@@ -145,7 +181,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, status, band, sku, sort, searchQuery, endpoint]);
+  }, [page, pageSize, status, band, category, priceBucket, sku, sort, searchQuery, endpoint]);
 
   // Wave 176: Enter / 🔍 버튼 / X 클릭 시 draft → query 적용 + 페이지 리셋.
   const applySearch = useCallback(() => {
@@ -156,6 +192,14 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
   const clearSearch = useCallback(() => {
     setSearchDraft("");
     setSearchQuery("");
+    setPage(1);
+  }, []);
+
+  const clearPoolFilters = useCallback(() => {
+    setBand("");
+    setCategory("");
+    setPriceBucket("");
+    setSku("");
     setPage(1);
   }, []);
 
@@ -240,6 +284,71 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
           </div>
         )}
 
+        {stats && (
+          <div className="mt-3 grid gap-2 lg:grid-cols-2">
+            <div className="rounded-lg border border-zinc-200 bg-white p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div className="font-bold text-zinc-700 dark:text-zinc-200">가격대별 ready</div>
+                {priceBucket ? (
+                  <button
+                    type="button"
+                    onClick={() => { setPriceBucket(""); setPage(1); }}
+                    className="text-[10px] font-black text-emerald-700 hover:underline dark:text-emerald-300"
+                  >
+                    가격 필터 해제
+                  </button>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {stats.byPriceBucket.map((bucket) => (
+                  <button
+                    key={bucket.key}
+                    type="button"
+                    onClick={() => { setPriceBucket(bucket.key); setPage(1); }}
+                    className={`rounded-full border px-2.5 py-1 text-[11px] font-black transition ${
+                      priceBucket === bucket.key
+                        ? "border-emerald-700 bg-emerald-700 text-white"
+                        : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-emerald-300 hover:bg-emerald-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                    }`}
+                  >
+                    {bucket.label} <span className="font-mono">{bucket.ready_count.toLocaleString()}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-lg border border-zinc-200 bg-white p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div className="font-bold text-zinc-700 dark:text-zinc-200">카테고리별 ready</div>
+                {category ? (
+                  <button
+                    type="button"
+                    onClick={() => { setCategory(""); setPage(1); }}
+                    className="text-[10px] font-black text-emerald-700 hover:underline dark:text-emerald-300"
+                  >
+                    카테고리 해제
+                  </button>
+                ) : null}
+              </div>
+              <div className="flex max-h-24 flex-wrap gap-1.5 overflow-y-auto pr-1">
+                {stats.byCategory.map((row) => (
+                  <button
+                    key={row.category}
+                    type="button"
+                    onClick={() => { setCategory(row.category); setPage(1); }}
+                    className={`rounded-full border px-2.5 py-1 text-[11px] font-black transition ${
+                      category === row.category
+                        ? "border-emerald-700 bg-emerald-700 text-white"
+                        : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-emerald-300 hover:bg-emerald-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                    }`}
+                  >
+                    {categoryLabel(row.category)} <span className="font-mono">{row.ready_count.toLocaleString()}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Wave 176 (2026-05-17): 매물명/SKU명/comparable_key/pid 통합 검색. Enter 또는 🔍 클릭. */}
         <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
           <div className="relative flex items-center">
@@ -286,6 +395,26 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
             <option value="2">band 2</option>
             <option value="3">band 3</option>
           </select>
+          {stats && stats.byPriceBucket.length > 0 && (
+            <select value={priceBucket} onChange={(e) => { setPriceBucket(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
+              <option value="">가격대 전체</option>
+              {stats.byPriceBucket.map((bucket) => (
+                <option key={bucket.key} value={bucket.key}>
+                  {bucket.label} — {bucket.ready_count}건
+                </option>
+              ))}
+            </select>
+          )}
+          {stats && stats.byCategory.length > 0 && (
+            <select value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
+              <option value="">카테고리 전체 ({stats.byCategory.length}종)</option>
+              {stats.byCategory.map((row) => (
+                <option key={row.category} value={row.category}>
+                  {categoryLabel(row.category)} — {row.ready_count}건
+                </option>
+              ))}
+            </select>
+          )}
           <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
             {SORT_OPTIONS.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
           </select>
@@ -302,6 +431,11 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
           <button onClick={fetchPage} disabled={loading} className="rounded-md border border-zinc-300 bg-white px-3 py-1 font-semibold hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700">
             {loading ? "..." : "↻ 새로고침"}
           </button>
+          {(band || category || priceBucket || sku) && (
+            <button onClick={clearPoolFilters} disabled={loading} className="rounded-md border border-zinc-300 bg-white px-3 py-1 font-semibold hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700">
+              필터 초기화
+            </button>
+          )}
         </div>
       </div>
 
