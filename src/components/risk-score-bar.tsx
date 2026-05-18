@@ -108,62 +108,89 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
           {open && (
             <>
               <div
-                className="fixed inset-0 z-40"
-                onClick={() => setOpen(false)}
+                className="fixed inset-0 z-40 bg-zinc-950/18 backdrop-blur-[1px] sm:bg-transparent sm:backdrop-blur-0"
+                onClick={(e) => { e.stopPropagation(); setOpen(false); }}
               />
-              <div className="absolute left-0 top-5 z-50 w-80 rounded-lg border border-zinc-300 bg-white p-3 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100">
-                    위험 신호 점검
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="위험 신호 점검"
+                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-x-3 bottom-3 z-50 max-h-[82dvh] overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-zinc-950/20 dark:border-zinc-700 dark:bg-zinc-900 sm:absolute sm:inset-auto sm:left-0 sm:top-6 sm:w-[30rem] sm:max-h-[74vh] sm:rounded-xl"
+              >
+                <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
+                  <div>
+                    <div className="text-sm font-black text-zinc-950 dark:text-zinc-50">
+                      위험 신호 점검
+                    </div>
+                    <div className="mt-0.5 text-xs font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
+                      추천 전에 걸러낸 뒤, 남은 확인 포인트만 보여드려요.
+                    </div>
                   </div>
-                  <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${toneClass}`}>
-                    {score.label}
-                  </span>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className={`rounded-full border px-2.5 py-1 text-xs font-bold ${toneClass}`}>
+                      {score.label}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setOpen(false)}
+                      className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-xs font-bold text-zinc-600 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                    >
+                      닫기
+                    </button>
+                  </div>
                 </div>
-                <div className="space-y-1.5 text-[10px]">
-                  {score.axes.map((a) => (
-                    <div key={a.axis} className="flex items-center gap-2">
-                      <span className="w-16 shrink-0 text-zinc-600 dark:text-zinc-400">
-                        {RISK_AXIS_LABEL[a.axis]}
-                      </span>
-                      <span className="flex shrink-0 items-center gap-[2px]">
-                        {[0, 1, 2].map((lv) => (
-                          <span
-                            key={lv}
-                            className={`block h-2 w-2 rounded-sm ${
-                              lv <= a.level
-                                ? RISK_AXIS_LEVEL_CLASS[a.level]
-                                : "bg-zinc-200 dark:bg-zinc-700"
-                            }`}
-                          />
+                <div className="max-h-[calc(82dvh-70px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(74vh-76px)] sm:px-5 sm:py-4">
+                  <div className="space-y-2.5">
+                    {score.axes.map((a) => (
+                      <div
+                        key={a.axis}
+                        className="grid grid-cols-[72px_minmax(0,1fr)] items-center gap-3 rounded-xl border border-[#ebe3d8] bg-white px-3 py-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/35"
+                      >
+                        <span className="text-xs font-black text-zinc-600 dark:text-zinc-400">
+                          {RISK_AXIS_LABEL[a.axis]}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="mb-1 flex items-center gap-1">
+                            {[0, 1, 2].map((lv) => (
+                              <span
+                                key={lv}
+                                className={`block h-2.5 w-5 rounded-full ${
+                                  lv <= a.level
+                                    ? RISK_AXIS_LEVEL_CLASS[a.level]
+                                    : "bg-zinc-200 dark:bg-zinc-700"
+                                }`}
+                              />
+                            ))}
+                          </span>
+                          <span className="block text-[13px] font-bold leading-5 text-zinc-800 dark:text-zinc-200">
+                            {a.reason ?? <span className="text-zinc-400 dark:text-zinc-500">정상</span>}
+                          </span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 rounded-xl border border-[#d8eadf] bg-[#f3fbf6] px-3.5 py-3 text-sm font-semibold leading-5 text-zinc-700 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-zinc-200">
+                    <div className="mb-1.5 text-sm font-black text-zinc-950 dark:text-zinc-50">
+                      확인하면 좋아요
+                    </div>
+                    {actionSummaries.length > 0 ? (
+                      <ul className="space-y-1.5">
+                        {actionSummaries.map((summary) => (
+                          <li key={summary} className="pl-2 before:mr-1.5 before:content-['·']">
+                            {summary}
+                          </li>
                         ))}
-                      </span>
-                      <span className="text-zinc-700 dark:text-zinc-300">
-                        {a.reason ?? <span className="text-zinc-400 dark:text-zinc-500">정상</span>}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-2 rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-[10px] font-semibold leading-4 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-300">
-                  <div className="mb-1 text-[10px] font-black text-zinc-900 dark:text-zinc-100">
-                    확인하면 좋아요
+                      </ul>
+                    ) : (
+                      <div>
+                        강한 잔여 신호는 없어요. 그래도 거래 전 실사진, 구성품, 판매완료 여부는 마지막으로 확인하세요.
+                      </div>
+                    )}
                   </div>
-                  {actionSummaries.length > 0 ? (
-                    <ul className="space-y-1">
-                      {actionSummaries.map((summary) => (
-                        <li key={summary} className="pl-2 before:mr-1 before:content-['·']">
-                          {summary}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div>
-                      강한 잔여 신호는 없어요. 그래도 거래 전 실사진, 구성품, 판매완료 여부는 마지막으로 확인하세요.
-                    </div>
-                  )}
-                </div>
-                <div className="mt-2 border-t border-zinc-200 pt-2 text-[9px] text-zinc-500 dark:border-zinc-700">
-                  득템잡이는 hard-block 필터 (POOL_BLOCK_FLAGS) 통과한 매물만 풀에 박힙니다. 위 점수는 <b>통과한 매물의 잔여 신호</b> — 0 이라도 100% 안전 보장은 아니지만, 신호 강하면 사용자가 한 번 더 셀러 문의 권고.
+                  <div className="mt-3 rounded-xl border border-[#ebe3d8] bg-white px-3.5 py-3 text-xs font-semibold leading-5 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/35 dark:text-zinc-400">
+                    득템잡이는 가품 의심, 잠금/할부 의심처럼 강한 차단 신호가 있는 매물은 추천 풀에 넣지 않아요. 이 화면은 통과한 매물에서 남은 확인 포인트만 보여줘요. 신호가 0이어도 거래 전 실사진과 안전결제는 마지막으로 확인하세요.
+                  </div>
                 </div>
               </div>
             </>
