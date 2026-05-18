@@ -191,7 +191,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   const [lossReportSubmitting, setLossReportSubmitting] = useState(false);
   const [lossReportResult, setLossReportResult] = useState<{ ok: boolean; message: string; compensation?: number } | null>(null);
 
-  const loadItems = useCallback(async (options?: { silent?: boolean }) => {
+  const loadItems = useCallback(async (options?: { silent?: boolean; page?: number; query?: string; sort?: RevealSort }) => {
     if (!userRef) return;
     const supabase = getSupabaseBrowserClient();
     if (!options?.silent) setLoading(true);
@@ -200,12 +200,15 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       const { data: sessionData } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
       const token = sessionData.session?.access_token;
       if (!token) throw new Error("로그인이 필요해요.");
+      const requestedPage = options?.page ?? page;
+      const requestedQuery = options?.query ?? query;
+      const requestedSort = options?.sort ?? sort;
       const params = new URLSearchParams({
-        page: page.toString(),
+        page: requestedPage.toString(),
         pageSize: PAGE_SIZE.toString(),
-        sort,
+        sort: requestedSort,
       });
-      if (query) params.set("q", query);
+      if (requestedQuery) params.set("q", requestedQuery);
       const res = await fetch(`/api/packs/me?${params.toString()}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -228,6 +231,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       if (!options?.silent) setLoading(false);
     }
   }, [page, query, sort, userRef]);
+  const loadItemsRef = useRef(loadItems);
+
+  useEffect(() => {
+    loadItemsRef.current = loadItems;
+  }, [loadItems]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -303,7 +311,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         // Wave 213: optimistic add도 pool의 net expected profit을 사용한다. silent reload 후 server response가 source of truth.
         marketGapKrw: Math.round(card.expectedProfitMin),
         marketGapKrwMax: Math.round(card.expectedProfitMax),
-        marketStale: card.expectedProfitMin < 0,
+        marketStale: card.expectedProfitMin <= 0,
       }));
       const incomingPids = new Set(nextItems.map((item) => item.pid));
       setSearchInput("");
@@ -312,7 +320,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       setItems((prevItems) => {
         return [...nextItems, ...prevItems.filter((item) => !incomingPids.has(item.pid))].slice(0, PAGE_SIZE);
       });
-      setTotal((prevTotal) => Math.max(prevTotal, nextItems.length));
+      setTotal((prevTotal) => Math.max(nextItems.length, prevTotal + nextItems.length));
       setPage(1);
       setNewlyRevealedPids(incomingPids);
       if (highlightClearTimerRef.current !== null) window.clearTimeout(highlightClearTimerRef.current);
@@ -323,6 +331,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       window.setTimeout(() => {
         document.getElementById("my-reveals-list")?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 150);
+      void loadItemsRef.current({ silent: true, page: 1, query: "", sort: "latest" });
     }
 
     window.addEventListener(PACK_REVEALS_UPDATED_EVENT, handlePackRevealsUpdated);
@@ -673,7 +682,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 disabled={items.length === 0}
                 className="rounded-full border border-[#ddd4c7] bg-white px-3 py-1 text-xs font-bold text-[#344136] hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
               >
-                ☑️ 선택
+                선택
               </button>
               <button
                 type="button"
@@ -681,7 +690,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 disabled={total === 0 || deleting}
                 className="rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-40 dark:border-rose-900 dark:bg-zinc-900 dark:text-rose-300"
               >
-                🗑️ 전체 삭제
+                전체 삭제
               </button>
             </>
           ) : (
@@ -895,7 +904,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 disabled={selectedPids.size === 0 || deleting}
                 className="rounded-full bg-rose-600 px-4 py-1.5 text-xs font-black text-white hover:bg-rose-700 disabled:opacity-50"
               >
-                {deleting ? "삭제 중..." : `🗑️ ${selectedPids.size}개 삭제`}
+                {deleting ? "삭제 중..." : `${selectedPids.size}개 삭제`}
               </button>
             </div>
           </div>
@@ -1015,7 +1024,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2" : "mt-4 grid gap-2"}>
         {visibleItems.map((item) => {
           // 2026-05-18: 판매완료/삭제/숨김 계열은 동일한 판매완료 tombstone으로 표시.
-          // Wave 224: 현재 순차익이 0원 미만이면 사용자 화면에서는 판매완료로 접는다.
+          // Wave 224/234: 현재 순차익이 0원 이하이면 사용자 화면에서는 판매완료로 접는다.
           // DB listing_state를 sold로 위조하지는 않는다. marketStale은 시세 재계산 결과이므로
           // 표본이 다시 쌓여 양수로 돌아오면 다음 /me 갱신 때 정상 카드로 복귀할 수 있다.
           const stateInfo = listingStateLabel(item.listingState);

@@ -64,7 +64,7 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
       `${tableUrl("mvp_raw_listings")}?select=pid,name,sku_id,sku_name&pid=eq.${pid}&limit=1`,
     ),
     loadJson<ParsedAnalysisRow[]>(
-      `${tableUrl("mvp_parsed_listings")}?select=pid,comparable_key,condition_class,parsed_json&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,parsed_json&pid=eq.${pid}&limit=1`,
     ),
   ]);
   const raw = rawRows[0] ?? null;

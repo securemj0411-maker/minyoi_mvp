@@ -96,7 +96,7 @@ describe("Wave 159h — pickByConditionFallback", () => {
       ["flawed", { samples: 1, price: 50 }],
       ["worn", { samples: 5, price: 80 }],
     ]);
-    const result = pickByConditionFallback(byCondition, "flawed", getSamples);
+    const result = pickByConditionFallback(byCondition, "flawed", getSamples, 3);
     assert.equal(result.conditionClass, "worn");
     assert.equal(result.row?.price, 80);
     assert.equal(result.fallbackUsed, true);

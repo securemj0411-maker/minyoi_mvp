@@ -120,10 +120,10 @@ type RevealItem = {
   optionBaseAssumed: string[] | null;
   // Wave 213 (2026-05-18): request-time current net profit.
   // 운영자풀과 같은 비용 모델(매입 배송비, 판매수수료, 재배송비, 안전버퍼)을 차감한다.
-  // 값은 signed로 둔다. 음수면 프론트에서 판매완료 tombstone으로 접는다.
+  // 값은 signed로 둔다. 0원 이하이면 프론트에서 판매완료 tombstone으로 접는다.
   marketGapKrw: number | null;
   marketGapKrwMax: number | null;
-  marketStale: boolean;  // true = 현재 순익 min < 0 (사용자 손해 위험 신호)
+  marketStale: boolean;  // true = 현재 순익 min <= 0 (사용자 실익 없음/손해 위험 신호)
 };
 
 async function loadJson<T>(url: string): Promise<T> {
@@ -352,7 +352,7 @@ async function syncVisibleCurrentProfits(items: RevealItem[]) {
       pid: item.pid,
       current_profit_min: min,
       current_profit_max: max,
-      market_invalidated: min < 0,
+      market_invalidated: min <= 0,
     });
   }
   const updates = [...byPid.values()];
@@ -510,7 +510,7 @@ export async function GET(req: Request) {
       const marketGapKrw = currentNetProfit?.min ?? dbCurrentProfitMin;
       const marketGapKrwMax = currentNetProfit?.max ?? dbCurrentProfitMax ?? marketGapKrw;
       const marketStale = marketGapKrw != null
-        ? marketGapKrw < 0
+        ? marketGapKrw <= 0
         : dbMarketInvalidatedAt != null;
       return {
         pid: Number(reveal.pid),

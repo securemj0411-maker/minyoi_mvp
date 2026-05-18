@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
-import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
@@ -435,7 +434,7 @@ function SkuListingFlowMini({ card }: { card: RevealCard }) {
   const trendLabel = ratio >= 1.3 ? "오늘 많음" : ratio <= 0.6 ? "오늘 적음" : "평소 수준";
   return (
     <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border px-3 py-1.5 text-[11px] leading-4 ${trendTone}`}>
-      <span className="font-black">📦 매물 유입량</span>
+      <span className="font-black">매물 유입량</span>
       <span className="tabular-nums">24h <b>{flow.count24h}</b>건</span>
       <span>·</span>
       <span className="tabular-nums">7일 평균 {flow.avgPerDay7d}건/일</span>
@@ -488,7 +487,7 @@ function VelocityBasisMini({ card }: { card: RevealCard }) {
     }`}>
       <div className="flex items-baseline justify-between gap-2">
         <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
-          📦 비슷한 상품은 보통
+          비슷한 상품은 보통
         </div>
         <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--brand-accent-strong)] ring-1 ring-[#d8e2d7] dark:bg-zinc-900/50 dark:text-zinc-100 dark:ring-zinc-700">
           {confidenceLabel}
@@ -506,12 +505,12 @@ function VelocityBasisMini({ card }: { card: RevealCard }) {
         </span>
         {isFastTurn && (
           <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white">
-            ⚡ 빨리 팔리는 편
+            빨리 팔리는 편
           </span>
         )}
         {isSlowTurn && (
           <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-white">
-            ⚠️ 오래 걸리는 편
+            오래 걸리는 편
           </span>
         )}
       </div>
@@ -658,7 +657,7 @@ function RevealCardItem({
   const [, setFeedback] = useState<RevealFeedbackType | null>(null);
   const [note, setNote] = useState("");
   const [noteSaved, setNoteSaved] = useState(false);
-  const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) < 0;
+  const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const sourceBadge = marketSourceBadge(card);
   const currentPct = currentProfitPercent(card);
   useEffect(() => {
@@ -796,7 +795,6 @@ function RevealCardItem({
         {/* catalog Sku.confusionNote 그대로 표시. 사용자가 매물 보고 헷갈리면 즉시 답. */}
         {card.confusionNote ? (
           <div className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] leading-snug text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
-            <span className="mr-1">💡</span>
             {card.confusionNote}
           </div>
         ) : null}
@@ -807,10 +805,10 @@ function RevealCardItem({
       </div>
       {/* 좌측 카드 닫음 — 우측 카드 = 시세 그래프 + 디테일. */}
 
-      {/* 우측 카드 — 시세 그래프 + 회전/유입/디버그 (시각 강조). */}
+      {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
       <div className="space-y-2 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40">
         <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
-          📊 시세 그래프 · 시장 분석
+          시세 그래프 · 시장 분석
         </div>
 
         {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
@@ -840,11 +838,6 @@ function RevealCardItem({
         />
 
         <SkuListingFlowMini card={card} />
-
-        {/* Wave 90 (2026-05-15): 시세 근거 디버그 패널 — 사용자가 검증할 때
-            "이 시세가 어떤 매물 기준인지" 즉시 확인 가능. comparable_key + market_price_daily
-            + 같은 SKU 매물 N건 list (가격순) + 번장 링크. */}
-        <MarketSourceDebug pid={card.pid} ourPrice={card.price} />
       </div>
       {/* 우측 카드 (시세 분석) 닫음. */}
 
@@ -856,7 +849,7 @@ function RevealCardItem({
             단일 "추천 상품이 이상해요" 신고 버튼 + 코멘트 폼으로 대체. */}
         <details className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs dark:border-zinc-800 dark:bg-zinc-800/50">
           <summary className="cursor-pointer font-bold text-zinc-500 dark:text-zinc-300">
-            💬 검증 메모 · 추천 평가 {noteSaved ? "· 저장됨" : ""}
+            검증 메모 · 추천 평가 {noteSaved ? "· 저장됨" : ""}
           </summary>
           <div className="mt-2 space-y-2">
             <div className="text-[10.5px] leading-[1.5] text-zinc-500 dark:text-zinc-400">

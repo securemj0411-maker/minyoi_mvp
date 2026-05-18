@@ -290,7 +290,7 @@ export function MyFeedbackActivity() {
                 onClick={() => setDetailOpen(false)}
                 className="text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400"
               >
-                닫기 ✕
+                닫기
               </button>
             </div>
 
@@ -349,13 +349,13 @@ export function MyFeedbackActivity() {
                                   ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
                                   : "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
                             }`}>
-                              {report.adminStatus === "resolved" ? "✅ 보정 완료"
-                                : report.adminStatus === "dismissed" ? "❌ 기각"
-                                : "⏳ 대기 중"}
+                              {report.adminStatus === "resolved" ? "보정 완료"
+                                : report.adminStatus === "dismissed" ? "기각"
+                                : "대기 중"}
                             </span>
                             {report.compensationTokens > 0 && (
                               <div className="mt-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                                🪙 +{report.compensationTokens}
+                                토큰 +{report.compensationTokens}
                               </div>
                             )}
                           </div>
@@ -370,7 +370,7 @@ export function MyFeedbackActivity() {
                               : "border-emerald-200 bg-emerald-50 text-emerald-900"
                           }`}>
                             <span className="font-black">
-                              {report.unread && "🆕 "}운영자 응답:
+                              {report.unread && "신규 "}운영자 응답:
                             </span> {report.adminResponseNote}
                             {report.adminRespondedAt && (
                               <div className={`mt-0.5 text-[9px] ${

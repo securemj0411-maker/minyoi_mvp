@@ -116,7 +116,7 @@ export default function MarketHistoryChart({
         onClick={() => setOpened(true)}
         className="w-full rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-left text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
       >
-        📊 시세 30일 추이 보기
+        시세 30일 추이 보기
       </button>
     );
   }
@@ -159,10 +159,10 @@ export default function MarketHistoryChart({
   // 좌표 계산. 우측은 가격 라벨 공간 확보 위해 padR 더 크게.
   // 하단 padBottom은 sold 날짜 X축 라벨 공간.
   const width = 360;
-  const height = 150;
+  const height = 160;
   const padX = 28;
   const padR = 60;
-  const padTop = 14;
+  const padTop = 26;
   const padBottom = 28;
   const innerW = width - padX - padR;
   const innerH = height - padTop - padBottom;
@@ -212,7 +212,7 @@ export default function MarketHistoryChart({
   const referenceLineY = showReferencePrice ? y(referencePrice as number) : null;
   const referenceLabelRectY = referenceLineY == null
     ? null
-    : Math.max(2, Math.min(height - padBottom - 14, referenceLineY - 20));
+    : Math.max(5, Math.min(height - padBottom - 14, referenceLineY - 20));
   const referenceLabelTextY = referenceLabelRectY == null ? null : referenceLabelRectY + 10;
 
   return (
@@ -240,7 +240,7 @@ export default function MarketHistoryChart({
           </span>
         </span>
       </div>
-      <svg viewBox={`0 0 ${width} ${height}`} className="mt-1 h-[150px] w-full">
+      <svg viewBox={`0 0 ${width} ${height}`} className="mt-1 h-[150px] w-full overflow-visible">
         {/* y 가이드 */}
         <line x1={padX} y1={padTop} x2={padX} y2={height - padBottom} stroke="#e5e7eb" strokeWidth="0.5" />
         <line x1={padX} y1={height - padBottom} x2={width - padR} y2={height - padBottom} stroke="#e5e7eb" strokeWidth="0.5" />
