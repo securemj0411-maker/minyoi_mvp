@@ -8,15 +8,18 @@
 // - 자전거 사고/크랙은 즉시 reject (가격 시세 무의미).
 
 import type { ParsedListingOptions, ConditionClass } from "@/lib/option-parser";
+import { bunjangLabelToConditionClass, resolveConditionClass } from "@/lib/option-parser";
 import type { Sku } from "@/lib/catalog";
 
 // option-parser.ts의 ParseInput과 동일 (모듈 내부 타입이라 재정의).
+// Wave 217 (2026-05-19): bunjangConditionLabel 추가 — bunjang detail API metadata.
 type ParseInput = {
   title: string;
   description?: string;
   skuId?: string | null;
   skuName?: string | null;
   category?: Sku["category"] | null;
+  bunjangConditionLabel?: string | null;
 };
 
 // ─── 공통 헬퍼 ───────────────────────────────────────────────────────
@@ -278,7 +281,9 @@ function parseBikeOptions(text: string) {
 
 // ─── 통합 dispatcher ─────────────────────────────────────────────────
 
-const PARSER_VERSION_W92 = "wave92-fashion-mobility-v1";
+// Wave 217 (2026-05-19): v2 — bunjang_condition_label + resolveConditionClass 활용.
+//   shoe/bag/bike 모두 metadata 기반 condition_class 박힘 → 시세 grouping 정확.
+const PARSER_VERSION_W92 = "wave92-fashion-mobility-v2";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
@@ -286,7 +291,8 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v1";
 //   condition tier (가품/택그대로/사용감/오염) 만 정확히 추출하면 시세 비교 OK.
 //   parser version 별도 박아 clothing 만 자동 re-parse (shoe/bag/bike 영향 X).
 // v2 (2026-05-19): modelFromSku brand 포함 (polo/stussy/tnf/arcteryx 구분).
-const PARSER_VERSION_W216_CLOTHING = "wave216-clothing-v2";
+// Wave 217 v3 (2026-05-19): bunjang_condition_label + resolveConditionClass 활용.
+const PARSER_VERSION_W216_CLOTHING = "wave216-clothing-v3";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");
@@ -420,6 +426,18 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     if (opt.conditionTier) {
       partsForKey.push(opt.conditionTier);
       parseConfidence += 0.1;
+      // Wave 217 (2026-05-19): bag condition_tier → condition_class 매핑 추가.
+      //   사용자 지적 (Wave 217): 가방 매물 260건 100% condition_class='normal' →
+      //   시세 grouping (comparable_key, condition_class) 한 bucket 으로 묶임 →
+      //   가품 + 새상품 + 사용감 매물 평균 = 시세 망가짐. shoe 와 동일 매핑.
+      const tierMap: Record<string, ConditionClass> = {
+        s_grade: "unopened",
+        a_grade: "mint",
+        b_grade: "clean",
+        c_grade: "worn",
+        reject: "flawed",
+      };
+      conditionClassResult = tierMap[opt.conditionTier] ?? "normal";
     }
   } else if (category === "bike") {
     const opt = parseBikeOptions(text);
@@ -504,6 +522,14 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
   // critical unknown 있으면 needsReview (시세 비교 무의미).
   if (criticalUnknown.length > 0) needsReview = true;
   if (parseConfidence < 0.55) needsReview = true;
+
+  // Wave 217 (2026-05-19): bunjang_condition_label (NEW/LIKE_NEW/...) + parseConditionTier 결합.
+  //   사용자 지적: shoe/bag/clothing 매물 8000+ 건에 bunjang 자체 등급 박혀있는데
+  //   parseFashionMobility 가 무시 → condition_class normal 비율 비정상 (bag 100% / shoe 25%).
+  //   기존 인프라 (bunjangLabelToConditionClass + resolveConditionClass — 전자기기 사용중) 그대로 적용.
+  //   policy: meta 와 notes (parseConditionTier) 둘 다 있으면 worse-of (낮은 등급 우선).
+  const fromMeta = bunjangLabelToConditionClass(input.bunjangConditionLabel);
+  conditionClassResult = resolveConditionClass(fromMeta, conditionClassResult, false);
 
   // Wave 175 (2026-05-17): condition_class → conditionScore 매핑.
   // 옛 코드는 0.5 hardcode — 신발 매물 2,189건 전부 conditionScore < 0.65 →

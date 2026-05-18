@@ -144,6 +144,10 @@ type ScorableRawRow = RawListingRow & {
   qty: number | null;
   // Wave 138b (2026-05-16): description hash — 다중 ID 사기 그룹 탐지.
   description_hash: string | null;
+  // Wave 217 (2026-05-19): bunjang 자체 condition 등급 (NEW/LIKE_NEW/LIGHTLY_USED/USED/HEAVILY_USED/DAMAGED).
+  //   shoe 4011건 / bag 1018건 등 8000+ 매물에 박혀있는데 parseFashionMobility 가 안 씀.
+  //   parseFashionMobility 안에서 bunjangLabelToConditionClass + resolveConditionClass 로 활용.
+  bunjang_condition_label: string | null;
 };
 
 type ParsedListingRow = {
@@ -1866,7 +1870,8 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   // raw upsert / detail enrichment / market invalidation 시점에 dirty=true로 마킹.
   const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
   // Wave 132: num_comment 추가 — candidate-pool-builder가 >= 8 차단.
-  const baseColumns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status,num_comment,qty,description_hash";
+  // Wave 217 (2026-05-19): bunjang_condition_label 추가 — parseFashionMobility 가 metadata 활용.
+  const baseColumns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status,num_comment,qty,description_hash,bunjang_condition_label";
   const columns = scoreDirtyAvailable ? `${baseColumns},pool_eligible` : baseColumns;
   const dirtyFilter = scoreDirtyAvailable ? "&score_dirty=eq.true" : "";
   const url = `${tableUrl("mvp_raw_listings")}?select=${columns}${dirtyFilter}&detail_status=eq.done&or=(listing_type.eq.normal,listing_type_override.eq.normal)&sku_id=not.is.null&listing_state=eq.active&order=last_seen_at.desc&limit=${limit}`;
@@ -1933,7 +1938,8 @@ const DEFAULT_MARKET_STATS_LOOKBACK_HOURS = 28;
 const MARKET_STATS_PAGE_SIZE = 1000;
 async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
   // Wave 132: num_comment 추가 (시세 sample 분석 시 활용 가능).
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty,description_hash";
+  // Wave 217 (2026-05-19): bunjang_condition_label 추가.
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty,description_hash,bunjang_condition_label";
   const lookbackHours = Math.max(
     1,
     Math.min(168, Number(process.env.PIPELINE_MARKET_STATS_LOOKBACK_HOURS ?? DEFAULT_MARKET_STATS_LOOKBACK_HOURS) || DEFAULT_MARKET_STATS_LOOKBACK_HOURS),
@@ -1959,7 +1965,8 @@ async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<
   const unique = [...new Set(pids.filter(Number.isFinite))].slice(0, limit);
   if (unique.length === 0) return [];
   // Wave 132: num_comment 추가.
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty,description_hash";
+  // Wave 217 (2026-05-19): bunjang_condition_label 추가.
+  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty,description_hash,bunjang_condition_label";
   const rows: ScorableRawRow[] = [];
   for (const chunk of chunkArray(unique, PARSED_PID_READ_CHUNK_SIZE)) {
     const remaining = limit - rows.length;
@@ -2009,7 +2016,12 @@ async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: n
 //   다른 카테고리는 옛 버전 그대로 두기 (드리프트 정책은 카테고리별로 명시적).
 const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["category"]>, string>> = {
   // v2 (2026-05-19): modelFromSku brand 포함 (polo/stussy/tnf/arcteryx 구분).
-  clothing: "wave216-clothing-v2",
+  // v3 (2026-05-19 Wave 217): bunjang_condition_label + resolveConditionClass 활용.
+  clothing: "wave216-clothing-v3",
+  // Wave 217 (2026-05-19): shoe/bag/bike 도 metadata 활용 — 전 매물 자동 re-parse.
+  shoe: "wave92-fashion-mobility-v2",
+  bag: "wave92-fashion-mobility-v2",
+  bike: "wave92-fashion-mobility-v2",
 };
 function isParsedStale(row: ParsedListingRow): boolean {
   if (!row.category) return false;
@@ -2034,6 +2046,8 @@ async function ensureParsedRows(rows: ScorableRawRow[], parsedByPid: Map<number,
       description: row.description_preview,
       skuId: row.sku_id,
       skuName: row.sku_name,
+      // Wave 217: bunjang metadata 전달 (shoe/bag/clothing 도 활용 가능하게).
+      bunjangConditionLabel: row.bunjang_condition_label,
       category: sku?.category ?? null,
     });
     return toParsedListingRow(row.pid, parsed);
