@@ -1381,24 +1381,24 @@ function RevealCardItem({
               <div className="line-clamp-2 text-[15px] font-black leading-5 text-[#18251c] dark:text-zinc-50">
                 {card.name}
               </div>
-              <div className={`mt-2 w-full rounded-lg border px-2.5 py-1.5 ${
+              <div className={`mt-1.5 w-full px-0 py-0 ${
                 isMarketInvalidated
-                  ? "border-rose-200/80 bg-rose-50/40 text-rose-500 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-400"
-                  : "border-emerald-200/85 bg-emerald-50/35 text-[#00a862] dark:border-emerald-900/55 dark:bg-emerald-950/20 dark:text-[#5dffae]"
+                  ? "text-rose-500 dark:text-rose-400"
+                  : "text-[#00a862] dark:text-[#5dffae]"
               }`}>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className={`text-[11px] font-semibold ${
+                  <span className={`text-xs font-bold ${
                     isMarketInvalidated ? "text-rose-600 dark:text-rose-300" : "text-zinc-500 dark:text-zinc-400"
                   }`}>
                     현재 차익
                   </span>
-                  <span className={`text-xs font-bold leading-tight tabular-nums sm:text-sm ${
+                  <span className={`text-[15px] font-black leading-tight tabular-nums sm:text-sm sm:font-bold ${
                     isMarketInvalidated ? "text-rose-700 dark:text-rose-200" : "text-[#00a862] dark:text-[#5dffae]"
                   }`}>
                     {displayProfitRange(card)}
                   </span>
                   {currentPct != null ? (
-                    <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
+                    <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-xs font-black tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
                       {currentPct >= 0 ? "+" : ""}{currentPct}%
                     </span>
                   ) : null}
@@ -1408,7 +1408,7 @@ function RevealCardItem({
                     </span>
                   ) : null}
                 </div>
-                <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[11px] font-bold tabular-nums text-zinc-700 dark:text-zinc-200 sm:text-xs">
+                <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-xs font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
                   <span>매입 {krw(card.price)}</span>
                   {card.marketBasis?.medianPrice ? (
                     <>
