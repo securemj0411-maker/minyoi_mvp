@@ -667,7 +667,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
             sizes="(max-width: 639px) 100vw, (max-width: 1023px) 132px, 150px"
             className="scale-[1.08] object-cover object-center opacity-55 blur-sm"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,253,249,0.22),rgba(238,231,218,0.30))] dark:bg-zinc-950/20" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,253,249,0.22),rgba(238,231,218,0.30))] dark:bg-none dark:bg-zinc-950/20" />
           <div className="absolute inset-0 p-2.5 sm:p-2">
             <div className="relative h-full w-full">
               <Image
@@ -808,7 +808,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
   } satisfies Record<RecommendationFeatureTone, string>;
 
   return (
-    <details className={`group rounded-2xl border border-[#d6e2d3] bg-[linear-gradient(180deg,#f8fcf5_0%,#eef7eb_100%)] p-3 shadow-[0_12px_28px_rgba(49,66,56,0.08)] dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:p-3.5 lg:col-span-2 ${className}`}>
+    <details className={`group rounded-2xl border border-[#d6e2d3] bg-[linear-gradient(180deg,#f8fcf5_0%,#eef7eb_100%)] p-3 shadow-[0_12px_28px_rgba(49,66,56,0.08)] dark:border-emerald-900/40 dark:bg-none dark:bg-emerald-950/20 sm:p-3.5 lg:col-span-2 ${className}`}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
@@ -906,7 +906,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
 
 function ProductSafetyPanel({ card, className = "" }: { card: RevealCard; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-[#d6e2d3] bg-[linear-gradient(180deg,#fbfdf8_0%,#f0f8ed_100%)] p-3 shadow-[0_12px_28px_rgba(49,66,56,0.07)] dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:p-3.5 lg:col-span-2 ${className}`}>
+    <div className={`rounded-2xl border border-[#d6e2d3] bg-[linear-gradient(180deg,#fbfdf8_0%,#f0f8ed_100%)] p-3 shadow-[0_12px_28px_rgba(49,66,56,0.07)] dark:border-emerald-900/40 dark:bg-none dark:bg-emerald-950/20 sm:p-3.5 lg:col-span-2 ${className}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <div className="text-sm font-black text-[#223127] dark:text-zinc-100">
@@ -1107,7 +1107,7 @@ function RevealCardItem({
       }`}
     >
       {/* 좌측 카드 — 매물 정보 (image + 메타 + verdicts + 노트 + 버튼) */}
-      <div className="order-1 grid gap-3 overflow-hidden rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf6ee_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.09)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-zinc-900 dark:ring-zinc-800/70 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
+      <div className="order-1 grid gap-3 overflow-hidden rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf6ee_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.09)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-none dark:bg-zinc-900 dark:ring-zinc-800/70 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
         <RevealProductImage card={card} />
 
         <div className="min-w-0 w-full space-y-2.5">
@@ -1206,7 +1206,7 @@ function RevealCardItem({
       <ProductSafetyPanel card={card} className="order-3 lg:order-4" />
 
       {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
-      <div className="order-4 space-y-2 rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.08)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-zinc-900 dark:ring-zinc-800/70 lg:order-2">
+      <div className="order-4 space-y-2 rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.08)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-none dark:bg-zinc-900 dark:ring-zinc-800/70 lg:order-2">
         <div className="flex items-center justify-between gap-2">
           <div className="text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
             시세 그래프 · 시장 분석

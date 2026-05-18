@@ -147,6 +147,16 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(dashboard, /window\.history\.back\(\)/);
 });
 
+test("/me reveal detail clears light gradients in dark mode", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+
+  assert.match(modal, /rgba\(255,253,249,0\.22\),rgba\(238,231,218,0\.30\)\)\] dark:bg-none dark:bg-zinc-950\/20/);
+  assert.match(modal, /#f8fcf5_0%,#eef7eb_100%\)\] p-3[\s\S]*dark:bg-none dark:bg-emerald-950\/20/);
+  assert.match(modal, /#fbfdf8_0%,#f0f8ed_100%\)\] p-3[\s\S]*dark:bg-none dark:bg-emerald-950\/20/);
+  assert.match(modal, /#fffdf9_0%,#fbf6ee_100%\)\] p-3[\s\S]*dark:bg-none dark:bg-zinc-900/);
+  assert.match(modal, /#fffdf9_0%,#fbf7ef_100%\)\] p-3[\s\S]*dark:bg-none dark:bg-zinc-900/);
+});
+
 test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached and list-shaped", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
