@@ -1068,13 +1068,13 @@ function RevealCardItem({
         {/* Wave 80: 사진을 가리던 floating overlay 제거. 액션은 모달 하단 footer로 이동. */}
       </div>
 
-      <div className="min-w-0 space-y-2">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
+      <div className="min-w-0 w-full space-y-2">
+        <div className="flex w-full items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
             <div className="line-clamp-2 text-sm font-black leading-5 text-zinc-900 dark:text-zinc-50">
               {card.name}
             </div>
-            <div className={`mt-2 rounded-xl border px-3 py-2 ${
+            <div className={`mt-2 w-full rounded-xl border px-3 py-2 ${
               isMarketInvalidated
                 ? "border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-950/25"
                 : "border-emerald-100 bg-emerald-50/70 dark:border-emerald-900/50 dark:bg-emerald-950/20"
@@ -1115,9 +1115,7 @@ function RevealCardItem({
                   </>
                 ) : null}
                 <span className="text-[11px] font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
-                <span className="hidden sm:inline-flex">
-                  <ConditionChip conditionClass={card.marketBasis?.conditionClass ?? null} showHelp />
-                </span>
+                <ConditionChip conditionClass={card.marketBasis?.conditionClass ?? null} showHelp />
                 {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
                   <span
                     title={`이 매물은 ${card.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}

@@ -86,7 +86,9 @@ test("/me mobile reveal card keeps secondary evidence behind recommendation deta
   assert.match(modal, /h-\[118px\] w-full/);
   assert.match(modal, /hidden text-xs font-semibold leading-5/);
   assert.match(modal, /sm:hidden[\s\S]*<RevealRiskScoreMini card=\{card\} \/>[\s\S]*<VerdictBadgesMini card=\{card\} \/>[\s\S]*<MarketBasisMini card=\{card\} \/>/);
-  assert.match(modal, /hidden sm:inline-flex[\s\S]*<ConditionChip conditionClass=\{card\.marketBasis\?\.conditionClass \?\? null\} showHelp \/>/);
+  assert.match(modal, /min-w-0 flex-1/);
+  assert.match(modal, /mt-2 w-full rounded-xl/);
+  assert.match(modal, /<span className="text-\[11px\] font-semibold text-zinc-400">\{freshLabel\(card\.freshSeconds\)\}<\/span>\s*<ConditionChip conditionClass=\{card\.marketBasis\?\.conditionClass \?\? null\} showHelp \/>/);
   assert.match(modal, /hidden sm:block[\s\S]*<RevealRiskScoreMini card=\{card\} \/>/);
   assert.match(modal, /hidden sm:block[\s\S]*<MarketBasisMini card=\{card\} \/>/);
 });
