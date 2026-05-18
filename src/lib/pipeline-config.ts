@@ -369,6 +369,14 @@ export const DEFAULT_SEARCH_QUERIES = [
   "미즈노 알파", "Mizuno Alpha", "Alpha 재팬",
   "미즈노 모나르시다", "Mizuno Monarcida",
   "미즈노 살라", "Mizuno Sala", "Morelia Sala",
+  // Wave 208 — 살로몬 본 라인
+  "Salomon XT-6", "살로몬 XT-6",
+  "Salomon XT-Quest", "살로몬 XT 퀘스트",
+  "Salomon XT-Whisper", "살로몬 XT 위스퍼",
+  "Salomon XA Pro", "살로몬 XA프로",
+  "Salomon ACS Pro", "살로몬 ACS",
+  "Salomon Speedcross", "살로몬 스피드크로스",
+  "Salomon X-Ultra", "살로몬 X-Ultra GTX",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

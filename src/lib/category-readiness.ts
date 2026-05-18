@@ -577,6 +577,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   mizuno_alpha: { status: "ready", label: "Mizuno Alpha (1/2/3)", note: "Wave 207" },
   mizuno_monarcida: { status: "ready", label: "Mizuno Monarcida (보급)", note: "Wave 207" },
   mizuno_sala: { status: "ready", label: "Mizuno Morelia Sala (풋살화)", note: "Wave 207" },
+  // Wave 208 (2026-05-18): 살로몬 본 라인 매물 60건+ 압도적
+  salomon_xt_6: { status: "ready", label: "Salomon XT-6 (시그니처)", note: "Wave 208 — 매물 매우 다수" },
+  salomon_xt_series: { status: "ready", label: "Salomon XT Series (Quest/Whisper/Wings/4)", note: "Wave 208" },
+  salomon_xa_pro: { status: "ready", label: "Salomon XA Pro/Comp/로그", note: "Wave 208" },
+  salomon_acs_pro: { status: "ready", label: "Salomon ACS Pro/+OG", note: "Wave 208" },
+  salomon_speedcross: { status: "ready", label: "Salomon Speedcross", note: "Wave 208" },
+  salomon_x_ultra: { status: "ready", label: "Salomon X-Ultra GTX", note: "Wave 208" },
 };
 
 export type CategoryReadinessConfig = {

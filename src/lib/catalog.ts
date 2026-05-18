@@ -7605,6 +7605,62 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "알파", "alpha", "모나르시다", "monarcida", "골프"],
     msrpKrw: 130000, released: 2017,
   },
+  // Wave 208 (2026-05-18): 살로몬 본 라인 — 매물 60건+ 압도적 (XT-6 시그니처).
+  // 가품 risk 낮음 ⭐ (등산화/트레일 시장, 정품 번호 명확 — 474294 등).
+  {
+    id: "shoe-salomon-xt-6",
+    brand: "Salomon", category: "shoe", laneKey: "salomon_xt_6",
+    modelName: "Salomon XT-6 (시그니처)",
+    aliases: ["Salomon XT-6", "살로몬 XT-6", "XT-6 익스팬스"],
+    mustContain: [["salomon", "살로몬"], ["xt-6", "xt 6", "xt6"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "cdg", "꼼데", "comme des", "mm6", "carhartt", "칼하트", "broken arm", "브로큰암", "kar l'art", "샌디리앙"],
+    msrpKrw: 250000, released: 2013,
+  },
+  {
+    id: "shoe-salomon-xt-series",
+    brand: "Salomon", category: "shoe", laneKey: "salomon_xt_series",
+    modelName: "Salomon XT Series (Quest/Whisper/Wings/PU.RE/4/TX-6)",
+    aliases: ["Salomon XT-Quest", "살로몬 XT-퀘스트", "XT-Whisper", "XT-위스퍼", "XT-Wings", "XT-4", "TX-6"],
+    mustContain: [["salomon", "살로몬"], ["xt-quest", "xt 퀘스트", "xt-whisper", "xt 위스퍼", "xt-wings", "xt 윙스", "xt-pu", "xt pu", "xt-4", "xt 4", "tx-6", "tx 6"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "xt-6", "xt 6", "xt6", "cdg", "꼼데", "mm6", "carhartt", "칼하트"],
+    msrpKrw: 220000, released: 2016,
+  },
+  {
+    id: "shoe-salomon-xa-pro",
+    brand: "Salomon", category: "shoe", laneKey: "salomon_xa_pro",
+    modelName: "Salomon XA Pro / XA-Comp / XA 로그",
+    aliases: ["Salomon XA Pro", "살로몬 XA프로", "XA-Comp", "XA 로그"],
+    mustContain: [["salomon", "살로몬"], ["xa pro", "xa-pro", "xa프로", "xa-comp", "xa comp", "xa 로그", "xa로그", "xa-roughstone"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "cdg", "꼼데", "mm6", "carhartt"],
+    msrpKrw: 199000, released: 2012,
+  },
+  {
+    id: "shoe-salomon-acs-pro",
+    brand: "Salomon", category: "shoe", laneKey: "salomon_acs_pro",
+    modelName: "Salomon ACS Pro / ACS+OG (Advanced)",
+    aliases: ["Salomon ACS", "살로몬 ACS", "ACS 프로", "ACS Pro Advanced", "ACS+OG", "버터컵"],
+    mustContain: [["salomon", "살로몬"], ["acs", "버터컵"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "cdg", "꼼데", "mm6", "carhartt", "kar l'art"],
+    msrpKrw: 290000, released: 2022,
+  },
+  {
+    id: "shoe-salomon-speedcross",
+    brand: "Salomon", category: "shoe", laneKey: "salomon_speedcross",
+    modelName: "Salomon Speedcross (3/4/5/6)",
+    aliases: ["Salomon Speedcross", "살로몬 스피드크로스"],
+    mustContain: [["salomon", "살로몬"], ["스피드크로스", "speedcross", "speed cross"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "cdg", "꼼데", "mm6"],
+    msrpKrw: 199000, released: 2009,
+  },
+  {
+    id: "shoe-salomon-x-ultra",
+    brand: "Salomon", category: "shoe", laneKey: "salomon_x_ultra",
+    modelName: "Salomon X-Ultra GTX (등산화)",
+    aliases: ["Salomon X-Ultra", "살로몬 X-Ultra", "X-Ultra 5 GTX"],
+    mustContain: [["salomon", "살로몬"], ["x-ultra", "x ultra", "x울트라", "xultra"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "cdg", "꼼데"],
+    msrpKrw: 230000, released: 2018,
+  },
 ];
 
 // Wave 94: CATALOG 전체 SKU에도 카테고리별 NOISE 자동 spread (GENERATED + CORE + Wave 91 신규 다 포함).

@@ -151,7 +151,12 @@ export function queryFamily(query: string): string {
     lower.includes("미즈노") || lower.includes("mizuno") ||
     lower.includes("모렐리아") || lower.includes("morelia") ||
     (lower.includes("알파") && (lower.includes("재팬") || lower.includes("jpn") || lower.includes("ag ") || lower.includes("tf "))) ||
-    lower.includes("모나르시다") || lower.includes("monarcida")
+    lower.includes("모나르시다") || lower.includes("monarcida") ||
+    // Wave 208: 살로몬
+    lower.includes("salomon") || lower.includes("살로몬") ||
+    lower.includes("xt-6") || lower.includes("xt 6") ||
+    lower.includes("xa pro") || lower.includes("xa-pro") || lower.includes("xa프로") ||
+    lower.includes("acs pro") || lower.includes("스피드크로스") || lower.includes("speedcross")
   ) return "shoe";
   // 가방 (TNF 백팩) — bag
   if (
