@@ -127,6 +127,21 @@ test("/me mobile reveal card keeps safety signals outside recommendation details
   assert.match(modal, /hidden sm:block[\s\S]*<MarketBasisMini card=\{card\} \/>/);
 });
 
+test("/me reveal detail behaves like a full-screen page on mobile", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const dashboard = source("src/components/user-reveal-dashboard.tsx");
+
+  assert.match(modal, /h-dvh max-h-dvh/);
+  assert.match(modal, /rounded-none border-0/);
+  assert.match(modal, /sm:max-h-\[88vh\]/);
+  assert.match(modal, /sm:rounded-2xl sm:border/);
+  assert.match(modal, /<span className="sm:hidden">뒤로<\/span>/);
+  assert.match(dashboard, /REVEAL_DETAIL_QUERY_KEY = "reveal"/);
+  assert.match(dashboard, /window\.history\.pushState\(\{ minyoiRevealPid: item\.pid \}/);
+  assert.match(dashboard, /window\.addEventListener\("popstate", handlePopState\)/);
+  assert.match(dashboard, /window\.history\.back\(\)/);
+});
+
 test("/me shows every condition grade as a photo badge and removes duplicate plain grade chips", () => {
   const chip = source("src/components/condition-chip.tsx");
   const modal = source("src/components/pack-reveal-modal.tsx");

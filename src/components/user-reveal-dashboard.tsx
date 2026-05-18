@@ -73,6 +73,8 @@ type TransactionFeedbackType = Extract<RevealFeedbackType, "contacted" | "bought
 type ReportFeedbackType = Extract<RevealFeedbackType, "loss_report" | "inaccurate_report">;
 
 const PAGE_SIZE = 20;
+const REVEAL_DETAIL_QUERY_KEY = "reveal";
+const REVEAL_DETAIL_MODE_QUERY_KEY = "preview";
 
 const SORT_OPTIONS: { value: RevealSort; label: string }[] = [
   { value: "latest", label: "최신순" },
@@ -191,6 +193,14 @@ function profitPercent(item: RevealItem) {
   return Number.isFinite(pct) ? pct : null;
 }
 
+function isMobileDetailViewport() {
+  return typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches;
+}
+
+function previewModeFromUrl(value: string | null): "listing" | "guide" {
+  return value === "guide" ? "guide" : "listing";
+}
+
 function applyFeedbackState(item: RevealItem, feedbackType: RevealFeedbackType, note?: string): RevealItem {
   if (isTransactionFeedbackType(feedbackType)) {
     return {
@@ -229,6 +239,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   const [selectedPreviewSeed, setSelectedPreviewSeed] = useState<string | null>(null);
   const [currentTimeMs, setCurrentTimeMs] = useState(0);
   const previewSeedCounterRef = useRef(0);
+  const pushedRevealUrlRef = useRef(false);
   const [newlyRevealedPids, setNewlyRevealedPids] = useState<Set<number>>(new Set());
   const highlightClearTimerRef = useRef<number | null>(null);
   // 2026-05-17: 매물 선택 + 삭제 (선택/전체 모드).
@@ -695,12 +706,79 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     { value: "other", label: "✏️ 기타", hint: "위 카테고리 외" },
   ];
 
-  function openItem(item: RevealItem, mode: "listing" | "guide") {
+  function clearSelectedDetail() {
+    setSelectedItem(null);
+    setSelectedPreviewMode("listing");
+    setSelectedPreviewSeed(null);
+  }
+
+  function removeRevealDetailUrl(replace = true) {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete(REVEAL_DETAIL_QUERY_KEY);
+    url.searchParams.delete(REVEAL_DETAIL_MODE_QUERY_KEY);
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+    if (replace) window.history.replaceState(window.history.state, "", nextUrl);
+    else window.history.pushState({}, "", nextUrl);
+  }
+
+  function openItem(item: RevealItem, mode: "listing" | "guide", options?: { pushUrl?: boolean }) {
     if (isUserFacingClosed(item)) return;
     previewSeedCounterRef.current += 1;
+    if (options?.pushUrl ?? isMobileDetailViewport()) {
+      const url = new URL(window.location.href);
+      url.searchParams.set(REVEAL_DETAIL_QUERY_KEY, String(item.pid));
+      url.searchParams.set(REVEAL_DETAIL_MODE_QUERY_KEY, mode);
+      window.history.pushState({ minyoiRevealPid: item.pid }, "", `${url.pathname}${url.search}${url.hash}`);
+      pushedRevealUrlRef.current = true;
+    }
     setSelectedItem(item);
     setSelectedPreviewMode(mode);
     setSelectedPreviewSeed(`${item.pid}:${mode}:${previewSeedCounterRef.current}`);
+  }
+
+  const openRevealFromUrl = useCallback(() => {
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    const pid = Number(params.get(REVEAL_DETAIL_QUERY_KEY));
+    if (!Number.isFinite(pid) || pid <= 0) return false;
+    const item = items.find((candidate) => candidate.pid === pid);
+    if (!item || isUserFacingClosed(item)) return true;
+    const mode = previewModeFromUrl(params.get(REVEAL_DETAIL_MODE_QUERY_KEY));
+    if (selectedItem?.pid === pid && selectedPreviewMode === mode) return true;
+    previewSeedCounterRef.current += 1;
+    setSelectedItem(item);
+    setSelectedPreviewMode(mode);
+    setSelectedPreviewSeed(`${item.pid}:${mode}:url:${previewSeedCounterRef.current}`);
+    return true;
+  }, [items, selectedItem?.pid, selectedPreviewMode]);
+
+  useEffect(() => {
+    void openRevealFromUrl();
+  }, [openRevealFromUrl]);
+
+  useEffect(() => {
+    function handlePopState() {
+      const hasReveal = openRevealFromUrl();
+      if (!hasReveal) {
+        pushedRevealUrlRef.current = false;
+        clearSelectedDetail();
+      }
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [openRevealFromUrl]);
+
+  function closeSelectedDetail() {
+    const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const urlPid = params?.get(REVEAL_DETAIL_QUERY_KEY);
+    if (urlPid && pushedRevealUrlRef.current) {
+      window.history.back();
+      return;
+    }
+    if (urlPid) removeRevealDetailUrl(true);
+    pushedRevealUrlRef.current = false;
+    clearSelectedDetail();
   }
 
   const firstIndex = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
@@ -1492,11 +1570,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         initialPreviewCard={modalResult?.result === "success" ? modalResult.reveals[0] ?? null : null}
         initialPreviewMode={selectedPreviewMode}
         initialPreviewSeed={selectedPreviewSeed}
-        onClose={() => {
-          setSelectedItem(null);
-          setSelectedPreviewMode("listing");
-          setSelectedPreviewSeed(null);
-        }}
+        onClose={closeSelectedDetail}
         onLinkClicked={handleLinkClicked}
         onFeedback={handleFeedback}
         currentFeedbackType={
@@ -1504,11 +1578,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           ?? (isTransactionFeedbackType(selectedItem?.feedbackType) ? selectedItem.feedbackType : null)
         }
         onLoadDetail={handleLoadDetail}
-        onRetry={() => {
-          setSelectedItem(null);
-          setSelectedPreviewMode("listing");
-          setSelectedPreviewSeed(null);
-        }}
+        onRetry={closeSelectedDetail}
         // Wave 182b: 손해 신고 — 매물 상세 모달 안 1곳에만 박음. 카드 list 에선 빠짐.
         // Wave 182c: 이미 inaccurate_report 박힌 매물은 비활성. (loss_report 보류 → 체크 안 함)
         alreadyReportedLoss={selectedItem?.reportFeedbackType === "inaccurate_report" || selectedItem?.feedbackType === "inaccurate_report"}

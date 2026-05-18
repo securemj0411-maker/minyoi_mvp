@@ -1690,7 +1690,7 @@ export default function PackRevealModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overscroll-contain bg-[rgba(31,40,34,0.48)] p-3 backdrop-blur-sm sm:p-6"
+      className="fixed inset-0 z-50 flex items-stretch justify-stretch overscroll-contain bg-[#fffdf9] p-0 dark:bg-zinc-950 sm:items-center sm:justify-center sm:bg-[rgba(31,40,34,0.48)] sm:p-6 sm:backdrop-blur-sm sm:dark:bg-[rgba(9,9,11,0.62)]"
       role="dialog"
       aria-modal="true"
       onClick={() => {
@@ -1698,7 +1698,7 @@ export default function PackRevealModal({
       }}
     >
       <div
-        className="flex max-h-[88vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-[rgba(49,66,56,0.16)] dark:border-zinc-800 dark:bg-zinc-900"
+        className="flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#fffdf9] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-h-[88vh] sm:max-w-6xl sm:rounded-2xl sm:border sm:border-[#ddd6ca] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.16)] sm:dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 z-10 shrink-0 border-b border-[#e2dbcf] bg-[#fffdf9]/95 px-3 py-2 text-[var(--brand-accent-strong)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-4">
@@ -1721,13 +1721,14 @@ export default function PackRevealModal({
                 onClick={handleClose}
                 className="shrink-0 rounded-lg border border-[#d7d1c5] bg-white/80 px-2.5 py-1.5 text-xs font-semibold text-[var(--brand-accent-strong)] backdrop-blur transition hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
               >
-                닫기
+                <span className="sm:hidden">뒤로</span>
+                <span className="hidden sm:inline">닫기</span>
               </button>
             ) : null}
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
           {displayLoading ? (
             <div className="space-y-4">
               <LoadingStage completing={completing} />
