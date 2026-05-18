@@ -195,7 +195,7 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
   if (velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0) {
     const days = Math.round(velocity.medianHoursToSold / 24);
     lines.push({
-      label: "평균 회전",
+      label: "판매 속도",
       value: days <= 0 ? "1일 이내" : `약 ${days}일`,
       tone: days <= 3 ? "good" : days >= 14 ? "warn" : undefined,
     });
@@ -420,6 +420,7 @@ function VelocityBasisMini({ card }: { card: RevealCard }) {
   const isFastTurn = hours != null && hours > 0 && hours <= 48; // 2일 안에 팔림
   const isSlowTurn = hours != null && hours > 168; // 7일+ 안 팔림
   const turnLabel = velocityHoursLabel(hours);
+  const confidenceLabel = velocity.confidence === "high" ? "신뢰 높음" : velocity.confidence === "medium" ? "신뢰 보통" : "참고용";
   return (
     <div className={`rounded-lg border-2 px-4 py-3 ${
       isFastTurn
@@ -430,36 +431,36 @@ function VelocityBasisMini({ card }: { card: RevealCard }) {
     }`}>
       <div className="flex items-baseline justify-between gap-2">
         <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
-          📦 평균 판매 회전
+          📦 비슷한 상품은 보통
         </div>
         <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--brand-accent-strong)] ring-1 ring-[#d8e2d7] dark:bg-zinc-900/50 dark:text-zinc-100 dark:ring-zinc-700">
-          {velocity.confidence}
+          {confidenceLabel}
         </span>
       </div>
-      <div className="mt-1 flex items-baseline gap-2">
-        <span className={`text-3xl font-black tabular-nums ${
+      <div className="mt-1 flex flex-wrap items-baseline gap-2">
+        <span className={`text-2xl font-black leading-tight tabular-nums sm:text-3xl ${
           isFastTurn
             ? "text-emerald-700 dark:text-emerald-300"
             : isSlowTurn
               ? "text-amber-700 dark:text-amber-300"
               : "text-[#223127] dark:text-white"
         }`}>
-          {turnLabel}
+          {turnLabel} 안에 팔렸어요
         </span>
         {isFastTurn && (
           <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white">
-            ⚡ 빠른 회전
+            ⚡ 빨리 팔리는 편
           </span>
         )}
         {isSlowTurn && (
           <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-white">
-            ⚠️ 느린 회전
+            ⚠️ 오래 걸리는 편
           </span>
         )}
       </div>
       <div className="mt-2 text-[11px] text-[#58705d] dark:text-zinc-300/80">
-        최근 7일 <span className="font-bold">{velocity.sold7dCount.toLocaleString("ko-KR")}건</span> 판매됨
-        · 관측 {velocity.observedSoldSampleCount.toLocaleString("ko-KR")}건 · 활성 {velocity.activeSampleCount.toLocaleString("ko-KR")}건
+        최근 7일 동안 비슷한 상품이 <span className="font-bold">{velocity.sold7dCount.toLocaleString("ko-KR")}건</span> 팔렸고,
+        현재 판매중인 비슷한 상품은 {velocity.activeSampleCount.toLocaleString("ko-KR")}건이에요.
       </div>
     </div>
   );
@@ -844,50 +845,52 @@ function RevealCardItem({
           </div>
         </details>
 
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={() => onPreviewListing(card, previewSide)}
-            className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-xs font-bold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-          >
-            상세 비교
-          </button>
-          <button
-            type="button"
-            onClick={() => onPreviewGuide(card, previewSide)}
-            className="rounded-xl border border-[#d5dfd2] bg-[var(--brand-accent-soft)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-accent-strong)] transition hover:border-[#b9c9b9] hover:bg-[#edf3ea] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
-          >
-            공략 보기
-          </button>
-          <a
-            href={card.url}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => onLinkClicked(card.pid)}
-            className="block rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-cream)] shadow-lg shadow-[rgba(49,66,56,0.18)] transition hover:bg-[#29382f]"
-          >
-            번개장터 열기
-          </a>
-        </div>
+        <div className="sticky bottom-0 z-20 -mx-3 -mb-2 space-y-2 rounded-t-xl border-t border-[#e7dece] bg-[#fffdf9]/95 p-3 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => onPreviewListing(card, previewSide)}
+              className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-xs font-bold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              상세 비교
+            </button>
+            <button
+              type="button"
+              onClick={() => onPreviewGuide(card, previewSide)}
+              className="rounded-xl border border-[#d5dfd2] bg-[var(--brand-accent-soft)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-accent-strong)] transition hover:border-[#b9c9b9] hover:bg-[#edf3ea] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+            >
+              공략 보기
+            </button>
+            <a
+              href={card.url}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => onLinkClicked(card.pid)}
+              className="block rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-cream)] shadow-lg shadow-[rgba(49,66,56,0.18)] transition hover:bg-[#29382f]"
+            >
+              번개장터 열기
+            </a>
+          </div>
 
-        {/* Wave 182c (2026-05-17): 정보 오류 신고 — 매수 전 자연 수집 (임계값 낮음).
-            loss_report (매수 후 손해) 는 보류 — 일단 inaccurate_report 만 노출.
-            onReportLoss prop 있을 때만 표시 (= user-reveal-dashboard "상품 보기" 흐름). */}
-        {onReportLoss && (
-          <button
-            type="button"
-            onClick={() => onReportLoss(card)}
-            disabled={alreadyReportedLoss}
-            title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하고 토큰 +3 받기 (24h 검수)"}
-            className={`flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black leading-none transition ${
-              alreadyReportedLoss
-                ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
-                : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
-            }`}
-          >
-            {alreadyReportedLoss ? "✅ 신고 완료 — 검수 중" : "🎁 토큰 +3 받기 · 부정확 정보 신고"}
-          </button>
-        )}
+          {/* Wave 182c (2026-05-17): 정보 오류 신고 — 매수 전 자연 수집 (임계값 낮음).
+              loss_report (매수 후 손해) 는 보류 — 일단 inaccurate_report 만 노출.
+              onReportLoss prop 있을 때만 표시 (= user-reveal-dashboard "상품 보기" 흐름). */}
+          {onReportLoss && (
+            <button
+              type="button"
+              onClick={() => onReportLoss(card)}
+              disabled={alreadyReportedLoss}
+              title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하고 토큰 +3 받기 (24h 검수)"}
+              className={`flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black leading-none transition ${
+                alreadyReportedLoss
+                  ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
+                  : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
+              }`}
+            >
+              {alreadyReportedLoss ? "✅ 신고 완료 — 검수 중" : "🎁 토큰 +3 받기 · 부정확 정보 신고"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -142,10 +142,10 @@ export const LIQUIDITY_POSITION_CLASS: Record<LiquidityPosition, string> = {
 };
 
 export const LIQUIDITY_POSITION_LABEL: Record<LiquidityPosition, string> = {
-  fast: "빠른 회전",
-  average: "평균 회전",
-  slow: "느린 회전",
-  unknown: "회전 정보 부족",
+  fast: "빨리 팔릴 가격",
+  average: "보통 속도",
+  slow: "느리게 팔릴 가격",
+  unknown: "판매 속도 정보 부족",
 };
 
 // 5 bucket → tailwind class (mini bar)

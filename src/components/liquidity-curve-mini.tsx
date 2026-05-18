@@ -40,8 +40,8 @@ export function LiquidityCurveMini({ compact = false, ...input }: Props) {
       <span
         className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${positionClass}`}
         title={curve.confident
-          ? `이 가격 추정 회전: ${estimated} (sample ${curve.soldSampleCount}건)`
-          : "회전 데이터 부족 — 추정 불확실"}
+          ? `이 가격이면 비슷한 상품이 보통 ${estimated} 안에 팔렸어요. 기준 ${curve.soldSampleCount}건`
+          : "판매 속도 데이터가 부족해서 추정이 불확실해요."}
       >
         ⚡ {positionLabel} · {estimated}
       </span>
@@ -53,7 +53,7 @@ export function LiquidityCurveMini({ compact = false, ...input }: Props) {
     <div className="rounded-lg border border-[#e2d9cb] bg-[#fffaf1] p-3 dark:border-zinc-800 dark:bg-zinc-900/60">
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[11px] font-black text-[#223127] dark:text-zinc-100">
-          ⚡ 가격대별 회전 예상
+          ⚡ 이 가격이면 얼마나 빨리 팔릴까?
         </span>
         <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${positionClass}`}>
           {positionLabel}
@@ -73,29 +73,27 @@ export function LiquidityCurveMini({ compact = false, ...input }: Props) {
           ))}
         </div>
         <div className="mt-1 flex justify-between text-[9px] font-bold text-zinc-500 dark:text-zinc-400">
-          <span>저렴 · 빠름</span>
-          <span>시세 ·평균</span>
-          <span>비쌈 · 느림</span>
+          <span>저렴 · 빨리 팔림</span>
+          <span>시세 근처</span>
+          <span>비쌈 · 오래 걸림</span>
         </div>
       </div>
 
-      {/* 추정 회전 시간 */}
       <div className="mt-2 text-[12px] font-black text-[#223127] dark:text-zinc-100">
-        이 가격 → 약 <span className="text-emerald-700 dark:text-emerald-300">{estimated}</span> 안에 팔림 (추정)
+        비슷한 상품은 보통 <span className="text-emerald-700 dark:text-emerald-300">{estimated}</span> 안에 팔렸어요
       </div>
 
-      {/* +5% 인하 / -5% 인상 보조 정보 */}
       {(curve.estimatedHoursAt5PctDiscount != null || curve.estimatedHoursAt5PctMarkup != null) && (
         <div className="mt-1.5 grid grid-cols-2 gap-1.5 text-[10px]">
           {curve.estimatedHoursAt5PctDiscount != null && (
             <div className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-              <span className="font-bold text-emerald-800 dark:text-emerald-300">5% 인하</span>
+              <span className="font-bold text-emerald-800 dark:text-emerald-300">5% 싸게 팔면</span>
               <span className="ml-1 text-emerald-900 dark:text-emerald-200">{liquidityHoursLabel(curve.estimatedHoursAt5PctDiscount)}</span>
             </div>
           )}
           {curve.estimatedHoursAt5PctMarkup != null && (
             <div className="rounded border border-rose-200 bg-rose-50 px-2 py-1 dark:border-rose-900/40 dark:bg-rose-950/20">
-              <span className="font-bold text-rose-800 dark:text-rose-300">5% 인상</span>
+              <span className="font-bold text-rose-800 dark:text-rose-300">5% 비싸게 팔면</span>
               <span className="ml-1 text-rose-900 dark:text-rose-200">{liquidityHoursLabel(curve.estimatedHoursAt5PctMarkup)}</span>
             </div>
           )}
@@ -104,8 +102,8 @@ export function LiquidityCurveMini({ compact = false, ...input }: Props) {
 
       <div className="mt-1.5 text-[9px] text-zinc-500 dark:text-zinc-400">
         {curve.confident
-          ? `같은 SKU sold ${curve.soldSampleCount}건 기반 추정 — 실제와 다를 수 있어요`
-          : `sample 부족 (${curve.soldSampleCount ?? 0}건) — 신뢰도 낮음`}
+          ? `비슷한 상품 판매 ${curve.soldSampleCount}건을 보고 추정했어요. 실제 판매 시간은 달라질 수 있어요.`
+          : `비슷한 상품 판매 기록이 ${curve.soldSampleCount ?? 0}건이라 아직 참고용이에요.`}
       </div>
     </div>
   );
