@@ -48,6 +48,12 @@ test("risk score detail trigger is written as an obvious clickable question", ()
   assert.match(riskScore, /triggerClassName/);
   assert.match(riskScore, /triggerLabel/);
   assert.match(riskScore, /hideChevron/);
+  assert.match(riskScore, /portalDetail/);
+  assert.match(riskScore, /createPortal/);
+  assert.match(riskScore, /document\.body/);
+  assert.match(riskScore, /z-\[190\]/);
+  assert.match(riskScore, /z-\[200\]/);
+  assert.match(riskScore, /renderedDetailLayer/);
   assert.match(riskScore, /py-0\.5 text-\[10px\] font-black leading-none/);
   assert.match(riskScore, /role="dialog"/);
   assert.match(riskScore, /left-1\/2 top-\[72px\] z-\[130\]/);

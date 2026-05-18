@@ -186,6 +186,7 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   assert.match(modal, /grid-cols-\[minmax\(0,0\.86fr\)_minmax\(0,1\.18fr\)\]/);
   assert.match(modal, /triggerLabel="안전 확인"/);
   assert.match(modal, /hideChevron/);
+  assert.match(modal, /portalDetail/);
   assert.match(modal, /containerClassName="flex w-full min-w-0"/);
   assert.match(modal, /triggerClassName="flex min-h-11 w-full/);
   assert.match(modal, /번개장터에서 확인하기/);

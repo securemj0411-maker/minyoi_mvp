@@ -4,7 +4,8 @@
 // 득템잡이 차별화 = "보호받음 감정" — POOL_BLOCK 통과 매물의 잔여 신호를 사용자에게 명시.
 // 3 화면 공유 (admin-pool-browser / pack-reveal-modal / user-reveal-dashboard).
 
-import { useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangleIcon, ShieldIcon } from "@/components/icons";
 import {
   buildRiskScore,
@@ -24,6 +25,7 @@ type Props = RiskScoreInput & {
   triggerClassName?: string;
   triggerLabel?: string;
   hideChevron?: boolean;
+  portalDetail?: boolean;
 };
 
 function detailTriggerLabel(tone: "safe" | "caution" | "danger", hitCount: number) {
@@ -65,9 +67,11 @@ export function RiskScoreBar({
   triggerClassName,
   triggerLabel,
   hideChevron = false,
+  portalDetail = false,
   ...input
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
   const score = buildRiskScore(input);
   const toneClass = RISK_TONE_CLASS[score.tone];
   const detailLabel = detailTriggerLabel(score.tone, score.hitCount);
@@ -75,6 +79,139 @@ export function RiskScoreBar({
   const actionSummaries = score.axes
     .map((axis) => riskActionSummary(axis))
     .filter((text): text is string => Boolean(text));
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
+  const backdropClassName = portalDetail
+    ? "fixed inset-0 z-[190] bg-zinc-950/24 backdrop-blur-[1px]"
+    : "fixed inset-0 z-[120] bg-zinc-950/24 backdrop-blur-[1px] sm:bg-transparent sm:backdrop-blur-0";
+  const dialogClassName = portalDetail
+    ? "risk-detail-dialog fixed left-1/2 top-[72px] z-[200] max-h-[calc(100dvh-156px)] w-[calc(100vw-28px)] max-w-[430px] -translate-x-1/2 overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-zinc-950/22 dark:border-zinc-700 dark:bg-zinc-900 sm:top-[96px] sm:max-w-[460px]"
+    : "risk-detail-dialog fixed left-1/2 top-[72px] z-[130] max-h-[calc(100dvh-156px)] w-[calc(100vw-28px)] max-w-[430px] -translate-x-1/2 overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-zinc-950/22 dark:border-zinc-700 dark:bg-zinc-900 sm:absolute sm:left-0 sm:top-6 sm:w-[30rem] sm:max-w-none sm:translate-x-0 sm:rounded-xl";
+  const detailLayer: ReactNode = open ? (
+    <>
+      <div
+        className={backdropClassName}
+        onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="위험 신호 점검"
+        onClick={(e) => e.stopPropagation()}
+        className={dialogClassName}
+      >
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
+          <div>
+            <div className="text-sm font-black text-zinc-950 dark:text-zinc-50">
+              위험 신호 점검
+            </div>
+            <div className="mt-0.5 text-xs font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
+              추천 전에 걸러낸 뒤, 남은 확인 포인트만 보여드려요.
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className={`rounded-full border px-2.5 py-1 text-xs font-bold ${toneClass}`}>
+              {score.label}
+            </span>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-xs font-bold text-zinc-600 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+        <div className="max-h-[calc(100dvh-232px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(74vh-76px)] sm:px-5 sm:py-4">
+          <div className="space-y-2.5">
+            {score.axes.map((a) => (
+              <div
+                key={a.axis}
+                className="grid grid-cols-[72px_minmax(0,1fr)] items-center gap-3 rounded-xl border border-[#ebe3d8] bg-white px-3 py-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/35"
+              >
+                <span className="text-xs font-black text-zinc-600 dark:text-zinc-400">
+                  {RISK_AXIS_LABEL[a.axis]}
+                </span>
+                <span className="min-w-0">
+                  <span className="mb-1 flex items-center gap-1">
+                    {[0, 1, 2].map((lv) => (
+                      <span
+                        key={lv}
+                        aria-hidden="true"
+                        className={`block h-2.5 w-5 rounded-full ${
+                          lv < 3 - a.level
+                            ? RISK_AXIS_LEVEL_CLASS[a.level]
+                            : "bg-zinc-200 dark:bg-zinc-700"
+                        }`}
+                      />
+                    ))}
+                  </span>
+                  <span className="block text-[13px] font-bold leading-5 text-zinc-800 dark:text-zinc-200">
+                    {a.reason ?? <span className="text-zinc-400 dark:text-zinc-500">정상</span>}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 rounded-xl border border-[#d8eadf] bg-[#f3fbf6] px-3.5 py-3 text-sm font-semibold leading-5 text-zinc-700 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-zinc-200">
+            <div className="mb-1.5 text-sm font-black text-zinc-950 dark:text-zinc-50">
+              확인하면 좋아요
+            </div>
+            {actionSummaries.length > 0 ? (
+              <ul className="space-y-1.5">
+                {actionSummaries.map((summary) => (
+                  <li key={summary} className="pl-2 before:mr-1.5 before:content-['·']">
+                    {summary}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div>
+                강한 잔여 신호는 없어요. 그래도 거래 전 실사진, 구성품, 판매완료 여부는 마지막으로 확인하세요.
+              </div>
+            )}
+          </div>
+          <div className="mt-3 rounded-xl border border-[#ebe3d8] bg-white px-3.5 py-3 text-xs font-semibold leading-5 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/35 dark:text-zinc-400">
+            득템잡이는 가품 의심, 잠금/할부 의심처럼 강한 차단 신호가 있는 매물은 추천 풀에 넣지 않아요. 이 화면은 통과한 매물에서 남은 확인 포인트만 보여줘요. 신호가 0이어도 거래 전 실사진과 안전결제는 마지막으로 확인하세요.
+          </div>
+        </div>
+      </div>
+      <style jsx global>{`
+        @keyframes riskSheetSettle {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -8px);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+          }
+        }
+
+        @media (min-width: 640px) {
+          @keyframes riskSheetSettle {
+            from {
+              opacity: 0;
+              transform: translateY(-6px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
+          }
+        }
+
+        .risk-detail-dialog {
+          animation: riskSheetSettle 130ms ease-out;
+        }
+      `}</style>
+    </>
+  ) : null;
+  const renderedDetailLayer =
+    portalDetail && portalReady && typeof document !== "undefined"
+      ? createPortal(detailLayer, document.body)
+      : detailLayer;
 
   return (
     <span className={`relative inline-flex items-center gap-1.5 ${containerClassName}`}>
@@ -115,130 +252,7 @@ export function RiskScoreBar({
         </span>
       )}
 
-      {showDetail && (
-        <>
-          {open && (
-            <>
-              <div
-                className="fixed inset-0 z-[120] bg-zinc-950/24 backdrop-blur-[1px] sm:bg-transparent sm:backdrop-blur-0"
-                onClick={(e) => { e.stopPropagation(); setOpen(false); }}
-              />
-              <div
-                role="dialog"
-                aria-modal="true"
-                aria-label="위험 신호 점검"
-                onClick={(e) => e.stopPropagation()}
-                className="risk-detail-dialog fixed left-1/2 top-[72px] z-[130] max-h-[calc(100dvh-156px)] w-[calc(100vw-28px)] max-w-[430px] -translate-x-1/2 overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-zinc-950/22 dark:border-zinc-700 dark:bg-zinc-900 sm:absolute sm:left-0 sm:top-6 sm:w-[30rem] sm:max-w-none sm:translate-x-0 sm:rounded-xl"
-              >
-                <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
-                  <div>
-                    <div className="text-sm font-black text-zinc-950 dark:text-zinc-50">
-                      위험 신호 점검
-                    </div>
-                    <div className="mt-0.5 text-xs font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
-                      추천 전에 걸러낸 뒤, 남은 확인 포인트만 보여드려요.
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <span className={`rounded-full border px-2.5 py-1 text-xs font-bold ${toneClass}`}>
-                      {score.label}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setOpen(false)}
-                      className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-xs font-bold text-zinc-600 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-                    >
-                      닫기
-                    </button>
-                  </div>
-                </div>
-                <div className="max-h-[calc(100dvh-232px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(74vh-76px)] sm:px-5 sm:py-4">
-                  <div className="space-y-2.5">
-                    {score.axes.map((a) => (
-                      <div
-                        key={a.axis}
-                        className="grid grid-cols-[72px_minmax(0,1fr)] items-center gap-3 rounded-xl border border-[#ebe3d8] bg-white px-3 py-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/35"
-                      >
-                        <span className="text-xs font-black text-zinc-600 dark:text-zinc-400">
-                          {RISK_AXIS_LABEL[a.axis]}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="mb-1 flex items-center gap-1">
-                            {[0, 1, 2].map((lv) => (
-                              <span
-                                key={lv}
-                                aria-hidden="true"
-                                className={`block h-2.5 w-5 rounded-full ${
-                                  lv < 3 - a.level
-                                    ? RISK_AXIS_LEVEL_CLASS[a.level]
-                                    : "bg-zinc-200 dark:bg-zinc-700"
-                                }`}
-                              />
-                            ))}
-                          </span>
-                          <span className="block text-[13px] font-bold leading-5 text-zinc-800 dark:text-zinc-200">
-                            {a.reason ?? <span className="text-zinc-400 dark:text-zinc-500">정상</span>}
-                          </span>
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-3 rounded-xl border border-[#d8eadf] bg-[#f3fbf6] px-3.5 py-3 text-sm font-semibold leading-5 text-zinc-700 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-zinc-200">
-                    <div className="mb-1.5 text-sm font-black text-zinc-950 dark:text-zinc-50">
-                      확인하면 좋아요
-                    </div>
-                    {actionSummaries.length > 0 ? (
-                      <ul className="space-y-1.5">
-                        {actionSummaries.map((summary) => (
-                          <li key={summary} className="pl-2 before:mr-1.5 before:content-['·']">
-                            {summary}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div>
-                        강한 잔여 신호는 없어요. 그래도 거래 전 실사진, 구성품, 판매완료 여부는 마지막으로 확인하세요.
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-3 rounded-xl border border-[#ebe3d8] bg-white px-3.5 py-3 text-xs font-semibold leading-5 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/35 dark:text-zinc-400">
-                    득템잡이는 가품 의심, 잠금/할부 의심처럼 강한 차단 신호가 있는 매물은 추천 풀에 넣지 않아요. 이 화면은 통과한 매물에서 남은 확인 포인트만 보여줘요. 신호가 0이어도 거래 전 실사진과 안전결제는 마지막으로 확인하세요.
-                  </div>
-                </div>
-              </div>
-              <style jsx global>{`
-                @keyframes riskSheetSettle {
-                  from {
-                    opacity: 0;
-                    transform: translate(-50%, -8px);
-                  }
-                  to {
-                    opacity: 1;
-                    transform: translate(-50%, 0);
-                  }
-                }
-
-                @media (min-width: 640px) {
-                  @keyframes riskSheetSettle {
-                    from {
-                      opacity: 0;
-                      transform: translateY(-6px);
-                    }
-                    to {
-                      opacity: 1;
-                      transform: translateY(0) scale(1);
-                    }
-                  }
-                }
-
-                .risk-detail-dialog {
-                  animation: riskSheetSettle 130ms ease-out;
-                }
-              `}</style>
-            </>
-          )}
-        </>
-      )}
+      {showDetail ? renderedDetailLayer : null}
     </span>
   );
 }

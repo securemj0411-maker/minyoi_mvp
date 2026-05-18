@@ -643,12 +643,14 @@ function RevealRiskScoreMini({
   triggerClassName,
   triggerLabel,
   hideChevron,
+  portalDetail,
 }: {
   card: RevealCard;
   containerClassName?: string;
   triggerClassName?: string;
   triggerLabel?: string;
   hideChevron?: boolean;
+  portalDetail?: boolean;
 }) {
   return (
     <RiskScoreBar
@@ -665,6 +667,7 @@ function RevealRiskScoreMini({
       triggerClassName={triggerClassName}
       triggerLabel={triggerLabel}
       hideChevron={hideChevron}
+      portalDetail={portalDetail}
     />
   );
 }
@@ -1644,6 +1647,7 @@ function FixedBunjangFooter({
           containerClassName="flex w-full min-w-0"
           triggerLabel="안전 확인"
           hideChevron
+          portalDetail
           triggerClassName="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-[#c9dbc8] bg-[#f1f8ef] px-3 py-3 text-center text-sm font-black text-[#274633] shadow-sm ring-1 ring-white/70 transition hover:bg-[#e7f3e4] dark:border-emerald-900/55 dark:bg-emerald-950/25 dark:text-emerald-100 dark:ring-emerald-900/25"
         />
         <a
