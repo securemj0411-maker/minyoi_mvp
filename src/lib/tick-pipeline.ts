@@ -2865,8 +2865,10 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   //   비현실적 낮음 (예: dunk_low 230 median 30K vs msrp 129K, ratio 23%). msrp×15% 차단으론 부족.
   //   0.25로 올려서 더 많은 저가 매물 차단 → median 정상화. 단 정상 사용감 큰 매물 (예: chuck70 230)
   //   일부 차단 가능 — recall ↓ but precision ↑ trade-off. §12b 정확성 우선.
-  const FAKE_FLOOR_CATEGORIES_MARKET = new Set<string>(["shoe", "bag"]);
-  const FAKE_FLOOR_RATIO_MARKET = 0.25;
+  // Wave 198 (2026-05-18): clothing 카테고리 추가 + ratio 0.30 (의류 가품 risk ↑).
+  //   사용자 정책 — 의류는 신발보다 가품 시장 더 큼.
+  const FAKE_FLOOR_CATEGORIES_MARKET = new Set<string>(["shoe", "bag", "clothing"]);
+  const FAKE_FLOOR_RATIO_MARKET = (category: string) => category === "clothing" ? 0.30 : 0.25;
   // Wave 171: price ceiling outlier 시세 제외 (msrp의 5배 초과 = 콜라보/한정/inflate)
   const FAKE_CEILING_RATIO_MARKET = 5;
   for (const group of byKey.values()) {
@@ -2874,7 +2876,7 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     const sku = skuById(group.skuId);
     if (!sku?.msrpKrw) continue;
     if (!FAKE_FLOOR_CATEGORIES_MARKET.has(sku.category)) continue;
-    const floor = sku.msrpKrw * FAKE_FLOOR_RATIO_MARKET;
+    const floor = sku.msrpKrw * FAKE_FLOOR_RATIO_MARKET(sku.category);
     const ceiling = sku.msrpKrw * FAKE_CEILING_RATIO_MARKET;
     group.activeRows = group.activeRows.filter((r) => r.price >= floor && r.price <= ceiling);
     group.soldRows = group.soldRows.filter((r) => r.price >= floor && r.price <= ceiling);
@@ -2936,6 +2938,13 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     /개인\s*결제창/,
     /[가-힣A-Za-z]+\*+[가-힣A-Za-z]?\s*고객님/,
     /고객님\s*(?:개인|전용)\s*(?:결제|페이지|링크)/,
+    // Wave 198 (2026-05-18): 의류 카테고리 특화 가품 광고 패턴 — 시세 sample 정정.
+    /S\s*급\s*(?:미러|레플리카|급)/i,
+    /\b(?:rep|replica|미러급|미러 급)\b/i,
+    /복각|이미테이션|imitation/i,
+    /고퀄리티\s*복각/,
+    /오프\s*화이트\s*공구/,
+    /택\s*그대로\s*보관/,
   ];
   const adPidSet = new Set<number>();
   for (const row of rows) {

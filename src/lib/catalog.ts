@@ -20,7 +20,7 @@ import { BIKE_CATALOG } from "@/lib/generated/catalog-bike-wave91";
 export type Sku = {
   id: string;
   brand: string;
-  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance" | "watch" | "sport_golf" | "shoe" | "bag" | "bike" | "drone" | "perfume" | "kickboard" | "lego";
+  category: "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop" | "monitor" | "speaker" | "camera" | "game_console" | "desktop" | "home_appliance" | "small_appliance" | "watch" | "sport_golf" | "shoe" | "bag" | "bike" | "drone" | "perfume" | "kickboard" | "lego" | "clothing";
   modelName: string;
   aliases: string[];
   mustContain: string[][];
@@ -6780,6 +6780,191 @@ export const CATALOG: Sku[] = [
   ...SHOE_WAVE140_CATALOG,
   ...BAG_CATALOG,
   ...BIKE_CATALOG,
+  // ─── Wave 198 (2026-05-18): 새 카테고리 "clothing" — Polo / TNF / Stussy ───
+  // 사용자 정책: broad 사이즈 무관, collab narrow 분리, 가품 floor 0.30.
+  // production 14d sweep 검증 — 매물량 ≥ 3건 SKU만 catalog 박음.
+  // 스투시 Nike collab 109건 (전체 195건 중 56%) → narrow 필수.
+  // Polo:
+  {
+    id: "clothing-polo-pique-classic",
+    brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_pique_classic",
+    modelName: "Polo Pique Classic Fit",
+    aliases: ["Polo Pique", "폴로 피케", "Ralph Lauren Pique"],
+    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["피케", "pique", "pk "]],
+    mustNotContain: ["RRL", "purple label", "퍼플라벨", "polo bear", "베어", "키즈", "kids", "여아", "남아", "토들러"],
+    msrpKrw: 159000, released: 2020,
+  },
+  {
+    id: "clothing-polo-pony-tee",
+    brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_pony_tee",
+    modelName: "Polo Pony Logo T-Shirt",
+    aliases: ["Polo Pony Tee", "폴로 포니 티셔츠", "Ralph Lauren T-Shirt"],
+    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "크루넥"]],
+    mustNotContain: ["RRL", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "pique", "긴팔", "롱슬리브", "키즈", "kids", "토들러"],
+    msrpKrw: 89000, released: 2020,
+  },
+  {
+    id: "clothing-polo-oxford-shirt",
+    brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_oxford_shirt",
+    modelName: "Polo Oxford Shirt (Standard)",
+    aliases: ["Polo Oxford", "폴로 옥스포드", "Ralph Lauren Oxford"],
+    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["옥스포드", "oxford"]],
+    // RRL 옥스포드는 별도 SKU (가격 5배)
+    mustNotContain: ["RRL", "더블 알엘", "double rl", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "키즈", "kids"],
+    msrpKrw: 159000, released: 2020,
+  },
+  {
+    id: "clothing-polo-bear-collab",
+    brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_bear_collab",
+    modelName: "Polo Bear Print (한정)",
+    aliases: ["Polo Bear", "폴로 베어", "Polo Bear Tee"],
+    mustContain: [["폴로", "polo", "ralph lauren"], ["베어", "bear"]],
+    mustNotContain: ["RRL", "purple label", "키즈", "kids", "토들러", "스티커", "키링"],
+    msrpKrw: 159000, released: 2020,
+  },
+  {
+    id: "clothing-polo-rrl",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl",
+    modelName: "Polo RRL Double RL (premium)",
+    aliases: ["RRL", "Double RL", "더블 알엘"],
+    // 별도 catalog — 가격대 다름 (premium)
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl"]],
+    mustNotContain: ["키즈", "kids"],
+    msrpKrw: 590000, released: 2020,
+  },
+  // The North Face:
+  {
+    id: "clothing-tnf-nuptse-1996",
+    brand: "The North Face", category: "clothing", laneKey: "tnf_nuptse_1996",
+    modelName: "TNF 1996 Retro Nuptse",
+    aliases: ["1996 Nuptse", "1996 눕시", "노스페이스 눕시"],
+    mustContain: [["노스페이스", "north face", "tnf"], ["눕시", "nuptse", "1996"]],
+    // collab은 별도 SKU
+    mustNotContain: ["supreme", "슈프림", "gucci", "구찌", "mm6", "마르지엘라", "키즈", "kids", "퍼플라벨", "purple label", "뮬", "mule", "슬리퍼"],
+    msrpKrw: 360000, released: 1996,
+  },
+  {
+    id: "clothing-tnf-mountain-jacket",
+    brand: "The North Face", category: "clothing", laneKey: "tnf_mountain_jacket",
+    modelName: "TNF Mountain Jacket (Gore-Tex)",
+    aliases: ["Mountain Jacket", "마운틴 자켓", "노스페이스 마운틴"],
+    mustContain: [["노스페이스", "north face", "tnf"], ["마운틴", "mountain jacket", "mountain 자켓"]],
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label", "퍼플라벨"],
+    msrpKrw: 590000, released: 1985,
+  },
+  {
+    id: "clothing-tnf-denali-fleece",
+    brand: "The North Face", category: "clothing", laneKey: "tnf_denali_fleece",
+    modelName: "TNF Denali Fleece",
+    aliases: ["Denali", "데날리", "노스페이스 데날리"],
+    mustContain: [["노스페이스", "north face", "tnf"], ["denali", "데날리"]],
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label"],
+    msrpKrw: 290000, released: 1988,
+  },
+  {
+    id: "clothing-tnf-purple-label",
+    brand: "The North Face Purple Label", category: "clothing", laneKey: "tnf_purple_label",
+    modelName: "TNF Purple Label (Nanamica 일본)",
+    aliases: ["Purple Label", "퍼플라벨", "Nanamica", "나나미카"],
+    // 일본 라인 별도 SKU — 가격 1.5~2배
+    mustContain: [["노스페이스", "north face", "tnf"], ["퍼플라벨", "purple label", "nanamica", "나나미카"]],
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids"],
+    msrpKrw: 290000, released: 2003,
+  },
+  {
+    id: "clothing-tnf-supreme-collab",
+    brand: "Supreme x TNF", category: "clothing", laneKey: "tnf_supreme_collab",
+    modelName: "Supreme × The North Face (collab)",
+    aliases: ["Supreme TNF", "슈프림 노스페이스", "Supreme Nuptse"],
+    mustContain: [["supreme", "슈프림"], ["노스페이스", "north face", "tnf"]],
+    mustNotContain: ["키즈", "kids"],
+    msrpKrw: 650000, released: 2020,
+  },
+  // TNF 백팩 (bag 카테고리):
+  {
+    id: "bag-tnf-borealis",
+    brand: "The North Face", category: "bag", laneKey: "tnf_borealis",
+    modelName: "TNF Borealis Backpack",
+    aliases: ["Borealis", "보레알리스", "노스페이스 보레알리스"],
+    mustContain: [["노스페이스", "north face", "tnf"], ["borealis", "보레알리스"]],
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label", "puplar label"],
+    msrpKrw: 159000, released: 2010,
+  },
+  {
+    id: "bag-tnf-hotshot",
+    brand: "The North Face", category: "bag", laneKey: "tnf_hotshot",
+    modelName: "TNF Hot Shot Backpack",
+    aliases: ["Hot Shot", "핫샷", "노스페이스 핫샷"],
+    mustContain: [["노스페이스", "north face", "tnf"], ["hot shot", "hotshot", "핫샷"]],
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label"],
+    msrpKrw: 189000, released: 2008,
+  },
+  {
+    id: "bag-tnf-bigshot",
+    brand: "The North Face", category: "bag", laneKey: "tnf_bigshot",
+    modelName: "TNF Big Shot Backpack",
+    aliases: ["Big Shot", "빅샷", "노스페이스 빅샷"],
+    mustContain: [["노스페이스", "north face", "tnf"], ["big shot", "bigshot", "빅샷"]],
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label"],
+    msrpKrw: 199000, released: 2008,
+  },
+  // TNF Nuptse Mule (shoe 카테고리):
+  {
+    id: "shoe-tnf-nuptse-mule",
+    brand: "The North Face", category: "shoe", laneKey: "tnf_nuptse_mule",
+    modelName: "TNF Nuptse Mule (슬리퍼)",
+    aliases: ["Nuptse Mule", "눕시 뮬", "노스페이스 뮬"],
+    mustContain: [["노스페이스", "north face", "tnf"], ["뮬", "mule", "슬리퍼", "slipper"]],
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "1996", "패딩", "down"],
+    msrpKrw: 89000, released: 2022,
+  },
+  // Stüssy:
+  {
+    id: "clothing-stussy-nike-collab",
+    brand: "Nike x Stussy", category: "clothing", laneKey: "stussy_nike_collab",
+    modelName: "Nike × Stüssy (collab)",
+    aliases: ["Nike Stussy", "나이키 스투시", "Stussy Nike"],
+    // 한국 매물 109건 압도적
+    mustContain: [["nike", "나이키"], ["stussy", "스투시", "stüssy"]],
+    mustNotContain: ["키즈", "kids", "fragment", "프래그먼트", "dior", "디올", "복각", "이미테이션", "rep ", "replica"],
+    msrpKrw: 250000, released: 2020,
+  },
+  {
+    id: "clothing-stussy-basic-tee",
+    brand: "Stussy", category: "clothing", laneKey: "stussy_basic_tee",
+    modelName: "Stüssy Basic Tee (8 Ball / World Tour / Stock)",
+    aliases: ["Stussy Tee", "스투시 반팔", "Stussy T-Shirt"],
+    mustContain: [["stussy", "스투시", "stüssy"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "8 ball", "8ball", "world tour", "월드투어", "stock", "스톡", "script", "스크립트"]],
+    mustNotContain: ["nike", "나이키", "dior", "디올", "birkenstock", "버켄스탁", "carhartt", "칼하트", "키즈", "kids", "후드", "hoodie", "맨투맨", "긴팔", "복각", "rep ", "replica"],
+    msrpKrw: 89000, released: 2020,
+  },
+  {
+    id: "clothing-stussy-hoodie",
+    brand: "Stussy", category: "clothing", laneKey: "stussy_hoodie",
+    modelName: "Stüssy Hoodie / Crewneck",
+    aliases: ["Stussy Hoodie", "스투시 후드", "Stussy Crewneck", "스투시 맨투맨"],
+    mustContain: [["stussy", "스투시", "stüssy"], ["후드", "hoodie", "맨투맨", "크루넥", "crewneck", "sweatshirt", "스웻셔츠"]],
+    mustNotContain: ["nike", "나이키", "dior", "디올", "birkenstock", "버켄스탁", "carhartt", "칼하트", "키즈", "kids", "반팔", "복각", "rep ", "replica"],
+    msrpKrw: 159000, released: 2020,
+  },
+  {
+    id: "bag-stussy-waist-bag",
+    brand: "Stussy", category: "bag", laneKey: "stussy_waist_bag",
+    modelName: "Stüssy Waist Bag",
+    aliases: ["Stussy Waist Bag", "스투시 웨이스트백", "Stussy Hip Bag", "스투시 힙색"],
+    mustContain: [["stussy", "스투시", "stüssy"], ["waist", "웨이스트", "힙색", "힙 색", "hip bag"]],
+    mustNotContain: ["nike", "나이키", "dior", "디올", "키즈", "kids", "복각", "rep ", "replica"],
+    msrpKrw: 89000, released: 2018,
+  },
+  {
+    id: "clothing-stussy-dior-collab",
+    brand: "Dior x Stussy", category: "clothing", laneKey: "stussy_dior_collab",
+    modelName: "Dior × Stüssy (FW21 한정)",
+    aliases: ["Dior Stussy", "디올 스투시"],
+    mustContain: [["dior", "디올"], ["stussy", "스투시", "stüssy"]],
+    mustNotContain: ["nike", "나이키", "키즈", "kids", "복각", "rep ", "replica"],
+    msrpKrw: 1200000, released: 2021,
+  },
 ];
 
 // Wave 94: CATALOG 전체 SKU에도 카테고리별 NOISE 자동 spread (GENERATED + CORE + Wave 91 신규 다 포함).

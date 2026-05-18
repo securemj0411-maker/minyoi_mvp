@@ -260,6 +260,32 @@ export const DEFAULT_SEARCH_QUERIES = [
   "레고 센트럴 퍼크", "LEGO 21319",
   "레고 A-프레임 캐빈", "LEGO 21338",
   "레고 백악관", "LEGO 21054",
+  // Wave 198 (2026-05-18): 새 카테고리 "clothing" — Polo / TNF / Stüssy.
+  // Polo Ralph Lauren
+  "폴로 피케", "Polo Pique Classic",
+  "폴로 포니", "Polo Pony Tee",
+  "폴로 옥스포드", "Polo Oxford Shirt",
+  "폴로 베어", "Polo Bear Tee",
+  "RRL", "더블 알엘", "Double RL",
+  // The North Face
+  "노스페이스 눕시", "North Face Nuptse", "1996 Nuptse",
+  "노스페이스 마운틴 자켓", "North Face Mountain Jacket", "Gore-Tex Mountain Jacket",
+  "노스페이스 데날리", "North Face Denali",
+  "노스페이스 퍼플라벨", "North Face Purple Label", "Nanamica",
+  "Supreme 노스페이스", "슈프림 노스페이스", "Supreme TNF",
+  "노스페이스 보레알리스", "North Face Borealis",
+  "노스페이스 핫샷", "North Face Hot Shot",
+  "노스페이스 빅샷", "North Face Big Shot",
+  "노스페이스 눕시 뮬", "Nuptse Mule",
+  // Stüssy
+  "Nike Stussy", "나이키 스투시", "Stussy Nike",
+  "Stussy 8 ball", "스투시 8볼",
+  "Stussy World Tour", "스투시 월드투어",
+  "Stussy Basic Tee", "스투시 반팔",
+  "Stussy Hoodie", "스투시 후드",
+  "Stussy Crewneck", "스투시 맨투맨",
+  "Stussy Waist Bag", "스투시 웨이스트백", "스투시 힙색",
+  "Dior Stussy", "디올 스투시",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

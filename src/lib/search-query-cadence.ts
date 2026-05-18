@@ -109,6 +109,26 @@ export function queryFamily(query: string): string {
   ) return "home_appliance";
   // 갤럭시 북 — laptop
   if (lower.includes("갤럭시 북") || lower.includes("galaxy book") || lower.includes("갤럭시북")) return "laptop";
+  // Wave 198 (2026-05-18): 의류 brand 매핑 — Polo / TNF / Stüssy 시그니처 + collab.
+  //   raw 7d sweep: Polo 419건 / TNF 153건 / Stussy 195건. Nike×Stussy 109건 (압도적 collab).
+  if (
+    lower.includes("폴로") || lower.includes("ralph lauren") || lower.includes("랄프로렌") ||
+    lower.includes("rrl") || lower.includes("더블 알엘") ||
+    lower.includes("노스페이스") || lower.includes("north face") || lower.includes("tnf") ||
+    lower.includes("눕시") || lower.includes("nuptse") ||
+    lower.includes("denali") || lower.includes("데날리") ||
+    lower.includes("mountain jacket") || lower.includes("마운틴 자켓") ||
+    lower.includes("nanamica") || lower.includes("나나미카") || lower.includes("퍼플라벨") ||
+    lower.includes("stussy") || lower.includes("스투시") || lower.includes("stüssy") ||
+    lower.includes("8 ball") || lower.includes("8ball") ||
+    lower.includes("world tour") || lower.includes("월드투어")
+  ) return "clothing";
+  // 가방 (TNF 백팩) — bag
+  if (
+    lower.includes("borealis") || lower.includes("보레알리스") ||
+    lower.includes("hot shot") || lower.includes("hotshot") || lower.includes("핫샷") ||
+    lower.includes("big shot") || lower.includes("bigshot") || lower.includes("빅샷")
+  ) return "bag";
   // Wave 194 (2026-05-18): 신발 / 가방 brand 매핑 — 이전엔 모두 unknown fallback.
   //   shoe category=1 query만 등록되어 통계/대시보드 misleading. 운영 가시성 ↑ 목적 (cosmetic).
   if (

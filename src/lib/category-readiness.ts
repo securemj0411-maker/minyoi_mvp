@@ -481,6 +481,26 @@ export const LANE_READINESS: LaneReadinessMap = {
   lego_21319_central_perk: { status: "ready", label: "LEGO 21319 Central Perk", note: "Wave 188" },
   lego_21338_a_frame_cabin: { status: "ready", label: "LEGO 21338 A-Frame Cabin", note: "Wave 188" },
   lego_21054_white_house: { status: "ready", label: "LEGO 21054 White House", note: "Wave 188" },
+  // Wave 198 (2026-05-18): 의류 narrow lane 19개 — Polo / TNF / Stüssy 시그니처 + collab.
+  polo_pique_classic: { status: "ready", label: "Polo Pique Classic Fit", note: "Wave 198" },
+  polo_pony_tee: { status: "ready", label: "Polo Pony Logo T-Shirt", note: "Wave 198" },
+  polo_oxford_shirt: { status: "ready", label: "Polo Oxford Shirt (Standard)", note: "Wave 198" },
+  polo_bear_collab: { status: "ready", label: "Polo Bear Print (한정)", note: "Wave 198" },
+  polo_rrl: { status: "ready", label: "Polo RRL Double RL (premium)", note: "Wave 198 — 가격대 별도" },
+  tnf_nuptse_1996: { status: "ready", label: "TNF 1996 Retro Nuptse", note: "Wave 198" },
+  tnf_mountain_jacket: { status: "ready", label: "TNF Mountain Jacket (Gore-Tex)", note: "Wave 198" },
+  tnf_denali_fleece: { status: "ready", label: "TNF Denali Fleece", note: "Wave 198" },
+  tnf_purple_label: { status: "ready", label: "TNF Purple Label (일본 Nanamica)", note: "Wave 198" },
+  tnf_supreme_collab: { status: "ready", label: "Supreme × TNF (collab)", note: "Wave 198 한정판" },
+  tnf_borealis: { status: "ready", label: "TNF Borealis Backpack", note: "Wave 198 bag" },
+  tnf_hotshot: { status: "ready", label: "TNF Hot Shot Backpack", note: "Wave 198 bag" },
+  tnf_bigshot: { status: "ready", label: "TNF Big Shot Backpack", note: "Wave 198 bag" },
+  tnf_nuptse_mule: { status: "ready", label: "TNF Nuptse Mule (슬리퍼)", note: "Wave 198 shoe" },
+  stussy_nike_collab: { status: "ready", label: "Nike × Stüssy (collab)", note: "Wave 198 ⭐ 매물 압도적 (109건/14d)" },
+  stussy_basic_tee: { status: "ready", label: "Stüssy Basic Tee (8 Ball/World Tour)", note: "Wave 198" },
+  stussy_hoodie: { status: "ready", label: "Stüssy Hoodie / Crewneck", note: "Wave 198" },
+  stussy_waist_bag: { status: "ready", label: "Stüssy Waist Bag", note: "Wave 198 bag" },
+  stussy_dior_collab: { status: "ready", label: "Dior × Stüssy (FW21 한정)", note: "Wave 198 한정판" },
 };
 
 export type CategoryReadinessConfig = {
@@ -671,6 +691,17 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minReadyPool: 8,
     minParseRate: 0.8,
     minTrustedKeys: 4,
+  },
+  // Wave 198 (2026-05-18): 새 카테고리 "clothing" — Polo / TNF / Stüssy.
+  // 사용자 정책: broad 사이즈 무관, collab narrow 분리, 가품 floor 0.30 (의류 시장 가품 ↑).
+  // production 14d sweep: Polo 419건 / TNF 153건 / Stüssy 195건. Nike×Stussy collab 109건 (56%) — narrow 필수.
+  clothing: {
+    status: "internal_only",
+    label: "Clothing",
+    note: "Wave 198: 의류 (Polo/TNF/Stüssy). broad 사이즈 무관, collab narrow 분리 (Supreme×TNF / Nike×Stussy / Dior×Stussy). 가품 floor 0.30 (의류 시장 가품 risk ↑). 시즌 매물 변동 큼 (5월 패딩 비시즌).",
+    minReadyPool: 8,
+    minParseRate: 0.85,
+    minTrustedKeys: 5,
   },
 };
 
