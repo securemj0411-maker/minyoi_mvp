@@ -58,10 +58,6 @@ function priceBucketFilter(key: string | null) {
   return parts.join("&");
 }
 
-function appendPidFilter(filter: string, pids: number[]) {
-  return `${filter}&pid=in.(${pids.join(",")})`;
-}
-
 export async function GET(req: NextRequest) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -168,13 +164,9 @@ export async function GET(req: NextRequest) {
     applyPidScope(searchPids);
   }
 
-  const hasPidScope = pidScope != null;
-  if (pidScope) {
-    const scopedPids = [...pidScope];
-    if (scopedPids.length === 0) {
-      return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
-    }
-    filter = appendPidFilter(filter, scopedPids);
+  const scopedPids: number[] | null = pidScope ? Array.from(pidScope as Set<number>) : null;
+  if (scopedPids && scopedPids.length === 0) {
+    return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
   }
 
   try {
@@ -183,13 +175,15 @@ export async function GET(req: NextRequest) {
     let total = 0;
     let poolRows: PoolRow[] = [];
 
-    if (hasPidScope) {
-      // price/SKU/search 필터는 pid pre-filter를 거치므로 content-range 대신 실제 교집합 row 수를 total로 사용한다.
+    if (scopedPids) {
+      // price/SKU/search 필터는 외부 테이블 pid set과 교집합을 내야 해서 candidate_pool은 base filter만 fetch한다.
+      const allowedPids = new Set<number>(scopedPids);
       const scopedPoolRes = await restFetch(
         `${tableUrl("mvp_candidate_pool")}?select=${cols}&${filter}&order=${order}&limit=5000`,
         { headers: serviceHeaders() },
       );
-      const allFilteredRows = (await scopedPoolRes.json()) as PoolRow[];
+      const allBaseRows = (await scopedPoolRes.json()) as PoolRow[];
+      const allFilteredRows = allBaseRows.filter((row) => allowedPids.has(Number(row.pid)));
       total = allFilteredRows.length;
       poolRows = allFilteredRows.slice(offset, offset + pageSize);
     } else {

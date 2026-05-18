@@ -54,10 +54,6 @@ function priceBucketFilter(key: string | null) {
   return parts.join("&");
 }
 
-function appendPidFilter(filter: string, pids: number[]) {
-  return `${filter}&pid=in.(${pids.join(",")})`;
-}
-
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const page = Math.max(1, Number(url.searchParams.get("page") ?? "1") || 1);
@@ -150,13 +146,9 @@ export async function GET(req: NextRequest) {
     applyPidScope(searchPids);
   }
 
-  const hasPidScope = pidScope != null;
-  if (pidScope) {
-    const scopedPids = [...pidScope];
-    if (scopedPids.length === 0) {
-      return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
-    }
-    filter = appendPidFilter(filter, scopedPids);
+  const scopedPids: number[] | null = pidScope ? Array.from(pidScope as Set<number>) : null;
+  if (scopedPids && scopedPids.length === 0) {
+    return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
   }
 
   try {
@@ -165,12 +157,14 @@ export async function GET(req: NextRequest) {
     let total = 0;
     let poolRows: PoolRow[] = [];
 
-    if (hasPidScope) {
+    if (scopedPids) {
+      const allowedPids = new Set<number>(scopedPids);
       const scopedPoolRes = await restFetch(
         `${tableUrl("mvp_candidate_pool")}?select=${cols}&${filter}&order=${order}&limit=5000`,
         { headers: serviceHeaders() },
       );
-      const allFilteredRows = (await scopedPoolRes.json()) as PoolRow[];
+      const allBaseRows = (await scopedPoolRes.json()) as PoolRow[];
+      const allFilteredRows = allBaseRows.filter((row) => allowedPids.has(Number(row.pid)));
       total = allFilteredRows.length;
       poolRows = allFilteredRows.slice(offset, offset + pageSize);
     } else {
