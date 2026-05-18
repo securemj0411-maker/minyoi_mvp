@@ -75,7 +75,6 @@ test("/me mobile reveal card keeps safety signals outside recommendation details
   const mobileRiskIndex = modal.indexOf("<RevealRiskScoreMini card={card} />", reasonIndex);
   const mobileSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", reasonIndex);
   const revealRiskIndex = modal.indexOf("<RevealRiskScoreMini card={card} />", revealIndex);
-  const conditionPhotoIndex = modal.indexOf("<ConditionPhotoBadge conditionClass={card.marketBasis?.conditionClass ?? null} />", revealIndex);
   const desktopSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", revealIndex);
 
   assert.ok(reasonIndex >= 0 && revealIndex > reasonIndex);
@@ -83,9 +82,10 @@ test("/me mobile reveal card keeps safety signals outside recommendation details
   assert.ok(!(mobileSignalIndex > reasonIndex && mobileSignalIndex < revealIndex));
   assert.ok(revealRiskIndex > revealIndex);
   assert.ok(desktopSignalIndex > revealIndex);
-  assert.ok(conditionPhotoIndex > revealIndex);
   assert.doesNotMatch(modal, /grid-cols-\[104px_minmax/);
-  assert.match(modal, /h-\[118px\] w-full/);
+  assert.match(modal, /function RevealProductImage/);
+  assert.match(modal, /aspect-\[16\/9\] w-full/);
+  assert.match(modal, /object-contain object-center/);
   assert.match(modal, /hidden text-xs font-semibold leading-5/);
   assert.match(modal, /추가 신호 \{hiddenMobileCount\}개/);
   assert.match(modal, /min-w-0 flex-1/);

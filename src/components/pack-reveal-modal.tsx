@@ -642,6 +642,42 @@ function RevealRiskScoreMini({ card }: { card: RevealCard }) {
   );
 }
 
+function RevealProductImage({ card }: { card: RevealCard }) {
+  return (
+    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg bg-[#eee7da] dark:bg-zinc-800 sm:aspect-auto sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]">
+      <ConditionPhotoBadge conditionClass={card.marketBasis?.conditionClass ?? null} />
+      {card.thumbnailUrl ? (
+        <>
+          <Image
+            src={card.thumbnailUrl}
+            alt=""
+            aria-hidden="true"
+            fill
+            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 132px, 150px"
+            className="scale-[1.08] object-cover object-center opacity-55 blur-sm"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,253,249,0.22),rgba(238,231,218,0.30))] dark:bg-zinc-950/20" />
+          <div className="absolute inset-0 p-2.5 sm:p-2">
+            <div className="relative h-full w-full">
+              <Image
+                src={card.thumbnailUrl}
+                alt={card.name}
+                fill
+                sizes="(max-width: 639px) 100vw, (max-width: 1023px) 132px, 150px"
+                className="rounded-md object-contain object-center drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)]"
+              />
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="flex h-full items-center justify-center text-xs font-semibold text-zinc-400">
+          이미지 없음
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SkuListingFlowMini({ card }: { card: RevealCard }) {
   const flow = card.skuListingFlow;
   if (!flow) return null;
@@ -1043,23 +1079,7 @@ function RevealCardItem({
     >
       {/* 좌측 카드 — 매물 정보 (image + 메타 + verdicts + 노트 + 버튼) */}
       <div className="order-1 grid gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/40 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
-      <div className="relative h-[118px] w-full overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]">
-        <ConditionPhotoBadge conditionClass={card.marketBasis?.conditionClass ?? null} />
-        {card.thumbnailUrl ? (
-          <Image
-            src={card.thumbnailUrl}
-            alt={card.name}
-            fill
-            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 132px, 150px"
-            className="object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-xs font-semibold text-zinc-400">
-            이미지 없음
-          </div>
-        )}
-        {/* Wave 80: 사진을 가리던 floating overlay 제거. 액션은 모달 하단 footer로 이동. */}
-      </div>
+      <RevealProductImage card={card} />
 
       <div className="min-w-0 w-full space-y-2">
         <div className="flex w-full items-start justify-between gap-3">
