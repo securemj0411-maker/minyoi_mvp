@@ -5,6 +5,8 @@
 // 2026-05-16 (사용자 코멘트 id 105): cc (condition_class) 옵션 추가. 본 매물 condition 매칭 그래프만.
 //   - cc 없으면 모든 cc 합쳐 (기존 동작).
 //   - cc 있으면 매칭만. fallback: 정확 매칭 없는 date는 'all' / 'normal' fallback.
+// 2026-05-18 Wave 227: strict=1 옵션 추가. 미개봉/다나와 기준 상세에서는
+//   숫자는 다나와 reference인데 그래프만 normal/clean fallback으로 보이는 괴리를 차단한다.
 
 import { NextResponse, type NextRequest } from "next/server";
 import { conditionFallbackChain } from "@/lib/condition-fallback";
@@ -26,6 +28,7 @@ export async function GET(req: NextRequest) {
   const days = Math.max(1, Math.min(MAX_DAYS, Number(url.searchParams.get("days") ?? String(DEFAULT_DAYS)) || DEFAULT_DAYS));
   const cc = url.searchParams.get("cc")?.trim();
   const ccFilter = cc && VALID_CCS.has(cc) ? cc : null;
+  const strictCondition = url.searchParams.get("strict") === "1";
 
   const rate = await checkRateLimit({
     bucketKey: `market-history:${clientIpKey(req)}`,
@@ -61,6 +64,7 @@ export async function GET(req: NextRequest) {
     }>;
 
     // cc filter 있으면 date 별로 fallback 적용: target → normal → all → 아무거나.
+    // strict=1이면 정확 condition_class만 사용하고 fallback row는 아예 버린다.
     // cc filter 없으면 'all' 우선, 없으면 첫 row.
     const byDate = new Map<string, typeof rows>();
     for (const r of rows) {
@@ -68,7 +72,7 @@ export async function GET(req: NextRequest) {
       byDate.get(r.date)!.push(r);
     }
     // Wave 159h (2026-05-17): shared module conditionFallbackChain 사용 (DRY).
-    const fallbackOrder = ccFilter ? conditionFallbackChain(ccFilter) : ["all", "normal"];
+    const fallbackOrder = ccFilter ? (strictCondition ? [ccFilter] : conditionFallbackChain(ccFilter)) : ["all", "normal"];
     const picked: typeof rows = [];
     for (const [, dateRows] of byDate) {
       let chosen = null;
@@ -76,7 +80,8 @@ export async function GET(req: NextRequest) {
         const c = dateRows.find((r) => r.condition_class === target);
         if (c) { chosen = c; break; }
       }
-      chosen = chosen ?? dateRows[0];
+      if (!chosen && !strictCondition) chosen = dateRows[0];
+      if (!chosen) continue;
       picked.push(chosen);
     }
     picked.sort((a, b) => a.date.localeCompare(b.date));
@@ -84,6 +89,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       comparableKey: ck,
       conditionClass: ccFilter,
+      strictCondition,
       points: picked.map((r) => ({
         date: r.date,
         conditionClass: r.condition_class,

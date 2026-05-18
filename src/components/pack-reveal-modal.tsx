@@ -786,6 +786,8 @@ function RevealCardItem({
           comparableKey={card.marketBasis?.comparableKey ?? null}
           currentPrice={card.price}
           conditionClass={card.marketBasis?.conditionClass ?? null}
+          priceSource={card.marketBasis?.priceSource ?? null}
+          referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
         />
 
         <VelocityBasisMini card={card} />

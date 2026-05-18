@@ -60,11 +60,15 @@ export default function MarketHistoryChart({
   comparableKey,
   currentPrice,
   conditionClass,
+  priceSource,
+  referencePrice,
   lazy = false,
 }: {
   comparableKey: string | null;
   currentPrice?: number | null;
   conditionClass?: string | null;
+  priceSource?: "reference" | "market" | null;
+  referencePrice?: number | null;
   // 2026-05-16 (사용자 코멘트): admin pool 처럼 한 페이지에 chart 10+ 개면 rate limit (30/60s/IP) 즉시 초과.
   // lazy=true → "시세 보기" 버튼 클릭 시만 fetch. admin-pool-browser 에서 사용.
   lazy?: boolean;
@@ -80,8 +84,13 @@ export default function MarketHistoryChart({
     setLoading(true);
     setError(null);
     // 2026-05-16 (사용자 코멘트 id 105): cc 옵션으로 condition_class 매칭 데이터만 fetch.
-    const ccQuery = conditionClass ? `&cc=${encodeURIComponent(conditionClass)}` : "";
-    fetch(`/api/market/history?ck=${encodeURIComponent(comparableKey)}&days=30${ccQuery}`, { cache: "no-store" })
+    // Wave 227: 다나와 reference 기준인 미개봉 매물은 그래프 fallback 차단.
+    // 숫자는 다나와인데 그래프는 normal/clean 번개 median으로 보이는 UX 괴리를 막는다.
+    const isReferenceChart = priceSource === "reference";
+    const chartConditionClass = isReferenceChart ? "unopened" : conditionClass;
+    const ccQuery = chartConditionClass ? `&cc=${encodeURIComponent(chartConditionClass)}` : "";
+    const strictQuery = isReferenceChart ? "&strict=1" : "";
+    fetch(`/api/market/history?ck=${encodeURIComponent(comparableKey)}&days=30${ccQuery}${strictQuery}`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: HistoryResp) => {
         if (!cancelled) setData(j.points ?? []);
@@ -95,7 +104,7 @@ export default function MarketHistoryChart({
     return () => {
       cancelled = true;
     };
-  }, [comparableKey, conditionClass, opened]);
+  }, [comparableKey, conditionClass, opened, priceSource]);
 
   if (!comparableKey) {
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">모델 분류 미완료 — 시세 그래프 없음</div>;
@@ -120,12 +129,26 @@ export default function MarketHistoryChart({
     return <div className="rounded-md bg-red-50 px-3 py-2 text-[11px] text-red-700">{friendly}</div>;
   }
   if (!data || data.length === 0) {
+    if (priceSource === "reference" && referencePrice != null && referencePrice > 0) {
+      return (
+        <div className="rounded-md border border-emerald-100 bg-emerald-50/70 px-3 py-2 text-[11px] font-semibold text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-200">
+          다나와 새상품 기준 {krwShort(referencePrice)} · 번개 미개봉 거래 추이는 표본 누적 중
+        </div>
+      );
+    }
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">시세 누적 중 — 아직 history 없어요 (매물 처음 등록)</div>;
   }
   // 2026-05-17 fix: 임계값 3 → 2 낮춤. 시스템 fresh start (5/16) 라 history 누적
   // 부족 — 사용자 대다수 매물 "그래프 없음" 텍스트만 봄. 2 점이면 라인 가능.
   // data.length === 1 (단일 시점) 만 텍스트 fallback.
   if (data.length < 2) {
+    if (priceSource === "reference" && referencePrice != null && referencePrice > 0) {
+      return (
+        <div className="rounded-md border border-emerald-100 bg-emerald-50/70 px-3 py-2 text-[11px] font-semibold text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-200">
+          다나와 새상품 기준 {krwShort(referencePrice)} · 번개 미개봉 추이는 내일부터 더 선명해져요
+        </div>
+      );
+    }
     return (
       <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
         시세 누적 1일째 — 내일부터 추이 그래프 자동 표시
@@ -153,6 +176,8 @@ export default function MarketHistoryChart({
   // currentPrice가 placeholder면 그래프 끌어올려 다른 점이 안 보임.
   const showCurrentPrice = currentPrice != null && currentPrice > 0 && currentPrice < 100_000_000;
   if (showCurrentPrice) allPrices.push(currentPrice as number);
+  const showReferencePrice = priceSource === "reference" && referencePrice != null && referencePrice > 0 && referencePrice < 100_000_000;
+  if (showReferencePrice) allPrices.push(referencePrice as number);
 
   if (allPrices.length === 0) {
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500">표본 부족 (가격 데이터 없음)</div>;
@@ -181,20 +206,29 @@ export default function MarketHistoryChart({
   const latestActive = data[data.length - 1]?.active;
   const latestSold = data[data.length - 1]?.sold;
   const totalSoldCount = data.reduce((sum, p) => sum + p.soldCount, 0);
+  const title = priceSource === "reference" ? "미개봉 시세 추이" : "시세 30일 추이";
+  const activeLabel = priceSource === "reference" ? "미개봉 호가" : "호가";
+  const soldLabel = priceSource === "reference" ? "미개봉 거래가" : "거래가";
 
   return (
     <div className="rounded-md bg-white px-2 py-2 dark:bg-zinc-900">
       <div className="flex items-center justify-between gap-2 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
-        <span>시세 30일 추이</span>
+        <span>{title}</span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 justify-end">
           <span className="inline-flex items-center gap-1">
             <span className="inline-block h-1.5 w-3 rounded bg-emerald-500" />
-            호가
+            {activeLabel}
           </span>
           <span className="inline-flex items-center gap-1">
             <span className="inline-block h-1.5 w-3 rounded bg-blue-500" />
-            거래가
+            {soldLabel}
           </span>
+          {showReferencePrice ? (
+            <span className="inline-flex items-center gap-1">
+              <span className="inline-block h-[2px] w-3 bg-violet-500" style={{ borderTop: "2px dashed #8b5cf6", background: "transparent" }} />
+              <span className="text-violet-600 dark:text-violet-300">다나와</span>
+            </span>
+          ) : null}
           <span className="inline-flex items-center gap-1">
             <span className="inline-block h-[2px] w-3 bg-red-500" style={{ borderTop: "2px dashed #ef4444", background: "transparent" }} />
             <span className="text-red-600 dark:text-red-400">내 매물</span>
@@ -240,6 +274,9 @@ export default function MarketHistoryChart({
         {showCurrentPrice ? (
           <line x1={padX} y1={y(currentPrice as number)} x2={width - padR} y2={y(currentPrice as number)} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,3" />
         ) : null}
+        {showReferencePrice ? (
+          <line x1={padX} y1={y(referencePrice as number)} x2={width - padR} y2={y(referencePrice as number)} stroke="#8b5cf6" strokeWidth="2" strokeDasharray="3,3" />
+        ) : null}
 
         {/* 우측 끝 라벨 — 호가(emerald) / 거래가(blue) / 내 매물(red) 각각 점 + 가격 박스 */}
         {latestActive != null ? (
@@ -267,11 +304,21 @@ export default function MarketHistoryChart({
             </text>
           </>
         ) : null}
+        {showReferencePrice ? (
+          <>
+            <circle cx={width - padR} cy={y(referencePrice as number)} r="3.5" fill="#8b5cf6" stroke="white" strokeWidth="1" />
+            <rect x={width - padR + 3} y={y(referencePrice as number) - 22} width="50" height="13" rx="3" fill="#8b5cf6" />
+            <text x={width - padR + 28} y={y(referencePrice as number) - 12} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">
+              {krwShort(referencePrice as number)}
+            </text>
+          </>
+        ) : null}
       </svg>
       <div className="mt-1 flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
         <span>
-          {latestActive != null ? `최근 호가 ${krwShort(latestActive)}` : ""}
-          {latestSold != null ? ` · 최근 거래가 ${krwShort(latestSold)}` : ""}
+          {showReferencePrice ? `다나와 ${krwShort(referencePrice as number)}` : ""}
+          {latestActive != null ? `${showReferencePrice ? " · " : ""}최근 ${activeLabel} ${krwShort(latestActive)}` : ""}
+          {latestSold != null ? ` · 최근 ${soldLabel} ${krwShort(latestSold)}` : ""}
         </span>
         <span>
           {totalSoldCount > 0 ? `총 거래 ${totalSoldCount}건 / 30일` : "거래 0건 — 호가 추정"}
