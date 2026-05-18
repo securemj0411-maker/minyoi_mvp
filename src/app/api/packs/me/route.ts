@@ -438,9 +438,9 @@ export async function GET(req: Request) {
       const skuName = raw?.sku_name ?? null;
       const skuId = raw?.sku_id ?? null;
       // Wave 189 (2026-05-18): 실시간 marketBasis 계산 후 marketGapKrw / marketStale 박음.
-      // Wave 190 (2026-05-18): DB 의 current_profit_* / market_invalidated_at 우선 사용.
-      //   market-worker 후 RPC `recompute_reveal_current_profits` 가 자동 갱신 (Wave 191).
-      //   DB column null 이면 (옛 reveal / 아직 cron 미실행) marketBasis 실시간 계산 fallback.
+      // Wave 208 (2026-05-18): /me display는 request-time marketBasis를 source of truth로 사용.
+      // DB current_profit_*는 cron lag/cache 값이라, 있더라도 stale할 수 있다. 사용자가 /me를
+      // 새로고침하면 그 시점의 latest market/reference median 기준으로 차익을 다시 보여준다.
       const computedMarketBasis = comparableKey
         ? marketBasisForCandidate(
             comparableKey,
@@ -455,18 +455,10 @@ export async function GET(req: Request) {
       const dbMarketInvalidatedAt = reveal.market_invalidated_at ?? null;
       const fallbackMedian = computedMarketBasis?.medianPrice ?? null;
       const fallbackGap = fallbackMedian != null && priceNum > 0 ? fallbackMedian - priceNum : null;
-      // Wave 203 (2026-05-18): unopened + reference price is the display source of truth.
-      // current_profit RPC can lag or be based on market_price_daily, so avoid mixing a
-      // Danawa/reference median with a Bunjang-derived current_profit on /me cards.
-      const usesReferenceAnchor = Boolean(
-        computedMarketBasis?.priceSource === "reference",
-      );
-      const marketGapKrw = usesReferenceAnchor
-        ? fallbackGap
-        : (dbCurrentProfit != null ? dbCurrentProfit : fallbackGap);
-      const marketStale = usesReferenceAnchor
-        ? (marketGapKrw != null && marketGapKrw < 0)
-        : (dbMarketInvalidatedAt != null ? true : (marketGapKrw != null && marketGapKrw < 0));
+      const marketGapKrw = fallbackGap != null ? fallbackGap : dbCurrentProfit;
+      const marketStale = marketGapKrw != null
+        ? marketGapKrw < 0
+        : dbMarketInvalidatedAt != null;
       return {
         pid: Number(reveal.pid),
         name: raw?.name ?? `PID ${reveal.pid}`,
