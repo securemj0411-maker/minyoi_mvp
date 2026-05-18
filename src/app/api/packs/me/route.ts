@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
+import { fetchDetail } from "@/lib/bunjang";
 import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import {
   fetchReferencePrices,
@@ -11,6 +12,7 @@ import {
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { detectSoldOut, describeSignals, isSoldOut } from "@/lib/sold-out";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -25,6 +27,8 @@ const MAX_USER_REF = 64;
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
 const MAX_REVEAL_SCAN = 500;
+const LIVE_VERIFY_EXTRA = 10;
+const LIVE_VERIFY_CONCURRENCY = 4;
 const RATE_LIMIT_MAX = Math.max(1, Number(process.env.PACKS_ME_RATE_LIMIT_MAX ?? 10));
 const RATE_LIMIT_WINDOW_SECONDS = Math.max(1, Number(process.env.PACKS_ME_RATE_LIMIT_WINDOW_SECONDS ?? 10));
 
@@ -174,6 +178,113 @@ function compareItems(sort: RevealSort) {
   };
 }
 
+function isTerminalListingState(state: string | null | undefined) {
+  return TERMINAL_STATES.has(String(state ?? "").toLowerCase());
+}
+
+async function patchLiveTerminalState(
+  item: RevealItem,
+  state: "sold_confirmed" | "disappeared",
+  saleStatus: string | null,
+  reason: string,
+) {
+  const now = new Date().toISOString();
+  const rawPatch: Record<string, unknown> = {
+    listing_state: state,
+    updated_at: now,
+  };
+  if (saleStatus != null) rawPatch.sale_status = saleStatus;
+  if (state === "sold_confirmed") rawPatch.sold_detected_at = now;
+  if (state === "disappeared") {
+    rawPatch.disappeared_at = now;
+    rawPatch.last_missing_at = now;
+  }
+
+  await Promise.allSettled([
+    restFetch(`${tableUrl("mvp_raw_listings")}?pid=eq.${item.pid}`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: JSON.stringify(rawPatch),
+    }),
+    restFetch(`${tableUrl("mvp_lifecycle_checks")}?pid=eq.${item.pid}`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: JSON.stringify({
+        status: state,
+        last_checked_at: now,
+        last_check_result: state === "sold_confirmed" ? "sold" : "missing",
+        next_check_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        state_reason: `packs_me_live_${reason}`.slice(0, 240),
+        locked_at: null,
+        locked_until: null,
+        updated_at: now,
+      }),
+    }),
+    restFetch(`${tableUrl("mvp_candidate_pool")}?pid=eq.${item.pid}&status=in.(ready,reserved)`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: JSON.stringify({
+        status: "invalidated",
+        invalidated_reason: `packs_me_live_${reason}`.slice(0, 120),
+        updated_at: now,
+      }),
+    }),
+  ]);
+}
+
+async function liveVerifyVisibleItems(items: RevealItem[]): Promise<{ items: RevealItem[]; hiddenCount: number }> {
+  const verified: Array<RevealItem | null> = new Array(items.length).fill(null);
+  let cursor = 0;
+  let hiddenCount = 0;
+
+  async function worker() {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      const item = items[index];
+      if (!item || isTerminalListingState(item.listingState)) {
+        hiddenCount += item ? 1 : 0;
+        continue;
+      }
+
+      try {
+        const detail = await fetchDetail(String(item.pid));
+        if (!detail) {
+          await patchLiveTerminalState(item, "disappeared", null, "detail_fetch_missing");
+          hiddenCount += 1;
+          continue;
+        }
+
+        const signals = detectSoldOut(detail, item.price, {
+          title: item.name,
+          description: item.descriptionPreview,
+        });
+        if (isSoldOut(signals)) {
+          const reason = describeSignals(signals);
+          await patchLiveTerminalState(item, "sold_confirmed", detail.saleStatus, reason);
+          hiddenCount += 1;
+          continue;
+        }
+
+        verified[index] = {
+          ...item,
+          listingState: "active",
+          saleStatus: detail.saleStatus || item.saleStatus,
+        };
+      } catch (err) {
+        console.error("packs/me live verify failed (non-fatal)", {
+          pid: item.pid,
+          err: err instanceof Error ? err.message : String(err),
+        });
+        verified[index] = item;
+      }
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(LIVE_VERIFY_CONCURRENCY, items.length) }, () => worker()));
+  return { items: verified.filter((item): item is RevealItem => item != null), hiddenCount };
+}
+
 export async function GET(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -225,9 +336,10 @@ export async function GET(req: Request) {
 
   const pidList = pids.join(",");
   const packOpenList = packOpenIds.join(",");
-  // 2026-05-17 (사용자 요청): 기본 true — 판매완료/사라진 매물도 표시. "?includeTerminal=0" 박으면 숨김.
+  // Wave 204 (2026-05-18): 기본 hide — 사용자 재접속 시 판매완료/삭제/숨김 매물은 보여주지 않는다.
+  // 운영/디버그가 필요할 때만 "?includeTerminal=1"로 terminal rows까지 확인.
   const includeTerminalRaw = url.searchParams.get("includeTerminal");
-  const includeTerminal = includeTerminalRaw !== "0";
+  const includeTerminal = includeTerminalRaw === "1";
   const [rawRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
       `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status&pid=in.(${pidList})`,
@@ -395,21 +507,29 @@ export async function GET(req: Request) {
         marketStale,
       };
     })
-    // 2026-05-17 (사용자 요청): terminal 매물 (sold/disappeared) 기본 표시.
-    // 이전: 기본 숨김 → 사용자가 "갑자기 사라진" 느낌, 손해본 인상.
-    // 이제: 명시적으로 "판매완료" 라벨 박아서 표시. ?includeTerminal=0 으로만 숨김 가능.
-    .filter((item) => includeTerminal !== false ? true : !TERMINAL_STATES.has(item.listingState))
+    .filter((item) => includeTerminal ? true : !isTerminalListingState(item.listingState))
     .filter((item) => matchesSearch(item, query))
     .sort(compareItems(sort));
 
-  const total = items.length;
+  const initialTotal = items.length;
+  const totalPagesBeforeLive = Math.max(1, Math.ceil(initialTotal / pageSize));
+  const safePageBeforeLive = Math.min(page, totalPagesBeforeLive);
+  const start = (safePageBeforeLive - 1) * pageSize;
+  const liveSlice = includeTerminal
+    ? items.slice(start, start + pageSize)
+    : items.slice(start, start + pageSize + LIVE_VERIFY_EXTRA);
+  const liveVerified = includeTerminal
+    ? { items: liveSlice, hiddenCount: 0 }
+    : await liveVerifyVisibleItems(liveSlice);
+
+  const pageItems = liveVerified.items.slice(0, pageSize);
+  const total = Math.max(0, initialTotal - liveVerified.hiddenCount);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(page, totalPages);
-  const start = (safePage - 1) * pageSize;
 
   return NextResponse.json({
     userRef,
-    reveals: items.slice(start, start + pageSize),
+    reveals: pageItems,
     page: safePage,
     pageSize,
     total,
