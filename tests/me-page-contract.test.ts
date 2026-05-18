@@ -68,6 +68,15 @@ test("/me modal keeps market evidence compact before the graph on mobile", () =>
   assert.ok(graphIndex >= 0 && trustIndex > graphIndex);
 });
 
+test("/me reveal profit block stays compact so the graph remains visible", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+
+  assert.match(modal, /text-xl font-black leading-tight tabular-nums sm:text-2xl/);
+  assert.match(modal, /text-\[11px\] font-black tabular-nums/);
+  assert.match(modal, /gap-x-1\.5 gap-y-0\.5 text-\[11px\]/);
+  assert.doesNotMatch(modal, /text-2xl font-black tabular-nums/);
+});
+
 test("/me mobile reveal card keeps safety signals outside recommendation details", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const reasonIndex = modal.indexOf("function RecommendationReasonPanel");

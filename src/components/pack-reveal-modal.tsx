@@ -1087,7 +1087,7 @@ function RevealCardItem({
             <div className="line-clamp-2 text-sm font-black leading-5 text-zinc-900 dark:text-zinc-50">
               {card.name}
             </div>
-            <div className={`mt-2 w-full rounded-xl border px-3 py-2 ${
+            <div className={`mt-2 w-full rounded-xl border px-2.5 py-2 sm:px-3 ${
               isMarketInvalidated
                 ? "border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-950/25"
                 : "border-emerald-100 bg-emerald-50/70 dark:border-emerald-900/50 dark:bg-emerald-950/20"
@@ -1098,13 +1098,13 @@ function RevealCardItem({
                 }`}>
                   현재 차익
                 </span>
-                <span className={`text-2xl font-black tabular-nums ${
+                <span className={`text-xl font-black leading-tight tabular-nums sm:text-2xl ${
                   isMarketInvalidated ? "text-rose-800 dark:text-rose-200" : "text-emerald-800 dark:text-emerald-200"
                 }`}>
                   {displayProfitRange(card)}
                 </span>
                 {currentPct != null ? (
-                  <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 ring-1 ring-amber-100 dark:bg-zinc-900/50 dark:text-amber-200 dark:ring-amber-900/50">
+                  <span className="rounded-full bg-white/80 px-1.5 py-0.5 text-[11px] font-black tabular-nums text-amber-800 ring-1 ring-amber-100 dark:bg-zinc-900/50 dark:text-amber-200 dark:ring-amber-900/50">
                     {currentPct >= 0 ? "+" : ""}{currentPct}%
                   </span>
                 ) : null}
@@ -1114,7 +1114,7 @@ function RevealCardItem({
                   </span>
                 ) : null}
               </div>
-              <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
+              <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[11px] font-bold tabular-nums text-zinc-700 dark:text-zinc-200 sm:text-xs">
                 <span>매입 {krw(card.price)}</span>
                 {card.marketBasis?.medianPrice ? (
                   <>
