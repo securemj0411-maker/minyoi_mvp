@@ -11,6 +11,7 @@ import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
+import { BunjangLogo, DanawaLogo } from "@/components/market-brand-logo";
 import { CATALOG } from "@/lib/catalog";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 
@@ -439,23 +440,27 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     })()}
                     {/* 2026-05-16 (사용자 코멘트 #120): 시세 출처 표시 — pack-reveal-modal 과 동일 패턴. */}
                     {item.conditionClass === "unopened" ? (
-                      <div className="text-[10px] font-bold text-amber-700 dark:text-amber-300">
-                        📍 다나와 새 가격 기준 (이 매물 미개봉)
+                      <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                        <DanawaLogo className="h-4 w-4 rounded-[4px]" />
+                        다나와 새 가격 기준 (이 매물 미개봉)
                       </div>
                     ) : item.conditionClass === "mint" ? (
-                      <div className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
-                        📍 번개 S급 매물 median
+                      <div className="inline-flex items-center gap-1 text-[10px] font-bold text-zinc-700 dark:text-zinc-200">
+                        <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+                        번개 S급 매물 median
                       </div>
                     ) : item.conditionClass ? (
-                      <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
-                        📍 번개 중고 매물 median ({item.conditionClass})
+                      <div className="inline-flex items-center gap-1 text-[10px] text-zinc-400 dark:text-zinc-500">
+                        <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+                        번개 중고 매물 median ({item.conditionClass})
                       </div>
                     ) : null}
                     <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
                       <span className="font-mono">{item.skuId ?? "—"}</span> · query: {item.query ?? "—"}
                     </div>
-                    <a href={item.bunjangUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-[11px] font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
-                      🔗 번장 열기
+                    <a href={item.bunjangUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
+                      <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+                      번장 열기
                     </a>
                   </div>
                 </div>

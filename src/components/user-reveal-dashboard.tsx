@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ConditionChip } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
+import { BunjangSourceBadge, DanawaSourceBadge } from "@/components/market-brand-logo";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
@@ -1097,12 +1098,12 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                     <span>시세 <span className={`font-black tabular-nums ${isTerminal ? "" : "text-[#223127] dark:text-zinc-100"}`}>{krw(item.marketBasis.medianPrice)}</span></span>
                     {/* Wave 207: only show Danawa when the reference anchor was actually used. */}
                     {!isTerminal && item.marketBasis.priceSource === "reference" ? (
-                      <span className="ml-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:bg-amber-950/30 dark:text-amber-300" title="다나와 새 가격 anchor — 이 매물 미개봉">
-                        📍 다나와
+                      <span className="ml-1" title="다나와 새 가격 anchor — 이 매물 미개봉">
+                        <DanawaSourceBadge />
                       </span>
                     ) : !isTerminal && item.marketBasis.conditionClass === "mint" ? (
-                      <span className="ml-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-black text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300" title="번개 S급 매물 median">
-                        📍 번개 S급
+                      <span className="ml-1" title="번개 S급 매물 median">
+                        <BunjangSourceBadge label="번개 S급" />
                       </span>
                     ) : null}
                   </>

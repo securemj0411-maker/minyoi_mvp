@@ -8,6 +8,7 @@ import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
+import { BunjangLogo, BunjangSourceBadge, DanawaLogo, DanawaSourceBadge } from "@/components/market-brand-logo";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 
@@ -96,8 +97,8 @@ function displayProfitRange(card: RevealCard) {
 function marketSourceBadge(card: RevealCard) {
   const market = card.marketBasis;
   if (!market) return null;
-  if (market.priceSource === "reference") return { label: "📍 다나와", tone: "reference" as const };
-  if (market.conditionClass === "mint") return { label: "📍 번개 S급", tone: "mint" as const };
+  if (market.priceSource === "reference") return { label: "다나와", tone: "reference" as const };
+  if (market.conditionClass === "mint") return { label: "번개 S급", tone: "mint" as const };
   return null;
 }
 
@@ -318,16 +319,19 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
         {/* 2026-05-16 (사용자 코멘트 id 104/107/109): 시세 출처 명시 강화. */}
         {/* 2026-05-16 (N4): unopened (박스 안 뜯음) vs mint (S급 사용감 거의 없음) 분리. */}
         {market.priceSource === "reference" ? (
-          <span className="text-amber-700 dark:text-amber-300 font-bold">
-            📍 다나와 새 가격 기준 (이 매물 미개봉)
+          <span className="inline-flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-300">
+            <DanawaLogo className="h-4 w-4 rounded-[4px]" />
+            다나와 새 가격 기준 (이 매물 미개봉)
           </span>
         ) : market.conditionClass === "mint" ? (
-          <span className="text-emerald-700 dark:text-emerald-300 font-bold">
-            📍 번개 S급 매물 {market.sampleCount}건 median
+          <span className="inline-flex items-center gap-1 font-bold text-zinc-700 dark:text-zinc-200">
+            <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+            번개 S급 매물 {market.sampleCount}건 median
           </span>
         ) : (
-          <span className="text-zinc-400 dark:text-zinc-500">
-            📍 번개 중고 매물 {market.sampleCount}건 median
+          <span className="inline-flex items-center gap-1 text-zinc-400 dark:text-zinc-500">
+            <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+            번개 중고 매물 {market.sampleCount}건 median
           </span>
         )}
       </div>
@@ -702,13 +706,9 @@ function RevealCardItem({
                     <span className="text-zinc-300 dark:text-zinc-600">·</span>
                     <span className="text-zinc-500 dark:text-zinc-300">시세 {krw(card.marketBasis.medianPrice)}</span>
                     {sourceBadge ? (
-                      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-black ${
-                        sourceBadge.tone === "reference"
-                          ? "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300"
-                          : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300"
-                      }`}>
-                        {sourceBadge.label}
-                      </span>
+                      sourceBadge.tone === "reference"
+                        ? <DanawaSourceBadge label={sourceBadge.label} />
+                        : <BunjangSourceBadge label={sourceBadge.label} />
                     ) : null}
                   </>
                 ) : null}
@@ -937,8 +937,9 @@ function ModalActionFooter({
           target="_blank"
           rel="noreferrer"
           onClick={() => onLinkClicked(card.pid)}
-          className="block rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-cream)] shadow-lg shadow-[rgba(49,66,56,0.18)] transition hover:bg-[#29382f]"
+          className="flex items-center justify-center gap-1.5 rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-cream)] shadow-lg shadow-[rgba(49,66,56,0.18)] transition hover:bg-[#29382f]"
         >
+          <BunjangLogo className="h-[18px] w-[18px] rounded-[5px]" />
           번개장터 열기
         </a>
       </div>

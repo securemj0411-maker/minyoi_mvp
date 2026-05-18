@@ -7,6 +7,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BunjangLogo, DanawaLogo } from "@/components/market-brand-logo";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -340,7 +341,12 @@ export function MarketSourceDebug({
                             매입 {krw(data.ourListing.price)}
                           </span>
                           <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                          <span className="text-[12px] font-semibold text-zinc-500 dark:text-zinc-400">
+                          <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-zinc-500 dark:text-zinc-400">
+                            {data.ourListing.marketPriceSource === "reference" ? (
+                              <DanawaLogo className="h-4 w-4 rounded-[4px]" />
+                            ) : (
+                              <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+                            )}
                             {data.ourListing.marketPriceLabel}{" "}
                             {krw(data.ourListing.displayMarketPrice ?? data.ourListing.skuMedian)}
                           </span>
@@ -357,9 +363,10 @@ export function MarketSourceDebug({
                           href={data.ourListing.bunjangUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-1 inline-block text-[11px] font-bold text-emerald-700 hover:underline dark:text-emerald-400"
+                          className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:underline dark:text-emerald-400"
                         >
-                          🔗 번장에서 이 매물 열기 →
+                          <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+                          번장에서 이 매물 열기 →
                         </a>
                       </div>
                     </div>
