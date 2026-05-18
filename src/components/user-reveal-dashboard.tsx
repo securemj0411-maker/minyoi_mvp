@@ -829,18 +829,15 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   }, [hideTerminal, items, selectedPids.size]);
 
   return (
-    <section id="my-reveals-list" className="rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] p-3 shadow-sm scroll-mt-4 dark:border-zinc-800 dark:bg-zinc-900 sm:p-5">
-      <div className="flex flex-col gap-2 sm:gap-3 lg:flex-row lg:items-start lg:justify-between">
+    <section id="my-reveals-list" className="scroll-mt-4 px-0 sm:rounded-2xl sm:border sm:border-[#ddd4c7] sm:bg-[#fffbf4] sm:p-5 sm:shadow-sm sm:dark:border-zinc-800 sm:dark:bg-zinc-900">
+      <div className="hidden flex-col gap-2 sm:flex sm:gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2 text-base font-black text-[#223127] dark:text-zinc-100">
             <span>내 추천 보관함</span>
-            <span className="rounded-full bg-[#eef6ec] px-2 py-0.5 text-[11px] font-black text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-zinc-200 sm:hidden">
-              {loading ? "로딩" : `${total.toLocaleString("ko-KR")}건`}
-            </span>
           </div>
           <div className="mt-1 hidden text-xs font-semibold text-[#6b7269] dark:text-zinc-400 sm:block">현재 시세와 판매 상태를 다시 맞춘 추천 기록입니다.</div>
         </div>
-        <div className="hidden items-center gap-2 sm:flex">
+        <div className="flex items-center gap-2">
           {/* 2026-05-17: 선택 모드 토글 + 전체 삭제. */}
           {!selectMode ? (
             <>
@@ -877,7 +874,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       </div>
 
       {hasReveals ? (
-        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-[#e5dccf] bg-white/70 px-2.5 py-1.5 text-[11px] font-black tabular-nums text-[#223127] dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-100 sm:hidden">
+        <div className="mx-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-y border-[#e5dccf] bg-transparent py-2 text-[11px] font-black tabular-nums text-[#223127] dark:border-zinc-800 dark:text-zinc-100 sm:hidden">
+          <span>{loading ? "로딩" : `${total.toLocaleString("ko-KR")}건`}</span>
           <span>판매중 {dashboardSummary.activeCount.toLocaleString("ko-KR")}건</span>
           <span className="text-[#b45d19] dark:text-amber-200">평균 {signedKrw(dashboardSummary.avgProfit)}</span>
           {dashboardSummary.marketClosedCount > 0 ? (
@@ -1097,7 +1095,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       {shouldShowListTools ? (
         <>
-          <details className="mt-2 rounded-lg border border-[#e5dccf] bg-white/75 px-2.5 py-1.5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:hidden">
+          <details className="mx-3 mt-2 rounded-lg border border-[#e5dccf] bg-white/75 px-2.5 py-1.5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:hidden">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[11px] font-black text-[#4f6a52] dark:text-emerald-200 [&::-webkit-details-marker]:hidden">
               <span>검색/정렬</span>
               <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "최신순"} · {viewMode === "grid" ? "카드" : "목록"}</span>
@@ -1216,7 +1214,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       ) : null}
 
       {!loading && total > 0 ? (
-        <div className="mt-3 flex items-center justify-between gap-2 text-xs text-[#6b7269] dark:text-zinc-400">
+        <div className="mx-3 mt-3 flex items-center justify-between gap-2 text-xs text-[#6b7269] dark:text-zinc-400 sm:mx-0">
           <div>
             {firstIndex.toLocaleString("ko-KR")}~{lastIndex.toLocaleString("ko-KR")} / {total.toLocaleString("ko-KR")}개
           </div>
@@ -1226,7 +1224,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       {loading && items.length === 0 ? (
         // 첫 로딩 스켈레톤 — items 비어있을 때만 표시. 검색/페이지 전환 시에는 기존 items 유지.
-        <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "mt-4 grid gap-2"}>
+        <div className={viewMode === "grid" ? "mt-3 grid gap-2 sm:mt-4 sm:gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "mt-3 grid gap-2 sm:mt-4"}>
           {Array.from({ length: 6 }).map((_, i) => (
             <article
               key={`skeleton-${i}`}
@@ -1543,7 +1541,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       {!loading && total === 0 ? (
         query ? (
-          <div className="mt-4 rounded-xl bg-[#fffaf1] p-4 text-center text-xs text-[#6b7269] dark:bg-zinc-950 dark:text-zinc-400">
+          <div className="mx-3 mt-4 rounded-xl bg-[#fffaf1] p-4 text-center text-xs text-[#6b7269] dark:bg-zinc-950 dark:text-zinc-400 sm:mx-0">
             검색 결과가 없습니다.
           </div>
         ) : welcomePending ? (
@@ -1570,7 +1568,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             </div>
           </div>
         ) : (
-          <div className="mt-4 rounded-xl bg-[#fffaf1] p-4 text-center text-xs text-[#6b7269] dark:bg-zinc-950 dark:text-zinc-400">
+          <div className="mx-3 mt-4 rounded-xl bg-[#fffaf1] p-4 text-center text-xs text-[#6b7269] dark:bg-zinc-950 dark:text-zinc-400 sm:mx-0">
             아직 본 추천 상품이 없습니다.
           </div>
         )

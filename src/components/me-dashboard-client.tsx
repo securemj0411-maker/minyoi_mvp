@@ -285,10 +285,8 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           `lg:col-start-2`가 일부 브라우저 implicit-grid 처리로 빈 column 만들어
           content가 오른쪽으로 치우치는 보고 있었음 → mobile에선 grid 비활성. */}
       <div className={`flex min-h-screen flex-col lg:grid ${sidebarCollapsed ? "lg:grid-cols-[44px_minmax(0,1fr)]" : "lg:grid-cols-[220px_minmax(0,1fr)]"} transition-[grid-template-columns] duration-200`}>
-        {/* Mobile: 메뉴 높이를 52px 로 고정. playbook-overview.tsx 의 sticky TOC `top-[112px]`
-            (60px nav + 52px 메뉴) 가정과 정확히 맞춰서 5px 갭 방지. 줄바꿈은 구조상
-            (overflow-x-auto + shrink-0 + whitespace-nowrap) 이미 차단됨. */}
-        <aside className="sticky top-[60px] z-30 h-[52px] border-b border-[#e2d9cb] bg-[#f8f4ec]/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:top-[60px] lg:row-span-2 lg:h-[calc(100dvh-60px)] lg:border-b-0 lg:border-r lg:bg-[#f8f4ec] lg:backdrop-blur-none xl:row-span-1">
+        {/* Mobile: 상품 피드 우선. 탭 바는 숨기고 desktop sidebar 에서만 view 전환. */}
+        <aside className="hidden border-b border-[#e2d9cb] bg-[#f8f4ec]/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:sticky lg:top-[60px] lg:z-30 lg:row-span-2 lg:block lg:h-[calc(100dvh-60px)] lg:border-b-0 lg:border-r lg:bg-[#f8f4ec] lg:backdrop-blur-none xl:row-span-1">
           <div className="flex h-full items-center px-3 py-1 lg:block lg:h-auto lg:px-2 lg:py-3">
             {/* desktop only: collapse toggle 버튼 — 우측 정렬 (saas 표준 패턴) */}
             <div className="hidden lg:flex lg:justify-end lg:mb-1.5">
@@ -353,10 +351,10 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
           <AdminClassificationBrowser />
         ) : (
           // 2026-05-17: history (default) — recommend view 폐기, 모달로 대체.
-          <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
+          <section className="w-full min-w-0 px-0 pb-24 pt-3 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             {/* Wave 182: Saved Money Counter — 안 잃은 돈 + 번 돈 (loss aversion ×2.5). */}
             <SavedMoneyCounter />
-            <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="mb-4 hidden items-center justify-between gap-3 sm:flex">
               <h2 className="flex items-center gap-1.5 text-base font-black text-[#223127] dark:text-zinc-100">
                 <PackageIcon className="h-4 w-4" />
                 나의 상품
@@ -374,11 +372,21 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
             {/* Wave 246: 모바일 첫 진입에서는 상품/준비중 CTA가 먼저 보여야 한다. 피드백 활동은 보관함 아래로 이동. */}
             <MyFeedbackActivity />
             {/* 2026-05-17 (사용자 요청): 목록 밑에도 "더 찾아보기" 버튼 (상단 버튼만 있으면 스크롤 후 보이지 않음). */}
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 hidden justify-center sm:flex">
               <button
                 type="button"
                 onClick={() => setSeekMoreOpen(true)}
                 className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-accent-strong)] px-5 py-2.5 text-sm font-black text-[var(--brand-cream)] shadow-sm transition hover:opacity-90"
+              >
+                <SearchIcon className="h-4 w-4" />
+                더 찾아보기
+              </button>
+            </div>
+            <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-4 sm:hidden">
+              <button
+                type="button"
+                onClick={() => setSeekMoreOpen(true)}
+                className="pointer-events-auto inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3 text-sm font-black text-[var(--brand-cream)] shadow-[0_16px_34px_rgba(34,49,39,0.28)] transition active:scale-[0.98]"
               >
                 <SearchIcon className="h-4 w-4" />
                 더 찾아보기
