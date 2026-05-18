@@ -695,7 +695,7 @@ function RevealCardItem({
                 ) : null}
                 {isMarketInvalidated ? (
                   <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black text-rose-900 dark:bg-rose-900/60 dark:text-rose-100">
-                    추천 무효
+                    판매완료 처리
                   </span>
                 ) : null}
               </div>

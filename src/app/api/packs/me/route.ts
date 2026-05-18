@@ -120,7 +120,7 @@ type RevealItem = {
   optionBaseAssumed: string[] | null;
   // Wave 213 (2026-05-18): request-time current net profit.
   // 운영자풀과 같은 비용 모델(매입 배송비, 판매수수료, 재배송비, 안전버퍼)을 차감한다.
-  // 값은 signed로 둔다. 음수면 "시세 갱신 — 추천 무효"를 즉시 보여준다.
+  // 값은 signed로 둔다. 음수면 프론트에서 판매완료 tombstone으로 접는다.
   marketGapKrw: number | null;
   marketGapKrwMax: number | null;
   marketStale: boolean;  // true = 현재 순익 min < 0 (사용자 손해 위험 신호)

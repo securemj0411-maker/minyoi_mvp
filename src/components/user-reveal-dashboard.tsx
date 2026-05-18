@@ -43,7 +43,8 @@ type RevealItem = {
   skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
   // Wave 182 Phase 3 (2026-05-17): base option fallback — "기본 옵션 가정" UI badge.
   optionBaseAssumed: string[] | null;
-  // Wave 213 (2026-05-18): 실시간 순현재차익 min/max. marketStale=true = 추천 무효 (시세 갱신).
+  // Wave 213 (2026-05-18): 실시간 순현재차익 min/max.
+  // Wave 224: marketStale=true는 사용자 화면에서 "판매완료" tombstone으로 접는다.
   marketGapKrw: number | null;
   marketGapKrwMax: number | null;
   marketStale: boolean;
@@ -108,6 +109,17 @@ function listingStateChipClass(tone: "active" | "sold" | "unknown"): string {
   if (tone === "sold") return "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200";
   if (tone === "active") return "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300";
   return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300";
+}
+
+function isUserFacingClosed(item: RevealItem) {
+  return listingStateLabel(item.listingState).tone === "sold" || item.marketStale;
+}
+
+function closedReasonText(item: RevealItem) {
+  if (listingStateLabel(item.listingState).tone === "sold") {
+    return "추천 당시 매물이 현재 판매완료되어 더 이상 열람할 수 없어요.";
+  }
+  return "현재 시세로는 매입 후 남는 차익이 없어 판매완료 상품으로 정리했어요.";
 }
 
 function storedDescriptionPreview(value: string) {
@@ -580,12 +592,12 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   }, [page, totalPages]);
   const visibleItems = useMemo(() => items.filter((item) => {
     if (!hideTerminal) return true;
-    return listingStateLabel(item.listingState).tone !== "sold";
+    return !isUserFacingClosed(item);
   }), [hideTerminal, items]);
   const dashboardSummary = useMemo(() => {
-    const terminalCount = items.filter((item) => listingStateLabel(item.listingState).tone === "sold").length;
-    const activeItems = visibleItems.filter((item) => listingStateLabel(item.listingState).tone !== "sold");
-    const staleCount = activeItems.filter((item) => item.marketStale).length;
+    const terminalCount = items.filter((item) => isUserFacingClosed(item)).length;
+    const marketClosedCount = items.filter((item) => item.marketStale && listingStateLabel(item.listingState).tone !== "sold").length;
+    const activeItems = visibleItems.filter((item) => !isUserFacingClosed(item));
     const avgProfit = activeItems.length > 0
       ? Math.round(activeItems.reduce((sum, item) => sum + currentProfitAverage(item), 0) / activeItems.length)
       : 0;
@@ -593,7 +605,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       visibleCount: visibleItems.length,
       activeCount: activeItems.length,
       terminalCount,
-      staleCount,
+      marketClosedCount,
       avgProfit,
     };
   }, [items, visibleItems]);
@@ -693,16 +705,16 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           <div className="mt-1 text-xl font-black tabular-nums text-amber-900 dark:text-amber-100">{signedKrw(dashboardSummary.avgProfit)}</div>
         </div>
         <div className={`rounded-xl border px-3 py-2.5 ${
-          dashboardSummary.staleCount > 0
-            ? "border-rose-100 bg-rose-50/80 dark:border-rose-900/50 dark:bg-rose-950/20"
+          dashboardSummary.marketClosedCount > 0
+            ? "border-zinc-300 bg-zinc-50/90 dark:border-zinc-700 dark:bg-zinc-900/50"
             : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950/40"
         }`}>
           <div className={`text-[10px] font-black uppercase tracking-[0.16em] ${
-            dashboardSummary.staleCount > 0 ? "text-rose-700 dark:text-rose-300" : "text-zinc-500 dark:text-zinc-500"
-          }`}>추천 무효</div>
+            dashboardSummary.marketClosedCount > 0 ? "text-zinc-700 dark:text-zinc-300" : "text-zinc-500 dark:text-zinc-500"
+          }`}>시세 마감</div>
           <div className={`mt-1 text-xl font-black tabular-nums ${
-            dashboardSummary.staleCount > 0 ? "text-rose-800 dark:text-rose-200" : "text-zinc-700 dark:text-zinc-300"
-          }`}>{dashboardSummary.staleCount.toLocaleString("ko-KR")}건</div>
+            dashboardSummary.marketClosedCount > 0 ? "text-zinc-800 dark:text-zinc-100" : "text-zinc-700 dark:text-zinc-300"
+          }`}>{dashboardSummary.marketClosedCount.toLocaleString("ko-KR")}건</div>
         </div>
       </div>
 
@@ -960,15 +972,17 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       {/* Wave 205 (2026-05-18): terminal 매물은 기본 표시. 사용자가 원하면 숨길 수만 있다. */}
       {(() => {
-        const terminalCount = items.filter((i) => {
-          const tone = listingStateLabel(i.listingState).tone;
-          return tone === "sold";
-        }).length;
+        const terminalCount = items.filter((item) => isUserFacingClosed(item)).length;
         if (terminalCount === 0) return null;
         return (
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[11px] shadow-sm dark:border-zinc-800 dark:bg-zinc-950/40">
             <span className="text-zinc-700 dark:text-zinc-300">
               판매완료된 상품 <b>{terminalCount}건</b>을 기록으로 남겨뒀어요.
+              {dashboardSummary.marketClosedCount > 0 ? (
+                <span className="ml-1 text-zinc-500 dark:text-zinc-400">
+                  시세상 차익이 사라진 상품 {dashboardSummary.marketClosedCount}건 포함.
+                </span>
+              ) : null}
             </span>
             <button
               type="button"
@@ -988,9 +1002,13 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2" : "mt-4 grid gap-2"}>
         {visibleItems.map((item) => {
           // 2026-05-18: 판매완료/삭제/숨김 계열은 동일한 판매완료 tombstone으로 표시.
+          // Wave 224: 현재 순차익이 0원 미만이면 사용자 화면에서는 판매완료로 접는다.
+          // DB listing_state를 sold로 위조하지는 않는다. marketStale은 시세 재계산 결과이므로
+          // 표본이 다시 쌓여 양수로 돌아오면 다음 /me 갱신 때 정상 카드로 복귀할 수 있다.
           const stateInfo = listingStateLabel(item.listingState);
-          const isTerminal = stateInfo.tone === "sold";
+          const isTerminal = isUserFacingClosed(item);
           if (isTerminal) {
+            const displayStateInfo = stateInfo.tone === "sold" ? stateInfo : { label: "판매완료", tone: "sold" as const };
             return (
               <article
                 key={item.pid}
@@ -1026,12 +1044,12 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                     <div className="min-w-0 flex-1 truncate text-sm font-black text-zinc-700 dark:text-zinc-200">
                       판매완료된 상품
                     </div>
-                    <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${listingStateChipClass(stateInfo.tone)}`}>
-                      {stateInfo.label}
+                    <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${listingStateChipClass(displayStateInfo.tone)}`}>
+                      {displayStateInfo.label}
                     </span>
                   </div>
                   <div className="mt-1 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                    추천 당시 매물이 현재 판매완료되어 더 이상 열람할 수 없어요.
+                    {closedReasonText(item)}
                   </div>
                   <div className="mt-1 text-[11px] text-zinc-400 dark:text-zinc-500">
                     {timeLabel(item.revealedAt)}
@@ -1135,66 +1153,39 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   );
                 })()}
               </div>
-              {/* Wave 189 (2026-05-18): marketStale=true (현재 시세 < 매입가) 면 "추천 무효" badge 우선 표시.
-                  사용자 frustration — 차익 +로 표시되는데 시세가 매입보다 낮음 모순. snapshot vs 실시간
-                  시세 mismatch (재계산 cron 없음). 표면 fix: API 가 marketGapKrw 박아서 UI 분기. */}
-              <div className={`mt-2 flex flex-wrap items-center gap-1.5 rounded-lg border px-2.5 py-2 ${
-                item.marketStale
-                  ? "border-rose-200 bg-rose-50 dark:border-rose-900/50 dark:bg-rose-950/20"
-                  : "border-emerald-100 bg-emerald-50/70 dark:border-emerald-900/50 dark:bg-emerald-950/20"
-              }`}>
-                {item.marketStale && item.marketGapKrw != null ? (
-                  <>
-                    <span className="text-[10px] font-black uppercase tracking-[0.14em] text-rose-700 dark:text-rose-300">
-                      현재 차익
-                    </span>
-                    <span className="text-lg font-black tabular-nums text-rose-800 dark:text-rose-200">
-                      {signedProfitRange(currentProfitMinOrSnapshot(item), currentProfitMaxOrSnapshot(item))}
-                    </span>
-                    <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black text-rose-900 dark:bg-rose-900/60 dark:text-rose-100">
-                      추천 무효
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    {/* Wave 200: terminal 매물 시 차익 strike-through (정보 stale).
-                        Wave 194 (2026-05-18): current_profit 박혀있으면 그 값 우선 표시. snapshot 과
-                        다르면 부가 라벨 ("추천 당시 +57K → 현재 +10K"). 사용자 frustration —
-                        snapshot 만 표시되면 시세 변동 후 진짜 차익 알 수 없음. marketStale=false (양수
-                        case) 에도 mismatch 발생 가능. current null = Wave 191 cron 미실행 → snapshot 표시. */}
-                    {(() => {
-                      const hasCurrent = item.marketGapKrw != null;
-                      const displayProfitMin = currentProfitMinOrSnapshot(item);
-                      const displayProfitMax = currentProfitMaxOrSnapshot(item);
-                      const displayProfitAvg = Math.round((displayProfitMin + displayProfitMax) / 2);
-                      const snapshotProfitAvg = Math.round((item.expectedProfitMin + item.expectedProfitMax) / 2);
-                      const profitDiverged = hasCurrent && Math.abs(displayProfitAvg - snapshotProfitAvg) >= 5000;
-                      const pct = profitPercent(item);
-                      return (
-                        <>
-                          <span className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">
-                            현재 차익
-                          </span>
-                          <span className={`text-lg font-black tabular-nums ${
-                            isTerminal ? "text-zinc-400 line-through dark:text-zinc-500" : "text-emerald-800 dark:text-emerald-200"
-                          }`}>
-                            {signedProfitRange(displayProfitMin, displayProfitMax)}
-                          </span>
-                          {pct != null ? (
-                            <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 ring-1 ring-amber-100 dark:bg-zinc-900/50 dark:text-amber-200 dark:ring-amber-900/50">
-                              {pct >= 0 ? "+" : ""}{pct}%
-                            </span>
-                          ) : null}
-                          {profitDiverged && !isTerminal && (
-                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/30 dark:text-amber-300" title={`추천 당시 ${signedProfitRange(item.expectedProfitMin, item.expectedProfitMax)} → 현재 ${signedProfitRange(displayProfitMin, displayProfitMax)}`}>
-                              ↓ 시세 갱신
-                            </span>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </>
-                )}
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 rounded-lg border border-emerald-100 bg-emerald-50/70 px-2.5 py-2 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+                {/* Wave 194 (2026-05-18): current_profit 박혀있으면 그 값 우선 표시. snapshot 과
+                    다르면 부가 라벨 ("추천 당시 +57K → 현재 +10K"). marketStale=true는 Wave 224에서
+                    이 블록에 오기 전에 판매완료 tombstone으로 접는다. */}
+                {(() => {
+                  const hasCurrent = item.marketGapKrw != null;
+                  const displayProfitMin = currentProfitMinOrSnapshot(item);
+                  const displayProfitMax = currentProfitMaxOrSnapshot(item);
+                  const displayProfitAvg = Math.round((displayProfitMin + displayProfitMax) / 2);
+                  const snapshotProfitAvg = Math.round((item.expectedProfitMin + item.expectedProfitMax) / 2);
+                  const profitDiverged = hasCurrent && Math.abs(displayProfitAvg - snapshotProfitAvg) >= 5000;
+                  const pct = profitPercent(item);
+                  return (
+                    <>
+                      <span className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">
+                        현재 차익
+                      </span>
+                      <span className="text-lg font-black tabular-nums text-emerald-800 dark:text-emerald-200">
+                        {signedProfitRange(displayProfitMin, displayProfitMax)}
+                      </span>
+                      {pct != null ? (
+                        <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 ring-1 ring-amber-100 dark:bg-zinc-900/50 dark:text-amber-200 dark:ring-amber-900/50">
+                          {pct >= 0 ? "+" : ""}{pct}%
+                        </span>
+                      ) : null}
+                      {profitDiverged && (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/30 dark:text-amber-300" title={`추천 당시 ${signedProfitRange(item.expectedProfitMin, item.expectedProfitMax)} → 현재 ${signedProfitRange(displayProfitMin, displayProfitMax)}`}>
+                          ↓ 시세 갱신
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
               {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 좁은 영역이라 compact (chip 만). */}
               <div className="mt-1">

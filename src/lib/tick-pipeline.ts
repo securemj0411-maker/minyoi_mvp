@@ -3045,7 +3045,7 @@ export async function marketStatsStage(): Promise<StageStats> {
   });
   // Wave 191 (2026-05-18): reveal row 의 current_profit 자동 재계산.
   //   recomputedKeys 의 comparable_key 가 reveal 매물의 키와 매칭되면 그 reveal 의
-  //   current_profit_min/max + market_invalidated_at 갱신. 시세 < 매입가 → 추천 무효 자동 박힘.
+  //   current_profit_min/max + market_invalidated_at 갱신. 시세 < 매입가 → /me 에서 판매완료처럼 접힘.
   //   snapshot (expected_profit_*) 는 reveal 시점 historical 그대로 유지.
   //   RPC `recompute_reveal_current_profits` (Wave 190 migration) — single batch query.
   let revealRecomputeStats = { updated: 0, invalidated: 0 };
