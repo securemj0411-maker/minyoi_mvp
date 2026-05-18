@@ -91,9 +91,35 @@ function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
 
+function signedKrw(value: number) {
+  const rounded = Math.round(value);
+  const sign = rounded >= 0 ? "+" : "";
+  return `${sign}${rounded.toLocaleString("ko-KR")}원`;
+}
+
 function profitRange(min: number, max: number) {
-  if (min === max) return `+${krw(max)}`;
-  return `+${krw(min)} ~ +${krw(max)}`;
+  if (min === max) return signedKrw(max);
+  return `${signedKrw(min)} ~ ${signedKrw(max)}`;
+}
+
+function currentMarketGap(card: RevealCard) {
+  const median = card.marketBasis?.medianPrice;
+  if (median == null || !Number.isFinite(Number(median)) || !Number.isFinite(Number(card.price)) || card.price <= 0) return null;
+  return Math.round(Number(median) - Number(card.price));
+}
+
+function displayProfitRange(card: RevealCard) {
+  const gap = currentMarketGap(card);
+  if (gap != null) return signedKrw(gap);
+  return profitRange(card.expectedProfitMin, card.expectedProfitMax);
+}
+
+function marketSourceBadge(card: RevealCard) {
+  const market = card.marketBasis;
+  if (!market) return null;
+  if (market.priceSource === "reference") return { label: "📍 다나와", tone: "reference" as const };
+  if (market.conditionClass === "mint") return { label: "📍 번개 S급", tone: "mint" as const };
+  return null;
 }
 
 function freshLabel(seconds: number) {
@@ -317,11 +343,12 @@ function verdictsForCard(card: RevealCard): Verdict[] {
   const velocity = card.velocityBasis;
   const flow = card.skuListingFlow;
   const market = card.marketBasis;
+  const currentGap = currentMarketGap(card);
   return buildVerdicts({
     price: card.price,
     skuMedian: market?.medianPrice ?? null,
-    expectedProfitMin: card.expectedProfitMin,
-    expectedProfitMax: card.expectedProfitMax,
+    expectedProfitMin: currentGap ?? card.expectedProfitMin,
+    expectedProfitMax: currentGap ?? card.expectedProfitMax,
     confidence: card.confidence,
     marketSampleCount: market?.sampleCount ?? null,
     marketConfidenceLabel: (market?.confidence as "high" | "medium" | "low" | null) ?? null,
@@ -582,6 +609,9 @@ function RevealCardItem({
   const [, setFeedback] = useState<RevealFeedbackType | null>(null);
   const [note, setNote] = useState("");
   const [noteSaved, setNoteSaved] = useState(false);
+  const displayGap = currentMarketGap(card);
+  const isMarketInvalidated = displayGap != null && displayGap < 0;
+  const sourceBadge = marketSourceBadge(card);
   useEffect(() => {
     const id = window.setTimeout(() => setShown(true), delay);
     return () => window.clearTimeout(id);
@@ -629,9 +659,14 @@ function RevealCardItem({
             </div>
             {/* Wave 80: 가격 정보 그룹화 — 매입/시세 인접 + 차익 강조 */}
             <div className="mt-1.5 flex items-baseline flex-wrap gap-2">
-              <span className="text-lg font-black tabular-nums text-[var(--brand-accent)]">
-                {profitRange(card.expectedProfitMin, card.expectedProfitMax)}
+              <span className={`text-lg font-black tabular-nums ${isMarketInvalidated ? "text-rose-700 dark:text-rose-300" : "text-[var(--brand-accent)]"}`}>
+                {displayProfitRange(card)}
               </span>
+              {isMarketInvalidated ? (
+                <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-black text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
+                  시세 갱신 — 추천 무효
+                </span>
+              ) : null}
               {/* 2026-05-17 (사용자 요청): 나의 상품 모달에도 운영자풀과 동일 band chip 표시. */}
               {card.band != null && (
                 <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
@@ -648,6 +683,15 @@ function RevealCardItem({
                 <>
                   <span className="text-zinc-300 dark:text-zinc-600">·</span>
                   <span className="text-zinc-500 dark:text-zinc-300">시세 {krw(card.marketBasis.medianPrice)}</span>
+                  {sourceBadge ? (
+                    <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-black ${
+                      sourceBadge.tone === "reference"
+                        ? "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300"
+                        : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300"
+                    }`}>
+                      {sourceBadge.label}
+                    </span>
+                  ) : null}
                 </>
               ) : null}
               {/* Wave 182 Phase 3 (2026-05-17): base option fallback 정직성 표시. */}
@@ -1142,6 +1186,8 @@ export default function PackRevealModal({
     queueMicrotask(() => {
       if (initialPreviewMode === "guide") {
         handlePreviewGuide(initialPreviewCard, "right");
+      } else {
+        handlePreviewListing(initialPreviewCard, "right");
       }
     });
   }, [

@@ -182,6 +182,11 @@ function isTerminalListingState(state: string | null | undefined) {
   return TERMINAL_STATES.has(String(state ?? "").toLowerCase());
 }
 
+function normalizedTerminalSaleStatus(value: string | null | undefined) {
+  const upper = String(value ?? "").toUpperCase();
+  return upper === "SOLD" || upper === "SOLD_OUT" ? upper : "SOLD_OUT";
+}
+
 async function patchLiveTerminalState(
   item: RevealItem,
   state: "sold_confirmed" | "disappeared",
@@ -264,11 +269,12 @@ async function liveVerifyVisibleItems(items: RevealItem[]): Promise<RevealItem[]
         });
         if (isSoldOut(signals)) {
           const reason = describeSignals(signals);
-          await patchLiveTerminalState(item, "sold_confirmed", detail.saleStatus, reason);
+          const saleStatus = normalizedTerminalSaleStatus(detail.saleStatus);
+          await patchLiveTerminalState(item, "sold_confirmed", saleStatus, reason);
           verified[index] = {
             ...item,
             listingState: "sold_confirmed",
-            saleStatus: detail.saleStatus || "SOLD_OUT",
+            saleStatus,
           };
           continue;
         }

@@ -7,7 +7,7 @@
 // 2026-05-16: rate limit 추가. pid enumeration abuse 차단. IP 기반 60 req / 60s.
 
 import { NextResponse } from "next/server";
-import { conditionFallbackChain } from "@/lib/condition-fallback";
+import { fetchLatestMarketStats, fetchReferencePrices, marketBasisForCandidate } from "@/lib/pack-open";
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
@@ -82,32 +82,35 @@ export async function GET(
     const conditionClass = (parsed?.condition_class as string | null) ?? null;
     const skuId = (raw?.sku_id as string | null) ?? null;
 
-    // 3. market_price_daily 시세 통계 (comparable_key 기준)
-    // Wave 130 (2026-05-16): condition_class별 시세 분리 — 매물 condition에 매칭되는 시세 우선.
+    // 3. /me 카드와 동일한 marketBasis 산정. reference price(Danawa)까지 같은 함수로 맞춘다.
     let marketStats: Record<string, unknown> | null = null;
+    let displayMarketBasis: ReturnType<typeof marketBasisForCandidate> | null = null;
     if (comparableKey) {
-      // 모든 condition_class row 가져온 후 매물 condition 우선 매칭. fallback: normal → all → 아무거나.
-      const statsRes = await restFetch(
-        `${tableUrl("mvp_market_price_daily")}?select=comparable_key,condition_class,blended_median_price,active_median_price,p25_price,p75_price,active_sample_count,sold_sample_count,disappeared_sample_count,confidence,computed_at&comparable_key=eq.${encodeURIComponent(comparableKey)}&order=date.desc,computed_at.desc&limit=12`,
-        { headers: serviceHeaders() },
+      const [basisStats, referencePrices] = await Promise.all([
+        fetchLatestMarketStats([comparableKey]),
+        fetchReferencePrices([comparableKey]),
+      ]);
+      displayMarketBasis = marketBasisForCandidate(
+        comparableKey,
+        (listing.sku_name as string | null) ?? "",
+        basisStats,
+        conditionClass,
+        referencePrices,
       );
-      const rows = (await statsRes.json()) as Array<Record<string, unknown>>;
-      const target = conditionClass ?? "normal";
-      // Wave 159h (2026-05-17): shared module conditionFallbackChain 사용 (DRY).
-      const fallback = conditionFallbackChain(target);
-      for (const cls of fallback) {
-        const candidate = rows.find((r) => r.condition_class === cls);
-        if (candidate) {
-          marketStats = candidate;
-          break;
-        }
-      }
-      // Wave 159g: fallback 실패 시 normal/worn/clean 안전 fallback. unopened/mint 임의 잡지 않음.
-      marketStats = marketStats
-        ?? rows.find((r) => r.condition_class === "normal")
-        ?? rows.find((r) => r.condition_class === "worn")
-        ?? rows.find((r) => r.condition_class === "clean")
-        ?? null;
+      const matchedCondition = displayMarketBasis.conditionClass;
+      const byCondition = basisStats.get(comparableKey);
+      const matchedRow = matchedCondition ? byCondition?.get(matchedCondition) : null;
+      marketStats = matchedRow ? {
+        blended_median_price: matchedRow.blended_median_price,
+        active_median_price: matchedRow.active_median_price,
+        p25_price: matchedRow.p25_price,
+        p75_price: matchedRow.p75_price,
+        active_sample_count: matchedRow.active_sample_count,
+        sold_sample_count: matchedRow.sold_sample_count,
+        disappeared_sample_count: matchedRow.disappeared_sample_count,
+        confidence: matchedRow.confidence,
+        computed_at: matchedRow.computed_at,
+      } : null;
     }
 
     // 4. comparable 매물 list — 같은 comparable_key 또는 sku_id 기반 fetch
@@ -211,6 +214,14 @@ export async function GET(
         skuMedian: Number(listing.sku_median ?? 0),
         comparableKey,
         conditionClass,
+        displayMarketPrice: displayMarketBasis?.medianPrice ?? null,
+        marketPriceSource: displayMarketBasis?.priceSource ?? "market",
+        marketPriceLabel: displayMarketBasis?.priceSource === "reference"
+          ? "다나와 새상품 시세"
+          : displayMarketBasis?.conditionLabel
+            ? `번개 ${displayMarketBasis.conditionLabel} 시세`
+            : "번개 중고 시세",
+        marketConditionLabel: displayMarketBasis?.conditionLabel ?? null,
         parseConfidence: Number(parsed?.parse_confidence ?? 0) || null,
         needsReview: Boolean(parsed?.needs_review),
         thumbnailUrl: (raw?.thumbnail_url as string | null) ?? null,

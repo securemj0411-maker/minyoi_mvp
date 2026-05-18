@@ -916,13 +916,118 @@ function shippingSummary(options: RevealListingDetail["shippingOptions"]) {
     .join(" · ");
 }
 
+function normalizedTerminalSaleStatus(value: string | null | undefined) {
+  const upper = String(value ?? "").toUpperCase();
+  return upper === "SOLD" || upper === "SOLD_OUT" ? upper : "SOLD_OUT";
+}
+
+async function patchRevealDetailTerminalState(
+  pid: number,
+  state: "sold_confirmed" | "disappeared",
+  saleStatus: string | null,
+  reason: string,
+) {
+  const now = new Date().toISOString();
+  const rawPatch: Record<string, unknown> = {
+    listing_state: state,
+    updated_at: now,
+  };
+  if (saleStatus != null) rawPatch.sale_status = saleStatus;
+  if (state === "sold_confirmed") rawPatch.sold_detected_at = now;
+  if (state === "disappeared") {
+    rawPatch.disappeared_at = now;
+    rawPatch.last_missing_at = now;
+  }
+
+  await Promise.allSettled([
+    callSupabase(`/mvp_raw_listings?pid=eq.${pid}`, {
+      method: "PATCH",
+      headers: authHeaders("return=minimal"),
+      body: JSON.stringify(rawPatch),
+    }),
+    callSupabase(`/mvp_lifecycle_checks?pid=eq.${pid}`, {
+      method: "PATCH",
+      headers: authHeaders("return=minimal"),
+      body: JSON.stringify({
+        status: state,
+        last_checked_at: now,
+        last_check_result: state === "sold_confirmed" ? "sold" : "missing",
+        next_check_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        state_reason: `reveal_detail_${reason}`.slice(0, 240),
+        locked_at: null,
+        locked_until: null,
+        updated_at: now,
+      }),
+    }),
+    callSupabase(`/mvp_candidate_pool?pid=eq.${pid}&status=in.(ready,reserved)`, {
+      method: "PATCH",
+      headers: authHeaders("return=minimal"),
+      body: JSON.stringify({
+        status: "invalidated",
+        invalidated_reason: `reveal_detail_${reason}`.slice(0, 120),
+        updated_at: now,
+      }),
+    }),
+  ]);
+}
+
+function terminalRevealDetail(pid: number, saleStatus = "SOLD_OUT"): RevealListingDetail {
+  return {
+    pid,
+    description: "추천 당시 매물이 현재 판매완료되어 더 이상 상세 정보를 확인할 수 없어요.",
+    saleStatus,
+    conditionLabel: null,
+    thumbnailUrl: null,
+    imageUrls: [],
+    metrics: {
+      viewCount: null,
+      favoriteCount: null,
+      commentCount: null,
+    },
+    seller: {
+      uid: null,
+      name: null,
+      reviewRating: null,
+      reviewCount: 0,
+      followerCount: 0,
+      salesCount: 0,
+      proshop: false,
+      officialSeller: false,
+      joinDate: null,
+    },
+    shippingOptions: [],
+    shippingSummary: "판매완료",
+  };
+}
+
 export async function loadRevealListingDetail(input: {
   userRef: string;
   pid: number;
 }): Promise<RevealListingDetail> {
   await assertRevealAccess(input.userRef, input.pid);
   const detail = await fetchDetail(String(input.pid));
-  if (!detail) throw new Error("listing detail unavailable");
+  if (!detail) {
+    await patchRevealDetailTerminalState(input.pid, "disappeared", "SOLD_OUT", "detail_fetch_missing");
+    return terminalRevealDetail(input.pid);
+  }
+
+  const soldSignals = detectSoldOut(detail, null);
+  if (isSoldOut(soldSignals)) {
+    const saleStatus = normalizedTerminalSaleStatus(detail.saleStatus);
+    await patchRevealDetailTerminalState(input.pid, "sold_confirmed", saleStatus, describeSignals(soldSignals));
+    return {
+      ...terminalRevealDetail(input.pid, saleStatus),
+      description: detail.description || "추천 당시 매물이 현재 판매완료되어 더 이상 상세 정보를 확인할 수 없어요.",
+      conditionLabel: detail.conditionLabel,
+      thumbnailUrl: detail.thumbnailUrl,
+      imageUrls: detail.imageUrls,
+      metrics: {
+        viewCount: detail.viewCount,
+        favoriteCount: detail.favoriteCount,
+        commentCount: detail.commentCount,
+      },
+    };
+  }
 
   const apiParsed = parseShippingFromTrade(detail.tradeData, detail.tradesData);
   const descParsed = parseShippingFromDescription(detail.description);

@@ -32,6 +32,10 @@ type MarketSourceResponse = {
     skuMedian: number;
     comparableKey: string | null;
     conditionClass: string | null;
+    displayMarketPrice: number | null;
+    marketPriceSource: "reference" | "market";
+    marketPriceLabel: string;
+    marketConditionLabel: string | null;
     parseConfidence: number | null;
     needsReview: boolean;
     thumbnailUrl: string | null;
@@ -99,6 +103,7 @@ export function MarketSourceDebug({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userRef, setUserRef] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [note, setNote] = useState(initialNote ?? "");
   const [noteSaved, setNoteSaved] = useState(false);
   const [noteLoading, setNoteLoading] = useState(false);
@@ -109,8 +114,10 @@ export function MarketSourceDebug({
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
-    void supabase.auth.getUser().then(({ data: u }) => {
-      if (u.user) setUserRef(userRefForAuthUser(u.user.id));
+    void supabase.auth.getSession().then(({ data }) => {
+      setAccessToken(data.session?.access_token ?? null);
+      const user = data.session?.user;
+      if (user) setUserRef(userRefForAuthUser(user.id));
     });
   }, []);
 
@@ -165,7 +172,7 @@ export function MarketSourceDebug({
   }, [open, data, loading, fetchData]);
 
   const handleSaveNote = useCallback(async () => {
-    if (!userRef || !note.trim()) return;
+    if (!userRef || !accessToken || !note.trim()) return;
     setNoteLoading(true);
     setError(null);
     try {
@@ -173,6 +180,7 @@ export function MarketSourceDebug({
         method: "POST",
         credentials: "include",
         headers: {
+          authorization: `Bearer ${accessToken}`,
           "content-type": "application/json",
           "x-user-ref": userRef,
         },
@@ -194,7 +202,7 @@ export function MarketSourceDebug({
     } finally {
       setNoteLoading(false);
     }
-  }, [userRef, note, pid, onCommentSaved]);
+  }, [accessToken, userRef, note, pid, onCommentSaved]);
 
   const sorted = data?.comparables ? [...data.comparables].sort((a, b) => a.price - b.price) : [];
 
@@ -275,12 +283,8 @@ export function MarketSourceDebug({
                           </span>
                           <span className="text-zinc-300 dark:text-zinc-600">·</span>
                           <span className="text-[12px] font-semibold text-zinc-500 dark:text-zinc-400">
-                            {data.ourListing.conditionClass === "unopened"
-                              ? "다나와 새상품 시세"
-                              : data.ourListing.conditionClass === "clean"
-                                ? "번개 S급 시세"
-                                : "번개 중고 시세"}{" "}
-                            {krw(data.ourListing.skuMedian)}
+                            {data.ourListing.marketPriceLabel}{" "}
+                            {krw(data.ourListing.displayMarketPrice ?? data.ourListing.skuMedian)}
                           </span>
                         </div>
                         <div className="mt-1 text-[11px] text-zinc-600 dark:text-zinc-400">
@@ -426,13 +430,13 @@ export function MarketSourceDebug({
             <div className="border-t border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
               <div className="mb-1.5 flex items-baseline justify-between text-[10px] font-bold">
                 <span className="text-zinc-600 dark:text-zinc-300">💬 검증 메모 — 매물별 자유 기록 (나중에 일괄 검토용)</span>
-                {!userRef && <span className="text-rose-500">로그인 필요</span>}
+                {(!userRef || !accessToken) && <span className="text-rose-500">로그인 필요</span>}
                 {noteSaved && <span className="text-emerald-600 dark:text-emerald-400">✓ 저장됨</span>}
               </div>
               <textarea
                 value={note}
                 onChange={(e) => { setNote(e.target.value); setNoteSaved(false); }}
-                disabled={!userRef}
+                disabled={!userRef || !accessToken}
                 maxLength={5000}
                 rows={3}
                 placeholder="시세 비교 OK / 단품 의심 / 가격 비교 틀린 듯 / 사진 애매 / 이거 좋은 추천 ..."
@@ -443,7 +447,7 @@ export function MarketSourceDebug({
                 <button
                   type="button"
                   onClick={handleSaveNote}
-                  disabled={!userRef || !note.trim() || noteLoading}
+                  disabled={!userRef || !accessToken || !note.trim() || noteLoading}
                   className="rounded-md bg-emerald-700 px-4 py-1.5 text-[11px] font-black text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-emerald-600 dark:hover:bg-emerald-700"
                 >
                   {noteLoading ? "저장 중..." : "코멘트 저장"}

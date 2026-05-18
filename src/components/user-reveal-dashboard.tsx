@@ -108,6 +108,10 @@ function storedDescriptionPreview(value: string) {
   return clean.length >= 180 ? `${clean.replace(/\s+$/g, "")}\n\n...` : clean;
 }
 
+function currentProfitOrSnapshot(item: RevealItem) {
+  return item.marketGapKrw ?? item.expectedProfitMax;
+}
+
 export default function UserRevealDashboard({ userRef, welcomePending = false }: { userRef: string; welcomePending?: boolean }) {
   const [items, setItems] = useState<RevealItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -248,10 +252,9 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         skuListingFlow: card.skuListingFlow ?? null,
         // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
         optionBaseAssumed: card.optionBaseAssumed ?? null,
-        // Wave 189 (2026-05-18): optimistic add — marketGap 은 silent reload 후 server response 로 정확값.
-        //   여기선 fresh reveal 직후라 medianPrice 가 거의 매입가 ≥ → stale 아님 가정.
+        // Wave 189/211: optimistic add도 실제 gap 기준으로 stale 판단. silent reload 후 server response가 source of truth.
         marketGapKrw: card.marketBasis?.medianPrice != null && card.price > 0 ? card.marketBasis.medianPrice - card.price : null,
-        marketStale: false,
+        marketStale: card.marketBasis?.medianPrice != null && card.price > 0 ? card.marketBasis.medianPrice - card.price < 0 : false,
       }));
       setItems((prevItems) => {
         if (query || sort !== "latest") return prevItems;
@@ -299,8 +302,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       skuId: selectedItem.skuId,
       skuName: selectedItem.skuName ?? selectedItem.name,
       thumbnailUrl: selectedItem.thumbnailUrl,
-      expectedProfitMin: selectedItem.expectedProfitMin,
-      expectedProfitMax: selectedItem.expectedProfitMax,
+      expectedProfitMin: currentProfitOrSnapshot(selectedItem),
+      expectedProfitMax: currentProfitOrSnapshot(selectedItem),
       confidence: selectedItem.confidence,
       // 2026-05-17: 모달 카드에 band chip 표시 (운영자풀과 동일 UX).
       band: (selectedItem.band ?? null) as 1 | 2 | 3 | null,
@@ -317,6 +320,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         sellerReviewCount: selectedItem.sellerReviewCount,
       },
       skuListingFlow: selectedItem.skuListingFlow ?? undefined,
+      optionBaseAssumed: selectedItem.optionBaseAssumed ?? null,
     };
     return {
       result: "success",
@@ -354,7 +358,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   }
 
   function selectAllVisible() {
-    setSelectedPids(new Set(items.map((i) => i.pid)));
+    setSelectedPids(new Set(visibleItems.map((i) => i.pid)));
   }
 
   function clearSelection() {
@@ -526,6 +530,18 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
     const end = Math.min(totalPages, start + 4);
     return Array.from({ length: end - start + 1 }, (_, idx) => start + idx);
   }, [page, totalPages]);
+  const visibleItems = useMemo(() => items.filter((item) => {
+    if (!hideTerminal) return true;
+    return listingStateLabel(item.listingState).tone !== "sold";
+  }), [hideTerminal, items]);
+  useEffect(() => {
+    if (!hideTerminal || selectedPids.size === 0) return;
+    const visiblePidSet = new Set(visibleItems.map((item) => item.pid));
+    setSelectedPids((prev) => {
+      const next = new Set(Array.from(prev).filter((pid) => visiblePidSet.has(pid)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [hideTerminal, selectedPids.size, visibleItems]);
 
   function ActionButtons({ item }: { item: RevealItem }) {
     // Wave 182b (2026-05-17): 카드 list 에서 손해 신고 버튼 제거 — 사용자 피드백
@@ -740,7 +756,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
               <button
                 type="button"
                 onClick={selectAllVisible}
-                disabled={items.length === 0}
+                disabled={visibleItems.length === 0}
                 className="rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
               >
                 현재 페이지 전체
@@ -875,12 +891,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       })()}
 
       <div className={viewMode === "grid" ? "mt-4 grid gap-3 md:grid-cols-2" : "mt-4 grid gap-2"}>
-        {items.filter((item) => {
-          // Wave 205: terminal tombstone은 기본 표시. toggle로만 숨김.
-          if (!hideTerminal) return true;
-          const tone = listingStateLabel(item.listingState).tone;
-          return tone !== "sold";
-        }).map((item) => {
+        {visibleItems.map((item) => {
           // 2026-05-18: 판매완료/삭제/숨김 계열은 동일한 판매완료 tombstone으로 표시.
           const stateInfo = listingStateLabel(item.listingState);
           const isTerminal = stateInfo.tone === "sold";
