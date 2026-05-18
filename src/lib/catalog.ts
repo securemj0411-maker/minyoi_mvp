@@ -6799,8 +6799,13 @@ export const CATALOG: Sku[] = [
     brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_pony_tee",
     modelName: "Polo Pony Logo T-Shirt",
     aliases: ["Polo Pony Tee", "폴로 포니 티셔츠", "Ralph Lauren T-Shirt"],
-    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "크루넥"]],
-    mustNotContain: ["RRL", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "pique", "긴팔", "롱슬리브", "키즈", "kids", "토들러"],
+    // Wave 223 (2026-05-19): "타이틀리스트 골프 폴로티" 매물 잘못 매칭 → mustNotContain 강화.
+    //   polo SKU 가 다른 brand 의 "폴로" 단어 매물에 매칭됨. brand 한정 필요.
+    mustContain: [["폴로 랄프로렌", "polo ralph", "ralph lauren", "랄프로렌"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "크루넥"]],
+    mustNotContain: ["RRL", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "pique", "긴팔", "롱슬리브", "키즈", "kids", "토들러",
+      // Wave 223: 다른 brand 의 "폴로/Polo" 단어 매물 차단.
+      "타이틀리스트", "titleist", "캘러웨이", "callaway", "푸마 폴로", "puma polo",
+      "골프 폴로", "골프폴로", "골프티", "골프 티"],
     msrpKrw: 89000, released: 2020,
   },
   {
@@ -8417,8 +8422,13 @@ export const CATALOG: Sku[] = [
     brand: "MLB", category: "clothing", laneKey: "mlb_cap_gucci_collab",
     modelName: "Gucci × MLB Cap (한정/명품)",
     aliases: ["Gucci MLB", "구찌 MLB", "구찌 MLB 콜라보"],
-    mustContain: [["gucci", "구찌"], ["mlb"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake"],
+    // Wave 223 (2026-05-19): "구찌 mlb 반지갑" 매물 잘못 매칭 → mustContain 강제 (cap/모자/볼캡만).
+    mustContain: [["gucci", "구찌"], ["mlb"], ["cap", "캡", "모자", "볼캡", "ballcap"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake",
+      // Wave 223: 지갑/벨트/가방/시계 등 cap 외 제품 차단
+      "지갑", "wallet", "반지갑", "장지갑",
+      "벨트", "belt", "가방", "bag", "백팩", "backpack",
+      "시계", "watch", "운동화", "스니커즈", "sneaker"],
     msrpKrw: 480000, released: 2018,
   },
   {
@@ -8748,10 +8758,16 @@ function requiresCombinedLaneVeto(sku: Sku | null): sku is Sku {
 // narrow lane(_self)이 description의 자급제 token 못 봄 → narrow ready 0건.
 // 변경: title에서 broad만 잡혔으면 description 포함 combined로 narrow lane 재시도. 1개 narrow 매칭 시 narrow 우선.
 // 정책 위반 X — narrow mustContain (자급제 + 용량) 둘 다 명시되어야 매칭 (precision 보존).
-const NARROW_PROMOTE_CATEGORIES = new Set(["smartphone", "laptop", "tablet", "watch", "sport_golf", "game_console"]);
+// Wave 223 (2026-05-19): clothing/shoe/bag 추가 — Wave 218/219 narrow SKU 박았는데
+//   promotion 흐름에 카테고리 없어서 broad 매물 다수 잘못 매칭 (Arcteryx Gamma/Beta 매물이 broad에).
+//   사용자 지적 "ready 매물 분류 이상한 거 다 찾아내".
+const NARROW_PROMOTE_CATEGORIES = new Set(["smartphone", "laptop", "tablet", "watch", "sport_golf", "game_console", "clothing", "shoe", "bag"]);
 
 function tryNarrowLanePromotion(broad: Sku, combined: string, titleNorm: string): Sku | null {
-  if (broad.laneKey) return null; // 이미 narrow
+  // Wave 223 (2026-05-19): `_broad` 또는 `_apparel` 접미사 lane key 는 broad lane —
+  //   narrow promotion 대상으로 인정. (Wave 218/219 broad SKU 가 LANE_READINESS 등록
+  //   위해 laneKey 박았는데 그게 narrow promotion 차단했음.)
+  if (broad.laneKey && !broad.laneKey.endsWith("_broad") && !broad.laneKey.endsWith("_apparel") && broad.laneKey !== "tnf_supreme_collab" && broad.laneKey !== "margiela_tabi") return null; // 이미 narrow
   if (!NARROW_PROMOTE_CATEGORIES.has(broad.category)) return null;
   if (combined === titleNorm) return null; // description 없으면 의미 X
   const narrowCandidates = CATALOG_WITH_NOISE_W94.filter(
