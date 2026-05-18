@@ -327,9 +327,22 @@ function PackSelectorCard({
   const costBreakdown = computeCostBreakdown(selectedPack.band, selectedCount, activeFilters);
   const totalCost = costBreakdown.totalCost;
   const loginRequired = !isAuthenticated;
+  const monthlyTotal = planUsage?.monthlyCredits ?? 0;
+  const monthlyUsed = monthlyTotal > 0 ? Math.max(0, monthlyTotal - tokens) : 0;
+  const monthlyPct = monthlyTotal > 0 ? (monthlyUsed / monthlyTotal) * 100 : 0;
+  const dailyLimit = planUsage?.dailyLimit ?? 0;
+  const dailyUsed = planUsage?.dailyUsed ?? 0;
+  const dailyPct = dailyLimit > 0 ? (dailyUsed / dailyLimit) * 100 : 0;
+  const monthWarn = monthlyTotal > 0 && monthlyPct >= 80;
+  const dailyWarn = dailyLimit > 0 && dailyPct >= 80;
+  const monthlyReached = monthlyTotal > 0 && monthlyPct >= 100;
+  const dailyReached = dailyLimit > 0 && dailyPct >= 100;
+  const limitBlocked = !infiniteCredits && (monthlyReached || dailyReached);
   const insufficient = !infiniteCredits && tokens < totalCost;
+  const creditShortage = Math.max(0, totalCost - tokens);
   const sold = !inventoryLoading && usableReady < MIN_REQUESTED_CARDS;
-  const disabled = busy || inventoryLoading || loginRequired || insufficient || sold;
+  const disabled = busy || inventoryLoading || loginRequired || insufficient || limitBlocked || sold;
+  const upgradeCta = limitBlocked || insufficient;
 
   function handleOpenClick() {
     if (disabled) return;
@@ -654,69 +667,98 @@ function PackSelectorCard({
             </div>
           </div>
 
-          {/* 한도 경고 — 80% 이상일 때만 표시 (월/일 둘 중 하나라도). admin/Pro unlimited는 X. */}
-          {(() => {
-            if (!planUsage || infiniteCredits) return null;
-            const { monthlyCredits, dailyUsed, dailyLimit } = planUsage;
-            const monthlyTotal = monthlyCredits;
-            const monthlyUsed = monthlyTotal > 0 ? Math.max(0, monthlyTotal - tokens) : 0;
-            const monthlyPct = monthlyTotal > 0 ? (monthlyUsed / monthlyTotal) * 100 : 0;
-            const dailyPct = dailyLimit > 0 ? (dailyUsed / dailyLimit) * 100 : 0;
-            const monthWarn = monthlyTotal > 0 && monthlyPct >= 80;
-            const dailyWarn = dailyLimit > 0 && dailyPct >= 80;
-            if (!monthWarn && !dailyWarn) return null;
-            const monthCritical = monthlyPct >= 100;
-            const dailyCritical = dailyPct >= 100;
-            const anyCritical = monthCritical || dailyCritical;
-            return (
-              <div
-                className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-[11px] font-black ${
-                  anyCritical
-                    ? "border border-red-300 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300"
-                    : "border border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
-                }`}
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <span>{anyCritical ? "한도 도달" : "한도 임박"}</span>
-                </span>
-                <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] tabular-nums">
-                  {monthWarn ? <span>월 {monthlyUsed}/{monthlyTotal}</span> : null}
-                  {dailyWarn ? <span>오늘 {dailyUsed}/{dailyLimit}</span> : null}
-                </span>
+          {/* 한도 안내 — 막힌 이유와 다음 행동을 같이 보여준다. */}
+          {!infiniteCredits && (monthWarn || dailyWarn || insufficient) ? (
+            <div
+              className={`rounded-2xl border px-3 py-3 text-xs ${
+                limitBlocked || insufficient
+                  ? "border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100"
+                  : "border-[#e5d8bf] bg-[#fff8e8] text-[#765c2d] dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
+              }`}
+            >
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="font-black">
+                    {dailyReached
+                      ? "오늘 열람 한도를 모두 썼어요"
+                      : monthlyReached
+                        ? "이번 달 크레딧을 모두 썼어요"
+                        : insufficient
+                          ? `크레딧 ${creditShortage}개가 더 필요해요`
+                          : "한도가 얼마 남지 않았어요"}
+                  </div>
+                  <div className="mt-1 leading-5 text-[#7a6a4a] dark:text-amber-100/80">
+                    {dailyReached
+                      ? "내일 다시 열 수 있고, 지금 더 보려면 한도가 큰 요금제로 바로 이어갈 수 있어요."
+                      : monthlyReached
+                        ? "요금제를 올리면 이번 달에도 바로 더 볼 수 있어요."
+                        : insufficient
+                          ? "추천을 멈추지 않게 필요한 크레딧과 한도를 같이 늘릴 수 있어요."
+                          : "다 쓰기 전에 더 큰 한도로 바꾸면 흐름이 끊기지 않아요."}
+                  </div>
+                </div>
+                <a
+                  href="/plans"
+                  className="shrink-0 rounded-xl bg-[#314238] px-3 py-2 text-[11px] font-black text-[#f7f1e6] transition hover:bg-[#27362e]"
+                >
+                  한도 늘리기
+                </a>
               </div>
-            );
-          })()}
+              <div className="mt-2 flex flex-wrap gap-1.5 text-[10.5px] font-black tabular-nums">
+                {monthlyTotal > 0 ? (
+                  <span className="rounded-full bg-white/75 px-2 py-0.5 text-[#765c2d] ring-1 ring-amber-200 dark:bg-zinc-900/40 dark:text-amber-100 dark:ring-amber-900/50">
+                    월 {monthlyUsed}/{monthlyTotal}
+                  </span>
+                ) : null}
+                {dailyLimit > 0 ? (
+                  <span className="rounded-full bg-white/75 px-2 py-0.5 text-[#765c2d] ring-1 ring-amber-200 dark:bg-zinc-900/40 dark:text-amber-100 dark:ring-amber-900/50">
+                    오늘 {dailyUsed}/{dailyLimit}
+                  </span>
+                ) : null}
+                {insufficient ? (
+                  <span className="rounded-full bg-white/75 px-2 py-0.5 text-[#765c2d] ring-1 ring-amber-200 dark:bg-zinc-900/40 dark:text-amber-100 dark:ring-amber-900/50">
+                    필요 {totalCost} · 보유 {tokens}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
 
-          <button
-            type="button"
-            onClick={handleOpenClick}
-            disabled={disabled}
-            className={ctaClasses(selectedPack.ctaTone, disabled)}
-          >
-            <span className="inline-flex items-center justify-center gap-2">
-              {busy
-                ? "처리 중..."
-                : inventoryLoading
-                  ? "재고 확인 중..."
-                  : loginRequired
-                    ? "로그인하고 검색"
-                    : sold
-                      ? "추천 없음"
-                      : insufficient
-                        ? (
-                            <>
-                              <span>부족</span>
-                              <CostBadge value={totalCost} />
-                            </>
-                          )
+          {upgradeCta && !loginRequired && !sold && !inventoryLoading && !busy ? (
+            <a
+              href="/plans"
+              className={`${ctaClasses(selectedPack.ctaTone, false)} flex items-center justify-center`}
+            >
+              <span className="inline-flex items-center justify-center gap-2">
+                <span>{limitBlocked ? "한도 늘리고 계속 보기" : "크레딧 충전하고 계속 보기"}</span>
+                <CostBadge value={totalCost} />
+              </span>
+            </a>
+          ) : (
+            <button
+              type="button"
+              onClick={handleOpenClick}
+              disabled={disabled}
+              className={ctaClasses(selectedPack.ctaTone, disabled)}
+            >
+              <span className="inline-flex items-center justify-center gap-2">
+                {busy
+                  ? "처리 중..."
+                  : inventoryLoading
+                    ? "재고 확인 중..."
+                    : loginRequired
+                      ? "로그인하고 검색"
+                      : sold
+                        ? "추천 없음"
                         : (
                             <>
                               <span>검색하기</span>
                               <CostBadge value={totalCost} />
                             </>
                           )}
-            </span>
-          </button>
+              </span>
+            </button>
+          )}
 
           {/* "재고 N건 남음" 박스 제거 — 위 funnel 박스에 통합됨 (band-only 옛 로직) */}
 
