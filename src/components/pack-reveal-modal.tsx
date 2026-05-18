@@ -453,10 +453,31 @@ function VelocityBasisMini({ card }: { card: RevealCard }) {
   // 보고서 인용: "회전 기간이 떡상점수보다 더 retention-critical한 지표".
   // 큰 글씨 + 색 + 빠른 회전 시 강조 badge.
   const hours = velocity.medianHoursToSold;
+  const hasTurnEstimate = hours != null && Number.isFinite(hours) && hours > 0 && velocity.sold7dCount > 0;
   const isFastTurn = hours != null && hours > 0 && hours <= 48; // 2일 안에 팔림
   const isSlowTurn = hours != null && hours > 168; // 7일+ 안 팔림
   const turnLabel = velocityHoursLabel(hours);
   const confidenceLabel = velocity.confidence === "high" ? "신뢰 높음" : velocity.confidence === "medium" ? "신뢰 보통" : "참고용";
+  if (!hasTurnEstimate) {
+    return (
+      <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+            판매 속도
+          </div>
+          <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase text-zinc-500 ring-1 ring-zinc-200 dark:bg-zinc-900/50 dark:text-zinc-300 dark:ring-zinc-700">
+            참고용
+          </span>
+        </div>
+        <div className="mt-1 text-sm font-bold text-zinc-700 dark:text-zinc-200">
+          비슷한 상품 판매 기록이 아직 부족해요.
+        </div>
+        <div className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+          최근 7일 판매 {velocity.sold7dCount.toLocaleString("ko-KR")}건 · 현재 판매중 {velocity.activeSampleCount.toLocaleString("ko-KR")}건
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={`rounded-lg border-2 px-4 py-3 ${
       isFastTurn

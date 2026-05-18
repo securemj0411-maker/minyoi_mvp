@@ -34,6 +34,11 @@ export function LiquidityCurveMini({ compact = false, ...input }: Props) {
   const positionClass = LIQUIDITY_POSITION_CLASS[curve.position];
   const positionLabel = LIQUIDITY_POSITION_LABEL[curve.position];
   const estimated = liquidityHoursLabel(curve.estimatedHours);
+  const hasSaleSpeedEstimate =
+    curve.estimatedHours != null &&
+    Number.isFinite(curve.estimatedHours) &&
+    curve.estimatedHours > 0 &&
+    (curve.soldSampleCount ?? 0) > 0;
 
   if (compact || curve.position === "unknown") {
     return (
@@ -43,8 +48,19 @@ export function LiquidityCurveMini({ compact = false, ...input }: Props) {
           ? `이 가격이면 비슷한 상품이 보통 ${estimated} 안에 팔렸어요. 기준 ${curve.soldSampleCount}건`
           : "판매 속도 데이터가 부족해서 추정이 불확실해요."}
       >
-        ⚡ {positionLabel} · {estimated}
+        {hasSaleSpeedEstimate ? `${positionLabel} · ${estimated}` : "판매 속도 표본 부족"}
       </span>
+    );
+  }
+
+  if (!hasSaleSpeedEstimate) {
+    return (
+      <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[11px] text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-300">
+        <div className="font-black text-zinc-700 dark:text-zinc-200">판매 속도 표본 부족</div>
+        <div className="mt-0.5">
+          비슷한 상품 판매 기록이 {(curve.soldSampleCount ?? 0).toLocaleString("ko-KR")}건이라 아직 팔리는 시간을 추정하지 않았어요.
+        </div>
+      </div>
     );
   }
 
@@ -53,7 +69,7 @@ export function LiquidityCurveMini({ compact = false, ...input }: Props) {
     <div className="rounded-lg border border-[#e2d9cb] bg-[#fffaf1] p-3 dark:border-zinc-800 dark:bg-zinc-900/60">
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[11px] font-black text-[#223127] dark:text-zinc-100">
-          ⚡ 이 가격이면 얼마나 빨리 팔릴까?
+          이 가격이면 얼마나 빨리 팔릴까?
         </span>
         <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${positionClass}`}>
           {positionLabel}
