@@ -3509,27 +3509,34 @@ async function loadRegistryQueryStates(queries: string[]): Promise<Map<string, D
 export async function filterDueSearchQueries(envQueries: string[]): Promise<string[]> {
   const registry = await loadRegistryQueryStates(envQueries);
   const nowMs = Date.now();
-  const due: string[] = [];
+  // Wave 191 (2026-05-18): never_scanned (last_scanned_at NULL) query 우선 정렬.
+  //   기존: envQueries 순서 그대로 반환 → categoryQueries + DEFAULT + catalogQueries 순.
+  //   문제: 1358 query 중 1016 never_scanned (75%). tickSearchBudgetMs 안에 못 처리되는
+  //         후순위 query (lego/kickboard/perfume 등) 가 매번 다음 tick으로 밀려 영영 0건 scan.
+  //   사용자 발견: "perfume/lego/kickboard 한 번도 scan 안 됨" — 정당한 의심.
+  //   fix: due query를 last_scanned_at 오래된 순 (NULL 가장 우선) 정렬. fair rotation 보장.
+  const due: { query: string; lastMs: number }[] = [];
   for (const query of envQueries) {
     const state = registry.get(query);
     if (!state) {
-      // 새 query — registry에 없으니 즉시 due 처리. ensure 단계에서 row 생성.
-      due.push(query);
+      due.push({ query, lastMs: 0 });
       continue;
     }
     if (!state.last_scanned_at) {
-      due.push(query);
+      due.push({ query, lastMs: 0 });
       continue;
     }
     const lastMs = Date.parse(state.last_scanned_at);
     if (!Number.isFinite(lastMs)) {
-      due.push(query);
+      due.push({ query, lastMs: 0 });
       continue;
     }
     const dueAt = lastMs + state.effective_cadence_minutes * 60_000;
-    if (nowMs >= dueAt) due.push(query);
+    if (nowMs >= dueAt) due.push({ query, lastMs });
   }
-  return due;
+  // 오래된 순 정렬 (NULL = lastMs 0 = 가장 우선). 같은 시간이면 envQueries 순서 안정 유지.
+  due.sort((a, b) => a.lastMs - b.lastMs);
+  return due.map((d) => d.query);
 }
 
 async function ensureSearchQueryRows(queries: string[]): Promise<void> {
