@@ -798,9 +798,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       .map((item) => ({
         pid: item.pid,
         name: item.name,
+        price: item.price,
         thumbnailUrl: item.thumbnailUrl,
         expectedProfitMin: currentProfitMinOrSnapshot(item),
         expectedProfitMax: currentProfitMaxOrSnapshot(item),
+        marketBasis: item.marketBasis,
         revealedAt: item.revealedAt,
       }))
     : [];

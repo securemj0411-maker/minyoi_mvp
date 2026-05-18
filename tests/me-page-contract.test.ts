@@ -127,6 +127,8 @@ test("/me mobile reveal card keeps safety signals out of the middle content", ()
   const modal = source("src/components/pack-reveal-modal.tsx");
   const reasonIndex = modal.indexOf("function RecommendationReasonPanel");
   const revealIndex = modal.indexOf("function RevealCardItem");
+  const footerIndex = modal.indexOf("function GuidePreviewPanel", revealIndex);
+  const revealSection = modal.slice(revealIndex, footerIndex);
   const mobileSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", reasonIndex);
   const desktopSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", revealIndex);
 
@@ -137,7 +139,7 @@ test("/me mobile reveal card keeps safety signals out of the middle content", ()
   assert.doesNotMatch(modal, /<ProductSafetyPanel card=\{card\}/);
   assert.match(modal, /const safetyScore = buildRiskScore\(revealRiskScoreInput\(card\)\)/);
   assert.match(modal, /triggerLabel=\{safetyScore\.label\}/);
-  assert.doesNotMatch(modal, /grid-cols-\[104px_minmax/);
+  assert.doesNotMatch(revealSection, /grid-cols-\[104px_minmax/);
   assert.match(modal, /function RevealProductImage/);
   assert.match(modal, /-mx-3 h-\[145px\] w-\[calc\(100%\+1\.5rem\)\]/);
   assert.match(modal, /rounded-none/);
@@ -221,7 +223,13 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   assert.match(modal, /function RelatedRevealStrip/);
   assert.match(modal, /function FixedBunjangFooter/);
   assert.match(modal, /내 다른 추천 매물/);
-  assert.match(modal, /\/me 목록 캐시 기준 · 열면 다시 상태 확인/);
+  assert.match(modal, /매입가 · 시세 · 상태를 같이 보고/);
+  assert.match(modal, /grid-cols-\[92px_minmax\(0,1fr\)\]/);
+  assert.match(modal, /매입 <b className="font-black tabular-nums/);
+  assert.match(modal, /시세 <b className="font-black tabular-nums/);
+  assert.match(modal, /<ConditionPhotoBadge conditionClass=\{item\.marketBasis\?\.conditionClass \?\? null\} compact \/>/);
+  assert.match(modal, /상태 재확인/);
+  assert.doesNotMatch(modal, /rounded-2xl border border-\[#e7dece\] bg-white\/80 p-3/);
   assert.match(modal, /grid-cols-\[minmax\(0,0\.86fr\)_minmax\(0,1\.18fr\)\]/);
   assert.match(modal, /triggerLabel=\{safetyScore\.label\}/);
   assert.match(modal, /fixedSafetyCtaClass\(safetyScore\.tone\)/);
@@ -233,10 +241,10 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   assert.match(modal, /containerClassName="flex w-full min-w-0"/);
   assert.match(modal, /triggerClassName=\{fixedSafetyCtaClass\(safetyScore\.tone\)\}/);
   assert.match(modal, /번개장터에서 확인하기/);
-  assert.match(modal, /상세를 열면서 현재 상태를 다시 확인합니다/);
-  assert.match(modal, /className="mt-3 space-y-2"/);
-  assert.match(modal, /className="group flex w-full min-w-0 gap-3/);
-  assert.match(modal, /h-\[86px\] w-\[86px\]/);
+  assert.match(modal, /매입가 · 시세 · 상태를 같이 보고/);
+  assert.match(modal, /className="mt-2 divide-y divide-\[#eee5d8\]/);
+  assert.match(modal, /className="group grid w-full min-w-0 grid-cols-\[92px_minmax/);
+  assert.match(modal, /sizes="104px"/);
   assert.match(modal, /pb-24[\s\S]*sm:pb-28/);
   assert.match(modal, /useLayoutEffect/);
   assert.match(modal, /const scrollAreaRef = useRef<HTMLDivElement \| null>\(null\)/);
@@ -257,9 +265,24 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   assert.doesNotMatch(modal, /onPreviewGuide/);
   assert.doesNotMatch(modal, /grid grid-cols-2 gap-2 sm:grid-cols-4/);
   assert.match(dashboard, /const relatedModalItems = selectedItem/);
+  assert.match(dashboard, /price: item\.price/);
+  assert.match(dashboard, /marketBasis: item\.marketBasis/);
   assert.match(dashboard, /relatedItems=\{relatedModalItems\}/);
   assert.match(dashboard, /onOpenRelatedItem=\{\(pid\) =>/);
   assert.match(dashboard, /openItem\(nextItem, "listing", \{ pushUrl: true \}\)/);
+});
+
+test("/me reveal detail hides operator memo and pushes generic disclaimer to the bottom", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const relatedIndex = modal.indexOf("<RelatedRevealStrip");
+  const footerIndex = modal.indexOf("<ModalActionFooter", relatedIndex);
+  const disclaimerIndex = modal.indexOf("시세 추천 유의사항", footerIndex);
+
+  assert.doesNotMatch(modal, /검증 메모 · 추천 평가/);
+  assert.doesNotMatch(modal, /매물 검증 결과 \/ 의심점 \/ 추천 품질 평가 자유 기록/);
+  assert.match(modal, /<summary className="cursor-pointer list-none font-black text-\[#647064\]/);
+  assert.match(modal, /AI 기반 시세 추천이며 수익을 보장하지 않습니다/);
+  assert.ok(relatedIndex >= 0 && footerIndex > relatedIndex && disclaimerIndex > footerIndex);
 });
 
 test("/me shows every condition grade as a photo badge and removes duplicate plain grade chips", () => {

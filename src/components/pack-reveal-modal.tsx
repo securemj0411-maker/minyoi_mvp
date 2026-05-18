@@ -65,9 +65,11 @@ type Props = {
 type RelatedRevealItem = {
   pid: number;
   name: string;
+  price: number;
   thumbnailUrl: string | null;
   expectedProfitMin: number;
   expectedProfitMax: number;
+  marketBasis: RevealCard["marketBasis"] | null;
   revealedAt: string;
 };
 
@@ -1338,16 +1340,11 @@ function LoadingStage({ completing = false }: { completing?: boolean }) {
 function RevealCardItem({
   card,
   delay,
-  onFeedback,
 }: {
   card: RevealCard;
   delay: number;
-  onFeedback: (pid: number, feedbackType: RevealFeedbackType, note?: string) => void;
 }) {
   const [shown, setShown] = useState(false);
-  const [, setFeedback] = useState<RevealFeedbackType | null>(null);
-  const [note, setNote] = useState("");
-  const [noteSaved, setNoteSaved] = useState(false);
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const sourceBadge = marketSourceBadge(card);
   const currentPct = currentProfitPercent(card);
@@ -1355,15 +1352,6 @@ function RevealCardItem({
     const id = window.setTimeout(() => setShown(true), delay);
     return () => window.clearTimeout(id);
   }, [delay]);
-
-  // Wave 80: 신고 코멘트 저장 — bad_pick 피드백 type으로 통합 (서버 schema 그대로)
-  function handleSaveNote() {
-    const cleanNote = note.trim();
-    if (!cleanNote) return;
-    setFeedback("bad_pick");
-    setNoteSaved(true);
-    onFeedback(card.pid, "bad_pick", cleanNote);
-  }
 
   return (
     <div
@@ -1499,47 +1487,6 @@ function RevealCardItem({
       </div>
       {/* 우측 카드 (시세 분석) 닫음. */}
 
-      {/* 노트 + 버튼 영역 — full width (lg:col-span-2). */}
-      <div className="order-5 space-y-2 lg:col-span-2">
-        {/* Wave 80: SavedDetailMini (찜/리뷰/리뷰N개/판매자 설명문) 제거 — 번개장터 데이터 직접 노출 법적 위험. 원본은 "번개장터 열기" 버튼으로 확인. */}
-
-        {/* Wave 80: 개별 피드백 버튼 (관심/매수함/이미 팔림/별로) + quickTags (단품 의심 등) 제거.
-            단일 "추천 상품이 이상해요" 신고 버튼 + 코멘트 폼으로 대체. */}
-        <details className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs dark:border-zinc-800 dark:bg-zinc-800/50">
-          <summary className="cursor-pointer font-bold text-zinc-500 dark:text-zinc-300">
-            검증 메모 · 추천 평가 {noteSaved ? "· 저장됨" : ""}
-          </summary>
-          <div className="mt-2 space-y-2">
-            <div className="text-[10.5px] leading-[1.5] text-zinc-500 dark:text-zinc-400">
-              매물 검증 결과 / 의심점 / 추천 품질 평가 자유 기록. 나중에 일괄 검토용.
-            </div>
-            <textarea
-              id={`reveal-note-${card.pid}`}
-              value={note}
-              onChange={(event) => {
-                setNote(event.target.value);
-                setNoteSaved(false);
-              }}
-              maxLength={5000}
-              rows={3}
-              placeholder="예) 시세 비교 OK / 단품 의심 / 가격 비교 틀린 듯 / 사진 애매 / 이거 좋은 추천 / 이미 팔린 것 같음 등 자유"
-              className="w-full resize-none rounded-lg border border-[#ddd6ca] bg-white px-3 py-2 text-xs leading-5 text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
-            />
-            <div className="flex items-center justify-between gap-2">
-              <div className="text-[10px] text-zinc-400">{note.length}/5000</div>
-              <button
-                type="button"
-                onClick={handleSaveNote}
-                disabled={!note.trim()}
-                className="rounded-lg bg-[var(--brand-accent-strong)] px-3 py-1.5 text-[11px] font-bold text-[var(--brand-cream)] transition hover:bg-[#29382f] disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:disabled:bg-zinc-700 dark:disabled:text-zinc-500"
-              >
-                저장
-              </button>
-            </div>
-          </div>
-        </details>
-
-      </div>
     </div>
   );
 }
@@ -1830,61 +1777,87 @@ function RelatedRevealStrip({
   if (visibleItems.length === 0 || !onOpenRelatedItem) return null;
 
   return (
-    <section className="rounded-2xl border border-[#e7dece] bg-white/80 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+    <section className="border-t border-[#e5dccf] pt-3 dark:border-zinc-800">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-sm font-black text-[#223127] dark:text-zinc-100">내 다른 추천 매물</div>
           <div className="mt-0.5 text-[11px] font-semibold text-[#7a8478] dark:text-zinc-400">
-            /me 목록 캐시 기준 · 열면 다시 상태 확인
+            매입가 · 시세 · 상태를 같이 보고, 열면 현재 상태를 다시 확인해요.
           </div>
         </div>
-        <span className="shrink-0 rounded-full bg-[#eef6ec] px-2 py-0.5 text-[10px] font-black text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-zinc-200">
+        <span className="shrink-0 text-[11px] font-black text-[var(--brand-accent-strong)] dark:text-zinc-200">
           {visibleItems.length}개
         </span>
       </div>
-      <div className="mt-3 space-y-2">
-        {visibleItems.map((item) => (
-          <button
-            key={item.pid}
-            type="button"
-            onClick={() => {
-              onBeforeOpenRelatedItem?.();
-              onOpenRelatedItem(item.pid);
-            }}
-            className="group flex w-full min-w-0 gap-3 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 text-left transition hover:border-[#b8c8b5] hover:bg-[#f4fbf0] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-          >
-            <div className="relative h-[86px] w-[86px] shrink-0 overflow-hidden rounded-lg bg-[#f2eadf] dark:bg-zinc-800 sm:h-[96px] sm:w-[96px]">
-              {item.thumbnailUrl ? (
-                <Image
-                  src={item.thumbnailUrl}
-                  alt=""
-                  fill
-                  sizes="96px"
-                  className="object-cover transition duration-200 group-hover:scale-[1.03]"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center px-2 text-center text-[11px] font-bold text-[#7a8478] dark:text-zinc-400">
-                  사진 없음
+      <div className="mt-2 divide-y divide-[#eee5d8] dark:divide-zinc-800">
+        {visibleItems.map((item) => {
+          const sourceBadge = item.marketBasis
+            ? item.marketBasis.priceSource === "reference"
+              ? { tone: "reference" as const, label: "다나와" }
+              : item.marketBasis.conditionClass === "mint"
+                ? { tone: "mint" as const, label: "번개 S급" }
+                : null
+            : null;
+          return (
+            <button
+              key={item.pid}
+              type="button"
+              onClick={() => {
+                onBeforeOpenRelatedItem?.();
+                onOpenRelatedItem(item.pid);
+              }}
+              className="group grid w-full min-w-0 grid-cols-[92px_minmax(0,1fr)] gap-3 py-3 text-left transition hover:bg-[#f6fbf2] dark:hover:bg-zinc-900/70 sm:grid-cols-[104px_minmax(0,1fr)]"
+            >
+              <div className="relative aspect-square shrink-0 overflow-hidden rounded-lg bg-[#f2eadf] dark:bg-zinc-800">
+                <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
+                {item.thumbnailUrl ? (
+                  <Image
+                    src={item.thumbnailUrl}
+                    alt=""
+                    fill
+                    sizes="104px"
+                    className="object-cover transition duration-200 group-hover:scale-[1.03]"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center px-2 text-center text-[11px] font-bold text-[#7a8478] dark:text-zinc-400">
+                    사진 없음
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 self-center">
+                <div className="line-clamp-2 text-[15px] font-black leading-5 text-[#223127] dark:text-zinc-100">
+                  {item.name}
                 </div>
-              )}
-            </div>
-            <div className="min-w-0 flex-1 py-0.5">
-              <div className="line-clamp-2 text-sm font-black leading-5 text-[#223127] dark:text-zinc-100">
-                {item.name}
+                <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[11px] font-semibold text-[#6b7269] dark:text-zinc-400">
+                  <span>매입 <b className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.price)}</b></span>
+                  {item.marketBasis?.medianPrice ? (
+                    <>
+                      <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                      <span>시세 <b className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.marketBasis.medianPrice)}</b></span>
+                      {sourceBadge ? (
+                        sourceBadge.tone === "reference"
+                          ? <DanawaSourceBadge label={sourceBadge.label} />
+                          : <BunjangSourceBadge label={sourceBadge.label} />
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                  <span className="text-sm font-black tabular-nums text-[#00a862] dark:text-[#5dffae]">
+                    {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
+                  </span>
+                  {item.marketBasis?.conditionLabel ? (
+                    <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-[10px] font-black text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
+                      {item.marketBasis.conditionLabel}
+                    </span>
+                  ) : null}
+                  <span className="text-[10px] font-bold text-[#8a9388] dark:text-zinc-500">상태 재확인</span>
+                </div>
               </div>
-              <div className="mt-1 truncate text-xs font-black tabular-nums text-[#00a862] dark:text-[#5dffae]">
-                {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
-              </div>
-              <div className="mt-2 text-[11px] font-semibold text-[#7a8478] dark:text-zinc-400">
-                누르면 현재 상태 다시 확인
-              </div>
-            </div>
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
-      <p className="mt-2 text-[11px] font-semibold leading-5 text-[#7a8478] dark:text-zinc-400">
-        오래 머무르는 동안 판매완료될 수 있어요. 다른 매물을 누르면 상세를 열면서 현재 상태를 다시 확인합니다.
-      </p>
     </section>
   );
 }
@@ -2118,7 +2091,6 @@ export default function PackRevealModal({
                       key={card.pid}
                       card={card}
                       delay={idx * 250}
-                      onFeedback={onFeedback}
                     />
                   ))}
                 </div>
@@ -2148,20 +2120,6 @@ export default function PackRevealModal({
                   )}
                 </div>
               ) : null}
-              <div className="rounded-xl border border-[#e1dacd] bg-[#fbf7ef] px-3 py-3 text-xs text-[#647064] dark:border-zinc-800 dark:bg-zinc-800/40 dark:text-zinc-400">
-                <div>
-                  상품 {result.attemptedCount}건 검증 → {result.reveals.length}건 추천 ·{" "}
-                  {(result.durationMs / 1000).toFixed(1)}초
-                </div>
-                <div className="mt-1">
-                  같은 전체 본품 기준으로만 비교. 단품/본체만/케이스만은 제외.
-                </div>
-                <div className="mt-2 border-t border-[#ebe2cf] pt-2 text-[11px] leading-[1.5] text-[#7a8478] dark:border-zinc-700/60 dark:text-zinc-500">
-                  ⓘ AI 기반 시세 추천 — 수익 보장 X. 표시된 차익은 <b>해당 가격에 정상 판매됐을 때 추정 수익</b>이며,
-                  실제 거래는 매입가 협상·판매 시점·시세 변동·구성품 차이로 달라질 수 있습니다.
-                  최종 판단은 본인.
-                </div>
-              </div>
               <RelatedRevealStrip
                 items={relatedItems}
                 onBeforeOpenRelatedItem={() => resetDetailScroll("auto")}
@@ -2176,6 +2134,21 @@ export default function PackRevealModal({
                   alreadyReportedLoss={alreadyReportedLoss}
                 />
               ) : null}
+              <details className="border-t border-[#e5dccf] pt-3 text-[11px] font-semibold leading-5 text-[#7a8478] dark:border-zinc-800 dark:text-zinc-500">
+                <summary className="cursor-pointer list-none font-black text-[#647064] dark:text-zinc-400">
+                  시세 추천 유의사항
+                </summary>
+                <div className="mt-1.5 space-y-1">
+                  <div>
+                    상품 {result.attemptedCount}건 검증 → {result.reveals.length}건 추천 · {(result.durationMs / 1000).toFixed(1)}초
+                  </div>
+                  <div>같은 전체 본품 기준으로만 비교하고, 단품/본체만/케이스만은 제외합니다.</div>
+                  <div>
+                    AI 기반 시세 추천이며 수익을 보장하지 않습니다. 표시된 차익은 <b>해당 가격에 정상 판매됐을 때 추정 수익</b>이고,
+                    실제 거래는 매입가 협상·판매 시점·시세 변동·구성품 차이로 달라질 수 있습니다.
+                  </div>
+                </div>
+              </details>
             </div>
           ) : null}
 
