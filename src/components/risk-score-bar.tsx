@@ -14,25 +14,46 @@ import {
 } from "@/lib/risk-score";
 
 type Props = RiskScoreInput & {
-  // showDetail: true = ? 아이콘 + popover (admin-pool 상세 / pack-reveal 상세).
+  // showDetail: true = 문장형 버튼 + popover (admin-pool 상세 / pack-reveal 상세).
   showDetail?: boolean;
   // compact: true = mini-bar 없이 chip 만 (user-reveal-dashboard 좁은 영역).
   compact?: boolean;
 };
 
+function detailTriggerLabel(tone: "safe" | "caution" | "danger", hitCount: number) {
+  if (tone === "safe") return "🛡️ 왜 안전한가요?";
+  if (tone === "caution") return `⚠️ 주의 ${hitCount}건이 있어요`;
+  return `🚨 위험 신호 ${hitCount}건 확인`;
+}
+
 export function RiskScoreBar({ showDetail = false, compact = false, ...input }: Props) {
   const [open, setOpen] = useState(false);
   const score = buildRiskScore(input);
   const toneClass = RISK_TONE_CLASS[score.tone];
+  const detailLabel = detailTriggerLabel(score.tone, score.hitCount);
 
   return (
     <span className="relative inline-flex items-center gap-1.5">
-      <span
-        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${toneClass}`}
-        title={score.label}
-      >
-        {score.label}
-      </span>
+      {showDetail ? (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-black shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${toneClass}`}
+          aria-expanded={open}
+          aria-label={`${score.label} 상세 보기`}
+          title={detailLabel}
+        >
+          <span>{detailLabel}</span>
+          <span aria-hidden="true" className="text-[11px]">›</span>
+        </button>
+      ) : (
+        <span
+          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${toneClass}`}
+          title={score.label}
+        >
+          {score.label}
+        </span>
+      )}
 
       {!compact && (
         <span
@@ -51,14 +72,6 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
 
       {showDetail && (
         <>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-            className="flex h-4 w-4 items-center justify-center rounded-full bg-zinc-200 text-[9px] font-bold text-zinc-600 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-300"
-            aria-label="위험 신호 상세 보기"
-          >
-            ?
-          </button>
           {open && (
             <>
               <div
