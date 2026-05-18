@@ -165,13 +165,26 @@ const CONDITION_RANK: Record<Exclude<ConditionClass, "low_batt">, number> = {
 //   - notes == normal (무신호) → meta 신뢰
 //   - low_batt 한쪽 있음 → low_batt (가격 modifier, 항상 우선)
 //   - 둘 다 신호 → worse-of (낮은 rank)
+// Wave 209 (2026-05-18): 객관적 measurement 우선 — strong objective signal 은 metadata worse-of 무시.
+// 사용자 통찰 (재확인): "메타데이터는 신뢰도 높지 않아서 ... 배터리 효율 / 사이클수 객관적 새거면 다르게 봐야".
+// Wave 203 박았는데도 사용자 #159 매물 normal — worse-of 가 metadata "사용감 적음" 우선.
+// 근본 fix: notes 에 objective clean signal (battery_high_health / battery_perfect) 있으면 description 우선.
+//   - 객관적 measure (배터리 95+) = 셀러 자연어/metadata 보다 강한 신호.
+//   - 단 cosmetic_wear 등 description negative 신호 있으면 그대로 worse-of (사용자 정책 유지).
 export function resolveConditionClass(
   fromMeta: ConditionClass | null,
   fromNotes: ConditionClass,
+  hasObjectiveCleanSignal: boolean = false,
 ): ConditionClass {
   if (!fromMeta) return fromNotes;
   if (fromMeta === "low_batt" || fromNotes === "low_batt") return "low_batt";
   if (fromNotes === "normal") return fromMeta;
+  // Wave 209: objective clean signal 우선 — metadata override 무시.
+  // notes 가 clean 이상이고 객관적 신호 있으면 description 신뢰 (metadata 의 "사용감 적음" worse-of 차단).
+  // 단 metadata flawed (DAMAGED — 셀러 명시적 손상) 는 무조건 우선 — 객관적 신호로 무시 안 함 (안전).
+  if (hasObjectiveCleanSignal && fromMeta !== "flawed" && CONDITION_RANK[fromNotes] >= CONDITION_RANK.clean) {
+    return fromNotes;
+  }
   return CONDITION_RANK[fromMeta] <= CONDITION_RANK[fromNotes] ? fromMeta : fromNotes;
 }
 
@@ -195,7 +208,10 @@ export function resolveConditionClass(
 // Wave 208 (2026-05-18) v53: "X용 + 액세서리" 호환 매물 일반 차단.
 //   사용자 코멘트 #157 — "DJI 오즈모 액션6 용 pov 렌즈" → 본체 매칭 잘못.
 //   drone-only catalog NOISE → parser 일반 detection.
-export const PARSER_VERSION = "option-parser-v53";
+// Wave 209 (2026-05-18) v54: objective measurement 우선 (worse-of 무시).
+//   사용자 #159 재확인 — Wave 203 박았는데 worse-of 가 metadata "사용감 적음" 우선해서 여전히 normal.
+//   battery 95+ 객관적 신호 있으면 metadata override 차단.
+export const PARSER_VERSION = "option-parser-v54";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -1277,7 +1293,13 @@ function conditionFromText(
   }
 
   if (/s급|상태\s*좋|상태좋|깨끗|깔끔/.test(lower)) add("good_condition", 0.05);
-  if (/사용감|기스|스크래치|찍힘|생활기스|흠집/.test(lower)) add("cosmetic_wear", -0.1);
+  // Wave 209 (2026-05-18): cosmetic_wear negation 보강 — "사용감 적음/없음" 자체는 wear 아님.
+  // 사용자 #159 매물 description "사용감 적음" — 셀러 명시적 부정인데 cosmetic_wear 박힘 → worn 분류 잘못.
+  // 사용자 정책: "사용감 적음/없음" 은 정상 (cosmetic_wear 박지 X). "사용감 있음/많음/심함" 만 worn 신호.
+  const noUseFeeling = /사용감\s*(?:거의\s*)?(?:적음|적은|없음|없|매우\s*적|아주\s*적|덜|미세)/i.test(lower);
+  const hasUseFeeling = !noUseFeeling && /사용감/.test(lower);
+  const hasOtherWear = /기스|스크래치|찍힘|생활기스|흠집/.test(lower);
+  if (hasUseFeeling || hasOtherWear) add("cosmetic_wear", -0.1);
   // 2026-05-17 (사용자 코멘트 id 146 pid 408047887): "하자는 채팅주시면 알려드리겠습니다 (없는수준)" false positive.
   // 셀러가 "하자 없음" 명시했는데 "하자" 단어만 잡고 flawed 분류 잘못. mitigator 추가 — 다른 negative 신호 (display/faceid/water 등) 와 같은 패턴.
   // 2026-05-17 (사용자 코멘트 id 148 pid 295882994): "거래 후 최초 원초적 하자(택배취급문제 등)를 제외하고는 환불 불가" 정상 거래 조건 표현이 flawed로 잘못 분류. negation 확장.
@@ -1833,7 +1855,11 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   //   - 메타 NULL + 본문 "박스 미개봉" → unopened (description)
   const bunjangOverride = bunjangLabelToConditionClass(input.bunjangConditionLabel);
   const notesClass = extractConditionClass(conditionNotes);
-  const finalConditionClass = resolveConditionClass(bunjangOverride, notesClass);
+  // Wave 209 (2026-05-18): objective clean signal 우선 — metadata worse-of 무시.
+  // battery_high_health (95~99%) 또는 battery_perfect (100%) = 객관적 measurement (셀러 자연어/metadata 보다 강함).
+  const hasObjectiveCleanSignal = conditionNotes.includes("battery_high_health")
+    || conditionNotes.includes("battery_perfect");
+  const finalConditionClass = resolveConditionClass(bunjangOverride, notesClass, hasObjectiveCleanSignal);
 
   return {
     parserVersion: PARSER_VERSION,
