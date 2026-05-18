@@ -134,6 +134,10 @@ test("/me modal exposes transaction state feedback actions", () => {
   assert.match(modal, /문의했어요/);
   assert.match(modal, /매수했어요/);
   assert.match(modal, /포기했어요/);
+  assert.match(modal, /sm:hidden/);
+  assert.match(modal, /hidden sm:block/);
+  assert.match(modal, /bottom-\[calc\(100%\+8px\)\]/);
+  assert.match(modal, /오류 신고 \+3/);
   assert.match(dashboard, /currentFeedbackType=\{\s*selectedItem\?\.transactionFeedbackType/);
   assert.match(dashboard, /거래 상태 · \{TRANSACTION_FEEDBACK_LABEL/);
   assert.match(feedbackRoute, /"contacted"/);

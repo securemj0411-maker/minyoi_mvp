@@ -1310,8 +1310,111 @@ function ModalActionFooter({
     onFeedback(card.pid, type, note);
   }
 
+  const statusLabel = localStatus ? TRANSACTION_STATUS_LABEL[localStatus] : "진행 전";
+
   return (
-    <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-3 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
+    <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-2 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-3">
+      <div className="sm:hidden">
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => onPreviewGuide(card, "right")}
+            className="rounded-xl border border-[#d5dfd2] bg-[var(--brand-accent-soft)] px-3 py-2 text-center text-xs font-bold text-[var(--brand-accent-strong)] transition hover:border-[#b9c9b9] hover:bg-[#edf3ea] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+          >
+            공략 보기
+          </button>
+          <a
+            href={card.url}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => onLinkClicked(card.pid)}
+            className="flex items-center justify-center gap-1.5 rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2 text-center text-xs font-bold text-[var(--brand-cream)] shadow-md shadow-[rgba(49,66,56,0.16)] transition hover:bg-[#29382f]"
+          >
+            <BunjangLogo className="h-[16px] w-[16px] rounded-[4px]" />
+            번개장터 열기
+          </a>
+        </div>
+        <div className="mt-1.5 flex items-center gap-1.5">
+          <details className="group relative min-w-0 flex-1">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-lg border border-[#d8d2c6] bg-white/85 px-2.5 py-1.5 text-[11px] font-bold text-[#425247] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
+              <span>거래 상태</span>
+              <span className="truncate text-[var(--brand-accent-strong)] dark:text-zinc-200">{statusLabel}</span>
+            </summary>
+            <div className="absolute inset-x-0 bottom-[calc(100%+8px)] z-20 rounded-xl border border-[#e1dacd] bg-[#fffdf9] p-2 shadow-2xl shadow-[rgba(49,66,56,0.18)] dark:border-zinc-800 dark:bg-zinc-950">
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#758174] dark:text-zinc-400">
+                  거래 상태
+                </span>
+                <span className="text-[11px] font-bold text-[var(--brand-accent-strong)] dark:text-zinc-200">
+                  {statusLabel}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {TRANSACTION_ACTIONS.map((action) => {
+                  const active = localStatus === action.type;
+                  return (
+                    <button
+                      key={action.type}
+                      type="button"
+                      onClick={() => handleTransactionFeedback(action.type, action.note)}
+                      className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
+                        active
+                          ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
+                          : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                      }`}
+                    >
+                      {action.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {isPostBuyFeedbackType(localStatus) && (
+                <div className="mt-2 border-t border-[#ebe4d8] pt-2 dark:border-zinc-800">
+                  <div className="mb-1.5 text-[10px] font-bold text-[#758174] dark:text-zinc-400">
+                    매수 후 진행
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {POST_BUY_ACTIONS.map((action) => {
+                      const active = localStatus === action.type;
+                      return (
+                        <button
+                          key={action.type}
+                          type="button"
+                          onClick={() => handleTransactionFeedback(action.type, action.note)}
+                          className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
+                            active
+                              ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
+                              : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                          }`}
+                        >
+                          {action.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </details>
+          {onReportLoss && (
+            <button
+              type="button"
+              onClick={() => onReportLoss(card)}
+              disabled={alreadyReportedLoss}
+              title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하고 토큰 +3 받기 (24h 검수)"}
+              className={`shrink-0 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition ${
+                alreadyReportedLoss
+                  ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
+                  : "border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
+              }`}
+            >
+              {alreadyReportedLoss ? "신고됨" : "오류 신고 +3"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="hidden sm:block">
       <div className="mb-2 rounded-xl border border-[#e1dacd] bg-white/85 p-2 dark:border-zinc-800 dark:bg-zinc-950/40">
         <div className="mb-1.5 flex items-center justify-between gap-2">
           <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#758174] dark:text-zinc-400">
@@ -1402,6 +1505,7 @@ function ModalActionFooter({
           {alreadyReportedLoss ? "신고 완료 — 검수 중" : "토큰 +3 받기 · 정보 오류 신고"}
         </button>
       )}
+      </div>
     </div>
   );
 }
