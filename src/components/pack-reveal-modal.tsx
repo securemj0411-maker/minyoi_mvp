@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { ConditionPhotoBadge } from "@/components/condition-chip";
@@ -1556,9 +1556,11 @@ function FixedBunjangFooter({
 
 function RelatedRevealStrip({
   items,
+  onBeforeOpenRelatedItem,
   onOpenRelatedItem,
 }: {
   items: RelatedRevealItem[];
+  onBeforeOpenRelatedItem?: () => void;
   onOpenRelatedItem?: (pid: number) => void;
 }) {
   const visibleItems = items.slice(0, 8);
@@ -1582,7 +1584,10 @@ function RelatedRevealStrip({
           <button
             key={item.pid}
             type="button"
-            onClick={() => onOpenRelatedItem(item.pid)}
+            onClick={() => {
+              onBeforeOpenRelatedItem?.();
+              onOpenRelatedItem(item.pid);
+            }}
             className="group flex w-full min-w-0 gap-3 rounded-xl border border-[#e5dccf] bg-[#fffdf9] p-2 text-left transition hover:border-[#b8c8b5] hover:bg-[#f4fbf0] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
           >
             <div className="relative h-[86px] w-[86px] shrink-0 overflow-hidden rounded-lg bg-[#f2eadf] dark:bg-zinc-800 sm:h-[96px] sm:w-[96px]">
@@ -1650,6 +1655,13 @@ export default function PackRevealModal({
   const consumedInitialPreviewSeedRef = useRef<string | number | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const activeRevealPid = result?.result === "success" ? result.reveals[0]?.pid ?? null : null;
+
+  const resetDetailScroll = useCallback((behavior: ScrollBehavior = "auto") => {
+    const node = scrollAreaRef.current;
+    if (!node) return;
+    node.scrollTop = 0;
+    node.scrollTo({ top: 0, behavior });
+  }, []);
 
   // Wave 76: loading 종료 후 LoadingStage를 잠깐 더 보여줘서 100% 도달 + smooth
   // 카드 reveal. 이전엔 응답 도착 시 중간 % 상태에서 갑자기 카드 노출됐음.
@@ -1767,10 +1779,12 @@ export default function PackRevealModal({
     onLoadDetail,
   ]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!open || activeRevealPid == null) return;
-    scrollAreaRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-  }, [open, activeRevealPid]);
+    resetDetailScroll("auto");
+    const frame = window.requestAnimationFrame(() => resetDetailScroll("auto"));
+    return () => window.cancelAnimationFrame(frame);
+  }, [open, activeRevealPid, initialPreviewSeed, resetDetailScroll]);
 
   if (!open) return null;
 
@@ -1814,7 +1828,11 @@ export default function PackRevealModal({
           </div>
         </div>
 
-        <div ref={scrollAreaRef} className="min-h-0 flex-1 overflow-y-auto p-3 pb-24 sm:p-4 sm:pb-28">
+        <div
+          key={activeRevealPid ?? "empty"}
+          ref={scrollAreaRef}
+          className="min-h-0 flex-1 overflow-y-auto p-3 pb-24 sm:p-4 sm:pb-28"
+        >
           {displayLoading ? (
             <div className="space-y-4">
               <LoadingStage completing={completing} />
@@ -1881,6 +1899,7 @@ export default function PackRevealModal({
               </div>
               <RelatedRevealStrip
                 items={relatedItems}
+                onBeforeOpenRelatedItem={() => resetDetailScroll("auto")}
                 onOpenRelatedItem={onOpenRelatedItem}
               />
               {result.reveals[0] ? (
