@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { KAKAO_LOGIN_SCOPES } from "@/lib/kakao";
+import { flushPendingConsents, persistPendingConsents } from "@/lib/pending-consents";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 // Wave 93b: 로그인 후 redirect — ?next= 파라미터 안전 처리.
@@ -83,6 +84,15 @@ export default function AuthForm({ mode }: Props) {
       setMessage("이용약관, 개인정보 수집·이용, 만 14세 이상 확인에 모두 동의해야 가입할 수 있어요.");
       return;
     }
+    // Wave 199 (2026-05-19): 가입 시 동의 정보 localStorage 저장 → callback 후 API 호출 → DB 기록.
+    if (isSignup) {
+      persistPendingConsents({
+        terms: agreeTerms,
+        privacy: agreePrivacy,
+        age_14: agreeAge,
+        marketing: agreeMarketing,
+      });
+    }
     setBusy(true);
     setMessage(null);
     const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
@@ -116,6 +126,15 @@ export default function AuthForm({ mode }: Props) {
       setMessage("이용약관, 개인정보 수집·이용, 만 14세 이상 확인에 모두 동의해야 가입할 수 있어요.");
       return;
     }
+    // Wave 199 (2026-05-19): 가입 시 동의 정보 localStorage 저장.
+    if (isSignup) {
+      persistPendingConsents({
+        terms: agreeTerms,
+        privacy: agreePrivacy,
+        age_14: agreeAge,
+        marketing: agreeMarketing,
+      });
+    }
     setEmailBusy(true);
     setMessage(null);
     if (isSignup) {
@@ -132,6 +151,8 @@ export default function AuthForm({ mode }: Props) {
         return;
       }
       if (data.session) {
+        // Wave 199: 즉시 session 있으면 (autoConfirm) consent insert.
+        await flushPendingConsents();
         window.location.href = nextPath;
         return;
       }

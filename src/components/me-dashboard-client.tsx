@@ -116,6 +116,12 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
     try {
       setSidebarCollapsed(window.localStorage.getItem("me_sidebar_collapsed") === "1");
     } catch {}
+    // Wave 199 (2026-05-19): 가입 직후 me 진입 시 localStorage 의 pending consent 를 DB insert.
+    //   카카오 OAuth callback 후 클라이언트 진입 시점에만 가능 (server callback 은 access_token X).
+    //   best-effort — 실패해도 사용자 진행에 영향 X. 운영자가 추후 검증 가능.
+    void import("@/lib/pending-consents").then(({ flushPendingConsents }) => {
+      flushPendingConsents().catch((err) => console.warn("[consents] flush failed (non-fatal)", err));
+    });
   }, []);
 
   const toggleSidebar = () => {
