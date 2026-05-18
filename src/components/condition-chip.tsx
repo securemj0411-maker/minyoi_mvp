@@ -99,7 +99,7 @@ const PHOTO_BADGE_STYLES: Record<string, PhotoBadgeStyle> = {
   },
   normal: {
     label: "일반",
-    compactLabel: "일반",
+    compactLabel: "B급",
     mark: "B",
     className: "border-zinc-200/90 bg-[linear-gradient(135deg,#ffffff_0%,#f4f4f5_100%)] text-zinc-700 shadow-[0_7px_18px_rgba(39,39,42,0.12)] ring-1 ring-white/65 dark:border-zinc-700/80 dark:bg-[linear-gradient(135deg,#18181b_0%,#27272a_100%)] dark:text-zinc-200 dark:ring-white/10",
     markClassName: "bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900",
@@ -217,26 +217,24 @@ export function ConditionPhotoBadge({
         style.className
       } ${
         compact
-          ? "rounded-[12px] p-0.5 sm:p-0.5"
+          ? "max-w-[calc(100%-10px)] rounded-[10px] px-2 py-1 text-[10px] leading-none sm:px-2 sm:py-1 sm:text-[10px]"
           : "max-w-[calc(100%-10px)] gap-1 rounded-[10px] px-1 py-0.5 sm:left-2 sm:top-2 sm:px-2.5 sm:py-1 sm:text-[10px]"
       } ${className}`}
     >
       <span className="pointer-events-none absolute inset-x-1 top-0 h-px bg-white/70 dark:bg-white/25" />
-      <span
-        className={`relative flex items-center justify-center rounded-[7px] px-1 font-black leading-none ${
-          style.markClassName
-        } ${
-          compact
-            ? "h-6 min-w-6 text-[10px] sm:h-6 sm:min-w-6 sm:text-[10px]"
-            : "h-4 min-w-[16px] text-[8px] sm:h-5 sm:min-w-[20px] sm:text-[9px]"
-        }`}
-      >
-        {style.mark}
-      </span>
       {compact ? (
-        <span className="sr-only">{style.compactLabel}</span>
+        <span className="relative whitespace-nowrap leading-none">{style.compactLabel}</span>
       ) : (
-        <span className="relative truncate leading-none">{style.label}</span>
+        <>
+          <span
+            className={`relative flex h-4 min-w-[16px] items-center justify-center rounded-[7px] px-1 text-[8px] font-black leading-none sm:h-5 sm:min-w-[20px] sm:text-[9px] ${
+              style.markClassName
+            }`}
+          >
+            {style.mark}
+          </span>
+          <span className="relative truncate leading-none">{style.label}</span>
+        </>
       )}
     </span>
   );

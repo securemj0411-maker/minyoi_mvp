@@ -103,12 +103,12 @@ test("/me shows every condition grade as a photo badge and removes duplicate pla
   assert.match(chip, /mark: "S"/);
   assert.match(chip, /markClassName/);
   assert.match(chip, /rounded-\[10px\]/);
-  assert.match(chip, /compact[\s\S]*sr-only/);
-  assert.match(chip, /h-6 min-w-6 text-\[10px\]/);
+  assert.match(chip, /compact[\s\S]*style\.compactLabel/);
+  assert.match(chip, /compact[\s\S]*whitespace-nowrap/);
   assert.match(chip, /unopened:[\s\S]*compactLabel: "미개봉"/);
   assert.match(chip, /mint:[\s\S]*compactLabel: "S급"/);
   assert.match(chip, /clean:[\s\S]*compactLabel: "A급"/);
-  assert.match(chip, /normal:[\s\S]*compactLabel: "일반"/);
+  assert.match(chip, /normal:[\s\S]*compactLabel: "B급"/);
   assert.match(chip, /worn:[\s\S]*compactLabel: "사용감"/);
   assert.match(chip, /flawed:[\s\S]*compactLabel: "훼손"/);
   assert.match(chip, /low_batt:[\s\S]*compactLabel: "배터리"/);
