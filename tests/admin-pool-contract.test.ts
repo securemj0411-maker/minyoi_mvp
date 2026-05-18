@@ -46,15 +46,16 @@ test("risk score detail trigger is written as an obvious clickable question", ()
   assert.match(riskScore, /ShieldIcon/);
   assert.match(riskScore, /py-0\.5 text-\[10px\] font-black leading-none/);
   assert.match(riskScore, /role="dialog"/);
-  assert.match(riskScore, /left-1\/2 top-\[39%\] z-\[130\]/);
-  assert.match(riskScore, /-translate-x-1\/2 -translate-y-1\/2/);
-  assert.match(riskScore, /max-h-\[calc\(100dvh-210px\)\]/);
-  assert.match(riskScore, /max-h-\[calc\(100dvh-284px\)\]/);
+  assert.match(riskScore, /left-1\/2 top-\[72px\] z-\[130\]/);
+  assert.match(riskScore, /-translate-x-1\/2 overflow-hidden/);
+  assert.match(riskScore, /max-h-\[calc\(100dvh-156px\)\]/);
+  assert.match(riskScore, /max-h-\[calc\(100dvh-232px\)\]/);
   assert.match(riskScore, /sm:w-\[30rem\]/);
   assert.match(riskScore, /text-\[13px\] font-bold leading-5/);
   assert.match(riskScore, /lv < 3 - a\.level/);
   assert.match(riskScore, /@keyframes riskSheetSettle/);
-  assert.match(riskScore, /translate\(-50%, calc\(-50% \+ 6px\)\) scale\(0\.98\)/);
+  assert.match(riskScore, /transform: translate\(-50%, -8px\)/);
+  assert.match(riskScore, /animation: riskSheetSettle 130ms ease-out/);
   assert.match(riskScore, /추천 전에 걸러낸 뒤, 남은 확인 포인트만 보여드려요/);
   assert.match(riskScore, /확인하면 좋아요/);
   assert.match(riskScore, /후기가 0건인 신규 판매자예요/);
@@ -64,5 +65,6 @@ test("risk score detail trigger is written as an obvious clickable question", ()
   assert.match(riskScore, /aria-expanded=\{open\}/);
   assert.doesNotMatch(riskScore, /hard-block 필터/);
   assert.doesNotMatch(riskScore, /🛡️|⚠️|🚨|🔍/);
+  assert.doesNotMatch(riskScore, /scale\(0\.98\)/);
   assert.doesNotMatch(riskScore, /aria-label="위험 신호 상세 보기"[\s\S]*>\s*\?/);
 });

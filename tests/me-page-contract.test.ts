@@ -40,10 +40,12 @@ test("/me user modal explains recommendation trust in plain language", () => {
   assert.match(modal, /const \[open, setOpen\] = useState\(false\)/);
   assert.match(modal, /aria-haspopup="dialog"/);
   assert.match(modal, /aria-label="추천 이유 자세히 보기"/);
-  assert.match(modal, /recommendation-reason-dialog fixed left-1\/2 top-\[39%\]/);
-  assert.match(modal, /max-h-\[calc\(100dvh-210px\)\]/);
-  assert.match(modal, /max-h-\[calc\(100dvh-286px\)\]/);
+  assert.match(modal, /recommendation-reason-dialog fixed left-1\/2 top-\[72px\]/);
+  assert.match(modal, /max-h-\[calc\(100dvh-156px\)\]/);
+  assert.match(modal, /max-h-\[calc\(100dvh-232px\)\]/);
   assert.match(modal, /@keyframes recommendationReasonSettle/);
+  assert.match(modal, /transform: translate\(-50%, -8px\)/);
+  assert.match(modal, /animation: recommendationReasonSettle 130ms ease-out/);
   assert.match(modal, /setOpen\(true\)/);
   assert.match(modal, /setOpen\(false\)/);
   assert.match(modal, /시세보다/);
@@ -57,6 +59,7 @@ test("/me user modal explains recommendation trust in plain language", () => {
   assert.match(modal, /사용감은 같은 등급 시세에 반영/);
   assert.match(modal, /상태가 다른 매물을 섞어 시세를 부풀리지 않아요/);
   assert.doesNotMatch(modal, /const reasons: \{ icon: ReactNode; title: string; body: string \}\[\]/);
+  assert.doesNotMatch(modal, /recommendationReasonSettle[\s\S]*scale\(0\.98\)/);
   assert.doesNotMatch(modal, /같은 모델로 묶었어요/);
   assert.doesNotMatch(modal, /비용을 빼고 계산했어요/);
   assert.doesNotMatch(modal, />\s*band \{card\.band\}/);

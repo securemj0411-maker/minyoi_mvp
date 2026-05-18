@@ -116,7 +116,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                 aria-modal="true"
                 aria-label="위험 신호 점검"
                 onClick={(e) => e.stopPropagation()}
-                className="risk-detail-dialog fixed left-1/2 top-[39%] z-[130] max-h-[calc(100dvh-210px)] w-[calc(100vw-28px)] max-w-[430px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-zinc-950/22 dark:border-zinc-700 dark:bg-zinc-900 sm:absolute sm:left-0 sm:top-6 sm:w-[30rem] sm:max-w-none sm:translate-x-0 sm:translate-y-0 sm:rounded-xl"
+                className="risk-detail-dialog fixed left-1/2 top-[72px] z-[130] max-h-[calc(100dvh-156px)] w-[calc(100vw-28px)] max-w-[430px] -translate-x-1/2 overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-zinc-950/22 dark:border-zinc-700 dark:bg-zinc-900 sm:absolute sm:left-0 sm:top-6 sm:w-[30rem] sm:max-w-none sm:translate-x-0 sm:rounded-xl"
               >
                 <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
                   <div>
@@ -140,7 +140,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                     </button>
                   </div>
                 </div>
-                <div className="max-h-[calc(100dvh-284px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(74vh-76px)] sm:px-5 sm:py-4">
+                <div className="max-h-[calc(100dvh-232px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(74vh-76px)] sm:px-5 sm:py-4">
                   <div className="space-y-2.5">
                     {score.axes.map((a) => (
                       <div
@@ -198,11 +198,11 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                 @keyframes riskSheetSettle {
                   from {
                     opacity: 0;
-                    transform: translate(-50%, calc(-50% + 6px)) scale(0.98);
+                    transform: translate(-50%, -8px);
                   }
                   to {
                     opacity: 1;
-                    transform: translate(-50%, -50%) scale(1);
+                    transform: translate(-50%, 0);
                   }
                 }
 
@@ -210,7 +210,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                   @keyframes riskSheetSettle {
                     from {
                       opacity: 0;
-                      transform: translateY(6px) scale(0.98);
+                      transform: translateY(-6px);
                     }
                     to {
                       opacity: 1;
@@ -220,7 +220,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                 }
 
                 .risk-detail-dialog {
-                  animation: riskSheetSettle 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+                  animation: riskSheetSettle 130ms ease-out;
                 }
               `}</style>
             </>

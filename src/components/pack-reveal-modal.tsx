@@ -853,7 +853,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
             aria-modal="true"
             aria-label="추천 이유 자세히 보기"
             onClick={(e) => e.stopPropagation()}
-            className="recommendation-reason-dialog fixed left-1/2 top-[39%] z-[130] max-h-[calc(100dvh-210px)] w-[calc(100vw-28px)] max-w-[540px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-[#d6e2d3] bg-[#fffdf9] shadow-2xl shadow-zinc-950/24 dark:border-zinc-700 dark:bg-zinc-900 sm:top-1/2 sm:max-h-[84vh]"
+            className="recommendation-reason-dialog fixed left-1/2 top-[72px] z-[130] max-h-[calc(100dvh-156px)] w-[calc(100vw-28px)] max-w-[540px] -translate-x-1/2 overflow-hidden rounded-2xl border border-[#d6e2d3] bg-[#fffdf9] shadow-2xl shadow-zinc-950/24 dark:border-zinc-700 dark:bg-zinc-900 sm:top-1/2 sm:max-h-[84vh] sm:-translate-y-1/2"
           >
             <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
               <div className="min-w-0">
@@ -873,7 +873,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
                 닫기
               </button>
             </div>
-            <div className="max-h-[calc(100dvh-286px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(84vh-74px)] sm:px-5 sm:py-4">
+            <div className="max-h-[calc(100dvh-232px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(84vh-74px)] sm:px-5 sm:py-4">
               <div className="grid gap-2 sm:grid-cols-2">
                 {featureCards.map((feature) => (
                   <div key={`${feature.title}-${feature.body}`} className={`rounded-xl border px-3 py-2.5 shadow-sm ${toneClass[feature.tone]}`}>
@@ -955,16 +955,29 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
             @keyframes recommendationReasonSettle {
               from {
                 opacity: 0;
-                transform: translate(-50%, calc(-50% + 8px)) scale(0.98);
+                transform: translate(-50%, -8px);
               }
               to {
                 opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
+                transform: translate(-50%, 0);
+              }
+            }
+
+            @media (min-width: 640px) {
+              @keyframes recommendationReasonSettle {
+                from {
+                  opacity: 0;
+                  transform: translate(-50%, calc(-50% - 6px));
+                }
+                to {
+                  opacity: 1;
+                  transform: translate(-50%, -50%);
+                }
               }
             }
 
             .recommendation-reason-dialog {
-              animation: recommendationReasonSettle 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+              animation: recommendationReasonSettle 130ms ease-out;
             }
           `}</style>
         </>
