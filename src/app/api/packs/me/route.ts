@@ -58,9 +58,6 @@ type RawRow = {
   name: string;
   url: string;
   price: number;
-  shipping_fee: number | null;
-  shipping_fee_general: number | null;
-  estimated_buy_cost: number | null;
   num_faved: number;
   free_shipping: boolean;
   description_preview: string;
@@ -71,6 +68,14 @@ type RawRow = {
   sku_name: string | null;
   listing_state: string;
   sale_status: string;
+};
+
+type ListingCostRow = {
+  pid: number;
+  price: number;
+  shipping_fee: number | null;
+  shipping_fee_general: number | null;
+  estimated_buy_cost: number | null;
 };
 
 type ParsedRow = {
@@ -191,17 +196,21 @@ function nonNegativeNumber(value: unknown): number {
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
-function currentNetProfitFromMarketPrice(raw: RawRow | undefined, marketPrice: number | null | undefined) {
+function currentNetProfitFromMarketPrice(
+  raw: RawRow | undefined,
+  cost: ListingCostRow | undefined,
+  marketPrice: number | null | undefined,
+) {
   if (!raw) return null;
   const market = positiveNumber(marketPrice);
-  const price = positiveNumber(raw.price);
+  const price = positiveNumber(cost?.price) ?? positiveNumber(raw.price);
   if (market == null || price == null) return null;
 
-  const shippingFee = nonNegativeNumber(raw.shipping_fee);
-  const generalShippingFee = raw.shipping_fee_general == null
+  const shippingFee = nonNegativeNumber(cost?.shipping_fee);
+  const generalShippingFee = cost?.shipping_fee_general == null
     ? shippingFee
-    : nonNegativeNumber(raw.shipping_fee_general);
-  const estimatedBuyCost = positiveNumber(raw.estimated_buy_cost) ?? price + shippingFee;
+    : nonNegativeNumber(cost.shipping_fee_general);
+  const estimatedBuyCost = positiveNumber(cost?.estimated_buy_cost) ?? price + shippingFee;
   const buyCostMax = price + generalShippingFee;
   const sellFee = Math.round(market * SELLING_FEE_RATE);
 
@@ -409,9 +418,12 @@ export async function GET(req: Request) {
 
   const pidList = pids.join(",");
   const packOpenList = packOpenIds.join(",");
-  const [rawRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
+  const [rawRows, listingCostRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,shipping_fee,shipping_fee_general,estimated_buy_cost,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status&pid=in.(${pidList})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status&pid=in.(${pidList})`,
+    ),
+    loadJson<ListingCostRow[]>(
+      `${tableUrl("mvp_listings")}?select=pid,price,shipping_fee,shipping_fee_general,estimated_buy_cost&pid=in.(${pidList})`,
     ),
     loadJson<FeedbackRow[]>(
       `${tableUrl("mvp_reveal_feedback")}?select=pid,feedback_type,note&user_ref=eq.${encodedUserRef}&pid=in.(${pidList})`,
@@ -429,6 +441,7 @@ export async function GET(req: Request) {
   ]);
 
   const rawByPid = new Map(rawRows.map((row) => [Number(row.pid), row]));
+  const listingCostByPid = new Map(listingCostRows.map((row) => [Number(row.pid), row]));
   const feedbackByPid = new Map(feedbackRows.map((row) => [Number(row.pid), row]));
   const bandByOpenId = new Map(packOpenRows.map((row) => [Number(row.id), Number(row.band_requested)]));
   const comparableKeyByPid = new Map(parsedRows.map((row) => [Number(row.pid), row.comparable_key ?? null]));
@@ -501,6 +514,7 @@ export async function GET(req: Request) {
   const items = reveals
     .map((reveal): RevealItem => {
       const raw = rawByPid.get(Number(reveal.pid));
+      const listingCost = listingCostByPid.get(Number(reveal.pid));
       const feedback = feedbackByPid.get(Number(reveal.pid));
       const comparableKey = comparableKeyByPid.get(Number(reveal.pid)) ?? null;
       const skuName = raw?.sku_name ?? null;
@@ -522,7 +536,7 @@ export async function GET(req: Request) {
       const dbCurrentProfitMax = reveal.current_profit_max ?? null;
       const dbMarketInvalidatedAt = reveal.market_invalidated_at ?? null;
       const fallbackMedian = computedMarketBasis?.medianPrice ?? null;
-      const currentNetProfit = currentNetProfitFromMarketPrice(raw, fallbackMedian);
+      const currentNetProfit = currentNetProfitFromMarketPrice(raw, listingCost, fallbackMedian);
       const marketGapKrw = currentNetProfit?.min ?? dbCurrentProfitMin;
       const marketGapKrwMax = currentNetProfit?.max ?? dbCurrentProfitMax ?? marketGapKrw;
       const marketStale = marketGapKrw != null
