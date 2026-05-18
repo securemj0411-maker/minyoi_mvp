@@ -142,7 +142,11 @@ export function queryFamily(query: string): string {
     lower.includes("보스턴") || lower.includes("아리조나") || lower.includes("취리히") || lower.includes("zurich") || lower.includes("zürich") ||
     lower.includes("크록스") || lower.includes("crocs") ||
     lower.includes("바야밴드") || lower.includes("bayaband") ||
-    (lower.includes("아크네") && (lower.includes("트리플로") || lower.includes("triplo") || lower.includes("베르틴") || lower.includes("bertin")))
+    (lower.includes("아크네") && (lower.includes("트리플로") || lower.includes("triplo") || lower.includes("베르틴") || lower.includes("bertin"))) ||
+    // Wave 206: 푸마 신발
+    lower.includes("푸마") || lower.includes("퓨마") || lower.includes("puma ") ||
+    lower.includes("스피드캣") || lower.includes("speedcat") ||
+    lower.includes("팔레르모") || lower.includes("palermo")
   ) return "shoe";
   // 가방 (TNF 백팩) — bag
   if (

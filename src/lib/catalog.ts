@@ -7511,6 +7511,53 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "케이스", "케이스티파이", "casetify", "에어팟", "아이폰", "iphone", "갤럭시"],
     msrpKrw: 90000, released: 2018,
   },
+  // Wave 206 (2026-05-18): 푸마 매물 폭발적 — 스피드캣/팔레르모/Open YY collab + 축구화/풋살화.
+  // 사용자 친화 가격 (25K~150K 다수, collab 200~700K).
+  {
+    id: "shoe-puma-speedcat",
+    brand: "Puma", category: "shoe", laneKey: "puma_speedcat",
+    modelName: "Puma Speedcat (시그니처)",
+    aliases: ["Puma Speedcat", "푸마 스피드캣", "퓨마 스피드캣"],
+    mustContain: [["puma", "푸마", "퓨마"], ["스피드캣", "speedcat", "speed cat"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "발렌시아가", "balenciaga", "오픈yy", "오픈 yy", "openyy", "open yy", "로제", "rose", "rhude", "팔레르모", "palermo"],
+    msrpKrw: 109000, released: 2024,
+  },
+  {
+    id: "shoe-puma-palermo",
+    brand: "Puma", category: "shoe", laneKey: "puma_palermo",
+    modelName: "Puma Palermo",
+    aliases: ["Puma Palermo", "푸마 팔레르모"],
+    mustContain: [["puma", "푸마", "퓨마"], ["팔레르모", "palermo"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "발렌시아가", "balenciaga", "오픈yy", "스피드캣", "speedcat"],
+    msrpKrw: 119000, released: 2024,
+  },
+  {
+    id: "shoe-puma-openyy-collab",
+    brand: "Puma x Open YY", category: "shoe", laneKey: "puma_openyy_collab",
+    modelName: "Puma × Open YY (한국 한정 collab)",
+    aliases: ["Puma Open YY", "푸마 오픈와이와이", "오픈 yy 스피드캣"],
+    mustContain: [["puma", "푸마", "퓨마"], ["오픈yy", "오픈 yy", "openyy", "open yy", "open_yy"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "발렌시아가", "balenciaga", "로제", "rose", "rhude"],
+    msrpKrw: 200000, released: 2023,
+  },
+  {
+    id: "shoe-puma-suede-classic",
+    brand: "Puma", category: "shoe", laneKey: "puma_suede_classic",
+    modelName: "Puma Suede / Clyde / GV Special",
+    aliases: ["Puma Suede", "푸마 스웨이드", "Puma Clyde", "푸마 클라이드", "GV Special"],
+    mustContain: [["puma", "푸마", "퓨마"], ["스웨이드", "suede", "클라이드", "clyde", "gv 스페셜", "gv special"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "발렌시아가", "balenciaga", "스피드캣", "speedcat", "팔레르모", "palermo", "축구화", "풋살화", "농구화"],
+    msrpKrw: 109000, released: 1968,
+  },
+  {
+    id: "shoe-puma-football",
+    brand: "Puma", category: "shoe", laneKey: "puma_football",
+    modelName: "Puma Football / Futsal (울트라 / 킹 / 퓨처)",
+    aliases: ["Puma 축구화", "Puma 풋살화", "푸마 울트라", "푸마 킹", "푸마 퓨처"],
+    mustContain: [["puma", "푸마", "퓨마"], ["울트라", "ultra", "킹", "king", "퓨처", "future", "축구화", "풋살화", "ag ", "tf ", "mg ", "퓨전니트로"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "스피드캣", "speedcat", "팔레르모", "palermo", "스웨이드", "suede", "농구화"],
+    msrpKrw: 150000, released: 2020,
+  },
 ];
 
 // Wave 94: CATALOG 전체 SKU에도 카테고리별 NOISE 자동 spread (GENERATED + CORE + Wave 91 신규 다 포함).

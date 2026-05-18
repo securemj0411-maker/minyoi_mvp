@@ -565,6 +565,12 @@ export const LANE_READINESS: LaneReadinessMap = {
   acne_musubi: { status: "ready", label: "Acne Musubi (시그니처)", note: "Wave 205 bag" },
   acne_apparel: { status: "ready", label: "Acne Apparel (broad)", note: "Wave 205 clothing" },
   kitsune_tote: { status: "ready", label: "Maison Kitsuné Tote/Eco", note: "Wave 205 bag" },
+  // Wave 206 (2026-05-18): 푸마 매물 폭발적 — 스피드캣/팔레르모/Open YY/스웨이드/축구화
+  puma_speedcat: { status: "ready", label: "Puma Speedcat (시그니처)", note: "Wave 206 — 매물 다수 faved 11~43" },
+  puma_palermo: { status: "ready", label: "Puma Palermo", note: "Wave 206 — 매물 다수" },
+  puma_openyy_collab: { status: "ready", label: "Puma × Open YY (한국 한정)", note: "Wave 206 collab" },
+  puma_suede_classic: { status: "ready", label: "Puma Suede/Clyde/GV Special", note: "Wave 206" },
+  puma_football: { status: "ready", label: "Puma Football/Futsal (Ultra/King/Future)", note: "Wave 206" },
 };
 
 export type CategoryReadinessConfig = {
