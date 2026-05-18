@@ -2177,7 +2177,12 @@ function trustedMarketMedian(stat: MarketPriceRow | undefined, category?: Sku["c
   const active = stat.active_sample_count ?? 0;
   const sold = stat.sold_sample_count ?? 0;
   const total = active + sold;
-  if (category === "shoe") {
+  // Wave 190 (2026-05-18): 신규 ready 카테고리 (drone/lego/kickboard/perfume) — Wave 173 신발과 동일 사유.
+  //   condition_class 별로 시세 row 분리 후 각 sample 1~2건이라 total<3 gate 차단 → skuMedian=0 → pool 진입 0건.
+  //   safety nets (msrp×5 ceiling / 4 tier fake floor / 광고 차단 / seller dup) 작동 중. sample 1건만 차단.
+  //   사용자 §12b 정책 영향: shoe 와 동일한 trade-off — 즉시 노출 vs precision. internal_only 카테고리라 영향 제한적.
+  const LOW_SAMPLE_ALLOWED_CATEGORIES = new Set<string>(["shoe", "drone", "lego", "kickboard", "perfume"]);
+  if (category && LOW_SAMPLE_ALLOWED_CATEGORIES.has(category)) {
     if (total < 2) return null;
   } else {
     if (total < 3) return null;
@@ -4292,6 +4297,21 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   await invalidatePoolEntries(poolBuild.invalidations);
   stats.poolUpserted = poolEntries.length;
   stats.poolSkipped = poolBuild.skipped;
+  // Wave 190 (2026-05-18): 풀 진입 0건 디버깅 — skip reason 별 카운터.
+  //   기존엔 stats.poolSkipped 총합만 있어서 어느 gate가 차단했는지 모름.
+  //   사용자 보고 "drone/lego/kickboard/perfume candidate_pool 0건" 진단 시 1시간+ 걸림.
+  //   각 reason 별 카운터 stats + console 양쪽에 출력.
+  (stats as Record<string, unknown>).poolSkipReasons = poolBuild.skipReasonCounts;
+  if (Object.keys(poolBuild.skipReasonCounts).length > 0) {
+    const topReasons = Object.entries(poolBuild.skipReasonCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8);
+    console.info("pool skip reasons (top 8)", {
+      totalSkipped: poolBuild.skipped,
+      totalAccepted: poolEntries.length,
+      reasons: Object.fromEntries(topReasons),
+    });
+  }
 
   // P0-5/P0-8: score를 처리한 row(needs_review로 skip된 것 포함) 모두 dirty=false.
   // - 시도 자체를 했다면 다음 tick에 다시 후보가 되지 않게 한다.

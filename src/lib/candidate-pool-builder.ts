@@ -109,6 +109,9 @@ export type CandidatePoolBuildResult = {
   entries: Record<string, unknown>[];
   invalidations: { pid: number; reason: string }[];
   skipped: number;
+  // Wave 190 (2026-05-18): skip reason 별 카운터. tick-pipeline stats에 출력 → 운영 가시성.
+  // 신규 카테고리 풀 진입 0건 디버깅 시 어느 gate가 차단했는지 즉시 확인 가능.
+  skipReasonCounts: Record<string, number>;
 };
 
 // Lane-aware pool gate. A SKU tagged with a `ready` laneKey enters the pool
@@ -488,5 +491,10 @@ export function buildCandidatePoolRows(input: {
     });
   }
 
-  return { entries, invalidations, skipped };
+  // Wave 190 (2026-05-18): invalidations → reason별 카운터 reduce. tick-pipeline 로그 출력 용.
+  const skipReasonCounts = invalidations.reduce<Record<string, number>>((acc, inv) => {
+    acc[inv.reason] = (acc[inv.reason] ?? 0) + 1;
+    return acc;
+  }, {});
+  return { entries, invalidations, skipped, skipReasonCounts };
 }
