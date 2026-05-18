@@ -719,7 +719,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
                 alt={card.name}
                 fill
                 sizes="(max-width: 639px) 100vw, (max-width: 1023px) 132px, 150px"
-                className="scale-[1.08] rounded-none object-contain object-center drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)] sm:scale-100 sm:rounded-md"
+                className="rounded-none object-cover object-center drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)] sm:rounded-md sm:object-contain"
               />
             </div>
           </div>
@@ -964,12 +964,20 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
         triggerClassName={`min-h-[62px] w-full border-0 px-3 py-2 text-left shadow-none transition hover:-translate-y-0.5 hover:shadow-md sm:min-h-[62px] sm:rounded-lg sm:border sm:px-2.5 sm:py-2 sm:shadow-sm ${safetyTone.card}`}
         triggerContent={(
           <span className="block w-full">
-            <span className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-1.5 text-xs font-black text-zinc-500 dark:text-zinc-400">
+            <span className="flex items-center text-xs font-black text-zinc-500 dark:text-zinc-400">
               <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
                 <SafetyIcon className={`h-4 w-4 ${safetyTone.value}`} />
                 거래 안전
               </span>
-              <span className="inline-flex min-w-0 justify-end gap-1">
+            </span>
+            <span className={`mt-0.5 block line-clamp-2 text-[17px] font-black leading-5 tracking-normal tabular-nums sm:text-sm ${safetyTone.value}`}>
+              {safety.value}
+            </span>
+            <span className="mt-0.5 flex min-w-0 items-center justify-between gap-1 text-xs font-bold text-zinc-500 dark:text-zinc-400">
+              <span className="min-w-0 truncate">
+                {safety.sub}
+              </span>
+              <span className="inline-flex shrink-0 items-center gap-1">
                 {safety.badge ? (
                   <span className={`shrink-0 rounded-full border px-1 py-0.5 text-[9px] font-black leading-none ${safety.badge.className}`}>
                     {safety.badge.label}
@@ -979,12 +987,6 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
                   근거 보기
                 </span>
               </span>
-            </span>
-            <span className={`mt-0.5 block line-clamp-2 text-[17px] font-black leading-5 tracking-normal tabular-nums sm:text-sm ${safetyTone.value}`}>
-              {safety.value}
-            </span>
-            <span className="mt-0.5 block line-clamp-1 text-xs font-bold text-zinc-500 dark:text-zinc-400">
-              {safety.sub}
             </span>
           </span>
         )}

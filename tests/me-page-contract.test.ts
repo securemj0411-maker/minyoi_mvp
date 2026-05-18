@@ -152,9 +152,8 @@ test("/me mobile reveal card keeps safety signals out of the middle content", ()
   assert.match(modal, /sm:left-auto sm:mx-0 sm:h-\[132px\] sm:w-\[132px\] sm:translate-x-0/);
   assert.match(modal, /rounded-none/);
   assert.match(modal, /p-0 sm:p-2/);
-  assert.match(modal, /scale-\[1\.08\] rounded-none object-contain object-center/);
-  assert.match(modal, /sm:scale-100 sm:rounded-md/);
-  assert.match(modal, /object-contain object-center/);
+  assert.match(modal, /rounded-none object-cover object-center/);
+  assert.match(modal, /sm:rounded-md sm:object-contain/);
   assert.match(modal, /hidden text-xs font-semibold leading-5/);
   assert.match(modal, /추가 신호 \{hiddenMobileCount\}개/);
   assert.match(modal, /bg-\[#00c471\]/);
@@ -206,8 +205,10 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.doesNotMatch(modal, /확인 포인트 있음 · 근거 보기/);
   assert.match(modal, /후기 적음/);
   assert.match(modal, /safety\.badge/);
-  assert.match(modal, /grid grid-cols-\[auto_minmax\(0,1fr\)\] items-center/);
+  assert.doesNotMatch(modal, /grid grid-cols-\[auto_minmax\(0,1fr\)\] items-center/);
   assert.match(modal, /inline-flex shrink-0 items-center gap-1 whitespace-nowrap/);
+  assert.match(modal, /flex min-w-0 items-center justify-between gap-1 text-xs font-bold/);
+  assert.match(modal, /min-w-0 truncate/);
   assert.match(modal, /shrink-0 text-\[10px\] font-black text-zinc-400/);
   assert.match(modal, /aria-label="상세 닫기"/);
   assert.match(modal, />←<\/span>/);
