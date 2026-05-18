@@ -1382,7 +1382,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                       <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
                         현재 차익
                       </span>
-                      <span className="text-base font-semibold tabular-nums text-[#00a862] dark:text-[#5dffae]">
+                      <span className="text-sm font-bold tabular-nums text-[#00a862] dark:text-[#5dffae] sm:text-base">
                         {signedProfitRange(displayProfitMin, displayProfitMax)}
                       </span>
                       {pct != null ? (
