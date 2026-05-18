@@ -754,79 +754,53 @@ function SkuListingFlowMini({ card }: { card: RevealCard }) {
   );
 }
 
-function VelocityBasisMini({ card }: { card: RevealCard }) {
+function saleSpeedDisplay(card: RevealCard) {
   const velocity = card.velocityBasis;
-  // Wave 129 (2026-05-16): 회전 기간 hero 수준 강조 (사업 보고서 L6 — "사용자가 가장 두려워하는 게 안 팔리는 거").
-  // 보고서 인용: "회전 기간이 떡상점수보다 더 retention-critical한 지표".
-  // 큰 글씨 + 색 + 빠른 회전 시 강조 badge.
-  // 2026-05-19: 판매속도 표본이 없을 때도 상세 UI 검수를 위해 2일 fallback을 노출한다.
-  // 실제 sold 표본이 생기면 아래 fallback은 자동으로 무시된다.
   const hasRealTurnEstimate =
     velocity?.medianHoursToSold != null &&
     Number.isFinite(velocity.medianHoursToSold) &&
     velocity.medianHoursToSold > 0 &&
     velocity.sold7dCount > 0;
   const hours = hasRealTurnEstimate ? velocity.medianHoursToSold : UI_TEST_FALLBACK_VELOCITY_HOURS;
-  const isFallbackEstimate = !hasRealTurnEstimate;
-  const isFastTurn = hours != null && hours > 0 && hours <= 48; // 2일 안에 팔림
-  const isSlowTurn = hours != null && hours > 168; // 7일+ 안 팔림
-  const turnLabel = velocityHoursLabel(hours);
-  const confidenceLabel = isFallbackEstimate
-    ? "UI 테스트"
-    : velocity?.confidence === "high"
-      ? "신뢰 높음"
-      : velocity?.confidence === "medium"
-        ? "신뢰 보통"
-        : "참고용";
+  return {
+    hours,
+    label: velocityHoursLabel(hours),
+    isFallback: !hasRealTurnEstimate,
+    isFast: hours != null && hours > 0 && hours <= 48,
+    isSlow: hours != null && hours > 168,
+    confidenceLabel: !hasRealTurnEstimate
+      ? "UI 테스트"
+      : velocity?.confidence === "high"
+        ? "신뢰 높음"
+        : velocity?.confidence === "medium"
+          ? "신뢰 보통"
+          : "참고용",
+    sold7dCount: velocity?.sold7dCount ?? 0,
+  };
+}
+
+function VelocitySummaryInline({ card }: { card: RevealCard }) {
+  const speed = saleSpeedDisplay(card);
   return (
-    <div className={`rounded-lg border-2 px-4 py-3 ${
-      isFastTurn
-        ? "border-emerald-500 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/40"
-        : isSlowTurn
-          ? "border-amber-400 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30"
-          : "border-[#d8e2d7] bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-800/60"
+    <div className={`mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border px-2.5 py-2 text-[11px] leading-4 ${
+      speed.isFast
+        ? "border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100"
+        : speed.isSlow
+          ? "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/25 dark:text-amber-100"
+          : "border-[#d8e2d7] bg-[#f8fbf4] text-[#24342a] dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-100"
     }`}>
-      <div className="flex items-baseline justify-between gap-2">
-        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
-          비슷한 상품은 보통
-        </div>
-        <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--brand-accent-strong)] ring-1 ring-[#d8e2d7] dark:bg-zinc-900/50 dark:text-zinc-100 dark:ring-zinc-700">
-          {confidenceLabel}
-        </span>
-      </div>
-      <div className="mt-1 flex flex-wrap items-baseline gap-2">
-        <span className={`text-2xl font-black leading-tight tabular-nums sm:text-3xl ${
-          isFastTurn
-            ? "text-emerald-700 dark:text-emerald-300"
-            : isSlowTurn
-              ? "text-amber-700 dark:text-amber-300"
-              : "text-[#223127] dark:text-white"
-        }`}>
-          {turnLabel} 안에 팔렸어요
-        </span>
-        {isFastTurn && (
-          <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white">
-            빨리 팔리는 편
-          </span>
-        )}
-        {isSlowTurn && (
-          <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-white">
-            오래 걸리는 편
-          </span>
-        )}
-      </div>
-      <div className="mt-2 text-[11px] text-[#58705d] dark:text-zinc-300/80">
-        {isFallbackEstimate ? (
-          <>
-            판매속도 표본이 아직 부족해서 UI 확인용으로 임시 2일 기준을 보여줘요.
-          </>
-        ) : (
-          <>
-            최근 7일 동안 비슷한 상품이 <span className="font-bold">{velocity?.sold7dCount.toLocaleString("ko-KR")}건</span> 팔렸고,
-            현재 판매중인 비슷한 상품은 {velocity?.activeSampleCount.toLocaleString("ko-KR")}건이에요.
-          </>
-        )}
-      </div>
+      <span className="font-black text-[#4f6a52] dark:text-emerald-300">판매 속도</span>
+      <span className="font-black tabular-nums">
+        비슷한 상품은 보통 {speed.label} 안에 팔려요
+      </span>
+      <span className="rounded-full bg-white/75 px-1.5 py-0.5 text-[10px] font-black text-[#58705d] ring-1 ring-[#d8e2d7] dark:bg-zinc-900/60 dark:text-zinc-300 dark:ring-zinc-700">
+        {speed.confidenceLabel}
+      </span>
+      <span className="text-[10px] font-semibold text-[#6d786b] dark:text-zinc-400">
+        {speed.isFallback
+          ? "표본 부족 · 임시 2일 기준"
+          : `최근 7일 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`}
+      </span>
     </div>
   );
 }
@@ -1270,7 +1244,12 @@ function RevealCardItem({
                     </span>
                   ) : null}
                 </div>
+                <VelocitySummaryInline card={card} />
               </div>
+              <RecommendationReasonPanel
+                card={card}
+                className="mt-2 rounded-xl p-2.5 shadow-none ring-0 sm:p-3"
+              />
             </div>
             <details className="group hidden shrink-0 rounded-full border border-[#d9e5d7] bg-[#f4faf1] px-3 py-1 text-right shadow-sm dark:border-zinc-700 dark:bg-zinc-800 sm:block sm:min-w-[72px]">
               <summary className="cursor-pointer list-none">
@@ -1306,10 +1285,8 @@ function RevealCardItem({
       </div>
       {/* 좌측 카드 닫음 — 우측 카드 = 시세 그래프 + 디테일. */}
 
-      <RecommendationReasonPanel card={card} className="order-2 lg:order-3" />
-
       {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
-      <div className="order-3 space-y-2 rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.08)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-none dark:bg-zinc-900 dark:ring-zinc-800/70 lg:order-2">
+      <div className="order-2 space-y-2 rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.08)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-none dark:bg-zinc-900 dark:ring-zinc-800/70 lg:order-2">
         <div className="flex items-center justify-between gap-2">
           <div className="text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
             시세 그래프 · 시장 분석
@@ -1330,8 +1307,6 @@ function RevealCardItem({
           referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
         />
         <MarketGraphTrustLine card={card} />
-
-        <VelocityBasisMini card={card} />
 
         {/* Wave 183 (2026-05-17): Liquidity 곡선 — 가격대별 회전 추정 (자본 묶임 두려움 해소).
             사업 보고서 L6 — "회전 기간이 떡상점수보다 retention-critical". */}
