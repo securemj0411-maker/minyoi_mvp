@@ -785,35 +785,55 @@ function saleSpeedDisplay(card: RevealCard) {
   };
 }
 
-function marketDepthDisplay(card: RevealCard) {
+type UpperFoldTileTone = "good" | "info" | "warn" | RiskTone;
+
+function marketEvidenceSummary(card: RevealCard) {
   const market = card.marketBasis;
-  const sample = market?.sampleCount ?? 0;
-  const active = market?.activeSampleCount ?? 0;
-  const sold = market?.soldSampleCount ?? 0;
-  const total = sample > 0 ? sample : active + sold;
-  if (total >= 30) return { label: "매물대 충분", value: `${total.toLocaleString("ko-KR")}건`, tone: "good" as const };
-  if (total >= 8) return { label: "매물대 보통", value: `${total.toLocaleString("ko-KR")}건`, tone: "info" as const };
-  if (total > 0) return { label: "표본 적음", value: `${total.toLocaleString("ko-KR")}건`, tone: "warn" as const };
-  return { label: "표본 수집중", value: "부족", tone: "warn" as const };
+  if (!market) return "시세 기준 확인중";
+  const sample = market.sampleCount ?? 0;
+  const source = market.priceSource === "reference" ? "다나와" : "번개";
+  const condition = marketConditionLabel(card);
+  if (sample > 0) return `${condition} · ${source} ${sample.toLocaleString("ko-KR")}건`;
+  return `${condition} · ${source} 기준`;
 }
 
-function upperFoldTileClass(tone: "good" | "info" | "warn" | RiskTone) {
+function verificationDisplay(card: RevealCard) {
+  if (card.freshSeconds <= 30 * 60) {
+    return { value: freshLabel(card.freshSeconds), sub: "판매상태 재확인", tone: "good" as const };
+  }
+  if (card.freshSeconds <= 3 * 3600) {
+    return { value: freshLabel(card.freshSeconds), sub: "최근 검증", tone: "info" as const };
+  }
+  return { value: freshLabel(card.freshSeconds), sub: "다시 확인 권장", tone: "warn" as const };
+}
+
+function upperFoldTileClass(tone: UpperFoldTileTone) {
   if (tone === "safe" || tone === "good") {
-    return "border-emerald-100 bg-emerald-50/80 text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/25 dark:text-emerald-100";
+    return {
+      card: "border-emerald-200/80 bg-white/80 dark:border-emerald-900/45 dark:bg-zinc-900/55",
+      dot: "bg-emerald-500",
+      value: "text-emerald-700 dark:text-emerald-300",
+    };
   }
   if (tone === "caution" || tone === "info") {
-    return "border-amber-100 bg-amber-50/80 text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-100";
+    return {
+      card: "border-amber-200/80 bg-white/80 dark:border-amber-900/45 dark:bg-zinc-900/55",
+      dot: "bg-amber-400",
+      value: "text-amber-700 dark:text-amber-300",
+    };
   }
-  return "border-rose-100 bg-rose-50/80 text-rose-950 dark:border-rose-900/50 dark:bg-rose-950/25 dark:text-rose-100";
+  return {
+    card: "border-rose-200/80 bg-white/80 dark:border-rose-900/45 dark:bg-zinc-900/55",
+    dot: "bg-rose-500",
+    value: "text-rose-700 dark:text-rose-300",
+  };
 }
-
-type UpperFoldTileTone = "good" | "info" | "warn" | RiskTone;
 
 function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   const speed = saleSpeedDisplay(card);
   const risk = buildRiskScore(revealRiskScoreInput(card));
   const discount = marketDiscountPercent(card);
-  const depth = marketDepthDisplay(card);
+  const verified = verificationDisplay(card);
   const priceTone: "good" | "info" | "warn" = discount == null
     ? "warn"
     : discount >= 15
@@ -824,9 +844,8 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   const priceValue = discount == null
     ? "확인중"
     : discount > 0
-      ? `${discount}% 저렴`
-      : "시세 근처";
-  const priceLabel = card.marketBasis?.priceSource === "reference" ? "새상품 기준" : `${marketConditionLabel(card)} 기준`;
+      ? `${discount}% 낮음`
+      : "여유 적음";
   const speedTone: "good" | "info" | "warn" = speed.isSlow ? "warn" : speed.isFast ? "good" : "info";
   const tiles: Array<{
     key: string;
@@ -836,10 +855,24 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
     tone: UpperFoldTileTone;
   }> = [
     {
+      key: "fresh",
+      label: "현재성",
+      value: verified.value,
+      sub: verified.sub,
+      tone: verified.tone,
+    },
+    {
+      key: "price",
+      label: "시세/매물대",
+      value: priceValue,
+      sub: marketEvidenceSummary(card),
+      tone: priceTone,
+    },
+    {
       key: "speed",
       label: "회수 속도",
       value: `보통 ${speed.label}`,
-      sub: speed.isFallback ? "임시 기준" : `돈 묶임 낮춤 · 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
+      sub: speed.isFallback ? "표본 부족 · 임시 기준" : `최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
       tone: speedTone,
     },
     {
@@ -849,37 +882,29 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
       sub: risk.tone === "safe" ? "강한 차단 통과" : "확인 포인트 있음",
       tone: risk.tone,
     },
-    {
-      key: "price",
-      label: "시세 확신",
-      value: priceValue,
-      sub: priceLabel,
-      tone: priceTone,
-    },
-    {
-      key: "depth",
-      label: "매물대",
-      value: depth.value,
-      sub: depth.label,
-      tone: depth.tone,
-    },
   ];
   return (
     <div className="mt-2 grid grid-cols-2 gap-1.5">
-      {tiles.map((tile) => (
-        <div
-          key={tile.key}
-          className={`min-h-[62px] rounded-lg border px-2.5 py-2 shadow-sm ${upperFoldTileClass(tile.tone)}`}
-        >
-          <div className="text-[10px] font-black text-current/55">{tile.label}</div>
-          <div className="mt-0.5 text-sm font-black leading-5 tracking-normal tabular-nums sm:text-[15px]">
-            {tile.value}
+      {tiles.map((tile) => {
+        const tone = upperFoldTileClass(tile.tone);
+        return (
+          <div
+            key={tile.key}
+            className={`min-h-[62px] rounded-lg border px-2.5 py-2 shadow-sm ${tone.card}`}
+          >
+            <div className="flex items-center gap-1.5 text-[10px] font-black text-zinc-500 dark:text-zinc-400">
+              <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+              {tile.label}
+            </div>
+            <div className={`mt-0.5 line-clamp-2 text-[13px] font-black leading-4 tracking-normal tabular-nums sm:text-sm ${tone.value}`}>
+              {tile.value}
+            </div>
+            <div className="mt-0.5 line-clamp-1 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+              {tile.sub}
+            </div>
           </div>
-          <div className="mt-0.5 truncate text-[10px] font-bold text-current/55">
-            {tile.sub}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
