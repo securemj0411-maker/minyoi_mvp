@@ -167,6 +167,13 @@ function marketSourceBadge(card: RevealCard) {
   return null;
 }
 
+function marketDiscountPercent(card: RevealCard) {
+  const median = card.marketBasis?.medianPrice ?? 0;
+  if (!median || median <= 0 || !card.price || card.price <= 0) return null;
+  const discount = Math.round(((median - card.price) / median) * 100);
+  return Number.isFinite(discount) ? discount : null;
+}
+
 function freshLabel(seconds: number) {
   if (seconds < 60) return `${seconds}초 전 검증`;
   if (seconds < 3600) return `${Math.round(seconds / 60)}분 전 검증`;
@@ -778,50 +785,101 @@ function saleSpeedDisplay(card: RevealCard) {
   };
 }
 
-function VelocityBasisMini({ card }: { card: RevealCard }) {
+function marketDepthDisplay(card: RevealCard) {
+  const market = card.marketBasis;
+  const sample = market?.sampleCount ?? 0;
+  const active = market?.activeSampleCount ?? 0;
+  const sold = market?.soldSampleCount ?? 0;
+  const total = sample > 0 ? sample : active + sold;
+  if (total >= 30) return { label: "매물대 충분", value: `${total.toLocaleString("ko-KR")}건`, tone: "good" as const };
+  if (total >= 8) return { label: "매물대 보통", value: `${total.toLocaleString("ko-KR")}건`, tone: "info" as const };
+  if (total > 0) return { label: "표본 적음", value: `${total.toLocaleString("ko-KR")}건`, tone: "warn" as const };
+  return { label: "표본 수집중", value: "부족", tone: "warn" as const };
+}
+
+function upperFoldTileClass(tone: "good" | "info" | "warn" | RiskTone) {
+  if (tone === "safe" || tone === "good") {
+    return "border-emerald-100 bg-emerald-50/80 text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/25 dark:text-emerald-100";
+  }
+  if (tone === "caution" || tone === "info") {
+    return "border-amber-100 bg-amber-50/80 text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-100";
+  }
+  return "border-rose-100 bg-rose-50/80 text-rose-950 dark:border-rose-900/50 dark:bg-rose-950/25 dark:text-rose-100";
+}
+
+type UpperFoldTileTone = "good" | "info" | "warn" | RiskTone;
+
+function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   const speed = saleSpeedDisplay(card);
+  const risk = buildRiskScore(revealRiskScoreInput(card));
+  const discount = marketDiscountPercent(card);
+  const depth = marketDepthDisplay(card);
+  const priceTone: "good" | "info" | "warn" = discount == null
+    ? "warn"
+    : discount >= 15
+      ? "good"
+      : discount >= 5
+        ? "info"
+        : "warn";
+  const priceValue = discount == null
+    ? "확인중"
+    : discount > 0
+      ? `${discount}% 저렴`
+      : "시세 근처";
+  const priceLabel = card.marketBasis?.priceSource === "reference" ? "새상품 기준" : `${marketConditionLabel(card)} 기준`;
+  const speedTone: "good" | "info" | "warn" = speed.isSlow ? "warn" : speed.isFast ? "good" : "info";
+  const tiles: Array<{
+    key: string;
+    label: string;
+    value: string;
+    sub: string;
+    tone: UpperFoldTileTone;
+  }> = [
+    {
+      key: "speed",
+      label: "회수 속도",
+      value: `보통 ${speed.label}`,
+      sub: speed.isFallback ? "임시 기준" : `돈 묶임 낮춤 · 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
+      tone: speedTone,
+    },
+    {
+      key: "risk",
+      label: "거래 안전",
+      value: risk.label,
+      sub: risk.tone === "safe" ? "강한 차단 통과" : "확인 포인트 있음",
+      tone: risk.tone,
+    },
+    {
+      key: "price",
+      label: "시세 확신",
+      value: priceValue,
+      sub: priceLabel,
+      tone: priceTone,
+    },
+    {
+      key: "depth",
+      label: "매물대",
+      value: depth.value,
+      sub: depth.label,
+      tone: depth.tone,
+    },
+  ];
   return (
-    <div className={`mt-2 rounded-xl border-2 px-4 py-3 ${
-      speed.isFast
-        ? "border-emerald-500 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/40"
-        : speed.isSlow
-          ? "border-amber-400 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30"
-          : "border-[#d8e2d7] bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-800/60"
-    }`}>
-      <div className="flex items-baseline justify-between gap-2">
-        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
-          비슷한 상품은 보통
+    <div className="mt-2 grid grid-cols-2 gap-1.5">
+      {tiles.map((tile) => (
+        <div
+          key={tile.key}
+          className={`min-h-[62px] rounded-lg border px-2.5 py-2 shadow-sm ${upperFoldTileClass(tile.tone)}`}
+        >
+          <div className="text-[10px] font-black text-current/55">{tile.label}</div>
+          <div className="mt-0.5 text-sm font-black leading-5 tracking-normal tabular-nums sm:text-[15px]">
+            {tile.value}
+          </div>
+          <div className="mt-0.5 truncate text-[10px] font-bold text-current/55">
+            {tile.sub}
+          </div>
         </div>
-        <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--brand-accent-strong)] ring-1 ring-[#d8e2d7] dark:bg-zinc-900/50 dark:text-zinc-100 dark:ring-zinc-700">
-          {speed.confidenceLabel}
-        </span>
-      </div>
-      <div className="mt-1 flex flex-wrap items-baseline gap-2">
-        <span className={`text-2xl font-black leading-tight tabular-nums sm:text-3xl ${
-          speed.isFast
-            ? "text-emerald-700 dark:text-emerald-300"
-            : speed.isSlow
-              ? "text-amber-700 dark:text-amber-300"
-              : "text-[#223127] dark:text-white"
-        }`}>
-          {speed.label} 안에 팔렸어요
-        </span>
-        {speed.isFast ? (
-          <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white">
-            빨리 팔리는 편
-          </span>
-        ) : null}
-        {speed.isSlow ? (
-          <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-white">
-            오래 걸리는 편
-          </span>
-        ) : null}
-      </div>
-      <div className="mt-2 text-[11px] text-[#58705d] dark:text-zinc-300/80">
-        {speed.isFallback
-          ? "판매속도 표본이 아직 부족해서 UI 확인용으로 임시 2일 기준을 보여줘요."
-          : `최근 7일 동안 비슷한 상품이 ${speed.sold7dCount.toLocaleString("ko-KR")}건 팔렸어요.`}
-      </div>
+      ))}
     </div>
   );
 }
@@ -1265,7 +1323,7 @@ function RevealCardItem({
                     </span>
                   ) : null}
                 </div>
-                <VelocityBasisMini card={card} />
+                <UpperFoldFearReducers card={card} />
               </div>
               <RecommendationReasonPanel
                 card={card}
