@@ -1836,7 +1836,7 @@ function RelatedRevealStrip({
   if (visibleItems.length === 0 || !onOpenRelatedItem) return null;
 
   return (
-    <section className="border-t border-[#e5dccf] pt-3 dark:border-zinc-800">
+    <section className="mx-3 rounded-2xl border border-[#e7dece] bg-[#fffdf9] px-3 py-3 shadow-[0_8px_22px_rgba(49,66,56,0.08)] dark:border-zinc-800 dark:bg-zinc-900 sm:mx-0 sm:px-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-sm font-black text-[#223127] dark:text-zinc-100">내 다른 추천 매물</div>
@@ -1865,7 +1865,7 @@ function RelatedRevealStrip({
                 onBeforeOpenRelatedItem?.();
                 onOpenRelatedItem(item.pid);
               }}
-              className="group grid w-full min-w-0 grid-cols-[92px_minmax(0,1fr)] gap-3 py-3 text-left transition hover:bg-[#f6fbf2] dark:hover:bg-zinc-900/70 sm:grid-cols-[104px_minmax(0,1fr)]"
+              className="group grid w-full min-w-0 grid-cols-[92px_minmax(0,1fr)] gap-3 rounded-xl px-1.5 py-3 text-left transition hover:bg-[#f6fbf2] dark:hover:bg-zinc-800/70 sm:grid-cols-[104px_minmax(0,1fr)]"
             >
               <div className="relative aspect-square shrink-0 overflow-hidden rounded-lg bg-[#f2eadf] dark:bg-zinc-800">
                 <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />

@@ -252,12 +252,13 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   assert.match(modal, /function FixedBunjangFooter/);
   assert.match(modal, /내 다른 추천 매물/);
   assert.match(modal, /매입가 · 시세 · 상태를 같이 보고/);
+  assert.match(modal, /mx-3 rounded-2xl border border-\[#e7dece\] bg-\[#fffdf9\] px-3 py-3/);
   assert.match(modal, /grid-cols-\[92px_minmax\(0,1fr\)\]/);
+  assert.match(modal, /rounded-xl px-1\.5 py-3 text-left/);
   assert.match(modal, /매입 <b className="font-black tabular-nums/);
   assert.match(modal, /시세 <b className="font-black tabular-nums/);
   assert.match(modal, /<ConditionPhotoBadge conditionClass=\{item\.marketBasis\?\.conditionClass \?\? null\} compact \/>/);
   assert.match(modal, /상태 재확인/);
-  assert.doesNotMatch(modal, /rounded-2xl border border-\[#e7dece\] bg-white\/80 p-3/);
   assert.match(modal, /grid-cols-\[minmax\(0,0\.86fr\)_minmax\(0,1\.18fr\)\]/);
   assert.match(modal, /triggerLabel=\{safetyScore\.label\}/);
   assert.match(modal, /fixedSafetyCtaClass\(safetyScore\.tone\)/);
