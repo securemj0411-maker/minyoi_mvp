@@ -1885,16 +1885,6 @@ export default function PackRevealModal({
                   alreadyReportedLoss={alreadyReportedLoss}
                 />
               ) : null}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
-                <span>최근 검증 시점이 오래된 카드는 상품이 사라졌을 수 있어요. 빠르게 확인해주세요.</span>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="rounded-lg border border-zinc-200 px-3 py-2 font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                >
-                  돌아가기
-                </button>
-              </div>
             </div>
           ) : null}
 

@@ -152,8 +152,7 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
   const relatedIndex = modal.indexOf("<RelatedRevealStrip");
   const footerIndex = modal.indexOf("<ModalActionFooter", relatedIndex);
-  const returnIndex = modal.indexOf("최근 검증 시점", footerIndex);
-  const fixedCtaIndex = modal.indexOf("<FixedBunjangFooter", returnIndex);
+  const fixedCtaIndex = modal.indexOf("<FixedBunjangFooter", footerIndex);
 
   assert.match(modal, /function RelatedRevealStrip/);
   assert.match(modal, /function FixedBunjangFooter/);
@@ -165,7 +164,9 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   assert.match(modal, /className="group flex w-full min-w-0 gap-3/);
   assert.match(modal, /h-\[86px\] w-\[86px\]/);
   assert.match(modal, /pb-24[\s\S]*sm:pb-28/);
-  assert.ok(relatedIndex >= 0 && footerIndex > relatedIndex && returnIndex > footerIndex && fixedCtaIndex > returnIndex);
+  assert.ok(relatedIndex >= 0 && footerIndex > relatedIndex && fixedCtaIndex > footerIndex);
+  assert.doesNotMatch(modal, /최근 검증 시점이 오래된 카드/);
+  assert.doesNotMatch(modal, />\s*돌아가기\s*</);
   assert.doesNotMatch(modal, />\s*공략 보기\s*</);
   assert.doesNotMatch(modal, /onPreviewGuide/);
   assert.doesNotMatch(modal, /grid grid-cols-2 gap-2 sm:grid-cols-4/);
