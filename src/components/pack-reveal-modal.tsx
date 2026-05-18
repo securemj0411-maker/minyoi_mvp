@@ -627,6 +627,22 @@ function VerdictBadgesMini({ card }: { card: RevealCard }) {
   );
 }
 
+function RevealRiskScoreMini({ card }: { card: RevealCard }) {
+  return (
+    <RiskScoreBar
+      descriptionPreview={card.savedDetail?.descriptionPreview ?? null}
+      conditionClass={card.marketBasis?.conditionClass ?? null}
+      price={card.price}
+      skuMedian={card.marketBasis?.medianPrice ?? null}
+      confidence={card.confidence}
+      sellerReviewRating={card.savedDetail?.sellerReviewRating ?? null}
+      sellerReviewCount={card.savedDetail?.sellerReviewCount ?? null}
+      showDetail
+      compact
+    />
+  );
+}
+
 function SkuListingFlowMini({ card }: { card: RevealCard }) {
   const flow = card.skuListingFlow;
   if (!flow) return null;
@@ -781,6 +797,9 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
       <div className="mt-3 grid gap-2 sm:hidden">
         <div className="rounded-lg border border-white/70 bg-white/80 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/45">
           <div className="mb-1.5 text-[11px] font-black text-[#4f6a52] dark:text-emerald-200">매물 신호</div>
+          <div className="mb-2">
+            <RevealRiskScoreMini card={card} />
+          </div>
           <VerdictBadgesMini card={card} />
         </div>
         <MarketBasisMini card={card} />
@@ -1096,7 +1115,9 @@ function RevealCardItem({
                   </>
                 ) : null}
                 <span className="text-[11px] font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
-                <ConditionChip conditionClass={card.marketBasis?.conditionClass ?? null} showHelp />
+                <span className="hidden sm:inline-flex">
+                  <ConditionChip conditionClass={card.marketBasis?.conditionClass ?? null} showHelp />
+                </span>
                 {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
                   <span
                     title={`이 매물은 ${card.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}
@@ -1124,17 +1145,7 @@ function RevealCardItem({
 
         {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 5축 잔여 위험 시각화. pack-reveal = showDetail. */}
         <div className="hidden sm:block">
-          <RiskScoreBar
-            descriptionPreview={card.savedDetail?.descriptionPreview ?? null}
-            conditionClass={card.marketBasis?.conditionClass ?? null}
-            price={card.price}
-            skuMedian={card.marketBasis?.medianPrice ?? null}
-            confidence={card.confidence}
-            sellerReviewRating={card.savedDetail?.sellerReviewRating ?? null}
-            sellerReviewCount={card.savedDetail?.sellerReviewCount ?? null}
-            showDetail
-            compact
-          />
+          <RevealRiskScoreMini card={card} />
         </div>
 
         <div className="hidden sm:block">
