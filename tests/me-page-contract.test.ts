@@ -95,3 +95,19 @@ test("saved money counter includes inaccurate report token compensation", () => 
   assert.match(counter, /신고 보상 토큰/);
   assert.doesNotMatch(counter, /손해 보상 토큰/);
 });
+
+test("/me delete action soft-hides reveals without deleting feedback history", () => {
+  const deleteRoute = source("src/app/api/packs/reveals/delete/route.ts");
+  const meRoute = source("src/app/api/packs/me/route.ts");
+  const migration = source("supabase/migrations/20260518103130_pack_reveals_soft_hide.sql");
+  const schema = source("supabase/schema.sql");
+
+  assert.match(deleteRoute, /method:\s*"PATCH"/);
+  assert.match(deleteRoute, /hidden_at/);
+  assert.match(deleteRoute, /hidden_reason/);
+  assert.doesNotMatch(deleteRoute, /mvp_reveal_feedback[\s\S]*method:\s*"DELETE"/);
+  assert.match(meRoute, /hidden_at=is\.null/);
+  assert.match(migration, /add column if not exists hidden_at/);
+  assert.match(migration, /mvp_pack_reveals_visible_user_idx/);
+  assert.match(schema, /hidden_at timestamptz/);
+});

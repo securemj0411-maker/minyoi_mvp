@@ -1089,6 +1089,9 @@ create table if not exists public.mvp_pack_reveals (
   confidence numeric not null,
   link_clicked_at timestamptz,
   revealed_at timestamptz not null default now(),
+  hidden_at timestamptz,
+  hidden_reason text,
+  hidden_source text,
   unique (user_ref, pid)
 );
 
@@ -1186,6 +1189,14 @@ create index if not exists mvp_pack_opens_user_idx
 
 create index if not exists mvp_pack_reveals_user_idx
   on public.mvp_pack_reveals(user_ref, revealed_at desc);
+
+create index if not exists mvp_pack_reveals_visible_user_idx
+  on public.mvp_pack_reveals(user_ref, revealed_at desc)
+  where hidden_at is null;
+
+create index if not exists mvp_pack_reveals_hidden_user_idx
+  on public.mvp_pack_reveals(user_ref, hidden_at desc)
+  where hidden_at is not null;
 
 create index if not exists mvp_pack_reveals_pack_idx
   on public.mvp_pack_reveals(pack_open_id);

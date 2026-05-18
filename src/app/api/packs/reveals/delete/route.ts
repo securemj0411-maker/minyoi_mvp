@@ -5,8 +5,8 @@ import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 // 2026-05-17: 사용자 매물 삭제 (dashboard "선택 삭제" / "전체 삭제").
-// mvp_pack_reveals + mvp_reveal_feedback row 다 delete (user_ref 본인 매물만).
-// 진짜 DELETE — undo 없음. 사용자 의도 = "내 dashboard 에서 안 보이게".
+// Wave 240: hard delete 대신 mvp_pack_reveals soft-hide.
+// 사용자 의도는 "내 dashboard 에서 안 보이게"이고, feedback/report/매수 신호는 보존해야 한다.
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,24 +54,24 @@ export async function POST(req: Request) {
 
   const headers = serviceHeaders("return=minimal");
 
-  // 전체 삭제 or pid 매칭 delete. 둘 다 user_ref 본인 것만.
+  // 전체 삭제 or pid 매칭 soft-hide. user_ref 본인 것만.
   const baseFilter = `user_ref=eq.${encodedUserRef}`;
   const pidFilter = all ? "" : `&pid=in.(${pids.join(",")})`;
+  const now = new Date().toISOString();
 
   try {
-    await Promise.all([
-      restFetch(`${tableUrl("mvp_pack_reveals")}?${baseFilter}${pidFilter}`, {
-        method: "DELETE",
-        headers,
+    await restFetch(`${tableUrl("mvp_pack_reveals")}?${baseFilter}${pidFilter}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({
+        hidden_at: now,
+        hidden_reason: all ? "user_hide_all" : "user_hide_selected",
+        hidden_source: "me_dashboard",
       }),
-      restFetch(`${tableUrl("mvp_reveal_feedback")}?${baseFilter}${pidFilter}`, {
-        method: "DELETE",
-        headers,
-      }),
-    ]);
+    });
     return NextResponse.json({ ok: true, mode: all ? "all" : "selected", count: all ? "all" : pids.length });
   } catch (err) {
-    console.error("[packs/reveals/delete] error", err);
-    return NextResponse.json({ error: "delete_failed", message: "삭제에 실패했어요." }, { status: 500 });
+    console.error("[packs/reveals/delete] hide error", err);
+    return NextResponse.json({ error: "hide_failed", message: "숨김 처리에 실패했어요." }, { status: 500 });
   }
 }

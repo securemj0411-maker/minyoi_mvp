@@ -417,7 +417,7 @@ export async function GET(req: Request) {
   const query = normalizeSearch(url.searchParams.get("q") ?? "");
   const encodedUserRef = encodeURIComponent(userRef);
   const reveals = await loadJson<RevealRow[]>(
-    `${tableUrl("mvp_pack_reveals")}?select=pid,pack_open_id,source,expected_profit_min,expected_profit_max,current_profit_min,current_profit_max,market_invalidated_at,confidence,link_clicked_at,revealed_at&user_ref=eq.${encodedUserRef}&order=revealed_at.desc&limit=${MAX_REVEAL_SCAN}`,
+    `${tableUrl("mvp_pack_reveals")}?select=pid,pack_open_id,source,expected_profit_min,expected_profit_max,current_profit_min,current_profit_max,market_invalidated_at,confidence,link_clicked_at,revealed_at&user_ref=eq.${encodedUserRef}&hidden_at=is.null&order=revealed_at.desc&limit=${MAX_REVEAL_SCAN}`,
   );
   const pids = [...new Set(reveals.map((row) => Number(row.pid)).filter(Number.isFinite))];
   const packOpenIds = [...new Set(reveals.map((row) => Number(row.pack_open_id)).filter(Number.isFinite))];
