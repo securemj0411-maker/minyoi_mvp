@@ -109,6 +109,38 @@ export function queryFamily(query: string): string {
   ) return "home_appliance";
   // 갤럭시 북 — laptop
   if (lower.includes("갤럭시 북") || lower.includes("galaxy book") || lower.includes("갤럭시북")) return "laptop";
+  // Wave 194 (2026-05-18): 신발 / 가방 brand 매핑 — 이전엔 모두 unknown fallback.
+  //   shoe category=1 query만 등록되어 통계/대시보드 misleading. 운영 가시성 ↑ 목적 (cosmetic).
+  if (
+    lower.includes("나이키") || lower.includes("nike") ||
+    lower.includes("아디다스") || lower.includes("adidas") ||
+    lower.includes("뉴발란스") || lower.includes("new balance") || lower.includes("newbalance") ||
+    lower.includes("컨버스") || lower.includes("converse") || lower.includes("척테일러") || lower.includes("척70") || lower.includes("chuck") ||
+    lower.includes("닥터마틴") || lower.includes("dr.martens") || lower.includes("dr martens") || lower.includes("doc martens") ||
+    lower.includes("조던") || lower.includes("jordan") || lower.includes("aj1") || lower.includes("aj4") ||
+    lower.includes("yeezy") || lower.includes("이지") ||
+    lower.includes("호카") || lower.includes("hoka") || lower.includes("클리프턴") ||
+    lower.includes("페가수스") || lower.includes("pegasus") || lower.includes("베이퍼플라이") || lower.includes("vaporfly") ||
+    lower.includes("덩크") || lower.includes("dunk") ||
+    lower.includes("에어포스") || lower.includes("airforce") || lower.includes("air force") ||
+    lower.includes("삼바") || lower.includes("samba") || lower.includes("가젤") || lower.includes("gazelle") ||
+    lower.includes("토바코") || lower.includes("tobacco") ||
+    lower.includes("스탠스미스") || lower.includes("stan smith") || lower.includes("슈퍼스타") || lower.includes("superstar") ||
+    lower.includes("코르테즈") || lower.includes("cortez") || lower.includes("블레이저") || lower.includes("blazer") ||
+    lower.includes("스니커즈") || lower.includes("sneakers") ||
+    lower.includes("운동화") || lower.includes("신발")
+  ) return "shoe";
+  if (
+    lower.includes("루이비통") || lower.includes("louis vuitton") || lower.includes("lv ") ||
+    lower.includes("구찌") || lower.includes("gucci") ||
+    lower.includes("샤넬") || lower.includes("chanel") ||
+    lower.includes("프라다") || lower.includes("prada") ||
+    lower.includes("디올") || lower.includes("dior") ||
+    lower.includes("생로랑") || lower.includes("saint laurent") || lower.includes("ysl") ||
+    lower.includes("로에베") || lower.includes("loewe") ||
+    lower.includes("발렌시아가") || lower.includes("balenciaga") ||
+    lower.includes("토트백") || lower.includes("크로스백") || lower.includes("숄더백") || lower.includes("백팩")
+  ) return "bag";
   return "unknown";
 }
 
