@@ -1150,6 +1150,9 @@ create table if not exists public.mvp_reveal_feedback (
     'watching',
     'contacted',
     'passed',
+    'inspected',
+    'listed',
+    'resold',
     'loss_report',
     'inaccurate_report'
   )),

@@ -20,6 +20,9 @@ const FEEDBACK_TYPES = new Set<RevealFeedbackType>([
   "watching",
   "contacted",
   "passed",
+  "inspected",
+  "listed",
+  "resold",
 ]);
 
 function isFeedbackType(value: unknown): value is RevealFeedbackType {

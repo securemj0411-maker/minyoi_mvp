@@ -90,6 +90,9 @@ type FeedbackRow = {
 const FEEDBACK_DISPLAY_PRIORITY: Record<string, number> = {
   inaccurate_report: 90,
   loss_report: 80,
+  resold: 76,
+  listed: 74,
+  inspected: 72,
   bought: 70,
   contacted: 65,
   watching: 60,

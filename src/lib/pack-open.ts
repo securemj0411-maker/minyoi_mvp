@@ -157,6 +157,9 @@ export type RevealFeedbackType =
   | "watching"
   | "contacted"
   | "passed"
+  | "inspected"
+  | "listed"
+  | "resold"
   | "loss_report"
   | "inaccurate_report";
 

@@ -61,12 +61,22 @@ type Props = {
 };
 
 type PreviewSide = "left" | "right";
-type TransactionFeedbackType = Extract<RevealFeedbackType, "contacted" | "bought" | "passed">;
+type TransactionFeedbackType = Extract<RevealFeedbackType, "contacted" | "bought" | "passed" | "inspected" | "listed" | "resold">;
+type RecommendationFeatureTone = "profit" | "market" | "speed" | "quality";
+type RecommendationFeatureCard = {
+  icon: ReactNode;
+  title: string;
+  body: string;
+  tone: RecommendationFeatureTone;
+};
 
 const TRANSACTION_STATUS_LABEL: Record<TransactionFeedbackType, string> = {
   contacted: "문의함",
   bought: "매수함",
   passed: "포기함",
+  inspected: "검수 완료",
+  listed: "판매 등록",
+  resold: "판매 완료",
 };
 
 const TRANSACTION_ACTIONS: Array<{
@@ -79,8 +89,27 @@ const TRANSACTION_ACTIONS: Array<{
   { type: "passed", label: "포기했어요", note: "이 매물은 진행하지 않음" },
 ];
 
+const POST_BUY_ACTIONS: Array<{
+  type: TransactionFeedbackType;
+  label: string;
+  note: string;
+}> = [
+  { type: "inspected", label: "검수 완료", note: "매수 후 검수 완료" },
+  { type: "listed", label: "판매 등록", note: "재판매 등록 완료" },
+  { type: "resold", label: "판매 완료", note: "재판매 완료" },
+];
+
 function isTransactionFeedbackType(value: string | null | undefined): value is TransactionFeedbackType {
-  return value === "contacted" || value === "bought" || value === "passed";
+  return value === "contacted"
+    || value === "bought"
+    || value === "passed"
+    || value === "inspected"
+    || value === "listed"
+    || value === "resold";
+}
+
+function isPostBuyFeedbackType(value: TransactionFeedbackType | null) {
+  return value === "bought" || value === "inspected" || value === "listed" || value === "resold";
 }
 
 const LOADING_STEPS = [
@@ -200,6 +229,88 @@ function recommendationWatchSignals(card: RevealCard) {
     market?.conditionClass === "worn" ? "사용감은 같은 등급 시세에 반영" : null,
     ...warnVerdicts,
   ], 3);
+}
+
+function recommendationFeatureCards(card: RevealCard): RecommendationFeatureCard[] {
+  const detail = card.savedDetail;
+  const market = card.marketBasis;
+  const velocity = card.velocityBasis;
+  const flow = card.skuListingFlow;
+  const cards: RecommendationFeatureCard[] = [];
+
+  const profitMin = Math.min(card.expectedProfitMin, card.expectedProfitMax);
+  const profitMax = Math.max(card.expectedProfitMin, card.expectedProfitMax);
+  if (profitMin > 0) {
+    const pct = currentProfitPercent(card);
+    cards.push({
+      icon: <WalletIcon className="h-4 w-4" />,
+      title: pct != null ? `현재 차익 ${pct >= 0 ? "+" : ""}${pct}%` : "차익 구간 통과",
+      body: `매입 ${krw(card.price)} 기준, 비용 차감 후 ${profitRange(profitMin, profitMax)} 남는 구간으로 봤어요.`,
+      tone: "profit",
+    });
+  }
+
+  if (market?.medianPrice && market.medianPrice > 0 && card.price > 0) {
+    const discount = Math.round(((market.medianPrice - card.price) / market.medianPrice) * 100);
+    if (discount >= 8) {
+      cards.push({
+        icon: <TargetIcon className="h-4 w-4" />,
+        title: `시세보다 ${discount}% 낮음`,
+        body: `${marketConditionLabel(card)} 기준 시세 ${krw(market.medianPrice)}와 비교했을 때 매입가가 낮아요.`,
+        tone: "market",
+      });
+    }
+  }
+
+  if (velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0 && velocity.sold7dCount > 0) {
+    cards.push({
+      icon: <ScaleIcon className="h-4 w-4" />,
+      title: `${velocityHoursLabel(velocity.medianHoursToSold)} 회전`,
+      body: `최근 7일 비슷한 상품 판매 ${velocity.sold7dCount.toLocaleString("ko-KR")}건을 같이 봤어요.`,
+      tone: "speed",
+    });
+  } else if (flow && flow.avgPerDay7d > 0) {
+    const ratio = flow.count24h / flow.avgPerDay7d;
+    if (ratio >= 1.3) {
+      cards.push({
+        icon: <ScaleIcon className="h-4 w-4" />,
+        title: "오늘 유입 많음",
+        body: `최근 24시간 ${flow.count24h}건, 7일 평균 ${flow.avgPerDay7d}건/일보다 매물이 활발해요.`,
+        tone: "speed",
+      });
+    }
+  }
+
+  const goodVerdicts = verdictsForCard(card)
+    .filter((v) => v.tone === "good")
+    .map((v) => v.label)
+    .filter((label) => !label.startsWith("시세보다") && !label.includes("회전") && !label.includes("시세 신뢰"));
+  if (goodVerdicts.length > 0) {
+    cards.push({
+      icon: <ShieldIcon className="h-4 w-4" />,
+      title: goodVerdicts.slice(0, 2).join(" · "),
+      body: "매물 설명과 상태 신호에서 추가로 잡힌 장점이에요.",
+      tone: "quality",
+    });
+  } else if (detail?.sellerReviewRating != null && detail.sellerReviewRating >= 4.5) {
+    cards.push({
+      icon: <ShieldIcon className="h-4 w-4" />,
+      title: `셀러 후기 ${detail.sellerReviewRating.toFixed(1)}`,
+      body: `후기 ${detail.sellerReviewCount.toLocaleString("ko-KR")}건의 판매자 신뢰도도 같이 봤어요.`,
+      tone: "quality",
+    });
+  }
+
+  if (cards.length === 0) {
+    cards.push({
+      icon: <TargetIcon className="h-4 w-4" />,
+      title: market?.label ?? card.skuName,
+      body: `${marketSampleLabel(card)}과 현재 차익을 기준으로 추천 후보에 남겼어요.`,
+      tone: "market",
+    });
+  }
+
+  return cards.slice(0, 4);
 }
 
 function SkeletonLine({ className = "" }: { className?: string }) {
@@ -626,30 +737,13 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
   const condition = marketConditionLabel(card);
   const goodSignals = recommendationGoodSignals(card);
   const watchSignals = recommendationWatchSignals(card);
-  const reasons: { icon: ReactNode; title: string; body: string }[] = [
-    {
-      icon: <TargetIcon className="h-4 w-4" />,
-      title: "같은 모델로 묶었어요",
-      body: market?.label
-        ? `${market.label}로 분류한 매물만 시세 계산에 사용했어요.`
-        : "모델 분류가 불확실하면 추천 강도와 신뢰도를 낮춰요.",
-    },
-    {
-      icon: <ScaleIcon className="h-4 w-4" />,
-      title: `${condition} 기준 시세예요`,
-      body: marketBasisPlainSentence(card),
-    },
-    {
-      icon: <WalletIcon className="h-4 w-4" />,
-      title: "비용을 빼고 계산했어요",
-      body: "매입가에 판매수수료, 재배송비, 안전버퍼까지 빼고 남는 금액을 현재 차익으로 보여줘요.",
-    },
-    {
-      icon: <ShieldIcon className="h-4 w-4" />,
-      title: "살아있는 매물인지 다시 봐요",
-      body: "상품 보기 전후로 판매완료나 사라진 매물은 판매완료로 접어 신뢰를 지켜요.",
-    },
-  ];
+  const featureCards = recommendationFeatureCards(card);
+  const toneClass = {
+    profit: "border-emerald-100 bg-emerald-50/70 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-100",
+    market: "border-sky-100 bg-sky-50/70 text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/20 dark:text-sky-100",
+    speed: "border-amber-100 bg-amber-50/70 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-100",
+    quality: "border-[#d8e2d7] bg-white/85 text-[#223127] dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-100",
+  } satisfies Record<RecommendationFeatureTone, string>;
 
   return (
     <details className={`group rounded-xl border border-[#d8e2d7] bg-[#f5faf3] p-3 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/20 lg:col-span-2 ${className}`}>
@@ -662,15 +756,28 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
           <div className="mt-1 text-xs font-semibold leading-5 text-[#60705f] dark:text-zinc-300">
             {isMarketInvalidated
               ? "지금 기준으로는 차익이 없어 판매완료 상품처럼 정리하는 게 맞아요."
-              : goodSignals.length > 0
-                ? `${goodSignals.slice(0, 2).join(" · ")}까지 같이 봤어요.`
-                : `비용을 빼고도 ${displayProfitRange(card)} 정도 남는다고 봤어요.`}
+              : featureCards.slice(0, 2).map((feature) => feature.title).join(" · ")}
           </div>
         </div>
         <span className="shrink-0 rounded-full border border-[#c8d8c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#4f6a52] transition group-open:bg-[#e4f0e1] dark:border-emerald-900/60 dark:bg-zinc-900 dark:text-emerald-200">
           근거 보기
         </span>
       </summary>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        {featureCards.map((feature) => (
+          <div key={`${feature.title}-${feature.body}`} className={`rounded-lg border px-3 py-2.5 ${toneClass[feature.tone]}`}>
+            <div className="flex items-center gap-2 text-xs font-black">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/75 text-current shadow-sm dark:bg-zinc-900/55">
+                {feature.icon}
+              </span>
+              <span>{feature.title}</span>
+            </div>
+            <div className="mt-1.5 text-[11px] font-semibold leading-5 opacity-75">
+              {feature.body}
+            </div>
+          </div>
+        ))}
+      </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <div className="rounded-lg border border-emerald-100 bg-white/80 px-3 py-2.5 dark:border-emerald-900/50 dark:bg-zinc-900/45">
           <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">좋은 점</div>
@@ -697,21 +804,26 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
           </div>
         </div>
       </div>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        {reasons.map((reason) => (
-          <div key={reason.title} className="rounded-lg border border-white/70 bg-white/75 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/45">
-            <div className="flex items-center gap-2 text-xs font-black text-[#223127] dark:text-zinc-100">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e7f2e4] text-[#4f6a52] dark:bg-emerald-950/50 dark:text-emerald-300">
-                {reason.icon}
-              </span>
-              {reason.title}
-            </div>
-            <div className="mt-1.5 text-[11px] font-semibold leading-5 text-[#647064] dark:text-zinc-400">
-              {reason.body}
-            </div>
+      <details className="mt-2 rounded-lg border border-white/70 bg-white/70 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
+        <summary className="cursor-pointer text-[11px] font-black text-[#4f6a52] dark:text-emerald-200">
+          계산 기준 보기
+        </summary>
+        <div className="mt-2 grid gap-2 text-[11px] font-semibold leading-5 text-[#647064] dark:text-zinc-400 sm:grid-cols-2">
+          <div>
+            <b className="text-[#223127] dark:text-zinc-100">비교군</b>
+            <br />
+            {market?.label ? `${market.label} · ${condition} 기준으로 비교했어요.` : "모델 분류가 약하면 추천 강도를 낮춰요."}
           </div>
-        ))}
-      </div>
+          <div>
+            <b className="text-[#223127] dark:text-zinc-100">비용/상태</b>
+            <br />
+            판매수수료, 재배송비, 안전버퍼를 차감하고 상품 보기 전후로 판매완료 여부를 다시 봐요.
+          </div>
+          <div className="sm:col-span-2">
+            {marketBasisPlainSentence(card)}
+          </div>
+        </div>
+      </details>
       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#697768] dark:text-zinc-400">
         <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
           {marketSample > 0 ? `시세 표본 ${marketSample.toLocaleString("ko-KR")}건` : "시세 표본 부족"}
@@ -1222,6 +1334,32 @@ function ModalActionFooter({
             );
           })}
         </div>
+        {isPostBuyFeedbackType(localStatus) && (
+          <div className="mt-2 border-t border-[#ebe4d8] pt-2 dark:border-zinc-800">
+            <div className="mb-1.5 text-[10px] font-bold text-[#758174] dark:text-zinc-400">
+              매수 후 진행
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {POST_BUY_ACTIONS.map((action) => {
+                const active = localStatus === action.type;
+                return (
+                  <button
+                    key={action.type}
+                    type="button"
+                    onClick={() => handleTransactionFeedback(action.type, action.note)}
+                    className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
+                      active
+                        ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
+                        : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                    }`}
+                  >
+                    {action.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-2">
         <button
@@ -1264,7 +1402,7 @@ function ModalActionFooter({
 
 export default function PackRevealModal({
   open,
-  band,
+  band: _band,
   loading,
   result,
   initialPreviewCard,

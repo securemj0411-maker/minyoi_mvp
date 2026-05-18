@@ -36,14 +36,20 @@ test("/me user modal explains recommendation trust in plain language", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
 
   assert.match(modal, /왜 이걸 추천했나요\?/);
-  assert.match(modal, /같은 모델로 묶었어요/);
-  assert.match(modal, /기준 시세예요/);
-  assert.match(modal, /비용을 빼고 계산했어요/);
+  assert.match(modal, /recommendationFeatureCards/);
+  assert.match(modal, /시세보다/);
+  assert.match(modal, /현재 차익/);
+  assert.match(modal, /회전/);
+  assert.match(modal, /오늘 유입 많음/);
   assert.match(modal, /좋은 점/);
   assert.match(modal, /확인할 점/);
+  assert.match(modal, /계산 기준 보기/);
   assert.match(modal, /셀러 후기/);
   assert.match(modal, /사용감은 같은 등급 시세에 반영/);
   assert.match(modal, /상태가 다른 매물을 섞어 시세를 부풀리지 않아요/);
+  assert.doesNotMatch(modal, /const reasons: \{ icon: ReactNode; title: string; body: string \}\[\]/);
+  assert.doesNotMatch(modal, /같은 모델로 묶었어요/);
+  assert.doesNotMatch(modal, /비용을 빼고 계산했어요/);
   assert.doesNotMatch(modal, />\s*band \{card\.band\}/);
 });
 
@@ -133,4 +139,29 @@ test("/me modal exposes transaction state feedback actions", () => {
   assert.match(packOpen, /\| "passed"/);
   assert.match(meRoute, /contacted: 65/);
   assert.match(meRoute, /passed: 35/);
+});
+
+test("/me modal supports post-buy follow-up states", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const feedbackRoute = source("src/app/api/packs/reveals/feedback/route.ts");
+  const migration = source("supabase/migrations/20260518103853_reveal_feedback_post_buy_states.sql");
+  const packOpen = source("src/lib/pack-open.ts");
+  const meRoute = source("src/app/api/packs/me/route.ts");
+
+  assert.match(modal, /매수 후 진행/);
+  assert.match(modal, /검수 완료/);
+  assert.match(modal, /판매 등록/);
+  assert.match(modal, /판매 완료/);
+  assert.match(feedbackRoute, /"inspected"/);
+  assert.match(feedbackRoute, /"listed"/);
+  assert.match(feedbackRoute, /"resold"/);
+  assert.match(migration, /'inspected'/);
+  assert.match(migration, /'listed'/);
+  assert.match(migration, /'resold'/);
+  assert.match(packOpen, /\| "inspected"/);
+  assert.match(packOpen, /\| "listed"/);
+  assert.match(packOpen, /\| "resold"/);
+  assert.match(meRoute, /resold: 76/);
+  assert.match(meRoute, /listed: 74/);
+  assert.match(meRoute, /inspected: 72/);
 });
