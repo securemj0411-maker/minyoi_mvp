@@ -644,7 +644,7 @@ function RevealRiskScoreMini({ card }: { card: RevealCard }) {
 
 function RevealProductImage({ card }: { card: RevealCard }) {
   return (
-    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg bg-[#eee7da] dark:bg-zinc-800 sm:aspect-auto sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]">
+    <div className="relative h-[145px] w-full overflow-hidden rounded-lg bg-[#eee7da] dark:bg-zinc-800 sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]">
       <ConditionPhotoBadge conditionClass={card.marketBasis?.conditionClass ?? null} />
       {card.thumbnailUrl ? (
         <>
@@ -1349,7 +1349,7 @@ function ModalActionFooter({
   return (
     <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-2 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-3">
       <div className="sm:hidden">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-[0.82fr_1.18fr] gap-2">
           <button
             type="button"
             onClick={() => onPreviewGuide(card, "right")}
@@ -1362,7 +1362,7 @@ function ModalActionFooter({
             target="_blank"
             rel="noreferrer"
             onClick={() => onLinkClicked(card.pid)}
-            className="flex items-center justify-center gap-1.5 rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2 text-center text-xs font-bold text-[var(--brand-cream)] shadow-md shadow-[rgba(49,66,56,0.16)] transition hover:bg-[#29382f]"
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-2.5 text-center text-sm font-black text-white shadow-lg shadow-[rgba(0,196,113,0.28)] ring-1 ring-[#80e8bd]/70 transition hover:bg-[#00b267]"
           >
             <BunjangLogo className="h-[16px] w-[16px] rounded-[4px]" />
             번개장터 열기
@@ -1504,7 +1504,7 @@ function ModalActionFooter({
           </div>
         )}
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-[0.82fr_1.18fr] gap-2">
         <button
           type="button"
           onClick={() => onPreviewGuide(card, "right")}
@@ -1517,7 +1517,7 @@ function ModalActionFooter({
           target="_blank"
           rel="noreferrer"
           onClick={() => onLinkClicked(card.pid)}
-          className="flex items-center justify-center gap-1.5 rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-center text-xs font-bold text-[var(--brand-cream)] shadow-lg shadow-[rgba(49,66,56,0.18)] transition hover:bg-[#29382f]"
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-3 text-center text-sm font-black text-white shadow-lg shadow-[rgba(0,196,113,0.28)] ring-1 ring-[#80e8bd]/70 transition hover:bg-[#00b267]"
         >
           <BunjangLogo className="h-[18px] w-[18px] rounded-[5px]" />
           번개장터 열기
