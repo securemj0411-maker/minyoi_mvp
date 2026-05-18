@@ -501,6 +501,17 @@ export const LANE_READINESS: LaneReadinessMap = {
   stussy_hoodie: { status: "ready", label: "Stüssy Hoodie / Crewneck", note: "Wave 198" },
   stussy_waist_bag: { status: "ready", label: "Stüssy Waist Bag", note: "Wave 198 bag" },
   stussy_dior_collab: { status: "ready", label: "Dior × Stüssy (FW21 한정)", note: "Wave 198 한정판" },
+  // Wave 199 (2026-05-18): 매물 mining 발견 후속 SKU
+  stussy_nike_shoe_collab: { status: "ready", label: "Nike × Stüssy Footwear", note: "Wave 199 신발 분리 (collab 109건 중 56% 신발)" },
+  stussy_crossbody: { status: "ready", label: "Stüssy Crossbody / Tote / 30주년", note: "Wave 199 bag broad" },
+  polo_leather_loafer: { status: "ready", label: "Polo Leather Loafer/Moccasin/Derby", note: "Wave 199 shoe" },
+  tnf_hiking_boots: { status: "ready", label: "TNF Hiking Boots / 등산화", note: "Wave 199 shoe" },
+  // Wave 199 Tier 2: 라코스테 + 아더에러
+  lacoste_sneakers: { status: "ready", label: "Lacoste Sneakers", note: "Wave 199 Tier 2 shoe" },
+  lacoste_tote: { status: "ready", label: "Lacoste Tote/Shopper/Backpack", note: "Wave 199 Tier 2 bag" },
+  lacoste_pique_polo: { status: "ready", label: "Lacoste Pique Polo (시그니처)", note: "Wave 199 Tier 2 clothing" },
+  adererror_shopper: { status: "ready", label: "ADER ERROR Shopper (시그니처)", note: "Wave 199 Tier 2 bag" },
+  adererror_converse_collab: { status: "ready", label: "Converse × ADER ERROR (collab)", note: "Wave 199 Tier 2 shoe collab" },
 };
 
 export type CategoryReadinessConfig = {

@@ -111,6 +111,7 @@ export function queryFamily(query: string): string {
   if (lower.includes("갤럭시 북") || lower.includes("galaxy book") || lower.includes("갤럭시북")) return "laptop";
   // Wave 198 (2026-05-18): 의류 brand 매핑 — Polo / TNF / Stüssy 시그니처 + collab.
   //   raw 7d sweep: Polo 419건 / TNF 153건 / Stussy 195건. Nike×Stussy 109건 (압도적 collab).
+  // Wave 199 (2026-05-18): Tier 2 brand 추가 — 라코스테 / 아더에러.
   if (
     lower.includes("폴로") || lower.includes("ralph lauren") || lower.includes("랄프로렌") ||
     lower.includes("rrl") || lower.includes("더블 알엘") ||
@@ -121,7 +122,8 @@ export function queryFamily(query: string): string {
     lower.includes("nanamica") || lower.includes("나나미카") || lower.includes("퍼플라벨") ||
     lower.includes("stussy") || lower.includes("스투시") || lower.includes("stüssy") ||
     lower.includes("8 ball") || lower.includes("8ball") ||
-    lower.includes("world tour") || lower.includes("월드투어")
+    lower.includes("world tour") || lower.includes("월드투어") ||
+    lower.includes("라코스테") || lower.includes("lacoste")
   ) return "clothing";
   // 가방 (TNF 백팩) — bag
   if (

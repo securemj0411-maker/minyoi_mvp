@@ -285,7 +285,25 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Stussy Hoodie", "스투시 후드",
   "Stussy Crewneck", "스투시 맨투맨",
   "Stussy Waist Bag", "스투시 웨이스트백", "스투시 힙색",
+  "Stussy Crossbody", "스투시 크로스백", "스투시 30주년",
   "Dior Stussy", "디올 스투시",
+  // Wave 199 — Nike × Stussy 신발 분리 (collab 다수 신발) + Tier 2 라코스테/아더에러
+  "Nike Stussy 스피리돈", "Nike Stussy Spiridon", "스투시 스피리돈",
+  "Nike Stussy 베나시", "Stussy Benassi",
+  "Nike Stussy Air Force", "스투시 에어포스",
+  "Stussy 컨버스", "Stussy Converse",
+  // Tier 2 라코스테
+  "라코스테 스니커즈", "Lacoste Sneakers",
+  "라코스테 카나비", "Lacoste Carnaby",
+  "라코스테 토트백", "Lacoste Tote",
+  "라코스테 백팩", "Lacoste Backpack",
+  "라코스테 피케 폴로", "Lacoste Pique Polo",
+  // Tier 2 아더에러
+  "아더에러 쇼퍼백", "ADER ERROR Shopper",
+  "아더에러 컨버스", "ADER ERROR Converse",
+  // Wave 199 - 폴로/TNF 신발
+  "폴로 로퍼", "Polo Loafer", "폴로 모카신", "Polo Moccasin",
+  "노스페이스 등산화", "TNF Hiking Boots",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

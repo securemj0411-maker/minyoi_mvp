@@ -6887,7 +6887,9 @@ export const CATALOG: Sku[] = [
     modelName: "TNF Borealis Backpack",
     aliases: ["Borealis", "보레알리스", "노스페이스 보레알리스"],
     mustContain: [["노스페이스", "north face", "tnf"], ["borealis", "보레알리스"]],
-    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label", "puplar label"],
+    // Wave 199 정정: 보레알리스 부츠 매물 차단 (신발 카테고리)
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label",
+      "부츠", "boots", "boot ", "운동화", "신발", "슬리퍼", "slipper", "뮬", "mule", "등산화"],
     msrpKrw: 159000, released: 2010,
   },
   {
@@ -6896,7 +6898,8 @@ export const CATALOG: Sku[] = [
     modelName: "TNF Hot Shot Backpack",
     aliases: ["Hot Shot", "핫샷", "노스페이스 핫샷"],
     mustContain: [["노스페이스", "north face", "tnf"], ["hot shot", "hotshot", "핫샷"]],
-    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label"],
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label",
+      "부츠", "boots", "boot ", "운동화", "신발", "슬리퍼", "slipper", "뮬", "mule"],
     msrpKrw: 189000, released: 2008,
   },
   {
@@ -6905,7 +6908,8 @@ export const CATALOG: Sku[] = [
     modelName: "TNF Big Shot Backpack",
     aliases: ["Big Shot", "빅샷", "노스페이스 빅샷"],
     mustContain: [["노스페이스", "north face", "tnf"], ["big shot", "bigshot", "빅샷"]],
-    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label"],
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label",
+      "부츠", "boots", "boot ", "운동화", "신발", "슬리퍼", "slipper", "뮬", "mule"],
     msrpKrw: 199000, released: 2008,
   },
   // TNF Nuptse Mule (shoe 카테고리):
@@ -6920,14 +6924,36 @@ export const CATALOG: Sku[] = [
   },
   // Stüssy:
   {
+    // Wave 199 정정 — clothing-stussy-nike-collab은 의류만 (fleece pant / hoodie / windrunner / track).
+    //   신발 매물 (Spiridon / Benassi / Air Force / Vandal / Air Max 2013 / Air Penny / LD-1000 / 척테일러) 차단.
     id: "clothing-stussy-nike-collab",
     brand: "Nike x Stussy", category: "clothing", laneKey: "stussy_nike_collab",
-    modelName: "Nike × Stüssy (collab)",
-    aliases: ["Nike Stussy", "나이키 스투시", "Stussy Nike"],
-    // 한국 매물 109건 압도적
+    modelName: "Nike × Stüssy Apparel (collab)",
+    aliases: ["Nike Stussy 의류", "나이키 스투시 fleece"],
+    mustContain: [["nike", "나이키"], ["stussy", "스투시", "stüssy"], ["fleece", "플리스", "windrunner", "윈드러너", "track", "트랙", "hoodie", "후드", "맨투맨", "tee", "반팔", "티셔츠"]],
+    mustNotContain: [
+      "키즈", "kids", "fragment", "프래그먼트", "dior", "디올", "복각", "이미테이션", "rep ", "replica",
+      // 신발 차단 — Nike Stussy collab 매물 56% 신발 (shoe SKU로 별도 분리)
+      "에어맥스", "air max", "에어포스", "air force", "스피리돈", "spiridon", "베나시", "benassi",
+      "반달", "vandal", "에어 페니", "air penny", "ld-1000", "ld1000",
+      "줌", "zoom", "쿠키니", "kukini", "척테일러", "척 70", "chuck",
+      "신발", "운동화", "스니커즈", "sneakers", "슬리퍼", "slipper", "슬라이드", "slide",
+    ],
+    msrpKrw: 150000, released: 2020,
+  },
+  {
+    // Wave 199 신규 — Nike × Stüssy 신발 (109건 매물 다수가 신발)
+    id: "shoe-stussy-nike-collab",
+    brand: "Nike x Stussy", category: "shoe", laneKey: "stussy_nike_shoe_collab",
+    modelName: "Nike × Stüssy Footwear (collab)",
+    aliases: ["Nike Stussy 신발", "나이키 스투시 신발", "Stussy 스피리돈", "Stussy 베나시"],
     mustContain: [["nike", "나이키"], ["stussy", "스투시", "stüssy"]],
-    mustNotContain: ["키즈", "kids", "fragment", "프래그먼트", "dior", "디올", "복각", "이미테이션", "rep ", "replica"],
-    msrpKrw: 250000, released: 2020,
+    mustNotContain: [
+      "키즈", "kids", "dior", "디올", "복각", "이미테이션", "rep ", "replica",
+      // 의류 차단
+      "fleece", "플리스", "windrunner", "윈드러너", "후드", "hoodie", "맨투맨", "반팔만",
+    ],
+    msrpKrw: 200000, released: 2020,
   },
   {
     id: "clothing-stussy-basic-tee",
@@ -6957,6 +6983,16 @@ export const CATALOG: Sku[] = [
     msrpKrw: 89000, released: 2018,
   },
   {
+    // Wave 199 신규 — Stüssy 가방 broad (크로스백 / 토트백 / 30주년 / 성조기 / 에코백 / 파우치)
+    id: "bag-stussy-crossbody",
+    brand: "Stussy", category: "bag", laneKey: "stussy_crossbody",
+    modelName: "Stüssy Crossbody / Tote / 30주년",
+    aliases: ["Stussy Crossbody", "스투시 크로스백", "Stussy Tote", "스투시 토트", "스투시 30주년", "Stussy 30th"],
+    mustContain: [["stussy", "스투시", "stüssy"], ["크로스백", "crossbody", "토트백", "tote", "30주년", "30th", "에코백", "성조기", "캔버스 파우치", "원통백", "스포츠백", "더플", "duffel"]],
+    mustNotContain: ["nike", "나이키", "dior", "디올", "키즈", "kids", "복각", "rep ", "replica", "waist", "웨이스트"],
+    msrpKrw: 89000, released: 2018,
+  },
+  {
     id: "clothing-stussy-dior-collab",
     brand: "Dior x Stussy", category: "clothing", laneKey: "stussy_dior_collab",
     modelName: "Dior × Stüssy (FW21 한정)",
@@ -6964,6 +7000,73 @@ export const CATALOG: Sku[] = [
     mustContain: [["dior", "디올"], ["stussy", "스투시", "stüssy"]],
     mustNotContain: ["nike", "나이키", "키즈", "kids", "복각", "rep ", "replica"],
     msrpKrw: 1200000, released: 2021,
+  },
+  // Wave 199 (2026-05-18): 의류 brand 신발 매물 mining 발견 — 폴로/TNF 신발 SKU 추가.
+  {
+    id: "shoe-polo-leather-loafer",
+    brand: "Polo Ralph Lauren", category: "shoe", laneKey: "polo_leather_loafer",
+    modelName: "Polo Leather Loafer / Moccasin / Derby",
+    aliases: ["Polo Loafer", "폴로 로퍼", "Polo Moccasin", "폴로 모카신", "Polo Derby"],
+    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["로퍼", "loafer", "모카신", "moccasin", "더비", "derby", "슬립온", "slip-on", "slipon", "페니"]],
+    mustNotContain: ["RRL", "더블 알엘", "purple label", "퍼플라벨", "키즈", "kids", "토들러", "복각", "rep ", "replica"],
+    msrpKrw: 250000, released: 2020,
+  },
+  {
+    id: "shoe-tnf-hiking-boots",
+    brand: "The North Face", category: "shoe", laneKey: "tnf_hiking_boots",
+    modelName: "TNF Hiking Boots (등산화)",
+    aliases: ["TNF 등산화", "노스페이스 등산화", "TNF Hiking", "보레알리스 부츠"],
+    mustContain: [["노스페이스", "north face", "tnf"], ["등산화", "hiking", "트레킹", "trekking", "trail", "트레일", "부츠 (260", "부츠(260", "부츠 (270", "부츠(270"]],
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label", "백팩", "backpack", "가방", "bag", "토트", "복각", "rep ", "replica", "뮬", "mule", "슬리퍼"],
+    msrpKrw: 200000, released: 2015,
+  },
+  // Wave 199 Tier 2 brand mining 추가:
+  // 라코스테 (매물 다수, faved 3~21, 가격 친화):
+  {
+    id: "shoe-lacoste-sneakers",
+    brand: "Lacoste", category: "shoe", laneKey: "lacoste_sneakers",
+    modelName: "Lacoste Sneakers (운동화)",
+    aliases: ["Lacoste Sneakers", "라코스테 스니커즈", "라코스테 운동화", "라코스테 카나비"],
+    mustContain: [["라코스테", "lacoste"], ["스니커즈", "sneakers", "운동화", "카나비", "런스핀", "스톰", "신발", "단화"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "가방", "bag", "토트", "원피스", "시계"],
+    msrpKrw: 100000, released: 2020,
+  },
+  {
+    id: "bag-lacoste-tote",
+    brand: "Lacoste", category: "bag", laneKey: "lacoste_tote",
+    modelName: "Lacoste Tote / Shopper / Backpack",
+    aliases: ["Lacoste Tote", "라코스테 토트백", "Lacoste Shopper", "라코스테 백팩"],
+    mustContain: [["라코스테", "lacoste"], ["토트백", "tote", "쇼퍼", "shopper", "백팩", "backpack", "캔버스백", "헤리티지 캔버스"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "운동화", "스니커즈", "신발", "원피스", "시계"],
+    msrpKrw: 100000, released: 2018,
+  },
+  {
+    id: "clothing-lacoste-pique-polo",
+    brand: "Lacoste", category: "clothing", laneKey: "lacoste_pique_polo",
+    modelName: "Lacoste Pique Polo Shirt (시그니처)",
+    aliases: ["Lacoste Pique", "라코스테 피케", "Lacoste Polo Shirt", "라코스테 폴로셔츠"],
+    mustContain: [["라코스테", "lacoste"], ["피케", "pique", "폴로", "polo", "셔츠", "shirt"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "스니커즈", "운동화", "가방", "bag", "토트", "원피스", "스커트", "시계", "골프 원피스"],
+    msrpKrw: 159000, released: 2020,
+  },
+  // 아더에러 (한국 디자이너 — 시그니처 쇼퍼백 + 컨버스 collab):
+  {
+    id: "bag-adererror-shopper",
+    brand: "ADER ERROR", category: "bag", laneKey: "adererror_shopper",
+    modelName: "ADER ERROR Shopper Bag (시그니처)",
+    aliases: ["Ader Error Shopper", "아더에러 쇼퍼백", "아더에러 와이드 쇼퍼"],
+    mustContain: [["adererror", "아더에러", "ader error"], ["쇼퍼", "shopper", "토트", "tote", "와이드", "wide bag"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "컨버스", "converse", "신발", "케이스"],
+    msrpKrw: 300000, released: 2020,
+  },
+  {
+    id: "shoe-adererror-converse-collab",
+    brand: "Converse x ADER ERROR", category: "shoe", laneKey: "adererror_converse_collab",
+    modelName: "Converse × ADER ERROR (collab)",
+    aliases: ["Ader Error Converse", "아더에러 컨버스", "Adererror x Converse"],
+    mustContain: [["adererror", "아더에러", "ader error"], ["컨버스", "converse"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "케이스", "case"],
+    msrpKrw: 159000, released: 2022,
   },
 ];
 
