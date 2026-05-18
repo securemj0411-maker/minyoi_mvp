@@ -549,6 +549,22 @@ export const LANE_READINESS: LaneReadinessMap = {
   supreme_vans_collab: { status: "ready", label: "Supreme × Vans", note: "Wave 204" },
   supreme_backpack: { status: "ready", label: "Supreme Backpack (FW/SS)", note: "Wave 204 bag" },
   supreme_shoulder_bag: { status: "ready", label: "Supreme Shoulder/Mesh/Side", note: "Wave 204 bag" },
+  // Wave 205 (2026-05-18): 가격 친화 brand — 크록스(매물 faved 48~108!) + 칼하트 + 아크네 + 메종키츠네 가방
+  crocs_classic_clog: { status: "ready", label: "Crocs Classic Clog (시그니처)", note: "Wave 205 — 가격 친화 ⭐" },
+  crocs_bayaband: { status: "ready", label: "Crocs Bayaband", note: "Wave 205" },
+  crocs_crush: { status: "ready", label: "Crocs Crush / Mega Crush", note: "Wave 205" },
+  crocs_platform: { status: "ready", label: "Crocs Platform 키높이", note: "Wave 205" },
+  crocs_eco_clog: { status: "ready", label: "Crocs Eco Clog", note: "Wave 205" },
+  carhartt_backpack: { status: "ready", label: "Carhartt WIP Backpack", note: "Wave 205 bag" },
+  carhartt_messenger: { status: "ready", label: "Carhartt WIP Messenger/Clutch", note: "Wave 205 bag" },
+  carhartt_converse_collab: { status: "ready", label: "Converse × Carhartt WIP", note: "Wave 205 collab" },
+  carhartt_salomon_collab: { status: "ready", label: "Salomon × Carhartt WIP (등산화)", note: "Wave 205 collab" },
+  acne_triplo: { status: "ready", label: "Acne Triplo", note: "Wave 205 shoe" },
+  acne_bertin_boots: { status: "ready", label: "Acne Bertin Boots", note: "Wave 205 shoe" },
+  acne_pvc_tote: { status: "ready", label: "Acne PVC Tote", note: "Wave 205 bag" },
+  acne_musubi: { status: "ready", label: "Acne Musubi (시그니처)", note: "Wave 205 bag" },
+  acne_apparel: { status: "ready", label: "Acne Apparel (broad)", note: "Wave 205 clothing" },
+  kitsune_tote: { status: "ready", label: "Maison Kitsuné Tote/Eco", note: "Wave 205 bag" },
 };
 
 export type CategoryReadinessConfig = {

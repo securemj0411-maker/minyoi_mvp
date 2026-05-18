@@ -341,6 +341,22 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Supreme Vans", "슈프림 반스",
   "Supreme Backpack", "슈프림 백팩",
   "Supreme 메쉬백", "Supreme 숄더백",
+  // Wave 205 — 가격 친화 brand
+  "Crocs 클래식 클로그", "크록스 클래식", "Crocs Classic Clog",
+  "Crocs 바야밴드", "크록스 바야밴드", "Crocs Bayaband",
+  "Crocs 크러쉬", "크록스 크러쉬", "Crocs Mega Crush",
+  "Crocs 플랫폼", "크록스 플랫폼", "크록스 키높이",
+  "Crocs 에코 클로그", "크록스 에코",
+  "Carhartt 백팩", "칼하트 백팩",
+  "Carhartt 메신저", "칼하트 메신저",
+  "Converse Carhartt", "컨버스 칼하트",
+  "Salomon Carhartt", "살로몬 칼하트",
+  "Acne Triplo", "아크네 트리플로",
+  "Acne Bertin", "아크네 베르틴",
+  "Acne PVC", "아크네 PVC 토트",
+  "Acne Musubi", "아크네 무수비",
+  "아크네 스튜디오 코트", "Acne Studios",
+  "Maison Kitsune 토트", "메종키츠네 토트",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

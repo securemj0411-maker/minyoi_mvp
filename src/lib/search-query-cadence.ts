@@ -133,12 +133,16 @@ export function queryFamily(query: string): string {
     (lower.includes("마르지엘라") && !lower.includes("타비") && !lower.includes("tabi") && !lower.includes("salomon") && !lower.includes("살로몬") && !lower.includes("글램슬램"))
   ) return "clothing";
   // Wave 202: 신발 brand 매핑 (On Running / Birkenstock)
+  // Wave 205: 크록스 / 아크네 신발 추가
   if (
     lower.includes("온러닝") || lower.includes("on running") ||
     lower.includes("클라우드 몬스터") || lower.includes("cloud monster") ||
     lower.includes("cloudsurfer") || lower.includes("클라우드서퍼") || lower.includes("클라우드 서퍼") ||
     lower.includes("버켄스탁") || lower.includes("birkenstock") ||
-    lower.includes("보스턴") || lower.includes("아리조나") || lower.includes("취리히") || lower.includes("zurich") || lower.includes("zürich")
+    lower.includes("보스턴") || lower.includes("아리조나") || lower.includes("취리히") || lower.includes("zurich") || lower.includes("zürich") ||
+    lower.includes("크록스") || lower.includes("crocs") ||
+    lower.includes("바야밴드") || lower.includes("bayaband") ||
+    (lower.includes("아크네") && (lower.includes("트리플로") || lower.includes("triplo") || lower.includes("베르틴") || lower.includes("bertin")))
   ) return "shoe";
   // 가방 (TNF 백팩) — bag
   if (
