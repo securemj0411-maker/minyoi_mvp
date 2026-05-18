@@ -963,18 +963,18 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
         triggerClassName={`min-h-[62px] w-full border-0 px-3 py-2 text-left shadow-none transition hover:-translate-y-0.5 hover:shadow-md sm:min-h-[62px] sm:rounded-lg sm:border sm:px-2.5 sm:py-2 sm:shadow-sm ${safetyTone.card}`}
         triggerContent={(
           <span className="block w-full">
-            <span className="flex items-center justify-between gap-2 text-xs font-black text-zinc-500 dark:text-zinc-400">
-              <span className="inline-flex items-center gap-1.5">
+            <span className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-1.5 text-xs font-black text-zinc-500 dark:text-zinc-400">
+              <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
                 <SafetyIcon className={`h-4 w-4 ${safetyTone.value}`} />
                 거래 안전
               </span>
-              <span className="inline-flex shrink-0 items-center gap-1">
+              <span className="inline-flex min-w-0 justify-end gap-1">
                 {safety.badge ? (
-                  <span className={`rounded-full border px-1.5 py-0.5 text-[9px] font-black leading-none ${safety.badge.className}`}>
+                  <span className={`shrink-0 rounded-full border px-1 py-0.5 text-[9px] font-black leading-none ${safety.badge.className}`}>
                     {safety.badge.label}
                   </span>
                 ) : null}
-                <span className="text-[10px] font-black text-zinc-400 underline decoration-zinc-300 underline-offset-2 dark:text-zinc-500 dark:decoration-zinc-600">
+                <span className="shrink-0 text-[10px] font-black text-zinc-400 underline decoration-zinc-300 underline-offset-2 dark:text-zinc-500 dark:decoration-zinc-600">
                   근거 보기
                 </span>
               </span>
@@ -1030,7 +1030,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
               <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
-              왜 이걸 추천했나요?
+              왜 이 상품을 추천했나요?
             </div>
             <div className="mt-1 hidden text-xs font-semibold leading-5 text-[#60705f] dark:text-zinc-300 sm:block">
               {reasonSummary}
@@ -1062,7 +1062,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
                   <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
-                  왜 이걸 추천했나요?
+                  왜 이 상품을 추천했나요?
                 </div>
                 <div className="mt-0.5 truncate text-xs font-semibold text-[#60705f] dark:text-zinc-300">
                   {reasonSummary}
@@ -1452,7 +1452,7 @@ function RevealCardItem({
           </div>
         ) : null}
 
-        {/* 시세 근거 (요약) — desktop/tablet 카드. mobile은 "왜 이걸 추천했나요?" 안으로 접어 첫 화면 밀도를 낮춤. */}
+        {/* 시세 근거 (요약) — desktop/tablet 카드. mobile은 "왜 이 상품을 추천했나요?" 안으로 접어 첫 화면 밀도를 낮춤. */}
         <div className="hidden sm:block">
           <MarketBasisMini card={card} />
         </div>

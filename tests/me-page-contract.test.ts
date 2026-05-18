@@ -35,7 +35,8 @@ test("/me treats zero net profit as terminal for user-facing display", () => {
 test("/me user modal explains recommendation trust in plain language", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
 
-  assert.match(modal, /왜 이걸 추천했나요\?/);
+  assert.match(modal, /왜 이 상품을 추천했나요\?/);
+  assert.doesNotMatch(modal, /왜 이걸 추천했나요\?/);
   assert.match(modal, /recommendationFeatureCards/);
   assert.match(modal, /const \[open, setOpen\] = useState\(false\)/);
   assert.match(modal, /aria-haspopup="dialog"/);
@@ -197,6 +198,9 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.doesNotMatch(modal, /확인 포인트 있음 · 근거 보기/);
   assert.match(modal, /후기 적음/);
   assert.match(modal, /safety\.badge/);
+  assert.match(modal, /grid grid-cols-\[auto_minmax\(0,1fr\)\] items-center/);
+  assert.match(modal, /inline-flex shrink-0 items-center gap-1 whitespace-nowrap/);
+  assert.match(modal, /shrink-0 text-\[10px\] font-black text-zinc-400/);
   assert.match(modal, /aria-label="상세 닫기"/);
   assert.match(modal, />←<\/span>/);
   assert.doesNotMatch(modal, />\s*추천 상세\s*<\/div>/);
