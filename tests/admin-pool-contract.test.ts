@@ -39,7 +39,7 @@ test("admin pool exposes ready counts and filters by price bucket and category",
 test("risk score detail trigger is written as an obvious clickable question", () => {
   const riskScore = source("src/components/risk-score-bar.tsx");
 
-  assert.match(riskScore, /왜 안전한가요\?/);
+  assert.match(riskScore, /왜 이 제품이 안전한가요\?/);
   assert.match(riskScore, /주의 \$\{hitCount\}건이 있어요/);
   assert.match(riskScore, /위험 신호 \$\{hitCount\}건 확인/);
   assert.match(riskScore, /aria-expanded=\{open\}/);

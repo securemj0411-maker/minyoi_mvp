@@ -21,7 +21,7 @@ type Props = RiskScoreInput & {
 };
 
 function detailTriggerLabel(tone: "safe" | "caution" | "danger", hitCount: number) {
-  if (tone === "safe") return "🛡️ 왜 안전한가요?";
+  if (tone === "safe") return "🛡️ 왜 이 제품이 안전한가요?";
   if (tone === "caution") return `⚠️ 주의 ${hitCount}건이 있어요`;
   return `🚨 위험 신호 ${hitCount}건 확인`;
 }
