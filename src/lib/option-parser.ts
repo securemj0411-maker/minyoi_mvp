@@ -1650,7 +1650,8 @@ function criticalUnknowns(category: Sku["category"] | null, comparableKey: strin
 export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const category0 = input.category ?? null;
   // Wave 92: shoe/bag/bike는 별도 모듈로 dispatch.
-  if (category0 === "shoe" || category0 === "bag" || category0 === "bike") {
+  // Wave 216 (2026-05-19): clothing 도 dispatch — 의류 사이즈 무관, condition tier 만 추출.
+  if (category0 === "shoe" || category0 === "bag" || category0 === "bike" || category0 === "clothing") {
     return parseFashionMobility(input);
   }
   const title = input.title ?? "";

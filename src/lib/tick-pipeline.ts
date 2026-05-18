@@ -2001,8 +2001,30 @@ async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: n
   return new Map(rows.map((row) => [row.pid, row]));
 }
 
+// Wave 216 (2026-05-19): parser_version drift 체크 — 카테고리별 최신 parser version.
+//   기존: missing 만 re-parse → 새 parser 박혀도 옛 row 영원히 stale.
+//   증상 (Wave 216): clothing 1253건 default 분기 (parse_confidence 0.45 + needs_review=true)
+//   → market_price_daily 0건 → candidate_pool 0건. clothing parser 새로 박혔어도 자동 적용 X.
+//   fix: 카테고리별 최신 parser_version 명시 → stale row 도 missingRows 에 포함.
+//   다른 카테고리는 옛 버전 그대로 두기 (드리프트 정책은 카테고리별로 명시적).
+const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["category"]>, string>> = {
+  // v2 (2026-05-19): modelFromSku brand 포함 (polo/stussy/tnf/arcteryx 구분).
+  clothing: "wave216-clothing-v2",
+};
+function isParsedStale(row: ParsedListingRow): boolean {
+  if (!row.category) return false;
+  const expected = LATEST_PARSER_VERSION_BY_CATEGORY[row.category];
+  if (!expected) return false;
+  return row.parser_version !== expected;
+}
+
 async function ensureParsedRows(rows: ScorableRawRow[], parsedByPid: Map<number, ParsedListingRow>) {
-  const missingRows = rows.filter((row) => !parsedByPid.has(row.pid));
+  const missingRows = rows.filter((row) => {
+    const parsed = parsedByPid.get(row.pid);
+    if (!parsed) return true;
+    // Wave 216: parser_version drift → 강제 re-parse.
+    return isParsedStale(parsed);
+  });
   if (missingRows.length === 0) return parsedByPid;
 
   const parsedRows = missingRows.map((row) => {
@@ -3568,7 +3590,42 @@ export async function filterDueSearchQueries(envQueries: string[]): Promise<stri
   }
   // 오래된 순 정렬 (NULL = lastMs 0 = 가장 우선). 같은 시간이면 envQueries 순서 안정 유지.
   due.sort((a, b) => a.lastMs - b.lastMs);
-  return due.map((d) => d.query);
+  return interleaveDueQueriesByFamily(due).map((d) => d.query);
+}
+
+type DueSearchQuery = { query: string; lastMs: number };
+
+function interleaveDueQueriesByFamily<T extends DueSearchQuery>(due: T[]): T[] {
+  const buckets = new Map<string, T[]>();
+  for (const row of due) {
+    const family = queryFamily(row.query);
+    const bucket = buckets.get(family) ?? [];
+    bucket.push(row);
+    buckets.set(family, bucket);
+  }
+  const families = Array.from(buckets.keys()).sort((a, b) => {
+    const aFirst = buckets.get(a)?.[0]?.lastMs ?? Number.MAX_SAFE_INTEGER;
+    const bFirst = buckets.get(b)?.[0]?.lastMs ?? Number.MAX_SAFE_INTEGER;
+    if (aFirst !== bFirst) return aFirst - bFirst;
+    return a.localeCompare(b);
+  });
+  const interleaved: T[] = [];
+  let remaining = due.length;
+  while (remaining > 0) {
+    for (const family of families) {
+      const bucket = buckets.get(family);
+      const row = bucket?.shift();
+      if (!row) continue;
+      interleaved.push(row);
+      remaining -= 1;
+    }
+  }
+  return interleaved;
+}
+
+export function interleaveSearchQueriesByFamilyForTest(queries: string[]): string[] {
+  return interleaveDueQueriesByFamily(queries.map((query, index) => ({ query, lastMs: index })))
+    .map((row) => row.query);
 }
 
 async function ensureSearchQueryRows(queries: string[]): Promise<void> {

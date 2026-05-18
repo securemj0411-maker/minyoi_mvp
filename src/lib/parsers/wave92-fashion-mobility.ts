@@ -279,15 +279,31 @@ function parseBikeOptions(text: string) {
 // ─── 통합 dispatcher ─────────────────────────────────────────────────
 
 const PARSER_VERSION_W92 = "wave92-fashion-mobility-v1";
+// Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
+//   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
+//   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
+//   사용자 명시 "사이즈마다 가격이 다르진 않으니까 일단 괜찮지 않을까" — 의류는 사이즈 무관.
+//   condition tier (가품/택그대로/사용감/오염) 만 정확히 추출하면 시세 비교 OK.
+//   parser version 별도 박아 clothing 만 자동 re-parse (shoe/bag/bike 영향 X).
+// v2 (2026-05-19): modelFromSku brand 포함 (polo/stussy/tnf/arcteryx 구분).
+const PARSER_VERSION_W216_CLOTHING = "wave216-clothing-v2";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");
 }
 
-function modelFromSku(skuId: string | null | undefined, _skuName: string | null | undefined): string | null {
-  // skuId 예: shoe-nike-jordan-1-high-chicago → jordan_1_high_chicago
+function modelFromSku(
+  skuId: string | null | undefined,
+  _skuName: string | null | undefined,
+  category?: string | null,
+): string | null {
+  // shoe/bag/bike: `category-brand-model` → brand 빼고 model (jordan_1_high 등 model 자체에 식별성 충분).
+  // Wave 216 (2026-05-19): clothing 은 brand 가 가격 결정 핵심 (polo vs tnf vs stussy vs arcteryx
+  //   가격대 완전 다름). slice(2) 로 brand 빼면 acne-apparel/reebok-apparel/fila-apparel 다
+  //   `apparel` 한 key 로 묶여 시세 망가짐. clothing 만 slice(1) → brand 포함.
   if (!skuId) return null;
-  const parts = skuId.split("-").slice(2); // brand 빼고
+  const sliceFrom = category === "clothing" ? 1 : 2;
+  const parts = skuId.split("-").slice(sliceFrom);
   return parts.length > 0 ? parts.join("_") : null;
 }
 
@@ -304,11 +320,11 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
   const description = input.description ?? "";
   const text = `${title}\n${description.slice(0, 1200)}`;
   const category = input.category ?? null;
-  if (category !== "shoe" && category !== "bag" && category !== "bike") {
+  if (category !== "shoe" && category !== "bag" && category !== "bike" && category !== "clothing") {
     throw new Error(`parseFashionMobility called with non-fashion-mobility category: ${category}`);
   }
 
-  const model = modelFromSku(input.skuId, input.skuName);
+  const model = modelFromSku(input.skuId, input.skuName, category);
   const family = category;
 
   const unknownParts: string[] = [];
@@ -405,8 +421,7 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
       partsForKey.push(opt.conditionTier);
       parseConfidence += 0.1;
     }
-  } else {
-    // bike
+  } else if (category === "bike") {
     const opt = parseBikeOptions(text);
     parsedJson.bike_frame_size = opt.frameSize;
     parsedJson.bike_condition_tier = opt.conditionTier;
@@ -446,6 +461,40 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
       partsForKey.push(opt.conditionTier);
       parseConfidence += 0.1;
     }
+  } else {
+    // Wave 216 (2026-05-19): clothing 신규 분기.
+    //   - 사용자 명시 "사이즈마다 가격이 다르진 않으니까 일단 괜찮지" → 사이즈 추출 안 함.
+    //   - condition tier (택그대로/S급/사용감/오염/reject) 만 정확히 추출.
+    //   - reject 패턴 (얼룩 심함/곰팡이/구멍) 만 needsReview.
+    //   - model 박혔으면 confidence 부스트 (sku_id 매칭됐다는 사실 자체가 강한 신호).
+    const conditionTier = parseConditionTier(text);
+    parsedJson.clothing_condition_tier = conditionTier;
+    if (conditionTier === "reject") {
+      needsReview = true;
+      criticalUnknown.push("clothing_damage_reject");
+    }
+    if (conditionTier) {
+      partsForKey.push(conditionTier);
+      parseConfidence += 0.2;
+      // shoe 와 동일 condition_class 매핑 (UI 일관성).
+      const tierMap: Record<string, ConditionClass> = {
+        s_grade: "unopened",
+        a_grade: "mint",
+        b_grade: "clean",
+        c_grade: "worn",
+        reject: "flawed",
+      };
+      conditionClassResult = tierMap[conditionTier] ?? "normal";
+    } else {
+      // condition 미명시도 흔함 — 가격 결정 핵심 아니라 critical 아님.
+      partsForKey.push("unknown_condition");
+      unknownParts.push("unknown_condition");
+      parseConfidence += 0.05;
+    }
+    // model 박힘 = sku_id catalog 매칭 됐다는 강한 신호 → confidence 큰 부스트.
+    if (model) {
+      parseConfidence += 0.25;
+    }
   }
 
   const comparableKey = partsForKey.map(slug).join("|");
@@ -473,7 +522,8 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
   const conditionScore = conditionScoreMap[conditionClassResult] ?? 0.5;
 
   return {
-    parserVersion: PARSER_VERSION_W92,
+    // Wave 216: clothing 만 새 parser version → 1253건 자동 re-parse (shoe/bag/bike 영향 X).
+    parserVersion: category === "clothing" ? PARSER_VERSION_W216_CLOTHING : PARSER_VERSION_W92,
     contentHash: hashText(text),
     category,
     family,
