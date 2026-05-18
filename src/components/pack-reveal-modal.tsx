@@ -711,14 +711,14 @@ function RevealProductImage({ card }: { card: RevealCard }) {
             className="scale-[1.08] object-cover object-center opacity-55 blur-sm"
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,253,249,0.22),rgba(238,231,218,0.30))] dark:bg-none dark:bg-zinc-950/20" />
-          <div className="absolute inset-0 p-1.5 sm:p-2">
+          <div className="absolute inset-0 p-0 sm:p-2">
             <div className="relative h-full w-full">
               <Image
                 src={card.thumbnailUrl}
                 alt={card.name}
                 fill
                 sizes="(max-width: 639px) 100vw, (max-width: 1023px) 132px, 150px"
-                className="rounded-md object-contain object-center drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)]"
+                className="scale-[1.08] rounded-none object-contain object-center drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)] sm:scale-100 sm:rounded-md"
               />
             </div>
           </div>
