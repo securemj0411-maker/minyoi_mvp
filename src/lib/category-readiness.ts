@@ -593,6 +593,16 @@ export const LANE_READINESS: LaneReadinessMap = {
   asics_jog_100: { status: "ready", label: "Asics Jog 100/Life Walker (입문)", note: "Wave 209" },
   asics_kiko_collab: { status: "ready", label: "Asics × Kiko Kostadinov (collab)", note: "Wave 209" },
   asics_cecilie_bahnsen_collab: { status: "ready", label: "Asics × Cecilie Bahnsen (한정)", note: "Wave 209 faved 41~75!" },
+  // Wave 210 (2026-05-18): 호카 추가 + FOG + 챔피온/토미힐피거
+  hoka_mafate_speed: { status: "ready", label: "Hoka Mafate Speed 4 (트레일)", note: "Wave 210 — 매물 다수" },
+  hoka_mach: { status: "ready", label: "Hoka Mach (5/6)", note: "Wave 210" },
+  hoka_kaha_gtx: { status: "ready", label: "Hoka Kaha 2 GTX (등산화)", note: "Wave 210" },
+  hoka_anacapa: { status: "ready", label: "Hoka Anacapa Breeze Low", note: "Wave 210" },
+  nike_fog_collab: { status: "ready", label: "Nike × FOG (Air FOG/라이트본/Raid/스카이론)", note: "Wave 210 한정 collab" },
+  adidas_fog_collab: { status: "ready", label: "Adidas × FOG Athletics 86", note: "Wave 210 한정 collab" },
+  fog_fear_of_god_self: { status: "ready", label: "Fear of God 자체 (8th/디스턴스 러너/캘리포니아 뮬)", note: "Wave 210" },
+  champion_trainer: { status: "ready", label: "Champion Trainer/Slipper", note: "Wave 210 입문" },
+  tommy_hilfiger_bag: { status: "ready", label: "Tommy Hilfiger Bag", note: "Wave 210 bag" },
 };
 
 export type CategoryReadinessConfig = {

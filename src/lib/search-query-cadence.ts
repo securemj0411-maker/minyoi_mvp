@@ -161,7 +161,13 @@ export function queryFamily(query: string): string {
     lower.includes("아식스") || lower.includes("asics") ||
     lower.includes("gel-1130") || lower.includes("gel 1130") || lower.includes("젤-1130") || lower.includes("젤 1130") ||
     lower.includes("kayano") || lower.includes("카야노") || lower.includes("nimbus") || lower.includes("님버스") ||
-    lower.includes("novablast") || lower.includes("노바블라스트")
+    lower.includes("novablast") || lower.includes("노바블라스트") ||
+    // Wave 210: 호카 / FOG
+    lower.includes("호카") || lower.includes("hoka") ||
+    lower.includes("마파테") || lower.includes("mafate") ||
+    lower.includes("anacapa") || lower.includes("아나카파") ||
+    lower.includes("피어 오브 갓") || lower.includes("피어오브갓") || lower.includes("피오갓") || lower.includes("fear of god") || lower.includes("fog ") ||
+    lower.includes("champion") || lower.includes("챔피온")
   ) return "shoe";
   // 가방 (TNF 백팩) — bag
   if (

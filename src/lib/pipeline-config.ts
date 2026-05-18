@@ -386,6 +386,16 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Asics Jog 100", "아식스 조그 100", "라이프워커",
   "Kiko Asics", "키코 아식스", "Kiko Kostadinov",
   "Cecilie Bahnsen Asics", "세실리에 반센",
+  // Wave 210 — 호카 / FOG / 챔피온 / 토미힐피거
+  "Hoka Mafate Speed", "호카 마파테",
+  "Hoka Mach", "호카 마하",
+  "Hoka Kaha", "호카 카하",
+  "Hoka Anacapa", "호카 아나카파",
+  "Nike Fear of God", "나이키 피어오브갓", "피오갓",
+  "Adidas Fear of God", "아디다스 피어오브갓", "FOG Athletics",
+  "Fear of God 8th", "FOG 디스턴스 러너", "캘리포니아 뮬",
+  "Champion 트레이너", "챔피온 트레이너",
+  "Tommy Hilfiger 가방", "타미힐피거 크로스백",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물
