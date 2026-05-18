@@ -50,6 +50,7 @@ type RevealItem = {
   marketGapKrw: number | null;
   marketGapKrwMax: number | null;
   marketStale: boolean;
+  commentCount: number | null;
 };
 
 type DashboardResponse = {
@@ -382,6 +383,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         marketGapKrw: Math.round(card.expectedProfitMin),
         marketGapKrwMax: Math.round(card.expectedProfitMax),
         marketStale: card.expectedProfitMin <= 0,
+        commentCount: null,
       }));
       const incomingPids = new Set(nextItems.map((item) => item.pid));
       setSearchInput("");
@@ -598,7 +600,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         metrics: {
           viewCount: null,
           favoriteCount: fallbackItem.favoriteCount,
-          commentCount: null,
+          commentCount: fallbackItem.commentCount,
         },
         seller: {
           uid: fallbackItem.sellerUid,

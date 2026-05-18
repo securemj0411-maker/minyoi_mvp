@@ -18,6 +18,7 @@ import {
 
 const TIMEOUT_MS = 30_000;
 const USER_REVEAL_DEDUPE_LIMIT = 1000;
+const MAX_PACK_OPEN_NUM_COMMENT = 8;
 
 export type PackBand = 1 | 2 | 3;
 
@@ -239,6 +240,7 @@ type RawSkuMeta = {
   free_shipping: boolean | null;
   shop_review_rating: number | null;
   shop_review_count: number | null;
+  num_comment: number | null;
 };
 
 type UserRevealDedupe = {
@@ -475,6 +477,28 @@ async function rpcInvalidate(pid: number, reason: string): Promise<void> {
   });
 }
 
+function isPackOpenCommentBlocked(value: number | null | undefined) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= MAX_PACK_OPEN_NUM_COMMENT;
+}
+
+async function invalidateHighCommentCandidate(pid: number, commentCount: number, source: "raw_num_comment" | "detail_comment_count") {
+  const reason = `num_comment_above_${MAX_PACK_OPEN_NUM_COMMENT}`;
+  await Promise.allSettled([
+    callSupabase(`/mvp_raw_listings?pid=eq.${pid}`, {
+      method: "PATCH",
+      headers: authHeaders("return=minimal"),
+      body: JSON.stringify({
+        num_comment: commentCount,
+        pool_eligible: false,
+        score_dirty: false,
+        updated_at: new Date().toISOString(),
+      }),
+    }),
+    rpcInvalidate(pid, `pack_open_${source}_${reason}`),
+  ]);
+}
+
 async function loadLatestSourceHealth(): Promise<SourceHealthStatus> {
   try {
     const res = await callSupabase(
@@ -492,7 +516,7 @@ async function fetchListings(pids: number[]): Promise<Map<number, ListingMeta>> 
   if (pids.length === 0) return new Map();
   const pidFilter = pids.join(",");
   const listingCols = "pid,name,url,price,sku_name,thumbnail_url";
-  const rawCols = "pid,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count";
+  const rawCols = "pid,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,num_comment";
   const [listingRes, rawRes] = await Promise.all([
     callSupabase(`/mvp_listings?select=${listingCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
     callSupabase(`/mvp_raw_listings?select=${rawCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
@@ -1296,6 +1320,10 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         await rpcInvalidate(candidate.pid, "missing_listing_meta");
         continue;
       }
+      if (isPackOpenCommentBlocked(meta._raw?.num_comment ?? null)) {
+        await invalidateHighCommentCandidate(candidate.pid, Number(meta._raw?.num_comment), "raw_num_comment");
+        continue;
+      }
       if (!candidateMatchesOpenFilters(candidate, meta, criteria)) {
         releasePids.push(candidate.pid);
         continue;
@@ -1322,6 +1350,10 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
           } else {
             releasePids.push(candidate.pid);
           }
+          continue;
+        }
+        if (isPackOpenCommentBlocked(detail?.commentCount ?? null)) {
+          await invalidateHighCommentCandidate(candidate.pid, Number(detail?.commentCount), "detail_comment_count");
           continue;
         }
         const liveType = classifyListing(meta.name, detail?.description ?? "", meta.price).listingType;

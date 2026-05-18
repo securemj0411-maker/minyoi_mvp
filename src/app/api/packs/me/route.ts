@@ -25,6 +25,7 @@ const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
 const MAX_REVEAL_SCAN = 500;
 const LIVE_VERIFY_CONCURRENCY = 4;
+const MAX_USER_VISIBLE_NUM_COMMENT = 8;
 const RATE_LIMIT_MAX = Math.max(1, Number(process.env.PACKS_ME_RATE_LIMIT_MAX ?? 10));
 const RATE_LIMIT_WINDOW_SECONDS = Math.max(1, Number(process.env.PACKS_ME_RATE_LIMIT_WINDOW_SECONDS ?? 10));
 
@@ -65,6 +66,7 @@ type RawRow = {
   sku_name: string | null;
   listing_state: string;
   sale_status: string;
+  num_comment: number | null;
 };
 
 type ListingCostRow = {
@@ -185,6 +187,7 @@ type RevealItem = {
   marketGapKrw: number | null;
   marketGapKrwMax: number | null;
   marketStale: boolean;  // true = 현재 순익 min <= 0 (사용자 실익 없음/손해 위험 신호)
+  commentCount: number | null;
 };
 
 async function loadJson<T>(url: string): Promise<T> {
@@ -282,6 +285,11 @@ function isTerminalListingState(state: string | null | undefined) {
   return TERMINAL_STATES.has(String(state ?? "").toLowerCase());
 }
 
+function isUserVisibleCommentBlocked(value: number | null | undefined) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= MAX_USER_VISIBLE_NUM_COMMENT;
+}
+
 function normalizedTerminalSaleStatus(value: string | null | undefined) {
   const upper = String(value ?? "").toUpperCase();
   return upper === "SOLD" || upper === "SOLD_OUT" ? upper : "SOLD_OUT";
@@ -337,7 +345,47 @@ async function patchLiveTerminalState(
   ]);
 }
 
-async function liveVerifyVisibleItems(items: RevealItem[]): Promise<RevealItem[]> {
+async function hideCommentBlockedReveal(
+  userRef: string,
+  item: Pick<RevealItem, "pid">,
+  commentCount: number,
+  source: "raw_num_comment" | "detail_comment_count",
+) {
+  const now = new Date().toISOString();
+  const reason = `num_comment_above_${MAX_USER_VISIBLE_NUM_COMMENT}`;
+  await Promise.allSettled([
+    restFetch(`${tableUrl("mvp_raw_listings")}?pid=eq.${item.pid}`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: JSON.stringify({
+        num_comment: commentCount,
+        pool_eligible: false,
+        score_dirty: false,
+        updated_at: now,
+      }),
+    }),
+    restFetch(`${tableUrl("mvp_candidate_pool")}?pid=eq.${item.pid}&status=in.(ready,reserved)`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: JSON.stringify({
+        status: "invalidated",
+        invalidated_reason: reason,
+        updated_at: now,
+      }),
+    }),
+    restFetch(`${tableUrl("mvp_pack_reveals")}?user_ref=eq.${encodeURIComponent(userRef)}&pid=eq.${item.pid}&hidden_at=is.null`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: JSON.stringify({
+        hidden_at: now,
+        hidden_reason: reason,
+        hidden_source: `packs_me_${source}`,
+      }),
+    }),
+  ]);
+}
+
+async function liveVerifyVisibleItems(userRef: string, items: RevealItem[]): Promise<RevealItem[]> {
   const verified: Array<RevealItem | null> = new Array(items.length).fill(null);
   let cursor = 0;
 
@@ -363,6 +411,12 @@ async function liveVerifyVisibleItems(items: RevealItem[]): Promise<RevealItem[]
           continue;
         }
 
+        if (isUserVisibleCommentBlocked(detail.commentCount)) {
+          await hideCommentBlockedReveal(userRef, item, Number(detail.commentCount), "detail_comment_count");
+          verified[index] = null;
+          continue;
+        }
+
         const signals = detectSoldOut(detail, item.price, {
           title: item.name,
           description: item.descriptionPreview,
@@ -383,6 +437,7 @@ async function liveVerifyVisibleItems(items: RevealItem[]): Promise<RevealItem[]
           ...item,
           listingState: "active",
           saleStatus: detail.saleStatus || item.saleStatus,
+          commentCount: detail.commentCount ?? item.commentCount,
         };
       } catch (err) {
         console.error("packs/me live verify failed (non-fatal)", {
@@ -478,7 +533,7 @@ export async function GET(req: Request) {
   const packOpenList = packOpenIds.join(",");
   const [rawRows, listingCostRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status&pid=in.(${pidList})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment&pid=in.(${pidList})`,
     ),
     loadJson<ListingCostRow[]>(
       `${tableUrl("mvp_listings")}?select=pid,price,shipping_fee,shipping_fee_general,estimated_buy_cost&pid=in.(${pidList})`,
@@ -553,7 +608,7 @@ export async function GET(req: Request) {
     fetchReferencePrices(comparableKeys),
   ]);
 
-  const items = reveals
+  const allItems = reveals
     .map((reveal): RevealItem => {
       const raw = rawByPid.get(Number(reveal.pid));
       const listingCost = listingCostByPid.get(Number(reveal.pid));
@@ -628,8 +683,21 @@ export async function GET(req: Request) {
         marketGapKrw,
         marketGapKrwMax,
         marketStale,
+        commentCount: raw?.num_comment == null ? null : Number(raw.num_comment),
       };
-    })
+    });
+
+  const rawCommentBlockedItems = allItems.filter((item) => isUserVisibleCommentBlocked(item.commentCount));
+  if (rawCommentBlockedItems.length > 0) {
+    await Promise.allSettled(
+      rawCommentBlockedItems.map((item) =>
+        hideCommentBlockedReveal(userRef, item, Number(item.commentCount), "raw_num_comment"),
+      ),
+    );
+  }
+
+  const items = allItems
+    .filter((item) => !isUserVisibleCommentBlocked(item.commentCount))
     .filter((item) => matchesSearch(item, query))
     .sort(compareItems(sort));
 
@@ -638,7 +706,7 @@ export async function GET(req: Request) {
   const safePageBeforeLive = Math.min(page, totalPagesBeforeLive);
   const start = (safePageBeforeLive - 1) * pageSize;
   const liveSlice = items.slice(start, start + pageSize);
-  const liveVerified = await liveVerifyVisibleItems(liveSlice);
+  const liveVerified = await liveVerifyVisibleItems(userRef, liveSlice);
 
   const pageItems = liveVerified.slice(0, pageSize);
   await syncVisibleCurrentProfits(pageItems).catch((err) => {
