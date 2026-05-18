@@ -137,7 +137,9 @@ test("/me mobile reveal card keeps safety signals out of the middle content", ()
   assert.match(modal, /triggerLabel=\{safetyScore\.label\}/);
   assert.doesNotMatch(modal, /grid-cols-\[104px_minmax/);
   assert.match(modal, /function RevealProductImage/);
-  assert.match(modal, /h-\[145px\] w-full/);
+  assert.match(modal, /-mx-3 h-\[145px\] w-\[calc\(100%\+1\.5rem\)\]/);
+  assert.match(modal, /rounded-none/);
+  assert.match(modal, /p-1\.5 sm:p-2/);
   assert.match(modal, /object-contain object-center/);
   assert.match(modal, /hidden text-xs font-semibold leading-5/);
   assert.match(modal, /추가 신호 \{hiddenMobileCount\}개/);
@@ -170,6 +172,7 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(modal, /sm:max-h-\[88vh\]/);
   assert.match(modal, /sm:rounded-2xl sm:border/);
   assert.match(modal, /px-2\.5 py-1\.5/);
+  assert.match(modal, /overflow-y-auto px-3 pb-24 pt-0 sm:p-4 sm:pb-28/);
   assert.match(modal, /flex min-h-8 items-center/);
   assert.match(modal, /aria-label="상세 닫기"/);
   assert.match(modal, />←<\/span>/);

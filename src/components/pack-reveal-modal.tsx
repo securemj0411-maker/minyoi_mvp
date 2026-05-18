@@ -696,7 +696,7 @@ function fixedSafetyCtaClass(tone: RiskTone) {
 
 function RevealProductImage({ card }: { card: RevealCard }) {
   return (
-    <div className="relative h-[145px] w-full overflow-hidden rounded-lg bg-[#eee7da] dark:bg-zinc-800 sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]">
+    <div className="relative -mx-3 h-[145px] w-[calc(100%+1.5rem)] overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-800 sm:mx-0 sm:h-[132px] sm:w-[132px] sm:rounded-lg lg:h-[150px] lg:w-[150px]">
       <ConditionPhotoBadge conditionClass={card.marketBasis?.conditionClass ?? null} />
       {card.thumbnailUrl ? (
         <>
@@ -709,7 +709,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
             className="scale-[1.08] object-cover object-center opacity-55 blur-sm"
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,253,249,0.22),rgba(238,231,218,0.30))] dark:bg-none dark:bg-zinc-950/20" />
-          <div className="absolute inset-0 p-2.5 sm:p-2">
+          <div className="absolute inset-0 p-1.5 sm:p-2">
             <div className="relative h-full w-full">
               <Image
                 src={card.thumbnailUrl}
@@ -2072,7 +2072,7 @@ export default function PackRevealModal({
         <div
           key={activeRevealPid ?? "empty"}
           ref={scrollAreaRef}
-          className="min-h-0 flex-1 overflow-y-auto p-3 pb-24 sm:p-4 sm:pb-28"
+          className="min-h-0 flex-1 overflow-y-auto px-3 pb-24 pt-0 sm:p-4 sm:pb-28"
         >
           {displayLoading ? (
             <div className="space-y-4">
