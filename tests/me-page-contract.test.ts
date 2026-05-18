@@ -77,6 +77,7 @@ test("reveal feedback is scoped by feedback type so reports do not overwrite use
 
   assert.match(migration, /drop constraint if exists mvp_reveal_feedback_user_ref_pid_key/);
   assert.match(migration, /unique \(user_ref, pid, feedback_type\)/);
+  assert.doesNotMatch(migration, /approved/);
   assert.match(schema, /unique \(user_ref, pid, feedback_type\)/);
   assert.match(packOpen, /on_conflict=user_ref,pid,feedback_type/);
   assert.match(inaccurateReport, /on_conflict=user_ref,pid,feedback_type/);

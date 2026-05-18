@@ -41,19 +41,12 @@ where compensation_granted_tokens is null;
 alter table public.mvp_reveal_feedback
   alter column compensation_granted_tokens set not null;
 
-do $$
-begin
-  if not exists (
-    select 1
-    from pg_constraint
-    where conrelid = 'public.mvp_reveal_feedback'::regclass
-      and conname = 'mvp_reveal_feedback_admin_status_chk'
-  ) then
-    alter table public.mvp_reveal_feedback
-      add constraint mvp_reveal_feedback_admin_status_chk
-      check (admin_status is null or admin_status in ('pending', 'approved', 'dismissed', 'resolved'));
-  end if;
-end $$;
+alter table public.mvp_reveal_feedback
+  drop constraint if exists mvp_reveal_feedback_admin_status_chk;
+
+alter table public.mvp_reveal_feedback
+  add constraint mvp_reveal_feedback_admin_status_chk
+  check (admin_status is null or admin_status in ('pending', 'resolved', 'dismissed'));
 
 alter table public.mvp_reveal_feedback
   drop constraint if exists mvp_reveal_feedback_user_ref_pid_key;

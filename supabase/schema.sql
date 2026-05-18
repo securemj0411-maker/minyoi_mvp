@@ -1150,7 +1150,7 @@ create table if not exists public.mvp_reveal_feedback (
   )),
   note text not null default '',
   source text not null default 'reveal_modal',
-  admin_status text check (admin_status is null or admin_status in ('pending', 'approved', 'dismissed', 'resolved')),
+  admin_status text check (admin_status is null or admin_status in ('pending', 'resolved', 'dismissed')),
   admin_response_note text,
   admin_responded_at timestamptz,
   compensation_granted_tokens integer not null default 0,
