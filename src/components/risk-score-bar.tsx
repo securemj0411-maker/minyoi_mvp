@@ -116,7 +116,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                 aria-modal="true"
                 aria-label="위험 신호 점검"
                 onClick={(e) => e.stopPropagation()}
-                className="risk-detail-dialog fixed left-1/2 top-[45%] z-[130] max-h-[calc(100dvh-190px)] w-[calc(100vw-28px)] max-w-[430px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-zinc-950/22 dark:border-zinc-700 dark:bg-zinc-900 sm:absolute sm:left-0 sm:top-6 sm:w-[30rem] sm:max-w-none sm:translate-x-0 sm:translate-y-0 sm:rounded-xl"
+                className="risk-detail-dialog fixed left-1/2 top-[39%] z-[130] max-h-[calc(100dvh-210px)] w-[calc(100vw-28px)] max-w-[430px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-zinc-950/22 dark:border-zinc-700 dark:bg-zinc-900 sm:absolute sm:left-0 sm:top-6 sm:w-[30rem] sm:max-w-none sm:translate-x-0 sm:translate-y-0 sm:rounded-xl"
               >
                 <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
                   <div>
@@ -140,7 +140,7 @@ export function RiskScoreBar({ showDetail = false, compact = false, ...input }: 
                     </button>
                   </div>
                 </div>
-                <div className="max-h-[calc(100dvh-264px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(74vh-76px)] sm:px-5 sm:py-4">
+                <div className="max-h-[calc(100dvh-284px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(74vh-76px)] sm:px-5 sm:py-4">
                   <div className="space-y-2.5">
                     {score.axes.map((a) => (
                       <div

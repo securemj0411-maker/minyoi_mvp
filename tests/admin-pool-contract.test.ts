@@ -46,10 +46,10 @@ test("risk score detail trigger is written as an obvious clickable question", ()
   assert.match(riskScore, /ShieldIcon/);
   assert.match(riskScore, /py-0\.5 text-\[10px\] font-black leading-none/);
   assert.match(riskScore, /role="dialog"/);
-  assert.match(riskScore, /left-1\/2 top-\[45%\] z-\[130\]/);
+  assert.match(riskScore, /left-1\/2 top-\[39%\] z-\[130\]/);
   assert.match(riskScore, /-translate-x-1\/2 -translate-y-1\/2/);
-  assert.match(riskScore, /max-h-\[calc\(100dvh-190px\)\]/);
-  assert.match(riskScore, /max-h-\[calc\(100dvh-264px\)\]/);
+  assert.match(riskScore, /max-h-\[calc\(100dvh-210px\)\]/);
+  assert.match(riskScore, /max-h-\[calc\(100dvh-284px\)\]/);
   assert.match(riskScore, /sm:w-\[30rem\]/);
   assert.match(riskScore, /text-\[13px\] font-bold leading-5/);
   assert.match(riskScore, /lv < 3 - a\.level/);

@@ -792,6 +792,7 @@ function VelocityBasisMini({ card }: { card: RevealCard }) {
 }
 
 function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard; className?: string }) {
+  const [open, setOpen] = useState(false);
   const market = card.marketBasis;
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const marketSample = market?.sampleCount ?? 0;
@@ -806,101 +807,169 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
     speed: "border-amber-100 bg-amber-50/70 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-100",
     quality: "border-[#d8e2d7] bg-white/85 text-[#223127] dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-100",
   } satisfies Record<RecommendationFeatureTone, string>;
+  const reasonSummary = isMarketInvalidated
+    ? "지금 기준으로는 차익이 없어 판매완료 상품처럼 정리하는 게 맞아요."
+    : featureCards.slice(0, 2).map((feature) => feature.title).join(" · ");
 
   return (
-    <details className={`group rounded-2xl border border-[#d6e2d3] bg-[linear-gradient(180deg,#f8fcf5_0%,#eef7eb_100%)] p-3 shadow-[0_12px_28px_rgba(49,66,56,0.08)] dark:border-emerald-900/40 dark:bg-none dark:bg-emerald-950/20 sm:p-3.5 lg:col-span-2 ${className}`}>
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
-            <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
-            왜 이걸 추천했나요?
-          </div>
-          <div className="mt-1 hidden text-xs font-semibold leading-5 text-[#60705f] dark:text-zinc-300 sm:block">
-            {isMarketInvalidated
-              ? "지금 기준으로는 차익이 없어 판매완료 상품처럼 정리하는 게 맞아요."
-              : featureCards.slice(0, 2).map((feature) => feature.title).join(" · ")}
-          </div>
-        </div>
-        <span className="shrink-0 rounded-full border border-[#b9d0b4] bg-white/90 px-2.5 py-1 text-[11px] font-black text-[#4f6a52] shadow-sm transition group-open:bg-[#e4f0e1] dark:border-emerald-900/60 dark:bg-zinc-900 dark:text-emerald-200">
-          근거 보기
-        </span>
-      </summary>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        {featureCards.map((feature) => (
-          <div key={`${feature.title}-${feature.body}`} className={`rounded-xl border px-3 py-2.5 shadow-sm ${toneClass[feature.tone]}`}>
-            <div className="flex items-center gap-2 text-xs font-black">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/75 text-current shadow-sm dark:bg-zinc-900/55">
-                {feature.icon}
-              </span>
-              <span>{feature.title}</span>
+    <>
+      <section className={`rounded-2xl border border-[#d6e2d3] bg-[linear-gradient(180deg,#f8fcf5_0%,#eef7eb_100%)] p-3 shadow-[0_12px_28px_rgba(49,66,56,0.08)] dark:border-emerald-900/40 dark:bg-none dark:bg-emerald-950/20 sm:p-3.5 lg:col-span-2 ${className}`}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(true);
+          }}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          className="group flex w-full items-center justify-between gap-3 text-left"
+        >
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
+              <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
+              왜 이걸 추천했나요?
             </div>
-            <div className="mt-1.5 text-[11px] font-semibold leading-5 opacity-75">
-              {feature.body}
+            <div className="mt-1 hidden text-xs font-semibold leading-5 text-[#60705f] dark:text-zinc-300 sm:block">
+              {reasonSummary}
             </div>
           </div>
-        ))}
-      </div>
-      <div className="mt-3 grid gap-2 sm:hidden">
-        <MarketBasisMini card={card} />
-      </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        <div className="rounded-xl border border-emerald-100 bg-white/85 px-3 py-2.5 shadow-sm dark:border-emerald-900/50 dark:bg-zinc-900/45">
-          <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">좋은 점</div>
-          <div className="mt-1.5 flex flex-wrap gap-1">
-            {goodSignals.length > 0 ? goodSignals.map((signal) => (
-              <span key={signal} className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
-                {signal}
-              </span>
-            )) : (
-              <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">차익과 시세 기준을 함께 확인했어요.</span>
-            )}
+          <span className="shrink-0 rounded-full border border-[#b9d0b4] bg-white/90 px-2.5 py-1 text-[11px] font-black text-[#4f6a52] shadow-sm transition group-hover:bg-[#e4f0e1] dark:border-emerald-900/60 dark:bg-zinc-900 dark:text-emerald-200">
+            근거 보기
+          </span>
+        </button>
+      </section>
+
+      {open && (
+        <>
+          <div
+            className="fixed inset-0 z-[120] bg-zinc-950/28 backdrop-blur-[1px]"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(false);
+            }}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="추천 이유 자세히 보기"
+            onClick={(e) => e.stopPropagation()}
+            className="recommendation-reason-dialog fixed left-1/2 top-[39%] z-[130] max-h-[calc(100dvh-210px)] w-[calc(100vw-28px)] max-w-[540px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-[#d6e2d3] bg-[#fffdf9] shadow-2xl shadow-zinc-950/24 dark:border-zinc-700 dark:bg-zinc-900 sm:top-1/2 sm:max-h-[84vh]"
+          >
+            <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
+                  <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
+                  왜 이걸 추천했나요?
+                </div>
+                <div className="mt-0.5 truncate text-xs font-semibold text-[#60705f] dark:text-zinc-300">
+                  {reasonSummary}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="shrink-0 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-bold text-zinc-600 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+              >
+                닫기
+              </button>
+            </div>
+            <div className="max-h-[calc(100dvh-286px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(84vh-74px)] sm:px-5 sm:py-4">
+              <div className="grid gap-2 sm:grid-cols-2">
+                {featureCards.map((feature) => (
+                  <div key={`${feature.title}-${feature.body}`} className={`rounded-xl border px-3 py-2.5 shadow-sm ${toneClass[feature.tone]}`}>
+                    <div className="flex items-center gap-2 text-xs font-black">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/75 text-current shadow-sm dark:bg-zinc-900/55">
+                        {feature.icon}
+                      </span>
+                      <span>{feature.title}</span>
+                    </div>
+                    <div className="mt-1.5 text-[11px] font-semibold leading-5 opacity-75">
+                      {feature.body}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 grid gap-2 sm:hidden">
+                <MarketBasisMini card={card} />
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <div className="rounded-xl border border-emerald-100 bg-white/85 px-3 py-2.5 shadow-sm dark:border-emerald-900/50 dark:bg-zinc-900/45">
+                  <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">좋은 점</div>
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    {goodSignals.length > 0 ? goodSignals.map((signal) => (
+                      <span key={signal} className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+                        {signal}
+                      </span>
+                    )) : (
+                      <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">차익과 시세 기준을 함께 확인했어요.</span>
+                    )}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-amber-100 bg-white/85 px-3 py-2.5 shadow-sm dark:border-amber-900/50 dark:bg-zinc-900/45">
+                  <div className="text-[11px] font-black text-amber-800 dark:text-amber-200">확인할 점</div>
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    {watchSignals.length > 0 ? watchSignals.map((signal) => (
+                      <span key={signal} className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                        {signal}
+                      </span>
+                    )) : (
+                      <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">큰 주의 신호는 적어요.</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <details className="mt-2 rounded-xl border border-white/80 bg-white/75 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
+                <summary className="cursor-pointer text-[11px] font-black text-[#4f6a52] dark:text-emerald-200">
+                  계산 기준 보기
+                </summary>
+                <div className="mt-2 grid gap-2 text-[11px] font-semibold leading-5 text-[#647064] dark:text-zinc-400 sm:grid-cols-2">
+                  <div>
+                    <b className="text-[#223127] dark:text-zinc-100">비교군</b>
+                    <br />
+                    {market?.label ? `${market.label} · ${condition} 기준으로 비교했어요.` : "모델 분류가 약하면 추천 강도를 낮춰요."}
+                  </div>
+                  <div>
+                    <b className="text-[#223127] dark:text-zinc-100">비용/상태</b>
+                    <br />
+                    판매수수료, 재배송비, 안전버퍼를 차감하고 상품 보기 전후로 판매완료 여부를 다시 봐요.
+                  </div>
+                  <div className="sm:col-span-2">
+                    {marketBasisPlainSentence(card)}
+                  </div>
+                </div>
+              </details>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#697768] dark:text-zinc-400">
+                <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
+                  {marketSample > 0 ? `시세 표본 ${marketSample.toLocaleString("ko-KR")}건` : "시세 표본 부족"}
+                </span>
+                <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
+                  {soldSample > 0 ? `판매완료 ${soldSample.toLocaleString("ko-KR")}건 반영` : "판매완료 표본 누적 중"}
+                </span>
+                <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
+                  {freshLabel(card.freshSeconds)}
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="rounded-xl border border-amber-100 bg-white/85 px-3 py-2.5 shadow-sm dark:border-amber-900/50 dark:bg-zinc-900/45">
-          <div className="text-[11px] font-black text-amber-800 dark:text-amber-200">확인할 점</div>
-          <div className="mt-1.5 flex flex-wrap gap-1">
-            {watchSignals.length > 0 ? watchSignals.map((signal) => (
-              <span key={signal} className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-                {signal}
-              </span>
-            )) : (
-              <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">큰 주의 신호는 적어요.</span>
-            )}
-          </div>
-        </div>
-      </div>
-      <details className="mt-2 rounded-xl border border-white/80 bg-white/75 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
-        <summary className="cursor-pointer text-[11px] font-black text-[#4f6a52] dark:text-emerald-200">
-          계산 기준 보기
-        </summary>
-        <div className="mt-2 grid gap-2 text-[11px] font-semibold leading-5 text-[#647064] dark:text-zinc-400 sm:grid-cols-2">
-          <div>
-            <b className="text-[#223127] dark:text-zinc-100">비교군</b>
-            <br />
-            {market?.label ? `${market.label} · ${condition} 기준으로 비교했어요.` : "모델 분류가 약하면 추천 강도를 낮춰요."}
-          </div>
-          <div>
-            <b className="text-[#223127] dark:text-zinc-100">비용/상태</b>
-            <br />
-            판매수수료, 재배송비, 안전버퍼를 차감하고 상품 보기 전후로 판매완료 여부를 다시 봐요.
-          </div>
-          <div className="sm:col-span-2">
-            {marketBasisPlainSentence(card)}
-          </div>
-        </div>
-      </details>
-      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#697768] dark:text-zinc-400">
-        <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
-          {marketSample > 0 ? `시세 표본 ${marketSample.toLocaleString("ko-KR")}건` : "시세 표본 부족"}
-        </span>
-        <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
-          {soldSample > 0 ? `판매완료 ${soldSample.toLocaleString("ko-KR")}건 반영` : "판매완료 표본 누적 중"}
-        </span>
-        <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
-          {freshLabel(card.freshSeconds)}
-        </span>
-      </div>
-    </details>
+          <style jsx global>{`
+            @keyframes recommendationReasonSettle {
+              from {
+                opacity: 0;
+                transform: translate(-50%, calc(-50% + 8px)) scale(0.98);
+              }
+              to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+              }
+            }
+
+            .recommendation-reason-dialog {
+              animation: recommendationReasonSettle 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+          `}</style>
+        </>
+      )}
+    </>
   );
 }
 

@@ -37,6 +37,15 @@ test("/me user modal explains recommendation trust in plain language", () => {
 
   assert.match(modal, /왜 이걸 추천했나요\?/);
   assert.match(modal, /recommendationFeatureCards/);
+  assert.match(modal, /const \[open, setOpen\] = useState\(false\)/);
+  assert.match(modal, /aria-haspopup="dialog"/);
+  assert.match(modal, /aria-label="추천 이유 자세히 보기"/);
+  assert.match(modal, /recommendation-reason-dialog fixed left-1\/2 top-\[39%\]/);
+  assert.match(modal, /max-h-\[calc\(100dvh-210px\)\]/);
+  assert.match(modal, /max-h-\[calc\(100dvh-286px\)\]/);
+  assert.match(modal, /@keyframes recommendationReasonSettle/);
+  assert.match(modal, /setOpen\(true\)/);
+  assert.match(modal, /setOpen\(false\)/);
   assert.match(modal, /시세보다/);
   assert.match(modal, /비용 차감 통과/);
   assert.match(modal, /회전/);
