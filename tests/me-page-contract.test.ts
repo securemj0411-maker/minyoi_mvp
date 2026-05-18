@@ -31,3 +31,14 @@ test("/me treats zero net profit as terminal for user-facing display", () => {
   assert.match(dashboard, /card\.expectedProfitMin <= 0/);
   assert.match(modal, /Math\.min\(card\.expectedProfitMin, card\.expectedProfitMax\) <= 0/);
 });
+
+test("/me user modal explains recommendation trust in plain language", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+
+  assert.match(modal, /왜 이걸 추천했나요\?/);
+  assert.match(modal, /같은 모델로 묶었어요/);
+  assert.match(modal, /기준 시세예요/);
+  assert.match(modal, /비용을 빼고 계산했어요/);
+  assert.match(modal, /상태가 다른 매물을 섞어 시세를 부풀리지 않아요/);
+  assert.doesNotMatch(modal, />\s*band \{card\.band\}/);
+});

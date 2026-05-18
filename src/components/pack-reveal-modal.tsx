@@ -8,6 +8,7 @@ import { ConditionChip } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
 import { BunjangLogo, BunjangSourceBadge, DanawaLogo, DanawaSourceBadge } from "@/components/market-brand-logo";
+import { CheckCircleIcon, ScaleIcon, ShieldIcon, TargetIcon, WalletIcon } from "@/components/icons";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 
@@ -119,6 +120,22 @@ function marketSampleLabel(card: RevealCard) {
     return `표본 ${market.sampleCount.toLocaleString("ko-KR")}건`;
   }
   return "표본 부족";
+}
+
+function marketConditionLabel(card: RevealCard) {
+  const market = card.marketBasis;
+  if (market?.priceSource === "reference") return "미개봉/새상품";
+  return market?.conditionLabel ?? "같은 상태";
+}
+
+function marketBasisPlainSentence(card: RevealCard) {
+  const market = card.marketBasis;
+  if (!market) return "모델과 상태 분류가 충분하지 않으면 추천 강도를 낮춰요.";
+  if (market.priceSource === "reference") {
+    return "미개봉/새상품은 다나와 새 가격을 기준으로 보고, 번개 미개봉 거래 추이는 따로 확인해요.";
+  }
+  const condition = market.conditionLabel ?? "같은 상태";
+  return `같은 모델 중 ${condition}로 분류된 매물 시세를 먼저 봐요. 상태가 다른 매물과 섞지 않아요.`;
 }
 
 function SkeletonLine({ className = "" }: { className?: string }) {
@@ -284,7 +301,7 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
     ? "다나와 새 가격 기준"
     : market.conditionClass === "mint"
       ? "번개 S급 매물 기준"
-      : "번개 중고 매물 기준";
+      : `번개 ${market.conditionLabel ?? "같은 상태"} 매물 기준`;
   return (
     <div className="rounded-lg border border-[#e2d9cb] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="flex items-baseline justify-between gap-2">
@@ -306,7 +323,7 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
         </span>
         {market.fallbackUsed && (
           <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500">
-            (인접 등급 fallback)
+            (가까운 상태 기준)
           </span>
         )}
       </div>
@@ -517,6 +534,105 @@ function VelocityBasisMini({ card }: { card: RevealCard }) {
       <div className="mt-2 text-[11px] text-[#58705d] dark:text-zinc-300/80">
         최근 7일 동안 비슷한 상품이 <span className="font-bold">{velocity.sold7dCount.toLocaleString("ko-KR")}건</span> 팔렸고,
         현재 판매중인 비슷한 상품은 {velocity.activeSampleCount.toLocaleString("ko-KR")}건이에요.
+      </div>
+    </div>
+  );
+}
+
+function RecommendationReasonPanel({ card }: { card: RevealCard }) {
+  const market = card.marketBasis;
+  const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
+  const marketSample = market?.sampleCount ?? 0;
+  const soldSample = market?.soldSampleCount ?? 0;
+  const condition = marketConditionLabel(card);
+  const reasons: { icon: ReactNode; title: string; body: string }[] = [
+    {
+      icon: <TargetIcon className="h-4 w-4" />,
+      title: "같은 모델로 묶었어요",
+      body: market?.label
+        ? `${market.label}로 분류한 매물만 시세 계산에 사용했어요.`
+        : "모델 분류가 불확실하면 추천 강도와 신뢰도를 낮춰요.",
+    },
+    {
+      icon: <ScaleIcon className="h-4 w-4" />,
+      title: `${condition} 기준 시세예요`,
+      body: marketBasisPlainSentence(card),
+    },
+    {
+      icon: <WalletIcon className="h-4 w-4" />,
+      title: "비용을 빼고 계산했어요",
+      body: "매입가에 판매수수료, 재배송비, 안전버퍼까지 빼고 남는 금액을 현재 차익으로 보여줘요.",
+    },
+    {
+      icon: <ShieldIcon className="h-4 w-4" />,
+      title: "살아있는 매물인지 다시 봐요",
+      body: "상품 보기 전후로 판매완료나 사라진 매물은 판매완료로 접어 신뢰를 지켜요.",
+    },
+  ];
+
+  return (
+    <details className="group rounded-xl border border-[#d8e2d7] bg-[#f5faf3] p-3 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/20 lg:col-span-2">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
+            <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
+            왜 이걸 추천했나요?
+          </div>
+          <div className="mt-1 text-xs font-semibold leading-5 text-[#60705f] dark:text-zinc-300">
+            {isMarketInvalidated
+              ? "지금 기준으로는 차익이 없어 판매완료 상품처럼 정리하는 게 맞아요."
+              : `비용을 빼고도 ${displayProfitRange(card)} 정도 남는다고 봤어요.`}
+          </div>
+        </div>
+        <span className="shrink-0 rounded-full border border-[#c8d8c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#4f6a52] transition group-open:bg-[#e4f0e1] dark:border-emerald-900/60 dark:bg-zinc-900 dark:text-emerald-200">
+          근거 보기
+        </span>
+      </summary>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        {reasons.map((reason) => (
+          <div key={reason.title} className="rounded-lg border border-white/70 bg-white/75 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/45">
+            <div className="flex items-center gap-2 text-xs font-black text-[#223127] dark:text-zinc-100">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e7f2e4] text-[#4f6a52] dark:bg-emerald-950/50 dark:text-emerald-300">
+                {reason.icon}
+              </span>
+              {reason.title}
+            </div>
+            <div className="mt-1.5 text-[11px] font-semibold leading-5 text-[#647064] dark:text-zinc-400">
+              {reason.body}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#697768] dark:text-zinc-400">
+        <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
+          {marketSample > 0 ? `시세 표본 ${marketSample.toLocaleString("ko-KR")}건` : "시세 표본 부족"}
+        </span>
+        <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
+          {soldSample > 0 ? `판매완료 ${soldSample.toLocaleString("ko-KR")}건 반영` : "판매완료 표본 누적 중"}
+        </span>
+        <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
+          {freshLabel(card.freshSeconds)}
+        </span>
+      </div>
+    </details>
+  );
+}
+
+function MarketGraphTrustLine({ card }: { card: RevealCard }) {
+  const market = card.marketBasis;
+  if (!market) return null;
+  const condition = marketConditionLabel(card);
+  const source = market.priceSource === "reference" ? "다나와 기준선 + 번개 미개봉 추이" : `번개 ${condition} 매물 추이`;
+  return (
+    <div className="rounded-lg border border-[#e2d9cb] bg-white/75 px-3 py-2 text-[11px] font-semibold leading-5 text-[#5f6d5f] dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-300">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="rounded-full bg-[#e7f2e4] px-2 py-0.5 text-[10px] font-black text-[#4f6a52] dark:bg-emerald-950/50 dark:text-emerald-300">
+          {condition} 기준
+        </span>
+        <span className="text-zinc-500 dark:text-zinc-400">{source}</span>
+      </div>
+      <div className="mt-1">
+        이 그래프는 같은 모델 중 비슷한 상태로 분류된 매물을 우선 사용해요. 상태가 다른 매물을 섞어 시세를 부풀리지 않아요.
       </div>
     </div>
   );
@@ -745,11 +861,6 @@ function RevealCardItem({
                     ) : null}
                   </>
                 ) : null}
-                {card.band != null ? (
-                  <span className="rounded-full bg-white/70 px-1.5 py-0.5 text-[10px] font-bold text-zinc-600 ring-1 ring-zinc-100 dark:bg-zinc-900/50 dark:text-zinc-300 dark:ring-zinc-800">
-                    band {card.band}
-                  </span>
-                ) : null}
                 <span className="text-[11px] font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
                 <ConditionChip conditionClass={card.marketBasis?.conditionClass ?? null} showHelp />
                 {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
@@ -810,6 +921,7 @@ function RevealCardItem({
         <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
           시세 그래프 · 시장 분석
         </div>
+        <MarketGraphTrustLine card={card} />
 
         {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
         {/* "시세 어떤 기준으로 잡나" 시각화. history 부족하면 자동 hide. */}
@@ -840,6 +952,8 @@ function RevealCardItem({
         <SkuListingFlowMini card={card} />
       </div>
       {/* 우측 카드 (시세 분석) 닫음. */}
+
+      <RecommendationReasonPanel card={card} />
 
       {/* 노트 + 버튼 영역 — full width (lg:col-span-2). */}
       <div className="space-y-2 lg:col-span-2">
