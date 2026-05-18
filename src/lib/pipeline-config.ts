@@ -326,6 +326,12 @@ export const DEFAULT_SEARCH_QUERIES = [
   "Lululemon 백팩", "Lululemon Backpack", "룰루레몬 백팩",
   "NB Levis", "뉴발란스 리바이스",
   "Nike Levis", "나이키 리바이스",
+  // Wave 203 — 마르지엘라 매물 압도적 발견
+  "메종 마르지엘라 타비", "Maison Margiela Tabi", "마르지엘라 타비",
+  "마르지엘라 독일군", "Margiela German Army", "Replica Trainer",
+  "MM6 살로몬", "Salomon MM6", "MM6 X-ALP",
+  "마르지엘라 글램슬램", "Margiela Glam Slam",
+  "MM6", "엠엠식스",
 ];
 
 // Wave 88 (2026-05-15): 카테고리 sweep — find_v2 f_category_id 파라미터로 카테고리별 신규 매물

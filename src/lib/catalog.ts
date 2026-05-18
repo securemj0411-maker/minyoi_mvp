@@ -6719,7 +6719,7 @@ export const CATALOG: Sku[] = [
     modelName: "Replica Jazz Club 100ml",
     aliases: ["Replica Jazz Club", "메종 마르지엘라 재즈클럽", "Margiela Jazz Club"],
     mustContain: [["margiela", "마르지엘라", "replica"], ["jazz club", "재즈클럽", "재즈 클럽"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", "재현향", "type", "필드센트", "마이퍼퓸", "섬유탈취제", "룸스프레이", "오피셜", "더미 향수", "dupe", "dupe향", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 170000, released: 2013,
   },
   {
@@ -6727,7 +6727,7 @@ export const CATALOG: Sku[] = [
     modelName: "Replica By the Fireplace 100ml",
     aliases: ["Replica By the Fireplace", "메종 마르지엘라 바이 더 파이어플레이스", "파이어플레이스"],
     mustContain: [["margiela", "마르지엘라", "replica"], ["fireplace", "파이어플레이스", "바이 더 파이어"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", "재현향", "type", "필드센트", "마이퍼퓸", "섬유탈취제", "룸스프레이", "오피셜", "더미 향수", "dupe", "dupe향", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 170000, released: 2015,
   },
   {
@@ -6735,7 +6735,7 @@ export const CATALOG: Sku[] = [
     modelName: "Replica Beach Walk 100ml",
     aliases: ["Replica Beach Walk", "메종 마르지엘라 비치워크"],
     mustContain: [["margiela", "마르지엘라", "replica"], ["beach walk", "비치워크", "비치 워크"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", "재현향", "type", "필드센트", "마이퍼퓸", "섬유탈취제", "룸스프레이", "오피셜", "더미 향수", "dupe", "dupe향", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 170000, released: 2012,
   },
   {
@@ -6743,7 +6743,7 @@ export const CATALOG: Sku[] = [
     modelName: "Replica When the Rain Stops 100ml",
     aliases: ["Replica When the Rain Stops", "메종 마르지엘라 비온뒤", "When the Rain Stops"],
     mustContain: [["margiela", "마르지엘라", "replica"], ["when the rain", "비 온 뒤", "비온뒤", "when the rain stops"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "200ml", "매입", "삽니다", "재현향", "type", "필드센트", "마이퍼퓸", "섬유탈취제", "룸스프레이", "오피셜", "더미 향수", "dupe", "dupe향", ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 170000, released: 2018,
   },
   // Memo Paris
@@ -7247,6 +7247,53 @@ export const CATALOG: Sku[] = [
     mustContain: [["nike", "나이키"], ["리바이스", "levis", "levi's", "levi"]],
     mustNotContain: ["뉴발란스", "newbalance", "new balance", "키즈", "kids", "복각", "rep ", "replica"],
     msrpKrw: 250000, released: 2018,
+  },
+  // Wave 203 (2026-05-18): 마르지엘라 매물 압도적 — 타비 신발 / MM6 × Salomon / 글램슬램 / 향수 dupe 차단 강화.
+  // 14d sample 80건 거의 다 마르지엘라. "Replica" 라인 (정품 향수) vs "재현향 스프레이" (가품 dupe) 분리.
+  {
+    id: "shoe-margiela-tabi",
+    brand: "Maison Margiela", category: "shoe", laneKey: "margiela_tabi",
+    modelName: "Maison Margiela Tabi (시그니처)",
+    aliases: ["Tabi", "타비", "마르지엘라 타비"],
+    mustContain: [["마르지엘라", "margiela", "maison margiela"], ["타비", "tabi"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica 라인", "salomon", "살로몬", "닥터마틴", "dr.martens", "rick owens", "릭 오웬스", "ami"],
+    msrpKrw: 750000, released: 1989,
+  },
+  {
+    id: "shoe-margiela-german-army",
+    brand: "Maison Margiela", category: "shoe", laneKey: "margiela_german_army",
+    modelName: "Maison Margiela German Army Trainer (Replica)",
+    aliases: ["Margiela German Army", "마르지엘라 독일군", "Replica Trainer"],
+    mustContain: [["마르지엘라", "margiela", "maison margiela"], ["독일군", "german army", "replica trainer", "리플리카 트레이너"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep만", "salomon", "살로몬", "타비", "tabi"],
+    msrpKrw: 590000, released: 2015,
+  },
+  {
+    id: "shoe-mm6-salomon-collab",
+    brand: "Salomon x MM6 Maison Margiela", category: "shoe", laneKey: "mm6_salomon_collab",
+    modelName: "Salomon × MM6 (X-ALP / ACS / Cross)",
+    aliases: ["MM6 Salomon", "살로몬 MM6", "살로몬 마르지엘라"],
+    mustContain: [["mm6", "마르지엘라", "margiela"], ["salomon", "살로몬"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "타비", "tabi", "cdg", "꼼데"],
+    msrpKrw: 500000, released: 2021,
+  },
+  {
+    id: "bag-margiela-glam-slam",
+    brand: "Maison Margiela", category: "bag", laneKey: "margiela_glam_slam",
+    modelName: "Maison Margiela Glam Slam (시그니처)",
+    aliases: ["Glam Slam", "글램슬램", "마르지엘라 글램슬램"],
+    mustContain: [["마르지엘라", "margiela", "maison margiela"], ["글램슬램", "glam slam", "glamslam"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "샘플", "vial", "공병", "재현향", "type", "마이퍼퓸"],
+    msrpKrw: 1800000, released: 2018,
+  },
+  {
+    id: "clothing-mm6-margiela",
+    brand: "MM6 Maison Margiela", category: "clothing", laneKey: "mm6_margiela_apparel",
+    modelName: "MM6 Maison Margiela Apparel (broad)",
+    aliases: ["MM6", "엠엠식스", "MM6 마르지엘라"],
+    mustContain: [["mm6"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "셔츠", "shirt", "자켓", "jacket", "스웨터", "knit"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "샘플", "vial", "공병", "재현향", "type", "마이퍼퓸", "tabi", "타비", "salomon", "살로몬", "닥터마틴", "가방", "bag", "신발", "shoe"],
+    msrpKrw: 290000, released: 2020,
   },
 ];
 

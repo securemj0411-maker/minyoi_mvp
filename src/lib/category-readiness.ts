@@ -534,6 +534,12 @@ export const LANE_READINESS: LaneReadinessMap = {
   lululemon_backpack: { status: "ready", label: "Lululemon Backpack (시그니처 faved 91)", note: "Wave 202 — 매물 압도적" },
   newbalance_levis_collab: { status: "ready", label: "NB × Levi's 990v3 (collab)", note: "Wave 202 collab" },
   nike_levis_collab: { status: "ready", label: "Nike × Levi's Air Max 95 (collab)", note: "Wave 202 collab" },
+  // Wave 203 (2026-05-18): 마르지엘라 mining — 매물 압도적 (80건 sample). 타비 / MM6 collab / 글램슬램.
+  margiela_tabi: { status: "ready", label: "Maison Margiela Tabi (시그니처)", note: "Wave 203 — 매물 다수" },
+  margiela_german_army: { status: "ready", label: "Margiela German Army Trainer (Replica)", note: "Wave 203" },
+  mm6_salomon_collab: { status: "ready", label: "Salomon × MM6 (X-ALP/ACS)", note: "Wave 203 collab" },
+  margiela_glam_slam: { status: "ready", label: "Margiela Glam Slam (시그니처)", note: "Wave 203 bag" },
+  mm6_margiela_apparel: { status: "ready", label: "MM6 Margiela Apparel (broad)", note: "Wave 203" },
 };
 
 export type CategoryReadinessConfig = {

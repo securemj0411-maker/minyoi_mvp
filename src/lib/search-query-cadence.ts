@@ -127,7 +127,10 @@ export function queryFamily(query: string): string {
     // Wave 200: 꼼데가르송 (Comme des Garcons / CDG)
     lower.includes("꼼데") || lower.includes("comme des garcons") || lower.includes("commedesgarcons") || lower.includes("cdg ") ||
     // Wave 202: 룰루레몬 (의류 + 가방)
-    lower.includes("룰루레몬") || lower.includes("lululemon")
+    lower.includes("룰루레몬") || lower.includes("lululemon") ||
+    // Wave 203: 마르지엘라 / MM6 (의류 broad)
+    lower.includes("mm6") || lower.includes("엠엠식스") ||
+    (lower.includes("마르지엘라") && !lower.includes("타비") && !lower.includes("tabi") && !lower.includes("salomon") && !lower.includes("살로몬") && !lower.includes("글램슬램"))
   ) return "clothing";
   // Wave 202: 신발 brand 매핑 (On Running / Birkenstock)
   if (
