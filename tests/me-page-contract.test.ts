@@ -180,8 +180,8 @@ test("/me reveal detail behaves like a full-screen page on mobile", () => {
   assert.match(modal, /px-2\.5 py-1\.5/);
   assert.match(modal, /overflow-y-auto px-3 pb-24 pt-0 sm:p-4 sm:pb-28/);
   assert.match(modal, /flex min-h-8 items-center/);
-  assert.match(modal, /-mx-3 mt-1 grid grid-cols-2 gap-px sm:mx-0 sm:mt-2 sm:gap-1\.5/);
-  assert.match(modal, /min-h-\[56px\] border px-2 py-1\.5 shadow-sm sm:min-h-\[62px\] sm:rounded-lg sm:px-2\.5 sm:py-2/);
+  assert.match(modal, /-mx-\[10px\] mt-1 grid grid-cols-2 gap-0\.5 sm:mx-0 sm:mt-2 sm:gap-1\.5/);
+  assert.match(modal, /min-h-\[56px\] border px-2\.5 py-1\.5 shadow-sm sm:min-h-\[62px\] sm:rounded-lg sm:px-2\.5 sm:py-2/);
   assert.match(modal, /reviewCount >= 100/);
   assert.match(modal, /reviewCount >= 30/);
   assert.match(modal, /reviewCount >= 10/);

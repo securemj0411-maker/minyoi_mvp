@@ -936,13 +936,13 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   const safetyTone = upperFoldTileClass(safety.tone);
   const SafetyIcon = safety.Icon;
   return (
-    <div className="-mx-3 mt-1 grid grid-cols-2 gap-px sm:mx-0 sm:mt-2 sm:gap-1.5">
+    <div className="-mx-[10px] mt-1 grid grid-cols-2 gap-0.5 sm:mx-0 sm:mt-2 sm:gap-1.5">
       {tiles.map((tile) => {
         const tone = upperFoldTileClass(tile.tone);
         return (
           <div
             key={tile.key}
-            className={`min-h-[56px] border px-2 py-1.5 shadow-sm sm:min-h-[62px] sm:rounded-lg sm:px-2.5 sm:py-2 ${tone.card}`}
+            className={`min-h-[56px] border px-2.5 py-1.5 shadow-sm sm:min-h-[62px] sm:rounded-lg sm:px-2.5 sm:py-2 ${tone.card}`}
           >
             <div className="flex items-center gap-1.5 text-[10px] font-black text-zinc-500 dark:text-zinc-400">
               <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
@@ -960,7 +960,7 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
       <RevealRiskScoreMini
         card={card}
         containerClassName="contents"
-        triggerClassName={`min-h-[56px] w-full border px-2 py-1.5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:min-h-[62px] sm:rounded-lg sm:px-2.5 sm:py-2 ${safetyTone.card}`}
+        triggerClassName={`min-h-[56px] w-full border px-2.5 py-1.5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:min-h-[62px] sm:rounded-lg sm:px-2.5 sm:py-2 ${safetyTone.card}`}
         triggerContent={(
           <span className="block w-full">
             <span className="flex items-center justify-between gap-2 text-[10px] font-black text-zinc-500 dark:text-zinc-400">
