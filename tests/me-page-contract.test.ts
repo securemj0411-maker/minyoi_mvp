@@ -155,6 +155,10 @@ test("/me mobile reveal card keeps safety signals out of the middle content", ()
   assert.match(modal, /scale-\[1\.08\] rounded-none object-contain object-center/);
   assert.match(modal, /sm:scale-100 sm:rounded-md/);
   assert.doesNotMatch(modal, /rounded-none object-cover object-center/);
+  assert.match(modal, /aria-label="상품 사진 크게 보기"/);
+  assert.match(modal, />\s*크게 보기\s*<\/button>/);
+  assert.match(modal, /createPortal\(largePreview, document\.body\)/);
+  assert.match(modal, /max-h-\[88dvh\] w-full max-w-3xl/);
   assert.match(modal, /hidden text-xs font-semibold leading-5/);
   assert.match(modal, /추가 신호 \{hiddenMobileCount\}개/);
   assert.match(modal, /bg-\[#00c471\]/);
