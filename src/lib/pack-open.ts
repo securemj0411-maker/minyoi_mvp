@@ -860,6 +860,11 @@ async function insertReveals(
         user_ref: userRef,
         expected_profit_min: card.expectedProfitMin,
         expected_profit_max: card.expectedProfitMax,
+        current_profit_min: card.marketBasis.medianPrice == null ? null : Math.round(card.marketBasis.medianPrice - card.price),
+        current_profit_max: card.marketBasis.medianPrice == null ? null : Math.round(card.marketBasis.medianPrice - card.price),
+        market_invalidated_at: card.marketBasis.medianPrice != null && card.marketBasis.medianPrice - card.price < 0
+          ? new Date().toISOString()
+          : null,
         confidence: card.confidence,
       })),
     ),

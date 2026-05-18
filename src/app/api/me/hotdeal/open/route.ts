@@ -104,6 +104,9 @@ export async function POST(req: Request) {
             source: "hotdeal",
             expected_profit_min: profit,
             expected_profit_max: profit,
+            current_profit_min: profit,
+            current_profit_max: profit,
+            market_invalidated_at: profit < 0 ? now : null,
             confidence: 0.9,
             revealed_at: now,
           };

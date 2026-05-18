@@ -11,7 +11,7 @@ import {
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { detectSoldOut, describeSignals, isSoldOut } from "@/lib/sold-out";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -292,6 +292,32 @@ async function liveVerifyVisibleItems(items: RevealItem[]): Promise<RevealItem[]
   return verified.filter((item): item is RevealItem => item != null);
 }
 
+async function syncVisibleCurrentProfits(items: RevealItem[]) {
+  const byPid = new Map<number, {
+    pid: number;
+    current_profit_min: number;
+    current_profit_max: number;
+    market_invalidated: boolean;
+  }>();
+  for (const item of items) {
+    if (!Number.isFinite(item.pid) || item.marketGapKrw == null) continue;
+    const gap = Math.round(item.marketGapKrw);
+    byPid.set(item.pid, {
+      pid: item.pid,
+      current_profit_min: gap,
+      current_profit_max: gap,
+      market_invalidated: gap < 0,
+    });
+  }
+  const updates = [...byPid.values()];
+  if (updates.length === 0) return;
+  await restFetch(rpcUrl("sync_reveal_current_profits_from_json"), {
+    method: "POST",
+    headers: serviceHeaders("return=minimal"),
+    body: jsonBody({ p_updates: updates }),
+  });
+}
+
 export async function GET(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -511,6 +537,11 @@ export async function GET(req: Request) {
   const liveVerified = await liveVerifyVisibleItems(liveSlice);
 
   const pageItems = liveVerified.slice(0, pageSize);
+  await syncVisibleCurrentProfits(pageItems).catch((err) => {
+    console.error("packs/me current profit sync failed (non-fatal)", {
+      err: err instanceof Error ? err.message : String(err),
+    });
+  });
   const total = initialTotal;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(page, totalPages);
