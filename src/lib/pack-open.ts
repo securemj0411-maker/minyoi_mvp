@@ -283,7 +283,7 @@ type MarketVelocityRow = {
   computed_at: string | null;
 };
 
-function categoryFromPool(row: { category: string | null; comparable_key: string | null }) {
+function categoryFromPool(row: { category?: string | null; comparable_key?: string | null }) {
   return categoryFromComparableKey(row.category) ?? categoryFromComparableKey(row.comparable_key);
 }
 
