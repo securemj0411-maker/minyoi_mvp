@@ -11,6 +11,7 @@ import { BunjangLogo, BunjangSourceBadge, DanawaLogo, DanawaSourceBadge } from "
 import { CheckCircleIcon, ScaleIcon, ShieldIcon, TargetIcon, WalletIcon } from "@/components/icons";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
+import { buildRiskScore, type RiskScoreInput, type RiskTone } from "@/lib/risk-score";
 
 type RevealResult =
   | {
@@ -652,15 +653,10 @@ function RevealRiskScoreMini({
   hideChevron?: boolean;
   portalDetail?: boolean;
 }) {
+  const riskInput = revealRiskScoreInput(card);
   return (
     <RiskScoreBar
-      descriptionPreview={card.savedDetail?.descriptionPreview ?? null}
-      conditionClass={card.marketBasis?.conditionClass ?? null}
-      price={card.price}
-      skuMedian={card.marketBasis?.medianPrice ?? null}
-      confidence={card.confidence}
-      sellerReviewRating={card.savedDetail?.sellerReviewRating ?? null}
-      sellerReviewCount={card.savedDetail?.sellerReviewCount ?? null}
+      {...riskInput}
       showDetail
       compact
       containerClassName={containerClassName}
@@ -670,6 +666,28 @@ function RevealRiskScoreMini({
       portalDetail={portalDetail}
     />
   );
+}
+
+function revealRiskScoreInput(card: RevealCard): RiskScoreInput {
+  return {
+    descriptionPreview: card.savedDetail?.descriptionPreview ?? null,
+    conditionClass: card.marketBasis?.conditionClass ?? null,
+    price: card.price,
+    skuMedian: card.marketBasis?.medianPrice ?? null,
+    confidence: card.confidence,
+    sellerReviewRating: card.savedDetail?.sellerReviewRating ?? null,
+    sellerReviewCount: card.savedDetail?.sellerReviewCount ?? null,
+  };
+}
+
+function fixedSafetyCtaClass(tone: RiskTone) {
+  if (tone === "danger") {
+    return "flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-rose-300 bg-rose-50 px-3 py-3 text-center text-sm font-black text-rose-800 shadow-sm ring-1 ring-white/70 transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-100 dark:ring-rose-900/25";
+  }
+  if (tone === "caution") {
+    return "flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 text-center text-sm font-black text-amber-800 shadow-sm ring-1 ring-white/70 transition hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100 dark:ring-amber-900/25";
+  }
+  return "flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-[#c9dbc8] bg-[#f1f8ef] px-3 py-3 text-center text-sm font-black text-[#274633] shadow-sm ring-1 ring-white/70 transition hover:bg-[#e7f3e4] dark:border-emerald-900/55 dark:bg-emerald-950/25 dark:text-emerald-100 dark:ring-emerald-900/25";
 }
 
 function RevealProductImage({ card }: { card: RevealCard }) {
@@ -1005,24 +1023,6 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
   );
 }
 
-function ProductSafetyPanel({ card, className = "" }: { card: RevealCard; className?: string }) {
-  return (
-    <div className={`rounded-2xl border border-[#d6e2d3] bg-[linear-gradient(180deg,#fbfdf8_0%,#f0f8ed_100%)] p-3 shadow-[0_12px_28px_rgba(49,66,56,0.07)] dark:border-emerald-900/40 dark:bg-none dark:bg-emerald-950/20 sm:p-3.5 lg:col-span-2 ${className}`}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <div className="text-sm font-black text-[#223127] dark:text-zinc-100">
-            안전 확인
-          </div>
-          <div className="mt-1 hidden text-xs font-semibold leading-5 text-[#60705f] dark:text-zinc-300 sm:block">
-            추천 풀 통과 후 남은 확인 포인트만 따로 봅니다.
-          </div>
-        </div>
-        <RevealRiskScoreMini card={card} />
-      </div>
-    </div>
-  );
-}
-
 function MarketGraphTrustLine({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
   if (!market) return null;
@@ -1304,10 +1304,9 @@ function RevealCardItem({
       {/* 좌측 카드 닫음 — 우측 카드 = 시세 그래프 + 디테일. */}
 
       <RecommendationReasonPanel card={card} className="order-2 lg:order-3" />
-      <ProductSafetyPanel card={card} className="order-3 lg:order-4" />
 
       {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
-      <div className="order-4 space-y-2 rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.08)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-none dark:bg-zinc-900 dark:ring-zinc-800/70 lg:order-2">
+      <div className="order-3 space-y-2 rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.08)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-none dark:bg-zinc-900 dark:ring-zinc-800/70 lg:order-2">
         <div className="flex items-center justify-between gap-2">
           <div className="text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
             시세 그래프 · 시장 분석
@@ -1639,16 +1638,17 @@ function FixedBunjangFooter({
   card: RevealCard;
   onLinkClicked: (pid: number) => void;
 }) {
+  const safetyScore = buildRiskScore(revealRiskScoreInput(card));
   return (
     <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-2 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-3">
       <div className="grid grid-cols-[minmax(0,0.86fr)_minmax(0,1.18fr)] gap-2">
         <RevealRiskScoreMini
           card={card}
           containerClassName="flex w-full min-w-0"
-          triggerLabel="안전 확인"
+          triggerLabel={safetyScore.label}
           hideChevron
           portalDetail
-          triggerClassName="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-[#c9dbc8] bg-[#f1f8ef] px-3 py-3 text-center text-sm font-black text-[#274633] shadow-sm ring-1 ring-white/70 transition hover:bg-[#e7f3e4] dark:border-emerald-900/55 dark:bg-emerald-950/25 dark:text-emerald-100 dark:ring-emerald-900/25"
+          triggerClassName={fixedSafetyCtaClass(safetyScore.tone)}
         />
         <a
           href={card.url}

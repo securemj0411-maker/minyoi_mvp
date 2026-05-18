@@ -74,7 +74,7 @@ test("/me modal keeps market evidence compact before the graph on mobile", () =>
   assert.match(modal, /표본 \{market\.sampleCount\.toLocaleString/);
   assert.match(modal, /신뢰 \{confidenceLabel\}/);
   assert.match(modal, /className=\"order-2 lg:order-3\"/);
-  assert.match(modal, /className=\"order-4 .*lg:order-2/);
+  assert.match(modal, /className=\"order-3 .*lg:order-2/);
   assert.match(modal, /hidden sm:inline-flex/);
   assert.match(modal, /그래프 기준 보기/);
   assert.ok(graphIndex >= 0 && trustIndex > graphIndex);
@@ -110,24 +110,20 @@ test("/me reveal profit block stays compact so the graph remains visible", () =>
   assert.doesNotMatch(modal, /text-2xl font-black tabular-nums/);
 });
 
-test("/me mobile reveal card keeps safety signals outside recommendation details", () => {
+test("/me mobile reveal card keeps safety signals out of the middle content", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const reasonIndex = modal.indexOf("function RecommendationReasonPanel");
-  const safetyIndex = modal.indexOf("function ProductSafetyPanel");
   const revealIndex = modal.indexOf("function RevealCardItem");
-  const mobileRiskIndex = modal.indexOf("<RevealRiskScoreMini card={card} />", reasonIndex);
   const mobileSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", reasonIndex);
-  const revealRiskIndex = modal.indexOf("<ProductSafetyPanel card={card}", revealIndex);
   const desktopSignalIndex = modal.indexOf("<VerdictBadgesMini card={card} />", revealIndex);
 
   assert.ok(reasonIndex >= 0 && revealIndex > reasonIndex);
-  assert.ok(safetyIndex > reasonIndex && safetyIndex < revealIndex);
-  assert.ok(mobileRiskIndex > safetyIndex && mobileRiskIndex < revealIndex);
   assert.ok(!(mobileSignalIndex > reasonIndex && mobileSignalIndex < revealIndex));
-  assert.ok(revealRiskIndex > revealIndex);
   assert.ok(desktopSignalIndex > revealIndex);
-  assert.match(modal, /function ProductSafetyPanel/);
-  assert.match(modal, /안전 확인/);
+  assert.doesNotMatch(modal, /function ProductSafetyPanel/);
+  assert.doesNotMatch(modal, /<ProductSafetyPanel card=\{card\}/);
+  assert.match(modal, /const safetyScore = buildRiskScore\(revealRiskScoreInput\(card\)\)/);
+  assert.match(modal, /triggerLabel=\{safetyScore\.label\}/);
   assert.doesNotMatch(modal, /grid-cols-\[104px_minmax/);
   assert.match(modal, /function RevealProductImage/);
   assert.match(modal, /h-\[145px\] w-full/);
@@ -140,6 +136,7 @@ test("/me mobile reveal card keeps safety signals outside recommendation details
   assert.match(modal, /mt-2 w-full border-l-\[3px\]/);
   assert.doesNotMatch(modal, /<ConditionChip conditionClass=\{card\.marketBasis\?\.conditionClass \?\? null\} showHelp \/>/);
   assert.doesNotMatch(modal, /hidden sm:block[\s\S]*<RevealRiskScoreMini card=\{card\} \/>/);
+  assert.doesNotMatch(modal, /<RevealRiskScoreMini card=\{card\} \/>/);
   assert.match(modal, /hidden sm:block[\s\S]*<MarketBasisMini card=\{card\} \/>/);
 });
 
@@ -167,7 +164,6 @@ test("/me reveal detail clears light gradients in dark mode", () => {
 
   assert.match(modal, /rgba\(255,253,249,0\.22\),rgba\(238,231,218,0\.30\)\)\] dark:bg-none dark:bg-zinc-950\/20/);
   assert.match(modal, /#f8fcf5_0%,#eef7eb_100%\)\] p-3[\s\S]*dark:bg-none dark:bg-emerald-950\/20/);
-  assert.match(modal, /#fbfdf8_0%,#f0f8ed_100%\)\] p-3[\s\S]*dark:bg-none dark:bg-emerald-950\/20/);
   assert.match(modal, /#fffdf9_0%,#fbf6ee_100%\)\] p-3[\s\S]*dark:bg-none dark:bg-zinc-900/);
   assert.match(modal, /#fffdf9_0%,#fbf7ef_100%\)\] p-3[\s\S]*dark:bg-none dark:bg-zinc-900/);
 });
@@ -175,6 +171,7 @@ test("/me reveal detail clears light gradients in dark mode", () => {
 test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached and list-shaped", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
+  const riskScore = source("src/lib/risk-score.ts");
   const relatedIndex = modal.indexOf("<RelatedRevealStrip");
   const footerIndex = modal.indexOf("<ModalActionFooter", relatedIndex);
   const fixedCtaIndex = modal.indexOf("<FixedBunjangFooter", footerIndex);
@@ -184,11 +181,15 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   assert.match(modal, /내 다른 추천 매물/);
   assert.match(modal, /\/me 목록 캐시 기준 · 열면 다시 상태 확인/);
   assert.match(modal, /grid-cols-\[minmax\(0,0\.86fr\)_minmax\(0,1\.18fr\)\]/);
-  assert.match(modal, /triggerLabel="안전 확인"/);
+  assert.match(modal, /triggerLabel=\{safetyScore\.label\}/);
+  assert.match(modal, /fixedSafetyCtaClass\(safetyScore\.tone\)/);
+  assert.match(riskScore, /if \(tone === "safe"\) return "안전"/);
+  assert.match(riskScore, /return `주의 \$\{hitCount\}건`/);
+  assert.match(riskScore, /return `위험 \$\{hitCount\}건`/);
   assert.match(modal, /hideChevron/);
   assert.match(modal, /portalDetail/);
   assert.match(modal, /containerClassName="flex w-full min-w-0"/);
-  assert.match(modal, /triggerClassName="flex min-h-11 w-full/);
+  assert.match(modal, /triggerClassName=\{fixedSafetyCtaClass\(safetyScore\.tone\)\}/);
   assert.match(modal, /번개장터에서 확인하기/);
   assert.match(modal, /상세를 열면서 현재 상태를 다시 확인합니다/);
   assert.match(modal, /className="mt-3 space-y-2"/);
