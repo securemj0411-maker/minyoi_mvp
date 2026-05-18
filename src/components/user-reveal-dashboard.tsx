@@ -4,9 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ConditionChip } from "@/components/condition-chip";
-import { RiskScoreBar } from "@/components/risk-score-bar";
 import { BunjangSourceBadge, DanawaSourceBadge } from "@/components/market-brand-logo";
-import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -577,6 +575,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   ];
 
   function openItem(item: RevealItem, mode: "listing" | "guide") {
+    if (isUserFacingClosed(item)) return;
     previewSeedCounterRef.current += 1;
     setSelectedItem(item);
     setSelectedPreviewMode(mode);
@@ -617,31 +616,6 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       return next.size === prev.size ? prev : next;
     });
   }, [hideTerminal, selectedPids.size, visibleItems]);
-
-  function ActionButtons({ item }: { item: RevealItem }) {
-    // Wave 182b (2026-05-17): 카드 list 에서 손해 신고 버튼 제거 — 사용자 피드백
-    //   "모든 카드에 박혀있으니까 거슬려; 한곳에 한개만"
-    // → 매물 상세 모달 (PackRevealModal) 안 1곳에만 박음 (매물 컨텍스트 자연스러움).
-    const actionBase = "inline-flex h-9 min-w-[82px] items-center justify-center rounded-lg px-3 text-xs font-black leading-none transition";
-    return (
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => openItem(item, "listing")}
-          className={`${actionBase} flex-1 bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)] hover:bg-[#29382f] sm:flex-none`}
-        >
-          상품 보기
-        </button>
-        <button
-          type="button"
-          onClick={() => openItem(item, "guide")}
-          className={`${actionBase} flex-1 border border-[#d5dfd2] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] hover:border-[#b9c9b9] hover:bg-[#edf3ea] sm:flex-none`}
-        >
-          공략 보기
-        </button>
-      </div>
-    );
-  }
 
   return (
     <section className="rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-5">
@@ -1061,18 +1035,28 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           return (
           <article
             key={item.pid}
-            onClick={selectMode ? () => togglePid(item.pid) : undefined}
+            onClick={selectMode ? () => togglePid(item.pid) : () => openItem(item, "listing")}
+            onKeyDown={(event) => {
+              if (selectMode) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openItem(item, "listing");
+              }
+            }}
+            role={selectMode ? undefined : "button"}
+            tabIndex={selectMode ? undefined : 0}
+            aria-label={`${item.name} 상세 보기`}
             className={`relative ${
               viewMode === "grid"
                 ? "grid grid-cols-[76px_minmax(0,1fr)] gap-3 rounded-xl border bg-[#fffdf9] p-2.5 transition dark:bg-zinc-950/40"
-                : "grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-xl border bg-[#fffdf9] p-2.5 transition dark:bg-zinc-950/40 lg:grid-cols-[64px_minmax(0,1fr)_auto]"
+                : "grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-xl border bg-[#fffdf9] p-2.5 transition dark:bg-zinc-950/40"
             } ${
               selectMode && selectedPids.has(item.pid)
                 ? "border-rose-400 bg-rose-50 ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/30"
                 : isTerminal
                   ? "border-zinc-200 bg-zinc-50/70 opacity-75 dark:border-zinc-800 dark:bg-zinc-900/40"
-                  : "border-[#e5dccf] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:hover:border-emerald-900 dark:hover:bg-emerald-950/20"
-            } ${selectMode ? "cursor-pointer" : ""}`}
+                  : "border-[#e5dccf] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] focus-visible:border-[#8ca88c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]/30 dark:border-zinc-800 dark:hover:border-emerald-900 dark:hover:bg-emerald-950/20"
+            } ${selectMode ? "cursor-pointer" : "cursor-pointer"}`}
           >
             {/* 2026-05-17: 선택 모드 체크박스 */}
             {selectMode && (
@@ -1126,18 +1110,6 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                     ) : null}
                   </>
                 ) : null}
-                {/* Wave 182 Phase 3 (2026-05-17): base option fallback 정직성 표시. 옵션 명시 X → SKU 기본 옵션 가정 시세. */}
-                {item.optionBaseAssumed && item.optionBaseAssumed.length > 0 ? (
-                  <>
-                    <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                    <span
-                      title={`이 매물은 ${item.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}
-                      className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                    >
-                      기본 옵션 가정
-                    </span>
-                  </>
-                ) : null}
                 <span className="text-zinc-300 dark:text-zinc-600">·</span>
                 <span>{timeLabel(item.revealedAt)}</span>
                 {/* 2026-05-17 (사용자 요청): listing_state 명시 표시. terminal 매물도 사라지지 않게. */}
@@ -1187,61 +1159,12 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   );
                 })()}
               </div>
-              {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 좁은 영역이라 compact (chip 만). */}
-              <div className="mt-1">
-                <RiskScoreBar
-                  descriptionPreview={item.descriptionPreview}
-                  conditionClass={item.marketBasis?.conditionClass ?? null}
-                  price={item.price}
-                  skuMedian={item.marketBasis?.medianPrice ?? null}
-                  confidence={item.confidence}
-                  sellerReviewRating={item.sellerReviewRating}
-                  sellerReviewCount={item.sellerReviewCount}
-                  compact
-                />
-              </div>
-              {/* 2026-05-17 Phase 2: verdict chips (근거 강조) — RevealItem 가진 데이터 활용. */}
-              {(() => {
-                const verdicts = buildVerdicts({
-                  price: item.price,
-                  skuMedian: item.marketBasis?.medianPrice ?? null,
-                  expectedProfitMin: currentProfitMinOrSnapshot(item),
-                  expectedProfitMax: currentProfitMaxOrSnapshot(item),
-                  confidence: item.confidence,
-                  marketSampleCount: item.marketBasis?.sampleCount ?? null,
-                  marketConfidenceLabel: (item.marketBasis?.confidence as "high" | "medium" | "low" | null) ?? null,
-                  medianHoursToSold: item.velocityBasis?.medianHoursToSold ?? null,
-                  soldSampleCount: item.marketBasis?.soldSampleCount ?? null,
-                  flowCount24h: item.skuListingFlow?.count24h ?? null,
-                  flowAvgPerDay7d: item.skuListingFlow?.avgPerDay7d ?? null,
-                  sellerReviewRating: item.sellerReviewRating,
-                  sellerReviewCount: item.sellerReviewCount,
-                  freeShipping: item.freeShipping,
-                  favoriteCount: item.favoriteCount,
-                  lastSeenAt: item.revealedAt,
-                  descriptionPreview: item.descriptionPreview,
-                });
-                return verdicts.length > 0 ? (
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {verdicts.map((v) => (
-                      <span
-                        key={v.label}
-                        className={`rounded-full border px-1.5 py-0.5 text-[9px] font-black ${VERDICT_TONE_CLASS[v.tone]}`}
-                      >
-                        {v.label}
-                      </span>
-                    ))}
-                  </div>
-                ) : null;
-              })()}
               {item.feedbackType ? (
                 <div className="mt-1 truncate text-[11px] text-zinc-500 dark:text-zinc-400">
                   피드백: {item.feedbackType}{item.feedbackNote ? ` · ${item.feedbackNote}` : ""}
                 </div>
               ) : null}
-              {viewMode === "grid" ? <ActionButtons item={item} /> : null}
             </div>
-            {viewMode === "list" ? <div className="self-center"><ActionButtons item={item} /></div> : null}
           </article>
           );
         })}
