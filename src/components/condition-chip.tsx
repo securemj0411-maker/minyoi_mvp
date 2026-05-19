@@ -87,19 +87,22 @@ const CHIP_STYLES: Record<string, ChipStyle> = {
 const PHOTO_BADGE_STYLES: Record<string, PhotoBadgeStyle> = {
   unopened: {
     label: "미개봉/새상품",
-    compactLabel: "미개봉",
+    compactLabel: "✦ 미개봉",
     mark: "N",
-    className: "border-[#efd486]/90 bg-[linear-gradient(135deg,#fff8de_0%,#f6cf68_48%,#fffaf0_100%)] text-[#513b0c] shadow-[0_10px_26px_rgba(217,154,28,0.34)] ring-1 ring-white/80 dark:border-amber-500/60 dark:bg-[linear-gradient(135deg,#3a2608_0%,#9a6b13_48%,#21160a_100%)] dark:text-amber-50 dark:ring-amber-100/20",
-    markClassName: "bg-[#2f2410] text-[#ffe7a3] shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] dark:bg-amber-100 dark:text-[#3a2608]",
-    desc: "미개봉/새상품으로 분류된 매물",
+    // Wave 355: "전설템" 느낌 — metallic gold + 강한 glow + double ring.
+    // unopened = 박스 안 뜯음 = 가장 희귀한 상태. mint(S급)보다 위.
+    className: "border-[#ffd86b]/95 bg-[linear-gradient(135deg,#1a0d02_0%,#5a3a06_22%,#d4a020_46%,#fff0a8_64%,#b88210_88%,#3d2406_100%)] text-[#fff8e1] shadow-[0_0_28px_rgba(255,200,30,0.55),0_14px_32px_rgba(195,135,15,0.45)] ring-2 ring-[#fff0ad]/70 dark:border-amber-300/70 dark:bg-[linear-gradient(135deg,#1a0d02_0%,#5a3a06_22%,#d4a020_46%,#fff0a8_64%,#b88210_88%,#3d2406_100%)] dark:text-amber-50 dark:ring-amber-100/40",
+    markClassName: "bg-[#1a0d02] text-[#ffd86b] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_2px_8px_rgba(0,0,0,0.3)] dark:bg-[#1a0d02] dark:text-[#ffd86b]",
+    desc: "미개봉/새상품 — 전설급 매물 (박스 안 뜯음)",
   },
   mint: {
     label: "S급",
-    compactLabel: "S급",
+    compactLabel: "★ S급",
     mark: "S",
-    className: "border-[#ecd37b]/90 bg-[linear-gradient(135deg,#071f19_0%,#104434_47%,#e6c268_100%)] text-[#fff6d1] shadow-[0_12px_30px_rgba(8,48,35,0.40)] ring-1 ring-[#fff0aa]/55 dark:border-[#e7c769]/60 dark:bg-[linear-gradient(135deg,#031812_0%,#0b3529_50%,#b7852c_100%)] dark:text-amber-50 dark:ring-amber-100/18",
+    // Wave 355: 그라데이션 강화 + 골드 glow ring 추가 (unopened와 비슷 격이지만 emerald 톤).
+    className: "border-[#ecd37b]/95 bg-[linear-gradient(135deg,#071f19_0%,#104434_42%,#1d6b50_60%,#e6c268_88%,#fff0ad_100%)] text-[#fff6d1] shadow-[0_0_22px_rgba(230,194,104,0.45),0_12px_30px_rgba(8,48,35,0.40)] ring-2 ring-[#fff0aa]/65 dark:border-[#e7c769]/70 dark:bg-[linear-gradient(135deg,#031812_0%,#0b3529_42%,#1d6b50_60%,#b7852c_88%,#fff0ad_100%)] dark:text-amber-50 dark:ring-amber-100/30",
     markClassName: "bg-[#fff0ad] text-[#12382b] shadow-[0_2px_8px_rgba(0,0,0,0.18)]",
-    desc: "S급으로 분류된 매물",
+    desc: "S급으로 분류된 매물 (실사용 거의 없음)",
   },
   clean: {
     label: "A급/풀세트",

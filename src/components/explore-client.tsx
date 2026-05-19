@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, FlameIcon, ClockIcon, TrophyIcon } from "@/components/icons";
-import { ConditionChip } from "@/components/condition-chip";
+import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
@@ -484,6 +484,10 @@ export default function ExploreClient() {
                       className={`object-cover ${isSoldOut ? "opacity-60" : ""}`}
                     />
                   ) : null}
+                  {/* Wave 355: unopened/mint만 사진 위 럭셔리 배지 ("전설템" 느낌). 나머지 등급은 메타 영역 friendly 칩. */}
+                  {!isSoldOut && (item.conditionClass === "unopened" || item.conditionClass === "mint") ? (
+                    <ConditionPhotoBadge conditionClass={item.conditionClass} compact />
+                  ) : null}
                   {isSoldOut ? (
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-zinc-900/30">
                       <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[9px] font-bold text-white shadow">
@@ -522,8 +526,9 @@ export default function ExploreClient() {
                       </span>
                     ) : (
                       <>
-                        {/* Wave 354: 매물 등급 — 일반인 친화 풀어쓴 라벨 ("거의 새것"/"상태 보통"/"하자 있음"...) */}
-                        {item.conditionClass ? (
+                        {/* Wave 354+355: 매물 등급 — 친화 풀어쓴 라벨 ("상태 보통"/"하자 있음"/...).
+                            unopened/mint는 사진 위 럭셔리 배지로 따로 표시되므로 여기선 제외. */}
+                        {item.conditionClass && item.conditionClass !== "unopened" && item.conditionClass !== "mint" ? (
                           <ConditionChip conditionClass={item.conditionClass} variant="friendly" />
                         ) : null}
                         <span className="flex items-center gap-0.5 text-zinc-500">
