@@ -233,9 +233,13 @@ create index if not exists mvp_listing_observation_payloads_pid_seen_idx
 
 alter table public.mvp_listing_observation_payloads enable row level security;
 
+-- Wave 130 (2026-05-15): condition_class별 분리 시세 (mint/clean/normal/worn/low_batt/unopened).
+-- PK = (date, comparable_key, condition_class) — 같은 SKU·날짜에 condition별 row 따로 박힘.
+-- legacy 'all' row는 5/16 incident에서 삭제됨 (해당 사건 로그 참고).
 create table if not exists public.mvp_market_price_daily (
   date date not null,
   comparable_key text not null,
+  condition_class text not null default 'all',
   category text,
   family text,
   model text,
@@ -250,12 +254,15 @@ create table if not exists public.mvp_market_price_daily (
   disappeared_sample_count integer not null default 0,
   confidence text not null default 'low' check (confidence in ('high','medium','low')),
   computed_at timestamptz not null default now(),
-  primary key (date, comparable_key)
+  primary key (date, comparable_key, condition_class)
 );
 
+-- Wave 130 후속: velocity_daily도 condition_class 분리 PK로 migration됨.
+-- 단 sync 로직은 현재 condition_class='all' 고정 박음 (P1: condition 분리 분석은 후속).
 create table if not exists public.mvp_market_velocity_daily (
   date date not null,
   comparable_key text not null,
+  condition_class text not null default 'all',
   category text,
   family text,
   model text,
@@ -271,7 +278,7 @@ create table if not exists public.mvp_market_velocity_daily (
   clock_basis text not null default 'first_seen_to_sold_detected'
     check (clock_basis in ('first_seen_to_sold_detected')),
   computed_at timestamptz not null default now(),
-  primary key (date, comparable_key)
+  primary key (date, comparable_key, condition_class)
 );
 
 create table if not exists public.mvp_source_health (

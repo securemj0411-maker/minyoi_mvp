@@ -206,7 +206,14 @@ export default function MarketHistoryChart({
   const latestActive = data[data.length - 1]?.active;
   const latestSold = data[data.length - 1]?.sold;
   const totalSoldCount = data.reduce((sum, p) => sum + p.soldCount, 0);
-  const title = priceSource === "reference" ? "다나와 · 번개 미개봉 추이" : "번개장터 시세 30일 추이";
+  // 2026-05-19 P0: "30일 추이" 거짓 카피 정직화. 5/16 incident로 historical 4일밖에 없는데
+  // 30일이라 표기하면 사용자가 trend 풍부함으로 오인. 실제 data.length 기반 동적 표기.
+  const daysSpan = data.length;
+  const isThinHistory = daysSpan < 7;
+  const baseTitle = priceSource === "reference"
+    ? "다나와 · 번개 미개봉 추이"
+    : `번개장터 시세 ${daysSpan}일 추이`;
+  const title = baseTitle;
   const activeLabel = priceSource === "reference" ? "번개 미개봉 호가" : "번개장터 호가";
   const soldLabel = priceSource === "reference" ? "번개 미개봉 거래가" : "번개장터 거래가";
   const referenceLineY = showReferencePrice ? y(referencePrice as number) : null;
@@ -217,6 +224,13 @@ export default function MarketHistoryChart({
 
   return (
     <div className="rounded-md bg-white px-2 py-2 dark:bg-zinc-900">
+      {/* 2026-05-19 P0: 표본 부족 배너 — 5/16 incident historical loss 후 회복 중임을 명시.
+          7일 미만 데이터로 trend 그릴 때 사용자가 변동성 오인하지 않게 안내. 7일 이상이면 자동 사라짐. */}
+      {isThinHistory && priceSource !== "reference" ? (
+        <div className="mb-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">
+          📊 시세 데이터 누적 중 ({daysSpan}일째) — 표본이 더 쌓이면 추이가 안정화돼요
+        </div>
+      ) : null}
       <div className="flex items-center justify-between gap-2 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
         <span>{title}</span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 justify-end">
