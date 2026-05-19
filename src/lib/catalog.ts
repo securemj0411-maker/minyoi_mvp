@@ -9831,6 +9831,32 @@ const CLOTHING_JACKET_PRODUCT_TYPE_MISMATCH_NOISE: string[] = [
   "스커트", "skirt", "원피스", "드레스",
 ];
 
+// Wave 260 (2026-05-20): shoe 본품 SKU 가 clothing 매물 매칭 차단 (사용자 발견 systemic).
+//   사용자 SQL 검증: ~280건 매물 — Adidas 슈퍼스타 트랙팬츠/트랙탑/티셔츠 / Nike collab 자켓 / NB 992 티셔츠 등
+//   shoe 카테고리에 박힘 (query "아디다스 슈퍼스타" → bunjang/cron 가 자동 shoe category).
+//   원인: shoe SKU mustContain (슈퍼스타/스탠스미스/덩크) 매물 title 매칭 통과 → sku_id 박힘 → 시세 비교군 진입.
+//   policy: shoe SKU defaultProductType=sneaker/boot/sandal/loafer/slipper + 매물 text 에 clothing keyword 매치 시 reject.
+//   intersect-aware: 자기 mustContain 에 clothing token 박혀있으면 skip (예외 없음 — shoe SKU 는 clothing keyword mustContain X).
+//   효과: ~280건 shoe sku_id=NULL clothing 매물 차단 → 시세 sample 분리 + 사용자 화면 노출 X.
+const SHOE_CATEGORY_MISMATCH_NOISE: string[] = [
+  // pants
+  "트랙팬츠", "트랙 팬츠", "track pants", "트레이닝 팬츠", "조거팬츠", "조거 팬츠", "스웻팬츠", "스웻 팬츠",
+  "바지", "팬츠", "pants",
+  // tops
+  "트랙탑", "트랙 탑", "track top", "트랙수트", "tracksuit", "츄리닝",
+  "티셔츠", "t-shirt", "tee", "반팔", "롱슬리브", "long sleeve", "맨투맨", "후드티", "후드집업", "후드 집업",
+  // jackets / coats
+  "자켓", "재킷", "jacket", "패딩", "다운", "코트", "coat", "바람막이", "windbreaker", "파카", "parka",
+  // shorts
+  "반바지", "쇼츠", "shorts", "버뮤다",
+  // shirts
+  "셔츠", "shirt", "남방",
+  // jeans / denim
+  "청바지", "데님", "denim", "jeans", "트러커",
+  // bag (shoe SKU 매칭 잘못 시 차단)
+  "토트백", "토트 백", "tote bag", "백팩 단품",
+];
+
 const GLOBAL_DESIGNER_COLLAB_NOISE: string[] = [
   // Wave 241 발견 — 즉시 단기 fix 시 박은 patterns 일반화
   "톰브라운", "thom browne", "thom-browne", "thombrowne",
@@ -9998,6 +10024,25 @@ function skuMatches(sku: Sku, normalizedText: string): boolean {
         || sku.defaultProductType === "waist")
     ) {
       for (const token of CLOTHING_JACKET_PRODUCT_TYPE_MISMATCH_NOISE) {
+        if (skuTokens.has(token.toLowerCase())) continue;
+        if (tokenHit(normalizedText, token)) return false;
+      }
+    }
+    // Wave 260 (2026-05-20): shoe 본품 SKU 가 clothing keyword 매물 매칭 차단 (사용자 발견 systemic, ~280건 영향).
+    //   사용자 SQL: Adidas/NB/Nike collab clothing 매물 (트랙팬츠/티셔츠/자켓) 가 shoe category 박힘.
+    //   query "아디다스 슈퍼스타" → bunjang 자동 shoe category → shoe SKU mustContain "슈퍼스타" 매칭 통과.
+    //   policy: shoe SKU defaultProductType=sneaker/boot/sandal/loafer/slipper + 매물 text 가 clothing keyword 매치 시 reject.
+    //   효과: clothing keyword 매물 sku_id=NULL → 시세 비교군 제외 + pool 차단.
+    if (
+      sku.category === "shoe" &&
+      sku.defaultProductType &&
+      (sku.defaultProductType === "sneaker"
+        || sku.defaultProductType === "boot"
+        || sku.defaultProductType === "sandal"
+        || sku.defaultProductType === "loafer"
+        || sku.defaultProductType === "slipper")
+    ) {
+      for (const token of SHOE_CATEGORY_MISMATCH_NOISE) {
         if (skuTokens.has(token.toLowerCase())) continue;
         if (tokenHit(normalizedText, token)) return false;
       }
