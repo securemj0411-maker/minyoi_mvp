@@ -1818,12 +1818,15 @@ function SellHelperPanel({
 // Wave 331 (사용자 + 메모리 정책 박혀있던 거):
 // 번개장터 안전결제 의무화 → 셀러 3.5% 수수료. 당근마켓 직거래는 수수료 0.
 // 사용자가 어디 팔지 선택지 보고 결정.
-function DaangnChip() {
-  // 정식 로고 추후 교체 — 일단 주황색 배경 + 텍스트 칩 (저작권 안전).
+function DaangnLogo({ className = "h-4 w-4" }: { className?: string }) {
+  // 당근마켓 로고 — 녹색 잎 + 주황 핀 본체 + 흰 원 (정식 형태 근사).
+  // 사용자가 정식 SVG/PNG 주면 교체.
   return (
-    <span className="inline-flex h-4 items-center justify-center rounded-[4px] bg-[#FF7E36] px-1 text-[9px] font-bold text-white">
-      당근
-    </span>
+    <svg className={className} viewBox="0 0 50 55" xmlns="http://www.w3.org/2000/svg" aria-label="당근마켓">
+      <path d="M15 6 Q18 1 22 3 Q25 0.5 28 3 Q32 1 35 6 Q30 11 25 9 Q20 11 15 6 Z" fill="#5DBA5E" />
+      <path d="M25 10 C12 10 6 22 11 36 L25 52 L39 36 C44 22 38 10 25 10 Z" fill="#FF7A36" />
+      <circle cx="25" cy="27" r="6" fill="white" />
+    </svg>
   );
 }
 
@@ -1870,7 +1873,7 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
         </div>
         <div className="rounded-md bg-orange-50 px-3 py-2.5 dark:bg-orange-950/30">
           <div className="flex items-center gap-1.5">
-            <DaangnChip />
+            <DaangnLogo className="h-4 w-4" />
             <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">당근 직거래</span>
           </div>
           <div className="mt-1 text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-300">
