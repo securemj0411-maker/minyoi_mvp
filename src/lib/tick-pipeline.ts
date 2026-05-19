@@ -2046,12 +2046,16 @@ async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: n
 const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["category"]>, string>> = {
   // v2 (2026-05-19): modelFromSku brand 포함 (polo/stussy/tnf/arcteryx 구분).
   // v3 (2026-05-19 Wave 217): bunjang_condition_label + resolveConditionClass 활용.
-  clothing: "wave216-clothing-v3",
+  // v4 (2026-05-19 Wave 236): product-type 추출 (hoodie/tee/jacket/pants/cap/belt/wallet/backpack/shoulder/tote).
+  //   사용자 코멘트 22건 중 17건 "같은 SKU 다른 product-type 섞임" 근본 fix.
+  //   comparable_key 에 product-type 박혀 시세 daily 자동 분리.
+  clothing: "wave216-clothing-v4",
   // Wave 217 (2026-05-19): shoe/bag/bike 도 metadata 활용 — 전 매물 자동 re-parse.
   // Wave 232 (2026-05-19): v3 — bag parser confidence base 강화.
-  shoe: "wave92-fashion-mobility-v3",
-  bag: "wave92-fashion-mobility-v3",
-  bike: "wave92-fashion-mobility-v3",
+  // Wave 236 (2026-05-19): v4 — product-type 추출 (bag 가장 큰 영향).
+  shoe: "wave92-fashion-mobility-v4",
+  bag: "wave92-fashion-mobility-v4",
+  bike: "wave92-fashion-mobility-v4",
 };
 function isParsedStale(row: ParsedListingRow): boolean {
   if (!row.category) return false;

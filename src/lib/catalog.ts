@@ -6790,8 +6790,21 @@ export const CATALOG: Sku[] = [
     brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_pique_classic",
     modelName: "Polo Pique Classic Fit",
     aliases: ["Polo Pique", "폴로 피케", "Ralph Lauren Pique"],
-    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["피케", "pique", "pk "]],
-    mustNotContain: ["RRL", "purple label", "퍼플라벨", "polo bear", "베어", "키즈", "kids", "여아", "남아", "토들러"],
+    // Wave 236 (2026-05-19): brand 강제 — mustContain 첫 그룹이 "폴로/polo" 만이면 다른 brand 매물도 매칭.
+    //   사용자 코멘트: 바나나리퍼블릭/타미힐피거/유니클로/나이키 골프/아디다스 스쿼드라/DKNY/무스너클/세터/렉토/캐피탈/빌보콰/폴스미스/헤지스 다 매칭.
+    //   fix: mustContain 에 polo "랄프 로렌" / "ralph lauren" 그룹 강제 추가 OR mustNotContain 에 비폴로 brand.
+    //   둘 다 적용 — Polo Bear/RRL 별도 SKU 있으니 정확.
+    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"], ["피케", "pique", "pk "], ["랄프", "ralph", "polo ralph", "rl", "pony", "포니"]],
+    mustNotContain: [
+      "RRL", "purple label", "퍼플라벨", "polo bear", "베어", "키즈", "kids", "여아", "남아", "토들러",
+      // Wave 236: 비폴로 brand 매물 차단 (사용자 코멘트 직접 발견 brand 다수).
+      "바나나리퍼블릭", "banana republic", "타미힐피거", "tommy hilfiger", "유니클로", "uniqlo",
+      "나이키 골프", "nike golf", "아디다스 골프", "adidas golf", "아디다스 스쿼드라", "squadra",
+      "dkny", "디케이엔와이", "무스너클", "moose knuckle", "라코스테", "lacoste",
+      "헤지스", "hazzys", "빌보콰", "vilebrequin", "폴스미스", "paul smith",
+      "세터", "setter", "렉토", "recto", "캐피탈", "kapital", "마뗑킴", "matin kim", "matinkim",
+      "마크 제이콥스", "marc jacobs", "베이프", "bape", "스투시", "stussy",
+    ],
     msrpKrw: 159000, released: 2020,
   },
   {
@@ -9157,11 +9170,26 @@ const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, strin
   ],
 };
 
+// Wave 236 (2026-05-19): 모든 카테고리 공통 — 역경매/구함 패턴.
+//   사용자 코멘트 pid 397387660: "갤탭 s9 fe 플러스 구함" → galaxy-tab-s9-fe-plus 매칭 (smartphone/tablet 통과).
+//   기존 GLOBAL_FASHION_NOISE 의 "구매 원함" 등은 fashion 카테고리만 적용 → 다른 카테고리 누락.
+//   근본 fix: 의미 자체가 역경매인 패턴은 모든 카테고리 차단.
+const UNIVERSAL_BUY_REQUEST_NOISE: string[] = [
+  "구함\\b", "구해요", "구합니다", "구해봅니다", "구해 봅니다",
+  "구매 원함", "구매원함", "구매원해요", "구매 원해요", "구매원합니다", "구매 원합니다",
+  "(구매)", "[구매]", "구매희망", "구매 희망",
+  "사고 싶어요", "사고싶어요", "사고싶습니다", "삽니다", "살게요", "매입",
+];
+
 function skuMatches(sku: Sku, normalizedText: string): boolean {
   for (const group of sku.mustContain) {
     if (!group.some((token) => tokenHit(normalizedText, token))) return false;
   }
   for (const token of sku.mustNotContain) {
+    if (tokenHit(normalizedText, token)) return false;
+  }
+  // Wave 236 (2026-05-19): 모든 카테고리 — 역경매/구함 패턴 차단 (smartphone/tablet 등 포함).
+  for (const token of UNIVERSAL_BUY_REQUEST_NOISE) {
     if (tokenHit(normalizedText, token)) return false;
   }
   // Wave 230: shoe/clothing/bag 카테고리는 자동 global noise + category noise 차단.
