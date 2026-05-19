@@ -751,25 +751,40 @@ export default function ExploreClient() {
       {/* Wave 348+358: Refresh Modal — bottom sheet slide-up + 위계 강조 + 사이트 톤. */}
       {refreshModalOpen ? (
         <div
-          className={`fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-200 sm:items-center sm:p-6 ${
+          className={`fixed inset-0 z-40 flex transition-opacity duration-200 ${
+            awaitingInitialPrefs
+              ? "items-stretch justify-stretch bg-[var(--brand-cream)] sm:items-center sm:justify-center sm:bg-black/60 sm:p-6 sm:backdrop-blur-sm dark:bg-zinc-900 sm:dark:bg-black/60"
+              : "items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-6"
+          } ${
             refreshModalAnimating ? "opacity-100" : "opacity-0"
           }`}
-          onClick={closeRefreshModal}
+          onClick={awaitingInitialPrefs ? undefined : closeRefreshModal}
         >
           <div
-            className={`relative w-full max-w-md transform border border-zinc-200/50 bg-[var(--brand-cream)] shadow-[0_-20px_60px_rgba(0,0,0,0.30)] transition-all duration-300 ease-out dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-3xl rounded-t-3xl ${
+            className={`relative w-full transform transition-all duration-300 ease-out ${
+              awaitingInitialPrefs
+                ? "h-dvh max-w-none border-0 bg-[var(--brand-cream)] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-w-md sm:rounded-3xl sm:border sm:border-zinc-200/50 sm:shadow-[0_-20px_60px_rgba(0,0,0,0.30)] sm:dark:border-zinc-800"
+                : "max-w-md border border-zinc-200/50 bg-[var(--brand-cream)] shadow-[0_-20px_60px_rgba(0,0,0,0.30)] dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-3xl rounded-t-3xl"
+            } ${
               refreshModalAnimating
                 ? "translate-y-0 opacity-100 sm:scale-100"
-                : "translate-y-full opacity-0 sm:translate-y-4 sm:scale-95"
+                : awaitingInitialPrefs
+                  ? "opacity-0 sm:translate-y-4 sm:scale-95"
+                  : "translate-y-full opacity-0 sm:translate-y-4 sm:scale-95"
             }`}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* 모바일 grab handle */}
-            <div className="flex justify-center pt-3 sm:hidden">
-              <div className="h-1 w-10 rounded-full bg-zinc-300 dark:bg-zinc-600" />
-            </div>
+            {/* 모바일 grab handle — lightweight 모드일 땐 숨김 (full-screen이라 sheet 표시 X) */}
+            {!awaitingInitialPrefs ? (
+              <div className="flex justify-center pt-3 sm:hidden">
+                <div className="h-1 w-10 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+              </div>
+            ) : null}
 
-            <div className="px-6 pt-5 pb-6 sm:pt-6">
+            <div className={awaitingInitialPrefs
+              ? "flex h-full flex-col justify-center px-6 py-10 sm:h-auto sm:py-8"
+              : "px-6 pt-5 pb-6 sm:pt-6"
+            }>
               {/* Wave 374+376: personalization 모달.
                   - awaitingInitialPrefs (가입 직후): 예산만 (성향 chips 숨김, default balanced)
                   - editingPrefs / preferences X: 예산 + 성향 풀폼
