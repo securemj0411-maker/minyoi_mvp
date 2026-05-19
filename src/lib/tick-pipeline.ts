@@ -4650,8 +4650,12 @@ export async function parserDriftStage(deadlineMs: number): Promise<StageStats> 
     if (!latestVersion) continue;
     if (Date.now() > deadlineMs - deadlineGuardMs) break;
 
-    const sampleLimit = (category === "bag" || category === "bike") ? 500 : 1000;
-    const url = `${tableUrl("mvp_listing_parsed")}?select=pid&category=eq.${encodeURIComponent(category)}&parser_version=neq.${encodeURIComponent(latestVersion)}&limit=${sampleLimit}`;
+    // Wave 257 (2026-05-20): ORDER BY updated_at ASC — 옛 매물 우선 마킹 + sample limit 3000 (속도 3x).
+    //   사용자 발견 root: Wave 255 sample 정렬 X → 같은 매물 반복 fetch → 사용자 매물 (가젤 볼드 / 눕시 쇼츠) 영원히 미마킹.
+    //   fix: 가장 옛 매물 (updated_at ASC) 부터 마킹 — 사용자 우려 영역 (1-2일 전 매물) 우선.
+    //   limit 3000 (옛 1000) — 17,711 stale → 6 tick (~7분) 완료.
+    const sampleLimit = (category === "bag" || category === "bike") ? 1500 : 3000;
+    const url = `${tableUrl("mvp_listing_parsed")}?select=pid&category=eq.${encodeURIComponent(category)}&parser_version=neq.${encodeURIComponent(latestVersion)}&order=updated_at.asc&limit=${sampleLimit}`;
 
     let rows: Array<{ pid: number | string }> = [];
     try {
