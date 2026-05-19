@@ -8914,12 +8914,71 @@ function tokenHit(normalizedText: string, token: string): boolean {
   return normalizedText.includes(n);
 }
 
+// Wave 230 (2026-05-19): GLOBAL fashion noise — 모든 shoe/clothing/bag SKU 에 자동 적용.
+//   사용자 명시 "야구공 같은 거 들어오는 건 파서가 병신이란 것".
+//   각 catalog 별 mustNotContain 박는 것보다 parser 단에서 globally 차단이 안전.
+//   product-type cross-category noise (저지/유니폼/카드/야구공 등) +
+//   weak signal (무드/스타일/닮은) + 매입글/단품 noise.
+const GLOBAL_FASHION_NOISE: string[] = [
+  // cross-product (의류/신발/가방 SKU 에 매칭되면 안 되는 단어)
+  "야구공", "baseball", "유니폼", "uniform", "저지", "jersey",
+  "카드", "topps", "탑스", "도쿄시리즈", "도쿄 시리즈", "tokyo series",
+  // 매물 비교 (brand A 의 매물명에 brand B 가 나옴 — false match)
+  "포지션", "포지셔닝", "느낌", "vs",
+  // weak signal — "rrl 무드" / "polo 스타일" 같은 가짜 brand 매물
+  "무드", "스타일 매물", "비슷한 디자인", "닮은 디자인",
+  // 단품 / 손상 / 매입
+  "한짝", "한 짝", "한쪽만", "왼발", "오른발", "왼 쪽", "오른 쪽", "한쪽",
+  "삽니다", "구합니다", "구해요", "매입", "살게요", "찾아요",
+  "찢어짐", "파손", "곰팡이", "구멍 있", "크랙 큼", "훼손",
+  // 사이즈 미상
+  "사이즈 미상", "사이즈 불명", "사이즈 확인불가", "사이즈 모름",
+  // 아동
+  "아동", "유아", "3t", "4t", "5t", "infant", "toddler", "어린이",
+  // 짝퉁 명시
+  "짝퉁", "복각", "레플", "reps", "이미테이션", "imitation", "fake", "미러급", "1:1",
+];
+
+// Wave 230: CATEGORY-specific cross-category noise.
+//   clothing SKU 인데 가방/신발 단어 — bag/shoe 매물 차단.
+const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, string[]>> = {
+  clothing: [
+    "가방", "backpack", "백팩", "토트백", "tote bag", "숄더백", "크로스백", "메신저", "messenger",
+    "월렛", "wallet", "지갑", "장지갑",
+    "운동화", "sneaker", "스니커즈", "부츠", "boot", "샌들", "슬리퍼", "뮬",
+  ],
+  shoe: [
+    "자켓", "jacket", "코트", "coat", "재킷",
+    "티셔츠", "tee ", "맨투맨", "후드", "후디", "hoodie", "셔츠", "shirt",
+    "팬츠", "pants", "바지", "쇼츠",
+    "니트", "knit", "패딩", "down jacket", "롱슬리브",
+    "가방", "backpack", "백팩", "토트백", "월렛", "지갑",
+  ],
+  bag: [
+    "운동화", "sneaker", "스니커즈", "부츠", "boot",
+    "자켓", "jacket", "코트", "coat",
+    "티셔츠", "tee ", "맨투맨", "후드", "후디", "hoodie", "셔츠", "shirt",
+  ],
+};
+
 function skuMatches(sku: Sku, normalizedText: string): boolean {
   for (const group of sku.mustContain) {
     if (!group.some((token) => tokenHit(normalizedText, token))) return false;
   }
   for (const token of sku.mustNotContain) {
     if (tokenHit(normalizedText, token)) return false;
+  }
+  // Wave 230: shoe/clothing/bag 카테고리는 자동 global noise + category noise 차단.
+  if (sku.category === "clothing" || sku.category === "shoe" || sku.category === "bag") {
+    for (const token of GLOBAL_FASHION_NOISE) {
+      if (tokenHit(normalizedText, token)) return false;
+    }
+    const catNoise = CATEGORY_FASHION_NOISE[sku.category];
+    if (catNoise) {
+      for (const token of catNoise) {
+        if (tokenHit(normalizedText, token)) return false;
+      }
+    }
   }
   return true;
 }
