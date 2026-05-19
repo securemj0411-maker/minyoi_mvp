@@ -877,125 +877,94 @@ function revealRiskScoreInput(card: RevealCard): RiskScoreInput {
 
 // Wave 333: fixedSafetyCtaClass 제거 — FixedBunjangFooter에서 안전도 버튼 빠지면서 미사용.
 
-// Wave 359: 득템 미터 — 당근 Manner Meter 영감 (체온식 종합 점수).
-// 매물 제목 위에 박음. 클릭 시 근거 패널 펼침 (시세/신뢰도/셀러/안전결제).
-function DealMeter({ card }: { card: RevealCard }) {
-  const [expanded, setExpanded] = useState(false);
-  const { temp, label, toneClass, badgeClass } = calculateDealTemperature(card);
+// Wave 359+361: 득템 점수 — 당근 Manner Meter 영감 (작고 우측).
+// state는 부모 (RevealCardItem)가 관리 → button + evidence 분리.
+function DealMeterButton({
+  card,
+  expanded,
+  onToggle,
+}: {
+  card: RevealCard;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const { temp, toneClass } = calculateDealTemperature(card);
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+      aria-expanded={expanded}
+      className="group flex shrink-0 flex-col items-end leading-tight"
+    >
+      <span className={`text-base font-bold tabular-nums ${toneClass}`}>
+        {temp.toFixed(1)}°C
+      </span>
+      <span className="mt-0.5 text-[10px] font-medium text-zinc-500 underline underline-offset-2 transition group-hover:text-zinc-800 dark:text-zinc-400 dark:group-hover:text-zinc-100">
+        득템 점수
+      </span>
+    </button>
+  );
+}
+
+function DealEvidencePanel({ card }: { card: RevealCard }) {
   const profitPct = netProfitPercent(card);
   const profitAvg = expectedProfitAverage(card);
   const sampleCount = card.marketBasis?.sampleCount ?? 0;
   const sellerRating = card.savedDetail?.sellerReviewRating ?? null;
   const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
   const confidencePct = Math.round((card.confidence ?? 0) * 100);
-
   return (
-    <div className="mb-3 rounded-2xl border border-[#e1dacd] bg-gradient-to-br from-[#fffdf9] to-[#f9f3e8] p-3 dark:border-zinc-800 dark:from-zinc-900/60 dark:to-zinc-900/30">
-      {/* 헤더 — 큰 °C + 라벨 */}
-      <div className="flex items-end justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-baseline gap-2">
-            <span className={`text-4xl font-bold leading-none tracking-tight tabular-nums ${toneClass}`}>
-              {temp.toFixed(1)}
-              <span className="text-2xl">°C</span>
-            </span>
-            <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${badgeClass}`}>
-              {label}
-            </span>
+    <div className="mt-2 space-y-2 rounded-xl border border-[#e1dacd] bg-[#fbf6ee] px-3 py-2.5 text-xs dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="flex items-start gap-2">
+        <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">1</span>
+        <div className="min-w-0 flex-1">
+          <div className="font-bold text-zinc-900 dark:text-zinc-100">
+            예상 차익 {signedKrw(profitAvg)}{profitPct != null ? ` (+${profitPct}%)` : ""}
           </div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded((v) => !v);
-            }}
-            className="mt-1.5 flex items-center gap-1 text-xs font-medium text-zinc-600 underline underline-offset-2 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-          >
-            <span>득템 미터 — 근거 보기</span>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`h-3 w-3 transition-transform ${expanded ? "rotate-180" : ""}`}
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
+          <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
+            매입가 {krw(card.price)}
+            {card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0
+              ? ` · 시세 ${krw(card.marketBasis.medianPrice)}`
+              : " · 시세 표본 부족"}
+          </div>
         </div>
-        {/* 우상단 thermometer icon */}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={`h-8 w-8 shrink-0 ${toneClass}`}>
-          <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4 4 0 1 0 5 0Z" />
-        </svg>
       </div>
-
-      {/* 펼침 — 근거 패널 */}
-      {expanded ? (
-        <div className="mt-3 space-y-2 border-t border-[#e1dacd] pt-3 text-xs dark:border-zinc-800">
-          {/* 1. 차익 */}
-          <div className="flex items-start gap-2">
-            <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">1</span>
-            <div className="min-w-0 flex-1">
-              <div className="font-bold text-zinc-900 dark:text-zinc-100">
-                예상 차익 {signedKrw(profitAvg)}{profitPct != null ? ` (+${profitPct}%)` : ""}
-              </div>
-              <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
-                매입가 {krw(card.price)}
-                {card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0
-                  ? ` · 시세 ${krw(card.marketBasis.medianPrice)}`
-                  : " · 시세 표본 부족"}
-              </div>
-            </div>
-          </div>
-
-          {/* 2. 신뢰도 */}
-          <div className="flex items-start gap-2">
-            <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-100 text-[9px] font-bold text-sky-700 dark:bg-sky-950/40 dark:text-sky-200">2</span>
-            <div className="min-w-0 flex-1">
-              <div className="font-bold text-zinc-900 dark:text-zinc-100">
-                AI 분석 신뢰도 {confidencePct}%
-              </div>
-              <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
-                {sampleCount > 0 ? `같은 매물 ${sampleCount}건 비교 분석` : "표본 부족 — 추정치"}
-              </div>
-            </div>
-          </div>
-
-          {/* 3. 셀러 */}
-          <div className="flex items-start gap-2">
-            <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-100 text-[9px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">3</span>
-            <div className="min-w-0 flex-1">
-              <div className="font-bold text-zinc-900 dark:text-zinc-100">
-                {sellerRating != null
-                  ? `셀러 평점 ${sellerRating.toFixed(1)}점 · 후기 ${reviewCount.toLocaleString("ko-KR")}건`
-                  : "셀러 후기 없음"}
-              </div>
-              <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
-                {sellerRating != null && sellerRating >= 4.8 && reviewCount >= 30
-                  ? "우수 셀러 — 거래 신뢰도 ↑"
-                  : sellerRating != null && sellerRating >= 4.5
-                  ? "평점 양호"
-                  : "안전결제 + 직거래 검수 권장"}
-              </div>
-            </div>
-          </div>
-
-          {/* 4. 안전결제 */}
-          <div className="flex items-start gap-2">
-            <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-[9px] font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-200">4</span>
-            <div className="min-w-0 flex-1">
-              <div className="font-bold text-zinc-900 dark:text-zinc-100">
-                번개장터 안전결제 — 셀러 의무 부담 (3.5%)
-              </div>
-              <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
-                구매자(나)는 0원 — 결제 안 들어가도 셀러가 부담
-              </div>
-            </div>
+      <div className="flex items-start gap-2">
+        <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-100 text-[9px] font-bold text-sky-700 dark:bg-sky-950/40 dark:text-sky-200">2</span>
+        <div className="min-w-0 flex-1">
+          <div className="font-bold text-zinc-900 dark:text-zinc-100">AI 분석 신뢰도 {confidencePct}%</div>
+          <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
+            {sampleCount > 0 ? `같은 매물 ${sampleCount}건 비교 분석` : "표본 부족 — 추정치"}
           </div>
         </div>
-      ) : null}
+      </div>
+      <div className="flex items-start gap-2">
+        <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-100 text-[9px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">3</span>
+        <div className="min-w-0 flex-1">
+          <div className="font-bold text-zinc-900 dark:text-zinc-100">
+            {sellerRating != null
+              ? `셀러 평점 ${sellerRating.toFixed(1)}점 · 후기 ${reviewCount.toLocaleString("ko-KR")}건`
+              : "셀러 후기 없음"}
+          </div>
+          <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
+            {sellerRating != null && sellerRating >= 4.8 && reviewCount >= 30
+              ? "우수 셀러 — 거래 신뢰도 ↑"
+              : sellerRating != null && sellerRating >= 4.5
+              ? "평점 양호"
+              : "안전결제 + 직거래 검수 권장"}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-start gap-2">
+        <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-[9px] font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-200">4</span>
+        <div className="min-w-0 flex-1">
+          <div className="font-bold text-zinc-900 dark:text-zinc-100">번개장터 안전결제 — 셀러 의무 부담 (3.5%)</div>
+          <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">구매자(나)는 0원 — 결제 안 들어가도 셀러가 부담</div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -2420,6 +2389,7 @@ function RevealCardItem({
   currentFeedbackType?: string | null;
 }) {
   const [shown, setShown] = useState(false);
+  const [dealExpanded, setDealExpanded] = useState(false);
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const sourceBadge = marketSourceBadge(card);
   const netPct = netProfitPercent(card);
@@ -2442,12 +2412,14 @@ function RevealCardItem({
         <div className="min-w-0 w-full space-y-3 px-3 sm:px-0">
           <div className="flex w-full items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              {/* Wave 359: 득템 미터 — 매물 제목 위에 체온식 종합 점수 + 근거 보기. */}
-              <DealMeter card={card} />
-              {/* Wave 323 (디자인 통일): 상품명 base size + 헤드라인 2-tier (label + 큰 가격 + % 칩). */}
-              <div className="line-clamp-2 text-base font-bold leading-tight text-zinc-900 dark:text-zinc-50">
-                {card.name}
+              {/* Wave 359+361: 득템 점수 — 제목과 같은 행 우측 작게 (당근 36.8°C 톤). */}
+              <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1 line-clamp-2 text-base font-bold leading-tight text-zinc-900 dark:text-zinc-50">
+                  {card.name}
+                </div>
+                <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
               </div>
+              {dealExpanded ? <DealEvidencePanel card={card} /> : null}
               <div className="mt-2">
                 <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   <WalletIcon className="h-3 w-3" />
@@ -3129,26 +3101,32 @@ export default function PackRevealModal({
         className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#fffdf9] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-h-[88vh] sm:max-w-6xl sm:rounded-2xl sm:border sm:border-[#ddd6ca] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.16)] sm:dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Wave 360: 당근식 floating nav — 별도 nav bar 제거, 사진 위 좌상/우상에 absolute floating.
-            모달 컨테이너 (relative) 기준 top. 스크롤 영역 밖이라 항상 모달 상단에 머무름. */}
+        {/* Wave 360+361: 당근식 floating nav — icon-only, 카드 X, 강한 drop-shadow.
+            backdrop은 매우 미묘 (사진 위에서 visibility 보장). */}
         {!loading ? (
           <>
             <button
               type="button"
               onClick={handleClose}
-              aria-label="상세 닫기"
-              className="absolute left-3 top-3 z-20 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/85 text-base font-bold leading-none text-zinc-900 shadow-[0_4px_14px_rgba(0,0,0,0.18)] ring-1 ring-black/5 backdrop-blur transition hover:bg-white active:scale-95 dark:bg-zinc-900/85 dark:text-zinc-100 dark:ring-white/10 dark:hover:bg-zinc-900 sm:left-4 sm:top-4"
+              aria-label="뒤로가기"
+              className="absolute left-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90 sm:left-4 sm:top-4"
+              style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" }}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
                 <path d="m15 18-6-6 6-6" />
               </svg>
             </button>
             <button
               type="button"
               onClick={handleClose}
-              className="absolute right-3 top-3 z-20 inline-flex h-9 shrink-0 items-center rounded-full bg-[var(--brand-accent-strong)] px-3.5 text-xs font-bold text-[var(--brand-cream)] shadow-[0_4px_14px_rgba(0,0,0,0.22)] ring-1 ring-white/10 transition hover:opacity-95 active:scale-95 dark:bg-zinc-100 dark:text-zinc-950 sm:right-4 sm:top-4"
+              aria-label="대시보드로"
+              className="absolute right-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90 sm:right-4 sm:top-4"
+              style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" }}
             >
-              대시보드
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <path d="M9 22V12h6v10" />
+              </svg>
             </button>
           </>
         ) : null}
