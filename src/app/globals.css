@@ -223,3 +223,15 @@ a {
 }
 
 /* Wave 139d (2026-05-16): 옛 marquee CSS 폐기 (toggle bar 재설계). 잔여 없음. */
+
+/* Wave 377 (2026-05-20): 가입 직후 onboarding 모달 stagger fade-up. */
+@keyframes explore-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

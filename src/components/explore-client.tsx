@@ -757,7 +757,7 @@ export default function ExploreClient() {
           onClick={closeRefreshModal}
         >
           <div
-            className={`w-full max-w-md transform border border-zinc-200/50 bg-[var(--brand-cream)] shadow-[0_-20px_60px_rgba(0,0,0,0.30)] transition-all duration-300 ease-out dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-3xl rounded-t-3xl ${
+            className={`relative w-full max-w-md transform border border-zinc-200/50 bg-[var(--brand-cream)] shadow-[0_-20px_60px_rgba(0,0,0,0.30)] transition-all duration-300 ease-out dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-3xl rounded-t-3xl ${
               refreshModalAnimating
                 ? "translate-y-0 opacity-100 sm:scale-100"
                 : "translate-y-full opacity-0 sm:translate-y-4 sm:scale-95"
@@ -787,27 +787,58 @@ export default function ExploreClient() {
                       : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 풀려요`);
                 return (
                   <>
-                    <div className="mb-5 flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">{headerTitle}</div>
-                        <div className="mt-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">{headerSub}</div>
+                    {/* Wave 377: lightweight 모드 — 토스 톤 (큰 emoji + 가운데 정렬 + 강한 CTA + stagger). */}
+                    {lightweightMode ? (
+                      <div className="mb-5 text-center">
+                        <button
+                          type="button"
+                          onClick={closeRefreshModal}
+                          className="absolute right-4 top-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                          aria-label="건너뛰기"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                            <path d="M18 6 6 18M6 6l12 12" />
+                          </svg>
+                        </button>
+                        {/* 큰 일러스트 emoji — 토스 톤 */}
+                        <div className="mx-auto mb-4 mt-2 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-4xl shadow-[inset_0_2px_8px_rgba(16,185,129,0.18)] dark:bg-emerald-950/40" style={{ animation: "explore-fade-up 360ms ease-out both" }}>
+                          💰
+                        </div>
+                        <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50" style={{ animation: "explore-fade-up 360ms ease-out 60ms both" }}>
+                          환영해요 👋
+                        </div>
+                        <div className="mt-1 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50" style={{ animation: "explore-fade-up 360ms ease-out 120ms both" }}>
+                          예산은 어느 정도세요?
+                        </div>
+                        <div className="mt-3 text-sm font-medium leading-6 text-zinc-500 dark:text-zinc-400" style={{ animation: "explore-fade-up 360ms ease-out 180ms both" }}>
+                          예산 안에서만 30개 골라드릴게요.<br />나중에 수정할 수 있어요.
+                        </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={closeRefreshModal}
-                        className="-mr-2 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                        aria-label="닫기"
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                          <path d="M18 6 6 18M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
+                    ) : (
+                      <div className="mb-5 flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">{headerTitle}</div>
+                          <div className="mt-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">{headerSub}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={closeRefreshModal}
+                          className="-mr-2 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                          aria-label="닫기"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                            <path d="M18 6 6 18M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
 
                     {showForm ? (
                       <>
-                        <div className="mb-4">
-                          <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">예산</div>
+                        <div className="mb-4" style={lightweightMode ? { animation: "explore-fade-up 360ms ease-out 240ms both" } : undefined}>
+                          {!lightweightMode ? (
+                            <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">예산</div>
+                          ) : null}
                           <div className="grid grid-cols-2 gap-2">
                             {BUDGET_OPTIONS.map((opt) => {
                               const active = draftBudget === opt.value;
@@ -816,7 +847,7 @@ export default function ExploreClient() {
                                   key={opt.value}
                                   type="button"
                                   onClick={() => setDraftBudget(opt.value)}
-                                  className={`rounded-xl border px-3 py-2.5 text-sm font-bold transition ${
+                                  className={`rounded-2xl border-2 px-3 ${lightweightMode ? "py-4" : "py-2.5"} text-sm font-bold transition active:scale-[0.98] ${
                                     active
                                       ? "border-emerald-500 bg-emerald-50 text-emerald-800 shadow-[0_2px_8px_rgba(16,185,129,0.18)] dark:border-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-200"
                                       : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
@@ -872,7 +903,8 @@ export default function ExploreClient() {
                             }
                             closeRefreshModal();
                           }}
-                          className="w-full rounded-2xl bg-[var(--brand-accent-strong)] px-5 py-3.5 text-base font-bold text-[var(--brand-cream)] shadow-[0_12px_28px_rgba(34,49,39,0.28)] transition hover:shadow-[0_16px_34px_rgba(34,49,39,0.34)] active:scale-[0.99]"
+                          className={`w-full rounded-2xl bg-[var(--brand-accent-strong)] px-5 ${lightweightMode ? "py-4 text-base" : "py-3.5 text-base"} font-bold text-[var(--brand-cream)] shadow-[0_12px_28px_rgba(34,49,39,0.28)] transition hover:shadow-[0_16px_34px_rgba(34,49,39,0.34)] active:scale-[0.99]`}
+                          style={lightweightMode ? { animation: "explore-fade-up 360ms ease-out 300ms both" } : undefined}
                         >
                           {lightweightMode
                             ? "이 예산으로 30개 받기"
@@ -880,6 +912,16 @@ export default function ExploreClient() {
                               ? (preferences ? "수정하고 새 30개 받기" : "내 취향대로 30개 받기")
                               : "수정 저장"}
                         </button>
+                        {lightweightMode ? (
+                          <button
+                            type="button"
+                            onClick={closeRefreshModal}
+                            className="mt-3 w-full text-center text-sm font-medium text-zinc-500 transition hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                            style={{ animation: "explore-fade-up 360ms ease-out 360ms both" }}
+                          >
+                            건너뛰기
+                          </button>
+                        ) : null}
                         {editingPrefs ? (
                           <button
                             type="button"
