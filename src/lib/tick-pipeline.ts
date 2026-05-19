@@ -75,6 +75,8 @@ import {
   type ListingOutputRow,
 } from "@/lib/score-output-mapper";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+// Wave 254.3 (2026-05-20): cap 1000 silent miss fix — restFetchAll page-loop.
+import { restFetchAll } from "@/lib/rest-paginated";
 
 type RawListingRow = {
   pid: number;
@@ -2050,15 +2052,25 @@ async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: n
   const unique = [...new Set(comparableKeys.filter(Boolean))].slice(0, limit);
   if (unique.length === 0) return new Map();
   // Wave 130: condition_class 컬럼 fetch — 시세 산정 grouping key.
+  // Wave 254.3 (2026-05-20): cap 1000 silent miss fix.
+  //   기존: `limit=Math.max(limit, chunk.length * 100)` → PostgREST server-side
+  //   default row cap (≈1000) 으로 silent truncation. 50 key chunk × 100 = 5000
+  //   limit 박아도 실제 1000 row 만 반환 → 12,736 stale 영역 1 chain 의 root cause.
+  //   fix: `restFetchAll` 의 offset pagination 으로 cap 우회.
   const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,needs_review,parsed_json";
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_KEY_READ_CHUNK_SIZE)) {
     const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
-    const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&comparable_key=in.(${encoded})&parse_confidence=gte.0.65&needs_review=eq.false&limit=${Math.max(limit, chunk.length * 100)}`;
-    const res = await restFetch(url, { headers: serviceHeaders() });
-    rows.push(...((await res.json()) as ParsedListingRow[]));
+    const baseUrl = `${tableUrl("mvp_listing_parsed")}?select=${columns}&comparable_key=in.(${encoded})&parse_confidence=gte.0.65&needs_review=eq.false`;
+    // maxRows = limit (caller 가 명시한 cap 존중). orderBy=pid.asc (PK 일관성).
+    const pageRows = await restFetchAll<ParsedListingRow>(baseUrl, {
+      maxRows: limit,
+      orderBy: "pid.asc",
+    });
+    rows.push(...pageRows);
+    if (rows.length >= limit) break;
   }
-  return new Map(rows.map((row) => [row.pid, row]));
+  return new Map(rows.slice(0, limit).map((row) => [row.pid, row]));
 }
 
 // Wave 216 (2026-05-19): parser_version drift 체크 — 카테고리별 최신 parser version.

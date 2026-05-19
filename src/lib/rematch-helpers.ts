@@ -34,8 +34,15 @@
 //   → 모든 3 helper 의 PATCH 이후 `mvp_detail_queue` INSERT IGNORE 추가.
 //   additive (INSERT IGNORE 로 기존 queue row 보존). search-stage
 //   `insert_detail_queue` (`tick-pipeline.ts:1502`) 와 같은 pattern.
+//
+// Wave 254.3 (2026-05-20) — restFetchPaginated shared helper 사용으로 refactor:
+//   - fetchPidsBySkuIds → restFetchAll (cap 1000 silent miss fix).
+//   - enqueueDetailQueue → insertIgnoreRows (Prefer + on_conflict 통합).
+//   - triggerRematchForListings PATCH chunk → patchAllByPids (URL 길이 안전).
+//   기존 동작 (additive PATCH + INSERT IGNORE) 보존, fetch logic 만 shared.
 
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { insertIgnoreRows, patchAllByPids, restFetchAll } from "@/lib/rest-paginated";
 
 export type RematchOptions = {
   /**
@@ -98,11 +105,14 @@ const DETAIL_QUEUE_INSERT_CHUNK = 500;
  */
 async function enqueueDetailQueue(pids: number[], triggeredAt: string): Promise<number> {
   if (pids.length === 0) return 0;
-  let inserted = 0;
-  for (let i = 0; i < pids.length; i += DETAIL_QUEUE_INSERT_CHUNK) {
-    const chunk = pids.slice(i, i + DETAIL_QUEUE_INSERT_CHUNK);
-    const rows = chunk.map((pid) => ({
-      pid: Number(pid),
+  // Wave 254.3 (2026-05-20): insertIgnoreRows shared helper 사용.
+  //   기존 동작 동일 (Prefer: resolution=ignore-duplicates + on_conflict=pid + chunk 500).
+  //   row defaults 박힘 — caller 가 pid 만 박으면 status/priority 등 자동.
+  const rows = pids.map((pid) => ({ pid: Number(pid) }));
+  return insertIgnoreRows("mvp_detail_queue", rows, {
+    onConflict: "pid",
+    chunkSize: DETAIL_QUEUE_INSERT_CHUNK,
+    rowDefaults: {
       status: "pending",
       priority: DETAIL_QUEUE_REMATCH_PRIORITY,
       available_at: triggeredAt,
@@ -110,18 +120,8 @@ async function enqueueDetailQueue(pids: number[], triggeredAt: string): Promise<
       locked_until: null,
       last_error: null,
       updated_at: triggeredAt,
-    }));
-    // PostgREST: `Prefer: resolution=ignore-duplicates` + `on_conflict=pid` 둘 다 필요.
-    //   on_conflict 미지정 시 unique constraint violation 23505 raise (Wave 253 fix A apply 발견).
-    //   search-stage `insertIgnoreRows` (tick-pipeline.ts:344-354) 와 같은 pattern.
-    await restFetch(`${tableUrl("mvp_detail_queue")}?on_conflict=pid`, {
-      method: "POST",
-      headers: { ...serviceHeaders("resolution=ignore-duplicates,return=minimal") },
-      body: JSON.stringify(rows),
-    });
-    inserted += chunk.length;
-  }
-  return inserted;
+    },
+  });
 }
 
 /**
@@ -133,18 +133,15 @@ async function enqueueDetailQueue(pids: number[], triggeredAt: string): Promise<
  */
 async function fetchPidsBySkuIds(encodedSkuIds: string, total: number): Promise<number[]> {
   if (total === 0) return [];
-  const PAGE = 1000;
-  const allPids: number[] = [];
-  for (let offset = 0; offset < total; offset += PAGE) {
-    const pageRes = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid&sku_id=in.(${encodedSkuIds})&listing_state=eq.active&detail_status=eq.done&order=pid.asc&limit=${PAGE}&offset=${offset}`,
-      { headers: serviceHeaders() },
-    );
-    const pageRows = (await pageRes.json()) as Array<{ pid: number }>;
-    allPids.push(...pageRows.map((r) => Number(r.pid)));
-    if (pageRows.length < PAGE) break;
-  }
-  return allPids;
+  // Wave 254.3 (2026-05-20): restFetchAll shared helper 사용.
+  //   기존 동작 동일 (offset pagination + order=pid.asc + page 1000).
+  //   maxRows = total — caller 가 명시한 cap 존중 (count=exact header 결과).
+  const baseUrl = `${tableUrl("mvp_raw_listings")}?select=pid&sku_id=in.(${encodedSkuIds})&listing_state=eq.active&detail_status=eq.done`;
+  const rows = await restFetchAll<{ pid: number }>(baseUrl, {
+    maxRows: total,
+    orderBy: "pid.asc",
+  });
+  return rows.map((r) => Number(r.pid));
 }
 
 /**
@@ -277,20 +274,16 @@ export async function triggerRematchForListings(
   }
 
   // batchSize 단위로 분할 PATCH — PostgREST in.() URL 길이 제한 회피.
+  // Wave 254.3 (2026-05-20): patchAllByPids shared helper 사용.
+  //   기존 default batchSize=5000 은 URL 길이 한계 부근 (silent cap 위험).
+  //   patchAllByPids 의 default cap = 1000 (REST_IN_CLAUSE_PID_CHUNK).
+  //   caller 의 batchSize 가 1000 초과면 helper 가 1000 으로 clamp.
   const patchBody: Record<string, unknown> = { score_dirty: true };
   if (resetDetailStatus) patchBody.detail_status = "pending";
-
-  let affected = 0;
-  for (let i = 0; i < pids.length; i += batchSize) {
-    const chunk = pids.slice(i, i + batchSize);
-    const patchUrl = `${tableUrl("mvp_raw_listings")}?pid=in.(${chunk.join(",")})`;
-    await restFetch(patchUrl, {
-      method: "PATCH",
-      headers: { ...serviceHeaders(), Prefer: "return=minimal" },
-      body: JSON.stringify(patchBody),
-    });
-    affected += chunk.length;
-  }
+  const affected = await patchAllByPids("mvp_raw_listings", pids, {
+    payload: patchBody,
+    chunkSize: batchSize,
+  });
 
   // Wave 253 fix A — PATCH 직후 detail_queue INSERT IGNORE.
   //   resetDetailStatus=false 면 enqueue 안 함. INSERT IGNORE 라 기존 queue row 보존.
@@ -364,17 +357,102 @@ export async function triggerRematchForParserVersions(
   // Wave 252.B step 1 (2026-05-20) bug fix: PostgREST server-side default
   // limit ≈ 1000 row 로 인해 `?limit=${total}` 가 무시되어 1000개만 반환.
   // → Range header (offset 페이지네이션) 으로 모든 pid 수집.
-  const allPids: number[] = [];
-  const PAGE = 1000;
-  for (let offset = 0; offset < total; offset += PAGE) {
-    const pageRes = await restFetch(
-      `${tableUrl("mvp_listing_parsed")}?select=pid&parser_version=in.(${encoded})&order=pid.asc&limit=${PAGE}&offset=${offset}`,
-      { headers: serviceHeaders() },
-    );
-    const pageRows = (await pageRes.json()) as Array<{ pid: number }>;
-    allPids.push(...pageRows.map((r) => Number(r.pid)));
-    if (pageRows.length < PAGE) break;
-  }
+  //
+  // Wave 254.3 (2026-05-20): restFetchAll shared helper 사용 — 위 fetchPidsBySkuIds 와 같은 패턴.
+  const rows = await restFetchAll<{ pid: number }>(
+    `${tableUrl("mvp_listing_parsed")}?select=pid&parser_version=in.(${encoded})`,
+    { maxRows: total, orderBy: "pid.asc" },
+  );
+  const allPids = rows.map((r) => Number(r.pid));
   // delegate 로 by_pid 변환 — 같은 분할 + 같은 PATCH body.
   return triggerRematchForListings(allPids, reason, opts);
+}
+
+// Wave 254.3 (2026-05-20): parser_version mismatch retry helper.
+//
+// 배경 — Wave 252.B silent miss 측정 결과 (2026-05-20):
+//   v3 listings 2,183 / v7 listings 2,107 / v4 listings 124. v3 의 2,183 매물 모두
+//   score_dirty=true 박혀있으나 parser_version 은 여전히 v3. 즉 Wave 252.B step 1
+//   trigger 후 detail-worker 재실행은 됐지만 parser 가 새 버전으로 update 안 됨
+//   (이유 — 별도 wave 에서 추적 필요. 우선 retry 로직으로 stuck listing 자동 해소).
+//
+// 본 helper 의 책임:
+//   stale parser_version 매물 (예: v3) 가 score_dirty 인 상태로 stuck → 다시
+//   detail_queue 에 INSERT IGNORE + score_dirty=true PATCH. 다음 detail-worker
+//   tick 에 pickup. max retry 3 + exponential backoff (1s/2s/4s) — caller 가
+//   재진입 시 무한 loop 방지.
+//
+// 가드:
+//   - additive — score_dirty / detail_status / detail_queue 만 reset.
+//   - max retry 3 — caller 가 명시한 cap. 초과 시 retry 안 함 + warning log.
+//   - dryRun mode — 사용자 신뢰 확보. default true.
+//
+// 사용 예시:
+//   import { retryStaleParserVersions } from "@/lib/rematch-helpers";
+//   const r = await retryStaleParserVersions(
+//     ["wave216-clothing-v3"],
+//     "wave254-3-silent-miss-retry",
+//     { dryRun: false, maxRetries: 3 },
+//   );
+export type RetryStaleOptions = RematchOptions & {
+  /** 최대 재시도 횟수 (default 3). 초과 시 warning log + retry skip. */
+  maxRetries?: number;
+  /** retry attempt 번호 — caller 가 외부에서 추적. default 1. */
+  attempt?: number;
+  /**
+   * backoff base ms — exponential (`base * 2^(attempt-1)`). default 1000.
+   *   attempt 1 → 0ms, 2 → 1s, 3 → 2s. 호출자가 sleep 책임 안 짊 — 정보만 log.
+   */
+  backoffBaseMs?: number;
+};
+
+/**
+ * stale parser_version 매물 자동 재시도.
+ *
+ * 사용 시점:
+ *   - Wave 252.B silent miss (v3 stuck) — 본 helper 가 자동 해소.
+ *   - 미래 parser_version bump 후 자동 retry — caller 가 attempt 추적.
+ *
+ * @param parserVersions stale parser_version 배열 (예: ['wave216-clothing-v3']).
+ * @param reason 호출 wave (audit log).
+ * @param opts dryRun (default true), maxRetries (default 3), attempt (default 1).
+ */
+export async function retryStaleParserVersions(
+  parserVersions: string[],
+  reason: string,
+  opts: RetryStaleOptions = {},
+): Promise<RematchResult> {
+  const maxRetries = opts.maxRetries ?? 3;
+  const attempt = opts.attempt ?? 1;
+  const backoffBaseMs = opts.backoffBaseMs ?? 1000;
+
+  if (attempt > maxRetries) {
+    console.warn("[rematch:retry-skip]", {
+      reason,
+      parserVersions,
+      attempt,
+      maxRetries,
+      message: "max retries exceeded — skip",
+    });
+    return {
+      count: 0,
+      samplePids: [],
+      triggeredAt: new Date().toISOString(),
+      dryRun: opts.dryRun ?? true,
+      reason,
+    };
+  }
+
+  const backoffMs = backoffBaseMs * Math.pow(2, attempt - 1);
+  console.log("[rematch:retry]", {
+    reason,
+    parserVersions,
+    attempt,
+    maxRetries,
+    backoffMsHint: backoffMs,
+    note: "caller 가 retry 간 sleep 책임 — 본 helper 는 정보만 log",
+  });
+
+  // delegate — 본 helper 는 attempt counter / backoff hint 만 추가.
+  return triggerRematchForParserVersions(parserVersions, `${reason}#attempt=${attempt}`, opts);
 }

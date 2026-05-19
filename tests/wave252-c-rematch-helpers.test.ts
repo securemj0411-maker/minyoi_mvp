@@ -300,3 +300,50 @@ test("triggerRematchForParserVersions dryRun 시 count + sample 만, PATCH 안 �
     mock.restore();
   }
 });
+
+// Wave 254.3 (2026-05-20): retryStaleParserVersions test.
+test("retryStaleParserVersions attempt > maxRetries 시 skip + warning log", async () => {
+  setEnv();
+  const { retryStaleParserVersions } = await import("../src/lib/rematch-helpers");
+  const mock = installFetchMock(() => {
+    throw new Error("max retries exceeded인데 fetch 호출됨");
+  });
+  try {
+    const result = await retryStaleParserVersions(
+      ["wave216-clothing-v3"],
+      "wave254-3-retry-skip",
+      { attempt: 4, maxRetries: 3 },
+    );
+    assert.equal(result.count, 0);
+    // skip — fetch 호출 안 함.
+    assert.equal(mock.calls.length, 0);
+  } finally {
+    mock.restore();
+  }
+});
+
+test("retryStaleParserVersions attempt 1 → triggerRematchForParserVersions delegate", async () => {
+  setEnv();
+  const { retryStaleParserVersions } = await import("../src/lib/rematch-helpers");
+  const mock = installFetchMock(({ method, url }) => {
+    if (method === "GET" && url.includes("mvp_listing_parsed")) {
+      return {
+        body: [{ pid: 1 }],
+        headers: { "content-range": "0-0/1" },
+      };
+    }
+    throw new Error(`unexpected ${method} ${url}`);
+  });
+  try {
+    const result = await retryStaleParserVersions(
+      ["wave216-clothing-v3"],
+      "wave254-3-retry-attempt1",
+      { dryRun: true, attempt: 1 },
+    );
+    assert.equal(result.count, 1);
+    // reason 에 #attempt=1 박힘 (audit log).
+    assert.ok(result.reason.includes("#attempt=1"));
+  } finally {
+    mock.restore();
+  }
+});
