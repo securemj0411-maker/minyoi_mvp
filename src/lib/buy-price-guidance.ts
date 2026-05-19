@@ -49,8 +49,11 @@ export function buyPriceGuidance(input: BuyPriceGuidanceInput): BuyPriceGuidance
 
   if (currentProfit >= 50000) {
     verdict = "great";
-    verdictLabel = "충분한 차익 · 협상 없어도 OK";
-    verdictSub = "차익이 충분해서 그대로 사도 안전";
+    // Wave 394.1 (외부 review #22): 단정형 "충분/안전/OK" → 데이터 기준 조건부.
+    // "데이터 충분해도 시장 변동성 있음. '현재 데이터 기준 90% 신뢰' 같은 확률적 톤이
+    // 장기적으로 신뢰 쌓임. 한 번 틀리면 앱 신뢰 박살남" — 외부 review 지적.
+    verdictLabel = "차익 충분 · 현재 데이터 기준";
+    verdictSub = "현재 시세 기준 차익 충분. 매입 전 사진/증빙 재확인";
   } else if (currentProfit >= 20000) {
     verdict = "good";
     verdictLabel = "괜찮은 차익 · 협상 시 +α";

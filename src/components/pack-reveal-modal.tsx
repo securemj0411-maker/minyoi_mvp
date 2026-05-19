@@ -1974,13 +1974,16 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
   const headlineText = headlineByCategory[checklist.category] ?? `구매 전 점검 ${totalCount}개`;
 
   // 카테고리별 uppercase 헤더도 자연어
+  // Wave 394.1 (외부 review #9): 정품 단정형 ("정품 확인") → 방어적 ("정품 확인 필요").
+  // "사용자가 '앱이 정품 판정해줬다'고 오해할 수 있음. 특히 명품 정품 판단 민감.
+  // 앱이 보장하는 듯한 문구는 위험" — 외부 review. 능동형 ("구매 전 점검", "기기 점검") 그대로 OK.
   const upperHeaderByCategory: Record<string, string> = {
     shoe: "구매 전 점검",
     earphone: "구매 전 점검",
-    bag: "정품 확인",
-    perfume: "정품 확인",
-    watch: "정품 확인",
-    clothing: "정품 확인",
+    bag: "정품 확인 필요",
+    perfume: "정품 확인 필요",
+    watch: "정품 확인 필요",
+    clothing: "정품 확인 필요",
     smartphone: "기기 점검",
     tablet: "기기 점검",
     smartwatch: "기기 점검",
@@ -2391,8 +2394,10 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
       note: "번개 안전결제는 셀러 의무 부담 (3.5%). 단 셀러가 별도 명시 시 협의 필요",
     },
     {
+      // Wave 394.1 (외부 review #17): "안전결제 ... · 재배송 ... · 안전버퍼 ..." 한 줄 → 리스트 (\n 줄바꿈, whitespace-pre-line 렌더).
+      // 비용 항목 3개 한 줄에 다 박으면 모바일에서 가독성 떨어짐.
       label: "되팔 때 빠지는 돈",
-      value: `안전결제 ${feeRateLabel}${snapshot.sellingFee == null ? "" : ` ${krw(snapshot.sellingFee)}`} · 재배송 ${krw(RESELL_SHIPPING_FEE)} · 안전버퍼 ${krw(SAFETY_BUFFER)}`,
+      value: `안전결제 ${feeRateLabel}${snapshot.sellingFee == null ? "" : ` ${krw(snapshot.sellingFee)}`}\n재배송비 ${krw(RESELL_SHIPPING_FEE)}\n안전버퍼 ${krw(SAFETY_BUFFER)}`,
       note: "내가 재판매 시 셀러로서 부담 — 시세에서 차감",
     },
   ];
@@ -2438,7 +2443,8 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
           <div key={row.label} className="flex items-baseline justify-between gap-2 text-xs">
             <div className="font-medium text-zinc-500 dark:text-zinc-400">{row.label}</div>
             <div className="min-w-0 text-right">
-              <div className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+              {/* Wave 394.1 (외부 review #17): whitespace-pre-line — value 안 \n 줄바꿈 렌더. 비용 분해 리스트. */}
+              <div className="whitespace-pre-line font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
                 {row.value}
               </div>
               <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
@@ -2501,11 +2507,13 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
               </span>
             </div>
 
+            {/* Wave 394.1 (외부 review #15): 위험/손해 구간 만원 단위 단순화. */}
+            {/* "867,550원 이상" → "약 86.8만원 이상" — 일반인 직관성. 1자리 소수로 정밀도 유지. */}
             <div className="flex items-baseline justify-between gap-2 border-t border-zinc-100 pt-1.5 dark:border-zinc-800">
               <span className="flex items-baseline gap-1.5">
                 <span className="text-amber-600 dark:text-amber-400">⚠</span>
                 <span className="text-zinc-500 dark:text-zinc-400">
-                  <span className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{krw(guidance.dangerStart)}</span> 이상에 사면
+                  약 <span className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{(guidance.dangerStart / 10000).toFixed(1)}만원</span> 이상에 사면
                 </span>
               </span>
               <span className="text-[11px] font-medium tabular-nums text-amber-600 dark:text-amber-400">
@@ -2517,7 +2525,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
               <span className="flex items-baseline gap-1.5">
                 <span className="text-rose-600 dark:text-rose-400">✕</span>
                 <span className="text-zinc-500 dark:text-zinc-400">
-                  <span className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{krw(guidance.breakEven)}</span> 이상에 사면
+                  약 <span className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{(guidance.breakEven / 10000).toFixed(1)}만원</span> 이상에 사면
                 </span>
               </span>
               <span className="text-[11px] font-medium tabular-nums text-rose-600 dark:text-rose-400">
@@ -2624,7 +2632,8 @@ function LoadingStage({ completing = false }: { completing?: boolean }) {
           {LOADING_STEPS[stepIndex]}
         </div>
         <div className="mt-1 text-center text-xs text-zinc-400 dark:text-zinc-500">
-          번개장터 실시간 검증 · 시세 재계산 · 리스크 필터
+          {/* Wave 394.1 (외부 review #19): "실시간 검증" → "최신 호가" — 호가는 추정 가능, 검증은 단정형. */}
+          번개장터 최신 호가 · 시세 재계산 · 리스크 필터
         </div>
       </div>
     </div>
@@ -2802,7 +2811,8 @@ function RevealCardItem({
             시세 그래프 · 시장 분석
           </div>
           <span className="rounded-full bg-[#eef6ec] px-2 py-0.5 text-[10px] font-black text-[#4f6a52] ring-1 ring-[#d8e2d7] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
-            실시간 근거
+            {/* Wave 394.1 (외부 review #19): "실시간" 과장 — 표본 부족 / 호가 추정인데 "실시간"이라 신뢰 역효과. */}
+            최신 수집 기준
           </span>
         </div>
 
@@ -3074,6 +3084,8 @@ function FixedBunjangFooter({
 }) {
   // Wave 333 (사용자 피드백): 안전도("주의 1건") 버튼 제거 — 모달 안 셀러 카드/거래 안전 타일에 이미 있음.
   // 하단 fixed는 번개장터 이동 버튼만 풀 너비로.
+  // Wave 394.1 (외부 review #6): CTA 문구 "번개장터에서 확인하기" 의미 불명확
+  // (구매? 판매? 채널 추천?) → "번개장터 원본 매물 보기" 액션 명확화.
   return (
     <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-2 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-3">
       <a
@@ -3084,7 +3096,7 @@ function FixedBunjangFooter({
         className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-3 text-center text-sm font-bold text-white shadow-lg shadow-[rgba(0,196,113,0.28)] ring-1 ring-[#80e8bd]/70 transition hover:bg-[#00b267]"
       >
         <BunjangLogo className="h-[18px] w-[18px] rounded-[5px]" />
-        번개장터에서 확인하기
+        번개장터 원본 매물 보기
       </a>
     </div>
   );
