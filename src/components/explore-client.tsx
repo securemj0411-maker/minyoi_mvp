@@ -1127,10 +1127,10 @@ export default function ExploreClient() {
                                 <KakaoLogo className="h-7 w-7 shrink-0 rounded-[8px]" />
                                 <div className="min-w-0">
                                   <div className="text-base font-bold text-[#3b1e1e]">
-                                    공유만 해도 즉시 득템 더 보기
+                                    카톡 공유하고 1초만에 더 보기
                                   </div>
                                   <div className="mt-0.5 text-[11px] font-medium text-[#3b1e1e]/70">
-                                    친구가 가입 안 해도 OK · 공유 클릭 1번
+                                    친구 가입 X · 공유 클릭 1번이면 끝
                                   </div>
                                 </div>
                               </div>
