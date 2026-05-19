@@ -255,6 +255,74 @@ function finiteKrw(value: number | null | undefined) {
   return typeof value === "number" && Number.isFinite(value) ? Math.round(value) : null;
 }
 
+// Wave 392: "왜 이 가격?" 규칙 기반 자동 이유 분류.
+// condition + description 키워드 + 차익률 종합. 사용자 의문 ("왜 싸지?") 직접 해소.
+function getWhyCheapReasons(card: RevealCard): string[] {
+  const reasons: string[] = [];
+  const cond = card.marketBasis?.conditionClass ?? null;
+  const desc = card.savedDetail?.descriptionPreview ?? "";
+  const profitPct = netProfitPercent(card) ?? 0;
+
+  // 1. Condition 기반 — 가장 명확한 이유
+  if (cond === "worn") {
+    reasons.push("사용감 있어 시세 대비 저렴해요");
+  } else if (cond === "low_batt") {
+    reasons.push("배터리 약함 — 시세보다 낮게 책정");
+  } else if (cond === "flawed") {
+    reasons.push("하자 있어 가격 조정된 매물");
+  }
+
+  // 2. Description 키워드 — 셀러 의도
+  if (/급매|급처|빨리/.test(desc)) {
+    reasons.push("셀러가 급하게 팔고 싶어해요");
+  } else if (/이사|이전|학업|입대|군대|해외/.test(desc)) {
+    reasons.push("이사·이전 등 정리하는 매물");
+  } else if (/선물|받았|개봉만|쓸 일/.test(desc)) {
+    reasons.push("선물받았지만 사용 안 함");
+  }
+
+  // 3. 차익률 큰데 condition 좋으면 — 셀러 시세 모름 가능성
+  if (reasons.length === 0 && profitPct >= 30 && (cond === "mint" || cond === "clean" || cond === "unopened")) {
+    reasons.push("셀러가 현재 시세를 모르고 등록한 듯");
+  }
+
+  // Fallback — 일반론
+  if (reasons.length === 0) {
+    if (profitPct >= 20) {
+      reasons.push("시세 대비 저렴 — 빠르게 팔리고 싶어 해요");
+    } else {
+      reasons.push("시세보다 살짝 낮게 등록됐어요");
+    }
+  }
+
+  return reasons.slice(0, 2); // 최대 2개
+}
+
+function WhyCheapPanel({ card }: { card: RevealCard }) {
+  const reasons = getWhyCheapReasons(card);
+  if (reasons.length === 0) return null;
+  return (
+    <div className="mt-3 rounded-2xl border border-amber-200/60 bg-amber-50/60 px-4 py-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+      <div className="flex items-start gap-2.5">
+        <span className="text-lg leading-none">💡</span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-amber-900/80 dark:text-amber-100/80">
+            왜 이 가격이에요?
+          </div>
+          <ul className="mt-1.5 space-y-1">
+            {reasons.map((r, i) => (
+              <li key={i} className="flex items-start gap-1.5 text-sm font-medium leading-5 text-zinc-800 dark:text-zinc-200">
+                <span className="text-amber-700 dark:text-amber-400">·</span>
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function costAssuranceSnapshot(card: RevealCard) {
   const salePrice = finiteKrw(card.marketBasis?.medianPrice);
   const sellingFee = salePrice == null ? null : Math.round(salePrice * SELLING_FEE_RATE);
@@ -2433,6 +2501,8 @@ function RevealCardItem({
                 <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
               </div>
               {dealExpanded ? <DealEvidencePanel card={card} /> : null}
+              {/* Wave 392: "왜 이 가격?" 자동 이유 — 사용자 의심 ("왜 싸지?") 즉시 해소. */}
+              <WhyCheapPanel card={card} />
               <div className="mt-2">
                 <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   <WalletIcon className="h-3 w-3" />
