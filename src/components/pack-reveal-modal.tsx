@@ -11,6 +11,19 @@ import { BunjangLogo, BunjangSourceBadge, DanawaLogo, DanawaSourceBadge } from "
 import { CheckCircleIcon, ScaleIcon, ShieldIcon, TargetIcon, TrophyIcon, WalletIcon } from "@/components/icons";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
+import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
+import { buyPriceGuidance } from "@/lib/buy-price-guidance";
+import { categoryFromComparableKey } from "@/lib/category-readiness";
+import {
+  counterfeitChecklistFor,
+  PRIORITY_LABEL,
+  type CounterfeitCheckPriority,
+} from "@/lib/counterfeit-checklist";
+import {
+  sellHelperFor,
+  suggestedAskingPrice,
+  buildBodyTemplate,
+} from "@/lib/sell-helper";
 import { buildRiskScore, type RiskScoreInput, type RiskTone } from "@/lib/risk-score";
 
 type RevealResult =
@@ -150,15 +163,80 @@ function profitRange(min: number, max: number) {
   return `${signedKrw(min)} ~ ${signedKrw(max)}`;
 }
 
-function currentProfitPercent(card: RevealCard) {
+function expectedProfitAverage(card: RevealCard) {
+  return Math.round((card.expectedProfitMin + card.expectedProfitMax) / 2);
+}
+
+function netProfitPercent(card: RevealCard) {
   if (!card.price || card.price <= 0) return null;
-  const profit = Math.round((card.expectedProfitMin + card.expectedProfitMax) / 2);
+  const profit = expectedProfitAverage(card);
   const pct = Math.round((profit / card.price) * 100);
   return Number.isFinite(pct) ? pct : null;
 }
 
 function displayProfitRange(card: RevealCard) {
   return profitRange(card.expectedProfitMin, card.expectedProfitMax);
+}
+
+function krwRange(min: number, max: number) {
+  if (Math.round(min) === Math.round(max)) return krw(max);
+  return `${krw(min)} ~ ${krw(max)}`;
+}
+
+function finiteKrw(value: number | null | undefined) {
+  return typeof value === "number" && Number.isFinite(value) ? Math.round(value) : null;
+}
+
+function costAssuranceSnapshot(card: RevealCard) {
+  const salePrice = finiteKrw(card.marketBasis?.medianPrice);
+  const sellingFee = salePrice == null ? null : Math.round(salePrice * SELLING_FEE_RATE);
+  const freeShipping = Boolean(card.savedDetail?.freeShipping);
+  const inferredBuyCostMin = salePrice == null || sellingFee == null
+    ? null
+    : finiteKrw(salePrice - card.expectedProfitMax - sellingFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
+  const inferredBuyCostMax = salePrice == null || sellingFee == null
+    ? null
+    : finiteKrw(salePrice - card.expectedProfitMin - sellingFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
+  const buyCostLow = freeShipping
+    ? card.price
+    : inferredBuyCostMin == null
+      ? null
+      : Math.max(card.price, Math.min(inferredBuyCostMin, inferredBuyCostMax ?? inferredBuyCostMin));
+  const buyCostHigh = freeShipping
+    ? card.price
+    : inferredBuyCostMax == null
+      ? null
+      : Math.max(buyCostLow ?? card.price, Math.max(inferredBuyCostMax, inferredBuyCostMin ?? inferredBuyCostMax));
+  const shippingLow = buyCostLow == null ? null : Math.max(0, buyCostLow - card.price);
+  const shippingHigh = buyCostHigh == null ? null : Math.max(shippingLow ?? 0, buyCostHigh - card.price);
+  const shippingKnown = freeShipping || shippingLow != null;
+  const buyerCostLabel = buyCostLow == null || buyCostHigh == null
+    ? `${krw(card.price)} + 배송비 확인`
+    : krwRange(buyCostLow, buyCostHigh);
+  const shippingLabel = freeShipping
+    ? "0원 · 무료배송 확인"
+    : shippingLow == null || shippingHigh == null
+      ? "확인 필요"
+      : `${krwRange(shippingLow, shippingHigh)} 계산 반영`;
+  const confidenceLabel = freeShipping
+    ? "배송비 확인됨"
+    : shippingKnown
+      ? "배송비 계산 반영"
+      : "비용 확인 필요";
+  const confidenceClass = freeShipping
+    ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+    : shippingKnown
+      ? "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-200"
+      : "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200";
+
+  return {
+    salePrice,
+    sellingFee,
+    buyerCostLabel,
+    shippingLabel,
+    confidenceLabel,
+    confidenceClass,
+  };
 }
 
 function marketSourceBadge(card: RevealCard) {
@@ -168,6 +246,9 @@ function marketSourceBadge(card: RevealCard) {
   if (market.conditionClass === "mint") return { label: "번개 S급", tone: "mint" as const };
   return null;
 }
+
+// Wave 2026-05-19 v2 (외부인 #7 권장 매입가 프레임):
+// 헬퍼 본체는 src/lib/buy-price-guidance.ts (모달 + 카드 리스트 공유).
 
 function freshLabel(seconds: number) {
   if (seconds < 60) return `${seconds}초 전 검증`;
@@ -401,18 +482,26 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
       : `${sample}건 (판매 ${sold}건)`
     : "표본 부족";
 
-  const lines: { label: string; value: string; tone?: "good" | "warn" }[] = [
+  // Wave 2026-05-19 (외부인 #추가 fix): 각 라인 hover 시 기준/근거 설명 — 사용자가 점수 의미 이해.
+  const lines: { label: string; value: string; tone?: "good" | "warn"; hint?: string }[] = [
     {
       label: "모델 매칭",
       value: market?.label ? `${market.label} (자동 분류)` : "분류 불완전",
       tone: market?.label ? "good" : "warn",
+      hint: "AI 파서가 매물 제목/설명에서 모델·옵션·상태를 추출한 결과예요. 분류 불완전이면 시세도 부정확할 수 있어요.",
     },
     {
       label: "시세 표본",
       value: matchedSampleText,
       tone: sampleTone,
+      hint: "같은 모델·같은 등급 매물 표본 수. 8건 이상이면 신뢰 충분, 그 미만이면 참고용으로만 봐주세요.",
     },
-    { label: "시세 신뢰", value: marketConfLabel, tone: marketConf === "high" ? "good" : marketConf === "low" ? "warn" : undefined },
+    {
+      label: "시세 신뢰",
+      value: marketConfLabel,
+      tone: marketConf === "high" ? "good" : marketConf === "low" ? "warn" : undefined,
+      hint: "표본 수 + 거래 데이터 충분도 + 분류 정확도 종합. 높음 / 보통 / 낮음 3단계.",
+    },
   ];
 
   if (velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0) {
@@ -421,6 +510,7 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
       label: "판매 속도",
       value: days <= 0 ? "1일 이내" : `약 ${days}일`,
       tone: days <= 3 ? "good" : days >= 14 ? "warn" : undefined,
+      hint: "비슷한 매물이 평균 며칠 만에 거래되는지. 자본이 묶이는 기간 예측에 사용해요.",
     });
   }
 
@@ -428,8 +518,15 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
     <div className="mt-2 space-y-1.5 rounded-md bg-white p-2 text-left text-[11px] leading-4 dark:bg-zinc-900">
       <div className="text-[10px] font-bold text-zinc-400">신뢰도 산출 근거</div>
       {lines.map((line) => (
-        <div key={line.label} className="flex items-center justify-between gap-2">
-          <span className="text-zinc-500 dark:text-zinc-400">{line.label}</span>
+        <div
+          key={line.label}
+          className={`flex items-center justify-between gap-2 ${line.hint ? "cursor-help" : ""}`}
+          title={line.hint}
+        >
+          <span className="text-zinc-500 dark:text-zinc-400">
+            {line.label}
+            {line.hint ? <span className="ml-0.5 text-[8px] font-bold text-zinc-300 dark:text-zinc-600">ⓘ</span> : null}
+          </span>
           <span
             className={`font-bold tabular-nums ${
               line.tone === "good"
@@ -509,10 +606,17 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
           )}
           {compactSourceLabel}
         </span>
-        <span className="rounded-full bg-zinc-50 px-1.5 py-0.5 tabular-nums dark:bg-zinc-800">
+        <span
+          className="rounded-full bg-zinc-50 px-1.5 py-0.5 tabular-nums dark:bg-zinc-800"
+          title={`판매중 ${market.activeSampleCount.toLocaleString("ko-KR")}건 + 거래완료 ${market.soldSampleCount.toLocaleString("ko-KR")}건 (호가/거래가 모두 포함)`}
+        >
           표본 {market.sampleCount.toLocaleString("ko-KR")}건
         </span>
-        <span className={`rounded-full px-1.5 py-0.5 ${confidenceClass}`}>
+        {/* Wave 2026-05-19 (외부인 #추가 fix): "신뢰 보통" 기준 툴팁 노출 — 사용자가 어떤 기준인지 알 수 있게. */}
+        <span
+          className={`cursor-help rounded-full px-1.5 py-0.5 ${confidenceClass}`}
+          title="높음 = 표본 충분 + 거래 데이터 있음. 보통 = 표본 적당. 낮음 = 표본 부족 / 분류 불완전. 표본이 많고 같은 등급끼리 비교됐을 때 점수가 올라가요."
+        >
           신뢰 {confidenceLabel}
         </span>
         <button
@@ -886,15 +990,8 @@ function marketActivityDisplay(card: RevealCard) {
   };
 }
 
-function verificationDisplay(card: RevealCard) {
-  if (card.freshSeconds <= 30 * 60) {
-    return { value: freshLabel(card.freshSeconds), sub: "판매상태 재확인", tone: "good" as const };
-  }
-  if (card.freshSeconds <= 3 * 3600) {
-    return { value: freshLabel(card.freshSeconds), sub: "최근 검증", tone: "info" as const };
-  }
-  return { value: freshLabel(card.freshSeconds), sub: "다시 확인 권장", tone: "warn" as const };
-}
+// Wave 2026-05-19 v3 (사용자 피드백): "현재성" 타일 자체 제거 — 매입/시세 줄에 검증 시점 이미 있음.
+// verificationDisplay 함수도 제거됨.
 
 function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>) {
   const rating = card.savedDetail?.sellerReviewRating ?? null;
@@ -938,7 +1035,7 @@ function upperFoldTileClass(tone: UpperFoldTileTone) {
       value: "text-emerald-700 dark:text-emerald-300",
     };
   }
-  if (tone === "caution" || tone === "info") {
+  if (tone === "caution" || tone === "info" || tone === "warn") {
     return {
       card: "border-amber-200/80 bg-white/80 dark:border-amber-900/45 dark:bg-zinc-900/55",
       dot: "bg-amber-400",
@@ -955,10 +1052,11 @@ function upperFoldTileClass(tone: UpperFoldTileTone) {
 function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   const speed = saleSpeedDisplay(card);
   const risk = buildRiskScore(revealRiskScoreInput(card));
-  const verified = verificationDisplay(card);
   const activity = marketActivityDisplay(card);
   const safety = safetyDisplay(card, risk);
   const speedTone: "good" | "info" | "warn" = speed.isSlow ? "warn" : speed.isFast ? "good" : "info";
+  // Wave 2026-05-19 v2 (사용자 피드백): "현재성" 타일 제거 — 매입/시세 줄에 이미 검증 시점 있어 중복.
+  // 4 타일 → 3 타일 (오늘 물량 / 보통 N일 안에 팔림 / 거래 안전).
   const tiles: Array<{
     key: string;
     label: string;
@@ -966,13 +1064,6 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
     sub: string;
     tone: UpperFoldTileTone;
   }> = [
-    {
-      key: "fresh",
-      label: "현재성",
-      value: verified.value,
-      sub: verified.sub,
-      tone: verified.tone,
-    },
     {
       key: "activity",
       label: activity.label,
@@ -982,16 +1073,18 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
     },
     {
       key: "speed",
-      label: "회수 속도",
-      value: `보통 ${speed.label}`,
-      sub: speed.isFallback ? "표본 부족 · 임시 기준" : `최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
+      label: "보통 며칠에 팔림",
+      value: speed.label,
+      sub: speed.isFallback
+        ? `표본 적음 · 카테고리 평균 기준`
+        : `최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
       tone: speedTone,
     },
   ];
   const safetyTone = upperFoldTileClass(safety.tone);
   const SafetyIcon = safety.Icon;
   return (
-    <div className="-mx-[10px] mt-1 grid grid-cols-2 overflow-hidden bg-[#d9e1d6] dark:bg-zinc-800 sm:mx-0 sm:mt-2 sm:gap-1.5 sm:overflow-visible sm:bg-transparent sm:dark:bg-transparent">
+    <div className="-mx-[10px] mt-1 grid grid-cols-1 overflow-hidden bg-[#d9e1d6] dark:bg-zinc-800 sm:mx-0 sm:mt-2 sm:grid-cols-3 sm:gap-1.5 sm:overflow-visible sm:bg-transparent sm:dark:bg-transparent">
       {tiles.map((tile) => {
         const tone = upperFoldTileClass(tile.tone);
         return (
@@ -1320,6 +1413,453 @@ function _SavedDetailMini({ card }: { card: RevealCard }) {
   );
 }
 
+// Wave 2026-05-19 (외부인 #2 B3 가품 체크리스트):
+// 카테고리별 정적 체크리스트 (counterfeit-checklist.ts). 12개 위험 카테고리만 노출.
+// 안전 카테고리(monitor/desktop/lego/speaker/kickboard/game_console/home_appliance/sport_golf)는
+// counterfeitChecklistFor() null 반환 → 미표시 (노이즈 안 박음).
+function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
+  const [expanded, setExpanded] = useState(false);
+  const category = categoryFromComparableKey(card.marketBasis?.comparableKey ?? null);
+  const checklist = counterfeitChecklistFor(category);
+  if (!checklist) return null;
+
+  const mustChecks = checklist.checks.filter((c) => c.priority === "must");
+  const recommendedChecks = checklist.checks.filter((c) => c.priority === "recommended");
+  const extraChecks = checklist.checks.filter((c) => c.priority === "extra");
+  const totalCount = checklist.checks.length;
+
+  const priorityClass: Record<CounterfeitCheckPriority, string> = {
+    must: "border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-100",
+    recommended: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100",
+    extra: "border-zinc-200 bg-white/85 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/45 dark:text-zinc-200",
+  };
+  const priorityBadgeClass: Record<CounterfeitCheckPriority, string> = {
+    must: "bg-rose-600 text-white",
+    recommended: "bg-amber-500 text-white",
+    extra: "bg-zinc-400 text-white dark:bg-zinc-600",
+  };
+
+  return (
+    <section className="mt-2 rounded-2xl border border-[#e6c9c9] bg-[#fff5f5] p-3 shadow-[0_10px_24px_rgba(180,40,60,0.06)] dark:border-rose-900/40 dark:bg-rose-950/15">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 text-left"
+      >
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-[12px] font-black text-rose-800 dark:text-rose-200">
+            <ShieldIcon className="h-4 w-4 shrink-0" />
+            정품 확인 체크리스트 — {checklist.label}
+            <span className="rounded-full bg-rose-600 px-1.5 py-0.5 text-[9px] font-black text-white">
+              {totalCount}개
+            </span>
+          </div>
+          <div className="mt-0.5 line-clamp-2 text-[11px] font-semibold leading-4 text-rose-700/85 dark:text-rose-200/85 sm:line-clamp-none">
+            {checklist.riskHeadline}
+          </div>
+        </div>
+        <span className="shrink-0 rounded-full border border-rose-300 bg-white/90 px-2 py-0.5 text-[10px] font-black text-rose-700 transition dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200">
+          {expanded ? "접기" : `필수 ${mustChecks.length}개 보기`}
+        </span>
+      </button>
+      {expanded ? (
+        <div className="mt-3 space-y-2">
+          {[...mustChecks, ...recommendedChecks, ...extraChecks].map((check) => (
+            <div
+              key={check.title}
+              className={`rounded-xl border px-3 py-2.5 shadow-sm ${priorityClass[check.priority]}`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-[12px] font-black leading-tight">
+                  {check.title}
+                </div>
+                <span
+                  className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-black ${priorityBadgeClass[check.priority]}`}
+                >
+                  {PRIORITY_LABEL[check.priority]}
+                </span>
+              </div>
+              <div className="mt-1.5 text-[11px] font-semibold leading-5 opacity-85">
+                {check.detail}
+              </div>
+            </div>
+          ))}
+          <div className="mt-2 rounded-lg bg-white/70 px-3 py-2 text-[10px] font-bold leading-4 text-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200/70">
+            ⚠ &lsquo;필수&rsquo; 항목 중 하나라도 셀러가 거절하면 거래 보류 권장. 안전결제 + 반품 보호 필수.
+          </div>
+        </div>
+      ) : (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {mustChecks.slice(0, 4).map((check) => (
+            <span
+              key={check.title}
+              className="rounded-full border border-rose-300 bg-white/85 px-2 py-0.5 text-[10px] font-black text-rose-700 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
+              title={check.detail}
+            >
+              {check.title}
+            </span>
+          ))}
+          {mustChecks.length > 4 ? (
+            <span className="rounded-full border border-rose-200 bg-white/60 px-2 py-0.5 text-[10px] font-bold text-rose-600 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-300">
+              +{mustChecks.length - 4}개 더
+            </span>
+          ) : null}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// Wave 2026-05-19 (외부인 #A1 판매 단계 도우미):
+// 카테고리별 정적 템플릿 (sell-helper.ts). 매수 후(bought/inspected feedback) 자동 펼침.
+// LLM 호출 없음 — 비용/모더레이션 책임 제거. 정적 룰만으로 일반인 친화 판매 가이드 제공.
+function SellHelperPanel({
+  card,
+  currentFeedbackType,
+}: {
+  card: RevealCard;
+  currentFeedbackType?: string | null;
+}) {
+  const category = categoryFromComparableKey(card.marketBasis?.comparableKey ?? null);
+  const helper = sellHelperFor(category);
+  // Wave 2026-05-19 v2 (사용자 피드백): 매수 전엔 아예 숨김.
+  // bought/inspected/listed/resold feedback 받은 매물에만 노출 — 매수 흐름 후 자연스럽게 등장.
+  const hasPurchased = currentFeedbackType === "bought"
+    || currentFeedbackType === "inspected"
+    || currentFeedbackType === "listed"
+    || currentFeedbackType === "resold";
+  const [expanded, setExpanded] = useState(true);
+  const [copiedTitle, setCopiedTitle] = useState(false);
+  const [copiedBody, setCopiedBody] = useState(false);
+
+  if (!helper) return null;
+  if (!hasPurchased) return null;
+
+  const medianPrice = card.marketBasis?.medianPrice ?? null;
+  const pricing = medianPrice != null && medianPrice > 0
+    ? suggestedAskingPrice(category, medianPrice)
+    : null;
+
+  const recommendedTitle = `[${helper.label.split(" ")[0]} 매물] ${card.name}`;
+  const bodyTemplate = buildBodyTemplate(category, card.name) ?? "";
+
+  async function copyText(text: string, setter: (v: boolean) => void) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setter(true);
+      window.setTimeout(() => setter(false), 1600);
+    } catch {
+      setter(false);
+    }
+  }
+
+  const requiredPhotos = helper.photos.filter((p) => p.required);
+  const optionalPhotos = helper.photos.filter((p) => !p.required);
+
+  return (
+    <section className="mt-2 rounded-2xl border border-[#cfe0d2] bg-[#f4faf3] p-3 shadow-[0_10px_24px_rgba(49,98,66,0.07)] dark:border-emerald-900/40 dark:bg-emerald-950/15">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 text-left"
+      >
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-[12px] font-black text-emerald-800 dark:text-emerald-200">
+            <WalletIcon className="h-4 w-4 shrink-0" />
+            판매 도우미 — {helper.label}
+            <span className="rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] font-black text-white">
+              {currentFeedbackType === "bought" ? "매수 완료"
+                : currentFeedbackType === "inspected" ? "검수 완료"
+                : currentFeedbackType === "listed" ? "판매 등록"
+                : "판매 완료"}
+            </span>
+          </div>
+          <div className="mt-0.5 line-clamp-2 text-[11px] font-semibold leading-4 text-emerald-700/85 dark:text-emerald-200/85 sm:line-clamp-none">
+            이제 어떻게 올릴지 — 제목 / 본문 / 사진 / 호가 가이드. 복붙 가능.
+          </div>
+        </div>
+        <span className="shrink-0 rounded-full border border-emerald-300 bg-white/90 px-2 py-0.5 text-[10px] font-black text-emerald-700 transition dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+          {expanded ? "접기" : "펼치기"}
+        </span>
+      </button>
+
+      {expanded ? (
+        <div className="mt-3 space-y-3">
+          {/* 호가 가이드 */}
+          {pricing ? (
+            <div className="rounded-xl border border-emerald-200 bg-white/85 p-3 dark:border-emerald-900/60 dark:bg-zinc-900/55">
+              <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">추천 호가 / 거래가</div>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-[12px]">
+                <div className="rounded-lg bg-emerald-50 px-2.5 py-2 dark:bg-emerald-950/30">
+                  <div className="text-[9px] font-bold text-emerald-700 dark:text-emerald-300">호가 (등록 가격)</div>
+                  <div className="mt-0.5 font-black tabular-nums text-emerald-900 dark:text-emerald-100">
+                    {krw(pricing.askingPrice)}
+                  </div>
+                  <div className="mt-0.5 text-[9px] font-bold text-emerald-600/80 dark:text-emerald-300/80">
+                    시세 +{pricing.markupPct}% (협상 여지)
+                  </div>
+                </div>
+                <div className="rounded-lg bg-white px-2.5 py-2 dark:bg-zinc-900/60">
+                  <div className="text-[9px] font-bold text-zinc-600 dark:text-zinc-400">거래가 (목표)</div>
+                  <div className="mt-0.5 font-black tabular-nums text-zinc-800 dark:text-zinc-100">
+                    {krw(pricing.targetClosePrice)}
+                  </div>
+                  <div className="mt-0.5 text-[9px] font-bold text-zinc-500 dark:text-zinc-400">
+                    시세 기준 (협상 후 최저)
+                  </div>
+                </div>
+              </div>
+              <div className="mt-2 text-[10px] font-bold leading-4 text-emerald-700/80 dark:text-emerald-200/80">
+                {helper.priceNote}
+              </div>
+            </div>
+          ) : null}
+
+          {/* 추천 제목 */}
+          <div className="rounded-xl border border-emerald-200 bg-white/85 p-3 dark:border-emerald-900/60 dark:bg-zinc-900/55">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">추천 제목</div>
+              <button
+                type="button"
+                onClick={() => copyText(recommendedTitle, setCopiedTitle)}
+                className="rounded-full border border-emerald-300 bg-white px-2 py-0.5 text-[10px] font-black text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-700 dark:bg-zinc-900 dark:text-emerald-200 dark:hover:bg-emerald-950/40"
+              >
+                {copiedTitle ? "복사됨" : "복사"}
+              </button>
+            </div>
+            <div className="mt-1.5 break-keep rounded-md bg-zinc-50 px-2.5 py-2 text-[11px] font-bold leading-5 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+              {recommendedTitle}
+            </div>
+            <div className="mt-1.5 text-[10px] font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
+              제목 패턴: <span className="font-mono">{helper.titlePattern}</span>
+              <br />
+              상태/구성품 정보로 빈 자리를 채우세요.
+            </div>
+          </div>
+
+          {/* 본문 템플릿 */}
+          <div className="rounded-xl border border-emerald-200 bg-white/85 p-3 dark:border-emerald-900/60 dark:bg-zinc-900/55">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">본문 템플릿 (복붙)</div>
+              <button
+                type="button"
+                onClick={() => copyText(bodyTemplate, setCopiedBody)}
+                className="rounded-full border border-emerald-300 bg-white px-2 py-0.5 text-[10px] font-black text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-700 dark:bg-zinc-900 dark:text-emerald-200 dark:hover:bg-emerald-950/40"
+              >
+                {copiedBody ? "복사됨" : "복사"}
+              </button>
+            </div>
+            <pre className="mt-1.5 max-h-[200px] overflow-auto whitespace-pre-wrap break-keep rounded-md bg-zinc-50 px-2.5 py-2 text-[11px] font-semibold leading-5 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+              {bodyTemplate}
+            </pre>
+          </div>
+
+          {/* 사진 가이드 */}
+          <div className="rounded-xl border border-emerald-200 bg-white/85 p-3 dark:border-emerald-900/60 dark:bg-zinc-900/55">
+            <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">
+              필수 사진 {requiredPhotos.length}장
+              {optionalPhotos.length > 0 ? (
+                <span className="ml-1 font-bold text-emerald-600/80 dark:text-emerald-300/80">
+                  + 선택 {optionalPhotos.length}장
+                </span>
+              ) : null}
+            </div>
+            <ol className="mt-2 space-y-1.5">
+              {requiredPhotos.map((photo, idx) => (
+                <li
+                  key={photo.title}
+                  className="rounded-md border border-emerald-100 bg-emerald-50/70 px-2.5 py-1.5 dark:border-emerald-900/40 dark:bg-emerald-950/25"
+                >
+                  <div className="flex items-start gap-2 text-[11px]">
+                    <span className="shrink-0 rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] font-black text-white">
+                      {idx + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="font-black text-emerald-900 dark:text-emerald-100">
+                        {photo.title}
+                      </div>
+                      <div className="mt-0.5 text-[10px] font-semibold leading-4 text-emerald-700/85 dark:text-emerald-200/85">
+                        {photo.detail}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+              {optionalPhotos.map((photo, idx) => (
+                <li
+                  key={photo.title}
+                  className="rounded-md border border-zinc-200 bg-white/60 px-2.5 py-1.5 dark:border-zinc-700 dark:bg-zinc-900/40"
+                >
+                  <div className="flex items-start gap-2 text-[11px]">
+                    <span className="shrink-0 rounded-full bg-zinc-400 px-1.5 py-0.5 text-[9px] font-black text-white">
+                      +{idx + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="font-black text-zinc-800 dark:text-zinc-100">
+                        {photo.title}
+                      </div>
+                      <div className="mt-0.5 text-[10px] font-semibold leading-4 text-zinc-600 dark:text-zinc-400">
+                        {photo.detail}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          {/* 카테고리별 팁 */}
+          <div className="rounded-xl bg-emerald-100 px-3 py-2 dark:bg-emerald-950/35">
+            <div className="text-[10px] font-black text-emerald-800 dark:text-emerald-200">💡 카테고리 팁</div>
+            <div className="mt-1 text-[11px] font-semibold leading-5 text-emerald-900 dark:text-emerald-100">
+              {helper.proTip}
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function sellerQuestionText(card: RevealCard) {
+  return [
+    `${card.name} 보고 문의드립니다.`,
+    "1. 표시 가격에 택배비가 포함돼 있나요?",
+    "2. 번개페이/안전결제 수수료는 누가 부담하나요?",
+    "3. 구성품은 사진과 설명에 보이는 것 전부 포함인가요?",
+  ].join("\n");
+}
+
+function CostAssurancePanel({ card }: { card: RevealCard }) {
+  const [copied, setCopied] = useState(false);
+  const snapshot = costAssuranceSnapshot(card);
+  const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
+  const questions = sellerQuestionText(card);
+  const rows = [
+    { label: "상품가", value: krw(card.price), note: "현재 매입 기준" },
+    { label: "구매자 배송비", value: snapshot.shippingLabel, note: "택포/별도 문구는 구매 전 재확인" },
+    { label: "거래/안전결제 수수료", value: "문의 필요", note: "판매자 부담/구매자 부담 문구 확인" },
+    {
+      label: "순익 차감",
+      value: `판매 ${feeRateLabel}${snapshot.sellingFee == null ? "" : ` ${krw(snapshot.sellingFee)}`} · 재배송 ${krw(RESELL_SHIPPING_FEE)} · 버퍼 ${krw(SAFETY_BUFFER)}`,
+      note: "미확인 비용을 보수적으로 흡수",
+    },
+  ];
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(questions);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  return (
+    <section className="mt-2 rounded-2xl border border-[#ded7ca] bg-[#fffaf2] p-3 shadow-[0_10px_24px_rgba(49,66,56,0.07)] dark:border-zinc-800 dark:bg-zinc-900/55">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-[11px] font-black text-[#5d735f] dark:text-emerald-300">
+            최종 매입가 체크
+          </div>
+          <div className="mt-0.5 text-lg font-black leading-tight tabular-nums text-[#223127] dark:text-zinc-50 sm:text-base">
+            {snapshot.buyerCostLabel}
+          </div>
+        </div>
+        <span className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-black ${snapshot.confidenceClass}`}>
+          {snapshot.confidenceLabel}
+        </span>
+      </div>
+      <div className="mt-2 divide-y divide-[#ece2d4] rounded-xl border border-[#eee5d8] bg-white/72 dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950/35">
+        {rows.map((row) => (
+          <div key={row.label} className="grid grid-cols-[86px_minmax(0,1fr)] gap-2 px-2.5 py-2 text-[11px] leading-5 sm:grid-cols-[104px_minmax(0,1fr)]">
+            <div className="font-black text-[#667263] dark:text-zinc-400">{row.label}</div>
+            <div className="min-w-0">
+              <div className="break-keep font-black tabular-nums text-[#26352a] dark:text-zinc-100">
+                {row.value}
+              </div>
+              <div className="text-[10px] font-semibold text-[#7c8779] dark:text-zinc-500">
+                {row.note}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {snapshot.salePrice != null ? (
+        <div className="mt-2 rounded-xl bg-[#f5efe4] px-3 py-2 text-[11px] font-bold leading-5 text-[#657060] dark:bg-zinc-950/40 dark:text-zinc-300">
+          시세 {krw(snapshot.salePrice)} - 매입 {snapshot.buyerCostLabel} - 재판매 비용 = 예상 순익 {displayProfitRange(card)}
+        </div>
+      ) : null}
+      {(() => {
+        const guidance = buyPriceGuidance({
+          price: card.price,
+          medianPrice: card.marketBasis?.medianPrice ?? null,
+        });
+        if (!guidance) return null;
+        const verdictClass = guidance.verdict === "good"
+          ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+          : guidance.verdict === "warn"
+            ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
+            : "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200";
+        return (
+          <div className="mt-2 rounded-xl border border-[#d8e2d7] bg-white/85 p-3 dark:border-zinc-800 dark:bg-zinc-900/55">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-[11px] font-black text-[#5d735f] dark:text-emerald-300">
+                매입가 판단 가이드
+              </div>
+              <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500">
+                손익분기 {krw(guidance.breakEven)}
+              </span>
+            </div>
+            <div className="mt-1.5 grid gap-1 rounded-lg border border-[#eee5d8] bg-white/72 px-2.5 py-2 dark:border-zinc-800 dark:bg-zinc-950/35">
+              <div className="flex items-center justify-between gap-2 text-[11px]">
+                <span className="font-bold text-zinc-500 dark:text-zinc-400">추천 매입가</span>
+                <span className="font-black tabular-nums text-emerald-700 dark:text-emerald-300">
+                  ~{krw(guidance.targetBuy)}
+                  <span className="ml-1 text-[9px] font-bold text-zinc-500 dark:text-zinc-500">+18% 확보</span>
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-[11px]">
+                <span className="font-bold text-zinc-500 dark:text-zinc-400">패스 기준</span>
+                <span className="font-black tabular-nums text-rose-700 dark:text-rose-300">
+                  {krw(guidance.passBuy)} 이상
+                  <span className="ml-1 text-[9px] font-bold text-zinc-500 dark:text-zinc-500">손 떼기</span>
+                </span>
+              </div>
+            </div>
+            <div className={`mt-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-black ${verdictClass}`}>
+              현재 {guidance.verdictLabel}
+              <span className="ml-1 font-bold opacity-80">· {guidance.verdictSub}</span>
+            </div>
+            <div className="mt-1.5 text-[9px] font-bold leading-4 text-zinc-400 dark:text-zinc-500">
+              협상 천장이 아니라 &lsquo;여기서 손 떼기&rsquo; 기준이에요. 패스 기준 이상이면 다른 매물 보세요.
+            </div>
+          </div>
+        );
+      })()}
+      <details className="mt-2 rounded-xl border border-[#d8e2d7] bg-[#f6fbf2] px-3 py-2 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[11px] font-black text-[#4f6a52] dark:text-emerald-200">
+          <span>문의 전에 확인할 3개</span>
+          <span className="text-[10px] font-bold text-[#748071] dark:text-zinc-400">복붙 가능</span>
+        </summary>
+        <ol className="mt-2 list-decimal space-y-1 pl-4 text-[11px] font-semibold leading-5 text-[#5f6d5f] dark:text-zinc-300">
+          <li>표시 가격에 택배비가 포함돼 있는지</li>
+          <li>번개페이/안전결제 수수료를 누가 부담하는지</li>
+          <li>구성품이 사진과 설명에 보이는 것 전부인지</li>
+        </ol>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="mt-2 w-full rounded-lg border border-[#b9d0b4] bg-white px-3 py-2 text-[11px] font-black text-[#3f5e45] shadow-sm transition hover:bg-[#eef7eb] dark:border-emerald-900/60 dark:bg-zinc-900 dark:text-emerald-200 dark:hover:bg-zinc-800"
+        >
+          {copied ? "복사됨" : "문의 문장 복사"}
+        </button>
+      </details>
+    </section>
+  );
+}
+
 function LoadingStage({ completing = false }: { completing?: boolean }) {
   // Wave 76: 게이지/% 동기화 + 완료 시 100% 도달. 이전엔 transition-[width] lag로
   // 바와 텍스트 desync, server 응답 시 중간 % 상태에서 갑자기 카드 reveal 됐음.
@@ -1399,14 +1939,17 @@ function LoadingStage({ completing = false }: { completing?: boolean }) {
 function RevealCardItem({
   card,
   delay,
+  currentFeedbackType,
 }: {
   card: RevealCard;
   delay: number;
+  currentFeedbackType?: string | null;
 }) {
   const [shown, setShown] = useState(false);
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const sourceBadge = marketSourceBadge(card);
-  const currentPct = currentProfitPercent(card);
+  const netPct = netProfitPercent(card);
+  // Wave 2026-05-19 v2: grossGap, dailyProfit 표시 제거 (일반인 헷갈림 / 노이즈 큼).
   useEffect(() => {
     const id = window.setTimeout(() => setShown(true), delay);
     return () => window.clearTimeout(id);
@@ -1437,24 +1980,28 @@ function RevealCardItem({
                   <span className={`text-[13px] font-bold ${
                     isMarketInvalidated ? "text-rose-600 dark:text-rose-300" : "text-zinc-500 dark:text-zinc-400"
                   }`}>
-                    현재 차익
+                    예상 순익
                   </span>
                   <span className={`text-lg font-black leading-tight tabular-nums sm:text-sm sm:font-bold ${
                     isMarketInvalidated ? "text-rose-700 dark:text-rose-200" : "text-[#00a862] dark:text-[#5dffae]"
                   }`}>
                     {displayProfitRange(card)}
                   </span>
-                  {currentPct != null ? (
+                  {netPct != null ? (
                     <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-[13px] font-black tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
-                      {currentPct >= 0 ? "+" : ""}{currentPct}%
+                      {netPct >= 0 ? "+" : ""}{netPct}%
                     </span>
                   ) : null}
+                  {/* Wave 2026-05-19 v2 (사용자 피드백): "총차익" 칩 제거 — 일반인이 "예상 순익"과 헷갈림.
+                      "최악 시 -X원" 배지도 제거 — 시세 -10% 가정이 임의적이고 일반인 망설임만 키움. */}
                   {isMarketInvalidated ? (
                     <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black text-rose-900 dark:bg-rose-900/60 dark:text-rose-100">
                       판매완료 처리
                     </span>
                   ) : null}
                 </div>
+                {/* Wave 2026-05-19 v2 (사용자 피드백): "일수익 표본 부족 · 참고용" 거의 모든 매물에 떠서 가치 없음 → 제거.
+                    회수 속도 정보는 UpperFold 회수 속도 타일에서 보임. */}
                 <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[13px] font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
                   <span>매입 {krw(card.price)}</span>
                   {card.marketBasis?.medianPrice ? (
@@ -1479,6 +2026,9 @@ function RevealCardItem({
                   ) : null}
                 </div>
                 <UpperFoldFearReducers card={card} />
+                <CostAssurancePanel card={card} />
+                <CounterfeitChecklistPanel card={card} />
+                <SellHelperPanel card={card} currentFeedbackType={currentFeedbackType} />
               </div>
               <RecommendationReasonPanel
                 card={card}
@@ -2150,6 +2700,7 @@ export default function PackRevealModal({
                       key={card.pid}
                       card={card}
                       delay={idx * 250}
+                      currentFeedbackType={currentFeedbackType}
                     />
                   ))}
                 </div>

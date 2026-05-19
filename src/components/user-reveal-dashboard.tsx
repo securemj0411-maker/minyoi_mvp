@@ -7,6 +7,7 @@ import { ConditionPhotoBadge } from "@/components/condition-chip";
 import { BunjangSourceBadge, DanawaSourceBadge } from "@/components/market-brand-logo";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
+import { buyPriceGuidance } from "@/lib/buy-price-guidance";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type RevealItem = {
@@ -1459,6 +1460,28 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                           ↓ 시세 갱신
                         </span>
                       )}
+                      {/* Wave 2026-05-19 (C: 카드 매입가 verdict 미니 — 모달 안 박은 가이드와 동일 헬퍼). */}
+                      {(() => {
+                        if (isTerminal) return null;
+                        const guidance = buyPriceGuidance({
+                          price: item.price,
+                          medianPrice: item.marketBasis?.medianPrice ?? null,
+                        });
+                        if (!guidance) return null;
+                        const cls = guidance.verdict === "good"
+                          ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/60"
+                          : guidance.verdict === "warn"
+                            ? "bg-amber-50 text-amber-800 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/60"
+                            : "bg-rose-50 text-rose-700 ring-1 ring-rose-200 dark:bg-rose-950/30 dark:text-rose-200 dark:ring-rose-900/60";
+                        return (
+                          <span
+                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-black sm:px-2 ${cls}`}
+                            title={`추천 매입가 ~${signedProfitRange(guidance.targetBuy, guidance.targetBuy).replace("+", "")} / 패스 기준 ${signedProfitRange(guidance.passBuy, guidance.passBuy).replace("+", "")} 이상`}
+                          >
+                            {guidance.verdictLabel}
+                          </span>
+                        );
+                      })()}
                     </>
                   );
                 })()}

@@ -14,6 +14,7 @@ import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
 import { BunjangLogo, DanawaLogo } from "@/components/market-brand-logo";
 import { CATALOG } from "@/lib/catalog";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
+import { buyPriceGuidance } from "@/lib/buy-price-guidance";
 
 type PoolItem = {
   pid: number;
@@ -93,6 +94,18 @@ function relAge(iso: string | null) {
   if (h < 1) return `${Math.round(h * 60)}분 전`;
   if (h < 24) return `${h.toFixed(1)}시간 전`;
   return `${(h / 24).toFixed(1)}일 전`;
+}
+
+// Wave 2026-05-19 (외부인 #1 신선도): 6h 초과 시 재검증 권장, 24h 초과 시 데이터 오래됨.
+// 모달의 verificationDisplay와 같은 임계 적용 — 운영자 풀에서 stale 매물 빠르게 식별.
+function verifiedAtStaleness(iso: string | null) {
+  if (!iso) return null;
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return null;
+  const h = (Date.now() - t) / 3_600_000;
+  if (h < 6) return null;
+  if (h < 24) return { tone: "warn" as const, label: "재검증 권장" };
+  return { tone: "danger" as const, label: "데이터 오래됨" };
 }
 
 const STATUS_OPTIONS = [
@@ -503,10 +516,28 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       {/* 2026-05-17 (사용자 요청): 매물 등급 chip + ? 분류 정책 모달. 운영자풀 = showHelp. */}
                       <ConditionChip conditionClass={item.conditionClass} showHelp />
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-2 text-zinc-700 dark:text-zinc-300">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-zinc-700 dark:text-zinc-300">
                       <span>매입 {krw(item.price)}</span>
                       <span>· 시세 {krw(item.skuMedian)}</span>
                       <span>· 신뢰 {(item.confidence * 100).toFixed(0)}%</span>
+                      {/* Wave 2026-05-19 (C: 운영자 카드도 매입가 verdict — 풀에서 빠른 의사결정). */}
+                      {(() => {
+                        const guidance = buyPriceGuidance({ price: item.price, medianPrice: item.skuMedian });
+                        if (!guidance) return null;
+                        const cls = guidance.verdict === "good"
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+                          : guidance.verdict === "warn"
+                            ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
+                            : "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200";
+                        return (
+                          <span
+                            className={`rounded-full border px-1.5 py-0.5 text-[10px] font-black ${cls}`}
+                            title={`추천 매입가 ~${krw(guidance.targetBuy)} / 패스 기준 ${krw(guidance.passBuy)} 이상`}
+                          >
+                            {guidance.verdictLabel}
+                          </span>
+                        );
+                      })()}
                       {/* Wave 182 Phase 3 (2026-05-17): base option fallback 정직성 표시.
                           매물 텍스트에 옵션 명시 X → SKU 기본 옵션 가정. 시세는 base 기준 (보수적). */}
                       {item.optionBaseAssumed && item.optionBaseAssumed.length > 0 ? (
@@ -518,8 +549,20 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                         </span>
                       ) : null}
                     </div>
-                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                      {item.skuName ?? "—"} · {item.poolStatus} · {relAge(item.lastVerifiedAt)} · 노출 {item.exposureCount}/{item.maxExposure}
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <span>{item.skuName ?? "—"} · {item.poolStatus} · {relAge(item.lastVerifiedAt)} · 노출 {item.exposureCount}/{item.maxExposure}</span>
+                      {(() => {
+                        const stale = verifiedAtStaleness(item.lastVerifiedAt);
+                        if (!stale) return null;
+                        const cls = stale.tone === "danger"
+                          ? "border border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
+                          : "border border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200";
+                        return (
+                          <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-black ${cls}`}>
+                            {stale.label}
+                          </span>
+                        );
+                      })()}
                     </div>
                     {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 5축 잔여 위험 신호 시각화. 운영자풀은 showDetail. */}
                     <div className="flex flex-wrap items-center gap-2">
