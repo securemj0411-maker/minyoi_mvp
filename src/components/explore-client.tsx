@@ -505,17 +505,17 @@ export default function ExploreClient() {
         </div>
       ) : null}
 
-      {/* Refresh Modal — 기다리기 / 크레딧 충전 옵션 */}
+      {/* Wave 348: Refresh Modal — 무료(랜덤) / 크레딧(맞춤 검색) 옵션. */}
       {refreshModalOpen ? (
         <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 p-3 sm:items-center sm:p-6" onClick={() => setRefreshModalOpen(false)}>
           <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-2 flex items-start justify-between gap-3">
+            <div className="mb-3 flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-base font-bold text-zinc-900 dark:text-zinc-50">
-                  새 30개 매물 받기
+                  다른 매물 찾기
                 </div>
                 <div className="mt-0.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                  {canRefresh ? "지금 바로 받을 수 있어요" : `${Math.floor(remainingSec / 60)}분 ${remainingSec % 60}초 후 무료로 받을 수 있어요`}
+                  랜덤으로 받거나, 원하는 조건으로 골라보세요
                 </div>
               </div>
               <button
@@ -527,57 +527,104 @@ export default function ExploreClient() {
               </button>
             </div>
 
-            <div className="mt-4 space-y-2">
-              {/* 옵션 1: 기다리기 (cooldown 끝나면 즉시 받기) */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (canRefresh) {
-                    void loadPool(true);
-                    setRefreshModalOpen(false);
-                  }
-                }}
-                disabled={!canRefresh}
-                className={`flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left transition ${
-                  canRefresh
-                    ? "border-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/40"
-                    : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/40"
-                }`}
-              >
+            {/* 옵션 1: 무료 랜덤 */}
+            <button
+              type="button"
+              onClick={() => {
+                if (canRefresh) {
+                  void loadPool(true);
+                  setRefreshModalOpen(false);
+                }
+              }}
+              disabled={!canRefresh}
+              className={`w-full rounded-xl border p-3 text-left transition ${
+                canRefresh
+                  ? "border-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/40"
+                  : "cursor-not-allowed border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/40"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className={`text-sm font-bold ${canRefresh ? "text-emerald-800 dark:text-emerald-200" : "text-zinc-600 dark:text-zinc-400"}`}>
-                    {canRefresh ? "✨ 지금 받기 (무료)" : "⏱ 기다리기 (무료)"}
+                    🎲 랜덤으로 30개 받기
                   </div>
                   <div className="mt-0.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
-                    {canRefresh ? "쿨다운 끝남 · 즉시 새 30개" : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 가능`}
+                    {canRefresh
+                      ? "다양한 카테고리 · 6시간 이상 지난 매물"
+                      : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 가능`}
                   </div>
                 </div>
                 <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${canRefresh ? "bg-emerald-600 text-white" : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"}`}>
                   무료
                 </span>
-              </button>
+              </div>
+            </button>
 
-              {/* 옵션 2: 크레딧 충전 (즉시 받기) */}
-              <a
-                href="/plans"
-                className="flex w-full items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-left transition hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/40 dark:hover:bg-amber-900/50"
-              >
+            {/* 옵션 2: 맞춤 검색 (크레딧, paywall 예고) */}
+            <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950/40">
+              <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-sm font-bold text-amber-900 dark:text-amber-100">
-                    ⚡ 크레딧으로 즉시 받기
+                    🎯 맞춤 검색으로 받기
                   </div>
                   <div className="mt-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">
-                    쿨다운 X · 즉시 매물 알림 (구독자 전용 · 곧 출시)
+                    예산 · 매물 성향 골라서 즉시 받기
                   </div>
                 </div>
                 <span className="shrink-0 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                  유료
+                  크레딧
                 </span>
+              </div>
+
+              {/* 맞춤 옵션 미리보기 (선택 불가, 곧 출시) */}
+              <div className="mt-3 space-y-2 opacity-75">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                    예산
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {["10만원 이하", "30만원 이하", "50만원 이하", "제한 없음"].map((label) => (
+                      <span
+                        key={label}
+                        className="cursor-not-allowed rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-900/50 dark:text-amber-200"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                    매물 성향
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {[
+                      { label: "공격적", sub: "차익 큰 매물" },
+                      { label: "균형", sub: "안정 + 차익" },
+                      { label: "안전", sub: "셀러 평점 높음" },
+                    ].map((opt) => (
+                      <span
+                        key={opt.label}
+                        className="cursor-not-allowed rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-900/50 dark:text-amber-200"
+                        title={opt.sub}
+                      >
+                        {opt.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <a
+                href="/plans"
+                className="mt-3 flex w-full items-center justify-center rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white transition hover:bg-amber-600"
+              >
+                구독으로 맞춤 검색 풀기 (곧 출시)
               </a>
             </div>
 
             <div className="mt-3 rounded-md bg-zinc-50 px-3 py-2 text-[10px] font-medium leading-4 text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-400">
-              💡 무료 사용자는 6시간 이상 지난 매물 30개를 30분마다 받을 수 있어요. 즉시 매물은 곧 출시되는 구독으로 받게 됩니다.
+              💡 무료는 30분마다 랜덤 30개. 크레딧으로는 예산/성향 골라서 즉시 받을 수 있어요.
             </div>
           </div>
         </div>
