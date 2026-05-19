@@ -483,11 +483,15 @@ export default function ExploreClient() {
   // sticky 통일 후 의미 없어짐 → button과 footer 사이 큰 빈 공간 제거.
   return (
     <div className="mx-auto w-full max-w-6xl px-3 pb-4 pt-2 sm:px-6 sm:pt-4">
-      {/* Wave 383: 6h lag 제거. 신선 매물 다 노출. paywall은 cooldown 차별로. */}
-      <div className="mb-2 rounded-xl border border-[#e7dece] bg-[#fffaf1] px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900/40">
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px]">
+      {/* Wave 383+393: 6h lag 제거 + 사이트 핵심 가치 (band-aware 비교) 강조. */}
+      <div className="mb-2 rounded-xl border border-[#e7dece] bg-[#fffaf1] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
+        <div className="flex items-center gap-1.5 text-[12px] font-bold text-emerald-800 dark:text-emerald-300">
+          <span aria-hidden="true">⚖</span>
+          <span>같은 상태 매물끼리만 비교 — 진짜 싼 매물만</span>
+        </div>
+        <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px]">
           <span className="text-zinc-600 dark:text-zinc-400">
-            <strong className="font-bold text-zinc-800 dark:text-zinc-100">신선 매물</strong>에서 추천받는 중
+            사용감은 사용감끼리, 미개봉은 미개봉끼리 비교
             {stats && stats.caughtToday > 0 ? (
               <span className="ml-1 text-amber-700 dark:text-amber-300">
                 · 오늘 {stats.caughtToday.toLocaleString("ko-KR")}건 잡힘

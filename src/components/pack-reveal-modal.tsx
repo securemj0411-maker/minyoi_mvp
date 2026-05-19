@@ -256,47 +256,51 @@ function finiteKrw(value: number | null | undefined) {
   return typeof value === "number" && Number.isFinite(value) ? Math.round(value) : null;
 }
 
-// Wave 392: "왜 이 가격?" 규칙 기반 자동 이유 분류.
-// condition + description 키워드 + 차익률 종합. 사용자 의문 ("왜 싸지?") 직접 해소.
+// Wave 392+393: "왜 이 가격?" — condition은 "비교 그룹"으로 사용 (band-aware).
+// 진짜 "왜 싸지" 이유 = description 키워드 (급매/이사 등) 또는 셀러 시세 모름.
+// "사용감 있어서 싸요" 같은 카피는 부정확 — 사용감 매물도 사용감끼리 비교한 시세 기준.
 function getWhyCheapReasons(card: RevealCard): string[] {
   const reasons: string[] = [];
   const cond = card.marketBasis?.conditionClass ?? null;
   const desc = card.savedDetail?.descriptionPreview ?? "";
   const profitPct = netProfitPercent(card) ?? 0;
 
-  // 1. Condition 기반 — 가장 명확한 이유
-  if (cond === "worn") {
-    reasons.push("사용감 있어 시세 대비 저렴해요");
-  } else if (cond === "low_batt") {
-    reasons.push("배터리 약함 — 시세보다 낮게 책정");
-  } else if (cond === "flawed") {
-    reasons.push("하자 있어 가격 조정된 매물");
-  }
+  // 상태 라벨 (비교 그룹 명시용)
+  const condLabel =
+    cond === "unopened" ? "미개봉" :
+    cond === "mint" ? "S급" :
+    cond === "clean" ? "A급" :
+    cond === "worn" ? "사용감 있는" :
+    cond === "flawed" ? "하자 있는" :
+    cond === "low_batt" ? "배터리 약한" :
+    cond === "normal" ? "일반 상태" : null;
 
-  // 2. Description 키워드 — 셀러 의도
+  // 1. Description 키워드 — 가장 명확한 셀러 의도
   if (/급매|급처|빨리/.test(desc)) {
-    reasons.push("셀러가 급하게 팔고 싶어해요");
+    reasons.push(condLabel
+      ? `같은 ${condLabel} 매물보다 셀러가 급하게 팔고 싶어해요`
+      : "셀러가 급하게 팔고 싶어해요");
   } else if (/이사|이전|학업|입대|군대|해외/.test(desc)) {
     reasons.push("이사·이전 등 정리하는 매물");
   } else if (/선물|받았|개봉만|쓸 일/.test(desc)) {
     reasons.push("선물받았지만 사용 안 함");
   }
 
-  // 3. 차익률 큰데 condition 좋으면 — 셀러 시세 모름 가능성
-  if (reasons.length === 0 && profitPct >= 30 && (cond === "mint" || cond === "clean" || cond === "unopened")) {
-    reasons.push("셀러가 현재 시세를 모르고 등록한 듯");
+  // 2. 차익률 큰데 (>=30%) → 셀러가 그 상태 시세 모름
+  if (reasons.length === 0 && profitPct >= 30 && condLabel) {
+    reasons.push(`같은 ${condLabel} 매물 평균보다 셀러가 낮게 등록한 듯`);
   }
 
-  // Fallback — 일반론
+  // Fallback — band-aware 비교 명시 (정직한 일반론)
   if (reasons.length === 0) {
-    if (profitPct >= 20) {
-      reasons.push("시세 대비 저렴 — 빠르게 팔리고 싶어 해요");
+    if (condLabel) {
+      reasons.push(`같은 ${condLabel} 매물 평균보다 저렴하게 올라왔어요`);
     } else {
-      reasons.push("시세보다 살짝 낮게 등록됐어요");
+      reasons.push("비슷한 상태 매물 평균보다 저렴해요");
     }
   }
 
-  return reasons.slice(0, 2); // 최대 2개
+  return reasons.slice(0, 2);
 }
 
 function WhyCheapPanel({ card }: { card: RevealCard }) {
