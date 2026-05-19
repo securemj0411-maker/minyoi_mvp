@@ -7522,7 +7522,10 @@ export const CATALOG: Sku[] = [
     modelName: "MM6 Maison Margiela Apparel (broad)",
     aliases: ["MM6", "엠엠식스", "MM6 마르지엘라"],
     mustContain: [["mm6"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "셔츠", "shirt", "자켓", "jacket", "스웨터", "knit"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "샘플", "vial", "공병", "재현향", "type", "마이퍼퓸", "tabi", "타비", "salomon", "살로몬", "닥터마틴", "가방", "bag", "신발", "shoe"],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "샘플", "vial", "공병", "재현향", "type", "마이퍼퓸", "tabi", "타비", "salomon", "살로몬", "닥터마틴", "가방", "bag", "신발", "shoe",
+      // Wave 238 (2026-05-19): production audit — "준지 롱야상 MM67" 매물이 MM6 SKU 매칭 (Juun.J 모델).
+      "준지", "juun", "juun.j", "juun j",
+    ],
     msrpKrw: 290000, released: 2020,
   },
   // Wave 204 (2026-05-18): 슈프림 매물 압도적 (sample 80건 거의 다) — 6 collab + 2 가방 = 8 SKU.
@@ -9226,6 +9229,10 @@ const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, strin
     //   동일 brand clothing SKU 도 같은 risk → 차단.
     "트러커 캡", "trucker cap", "메쉬캡", "메쉬 캡", "볼캡", "ball cap",
     "벙거지", "버킷햇", "bucket hat", "비니", "beanie", "야구모자",
+    // Wave 238 (2026-05-19): production audit — Acne 신발 매물 (바틸다 삭스슈즈/네오프렌 부티) 의류 SKU 매칭.
+    "부티", "booties", "삭스슈즈", "삭스 슈즈", "sock shoes",
+    "러너 슈즈", "runner shoe", "러닝화", "트레이너", "trainer",
+    "슈즈", "shoes",
   ],
   shoe: [
     "자켓", "jacket", "코트", "coat", "재킷",
