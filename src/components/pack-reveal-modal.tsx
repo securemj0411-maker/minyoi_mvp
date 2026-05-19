@@ -1931,13 +1931,13 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
       {open ? (
         <div className="mt-2 space-y-1.5 rounded-md bg-zinc-50 px-3 py-2 text-[11px] font-medium leading-5 text-zinc-600 dark:bg-zinc-900/60 dark:text-zinc-300">
           <div>
-            <span className="font-bold text-zinc-900 dark:text-zinc-100">번개장터:</span> 안전결제 의무화. 셀러가 거래액의 3.5% 수수료 부담. 사기 보호 강함.
+            <span className="font-bold text-zinc-900 dark:text-zinc-100">번개장터:</span> 안전결제 의무 — 셀러 돈 받기 안전 (구매자 결제 후 셀러 정산). 대신 거래액의 3.5% 수수료.
           </div>
           <div>
-            <span className="font-bold text-zinc-900 dark:text-zinc-100">당근마켓:</span> 직거래 기반 — 수수료 없음. 단 안전결제(당근페이) 미사용 시 사기 위험. 동네 직접 만나면 가장 안전 + 무료.
+            <span className="font-bold text-zinc-900 dark:text-zinc-100">당근 직거래:</span> 수수료 0이지만 셀러도 주의 — 위조지폐 / 입금 미루기 / 반품 가짜 클레임 가능. 동네 직거래는 현장에서 현금 확인 필수.
           </div>
           <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
-            ※ 당근 안전결제(당근페이) 사용 시 별도 수수료 일부 있을 수 있음. 직거래가 가장 차익 큼.
+            ※ 당근페이 사용 시 셀러도 보호 (입금 보장) — 별도 수수료 일부. 가장 안전한 셀러 보호는 번개 안전결제 또는 당근페이.
           </div>
         </div>
       ) : null}
