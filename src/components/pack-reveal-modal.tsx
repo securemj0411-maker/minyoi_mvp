@@ -265,7 +265,7 @@ function getWhyCheapReasons(card: RevealCard): string[] {
   const desc = card.savedDetail?.descriptionPreview ?? "";
   const profitPct = netProfitPercent(card) ?? 0;
 
-  // 상태 라벨 (비교 그룹 명시용)
+  // 상태 라벨 (카피 안 형용사 형식 — "X 매물 중에서도" 자연 어법)
   const condLabel =
     cond === "unopened" ? "미개봉" :
     cond === "mint" ? "S급" :
@@ -273,12 +273,12 @@ function getWhyCheapReasons(card: RevealCard): string[] {
     cond === "worn" ? "사용감 있는" :
     cond === "flawed" ? "하자 있는" :
     cond === "low_batt" ? "배터리 약한" :
-    cond === "normal" ? "일반 상태" : null;
+    cond === "normal" ? "비슷한 상태의" : null;
 
   // 1. Description 키워드 — 가장 명확한 셀러 의도
   if (/급매|급처|빨리/.test(desc)) {
     reasons.push(condLabel
-      ? `같은 ${condLabel} 매물보다 셀러가 급하게 팔고 싶어해요`
+      ? `${condLabel} 매물 중에서도 셀러가 급하게 팔고 싶어해요`
       : "셀러가 급하게 팔고 싶어해요");
   } else if (/이사|이전|학업|입대|군대|해외/.test(desc)) {
     reasons.push("이사·이전 등 정리하는 매물");
@@ -288,15 +288,15 @@ function getWhyCheapReasons(card: RevealCard): string[] {
 
   // 2. 차익률 큰데 (>=30%) → 셀러가 그 상태 시세 모름
   if (reasons.length === 0 && profitPct >= 30 && condLabel) {
-    reasons.push(`같은 ${condLabel} 매물 평균보다 셀러가 낮게 등록한 듯`);
+    reasons.push(`${condLabel} 매물 중에서도 셀러가 낮게 등록한 듯`);
   }
 
   // Fallback — band-aware 비교 명시 (정직한 일반론)
   if (reasons.length === 0) {
     if (condLabel) {
-      reasons.push(`같은 ${condLabel} 매물 평균보다 저렴하게 올라왔어요`);
+      reasons.push(`${condLabel} 매물 중에서도 저렴하게 올라왔어요`);
     } else {
-      reasons.push("비슷한 상태 매물 평균보다 저렴해요");
+      reasons.push("비슷한 상태 매물 중에서도 저렴해요");
     }
   }
 

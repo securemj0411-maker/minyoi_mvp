@@ -491,7 +491,7 @@ export default function ExploreClient() {
         </div>
         <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px]">
           <span className="text-zinc-600 dark:text-zinc-400">
-            사용감은 사용감끼리, 미개봉은 미개봉끼리 비교
+            사용감 있는 매물끼리, 미개봉 매물끼리 비교
             {stats && stats.caughtToday > 0 ? (
               <span className="ml-1 text-amber-700 dark:text-amber-300">
                 · 오늘 {stats.caughtToday.toLocaleString("ko-KR")}건 잡힘
