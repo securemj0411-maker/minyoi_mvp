@@ -303,27 +303,14 @@ function getWhyCheapReasons(card: RevealCard): string[] {
   return reasons.slice(0, 2);
 }
 
+// Wave 393.2: 위계 ↓ — 큰 amber panel → 작은 inline 한 줄. boilerplate 톤 어울리게.
 function WhyCheapPanel({ card }: { card: RevealCard }) {
   const reasons = getWhyCheapReasons(card);
   if (reasons.length === 0) return null;
   return (
-    <div className="mt-3 rounded-2xl border border-amber-200/60 bg-amber-50/60 px-4 py-3 dark:border-amber-900/40 dark:bg-amber-950/20">
-      <div className="flex items-start gap-2.5">
-        <span className="text-lg leading-none">💡</span>
-        <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-amber-900/80 dark:text-amber-100/80">
-            왜 이 가격이에요?
-          </div>
-          <ul className="mt-1.5 space-y-1">
-            {reasons.map((r, i) => (
-              <li key={i} className="flex items-start gap-1.5 text-sm font-medium leading-5 text-zinc-800 dark:text-zinc-200">
-                <span className="text-amber-700 dark:text-amber-400">·</span>
-                <span>{r}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+    <div className="mt-2 flex items-start gap-1.5 text-[11px] font-medium leading-5 text-zinc-500 dark:text-zinc-400">
+      <span className="shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true">💡</span>
+      <span className="min-w-0">{reasons.join(" · ")}</span>
     </div>
   );
 }
@@ -2658,8 +2645,6 @@ function RevealCardItem({
                 <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
               </div>
               {dealExpanded ? <DealEvidencePanel card={card} /> : null}
-              {/* Wave 392: "왜 이 가격?" 자동 이유 — 사용자 의심 ("왜 싸지?") 즉시 해소. */}
-              <WhyCheapPanel card={card} />
               <div className="mt-2">
                 <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   <WalletIcon className="h-3 w-3" />
@@ -2723,6 +2708,8 @@ function RevealCardItem({
                     </span>
                   ) : null}
                 </div>
+                {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
+                <WhyCheapPanel card={card} />
                 <UpperFoldFearReducers card={card} />
                 <CostAssurancePanel card={card} />
                 <PlatformProfitCompare card={card} />
