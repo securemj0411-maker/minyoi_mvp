@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { createPortal } from "react-dom";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
@@ -510,50 +509,14 @@ function uploadAgoLabel(firstSeenAtIso: string | null | undefined): string | nul
   return `${Math.round(seconds / 86400)}일 전 등록`;
 }
 
-// Wave 392.2: 신선도 강조 라벨 — fold-above (제목 위).
-// <1h: 매우 신선 (emerald 강조) — Pro USP hint
-// 1~6h: 보통 신선 (zinc)
-// 6h+: 표시 X (이미 사진 메타에 freshLabel 있음)
-function freshHeadline(seconds: number): { label: string; tone: "hot" | "warm" | null } {
-  if (seconds < 60) return { label: `방금 등장`, tone: "hot" };
-  if (seconds < 3600) {
-    const m = Math.round(seconds / 60);
-    return { label: `${m}분 전 등장`, tone: "hot" };
-  }
-  if (seconds < 6 * 3600) {
-    const h = Math.round(seconds / 3600);
-    return { label: `${h}시간 전 등장`, tone: "warm" };
-  }
-  return { label: "", tone: null };
-}
-
+// Wave 393.7: 신선도 chip + Pro link 제거 (사용자 짚음 — 모달엔 불필요).
+// ConditionChip(friendly)만 노출. 신선도는 매입/시세 메타 라인의 freshLabel에 이미 있음.
 function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
-  const { label, tone } = freshHeadline(card.freshSeconds);
   const cond = card.marketBasis?.conditionClass ?? null;
-  // 신선도 chip 또는 condition chip 둘 중 하나라도 있으면 row 표시
-  if (!tone && !cond) return null;
+  if (!cond) return null;
   return (
     <div className="mb-2 flex flex-wrap items-center gap-2">
-      {tone ? (
-        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
-          tone === "hot"
-            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
-            : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-        }`}>
-          {tone === "hot" ? <span aria-hidden="true">🆕</span> : null}
-          <span>{label}</span>
-        </span>
-      ) : null}
-      {/* Wave 393.3: 모달 사진 위 ConditionPhotoBadge 제거 후 텍스트 영역에 chip으로 노출. */}
-      {cond ? <ConditionChip conditionClass={cond} variant="friendly" /> : null}
-      {tone === "hot" ? (
-        <Link
-          href="/plans"
-          className="text-[10px] font-medium text-zinc-500 underline underline-offset-2 transition hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
-        >
-          Pro면 즉시 알림 →
-        </Link>
-      ) : null}
+      <ConditionChip conditionClass={cond} variant="friendly" />
     </div>
   );
 }
