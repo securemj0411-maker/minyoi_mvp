@@ -6942,7 +6942,10 @@ export const CATALOG: Sku[] = [
     aliases: ["Purple Label", "퍼플라벨", "Nanamica", "나나미카"],
     // 일본 라인 별도 SKU — 가격 1.5~2배
     mustContain: [["노스페이스", "north face", "tnf"], ["퍼플라벨", "purple label", "nanamica", "나나미카"]],
-    mustNotContain: ["supreme", "슈프림", "키즈", "kids"],
+    // Wave 229 (2026-05-19) Iter1: clothing SKU 인데 토트백/가방 매물 매칭 → cross-category 차단.
+    mustNotContain: ["supreme", "슈프림", "키즈", "kids",
+      "가방", "bag", "backpack", "토트백", "tote", "숄더백", "크로스백", "메신저", "messenger", "월렛", "wallet", "지갑",
+      "운동화", "sneaker", "스니커즈", "부츠", "boot", "샌들"],
     msrpKrw: 290000, released: 2003,
   },
   {
@@ -6955,6 +6958,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids",
       // narrow 키워드 제외 (이미 그쪽 매칭)
       "백팩", "backpack", "숄더백", "토트백", "shoulder bag", "tote bag",
+      "웨이스트백", "웨이스트 백", "waist bag", "벨트백", "belt bag",
       "뮬", "슬리퍼", "샌들",
       "지샥", "g-shock", "dw-6900", "dw6900", "카시오"],
     msrpKrw: 380000, released: 2020,
@@ -8330,7 +8334,10 @@ export const CATALOG: Sku[] = [
     modelName: "Arc'teryx Alpha (SV / AR / FL) 등반/expedition",
     aliases: ["Alpha Jacket", "알파 자켓", "Alpha SV", "Alpha AR", "Alpha FL"],
     mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["alpha", "알파"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
+    // Wave 229 (2026-05-19) Iter10: 다른 brand 매물 차단 ("몽벨 ... 아크테릭스 포지션" 같은 비교 매물).
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance",
+      "몽벨", "montbell", "콜롬비아", "columbia", "마운틴 하드웨어", "mountain hardware",
+      "포지션", "포지셔닝", "비교", "vs"],
     msrpKrw: 850000, released: 1998,
   },
   {
@@ -8413,7 +8420,8 @@ export const CATALOG: Sku[] = [
     modelName: "Patagonia Shell (Torrentshell / 바람막이 / H2No)",
     aliases: ["Torrentshell", "토렌쉘", "Patagonia Shell"],
     mustContain: [["patagonia", "파타고니아"], ["torrentshell", "토렌쉘", "바람막이", "shell", "h2no", "윈드"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack", "retro", "레트로", "다운", "down"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack", "retro", "레트로", "다운", "down",
+      "아동", "유아", "3t", "4t", "5t", "infant"],
     msrpKrw: 199000, released: 1980,
   },
   // MLB 모자 + 의류 mainstream
