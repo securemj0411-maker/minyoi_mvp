@@ -1900,37 +1900,69 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
         </div>
       ) : null}
 
-      {/* Wave 325: 협상 가이드 — 현재 차익 + 협상 목표 + 손해 시작 (3개 단순). */}
+      {/* Wave 326: 협상 가이드 — 가격대별 의미 명시. "이 이상에 사면" 동사 명시 + 위험 구간(차익 1만 미만) 별도. */}
       {guidance ? (
         <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
           <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             협상 가이드
           </div>
-          <div className="mt-1.5 space-y-1 text-xs">
-            <div className="flex items-baseline justify-between">
-              <span className="text-zinc-500 dark:text-zinc-400">남는 돈 (예상 순익)</span>
-              <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                +{krw(guidance.currentProfit)}
+
+          {/* 현재 가격 — 헤드라인 */}
+          <div className="mt-2 rounded-md bg-emerald-50 px-3 py-2 dark:bg-emerald-950/30">
+            <div className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">현재 가격</div>
+            <div className="mt-0.5 flex items-baseline justify-between">
+              <span className="text-sm font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                {krw(card.price)}
               </span>
-            </div>
-            <div className="flex items-baseline justify-between">
-              <span className="text-zinc-500 dark:text-zinc-400">협상 시도 목표</span>
-              <span className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                {krw(guidance.negotiationTarget)}
-                <span className="ml-1 text-[10px] font-medium text-zinc-400">-{krw(guidance.negotiationRoom)} 깎으면</span>
-              </span>
-            </div>
-            <div className="flex items-baseline justify-between">
-              <span className="text-zinc-500 dark:text-zinc-400">손해 시작</span>
-              <span className="font-bold tabular-nums text-zinc-500 dark:text-zinc-400">
-                {krw(guidance.breakEven)}
-                <span className="ml-1 text-[10px] font-medium text-zinc-400">이 이상은 손해</span>
+              <span className="text-sm font-bold tabular-nums text-emerald-600 dark:text-emerald-300">
+                남는 돈 +{krw(guidance.currentProfit)}
               </span>
             </div>
           </div>
+
+          {/* 가격대별 의미 — 위→아래 (좋음→나쁨) */}
+          <div className="mt-2 space-y-1.5 text-xs">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="flex items-baseline gap-1.5">
+                <span className="text-emerald-600 dark:text-emerald-400">↓</span>
+                <span className="text-zinc-500 dark:text-zinc-400">협상 시도</span>
+                <span className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                  {krw(guidance.negotiationTarget)}
+                </span>
+              </span>
+              <span className="text-[11px] font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
+                +{krw(guidance.negotiationProfit)}
+              </span>
+            </div>
+
+            <div className="flex items-baseline justify-between gap-2 border-t border-zinc-100 pt-1.5 dark:border-zinc-800">
+              <span className="flex items-baseline gap-1.5">
+                <span className="text-amber-600 dark:text-amber-400">⚠</span>
+                <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{krw(guidance.dangerStart)}</span> 이상에 사면
+                </span>
+              </span>
+              <span className="text-[11px] font-medium tabular-nums text-amber-600 dark:text-amber-400">
+                +1만원 미만 (위험)
+              </span>
+            </div>
+
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="flex items-baseline gap-1.5">
+                <span className="text-rose-600 dark:text-rose-400">✕</span>
+                <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{krw(guidance.breakEven)}</span> 이상에 사면
+                </span>
+              </span>
+              <span className="text-[11px] font-medium tabular-nums text-rose-600 dark:text-rose-400">
+                손해 (수익 0 이하)
+              </span>
+            </div>
+          </div>
+
+          {/* Verdict */}
           <div className={`mt-2 rounded-md px-2.5 py-1.5 text-xs font-bold ${verdictClass}`}>
             {guidance.verdictLabel}
-            <span className="ml-1 font-medium opacity-75">· {guidance.verdictSub}</span>
           </div>
         </div>
       ) : null}

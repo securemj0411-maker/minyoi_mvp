@@ -22,14 +22,19 @@ export type BuyPriceGuidanceInput = {
 export type BuyPriceVerdict = "great" | "good" | "fair" | "tight";
 
 export type BuyPriceGuidance = {
-  breakEven: number;
-  currentProfit: number;
-  negotiationTarget: number;
+  breakEven: number;      // 손익분기 = 시세 - 비용 (이 가격에 사면 수익 0)
+  dangerStart: number;    // 차익 1만원 미만 시작 = breakEven - 10000 (사실상 손해 시작 구간)
+  currentProfit: number;  // 현재 가격에 사면 남는 돈
+  negotiationTarget: number;  // 협상해서 도달 시도할 가격
   negotiationRoom: number;
+  negotiationProfit: number;  // 협상 도달 시 남는 돈
   verdict: BuyPriceVerdict;
   verdictLabel: string;
   verdictSub: string;
 };
+
+// 위험 임계: 차익 1만원 미만이면 사실상 손해 (잡비/시간 비용 + 시세 변동 흡수 못 함).
+export const DANGER_PROFIT_THRESHOLD = 10000;
 
 export function buyPriceGuidance(input: BuyPriceGuidanceInput): BuyPriceGuidance | null {
   const { price, medianPrice } = input;
@@ -48,6 +53,10 @@ export function buyPriceGuidance(input: BuyPriceGuidanceInput): BuyPriceGuidance
   // 일반인이 협상 시 시도해볼만한 폭.
   const negotiationRoom = Math.min(Math.round(currentProfit * 0.3), 20000);
   const negotiationTarget = Math.max(0, price - negotiationRoom);
+  const negotiationProfit = breakEven - negotiationTarget;
+
+  // 위험 임계 — 차익 1만원 미만 시작 가격.
+  const dangerStart = breakEven - DANGER_PROFIT_THRESHOLD;
 
   let verdict: BuyPriceVerdict;
   let verdictLabel: string;
@@ -73,9 +82,11 @@ export function buyPriceGuidance(input: BuyPriceGuidanceInput): BuyPriceGuidance
 
   return {
     breakEven,
+    dangerStart,
     currentProfit,
     negotiationTarget,
     negotiationRoom,
+    negotiationProfit,
     verdict,
     verdictLabel,
     verdictSub,
