@@ -323,10 +323,14 @@ export const BAG_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       "짝퉁", "이미테이션", "복각", "퀄리티", "미러급", "키즈", "아동", "토일렛", "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔", "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "정가품감정", "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
+      // Wave 241 (2026-05-19): 사용자 코멘트 "이건 신발인데 신발이랑 비교하네" — Camper x Issey Miyake 신발이 BaoBao bag SKU 매칭.
+      "캠퍼", "camper", "asics", "아식스", "salomon", "살로몬",
+      "운동화", "sneaker", "스니커즈", "샌들", "sandal", "슬리퍼", "slipper",
     ],
     msrpKrw: 580000,
     released: 2024,
     laneKey: "bag_baobao_lucent",
+    defaultProductType: "tote",
   },
   {
     id: "bag-bottega-cassette-mini",

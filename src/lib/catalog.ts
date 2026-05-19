@@ -7034,7 +7034,11 @@ export const CATALOG: Sku[] = [
       //   "슈프림 노스 데이팩 데님" 410k 매물 잘못 매칭 (가방 인데 의류 SKU).
       "데이팩", "daypack", "day pack", "메신저", "messenger",
       "더플", "duffle", "duffel", "트래블", "travel bag",
-      "크로스백", "cross bag", "crossbody"],
+      "크로스백", "cross bag", "crossbody",
+      // Wave 241 (2026-05-19): 사용자 코멘트 — "Supreme x TNF Snakeskin bag" 200k 가방 매물 매칭.
+      "snakeskin bag", "스네이크스킨 백", "스네이크스킨", "snake skin bag",
+      "익스페디션 빅 백", "expedition big bag", "스플릿 백",
+      "웨이스트 백", "벨트 백"],
     msrpKrw: 380000, released: 2020,
   },
   // Wave 219 (2026-05-19): Supreme × TNF product type 분리 — 자켓 300~400K / 백팩 250~350K / 슬리퍼 250K / 지샥 290K
@@ -8011,7 +8015,16 @@ export const CATALOG: Sku[] = [
     modelName: "Asics Gel Kayano (14 / 26 / 27)",
     aliases: ["Asics Gel Kayano", "아식스 카야노", "Kayano 14", "젤 카야노"],
     mustContain: [["asics", "아식스"], ["kayano", "카야노", "캬아노"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "비비안", "vivienne westwood"],
+    // Wave 241 (2026-05-19): 사용자 코멘트 — "톰브라운 에디션인데 뒤질래? 기본적인 에디션 구분도 못해?"
+    //   Asics x Thom Browne 카야노 14 590k 가 일반 175k SKU 매칭. 가격 3배 차이.
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "비비안", "vivienne westwood",
+      // Wave 241: Thom Browne collab 차단 (별도 SKU 또는 가격대 분리)
+      "톰브라운", "thom browne", "thom-browne", "thombrowne",
+      // 다른 designer collab 도 차단 (Jjjjound / cecilie bahnsen / kiko kostadinov 등)
+      "jjjjound", "자운드", "kiko", "kostadinov", "코스타디노프",
+      "andersson bell", "앤더슨 벨",
+    ],
+    defaultProductType: "sneaker",
     msrpKrw: 180000, released: 2007,
   },
   {
@@ -8398,7 +8411,20 @@ export const CATALOG: Sku[] = [
     modelName: "BAPE T-Shirt / Hoodie (basic Ape Head/카모)",
     aliases: ["BAPE Tee", "베이프 티셔츠", "BAPE Hoodie", "베이프 후드", "Ape Head"],
     mustContain: [["bape", "베이프", "a bathing ape"], ["반팔", "티셔츠", "tee ", "t-shirt", "후드", "hoodie", "맨투맨", "크루넥", "ape head"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "carbon", "샤크 후드", "shark hoodie", "yeezy", "스타워즈", "신발", "스니커즈", "운동화"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "carbon", "샤크 후드", "shark hoodie", "yeezy", "스타워즈", "신발", "스니커즈", "운동화",
+      // Wave 241 (2026-05-19): 사용자 코멘트 — BAPE tee SKU 안 콜라보 가격 45~520k 다 한 시세.
+      //   collab 별 가격 천차만별 — 별도 SKU 또는 차단 필요.
+      "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack",
+      "puma", "푸마 콜라보", "puma collab", "puma x bape",
+      "꼼데가르송", "cdg", "comme des garcons", "오사카 카모 박스",
+      "스왈로브스키", "swarovski", "1st 스왈로브스키",
+      "뉴진스", "newjeans", "하니 컬리지", "황계",
+      "세인트미카엘", "saint michael", "st michael",
+      "네이버후드", "neighborhood", "바시티",
+      "몽클레어", "몽클레르", "moncler",
+      "stussy", "스투시 x bape", "스투시x베이프",
+      "wtaps", "더블탭스",
+    ],
     msrpKrw: 199000, released: 1993,
   },
   {
