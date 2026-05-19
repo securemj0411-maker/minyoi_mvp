@@ -1959,14 +1959,22 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
   const snapshot = costAssuranceSnapshot(card);
   const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
   const questions = sellerQuestionText(card);
+  // Wave 337 (사용자 + 메모리 정책 bunjang_safe_payment_mandate):
+  // 번개장터 안전결제 의무화 → 셀러가 3.5% 부담. 구매자(우리 사용자가 살 때)는 0원.
+  // "문의 필요"는 잘못된 표현. 디폴트는 0원 명시.
+  // "순익 차감"도 일반인 친화 라벨로 변경.
   const rows = [
     { label: "상품가", value: krw(card.price), note: "현재 매입 기준" },
-    { label: "구매자 배송비", value: snapshot.shippingLabel, note: "택포/별도 문구는 구매 전 재확인" },
-    { label: "거래/안전결제 수수료", value: "문의 필요", note: "판매자 부담/구매자 부담 문구 확인" },
+    { label: "내가 낼 배송비", value: snapshot.shippingLabel, note: "택포/별도 문구는 구매 전 재확인" },
     {
-      label: "순익 차감",
-      value: `판매 ${feeRateLabel}${snapshot.sellingFee == null ? "" : ` ${krw(snapshot.sellingFee)}`} · 재배송 ${krw(RESELL_SHIPPING_FEE)} · 버퍼 ${krw(SAFETY_BUFFER)}`,
-      note: "미확인 비용을 보수적으로 흡수",
+      label: "결제 수수료 (내가 살 때)",
+      value: "0원",
+      note: "번개 안전결제는 셀러 의무 부담 (3.5%). 단 셀러가 별도 명시 시 협의 필요",
+    },
+    {
+      label: "되팔 때 빠지는 돈",
+      value: `안전결제 ${feeRateLabel}${snapshot.sellingFee == null ? "" : ` ${krw(snapshot.sellingFee)}`} · 재배송 ${krw(RESELL_SHIPPING_FEE)} · 안전버퍼 ${krw(SAFETY_BUFFER)}`,
+      note: "내가 재판매 시 셀러로서 부담 — 시세에서 차감",
     },
   ];
 
