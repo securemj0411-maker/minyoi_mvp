@@ -6847,7 +6847,9 @@ export const CATALOG: Sku[] = [
     modelName: "Polo RRL Denim (jeans / shirt)",
     aliases: ["RRL 데님", "RRL 청바지", "더블알엘 데님"],
     mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["데님", "denim", "청바지", "셀비지", "jean"]],
-    mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "벨트", "지갑", "모자"],
+    // Wave 228 (2026-05-19): jacket/coat 차단 (jacket-coat lane 으로 가야).
+    mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "벨트", "지갑", "모자",
+      "그리즐리", "grizzly", "자켓", "jacket", "코트", "coat", "재킷"],
     msrpKrw: 420000, released: 2020,
   },
   {
@@ -6855,8 +6857,12 @@ export const CATALOG: Sku[] = [
     brand: "RRL", category: "clothing", laneKey: "polo_rrl_shirt_pants",
     modelName: "Polo RRL Shirt / Pants (코튼/코듀로이/워크)",
     aliases: ["RRL 셔츠", "RRL 코듀로이", "RRL 워크팬츠"],
-    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["셔츠", "shirt", "코듀로이", "corduroy", "워크팬츠", "워크 팬츠", "코튼", "린넨", "퀄팅", "져지", "체크"]],
-    mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "데님", "청바지", "셀비지"],
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["셔츠", "shirt", "코듀로이", "corduroy", "워크팬츠", "워크 팬츠", "코튼", "린넨", "퀄팅", "져지", "체크", "팬츠", "pants", "바지", "쇼츠", "하프팬츠"]],
+    // Wave 228: 자켓/덱자켓/월렛/지갑/목걸이/rrl 무드 가짜 차단.
+    mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "데님", "청바지", "셀비지",
+      "자켓", "jacket", "코트", "coat", "덱자켓",
+      "월렛", "wallet", "지갑",
+      "목걸이", "925", "은목걸이", "실버", "silver"],
     msrpKrw: 350000, released: 2020,
   },
   {
@@ -6864,8 +6870,11 @@ export const CATALOG: Sku[] = [
     brand: "RRL", category: "clothing", laneKey: "polo_rrl_accessory",
     modelName: "Polo RRL Accessory (벨트/지갑/모자/넥타이)",
     aliases: ["RRL 액세서리", "RRL 벨트", "RRL 지갑"],
-    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["벨트", "belt", "지갑", "wallet", "모자", "캡", "cap", "넥타이", "tie", "키링", "키 링", "클러치", "clutch", "장지갑", "뉴스보이"]],
-    mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "목걸이", "925"],
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["벨트", "belt", "지갑", "wallet", "월렛", "모자", "캡", "cap", "볼캡", "넥타이", "tie", "키링", "키 링", "클러치", "clutch", "장지갑", "뉴스보이", "쉴드", "방패", "더스트", "콘초"]],
+    // Wave 228: 팬츠/자켓/코트 차단 (shirt-pants / jacket-coat lane 으로 가야).
+    mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "목걸이", "925",
+      "팬츠", "pants", "바지", "하프팬츠", "쇼츠",
+      "자켓", "jacket", "코트", "coat", "재킷"],
     msrpKrw: 220000, released: 2020,
   },
   {
@@ -7369,7 +7378,10 @@ export const CATALOG: Sku[] = [
     modelName: "Margiela Tabi Sneaker (Lowtop / Hightop)",
     aliases: ["Tabi Sneaker", "타비 스니커즈", "마르지엘라 타비 스니커즈"],
     mustContain: [["마르지엘라", "margiela"], ["타비", "tabi"], ["스니커즈", "sneaker", "하이탑", "로우", "lowtop", "hightop", "low", "high"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica 라인", "salomon", "닥터마틴", "rick owens", "ami", "부츠", "boot", "슬리퍼"],
+    // Wave 228 (2026-05-19): German Army Trainer / Reebok collab / 페인팅 별도 SKU.
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica 라인", "salomon", "닥터마틴", "rick owens", "ami", "부츠", "boot", "슬리퍼",
+      "독일군", "german army", "reebok", "리복", "인스타펌프", "instapump",
+      "페인팅", "painting"],
     msrpKrw: 1090000, released: 2018,
   },
   {
@@ -8445,8 +8457,14 @@ export const CATALOG: Sku[] = [
     brand: "MLB", category: "clothing", laneKey: "mlb_cap_murakami_collab",
     modelName: "Murakami × MLB Cap (한정 9twenty)",
     aliases: ["Murakami MLB", "무라카미 MLB", "카이카이 키키 MLB"],
-    mustContain: [["murakami", "무라카미", "카이카이", "kaikai"], ["mlb"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "구찌", "gucci"],
+    // Wave 228 (2026-05-19): cap 강제 + 야구공/유니폼/카드/저지/토트백/도쿄시리즈 제외.
+    mustContain: [["murakami", "무라카미", "카이카이", "kaikai"], ["mlb"], ["cap", "캡", "모자", "볼캡", "9twenty", "뉴에라"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "구찌", "gucci",
+      // 야구공/유니폼/카드/저지/토트백/티셔츠 등 cap 외 제품 차단
+      "야구공", "baseball", "유니폼", "uniform", "저지", "jersey",
+      "토트백", "tote", "tote bag", "백팩", "backpack", "지갑", "wallet",
+      "카드", "card", "탑스", "topps",
+      "도쿄시리즈", "도쿄 시리즈", "tokyo series"],
     msrpKrw: 220000, released: 2023,
   },
   // 디스커버리 익스페디션 — 매물 11건, outdoor 친화
