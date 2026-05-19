@@ -9322,6 +9322,63 @@ const UNIVERSAL_ACCESSORY_ONLY_NOISE: string[] = [
   "버클만", "버클 단품",
 ];
 
+// Wave 242 (2026-05-19): system-wide designer collab 자동 차단 (사용자 지적 — 패턴 fashion 전반).
+//   "왜 특정 옷들만? 해당 패턴이 다른 SKU/lane 에서도 발생할 것" — 그대로 정확.
+//   broad fashion SKU 가 designer collab 매물 (Thom Browne / Travis Scott / JJJJound 등) 매칭 시
+//   가격대 3~10배 차이 → 시세 왜곡.
+//   skuMatches 안에서 intersect-aware 차단: sku.mustContain 토큰과 겹치는 brand 는 skip
+//     (의도된 collab SKU 는 mustContain 에 brand 박혀있어서 skip → 정상 통과).
+//     broad SKU 는 그 brand mustContain 에 없으면 차단 → 자동 정확.
+const GLOBAL_DESIGNER_COLLAB_NOISE: string[] = [
+  // Wave 241 발견 — 즉시 단기 fix 시 박은 patterns 일반화
+  "톰브라운", "thom browne", "thom-browne", "thombrowne",
+  "jjjjound", "자운드",
+  "kiko kostadinov", "kiko", "코스타디노프",
+  "andersson bell", "앤더슨 벨", "anderson bell",
+  // designer / 럭셔리 collab brand (가격 3~10배)
+  "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack", "트래비스",
+  "tom sachs", "톰 삭스", "톰삭스",
+  "off-white", "오프화이트", "offwhite", "off white", "virgil", "버질",
+  "sacai", "사카이",
+  "fragment", "프래그먼트", "후지와라",
+  "dior", "디올",
+  "tiffany", "티파니",
+  "louis vuitton", "lv x", "루이비통",
+  "comme des garcons", "comme garcons", "cdg x", "꼼데가르송",
+  "kaws", "카우스",
+  // streetwear collab
+  "supreme", "슈프림",
+  "fear of god", "fog x", "피오갓", "피어오브갓",
+  "stussy", "스투시",
+  "wtaps", "더블탭스",
+  "neighborhood", "네이버후드",
+  "fragment x", "프래그먼트 x",
+  // 신발 designer collab
+  "wales bonner", "웨일즈보너", "웨일즈 보너", "웨일스",
+  "pharrell", "퍼렐",
+  "sporty rich", "스포티앤리치", "sporty&rich", "sporty & rich",
+  "kith", "키스",
+  "aime leon dore", "ald", "에메레옹도레",
+  "joe freshgoods", "조 프레쉬굿즈", "조 프레시굿즈",
+  "salehe bembury", "살레 벰버리",
+  "teddy santis",
+  "ronnie fieg", "로니피그", "로니 피그",
+  // 한정 한국 / 일본 designer
+  "세인트미카엘", "saint michael", "saintmichael",
+  "스왈로브스키", "swarovski",
+  "newjeans", "뉴진스",
+  // 명품 collab (clothing-tnf 등 fashion 일반)
+  "moncler", "몽클레어", "몽클레르",
+  "rhuigi",
+  "cecilie bahnsen", "세실리에", "bahnsen", "반센",
+  "brain dead", "브레인데드",
+  "junya", "준야", "watanabe",
+  "denim tears", "데님티어스", "데님 티어스",
+  "balenciaga x", "발렌시아가 x",
+  "miu miu x", "미우미우 x",
+  "gucci x", "구찌 x",
+];
+
 function skuMatches(sku: Sku, normalizedText: string): boolean {
   for (const group of sku.mustContain) {
     if (!group.some((token) => tokenHit(normalizedText, token))) return false;
@@ -9350,6 +9407,22 @@ function skuMatches(sku: Sku, normalizedText: string): boolean {
       for (const token of catNoise) {
         if (tokenHit(normalizedText, token)) return false;
       }
+    }
+    // Wave 242 (2026-05-19): system-wide designer collab 자동 차단 (intersect-aware).
+    //   사용자 지적: "왜 특정 옷들만? 패턴이 다른 SKU 에서도 발생". 모든 fashion SKU 자동.
+    //   policy:
+    //     - sku.mustContain 토큰 set 추출 (자기 brand)
+    //     - GLOBAL_DESIGNER_COLLAB_NOISE 의 brand 가 mustContain 에 있으면 skip (의도된 collab)
+    //     - 그 외 brand 가 매물 text 에 있으면 차단 (broad SKU 가 다른 collab 매물 매칭)
+    //   효과: shoe-asics-gel-kayano 의 "톰브라운 카야노" 자동 차단 (모든 designer 동일).
+    //         shoe-supreme-vans-collab 의 mustContain ["supreme/슈프림", "vans/반스"] → supreme/슈프림 skip → 정상.
+    const skuTokens = new Set<string>();
+    for (const group of sku.mustContain) {
+      for (const t of group) skuTokens.add(t.toLowerCase());
+    }
+    for (const token of GLOBAL_DESIGNER_COLLAB_NOISE) {
+      if (skuTokens.has(token.toLowerCase())) continue; // 자기 brand 면 skip
+      if (tokenHit(normalizedText, token)) return false;
     }
   }
   return true;
