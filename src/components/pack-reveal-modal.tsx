@@ -3377,16 +3377,19 @@ function FixedBunjangFooter({
   // 하단 fixed는 번개장터 이동 버튼만 풀 너비로.
   // Wave 394.1 (외부 review #6): CTA 문구 "번개장터에서 확인하기" 의미 불명확
   // (구매? 판매? 채널 추천?) → "번개장터 원본 매물 보기" 액션 명확화.
+  // Wave 394.7 (외부 review #5): "정보 앱인데 광고 랜딩페이지 같음. 모바일 분석 내용 읽는 공간 줄어듦".
+  // 사이즈 ↓ — py-3 → py-2.5, text-sm → text-[13px], shadow-lg → shadow-md, ring-1 제거.
+  // min-h-11 (iOS 44px tap target) 유지. brand color 유지 (핵심 액션 색은 강조).
   return (
-    <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-2 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-3">
+    <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-1.5 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-2">
       <a
         href={card.url}
         target="_blank"
         rel="noreferrer"
         onClick={() => onLinkClicked(card.pid)}
-        className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-3 text-center text-sm font-bold text-white shadow-lg shadow-[rgba(0,196,113,0.28)] ring-1 ring-[#80e8bd]/70 transition hover:bg-[#00b267]"
+        className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-2.5 text-center text-[13px] font-bold text-white shadow-md shadow-[rgba(0,196,113,0.22)] transition hover:bg-[#00b267]"
       >
-        <BunjangLogo className="h-[18px] w-[18px] rounded-[5px]" />
+        <BunjangLogo className="h-[16px] w-[16px] rounded-[4px]" />
         번개장터 원본 매물 보기
       </a>
     </div>
