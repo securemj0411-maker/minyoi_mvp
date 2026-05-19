@@ -650,10 +650,17 @@ export default function ExploreClient() {
             </button>
             <button
               type="button"
-              onClick={() => setRefreshModalOpen(true)}
+              onClick={() => {
+                if (canRefresh) {
+                  void loadPool(true);
+                } else {
+                  setRefreshModalOpen(true);
+                }
+              }}
               className="rounded-full bg-amber-600 px-3 py-1.5 text-xs font-bold text-white"
             >
-              🔍 다른 매물 찾기
+              <SearchIcon className="mr-1 inline h-3 w-3" />
+              더 찾아보기
             </button>
           </div>
         </div>
@@ -797,16 +804,25 @@ export default function ExploreClient() {
           이전: 모바일=fixed FAB (항상 떠있음), 데스크탑=sticky bottom-4 (카드 끝에 흡수).
           사용자 피드백: "하단에 fixed되다가 제자리 보이면 탁 멈추는 그게 sticky 아니였나?"
           → 모바일도 sticky로 통일. "다른 30개" 카드 도달 시 자연 위치 흡수. */}
+      {/* Wave 390: "다른 매물 찾기" → "더 찾아보기".
+          canRefresh이면 모달 X, 직접 loadPool(true) — 자연스럽게 append.
+          !canRefresh면 cooldown 모달 (카톡/즉시받기/대기). */}
       {!loading && items.length > 0 ? (
         <div className="sticky bottom-4 z-20 mt-4 flex justify-center px-4 sm:mt-6 sm:px-0">
           <button
             type="button"
-            onClick={() => setRefreshModalOpen(true)}
+            onClick={() => {
+              if (canRefresh) {
+                void loadPool(true);
+              } else {
+                setRefreshModalOpen(true);
+              }
+            }}
             disabled={refreshing}
             className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3.5 text-base font-bold text-[var(--brand-cream)] shadow-[0_20px_44px_rgba(34,49,39,0.38),0_4px_12px_rgba(34,49,39,0.20)] ring-1 ring-white/10 transition active:scale-[0.97] hover:translate-y-[-1px] hover:shadow-[0_24px_48px_rgba(34,49,39,0.42)] sm:min-h-0 sm:py-3 sm:text-sm sm:shadow-[0_16px_34px_rgba(34,49,39,0.32)]"
           >
             <SearchIcon className="h-4 w-4" />
-            {refreshing ? "받는 중..." : "다른 매물 찾기"}
+            {refreshing ? "받는 중..." : "더 찾아보기"}
           </button>
         </div>
       ) : null}
@@ -857,7 +873,7 @@ export default function ExploreClient() {
                 const lightweightMode = awaitingInitialPrefs; // 가입 직후 = 예산만
                 const headerTitle = showForm
                   ? (lightweightMode ? "환영해요 👋 예산 알려주세요" : (preferences ? "선호 수정" : "내 매물 취향 알려주세요"))
-                  : "다른 매물 찾기";
+                  : "더 찾아보기";
                 const headerSub = showForm
                   ? (lightweightMode ? "그 예산 안에서 30개 골라드릴게요 (나중에 수정 가능)" : "예산과 매물 성향에 맞춰 30개 골라드려요")
                   : (canRefresh
@@ -976,8 +992,10 @@ export default function ExploreClient() {
                             savePreferences(newPrefs);
                             setPreferences(newPrefs);
                             setEditingPrefs(false);
+                            // Wave 390: 폼 답 = cooldown 시작 X (가입 보너스). refresh=false로 fetch.
+                            // 첫 "더 찾아보기" 클릭에서 cooldown 시작됨.
                             if (canRefresh) {
-                              void loadPool(true, newPrefs);
+                              void loadPool(false, newPrefs);
                             }
                             closeRefreshModal();
                           }}
