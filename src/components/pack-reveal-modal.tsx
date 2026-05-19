@@ -2771,23 +2771,24 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
   const questions = sellerQuestionText(card);
   // Wave 337 (사용자 + 메모리 정책 bunjang_safe_payment_mandate):
   // 번개장터 안전결제 의무화 → 셀러가 3.5% 부담. 구매자(우리 사용자가 살 때)는 0원.
-  // "문의 필요"는 잘못된 표현. 디폴트는 0원 명시.
-  // "순익 차감"도 일반인 친화 라벨로 변경.
-  const rows = [
+  // Wave 394.7.h (외부 review 2라운드 #8): 비용 그룹 분리 — 구매 / 재판매. 초보자 헷갈림 차단.
+  const purchaseRows = [
     { label: "상품가", value: krw(card.price), note: "현재 매입 기준" },
     { label: "내가 낼 배송비", value: snapshot.shippingLabel, note: "택포/별도 문구는 구매 전 재확인" },
     {
-      label: "결제 수수료 (내가 살 때)",
+      label: "결제 수수료",
       value: "0원",
-      note: "번개 안전결제는 셀러 의무 부담 (3.5%). 단 셀러가 별도 명시 시 협의 필요",
+      note: "번개 안전결제는 셀러 의무 부담 (3.5%)",
     },
+  ];
+  const resellRows = [
     {
-      // Wave 394.1 (외부 review #17): "안전결제 ... · 재배송 ... · 안전버퍼 ..." 한 줄 → 리스트 (\n 줄바꿈, whitespace-pre-line 렌더).
-      // 비용 항목 3개 한 줄에 다 박으면 모바일에서 가독성 떨어짐.
-      label: "되팔 때 빠지는 돈",
-      value: `안전결제 ${feeRateLabel}${snapshot.sellingFee == null ? "" : ` ${krw(snapshot.sellingFee)}`}\n재배송비 ${krw(RESELL_SHIPPING_FEE)}\n안전버퍼 ${krw(SAFETY_BUFFER)}`,
-      note: "내가 재판매 시 셀러로서 부담 — 시세에서 차감",
+      label: "안전결제 수수료",
+      value: snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`,
+      note: "셀러가 부담 (시세 대비 차감)",
     },
+    { label: "재배송비", value: krw(RESELL_SHIPPING_FEE), note: "재판매 발송 시" },
+    { label: "안전버퍼", value: krw(SAFETY_BUFFER), note: "분쟁/반품 등 예비비" },
   ];
 
   async function handleCopy() {
@@ -2825,14 +2826,35 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
         {snapshot.buyerCostLabel}
       </div>
 
-      {/* 비용 분해 — 평탄 리스트 */}
+      {/* Wave 394.7.h: 비용 분해 — 구매 / 재판매 그룹 분리. */}
       <div className="mt-3 space-y-1.5 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-        {rows.map((row) => (
+        <div className="text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+          구매 비용 — 내가 내는 돈
+        </div>
+        {purchaseRows.map((row) => (
           <div key={row.label} className="flex items-baseline justify-between gap-2 text-xs">
             <div className="font-medium text-zinc-500 dark:text-zinc-400">{row.label}</div>
             <div className="min-w-0 text-right">
-              {/* Wave 394.1 (외부 review #17): whitespace-pre-line — value 안 \n 줄바꿈 렌더. 비용 분해 리스트. */}
-              <div className="whitespace-pre-line font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+              <div className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                {row.value}
+              </div>
+              <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
+                {row.note}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 space-y-1.5 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+        <div className="text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-400">
+          재판매 차감 비용 — 시세에서 빠지는 돈
+        </div>
+        {resellRows.map((row) => (
+          <div key={row.label} className="flex items-baseline justify-between gap-2 text-xs">
+            <div className="font-medium text-zinc-500 dark:text-zinc-400">{row.label}</div>
+            <div className="min-w-0 text-right">
+              <div className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
                 {row.value}
               </div>
               <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
