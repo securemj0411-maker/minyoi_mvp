@@ -665,6 +665,42 @@ export const SHOE_CATALOG: Sku[] = [
     released: 2021,
     laneKey: "shoe_salomon_xt6_black",
   },
+  // Wave 263 (2026-05-20): Salomon XT-6 broad fallback — 사용자 SQL 122건 sku_id=NULL.
+  //   narrow 2개 (Black Phantom / Mindful 2 Vanilla) 만 catalog — 다양한 colorway 미커버.
+  //   variant: 어스브라운/터틀도브/익스팬스/ADV/GTX/애프리콧/켈프 렌 사파리/콰이엇 쉐이드/에보니/실버 등.
+  //   broad SKU 신설 → narrow 매칭 실패 매물 fallback. collab (MM6/CDG/샌디리앙/간류) 차단.
+  {
+    id: "shoe-salomon-xt-6-broad",
+    brand: "Salomon",
+    category: "shoe",
+    modelName: "Salomon XT-6 (Broad — 모든 single variant fallback)",
+    aliases: ["Salomon XT-6"],
+    mustContain: [
+      ["살로몬", "salomon"],
+      ["xt-6", "xt 6", "xt6"],
+    ],
+    mustNotContain: [
+      // narrow specific (Wave 218 narrow promotion 보존)
+      "블랙 팬텀", "black phantom", "phantom",
+      "마인드풀", "mindful", "바닐라", "vanilla",
+      // collab (Wave 242/243 GLOBAL_DESIGNER_COLLAB_NOISE 영역, broad SKU 차단)
+      "mm6", "마르지엘라", "margiela", "11 by", "boris bidjan", "advanced",
+      "샌디 리앙", "샌디리앙", "sandy liang",
+      "꼼데가르송", "comme des garcons", "cdg",
+      "간류", "kanryu",
+      // buy intent
+      "삽니다", "매입", "구합니다", "구해요", "구함",
+      // 일반 noise
+      "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "복각", "이미테이션", "레플리카", "짝퉁",
+      "백팩", "backpack",
+      // clothing keyword (Wave 260 systemic)
+      "트랙팬츠", "트랙 팬츠", "티셔츠", "맨투맨", "후드", "자켓", "재킷", "바람막이", "롱슬리브", "코트", "쇼츠", "반바지", "벨트",
+    ],
+    msrpKrw: 230000,
+    released: 2024,
+    laneKey: "shoe_salomon_xt_6_broad",
+    defaultProductType: "sneaker",
+  },
   {
     id: "shoe-salomon-xt-6-mindful-2",
     brand: "Salomon",
