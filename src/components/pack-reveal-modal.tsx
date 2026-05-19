@@ -792,15 +792,7 @@ function revealRiskScoreInput(card: RevealCard): RiskScoreInput {
   };
 }
 
-function fixedSafetyCtaClass(tone: RiskTone) {
-  if (tone === "danger") {
-    return "flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-rose-300 bg-rose-50 px-3 py-3 text-center text-sm font-black text-rose-800 shadow-sm ring-1 ring-white/70 transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-100 dark:ring-rose-900/25";
-  }
-  if (tone === "caution") {
-    return "flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 text-center text-sm font-black text-amber-800 shadow-sm ring-1 ring-white/70 transition hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100 dark:ring-amber-900/25";
-  }
-  return "flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-[#c9dbc8] bg-[#f1f8ef] px-3 py-3 text-center text-sm font-black text-[#274633] shadow-sm ring-1 ring-white/70 transition hover:bg-[#e7f3e4] dark:border-emerald-900/55 dark:bg-emerald-950/25 dark:text-emerald-100 dark:ring-emerald-900/25";
-}
+// Wave 333: fixedSafetyCtaClass 제거 — FixedBunjangFooter에서 안전도 버튼 빠지면서 미사용.
 
 function RevealProductImage({ card }: { card: RevealCard }) {
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -1978,10 +1970,20 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
         ))}
       </div>
 
-      {/* 순익 계산식 — 한 줄 */}
+      {/* Wave 333: 결과 라벨 명시 — 24,739원이 뭔지 가시적이지 않았던 거 fix */}
       {snapshot.salePrice != null ? (
-        <div className="mt-3 border-t border-zinc-100 pt-3 text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
-          시세 {krw(snapshot.salePrice)} − 매입 {snapshot.buyerCostLabel} − 비용 = <span className="font-bold text-zinc-900 dark:text-zinc-100">{displayProfitRange(card)}</span>
+        <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+          <div className="text-[10px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
+            시세 {krw(snapshot.salePrice)} − 매입 {snapshot.buyerCostLabel} − 비용
+          </div>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              = 예상 차익
+            </span>
+            <span className="text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+              {displayProfitRange(card)}
+            </span>
+          </div>
         </div>
       ) : null}
 
@@ -2562,29 +2564,20 @@ function FixedBunjangFooter({
   card: RevealCard;
   onLinkClicked: (pid: number) => void;
 }) {
-  const safetyScore = buildRiskScore(revealRiskScoreInput(card));
+  // Wave 333 (사용자 피드백): 안전도("주의 1건") 버튼 제거 — 모달 안 셀러 카드/거래 안전 타일에 이미 있음.
+  // 하단 fixed는 번개장터 이동 버튼만 풀 너비로.
   return (
     <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-2 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-3">
-      <div className="grid grid-cols-[minmax(0,0.86fr)_minmax(0,1.18fr)] gap-2">
-        <RevealRiskScoreMini
-          card={card}
-          containerClassName="flex w-full min-w-0"
-          triggerLabel={safetyScore.label}
-          hideChevron
-          portalDetail
-          triggerClassName={fixedSafetyCtaClass(safetyScore.tone)}
-        />
-        <a
-          href={card.url}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => onLinkClicked(card.pid)}
-          className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-3 text-center text-sm font-black text-white shadow-lg shadow-[rgba(0,196,113,0.28)] ring-1 ring-[#80e8bd]/70 transition hover:bg-[#00b267]"
-        >
-          <BunjangLogo className="h-[18px] w-[18px] rounded-[5px]" />
-          번개장터에서 확인하기
-        </a>
-      </div>
+      <a
+        href={card.url}
+        target="_blank"
+        rel="noreferrer"
+        onClick={() => onLinkClicked(card.pid)}
+        className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-3 text-center text-sm font-bold text-white shadow-lg shadow-[rgba(0,196,113,0.28)] ring-1 ring-[#80e8bd]/70 transition hover:bg-[#00b267]"
+      >
+        <BunjangLogo className="h-[18px] w-[18px] rounded-[5px]" />
+        번개장터에서 확인하기
+      </a>
     </div>
   );
 }
