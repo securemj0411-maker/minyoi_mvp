@@ -871,7 +871,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
   ) : null;
 
   return (
-    <div className="relative left-1/2 h-[145px] w-screen -translate-x-1/2 overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-800 sm:left-auto sm:mx-0 sm:h-[132px] sm:w-[132px] sm:translate-x-0 sm:rounded-lg lg:h-[150px] lg:w-[150px]">
+    <div className="relative left-1/2 h-[210px] w-screen -translate-x-1/2 overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-800 sm:left-auto sm:mx-0 sm:h-[180px] sm:w-[180px] sm:translate-x-0 sm:rounded-lg lg:h-[220px] lg:w-[220px]">
       <ConditionPhotoBadge conditionClass={card.marketBasis?.conditionClass ?? null} />
       {card.thumbnailUrl ? (
         <>
@@ -880,7 +880,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
             alt=""
             aria-hidden="true"
             fill
-            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 132px, 150px"
+            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 180px, 220px"
             className="scale-[1.08] object-cover object-center opacity-55 blur-sm"
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,253,249,0.22),rgba(238,231,218,0.30))] dark:bg-none dark:bg-zinc-950/20" />
@@ -890,7 +890,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
                 src={card.thumbnailUrl}
                 alt={card.name}
                 fill
-                sizes="(max-width: 639px) 100vw, (max-width: 1023px) 132px, 150px"
+                sizes="(max-width: 639px) 100vw, (max-width: 1023px) 180px, 220px"
                 className="scale-[1.08] rounded-none object-contain object-center drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)] sm:scale-100 sm:rounded-md"
               />
             </div>

@@ -489,9 +489,10 @@ export default function ExploreClient() {
                     <ConditionPhotoBadge conditionClass={item.conditionClass} compact />
                   ) : null}
                   {isSoldOut ? (
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-zinc-900/30">
-                      <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[9px] font-bold text-white shadow">
-                        잡힘
+                    // Wave 357: SaaS 친화 톤 — 단순 "잡힘" → sympathy 표현 + emoji.
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-zinc-900/35 px-2">
+                      <span className="rounded-full bg-rose-600/95 px-2.5 py-1 text-center text-[10px] font-bold leading-tight text-white shadow-lg">
+                        다른 분이 잡았어요 ㅠㅠ
                       </span>
                     </div>
                   ) : null}
