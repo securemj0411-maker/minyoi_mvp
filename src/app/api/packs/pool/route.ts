@@ -358,6 +358,20 @@ export async function GET(req: Request) {
     const sortParam = url.searchParams.get("sort");
     const sort: "profit_desc" | "latest" = sortParam === "latest" ? "latest" : "profit_desc";
 
+    // Wave 373: personalization 필터 — 예산(가격 상한) + 성향(정렬/필터 우선순위).
+    const budgetParam = url.searchParams.get("budget");
+    const priceMax =
+      budgetParam === "100k" ? 100000 :
+      budgetParam === "300k" ? 300000 :
+      budgetParam === "500k" ? 500000 :
+      null; // unlimited / 미지정
+
+    const preferenceParam = url.searchParams.get("preference");
+    const preference: "safe" | "balanced" | "aggressive" =
+      preferenceParam === "safe" ? "safe" :
+      preferenceParam === "aggressive" ? "aggressive" :
+      "balanced";
+
     const headers = serviceHeaders();
     const credits = await loadUserCredits(headers, userRef);
     const cooldown = computeCooldown(credits?.last_free_browse_at ?? null);
@@ -377,7 +391,30 @@ export async function GET(req: Request) {
     }
 
     const { pool, raws, metas, marketBands } = await loadPool(headers, { sort });
-    const items = buildItems(pool, raws, metas, marketBands);
+    let items = buildItems(pool, raws, metas, marketBands);
+
+    // Wave 373: 예산 필터 — 매입가 상한 이하만.
+    if (priceMax != null) {
+      items = items.filter((it) => it.price <= priceMax);
+    }
+
+    // Wave 373: 성향 정렬 — preference 따라 우선순위 재정렬.
+    //   safe: 우수 셀러 (평점 4.5+ & 후기 10+) 우선
+    //   aggressive: 차익 큰 매물 우선 (expected_profit_max desc)
+    //   balanced: loadPool의 기존 정렬 유지 (profit_band desc + random shuffle)
+    if (preference === "safe") {
+      const isPremium = (it: (typeof items)[number]) =>
+        (it.sellerReviewRating ?? 0) >= 4.5 && it.sellerReviewCount >= 10;
+      items = [...items].sort((a, b) => {
+        const aP = isPremium(a) ? 1 : 0;
+        const bP = isPremium(b) ? 1 : 0;
+        if (aP !== bP) return bP - aP;
+        // tie-breaker: 셀러 평점 desc
+        return (b.sellerReviewRating ?? 0) - (a.sellerReviewRating ?? 0);
+      });
+    } else if (preference === "aggressive") {
+      items = [...items].sort((a, b) => b.expectedProfitMax - a.expectedProfitMax);
+    }
 
     // refresh 후 새 cooldown 정보
     const nextCooldown = refresh && cooldown.canRefresh
