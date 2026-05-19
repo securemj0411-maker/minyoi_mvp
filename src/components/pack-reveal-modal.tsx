@@ -1084,23 +1084,24 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   ];
   const safetyTone = upperFoldTileClass(safety.tone);
   const SafetyIcon = safety.Icon;
+  // Wave 323 (디자인 통일): 모바일 1열, sm+ 3열. 모든 타일 같은 디자인 토큰.
   return (
-    <div className="-mx-[10px] mt-1 grid grid-cols-1 overflow-hidden bg-[#d9e1d6] dark:bg-zinc-800 sm:mx-0 sm:mt-2 sm:grid-cols-3 sm:gap-1.5 sm:overflow-visible sm:bg-transparent sm:dark:bg-transparent">
+    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
       {tiles.map((tile) => {
         const tone = upperFoldTileClass(tile.tone);
         return (
           <div
             key={tile.key}
-            className={`min-h-[62px] border-0 px-3 py-2 shadow-none sm:min-h-[62px] sm:rounded-lg sm:border sm:px-2.5 sm:py-2 sm:shadow-sm ${tone.card}`}
+            className={`rounded-xl border p-3 ${tone.card}`}
           >
-            <div className="flex items-center gap-1.5 text-xs font-black text-zinc-500 dark:text-zinc-400">
-              <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
               {tile.label}
             </div>
-            <div className={`mt-0.5 line-clamp-2 text-[17px] font-black leading-5 tracking-normal tabular-nums sm:text-sm ${tone.value}`}>
+            <div className={`mt-1 text-sm font-bold tabular-nums ${tone.value}`}>
               {tile.value}
             </div>
-            <div className="mt-0.5 line-clamp-1 text-xs font-bold text-zinc-500 dark:text-zinc-400">
+            <div className="mt-0.5 line-clamp-2 text-[11px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
               {tile.sub}
             </div>
           </div>
@@ -1109,31 +1110,20 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
       <RevealRiskScoreMini
         card={card}
         containerClassName="contents"
-        triggerClassName={`min-h-[62px] w-full border-0 px-3 py-2 text-left shadow-none transition hover:-translate-y-0.5 hover:shadow-md sm:min-h-[62px] sm:rounded-lg sm:border sm:px-2.5 sm:py-2 sm:shadow-sm ${safetyTone.card}`}
+        triggerClassName={`rounded-xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-sm ${safetyTone.card}`}
         triggerContent={(
           <span className="block w-full">
-            <span className="flex items-center text-xs font-black text-zinc-500 dark:text-zinc-400">
-              <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
-                <SafetyIcon className={`h-4 w-4 ${safetyTone.value}`} />
-                거래 안전
-              </span>
+            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <SafetyIcon className={`h-3 w-3 ${safetyTone.value}`} />
+              거래 안전
             </span>
-            <span className={`mt-0.5 block line-clamp-2 text-[17px] font-black leading-5 tracking-normal tabular-nums sm:text-sm ${safetyTone.value}`}>
+            <span className={`mt-1 block text-sm font-bold tabular-nums ${safetyTone.value}`}>
               {safety.value}
             </span>
-            <span className="mt-0.5 flex min-w-0 items-center justify-between gap-1 text-xs font-bold text-zinc-500 dark:text-zinc-400">
-              <span className="min-w-0 truncate">
-                {safety.sub}
-              </span>
-              <span className="inline-flex shrink-0 items-center gap-1">
-                {safety.badge ? (
-                  <span className={`shrink-0 rounded-full border px-1 py-0.5 text-[9px] font-black leading-none ${safety.badge.className}`}>
-                    {safety.badge.label}
-                  </span>
-                ) : null}
-                <span className="shrink-0 text-[10px] font-black text-zinc-400 underline decoration-zinc-300 underline-offset-2 dark:text-zinc-500 dark:decoration-zinc-600">
-                  근거 보기
-                </span>
+            <span className="mt-0.5 flex min-w-0 items-center justify-between gap-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+              <span className="min-w-0 truncate">{safety.sub}</span>
+              <span className="shrink-0 text-[10px] font-bold text-zinc-400 underline decoration-zinc-300 underline-offset-2 dark:text-zinc-500 dark:decoration-zinc-600">
+                근거
               </span>
             </span>
           </span>
@@ -1446,50 +1436,49 @@ function SellerTrustPanel({ card }: { card: RevealCard }) {
     trustSub = "후기 없음 — 안전결제 + 직거래 검수 권장";
   }
 
-  const trustClass = trustLevel === "good"
-    ? "border-emerald-300 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/30"
+  // Wave 323 (디자인 통일): 모든 패널 같은 base — 흰 카드 + 색 accent strip (좌측 보더).
+  // 등급별 좌측 4px 보더 색만 변경. 박스 안 박스 없음.
+  const accentBorderClass = trustLevel === "good"
+    ? "border-l-emerald-500"
     : trustLevel === "ok"
-      ? "border-[#cfe0d2] bg-[#f4faf3] dark:border-emerald-900/40 dark:bg-emerald-950/15"
+      ? "border-l-emerald-300"
       : trustLevel === "caution"
-        ? "border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30"
-        : "border-rose-300 bg-rose-50 dark:border-rose-700 dark:bg-rose-950/30";
-  const trustTextClass = trustLevel === "good" || trustLevel === "ok"
-    ? "text-emerald-900 dark:text-emerald-100"
+        ? "border-l-amber-400"
+        : "border-l-rose-500";
+  const valueColor = trustLevel === "good" || trustLevel === "ok"
+    ? "text-emerald-700 dark:text-emerald-300"
     : trustLevel === "caution"
-      ? "text-amber-900 dark:text-amber-100"
-      : "text-rose-900 dark:text-rose-100";
-  const trustSubClass = trustLevel === "good" || trustLevel === "ok"
-    ? "text-emerald-700/85 dark:text-emerald-200/85"
-    : trustLevel === "caution"
-      ? "text-amber-700/85 dark:text-amber-200/85"
-      : "text-rose-700/85 dark:text-rose-200/85";
+      ? "text-amber-700 dark:text-amber-300"
+      : "text-rose-700 dark:text-rose-300";
 
   return (
-    <section className={`mt-2 rounded-2xl border p-3 shadow-[0_8px_20px_rgba(49,66,56,0.05)] ${trustClass}`}>
-      <div className="flex items-start justify-between gap-2">
+    <section className={`mt-3 rounded-xl border border-zinc-200 border-l-4 ${accentBorderClass} bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40`}>
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className={`text-[11px] font-black ${trustTextClass}`}>셀러 정보</div>
-          <div className={`mt-0.5 text-[14px] font-black ${trustTextClass}`}>
+          <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            셀러 정보
+          </div>
+          <div className={`mt-1 text-sm font-bold ${valueColor}`}>
             {trustHeadline}
           </div>
-          <div className={`mt-0.5 text-[11px] font-semibold leading-4 ${trustSubClass}`}>
+          <div className="mt-0.5 text-xs font-medium leading-4 text-zinc-600 dark:text-zinc-400">
             {trustSub}
           </div>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           {freeShipping ? (
-            <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white">
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
               무료배송
             </span>
           ) : null}
-          <span className="rounded-full border border-zinc-300 bg-white px-2 py-0.5 text-[10px] font-black text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200">
+          <span className="rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
             안전결제 권장
           </span>
         </div>
       </div>
       {(trustLevel === "caution" || trustLevel === "danger") ? (
-        <div className="mt-2 rounded-lg bg-white/70 px-2.5 py-1.5 text-[10px] font-bold leading-4 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
-          ⚠ 후기 적은 셀러는 번개페이 안전결제 + 직거래 검수로 위험 최소화.
+        <div className="mt-2 border-t border-zinc-100 pt-2 text-[11px] font-medium leading-4 text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
+          후기 적은 셀러는 번개페이 안전결제 + 직거래 검수 권장.
         </div>
       ) : null}
     </section>
@@ -1511,80 +1500,79 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
   const extraChecks = checklist.checks.filter((c) => c.priority === "extra");
   const totalCount = checklist.checks.length;
 
-  const priorityClass: Record<CounterfeitCheckPriority, string> = {
-    must: "border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-100",
-    recommended: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100",
-    extra: "border-zinc-200 bg-white/85 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/45 dark:text-zinc-200",
-  };
-  const priorityBadgeClass: Record<CounterfeitCheckPriority, string> = {
-    must: "bg-rose-600 text-white",
-    recommended: "bg-amber-500 text-white",
-    extra: "bg-zinc-400 text-white dark:bg-zinc-600",
+  // Wave 323 (디자인 통일): 흰 카드 + rose 좌측 보더 + 본문은 색 강도 줄임.
+  const priorityDotClass: Record<CounterfeitCheckPriority, string> = {
+    must: "bg-rose-500",
+    recommended: "bg-amber-400",
+    extra: "bg-zinc-300 dark:bg-zinc-600",
   };
 
   return (
-    <section className="mt-2 rounded-2xl border border-[#e6c9c9] bg-[#fff5f5] p-3 shadow-[0_10px_24px_rgba(180,40,60,0.06)] dark:border-rose-900/40 dark:bg-rose-950/15">
+    <section className="mt-3 rounded-xl border border-zinc-200 border-l-4 border-l-rose-500 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-center justify-between gap-2 text-left"
       >
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-[12px] font-black text-rose-800 dark:text-rose-200">
-            <ShieldIcon className="h-4 w-4 shrink-0" />
-            정품 확인 체크리스트 — {checklist.label}
-            <span className="rounded-full bg-rose-600 px-1.5 py-0.5 text-[9px] font-black text-white">
-              {totalCount}개
-            </span>
+          <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            정품 확인 — {checklist.label}
           </div>
-          <div className="mt-0.5 line-clamp-2 text-[11px] font-semibold leading-4 text-rose-700/85 dark:text-rose-200/85 sm:line-clamp-none">
+          <div className="mt-1 flex items-center gap-2 text-sm font-bold text-rose-700 dark:text-rose-300">
+            <ShieldIcon className="h-4 w-4 shrink-0" />
+            가품 위험 — {totalCount}개 체크
+          </div>
+          <div className="mt-0.5 line-clamp-2 text-xs font-medium leading-4 text-zinc-600 dark:text-zinc-400 sm:line-clamp-none">
             {checklist.riskHeadline}
           </div>
         </div>
-        <span className="shrink-0 rounded-full border border-rose-300 bg-white/90 px-2 py-0.5 text-[10px] font-black text-rose-700 transition dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200">
-          {expanded ? "접기" : `필수 ${mustChecks.length}개 보기`}
+        <span className="shrink-0 rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+          {expanded ? "접기" : `필수 ${mustChecks.length}개`}
         </span>
       </button>
       {expanded ? (
-        <div className="mt-3 space-y-2">
+        <div className="mt-3 space-y-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
           {[...mustChecks, ...recommendedChecks, ...extraChecks].map((check) => (
             <div
               key={check.title}
-              className={`rounded-xl border px-3 py-2.5 shadow-sm ${priorityClass[check.priority]}`}
+              className="rounded-md bg-zinc-50 px-3 py-2 dark:bg-zinc-900/60"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="text-[12px] font-black leading-tight">
-                  {check.title}
+              <div className="flex items-start gap-2">
+                <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${priorityDotClass[check.priority]}`} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="text-xs font-bold leading-tight text-zinc-900 dark:text-zinc-100">
+                      {check.title}
+                    </div>
+                    <span className="shrink-0 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                      {PRIORITY_LABEL[check.priority]}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-[11px] font-medium leading-4 text-zinc-600 dark:text-zinc-400">
+                    {check.detail}
+                  </div>
                 </div>
-                <span
-                  className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-black ${priorityBadgeClass[check.priority]}`}
-                >
-                  {PRIORITY_LABEL[check.priority]}
-                </span>
-              </div>
-              <div className="mt-1.5 text-[11px] font-semibold leading-5 opacity-85">
-                {check.detail}
               </div>
             </div>
           ))}
-          <div className="mt-2 rounded-lg bg-white/70 px-3 py-2 text-[10px] font-bold leading-4 text-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200/70">
-            ⚠ &lsquo;필수&rsquo; 항목 중 하나라도 셀러가 거절하면 거래 보류 권장. 안전결제 + 반품 보호 필수.
+          <div className="text-[10px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
+            필수 항목 거절 시 거래 보류 권장. 안전결제 + 반품 보호 필수.
           </div>
         </div>
       ) : (
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="mt-2 flex flex-wrap gap-1">
           {mustChecks.slice(0, 4).map((check) => (
             <span
               key={check.title}
-              className="rounded-full border border-rose-300 bg-white/85 px-2 py-0.5 text-[10px] font-black text-rose-700 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
+              className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
               title={check.detail}
             >
               {check.title}
             </span>
           ))}
           {mustChecks.length > 4 ? (
-            <span className="rounded-full border border-rose-200 bg-white/60 px-2 py-0.5 text-[10px] font-bold text-rose-600 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-300">
-              +{mustChecks.length - 4}개 더
+            <span className="rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+              +{mustChecks.length - 4}
             </span>
           ) : null}
         </div>
@@ -1640,150 +1628,142 @@ function SellHelperPanel({
   const optionalPhotos = helper.photos.filter((p) => !p.required);
 
   return (
-    <section className="mt-2 rounded-2xl border border-[#cfe0d2] bg-[#f4faf3] p-3 shadow-[0_10px_24px_rgba(49,98,66,0.07)] dark:border-emerald-900/40 dark:bg-emerald-950/15">
+    <section className="mt-3 rounded-xl border border-zinc-200 border-l-4 border-l-emerald-500 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-center justify-between gap-2 text-left"
       >
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-[12px] font-black text-emerald-800 dark:text-emerald-200">
-            <WalletIcon className="h-4 w-4 shrink-0" />
+          <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             판매 도우미 — {helper.label}
-            <span className="rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] font-black text-white">
-              {currentFeedbackType === "bought" ? "매수 완료"
-                : currentFeedbackType === "inspected" ? "검수 완료"
-                : currentFeedbackType === "listed" ? "판매 등록"
-                : "판매 완료"}
-            </span>
           </div>
-          <div className="mt-0.5 line-clamp-2 text-[11px] font-semibold leading-4 text-emerald-700/85 dark:text-emerald-200/85 sm:line-clamp-none">
-            이제 어떻게 올릴지 — 제목 / 본문 / 사진 / 호가 가이드. 복붙 가능.
+          <div className="mt-1 flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-300">
+            <WalletIcon className="h-4 w-4 shrink-0" />
+            {currentFeedbackType === "bought" ? "매수 완료 — 이제 팔아보자"
+              : currentFeedbackType === "inspected" ? "검수 완료 — 등록 단계"
+              : currentFeedbackType === "listed" ? "판매 등록 완료"
+              : "판매 완료"}
+          </div>
+          <div className="mt-0.5 line-clamp-2 text-xs font-medium leading-4 text-zinc-600 dark:text-zinc-400 sm:line-clamp-none">
+            제목 / 본문 / 사진 / 호가 가이드 — 복붙 가능.
           </div>
         </div>
-        <span className="shrink-0 rounded-full border border-emerald-300 bg-white/90 px-2 py-0.5 text-[10px] font-black text-emerald-700 transition dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+        <span className="shrink-0 rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
           {expanded ? "접기" : "펼치기"}
         </span>
       </button>
 
       {expanded ? (
-        <div className="mt-3 space-y-3">
-          {/* 호가 가이드 */}
+        <div className="mt-3 space-y-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+          {/* 호가 가이드 — 평탄 */}
           {pricing ? (
-            <div className="rounded-xl border border-emerald-200 bg-white/85 p-3 dark:border-emerald-900/60 dark:bg-zinc-900/55">
-              <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">추천 호가 / 거래가</div>
-              <div className="mt-2 grid grid-cols-2 gap-2 text-[12px]">
-                <div className="rounded-lg bg-emerald-50 px-2.5 py-2 dark:bg-emerald-950/30">
-                  <div className="text-[9px] font-bold text-emerald-700 dark:text-emerald-300">호가 (등록 가격)</div>
-                  <div className="mt-0.5 font-black tabular-nums text-emerald-900 dark:text-emerald-100">
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                추천 호가 / 거래가
+              </div>
+              <div className="mt-1.5 grid grid-cols-2 gap-2">
+                <div>
+                  <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">호가 (등록)</div>
+                  <div className="text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-300">
                     {krw(pricing.askingPrice)}
                   </div>
-                  <div className="mt-0.5 text-[9px] font-bold text-emerald-600/80 dark:text-emerald-300/80">
-                    시세 +{pricing.markupPct}% (협상 여지)
+                  <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                    시세 +{pricing.markupPct}%
                   </div>
                 </div>
-                <div className="rounded-lg bg-white px-2.5 py-2 dark:bg-zinc-900/60">
-                  <div className="text-[9px] font-bold text-zinc-600 dark:text-zinc-400">거래가 (목표)</div>
-                  <div className="mt-0.5 font-black tabular-nums text-zinc-800 dark:text-zinc-100">
+                <div>
+                  <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">거래가 (목표)</div>
+                  <div className="text-base font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
                     {krw(pricing.targetClosePrice)}
                   </div>
-                  <div className="mt-0.5 text-[9px] font-bold text-zinc-500 dark:text-zinc-400">
-                    시세 기준 (협상 후 최저)
+                  <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                    시세 기준
                   </div>
                 </div>
               </div>
-              <div className="mt-2 text-[10px] font-bold leading-4 text-emerald-700/80 dark:text-emerald-200/80">
+              <div className="mt-1.5 text-[10px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
                 {helper.priceNote}
               </div>
             </div>
           ) : null}
 
           {/* 추천 제목 */}
-          <div className="rounded-xl border border-emerald-200 bg-white/85 p-3 dark:border-emerald-900/60 dark:bg-zinc-900/55">
+          <div className="border-t border-zinc-100 pt-3 dark:border-zinc-800">
             <div className="flex items-center justify-between gap-2">
-              <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">추천 제목</div>
+              <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                추천 제목
+              </div>
               <button
                 type="button"
                 onClick={() => copyText(recommendedTitle, setCopiedTitle)}
-                className="rounded-full border border-emerald-300 bg-white px-2 py-0.5 text-[10px] font-black text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-700 dark:bg-zinc-900 dark:text-emerald-200 dark:hover:bg-emerald-950/40"
+                className="rounded-md border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-bold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
               >
                 {copiedTitle ? "복사됨" : "복사"}
               </button>
             </div>
-            <div className="mt-1.5 break-keep rounded-md bg-zinc-50 px-2.5 py-2 text-[11px] font-bold leading-5 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+            <div className="mt-1.5 rounded-md bg-zinc-50 px-2.5 py-2 text-xs font-medium leading-5 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
               {recommendedTitle}
             </div>
-            <div className="mt-1.5 text-[10px] font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
-              제목 패턴: <span className="font-mono">{helper.titlePattern}</span>
-              <br />
-              상태/구성품 정보로 빈 자리를 채우세요.
+            <div className="mt-1 text-[10px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
+              패턴: <span className="font-mono">{helper.titlePattern}</span>
             </div>
           </div>
 
           {/* 본문 템플릿 */}
-          <div className="rounded-xl border border-emerald-200 bg-white/85 p-3 dark:border-emerald-900/60 dark:bg-zinc-900/55">
+          <div className="border-t border-zinc-100 pt-3 dark:border-zinc-800">
             <div className="flex items-center justify-between gap-2">
-              <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">본문 템플릿 (복붙)</div>
+              <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                본문 템플릿
+              </div>
               <button
                 type="button"
                 onClick={() => copyText(bodyTemplate, setCopiedBody)}
-                className="rounded-full border border-emerald-300 bg-white px-2 py-0.5 text-[10px] font-black text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-700 dark:bg-zinc-900 dark:text-emerald-200 dark:hover:bg-emerald-950/40"
+                className="rounded-md border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-bold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
               >
                 {copiedBody ? "복사됨" : "복사"}
               </button>
             </div>
-            <pre className="mt-1.5 max-h-[200px] overflow-auto whitespace-pre-wrap break-keep rounded-md bg-zinc-50 px-2.5 py-2 text-[11px] font-semibold leading-5 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+            <pre className="mt-1.5 max-h-[200px] overflow-auto whitespace-pre-wrap rounded-md bg-zinc-50 px-2.5 py-2 text-[11px] font-medium leading-5 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
               {bodyTemplate}
             </pre>
           </div>
 
           {/* 사진 가이드 */}
-          <div className="rounded-xl border border-emerald-200 bg-white/85 p-3 dark:border-emerald-900/60 dark:bg-zinc-900/55">
-            <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">
+          <div className="border-t border-zinc-100 pt-3 dark:border-zinc-800">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               필수 사진 {requiredPhotos.length}장
               {optionalPhotos.length > 0 ? (
-                <span className="ml-1 font-bold text-emerald-600/80 dark:text-emerald-300/80">
-                  + 선택 {optionalPhotos.length}장
-                </span>
+                <span className="ml-1 font-medium normal-case text-zinc-400">+ 선택 {optionalPhotos.length}</span>
               ) : null}
             </div>
             <ol className="mt-2 space-y-1.5">
               {requiredPhotos.map((photo, idx) => (
-                <li
-                  key={photo.title}
-                  className="rounded-md border border-emerald-100 bg-emerald-50/70 px-2.5 py-1.5 dark:border-emerald-900/40 dark:bg-emerald-950/25"
-                >
-                  <div className="flex items-start gap-2 text-[11px]">
-                    <span className="shrink-0 rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] font-black text-white">
-                      {idx + 1}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="font-black text-emerald-900 dark:text-emerald-100">
-                        {photo.title}
-                      </div>
-                      <div className="mt-0.5 text-[10px] font-semibold leading-4 text-emerald-700/85 dark:text-emerald-200/85">
-                        {photo.detail}
-                      </div>
+                <li key={photo.title} className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">
+                    {idx + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                      {photo.title}
+                    </div>
+                    <div className="text-[11px] font-medium leading-4 text-zinc-600 dark:text-zinc-400">
+                      {photo.detail}
                     </div>
                   </div>
                 </li>
               ))}
               {optionalPhotos.map((photo, idx) => (
-                <li
-                  key={photo.title}
-                  className="rounded-md border border-zinc-200 bg-white/60 px-2.5 py-1.5 dark:border-zinc-700 dark:bg-zinc-900/40"
-                >
-                  <div className="flex items-start gap-2 text-[11px]">
-                    <span className="shrink-0 rounded-full bg-zinc-400 px-1.5 py-0.5 text-[9px] font-black text-white">
-                      +{idx + 1}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="font-black text-zinc-800 dark:text-zinc-100">
-                        {photo.title}
-                      </div>
-                      <div className="mt-0.5 text-[10px] font-semibold leading-4 text-zinc-600 dark:text-zinc-400">
-                        {photo.detail}
-                      </div>
+                <li key={photo.title} className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-300 text-[10px] font-bold text-white dark:bg-zinc-600">
+                    +{idx + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                      {photo.title}
+                    </div>
+                    <div className="text-[11px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
+                      {photo.detail}
                     </div>
                   </div>
                 </li>
@@ -1791,10 +1771,12 @@ function SellHelperPanel({
             </ol>
           </div>
 
-          {/* 카테고리별 팁 */}
-          <div className="rounded-xl bg-emerald-100 px-3 py-2 dark:bg-emerald-950/35">
-            <div className="text-[10px] font-black text-emerald-800 dark:text-emerald-200">💡 카테고리 팁</div>
-            <div className="mt-1 text-[11px] font-semibold leading-5 text-emerald-900 dark:text-emerald-100">
+          {/* 카테고리 팁 */}
+          <div className="border-t border-zinc-100 pt-3 dark:border-zinc-800">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              💡 팁
+            </div>
+            <div className="mt-1 text-xs font-medium leading-5 text-zinc-700 dark:text-zinc-300">
               {helper.proTip}
             </div>
           </div>
@@ -1839,94 +1821,91 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
     }
   }
 
+  const guidance = buyPriceGuidance({
+    price: card.price,
+    medianPrice: card.marketBasis?.medianPrice ?? null,
+  });
+  const verdictClass = !guidance ? "" : guidance.verdict === "good"
+    ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+    : guidance.verdict === "warn"
+      ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+      : "bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200";
+
   return (
-    <section className="mt-2 rounded-2xl border border-[#ded7ca] bg-[#fffaf2] p-3 shadow-[0_10px_24px_rgba(49,66,56,0.07)] dark:border-zinc-800 dark:bg-zinc-900/55">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="text-[11px] font-black text-[#5d735f] dark:text-emerald-300">
-            최종 매입가 체크
-          </div>
-          <div className="mt-0.5 text-lg font-black leading-tight tabular-nums text-[#223127] dark:text-zinc-50 sm:text-base">
-            {snapshot.buyerCostLabel}
-          </div>
+    <section className="mt-3 rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40">
+      {/* Wave 323 (디자인 평탄화): 박스 안 박스 제거, 단일 평면 + 섹션 구분선. */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          최종 매입가 체크
         </div>
-        <span className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-black ${snapshot.confidenceClass}`}>
+        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${snapshot.confidenceClass}`}>
           {snapshot.confidenceLabel}
         </span>
       </div>
-      <div className="mt-2 divide-y divide-[#ece2d4] rounded-xl border border-[#eee5d8] bg-white/72 dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950/35">
+      <div className="mt-1 text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
+        {snapshot.buyerCostLabel}
+      </div>
+
+      {/* 비용 분해 — 평탄 리스트 */}
+      <div className="mt-3 space-y-1.5 border-t border-zinc-100 pt-3 dark:border-zinc-800">
         {rows.map((row) => (
-          <div key={row.label} className="grid grid-cols-[86px_minmax(0,1fr)] gap-2 px-2.5 py-2 text-[11px] leading-5 sm:grid-cols-[104px_minmax(0,1fr)]">
-            <div className="font-black text-[#667263] dark:text-zinc-400">{row.label}</div>
-            <div className="min-w-0">
-              <div className="break-keep font-black tabular-nums text-[#26352a] dark:text-zinc-100">
+          <div key={row.label} className="flex items-baseline justify-between gap-2 text-xs">
+            <div className="font-medium text-zinc-500 dark:text-zinc-400">{row.label}</div>
+            <div className="min-w-0 text-right">
+              <div className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
                 {row.value}
               </div>
-              <div className="text-[10px] font-semibold text-[#7c8779] dark:text-zinc-500">
+              <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
                 {row.note}
               </div>
             </div>
           </div>
         ))}
       </div>
+
+      {/* 순익 계산식 — 한 줄 */}
       {snapshot.salePrice != null ? (
-        <div className="mt-2 rounded-xl bg-[#f5efe4] px-3 py-2 text-[11px] font-bold leading-5 text-[#657060] dark:bg-zinc-950/40 dark:text-zinc-300">
-          시세 {krw(snapshot.salePrice)} - 매입 {snapshot.buyerCostLabel} - 재판매 비용 = 예상 순익 {displayProfitRange(card)}
+        <div className="mt-3 border-t border-zinc-100 pt-3 text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
+          시세 {krw(snapshot.salePrice)} − 매입 {snapshot.buyerCostLabel} − 비용 = <span className="font-bold text-zinc-900 dark:text-zinc-100">{displayProfitRange(card)}</span>
         </div>
       ) : null}
-      {(() => {
-        const guidance = buyPriceGuidance({
-          price: card.price,
-          medianPrice: card.marketBasis?.medianPrice ?? null,
-        });
-        if (!guidance) return null;
-        const verdictClass = guidance.verdict === "good"
-          ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
-          : guidance.verdict === "warn"
-            ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
-            : "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200";
-        return (
-          <div className="mt-2 rounded-xl border border-[#d8e2d7] bg-white/85 p-3 dark:border-zinc-800 dark:bg-zinc-900/55">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-[11px] font-black text-[#5d735f] dark:text-emerald-300">
-                매입가 판단 가이드
-              </div>
-              <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500">
-                손익분기 {krw(guidance.breakEven)}
+
+      {/* 매입가 가이드 — 박스 없이 인라인 */}
+      {guidance ? (
+        <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            매입가 가이드
+          </div>
+          <div className="mt-1.5 space-y-1 text-xs">
+            <div className="flex items-baseline justify-between">
+              <span className="text-zinc-500 dark:text-zinc-400">추천 매입가</span>
+              <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                ~{krw(guidance.targetBuy)} <span className="text-[10px] font-medium text-zinc-400">+18% 확보</span>
               </span>
             </div>
-            <div className="mt-1.5 grid gap-1 rounded-lg border border-[#eee5d8] bg-white/72 px-2.5 py-2 dark:border-zinc-800 dark:bg-zinc-950/35">
-              <div className="flex items-center justify-between gap-2 text-[11px]">
-                <span className="font-bold text-zinc-500 dark:text-zinc-400">추천 매입가</span>
-                <span className="font-black tabular-nums text-emerald-700 dark:text-emerald-300">
-                  ~{krw(guidance.targetBuy)}
-                  <span className="ml-1 text-[9px] font-bold text-zinc-500 dark:text-zinc-500">+18% 확보</span>
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-2 text-[11px]">
-                <span className="font-bold text-zinc-500 dark:text-zinc-400">패스 기준</span>
-                <span className="font-black tabular-nums text-rose-700 dark:text-rose-300">
-                  {krw(guidance.passBuy)} 이상
-                  <span className="ml-1 text-[9px] font-bold text-zinc-500 dark:text-zinc-500">손 떼기</span>
-                </span>
-              </div>
-            </div>
-            <div className={`mt-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-black ${verdictClass}`}>
-              현재 {guidance.verdictLabel}
-              <span className="ml-1 font-bold opacity-80">· {guidance.verdictSub}</span>
-            </div>
-            <div className="mt-1.5 text-[9px] font-bold leading-4 text-zinc-400 dark:text-zinc-500">
-              협상 천장이 아니라 &lsquo;여기서 손 떼기&rsquo; 기준이에요. 패스 기준 이상이면 다른 매물 보세요.
+            <div className="flex items-baseline justify-between">
+              <span className="text-zinc-500 dark:text-zinc-400">패스 기준</span>
+              <span className="font-bold tabular-nums text-rose-600 dark:text-rose-400">
+                {krw(guidance.passBuy)} 이상 <span className="text-[10px] font-medium text-zinc-400">손 떼기</span>
+              </span>
             </div>
           </div>
-        );
-      })()}
-      <details className="mt-2 rounded-xl border border-[#d8e2d7] bg-[#f6fbf2] px-3 py-2 dark:border-emerald-900/50 dark:bg-emerald-950/20">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[11px] font-black text-[#4f6a52] dark:text-emerald-200">
-          <span>문의 전에 확인할 3개</span>
-          <span className="text-[10px] font-bold text-[#748071] dark:text-zinc-400">복붙 가능</span>
+          <div className={`mt-2 rounded-md px-2.5 py-1.5 text-xs font-bold ${verdictClass}`}>
+            현재 {guidance.verdictLabel}
+            <span className="ml-1 font-medium opacity-75">· {guidance.verdictSub}</span>
+          </div>
+          <div className="mt-1.5 text-[10px] font-medium leading-4 text-zinc-400 dark:text-zinc-500">
+            손익분기 {krw(guidance.breakEven)} — 협상 천장이 아니라 &lsquo;여기서 손 떼기&rsquo; 기준.
+          </div>
+        </div>
+      ) : null}
+
+      <details className="group mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <span>문의 전 확인 3가지 (복붙)</span>
+          <span className="text-zinc-400 transition group-open:rotate-45">+</span>
         </summary>
-        <ol className="mt-2 list-decimal space-y-1 pl-4 text-[11px] font-semibold leading-5 text-[#5f6d5f] dark:text-zinc-300">
+        <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs font-medium leading-5 text-zinc-700 dark:text-zinc-300">
           <li>표시 가격에 택배비가 포함돼 있는지</li>
           <li>번개페이/안전결제 수수료를 누가 부담하는지</li>
           <li>구성품이 사진과 설명에 보이는 것 전부인지</li>
@@ -1934,9 +1913,9 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
         <button
           type="button"
           onClick={handleCopy}
-          className="mt-2 w-full rounded-lg border border-[#b9d0b4] bg-white px-3 py-2 text-[11px] font-black text-[#3f5e45] shadow-sm transition hover:bg-[#eef7eb] dark:border-emerald-900/60 dark:bg-zinc-900 dark:text-emerald-200 dark:hover:bg-zinc-800"
+          className="mt-2 w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
         >
-          {copied ? "복사됨" : "문의 문장 복사"}
+          {copied ? "복사됨" : "문장 복사"}
         </button>
       </details>
     </section>
@@ -2048,49 +2027,48 @@ function RevealCardItem({
       <div className="order-1 grid gap-3 overflow-hidden rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent sm:rounded-2xl sm:border sm:border-[#dfd6c9] sm:bg-[linear-gradient(180deg,#fffdf9_0%,#fbf6ee_100%)] sm:p-3 sm:shadow-[0_16px_34px_rgba(49,66,56,0.09)] sm:ring-1 sm:ring-white/70 sm:dark:border-zinc-800 sm:dark:bg-none sm:dark:bg-zinc-900 sm:dark:ring-zinc-800/70 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
         <RevealProductImage card={card} />
 
-        <div className="min-w-0 w-full space-y-2.5 px-3 sm:px-0">
+        <div className="min-w-0 w-full space-y-3 px-3 sm:px-0">
           <div className="flex w-full items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <div className="line-clamp-2 text-[17px] font-black leading-6 text-[#18251c] dark:text-zinc-50">
+              {/* Wave 323 (디자인 통일): 상품명 base size + 헤드라인 2-tier (label + 큰 가격 + % 칩). */}
+              <div className="line-clamp-2 text-base font-bold leading-tight text-zinc-900 dark:text-zinc-50">
                 {card.name}
               </div>
-              <div className={`mt-1.5 w-full px-0 py-0 ${
-                isMarketInvalidated
-                  ? "text-rose-500 dark:text-rose-400"
-                  : "text-[#00a862] dark:text-[#5dffae]"
-              }`}>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className={`text-[13px] font-bold ${
-                    isMarketInvalidated ? "text-rose-600 dark:text-rose-300" : "text-zinc-500 dark:text-zinc-400"
-                  }`}>
-                    예상 순익
-                  </span>
-                  <span className={`text-lg font-black leading-tight tabular-nums sm:text-sm sm:font-bold ${
-                    isMarketInvalidated ? "text-rose-700 dark:text-rose-200" : "text-[#00a862] dark:text-[#5dffae]"
+              <div className="mt-2">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  예상 순익
+                </div>
+                <div className="mt-0.5 flex flex-wrap items-baseline gap-2">
+                  <span className={`text-2xl font-bold leading-none tabular-nums ${
+                    isMarketInvalidated
+                      ? "text-rose-600 dark:text-rose-300"
+                      : "text-emerald-600 dark:text-emerald-300"
                   }`}>
                     {displayProfitRange(card)}
                   </span>
                   {netPct != null ? (
-                    <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-[13px] font-black tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold tabular-nums ${
+                      isMarketInvalidated
+                        ? "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
+                        : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                    }`}>
                       {netPct >= 0 ? "+" : ""}{netPct}%
                     </span>
                   ) : null}
-                  {/* Wave 2026-05-19 v2 (사용자 피드백): "총차익" 칩 제거 — 일반인이 "예상 순익"과 헷갈림.
-                      "최악 시 -X원" 배지도 제거 — 시세 -10% 가정이 임의적이고 일반인 망설임만 키움. */}
                   {isMarketInvalidated ? (
-                    <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black text-rose-900 dark:bg-rose-900/60 dark:text-rose-100">
+                    <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-900 dark:bg-rose-900/40 dark:text-rose-100">
                       판매완료 처리
                     </span>
                   ) : null}
                 </div>
                 {/* Wave 2026-05-19 v2 (사용자 피드백): "일수익 표본 부족 · 참고용" 거의 모든 매물에 떠서 가치 없음 → 제거.
                     회수 속도 정보는 UpperFold 회수 속도 타일에서 보임. */}
-                <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[13px] font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
-                  <span>매입 {krw(card.price)}</span>
+                <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium tabular-nums text-zinc-600 dark:text-zinc-400">
+                  <span>매입 <span className="font-bold text-zinc-900 dark:text-zinc-100">{krw(card.price)}</span></span>
                   {card.marketBasis?.medianPrice ? (
                     <>
-                      <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                      <span className="text-zinc-500 dark:text-zinc-300">시세 {krw(card.marketBasis.medianPrice)}</span>
+                      <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                      <span>시세 <span className="font-bold text-zinc-900 dark:text-zinc-100">{krw(card.marketBasis.medianPrice)}</span></span>
                       {sourceBadge ? (
                         sourceBadge.tone === "reference"
                           ? <DanawaSourceBadge label={sourceBadge.label} />
@@ -2098,11 +2076,12 @@ function RevealCardItem({
                       ) : null}
                     </>
                   ) : null}
-                  <span className="text-xs font-semibold text-zinc-400">{freshLabel(card.freshSeconds)}</span>
+                  <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                  <span className="text-zinc-500">{freshLabel(card.freshSeconds)}</span>
                   {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
                     <span
-                      title={`이 매물은 ${card.optionBaseAssumed.join(", ")} 명시 안 됨 → SKU 기본 옵션 가정 시세로 계산. 실제 매물이 고옵션이면 차익이 더 클 수 있어요.`}
-                      className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] font-black text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                      title={`옵션 명시 안 됨 → SKU 기본 옵션 가정`}
+                      className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
                     >
                       기본 옵션 가정
                     </span>
