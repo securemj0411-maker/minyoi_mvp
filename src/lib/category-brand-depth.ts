@@ -2165,8 +2165,11 @@ export function categoryDefaultDepth(
 }
 
 /** 가품 위험 한국어 라벨. */
+// Wave 394.7.f (외부 review 2라운드 #5): "가품 위험 큼" 단정형 → "정품 증빙 권장" 톤 약화.
+// 사용자 짚음 — "가품 위험 큼" = 사용자가 "이 매물 가품" 으로 받아들임. 실제 의미는
+// "이 브랜드/카테고리 가품 흔하니 증빙 확인" — 카테고리 가품 리스크 강조 톤.
 export const COUNTERFEIT_RISK_LABEL: Record<BrandDepth["counterfeitRisk"], string> = {
-  high: "가품 위험 큼",
-  moderate: "가품 가능 — 변별 권장",
+  high: "정품 증빙 권장",
+  moderate: "정품 변별 권장",
   low: "가품 거의 없음",
 };

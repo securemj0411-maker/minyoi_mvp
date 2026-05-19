@@ -603,11 +603,15 @@ function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
   if (!cond) return null;
   return (
     <div className="mb-2">
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Wave 394.7.f (외부 review 2라운드 #7): chip 옆에 "판매글 기준" prefix — 사진 분석 X 명확. */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+          판매글 기준
+        </span>
         <ConditionChip conditionClass={cond} variant="friendly" />
       </div>
       <div className="mt-1 text-[10px] font-medium leading-tight text-zinc-400 dark:text-zinc-500">
-        AI가 매물 설명(텍스트) 기준 판단 · 사진은 직접 확인 권장
+        사진은 직접 확인 권장
       </div>
     </div>
   );
@@ -1185,8 +1189,10 @@ function DealMeterButton({
         </span>
         <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">/100</span>
       </span>
+      {/* Wave 394.7.f (외부 review 2라운드 #2): "득템 점수" → "수익 기회" — 점수 의미 명확화.
+          사용자가 100/100을 "종합 점수" (가품/리스크 포함) 로 오해 → 수익성 점수임을 명시. */}
       <span className="mt-0.5 text-[10px] font-medium text-zinc-500 underline underline-offset-2 transition group-hover:text-zinc-800 dark:text-zinc-400 dark:group-hover:text-zinc-100">
-        득템 점수
+        수익 기회
       </span>
     </button>
   );
@@ -2238,13 +2244,14 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
 
   // Wave 393.8: 카테고리별 헤드라인 — "전자제품이 뭔 가품이냐" (사용자 짚음).
   // 가품 위험 카테고리 vs 정품 거래 카테고리 분기. 헤드라인 의미 정확.
+  // Wave 394.7.f (외부 review 2라운드 #6): "명품 정품 점검" → 일반화. 스트릿/한정판 콜라보 (Supreme/BAPE) 도 cover.
   const headlineByCategory: Record<string, string> = {
     shoe: `가품 + 사이즈 점검 ${totalCount}개`,
     earphone: `차이팟 가품 + 정품 점검 ${totalCount}개`,
-    bag: `명품 가품 점검 ${totalCount}개`,
+    bag: `브랜드 정품 점검 ${totalCount}개`,
     perfume: `정품 진위 점검 ${totalCount}개`,
-    watch: `명품 가품 점검 ${totalCount}개`,
-    clothing: `명품 정품 점검 ${totalCount}개`,
+    watch: `브랜드 정품 점검 ${totalCount}개`,
+    clothing: `브랜드 정품 점검 ${totalCount}개`,
     smartphone: `잠금 + 기기 상태 점검 ${totalCount}개`,
     tablet: `iCloud 잠금 + 상태 점검 ${totalCount}개`,
     smartwatch: `잠금 + 배터리 점검 ${totalCount}개`,
@@ -3050,6 +3057,15 @@ function RevealCardItem({
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const sourceBadge = marketSourceBadge(card);
   const netPct = netProfitPercent(card);
+  // Wave 394.7.f (외부 review 2라운드 #3): brand 가품 위험 큰 카테고리는 "조건부 매입 OK".
+  // 사용자 짚음 — "매입 OK + 가품 위험 큼" 충돌. 정품 확인 필요 명시.
+  const verdictCategory = categoryFromComparableKey(card.marketBasis?.comparableKey ?? null);
+  const verdictBrandDepth = detectBrandDepth(verdictCategory, {
+    skuId: card.skuId ?? null,
+    skuName: card.skuName ?? null,
+    name: card.name ?? null,
+  });
+  const hasHighCounterfeitRisk = verdictBrandDepth?.brand.counterfeitRisk === "high";
   // Wave 394.6.a (외부 review #1): 차익 헤드라인 옆 verdict chip — "3초 안에 사라/말아라/협상" 답.
   // buyPriceGuidance.verdict 4-tier (great/good/fair/tight) → 3-tier 단순화 (사용자 일반인 친화).
   const verdictGuidance = !isMarketInvalidated
@@ -3058,7 +3074,10 @@ function RevealCardItem({
   const verdictTier = !verdictGuidance
     ? null
     : verdictGuidance.verdict === "great" || verdictGuidance.verdict === "good"
-      ? { label: "매입 OK", cls: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200" }
+      ? {
+          label: hasHighCounterfeitRisk ? "조건부 매입 OK" : "매입 OK",
+          cls: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200",
+        }
       : verdictGuidance.verdict === "fair"
         ? { label: "협상 권장", cls: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200" }
         : { label: "협상 필수", cls: "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200" };
@@ -3597,8 +3616,10 @@ function RelatedRevealStrip({
     // Wave 366: 카드 박스 제거 → /me 피드 톤 (divider만 + 사진 크게 120px).
     <section className="mt-4 px-3 sm:px-4">
       <div className="mb-2 flex items-baseline justify-between gap-3">
+        {/* Wave 394.7.f (외부 review 2라운드 #10): 사용자 짚음 — "다른 추천 매물 = 비슷한 매물인지 다른 수익 매물인지 헷갈림".
+            "다른 수익 매물" 로 정확화 (이 매물과 무관한 다른 수익성 매물). */}
         <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-          다른 추천 매물
+          다른 수익 매물
         </div>
         <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
           {visibleItems.length}개
