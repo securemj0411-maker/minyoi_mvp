@@ -264,6 +264,13 @@ function buildItems(
       //   pack-open.ts 의 marketBasisForCandidate 와 동일 정책. additive only — DB 변경 X.
       const bandPrice = bandAwareMedian(marketBands, row.comparable_key, row.condition_class);
       const skuMedianFinal = bandPrice ?? raw.sku_median;
+      // Wave 368 (2026-05-19): sanity check — expected_profit (옛날 시점 계산) vs
+      // 현재 표시 시세 (wave 247.2 band-aware) inconsistency 차단.
+      // 표시 시세가 매입가보다 낮은데 차익 +로 나오면 사용자 신뢰 깎임 (사기처럼 보임).
+      // 시세가 매입가 미만이면 풀에서 제외 (data drift 시 silently 숨김).
+      if (skuMedianFinal && skuMedianFinal > 0 && raw.price > skuMedianFinal) {
+        return null;
+      }
       return {
         pid: row.pid,
         name: raw.name,
