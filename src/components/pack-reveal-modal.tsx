@@ -2290,34 +2290,33 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
   // 실제 의미 = 구매 전 정품 점검 체크리스트).
   return (
     <section className="mt-3 border-t border-zinc-200 border-l-4 border-l-amber-400 bg-white/0 py-3 pl-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
+      {/* Wave 394.7.d (사용자 짚음 — "토스처럼 잠깐, 이 3가지 꼭 확인해주세요" 톤 + 클릭 affordance ↑):
+          단어 토막 ("정품 확인 필요 — 명품 의류") → 친절 문장 ("잠깐, 사기 전에 N가지 꼭 확인해주세요").
+          우측 chip 화살표 ▼ 으로 클릭 명확. */}
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center justify-between gap-2 text-left"
+        className="flex w-full items-center justify-between gap-2 text-left transition hover:opacity-80"
       >
         <div className="min-w-0">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            {upperHeader} — {checklist.label}
-          </div>
-          <div className="mt-1 flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+          <div className="flex items-center gap-1.5 text-sm font-bold leading-snug text-zinc-900 dark:text-zinc-100">
             <ShieldIcon className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-            {headlineText}
+            <span>잠깐, 사기 전에 이 {totalCount}가지 꼭 확인해주세요</span>
           </div>
-          <div className="mt-0.5 line-clamp-2 text-xs font-medium leading-4 text-zinc-600 dark:text-zinc-400 sm:line-clamp-none">
-            {checklist.riskHeadline}
+          <div className="mt-1 text-xs font-medium leading-snug text-zinc-600 dark:text-zinc-400">
+            {brandDepth?.brand.label
+              ? <><b className="font-bold">{brandDepth.brand.label}</b> 매물 — {checklist.riskHeadline}</>
+              : checklist.riskHeadline}
           </div>
           {brandDepth ? (
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[10px] font-medium leading-4">
-              <span className="rounded-full bg-amber-50 px-2 py-0.5 font-bold text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-                {brandDepth.brand.label}
-              </span>
               <span
                 className={
                   brandDepth.brand.counterfeitRisk === "high"
-                    ? "rounded-full bg-rose-50 px-2 py-0.5 font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
+                    ? "rounded-full bg-rose-100 px-2 py-0.5 font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
                     : brandDepth.brand.counterfeitRisk === "moderate"
-                      ? "rounded-full bg-amber-50 px-2 py-0.5 font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
-                      : "rounded-full bg-emerald-50 px-2 py-0.5 font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                      ? "rounded-full bg-amber-100 px-2 py-0.5 font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
+                      : "rounded-full bg-emerald-100 px-2 py-0.5 font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
                 }
               >
                 {COUNTERFEIT_RISK_LABEL[brandDepth.brand.counterfeitRisk]}
@@ -2325,8 +2324,8 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
             </div>
           ) : null}
         </div>
-        <span className="shrink-0 rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-          {expanded ? "접기" : `필수 ${mustChecks.length}개`}
+        <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:ring-amber-900/50">
+          {expanded ? <>접기 <span aria-hidden="true">▲</span></> : <>자세히 <span aria-hidden="true">▼</span></>}
         </span>
       </button>
       {expanded ? (
