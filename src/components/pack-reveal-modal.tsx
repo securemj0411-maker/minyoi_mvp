@@ -2381,10 +2381,12 @@ function RevealCardItem({
   card,
   delay,
   currentFeedbackType,
+  photoRef,
 }: {
   card: RevealCard;
   delay: number;
   currentFeedbackType?: string | null;
+  photoRef?: React.RefObject<HTMLDivElement | null>;
 }) {
   const [shown, setShown] = useState(false);
   const [dealExpanded, setDealExpanded] = useState(false);
@@ -2405,7 +2407,9 @@ function RevealCardItem({
     >
       {/* 좌측 카드 — 매물 정보 (image + 메타 + verdicts + 노트 + 버튼) */}
       <div className="order-1 grid gap-3 overflow-hidden rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent sm:rounded-2xl sm:border sm:border-[#dfd6c9] sm:bg-[linear-gradient(180deg,#fffdf9_0%,#fbf6ee_100%)] sm:p-3 sm:shadow-[0_16px_34px_rgba(49,66,56,0.09)] sm:ring-1 sm:ring-white/70 sm:dark:border-zinc-800 sm:dark:bg-none sm:dark:bg-zinc-900 sm:dark:ring-zinc-800/70 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
-        <RevealProductImage card={card} />
+        <div ref={photoRef}>
+          <RevealProductImage card={card} />
+        </div>
 
         <div className="min-w-0 w-full space-y-3 px-3 sm:px-0">
           <div className="flex w-full items-start justify-between gap-3">
@@ -2952,7 +2956,24 @@ export default function PackRevealModal({
   const [previewSide, setPreviewSide] = useState<PreviewSide>("right");
   const consumedInitialPreviewSeedRef = useRef<string | number | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+  const photoRef = useRef<HTMLDivElement | null>(null);
+  // Wave 364: 사진이 viewport에 보이면 floating nav (icon-only), 안 보이면 sticky nav bar.
+  const [photoVisible, setPhotoVisible] = useState(true);
   const activeRevealPid = result?.result === "success" ? result.reveals[0]?.pid ?? null : null;
+
+  // 사진 영역 IntersectionObserver — scrollAreaRef 안에서 사진 visibility 추적.
+  useEffect(() => {
+    if (!open || activeRevealPid == null) return;
+    const photoEl = photoRef.current;
+    const scrollEl = scrollAreaRef.current;
+    if (!photoEl || !scrollEl) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setPhotoVisible(entry.isIntersecting),
+      { root: scrollEl, threshold: 0.1 },
+    );
+    observer.observe(photoEl);
+    return () => observer.disconnect();
+  }, [open, activeRevealPid]);
 
   const resetDetailScroll = useCallback((behavior: ScrollBehavior = "auto") => {
     const node = scrollAreaRef.current;
@@ -3099,33 +3120,77 @@ export default function PackRevealModal({
         className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#fffdf9] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-h-[88vh] sm:max-w-6xl sm:rounded-2xl sm:border sm:border-[#ddd6ca] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.16)] sm:dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Wave 360+361+362: 당근식 floating nav — icon-only, 좌상 ← + 🏠 나란히. */}
+        {/* Wave 360+361+362+364: 당근식 nav 유기적 전환.
+            사진 보일 때 → floating icon (drop-shadow on photo).
+            사진 사라지면 → sticky nav bar (cream 배경 + border + zinc icon). */}
         {!loading ? (
-          <div className="absolute left-3 top-3 z-20 flex items-center gap-1 sm:left-4 sm:top-4">
-            <button
-              type="button"
-              onClick={handleClose}
-              aria-label="뒤로가기"
-              className="inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90"
-              style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" }}
+          <>
+            {/* (A) Floating icon nav — 사진 위 */}
+            <div
+              className={`pointer-events-none absolute left-3 top-3 z-20 flex items-center gap-1 transition-opacity duration-200 sm:left-4 sm:top-4 ${
+                photoVisible ? "opacity-100" : "opacity-0"
+              }`}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={handleClose}
-              aria-label="대시보드로"
-              className="inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90"
-              style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" }}
+              <button
+                type="button"
+                onClick={handleClose}
+                aria-label="뒤로가기"
+                tabIndex={photoVisible ? 0 : -1}
+                className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90"
+                style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={handleClose}
+                aria-label="대시보드로"
+                tabIndex={photoVisible ? 0 : -1}
+                className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90"
+                style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <path d="M9 22V12h6v10" />
+                </svg>
+              </button>
+            </div>
+
+            {/* (B) Sticky nav bar — 사진 사라지면 등장 */}
+            <div
+              className={`pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-[#e2dbcf] bg-[#fffdf9]/95 backdrop-blur transition-opacity duration-200 dark:border-zinc-800 dark:bg-zinc-900/95 ${
+                photoVisible ? "opacity-0" : "opacity-100"
+              }`}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <path d="M9 22V12h6v10" />
-              </svg>
-            </button>
-          </div>
+              <div className="flex items-center gap-1 px-3 py-2 sm:px-4">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  aria-label="뒤로가기"
+                  tabIndex={photoVisible ? -1 : 0}
+                  className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center text-zinc-900 transition hover:bg-zinc-100 rounded-full active:scale-90 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  aria-label="대시보드로"
+                  tabIndex={photoVisible ? -1 : 0}
+                  className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center text-zinc-900 transition hover:bg-zinc-100 rounded-full active:scale-90 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <path d="M9 22V12h6v10" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </>
         ) : null}
 
         <div
@@ -3154,6 +3219,7 @@ export default function PackRevealModal({
                       card={card}
                       delay={idx * 250}
                       currentFeedbackType={currentFeedbackType}
+                      photoRef={idx === 0 ? photoRef : undefined}
                     />
                   ))}
                 </div>
