@@ -126,6 +126,20 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
   };
 }
 
+// Wave 340: 카테고리 필터 옵션 — 6개 위험 카테고리 + 가장 큰 카테고리 위주.
+const CATEGORY_OPTIONS = [
+  { value: "earphone", label: "이어폰" },
+  { value: "smartphone", label: "폰" },
+  { value: "tablet", label: "태블릿" },
+  { value: "smartwatch", label: "스마트워치" },
+  { value: "laptop", label: "노트북" },
+  { value: "shoe", label: "신발" },
+  { value: "bag", label: "가방" },
+  { value: "clothing", label: "옷" },
+];
+
+type SortOption = "profit_desc" | "latest";
+
 export default function ExploreClient() {
   const [items, setItems] = useState<PoolItem[]>([]);
   const [cooldown, setCooldown] = useState<PoolResponse["cooldown"] | null>(null);
@@ -135,6 +149,9 @@ export default function ExploreClient() {
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
+  // Wave 340: 카테고리 필터 + 정렬
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [sort, setSort] = useState<SortOption>("profit_desc");
 
   // Cooldown tick (매초 갱신)
   useEffect(() => {
@@ -155,11 +172,16 @@ export default function ExploreClient() {
     else setLoading(true);
     setError(null);
     try {
-      const url = `/api/packs/pool${refresh ? "?refresh=1" : ""}`;
+      const params = new URLSearchParams();
+      if (refresh) params.set("refresh", "1");
+      if (selectedCategories.size > 0) params.set("categories", Array.from(selectedCategories).join(","));
+      if (sort !== "profit_desc") params.set("sort", sort);
+      const url = `/api/packs/pool${params.toString() ? `?${params.toString()}` : ""}`;
       const res = await fetch(url, { cache: "no-store" });
       const data = (await res.json()) as PoolResponse;
       if (res.ok) {
-        if (data.items && data.items.length > 0) setItems(data.items);
+        // Wave 340: 필터 적용 시 빈 결과도 반영 (items 빈 배열로 갱신)
+        if (data.items != null) setItems(data.items);
         setCooldown(data.cooldown);
       } else {
         setError(data.message ?? "매물 불러오기 실패");
@@ -170,7 +192,7 @@ export default function ExploreClient() {
       setRefreshing(false);
       setLoading(false);
     }
-  }, []);
+  }, [selectedCategories, sort]);
 
   const loadStats = useCallback(async () => {
     try {
@@ -181,10 +203,15 @@ export default function ExploreClient() {
     }
   }, []);
 
+  // 초기 1회 통계 fetch
+  useEffect(() => {
+    void loadStats();
+  }, [loadStats]);
+
+  // 필터/정렬 변경 시 자동 재로드
   useEffect(() => {
     void loadPool(false);
-    void loadStats();
-  }, [loadPool, loadStats]);
+  }, [loadPool]);
 
   // PackRevealModal용 result wrapper (single card)
   const modalResult: RevealResult | null = useMemo(() => {
@@ -277,6 +304,56 @@ export default function ExploreClient() {
         <span>
           <span className="font-bold text-zinc-900 dark:text-zinc-100">즉시 매물</span>은 구독자 전용 — 곧 출시. 지금은 6시간 전 매물만 무료로 봐요.
         </span>
+      </div>
+
+      {/* Wave 340: 카테고리 필터 + 정렬 */}
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          {CATEGORY_OPTIONS.map((opt) => {
+            const isActive = selectedCategories.has(opt.value);
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  setSelectedCategories((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(opt.value)) next.delete(opt.value);
+                    else next.add(opt.value);
+                    return next;
+                  });
+                }}
+                className={`rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
+                  isActive
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                    : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400 dark:hover:border-zinc-600"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+          {selectedCategories.size > 0 ? (
+            <button
+              type="button"
+              onClick={() => setSelectedCategories(new Set())}
+              className="rounded-full px-2 py-1 text-[11px] font-medium text-zinc-500 underline dark:text-zinc-400"
+            >
+              초기화
+            </button>
+          ) : null}
+        </div>
+        <div className="ml-auto flex items-center gap-1.5 text-[11px]">
+          <span className="text-zinc-500 dark:text-zinc-400">정렬</span>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortOption)}
+            className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
+          >
+            <option value="profit_desc">차익 높은순</option>
+            <option value="latest">최신순</option>
+          </select>
+        </div>
       </div>
 
       {/* 로딩 / 에러 / 매물 grid */}

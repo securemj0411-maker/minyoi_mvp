@@ -89,29 +89,41 @@ function computeCooldown(lastBrowseAt: string | null): {
   };
 }
 
-async function loadPool(headers: Record<string, string>): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[] }> {
+async function loadPool(
+  headers: Record<string, string>,
+  options: { categories?: string[] | null; sort?: "profit_desc" | "latest" } = {},
+): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[] }> {
   const sixHoursAgo = new Date(Date.now() - FRESH_LAG_HOURS * 60 * 60 * 1000).toISOString();
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todayIso = todayStart.toISOString();
 
+  // Wave 340 (UX 개선): 카테고리 필터 + 정렬 옵션
+  const categoryFilter = options.categories && options.categories.length > 0
+    ? `&category=in.(${options.categories.map(encodeURIComponent).join(",")})`
+    : "";
+  const orderClause = options.sort === "latest"
+    ? "order=last_verified_at.desc"
+    : "order=profit_band.desc,expected_profit_max.desc";
+
   // Wave 339 (Phase 1b sold out 옵션 B): ready 25 + 오늘 invalidated 5 = 30개.
-  // sold out 매물도 카드 그대로 + "🔴 다른 사용자가 잡음" 오버레이 → FOMO 강화.
   const [readyRes, soldOutRes] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&last_verified_at=lte.${encodeURIComponent(sixHoursAgo)}&order=profit_band.desc,expected_profit_max.desc&limit=${READY_SLOTS}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&last_verified_at=lte.${encodeURIComponent(sixHoursAgo)}${categoryFilter}&${orderClause}&limit=${READY_SLOTS}`,
       { headers },
     ),
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}${categoryFilter}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS}`,
       { headers },
     ),
   ]);
   const readyRows = ((await readyRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: false }));
   const soldOutRows = ((await soldOutRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: true }));
 
-  // 무작위 섞기 — sold out 매물이 자연스럽게 grid 중간에 (사용자가 발견하며 후회)
-  const pool = [...readyRows, ...soldOutRows].sort(() => Math.random() - 0.5);
+  // sold out grid 중간에 자연스럽게 (사용자가 발견하며 후회). 정렬 latest일 땐 안 섞음.
+  const pool = options.sort === "latest"
+    ? [...readyRows, ...soldOutRows]
+    : [...readyRows, ...soldOutRows].sort(() => Math.random() - 0.5);
   if (pool.length === 0) return { pool: [], raws: [], metas: [] };
 
   const pids = pool.map((r) => r.pid);
@@ -196,6 +208,13 @@ export async function GET(req: Request) {
     const authUserId = auth.user.id;
     const url = new URL(req.url);
     const refresh = url.searchParams.get("refresh") === "1";
+    // Wave 340: 카테고리 필터 + 정렬 옵션
+    const categoriesParam = url.searchParams.get("categories");
+    const categories = categoriesParam
+      ? categoriesParam.split(",").map((s) => s.trim()).filter(Boolean)
+      : null;
+    const sortParam = url.searchParams.get("sort");
+    const sort: "profit_desc" | "latest" = sortParam === "latest" ? "latest" : "profit_desc";
 
     const headers = serviceHeaders();
     const credits = await loadUserCredits(headers, userRef);
@@ -215,7 +234,7 @@ export async function GET(req: Request) {
       await upsertLastBrowse(headers, userRef, authUserId);
     }
 
-    const { pool, raws, metas } = await loadPool(headers);
+    const { pool, raws, metas } = await loadPool(headers, { categories, sort });
     const items = buildItems(pool, raws, metas);
 
     // refresh 후 새 cooldown 정보
