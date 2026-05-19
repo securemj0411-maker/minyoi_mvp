@@ -1593,16 +1593,15 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
             // 강한 신호 = sold (실제 거래가). 약한 신호 = active (현재 호가).
             const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
             const isReserved = item.saleStatus === "reserved" || item.saleStatus === "RESERVED" || item.saleStatus === "예약중";
-            const saleLabel = isSold ? "판매완료" : isReserved ? "예약중" : "판매중";
-            const saleClass = isSold
-              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
-              : isReserved
-                ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
-                : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300";
 
+            // Wave 394.6.b.fix4 (사용자 짚음): "판매중" chip = default 상태 (99% active)
+            // → 매물명 가독성만 깎음. "판매완료/예약중" 만 우측 가격 위 작게 표시 (특별 정보).
+            const statusBadge = isSold
+              ? { label: "판매완료", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200" }
+              : isReserved
+                ? { label: "예약중", cls: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" }
+                : null; // "판매중" 안 보임 (default)
             return (
-              // Wave 394.6.b.fix3 (사용자 짚음): 매물명 좌측 / 가격 + 차이% 우측 column 묶음.
-              // 가격 비교가 시각 직관 — 한 column 에 가격 + ±% 위 아래로 시선 일관.
               <li key={item.pid} className="flex items-center gap-2 rounded bg-white/70 px-1.5 py-1.5 dark:bg-zinc-900/50">
                 <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded bg-[#f2eadf] dark:bg-zinc-800">
                   {item.thumbnailUrl ? (
@@ -1611,17 +1610,21 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
                     <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
                   )}
                 </div>
-                {/* 가운데 = 판매상태 chip + 매물명 */}
+                {/* 가운데 = 매물명 (chip 제거, 가독성 ↑ — line-clamp-2 좌측 다 차지) */}
                 <div className="min-w-0 flex-1">
-                  <span className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold ${saleClass}`}>
-                    {saleLabel}
-                  </span>
-                  <div className="mt-0.5 line-clamp-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400">
+                  <div className="line-clamp-2 text-[11px] font-medium leading-snug text-zinc-700 dark:text-zinc-300">
                     {item.name || "이름 없음"}
                   </div>
                 </div>
-                {/* 우측 = 가격 + 차이 % column */}
+                {/* 우측 = (선택) 판매완료/예약중 badge + 가격 + 차이 % column */}
                 <div className="shrink-0 text-right">
+                  {statusBadge ? (
+                    <div className="mb-0.5">
+                      <span className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold ${statusBadge.cls}`}>
+                        {statusBadge.label}
+                      </span>
+                    </div>
+                  ) : null}
                   <div className="text-sm font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
                     {krw(itemPrice)}
                   </div>
