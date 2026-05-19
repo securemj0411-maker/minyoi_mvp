@@ -1648,6 +1648,8 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           // Wave 140: 번개 detail 의 product.condition (셀러 명시) → parser condition_class strong override.
           bunjangConditionLabel: detail.conditionLabel ?? null,
           // 2026-05-16: 번개 detail의 product.condition (셀러 명시) → parser condition_class strong override.
+          // Wave 236d (2026-05-19): catalog defaultProductType — narrow model SKU 만 박힘 (fallback OK).
+          defaultProductType: sku?.defaultProductType ?? null,
         });
         const existingParsed = existingParsedByPid.get(Number(claim.pid));
         const now = new Date().toISOString();
@@ -2049,13 +2051,20 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // v4 (2026-05-19 Wave 236): product-type 추출 (hoodie/tee/jacket/pants/cap/belt/wallet/backpack/shoulder/tote).
   //   사용자 코멘트 22건 중 17건 "같은 SKU 다른 product-type 섞임" 근본 fix.
   //   comparable_key 에 product-type 박혀 시세 daily 자동 분리.
-  clothing: "wave216-clothing-v4",
+  // v5 (2026-05-19 Wave 236b): regex 보완 (반팔/남방/빈파포/눕시/터틀넥/탱크탑/트랙탑/윈드/호보/버킷/카메라/슬링/탑핸들/포쉐트).
+  // v6 (2026-05-19 Wave 236c): defaultProductType fallback 제거 + type_unknown → needsReview.
+  // v7 (2026-05-19 Wave 236d): catalog narrow model defaultProductType 박힘 시 fallback OK,
+  //   broad SKU 미박힘 시 차단. 사용자 의도: "Borealis=백팩 확정" 같은 narrow 만 통과.
+  clothing: "wave216-clothing-v7",
   // Wave 217 (2026-05-19): shoe/bag/bike 도 metadata 활용 — 전 매물 자동 re-parse.
   // Wave 232 (2026-05-19): v3 — bag parser confidence base 강화.
   // Wave 236 (2026-05-19): v4 — product-type 추출 (bag 가장 큰 영향).
-  shoe: "wave92-fashion-mobility-v4",
-  bag: "wave92-fashion-mobility-v4",
-  bike: "wave92-fashion-mobility-v4",
+  // Wave 236b (2026-05-19): v5 — regex 보완 + defaultProductType fallback.
+  // Wave 236c (2026-05-19): v6 — fallback 제거 + needsReview 차단.
+  // Wave 236d (2026-05-19): v7 — catalog narrow model defaultProductType fallback 복원.
+  shoe: "wave92-fashion-mobility-v7",
+  bag: "wave92-fashion-mobility-v7",
+  bike: "wave92-fashion-mobility-v7",
 };
 function isParsedStale(row: ParsedListingRow): boolean {
   if (!row.category) return false;
@@ -2083,6 +2092,8 @@ async function ensureParsedRows(rows: ScorableRawRow[], parsedByPid: Map<number,
       // Wave 217: bunjang metadata 전달 (shoe/bag/clothing 도 활용 가능하게).
       bunjangConditionLabel: row.bunjang_condition_label,
       category: sku?.category ?? null,
+      // Wave 236d: catalog defaultProductType (narrow model 박힘 시 fallback, broad SKU 차단).
+      defaultProductType: sku?.defaultProductType ?? null,
     });
     return toParsedListingRow(row.pid, parsed);
   });

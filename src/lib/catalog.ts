@@ -58,6 +58,15 @@ export type Sku = {
   //   policy: 박힌 SKU 는 그 값. 안 박혔으면 aliases 자동 fallback (buildCatalogSearchQueries
   //   helper 가 처리). noise 가능성 있는 SKU 는 빈 배열 [] 박아서 명시 차단.
   searchQueries?: string[];
+  // Wave 236d (2026-05-19): catalog model 자체가 product-type 1개 확정인 SKU 만 박힘.
+  //   사용자 의도: "노스페이스 빅샷 블랙 이런것만 보고 티셔츠인지 추정이 확실히 되면 그
+  //     이름이 티셔츠밖에 없는 이름이면 당연히 넣어야되는데" — narrow model SKU = product-type 확정.
+  //   policy:
+  //     - model 자체가 product-type 1개 라인 (Borealis=backpack, Nuptse=down jacket) → 박기
+  //     - model 이 multi product-type (RRL/FOG Essentials/Supreme collab broad) → 박지 X
+  //   미박힘 SKU + text 매칭 실패 → parser needsReview=true → pool 차단 (안전).
+  //   값: parser ClothingProductType/BagProductType/ShoeProductType union 문자열.
+  defaultProductType?: string;
 };
 
 // Wave 122 (2026-05-15): 모든 카테고리 공통 noise 패턴 (Wave 121 audit 결과).
@@ -6806,6 +6815,7 @@ export const CATALOG: Sku[] = [
       "마크 제이콥스", "marc jacobs", "베이프", "bape", "스투시", "stussy",
     ],
     msrpKrw: 159000, released: 2020,
+    defaultProductType: "polo_shirt", // Wave 236d — Polo Pique = polo shirt 라인 확정.
   },
   {
     id: "clothing-polo-pony-tee",
@@ -6820,6 +6830,7 @@ export const CATALOG: Sku[] = [
       "타이틀리스트", "titleist", "캘러웨이", "callaway", "푸마 폴로", "puma polo",
       "골프 폴로", "골프폴로", "골프티", "골프 티"],
     msrpKrw: 89000, released: 2020,
+    defaultProductType: "tee", // Wave 236d — Polo Pony Tee = tee 라인 확정.
   },
   {
     id: "clothing-polo-oxford-shirt",
@@ -6830,6 +6841,7 @@ export const CATALOG: Sku[] = [
     // RRL 옥스포드는 별도 SKU (가격 5배)
     mustNotContain: ["RRL", "더블 알엘", "double rl", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "키즈", "kids"],
     msrpKrw: 159000, released: 2020,
+    defaultProductType: "shirt", // Wave 236d — Oxford = 셔츠 라인.
   },
   {
     id: "clothing-polo-bear-collab",
@@ -6929,6 +6941,7 @@ export const CATALOG: Sku[] = [
     // collab은 별도 SKU
     mustNotContain: ["supreme", "슈프림", "gucci", "구찌", "mm6", "마르지엘라", "키즈", "kids", "퍼플라벨", "purple label", "뮬", "mule", "슬리퍼"],
     msrpKrw: 360000, released: 1996,
+    defaultProductType: "down_jacket", // Wave 236d — Nuptse = 다운자켓 라인 확정.
   },
   {
     id: "clothing-tnf-mountain-jacket",
@@ -6947,6 +6960,7 @@ export const CATALOG: Sku[] = [
       "마운틴 가이드", "mountain guide", "안타르티카", "antarctica",
     ],
     msrpKrw: 590000, released: 1985,
+    defaultProductType: "jacket", // Wave 236d — Mountain Jacket = jacket 라인 확정.
   },
   {
     id: "clothing-tnf-denali-fleece",
@@ -6956,6 +6970,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["노스페이스", "north face", "tnf"], ["denali", "데날리"]],
     mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label"],
     msrpKrw: 290000, released: 1988,
+    defaultProductType: "jacket", // Wave 236d — Denali = 플리스 자켓 라인 확정.
   },
   {
     id: "clothing-tnf-purple-label",
@@ -7024,6 +7039,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label",
       "부츠", "boots", "boot ", "운동화", "신발", "슬리퍼", "slipper", "뮬", "mule", "등산화"],
     msrpKrw: 159000, released: 2010,
+    defaultProductType: "backpack", // Wave 236d — Borealis = TNF 백팩 라인 확정.
   },
   {
     id: "bag-tnf-hotshot",
@@ -7034,6 +7050,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label",
       "부츠", "boots", "boot ", "운동화", "신발", "슬리퍼", "slipper", "뮬", "mule"],
     msrpKrw: 189000, released: 2008,
+    defaultProductType: "backpack", // Wave 236d — Hot Shot = TNF 백팩 확정.
   },
   {
     id: "bag-tnf-bigshot",
@@ -7044,6 +7061,7 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label",
       "부츠", "boots", "boot ", "운동화", "신발", "슬리퍼", "slipper", "뮬", "mule"],
     msrpKrw: 199000, released: 2008,
+    defaultProductType: "backpack", // Wave 236d — Big Shot = TNF 백팩 확정.
   },
   // TNF Nuptse Mule (shoe 카테고리):
   {
@@ -7096,6 +7114,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["stussy", "스투시", "stüssy"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "8 ball", "8ball", "world tour", "월드투어", "stock", "스톡", "script", "스크립트"]],
     mustNotContain: ["nike", "나이키", "dior", "디올", "birkenstock", "버켄스탁", "carhartt", "칼하트", "키즈", "kids", "후드", "hoodie", "맨투맨", "긴팔", "복각", "rep ", "replica"],
     msrpKrw: 89000, released: 2020,
+    defaultProductType: "tee", // Wave 236d — Basic Tee = tee 확정.
   },
   {
     id: "clothing-stussy-hoodie",
@@ -7551,6 +7570,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["supreme", "슈프림"], ["백팩", "backpack"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "구찌", "gucci", "노스페이스", "north face", "tnf", "tnf collab"],
     msrpKrw: 250000, released: 2018,
+    defaultProductType: "backpack", // Wave 236d — Supreme Backpack (mustContain 강제됨).
   },
   {
     id: "bag-supreme-shoulder",
@@ -7560,6 +7580,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["supreme", "슈프림"], ["숄더", "shoulder", "메쉬", "mesh", "사이드", "side bag", "crossbody", "타프", "tarp"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "구찌", "gucci", "백팩", "backpack", "노스페이스", "north face", "tnf"],
     msrpKrw: 200000, released: 2017,
+    defaultProductType: "shoulder", // Wave 236d — Supreme Shoulder/Mesh/Side bag (mustContain).
   },
   // Wave 205 (2026-05-18): 가격 친화 brand mining — 크록스/칼하트/아크네/메종키츠네.
   // 사용자 정책 "너무 비싸지만 않으면" — 25K~300K 범위 매물 압도적 brand 박음.
@@ -7713,6 +7734,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["acne", "아크네"], ["반팔", "티셔츠", "tee ", "롱슬리브", "긴팔티", "반팔티"]],
     mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "맨투맨", "후드", "hoodie", "자켓", "코트", "데님", "셔츠"],
     msrpKrw: 130000, released: 2020,
+    defaultProductType: "tee", // Wave 236d — Acne Tee = tee 확정.
   },
   {
     id: "clothing-acne-sweat",
@@ -7722,6 +7744,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["acne", "아크네"], ["맨투맨", "후드", "hoodie", "후디", "스웻", "sweat", "페어뷰", "fairview", "페이셜", "facial", "크루넥"]],
     mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "자켓", "코트", "데님", "셔츠"],
     msrpKrw: 230000, released: 2020,
+    // Wave 236d: multi product-type (hoodie + crewneck) — default 안 박음. text 추출 의존.
   },
   {
     id: "clothing-acne-jacket-coat",
@@ -7731,6 +7754,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["acne", "아크네"], ["자켓", "jacket", "코트", "coat", "재킷"]],
     mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "오르빗", "orbit", "핸메"],
     msrpKrw: 590000, released: 2020,
+    // Wave 236d: multi (jacket + coat) — default 안 박음. text 추출 의존 (regex 가 jacket/coat 구분).
   },
   {
     id: "clothing-acne-denim",
@@ -7740,6 +7764,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["acne", "아크네"], ["데님", "denim", "청바지", "반바지", "shorts", "jean"]],
     mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake"],
     msrpKrw: 320000, released: 2020,
+    defaultProductType: "jeans", // Wave 236d — Acne Denim = jeans 라인 확정.
   },
   {
     id: "clothing-acne-shirt",
@@ -7749,6 +7774,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["acne", "아크네"], ["셔츠", "shirt", "버튼다운", "프린팅"]],
     mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "티셔츠", "tee ", "롱슬리브"],
     msrpKrw: 380000, released: 2020,
+    defaultProductType: "shirt", // Wave 236d — Acne Shirt = shirt 확정.
   },
   // 메종키츠네 가방 broad — 의류 매물 적고 가방 다수
   {
@@ -8324,6 +8350,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["bape", "베이프", "a bathing ape"], ["샤크", "shark"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "신발", "운동화", "야구", "농구", "축구"],
     msrpKrw: 450000, released: 2005,
+    defaultProductType: "hoodie", // Wave 236d — Shark Hoodie = 후드 라인 확정 (text 다른 type 우선).
   },
   // 마뗑킴 (Matin Kim) — 한국 디자이너, 매물 63건
   {
@@ -8357,6 +8384,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["beta", "베타"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
     msrpKrw: 590000, released: 1998,
+    defaultProductType: "jacket", // Wave 236d — Beta = Gore-Tex 자켓 라인 확정.
   },
   {
     id: "clothing-arcteryx-gamma",
@@ -8366,6 +8394,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["gamma", "감마"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
     msrpKrw: 350000, released: 1998,
+    defaultProductType: "jacket", // Wave 236d — Gamma = softshell 자켓 확정.
   },
   {
     id: "clothing-arcteryx-alpha",
@@ -8378,6 +8407,7 @@ export const CATALOG: Sku[] = [
       "몽벨", "montbell", "콜롬비아", "columbia", "마운틴 하드웨어", "mountain hardware",
       "포지션", "포지셔닝", "비교", "vs"],
     msrpKrw: 850000, released: 1998,
+    defaultProductType: "jacket", // Wave 236d — Alpha = expedition 자켓 확정.
   },
   {
     id: "clothing-arcteryx-atom",
@@ -8387,6 +8417,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["atom", "아톰"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
     msrpKrw: 320000, released: 2010,
+    defaultProductType: "jacket", // Wave 236d — Atom = insulated 자켓 확정.
   },
   {
     id: "clothing-arcteryx-vertex-squamish",
@@ -8396,6 +8427,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["vertex", "버텍스", "squamish", "스쿼미시"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
     msrpKrw: 280000, released: 2015,
+    defaultProductType: "jacket", // Wave 236d — Vertex/Squamish = lightweight 자켓 확정.
   },
   {
     id: "clothing-arcteryx",
@@ -8443,6 +8475,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["patagonia", "파타고니아"], ["retro", "레트로", "fleece", "플리스", "후리스", "synchilla", "신칠라", "snap-t", "파일"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack"],
     msrpKrw: 199000, released: 1985,
+    defaultProductType: "jacket", // Wave 236d — Retro X/Synchilla = 플리스 자켓 라인 확정.
   },
   {
     id: "clothing-patagonia-down",
@@ -8452,6 +8485,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["patagonia", "파타고니아"], ["다운", "down", "nano puff", "패딩", "구스다운"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack", "retro", "레트로"],
     msrpKrw: 290000, released: 2004,
+    defaultProductType: "down_jacket", // Wave 236d — Patagonia Down = 다운 자켓 라인.
   },
   {
     id: "clothing-patagonia-shell",
@@ -8798,6 +8832,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["coach", "코치"], ["tabby", "태비"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
     msrpKrw: 590000, released: 2021,
+    defaultProductType: "shoulder", // Wave 236d — Tabby = 숄더백 시그니처 (체인/숄더).
   },
   {
     id: "bag-longchamp-le-pliage",
@@ -8807,6 +8842,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["longchamp", "롱샴"], ["pliage", "플리아쥬", "토트", "tote", "숄더", "shoulder", "크로스", "cross", "백", "bag", "핸드백", "미니"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
     msrpKrw: 169000, released: 1993,
+    defaultProductType: "tote", // Wave 236d — Le Pliage = 토트백 시그니처 라인.
   },
   {
     id: "shoe-nike-tailwind-79",

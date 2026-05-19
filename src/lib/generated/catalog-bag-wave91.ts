@@ -202,6 +202,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 3400000,
     released: 2024,
     laneKey: "bag_prada_galleria_mini_saffiano",
+    defaultProductType: "tote", // Wave 236d — Galleria = 토트백 시그니처.
   },
   {
     id: "bag-prada-nylon-hobo-vintage",
@@ -220,6 +221,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 2200000,
     released: 2024,
     laneKey: "bag_prada_nylon_hobo",
+    defaultProductType: "shoulder", // Wave 236d — Hobo bag = shoulder bag.
   },
   {
     id: "bag-prada-saffiano-card-wallet",
@@ -238,6 +240,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 750000,
     released: 2024,
     laneKey: "bag_prada_saffiano_wallet",
+    defaultProductType: "wallet", // Wave 236d — Saffiano Wallet (mustContain wallet 강제).
   },
   {
     id: "bag-celine-trio-medium",
@@ -255,6 +258,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 950000,
     released: 2024,
     laneKey: "bag_celine_trio_crossbody",
+    defaultProductType: "crossbody", // Wave 236d — Trio = crossbody 확정.
   },
   {
     id: "bag-celine-vintage-macadam",
@@ -272,6 +276,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 1500000,
     released: 2024,
     laneKey: "bag_celine_vintage_macadam",
+    defaultProductType: "shoulder", // Wave 236d — Vintage Macadam = shoulder bag.
   },
   {
     id: "bag-balenciaga-classic-city-mini",
@@ -339,6 +344,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 2950000,
     released: 2024,
     laneKey: "bag_bottega_cassette_mini",
+    defaultProductType: "crossbody", // Wave 236d — Cassette Mini = mini crossbody bag.
   },
   {
     id: "bag-mcm-visetos-medium-backpack",
@@ -356,6 +362,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 890000,
     released: 2024,
     laneKey: "bag_mcm_visetos_stark",
+    defaultProductType: "backpack", // Wave 236d — Stark = backpack 확정 (mustContain).
   },
   {
     id: "bag-coach-signature-tote",
@@ -373,6 +380,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 590000,
     released: 2024,
     laneKey: "bag_coach_signature",
+    defaultProductType: "tote", // Wave 236d — Signature Canvas = tote.
   },
   {
     id: "bag-coach-wallet",
@@ -390,6 +398,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 290000,
     released: 2024,
     laneKey: "bag_coach_wallet",
+    defaultProductType: "wallet", // Wave 236d — Coach Wallet (mustContain wallet).
   },
   {
     id: "bag-michael-kors-jet-set",

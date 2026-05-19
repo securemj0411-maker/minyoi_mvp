@@ -20,6 +20,12 @@ type ParseInput = {
   skuName?: string | null;
   category?: Sku["category"] | null;
   bunjangConditionLabel?: string | null;
+  // Wave 236d (2026-05-19): catalog SKU 의 defaultProductType — narrow model 만 박힘 (model=type 1개 확정).
+  //   policy:
+  //     - SKU 가 defaultProductType 박힘 + text 매칭 실패 → fallback (안전한 추론)
+  //     - SKU 미박힘 + text 매칭 실패 → needsReview=true → pool 차단
+  //   사용자 의도: 모델명 자체로 product-type 확정 가능한 매물만 통과, 그 외 차단.
+  defaultProductType?: string | null;
 };
 
 // ─── 공통 헬퍼 ───────────────────────────────────────────────────────
@@ -338,43 +344,58 @@ type ShoeProductType =
 function parseClothingProductType(text: string): ClothingProductType {
   const t = text.toLowerCase();
   // 우선순위 — 더 specific 한 키워드부터 (jacket 가 down_jacket 보다 먼저 매칭되면 안 됨).
-  if (/패딩|다운 ?재킷|다운 ?자켓|down ?jacket|푸퍼|puffer|nano puff|nanopuff|구스다운|덕다운/.test(t)) return "down_jacket";
-  if (/코트(?!\s*디테일)|coat\b|trench|트렌치|체스터필드|chesterfield|피코트|peacoat|카코트/.test(t)) return "coat";
+  // Wave 236b (2026-05-19): in-memory simulate sample 30건 분석 → 누락 패턴 보완.
+  //   17% type_unknown (511/3000) → 보완 후 ~5% 목표.
+  // down jacket — 눕시 / 푸퍼 / 다운 라이너 등.
+  if (/패딩|다운 ?재킷|다운 ?자켓|down ?jacket|푸퍼|puffer|nano puff|nanopuff|구스다운|덕다운|눕시|nuptse|다운 ?베스트|다운 ?베어|다운 ?재킷|다운 ?파카|down ?parka/.test(t)) return "down_jacket";
+  if (/코트(?!\s*디테일)|coat\b|trench|트렌치|체스터필드|chesterfield|피코트|peacoat|카코트|발마칸|balmacaan|울 ?코트/.test(t)) return "coat";
   if (/카디건|cardigan|니트 ?집업|knit ?zip/.test(t)) return "cardigan";
-  if (/니트(?!\s*집업)|knit(?! ?zip)|스웨터|sweater/.test(t)) return "knit";
+  // Wave 236b: 터틀넥/폴라넥/모크넥 추가.
+  if (/니트(?!\s*집업)|knit(?! ?zip)|스웨터|sweater|터틀넥|turtleneck|폴라넥|모크넥|mockneck|crewneck ?knit/.test(t)) return "knit";
   if (/조끼|베스트(?!\s*조끼)|vest\b|gilet/.test(t)) return "vest";
   if (/플리스|fleece|레트로 ?x|retro ?x|덴알리|denali|숄카라|숄 ?카라|shawl/.test(t)) return "jacket"; // 플리스/베스트 자켓 류
-  if (/자켓|재킷|jacket|아노락|anorak|봄버|bomber|블레이저(?!\s*미드)/.test(t)) return "jacket";
+  // Wave 236b: windbreaker/바람막이/아노락/안타르티카/마운틴 라이트 등 자켓 류.
+  if (/자켓|재킷|jacket|아노락|anorak|봄버|bomber|블레이저(?!\s*미드)|윈드 ?브레이커|windbreaker|바람막이|마운틴 ?라이트|mountain ?light|마운틴 ?파카|mountain ?parka|마운틴 ?자켓|mountain ?jacket|트랙 ?탑|track ?top|트랙수트|tracksuit|덱 ?자켓|deck ?jacket|쉴드|shield/.test(t)) return "jacket";
   if (/후드(?!\s*티 ?셔츠)|후디|hoodie|hooded sweat/.test(t)) return "hoodie";
-  if (/맨투맨|크루넥|crewneck|sweatshirt|스웻 ?셔츠|스웻\(맨투맨\)|풀오버(?!\s*조끼)/.test(t)) return "crewneck";
+  if (/맨투맨|크루넥|crewneck|sweatshirt|스웻 ?셔츠|스웻\(맨투맨\)|풀오버(?!\s*조끼)|스웻 ?셔트|sweat ?shirt/.test(t)) return "crewneck";
   if (/롱슬리브|long sleeve|롱 ?티|장 ?티|long sleeved/.test(t)) return "tee"; // 롱슬리브 = tee 류
-  if (/티 ?셔츠|tee\b|반팔 ?티|반팔티|t-shirt|tshirt|t ?셔츠/.test(t)) return "tee";
+  // Wave 236b: 반팔 단독 + 탱크탑/민소매 추가.
+  if (/티 ?셔츠|tee\b|반팔 ?티|반팔티|t-shirt|tshirt|t ?셔츠|반팔(?!\s*티 ?셔츠)|탱크 ?탑|tank ?top|민소매|sleeveless|반 ?소매/.test(t)) return "tee";
   if (/폴로(?!\s*rrl|랄프)|polo shirt|폴로 ?티|피케 ?폴로|피케 ?셔츠|pique/.test(t)) return "polo_shirt";
-  if (/셔츠(?!\s*ZIP)|shirt(?! sleeve)/.test(t)) return "shirt";
-  if (/청바지|진(?:즈)?\b|jean(?:s)?\b|데님 ?팬츠|데님 ?진|denim ?jean/.test(t)) return "jeans";
+  // Wave 236b: 남방 추가.
+  if (/셔츠(?!\s*ZIP)|shirt(?! sleeve)|남방|button ?up|버튼 ?다운|button ?down|옥스포드 ?셔츠|oxford ?shirt/.test(t)) return "shirt";
+  // Wave 236b: 빈파포/빈티지 파이브포켓/5-pocket → jeans.
+  if (/청바지|진(?:즈)?\b|jean(?:s)?\b|데님 ?팬츠|데님 ?진|denim ?jean|빈파포|빈티지 ?파이브 ?포켓|파이브 ?포켓|five ?pocket|5 ?포켓|5-pocket|기빈스|미드랜드|이스트웨스트|힐스뷰|에이버리|키팅진/.test(t)) return "jeans";
   if (/반바지|쇼츠|shorts\b|버뮤다|bermuda/.test(t)) return "shorts";
   if (/원피스|dress\b|드레스(?!\s*셔츠)|미니 ?원피스|롱 ?원피스/.test(t)) return "dress";
   if (/스커트|skirt/.test(t)) return "skirt";
-  if (/팬츠|pants\b|바지(?!\s*받침)|trouser|치노|chino|슬랙스|slacks|조거|jogger|카고|cargo/.test(t)) return "pants";
-  if (/볼캡|ball ?cap|야구모자|버킷햇|bucket hat|벙거지|비니|beanie|메쉬캡|메쉬 ?캡|트러커 ?캡|trucker cap|cap\b|모자\b/.test(t)) return "cap";
+  // Wave 236b: 트랙 팬츠 추가 (분리 — track top 은 jacket).
+  if (/팬츠|pants\b|바지(?!\s*받침)|trouser|치노|chino|슬랙스|slacks|조거|jogger|카고|cargo|트랙 ?팬츠|track ?pants|카펜터|carpenter|워크팬츠|workwear ?pants/.test(t)) return "pants";
+  if (/볼캡|ball ?cap|야구모자|버킷햇|bucket hat|벙거지|비니|beanie|메쉬캡|메쉬 ?캡|트러커 ?캡|trucker cap|cap\b|모자\b|스냅백|snapback/.test(t)) return "cap";
   if (/벨트|belt\b/.test(t)) return "belt";
-  if (/지갑|wallet|반지갑|장지갑|카드지갑|머니 ?클립/.test(t)) return "wallet";
+  if (/지갑|wallet|반지갑|장지갑|카드지갑|머니 ?클립|콘초 ?월렛|콘초 ?지갑/.test(t)) return "wallet";
   return "type_unknown";
 }
 
 function parseBagProductType(text: string): BagProductType {
   const t = text.toLowerCase();
-  if (/카드지갑|반지갑|머니 ?클립|card ?holder|card ?case|카드 ?케이스/.test(t)) return "card_holder";
-  if (/장지갑|long wallet|월렛|지갑(?!\s*케이스)|wallet\b/.test(t)) return "wallet";
-  if (/파우치|pouch|미니 ?파우치|cosmetic|화장품 ?파우치/.test(t)) return "pouch";
+  // Wave 236b (2026-05-19): in-memory simulate 22% type_unknown → 누락 패턴 보완.
+  //   호보백/버킷백/체인백/카메라백/슬링백/탑핸들/포쉐트/포켓오거나이저 등.
+  if (/카드지갑|반지갑|머니 ?클립|card ?holder|card ?case|카드 ?케이스|콘초 ?지갑/.test(t)) return "card_holder";
+  if (/장지갑|long wallet|월렛|지갑(?!\s*케이스)|wallet\b|포켓 ?오거나이저|pocket ?organizer|콘초 ?월렛/.test(t)) return "wallet";
+  if (/파우치|pouch|미니 ?파우치|cosmetic|화장품 ?파우치|포쉐트|pochette/.test(t)) return "pouch";
   if (/클러치|clutch/.test(t)) return "clutch";
   if (/메신저|messenger/.test(t)) return "messenger";
   if (/더플|duffle|duffel|보스턴 ?백|boston ?bag|여행 ?가방|트래블/.test(t)) return "duffle";
-  if (/웨이스트|허리|힙색|waist ?bag|fanny ?pack|벨트 ?백/.test(t)) return "waist";
-  if (/숄더|shoulder ?bag(?!\s*backpack)|어깨 ?가방/.test(t)) return "shoulder";
-  if (/크로스(?!\s*?백 ?팩)|crossbody|cross ?bag|크로스 ?백(?!팩)/.test(t)) return "crossbody";
-  if (/토트|tote\b|쇼퍼|shopper/.test(t)) return "tote";
-  if (/백팩|backpack|배낭|knapsack/.test(t)) return "backpack";
+  if (/웨이스트|허리|힙색|waist ?bag|fanny ?pack|벨트 ?백|fanny|슬링 ?백|sling ?bag|sling\b|보레알리스 ?슬링|borealis ?sling/.test(t)) return "waist";
+  // shoulder — 호보백/버킷백/체인백 추가.
+  if (/숄더|shoulder ?bag(?!\s*backpack)|어깨 ?가방|호보 ?백|hobo ?bag|hobo\b|버킷 ?백|bucket ?bag|체인 ?백|chain ?bag|chain ?미니/.test(t)) return "shoulder";
+  // crossbody — 카메라백/미니체인백/사이드백.
+  if (/크로스(?!\s*?백 ?팩)|crossbody|cross ?bag|크로스 ?백(?!팩)|카메라 ?백|camera ?bag|사이드 ?백|side ?bag/.test(t)) return "crossbody";
+  // tote — 탑핸들/핸드백.
+  if (/토트|tote\b|쇼퍼|shopper|탑 ?핸들|top ?handle|핸드 ?백|handbag/.test(t)) return "tote";
+  // backpack — 빅샷/보레알리스 (TNF 모델명).
+  if (/백팩|backpack|배낭|knapsack|빅샷|big ?shot|보레알리스|borealis(?!\s*sling)|핫샷|hot ?shot/.test(t)) return "backpack";
   return "type_unknown";
 }
 
@@ -397,7 +418,15 @@ function parseShoeProductType(text: string): ShoeProductType {
 // Wave 236 (2026-05-19): v4 — product-type 추출 추가 (clothing/bag/shoe).
 //   사용자 코멘트 22건 중 17건 "같은 SKU 다른 product-type 섞임" 근본 fix.
 //   comparable_key 에 product-type 박혀 시세 daily 자동 분리.
-const PARSER_VERSION_W92 = "wave92-fashion-mobility-v4";
+// Wave 236b (2026-05-19): v5 — regex 보완 (반팔/남방/빈파포/눕시/터틀넥/탱크탑/트랙탑/윈드/호보/버킷/카메라/슬링/탑핸들/포쉐트).
+//   in-memory simulate 측정: clothing 17%/bag 22% type_unknown → 보완 후 5% 목표.
+// Wave 236c (2026-05-19): v6 — defaultProductType fallback 제거 + type_unknown → needsReview=true.
+// Wave 236d (2026-05-19): v7 — catalog defaultProductType narrow model 만 박혀있으면 fallback.
+//   사용자 의도: "노스페이스 빅샷 블랙 이런것만 보고 티셔츠인지 추정이 확실히 되면 그 이름이 티셔츠밖에
+//     없는 이름이면 당연히 넣어야되는데 그런게 아닌 매물들은 탈락시켜야" — Goldilocks policy.
+//   - narrow model (Borealis/Nuptse/Galleria 등) defaultProductType 박힘 → fallback (안전)
+//   - broad SKU (RRL/FOG/Supreme collab) 미박힘 → 차단 (needsReview)
+const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
@@ -407,7 +436,10 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v4";
 // v2 (2026-05-19): modelFromSku brand 포함 (polo/stussy/tnf/arcteryx 구분).
 // Wave 217 v3 (2026-05-19): bunjang_condition_label + resolveConditionClass 활용.
 // Wave 236 v4 (2026-05-19): product-type 추출 추가 (hoodie/tee/jacket/pants/cap/belt/wallet 등).
-const PARSER_VERSION_W216_CLOTHING = "wave216-clothing-v4";
+// Wave 236b v5 (2026-05-19): regex 보완 (반팔/남방/빈파포/눕시/터틀넥 등).
+// Wave 236c v6 (2026-05-19): fallback 제거 + type_unknown → needsReview (사용자 정책).
+// Wave 236d v7 (2026-05-19): catalog narrow model defaultProductType fallback OK + broad 차단.
+const PARSER_VERSION_W216_CLOTHING = "wave216-clothing-v7";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");
@@ -470,10 +502,26 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     parsedJson.shoe_is_kids = opt.isKids;
     // Wave 236 (2026-05-19): product-type 추출 — 다른 product-type 매물 차단.
     //   예: shoe-margiela-tabi-sneaker SKU 인데 매물이 "타비 부츠" → product-type 다름 → 다른 시세.
-    const productType = parseShoeProductType(text);
+    // Wave 236d (2026-05-19): catalog defaultProductType 정확 정책.
+    //   - text 추출 성공 → 그 값
+    //   - text 실패 + catalog defaultProductType 박힘 → fallback (model=type 1개 확정 SKU)
+    //   - text 실패 + 미박힘 → needsReview=true (pool 차단)
+    let productType: string = parseShoeProductType(text);
+    let typeFromCatalog = false;
+    if (productType === "type_unknown" && input.defaultProductType) {
+      productType = input.defaultProductType;
+      typeFromCatalog = true;
+    }
     parsedJson.shoe_product_type = productType;
+    parsedJson.shoe_product_type_from_catalog = typeFromCatalog;
     partsForKey.push(productType);
-    if (productType !== "type_unknown") parseConfidence += 0.05;
+    if (productType !== "type_unknown") {
+      parseConfidence += typeFromCatalog ? 0.03 : 0.05;
+    } else {
+      // 사용자 정책: text 추출 실패 + catalog 미박힘 → pool 차단.
+      needsReview = true;
+      criticalUnknown.push("shoe_product_type_unknown");
+    }
     if (opt.isKids) {
       needsReview = true;
       criticalUnknown.push("shoe_kids_size_mismatch");
@@ -522,10 +570,22 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     parsedJson.bag_fake_flags = opt.fakeFlags;
     // Wave 236 (2026-05-19): product-type 추출 — bag 가장 큰 영향 (TNF×Supreme 백팩/숄더/토트 섞임).
     //   사용자 코멘트: "백팩이랑 숄더백이랑 다른거 아닌가???" / "지갑이랑 뭐하냐?"
-    const productType = parseBagProductType(text);
+    // Wave 236d (2026-05-19): catalog defaultProductType 정확 정책 (narrow model 만 박힘).
+    let productType: string = parseBagProductType(text);
+    let typeFromCatalog = false;
+    if (productType === "type_unknown" && input.defaultProductType) {
+      productType = input.defaultProductType;
+      typeFromCatalog = true;
+    }
     parsedJson.bag_product_type = productType;
+    parsedJson.bag_product_type_from_catalog = typeFromCatalog;
     partsForKey.push(productType);
-    if (productType !== "type_unknown") parseConfidence += 0.1; // bag 은 product-type 가격 차 큼.
+    if (productType !== "type_unknown") {
+      parseConfidence += typeFromCatalog ? 0.05 : 0.1; // bag 은 product-type 가격 차 큼.
+    } else {
+      needsReview = true;
+      criticalUnknown.push("bag_product_type_unknown");
+    }
     if (opt.fakeFlags) {
       needsReview = true;
       criticalUnknown.push("bag_fake_suspect");
@@ -622,10 +682,23 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     // Wave 236 (2026-05-19): product-type 추출 — clothing 가장 큰 영향 (Stussy hoodie / RRL / Polo Pique).
     //   사용자 코멘트 22건 중 12건 clothing product-type 섞임.
     //   "후드티랑 맨투맨 다른거 아닌가" / "지갑이랑 벨트랑 모자랑 ㅋㅋㅋ" / "롱슬리브랑 반팔 지랄났네"
-    const productType = parseClothingProductType(text);
+    // Wave 236d (2026-05-19): catalog defaultProductType 정확 정책 (narrow model 만 박힘).
+    //   "노스페이스 빅샷 블랙" 같은 model=type 확정 매물만 fallback, broad SKU 매물은 needsReview 차단.
+    let productType: string = parseClothingProductType(text);
+    let typeFromCatalog = false;
+    if (productType === "type_unknown" && input.defaultProductType) {
+      productType = input.defaultProductType;
+      typeFromCatalog = true;
+    }
     parsedJson.clothing_product_type = productType;
+    parsedJson.clothing_product_type_from_catalog = typeFromCatalog;
     partsForKey.push(productType);
-    if (productType !== "type_unknown") parseConfidence += 0.1;
+    if (productType !== "type_unknown") {
+      parseConfidence += typeFromCatalog ? 0.05 : 0.1;
+    } else {
+      needsReview = true;
+      criticalUnknown.push("clothing_product_type_unknown");
+    }
 
     const conditionTier = parseConditionTier(text);
     parsedJson.clothing_condition_tier = conditionTier;

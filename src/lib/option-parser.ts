@@ -123,6 +123,9 @@ type ParseInput = {
   // "사용감 많음" / "사용감 적음" / "사용감 없음" / "거의 새것" / "새상품" 등.
   // 셀러가 직접 선택한 metadata — description 자연어 false positive 보다 신뢰도 높음.
   bunjangConditionLabel?: string | null;
+  // Wave 236d (2026-05-19): catalog SKU 의 defaultProductType (model=type 1개 확정인 SKU만).
+  //   text 에서 product-type regex 실패 시 fallback. 미박힘 SKU → needsReview 차단.
+  defaultProductType?: string | null;
 };
 
 // Wave 140 (2026-05-16): 번개 condition label → condition_class 매핑.
