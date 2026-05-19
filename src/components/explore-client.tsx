@@ -134,7 +134,7 @@ export default function ExploreClient() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
-  const [selectedPid, setSelectedPid] = useState<number | null>(null);
+  const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
 
   // Cooldown tick (매초 갱신)
   useEffect(() => {
@@ -186,15 +186,6 @@ export default function ExploreClient() {
     void loadStats();
   }, [loadPool, loadStats]);
 
-  const selectedItem = useMemo(
-    () => items.find((it) => it.pid === selectedPid) ?? null,
-    [items, selectedPid],
-  );
-  const selectedCard = useMemo(
-    () => (selectedItem ? poolItemToRevealCard(selectedItem) : null),
-    [selectedItem],
-  );
-
   // PackRevealModal용 result wrapper (single card)
   const modalResult: RevealResult | null = useMemo(() => {
     if (!selectedCard) return null;
@@ -206,9 +197,29 @@ export default function ExploreClient() {
     };
   }, [selectedCard]);
 
+  // Wave 339b: /api/packs/pool/analysis로 marketBasis/velocityBasis lazy-fill.
+  // assertRevealAccess 우회 (pid 기반). 가져온 분석으로 selectedCard 갱신.
   const handleLoadDetail = useCallback(async (pid: number): Promise<RevealListingDetail> => {
-    // /api/packs/reveals/detail은 사용자 자신의 reveal만 — /explore는 reveal 안 된 매물.
-    // marketBasis lazy-load 없이 minimal로 동작. (다음 wave에서 별도 endpoint 추가 가능)
+    try {
+      const res = await fetch(`/api/packs/pool/analysis?pid=${pid}`, { cache: "no-store" });
+      if (res.ok) {
+        const data = (await res.json()) as { analysis?: { marketBasis: RevealCard["marketBasis"] | null; velocityBasis: RevealCard["velocityBasis"]; skuListingFlow: RevealCard["skuListingFlow"]; optionBaseAssumed: RevealCard["optionBaseAssumed"] } };
+        if (data.analysis) {
+          setSelectedCard((prev) => {
+            if (!prev || prev.pid !== pid) return prev;
+            return {
+              ...prev,
+              marketBasis: data.analysis!.marketBasis ?? prev.marketBasis,
+              velocityBasis: data.analysis!.velocityBasis ?? prev.velocityBasis,
+              skuListingFlow: data.analysis!.skuListingFlow ?? prev.skuListingFlow,
+              optionBaseAssumed: data.analysis!.optionBaseAssumed ?? prev.optionBaseAssumed,
+            };
+          });
+        }
+      }
+    } catch {
+      // 분석 fetch 실패는 무시 (minimal로 모달 동작)
+    }
     return {
       pid,
       description: "",
@@ -297,7 +308,7 @@ export default function ExploreClient() {
                 type="button"
                 onClick={() => {
                   if (isSoldOut) return;
-                  setSelectedPid(item.pid);
+                  setSelectedCard(poolItemToRevealCard(item));
                 }}
                 disabled={isSoldOut}
                 className={`group relative grid grid-cols-[100px_minmax(0,1fr)] gap-3 rounded-xl border p-3 text-left transition ${
@@ -386,11 +397,11 @@ export default function ExploreClient() {
 
       {/* PackRevealModal — 카드 클릭 시 띄움 */}
       <PackRevealModal
-        open={selectedPid != null}
+        open={selectedCard != null}
         band={2}
         loading={false}
         result={modalResult}
-        onClose={() => setSelectedPid(null)}
+        onClose={() => setSelectedCard(null)}
         onLinkClicked={() => {}}
         onFeedback={() => {}}
         onLoadDetail={handleLoadDetail}
