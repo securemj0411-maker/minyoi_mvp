@@ -5,6 +5,7 @@ import {
   fetchReferencePrices,
   fetchLatestMarketStats,
   fetchLatestMarketVelocity,
+  fetchV7SiblingPresence,
   marketBasisForCandidate,
   velocityBasisForCandidate,
 } from "@/lib/pack-open";
@@ -649,12 +650,15 @@ export async function GET(req: Request) {
   //   reveal/detail은 단일 매물 호출용이라 list 진입엔 안 도달 → demand·supply 영구 미표시.
   //   batch로 묶어서 N+1 회피하면서 정상 표시 복구.
   const skuIdsToFetch = rawRows.map((row) => row.sku_id ?? null);
-  const [marketStats, referencePrices, velocityStats, readinessMap, skuFlowByIdMap] = await Promise.all([
+  const [marketStats, referencePrices, velocityStats, readinessMap, skuFlowByIdMap, v7SiblingPresence] = await Promise.all([
     fetchLatestMarketStats(comparableKeys),
     fetchReferencePrices(comparableKeys),
     fetchLatestMarketVelocity(comparableKeys),
     loadCategoryReadinessMap(),
     loadSkuListingFlowBatch(skuIdsToFetch),
+    // Wave 252.A real (2026-05-20): v3 clothing 매물의 v7 sibling 존재 batch lookup.
+    //   v3 매물 (clothing|<sku>|<grade> — 3 tokens) + v7 sibling 존재 시 mixed-pool median 차단.
+    fetchV7SiblingPresence(comparableKeys),
   ]);
 
   const allItems = reveals
@@ -678,6 +682,7 @@ export async function GET(req: Request) {
             marketStats,
             conditionClassByPid.get(Number(reveal.pid)) ?? null,
             referencePrices,
+            v7SiblingPresence,
           )
         : null;
       const dbCurrentProfitMin = reveal.current_profit_min ?? null;

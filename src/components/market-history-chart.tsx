@@ -68,7 +68,8 @@ export default function MarketHistoryChart({
   comparableKey: string | null;
   currentPrice?: number | null;
   conditionClass?: string | null;
-  priceSource?: "reference" | "market" | null;
+  // Wave 252.A real (2026-05-20): "v3_pending_rematch" 추가 — v3 clothing 매물 mixed-pool 시세 차단.
+  priceSource?: "reference" | "market" | "v3_pending_rematch" | null;
   referencePrice?: number | null;
   // 2026-05-16 (사용자 코멘트): admin pool 처럼 한 페이지에 chart 10+ 개면 rate limit (30/60s/IP) 즉시 초과.
   // lazy=true → "시세 보기" 버튼 클릭 시만 fetch. admin-pool-browser 에서 사용.

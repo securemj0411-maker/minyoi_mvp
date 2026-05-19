@@ -4,6 +4,7 @@ import {
   fetchLatestMarketStats,
   fetchLatestMarketVelocity,
   fetchReferencePrices,
+  fetchV7SiblingPresence,
   loadRevealListingDetail,
   marketBasisForCandidate,
   velocityBasisForCandidate,
@@ -82,12 +83,14 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
     };
   }
 
-  const [marketStats, velocityStats, readinessMap, referencePrices, skuListingFlow] = await Promise.all([
+  const [marketStats, velocityStats, readinessMap, referencePrices, skuListingFlow, v7SiblingPresence] = await Promise.all([
     fetchLatestMarketStats([comparableKey]),
     fetchLatestMarketVelocity([comparableKey]),
     loadCategoryReadinessMap(),
     fetchReferencePrices([comparableKey]),
     loadSkuListingFlow(raw?.sku_id ?? null),
+    // Wave 252.A real (2026-05-20): v3 clothing key + v7 sibling 존재 시 mixed-pool median 차단.
+    fetchV7SiblingPresence([comparableKey]),
   ]);
 
   return {
@@ -97,6 +100,7 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
       marketStats,
       parsed?.condition_class ?? null,
       referencePrices,
+      v7SiblingPresence,
     ),
     velocityBasis: velocityBasisForCandidate(comparableKey, velocityStats, readinessMap),
     skuListingFlow,

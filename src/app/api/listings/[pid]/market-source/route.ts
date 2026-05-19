@@ -7,7 +7,7 @@
 // 2026-05-16: rate limit 추가. pid enumeration abuse 차단. IP 기반 60 req / 60s.
 
 import { NextResponse } from "next/server";
-import { fetchLatestMarketStats, fetchReferencePrices, marketBasisForCandidate } from "@/lib/pack-open";
+import { fetchLatestMarketStats, fetchReferencePrices, fetchV7SiblingPresence, marketBasisForCandidate } from "@/lib/pack-open";
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
@@ -94,9 +94,11 @@ export async function GET(
     let marketStats: Record<string, unknown> | null = null;
     let displayMarketBasis: ReturnType<typeof marketBasisForCandidate> | null = null;
     if (comparableKey) {
-      const [basisStats, referencePrices] = await Promise.all([
+      const [basisStats, referencePrices, v7SiblingPresence] = await Promise.all([
         fetchLatestMarketStats([comparableKey]),
         fetchReferencePrices([comparableKey]),
+        // Wave 252.A real (2026-05-20): v3 clothing key + v7 sibling 존재 시 mixed-pool median 차단.
+        fetchV7SiblingPresence([comparableKey]),
       ]);
       displayMarketBasis = marketBasisForCandidate(
         comparableKey,
@@ -104,6 +106,7 @@ export async function GET(
         basisStats,
         conditionClass,
         referencePrices,
+        v7SiblingPresence,
       );
       const matchedCondition = displayMarketBasis.conditionClass;
       const byCondition = basisStats.get(comparableKey);

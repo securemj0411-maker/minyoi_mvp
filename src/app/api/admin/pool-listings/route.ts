@@ -4,7 +4,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
-import { loadMarketBandsForKeys, resolveSkuMedianForDisplay } from "@/lib/band-aware-median";
+import { loadMarketBandsForKeys, loadV7SiblingPresence, resolveSkuMedianForDisplay } from "@/lib/band-aware-median";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -315,9 +315,13 @@ export async function GET(req: NextRequest) {
     const priceMap = new Map<string, { p25Price: number | null; medianPrice: number | null; p75Price: number | null; date: string }>();
     const refPriceMap = new Map<string, number>();
     // Wave 252.A: band-aware median map — (comparable_key, condition_class) → 최신 row.
-    const bandMap = comparableKeys.length > 0
-      ? await loadMarketBandsForKeys(serviceHeaders() as unknown as Record<string, string>, comparableKeys)
-      : new Map();
+    // Wave 252.A real (2026-05-20): v7 sibling presence — v3 clothing key mixed-pool 차단 가드.
+    const [bandMap, v7SiblingPresence] = comparableKeys.length > 0
+      ? await Promise.all([
+          loadMarketBandsForKeys(serviceHeaders() as unknown as Record<string, string>, comparableKeys),
+          loadV7SiblingPresence(serviceHeaders() as unknown as Record<string, string>, comparableKeys),
+        ])
+      : [new Map(), new Map()];
     if (comparableKeys.length > 0) {
       const keysCsv = comparableKeys.map((k) => `"${k}"`).join(",");
       const [velocityRes, priceRes, refRes] = await Promise.all([
@@ -397,6 +401,7 @@ export async function GET(req: NextRequest) {
         comparableKey,
         conditionClass,
         l.sku_median as number | null | undefined,
+        v7SiblingPresence,
       );
       return {
         hasComment: note.trim().length > 0,

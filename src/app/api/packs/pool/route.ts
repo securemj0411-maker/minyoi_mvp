@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { loadV7SiblingPresence, type V7SiblingPresenceMap } from "@/lib/band-aware-median";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -153,8 +154,11 @@ function bandAwareMedian(
   bandMap: Map<string, Map<string, MarketBandRow>>,
   comparableKey: string | null,
   conditionClass: string | null,
+  // Wave 252.A real (2026-05-20): v3 clothing key + v7 sibling 존재 시 mixed-pool median 차단.
+  v7SiblingPresence?: V7SiblingPresenceMap,
 ): number | null {
   if (!comparableKey) return null;
+  if (v7SiblingPresence && v7SiblingPresence.get(comparableKey) === true) return null;
   const byCondition = bandMap.get(comparableKey);
   if (!byCondition) return null;
   const { row } = pickByConditionFallback(
@@ -170,7 +174,7 @@ function bandAwareMedian(
 async function loadPool(
   headers: Record<string, string>,
   options: { sort?: "profit_desc" | "latest" } = {},
-): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[]; marketBands: Map<string, Map<string, MarketBandRow>> }> {
+): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[]; marketBands: Map<string, Map<string, MarketBandRow>>; v7SiblingPresence: V7SiblingPresenceMap }> {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todayIso = todayStart.toISOString();
@@ -227,12 +231,13 @@ async function loadPool(
   const pool = options.sort === "latest"
     ? [...readyRows, ...soldOutRows]
     : [...readyRows, ...soldOutRows].sort(() => Math.random() - 0.5);
-  if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map() };
+  if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map(), v7SiblingPresence: new Map() };
 
   const pids = pool.map((r) => r.pid);
   // Wave 247.2: market band fetch 도 병렬화 — pool 의 comparable_key 만 lookup.
+  // Wave 252.A real (2026-05-20): v7 sibling presence — v3 clothing key mixed-pool 차단 가드.
   const comparableKeys = [...new Set(pool.map((r) => r.comparable_key).filter((k): k is string => Boolean(k)))];
-  const [rawRes, metaRes, marketBands] = await Promise.all([
+  const [rawRes, metaRes, marketBands, v7SiblingPresence] = await Promise.all([
     restFetch(
       `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url&pid=in.(${pids.join(",")})`,
       { headers },
@@ -242,10 +247,11 @@ async function loadPool(
       { headers },
     ),
     loadMarketBandsForPool(headers, comparableKeys),
+    loadV7SiblingPresence(headers, comparableKeys),
   ]);
   const raws = (await rawRes.json()) as RawRow[];
   const metas = (await metaRes.json()) as RawListingMeta[];
-  return { pool, raws, metas, marketBands };
+  return { pool, raws, metas, marketBands, v7SiblingPresence };
 }
 
 function buildItems(
@@ -253,6 +259,7 @@ function buildItems(
   raws: RawRow[],
   metas: RawListingMeta[],
   marketBands: Map<string, Map<string, MarketBandRow>>,
+  v7SiblingPresence: V7SiblingPresenceMap,
 ) {
   const rawByPid = new Map(raws.map((r) => [r.pid, r]));
   const metaByPid = new Map(metas.map((m) => [m.pid, m]));
@@ -268,8 +275,12 @@ function buildItems(
       //     매칭 band 없으면 fallback chain (mint → clean → normal → worn) →
       //     모든 band 없으면 raw.sku_median (전체 median).
       //   pack-open.ts 의 marketBasisForCandidate 와 동일 정책. additive only — DB 변경 X.
-      const bandPrice = bandAwareMedian(marketBands, row.comparable_key, row.condition_class);
-      const skuMedianFinal = bandPrice ?? raw.sku_median;
+      // Wave 252.A real (2026-05-20): v3 clothing key + v7 sibling 존재 시 mixed-pool 차단.
+      //   v3 매물은 raw.sku_median 도 mixed-pool 계산값 → 둘 다 신뢰 불가 → skuMedianFinal=0
+      //   (Wave 249 sku_median_unavailable 가드 동일 결과).
+      const v3Stale = row.comparable_key && v7SiblingPresence.get(row.comparable_key) === true;
+      const bandPrice = bandAwareMedian(marketBands, row.comparable_key, row.condition_class, v7SiblingPresence);
+      const skuMedianFinal = v3Stale ? 0 : (bandPrice ?? raw.sku_median);
       // Wave 369 (2026-05-19): expected_profit 재계산 — pool builder 공식과 같이,
       // 표시 시세 (band-aware) 기준으로 응답 시점에 다시 계산.
       // 이유: DB column expected_profit_min/max는 pool builder 시점 계산이라
@@ -396,8 +407,8 @@ export async function GET(req: Request) {
       await upsertLastBrowse(headers, userRef, authUserId);
     }
 
-    const { pool, raws, metas, marketBands } = await loadPool(headers, { sort });
-    let items = buildItems(pool, raws, metas, marketBands);
+    const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, { sort });
+    let items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
 
     // Wave 373: 예산 필터. Wave 382: fallback chain — 사용자 예산 안 매물 부족하면
     // 한 단계 위로 자동 확장 (150k → 300k → 500k → unlimited). 임계 < 5개.

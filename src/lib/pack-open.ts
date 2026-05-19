@@ -88,7 +88,9 @@ export type RevealMarketBasis = {
   confidence: string | null;
   // Wave 207 (2026-05-18): UI source label must reflect the actual price anchor.
   // "reference" = Danawa/official new-product anchor, "market" = Bunjang market stats.
-  priceSource: "reference" | "market";
+  // Wave 252.A real (2026-05-20): "v3_pending_rematch" = clothing v3 매물 (product_type 미박힘) +
+  //   v7 sibling row 존재 → mixed-pool median 차단. UI 에서 "비교 기준 미확정 (재매칭 대기)" 표시.
+  priceSource: "reference" | "market" | "v3_pending_rematch";
   computedAt: string | null;
   excludedExamples: string[];
   // Wave 130 (2026-05-16): condition별 시세 분리 — 사업 보고서 L2 retention.
@@ -760,6 +762,91 @@ export async function fetchReferencePrices(comparableKeys: (string | null)[]): P
   return map;
 }
 
+// Wave 252.A real (2026-05-20): v3 clothing comparable_key stale 가드.
+//
+//   문제: Wave 216 이전 clothing parser (v3) 는 comparable_key 에 product_type 미박힘.
+//     예: `clothing|bape_tee|a_grade` (3 tokens). v7 parser 는 `clothing|bape_tee|tee|a_grade` (4 tokens).
+//   v3 매물이 mvp_market_price_daily 의 v3 row (mixed-pool: tee + hoodie + crewneck 평균) 로 lookup →
+//     사용자에게 잘못된 median 표시 (BAPE hoodie A-grade mint 매물에 78,200원 (tee 가격) 또는 mixed 119,600원).
+//
+//   해결: v3 매물의 comparable_key + sibling v7 row 존재 시 v3 row 차단 → medianPrice=null →
+//     UI 에서 "비교 기준 미확정 (재매칭 대기)" 표시. Wave 252.B step 1 의 v3 재매칭 완료 후 자동 정상화.
+//
+//   비용: v7 sibling presence batch lookup 1회 추가 (LIKE prefix or 절). v3 매물 비율 약 13% (production
+//     clothing 2,917 / 4,493).
+
+type V7SiblingPresenceMap = Map<string, boolean>;
+
+const CLOTHING_V3_CONDITION_TOKENS = new Set([
+  "a_grade",
+  "b_grade",
+  "c_grade",
+  "s_grade",
+  "unknown_condition",
+  "reject",
+]);
+
+function isClothingV3PackOpenKey(key: string | null | undefined): boolean {
+  if (!key) return false;
+  const parts = key.split("|");
+  if (parts.length !== 3) return false;
+  if (parts[0] !== "clothing") return false;
+  return CLOTHING_V3_CONDITION_TOKENS.has(parts[2] ?? "");
+}
+
+const v7SiblingPresenceCache = new Map<string, TtlEntry<boolean>>();
+const V7_SIBLING_PRESENCE_CACHE_TTL_MS = ttlFromEnv("PACK_V7_SIBLING_CACHE_TTL_MS", 10 * 60 * 1000);
+
+export async function fetchV7SiblingPresence(
+  comparableKeys: (string | null | undefined)[],
+): Promise<V7SiblingPresenceMap> {
+  const map: V7SiblingPresenceMap = new Map();
+  const v3Candidates = [...new Set(comparableKeys.filter((k): k is string => isClothingV3PackOpenKey(k ?? null)))];
+  if (v3Candidates.length === 0) return map;
+  const now = Date.now();
+  const missing: string[] = [];
+  for (const key of v3Candidates) {
+    const cached = readTtl(v7SiblingPresenceCache, key, now);
+    if (cached === undefined) missing.push(key);
+    else map.set(key, cached);
+  }
+  if (missing.length === 0) return map;
+
+  const orClauses: string[] = [];
+  for (const v3Key of missing) {
+    const parts = v3Key.split("|");
+    const prefix = `${parts[0]}|${parts[1]}|`;
+    orClauses.push(`comparable_key.like.${encodeURIComponent(prefix + "*")}`);
+  }
+  if (orClauses.length === 0) return map;
+
+  try {
+    const limit = Math.max(200, missing.length * 50);
+    const res = await callSupabase(
+      `/mvp_market_price_daily?select=comparable_key&or=(${orClauses.join(",")})&order=date.desc&limit=${limit}`,
+      { headers: authHeaders() },
+    );
+    const rows = (await res.json()) as Array<{ comparable_key: string }>;
+    const v7Presence = new Set<string>();
+    for (const row of rows) {
+      const p = row.comparable_key.split("|");
+      if (p.length === 4 && p[0] === "clothing") {
+        // signature: clothing|<sku>|<condition_token>
+        v7Presence.add(`${p[0]}|${p[1]}|${p[3]}`);
+      }
+    }
+    for (const v3Key of missing) {
+      const present = v7Presence.has(v3Key);
+      map.set(v3Key, present);
+      writeTtl(v7SiblingPresenceCache, v3Key, present, V7_SIBLING_PRESENCE_CACHE_TTL_MS, now);
+    }
+  } catch (err) {
+    console.warn("fetchV7SiblingPresence failed (non-fatal)", err);
+    // failure → no stale 가드 (기존 동작 그대로). additive only.
+  }
+  return map;
+}
+
 export async function fetchLatestMarketVelocity(comparableKeys: (string | null)[]): Promise<Map<string, MarketVelocityRow>> {
   const unique = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
   if (unique.length === 0) return new Map();
@@ -879,7 +966,33 @@ export function marketBasisForCandidate(
   conditionClass: string | null = null,
   // Wave 201 (2026-05-18): unopened 매물 anchor — reference_prices.effective_price 우선.
   referencePrices?: Map<string, number>,
+  // Wave 252.A real (2026-05-20): v3 stale 가드 — v7 sibling 존재 시 mixed-pool row 차단.
+  v7SiblingPresence?: V7SiblingPresenceMap,
 ): RevealMarketBasis {
+  // Wave 252.A real: v3 clothing key + v7 sibling 존재 → mixed-pool 신뢰 불가 → "v3_pending_rematch" 표시.
+  //   medianPrice=null 로 caller (currentNetProfitFromMarketPrice) 가 차익 계산 skip → 사용자에게 잘못된 가격 노출 X.
+  //   Wave 252.B step 1 의 재매칭 완료 후 v3 매물의 comparable_key 가 v7 패턴으로 update → 자동 정상화.
+  if (comparableKey && v7SiblingPresence?.get(comparableKey) === true) {
+    return {
+      comparableKey,
+      label: marketBasisLabel(comparableKey, skuName),
+      p25Price: null,
+      medianPrice: null,
+      p75Price: null,
+      sampleCount: 0,
+      activeSampleCount: 0,
+      soldSampleCount: 0,
+      disappearedSampleCount: 0,
+      confidence: null,
+      priceSource: "v3_pending_rematch",
+      computedAt: null,
+      excludedExamples: excludedExamplesForKey(comparableKey),
+      conditionClass: conditionClass ?? null,
+      conditionLabel: conditionClass ? CONDITION_LABEL[conditionClass] ?? conditionClass : null,
+      fallbackUsed: false,
+      otherConditions: [],
+    };
+  }
   const byCondition = comparableKey ? marketStats.get(comparableKey) : undefined;
   const { row: stat, conditionClass: actualCondition, fallbackUsed } = selectMarketRowByCondition(
     byCondition,
@@ -1302,7 +1415,8 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     const orderedReserved = interleaveReservedByCategory(reserved);
     const reservedPids = orderedReserved.map((r) => r.pid);
     // Wave 201 (2026-05-18): reference_prices fetch — unopened 매물 anchor (다나와 새 가격).
-    const [listingMap, marketStats, velocityStats, readinessMap, poolConditionMap, optionBaseAssumedMap, referencePrices] = await Promise.all([
+    // Wave 252.A real (2026-05-20): v7 sibling presence — v3 clothing key mixed-pool 차단 가드.
+    const [listingMap, marketStats, velocityStats, readinessMap, poolConditionMap, optionBaseAssumedMap, referencePrices, v7SiblingPresence] = await Promise.all([
       fetchListings(reservedPids),
       fetchLatestMarketStats(orderedReserved.map((r) => r.comparable_key)),
       fetchLatestMarketVelocity(orderedReserved.map((r) => r.comparable_key)),
@@ -1310,6 +1424,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       fetchPoolConditionClassByPids(reservedPids),
       fetchOptionBaseAssumedByPids(reservedPids),
       fetchReferencePrices(orderedReserved.map((r) => r.comparable_key)),
+      fetchV7SiblingPresence(orderedReserved.map((r) => r.comparable_key)),
     ]);
     const sourceHealth = await loadLatestSourceHealth();
     const reveals: RevealCard[] = [];
@@ -1429,6 +1544,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
           marketStats,
           poolConditionMap.get(candidate.pid) ?? null,
           referencePrices,
+          v7SiblingPresence,
         ),
         velocityBasis: velocityBasisForCandidate(candidate.comparable_key, velocityStats, readinessMap),
         lastVerifiedAt: liveVerifiedAt,
