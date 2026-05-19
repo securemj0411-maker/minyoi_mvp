@@ -334,9 +334,9 @@ export default function ExploreClient() {
     } as RevealListingDetail;
   }, []);
 
+  // 2026-05-19: pb-24 → pb-4. 이전 fixed FAB 시절 sticky 영역 확보 padding이었는데
+  // sticky 통일 후 의미 없어짐 → button과 footer 사이 큰 빈 공간 제거.
   return (
-    {/* 2026-05-19: pb-24 → pb-4. 이전 fixed FAB 시절 sticky 영역 확보 padding이었는데
-        sticky 통일 후 의미 없어짐 → button과 footer 사이 큰 빈 공간 제거. */}
     <div className="mx-auto w-full max-w-6xl px-3 pb-4 pt-2 sm:px-6 sm:pt-4">
       {/* 2026-05-19 (사용자 피드백): 광고 톤 줄이고 안내 톤으로 정비.
           "구독자 전용 (곧 출시)" → "따끈한 매물 먼저 보기 →" 으로 사용자 액션 명확화.
