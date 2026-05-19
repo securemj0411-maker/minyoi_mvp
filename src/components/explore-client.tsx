@@ -150,6 +150,8 @@ export default function ExploreClient() {
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
+  // Wave 346: refresh modal — 기다리기/충전 옵션
+  const [refreshModalOpen, setRefreshModalOpen] = useState(false);
 
   // Wave 341 + 344: URL state sync — 새로고침/공유 시 카테고리/정렬 유지.
   // Wave 344: /me에 통합되면서 동적 pathname 사용 (이전엔 "/explore" 하드코딩 → /me에서 404 발생).
@@ -477,19 +479,19 @@ export default function ExploreClient() {
         </div>
       )}
 
-      {/* Wave 345: 모바일 fixed sticky 하단 — "새 30개 받기" (당근 글쓰기 버튼 패턴). */}
+      {/* Wave 345+346: 모바일 fixed sticky 하단 — 클릭 시 모달 (기다리기/충전 옵션) */}
       <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-4 sm:hidden">
         <button
           type="button"
-          onClick={() => loadPool(true)}
-          disabled={!canRefresh || refreshing}
+          onClick={() => setRefreshModalOpen(true)}
+          disabled={refreshing}
           className={`pointer-events-auto inline-flex min-h-12 items-center gap-2 rounded-full px-6 py-3 text-sm font-bold shadow-[0_16px_34px_rgba(34,49,39,0.28)] transition active:scale-[0.98] ${
-            canRefresh && !refreshing
+            canRefresh
               ? "bg-emerald-600 text-white"
-              : "bg-zinc-400 text-zinc-100"
+              : "bg-amber-500 text-white"
           }`}
         >
-          {refreshing ? "받는 중..." : canRefresh ? "✨ 새 30개 받기" : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 가능`}
+          {refreshing ? "받는 중..." : canRefresh ? "✨ 새 30개 받기" : `⏱ ${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} · 옵션 보기`}
         </button>
       </div>
 
@@ -498,16 +500,94 @@ export default function ExploreClient() {
         <div className="mt-6 hidden justify-center sm:flex">
           <button
             type="button"
-            onClick={() => loadPool(true)}
-            disabled={!canRefresh || refreshing}
+            onClick={() => setRefreshModalOpen(true)}
+            disabled={refreshing}
             className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition ${
-              canRefresh && !refreshing
+              canRefresh
                 ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+                : "bg-amber-500 text-white hover:bg-amber-600"
             }`}
           >
-            {refreshing ? "받는 중..." : canRefresh ? "✨ 새 30개 받기" : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 가능`}
+            {refreshing ? "받는 중..." : canRefresh ? "✨ 새 30개 받기" : `⏱ ${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} · 옵션 보기`}
           </button>
+        </div>
+      ) : null}
+
+      {/* Refresh Modal — 기다리기 / 크레딧 충전 옵션 */}
+      {refreshModalOpen ? (
+        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 p-3 sm:items-center sm:p-6" onClick={() => setRefreshModalOpen(false)}>
+          <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-base font-bold text-zinc-900 dark:text-zinc-50">
+                  새 30개 매물 받기
+                </div>
+                <div className="mt-0.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  {canRefresh ? "지금 바로 받을 수 있어요" : `${Math.floor(remainingSec / 60)}분 ${remainingSec % 60}초 후 무료로 받을 수 있어요`}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRefreshModalOpen(false)}
+                className="shrink-0 rounded-full bg-zinc-100 px-2 py-1 text-xs font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-2">
+              {/* 옵션 1: 기다리기 (cooldown 끝나면 즉시 받기) */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (canRefresh) {
+                    void loadPool(true);
+                    setRefreshModalOpen(false);
+                  }
+                }}
+                disabled={!canRefresh}
+                className={`flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left transition ${
+                  canRefresh
+                    ? "border-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/40"
+                    : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/40"
+                }`}
+              >
+                <div className="min-w-0">
+                  <div className={`text-sm font-bold ${canRefresh ? "text-emerald-800 dark:text-emerald-200" : "text-zinc-600 dark:text-zinc-400"}`}>
+                    {canRefresh ? "✨ 지금 받기 (무료)" : "⏱ 기다리기 (무료)"}
+                  </div>
+                  <div className="mt-0.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                    {canRefresh ? "쿨다운 끝남 · 즉시 새 30개" : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 가능`}
+                  </div>
+                </div>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${canRefresh ? "bg-emerald-600 text-white" : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"}`}>
+                  무료
+                </span>
+              </button>
+
+              {/* 옵션 2: 크레딧 충전 (즉시 받기) */}
+              <a
+                href="/plans"
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-left transition hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/40 dark:hover:bg-amber-900/50"
+              >
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-amber-900 dark:text-amber-100">
+                    ⚡ 크레딧으로 즉시 받기
+                  </div>
+                  <div className="mt-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">
+                    쿨다운 X · 즉시 매물 알림 (구독자 전용 · 곧 출시)
+                  </div>
+                </div>
+                <span className="shrink-0 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                  유료
+                </span>
+              </a>
+            </div>
+
+            <div className="mt-3 rounded-md bg-zinc-50 px-3 py-2 text-[10px] font-medium leading-4 text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-400">
+              💡 무료 사용자는 6시간 이상 지난 매물 30개를 30분마다 받을 수 있어요. 즉시 매물은 곧 출시되는 구독으로 받게 됩니다.
+            </div>
+          </div>
         </div>
       ) : null}
 

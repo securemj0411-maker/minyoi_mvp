@@ -31,6 +31,10 @@ const READY_SLOTS = 25; // 살아있는 매물
 const SOLD_OUT_SLOTS = 5; // 오늘 잡힌 매물 (FOMO)
 const COOLDOWN_MS = 30 * 60 * 1000; // 30분
 const FRESH_LAG_HOURS = 6; // 무료는 6h 이상 지난 매물만
+// Wave 346: 카테고리 다양화 — 한 카테고리에 5개 이상 몰리지 않게.
+// 이어폰 풀이 가장 커서 profit_band 정렬하면 다 이어폰. 다양화 필수.
+const MAX_PER_CATEGORY = 5;
+const FETCH_POOL_OVERFETCH = 200; // 다양화 위해 더 많이 fetch 후 client-side dedup
 
 type PoolRow = {
   pid: number;
@@ -107,18 +111,47 @@ async function loadPool(
     : "order=profit_band.desc,expected_profit_max.desc";
 
   // Wave 339 (Phase 1b sold out 옵션 B): ready 25 + 오늘 invalidated 5 = 30개.
+  // Wave 346: 카테고리 다양화 — overfetch 후 카테고리당 MAX_PER_CATEGORY 제한.
+  const fetchLimit = options.categories && options.categories.length > 0 ? READY_SLOTS : FETCH_POOL_OVERFETCH;
   const [readyRes, soldOutRes] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&last_verified_at=lte.${encodeURIComponent(sixHoursAgo)}${categoryFilter}&${orderClause}&limit=${READY_SLOTS}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&last_verified_at=lte.${encodeURIComponent(sixHoursAgo)}${categoryFilter}&${orderClause}&limit=${fetchLimit}`,
       { headers },
     ),
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}${categoryFilter}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}${categoryFilter}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS * 4}`,
       { headers },
     ),
   ]);
-  const readyRows = ((await readyRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: false }));
-  const soldOutRows = ((await soldOutRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: true }));
+  const readyRowsRaw = ((await readyRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: false }));
+  const soldOutRowsRaw = ((await soldOutRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: true }));
+
+  // Wave 346: 카테고리 다양화. 사용자가 카테고리 필터 적용 시 skip.
+  function diversifyByCategory(rows: (PoolRow & { soldOut: boolean })[], maxRows: number) {
+    if (options.categories && options.categories.length > 0) return rows.slice(0, maxRows);
+    const perCategory = new Map<string, number>();
+    const out: (PoolRow & { soldOut: boolean })[] = [];
+    for (const row of rows) {
+      const cat = row.category ?? "unknown";
+      const count = perCategory.get(cat) ?? 0;
+      if (count >= MAX_PER_CATEGORY) continue;
+      perCategory.set(cat, count + 1);
+      out.push(row);
+      if (out.length >= maxRows) break;
+    }
+    // 만약 다양화 후 부족하면 (희귀 카테고리만 있는 경우) 부족분 채움
+    if (out.length < maxRows) {
+      for (const row of rows) {
+        if (out.length >= maxRows) break;
+        if (out.some((r) => r.pid === row.pid)) continue;
+        out.push(row);
+      }
+    }
+    return out;
+  }
+
+  const readyRows = diversifyByCategory(readyRowsRaw, READY_SLOTS);
+  const soldOutRows = diversifyByCategory(soldOutRowsRaw, SOLD_OUT_SLOTS);
 
   // sold out grid 중간에 자연스럽게 (사용자가 발견하며 후회). 정렬 latest일 땐 안 섞음.
   const pool = options.sort === "latest"
