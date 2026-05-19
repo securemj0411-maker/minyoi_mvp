@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { createPortal } from "react-dom";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
@@ -394,6 +395,48 @@ function freshLabel(seconds: number) {
   if (seconds < 60) return `${seconds}초 전 검증`;
   if (seconds < 3600) return `${Math.round(seconds / 60)}분 전 검증`;
   return `${Math.round(seconds / 3600)}시간 전 검증`;
+}
+
+// Wave 392.2: 신선도 강조 라벨 — fold-above (제목 위).
+// <1h: 매우 신선 (emerald 강조) — Pro USP hint
+// 1~6h: 보통 신선 (zinc)
+// 6h+: 표시 X (이미 사진 메타에 freshLabel 있음)
+function freshHeadline(seconds: number): { label: string; tone: "hot" | "warm" | null } {
+  if (seconds < 60) return { label: `방금 등장`, tone: "hot" };
+  if (seconds < 3600) {
+    const m = Math.round(seconds / 60);
+    return { label: `${m}분 전 등장`, tone: "hot" };
+  }
+  if (seconds < 6 * 3600) {
+    const h = Math.round(seconds / 3600);
+    return { label: `${h}시간 전 등장`, tone: "warm" };
+  }
+  return { label: "", tone: null };
+}
+
+function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
+  const { label, tone } = freshHeadline(card.freshSeconds);
+  if (!tone) return null;
+  return (
+    <div className="mb-2 flex flex-wrap items-center gap-2">
+      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
+        tone === "hot"
+          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+          : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+      }`}>
+        {tone === "hot" ? <span aria-hidden="true">🆕</span> : null}
+        <span>{label}</span>
+      </span>
+      {tone === "hot" ? (
+        <Link
+          href="/plans"
+          className="text-[10px] font-medium text-zinc-500 underline underline-offset-2 transition hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+        >
+          Pro면 즉시 알림 →
+        </Link>
+      ) : null}
+    </div>
+  );
 }
 
 function velocityHoursLabel(value: number | null) {
@@ -2493,6 +2536,8 @@ function RevealCardItem({
         <div className="min-w-0 w-full space-y-3 px-3 sm:px-0">
           <div className="flex w-full items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
+              {/* Wave 392.2: 신선도 강조 — 매우 신선 매물 즉시 인지 + Pro USP hint. */}
+              <LastVerifiedAtBadge card={card} />
               {/* Wave 359+361: 득템 점수 — 제목과 같은 행 우측 작게 (당근 36.8°C 톤). */}
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1 line-clamp-2 text-base font-bold leading-tight text-zinc-900 dark:text-zinc-50">
