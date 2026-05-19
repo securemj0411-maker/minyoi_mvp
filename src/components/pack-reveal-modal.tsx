@@ -324,6 +324,114 @@ function WhyCheapPanel({ card }: { card: RevealCard }) {
   );
 }
 
+// Wave 392.3: 진입장벽 / 불안감 해소 Q&A. 사용자가 모달 보면서 의문 들면 펼침.
+// 셀러 / 가품 / 안전결제 / 사기 신고 4개 — 가장 자주 묻는 거.
+function WhyTrustCollapse({ card }: { card: RevealCard }) {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const sellerRating = card.savedDetail?.sellerReviewRating ?? null;
+  const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
+  const isPremiumSeller = sellerRating != null && sellerRating >= 4.8 && reviewCount >= 30;
+  const cond = card.marketBasis?.conditionClass ?? null;
+  const conditionLabel =
+    cond === "unopened" ? "미개봉" :
+    cond === "mint" ? "S급" :
+    cond === "clean" ? "A급" :
+    cond === "worn" ? "사용감 있음" :
+    cond === "flawed" ? "하자 있음" :
+    cond === "low_batt" ? "배터리 약함" : "일반";
+
+  const qas: { q: string; a: React.ReactNode }[] = [
+    {
+      q: "셀러 믿을 만한가요?",
+      a: sellerRating != null ? (
+        <>
+          이 셀러 평점은 <b className="font-bold">{sellerRating.toFixed(1)}점</b> ({reviewCount.toLocaleString("ko-KR")}건 후기).
+          {isPremiumSeller
+            ? " 우수 셀러로 분류돼요 (평점 4.8+ & 후기 30건+)."
+            : reviewCount >= 10
+              ? " 평점 적당해요. 안전결제로 거래하면 안전합니다."
+              : " 후기 수가 적어요. 안전결제 + 직거래 검수 권장."}
+        </>
+      ) : (
+        <>이 셀러는 아직 후기가 없어요. <b className="font-bold">안전결제 + 직거래 검수</b>를 꼭 권장해요. 또는 다른 매물 보세요.</>
+      ),
+    },
+    {
+      q: "가품 위험 없나요?",
+      a: (
+        <>
+          이 매물은 <b className="font-bold">{conditionLabel}</b>로 분류돼요. 미뇨이는 의심 키워드 매물을 사전 차단하고 있어요.
+          {" "}그래도 직거래 시 <b className="font-bold">시리얼 번호 / 정품 보증서</b> 확인 권장. 아래 체크리스트 펼쳐서 확인하세요.
+        </>
+      ),
+    },
+    {
+      q: "안전결제 어떻게 되나요?",
+      a: (
+        <>
+          번개장터는 <b className="font-bold">안전결제 셀러 의무</b>예요. 셀러가 3.5% 수수료 부담하고, 구매자는 0원.
+          {" "}결제 후 셀러 정산은 거래 완료 확인 후 진행돼요. 입금 사기 X.
+        </>
+      ),
+    },
+    {
+      q: "사기 당하면 어떻게 하나요?",
+      a: (
+        <>
+          안전결제 매물이면 <b className="font-bold">번개장터 분쟁센터</b>에 신고하면 거래 정지 + 환불 절차 진행돼요.
+          {" "}직거래 사기는 경찰서 사이버수사대 신고. 미뇨이는 거래 당사자 아니지만 위험 신호를 사전 알려드려요.
+        </>
+      ),
+    },
+  ];
+
+  return (
+    <div className="mt-3 rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="px-4 py-2.5">
+        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+          <span aria-hidden="true">🤔</span>
+          <span>궁금한 점이 있다면</span>
+        </div>
+      </div>
+      <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        {qas.map((item, idx) => {
+          const open = openIdx === idx;
+          return (
+            <li key={idx}>
+              <button
+                type="button"
+                onClick={() => setOpenIdx(open ? null : idx)}
+                aria-expanded={open}
+                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+              >
+                <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  {item.q}
+                </span>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`h-4 w-4 shrink-0 text-zinc-500 transition-transform ${open ? "rotate-180" : ""}`}
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+              {open ? (
+                <div className="px-4 pb-3 text-xs font-medium leading-6 text-zinc-600 dark:text-zinc-400">
+                  {item.a}
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 function costAssuranceSnapshot(card: RevealCard) {
   const salePrice = finiteKrw(card.marketBasis?.medianPrice);
   const sellingFee = salePrice == null ? null : Math.round(salePrice * SELLING_FEE_RATE);
@@ -2616,6 +2724,8 @@ function RevealCardItem({
                 <PlatformProfitCompare card={card} />
                 <SellerTrustPanel card={card} />
                 <CounterfeitChecklistPanel card={card} />
+                {/* Wave 392.3: 진입장벽/불안감 해소 Q&A — 4개 자주 묻는 거 collapse. */}
+                <WhyTrustCollapse card={card} />
                 <SellHelperPanel card={card} currentFeedbackType={currentFeedbackType} />
               </div>
               <RecommendationReasonPanel
