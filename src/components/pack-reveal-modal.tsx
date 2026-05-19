@@ -2839,22 +2839,19 @@ function RelatedRevealStrip({
   if (visibleItems.length === 0 || !onOpenRelatedItem) return null;
 
   return (
-    <section className="mx-3 rounded-2xl border border-[#e7dece] bg-[#fffdf9] px-3 py-3 shadow-[0_8px_22px_rgba(49,66,56,0.08)] dark:border-zinc-800 dark:bg-zinc-900 sm:mx-0 sm:px-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-sm font-black text-[#223127] dark:text-zinc-100">내 다른 추천 매물</div>
-          <div className="mt-0.5 text-[11px] font-semibold text-[#7a8478] dark:text-zinc-400">
-            매입가 · 시세 · 상태를 같이 보고, 열면 현재 상태를 다시 확인해요.
-          </div>
+    // Wave 366: 카드 박스 제거 → /me 피드 톤 (divider만 + 사진 크게 120px).
+    <section className="mt-4 px-3 sm:px-4">
+      <div className="mb-2 flex items-baseline justify-between gap-3">
+        <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+          다른 추천 매물
         </div>
-        <span className="shrink-0 text-[11px] font-black text-[var(--brand-accent-strong)] dark:text-zinc-200">
+        <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
           {visibleItems.length}개
         </span>
       </div>
-      <div className="mt-2 divide-y divide-[#eee5d8] dark:divide-zinc-800">
+      <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0">
         {visibleItems.map((item) => {
-          // Wave 246 (2026-05-19): medianPrice=0/null 이면 출처 배지 의미 없음.
-          // "번개 S급 시세 0원" 미스리딩 방지 (사용자 사례 pid 406974440).
+          // Wave 246: medianPrice=0/null 이면 출처 배지 의미 없음.
           const hasMedian = !!(item.marketBasis?.medianPrice && item.marketBasis.medianPrice > 0);
           const sourceBadge = !hasMedian
             ? null
@@ -2871,7 +2868,7 @@ function RelatedRevealStrip({
                 onBeforeOpenRelatedItem?.();
                 onOpenRelatedItem(item.pid);
               }}
-              className="group grid w-full min-w-0 grid-cols-[92px_minmax(0,1fr)] gap-3 rounded-xl px-1.5 py-3 text-left transition hover:bg-[#f6fbf2] dark:hover:bg-zinc-800/70 sm:grid-cols-[104px_minmax(0,1fr)]"
+              className="grid w-full min-w-0 grid-cols-[120px_minmax(0,1fr)] gap-3 px-3 py-4 text-left transition active:bg-zinc-50 dark:active:bg-zinc-900/40"
             >
               <div className="relative aspect-square shrink-0 overflow-hidden rounded-lg bg-[#f2eadf] dark:bg-zinc-800">
                 <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
@@ -2880,26 +2877,30 @@ function RelatedRevealStrip({
                     src={item.thumbnailUrl}
                     alt=""
                     fill
-                    sizes="104px"
-                    className="object-cover transition duration-200 group-hover:scale-[1.03]"
+                    sizes="120px"
+                    className="object-cover"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center px-2 text-center text-[11px] font-bold text-[#7a8478] dark:text-zinc-400">
+                  <div className="flex h-full items-center justify-center px-2 text-center text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
                     사진 없음
                   </div>
                 )}
               </div>
-              <div className="min-w-0 self-center">
-                <div className="line-clamp-2 text-[15px] font-black leading-5 text-[#223127] dark:text-zinc-100">
+              <div className="min-w-0">
+                <div className="line-clamp-2 text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-50">
                   {item.name}
                 </div>
-                <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[11px] font-semibold text-[#6b7269] dark:text-zinc-400">
-                  <span>매입 <b className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.price)}</b></span>
-                  {/* Wave 246 (2026-05-19): explicit > 0 guard — 0 is falsy but explicit is safer. */}
+                <div className="mt-1.5">
+                  <span className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                    {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
+                  </span>
+                </div>
+                <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                  <span>매입 <b className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{krw(item.price)}</b></span>
                   {item.marketBasis?.medianPrice && item.marketBasis.medianPrice > 0 ? (
                     <>
                       <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                      <span>시세 <b className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.marketBasis.medianPrice)}</b></span>
+                      <span>시세 <b className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{krw(item.marketBasis.medianPrice)}</b></span>
                       {sourceBadge ? (
                         sourceBadge.tone === "reference"
                           ? <DanawaSourceBadge label={sourceBadge.label} />
@@ -2907,17 +2908,6 @@ function RelatedRevealStrip({
                       ) : null}
                     </>
                   ) : null}
-                </div>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                  <span className="text-sm font-black tabular-nums text-[#00a862] dark:text-[#5dffae]">
-                    {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
-                  </span>
-                  {item.marketBasis?.conditionLabel ? (
-                    <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-[10px] font-black text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
-                      {item.marketBasis.conditionLabel}
-                    </span>
-                  ) : null}
-                  <span className="text-[10px] font-bold text-[#8a9388] dark:text-zinc-500">상태 재확인</span>
                 </div>
               </div>
             </button>
