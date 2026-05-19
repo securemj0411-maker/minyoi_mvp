@@ -1114,23 +1114,25 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
     },
   ];
   const safetyTone = upperFoldTileClass(safety.tone);
-  const SafetyIcon = safety.Icon;
-  // Wave 328 (사용자 피드백): 세로 3층 → 가로 3 segment 단일 카드 (모바일도 가로 유지, 공간 효율).
+  // Wave 330: SafetyIcon 제거 — 모든 segment dot 통일 (정렬 일치).
+  // - dot 크기 통일 (h-1.5 w-1.5) — ShieldIcon 대신 dot로 거래 안전도 통일
+  // - sub line-clamp-2 + 고정 높이 (정렬 어긋남 방지)
+  // - 라벨 한 줄 고정
   return (
     <div className="mt-2 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="grid grid-cols-3 divide-x divide-zinc-200 dark:divide-zinc-800">
         {tiles.map((tile) => {
           const tone = upperFoldTileClass(tile.tone);
           return (
-            <div key={tile.key} className="px-2 py-2.5 text-center">
-              <div className="flex items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
-                {tile.label}
+            <div key={tile.key} className="flex flex-col px-2 py-2.5 text-center">
+              <div className="flex h-3 items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${tone.dot}`} />
+                <span className="truncate">{tile.label}</span>
               </div>
-              <div className={`mt-1 text-xs font-bold leading-tight tabular-nums ${tone.value}`}>
+              <div className={`mt-1.5 line-clamp-1 text-xs font-bold leading-tight tabular-nums ${tone.value}`}>
                 {tile.value}
               </div>
-              <div className="mt-1 line-clamp-2 text-[10px] font-medium leading-3 text-zinc-500 dark:text-zinc-400">
+              <div className="mt-1 line-clamp-2 min-h-[24px] text-[10px] font-medium leading-3 text-zinc-500 dark:text-zinc-400">
                 {tile.sub}
               </div>
             </div>
@@ -1139,17 +1141,17 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
         <RevealRiskScoreMini
           card={card}
           containerClassName="contents"
-          triggerClassName="px-2 py-2.5 text-center transition hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+          triggerClassName="flex flex-col px-2 py-2.5 text-center transition hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
           triggerContent={(
-            <span className="block w-full">
-              <span className="flex items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                <SafetyIcon className={`h-3 w-3 ${safetyTone.value}`} />
-                거래 안전
+            <span className="flex w-full flex-col">
+              <span className="flex h-3 items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${safetyTone.dot}`} />
+                <span className="truncate">거래 안전</span>
               </span>
-              <span className={`mt-1 block text-xs font-bold leading-tight tabular-nums ${safetyTone.value}`}>
+              <span className={`mt-1.5 line-clamp-1 text-xs font-bold leading-tight tabular-nums ${safetyTone.value}`}>
                 {safety.value}
               </span>
-              <span className="mt-1 line-clamp-2 block text-[10px] font-medium leading-3 text-zinc-500 dark:text-zinc-400">
+              <span className="mt-1 line-clamp-2 block min-h-[24px] text-[10px] font-medium leading-3 text-zinc-500 dark:text-zinc-400">
                 {safety.sub}
               </span>
             </span>
