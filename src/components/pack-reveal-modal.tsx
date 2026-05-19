@@ -1600,11 +1600,14 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
   const [listings, setListings] = useState<ComparableListing[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Wave 394.7.i (사용자 짚음): 비교 매물 4개 이상이면 처음 3개만 보이고 "자세히 보기" 펼침.
+  const [expanded, setExpanded] = useState(false);
 
   const ck = card.marketBasis?.comparableKey ?? null;
   const cc = card.marketBasis?.conditionClass ?? null;
   // Wave 394.5.b: detailed 모드 시 더 많이 (6 → 12).
   const limit = mode === "detailed" ? 12 : 6;
+  const INITIAL_VISIBLE = 3;
 
   useEffect(() => {
     if (!ck) return;
@@ -1674,7 +1677,8 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
       ) : (
         <ul className="mt-1.5 space-y-1">
           {/* Wave 394.5.b: mode 따라 slice. simple = 6 / detailed = 12. */}
-          {listings.slice(0, limit).map((item) => {
+          {/* Wave 394.7.i: 4개 이상이면 처음 3개만 — 펼침 후 전체 limit. */}
+          {listings.slice(0, expanded ? limit : INITIAL_VISIBLE).map((item) => {
             const itemPrice = item.price > 0 ? item.price : 0;
             const priceDiff = card.price && itemPrice ? itemPrice - card.price : 0;
             const diffPct = card.price && itemPrice ? Math.round((priceDiff / card.price) * 100) : 0;
@@ -1733,6 +1737,26 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
           })}
         </ul>
       )}
+
+      {/* Wave 394.7.i: 비교 매물 4+ 이고 펼침 X 시 "자세히 보기 ▼" 버튼. */}
+      {listings && listings.length > INITIAL_VISIBLE && !expanded ? (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-700 transition hover:bg-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/60"
+        >
+          자세히 보기 ({Math.min(listings.length, limit) - INITIAL_VISIBLE}개 더) <span aria-hidden="true">▼</span>
+        </button>
+      ) : null}
+      {listings && listings.length > INITIAL_VISIBLE && expanded ? (
+        <button
+          type="button"
+          onClick={() => setExpanded(false)}
+          className="mt-2 inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-bold text-zinc-600 transition hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+        >
+          접기 <span aria-hidden="true">▲</span>
+        </button>
+      ) : null}
 
       <div className="mt-1.5 space-y-0.5 text-[10px] font-medium leading-snug text-zinc-500 dark:text-zinc-400">
         <div>
@@ -2827,9 +2851,10 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
       </div>
 
       {/* Wave 394.7.h: 비용 분해 — 구매 / 재판매 그룹 분리. */}
+      {/* Wave 394.7.h.fix (사용자 짚음): 헤더 sub 제거. "구매 비용" / "리셀 비용" 페어 단순화. */}
       <div className="mt-3 space-y-1.5 border-t border-zinc-100 pt-3 dark:border-zinc-800">
         <div className="text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
-          구매 비용 — 내가 내는 돈
+          구매 비용
         </div>
         {purchaseRows.map((row) => (
           <div key={row.label} className="flex items-baseline justify-between gap-2 text-xs">
@@ -2848,7 +2873,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
 
       <div className="mt-3 space-y-1.5 border-t border-zinc-100 pt-3 dark:border-zinc-800">
         <div className="text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-400">
-          재판매 차감 비용 — 시세에서 빠지는 돈
+          리셀 비용
         </div>
         {resellRows.map((row) => (
           <div key={row.label} className="flex items-baseline justify-between gap-2 text-xs">
