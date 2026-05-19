@@ -1777,8 +1777,28 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
 
           // 옵션 A — conflicting signal: negation + damage keyword 동시 등장
           //   사용자 매물 pid 405343339 ("메인보드 손상... 하자 일절 없습니다") 잡는 핵심 trigger.
-          const hasNegationPattern = /(?:하자|손상|수리|교체|고장|불량|파손|깨짐|기스|스크래치|찍힘)(?:는|도|이|가|을|를)?\s*(?:일절|전혀|아예|단\s*하나|일체|진짜)?\s*(?:없|아닙|아님)/.test(text);
-          const hasDamageKeyword = /손상|메인보드|배터리\s*교체|디스플레이\s*교체|화면\s*교체|액정\s*교체|사설\s*수리|부품\s*수리|침수|낙상|충격|크랙|박살|찌그러짐\s*심|깨짐\s*있/.test(text);
+          //   Wave 256 patch 1 (2026-05-20): 사용자 검증 — 한국어 변형 누락 발견.
+          //     "기스 진심 없습니다" / "떨어뜨려서 충격받은적 전혀없습니다" 등 미커버.
+          //     fix:
+          //       1) keyword list 확장: 충격/떨어뜨림/낙상/이력
+          //       2) 강조어 확장: 진심/정말/완전/완벽/일체/단연/하나도/아예/거의
+          //       3) 강조어 위치 자유화 (앞/뒤 모두 OK)
+          //       4) 강조어 와 keyword 사이 한국어 명사구 허용 (.{0,12})
+          // Wave 256 patch 1: "단 하나도" 의 "도" 누락 fix + "이력" keyword 추가.
+          const NEGATION_INTENSIFIER = "(?:일절|전혀|아예|단\\s*하나(?:도)?|일체|진짜|진심|정말|완전|완벽히?|단연|하나도|결코|거의|딱히|별로|한\\s*번도|단\\s*한\\s*번도)";
+          const NEGATION_KEYWORDS = "(?:하자|손상|수리|교체|고장|불량|파손|깨짐|기스|스크래치|찍힘|크랙|찌그러짐|얼룩|오염|침수|낙상|충격|떨어(?:뜨|트)림|이상|문제|사고|결함|이력|흠집)";
+          // 패턴 1: keyword 먼저 — "기스 진심 없습니다" / "충격받은적 전혀없습니다" / "하자 일절 없습니다"
+          const negationPattern1 = new RegExp(
+            `${NEGATION_KEYWORDS}\\s*(?:된\\s*적|받은\\s*적|있는\\s*적|당한\\s*적|진\\s*적|난\\s*적|은\\s*적|한\\s*적|적)?\\s*(?:는|도|이|가|을|를|은|만)?\\s*${NEGATION_INTENSIFIER}?\\s*(?:없|아닙|아님|無|x|X)`
+          );
+          // 패턴 2: 강조어 먼저 — "전혀 하자 없" / "진심 기스 없" (한국어 어순 다양)
+          const negationPattern2 = new RegExp(
+            `${NEGATION_INTENSIFIER}\\s*${NEGATION_KEYWORDS}\\s*(?:는|도|이|가|을|를)?\\s*(?:없|아닙|아님)`
+          );
+          // 패턴 3: "떨어뜨린 적 없" / "충격받은 적 없" — 동작 형 부정
+          const negationPattern3 = /(?:떨어(?:뜨|트)린|충격\s*받은|침수된|낙상된|박살난|밟힌|튕긴)\s*(?:적|일|경험|이력)\s*(?:은|도)?\s*(?:전혀|일절|한\s*번도|단\s*한\s*번도|진심|정말)?\s*없/.test(text);
+          const hasNegationPattern = negationPattern1.test(text) || negationPattern2.test(text) || negationPattern3;
+          const hasDamageKeyword = /손상|메인보드|배터리\s*교체|디스플레이\s*교체|화면\s*교체|액정\s*교체|사설\s*수리|부품\s*수리|침수|낙상|충격|크랙|박살|찌그러짐\s*심|깨짐\s*있|떨어(?:뜨|트)린|떨어(?:뜨|트)림|기스\s*있|얼룩\s*심|얼룩\s*있|이력\s*있|문제\s*있|결함\s*있|수리\s*이력|교체\s*이력/.test(text);
           const conflictingSignal = hasNegationPattern && hasDamageKeyword;
 
           // 옵션 B — positive 분류 (mint/clean/unopened) 인데 description 에 negative keyword 존재
