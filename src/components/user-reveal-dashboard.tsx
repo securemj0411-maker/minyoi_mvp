@@ -1463,9 +1463,10 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                       {/* Wave 325: 새 verdict 4단계 (great/good/fair/tight). 풀 매물은 다 안전이라 rose 없음. */}
                       {(() => {
                         if (isTerminal) return null;
+                        // Wave 329: 카드 헤드라인이 보여주는 displayProfitAvg와 동일한 차익 사용.
                         const guidance = buyPriceGuidance({
                           price: item.price,
-                          medianPrice: item.marketBasis?.medianPrice ?? null,
+                          currentProfit: displayProfitAvg,
                         });
                         if (!guidance) return null;
                         const cls = (guidance.verdict === "great" || guidance.verdict === "good")

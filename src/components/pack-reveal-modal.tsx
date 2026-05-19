@@ -1848,9 +1848,10 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
     }
   }
 
+  // Wave 329: 헤드라인 expected_profit_average와 동일한 차익 사용 (배송비 등 모두 포함된 정확한 값).
   const guidance = buyPriceGuidance({
     price: card.price,
-    medianPrice: card.marketBasis?.medianPrice ?? null,
+    currentProfit: expectedProfitAverage(card),
   });
   // Wave 325: verdict 4단계 (great/good/fair/tight). rose 제거 — 풀 매물은 다 안전 통과.
   const verdictClass = !guidance ? "" : (guidance.verdict === "great" || guidance.verdict === "good")

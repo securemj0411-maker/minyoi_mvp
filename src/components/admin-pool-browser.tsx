@@ -520,9 +520,10 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       <span>매입 {krw(item.price)}</span>
                       <span>· 시세 {krw(item.skuMedian)}</span>
                       <span>· 신뢰 {(item.confidence * 100).toFixed(0)}%</span>
-                      {/* Wave 325: 새 verdict 4단계. 운영자 풀도 동일 헬퍼. */}
+                      {/* Wave 329: 헤드라인 차익(expectedProfitMin/Max 평균)을 그대로 사용 — 가이드와 일치 */}
                       {(() => {
-                        const guidance = buyPriceGuidance({ price: item.price, medianPrice: item.skuMedian });
+                        const avgProfit = Math.round((item.expectedProfitMin + item.expectedProfitMax) / 2);
+                        const guidance = buyPriceGuidance({ price: item.price, currentProfit: avgProfit });
                         if (!guidance) return null;
                         const cls = (guidance.verdict === "great" || guidance.verdict === "good")
                           ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
