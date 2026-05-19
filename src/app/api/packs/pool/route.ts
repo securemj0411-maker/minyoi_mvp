@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
+import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -264,11 +265,35 @@ function buildItems(
       //   pack-open.ts 의 marketBasisForCandidate 와 동일 정책. additive only — DB 변경 X.
       const bandPrice = bandAwareMedian(marketBands, row.comparable_key, row.condition_class);
       const skuMedianFinal = bandPrice ?? raw.sku_median;
-      // Wave 368 (2026-05-19): sanity check — expected_profit (옛날 시점 계산) vs
-      // 현재 표시 시세 (wave 247.2 band-aware) inconsistency 차단.
-      // 표시 시세가 매입가보다 낮은데 차익 +로 나오면 사용자 신뢰 깎임 (사기처럼 보임).
-      // 시세가 매입가 미만이면 풀에서 제외 (data drift 시 silently 숨김).
-      if (skuMedianFinal && skuMedianFinal > 0 && raw.price > skuMedianFinal) {
+      // Wave 369 (2026-05-19): expected_profit 재계산 — pool builder 공식과 같이,
+      // 표시 시세 (band-aware) 기준으로 응답 시점에 다시 계산.
+      // 이유: DB column expected_profit_min/max는 pool builder 시점 계산이라
+      // wave 247.2 band-aware median 적용 후 동기화 안 됨. 같은 매물에 "시세 < 매입인데 차익 +"
+      // 같은 모순 노출 (사용자 신뢰 손상).
+      //
+      // 공식 (candidate-pool-builder.ts line 398-402 와 동일):
+      //   sellFee = skuMedian * 3.5%
+      //   profitMax = max(0, skuMedian - price - sellFee - 3500(재배송) - 5000(buffer))
+      //   profitMin = max(0, skuMedian - (price + 3500(매입배송 추정)) - sellFee - 3500 - 5000)
+      //
+      // 정확한 buyer_shipping/estimated_buy_cost는 raw mvp_listings에 없어서 단순 가정.
+      // 더 정확한 값 필요 시 mvp_listings join 추가 (별도 wave).
+      const ASSUMED_BUY_SHIPPING = 3500;
+      let recomputedProfitMin = row.expected_profit_min;
+      let recomputedProfitMax = row.expected_profit_max;
+      if (skuMedianFinal && skuMedianFinal > 0 && Number.isFinite(raw.price) && raw.price > 0) {
+        const sellFee = Math.round(skuMedianFinal * SELLING_FEE_RATE);
+        recomputedProfitMax = Math.max(
+          0,
+          skuMedianFinal - raw.price - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER,
+        );
+        recomputedProfitMin = Math.max(
+          0,
+          skuMedianFinal - (raw.price + ASSUMED_BUY_SHIPPING) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER,
+        );
+      }
+      // Wave 368: 안전망 — 재계산 후 차익이 0이면 응답에서 제외 (사용자 화면 노출 차단).
+      if (recomputedProfitMax <= 0) {
         return null;
       }
       return {
@@ -279,8 +304,8 @@ function buildItems(
         thumbnailUrl: raw.thumbnail_url,
         skuId: meta?.sku_id ?? null,
         skuName: meta?.sku_name ?? null,
-        expectedProfitMin: row.expected_profit_min,
-        expectedProfitMax: row.expected_profit_max,
+        expectedProfitMin: recomputedProfitMin,
+        expectedProfitMax: recomputedProfitMax,
         profitBand: row.profit_band,
         confidence: row.confidence,
         category: row.category,
