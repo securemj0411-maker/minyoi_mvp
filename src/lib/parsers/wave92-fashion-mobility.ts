@@ -356,13 +356,15 @@ function parseClothingProductType(text: string): ClothingProductType {
   //   Wave 254.6: 기존 "모자\b" 패턴 bug 정정 — JavaScript \b 가 Korean 한글 매칭 안 됨
   //   ("모자" 단독 / "모자가" / "모자에" 매칭 실패). fix: bare "모자" (자켓에 모자 부속 등 false positive 낮음).
   //   "모자이크/모자보호" 등 false positive 차단 — 명시적 negative lookahead.
-  if (/볼캡|ball ?cap|야구모자|버킷햇|bucket hat|벙거지|비니|beanie|메쉬캡|메쉬 ?캡|트러커 ?캡|trucker cap|cap\b|모자(?!이크|보호)|스냅백|snapback/.test(t)) return "cap";
+  // Wave 264 (2026-05-20): 캡모자/베이스볼 캡/풋볼캡 보강 — 사용자 발견 type_unknown 매물.
+  if (/볼캡|ball ?cap|야구모자|버킷햇|bucket hat|벙거지|비니|beanie|메쉬캡|메쉬 ?캡|트러커 ?캡|trucker cap|cap\b|모자(?!이크|보호)|스냅백|snapback|캡모자|베이스볼 ?캡|baseball ?cap|풋볼 ?캡|football ?cap|6 ?패널/.test(t)) return "cap";
   // belt — "Supreme 벨트" / "Polo RRL 벨트" 등.
   if (/벨트|belt\b/.test(t)) return "belt";
   // wallet — "콘초 월렛" / "장지갑" 등.
   if (/지갑|wallet|반지갑|장지갑|카드지갑|머니 ?클립|콘초 ?월렛|콘초 ?지갑/.test(t)) return "wallet";
   // jeans — 청바지 명시 (데님 팬츠보다 specific).
-  if (/청바지|진(?:즈)?\b|jean(?:s)?\b|데님 ?팬츠|데님 ?진|denim ?jean|빈파포|빈티지 ?파이브 ?포켓|파이브 ?포켓|five ?pocket|5 ?포켓|5-pocket|기빈스|미드랜드|이스트웨스트|힐스뷰|에이버리|키팅진/.test(t)) return "jeans";
+  // Wave 264: "워싱진/슬림내로우 진/데님 와이드/와이드 진" 보강 (RRL/TNF Purple Label sample 발견).
+  if (/청바지|진(?:즈)?\b|jean(?:s)?\b|데님 ?팬츠|데님 ?진|denim ?jean|빈파포|빈티지 ?파이브 ?포켓|파이브 ?포켓|five ?pocket|5 ?포켓|5-pocket|기빈스|미드랜드|이스트웨스트|힐스뷰|에이버리|키팅진|워싱진|슬림 ?내로우 ?진|슬림내로우 ?진|데님 ?와이드|와이드 ?진|데님 ?스트레이트|스트레이트 ?진/.test(t)) return "jeans";
   // pants — "RRL 데님 팬츠" 등 (jeans 보다 narrow 한 데님은 위에서 잡힘).
   if (/팬츠|pants\b|바지(?!\s*받침)|trouser|치노|chino|슬랙스|slacks|조거|jogger|카고|cargo|트랙 ?팬츠|track ?pants|카펜터|carpenter|워크팬츠|workwear ?pants/.test(t)) return "pants";
 
@@ -370,18 +372,21 @@ function parseClothingProductType(text: string): ClothingProductType {
   // down jacket — 눕시 / 푸퍼 / 다운 라이너 등.
   if (/패딩|다운 ?재킷|다운 ?자켓|down ?jacket|푸퍼|puffer|nano puff|nanopuff|구스다운|덕다운|눕시|nuptse|다운 ?베스트|다운 ?베어|다운 ?재킷|다운 ?파카|down ?parka/.test(t)) return "down_jacket";
   if (/코트(?!\s*디테일)|coat\b|trench|트렌치|체스터필드|chesterfield|피코트|peacoat|카코트|발마칸|balmacaan|울 ?코트/.test(t)) return "coat";
-  if (/카디건|cardigan|니트 ?집업|knit ?zip/.test(t)) return "cardigan";
+  // Wave 264: 가디건 (한글 변형) 추가.
+  if (/카디건|cardigan|가디건|니트 ?집업|knit ?zip/.test(t)) return "cardigan";
   // Wave 236b: 터틀넥/폴라넥/모크넥 추가.
   if (/니트(?!\s*집업)|knit(?! ?zip)|스웨터|sweater|터틀넥|turtleneck|폴라넥|모크넥|mockneck|crewneck ?knit/.test(t)) return "knit";
   if (/조끼|베스트(?!\s*조끼)|vest\b|gilet/.test(t)) return "vest";
   if (/플리스|fleece|레트로 ?x|retro ?x|덴알리|denali|숄카라|숄 ?카라|shawl/.test(t)) return "jacket"; // 플리스/베스트 자켓 류
   // Wave 236b: windbreaker/바람막이/아노락/안타르티카/마운틴 라이트 등 자켓 류.
-  if (/자켓|재킷|jacket|아노락|anorak|봄버|bomber|블레이저(?!\s*미드)|윈드 ?브레이커|windbreaker|바람막이|마운틴 ?라이트|mountain ?light|마운틴 ?파카|mountain ?parka|마운틴 ?자켓|mountain ?jacket|트랙 ?탑|track ?top|트랙수트|tracksuit|덱 ?자켓|deck ?jacket|쉴드|shield/.test(t)) return "jacket";
+  // Wave 264: 윈드러너/스팁 테크/패딩 자켓 보강 (TNF Supreme collab).
+  if (/자켓|재킷|jacket|아노락|anorak|봄버|bomber|블레이저(?!\s*미드)|윈드 ?브레이커|windbreaker|바람막이|마운틴 ?라이트|mountain ?light|마운틴 ?파카|mountain ?parka|마운틴 ?자켓|mountain ?jacket|트랙 ?탑|track ?top|트랙수트|tracksuit|덱 ?자켓|deck ?jacket|쉴드|shield|윈드러너|windrunner|스팁 ?테크|steep ?tech|패딩 ?자켓|padded ?jacket/.test(t)) return "jacket";
   if (/후드(?!\s*티 ?셔츠)|후디|hoodie|hooded sweat/.test(t)) return "hoodie";
   if (/맨투맨|크루넥|crewneck|sweatshirt|스웻 ?셔츠|스웻\(맨투맨\)|풀오버(?!\s*조끼)|스웻 ?셔트|sweat ?shirt/.test(t)) return "crewneck";
   if (/롱슬리브|long sleeve|롱 ?티|장 ?티|long sleeved/.test(t)) return "tee"; // 롱슬리브 = tee 류
   // Wave 236b: 반팔 단독 + 탱크탑/민소매 추가.
-  if (/티 ?셔츠|tee\b|반팔 ?티|반팔티|t-shirt|tshirt|t ?셔츠|반팔(?!\s*티 ?셔츠)|탱크 ?탑|tank ?top|민소매|sleeveless|반 ?소매/.test(t)) return "tee";
+  // Wave 264: 블라우스 추가 (acne-apparel sample 발견).
+  if (/티 ?셔츠|tee\b|반팔 ?티|반팔티|t-shirt|tshirt|t ?셔츠|반팔(?!\s*티 ?셔츠)|탱크 ?탑|tank ?top|민소매|sleeveless|반 ?소매|블라우스|blouse/.test(t)) return "tee";
   // Wave 254.6: polo_shirt lookahead group bug fix — `(?!\s*rrl|랄프)` 의 alternation
   //   파싱: `\s*rrl` OR `랄프` (모두 from 같은 시작점). 실제는 `\s*rrl|랄프` 가 `\s*` 만 첫 번째에 적용.
   //   "폴로 랄프로렌" → 폴로 + 공백 + 랄프 → 폴로 match 후 lookahead "\s*rrl|랄프" 검사 →
@@ -427,8 +432,11 @@ function parseShoeProductType(text: string): ShoeProductType {
   if (/부츠|boot\b|첼시|chelsea|앵클 ?부츠|ankle ?boot|컴뱃|combat ?boot|콤뱃/.test(t)) return "boot";
   if (/샌들|sandal|쪼리/.test(t)) return "sandal";
   if (/로퍼|loafer|페니|penny/.test(t)) return "loafer";
-  if (/슬리퍼|slipper|뮬\b|mule\b|에스파드류|espadrille|크록스|clog/.test(t)) return "slipper";
-  if (/스니커즈|sneaker|운동화|단화\b|러닝화|러닝 ?화|블레이저|blazer|에어맥스|airmax|에어포스|airforce|덩크|dunk|조던|jordan|올드스쿨|sk8|에라\b|어센틱|슬립온|체커보드/.test(t)) return "sneaker";
+  // Wave 264 (2026-05-20): 슬라이드 (Yeezy Slide) / 클로그 한글 / 아딜렛 (Adidas Adilette) / 폼러너 보강.
+  //   사용자 발견 type_unknown sample: "이지슬라이드" / "아디다스 아딜렛 클로그 플랫폼" / "Crocs 클로그".
+  if (/슬리퍼|slipper|뮬\b|mule\b|에스파드류|espadrille|크록스|crocs|clog|클로그|슬라이드|slide|이지 ?슬라이드|yeezy ?slide|아딜렛|adilette|adilet|adilete|폼 ?러너|foam ?runner|푸쉬 ?에어|nb 슬리퍼/.test(t)) return "slipper";
+  // Wave 264: 축구화/풋살화 (F50/프레데터/코파/네메지즈/메시/crazyfast) — sneaker 분류 (운동화 광의).
+  if (/스니커즈|sneaker|운동화|단화\b|러닝화|러닝 ?화|블레이저|blazer|에어맥스|airmax|에어포스|airforce|덩크|dunk|조던|jordan|올드스쿨|sk8|에라\b|어센틱|슬립온|체커보드|축구화|풋살화|풋볼화|football ?boot|football ?shoes|f50|프레데터|predator|코파(?:\s|$)|copa\b|네메지즈|nemeziz|메시|messi|crazyfast|크레이지 ?패스트/.test(t)) return "sneaker";
   return "type_unknown";
 }
 
@@ -455,8 +463,12 @@ function parseShoeProductType(text: string): ShoeProductType {
 //   점진 rollout 폐기 — bike 제외하고 shoe/bag/clothing 모두 v8 통합.
 //   bike (wave92-fashion-mobility-v7) 만 옛 path 유지 (자전거는 conditionFromTextFashion 미적용).
 const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
-const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v8";
-const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v8";
+// Wave 264 (2026-05-20) v9: parser regex 보강 (사용자 SQL 검증 — type_unknown 320건 영향).
+//   clothing: 블라우스/가디건/윈드러너/캡모자/베이스볼캡/풋볼캡/6패널/워싱진/슬림내로우/데님 와이드 등
+//   shoe: 슬라이드/이지 슬라이드/클로그/아딜렛/폼러너/축구화/풋살화/F50/프레데터/코파/네메지즈/메시
+//   ~320건 type_unknown 매물 자동 product_type 추출 → comparable_key 정확 분리.
+const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v9";
+const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v9";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
@@ -471,7 +483,8 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v8";
 // Wave 236d v7 (2026-05-19): catalog narrow model defaultProductType fallback OK + broad 차단.
 // Wave 254.5 step 3 v8 (2026-05-20): conditionFromTextFashion 통합 (의류 specific signals).
 const PARSER_VERSION_W216_CLOTHING = "wave216-clothing-v7";
-const PARSER_VERSION_W216_CLOTHING_V8 = "wave216-clothing-v8";
+// Wave 264 v9: 블라우스/가디건/윈드러너/캡모자/베이스볼캡/풋볼캡/6패널/워싱진/슬림내로우 regex 보강.
+const PARSER_VERSION_W216_CLOTHING_V8 = "wave216-clothing-v9";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");

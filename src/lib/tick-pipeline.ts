@@ -2165,9 +2165,13 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   //   8,191건 suspicious_high_grade (mint/clean/unopened + notes []) 잘못 추천 가능.
   //   점진 rollout 폐기 — shoe+bag+clothing 모두 conditionFromTextFashion 동시 적용.
   //   bike 만 v7 유지 (자전거 specific signal 별도 wave).
-  clothing: "wave216-clothing-v8",
-  shoe: "wave92-shoe-v8",
-  bag: "wave92-bag-v8",
+  // Wave 264 (2026-05-20): v9 — parser regex 보강 (사용자 발견 320건 type_unknown).
+  //   clothing: 블라우스/가디건/윈드러너/캡모자/베이스볼캡/6패널/워싱진/슬림내로우/데님와이드
+  //   shoe: 슬라이드/이지슬라이드/클로그/아딜렛/폼러너/축구화/풋살화/F50/프레데터/코파/네메지즈/메시
+  //   + catalog false positive 차단 (bag-lv-monogram-key-pouch / clothing-acne-apparel 화장품)
+  clothing: "wave216-clothing-v9",
+  shoe: "wave92-shoe-v9",
+  bag: "wave92-bag-v9",
   bike: "wave92-fashion-mobility-v7",
 };
 function isParsedStale(row: ParsedListingRow): boolean {

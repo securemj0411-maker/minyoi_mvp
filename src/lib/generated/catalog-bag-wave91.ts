@@ -499,15 +499,23 @@ export const BAG_CATALOG: Sku[] = [
     category: "bag",
     modelName: "Key Pouch / Cles Monogram",
     aliases: [],
+    // Wave 264 (2026-05-20): mustContain group 1 추가 — LV brand 강제 (사용자 발견 false positive).
+    //   기존: ["키 포셰트", "키 파우치", ...] 만 — "나이키 에어포스 1 로우" 매물의 "키" 매칭? false positive 의심.
+    //   fix: mustContain 에 LV brand 강제 group 추가. + mustNotContain 에 nike/adidas/스니커즈 추가.
     mustContain: [
+      ["루이비통", "lv", "louis vuitton"],
       ["키 포셰트", "키포셰트", "키 파우치", "키파우치", "키 포쉐트", "키포쉐트", "key pouch", "cles", "클레"],
     ],
     mustNotContain: [
-      "다미에", "damier", "에삐", "epi", "앙프렝뜨", "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔", "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정", "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
+      "다미에", "damier", "에삐", "epi", "앙프렝뜨",
+      // Wave 264 false positive 차단 — 다른 brand 신발/잡화
+      "나이키", "nike", "아디다스", "adidas", "에어포스", "airforce", "에어맥스", "airmax", "스니커즈", "운동화", "조던", "jordan",
+      "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔", "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정", "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
     ],
     msrpKrw: 380000,
     released: 2024,
     laneKey: "bag_lv_key_pouch_monogram",
+    defaultProductType: "pouch",
   },
   {
     id: "bag-gucci-marmont-card-wallet",
