@@ -197,19 +197,24 @@ export default function ExploreClient() {
   const [refreshModalAnimating, setRefreshModalAnimating] = useState(false);
   // Wave 374: personalization — localStorage 저장된 선호 + 모달 step.
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
-  // 모달 step: prefs 없으면 form / 있고 cooldown 안 끝 cooldown / 있고 끝 ready.
-  const [editingPrefs, setEditingPrefs] = useState(false); // cooldown 모드에서 "수정" 클릭 시 form 표시
-  // 폼 임시 값 (저장 전)
+  const [editingPrefs, setEditingPrefs] = useState(false);
   const [draftBudget, setDraftBudget] = useState<Budget>("unlimited");
   const [draftPreference, setDraftPreference] = useState<Preference>("balanced");
+  // Wave 376: 가입 직후 (prefs X) → 모달 자동 열림 + 예산만 묻기 (성향은 default balanced).
+  // 답 또는 dismiss 전에는 첫 fetch 보류 — 첫 30개부터 personalized 가치 체감.
+  const [awaitingInitialPrefs, setAwaitingInitialPrefs] = useState(false);
 
-  // localStorage 로드 (mount 1회)
+  // localStorage 로드 (mount 1회). prefs X면 가입 직후 자동 폼 트리거.
   useEffect(() => {
     const loaded = loadPreferences();
     if (loaded) {
       setPreferences(loaded);
       setDraftBudget(loaded.budget);
       setDraftPreference(loaded.preference);
+    } else {
+      // Wave 376: 가입 직후 자동 모달 (예산만)
+      setAwaitingInitialPrefs(true);
+      setRefreshModalOpen(true);
     }
   }, []);
 
@@ -223,7 +228,11 @@ export default function ExploreClient() {
 
   const closeRefreshModal = useCallback(() => {
     setRefreshModalAnimating(false);
-    const t = setTimeout(() => setRefreshModalOpen(false), 250);
+    const t = setTimeout(() => {
+      setRefreshModalOpen(false);
+      // Wave 376: 모달 닫힘 시 가입 직후 가드 자동 해제 → 보류된 첫 fetch 트리거.
+      setAwaitingInitialPrefs(false);
+    }, 250);
     return () => clearTimeout(t);
   }, []);
 
@@ -326,10 +335,12 @@ export default function ExploreClient() {
     void loadStats();
   }, [loadStats]);
 
-  // 필터/정렬 변경 시 자동 재로드
+  // 필터/정렬 변경 시 자동 재로드.
+  // Wave 376: 가입 직후 가드 — preferences 답하기 전엔 fetch 보류 (random 30 안 보이게).
   useEffect(() => {
+    if (awaitingInitialPrefs) return;
     void loadPool(false);
-  }, [loadPool]);
+  }, [loadPool, awaitingInitialPrefs]);
 
   // Wave 353: 클라이언트 사이드 카테고리 필터. 전체 풀(items)에서 selectedCategories에 속한 매물만.
   // category가 null이면 selectedCategories 활성 시 제외 (안전).
@@ -759,14 +770,18 @@ export default function ExploreClient() {
             </div>
 
             <div className="px-6 pt-5 pb-6 sm:pt-6">
-              {/* Wave 374: personalization 모달 — form (예산/성향 선택) vs cooldown/ready 분기 */}
+              {/* Wave 374+376: personalization 모달.
+                  - awaitingInitialPrefs (가입 직후): 예산만 (성향 chips 숨김, default balanced)
+                  - editingPrefs / preferences X: 예산 + 성향 풀폼
+                  - preferences O & cooldown: ready/cooldown */}
               {(() => {
                 const showForm = !preferences || editingPrefs;
+                const lightweightMode = awaitingInitialPrefs; // 가입 직후 = 예산만
                 const headerTitle = showForm
-                  ? (preferences ? "선호 수정" : "내 매물 취향 알려주세요")
+                  ? (lightweightMode ? "환영해요 👋 예산 알려주세요" : (preferences ? "선호 수정" : "내 매물 취향 알려주세요"))
                   : "다른 매물 찾기";
                 const headerSub = showForm
-                  ? "예산과 매물 성향에 맞춰 30개 골라드려요"
+                  ? (lightweightMode ? "그 예산 안에서 30개 골라드릴게요 (나중에 수정 가능)" : "예산과 매물 성향에 맞춰 30개 골라드려요")
                   : (canRefresh
                       ? "현재 선호로 새 30개 받기"
                       : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 풀려요`);
@@ -814,32 +829,36 @@ export default function ExploreClient() {
                           </div>
                         </div>
 
-                        <div className="mb-4">
-                          <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">매물 성향</div>
-                          <div className="grid grid-cols-3 gap-2">
-                            {PREFERENCE_OPTIONS.map((opt) => {
-                              const active = draftPreference === opt.value;
-                              return (
-                                <button
-                                  key={opt.value}
-                                  type="button"
-                                  onClick={() => setDraftPreference(opt.value)}
-                                  className={`flex flex-col items-center gap-0.5 rounded-xl border px-2 py-2.5 transition ${
-                                    active
-                                      ? "border-emerald-500 bg-emerald-50 shadow-[0_2px_8px_rgba(16,185,129,0.18)] dark:border-emerald-600 dark:bg-emerald-950/40"
-                                      : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900/40"
-                                  }`}
-                                >
-                                  <span className="text-lg leading-none">{opt.emoji}</span>
-                                  <span className={`text-sm font-bold ${active ? "text-emerald-800 dark:text-emerald-200" : "text-zinc-800 dark:text-zinc-200"}`}>
-                                    {opt.label}
-                                  </span>
-                                  <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">{opt.sub}</span>
-                                </button>
-                              );
-                            })}
+                        {/* Wave 376: lightweight 모드 (가입 직후)일 땐 성향 chips 숨김.
+                            성향은 default balanced로 들어가고, 사용자가 나중에 "수정" 클릭 시 추가 가능. */}
+                        {!lightweightMode ? (
+                          <div className="mb-4">
+                            <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">매물 성향</div>
+                            <div className="grid grid-cols-3 gap-2">
+                              {PREFERENCE_OPTIONS.map((opt) => {
+                                const active = draftPreference === opt.value;
+                                return (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    onClick={() => setDraftPreference(opt.value)}
+                                    className={`flex flex-col items-center gap-0.5 rounded-xl border px-2 py-2.5 transition ${
+                                      active
+                                        ? "border-emerald-500 bg-emerald-50 shadow-[0_2px_8px_rgba(16,185,129,0.18)] dark:border-emerald-600 dark:bg-emerald-950/40"
+                                        : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900/40"
+                                    }`}
+                                  >
+                                    <span className="text-lg leading-none">{opt.emoji}</span>
+                                    <span className={`text-sm font-bold ${active ? "text-emerald-800 dark:text-emerald-200" : "text-zinc-800 dark:text-zinc-200"}`}>
+                                      {opt.label}
+                                    </span>
+                                    <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">{opt.sub}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
+                        ) : null}
 
                         <button
                           type="button"
@@ -855,7 +874,11 @@ export default function ExploreClient() {
                           }}
                           className="w-full rounded-2xl bg-[var(--brand-accent-strong)] px-5 py-3.5 text-base font-bold text-[var(--brand-cream)] shadow-[0_12px_28px_rgba(34,49,39,0.28)] transition hover:shadow-[0_16px_34px_rgba(34,49,39,0.34)] active:scale-[0.99]"
                         >
-                          {canRefresh ? (preferences ? "수정하고 새 30개 받기" : "내 취향대로 30개 받기") : "수정 저장"}
+                          {lightweightMode
+                            ? "이 예산으로 30개 받기"
+                            : canRefresh
+                              ? (preferences ? "수정하고 새 30개 받기" : "내 취향대로 30개 받기")
+                              : "수정 저장"}
                         </button>
                         {editingPrefs ? (
                           <button
