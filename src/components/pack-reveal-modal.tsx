@@ -35,6 +35,13 @@ import {
   PRIORITY_LABEL,
   type CounterfeitCheckPriority,
 } from "@/lib/counterfeit-checklist";
+// Wave A (2026-05-20): 카테고리별 브랜드 깊이 정보 (Nike Jordan, Adidas Yeezy 등).
+// CounterfeitChecklistPanel + WhyTrustCollapse 가품 Q 답 둘 다 사용.
+import {
+  detectBrandDepth,
+  COUNTERFEIT_RISK_LABEL,
+  type BrandDepthMatch,
+} from "@/lib/category-brand-depth";
 import {
   sellHelperFor,
   suggestedAskingPrice,
@@ -2909,6 +2916,11 @@ function RevealCardItem({
 }) {
   const [shown, setShown] = useState(false);
   const [dealExpanded, setDealExpanded] = useState(false);
+  // Wave 394.5.a (외부 review #23 — 사용자 명시 채택): 초보/상세 모드 토글.
+  // 디폴트 = simple (메모리 룰 일반인 친화). detailed = "디테일 펼침" (이미 있는 정보 더 자세히).
+  // localStorage 기억 — 한 번 선택하면 다음 모달도 자동.
+  // 본질 = 일반인 친화 단일 톤 유지 + "더 자세히 보고 싶은 사용자" 옵션. 전문가 통계 도구 X (별 wave).
+  const [mode, setMode] = useState<"simple" | "detailed">("simple");
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const sourceBadge = marketSourceBadge(card);
   const netPct = netProfitPercent(card);
@@ -2929,6 +2941,29 @@ function RevealCardItem({
     const id = window.setTimeout(() => setShown(true), delay);
     return () => window.clearTimeout(id);
   }, [delay]);
+  // Wave 394.5.a: localStorage 기억 mount sync.
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("minyoi_modal_mode");
+      if (stored === "detailed") {
+        setMode("detailed");
+        setDealExpanded(true);
+      }
+    } catch {}
+  }, []);
+  // mode 변경 시 자동 펼침 동작.
+  useEffect(() => {
+    if (mode === "detailed") {
+      setDealExpanded(true);
+    }
+  }, [mode]);
+  const toggleMode = useCallback(() => {
+    setMode((prev) => {
+      const next = prev === "simple" ? "detailed" : "simple";
+      try { localStorage.setItem("minyoi_modal_mode", next); } catch {}
+      return next;
+    });
+  }, []);
 
   return (
     <div
@@ -3026,6 +3061,15 @@ function RevealCardItem({
                       기본 옵션 가정
                     </span>
                   ) : null}
+                  {/* Wave 394.5.a (외부 review #23): 모드 토글 chip — 우측 정렬. 일반인 친화 디폴트. */}
+                  <button
+                    type="button"
+                    onClick={toggleMode}
+                    className="ml-auto rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold text-zinc-700 transition hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                    title={mode === "simple" ? "더 자세한 정보 보기 (계산식, 비용 분해 등)" : "간단하게 보기"}
+                  >
+                    {mode === "simple" ? "🔍 상세 보기" : "← 간단 보기"}
+                  </button>
                 </div>
 
                 {/* Wave 394.6.b.fix2 (사용자 정확 지적): 비교 매물 = "이 시세 진짜야?" 직빵 증명.
