@@ -3042,6 +3042,12 @@ function RevealCardItem({
           </span>
         </div>
 
+        {/* Wave 394.6.b.fix (사용자 짚음): 비교 매물 위계 ↑ — 그래프 보다 위.
+            "이 시세가 믿을만한건지 결정이 우선순위 — 비교매물이 위계가 훨씬 높지 않나?".
+            시세 그래프 = 자세한 추이 (디테일). 비교 매물 = "이 시세 어떻게 산출됐나" 근거 자체.
+            근거 → 자세한 추이 흐름이 자연. */}
+        <ComparableListingsPanel card={card} />
+
         {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
         {/* "시세 어떤 기준으로 잡나" 시각화. history 부족하면 자동 hide. */}
         {/* 2026-05-16 (코멘트 id 105): conditionClass 전달 → 그래프도 같은 condition 매물 기준. */}
@@ -3055,9 +3061,6 @@ function RevealCardItem({
         <MarketGraphTrustLine card={card} />
 
         <SkuListingFlowMini card={card} />
-
-        {/* Wave 394.4 (외부 review #3 + 사용자 강조 — USP 정면): 이 시세 산출 근거 매물 N개 직접 노출. */}
-        <ComparableListingsPanel card={card} />
       </div>
       {/* 우측 카드 (시세 분석) 닫음. */}
 
