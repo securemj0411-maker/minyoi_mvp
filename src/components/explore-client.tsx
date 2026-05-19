@@ -1077,27 +1077,56 @@ export default function ExploreClient() {
                         </button>
 
                         {!canRefresh ? (
-                          <div className="mt-3 rounded-2xl border border-amber-200/60 bg-amber-50/50 px-5 py-4 dark:border-amber-900/40 dark:bg-amber-950/20">
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="flex items-center gap-2">
-                                <ZapIcon className="h-5 w-5 text-amber-700 dark:text-amber-300" />
-                                <span className="text-base font-bold text-amber-900 dark:text-amber-100">기다리지 말고 즉시 받기</span>
-                              </div>
-                              <span className="rounded-full bg-amber-500/90 px-2 py-0.5 text-[10px] font-bold text-white">구독</span>
-                            </div>
-                            <div className="mt-1 text-xs font-medium text-amber-800/80 dark:text-amber-200/80">
-                              cooldown 없이 바로 + 6시간 미만 fresh 매물도
-                            </div>
-                            <Link
-                              href="/plans"
-                              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full bg-amber-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-amber-700"
+                          <>
+                            {/* Wave 384 (placeholder): 카카오톡 공유 → 30개 즉시 받기. App Key + DB migration 필요해서 일단 UI만 + "곧 출시". */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                // TODO Wave 384 phase 2: Kakao.Share.sendDefault + POST /api/packs/pool/share-bonus
+                                alert("카카오톡 공유 보너스는 곧 출시예요! 조금만 기다려주세요 🙏");
+                              }}
+                              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl border border-[#FAE100]/70 bg-[#FFEB00]/15 px-5 py-4 text-left transition hover:bg-[#FFEB00]/25 dark:border-[#FAE100]/40 dark:bg-[#FAE100]/10"
                             >
-                              구독으로 풀기 (곧 출시)
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                                <path d="M5 12h14M13 5l7 7-7 7" />
-                              </svg>
-                            </Link>
-                          </div>
+                              <div className="flex min-w-0 items-center gap-2">
+                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FAE100] text-base">
+                                  💬
+                                </span>
+                                <div className="min-w-0">
+                                  <div className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                                    카톡 공유하고 30개 받기
+                                  </div>
+                                  <div className="mt-0.5 text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                                    공유 1번 → 즉시 새 30개 (곧 출시)
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="shrink-0 rounded-full bg-zinc-900/10 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:bg-white/10 dark:text-zinc-200">
+                                무료
+                              </span>
+                            </button>
+
+                            <div className="mt-3 rounded-2xl border border-amber-200/60 bg-amber-50/50 px-5 py-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                  <ZapIcon className="h-5 w-5 text-amber-700 dark:text-amber-300" />
+                                  <span className="text-base font-bold text-amber-900 dark:text-amber-100">기다리지 말고 즉시 받기</span>
+                                </div>
+                                <span className="rounded-full bg-amber-500/90 px-2 py-0.5 text-[10px] font-bold text-white">구독</span>
+                              </div>
+                              <div className="mt-1 text-xs font-medium text-amber-800/80 dark:text-amber-200/80">
+                                cooldown 없이 바로 + 알림 즉시 받기
+                              </div>
+                              <Link
+                                href="/plans"
+                                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full bg-amber-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-amber-700"
+                              >
+                                구독으로 풀기 (곧 출시)
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                                  <path d="M5 12h14M13 5l7 7-7 7" />
+                                </svg>
+                              </Link>
+                            </div>
+                          </>
                         ) : null}
                       </>
                     )}
