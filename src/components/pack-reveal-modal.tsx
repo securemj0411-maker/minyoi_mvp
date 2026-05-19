@@ -1738,16 +1738,16 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
         </ul>
       )}
 
-      {/* Wave 394.7.i.fix (사용자 짚음): 디자인 일관 — 다른 매물 행처럼 full width + 폰트 통일. */}
+      {/* Wave 394.7.i.fix2 (사용자 짚음 — 토스 톤): 큰 padding + rounded-xl + subtle shadow + active scale. */}
       {listings && listings.length > INITIAL_VISIBLE ? (
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="mt-1 flex w-full items-center justify-center gap-1 rounded border border-emerald-100 bg-white/60 px-2 py-1.5 text-[11px] font-bold text-emerald-700 transition hover:bg-white/90 dark:border-emerald-900/30 dark:bg-zinc-900/40 dark:text-emerald-400 dark:hover:bg-zinc-900/60"
+          className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition-all hover:bg-emerald-100 hover:shadow active:scale-[0.98] dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
         >
           {expanded
-            ? <>접기 <span aria-hidden="true">▲</span></>
-            : <>자세히 보기 ({Math.min(listings.length, limit) - INITIAL_VISIBLE}개 더) <span aria-hidden="true">▼</span></>
+            ? <>접기 <span aria-hidden="true" className="text-[10px]">▲</span></>
+            : <>자세히 보기 <span className="text-emerald-600/70 dark:text-emerald-400/70">({Math.min(listings.length, limit) - INITIAL_VISIBLE}개 더)</span> <span aria-hidden="true" className="text-[10px]">▼</span></>
           }
         </button>
       ) : null}
