@@ -249,6 +249,35 @@ export default function ExploreClient() {
     };
   }, [selectedCard]);
 
+  // Wave 349: 모달 안 "다른 매물 추천" — 현재 매물 제외 + 같은 카테고리 우선 + 8개.
+  // sold out 매물 제외 (클릭 불가).
+  const relatedItems = useMemo(() => {
+    if (!selectedCard) return [];
+    const currentPid = selectedCard.pid;
+    const currentCategory = items.find((it) => it.pid === currentPid)?.category ?? null;
+    const candidates = items.filter((it) => it.pid !== currentPid && !it.soldOut);
+    // 같은 카테고리 우선 정렬
+    const sameCategory = candidates.filter((it) => it.category === currentCategory);
+    const otherCategory = candidates.filter((it) => it.category !== currentCategory);
+    const ordered = [...sameCategory, ...otherCategory].slice(0, 8);
+    return ordered.map((it) => ({
+      pid: it.pid,
+      name: it.name,
+      price: it.price,
+      thumbnailUrl: it.thumbnailUrl,
+      expectedProfitMin: it.expectedProfitMin,
+      expectedProfitMax: it.expectedProfitMax,
+      marketBasis: null,
+      revealedAt: it.lastVerifiedAt,
+    }));
+  }, [items, selectedCard]);
+
+  // 다른 매물 클릭 시 modal 전환
+  const handleOpenRelatedItem = useCallback((pid: number) => {
+    const item = items.find((it) => it.pid === pid);
+    if (item) setSelectedCard(poolItemToRevealCard(item));
+  }, [items]);
+
   // Wave 339b: /api/packs/pool/analysis로 marketBasis/velocityBasis lazy-fill.
   // assertRevealAccess 우회 (pid 기반). 가져온 분석으로 selectedCard 갱신.
   const handleLoadDetail = useCallback(async (pid: number): Promise<RevealListingDetail> => {
@@ -641,6 +670,8 @@ export default function ExploreClient() {
         onFeedback={() => {}}
         onLoadDetail={handleLoadDetail}
         onRetry={() => {}}
+        relatedItems={relatedItems}
+        onOpenRelatedItem={handleOpenRelatedItem}
       />
     </div>
   );
