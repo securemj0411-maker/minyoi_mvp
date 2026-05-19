@@ -368,6 +368,33 @@ export function buildCandidatePoolRows(input: {
       continue;
     }
 
+    // Wave 249 (2026-05-19): Option 3 — pool 진입 단계에서 차익 음수 + sku_median 부재 매물 명시 차단.
+    //   사용자 결정: candidates.ts:103-104 `Math.max(0, ...)` clamp 정책 root fix.
+    //   기존: 차익 음수/시세 부재 매물이 `bandFromProfit` 의 `null` 반환에 묶여 모두
+    //         `profit_below_pack_band` 하나의 reason 으로 invalidate → 운영 가시성 낮음.
+    //   신규: 두 case 를 명시적으로 분리 → admin/SQL 측정 + 사용자 친화 (badge 다르게) + Wave 247.2
+    //         band-aware fallback 효과 측정 가능.
+    //   순서: sku_median_unavailable 가드 먼저 (skuMedian 가 신호 자체 없을 때) → negative_resell_gap.
+    //
+    // 1) skuMedian = 0 / null → "비교 불가능" — band-aware sku_median fallback 안 채워진 매물.
+    //    Wave 247.2 의 band-aware chain 으로 production pool 의 16% → 0% 까지 감소.
+    //    잔여 차단 = pool builder 시점에 trustedMedian/fallbackMedian/referencePrice 모두 0 인 매물.
+    if (row.skuMedian == null || !Number.isFinite(row.skuMedian) || row.skuMedian <= 0) {
+      skipped += 1;
+      invalidations.push({ pid, reason: "sku_median_unavailable" });
+      continue;
+    }
+
+    // 2) skuMedian > 0 이지만 price >= skuMedian → 차익 음수/0 매물.
+    //    Wave 246 me 페이지 0원 시세 UI fix 의 root cause. clamp 0 으로 가리기 X — pool 자체 차단.
+    //    사용자 friendly: 일반인이 "차익 음수 매물" 추천 받으면 혼란.
+    //    NOTE: poolSkipReason 도 `price_gte_market` 으로 잡지만 후순위 — 여기서 explicit reason 먼저 박음.
+    if (Number.isFinite(row.price) && row.price > 0 && row.price >= row.skuMedian) {
+      skipped += 1;
+      invalidations.push({ pid, reason: "negative_resell_gap" });
+      continue;
+    }
+
     const sellFee = Math.round(row.skuMedian * SELLING_FEE_RATE);
     const buyMax = row.price + (row.shippingFeeGeneral ?? row.shippingFee);
     const buyMin = row.estimatedBuyCost;
