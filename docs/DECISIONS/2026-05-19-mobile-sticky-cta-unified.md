@@ -51,6 +51,13 @@
 - pointer-events 통상 (이전 fixed FAB는 `pointer-events-none` + `pointer-events-auto` 패턴이었으나 sticky는 불필요)
 - z-index 20 (sticky filter bar의 z-20과 같지만 위치 다름. 충돌 X)
 
-## 후속
+## 후속 (같은 PR에 추가 commit)
 
-없음. CTA UX 완료. 추후 cooldown 종료 알림 같은 부가 기능은 별도.
+### pb-24 → pb-4 — sticky 통일 후 잔여 padding 제거
+[explore-client.tsx:338](../../src/components/explore-client.tsx#L338) root div
+
+옛 fixed FAB 시절: 매물 카드 끝이 화면 하단 FAB에 가려지지 않게 부모 `pb-24` (96px) 박았었음.
+sticky 통일 후 fixed가 차지하는 영역이 없으니 그 padding이 button과 footer 사이 빈 공간으로 남음.
+사용자 모바일 스크린샷에서 "다른매물찾기 버튼이랑 푸터 사이 여백" 직접 보고됨.
+
+→ `pb-24` → `pb-4` (16px). 시각적 최소 여백만. 자연 흐름: 카드 grid → 다음 라운드 안내 → sticky button → footer.
