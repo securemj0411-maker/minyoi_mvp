@@ -263,11 +263,21 @@ export async function triggerRematchForParserVersions(
   //
   // Postgres-side UPDATE via RPC 권장이지만 단순화 위해 PATCH (mvp_raw_listings).
   // pid 매칭은 sub-select 안 됨 → 2 step: select pids → patch in batches.
-  const allPidsRes = await restFetch(
-    `${tableUrl("mvp_listing_parsed")}?select=pid&parser_version=in.(${encoded})&limit=${total}`,
-    { headers: serviceHeaders() },
-  );
-  const allPids = ((await allPidsRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+  //
+  // Wave 252.B step 1 (2026-05-20) bug fix: PostgREST server-side default
+  // limit ≈ 1000 row 로 인해 `?limit=${total}` 가 무시되어 1000개만 반환.
+  // → Range header (offset 페이지네이션) 으로 모든 pid 수집.
+  const allPids: number[] = [];
+  const PAGE = 1000;
+  for (let offset = 0; offset < total; offset += PAGE) {
+    const pageRes = await restFetch(
+      `${tableUrl("mvp_listing_parsed")}?select=pid&parser_version=in.(${encoded})&order=pid.asc&limit=${PAGE}&offset=${offset}`,
+      { headers: serviceHeaders() },
+    );
+    const pageRows = (await pageRes.json()) as Array<{ pid: number }>;
+    allPids.push(...pageRows.map((r) => Number(r.pid)));
+    if (pageRows.length < PAGE) break;
+  }
   // delegate 로 by_pid 변환 — 같은 분할 + 같은 PATCH body.
   return triggerRematchForListings(allPids, reason, opts);
 }
