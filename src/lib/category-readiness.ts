@@ -499,7 +499,16 @@ export const LANE_READINESS: LaneReadinessMap = {
   tnf_mountain_jacket: { status: "ready", label: "TNF Mountain Jacket (Gore-Tex)", note: "Wave 198" },
   tnf_denali_fleece: { status: "ready", label: "TNF Denali Fleece", note: "Wave 198" },
   tnf_purple_label: { status: "ready", label: "TNF Purple Label (일본 Nanamica)", note: "Wave 198" },
-  tnf_supreme_collab: { status: "ready", label: "Supreme × TNF (broad fallback)", note: "Wave 219: product type 분리 후 catch-all" },
+  tnf_supreme_collab: { status: "ready", label: "Supreme × TNF (legacy laneKey)", note: "Wave 219. Wave 245.3 에서 tnf_supreme_collab_broad 로 리네임. 호환성 유지." },
+  tnf_supreme_collab_broad: { status: "ready", label: "Supreme × TNF (broad fallback — 기타 자켓/베스트)", note: "Wave 245.3: 자켓 모델별 narrow 7개 분리 후 catch-all" },
+  // Wave 245.3 (2026-05-19): Supreme × TNF 자켓 모델별 narrow 7개 신설 (production 107건 측정, 자켓 53건/50%).
+  tnf_supreme_nuptse: { status: "ready", label: "Supreme × TNF 1996 Nuptse", note: "Wave 245.3 — median 83만 / msrp down_jacket" },
+  tnf_supreme_mountain_jacket: { status: "ready", label: "Supreme × TNF Mountain Jacket (Gore-Tex)", note: "Wave 245.3 — median 68만" },
+  tnf_supreme_mountain_light: { status: "ready", label: "Supreme × TNF Mountain Light", note: "Wave 245.3 — median 70만" },
+  tnf_supreme_mountain_parka: { status: "ready", label: "Supreme × TNF Mountain Parka", note: "Wave 245.3 — median 70만" },
+  tnf_supreme_expedition: { status: "ready", label: "Supreme × TNF Expedition", note: "Wave 245.3 — median 107만 (의류만; 가방은 broad 차단)" },
+  tnf_supreme_denali_fleece: { status: "ready", label: "Supreme × TNF Denali Fleece", note: "Wave 245.3 — median 39만" },
+  tnf_supreme_baltoro: { status: "ready", label: "Supreme × TNF Baltoro Down Jacket", note: "Wave 245.3 — median 84.5만" },
   // Wave 219 (2026-05-19): Supreme × TNF product type 분리 — 자켓 380K vs 백팩 320K vs 슬리퍼 350K vs G-Shock 320K
   tnf_supreme_backpack: { status: "ready", label: "Supreme × TNF Backpack", note: "Wave 219 (bag 카테고리)" },
   tnf_supreme_slipper: { status: "ready", label: "Supreme × TNF Mule/Slipper", note: "Wave 219 (shoe 카테고리)" },

@@ -7054,8 +7054,8 @@ export const CATALOG: Sku[] = [
   },
   {
     id: "clothing-tnf-supreme-collab",
-    brand: "Supreme x TNF", category: "clothing", laneKey: "tnf_supreme_collab",
-    modelName: "Supreme × The North Face (broad)",
+    brand: "Supreme x TNF", category: "clothing", laneKey: "tnf_supreme_collab_broad",
+    modelName: "Supreme × The North Face (broad — 기타 자켓/플리스/베스트)",
     aliases: ["Supreme TNF", "슈프림 노스페이스"],
     // Wave 219: product type 분리 후 broad catch-all (자켓/티/맨투맨 만).
     mustContain: [["supreme", "슈프림"], ["노스페이스", "north face", "tnf"]],
@@ -7073,8 +7073,116 @@ export const CATALOG: Sku[] = [
       // Wave 241 (2026-05-19): 사용자 코멘트 — "Supreme x TNF Snakeskin bag" 200k 가방 매물 매칭.
       "snakeskin bag", "스네이크스킨 백", "스네이크스킨", "snake skin bag",
       "익스페디션 빅 백", "expedition big bag", "스플릿 백",
-      "웨이스트 백", "벨트 백"],
+      "웨이스트 백", "벨트 백",
+      // Wave 245.3 (2026-05-19): production sample 측정 — 자켓 53건 (50%) — 모델별 narrow 분리.
+      //   nuptse 14건 median 83만 / mountain jacket 12건 median 68만 / 등.
+      //   broad 는 모델 미식별 자켓/플리스/베스트 catch-all 만.
+      "눕시", "nuptse", "1996",
+      "마운틴 자켓", "mountain jacket", "마운틴자켓",
+      "마운틴 라이트", "mountain light", "마운틴라이트",
+      "마운틴 파카", "mountain parka", "마운틴파카",
+      "마운틴 가이드", "mountain guide",
+      "발토로", "baltoro",
+      "익스페디션", "expedition",
+      // narrow tee/sweat/pants 키워드 차단 (매물 적어 별도 narrow 신설은 보류)
+      "티셔츠", "반팔", "롱슬리브",
+      "후디", "hoodie", "맨투맨", "크루넥", "스웻", "sweat",
+      "팬츠", "pants", "바지", "쇼츠", "반바지"],
     msrpKrw: 380000, released: 2020,
+  },
+  // Wave 245.3 (2026-05-19): Supreme × TNF 자켓 모델별 narrow 분리.
+  //   production sample 측정 (60 days, 107건):
+  //   - Nuptse 14건 median 83만 / Mountain Jacket 12건 median 68만 / Mountain Parka 4건 median 70만
+  //   - Mountain Light 3건 median 70만 / Denali Fleece 3건 median 39만 / Expedition 4건 median 107만
+  //   - Baltoro 2건 median 84.5만
+  //   모델별 가격대 distinct → narrow split 효과 큼. (msrp 50만~110만)
+  {
+    id: "clothing-tnf-supreme-nuptse",
+    brand: "Supreme x TNF", category: "clothing", laneKey: "tnf_supreme_nuptse",
+    modelName: "Supreme × TNF 1996 Nuptse",
+    aliases: ["Supreme TNF Nuptse", "슈프림 노스페이스 눕시"],
+    mustContain: [["supreme", "슈프림"], ["노스페이스", "north face", "tnf"], ["눕시", "nuptse", "1996"]],
+    mustNotContain: ["키즈", "kids",
+      "백팩", "backpack", "숄더백", "토트백", "shoulder bag", "tote bag", "tote", "토트", "shoulder", "숄더",
+      "웨이스트백", "벨트백", "데이팩", "duffle", "duffel",
+      "뮬", "슬리퍼", "샌들",
+      "지샥", "g-shock", "dw-6900"],
+    msrpKrw: 830000, released: 2017,
+    defaultProductType: "down_jacket",
+  },
+  {
+    id: "clothing-tnf-supreme-mountain-jacket",
+    brand: "Supreme x TNF", category: "clothing", laneKey: "tnf_supreme_mountain_jacket",
+    modelName: "Supreme × TNF Mountain Jacket (Gore-Tex)",
+    aliases: ["Supreme TNF Mountain Jacket", "슈프림 노스페이스 마운틴자켓"],
+    mustContain: [["supreme", "슈프림"], ["노스페이스", "north face", "tnf"], ["마운틴 자켓", "mountain jacket", "마운틴자켓"]],
+    mustNotContain: ["키즈", "kids",
+      "마운틴 라이트", "mountain light", "마운틴 파카", "mountain parka",
+      "마운틴 가이드", "mountain guide",
+      "백팩", "backpack", "숄더백", "토트백", "tote", "토트", "shoulder",
+      "뮬", "슬리퍼", "지샥"],
+    msrpKrw: 680000, released: 2017,
+    defaultProductType: "jacket",
+  },
+  {
+    id: "clothing-tnf-supreme-mountain-light",
+    brand: "Supreme x TNF", category: "clothing", laneKey: "tnf_supreme_mountain_light",
+    modelName: "Supreme × TNF Mountain Light Jacket",
+    aliases: ["Supreme TNF Mountain Light", "슈프림 노스페이스 마운틴라이트"],
+    mustContain: [["supreme", "슈프림"], ["노스페이스", "north face", "tnf"], ["마운틴 라이트", "mountain light", "마운틴라이트"]],
+    mustNotContain: ["키즈", "kids",
+      "마운틴 자켓", "mountain jacket", "마운틴 파카", "mountain parka",
+      "백팩", "토트", "shoulder", "뮬", "슬리퍼", "지샥"],
+    msrpKrw: 700000, released: 2018,
+    defaultProductType: "jacket",
+  },
+  {
+    id: "clothing-tnf-supreme-mountain-parka",
+    brand: "Supreme x TNF", category: "clothing", laneKey: "tnf_supreme_mountain_parka",
+    modelName: "Supreme × TNF Mountain Parka",
+    aliases: ["Supreme TNF Mountain Parka", "슈프림 노스페이스 마운틴파카"],
+    mustContain: [["supreme", "슈프림"], ["노스페이스", "north face", "tnf"], ["마운틴 파카", "mountain parka", "마운틴파카"]],
+    mustNotContain: ["키즈", "kids",
+      "마운틴 자켓", "마운틴 라이트",
+      "백팩", "토트", "shoulder", "뮬", "슬리퍼", "지샥"],
+    msrpKrw: 700000, released: 2018,
+    defaultProductType: "jacket",
+  },
+  {
+    id: "clothing-tnf-supreme-expedition",
+    brand: "Supreme x TNF", category: "clothing", laneKey: "tnf_supreme_expedition",
+    modelName: "Supreme × TNF Expedition (자켓/파카)",
+    aliases: ["Supreme TNF Expedition", "슈프림 노스페이스 익스페디션"],
+    // Wave 245.3: 백/가방 매물 제외 (Wave 241 의 익스페디션 빅 백 차단과 일치)
+    mustContain: [["supreme", "슈프림"], ["노스페이스", "north face", "tnf"], ["익스페디션", "expedition"]],
+    mustNotContain: ["키즈", "kids",
+      // 가방 차단 (Wave 241)
+      "빅 백", "big bag", "큰 백", "백팩", "backpack", "토트", "tote", "shoulder", "숄더",
+      "뮬", "슬리퍼", "지샥"],
+    msrpKrw: 1070000, released: 2017,
+    defaultProductType: "jacket",
+  },
+  {
+    id: "clothing-tnf-supreme-denali-fleece",
+    brand: "Supreme x TNF", category: "clothing", laneKey: "tnf_supreme_denali_fleece",
+    modelName: "Supreme × TNF Denali Fleece",
+    aliases: ["Supreme TNF Denali", "슈프림 노스페이스 데날리", "슈프림 노스 플리스"],
+    mustContain: [["supreme", "슈프림"], ["노스페이스", "north face", "tnf"], ["데날리", "denali", "플리스", "fleece"]],
+    mustNotContain: ["키즈", "kids",
+      "백팩", "토트", "shoulder", "숄더", "뮬", "슬리퍼", "지샥"],
+    msrpKrw: 390000, released: 2018,
+    defaultProductType: "jacket",
+  },
+  {
+    id: "clothing-tnf-supreme-baltoro",
+    brand: "Supreme x TNF", category: "clothing", laneKey: "tnf_supreme_baltoro",
+    modelName: "Supreme × TNF Baltoro Jacket (다운)",
+    aliases: ["Supreme TNF Baltoro", "슈프림 노스페이스 발토로"],
+    mustContain: [["supreme", "슈프림"], ["노스페이스", "north face", "tnf"], ["발토로", "baltoro"]],
+    mustNotContain: ["키즈", "kids",
+      "백팩", "토트", "shoulder", "숄더", "뮬", "슬리퍼", "지샥"],
+    msrpKrw: 845000, released: 2017,
+    defaultProductType: "down_jacket",
   },
   // Wave 219 (2026-05-19): Supreme × TNF product type 분리 — 자켓 300~400K / 백팩 250~350K / 슬리퍼 250K / 지샥 290K
   {
