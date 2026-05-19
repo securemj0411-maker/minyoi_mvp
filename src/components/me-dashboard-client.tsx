@@ -1,24 +1,22 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import AdminPoolBrowser from "@/components/admin-pool-browser";
 import AdminClassificationBrowser from "@/components/admin-classification-browser";
 import HotdealAlertsView from "@/components/hotdeal-alerts-view";
 import PlaybookOverview from "@/components/playbook-overview";
-import RecommendationWorkspace from "@/components/recommendation-workspace";
-import UserRevealDashboard from "@/components/user-reveal-dashboard";
+// Wave 343: history view = ExploreClient. UserRevealDashboard / RecommendationWorkspace / PackageIcon / SearchIcon / userRefForAuthUser 미사용 제거.
+import ExploreClient from "@/components/explore-client";
 import PreviewMaskedDashboard from "@/components/preview-masked-dashboard";
 import { SavedMoneyCounter } from "@/components/saved-money-counter";
 import { MyFeedbackActivity } from "@/components/my-feedback-activity";
-import { PackageIcon, SearchIcon } from "@/components/icons";
 import { isAdminUser } from "@/lib/auth-users";
 import { hasAdminShadowClient } from "@/lib/admin-shadow-mode";
 import { MODEL_GUIDES } from "@/lib/model-guides";
-import { dispatchPackRevealsUpdated } from "@/lib/pack-events";
-import type { InventorySnapshot, PackBand, PackOpenResult, RevealCard } from "@/lib/pack-open";
+// Wave 343: welcome flow 폐기로 dispatchPackRevealsUpdated/PackBand/PackOpenResult/RevealCard 미사용.
+import type { InventorySnapshot } from "@/lib/pack-open";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { userRefForAuthUser } from "@/lib/user-ref";
 
 // Wave 90 (2026-05-15): view를 단일 활성 view로 분리. 이전엔 "work" view 안에
 // recommend + history 섹션이 같이 mount돼서 /me 들어올 때마다 둘 다 fetch.
@@ -94,7 +92,8 @@ function initialViewFromUrl(): DashboardView {
   return (VALID_VIEWS as string[]).includes(v ?? "") ? (v as DashboardView) : "history";
 }
 
-export default function MeDashboardClient({ initialInventory }: { initialInventory: InventorySnapshot[] }) {
+// Wave 343: initialInventory는 next/server에서 page.tsx prop으로 강제 전달 (서버 prop). 미사용이지만 시그니처 유지.
+export default function MeDashboardClient({ initialInventory: _initialInventory }: { initialInventory: InventorySnapshot[] }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<DashboardView>(initialViewFromUrl);
@@ -102,14 +101,9 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
   const [isBetaTester, setIsBetaTester] = useState<boolean>(false);
   const [shadowMode, setShadowMode] = useState<boolean>(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
-  // 2026-05-17: "더 찾아보기" 모달 — 추천 받기 기능을 모달 안에서 호출 (별도 페이지 아님).
-  const [seekMoreOpen, setSeekMoreOpen] = useState(false);
-  // 2026-05-17 fix: welcome 호출 중 표시 — 빈 상태 flash 차단 ("상품 없음" 깜빡임 방지).
-  const [welcomePending, setWelcomePending] = useState<boolean>(true);
-  // 2026-05-17 fix: welcome useEffect double-fire 가드 — Supabase 가 loadUser + onAuthStateChange
-  // 양쪽에서 setUser 호출하면서 user reference 두 번 바뀌어 useEffect 두 번 실행 → 두 번 POST →
-  // existing.length 체크 race → openPack 두 번 → 4 × 2 = 8 reveal 박힘.
-  const welcomeRequestedRef = useRef<string | null>(null);
+  // Wave 343: welcome flow 폐기 (ExploreClient로 통합). welcomePending state 제거.
+  // seekMoreOpen modal 제거 ("더 찾아보기" 버튼 사라짐 — cooldown으로 대체).
+  // Wave 343: welcome flow 폐기로 welcomeRequestedRef 제거됨.
 
   useEffect(() => {
     setShadowMode(hasAdminShadowClient());
@@ -188,46 +182,9 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
     };
   }, []);
 
-  // 2026-05-17: 신규 가입자 welcome — dashboard 첫 진입 시 자동 매물 reserve (4 카드).
-  // 사용자 의도: "가치를 확실히 인식시켜야". 가입 직후 빈 dashboard → 자동 매물.
-  // /api/packs/welcome 이 reveal count 0 일 때만 reserve (once-only).
-  // 2026-05-17 fix: ref 가드로 user.id 별 1회만 POST. 이전엔 user reference 두 번 바뀌면서
-  // useEffect 두 번 fire → race condition → 8 reveal 박힘.
-  // 2026-05-17 fix #2: cancelled flag 제거. cleanup 이 fire 되면 cancelled=true → finally 의
-  // setWelcomePending(false) skip → 무한 로딩. fetch 는 그래도 진행돼서 DB 엔 4개 박혔지만
-  // 화면은 "준비 중" 무한 표시. unmount 후 setState 는 React 가 silent ignore — 그냥 호출.
-  useEffect(() => {
-    if (!user) return;
-    if (welcomeRequestedRef.current === user.id) return; // 이미 이 user 로 호출함
-    welcomeRequestedRef.current = user.id;
-    (async () => {
-      try {
-        const supabase = getSupabaseBrowserClient();
-        if (!supabase) return;
-        const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
-        if (!token) return;
-        const res = await fetch("/api/packs/welcome", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        });
-        if (!res.ok) return;
-        const data = (await res.json()) as PackOpenResult | { result?: string; error?: string };
-        if (data && (data as PackOpenResult).result === "success") {
-          // dashboard refresh — UserRevealDashboard 가 PACK_REVEALS_UPDATED_EVENT listen 함.
-          // 2026-05-17 fix: canonical event name + 실제 reveals + band 전달.
-          const success = data as Extract<PackOpenResult, { result: "success" }>;
-          const reveals: RevealCard[] = Array.isArray(success.reveals) ? success.reveals : [];
-          dispatchPackRevealsUpdated({ band: 2 as PackBand, reveals });
-        }
-      } catch (err) {
-        console.error("[me-dashboard] welcome failed", err);
-      } finally {
-        setWelcomePending(false); // 무조건 풀음 — pending true 잠금 차단.
-      }
-    })();
-  }, [user]);
+  // Wave 343: welcome flow 폐기 — /me history view가 ExploreClient (freemium 30개 풀)로 통합.
+  // 신규 가입자도 진입 즉시 30개 풀 봄 → welcome 4개 reserve 불필요.
+  // /api/packs/welcome endpoint와 mvp_welcome_grants 테이블은 유지 (히스토리). 단 호출 X.
 
   // Wave 90: IntersectionObserver(스크롤 추적) 제거 — 각 view 단독 mount라 의미 X
 
@@ -350,73 +307,14 @@ export default function MeDashboardClient({ initialInventory }: { initialInvento
         ) : activeView === "admin-classification" ? (
           <AdminClassificationBrowser />
         ) : (
-          // 2026-05-17: history (default) — recommend view 폐기, 모달로 대체.
-          <section className="w-full min-w-0 px-0 pb-24 pt-3 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
-            {/* Wave 182: Saved Money Counter — 안 잃은 돈 + 번 돈 (loss aversion ×2.5). */}
+          // Wave 343: history view = freemium 탐색 (ExploreClient).
+          // welcome 4개 + UserRevealDashboard 폐기 → 30개 풀 + cooldown + sold out + 통계 + paywall 예고.
+          // SavedMoneyCounter / MyFeedbackActivity는 가치 정보라 유지.
+          // "더 찾아보기" 버튼들 폐기 — ExploreClient의 "새 30개 받기" cooldown으로 대체.
+          <section className="w-full min-w-0 pb-24 lg:col-start-2">
             <SavedMoneyCounter />
-            <div className="mb-4 hidden items-center justify-between gap-3 sm:flex">
-              <h2 className="flex items-center gap-1.5 text-base font-black text-[#223127] dark:text-zinc-100">
-                <PackageIcon className="h-4 w-4" />
-                나의 상품
-              </h2>
-              <button
-                type="button"
-                onClick={() => setSeekMoreOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-accent-strong)] px-4 py-2 text-xs font-black text-[var(--brand-cream)] shadow-sm transition hover:opacity-90"
-              >
-                <SearchIcon className="h-3.5 w-3.5" />
-                더 찾아보기
-              </button>
-            </div>
-            <UserRevealDashboard userRef={userRefForAuthUser(user.id)} welcomePending={welcomePending} />
-            {/* Wave 246: 모바일 첫 진입에서는 상품/준비중 CTA가 먼저 보여야 한다. 피드백 활동은 보관함 아래로 이동. */}
+            <ExploreClient />
             <MyFeedbackActivity />
-            {/* 2026-05-17 (사용자 요청): 목록 밑에도 "더 찾아보기" 버튼 (상단 버튼만 있으면 스크롤 후 보이지 않음). */}
-            <div className="mt-6 hidden justify-center sm:flex">
-              <button
-                type="button"
-                onClick={() => setSeekMoreOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-accent-strong)] px-5 py-2.5 text-sm font-black text-[var(--brand-cream)] shadow-sm transition hover:opacity-90"
-              >
-                <SearchIcon className="h-4 w-4" />
-                더 찾아보기
-              </button>
-            </div>
-            <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-4 sm:hidden">
-              <button
-                type="button"
-                onClick={() => setSeekMoreOpen(true)}
-                className="pointer-events-auto inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3 text-sm font-black text-[var(--brand-cream)] shadow-[0_16px_34px_rgba(34,49,39,0.28)] transition active:scale-[0.98]"
-              >
-                <SearchIcon className="h-4 w-4" />
-                더 찾아보기
-              </button>
-            </div>
-            {/* 2026-05-17 phase 1b: 더 찾아보기 모달 — RecommendationWorkspace 모달 안에서 호출. */}
-            {seekMoreOpen && (
-              <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/60 p-3 sm:p-6" onClick={() => setSeekMoreOpen(false)}>
-                <div className="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-[#e6dccf] bg-[#fffbf4] p-5 shadow-[0_28px_80px_rgba(34,49,39,0.26)] dark:border-zinc-800 dark:bg-zinc-950 sm:p-6" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    type="button"
-                    onClick={() => setSeekMoreOpen(false)}
-                    aria-label="닫기"
-                    className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-zinc-100 text-lg font-black text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
-                  >
-                    ✕
-                  </button>
-                  <div className="mb-3 flex items-center gap-1.5 text-base font-black text-[#223127] dark:text-zinc-100">
-                    <SearchIcon className="h-4 w-4" />
-                    더 찾아보기
-                  </div>
-                  <RecommendationWorkspace
-                    initialInventory={initialInventory}
-                    showResultModal={false}
-                    surface="modal"
-                    onSuccess={() => setSeekMoreOpen(false)}
-                  />
-                </div>
-              </div>
-            )}
           </section>
         )}
       </div>

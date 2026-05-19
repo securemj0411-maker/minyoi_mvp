@@ -277,7 +277,7 @@ export default function ExploreClient() {
   }, []);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-6xl px-3 pb-20 pt-4 sm:px-6 sm:pt-6">
+    <div className="mx-auto w-full max-w-6xl px-3 pb-20 pt-4 sm:px-6 sm:pt-6">
       {/* 통계 배너 (FOMO) */}
       {stats && (stats.caughtToday > 0 || stats.freshLocked > 0) ? (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/60 dark:bg-amber-950/30">
@@ -527,6 +527,6 @@ export default function ExploreClient() {
         onLoadDetail={handleLoadDetail}
         onRetry={() => {}}
       />
-    </main>
+    </div>
   );
 }
