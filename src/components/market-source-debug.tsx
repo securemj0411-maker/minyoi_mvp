@@ -37,6 +37,8 @@ type MarketSourceResponse = {
     marketPriceSource: "reference" | "market";
     marketPriceLabel: string;
     marketConditionLabel: string | null;
+    // Wave 251.4 (2026-05-19): 비교군 product_type 필터 투명성.
+    productType?: string | null;
     parseConfidence: number | null;
     needsReview: boolean;
     thumbnailUrl: string | null;
@@ -438,6 +440,12 @@ export function MarketSourceDebug({
                       📋 비교 매물 {data.comparables.length}건 · 출처 = {data.comparableSource}
                       <span className="ml-2 font-normal text-zinc-500">(가격 낮은 순 / 우리보다 싼 매물 강조)</span>
                     </div>
+                    {/* Wave 251.4 (2026-05-19): clothing product_type 필터 표시 — 사용자 신뢰. */}
+                    {data.ourListing.productType && data.ourListing.productType !== "type_unknown" && (
+                      <div className="mb-2 rounded-md bg-emerald-50 px-2 py-1 text-[11px] text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-700">
+                        🧵 product_type 필터 적용 — 본 매물 「{data.ourListing.productType}」 와 같은 type 만 표시 (다른 type 매물 제외)
+                      </div>
+                    )}
                     <div className="space-y-1">
                       {sorted.map((c) => {
                         const isCheaper = c.price < ourPrice;

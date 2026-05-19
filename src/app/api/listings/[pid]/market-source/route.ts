@@ -64,7 +64,8 @@ export async function GET(
       ),
       restFetch(
         // Wave 130 (2026-05-16): condition_class 추가 — 시세 stats를 매칭 condition으로 조회.
-        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class&pid=eq.${pid}`,
+        // Wave 251.4 (2026-05-19): parsed_json 추가 — clothing_product_type 비교군 필터용.
+        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,parsed_json&pid=eq.${pid}`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -81,6 +82,13 @@ export async function GET(
     const comparableKey = (parsed?.comparable_key as string | null) ?? null;
     const conditionClass = (parsed?.condition_class as string | null) ?? null;
     const skuId = (raw?.sku_id as string | null) ?? null;
+    // Wave 251.4 (2026-05-19): fashion sub-product 분리 — 본 매물 clothing_product_type 추출.
+    //   사용자 frustration (id 201, 202, 203): BAPE tee 50+건 비교군에 tee/hoodie/crewneck/맨투맨 섞임.
+    //     같은 sku_id (clothing-bape-tee) 안 product_type 별 가격 분포 다름 (tee ₩70k vs hoodie ₩300k).
+    //   comparable_key 자체엔 clothing_product_type 안 박힘 — UI 노출 단계에서 필터 적용.
+    //   본 매물 parsed_json.clothing_product_type 와 같은 type 만 표시. null/type_unknown 이면 필터 안 함 (보수).
+    const targetParsedJson = (parsed?.parsed_json as Record<string, unknown> | null) ?? null;
+    const targetProductType = (targetParsedJson?.clothing_product_type as string | null) ?? null;
 
     // 3. /me 카드와 동일한 marketBasis 산정. reference price(Danawa)까지 같은 함수로 맞춘다.
     let marketStats: Record<string, unknown> | null = null;
@@ -163,6 +171,19 @@ export async function GET(
             excludeByPid.set(Number(p.pid), true);
             continue;
           }
+          // Wave 251.4 (2026-05-19): fashion clothing_product_type 분리.
+          //   본 매물 product_type 박혀 있고 (tee/hoodie/crewneck/jacket/shirt 등) 비교 매물 박혀 있고 다르면 exclude.
+          //   본 매물 또는 비교 매물 type 이 null/type_unknown 이면 필터 안 함 (보수 — 옛 데이터 호환).
+          //   사용자 frustration (id 201/202/203): BAPE tee vs hoodie 가격 차 4배, Stussy crewneck vs 맨투맨 7배.
+          const compareProductType = (p.parsed_json?.clothing_product_type as string | null) ?? null;
+          if (
+            targetProductType != null && targetProductType !== "type_unknown"
+            && compareProductType != null && compareProductType !== "type_unknown"
+            && targetProductType !== compareProductType
+          ) {
+            excludeByPid.set(Number(p.pid), true);
+            continue;
+          }
           excludeByPid.set(Number(p.pid), false);
         }
         const safeRows = rawRows.filter((r) => {
@@ -222,6 +243,8 @@ export async function GET(
             ? `번개 ${displayMarketBasis.conditionLabel} 시세`
             : "번개 중고 시세",
         marketConditionLabel: displayMarketBasis?.conditionLabel ?? null,
+        // Wave 251.4 (2026-05-19): 본 매물 clothing_product_type 노출 — 비교군 필터 투명성.
+        productType: targetProductType,
         parseConfidence: Number(parsed?.parse_confidence ?? 0) || null,
         needsReview: Boolean(parsed?.needs_review),
         thumbnailUrl: (raw?.thumbnail_url as string | null) ?? null,
