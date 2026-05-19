@@ -1475,6 +1475,157 @@ function renderSafetyIcon(tone: "good" | RiskTone, value: string, className: str
   return <AlertTriangleIcon className={className} />;
 }
 
+// Wave 394.4 (외부 review #3 + 사용자 본인 강조): "어떤 매물 비교했나" — 시세 근거 매물 직접 노출.
+// "/me 운영자풀처럼 시세근거 sample 직접 볼수있으면 진짜 좋을듯" — 사용자 인용.
+// USP 정면 = band-aware (같은 모델 / 같은 상태 매물끼리 비교). 시세 그래프 옆에 sample 매물 보여줘
+// "이 시세는 어떻게 산출됐나" 투명성 + 신뢰도 boost.
+type ComparableListing = {
+  pid: number;
+  name: string | null;
+  url: string | null;
+  thumbnailUrl: string | null;
+  price: number | null;
+  conditionClass: string | null;
+  saleStatus: string | null;
+  lastSeenAt: string | null;
+  soldAt: string | null;
+};
+
+function ComparableListingsPanel({ card }: { card: RevealCard }) {
+  const [listings, setListings] = useState<ComparableListing[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const ck = card.marketBasis?.comparableKey ?? null;
+  const cc = card.marketBasis?.conditionClass ?? null;
+
+  useEffect(() => {
+    if (!ck) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    const ccQuery = cc ? `&cc=${encodeURIComponent(cc)}` : "";
+    fetch(`/api/market/comparable-listings?ck=${encodeURIComponent(ck)}${ccQuery}&excludePid=${card.pid}&limit=6`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((j: { listings?: ComparableListing[] }) => {
+        if (!cancelled) setListings(j.listings ?? []);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "fetch failed");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ck, cc, card.pid]);
+
+  if (!ck) return null;
+
+  const ccLabel =
+    cc === "unopened" ? "미개봉"
+    : cc === "mint" ? "S급"
+    : cc === "clean" ? "A급"
+    : cc === "worn" ? "사용감 있는"
+    : cc === "flawed" ? "하자 있는"
+    : cc === "low_batt" ? "배터리 약한"
+    : cc === "normal" ? "비슷한 상태"
+    : null;
+
+  return (
+    <div className="mt-2 rounded-md border border-emerald-100 bg-emerald-50/40 px-2.5 py-2 dark:border-emerald-900/30 dark:bg-emerald-950/20">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+          <span aria-hidden="true">🔍</span>
+          <span>이 시세 비교 매물</span>
+        </div>
+        {ccLabel ? (
+          <span className="text-[10px] font-medium text-emerald-700/70 dark:text-emerald-300/70">
+            {ccLabel} 매물끼리만
+          </span>
+        ) : null}
+      </div>
+
+      {loading ? (
+        <div className="mt-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">비교 매물 불러오는 중...</div>
+      ) : error ? (
+        <div className="mt-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">비교 매물 불러오기 실패</div>
+      ) : !listings || listings.length === 0 ? (
+        <div className="mt-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+          {ccLabel ? `${ccLabel} 비교 매물 누적 중` : "비교 매물 누적 중"} — 데이터 쌓이면 자동 표시
+        </div>
+      ) : (
+        <ul className="mt-1.5 space-y-1">
+          {listings.map((item) => {
+            const priceDiff = card.price && item.price ? item.price - card.price : 0;
+            const diffPct = card.price && item.price ? Math.round((priceDiff / card.price) * 100) : 0;
+            const isSimilar = Math.abs(diffPct) <= 2;
+            const isMoreExpensive = !isSimilar && priceDiff > 0;
+
+            const saleLabel = item.saleStatus === "sold" ? "판매완료" : item.saleStatus === "reserved" ? "예약중" : "판매중";
+            const saleClass = item.saleStatus === "sold"
+              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+              : item.saleStatus === "reserved"
+                ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
+                : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300";
+
+            return (
+              <li key={item.pid} className="flex items-center gap-2 rounded bg-white/70 px-1.5 py-1.5 dark:bg-zinc-900/50">
+                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded bg-[#f2eadf] dark:bg-zinc-800">
+                  {item.thumbnailUrl ? (
+                    <Image src={item.thumbnailUrl} alt="" fill sizes="40px" className="object-cover" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-xs font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                      {krw(item.price ?? 0)}
+                    </span>
+                    <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${saleClass}`}>
+                      {saleLabel}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 line-clamp-1 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                    {item.name ?? "이름 없음"}
+                  </div>
+                </div>
+                {!isSimilar ? (
+                  <div className={`shrink-0 text-right text-[10px] font-bold tabular-nums ${isMoreExpensive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                    {isMoreExpensive ? `+${diffPct}%` : `${diffPct}%`}
+                  </div>
+                ) : (
+                  <div className="shrink-0 text-right text-[10px] font-medium text-zinc-400">
+                    비슷
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <div className="mt-1.5 space-y-0.5 text-[10px] font-medium leading-snug text-zinc-500 dark:text-zinc-400">
+        <div>
+          {ccLabel ? (
+            <>같은 모델 · {ccLabel} 매물끼리만 비교 (다른 상태는 별도 시세).</>
+          ) : (
+            <>같은 모델 매물 비교.</>
+          )}
+        </div>
+        {listings && listings.length > 0 ? (
+          <div>
+            <span className="text-emerald-600 dark:text-emerald-400">+%</span> = 이 매물이 비교 대비 <b>쌈</b> ·{" "}
+            <span className="text-rose-600 dark:text-rose-400">−%</span> = 비교 대비 <b>비쌈</b>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   const speed = saleSpeedDisplay(card);
   const risk = buildRiskScore(revealRiskScoreInput(card));
@@ -2829,6 +2980,9 @@ function RevealCardItem({
         <MarketGraphTrustLine card={card} />
 
         <SkuListingFlowMini card={card} />
+
+        {/* Wave 394.4 (외부 review #3 + 사용자 강조 — USP 정면): 이 시세 산출 근거 매물 N개 직접 노출. */}
+        <ComparableListingsPanel card={card} />
       </div>
       {/* 우측 카드 (시세 분석) 닫음. */}
 
