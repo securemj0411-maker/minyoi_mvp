@@ -71,6 +71,10 @@ type RawListingMeta = {
   sku_name: string | null;
   free_shipping: boolean | null;
   last_seen_at: string | null;
+  // Wave 254.7 (2026-05-20): P0-Upload feature 가 first_seen_at access 하지만 type 누락 — Vercel build 실패 원인.
+  //   SELECT 쿼리 (line 269) 는 이미 first_seen_at 포함. type 만 누락 → 5 deploys (4b10017, 2b41044, c47f40f, 8940f86, 59392a7) 모두 build 실패.
+  //   fix: type 추가 (additive only).
+  first_seen_at: string | null;
   shop_review_rating: number | null;
   shop_review_count: number | null;
   description_preview: string | null;

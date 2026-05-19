@@ -362,6 +362,9 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         skuId: card.skuId ?? null,
         thumbnailUrl: card.thumbnailUrl,
         skuName: card.skuName,
+        // Wave 254.7 (2026-05-20): P0-Upload feature — firstSeenAt 필수 type 누락.
+        //   reveal 이벤트 detail 에는 firstSeenAt 정보 없음 (시점 미상) → null fallback.
+        firstSeenAt: null,
         comparableKey: card.marketBasis.comparableKey,
         listingState: "active",
         saleStatus: "",

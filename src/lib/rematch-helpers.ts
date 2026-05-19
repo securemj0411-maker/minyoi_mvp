@@ -108,8 +108,19 @@ async function enqueueDetailQueue(pids: number[], triggeredAt: string): Promise<
   // Wave 254.3 (2026-05-20): insertIgnoreRows shared helper 사용.
   //   기존 동작 동일 (Prefer: resolution=ignore-duplicates + on_conflict=pid + chunk 500).
   //   row defaults 박힘 — caller 가 pid 만 박으면 status/priority 등 자동.
-  const rows = pids.map((pid) => ({ pid: Number(pid) }));
-  return insertIgnoreRows("mvp_detail_queue", rows, {
+  // Wave 254.7 (2026-05-20): rowDefaults Partial<T> 타입 매칭 — explicit row type 박아 status 등 inference.
+  type DetailQueueRow = {
+    pid: number;
+    status?: string;
+    priority?: number;
+    available_at?: string;
+    locked_at?: string | null;
+    locked_until?: string | null;
+    last_error?: string | null;
+    updated_at?: string;
+  };
+  const rows: DetailQueueRow[] = pids.map((pid) => ({ pid: Number(pid) }));
+  return insertIgnoreRows<DetailQueueRow>("mvp_detail_queue", rows, {
     onConflict: "pid",
     chunkSize: DETAIL_QUEUE_INSERT_CHUNK,
     rowDefaults: {
