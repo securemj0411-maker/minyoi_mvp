@@ -363,7 +363,8 @@ export async function GET(req: Request) {
     // Wave 373: personalization 필터 — 예산(가격 상한) + 성향(정렬/필터 우선순위).
     const budgetParam = url.searchParams.get("budget");
     const priceMax =
-      budgetParam === "100k" ? 100000 :
+      budgetParam === "150k" ? 150000 :
+      budgetParam === "100k" ? 100000 : // Wave 381 backward-compat (frontend는 150k로 migration됨)
       budgetParam === "300k" ? 300000 :
       budgetParam === "500k" ? 500000 :
       null; // unlimited / 미지정

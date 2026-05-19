@@ -144,7 +144,8 @@ const CATEGORY_OPTIONS = [
 type SortOption = "profit_desc" | "latest";
 
 // Wave 374: personalization — 예산 + 매물 성향. localStorage에 저장 (디바이스 단위).
-type Budget = "100k" | "300k" | "500k" | "unlimited";
+// Wave 381: 옵션 10만 → 15만 (10~15만 사이 매물이 가장 많은 가격대).
+type Budget = "150k" | "300k" | "500k" | "unlimited";
 type Preference = "safe" | "balanced" | "aggressive";
 type UserPreferences = { budget: Budget; preference: Preference };
 const PREFS_STORAGE_KEY = "minyoi_explore_prefs_v1";
@@ -154,9 +155,13 @@ function loadPreferences(): UserPreferences | null {
   try {
     const raw = window.localStorage.getItem(PREFS_STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<UserPreferences>;
+    const parsed = JSON.parse(raw) as { budget?: string; preference?: Preference };
     if (!parsed.budget || !parsed.preference) return null;
-    return { budget: parsed.budget, preference: parsed.preference };
+    // Wave 381: 이전 "100k" 옵션 폐기 → "150k"로 migration. 사용자 다시 답 안 받아도 OK.
+    const rawBudget: string = parsed.budget === "100k" ? "150k" : parsed.budget;
+    const validBudgets: Budget[] = ["150k", "300k", "500k", "unlimited"];
+    if (!(validBudgets as string[]).includes(rawBudget)) return null;
+    return { budget: rawBudget as Budget, preference: parsed.preference };
   } catch {
     return null;
   }
@@ -171,7 +176,7 @@ function savePreferences(prefs: UserPreferences) {
 }
 
 const BUDGET_OPTIONS: { value: Budget; label: string }[] = [
-  { value: "100k", label: "10만 이하" },
+  { value: "150k", label: "15만 이하" },
   { value: "300k", label: "30만 이하" },
   { value: "500k", label: "50만 이하" },
   { value: "unlimited", label: "제한 없음" },
@@ -558,15 +563,40 @@ export default function ExploreClient() {
           {error}
         </div>
       ) : items.length === 0 ? (
-        // Wave 370: 친화 톤 + 다음 액션 명확. 잔해 톤 X.
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 px-5 py-8 text-center dark:border-emerald-900/40 dark:bg-emerald-950/20">
-          <HourglassIcon className="mx-auto h-8 w-8 text-emerald-600 dark:text-emerald-300" />
-          <p className="mt-3 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-            잠시 후 다시 와주세요
-          </p>
-          <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            매물 분석 중이에요. 곧 새 풀이 풀려요.
-          </p>
+        // Wave 370 + 381: preferences 적용 결과 빈 경우 명확화. 예산 수정 유도.
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/60 px-5 py-8 text-center dark:border-amber-900/40 dark:bg-amber-950/20">
+          <HourglassIcon className="mx-auto h-8 w-8 text-amber-600 dark:text-amber-300" />
+          {preferences && preferences.budget !== "unlimited" ? (
+            <>
+              <p className="mt-3 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                {BUDGET_OPTIONS.find((o) => o.value === preferences.budget)?.label} 매물이 부족해요
+              </p>
+              <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                예산을 조금 늘리거나 잠시 후 다시 와주세요.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setDraftBudget(preferences.budget);
+                  setDraftPreference(preferences.preference);
+                  setEditingPrefs(true);
+                  setRefreshModalOpen(true);
+                }}
+                className="mt-3 rounded-full bg-amber-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-700"
+              >
+                예산 수정하기
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="mt-3 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                잠시 후 다시 와주세요
+              </p>
+              <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                매물 분석 중이에요. 곧 새 풀이 풀려요.
+              </p>
+            </>
+          )}
         </div>
       ) : displayItems.length === 0 ? (
         // Wave 353: 클라이언트 필터 결과 빈 경우 — 풀엔 있는데 선택 카테고리에만 없음.
