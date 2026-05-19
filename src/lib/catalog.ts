@@ -6970,7 +6970,8 @@ export const CATALOG: Sku[] = [
       ["러프아웃", "러프 아웃", "roughout", "rough out", "스웨이드", "suede", "레더", "leather", "가죽", "염소가죽"],
       ["셔츠", "shirt", "오버셔츠", "오버 셔츠", "워크셔츠", "워크 셔츠", "웨스턴", "western"],
     ],
-    mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일",
+    // Wave 250.5 (2026-05-19): "rrl스타일" / "rrl무드" 공백 없는 변형 추가 차단 (정품 RRL 아닌 imitation 매물).
+    mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일", "rrl스타일", "rrl무드",
       // 자켓/코트/팬츠 차단 — leather-suede-jacket lane 으로 가야.
       "자켓", "jacket", "코트", "coat", "재킷", "블레이저", "blazer", "점퍼", "트러커", "trucker",
       "팬츠", "pants", "바지", "치노"],
@@ -7114,7 +7115,14 @@ export const CATALOG: Sku[] = [
       ["레더", "leather", "가죽", "스웨이드", "suede", "러프아웃", "러프 아웃", "roughout", "rough out", "시얼링", "shearling", "뉴스보이", "newsboy", "모토", "moto", "G-1", "g1", "g 1", "플라이트", "flight", "MA-1", "ma-1", "ma1", "항공 점퍼", "항공점퍼", "나바호 자켓", "버팔로 레더", "buffalo leather"],
     ],
     // 키즈/액세서리/구두/벨트/지갑/주얼리 차단. canvas/denim 만 들어가는 매물 차단 (가죽 키워드 동반 필수).
-    mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일",
+    // Wave 250.5 (2026-05-19): production sample 검증 후 발견된 catalog gap fix.
+    //   1. 블레이저 (헤링본 블레이저 자켓 류준열 RRL 가죽 뉴스보이 — pid 406756050 ₩180k) → jacket-coat narrow 로 가야.
+    //      jacket-coat 는 블레이저 mustContain 보유. leather-suede 가 가죽 + 뉴스보이 키워드만으로 catch 했음.
+    //   2. "rrl스타일" (공백 없음 변형 — rrl스타일 가죽자켓 3xl, pid 404563540 ₩220k) — 정품 RRL 아닌 imitation 매물.
+    //      기존 "rrl 무드" / "rrl 스타일" 은 공백 동반 패턴만 잡음. normalize 가 한글 token 보존 → no-space 변형 통과.
+    mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일", "rrl스타일", "rrl무드",
+      // Wave 250.5: 블레이저는 jacket-coat narrow 로 routing.
+      "블레이저", "blazer",
       "스니커즈", "벨트", "지갑", "모자", "키링", "팔찌", "반지", "목걸이"],
     msrpKrw: 3000000, released: 2020,
   },
