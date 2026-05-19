@@ -143,6 +143,45 @@ const CATEGORY_OPTIONS = [
 
 type SortOption = "profit_desc" | "latest";
 
+// Wave 374: personalization — 예산 + 매물 성향. localStorage에 저장 (디바이스 단위).
+type Budget = "100k" | "300k" | "500k" | "unlimited";
+type Preference = "safe" | "balanced" | "aggressive";
+type UserPreferences = { budget: Budget; preference: Preference };
+const PREFS_STORAGE_KEY = "minyoi_explore_prefs_v1";
+
+function loadPreferences(): UserPreferences | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(PREFS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<UserPreferences>;
+    if (!parsed.budget || !parsed.preference) return null;
+    return { budget: parsed.budget, preference: parsed.preference };
+  } catch {
+    return null;
+  }
+}
+function savePreferences(prefs: UserPreferences) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(prefs));
+  } catch {
+    // ignore
+  }
+}
+
+const BUDGET_OPTIONS: { value: Budget; label: string }[] = [
+  { value: "100k", label: "10만 이하" },
+  { value: "300k", label: "30만 이하" },
+  { value: "500k", label: "50만 이하" },
+  { value: "unlimited", label: "제한 없음" },
+];
+const PREFERENCE_OPTIONS: { value: Preference; label: string; sub: string; emoji: string }[] = [
+  { value: "safe", label: "안전", sub: "셀러 평점 높음", emoji: "🛡" },
+  { value: "balanced", label: "균형", sub: "안정 + 차익", emoji: "⚖" },
+  { value: "aggressive", label: "공격", sub: "차익 큰 매물", emoji: "🚀" },
+];
+
 export default function ExploreClient() {
   const [items, setItems] = useState<PoolItem[]>([]);
   const [cooldown, setCooldown] = useState<PoolResponse["cooldown"] | null>(null);
@@ -156,6 +195,23 @@ export default function ExploreClient() {
   // Wave 358: 슬라이드 업 애니메이션 — open/close 사이 250ms transition.
   const [refreshModalOpen, setRefreshModalOpen] = useState(false);
   const [refreshModalAnimating, setRefreshModalAnimating] = useState(false);
+  // Wave 374: personalization — localStorage 저장된 선호 + 모달 step.
+  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
+  // 모달 step: prefs 없으면 form / 있고 cooldown 안 끝 cooldown / 있고 끝 ready.
+  const [editingPrefs, setEditingPrefs] = useState(false); // cooldown 모드에서 "수정" 클릭 시 form 표시
+  // 폼 임시 값 (저장 전)
+  const [draftBudget, setDraftBudget] = useState<Budget>("unlimited");
+  const [draftPreference, setDraftPreference] = useState<Preference>("balanced");
+
+  // localStorage 로드 (mount 1회)
+  useEffect(() => {
+    const loaded = loadPreferences();
+    if (loaded) {
+      setPreferences(loaded);
+      setDraftBudget(loaded.budget);
+      setDraftPreference(loaded.preference);
+    }
+  }, []);
 
   // 모달 mount 후 다음 frame에 애니메이션 활성화 (slide up / fade in)
   useEffect(() => {
@@ -212,7 +268,8 @@ export default function ExploreClient() {
 
   // Wave 353: 카테고리 필터는 클라이언트 사이드 (서버 → 항상 다양화된 30개 풀, 클라가 필터링).
   // 정렬은 백엔드 유지 — 풀 구성 자체가 달라짐 (latest = 최신 30 vs profit_desc = 차익 상위 30).
-  const loadPool = useCallback(async (refresh: boolean) => {
+  // Wave 374: preferences (budget/preference) 인자도 전달.
+  const loadPool = useCallback(async (refresh: boolean, prefsOverride?: UserPreferences | null) => {
     if (refresh) setRefreshing(true);
     else setLoading(true);
     setError(null);
@@ -220,6 +277,11 @@ export default function ExploreClient() {
       const params = new URLSearchParams();
       if (refresh) params.set("refresh", "1");
       if (sort !== "profit_desc") params.set("sort", sort);
+      const effectivePrefs = prefsOverride !== undefined ? prefsOverride : preferences;
+      if (effectivePrefs) {
+        if (effectivePrefs.budget !== "unlimited") params.set("budget", effectivePrefs.budget);
+        params.set("preference", effectivePrefs.preference);
+      }
       const url = `/api/packs/pool${params.toString() ? `?${params.toString()}` : ""}`;
       const res = await fetch(url, { cache: "no-store" });
       const data = (await res.json()) as PoolResponse;
@@ -248,7 +310,7 @@ export default function ExploreClient() {
       setRefreshing(false);
       setLoading(false);
     }
-  }, [sort]);
+  }, [sort, preferences]);
 
   const loadStats = useCallback(async () => {
     try {
@@ -697,140 +759,209 @@ export default function ExploreClient() {
             </div>
 
             <div className="px-6 pt-5 pb-6 sm:pt-6">
-              {/* Header */}
-              <div className="mb-5 flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                    다른 매물 찾기
-                  </div>
-                  <div className="mt-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                    무료로 새 30개, 또는 조건 골라서 받기
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={closeRefreshModal}
-                  className="-mr-2 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                  aria-label="닫기"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                    <path d="M18 6 6 18M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* 메인 CTA — 무료 랜덤 30개 (가장 강조) */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (canRefresh) {
-                    void loadPool(true);
-                    closeRefreshModal();
-                  }
-                }}
-                disabled={!canRefresh}
-                className={`group relative w-full overflow-hidden rounded-2xl px-5 py-4 text-left transition ${
-                  canRefresh
-                    ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-[0_12px_28px_rgba(34,49,39,0.28)] hover:shadow-[0_16px_34px_rgba(34,49,39,0.34)] active:scale-[0.99]"
-                    : "cursor-not-allowed bg-zinc-100 text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-500"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <GiftIcon className="h-5 w-5" />
-                      <span className="text-base font-bold">
-                        랜덤 30개 받기
-                      </span>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${canRefresh ? "bg-white/20 text-[var(--brand-cream)]" : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"}`}>
-                        무료
-                      </span>
+              {/* Wave 374: personalization 모달 — form (예산/성향 선택) vs cooldown/ready 분기 */}
+              {(() => {
+                const showForm = !preferences || editingPrefs;
+                const headerTitle = showForm
+                  ? (preferences ? "선호 수정" : "내 매물 취향 알려주세요")
+                  : "다른 매물 찾기";
+                const headerSub = showForm
+                  ? "예산과 매물 성향에 맞춰 30개 골라드려요"
+                  : (canRefresh
+                      ? "현재 선호로 새 30개 받기"
+                      : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 풀려요`);
+                return (
+                  <>
+                    <div className="mb-5 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">{headerTitle}</div>
+                        <div className="mt-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">{headerSub}</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={closeRefreshModal}
+                        className="-mr-2 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        aria-label="닫기"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                          <path d="M18 6 6 18M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
-                    <div className={`mt-1.5 text-xs font-medium ${canRefresh ? "text-[var(--brand-cream)]/75" : "text-zinc-500 dark:text-zinc-500"}`}>
-                      {canRefresh
-                        ? "다양한 카테고리에서 새 30개"
-                        : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 풀려요`}
-                    </div>
-                  </div>
-                  {canRefresh ? (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 shrink-0 transition group-hover:translate-x-0.5">
-                      <path d="M5 12h14M13 5l7 7-7 7" />
-                    </svg>
-                  ) : null}
-                </div>
-              </button>
 
-              {/* 보조 옵션 — 크레딧 맞춤 검색 (paywall 예고) */}
-              <div className="mt-3 rounded-2xl border border-amber-200/60 bg-amber-50/50 px-5 py-4 dark:border-amber-900/40 dark:bg-amber-950/20">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <TargetIcon className="h-5 w-5 text-amber-700 dark:text-amber-300" />
-                    <span className="text-base font-bold text-amber-900 dark:text-amber-100">
-                      맞춤 검색
-                    </span>
-                  </div>
-                  <span className="rounded-full bg-amber-500/90 px-2 py-0.5 text-[10px] font-bold text-white">
-                    크레딧
-                  </span>
-                </div>
-                <div className="mt-1 text-xs font-medium text-amber-800/80 dark:text-amber-200/80">
-                  예산 · 성향 골라서 즉시 받기
-                </div>
+                    {showForm ? (
+                      <>
+                        <div className="mb-4">
+                          <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">예산</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {BUDGET_OPTIONS.map((opt) => {
+                              const active = draftBudget === opt.value;
+                              return (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  onClick={() => setDraftBudget(opt.value)}
+                                  className={`rounded-xl border px-3 py-2.5 text-sm font-bold transition ${
+                                    active
+                                      ? "border-emerald-500 bg-emerald-50 text-emerald-800 shadow-[0_2px_8px_rgba(16,185,129,0.18)] dark:border-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-200"
+                                      : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
+                                  }`}
+                                >
+                                  {opt.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
 
-                {/* 옵션 미리보기 */}
-                <div className="mt-3 space-y-2.5">
-                  <div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-amber-900/70 dark:text-amber-100/70">
-                      예산
-                    </div>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {["10만 이하", "30만 이하", "50만 이하", "제한 없음"].map((label) => (
-                        <span
-                          key={label}
-                          className="cursor-not-allowed rounded-full border border-amber-200 bg-white/80 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:border-amber-800/40 dark:bg-zinc-900/60 dark:text-amber-200"
+                        <div className="mb-4">
+                          <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">매물 성향</div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {PREFERENCE_OPTIONS.map((opt) => {
+                              const active = draftPreference === opt.value;
+                              return (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  onClick={() => setDraftPreference(opt.value)}
+                                  className={`flex flex-col items-center gap-0.5 rounded-xl border px-2 py-2.5 transition ${
+                                    active
+                                      ? "border-emerald-500 bg-emerald-50 shadow-[0_2px_8px_rgba(16,185,129,0.18)] dark:border-emerald-600 dark:bg-emerald-950/40"
+                                      : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900/40"
+                                  }`}
+                                >
+                                  <span className="text-lg leading-none">{opt.emoji}</span>
+                                  <span className={`text-sm font-bold ${active ? "text-emerald-800 dark:text-emerald-200" : "text-zinc-800 dark:text-zinc-200"}`}>
+                                    {opt.label}
+                                  </span>
+                                  <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">{opt.sub}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newPrefs: UserPreferences = { budget: draftBudget, preference: draftPreference };
+                            savePreferences(newPrefs);
+                            setPreferences(newPrefs);
+                            setEditingPrefs(false);
+                            if (canRefresh) {
+                              void loadPool(true, newPrefs);
+                            }
+                            closeRefreshModal();
+                          }}
+                          className="w-full rounded-2xl bg-[var(--brand-accent-strong)] px-5 py-3.5 text-base font-bold text-[var(--brand-cream)] shadow-[0_12px_28px_rgba(34,49,39,0.28)] transition hover:shadow-[0_16px_34px_rgba(34,49,39,0.34)] active:scale-[0.99]"
                         >
-                          {label}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-amber-900/70 dark:text-amber-100/70">
-                      매물 성향
-                    </div>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {[
-                        { label: "공격적", sub: "차익 큰 매물" },
-                        { label: "균형", sub: "안정 + 차익" },
-                        { label: "안전", sub: "셀러 평점 높음" },
-                      ].map((opt) => (
-                        <span
-                          key={opt.label}
-                          className="cursor-not-allowed rounded-full border border-amber-200 bg-white/80 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:border-amber-800/40 dark:bg-zinc-900/60 dark:text-amber-200"
-                          title={opt.sub}
+                          {canRefresh ? (preferences ? "수정하고 새 30개 받기" : "내 취향대로 30개 받기") : "수정 저장"}
+                        </button>
+                        {editingPrefs ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingPrefs(false);
+                              if (preferences) {
+                                setDraftBudget(preferences.budget);
+                                setDraftPreference(preferences.preference);
+                              }
+                            }}
+                            className="mt-2 w-full text-center text-xs font-medium text-zinc-500 underline underline-offset-2 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                          >
+                            취소
+                          </button>
+                        ) : null}
+                      </>
+                    ) : (
+                      <>
+                        <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 dark:border-zinc-700 dark:bg-zinc-900/40">
+                          <div className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                            <TargetIcon className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <span className="font-bold">{BUDGET_OPTIONS.find((o) => o.value === preferences!.budget)?.label}</span>
+                            <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                            <span className="font-bold">
+                              {PREFERENCE_OPTIONS.find((o) => o.value === preferences!.preference)?.emoji}{" "}
+                              {PREFERENCE_OPTIONS.find((o) => o.value === preferences!.preference)?.label}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDraftBudget(preferences!.budget);
+                              setDraftPreference(preferences!.preference);
+                              setEditingPrefs(true);
+                            }}
+                            className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-bold text-zinc-700 transition hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200"
+                          >
+                            수정
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (canRefresh) {
+                              void loadPool(true);
+                              closeRefreshModal();
+                            }
+                          }}
+                          disabled={!canRefresh}
+                          className={`group relative w-full overflow-hidden rounded-2xl px-5 py-4 text-left transition ${
+                            canRefresh
+                              ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-[0_12px_28px_rgba(34,49,39,0.28)] hover:shadow-[0_16px_34px_rgba(34,49,39,0.34)] active:scale-[0.99]"
+                              : "cursor-not-allowed bg-zinc-100 text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-500"
+                          }`}
                         >
-                          {opt.label}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <GiftIcon className="h-5 w-5" />
+                                <span className="text-base font-bold">내 취향대로 30개 받기</span>
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${canRefresh ? "bg-white/20 text-[var(--brand-cream)]" : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"}`}>
+                                  무료
+                                </span>
+                              </div>
+                              <div className={`mt-1.5 text-xs font-medium ${canRefresh ? "text-[var(--brand-cream)]/75" : "text-zinc-500 dark:text-zinc-500"}`}>
+                                {canRefresh ? "예산 + 성향 적용해서 새 30개" : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 풀려요`}
+                              </div>
+                            </div>
+                            {canRefresh ? (
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 shrink-0 transition group-hover:translate-x-0.5">
+                                <path d="M5 12h14M13 5l7 7-7 7" />
+                              </svg>
+                            ) : null}
+                          </div>
+                        </button>
 
-                <Link
-                  href="/plans"
-                  className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-full bg-amber-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-amber-700"
-                >
-                  구독으로 풀기 (곧 출시)
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                    <path d="M5 12h14M13 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-
-              {/* Footer hint */}
-              <div className="mt-4 text-center text-[11px] font-medium leading-5 text-zinc-500 dark:text-zinc-400">
-                무료는 30분마다 새 30개 · 크레딧으로는 예산/성향 골라 즉시 받기
-              </div>
+                        {!canRefresh ? (
+                          <div className="mt-3 rounded-2xl border border-amber-200/60 bg-amber-50/50 px-5 py-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2">
+                                <ZapIcon className="h-5 w-5 text-amber-700 dark:text-amber-300" />
+                                <span className="text-base font-bold text-amber-900 dark:text-amber-100">기다리지 말고 즉시 받기</span>
+                              </div>
+                              <span className="rounded-full bg-amber-500/90 px-2 py-0.5 text-[10px] font-bold text-white">구독</span>
+                            </div>
+                            <div className="mt-1 text-xs font-medium text-amber-800/80 dark:text-amber-200/80">
+                              cooldown 없이 바로 + 6시간 미만 fresh 매물도
+                            </div>
+                            <Link
+                              href="/plans"
+                              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full bg-amber-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-amber-700"
+                            >
+                              구독으로 풀기 (곧 출시)
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                                <path d="M5 12h14M13 5l7 7-7 7" />
+                              </svg>
+                            </Link>
+                          </div>
+                        ) : null}
+                      </>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
