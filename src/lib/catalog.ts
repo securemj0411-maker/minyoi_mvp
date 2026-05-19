@@ -8727,7 +8727,22 @@ export const CATALOG: Sku[] = [
     modelName: "Adidas Football (F50 / Predator / Copa / X Crazyfast / Nemeziz / Messi)",
     aliases: ["Adidas F50", "아디다스 F50", "Adidas Predator", "프레데터", "Adidas X Crazyfast"],
     mustContain: [["adidas", "아디다스"], ["f50", "프레데터", "predator", "copa", "코파", "crazyfast", "크레이지패스트", "네메시스", "nemeziz", "메시", "messi", "축구화", "풋살화"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "스탠스미스", "캠퍼스", "포럼"],
+    // Wave 265 (2026-05-20): 한정판/시그니처 매물 차단 (사용자 발견 — broad sku_median 99k 인데 매물 35만~110만).
+    //   sample: 베이프 F50 / 메시 크레이지페스트 / 프레데터 지단 한정 / 벨링엄 / 토니크로스 / 나나미 / 엑셀레이터 / 아카이브 / 한정판
+    //   broad 시세 sample 오염 — 한정/시그니처 별도 시세 (10x). broad SKU 차단 → sku_id=NULL → 시세 sample 제외.
+    mustNotContain: [
+      "키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      "스탠스미스", "캠퍼스", "포럼",
+      // Wave 265: 한정판/시그니처 (broad 시세 오염 차단)
+      "한정", "한정판", "limited", "엑셀레이터", "accelerator", "아카이브", "archive",
+      "지단", "zidane", "벨링엄", "bellingham", "토니크로스", "kroos", "메시 한정",
+      "나나미", "nanami", "벨라즈", "veloz",
+      "베이프", "bape", "비에이프", // 베이프 F50 collab
+      "supreme", "슈프림", // Supreme collab
+      "정품 보장", "100% 정품 보장",
+      // buy intent
+      "삽니다", "매입", "구합니다", "구해요", "구함",
+    ],
     msrpKrw: 199000, released: 2014,
   },
   {
