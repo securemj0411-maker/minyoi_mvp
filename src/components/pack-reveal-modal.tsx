@@ -3851,6 +3851,34 @@ export default function PackRevealModal({
     onClose();
   }, [closePreviewPanel, onClose]);
 
+  // Wave 394.7.k (사용자 짚음 — 모바일 브라우저 뒤로가기):
+  // modal open 시 history.pushState — 사용자 브라우저 뒤로가기 (iOS swipe back / Android 뒤로) 시
+  // 페이지 이동 X, modal 만 닫힘 (인스타/카카오 동일 패턴).
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+  useEffect(() => {
+    if (!open) return;
+    if (typeof window === "undefined") return;
+
+    const stateToken = { minyoiModalOpen: Date.now() };
+    window.history.pushState(stateToken, "");
+
+    let triggeredByPopState = false;
+    const handlePopState = () => {
+      triggeredByPopState = true;
+      onCloseRef.current();
+    };
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      // X 버튼/outside click 로 닫힌 경우 (popstate 안 거침) — 우리가 push 한 state 정리.
+      if (!triggeredByPopState && window.history.state?.minyoiModalOpen) {
+        window.history.back();
+      }
+    };
+  }, [open]);
+
   const handlePreviewGuide = useCallback((card: RevealCard, side: PreviewSide) => {
     setPreviewCard(card);
     setPreviewSide(side);

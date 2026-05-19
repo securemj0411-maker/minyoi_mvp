@@ -217,6 +217,9 @@ export default function ExploreClient() {
   // Wave 391: loadPool에서 items deps에 박으면 infinite loop. ref로 fresh 접근.
   const itemsRef = useRef<PoolItem[]>([]);
   useEffect(() => { itemsRef.current = items; }, [items]);
+  // Wave 394.7.j (사용자 짚음): 더 찾아보기 append 후 새 매물 시작점으로 자동 스크롤.
+  const [scrollTargetPid, setScrollTargetPid] = useState<number | null>(null);
+  const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
   const [cooldown, setCooldown] = useState<PoolResponse["cooldown"] | null>(null);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -346,6 +349,8 @@ export default function ExploreClient() {
             setItems((prev) => {
               const existingPids = new Set(prev.map((it) => it.pid));
               const fresh = data.items!.filter((it) => !existingPids.has(it.pid));
+              // Wave 394.7.j: 새 매물 첫 pid 저장 — useEffect 가 mount 후 scroll.
+              if (fresh.length > 0) setScrollTargetPid(fresh[0].pid);
               return [...prev, ...fresh];
             });
           } else {
@@ -379,6 +384,17 @@ export default function ExploreClient() {
   useEffect(() => {
     void loadStats();
   }, [loadStats]);
+
+  // Wave 394.7.j: 더 찾아보기 후 새 매물 첫 카드로 자동 스크롤.
+  useEffect(() => {
+    if (scrollTargetPid == null) return;
+    // 다음 render 후 ref 잡혀야 — items 의존성으로 mount 후 trigger.
+    const el = cardRefs.current.get(scrollTargetPid);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setScrollTargetPid(null);
+    }
+  }, [scrollTargetPid, items]);
 
   // 필터/정렬 변경 시 자동 재로드.
   // Wave 376: 가입 직후 가드 — preferences 답하기 전엔 fetch 보류 (random 30 안 보이게).
@@ -698,6 +714,10 @@ export default function ExploreClient() {
             return (
               <button
                 key={item.pid}
+                ref={(el) => {
+                  if (el) cardRefs.current.set(item.pid, el);
+                  else cardRefs.current.delete(item.pid);
+                }}
                 type="button"
                 onClick={() => {
                   if (isSoldOut) return;
