@@ -8,7 +8,23 @@ import ModelGuidePanel from "@/components/model-guide-panel";
 import { ConditionPhotoBadge } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { BunjangLogo, BunjangSourceBadge, DanawaLogo, DanawaSourceBadge } from "@/components/market-brand-logo";
-import { CheckCircleIcon, ScaleIcon, ShieldIcon, TargetIcon, TrophyIcon, WalletIcon } from "@/components/icons";
+import {
+  ActivityIcon,
+  AlertTriangleIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  FlameIcon,
+  HourglassIcon,
+  PackageIcon,
+  ScaleIcon,
+  ShieldIcon,
+  TargetIcon,
+  TrendingDownIcon,
+  TrendingUpIcon,
+  TrophyIcon,
+  WalletIcon,
+  ZapIcon,
+} from "@/components/icons";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
@@ -1072,6 +1088,27 @@ function upperFoldTileClass(tone: UpperFoldTileTone) {
   };
 }
 
+// Wave 334: 타일 평가별 아이콘 매핑 — JSX element 직접 반환 (react-hooks 호환).
+function renderActivityIcon(value: string, className: string) {
+  if (value.includes("활발")) return <FlameIcon className={className} />;
+  if (value.includes("약함")) return <TrendingDownIcon className={className} />;
+  if (value.includes("매물 적음")) return <PackageIcon className={className} />;
+  if (value.includes("공급 많음")) return <TrendingUpIcon className={className} />;
+  return <ActivityIcon className={className} />;
+}
+
+function renderSpeedIcon(speed: ReturnType<typeof saleSpeedDisplay>, className: string) {
+  if (speed.isFast) return <ZapIcon className={className} />;
+  if (speed.isSlow) return <HourglassIcon className={className} />;
+  return <ClockIcon className={className} />;
+}
+
+function renderSafetyIcon(tone: "good" | RiskTone, value: string, className: string) {
+  if (value.includes("우수") || (tone === "good" && value.includes("⭐"))) return <TrophyIcon className={className} />;
+  if (tone === "safe" || tone === "good") return <ShieldIcon className={className} />;
+  return <AlertTriangleIcon className={className} />;
+}
+
 function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   const speed = saleSpeedDisplay(card);
   const risk = buildRiskScore(revealRiskScoreInput(card));
@@ -1080,12 +1117,15 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   const speedTone: "good" | "info" | "warn" = speed.isSlow ? "warn" : speed.isFast ? "good" : "info";
   // Wave 2026-05-19 v2 (사용자 피드백): "현재성" 타일 제거 — 매입/시세 줄에 이미 검증 시점 있어 중복.
   // 4 타일 → 3 타일 (오늘 물량 / 보통 N일 안에 팔림 / 거래 안전).
+  const activityIconClass = `mt-1 h-5 w-5 ${upperFoldTileClass(activity.tone).value}`;
+  const speedIconClass = `mt-1 h-5 w-5 ${upperFoldTileClass(speedTone).value}`;
   const tiles: Array<{
     key: string;
     label: string;
     value: string;
     sub: string;
     tone: UpperFoldTileTone;
+    icon: React.ReactNode;
   }> = [
     {
       key: "activity",
@@ -1093,9 +1133,9 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
       value: activity.value,
       sub: activity.sub,
       tone: activity.tone,
+      icon: renderActivityIcon(activity.value, activityIconClass),
     },
     {
-      // Wave 324: 평가가 헤드라인, raw 시간은 sub.
       key: "speed",
       label: "팔리는 속도",
       value: speed.isFast ? "빠름" : speed.isSlow ? "느림" : "보통",
@@ -1103,10 +1143,12 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
         ? `약 ${speed.label} · 표본 적음 (카테고리 평균)`
         : `약 ${speed.label} · 최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
       tone: speedTone,
+      icon: renderSpeedIcon(speed, speedIconClass),
     },
   ];
   const safetyTone = upperFoldTileClass(safety.tone);
-  // Wave 330: SafetyIcon 제거 — 모든 segment dot 통일 (정렬 일치).
+  // Wave 334: 평가별 아이콘 — renderSafetyIcon이 JSX 반환 (컴포넌트 새로 만들지 않음).
+  const safetyIconNode = renderSafetyIcon(safety.tone, safety.value, `mt-1 h-5 w-5 ${safetyTone.value}`);
   // - dot 크기 통일 (h-1.5 w-1.5) — ShieldIcon 대신 dot로 거래 안전도 통일
   // - sub line-clamp-2 + 고정 높이 (정렬 어긋남 방지)
   // - 라벨 한 줄 고정
@@ -1116,12 +1158,12 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
         {tiles.map((tile) => {
           const tone = upperFoldTileClass(tile.tone);
           return (
-            <div key={tile.key} className="flex flex-col px-2 py-2.5 text-center">
-              <div className="flex h-3 items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${tone.dot}`} />
+            <div key={tile.key} className="flex flex-col items-center px-2 py-2.5 text-center">
+              <div className="flex h-3 items-center justify-center text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 <span className="truncate">{tile.label}</span>
               </div>
-              <div className={`mt-1.5 line-clamp-1 text-xs font-bold leading-tight tabular-nums ${tone.value}`}>
+              {tile.icon}
+              <div className={`mt-1 line-clamp-1 text-xs font-bold leading-tight tabular-nums ${tone.value}`}>
                 {tile.value}
               </div>
               <div className="mt-1 line-clamp-2 min-h-[24px] text-[10px] font-medium leading-3 text-zinc-500 dark:text-zinc-400">
@@ -1133,14 +1175,14 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
         <RevealRiskScoreMini
           card={card}
           containerClassName="contents"
-          triggerClassName="flex flex-col px-2 py-2.5 text-center transition hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+          triggerClassName="flex flex-col items-center px-2 py-2.5 text-center transition hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
           triggerContent={(
-            <span className="flex w-full flex-col">
-              <span className="flex h-3 items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${safetyTone.dot}`} />
+            <span className="flex w-full flex-col items-center">
+              <span className="flex h-3 items-center justify-center text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 <span className="truncate">거래 안전</span>
               </span>
-              <span className={`mt-1.5 line-clamp-1 text-xs font-bold leading-tight tabular-nums ${safetyTone.value}`}>
+              {safetyIconNode}
+              <span className={`mt-1 line-clamp-1 text-xs font-bold leading-tight tabular-nums ${safetyTone.value}`}>
                 {safety.value}
               </span>
               <span className="mt-1 line-clamp-2 block min-h-[24px] text-[10px] font-medium leading-3 text-zinc-500 dark:text-zinc-400">
@@ -1472,18 +1514,28 @@ function SellerTrustPanel({ card }: { card: RevealCard }) {
       ? "text-amber-700 dark:text-amber-300"
       : "text-rose-700 dark:text-rose-300";
 
+  // Wave 334: 등급별 아이콘 시각화.
+  const TrustIcon = trustLevel === "good"
+    ? TrophyIcon
+    : trustLevel === "ok"
+      ? ShieldIcon
+      : AlertTriangleIcon;
+
   return (
     <section className={`mt-3 rounded-xl border border-zinc-200 border-l-4 ${accentBorderClass} bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40`}>
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            셀러 정보
-          </div>
-          <div className={`mt-1 text-sm font-bold ${valueColor}`}>
-            {trustHeadline}
-          </div>
-          <div className="mt-0.5 text-xs font-medium leading-4 text-zinc-600 dark:text-zinc-400">
-            {trustSub}
+        <div className="flex min-w-0 items-start gap-2.5">
+          <TrustIcon className={`mt-3 h-6 w-6 shrink-0 ${valueColor}`} />
+          <div className="min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              셀러 정보
+            </div>
+            <div className={`mt-1 text-sm font-bold ${valueColor}`}>
+              {trustHeadline}
+            </div>
+            <div className="mt-0.5 text-xs font-medium leading-4 text-zinc-600 dark:text-zinc-400">
+              {trustSub}
+            </div>
           </div>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
@@ -2189,7 +2241,8 @@ function RevealCardItem({
                 {card.name}
               </div>
               <div className="mt-2">
-                <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  <WalletIcon className="h-3 w-3" />
                   예상 순익
                 </div>
                 <div className="mt-0.5 flex flex-wrap items-baseline gap-2">
