@@ -8923,8 +8923,8 @@ export const CATALOG: Sku[] = [
   //   가품 risk 큰 명품 (LV/구찌/디올/샤넬/Celine) skip — 사용자 정책.
   {
     id: "clothing-fog-essentials",
-    brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials",
-    modelName: "Fear of God Essentials (티 / 후드 / 스웻 / 반바지)",
+    brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_broad",
+    modelName: "Fear of God Essentials (broad — 베스트/니트/플리스/카라티/모자 등)",
     aliases: ["FOG Essentials", "피오갓 에센셜", "피어오브갓 에센셜"],
     mustContain: [["피어오브갓", "피오갓", "fear of god", "fog"], ["essentials", "에센셜"]],
     // FOG Main Line (3rd-7th 시즌별) 한정/명품 - mustNotContain 차단.
@@ -8934,8 +8934,106 @@ export const CATALOG: Sku[] = [
       "제냐", "zegna", "ermenegildo",
       // Nike 콜라보 차단 (별도)
       "nike", "나이키",
-      "캘리포니아", "california mule", "디스턴스 러너", "distance runner", "101 lace", "로퍼", "loafer"],
+      "캘리포니아", "california mule", "디스턴스 러너", "distance runner", "101 lace", "로퍼", "loafer",
+      // Wave 245.2 (2026-05-19): production sample 측정 — narrow split 후 broad 는 catch-all fallback.
+      //   narrow 키워드 매물은 narrow 로 매칭 → broad mustNotContain 으로 차단 (fallback only).
+      //   hoodie/tee/pants/shorts/crewneck/jacket 매물 차단. 다른 product-type (베스트/니트/플리스/카라티/모자) 만 broad.
+      "후디", "hoodie", "후드티", "후드",
+      "맨투맨", "크루넥", "스웻", "sweat",
+      "티셔츠", "반팔", "롱슬리브", "긴팔티",
+      "팬츠", "pants", "바지", "조거", "jogger", "sweatpants", "트레이닝",
+      "쇼츠", "shorts", "반바지", "하프팬츠", "숏팬츠",
+      "자켓", "jacket", "재킷", "블레이저", "점퍼", "코트", "coat",
+      // 신발 차단 (cross-category) — 컨버스 척70 콜라보 같은 거.
+      "컨버스", "converse", "척70", "chuck 70", "신발", "운동화"],
     msrpKrw: 99000, released: 2018,
+  },
+  // Wave 245.2 (2026-05-19): FOG Essentials product-type 별 narrow 분리.
+  //   production sample 측정 (60 days, 100건):
+  //   - hoodie 19건 median 16만 / crewneck 10건 median 7.2만 / tee 19건 median 5.5만
+  //   - pants 18건 median 9.5만 / shorts 4건 median 6만 / jacket 5건 median 18.2만
+  //   product-type 별 가격대 2~3배 차이 → narrow split 효과 큼.
+  {
+    id: "clothing-fog-essentials-hoodie",
+    brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_hoodie",
+    modelName: "FOG Essentials Hoodie",
+    aliases: ["FOG Essentials 후디", "피오갓 에센셜 후드", "에센셜 후디"],
+    mustContain: [["피어오브갓", "피오갓", "fear of god", "fog"], ["essentials", "에센셜"], ["후디", "hoodie", "후드티", "후드"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
+      "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
+      "제냐", "zegna", "nike", "나이키",
+      // 다른 product-type 차단 (각 narrow lane 으로 가게).
+      "맨투맨", "크루넥", "팬츠", "바지", "쇼츠", "반바지", "자켓", "재킷"],
+    msrpKrw: 160000, released: 2018,
+    defaultProductType: "hoodie",
+  },
+  {
+    id: "clothing-fog-essentials-crewneck",
+    brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_crewneck",
+    modelName: "FOG Essentials Crewneck / Sweat (스웻셔츠/맨투맨)",
+    aliases: ["FOG Essentials 맨투맨", "피오갓 에센셜 스웻", "에센셜 크루넥"],
+    mustContain: [["피어오브갓", "피오갓", "fear of god", "fog"], ["essentials", "에센셜"], ["맨투맨", "크루넥", "crewneck", "스웻", "sweat"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
+      "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
+      "제냐", "zegna", "nike", "나이키",
+      "후디", "hoodie", "후드티", "후드", "팬츠", "바지", "쇼츠", "반바지", "자켓", "재킷",
+      "sweatpants", "스웻팬츠", "스웻 팬츠"],
+    msrpKrw: 72000, released: 2018,
+    defaultProductType: "crewneck",
+  },
+  {
+    id: "clothing-fog-essentials-tee",
+    brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_tee",
+    modelName: "FOG Essentials Tee / T-Shirt / Long-Sleeve",
+    aliases: ["FOG Essentials 티", "피오갓 에센셜 반팔", "에센셜 티"],
+    mustContain: [["피어오브갓", "피오갓", "fear of god", "fog"], ["essentials", "에센셜"], ["티셔츠", "반팔", "롱슬리브", "긴팔티", "tee shirt", "t-shirt"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
+      "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
+      "제냐", "zegna", "nike", "나이키",
+      "후디", "hoodie", "후드티", "후드", "맨투맨", "크루넥", "스웻", "sweat", "팬츠", "바지", "쇼츠", "반바지", "자켓", "재킷"],
+    msrpKrw: 55000, released: 2018,
+    defaultProductType: "tee",
+  },
+  {
+    id: "clothing-fog-essentials-pants",
+    brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_pants",
+    modelName: "FOG Essentials Pants (스웻팬츠/조거/트레이닝)",
+    aliases: ["FOG Essentials 팬츠", "피오갓 에센셜 조거", "에센셜 스웻팬츠"],
+    mustContain: [["피어오브갓", "피오갓", "fear of god", "fog"], ["essentials", "에센셜"], ["팬츠", "pants", "바지", "조거", "jogger", "스웻팬츠", "sweatpants", "트레이닝"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
+      "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
+      "제냐", "zegna", "nike", "나이키",
+      "후디", "hoodie", "후드티", "후드", "맨투맨", "크루넥", "티셔츠", "반팔",
+      "쇼츠", "shorts", "반바지", "하프팬츠", "숏팬츠", "자켓", "재킷"],
+    msrpKrw: 95000, released: 2018,
+    defaultProductType: "pants",
+  },
+  {
+    id: "clothing-fog-essentials-shorts",
+    brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_shorts",
+    modelName: "FOG Essentials Shorts (반바지/하프팬츠)",
+    aliases: ["FOG Essentials 쇼츠", "피오갓 에센셜 반바지", "에센셜 하프팬츠"],
+    mustContain: [["피어오브갓", "피오갓", "fear of god", "fog"], ["essentials", "에센셜"], ["쇼츠", "shorts", "반바지", "하프팬츠", "숏팬츠"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
+      "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
+      "제냐", "zegna", "nike", "나이키",
+      "후디", "hoodie", "맨투맨", "크루넥", "티셔츠", "반팔", "긴팔",
+      "조거", "jogger", "스웻팬츠", "sweatpants", "자켓", "재킷"],
+    msrpKrw: 60000, released: 2018,
+    defaultProductType: "shorts",
+  },
+  {
+    id: "clothing-fog-essentials-jacket",
+    brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_jacket",
+    modelName: "FOG Essentials Jacket (자켓/아노락/봄버)",
+    aliases: ["FOG Essentials 자켓", "피오갓 에센셜 아노락"],
+    mustContain: [["피어오브갓", "피오갓", "fear of god", "fog"], ["essentials", "에센셜"], ["자켓", "jacket", "재킷", "블레이저", "점퍼", "코트", "coat", "아노락"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
+      "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
+      "제냐", "zegna", "nike", "나이키",
+      "후디", "hoodie", "맨투맨", "크루넥", "티셔츠", "반팔", "팬츠", "바지", "쇼츠", "반바지"],
+    msrpKrw: 180000, released: 2018,
+    // multi (jacket + coat + 아노락) — defaultProductType 안 박음.
   },
   {
     id: "bag-coach-broad",

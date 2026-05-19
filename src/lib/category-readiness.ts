@@ -646,7 +646,15 @@ export const LANE_READINESS: LaneReadinessMap = {
   adidas_samba_pharrell: { status: "ready", label: "Pharrell × Samba Humanrace", note: "Wave 226 한정" },
   adidas_samba_sporty_rich: { status: "ready", label: "Sporty & Rich × Samba", note: "Wave 226 한정" },
   // Wave 227 (2026-05-19): 의류/가방 누락 narrow.
-  fog_essentials: { status: "ready", label: "FOG Essentials (티/후드/스웻)", note: "Wave 227 일반인 친화" },
+  // Wave 245.2 (2026-05-19): FOG Essentials 6 narrow + 1 broad — product-type 별 시세 분리.
+  fog_essentials: { status: "ready", label: "FOG Essentials (legacy laneKey)", note: "Wave 227. Wave 245.2 에서 fog_essentials_broad 로 리네임. 호환성 유지." },
+  fog_essentials_broad: { status: "ready", label: "FOG Essentials (broad fallback — 베스트/니트/플리스/모자)", note: "Wave 245.2: narrow 6개 분리 후 catch-all" },
+  fog_essentials_hoodie: { status: "ready", label: "FOG Essentials Hoodie", note: "Wave 245.2 — median 16만" },
+  fog_essentials_crewneck: { status: "ready", label: "FOG Essentials Crewneck / Sweat", note: "Wave 245.2 — median 7.2만" },
+  fog_essentials_tee: { status: "ready", label: "FOG Essentials Tee", note: "Wave 245.2 — median 5.5만" },
+  fog_essentials_pants: { status: "ready", label: "FOG Essentials Pants (스웻팬츠/조거)", note: "Wave 245.2 — median 9.5만" },
+  fog_essentials_shorts: { status: "ready", label: "FOG Essentials Shorts (반바지)", note: "Wave 245.2 — median 6만" },
+  fog_essentials_jacket: { status: "ready", label: "FOG Essentials Jacket (자켓/아노락)", note: "Wave 245.2 — median 18.2만" },
   coach_broad: { status: "ready", label: "Coach Bag (broad)", note: "Wave 227 가품 식별 가능" },
   coach_tabby: { status: "ready", label: "Coach Tabby (시그니처)", note: "Wave 227" },
   longchamp_le_pliage: { status: "ready", label: "Longchamp Le Pliage (시그니처)", note: "Wave 227 나일론" },
