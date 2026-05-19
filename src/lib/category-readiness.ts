@@ -632,6 +632,18 @@ export const LANE_READINESS: LaneReadinessMap = {
   nike_blazer_broad: { status: "ready", label: "Nike Blazer (broad fallback)", note: "Wave 219: Mid/Low/Hi 분리 후 catch-all" },
   // Wave 220 (2026-05-19): orphan sku_id cleanup — Air Force 1 Low Black 시그니처.
   nike_airforce_1_low_black: { status: "ready", label: "Nike Air Force 1 Low Black (Triple Black)", note: "Wave 220 — orphan cleanup, 79건 매물 진입" },
+  // Wave 226 (2026-05-19): Nike/Adidas/NB 누락 인기 narrow lane (사용자 명시 "Nike/Adidas/뉴발 narrow 추가").
+  //   측정 결과: NB iconic 718 / Samba 218 / Cortez 206 매물 unmatched. catalog 신규 + 530 mustContain fix.
+  newbalance_574_broad: { status: "ready", label: "NB 574 (broad)", note: "Wave 226" },
+  newbalance_2002r: { status: "ready", label: "NB 2002R", note: "Wave 226" },
+  newbalance_9060: { status: "ready", label: "NB 9060 (Y2K)", note: "Wave 226" },
+  newbalance_990v3: { status: "ready", label: "NB 990v3 (MIUSA)", note: "Wave 226" },
+  newbalance_990v4: { status: "ready", label: "NB 990v4 (MIUSA)", note: "Wave 226" },
+  nike_cortez: { status: "ready", label: "Nike Cortez (Classic/Nylon)", note: "Wave 226" },
+  adidas_samba_kith: { status: "ready", label: "KITH × Samba (collab)", note: "Wave 226 한정" },
+  adidas_samba_wales_bonner: { status: "ready", label: "Wales Bonner × Samba", note: "Wave 226 한정" },
+  adidas_samba_pharrell: { status: "ready", label: "Pharrell × Samba Humanrace", note: "Wave 226 한정" },
+  adidas_samba_sporty_rich: { status: "ready", label: "Sporty & Rich × Samba", note: "Wave 226 한정" },
   // Wave 219 (2026-05-19): Nike Blazer variant 분리 — Mid 119K / Low/Platform 99K / Hi 129K
   nike_blazer_mid: { status: "ready", label: "Nike Blazer Mid / Mid 77", note: "Wave 219" },
   nike_blazer_low: { status: "ready", label: "Nike Blazer Low / Low 77 / Platform", note: "Wave 219" },

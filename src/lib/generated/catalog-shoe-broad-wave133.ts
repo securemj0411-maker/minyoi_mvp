@@ -18,7 +18,8 @@ export const SHOE_BROAD_CATALOG: Sku[] = [
     modelName: "New Balance 530 (Broad)",
     aliases: ["뉴발란스 530", "NB 530", "뉴발 530"],
     mustContain: [
-      ["뉴발란스 530", "뉴발 530", "nb 530", "nb530", "new balance 530"],
+      // Wave 226 (2026-05-19): "뉴발란스530" (붙임) 추가 — Bunjang 매물 718건 unmatched 중 다수 패턴.
+      ["뉴발란스 530", "뉴발란스530", "뉴발 530", "nb 530", "nb530", "new balance 530"],
     ],
     mustNotContain: [
       // 콜라보
