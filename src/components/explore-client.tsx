@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, TargetIcon, HourglassIcon } from "@/components/icons";
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
+import KakaoLogo from "@/components/kakao-logo";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
@@ -1088,9 +1089,7 @@ export default function ExploreClient() {
                               className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl border border-[#FAE100]/70 bg-[#FFEB00]/15 px-5 py-4 text-left transition hover:bg-[#FFEB00]/25 dark:border-[#FAE100]/40 dark:bg-[#FAE100]/10"
                             >
                               <div className="flex min-w-0 items-center gap-2">
-                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FAE100] text-base">
-                                  💬
-                                </span>
+                                <KakaoLogo className="h-7 w-7 shrink-0 rounded-[8px]" />
                                 <div className="min-w-0">
                                   <div className="text-base font-bold text-zinc-900 dark:text-zinc-100">
                                     카톡 공유하고 30개 받기
