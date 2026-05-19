@@ -3060,21 +3060,17 @@ function RevealCardItem({
     const id = window.setTimeout(() => setShown(true), delay);
     return () => window.clearTimeout(id);
   }, [delay]);
-  // Wave 394.5.a: localStorage 기억 mount sync.
+  // Wave 394.5.a: localStorage 기억 mount sync. (dealExpanded sync 는 별 useEffect 가 자동.)
   useEffect(() => {
     try {
       const stored = localStorage.getItem("minyoi_modal_mode");
-      if (stored === "detailed") {
-        setMode("detailed");
-        setDealExpanded(true);
-      }
+      if (stored === "detailed") setMode("detailed");
     } catch {}
   }, []);
-  // mode 변경 시 자동 펼침 동작.
+  // Wave 394.5.a.fix2 (사용자 버그 짚음 — "간단 보기 누르면 다시 안돌아가는데?"):
+  // mode 변경 시 양방향 sync. detailed → 펼침 / simple → 접힘.
   useEffect(() => {
-    if (mode === "detailed") {
-      setDealExpanded(true);
-    }
+    setDealExpanded(mode === "detailed");
   }, [mode]);
   const toggleMode = useCallback(() => {
     setMode((prev) => {
@@ -3661,6 +3657,35 @@ function RelatedRevealStrip({
                     </>
                   ) : null}
                 </div>
+                {/* Wave 394.7.c (외부 review #21): "왜 추천인지 기준이 안 보임" 정정 — 추천 이유 chip. */}
+                {/* 차익률 + condition (미개봉/S급) 강조. 다른 매물 대비 우월성 직관. */}
+                {(() => {
+                  const profitPct = item.price > 0 ? Math.round((item.expectedProfitMax / item.price) * 100) : 0;
+                  const cond = item.marketBasis?.conditionClass ?? null;
+                  const condLabel = cond === "unopened" ? "미개봉"
+                    : cond === "mint" ? "S급 매물"
+                    : cond === "clean" ? "A급"
+                    : null;
+                  if (profitPct <= 0 && !condLabel) return null;
+                  return (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {profitPct > 0 ? (
+                        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                          profitPct >= 30
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                            : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
+                        }`}>
+                          차익률 +{profitPct}%{profitPct >= 30 ? " 큼" : ""}
+                        </span>
+                      ) : null}
+                      {condLabel ? (
+                        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                          {condLabel}
+                        </span>
+                      ) : null}
+                    </div>
+                  );
+                })()}
               </div>
             </button>
           );
