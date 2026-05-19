@@ -482,41 +482,42 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
       : `${sample}건 (판매 ${sold}건)`
     : "표본 부족";
 
-  // Wave 2026-05-19 (외부인 #추가 fix): 각 라인 hover 시 기준/근거 설명 — 사용자가 점수 의미 이해.
+  // Wave 2026-05-19 v3 (사용자 피드백 — 단어 일반인 친화):
+  // "모델 매칭/시세 표본/시세 신뢰/판매 속도" → "모델 인식/비슷한 매물/비교 데이터/팔리는 속도"
   const lines: { label: string; value: string; tone?: "good" | "warn"; hint?: string }[] = [
     {
-      label: "모델 매칭",
-      value: market?.label ? `${market.label} (자동 분류)` : "분류 불완전",
+      label: "모델 인식",
+      value: market?.label ? `${market.label}` : "분류 흐림",
       tone: market?.label ? "good" : "warn",
-      hint: "AI 파서가 매물 제목/설명에서 모델·옵션·상태를 추출한 결과예요. 분류 불완전이면 시세도 부정확할 수 있어요.",
+      hint: "AI가 매물 제목/설명에서 모델/옵션/상태를 알아본 결과예요. 분류 흐림이면 시세 비교가 부정확할 수 있어요.",
     },
     {
-      label: "시세 표본",
+      label: "비슷한 매물",
       value: matchedSampleText,
       tone: sampleTone,
-      hint: "같은 모델·같은 등급 매물 표본 수. 8건 이상이면 신뢰 충분, 그 미만이면 참고용으로만 봐주세요.",
+      hint: "같은 모델·같은 상태 매물이 몇 건 있는지. 8건+ 면 비교 신뢰 충분, 그 미만이면 참고용으로만.",
     },
     {
-      label: "시세 신뢰",
-      value: marketConfLabel,
+      label: "비교 데이터",
+      value: marketConfLabel === "높음" ? "충분" : marketConfLabel === "보통" ? "보통" : marketConfLabel === "낮음" ? "부족" : marketConfLabel,
       tone: marketConf === "high" ? "good" : marketConf === "low" ? "warn" : undefined,
-      hint: "표본 수 + 거래 데이터 충분도 + 분류 정확도 종합. 높음 / 보통 / 낮음 3단계.",
+      hint: "비슷한 매물 수 + 거래 완료 건수 + 분류 정확도를 합쳐서 본 점수.",
     },
   ];
 
   if (velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0) {
     const days = Math.round(velocity.medianHoursToSold / 24);
     lines.push({
-      label: "판매 속도",
+      label: "팔리는 속도",
       value: days <= 0 ? "1일 이내" : `약 ${days}일`,
       tone: days <= 3 ? "good" : days >= 14 ? "warn" : undefined,
-      hint: "비슷한 매물이 평균 며칠 만에 거래되는지. 자본이 묶이는 기간 예측에 사용해요.",
+      hint: "비슷한 매물이 평균 며칠 만에 거래되는지. 내가 사서 다시 팔 때 걸리는 시간 추정.",
     });
   }
 
   return (
     <div className="mt-2 space-y-1.5 rounded-md bg-white p-2 text-left text-[11px] leading-4 dark:bg-zinc-900">
-      <div className="text-[10px] font-bold text-zinc-400">신뢰도 산출 근거</div>
+      <div className="text-[10px] font-bold text-zinc-400">왜 이 점수가 나왔나</div>
       {lines.map((line) => (
         <div
           key={line.label}
@@ -558,7 +559,7 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
         </div>
       )}
       <div className="pt-1 text-[10px] leading-[1.4] text-zinc-400">
-        시세 표본이 많고 같은 모델끼리 정확히 비교됐을 때 점수가 올라가요. 표본 부족 / 분류 불완전 / 새상품·번들 같은 왜곡 매물 비중이 높으면 점수가 내려갑니다.
+        비슷한 매물이 많고 같은 모델끼리 정확히 비교됐을 때 점수가 올라가요. 비슷한 매물 부족 / 분류 흐림 / 새상품 섞임이 많으면 점수 내려가요.
       </div>
     </div>
   );
@@ -608,16 +609,16 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
         </span>
         <span
           className="rounded-full bg-zinc-50 px-1.5 py-0.5 tabular-nums dark:bg-zinc-800"
-          title={`판매중 ${market.activeSampleCount.toLocaleString("ko-KR")}건 + 거래완료 ${market.soldSampleCount.toLocaleString("ko-KR")}건 (호가/거래가 모두 포함)`}
+          title={`판매중 ${market.activeSampleCount.toLocaleString("ko-KR")}건 + 거래완료 ${market.soldSampleCount.toLocaleString("ko-KR")}건`}
         >
-          표본 {market.sampleCount.toLocaleString("ko-KR")}건
+          비슷한 매물 {market.sampleCount.toLocaleString("ko-KR")}건
         </span>
-        {/* Wave 2026-05-19 (외부인 #추가 fix): "신뢰 보통" 기준 툴팁 노출 — 사용자가 어떤 기준인지 알 수 있게. */}
+        {/* Wave 2026-05-19 v3 (사용자 피드백 — 단어 일반인 친화): "신뢰" 칩 → "비교 데이터" */}
         <span
           className={`cursor-help rounded-full px-1.5 py-0.5 ${confidenceClass}`}
-          title="높음 = 표본 충분 + 거래 데이터 있음. 보통 = 표본 적당. 낮음 = 표본 부족 / 분류 불완전. 표본이 많고 같은 등급끼리 비교됐을 때 점수가 올라가요."
+          title="비슷한 매물 데이터가 얼마나 충분한지 — 충분 = 비교 매물 8건+. 보통 = 비교 매물 적당. 부족 = 비교 매물 적거나 분류 흐림."
         >
-          신뢰 {confidenceLabel}
+          비교 데이터 {confidenceLabel === "높음" ? "충분" : confidenceLabel === "보통" ? "보통" : "부족"}
         </span>
         <button
           type="button"
@@ -1307,10 +1308,10 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
               </details>
               <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#697768] dark:text-zinc-400">
                 <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
-                  {marketSample > 0 ? `시세 표본 ${marketSample.toLocaleString("ko-KR")}건` : "시세 표본 부족"}
+                  {marketSample > 0 ? `비슷한 매물 ${marketSample.toLocaleString("ko-KR")}건` : "비슷한 매물 부족"}
                 </span>
                 <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
-                  {soldSample > 0 ? `판매완료 ${soldSample.toLocaleString("ko-KR")}건 반영` : "판매완료 표본 누적 중"}
+                  {soldSample > 0 ? `최근 거래 ${soldSample.toLocaleString("ko-KR")}건` : "거래 데이터 누적 중"}
                 </span>
                 <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
                   {freshLabel(card.freshSeconds)}
@@ -1410,6 +1411,88 @@ function _SavedDetailMini({ card }: { card: RevealCard }) {
         </p>
       ) : null}
     </div>
+  );
+}
+
+// Wave 2026-05-19 v3 (사용자 피드백 — 셀러 신뢰도 별도 카드):
+// 거래 안전 타일 + RecommendationReason 안 셀러 후기가 분산 → 별도 카드로 통합.
+// savedDetail에 있는 데이터만 활용 (sellerReviewRating/sellerReviewCount/freeShipping).
+// is_proshop / last_seen_at 은 prop 부재 → 다음 wave (API 확장 필요).
+function SellerTrustPanel({ card }: { card: RevealCard }) {
+  const detail = card.savedDetail;
+  const rating = detail?.sellerReviewRating ?? null;
+  const reviewCount = detail?.sellerReviewCount ?? 0;
+  const freeShipping = Boolean(detail?.freeShipping);
+
+  // 등급 판단 — 일반인 친화 4단계
+  let trustLevel: "good" | "ok" | "caution" | "danger";
+  let trustHeadline: string;
+  let trustSub: string;
+  if (rating != null && rating >= 4.8 && reviewCount >= 30) {
+    trustLevel = "good";
+    trustHeadline = `우수 셀러 ⭐ ${rating.toFixed(1)}`;
+    trustSub = `후기 ${reviewCount.toLocaleString("ko-KR")}건 · 거래 신뢰 매우 높음`;
+  } else if (rating != null && rating >= 4.5 && reviewCount >= 10) {
+    trustLevel = "ok";
+    trustHeadline = `평점 ${rating.toFixed(1)} 셀러`;
+    trustSub = `후기 ${reviewCount.toLocaleString("ko-KR")}건 · 거래 신뢰 양호`;
+  } else if (reviewCount > 0 && rating != null) {
+    trustLevel = "caution";
+    trustHeadline = `평점 ${rating.toFixed(1)} · 후기 ${reviewCount.toLocaleString("ko-KR")}건`;
+    trustSub = reviewCount < 10 ? "후기 적음 — 안전결제 필수" : "후기 평점 보통 — 안전결제 권장";
+  } else {
+    trustLevel = "danger";
+    trustHeadline = "신규/익명 셀러";
+    trustSub = "후기 없음 — 안전결제 + 직거래 검수 권장";
+  }
+
+  const trustClass = trustLevel === "good"
+    ? "border-emerald-300 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/30"
+    : trustLevel === "ok"
+      ? "border-[#cfe0d2] bg-[#f4faf3] dark:border-emerald-900/40 dark:bg-emerald-950/15"
+      : trustLevel === "caution"
+        ? "border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30"
+        : "border-rose-300 bg-rose-50 dark:border-rose-700 dark:bg-rose-950/30";
+  const trustTextClass = trustLevel === "good" || trustLevel === "ok"
+    ? "text-emerald-900 dark:text-emerald-100"
+    : trustLevel === "caution"
+      ? "text-amber-900 dark:text-amber-100"
+      : "text-rose-900 dark:text-rose-100";
+  const trustSubClass = trustLevel === "good" || trustLevel === "ok"
+    ? "text-emerald-700/85 dark:text-emerald-200/85"
+    : trustLevel === "caution"
+      ? "text-amber-700/85 dark:text-amber-200/85"
+      : "text-rose-700/85 dark:text-rose-200/85";
+
+  return (
+    <section className={`mt-2 rounded-2xl border p-3 shadow-[0_8px_20px_rgba(49,66,56,0.05)] ${trustClass}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className={`text-[11px] font-black ${trustTextClass}`}>셀러 정보</div>
+          <div className={`mt-0.5 text-[14px] font-black ${trustTextClass}`}>
+            {trustHeadline}
+          </div>
+          <div className={`mt-0.5 text-[11px] font-semibold leading-4 ${trustSubClass}`}>
+            {trustSub}
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          {freeShipping ? (
+            <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white">
+              무료배송
+            </span>
+          ) : null}
+          <span className="rounded-full border border-zinc-300 bg-white px-2 py-0.5 text-[10px] font-black text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200">
+            안전결제 권장
+          </span>
+        </div>
+      </div>
+      {(trustLevel === "caution" || trustLevel === "danger") ? (
+        <div className="mt-2 rounded-lg bg-white/70 px-2.5 py-1.5 text-[10px] font-bold leading-4 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
+          ⚠ 후기 적은 셀러는 번개페이 안전결제 + 직거래 검수로 위험 최소화.
+        </div>
+      ) : null}
+    </section>
   );
 }
 
@@ -2027,6 +2110,7 @@ function RevealCardItem({
                 </div>
                 <UpperFoldFearReducers card={card} />
                 <CostAssurancePanel card={card} />
+                <SellerTrustPanel card={card} />
                 <CounterfeitChecklistPanel card={card} />
                 <SellHelperPanel card={card} currentFeedbackType={currentFeedbackType} />
               </div>
