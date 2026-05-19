@@ -1395,6 +1395,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
               </div>
               {/* 2026-05-17: 매입 · 시세 표시 (대시보드 패턴 통일 — 운영자풀/preview 와 동일). */}
               {/* Wave 200 (2026-05-18): terminal 매물 시 strike-through — 정보 stale 명시. */}
+              {/* Wave 246 (2026-05-19): medianPrice 0/null 시 "시세 확인중" 명시 — "번개 S급 시세 0원" 미스리딩 차단.
+                 terminal 카드는 별도 tombstone 으로 가서 여기 안 옴. */}
               <div className={`mt-1 flex flex-wrap items-baseline gap-x-2 text-[11px] font-semibold ${
                 isTerminal ? "text-zinc-400 line-through decoration-zinc-400 dark:text-zinc-500" : "text-[#6b7269] dark:text-zinc-400"
               }`}>
@@ -1413,6 +1415,13 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                         <BunjangSourceBadge label="번개 S급" />
                       </span>
                     ) : null}
+                  </>
+                ) : !isTerminal ? (
+                  <>
+                    <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                    <span className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" title="시세 표본 부족 또는 갱신중 — 차익은 추정치">
+                      시세 확인중
+                    </span>
                   </>
                 ) : null}
                 <span className="text-zinc-300 dark:text-zinc-600">·</span>

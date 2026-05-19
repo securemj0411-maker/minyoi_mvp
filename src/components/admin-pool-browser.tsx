@@ -518,7 +518,17 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     </div>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-zinc-700 dark:text-zinc-300">
                       <span>매입 {krw(item.price)}</span>
-                      <span>· 시세 {krw(item.skuMedian)}</span>
+                      {/* Wave 246 (2026-05-19): skuMedian=0/null 가드 — "시세 0원" 미스리딩 차단.
+                         16% 매물에 sku_median=0 (production 측정). band-aware market median이
+                         있어도 mvp_listings.sku_median은 별도 path라 0일 수 있음. 0이면
+                         사용자 명시 정책 (b): "표시 안 함" — 시세 확인중 안내로 대체. */}
+                      {item.skuMedian && item.skuMedian > 0 ? (
+                        <span>· 시세 {krw(item.skuMedian)}</span>
+                      ) : (
+                        <span className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" title="시세 표본이 아직 부족하거나 갱신중 — 차익은 추정치">
+                          시세 확인중
+                        </span>
+                      )}
                       <span>· 신뢰 {(item.confidence * 100).toFixed(0)}%</span>
                       {/* Wave 329: 헤드라인 차익(expectedProfitMin/Max 평균)을 그대로 사용 — 가이드와 일치 */}
                       {(() => {
@@ -622,7 +632,8 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       ) : null;
                     })()}
                     {/* 2026-05-16 (사용자 코멘트 #120): 시세 출처 표시 — pack-reveal-modal 과 동일 패턴. */}
-                    {item.conditionClass === "unopened" ? (
+                    {/* Wave 246 (2026-05-19): skuMedian=0 일 땐 출처 배지 숨김 — 시세 자체가 없는데 출처만 보이면 미스리딩. */}
+                    {!(item.skuMedian && item.skuMedian > 0) ? null : item.conditionClass === "unopened" ? (
                       <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
                         <DanawaLogo className="h-4 w-4 rounded-[4px]" />
                         다나와 새 가격 기준 (이 매물 미개봉)

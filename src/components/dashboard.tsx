@@ -401,7 +401,8 @@ function AlertPreview({ item }: { item: ListingCandidate }) {
       <div>가격: {krw(item.price)}</div>
       <div>배송비: {shippingLabel(item)}</div>
       <div>예상 구매비: {buyCostLabel(item)}</div>
-      <div>시세: {krw(item.skuMedian)}</div>
+      {/* Wave 246 (2026-05-19): skuMedian=0 가드 — landing demo alert preview. */}
+      <div>시세: {item.skuMedian && item.skuMedian > 0 ? krw(item.skuMedian) : "확인중"}</div>
       <div>배송 후 갭: {netGapLabel(item)}</div>
       <div>예상 순익: {profitLabel(item)}</div>
       <div>예상 현금화: {cashoutHint(item)}</div>
