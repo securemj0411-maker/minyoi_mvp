@@ -332,6 +332,55 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
     cond === "flawed" ? "하자 있음" :
     cond === "low_batt" ? "배터리 약함" : "일반";
 
+  // Wave 394.6.d (외부 review 가품 답 카테고리별 분기 — Wave 393.8 CounterfeitChecklistPanel 연장):
+  // "전자제품이 뭔 가품이냐" 사용자 짚음. 폰/태블릿/노트북 = 가품 거의 X (잠금/부품이 진짜 위험).
+  // 신발/명품/에어팟 = 가품 위험 큼. WhyTrust 가품 Q 답을 카테고리별 분기 = 정확한 위험 신호.
+  const category = categoryFromComparableKey(card.marketBasis?.comparableKey ?? null);
+  const counterfeitAnswer = ((): React.ReactNode => {
+    const condBold = <b className="font-bold">{conditionLabel}</b>;
+    switch (category) {
+      case "shoe":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">신발 가품 위험 큼</b> (특히 명품/한정판).
+          {" "}KREAM 검수 권장. 안창 / 박스 / 태그 / 시리얼 확인 필수.</>;
+      case "earphone":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">차이팟(가품 에어팟) 흔함</b>.
+          {" "}패키지 시리얼 / 케이스 정품 인증 / 무게(정품 50g) 확인.</>;
+      case "bag":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">명품 가방 가품 위험 큼</b>.
+          {" "}라벨 / 봉제선 / 안감 / 시리얼 확인. 정품 인증 서비스 (KREAM, 트렌비) 권장.</>;
+      case "watch":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">명품 시계 가품 위험 매우 큼</b>.
+          {" "}정품 보증서 필수 + 시리얼 매칭 + AS 가능 확인.</>;
+      case "perfume":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">공병 / 가짜 향료 위험</b>.
+          {" "}시리얼 + 박스 인쇄 품질 + 향 패턴 확인.</>;
+      case "clothing":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">명품/스트릿웨어 가품 흔함</b> (Supreme/Stussy/BAPE 등).
+          {" "}라벨 / 봉제 / 태그 / 시리얼 확인.</>;
+      case "smartphone":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">가품 거의 없음</b>.
+          {" "}진짜 위험 = <b className="font-bold">iCloud/구글 잠금, IMEI 위변조, 부품 교체</b>. 통신사 등록 확인.</>;
+      case "tablet":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">가품 거의 없음</b>.
+          {" "}진짜 위험 = <b className="font-bold">iCloud 잠금, 액정, 배터리 상태</b>. 모델 + IMEI 확인.</>;
+      case "smartwatch":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">가품 거의 없음</b>.
+          {" "}진짜 위험 = <b className="font-bold">iCloud 잠금, 페어링, 배터리 사이클</b>.</>;
+      case "laptop":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">가품 거의 없음</b>.
+          {" "}진짜 위험 = <b className="font-bold">iCloud (맥북), 부품 교체 (램/SSD), 액정, 키보드</b>.</>;
+      case "drone":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">DJI 가품 거의 없음</b>.
+          {" "}진짜 위험 = <b className="font-bold">활성화 (DJI 계정), 펌웨어, 배터리 사이클</b>.</>;
+      case "camera":
+        return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">가품 거의 없음</b>.
+          {" "}진짜 위험 = <b className="font-bold">셔터 카운트, 렌즈 곰팡이, 센서 클리닝, AS 가능</b>.</>;
+      default:
+        return <>이 매물은 {condBold}로 분류돼요. 미뇨이는 의심 키워드 매물을 사전 차단하고 있어요.
+          {" "}그래도 직거래 시 <b className="font-bold">시리얼 번호 / 정품 보증서</b> 확인 권장. 아래 체크리스트 펼쳐서 확인하세요.</>;
+    }
+  })();
+
   const qas: { q: string; a: React.ReactNode }[] = [
     {
       q: "셀러 믿을 만한가요?",
@@ -350,12 +399,7 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
     },
     {
       q: "가품 위험 없나요?",
-      a: (
-        <>
-          이 매물은 <b className="font-bold">{conditionLabel}</b>로 분류돼요. 미뇨이는 의심 키워드 매물을 사전 차단하고 있어요.
-          {" "}그래도 직거래 시 <b className="font-bold">시리얼 번호 / 정품 보증서</b> 확인 권장. 아래 체크리스트 펼쳐서 확인하세요.
-        </>
-      ),
+      a: counterfeitAnswer,
     },
     {
       q: "안전결제 어떻게 되나요?",
