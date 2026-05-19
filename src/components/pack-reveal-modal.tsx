@@ -1142,7 +1142,14 @@ function marketActivityDisplay(card: RevealCard) {
 
   // 수요 평가 — 거래 데이터 있으면 활발도. 판매중 대비 거래완료 비율로.
   // soldRecent = 7일 판매 수, active = 현재 매물 수. ratio 높으면 수요 활발.
-  const demandRatio = active > 0 && soldRecent > 0 ? soldRecent / active : null;
+  // 2026-05-20 P0-Demand-B: sample-floor 게이트. N=1,2 표본으로 "수요 활발/약함" 단정 위험.
+  //   active+sold 합 < 5 면 demand 단정 X (null로 떨어뜨려서 sub에 표본 표시).
+  //   velocity P0-1 정직성 원칙 (낮은 신뢰도 데이터는 "수집 중" 표기) 동일 적용.
+  const demandSampleSize = active + soldRecent;
+  const demandSampleSufficient = demandSampleSize >= 5;
+  const demandRatio = active > 0 && soldRecent > 0 && demandSampleSufficient
+    ? soldRecent / active
+    : null;
   const demandLevel: "active" | "ok" | "weak" | null = demandRatio == null
     ? null
     : demandRatio >= 0.5 ? "active" : demandRatio >= 0.2 ? "ok" : "weak";
@@ -1179,6 +1186,10 @@ function marketActivityDisplay(card: RevealCard) {
   if (supply24h > 0) subParts.push(`오늘 매물 ${supply24h}건`);
   if (supplyAvg > 0) subParts.push(`평균 ${supplyAvg}건/일`);
   if (soldRecent > 0) subParts.push(`최근 거래 ${soldRecent}건`);
+  // 2026-05-20 P0-Demand-B: 표본 부족(<5)이면 명시. 사용자가 "왜 데이터 부족인지" 즉시 인지.
+  if (demandSampleSize > 0 && !demandSampleSufficient) {
+    subParts.push(`표본 ${demandSampleSize}건 — 누적 중`);
+  }
   const sub = subParts.length > 0 ? subParts.join(" · ") : marketEvidenceSummary(card);
 
   return {

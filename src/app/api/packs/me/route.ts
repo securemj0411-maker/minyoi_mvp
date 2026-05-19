@@ -4,9 +4,12 @@ import { fetchDetail } from "@/lib/bunjang";
 import {
   fetchReferencePrices,
   fetchLatestMarketStats,
+  fetchLatestMarketVelocity,
   marketBasisForCandidate,
+  velocityBasisForCandidate,
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
+import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { detectSoldOut, describeSignals, isSoldOut } from "@/lib/sold-out";
@@ -16,6 +19,44 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 
 // Wave 205: /me에서는 terminal state도 응답에 남겨 "판매완료 상품" tombstone으로 표시한다.
 const TERMINAL_STATES = new Set(["sold", "sold_confirmed", "disappeared"]);
+
+// 2026-05-20 P0-Demand-A: sku_id 단위 7일 listing 유입량 batch fetch.
+//   reveal/detail 라우트의 단일 SKU 헬퍼(loadSkuListingFlow)를 batch 버전으로 확장.
+//   /me는 list라 N+1 회피 위해 sku_id로 묶어서 한 번에 PostgREST in.() 쿼리 후 JS 집계.
+async function loadSkuListingFlowBatch(
+  skuIds: (string | null | undefined)[],
+): Promise<Map<string, { count24h: number; avgPerDay7d: number }>> {
+  const unique = [...new Set(skuIds.filter((id): id is string => Boolean(id)))];
+  const result = new Map<string, { count24h: number; avgPerDay7d: number }>();
+  if (unique.length === 0) return result;
+  const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const encoded = unique.map((id) => encodeURIComponent(id)).join(",");
+  const res = await restFetch(
+    `${tableUrl("mvp_raw_listings")}?select=sku_id,created_at&sku_id=in.(${encoded})&created_at=gte.${since7d}&limit=50000`,
+    { headers: serviceHeaders() },
+  );
+  const rows = (await res.json()) as Array<{ sku_id: string; created_at: string }>;
+  const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
+  const grouped = new Map<string, { count24h: number; total: number }>();
+  for (const row of rows) {
+    const entry = grouped.get(row.sku_id) ?? { count24h: 0, total: 0 };
+    entry.total += 1;
+    if (new Date(row.created_at).getTime() >= cutoff24h) entry.count24h += 1;
+    grouped.set(row.sku_id, entry);
+  }
+  for (const id of unique) {
+    const g = grouped.get(id);
+    if (!g) {
+      result.set(id, { count24h: 0, avgPerDay7d: 0 });
+    } else {
+      result.set(id, {
+        count24h: g.count24h,
+        avgPerDay7d: Math.round((g.total / 7) * 10) / 10,
+      });
+    }
+  }
+  return result;
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -602,9 +643,18 @@ export async function GET(req: Request) {
   // 눌렀을 때 /api/packs/reveals/detail 단일 매물 응답에서 lazy-load 한다.
   // 목록에서는 현재 시세/차익에 필요한 market/reference 가격만 batch fetch.
   const comparableKeys = [...new Set(parsedRows.map((row) => row.comparable_key).filter((k): k is string => Boolean(k)))];
-  const [marketStats, referencePrices] = await Promise.all([
+  // 2026-05-20 P0-Demand-A: velocity + skuListingFlow도 batch fetch.
+  //   이전 (Wave 216): /me 목록은 가볍게 유지 + reveal/detail에서 lazy-load 의도.
+  //   그러나 사용자 피드백 — 매물 상세 모달이 /me payload 직접 사용하면서 "데이터 부족" 출력.
+  //   reveal/detail은 단일 매물 호출용이라 list 진입엔 안 도달 → demand·supply 영구 미표시.
+  //   batch로 묶어서 N+1 회피하면서 정상 표시 복구.
+  const skuIdsToFetch = rawRows.map((row) => row.sku_id ?? null);
+  const [marketStats, referencePrices, velocityStats, readinessMap, skuFlowByIdMap] = await Promise.all([
     fetchLatestMarketStats(comparableKeys),
     fetchReferencePrices(comparableKeys),
+    fetchLatestMarketVelocity(comparableKeys),
+    loadCategoryReadinessMap(),
+    loadSkuListingFlowBatch(skuIdsToFetch),
   ]);
 
   const allItems = reveals
@@ -674,8 +724,12 @@ export async function GET(req: Request) {
         reportFeedbackNote: reportFeedback?.note ?? null,
         // Wave 130 (2026-05-16): 매물 condition_class 전달 → 매칭되는 시세 우선 표시 (사업 보고서 L2).
         marketBasis: computedMarketBasis,
-        velocityBasis: null,
-        skuListingFlow: null,
+        // 2026-05-20 P0-Demand-A: 하드코딩 null 제거. reveal/pool 라우트와 동일 채움.
+        //   사용자가 매물 상세 모달에서 "수요·공급 데이터 부족" 보던 버그 해소.
+        velocityBasis: comparableKey
+          ? velocityBasisForCandidate(comparableKey, velocityStats, readinessMap)
+          : null,
+        skuListingFlow: skuId ? (skuFlowByIdMap.get(skuId) ?? null) : null,
         // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
         optionBaseAssumed: optionBaseAssumedByPid.get(Number(reveal.pid)) ?? null,
         // Wave 213 (2026-05-18): 실시간 순현재차익 min/max.
