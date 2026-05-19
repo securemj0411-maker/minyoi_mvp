@@ -1815,6 +1815,89 @@ function SellHelperPanel({
   );
 }
 
+// Wave 331 (사용자 + 메모리 정책 박혀있던 거):
+// 번개장터 안전결제 의무화 → 셀러 3.5% 수수료. 당근마켓 직거래는 수수료 0.
+// 사용자가 어디 팔지 선택지 보고 결정.
+function DaangnChip() {
+  // 정식 로고 추후 교체 — 일단 주황색 배경 + 텍스트 칩 (저작권 안전).
+  return (
+    <span className="inline-flex h-4 items-center justify-center rounded-[4px] bg-[#FF7E36] px-1 text-[9px] font-bold text-white">
+      당근
+    </span>
+  );
+}
+
+function PlatformProfitCompare({ card }: { card: RevealCard }) {
+  const [open, setOpen] = useState(false);
+  const market = card.marketBasis;
+  if (!market?.medianPrice || market.medianPrice <= 0) return null;
+
+  const bunjangFee = Math.round(market.medianPrice * SELLING_FEE_RATE);
+  const bunjangProfit = expectedProfitAverage(card);
+  // 당근 차익 = 번개 차익 + 수수료 (당근 직거래는 수수료 0)
+  // 단 당근 안전결제 사용 시 0.x% 수수료 — 무시할 수준이라 0으로.
+  const daangnProfit = bunjangProfit + bunjangFee;
+  if (bunjangProfit <= 0 && daangnProfit <= 0) return null;
+  const bonusFromDaangn = bunjangFee;
+
+  return (
+    <section className="mt-3 rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          어디에 팔지? — 차익 비교
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-bold text-zinc-700 transition hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+          aria-label="수수료 차이 설명"
+        >
+          {open ? "✕" : "?"}
+        </button>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="rounded-md bg-zinc-50 px-3 py-2.5 dark:bg-zinc-900/60">
+          <div className="flex items-center gap-1.5">
+            <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+            <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">번개장터 판매</span>
+          </div>
+          <div className="mt-1 text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-300">
+            +{krw(bunjangProfit)}
+          </div>
+          <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+            수수료 3.5% 차감
+          </div>
+        </div>
+        <div className="rounded-md bg-orange-50 px-3 py-2.5 dark:bg-orange-950/30">
+          <div className="flex items-center gap-1.5">
+            <DaangnChip />
+            <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">당근 직거래</span>
+          </div>
+          <div className="mt-1 text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-300">
+            +{krw(daangnProfit)}
+          </div>
+          <div className="text-[10px] font-medium text-orange-700 dark:text-orange-300">
+            +{krw(bonusFromDaangn)} 더 (수수료 0)
+          </div>
+        </div>
+      </div>
+      {open ? (
+        <div className="mt-2 space-y-1.5 rounded-md bg-zinc-50 px-3 py-2 text-[11px] font-medium leading-5 text-zinc-600 dark:bg-zinc-900/60 dark:text-zinc-300">
+          <div>
+            <span className="font-bold text-zinc-900 dark:text-zinc-100">번개장터:</span> 안전결제 의무화. 셀러가 거래액의 3.5% 수수료 부담. 사기 보호 강함.
+          </div>
+          <div>
+            <span className="font-bold text-zinc-900 dark:text-zinc-100">당근마켓:</span> 직거래 기반 — 수수료 없음. 단 안전결제(당근페이) 미사용 시 사기 위험. 동네 직접 만나면 가장 안전 + 무료.
+          </div>
+          <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            ※ 당근 안전결제(당근페이) 사용 시 별도 수수료 일부 있을 수 있음. 직거래가 가장 차익 큼.
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function sellerQuestionText(card: RevealCard) {
   return [
     `${card.name} 보고 문의드립니다.`,
@@ -2155,6 +2238,7 @@ function RevealCardItem({
                 </div>
                 <UpperFoldFearReducers card={card} />
                 <CostAssurancePanel card={card} />
+                <PlatformProfitCompare card={card} />
                 <SellerTrustPanel card={card} />
                 <CounterfeitChecklistPanel card={card} />
                 <SellHelperPanel card={card} currentFeedbackType={currentFeedbackType} />
