@@ -2252,7 +2252,12 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
     drone: `활성화 + 펌웨어 점검 ${totalCount}개`,
     camera: `셔터 + 렌즈 점검 ${totalCount}개`,
   };
-  const headlineText = headlineByCategory[checklist.category] ?? `구매 전 점검 ${totalCount}개`;
+  // Wave C+E.fix (사용자 짚음 — "에어팟맥스가 차이팟이랑 뭔 관련이길래"):
+  // brand 감지된 매물은 brand label 헤드라인 우선. AirPods Max (헤드폰) ≠ 차이팟 (인이어 가품).
+  // brand 미감지 시 카테고리 default fallback.
+  const headlineText = brandDepth?.brand.label
+    ? `${brandDepth.brand.label} 정품 점검 ${totalCount}개`
+    : headlineByCategory[checklist.category] ?? `구매 전 점검 ${totalCount}개`;
 
   // 카테고리별 uppercase 헤더도 자연어
   // Wave 394.1 (외부 review #9): 정품 단정형 ("정품 확인") → 방어적 ("정품 확인 필요").
