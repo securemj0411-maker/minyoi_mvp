@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, FlameIcon, ClockIcon, TrophyIcon } from "@/components/icons";
+import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 
-// Wave 338 (Phase 1a + 1b — Freemium /explore):
-// 무료 사용자 매물 풀 browsing. 6h 이상 매물 30개 + 30min cooldown + 통계 배너 + paywall 예고.
+// Wave 338+339 (Phase 1a + 1b — Freemium /explore):
+// 무료 사용자 매물 풀 browsing. 6h+ 매물 30개 (ready 25 + 오늘 invalidated 5) + 30min cooldown
+// + 통계 배너 + paywall 예고 + sold out 오버레이 + PackRevealModal 통합.
 
 type PoolItem = {
   pid: number;
@@ -27,6 +30,7 @@ type PoolItem = {
   sellerReviewRating: number | null;
   sellerReviewCount: number;
   descriptionPreview: string;
+  soldOut: boolean;
 };
 
 type PoolResponse = {
@@ -69,6 +73,59 @@ function bunjangUrl(pid: number) {
   return `https://m.bunjang.co.kr/products/${pid}`;
 }
 
+// PoolItem → RevealCard 매핑 (PackRevealModal prop용).
+// marketBasis는 minimal로 시작, onLoadDetail에서 lazy-fill.
+function poolItemToRevealCard(item: PoolItem): RevealCard {
+  const verifiedMs = new Date(item.lastVerifiedAt).getTime();
+  const freshSeconds = Number.isFinite(verifiedMs)
+    ? Math.max(0, Math.floor((Date.now() - verifiedMs) / 1000))
+    : 0;
+  return {
+    pid: item.pid,
+    name: item.name,
+    url: bunjangUrl(item.pid),
+    price: item.price,
+    skuId: item.skuId,
+    skuName: item.skuName ?? item.name,
+    thumbnailUrl: item.thumbnailUrl,
+    expectedProfitMin: item.expectedProfitMin,
+    expectedProfitMax: item.expectedProfitMax,
+    confidence: item.confidence ?? 0,
+    band: (item.profitBand as 1 | 2 | 3) ?? null,
+    marketBasis: {
+      comparableKey: item.comparableKey,
+      label: item.skuName ?? item.name,
+      p25Price: null,
+      medianPrice: item.skuMedian,
+      p75Price: null,
+      sampleCount: 0,
+      activeSampleCount: 0,
+      soldSampleCount: 0,
+      disappearedSampleCount: 0,
+      confidence: null,
+      priceSource: "market",
+      computedAt: null,
+      excludedExamples: [],
+      conditionClass: item.conditionClass,
+      conditionLabel: null,
+      fallbackUsed: false,
+      otherConditions: [],
+    },
+    velocityBasis: null,
+    lastVerifiedAt: item.lastVerifiedAt,
+    freshSeconds,
+    savedDetail: {
+      descriptionPreview: item.descriptionPreview,
+      favoriteCount: null,
+      freeShipping: item.freeShipping,
+      sellerName: null,
+      sellerReviewRating: item.sellerReviewRating,
+      sellerReviewCount: item.sellerReviewCount,
+    },
+    optionBaseAssumed: null,
+  };
+}
+
 export default function ExploreClient() {
   const [items, setItems] = useState<PoolItem[]>([]);
   const [cooldown, setCooldown] = useState<PoolResponse["cooldown"] | null>(null);
@@ -77,6 +134,7 @@ export default function ExploreClient() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
+  const [selectedPid, setSelectedPid] = useState<number | null>(null);
 
   // Cooldown tick (매초 갱신)
   useEffect(() => {
@@ -127,6 +185,37 @@ export default function ExploreClient() {
     void loadPool(false);
     void loadStats();
   }, [loadPool, loadStats]);
+
+  const selectedItem = useMemo(
+    () => items.find((it) => it.pid === selectedPid) ?? null,
+    [items, selectedPid],
+  );
+  const selectedCard = useMemo(
+    () => (selectedItem ? poolItemToRevealCard(selectedItem) : null),
+    [selectedItem],
+  );
+
+  // PackRevealModal용 result wrapper (single card)
+  const modalResult: RevealResult | null = useMemo(() => {
+    if (!selectedCard) return null;
+    return {
+      result: "success",
+      reveals: [selectedCard],
+      attemptedCount: 1,
+      durationMs: 0,
+    };
+  }, [selectedCard]);
+
+  const handleLoadDetail = useCallback(async (pid: number): Promise<RevealListingDetail> => {
+    // /api/packs/reveals/detail은 사용자 자신의 reveal만 — /explore는 reveal 안 된 매물.
+    // marketBasis lazy-load 없이 minimal로 동작. (다음 wave에서 별도 endpoint 추가 가능)
+    return {
+      pid,
+      description: "",
+      saleStatus: "",
+      conditionLabel: null,
+    } as RevealListingDetail;
+  }, []);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-3 pb-20 pt-4 sm:px-6 sm:pt-6">
@@ -201,15 +290,35 @@ export default function ExploreClient() {
           {items.map((item) => {
             const pct = profitPct(item);
             const isPremiumSeller = (item.sellerReviewRating ?? 0) >= 4.8 && item.sellerReviewCount >= 30;
+            const isSoldOut = item.soldOut;
             return (
-              <a
+              <button
                 key={item.pid}
-                href={bunjangUrl(item.pid)}
-                target="_blank"
-                rel="noreferrer"
-                className="group grid grid-cols-[100px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-white p-3 transition hover:border-emerald-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:border-emerald-700"
+                type="button"
+                onClick={() => {
+                  if (isSoldOut) return;
+                  setSelectedPid(item.pid);
+                }}
+                disabled={isSoldOut}
+                className={`group relative grid grid-cols-[100px_minmax(0,1fr)] gap-3 rounded-xl border p-3 text-left transition ${
+                  isSoldOut
+                    ? "cursor-not-allowed border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/30"
+                    : "border-zinc-200 bg-white hover:border-emerald-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:border-emerald-700"
+                }`}
               >
-                <div className="relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                {/* Sold out 오버레이 */}
+                {isSoldOut ? (
+                  <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl bg-zinc-900/55 backdrop-blur-[1px]">
+                    <div className="rounded-full bg-rose-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
+                      🔴 다른 사용자가 잡음
+                    </div>
+                    <div className="mt-1.5 text-[10px] font-bold text-white/85">
+                      즉시 알림 있었으면 잡을 수 있었어요
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className={`relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ${isSoldOut ? "opacity-50" : ""}`}>
                   {item.thumbnailUrl ? (
                     <Image
                       src={item.thumbnailUrl}
@@ -221,16 +330,16 @@ export default function ExploreClient() {
                     />
                   ) : null}
                 </div>
-                <div className="min-w-0">
+                <div className={`min-w-0 ${isSoldOut ? "opacity-60" : ""}`}>
                   <div className="line-clamp-2 text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-100">
                     {item.name}
                   </div>
                   <div className="mt-1.5 flex items-baseline gap-1.5">
-                    <span className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                    <span className={`text-lg font-bold tabular-nums ${isSoldOut ? "text-zinc-500 line-through dark:text-zinc-500" : "text-emerald-600 dark:text-emerald-400"}`}>
                       +{krw(profitAvg(item))}
                     </span>
                     {pct != null ? (
-                      <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${isSoldOut ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500" : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"}`}>
                         +{pct}%
                       </span>
                     ) : null}
@@ -249,20 +358,20 @@ export default function ExploreClient() {
                       <ClockIcon className="h-3 w-3" />
                       {hoursAgoLabel(item.lastVerifiedAt)}
                     </span>
-                    {isPremiumSeller ? (
+                    {isPremiumSeller && !isSoldOut ? (
                       <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
                         <TrophyIcon className="h-3 w-3" />
                         우수 셀러
                       </span>
                     ) : null}
-                    {item.freeShipping ? (
+                    {item.freeShipping && !isSoldOut ? (
                       <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                         무료배송
                       </span>
                     ) : null}
                   </div>
                 </div>
-              </a>
+              </button>
             );
           })}
         </div>
@@ -271,9 +380,22 @@ export default function ExploreClient() {
       {/* 푸터 안내 */}
       {!loading && items.length > 0 ? (
         <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-center text-[11px] font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
-          매물 클릭 → 번개장터에서 직접 확인하고 거래하세요. 시세는 AI 비교 정보일 뿐, 거래 진위는 본인이 판단.
+          매물 클릭 → 상세 정보 확인. 시세는 AI 비교 정보일 뿐, 거래 진위는 본인이 판단.
         </div>
       ) : null}
+
+      {/* PackRevealModal — 카드 클릭 시 띄움 */}
+      <PackRevealModal
+        open={selectedPid != null}
+        band={2}
+        loading={false}
+        result={modalResult}
+        onClose={() => setSelectedPid(null)}
+        onLinkClicked={() => {}}
+        onFeedback={() => {}}
+        onLoadDetail={handleLoadDetail}
+        onRetry={() => {}}
+      />
     </main>
   );
 }

@@ -27,6 +27,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const PAGE_SIZE = 30;
+const READY_SLOTS = 25; // 살아있는 매물
+const SOLD_OUT_SLOTS = 5; // 오늘 잡힌 매물 (FOMO)
 const COOLDOWN_MS = 30 * 60 * 1000; // 30분
 const FRESH_LAG_HOURS = 6; // 무료는 6h 이상 지난 매물만
 
@@ -87,11 +89,29 @@ function computeCooldown(lastBrowseAt: string | null): {
   };
 }
 
-async function loadPool(headers: Record<string, string>): Promise<{ pool: PoolRow[]; raws: RawRow[]; metas: RawListingMeta[] }> {
+async function loadPool(headers: Record<string, string>): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[] }> {
   const sixHoursAgo = new Date(Date.now() - FRESH_LAG_HOURS * 60 * 60 * 1000).toISOString();
-  const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&last_verified_at=lte.${encodeURIComponent(sixHoursAgo)}&order=profit_band.desc,expected_profit_max.desc&limit=${PAGE_SIZE}`;
-  const poolRes = await restFetch(poolUrl, { headers });
-  const pool = (await poolRes.json()) as PoolRow[];
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayIso = todayStart.toISOString();
+
+  // Wave 339 (Phase 1b sold out 옵션 B): ready 25 + 오늘 invalidated 5 = 30개.
+  // sold out 매물도 카드 그대로 + "🔴 다른 사용자가 잡음" 오버레이 → FOMO 강화.
+  const [readyRes, soldOutRes] = await Promise.all([
+    restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&last_verified_at=lte.${encodeURIComponent(sixHoursAgo)}&order=profit_band.desc,expected_profit_max.desc&limit=${READY_SLOTS}`,
+      { headers },
+    ),
+    restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS}`,
+      { headers },
+    ),
+  ]);
+  const readyRows = ((await readyRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: false }));
+  const soldOutRows = ((await soldOutRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: true }));
+
+  // 무작위 섞기 — sold out 매물이 자연스럽게 grid 중간에 (사용자가 발견하며 후회)
+  const pool = [...readyRows, ...soldOutRows].sort(() => Math.random() - 0.5);
   if (pool.length === 0) return { pool: [], raws: [], metas: [] };
 
   const pids = pool.map((r) => r.pid);
@@ -110,7 +130,7 @@ async function loadPool(headers: Record<string, string>): Promise<{ pool: PoolRo
   return { pool, raws, metas };
 }
 
-function buildItems(pool: PoolRow[], raws: RawRow[], metas: RawListingMeta[]) {
+function buildItems(pool: (PoolRow & { soldOut: boolean })[], raws: RawRow[], metas: RawListingMeta[]) {
   const rawByPid = new Map(raws.map((r) => [r.pid, r]));
   const metaByPid = new Map(metas.map((m) => [m.pid, m]));
   return pool
@@ -139,6 +159,7 @@ function buildItems(pool: PoolRow[], raws: RawRow[], metas: RawListingMeta[]) {
         sellerReviewCount: meta?.shop_review_count ?? 0,
         descriptionPreview: meta?.description_preview ?? "",
         lastSeenAt: meta?.last_seen_at ?? null,
+        soldOut: row.soldOut,
       };
     })
     .filter((x): x is NonNullable<typeof x> => x != null);
