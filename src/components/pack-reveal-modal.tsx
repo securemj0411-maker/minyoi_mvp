@@ -1479,16 +1479,22 @@ function renderSafetyIcon(tone: "good" | RiskTone, value: string, className: str
 // "/me 운영자풀처럼 시세근거 sample 직접 볼수있으면 진짜 좋을듯" — 사용자 인용.
 // USP 정면 = band-aware (같은 모델 / 같은 상태 매물끼리 비교). 시세 그래프 옆에 sample 매물 보여줘
 // "이 시세는 어떻게 산출됐나" 투명성 + 신뢰도 boost.
+//
+// Wave 394.4.b 수정 (사용자 짚음 — 첫 fetch endpoint 실패):
+// 신규 /api/market/comparable-listings 만들었는데 mvp_listings 에 comparable_key 컬럼 없어 fetch 실패.
+// 사용자 reference: "/me운영자풀에 시세 근거보기 눌렀을때 나오는 sample끼리 비교 매물 그거 참고"
+// → 이미 /api/listings/[pid]/market-source 가 정확히 그 endpoint. 재사용.
+// market-source 의 풍부한 데이터 (saleStatus + listingState + 위험 매물 제외 + condition 정확 매칭) 활용.
 type ComparableListing = {
   pid: number;
-  name: string | null;
-  url: string | null;
+  name: string;
+  price: number;
   thumbnailUrl: string | null;
-  price: number | null;
-  conditionClass: string | null;
   saleStatus: string | null;
+  listingState: string | null;
   lastSeenAt: string | null;
-  soldAt: string | null;
+  sourceQuery: string | null;
+  bunjangUrl: string;
 };
 
 function ComparableListingsPanel({ card }: { card: RevealCard }) {
@@ -1504,11 +1510,18 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    const ccQuery = cc ? `&cc=${encodeURIComponent(cc)}` : "";
-    fetch(`/api/market/comparable-listings?ck=${encodeURIComponent(ck)}${ccQuery}&excludePid=${card.pid}&limit=6`, { cache: "no-store" })
+    // Wave 394.4.b: /api/listings/[pid]/market-source 호출 — admin 풀에서 사용하는 동일한 endpoint.
+    // condition_class + comparable_key 정확 매칭, COMPARABLE_EXCLUDE_NOTES 적용 (위험 매물 제외).
+    fetch(`/api/listings/${card.pid}/market-source`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((j: { listings?: ComparableListing[] }) => {
-        if (!cancelled) setListings(j.listings ?? []);
+      .then((j: { comparables?: ComparableListing[] }) => {
+        if (!cancelled) {
+          // disappeared 매물 제외, 6개로 자름.
+          const filtered = (j.comparables ?? [])
+            .filter((c) => c.listingState !== "disappeared")
+            .slice(0, 6);
+          setListings(filtered);
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : "fetch failed");
@@ -1519,7 +1532,7 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
     return () => {
       cancelled = true;
     };
-  }, [ck, cc, card.pid]);
+  }, [ck, card.pid]);
 
   if (!ck) return null;
 
@@ -1558,15 +1571,20 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
       ) : (
         <ul className="mt-1.5 space-y-1">
           {listings.map((item) => {
-            const priceDiff = card.price && item.price ? item.price - card.price : 0;
-            const diffPct = card.price && item.price ? Math.round((priceDiff / card.price) * 100) : 0;
+            const itemPrice = item.price > 0 ? item.price : 0;
+            const priceDiff = card.price && itemPrice ? itemPrice - card.price : 0;
+            const diffPct = card.price && itemPrice ? Math.round((priceDiff / card.price) * 100) : 0;
             const isSimilar = Math.abs(diffPct) <= 2;
             const isMoreExpensive = !isSimilar && priceDiff > 0;
 
-            const saleLabel = item.saleStatus === "sold" ? "판매완료" : item.saleStatus === "reserved" ? "예약중" : "판매중";
-            const saleClass = item.saleStatus === "sold"
+            // listingState (시스템 분류) 우선, saleStatus (셀러 설정) fallback.
+            // 강한 신호 = sold (실제 거래가). 약한 신호 = active (현재 호가).
+            const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
+            const isReserved = item.saleStatus === "reserved" || item.saleStatus === "RESERVED" || item.saleStatus === "예약중";
+            const saleLabel = isSold ? "판매완료" : isReserved ? "예약중" : "판매중";
+            const saleClass = isSold
               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
-              : item.saleStatus === "reserved"
+              : isReserved
                 ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
                 : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300";
 
@@ -1582,14 +1600,14 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-xs font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                      {krw(item.price ?? 0)}
+                      {krw(itemPrice)}
                     </span>
                     <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${saleClass}`}>
                       {saleLabel}
                     </span>
                   </div>
                   <div className="mt-0.5 line-clamp-1 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-                    {item.name ?? "이름 없음"}
+                    {item.name || "이름 없음"}
                   </div>
                 </div>
                 {!isSimilar ? (
