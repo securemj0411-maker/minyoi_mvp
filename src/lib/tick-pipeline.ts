@@ -1750,17 +1750,74 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           // Wave 141 B (2026-05-16): 모호 매물 condition AI 분류 — 정규식 fail 매물에만 호출 (월 ~$9).
           // 조건: condition_score 모호(0.55~0.75) + 명확한 condition_notes 없음 + bunjang label "매핑 불가"
           // → AI 호출 → 결과로 conditionClass override.
-          // 2026-05-17 (사용자 코멘트 #158): 이전 조건 `!detail.conditionLabel` 은 영어 enum truthy 때문에
-          //   매핑 실패한 label 매물도 AI skip 됐음. 매핑 가능 (= metadata 신뢰) 시만 AI skip 으로 수정.
-          const ambiguousCondition = parsed.conditionScore >= 0.55 && parsed.conditionScore <= 0.75;
+          //
+          // Wave 256 (2026-05-20): 보수적 escalation 전면 확장 (사용자 정책 변경).
+          //   사용자 매물 pid 405343339: "메인보드 손상이 있어서... 하자 일절 없습니다"
+          //     → regex negation "하자 일절 없" 매치 → repair_or_defect_signal 안 박힘 → normal 잘못 가능.
+          //     → Wave 141B 가 잡았지만 systemic 확장 필요 (다른 conflicting pattern 미커버).
+          //   사용자: "AI 비용 아끼지 말고 보수적, 겁쟁이 모드. regex 자신감 과잉 차단."
+          //   사용자 결정: 전 옵션 (A+B+C+D+E) 진행, gpt-4o-mini 유지 (모델 업그레이드 X).
+          //   실측 baseline: 일 750 AI calls / 월 ~$3.4. 확장 후 월 ~$24 예상 (실측 1주 후 확정).
+          //
+          // 5 trigger 확장:
+          //   A. conflicting signal: negation ("하자 없") + damage keyword ("손상" 등) 동시 등장
+          //   B. positive 분류 + negative keyword: mint/clean 인데 description 에 "손상/수리/하자" 등
+          //   C. ambiguous zone 확대: 0.55~0.75 → 0.40~0.85
+          //   D. bunjang label 불일치: bunjang DAMAGED + class positive / bunjang NEW + class flawed-worn
+          //   E. needsReview=true 무조건 AI
+          const text = `${claim.name ?? ""}\n${(detail.description ?? "").slice(0, 1200)}`.toLowerCase();
+
           const hasStrongSignal = parsed.conditionNotes.some((n) =>
             ["new_or_open_box", "display_defect", "screen_replaced", "faceid_issue",
              "water_damage", "parts_only", "low_battery_health"].includes(n));
           const bunjangLabelMapped = bunjangLabelToConditionClass(detail.conditionLabel);
-          if (ambiguousCondition && !hasStrongSignal && bunjangLabelMapped === null) {
+
+          // 옵션 C — ambiguous zone 확대 (0.55~0.75 → 0.40~0.85)
+          const ambiguousConditionWide = parsed.conditionScore >= 0.40 && parsed.conditionScore <= 0.85;
+
+          // 옵션 A — conflicting signal: negation + damage keyword 동시 등장
+          //   사용자 매물 pid 405343339 ("메인보드 손상... 하자 일절 없습니다") 잡는 핵심 trigger.
+          const hasNegationPattern = /(?:하자|손상|수리|교체|고장|불량|파손|깨짐|기스|스크래치|찍힘)(?:는|도|이|가|을|를)?\s*(?:일절|전혀|아예|단\s*하나|일체|진짜)?\s*(?:없|아닙|아님)/.test(text);
+          const hasDamageKeyword = /손상|메인보드|배터리\s*교체|디스플레이\s*교체|화면\s*교체|액정\s*교체|사설\s*수리|부품\s*수리|침수|낙상|충격|크랙|박살|찌그러짐\s*심|깨짐\s*있/.test(text);
+          const conflictingSignal = hasNegationPattern && hasDamageKeyword;
+
+          // 옵션 B — positive 분류 (mint/clean/unopened) 인데 description 에 negative keyword 존재
+          //   regex negation 잘못 매칭 시 false positive 차단용 safety net.
+          const isPositiveClass = parsed.conditionClass === "mint" || parsed.conditionClass === "clean" || parsed.conditionClass === "unopened";
+          const hasAnyNegativeKeyword = /손상|수리|교체|하자|고장|불량|파손|깨짐|침수|낙상|크랙|기스\s*있|얼룩\s*심|곰팡이|악취/.test(text);
+          const positiveButNegativeText = isPositiveClass && hasAnyNegativeKeyword;
+
+          // 옵션 D — bunjang label vs class 불일치
+          const isClassPositive = isPositiveClass;
+          const isClassFlawedOrWorn = parsed.conditionClass === "flawed" || parsed.conditionClass === "worn";
+          const bunjangConflict =
+            (bunjangLabelMapped === "flawed" && isClassPositive) ||
+            ((bunjangLabelMapped === "unopened" || bunjangLabelMapped === "clean") && isClassFlawedOrWorn);
+
+          // 옵션 E — needsReview 무조건 AI
+          const needsReviewFlag = parsed.needsReview === true;
+
+          // 통합 trigger (5 options OR)
+          const aiTriggered =
+            (ambiguousConditionWide && !hasStrongSignal && bunjangLabelMapped === null) || // 기존 + 옵션 C
+            conflictingSignal ||  // 옵션 A
+            positiveButNegativeText ||  // 옵션 B
+            bunjangConflict ||  // 옵션 D
+            needsReviewFlag;  // 옵션 E
+
+          if (aiTriggered) {
             const aiClass = await classifyConditionWithAi(Number(claim.pid), claim.name, detail.description).catch(() => null);
             if (aiClass) {
               parsed.conditionClass = aiClass;
+              // Wave 256: AI escalation trigger 기록 — 운영자 추적 + production 비용 측정.
+              const triggerReasons: string[] = [];
+              if (ambiguousConditionWide && !hasStrongSignal && bunjangLabelMapped === null) triggerReasons.push("ambiguous_wide");
+              if (conflictingSignal) triggerReasons.push("conflicting_signal");
+              if (positiveButNegativeText) triggerReasons.push("positive_but_negative");
+              if (bunjangConflict) triggerReasons.push("bunjang_conflict");
+              if (needsReviewFlag) triggerReasons.push("needs_review");
+              (parsed.parsedJson as Record<string, unknown>).ai_escalation_triggers = triggerReasons;
+              (parsed.parsedJson as Record<string, unknown>).ai_escalation_class = aiClass;
             }
           }
           await upsertRows("mvp_listing_parsed", [toParsedListingRow(claim.pid, parsed)], "pid");
