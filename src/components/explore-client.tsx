@@ -224,7 +224,20 @@ export default function ExploreClient() {
       const res = await fetch(url, { cache: "no-store" });
       const data = (await res.json()) as PoolResponse;
       if (res.ok) {
-        if (data.items != null) setItems(data.items);
+        if (data.items != null) {
+          // Wave 371: refresh = append + pid dedupe (기존 매물 유지하면서 새 매물 추가).
+          // 사용자 의도 — 더 둘러보고 싶어서 "다른 매물 찾기" 누르는데 기존이 사라지면 X.
+          // 초기 load (refresh=false)는 덮어쓰기 (첫 데이터).
+          if (refresh) {
+            setItems((prev) => {
+              const existingPids = new Set(prev.map((it) => it.pid));
+              const fresh = data.items!.filter((it) => !existingPids.has(it.pid));
+              return [...prev, ...fresh];
+            });
+          } else {
+            setItems(data.items);
+          }
+        }
         setCooldown(data.cooldown);
       } else {
         setError(data.message ?? "매물 불러오기 실패");
