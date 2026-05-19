@@ -626,6 +626,32 @@ export const BAG_CATALOG: Sku[] = [
     laneKey: "bag_bottega_cassette_wallet",
     defaultProductType: "wallet",
   },
+  // Wave 261 (2026-05-20): Prada Pocono Nylon Vintage broad — 사용자 SQL 발견 ~7건 매물 sku_id=NULL.
+  //   포코노 빈티지 라인: 백팩 / 토트백 / 숄더백 / 미니 숄더 — 가격 280k-700k.
+  //   기존 bag-prada-nylon-hobo-vintage 는 Hobo specific만 — 포코노 일반 라인 누락.
+  {
+    id: "bag-prada-pocono-vintage",
+    brand: "Prada",
+    category: "bag",
+    modelName: "Prada Pocono Nylon Vintage (백팩/토트/숄더 broad)",
+    aliases: [],
+    mustContain: [
+      ["프라다", "prada"],
+      ["포코노", "pocono"],
+    ],
+    mustNotContain: [
+      "호보", "hobo", "리에디션", "re-edition",
+      "지갑", "wallet", "월렛", "카드지갑", "반지갑",
+      "삽니다", "매입", "구합니다", "구해요", "구함",
+      "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔",
+      "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정",
+      "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
+    ],
+    msrpKrw: 500000, // Wave 261 — 사용자 SQL: 280k-700k median ~500k.
+    released: 2024,
+    laneKey: "bag_prada_pocono_vintage",
+    // multi product_type (백팩/토트/숄더) — defaultProductType 안 박음. parser text 추출 의존.
+  },
   // Wave 258: Gucci GG Marmont Matelasse Wallet 신설 — 사용자 발견 matelassé 카드지갑/반지갑.
   //   기존 bag-gucci-gg-marmont-mini (shoulder) / -camera 등 본품 SKU 와 별도 product_type.
   //   기존 bag-gucci-gg-supreme-card-wallet 은 supreme 라인만 — marmont 라인 누락.

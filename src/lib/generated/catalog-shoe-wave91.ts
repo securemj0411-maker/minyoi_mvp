@@ -700,4 +700,72 @@ export const SHOE_CATALOG: Sku[] = [
     released: 2017,
     laneKey: "shoe_limited_exact_model",
   },
+  // Wave 261 (2026-05-20): Yeezy variant fallback broad SKU — 사용자 SQL 발견 ~15+ variant 매물 sku_id=NULL.
+  //   specific variant (Zebra/Bred/Beluga/Onyx/Wave Runner) catalog 있지만 다수 누락:
+  //     - 350 V2: 슬레이트/카퍼/터틀도브/이너시아/벨루가 리플렉티브
+  //     - 700: V2/V3, 이너시아, mauve
+  //     - 380 에일리언 / 450 스톤플렉스 / 750 OG
+  //   각 variant narrow SKU 박기 = sample 부족 (≤3건). broad fallback 으로 묶음.
+  {
+    id: "shoe-adidas-yeezy-350-broad",
+    brand: "Adidas",
+    category: "shoe",
+    modelName: "Adidas Yeezy Boost 350 (Broad fallback — variant 미매칭)",
+    aliases: ["Yeezy Boost 350"],
+    mustContain: [
+      ["이지", "yeezy"],
+      ["350"],
+    ],
+    mustNotContain: [
+      "700", "380", "450", "500", "750", "slide", "슬라이드", "foam", "폼",
+      "삽니다", "매입", "구합니다", "구해요", "구함",
+      "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "복각", "이미테이션", "레플리카", "짝퉁",
+      "트랙팬츠", "티셔츠", "맨투맨", "후드", "자켓",
+    ],
+    msrpKrw: 290000,
+    released: 2016,
+    laneKey: "shoe_adidas_yeezy_350_broad",
+    defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-adidas-yeezy-700-broad",
+    brand: "Adidas",
+    category: "shoe",
+    modelName: "Adidas Yeezy Boost 700 (V1/V2/V3 Broad)",
+    aliases: ["Yeezy Boost 700"],
+    mustContain: [
+      ["이지", "yeezy"],
+      ["700"],
+    ],
+    mustNotContain: [
+      "350", "380", "450", "500", "750",
+      "삽니다", "매입", "구합니다", "구해요", "구함",
+      "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "복각", "이미테이션", "레플리카", "짝퉁",
+      "트랙팬츠", "티셔츠", "맨투맨", "후드", "자켓",
+    ],
+    msrpKrw: 390000,
+    released: 2017,
+    laneKey: "shoe_adidas_yeezy_700_broad",
+    defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-adidas-tobacco",
+    brand: "Adidas",
+    category: "shoe",
+    modelName: "Adidas Tobacco (Gruen / 메사 브라운 / 버건디 등 broad)",
+    aliases: ["Adidas Tobacco"],
+    mustContain: [
+      ["아디다스", "adidas"],
+      ["토바코", "tobacco"],
+    ],
+    mustNotContain: [
+      "삽니다", "매입", "구합니다", "구해요", "구함",
+      "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "복각", "이미테이션", "레플리카", "짝퉁",
+      "트랙팬츠", "티셔츠", "맨투맨", "후드", "자켓", "쇼츠", "반바지",
+    ],
+    msrpKrw: 140000,
+    released: 2024,
+    laneKey: "shoe_adidas_tobacco",
+    defaultProductType: "sneaker",
+  },
 ];
