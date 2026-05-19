@@ -417,15 +417,14 @@ function parseShoeProductType(text: string): ShoeProductType {
 //     없는 이름이면 당연히 넣어야되는데 그런게 아닌 매물들은 탈락시켜야" — Goldilocks policy.
 //   - narrow model (Borealis/Nuptse/Galleria 등) defaultProductType 박힘 → fallback (안전)
 //   - broad SKU (RRL/FOG/Supreme collab) 미박힘 → 차단 (needsReview)
+// Wave 254.5 step 1+2+3 (2026-05-20): 사용자 root fix 정정 — fashion 3 카테고리 일괄 v8.
+//   사용자 SQL 검증: fashion 17,646건 condition_notes = 0% 채움 (vs earphone 80.9%/tablet 84.1%/phone 86.4%).
+//   8,191건 suspicious_high_grade (mint/clean/unopened + notes []) 잘못 추천 가능.
+//   점진 rollout 폐기 — bike 제외하고 shoe/bag/clothing 모두 v8 통합.
+//   bike (wave92-fashion-mobility-v7) 만 옛 path 유지 (자전거는 conditionFromTextFashion 미적용).
 const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
-// Wave 254.5 step 1 (2026-05-20): shoe 전용 v8 — conditionFromTextFashion 통합.
-//   사용자 결정: 점진 rollout — shoe (step 1) → bag (step 2) → clothing (step 3).
-//   기존 PARSER_VERSION_W92 v7 은 bag/bike 유지 (re-parse 영향 없음).
-//   효과: Wave 203~209 정책 (cosmetic_wear negation / objective signal override /
-//     buying_post / single_side_only / accessory_compatible / repair_or_defect_signal negation)
-//     + 신발 specific (솔 가루 / 가수분해 / 인솔 빠짐 / 굽창 마모 / 밑창 분리) 자동 적용.
-//   tick-pipeline LATEST_PARSER_VERSION_BY_CATEGORY.shoe 도 v8 로 bump 필요.
 const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v8";
+const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v8";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
@@ -438,7 +437,9 @@ const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v8";
 // Wave 236b v5 (2026-05-19): regex 보완 (반팔/남방/빈파포/눕시/터틀넥 등).
 // Wave 236c v6 (2026-05-19): fallback 제거 + type_unknown → needsReview (사용자 정책).
 // Wave 236d v7 (2026-05-19): catalog narrow model defaultProductType fallback OK + broad 차단.
+// Wave 254.5 step 3 v8 (2026-05-20): conditionFromTextFashion 통합 (의류 specific signals).
 const PARSER_VERSION_W216_CLOTHING = "wave216-clothing-v7";
+const PARSER_VERSION_W216_CLOTHING_V8 = "wave216-clothing-v8";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");
@@ -679,6 +680,33 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
       };
       conditionClassResult = tierMap[opt.conditionTier] ?? "normal";
     }
+    // Wave 254.5 step 2 (2026-05-20): bag conditionFromTextFashion 통합 (사용자 systemic 결정).
+    //   사용자 SQL 검증: bag 1,705 매물 condition_notes 0% 채움 (vs tech 80%+).
+    //   fix: bag 분기에서도 conditionFromTextFashion 호출 + bag-specific signals 추가.
+    //   bag-specific: 내피 끈적/오염 / 가죽 까짐 / 손잡이 마모 / 코너 닳음 / 페인팅 벗겨짐 / 곰팡이.
+    const fashion = conditionFromTextFashion(text, "bag");
+    fashionConditionScore = fashion.conditionScore;
+    fashionConditionNotes = fashion.conditionNotes;
+    parsedJson.bag_condition_notes = fashion.conditionNotes;
+    parsedJson.bag_condition_score_fashion = fashion.conditionScore;
+    parsedJson.bag_fashion_condition_applied = true;
+    const fashionNotesClassBag = extractConditionClass(fashion.conditionNotes);
+    if (
+      fashionNotesClassBag !== "normal" &&
+      fashionNotesClassBag !== "low_batt" &&
+      conditionClassResult !== "low_batt"
+    ) {
+      const currentRank = CONDITION_RANK[conditionClassResult];
+      const fashionRank = CONDITION_RANK[fashionNotesClassBag];
+      if (fashionRank < currentRank) {
+        conditionClassResult = fashionNotesClassBag;
+      }
+    }
+    const strongNegativeSignalsBag = ["buying_post", "accessory_compatible_for_other_product", "parts_only"];
+    if (fashion.conditionNotes.some((n) => strongNegativeSignalsBag.includes(n))) {
+      needsReview = true;
+      criticalUnknown.push("bag_strong_negative_signal");
+    }
   } else if (category === "bike") {
     const opt = parseBikeOptions(text);
     parsedJson.bike_frame_size = opt.frameSize;
@@ -774,6 +802,33 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     if (model) {
       parseConfidence += 0.25;
     }
+    // Wave 254.5 step 3 (2026-05-20): clothing conditionFromTextFashion 통합 (사용자 systemic 결정).
+    //   사용자 SQL 검증: clothing 4,437 매물 condition_notes 0% 채움 (vs tech 80%+).
+    //   2,686건 suspicious_high_grade (60.5%) 즉시 정정 대상.
+    //   clothing-specific: 보풀 / 색바램 / 늘어남 / 봉제 풀림 / 트임 / 인쇄 갈라짐 / 얼룩.
+    const fashion = conditionFromTextFashion(text, "clothing");
+    fashionConditionScore = fashion.conditionScore;
+    fashionConditionNotes = fashion.conditionNotes;
+    parsedJson.clothing_condition_notes = fashion.conditionNotes;
+    parsedJson.clothing_condition_score_fashion = fashion.conditionScore;
+    parsedJson.clothing_fashion_condition_applied = true;
+    const fashionNotesClassClothing = extractConditionClass(fashion.conditionNotes);
+    if (
+      fashionNotesClassClothing !== "normal" &&
+      fashionNotesClassClothing !== "low_batt" &&
+      conditionClassResult !== "low_batt"
+    ) {
+      const currentRank = CONDITION_RANK[conditionClassResult];
+      const fashionRank = CONDITION_RANK[fashionNotesClassClothing];
+      if (fashionRank < currentRank) {
+        conditionClassResult = fashionNotesClassClothing;
+      }
+    }
+    const strongNegativeSignalsClothing = ["buying_post", "accessory_compatible_for_other_product", "parts_only"];
+    if (fashion.conditionNotes.some((n) => strongNegativeSignalsClothing.includes(n))) {
+      needsReview = true;
+      criticalUnknown.push("clothing_strong_negative_signal");
+    }
   }
 
   const comparableKey = partsForKey.map(slug).join("|");
@@ -814,14 +869,17 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     : tierConditionScore;
 
   return {
-    // Wave 216: clothing 만 새 parser version → 1253건 자동 re-parse (shoe/bag/bike 영향 X).
-    // Wave 254.5 step 1 (2026-05-20): shoe 만 v8 (conditionFromTextFashion 적용). bag/bike 은 v7 유지.
+    // Wave 254.5 step 1+2+3 (2026-05-20): fashion 3 카테고리 일괄 v8.
+    //   shoe → wave92-shoe-v8 / bag → wave92-bag-v8 / clothing → wave216-clothing-v8.
+    //   bike 만 v7 유지 (conditionFromTextFashion 미적용 — 자전거 specific signal 별도 wave).
     parserVersion:
       category === "clothing"
-        ? PARSER_VERSION_W216_CLOTHING
+        ? PARSER_VERSION_W216_CLOTHING_V8
         : category === "shoe"
           ? PARSER_VERSION_W92_SHOE_V8
-          : PARSER_VERSION_W92,
+          : category === "bag"
+            ? PARSER_VERSION_W92_BAG_V8
+            : PARSER_VERSION_W92,
     contentHash: hashText(text),
     category,
     family,

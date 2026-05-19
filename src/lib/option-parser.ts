@@ -1413,17 +1413,20 @@ function conditionFromText(
   };
 }
 
-// Wave 254.5 step 1 (2026-05-20): fashion-specific condition extraction.
-//   사용자 결정 (Wave 254.5 옵션 a, 점진 rollout): shoe → bag → clothing.
-//   현재 step 1: shoe 만 적용 (wave92-fashion-mobility.ts shoe 분기에서 호출).
-//   효과:
+// Wave 254.5 step 1+2+3 (2026-05-20): fashion-specific condition extraction.
+//   사용자 정정 (root fix systemic 확장): 점진 rollout 폐기. fashion 3 카테고리 일괄 적용.
+//   사용자 SQL 검증: shoe v7 1,575 / bag 1,705 / clothing 4,437 = 0% condition_notes 채움
+//   vs earphone 80.9% / tablet 84.1% / smartphone 86.4% → fashion 전체 17,646건 0%.
+//   8,191건 suspicious_high_grade (mint/clean/unopened 분류 + notes [] = 사용자 잘못 추천 가능).
+//   효과 (3 카테고리 일괄):
 //     - Wave 203~209 정책 자동 적용 (cosmetic_wear negation / objective signal override /
 //       buying_post / single_side_only / accessory_compatible / repair_or_defect_signal negation).
-//     - 신발 specific 신호 추가 (솔 가루 / 가수분해 / 인솔 빠짐 / 굽창 마모 심함 / 밑창 분리).
+//     - 신발 specific (솔 가루 / 가수분해 / 인솔 빠짐 / 굽창 마모 심함 / 밑창 분리).
+//     - 가방 specific (내피 끈적/오염 / 가죽 까짐 / 손잡이 마모 / 코너 닳음 / 페인팅 벗겨짐).
+//     - 의류 specific (보풀 / 색바램 / 늘어남 / 봉제 풀림 / 트임 / 인쇄 갈라짐).
 //   사용자 매물 pid 408858108 가젤 볼드 케이스:
 //     "새상품 + 약간 하자가있어" → 기존 parseConditionTier mint (a_grade) → 잘못.
 //     fix 후: conditionFromText 의 repair_or_defect_signal 감지 → flawed.
-//   Wave 254.5 step 2/3 (예정): bag/clothing 도 동일 path.
 export function conditionFromTextFashion(
   text: string,
   category: "shoe" | "bag" | "clothing",
@@ -1477,7 +1480,86 @@ export function conditionFromTextFashion(
     }
   }
 
-  // bag/clothing — Wave 254.5 step 2/3 에서 추가 (현재 base 만 반환).
+  // 3) bag-specific signals — Wave 254.5 step 2 (2026-05-20).
+  //    사용자 list: 내피 끈적 / 가죽 까짐 / 손잡이 마모 / 코너 닳음 (+ 페인팅 벗겨짐).
+  if (category === "bag") {
+    // 내피 끈적/녹음/오염 — 가수분해 유사 (PU 내피 시간 지나면 끈적). flawed 명확.
+    const noLiningSticky = /내피\s*(?:끈적|녹|오염|벗겨)\s*(?:없|없음|아님|깨끗)/.test(lower);
+    if (!noLiningSticky && /내피\s*(?:끈적|끈쩍|녹았|녹음|벗겨|찢어|오염\s*심)|안감\s*(?:끈적|녹|벗겨|찢어)|라이닝\s*(?:끈적|녹|벗겨)/.test(lower)) {
+      add("bag_lining_damage", -0.25);
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal");
+      }
+    }
+    // 가죽 까짐/벗겨짐/갈라짐 — 외관 손상. worn~flawed 경계.
+    const noLeatherDamage = /가죽\s*(?:까짐|벗겨|갈라)\s*(?:없|없음|아님)/.test(lower);
+    if (!noLeatherDamage && /가죽\s*(?:까짐|벗겨|갈라짐|찢어|크랙|박리)|레더\s*(?:까짐|벗겨|갈라|크랙)|코팅\s*(?:벗겨|박리|들뜸)/.test(lower)) {
+      add("bag_leather_damage", -0.2);
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal");
+      }
+    }
+    // 손잡이 마모/끊어짐/늘어남.
+    if (/손잡이\s*(?:마모|닳|끊어|늘어|찢어|벗겨|페인팅\s*벗)|핸들\s*(?:마모|닳|끊어|늘어)|스트랩\s*(?:끊어|찢어|벗겨)/.test(lower)) {
+      add("bag_handle_worn", -0.15);
+    }
+    // 코너 닳음/벗겨짐 — 가방 모서리 일반 사용감.
+    if (/모서리\s*(?:닳|벗겨|까짐|마모)|코너\s*(?:닳|벗겨|까짐|마모)|네\s*귀퉁이\s*(?:닳|벗겨)|네귀퉁이\s*(?:닳|벗겨)/.test(lower)) {
+      add("bag_corner_worn", -0.1);
+    }
+    // 페인팅/도장 벗겨짐 — 명품 모서리 페인트 벗겨짐 흔함.
+    if (/페인팅\s*(?:벗겨|박리|들뜸|날아)|도장\s*(?:벗겨|박리|들뜸)|페인트\s*(?:벗겨|박리)/.test(lower)) {
+      add("bag_paint_peeling", -0.12);
+    }
+    // 곰팡이 — flawed 즉시 (LV/Chanel 빈티지 흔함).
+    if (/곰팡이|mold|fungus/.test(lower)) {
+      add("bag_mold", -0.3);
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal");
+      }
+    }
+  }
+
+  // 4) clothing-specific signals — Wave 254.5 step 3 (2026-05-20).
+  //    사용자 list: 보풀 / 색바램 / 늘어남 / 봉제 풀림 / 트임 (+ 인쇄 갈라짐).
+  if (category === "clothing") {
+    // 보풀 — 의류 일반 사용감 (니트/스웻 흔함).
+    const noPilling = /보풀\s*(?:없|없음|아님|적|거의\s*없)/.test(lower);
+    if (!noPilling && /보풀\s*(?:있|많|심)|보풀이?\s*(?:있|많|심)|필링/.test(lower)) {
+      add("clothing_pilling", -0.1);
+    }
+    // 색바램/변색/탈색 — 자외선/세탁.
+    const noFading = /색바램\s*(?:없|없음|아님)|변색\s*(?:없|없음|아님)/.test(lower);
+    if (!noFading && /색\s*바램|색바램|탈색|변색|색\s*빠짐|색이?\s*빠|페이딩\s*심/.test(lower)) {
+      add("clothing_fading", -0.15);
+    }
+    // 늘어남/처짐 — 니트/티 흔함.
+    if (/늘어남|늘어진|넥\s*늘어|밑단\s*늘어|소매\s*늘어|핏\s*변형|처짐|쳐짐\s*있/.test(lower)) {
+      add("clothing_stretched", -0.12);
+    }
+    // 봉제 풀림/터짐/뜯어짐 — 수선 필요.
+    if (/봉제\s*(?:풀|터|뜯|벌어)|솔기\s*(?:풀|터|뜯|벌어)|박음질\s*(?:풀|터|뜯)|시접\s*(?:풀|터)/.test(lower)) {
+      add("clothing_seam_damage", -0.15);
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal");
+      }
+    }
+    // 트임 — "찢어짐 변형" (트임을 의도된 디자인이 아닌 손상으로).
+    // 단 negation: "트임 있는 디자인" / "사이드 트임" 같은 디자인 의도 패턴 차단.
+    const isDesignSlit = /트임\s*(?:디자인|있는\s*디자인|사이드|밑단)|사이드\s*트임|밑단\s*트임/.test(lower);
+    if (!isDesignSlit && /트임\s*(?:손상|찢|벌어|풀)|예상치\s*못한\s*트임/.test(lower)) {
+      add("clothing_slit_damage", -0.12);
+    }
+    // 인쇄/프린팅 갈라짐 — 그래픽 티 흔함.
+    if (/인쇄\s*(?:갈라|벗겨|박리)|프린팅\s*(?:갈라|벗겨|박리|찢어)|프린트\s*(?:갈라|벗겨|박리|찢어)|로고\s*(?:갈라|벗겨|박리)/.test(lower)) {
+      add("clothing_print_cracked", -0.1);
+    }
+    // 얼룩 — clothing 만 (shoe 는 c_grade 의 얼룩 패턴 있음).
+    const noStain = /얼룩\s*(?:없|없음|아님|깨끗|하나\s*없)/.test(lower);
+    if (!noStain && /얼룩\s*(?:심|많|있|크)|얼룩이?\s*(?:심|많|있|크)|이염\s*심/.test(lower)) {
+      add("clothing_stain", -0.12);
+    }
+  }
 
   return {
     conditionScore: cap01(score),

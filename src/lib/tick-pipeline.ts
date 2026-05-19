@@ -2089,18 +2089,14 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // v6 (2026-05-19 Wave 236c): defaultProductType fallback 제거 + type_unknown → needsReview.
   // v7 (2026-05-19 Wave 236d): catalog narrow model defaultProductType 박힘 시 fallback OK,
   //   broad SKU 미박힘 시 차단. 사용자 의도: "Borealis=백팩 확정" 같은 narrow 만 통과.
-  clothing: "wave216-clothing-v7",
-  // Wave 217 (2026-05-19): shoe/bag/bike 도 metadata 활용 — 전 매물 자동 re-parse.
-  // Wave 232 (2026-05-19): v3 — bag parser confidence base 강화.
-  // Wave 236 (2026-05-19): v4 — product-type 추출 (bag 가장 큰 영향).
-  // Wave 236b (2026-05-19): v5 — regex 보완 + defaultProductType fallback.
-  // Wave 236c (2026-05-19): v6 — fallback 제거 + needsReview 차단.
-  // Wave 236d (2026-05-19): v7 — catalog narrow model defaultProductType fallback 복원.
-  // Wave 254.5 step 1 (2026-05-20): shoe 만 v8 — conditionFromTextFashion 통합 (Wave 203~209 정책 + shoe-specific).
-  //   사용자 매물 pid 408858108 가젤 볼드 "새상품 + 약간 하자가있어" → mint 잘못 root fix.
-  //   bag/bike 은 v7 유지 — 점진 rollout 안전성 우선 (step 2/3 에서 bag/clothing 적용).
+  // Wave 254.5 step 1+2+3 (2026-05-20): fashion 3 카테고리 일괄 v8 — 사용자 systemic 정정.
+  //   사용자 SQL 검증: fashion 17,646건 condition_notes = 0% (vs tech 80%+).
+  //   8,191건 suspicious_high_grade (mint/clean/unopened + notes []) 잘못 추천 가능.
+  //   점진 rollout 폐기 — shoe+bag+clothing 모두 conditionFromTextFashion 동시 적용.
+  //   bike 만 v7 유지 (자전거 specific signal 별도 wave).
+  clothing: "wave216-clothing-v8",
   shoe: "wave92-shoe-v8",
-  bag: "wave92-fashion-mobility-v7",
+  bag: "wave92-bag-v8",
   bike: "wave92-fashion-mobility-v7",
 };
 function isParsedStale(row: ParsedListingRow): boolean {

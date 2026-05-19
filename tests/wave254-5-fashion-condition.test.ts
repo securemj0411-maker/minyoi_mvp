@@ -173,7 +173,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version bag = wave92-fashion-mobility-v7 (변경 없음 — step 2 대기)", () => {
+    it("parser_version bag = wave92-bag-v8 (Wave 254.5 step 2 일괄)", () => {
       const result = parseListingOptions({
         title: "구찌 마몬트 토트백",
         description: "정품",
@@ -181,13 +181,11 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Gucci Marmont",
         category: "bag",
       });
-      assert.equal(result.parserVersion, "wave92-fashion-mobility-v7",
-        `bag parser_version 잘못 변경: ${result.parserVersion}`);
-      // bag conditionNotes 는 빈 배열 유지 (step 2 까지).
-      assert.deepEqual(result.conditionNotes, []);
+      assert.equal(result.parserVersion, "wave92-bag-v8",
+        `bag parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version clothing = wave216-clothing-v7 (변경 없음 — step 3 대기)", () => {
+    it("parser_version clothing = wave216-clothing-v8 (Wave 254.5 step 3 일괄)", () => {
       const result = parseListingOptions({
         title: "스투시 후드",
         description: "L 사이즈",
@@ -195,10 +193,8 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Stussy Hoodie",
         category: "clothing",
       });
-      assert.equal(result.parserVersion, "wave216-clothing-v7",
-        `clothing parser_version 잘못 변경: ${result.parserVersion}`);
-      // clothing conditionNotes 는 빈 배열 유지 (step 3 까지).
-      assert.deepEqual(result.conditionNotes, []);
+      assert.equal(result.parserVersion, "wave216-clothing-v8",
+        `clothing parser_version mismatch: ${result.parserVersion}`);
     });
 
     it("strong negative signal (buying_post) → needsReview=true", () => {
@@ -211,6 +207,156 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
       });
       assert.ok(result.needsReview,
         `buying_post → needsReview 안 박힘 (notes: ${result.conditionNotes.join(",")})`);
+    });
+  });
+
+  describe("bag-specific signals (Wave 254.5 step 2 신규)", () => {
+    it("내피 끈적 → bag_lining_damage + flawed", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "구찌 마몬트 토트 내피 끈적해요 사용감 있어요",
+        "bag",
+      );
+      assert.ok(conditionNotes.includes("bag_lining_damage"),
+        `bag_lining_damage 없음: ${conditionNotes.join(",")}`);
+      assert.equal(extractConditionClass(conditionNotes), "flawed");
+    });
+
+    it("가죽 까짐 → bag_leather_damage + flawed", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "샤넬 클래식 플랩 가죽 까짐 살짝",
+        "bag",
+      );
+      assert.ok(conditionNotes.includes("bag_leather_damage"));
+      assert.equal(extractConditionClass(conditionNotes), "flawed");
+    });
+
+    it("손잡이 마모 → bag_handle_worn", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "프라다 나일론 호보 손잡이 마모 있음",
+        "bag",
+      );
+      assert.ok(conditionNotes.includes("bag_handle_worn"));
+    });
+
+    it("코너 닳음 → bag_corner_worn", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "루이비통 스피디 25 모서리 닳음",
+        "bag",
+      );
+      assert.ok(conditionNotes.includes("bag_corner_worn"));
+    });
+
+    it("페인팅 벗겨짐 → bag_paint_peeling", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "셀린느 카바백 페인팅 벗겨짐",
+        "bag",
+      );
+      assert.ok(conditionNotes.includes("bag_paint_peeling"));
+    });
+
+    it("곰팡이 → bag_mold + flawed", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "루이비통 스피디 곰팡이 있어요",
+        "bag",
+      );
+      assert.ok(conditionNotes.includes("bag_mold"));
+      assert.equal(extractConditionClass(conditionNotes), "flawed");
+    });
+
+    it("bag integration — conditionNotes 채워짐 (Wave 254.5 step 2 fix 확인)", () => {
+      const result = parseListingOptions({
+        title: "구찌 마몬트 토트백",
+        description: "내피 끈적합니다",
+        skuId: "bag-gucci-marmont",
+        skuName: "Gucci Marmont",
+        category: "bag",
+      });
+      assert.ok(Array.isArray(result.conditionNotes));
+      assert.ok(result.conditionNotes.length > 0,
+        `bag conditionNotes 비어있음: ${JSON.stringify(result.conditionNotes)}`);
+      assert.ok(result.conditionNotes.includes("bag_lining_damage"));
+    });
+  });
+
+  describe("clothing-specific signals (Wave 254.5 step 3 신규)", () => {
+    it("보풀 → clothing_pilling", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "스투시 후드 보풀 있어요",
+        "clothing",
+      );
+      assert.ok(conditionNotes.includes("clothing_pilling"));
+    });
+
+    it("보풀 negation '보풀 없음'", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "스투시 후드 보풀 없습니다",
+        "clothing",
+      );
+      assert.ok(!conditionNotes.includes("clothing_pilling"));
+    });
+
+    it("색바램 → clothing_fading", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "베이프 티 색바램 있음",
+        "clothing",
+      );
+      assert.ok(conditionNotes.includes("clothing_fading"));
+    });
+
+    it("늘어남 → clothing_stretched", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "랄프로렌 니트 넥 늘어남",
+        "clothing",
+      );
+      assert.ok(conditionNotes.includes("clothing_stretched"));
+    });
+
+    it("봉제 풀림 → clothing_seam_damage + flawed", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "캠퍼 자켓 봉제 풀림 있음",
+        "clothing",
+      );
+      assert.ok(conditionNotes.includes("clothing_seam_damage"));
+      assert.equal(extractConditionClass(conditionNotes), "flawed");
+    });
+
+    it("디자인 트임은 무시 ('사이드 트임')", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "유니클로 셔츠 사이드 트임 디자인",
+        "clothing",
+      );
+      assert.ok(!conditionNotes.includes("clothing_slit_damage"),
+        `디자인 트임 false positive: ${conditionNotes.join(",")}`);
+    });
+
+    it("인쇄 갈라짐 → clothing_print_cracked", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "베이프 티 인쇄 갈라짐",
+        "clothing",
+      );
+      assert.ok(conditionNotes.includes("clothing_print_cracked"));
+    });
+
+    it("얼룩 negation '얼룩 없음'", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "폴로 셔츠 얼룩 없습니다 깨끗",
+        "clothing",
+      );
+      assert.ok(!conditionNotes.includes("clothing_stain"));
+    });
+
+    it("clothing integration — conditionNotes 채워짐 + flawed demote", () => {
+      const result = parseListingOptions({
+        title: "스투시 후드 새상품",
+        description: "보풀 있어요 색바램 있음",
+        skuId: "clothing-stussy-hoodie",
+        skuName: "Stussy Hoodie",
+        category: "clothing",
+      });
+      assert.ok(result.conditionNotes.length > 0,
+        `clothing conditionNotes 비어있음: ${JSON.stringify(result.conditionNotes)}`);
+      assert.ok(result.conditionNotes.includes("clothing_pilling"));
+      assert.ok(result.conditionNotes.includes("clothing_fading"));
     });
   });
 
