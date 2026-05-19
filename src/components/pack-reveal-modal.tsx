@@ -3585,15 +3585,17 @@ function FixedBunjangFooter({
   // 사이즈 ↓ — py-3 → py-2.5, text-sm → text-[13px], shadow-lg → shadow-md, ring-1 제거.
   // min-h-11 (iOS 44px tap target) 유지. brand color 유지 (핵심 액션 색은 강조).
   return (
-    <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-1.5 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-2">
+    <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-1 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-1.5">
+      {/* Wave 394.7.g (외부 review 2라운드 #9): 더 작게 — 콘텐츠 영역 더 확보.
+          min-h-11 → min-h-10 (iOS 44 → 40 — tap target 약간 손해 단 사용자 명시 우선). */}
       <a
         href={card.url}
         target="_blank"
         rel="noreferrer"
         onClick={() => onLinkClicked(card.pid)}
-        className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-2.5 text-center text-[13px] font-bold text-white shadow-md shadow-[rgba(0,196,113,0.22)] transition hover:bg-[#00b267]"
+        className="flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-2 text-center text-xs font-bold text-white shadow-sm shadow-[rgba(0,196,113,0.18)] transition hover:bg-[#00b267]"
       >
-        <BunjangLogo className="h-[16px] w-[16px] rounded-[4px]" />
+        <BunjangLogo className="h-[14px] w-[14px] rounded-[3px]" />
         번개장터 원본 매물 보기
       </a>
     </div>
