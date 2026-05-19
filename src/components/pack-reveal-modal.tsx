@@ -342,9 +342,40 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
   // Wave 394.6.d (외부 review 가품 답 카테고리별 분기 — Wave 393.8 CounterfeitChecklistPanel 연장):
   // "전자제품이 뭔 가품이냐" 사용자 짚음. 폰/태블릿/노트북 = 가품 거의 X (잠금/부품이 진짜 위험).
   // 신발/명품/에어팟 = 가품 위험 큼. WhyTrust 가품 Q 답을 카테고리별 분기 = 정확한 위험 신호.
+  //
+  // Wave A (2026-05-20): brand 감지되면 brand-specific 답으로 교체 (Nike Jordan / Adidas Yeezy 등).
+  //   외부 review 직접 인용: "라벨/봉제/안감 3축 확인하세요'가 너무 일반적. Bird-aid 라벨,
+  //   GORE-TEX 4면 박음질 같은 모델별 가품 체크포인트가 있어야 진짜 가치 있음."
   const category = categoryFromComparableKey(card.marketBasis?.comparableKey ?? null);
+  const brandDepth = detectBrandDepth(category, {
+    skuId: card.skuId ?? null,
+    skuName: card.skuName ?? null,
+    name: card.name ?? null,
+  });
   const counterfeitAnswer = ((): React.ReactNode => {
     const condBold = <b className="font-bold">{conditionLabel}</b>;
+    // Brand 감지된 경우 — brand-specific 답 우선 (shoe Wave A. 후속 wave 에서 다른 카테고리 확장).
+    if (brandDepth) {
+      const riskLabel = COUNTERFEIT_RISK_LABEL[brandDepth.brand.counterfeitRisk];
+      const top2Checks = brandDepth.brand.counterfeitChecks.slice(0, 2);
+      return (
+        <>
+          이 매물은 {condBold}로 분류돼요. <b className="font-bold">{brandDepth.brand.label}</b> — <b className="font-bold">{riskLabel}</b>.
+          {top2Checks.length > 0 ? (
+            <>
+              {" "}변별 포인트: {top2Checks.map((c, i) => (
+                <span key={i}>{i > 0 ? " · " : ""}{c}</span>
+              ))}
+            </>
+          ) : null}
+          {brandDepth.brand.authentication.length > 0 ? (
+            <>
+              {" "}인증: <b className="font-bold">{brandDepth.brand.authentication[0]}</b>.
+            </>
+          ) : null}
+        </>
+      );
+    }
     switch (category) {
       case "shoe":
         return <>이 매물은 {condBold}로 분류돼요. <b className="font-bold">신발 가품 위험 큼</b> (특히 명품/한정판).
@@ -1558,13 +1589,15 @@ type ComparableListing = {
   bunjangUrl: string;
 };
 
-function ComparableListingsPanel({ card }: { card: RevealCard }) {
+function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; mode?: "simple" | "detailed" }) {
   const [listings, setListings] = useState<ComparableListing[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const ck = card.marketBasis?.comparableKey ?? null;
   const cc = card.marketBasis?.conditionClass ?? null;
+  // Wave 394.5.b: detailed 모드 시 더 많이 (6 → 12).
+  const limit = mode === "detailed" ? 12 : 6;
 
   useEffect(() => {
     if (!ck) return;
@@ -1577,12 +1610,12 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: { comparables?: ComparableListing[] }) => {
         if (!cancelled) {
-          // disappeared 매물 제외, 가격 낮은 순 정렬 (사용자 짚음), 6개로 자름.
-          // market-source 기본 정렬 = last_seen_at.desc (최신순). 시세 비교 = 가격 순이 직관.
+          // disappeared 매물 제외, 가격 낮은 순 정렬 (사용자 짚음), max 16 보관 (mode 따라 render slice).
+          // simple = 6, detailed = 12 표시. fetch 한 번에 16 까지 보관해서 mode 변경 시 re-fetch X.
           const filtered = (j.comparables ?? [])
             .filter((c) => c.listingState !== "disappeared")
             .sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
-            .slice(0, 6);
+            .slice(0, 16);
           setListings(filtered);
         }
       })
@@ -1633,7 +1666,8 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
         </div>
       ) : (
         <ul className="mt-1.5 space-y-1">
-          {listings.map((item) => {
+          {/* Wave 394.5.b: mode 따라 slice. simple = 6 / detailed = 12. */}
+          {listings.slice(0, limit).map((item) => {
             const itemPrice = item.price > 0 ? item.price : 0;
             const priceDiff = card.price && itemPrice ? itemPrice - card.price : 0;
             const diffPct = card.price && itemPrice ? Math.round((priceDiff / card.price) * 100) : 0;
@@ -2188,6 +2222,14 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
   const checklist = counterfeitChecklistFor(category);
   if (!checklist) return null;
 
+  // Wave A (2026-05-20): brand 감지 시 brand-specific 변별 포인트 + 시장 위험 + 인증 박스 노출.
+  //   외부 review — "Bird-aid 라벨, GORE-TEX 4면 박음질 같은 모델별 가품 체크포인트가 진짜 가치 있음."
+  const brandDepth: BrandDepthMatch | null = detectBrandDepth(category, {
+    skuId: card.skuId ?? null,
+    skuName: card.skuName ?? null,
+    name: card.name ?? null,
+  });
+
   const mustChecks = checklist.checks.filter((c) => c.priority === "must");
   const recommendedChecks = checklist.checks.filter((c) => c.priority === "recommended");
   const extraChecks = checklist.checks.filter((c) => c.priority === "extra");
@@ -2258,6 +2300,24 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
           <div className="mt-0.5 line-clamp-2 text-xs font-medium leading-4 text-zinc-600 dark:text-zinc-400 sm:line-clamp-none">
             {checklist.riskHeadline}
           </div>
+          {brandDepth ? (
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[10px] font-medium leading-4">
+              <span className="rounded-full bg-amber-50 px-2 py-0.5 font-bold text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                {brandDepth.brand.label}
+              </span>
+              <span
+                className={
+                  brandDepth.brand.counterfeitRisk === "high"
+                    ? "rounded-full bg-rose-50 px-2 py-0.5 font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
+                    : brandDepth.brand.counterfeitRisk === "moderate"
+                      ? "rounded-full bg-amber-50 px-2 py-0.5 font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
+                      : "rounded-full bg-emerald-50 px-2 py-0.5 font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                }
+              >
+                {COUNTERFEIT_RISK_LABEL[brandDepth.brand.counterfeitRisk]}
+              </span>
+            </div>
+          ) : null}
         </div>
         <span className="shrink-0 rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
           {expanded ? "접기" : `필수 ${mustChecks.length}개`}
@@ -2265,6 +2325,65 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
       </button>
       {expanded ? (
         <div className="mt-3 space-y-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+          {brandDepth ? (
+            <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                <span aria-hidden="true">🎯</span>
+                <span>{brandDepth.brand.label} — 모델별 변별 포인트</span>
+              </div>
+              {brandDepth.brand.counterfeitChecks.length > 0 ? (
+                <div>
+                  <div className="text-[11px] font-bold text-zinc-800 dark:text-zinc-100">가품 변별 (구체 항목)</div>
+                  <ul className="mt-1 space-y-1">
+                    {brandDepth.brand.counterfeitChecks.map((c, i) => (
+                      <li
+                        key={i}
+                        className="flex gap-1.5 text-[11px] font-medium leading-4 text-zinc-700 dark:text-zinc-200"
+                      >
+                        <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-rose-500" />
+                        <span>{c}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {brandDepth.brand.marketRisks.length > 0 ? (
+                <div>
+                  <div className="text-[11px] font-bold text-zinc-800 dark:text-zinc-100">시장 위험 (가품 외)</div>
+                  <ul className="mt-1 space-y-1">
+                    {brandDepth.brand.marketRisks.map((c, i) => (
+                      <li
+                        key={i}
+                        className="flex gap-1.5 text-[11px] font-medium leading-4 text-zinc-700 dark:text-zinc-200"
+                      >
+                        <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-amber-500" />
+                        <span>{c}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {brandDepth.brand.authentication.length > 0 ? (
+                <div>
+                  <div className="text-[11px] font-bold text-zinc-800 dark:text-zinc-100">인증/검수 가능 채널</div>
+                  <ul className="mt-1 space-y-1">
+                    {brandDepth.brand.authentication.map((c, i) => (
+                      <li
+                        key={i}
+                        className="flex gap-1.5 text-[11px] font-medium leading-4 text-zinc-700 dark:text-zinc-200"
+                      >
+                        <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-emerald-500" />
+                        <span>{c}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              <div className="text-[10px] font-medium leading-4 text-zinc-600 dark:text-zinc-400">
+                ※ 미뇨이는 정품 판정 X. 직접 거래 시 셀러에게 사진/영상 요청해 본인 판단 권장.
+              </div>
+            </div>
+          ) : null}
           {[...mustChecks, ...recommendedChecks, ...extraChecks].map((check) => (
             <div
               key={check.title}
@@ -3076,7 +3195,7 @@ function RevealCardItem({
                     차익 헤드라인 직후 위치 — 외부 review #7 "3. 데이터 믿을 만한가" 핵심 신호.
                     "데이터 믿을 만한가? 의 측면에서 직빵으로 active 매물 중 비교매물 보여주는게 직빵.
                      시세가 진짜인지가 비교매물로 제일 증명." */}
-                <ComparableListingsPanel card={card} />
+                <ComparableListingsPanel card={card} mode={mode} />
 
                 {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
                 <WhyCheapPanel card={card} />
@@ -3099,7 +3218,11 @@ function RevealCardItem({
                 className="mt-2 border-t border-[#e1dacd] pt-2 sm:rounded-xl sm:border sm:p-3 sm:shadow-none sm:ring-0"
               />
             </div>
-            <details className="group hidden shrink-0 rounded-full border border-[#d9e5d7] bg-[#f4faf1] px-3 py-1 text-right shadow-sm dark:border-zinc-700 dark:bg-zinc-800 sm:block sm:min-w-[72px]">
+            {/* Wave 394.5.c: detailed 모드 시 신뢰도 분해 자동 펼침 (사용자 재닫음 가능). */}
+            <details
+              open={mode === "detailed"}
+              className="group hidden shrink-0 rounded-full border border-[#d9e5d7] bg-[#f4faf1] px-3 py-1 text-right shadow-sm dark:border-zinc-700 dark:bg-zinc-800 sm:block sm:min-w-[72px]"
+            >
               <summary className="cursor-pointer list-none">
                 <div className="flex items-center justify-end gap-1 text-[10px] font-bold text-zinc-400">
                   <span>신뢰</span>
