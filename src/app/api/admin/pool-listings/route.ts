@@ -4,6 +4,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
+import { loadMarketBandsForKeys, resolveSkuMedianForDisplay } from "@/lib/band-aware-median";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -304,11 +305,19 @@ export async function GET(req: NextRequest) {
     // mvp_market_velocity_daily 는 condition='all' 만 박혀있음 → 일단 'all' fetch (Wave 183 한계 동일).
     // 가장 최근 row per comparable_key 만 사용 (client-side picking).
     // Wave 201 (2026-05-18): reference_prices 도 fetch — unopened 매물 시 anchor 우선.
+    // Wave 252.A (2026-05-20): (comparable_key, condition_class) band-aware sku_median fetch
+    //   추가 — admin-pool-browser 화면의 raw mvp_listings.sku_median 이 v3 매물에서
+    //   product_type 무분리로 hoodie+tee 혼합 → admin-pool-browser 차익 표시 mislead.
+    //   /api/packs/pool (Wave 247.2) 와 동일 정책. additive only — DB 변경 X.
     const parsedRowsForKeys = (await parsedRes.clone().json()) as Array<{ pid: number; comparable_key: string | null; condition_class: string | null }>;
     const comparableKeys = Array.from(new Set(parsedRowsForKeys.map((r) => r.comparable_key).filter((k): k is string => !!k)));
     const velocityMap = new Map<string, { p25Hours: number | null; medianHours: number | null; p75Hours: number | null; soldSampleCount: number; date: string }>();
     const priceMap = new Map<string, { p25Price: number | null; medianPrice: number | null; p75Price: number | null; date: string }>();
     const refPriceMap = new Map<string, number>();
+    // Wave 252.A: band-aware median map — (comparable_key, condition_class) → 최신 row.
+    const bandMap = comparableKeys.length > 0
+      ? await loadMarketBandsForKeys(serviceHeaders() as unknown as Record<string, string>, comparableKeys)
+      : new Map();
     if (comparableKeys.length > 0) {
       const keysCsv = comparableKeys.map((k) => `"${k}"`).join(",");
       const [velocityRes, priceRes, refRes] = await Promise.all([
@@ -377,8 +386,18 @@ export async function GET(req: NextRequest) {
       const fb = feedbackMap.get(pid);
       const note = (fb?.note as string | undefined) ?? "";
       const comparableKey = (p.comparable_key as string | null) ?? null;
+      const conditionClass = (p.condition_class as string | null) ?? null;
       const velocity = comparableKey ? velocityMap.get(comparableKey) ?? null : null;
       const priceStats = comparableKey ? priceMap.get(comparableKey) ?? null : null;
+      // Wave 252.A (2026-05-20): band-aware sku_median — (comparable_key, condition_class) 매칭
+      //   row 우선, sample 부족 시 condition-fallback chain, 그래도 없으면 raw mvp_listings.sku_median.
+      //   사용자 코멘트 id 201/202 (BAPE tee 후드/티 혼합) 근본 fix — admin-pool-browser 화면.
+      const skuMedianFinal = resolveSkuMedianForDisplay(
+        bandMap,
+        comparableKey,
+        conditionClass,
+        l.sku_median as number | null | undefined,
+      );
       return {
         hasComment: note.trim().length > 0,
         commentPreview: note.slice(0, 100),
@@ -388,7 +407,7 @@ export async function GET(req: NextRequest) {
         price: Number(l.price ?? 0),
         skuId: (r.sku_id as string | null) ?? null,
         skuName: (l.sku_name as string | null) ?? null,
-        skuMedian: Number(l.sku_median ?? 0),
+        skuMedian: skuMedianFinal,
         thumbnailUrl: (l.thumbnail_url as string | null) ?? null,
         bunjangUrl: `https://m.bunjang.co.kr/products/${pid}`,
         comparableKey: (p.comparable_key as string | null) ?? null,
