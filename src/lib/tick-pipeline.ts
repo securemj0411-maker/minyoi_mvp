@@ -1331,6 +1331,24 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
     }
   });
 
+  // 2026-05-19 P1-F-Fix-1: title-triage skipped pid도 lifecycle seed.
+  //   배경: SKU 매칭 실패한 매물(detail_status='skipped')은 이전엔 mvp_lifecycle_checks에
+  //   영구 안 박혀서 sold polling 대상에서 영구 제외 → 신발/의류/가방 sold 검출 1~5% 머묾.
+  //   - 신발 4222 skipped 매물 중 4208건(99.7%)이 lifecycle 영구 누락
+  //   - 의류 100%, 가방 98.6% 동일
+  //   해결: general tier (가장 낮은 우선순위, 긴 cooldown)로 seed. polling 비용 최소화.
+  //   insertIgnoreRows 라 기존 pid는 중복 X. SKU 매칭 후속 진행은 별개 (mining wave 후속).
+  //   자세한 진단: docs/DECISIONS/2026-05-19-p1-velocity-condition-confidence-sold-detection.md
+  const skippedPids = titleTriageSkipGroups.flatMap((group) => group.ids);
+  if (skippedPids.length > 0) {
+    await timedSearchSubstage(timingsMs, "seed_lifecycle_for_skipped", async () => {
+      const seeded = await seedLifecycleChecks(
+        skippedPids.map((pid) => ({ pid, priorityTier: "general" as const })),
+      );
+      timingsMs.skipped_lifecycle_seeded = seeded;
+    });
+  }
+
   const rawTouchGroups = timedSearchBlock(timingsMs, "build_raw_touch_groups", () => {
     const activeSeenOnly: number[] = [];
     const activeStateReset: number[] = [];
