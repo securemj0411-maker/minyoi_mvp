@@ -283,7 +283,9 @@ function parseBikeOptions(text: string) {
 
 // Wave 217 (2026-05-19): v2 — bunjang_condition_label + resolveConditionClass 활용.
 //   shoe/bag/bike 모두 metadata 기반 condition_class 박힘 → 시세 grouping 정확.
-const PARSER_VERSION_W92 = "wave92-fashion-mobility-v2";
+// Wave 232 (2026-05-19): v3 — bag parser confidence base 강화 (model 보너스 + era/size unknown 도 +0.05).
+//   80% bag 매물 차단 (0.5 < 0.55) → fix 후 대부분 통과.
+const PARSER_VERSION_W92 = "wave92-fashion-mobility-v3";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
@@ -407,11 +409,17 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
       needsReview = true;
       criticalUnknown.push("bag_damage_reject");
     }
+    // Wave 232 (2026-05-19): bag parser confidence 강화.
+    //   기존: base 0.45 + era unknown +0.05 + size unknown +0 + condition unknown +0 = 0.5 → needsReview.
+    //   80% bag 매물 차단 (Wave 232 측정 397/1287). 사용자 의도 "ready 진입" 충족 못 함.
+    //   fix: model 박힘 보너스 +0.25 (sku 매칭됐다는 신호 — clothing parser 처럼). era/size 미명시도 +0.05.
+    if (model) {
+      parseConfidence += 0.25;
+    }
     if (opt.era) {
       partsForKey.push(opt.era);
-      parseConfidence += 0.2;
+      parseConfidence += 0.15;
     } else {
-      // era 미명시는 흔함 → critical 아님, 단 confidence 약간 감소.
       partsForKey.push("era_unknown");
       unknownParts.push("unknown_era");
       parseConfidence += 0.05;
@@ -422,6 +430,7 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     } else {
       partsForKey.push("unknown_size_variant");
       unknownParts.push("unknown_size_variant");
+      parseConfidence += 0.05;
     }
     if (opt.conditionTier) {
       partsForKey.push(opt.conditionTier);

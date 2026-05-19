@@ -465,9 +465,11 @@ export const BAG_CATALOG: Sku[] = [
     category: "bag",
     modelName: "Vintage Solo / Pouch (마카담 외 빈티지)",
     aliases: [],
+    // Wave 232 (2026-05-19): product type 강제 — 시계/신발 매물 차단.
     mustContain: [
       ["셀린느", "셀린", "celine"],
-      ["빈티지", "vintage", "올드 셀린느", "올드셀린느", "파우치", "pouch", "솔로"],
+      ["올드 셀린느", "올드셀린느", "마카담", "macadam", "트리오", "trio"],
+      ["가방", "bag", "토트백", "tote", "숄더백", "shoulder bag", "크로스백", "crossbody", "백팩", "backpack", "포셰트", "pochette", "파우치", "pouch", "백"],
     ],
     mustNotContain: [
       "트리옴프", "triomphe", "현행", "리에디션", "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔", "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정", "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
@@ -532,9 +534,12 @@ export const BAG_CATALOG: Sku[] = [
     category: "bag",
     modelName: "Vintage Tessuto Nylon Shoulder Bag",
     aliases: [],
+    // Wave 232 (2026-05-19): product type 강제 — 시계/신발 매물 차단.
+    //   원래 "프라다" + "빈티지/tessuto" → 가방/시계/신발 다 매칭됨.
     mustContain: [
       ["프라다", "prada"],
-      ["테수토", "tessuto", "빈티지", "vintage", "올드 프라다", "올드프라다"],
+      ["테수토", "tessuto", "올드 프라다", "올드프라다"],
+      ["가방", "bag", "토트백", "tote", "숄더백", "shoulder bag", "크로스백", "crossbody", "백팩", "backpack", "포셰트", "pochette", "백"],
     ],
     mustNotContain: [
       "현행", "리에디션", "re-edition", "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔", "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정", "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",

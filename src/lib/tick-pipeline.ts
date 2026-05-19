@@ -2048,9 +2048,10 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // v3 (2026-05-19 Wave 217): bunjang_condition_label + resolveConditionClass 활용.
   clothing: "wave216-clothing-v3",
   // Wave 217 (2026-05-19): shoe/bag/bike 도 metadata 활용 — 전 매물 자동 re-parse.
-  shoe: "wave92-fashion-mobility-v2",
-  bag: "wave92-fashion-mobility-v2",
-  bike: "wave92-fashion-mobility-v2",
+  // Wave 232 (2026-05-19): v3 — bag parser confidence base 강화.
+  shoe: "wave92-fashion-mobility-v3",
+  bag: "wave92-fashion-mobility-v3",
+  bike: "wave92-fashion-mobility-v3",
 };
 function isParsedStale(row: ParsedListingRow): boolean {
   if (!row.category) return false;

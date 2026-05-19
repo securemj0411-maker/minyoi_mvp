@@ -8967,9 +8967,18 @@ const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, strin
     "가방", "backpack", "백팩", "토트백", "월렛", "지갑",
   ],
   bag: [
-    "운동화", "sneaker", "스니커즈", "부츠", "boot",
-    "자켓", "jacket", "코트", "coat",
+    // Wave 232 (2026-05-19): bag SKU 에 시계/신발/의류 차단 강화.
+    //   사용자 명시 "프라다 빈티지 시계가 bag-prada SKU 매칭" — Wave 230 noise 부족.
+    "운동화", "sneaker", "스니커즈", "부츠", "boot", "샌들", "sandal",
+    "슈즈", "shoes", "메리제인", "mary jane", "더비", "derby", "펌프스", "pumps",
+    "플랫슈즈", "flat shoes", "로퍼", "loafer", "옥스포드", "oxford",
+    "뮬", "mule", "슬리퍼", "slipper", "에스파드류", "espadrille",
+    "자켓", "jacket", "코트", "coat", "재킷",
     "티셔츠", "tee ", "맨투맨", "후드", "후디", "hoodie", "셔츠", "shirt",
+    "팬츠", "pants", "바지", "쇼츠",
+    // Wave 232: 시계/주얼리 차단
+    "시계", "watch", "시계줄", "watch strap", "팔찌", "bracelet", "목걸이", "necklace",
+    "반지", "ring", "귀걸이", "earring", "925",
   ],
 };
 
