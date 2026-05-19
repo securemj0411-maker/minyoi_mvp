@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, FlameIcon, ClockIcon, TrophyIcon } from "@/components/icons";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
@@ -149,9 +150,29 @@ export default function ExploreClient() {
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
-  // Wave 340: 카테고리 필터 + 정렬
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
-  const [sort, setSort] = useState<SortOption>("profit_desc");
+
+  // Wave 341: URL state sync — 새로고침/공유 시 카테고리/정렬 유지
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // 초기값 URL에서 파싱
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(() => {
+    const raw = searchParams.get("categories");
+    return raw ? new Set(raw.split(",").filter(Boolean)) : new Set();
+  });
+  const [sort, setSort] = useState<SortOption>(() => {
+    const raw = searchParams.get("sort");
+    return raw === "latest" ? "latest" : "profit_desc";
+  });
+
+  // 필터/정렬 변경 시 URL 갱신
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedCategories.size > 0) params.set("categories", Array.from(selectedCategories).join(","));
+    if (sort !== "profit_desc") params.set("sort", sort);
+    const queryString = params.toString();
+    router.replace(`/explore${queryString ? `?${queryString}` : ""}`, { scroll: false });
+  }, [selectedCategories, sort, router]);
 
   // Cooldown tick (매초 갱신)
   useEffect(() => {
@@ -360,7 +381,29 @@ export default function ExploreClient() {
       {loading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-[140px] animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900/60" />
+            <div
+              key={i}
+              className="grid grid-cols-[100px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40"
+            >
+              {/* 사진 영역 */}
+              <div className="aspect-square animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
+              {/* 텍스트 영역 */}
+              <div className="min-w-0 space-y-2">
+                <div className="space-y-1">
+                  <div className="h-3 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+                  <div className="h-3 w-3/4 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <div className="h-5 w-20 animate-pulse rounded bg-emerald-100 dark:bg-emerald-950/40" />
+                  <div className="h-3 w-8 animate-pulse rounded-full bg-emerald-50 dark:bg-emerald-950/30" />
+                </div>
+                <div className="h-2.5 w-2/3 animate-pulse rounded bg-zinc-100 dark:bg-zinc-800/60" />
+                <div className="flex gap-1.5">
+                  <div className="h-2.5 w-12 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800/60" />
+                  <div className="h-2.5 w-14 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800/60" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       ) : error ? (
