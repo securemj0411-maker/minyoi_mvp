@@ -230,17 +230,18 @@ function calculateDealScore(card: RevealCard): DealScore {
 
   score = Math.min(100, Math.max(0, Math.round(score)));
 
+  // Wave 363: 빨강 (rose)은 "위험" 시그널. 점수 ↑ = 좋은 매물 = 초록 진해짐.
   let label = "보통";
-  let toneClass = "text-zinc-600 dark:text-zinc-400";
+  let toneClass = "text-zinc-500 dark:text-zinc-400";
   if (score >= 90) {
-    label = "핫";
-    toneClass = "text-rose-600 dark:text-rose-300";
+    label = "최고";
+    toneClass = "text-emerald-700 dark:text-emerald-300";
   } else if (score >= 80) {
     label = "강추";
-    toneClass = "text-orange-600 dark:text-orange-300";
+    toneClass = "text-emerald-600 dark:text-emerald-400";
   } else if (score >= 70) {
     label = "좋음";
-    toneClass = "text-emerald-600 dark:text-emerald-400";
+    toneClass = "text-emerald-500 dark:text-emerald-400";
   }
   return { score, label, toneClass };
 }
