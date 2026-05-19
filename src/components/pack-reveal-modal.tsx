@@ -496,6 +496,20 @@ function freshLabel(seconds: number) {
   return `${Math.round(seconds / 3600)}시간 전 검증`;
 }
 
+// 2026-05-20 P0-Upload: 셀러 등록 시점 라벨 (first_seen_at 기반).
+//   "등록 N시간 전" — 사용자가 가장 궁금해하는 정보. freshLabel(검증)과 구분.
+//   미뇨이 crawler 처음 발견 시점 = 실제 업로드 + 0~30분 lag (collect cadence 기준).
+function uploadAgoLabel(firstSeenAtIso: string | null | undefined): string | null {
+  if (!firstSeenAtIso) return null;
+  const ms = Date.now() - new Date(firstSeenAtIso).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return null;
+  const seconds = Math.floor(ms / 1000);
+  if (seconds < 60) return "방금 등록";
+  if (seconds < 3600) return `${Math.round(seconds / 60)}분 전 등록`;
+  if (seconds < 24 * 3600) return `${Math.round(seconds / 3600)}시간 전 등록`;
+  return `${Math.round(seconds / 86400)}일 전 등록`;
+}
+
 // Wave 392.2: 신선도 강조 라벨 — fold-above (제목 위).
 // <1h: 매우 신선 (emerald 강조) — Pro USP hint
 // 1~6h: 보통 신선 (zinc)
@@ -1759,9 +1773,16 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
                 <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
                   {soldSample > 0 ? `최근 거래 ${soldSample.toLocaleString("ko-KR")}건` : "거래 데이터 누적 중"}
                 </span>
-                <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
-                  {freshLabel(card.freshSeconds)}
-                </span>
+                {/* 2026-05-20 P0-Upload: 셀러 등록 시점 우선 (있으면). 검증 시점은 sub로 강등. */}
+                {uploadAgoLabel(card.firstSeenAt) ? (
+                  <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60" title={`데이터 ${freshLabel(card.freshSeconds)}`}>
+                    {uploadAgoLabel(card.firstSeenAt)}
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
+                    {freshLabel(card.freshSeconds)}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -1874,22 +1895,24 @@ function SellerTrustPanel({ card }: { card: RevealCard }) {
   let trustLevel: "good" | "ok" | "caution" | "danger";
   let trustHeadline: string;
   let trustSub: string;
+  // Wave 393.5: sub 단순화 — WhyTrustCollapse Q&A에 자세한 답 이미 있음.
+  // 헤드라인은 등급 + 별점, sub은 "후기 N건 (수 충분/적음)" 단순 정보만.
   if (rating != null && rating >= 4.8 && reviewCount >= 30) {
     trustLevel = "good";
     trustHeadline = `우수 셀러 ⭐ ${rating.toFixed(1)}`;
-    trustSub = `후기 ${reviewCount.toLocaleString("ko-KR")}건 · 거래 신뢰 매우 높음`;
+    trustSub = `후기 ${reviewCount.toLocaleString("ko-KR")}건 (수 충분)`;
   } else if (rating != null && rating >= 4.5 && reviewCount >= 10) {
     trustLevel = "ok";
     trustHeadline = `평점 ${rating.toFixed(1)} 셀러`;
-    trustSub = `후기 ${reviewCount.toLocaleString("ko-KR")}건 · 거래 신뢰 양호`;
+    trustSub = `후기 ${reviewCount.toLocaleString("ko-KR")}건`;
   } else if (reviewCount > 0 && rating != null) {
     trustLevel = "caution";
     trustHeadline = `평점 ${rating.toFixed(1)} · 후기 ${reviewCount.toLocaleString("ko-KR")}건`;
-    trustSub = reviewCount < 10 ? "후기 적음 — 안전결제 필수" : "후기 평점 보통 — 안전결제 권장";
+    trustSub = reviewCount < 10 ? "후기 적음 — 안전결제 권장" : "후기 보통 — 안전결제 권장";
   } else {
     trustLevel = "danger";
     trustHeadline = "신규/익명 셀러";
-    trustSub = "후기 없음 — 안전결제 + 직거래 검수 권장";
+    trustSub = "후기 없음 — 안전결제 + 직거래 검수";
   }
 
   // Wave 323 (디자인 통일): 모든 패널 같은 base — 흰 카드 + 색 accent strip (좌측 보더).
@@ -1974,7 +1997,9 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
   };
 
   return (
-    <section className="mt-3 border-t border-zinc-200 border-l-4 border-l-rose-500 bg-white/0 py-3 pl-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
+    {/* Wave 393.5: rose → amber (사용자 짚음 — rose는 "이 매물 가품"으로 헷갈림.
+        실제 의미 = 구매 전 정품 점검 체크리스트). */}
+    <section className="mt-3 border-t border-zinc-200 border-l-4 border-l-amber-400 bg-white/0 py-3 pl-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -1984,9 +2009,9 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
           <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             정품 확인 — {checklist.label}
           </div>
-          <div className="mt-1 flex items-center gap-2 text-sm font-bold text-rose-700 dark:text-rose-300">
-            <ShieldIcon className="h-4 w-4 shrink-0" />
-            가품 위험 — {totalCount}개 체크
+          <div className="mt-1 flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            <ShieldIcon className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            구매 전 정품 확인 {totalCount}개
           </div>
           <div className="mt-0.5 line-clamp-2 text-xs font-medium leading-4 text-zinc-600 dark:text-zinc-400 sm:line-clamp-none">
             {checklist.riskHeadline}
@@ -2705,7 +2730,10 @@ function RevealCardItem({
                     </>
                   )}
                   <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                  <span className="text-zinc-500">{freshLabel(card.freshSeconds)}</span>
+                  {/* 2026-05-20 P0-Upload: 셀러 등록 시점 우선. 검증 시점은 title hover로 강등. */}
+                  <span className="text-zinc-500" title={uploadAgoLabel(card.firstSeenAt) ? `데이터 ${freshLabel(card.freshSeconds)}` : undefined}>
+                    {uploadAgoLabel(card.firstSeenAt) ?? freshLabel(card.freshSeconds)}
+                  </span>
                   {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
                     <span
                       title={`옵션 명시 안 됨 → SKU 기본 옵션 가정`}

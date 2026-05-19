@@ -44,6 +44,8 @@ type RevealItem = {
   marketBasis: RevealMarketBasis | null;
   velocityBasis: RevealVelocityBasis | null;
   skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
+  // 2026-05-20 P0-Upload: 셀러 업로드 시점 (number-friendly first_seen_at).
+  firstSeenAt: string | null;
   // Wave 182 Phase 3 (2026-05-17): base option fallback — "기본 옵션 가정" UI badge.
   optionBaseAssumed: string[] | null;
   // Wave 213 (2026-05-18): 실시간 순현재차익 min/max.
@@ -456,6 +458,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       velocityBasis: selectedItem.velocityBasis,
       lastVerifiedAt: selectedItem.revealedAt,
       freshSeconds: Number.isFinite(revealedAtMs) && currentTimeMs > 0 ? Math.max(0, Math.floor((currentTimeMs - revealedAtMs) / 1000)) : 0,
+      // 2026-05-20 P0-Upload: 셀러 업로드 시점 전달 (모달이 "등록 N시간 전" 표시).
+      firstSeenAt: selectedItem.firstSeenAt ?? null,
       savedDetail: {
         descriptionPreview: storedDescriptionPreview(selectedItem.descriptionPreview),
         favoriteCount: selectedItem.favoriteCount,

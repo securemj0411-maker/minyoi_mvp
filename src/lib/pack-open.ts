@@ -42,6 +42,11 @@ export type RevealCard = {
   velocityBasis: RevealVelocityBasis | null;
   lastVerifiedAt: string;
   freshSeconds: number;
+  // 2026-05-20: 셀러가 번개장터에 매물 올린 시점 추정 (first_seen_at).
+  //   미뇨이 crawler가 처음 발견한 시점 = 실제 업로드 + 0~30분 lag (collect cadence 기준).
+  //   사용자가 "검증 N분 전"과 "등록 N시간 전"을 구분할 수 있게 추가.
+  //   nullable — 옛 reveal/일부 source에 first_seen_at 없을 수 있음.
+  firstSeenAt?: string | null;
   // Wave 80: SKU별 일별 매물 유입량 (24h rolling + 7d 평균)
   // 사용자가 매물대 크기/회전성 직관 파악용.
   skuListingFlow?: {

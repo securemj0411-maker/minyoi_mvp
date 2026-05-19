@@ -30,6 +30,8 @@ type PoolItem = {
   conditionClass: string | null;
   comparableKey: string | null;
   lastVerifiedAt: string;
+  // 2026-05-20 P0-Upload: 셀러 업로드 시점.
+  firstSeenAt: string | null;
   freeShipping: boolean;
   sellerReviewRating: number | null;
   sellerReviewCount: number;
@@ -86,6 +88,10 @@ function hoursAgoLabel(iso: string) {
   const ms = Date.now() - new Date(iso).getTime();
   if (!Number.isFinite(ms)) return "";
   const hours = Math.round(ms / (60 * 60 * 1000));
+  if (hours < 1) {
+    const minutes = Math.max(1, Math.round(ms / (60 * 1000)));
+    return `${minutes}분 전`;
+  }
   if (hours < 24) return `${hours}시간 전`;
   return `${Math.round(hours / 24)}일 전`;
 }
@@ -134,6 +140,7 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
     },
     velocityBasis: null,
     lastVerifiedAt: item.lastVerifiedAt,
+    firstSeenAt: item.firstSeenAt ?? null,
     freshSeconds,
     savedDetail: {
       descriptionPreview: item.descriptionPreview,
@@ -765,7 +772,10 @@ export default function ExploreClient() {
                         ) : null}
                         <span className="flex items-center gap-0.5 text-zinc-500">
                           <ClockIcon className="h-3 w-3" />
-                          {hoursAgoLabel(item.lastVerifiedAt)}
+                          {/* 2026-05-20 P0-Upload: 셀러 업로드 시점 우선. 없으면 검증 시점. */}
+                          {item.firstSeenAt
+                            ? `${hoursAgoLabel(item.firstSeenAt)} 등록`
+                            : hoursAgoLabel(item.lastVerifiedAt)}
                         </span>
                         {isPremiumSeller ? (
                           <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">

@@ -109,6 +109,8 @@ type RawRow = {
   listing_state: string;
   sale_status: string;
   num_comment: number | null;
+  // 2026-05-20: 셀러 업로드 시점 추정 (미뇨이가 처음 발견한 시점).
+  first_seen_at: string | null;
 };
 
 type ListingCostRow = {
@@ -221,6 +223,8 @@ type RevealItem = {
   marketBasis: RevealMarketBasis | null;
   velocityBasis: RevealVelocityBasis | null;
   skuListingFlow: { count24h: number; avgPerDay7d: number } | null;
+  // 2026-05-20: 셀러 업로드 시점 추정. UI에서 "등록 N시간 전" 표시 (검증 시점과 구분).
+  firstSeenAt: string | null;
   // Wave 182 Phase 3 (2026-05-17): base option fallback metadata — "기본 옵션 가정" UI badge.
   optionBaseAssumed: string[] | null;
   // Wave 213 (2026-05-18): request-time current net profit.
@@ -574,7 +578,7 @@ export async function GET(req: Request) {
   const packOpenList = packOpenIds.join(",");
   const [rawRows, listingCostRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment&pid=in.(${pidList})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at&pid=in.(${pidList})`,
     ),
     loadJson<ListingCostRow[]>(
       `${tableUrl("mvp_listings")}?select=pid,price,shipping_fee,shipping_fee_general,estimated_buy_cost&pid=in.(${pidList})`,
@@ -735,6 +739,8 @@ export async function GET(req: Request) {
           ? velocityBasisForCandidate(comparableKey, velocityStats, readinessMap)
           : null,
         skuListingFlow: skuId ? (skuFlowByIdMap.get(skuId) ?? null) : null,
+        // 2026-05-20 P0-Upload: 셀러 업로드 시점 (first_seen_at). UI에서 "등록 N시간 전" 표시.
+        firstSeenAt: raw?.first_seen_at ?? null,
         // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
         optionBaseAssumed: optionBaseAssumedByPid.get(Number(reveal.pid)) ?? null,
         // Wave 213 (2026-05-18): 실시간 순현재차익 min/max.

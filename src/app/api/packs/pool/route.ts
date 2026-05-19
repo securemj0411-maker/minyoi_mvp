@@ -266,7 +266,7 @@ async function loadPool(
   const comparableKeys = [...new Set(pool.map((r) => r.comparable_key).filter((k): k is string => Boolean(k)))];
   const [metaRes, marketBands, v7SiblingPresence] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name,free_shipping,last_seen_at,shop_review_rating,shop_review_count,description_preview&pid=in.(${pids.join(",")})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,description_preview&pid=in.(${pids.join(",")})`,
       { headers },
     ),
     loadMarketBandsForPool(headers, comparableKeys),
@@ -350,6 +350,8 @@ function buildItems(
         conditionClass: row.condition_class,
         comparableKey: row.comparable_key,
         lastVerifiedAt: row.last_verified_at,
+        // 2026-05-20 P0-Upload: 셀러 업로드 시점 (first_seen_at). UI 모달 "등록 N시간 전" 표시.
+        firstSeenAt: meta?.first_seen_at ?? null,
         freeShipping: meta?.free_shipping ?? false,
         sellerReviewRating: meta?.shop_review_rating ?? null,
         sellerReviewCount: meta?.shop_review_count ?? 0,
