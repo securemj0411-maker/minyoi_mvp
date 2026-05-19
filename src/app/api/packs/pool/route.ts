@@ -31,8 +31,11 @@ export const revalidate = 0;
 const PAGE_SIZE = 30;
 const READY_SLOTS = 25; // 살아있는 매물
 const SOLD_OUT_SLOTS = 5; // 오늘 잡힌 매물 (FOMO)
-const COOLDOWN_MS = 30 * 60 * 1000; // 30분
-const FRESH_LAG_HOURS = 6; // 무료는 6h 이상 지난 매물만
+// Wave 383: 30min → 2h. 6h 매물 lag 제거 (모든 신선 매물 노출) 대신 cooldown 4배 ↑.
+// 초기 가치 체감 ↑ + 답답함으로 paywall 압박.
+const COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2시간
+// Wave 383: 6h lag 제거 (0으로). 신선도 차별 X → cooldown 차별화에 집중.
+const FRESH_LAG_HOURS = 0;
 // Wave 346: 카테고리 다양화 — 한 카테고리에 5개 이상 몰리지 않게.
 // 이어폰 풀이 가장 커서 profit_band 정렬하면 다 이어폰. 다양화 필수.
 const MAX_PER_CATEGORY = 5;
@@ -168,7 +171,6 @@ async function loadPool(
   headers: Record<string, string>,
   options: { sort?: "profit_desc" | "latest" } = {},
 ): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[]; marketBands: Map<string, Map<string, MarketBandRow>> }> {
-  const sixHoursAgo = new Date(Date.now() - FRESH_LAG_HOURS * 60 * 60 * 1000).toISOString();
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todayIso = todayStart.toISOString();
@@ -181,9 +183,10 @@ async function loadPool(
   // Wave 339 (Phase 1b sold out 옵션 B): ready 25 + 오늘 invalidated 5 = 30개.
   // Wave 346: 카테고리 다양화 — overfetch 후 카테고리당 MAX_PER_CATEGORY 제한.
   // Wave 353: 항상 다양화 (전체 = 카테고리 합집합 기대값과 일관성 위해 카테고리 필터는 클라이언트로).
+  // Wave 383: last_verified_at lag 필터 제거. 신선 매물 다 노출.
   const [readyRes, soldOutRes] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&last_verified_at=lte.${encodeURIComponent(sixHoursAgo)}&${orderClause}&limit=${FETCH_POOL_OVERFETCH}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&${orderClause}&limit=${FETCH_POOL_OVERFETCH}`,
       { headers },
     ),
     restFetch(

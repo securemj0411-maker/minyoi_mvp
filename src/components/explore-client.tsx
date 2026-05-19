@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
-import { ZapIcon, FlameIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, TargetIcon, HourglassIcon } from "@/components/icons";
+import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, TargetIcon, HourglassIcon } from "@/components/icons";
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 
@@ -55,6 +55,21 @@ type StatsResponse = {
 
 function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
+}
+
+// Wave 383: cooldown 2시간 변경 → 시간/분/초 친화 표시 helper.
+function formatCooldown(sec: number): string {
+  if (sec >= 3600) {
+    const h = Math.floor(sec / 3600);
+    const m = Math.ceil((sec % 3600) / 60);
+    return m > 0 ? `${h}시간 ${m}분` : `${h}시간`;
+  }
+  if (sec >= 60) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${String(s).padStart(2, "0")}`;
+  }
+  return `${sec}초`;
 }
 
 function profitAvg(item: PoolItem) {
@@ -456,37 +471,25 @@ export default function ExploreClient() {
   // sticky 통일 후 의미 없어짐 → button과 footer 사이 큰 빈 공간 제거.
   return (
     <div className="mx-auto w-full max-w-6xl px-3 pb-4 pt-2 sm:px-6 sm:pt-4">
-      {/* 2026-05-19 (사용자 피드백): 광고 톤 줄이고 안내 톤으로 정비.
-          "구독자 전용 (곧 출시)" → "따끈한 매물 먼저 보기 →" 으로 사용자 액션 명확화.
-          freshLagHours 값을 직접 노출해 무엇을 보고 있는지 즉시 인지. */}
+      {/* Wave 383: 6h lag 제거. 신선 매물 다 노출. paywall은 cooldown 차별로. */}
       <div className="mb-2 rounded-xl border border-[#e7dece] bg-[#fffaf1] px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900/40">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px]">
           <span className="text-zinc-600 dark:text-zinc-400">
-            지금{" "}
-            <strong className="font-bold text-zinc-800 dark:text-zinc-100">
-              올린 지 {stats?.freshLagHours ?? 6}시간 넘은 매물
-            </strong>
-            을 보고 있어요
+            <strong className="font-bold text-zinc-800 dark:text-zinc-100">신선 매물</strong>에서 추천받는 중
+            {stats && stats.caughtToday > 0 ? (
+              <span className="ml-1 text-amber-700 dark:text-amber-300">
+                · 오늘 {stats.caughtToday.toLocaleString("ko-KR")}건 잡힘
+              </span>
+            ) : null}
           </span>
           <Link
             href="/plans"
             className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:underline dark:text-emerald-300"
           >
             <ZapIcon className="h-3 w-3" />
-            따끈한 매물 먼저 보기 →
+            대기 없이 즉시 받기 →
           </Link>
         </div>
-        {stats && stats.caughtToday > 0 ? (
-          <div className="mt-1 flex items-center gap-1 text-[10px] font-medium text-amber-700 dark:text-amber-300">
-            <FlameIcon className="h-3 w-3" />
-            오늘 {stats.caughtToday.toLocaleString("ko-KR")}건 새로 잡힘
-            {stats.freshLocked > 0 ? (
-              <span className="text-zinc-500 dark:text-zinc-400">
-                · 구독자가 본 신선 매물 {stats.freshLocked.toLocaleString("ko-KR")}건
-              </span>
-            ) : null}
-          </div>
-        ) : null}
       </div>
 
       {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음). */}
@@ -776,7 +779,7 @@ export default function ExploreClient() {
               <div className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {canRefresh
                   ? "새로운 매물 풀로 갱신 · 다양한 카테고리"
-                  : `${Math.floor(remainingSec / 60)}분 ${String(remainingSec % 60).padStart(2, "0")}초 후 새 매물 자동으로 풀려요`}
+                  : `${formatCooldown(remainingSec)} 후 새 매물 자동으로 풀려요`}
               </div>
               {stats && stats.freshLocked > 0 ? (
                 <div className="mt-2 flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1.5 text-[11px] font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
@@ -858,7 +861,7 @@ export default function ExploreClient() {
                   ? (lightweightMode ? "그 예산 안에서 30개 골라드릴게요 (나중에 수정 가능)" : "예산과 매물 성향에 맞춰 30개 골라드려요")
                   : (canRefresh
                       ? "현재 선호로 새 30개 받기"
-                      : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 풀려요`);
+                      : `${formatCooldown(remainingSec)} 후 자동으로 풀려요`);
                 return (
                   <>
                     {/* Wave 380: 노션 톤 — 큰 👋 + "환영해요!" + 본 메시지. */}
@@ -1062,7 +1065,7 @@ export default function ExploreClient() {
                                 </span>
                               </div>
                               <div className={`mt-1.5 text-xs font-medium ${canRefresh ? "text-[var(--brand-cream)]/75" : "text-zinc-500 dark:text-zinc-500"}`}>
-                                {canRefresh ? "예산 + 성향 적용해서 새 30개" : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 풀려요`}
+                                {canRefresh ? "예산 + 성향 적용해서 새 30개" : `${formatCooldown(remainingSec)} 후 자동으로 풀려요`}
                               </div>
                             </div>
                             {canRefresh ? (
