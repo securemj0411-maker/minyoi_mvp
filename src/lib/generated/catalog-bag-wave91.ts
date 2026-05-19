@@ -586,15 +586,70 @@ export const BAG_CATALOG: Sku[] = [
     category: "bag",
     modelName: "Pocket Organizer / Card Holder Monogram",
     aliases: [],
+    // Wave 258 (2026-05-20): mustContain 보강 — "오거나이저/organizer/엔벨로프 비즈니스/비즈니스 카드/악어지갑" 추가.
+    // 사용자 SQL 검증 — LV 78건 sku_id=NULL 매물 중 28건 "오거나이저/카드 홀더" 매칭 안 됨.
     mustContain: [
       ["루이비통", "lv", "louis vuitton"],
-      ["카드지갑", "카드 지갑", "포켓 오거나이저", "포켓오거나이저", "card holder", "카드홀더", "카드 홀더"],
+      ["카드지갑", "카드 지갑", "포켓 오거나이저", "포켓오거나이저", "오거나이저", "organizer", "card holder", "카드홀더", "카드 홀더", "엔벨로프 비즈니스", "엔벨로프", "비즈니스 카드", "비즈니스카드", "악어지갑", "악어 지갑"],
     ],
     mustNotContain: [
       "장지갑", "반지갑", "지피", "사라", "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔", "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정", "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
     ],
-    msrpKrw: 360000,
+    msrpKrw: 500000, // Wave 258 — 실제 LV organizer/card holder 시세 평균 (월릿 broad: 보레알리스 670k / 이클립스 530k / 모노그램 600k 등 → median ~500k)
     released: 2024,
     laneKey: "bag_lv_card_holder",
+    defaultProductType: "card_holder", // Wave 258 — LV card holder/organizer 라인.
+  },
+  // Wave 258 (2026-05-20): Bottega Cassette Wallet 신설 — 사용자 직접 발견.
+  //   pid 404983654 "카세트 카드지갑" / pid 408265628 "카세트 패러킷 반지갑" sku_id=NULL.
+  //   기존 bag-bottega-cassette-mini (crossbody) 와 같은 comparable_key 묶임 → 시세 sample 오염.
+  //   별도 SKU 신설 → product_type=wallet 분리 → 비교 매물 list 자동 분리.
+  {
+    id: "bag-bottega-cassette-wallet",
+    brand: "Bottega Veneta",
+    category: "bag",
+    modelName: "Cassette Wallet (카드지갑/반지갑)",
+    aliases: [],
+    mustContain: [
+      ["보테가", "bottega", "보테가베네타", "bottega veneta"],
+      ["카세트", "cassette"],
+      ["카드지갑", "카드 지갑", "반지갑", "지갑", "wallet", "월릿", "카드 홀더", "card holder", "카드케이스", "카드 케이스"],
+    ],
+    mustNotContain: [
+      "크로스백", "카메라백", "백팩", "토트백", "숄더백", "미니백", "버킷백",
+      "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔",
+      "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정",
+      "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
+    ],
+    msrpKrw: 400000, // Wave 258 — 사용자 SQL sample: 카드지갑 270k / 패러킷 반지갑 440k / 보레알리스 430k → median ~400k
+    released: 2024,
+    laneKey: "bag_bottega_cassette_wallet",
+    defaultProductType: "wallet",
+  },
+  // Wave 258: Gucci GG Marmont Matelasse Wallet 신설 — 사용자 발견 matelassé 카드지갑/반지갑.
+  //   기존 bag-gucci-gg-marmont-mini (shoulder) / -camera 등 본품 SKU 와 별도 product_type.
+  //   기존 bag-gucci-gg-supreme-card-wallet 은 supreme 라인만 — marmont 라인 누락.
+  {
+    id: "bag-gucci-marmont-wallet",
+    brand: "Gucci",
+    category: "bag",
+    modelName: "GG Marmont Matelasse Wallet (카드지갑/반지갑)",
+    aliases: [],
+    mustContain: [
+      ["구찌", "gucci"],
+      ["마몽", "marmont", "마몬트", "마몽트"],
+      ["카드지갑", "카드 지갑", "반지갑", "지갑", "wallet", "월릿", "카드 홀더", "card holder", "체인 카드", "마틀라세", "matelasse", "마틀라쎄"],
+    ],
+    mustNotContain: [
+      "백팩", "크로스백", "숄더백", "토트백", "카메라백", "미니백", "벨트백",
+      "탑핸들", "top handle",
+      "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔",
+      "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정",
+      "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
+    ],
+    msrpKrw: 500000, // Wave 258 — 사용자 SQL: 마몬트 카드지갑 280k~490k → median ~400k. 신상품 530k+ → msrp 500k.
+    released: 2024,
+    laneKey: "bag_gucci_marmont_wallet",
+    defaultProductType: "wallet",
   },
 ];
