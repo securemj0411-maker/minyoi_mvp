@@ -6908,15 +6908,71 @@ export const CATALOG: Sku[] = [
       "그리즐리", "grizzly", "자켓", "jacket", "코트", "coat", "재킷"],
     msrpKrw: 420000, released: 2020,
   },
+  // Wave 247.1 (2026-05-19): Polo RRL shirt-pants narrow 추가 split.
+  //   기존 broad clothing-polo-rrl-shirt-pants 는 catch-all 로 유지 (additive only).
+  //   production sample 74건 / CV 0.86 측정 (Wave 245 baseline) — shirt 49 / pants 20 / other 5.
+  //   shirt median ₩340k (₩13k~215만), pants median ₩370k (₩14만~95만).
+  //   narrow 별로 잡으면 시세 grouping 더 정확.
+  //
+  //   매칭 정책 (Wave 218/245 jacket-coat 패턴):
+  //   - narrow shirt mustContain: SPECIFIC subtype 키워드만 (옥스포드/버튼다운/플란넬/샴브레이 등).
+  //     일반적 "셔츠" 단독 매물은 catch-all 으로 가야 (ambiguity → null 매칭 회피).
+  //   - narrow pants mustContain: SPECIFIC subtype 키워드만 (치노/슬랙스/오피서/카키/조드퍼 등).
+  //     일반적 "팬츠" 단독 매물은 catch-all 으로 가야.
+  //   - catch-all (broad shirt-pants) mustNotContain: narrow 의 specific 키워드 차단 → narrow lane 우선.
+  {
+    id: "clothing-polo-rrl-shirt",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_shirt",
+    modelName: "Polo RRL Shirt (옥스포드/버튼다운/플란넬/샴브레이)",
+    aliases: ["RRL 옥스포드", "RRL 체크셔츠", "RRL 플란넬", "더블알엘 옥스포드"],
+    // SPECIFIC subtype 키워드만 — "셔츠" 단독은 catch-all 로.
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["oxford", "옥스포드", "버튼다운", "버튼 다운", "체크셔츠", "체크 셔츠", "샴브레이", "chambray", "워크셔츠", "워크 셔츠", "린넨 셔츠", "린넨셔츠", "헨리 셔츠", "henley", "헨리넥", "플란넬", "flannel", "남방", "다이아 체크", "윈드페인"]],
+    mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일", "스니커즈",
+      // shirt 외 product-type 차단
+      "팬츠", "pants", "바지", "치노", "chino", "슬랙스", "트라우저", "trouser", "카펜터", "carpenter", "카고", "cargo", "오피서", "officer", "jodhpur", "조드퍼",
+      "자켓", "jacket", "코트", "coat", "재킷", "블레이저", "blazer", "점퍼", "봄버", "bomber", "트러커", "trucker", "카코트", "피코트", "덱자켓", "초어", "chore",
+      "데님", "denim", "청바지", "셀비지", "진\\b", "jean",
+      "티셔츠", "tee", "맨투맨", "후디", "hoodie", "후드", "롱슬리브", "긴팔티", "반팔",
+      "니트", "knit", "카디건", "cardigan", "스웨터", "sweater",
+      "벨트", "지갑", "wallet", "월렛", "모자", "캡\\b", "넥타이", "키링",
+      "목걸이", "925", "팔찌", "bracelet", "반지",
+      // denim 모델명 (denim lane 으로)
+      "빈파포", "파이브포켓", "파이브 포켓", "5포켓", "기빈스", "미드랜드", "이스트웨스트", "에이버리", "브룸필드", "힐스뷰", "벤튼", "클리어빌"],
+    msrpKrw: 290000, released: 2020,
+    defaultProductType: "shirt", // Wave 236d — RRL 옥스포드/체크/버튼다운 = shirt 라인.
+  },
+  {
+    id: "clothing-polo-rrl-pants",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_pants",
+    modelName: "Polo RRL Pants (치노/슬랙스/오피서/카키/조드퍼)",
+    aliases: ["RRL 치노", "RRL 슬랙스", "RRL 카키", "RRL 조드퍼", "더블알엘 치노"],
+    // SPECIFIC subtype 키워드만 — "팬츠" 단독은 catch-all 로.
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["치노", "chino", "슬랙스", "오피서 팬츠", "오피서팬츠", "officer pant", "jodhpur", "조드퍼", "조파", "트라우저", "trouser", "카펜터", "carpenter", "카고 팬츠", "cargo pant", "카키 팬츠", "카키팬츠", "필드 치노", "필드치노", "헤링본 팬츠", "헤링본팬츠"]],
+    mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일", "스니커즈",
+      // pants 외 product-type 차단
+      "셔츠", "shirt", "남방", "oxford", "옥스포드", "버튼다운", "체크셔츠", "체크 셔츠", "샴브레이", "chambray", "워크셔츠", "워크 셔츠", "린넨 셔츠", "린넨셔츠", "플란넬", "flannel",
+      "자켓", "jacket", "코트", "coat", "재킷", "블레이저", "blazer", "점퍼", "봄버", "bomber", "트러커", "trucker", "카코트", "피코트", "덱자켓", "초어", "chore",
+      "데님", "denim", "청바지", "셀비지", "진\\b", "jean",
+      "티셔츠", "tee", "맨투맨", "후디", "hoodie", "후드", "롱슬리브", "긴팔티", "반팔",
+      "니트", "knit", "카디건", "cardigan", "스웨터", "sweater",
+      "벨트", "지갑", "wallet", "월렛", "모자", "캡\\b", "넥타이", "키링",
+      "목걸이", "925", "팔찌", "bracelet", "반지",
+      // denim 모델명 (denim lane 으로)
+      "빈파포", "파이브포켓", "파이브 포켓", "5포켓", "기빈스", "미드랜드", "이스트웨스트", "에이버리", "브룸필드", "힐스뷰", "벤튼", "클리어빌"],
+    msrpKrw: 380000, released: 2020,
+    defaultProductType: "pants", // Wave 236d — RRL 치노/슬랙스 = pants 라인.
+  },
   {
     id: "clothing-polo-rrl-shirt-pants",
     brand: "RRL", category: "clothing", laneKey: "polo_rrl_shirt_pants",
-    modelName: "Polo RRL Shirt / Pants (코튼/코듀로이/워크)",
-    aliases: ["RRL 셔츠", "RRL 코듀로이", "RRL 워크팬츠"],
+    modelName: "Polo RRL Shirt / Pants (코튼/코듀로이/워크 — catch-all)",
+    aliases: ["RRL 셔츠팬츠", "RRL 코듀로이", "RRL 워크팬츠"],
     // Wave 245 (2026-05-19): production sample 에서 오피서치노/필드치노/카고/트라우저/카펜터/슬림핏/스트레이트핏 매물이 broad 로 잘못 매칭.
+    // Wave 247.1 (2026-05-19): shirt / pants narrow 신설 후 catch-all (코듀로이/워크 등 모호한 product-type 매물만).
+    //   narrow 의 specific 키워드 (옥스포드/치노/슬랙스 등) 는 mustNotContain 로 차단 → narrow lane 우선.
+    //   일반적 "셔츠" / "팬츠" / "shirt" / "pants" 단독 매물은 catch-all 에서 매칭.
     mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["셔츠", "shirt", "코듀로이", "corduroy", "워크팬츠", "워크 팬츠", "코튼", "린넨", "퀄팅", "져지", "체크", "팬츠", "pants", "바지", "쇼츠", "하프팬츠",
-      "치노", "chino", "오피서", "officer", "필드 치노", "필드치노", "카고", "cargo", "트라우저", "trouser", "카펜터", "carpenter", "슬림핏", "slim fit", "스트레이트핏", "straight fit", "스트레이트 핏", "헤링본"]],
-    // Wave 228: 자켓/덱자켓/월렛/지갑/목걸이/rrl 무드 가짜 차단.
+      "슬림핏", "slim fit", "스트레이트핏", "straight fit", "스트레이트 핏"]],
     mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "데님", "청바지", "셀비지",
       "자켓", "jacket", "코트", "coat", "덱자켓",
       "월렛", "wallet", "지갑",
@@ -6924,7 +6980,11 @@ export const CATALOG: Sku[] = [
       // Wave 245: denim 모델명 차단 (denim lane 으로 가야)
       "빈파포", "파이브포켓", "파이브 포켓", "5포켓", "기빈스", "미드랜드", "이스트웨스트", "에이버리", "브룸필드", "힐스뷰", "벤튼", "클리어빌",
       // 데님 진 자체 차단
-      "진\\b", "jean"],
+      "진\\b", "jean",
+      // Wave 247.1: shirt narrow 키워드 차단 (narrow shirt lane 우선)
+      "oxford", "옥스포드", "버튼다운", "버튼 다운", "체크셔츠", "체크 셔츠", "샴브레이", "chambray", "워크셔츠", "워크 셔츠", "린넨 셔츠", "린넨셔츠", "헨리 셔츠", "henley", "헨리넥", "플란넬", "flannel", "남방", "다이아 체크", "윈드페인",
+      // Wave 247.1: pants narrow 키워드 차단 (narrow pants lane 우선)
+      "치노", "chino", "슬랙스", "오피서", "officer", "jodhpur", "조드퍼", "조파", "트라우저", "trouser", "카펜터", "carpenter", "카고", "cargo", "카키 팬츠", "카키팬츠", "헤링본 팬츠", "헤링본팬츠"],
     msrpKrw: 350000, released: 2020,
   },
   {
@@ -6995,6 +7055,12 @@ export const CATALOG: Sku[] = [
       "진\\b", "jean",
       // knit 도 광범위하게 mustContain 키워드 미박혔지만 broad 에서 차단 (필요 시 추후 narrow lane 신설).
       "니트", "knit", "카디건", "cardigan", "스웨터", "sweater", "풀오버",
+      // Wave 247.1 (2026-05-19): shirt / pants narrow specific 키워드 추가 차단.
+      //   broad RRL 가 narrow 키워드 매물 잡으면 narrow + broad 충돌 → null 매칭.
+      "슬랙스", "jodhpur", "조드퍼", "조파", "카키 팬츠", "카키팬츠",
+      "oxford", "옥스포드", "버튼다운", "버튼 다운", "체크셔츠", "체크 셔츠", "샴브레이", "chambray",
+      "워크셔츠", "워크 셔츠", "린넨 셔츠", "린넨셔츠", "헨리 셔츠", "henley", "플란넬", "flannel",
+      "남방", "다이아 체크", "윈드페인",
     ],
     msrpKrw: 350000, released: 2020,
   },

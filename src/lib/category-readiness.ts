@@ -490,7 +490,10 @@ export const LANE_READINESS: LaneReadinessMap = {
   // Wave 218 (2026-05-19): RRL narrow 5개 — product type 별 가격대 완전 다름 (CV 1.56 분산)
   polo_rrl_tee: { status: "ready", label: "Polo RRL Tee / Sweat / Hoodie", note: "Wave 218" },
   polo_rrl_denim: { status: "ready", label: "Polo RRL Denim (jeans/shirt)", note: "Wave 218" },
-  polo_rrl_shirt_pants: { status: "ready", label: "Polo RRL Shirt / Pants", note: "Wave 218" },
+  polo_rrl_shirt_pants: { status: "ready", label: "Polo RRL Shirt / Pants (catch-all)", note: "Wave 218. Wave 247.1: shirt / pants narrow 신설 후 catch-all (코듀로이/워크 등 모호한 매물만)." },
+  // Wave 247.1 (2026-05-19): shirt-pants split — production sample 74건 (CV 0.86) → shirt 49 / pants 20 narrow 분리.
+  polo_rrl_shirt: { status: "ready", label: "Polo RRL Shirt (옥스포드/플란넬)", note: "Wave 247.1 — broad 의 66% 셔츠 매물 분리 (49건, median 34만)" },
+  polo_rrl_pants: { status: "ready", label: "Polo RRL Pants (치노/슬랙스)", note: "Wave 247.1 — broad 의 27% 팬츠 매물 분리 (20건, median 37만)" },
   polo_rrl_accessory: { status: "ready", label: "Polo RRL Accessory", note: "Wave 218" },
   polo_rrl_sneaker: { status: "ready", label: "Polo RRL Sneaker", note: "Wave 218 — shoe 카테고리" },
   polo_rrl_jacket_coat: { status: "ready", label: "Polo RRL Jacket / Coat", note: "Wave 245 — broad 의 42% 자켓 매물 분리 (median 150만, p25/p75=82만/264만)" },
