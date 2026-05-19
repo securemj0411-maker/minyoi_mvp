@@ -12,6 +12,7 @@ type Point = {
   blended: number | null;
   activeCount: number;
   soldCount: number;
+  confidence?: "high" | "medium" | "low";
 };
 
 type HistoryResp = {
@@ -210,6 +211,14 @@ export default function MarketHistoryChart({
   // 30일이라 표기하면 사용자가 trend 풍부함으로 오인. 실제 data.length 기반 동적 표기.
   const daysSpan = data.length;
   const isThinHistory = daysSpan < 7;
+  // 2026-05-19 P1: 최신 confidence (high/medium/low) 뱃지 표시. API는 이미 confidence 컬럼 반환 중.
+  const latestConfidence = data[data.length - 1]?.confidence ?? "low";
+  const confidenceBadge: { label: string; cls: string } | null =
+    latestConfidence === "high"
+      ? { label: "✓ 신뢰 높음", cls: "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300" }
+      : latestConfidence === "medium"
+        ? { label: "△ 신뢰 보통", cls: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300" }
+        : { label: "? 표본 부족", cls: "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400" };
   const baseTitle = priceSource === "reference"
     ? "다나와 · 번개 미개봉 추이"
     : `번개장터 시세 ${daysSpan}일 추이`;
@@ -232,7 +241,15 @@ export default function MarketHistoryChart({
         </div>
       ) : null}
       <div className="flex items-center justify-between gap-2 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
-        <span>{title}</span>
+        <span className="inline-flex items-center gap-1.5">
+          {title}
+          {/* 2026-05-19 P1: 최신 confidence 뱃지. 사용자에게 시세 신뢰도 명시. */}
+          {confidenceBadge ? (
+            <span className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-bold ${confidenceBadge.cls}`}>
+              {confidenceBadge.label}
+            </span>
+          ) : null}
+        </span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 justify-end">
           <span className="inline-flex items-center gap-1">
             <span className="inline-block h-1.5 w-3 rounded bg-emerald-500" />
