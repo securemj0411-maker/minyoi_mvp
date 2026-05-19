@@ -615,27 +615,17 @@ export default function ExploreClient() {
         </div>
       ) : null}
 
-      {/* Wave 347+358: 모바일 fixed FAB — 항상 화면 하단에 따라옴. */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-4 sm:hidden">
-        <button
-          type="button"
-          onClick={() => setRefreshModalOpen(true)}
-          disabled={refreshing}
-          className="pointer-events-auto inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3.5 text-base font-bold text-[var(--brand-cream)] shadow-[0_20px_44px_rgba(34,49,39,0.38),0_4px_12px_rgba(34,49,39,0.20)] ring-1 ring-white/10 transition active:scale-[0.97]"
-        >
-          <SearchIcon className="h-4 w-4" />
-          {refreshing ? "받는 중..." : "다른 매물 찾기"}
-        </button>
-      </div>
-
-      {/* 데스크탑: sticky bottom (페이지 끝까지 따라옴) */}
+      {/* 2026-05-19: sticky bottom CTA 통일 — 모바일도 PC와 동일 sticky 패턴.
+          이전: 모바일=fixed FAB (항상 떠있음), 데스크탑=sticky bottom-4 (카드 끝에 흡수).
+          사용자 피드백: "하단에 fixed되다가 제자리 보이면 탁 멈추는 그게 sticky 아니였나?"
+          → 모바일도 sticky로 통일. "다른 30개" 카드 도달 시 자연 위치 흡수. */}
       {!loading && items.length > 0 ? (
-        <div className="sticky bottom-4 z-20 mt-6 hidden justify-center sm:flex">
+        <div className="sticky bottom-4 z-20 mt-4 flex justify-center px-4 sm:mt-6 sm:px-0">
           <button
             type="button"
             onClick={() => setRefreshModalOpen(true)}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3 text-sm font-bold text-[var(--brand-cream)] shadow-[0_16px_34px_rgba(34,49,39,0.32)] ring-1 ring-white/10 transition hover:translate-y-[-1px] hover:shadow-[0_20px_40px_rgba(34,49,39,0.38)]"
+            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3.5 text-base font-bold text-[var(--brand-cream)] shadow-[0_20px_44px_rgba(34,49,39,0.38),0_4px_12px_rgba(34,49,39,0.20)] ring-1 ring-white/10 transition active:scale-[0.97] hover:translate-y-[-1px] hover:shadow-[0_24px_48px_rgba(34,49,39,0.42)] sm:min-h-0 sm:py-3 sm:text-sm sm:shadow-[0_16px_34px_rgba(34,49,39,0.32)]"
           >
             <SearchIcon className="h-4 w-4" />
             {refreshing ? "받는 중..." : "다른 매물 찾기"}
