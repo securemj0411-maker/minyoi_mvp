@@ -511,12 +511,19 @@ function uploadAgoLabel(firstSeenAtIso: string | null | undefined): string | nul
 
 // Wave 393.7: 신선도 chip + Pro link 제거 (사용자 짚음 — 모달엔 불필요).
 // ConditionChip(friendly)만 노출. 신선도는 매입/시세 메타 라인의 freshLabel에 이미 있음.
+// Wave 394.2 (외부 review #20): 사진 분석 부재 한계 명시 — "AI가 사진 봤겠지" 오해 차단.
+// description (텍스트) 기반 판단이라는 한계 1줄. 사진 직접 확인 권장.
 function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
   const cond = card.marketBasis?.conditionClass ?? null;
   if (!cond) return null;
   return (
-    <div className="mb-2 flex flex-wrap items-center gap-2">
-      <ConditionChip conditionClass={cond} variant="friendly" />
+    <div className="mb-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <ConditionChip conditionClass={cond} variant="friendly" />
+      </div>
+      <div className="mt-1 text-[10px] font-medium leading-tight text-zinc-400 dark:text-zinc-500">
+        AI가 매물 설명(텍스트) 기준 판단 · 사진은 직접 확인 권장
+      </div>
     </div>
   );
 }
@@ -2505,6 +2512,15 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
           <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
             수수료 3.5% 차감
           </div>
+          {/* Wave 394.2 (외부 review #13): 채널 리스크 chip — 단순 순익 비교가 당근 무조건 좋아 보이는 문제. */}
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+              전국 거래
+            </span>
+            <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+              안전결제
+            </span>
+          </div>
         </div>
         <div className="rounded-md bg-orange-50 px-3 py-2.5 dark:bg-orange-950/30">
           <div className="flex items-center gap-1.5">
@@ -2516,6 +2532,15 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
           </div>
           <div className="text-[10px] font-medium text-orange-700 dark:text-orange-300">
             +{krw(bonusFromDaangn)} 더 (수수료 0)
+          </div>
+          {/* Wave 394.2 (외부 review #13): 당근 리스크 chip — "당근 = 무조건 더 좋다"는 단순화 정정. */}
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+              지역 제한
+            </span>
+            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+              네고 부담
+            </span>
           </div>
         </div>
       </div>
@@ -2663,17 +2688,24 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
 
           {/* 가격대별 의미 — 위→아래 (좋음→나쁨). 모든 라인 "차익" 용어 통일. */}
           <div className="mt-2 space-y-1.5 text-xs">
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="flex items-baseline gap-1.5">
-                <span className="text-emerald-600 dark:text-emerald-400">↓</span>
-                <span className="text-zinc-500 dark:text-zinc-400">협상 시도</span>
-                <span className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                  {krw(guidance.negotiationTarget)}
+            <div>
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="flex items-baseline gap-1.5">
+                  <span className="text-emerald-600 dark:text-emerald-400">↓</span>
+                  <span className="text-zinc-500 dark:text-zinc-400">협상 시도</span>
+                  <span className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                    {krw(guidance.negotiationTarget)}
+                  </span>
                 </span>
-              </span>
-              <span className="text-[11px] font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
-                차익 +{krw(guidance.negotiationProfit)}
-              </span>
+                <span className="text-[11px] font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
+                  차익 +{krw(guidance.negotiationProfit)}
+                </span>
+              </div>
+              {/* Wave 394.2 (외부 review #14): 협상가 산출 근거 1줄 — "왜 이 가격?" 의문 해소. */}
+              {/* buyPriceGuidance.ts: negotiationRoom = min(차익×30%, 2만원) */}
+              <div className="mt-0.5 pl-4 text-[10px] font-medium leading-tight text-zinc-400 dark:text-zinc-500">
+                현재가 −{krw(guidance.negotiationRoom)} 깎기 (차익의 30% 또는 최대 2만원)
+              </div>
             </div>
 
             {/* Wave 394.1 (외부 review #15): 위험/손해 구간 만원 단위 단순화. */}
