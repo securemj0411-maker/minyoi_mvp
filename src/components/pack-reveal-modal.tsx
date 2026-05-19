@@ -1955,6 +1955,41 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
   const extraChecks = checklist.checks.filter((c) => c.priority === "extra");
   const totalCount = checklist.checks.length;
 
+  // Wave 393.8: 카테고리별 헤드라인 — "전자제품이 뭔 가품이냐" (사용자 짚음).
+  // 가품 위험 카테고리 vs 정품 거래 카테고리 분기. 헤드라인 의미 정확.
+  const headlineByCategory: Record<string, string> = {
+    shoe: `가품 + 사이즈 점검 ${totalCount}개`,
+    earphone: `차이팟 가품 + 정품 점검 ${totalCount}개`,
+    bag: `명품 가품 점검 ${totalCount}개`,
+    perfume: `정품 진위 점검 ${totalCount}개`,
+    watch: `명품 가품 점검 ${totalCount}개`,
+    clothing: `명품 정품 점검 ${totalCount}개`,
+    smartphone: `잠금 + 기기 상태 점검 ${totalCount}개`,
+    tablet: `iCloud 잠금 + 상태 점검 ${totalCount}개`,
+    smartwatch: `잠금 + 배터리 점검 ${totalCount}개`,
+    laptop: `잠금 + 부품 점검 ${totalCount}개`,
+    drone: `활성화 + 펌웨어 점검 ${totalCount}개`,
+    camera: `셔터 + 렌즈 점검 ${totalCount}개`,
+  };
+  const headlineText = headlineByCategory[checklist.category] ?? `구매 전 점검 ${totalCount}개`;
+
+  // 카테고리별 uppercase 헤더도 자연어
+  const upperHeaderByCategory: Record<string, string> = {
+    shoe: "구매 전 점검",
+    earphone: "구매 전 점검",
+    bag: "정품 확인",
+    perfume: "정품 확인",
+    watch: "정품 확인",
+    clothing: "정품 확인",
+    smartphone: "기기 점검",
+    tablet: "기기 점검",
+    smartwatch: "기기 점검",
+    laptop: "기기 점검",
+    drone: "기기 점검",
+    camera: "기기 점검",
+  };
+  const upperHeader = upperHeaderByCategory[checklist.category] ?? "구매 전 점검";
+
   // Wave 323 (디자인 통일): 흰 카드 + rose 좌측 보더 + 본문은 색 강도 줄임.
   const priorityDotClass: Record<CounterfeitCheckPriority, string> = {
     must: "bg-rose-500",
@@ -1973,11 +2008,11 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
       >
         <div className="min-w-0">
           <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            정품 확인 — {checklist.label}
+            {upperHeader} — {checklist.label}
           </div>
           <div className="mt-1 flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
             <ShieldIcon className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-            구매 전 정품 확인 {totalCount}개
+            {headlineText}
           </div>
           <div className="mt-0.5 line-clamp-2 text-xs font-medium leading-4 text-zinc-600 dark:text-zinc-400 sm:line-clamp-none">
             {checklist.riskHeadline}
