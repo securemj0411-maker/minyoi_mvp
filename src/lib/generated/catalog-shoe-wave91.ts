@@ -571,6 +571,10 @@ export const SHOE_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       "miu miu", "미우미우", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
+      // Wave 235 (2026-05-19): Ronnie Fieg(Kith) collab 40만 mismatch. Miu Miu 145만 이미 차단됨.
+      "ronnie fieg", "로니피그", "로니 피그", "kith", "키스",
+      "aime leon dore", "ald", "에메레옹도레", "joe freshgoods", "조 프레쉬굿즈",
+      "salehe bembury", "살레 벰버리", "테디", "teddy santis", "made in usa",
     ],
     msrpKrw: 119000,
     released: 2022,

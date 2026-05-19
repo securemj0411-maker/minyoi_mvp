@@ -657,6 +657,12 @@ export const LANE_READINESS: LaneReadinessMap = {
   vans_authentic: { status: "ready", label: "Vans Authentic", note: "Wave 233" },
   vans_era: { status: "ready", label: "Vans Era", note: "Wave 233" },
   vans_slip_on: { status: "ready", label: "Vans Slip-On", note: "Wave 233" },
+  // Wave 235 (2026-05-19): collab variant 분리 — broad SKU stddev 진단 mismatch 발굴.
+  offwhite_blazer_mid_collab: { status: "ready", label: "Off-White × Nike Blazer Mid", note: "Wave 235 collab — Blazer Mid broad 95만/73만 mismatch 색출" },
+  bape_vans_collab: { status: "ready", label: "BAPE × Vans (Old Skool/Sk8-Hi LX)", note: "Wave 235 collab" },
+  clot_superstar_collab: { status: "ready", label: "Clot × Adidas Superstar", note: "Wave 235 collab — Superstar broad 90만 mismatch" },
+  thugclub_superstar_collab: { status: "ready", label: "Thug Club × Adidas Superstar (떠그다스)", note: "Wave 235 collab — 한국 인기" },
+  vans_sato_era_collab: { status: "ready", label: "Vans × Sato Era 95 (Satoshi 한정)", note: "Wave 235 collab — Era broad 85만~108만 mismatch" },
   // Wave 219 (2026-05-19): Nike Blazer variant 분리 — Mid 119K / Low/Platform 99K / Hi 129K
   nike_blazer_mid: { status: "ready", label: "Nike Blazer Mid / Mid 77", note: "Wave 219" },
   nike_blazer_low: { status: "ready", label: "Nike Blazer Low / Low 77 / Platform", note: "Wave 219" },

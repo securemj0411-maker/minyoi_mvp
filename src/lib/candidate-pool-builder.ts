@@ -21,6 +21,21 @@ import { POOL_BLOCK_NOTES } from "@/lib/condition-policy";
 // 일반 사용자 결제 부담 + 단일 매물 risk + 한정판/고가 모델 노이즈 차단.
 const MAX_POOL_PRICE_KRW = 2_000_000;
 
+// Wave 235 (2026-05-19): placeholder 가격 sanity — sample sweep 발견 패턴 일관 차단.
+//   같은 자리수 5+ 반복 (999,999 / 88888 / 11111) + 의도적 시퀀스 (1004/1234/4321/12345)
+//   + 너무 작은 가격 (1000원 미만 = 카탈로그 모델 무관 placeholder).
+//   tick-pipeline isPlaceholderPrice 와 정렬 + 카테고리 친화 minimum.
+function isPoolPlaceholderPrice(price: number | null | undefined): boolean {
+  if (!Number.isFinite(price ?? NaN)) return true;
+  const p = Number(price);
+  if (p <= 0) return true;
+  if (p < 1000) return true; // 500원 같은 매물 — 카테고리 ready SKU 가격대 (shoe/clothing/bag) 모두 1000원 이상.
+  const s = String(Math.floor(p));
+  if (s.length >= 5 && /^(\d)\1+$/.test(s)) return true; // 11111 / 99999 / 1111111
+  if (p === 1004 || p === 1234 || p === 4321 || p === 12345) return true;
+  return false;
+}
+
 // Wave 132 (2026-05-16): 댓글 수 상한 — 사용자 정책.
 // "댓글 8개 이상 = 흥정 호가 괴리 큼. 추천해봤자 의미 없음 → pool 진입 X".
 // num_comment는 detail-worker가 patchRows("mvp_raw_listings", {num_comment: detail.commentCount})로 박음.
@@ -193,6 +208,17 @@ export function buildCandidatePoolRows(input: {
     if (Number.isFinite(row.price) && row.price > MAX_POOL_PRICE_KRW) {
       skipped += 1;
       invalidations.push({ pid, reason: "price_above_pool_max" });
+      continue;
+    }
+
+    // Wave 235 (2026-05-19): placeholder 가격 sanity check — candidate pool 진입 차단.
+    //   tick-pipeline isPlaceholderPrice 와 동일 패턴 적용. 200만 cap 미만 placeholder
+    //   (999,999 / 88888 / 11111 등) 가 pool 통과해 사용자 추천에 들어가는 risk 차단.
+    //   sample sweep 발견: 999,999 (bag-lululemon-backpack/shoe-asics-jog-100/clothing-polo-oxford-shirt),
+    //   1,234 (bag-stussy-crossbody), 500 (bag-cdg-pvc).
+    if (isPoolPlaceholderPrice(row.price)) {
+      skipped += 1;
+      invalidations.push({ pid, reason: "placeholder_price" });
       continue;
     }
 

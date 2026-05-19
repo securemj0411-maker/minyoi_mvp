@@ -6922,8 +6922,17 @@ export const CATALOG: Sku[] = [
     brand: "The North Face", category: "clothing", laneKey: "tnf_mountain_jacket",
     modelName: "TNF Mountain Jacket (Gore-Tex)",
     aliases: ["Mountain Jacket", "마운틴 자켓", "노스페이스 마운틴"],
-    mustContain: [["노스페이스", "north face", "tnf"], ["마운틴", "mountain jacket", "mountain 자켓"]],
-    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label", "퍼플라벨"],
+    mustContain: [["노스페이스", "north face", "tnf"], ["마운틴 자켓", "mountain jacket", "마운틴자켓"]],
+    // Wave 235 (2026-05-19): Cecilie Bahnsen collab 93만, Mountain Light/Mountain Parka 별 모델 차단.
+    mustNotContain: [
+      "supreme", "슈프림", "키즈", "kids", "purple label", "퍼플라벨", "퍼플 라벨",
+      // Wave 235 collab 차단
+      "cecilie", "세실리에", "bahnsen", "반센", "세실리에 반센",
+      "brain dead", "브레인데드", "junya", "준야", "gucci", "구찌",
+      "마운틴 라이트", "mountain light", "마운틴라이트",
+      "마운틴 파카", "mountain parka", "마운틴파카",
+      "마운틴 가이드", "mountain guide", "안타르티카", "antarctica",
+    ],
     msrpKrw: 590000, released: 1985,
   },
   {
@@ -7197,7 +7206,13 @@ export const CATALOG: Sku[] = [
     modelName: "CDG PVC Bag (시그니처)",
     aliases: ["CDG PVC", "꼼데가르송 PVC", "꼼데 PVC 가방"],
     mustContain: [["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["pvc"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "nike", "나이키", "신발", "스니커즈"],
+    // Wave 235 (2026-05-19): Gucci × CDG 100주년 collab 105만/65만/56만 — 별도 SKU 또는 차단.
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep ", "replica", "nike", "나이키", "신발", "스니커즈",
+      // Wave 235 collab 차단
+      "gucci", "구찌", "구찌 100주년", "지드래곤", "지디", "위버멘쉬",
+      "louis vuitton", "lv", "루이비통",
+    ],
     msrpKrw: 200000, released: 2018,
   },
   {
@@ -8104,7 +8119,8 @@ export const CATALOG: Sku[] = [
     modelName: "Nike Blazer Mid / Mid 77",
     aliases: ["Blazer Mid", "블레이저 미드", "Blazer Mid 77"],
     mustContain: [["nike", "나이키"], ["블레이저", "blazer"], ["미드", "mid"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "sakai", "사카이", "꼼데", "cdg", "supreme", "슈프림", "로우", "low", "하이", "high"],
+    // Wave 235 (2026-05-19): Off-White × Blazer Mid collab 95만/73만/65만 가격대 (별도 SKU).
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "sakai", "사카이", "꼼데", "cdg", "supreme", "슈프림", "로우", "low", "하이", "high", "오프화이트", "off-white", "off white", "offwhite", "버질"],
     msrpKrw: 119000, released: 1973,
   },
   {
@@ -8206,7 +8222,17 @@ export const CATALOG: Sku[] = [
     modelName: "Adidas Superstar (broad)",
     aliases: ["Adidas Superstar", "아디다스 슈퍼스타"],
     mustContain: [["adidas", "아디다스"], ["슈퍼스타", "superstar"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "베이프", "bape", "제레미 스캇"],
+    // Wave 235 (2026-05-19): collab 한정판 다수 mismatch (Clot/Kith/JJJJound/Wales Bonner/Prada/TMNT/Thug Club).
+    //   Wales Bonner 는 별도 SKU 있을 수도 — 일단 broad 에서 차단 후 narrow 추가 필요 시 분리.
+    mustNotContain: [
+      "키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      "베이프", "bape", "제레미 스캇",
+      // Wave 235 collab 차단
+      "클랏", "clot", "prada", "프라다", "jjjjound", "자운드", "kith", "키스",
+      "wales bonner", "웨일즈보너", "웨일즈 보너", "pleasure", "플레저", "pleasures",
+      "닌자 거북이", "닌자거북이", "tmnt", "거북이 슈퍼스타", "thug club", "떠그클럽", "떠그 클럽",
+      "ot-tech", "ot tech", "clot 슈퍼스타", "프라다 슈퍼스타",
+    ],
     msrpKrw: 119000, released: 1969,
   },
   {
@@ -8487,13 +8513,22 @@ export const CATALOG: Sku[] = [
   },
   // Wave 233 (2026-05-19): Vans 시리즈 누락 narrow 추가 — 사용자 명시 "정확한 매물".
   //   측정 unmatched: Vans Old Skool/Authentic/SK8/Era 239 매물. 일반인 친화 (15~60K).
+  // Wave 235 (2026-05-19): Vault/한정판/Vintage/collab mustNotContain 강화 — sample sweep 발견:
+  //   Old Skool: BAPE 499k / Vault Mastermind 500k / FDMTL 279k / Bottega 520k / Souvenir LX 799k
+  //   Slip-On: 빈티지 70s/90s 한정판 360k~930k / Taka Hayashi Vault 350k
+  //   Era: 사토시 95 850k~1.08M / Fear of God 600k~850k / 빈티지 70s/80s 700k
   {
     id: "shoe-vans-old-skool",
     brand: "Vans", category: "shoe", laneKey: "vans_old_skool",
     modelName: "Vans Old Skool (Classic Black / Color Theory)",
     aliases: ["Vans Old Skool", "반스 올드스쿨", "올드 스쿨", "Old Skool"],
     mustContain: [["반스", "vans"], ["올드스쿨", "올드 스쿨", "old skool", "oldskool"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품", "미러"],
+    mustNotContain: [
+      "키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품", "미러",
+      // Wave 235 한정판/Vault/collab
+      "vault", "볼트", "lx", "베이프", "bape", "마스터마인드", "mastermind", "fdmtl", "펀더멘탈",
+      "보테가", "bottega", "수베니어", "souvenir", "end.", "end ", "fragment", "프래그먼트",
+    ],
     msrpKrw: 89000, released: 1977,
   },
   {
@@ -8502,7 +8537,11 @@ export const CATALOG: Sku[] = [
     modelName: "Vans SK8-Hi (Classic / Reissue)",
     aliases: ["Vans SK8", "반스 sk8", "SK8 Hi"],
     mustContain: [["반스", "vans"], ["sk8", "스케이트"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품",
+      "vault", "볼트", "lx", "베이프", "bape", "마스터마인드", "mastermind",
+      "보테가", "bottega", "fragment", "프래그먼트",
+    ],
     msrpKrw: 99000, released: 1978,
   },
   {
@@ -8511,7 +8550,10 @@ export const CATALOG: Sku[] = [
     modelName: "Vans Authentic (Canvas Classic)",
     aliases: ["Vans Authentic", "반스 어센틱", "Authentic"],
     mustContain: [["반스", "vans"], ["어센틱", "authentic"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품",
+      "vault", "볼트", "lx", "베이프", "bape", "fragment", "프래그먼트",
+    ],
     msrpKrw: 79000, released: 1966,
   },
   {
@@ -8520,7 +8562,14 @@ export const CATALOG: Sku[] = [
     modelName: "Vans Era (Classic Canvas Low)",
     aliases: ["Vans Era", "반스 에라", "Era"],
     mustContain: [["반스", "vans"], ["에라", " era ", "era\\b"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품", "벨크로"],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품", "벨크로",
+      // Wave 235 한정판 (Era 95 Vault/Sato/FoG/Vintage)
+      "vault", "볼트", "lx", "사토시", "satoshi", "사토시 나카모토",
+      "fear of god", "fog", "피오갓", "피어오브갓", "era 95", "에라95", "에라 95",
+      "fdmtl", "더블탭스", "double taps", "wtaps",
+      "70s 반스", "80s 반스", "70s반스", "80s반스", "독타운", "dogtown",
+    ],
     msrpKrw: 79000, released: 1976,
   },
   {
@@ -8529,8 +8578,67 @@ export const CATALOG: Sku[] = [
     modelName: "Vans Slip-On (Checkerboard / Classic)",
     aliases: ["Vans Slip-On", "반스 슬립온", "Slip On", "체커보드"],
     mustContain: [["반스", "vans"], ["슬립온", "slip on", "slip-on", "체커보드", "checkerboard"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품",
+      // Wave 235 Vault/Vintage/collab
+      "vault", "볼트", "lx", "타카 하야시", "taka hayashi", "타카하야시",
+      "70s 반스", "80s 반스", "90s 반스", "70s반스", "80s반스", "90s반스",
+      "fear of god", "fog", "피오갓", "피어오브갓", "fragment", "프래그먼트",
+    ],
     msrpKrw: 79000, released: 1979,
+  },
+  // Wave 235 (2026-05-19): collab variant 분리 — broad SKU stddev 진단 후 mismatch 색출.
+  //   추가 기준: 매물 5+ 건 + 일반 친화 + 가품 risk 낮음 (명품 collab 제외).
+  //   1) Off-White × Blazer Mid 5매물 65만~95만 (Lugano/Hallows Eve/Serena/Wood)
+  //   2) BAPE × Vans 4매물 50만 (Old Skool/Sk8-Hi TB LX)
+  //   3) Adidas × Clot Superstar 3매물 30만~90만 (Clot collab)
+  //   4) Adidas × Thug Club Superstar 3매물 25만~33만 (떠그클럽 — 한국 인기)
+  //   5) Vans × Sato (Satoshi Nakamoto) Era 95 3매물 85만~108만
+  //   skip: Miu Miu × NB530 (1매물), Denim Tears × Marc Jacobs (2매물), Gucci × CDG (명품 가품 risk), Balenciaga × Adidas (200만 cap 초과).
+  {
+    id: "shoe-offwhite-nike-blazer-mid",
+    brand: "Off-White x Nike", category: "shoe", laneKey: "offwhite_blazer_mid_collab",
+    modelName: "Off-White × Nike Blazer Mid (Lugano/Serena/Hallows Eve/Wood)",
+    aliases: ["Off-White Blazer", "오프화이트 블레이저", "Virgil Blazer"],
+    mustContain: [["off-white", "off white", "offwhite", "오프화이트"], ["블레이저", "blazer"], ["미드", "mid"], ["nike", "나이키"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "짭", "가품", "미러", "1:1", "low", "high", "로우", "하이"],
+    msrpKrw: 220000, released: 2018,
+  },
+  {
+    id: "shoe-bape-vans-collab",
+    brand: "Bape x Vans", category: "shoe", laneKey: "bape_vans_collab",
+    modelName: "BAPE × Vans (Old Skool TB LX / Sk8-Hi)",
+    aliases: ["BAPE Vans", "베이프 반스", "Bape Vans collab"],
+    mustContain: [["베이프", "bape", "a bathing ape"], ["반스", "vans"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "짭", "가품", "미러", "1:1", "supreme", "슈프림"],
+    msrpKrw: 350000, released: 2020,
+  },
+  {
+    id: "shoe-clot-adidas-superstar",
+    brand: "Clot x Adidas", category: "shoe", laneKey: "clot_superstar_collab",
+    modelName: "Clot × Adidas Superstar (Clot collab)",
+    aliases: ["Clot Superstar", "클랏 슈퍼스타", "Clot Adidas"],
+    mustContain: [["클랏", "clot", "edison chen"], ["슈퍼스타", "superstar"], ["adidas", "아디다스"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "짭", "가품", "미러", "1:1"],
+    msrpKrw: 220000, released: 2023,
+  },
+  {
+    id: "shoe-thugclub-adidas-superstar",
+    brand: "Thug Club x Adidas", category: "shoe", laneKey: "thugclub_superstar_collab",
+    modelName: "Thug Club × Adidas Superstar (떠그클럽 collab)",
+    aliases: ["Thug Club Superstar", "떠그클럽 슈퍼스타", "떠그다스", "Thug Adidas"],
+    mustContain: [["떠그", "thug club", "thugclub", "떠그다스"], ["슈퍼스타", "superstar"], ["adidas", "아디다스"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "짭", "가품", "미러", "1:1"],
+    msrpKrw: 250000, released: 2024,
+  },
+  {
+    id: "shoe-vans-sato-era-95",
+    brand: "Vans x Sato", category: "shoe", laneKey: "vans_sato_era_collab",
+    modelName: "Vans × Sato Era 95 (Satoshi Nakamoto collab)",
+    aliases: ["Vans Sato Era", "반스 사토시", "Satoshi Era 95"],
+    mustContain: [["사토시", "satoshi", "sato"], ["반스", "vans"], ["에라", "era"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "짭", "가품", "미러", "1:1"],
+    msrpKrw: 350000, released: 2024,
   },
   // Wave 226 (2026-05-19): 누락 인기 SKU 추가 — 사용자 명시 "Nike/Adidas/뉴발 narrow".
   //   측정 결과: NB iconic 718 / Samba 218 / Cortez 206 매물 unmatched.
@@ -8707,7 +8815,11 @@ export const CATALOG: Sku[] = [
       "스니커즈", "sneaker", "운동화", "삼바", "samba", "가젤", "gazelle", "스탠", "stan", "이지", "yeezy",
       "campus", "캠퍼스", "superstar", "슈퍼스타", "spezial", "스페지알",
       // 한정판 차단
-      "wales bonner", "웨일스", "kith", "pharrell", "퍼렐", "sporty rich",
+      "wales bonner", "웨일스", "웨일즈보너", "웨일즈 보너", "kith", "pharrell", "퍼렐", "sporty rich",
+      // Wave 235 (2026-05-19): Balenciaga × Adidas collab 200만~270만 8건 mismatch 발견 (별도 SKU 또는 차단).
+      "balenciaga", "발렌시아가", "demna", "뎀나",
+      // Wave 235: Gucci × Adidas Trefoil 자켓 62만 mismatch.
+      "gucci", "구찌",
       // 가방 차단
       "가방", "bag", "backpack", "백팩"],
     msrpKrw: 119000, released: 1949,
@@ -8978,6 +9090,13 @@ const GLOBAL_FASHION_NOISE: string[] = [
   "한짝", "한 짝", "한쪽만", "왼발", "오른발", "왼 쪽", "오른 쪽", "한쪽",
   "삽니다", "구합니다", "구해요", "매입", "살게요", "찾아요",
   "찢어짐", "파손", "곰팡이", "구멍 있", "크랙 큼", "훼손",
+  // Wave 235 (2026-05-19): 역경매 (구매 요청) 매물 차단.
+  //   sample sweep 발견 — "(구매) rrl 반다나" 9,999,999 / "RRL 콩그레스 구매 원합니다" 11,111,111 등.
+  //   셀러가 사는 매물 = 미뇨이 candidate pool 에 들어오면 안 됨 (시세 inflation).
+  "구매 원함", "구매원함", "구매원해요", "구매 원해요", "구매원합니다", "구매 원합니다",
+  "(구매)", "[구매]", "구매희망", "구매 희망", "구해 봅니다", "사고 싶어요", "사고싶어요",
+  // Wave 235: SOLD / 판매완료 마커 차단 — 1B/placeholder 가격 동반 빈도 높음.
+  "sold", "판매완료", "판완료", "거래완료", "예약완료", "판매됨",
   // 사이즈 미상
   "사이즈 미상", "사이즈 불명", "사이즈 확인불가", "사이즈 모름",
   // 아동
@@ -9005,6 +9124,11 @@ const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, strin
     "가방", "backpack", "백팩", "토트백", "tote bag", "숄더백", "크로스백", "메신저", "messenger",
     "월렛", "wallet", "지갑", "장지갑",
     "운동화", "sneaker", "스니커즈", "부츠", "boot", "샌들", "슬리퍼", "뮬",
+    // Wave 235 (2026-05-19): 모자/캡 매물이 의류 SKU 매칭 차단.
+    //   sample sweep 발견 — Stussy x Bape 트러커 캡이 bag-stussy-crossbody 매칭.
+    //   동일 brand clothing SKU 도 같은 risk → 차단.
+    "트러커 캡", "trucker cap", "메쉬캡", "메쉬 캡", "볼캡", "ball cap",
+    "벙거지", "버킷햇", "bucket hat", "비니", "beanie", "야구모자",
   ],
   shoe: [
     "자켓", "jacket", "코트", "coat", "재킷",
@@ -9026,6 +9150,10 @@ const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, strin
     // Wave 232: 시계/주얼리 차단
     "시계", "watch", "시계줄", "watch strap", "팔찌", "bracelet", "목걸이", "necklace",
     "반지", "ring", "귀걸이", "earring", "925",
+    // Wave 235 (2026-05-19): 모자/캡 매물 차단 (bag SKU 와 cross-category 매칭).
+    //   sample sweep 발견 — "스투시x베이프 30주년 카모 메쉬캡 트러커" 가 bag-stussy-crossbody 매칭.
+    "트러커 캡", "trucker cap", "메쉬캡", "메쉬 캡", "볼캡", "ball cap",
+    "벙거지", "버킷햇", "bucket hat", "비니", "beanie", "야구모자",
   ],
 };
 
