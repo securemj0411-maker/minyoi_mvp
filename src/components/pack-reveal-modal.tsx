@@ -3060,21 +3060,18 @@ function RevealCardItem({
     const id = window.setTimeout(() => setShown(true), delay);
     return () => window.clearTimeout(id);
   }, [delay]);
-  // Wave 394.5.a: localStorage 기억 mount sync.
+  // Wave 394.5.a: localStorage 기억 mount sync. (dealExpanded sync 는 별 useEffect 가 자동.)
   useEffect(() => {
     try {
       const stored = localStorage.getItem("minyoi_modal_mode");
-      if (stored === "detailed") {
-        setMode("detailed");
-        setDealExpanded(true);
-      }
+      if (stored === "detailed") setMode("detailed");
     } catch {}
   }, []);
-  // mode 변경 시 자동 펼침 동작.
+  // Wave 394.5.a.fix2 (사용자 버그 짚음 — "간단 보기 누르면 다시 안돌아가는데?"):
+  // mode 변경 시 양방향 sync. detailed → 펼침 / simple → 접힘.
+  // 이전 단방향 (detailed 시만 펼침) → simple 가도 dealExpanded 그대로 → 시각 변화 없음.
   useEffect(() => {
-    if (mode === "detailed") {
-      setDealExpanded(true);
-    }
+    setDealExpanded(mode === "detailed");
   }, [mode]);
   const toggleMode = useCallback(() => {
     setMode((prev) => {
