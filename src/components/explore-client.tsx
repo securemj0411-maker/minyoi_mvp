@@ -58,19 +58,19 @@ function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
 
-// Wave 383: cooldown 2시간 변경 → 시간/분/초 친화 표시 helper.
+// Wave 383+385: cooldown 표시 — 초까지 보여서 카운트다운 실시간 가시.
+// 매초 setNow 갱신 (line ~213 setInterval) → remainingSec useMemo 재계산 → 표시 매초 변경.
 function formatCooldown(sec: number): string {
   if (sec >= 3600) {
     const h = Math.floor(sec / 3600);
-    const m = Math.ceil((sec % 3600) / 60);
-    return m > 0 ? `${h}시간 ${m}분` : `${h}시간`;
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return `${h}시간 ${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   }
   if (sec >= 60) {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m}:${String(s).padStart(2, "0")}`;
+    return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
   }
-  return `${sec}초`;
+  return `0:${String(sec).padStart(2, "0")}`;
 }
 
 function profitAvg(item: PoolItem) {
@@ -1080,26 +1080,27 @@ export default function ExploreClient() {
                         {!canRefresh ? (
                           <>
                             {/* Wave 384 (placeholder): 카카오톡 공유 → 30개 즉시 받기. App Key + DB migration 필요해서 일단 UI만 + "곧 출시". */}
+                            {/* Wave 385: 정통 카카오 노란 (#fbe300) 배경 + 갈색 텍스트 (#3b1e1e). */}
                             <button
                               type="button"
                               onClick={() => {
                                 // TODO Wave 384 phase 2: Kakao.Share.sendDefault + POST /api/packs/pool/share-bonus
                                 alert("카카오톡 공유 보너스는 곧 출시예요! 조금만 기다려주세요 🙏");
                               }}
-                              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl border border-[#FAE100]/70 bg-[#FFEB00]/15 px-5 py-4 text-left transition hover:bg-[#FFEB00]/25 dark:border-[#FAE100]/40 dark:bg-[#FAE100]/10"
+                              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-[#fbe300] px-5 py-4 text-left shadow-[0_4px_14px_rgba(251,227,0,0.35)] transition hover:bg-[#fae100] active:scale-[0.99]"
                             >
-                              <div className="flex min-w-0 items-center gap-2">
+                              <div className="flex min-w-0 items-center gap-2.5">
                                 <KakaoLogo className="h-7 w-7 shrink-0 rounded-[8px]" />
                                 <div className="min-w-0">
-                                  <div className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                                  <div className="text-base font-bold text-[#3b1e1e]">
                                     카톡 공유하고 30개 받기
                                   </div>
-                                  <div className="mt-0.5 text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                                  <div className="mt-0.5 text-[11px] font-medium text-[#3b1e1e]/70">
                                     공유 1번 → 즉시 새 30개 (곧 출시)
                                   </div>
                                 </div>
                               </div>
-                              <span className="shrink-0 rounded-full bg-zinc-900/10 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:bg-white/10 dark:text-zinc-200">
+                              <span className="shrink-0 rounded-full bg-[#3b1e1e] px-2 py-0.5 text-[10px] font-bold text-[#fbe300]">
                                 무료
                               </span>
                             </button>
