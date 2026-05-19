@@ -4213,10 +4213,12 @@ export const CATALOG: Sku[] = [
     modelName: "Dyson Supersonic (HD08)",
     aliases: ["Dyson Supersonic", "다이슨 슈퍼소닉", "Dyson HD08"],
     // mustContain 강화: "헤어드라이어" / "드라이어" 명시 매물만 본품으로 인정.
+    // Wave 240 (2026-05-19): production audit — "HD15" 매물 188k 매칭. HD15 다른 세대 (24년).
+    //   mustContain 에서 "hd15" 제거 + mustNotContain 차단 → HD15 매물 unmatched 처리.
     mustContain: [
       ["다이슨", "dyson"],
-      ["슈퍼소닉", "supersonic", "hd08", "hd15"],
-      ["헤어드라이어", "드라이어", "본체", "본품", "풀세트", "hd08", "hd15"],
+      ["슈퍼소닉", "supersonic", "hd08"],
+      ["헤어드라이어", "드라이어", "본체", "본품", "풀세트", "hd08"],
     ],
     // Wave 188 internal test (2026-05-18): production sweep 으로 발견한 false positive 차단.
     // Wave 188 follow-up: sweep 재실행 결과 HD08 FP 65% (12/26). "노즐 툴 세트" / "박보검 포토카드 2종" 잡음.
@@ -4232,6 +4234,8 @@ export const CATALOG: Sku[] = [
       "트래블", "travel",
       "수리", "고장", "충전 안됨", "침수",
       "매입", "삽니다", "구합니다",
+      // Wave 240 (2026-05-19): HD15 / HD16 / HD17 다른 세대 차단.
+      "hd15", "hd16", "hd17", "supersonic nural", "뉴럴",
       ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 550000,
@@ -4287,6 +4291,10 @@ export const CATALOG: Sku[] = [
       "부품",
       "수리", "고장", "침수",
       "매입", "삽니다", "구합니다",
+      // Wave 240 (2026-05-19): production audit — "로로보아 에어아르떼" 매물 다이슨 SKU 잘못 매칭.
+      "로로보아", "loroboa", "loroboar", "에어아르떼", "airarte",
+      // "다이슨 에어랩X" / "다이슨 에어랩 아님" 같은 명시적 부정 표기
+      "에어랩x", "에어랩 x", "에어랩 아님", "에어랩이 아닌",
       ...WAVE188_NEW_CATEGORY_NOISE,
     ],
     msrpKrw: 699000,
@@ -6447,7 +6455,10 @@ export const CATALOG: Sku[] = [
     modelName: "LEGO 75331 The Razor Crest (UCS)",
     aliases: ["LEGO 75331", "레고 레이저 크레스트", "Razor Crest UCS"],
     mustContain: [["75331", "lego 75331", "레고 75331"]],
-    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    // Wave 240 (2026-05-19): production audit — "75331 만달로리안 만도 몸통+헬멧 부품" 40k 매물 본품 1.1M+ SKU 매칭.
+    mustNotContain: ["lepin", "카피", "호환", "복제", "짝퉁", "조립도만", "설명서만", "박스만", "부품만", "매입", "삽니다",
+      "몸통", "헬멧만", "헬멧 부품", "피규어만", "미니피겨만", "minifigure only", "부품 새상품",
+      ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 850000, released: 2022,
   },
   {
