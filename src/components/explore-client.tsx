@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
-import { ZapIcon, FlameIcon, ClockIcon, TrophyIcon } from "@/components/icons";
+import { ZapIcon, FlameIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, TargetIcon, HourglassIcon } from "@/components/icons";
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 
@@ -152,7 +153,23 @@ export default function ExploreClient() {
   const [now, setNow] = useState(Date.now());
   const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
   // Wave 346: refresh modal — 기다리기/충전 옵션
+  // Wave 358: 슬라이드 업 애니메이션 — open/close 사이 250ms transition.
   const [refreshModalOpen, setRefreshModalOpen] = useState(false);
+  const [refreshModalAnimating, setRefreshModalAnimating] = useState(false);
+
+  // 모달 mount 후 다음 frame에 애니메이션 활성화 (slide up / fade in)
+  useEffect(() => {
+    if (refreshModalOpen) {
+      const id = requestAnimationFrame(() => setRefreshModalAnimating(true));
+      return () => cancelAnimationFrame(id);
+    }
+  }, [refreshModalOpen]);
+
+  const closeRefreshModal = useCallback(() => {
+    setRefreshModalAnimating(false);
+    const t = setTimeout(() => setRefreshModalOpen(false), 250);
+    return () => clearTimeout(t);
+  }, []);
 
   // Wave 341 + 344: URL state sync — 새로고침/공유 시 카테고리/정렬 유지.
   // Wave 344: /me에 통합되면서 동적 pathname 사용 (이전엔 "/explore" 하드코딩 → /me에서 404 발생).
@@ -319,25 +336,37 @@ export default function ExploreClient() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-3 pb-24 pt-2 sm:px-6 sm:pt-4">
-      {/* Wave 345: 당근 feed 스타일 — 위 단순화. 통계+paywall 한 줄 inline. */}
-      <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] font-medium">
+      {/* 2026-05-19 (사용자 피드백): 광고 톤 줄이고 안내 톤으로 정비.
+          "구독자 전용 (곧 출시)" → "따끈한 매물 먼저 보기 →" 으로 사용자 액션 명확화.
+          freshLagHours 값을 직접 노출해 무엇을 보고 있는지 즉시 인지. */}
+      <div className="mb-3 rounded-xl border border-[#e7dece] bg-[#fffaf1] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px]">
+          <span className="text-zinc-600 dark:text-zinc-400">
+            지금{" "}
+            <strong className="font-bold text-zinc-800 dark:text-zinc-100">
+              올린 지 {stats?.freshLagHours ?? 6}시간 넘은 매물
+            </strong>
+            을 보고 있어요
+          </span>
+          <Link
+            href="/plans"
+            className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:underline dark:text-emerald-300"
+          >
+            <ZapIcon className="h-3 w-3" />
+            따끈한 매물 먼저 보기 →
+          </Link>
+        </div>
         {stats && stats.caughtToday > 0 ? (
-          <span className="flex items-center gap-1 text-amber-700 dark:text-amber-300">
+          <div className="mt-1 flex items-center gap-1 text-[10px] font-medium text-amber-700 dark:text-amber-300">
             <FlameIcon className="h-3 w-3" />
-            오늘 {stats.caughtToday.toLocaleString("ko-KR")}건 잡힘
-          </span>
+            오늘 {stats.caughtToday.toLocaleString("ko-KR")}건 새로 잡힘
+            {stats.freshLocked > 0 ? (
+              <span className="text-zinc-500 dark:text-zinc-400">
+                · 구독자가 본 신선 매물 {stats.freshLocked.toLocaleString("ko-KR")}건
+              </span>
+            ) : null}
+          </div>
         ) : null}
-        {stats && stats.freshLocked > 0 ? (
-          <span className="flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
-            <ZapIcon className="h-3 w-3 text-amber-500" />
-            즉시 매물 {stats.freshLocked.toLocaleString("ko-KR")}건은 구독자 전용 (곧 출시)
-          </span>
-        ) : (
-          <span className="flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
-            <ZapIcon className="h-3 w-3 text-amber-500" />
-            즉시 매물은 구독자 전용 — 곧 출시
-          </span>
-        )}
       </div>
 
       {/* 필터/정렬 — sticky bar (당근식) */}
@@ -356,12 +385,14 @@ export default function ExploreClient() {
                   return next;
                 });
               }}
-              className={`shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
+              className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
                 isActive
                   ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
                   : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
               }`}
             >
+              {/* 2026-05-19: SF Symbol 스타일 라인 아이콘 추가. 텍스트만 칩 촌스러움 해소. */}
+              <CategoryIcon category={opt.value} className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
               {opt.label}
             </button>
           );
@@ -557,152 +588,217 @@ export default function ExploreClient() {
         </div>
       )}
 
-      {/* Wave 347: 모바일 fixed sticky 하단 — 단순 "다른 매물 찾기". cooldown은 모달 안에서. */}
+      {/* Wave 358: 빈 공간 채우기 — 매물 끝에 다음 라운드 안내 카드. */}
+      {!loading && items.length > 0 ? (
+        <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/40">
+              <HourglassIcon className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
+                {canRefresh ? "다른 30개 매물 받을 수 있어요" : "다음 라운드 준비 중"}
+              </div>
+              <div className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                {canRefresh
+                  ? "새로운 매물 풀로 갱신 · 다양한 카테고리"
+                  : `${Math.floor(remainingSec / 60)}분 ${String(remainingSec % 60).padStart(2, "0")}초 후 새 매물 자동으로 풀려요`}
+              </div>
+              {stats && stats.freshLocked > 0 ? (
+                <div className="mt-2 flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1.5 text-[11px] font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                  <ZapIcon className="h-3 w-3" />
+                  <span>지금 즉시 매물 {stats.freshLocked.toLocaleString("ko-KR")}건은 <b className="font-bold">구독자 전용</b> (곧 출시)</span>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Wave 347+358: 모바일 fixed FAB — 항상 화면 하단에 따라옴. */}
       <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-4 sm:hidden">
         <button
           type="button"
           onClick={() => setRefreshModalOpen(true)}
           disabled={refreshing}
-          className="pointer-events-auto inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3 text-sm font-bold text-[var(--brand-cream)] shadow-[0_16px_34px_rgba(34,49,39,0.28)] transition active:scale-[0.98]"
+          className="pointer-events-auto inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3.5 text-base font-bold text-[var(--brand-cream)] shadow-[0_20px_44px_rgba(34,49,39,0.38),0_4px_12px_rgba(34,49,39,0.20)] ring-1 ring-white/10 transition active:scale-[0.97]"
         >
-          {refreshing ? "받는 중..." : "🔍 다른 매물 찾기"}
+          <SearchIcon className="h-4 w-4" />
+          {refreshing ? "받는 중..." : "다른 매물 찾기"}
         </button>
       </div>
 
-      {/* 데스크탑: 목록 아래 */}
+      {/* 데스크탑: sticky bottom (페이지 끝까지 따라옴) */}
       {!loading && items.length > 0 ? (
-        <div className="mt-6 hidden justify-center sm:flex">
+        <div className="sticky bottom-4 z-20 mt-6 hidden justify-center sm:flex">
           <button
             type="button"
             onClick={() => setRefreshModalOpen(true)}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-5 py-2.5 text-sm font-bold text-[var(--brand-cream)] transition hover:opacity-90"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3 text-sm font-bold text-[var(--brand-cream)] shadow-[0_16px_34px_rgba(34,49,39,0.32)] ring-1 ring-white/10 transition hover:translate-y-[-1px] hover:shadow-[0_20px_40px_rgba(34,49,39,0.38)]"
           >
-            {refreshing ? "받는 중..." : "🔍 다른 매물 찾기"}
+            <SearchIcon className="h-4 w-4" />
+            {refreshing ? "받는 중..." : "다른 매물 찾기"}
           </button>
         </div>
       ) : null}
 
-      {/* Wave 348: Refresh Modal — 무료(랜덤) / 크레딧(맞춤 검색) 옵션. */}
+      {/* Wave 348+358: Refresh Modal — bottom sheet slide-up + 위계 강조 + 사이트 톤. */}
       {refreshModalOpen ? (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 p-3 sm:items-center sm:p-6" onClick={() => setRefreshModalOpen(false)}>
-          <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-3 flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-base font-bold text-zinc-900 dark:text-zinc-50">
-                  다른 매물 찾기
+        <div
+          className={`fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-200 sm:items-center sm:p-6 ${
+            refreshModalAnimating ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={closeRefreshModal}
+        >
+          <div
+            className={`w-full max-w-md transform border border-zinc-200/50 bg-[var(--brand-cream)] shadow-[0_-20px_60px_rgba(0,0,0,0.30)] transition-all duration-300 ease-out dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-3xl rounded-t-3xl ${
+              refreshModalAnimating
+                ? "translate-y-0 opacity-100 sm:scale-100"
+                : "translate-y-full opacity-0 sm:translate-y-4 sm:scale-95"
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 모바일 grab handle */}
+            <div className="flex justify-center pt-3 sm:hidden">
+              <div className="h-1 w-10 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            </div>
+
+            <div className="px-6 pt-5 pb-6 sm:pt-6">
+              {/* Header */}
+              <div className="mb-5 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                    다른 매물 찾기
+                  </div>
+                  <div className="mt-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    무료로 새 30개, 또는 조건 골라서 받기
+                  </div>
                 </div>
-                <div className="mt-0.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                  랜덤으로 받거나, 원하는 조건으로 골라보세요
-                </div>
+                <button
+                  type="button"
+                  onClick={closeRefreshModal}
+                  className="-mr-2 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                  aria-label="닫기"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
+
+              {/* 메인 CTA — 무료 랜덤 30개 (가장 강조) */}
               <button
                 type="button"
-                onClick={() => setRefreshModalOpen(false)}
-                className="shrink-0 rounded-full bg-zinc-100 px-2 py-1 text-xs font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                onClick={() => {
+                  if (canRefresh) {
+                    void loadPool(true);
+                    closeRefreshModal();
+                  }
+                }}
+                disabled={!canRefresh}
+                className={`group relative w-full overflow-hidden rounded-2xl px-5 py-4 text-left transition ${
+                  canRefresh
+                    ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-[0_12px_28px_rgba(34,49,39,0.28)] hover:shadow-[0_16px_34px_rgba(34,49,39,0.34)] active:scale-[0.99]"
+                    : "cursor-not-allowed bg-zinc-100 text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-500"
+                }`}
               >
-                ✕
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <GiftIcon className="h-5 w-5" />
+                      <span className="text-base font-bold">
+                        랜덤 30개 받기
+                      </span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${canRefresh ? "bg-white/20 text-[var(--brand-cream)]" : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"}`}>
+                        무료
+                      </span>
+                    </div>
+                    <div className={`mt-1.5 text-xs font-medium ${canRefresh ? "text-[var(--brand-cream)]/75" : "text-zinc-500 dark:text-zinc-500"}`}>
+                      {canRefresh
+                        ? "다양한 카테고리에서 새 30개"
+                        : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 풀려요`}
+                    </div>
+                  </div>
+                  {canRefresh ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 shrink-0 transition group-hover:translate-x-0.5">
+                      <path d="M5 12h14M13 5l7 7-7 7" />
+                    </svg>
+                  ) : null}
+                </div>
               </button>
-            </div>
 
-            {/* 옵션 1: 무료 랜덤 */}
-            <button
-              type="button"
-              onClick={() => {
-                if (canRefresh) {
-                  void loadPool(true);
-                  setRefreshModalOpen(false);
-                }
-              }}
-              disabled={!canRefresh}
-              className={`w-full rounded-xl border p-3 text-left transition ${
-                canRefresh
-                  ? "border-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/40"
-                  : "cursor-not-allowed border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/40"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className={`text-sm font-bold ${canRefresh ? "text-emerald-800 dark:text-emerald-200" : "text-zinc-600 dark:text-zinc-400"}`}>
-                    🎲 랜덤으로 30개 받기
+              {/* 보조 옵션 — 크레딧 맞춤 검색 (paywall 예고) */}
+              <div className="mt-3 rounded-2xl border border-amber-200/60 bg-amber-50/50 px-5 py-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <TargetIcon className="h-5 w-5 text-amber-700 dark:text-amber-300" />
+                    <span className="text-base font-bold text-amber-900 dark:text-amber-100">
+                      맞춤 검색
+                    </span>
                   </div>
-                  <div className="mt-0.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
-                    {canRefresh
-                      ? "다양한 카테고리 · 6시간 이상 지난 매물"
-                      : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 가능`}
-                  </div>
+                  <span className="rounded-full bg-amber-500/90 px-2 py-0.5 text-[10px] font-bold text-white">
+                    크레딧
+                  </span>
                 </div>
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${canRefresh ? "bg-emerald-600 text-white" : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"}`}>
-                  무료
-                </span>
-              </div>
-            </button>
+                <div className="mt-1 text-xs font-medium text-amber-800/80 dark:text-amber-200/80">
+                  예산 · 성향 골라서 즉시 받기
+                </div>
 
-            {/* 옵션 2: 맞춤 검색 (크레딧, paywall 예고) */}
-            <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950/40">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-sm font-bold text-amber-900 dark:text-amber-100">
-                    🎯 맞춤 검색으로 받기
+                {/* 옵션 미리보기 */}
+                <div className="mt-3 space-y-2.5">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-amber-900/70 dark:text-amber-100/70">
+                      예산
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {["10만 이하", "30만 이하", "50만 이하", "제한 없음"].map((label) => (
+                        <span
+                          key={label}
+                          className="cursor-not-allowed rounded-full border border-amber-200 bg-white/80 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:border-amber-800/40 dark:bg-zinc-900/60 dark:text-amber-200"
+                        >
+                          {label}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="mt-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">
-                    예산 · 매물 성향 골라서 즉시 받기
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-amber-900/70 dark:text-amber-100/70">
+                      매물 성향
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {[
+                        { label: "공격적", sub: "차익 큰 매물" },
+                        { label: "균형", sub: "안정 + 차익" },
+                        { label: "안전", sub: "셀러 평점 높음" },
+                      ].map((opt) => (
+                        <span
+                          key={opt.label}
+                          className="cursor-not-allowed rounded-full border border-amber-200 bg-white/80 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:border-amber-800/40 dark:bg-zinc-900/60 dark:text-amber-200"
+                          title={opt.sub}
+                        >
+                          {opt.label}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <span className="shrink-0 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                  크레딧
-                </span>
-              </div>
 
-              {/* 맞춤 옵션 미리보기 (선택 불가, 곧 출시) */}
-              <div className="mt-3 space-y-2 opacity-75">
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-amber-800 dark:text-amber-200">
-                    예산
-                  </div>
-                  <div className="mt-1 flex flex-wrap gap-1.5">
-                    {["10만원 이하", "30만원 이하", "50만원 이하", "제한 없음"].map((label) => (
-                      <span
-                        key={label}
-                        className="cursor-not-allowed rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-900/50 dark:text-amber-200"
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-amber-800 dark:text-amber-200">
-                    매물 성향
-                  </div>
-                  <div className="mt-1 flex flex-wrap gap-1.5">
-                    {[
-                      { label: "공격적", sub: "차익 큰 매물" },
-                      { label: "균형", sub: "안정 + 차익" },
-                      { label: "안전", sub: "셀러 평점 높음" },
-                    ].map((opt) => (
-                      <span
-                        key={opt.label}
-                        className="cursor-not-allowed rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-900/50 dark:text-amber-200"
-                        title={opt.sub}
-                      >
-                        {opt.label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <Link
+                  href="/plans"
+                  className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-full bg-amber-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-amber-700"
+                >
+                  구독으로 풀기 (곧 출시)
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </Link>
               </div>
 
-              <a
-                href="/plans"
-                className="mt-3 flex w-full items-center justify-center rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white transition hover:bg-amber-600"
-              >
-                구독으로 맞춤 검색 풀기 (곧 출시)
-              </a>
-            </div>
-
-            <div className="mt-3 rounded-md bg-zinc-50 px-3 py-2 text-[10px] font-medium leading-4 text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-400">
-              💡 무료는 30분마다 랜덤 30개. 크레딧으로는 예산/성향 골라서 즉시 받을 수 있어요.
+              {/* Footer hint */}
+              <div className="mt-4 text-center text-[11px] font-medium leading-5 text-zinc-500 dark:text-zinc-400">
+                무료는 30분마다 새 30개 · 크레딧으로는 예산/성향 골라 즉시 받기
+              </div>
             </div>
           </div>
         </div>
