@@ -47,7 +47,7 @@ const CATEGORY_LABEL: Record<string, string> = {
   unknown: "(분류 없음)",
 };
 
-export default function ExploreMonitorPage() {
+export default function ExploreMonitorClient() {
   const [data, setData] = useState<MonitorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
