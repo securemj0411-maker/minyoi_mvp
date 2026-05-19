@@ -285,6 +285,7 @@ export default function ExploreClient() {
     const sameCategory = candidates.filter((it) => it.category === currentCategory);
     const otherCategory = candidates.filter((it) => it.category !== currentCategory);
     const ordered = [...sameCategory, ...otherCategory].slice(0, 8);
+    // Wave 366: marketBasis null → minimal로 채워서 시세 표시되도록.
     return ordered.map((it) => ({
       pid: it.pid,
       name: it.name,
@@ -292,7 +293,27 @@ export default function ExploreClient() {
       thumbnailUrl: it.thumbnailUrl,
       expectedProfitMin: it.expectedProfitMin,
       expectedProfitMax: it.expectedProfitMax,
-      marketBasis: null,
+      marketBasis: it.skuMedian
+        ? {
+            comparableKey: it.comparableKey,
+            label: it.skuName ?? it.name,
+            p25Price: null,
+            medianPrice: it.skuMedian,
+            p75Price: null,
+            sampleCount: 0,
+            activeSampleCount: 0,
+            soldSampleCount: 0,
+            disappearedSampleCount: 0,
+            confidence: null,
+            priceSource: "market" as const,
+            computedAt: null,
+            excludedExamples: [],
+            conditionClass: it.conditionClass,
+            conditionLabel: null,
+            fallbackUsed: false,
+            otherConditions: [],
+          }
+        : null,
       revealedAt: it.lastVerifiedAt,
     }));
   }, [items, selectedCard]);
@@ -341,7 +362,7 @@ export default function ExploreClient() {
       {/* 2026-05-19 (사용자 피드백): 광고 톤 줄이고 안내 톤으로 정비.
           "구독자 전용 (곧 출시)" → "따끈한 매물 먼저 보기 →" 으로 사용자 액션 명확화.
           freshLagHours 값을 직접 노출해 무엇을 보고 있는지 즉시 인지. */}
-      <div className="mb-3 rounded-xl border border-[#e7dece] bg-[#fffaf1] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="mb-2 rounded-xl border border-[#e7dece] bg-[#fffaf1] px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900/40">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px]">
           <span className="text-zinc-600 dark:text-zinc-400">
             지금{" "}
@@ -371,8 +392,8 @@ export default function ExploreClient() {
         ) : null}
       </div>
 
-      {/* 필터/정렬 — sticky bar (당근식) */}
-      <div className="sticky top-0 z-20 -mx-3 mb-3 flex items-center gap-1.5 overflow-x-auto bg-[#f6f1e8]/95 px-3 py-2 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:px-6">
+      {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음). */}
+      <div className="sticky top-0 z-20 -mx-3 mb-2 flex items-center gap-1.5 overflow-x-auto bg-[#f6f1e8]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:px-6">
         {CATEGORY_OPTIONS.map((opt) => {
           const isActive = selectedCategories.has(opt.value);
           return (
@@ -421,7 +442,8 @@ export default function ExploreClient() {
       {/* 로딩 / 에러 / 매물 grid */}
       {loading ? (
         <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0 sm:grid sm:grid-cols-2 sm:divide-y-0 sm:gap-3 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {/* Wave 370: 6 → 3 (모바일 viewport 잔해 줄임, 빠른 fade-in 체감) */}
+          {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
               className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 px-3 py-4 sm:rounded-xl sm:border sm:border-zinc-200 sm:bg-white sm:p-3 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40"
@@ -450,9 +472,14 @@ export default function ExploreClient() {
           {error}
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-900/40">
-          <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            6시간 이상 지난 매물이 아직 없어요. 잠시 후 다시 와주세요.
+        // Wave 370: 친화 톤 + 다음 액션 명확. 잔해 톤 X.
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 px-5 py-8 text-center dark:border-emerald-900/40 dark:bg-emerald-950/20">
+          <HourglassIcon className="mx-auto h-8 w-8 text-emerald-600 dark:text-emerald-300" />
+          <p className="mt-3 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            잠시 후 다시 와주세요
+          </p>
+          <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            매물 분석 중이에요. 곧 새 풀이 풀려요.
           </p>
         </div>
       ) : displayItems.length === 0 ? (
