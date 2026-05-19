@@ -1907,20 +1907,20 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
             협상 가이드
           </div>
 
-          {/* 현재 가격 — 헤드라인 */}
+          {/* 현재 매입가 — 헤드라인 */}
           <div className="mt-2 rounded-md bg-emerald-50 px-3 py-2 dark:bg-emerald-950/30">
-            <div className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">현재 가격</div>
+            <div className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">현재 매입가</div>
             <div className="mt-0.5 flex items-baseline justify-between">
               <span className="text-sm font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
                 {krw(card.price)}
               </span>
               <span className="text-sm font-bold tabular-nums text-emerald-600 dark:text-emerald-300">
-                남는 돈 +{krw(guidance.currentProfit)}
+                차익 +{krw(guidance.currentProfit)}
               </span>
             </div>
           </div>
 
-          {/* 가격대별 의미 — 위→아래 (좋음→나쁨) */}
+          {/* 가격대별 의미 — 위→아래 (좋음→나쁨). 모든 라인 "차익" 용어 통일. */}
           <div className="mt-2 space-y-1.5 text-xs">
             <div className="flex items-baseline justify-between gap-2">
               <span className="flex items-baseline gap-1.5">
@@ -1931,7 +1931,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
                 </span>
               </span>
               <span className="text-[11px] font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
-                +{krw(guidance.negotiationProfit)}
+                차익 +{krw(guidance.negotiationProfit)}
               </span>
             </div>
 
@@ -1943,7 +1943,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
                 </span>
               </span>
               <span className="text-[11px] font-medium tabular-nums text-amber-600 dark:text-amber-400">
-                +1만원 미만 (위험)
+                차익 1만원 미만 (위험)
               </span>
             </div>
 
@@ -1955,7 +1955,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
                 </span>
               </span>
               <span className="text-[11px] font-medium tabular-nums text-rose-600 dark:text-rose-400">
-                손해 (수익 0 이하)
+                손해 (차익 0 이하)
               </span>
             </div>
           </div>

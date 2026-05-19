@@ -537,7 +537,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                         return (
                           <span
                             className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${cls}`}
-                            title={`남는 돈 +${krw(guidance.currentProfit)} · 협상 시도 ${krw(guidance.negotiationTarget)} / 손해 시작 ${krw(guidance.breakEven)}`}
+                            title={`차익 +${krw(guidance.currentProfit)} · 협상 시도 ${krw(guidance.negotiationTarget)} / ${krw(guidance.breakEven)} 이상에 사면 손해`}
                           >
                             {shortLabel}
                           </span>

@@ -65,7 +65,7 @@ export function buyPriceGuidance(input: BuyPriceGuidanceInput): BuyPriceGuidance
   if (currentProfit >= 50000) {
     verdict = "great";
     verdictLabel = "충분한 차익 · 협상 없어도 OK";
-    verdictSub = "남는 돈이 충분해서 그대로 사도 안전";
+    verdictSub = "차익이 충분해서 그대로 사도 안전";
   } else if (currentProfit >= 20000) {
     verdict = "good";
     verdictLabel = "괜찮은 차익 · 협상 시 +α";

@@ -1471,7 +1471,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                         const cls = (guidance.verdict === "great" || guidance.verdict === "good")
                           ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/60"
                           : "bg-amber-50 text-amber-800 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/60";
-                        // 카드는 공간 좁아서 짧게: "남는 돈 +N원"만
+                        // 카드는 공간 좁아서 짧게: verdict label만
                         const shortLabel = guidance.verdict === "great"
                           ? "충분"
                           : guidance.verdict === "good"
@@ -1482,7 +1482,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                         return (
                           <span
                             className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold sm:px-2 ${cls}`}
-                            title={`남는 돈 +${signedProfitRange(guidance.currentProfit, guidance.currentProfit).replace("+", "")} · 협상 시도 ${signedProfitRange(guidance.negotiationTarget, guidance.negotiationTarget).replace("+", "")} 이하 / 손해 시작 ${signedProfitRange(guidance.breakEven, guidance.breakEven).replace("+", "")}`}
+                            title={`차익 +${signedProfitRange(guidance.currentProfit, guidance.currentProfit).replace("+", "")} · 협상 시도 ${signedProfitRange(guidance.negotiationTarget, guidance.negotiationTarget).replace("+", "")} 이하 / ${signedProfitRange(guidance.breakEven, guidance.breakEven).replace("+", "")} 이상에 사면 손해`}
                           >
                             {shortLabel}
                           </span>
