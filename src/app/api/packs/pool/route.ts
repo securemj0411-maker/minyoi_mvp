@@ -431,7 +431,10 @@ export async function GET(req: Request) {
 
     // Wave 388: budget filter를 loadPool 안으로 (다양화 전에). fallback chain은
     // loadPool 재호출 — 각 단계 priceMax로 fetch + filter + 다양화 다시.
-    const FALLBACK_THRESHOLD = 5;
+    // Wave 389: threshold 5 → 1. budget 통과 매물 1개라도 있으면 그대로 보여줌
+    // (사용자가 본 매물 = 자기 예산 안 매물). 진짜 0개일 때만 fallback.
+    // 다양화 cap 풀기는 diversifyByCategory의 "부족분 채움" 로직에서 이미 처리.
+    const FALLBACK_THRESHOLD = 1;
     const fallbackChain: { code: "150k" | "300k" | "500k" | "unlimited"; max: number | null }[] = [
       { code: "150k", max: 150000 },
       { code: "300k", max: 300000 },
