@@ -5,6 +5,10 @@
       "schedule": "0 19 * * *"
     },
     {
+      "path": "/api/cron/sync-market-velocity",
+      "schedule": "30 18 * * *"
+    },
+    {
       "path": "/api/cron/incident-watch",
       "schedule": "0 21 * * *"
     },

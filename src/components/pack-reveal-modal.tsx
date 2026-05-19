@@ -113,7 +113,13 @@ type RecommendationFeatureCard = {
   tone: RecommendationFeatureTone;
 };
 
+// 2026-05-19 P0 fix: 폴백 게이트화. 실데이터 없을 때 거짓 "약 2일 (카테고리 평균)" 노출 문제.
+//   - `NEXT_PUBLIC_VELOCITY_UI_TEST==='1'` 인 환경(개발/테스트)에서만 48h 폴백을 보여준다.
+//   - 운영(게이트 OFF)에서는 폴백 hours = null → UI 카드는 "회전 데이터 수집 중"으로 표시.
+//   - 거짓 "카테고리 평균" 카피 제거 (Wave 297 결정 로그 미반영분 해소).
 const UI_TEST_FALLBACK_VELOCITY_HOURS = 48;
+const VELOCITY_UI_TEST_ENABLED =
+  typeof process !== "undefined" && process.env.NEXT_PUBLIC_VELOCITY_UI_TEST === "1";
 
 const TRANSACTION_STATUS_LABEL: Record<TransactionFeedbackType, string> = {
   contacted: "문의함",
@@ -258,6 +264,10 @@ function costAssuranceSnapshot(card: RevealCard) {
 function marketSourceBadge(card: RevealCard) {
   const market = card.marketBasis;
   if (!market) return null;
+  // Wave 246 (2026-05-19): medianPrice 가 0/null 이면 출처 배지 자체가 의미 없음.
+  // 사용자 사례 (pid 406974440): "번개 S급 시세 0원" — 시세 0인데 S급 배지만 떠서 미스리딩.
+  // 정책 (b): 0원 시 표시 안 함. 호출 측 가드와 중복이지만 defense-in-depth.
+  if (!market.medianPrice || market.medianPrice <= 0) return null;
   if (market.priceSource === "reference") return { label: "다나와", tone: "reference" as const };
   if (market.conditionClass === "mint") return { label: "번개 S급", tone: "mint" as const };
   return null;
@@ -521,7 +531,13 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
     },
   ];
 
-  if (velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0) {
+  // 2026-05-19 P0-4: sold7dCount>0 가드 추가. 다른 velocity 표시 지점들(saleSpeedDisplay 등)과
+  // 일관성. 7일 표본 0건이면 historical median만으로 "약 N일" 출력 X (통계적 오해 방지).
+  if (
+    velocity?.medianHoursToSold != null &&
+    velocity.medianHoursToSold > 0 &&
+    (velocity.sold7dCount ?? 0) > 0
+  ) {
     const days = Math.round(velocity.medianHoursToSold / 24);
     lines.push({
       label: "팔리는 속도",
@@ -932,15 +948,18 @@ function saleSpeedDisplay(card: RevealCard) {
     Number.isFinite(velocity.medianHoursToSold) &&
     velocity.medianHoursToSold > 0 &&
     velocity.sold7dCount > 0;
-  const hours = hasRealTurnEstimate ? velocity.medianHoursToSold : UI_TEST_FALLBACK_VELOCITY_HOURS;
+  // 2026-05-19 P0: 운영 게이트 OFF에선 hours=null → "수집 중" 표시. 개발 게이트 ON에선 48h 폴백 유지.
+  const hours = hasRealTurnEstimate
+    ? velocity.medianHoursToSold
+    : (VELOCITY_UI_TEST_ENABLED ? UI_TEST_FALLBACK_VELOCITY_HOURS : null);
   return {
     hours,
-    label: velocityHoursLabel(hours),
+    label: hours == null ? "수집 중" : velocityHoursLabel(hours),
     isFallback: !hasRealTurnEstimate,
     isFast: hours != null && hours > 0 && hours <= 48,
     isSlow: hours != null && hours > 168,
     confidenceLabel: !hasRealTurnEstimate
-      ? "UI 테스트"
+      ? (VELOCITY_UI_TEST_ENABLED ? "UI 테스트" : "데이터 수집 중")
       : velocity?.confidence === "high"
         ? "신뢰 높음"
         : velocity?.confidence === "medium"
@@ -1138,9 +1157,14 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
     {
       key: "speed",
       label: "팔리는 속도",
-      value: speed.isFast ? "빠름" : speed.isSlow ? "느림" : "보통",
+      // 2026-05-19 P0: 폴백 운영 게이트 OFF면 value/sub 정직하게. 거짓 "카테고리 평균" 카피 제거.
+      value: speed.isFallback && !VELOCITY_UI_TEST_ENABLED
+        ? "수집 중"
+        : (speed.isFast ? "빠름" : speed.isSlow ? "느림" : "보통"),
       sub: speed.isFallback
-        ? `약 ${speed.label} · 표본 적음 (카테고리 평균)`
+        ? (VELOCITY_UI_TEST_ENABLED
+            ? `약 ${speed.label} · 표본 부족 (UI 테스트 표시)`
+            : "회전 데이터 수집 중")
         : `약 ${speed.label} · 최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
       tone: speedTone,
       icon: renderSpeedIcon(speed, speedIconClass),
@@ -2280,7 +2304,9 @@ function RevealCardItem({
                     회수 속도 정보는 UpperFold 회수 속도 타일에서 보임. */}
                 <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium tabular-nums text-zinc-600 dark:text-zinc-400">
                   <span>매입 <span className="font-bold text-zinc-900 dark:text-zinc-100">{krw(card.price)}</span></span>
-                  {card.marketBasis?.medianPrice ? (
+                  {/* Wave 246 (2026-05-19): explicit > 0 guard — 0 미스리딩 차단.
+                     없으면 "시세 확인중" 보여서 사용자가 추정 데이터임을 인지. */}
+                  {card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0 ? (
                     <>
                       <span className="text-zinc-300 dark:text-zinc-700">·</span>
                       <span>시세 <span className="font-bold text-zinc-900 dark:text-zinc-100">{krw(card.marketBasis.medianPrice)}</span></span>
@@ -2290,7 +2316,14 @@ function RevealCardItem({
                           : <BunjangSourceBadge label={sourceBadge.label} />
                       ) : null}
                     </>
-                  ) : null}
+                  ) : (
+                    <>
+                      <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" title="시세 표본 부족 또는 갱신중 — 차익은 추정치">
+                        시세 확인중
+                      </span>
+                    </>
+                  )}
                   <span className="text-zinc-300 dark:text-zinc-700">·</span>
                   <span className="text-zinc-500">{freshLabel(card.freshSeconds)}</span>
                   {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
@@ -2670,13 +2703,16 @@ function RelatedRevealStrip({
       </div>
       <div className="mt-2 divide-y divide-[#eee5d8] dark:divide-zinc-800">
         {visibleItems.map((item) => {
-          const sourceBadge = item.marketBasis
-            ? item.marketBasis.priceSource === "reference"
+          // Wave 246 (2026-05-19): medianPrice=0/null 이면 출처 배지 의미 없음.
+          // "번개 S급 시세 0원" 미스리딩 방지 (사용자 사례 pid 406974440).
+          const hasMedian = !!(item.marketBasis?.medianPrice && item.marketBasis.medianPrice > 0);
+          const sourceBadge = !hasMedian
+            ? null
+            : item.marketBasis?.priceSource === "reference"
               ? { tone: "reference" as const, label: "다나와" }
-              : item.marketBasis.conditionClass === "mint"
+              : item.marketBasis?.conditionClass === "mint"
                 ? { tone: "mint" as const, label: "번개 S급" }
-                : null
-            : null;
+                : null;
           return (
             <button
               key={item.pid}
@@ -2709,7 +2745,8 @@ function RelatedRevealStrip({
                 </div>
                 <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[11px] font-semibold text-[#6b7269] dark:text-zinc-400">
                   <span>매입 <b className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.price)}</b></span>
-                  {item.marketBasis?.medianPrice ? (
+                  {/* Wave 246 (2026-05-19): explicit > 0 guard — 0 is falsy but explicit is safer. */}
+                  {item.marketBasis?.medianPrice && item.marketBasis.medianPrice > 0 ? (
                     <>
                       <span className="text-zinc-300 dark:text-zinc-600">·</span>
                       <span>시세 <b className="font-black tabular-nums text-[#223127] dark:text-zinc-100">{krw(item.marketBasis.medianPrice)}</b></span>
