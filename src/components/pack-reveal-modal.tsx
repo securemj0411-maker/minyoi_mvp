@@ -1175,7 +1175,7 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
         <RevealRiskScoreMini
           card={card}
           containerClassName="contents"
-          triggerClassName="flex flex-col items-center px-2 py-2.5 text-center transition hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+          triggerClassName="flex w-full flex-col items-center justify-start px-2 py-2.5 text-center transition hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
           triggerContent={(
             <span className="flex w-full flex-col items-center">
               <span className="flex h-3 items-center justify-center text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
