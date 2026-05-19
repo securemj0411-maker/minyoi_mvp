@@ -1101,6 +1101,9 @@ create table if not exists public.mvp_user_credits (
   balance integer not null default 0 check (balance >= 0),
   free_grant_tokens integer not null default 5 check (free_grant_tokens >= 0),
   free_granted_at timestamptz,
+  -- Wave 338 (Phase 1a freemium): 무료 사용자가 /explore에서 새 30개 매물 받은 마지막 시각.
+  -- /api/packs/pool에서 30min cooldown 체크.
+  last_free_browse_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

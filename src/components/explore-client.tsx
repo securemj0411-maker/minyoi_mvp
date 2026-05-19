@@ -1,0 +1,279 @@
+"use client";
+
+import Image from "next/image";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ZapIcon, FlameIcon, ClockIcon, TrophyIcon } from "@/components/icons";
+
+// Wave 338 (Phase 1a + 1b — Freemium /explore):
+// 무료 사용자 매물 풀 browsing. 6h 이상 매물 30개 + 30min cooldown + 통계 배너 + paywall 예고.
+
+type PoolItem = {
+  pid: number;
+  name: string;
+  price: number;
+  skuMedian: number | null;
+  thumbnailUrl: string | null;
+  skuId: string | null;
+  skuName: string | null;
+  expectedProfitMin: number;
+  expectedProfitMax: number;
+  profitBand: number;
+  confidence: number | null;
+  category: string | null;
+  conditionClass: string | null;
+  comparableKey: string | null;
+  lastVerifiedAt: string;
+  freeShipping: boolean;
+  sellerReviewRating: number | null;
+  sellerReviewCount: number;
+  descriptionPreview: string;
+};
+
+type PoolResponse = {
+  items: PoolItem[];
+  cooldown: { canRefresh: boolean; remainingSec: number; nextAvailableAt: string | null };
+  total: number;
+  pageSize: number;
+  freshLagHours: number;
+  message?: string;
+};
+
+type StatsResponse = {
+  caughtToday: number;
+  freshLocked: number;
+  freshLagHours: number;
+};
+
+function krw(value: number) {
+  return `${Math.round(value).toLocaleString("ko-KR")}원`;
+}
+
+function profitAvg(item: PoolItem) {
+  return Math.round((item.expectedProfitMin + item.expectedProfitMax) / 2);
+}
+
+function profitPct(item: PoolItem) {
+  if (!item.price || item.price <= 0) return null;
+  return Math.round((profitAvg(item) / item.price) * 100);
+}
+
+function hoursAgoLabel(iso: string) {
+  const ms = Date.now() - new Date(iso).getTime();
+  if (!Number.isFinite(ms)) return "";
+  const hours = Math.round(ms / (60 * 60 * 1000));
+  if (hours < 24) return `${hours}시간 전`;
+  return `${Math.round(hours / 24)}일 전`;
+}
+
+function bunjangUrl(pid: number) {
+  return `https://m.bunjang.co.kr/products/${pid}`;
+}
+
+export default function ExploreClient() {
+  const [items, setItems] = useState<PoolItem[]>([]);
+  const [cooldown, setCooldown] = useState<PoolResponse["cooldown"] | null>(null);
+  const [stats, setStats] = useState<StatsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [now, setNow] = useState(Date.now());
+
+  // Cooldown tick (매초 갱신)
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const remainingSec = useMemo(() => {
+    if (!cooldown?.nextAvailableAt) return 0;
+    const ms = new Date(cooldown.nextAvailableAt).getTime() - now;
+    return Math.max(0, Math.ceil(ms / 1000));
+  }, [cooldown, now]);
+
+  const canRefresh = remainingSec === 0;
+
+  const loadPool = useCallback(async (refresh: boolean) => {
+    if (refresh) setRefreshing(true);
+    else setLoading(true);
+    setError(null);
+    try {
+      const url = `/api/packs/pool${refresh ? "?refresh=1" : ""}`;
+      const res = await fetch(url, { cache: "no-store" });
+      const data = (await res.json()) as PoolResponse;
+      if (res.ok) {
+        if (data.items && data.items.length > 0) setItems(data.items);
+        setCooldown(data.cooldown);
+      } else {
+        setError(data.message ?? "매물 불러오기 실패");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "네트워크 오류");
+    } finally {
+      setRefreshing(false);
+      setLoading(false);
+    }
+  }, []);
+
+  const loadStats = useCallback(async () => {
+    try {
+      const res = await fetch("/api/stats/pool", { cache: "no-store" });
+      if (res.ok) setStats((await res.json()) as StatsResponse);
+    } catch {
+      // 통계 실패는 무시
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadPool(false);
+    void loadStats();
+  }, [loadPool, loadStats]);
+
+  return (
+    <main className="mx-auto min-h-screen w-full max-w-6xl px-3 pb-20 pt-4 sm:px-6 sm:pt-6">
+      {/* 통계 배너 (FOMO) */}
+      {stats && (stats.caughtToday > 0 || stats.freshLocked > 0) ? (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/60 dark:bg-amber-950/30">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+            {stats.caughtToday > 0 ? (
+              <span className="flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-100">
+                <FlameIcon className="h-4 w-4" />
+                오늘 {stats.caughtToday.toLocaleString("ko-KR")}건 잡힘
+              </span>
+            ) : null}
+            {stats.freshLocked > 0 ? (
+              <span className="text-amber-700 dark:text-amber-300">
+                · 최근 {stats.freshLagHours}시간 안에 풀린 매물 <span className="font-bold">{stats.freshLocked.toLocaleString("ko-KR")}건</span> (구독자 전용)
+              </span>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {/* 헤더 */}
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">탐색</h1>
+          <p className="mt-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            6시간 이상 지난 매물 30개 · 30분마다 새로 받기
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => loadPool(true)}
+          disabled={!canRefresh || refreshing}
+          className={`shrink-0 rounded-xl px-3 py-2 text-xs font-bold transition ${
+            canRefresh && !refreshing
+              ? "bg-emerald-600 text-white hover:bg-emerald-700"
+              : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+          }`}
+        >
+          {refreshing ? "받는 중..." : canRefresh ? "새 30개 받기" : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 가능`}
+        </button>
+      </div>
+
+      {/* Paywall 예고 칩 */}
+      <div className="mb-4 flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
+        <ZapIcon className="h-4 w-4 text-amber-500" />
+        <span>
+          <span className="font-bold text-zinc-900 dark:text-zinc-100">즉시 매물</span>은 구독자 전용 — 곧 출시. 지금은 6시간 전 매물만 무료로 봐요.
+        </span>
+      </div>
+
+      {/* 로딩 / 에러 / 매물 grid */}
+      {loading ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-[140px] animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900/60" />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200">
+          {error}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="rounded-xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-900/40">
+          <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+            6시간 이상 지난 매물이 아직 없어요. 잠시 후 다시 와주세요.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {items.map((item) => {
+            const pct = profitPct(item);
+            const isPremiumSeller = (item.sellerReviewRating ?? 0) >= 4.8 && item.sellerReviewCount >= 30;
+            return (
+              <a
+                key={item.pid}
+                href={bunjangUrl(item.pid)}
+                target="_blank"
+                rel="noreferrer"
+                className="group grid grid-cols-[100px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-white p-3 transition hover:border-emerald-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:border-emerald-700"
+              >
+                <div className="relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                  {item.thumbnailUrl ? (
+                    <Image
+                      src={item.thumbnailUrl}
+                      alt={item.name}
+                      fill
+                      sizes="100px"
+                      unoptimized
+                      className="object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div className="min-w-0">
+                  <div className="line-clamp-2 text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-100">
+                    {item.name}
+                  </div>
+                  <div className="mt-1.5 flex items-baseline gap-1.5">
+                    <span className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                      +{krw(profitAvg(item))}
+                    </span>
+                    {pct != null ? (
+                      <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+                        +{pct}%
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                    <span>매입 <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{krw(item.price)}</span></span>
+                    {item.skuMedian ? (
+                      <>
+                        <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                        <span>시세 <span className="font-bold tabular-nums">{krw(item.skuMedian)}</span></span>
+                      </>
+                    ) : null}
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-medium">
+                    <span className="flex items-center gap-0.5 text-zinc-500">
+                      <ClockIcon className="h-3 w-3" />
+                      {hoursAgoLabel(item.lastVerifiedAt)}
+                    </span>
+                    {isPremiumSeller ? (
+                      <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+                        <TrophyIcon className="h-3 w-3" />
+                        우수 셀러
+                      </span>
+                    ) : null}
+                    {item.freeShipping ? (
+                      <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                        무료배송
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 푸터 안내 */}
+      {!loading && items.length > 0 ? (
+        <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-center text-[11px] font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
+          매물 클릭 → 번개장터에서 직접 확인하고 거래하세요. 시세는 AI 비교 정보일 뿐, 거래 진위는 본인이 판단.
+        </div>
+      ) : null}
+    </main>
+  );
+}
