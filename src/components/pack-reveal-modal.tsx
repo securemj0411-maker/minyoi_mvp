@@ -2975,6 +2975,13 @@ function RevealCardItem({
                     </span>
                   ) : null}
                 </div>
+
+                {/* Wave 394.6.b.fix2 (사용자 정확 지적): 비교 매물 = "이 시세 진짜야?" 직빵 증명.
+                    차익 헤드라인 직후 위치 — 외부 review #7 "3. 데이터 믿을 만한가" 핵심 신호.
+                    "데이터 믿을 만한가? 의 측면에서 직빵으로 active 매물 중 비교매물 보여주는게 직빵.
+                     시세가 진짜인지가 비교매물로 제일 증명." */}
+                <ComparableListingsPanel card={card} />
+
                 {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
                 <WhyCheapPanel card={card} />
                 <UpperFoldFearReducers card={card} />
@@ -3042,11 +3049,11 @@ function RevealCardItem({
           </span>
         </div>
 
-        {/* Wave 394.6.b.fix (사용자 짚음): 비교 매물 위계 ↑ — 그래프 보다 위.
-            "이 시세가 믿을만한건지 결정이 우선순위 — 비교매물이 위계가 훨씬 높지 않나?".
-            시세 그래프 = 자세한 추이 (디테일). 비교 매물 = "이 시세 어떻게 산출됐나" 근거 자체.
-            근거 → 자세한 추이 흐름이 자연. */}
-        <ComparableListingsPanel card={card} />
+        {/* Wave 394.6.b.fix2 (사용자 재지적): 비교 매물 → 좌측 카드 안으로 이동 (차익 헤드라인 직후).
+            "데이터 믿을 만한가? 의 측면에서 직빵으로 비교매물 보여주는게 active 매물 중에서 직빵.
+             일단 시세가 진짜인지가 비교매물로 제일 증명." — 사용자 짚음.
+            우측 카드 (자세한 그래프 추이) 와 분리 — 좌측 카드 = 매물 정보 + 시세 신뢰 증명. */}
+        {/* ComparableListingsPanel 호출 = 좌측 카드 안 (차익 메타 line 다음). 우측 카드에선 제거. */}
 
         {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
         {/* "시세 어떤 기준으로 잡나" 시각화. history 부족하면 자동 hide. */}
