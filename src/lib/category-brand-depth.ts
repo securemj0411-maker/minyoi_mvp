@@ -1092,6 +1092,1004 @@ const LAPTOP: CategoryBrandDepth = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────
+// bag — Wave C
+// ─────────────────────────────────────────────────────────────────────────
+// 명품 (LV/Chanel/Gucci/Hermes/Dior) — 가품 위험 매우 큼. 인증 서비스 권장.
+// 등록된 SKU (TNF/Stussy/Margiela/Supreme/Carhartt/Acne 등) — 가품 위험 중간.
+
+const BAG: CategoryBrandDepth = {
+  category: "bag",
+  default: {
+    counterfeitRisk: "high",
+    counterfeitChecks: [
+      "라벨/태그 폰트 — 정품은 균일한 자간/굵기, 가품은 미세한 어긋남",
+      "봉제선 간격 — 정품은 1cm당 일정 땀수, 가품은 불균일",
+      "안감/가죽 결 — 정품은 모공/패턴 자연, 가품은 매끈하거나 균일 X",
+      "시리얼/모델 번호 — 박스/태그/내부 라벨 3곳 일치 확인",
+    ],
+    marketRisks: [
+      "정품 인증 서비스 (KREAM, 트렌비, MJ인증) 카드 동봉 매물 신뢰 ↑↑",
+      "가짜 박스 / dust bag 도 흔함 — 박스 X도 정품 가능",
+    ],
+    authentication: ["KREAM 검수", "트렌비 정품 인증", "MJ인증 (한국)"],
+  },
+  brands: {
+    "louis-vuitton": {
+      detectKeywords: ["루이비통", "louis vuitton", "lv ", " lv,", "네버풀", "스피디", "키폴"],
+      skuIdPrefixes: ["bag-lv", "bag-louis-vuitton"],
+      label: "루이비통 (Louis Vuitton)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "데이트 코드 — 내부 가죽 탭 6자리 (2021 이전: 알파벳 2 + 숫자 4 / 2021 이후: 마이크로칩 RFID 매립)",
+        "모노그램 패턴 — 정품은 꽃잎/LV 가운데 정확 배치, 가품은 패턴 어긋나거나 잘림",
+        "스티치(봉제) — 정품 황금색 미세 잔잔, 가품은 굵거나 노란기 강함",
+        "지퍼/금속 마감 — 정품은 'LV' 각인 깊이 균일 + 광택 일정",
+        "내부 보일 가죽 — 정품은 모공 자연, 가품은 매끈하거나 PVC 광택",
+      ],
+      marketRisks: [
+        "한정/콜라보 (LV x Murakami, Supreme, Yayoi Kusama) = 가품 위험 최상위 — 인증 없으면 거래 금지",
+        "2021+ 마이크로칩 매물은 LV 공식 매장에서 칩 reading 가능 — 인증 ↑",
+        "Speedy/Neverfull 흔한 가품 모델 — 정품 인증 카드 필수",
+      ],
+      authentication: ["KREAM 검수", "트렌비 정품 인증", "LV 공식 매장 RFID 칩 확인 (2021+ 모델)"],
+    },
+    "chanel": {
+      detectKeywords: ["샤넬", "chanel", "클래식플랩", "보이샤넬", "19백"],
+      skuIdPrefixes: ["bag-chanel"],
+      label: "샤넬 (Chanel)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "시리얼 — 7자리 (Classic/Boy/19 등) 또는 8자리 (최신). 내부 시리얼 스티커 + 보증 카드 매칭",
+        "퀼팅 패턴 — 정품은 다이아몬드 균일, 봉제선이 다이아몬드 꼭지점에서 정확히 만남",
+        "CC 로고 금속 — 'CC'가 겹치는 부분 (오른쪽 C가 위) 일관",
+        "체인 스트랩 — 가죽 weave 균일, 금속 무게감 (정품 무거움)",
+        "지퍼 'CC' 각인 깊이 + 'YKK Excella' 또는 'Lampo' 마킹 확인",
+      ],
+      marketRisks: [
+        "Classic Flap / Boy / 19 = 가품 매우 흔함 — 인증 카드 없으면 70%+ 의심",
+        "샤넬 매장 AS 거부 = 가품 또는 그레이 마켓 (병행 수입) 매물",
+        "보증 카드 시리얼 + 가방 내부 시리얼 매칭 (꼭 사진 비교)",
+      ],
+      authentication: ["KREAM 검수 + 인증 카드", "샤넬 공식 매장 AS 가능성 확인"],
+    },
+    "gucci": {
+      detectKeywords: ["구찌", "gucci", "마몬트", "디오니소스", "재키"],
+      skuIdPrefixes: ["bag-gucci"],
+      label: "구찌 (Gucci)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "내부 시리얼 — 가죽 탭 2줄 (위: 6자리 모델 / 아래: 6자리 시리얼). 흰 가죽 + 검정 각인",
+        "GG 모노그램 — 정품은 G가 살짝 떨어짐 (붙어있지 않음), 가품은 G가 너무 가까움",
+        "Marmont/Dionysus 금속 마감 — 'Made in Italy' 각인 + 광택",
+        "안감 — 정품은 면/캔버스 (베이지~카키), 가품은 폴리에스터 광택",
+        "지퍼 — 'Lampo' 또는 'YKK' 마킹 (Lampo가 더 흔함)",
+      ],
+      marketRisks: [
+        "Marmont 흔한 가품 모델 — KREAM 검수 권장",
+        "Tom Ford 시대 (1994-2004) 빈티지는 진짜 가품 적음 (다른 마감)",
+      ],
+      authentication: ["KREAM 검수", "트렌비"],
+    },
+    "hermes": {
+      detectKeywords: ["에르메스", "hermes", "켈리", "버킨", "에블린", "린디"],
+      skuIdPrefixes: ["bag-hermes"],
+      label: "에르메스 (Hermès)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "스탬프 — 'HERMÈS PARIS MADE IN FRANCE' 외 + 가죽 종류 표기 (Togo/Epsom/Box 등)",
+        "년식 마크 — Square/Circle 안 알파벳 (예: A=2017, Z=2024)",
+        "봉제 — 새들 스티치 (한 줄로 보이지만 양쪽에서 박는 방식). 정품 손바느질, 가품 기계바느질",
+        "금속 마감 — Palladium/Gold 도금 + 무게감 (켈리 락 25g+)",
+        "가죽 결 — Togo (자연 모공), Epsom (인쇄 패턴), Box (광택). 모델 매칭 필수",
+      ],
+      marketRisks: [
+        "Kelly/Birkin = 가품 매우 흔함 — 매장 영수증 + 인증 필수",
+        "리세일 가격 ₩2000만~수억원 — 인증 비용 (₩50만+) 들여도 회수 가능",
+        "Hermès 공식 매장 AS = 정품 검증 도구. 가품 시 AS 거부",
+      ],
+      authentication: ["KREAM 검수 (켈리/버킨)", "Hermès 공식 매장 AS"],
+    },
+    "dior": {
+      detectKeywords: ["디올", "dior", "북토트", "새들백", "레이디디올"],
+      skuIdPrefixes: ["bag-dior"],
+      label: "디올 (Dior)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "시리얼 — 가죽 탭 코드 (예: 02-MA-1234). 2 자리 = 월/주, 알파벳 2 = 공장, 4 = 시리얼",
+        "CD 로고 폰트 + 자간 균일",
+        "Cannage (퀼팅) 패턴 — Lady Dior 다이아몬드 정확, 가품은 패턴 크기 다름",
+        "안감 — 양가죽 (lambskin) 부드러움, 가품은 매끈한 PU",
+      ],
+      marketRisks: [
+        "Lady Dior / Saddle / Book Tote = 가품 흔함",
+        "Cannage 모델 흠집 흔함 — 사용감 사진 필수",
+      ],
+      authentication: ["KREAM 검수", "트렌비"],
+    },
+    "goyard": {
+      detectKeywords: ["고야드", "goyard", "쌩루이", "안조"],
+      skuIdPrefixes: ["bag-goyard"],
+      label: "고야드 (Goyard)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "Y 헤링본 패턴 — 손으로 그린듯한 미세 변동 (정품), 가품은 기계 인쇄 균일",
+        "내부 시리얼 — 가죽 탭 'Goyard' 각인",
+        "캔버스 코팅 — 정품은 살짝 광택, 가품은 매트 또는 과한 광택",
+      ],
+      marketRisks: [
+        "Saint Louis / Anjou = 가품 흔함 — 인증 권장",
+        "맞춤 페인팅 가품도 흔함 (이니셜/스트라이프 추가 매물 검증 어려움)",
+      ],
+      authentication: ["트렌비", "MJ인증"],
+    },
+    "prada": {
+      detectKeywords: ["프라다", "prada", "사피아노", "리나일론", "갤러리아"],
+      skuIdPrefixes: ["bag-prada"],
+      label: "프라다 (Prada)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "삼각 로고 — 정품은 살짝 입체 (양각), 가품은 평면 인쇄",
+        "지퍼 — 'Lampo' / 'Riri' 마킹",
+        "Saffiano 가죽 패턴 — 십자 사선 균일 (정품), 가품은 무늬 흐림",
+        "Re-Nylon 매물 — 'Prada Re-Nylon' 라벨 + ECONYL® 표기 (재활용 나일론)",
+      ],
+      marketRisks: [
+        "갤러리아 (Galleria) / Re-Edition = 가품 위험 중간 — 인증 권장",
+        "1990년대 빈티지 = 진짜 가품 적음 (제조 방식 다름)",
+      ],
+      authentication: ["KREAM 검수", "트렌비"],
+    },
+    "celine": {
+      detectKeywords: ["셀린느", "celine", "트리오페", "벨트백", "럭기지"],
+      skuIdPrefixes: ["bag-celine"],
+      label: "셀린느 (Celine)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "로고 — 옛 (Céline, 악센트 포함) vs 신 (CELINE) 구분",
+        "시리얼 — 가죽 탭 'F-MA-...' 식 (Phoebe 시대) 또는 'CELINE...' (Hedi 시대)",
+        "Triomphe 캔버스 — 패턴 균일",
+      ],
+      marketRisks: [
+        "Phoebe Philo 시대 빈티지 = 시세 매우 높음 (단종으로 인한 희소성)",
+        "Hedi Slimane 신상 = 가품 위험 늘어남",
+      ],
+      authentication: ["트렌비"],
+    },
+    "bottega-veneta": {
+      detectKeywords: ["보테가", "bottega", "베네타", "카세트", "파우치"],
+      skuIdPrefixes: ["bag-bottega"],
+      label: "보테가 베네타 (Bottega Veneta)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "Intrecciato (인트레치아토) 위빙 — 가죽 strip 너비 균일 (정품 일정 mm), 가품은 너비 다름",
+        "시리얼 — 가죽 탭 'Bottega Veneta Made in Italy' + 6자리",
+        "가죽 결 — Nappa (부드러움), 가품은 PU/PVC 광택",
+      ],
+      marketRisks: [
+        "카세트 / 파우치 / Jodie = 가품 흔함",
+        "인트레치아토 가품 = 위빙 풀리기 쉬움 (정품은 견고)",
+      ],
+      authentication: ["KREAM 검수", "트렌비"],
+    },
+    "loewe": {
+      detectKeywords: ["로에베", "loewe", "퍼즐백", "햄목", "버킨", "고야"],
+      skuIdPrefixes: ["bag-loewe"],
+      label: "로에베 (Loewe)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "Anagram 로고 — 4개 L 모양 균일 + 가운데 사각형 정확",
+        "시리얼 — 가죽 탭 'Loewe Made in Spain' + 코드",
+        "가죽 결 — Soft Calf (부드러움), Classic Calf (단단함). 모델 매칭",
+      ],
+      marketRisks: [
+        "Puzzle Bag / Hammock = 인기 모델 가품 늘어나는 중",
+        "수공예 마감 — 정품 봉제선 정확, 가품은 풀린 부분 보임",
+      ],
+      authentication: ["KREAM 검수", "트렌비"],
+    },
+    "margiela-bag": {
+      detectKeywords: ["마르지엘라", "margiela", "마틴마르지엘라", "글램슬램", "5ac"],
+      skuIdPrefixes: ["bag-margiela"],
+      label: "메종 마르지엘라 (Maison Margiela)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "Four-stitch — 외부 4개 흰 실 박음 (모델 시그니처). 모든 가방에 있음",
+        "Numbers 라벨 — 0~23 라인 중 하나에 동그라미 (라인 표시)",
+        "안감 'MM' 또는 'Maison Margiela' 라벨",
+      ],
+      marketRisks: [
+        "Glam Slam / 5AC = 인기 모델",
+        "리세일 시세 안정적 — 가품 적음",
+      ],
+      authentication: ["KREAM 검수"],
+    },
+    "supreme-bag": {
+      detectKeywords: ["슈프림", "supreme", "박스로고"],
+      skuIdPrefixes: ["bag-supreme"],
+      label: "슈프림 가방 (Supreme)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "BOX 로고 — Futura Heavy Oblique 폰트 (clothing wave B 와 동일)",
+        "지퍼 'YKK' 마킹 + Cordura/Nylon 안감",
+        "시즌 태그 — 'SS' (봄여름) 또는 'FW' (가을겨울) + 연도",
+      ],
+      marketRisks: [
+        "콜라보 (Supreme x TNF, LV, etc) = 가품 위험 최상위",
+        "특정 시즌 (SS17 등) 한정 인기 = 시세 변동 큼",
+      ],
+      authentication: ["KREAM 검수", "Stockx"],
+    },
+    "stussy-bag": {
+      detectKeywords: ["스투시", "stussy", "더블에스"],
+      skuIdPrefixes: ["bag-stussy"],
+      label: "스투시 (Stussy)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "Logo — 손글씨 'Stussy' (Shawn Stussy 시그니처) 폰트 균일",
+        "안감 라벨 + 시즌 태그",
+      ],
+      marketRisks: [
+        "콜라보 매물 시세 ↑ — 인증 권장",
+      ],
+      authentication: ["KREAM 검수"],
+    },
+    "tnf-bag": {
+      detectKeywords: ["노스페이스", "north face", "tnf", "thenorthface", "보레알리스", "핫샷", "빅샷"],
+      skuIdPrefixes: ["bag-tnf"],
+      label: "노스페이스 (The North Face)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "로고 자수 — TNF 폰트 균일 + 미국기 배지 (있는 모델)",
+        "지퍼 YKK 마킹",
+        "Nylon 강도 + 봉제 균일",
+      ],
+      marketRisks: [
+        "Supreme x TNF 콜라보 = 가품 위험 ↑↑",
+        "보레알리스/핫샷/빅샷 = 인기 백팩 — 가품 적당",
+      ],
+      authentication: ["KREAM 검수 (콜라보)"],
+    },
+    "acne-bag": {
+      detectKeywords: ["아크네", "acne", "무수비"],
+      skuIdPrefixes: ["bag-acne"],
+      label: "아크네 스튜디오 (Acne Studios)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "로고 — 'Acne Studios' 또는 분홍 라벨",
+        "안감 — 면 라벨 + 시리얼",
+      ],
+      marketRisks: [
+        "Musubi 시그니처 매물 인기",
+      ],
+      authentication: ["KREAM 검수"],
+    },
+    "carhartt-bag": {
+      detectKeywords: ["칼하트", "carhartt", "wip", "메신저"],
+      skuIdPrefixes: ["bag-carhartt"],
+      label: "칼하트 WIP (Carhartt)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "Square Label — 노란 사각형 'Carhartt' 정확",
+        "안감 + 봉제 균일",
+      ],
+      marketRisks: [
+        "가품 위험 낮음 (시세 적당)",
+      ],
+      authentication: [],
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// watch — Wave E
+// ─────────────────────────────────────────────────────────────────────────
+// 명품 시계 = 가품 매우 큼 (Rolex/Omega/Cartier/AP/PP). AS 가능성 = 정품 검증 도구.
+// G-Shock/Seiko 등 중저가 = 가품 적음.
+
+const WATCH: CategoryBrandDepth = {
+  category: "watch",
+  default: {
+    counterfeitRisk: "high",
+    counterfeitChecks: [
+      "시리얼/모델 번호 — 케이스 백 + 무브먼트 + 보증 카드 3곳 일치",
+      "무브먼트 — 자동/쿼츠 차이. 정품 자동시계는 초침이 부드럽게 흐름, 쿼츠는 1초씩 톡톡",
+      "다이얼 인쇄 — 폰트 굵기 균일, 인덱스 위치 대칭",
+      "케이스 무게감 — 명품은 메탈 무게감 (Steel 150g+, Gold 250g+)",
+    ],
+    marketRisks: [
+      "보증서 + 박스 + 카드 풀세트 = 정가 +20~30% (정품 검증 도구로도 활용)",
+      "공식 매장 AS 가능 = 정품 검증 가능 (사설 AS만 가능 = 의심)",
+    ],
+    authentication: ["공식 매장 AS 가능성 확인", "Chrono24 인증"],
+  },
+  brands: {
+    "rolex": {
+      detectKeywords: ["롤렉스", "rolex", "서브마리너", "데이토나", "gmt", "익스플로러"],
+      skuIdPrefixes: ["watch-rolex"],
+      label: "롤렉스 (Rolex)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "크라운 (왕관) 로고 — 5각형 + 5개 점. 다이얼 6시 + 케이스 백 + 베젤 마이크로 각인 일치",
+        "시리얼 — 8자리 (2010 이후 무작위 알파벳+숫자). 케이스 백 + 보증 카드 매칭",
+        "무브먼트 — Caliber 3xxx 시리즈 (3135, 3186 등). 정품 'COSC 인증' 표기",
+        "사이클로프 렌즈 — 데이트 창 2.5배 확대 (정품), 가품은 1.5배~2배",
+        "초침 — 부드럽게 흐름 (Hi-Beat 4Hz=28800 vph). 가품은 끊김 있음",
+      ],
+      marketRisks: [
+        "Submariner / GMT-Master / Daytona / Datejust = 가품 매우 흔함",
+        "공식 매장 AS 가능 매물 = 정품 검증 도구. AS 거부 = 가품 또는 부품 교체",
+        "최근 'frankenwatch' (정품 부품 + 가품 부품 혼합) 위험",
+      ],
+      authentication: ["롤렉스 공식 매장 AS (한국)", "Chrono24 인증 매물"],
+    },
+    "omega": {
+      detectKeywords: ["오메가", "omega", "스피드마스터", "씨마스터", "컨스텔레이션"],
+      skuIdPrefixes: ["watch-omega"],
+      label: "오메가 (Omega)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "시리얼 — 8자리 숫자 (현대 모델). 케이스 백 안쪽 + 보증서",
+        "Co-Axial 무브먼트 (2007 이후) — 정품 시계는 'Co-Axial' 표기 + 인증",
+        "Seamaster Diver — Helium Escape Valve (HEV) 정확 위치 + 마감",
+        "Speedmaster Moonwatch — Hesalite 크리스탈 (플라스틱) 모델은 NASA 인증 표시",
+      ],
+      marketRisks: [
+        "Speedmaster Moonwatch (스피드 문워치) = 가품 흔함 — 보증서 + 박스 필수",
+        "Seamaster 300m (제임스 본드) = 가품 매우 흔함",
+      ],
+      authentication: ["오메가 공식 매장 AS", "Chrono24 인증"],
+    },
+    "cartier": {
+      detectKeywords: ["까르띠에", "cartier", "탱크", "산토스", "발롱블루"],
+      skuIdPrefixes: ["watch-cartier"],
+      label: "까르띠에 (Cartier)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "사파이어 크라운 (cabochon) — 블루/레드 보석 마감. 정품 색감 진함, 가품 옅음",
+        "시리얼 — 케이스 백 + 보증 카드",
+        "다이얼 폰트 — Cartier 'C' 곡선 균일",
+        "Roman Numeral (로마자 인덱스) — VII 가 12시 방향, 'IIII' (IV 아님) 표기",
+      ],
+      marketRisks: [
+        "Tank Must / Solo = 인기 모델, 가품 흔함",
+        "Santos / Ballon Bleu = 명품 가품 위험 큼",
+      ],
+      authentication: ["까르띠에 공식 매장 AS", "Chrono24 인증"],
+    },
+    "audemars-piguet": {
+      detectKeywords: ["오데마피게", "audemars piguet", "ap watch", "로열오크"],
+      skuIdPrefixes: ["watch-audemars-piguet", "watch-ap"],
+      label: "오데마 피게 (Audemars Piguet)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "Royal Oak 8각 베젤 — 8개 hex screw 위치 정확 (모든 screw 같은 방향 일치)",
+        "Tapisserie 다이얼 — 격자 패턴 정확. 정품 디테일 선명",
+        "시리얼 — 5자리 (현대 RO 15400/15500). 케이스 백 + 보증 카드",
+        "무브먼트 Calibre 3120/4302 — 자동, 60시간 파워 리저브",
+      ],
+      marketRisks: [
+        "Royal Oak = 가품 매우 흔함, 리세일 ₩3000만~수억원",
+        "공식 매장 AS 가능 = 정품 검증. AS 거부 = 가품",
+      ],
+      authentication: ["AP 공식 매장 AS", "Chrono24 인증"],
+    },
+    "patek-philippe": {
+      detectKeywords: ["파텍필립", "patek philippe", "노틸러스", "아쿠아넛"],
+      skuIdPrefixes: ["watch-patek-philippe", "watch-patek"],
+      label: "파텍 필립 (Patek Philippe)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "시리얼 — 케이스 백 안쪽 + 보증 카드 (Origin / Service papers)",
+        "Patek 'Extract from Archives' (₩400+) 발급 가능 = 정품 검증 최고 도구",
+        "무브먼트 — Caliber 240 (2.4mm 마이크로 로터) 등. 정품 무브먼트 사진 필수",
+        "케이스 백 마이크로 각인 — 'PP & Co.' 로고 깊이 균일",
+      ],
+      marketRisks: [
+        "Nautilus 5711/5980 = 가품 흔함 + 리세일 ₩5000만+",
+        "Aquanaut 5167/5168 = 흔한 가품 모델",
+        "Patek Extract 발급 ($400) = 진품 확정 최고 방법",
+      ],
+      authentication: ["Patek Extract from Archives", "공식 매장 AS"],
+    },
+    "iwc": {
+      detectKeywords: ["iwc", "포르투기저", "파일럿", "포르토피노"],
+      skuIdPrefixes: ["watch-iwc"],
+      label: "IWC 샤프하우젠",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "시리얼 — 케이스 백 + 보증 카드",
+        "무브먼트 — Caliber 32xxx / 51xxx / 89xxx 등 자체 무브먼트",
+        "Portuguese (포르투기저) Lume — 야광 균일",
+      ],
+      marketRisks: [
+        "Portuguese / Pilot / Aquatimer = 가품 흔함",
+      ],
+      authentication: ["IWC 공식 매장 AS", "Chrono24 인증"],
+    },
+    "casio-gshock": {
+      detectKeywords: ["지샥", "g-shock", "gshock", "casio g"],
+      skuIdPrefixes: ["watch-casio-gshock"],
+      label: "카시오 지샥 (G-Shock)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "모듈 번호 — 케이스 백 (예: 3431 = GA-2100 모듈)",
+        "후면 'CASIO' 음각 + 'JAPAN MOVT'",
+      ],
+      marketRisks: [
+        "가품 거의 없음 (시세 ₩5~30만)",
+        "스트랩/베젤 교체 가능 — 정품 부품 확인 (정품 부품 다르면 시세 ↓)",
+      ],
+      authentication: ["카시오 공식 시리얼 조회"],
+    },
+    "seiko": {
+      detectKeywords: ["세이코", "seiko", "프리미어", "프로스펙스", "프레자지"],
+      skuIdPrefixes: ["watch-seiko"],
+      label: "세이코 (Seiko)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "케이스 백 — 'Seiko Japan' + 모듈 번호 (예: 4R36) + 시리얼",
+        "무브먼트 — Caliber 4R/6R 시리즈",
+      ],
+      marketRisks: [
+        "5 Sports / Prospex (다이버) = 가품 적음, 인기 모델",
+        "Grand Seiko = 별도 시세, 가품 가능성 ↑",
+      ],
+      authentication: ["세이코 공식 AS (한국 - 동일이트레이딩)"],
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// perfume — Wave E
+// ─────────────────────────────────────────────────────────────────────────
+// 공병/가짜 향료 위험 — 시리얼 + 박스 인쇄 + 잔량 확인.
+
+const PERFUME: CategoryBrandDepth = {
+  category: "perfume",
+  default: {
+    counterfeitRisk: "moderate",
+    counterfeitChecks: [
+      "시리얼 — 박스 바닥 + 병 바닥 일치 (생산 batch 표시)",
+      "박스 인쇄 — 폰트 굵기/색감/마감 균일",
+      "스프레이 노즐 — 분사력 + 향 패턴 (정품은 미세 분무)",
+      "캡 — 무게감 + 끼움새 (정품은 정확히 맞음)",
+    ],
+    marketRisks: [
+      "공병에 가짜 향료 채워 판매 — 직거래 시 시향 권장",
+      "잔량 X% 명시 매물 = 시세 (50% = 정가 -50%)",
+      "박스/박스 봉인 확인 (꽉찬 매물 = 거의 새것)",
+    ],
+    authentication: ["공식 매장 영수증", "면세점 영수증"],
+  },
+  brands: {
+    "chanel-perfume": {
+      detectKeywords: ["샤넬", "chanel", "코코마드모아젤", "no.5", "넘버5", "블루드샤넬", "블루 드 샤넬"],
+      skuIdPrefixes: ["chanel-"],
+      label: "샤넬 향수 (Chanel)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "병 바닥 시리얼 — 박스 바닥과 매칭 (배치 번호 4~7자리)",
+        "라벨 폰트 — Chanel 폰트 (균일 자간), 'EAU DE PARFUM' 글자 선명",
+        "캡 — 정품은 무거움 + 자석 끼임 (Coco Mademoiselle), 가품은 가볍거나 헐거움",
+        "박스 셀로판 봉인 — 정품 정사각형 + 빈틈 없음",
+      ],
+      marketRisks: [
+        "Coco Mademoiselle / No.5 / Chance = 가품 흔함",
+        "Bleu de Chanel (남성) 가품 매우 흔함",
+        "면세점 영수증 매물 = 신뢰 ↑",
+      ],
+      authentication: ["샤넬 공식 매장 영수증", "면세점 영수증 (롯데/신라/현대)"],
+    },
+    "dior-perfume": {
+      detectKeywords: ["디올", "dior", "쇼비주", "미스디올", "사우바주", "사바주"],
+      skuIdPrefixes: ["dior-"],
+      label: "디올 향수 (Dior)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "병 바닥 — 시리얼 + 'France' 음각",
+        "캡 — 무게감 + Dior 폰트 균일",
+        "라벨 인쇄 — Dior CD 로고 선명",
+      ],
+      marketRisks: [
+        "Sauvage (사우바주) 남성 향수 가품 매우 흔함",
+        "Miss Dior / J'adore 흔한 가품 모델",
+      ],
+      authentication: ["디올 공식 매장 영수증", "면세점 영수증"],
+    },
+    "tom-ford": {
+      detectKeywords: ["톰포드", "tom ford", "tobacco", "ombre", "오드"],
+      skuIdPrefixes: ["tom-ford-"],
+      label: "톰 포드 (Tom Ford)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "병 바닥 — 'TF' 로고 음각 + 시리얼",
+        "캡 — 메탈 무게감 (Private Blend 라인은 무거움)",
+        "박스 — 검정 매트 마감 + 흰 라벨 'TOM FORD' 정확",
+      ],
+      marketRisks: [
+        "Private Blend (Tobacco Vanille, Oud Wood, Lost Cherry) = 가품 흔함",
+        "Signature 라인 (Black Orchid) = 가품 가능",
+      ],
+      authentication: ["면세점/매장 영수증"],
+    },
+    "jo-malone": {
+      detectKeywords: ["조말론", "jo malone", "잉글리시", "라임", "우드세이지"],
+      skuIdPrefixes: ["jo-malone-"],
+      label: "조 말론 (Jo Malone)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "박스 — 크림색 + 검정 라벨 'Jo Malone London'",
+        "병 — 사각형 클리어 글래스 + 검정 캡",
+        "병 바닥 시리얼",
+        "리본 — 검정 새틴 리본 (선물 포장)",
+      ],
+      marketRisks: [
+        "Wood Sage & Sea Salt / Lime Basil & Mandarin / English Pear = 인기 + 가품 흔함",
+        "잔량 표기 (꽉찬 / 80% 등) 가격 영향",
+      ],
+      authentication: ["면세점/매장 영수증"],
+    },
+    "diptyque": {
+      detectKeywords: ["딥티크", "diptyque", "도손", "탐다오", "오선"],
+      skuIdPrefixes: ["diptyque-"],
+      label: "딥티크 (Diptyque)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "박스 — 흰 박스 + Diptyque 손글씨 로고",
+        "병 — 흰 라벨 + 손글씨 폰트 'Diptyque'",
+        "캡 — 메탈 무게감 (EDP 라인)",
+      ],
+      marketRisks: [
+        "Do Son / Tam Dao / Eau Rose = 인기 모델",
+        "캔들 매물도 흔함 — 향수와 별도 시세",
+      ],
+      authentication: ["면세점/매장 영수증"],
+    },
+    "le-labo": {
+      detectKeywords: ["르라보", "le labo", "산탈", "베르가못", "더라이트"],
+      skuIdPrefixes: ["le-labo-"],
+      label: "르 라보 (Le Labo)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "병 — 흰 라벨에 손글씨처럼 적힘 (모델명 + 사용자 이름 + 날짜)",
+        "박스 — 갈색 박스 + 흰 라벨",
+        "캡 — 메탈 무게감",
+      ],
+      marketRisks: [
+        "Santal 33 / Bergamote 22 / The Noir = 가장 인기",
+        "병 라벨에 적힌 사용자 이름/날짜는 정품 표시 (커스텀 가능)",
+      ],
+      authentication: ["면세점/매장 영수증", "Le Labo 공식 매장"],
+    },
+    "memo": {
+      detectKeywords: ["메모", "memo paris", "아이리시 레더", "russian", "쟈로니어"],
+      skuIdPrefixes: ["memo-"],
+      label: "메모 파리 (Memo Paris)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "박스 — Memo 로고 + 'Paris'",
+        "병 — 두꺼운 글래스 + 메탈 캡",
+      ],
+      marketRisks: [
+        "Irish Leather / Russian Leather = 인기",
+        "분사 노즐 작동 확인 (정품은 미세 분무)",
+      ],
+      authentication: ["면세점/매장 영수증"],
+    },
+    "replica": {
+      detectKeywords: ["레플리카", "replica", "메종 마르지엘라 향수", "비치워크", "재즈클럽"],
+      skuIdPrefixes: ["replica-"],
+      label: "레플리카 (Maison Margiela Replica)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "박스 — 종이 라벨 (사진 같음, 'When the Rain Stops' 등)",
+        "병 — 흰 라벨 + 시리얼",
+        "캡 — 메탈 마감",
+      ],
+      marketRisks: [
+        "Jazz Club / Beach Walk / Lazy Sunday Morning = 인기",
+      ],
+      authentication: ["면세점/매장 영수증"],
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// camera — Wave E
+// ─────────────────────────────────────────────────────────────────────────
+// 가품 거의 X — 진짜 위험 = 셔터 카운트 / 렌즈 곰팡이 / 센서 / AS.
+
+const CAMERA: CategoryBrandDepth = {
+  category: "camera",
+  default: {
+    counterfeitRisk: "low",
+    counterfeitChecks: [
+      "시리얼 — 바디 하단 + 박스 일치 (제조사 공식 등록 조회)",
+      "센서 — 클리닝 (먼지/얼룩 사진 확인) + 결함 (Hot pixel)",
+      "셔터 카운트 — 메뉴에서 확인 (브랜드별 다름)",
+    ],
+    marketRisks: [
+      "셔터 카운트 명시 매물 = 신뢰 ↑ (10만 이하 정상)",
+      "AS 가능 + 보증 잔여 매물 = 시세 +",
+      "풀세트 (박스/배터리/충전기/스트랩) vs 본체만 가격 차",
+    ],
+    authentication: ["제조사 공식 시리얼 조회", "공식 AS 매장"],
+  },
+  brands: {
+    "sony-camera": {
+      detectKeywords: ["소니", "sony alpha", "a7", "fx3", "zv"],
+      skuIdPrefixes: ["camera-sony"],
+      label: "소니 알파 (Sony α)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "셔터 카운트 — 메뉴 > 설정 > 카메라 설정 (a7 시리즈)",
+        "시리얼 — 바디 하단 + 박스 일치. Sony 한국 AS 등록 가능",
+      ],
+      marketRisks: [
+        "a7M3/M4 = 정격 셔터 300,000. 10만 초과 = -20% 시세",
+        "센서 클리닝 비용 (₩3~5만 — 직거래 후 cleaning 권장)",
+        "E-mount 렌즈 호환 — 풀프레임 (FE) vs 크롭 (E) 구분",
+      ],
+      authentication: ["Sony Korea AS", "사진 갤러리/카페 후기"],
+    },
+    "canon-camera": {
+      detectKeywords: ["캐논", "canon", "eos", "r5", "r6", "5d"],
+      skuIdPrefixes: ["camera-canon"],
+      label: "캐논 EOS (Canon)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "셔터 카운트 — Canon 메뉴 (R 시리즈) 또는 EOSInfo (DSLR)",
+        "시리얼 — 바디 하단 + 박스",
+      ],
+      marketRisks: [
+        "5D Mark IV/III = DSLR 인기. AF 모듈 자주 고장 (점검 권장)",
+        "R5/R6 = 미러리스 인기. EF → RF 마운트 어댑터 호환",
+        "센서 곰팡이 — 한국 습도 영향 (특히 보관 잘못 시)",
+      ],
+      authentication: ["Canon Korea AS", "사진 갤러리 후기"],
+    },
+    "nikon-camera": {
+      detectKeywords: ["니콘", "nikon", "z6", "z7", "z9", "d850"],
+      skuIdPrefixes: ["camera-nikon"],
+      label: "니콘 Z (Nikon)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "셔터 카운트 — Nikon 메뉴 (Z 시리즈)",
+        "시리얼 + 펌웨어 버전 확인",
+      ],
+      marketRisks: [
+        "Z9 = 플래그십, 비싼 매물 (₩600만+)",
+        "Z mount → F mount 어댑터 호환 (DSLR 렌즈 사용)",
+      ],
+      authentication: ["Nikon Korea AS"],
+    },
+    "fujifilm-camera": {
+      detectKeywords: ["후지", "fujifilm", "x-t", "xt4", "xt5", "x100"],
+      skuIdPrefixes: ["camera-fujifilm"],
+      label: "후지필름 X (Fujifilm)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "셔터 카운트 — Fuji 메뉴 또는 EXIF data",
+        "시리얼 + 펌웨어",
+      ],
+      marketRisks: [
+        "X100V/X100VI = 인기 + 매물 적음 (시세 ↑)",
+        "X-T5/X-T4 = 메인 미러리스",
+        "X mount 렌즈 호환",
+      ],
+      authentication: ["Fujifilm Korea AS"],
+    },
+    "leica": {
+      detectKeywords: ["라이카", "leica", "m10", "m11", "q3", "sl2"],
+      skuIdPrefixes: ["camera-leica"],
+      label: "라이카 (Leica)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "시리얼 — Leica 공식 등록 + AS 가능",
+        "마운트 — M mount (M 시리즈) / L mount (SL/Q)",
+      ],
+      marketRisks: [
+        "M11/Q3 = ₩1000~1500만 — 가품 위험 ↑ (희소 + 비싼 매물)",
+        "Leica Korea AS = 정품 검증 도구",
+      ],
+      authentication: ["Leica Korea AS", "Chrono24 (수입 매물)"],
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// drone — Wave E
+// ─────────────────────────────────────────────────────────────────────────
+// DJI 가품 거의 X. 진짜 위험 = 활성화 + 펌웨어 + 배터리 사이클.
+
+const DRONE: CategoryBrandDepth = {
+  category: "drone",
+  default: {
+    counterfeitRisk: "low",
+    counterfeitChecks: [
+      "시리얼 — DJI Fly 앱 > 기기 정보 (시리얼 + 활성화 횟수)",
+      "활성화 횟수 = 1회 권장 (2회 이상 = 이전 사용자 deactivate 안 함 의심)",
+      "펌웨어 버전 — 최신 권장",
+    ],
+    marketRisks: [
+      "배터리 사이클 (200 cycle 미만 정상)",
+      "프로펠러 크랙 + 짐벌 흔들림 점검",
+      "DJI Care Refresh 잔여 기간 (보험 — 추락/사고 보상)",
+    ],
+    authentication: ["DJI 공식 account 등록 조회", "DJI Korea AS"],
+  },
+  brands: {
+    "dji-drone": {
+      detectKeywords: ["dji", "디제이아이", "매빅", "mavic", "에어3", "미니4", "fpv", "아바타"],
+      skuIdPrefixes: ["dji-"],
+      label: "DJI (드론)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "DJI Fly 앱 페어링 — 시리얼 + 활성화 횟수 + 배터리 사이클 표시",
+        "account.dji.com 시리얼 등록 확인",
+        "펌웨어 업데이트 가능 (최신 펌웨어 적용 매물 = 신뢰 ↑)",
+      ],
+      marketRisks: [
+        "Mavic 3 Pro / Air 3S / Mini 4 Pro = 인기. 가품 거의 없음",
+        "배터리 사이클 (200 cycle 미만 권장)",
+        "Combo (Fly More Combo) vs 본체만 = 가격 차 (배터리/충전기/필터)",
+        "한국 항공법 — 250g 이상 드론 = 사용 등록 필요",
+      ],
+      authentication: ["DJI account 시리얼 조회", "DJI Korea AS"],
+    },
+    "gopro": {
+      detectKeywords: ["고프로", "gopro", "hero", "max"],
+      skuIdPrefixes: ["gopro-"],
+      label: "고프로 (GoPro)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "시리얼 — GoPro Quik 앱 또는 본체 메뉴",
+        "GoPro Care 가입 여부 (보험)",
+      ],
+      marketRisks: [
+        "Hero 12/13 = 최신, 인기 매물",
+        "배터리/방수 케이스 부속 별도 시세",
+      ],
+      authentication: ["GoPro Korea AS"],
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// earphone — Wave E
+// ─────────────────────────────────────────────────────────────────────────
+// AirPods 차이팟 가품 매우 흔함. Galaxy Buds/Sony/Bose 가품 적당.
+
+const EARPHONE: CategoryBrandDepth = {
+  category: "earphone",
+  default: {
+    counterfeitRisk: "high",
+    counterfeitChecks: [
+      "무게 측정 (정품 사양 비교)",
+      "시리얼 — 케이스 안쪽 + 공식 사이트 등록",
+      "페어링 — 정품은 자동 팝업, 가품은 일반 BT 페어링만",
+    ],
+    marketRisks: [
+      "좌/우 단품 매물 = 페어링 X, 매입 가치 50% 이하",
+      "케이스 only / 본체 only = 정가 -50%",
+      "정품 박스/케이블/이어팁 완비 시 가격 +",
+    ],
+    authentication: ["제조사 공식 시리얼 조회"],
+  },
+  brands: {
+    "airpods-pro": {
+      detectKeywords: ["에어팟 프로", "airpods pro"],
+      skuIdPrefixes: ["airpods-pro-"],
+      label: "Apple AirPods Pro",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "본체 좌/우 무게 = 각 5.3g (±0.05). 가품 4.5~5.5g 변동",
+        "케이스 무게 = 50.8g. 가품 45~52g 변동",
+        "시리얼 — 케이스 안쪽 + checkcoverage.apple.com 등록",
+        "iOS 자동 페어링 팝업 + animation. 가품 = 일반 BT 페어링만",
+        "케이스 LED — 정품 호박색 → 녹색. 가품 어두운 노란색",
+        "공기 흐름 — 정품 분리 시 공기 흐름 X. 가품 = '치익' 소리",
+      ],
+      marketRisks: [
+        "차이팟 가품 매우 흔함 — 15만원 미만 매물 = 의심",
+        "좌/우 단품 = 페어링 X (50% 이하 시세)",
+        "케이스 only / 본체 only = -50%",
+      ],
+      authentication: ["Apple checkcoverage.apple.com", "iOS 페어링 팝업 동작"],
+    },
+    "airpods-other": {
+      detectKeywords: ["airpods 2", "airpods 3", "airpods 4", "에어팟 2", "에어팟 3", "에어팟 4"],
+      skuIdPrefixes: ["airpods-2", "airpods-3", "airpods-4"],
+      label: "Apple AirPods (Pro 외)",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "본체 좌/우 무게 (AirPods 2/3 ~4g, AirPods 4 ~4.2g)",
+        "케이스 무게 (AirPods 3 ~37g, AirPods 4 ~32g)",
+        "iOS 자동 페어링 팝업",
+        "시리얼 + checkcoverage.apple.com",
+      ],
+      marketRisks: [
+        "에어팟 2/3/4 일반 = 차이팟 가품 흔함",
+        "좌/우 단품 매물 = -50%",
+      ],
+      authentication: ["Apple checkcoverage", "iOS 페어링"],
+    },
+    "airpods-max": {
+      detectKeywords: ["에어팟 맥스", "airpods max"],
+      skuIdPrefixes: ["airpods-max"],
+      label: "Apple AirPods Max",
+      counterfeitRisk: "high",
+      counterfeitChecks: [
+        "무게 = 384.8g (정확). 가품 350~400g",
+        "Smart Case 자석 끼임 — 케이스 분리 시 자동 꺼짐",
+        "USB-C (2024+) vs Lightning (2020) 구분",
+        "Digital Crown 회전 부드러움 + 노이즈 캔슬링 동작",
+      ],
+      marketRisks: [
+        "가품 흔함 (₩50만 이상 시세)",
+        "이어컵 (메모리폼) 마모 — 교체 부품 시세 ₩15만",
+        "Lightning vs USB-C — USB-C 신규 권장 (가격 +)",
+      ],
+      authentication: ["Apple checkcoverage", "iOS 페어링"],
+    },
+    "galaxy-buds": {
+      detectKeywords: ["갤럭시 버즈", "galaxy buds", "버즈 프로", "buds pro"],
+      skuIdPrefixes: ["galaxy-buds-"],
+      label: "삼성 갤럭시 버즈 (Galaxy Buds)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "Samsung Galaxy Wearable 앱 페어링",
+        "시리얼 — 케이스 안쪽 + samsung.com/sec/support 등록",
+        "본체 좌/우 무게 (Buds 3 Pro ~5.4g)",
+      ],
+      marketRisks: [
+        "Buds 3 Pro / Buds 2 Pro = 인기. 가품 발견됨 (적음)",
+        "Buds Live (콩나물) 케이스 = 분실 흔함",
+      ],
+      authentication: ["Samsung Korea AS", "Galaxy Wearable 앱 페어링"],
+    },
+    "sony-earphone": {
+      detectKeywords: ["sony wf", "sony wh", "1000xm5", "1000xm4", "linkbuds"],
+      skuIdPrefixes: ["sony-wf", "sony-wh"],
+      label: "Sony WF/WH",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "Sony Headphones Connect 앱 페어링",
+        "시리얼 — 케이스 + 박스 + 본체",
+        "노이즈 캔슬링 강도 (Sony 자체 LDAC 코덱)",
+      ],
+      marketRisks: [
+        "WF-1000XM5 / WH-1000XM5/M6 = 인기 노이즈캔슬링",
+        "이어팁 마모 — 교체 권장",
+      ],
+      authentication: ["Sony Korea AS"],
+    },
+    "bose-earphone": {
+      detectKeywords: ["보스", "bose qc", "qc ultra"],
+      skuIdPrefixes: ["bose-"],
+      label: "Bose (QC 시리즈)",
+      counterfeitRisk: "moderate",
+      counterfeitChecks: [
+        "Bose Music 앱 페어링",
+        "시리얼 + 박스",
+      ],
+      marketRisks: [
+        "QC Ultra Earbuds / QC SE = 인기",
+        "Headphones 700 / QC45 = 단종 모델 시세 변동",
+      ],
+      authentication: ["Bose Korea AS"],
+    },
+    "beats": {
+      detectKeywords: ["비츠", "beats", "studio buds", "solo 4"],
+      skuIdPrefixes: ["beats-"],
+      label: "Beats (Apple 산하)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "Apple checkcoverage.apple.com 시리얼 조회 (Apple 인수 후)",
+        "iOS/Android Beats 앱 페어링",
+      ],
+      marketRisks: [
+        "Studio Buds+ / Solo 4 / Studio Pro = 최신",
+        "Apple 인수 후 가품 적어짐 (Apple 검증 system)",
+      ],
+      authentication: ["Apple checkcoverage"],
+    },
+    "sennheiser": {
+      detectKeywords: ["젠하이저", "sennheiser", "momentum", "ie 100", "ie 300"],
+      skuIdPrefixes: ["sennheiser-"],
+      label: "젠하이저 (Sennheiser)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "시리얼 — 본체 + 박스",
+        "Sennheiser Smart Control 앱 (Momentum 시리즈)",
+      ],
+      marketRisks: [
+        "Momentum True Wireless 4 = 최신",
+        "유선 IE 시리즈 (100/300/600/900) = 음향 매니아",
+      ],
+      authentication: ["Sennheiser 공식 사이트 등록"],
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// smartwatch — Wave E
+// ─────────────────────────────────────────────────────────────────────────
+// Apple Watch / Galaxy Watch — 가품 거의 X. 진짜 위험 = iCloud/FRP 잠금 + 배터리.
+
+const SMARTWATCH: CategoryBrandDepth = {
+  category: "smartwatch",
+  default: {
+    counterfeitRisk: "low",
+    counterfeitChecks: [
+      "시리얼 — 본체 + 박스 + 페어링 앱 매칭",
+      "iCloud Activation Lock (Apple) / FRP Lock (Galaxy) 해제 여부 확인",
+      "배터리 사이클 — 1년 800 cycle 권장",
+    ],
+    marketRisks: [
+      "셀룰러 모델 vs Wi-Fi (셀룰러 +₩5~10만)",
+      "밴드/스트랩 별도 시세 (정품 vs 사제)",
+      "페어링 해제 = 직거래 시 즉시 확인",
+    ],
+    authentication: ["Apple checkcoverage.apple.com", "Samsung samsung.com/sec/support"],
+  },
+  brands: {
+    "applewatch": {
+      detectKeywords: ["애플워치", "apple watch", "applewatch", "워치 시리즈", "워치 울트라"],
+      skuIdPrefixes: ["applewatch-"],
+      label: "Apple Watch",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "설정 > 일반 > 정보 (시리얼 + 모델 번호)",
+        "Watch 앱 (iPhone) 페어링 + Activation Lock 해제 여부",
+        "Apple checkcoverage.apple.com 시리얼 등록",
+        "Digital Crown / Side Button 작동",
+      ],
+      marketRisks: [
+        "Series 9/10 + Ultra/Ultra 2 = 인기",
+        "셀룰러 vs Wi-Fi (셀룰러 +₩5~10만)",
+        "배터리 사이클 (1년 800 cycle 권장)",
+        "AppleCare+ 가입 매물 = 시세 ↑",
+      ],
+      authentication: ["Apple checkcoverage", "iPhone Watch 앱 페어링"],
+    },
+    "galaxywatch": {
+      detectKeywords: ["갤럭시 워치", "galaxy watch", "galaxywatch"],
+      skuIdPrefixes: ["galaxywatch-"],
+      label: "Samsung Galaxy Watch",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "설정 > 시계 정보 (시리얼 + 모델)",
+        "Samsung Galaxy Wearable 앱 페어링 + FRP 해제",
+        "samsung.com/sec/support 시리얼 등록",
+      ],
+      marketRisks: [
+        "Watch 7 / Watch Ultra / Watch 6 = 최신",
+        "Classic (회전 베젤) vs 일반 가격 차",
+        "Samsung Care+ 가입 매물 = 시세 ↑",
+      ],
+      authentication: ["Samsung Korea AS", "Galaxy Wearable 앱 페어링"],
+    },
+    "garmin": {
+      detectKeywords: ["가민", "garmin", "fenix", "epix", "forerunner", "venu"],
+      skuIdPrefixes: ["garmin-"],
+      label: "가민 (Garmin)",
+      counterfeitRisk: "low",
+      counterfeitChecks: [
+        "시리얼 — 본체 후면 + 박스",
+        "Garmin Connect 앱 페어링",
+      ],
+      marketRisks: [
+        "Fenix / Epix = 프리미엄 (₩60~120만)",
+        "Forerunner = 러닝 특화",
+        "GPS 정확도 + 배터리 (Solar 모델 = 태양광)",
+      ],
+      authentication: ["Garmin Korea AS"],
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────
 // Registry & helpers
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -1101,6 +2099,13 @@ export const CATEGORY_BRAND_DEPTH: Record<string, CategoryBrandDepth> = {
   smartphone: SMARTPHONE,
   tablet: TABLET,
   laptop: LAPTOP,
+  bag: BAG,
+  watch: WATCH,
+  perfume: PERFUME,
+  camera: CAMERA,
+  drone: DRONE,
+  earphone: EARPHONE,
+  smartwatch: SMARTWATCH,
 };
 
 export type BrandDepthMatch = {
