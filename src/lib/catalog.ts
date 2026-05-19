@@ -6898,7 +6898,11 @@ export const CATALOG: Sku[] = [
     brand: "RRL", category: "clothing", laneKey: "polo_rrl_denim",
     modelName: "Polo RRL Denim (jeans / shirt)",
     aliases: ["RRL 데님", "RRL 청바지", "더블알엘 데님"],
-    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["데님", "denim", "청바지", "셀비지", "jean"]],
+    // Wave 245 (2026-05-19): RRL denim 모델명 보강 — production sample 에서 빈파포/파이브포켓/기빈스/미드랜드/에크루/에이버리/브룸필드/힐스뷰/슬림핏 청바지가 broad 로 잘못 매칭.
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["데님", "denim", "청바지", "셀비지", "jean",
+      "빈파포", "파이브포켓", "파이브 포켓", "5포켓", "5 포켓",
+      "기빈스", "미드랜드", "이스트웨스트", "이스트 웨스트", "에크루", "에이버리", "브룸필드", "힐스뷰",
+      "벤튼", "클리어빌"]],
     // Wave 228 (2026-05-19): jacket/coat 차단 (jacket-coat lane 으로 가야).
     mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "벨트", "지갑", "모자",
       "그리즐리", "grizzly", "자켓", "jacket", "코트", "coat", "재킷"],
@@ -6909,12 +6913,18 @@ export const CATALOG: Sku[] = [
     brand: "RRL", category: "clothing", laneKey: "polo_rrl_shirt_pants",
     modelName: "Polo RRL Shirt / Pants (코튼/코듀로이/워크)",
     aliases: ["RRL 셔츠", "RRL 코듀로이", "RRL 워크팬츠"],
-    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["셔츠", "shirt", "코듀로이", "corduroy", "워크팬츠", "워크 팬츠", "코튼", "린넨", "퀄팅", "져지", "체크", "팬츠", "pants", "바지", "쇼츠", "하프팬츠"]],
+    // Wave 245 (2026-05-19): production sample 에서 오피서치노/필드치노/카고/트라우저/카펜터/슬림핏/스트레이트핏 매물이 broad 로 잘못 매칭.
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["셔츠", "shirt", "코듀로이", "corduroy", "워크팬츠", "워크 팬츠", "코튼", "린넨", "퀄팅", "져지", "체크", "팬츠", "pants", "바지", "쇼츠", "하프팬츠",
+      "치노", "chino", "오피서", "officer", "필드 치노", "필드치노", "카고", "cargo", "트라우저", "trouser", "카펜터", "carpenter", "슬림핏", "slim fit", "스트레이트핏", "straight fit", "스트레이트 핏", "헤링본"]],
     // Wave 228: 자켓/덱자켓/월렛/지갑/목걸이/rrl 무드 가짜 차단.
     mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "데님", "청바지", "셀비지",
       "자켓", "jacket", "코트", "coat", "덱자켓",
       "월렛", "wallet", "지갑",
-      "목걸이", "925", "은목걸이", "실버", "silver"],
+      "목걸이", "925", "은목걸이", "실버", "silver",
+      // Wave 245: denim 모델명 차단 (denim lane 으로 가야)
+      "빈파포", "파이브포켓", "파이브 포켓", "5포켓", "기빈스", "미드랜드", "이스트웨스트", "에이버리", "브룸필드", "힐스뷰", "벤튼", "클리어빌",
+      // 데님 진 자체 차단
+      "진\\b", "jean"],
     msrpKrw: 350000, released: 2020,
   },
   {
@@ -6938,6 +6948,20 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "rrl 무드"],
     msrpKrw: 280000, released: 2020,
   },
+  // Wave 245 (2026-05-19): RRL jacket-coat narrow 신설 — production sample 47건 (broad 42%) 측정.
+  //   median 150만, p25/p75 = 82만/264만 (가죽/스웨이드/봄버/피코트/트러커/카코트/덱자켓 등 다양).
+  //   broad RRL 에서 자켓이 가장 많은 mismatch → 별도 lane 필수.
+  {
+    id: "clothing-polo-rrl-jacket-coat",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_jacket_coat",
+    modelName: "Polo RRL Jacket / Coat (가죽/스웨이드/봄버/카코트)",
+    aliases: ["RRL 자켓", "RRL 재킷", "RRL 코트", "더블알엘 자켓"],
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["자켓", "jacket", "코트", "coat", "재킷", "블레이저", "blazer", "점퍼", "봄버", "bomber", "트러커", "trucker", "카코트", "car coat", "피코트", "pea coat", "필드자켓", "field jacket", "스포츠 자켓", "스포츠자켓", "덱자켓", "초어", "chore", "그리즐리", "grizzly"]],
+    mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일",
+      "스니커즈", "벨트", "지갑", "모자", "키링", "팔찌", "반지", "목걸이"],
+    msrpKrw: 1500000, released: 2020,
+    // jacket + coat 둘 다 가능. defaultProductType 안 박음 — text 추출 의존 (regex 가 jacket/coat 구분).
+  },
   {
     id: "clothing-polo-rrl",
     brand: "RRL", category: "clothing", laneKey: "polo_rrl_broad",
@@ -6960,6 +6984,17 @@ export const CATALOG: Sku[] = [
       "팔찌", "bracelet", "반지", "ring\\b", "귀걸이", "earring",
       "주얼리", "jewelry", "터콰이즈", "turquoise", "네이티브 어메리칸", "native american",
       "나바호 팔찌", "나바호 반지", "나바호 액세서리", "커프", "cuff", "버클\\b",
+      // Wave 245 (2026-05-19): production sample 측정 결과 broad 의 42% (47건) 가 자켓 → narrow 신설 후 broad 차단.
+      //   denim 모델명 (빈파포/파이브포켓/기빈스/미드랜드 등) 도 narrow denim lane 으로 가도록 차단.
+      //   shirt-pants 모델명 (오피서/필드치노/카고/트라우저/카펜터/슬림핏/스트레이트핏) 도 차단.
+      "자켓", "jacket", "코트", "coat", "재킷", "블레이저", "blazer", "점퍼", "봄버", "bomber", "트러커", "trucker",
+      "카코트", "car coat", "피코트", "pea coat", "필드자켓", "field jacket", "덱자켓", "초어", "chore",
+      "빈파포", "파이브포켓", "파이브 포켓", "5포켓", "기빈스", "미드랜드", "이스트웨스트", "에이버리", "브룸필드", "힐스뷰", "벤튼", "클리어빌", "그리즐리",
+      "치노", "chino", "오피서", "필드 치노", "필드치노", "카고", "cargo", "트라우저", "trouser", "카펜터", "carpenter",
+      "슬림핏", "slim fit", "스트레이트핏", "straight fit", "스트레이트 핏", "헤링본",
+      "진\\b", "jean",
+      // knit 도 광범위하게 mustContain 키워드 미박혔지만 broad 에서 차단 (필요 시 추후 narrow lane 신설).
+      "니트", "knit", "카디건", "cardigan", "스웨터", "sweater", "풀오버",
     ],
     msrpKrw: 350000, released: 2020,
   },

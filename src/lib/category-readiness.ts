@@ -493,6 +493,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   polo_rrl_shirt_pants: { status: "ready", label: "Polo RRL Shirt / Pants", note: "Wave 218" },
   polo_rrl_accessory: { status: "ready", label: "Polo RRL Accessory", note: "Wave 218" },
   polo_rrl_sneaker: { status: "ready", label: "Polo RRL Sneaker", note: "Wave 218 — shoe 카테고리" },
+  polo_rrl_jacket_coat: { status: "ready", label: "Polo RRL Jacket / Coat", note: "Wave 245 — broad 의 42% 자켓 매물 분리 (median 150만, p25/p75=82만/264만)" },
   polo_rrl_broad: { status: "ready", label: "Polo RRL (broad fallback)", note: "Wave 218: narrow 분리 후 catch-all" },
   tnf_nuptse_1996: { status: "ready", label: "TNF 1996 Retro Nuptse", note: "Wave 198" },
   tnf_mountain_jacket: { status: "ready", label: "TNF Mountain Jacket (Gore-Tex)", note: "Wave 198" },
