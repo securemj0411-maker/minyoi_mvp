@@ -1460,7 +1460,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                           ↓ 시세 갱신
                         </span>
                       )}
-                      {/* Wave 2026-05-19 (C: 카드 매입가 verdict 미니 — 모달 안 박은 가이드와 동일 헬퍼). */}
+                      {/* Wave 325: 새 verdict 4단계 (great/good/fair/tight). 풀 매물은 다 안전이라 rose 없음. */}
                       {(() => {
                         if (isTerminal) return null;
                         const guidance = buyPriceGuidance({
@@ -1468,17 +1468,23 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                           medianPrice: item.marketBasis?.medianPrice ?? null,
                         });
                         if (!guidance) return null;
-                        const cls = guidance.verdict === "good"
+                        const cls = (guidance.verdict === "great" || guidance.verdict === "good")
                           ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/60"
-                          : guidance.verdict === "warn"
-                            ? "bg-amber-50 text-amber-800 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/60"
-                            : "bg-rose-50 text-rose-700 ring-1 ring-rose-200 dark:bg-rose-950/30 dark:text-rose-200 dark:ring-rose-900/60";
+                          : "bg-amber-50 text-amber-800 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/60";
+                        // 카드는 공간 좁아서 짧게: "남는 돈 +N원"만
+                        const shortLabel = guidance.verdict === "great"
+                          ? "충분"
+                          : guidance.verdict === "good"
+                            ? "괜찮음"
+                            : guidance.verdict === "fair"
+                              ? "협상 권장"
+                              : "협상 필수";
                         return (
                           <span
-                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-black sm:px-2 ${cls}`}
-                            title={`추천 매입가 ~${signedProfitRange(guidance.targetBuy, guidance.targetBuy).replace("+", "")} / 패스 기준 ${signedProfitRange(guidance.passBuy, guidance.passBuy).replace("+", "")} 이상`}
+                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold sm:px-2 ${cls}`}
+                            title={`남는 돈 +${signedProfitRange(guidance.currentProfit, guidance.currentProfit).replace("+", "")} · 협상 시도 ${signedProfitRange(guidance.negotiationTarget, guidance.negotiationTarget).replace("+", "")} 이하 / 손해 시작 ${signedProfitRange(guidance.breakEven, guidance.breakEven).replace("+", "")}`}
                           >
-                            {guidance.verdictLabel}
+                            {shortLabel}
                           </span>
                         );
                       })()}

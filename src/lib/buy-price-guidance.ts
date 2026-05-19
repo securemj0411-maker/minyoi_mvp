@@ -1,29 +1,35 @@
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 
-// Wave 2026-05-19 (외부인 #7 권장 매입가 프레임 — 공유 헬퍼):
-// 모달(pack-reveal-modal)과 카드 리스트(user-reveal-dashboard)에서 모두 사용.
-// "최대 매입가" 프레임은 일반인이 협상 천장으로 오해 → 손해 위험. "추천/패스" 프레임으로 통일.
-// 목표 마진 18% / 패스 임계 10% — 일반인 보호 정책 (메모리: 일반인 친화).
+// Wave 325 (사용자 피드백 — 가이드 로직 잘못 박힘):
+// 기존 18%/10% 마진 기준은 신발/명품용. 미개봉 IT는 5~10% 마진이 정상.
+// → 풀에 있는 거의 모든 매물이 "패스 권장"으로 뜨는 모순.
+//
+// 우리 풀 정책: 차익 양수 + 안전 마진 통과한 매물만 노출.
+// → 사용자는 "이 매물 사도 되나?"가 아니라 "협상 어디까지?" 알고 싶음.
+//
+// 새 프레임:
+//   - 현재 가격 = 매물 매입가 (헤드라인)
+//   - 현재 차익 = 남는 돈 (예상 순익)
+//   - 협상 목표 = 현재 가격 - 협상 여유 (차익의 30% 또는 최대 2만원)
+//   - 손익분기 = 시세 - 비용 (이 이상이면 손해)
+//   - verdict = 차익 절대값 기준 (5만+ 충분 / 2만+ 괜찮음 / 1만+ 작음 / 1만 미만 매우 작음)
 
 export type BuyPriceGuidanceInput = {
   price: number;
   medianPrice: number | null | undefined;
 };
 
-export type BuyPriceVerdict = "good" | "warn" | "danger";
+export type BuyPriceVerdict = "great" | "good" | "fair" | "tight";
 
 export type BuyPriceGuidance = {
   breakEven: number;
-  targetBuy: number;
-  passBuy: number;
-  currentMarginPct: number;
+  currentProfit: number;
+  negotiationTarget: number;
+  negotiationRoom: number;
   verdict: BuyPriceVerdict;
   verdictLabel: string;
   verdictSub: string;
 };
-
-export const TARGET_MARGIN_PCT = 0.18;
-export const PASS_MARGIN_PCT = 0.10;
 
 export function buyPriceGuidance(input: BuyPriceGuidanceInput): BuyPriceGuidance | null {
   const { price, medianPrice } = input;
@@ -31,35 +37,51 @@ export function buyPriceGuidance(input: BuyPriceGuidanceInput): BuyPriceGuidance
   if (price == null || !Number.isFinite(price) || price <= 0) return null;
 
   const sellingFee = Math.round(medianPrice * SELLING_FEE_RATE);
-  const resellCost = sellingFee + RESELL_SHIPPING_FEE + SAFETY_BUFFER;
-  const breakEven = medianPrice - resellCost;
-  if (breakEven <= 0) return null;
+  const totalCost = sellingFee + RESELL_SHIPPING_FEE + SAFETY_BUFFER;
+  const breakEven = medianPrice - totalCost;
+  const currentProfit = breakEven - price;
 
-  const targetBuy = Math.max(0, breakEven - Math.round(medianPrice * TARGET_MARGIN_PCT));
-  const passBuy = Math.max(0, breakEven - Math.round(medianPrice * PASS_MARGIN_PCT));
-  if (targetBuy <= 0 || passBuy <= 0) return null;
+  // 풀에 있는 매물은 currentProfit > 0 가정. 음수면 (시세 갱신 등) 별도 처리.
+  if (currentProfit <= 0) return null;
 
-  const currentMarginPct = Math.round(((breakEven - price) / medianPrice) * 100);
+  // 협상 여유 — 현재 차익의 30% 또는 최대 2만원 (보수적).
+  // 일반인이 협상 시 시도해볼만한 폭.
+  const negotiationRoom = Math.min(Math.round(currentProfit * 0.3), 20000);
+  const negotiationTarget = Math.max(0, price - negotiationRoom);
+
   let verdict: BuyPriceVerdict;
   let verdictLabel: string;
   let verdictSub: string;
-  if (currentMarginPct >= 18) {
+
+  if (currentProfit >= 50000) {
+    verdict = "great";
+    verdictLabel = "충분한 차익 · 협상 없어도 OK";
+    verdictSub = "남는 돈이 충분해서 그대로 사도 안전";
+  } else if (currentProfit >= 20000) {
     verdict = "good";
-    verdictLabel = `${currentMarginPct}% 마진 확보`;
-    verdictSub = "협상 없이도 충분";
-  } else if (currentMarginPct >= 10) {
-    verdict = "warn";
-    verdictLabel = `${currentMarginPct}% 마진 낮음`;
-    verdictSub = "협상 권장";
-  } else if (currentMarginPct >= 0) {
-    verdict = "danger";
-    verdictLabel = `${currentMarginPct}% 마진 — 패스 권장`;
-    verdictSub = "손실 위험";
+    verdictLabel = "괜찮은 차익 · 협상 시 +α";
+    verdictSub = `협상되면 더 좋음 (목표 ${formatKrw(negotiationTarget)})`;
+  } else if (currentProfit >= 10000) {
+    verdict = "fair";
+    verdictLabel = "차익 작음 · 협상 권장";
+    verdictSub = `${formatKrw(negotiationTarget)} 이하로 협상 시도 권장`;
   } else {
-    verdict = "danger";
-    verdictLabel = "손익분기 미달";
-    verdictSub = "현재 가격 손해";
+    verdict = "tight";
+    verdictLabel = "차익 매우 작음 · 적극 협상 필요";
+    verdictSub = `협상 안 되면 패스 고려 — 목표 ${formatKrw(negotiationTarget)}`;
   }
 
-  return { breakEven, targetBuy, passBuy, currentMarginPct, verdict, verdictLabel, verdictSub };
+  return {
+    breakEven,
+    currentProfit,
+    negotiationTarget,
+    negotiationRoom,
+    verdict,
+    verdictLabel,
+    verdictSub,
+  };
+}
+
+function formatKrw(value: number) {
+  return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }

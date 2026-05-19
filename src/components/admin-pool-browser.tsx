@@ -520,21 +520,26 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       <span>매입 {krw(item.price)}</span>
                       <span>· 시세 {krw(item.skuMedian)}</span>
                       <span>· 신뢰 {(item.confidence * 100).toFixed(0)}%</span>
-                      {/* Wave 2026-05-19 (C: 운영자 카드도 매입가 verdict — 풀에서 빠른 의사결정). */}
+                      {/* Wave 325: 새 verdict 4단계. 운영자 풀도 동일 헬퍼. */}
                       {(() => {
                         const guidance = buyPriceGuidance({ price: item.price, medianPrice: item.skuMedian });
                         if (!guidance) return null;
-                        const cls = guidance.verdict === "good"
+                        const cls = (guidance.verdict === "great" || guidance.verdict === "good")
                           ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
-                          : guidance.verdict === "warn"
-                            ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
-                            : "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200";
+                          : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200";
+                        const shortLabel = guidance.verdict === "great"
+                          ? "차익 충분"
+                          : guidance.verdict === "good"
+                            ? "차익 OK"
+                            : guidance.verdict === "fair"
+                              ? "협상 권장"
+                              : "차익 박함";
                         return (
                           <span
-                            className={`rounded-full border px-1.5 py-0.5 text-[10px] font-black ${cls}`}
-                            title={`추천 매입가 ~${krw(guidance.targetBuy)} / 패스 기준 ${krw(guidance.passBuy)} 이상`}
+                            className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${cls}`}
+                            title={`남는 돈 +${krw(guidance.currentProfit)} · 협상 시도 ${krw(guidance.negotiationTarget)} / 손해 시작 ${krw(guidance.breakEven)}`}
                           >
-                            {guidance.verdictLabel}
+                            {shortLabel}
                           </span>
                         );
                       })()}

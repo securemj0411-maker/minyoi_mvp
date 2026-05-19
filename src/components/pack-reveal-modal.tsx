@@ -1856,11 +1856,10 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
     price: card.price,
     medianPrice: card.marketBasis?.medianPrice ?? null,
   });
-  const verdictClass = !guidance ? "" : guidance.verdict === "good"
+  // Wave 325: verdict 4단계 (great/good/fair/tight). rose 제거 — 풀 매물은 다 안전 통과.
+  const verdictClass = !guidance ? "" : (guidance.verdict === "great" || guidance.verdict === "good")
     ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
-    : guidance.verdict === "warn"
-      ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
-      : "bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200";
+    : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200";
 
   return (
     <section className="mt-3 rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40">
@@ -1901,32 +1900,37 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
         </div>
       ) : null}
 
-      {/* 매입가 가이드 — 박스 없이 인라인 */}
+      {/* Wave 325: 협상 가이드 — 현재 차익 + 협상 목표 + 손해 시작 (3개 단순). */}
       {guidance ? (
         <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
           <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            매입가 가이드
+            협상 가이드
           </div>
           <div className="mt-1.5 space-y-1 text-xs">
             <div className="flex items-baseline justify-between">
-              <span className="text-zinc-500 dark:text-zinc-400">추천 매입가</span>
+              <span className="text-zinc-500 dark:text-zinc-400">남는 돈 (예상 순익)</span>
               <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                ~{krw(guidance.targetBuy)} <span className="text-[10px] font-medium text-zinc-400">+18% 확보</span>
+                +{krw(guidance.currentProfit)}
               </span>
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="text-zinc-500 dark:text-zinc-400">패스 기준</span>
-              <span className="font-bold tabular-nums text-rose-600 dark:text-rose-400">
-                {krw(guidance.passBuy)} 이상 <span className="text-[10px] font-medium text-zinc-400">손 떼기</span>
+              <span className="text-zinc-500 dark:text-zinc-400">협상 시도 목표</span>
+              <span className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                {krw(guidance.negotiationTarget)}
+                <span className="ml-1 text-[10px] font-medium text-zinc-400">-{krw(guidance.negotiationRoom)} 깎으면</span>
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-zinc-500 dark:text-zinc-400">손해 시작</span>
+              <span className="font-bold tabular-nums text-zinc-500 dark:text-zinc-400">
+                {krw(guidance.breakEven)}
+                <span className="ml-1 text-[10px] font-medium text-zinc-400">이 이상은 손해</span>
               </span>
             </div>
           </div>
           <div className={`mt-2 rounded-md px-2.5 py-1.5 text-xs font-bold ${verdictClass}`}>
-            현재 {guidance.verdictLabel}
+            {guidance.verdictLabel}
             <span className="ml-1 font-medium opacity-75">· {guidance.verdictSub}</span>
-          </div>
-          <div className="mt-1.5 text-[10px] font-medium leading-4 text-zinc-400 dark:text-zinc-500">
-            손익분기 {krw(guidance.breakEven)} — 협상 천장이 아니라 &lsquo;여기서 손 떼기&rsquo; 기준.
           </div>
         </div>
       ) : null}
