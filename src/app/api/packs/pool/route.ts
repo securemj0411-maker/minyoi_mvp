@@ -40,9 +40,11 @@ const FRESH_LAG_HOURS = 0;
 // Wave 346: 카테고리 다양화 — 한 카테고리에 5개 이상 몰리지 않게.
 // 이어폰 풀이 가장 커서 profit_band 정렬하면 다 이어폰. 다양화 필수.
 const MAX_PER_CATEGORY = 5;
-// Wave 375 (2026-05-20): 200 → 500. wave 369 sanity check가 차익 0 매물 제외하면서
-// 실제 응답이 14~20개로 떨어지는 사례 다수. 더 많이 fetch해서 30개 채울 확률 ↑.
-const FETCH_POOL_OVERFETCH = 500;
+// Wave 375 (2026-05-20): 200 → 500.
+// Wave 387 (2026-05-20): 500 → 2000. profit_band desc로 정렬한 500개는 대부분 고가 매물
+// → 사용자 예산 (15만 이하) 통과 매물 < 5. 운영자 풀 176개 있어도 응답 0개 사례.
+// 2000으로 늘려서 budget 통과 매물 충분히 잡음.
+const FETCH_POOL_OVERFETCH = 2000;
 
 type PoolRow = {
   pid: number;
