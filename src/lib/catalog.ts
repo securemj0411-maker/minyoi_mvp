@@ -6828,9 +6828,12 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["RRL", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "pique", "긴팔", "롱슬리브", "키즈", "kids", "토들러",
       // Wave 223: 다른 brand 의 "폴로/Polo" 단어 매물 차단.
       "타이틀리스트", "titleist", "캘러웨이", "callaway", "푸마 폴로", "puma polo",
-      "골프 폴로", "골프폴로", "골프티", "골프 티"],
+      "골프 폴로", "골프폴로", "골프티", "골프 티",
+      // Wave 236f (2026-05-19): audit 발견 — polo 카라티 (polo_shirt) 매물 차단.
+      //   Polo Pony Tee = 라운드넥 tee + 포니 로고. 카라티 별도 SKU (Polo Pique Classic).
+      "카라티", "카라 티", "카라넥", "collar tee", "단추", "카라 셔츠"],
     msrpKrw: 89000, released: 2020,
-    defaultProductType: "tee", // Wave 236d — Polo Pony Tee = tee 라인 확정.
+    defaultProductType: "tee", // Wave 236d — Polo Pony Tee = tee 라인 확정 (라운드넥).
   },
   {
     id: "clothing-polo-oxford-shirt",
@@ -7018,6 +7021,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["supreme", "슈프림"], ["노스페이스", "north face", "tnf"], ["뮬", "슬리퍼", "샌들", "mule", "slipper"]],
     mustNotContain: ["키즈", "kids"],
     msrpKrw: 350000, released: 2021,
+    defaultProductType: "slipper", // Wave 236e — Supreme TNF Mule = slipper.
   },
   {
     id: "clothing-tnf-supreme-gshock",
@@ -7072,6 +7076,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["노스페이스", "north face", "tnf"], ["뮬", "mule", "슬리퍼", "slipper"]],
     mustNotContain: ["supreme", "슈프림", "키즈", "kids", "1996", "패딩", "down"],
     msrpKrw: 89000, released: 2022,
+    defaultProductType: "slipper", // Wave 236e — Nuptse Mule = slipper.
   },
   // Stüssy:
   {
@@ -7162,6 +7167,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["로퍼", "loafer", "모카신", "moccasin", "더비", "derby", "슬립온", "slip-on", "slipon", "페니"]],
     mustNotContain: ["RRL", "더블 알엘", "purple label", "퍼플라벨", "키즈", "kids", "토들러", "복각", "rep ", "replica"],
     msrpKrw: 250000, released: 2020,
+    defaultProductType: "loafer", // Wave 236e — Polo Loafer/Moccasin/Derby.
   },
   {
     id: "shoe-tnf-hiking-boots",
@@ -7171,6 +7177,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["노스페이스", "north face", "tnf"], ["등산화", "hiking", "트레킹", "trekking", "trail", "트레일", "부츠 (260", "부츠(260", "부츠 (270", "부츠(270"]],
     mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label", "백팩", "backpack", "가방", "bag", "토트", "복각", "rep ", "replica", "뮬", "mule", "슬리퍼"],
     msrpKrw: 200000, released: 2015,
+    defaultProductType: "boot", // Wave 236e — Hiking Boots.
   },
   // Wave 199 Tier 2 brand mining 추가:
   // 라코스테 (매물 다수, faved 3~21, 가격 친화):
@@ -7349,6 +7356,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["버켄스탁", "birkenstock"], ["보스턴", "boston"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "stussy", "스투시", "dior", "디올", "아더에러", "adererror", "피어 오브 갓", "fear of god"],
     msrpKrw: 240000, released: 2020,
+    defaultProductType: "slipper", // Wave 236e — Boston = closed-toe clog (slipper).
   },
   {
     id: "shoe-birkenstock-arizona",
@@ -7358,6 +7366,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["버켄스탁", "birkenstock"], ["아리조나", "arizona"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "dior", "디올", "아더에러"],
     msrpKrw: 159000, released: 1973,
+    defaultProductType: "sandal", // Wave 236e — Arizona = 2-strap sandal.
   },
   {
     id: "shoe-birkenstock-zurich",
@@ -7367,6 +7376,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["버켄스탁", "birkenstock"], ["취리히", "zurich", "zürich"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "dior", "디올"],
     msrpKrw: 199000, released: 1995,
+    defaultProductType: "sandal", // Wave 236e — Zürich = 3-strap sandal.
   },
   {
     id: "shoe-birkenstock-milano",
@@ -7376,6 +7386,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["버켄스탁", "birkenstock"], ["밀라노", "milano"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "dior", "디올", "아더에러"],
     msrpKrw: 159000, released: 1995,
+    defaultProductType: "sandal", // Wave 236e — Milano = 3-strap sandal with heel.
   },
   // 룰루레몬 — 백팩 압도적 (faved 91!)
   {
@@ -7443,6 +7454,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["마르지엘라", "margiela"], ["타비", "tabi"], ["부츠", "boot", "앵클부츠"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica 라인", "salomon", "닥터마틴", "rick owens", "ami", "스니커즈", "sneaker", "슬리퍼"],
     msrpKrw: 1290000, released: 1989,
+    defaultProductType: "boot", // Wave 236e — Tabi Boot.
   },
   {
     id: "shoe-margiela-tabi-slipper",
@@ -7452,6 +7464,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["마르지엘라", "margiela"], ["타비", "tabi"], ["슬리퍼", "slipper", "에스파드류", "espadrille", "뮬"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica 라인", "salomon", "닥터마틴", "rick owens", "ami", "스니커즈", "sneaker", "부츠", "boot"],
     msrpKrw: 690000, released: 2020,
+    defaultProductType: "slipper", // Wave 236e — Tabi Slipper.
   },
   {
     id: "shoe-margiela-german-army",
@@ -7543,6 +7556,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["supreme", "슈프림"], ["timberland", "팀버랜드"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "구찌", "gucci", "nike", "나이키", "vans", "반스"],
     msrpKrw: 700000, released: 2018,
+    defaultProductType: "boot", // Wave 236e — Timberland = boot.
   },
   {
     id: "shoe-supreme-drmartens-collab",
@@ -7551,6 +7565,7 @@ export const CATALOG: Sku[] = [
     aliases: ["Supreme Dr.Martens", "슈프림 닥터마틴"],
     mustContain: [["supreme", "슈프림"], ["닥터마틴", "dr.martens", "dr martens", "doc martens"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "구찌", "gucci", "nike", "나이키", "vans", "반스", "팀버랜드"],
+    defaultProductType: "boot", // Wave 236e — Dr.Martens = boot.
     msrpKrw: 500000, released: 2018,
   },
   {
@@ -7598,6 +7613,7 @@ export const CATALOG: Sku[] = [
       "굿즈", "참이슬", "두꺼비",
       "디스코", "disco", "별무늬", "라이트라이드", "lite ride", "딜런", "dylan", "스톰프", "stomp", "베이 글리터", "글리터", "glitter", "퍼클로그", "퍼 클로그", "fur clog", "언퍼게터블", "스웨이드", "비건"],
     msrpKrw: 49000, released: 2002,
+    defaultProductType: "slipper", // Wave 236e — Classic Clog = slipper.
   },
   {
     id: "shoe-crocs-bayaband",
@@ -7607,6 +7623,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["crocs", "크록스"], ["바야밴드", "bayaband"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "클래식 클로그", "classic clog", "크러쉬", "crush", "굿즈", "참이슬"],
     msrpKrw: 49000, released: 2018,
+    defaultProductType: "slipper", // Wave 236e
   },
   {
     id: "shoe-crocs-crush",
@@ -7616,6 +7633,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["crocs", "크록스"], ["크러쉬", "crush", "메가", "mega"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "클래식 클로그만", "바야밴드", "굿즈"],
     msrpKrw: 79000, released: 2022,
+    defaultProductType: "slipper", // Wave 236e
   },
   {
     id: "shoe-crocs-platform",
@@ -7625,6 +7643,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["crocs", "크록스"], ["플랫폼", "platform", "키높이"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "굿즈", "참이슬"],
     msrpKrw: 59000, released: 2019,
+    defaultProductType: "slipper", // Wave 236e
   },
   {
     id: "shoe-crocs-eco-clog",
@@ -7634,6 +7653,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["crocs", "크록스"], ["에코", "eco"], ["클로그", "clog"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "굿즈", "참이슬"],
     msrpKrw: 69000, released: 2023,
+    defaultProductType: "slipper", // Wave 236e
   },
   // 칼하트 — 백팩/메신저/Carhartt WIP collab
   {
@@ -7689,6 +7709,7 @@ export const CATALOG: Sku[] = [
     aliases: ["Acne Bertin", "아크네 베르틴", "베르틴 부츠"],
     mustContain: [["acne", "아크네"], ["베르틴", "bertin"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "트리플로", "triplo"],
+    defaultProductType: "boot", // Wave 236e — Bertin Ankle Boots.
     msrpKrw: 590000, released: 2018,
   },
   {
@@ -8291,6 +8312,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["adidas", "아디다스"], ["아딜렛", "adilette"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake"],
     msrpKrw: 49000, released: 1972,
+    defaultProductType: "slipper", // Wave 236e — Adilette = slipper.
   },
   {
     id: "shoe-adidas-football",
@@ -8350,7 +8372,10 @@ export const CATALOG: Sku[] = [
     mustContain: [["bape", "베이프", "a bathing ape"], ["샤크", "shark"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "신발", "운동화", "야구", "농구", "축구"],
     msrpKrw: 450000, released: 2005,
-    defaultProductType: "hoodie", // Wave 236d — Shark Hoodie = 후드 라인 확정 (text 다른 type 우선).
+    // Wave 236f (2026-05-19): audit 발견 — BAPE Shark 패턴이 pants/tee/조거에도 출시 (multi-line model).
+    //   사용자 코멘트: "이게 왜 같은 sample?" — Shark 패딩 SKU 에 조거팬츠 매칭.
+    //   defaultProductType 제거 → text 미명시 매물 needsReview 차단 (사용자 정책).
+    //   text 명시 매물 (e.g. "BAPE 샤크 후드티") 은 정상 통과 (regex 가 hoodie 추출).
   },
   // 마뗑킴 (Matin Kim) — 한국 디자이너, 매물 63건
   {

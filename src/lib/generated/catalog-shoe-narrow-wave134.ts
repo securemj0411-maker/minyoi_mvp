@@ -501,6 +501,7 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     ],
     msrpKrw: 219000,
     released: 1960,
+    defaultProductType: "boot",
   },
   {
     id: "shoe-drmartens-1460-cherry",
@@ -529,6 +530,7 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     ],
     msrpKrw: 219000,
     released: 1960,
+    defaultProductType: "boot",
   },
   {
     id: "shoe-drmartens-2976-chelsea",
@@ -565,6 +567,7 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     ],
     msrpKrw: 239000,
     released: 1976,
+    defaultProductType: "boot", // Wave 236e — 2976 Chelsea = boot.
   },
 
   // ─── 푸마 팔레르모 (컬러 분리) ─────────────────────────

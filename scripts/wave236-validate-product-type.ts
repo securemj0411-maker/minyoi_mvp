@@ -94,6 +94,7 @@ function analyze(category: string, rows: Row[], extractor: (text: string) => str
   const unknownSamples: Array<{ pid: number; name: string; skuId: string | null }> = [];
   let fromTextCount = 0;
   let fromCatalogCount = 0;
+  let fromShoeDefaultCount = 0;
   let blockedCount = 0;
 
   for (const row of rows) {
@@ -108,6 +109,11 @@ function analyze(category: string, rows: Row[], extractor: (text: string) => str
         pt = sku.defaultProductType;
         source = "catalog";
         fromCatalogCount += 1;
+      } else if (category === "shoe" && row.sku_id) {
+        // Wave 236e: shoe + SKU 매칭 자체 = sneaker default (parser 룰 simulate).
+        pt = "sneaker";
+        source = "shoe-default";
+        fromShoeDefaultCount += 1;
       } else {
         source = "blocked";
         blockedCount += 1;
@@ -129,9 +135,12 @@ function analyze(category: string, rows: Row[], extractor: (text: string) => str
     }
   }
 
-  console.log(`\nproduct-type 분포 (text 추출 / catalog fallback / 차단):`);
+  console.log(`\nproduct-type 분포:`);
   console.log(`  text 추출 성공: ${fromTextCount} (${((fromTextCount / rows.length) * 100).toFixed(1)}%)`);
-  console.log(`  catalog fallback: ${fromCatalogCount} (${((fromCatalogCount / rows.length) * 100).toFixed(1)}%)`);
+  console.log(`  catalog default fallback: ${fromCatalogCount} (${((fromCatalogCount / rows.length) * 100).toFixed(1)}%)`);
+  if (fromShoeDefaultCount > 0) {
+    console.log(`  shoe sneaker default (parser 룰): ${fromShoeDefaultCount} (${((fromShoeDefaultCount / rows.length) * 100).toFixed(1)}%)`);
+  }
   console.log(`  pool 차단 (type_unknown): ${blockedCount} (${((blockedCount / rows.length) * 100).toFixed(1)}%)`);
 
   console.log(`\nproduct-type 최종 분포 (시세 daily 분리 결과):`);

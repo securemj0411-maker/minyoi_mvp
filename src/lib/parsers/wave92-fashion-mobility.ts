@@ -7,26 +7,11 @@
 // - 사이즈 추출 못 하면 needs_review (사용자 체형/발 매칭 위험).
 // - 자전거 사고/크랙은 즉시 reject (가격 시세 무의미).
 
-import type { ParsedListingOptions, ConditionClass } from "@/lib/option-parser";
+import type { ParsedListingOptions, ConditionClass, ParseInput } from "@/lib/option-parser";
 import { bunjangLabelToConditionClass, resolveConditionClass } from "@/lib/option-parser";
-import type { Sku } from "@/lib/catalog";
 
-// option-parser.ts의 ParseInput과 동일 (모듈 내부 타입이라 재정의).
-// Wave 217 (2026-05-19): bunjangConditionLabel 추가 — bunjang detail API metadata.
-type ParseInput = {
-  title: string;
-  description?: string;
-  skuId?: string | null;
-  skuName?: string | null;
-  category?: Sku["category"] | null;
-  bunjangConditionLabel?: string | null;
-  // Wave 236d (2026-05-19): catalog SKU 의 defaultProductType — narrow model 만 박힘 (model=type 1개 확정).
-  //   policy:
-  //     - SKU 가 defaultProductType 박힘 + text 매칭 실패 → fallback (안전한 추론)
-  //     - SKU 미박힘 + text 매칭 실패 → needsReview=true → pool 차단
-  //   사용자 의도: 모델명 자체로 product-type 확정 가능한 매물만 통과, 그 외 차단.
-  defaultProductType?: string | null;
-};
+// Wave 236f (2026-05-19): ParseInput type 통합 — option-parser 가 source of truth.
+//   audit 발견: 두 별도 정의 → drift risk. 통합 import 로 fix.
 
 // ─── 공통 헬퍼 ───────────────────────────────────────────────────────
 
@@ -506,19 +491,30 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     //   - text 추출 성공 → 그 값
     //   - text 실패 + catalog defaultProductType 박힘 → fallback (model=type 1개 확정 SKU)
     //   - text 실패 + 미박힘 → needsReview=true (pool 차단)
+    // Wave 236e (2026-05-19): shoe 카테고리는 SKU 매칭 자체 = product-type 1개 확정 (catalog 가 model-level narrow).
+    //   매물 text 에 "운동화/스니커즈" 단어 없어도 (sample 58% — "나이키 페가수스 39 블랙" 같이)
+    //   catalog SKU (shoe-nike-pegasus-41 등) 매칭 자체로 product-type 추론 가능.
+    //   따라서 shoe category 한정 — catalog 미박힘 시 "sneaker" default (99% shoe = sneaker).
+    //   예외 (boot/sandal/loafer/slipper) SKU 는 catalog 명시 박힘.
     let productType: string = parseShoeProductType(text);
     let typeFromCatalog = false;
+    let typeFromShoeDefault = false;
     if (productType === "type_unknown" && input.defaultProductType) {
       productType = input.defaultProductType;
       typeFromCatalog = true;
+    } else if (productType === "type_unknown" && input.skuId) {
+      // Wave 236e: shoe + SKU 매칭 자체 = product-type 추론 가능 → "sneaker" default.
+      productType = "sneaker";
+      typeFromShoeDefault = true;
     }
     parsedJson.shoe_product_type = productType;
     parsedJson.shoe_product_type_from_catalog = typeFromCatalog;
+    parsedJson.shoe_product_type_from_shoe_default = typeFromShoeDefault;
     partsForKey.push(productType);
     if (productType !== "type_unknown") {
-      parseConfidence += typeFromCatalog ? 0.03 : 0.05;
+      parseConfidence += typeFromCatalog ? 0.03 : (typeFromShoeDefault ? 0.02 : 0.05);
     } else {
-      // 사용자 정책: text 추출 실패 + catalog 미박힘 → pool 차단.
+      // 사용자 정책: SKU 매칭 자체도 안 됨 → pool 차단.
       needsReview = true;
       criticalUnknown.push("shoe_product_type_unknown");
     }

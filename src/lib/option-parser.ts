@@ -113,7 +113,10 @@ export function extractConditionClass(conditionNotes: readonly string[]): Condit
   return "normal";
 }
 
-type ParseInput = {
+// Wave 236f (2026-05-19): ParseInput 통합 export — wave92-fashion-mobility 도 같은 type 사용 (drift 방지).
+//   audit 발견: option-parser.ts + wave92-fashion-mobility.ts 둘 다 ParseInput 별도 정의 →
+//     향후 한쪽 update 잊으면 silent drift. 통합 import 로 fix.
+export type ParseInput = {
   title: string;
   description?: string;
   skuId?: string | null;
