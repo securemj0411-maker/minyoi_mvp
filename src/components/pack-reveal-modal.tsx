@@ -200,55 +200,49 @@ function displayProfitRange(card: RevealCard) {
   return profitRange(card.expectedProfitMin, card.expectedProfitMax);
 }
 
-// Wave 359: "득템 미터" — 당근 Manner Meter (체온) 영감. 차익 + 신뢰도 + 셀러 종합 °C.
-// 기준 36.5°C (정상 체온). 차익률 ↑ + 신뢰 ↑ + 셀러 ↑ 마다 °C 보너스.
-// 범위 35.0 ~ 39.5 (낮으면 차분, 높으면 핫).
-type DealTemperature = {
-  temp: number;
+// Wave 359+362: "득템 점수" — 100점 만점. 차익 + 신뢰도 + 셀러 + 시세 표본 종합.
+// 기본 50점. 차익률 ↑↑↑ 가장 강한 가중치. 미뇨이 자체 메트릭 (°C 당근 따라 X).
+type DealScore = {
+  score: number; // 0~100
   label: string;
   toneClass: string;
-  badgeClass: string;
 };
 
-function calculateDealTemperature(card: RevealCard): DealTemperature {
+function calculateDealScore(card: RevealCard): DealScore {
   const profitPct = netProfitPercent(card) ?? 0;
   const confidence = card.confidence ?? 0;
   const sellerRating = card.savedDetail?.sellerReviewRating ?? null;
   const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
   const sampleCount = card.marketBasis?.sampleCount ?? 0;
 
-  let temp = 36.5;
-  // 차익률 (가장 강한 가중치): 5% → +0.5, 10% → +1.0, 30% → +3.0 (cap)
-  if (profitPct > 0) temp += Math.min(profitPct * 0.1, 3.0);
+  let score = 50;
+  // 차익률: 5% → +7.5, 10% → +15, 30%+ → +40 (cap)
+  if (profitPct > 0) score += Math.min(profitPct * 1.5, 40);
   // AI 신뢰도
-  if (confidence >= 0.8) temp += 0.4;
-  else if (confidence >= 0.6) temp += 0.2;
+  if (confidence >= 0.8) score += 8;
+  else if (confidence >= 0.6) score += 4;
   // 셀러 신뢰
-  if (sellerRating != null && sellerRating >= 4.8 && reviewCount >= 30) temp += 0.3;
-  else if (sellerRating != null && sellerRating >= 4.5) temp += 0.1;
-  // 시세 표본 (많을수록 ↑)
-  if (sampleCount >= 20) temp += 0.2;
-  else if (sampleCount >= 10) temp += 0.1;
+  if (sellerRating != null && sellerRating >= 4.8 && reviewCount >= 30) score += 6;
+  else if (sellerRating != null && sellerRating >= 4.5) score += 2;
+  // 시세 표본
+  if (sampleCount >= 20) score += 4;
+  else if (sampleCount >= 10) score += 2;
 
-  temp = Math.min(39.5, Math.max(35.0, Math.round(temp * 10) / 10));
+  score = Math.min(100, Math.max(0, Math.round(score)));
 
   let label = "보통";
   let toneClass = "text-zinc-600 dark:text-zinc-400";
-  let badgeClass = "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
-  if (temp >= 39.0) {
+  if (score >= 90) {
     label = "핫";
     toneClass = "text-rose-600 dark:text-rose-300";
-    badgeClass = "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-200";
-  } else if (temp >= 38.0) {
+  } else if (score >= 80) {
     label = "강추";
     toneClass = "text-orange-600 dark:text-orange-300";
-    badgeClass = "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-200";
-  } else if (temp >= 37.0) {
+  } else if (score >= 70) {
     label = "좋음";
     toneClass = "text-emerald-600 dark:text-emerald-400";
-    badgeClass = "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200";
   }
-  return { temp, label, toneClass, badgeClass };
+  return { score, label, toneClass };
 }
 
 function krwRange(min: number, max: number) {
@@ -888,7 +882,7 @@ function DealMeterButton({
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const { temp, toneClass } = calculateDealTemperature(card);
+  const { score, toneClass } = calculateDealScore(card);
   return (
     <button
       type="button"
@@ -897,10 +891,13 @@ function DealMeterButton({
         onToggle();
       }}
       aria-expanded={expanded}
-      className="group flex shrink-0 flex-col items-end leading-tight"
+      className="group flex shrink-0 flex-col items-end whitespace-nowrap leading-tight"
     >
-      <span className={`text-base font-bold tabular-nums ${toneClass}`}>
-        {temp.toFixed(1)}°C
+      <span className="flex items-baseline gap-0.5">
+        <span className={`text-lg font-bold tabular-nums ${toneClass}`}>
+          {score}
+        </span>
+        <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">/100</span>
       </span>
       <span className="mt-0.5 text-[10px] font-medium text-zinc-500 underline underline-offset-2 transition group-hover:text-zinc-800 dark:text-zinc-400 dark:group-hover:text-zinc-100">
         득템 점수
@@ -3101,15 +3098,14 @@ export default function PackRevealModal({
         className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#fffdf9] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-h-[88vh] sm:max-w-6xl sm:rounded-2xl sm:border sm:border-[#ddd6ca] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.16)] sm:dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Wave 360+361: 당근식 floating nav — icon-only, 카드 X, 강한 drop-shadow.
-            backdrop은 매우 미묘 (사진 위에서 visibility 보장). */}
+        {/* Wave 360+361+362: 당근식 floating nav — icon-only, 좌상 ← + 🏠 나란히. */}
         {!loading ? (
-          <>
+          <div className="absolute left-3 top-3 z-20 flex items-center gap-1 sm:left-4 sm:top-4">
             <button
               type="button"
               onClick={handleClose}
               aria-label="뒤로가기"
-              className="absolute left-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90 sm:left-4 sm:top-4"
+              className="inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90"
               style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" }}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
@@ -3120,7 +3116,7 @@ export default function PackRevealModal({
               type="button"
               onClick={handleClose}
               aria-label="대시보드로"
-              className="absolute right-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90 sm:right-4 sm:top-4"
+              className="inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90"
               style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" }}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
@@ -3128,7 +3124,7 @@ export default function PackRevealModal({
                 <path d="M9 22V12h6v10" />
               </svg>
             </button>
-          </>
+          </div>
         ) : null}
 
         <div
