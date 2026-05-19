@@ -200,6 +200,57 @@ function displayProfitRange(card: RevealCard) {
   return profitRange(card.expectedProfitMin, card.expectedProfitMax);
 }
 
+// Wave 359: "득템 미터" — 당근 Manner Meter (체온) 영감. 차익 + 신뢰도 + 셀러 종합 °C.
+// 기준 36.5°C (정상 체온). 차익률 ↑ + 신뢰 ↑ + 셀러 ↑ 마다 °C 보너스.
+// 범위 35.0 ~ 39.5 (낮으면 차분, 높으면 핫).
+type DealTemperature = {
+  temp: number;
+  label: string;
+  toneClass: string;
+  badgeClass: string;
+};
+
+function calculateDealTemperature(card: RevealCard): DealTemperature {
+  const profitPct = netProfitPercent(card) ?? 0;
+  const confidence = card.confidence ?? 0;
+  const sellerRating = card.savedDetail?.sellerReviewRating ?? null;
+  const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
+  const sampleCount = card.marketBasis?.sampleCount ?? 0;
+
+  let temp = 36.5;
+  // 차익률 (가장 강한 가중치): 5% → +0.5, 10% → +1.0, 30% → +3.0 (cap)
+  if (profitPct > 0) temp += Math.min(profitPct * 0.1, 3.0);
+  // AI 신뢰도
+  if (confidence >= 0.8) temp += 0.4;
+  else if (confidence >= 0.6) temp += 0.2;
+  // 셀러 신뢰
+  if (sellerRating != null && sellerRating >= 4.8 && reviewCount >= 30) temp += 0.3;
+  else if (sellerRating != null && sellerRating >= 4.5) temp += 0.1;
+  // 시세 표본 (많을수록 ↑)
+  if (sampleCount >= 20) temp += 0.2;
+  else if (sampleCount >= 10) temp += 0.1;
+
+  temp = Math.min(39.5, Math.max(35.0, Math.round(temp * 10) / 10));
+
+  let label = "보통";
+  let toneClass = "text-zinc-600 dark:text-zinc-400";
+  let badgeClass = "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
+  if (temp >= 39.0) {
+    label = "핫";
+    toneClass = "text-rose-600 dark:text-rose-300";
+    badgeClass = "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-200";
+  } else if (temp >= 38.0) {
+    label = "강추";
+    toneClass = "text-orange-600 dark:text-orange-300";
+    badgeClass = "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-200";
+  } else if (temp >= 37.0) {
+    label = "좋음";
+    toneClass = "text-emerald-600 dark:text-emerald-400";
+    badgeClass = "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200";
+  }
+  return { temp, label, toneClass, badgeClass };
+}
+
 function krwRange(min: number, max: number) {
   if (Math.round(min) === Math.round(max)) return krw(max);
   return `${krw(min)} ~ ${krw(max)}`;
@@ -825,6 +876,129 @@ function revealRiskScoreInput(card: RevealCard): RiskScoreInput {
 }
 
 // Wave 333: fixedSafetyCtaClass 제거 — FixedBunjangFooter에서 안전도 버튼 빠지면서 미사용.
+
+// Wave 359: 득템 미터 — 당근 Manner Meter 영감 (체온식 종합 점수).
+// 매물 제목 위에 박음. 클릭 시 근거 패널 펼침 (시세/신뢰도/셀러/안전결제).
+function DealMeter({ card }: { card: RevealCard }) {
+  const [expanded, setExpanded] = useState(false);
+  const { temp, label, toneClass, badgeClass } = calculateDealTemperature(card);
+  const profitPct = netProfitPercent(card);
+  const profitAvg = expectedProfitAverage(card);
+  const sampleCount = card.marketBasis?.sampleCount ?? 0;
+  const sellerRating = card.savedDetail?.sellerReviewRating ?? null;
+  const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
+  const confidencePct = Math.round((card.confidence ?? 0) * 100);
+
+  return (
+    <div className="mb-3 rounded-2xl border border-[#e1dacd] bg-gradient-to-br from-[#fffdf9] to-[#f9f3e8] p-3 dark:border-zinc-800 dark:from-zinc-900/60 dark:to-zinc-900/30">
+      {/* 헤더 — 큰 °C + 라벨 */}
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-2">
+            <span className={`text-4xl font-bold leading-none tracking-tight tabular-nums ${toneClass}`}>
+              {temp.toFixed(1)}
+              <span className="text-2xl">°C</span>
+            </span>
+            <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${badgeClass}`}>
+              {label}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded((v) => !v);
+            }}
+            className="mt-1.5 flex items-center gap-1 text-xs font-medium text-zinc-600 underline underline-offset-2 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            <span>득템 미터 — 근거 보기</span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={`h-3 w-3 transition-transform ${expanded ? "rotate-180" : ""}`}
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+        </div>
+        {/* 우상단 thermometer icon */}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={`h-8 w-8 shrink-0 ${toneClass}`}>
+          <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4 4 0 1 0 5 0Z" />
+        </svg>
+      </div>
+
+      {/* 펼침 — 근거 패널 */}
+      {expanded ? (
+        <div className="mt-3 space-y-2 border-t border-[#e1dacd] pt-3 text-xs dark:border-zinc-800">
+          {/* 1. 차익 */}
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">1</span>
+            <div className="min-w-0 flex-1">
+              <div className="font-bold text-zinc-900 dark:text-zinc-100">
+                예상 차익 {signedKrw(profitAvg)}{profitPct != null ? ` (+${profitPct}%)` : ""}
+              </div>
+              <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
+                매입가 {krw(card.price)}
+                {card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0
+                  ? ` · 시세 ${krw(card.marketBasis.medianPrice)}`
+                  : " · 시세 표본 부족"}
+              </div>
+            </div>
+          </div>
+
+          {/* 2. 신뢰도 */}
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-100 text-[9px] font-bold text-sky-700 dark:bg-sky-950/40 dark:text-sky-200">2</span>
+            <div className="min-w-0 flex-1">
+              <div className="font-bold text-zinc-900 dark:text-zinc-100">
+                AI 분석 신뢰도 {confidencePct}%
+              </div>
+              <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
+                {sampleCount > 0 ? `같은 매물 ${sampleCount}건 비교 분석` : "표본 부족 — 추정치"}
+              </div>
+            </div>
+          </div>
+
+          {/* 3. 셀러 */}
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-100 text-[9px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">3</span>
+            <div className="min-w-0 flex-1">
+              <div className="font-bold text-zinc-900 dark:text-zinc-100">
+                {sellerRating != null
+                  ? `셀러 평점 ${sellerRating.toFixed(1)}점 · 후기 ${reviewCount.toLocaleString("ko-KR")}건`
+                  : "셀러 후기 없음"}
+              </div>
+              <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
+                {sellerRating != null && sellerRating >= 4.8 && reviewCount >= 30
+                  ? "우수 셀러 — 거래 신뢰도 ↑"
+                  : sellerRating != null && sellerRating >= 4.5
+                  ? "평점 양호"
+                  : "안전결제 + 직거래 검수 권장"}
+              </div>
+            </div>
+          </div>
+
+          {/* 4. 안전결제 */}
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-[9px] font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-200">4</span>
+            <div className="min-w-0 flex-1">
+              <div className="font-bold text-zinc-900 dark:text-zinc-100">
+                번개장터 안전결제 — 셀러 의무 부담 (3.5%)
+              </div>
+              <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
+                구매자(나)는 0원 — 결제 안 들어가도 셀러가 부담
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function RevealProductImage({ card }: { card: RevealCard }) {
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -2268,6 +2442,8 @@ function RevealCardItem({
         <div className="min-w-0 w-full space-y-3 px-3 sm:px-0">
           <div className="flex w-full items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
+              {/* Wave 359: 득템 미터 — 매물 제목 위에 체온식 종합 점수 + 근거 보기. */}
+              <DealMeter card={card} />
               {/* Wave 323 (디자인 통일): 상품명 base size + 헤드라인 2-tier (label + 큰 가격 + % 칩). */}
               <div className="line-clamp-2 text-base font-bold leading-tight text-zinc-900 dark:text-zinc-50">
                 {card.name}

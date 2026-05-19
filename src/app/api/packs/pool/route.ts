@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -93,10 +94,77 @@ function computeCooldown(lastBrowseAt: string | null): {
   };
 }
 
+// Wave 247.2 (2026-05-19): band-aware sku_median fallback.
+//   pool API 가 raw mvp_listings.sku_median 직접 사용 → condition_class 무시.
+//   사용자 풀의 16% 가 sku_median=0 으로 미스리딩 표시 (Wave 246 시세 0원 bug 측정).
+//   기존 marketBasisForCandidate (pack-open.ts) 가 mvp_market_price_daily band-aware lookup
+//   하는 패턴 그대로 도입. additive only — DB 변경 X, fetch logic 만.
+type MarketBandRow = {
+  comparable_key: string;
+  condition_class: string;
+  blended_median_price: number | null;
+  active_median_price: number | null;
+  active_sample_count: number | null;
+  sold_sample_count: number | null;
+  disappeared_sample_count: number | null;
+};
+
+async function loadMarketBandsForPool(
+  headers: Record<string, string>,
+  comparableKeys: string[],
+): Promise<Map<string, Map<string, MarketBandRow>>> {
+  const unique = [...new Set(comparableKeys.filter((k): k is string => Boolean(k)))];
+  if (unique.length === 0) return new Map();
+  const cols = [
+    "comparable_key",
+    "condition_class",
+    "blended_median_price",
+    "active_median_price",
+    "active_sample_count",
+    "sold_sample_count",
+    "disappeared_sample_count",
+  ].join(",");
+  const encoded = unique.map((k) => encodeURIComponent(k)).join(",");
+  // pack-open.ts 의 fetch 패턴 — comparable_key in (...) + order date desc + limit ample.
+  //   각 (comparable_key, condition_class) 의 가장 최신 row 만 보존.
+  const res = await restFetch(
+    `${tableUrl("mvp_market_price_daily")}?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(200, unique.length * 12)}`,
+    { headers },
+  );
+  const rows = (await res.json()) as MarketBandRow[];
+  const byKey = new Map<string, Map<string, MarketBandRow>>();
+  for (const row of rows) {
+    const byCondition = byKey.get(row.comparable_key) ?? new Map<string, MarketBandRow>();
+    if (!byCondition.has(row.condition_class)) {
+      byCondition.set(row.condition_class, row);
+    }
+    byKey.set(row.comparable_key, byCondition);
+  }
+  return byKey;
+}
+
+function bandAwareMedian(
+  bandMap: Map<string, Map<string, MarketBandRow>>,
+  comparableKey: string | null,
+  conditionClass: string | null,
+): number | null {
+  if (!comparableKey) return null;
+  const byCondition = bandMap.get(comparableKey);
+  if (!byCondition) return null;
+  const { row } = pickByConditionFallback(
+    byCondition,
+    conditionClass,
+    (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0) + Number(r.disappeared_sample_count ?? 0),
+  );
+  if (!row) return null;
+  const price = row.blended_median_price ?? row.active_median_price ?? null;
+  return price && price > 0 ? price : null;
+}
+
 async function loadPool(
   headers: Record<string, string>,
   options: { sort?: "profit_desc" | "latest" } = {},
-): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[] }> {
+): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[]; marketBands: Map<string, Map<string, MarketBandRow>> }> {
   const sixHoursAgo = new Date(Date.now() - FRESH_LAG_HOURS * 60 * 60 * 1000).toISOString();
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -153,10 +221,12 @@ async function loadPool(
   const pool = options.sort === "latest"
     ? [...readyRows, ...soldOutRows]
     : [...readyRows, ...soldOutRows].sort(() => Math.random() - 0.5);
-  if (pool.length === 0) return { pool: [], raws: [], metas: [] };
+  if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map() };
 
   const pids = pool.map((r) => r.pid);
-  const [rawRes, metaRes] = await Promise.all([
+  // Wave 247.2: market band fetch 도 병렬화 — pool 의 comparable_key 만 lookup.
+  const comparableKeys = [...new Set(pool.map((r) => r.comparable_key).filter((k): k is string => Boolean(k)))];
+  const [rawRes, metaRes, marketBands] = await Promise.all([
     restFetch(
       `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url&pid=in.(${pids.join(",")})`,
       { headers },
@@ -165,13 +235,19 @@ async function loadPool(
       `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name,free_shipping,last_seen_at,shop_review_rating,shop_review_count,description_preview&pid=in.(${pids.join(",")})`,
       { headers },
     ),
+    loadMarketBandsForPool(headers, comparableKeys),
   ]);
   const raws = (await rawRes.json()) as RawRow[];
   const metas = (await metaRes.json()) as RawListingMeta[];
-  return { pool, raws, metas };
+  return { pool, raws, metas, marketBands };
 }
 
-function buildItems(pool: (PoolRow & { soldOut: boolean })[], raws: RawRow[], metas: RawListingMeta[]) {
+function buildItems(
+  pool: (PoolRow & { soldOut: boolean })[],
+  raws: RawRow[],
+  metas: RawListingMeta[],
+  marketBands: Map<string, Map<string, MarketBandRow>>,
+) {
   const rawByPid = new Map(raws.map((r) => [r.pid, r]));
   const metaByPid = new Map(metas.map((m) => [m.pid, m]));
   return pool
@@ -179,11 +255,20 @@ function buildItems(pool: (PoolRow & { soldOut: boolean })[], raws: RawRow[], me
       const raw = rawByPid.get(row.pid);
       const meta = metaByPid.get(row.pid);
       if (!raw) return null;
+      // Wave 247.2 (2026-05-19): band-aware sku_median.
+      //   기존: raw.sku_median (mvp_listings — condition_class 무시, 전체 median).
+      //   사용자 풀의 16% (82/500) sku_median=0 → "시세 0원" 미스리딩.
+      //   새: mvp_market_price_daily 의 (comparable_key, condition_class) band 우선 →
+      //     매칭 band 없으면 fallback chain (mint → clean → normal → worn) →
+      //     모든 band 없으면 raw.sku_median (전체 median).
+      //   pack-open.ts 의 marketBasisForCandidate 와 동일 정책. additive only — DB 변경 X.
+      const bandPrice = bandAwareMedian(marketBands, row.comparable_key, row.condition_class);
+      const skuMedianFinal = bandPrice ?? raw.sku_median;
       return {
         pid: row.pid,
         name: raw.name,
         price: raw.price,
-        skuMedian: raw.sku_median,
+        skuMedian: skuMedianFinal,
         thumbnailUrl: raw.thumbnail_url,
         skuId: meta?.sku_id ?? null,
         skuName: meta?.sku_name ?? null,
@@ -259,8 +344,8 @@ export async function GET(req: Request) {
       await upsertLastBrowse(headers, userRef, authUserId);
     }
 
-    const { pool, raws, metas } = await loadPool(headers, { sort });
-    const items = buildItems(pool, raws, metas);
+    const { pool, raws, metas, marketBands } = await loadPool(headers, { sort });
+    const items = buildItems(pool, raws, metas, marketBands);
 
     // refresh 후 새 cooldown 정보
     const nextCooldown = refresh && cooldown.canRefresh
