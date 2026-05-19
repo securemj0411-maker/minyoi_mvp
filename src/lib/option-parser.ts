@@ -157,7 +157,8 @@ export function bunjangLabelToConditionClass(label: string | null | undefined): 
 
 // 2026-05-16 v46: condition_class ranking — 낮을수록 낮은 등급.
 // low_batt 는 special (가격 modifier, ordering 밖).
-const CONDITION_RANK: Record<Exclude<ConditionClass, "low_batt">, number> = {
+// Wave 254.5 step 1 (2026-05-20): export — fashion parser 도 worst-of 결합에 사용.
+export const CONDITION_RANK: Record<Exclude<ConditionClass, "low_batt">, number> = {
   flawed: 0,
   worn: 1,
   normal: 2,
@@ -1405,6 +1406,78 @@ function conditionFromText(
   if (/(?:예민하지\s*않은|민감하지\s*않은|꼼꼼하지\s*않은).{0,12}(?:분|사용자|구매자|유저)|케이스\s*끼면\s*(?:안\s*보|티\s*안)|필름\s*붙이면\s*(?:안\s*보|티\s*안)/.test(lower)) {
     add("cosmetic_wear", -0.05);
   }
+
+  return {
+    conditionScore: cap01(score),
+    conditionNotes: [...new Set(notes)],
+  };
+}
+
+// Wave 254.5 step 1 (2026-05-20): fashion-specific condition extraction.
+//   사용자 결정 (Wave 254.5 옵션 a, 점진 rollout): shoe → bag → clothing.
+//   현재 step 1: shoe 만 적용 (wave92-fashion-mobility.ts shoe 분기에서 호출).
+//   효과:
+//     - Wave 203~209 정책 자동 적용 (cosmetic_wear negation / objective signal override /
+//       buying_post / single_side_only / accessory_compatible / repair_or_defect_signal negation).
+//     - 신발 specific 신호 추가 (솔 가루 / 가수분해 / 인솔 빠짐 / 굽창 마모 심함 / 밑창 분리).
+//   사용자 매물 pid 408858108 가젤 볼드 케이스:
+//     "새상품 + 약간 하자가있어" → 기존 parseConditionTier mint (a_grade) → 잘못.
+//     fix 후: conditionFromText 의 repair_or_defect_signal 감지 → flawed.
+//   Wave 254.5 step 2/3 (예정): bag/clothing 도 동일 path.
+export function conditionFromTextFashion(
+  text: string,
+  category: "shoe" | "bag" | "clothing",
+): { conditionScore: number; conditionNotes: string[] } {
+  // 1) Wave 203~209 canonical conditionFromText 호출.
+  //    fashion 은 batteryHealth/cycles 없음 (null). category 인자는 earphone single_side_only 만 활성화
+  //    되므로 fashion 카테고리는 null 로 passthrough.
+  const base = conditionFromText(text, null, null, null);
+
+  const lower = normalize(text).toLowerCase();
+  let score = base.conditionScore;
+  const notes = [...base.conditionNotes];
+  const add = (note: string, delta: number) => {
+    notes.push(note);
+    score += delta;
+  };
+
+  // 2) shoe-specific signals — Wave 254.5 step 1.
+  if (category === "shoe") {
+    // 솔 가루 — 미드솔/아웃솔 부서짐 (가수분해 직전). flawed 명확.
+    const noSoleCrumbling = /솔\s*가루\s*(?:없|없음|아님)/.test(lower);
+    if (!noSoleCrumbling && /솔\s*가루|미드솔\s*가루|아웃솔\s*가루|솔\s*부서|미드솔\s*부서|솔\s*먼지\s*떨어/.test(lower)) {
+      add("shoe_sole_crumbling", -0.25);
+      // FLAWED 분류 보장 — extractConditionClass 가 shoe_sole_crumbling 모르므로 piggy-back.
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal"); // 점수 영향 없이 note 만
+      }
+    }
+    // 가수분해 — parseConditionTier reject 이미 잡지만 conditionFromText 노트에도 박기 (UI 표시 + score).
+    const noHydrolysis = /가수분해\s*(?:없|없음|아님)/.test(lower);
+    if (!noHydrolysis && /가수분해|hydrolysis|밑창\s*가수|솔\s*가수/.test(lower)) {
+      add("shoe_hydrolysis", -0.3);
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal");
+      }
+    }
+    // 인솔 빠짐/없음 — 시세 영향 (신발 본체는 멀쩡하지만 사용감 표시).
+    if (/인솔\s*(?:빠|없\s*음|없\s*어|분실|떨어진)|깔창\s*(?:빠|없\s*음|없\s*어|분실|떨어진)/.test(lower)) {
+      add("shoe_insole_missing", -0.15);
+    }
+    // 굽창/뒷굽 강한 마모 — c_grade (parseConditionTier) 보다 더 심함 (worn → flawed 경계).
+    if (/굽창\s*마모\s*심|뒷굽\s*다\s*닳|뒷굽\s*완전\s*닳|굽\s*완전\s*마모|아웃솔\s*마모\s*심|밑창\s*완전\s*닳/.test(lower)) {
+      add("shoe_heel_worn_severe", -0.15);
+    }
+    // 밑창 분리/벗겨짐 — parseConditionTier reject ("밑창 벗겨") 보강.
+    if (/밑창\s*분리|밑창\s*벗겨|밑창\s*떨어진|솔\s*분리|솔\s*떨어진|본드로?\s*붙여/.test(lower)) {
+      add("shoe_sole_separation", -0.25);
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal");
+      }
+    }
+  }
+
+  // bag/clothing — Wave 254.5 step 2/3 에서 추가 (현재 base 만 반환).
 
   return {
     conditionScore: cap01(score),

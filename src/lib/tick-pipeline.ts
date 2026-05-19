@@ -2096,7 +2096,10 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 236b (2026-05-19): v5 — regex 보완 + defaultProductType fallback.
   // Wave 236c (2026-05-19): v6 — fallback 제거 + needsReview 차단.
   // Wave 236d (2026-05-19): v7 — catalog narrow model defaultProductType fallback 복원.
-  shoe: "wave92-fashion-mobility-v7",
+  // Wave 254.5 step 1 (2026-05-20): shoe 만 v8 — conditionFromTextFashion 통합 (Wave 203~209 정책 + shoe-specific).
+  //   사용자 매물 pid 408858108 가젤 볼드 "새상품 + 약간 하자가있어" → mint 잘못 root fix.
+  //   bag/bike 은 v7 유지 — 점진 rollout 안전성 우선 (step 2/3 에서 bag/clothing 적용).
+  shoe: "wave92-shoe-v8",
   bag: "wave92-fashion-mobility-v7",
   bike: "wave92-fashion-mobility-v7",
 };

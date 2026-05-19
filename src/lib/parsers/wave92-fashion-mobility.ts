@@ -8,7 +8,13 @@
 // - 자전거 사고/크랙은 즉시 reject (가격 시세 무의미).
 
 import type { ParsedListingOptions, ConditionClass, ParseInput } from "@/lib/option-parser";
-import { bunjangLabelToConditionClass, resolveConditionClass } from "@/lib/option-parser";
+import {
+  bunjangLabelToConditionClass,
+  resolveConditionClass,
+  conditionFromTextFashion,
+  extractConditionClass,
+  CONDITION_RANK,
+} from "@/lib/option-parser";
 
 // Wave 236f (2026-05-19): ParseInput type 통합 — option-parser 가 source of truth.
 //   audit 발견: 두 별도 정의 → drift risk. 통합 import 로 fix.
@@ -412,6 +418,14 @@ function parseShoeProductType(text: string): ShoeProductType {
 //   - narrow model (Borealis/Nuptse/Galleria 등) defaultProductType 박힘 → fallback (안전)
 //   - broad SKU (RRL/FOG/Supreme collab) 미박힘 → 차단 (needsReview)
 const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
+// Wave 254.5 step 1 (2026-05-20): shoe 전용 v8 — conditionFromTextFashion 통합.
+//   사용자 결정: 점진 rollout — shoe (step 1) → bag (step 2) → clothing (step 3).
+//   기존 PARSER_VERSION_W92 v7 은 bag/bike 유지 (re-parse 영향 없음).
+//   효과: Wave 203~209 정책 (cosmetic_wear negation / objective signal override /
+//     buying_post / single_side_only / accessory_compatible / repair_or_defect_signal negation)
+//     + 신발 specific (솔 가루 / 가수분해 / 인솔 빠짐 / 굽창 마모 / 밑창 분리) 자동 적용.
+//   tick-pipeline LATEST_PARSER_VERSION_BY_CATEGORY.shoe 도 v8 로 bump 필요.
+const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v8";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
@@ -478,6 +492,10 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
   // 이전: 모든 신발 conditionClass = "normal" (Wave 130까지 미구현).
   // 변경: s_grade → unopened / a_grade → mint / b_grade → clean / c_grade → worn / reject → flawed.
   let conditionClassResult: ConditionClass = "normal";
+  // Wave 254.5 step 1 (2026-05-20): shoe conditionFromTextFashion 결과 — score/notes worst-of merge 용.
+  //   bag/clothing (step 2/3) 까지는 빈 배열 유지 (Wave 130 정책).
+  let fashionConditionScore: number | null = null;
+  let fashionConditionNotes: string[] = [];
 
   if (category === "shoe") {
     const opt = parseShoeOptions(text);
@@ -557,6 +575,38 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
       if (opt.boxStatus === "with_box" && opt.conditionTier === "s_grade") {
         conditionClassResult = "unopened";
       }
+    }
+    // Wave 254.5 step 1 (2026-05-20): shoe 카테고리 conditionFromTextFashion 통합.
+    //   기존: parseConditionTier (tier-only regex) — Wave 203~209 negation/objective override 누락.
+    //   사용자 매물 pid 408858108 가젤 볼드 "새상품 + 약간 하자가있어" → mint 잘못 (a_grade match).
+    //   fix: conditionFromText 의 repair_or_defect_signal 감지 + worst-of merge.
+    //   bag/clothing 은 step 2/3 (점진 rollout, 사용자 결정).
+    const fashion = conditionFromTextFashion(text, "shoe");
+    fashionConditionScore = fashion.conditionScore;
+    fashionConditionNotes = fashion.conditionNotes;
+    parsedJson.shoe_condition_notes = fashion.conditionNotes;
+    parsedJson.shoe_condition_score_fashion = fashion.conditionScore;
+    parsedJson.shoe_fashion_condition_applied = true;
+    // notes-based ConditionClass — Wave 203~209 정책 (flawed > worn > unopened > clean > normal).
+    const fashionNotesClass = extractConditionClass(fashion.conditionNotes);
+    // worst-of merge — tier-based conditionClassResult 와 fashion notes-based class 둘 중 낮은 등급.
+    //   normal 인 쪽은 무시 (실제 signal 없음). low_batt 는 fashion 미사용 (battery health 없음).
+    if (
+      fashionNotesClass !== "normal" &&
+      fashionNotesClass !== "low_batt" &&
+      conditionClassResult !== "low_batt"
+    ) {
+      const currentRank = CONDITION_RANK[conditionClassResult];
+      const fashionRank = CONDITION_RANK[fashionNotesClass];
+      if (fashionRank < currentRank) {
+        conditionClassResult = fashionNotesClass;
+      }
+    }
+    // needsReview 보강 — strong negative signals (Wave 204/207/208).
+    const strongNegativeSignals = ["buying_post", "single_side_only", "accessory_compatible_for_other_product", "parts_only"];
+    if (fashion.conditionNotes.some((n) => strongNegativeSignals.includes(n))) {
+      needsReview = true;
+      criticalUnknown.push("shoe_strong_negative_signal");
     }
   } else if (category === "bag") {
     const opt = parseBagOptions(text);
@@ -756,11 +806,22 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     flawed: 0.35,
     low_batt: 0.4,
   };
-  const conditionScore = conditionScoreMap[conditionClassResult] ?? 0.5;
+  const tierConditionScore = conditionScoreMap[conditionClassResult] ?? 0.5;
+  // Wave 254.5 step 1 (2026-05-20): shoe 한정 — fashion score 와 worst-of merge.
+  //   객관적 negative signal (repair_or_defect_signal etc.) 감지 시 tier 보다 낮은 score 적용.
+  const conditionScore = fashionConditionScore !== null
+    ? Math.min(tierConditionScore, fashionConditionScore)
+    : tierConditionScore;
 
   return {
     // Wave 216: clothing 만 새 parser version → 1253건 자동 re-parse (shoe/bag/bike 영향 X).
-    parserVersion: category === "clothing" ? PARSER_VERSION_W216_CLOTHING : PARSER_VERSION_W92,
+    // Wave 254.5 step 1 (2026-05-20): shoe 만 v8 (conditionFromTextFashion 적용). bag/bike 은 v7 유지.
+    parserVersion:
+      category === "clothing"
+        ? PARSER_VERSION_W216_CLOTHING
+        : category === "shoe"
+          ? PARSER_VERSION_W92_SHOE_V8
+          : PARSER_VERSION_W92,
     contentHash: hashText(text),
     category,
     family,
@@ -778,9 +839,11 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     carrier: null,
     connectivity: null,
     conditionScore,
-    conditionNotes: [],
+    // Wave 254.5 step 1 (2026-05-20): shoe 만 conditionFromTextFashion notes 사용 (bag/clothing/bike: [] 유지).
+    conditionNotes: fashionConditionNotes,
     // Wave 130 (2026-05-16): fashion/mobility는 condition_notes 추출 미구현 → default normal.
     // Wave 134 (2026-05-16): 신발 condition_tier → condition_class 매핑 추가. 가방/자전거는 normal 유지.
+    // Wave 254.5 step 1 (2026-05-20): shoe 만 conditionFromTextFashion notes 채움 (Wave 203~209 정책 + shoe-specific).
     conditionClass: conditionClassResult,
     parseConfidence,
     needsReview,
