@@ -1014,10 +1014,11 @@ export type PipelineResult = {
   upserted: number;
 };
 
-type AiListingType = "normal" | "counterfeit" | "parts" | "buying" | "callout" | "damaged" | "accessory" | "multi" | "commercial" | "unknown";
-type AiConfidence = "high" | "medium" | "low";
-type AiDecision = "pass" | "hold" | "reject";
-type AiClassification = {
+// Wave 238 (2026-05-19): export 박음 — shadow audit 모듈이 동일 type 사용.
+export type AiListingType = "normal" | "counterfeit" | "parts" | "buying" | "callout" | "damaged" | "accessory" | "multi" | "commercial" | "unknown";
+export type AiConfidence = "high" | "medium" | "low";
+export type AiDecision = "pass" | "hold" | "reject";
+export type AiClassification = {
   listingType: AiListingType;
   decision: AiDecision | null;
   confidence: AiConfidence;
@@ -1055,7 +1056,8 @@ type AiReviewResult = {
   // Wave 34 — caller (scoreStage)가 score_dirty 재마킹할 pid 목록.
   escrowUnavailablePids: string[];
 };
-type AiClassifyOutcome = {
+// Wave 238: export 박음 — shadow audit return type.
+export type AiClassifyOutcome = {
   result: AiClassification | null;
   source: "cache" | "api" | "unavailable";
 };
@@ -1320,12 +1322,14 @@ const AI_HARD_RISK_KEYWORDS = [
   "거래완료",
 ];
 
-function aiHasHardRisk(result: AiClassification): boolean {
+// Wave 238 (2026-05-19): export 박음 — shadow audit 가 동일 verdict logic 사용 (drift 차단).
+export function aiHasHardRisk(result: AiClassification): boolean {
   const text = result.riskKeywords.map((keyword) => nrm(keyword)).join(" ");
   return AI_HARD_RISK_KEYWORDS.some((keyword) => text.includes(nrm(keyword)));
 }
 
-function aiSecondOpinionDecision(result: AiClassification): AiDecision {
+// Wave 238: export 박음 — shadow audit 가 pass/hold/reject 동일 분류.
+export function aiSecondOpinionDecision(result: AiClassification): AiDecision {
   if (result.decision) return result.decision;
   if (result.listingType === "normal") {
     return result.confidence === "high" ? "pass" : "hold";
@@ -1609,7 +1613,10 @@ async function classifyWithAi(row: PipelineRow): Promise<AiClassification | null
   }
 }
 
-async function classifyWithCache(row: PipelineRow): Promise<AiClassifyOutcome> {
+// Wave 238 (2026-05-19): export 박음 — shadow audit (`ai-l2-shadow-audit.ts`) 에서
+//   ready promotion gate 통과 매물 AI 호출 hook 으로 활용. baseline 91.1% AI 안 봄.
+//   tech 패턴 처럼 catalog 가 source-of-truth 가 되도록 학습 큐 입력 시그널 박는 path.
+export async function classifyWithCache(row: PipelineRow): Promise<AiClassifyOutcome> {
   const hash = contentHash(row);
   const cached = await fetchAiCache(row, hash);
   if (cached) return { result: cached, source: "cache" };

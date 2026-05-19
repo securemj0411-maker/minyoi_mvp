@@ -17,6 +17,10 @@ function computeDescriptionHash(description: string | null | undefined): string 
 import { loadCategoryReadinessMap, loadLaneReadinessMap } from "@/lib/category-readiness";
 import { evaluatePhase2Escrow, isPhase2EscrowEnabled } from "@/lib/ai-l2-escrow";
 import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
+// Wave 238 (2026-05-19): AI L2 coverage gap fix. ready pool 매물 중 91.1% 가 AI 안 봄.
+//   Phase 1 = shadow audit (status='ready' 유지, ai_audit_status 만 박음).
+//   Phase 2 별도 wave 에서 차단 활성화.
+import { runShadowAudit } from "@/lib/ai-l2-shadow-audit";
 import { CATALOG, ruleMatch, skuById, type Sku } from "@/lib/catalog";
 import {
   decayTrimmedSellerMarket,
@@ -4511,6 +4515,53 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     new Date(Date.now() + 30 * 60 * 1000).toISOString(),
   );
   await invalidatePoolEntries(poolBuild.invalidations);
+
+  // Wave 238 (2026-05-19): shadow audit — ready 매물 중 AI 안 본 매물 강제 호출.
+  //   baseline 91.1% AI 안 봄 → fashion mismatch 근본 source. Option A 본체.
+  //   Phase 1 = shadow only (ai_audit_status 컬럼만 박음, status='ready' 유지).
+  //   비용 cap (AI_L2_DAILY_BUDGET_USD env, default $10/일) + telegram alert.
+  //   Phase 2 별도 wave 에서 실제 차단 활성화.
+  try {
+    const auditStats = await runShadowAudit({
+      rows: aiReview.rows,
+      poolEntries: poolEntries.map((e) => ({
+        pid: Number(e.pid),
+        category: (e.category as string | null) ?? null,
+      })),
+      resolveSkuId: (pid) => {
+        const row = aiReview.rows.find((r) => Number(r.pid) === pid);
+        return row?.skuId ?? null;
+      },
+    });
+    (stats as Record<string, unknown>).aiL2ShadowAudit = {
+      enabled: auditStats.enabled,
+      candidates: auditStats.candidates,
+      audited: auditStats.audited,
+      pass: auditStats.passCount,
+      hold: auditStats.holdCount,
+      reject: auditStats.rejectCount,
+      learning_enqueued: auditStats.learningEnqueued,
+      budget_ok: auditStats.budgetGuardOk,
+      spent_usd: Number(auditStats.spentUsdToday.toFixed(4)),
+      budget_usd: auditStats.budgetUsd,
+      duration_ms: auditStats.durationMs,
+    };
+    if (auditStats.audited > 0) {
+      console.info("[wave238] shadow audit", {
+        candidates: auditStats.candidates,
+        audited: auditStats.audited,
+        pass: auditStats.passCount,
+        hold: auditStats.holdCount,
+        reject: auditStats.rejectCount,
+        learning_enqueued: auditStats.learningEnqueued,
+        spent_usd: auditStats.spentUsdToday.toFixed(4),
+      });
+    }
+  } catch (err) {
+    // shadow audit 실패는 pipeline 전체 중단 X — Phase 1 비파괴 원칙.
+    console.warn("[wave238] shadow audit failed (non-fatal)", err);
+    (stats as Record<string, unknown>).aiL2ShadowAuditError = (err as Error).message?.slice(0, 200) ?? "unknown";
+  }
   stats.poolUpserted = poolEntries.length;
   stats.poolSkipped = poolBuild.skipped;
   // Wave 190 (2026-05-18): 풀 진입 0건 디버깅 — skip reason 별 카운터.
