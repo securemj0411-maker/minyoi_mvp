@@ -7,60 +7,66 @@ const legalLinks = [
   { href: "/youth-policy", label: "청소년보호정책" },
 ];
 
+// Wave 372: 모바일 친화 푸터 — 사업자 정보 collapse. 한국 전자상거래법은 "표시" 요건만,
+// 형태 자유. 데스크탑은 기본 열림 (sm+), 모바일은 닫힘 → 사용자 클릭 시 펼침.
 export default function AppFooter() {
   return (
     <footer className="mt-10 border-t border-[#e2d9cb] bg-[#f8f4ec] dark:border-zinc-800 dark:bg-zinc-950">
-      <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-6 px-4 py-8 text-sm text-[#5c655b] sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] font-semibold text-[#344136] dark:text-zinc-200">
-          {legalLinks.map((link) => (
-            <Link key={link.label} href={link.href} className="transition hover:text-[var(--brand-accent-strong)]">
-              {link.label}
-            </Link>
+      <div className="mx-auto w-full max-w-[1380px] px-4 py-5 text-xs text-[#5c655b] sm:px-6 sm:py-7 lg:px-8">
+        {/* Legal links */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] font-bold text-[#344136] dark:text-zinc-200">
+          {legalLinks.map((link, idx) => (
+            <span key={link.label} className="flex items-center gap-x-3">
+              <Link href={link.href} className="transition hover:text-[var(--brand-accent-strong)]">
+                {link.label}
+              </Link>
+              {idx < legalLinks.length - 1 ? (
+                <span className="text-zinc-300 dark:text-zinc-700" aria-hidden="true">·</span>
+              ) : null}
+            </span>
           ))}
         </div>
 
-        <div className="grid gap-3 text-[13px] leading-6 sm:grid-cols-2 xl:grid-cols-3">
-          <div>
-            <div className="font-black text-[#223127] dark:text-zinc-100">득템잡이</div>
-            <div className="mt-2">
-              상호명: 득템잡이
-              <br />
-              대표자: 이민제
-              <br />
-              사업자등록번호: 123-45-67890
-              <br />
-              통신판매업신고: 2026-서울강남-00000
+        {/* 사업자 정보 — 모바일 collapse, 데스크탑 열림 */}
+        <details className="group mt-4 sm:open" open>
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[12px] font-bold text-[#344136] transition hover:text-[var(--brand-accent-strong)] dark:text-zinc-200 sm:cursor-default">
+            <span>득템잡이 · 사업자 정보</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 transition-transform group-open:rotate-180 sm:hidden">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </summary>
+
+          <div className="mt-3 space-y-1 leading-5 text-[#6b7269] dark:text-zinc-400">
+            <div>
+              상호명 <b className="font-bold text-[#344136] dark:text-zinc-300">득템잡이</b>
+              <span className="mx-1.5 text-zinc-300 dark:text-zinc-700">·</span>
+              대표 <b className="font-bold text-[#344136] dark:text-zinc-300">이민제</b>
+            </div>
+            <div>
+              사업자등록번호 <b className="font-bold text-[#344136] dark:text-zinc-300">123-45-67890</b>
+              <span className="mx-1.5 text-zinc-300 dark:text-zinc-700">·</span>
+              통신판매업신고 <b className="font-bold text-[#344136] dark:text-zinc-300">2026-서울강남-00000</b>
+            </div>
+            <div>
+              주소 서울특별시 강남구 테헤란로 000, 0층
+            </div>
+            <div>
+              이메일 <a href="mailto:help@minyoi.kr" className="font-bold text-[#344136] hover:text-[var(--brand-accent-strong)] dark:text-zinc-300">help@minyoi.kr</a>
+              <span className="mx-1.5 text-zinc-300 dark:text-zinc-700">·</span>
+              대표번호 02-1234-5678
+              <span className="mx-1.5 text-zinc-300 dark:text-zinc-700">·</span>
+              평일 10:00–18:00
+            </div>
+            <div>
+              호스팅 Vercel
+              <span className="mx-1.5 text-zinc-300 dark:text-zinc-700">·</span>
+              서비스명 득템잡이 MVP — 중고 상품 추천 및 모니터링
             </div>
           </div>
+        </details>
 
-          <div>
-            <div className="font-black text-[#223127] dark:text-zinc-100">고객 지원</div>
-            <div className="mt-2">
-              이메일: help@minyoi.kr
-              <br />
-              대표번호: 02-1234-5678
-              <br />
-              운영시간: 평일 10:00 - 18:00
-              <br />
-              호스팅 제공자: Vercel
-            </div>
-          </div>
-
-          <div>
-            <div className="font-black text-[#223127] dark:text-zinc-100">사업장 정보</div>
-            <div className="mt-2">
-              주소: 서울특별시 강남구 테헤란로 000, 0층
-              <br />
-              서비스명: 득템잡이 MVP
-              <br />
-              중고 상품 추천 및 모니터링 서비스
-            </div>
-          </div>
-        </div>
-
-        <div className="border-t border-[#e8dfd2] pt-4 text-xs leading-5 text-[#7a8177] dark:border-zinc-800 dark:text-zinc-400">
-          현재 표시되는 사업자 정보와 정책 링크는 MVP 검토용 mock입니다. 실제 운영 전 사업자 정보, 신고번호,
-          정책 문서는 최종 값으로 교체해야 합니다.
+        <div className="mt-4 text-[10px] leading-4 text-[#9aa097] dark:text-zinc-500">
+          현재 표시되는 사업자 정보와 정책은 MVP 검토용 mock입니다. 실제 운영 전 최종 값으로 교체 예정.
         </div>
       </div>
     </footer>
