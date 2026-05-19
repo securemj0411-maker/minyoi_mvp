@@ -3180,14 +3180,29 @@ function RevealCardItem({
                       기본 옵션 가정
                     </span>
                   ) : null}
-                  {/* Wave 394.5.a (외부 review #23): 모드 토글 chip — 우측 정렬. 일반인 친화 디폴트. */}
+                </div>
+
+                {/* Wave 394.5.a.fix (사용자 짚음 — "토글 어디있어?"): 메타 line 안 작은 chip 묻힘.
+                    별도 row + emerald 강조로 옮김. 일반인 친화 디폴트는 유지 (simple), 토글이 또렷이 보임. */}
+                <div className="mt-2 flex justify-end">
                   <button
                     type="button"
                     onClick={toggleMode}
-                    className="ml-auto rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold text-zinc-700 transition hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-                    title={mode === "simple" ? "더 자세한 정보 보기 (계산식, 비용 분해 등)" : "간단하게 보기"}
+                    className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100 hover:shadow dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
+                    title={mode === "simple" ? "더 자세한 정보 보기 (계산식 + 비교 매물 12개 + 신뢰도 분해)" : "간단하게 보기"}
                   >
-                    {mode === "simple" ? "🔍 상세 보기" : "← 간단 보기"}
+                    {mode === "simple" ? (
+                      <>
+                        <span aria-hidden="true">🔍</span>
+                        <span>상세 보기</span>
+                        <span className="font-medium text-emerald-600/70 dark:text-emerald-400/70">— 계산식 · 비교 12개</span>
+                      </>
+                    ) : (
+                      <>
+                        <span aria-hidden="true">←</span>
+                        <span>간단 보기</span>
+                      </>
+                    )}
                   </button>
                 </div>
 
