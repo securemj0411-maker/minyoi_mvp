@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, TargetIcon, HourglassIcon } from "@/components/icons";
@@ -207,6 +207,9 @@ const PREFERENCE_OPTIONS: { value: Preference; label: string; sub: string; emoji
 
 export default function ExploreClient() {
   const [items, setItems] = useState<PoolItem[]>([]);
+  // Wave 391: loadPool에서 items deps에 박으면 infinite loop. ref로 fresh 접근.
+  const itemsRef = useRef<PoolItem[]>([]);
+  useEffect(() => { itemsRef.current = items; }, [items]);
   const [cooldown, setCooldown] = useState<PoolResponse["cooldown"] | null>(null);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -315,6 +318,14 @@ export default function ExploreClient() {
       if (effectivePrefs) {
         if (effectivePrefs.budget !== "unlimited") params.set("budget", effectivePrefs.budget);
         params.set("preference", effectivePrefs.preference);
+      }
+      // Wave 391: refresh 시 이미 본 pids 전달 → 백엔드가 제외하고 다른 매물 fetch.
+      // 안 그러면 같은 풀에서 같은 30개 다양화 결과 → frontend dedupe 후 0개 추가.
+      // itemsRef로 fresh 접근 (deps에 items 박으면 infinite loop).
+      const currentItems = itemsRef.current;
+      if (refresh && currentItems.length > 0) {
+        const excludePids = currentItems.map((it) => it.pid).join(",");
+        params.set("excludePids", excludePids);
       }
       const url = `/api/packs/pool${params.toString() ? `?${params.toString()}` : ""}`;
       const res = await fetch(url, { cache: "no-store" });

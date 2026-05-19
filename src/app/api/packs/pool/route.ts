@@ -174,7 +174,7 @@ function bandAwareMedian(
 
 async function loadPool(
   headers: Record<string, string>,
-  options: { sort?: "profit_desc" | "latest"; priceMax?: number | null } = {},
+  options: { sort?: "profit_desc" | "latest"; priceMax?: number | null; excludePids?: number[] } = {},
 ): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[]; marketBands: Map<string, Map<string, MarketBandRow>>; v7SiblingPresence: V7SiblingPresenceMap }> {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -185,19 +185,19 @@ async function loadPool(
     ? "order=last_verified_at.desc"
     : "order=profit_band.desc,expected_profit_max.desc";
 
+  // Wave 391: excludePids — 이미 본 매물 제외 (PostgREST not.in.(...))
+  const excludeClause = options.excludePids && options.excludePids.length > 0
+    ? `&pid=not.in.(${options.excludePids.join(",")})`
+    : "";
+
   // Wave 388: fetch 순서 재정렬 — budget filter를 다양화 전에 적용.
-  // 1. candidate_pool fetch (ready + soldOut)
-  // 2. mvp_listings fetch (모든 pid → price 등) — budget filter용
-  // 3. priceMax 있으면 budget filter (ready + soldOut)
-  // 4. 다양화 (budget 통과 매물만)
-  // 5. meta + marketBands fetch (selected pids만)
   const [readyRes, soldOutRes] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&${orderClause}&limit=${FETCH_POOL_OVERFETCH}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready${excludeClause}&${orderClause}&limit=${FETCH_POOL_OVERFETCH}`,
       { headers },
     ),
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS * 4}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}${excludeClause}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS * 4}`,
       { headers },
     ),
   ]);
@@ -411,6 +411,12 @@ export async function GET(req: Request) {
       preferenceParam === "aggressive" ? "aggressive" :
       "balanced";
 
+    // Wave 391: 클라이언트가 이미 본 pids 제외 — refresh 시 새 매물 보장.
+    const excludePidsParam = url.searchParams.get("excludePids");
+    const excludePids: number[] = excludePidsParam
+      ? excludePidsParam.split(",").map((s) => Number(s)).filter((n) => Number.isFinite(n))
+      : [];
+
     const headers = serviceHeaders();
     const credits = await loadUserCredits(headers, userRef);
     const cooldown = computeCooldown(credits?.last_free_browse_at ?? null);
@@ -449,7 +455,7 @@ export async function GET(req: Request) {
       const effectiveStart = startIdx >= 0 ? startIdx : 0;
       for (let i = effectiveStart; i < fallbackChain.length; i++) {
         const candidate = fallbackChain[i];
-        const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, { sort, priceMax: candidate.max });
+        const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, { sort, priceMax: candidate.max, excludePids });
         const candItems = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
         if (candItems.length >= FALLBACK_THRESHOLD || i === fallbackChain.length - 1) {
           items = candItems;
@@ -459,7 +465,7 @@ export async function GET(req: Request) {
       }
     } else {
       // priceMax 없으면 unlimited 한 번만 fetch.
-      const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, { sort });
+      const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, { sort, excludePids });
       items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
       appliedBudget = "unlimited";
     }
