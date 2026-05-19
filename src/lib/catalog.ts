@@ -6874,6 +6874,9 @@ export const CATALOG: Sku[] = [
       "헤지스", "hazzys", "빌보콰", "vilebrequin", "폴스미스", "paul smith",
       "세터", "setter", "렉토", "recto", "캐피탈", "kapital", "마뗑킴", "matin kim", "matinkim",
       "마크 제이콥스", "marc jacobs", "베이프", "bape", "스투시", "stussy",
+      // Wave 251.1 (2026-05-19): 사용자 코멘트 (id 195, 196) — "내셔널지오그래픽 반팔 피케 폴로 셔츠" 16k 가 polo-pique-classic 비교군에 섞임.
+      //   National Geographic 은 폴로 카라티 자체 라인이 있어 "폴로/pique" 둘 다 만족 → 폴로 SKU 차단 필요.
+      "내셔널지오그래픽", "내셔널 지오그래픽", "national geographic", "natgeo", "nat geo",
     ],
     msrpKrw: 159000, released: 2020,
     defaultProductType: "polo_shirt", // Wave 236d — Polo Pique = polo shirt 라인 확정.
