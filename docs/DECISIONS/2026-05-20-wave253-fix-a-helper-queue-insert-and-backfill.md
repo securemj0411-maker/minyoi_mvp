@@ -99,17 +99,20 @@ npx tsx --env-file=.env.local scripts/wave253-fix-a-backfill.ts --apply
 - chunks 15 (1000 × 14 + 183 × 1)
 - 모두 성공. 총 14,183 INSERT IGNORE issued.
 
-### Step 5: post-apply 검증 (17:11 UTC)
+### Step 5: post-apply 검증 (17:11-17:16 UTC, T+0 ~ T+8min)
 
-| 측정 | baseline (17:08) | post-apply (17:14) | 변화 |
-|---|---:|---:|---:|
-| mvp_detail_queue done | 45,565 | 45,666 | +101 |
-| mvp_detail_queue pending | 0 | 11,725 | +11,725 |
-| mvp_detail_queue processing | 0 | 95 | +95 |
-| mvp_detail_queue failed | 175 | 175 | 0 |
-| mvp_raw_listings active_pending | 14,170 | 14,082 | -88 |
-| mvp_listing_parsed v3 | 2,380 | 2,380 | 0 |
-| mvp_listing_parsed v7 | 1,989 | 1,996 | +7 |
+| 측정 | baseline (17:08) | T+3min (17:14) | T+8min (17:16) | 누적 변화 |
+|---|---:|---:|---:|---:|
+| clothing_v3 | 2,380 | 2,377 | 2,372 | -8 |
+| clothing_v7 | 1,989 | 1,997 | 1,998 | +9 |
+| queue done | 45,565 | 45,711 | 45,889 | +324 |
+| queue pending | 0 | 11,725 | 11,575 | drain 시작 |
+| queue processing | 0 | 50 | 20 | active claim |
+| queue failed | 175 | 175 | 175 | 0 |
+| active_pending | 14,170 | 14,037 | 13,859 | -311 |
+| detail-worker rate_5m | n/a | n/a | 324 | spike (T+5min) |
+| detail-worker rate_30m | 115 | 232 | 410 | 2.0x → 3.6x |
+| detail-worker rate_1h | 227 | 348 | 526 | 1.5x → 2.3x |
 
 **증거**:
 - detail-worker actively claim → status='processing' (95 in flight)
@@ -119,15 +122,16 @@ npx tsx --env-file=.env.local scripts/wave253-fix-a-backfill.ts --apply
 
 ### 사용자 가드 5번 검증 — detail-worker rate
 
-| window | baseline | post-apply | 비율 |
+| window | baseline | T+8min | 비율 |
 |---|---:|---:|---:|
-| 5m rate | n/a | 10 | ~2/min |
-| 15m rate | n/a | 34 | ~136/h |
-| 30m rate | 115 | (측정 후 갱신) | |
-| 1h rate | 227 | 213 | -6% (시간 경계 효과) |
+| 5m rate | n/a | 324 | spike (사실상 65/min — 본 backfill 효과) |
+| 30m rate | 115 | 410 | 3.6x baseline |
+| 1h rate | 227 | 526 | 2.3x baseline |
 | 24h rate | 8,703 | (변화 X) | |
 
-cron tick 3분 주기, `claim_mvp_detail_queue` RPC max batch=200. enriched_count 가 cron tick 당 0-27 변동 (bunjang detail API rate limit 추정). **사용자 가드 600/h 가이드 안 넘음** — rate 정상 범위. 측정 30min 후 보고.
+**사용자 가드 600/h 임계**: 526/h (T+8min) — **아직 안 넘음** but 근접. cron tick 3분 주기, `claim_mvp_detail_queue` RPC max batch=200. 본 backfill 의 burst effect 가 ~30min 안에 600/h 넘을 가능성 측정 필요. 30min 후 rate 다시 측정 → 600 초과 시 사용자 보고.
+
+drain ETA: 11,575 pending / 65/min (rate_5m) = ~180 min ≈ 3시간. 단, 그 사이 신규 매물 inflow 도 있음.
 
 ### 사용자 #5 — mvp_listings.sku_median update path 검증
 
