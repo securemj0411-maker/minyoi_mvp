@@ -1242,7 +1242,8 @@ function DealEvidencePanel({ card }: { card: RevealCard }) {
         </div>
       </div>
       <div className="flex items-start gap-2">
-        <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-[9px] font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-200">4</span>
+        {/* Wave 394.7.b (외부 review #18): 안전결제 = 안전 의미인데 rose (위험 색) → emerald (안전 색) 정정. */}
+        <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">4</span>
         <div className="min-w-0 flex-1">
           <div className="font-bold text-zinc-900 dark:text-zinc-100">번개장터 안전결제 — 셀러 의무 부담 (3.5%)</div>
           <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">구매자(나)는 0원 — 결제 안 들어가도 셀러가 부담</div>
