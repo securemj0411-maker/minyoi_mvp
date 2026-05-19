@@ -954,40 +954,70 @@ function marketEvidenceSummary(card: RevealCard) {
   return `${condition} · ${source} 기준`;
 }
 
+// Wave 324 (사용자 피드백 + 외부 감사/외부인 #5): 일반인에게 raw 매물 건수는 의미 없음.
+// 핵심은 "수요·공급 균형이 어떤가" — 공급(매물 등록)만 보지 말고 수요(거래완료) 같이 본 평가가 헤드라인.
+// raw 숫자는 sub로 강등.
 function marketActivityDisplay(card: RevealCard) {
   const flow = card.skuListingFlow;
-  if (flow && flow.avgPerDay7d > 0) {
-    const ratio = flow.count24h / flow.avgPerDay7d;
-    const tone: "good" | "info" | "warn" =
-      ratio >= 1.25 ? "good" : ratio <= 0.55 ? "warn" : "info";
-    const trend = ratio >= 1.25 ? "평소보다 많음" : ratio <= 0.55 ? "오늘은 조용함" : "평소 수준";
-    return {
-      label: "오늘 물량",
-      value: `${flow.count24h.toLocaleString("ko-KR")}건`,
-      sub: `7일 평균 ${flow.avgPerDay7d.toLocaleString("ko-KR")}건/일 · ${trend}`,
-      tone,
-    };
+  const market = card.marketBasis;
+  const velocity = card.velocityBasis;
+  const supply24h = flow?.count24h ?? 0;
+  const supplyAvg = flow?.avgPerDay7d ?? 0;
+  const soldRecent = velocity?.sold7dCount ?? market?.soldSampleCount ?? 0;
+  const active = market?.activeSampleCount ?? 0;
+
+  // 공급 평가
+  const supplyRatio = supplyAvg > 0 ? supply24h / supplyAvg : null;
+  const supplyLevel: "high" | "normal" | "low" | null = supplyRatio == null
+    ? null
+    : supplyRatio >= 1.25 ? "high" : supplyRatio <= 0.55 ? "low" : "normal";
+
+  // 수요 평가 — 거래 데이터 있으면 활발도. 판매중 대비 거래완료 비율로.
+  // soldRecent = 7일 판매 수, active = 현재 매물 수. ratio 높으면 수요 활발.
+  const demandRatio = active > 0 && soldRecent > 0 ? soldRecent / active : null;
+  const demandLevel: "active" | "ok" | "weak" | null = demandRatio == null
+    ? null
+    : demandRatio >= 0.5 ? "active" : demandRatio >= 0.2 ? "ok" : "weak";
+
+  // 복합 평가 — 수요가 우선, 공급은 secondary
+  let value: string;
+  let tone: "good" | "info" | "warn";
+
+  if (demandLevel == null && supplyLevel == null) {
+    value = "데이터 부족";
+    tone = "warn";
+  } else if (demandLevel === "active") {
+    value = supplyLevel === "low" ? "수요 활발 · 공급 부족" : "수요 활발";
+    tone = "good";
+  } else if (demandLevel === "weak") {
+    value = "수요 약함";
+    tone = "warn";
+  } else if (demandLevel === "ok") {
+    value = supplyLevel === "high" ? "수요 보통 · 공급 많음" : "수요 보통";
+    tone = "info";
+  } else if (supplyLevel === "high") {
+    value = "공급 많음 · 거래 데이터 부족";
+    tone = "info";
+  } else if (supplyLevel === "low") {
+    value = "매물 적음";
+    tone = "info";
+  } else {
+    value = "평소 수준";
+    tone = "info";
   }
 
-  const market = card.marketBasis;
-  const sample = market?.sampleCount ?? 0;
-  const active = market?.activeSampleCount ?? 0;
-  const sold = market?.soldSampleCount ?? 0;
-  if (sample > 0) {
-    const tone: "good" | "info" | "warn" = sample >= 30 ? "good" : sample >= 8 ? "info" : "warn";
-    return {
-      label: "시장 표본",
-      value: `${sample.toLocaleString("ko-KR")}건`,
-      sub: `판매중 ${active.toLocaleString("ko-KR")} · 거래완료 ${sold.toLocaleString("ko-KR")}`,
-      tone,
-    };
-  }
+  // sub — raw 숫자 디테일
+  const subParts: string[] = [];
+  if (supply24h > 0) subParts.push(`오늘 매물 ${supply24h}건`);
+  if (supplyAvg > 0) subParts.push(`평균 ${supplyAvg}건/일`);
+  if (soldRecent > 0) subParts.push(`최근 거래 ${soldRecent}건`);
+  const sub = subParts.length > 0 ? subParts.join(" · ") : marketEvidenceSummary(card);
 
   return {
-    label: "시장 표본",
-    value: "수집중",
-    sub: marketEvidenceSummary(card),
-    tone: "warn" as const,
+    label: "수요 · 공급",
+    value,
+    sub,
+    tone,
   };
 }
 
@@ -1073,12 +1103,13 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
       tone: activity.tone,
     },
     {
+      // Wave 324: 평가가 헤드라인, raw 시간은 sub.
       key: "speed",
-      label: "보통 며칠에 팔림",
-      value: speed.label,
+      label: "팔리는 속도",
+      value: speed.isFast ? "빠름" : speed.isSlow ? "느림" : "보통",
       sub: speed.isFallback
-        ? `표본 적음 · 카테고리 평균 기준`
-        : `최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
+        ? `약 ${speed.label} · 표본 적음 (카테고리 평균)`
+        : `약 ${speed.label} · 최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
       tone: speedTone,
     },
   ];
