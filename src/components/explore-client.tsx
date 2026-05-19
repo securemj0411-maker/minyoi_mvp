@@ -379,15 +379,13 @@ export default function ExploreClient() {
 
       {/* 로딩 / 에러 / 매물 grid */}
       {loading ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0 sm:grid sm:grid-cols-2 sm:divide-y-0 sm:gap-3 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="grid grid-cols-[100px_minmax(0,1fr)] gap-3 rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40"
+              className="grid grid-cols-[88px_minmax(0,1fr)] gap-3 px-3 py-3 sm:rounded-xl sm:border sm:border-zinc-200 sm:bg-white sm:p-3 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40"
             >
-              {/* 사진 영역 */}
               <div className="aspect-square animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
-              {/* 텍스트 영역 */}
               <div className="min-w-0 space-y-2">
                 <div className="space-y-1">
                   <div className="h-3 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
@@ -417,7 +415,9 @@ export default function ExploreClient() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        // Wave 350: 당근 피드 스타일 — 모바일 1열 + 박스 X + divider만.
+        // 데스크탑 sm+ 2열 (좁은 화면 1열은 너무 비어보임).
+        <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0 sm:grid sm:grid-cols-2 sm:divide-y-0 sm:gap-3 lg:grid-cols-3">
           {items.map((item) => {
             const pct = profitPct(item);
             const isPremiumSeller = (item.sellerReviewRating ?? 0) >= 4.8 && item.sellerReviewCount >= 30;
@@ -431,15 +431,15 @@ export default function ExploreClient() {
                   setSelectedCard(poolItemToRevealCard(item));
                 }}
                 disabled={isSoldOut}
-                className={`group relative grid grid-cols-[100px_minmax(0,1fr)] gap-3 rounded-xl border p-3 text-left transition ${
+                className={`relative grid grid-cols-[88px_minmax(0,1fr)] gap-3 px-3 py-3 text-left transition sm:rounded-xl sm:border sm:p-3 ${
                   isSoldOut
-                    ? "cursor-not-allowed border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/30"
-                    : "border-zinc-200 bg-white hover:border-emerald-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:border-emerald-700"
+                    ? "cursor-not-allowed sm:border-zinc-200 sm:bg-zinc-50 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/30"
+                    : "active:bg-zinc-50 dark:active:bg-zinc-900/40 sm:border-zinc-200 sm:bg-white sm:hover:border-emerald-300 sm:hover:shadow-md dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 dark:sm:hover:border-emerald-700"
                 }`}
               >
                 {/* Sold out 오버레이 */}
                 {isSoldOut ? (
-                  <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl bg-zinc-900/55 backdrop-blur-[1px]">
+                  <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center bg-zinc-900/55 backdrop-blur-[1px] sm:rounded-xl">
                     <div className="rounded-full bg-rose-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
                       🔴 다른 사용자가 잡음
                     </div>
@@ -455,7 +455,7 @@ export default function ExploreClient() {
                       src={item.thumbnailUrl}
                       alt={item.name}
                       fill
-                      sizes="100px"
+                      sizes="88px"
                       unoptimized
                       className="object-cover"
                     />
