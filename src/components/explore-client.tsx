@@ -1080,7 +1080,8 @@ export default function ExploreClient() {
                         {!canRefresh ? (
                           <>
                             {/* Wave 384 (placeholder): 카카오톡 공유 → 30개 즉시 받기. App Key + DB migration 필요해서 일단 UI만 + "곧 출시". */}
-                            {/* Wave 385: 정통 카카오 노란 (#fbe300) 배경 + 갈색 텍스트 (#3b1e1e). */}
+                            {/* Wave 385: 정통 카카오 노란 (#fbe300) 배경 + 갈색 텍스트 (#3b1e1e).
+                                Wave 386: 카피 명확화 — 친구 가입 무관, 공유만으로 reward. */}
                             <button
                               type="button"
                               onClick={() => {
@@ -1093,10 +1094,10 @@ export default function ExploreClient() {
                                 <KakaoLogo className="h-7 w-7 shrink-0 rounded-[8px]" />
                                 <div className="min-w-0">
                                   <div className="text-base font-bold text-[#3b1e1e]">
-                                    카톡 공유하고 30개 받기
+                                    공유만 해도 즉시 득템 더 보기
                                   </div>
                                   <div className="mt-0.5 text-[11px] font-medium text-[#3b1e1e]/70">
-                                    공유 1번 → 즉시 새 30개 (곧 출시)
+                                    친구가 가입 안 해도 OK · 공유 클릭 1번
                                   </div>
                                 </div>
                               </div>
@@ -1105,27 +1106,28 @@ export default function ExploreClient() {
                               </span>
                             </button>
 
-                            <div className="mt-3 rounded-2xl border border-amber-200/60 bg-amber-50/50 px-5 py-4 dark:border-amber-900/40 dark:bg-amber-950/20">
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-2">
-                                  <ZapIcon className="h-5 w-5 text-amber-700 dark:text-amber-300" />
-                                  <span className="text-base font-bold text-amber-900 dark:text-amber-100">기다리지 말고 즉시 받기</span>
+                            {/* Wave 386: amber → 밝은 emerald. 카피 변경. chip "구독" 작게 유지 (paywall 인지) + 클릭 시 plans. */}
+                            <Link
+                              href="/plans"
+                              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-emerald-500 px-5 py-4 text-left shadow-[0_4px_14px_rgba(16,185,129,0.35)] transition hover:bg-emerald-600 active:scale-[0.99]"
+                            >
+                              <div className="flex min-w-0 items-center gap-2.5">
+                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-white/20">
+                                  <ZapIcon className="h-4 w-4 text-white" />
+                                </span>
+                                <div className="min-w-0">
+                                  <div className="text-base font-bold text-white">
+                                    지금 바로 득템 더 보기
+                                  </div>
+                                  <div className="mt-0.5 text-[11px] font-medium text-white/85">
+                                    대기 없이 즉시 + 신규 매물 알림
+                                  </div>
                                 </div>
-                                <span className="rounded-full bg-amber-500/90 px-2 py-0.5 text-[10px] font-bold text-white">구독</span>
                               </div>
-                              <div className="mt-1 text-xs font-medium text-amber-800/80 dark:text-amber-200/80">
-                                cooldown 없이 바로 + 알림 즉시 받기
-                              </div>
-                              <Link
-                                href="/plans"
-                                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full bg-amber-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-amber-700"
-                              >
-                                구독으로 풀기 (곧 출시)
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                                  <path d="M5 12h14M13 5l7 7-7 7" />
-                                </svg>
-                              </Link>
-                            </div>
+                              <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
+                                PRO
+                              </span>
+                            </Link>
                           </>
                         ) : null}
                       </>
