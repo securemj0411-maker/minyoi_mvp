@@ -1526,9 +1526,11 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: { comparables?: ComparableListing[] }) => {
         if (!cancelled) {
-          // disappeared 매물 제외, 6개로 자름.
+          // disappeared 매물 제외, 가격 낮은 순 정렬 (사용자 짚음), 6개로 자름.
+          // market-source 기본 정렬 = last_seen_at.desc (최신순). 시세 비교 = 가격 순이 직관.
           const filtered = (j.comparables ?? [])
             .filter((c) => c.listingState !== "disappeared")
+            .sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
             .slice(0, 6);
           setListings(filtered);
         }
@@ -1599,6 +1601,8 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
                 : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300";
 
             return (
+              // Wave 394.6.b.fix3 (사용자 짚음): 매물명 좌측 / 가격 + 차이% 우측 column 묶음.
+              // 가격 비교가 시각 직관 — 한 column 에 가격 + ±% 위 아래로 시선 일관.
               <li key={item.pid} className="flex items-center gap-2 rounded bg-white/70 px-1.5 py-1.5 dark:bg-zinc-900/50">
                 <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded bg-[#f2eadf] dark:bg-zinc-800">
                   {item.thumbnailUrl ? (
@@ -1607,28 +1611,28 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
                     <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
                   )}
                 </div>
+                {/* 가운데 = 판매상태 chip + 매물명 */}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-xs font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                      {krw(itemPrice)}
-                    </span>
-                    <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${saleClass}`}>
-                      {saleLabel}
-                    </span>
-                  </div>
-                  <div className="mt-0.5 line-clamp-1 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                  <span className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold ${saleClass}`}>
+                    {saleLabel}
+                  </span>
+                  <div className="mt-0.5 line-clamp-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400">
                     {item.name || "이름 없음"}
                   </div>
                 </div>
-                {!isSimilar ? (
-                  <div className={`shrink-0 text-right text-[10px] font-bold tabular-nums ${isMoreExpensive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-                    {isMoreExpensive ? `+${diffPct}%` : `${diffPct}%`}
+                {/* 우측 = 가격 + 차이 % column */}
+                <div className="shrink-0 text-right">
+                  <div className="text-sm font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                    {krw(itemPrice)}
                   </div>
-                ) : (
-                  <div className="shrink-0 text-right text-[10px] font-medium text-zinc-400">
-                    비슷
-                  </div>
-                )}
+                  {!isSimilar ? (
+                    <div className={`text-[10px] font-bold tabular-nums ${isMoreExpensive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                      {isMoreExpensive ? `+${diffPct}%` : `${diffPct}%`}
+                    </div>
+                  ) : (
+                    <div className="text-[10px] font-medium text-zinc-400">비슷</div>
+                  )}
+                </div>
               </li>
             );
           })}
@@ -1644,9 +1648,10 @@ function ComparableListingsPanel({ card }: { card: RevealCard }) {
           )}
         </div>
         {listings && listings.length > 0 ? (
+          // Wave 394.6.b.fix3: 사용자 짚음 — "현재 매입가 대비 몇 % 싸거나 비싼지". 비교 매물 기준 표현.
           <div>
-            <span className="text-emerald-600 dark:text-emerald-400">+%</span> = 이 매물이 비교 대비 <b>쌈</b> ·{" "}
-            <span className="text-rose-600 dark:text-rose-400">−%</span> = 비교 대비 <b>비쌈</b>
+            <span className="text-emerald-600 dark:text-emerald-400">+%</span> 비교 매물 비쌈 (이 매물 더 쌈) ·{" "}
+            <span className="text-rose-600 dark:text-rose-400">−%</span> 비교 매물 쌈 (이 매물 더 비쌈)
           </div>
         ) : null}
       </div>
