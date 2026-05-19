@@ -1996,9 +1996,9 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
     extra: "bg-zinc-300 dark:bg-zinc-600",
   };
 
+  // Wave 393.5: rose → amber (사용자 짚음 — rose는 "이 매물 가품"으로 헷갈림.
+  // 실제 의미 = 구매 전 정품 점검 체크리스트).
   return (
-    {/* Wave 393.5: rose → amber (사용자 짚음 — rose는 "이 매물 가품"으로 헷갈림.
-        실제 의미 = 구매 전 정품 점검 체크리스트). */}
     <section className="mt-3 border-t border-zinc-200 border-l-4 border-l-amber-400 bg-white/0 py-3 pl-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
       <button
         type="button"
