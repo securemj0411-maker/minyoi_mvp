@@ -3126,37 +3126,32 @@ export default function PackRevealModal({
       }}
     >
       <div
-        className="flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#fffdf9] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-h-[88vh] sm:max-w-6xl sm:rounded-2xl sm:border sm:border-[#ddd6ca] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.16)] sm:dark:border-zinc-800"
+        className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#fffdf9] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-h-[88vh] sm:max-w-6xl sm:rounded-2xl sm:border sm:border-[#ddd6ca] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.16)] sm:dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 z-10 shrink-0 border-b border-[#e2dbcf] bg-[#fffdf9]/95 px-2.5 py-1.5 text-[var(--brand-accent-strong)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-3">
-          <div className="flex min-h-8 items-center justify-between gap-3">
-            {!loading ? (
-              <button
-                type="button"
-                onClick={handleClose}
-                aria-label="상세 닫기"
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#d7d1c5] bg-white/80 text-lg font-black leading-none text-[var(--brand-accent-strong)] shadow-sm backdrop-blur transition hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-              >
-                <span aria-hidden="true">←</span>
-              </button>
-            ) : (
-              <span className="h-8 w-8" aria-hidden="true" />
-            )}
-            <div className="min-w-0 flex-1" aria-hidden="true" />
-            {!loading ? (
-              <button
-                type="button"
-                onClick={handleClose}
-                className="inline-flex h-9 shrink-0 items-center rounded-xl bg-[var(--brand-accent-strong)] px-3 text-xs font-black text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] transition hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-950"
-              >
-                대시보드
-              </button>
-            ) : (
-              <span className="h-8 w-[72px]" aria-hidden="true" />
-            )}
-          </div>
-        </div>
+        {/* Wave 360: 당근식 floating nav — 별도 nav bar 제거, 사진 위 좌상/우상에 absolute floating.
+            모달 컨테이너 (relative) 기준 top. 스크롤 영역 밖이라 항상 모달 상단에 머무름. */}
+        {!loading ? (
+          <>
+            <button
+              type="button"
+              onClick={handleClose}
+              aria-label="상세 닫기"
+              className="absolute left-3 top-3 z-20 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/85 text-base font-bold leading-none text-zinc-900 shadow-[0_4px_14px_rgba(0,0,0,0.18)] ring-1 ring-black/5 backdrop-blur transition hover:bg-white active:scale-95 dark:bg-zinc-900/85 dark:text-zinc-100 dark:ring-white/10 dark:hover:bg-zinc-900 sm:left-4 sm:top-4"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="absolute right-3 top-3 z-20 inline-flex h-9 shrink-0 items-center rounded-full bg-[var(--brand-accent-strong)] px-3.5 text-xs font-bold text-[var(--brand-cream)] shadow-[0_4px_14px_rgba(0,0,0,0.22)] ring-1 ring-white/10 transition hover:opacity-95 active:scale-95 dark:bg-zinc-100 dark:text-zinc-950 sm:right-4 sm:top-4"
+            >
+              대시보드
+            </button>
+          </>
+        ) : null}
 
         <div
           key={activeRevealPid ?? "empty"}
