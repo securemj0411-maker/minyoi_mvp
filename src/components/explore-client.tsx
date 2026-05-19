@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, FlameIcon, ClockIcon, TrophyIcon } from "@/components/icons";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
@@ -151,8 +151,10 @@ export default function ExploreClient() {
   const [now, setNow] = useState(Date.now());
   const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
 
-  // Wave 341: URL state sync — 새로고침/공유 시 카테고리/정렬 유지
+  // Wave 341 + 344: URL state sync — 새로고침/공유 시 카테고리/정렬 유지.
+  // Wave 344: /me에 통합되면서 동적 pathname 사용 (이전엔 "/explore" 하드코딩 → /me에서 404 발생).
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   // 초기값 URL에서 파싱
@@ -171,8 +173,8 @@ export default function ExploreClient() {
     if (selectedCategories.size > 0) params.set("categories", Array.from(selectedCategories).join(","));
     if (sort !== "profit_desc") params.set("sort", sort);
     const queryString = params.toString();
-    router.replace(`/explore${queryString ? `?${queryString}` : ""}`, { scroll: false });
-  }, [selectedCategories, sort, router]);
+    router.replace(`${pathname}${queryString ? `?${queryString}` : ""}`, { scroll: false });
+  }, [selectedCategories, sort, router, pathname]);
 
   // Cooldown tick (매초 갱신)
   useEffect(() => {
