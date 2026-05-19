@@ -462,10 +462,10 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
   return (
     <div className="mt-3 rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="px-4 py-2.5">
-        {/* Wave 394.6.c (외부 review #8): "궁금한 점" 고객센터 톤 → "구매 전 확인" 능동형. */}
-        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+        {/* Wave 394.7.e (사용자 짚음 — 토스 톤): caps 단어 토막 → 친절 문장. */}
+        <div className="flex items-center gap-1.5 text-sm font-bold text-zinc-900 dark:text-zinc-100">
           <span aria-hidden="true">🛡</span>
-          <span>구매 전 확인 — 자주 묻는 4가지</span>
+          <span>살까 말까 고민될 때, 자주 묻는 4가지를 정리했어요</span>
         </div>
       </div>
       <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -1201,26 +1201,29 @@ function DealEvidencePanel({ card }: { card: RevealCard }) {
   const confidencePct = Math.round((card.confidence ?? 0) * 100);
   return (
     <div className="mt-2 space-y-2 rounded-xl border border-[#e1dacd] bg-[#fbf6ee] px-3 py-2.5 text-xs dark:border-zinc-800 dark:bg-zinc-900/40">
+      {/* Wave 394.7.e (사용자 짚음 — "단어 토막 X, 일반인 문장으로"): sub 친절 톤. */}
       <div className="flex items-start gap-2">
         <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">1</span>
         <div className="min-w-0 flex-1">
           <div className="font-bold text-zinc-900 dark:text-zinc-100">
-            예상 차익 {signedKrw(profitAvg)}{profitPct != null ? ` (+${profitPct}%)` : ""}
+            이 매물 사면 약 {signedKrw(profitAvg)} 남을 거예요{profitPct != null ? ` (+${profitPct}%)` : ""}
           </div>
           <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
             매입가 {krw(card.price)}
             {card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0
-              ? ` · 시세 ${krw(card.marketBasis.medianPrice)}`
-              : " · 시세 표본 부족"}
+              ? ` · 시세 ${krw(card.marketBasis.medianPrice)} (시세 대비 차이로 산출)`
+              : " · 시세 표본이 부족해 추정치예요"}
           </div>
         </div>
       </div>
       <div className="flex items-start gap-2">
         <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-100 text-[9px] font-bold text-sky-700 dark:bg-sky-950/40 dark:text-sky-200">2</span>
         <div className="min-w-0 flex-1">
-          <div className="font-bold text-zinc-900 dark:text-zinc-100">AI 분석 신뢰도 {confidencePct}%</div>
+          <div className="font-bold text-zinc-900 dark:text-zinc-100">AI 분석 신뢰도는 {confidencePct}%예요</div>
           <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
-            {sampleCount > 0 ? `같은 매물 ${sampleCount}건 비교 분석` : "표본 부족 — 추정치"}
+            {sampleCount > 0
+              ? `같은 모델·같은 상태 매물 ${sampleCount}건과 비교해서 산출했어요`
+              : "비슷한 매물 표본이 부족해서 정확도가 떨어질 수 있어요"}
           </div>
         </div>
       </div>
@@ -1229,15 +1232,15 @@ function DealEvidencePanel({ card }: { card: RevealCard }) {
         <div className="min-w-0 flex-1">
           <div className="font-bold text-zinc-900 dark:text-zinc-100">
             {sellerRating != null
-              ? `셀러 평점 ${sellerRating.toFixed(1)}점 · 후기 ${reviewCount.toLocaleString("ko-KR")}건`
-              : "셀러 후기 없음"}
+              ? `이 셀러는 평점 ${sellerRating.toFixed(1)}점 · 후기 ${reviewCount.toLocaleString("ko-KR")}건이에요`
+              : "이 셀러는 아직 후기가 없어요"}
           </div>
           <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
             {sellerRating != null && sellerRating >= 4.8 && reviewCount >= 30
-              ? "우수 셀러 — 거래 신뢰도 ↑"
+              ? "우수 셀러로 분류돼요 (평점 4.8+ & 후기 30건+) — 거래 신뢰도 ↑"
               : sellerRating != null && sellerRating >= 4.5
-              ? "평점 양호"
-              : "안전결제 + 직거래 검수 권장"}
+              ? "평점이 양호한 편이에요. 안전결제 거래 추천드려요"
+              : "후기가 적은 편이라 안전결제 + 직거래 검수를 권장해요"}
           </div>
         </div>
       </div>
@@ -1245,8 +1248,8 @@ function DealEvidencePanel({ card }: { card: RevealCard }) {
         {/* Wave 394.7.b (외부 review #18): 안전결제 = 안전 의미인데 rose (위험 색) → emerald (안전 색) 정정. */}
         <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">4</span>
         <div className="min-w-0 flex-1">
-          <div className="font-bold text-zinc-900 dark:text-zinc-100">번개장터 안전결제 — 셀러 의무 부담 (3.5%)</div>
-          <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">구매자(나)는 0원 — 결제 안 들어가도 셀러가 부담</div>
+          <div className="font-bold text-zinc-900 dark:text-zinc-100">번개장터 안전결제라 안심하셔도 돼요</div>
+          <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">셀러가 수수료 3.5% 부담. 구매자(나)는 0원이고 사기 걱정 없어요</div>
         </div>
       </div>
     </div>
@@ -2674,8 +2677,9 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
   return (
     <section className="mt-3 border-t border-zinc-200 bg-white/0 py-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
       <div className="flex items-center justify-between gap-2">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          어디에 팔지? — 차익 비교
+        {/* Wave 394.7.e: caps 단어 토막 → 친절 문장. */}
+        <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+          어디에 팔면 더 남을까요?
         </div>
         <button
           type="button"
@@ -2805,9 +2809,10 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
   return (
     <section className="mt-3 border-t border-zinc-200 bg-white/0 py-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
       {/* Wave 323 (디자인 평탄화): 박스 안 박스 제거, 단일 평면 + 섹션 구분선. */}
+      {/* Wave 394.7.e: caps 단어 토막 → 친절 문장. */}
       <div className="flex items-center justify-between gap-2">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          최종 매입가 체크
+        <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+          이거 사면 진짜 얼마 드나요?
         </div>
         <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${snapshot.confidenceClass}`}>
           {snapshot.confidenceLabel}
@@ -2853,10 +2858,11 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
       ) : null}
 
       {/* Wave 326: 협상 가이드 — 가격대별 의미 명시. "이 이상에 사면" 동사 명시 + 위험 구간(차익 1만 미만) 별도. */}
+      {/* Wave 394.7.e: caps 단어 토막 → 친절 문장. */}
       {guidance ? (
         <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            협상 가이드
+          <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            얼마까지 깎으면 좋을까요?
           </div>
 
           {/* 현재 매입가 — 헤드라인 */}
@@ -3111,9 +3117,10 @@ function RevealCardItem({
               </div>
               {dealExpanded ? <DealEvidencePanel card={card} /> : null}
               <div className="mt-2">
-                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                  <WalletIcon className="h-3 w-3" />
-                  예상 순익
+                {/* Wave 394.7.e: caps 단어 토막 → 친절 문장. */}
+                <div className="flex items-center gap-1 text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                  <WalletIcon className="h-3.5 w-3.5" />
+                  이 매물 사면 얼마 남나요?
                 </div>
                 <div className="mt-0.5 flex flex-wrap items-baseline gap-2">
                   <span className={`text-2xl font-bold leading-none tabular-nums ${
@@ -3275,8 +3282,9 @@ function RevealCardItem({
       {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
       <div className="order-2 space-y-2 px-3 sm:mx-0 sm:rounded-2xl sm:border sm:border-[#dfd6c9] sm:bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] sm:p-3 sm:shadow-[0_16px_34px_rgba(49,66,56,0.08)] sm:ring-1 sm:ring-white/70 sm:dark:border-zinc-800 sm:dark:bg-none sm:dark:bg-zinc-900 sm:dark:ring-zinc-800/70 lg:order-2">
         <div className="flex items-center justify-between gap-2">
-          <div className="text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
-            시세 그래프 · 시장 분석
+          {/* Wave 394.7.e: caps 단어 토막 → 친절 문장. */}
+          <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            이 시세 어떻게 산출했어요?
           </div>
           <span className="rounded-full bg-[#eef6ec] px-2 py-0.5 text-[10px] font-black text-[#4f6a52] ring-1 ring-[#d8e2d7] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
             {/* Wave 394.1 (외부 review #19): "실시간" 과장 — 표본 부족 / 호가 추정인데 "실시간"이라 신뢰 역효과. */}
