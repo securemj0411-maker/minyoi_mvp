@@ -1747,98 +1747,92 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
               updated_at: now,
             }]);
           }
-          // Wave 141 B (2026-05-16): 모호 매물 condition AI 분류 — 정규식 fail 매물에만 호출 (월 ~$9).
-          // 조건: condition_score 모호(0.55~0.75) + 명확한 condition_notes 없음 + bunjang label "매핑 불가"
-          // → AI 호출 → 결과로 conditionClass override.
+          // Wave 257 (2026-05-20): ARCHITECTURE FLIP — AI default + regex whitelist fast-path.
           //
-          // Wave 256 (2026-05-20): 보수적 escalation 전면 확장 (사용자 정책 변경).
-          //   사용자 매물 pid 405343339: "메인보드 손상이 있어서... 하자 일절 없습니다"
-          //     → regex negation "하자 일절 없" 매치 → repair_or_defect_signal 안 박힘 → normal 잘못 가능.
-          //     → Wave 141B 가 잡았지만 systemic 확장 필요 (다른 conflicting pattern 미커버).
-          //   사용자: "AI 비용 아끼지 말고 보수적, 겁쟁이 모드. regex 자신감 과잉 차단."
-          //   사용자 결정: 전 옵션 (A+B+C+D+E) 진행, gpt-4o-mini 유지 (모델 업그레이드 X).
-          //   실측 baseline: 일 750 AI calls / 월 ~$3.4. 확장 후 월 ~$24 예상 (실측 1주 후 확정).
+          // 사용자 근원적 지적 (정확):
+          //   "그럼 우린 진짜 이런 정규식이면 100% 이런 의미다 이런 단어나 콜로케이션 조합이면
+          //   100%이거다 확신이 없는 기출 변형들은? 다 AI한테 해야되는거 아닌가?"
           //
-          // 5 trigger 확장:
-          //   A. conflicting signal: negation ("하자 없") + damage keyword ("손상" 등) 동시 등장
-          //   B. positive 분류 + negative keyword: mint/clean 인데 description 에 "손상/수리/하자" 등
-          //   C. ambiguous zone 확대: 0.55~0.75 → 0.40~0.85
-          //   D. bunjang label 불일치: bunjang DAMAGED + class positive / bunjang NEW + class flawed-worn
-          //   E. needsReview=true 무조건 AI
+          // 기존 (Wave 141B + Wave 256 5 trigger): regex 가 confident "normal" / "flawed" 박은 후
+          //   일부 case 만 AI escalation → 사용자가 든 "기스 진심 없" 같은 변형 regex 가 못 잡으면
+          //   AI 안 거치고 confident normal 박힘. **사용자 의도 정반대.**
+          //
+          // 새 (Wave 257): regex 자신감 = whitelist (셀러 명시 명백 case) 만. 그 외 모든
+          //   자연어 description → AI default. 사용자 명시 "종합 whitelist".
+          //
+          // 실측 baseline: 일 ~8,000 detail parse / 현재 750 AI calls (~9%).
+          // Wave 257 예상: AI 호출 ~3,500-5,000/day (whitelist 미통과 50-60%).
+          // 월 비용 ~$15-25 (cache hit ~50% 적용).
           const text = `${claim.name ?? ""}\n${(detail.description ?? "").slice(0, 1200)}`.toLowerCase();
-
-          const hasStrongSignal = parsed.conditionNotes.some((n) =>
-            ["new_or_open_box", "display_defect", "screen_replaced", "faceid_issue",
-             "water_damage", "parts_only", "low_battery_health"].includes(n));
           const bunjangLabelMapped = bunjangLabelToConditionClass(detail.conditionLabel);
 
-          // 옵션 C — ambiguous zone 확대 (0.55~0.75 → 0.40~0.85)
-          const ambiguousConditionWide = parsed.conditionScore >= 0.40 && parsed.conditionScore <= 0.85;
+          // === regex whitelist (fast-path — AI skip 가능 case) ===
+          const fastPathReasons: string[] = [];
 
-          // 옵션 A — conflicting signal: negation + damage keyword 동시 등장
-          //   사용자 매물 pid 405343339 ("메인보드 손상... 하자 일절 없습니다") 잡는 핵심 trigger.
-          //   Wave 256 patch 1 (2026-05-20): 사용자 검증 — 한국어 변형 누락 발견.
-          //     "기스 진심 없습니다" / "떨어뜨려서 충격받은적 전혀없습니다" 등 미커버.
-          //     fix:
-          //       1) keyword list 확장: 충격/떨어뜨림/낙상/이력
-          //       2) 강조어 확장: 진심/정말/완전/완벽/일체/단연/하나도/아예/거의
-          //       3) 강조어 위치 자유화 (앞/뒤 모두 OK)
-          //       4) 강조어 와 keyword 사이 한국어 명사구 허용 (.{0,12})
-          // Wave 256 patch 1: "단 하나도" 의 "도" 누락 fix + "이력" keyword 추가.
-          const NEGATION_INTENSIFIER = "(?:일절|전혀|아예|단\\s*하나(?:도)?|일체|진짜|진심|정말|완전|완벽히?|단연|하나도|결코|거의|딱히|별로|한\\s*번도|단\\s*한\\s*번도)";
-          const NEGATION_KEYWORDS = "(?:하자|손상|수리|교체|고장|불량|파손|깨짐|기스|스크래치|찍힘|크랙|찌그러짐|얼룩|오염|침수|낙상|충격|떨어(?:뜨|트)림|이상|문제|사고|결함|이력|흠집)";
-          // 패턴 1: keyword 먼저 — "기스 진심 없습니다" / "충격받은적 전혀없습니다" / "하자 일절 없습니다"
-          const negationPattern1 = new RegExp(
-            `${NEGATION_KEYWORDS}\\s*(?:된\\s*적|받은\\s*적|있는\\s*적|당한\\s*적|진\\s*적|난\\s*적|은\\s*적|한\\s*적|적)?\\s*(?:는|도|이|가|을|를|은|만)?\\s*${NEGATION_INTENSIFIER}?\\s*(?:없|아닙|아님|無|x|X)`
-          );
-          // 패턴 2: 강조어 먼저 — "전혀 하자 없" / "진심 기스 없" (한국어 어순 다양)
-          const negationPattern2 = new RegExp(
-            `${NEGATION_INTENSIFIER}\\s*${NEGATION_KEYWORDS}\\s*(?:는|도|이|가|을|를)?\\s*(?:없|아닙|아님)`
-          );
-          // 패턴 3: "떨어뜨린 적 없" / "충격받은 적 없" — 동작 형 부정
-          const negationPattern3 = /(?:떨어(?:뜨|트)린|충격\s*받은|침수된|낙상된|박살난|밟힌|튕긴)\s*(?:적|일|경험|이력)\s*(?:은|도)?\s*(?:전혀|일절|한\s*번도|단\s*한\s*번도|진심|정말)?\s*없/.test(text);
-          const hasNegationPattern = negationPattern1.test(text) || negationPattern2.test(text) || negationPattern3;
-          const hasDamageKeyword = /손상|메인보드|배터리\s*교체|디스플레이\s*교체|화면\s*교체|액정\s*교체|사설\s*수리|부품\s*수리|침수|낙상|충격|크랙|박살|찌그러짐\s*심|깨짐\s*있|떨어(?:뜨|트)린|떨어(?:뜨|트)림|기스\s*있|얼룩\s*심|얼룩\s*있|이력\s*있|문제\s*있|결함\s*있|수리\s*이력|교체\s*이력/.test(text);
-          const conflictingSignal = hasNegationPattern && hasDamageKeyword;
+          // 1. bunjang label 명시 (셀러 직접 선택 — 100% 신뢰)
+          //    NEW/DAMAGED/HEAVILY_USED/LIKE_NEW/LIGHTLY_USED/USED 영어 enum + 한글 fallback.
+          if (bunjangLabelMapped !== null) {
+            fastPathReasons.push("bunjang_label_explicit");
+          }
 
-          // 옵션 B — positive 분류 (mint/clean/unopened) 인데 description 에 negative keyword 존재
-          //   regex negation 잘못 매칭 시 false positive 차단용 safety net.
-          const isPositiveClass = parsed.conditionClass === "mint" || parsed.conditionClass === "clean" || parsed.conditionClass === "unopened";
-          const hasAnyNegativeKeyword = /손상|수리|교체|하자|고장|불량|파손|깨짐|침수|낙상|크랙|기스\s*있|얼룩\s*심|곰팡이|악취/.test(text);
-          const positiveButNegativeText = isPositiveClass && hasAnyNegativeKeyword;
+          // 2. 박스 미개봉 명시 + battery measurement 모순 없음 (Wave 203 정책 — 객관적 모순 차단)
+          //    "미개봉" 인데 battery 측정값 있으면 거짓 → 이 fast-path 빠짐 → AI default.
+          const hasExplicitUnopened = /미개봉|단순개봉|박스\s*(?:미개봉|새상품)|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*(?:안\s*함|안함)|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯/.test(text);
+          const noMeasurement = (parsed.batteryHealth === null || parsed.batteryHealth === 0) &&
+                                 (parsed.batteryCycles === null || parsed.batteryCycles === 0);
+          if (hasExplicitUnopened && noMeasurement) {
+            fastPathReasons.push("explicit_unopened_no_measurement");
+          }
 
-          // 옵션 D — bunjang label vs class 불일치
-          const isClassPositive = isPositiveClass;
-          const isClassFlawedOrWorn = parsed.conditionClass === "flawed" || parsed.conditionClass === "worn";
-          const bunjangConflict =
-            (bunjangLabelMapped === "flawed" && isClassPositive) ||
-            ((bunjangLabelMapped === "unopened" || bunjangLabelMapped === "clean") && isClassFlawedOrWorn);
+          // 3. 공식 리퍼 명시 (Wave 205 정책 — 공식 리퍼 = 정상 작동)
+          if (/(?:공식\s*리퍼|애플\s*리퍼|apple\s*refurbished|factory\s*refurbished|리퍼\s*폰?\s*미개봉|리퍼\s*박스\s*미개봉)/.test(text)) {
+            fastPathReasons.push("explicit_factory_refurbished");
+          }
 
-          // 옵션 E — needsReview 무조건 AI
-          const needsReviewFlag = parsed.needsReview === true;
+          // 4. 명백 reject 신호 (regex 가 잡은 strong negative — FLAWED 확정. 변형 risk 적음)
+          //    이 notes 는 regex 가 strict 패턴 + negation 처리 다 거친 결과 → 신뢰 가능.
+          const strongFlawedNotes = ["display_defect", "screen_replaced", "faceid_issue", "water_damage",
+            "parts_only", "locked_or_lost_signal", "refurbished_or_repaired", "buying_post",
+            "single_side_only", "accessory_compatible_for_other_product", "multi_device_bundle"];
+          const hasStrongFlawedNote = parsed.conditionNotes.some((n) => strongFlawedNotes.includes(n));
+          if (hasStrongFlawedNote) {
+            fastPathReasons.push("strong_flawed_note_regex_confident");
+          }
 
-          // 통합 trigger (5 options OR)
-          const aiTriggered =
-            (ambiguousConditionWide && !hasStrongSignal && bunjangLabelMapped === null) || // 기존 + 옵션 C
-            conflictingSignal ||  // 옵션 A
-            positiveButNegativeText ||  // 옵션 B
-            bunjangConflict ||  // 옵션 D
-            needsReviewFlag;  // 옵션 E
+          // 5. 객관적 battery measurement 강한 신호 (Wave 209 — 셀러 자연어보다 강함)
+          //    95%+ : positive 명확. <85% : low_batt 명확.
+          const hasObjBatteryHigh = parsed.batteryHealth !== null && parsed.batteryHealth >= 95;
+          const hasObjBatteryLow = parsed.batteryHealth !== null && parsed.batteryHealth < 85;
+          if (hasObjBatteryHigh || hasObjBatteryLow) {
+            fastPathReasons.push("objective_battery_signal");
+          }
 
-          if (aiTriggered) {
+          // 6. description 너무 짧음 (AI 호출해도 정보 부족 — 비용 낭비 차단)
+          const descLength = (detail.description ?? "").trim().length;
+          if (descLength < 20) {
+            fastPathReasons.push("description_too_short");
+          }
+
+          // === AI default — whitelist 미통과 시 자연어 description 무조건 AI ===
+          const shouldEscalateToAi = fastPathReasons.length === 0;
+
+          if (shouldEscalateToAi) {
             const aiClass = await classifyConditionWithAi(Number(claim.pid), claim.name, detail.description).catch(() => null);
             if (aiClass) {
               parsed.conditionClass = aiClass;
-              // Wave 256: AI escalation trigger 기록 — 운영자 추적 + production 비용 측정.
-              const triggerReasons: string[] = [];
-              if (ambiguousConditionWide && !hasStrongSignal && bunjangLabelMapped === null) triggerReasons.push("ambiguous_wide");
-              if (conflictingSignal) triggerReasons.push("conflicting_signal");
-              if (positiveButNegativeText) triggerReasons.push("positive_but_negative");
-              if (bunjangConflict) triggerReasons.push("bunjang_conflict");
-              if (needsReviewFlag) triggerReasons.push("needs_review");
-              (parsed.parsedJson as Record<string, unknown>).ai_escalation_triggers = triggerReasons;
-              (parsed.parsedJson as Record<string, unknown>).ai_escalation_class = aiClass;
+              // Wave 257: AI default 호출 기록 — 운영자 추적 + 비용 측정.
+              (parsed.parsedJson as Record<string, unknown>).ai_default_invoked = true;
+              (parsed.parsedJson as Record<string, unknown>).ai_default_class = aiClass;
+              (parsed.parsedJson as Record<string, unknown>).ai_default_reason = "whitelist_miss";
+            } else {
+              // AI fail (network/budget/rate-limit) — regex 결과 그대로 유지. 운영자 추적용 기록.
+              (parsed.parsedJson as Record<string, unknown>).ai_default_invoked = true;
+              (parsed.parsedJson as Record<string, unknown>).ai_default_failed = true;
             }
+          } else {
+            // fast-path 통과 — regex 자신감 case. AI skip + 사유 기록 (운영자 audit).
+            (parsed.parsedJson as Record<string, unknown>).ai_skipped = true;
+            (parsed.parsedJson as Record<string, unknown>).ai_skipped_reasons = fastPathReasons;
           }
           await upsertRows("mvp_listing_parsed", [toParsedListingRow(claim.pid, parsed)], "pid");
           if (existingParsed?.comparable_key && existingParsed.comparable_key !== parsed.comparableKey) {
