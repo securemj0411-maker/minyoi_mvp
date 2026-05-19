@@ -383,7 +383,7 @@ export default function ExploreClient() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="grid grid-cols-[88px_minmax(0,1fr)] gap-3 px-3 py-3 sm:rounded-xl sm:border sm:border-zinc-200 sm:bg-white sm:p-3 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40"
+              className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 px-3 py-4 sm:rounded-xl sm:border sm:border-zinc-200 sm:bg-white sm:p-3 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40"
             >
               <div className="aspect-square animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
               <div className="min-w-0 space-y-2">
@@ -431,7 +431,7 @@ export default function ExploreClient() {
                   setSelectedCard(poolItemToRevealCard(item));
                 }}
                 disabled={isSoldOut}
-                className={`relative grid grid-cols-[88px_minmax(0,1fr)] gap-3 px-3 py-3 text-left transition sm:rounded-xl sm:border sm:p-3 ${
+                className={`relative grid grid-cols-[120px_minmax(0,1fr)] gap-3 px-3 py-4 text-left transition sm:rounded-xl sm:border sm:p-3 ${
                   isSoldOut
                     ? "cursor-not-allowed sm:border-zinc-200 sm:bg-zinc-50 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/30"
                     : "active:bg-zinc-50 dark:active:bg-zinc-900/40 sm:border-zinc-200 sm:bg-white sm:hover:border-emerald-300 sm:hover:shadow-md dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 dark:sm:hover:border-emerald-700"
@@ -444,7 +444,7 @@ export default function ExploreClient() {
                       src={item.thumbnailUrl}
                       alt={item.name}
                       fill
-                      sizes="88px"
+                      sizes="120px"
                       unoptimized
                       className={`object-cover ${isSoldOut ? "opacity-60" : ""}`}
                     />
