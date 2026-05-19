@@ -192,6 +192,8 @@ export default function ExploreClient() {
 
   const canRefresh = remainingSec === 0;
 
+  // Wave 353: 카테고리 필터는 클라이언트 사이드 (서버 → 항상 다양화된 30개 풀, 클라가 필터링).
+  // 정렬은 백엔드 유지 — 풀 구성 자체가 달라짐 (latest = 최신 30 vs profit_desc = 차익 상위 30).
   const loadPool = useCallback(async (refresh: boolean) => {
     if (refresh) setRefreshing(true);
     else setLoading(true);
@@ -199,13 +201,11 @@ export default function ExploreClient() {
     try {
       const params = new URLSearchParams();
       if (refresh) params.set("refresh", "1");
-      if (selectedCategories.size > 0) params.set("categories", Array.from(selectedCategories).join(","));
       if (sort !== "profit_desc") params.set("sort", sort);
       const url = `/api/packs/pool${params.toString() ? `?${params.toString()}` : ""}`;
       const res = await fetch(url, { cache: "no-store" });
       const data = (await res.json()) as PoolResponse;
       if (res.ok) {
-        // Wave 340: 필터 적용 시 빈 결과도 반영 (items 빈 배열로 갱신)
         if (data.items != null) setItems(data.items);
         setCooldown(data.cooldown);
       } else {
@@ -217,7 +217,7 @@ export default function ExploreClient() {
       setRefreshing(false);
       setLoading(false);
     }
-  }, [selectedCategories, sort]);
+  }, [sort]);
 
   const loadStats = useCallback(async () => {
     try {
@@ -237,6 +237,13 @@ export default function ExploreClient() {
   useEffect(() => {
     void loadPool(false);
   }, [loadPool]);
+
+  // Wave 353: 클라이언트 사이드 카테고리 필터. 전체 풀(items)에서 selectedCategories에 속한 매물만.
+  // category가 null이면 selectedCategories 활성 시 제외 (안전).
+  const displayItems = useMemo(() => {
+    if (selectedCategories.size === 0) return items;
+    return items.filter((it) => it.category != null && selectedCategories.has(it.category));
+  }, [items, selectedCategories]);
 
   // PackRevealModal용 result wrapper (single card)
   const modalResult: RevealResult | null = useMemo(() => {
@@ -414,11 +421,38 @@ export default function ExploreClient() {
             6시간 이상 지난 매물이 아직 없어요. 잠시 후 다시 와주세요.
           </p>
         </div>
+      ) : displayItems.length === 0 ? (
+        // Wave 353: 클라이언트 필터 결과 빈 경우 — 풀엔 있는데 선택 카테고리에만 없음.
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
+          <p className="text-sm font-bold text-amber-900 dark:text-amber-100">
+            이번 30개 풀에 해당 카테고리 매물이 없어요
+          </p>
+          <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+            필터 초기화하거나, 다른 30개를 받아보세요.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedCategories(new Set())}
+              className="rounded-full border border-amber-400 bg-white px-3 py-1.5 text-xs font-bold text-amber-800 dark:border-amber-700 dark:bg-zinc-900 dark:text-amber-200"
+            >
+              전체 카테고리 보기
+            </button>
+            <button
+              type="button"
+              onClick={() => setRefreshModalOpen(true)}
+              className="rounded-full bg-amber-600 px-3 py-1.5 text-xs font-bold text-white"
+            >
+              🔍 다른 매물 찾기
+            </button>
+          </div>
+        </div>
       ) : (
         // Wave 350: 당근 피드 스타일 — 모바일 1열 + 박스 X + divider만.
         // 데스크탑 sm+ 2열 (좁은 화면 1열은 너무 비어보임).
+        // Wave 353: items → displayItems (클라이언트 카테고리 필터 적용).
         <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0 sm:grid sm:grid-cols-2 sm:divide-y-0 sm:gap-3 lg:grid-cols-3">
-          {items.map((item) => {
+          {displayItems.map((item) => {
             const pct = profitPct(item);
             const isPremiumSeller = (item.sellerReviewRating ?? 0) >= 4.8 && item.sellerReviewCount >= 30;
             const isSoldOut = item.soldOut;

@@ -95,40 +95,36 @@ function computeCooldown(lastBrowseAt: string | null): {
 
 async function loadPool(
   headers: Record<string, string>,
-  options: { categories?: string[] | null; sort?: "profit_desc" | "latest" } = {},
+  options: { sort?: "profit_desc" | "latest" } = {},
 ): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[] }> {
   const sixHoursAgo = new Date(Date.now() - FRESH_LAG_HOURS * 60 * 60 * 1000).toISOString();
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todayIso = todayStart.toISOString();
 
-  // Wave 340 (UX 개선): 카테고리 필터 + 정렬 옵션
-  const categoryFilter = options.categories && options.categories.length > 0
-    ? `&category=in.(${options.categories.map(encodeURIComponent).join(",")})`
-    : "";
+  // Wave 340 (UX 개선): 정렬 옵션. Wave 353: 카테고리 필터 백엔드 제거 (클라이언트로 이동).
   const orderClause = options.sort === "latest"
     ? "order=last_verified_at.desc"
     : "order=profit_band.desc,expected_profit_max.desc";
 
   // Wave 339 (Phase 1b sold out 옵션 B): ready 25 + 오늘 invalidated 5 = 30개.
   // Wave 346: 카테고리 다양화 — overfetch 후 카테고리당 MAX_PER_CATEGORY 제한.
-  const fetchLimit = options.categories && options.categories.length > 0 ? READY_SLOTS : FETCH_POOL_OVERFETCH;
+  // Wave 353: 항상 다양화 (전체 = 카테고리 합집합 기대값과 일관성 위해 카테고리 필터는 클라이언트로).
   const [readyRes, soldOutRes] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&last_verified_at=lte.${encodeURIComponent(sixHoursAgo)}${categoryFilter}&${orderClause}&limit=${fetchLimit}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&last_verified_at=lte.${encodeURIComponent(sixHoursAgo)}&${orderClause}&limit=${FETCH_POOL_OVERFETCH}`,
       { headers },
     ),
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}${categoryFilter}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS * 4}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS * 4}`,
       { headers },
     ),
   ]);
   const readyRowsRaw = ((await readyRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: false }));
   const soldOutRowsRaw = ((await soldOutRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: true }));
 
-  // Wave 346: 카테고리 다양화. 사용자가 카테고리 필터 적용 시 skip.
+  // Wave 346: 카테고리 다양화 (항상 적용 — Wave 353부터 카테고리 필터는 클라이언트로).
   function diversifyByCategory(rows: (PoolRow & { soldOut: boolean })[], maxRows: number) {
-    if (options.categories && options.categories.length > 0) return rows.slice(0, maxRows);
     const perCategory = new Map<string, number>();
     const out: (PoolRow & { soldOut: boolean })[] = [];
     for (const row of rows) {
@@ -241,11 +237,7 @@ export async function GET(req: Request) {
     const authUserId = auth.user.id;
     const url = new URL(req.url);
     const refresh = url.searchParams.get("refresh") === "1";
-    // Wave 340: 카테고리 필터 + 정렬 옵션
-    const categoriesParam = url.searchParams.get("categories");
-    const categories = categoriesParam
-      ? categoriesParam.split(",").map((s) => s.trim()).filter(Boolean)
-      : null;
+    // Wave 340: 정렬 옵션. Wave 353: 카테고리 필터는 클라이언트로 이동 (전체 vs 카테고리 일관성).
     const sortParam = url.searchParams.get("sort");
     const sort: "profit_desc" | "latest" = sortParam === "latest" ? "latest" : "profit_desc";
 
@@ -267,7 +259,7 @@ export async function GET(req: Request) {
       await upsertLastBrowse(headers, userRef, authUserId);
     }
 
-    const { pool, raws, metas } = await loadPool(headers, { categories, sort });
+    const { pool, raws, metas } = await loadPool(headers, { sort });
     const items = buildItems(pool, raws, metas);
 
     // refresh 후 새 cooldown 정보
