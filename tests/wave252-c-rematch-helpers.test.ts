@@ -73,11 +73,22 @@ test("triggerRematchForSkus default dryRun=true 시 PATCH 호출 X — count 만
 
 test("triggerRematchForSkus dryRun=false 시 PATCH 호출 detail_status + score_dirty set", async () => {
   setEnv();
-  const mock = installFetchMock(({ method }) => {
+  // Wave 253 fix A — PATCH 전 pid fetch (페이지네이션) + PATCH + detail_queue INSERT 의 흐름.
+  let getCallIdx = 0;
+  const mock = installFetchMock(({ method, url }) => {
     if (method === "GET") {
+      // 첫 GET = count + sample (limit=10). 두번째 GET = page (limit=1000) for fetchPidsBySkuIds.
+      getCallIdx += 1;
+      if (getCallIdx === 1) {
+        return {
+          body: [{ pid: 2001 }],
+          headers: { "content-range": "0-0/5" },
+        };
+      }
+      // page fetch — 5 pid 모두 반환.
       return {
-        body: [{ pid: 2001 }],
-        headers: { "content-range": "0-0/5" },
+        body: [{ pid: 2001 }, { pid: 2002 }, { pid: 2003 }, { pid: 2004 }, { pid: 2005 }],
+        headers: { "content-range": "0-4/5" },
       };
     }
     if (method === "PATCH") {
@@ -87,7 +98,11 @@ test("triggerRematchForSkus dryRun=false 시 PATCH 호출 detail_status + score_
         headers: { "content-range": "*/5" },
       };
     }
-    throw new Error(`unexpected ${method}`);
+    if (method === "POST" && url.includes("mvp_detail_queue")) {
+      // Wave 253 fix A — INSERT IGNORE 응답.
+      return { status: 201, body: null };
+    }
+    throw new Error(`unexpected ${method} ${url}`);
   });
   try {
     const result = await triggerRematchForSkus(["clothing-bape-tee"], "test-apply", { dryRun: false });
@@ -98,17 +113,28 @@ test("triggerRematchForSkus dryRun=false 시 PATCH 호출 detail_status + score_
     const body = JSON.parse(patchCall!.body!) as Record<string, unknown>;
     assert.equal(body.score_dirty, true);
     assert.equal(body.detail_status, "pending");
+    // Wave 253 fix A — detail_queue INSERT IGNORE 검증.
+    const queueCall = mock.calls.find((c) => c.method === "POST" && c.url.includes("mvp_detail_queue"));
+    assert.ok(queueCall, "mvp_detail_queue INSERT 호출 발생");
+    const queueRows = JSON.parse(queueCall!.body!) as Array<Record<string, unknown>>;
+    assert.equal(queueRows.length, 5, "5 pid INSERT IGNORE");
+    assert.equal(queueRows[0].status, "pending");
+    assert.equal(queueRows[0].priority, 50);
+    assert.equal(queueRows[0].locked_at, null);
   } finally {
     mock.restore();
   }
 });
 
-test("triggerRematchForSkus resetDetailStatus=false 시 score_dirty 만 set", async () => {
+test("triggerRematchForSkus resetDetailStatus=false 시 score_dirty 만 set + detail_queue INSERT 안 함", async () => {
   setEnv();
-  const mock = installFetchMock(({ method }) => {
+  const mock = installFetchMock(({ method, url }) => {
     if (method === "GET") return { body: [], headers: { "content-range": "0-0/3" } };
     if (method === "PATCH") return { status: 204, body: null, headers: { "content-range": "*/3" } };
-    throw new Error(`unexpected ${method}`);
+    if (method === "POST" && url.includes("mvp_detail_queue")) {
+      throw new Error("resetDetailStatus=false 인데 detail_queue INSERT 호출됨");
+    }
+    throw new Error(`unexpected ${method} ${url}`);
   });
   try {
     await triggerRematchForSkus(["x"], "test", { dryRun: false, resetDetailStatus: false });
@@ -116,6 +142,9 @@ test("triggerRematchForSkus resetDetailStatus=false 시 score_dirty 만 set", as
     const body = JSON.parse(patchCall!.body!) as Record<string, unknown>;
     assert.equal(body.score_dirty, true);
     assert.equal(body.detail_status, undefined);
+    // Wave 253 fix A — resetDetailStatus=false → detail_queue INSERT 호출 안 함.
+    const queueCall = mock.calls.find((c) => c.method === "POST" && c.url.includes("mvp_detail_queue"));
+    assert.equal(queueCall, undefined, "resetDetailStatus=false 시 detail_queue INSERT 안 함");
   } finally {
     mock.restore();
   }
@@ -137,11 +166,14 @@ test("triggerRematchForListings dryRun 시 PATCH 안 함", async () => {
   }
 });
 
-test("triggerRematchForListings 큰 batch 분할 PATCH (batchSize=2)", async () => {
+test("triggerRematchForListings 큰 batch 분할 PATCH (batchSize=2) + detail_queue INSERT", async () => {
   setEnv();
-  const mock = installFetchMock(({ method }) => {
+  const mock = installFetchMock(({ method, url }) => {
     if (method === "PATCH") return { status: 204, body: null };
-    throw new Error(`unexpected ${method}`);
+    if (method === "POST" && url.includes("mvp_detail_queue")) {
+      return { status: 201, body: null };
+    }
+    throw new Error(`unexpected ${method} ${url}`);
   });
   try {
     const result = await triggerRematchForListings([1, 2, 3, 4, 5], "split-test", { dryRun: false, batchSize: 2 });
@@ -149,8 +181,69 @@ test("triggerRematchForListings 큰 batch 분할 PATCH (batchSize=2)", async () 
     // 5 pids / batch 2 = 3 batches (2 + 2 + 1)
     const patchCalls = mock.calls.filter((c) => c.method === "PATCH");
     assert.equal(patchCalls.length, 3);
+    // Wave 253 fix A — detail_queue INSERT IGNORE (chunk=500 라 5건 1 call).
+    const queueCalls = mock.calls.filter((c) => c.method === "POST" && c.url.includes("mvp_detail_queue"));
+    assert.equal(queueCalls.length, 1, "detail_queue INSERT 1회 (5 pid 1 chunk)");
+    const queueRows = JSON.parse(queueCalls[0].body!) as Array<Record<string, unknown>>;
+    assert.equal(queueRows.length, 5);
+    assert.deepEqual(queueRows.map((r) => r.pid), [1, 2, 3, 4, 5]);
+    assert.equal(queueRows[0].status, "pending");
+    assert.equal(queueRows[0].priority, 50);
   } finally {
     mock.restore();
+  }
+});
+
+test("triggerRematchForListings dryRun=false + resetDetailStatus=false → PATCH 만, detail_queue INSERT 안 함", async () => {
+  setEnv();
+  const mock = installFetchMock(({ method, url }) => {
+    if (method === "PATCH") return { status: 204, body: null };
+    if (method === "POST" && url.includes("mvp_detail_queue")) {
+      throw new Error("resetDetailStatus=false 인데 detail_queue INSERT 호출됨");
+    }
+    throw new Error(`unexpected ${method} ${url}`);
+  });
+  try {
+    await triggerRematchForListings([10, 20, 30], "no-detail", { dryRun: false, resetDetailStatus: false });
+    const queueCall = mock.calls.find((c) => c.method === "POST" && c.url.includes("mvp_detail_queue"));
+    assert.equal(queueCall, undefined);
+    // PATCH body 검증 — detail_status 없음.
+    const patchCall = mock.calls.find((c) => c.method === "PATCH");
+    const body = JSON.parse(patchCall!.body!) as Record<string, unknown>;
+    assert.equal(body.score_dirty, true);
+    assert.equal(body.detail_status, undefined);
+  } finally {
+    mock.restore();
+  }
+});
+
+test("triggerRematchForListings detail_queue INSERT Prefer header + on_conflict 정확", async () => {
+  setEnv();
+  let queueHeaders: Headers | null = null;
+  let queueUrl: string | null = null;
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input.toString();
+    const method = (init?.method ?? "GET").toUpperCase();
+    if (method === "POST" && url.includes("mvp_detail_queue")) {
+      queueHeaders = new Headers((init?.headers as HeadersInit | undefined) ?? {});
+      queueUrl = url;
+      return new Response(null, { status: 201 });
+    }
+    if (method === "PATCH") return new Response(null, { status: 204 });
+    throw new Error(`unexpected ${method} ${url}`);
+  }) as typeof globalThis.fetch;
+  try {
+    await triggerRematchForListings([99], "header-test", { dryRun: false });
+    assert.ok(queueHeaders, "detail_queue INSERT 호출됨");
+    const prefer = (queueHeaders as Headers).get("prefer");
+    assert.ok(prefer, "Prefer header 존재");
+    assert.ok(prefer!.includes("resolution=ignore-duplicates"), "Prefer 에 ignore-duplicates");
+    // Wave 253 fix A — on_conflict=pid URL param 필수.
+    assert.ok(queueUrl, "INSERT URL 캡처");
+    assert.ok(queueUrl!.includes("on_conflict=pid"), "URL 에 on_conflict=pid");
+  } finally {
+    globalThis.fetch = originalFetch;
   }
 });
 

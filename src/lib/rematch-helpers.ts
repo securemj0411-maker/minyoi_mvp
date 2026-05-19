@@ -25,6 +25,15 @@
 //   본 helper 의 default 는 dry-run=true. 실제 UPDATE 는 caller 가
 //   명시적으로 dryRun=false 선언해야 한다. wrapper script / API 가 사용자
 //   confirm prompt 박은 다음 dryRun=false 호출 권고.
+//
+// Wave 253 fix A (2026-05-20) — bug fix:
+//   Wave 252.C 1차 helper 는 `mvp_raw_listings.detail_status='pending'` +
+//   `score_dirty=true` 만 PATCH, **`mvp_detail_queue` INSERT 안 함**.
+//   detail-worker 는 `claim_mvp_detail_queue` RPC 로만 작업 수신 — queue
+//   비어있으면 영영 reparse 안 됨 (Wave 253 진단 14,177 stuck 발견).
+//   → 모든 3 helper 의 PATCH 이후 `mvp_detail_queue` INSERT IGNORE 추가.
+//   additive (INSERT IGNORE 로 기존 queue row 보존). search-stage
+//   `insert_detail_queue` (`tick-pipeline.ts:1502`) 와 같은 pattern.
 
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
@@ -63,6 +72,80 @@ export type RematchResult = {
 
 const DEFAULT_BATCH = 5000;
 const SAMPLE_PID_COUNT = 10;
+
+// Wave 253 fix A — detail_queue INSERT IGNORE.
+// search-stage `insert_detail_queue` (`tick-pipeline.ts:1502`) 와 같은 row shape.
+// priority 50 = rematch (search-stage 의 numFaved 기반 default 보다 낮춤 — 신규 매물 우선).
+const DETAIL_QUEUE_REMATCH_PRIORITY = 50;
+// PostgREST INSERT chunk — `REST_WRITE_CHUNK_SIZE` 와 같은 의도. local hardcode.
+const DETAIL_QUEUE_INSERT_CHUNK = 500;
+
+/**
+ * pid 집합을 `mvp_detail_queue` 에 INSERT IGNORE.
+ *
+ * Wave 253 fix A (2026-05-20) — bug fix.
+ *   detail-worker 는 `claim_mvp_detail_queue` RPC 로만 작업 수신. helper 가
+ *   `detail_status='pending'` PATCH 만 박으면 영영 reparse 안 됨.
+ *   PATCH 직후 본 함수 호출 → 다음 cron tick 에 detail-worker pickup.
+ *
+ * 정책 — additive only:
+ *   - `Prefer: resolution=ignore-duplicates` — 이미 queue 에 있으면 skip.
+ *   - locked/locked_until 등 destructive overwrite X. ON CONFLICT UPDATE X.
+ *   - search-stage (`tick-pipeline.ts:1502`) 의 row shape 동일.
+ *
+ * @param pids enqueue 대상 pid 배열.
+ * @param triggeredAt ISO timestamp (caller 의 `triggeredAt` 재사용).
+ */
+async function enqueueDetailQueue(pids: number[], triggeredAt: string): Promise<number> {
+  if (pids.length === 0) return 0;
+  let inserted = 0;
+  for (let i = 0; i < pids.length; i += DETAIL_QUEUE_INSERT_CHUNK) {
+    const chunk = pids.slice(i, i + DETAIL_QUEUE_INSERT_CHUNK);
+    const rows = chunk.map((pid) => ({
+      pid: Number(pid),
+      status: "pending",
+      priority: DETAIL_QUEUE_REMATCH_PRIORITY,
+      available_at: triggeredAt,
+      locked_at: null,
+      locked_until: null,
+      last_error: null,
+      updated_at: triggeredAt,
+    }));
+    // PostgREST: `Prefer: resolution=ignore-duplicates` + `on_conflict=pid` 둘 다 필요.
+    //   on_conflict 미지정 시 unique constraint violation 23505 raise (Wave 253 fix A apply 발견).
+    //   search-stage `insertIgnoreRows` (tick-pipeline.ts:344-354) 와 같은 pattern.
+    await restFetch(`${tableUrl("mvp_detail_queue")}?on_conflict=pid`, {
+      method: "POST",
+      headers: { ...serviceHeaders("resolution=ignore-duplicates,return=minimal") },
+      body: JSON.stringify(rows),
+    });
+    inserted += chunk.length;
+  }
+  return inserted;
+}
+
+/**
+ * sku_id in.() 매칭 매물의 pid list 를 페이지네이션으로 모두 수집.
+ *
+ * Wave 253 fix A — `triggerRematchForSkus` 가 PATCH 직후 detail_queue 에 INSERT
+ * 하기 위해 pid 가 필요. PostgREST default 1k row cap 회피 (Wave 252.B step 1 의
+ * 같은 bug fix pattern).
+ */
+async function fetchPidsBySkuIds(encodedSkuIds: string, total: number): Promise<number[]> {
+  if (total === 0) return [];
+  const PAGE = 1000;
+  const allPids: number[] = [];
+  for (let offset = 0; offset < total; offset += PAGE) {
+    const pageRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid&sku_id=in.(${encodedSkuIds})&listing_state=eq.active&detail_status=eq.done&order=pid.asc&limit=${PAGE}&offset=${offset}`,
+      { headers: serviceHeaders() },
+    );
+    const pageRows = (await pageRes.json()) as Array<{ pid: number }>;
+    allPids.push(...pageRows.map((r) => Number(r.pid)));
+    if (pageRows.length < PAGE) break;
+  }
+  return allPids;
+}
 
 /**
  * 특정 sku_id 집합 매물 모두 reparse trigger.
@@ -121,6 +204,10 @@ export async function triggerRematchForSkus(
   const patchBody: Record<string, unknown> = { score_dirty: true };
   if (resetDetailStatus) patchBody.detail_status = "pending";
 
+  // Wave 253 fix A — PATCH 전에 pid list 수집 (detail-queue INSERT 용).
+  //   PATCH 후엔 detail_status='done' 필터 매칭 안 됨. pid list 사전 fetch 필수.
+  const affectedPids = resetDetailStatus ? await fetchPidsBySkuIds(encoded, total) : [];
+
   const patchUrl = `${tableUrl("mvp_raw_listings")}?sku_id=in.(${encoded})&listing_state=eq.active&detail_status=eq.done`;
   const patchRes = await restFetch(patchUrl, {
     method: "PATCH",
@@ -131,11 +218,16 @@ export async function triggerRematchForSkus(
   const affectedRaw = patchRes.headers.get("content-range")?.split("/")?.[1] ?? String(total);
   const affected = Number(affectedRaw) || total;
 
+  // Wave 253 fix A — PATCH 직후 detail_queue INSERT IGNORE.
+  //   resetDetailStatus=false 면 enqueue 안 함 (score-only rematch — Wave 251.3 외 use case).
+  const enqueued = resetDetailStatus ? await enqueueDetailQueue(affectedPids, triggeredAt) : 0;
+
   console.log("[rematch:applied]", {
     type: "by_sku_id",
     skuIds,
     reason,
     affected,
+    detailQueueEnqueued: enqueued,
     triggeredAt,
   });
 
@@ -200,10 +292,15 @@ export async function triggerRematchForListings(
     affected += chunk.length;
   }
 
+  // Wave 253 fix A — PATCH 직후 detail_queue INSERT IGNORE.
+  //   resetDetailStatus=false 면 enqueue 안 함. INSERT IGNORE 라 기존 queue row 보존.
+  const enqueued = resetDetailStatus ? await enqueueDetailQueue(pids, triggeredAt) : 0;
+
   console.log("[rematch:applied]", {
     type: "by_pid",
     reason,
     affected,
+    detailQueueEnqueued: enqueued,
     triggeredAt,
   });
 
