@@ -7006,7 +7006,22 @@ export const CATALOG: Sku[] = [
     aliases: ["1996 Nuptse", "1996 눕시", "노스페이스 눕시"],
     mustContain: [["노스페이스", "north face", "tnf"], ["눕시", "nuptse", "1996"]],
     // collab은 별도 SKU
-    mustNotContain: ["supreme", "슈프림", "gucci", "구찌", "mm6", "마르지엘라", "키즈", "kids", "퍼플라벨", "purple label", "뮬", "mule", "슬리퍼"],
+    // Wave 248 (2026-05-19): 사용자 코멘트 id 192~194 mismatch fix.
+    //   - 쇼츠/반바지 (pid 331382713 "빔즈 노스페이스 눕시 쇼츠" 89k) — 다운자켓 아닌 반바지 variant
+    //   - 베스트/조끼 (pid 318635782 "노벨티 눕시 다운 베스트" 105k) — 베스트 variant
+    //   - 1994/1992/1990/에코 (pid 395757345 "1994 눕시" 130k, 에코눕시 등) — 다른 에디션
+    mustNotContain: [
+      "supreme", "슈프림", "gucci", "구찌", "mm6", "마르지엘라",
+      "키즈", "kids", "퍼플라벨", "purple label", "뮬", "mule", "슬리퍼",
+      // Wave 248: shorts variant — 다운자켓이 아닌 반바지 매물 차단
+      "쇼츠", "반바지", "shorts", "short pants", "쇼츠 m", "쇼츠 l",
+      // Wave 248: vest variant — 다운자켓이 아닌 베스트/조끼 매물 차단
+      "베스트", "조끼", "vest", "푸퍼 베스트", "puffer vest", "다운 베스트", "다운 조끼", "패딩 베스트", "패딩 조끼", "패딩조끼",
+      // Wave 248: 다른 에디션 (1996 모델만 강제) — 1994/1992/1990/2000s
+      "1994", "1992", "1990", "2000년대", "2000s", "2010", "2012",
+      // Wave 248: Eco Nuptse 별도 라인 (재활용 소재, 2023+ 리메이크)
+      "에코 눕시", "에코눕시", "eco nuptse", "리메이크", "remake",
+    ],
     msrpKrw: 360000, released: 1996,
     defaultProductType: "down_jacket", // Wave 236d — Nuptse = 다운자켓 라인 확정.
   },
