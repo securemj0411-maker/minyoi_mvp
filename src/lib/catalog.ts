@@ -6920,13 +6920,34 @@ export const CATALOG: Sku[] = [
   //   - narrow pants mustContain: SPECIFIC subtype 키워드만 (치노/슬랙스/오피서/카키/조드퍼 등).
   //     일반적 "팬츠" 단독 매물은 catch-all 으로 가야.
   //   - catch-all (broad shirt-pants) mustNotContain: narrow 의 specific 키워드 차단 → narrow lane 우선.
+  // Wave 250 (2026-05-19): RRL leather/suede shirt narrow 신설 — production sample 4건 (1.2~2.15M).
+  //   broad shirt-pants 의 outlier 매물 (러프아웃 스웨이드 셔츠/오버셔츠/워크 오버 셔츠).
+  //   가격이 일반 shirt narrow (p50 ~280k) 의 8x — CV 왜곡 주범.
+  {
+    id: "clothing-polo-rrl-shirt-leather-suede",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_shirt_leather_suede",
+    modelName: "Polo RRL Leather / Suede Shirt (러프아웃/스웨이드 셔츠)",
+    aliases: ["RRL 러프아웃 셔츠", "RRL 스웨이드 셔츠", "RRL 가죽 셔츠"],
+    mustContain: [
+      ["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"],
+      ["러프아웃", "러프 아웃", "roughout", "rough out", "스웨이드", "suede", "레더", "leather", "가죽", "염소가죽"],
+      ["셔츠", "shirt", "오버셔츠", "오버 셔츠", "워크셔츠", "워크 셔츠", "웨스턴", "western"],
+    ],
+    mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일",
+      // 자켓/코트/팬츠 차단 — leather-suede-jacket lane 으로 가야.
+      "자켓", "jacket", "코트", "coat", "재킷", "블레이저", "blazer", "점퍼", "트러커", "trucker",
+      "팬츠", "pants", "바지", "치노"],
+    msrpKrw: 1800000, released: 2020,
+    defaultProductType: "shirt",
+  },
   {
     id: "clothing-polo-rrl-shirt",
     brand: "RRL", category: "clothing", laneKey: "polo_rrl_shirt",
     modelName: "Polo RRL Shirt (옥스포드/버튼다운/플란넬/샴브레이)",
     aliases: ["RRL 옥스포드", "RRL 체크셔츠", "RRL 플란넬", "더블알엘 옥스포드"],
     // SPECIFIC subtype 키워드만 — "셔츠" 단독은 catch-all 로.
-    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["oxford", "옥스포드", "버튼다운", "버튼 다운", "체크셔츠", "체크 셔츠", "샴브레이", "chambray", "워크셔츠", "워크 셔츠", "린넨 셔츠", "린넨셔츠", "헨리 셔츠", "henley", "헨리넥", "플란넬", "flannel", "남방", "다이아 체크", "윈드페인"]],
+    // Wave 250 (2026-05-19): "오버셔츠"/"오버 셔츠"/"웨스턴" 추가 — broad 의 워크 오버 셔츠 매물 narrow 우선.
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["oxford", "옥스포드", "버튼다운", "버튼 다운", "체크셔츠", "체크 셔츠", "샴브레이", "chambray", "워크셔츠", "워크 셔츠", "오버셔츠", "오버 셔츠", "웨스턴", "western", "린넨 셔츠", "린넨셔츠", "헨리 셔츠", "henley", "헨리넥", "플란넬", "flannel", "남방", "다이아 체크", "윈드페인"]],
     mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일", "스니커즈",
       // shirt 외 product-type 차단
       "팬츠", "pants", "바지", "치노", "chino", "슬랙스", "트라우저", "trouser", "카펜터", "carpenter", "카고", "cargo", "오피서", "officer", "jodhpur", "조드퍼",
@@ -6984,7 +7005,18 @@ export const CATALOG: Sku[] = [
       // Wave 247.1: shirt narrow 키워드 차단 (narrow shirt lane 우선)
       "oxford", "옥스포드", "버튼다운", "버튼 다운", "체크셔츠", "체크 셔츠", "샴브레이", "chambray", "워크셔츠", "워크 셔츠", "린넨 셔츠", "린넨셔츠", "헨리 셔츠", "henley", "헨리넥", "플란넬", "flannel", "남방", "다이아 체크", "윈드페인",
       // Wave 247.1: pants narrow 키워드 차단 (narrow pants lane 우선)
-      "치노", "chino", "슬랙스", "오피서", "officer", "jodhpur", "조드퍼", "조파", "트라우저", "trouser", "카펜터", "carpenter", "카고", "cargo", "카키 팬츠", "카키팬츠", "헤링본 팬츠", "헤링본팬츠"],
+      "치노", "chino", "슬랙스", "오피서", "officer", "jodhpur", "조드퍼", "조파", "트라우저", "trouser", "카펜터", "carpenter", "카고", "cargo", "카키 팬츠", "카키팬츠", "헤링본 팬츠", "헤링본팬츠",
+      // Wave 250 (2026-05-19): leather/suede shirt narrow 키워드 차단 (CV 0.85 outlier 매물).
+      //   러프아웃/스웨이드/가죽 셔츠는 별도 narrow lane 으로 가야 (avg ~1.8M, 일반 셔츠 ~280k 의 8x).
+      //   "오버셔츠"/"웨스턴" 도 narrow shirt 추가 — broad catch 차단.
+      "러프아웃", "러프 아웃", "roughout", "rough out", "스웨이드", "suede", "염소가죽",
+      "오버셔츠", "오버 셔츠", "웨스턴", "western",
+      // Wave 250: 워크팬츠/필드팬츠/플리츠 코듀로이/퍼티그 추가 (pants narrow 우선).
+      "워크팬츠", "워크 팬츠", "필드 팬츠", "필드팬츠", "플리츠 코듀로이", "플리츠 코듀로이 팬츠", "퍼티그", "fatigue",
+      // Wave 250: 블레이저 (jacket 라인이지만 broad shirt-pants 차단 안 됐던 점) — jacket-coat narrow 로 가야.
+      "블레이저", "blazer",
+      // Wave 250: 카디건/스웨터 — knit 라인 (narrow polo-rrl-knit 으로 가야).
+      "카디건", "cardigan", "스웨터", "sweater"],
     msrpKrw: 350000, released: 2020,
   },
   {
@@ -7008,17 +7040,60 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "rrl 무드"],
     msrpKrw: 280000, released: 2020,
   },
+  // Wave 250 (2026-05-19): RRL knit narrow 신설 — production sample 11건.
+  //   카디건/스웨터/니트 후디/와플 니트/터틀넥 등. price range 63k~2.24M (CV 광범위).
+  //   broad RRL 에서 니트 차단 (mustNotContain 에 이미 있음) → null 매칭 → 사용자 풀 진입 X.
+  //   별도 narrow lane 으로 매칭 가능하게.
+  {
+    id: "clothing-polo-rrl-knit",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_knit",
+    modelName: "Polo RRL Knit (카디건/스웨터/니트)",
+    aliases: ["RRL 카디건", "RRL 스웨터", "RRL 니트", "더블알엘 카디건"],
+    mustContain: [
+      ["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"],
+      ["카디건", "cardigan", "스웨터", "sweater", "니트", "knit", "터틀넥", "turtle neck", "터틀 넥", "와플", "waffle", "헨리 니트", "풀오버", "pullover"],
+    ],
+    mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일",
+      "스니커즈", "벨트", "지갑", "모자", "키링", "팔찌", "반지", "목걸이",
+      // 스웨터 재킷 = jacket-coat lane 으로 가야.
+      "스웨터 재킷", "스웨터재킷", "스웨터 자켓", "스웨터자켓"],
+    msrpKrw: 500000, released: 2020,
+    defaultProductType: "knit",
+  },
   // Wave 245 (2026-05-19): RRL jacket-coat narrow 신설 — production sample 47건 (broad 42%) 측정.
   //   median 150만, p25/p75 = 82만/264만 (가죽/스웨이드/봄버/피코트/트러커/카코트/덱자켓 등 다양).
   //   broad RRL 에서 자켓이 가장 많은 mismatch → 별도 lane 필수.
+  // Wave 250 (2026-05-19): production CV 0.78 (n=41) — leather/suede cluster (avg 2.46M, n=15)
+  //   가 canvas/denim/coat (avg 700~840k) 와 가격 3x 차이. 별도 narrow lane 분리.
+  //   leather/suede 매물은 새 narrow `clothing-polo-rrl-jacket-leather-suede` 로 캐치.
+  //   기존 jacket-coat narrow 는 leather/suede 키워드 차단 (canvas/denim/coat catch-all).
+  {
+    id: "clothing-polo-rrl-jacket-leather-suede",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_jacket_leather_suede",
+    modelName: "Polo RRL Leather / Suede Jacket (러프아웃/시얼링/뉴스보이/G-1/모토)",
+    aliases: ["RRL 가죽자켓", "RRL 레더 재킷", "RRL 스웨이드 자켓", "RRL 러프아웃", "RRL 뉴스보이", "RRL 시얼링", "RRL G-1"],
+    mustContain: [
+      ["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"],
+      ["레더", "leather", "가죽", "스웨이드", "suede", "러프아웃", "러프 아웃", "roughout", "rough out", "시얼링", "shearling", "뉴스보이", "newsboy", "모토", "moto", "G-1", "g1", "g 1", "플라이트", "flight", "MA-1", "ma-1", "ma1", "항공 점퍼", "항공점퍼", "나바호 자켓", "버팔로 레더", "buffalo leather"],
+    ],
+    // 키즈/액세서리/구두/벨트/지갑/주얼리 차단. canvas/denim 만 들어가는 매물 차단 (가죽 키워드 동반 필수).
+    mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일",
+      "스니커즈", "벨트", "지갑", "모자", "키링", "팔찌", "반지", "목걸이"],
+    msrpKrw: 3000000, released: 2020,
+  },
   {
     id: "clothing-polo-rrl-jacket-coat",
     brand: "RRL", category: "clothing", laneKey: "polo_rrl_jacket_coat",
-    modelName: "Polo RRL Jacket / Coat (가죽/스웨이드/봄버/카코트)",
+    modelName: "Polo RRL Jacket / Coat (캔버스/데님/카코트/필드)",
     aliases: ["RRL 자켓", "RRL 재킷", "RRL 코트", "더블알엘 자켓"],
     mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["자켓", "jacket", "코트", "coat", "재킷", "블레이저", "blazer", "점퍼", "봄버", "bomber", "트러커", "trucker", "카코트", "car coat", "피코트", "pea coat", "필드자켓", "field jacket", "스포츠 자켓", "스포츠자켓", "덱자켓", "초어", "chore", "그리즐리", "grizzly"]],
     mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일",
-      "스니커즈", "벨트", "지갑", "모자", "키링", "팔찌", "반지", "목걸이"],
+      "스니커즈", "벨트", "지갑", "모자", "키링", "팔찌", "반지", "목걸이",
+      // Wave 250: leather/suede 키워드 차단 (leather-suede narrow 로 가야).
+      "레더", "leather", "가죽", "스웨이드", "suede", "러프아웃", "러프 아웃", "roughout", "rough out",
+      "시얼링", "shearling", "뉴스보이", "newsboy", "모토 재킷", "모토재킷", "moto",
+      "G-1", "g1", "g 1", "플라이트", "flight", "MA-1", "ma-1", "ma1",
+      "항공 점퍼", "항공점퍼", "나바호 자켓", "버팔로 레더", "buffalo leather"],
     msrpKrw: 1500000, released: 2020,
     // jacket + coat 둘 다 가능. defaultProductType 안 박음 — text 추출 의존 (regex 가 jacket/coat 구분).
   },
@@ -9211,7 +9286,14 @@ export const CATALOG: Sku[] = [
       "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
       "제냐", "zegna", "nike", "나이키",
       "후디", "hoodie", "맨투맨", "크루넥", "티셔츠", "반팔", "긴팔",
-      "조거", "jogger", "스웻팬츠", "sweatpants", "자켓", "재킷"],
+      "조거", "jogger", "스웻팬츠", "sweatpants", "자켓", "재킷",
+      // Wave 250 (2026-05-19): CV 0.87 (n=20) — outlier 차단.
+      //   "주니어/10Y" 키즈 매물 / "코어 컬렉션" 한정판 / "1977/그라미치/알파 카고" collab 차단.
+      //   세트 매물 (후드+반바지) 도 single shorts 시세 왜곡 → 차단.
+      "주니어", "junior", "10y", "10Y", "12y", "12Y", "8y", "8Y",
+      "코어 컬렉션", "코어컬렉션", "core collection",
+      "1977", "그라미치", "gramicci", "알파", "alpha", "카고 쇼츠", "카고쇼츠",
+      "후드 반바지 세트", "후드반바지 세트", "셋업", "set up", "세트 팝니다", "세트팝니다"],
     msrpKrw: 60000, released: 2018,
     defaultProductType: "shorts",
   },
