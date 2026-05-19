@@ -89,6 +89,9 @@ function makeMatchedTextSignature(skuId: string, candidates: string[], aiReason:
  * pass 매물은 skip (학습 시그널 X).
  *
  * 실패는 non-fatal — telegram alert 는 batch wrapper 에서 처리.
+ *
+ * Wave 244 (2026-05-19): admin reject 한 (sku_id, matched_text) 패턴은 false_positive=true 박혀
+ * 다시 큐 안 들어옴. 운영자 같은 패턴 100번 보지 않도록.
  */
 export async function enqueueLearningSignal(input: LearningQueueInput): Promise<LearningQueueResult> {
   if (!SUPABASE_URL_ENV || !SUPABASE_KEY_ENV) {
@@ -103,6 +106,14 @@ export async function enqueueLearningSignal(input: LearningQueueInput): Promise<
 
   const candidates = extractKeywordCandidates(input.aiReason, input.listingTitle);
   const matchedText = makeMatchedTextSignature(input.skuId, candidates, input.aiReason);
+
+  // Wave 244: rejected/false_positive 패턴 pre-check. 같은 (sku_id, matched_text) row 가
+  // status='rejected' 또는 false_positive=true 면 skip → 운영자가 한 번 reject 한 패턴 다시 X.
+  // frequency_count++ 도 일어나지 않음 (사용자 명시: "다시 큐 안 들어옴").
+  const skipReason = await checkFalsePositive(input.skuId, matchedText);
+  if (skipReason) {
+    return { enqueued: false, skipped: true, reason: skipReason };
+  }
 
   // upsert: 같은 (sku_id, matched_text) → frequency_count++.
   // PostgREST RPC 가 없으므로 raw SQL 통해 처리 (UPDATE first, INSERT on miss).
@@ -138,6 +149,37 @@ export async function enqueueLearningSignal(input: LearningQueueInput): Promise<
     return { enqueued: true, skipped: false };
   } catch (err) {
     return { enqueued: false, skipped: true, reason: `exception_${(err as Error).message?.slice(0, 60)}` };
+  }
+}
+
+/**
+ * Wave 244: rejected/false_positive 패턴 사전 체크.
+ * 같은 (sku_id, matched_text) row 가 admin 의해 rejected 됐거나 false_positive=true 면 skip.
+ *
+ * 반환:
+ *   - null  → 패턴 새로 박아도 됨
+ *   - 문자열 reason → skip (예: "rejected_by_admin", "marked_false_positive")
+ *
+ * 실패는 conservative — fetch fail 시 null (즉 enqueue 진행). false negative 보다는 false positive 가 admin 의 review 부담만 늘어남.
+ */
+async function checkFalsePositive(skuId: string, matchedText: string): Promise<string | null> {
+  if (!SUPABASE_URL_ENV || !SUPABASE_KEY_ENV) return null;
+  try {
+    const url = `${supabaseRestBase()}/rest/v1/mvp_catalog_learning_queue`
+      + `?select=status,false_positive`
+      + `&sku_id=eq.${encodeURIComponent(skuId)}`
+      + `&matched_text=eq.${encodeURIComponent(matchedText)}`
+      + `&limit=1`;
+    const res = await fetch(url, { headers: supabaseHeaders() });
+    if (!res.ok) return null;
+    const rows = await res.json() as Array<{ status: string; false_positive: boolean }>;
+    if (rows.length === 0) return null;
+    const row = rows[0];
+    if (row.false_positive === true) return "marked_false_positive";
+    if (row.status === "rejected") return "rejected_by_admin";
+    return null;
+  } catch {
+    return null;
   }
 }
 
