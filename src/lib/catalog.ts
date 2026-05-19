@@ -9979,6 +9979,29 @@ function skuMatches(sku: Sku, normalizedText: string): boolean {
         if (tokenHit(normalizedText, token)) return false;
       }
     }
+    // Wave 256 (2026-05-20): bag SKU 도 같은 intersect-aware safety net (systemic 확장).
+    //   사용자 발견 (보테가베네타 카세트백 비교 매물): "카세트 카드지갑/반지갑" 이 cassette-mini (crossbody) SKU 매칭.
+    //   bag-bottega-cassette-mini mustNotContain 에 "지갑/wallet/카드지갑" 누락 → 매칭 통과 → 시세 비교군 진입.
+    //   systemic: 모든 bag 본품 SKU (crossbody/shoulder/tote/backpack/duffle/messenger/waist) 가 같은 위험.
+    //   policy: defaultProductType 이 본품 (백) + 매물 text 가 wallet/카드지갑/지갑 매치 시 reject.
+    //   intersect-aware: 자기 mustContain 에 wallet/지갑 박혀있으면 skip (bag-prada-saffiano-card-wallet 등 정상 매칭).
+    //   효과: 모든 bag 본품 SKU 일괄 보강 (1타 N피, per-SKU mustNotContain 30+ 박는 대신 1번).
+    if (
+      sku.category === "bag" &&
+      sku.defaultProductType &&
+      (sku.defaultProductType === "crossbody"
+        || sku.defaultProductType === "shoulder"
+        || sku.defaultProductType === "tote"
+        || sku.defaultProductType === "backpack"
+        || sku.defaultProductType === "duffle"
+        || sku.defaultProductType === "messenger"
+        || sku.defaultProductType === "waist")
+    ) {
+      for (const token of CLOTHING_JACKET_PRODUCT_TYPE_MISMATCH_NOISE) {
+        if (skuTokens.has(token.toLowerCase())) continue;
+        if (tokenHit(normalizedText, token)) return false;
+      }
+    }
   }
   return true;
 }
