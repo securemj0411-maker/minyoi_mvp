@@ -7903,7 +7903,10 @@ export const CATALOG: Sku[] = [
     aliases: ["Acne PVC Tote", "아크네 PVC 토트백", "아크네 토트"],
     mustContain: [["acne", "아크네"], ["pvc", "토트", "tote"]],
     // Wave 243 (2026-05-19): production audit — "테디 쇼퍼/테디 데님" 730k~1M 매물 broad PVC 매칭.
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "musubi", "무수비", "클러치",
+    // Wave 245.4 (2026-05-19): "무스비" (Musubi 한국 표기 다른 변형) 추가 차단 — production 220만 매물 발견.
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake",
+      "musubi", "무수비", "무스비",
+      "클러치",
       "테디 쇼퍼", "teddy shopper", "테디 데님", "teddy denim", "테디\\b"],
     msrpKrw: 250000, released: 2019,
     defaultProductType: "tote",
@@ -7913,7 +7916,8 @@ export const CATALOG: Sku[] = [
     brand: "Acne Studios", category: "bag", laneKey: "acne_musubi",
     modelName: "Acne Studios Musubi Bag (시그니처)",
     aliases: ["Acne Musubi", "아크네 무수비", "Musubi 클러치"],
-    mustContain: [["acne", "아크네"], ["musubi", "무수비"]],
+    // Wave 245.4 (2026-05-19): "무스비" 추가 (Musubi 한국 표기 변형).
+    mustContain: [["acne", "아크네"], ["musubi", "무수비", "무스비"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "pvc", "토트만"],
     msrpKrw: 650000, released: 2017,
   },
