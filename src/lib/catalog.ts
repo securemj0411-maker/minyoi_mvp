@@ -7759,8 +7759,11 @@ export const CATALOG: Sku[] = [
     modelName: "Acne Studios PVC Tote / Logo Tote",
     aliases: ["Acne PVC Tote", "아크네 PVC 토트백", "아크네 토트"],
     mustContain: [["acne", "아크네"], ["pvc", "토트", "tote"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "musubi", "무수비", "클러치"],
+    // Wave 243 (2026-05-19): production audit — "테디 쇼퍼/테디 데님" 730k~1M 매물 broad PVC 매칭.
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "musubi", "무수비", "클러치",
+      "테디 쇼퍼", "teddy shopper", "테디 데님", "teddy denim", "테디\\b"],
     msrpKrw: 250000, released: 2019,
+    defaultProductType: "tote",
   },
   {
     id: "bag-acne-musubi",
@@ -9377,6 +9380,43 @@ const GLOBAL_DESIGNER_COLLAB_NOISE: string[] = [
   "balenciaga x", "발렌시아가 x",
   "miu miu x", "미우미우 x",
   "gucci x", "구찌 x",
+  // Wave 243 (2026-05-19): outlier 매물 sample sweep 발견 추가 brand.
+  // 떠그클럽 / 팔라스 / 코트와일러 / 캐피탈 / 마스터마인드 (streetwear/일본 designer)
+  "thug club", "thugclub", "떠그클럽", "떠그 클럽", "떠그",
+  "palace", "팔라스",
+  "cottweiler", "코트와일러",
+  "kapital", "캐피탈",
+  "mastermind", "마스터마인드", "mastermind japan", "mastermind world",
+  "raf simons", "라프시몬스", "라프 시몬스",
+  // 럭셔리 (fashion 일반)
+  "fendi", "펜디",
+  "burberry", "버버리",
+  "valentino", "발렌티노",
+  "balmain", "발맹",
+  "celine homme", "셀린 옴므",
+  "saint laurent", "생로랑",
+  "givenchy", "지방시",
+  "loewe", "로에베",
+  "prada x", "프라다 x",
+  // 골프 brand (polo-pique false positive 빈번)
+  "g/fore", "gfore", "지포어",
+  "titleist", "타이틀리스트",
+  "callaway", "캘러웨이",
+  "hazzys", "헤지스",
+  "vilebrequin", "빌보콰",
+  "paul smith", "폴스미스",
+  // 한정/collab patterns
+  "chief keef", "치프키프", "치프 키프",
+  "hellraiser",
+  // Wave 243: Trefoil/RRL 한정 패턴 (Adidas x ?)
+  "tom sachs x", "톰삭스 x",
+  "trefoil firebird x", "파이어버드 x",
+  // Acne Studios 한정/별 라인 (broad acne SKU mismatch)
+  "골드마인", "goldmine",
+  "트롱프뢰유", "trompe loeil", "trompe-loeil",
+  "키제인", "keissen",
+  "테디 쇼퍼", "teddy shopper", "테디 데님",
+  "트라팔가", "trafalgar",
 ];
 
 function skuMatches(sku: Sku, normalizedText: string): boolean {
