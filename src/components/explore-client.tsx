@@ -802,9 +802,9 @@ export default function ExploreClient() {
                       : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 자동으로 풀려요`);
                 return (
                   <>
-                    {/* Wave 377: lightweight 모드 — 토스 톤 (큰 emoji + 가운데 정렬 + 강한 CTA + stagger). */}
+                    {/* Wave 379: 일러스트 emoji 제거. 카피 = 사용자 이익 명확. */}
                     {lightweightMode ? (
-                      <div className="mb-5 text-center">
+                      <div className="mb-6">
                         <button
                           type="button"
                           onClick={closeRefreshModal}
@@ -815,18 +815,16 @@ export default function ExploreClient() {
                             <path d="M18 6 6 18M6 6l12 12" />
                           </svg>
                         </button>
-                        {/* 큰 일러스트 emoji — 토스 톤 */}
-                        <div className="mx-auto mb-4 mt-2 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-4xl shadow-[inset_0_2px_8px_rgba(16,185,129,0.18)] dark:bg-emerald-950/40" style={{ animation: "explore-fade-up 360ms ease-out both" }}>
-                          💰
+                        {/* 작은 라벨 — 사용자 이익 미리 알림 */}
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100/70 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" style={{ animation: "explore-fade-up 360ms ease-out both" }}>
+                          <span>🎯</span>
+                          <span>맞춤 추천</span>
                         </div>
-                        <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50" style={{ animation: "explore-fade-up 360ms ease-out 60ms both" }}>
-                          환영해요 👋
+                        <div className="mt-4 text-[26px] font-bold leading-[1.25] tracking-tight text-zinc-900 dark:text-zinc-50" style={{ animation: "explore-fade-up 360ms ease-out 60ms both" }}>
+                          내가 살 만한 매물만<br />보여드릴게요
                         </div>
-                        <div className="mt-1 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50" style={{ animation: "explore-fade-up 360ms ease-out 120ms both" }}>
-                          예산은 어느 정도세요?
-                        </div>
-                        <div className="mt-3 text-sm font-medium leading-6 text-zinc-500 dark:text-zinc-400" style={{ animation: "explore-fade-up 360ms ease-out 180ms both" }}>
-                          예산 안에서만 30개 골라드릴게요.<br />나중에 수정할 수 있어요.
+                        <div className="mt-3 text-sm font-medium leading-6 text-zinc-500 dark:text-zinc-400" style={{ animation: "explore-fade-up 360ms ease-out 120ms both" }}>
+                          예산 알려주시면 그 안에서<br />30개 골라드릴게요. 나중에 수정 가능.
                         </div>
                       </div>
                     ) : (
