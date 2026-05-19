@@ -279,104 +279,71 @@ export default function ExploreClient() {
   }, []);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-3 pb-20 pt-4 sm:px-6 sm:pt-6">
-      {/* 통계 배너 (FOMO) */}
-      {stats && (stats.caughtToday > 0 || stats.freshLocked > 0) ? (
-        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/60 dark:bg-amber-950/30">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-            {stats.caughtToday > 0 ? (
-              <span className="flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-100">
-                <FlameIcon className="h-4 w-4" />
-                오늘 {stats.caughtToday.toLocaleString("ko-KR")}건 잡힘
-              </span>
-            ) : null}
-            {stats.freshLocked > 0 ? (
-              <span className="text-amber-700 dark:text-amber-300">
-                · 최근 {stats.freshLagHours}시간 안에 풀린 매물 <span className="font-bold">{stats.freshLocked.toLocaleString("ko-KR")}건</span> (구독자 전용)
-              </span>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-
-      {/* 헤더 */}
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">탐색</h1>
-          <p className="mt-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            6시간 이상 지난 매물 30개 · 30분마다 새로 받기
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => loadPool(true)}
-          disabled={!canRefresh || refreshing}
-          className={`shrink-0 rounded-xl px-3 py-2 text-xs font-bold transition ${
-            canRefresh && !refreshing
-              ? "bg-emerald-600 text-white hover:bg-emerald-700"
-              : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
-          }`}
-        >
-          {refreshing ? "받는 중..." : canRefresh ? "새 30개 받기" : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 가능`}
-        </button>
+    <div className="mx-auto w-full max-w-6xl px-3 pb-24 pt-2 sm:px-6 sm:pt-4">
+      {/* Wave 345: 당근 feed 스타일 — 위 단순화. 통계+paywall 한 줄 inline. */}
+      <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] font-medium">
+        {stats && stats.caughtToday > 0 ? (
+          <span className="flex items-center gap-1 text-amber-700 dark:text-amber-300">
+            <FlameIcon className="h-3 w-3" />
+            오늘 {stats.caughtToday.toLocaleString("ko-KR")}건 잡힘
+          </span>
+        ) : null}
+        {stats && stats.freshLocked > 0 ? (
+          <span className="flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
+            <ZapIcon className="h-3 w-3 text-amber-500" />
+            즉시 매물 {stats.freshLocked.toLocaleString("ko-KR")}건은 구독자 전용 (곧 출시)
+          </span>
+        ) : (
+          <span className="flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
+            <ZapIcon className="h-3 w-3 text-amber-500" />
+            즉시 매물은 구독자 전용 — 곧 출시
+          </span>
+        )}
       </div>
 
-      {/* Paywall 예고 칩 */}
-      <div className="mb-4 flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
-        <ZapIcon className="h-4 w-4 text-amber-500" />
-        <span>
-          <span className="font-bold text-zinc-900 dark:text-zinc-100">즉시 매물</span>은 구독자 전용 — 곧 출시. 지금은 6시간 전 매물만 무료로 봐요.
-        </span>
-      </div>
-
-      {/* Wave 340: 카테고리 필터 + 정렬 */}
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap gap-1.5">
-          {CATEGORY_OPTIONS.map((opt) => {
-            const isActive = selectedCategories.has(opt.value);
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  setSelectedCategories((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(opt.value)) next.delete(opt.value);
-                    else next.add(opt.value);
-                    return next;
-                  });
-                }}
-                className={`rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
-                  isActive
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
-                    : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400 dark:hover:border-zinc-600"
-                }`}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-          {selectedCategories.size > 0 ? (
+      {/* 필터/정렬 — sticky bar (당근식) */}
+      <div className="sticky top-0 z-20 -mx-3 mb-3 flex items-center gap-1.5 overflow-x-auto bg-[#f6f1e8]/95 px-3 py-2 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:px-6">
+        {CATEGORY_OPTIONS.map((opt) => {
+          const isActive = selectedCategories.has(opt.value);
+          return (
             <button
+              key={opt.value}
               type="button"
-              onClick={() => setSelectedCategories(new Set())}
-              className="rounded-full px-2 py-1 text-[11px] font-medium text-zinc-500 underline dark:text-zinc-400"
+              onClick={() => {
+                setSelectedCategories((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(opt.value)) next.delete(opt.value);
+                  else next.add(opt.value);
+                  return next;
+                });
+              }}
+              className={`shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
+                isActive
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                  : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
+              }`}
             >
-              초기화
+              {opt.label}
             </button>
-          ) : null}
-        </div>
-        <div className="ml-auto flex items-center gap-1.5 text-[11px]">
-          <span className="text-zinc-500 dark:text-zinc-400">정렬</span>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortOption)}
-            className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
+          );
+        })}
+        {selectedCategories.size > 0 ? (
+          <button
+            type="button"
+            onClick={() => setSelectedCategories(new Set())}
+            className="shrink-0 px-1.5 py-1 text-[10px] font-medium text-zinc-500 underline dark:text-zinc-400"
           >
-            <option value="profit_desc">차익 높은순</option>
-            <option value="latest">최신순</option>
-          </select>
-        </div>
+            초기화
+          </button>
+        ) : null}
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortOption)}
+          className="ml-auto shrink-0 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
+        >
+          <option value="profit_desc">차익순</option>
+          <option value="latest">최신순</option>
+        </select>
       </div>
 
       {/* 로딩 / 에러 / 매물 grid */}
@@ -510,10 +477,37 @@ export default function ExploreClient() {
         </div>
       )}
 
-      {/* 푸터 안내 */}
+      {/* Wave 345: 모바일 fixed sticky 하단 — "새 30개 받기" (당근 글쓰기 버튼 패턴). */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-4 sm:hidden">
+        <button
+          type="button"
+          onClick={() => loadPool(true)}
+          disabled={!canRefresh || refreshing}
+          className={`pointer-events-auto inline-flex min-h-12 items-center gap-2 rounded-full px-6 py-3 text-sm font-bold shadow-[0_16px_34px_rgba(34,49,39,0.28)] transition active:scale-[0.98] ${
+            canRefresh && !refreshing
+              ? "bg-emerald-600 text-white"
+              : "bg-zinc-400 text-zinc-100"
+          }`}
+        >
+          {refreshing ? "받는 중..." : canRefresh ? "✨ 새 30개 받기" : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 가능`}
+        </button>
+      </div>
+
+      {/* 데스크탑: 목록 아래 일반 버튼 */}
       {!loading && items.length > 0 ? (
-        <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-center text-[11px] font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
-          매물 클릭 → 상세 정보 확인. 시세는 AI 비교 정보일 뿐, 거래 진위는 본인이 판단.
+        <div className="mt-6 hidden justify-center sm:flex">
+          <button
+            type="button"
+            onClick={() => loadPool(true)}
+            disabled={!canRefresh || refreshing}
+            className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition ${
+              canRefresh && !refreshing
+                ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+            }`}
+          >
+            {refreshing ? "받는 중..." : canRefresh ? "✨ 새 30개 받기" : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} 후 가능`}
+          </button>
         </div>
       ) : null}
 
