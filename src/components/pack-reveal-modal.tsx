@@ -1318,7 +1318,7 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   // - sub line-clamp-2 + 고정 높이 (정렬 어긋남 방지)
   // - 라벨 한 줄 고정
   return (
-    <div className="mt-2 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
+    <div className="mt-2 overflow-hidden border-t border-zinc-200 bg-white/0 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:dark:bg-zinc-900/40">
       <div className="grid grid-cols-3 divide-x divide-zinc-200 dark:divide-zinc-800">
         {tiles.map((tile) => {
           const tone = upperFoldTileClass(tile.tone);
@@ -1687,7 +1687,7 @@ function SellerTrustPanel({ card }: { card: RevealCard }) {
       : AlertTriangleIcon;
 
   return (
-    <section className={`mt-3 rounded-xl border border-zinc-200 border-l-4 ${accentBorderClass} bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40`}>
+    <section className={`mt-3 border-t border-zinc-200 border-l-4 ${accentBorderClass} bg-white/0 py-3 pl-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2.5">
           <TrustIcon className={`mt-3 h-6 w-6 shrink-0 ${valueColor}`} />
@@ -1746,7 +1746,7 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
   };
 
   return (
-    <section className="mt-3 rounded-xl border border-zinc-200 border-l-4 border-l-rose-500 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40">
+    <section className="mt-3 border-t border-zinc-200 border-l-4 border-l-rose-500 bg-white/0 py-3 pl-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -1866,7 +1866,7 @@ function SellHelperPanel({
   const optionalPhotos = helper.photos.filter((p) => !p.required);
 
   return (
-    <section className="mt-3 rounded-xl border border-zinc-200 border-l-4 border-l-emerald-500 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40">
+    <section className="mt-3 border-t border-zinc-200 border-l-4 border-l-emerald-500 bg-white/0 py-3 pl-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -2053,7 +2053,7 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
   const bonusFromDaangn = bunjangFee;
 
   return (
-    <section className="mt-3 rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40">
+    <section className="mt-3 border-t border-zinc-200 bg-white/0 py-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
       <div className="flex items-center justify-between gap-2">
         <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
           어디에 팔지? — 차익 비교
@@ -2164,7 +2164,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
     : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200";
 
   return (
-    <section className="mt-3 rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/40">
+    <section className="mt-3 border-t border-zinc-200 bg-white/0 py-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
       {/* Wave 323 (디자인 평탄화): 박스 안 박스 제거, 단일 평면 + 섹션 구분선. */}
       <div className="flex items-center justify-between gap-2">
         <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
@@ -2532,7 +2532,7 @@ function RevealCardItem({
       {/* 좌측 카드 닫음 — 우측 카드 = 시세 그래프 + 디테일. */}
 
       {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
-      <div className="order-2 mx-3 space-y-2 rounded-2xl border border-[#dfd6c9] bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] p-3 shadow-[0_16px_34px_rgba(49,66,56,0.08)] ring-1 ring-white/70 dark:border-zinc-800 dark:bg-none dark:bg-zinc-900 dark:ring-zinc-800/70 sm:mx-0 lg:order-2">
+      <div className="order-2 space-y-2 px-3 sm:mx-0 sm:rounded-2xl sm:border sm:border-[#dfd6c9] sm:bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] sm:p-3 sm:shadow-[0_16px_34px_rgba(49,66,56,0.08)] sm:ring-1 sm:ring-white/70 sm:dark:border-zinc-800 sm:dark:bg-none sm:dark:bg-zinc-900 sm:dark:ring-zinc-800/70 lg:order-2">
         <div className="flex items-center justify-between gap-2">
           <div className="text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
             시세 그래프 · 시장 분석
