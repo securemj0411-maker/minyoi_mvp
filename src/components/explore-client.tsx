@@ -43,6 +43,8 @@ type PoolResponse = {
   pageSize: number;
   freshLagHours: number;
   message?: string;
+  // Wave 382: 사용자 예산이 fallback됐는지 (사용자 안내용).
+  appliedBudget?: "150k" | "300k" | "500k" | "unlimited";
 };
 
 type StatsResponse = {
@@ -208,6 +210,8 @@ export default function ExploreClient() {
   // Wave 376: 가입 직후 (prefs X) → 모달 자동 열림 + 예산만 묻기 (성향은 default balanced).
   // 답 또는 dismiss 전에는 첫 fetch 보류 — 첫 30개부터 personalized 가치 체감.
   const [awaitingInitialPrefs, setAwaitingInitialPrefs] = useState(false);
+  // Wave 382: pool API에서 fallback 적용된 예산 (사용자 prefs와 다르면 배너 표시)
+  const [appliedBudget, setAppliedBudget] = useState<Budget | null>(null);
 
   // localStorage 로드 (mount 1회). prefs X면 가입 직후 자동 폼 트리거.
   useEffect(() => {
@@ -315,6 +319,8 @@ export default function ExploreClient() {
           }
         }
         setCooldown(data.cooldown);
+        // Wave 382: 응답의 fallback 적용된 budget 저장 (사용자 prefs와 비교 위해)
+        if (data.appliedBudget) setAppliedBudget(data.appliedBudget);
       } else {
         setError(data.message ?? "매물 불러오기 실패");
       }
@@ -529,6 +535,29 @@ export default function ExploreClient() {
           <option value="latest">최신순</option>
         </select>
       </div>
+
+      {/* Wave 382: budget fallback 안내 — 사용자 prefs와 응답 appliedBudget 다를 때만 표시 */}
+      {preferences && appliedBudget && preferences.budget !== "unlimited" && appliedBudget !== preferences.budget ? (
+        <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2.5 text-xs dark:border-amber-900/60 dark:bg-amber-950/30">
+          <span className="text-base leading-none">💡</span>
+          <div className="min-w-0 flex-1 leading-5 text-amber-900 dark:text-amber-200">
+            <b className="font-bold">{BUDGET_OPTIONS.find((o) => o.value === preferences.budget)?.label}</b> 매물이 부족해서{" "}
+            <b className="font-bold">{BUDGET_OPTIONS.find((o) => o.value === appliedBudget)?.label}</b>로 준비했어요.
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setDraftBudget(preferences.budget);
+              setDraftPreference(preferences.preference);
+              setEditingPrefs(true);
+              setRefreshModalOpen(true);
+            }}
+            className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-900 transition hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200"
+          >
+            예산 수정
+          </button>
+        </div>
+      ) : null}
 
       {/* 로딩 / 에러 / 매물 grid */}
       {loading ? (

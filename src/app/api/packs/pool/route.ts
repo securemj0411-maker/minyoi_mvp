@@ -396,9 +396,30 @@ export async function GET(req: Request) {
     const { pool, raws, metas, marketBands } = await loadPool(headers, { sort });
     let items = buildItems(pool, raws, metas, marketBands);
 
-    // Wave 373: 예산 필터 — 매입가 상한 이하만.
+    // Wave 373: 예산 필터. Wave 382: fallback chain — 사용자 예산 안 매물 부족하면
+    // 한 단계 위로 자동 확장 (150k → 300k → 500k → unlimited). 임계 < 5개.
+    const FALLBACK_THRESHOLD = 5;
+    const fallbackChain: { code: "150k" | "300k" | "500k" | "unlimited"; max: number | null }[] = [
+      { code: "150k", max: 150000 },
+      { code: "300k", max: 300000 },
+      { code: "500k", max: 500000 },
+      { code: "unlimited", max: null },
+    ];
+    let appliedBudget: "150k" | "300k" | "500k" | "unlimited" = "unlimited";
     if (priceMax != null) {
-      items = items.filter((it) => it.price <= priceMax);
+      const startIdx = fallbackChain.findIndex((c) => c.max === priceMax);
+      const effectiveStart = startIdx >= 0 ? startIdx : 0;
+      for (let i = effectiveStart; i < fallbackChain.length; i++) {
+        const candidate = fallbackChain[i];
+        const candFiltered = candidate.max == null
+          ? items
+          : items.filter((it) => it.price <= candidate.max!);
+        if (candFiltered.length >= FALLBACK_THRESHOLD || i === fallbackChain.length - 1) {
+          items = candFiltered;
+          appliedBudget = candidate.code;
+          break;
+        }
+      }
     }
 
     // Wave 373: 성향 정렬 — preference 따라 우선순위 재정렬.
@@ -430,6 +451,8 @@ export async function GET(req: Request) {
       total: items.length,
       pageSize: PAGE_SIZE,
       freshLagHours: FRESH_LAG_HOURS,
+      // Wave 382: 사용자 예산이 fallback됐는지 (사용자 안내용).
+      appliedBudget,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
