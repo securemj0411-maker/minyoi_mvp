@@ -109,6 +109,19 @@ const DRONE_FILTER_ACCESSORY_NOISE = [
   // 그립/홀더/마운트 (GoPro/액션캠 액세서리)
   "볼타", "그립 단품", "셀카봉만", "셀카봉 단품", "삼각대만",
   "헬멧 마운트", "마운트 단품", "흡착 마운트",
+  // Wave 237 (2026-05-19): production audit — DJI 액세서리 단품 매물 다수 mismatch.
+  //   본품 가격 (DJI Mavic 1~3M, Mini 800k) 과 격차 큼 → 시세 왜곡 (60k 매물이 median 낮춤).
+  //   주의: "프로펠러" 단독 차단 X — 정상 본품 풀세트도 차단됨. 단품 명시 키워드만.
+  "배터리만", "배터리 단품", "배터리 판매(?!\\s*용)", "드론배터리", "battery only",
+  "프롭만", "프로펠러만", "프로펠러 단품", "프롭 단품",
+  "매크로 렌즈", "pov 렌즈", "렌즈 단품", "와이드 렌즈 단품", "어안 렌즈만",
+  "액세서리 4종", "액세서리 세트(?!\\s*포함)", "악세 풀셋(?!\\s*트)", "악세서리 모음", "액세서리 모음",
+  "스킨 스티커만", "보호 스티커만", "데칼만", "데칼 단품",
+  "마이크 단품", "마이크만", "외장 마이크 단품",
+  "프로펠러 가드만", "프로펠러 홀더만",
+  "슬링백만", "전용 슬링백만",
+  "삼각대로드만", "삼각대 단품만",
+  "배터리 핸들만", "배터리 그립만",
 ];
 
 // Garmin 워치 액세서리 (마운트/스트랩/케이스 단품) — 본품 X.
@@ -6931,6 +6944,11 @@ export const CATALOG: Sku[] = [
       "벨트", "지갑", "모자", "캡", "cap", "넥타이", "키링", "클러치", "장지갑",
       "스니커즈", "sneaker",
       "목걸이", "925",
+      // Wave 237 (2026-05-19): production sample audit 발견 — 주얼리 매물 차단 강화.
+      //   "RRL 나바호 빈티지 팔찌" 320k 매물 잘못 매칭 (의류 SKU 인데).
+      "팔찌", "bracelet", "반지", "ring\\b", "귀걸이", "earring",
+      "주얼리", "jewelry", "터콰이즈", "turquoise", "네이티브 어메리칸", "native american",
+      "나바호 팔찌", "나바호 반지", "나바호 액세서리", "커프", "cuff", "버클\\b",
     ],
     msrpKrw: 350000, released: 2020,
   },
@@ -7000,7 +7018,12 @@ export const CATALOG: Sku[] = [
       "백팩", "backpack", "숄더백", "토트백", "shoulder bag", "tote bag",
       "웨이스트백", "웨이스트 백", "waist bag", "벨트백", "belt bag",
       "뮬", "슬리퍼", "샌들",
-      "지샥", "g-shock", "dw-6900", "dw6900", "카시오"],
+      "지샥", "g-shock", "dw-6900", "dw6900", "카시오",
+      // Wave 237 (2026-05-19): production sample audit 발견 — 가방 추가 패턴 누락.
+      //   "슈프림 노스 데이팩 데님" 410k 매물 잘못 매칭 (가방 인데 의류 SKU).
+      "데이팩", "daypack", "day pack", "메신저", "messenger",
+      "더플", "duffle", "duffel", "트래블", "travel bag",
+      "크로스백", "cross bag", "crossbody"],
     msrpKrw: 380000, released: 2020,
   },
   // Wave 219 (2026-05-19): Supreme × TNF product type 분리 — 자켓 300~400K / 백팩 250~350K / 슬리퍼 250K / 지샥 290K
@@ -9238,8 +9261,21 @@ const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, strin
 const UNIVERSAL_BUY_REQUEST_NOISE: string[] = [
   "구함\\b", "구해요", "구합니다", "구해봅니다", "구해 봅니다",
   "구매 원함", "구매원함", "구매원해요", "구매 원해요", "구매원합니다", "구매 원합니다",
+  // Wave 237 (2026-05-19): production audit — Apple Watch Ultra "구매합니다(가격상의)" 500k 매물 통과.
+  "구매합니다", "구매 합니다",
   "(구매)", "[구매]", "구매희망", "구매 희망",
   "사고 싶어요", "사고싶어요", "사고싶습니다", "삽니다", "살게요", "매입",
+];
+
+// Wave 237 (2026-05-19): production audit — 액세서리/단품 매물이 본품 SKU 매칭 (cross-cutting).
+//   smartwatch 사례: "정품 스포츠 실리콘밴드" 50k / "스포츠루프 스타라이트" 17k → applewatch-series4 매칭.
+//   본품 매물 (애플워치 시리즈4 13~16만) 가격대와 10배 차이 → 시세 왜곡 큼.
+//   사용자 코멘트 발단 패턴 (Wave 235): DJI 렌즈 단품 / 에어팟 한쪽 / 시계 밴드 단품 다 cross-cutting.
+const UNIVERSAL_ACCESSORY_ONLY_NOISE: string[] = [
+  // 시계 / 스마트워치 밴드 단품 (smartwatch 카테고리만 적용 가능 but 다른 카테고리 영향 X)
+  "밴드만", "밴드 단품", "스트랩만", "스트랩 단품", "줄만", "워치줄만", "워치 스트랩만",
+  "스포츠 ?루프", "sport ?loop",
+  "버클만", "버클 단품",
 ];
 
 function skuMatches(sku: Sku, normalizedText: string): boolean {
@@ -9252,6 +9288,13 @@ function skuMatches(sku: Sku, normalizedText: string): boolean {
   // Wave 236 (2026-05-19): 모든 카테고리 — 역경매/구함 패턴 차단 (smartphone/tablet 등 포함).
   for (const token of UNIVERSAL_BUY_REQUEST_NOISE) {
     if (tokenHit(normalizedText, token)) return false;
+  }
+  // Wave 237 (2026-05-19): smartwatch 밴드 단품 매물 차단 (production audit 발견).
+  //   applewatch-series4 SKU 에 "스포츠 실리콘밴드 50k" / "스포츠루프 17k" 매물 잘못 매칭.
+  if (sku.category === "smartwatch") {
+    for (const token of UNIVERSAL_ACCESSORY_ONLY_NOISE) {
+      if (tokenHit(normalizedText, token)) return false;
+    }
   }
   // Wave 230: shoe/clothing/bag 카테고리는 자동 global noise + category noise 차단.
   if (sku.category === "clothing" || sku.category === "shoe" || sku.category === "bag") {
