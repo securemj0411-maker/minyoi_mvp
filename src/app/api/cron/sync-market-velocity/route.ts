@@ -64,8 +64,8 @@ export async function GET(req: NextRequest) {
       summary,
     });
   } catch (err) {
-    return logAndRespond("cron/sync-market-velocity", err, {
-      startedAt: startedAt.toISOString(),
+    return logAndRespond("cron/sync-market-velocity", err, "cron_sync_market_velocity_failed", {
+      context: { startedAt: startedAt.toISOString() },
     });
   }
 }
