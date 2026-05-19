@@ -317,6 +317,8 @@ export default function AppNav() {
 
   const navLinks = [
     { href: "/", label: "추천 상품" },
+    // Wave 338: 무료 사용자 매물 풀 browsing (Freemium /explore)
+    ...(user ? [{ href: "/explore", label: "탐색" }] : []),
     { href: "/how-it-works", label: "서비스 안내" },
     { href: "/plans", label: "요금제" },
     ...(user ? [{ href: "/me", label: "내 대시보드" }] : []),
