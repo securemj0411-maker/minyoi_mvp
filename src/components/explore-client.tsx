@@ -479,36 +479,28 @@ export default function ExploreClient() {
         </div>
       )}
 
-      {/* Wave 345+346: 모바일 fixed sticky 하단 — 클릭 시 모달 (기다리기/충전 옵션) */}
+      {/* Wave 347: 모바일 fixed sticky 하단 — 단순 "다른 매물 찾기". cooldown은 모달 안에서. */}
       <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-4 sm:hidden">
         <button
           type="button"
           onClick={() => setRefreshModalOpen(true)}
           disabled={refreshing}
-          className={`pointer-events-auto inline-flex min-h-12 items-center gap-2 rounded-full px-6 py-3 text-sm font-bold shadow-[0_16px_34px_rgba(34,49,39,0.28)] transition active:scale-[0.98] ${
-            canRefresh
-              ? "bg-emerald-600 text-white"
-              : "bg-amber-500 text-white"
-          }`}
+          className="pointer-events-auto inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3 text-sm font-bold text-[var(--brand-cream)] shadow-[0_16px_34px_rgba(34,49,39,0.28)] transition active:scale-[0.98]"
         >
-          {refreshing ? "받는 중..." : canRefresh ? "✨ 새 30개 받기" : `⏱ ${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} · 옵션 보기`}
+          {refreshing ? "받는 중..." : "🔍 다른 매물 찾기"}
         </button>
       </div>
 
-      {/* 데스크탑: 목록 아래 일반 버튼 */}
+      {/* 데스크탑: 목록 아래 */}
       {!loading && items.length > 0 ? (
         <div className="mt-6 hidden justify-center sm:flex">
           <button
             type="button"
             onClick={() => setRefreshModalOpen(true)}
             disabled={refreshing}
-            className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition ${
-              canRefresh
-                ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                : "bg-amber-500 text-white hover:bg-amber-600"
-            }`}
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-5 py-2.5 text-sm font-bold text-[var(--brand-cream)] transition hover:opacity-90"
           >
-            {refreshing ? "받는 중..." : canRefresh ? "✨ 새 30개 받기" : `⏱ ${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")} · 옵션 보기`}
+            {refreshing ? "받는 중..." : "🔍 다른 매물 찾기"}
           </button>
         </div>
       ) : null}
