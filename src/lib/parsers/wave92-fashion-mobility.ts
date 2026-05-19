@@ -334,9 +334,39 @@ type ShoeProductType =
 
 function parseClothingProductType(text: string): ClothingProductType {
   const t = text.toLowerCase();
-  // 우선순위 — 더 specific 한 키워드부터 (jacket 가 down_jacket 보다 먼저 매칭되면 안 됨).
-  // Wave 236b (2026-05-19): in-memory simulate sample 30건 분석 → 누락 패턴 보완.
-  //   17% type_unknown (511/3000) → 보완 후 ~5% 목표.
+  // Wave 254.6 (2026-05-20) — 우선순위 정정 (사용자 발견 root cause):
+  //   기존: down_jacket 모델명 (눕시/nuptse) 가 shorts 보다 먼저 매칭 →
+  //     pid 331382713 "빔즈 노스페이스 눕시 쇼츠" → down_jacket 잘못.
+  //   systemic 사례:
+  //     - clothing-tnf-nuptse-1996 + 쇼츠 (model = down_jacket, 매물 = shorts)
+  //     - clothing-tnf-purple-label + 쇼츠
+  //     - clothing-tnf-supreme-collab + 모자
+  //     - clothing-polo-rrl-denim + 쇼츠
+  //   fix: product_type 명시 키워드 (쇼츠/모자/벨트/지갑/원피스/스커트/팬츠/jeans) 가 모델명 기반 패턴보다 먼저.
+  //   기존 패턴 모두 유지 — 순서만 변경 (additive, 비파괴).
+  //
+  // ── PRIORITY 1: 명시적 product_type 키워드 (모델명과 충돌 가능) ──
+  // shorts — "눕시 쇼츠" / "마운틴 쇼츠" / "RRL 쇼츠" 등 (down_jacket/jacket/jeans 모델명 + 쇼츠 매물).
+  if (/반바지|쇼츠|shorts\b|버뮤다|bermuda/.test(t)) return "shorts";
+  // dress — "원피스" 단독 (셔츠 등과 다름).
+  if (/원피스|dress\b|드레스(?!\s*셔츠)|미니 ?원피스|롱 ?원피스/.test(t)) return "dress";
+  // skirt.
+  if (/스커트|skirt/.test(t)) return "skirt";
+  // cap/hat — "Supreme 모자" / "TNF 모자" 등 (collab brand 모자).
+  //   Wave 254.6: 기존 "모자\b" 패턴 bug 정정 — JavaScript \b 가 Korean 한글 매칭 안 됨
+  //   ("모자" 단독 / "모자가" / "모자에" 매칭 실패). fix: bare "모자" (자켓에 모자 부속 등 false positive 낮음).
+  //   "모자이크/모자보호" 등 false positive 차단 — 명시적 negative lookahead.
+  if (/볼캡|ball ?cap|야구모자|버킷햇|bucket hat|벙거지|비니|beanie|메쉬캡|메쉬 ?캡|트러커 ?캡|trucker cap|cap\b|모자(?!이크|보호)|스냅백|snapback/.test(t)) return "cap";
+  // belt — "Supreme 벨트" / "Polo RRL 벨트" 등.
+  if (/벨트|belt\b/.test(t)) return "belt";
+  // wallet — "콘초 월렛" / "장지갑" 등.
+  if (/지갑|wallet|반지갑|장지갑|카드지갑|머니 ?클립|콘초 ?월렛|콘초 ?지갑/.test(t)) return "wallet";
+  // jeans — 청바지 명시 (데님 팬츠보다 specific).
+  if (/청바지|진(?:즈)?\b|jean(?:s)?\b|데님 ?팬츠|데님 ?진|denim ?jean|빈파포|빈티지 ?파이브 ?포켓|파이브 ?포켓|five ?pocket|5 ?포켓|5-pocket|기빈스|미드랜드|이스트웨스트|힐스뷰|에이버리|키팅진/.test(t)) return "jeans";
+  // pants — "RRL 데님 팬츠" 등 (jeans 보다 narrow 한 데님은 위에서 잡힘).
+  if (/팬츠|pants\b|바지(?!\s*받침)|trouser|치노|chino|슬랙스|slacks|조거|jogger|카고|cargo|트랙 ?팬츠|track ?pants|카펜터|carpenter|워크팬츠|workwear ?pants/.test(t)) return "pants";
+
+  // ── PRIORITY 2: 모델명 기반 / 일반 product_type 키워드 ──
   // down jacket — 눕시 / 푸퍼 / 다운 라이너 등.
   if (/패딩|다운 ?재킷|다운 ?자켓|down ?jacket|푸퍼|puffer|nano puff|nanopuff|구스다운|덕다운|눕시|nuptse|다운 ?베스트|다운 ?베어|다운 ?재킷|다운 ?파카|down ?parka/.test(t)) return "down_jacket";
   if (/코트(?!\s*디테일)|coat\b|trench|트렌치|체스터필드|chesterfield|피코트|peacoat|카코트|발마칸|balmacaan|울 ?코트/.test(t)) return "coat";
@@ -352,30 +382,32 @@ function parseClothingProductType(text: string): ClothingProductType {
   if (/롱슬리브|long sleeve|롱 ?티|장 ?티|long sleeved/.test(t)) return "tee"; // 롱슬리브 = tee 류
   // Wave 236b: 반팔 단독 + 탱크탑/민소매 추가.
   if (/티 ?셔츠|tee\b|반팔 ?티|반팔티|t-shirt|tshirt|t ?셔츠|반팔(?!\s*티 ?셔츠)|탱크 ?탑|tank ?top|민소매|sleeveless|반 ?소매/.test(t)) return "tee";
-  if (/폴로(?!\s*rrl|랄프)|polo shirt|폴로 ?티|피케 ?폴로|피케 ?셔츠|pique/.test(t)) return "polo_shirt";
+  // Wave 254.6: polo_shirt lookahead group bug fix — `(?!\s*rrl|랄프)` 의 alternation
+  //   파싱: `\s*rrl` OR `랄프` (모두 from 같은 시작점). 실제는 `\s*rrl|랄프` 가 `\s*` 만 첫 번째에 적용.
+  //   "폴로 랄프로렌" → 폴로 + 공백 + 랄프 → 폴로 match 후 lookahead "\s*rrl|랄프" 검사 →
+  //     "\s*rrl" 공백 0~N + "rrl" 안 맞음 / "랄프" 위치는 ' '에서 시작 ≠ '랄' → 둘 다 fail → polo_shirt match (잘못).
+  //   fix: (?:\s*rrl|\s*랄프|옥스포드|oxford|셔츠) — 그룹화 + 옥스포드 셔츠/shirt 제외.
+  if (/폴로(?!\s*(?:rrl|랄프|옥스포드|oxford|셔츠))|polo shirt|폴로 ?티|피케 ?폴로|피케 ?셔츠|pique/.test(t)) return "polo_shirt";
   // Wave 236b: 남방 추가.
   if (/셔츠(?!\s*ZIP)|shirt(?! sleeve)|남방|button ?up|버튼 ?다운|button ?down|옥스포드 ?셔츠|oxford ?shirt/.test(t)) return "shirt";
-  // Wave 236b: 빈파포/빈티지 파이브포켓/5-pocket → jeans.
-  if (/청바지|진(?:즈)?\b|jean(?:s)?\b|데님 ?팬츠|데님 ?진|denim ?jean|빈파포|빈티지 ?파이브 ?포켓|파이브 ?포켓|five ?pocket|5 ?포켓|5-pocket|기빈스|미드랜드|이스트웨스트|힐스뷰|에이버리|키팅진/.test(t)) return "jeans";
-  if (/반바지|쇼츠|shorts\b|버뮤다|bermuda/.test(t)) return "shorts";
-  if (/원피스|dress\b|드레스(?!\s*셔츠)|미니 ?원피스|롱 ?원피스/.test(t)) return "dress";
-  if (/스커트|skirt/.test(t)) return "skirt";
-  // Wave 236b: 트랙 팬츠 추가 (분리 — track top 은 jacket).
-  if (/팬츠|pants\b|바지(?!\s*받침)|trouser|치노|chino|슬랙스|slacks|조거|jogger|카고|cargo|트랙 ?팬츠|track ?pants|카펜터|carpenter|워크팬츠|workwear ?pants/.test(t)) return "pants";
-  if (/볼캡|ball ?cap|야구모자|버킷햇|bucket hat|벙거지|비니|beanie|메쉬캡|메쉬 ?캡|트러커 ?캡|trucker cap|cap\b|모자\b|스냅백|snapback/.test(t)) return "cap";
-  if (/벨트|belt\b/.test(t)) return "belt";
-  if (/지갑|wallet|반지갑|장지갑|카드지갑|머니 ?클립|콘초 ?월렛|콘초 ?지갑/.test(t)) return "wallet";
   return "type_unknown";
 }
 
 function parseBagProductType(text: string): BagProductType {
   const t = text.toLowerCase();
-  // Wave 236b (2026-05-19): in-memory simulate 22% type_unknown → 누락 패턴 보완.
-  //   호보백/버킷백/체인백/카메라백/슬링백/탑핸들/포쉐트/포켓오거나이저 등.
+  // Wave 254.6 (2026-05-20) — accessory 우선순위 강화 + Borealis/Big Shot 모델명 false positive 차단.
+  //   사용자 발견 사례: "Borealis 키링" → backpack 잘못. 모델명 단독 매칭 risk.
+  //   기존 패턴 유지 — accessory keyword 더 명확히 top, backpack 모델명은 backpack/배낭 키워드 동반 시만.
+  //
+  // ── PRIORITY 1: accessory (지갑/파우치/카드지갑) — 모델명 충돌 차단 ──
   if (/카드지갑|반지갑|머니 ?클립|card ?holder|card ?case|카드 ?케이스|콘초 ?지갑/.test(t)) return "card_holder";
   if (/장지갑|long wallet|월렛|지갑(?!\s*케이스)|wallet\b|포켓 ?오거나이저|pocket ?organizer|콘초 ?월렛/.test(t)) return "wallet";
   if (/파우치|pouch|미니 ?파우치|cosmetic|화장품 ?파우치|포쉐트|pochette/.test(t)) return "pouch";
   if (/클러치|clutch/.test(t)) return "clutch";
+  // Wave 254.6: 키링/스트랩/참 등 액세서리 단독 → type_unknown (backpack 모델명 false positive 차단).
+  if (/^\s*(?:키링|key ?ring|스트랩|strap|참|charm|네임 ?태그|name ?tag)\s*$|^\s*[가-힣A-Za-z0-9\s]*\s+(?:키링|key ?ring|스트랩|strap|참|charm)\s*$/.test(t)) return "type_unknown";
+
+  // ── PRIORITY 2: 형태 명시 (메신저/더플/허리/숄더 등) ──
   if (/메신저|messenger/.test(t)) return "messenger";
   if (/더플|duffle|duffel|보스턴 ?백|boston ?bag|여행 ?가방|트래블/.test(t)) return "duffle";
   if (/웨이스트|허리|힙색|waist ?bag|fanny ?pack|벨트 ?백|fanny|슬링 ?백|sling ?bag|sling\b|보레알리스 ?슬링|borealis ?sling/.test(t)) return "waist";

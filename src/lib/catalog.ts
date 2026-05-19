@@ -9808,6 +9808,29 @@ const UNIVERSAL_ACCESSORY_ONLY_NOISE: string[] = [
 //   skuMatches 안에서 intersect-aware 차단: sku.mustContain 토큰과 겹치는 brand 는 skip
 //     (의도된 collab SKU 는 mustContain 에 brand 박혀있어서 skip → 정상 통과).
 //     broad SKU 는 그 brand mustContain 에 없으면 차단 → 자동 정확.
+// Wave 254.6 (2026-05-20): clothing jacket/down_jacket/coat SKU 의 product_type variant 매물 차단 (intersect-aware).
+//   사용자 발견 root: parseClothingProductType regex 가 모델명 (눕시/nuptse) 을 product_type 키워드 (쇼츠/shorts) 보다 먼저 매칭.
+//   1차 fix: parser regex 우선순위 정정 (wave92-fashion-mobility.ts).
+//   2차 fix: catalog 에서도 명백 product_type 불일치 매물 차단 (이 list).
+//   policy: SKU defaultProductType 이 jacket/down_jacket/coat 인데 매물 text 에 명백 product_type
+//     키워드 (쇼츠/모자/벨트/지갑/스커트/원피스) 매치 시 reject. mustContain 토큰에 있으면 skip
+//     (예: Polo RRL 의 belt SKU 매칭은 통과).
+//   효과: clothing-tnf-nuptse-1996 / mountain-jacket / denali-fleece / arcteryx-* /
+//     patagonia-* / supreme-* 등 17 jacket SKU 일괄 보강 (1타 N피).
+const CLOTHING_JACKET_PRODUCT_TYPE_MISMATCH_NOISE: string[] = [
+  // shorts variant (눕시 쇼츠 / 마운틴 쇼츠 / RRL 쇼츠)
+  "쇼츠", "반바지", "shorts", "버뮤다", "bermuda", "쇼츠 m", "쇼츠 l", "쇼츠 s",
+  // cap/hat variant (Supreme 모자 / TNF 모자 / 비니)
+  "모자", "비니", "beanie", "볼캡", "ball cap", "야구모자", "버킷햇", "bucket hat",
+  "벙거지", "스냅백", "snapback", "메쉬캡", "트러커캡", "trucker cap",
+  // belt variant (Supreme 벨트 / Polo RRL 벨트)
+  "벨트", "belt",
+  // wallet variant (지갑 / 카드지갑 / 콘초 월렛)
+  "지갑", "wallet", "월렛", "장지갑", "카드지갑", "반지갑",
+  // skirt / dress variant
+  "스커트", "skirt", "원피스", "드레스",
+];
+
 const GLOBAL_DESIGNER_COLLAB_NOISE: string[] = [
   // Wave 241 발견 — 즉시 단기 fix 시 박은 patterns 일반화
   "톰브라운", "thom browne", "thom-browne", "thombrowne",
@@ -9939,6 +9962,22 @@ function skuMatches(sku: Sku, normalizedText: string): boolean {
     for (const token of GLOBAL_DESIGNER_COLLAB_NOISE) {
       if (skuTokens.has(token.toLowerCase())) continue; // 자기 brand 면 skip
       if (tokenHit(normalizedText, token)) return false;
+    }
+    // Wave 254.6 (2026-05-20): clothing jacket/down_jacket/coat SKU 가 다른 product_type 매물 매칭 차단.
+    //   사용자 발견: pid 331382713 "빔즈 노스페이스 눕시 쇼츠" → clothing-tnf-nuptse-1996 (down_jacket) 잘못 매칭.
+    //   systemic 사례: clothing-tnf-purple-label + 쇼츠 / clothing-tnf-supreme-collab + 모자 / clothing-polo-rrl-denim + 쇼츠 등.
+    //   policy: SKU defaultProductType 이 jacket/down_jacket/coat 이고 매물 text 가 다른 명백 product_type 키워드 (쇼츠/모자/벨트/지갑/원피스/스커트) 매치 시 reject.
+    //   intersect-aware: 매물이 "마운틴 자켓 + 허리 벨트 포함" 같이 자켓 본품 + 벨트 부속이면 false positive 위험 OK (broad fallback).
+    //   효과: 17 jacket SKU 일괄 보강 (per-SKU mustNotContain 17번 박는 대신 1번 박음 — 1타 N피).
+    if (
+      sku.category === "clothing" &&
+      sku.defaultProductType &&
+      (sku.defaultProductType === "jacket" || sku.defaultProductType === "down_jacket" || sku.defaultProductType === "coat")
+    ) {
+      for (const token of CLOTHING_JACKET_PRODUCT_TYPE_MISMATCH_NOISE) {
+        if (skuTokens.has(token.toLowerCase())) continue; // 자기 brand mustContain 에 있으면 skip
+        if (tokenHit(normalizedText, token)) return false;
+      }
     }
   }
   return true;
