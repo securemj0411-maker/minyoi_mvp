@@ -317,7 +317,9 @@ function WhyCheapPanel({ card }: { card: RevealCard }) {
 // Wave 392.3: 진입장벽 / 불안감 해소 Q&A. 사용자가 모달 보면서 의문 들면 펼침.
 // 셀러 / 가품 / 안전결제 / 사기 신고 4개 — 가장 자주 묻는 거.
 function WhyTrustCollapse({ card }: { card: RevealCard }) {
-  const [openIdx, setOpenIdx] = useState<number | null>(null);
+  // Wave 394.6.c (외부 review #8): FAQ → 리스크 카드. 첫 Q (셀러 신뢰) default 펼침.
+  // "이건 부가 정보가 아니라 구매 판단의 핵심임. FAQ로 숨기면 안 됨" — 외부 review.
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
   const sellerRating = card.savedDetail?.sellerReviewRating ?? null;
   const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
   const isPremiumSeller = sellerRating != null && sellerRating >= 4.8 && reviewCount >= 30;
@@ -378,9 +380,10 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
   return (
     <div className="mt-3 rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="px-4 py-2.5">
+        {/* Wave 394.6.c (외부 review #8): "궁금한 점" 고객센터 톤 → "구매 전 확인" 능동형. */}
         <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-          <span aria-hidden="true">🤔</span>
-          <span>궁금한 점이 있다면</span>
+          <span aria-hidden="true">🛡</span>
+          <span>구매 전 확인 — 자주 묻는 4가지</span>
         </div>
       </div>
       <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -2857,6 +2860,18 @@ function RevealCardItem({
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const sourceBadge = marketSourceBadge(card);
   const netPct = netProfitPercent(card);
+  // Wave 394.6.a (외부 review #1): 차익 헤드라인 옆 verdict chip — "3초 안에 사라/말아라/협상" 답.
+  // buyPriceGuidance.verdict 4-tier (great/good/fair/tight) → 3-tier 단순화 (사용자 일반인 친화).
+  const verdictGuidance = !isMarketInvalidated
+    ? buyPriceGuidance({ price: card.price, currentProfit: expectedProfitAverage(card) })
+    : null;
+  const verdictTier = !verdictGuidance
+    ? null
+    : verdictGuidance.verdict === "great" || verdictGuidance.verdict === "good"
+      ? { label: "매입 OK", cls: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200" }
+      : verdictGuidance.verdict === "fair"
+        ? { label: "협상 권장", cls: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200" }
+        : { label: "협상 필수", cls: "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200" };
   // Wave 2026-05-19 v2: grossGap, dailyProfit 표시 제거 (일반인 헷갈림 / 노이즈 큼).
   useEffect(() => {
     const id = window.setTimeout(() => setShown(true), delay);
@@ -2910,6 +2925,12 @@ function RevealCardItem({
                       {netPct >= 0 ? "+" : ""}{netPct}%
                     </span>
                   ) : null}
+                  {/* Wave 394.6.a (외부 review #1): 3초 결정 chip — "매입 OK / 협상 권장 / 협상 필수". */}
+                  {verdictTier ? (
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${verdictTier.cls}`}>
+                      {verdictTier.label}
+                    </span>
+                  ) : null}
                   {isMarketInvalidated ? (
                     <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-900 dark:bg-rose-900/40 dark:text-rose-100">
                       판매완료 처리
@@ -2957,13 +2978,17 @@ function RevealCardItem({
                 {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
                 <WhyCheapPanel card={card} />
                 <UpperFoldFearReducers card={card} />
+                {/* Wave 394.6.b (외부 review #7): 정보 순서 재정렬 — 사용자 판단 흐름 따름.
+                    "1. 사도 되나 → 2. 얼마 남나 → 3. 데이터 믿을 만? → 4. 위험? → 5. 깎기 → 6. 어디 팔까".
+                    가품/리스크 위로 (구매 결정 핵심), 채널 비교 아래로 (판매 결정). */}
+                <CounterfeitChecklistPanel card={card} />
                 <CostAssurancePanel card={card} />
+                {/* Wave 392.3: 진입장벽/불안감 해소 Q&A — 4개 자주 묻는 거 collapse. */}
+                <WhyTrustCollapse card={card} />
+                {/* Wave 394.6.b: 채널 비교 → SellHelper 위 (둘 다 "판매" 관련 단위). */}
                 <PlatformProfitCompare card={card} />
                 {/* Wave 393.6: SellerTrustPanel 제거 — UpperFoldFearReducers 셀러 tile +
                     WhyTrustCollapse Q&A에 셀러 정보 이미 있음. 3중 중복 해소. */}
-                <CounterfeitChecklistPanel card={card} />
-                {/* Wave 392.3: 진입장벽/불안감 해소 Q&A — 4개 자주 묻는 거 collapse. */}
-                <WhyTrustCollapse card={card} />
                 <SellHelperPanel card={card} currentFeedbackType={currentFeedbackType} />
               </div>
               <RecommendationReasonPanel
