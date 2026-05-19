@@ -4629,14 +4629,68 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   return stats;
 }
 
+// Wave 255 (2026-05-20): parser_version drift auto-detection.
+// 사용자 발견 root cause (사용자 SQL 검증):
+//   - scoreStage 가 score_dirty=true 매물만 처리 → ensureParsedRows 호출
+//   - score_dirty=false + parser_version drift 매물 평생 옛 분류
+//   - 매 wave 박을 때 manual rematch 필요 = whack-a-mole 진짜 본질
+// fix: cron tick 마다 parser_version mismatch 매물 sample 검색 → score_dirty=true 자동 set
+//   - 미래 모든 parser_version bump 자동 production 적용 (manual rematch 불필요)
+//   - additive only (score_dirty: false → true = 정상 reparse trigger)
+// systemic: LATEST_PARSER_VERSION_BY_CATEGORY 의 모든 카테고리 자동 cover.
+// 효과: Wave 254.5 (fashion v8) + 254.6 (regex 우선순위) production 적용 자동화.
+export async function parserDriftStage(deadlineMs: number): Promise<StageStats> {
+  const stats = emptyStats();
+  const deadlineGuardMs = 30_000;
+
+  const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
+  if (!scoreDirtyAvailable) return stats; // legacy compat
+
+  for (const [category, latestVersion] of Object.entries(LATEST_PARSER_VERSION_BY_CATEGORY)) {
+    if (!latestVersion) continue;
+    if (Date.now() > deadlineMs - deadlineGuardMs) break;
+
+    const sampleLimit = (category === "bag" || category === "bike") ? 500 : 1000;
+    const url = `${tableUrl("mvp_listing_parsed")}?select=pid&category=eq.${encodeURIComponent(category)}&parser_version=neq.${encodeURIComponent(latestVersion)}&limit=${sampleLimit}`;
+
+    let rows: Array<{ pid: number | string }> = [];
+    try {
+      const res = await restFetch(url);
+      if (!res.ok) {
+        console.error(`[parserDriftStage] ${category} fetch ${res.status}`);
+        continue;
+      }
+      rows = await res.json();
+    } catch (err) {
+      console.error(`[parserDriftStage] ${category} fetch exception`, err);
+      continue;
+    }
+
+    if (!Array.isArray(rows) || rows.length === 0) continue;
+    const pids = rows.map((r) => Number(r.pid)).filter(Number.isFinite);
+    if (pids.length === 0) continue;
+
+    try {
+      await patchRowsByIds("mvp_raw_listings", pids, { score_dirty: true }, REST_WRITE_CHUNK_SIZE);
+      console.log(`[parserDriftStage] ${category}: marked ${pids.length} drift → score_dirty=true (target: ${latestVersion})`);
+    } catch (err) {
+      console.error(`[parserDriftStage] ${category} patch fail`, err);
+    }
+  }
+
+  return stats;
+}
+
 export async function runTickPipeline(): Promise<TickResult> {
   const config = loadPipelineRuntimeConfig();
   const stageDurationsMs: Record<string, number> = {};
 
   const search = await timedStage(stageDurationsMs, "search", () => searchStage(Date.now() + config.tickSearchBudgetMs));
   const detail = await timedStage(stageDurationsMs, "detail", () => detailStage(Date.now() + config.tickDetailBudgetMs));
+  // Wave 255: parser_version drift 매물 자동 trigger (score_dirty=false + drift → score_dirty=true)
+  const parserDrift = await timedStage(stageDurationsMs, "parser_drift", () => parserDriftStage(Date.now() + 60_000));
   const score = await timedStage(stageDurationsMs, "score", () => scoreStage(Date.now() + config.tickScoreBudgetMs));
-  const total = mergeStats([search, detail, score]);
+  const total = mergeStats([search, detail, parserDrift, score]);
   return {
     ...total,
     stages: { search, detail, score },
