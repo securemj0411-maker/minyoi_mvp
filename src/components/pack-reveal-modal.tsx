@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
-import { ConditionPhotoBadge } from "@/components/condition-chip";
+import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { BunjangLogo, BunjangSourceBadge, DanawaLogo, DanawaSourceBadge } from "@/components/market-brand-logo";
 import {
@@ -515,17 +515,23 @@ function freshHeadline(seconds: number): { label: string; tone: "hot" | "warm" |
 
 function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
   const { label, tone } = freshHeadline(card.freshSeconds);
-  if (!tone) return null;
+  const cond = card.marketBasis?.conditionClass ?? null;
+  // 신선도 chip 또는 condition chip 둘 중 하나라도 있으면 row 표시
+  if (!tone && !cond) return null;
   return (
     <div className="mb-2 flex flex-wrap items-center gap-2">
-      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
-        tone === "hot"
-          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
-          : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-      }`}>
-        {tone === "hot" ? <span aria-hidden="true">🆕</span> : null}
-        <span>{label}</span>
-      </span>
+      {tone ? (
+        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
+          tone === "hot"
+            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+            : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+        }`}>
+          {tone === "hot" ? <span aria-hidden="true">🆕</span> : null}
+          <span>{label}</span>
+        </span>
+      ) : null}
+      {/* Wave 393.3: 모달 사진 위 ConditionPhotoBadge 제거 후 텍스트 영역에 chip으로 노출. */}
+      {cond ? <ConditionChip conditionClass={cond} variant="friendly" /> : null}
       {tone === "hot" ? (
         <Link
           href="/plans"
@@ -1223,7 +1229,8 @@ function RevealProductImage({ card }: { card: RevealCard }) {
 
   return (
     <div className="relative left-1/2 h-[290px] w-screen -translate-x-1/2 overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-800 sm:left-auto sm:mx-0 sm:h-[240px] sm:w-[240px] sm:translate-x-0 sm:rounded-lg lg:h-[280px] lg:w-[280px]">
-      <ConditionPhotoBadge conditionClass={card.marketBasis?.conditionClass ?? null} />
+      {/* Wave 393.3: ConditionPhotoBadge 모달에선 nav (좌상 ← 🏠 floating)에 가려서 제거.
+          텍스트 영역 LastVerifiedAtBadge 옆에 ConditionChip으로 대체 노출. */}
       {card.thumbnailUrl ? (
         <>
           <Image
