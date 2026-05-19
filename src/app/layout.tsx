@@ -16,16 +16,17 @@ export const viewport: Viewport = {
   ],
 };
 
-// Wave 106: SEO 보강. 한국어 자연어 + 키워드 (중고 / 리셀 / AI / 번개장터 / 시세 / 가격 차익).
-// 정직 톤 — "보장" 어휘 X, "추천" 위주.
+// Wave 106: SEO 보강. 한국어 자연어 + 키워드.
+// 2026-05-19: PG 심사 대비 톤 정비. "리셀/가격 차익"처럼 투자·수익 보장으로 읽힐 어휘 제거.
+// "시세 비교 정보 제공" 톤. 면책은 /terms 제6·11조에 박혀 있음.
 const SITE_NAME = "득템잡이";
-const TAGLINE = "중고 리셀 추천 — AI가 시세 비교해주는 가격 차익 매물";
-const DESCRIPTION = "번개장터 매물의 시세를 AI가 비교해서, 가격 차익이 큰 상품만 추천해드립니다. 옵션 같은 본품끼리만 비교하고, 공개 직전 판매 상태를 다시 확인합니다.";
+const TAGLINE = "중고 매물 시세 비교 — AI가 알려주는 알뜰 득템 정보";
+const DESCRIPTION = "공개된 중고 매물의 시세를 AI가 비교해서, 시세보다 저렴한 매물 정보를 알려드립니다. 옵션 같은 본품끼리만 비교하고, 공개 직전 판매 상태를 다시 확인합니다. 매물 진위·거래 결과는 보장하지 않으며, 최종 판단은 이용자가 합니다.";
 
 export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s — ${SITE_NAME}` },
   description: DESCRIPTION,
-  keywords: ["중고", "리셀", "리셀러", "번개장터", "시세", "가격 차익", "AI 추천", "중고 거래", "에어팟", "애플워치", "아이패드"],
+  keywords: ["중고", "중고거래", "번개장터", "시세 비교", "AI 매물 분석", "득템", "알뜰 구매", "에어팟", "애플워치", "아이패드"],
   applicationName: SITE_NAME,
   openGraph: {
     type: "website",

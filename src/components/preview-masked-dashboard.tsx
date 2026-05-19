@@ -131,10 +131,12 @@ export default function PreviewMaskedDashboard() {
 
   return (
     <main className="min-h-screen bg-[#f6f1e8] dark:bg-zinc-950">
-      {/* SEO hidden — 옛 landing 키워드 보존. */}
+      {/* SEO hidden — 옛 landing 키워드 보존.
+          2026-05-19: PG 심사 대비 톤 정비. "차익/돈 벌기"로 읽힐 표현 제거, 정보 제공·면책 톤으로 교체.
+          면책은 /terms 제6·11조 참고. */}
       <div className="sr-only">
-        <h1>득템잡이 — 중고 매물 AI 차익 분석</h1>
-        <p>중고 거래 가격 차이 자동 분석. 시세보다 싼 매물 자동 추천. 일반인도 편하게 돈 벌 수 있는 AI 사이트.</p>
+        <h1>득템잡이 — 시세보다 저렴한 중고 매물 AI 분석</h1>
+        <p>공개된 중고 매물의 시세를 AI가 비교해, 시세 대비 저렴한 매물 정보를 알려드립니다. 매물의 진위·거래 결과는 보장하지 않으며, 최종 구매 판단은 이용자가 합니다.</p>
         <p>스마트폰, 태블릿, 노트북, 애플워치, 에어팟, 카메라, 신발, 가방 등 카테고리 매물 시세 비교.</p>
       </div>
 
@@ -145,8 +147,8 @@ export default function PreviewMaskedDashboard() {
             <FlameIcon width={12} height={12} /> LIVE
           </div>
           <h1 className="mt-3 text-2xl font-black tracking-tight text-[#223127] dark:text-zinc-100 sm:text-3xl">
-            지금 사면<br />
-            <span className="text-[var(--brand-accent-strong)]">차익 나는 상품</span>
+            지금 싸게<br />
+            <span className="text-[var(--brand-accent-strong)]">득템할 수 있는 중고</span>
           </h1>
           <p className="mt-2 text-sm text-[#5a6658] dark:text-zinc-400">
             AI가 시세와 비교해서 찾았어요. 로그인하면 매물 다 보입니다.
@@ -169,7 +171,7 @@ export default function PreviewMaskedDashboard() {
             </div>
           ) : items.length === 0 ? (
             <div className="rounded-xl border border-[#ddd4c7] bg-[#fffdf9] p-6 text-center text-sm text-[#6b7269] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-              지금 차익 매물 준비 중. 잠시 후 다시 와 보세요.
+              지금 추천 매물 준비 중. 잠시 후 다시 와 보세요.
             </div>
           ) : (
             items.map((item) => {
