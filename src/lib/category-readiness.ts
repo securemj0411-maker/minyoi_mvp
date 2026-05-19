@@ -723,6 +723,8 @@ export const LANE_READINESS: LaneReadinessMap = {
   patagonia_retro_x: { status: "ready", label: "Patagonia Retro X Fleece", note: "Wave 219" },
   patagonia_down: { status: "ready", label: "Patagonia Down (Nano Puff)", note: "Wave 219" },
   patagonia_shell: { status: "ready", label: "Patagonia Shell (Torrentshell)", note: "Wave 219" },
+  // Wave 251.2 (2026-05-19): Deep Pile 90s 빈티지 콜렉터 narrow split (p50 ₩390k vs mainstream ₩165k).
+  patagonia_deep_pile: { status: "ready", label: "Patagonia Deep Pile (90s 빈티지)", note: "Wave 251.2 — n=10, mainstream 2.4배 시세" },
   mlb_apparel: { status: "ready", label: "MLB Cap (broad fallback)", note: "Wave 219: collab 분리 후 catch-all" },
   // Wave 219 (2026-05-19): MLB collab 분리 — Gucci 480K / Nike 79K / Murakami 220K vs 일반 49K
   mlb_cap_gucci_collab: { status: "ready", label: "Gucci × MLB Cap (한정 명품)", note: "Wave 219" },

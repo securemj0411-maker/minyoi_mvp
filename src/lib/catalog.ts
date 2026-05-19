@@ -8909,13 +8909,33 @@ export const CATALOG: Sku[] = [
     msrpKrw: 99000, released: 1973,
   },
   // Wave 219 (2026-05-19): Patagonia 모델별 분리 — Retro X 플리스 65~150K vs 다운 100K vs 셸 110K
+  // Wave 251.2 (2026-05-19): Deep Pile narrow split.
+  //   사용자 코멘트 (id 197 — pid 402789240 Synchilla 오트밀 ₩190k) — 비교군에 "진짜 다른 상품들"(Pull 190k / Snap-T 249k / Reversible 400k).
+  //   production sample (14d, n=164) 측정:
+  //     - mainstream Synchilla/Snap-T/Retro X — n=149 / p50 ₩165k / spread 색상-연도-사이즈 자연스러움.
+  //     - 딥파일 (Deep Pile, 90s 빈티지 콜렉터) — n=10 / p50 ₩390k / max ₩780k (시세 2.4배).
+  //     - 쉘드 신칠라 — n=4 / Reversible — n=1 / 40주년 — n=1 (narrow 임계 미달).
+  //   결론: 딥파일만 narrow 신설. 나머지는 mustNotContain 으로 broad fallback.
+  //   Wave 251.4 의 sub_model 필터 (비교군 list) 가 색상/연도 spread 의 대부분을 흡수.
+  {
+    id: "clothing-patagonia-deep-pile",
+    brand: "Patagonia", category: "clothing", laneKey: "patagonia_deep_pile",
+    modelName: "Patagonia Deep Pile (90s 빈티지 콜렉터 / Mesclun 40주년)",
+    aliases: ["Deep Pile", "딥파일", "Patagonia 딥파일", "Mesclun", "40주년"],
+    mustContain: [["patagonia", "파타고니아"], ["딥파일", "deep pile", "mesclun", "40주년", "legacy"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack"],
+    msrpKrw: 390000, released: 1990,
+    defaultProductType: "jacket",
+  },
   {
     id: "clothing-patagonia-retro-x",
     brand: "Patagonia", category: "clothing", laneKey: "patagonia_retro_x",
     modelName: "Patagonia Retro X / Classic Retro / Synchilla Fleece",
     aliases: ["Retro X", "레트로 X", "Synchilla", "Snap-T"],
     mustContain: [["patagonia", "파타고니아"], ["retro", "레트로", "fleece", "플리스", "후리스", "synchilla", "신칠라", "snap-t", "파일"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack"],
+    // Wave 251.2: 딥파일 narrow 로 routing.
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack",
+      "딥파일", "deep pile", "mesclun", "40주년", "legacy"],
     msrpKrw: 199000, released: 1985,
     defaultProductType: "jacket", // Wave 236d — Retro X/Synchilla = 플리스 자켓 라인 확정.
   },
