@@ -1738,23 +1738,17 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
         </ul>
       )}
 
-      {/* Wave 394.7.i: 비교 매물 4+ 이고 펼침 X 시 "자세히 보기 ▼" 버튼. */}
-      {listings && listings.length > INITIAL_VISIBLE && !expanded ? (
+      {/* Wave 394.7.i.fix (사용자 짚음): 디자인 일관 — 다른 매물 행처럼 full width + 폰트 통일. */}
+      {listings && listings.length > INITIAL_VISIBLE ? (
         <button
           type="button"
-          onClick={() => setExpanded(true)}
-          className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-700 transition hover:bg-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/60"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1 flex w-full items-center justify-center gap-1 rounded border border-emerald-100 bg-white/60 px-2 py-1.5 text-[11px] font-bold text-emerald-700 transition hover:bg-white/90 dark:border-emerald-900/30 dark:bg-zinc-900/40 dark:text-emerald-400 dark:hover:bg-zinc-900/60"
         >
-          자세히 보기 ({Math.min(listings.length, limit) - INITIAL_VISIBLE}개 더) <span aria-hidden="true">▼</span>
-        </button>
-      ) : null}
-      {listings && listings.length > INITIAL_VISIBLE && expanded ? (
-        <button
-          type="button"
-          onClick={() => setExpanded(false)}
-          className="mt-2 inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-bold text-zinc-600 transition hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-        >
-          접기 <span aria-hidden="true">▲</span>
+          {expanded
+            ? <>접기 <span aria-hidden="true">▲</span></>
+            : <>자세히 보기 ({Math.min(listings.length, limit) - INITIAL_VISIBLE}개 더) <span aria-hidden="true">▼</span></>
+          }
         </button>
       ) : null}
 
