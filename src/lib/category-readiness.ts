@@ -651,6 +651,12 @@ export const LANE_READINESS: LaneReadinessMap = {
   longchamp_le_pliage: { status: "ready", label: "Longchamp Le Pliage (시그니처)", note: "Wave 227 나일론" },
   nike_tailwind_79: { status: "ready", label: "Nike Tailwind 79 (Vintage Runner)", note: "Wave 227" },
   adidas_trefoil: { status: "ready", label: "Adidas Trefoil/Track Suit", note: "Wave 227 의류" },
+  // Wave 233 (2026-05-19): Vans 시리즈 누락 — 239 매물 unmatched (일반인 친화 15~60K).
+  vans_old_skool: { status: "ready", label: "Vans Old Skool", note: "Wave 233" },
+  vans_sk8_hi: { status: "ready", label: "Vans SK8-Hi", note: "Wave 233" },
+  vans_authentic: { status: "ready", label: "Vans Authentic", note: "Wave 233" },
+  vans_era: { status: "ready", label: "Vans Era", note: "Wave 233" },
+  vans_slip_on: { status: "ready", label: "Vans Slip-On", note: "Wave 233" },
   // Wave 219 (2026-05-19): Nike Blazer variant 분리 — Mid 119K / Low/Platform 99K / Hi 129K
   nike_blazer_mid: { status: "ready", label: "Nike Blazer Mid / Mid 77", note: "Wave 219" },
   nike_blazer_low: { status: "ready", label: "Nike Blazer Low / Low 77 / Platform", note: "Wave 219" },

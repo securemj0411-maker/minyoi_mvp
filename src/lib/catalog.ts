@@ -8485,6 +8485,53 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "신발", "운동화", "discovery channel"],
     msrpKrw: 119000, released: 2018,
   },
+  // Wave 233 (2026-05-19): Vans 시리즈 누락 narrow 추가 — 사용자 명시 "정확한 매물".
+  //   측정 unmatched: Vans Old Skool/Authentic/SK8/Era 239 매물. 일반인 친화 (15~60K).
+  {
+    id: "shoe-vans-old-skool",
+    brand: "Vans", category: "shoe", laneKey: "vans_old_skool",
+    modelName: "Vans Old Skool (Classic Black / Color Theory)",
+    aliases: ["Vans Old Skool", "반스 올드스쿨", "올드 스쿨", "Old Skool"],
+    mustContain: [["반스", "vans"], ["올드스쿨", "올드 스쿨", "old skool", "oldskool"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품", "미러"],
+    msrpKrw: 89000, released: 1977,
+  },
+  {
+    id: "shoe-vans-sk8-hi",
+    brand: "Vans", category: "shoe", laneKey: "vans_sk8_hi",
+    modelName: "Vans SK8-Hi (Classic / Reissue)",
+    aliases: ["Vans SK8", "반스 sk8", "SK8 Hi"],
+    mustContain: [["반스", "vans"], ["sk8", "스케이트"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
+    msrpKrw: 99000, released: 1978,
+  },
+  {
+    id: "shoe-vans-authentic",
+    brand: "Vans", category: "shoe", laneKey: "vans_authentic",
+    modelName: "Vans Authentic (Canvas Classic)",
+    aliases: ["Vans Authentic", "반스 어센틱", "Authentic"],
+    mustContain: [["반스", "vans"], ["어센틱", "authentic"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
+    msrpKrw: 79000, released: 1966,
+  },
+  {
+    id: "shoe-vans-era",
+    brand: "Vans", category: "shoe", laneKey: "vans_era",
+    modelName: "Vans Era (Classic Canvas Low)",
+    aliases: ["Vans Era", "반스 에라", "Era"],
+    mustContain: [["반스", "vans"], ["에라", " era ", "era\\b"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품", "벨크로"],
+    msrpKrw: 79000, released: 1976,
+  },
+  {
+    id: "shoe-vans-slip-on",
+    brand: "Vans", category: "shoe", laneKey: "vans_slip_on",
+    modelName: "Vans Slip-On (Checkerboard / Classic)",
+    aliases: ["Vans Slip-On", "반스 슬립온", "Slip On", "체커보드"],
+    mustContain: [["반스", "vans"], ["슬립온", "slip on", "slip-on", "체커보드", "checkerboard"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
+    msrpKrw: 79000, released: 1979,
+  },
   // Wave 226 (2026-05-19): 누락 인기 SKU 추가 — 사용자 명시 "Nike/Adidas/뉴발 narrow".
   //   측정 결과: NB iconic 718 / Samba 218 / Cortez 206 매물 unmatched.
   //   진단: NB 530 mustContain "뉴발란스 530" (띄어쓰기) → "뉴발란스530" (붙임) 누락 / NB 574/2002R/9060/990v1~v4 catalog 없음 / Samba collab (KITH/Wales Bonner/Pharrell/Sporty Rich) narrow 없음 / Cortez catalog 없음.
