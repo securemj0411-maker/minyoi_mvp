@@ -40,11 +40,10 @@ const FRESH_LAG_HOURS = 0;
 // Wave 346: 카테고리 다양화 — 한 카테고리에 5개 이상 몰리지 않게.
 // 이어폰 풀이 가장 커서 profit_band 정렬하면 다 이어폰. 다양화 필수.
 const MAX_PER_CATEGORY = 5;
-// Wave 375 (2026-05-20): 200 → 500.
-// Wave 387 (2026-05-20): 500 → 2000. profit_band desc로 정렬한 500개는 대부분 고가 매물
-// → 사용자 예산 (15만 이하) 통과 매물 < 5. 운영자 풀 176개 있어도 응답 0개 사례.
-// 2000으로 늘려서 budget 통과 매물 충분히 잡음.
-const FETCH_POOL_OVERFETCH = 2000;
+// Wave 375 (2026-05-20): 200 → 500. Wave 387 잘못 진단 revert.
+// 실제 원인 (Wave 388): 다양화가 budget filter 전에 적용됨 → 카테고리당 5개 = 30개가
+// 비싼 매물로 채워짐 → budget 통과 < 5. ready 전체 400개라 overfetch는 충분.
+const FETCH_POOL_OVERFETCH = 500;
 
 type PoolRow = {
   pid: number;
@@ -175,7 +174,7 @@ function bandAwareMedian(
 
 async function loadPool(
   headers: Record<string, string>,
-  options: { sort?: "profit_desc" | "latest" } = {},
+  options: { sort?: "profit_desc" | "latest"; priceMax?: number | null } = {},
 ): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[]; marketBands: Map<string, Map<string, MarketBandRow>>; v7SiblingPresence: V7SiblingPresenceMap }> {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -186,10 +185,12 @@ async function loadPool(
     ? "order=last_verified_at.desc"
     : "order=profit_band.desc,expected_profit_max.desc";
 
-  // Wave 339 (Phase 1b sold out 옵션 B): ready 25 + 오늘 invalidated 5 = 30개.
-  // Wave 346: 카테고리 다양화 — overfetch 후 카테고리당 MAX_PER_CATEGORY 제한.
-  // Wave 353: 항상 다양화 (전체 = 카테고리 합집합 기대값과 일관성 위해 카테고리 필터는 클라이언트로).
-  // Wave 383: last_verified_at lag 필터 제거. 신선 매물 다 노출.
+  // Wave 388: fetch 순서 재정렬 — budget filter를 다양화 전에 적용.
+  // 1. candidate_pool fetch (ready + soldOut)
+  // 2. mvp_listings fetch (모든 pid → price 등) — budget filter용
+  // 3. priceMax 있으면 budget filter (ready + soldOut)
+  // 4. 다양화 (budget 통과 매물만)
+  // 5. meta + marketBands fetch (selected pids만)
   const [readyRes, soldOutRes] = await Promise.all([
     restFetch(
       `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready&${orderClause}&limit=${FETCH_POOL_OVERFETCH}`,
@@ -203,7 +204,31 @@ async function loadPool(
   const readyRowsRaw = ((await readyRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: false }));
   const soldOutRowsRaw = ((await soldOutRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: true }));
 
-  // Wave 346: 카테고리 다양화 (항상 적용 — Wave 353부터 카테고리 필터는 클라이언트로).
+  // Wave 388: 모든 candidate pid의 raw mvp_listings fetch (다양화/budget filter 전).
+  const allCandidatePids = Array.from(new Set([
+    ...readyRowsRaw.map((r) => r.pid),
+    ...soldOutRowsRaw.map((r) => r.pid),
+  ]));
+  const rawByPid = new Map<number, RawRow>();
+  if (allCandidatePids.length > 0) {
+    const rawAllRes = await restFetch(
+      `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url&pid=in.(${allCandidatePids.join(",")})&limit=${allCandidatePids.length + 100}`,
+      { headers },
+    );
+    const rawAll = (await rawAllRes.json()) as RawRow[];
+    for (const r of rawAll) rawByPid.set(r.pid, r);
+  }
+
+  // Wave 388: budget filter — priceMax 있으면 raw.price <= priceMax인 매물만.
+  const budgetPass = (row: PoolRow & { soldOut: boolean }) => {
+    if (options.priceMax == null) return true;
+    const raw = rawByPid.get(row.pid);
+    return raw != null && Number.isFinite(raw.price) && raw.price > 0 && raw.price <= options.priceMax;
+  };
+  const readyFiltered = readyRowsRaw.filter(budgetPass);
+  const soldOutFiltered = soldOutRowsRaw.filter(budgetPass);
+
+  // Wave 346: 카테고리 다양화 — budget filter 통과 매물 안에서만.
   function diversifyByCategory(rows: (PoolRow & { soldOut: boolean })[], maxRows: number) {
     const perCategory = new Map<string, number>();
     const out: (PoolRow & { soldOut: boolean })[] = [];
@@ -215,7 +240,6 @@ async function loadPool(
       out.push(row);
       if (out.length >= maxRows) break;
     }
-    // 만약 다양화 후 부족하면 (희귀 카테고리만 있는 경우) 부족분 채움
     if (out.length < maxRows) {
       for (const row of rows) {
         if (out.length >= maxRows) break;
@@ -226,24 +250,21 @@ async function loadPool(
     return out;
   }
 
-  const readyRows = diversifyByCategory(readyRowsRaw, READY_SLOTS);
-  const soldOutRows = diversifyByCategory(soldOutRowsRaw, SOLD_OUT_SLOTS);
+  const readyRows = diversifyByCategory(readyFiltered, READY_SLOTS);
+  const soldOutRows = diversifyByCategory(soldOutFiltered, SOLD_OUT_SLOTS);
 
-  // sold out grid 중간에 자연스럽게 (사용자가 발견하며 후회). 정렬 latest일 땐 안 섞음.
   const pool = options.sort === "latest"
     ? [...readyRows, ...soldOutRows]
     : [...readyRows, ...soldOutRows].sort(() => Math.random() - 0.5);
   if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map(), v7SiblingPresence: new Map() };
 
   const pids = pool.map((r) => r.pid);
-  // Wave 247.2: market band fetch 도 병렬화 — pool 의 comparable_key 만 lookup.
-  // Wave 252.A real (2026-05-20): v7 sibling presence — v3 clothing key mixed-pool 차단 가드.
+  // raws는 이미 rawByPid에 있음 — pool pids만 추출.
+  const raws = pids.map((pid) => rawByPid.get(pid)).filter((r): r is RawRow => r != null);
+
+  // meta + marketBands fetch (pool pids만).
   const comparableKeys = [...new Set(pool.map((r) => r.comparable_key).filter((k): k is string => Boolean(k)))];
-  const [rawRes, metaRes, marketBands, v7SiblingPresence] = await Promise.all([
-    restFetch(
-      `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url&pid=in.(${pids.join(",")})`,
-      { headers },
-    ),
+  const [metaRes, marketBands, v7SiblingPresence] = await Promise.all([
     restFetch(
       `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name,free_shipping,last_seen_at,shop_review_rating,shop_review_count,description_preview&pid=in.(${pids.join(",")})`,
       { headers },
@@ -251,7 +272,6 @@ async function loadPool(
     loadMarketBandsForPool(headers, comparableKeys),
     loadV7SiblingPresence(headers, comparableKeys),
   ]);
-  const raws = (await rawRes.json()) as RawRow[];
   const metas = (await metaRes.json()) as RawListingMeta[];
   return { pool, raws, metas, marketBands, v7SiblingPresence };
 }
@@ -409,11 +429,8 @@ export async function GET(req: Request) {
       await upsertLastBrowse(headers, userRef, authUserId);
     }
 
-    const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, { sort });
-    let items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
-
-    // Wave 373: 예산 필터. Wave 382: fallback chain — 사용자 예산 안 매물 부족하면
-    // 한 단계 위로 자동 확장 (150k → 300k → 500k → unlimited). 임계 < 5개.
+    // Wave 388: budget filter를 loadPool 안으로 (다양화 전에). fallback chain은
+    // loadPool 재호출 — 각 단계 priceMax로 fetch + filter + 다양화 다시.
     const FALLBACK_THRESHOLD = 5;
     const fallbackChain: { code: "150k" | "300k" | "500k" | "unlimited"; max: number | null }[] = [
       { code: "150k", max: 150000 },
@@ -422,20 +439,26 @@ export async function GET(req: Request) {
       { code: "unlimited", max: null },
     ];
     let appliedBudget: "150k" | "300k" | "500k" | "unlimited" = "unlimited";
+    let items: ReturnType<typeof buildItems> = [];
+
     if (priceMax != null) {
       const startIdx = fallbackChain.findIndex((c) => c.max === priceMax);
       const effectiveStart = startIdx >= 0 ? startIdx : 0;
       for (let i = effectiveStart; i < fallbackChain.length; i++) {
         const candidate = fallbackChain[i];
-        const candFiltered = candidate.max == null
-          ? items
-          : items.filter((it) => it.price <= candidate.max!);
-        if (candFiltered.length >= FALLBACK_THRESHOLD || i === fallbackChain.length - 1) {
-          items = candFiltered;
+        const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, { sort, priceMax: candidate.max });
+        const candItems = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
+        if (candItems.length >= FALLBACK_THRESHOLD || i === fallbackChain.length - 1) {
+          items = candItems;
           appliedBudget = candidate.code;
           break;
         }
       }
+    } else {
+      // priceMax 없으면 unlimited 한 번만 fetch.
+      const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, { sort });
+      items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
+      appliedBudget = "unlimited";
     }
 
     // Wave 373: 성향 정렬 — preference 따라 우선순위 재정렬.
