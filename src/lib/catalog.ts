@@ -9381,14 +9381,24 @@ export const CATALOG: Sku[] = [
   {
     id: "bag-coach-broad",
     brand: "Coach", category: "bag", laneKey: "coach_broad",
-    modelName: "Coach Bag (broad — 토트/숄더/크로스/호보)",
+    modelName: "Coach Bag (broad — 토트/숄더/크로스/호보/보스턴/시그니처)",
     aliases: ["Coach", "코치 가방"],
-    mustContain: [["coach", "코치"], ["가방", "bag", "토트", "tote", "크로스", "cross", "숄더", "shoulder", "호보", "hobo", "사첼", "satchel", "버킷", "bucket", "체인", "chain", "핸드백"]],
-    // tabby/signature-tote 별도 SKU.
+    // Wave 262 (2026-05-20): mustContain 보강 — 사용자 SQL 발견 ~25건 매물 sku_id=NULL.
+    //   누락: 보스턴/시그니처/스웨거/쇼퍼/스테이션/캔틴/탑핸들/소호 등 Coach 모델 라인.
+    mustContain: [
+      ["coach", "코치"],
+      ["가방", "bag", "토트", "tote", "크로스", "cross", "숄더", "shoulder", "호보", "hobo", "사첼", "satchel", "버킷", "bucket", "체인", "chain", "핸드백", "boston", "보스턴", "더플", "duffle", "duffel", "시그니처", "signature", "캔틴", "canteen", "스웨거", "swagger", "쇼퍼", "shopper", "스테이션", "station", "탑핸들", "top handle", "소호", "soho", "쿼리", "quarry", "롤리", "rowley", "월렛백", "wallet bag"],
+    ],
+    // tabby/signature-tote/wallet 별도 SKU. 시계/잡화/의류 차단.
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "짭", "가품",
       "tabby", "태비",
       "signature tote", "시그니처 토트",
-      "wallet", "지갑"],
+      "wallet", "지갑", "반지갑", "장지갑", "카드지갑", "카드 지갑",
+      "시계", "watch", "쿼츠", "벨트", "belt", "스니커즈", "운동화", "신발",
+      "티셔츠", "맨투맨", "후드", "자켓", "재킷", "트레이닝 코치",  // "토트넘 Pony 트레이닝 코치 자켓" 같은 의류 차단
+      "삽니다", "매입", "구합니다", "구해요", "구함",
+      // 다른 brand
+      "coccinelle", "코치넬레"],
     msrpKrw: 290000, released: 1941,
   },
   {
