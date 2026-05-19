@@ -1448,10 +1448,11 @@ function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>
           : reviewCount > 0
             ? { label: "후기 적음", className: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200" }
             : null;
+  // Wave 393.6: "후기 수 확인" 같은 라벨 X — 실제 후기 건수 적기.
   if (rating != null && rating >= 4.8 && reviewCount >= 10) {
     return {
       value: `평점 ${rating.toFixed(1)} 셀러`,
-      sub: reviewCount >= 30 ? "후기 수 충분" : "후기 수 확인",
+      sub: `후기 ${reviewCountLabel}건${reviewCount >= 30 ? " (충분)" : ""}`,
       Icon: TrophyIcon,
       badge: reviewBadge,
       tone: "good" as const,
@@ -1460,7 +1461,7 @@ function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>
   return {
     value: risk.label,
     sub: reviewCount > 0 && rating != null
-      ? `평점 ${rating.toFixed(1)} · 후기 ${reviewCountLabel}건은 참고만`
+      ? `평점 ${rating.toFixed(1)} · 후기 ${reviewCountLabel}건`
       : risk.tone === "safe" ? "차단 필터 통과" : "확인 포인트 있음",
     Icon: ShieldIcon,
     badge: reviewBadge,
@@ -1885,7 +1886,9 @@ function _SavedDetailMini({ card }: { card: RevealCard }) {
 // 거래 안전 타일 + RecommendationReason 안 셀러 후기가 분산 → 별도 카드로 통합.
 // savedDetail에 있는 데이터만 활용 (sellerReviewRating/sellerReviewCount/freeShipping).
 // is_proshop / last_seen_at 은 prop 부재 → 다음 wave (API 확장 필요).
-function SellerTrustPanel({ card }: { card: RevealCard }) {
+// Wave 393.6: 호출처 제거됨 (UpperFold tile + WhyTrust Q&A에 정보 있음).
+// 함수는 보존 — 추후 재활용 가능. ESLint _ prefix로 unused 허용.
+function _SellerTrustPanel({ card }: { card: RevealCard }) {
   const detail = card.savedDetail;
   const rating = detail?.sellerReviewRating ?? null;
   const reviewCount = detail?.sellerReviewCount ?? 0;
@@ -2748,7 +2751,8 @@ function RevealCardItem({
                 <UpperFoldFearReducers card={card} />
                 <CostAssurancePanel card={card} />
                 <PlatformProfitCompare card={card} />
-                <SellerTrustPanel card={card} />
+                {/* Wave 393.6: SellerTrustPanel 제거 — UpperFoldFearReducers 셀러 tile +
+                    WhyTrustCollapse Q&A에 셀러 정보 이미 있음. 3중 중복 해소. */}
                 <CounterfeitChecklistPanel card={card} />
                 {/* Wave 392.3: 진입장벽/불안감 해소 Q&A — 4개 자주 묻는 거 collapse. */}
                 <WhyTrustCollapse card={card} />
