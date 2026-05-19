@@ -377,3 +377,64 @@ export function ActivityIcon(props: IconProps) {
     </svg>
   );
 }
+
+// 2026-05-19: 카테고리 칩 SF Symbol 라인 아이콘. 사용자 피드백 — 텍스트만 칩 촌스러움 해소.
+export function ShirtIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" />
+    </svg>
+  );
+}
+
+export function GameControllerIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <line x1="6" y1="11" x2="10" y2="11" />
+      <line x1="8" y1="9" x2="8" y2="13" />
+      <line x1="15" y1="12" x2="15.01" y2="12" />
+      <line x1="18" y1="10" x2="18.01" y2="10" />
+      <path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z" />
+    </svg>
+  );
+}
+
+export function DesktopIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <rect x="2" y="3" width="20" height="14" rx="2" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+      <line x1="12" y1="17" x2="12" y2="21" />
+    </svg>
+  );
+}
+
+// 2026-05-19: 카테고리 → 아이콘 매핑 dispatcher.
+// 카테고리 칩(recommendation-workspace, explore-client) + 향후 풀 카드 일관 사용.
+export type CategoryIconKey =
+  | "earphone" | "smartwatch" | "smartphone" | "tablet" | "laptop"
+  | "shoe" | "clothing" | "bag" | "game_console" | "speaker"
+  | "monitor" | "camera" | "watch" | "desktop" | "home_appliance" | "sport_golf";
+
+export function CategoryIcon({
+  category,
+  ...props
+}: { category: string } & IconProps) {
+  switch (category) {
+    case "earphone": return <HeadphoneIcon {...props} />;
+    case "smartwatch": return <WatchIcon {...props} />;
+    case "watch": return <WatchIcon {...props} />;
+    case "smartphone": return <SmartphoneIcon {...props} />;
+    case "tablet": return <TabletIcon {...props} />;
+    case "laptop": return <LaptopIcon {...props} />;
+    case "shoe": return <ShoeIcon {...props} />;
+    case "clothing": return <ShirtIcon {...props} />;
+    case "bag": return <BagIcon {...props} />;
+    case "game_console": return <GameControllerIcon {...props} />;
+    case "speaker": return <SpeakerIcon {...props} />;
+    case "monitor": return <MonitorIcon {...props} />;
+    case "camera": return <CameraIcon {...props} />;
+    case "desktop": return <DesktopIcon {...props} />;
+    default: return <PackageIcon {...props} />;
+  }
+}

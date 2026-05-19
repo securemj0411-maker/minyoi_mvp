@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import AppFooter from "@/components/app-footer";
 import AppNav from "@/components/app-nav";
-import SafetyStatsMarquee from "@/components/safety-stats-marquee";
 import SiteHelpFaq from "@/components/site-help-faq";
 import "./globals.css";
 
@@ -59,8 +58,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <AppNav />
-        {/* Wave 139d (2026-05-16): 네비 바 아래 marquee — "오늘 득템잡이 AI가 차단한 의심 매물 X건" 우→좌 흐름. */}
-        <SafetyStatsMarquee />
+        {/* 2026-05-19: SafetyStatsMarquee 글로벌 제거 — /me 모바일 fold 잡아먹는 문제 해소.
+            비로그인 메인(PreviewMaskedDashboard) + "더 찾아보기" 모달(seekMore)에만 노출.
+            사용자가 "다른 매물 찾을 때" 시점에 보이는 게 신뢰 신호로 더 자연스러움. */}
         <div className="flex-1">{children}</div>
         <AppFooter />
         <SiteHelpFaq />

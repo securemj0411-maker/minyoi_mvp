@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import CreditIcon from "@/components/credit-icon";
 import {
+  CategoryIcon,
   CoinsIcon,
   LightbulbIcon,
   PackageIcon,
@@ -852,15 +853,22 @@ function PackSelectorCard({
                   onClick={() => { if (!opt.disabled) toggleCategory(opt.id); }}
                   disabled={isDisabled}
                   title={opt.disabled ? "아직 추천 매물이 없는 카테고리예요. 추후 source 다양화로 추가 예정." : undefined}
-                  className={`rounded-full border px-2 py-0.5 text-[10.5px] font-black transition ${
+                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10.5px] font-black transition ${
                     opt.disabled
-                      ? "cursor-not-allowed border-dashed border-[#dcd5c8] bg-[#f3ede2] text-zinc-400 line-through dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-600"
+                      ? "cursor-not-allowed border-dashed border-[#dcd5c8] bg-[#f3ede2] text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-600"
                       : active
                         ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)]"
                         : "border-[#d8d2c4] bg-white text-zinc-500 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
                   }`}
                 >
-                  {opt.label}{opt.disabled ? <span className="ml-0.5 no-underline opacity-70">(준비중)</span> : count ? <span className="ml-0.5 opacity-60">·{count}</span> : null}
+                  {/* 2026-05-19: SF Symbol 스타일 라인 아이콘 (h-3 strokeWidth 2 → SVG 자체 stroke 1.5로 가는 게 정직하나 base stroke 2 유지 — 일관성). */}
+                  <CategoryIcon category={opt.id} className="h-3 w-3 shrink-0" strokeWidth={1.75} />
+                  <span className={opt.disabled ? "line-through" : ""}>{opt.label}</span>
+                  {opt.disabled
+                    ? <span className="opacity-70">(준비중)</span>
+                    : count
+                      ? <span className="opacity-60">·{count}</span>
+                      : null}
                 </button>
               );
             })}

@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ConditionPhotoBadge } from "@/components/condition-chip";
+import SafetyStatsMarquee from "@/components/safety-stats-marquee";
 import {
   CheckCircleIcon,
   FlameIcon,
@@ -131,6 +132,9 @@ export default function PreviewMaskedDashboard() {
 
   return (
     <main className="min-h-screen bg-[#f6f1e8] dark:bg-zinc-950">
+      {/* 2026-05-19: SafetyStatsMarquee — 글로벌 layout에서 제거 후 비로그인 메인에만.
+          신뢰 hook이 fold 안 첫 화면에 들어와 가입 동기 강화. /me는 빠져서 모바일 fold 회수. */}
+      <SafetyStatsMarquee />
       {/* SEO hidden — 옛 landing 키워드 보존.
           2026-05-19: PG 심사 대비 톤 정비. "차익/돈 벌기"로 읽힐 표현 제거, 정보 제공·면책 톤으로 교체.
           면책은 /terms 제6·11조 참고. */}
