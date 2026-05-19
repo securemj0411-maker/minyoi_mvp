@@ -9,10 +9,15 @@ type Props = {
   conditionClass: string | null | undefined;
   // showHelp: true = ? 아이콘 + 분류 정책 popover. 운영자풀 만 true.
   showHelp?: boolean;
+  // Wave 354: friendly = 일반인 친화 풀어쓴 라벨 ("S급" → "거의 새것", "B급" → "상태 보통").
+  // 사용자 피드백: S급/미개봉 외엔 사용자가 등급명 모름.
+  variant?: "default" | "friendly";
 };
 
 type ChipStyle = {
   label: string;
+  // Wave 354: friendlyLabel — variant="friendly" 시 사용. 일반인용 풀어쓴 라벨.
+  friendlyLabel: string;
   bg: string;
   text: string;
   desc: string;
@@ -30,42 +35,49 @@ type PhotoBadgeStyle = {
 const CHIP_STYLES: Record<string, ChipStyle> = {
   unopened: {
     label: "미개봉/새상품",
+    friendlyLabel: "미개봉",
     bg: "bg-amber-100 dark:bg-amber-900/40",
     text: "text-amber-800 dark:text-amber-200",
     desc: "박스 안 뜯음. 다나와 새상품 시세 기준.",
   },
   mint: {
     label: "S급",
+    friendlyLabel: "거의 새것",
     bg: "border border-emerald-300/70 bg-gradient-to-r from-emerald-950 via-emerald-800 to-[#b78a2c] shadow-sm shadow-emerald-950/15 dark:border-emerald-300/30 dark:from-emerald-400/25 dark:via-emerald-900/70 dark:to-amber-500/25",
     text: "text-amber-50 dark:text-emerald-50",
     desc: "실사용 거의 없음 (AI 판정 — 사이클 적음 / 거의 새것).",
   },
   clean: {
     label: "A급",
+    friendlyLabel: "깨끗한 편",
     bg: "border border-sky-200/80 bg-gradient-to-r from-white via-sky-50 to-teal-100 shadow-sm shadow-sky-900/10 dark:border-sky-300/20 dark:from-sky-400/20 dark:via-teal-900/50 dark:to-zinc-900",
     text: "text-sky-950 dark:text-sky-50",
     desc: "셀러 명시 프리미엄 — 풀세트 / AppleCare / 배터리 100% / S급 표현. 셀러 인플레 가능성 (보수적 분류).",
   },
   normal: {
     label: "일반",
+    friendlyLabel: "상태 보통",
     bg: "bg-zinc-100 dark:bg-zinc-800",
     text: "text-zinc-700 dark:text-zinc-300",
     desc: "명시적 신호 없음 (default).",
   },
   worn: {
     label: "사용감",
+    friendlyLabel: "사용감 있음",
     bg: "bg-orange-100 dark:bg-orange-900/40",
     text: "text-orange-800 dark:text-orange-200",
     desc: "사용감, 잔기스, 미세 흠집 명시.",
   },
   flawed: {
     label: "훼손",
+    friendlyLabel: "하자 있음",
     bg: "bg-rose-100 dark:bg-rose-900/40",
     text: "text-rose-800 dark:text-rose-200",
     desc: "액정 깨짐 / 낙상 / 작동 결함 / 부품용. 풀 차단 대상.",
   },
   low_batt: {
     label: "배터리 저하",
+    friendlyLabel: "배터리 약함",
     bg: "bg-yellow-100 dark:bg-yellow-900/40",
     text: "text-yellow-800 dark:text-yellow-200",
     desc: "배터리 효율 < 85% 명시. 가격 modifier.",
@@ -131,7 +143,7 @@ const PHOTO_BADGE_STYLES: Record<string, PhotoBadgeStyle> = {
   },
 };
 
-export function ConditionChip({ conditionClass, showHelp = false }: Props) {
+export function ConditionChip({ conditionClass, showHelp = false, variant = "default" }: Props) {
   const [open, setOpen] = useState(false);
   if (!conditionClass) return null;
   const style = CHIP_STYLES[conditionClass];
@@ -142,10 +154,11 @@ export function ConditionChip({ conditionClass, showHelp = false }: Props) {
       </span>
     );
   }
+  const displayLabel = variant === "friendly" ? style.friendlyLabel : style.label;
   return (
     <span className="relative inline-flex items-center gap-1">
       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${style.bg} ${style.text}`}>
-        {style.label}
+        {displayLabel}
       </span>
       {showHelp && (
         <>

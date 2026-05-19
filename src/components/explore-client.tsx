@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, FlameIcon, ClockIcon, TrophyIcon } from "@/components/icons";
+import { ConditionChip } from "@/components/condition-chip";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
@@ -521,6 +522,10 @@ export default function ExploreClient() {
                       </span>
                     ) : (
                       <>
+                        {/* Wave 354: 매물 등급 — 일반인 친화 풀어쓴 라벨 ("거의 새것"/"상태 보통"/"하자 있음"...) */}
+                        {item.conditionClass ? (
+                          <ConditionChip conditionClass={item.conditionClass} variant="friendly" />
+                        ) : null}
                         <span className="flex items-center gap-0.5 text-zinc-500">
                           <ClockIcon className="h-3 w-3" />
                           {hoursAgoLabel(item.lastVerifiedAt)}
