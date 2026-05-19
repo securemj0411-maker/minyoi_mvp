@@ -437,19 +437,8 @@ export default function ExploreClient() {
                     : "active:bg-zinc-50 dark:active:bg-zinc-900/40 sm:border-zinc-200 sm:bg-white sm:hover:border-emerald-300 sm:hover:shadow-md dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 dark:sm:hover:border-emerald-700"
                 }`}
               >
-                {/* Sold out 오버레이 */}
-                {isSoldOut ? (
-                  <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center bg-zinc-900/55 backdrop-blur-[1px] sm:rounded-xl">
-                    <div className="rounded-full bg-rose-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                      🔴 다른 사용자가 잡음
-                    </div>
-                    <div className="mt-1.5 text-[10px] font-bold text-white/85">
-                      즉시 알림 있었으면 잡을 수 있었어요
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className={`relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ${isSoldOut ? "opacity-50" : ""}`}>
+                {/* Wave 351: sold out — 사진만 흐리게 + 우상단 칩. 카드 내용 그대로 (FOMO). */}
+                <div className={`relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ${isSoldOut ? "grayscale" : ""}`}>
                   {item.thumbnailUrl ? (
                     <Image
                       src={item.thumbnailUrl}
@@ -457,8 +446,15 @@ export default function ExploreClient() {
                       fill
                       sizes="88px"
                       unoptimized
-                      className="object-cover"
+                      className={`object-cover ${isSoldOut ? "opacity-60" : ""}`}
                     />
+                  ) : null}
+                  {isSoldOut ? (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-zinc-900/30">
+                      <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[9px] font-bold text-white shadow">
+                        잡힘
+                      </span>
+                    </div>
                   ) : null}
                 </div>
                 <div className={`min-w-0 ${isSoldOut ? "opacity-60" : ""}`}>
@@ -485,21 +481,29 @@ export default function ExploreClient() {
                     ) : null}
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-medium">
-                    <span className="flex items-center gap-0.5 text-zinc-500">
-                      <ClockIcon className="h-3 w-3" />
-                      {hoursAgoLabel(item.lastVerifiedAt)}
-                    </span>
-                    {isPremiumSeller && !isSoldOut ? (
-                      <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
-                        <TrophyIcon className="h-3 w-3" />
-                        우수 셀러
+                    {isSoldOut ? (
+                      <span className="flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
+                        💡 구독자는 잡을 수 있었어요
                       </span>
-                    ) : null}
-                    {item.freeShipping && !isSoldOut ? (
-                      <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                        무료배송
-                      </span>
-                    ) : null}
+                    ) : (
+                      <>
+                        <span className="flex items-center gap-0.5 text-zinc-500">
+                          <ClockIcon className="h-3 w-3" />
+                          {hoursAgoLabel(item.lastVerifiedAt)}
+                        </span>
+                        {isPremiumSeller ? (
+                          <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+                            <TrophyIcon className="h-3 w-3" />
+                            우수 셀러
+                          </span>
+                        ) : null}
+                        {item.freeShipping ? (
+                          <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                            무료배송
+                          </span>
+                        ) : null}
+                      </>
+                    )}
                   </div>
                 </div>
               </button>
