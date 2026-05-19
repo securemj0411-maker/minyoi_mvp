@@ -644,6 +644,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   adidas_samba_wales_bonner: { status: "ready", label: "Wales Bonner × Samba", note: "Wave 226 한정" },
   adidas_samba_pharrell: { status: "ready", label: "Pharrell × Samba Humanrace", note: "Wave 226 한정" },
   adidas_samba_sporty_rich: { status: "ready", label: "Sporty & Rich × Samba", note: "Wave 226 한정" },
+  // Wave 227 (2026-05-19): 의류/가방 누락 narrow.
+  fog_essentials: { status: "ready", label: "FOG Essentials (티/후드/스웻)", note: "Wave 227 일반인 친화" },
+  coach_broad: { status: "ready", label: "Coach Bag (broad)", note: "Wave 227 가품 식별 가능" },
+  coach_tabby: { status: "ready", label: "Coach Tabby (시그니처)", note: "Wave 227" },
+  longchamp_le_pliage: { status: "ready", label: "Longchamp Le Pliage (시그니처)", note: "Wave 227 나일론" },
+  nike_tailwind_79: { status: "ready", label: "Nike Tailwind 79 (Vintage Runner)", note: "Wave 227" },
+  adidas_trefoil: { status: "ready", label: "Adidas Trefoil/Track Suit", note: "Wave 227 의류" },
   // Wave 219 (2026-05-19): Nike Blazer variant 분리 — Mid 119K / Low/Platform 99K / Hi 129K
   nike_blazer_mid: { status: "ready", label: "Nike Blazer Mid / Mid 77", note: "Wave 219" },
   nike_blazer_low: { status: "ready", label: "Nike Blazer Low / Low 77 / Platform", note: "Wave 219" },

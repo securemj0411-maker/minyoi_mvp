@@ -8563,6 +8563,82 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
     msrpKrw: 250000, released: 2024,
   },
+  // Wave 227 (2026-05-19): 의류/가방 누락 narrow 추가 — 사용자 명시 "의류/가방 카테고리도 누락 측정".
+  //   측정 unmatched: Nike apparel 355 / Adidas apparel 105 / FOG Essentials 75 /
+  //   Coach 114 / Longchamp 35 / Adidas Trefoil/Track 일부 / Tailwind 79 등.
+  //   가품 risk 큰 명품 (LV/구찌/디올/샤넬/Celine) skip — 사용자 정책.
+  {
+    id: "clothing-fog-essentials",
+    brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials",
+    modelName: "Fear of God Essentials (티 / 후드 / 스웻 / 반바지)",
+    aliases: ["FOG Essentials", "피오갓 에센셜", "피어오브갓 에센셜"],
+    mustContain: [["피어오브갓", "피오갓", "fear of god", "fog"], ["essentials", "에센셜"]],
+    // FOG Main Line (3rd-7th 시즌별) 한정/명품 - mustNotContain 차단.
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "짭", "가품",
+      // Main Line (시즌 번호) 차단 — 별도 SKU 또는 가격대 다름.
+      "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
+      "제냐", "zegna", "ermenegildo",
+      // Nike 콜라보 차단 (별도)
+      "nike", "나이키",
+      "캘리포니아", "california mule", "디스턴스 러너", "distance runner", "101 lace", "로퍼", "loafer"],
+    msrpKrw: 99000, released: 2018,
+  },
+  {
+    id: "bag-coach-broad",
+    brand: "Coach", category: "bag", laneKey: "coach_broad",
+    modelName: "Coach Bag (broad — 토트/숄더/크로스/호보)",
+    aliases: ["Coach", "코치 가방"],
+    mustContain: [["coach", "코치"], ["가방", "bag", "토트", "tote", "크로스", "cross", "숄더", "shoulder", "호보", "hobo", "사첼", "satchel", "버킷", "bucket", "체인", "chain", "핸드백"]],
+    // tabby/signature-tote 별도 SKU.
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "짭", "가품",
+      "tabby", "태비",
+      "signature tote", "시그니처 토트",
+      "wallet", "지갑"],
+    msrpKrw: 290000, released: 1941,
+  },
+  {
+    id: "bag-coach-tabby",
+    brand: "Coach", category: "bag", laneKey: "coach_tabby",
+    modelName: "Coach Tabby (시그니처 — 체인/숄더)",
+    aliases: ["Coach Tabby", "코치 태비", "코치 Tabby"],
+    mustContain: [["coach", "코치"], ["tabby", "태비"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
+    msrpKrw: 590000, released: 2021,
+  },
+  {
+    id: "bag-longchamp-le-pliage",
+    brand: "Longchamp", category: "bag", laneKey: "longchamp_le_pliage",
+    modelName: "Longchamp Le Pliage (시그니처 나일론)",
+    aliases: ["Longchamp Le Pliage", "롱샴 르 플리아쥬", "롱샴 플리아쥬"],
+    mustContain: [["longchamp", "롱샴"], ["pliage", "플리아쥬", "토트", "tote", "숄더", "shoulder", "크로스", "cross", "백", "bag", "핸드백", "미니"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
+    msrpKrw: 169000, released: 1993,
+  },
+  {
+    id: "shoe-nike-tailwind-79",
+    brand: "Nike", category: "shoe", laneKey: "nike_tailwind_79",
+    modelName: "Nike Tailwind 79 (Vintage Runner)",
+    aliases: ["Tailwind 79", "테일윈드 79"],
+    mustContain: [["nike", "나이키"], ["테일윈드", "tailwind"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
+    msrpKrw: 109000, released: 2018,
+  },
+  {
+    id: "clothing-adidas-trefoil",
+    brand: "Adidas", category: "clothing", laneKey: "adidas_trefoil",
+    modelName: "Adidas Trefoil / 3-Stripe (Track Suit / Hoodie / Tee)",
+    aliases: ["Adidas Trefoil", "아디다스 트레포일", "아디다스 트랙수트", "아디다스 3선"],
+    mustContain: [["adidas", "아디다스"], ["trefoil", "트레포일", "3-stripe", "3선", "삼선", "track", "트랙", "트랙수트", "오리지널스", "originals"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품",
+      // 신발 차단 (의류만)
+      "스니커즈", "sneaker", "운동화", "삼바", "samba", "가젤", "gazelle", "스탠", "stan", "이지", "yeezy",
+      "campus", "캠퍼스", "superstar", "슈퍼스타", "spezial", "스페지알",
+      // 한정판 차단
+      "wales bonner", "웨일스", "kith", "pharrell", "퍼렐", "sporty rich",
+      // 가방 차단
+      "가방", "bag", "backpack", "백팩"],
+    msrpKrw: 119000, released: 1949,
+  },
   // Wave 215 (2026-05-19): Yeezy 신발 + BAPE STA + Stussy 8 Ball — 매물 검증.
   // Yeezy: 신발 매물 매우 많음 (Boost 350 21 / Slide 8 / Foam 8). 가품 risk 큼 — mustNotContain 강력.
   {
