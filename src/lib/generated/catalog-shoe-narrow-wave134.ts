@@ -669,19 +669,24 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     category: "shoe",
     modelName: "New Balance 990v5",
     aliases: ["뉴발란스 990v5", "NB 990v5"],
+    // Wave 239 (2026-05-19): production audit — "뉴발란스 410v5" 매물 매칭. "v5" 단독 매칭이 위험.
+    //   다른 NB 모델 (410/411/412/810/910 등) 도 v5 표기. "990v5"/"990 v5" 만 강제.
     mustContain: [
       ["뉴발란스", "뉴발", "new balance", "nb"],
-      ["990v5", "990 v5", "v5"],
+      ["990v5", "990 v5"],
     ],
     mustNotContain: [
       "990v6", "v6", "990v4", "v4",
       "991", "992", "993", "997", "998",
       "joe freshgoods", "조 프레시굿즈", "ald", "aime leon dore",
+      // Wave 239: 다른 NB 모델 차단 (v5 표기 공유 모델)
+      "410", "411", "412", "810", "910", "996", "999",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],
     msrpKrw: 269000,
     released: 2019,
+    defaultProductType: "sneaker",
   },
   {
     id: "shoe-newbalance-990v6",
