@@ -311,7 +311,7 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
           // welcome 4개 + UserRevealDashboard 폐기 → 30개 풀 + cooldown + sold out + 통계 + paywall 예고.
           // SavedMoneyCounter / MyFeedbackActivity는 가치 정보라 유지.
           // "더 찾아보기" 버튼들 폐기 — ExploreClient의 "새 30개 받기" cooldown으로 대체.
-          <section className="w-full min-w-0 pb-24 lg:col-start-2">
+          <section className="w-full min-w-0 pb-4 lg:col-start-2">
             <SavedMoneyCounter />
             <ExploreClient />
             <MyFeedbackActivity />
