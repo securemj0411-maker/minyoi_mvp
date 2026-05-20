@@ -300,6 +300,48 @@ export default function MarketHistoryChart({
         </span>
       </div>
       <svg viewBox={`0 0 ${width} ${height}`} className="mt-1 h-[150px] w-full overflow-visible">
+        <style>
+          {`
+            @keyframes minyoiChartDraw {
+              from { stroke-dashoffset: 1; }
+              to { stroke-dashoffset: 0; }
+            }
+            @keyframes minyoiChartScaleX {
+              from { opacity: 0.15; transform: scaleX(0); }
+              to { opacity: 1; transform: scaleX(1); }
+            }
+            @keyframes minyoiChartPop {
+              from { opacity: 0; transform: scale(0.72); }
+              to { opacity: 1; transform: scale(1); }
+            }
+            .minyoi-chart-line {
+              stroke-dasharray: 1;
+              stroke-dashoffset: 1;
+              animation: minyoiChartDraw 680ms ease-out forwards;
+            }
+            .minyoi-chart-line--sold { animation-delay: 120ms; }
+            .minyoi-chart-price-line {
+              transform-box: fill-box;
+              transform-origin: left center;
+              animation: minyoiChartScaleX 520ms ease-out forwards;
+            }
+            .minyoi-chart-pop {
+              transform-box: fill-box;
+              transform-origin: center;
+              animation: minyoiChartPop 360ms ease-out both;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .minyoi-chart-line,
+              .minyoi-chart-price-line,
+              .minyoi-chart-pop {
+                animation: none !important;
+                stroke-dashoffset: 0 !important;
+                opacity: 1 !important;
+                transform: none !important;
+              }
+            }
+          `}
+        </style>
         {/* y 가이드 */}
         <line x1={padX} y1={padTop} x2={padX} y2={height - padBottom} stroke="#e5e7eb" strokeWidth="0.5" />
         <line x1={padX} y1={height - padBottom} x2={width - padR} y2={height - padBottom} stroke="#e5e7eb" strokeWidth="0.5" />
@@ -319,25 +361,25 @@ export default function MarketHistoryChart({
           );
         })}
         {/* active 라인 (emerald) */}
-        {activePath ? <path d={activePath} fill="none" stroke="#10b981" strokeWidth="1.5" /> : null}
+        {activePath ? <path d={activePath} fill="none" stroke="#10b981" strokeWidth="1.5" pathLength={1} className="minyoi-chart-line" /> : null}
         {/* sold 라인 (blue) */}
-        {soldPath ? <path d={soldPath} fill="none" stroke="#3b82f6" strokeWidth="1.5" /> : null}
+        {soldPath ? <path d={soldPath} fill="none" stroke="#3b82f6" strokeWidth="1.5" pathLength={1} className="minyoi-chart-line minyoi-chart-line--sold" /> : null}
         {/* 거래가가 실제 관측된 날짜들. X축 라벨과 분리해 "전체 기간"과 "거래 관측일"을 혼동하지 않게 한다. */}
         {data.map((p, i) => p.sold != null ? (
-          <circle key={`sold-${p.date}`} cx={x(i)} cy={y(p.sold)} r="2.5" fill="#3b82f6" stroke="white" strokeWidth="0.75" />
+          <circle key={`sold-${p.date}`} cx={x(i)} cy={y(p.sold)} r="2.5" fill="#3b82f6" stroke="white" strokeWidth="0.75" className="minyoi-chart-pop" style={{ animationDelay: `${180 + i * 24}ms` }} />
         ) : null)}
         {/* 현재 매물 가격 horizontal line — 가장 위에 그림 */}
         {showCurrentPrice ? (
-          <line x1={padX} y1={y(currentPrice as number)} x2={width - padR} y2={y(currentPrice as number)} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,3" />
+          <line x1={padX} y1={y(currentPrice as number)} x2={width - padR} y2={y(currentPrice as number)} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,3" className="minyoi-chart-price-line" style={{ animationDelay: "220ms" }} />
         ) : null}
         {showReferencePrice ? (
-          <line x1={padX} y1={y(referencePrice as number)} x2={width - padR} y2={y(referencePrice as number)} stroke="#8b5cf6" strokeWidth="2" strokeDasharray="3,3" />
+          <line x1={padX} y1={y(referencePrice as number)} x2={width - padR} y2={y(referencePrice as number)} stroke="#8b5cf6" strokeWidth="2" strokeDasharray="3,3" className="minyoi-chart-price-line" style={{ animationDelay: "260ms" }} />
         ) : null}
 
         {/* 우측 끝 라벨 — 호가(emerald) / 거래가(blue) / 내 매물(red) 각각 점 + 가격 박스 */}
         {latestActive != null ? (
           <>
-            <circle cx={width - padR} cy={y(latestActive)} r="3" fill="#10b981" stroke="white" strokeWidth="1" />
+            <circle cx={width - padR} cy={y(latestActive)} r="3" fill="#10b981" stroke="white" strokeWidth="1" className="minyoi-chart-pop" style={{ animationDelay: "360ms" }} />
             <text x={width - padR + 5} y={y(latestActive) + 3} fontSize="9" fill="#059669" fontWeight="bold">
               {krwShort(latestActive)}
             </text>
@@ -345,7 +387,7 @@ export default function MarketHistoryChart({
         ) : null}
         {latestSold != null ? (
           <>
-            <circle cx={width - padR} cy={y(latestSold)} r="3" fill="#3b82f6" stroke="white" strokeWidth="1" />
+            <circle cx={width - padR} cy={y(latestSold)} r="3" fill="#3b82f6" stroke="white" strokeWidth="1" className="minyoi-chart-pop" style={{ animationDelay: "420ms" }} />
             <text x={width - padR + 5} y={y(latestSold) + 3} fontSize="9" fill="#2563eb" fontWeight="bold">
               {krwShort(latestSold)}
             </text>
@@ -353,18 +395,18 @@ export default function MarketHistoryChart({
         ) : null}
         {showCurrentPrice ? (
           <>
-            <circle cx={width - padR} cy={y(currentPrice as number)} r="3.5" fill="#ef4444" stroke="white" strokeWidth="1" />
-            <rect x={width - padR + 3} y={y(currentPrice as number) - 7} width="50" height="13" rx="3" fill="#ef4444" />
-            <text x={width - padR + 28} y={y(currentPrice as number) + 3} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">
+            <circle cx={width - padR} cy={y(currentPrice as number)} r="3.5" fill="#ef4444" stroke="white" strokeWidth="1" className="minyoi-chart-pop" style={{ animationDelay: "460ms" }} />
+            <rect x={width - padR + 3} y={y(currentPrice as number) - 7} width="50" height="13" rx="3" fill="#ef4444" className="minyoi-chart-pop" style={{ animationDelay: "480ms" }} />
+            <text x={width - padR + 28} y={y(currentPrice as number) + 3} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle" className="minyoi-chart-pop" style={{ animationDelay: "500ms" }}>
               {krwShort(currentPrice as number)}
             </text>
           </>
         ) : null}
         {showReferencePrice ? (
           <>
-            <circle cx={width - padR} cy={referenceLineY as number} r="3.5" fill="#8b5cf6" stroke="white" strokeWidth="1" />
-            <rect x={width - padR + 3} y={referenceLabelRectY as number} width="50" height="13" rx="3" fill="#8b5cf6" />
-            <text x={width - padR + 28} y={referenceLabelTextY as number} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">
+            <circle cx={width - padR} cy={referenceLineY as number} r="3.5" fill="#8b5cf6" stroke="white" strokeWidth="1" className="minyoi-chart-pop" style={{ animationDelay: "500ms" }} />
+            <rect x={width - padR + 3} y={referenceLabelRectY as number} width="50" height="13" rx="3" fill="#8b5cf6" className="minyoi-chart-pop" style={{ animationDelay: "520ms" }} />
+            <text x={width - padR + 28} y={referenceLabelTextY as number} fontSize="9" fill="white" fontWeight="bold" textAnchor="middle" className="minyoi-chart-pop" style={{ animationDelay: "540ms" }}>
               {krwShort(referencePrice as number)}
             </text>
           </>

@@ -30,3 +30,17 @@ test("market history x-axis labels the full timeline, not only sold dates", () =
   assert.doesNotMatch(chart, /const soldDays = data/);
   assert.doesNotMatch(chart, /거래 날짜 X축 라벨/);
 });
+
+test("market history chart animates line drawing without breaking reduced motion", () => {
+  const chart = source("src/components/market-history-chart.tsx");
+
+  assert.match(chart, /@keyframes minyoiChartDraw/);
+  assert.match(chart, /@keyframes minyoiChartScaleX/);
+  assert.match(chart, /@keyframes minyoiChartPop/);
+  assert.match(chart, /prefers-reduced-motion: reduce/);
+  assert.match(chart, /pathLength=\{1\}/);
+  assert.match(chart, /className="minyoi-chart-line"/);
+  assert.match(chart, /className="minyoi-chart-line minyoi-chart-line--sold"/);
+  assert.match(chart, /className="minyoi-chart-price-line"/);
+  assert.match(chart, /className="minyoi-chart-pop"/);
+});

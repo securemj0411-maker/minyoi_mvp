@@ -337,12 +337,14 @@ type BeginnerGuideStep = {
   tone: "trust" | "market" | "trend" | "buy" | "resell" | "safety" | "channel" | "speed" | "summary";
 };
 
+const SELLER_TRUST_MIN_REVIEW_COUNT = 10;
+
 function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   const rating = card.savedDetail?.sellerReviewRating ?? null;
   const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
   const reviewLabel = reviewCount.toLocaleString("ko-KR");
 
-  if (rating != null && rating >= 4.8 && reviewCount >= 30) {
+  if (rating != null && rating >= 4.8 && reviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT) {
     return {
       eyebrow: "1. 판매자 신뢰",
       title: "먼저 상품과 판매자를 같이 봐요",
@@ -360,7 +362,9 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
       title: "먼저 상품과 판매자를 같이 봐요",
       metric: `후기 ${reviewLabel}건`,
       metricLabel: `평점 ${rating.toFixed(1)}점`,
-      body: `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점이에요. 후기가 많지 않은 편이면 안전결제와 실제 상태 확인을 조금 더 보수적으로 보면 좋아요.`,
+      body: reviewCount < SELLER_TRUST_MIN_REVIEW_COUNT
+        ? `평점은 ${rating.toFixed(1)}점이지만 후기가 ${reviewLabel}건이라 아직 판단 표본이 적어요. 안전결제와 실제 상태 확인을 조금 더 보수적으로 보면 좋아요.`
+        : `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점이에요. 안전결제와 실제 상태 확인을 같이 보면 좋아요.`,
       note: "셀러 신뢰도는 참고 지표라서, 최종 거래 전에는 사진과 구성품을 직접 확인해야 합니다.",
       tone: "trust",
     };
@@ -389,17 +393,17 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
     const diff = median - card.price;
     const diffAbs = Math.abs(diff);
     const metric = diff > 0
-      ? `${krw(diffAbs)} 낮음`
+      ? `${krw(diffAbs)} 저렴`
       : diff < 0
         ? `${krw(diffAbs)} 높음`
         : "시세와 비슷";
     const title = diff > 0
-      ? "상태가 비슷한 매물보다 낮아요"
+      ? "상태가 비슷한 매물보다 싸게 나왔어요"
       : diff < 0
         ? "상태가 비슷한 매물보다 높아요"
         : "상태가 비슷한 매물과 비슷해요";
     const body = diff > 0
-      ? `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준보다 ${krw(diffAbs)} 낮아요.`
+      ? `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준보다 ${krw(diffAbs)} 싸게 나왔어요.`
       : diff < 0
         ? `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준보다 ${krw(diffAbs)} 높아요.`
         : `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준과 거의 비슷한 가격이에요.`;
@@ -3699,11 +3703,27 @@ function BeginnerGuideTrustBody({ card, fallback }: { card: RevealCard; fallback
   const rating = card.savedDetail?.sellerReviewRating ?? null;
   const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
   const reviewLabel = reviewCount.toLocaleString("ko-KR");
+  const hasEnoughReviews = reviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT;
 
   if (rating == null || reviewCount <= 0) {
     return (
       <p className="mt-4 break-keep text-[16px] font-semibold leading-7 text-[#475449] dark:text-zinc-300">
         {fallback}
+      </p>
+    );
+  }
+
+  if (!hasEnoughReviews) {
+    return (
+      <p data-beginner-guide-trust-highlight className="mt-4 break-keep text-[16px] font-semibold leading-7 text-[#475449] dark:text-zinc-300">
+        <span className="inline-flex items-baseline rounded-full bg-amber-50 px-2 py-0.5 font-black text-amber-700 ring-1 ring-amber-100 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-900/55">
+          평점은 <strong className="ml-1 text-[17px]">{rating.toFixed(1)}점</strong>
+        </span>
+        이지만{" "}
+        <span className="inline-flex items-baseline rounded-full bg-white px-2 py-0.5 font-black text-[#5f6a60] ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:text-zinc-300 dark:ring-zinc-800">
+          후기가 <strong className="ml-1 text-[17px]">{reviewLabel}건</strong>
+        </span>
+        이라 아직 판단 표본이 적어요. 안전결제와 실제 상태 확인을 더 보수적으로 보면 좋아요.
       </p>
     );
   }

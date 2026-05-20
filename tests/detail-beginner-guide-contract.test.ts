@@ -79,13 +79,18 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
 
   assert.match(modal, /sellerReviewRating/);
   assert.match(modal, /sellerReviewCount/);
+  assert.match(modal, /SELLER_TRUST_MIN_REVIEW_COUNT = 10/);
   assert.match(modal, /이 상품 판매자는 후기가/);
+  assert.match(modal, /평점은/);
+  assert.match(modal, /판단 표본이 적어요/);
   assert.match(modal, /data-beginner-guide-trust-highlight/);
   assert.match(modal, /data-beginner-guide-trust-metric/);
   assert.match(modal, /BeginnerGuideStarGlyph/);
   assert.match(modal, /평점이 <strong/);
   assert.match(modal, /후기가 <strong/);
   assert.match(modal, /marketConditionLabel\(card\)/);
+  assert.match(modal, /상태가 비슷한 매물보다 싸게 나왔어요/);
+  assert.match(modal, /저렴/);
   assert.match(modal, /상태가 비슷한 .*매물의 시세를 모아봤어요/);
   assert.match(modal, /data-beginner-guide-product-image/);
   assert.match(modal, /data-beginner-guide-market-evidence/);
@@ -133,6 +138,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /guidePrimaryButtonClass/);
   assert.doesNotMatch(modal, /지금까지 핵심 판단 근거|비교 표본 .* 실제 결과/);
   assert.doesNotMatch(modal, /안에 팔린 기록이 있어요/);
+  assert.doesNotMatch(modal, /상태가 비슷한 매물보다 낮아요|그 기준보다 .* 낮아요/);
   assert.doesNotMatch(modal, /판매완료 누적|판매완료 표본|시세 거래 표본|거래완료 표본|최근 등록/);
   assert.doesNotMatch(modal, /0원로|수집중|후기 데이터는 아직 충분하지/);
   assert.doesNotMatch(modal, /무조건|본전|수익 보장|돈을 벌|얼마를 벌/);
