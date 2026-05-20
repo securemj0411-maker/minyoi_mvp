@@ -387,7 +387,10 @@ function parseClothingProductType(text: string): ClothingProductType {
   if (/자켓|재킷|jacket|아노락|anorak|봄버|bomber|블레이저(?!\s*미드)|윈드 ?브레이커|windbreaker|바람막이|마운틴 ?라이트|mountain ?light|마운틴 ?파카|mountain ?parka|마운틴 ?자켓|mountain ?jacket|트랙 ?탑|track ?top|트랙수트|tracksuit|덱 ?자켓|deck ?jacket|쉴드|shield|윈드러너|windrunner|스팁 ?테크|steep ?tech|패딩 ?자켓|padded ?jacket|베이스볼 ?저지|baseball ?jersey|야구 ?점퍼|야구점퍼|바시티|varsity|코치자켓|코치 ?자켓|coach ?jacket|하드쉘|hardshell|소프트쉘|softshell|sherpa ?자켓|셰르파 ?자켓|레터맨|letterman|스타디움 ?자켓|stadium ?jacket|MA-1|ma-1|MA1\b/.test(t)) return "jacket";
   if (/후드(?!\s*티 ?셔츠)|후디|hoodie|hooded sweat/.test(t)) return "hoodie";
   if (/맨투맨|크루넥|crewneck|sweatshirt|스웻 ?셔츠|스웻\(맨투맨\)|풀오버(?!\s*조끼)|스웻 ?셔트|sweat ?shirt/.test(t)) return "crewneck";
-  if (/롱슬리브|long sleeve|롱 ?티|장 ?티|long sleeved/.test(t)) return "tee"; // 롱슬리브 = tee 류
+  // Wave 269c (2026-05-20): 긴팔 / 반집업 / 1/4 zip 추가 (API sweep — 아크네/스튜시 매물 type_unknown).
+  //   반집업/half zip = pullover style jacket (Patagonia Better Sweater 등).
+  if (/롱슬리브|long sleeve|롱 ?티|장 ?티|long sleeved|긴팔|long ?sleeve\b/.test(t)) return "tee"; // 롱슬리브/긴팔 = tee 류
+  if (/반집업|반 ?집업|half ?zip|1\/?4 ?zip|쿼터 ?집업|쿼터 ?지퍼|1\/?4 ?집업|풀오버 ?집업/.test(t)) return "jacket";
   // Wave 236b: 반팔 단독 + 탱크탑/민소매 추가.
   // Wave 264: 블라우스 추가 (acne-apparel sample 발견).
   if (/티 ?셔츠|tee\b|반팔 ?티|반팔티|t-shirt|tshirt|t ?셔츠|반팔(?!\s*티 ?셔츠)|탱크 ?탑|tank ?top|민소매|sleeveless|반 ?소매|블라우스|blouse/.test(t)) return "tee";

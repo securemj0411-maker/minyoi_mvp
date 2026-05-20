@@ -8938,6 +8938,10 @@ export const CATALOG: Sku[] = [
       "mantis", "만티스", "waistpack", "웨이스트팩", "waist pack",
       "백팩", "backpack", "가방", "토트", "tote", "숄더 백", "shoulder bag", "크로스백",
       "슬링", "sling",
+      // Wave 269c (2026-05-20): 신발 모델 추가 차단 (Norvan/Aerios/Vertex shoe etc)
+      "norvan", "노르반", "aerios", "에어리오스", "konseal", "콘실",
+      "트레일 러닝화", "trail running shoe", "러닝화",
+      "크래그", "crag",  // 크래그는 보행 신발 라인
     ],
     msrpKrw: 400000, released: 1989,
   },
@@ -8952,6 +8956,8 @@ export const CATALOG: Sku[] = [
       // Wave 268 (2026-05-20): API sweep 발견 — 휠라 골프웨어 26/40 (65%) 일반 의류 SKU 잘못 매칭.
       //   골프웨어 시세군 (택가 50~150만) ≠ 일반 휠라 의류 (3~10만). 별도 차단.
       "골프", "골프웨어", "골프 의류", "골프 셔츠", "골프 셋업", "골프채", "퍼터", "드라이버", "아이언",
+      // Wave 269c (2026-05-20): "남성의류 휠라 운동화" 같은 신발 매물도 격리.
+      "운동화", "러닝화", "트레일", "신발",
     ],
     msrpKrw: 69000, released: 2018,
   },
