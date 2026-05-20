@@ -260,7 +260,6 @@ export const BAG_CATALOG: Sku[] = [
     released: 2024,
     laneKey: "bag_celine_trio_crossbody",
     defaultProductType: "crossbody", // Wave 269d: narrow SKU type fallback
-    defaultProductType: "crossbody", // Wave 236d — Trio = crossbody 확정.
   },
   {
     id: "bag-celine-vintage-macadam",
@@ -370,7 +369,6 @@ export const BAG_CATALOG: Sku[] = [
     released: 2024,
     laneKey: "bag_mcm_visetos_stark",
     defaultProductType: "backpack", // Wave 269d: narrow SKU type fallback
-    defaultProductType: "backpack", // Wave 236d — Stark = backpack 확정 (mustContain).
   },
   {
     id: "bag-coach-signature-tote",
@@ -389,7 +387,6 @@ export const BAG_CATALOG: Sku[] = [
     released: 2024,
     laneKey: "bag_coach_signature",
     defaultProductType: "tote", // Wave 269d: narrow SKU type fallback
-    defaultProductType: "tote", // Wave 236d — Signature Canvas = tote.
   },
   {
     id: "bag-coach-wallet",
