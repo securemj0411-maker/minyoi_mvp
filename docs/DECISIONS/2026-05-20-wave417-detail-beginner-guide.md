@@ -35,6 +35,12 @@
 - 판매 속도 단계의 `거래 표본`은 7일 판매 수 대신 velocity 누적 판매완료 표본(`observedSoldSampleCount`)을 우선 보여주고, velocity가 없으면 시세 거래 표본으로 fallback한다.
 - `fetchLatestMarketVelocity()`는 `condition_class=eq.all`을 고정 조회한다. condition별 velocity row가 섞여 batch limit을 잡아먹거나 임의 row가 먼저 선택되는 문제를 차단한다.
 - `scripts/sync-market-velocity.mjs`는 `condition_class='all'`, PK `(date, comparable_key, condition_class)`, 동일 conflict target을 사용하도록 맞췄다. 2026-05-20 23:21 KST에 script apply, 23:24 KST에 운영 RPC `sync_market_velocity_daily`까지 실행해 all/condition split materialization을 갱신했다.
+- 2026-05-20 추가 UX 다듬기:
+  - 무료배송 매물은 `0원로 계산` 같은 문장을 만들지 않고, `판매자 무료배송`으로 표시하되 실제 거래 전 배송비 부담 주체를 재확인하라고 안내한다.
+  - 되팔 때 비용 단계는 셀러 관점의 `번개장터에 팔면` 대신 `되팔 때 드는 비용`으로 표현하고, 수수료/재배송비/안전버퍼를 뺀 뒤 남는 값이 예상 차익임을 먼저 설명한다.
+  - 판매자 후기/평점이 없으면 `-/5.0` 카드를 숨기고, `후기와 평점이 없어요` + 신규/이력 적은 판매자일 수 있으니 안전결제·사진·구성품 확인이 필요하다고 말한다.
+  - 쉬운모드 하단 `다음` 버튼 색은 단계별로 바꾸지 않고 3/9 시세 흐름의 파란색으로 통일한다.
+  - 모달이 열릴 때 상세 분석 payload를 한 번 선요청해, easy mode가 placeholder 상태에서 `표본 부족`으로 오판하지 않도록 한다.
 
 ## 보류
 - 사용자 계정 단위의 초보자 모드 설정 저장은 아직 하지 않는다. 현재는 브라우저 localStorage 기준이다.

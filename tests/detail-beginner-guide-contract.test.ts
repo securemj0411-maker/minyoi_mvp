@@ -60,7 +60,11 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /data-beginner-guide-market-trend/);
   assert.match(modal, /data-beginner-guide-buy-cost/);
   assert.match(modal, /data-beginner-guide-resell-cost/);
-  assert.match(modal, /번개장터에 팔면 수수료를 빼요/);
+  assert.match(modal, /판매자 무료배송/);
+  assert.match(modal, /배송비를 누가 부담하는지 한 번 더 확인/);
+  assert.match(modal, /되팔 때 드는 비용을 빼요/);
+  assert.match(modal, /수수료·배송비까지 뺀 예상 차익/);
+  assert.match(modal, /그 비용까지 뺀 뒤 남는 예상 차익/);
   assert.ok(modal.includes('<BunjangLogo className="h-6 w-6 rounded-full" />'));
   assert.match(modal, /내가 낼 배송비/);
   assert.match(modal, /data-beginner-guide-safe-payment/);
@@ -75,8 +79,15 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /medianHoursToSold/);
   assert.match(modal, /observedSoldSampleCount/);
   assert.match(modal, /시세 거래 표본/);
+  assert.match(modal, /판매 속도를 불러오는 중이에요/);
+  assert.match(modal, /확인 중/);
   assert.match(modal, /h-14 w-14/);
+  assert.match(modal, /후기와 평점이 없어요/);
+  assert.match(modal, /번개장터 신규 판매자/);
+  assert.match(modal, /requestedAnalysisPidsRef/);
+  assert.match(modal, /guidePrimaryButtonClass/);
   assert.doesNotMatch(modal, /지금까지 핵심 판단 근거|비교 표본 .* 실제 결과/);
+  assert.doesNotMatch(modal, /0원로|수집중|후기 데이터는 아직 충분하지/);
   assert.doesNotMatch(modal, /무조건|본전|수익 보장|돈을 벌|얼마를 벌/);
 });
 

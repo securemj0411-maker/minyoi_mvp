@@ -369,10 +369,12 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   return {
     eyebrow: "1. 판매자 신뢰",
     title: "먼저 상품과 판매자를 같이 봐요",
-    metric: "확인 필요",
-    metricLabel: "후기 표본 부족",
-    body: "이 상품 판매자의 후기 데이터는 아직 충분하지 않아요. 가격이 좋아 보여도 거래 방식, 사진, 구성품을 더 보수적으로 확인하는 쪽이 맞아요.",
-    note: "가능하면 안전결제, 직거래 검수, 추가 사진 요청을 같이 보세요.",
+    metric: reviewCount > 0 ? `후기 ${reviewLabel}건` : "후기 없음",
+    metricLabel: rating == null ? "평점 없음" : `평점 ${rating.toFixed(1)}점`,
+    body: reviewCount > 0
+      ? `이 상품 판매자는 후기가 ${reviewLabel}건 있지만 평점 정보는 없어요. 거래 방식과 상품 상태를 조금 더 보수적으로 확인하는 게 좋아요.`
+      : "이 상품 판매자는 아직 거래 후기와 평점이 없어요. 번개장터 신규 판매자이거나 거래 이력이 적은 계정일 수 있어서 더 보수적으로 확인해야 해요.",
+    note: "안전결제, 추가 사진, 구성품, 택배 발송 조건을 먼저 확인하세요.",
     tone: "trust",
   };
 }
@@ -444,6 +446,12 @@ function marketTrendGuideStep(card: RevealCard): BeginnerGuideStep {
 function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
   const velocity = card.velocityBasis;
   const flow = card.skuListingFlow;
+  const marketSoldSample = card.marketBasis?.soldSampleCount ?? 0;
+  const analysisPending =
+    !velocity &&
+    !flow &&
+    marketSoldSample <= 0 &&
+    card.marketBasis?.computedAt == null;
   const hasVelocity =
     velocity?.medianHoursToSold != null &&
     velocity.medianHoursToSold > 0 &&
@@ -476,12 +484,14 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
 
   return {
     eyebrow: "8. 판매 속도",
-    title: "판매 속도 표본은 아직 부족해요",
-    metric: card.marketBasis?.soldSampleCount ? `${card.marketBasis.soldSampleCount.toLocaleString("ko-KR")}건` : "수집 중",
-    metricLabel: card.marketBasis?.soldSampleCount ? "시세 거래 표본" : "거래완료 표본 부족",
-    body: card.marketBasis?.soldSampleCount
+    title: analysisPending ? "판매 속도를 불러오는 중이에요" : "판매 속도 표본은 더 확인이 필요해요",
+    metric: marketSoldSample ? `${marketSoldSample.toLocaleString("ko-KR")}건` : "확인 중",
+    metricLabel: marketSoldSample ? "시세 거래 표본" : "판매완료 표본 확인 중",
+    body: analysisPending
+      ? "비슷한 상품이 보통 얼마나 걸려 팔리는지 다시 확인하고 있어요. 잠시 후에도 비어 있으면 상세 분석에서 시세와 비교 매물을 먼저 보세요."
+      : marketSoldSample
       ? "거래완료 표본은 잡혔지만, 판매까지 걸린 시간을 안정적으로 말할 만큼은 아직 부족해요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 봅니다."
-      : "거래완료 데이터가 충분하지 않아서 판매 주기를 단정하지 않았어요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 보는 게 좋아요.",
+      : "판매완료 데이터가 아직 충분하지 않아서 판매 주기를 단정하지 않았어요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 보는 게 좋아요.",
     note: "상세 분석에서 시세 그래프와 비교 매물을 함께 확인하세요.",
     tone: "speed",
   };
@@ -489,16 +499,19 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
 
 function buyCostGuideStep(card: RevealCard): BeginnerGuideStep {
   const snapshot = costAssuranceSnapshot(card);
-  const shippingText = snapshot.shippingValueLabel === "확인 필요"
-    ? "배송비는 아직 확인이 필요해요"
-    : `내가 낼 배송비는 ${snapshot.shippingValueLabel}로 계산했어요`;
+  const isFreeShipping = snapshot.shippingValueLabel === "판매자 무료배송";
+  const body = isFreeShipping
+    ? `판매자는 무료배송으로 올렸어요. 그래도 실제 거래 전에 배송비를 누가 부담하는지 한 번 더 확인하고, 현재 매입가는 상품가 ${krw(card.price)} 기준으로 봅니다.`
+    : snapshot.shippingValueLabel === "확인 필요"
+      ? `상품가격은 ${krw(card.price)}예요. 배송비는 아직 확인이 필요해서, 실제 매입가는 상품가에 배송비를 더해서 봐야 합니다.`
+      : `상품가격은 ${krw(card.price)}예요. 여기에 내가 낼 배송비 ${snapshot.shippingValueLabel}를 더해서 실제 매입가는 ${snapshot.buyerCostLabel}로 봅니다.`;
 
   return {
     eyebrow: "4. 매입가",
     title: "상품가에 배송비를 더해요",
     metric: snapshot.buyerCostLabel,
     metricLabel: "상품가 + 내가 낼 배송비",
-    body: `상품가격은 ${krw(card.price)}이지만, ${shippingText}. 그래서 실제 매입가는 ${snapshot.buyerCostLabel}로 봅니다.`,
+    body,
     note: "택포/배송비 별도 문구는 구매 전 판매자에게 한 번 더 확인하는 게 안전합니다.",
     tone: "buy",
   };
@@ -511,11 +524,11 @@ function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
 
   return {
     eyebrow: "5. 되팔 때 비용",
-    title: "번개장터에 팔면 수수료를 빼요",
+    title: "되팔 때 드는 비용을 빼요",
     metric: displayProfitRange(card),
-    metricLabel: "번개장터 기준 예상 차익",
-    body: `번개장터로 다시 팔면 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}를 빼고 봐요.`,
-    note: "그래서 단순히 시세와 매입가 차이만 보는 것보다 보수적으로 계산합니다.",
+    metricLabel: "수수료·배송비까지 뺀 예상 차익",
+    body: `번개장터에서 되팔 때는 예상 판매가에서 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}를 먼저 빼요. 그 비용까지 뺀 뒤 남는 예상 차익이 ${displayProfitRange(card)}입니다.`,
+    note: "단순 시세 차이가 아니라 되팔 때 드는 비용까지 뺀 값으로 봅니다.",
     tone: "resell",
   };
 }
@@ -928,7 +941,7 @@ function costAssuranceSnapshot(card: RevealCard) {
     buyerCostLabel,
     shippingLabel,
     shippingValueLabel: freeShipping
-      ? "0원"
+      ? "판매자 무료배송"
       : shippingLow == null || shippingHigh == null
         ? "확인 필요"
         : krwRange(shippingLow, shippingHigh),
@@ -3722,30 +3735,50 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
   const hasRating = rating != null && Number.isFinite(rating);
   const starCount = hasRating ? Math.max(0, Math.min(5, Math.round(rating))) : 0;
 
-  return (
-    <div data-beginner-guide-trust-metric className="my-6 grid grid-cols-2 gap-3 border-y border-[#eee5d8] py-5 dark:border-zinc-800">
-      <div className="rounded-[20px] bg-white/84 p-4 ring-1 ring-amber-100 dark:bg-zinc-950/60 dark:ring-amber-900/40">
-        <div className="flex items-center gap-2 text-[12px] font-black text-amber-700 dark:text-amber-200">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-200">
-            <BeginnerGuideStarGlyph className="h-4 w-4" />
+  if (!hasRating && reviewCount <= 0) {
+    return (
+      <div data-beginner-guide-trust-metric className="my-6 rounded-[22px] bg-amber-50/90 p-4 ring-1 ring-amber-200 dark:bg-amber-950/25 dark:ring-amber-900/50">
+        <div className="flex items-center gap-3">
+          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-amber-700 ring-1 ring-amber-100 dark:bg-zinc-950 dark:text-amber-200 dark:ring-amber-900/50">
+            <AlertTriangleIcon className="h-6 w-6" />
           </span>
-          <span>판매자 평점</span>
-        </div>
-        <div className="mt-3 flex items-end gap-1.5">
-          <span className="text-[32px] font-black leading-none text-amber-700 dark:text-amber-200">
-            {hasRating ? rating.toFixed(1) : "-"}
-          </span>
-          <span className="pb-1 text-[13px] font-black text-[#7b8378] dark:text-zinc-400">/ 5.0</span>
-        </div>
-        <div aria-label={hasRating ? `평점 ${rating.toFixed(1)}점` : "평점 없음"} className="mt-2 flex gap-0.5 text-amber-400">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <BeginnerGuideStarGlyph
-              key={index}
-              className={`h-3.5 w-3.5 ${index < starCount ? "opacity-100" : "opacity-18"}`}
-            />
-          ))}
+          <div>
+            <div className="text-[15px] font-black text-[#172019] dark:text-zinc-50">후기와 평점이 없어요</div>
+            <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-[#7b8378] dark:text-zinc-400">
+              신규 판매자이거나 거래 이력이 적은 계정일 수 있어요.
+            </div>
+          </div>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div data-beginner-guide-trust-metric className={`my-6 grid gap-3 border-y border-[#eee5d8] py-5 dark:border-zinc-800 ${hasRating ? "grid-cols-2" : "grid-cols-1"}`}>
+      {hasRating ? (
+        <div className="rounded-[20px] bg-white/84 p-4 ring-1 ring-amber-100 dark:bg-zinc-950/60 dark:ring-amber-900/40">
+          <div className="flex items-center gap-2 text-[12px] font-black text-amber-700 dark:text-amber-200">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-200">
+              <BeginnerGuideStarGlyph className="h-4 w-4" />
+            </span>
+            <span>판매자 평점</span>
+          </div>
+          <div className="mt-3 flex items-end gap-1.5">
+            <span className="text-[32px] font-black leading-none text-amber-700 dark:text-amber-200">
+              {rating.toFixed(1)}
+            </span>
+            <span className="pb-1 text-[13px] font-black text-[#7b8378] dark:text-zinc-400">/ 5.0</span>
+          </div>
+          <div aria-label={`평점 ${rating.toFixed(1)}점`} className="mt-2 flex gap-0.5 text-amber-400">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <BeginnerGuideStarGlyph
+                key={index}
+                className={`h-3.5 w-3.5 ${index < starCount ? "opacity-100" : "opacity-18"}`}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="rounded-[20px] bg-white/84 p-4 ring-1 ring-emerald-100 dark:bg-zinc-950/60 dark:ring-emerald-900/40">
         <div className="flex items-center gap-2 text-[12px] font-black text-emerald-700 dark:text-emerald-200">
@@ -3775,6 +3808,8 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
   const sampleCount = velocity?.observedSoldSampleCount ?? market?.soldSampleCount ?? 0;
   const sampleLabel = velocity ? "판매완료 누적" : "시세 거래 표본";
+  const sampleValue = sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "확인 중";
+  const recentListingValue = flow?.count24h != null ? `${flow.count24h.toLocaleString("ko-KR")}건` : "확인 중";
 
   return (
     <div className="rounded-[22px] bg-white/82 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
@@ -3785,11 +3820,11 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
         </div>
         <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
           <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{sampleLabel}</div>
-          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{sampleCount.toLocaleString("ko-KR")}건</div>
+          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{sampleValue}</div>
         </div>
         <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
           <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">최근 등록</div>
-          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{flow?.count24h?.toLocaleString("ko-KR") ?? "수집중"}</div>
+          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{recentListingValue}</div>
         </div>
       </div>
     </div>
@@ -4088,60 +4123,52 @@ function BeginnerGuideWalkthrough({
   const isLast = safeIndex === steps.length - 1;
   const canGoPrev = safeIndex > 0;
   const isSummary = step.tone === "summary";
-  const toneClasses: Record<BeginnerGuideStep["tone"], { bg: string; text: string; ring: string; button: string }> = {
+  const guidePrimaryButtonClass = "bg-[#3182f6] hover:bg-[#1c6fe8]";
+  const toneClasses: Record<BeginnerGuideStep["tone"], { bg: string; text: string; ring: string }> = {
     trust: {
       bg: "bg-[#eef6ec]",
       text: "text-[#2f6440]",
       ring: "ring-[#cfe3ca]",
-      button: "bg-[var(--rd-em)] hover:bg-[var(--rd-em-700)]",
     },
     market: {
       bg: "bg-sky-50",
       text: "text-sky-700",
       ring: "ring-sky-100",
-      button: "bg-[#3182f6] hover:bg-[#1c6fe8]",
     },
     trend: {
       bg: "bg-blue-50",
       text: "text-blue-700",
       ring: "ring-blue-100",
-      button: "bg-[#3182f6] hover:bg-[#1c6fe8]",
     },
     buy: {
       bg: "bg-emerald-50",
       text: "text-emerald-700",
       ring: "ring-emerald-100",
-      button: "bg-[var(--rd-em)] hover:bg-[var(--rd-em-700)]",
     },
     resell: {
       bg: "bg-amber-50",
       text: "text-amber-800",
       ring: "ring-amber-100",
-      button: "bg-amber-600 hover:bg-amber-700",
     },
     safety: {
       bg: "bg-[#eef6ec]",
       text: "text-[#2f6440]",
       ring: "ring-[#cfe3ca]",
-      button: "bg-[#223127] hover:bg-[#344136]",
     },
     channel: {
       bg: "bg-orange-50",
       text: "text-orange-700",
       ring: "ring-orange-100",
-      button: "bg-orange-600 hover:bg-orange-700",
     },
     speed: {
       bg: "bg-amber-50",
       text: "text-amber-800",
       ring: "ring-amber-100",
-      button: "bg-amber-600 hover:bg-amber-700",
     },
     summary: {
       bg: "bg-[#f4f0e8]",
       text: "text-[#344136]",
       ring: "ring-[#e4dacb]",
-      button: "bg-[#223127] hover:bg-[#344136]",
     },
   };
   const toneClass = toneClasses[step.tone];
@@ -4243,7 +4270,7 @@ function BeginnerGuideWalkthrough({
             <button
               type="button"
               onClick={onNext}
-              className={`flex min-h-[50px] items-center justify-center rounded-[17px] px-4 text-[16px] font-black text-white shadow-[0_14px_28px_rgba(34,49,39,0.18)] transition active:scale-[0.99] ${toneClass.button}`}
+              className={`flex min-h-[50px] items-center justify-center rounded-[17px] px-4 text-[16px] font-black text-white shadow-[0_14px_28px_rgba(34,49,39,0.18)] transition active:scale-[0.99] ${guidePrimaryButtonClass}`}
             >
               {isLast ? "상세 분석 보기" : "다음"}
             </button>
@@ -4987,6 +5014,7 @@ export default function PackRevealModal({
   const [beginnerGuideStep, setBeginnerGuideStep] = useState(0);
   const [saveToast, setSaveToast] = useState<string | null>(null);
   const saveToastTimerRef = useRef<number | null>(null);
+  const requestedAnalysisPidsRef = useRef<Set<number>>(new Set());
   const guideModeActive = result?.result === "success" && activeRevealCard != null && beginnerGuideVisible;
 
   useEffect(() => {
@@ -5059,15 +5087,26 @@ export default function PackRevealModal({
     node.scrollTo({ top: 0, behavior });
   }, []);
 
+  const requestRevealAnalysis = useCallback((pid: number) => {
+    if (!Number.isFinite(pid)) return;
+    if (requestedAnalysisPidsRef.current.has(pid)) return;
+    requestedAnalysisPidsRef.current.add(pid);
+    void onLoadDetail(pid).catch((err) => {
+      requestedAnalysisPidsRef.current.delete(pid);
+      console.error("[pack-reveal-modal] lazy detail analysis load failed", err);
+    });
+  }, [onLoadDetail]);
+
   useEffect(() => {
     if (!open || loading || result?.result !== "success" || activeRevealPid == null) {
       setBeginnerGuideVisible(false);
       setBeginnerGuideStep(0);
       return;
     }
+    requestRevealAnalysis(activeRevealPid);
     setBeginnerGuideStep(0);
     setBeginnerGuideVisible(shouldAutoShowBeginnerGuide(activeRevealPid));
-  }, [open, loading, result?.result, activeRevealPid]);
+  }, [open, loading, result?.result, activeRevealPid, requestRevealAnalysis]);
 
   const skipBeginnerGuide = useCallback(() => {
     recordBeginnerGuideSkipped(activeRevealPid);
@@ -5124,10 +5163,11 @@ export default function PackRevealModal({
   const openBeginnerGuide = useCallback(() => {
     if (!activeRevealCard) return;
     closePreviewPanel();
+    requestRevealAnalysis(activeRevealCard.pid);
     setBeginnerGuideStep(0);
     setBeginnerGuideVisible(true);
     window.requestAnimationFrame(() => resetDetailScroll("auto"));
-  }, [activeRevealCard, closePreviewPanel, resetDetailScroll]);
+  }, [activeRevealCard, closePreviewPanel, requestRevealAnalysis, resetDetailScroll]);
 
   const handleClose = useCallback(() => {
     closePreviewPanel();
@@ -5228,9 +5268,7 @@ export default function PackRevealModal({
     consumedInitialPreviewSeedRef.current = initialPreviewSeed;
     // Wave 218: 상품 보기에서는 개발자용 상세 패널을 열지 않는다. 단, /me lazy
     // market analysis는 onLoadDetail 응답에 같이 오므로 백그라운드로만 호출한다.
-    void onLoadDetail(initialPreviewCard.pid).catch((err) => {
-      console.error("[pack-reveal-modal] lazy detail analysis load failed", err);
-    });
+    requestRevealAnalysis(initialPreviewCard.pid);
     queueMicrotask(() => {
       if (initialPreviewMode === "guide") {
         handlePreviewGuide(initialPreviewCard, "right");
@@ -5244,7 +5282,7 @@ export default function PackRevealModal({
     initialPreviewMode,
     initialPreviewSeed,
     handlePreviewGuide,
-    onLoadDetail,
+    requestRevealAnalysis,
   ]);
 
   useLayoutEffect(() => {
