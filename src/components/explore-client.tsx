@@ -64,6 +64,13 @@ type DetailAccessResponse = {
   dailyLimit?: number;
 };
 
+type DetailAccessLimitModal = {
+  title: string;
+  message: string;
+  dailyUsed: number | null;
+  dailyLimit: number | null;
+};
+
 function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
@@ -208,6 +215,92 @@ function savePreferences(prefs: UserPreferences) {
   }
 }
 
+function DetailAccessPaywallModal({
+  state,
+  onClose,
+}: {
+  state: DetailAccessLimitModal | null;
+  onClose: () => void;
+}) {
+  if (!state) return null;
+  const dailyLimit = state.dailyLimit && state.dailyLimit > 0 ? state.dailyLimit : 3;
+  const used = Math.min(dailyLimit, Math.max(0, state.dailyUsed ?? dailyLimit));
+  const segments = Math.min(3, Math.max(1, dailyLimit));
+
+  return (
+    <div
+      className="fixed inset-0 z-[95] flex items-end justify-center bg-black/45 px-3 pb-3 pt-10 backdrop-blur-[2px] sm:items-center sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-[420px] overflow-hidden rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.28)] dark:bg-zinc-950"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="px-5 pb-5 pt-5 sm:px-6 sm:pt-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-[#eef6ff] text-lg font-black text-[#3182f6] dark:bg-blue-950/50 dark:text-blue-300">
+              3
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="min-h-9 rounded-full px-3 text-xs font-bold text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            >
+              닫기
+            </button>
+          </div>
+
+          <div className="mt-5">
+            <p className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">무료 상세보기</p>
+            <h2 className="mt-2 break-keep text-[25px] font-black leading-[1.18] tracking-tight text-zinc-950 dark:text-zinc-50">
+              {state.title}
+            </h2>
+            <p className="mt-3 break-keep text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+              {state.message}
+            </p>
+          </div>
+
+          <div className="mt-5 rounded-[22px] bg-zinc-50 p-4 dark:bg-zinc-900/70">
+            <div className="flex items-center justify-between text-xs font-bold text-zinc-500 dark:text-zinc-400">
+              <span>오늘 사용량</span>
+              <span>{used.toLocaleString("ko-KR")} / {dailyLimit.toLocaleString("ko-KR")}</span>
+            </div>
+            <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: `repeat(${segments}, minmax(0, 1fr))` }}>
+              {Array.from({ length: segments }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-2.5 rounded-full ${idx < Math.min(used, segments) ? "bg-[#3182f6]" : "bg-zinc-200 dark:bg-zinc-700"}`}
+                />
+              ))}
+            </div>
+            <p className="mt-3 text-[12px] font-medium leading-5 text-zinc-500 dark:text-zinc-400">
+              무료 상세보기는 하루 기준으로 다시 열려요.
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-2">
+            <Link
+              href="/plans"
+              className="flex min-h-12 items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-base font-black text-white shadow-[0_12px_26px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8]"
+            >
+              Plus로 계속 보기
+            </Link>
+            <button
+              type="button"
+              onClick={onClose}
+              className="min-h-12 rounded-2xl bg-zinc-100 px-4 text-sm font-black text-zinc-700 transition hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              오늘은 여기까지 볼게요
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const BUDGET_OPTIONS: { value: Budget; label: string }[] = [
   { value: "150k", label: "15만 이하" },
   { value: "300k", label: "30만 이하" },
@@ -233,7 +326,7 @@ export default function ExploreClient() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [detailAccessMessage, setDetailAccessMessage] = useState<string | null>(null);
+  const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
   const [detailAccessLoadingPid, setDetailAccessLoadingPid] = useState<number | null>(null);
   const openedDetailPidsRef = useRef<Set<number>>(new Set());
   const [now, setNow] = useState(Date.now());
@@ -479,13 +572,13 @@ export default function ExploreClient() {
   const openItemDetail = useCallback(async (item: PoolItem) => {
     if (item.soldOut) return;
     if (openedDetailPidsRef.current.has(item.pid)) {
-      setDetailAccessMessage(null);
+      setDetailAccessLimit(null);
       setSelectedCard(poolItemToRevealCard(item));
       return;
     }
 
     setDetailAccessLoadingPid(item.pid);
-    setDetailAccessMessage(null);
+    setDetailAccessLimit(null);
     try {
       const res = await fetch("/api/packs/pool/detail-access", {
         method: "POST",
@@ -495,13 +588,28 @@ export default function ExploreClient() {
       });
       const data = (await res.json()) as DetailAccessResponse;
       if (!res.ok) {
-        setDetailAccessMessage(data.message ?? "상세보기를 열 수 없어요. 잠시 후 다시 시도해주세요.");
+        const dailyLimit = Number.isFinite(Number(data.dailyLimit)) ? Number(data.dailyLimit) : null;
+        const dailyUsed = Number.isFinite(Number(data.dailyUsed)) ? Number(data.dailyUsed) : null;
+        const isLimit = data.error === "daily_limit_reached" || data.error === "no_plan";
+        setDetailAccessLimit({
+          title: isLimit && dailyLimit
+            ? `오늘 무료 상세보기 ${dailyLimit.toLocaleString("ko-KR")}회를 모두 썼어요`
+            : "상세보기를 열 수 없어요",
+          message: data.message ?? "Plus로 전환하면 기다리지 않고 바로 이어서 볼 수 있어요.",
+          dailyUsed,
+          dailyLimit,
+        });
         return;
       }
       openedDetailPidsRef.current.add(item.pid);
       setSelectedCard(poolItemToRevealCard(item));
     } catch (err) {
-      setDetailAccessMessage(err instanceof Error ? err.message : "상세보기 요청 중 오류가 발생했어요.");
+      setDetailAccessLimit({
+        title: "상세보기 요청이 잠시 막혔어요",
+        message: err instanceof Error ? err.message : "잠시 후 다시 시도해주세요.",
+        dailyUsed: null,
+        dailyLimit: null,
+      });
     } finally {
       setDetailAccessLoadingPid((prev) => (prev === item.pid ? null : prev));
     }
@@ -640,15 +748,6 @@ export default function ExploreClient() {
           >
             예산 수정
           </button>
-        </div>
-      ) : null}
-
-      {detailAccessMessage ? (
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-bold text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-100">
-          <span className="min-w-0 flex-1">{detailAccessMessage}</span>
-          <Link href="/plans" className="shrink-0 rounded-full bg-emerald-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-emerald-700">
-            Plus 보기
-          </Link>
         </div>
       ) : null}
 
@@ -1255,6 +1354,11 @@ export default function ExploreClient() {
           </div>
         </div>
       ) : null}
+
+      <DetailAccessPaywallModal
+        state={detailAccessLimit}
+        onClose={() => setDetailAccessLimit(null)}
+      />
 
       {/* PackRevealModal — 카드 클릭 시 띄움 */}
       <PackRevealModal

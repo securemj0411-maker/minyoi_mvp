@@ -12,6 +12,7 @@
 - `/api/packs/pool/detail-access`를 추가해 `/explore` 카드 클릭 전에 권한을 확인한다.
 - `/explore`는 권한 확인 성공 후에만 상세 모달을 열고, 한도 초과 시 Plus 안내 배너를 표시한다.
 - staged 배포 검증 중 기존 `tick-pipeline`의 `Promise<number>` 반환이 `Promise<void>` 콜백에 물려 빌드가 막히는 것을 확인해, 반환값을 버리는 `async` 래퍼로 타입을 정리했다.
+- 후속 UX 조정: 한도 초과 안내는 작은 배너가 아니라 토스식 바텀시트/모달로 표시한다. 문구는 `2시간에 3건`이 아니라 `오늘 무료 상세보기 3회`로 유지한다.
 
 ## 보류
 - Starter/Pro 패키지는 API/기존 링크 호환을 위해 제거하지 않았다.

@@ -36,6 +36,8 @@ test("explore opens the modal only after detail access is granted", () => {
 
   assert.match(explore, /\/api\/packs\/pool\/detail-access/);
   assert.match(explore, /openedDetailPidsRef/);
-  assert.match(explore, /setDetailAccessMessage/);
+  assert.match(explore, /DetailAccessPaywallModal/);
+  assert.match(explore, /setDetailAccessLimit/);
+  assert.match(explore, /Plus로 계속 보기/);
   assert.match(explore, /void openItemDetail\(item\)/);
 });
