@@ -899,7 +899,12 @@ export async function fetchLatestMarketVelocity(comparableKeys: (string | null)[
   ].join(",");
   const encoded = missing.map((key) => encodeURIComponent(key)).join(",");
   const res = await callSupabase(
-    `/mvp_market_velocity_daily?select=${cols}&comparable_key=in.(${encoded})&condition_class=eq.all&confidence=in.(high,medium)&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=${Math.max(100, missing.length * 2)}`,
+    // Wave 394.7.ac (사용자 짚음 — DB 직접 확인): "에어팟맥스는 기록 없을 수가 없는데"
+    // 원인 = 쿼리에서 confidence=in.(high,medium) 으로 low 데이터 아예 fetch 안 함.
+    // DB 실측: airpods_max condition별 confidence "low" 8건 (sold_7d 2~7건 풍부). all 통합은 high.
+    // condition_class=all 의 high confidence 못 매칭되는 케이스에서 low fallback 도 필요.
+    // confidence 가드 제거 → UI 측 (velocityGuideStep) 의 hasReferenceVelocity 분기로 정직 표시.
+    `/mvp_market_velocity_daily?select=${cols}&comparable_key=in.(${encoded})&condition_class=eq.all&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=${Math.max(100, missing.length * 2)}`,
     { headers: authHeaders() },
   );
   const rows = (await res.json()) as MarketVelocityRow[];
