@@ -8915,6 +8915,11 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance",
       // narrow 매칭되는 키워드 제외
       "beta", "베타", "gamma", "감마", "alpha", "알파", "atom", "아톰", "vertex", "버텍스", "squamish", "스쿼미시",
+      // Wave 269 (2026-05-20): API sweep 발견 — Mantis Waistpack 같은 가방 매물이 의류 SKU에 잡힘.
+      //   가방 시세군 (15~30만) ≠ 의류 시세군 (30~60만). 별도 차단.
+      "mantis", "만티스", "waistpack", "웨이스트팩", "waist pack",
+      "백팩", "backpack", "가방", "토트", "tote", "숄더 백", "shoulder bag", "크로스백",
+      "슬링", "sling",
     ],
     msrpKrw: 400000, released: 1989,
   },
@@ -9030,7 +9035,12 @@ export const CATALOG: Sku[] = [
     modelName: "Nike × MLB Cap (LA Dodgers / NY Yankees 등)",
     aliases: ["Nike MLB", "나이키 MLB", "Nike x MLB"],
     mustContain: [["nike", "나이키"], ["mlb"], ["cap", "캡", "모자"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "구찌", "gucci", "무라카미"],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "구찌", "gucci", "무라카미",
+      // Wave 269 (2026-05-20): API sweep 발견 — 46/96 (48%) 유니폼/져지 의류 매물 잘못 매칭.
+      //   nike x mlb 유니폼은 cap (모자) ≠ 의류 (jersey/uniform) 시세군 완전 다름.
+      "유니폼", "uniform", "져지", "jersey", "베이퍼리미티드", "vapor limited", "vapor",
+      "스넬", "snell", "리미티드",
+    ],
     msrpKrw: 79000, released: 2022,
   },
   {
