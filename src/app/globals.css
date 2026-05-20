@@ -8,6 +8,26 @@
   --brand-accent-strong: #314238;
   --brand-accent-soft: #edf3eb;
   --brand-cream: #f7f1e6;
+  /* Wave 394.7.n (Claude Design handoff reference): 디자인 토큰 — 모든 panel 통일. */
+  --rd-bg: #ebe6dc;
+  --rd-cream: #f7f2e8;
+  --rd-card: #ffffff;
+  --rd-card-warm: #fffaf0;
+  --rd-line: #ece3d2;
+  --rd-line-strong: #ddd4c0;
+  --rd-ink: #1a2620;
+  --rd-ink-2: #344136;
+  --rd-ink-3: #6f7c6d;
+  --rd-ink-4: #98a497;
+  --rd-em: #059669;
+  --rd-em-700: #047857;
+  --rd-em-50: #ecfdf5;
+  --rd-em-100: #d1fae5;
+  --rd-em-soft: #edf4e8;
+  --rd-amber: #b45309;
+  --rd-amber-bg: #fef7e0;
+  --rd-rose: #be123c;
+  --rd-rose-bg: #ffe4e6;
 }
 
 .dark {
