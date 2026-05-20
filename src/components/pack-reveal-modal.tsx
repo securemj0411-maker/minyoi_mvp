@@ -4639,6 +4639,7 @@ function beginnerSafetyStatRows(stats: BeginnerGuideSafetyStats) {
 function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: RevealCard; variant?: "intro" | "inline" }) {
   const [stats, setStats] = useState<BeginnerGuideSafetyStats | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [introLoadingHold, setIntroLoadingHold] = useState(variant === "intro");
   const statsUrl = beginnerSafetyStatsUrl(card, variant === "intro" ? "category" : "precise");
 
   useEffect(() => {
@@ -4673,6 +4674,16 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
     return () => controller.abort();
   }, [loadFailed, stats, statsUrl]);
 
+  useEffect(() => {
+    if (variant !== "intro" || stats || loadFailed) {
+      setIntroLoadingHold(false);
+      return;
+    }
+    setIntroLoadingHold(true);
+    const timer = window.setTimeout(() => setIntroLoadingHold(false), 760);
+    return () => window.clearTimeout(timer);
+  }, [loadFailed, stats, variant]);
+
   const totalBlocked = stats?.total_blocked_7d ?? 0;
   const rows = stats ? beginnerSafetyStatRows(stats) : [];
   const scopedSubject = variant !== "intro" && (stats?.scope?.level === "lane" || stats?.scope?.level === "sku")
@@ -4683,6 +4694,39 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
   const subjectLabel = scopedSubject ?? "전체 추천 풀에서";
 
   if (variant === "intro") {
+    if (introLoadingHold && !stats && !loadFailed) {
+      return (
+        <div
+          data-beginner-guide-safety-filter-note
+          data-beginner-guide-safety-loading
+          className="mt-6 overflow-hidden rounded-[28px] bg-white px-5 py-5 shadow-[0_18px_44px_rgba(34,49,39,0.08)] ring-1 ring-[#ece4d7] dark:bg-zinc-950/70 dark:ring-zinc-800"
+        >
+          <div className="flex items-center gap-3">
+            <span className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f2f7ff] text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/45">
+              <span className="absolute h-11 w-11 animate-ping rounded-full bg-[#3182f6]/10" />
+              <ShieldIcon className="relative h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <div className="break-keep text-[14px] font-black leading-5 text-[#172019] dark:text-zinc-50">
+                오늘 추천 풀을 먼저 훑고 있어요
+              </div>
+              <div className="mt-1 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">
+                돈 안 되는 매물을 거르는 중
+              </div>
+            </div>
+          </div>
+          <div className="mt-5 space-y-2.5">
+            {[0, 1, 2].map((index) => (
+              <div key={index} className="flex items-center justify-between gap-4 rounded-[16px] bg-[#faf7f1] px-3.5 py-3 dark:bg-zinc-900/70">
+                <span className="h-3.5 w-28 animate-pulse rounded-full bg-[#e9dfd0] dark:bg-zinc-800" />
+                <span className="h-4 w-14 animate-pulse rounded-full bg-[#dce9ff] dark:bg-blue-950/50" />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
     const showFallbackTotal = !stats || totalBlocked <= 0;
     const displayRows = rows.length > 0 ? rows : [
       { label: "돈 안 되는 것", value: null },

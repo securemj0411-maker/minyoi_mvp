@@ -112,6 +112,11 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /return fetchStats\("\/api\/public\/safety-stats"\)/);
   assert.match(modal, /전체 추천 풀에서/);
   assert.doesNotMatch(modal, /곧 숫자까지 보여드릴게요/);
+  assert.match(modal, /introLoadingHold/);
+  assert.match(modal, /data-beginner-guide-safety-loading/);
+  assert.match(modal, /오늘 추천 풀을 먼저 훑고 있어요/);
+  assert.match(modal, /돈 안 되는 매물을 거르는 중/);
+  assert.match(modal, /setTimeout\(\(\) => setIntroLoadingHold\(false\), 760\)/);
   assert.match(modal, /득템잡이가 오늘 \{subjectLabel\}/);
   assert.match(modal, /에어팟 맥스/);
   assert.match(modal, /돈 안 되는 것/);
