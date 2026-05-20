@@ -156,7 +156,8 @@ async function diagnoseSku(sku: Sku): Promise<PerSkuResult | null> {
     }
 
     // parser 적용 — type 추출 정확도 검증.
-    // Wave 267 보강: field name 카테고리별 정확 추출 (shoe_product_type / bag_product_type / clothing_product_type)
+    // Wave 267 보강: parsedJson (camelCase 가 아니라 그대로) + field name 카테고리별 정확 추출.
+    //   1차/2차 sweep type_unknown 100% 잘못 보고된 원인: 내 script가 parsed.json 봤지만 실제는 parsed.parsedJson.
     if (FASHION_CATEGORIES.has(sku.category)) {
       try {
         const parsed = parseFashionMobility({
@@ -169,7 +170,7 @@ async function diagnoseSku(sku: Sku): Promise<PerSkuResult | null> {
           defaultProductType: sku.defaultProductType,
         });
         const fieldName = `${sku.category}_product_type`;
-        const productType = (parsed?.json as Record<string, unknown> | undefined)?.[fieldName] as string | undefined;
+        const productType = (parsed?.parsedJson as Record<string, unknown> | undefined)?.[fieldName] as string | undefined;
         if (!productType || productType === "type_unknown") {
           result.typeUnknown += 1;
           if (result.typeUnknownSamples.length < 10) result.typeUnknownSamples.push(item.name);

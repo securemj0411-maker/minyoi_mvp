@@ -425,7 +425,8 @@ function parseBagProductType(text: string): BagProductType {
   if (/크로스(?!\s*?백 ?팩)|crossbody|cross ?bag|크로스 ?백(?!팩)|카메라 ?백|camera ?bag|사이드 ?백|side ?bag/.test(t)) return "crossbody";
   // tote — 탑핸들/핸드백.
   // Wave 266 (2026-05-20): 캔버스 백 / 토트 백 영문 / 빈티지 토트 보강.
-  if (/토트|tote\b|쇼퍼|shopper|탑 ?핸들|top ?handle|핸드 ?백|handbag|캔버스 ?백|canvas ?bag|마트 ?백|쇼핑 ?백/.test(t)) return "tote";
+  // Wave 267b (2026-05-20): 토드백/japanese bag/재패니즈/명품 쇼핑백 보강 (API sweep 발견).
+  if (/토트|tote\b|쇼퍼|shopper|탑 ?핸들|top ?handle|핸드 ?백|handbag|캔버스 ?백|canvas ?bag|마트 ?백|쇼핑 ?백|토드 ?백|todd ?bag|재패니즈 ?백|japanese ?bag|명품 ?쇼핑백|쇼핑백/.test(t)) return "tote";
   // backpack — 빅샷/보레알리스 (TNF 모델명).
   // Wave 266: 백오프 ?팩 / 데이팩 / 캠퍼 백 / 트래블 백 / 캐리 백 / 학생 가방 (school bag) / 책가방 보강.
   if (/백팩|backpack|배낭|knapsack|빅샷|big ?shot|보레알리스|borealis(?!\s*sling)|핫샷|hot ?shot|데이 ?팩|day ?pack|캠퍼 ?백|camper ?bag|책 ?가방|학생 ?가방|school ?bag|학생가방/.test(t)) return "backpack";

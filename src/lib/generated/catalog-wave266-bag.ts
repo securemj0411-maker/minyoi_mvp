@@ -48,10 +48,30 @@ const BAG_COMMON_NOISE = [
 
 const BAG_TYPES = [
   // 가방 product type (모델 명시 안되도 가방으로 인식)
-  "가방", "백", "bag", "토트", "tote", "숄더", "shoulder", "크로스백", "cross",
+  "가방", "백 ", "bag", "토트", "tote", "숄더", "shoulder", "크로스백", "cross",
   "백팩", "backpack", "쇼퍼", "shopper", "버킷", "bucket", "보스턴", "boston",
   "포셰트", "pochette", "클러치", "clutch", "호보", "hobo", "메신저", "messenger",
   "더플", "duffle", "캐리어", "carrier", "여행가방", "여행 가방",
+];
+
+// Wave 267b (2026-05-20): bag broad SKU에 일관 적용할 의류/신발/향수 차단 noise.
+//   API sweep 발견 — bag-cdg-broad 98%/bag-balenciaga-broad 83%/bag-margiela-broad 79% 가 의류/향수 매물에 잡힘.
+const BAG_NON_BAG_NOISE = [
+  // 의류
+  "반팔", "반팔티", "티셔츠", "tee ", "맨투맨", "후드티", "후드 티",
+  "데님자켓", "데님 자켓", "데님셔츠", "데님 셔츠", "데님셔츠자켓", "셔츠자켓",
+  "하프집업", "하프 집업", "half zip", "풀집업",
+  "스웻", "sweat", "스웻셔츠", "스웻 셔츠",
+  "점퍼", "jumper", "점프수트",
+  "오버핏 반팔", "오버핏 셔츠", "오버핏 자켓", "셋업",
+  "패딩", "다운자켓", "다운 자켓",
+  "머플러", "스카프", "scarf",
+  // 향수 (Margiela Replica 등)
+  "edt", "edp", "오드뚜왈렛", "오드 뚜왈렛", "오드퍼퓸", "오드 퍼퓸",
+  "100ml", "50ml", "30ml", "75ml",
+  "replica", "재즈클럽", "레이지선데이", "lazy sunday",
+  // 신발 (Bottega 퍼들 등)
+  "퍼들", "puddle", "샌들 보트", "더비 슈즈", "boot 슈즈",
 ];
 
 // 가방 / 지갑 격리
@@ -79,6 +99,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 별도 narrow SKU (이미 있음)
       "speedy 25", "speedy 30", "speedy 35", "speedy 40",
@@ -111,6 +132,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 별도 narrow SKU
       "marmont mini", "마몽 미니",
@@ -152,6 +174,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 액세서리 별도
       "립스틱", "립밤", "퍼퓸", "perfume", "오 드", "edp", "edt", "향수", "ml ",
@@ -179,6 +202,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 향수/화장품
       "퍼퓸", "perfume", "오 드", "edp", "edt", "향수", "ml ",
@@ -206,6 +230,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 별도 narrow SKU
       "saffiano galleria mini",
@@ -247,6 +272,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 별도 narrow
       "trio medium", "트리오 미디엄",
@@ -283,6 +309,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 별도 narrow
       "cassette mini", "카세트 미니",
@@ -309,6 +336,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 버킨/켈리는 별도 (영업가 너무 다름)
       "birkin", "버킨",
@@ -338,6 +366,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 별도 narrow
       "classic city mini",
@@ -364,6 +393,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 향수/스카프/의류
       "퍼퓸", "perfume", "향수", "edp", "edt", "ml ",
@@ -392,6 +422,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 별도 narrow
       "signature tote", "시그니처 토트",
@@ -423,6 +454,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 별도 narrow
       "5ac mini",
@@ -458,6 +490,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       "신발", "스니커즈", "벨트",
     ],
@@ -482,6 +515,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 화장품
       "립스틱", "립밤", "립글로스", "쿠션",
@@ -509,6 +543,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 별도 narrow
       "visetos medium backpack",
@@ -535,6 +570,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       "신발", "벨트",
     ],
@@ -558,6 +594,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
     ],
     msrpKrw: 1890000,
@@ -580,6 +617,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 의류 별도
       "셔츠", "팬츠", "자켓", "코트",
@@ -604,6 +642,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 의류
       "셔츠", "팬츠", "자켓", "코트", "후드티", "맨투맨", "티셔츠", "반팔", "반팔티",
@@ -632,6 +671,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       "tom ford", "톰포드",  // 다른 브랜드
       "셔츠", "팬츠", "자켓", "코트",
