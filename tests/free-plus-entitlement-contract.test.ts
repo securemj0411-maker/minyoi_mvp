@@ -121,6 +121,10 @@ test("related item clicks do not scroll before access is granted", () => {
   assert.doesNotMatch(modal, /onBeforeOpenRelatedItem/);
   assert.match(modal, /activeRevealPid/);
   assert.match(modal, /resetDetailScroll\("auto"\)/);
+  assert.match(modal, /data-related-reveal-scroll/);
+  assert.match(modal, /scrollRelatedItems/);
+  assert.match(modal, /scrollBy\(\{/);
+  assert.match(modal, /다른 수익 매물 오른쪽으로 보기/);
 });
 
 test("profit card detail toggle does not duplicate market comparables copy", () => {

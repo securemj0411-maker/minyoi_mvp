@@ -5836,20 +5836,80 @@ function RelatedRevealStrip({
   onOpenRelatedItem?: (pid: number) => void;
 }) {
   const visibleItems = items.slice(0, 8);
+  const stripRef = useRef<HTMLDivElement | null>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+
+  const updateScrollButtons = useCallback(() => {
+    const node = stripRef.current;
+    if (!node) return;
+    const maxScrollLeft = Math.max(0, node.scrollWidth - node.clientWidth);
+    setCanScrollPrev(node.scrollLeft > 4);
+    setCanScrollNext(node.scrollLeft < maxScrollLeft - 4);
+  }, []);
+
+  useEffect(() => {
+    const node = stripRef.current;
+    if (!node) return;
+    updateScrollButtons();
+    node.addEventListener("scroll", updateScrollButtons, { passive: true });
+    window.addEventListener("resize", updateScrollButtons);
+    return () => {
+      node.removeEventListener("scroll", updateScrollButtons);
+      window.removeEventListener("resize", updateScrollButtons);
+    };
+  }, [updateScrollButtons, visibleItems.length]);
+
+  const scrollRelatedItems = useCallback((direction: "prev" | "next") => {
+    const node = stripRef.current;
+    if (!node) return;
+    const cardStep = 150 * 3;
+    const distance = Math.min(Math.max(node.clientWidth * 0.85, 300), cardStep);
+    node.scrollBy({
+      left: direction === "next" ? distance : -distance,
+      behavior: "smooth",
+    });
+    window.setTimeout(updateScrollButtons, 240);
+  }, [updateScrollButtons]);
+
   if (visibleItems.length === 0 || !onOpenRelatedItem) return null;
 
   // Wave 394.7.p (reference OtherRecs): horizontal scroll + 140px 카드 + rounded border.
   return (
     <section className="mt-4 px-3 sm:px-4">
-      <div className="mb-2 flex items-baseline justify-between gap-3">
+      <div className="mb-2 flex items-center justify-between gap-3">
         <div className="text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
           다른 수익 매물
         </div>
-        <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
-          {visibleItems.length}개 →
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+            {visibleItems.length}개
+          </span>
+          <button
+            type="button"
+            onClick={() => scrollRelatedItems("prev")}
+            disabled={!canScrollPrev}
+            aria-label="다른 수익 매물 왼쪽으로 보기"
+            className="hidden h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-sm font-black text-zinc-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-emerald-700 dark:hover:text-emerald-300 sm:inline-flex"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollRelatedItems("next")}
+            disabled={!canScrollNext}
+            aria-label="다른 수익 매물 오른쪽으로 보기"
+            className="hidden h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-sm font-black text-zinc-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-emerald-700 dark:hover:text-emerald-300 sm:inline-flex"
+          >
+            →
+          </button>
+        </div>
       </div>
-      <div className="-mx-3 flex gap-2.5 overflow-x-auto px-3 pb-2 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+      <div
+        ref={stripRef}
+        data-related-reveal-scroll
+        className="-mx-3 flex scroll-px-3 gap-2.5 overflow-x-auto px-3 pb-2 sm:mx-0 sm:scroll-px-0 sm:px-0 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+      >
         {visibleItems.map((item) => {
           const profitPct = item.price > 0 ? Math.round((item.expectedProfitMax / item.price) * 100) : 0;
           return (
