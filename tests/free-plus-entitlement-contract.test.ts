@@ -61,3 +61,11 @@ test("related item clicks do not scroll before access is granted", () => {
   assert.match(modal, /activeRevealPid/);
   assert.match(modal, /resetDetailScroll\("auto"\)/);
 });
+
+test("profit card detail toggle does not duplicate market comparables copy", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+
+  assert.match(modal, /계산 근거 보기/);
+  assert.doesNotMatch(modal, /계산식 · 비교 매물/);
+  assert.match(modal, /시세 비교 매물/);
+});

@@ -3373,7 +3373,7 @@ function RevealCardItem({
                   ) : null}
                 </div>
 
-                {/* 큰 흰 버튼 — "계산식 · 비교 매물 N개 보기" — handoff 핵심. mode 토글. */}
+                {/* 큰 흰 버튼 — 계산 근거 토글. 비교 매물은 바로 아래 독립 섹션에서 전담. */}
                 <button
                   type="button"
                   onClick={toggleMode}
@@ -3399,7 +3399,7 @@ function RevealCardItem({
                     <circle cx="11" cy="11" r="7" />
                     <path d="M21 21l-4.3-4.3" />
                   </svg>
-                  <span>{mode === "detailed" ? "간단 보기" : `계산식 · 비교 매물 ${card.marketBasis?.sampleCount ?? 0}개 보기`}</span>
+                  <span>{mode === "detailed" ? "간단 보기" : "계산 근거 보기"}</span>
                   <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: mode === "detailed" ? "rotate(90deg)" : "none", transition: "transform .2s" }}>
                     <path d="M9 18l6-6-6-6" />
                   </svg>
