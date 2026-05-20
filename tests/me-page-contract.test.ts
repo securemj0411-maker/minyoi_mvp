@@ -469,6 +469,13 @@ test("saved money counter includes inaccurate report token compensation", () => 
   assert.doesNotMatch(counter, /손해 보상 토큰/);
 });
 
+test("/me does not render saved money or monthly earned counters", () => {
+  const meClient = source("src/components/me-dashboard-client.tsx");
+
+  assert.doesNotMatch(meClient, /SavedMoneyCounter/);
+  assert.doesNotMatch(meClient, /saved-money-counter/);
+});
+
 test("/me delete action soft-hides reveals without deleting feedback history", () => {
   const deleteRoute = source("src/app/api/packs/reveals/delete/route.ts");
   const meRoute = source("src/app/api/packs/me/route.ts");

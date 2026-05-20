@@ -9,7 +9,6 @@ import PlaybookOverview from "@/components/playbook-overview";
 // Wave 343: history view = ExploreClient. UserRevealDashboard / RecommendationWorkspace / PackageIcon / SearchIcon / userRefForAuthUser 미사용 제거.
 import ExploreClient from "@/components/explore-client";
 import PreviewMaskedDashboard from "@/components/preview-masked-dashboard";
-import { SavedMoneyCounter } from "@/components/saved-money-counter";
 import { MyFeedbackActivity } from "@/components/my-feedback-activity";
 import { isAdminUser } from "@/lib/auth-users";
 import { hasAdminShadowClient } from "@/lib/admin-shadow-mode";
@@ -309,10 +308,9 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
         ) : (
           // Wave 343: history view = freemium 탐색 (ExploreClient).
           // welcome 4개 + UserRevealDashboard 폐기 → 30개 풀 + cooldown + sold out + 통계 + paywall 예고.
-          // SavedMoneyCounter / MyFeedbackActivity는 가치 정보라 유지.
+          // Wave 404: 수익/손실 회피 카운터는 PG 심사 톤에 맞지 않아 /me에서 제거.
           // "더 찾아보기" 버튼들 폐기 — ExploreClient의 "새 30개 받기" cooldown으로 대체.
           <section className="w-full min-w-0 pb-4 lg:col-start-2">
-            <SavedMoneyCounter />
             <ExploreClient />
             <MyFeedbackActivity />
           </section>
