@@ -66,3 +66,15 @@
 - 발견: `tick`, `detail-worker`, `lifecycle-worker` 기본 모드, `housekeeper`가 기존에는 in-memory guard만 사용했다. Serverless 인스턴스가 갈라지면 QStash/Vercel 중복 호출을 막지 못할 수 있다.
 - 조치: 위 4개 route도 `acquireCronGuardWithSourceHealth()`를 사용하도록 바꿔 `CRON_GUARD_DB_LOCK_ENABLED=1` 환경에서 Supabase DB lock을 타게 했다.
 - 권고: QStash의 같은 endpoint schedule은 즉시 끈다. 끄지 않으면 Vercel Cron과 QStash가 동시에 production worker를 때린다.
+
+## 2026-05-21 QStash 비활성화 후 확인
+
+- 사용자 조치로 QStash schedules를 끈 뒤 `mvp_collect_runs`를 재확인했다.
+- 최근 12분 구간에는 QStash 잔상 13건과 Vercel 18건이 섞여 있었고, 마지막 QStash 기록은 `2026-05-20T23:42:51Z`의 `/api/cron/lifecycle-worker?wait=1`였다.
+- 이후 최근 4분 구간(`2026-05-20T23:43:09Z` 이후)은 Vercel 8건, QStash 0건이었다.
+- 해당 구간에서 확인된 Vercel Cron 경로:
+  - `/api/cron/tick`
+  - `/api/cron/detail-worker`
+  - `/api/cron/lifecycle-worker`
+  - `/api/cron/pool-warmer`
+- 결론: DB 실행 로그 기준으로 QStash 중복 호출은 끊기고 Vercel Cron 호출은 정상 유입 중이다. 단, 로컬 Vercel CLI token이 유효하지 않아 Vercel 플랫폼 로그 직접 조회는 하지 못했다.
