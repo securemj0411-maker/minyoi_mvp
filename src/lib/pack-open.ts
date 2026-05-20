@@ -19,6 +19,7 @@ import {
 const TIMEOUT_MS = 30_000;
 const USER_REVEAL_DEDUPE_LIMIT = 1000;
 const MAX_PACK_OPEN_NUM_COMMENT = 8;
+const COMMENT_COUNT_REFRESH_MS = 6 * 60 * 60 * 1000;
 
 export type PackBand = 1 | 2 | 3;
 
@@ -248,6 +249,7 @@ type RawSkuMeta = {
   shop_review_rating: number | null;
   shop_review_count: number | null;
   num_comment: number | null;
+  detail_enriched_at: string | null;
 };
 
 type UserRevealDedupe = {
@@ -512,14 +514,22 @@ async function invalidateHighCommentCandidate(pid: number, commentCount: number,
 }
 
 async function patchRawCommentCount(pid: number, commentCount: number): Promise<void> {
+  const now = new Date().toISOString();
   await callSupabase(`/mvp_raw_listings?pid=eq.${pid}`, {
     method: "PATCH",
     headers: authHeaders("return=minimal"),
     body: JSON.stringify({
       num_comment: commentCount,
-      updated_at: new Date().toISOString(),
+      detail_enriched_at: now,
+      updated_at: now,
     }),
   });
+}
+
+function hasStaleRawCommentCount(raw: RawSkuMeta | undefined, nowMs = Date.now()) {
+  if (!hasRawCommentCount(raw?.num_comment ?? null)) return true;
+  const enrichedAt = raw?.detail_enriched_at ? Date.parse(raw.detail_enriched_at) : Number.NaN;
+  return !Number.isFinite(enrichedAt) || nowMs - enrichedAt > COMMENT_COUNT_REFRESH_MS;
 }
 
 async function loadLatestSourceHealth(): Promise<SourceHealthStatus> {
@@ -539,7 +549,7 @@ async function fetchListings(pids: number[]): Promise<Map<number, ListingMeta>> 
   if (pids.length === 0) return new Map();
   const pidFilter = pids.join(",");
   const listingCols = "pid,name,url,price,sku_name,thumbnail_url";
-  const rawCols = "pid,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,num_comment";
+  const rawCols = "pid,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,num_comment,detail_enriched_at";
   const [listingRes, rawRes] = await Promise.all([
     callSupabase(`/mvp_listings?select=${listingCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
     callSupabase(`/mvp_raw_listings?select=${rawCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
@@ -1572,7 +1582,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       const isFresh = Number.isFinite(lastVerified) && Date.now() - lastVerified < freshnessMs;
 
       let liveVerifiedAt = candidate.last_verified_at;
-      const shouldLiveVerify = !isFresh || !hasRawCommentCount(rawCommentCount);
+      const shouldLiveVerify = !isFresh || hasStaleRawCommentCount(meta._raw);
       if (shouldLiveVerify) {
         const { detail, signals } = await verifyAndCheckSold(candidate.pid, meta.price, meta.name);
         if (isSoldOut(signals)) {

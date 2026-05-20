@@ -5,6 +5,7 @@ import { searchPage, fetchDetail, type SearchItem } from "@/lib/bunjang";
 // Wave 132b (2026-05-16 04:38 KST): 번개 UI 댓글 수가 metrics.buntalkCount임을 확인.
 // 이 시각 이전에 이미 detail_status=done이었던 row는 num_comment가 비어 있을 수 있어 재상세수집한다.
 const BUNTALK_COUNT_FIX_DEPLOYED_AT_MS = Date.UTC(2026, 4, 15, 19, 38, 30);
+const MAX_POOL_WARM_NUM_COMMENT = 8;
 
 // Wave 138b (2026-05-16): description SHA256 (500자) — 다중 ID 사기 그룹 탐지.
 // 같은 hash + 다른 seller_uid 2+ = 부캐 그룹 (DB 발견 27건/7셀러 패턴).
@@ -3420,6 +3421,16 @@ async function markPoolVerified(pid: number) {
   });
 }
 
+async function patchPoolWarmDetailFacts(pid: number, detail: { commentCount: number | null }) {
+  const now = new Date().toISOString();
+  const patch: Record<string, unknown> = {
+    detail_enriched_at: now,
+    updated_at: now,
+  };
+  if (detail.commentCount != null) patch.num_comment = detail.commentCount;
+  await patchRows("mvp_raw_listings", `pid=eq.${pid}`, patch);
+}
+
 async function claimLifecycleChecks(mode: LifecycleClaimMode = "default"): Promise<LifecycleClaimRow[]> {
   const config = loadPipelineRuntimeConfig();
   // 2026-05-16: Bunjang rate limit probe 결과 600 calls 전부 200 응답 (429 0건).
@@ -3722,6 +3733,12 @@ export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
     stats.claimed += 1;
     if (!detail) {
       stats.detailFailed += 1;
+      continue;
+    }
+    await patchPoolWarmDetailFacts(row.pid, detail);
+    if (detail.commentCount != null && detail.commentCount >= MAX_POOL_WARM_NUM_COMMENT) {
+      await invalidatePoolEntries([{ pid: row.pid, reason: `num_comment_above_${MAX_POOL_WARM_NUM_COMMENT}_pool_warmer` }]);
+      stats.poolSkipped += 1;
       continue;
     }
     if (isSoldOut(signals)) {
