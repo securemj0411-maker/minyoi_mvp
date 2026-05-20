@@ -2314,21 +2314,25 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
   // Wave 393.5: rose → amber (사용자 짚음 — rose는 "이 매물 가품"으로 헷갈림.
   // 실제 의미 = 구매 전 정품 점검 체크리스트).
   return (
-    <section className="mt-3 rounded-2xl border-l-4 border-l-amber-500 border border-amber-200 bg-amber-50/40 px-4 py-3.5 dark:border-amber-900/40 dark:border-l-amber-600 dark:bg-amber-950/20">
-      {/* Wave 394.7.n (Claude Design reference AuthenticityCheck): warm bg amber-50 + amber-200 border + amber-500 accent left. */}
+    <section style={{ marginTop: 18, padding: "0 14px" }}>
+      {/* Wave 394.7.s: handoff AuthenticityCheck 정확 — bg #fffbef + border 1px #fde68a + border-left 3px #f59e0b + radius 16. */}
+      <div style={{ background: "#fffbef", border: "1px solid #fde68a", borderLeftWidth: 3, borderLeftColor: "#f59e0b", borderLeftStyle: "solid", borderRadius: 16, padding: 16 }}>
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-center justify-between gap-2 text-left"
+        style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
       >
         <div className="min-w-0">
-          <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.12em] text-amber-800 dark:text-amber-300">
-            <ShieldIcon className="h-3 w-3 shrink-0" />
-            {upperHeader} · {checklist.label}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+            <ShieldIcon className="h-3.5 w-3.5 shrink-0" style={{ color: "#b45309" }} />
+            <span style={{ fontSize: 10.5, fontWeight: 800, color: "#92400e", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+              {upperHeader} · {checklist.label}
+            </span>
           </div>
-          <div className="mt-1 text-[15px] font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+          <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 800, color: "#1a2620", letterSpacing: -0.2 }}>
             {headlineText}
-          </div>
+          </h4>
           <div className="mt-0.5 line-clamp-2 text-xs font-medium leading-4 text-zinc-600 dark:text-zinc-400 sm:line-clamp-none">
             {checklist.riskHeadline}
           </div>
@@ -2461,6 +2465,7 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
           ) : null}
         </div>
       )}
+      </div>
     </section>
   );
 }
