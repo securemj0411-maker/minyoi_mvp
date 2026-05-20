@@ -45,5 +45,9 @@ test("PG review sensitive operator pages are server-side gated", () => {
   assert.match(adminLayout, /requireSupabaseUserFromCookies/);
   assert.match(adminLayout, /isAdminUser/);
   assert.match(adminLayout, /redirect\("\/login\?next=\/admin"\)/);
+  assert.match(adminLayout, /AdminCaughtPage/);
+  assert.match(adminLayout, /딱 걸렸죠/);
+  assert.match(adminLayout, /access attempt noticed/);
+  assert.match(adminLayout, /403 · nice try/);
   assert.match(debugAdmin, /debug routes disabled in production/);
 });
