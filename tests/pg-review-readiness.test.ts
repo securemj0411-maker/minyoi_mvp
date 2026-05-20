@@ -40,14 +40,27 @@ test("PG review checkout collects Inicis required buyer fields", () => {
 
 test("PG review sensitive operator pages are server-side gated", () => {
   const adminLayout = source("src/app/admin/layout.tsx");
+  const adminTrap = source("src/components/admin-caught-page.tsx");
+  const trapRoutes = [
+    "src/app/(admin-traps)/root/page.tsx",
+    "src/app/(admin-traps)/master/page.tsx",
+    "src/app/(admin-traps)/administrator/page.tsx",
+    "src/app/(admin-traps)/wp-admin/page.tsx",
+    "src/app/(admin-traps)/phpmyadmin/page.tsx",
+  ].map(source);
   const debugAdmin = source("src/lib/debug-admin.ts");
 
   assert.match(adminLayout, /requireSupabaseUserFromCookies/);
   assert.match(adminLayout, /isAdminUser/);
   assert.match(adminLayout, /redirect\("\/login\?next=\/admin"\)/);
   assert.match(adminLayout, /AdminCaughtPage/);
-  assert.match(adminLayout, /딱 걸렸죠/);
-  assert.match(adminLayout, /access attempt noticed/);
-  assert.match(adminLayout, /403 · nice try/);
+  assert.match(adminTrap, /딱 걸렸죠/);
+  assert.match(adminTrap, /access attempt noticed/);
+  assert.match(adminTrap, /403 · nice try/);
+  assert.match(adminTrap, /거긴 막힌 문이에요/);
+  assert.doesNotMatch(adminTrap, /운영자 방/);
+  for (const route of trapRoutes) {
+    assert.match(route, /AdminCaughtPage/);
+  }
   assert.match(debugAdmin, /debug routes disabled in production/);
 });
