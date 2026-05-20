@@ -72,7 +72,7 @@ export async function GET(req: Request) {
     const blockedFlagsCsv = BLOCK_FLAGS.map((f) => `"${f}"`).join(",");
     const blockedRes = await restFetch(
       // PostgREST `&&` (overlap) 연산자 = `ov`. score_flags 가 array 컬럼.
-      `${tableUrl("mvp_listing_analysis")}?select=id&updated_at=gte.${encodeURIComponent(monthStartIso)}&score_flags=ov.{${BLOCK_FLAGS.join(",")}}&limit=1`,
+      `${tableUrl("mvp_listing_analysis")}?select=pid&updated_at=gte.${encodeURIComponent(monthStartIso)}&score_flags=ov.{${BLOCK_FLAGS.join(",")}}&limit=1`,
       { headers: { ...serviceHeaders(), Prefer: "count=exact" } },
     );
     const blockedRange = blockedRes.headers.get("content-range") ?? "0-0/0";

@@ -48,21 +48,34 @@ type PerSkuResult = {
 };
 
 // SKU → search query 변환.
-// 1순위: brand + 첫 alias (없으면 modelName)
-// 2순위: SKU에 searchQueries 박혀있으면 그것
+// Wave 267 보강 — Jordan 같은 narrow SKU 들이 "Nike Air" query 사용해서 TP 0% 되던 문제 fix.
+//   ① searchQueries override → 박혀있으면 그것 사용
+//   ② Korean alias 중 가장 specific (5자+) → 우선 사용
+//   ③ Korean modelName 추출 → 가장 informative
+//   ④ fallback: full English modelName (괄호 제거)
 function pickQuery(sku: Sku): string | null {
   if (sku.searchQueries && sku.searchQueries.length > 0) {
     return sku.searchQueries[0];
   }
-  // alias 중 가장 specific (Korean 한글 + brand)
+  // alias 중 한글 5자+ 가장 specific
+  const longKoAliases = sku.aliases.filter((a) => /[가-힣]/.test(a) && a.length >= 5);
+  if (longKoAliases.length > 0) {
+    return longKoAliases.sort((a, b) => b.length - a.length)[0];
+  }
+  // model name 전체 추출 (괄호 안 제거)
+  if (sku.modelName) {
+    // "Air Jordan 1 High (Chicago Lost and Found)" → "Air Jordan 1 High Chicago Lost and Found"
+    const cleaned = sku.modelName.replace(/[()]/g, " ").replace(/\s+/g, " ").trim();
+    // brand 이미 modelName 에 포함된 경우 중복 제거
+    if (cleaned.toLowerCase().includes(sku.brand.toLowerCase().split(" ")[0])) {
+      return cleaned;
+    }
+    return `${sku.brand} ${cleaned}`.trim();
+  }
+  // 짧은 한글 alias fallback
   const koAliases = sku.aliases.filter((a) => /[가-힣]/.test(a));
   if (koAliases.length > 0) {
-    const longest = koAliases.sort((a, b) => b.length - a.length)[0];
-    return longest;
-  }
-  // model name 추출
-  if (sku.modelName) {
-    return `${sku.brand} ${sku.modelName.split(/[(\s]/)[0]}`.trim();
+    return koAliases.sort((a, b) => b.length - a.length)[0];
   }
   return null;
 }
@@ -143,6 +156,7 @@ async function diagnoseSku(sku: Sku): Promise<PerSkuResult | null> {
     }
 
     // parser 적용 — type 추출 정확도 검증.
+    // Wave 267 보강: field name 카테고리별 정확 추출 (shoe_product_type / bag_product_type / clothing_product_type)
     if (FASHION_CATEGORIES.has(sku.category)) {
       try {
         const parsed = parseFashionMobility({
@@ -152,8 +166,10 @@ async function diagnoseSku(sku: Sku): Promise<PerSkuResult | null> {
           skuId: sku.id,
           skuName: sku.modelName,
           bunjangConditionLabel: null,
+          defaultProductType: sku.defaultProductType,
         });
-        const productType = (parsed?.json as Record<string, unknown> | undefined)?.product_type as string | undefined;
+        const fieldName = `${sku.category}_product_type`;
+        const productType = (parsed?.json as Record<string, unknown> | undefined)?.[fieldName] as string | undefined;
         if (!productType || productType === "type_unknown") {
           result.typeUnknown += 1;
           if (result.typeUnknownSamples.length < 10) result.typeUnknownSamples.push(item.name);

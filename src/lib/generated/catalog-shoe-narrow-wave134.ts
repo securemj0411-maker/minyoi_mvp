@@ -368,6 +368,18 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "판다", "panda", "오프화이트", "off-white", "off white",
       "travis", "트래비스", "supreme", "슈프림", "sb", "ben & jerry", "벤앤제리",
       "ambush", "앰부쉬", "co.jp", "civilist", "유타", "utah", "syracuse",
+      // Wave 267 (2026-05-20): API sweep 발견 — syracuse/seoul/kentucky/michigan 등 narrow color SKU 들이
+      //   black-white broad에 잡혀버림. narrow color keyword 차단 강화.
+      "시라큐스", "syracues", "syracuse",  // narrow syracuse SKU 우선
+      "서울", "seoul", "se seoul",  // narrow seoul SKU 우선
+      "켄터키", "kentucky",  // narrow kentucky SKU 우선
+      "미시간", "michigan",  // narrow michigan SKU 우선
+      "스트레인지러브", "strangelove",
+      "청키 덩키", "chunky dunky",
+      "리버스 판다", "reverse panda",
+      "카시나", "kasina",
+      "베니자나", "veneer",
+      "헤마초", "huf",
       // 다른 모델
       "high", "하이", "미드", "mid", "sky", "스카이",
       // Wave 137: 한정 컬러/SP 변형 차단 (가격 매우 다름)

@@ -1652,67 +1652,66 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
     : cc === "normal" ? "비슷한 상태"
     : null;
 
+  const totalListings = listings?.length ?? 0;
   return (
-    <div className="mt-2 rounded-md border border-emerald-100 bg-emerald-50/40 px-2.5 py-2 dark:border-emerald-900/30 dark:bg-emerald-950/20">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+    <div className="mt-3">
+      {/* Wave 394.7.v (Claude Design handoff CompareList): SectionH + 흰 카드 + line divider rows + footer 펼침. */}
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-[13px] font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
           <span aria-hidden="true">🔍</span>
-          <span>이 시세 비교 매물</span>
+          <span>시세 비교 매물{totalListings ? ` ${totalListings}개` : ""}</span>
         </div>
         {ccLabel ? (
-          <span className="text-[10px] font-medium text-emerald-700/70 dark:text-emerald-300/70">
+          <span className="whitespace-nowrap text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">
             {ccLabel} 매물끼리만
           </span>
         ) : null}
       </div>
 
       {loading ? (
-        <div className="mt-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">비교 매물 불러오는 중...</div>
+        <div className="rounded-2xl border border-[#ece3d2] bg-white px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">비교 매물 불러오는 중...</div>
       ) : error ? (
-        <div className="mt-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">비교 매물 불러오기 실패</div>
+        <div className="rounded-2xl border border-[#ece3d2] bg-white px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">비교 매물 불러오기 실패</div>
       ) : !listings || listings.length === 0 ? (
-        <div className="mt-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="rounded-2xl border border-[#ece3d2] bg-white px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
           {ccLabel ? `${ccLabel} 비교 매물 누적 중` : "비교 매물 누적 중"} — 데이터 쌓이면 자동 표시
         </div>
       ) : (
-        <ul className="mt-1.5 space-y-1">
+        <ul className="overflow-hidden rounded-2xl border border-[#ece3d2] bg-white dark:border-zinc-800 dark:bg-zinc-900">
           {/* Wave 394.5.b: mode 따라 slice. simple = 6 / detailed = 12. */}
           {/* Wave 394.7.i: 4개 이상이면 처음 3개만 — 펼침 후 전체 limit. */}
-          {listings.slice(0, expanded ? limit : INITIAL_VISIBLE).map((item) => {
+          {listings.slice(0, expanded ? limit : INITIAL_VISIBLE).map((item, idx) => {
             const itemPrice = item.price > 0 ? item.price : 0;
             const priceDiff = card.price && itemPrice ? itemPrice - card.price : 0;
             const diffPct = card.price && itemPrice ? Math.round((priceDiff / card.price) * 100) : 0;
             const isSimilar = Math.abs(diffPct) <= 2;
             const isMoreExpensive = !isSimilar && priceDiff > 0;
 
-            // listingState (시스템 분류) 우선, saleStatus (셀러 설정) fallback.
-            // 강한 신호 = sold (실제 거래가). 약한 신호 = active (현재 호가).
             const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
             const isReserved = item.saleStatus === "reserved" || item.saleStatus === "RESERVED" || item.saleStatus === "예약중";
 
-            // Wave 394.6.b.fix4 (사용자 짚음): "판매중" chip = default 상태 (99% active)
-            // → 매물명 가독성만 깎음. "판매완료/예약중" 만 우측 가격 위 작게 표시 (특별 정보).
             const statusBadge = isSold
               ? { label: "판매완료", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200" }
               : isReserved
                 ? { label: "예약중", cls: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" }
-                : null; // "판매중" 안 보임 (default)
+                : null;
             return (
-              <li key={item.pid} className="flex items-center gap-2 rounded bg-white/70 px-1.5 py-1.5 dark:bg-zinc-900/50">
-                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded bg-[#f2eadf] dark:bg-zinc-800">
+              <li
+                key={item.pid}
+                className={`flex items-center gap-3 px-3 py-3 ${idx === 0 ? "" : "border-t border-[#ece3d2] dark:border-zinc-800"}`}
+              >
+                <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-[#f2eadf] dark:bg-zinc-800">
                   {item.thumbnailUrl ? (
-                    <Image src={item.thumbnailUrl} alt="" fill sizes="40px" className="object-cover" />
+                    <Image src={item.thumbnailUrl} alt="" fill sizes="52px" className="object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
                   )}
                 </div>
-                {/* 가운데 = 매물명 (chip 제거, 가독성 ↑ — line-clamp-2 좌측 다 차지) */}
                 <div className="min-w-0 flex-1">
-                  <div className="line-clamp-2 text-[11px] font-medium leading-snug text-zinc-700 dark:text-zinc-300">
+                  <div className="line-clamp-2 text-[12.5px] font-bold leading-tight tracking-tight text-zinc-700 dark:text-zinc-300">
                     {item.name || "이름 없음"}
                   </div>
                 </div>
-                {/* 우측 = (선택) 판매완료/예약중 badge + 가격 + 차이 % column */}
                 <div className="shrink-0 text-right">
                   {statusBadge ? (
                     <div className="mb-0.5">
@@ -1721,38 +1720,39 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                       </span>
                     </div>
                   ) : null}
-                  <div className="text-sm font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                  <div className="text-[14px] font-black tabular-nums tracking-tight text-zinc-900 dark:text-zinc-100">
                     {krw(itemPrice)}
                   </div>
                   {!isSimilar ? (
-                    <div className={`text-[10px] font-bold tabular-nums ${isMoreExpensive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                    <div className={`mt-px text-[11px] font-extrabold tabular-nums ${isMoreExpensive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                       {isMoreExpensive ? `+${diffPct}%` : `${diffPct}%`}
                     </div>
                   ) : (
-                    <div className="text-[10px] font-medium text-zinc-400">비슷</div>
+                    <div className="mt-px text-[10px] font-medium text-zinc-400">비슷</div>
                   )}
                 </div>
               </li>
             );
           })}
+          {/* 펼침 footer — handoff: 카드 바닥 안쪽에 line divider + 중앙 텍스트 버튼 */}
+          {totalListings > INITIAL_VISIBLE ? (
+            <li className="border-t border-[#ece3d2] text-center dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                className="w-full bg-transparent px-3 py-2.5 text-[11.5px] font-bold text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800/50"
+              >
+                {expanded
+                  ? "접기 ↑"
+                  : `비교 매물 ${Math.min(totalListings, limit) - INITIAL_VISIBLE}개 더 보기 ↓`}
+              </button>
+            </li>
+          ) : null}
         </ul>
       )}
 
-      {/* Wave 394.7.i.fix2 (사용자 짚음 — 토스 톤): 큰 padding + rounded-xl + subtle shadow + active scale. */}
-      {listings && listings.length > INITIAL_VISIBLE ? (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition-all hover:bg-emerald-100 hover:shadow active:scale-[0.98] dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
-        >
-          {expanded
-            ? <>접기 <span aria-hidden="true" className="text-[10px]">▲</span></>
-            : <>자세히 보기 <span className="text-emerald-600/70 dark:text-emerald-400/70">({Math.min(listings.length, limit) - INITIAL_VISIBLE}개 더)</span> <span aria-hidden="true" className="text-[10px]">▼</span></>
-          }
-        </button>
-      ) : null}
-
-      <div className="mt-1.5 space-y-0.5 text-[10px] font-medium leading-snug text-zinc-500 dark:text-zinc-400">
+      {/* footnote — 카드 밖 작은 텍스트 (handoff 동일) */}
+      <div className="mt-1.5 space-y-0.5 px-1 text-[10px] font-medium leading-snug text-zinc-500 dark:text-zinc-400">
         <div>
           {ccLabel ? (
             <>같은 모델 · {ccLabel} 매물끼리만 비교 (다른 상태는 별도 시세).</>
@@ -1820,9 +1820,21 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   // - dot 크기 통일 (h-1.5 w-1.5) — ShieldIcon 대신 dot로 거래 안전도 통일
   // - sub line-clamp-2 + 고정 높이 (정렬 어긋남 방지)
   // - 라벨 한 줄 고정
+  // Wave 394.7.v (handoff MarketStats): 💡 hint box 위에 추가. 셀러 매입가가 비교 매물 대비 낮을 때 강조.
+  const median = card.marketBasis?.medianPrice ?? 0;
+  const buyerCost = card.price;
+  const isBelowMedian = median > 0 && buyerCost > 0 && buyerCost < median * 0.95;
+  const hint = isBelowMedian
+    ? "비슷한 상태의 매물 중에서도 셀러가 낮게 등록한 것 같아요"
+    : "비슷한 상태의 매물끼리만 비교한 결과예요";
   return (
-    <div className="mt-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
-      <div className="grid grid-cols-3 divide-x divide-zinc-100 dark:divide-zinc-800">
+    <div className="mt-3 overflow-hidden rounded-2xl border border-[#ece3d2] bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
+      {/* handoff: bg em-50 + 💡 + bold 11.5px text */}
+      <div className="mx-3 mt-3 flex items-center gap-2 rounded-[10px] bg-emerald-50 px-2.5 py-2 dark:bg-emerald-950/30">
+        <span className="text-[14px]" aria-hidden="true">💡</span>
+        <span className="text-[11.5px] font-bold leading-tight text-emerald-800 dark:text-emerald-200">{hint}</span>
+      </div>
+      <div className="mt-3 grid grid-cols-3 divide-x divide-[#ece3d2] dark:divide-zinc-800">
         {tiles.map((tile) => {
           const tone = upperFoldTileClass(tile.tone);
           return (

@@ -10030,12 +10030,23 @@ function skuMatches(sku: Sku, normalizedText: string): boolean {
     //     - 그 외 brand 가 매물 text 에 있으면 차단 (broad SKU 가 다른 collab 매물 매칭)
     //   효과: shoe-asics-gel-kayano 의 "톰브라운 카야노" 자동 차단 (모든 designer 동일).
     //         shoe-supreme-vans-collab 의 mustContain ["supreme/슈프림", "vans/반스"] → supreme/슈프림 skip → 정상.
+    //
+    // Wave 267 (2026-05-20): partial match 보강.
+    //   API sweep 발견 — shoe-nike-jordan-1-low-travis-scott-mocha 의 mustContain "트래비스" 박혀있는데
+    //   COLLAB_NOISE 의 "트래비스 스캇" 이 매물에 hit → skuTokens.has("트래비스 스캇") false (정확매치) →
+    //   intended collab SKU 인데 자기 mustContain 만족 매물에서도 차단됨.
+    //   fix: skuTokens 의 어떤 토큰이 COLLAB_NOISE 토큰의 substring (3자+) 이면 skip.
+    //   safety: 3자+ 제한 — "th"/"sa" 같은 짧은 토큰 false skip 차단.
     const skuTokens = new Set<string>();
     for (const group of sku.mustContain) {
       for (const t of group) skuTokens.add(t.toLowerCase());
     }
+    const skuTokensArr = [...skuTokens];
     for (const token of GLOBAL_DESIGNER_COLLAB_NOISE) {
-      if (skuTokens.has(token.toLowerCase())) continue; // 자기 brand 면 skip
+      const tokenLower = token.toLowerCase();
+      // 정확 매치 또는 sku 토큰이 collab noise 토큰의 substring (3자+) 이면 skip.
+      if (skuTokens.has(tokenLower)) continue;
+      if (skuTokensArr.some((skuTok) => skuTok.length >= 3 && tokenLower.includes(skuTok))) continue;
       if (tokenHit(normalizedText, token)) return false;
     }
     // Wave 254.6 (2026-05-20): clothing jacket/down_jacket/coat SKU 가 다른 product_type 매물 매칭 차단.
