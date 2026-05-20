@@ -41,3 +41,15 @@ test("explore opens the modal only after detail access is granted", () => {
   assert.match(explore, /Plus로 계속 보기/);
   assert.match(explore, /void openItemDetail\(item\)/);
 });
+
+test("detail modal keeps purchase decision and market evidence in the first fold", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const decisionIndex = modal.indexOf("<PurchaseDecisionHeader card={card} />");
+  const comparableIndex = modal.indexOf("<ComparableListingsPanel card={card} mode={mode} />");
+
+  assert.match(modal, /function PurchaseDecisionHeader/);
+  assert.match(modal, /구매 판단/);
+  assert.match(modal, /근거 있는 매입 후보/);
+  assert.ok(decisionIndex > 0, "purchase decision header should render in the detail modal");
+  assert.ok(comparableIndex > decisionIndex, "market comparables should stay directly after the decision/profit block");
+});

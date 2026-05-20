@@ -203,6 +203,13 @@ function netProfitPercent(card: RevealCard) {
   return Number.isFinite(pct) ? pct : null;
 }
 
+function marketDiscountPercent(card: RevealCard) {
+  const median = card.marketBasis?.medianPrice ?? null;
+  if (!median || median <= 0 || !card.price || card.price <= 0) return null;
+  const pct = Math.round(((median - card.price) / median) * 100);
+  return Number.isFinite(pct) ? pct : null;
+}
+
 function displayProfitRange(card: RevealCard) {
   return profitRange(card.expectedProfitMin, card.expectedProfitMax);
 }
@@ -1198,6 +1205,116 @@ function DealMeterButton({
       </span>
       <span className="mt-1 h-[3px] w-[70px] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700 transition group-hover:from-emerald-600 group-hover:to-emerald-800 sm:hidden" />
     </button>
+  );
+}
+
+function PurchaseDecisionHeader({ card }: { card: RevealCard }) {
+  const sampleCount = card.marketBasis?.sampleCount ?? 0;
+  const confidencePct = Math.round((card.confidence ?? 0) * 100);
+  const profitAvg = expectedProfitAverage(card);
+  const netPct = netProfitPercent(card);
+  const discountPct = marketDiscountPercent(card);
+  const conditionLabel = marketConditionLabel(card);
+  const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
+  const category = categoryFromComparableKey(card.marketBasis?.comparableKey ?? null);
+  const brandDepth = detectBrandDepth(category, {
+    skuId: card.skuId ?? null,
+    skuName: card.skuName ?? null,
+    name: card.name ?? null,
+  });
+  const hasHighCounterfeitRisk = brandDepth?.brand.counterfeitRisk === "high";
+
+  const sampleText = sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "부족";
+  const discountText = discountPct != null && discountPct > 0
+    ? `시세보다 ${discountPct}% 낮게`
+    : null;
+  const profitText = displayProfitRange(card);
+
+  const tone = isMarketInvalidated
+    ? {
+        eyebrow: "text-rose-700 dark:text-rose-300",
+        badge: "보류",
+        badgeClass: "bg-rose-100 text-rose-800 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-200 dark:ring-rose-900/60",
+        borderClass: "border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-950/25",
+        headline: "지금은 보류할 매물",
+        body: "판매완료나 시세 갱신으로 차익이 사라졌어요. 비교 매물부터 다시 확인하세요.",
+      }
+    : hasHighCounterfeitRisk
+      ? {
+          eyebrow: "text-amber-700 dark:text-amber-300",
+          badge: "조건부",
+          badgeClass: "bg-amber-100 text-amber-800 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900/60",
+          borderClass: "border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/25",
+          headline: "정품 확인 후 매입 후보",
+          body: `${conditionLabel} 비교 ${sampleText} 기준 차익은 보이지만, 정품 체크가 먼저예요.`,
+        }
+      : sampleCount < 3 || confidencePct < 65
+        ? {
+            eyebrow: "text-amber-700 dark:text-amber-300",
+            badge: "확인",
+            badgeClass: "bg-amber-100 text-amber-800 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900/60",
+            borderClass: "border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/25",
+            headline: "근거 확인 후 판단",
+            body: `${conditionLabel} 비교 표본이 ${sampleText}이라 시세 근거를 먼저 보고 결정하는 게 좋아요.`,
+          }
+        : profitAvg > 0
+          ? {
+              eyebrow: "text-emerald-700 dark:text-emerald-300",
+              badge: "후보",
+              badgeClass: "bg-emerald-100 text-emerald-800 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900/60",
+              borderClass: "border-[#d7e4d2] bg-[#fffdf8] dark:border-zinc-800 dark:bg-zinc-900",
+              headline: "근거 있는 매입 후보",
+              body: discountText
+                ? `${conditionLabel} 비교 ${sampleText} 기준 ${discountText} 잡힌 매물이에요.`
+                : `${conditionLabel} 비교 ${sampleText} 기준 예상 순익 ${profitText} 구간이에요.`,
+            }
+          : {
+              eyebrow: "text-zinc-500 dark:text-zinc-400",
+              badge: "대기",
+              badgeClass: "bg-zinc-100 text-zinc-700 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700",
+              borderClass: "border-[#e3dccf] bg-[#fffdf8] dark:border-zinc-800 dark:bg-zinc-900",
+              headline: "추가 확인이 필요한 매물",
+              body: "가격 차이가 크지 않아 비교 매물과 리스크를 같이 확인해야 해요.",
+            };
+
+  const chips = [
+    `예상 ${profitText}`,
+    netPct != null ? `순익률 ${netPct >= 0 ? "+" : ""}${netPct}%` : null,
+    `${conditionLabel} 비교 ${sampleText}`,
+  ].filter((chip): chip is string => Boolean(chip));
+
+  return (
+    <section
+      aria-label="구매 판단 요약"
+      className={`mt-3 rounded-2xl border px-3.5 py-3 shadow-sm ${tone.borderClass}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className={`text-[10px] font-black uppercase tracking-[0.16em] ${tone.eyebrow}`}>
+            구매 판단
+          </div>
+          <div className="mt-1 text-[15px] font-black leading-tight tracking-tight text-[#172019] dark:text-zinc-50">
+            {tone.headline}
+          </div>
+          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#5f6b5e] dark:text-zinc-300">
+            {tone.body}
+          </p>
+        </div>
+        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black ring-1 ${tone.badgeClass}`}>
+          {tone.badge}
+        </span>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {chips.map((chip) => (
+          <span
+            key={chip}
+            className="rounded-full bg-white/80 px-2 py-1 text-[11px] font-bold leading-none text-[#4d5a50] ring-1 ring-[#e2dbcf] dark:bg-zinc-950/50 dark:text-zinc-300 dark:ring-zinc-800"
+          >
+            {chip}
+          </span>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -3208,6 +3325,7 @@ function RevealCardItem({
                   </div>
                 </div>
               {dealExpanded ? <DealEvidencePanel card={card} /> : null}
+              <PurchaseDecisionHeader card={card} />
               {/* Wave 395.1: PDF처럼 "예상 순익 + 계산식/비교매물 보기"만 독립 카드로 분리. */}
               <div
                 className="relative overflow-hidden"
