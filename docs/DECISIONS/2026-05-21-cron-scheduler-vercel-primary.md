@@ -50,3 +50,19 @@
 - `hotdeal-worker` route는 `pool-warmer`에 흡수된 구조라 중복 발송을 피하려고 등록하지 않았다.
 - `landing-showcases`와 `housekeeper-ai-cache-prune`은 베타 단계 보류 결정을 유지했다. 사용자 수/DB 사이즈 증가 시 별도 등록한다.
 - 로컬에 `QSTASH_TOKEN`이 없어 현재 Upstash schedule 목록은 확인하지 못했다. Vercel 배포 후 QStash 콘솔에서 동일 endpoint schedule을 꺼야 중복 호출을 피할 수 있다.
+
+## 2026-05-21 운영 로그 재확인
+
+- `mvp_collect_runs` 최신 1000개 기준, Vercel Cron 배포 직후 `vercel-cron/1.0` 호출이 들어오기 시작했고 QStash 호출도 동시에 남아 있었다.
+- QStash 실측 주기:
+  - `detail-worker`: 약 3분.
+  - `tick`: 약 5분.
+  - `lifecycle-worker`: 약 5~7분.
+  - `housekeeper`: 약 30분.
+  - `pool-warmer`: 약 30분이나 일부 90~150분 gap.
+  - `deep-crawl`: 약 30분이나 일부 90~150분 gap.
+  - `market-worker`: 약 60분.
+- 최근 로그에서 `tick`은 p50 duration 약 81s, p95 약 89s였고, stale auto-mark 실패가 반복됐다. Vercel 1분 schedule에서는 overlap 방지가 필수다.
+- 발견: `tick`, `detail-worker`, `lifecycle-worker` 기본 모드, `housekeeper`가 기존에는 in-memory guard만 사용했다. Serverless 인스턴스가 갈라지면 QStash/Vercel 중복 호출을 막지 못할 수 있다.
+- 조치: 위 4개 route도 `acquireCronGuardWithSourceHealth()`를 사용하도록 바꿔 `CRON_GUARD_DB_LOCK_ENABLED=1` 환경에서 Supabase DB lock을 타게 했다.
+- 권고: QStash의 같은 endpoint schedule은 즉시 끈다. 끄지 않으면 Vercel Cron과 QStash가 동시에 production worker를 때린다.

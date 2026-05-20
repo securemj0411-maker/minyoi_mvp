@@ -8,7 +8,7 @@ import {
   type CollectRunRequestMeta,
 } from "@/lib/collect-logs";
 import { checkCronAuth } from "@/lib/cron-auth";
-import { acquireCronGuard, cronGuardSkipBody } from "@/lib/cron-guard";
+import { acquireCronGuardWithSourceHealth, cronGuardSkipBody } from "@/lib/cron-guard";
 import { checkCronWatchdog } from "@/lib/cron-watchdog";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runSearchScorePipeline } from "@/lib/tick-pipeline";
@@ -87,7 +87,7 @@ async function handleTick(req: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const guard = acquireCronGuard("tick", req);
+  const guard = await acquireCronGuardWithSourceHealth("tick", req);
   if (!guard.allowed) {
     return NextResponse.json(cronGuardSkipBody(guard));
   }

@@ -9,7 +9,6 @@ import {
 } from "@/lib/collect-logs";
 import { checkCronAuth } from "@/lib/cron-auth";
 import {
-  acquireCronGuard,
   acquireCronGuardWithSourceHealth,
   cronGuardSkipBody,
   type CronGuardAllowed,
@@ -172,9 +171,7 @@ async function handleLifecycleWorker(req: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const guard = terminalRecheck
-    ? await acquireCronGuardWithSourceHealth(guardMode, req)
-    : acquireCronGuard(guardMode, req);
+  const guard = await acquireCronGuardWithSourceHealth(guardMode, req);
   if (!guard.allowed) {
     return NextResponse.json(cronGuardSkipBody(guard));
   }

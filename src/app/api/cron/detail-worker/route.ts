@@ -8,7 +8,7 @@ import {
   type CollectRunRequestMeta,
 } from "@/lib/collect-logs";
 import { checkCronAuth } from "@/lib/cron-auth";
-import { acquireCronGuard, cronGuardSkipBody } from "@/lib/cron-guard";
+import { acquireCronGuardWithSourceHealth, cronGuardSkipBody } from "@/lib/cron-guard";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runDetailWorkerPipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
@@ -86,7 +86,7 @@ async function handleDetailWorker(req: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const guard = acquireCronGuard("detail_worker", req);
+  const guard = await acquireCronGuardWithSourceHealth("detail_worker", req);
   if (!guard.allowed) {
     return NextResponse.json(cronGuardSkipBody(guard));
   }
