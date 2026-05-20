@@ -625,19 +625,18 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
       : diff < 0
         ? `${groupLabel} 중에서는 가격이 높아요`
         : `${groupLabel} 시세와 비슷해요`;
-    const conditionBasis = conditionBasisSentence(card);
     const body = diff > 0
-      ? `${conditionBasis} 이 매물은 그 기준보다 ${krw(diffAbs)} 싸요.`
+      ? `${groupLabel} 기준보다 ${krw(diffAbs)} 싸요.`
       : diff < 0
-        ? `${conditionBasis} 이 매물은 그 기준보다 ${krw(diffAbs)} 높아요.`
-        : `${conditionBasis} 이 상품은 그 기준과 거의 비슷한 가격이에요.`;
+        ? `${groupLabel} 기준보다 ${krw(diffAbs)} 높아요.`
+        : `${groupLabel} 기준과 거의 비슷한 가격이에요.`;
 
     return {
       eyebrow: "3. 비교 매물",
       title,
       metric,
       metricLabel: `비슷한 상태 시세 ${krw(median)} · 이 매물 ${krw(card.price)}`,
-      body: `${body} 아래에는 기준이 된 매물을 비싼 순으로 보여드릴게요.`,
+      body,
       note: sampleCount > 0
         ? `비교 표본 ${sampleCount.toLocaleString("ko-KR")}건 중 일부를 먼저 보여드릴게요.`
         : "상태 분류와 표본 수에 따라 시세 판단은 달라질 수 있어요.",
@@ -4174,6 +4173,51 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
   );
 }
 
+function BeginnerGuideMarketBody({ card, fallback }: { card: RevealCard; fallback: string }) {
+  const market = card.marketBasis;
+  const median = market?.medianPrice ?? null;
+  const groupLabel = conditionComparisonGroupLabel(card);
+  const productLabel = conditionProductLabel(card);
+
+  if (median == null || median <= 0 || card.price <= 0) {
+    return (
+      <p className="mt-3 break-keep text-[15px] font-semibold leading-6 text-[#475449] dark:text-zinc-300">
+        {fallback}
+      </p>
+    );
+  }
+
+  const diff = median - card.price;
+  const amount = krw(Math.abs(diff));
+  const sourceLine = market?.priceSource === "reference"
+    ? `다나와 새 가격과 번개 ${groupLabel} 흐름을 같이 봤어요.`
+    : `번개장터 ${groupLabel}끼리만 비교했어요.`;
+  const verdict = diff > 0
+    ? "싸요"
+    : diff < 0
+      ? "높아요"
+      : "비슷해요";
+  const toneClass = diff > 0
+    ? "text-[#3182f6] dark:text-blue-300"
+    : diff < 0
+      ? "text-amber-700 dark:text-amber-200"
+      : "text-[#172019] dark:text-zinc-50";
+
+  return (
+    <div data-beginner-guide-market-body className="mt-3 break-keep">
+      <p className="text-[15px] font-semibold leading-6 text-[#475449] dark:text-zinc-300">
+        이 상품은 {productLabel}이에요. {sourceLine}
+      </p>
+      <p className="mt-2 text-[16px] font-black leading-6 text-[#172019] dark:text-zinc-50">
+        기준보다 <strong className={`text-[19px] ${toneClass}`}>{amount}</strong> {verdict}.
+      </p>
+      <p className="mt-1.5 text-[12.5px] font-bold leading-5 text-[#7b8378] dark:text-zinc-400">
+        아래는 비싼 순 비교 매물이에요.
+      </p>
+    </div>
+  );
+}
+
 function BeginnerGuidePurchaseCheckVisual({ card }: { card: RevealCard }) {
   const checks = beginnerPurchaseChecks(card);
   const toneClasses: Record<BeginnerPurchaseCheck["tone"], { icon: string; badge: string; card: string }> = {
@@ -4968,6 +5012,8 @@ function BeginnerGuideWalkthrough({
             </h2>
             {step.tone === "trust" ? (
               <BeginnerGuideTrustBody card={card} fallback={step.body} />
+            ) : step.tone === "market" ? (
+              <BeginnerGuideMarketBody card={card} fallback={step.body} />
             ) : step.body ? (
               <p className="mt-3 break-keep text-[15px] font-semibold leading-6 text-[#475449] dark:text-zinc-300">
                 {step.body}

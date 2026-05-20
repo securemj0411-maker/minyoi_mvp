@@ -145,7 +145,11 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /하자가 있는 상품/);
   assert.match(modal, /\$\{groupLabel\} 중에서도 싸게 나왔어요/);
   assert.match(modal, /return "미개봉품"/);
-  assert.match(modal, /아래에는 기준이 된 매물을 비싼 순으로 보여드릴게요/);
+  assert.match(modal, /BeginnerGuideMarketBody/);
+  assert.match(modal, /data-beginner-guide-market-body/);
+  assert.match(modal, /기준보다 <strong/);
+  assert.match(modal, /아래는 비싼 순 비교 매물이에요/);
+  assert.doesNotMatch(modal, /아래에는 기준이 된 매물을 비싼 순으로 보여드릴게요/);
   assert.match(modal, /사용감이 어느 정도 있는 상품끼리/);
   assert.match(modal, /\.sort\(\(a, b\) => \(b\.price \?\? 0\) - \(a\.price \?\? 0\)\)/);
   assert.match(modal, /저렴/);
