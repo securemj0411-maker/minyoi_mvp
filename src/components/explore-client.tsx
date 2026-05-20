@@ -1430,12 +1430,14 @@ export default function ExploreClient() {
                 const lightweightMode = awaitingInitialPrefs; // 가입 직후 = 예산만
                 const headerTitle = showForm
                   ? (lightweightMode ? "환영해요 👋 예산 알려주세요" : (preferences ? "선호 수정" : "내 매물 취향 알려주세요"))
-                  : "더 찾아보기";
+                  : canRefresh
+                    ? "더 찾아보기"
+                    : "크레딧 1개면 피드 무제한";
                 const headerSub = showForm
                   ? (lightweightMode ? "그 예산 안에서 30개 골라드릴게요 (나중에 수정 가능)" : "예산과 매물 성향에 맞춰 30개 골라드려요")
                   : (canRefresh
                       ? "현재 선호로 새 30개 받기"
-                      : `${formatCooldown(remainingSec)} 후 자동으로 풀려요`);
+                      : "피드는 차감 없이 계속 보고, 상세 분석을 열 때만 1크레딧을 써요");
                 return (
                   <>
                     {/* Wave 380: 노션 톤 — 큰 👋 + "환영해요!" + 본 메시지. */}
@@ -1651,6 +1653,58 @@ export default function ExploreClient() {
 
                         {!canRefresh ? (
                           <>
+                            <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 shadow-[0_10px_28px_rgba(16,185,129,0.12)] dark:border-emerald-900/70 dark:bg-emerald-950/30">
+                              <div className="flex items-start gap-3">
+                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm dark:bg-zinc-900/70">
+                                  <CreditIcon size={26} />
+                                </span>
+                                <div className="min-w-0">
+                                  <div className="text-base font-black tracking-tight text-[#123c2b] dark:text-emerald-100">
+                                    크레딧 1개만 있어도 계속 둘러볼 수 있어요
+                                  </div>
+                                  <div className="mt-1 text-[12px] font-bold leading-5 text-emerald-800/80 dark:text-emerald-200/80">
+                                    무한 피드는 크레딧 차감 없음. 크레딧은 새 상품의 상세 분석을 열 때만 1개씩 빠져요.
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="mt-3 grid grid-cols-3 gap-2">
+                                <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
+                                  <div className="text-[11px] font-black text-[#008f5f] dark:text-emerald-300">1개 이상</div>
+                                  <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">보유 조건</div>
+                                </div>
+                                <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
+                                  <div className="text-[11px] font-black text-[#008f5f] dark:text-emerald-300">0개</div>
+                                  <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">피드 차감</div>
+                                </div>
+                                <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
+                                  <div className="text-[11px] font-black text-[#008f5f] dark:text-emerald-300">상세만</div>
+                                  <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">차감 대상</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <Link
+                              href="/plans"
+                              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-emerald-500 px-5 py-4 text-left shadow-[0_4px_14px_rgba(16,185,129,0.35)] transition hover:bg-emerald-600 active:scale-[0.99]"
+                            >
+                              <div className="flex min-w-0 items-center gap-2.5">
+                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-white/20">
+                                  <ZapIcon className="h-4 w-4 text-white" />
+                                </span>
+                                <div className="min-w-0">
+                                  <div className="text-base font-bold text-white">
+                                    크레딧 충전하고 무제한 피드 열기
+                                  </div>
+                                  <div className="mt-0.5 text-[11px] font-medium text-white/85">
+                                    20크레딧 3,900원부터 · 피드는 차감 없음
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
+                                1개 이상
+                              </span>
+                            </Link>
+
                             {/* Wave 384 (placeholder): 카카오톡 공유 → 30개 즉시 받기. App Key + DB migration 필요해서 일단 UI만 + "곧 출시". */}
                             {/* Wave 385: 정통 카카오 노란 (#fbe300) 배경 + 갈색 텍스트 (#3b1e1e).
                                 Wave 386: 카피 명확화 — 친구 가입 무관, 공유만으로 reward. */}
@@ -1677,29 +1731,6 @@ export default function ExploreClient() {
                                 무료
                               </span>
                             </button>
-
-                            {/* Wave 386: amber → 밝은 emerald. 카피 변경. 충전 chip + 클릭 시 plans. */}
-                            <Link
-                              href="/plans"
-                              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-emerald-500 px-5 py-4 text-left shadow-[0_4px_14px_rgba(16,185,129,0.35)] transition hover:bg-emerald-600 active:scale-[0.99]"
-                            >
-                              <div className="flex min-w-0 items-center gap-2.5">
-                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-white/20">
-                                  <ZapIcon className="h-4 w-4 text-white" />
-                                </span>
-                                <div className="min-w-0">
-                                  <div className="text-base font-bold text-white">
-                                    크레딧 충전하고 더 보기
-                                  </div>
-                                  <div className="mt-0.5 text-[11px] font-medium text-white/85">
-                                    상세보기와 원본 확인에 사용
-                                  </div>
-                                </div>
-                              </div>
-                              <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
-                                충전
-                              </span>
-                            </Link>
                           </>
                         ) : null}
                       </>

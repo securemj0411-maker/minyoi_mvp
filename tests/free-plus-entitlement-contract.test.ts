@@ -56,6 +56,11 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(explore, /IntersectionObserver/);
   assert.match(explore, /autoScrollNew: false/);
   assert.match(explore, /피드 탐색은 무제한 · 크레딧은 상세 분석을 열 때만 차감/);
+  assert.match(explore, /크레딧 1개면 피드 무제한/);
+  assert.match(explore, /크레딧 1개만 있어도 계속 둘러볼 수 있어요/);
+  assert.match(explore, /무한 피드는 크레딧 차감 없음/);
+  assert.match(explore, /크레딧 충전하고 무제한 피드 열기/);
+  assert.match(explore, /20크레딧 3,900원부터 · 피드는 차감 없음/);
   assert.match(explore, /!creditFeedEnabled && items\.length > 0/);
 });
 
