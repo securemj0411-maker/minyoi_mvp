@@ -3174,29 +3174,30 @@ function RevealCardItem({
               {dealExpanded ? <DealEvidencePanel card={card} /> : null}
               {/* Wave 394.7.l (Claude Design reference): 차익 헤드라인 = ProfitHero 카드 톤.
                   gradient bg + border + rounded-2xl + ₩ watermark + 큰 폰트. */}
-              <div className={`relative mt-3 overflow-hidden rounded-2xl border px-4 py-3.5 ${
+              {/* Wave 394.7.l.fix: 사용자 안 보임 → 더 진하게. bg-emerald-100, border-emerald-300, watermark 15%. */}
+              <div className={`relative mt-3 overflow-hidden rounded-2xl border-2 px-4 py-4 shadow-sm ${
                 isMarketInvalidated
-                  ? "border-rose-200/60 bg-gradient-to-br from-rose-50/80 to-rose-50/30 dark:border-rose-900/40 dark:from-rose-950/30 dark:to-rose-950/10"
-                  : "border-emerald-200/60 bg-gradient-to-br from-emerald-50/80 to-emerald-50/30 dark:border-emerald-900/40 dark:from-emerald-950/30 dark:to-emerald-950/10"
+                  ? "border-rose-300 bg-gradient-to-br from-rose-100 to-rose-50 dark:border-rose-800 dark:from-rose-950/50 dark:to-rose-950/20"
+                  : "border-emerald-300 bg-gradient-to-br from-emerald-100 to-emerald-50 dark:border-emerald-800 dark:from-emerald-950/50 dark:to-emerald-950/20"
               }`}>
-                {/* ₩ watermark — 우상단 큰 emerald (subtle) */}
-                <div className={`pointer-events-none absolute -right-2 -top-3 select-none text-7xl font-black leading-none ${
+                {/* ₩ watermark — 우상단 큰 emerald (보임) */}
+                <div className={`pointer-events-none absolute -right-2 -top-4 select-none text-8xl font-black leading-none ${
                   isMarketInvalidated
-                    ? "text-rose-700/[0.06] dark:text-rose-400/[0.06]"
-                    : "text-emerald-700/[0.07] dark:text-emerald-400/[0.07]"
+                    ? "text-rose-600/15 dark:text-rose-400/20"
+                    : "text-emerald-600/15 dark:text-emerald-400/20"
                 }`}>₩</div>
 
                 <div className={`relative flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.16em] ${
-                  isMarketInvalidated ? "text-rose-700 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400"
+                  isMarketInvalidated ? "text-rose-800 dark:text-rose-300" : "text-emerald-800 dark:text-emerald-300"
                 }`}>
                   <WalletIcon className="h-3 w-3" />
-                  예상 순익
+                  💎 예상 순익
                 </div>
                 <div className="relative mt-1 flex flex-wrap items-baseline gap-2">
-                  <span className={`text-2xl font-black leading-none tabular-nums tracking-tight ${
+                  <span className={`text-3xl font-black leading-none tabular-nums tracking-tight ${
                     isMarketInvalidated
-                      ? "text-rose-600 dark:text-rose-300"
-                      : "text-emerald-700 dark:text-emerald-300"
+                      ? "text-rose-700 dark:text-rose-300"
+                      : "text-emerald-800 dark:text-emerald-200"
                   }`}>
                     {displayProfitRange(card)}
                   </span>
