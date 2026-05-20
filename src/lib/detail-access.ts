@@ -107,6 +107,15 @@ async function readCreditBalance(user: User, userRef: string): Promise<number> {
   return Math.max(0, Number(credits?.tokens ?? 0));
 }
 
+export async function hasDetailAccess(input: {
+  user: User;
+  userRef: string;
+  pid: number;
+}): Promise<boolean> {
+  if (isAdminUser(input.user)) return true;
+  return (await loadRateLimitCount(detailAccessBucket(input.userRef, input.pid))) > 0;
+}
+
 export async function consumeDetailAccess(input: {
   user: User;
   userRef: string;

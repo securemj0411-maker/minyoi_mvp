@@ -18,6 +18,7 @@ import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 
 type PoolItem = {
   pid: number;
+  accessToken?: string | null;
   name: string;
   price: number;
   skuMedian: number | null;
@@ -73,6 +74,7 @@ type DetailAccessResponse = {
   creditBalance?: number | null;
   freeUsed?: number;
   freeLimit?: number;
+  item?: PoolItem | null;
 };
 
 type DetailAccessLimitModal = {
@@ -676,8 +678,10 @@ export default function ExploreClient() {
       // itemsRef로 fresh 접근 (deps에 items 박으면 infinite loop).
       const currentItems = itemsRef.current;
       if (refresh && currentItems.length > 0) {
-        const excludePids = currentItems.map((it) => it.pid).join(",");
-        params.set("excludePids", excludePids);
+        const excludePids = currentItems.filter((it) => !it.accessToken).map((it) => it.pid).join(",");
+        const excludeTokens = currentItems.map((it) => it.accessToken).filter((t): t is string => Boolean(t)).join(",");
+        if (excludePids) params.set("excludePids", excludePids);
+        if (excludeTokens) params.set("excludeTokens", excludeTokens);
       }
       const url = `/api/packs/pool${params.toString() ? `?${params.toString()}` : ""}`;
       const res = await fetch(url, { cache: "no-store" });
@@ -840,7 +844,7 @@ export default function ExploreClient() {
       const res = await fetch("/api/packs/pool/detail-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pid: item.pid }),
+        body: JSON.stringify(item.accessToken ? { accessToken: item.accessToken } : { pid: item.pid }),
         cache: "no-store",
       });
       const data = (await res.json()) as DetailAccessResponse;
@@ -867,15 +871,20 @@ export default function ExploreClient() {
       if (data.creditBalance != null) {
         setCreditFeedEnabled(Number(data.creditBalance) > 0);
       }
+      const exactItem = data.item ?? item;
+      if (data.item) {
+        setItems((prev) => prev.map((candidate) => (candidate.pid === item.pid ? data.item! : candidate)));
+      }
       if (!data.alreadyOpened && data.accessType === "free") {
         detailAccessValueRef.current = mergeAccessValueSummary(
           detailAccessValueRef.current,
-          accessValueForItem(item),
+          accessValueForItem(exactItem),
         );
       }
       openedDetailPidsRef.current.add(item.pid);
+      openedDetailPidsRef.current.add(exactItem.pid);
       setOpenedDetailPids(new Set(openedDetailPidsRef.current));
-      setSelectedCard(poolItemToRevealCard(item));
+      setSelectedCard(poolItemToRevealCard(exactItem));
     } catch (err) {
       setDetailAccessLimit({
         title: "상세보기 요청이 잠시 막혔어요",

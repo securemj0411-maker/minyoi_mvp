@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { loadV7SiblingPresence, type V7SiblingPresenceMap } from "@/lib/band-aware-median";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
+import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -16,7 +17,7 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 // - 무료 "새 30개 받기" = 2h cooldown (mvp_user_credits.last_free_browse_at)
 // - 크레딧 1개 이상 보유자는 피드 탐색 쿨다운 우회. 크레딧은 상세 분석 열람 때만 차감.
 // - 정렬: profit_band desc, expected_profit_max desc (안정적 = 같은 사용자 같은 매물)
-// - 마스킹 X (가입한 사용자는 다 봄)
+// - 무료 피드는 원본 pid/name/image/정확한 가격을 서버에서 마스킹
 //
 // 응답:
 // {
@@ -88,6 +89,38 @@ type UserCreditsRow = {
   balance: number | null;
   last_free_browse_at: string | null;
 };
+
+const LOCKED_CATEGORY_LABELS: Record<string, string> = {
+  earphone: "이어폰/헤드셋",
+  smartphone: "휴대폰",
+  tablet: "태블릿",
+  smartwatch: "스마트워치",
+  laptop: "노트북",
+  shoe: "신발",
+  bag: "가방",
+  clothing: "의류",
+};
+
+const LOCKED_CONDITION_LABELS: Record<string, string> = {
+  unopened: "미개봉",
+  mint: "S급",
+  clean: "A급",
+  normal: "상태 보통",
+  worn: "사용감 있음",
+  flawed: "하자 있음",
+  low_batt: "배터리 약함",
+};
+
+function roundDownTenThousand(value: number | null) {
+  if (value == null || !Number.isFinite(Number(value))) return value;
+  return Math.max(0, Math.floor(Number(value) / 10000) * 10000);
+}
+
+function lockedPreviewTitle(category: string | null, conditionClass: string | null) {
+  const categoryLabel = LOCKED_CATEGORY_LABELS[category ?? ""] ?? "추천 매물";
+  const conditionLabel = conditionClass ? (LOCKED_CONDITION_LABELS[conditionClass] ?? "상태 확인") : "상태 확인";
+  return `${categoryLabel} · ${conditionLabel} 후보`;
+}
 
 function computeCooldown(lastBrowseAt: string | null): {
   canRefresh: boolean;
@@ -379,6 +412,28 @@ function buildItems(
     .filter((x): x is NonNullable<typeof x> => x != null);
 }
 
+function maskFreeFeedItems<T extends ReturnType<typeof buildItems>[number]>(items: T[]) {
+  return items.map((item) => {
+    const accessToken = createPoolAccessToken(item.pid);
+    return {
+      ...item,
+      pid: syntheticPidForPoolToken(accessToken),
+      accessToken,
+      name: lockedPreviewTitle(item.category, item.conditionClass),
+      price: roundDownTenThousand(item.price) ?? 0,
+      skuMedian: roundDownTenThousand(item.skuMedian),
+      thumbnailUrl: null,
+      skuId: null,
+      skuName: null,
+      expectedProfitMin: roundDownTenThousand(item.expectedProfitMin) ?? 0,
+      expectedProfitMax: roundDownTenThousand(item.expectedProfitMax) ?? 0,
+      sellerReviewRating: null,
+      sellerReviewCount: 0,
+      descriptionPreview: "",
+    };
+  });
+}
+
 async function loadUserCredits(headers: Record<string, string>, userRef: string): Promise<UserCreditsRow | null> {
   const res = await restFetch(
     `${tableUrl("mvp_user_credits")}?select=user_ref,balance,last_free_browse_at&user_ref=eq.${encodeURIComponent(userRef)}&limit=1`,
@@ -435,6 +490,14 @@ export async function GET(req: Request) {
     const excludePids: number[] = excludePidsParam
       ? excludePidsParam.split(",").map((s) => Number(s)).filter((n) => Number.isFinite(n))
       : [];
+    const excludeTokensParam = url.searchParams.get("excludeTokens");
+    const excludeTokenPids: number[] = excludeTokensParam
+      ? excludeTokensParam
+          .split(",")
+          .map((s) => decodePoolAccessToken(s))
+          .filter((n): n is number => Number.isFinite(Number(n)) && Number(n) > 0)
+      : [];
+    const excludeAllPids = [...new Set([...excludePids, ...excludeTokenPids])];
 
     const headers = serviceHeaders();
     const credits = await loadUserCredits(headers, userRef);
@@ -485,7 +548,7 @@ export async function GET(req: Request) {
         const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, {
           sort,
           priceMax: candidate.max,
-          excludePids,
+          excludePids: excludeAllPids,
           readyCandidateLimit,
         });
         const candItems = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
@@ -499,7 +562,7 @@ export async function GET(req: Request) {
       // priceMax 없으면 unlimited 한 번만 fetch.
       const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, {
         sort,
-        excludePids,
+        excludePids: excludeAllPids,
         readyCandidateLimit,
       });
       items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
@@ -529,6 +592,7 @@ export async function GET(req: Request) {
       items = [...items].sort((a, b) => b.expectedProfitMax - a.expectedProfitMax);
     }
     items = items.slice(0, PAGE_SIZE);
+    const responseItems = creditFeed ? items : maskFreeFeedItems(items);
 
     // refresh 후 새 cooldown 정보
     const nextCooldown = creditFeed
@@ -538,11 +602,11 @@ export async function GET(req: Request) {
       : cooldown;
 
     return NextResponse.json({
-      items,
+      items: responseItems,
       cooldown: nextCooldown,
       feedMode: creditFeed ? "credit" : "free",
       creditFeed,
-      total: items.length,
+      total: responseItems.length,
       pageSize: PAGE_SIZE,
       freshLagHours: FRESH_LAG_HOURS,
       // Wave 382: 사용자 예산이 fallback됐는지 (사용자 안내용).

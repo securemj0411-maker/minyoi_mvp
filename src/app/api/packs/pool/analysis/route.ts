@@ -10,7 +10,9 @@ import {
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { loadCategoryReadinessMap } from "@/lib/category-readiness";
+import { hasDetailAccess } from "@/lib/detail-access";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { userRefForAuthUser } from "@/lib/user-ref";
 
 // Wave 339b: /explore 카드 클릭 시 marketBasis/velocityBasis lazy-fill.
 // pid 기반 — assertRevealAccess 우회 (사용자가 reveal 안 한 매물도 가능).
@@ -121,6 +123,10 @@ export async function GET(req: Request) {
     const pid = Number(pidStr);
     if (!Number.isFinite(pid) || pid <= 0) {
       return NextResponse.json({ error: "invalid pid" }, { status: 400 });
+    }
+    const userRef = userRefForAuthUser(auth.user.id);
+    if (!(await hasDetailAccess({ user: auth.user, userRef, pid }))) {
+      return NextResponse.json({ error: "detail_access_required" }, { status: 403 });
     }
 
     const analysis = await loadAnalysis(pid);

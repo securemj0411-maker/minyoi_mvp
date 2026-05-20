@@ -44,6 +44,8 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   const poolRoute = source("src/app/api/packs/pool/route.ts");
   const statsRoute = source("src/app/api/stats/pool/route.ts");
   const explore = source("src/components/explore-client.tsx");
+  const detailAccessRoute = source("src/app/api/packs/pool/detail-access/route.ts");
+  const analysisRoute = source("src/app/api/packs/pool/analysis/route.ts");
 
   assert.match(poolRoute, /2h cooldown/);
   assert.match(poolRoute, /select=user_ref,balance,last_free_browse_at/);
@@ -58,6 +60,14 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(poolRoute, /return a\.price - b\.price/);
   assert.match(poolRoute, /feedMode: creditFeed \? "credit" : "free"/);
   assert.match(poolRoute, /creditFeed/);
+  assert.match(poolRoute, /maskFreeFeedItems/);
+  assert.match(poolRoute, /createPoolAccessToken/);
+  assert.match(poolRoute, /syntheticPidForPoolToken/);
+  assert.match(poolRoute, /excludeTokens/);
+  assert.match(detailAccessRoute, /decodePoolAccessToken/);
+  assert.match(detailAccessRoute, /item: await loadExactPoolItem\(pid\)/);
+  assert.match(analysisRoute, /hasDetailAccess/);
+  assert.match(analysisRoute, /detail_access_required/);
 
   assert.match(explore, /creditFeedEnabled/);
   assert.match(explore, /lockedPreviewTitle/);
@@ -68,6 +78,8 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(explore, /data-credit-infinite-feed-sentinel/);
   assert.match(explore, /IntersectionObserver/);
   assert.match(explore, /autoScrollNew: false/);
+  assert.match(explore, /accessToken/);
+  assert.match(explore, /excludeTokens/);
   assert.match(explore, /피드 탐색은 무제한 · 크레딧은 상세 분석을 열 때만 차감/);
   assert.match(explore, /조금만 기다리면 새 상품이 열려요/);
   assert.match(explore, /무료로 새 상품을 볼 수 있어요/);
@@ -111,7 +123,8 @@ test("explore opens the modal only after detail access is granted", () => {
   assert.match(explore, /비교 매물/);
   assert.match(explore, /예상 기회 수익/);
   assert.match(explore, /판단 시간/);
-  assert.match(explore, /accessValueForItem\(item\)/);
+  assert.match(explore, /accessValueForItem\(exactItem\)/);
+  assert.match(explore, /data\.item/);
   assert.match(explore, /minyoi:credits-changed/);
   assert.doesNotMatch(explore, /Plus로 계속 보기/);
   assert.doesNotMatch(explore, /오늘 무료 상세보기|하루 기준으로 다시 열려요/);
