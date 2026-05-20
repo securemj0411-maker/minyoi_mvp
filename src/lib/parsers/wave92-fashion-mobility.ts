@@ -391,6 +391,8 @@ function parseClothingProductType(text: string): ClothingProductType {
   //   반집업/half zip = pullover style jacket (Patagonia Better Sweater 등).
   if (/롱슬리브|long sleeve|롱 ?티|장 ?티|long sleeved|긴팔|long ?sleeve\b/.test(t)) return "tee"; // 롱슬리브/긴팔 = tee 류
   if (/반집업|반 ?집업|half ?zip|1\/?4 ?zip|쿼터 ?집업|쿼터 ?지퍼|1\/?4 ?집업|풀오버 ?집업/.test(t)) return "jacket";
+  // Wave 269d (2026-05-20): "기모 집업/풀집업/집업" 단독 (니트 집업/반집업/카디건이 위에서 캐치된 후).
+  if (/기모 ?집업|풀집업|풀 ?집업|집업(?!\s*가능)|zip ?up/.test(t)) return "jacket";
   // Wave 236b: 반팔 단독 + 탱크탑/민소매 추가.
   // Wave 264: 블라우스 추가 (acne-apparel sample 발견).
   if (/티 ?셔츠|tee\b|반팔 ?티|반팔티|t-shirt|tshirt|t ?셔츠|반팔(?!\s*티 ?셔츠)|탱크 ?탑|tank ?top|민소매|sleeveless|반 ?소매|블라우스|blouse/.test(t)) return "tee";
