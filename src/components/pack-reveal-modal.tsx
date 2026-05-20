@@ -460,12 +460,12 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
   ];
 
   return (
-    <div className="mt-3 rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
-      <div className="px-4 py-2.5">
-        {/* Wave 394.7.e (사용자 짚음 — 토스 톤): caps 단어 토막 → 친절 문장. */}
-        <div className="flex items-center gap-1.5 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-          <span aria-hidden="true">🛡</span>
-          <span>살까 말까 고민될 때, 자주 묻는 4가지를 정리했어요</span>
+    <div className="mt-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
+      {/* Wave 394.7.o (reference FAQ): 헤더 박스 (warm cream bg + shield icon amber + border-bottom). */}
+      <div className="flex items-center gap-1.5 border-b border-zinc-100 bg-amber-50/40 px-4 py-3 dark:border-zinc-800 dark:bg-amber-950/10">
+        <ShieldIcon className="h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-400" />
+        <div className="text-[13px] font-bold tracking-tight text-zinc-800 dark:text-zinc-100">
+          구매 전 확인 — 자주 묻는 4가지
         </div>
       </div>
       <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -1821,8 +1821,9 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   // - sub line-clamp-2 + 고정 높이 (정렬 어긋남 방지)
   // - 라벨 한 줄 고정
   return (
-    <div className="mt-2 overflow-hidden border-t border-zinc-200 bg-white/0 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:dark:bg-zinc-900/40">
-      <div className="grid grid-cols-3 divide-x divide-zinc-200 dark:divide-zinc-800">
+    {/* Wave 394.7.o (reference MarketStats): rounded-2xl + border-[#ece3d2] + bg-white (모든 viewport). */}
+    <div className="mt-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="grid grid-cols-3 divide-x divide-zinc-100 dark:divide-zinc-800">
         {tiles.map((tile) => {
           const tone = upperFoldTileClass(tile.tone);
           return (
@@ -3646,18 +3647,24 @@ function FixedBunjangFooter({
   // 사이즈 ↓ — py-3 → py-2.5, text-sm → text-[13px], shadow-lg → shadow-md, ring-1 제거.
   // min-h-11 (iOS 44px tap target) 유지. brand color 유지 (핵심 액션 색은 강조).
   return (
-    <div className="shrink-0 border-t border-[#e7dece] bg-[#fffdf9]/95 p-1 shadow-[0_-10px_24px_rgba(49,66,56,0.10)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:p-1.5">
-      {/* Wave 394.7.g (외부 review 2라운드 #9): 더 작게 — 콘텐츠 영역 더 확보.
-          min-h-11 → min-h-10 (iOS 44 → 40 — tap target 약간 손해 단 사용자 명시 우선). */}
+    {/* Wave 394.7.o (reference StickyCTA): emerald pill + 검정 원 + 노란 번개 아이콘. */}
+    <div className="shrink-0 bg-gradient-to-t from-[#ebe6dc] from-30% to-transparent px-3 pb-5 pt-4 dark:from-zinc-900">
       <a
         href={card.url}
         target="_blank"
         rel="noreferrer"
         onClick={() => onLinkClicked(card.pid)}
-        className="flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl border border-[#00a862] bg-[#00c471] px-3 py-2 text-center text-xs font-bold text-white shadow-sm shadow-[rgba(0,196,113,0.18)] transition hover:bg-[#00b267]"
+        className="flex items-center gap-2 rounded-full bg-emerald-600 px-1.5 py-1 text-white shadow-[0_10px_24px_rgba(5,150,105,0.28),0_4px_8px_rgba(5,150,105,0.18)] transition hover:bg-emerald-700"
       >
-        <BunjangLogo className="h-[14px] w-[14px] rounded-[3px]" />
-        번개장터 원본 매물 보기
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0b1413]">
+          <BunjangLogo className="h-[18px] w-[18px] rounded-[4px]" />
+        </span>
+        <span className="flex flex-1 items-center justify-center gap-2 py-2 text-sm font-black tracking-tight">
+          <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0b1413] text-amber-400">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>
+          </span>
+          <span>번개장터 원본 매물 보기</span>
+        </span>
       </a>
     </div>
   );
