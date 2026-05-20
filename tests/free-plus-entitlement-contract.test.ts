@@ -50,6 +50,9 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(poolRoute, /const creditFeed = isAdminUser\(auth\.user\) \|\| Number\(credits\?\.balance \?\? 0\) > 0/);
   assert.match(poolRoute, /if \(refresh && !creditFeed && !cooldown\.canRefresh\)/);
   assert.match(poolRoute, /if \(refresh && !creditFeed && cooldown\.canRefresh\)/);
+  assert.match(poolRoute, /const readyCandidateLimit = refresh \? FETCH_POOL_OVERFETCH : READY_SLOTS/);
+  assert.match(poolRoute, /diversifyByCategory\(readyFiltered, options\.readyCandidateLimit \?\? READY_SLOTS\)/);
+  assert.match(poolRoute, /items = items\.slice\(0, PAGE_SIZE\)/);
   assert.match(poolRoute, /feedMode: creditFeed \? "credit" : "free"/);
   assert.match(poolRoute, /creditFeed/);
 

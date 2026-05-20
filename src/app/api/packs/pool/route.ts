@@ -182,7 +182,12 @@ function bandAwareMedian(
 
 async function loadPool(
   headers: Record<string, string>,
-  options: { sort?: "profit_desc" | "latest"; priceMax?: number | null; excludePids?: number[] } = {},
+  options: {
+    sort?: "profit_desc" | "latest";
+    priceMax?: number | null;
+    excludePids?: number[];
+    readyCandidateLimit?: number;
+  } = {},
 ): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[]; marketBands: Map<string, Map<string, MarketBandRow>>; v7SiblingPresence: V7SiblingPresenceMap }> {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -258,7 +263,9 @@ async function loadPool(
     return out;
   }
 
-  const readyRows = diversifyByCategory(readyFiltered, READY_SLOTS);
+  // Refresh/infinite feed에서는 앞쪽 25개 후보가 실시간 차익 재계산에서 탈락해도
+  // 뒤에 남은 ready 후보를 계속 찾을 수 있게 더 넓게 훑는다.
+  const readyRows = diversifyByCategory(readyFiltered, options.readyCandidateLimit ?? READY_SLOTS);
   const soldOutRows = diversifyByCategory(soldOutFiltered, SOLD_OUT_SLOTS);
 
   const pool = options.sort === "latest"
@@ -459,6 +466,7 @@ export async function GET(req: Request) {
     // (사용자가 본 매물 = 자기 예산 안 매물). 진짜 0개일 때만 fallback.
     // 다양화 cap 풀기는 diversifyByCategory의 "부족분 채움" 로직에서 이미 처리.
     const FALLBACK_THRESHOLD = 1;
+    const readyCandidateLimit = refresh ? FETCH_POOL_OVERFETCH : READY_SLOTS;
     const fallbackChain: { code: "150k" | "300k" | "500k" | "unlimited"; max: number | null }[] = [
       { code: "150k", max: 150000 },
       { code: "300k", max: 300000 },
@@ -473,7 +481,12 @@ export async function GET(req: Request) {
       const effectiveStart = startIdx >= 0 ? startIdx : 0;
       for (let i = effectiveStart; i < fallbackChain.length; i++) {
         const candidate = fallbackChain[i];
-        const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, { sort, priceMax: candidate.max, excludePids });
+        const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, {
+          sort,
+          priceMax: candidate.max,
+          excludePids,
+          readyCandidateLimit,
+        });
         const candItems = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
         if (candItems.length >= FALLBACK_THRESHOLD || i === fallbackChain.length - 1) {
           items = candItems;
@@ -483,7 +496,11 @@ export async function GET(req: Request) {
       }
     } else {
       // priceMax 없으면 unlimited 한 번만 fetch.
-      const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, { sort, excludePids });
+      const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, {
+        sort,
+        excludePids,
+        readyCandidateLimit,
+      });
       items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
       appliedBudget = "unlimited";
     }
@@ -505,6 +522,7 @@ export async function GET(req: Request) {
     } else if (preference === "aggressive") {
       items = [...items].sort((a, b) => b.expectedProfitMax - a.expectedProfitMax);
     }
+    items = items.slice(0, PAGE_SIZE);
 
     // refresh 후 새 cooldown 정보
     const nextCooldown = creditFeed
