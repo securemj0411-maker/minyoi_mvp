@@ -344,12 +344,6 @@ type BeginnerGuideStep = {
 
 type BeginnerGuideSafetyStats = {
   total_blocked_7d?: number;
-  fake_or_lock_7d?: number;
-  listing_parts_7d?: number;
-  listing_accessory_7d?: number;
-  listing_commercial_7d?: number;
-  listing_multi_7d?: number;
-  needs_review_7d?: number;
 };
 
 const SELLER_TRUST_MIN_REVIEW_COUNT = 10;
@@ -4615,20 +4609,6 @@ function formatBeginnerStatCount(value: number) {
   return value.toLocaleString("ko-KR");
 }
 
-function beginnerPositiveStatParts(stats: BeginnerGuideSafetyStats) {
-  const partsOnly = (stats.listing_parts_7d ?? 0) + (stats.listing_accessory_7d ?? 0) + (stats.listing_multi_7d ?? 0);
-  const sellerNoise = stats.listing_commercial_7d ?? 0;
-  const needsReview = stats.needs_review_7d ?? 0;
-  const fakeOrLock = stats.fake_or_lock_7d ?? 0;
-
-  return [
-    partsOnly > 0 ? `단품·구성품만 ${formatBeginnerStatCount(partsOnly)}건` : null,
-    sellerNoise > 0 ? `업자성 매물 ${formatBeginnerStatCount(sellerNoise)}건` : null,
-    needsReview > 0 ? `모델 확인 필요 ${formatBeginnerStatCount(needsReview)}건` : null,
-    fakeOrLock > 0 ? `잠금·가품 의심 ${formatBeginnerStatCount(fakeOrLock)}건` : null,
-  ].filter(Boolean) as string[];
-}
-
 function BeginnerGuideSafetyFilterNote() {
   const [stats, setStats] = useState<BeginnerGuideSafetyStats | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -4658,8 +4638,6 @@ function BeginnerGuideSafetyFilterNote() {
   const totalBlocked = stats?.total_blocked_7d ?? 0;
   if (!stats || totalBlocked <= 0) return null;
 
-  const parts = beginnerPositiveStatParts(stats).slice(0, 3);
-
   return (
     <div
       data-beginner-guide-safety-filter-note
@@ -4671,24 +4649,12 @@ function BeginnerGuideSafetyFilterNote() {
         </span>
         <div className="min-w-0">
           <p className="break-keep text-[12.5px] font-semibold leading-5 text-[#53605a] dark:text-zinc-300">
-            최근 24시간 전체 추천 풀에서 단품·액세서리·업자성·모델 확인 필요 매물{" "}
+            득템잡이가 오늘 돈 안 되는 매물{" "}
             <strong className="font-black text-[#172019] dark:text-zinc-50">{formatBeginnerStatCount(totalBlocked)}건</strong>
-            은 먼저 걸러졌어요. 그래서 여기서는 이 매물을 살 때 남은 질문만 차례대로 보면 돼요.
+            은 먼저 걸렀어요. 이제 이 매물만 보면 돼요.
           </p>
         </div>
       </div>
-      {parts.length > 0 ? (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {parts.map((part) => (
-            <span
-              key={part}
-              className="rounded-full bg-white/86 px-2.5 py-1 text-[10.5px] font-black text-[#58655d] ring-1 ring-blue-100 dark:bg-zinc-950/54 dark:text-zinc-300 dark:ring-blue-900/35"
-            >
-              {part}
-            </span>
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }

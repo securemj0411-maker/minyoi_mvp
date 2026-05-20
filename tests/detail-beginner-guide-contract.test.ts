@@ -100,11 +100,10 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /BeginnerGuideSafetyFilterNote/);
   assert.match(modal, /data-beginner-guide-safety-filter-note/);
   assert.match(modal, /\/api\/public\/safety-stats/);
-  assert.match(modal, /최근 24시간 전체 추천 풀/);
-  assert.match(modal, /이 매물을 살 때 남은 질문만 차례대로 보면 돼요/);
+  assert.match(modal, /득템잡이가 오늘 돈 안 되는 매물/);
+  assert.match(modal, /은 먼저 걸렀어요/);
+  assert.match(modal, /이제 이 매물만 보면 돼요/);
   assert.match(modal, /step\.tone === "trust" \? <BeginnerGuideSafetyFilterNote \/> : null/);
-  assert.match(modal, /단품·구성품만/);
-  assert.match(modal, /모델 확인 필요/);
   assert.match(modal, /data-beginner-guide-purchase-check/);
   assert.match(modal, /구매 전에 이것만 물어보면 돼요/);
   assert.match(modal, /혼자 보면 놓치기 쉬운 질문/);
@@ -193,7 +192,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.doesNotMatch(modal, /판매완료 누적|판매완료 표본|시세 거래 표본|거래완료 표본|최근 등록/);
   assert.doesNotMatch(modal, /0원로|수집중|후기 데이터는 아직 충분하지/);
   assert.doesNotMatch(modal, /이어폰\/헤드폰은 배터리/);
-  assert.doesNotMatch(modal, /대신 확인한 것|추천 전에 걸러진 매물/);
+  assert.doesNotMatch(modal, /대신 확인한 것|추천 전에 걸러진 매물|전체 추천 풀|단품·액세서리·업자성·모델 확인 필요/);
   assert.doesNotMatch(modal, /무조건|본전|수익 보장|돈을 벌|얼마를 벌/);
 });
 
