@@ -74,6 +74,8 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(explore, /data-category-filter-scroll/);
   assert.match(explore, /scrollCategories/);
   assert.match(explore, /카테고리 오른쪽으로 보기/);
+  assert.match(explore, /bg-black\/72/);
+  assert.doesNotMatch(explore, /hidden h-7 w-7 shrink-0/);
   assert.match(explore, /<option value="price_asc">매입단가순<\/option>/);
   assert.match(explore, /오늘 볼 수 있는 추천 매물은 여기까지예요/);
   assert.match(explore, /수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요/);

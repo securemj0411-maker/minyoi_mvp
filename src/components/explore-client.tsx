@@ -1025,89 +1025,91 @@ export default function ExploreClient() {
 
       {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음). */}
       <div className="sticky top-0 z-20 -mx-3 mb-2 flex items-center gap-1.5 bg-[#f6f1e8]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:px-6">
-        <button
-          type="button"
-          onClick={() => scrollCategories("prev")}
-          disabled={!canScrollCategoriesPrev}
-          aria-label="카테고리 왼쪽으로 보기"
-          className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-sm font-black text-zinc-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-emerald-700 dark:hover:text-emerald-300 sm:inline-flex"
-        >
-          ←
-        </button>
-        <div
-          ref={categoryScrollRef}
-          data-category-filter-scroll
-          className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
-        >
+        <div className="relative min-w-0 flex-1">
           <button
             type="button"
-            onClick={() => {
-              setScrapOnly((prev) => !prev);
-              setSelectedCategories(new Set());
-            }}
-            className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
-              scrapOnly
-                ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
-                : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
-            }`}
+            onClick={() => scrollCategories("prev")}
+            disabled={!canScrollCategoriesPrev}
+            aria-label="카테고리 왼쪽으로 보기"
+            className="absolute left-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-black/72 text-sm font-black text-white shadow-[0_8px_22px_rgba(0,0,0,0.28)] backdrop-blur transition hover:bg-black/84 disabled:pointer-events-none disabled:opacity-0 dark:border-zinc-700/80"
           >
-            <BookmarkIcon className="h-3.5 w-3.5 shrink-0" strokeWidth={2} fill={scrapOnly ? "currentColor" : "none"} />
-            스크랩
-            {scrapItems.length > 0 ? (
-              <span className={scrapOnly ? "text-white/70 dark:text-zinc-950/70" : "text-zinc-400"}>
-                {scrapItems.length.toLocaleString("ko-KR")}
-              </span>
-            ) : null}
+            ←
           </button>
-          {CATEGORY_OPTIONS.map((opt) => {
-            const isActive = selectedCategories.has(opt.value);
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  setSelectedCategories((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(opt.value)) next.delete(opt.value);
-                    else next.add(opt.value);
-                    return next;
-                  });
-                  setScrapOnly(false);
-                }}
-                className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
-                  isActive
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
-                    : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
-                }`}
-              >
-                {/* 2026-05-19: SF Symbol 스타일 라인 아이콘 추가. 텍스트만 칩 촌스러움 해소. */}
-                <CategoryIcon category={opt.value} className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
-                {opt.label}
-              </button>
-            );
-          })}
-          {selectedCategories.size > 0 || scrapOnly ? (
+          <button
+            type="button"
+            onClick={() => scrollCategories("next")}
+            disabled={!canScrollCategoriesNext}
+            aria-label="카테고리 오른쪽으로 보기"
+            className="absolute right-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-black/72 text-sm font-black text-white shadow-[0_8px_22px_rgba(0,0,0,0.28)] backdrop-blur transition hover:bg-black/84 disabled:pointer-events-none disabled:opacity-0 dark:border-zinc-700/80"
+          >
+            →
+          </button>
+          <div
+            ref={categoryScrollRef}
+            data-category-filter-scroll
+            className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto px-8 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+          >
             <button
               type="button"
               onClick={() => {
+                setScrapOnly((prev) => !prev);
                 setSelectedCategories(new Set());
-                setScrapOnly(false);
               }}
-              className="shrink-0 px-1.5 py-1 text-[10px] font-medium text-zinc-500 underline dark:text-zinc-400"
+              className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
+                scrapOnly
+                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
+                  : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
+              }`}
             >
-              초기화
+              <BookmarkIcon className="h-3.5 w-3.5 shrink-0" strokeWidth={2} fill={scrapOnly ? "currentColor" : "none"} />
+              스크랩
+              {scrapItems.length > 0 ? (
+                <span className={scrapOnly ? "text-white/70 dark:text-zinc-950/70" : "text-zinc-400"}>
+                  {scrapItems.length.toLocaleString("ko-KR")}
+                </span>
+              ) : null}
             </button>
-          ) : null}
+            {CATEGORY_OPTIONS.map((opt) => {
+              const isActive = selectedCategories.has(opt.value);
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategories((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(opt.value)) next.delete(opt.value);
+                      else next.add(opt.value);
+                      return next;
+                    });
+                    setScrapOnly(false);
+                  }}
+                  className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
+                    isActive
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                      : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
+                  }`}
+                >
+                  {/* 2026-05-19: SF Symbol 스타일 라인 아이콘 추가. 텍스트만 칩 촌스러움 해소. */}
+                  <CategoryIcon category={opt.value} className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+                  {opt.label}
+                </button>
+              );
+            })}
+            {selectedCategories.size > 0 || scrapOnly ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategories(new Set());
+                  setScrapOnly(false);
+                }}
+                className="shrink-0 px-1.5 py-1 text-[10px] font-medium text-zinc-500 underline dark:text-zinc-400"
+              >
+                초기화
+              </button>
+            ) : null}
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => scrollCategories("next")}
-          disabled={!canScrollCategoriesNext}
-          aria-label="카테고리 오른쪽으로 보기"
-          className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-sm font-black text-zinc-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-emerald-700 dark:hover:text-emerald-300 sm:inline-flex"
-        >
-          →
-        </button>
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
