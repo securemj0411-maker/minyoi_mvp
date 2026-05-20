@@ -9727,7 +9727,15 @@ export function normalize(text: string): string {
   for (const [pat, repl] of NORMALIZATIONS) {
     t = t.replace(pat, repl);
   }
-  t = t.replace(/[^0-9a-z가-힣]+/g, " ").replace(/\s+/g, " ").trim();
+  t = t.replace(/[^0-9a-z가-힣]+/g, " ");
+  // Wave 268 (2026-05-20): 한글-숫자 경계 공백 강제 → "조던1" / "조던 1" canonical 통합.
+  //   사용자 발견 (API sweep): 매물 "나이키 조던 1 로우 스캇 모카" → SKU mustContain "조던1" (공백 없음) 매칭 X.
+  //   systemic 해결: normalize 단계에서 한글-숫자 경계 공백 강제 → 모든 SKU/매물 같은 canonical form.
+  //   효과: shoe-nike-jordan-1-* / dunk-low-* / af1 등 수십~수백건 catch.
+  //   영문 단어 (jordan 1) 는 이미 공백 있어 영향 X.
+  t = t.replace(/([가-힣])(\d)/g, "$1 $2");
+  t = t.replace(/(\d)([가-힣])/g, "$1 $2");
+  t = t.replace(/\s+/g, " ").trim();
   return ` ${t} `;
 }
 

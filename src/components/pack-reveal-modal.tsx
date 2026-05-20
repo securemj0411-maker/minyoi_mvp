@@ -1329,6 +1329,12 @@ function RevealProductImage({ card }: { card: RevealCard }) {
               />
             </div>
           </div>
+          {/* Wave 394.7.w (사용자 짚음 + handoff): 좌하 condition pill — nav(top-left)랑 안 겹침. */}
+          {card.marketBasis?.conditionClass ? (
+            <div className="absolute bottom-2 left-2 z-10">
+              <ConditionPhotoBadge conditionClass={card.marketBasis.conditionClass} />
+            </div>
+          ) : null}
           <button
             type="button"
             onClick={(e) => {
@@ -2909,13 +2915,20 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
       {/* Wave 326: 협상 가이드 — 가격대별 의미 명시. "이 이상에 사면" 동사 명시 + 위험 구간(차익 1만 미만) 별도. */}
       {/* Wave 394.7.e: caps 단어 토막 → 친절 문장. */}
       {guidance ? (
-        <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-          <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-            얼마까지 깎으면 좋을까요?
+        <div className="mt-4">
+          {/* Wave 394.7.w (사용자 짚음): handoff 패턴 — 섹션 제목 카드 밖 + 우측 chip + 흰 카드 안에 rows */}
+          <div className="mb-2 flex items-center justify-between gap-2 px-0">
+            <h3 className="m-0 text-[16px] font-extrabold tracking-tight text-[#1a2620] dark:text-zinc-100">
+              협상 가이드
+            </h3>
+            <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${verdictClass}`}>
+              {guidance.verdictLabel}
+            </span>
           </div>
 
-          {/* Wave 394.7.n (Claude Design reference NegotiationGuide): tone-specific bg row + icon circle. */}
-          <div className="mt-3 space-y-1.5">
+          {/* 흰 카드 wrapper — rows 안에 */}
+          <div className="rounded-2xl border border-[#ece3d2] bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="space-y-1.5">
             {/* 현재 매입가 — em row */}
             <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 px-3 py-3 dark:bg-emerald-950/30">
               <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-sm font-black text-emerald-500 dark:bg-zinc-900">●</div>
@@ -2971,11 +2984,8 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
               </div>
             </div>
           </div>
-
-          {/* Verdict */}
-          <div className={`mt-2 rounded-xl px-3 py-2 text-xs font-bold ${verdictClass}`}>
-            {guidance.verdictLabel}
           </div>
+          {/* verdict chip moved to header — handoff "차익 충분" 위치. */}
         </div>
       ) : null}
 
@@ -3332,12 +3342,13 @@ function RevealCardItem({
       {/* 좌측 카드 닫음 — 우측 카드 = 시세 그래프 + 디테일. */}
 
       {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
-      <div className="order-2 space-y-2 px-3 sm:mx-0 sm:rounded-2xl sm:border sm:border-[#dfd6c9] sm:bg-[linear-gradient(180deg,#fffdf9_0%,#fbf7ef_100%)] sm:p-3 sm:shadow-[0_16px_34px_rgba(49,66,56,0.08)] sm:ring-1 sm:ring-white/70 sm:dark:border-zinc-800 sm:dark:bg-none sm:dark:bg-zinc-900 sm:dark:ring-zinc-800/70 lg:order-2">
+      {/* Wave 394.7.w (사용자 짚음): handoff 패턴 — 섹션 제목 카드 밖으로. desktop wrapper card 제거. */}
+      <div className="order-2 space-y-2 px-3 lg:order-2">
         <div className="flex items-center justify-between gap-2">
-          <div className="text-[11px] font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
+          <h3 className="m-0 text-[16px] font-extrabold tracking-tight text-[#1a2620] dark:text-zinc-100">
             시세 그래프 · 시장 분석
-          </div>
-          <span className="rounded-full bg-[#eef6ec] px-2 py-0.5 text-[10px] font-black text-[#4f6a52] ring-1 ring-[#d8e2d7] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
+          </h3>
+          <span className="rounded-full bg-[#eef6ec] px-2.5 py-1 text-[11px] font-bold text-[#4f6a52] ring-1 ring-[#d8e2d7] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
             {/* Wave 394.1 (외부 review #19): "실시간" 과장 — 표본 부족 / 호가 추정인데 "실시간"이라 신뢰 역효과. */}
             최신 수집 기준
           </span>
@@ -3349,19 +3360,18 @@ function RevealCardItem({
             우측 카드 (자세한 그래프 추이) 와 분리 — 좌측 카드 = 매물 정보 + 시세 신뢰 증명. */}
         {/* ComparableListingsPanel 호출 = 좌측 카드 안 (차익 메타 line 다음). 우측 카드에선 제거. */}
 
-        {/* 2026-05-15: 시세 30일 추이 chart (active/sold median). 사용자 베타테스터 질문 응답 — */}
-        {/* "시세 어떤 기준으로 잡나" 시각화. history 부족하면 자동 hide. */}
-        {/* 2026-05-16 (코멘트 id 105): conditionClass 전달 → 그래프도 같은 condition 매물 기준. */}
-        <MarketHistoryChart
-          comparableKey={card.marketBasis?.comparableKey ?? null}
-          currentPrice={card.price}
-          conditionClass={card.marketBasis?.conditionClass ?? null}
-          priceSource={card.marketBasis?.priceSource ?? null}
-          referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
-        />
-        <MarketGraphTrustLine card={card} />
-
-        <SkuListingFlowMini card={card} />
+        {/* Wave 394.7.w: 흰 카드 wrapper — handoff PriceGraph 패턴 매칭. */}
+        <div className="overflow-hidden rounded-2xl border border-[#ece3d2] bg-white p-3 space-y-2 dark:border-zinc-800 dark:bg-zinc-900">
+          <MarketHistoryChart
+            comparableKey={card.marketBasis?.comparableKey ?? null}
+            currentPrice={card.price}
+            conditionClass={card.marketBasis?.conditionClass ?? null}
+            priceSource={card.marketBasis?.priceSource ?? null}
+            referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
+          />
+          <MarketGraphTrustLine card={card} />
+          <SkuListingFlowMini card={card} />
+        </div>
       </div>
       {/* 우측 카드 (시세 분석) 닫음. */}
 
