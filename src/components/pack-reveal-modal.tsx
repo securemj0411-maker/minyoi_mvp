@@ -2344,7 +2344,25 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
       </div>
 
       {loading ? (
-        <div className="rounded-2xl border border-[#ece3d2] bg-white px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">비교 매물 불러오는 중...</div>
+        // Wave 394.7.aa: skeleton 4개 row — 디폴트 visible 갯수와 동일 shape.
+        <ul className="overflow-hidden rounded-2xl border border-[#ece3d2] bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          {[0, 1, 2, 3].map((i) => (
+            <li
+              key={i}
+              className={`flex items-center gap-3 px-3 py-3 ${i === 0 ? "" : "border-t border-[#ece3d2] dark:border-zinc-800"}`}
+            >
+              <div className="h-[52px] w-[52px] shrink-0 animate-pulse rounded-[9px] bg-[#ece3d2] dark:bg-zinc-800" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <div className="h-3 w-[82%] animate-pulse rounded-full bg-[#ece3d2] dark:bg-zinc-800" />
+                <div className="h-2.5 w-[58%] animate-pulse rounded-full bg-[#ece3d2]/70 dark:bg-zinc-800/70" />
+              </div>
+              <div className="shrink-0 space-y-1 text-right">
+                <div className="ml-auto h-3.5 w-16 animate-pulse rounded-full bg-[#ece3d2] dark:bg-zinc-800" />
+                <div className="ml-auto h-2.5 w-10 animate-pulse rounded-full bg-[#ece3d2]/70 dark:bg-zinc-800/70" />
+              </div>
+            </li>
+          ))}
+        </ul>
       ) : error ? (
         <div className="rounded-2xl border border-[#ece3d2] bg-white px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">비교 매물 불러오기 실패</div>
       ) : !listings || listings.length === 0 ? (
@@ -4157,7 +4175,20 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
         <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{ccLabel}끼리</div>
       </div>
       {loading ? (
-        <div className="px-4 pb-4 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">비교 매물 불러오는 중...</div>
+        // Wave 394.7.aa (사용자 짚음): skeleton row 4개 — 디폴트 4개 보이는 것과 동일 shape.
+        // 텍스트만 깜빡이면 layout shift 큼 + "비교 매물이 진짜 있나?" 의심. shape preview 가 신뢰 ↑.
+        <div className="divide-y divide-[#eee5d8] dark:divide-zinc-800">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-3 px-4 py-3">
+              <div className="h-12 w-12 shrink-0 animate-pulse rounded-[12px] bg-[#ece3d2] dark:bg-zinc-800" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <div className="h-3 w-[80%] animate-pulse rounded-full bg-[#ece3d2] dark:bg-zinc-800" />
+                <div className="h-2.5 w-[55%] animate-pulse rounded-full bg-[#ece3d2]/70 dark:bg-zinc-800/70" />
+              </div>
+              <div className="h-4 w-14 shrink-0 animate-pulse rounded-full bg-[#ece3d2] dark:bg-zinc-800" />
+            </div>
+          ))}
+        </div>
       ) : !listings || listings.length === 0 ? (
         <div className="px-4 pb-4 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">비교 매물 누적 중</div>
       ) : (
