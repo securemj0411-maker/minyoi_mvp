@@ -247,7 +247,16 @@ const CATEGORY_OPTIONS = [
   { value: "clothing", label: "옷" },
 ];
 
-const CATEGORY_LABEL_BY_VALUE = new Map(CATEGORY_OPTIONS.map((opt) => [opt.value, opt.label]));
+const LOCKED_CATEGORY_LABELS: Record<string, string> = {
+  earphone: "이어폰/헤드셋",
+  smartphone: "휴대폰",
+  tablet: "태블릿",
+  smartwatch: "스마트워치",
+  laptop: "노트북",
+  shoe: "신발",
+  bag: "가방",
+  clothing: "의류",
+};
 
 const CONDITION_PREVIEW_LABELS: Record<string, string> = {
   unopened: "미개봉",
@@ -264,23 +273,12 @@ function conditionPreviewLabel(conditionClass: string | null) {
   return CONDITION_PREVIEW_LABELS[conditionClass] ?? "상태 확인";
 }
 
-function lockedPreviewModelLabel(item: PoolItem) {
-  const raw = `${item.skuName ?? ""} ${item.name ?? ""}`.toLowerCase();
-  if (raw.includes("airpods max") || raw.includes("에어팟 맥스") || raw.includes("에어팟맥스")) return "에어팟 맥스 계열";
-  if (raw.includes("airpods pro") || raw.includes("에어팟 프로") || raw.includes("에어팟프로")) return "에어팟 프로 계열";
-  if (raw.includes("airpods") || raw.includes("에어팟")) return "에어팟 계열";
-  if (raw.includes("macbook") || raw.includes("맥북")) return "맥북 계열";
-  if (raw.includes("ipad") || raw.includes("아이패드")) return "아이패드 계열";
-  if (raw.includes("apple watch") || raw.includes("애플워치")) return "애플워치 계열";
-  if (raw.includes("dji")) return "DJI 계열";
-  if (raw.includes("supreme") || raw.includes("슈프림")) return "슈프림 계열";
-  if (raw.includes("rrl") || raw.includes("더블알엘")) return "RRL 계열";
-  if (raw.includes("arcteryx") || raw.includes("아크테릭스")) return "아크테릭스 계열";
-  return `${CATEGORY_LABEL_BY_VALUE.get(item.category ?? "") ?? "추천"} 매물`;
+function lockedPreviewCategoryLabel(item: PoolItem) {
+  return LOCKED_CATEGORY_LABELS[item.category ?? ""] ?? "추천 매물";
 }
 
 function lockedPreviewTitle(item: PoolItem) {
-  return `${lockedPreviewModelLabel(item)} · ${conditionPreviewLabel(item.conditionClass)} 후보`;
+  return `${lockedPreviewCategoryLabel(item)} · ${conditionPreviewLabel(item.conditionClass)} 후보`;
 }
 
 type SortOption = "profit_desc" | "latest" | "price_asc";
