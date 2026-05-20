@@ -1212,7 +1212,6 @@ function PurchaseDecisionHeader({ card }: { card: RevealCard }) {
   const sampleCount = card.marketBasis?.sampleCount ?? 0;
   const confidencePct = Math.round((card.confidence ?? 0) * 100);
   const profitAvg = expectedProfitAverage(card);
-  const netPct = netProfitPercent(card);
   const discountPct = marketDiscountPercent(card);
   const conditionLabel = marketConditionLabel(card);
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
@@ -1277,42 +1276,28 @@ function PurchaseDecisionHeader({ card }: { card: RevealCard }) {
               body: "가격 차이가 크지 않아 비교 매물과 리스크를 같이 확인해야 해요.",
             };
 
-  const chips = [
-    `예상 ${profitText}`,
-    netPct != null ? `순익률 ${netPct >= 0 ? "+" : ""}${netPct}%` : null,
-    `${conditionLabel} 비교 ${sampleText}`,
-  ].filter((chip): chip is string => Boolean(chip));
-
   return (
     <section
       aria-label="구매 판단 요약"
-      className={`mt-3 rounded-2xl border px-3.5 py-3 shadow-sm ${tone.borderClass}`}
+      className={`mt-3 rounded-xl border px-3 py-2.5 shadow-sm ${tone.borderClass}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className={`text-[10px] font-black uppercase tracking-[0.16em] ${tone.eyebrow}`}>
-            구매 판단
+          <div className="flex min-w-0 items-center gap-2">
+            <div className={`shrink-0 text-[10px] font-black uppercase tracking-[0.14em] ${tone.eyebrow}`}>
+              구매 판단
+            </div>
+            <div className="min-w-0 truncate text-[14px] font-black leading-tight tracking-tight text-[#172019] dark:text-zinc-50">
+              {tone.headline}
+            </div>
           </div>
-          <div className="mt-1 text-[15px] font-black leading-tight tracking-tight text-[#172019] dark:text-zinc-50">
-            {tone.headline}
-          </div>
-          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#5f6b5e] dark:text-zinc-300">
+          <p className="mt-1 line-clamp-2 text-[11.5px] font-semibold leading-4 text-[#5f6b5e] dark:text-zinc-300">
             {tone.body}
           </p>
         </div>
         <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black ring-1 ${tone.badgeClass}`}>
           {tone.badge}
         </span>
-      </div>
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        {chips.map((chip) => (
-          <span
-            key={chip}
-            className="rounded-full bg-white/80 px-2 py-1 text-[11px] font-bold leading-none text-[#4d5a50] ring-1 ring-[#e2dbcf] dark:bg-zinc-950/50 dark:text-zinc-300 dark:ring-zinc-800"
-          >
-            {chip}
-          </span>
-        ))}
       </div>
     </section>
   );
