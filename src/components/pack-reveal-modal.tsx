@@ -3681,30 +3681,20 @@ function RelatedRevealStrip({
   const visibleItems = items.slice(0, 8);
   if (visibleItems.length === 0 || !onOpenRelatedItem) return null;
 
+  // Wave 394.7.p (reference OtherRecs): horizontal scroll + 140px 카드 + rounded border.
   return (
-    // Wave 366: 카드 박스 제거 → /me 피드 톤 (divider만 + 사진 크게 120px).
     <section className="mt-4 px-3 sm:px-4">
       <div className="mb-2 flex items-baseline justify-between gap-3">
-        {/* Wave 394.7.f (외부 review 2라운드 #10): 사용자 짚음 — "다른 추천 매물 = 비슷한 매물인지 다른 수익 매물인지 헷갈림".
-            "다른 수익 매물" 로 정확화 (이 매물과 무관한 다른 수익성 매물). */}
-        <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+        <div className="text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
           다른 수익 매물
         </div>
-        <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-          {visibleItems.length}개
+        <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+          {visibleItems.length}개 →
         </span>
       </div>
-      <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0">
+      <div className="-mx-3 flex gap-2.5 overflow-x-auto px-3 pb-2 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {visibleItems.map((item) => {
-          // Wave 246: medianPrice=0/null 이면 출처 배지 의미 없음.
-          const hasMedian = !!(item.marketBasis?.medianPrice && item.marketBasis.medianPrice > 0);
-          const sourceBadge = !hasMedian
-            ? null
-            : item.marketBasis?.priceSource === "reference"
-              ? { tone: "reference" as const, label: "다나와" }
-              : item.marketBasis?.conditionClass === "mint"
-                ? { tone: "mint" as const, label: "번개 S급" }
-                : null;
+          const profitPct = item.price > 0 ? Math.round((item.expectedProfitMax / item.price) * 100) : 0;
           return (
             <button
               key={item.pid}
@@ -3713,76 +3703,34 @@ function RelatedRevealStrip({
                 onBeforeOpenRelatedItem?.();
                 onOpenRelatedItem(item.pid);
               }}
-              className="grid w-full min-w-0 grid-cols-[120px_minmax(0,1fr)] gap-3 px-3 py-4 text-left transition active:bg-zinc-50 dark:active:bg-zinc-900/40"
+              className="flex w-[140px] shrink-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white text-left transition hover:border-emerald-300 hover:shadow-sm active:scale-[0.98] dark:border-zinc-800 dark:bg-zinc-900/40"
             >
-              <div className="relative aspect-square shrink-0 overflow-hidden rounded-lg bg-[#f2eadf] dark:bg-zinc-800">
+              <div className="relative aspect-square w-full overflow-hidden bg-[#f2eadf] dark:bg-zinc-800">
                 <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
                 {item.thumbnailUrl ? (
                   <Image
                     src={item.thumbnailUrl}
                     alt=""
                     fill
-                    sizes="120px"
+                    sizes="140px"
                     className="object-cover"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center px-2 text-center text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+                  <div className="flex h-full items-center justify-center px-2 text-center text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
                     사진 없음
                   </div>
                 )}
               </div>
-              <div className="min-w-0">
-                <div className="line-clamp-2 text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-50">
+              <div className="flex flex-1 flex-col px-2.5 py-2.5">
+                <div className="line-clamp-2 min-h-[32px] text-[11px] font-bold leading-tight text-zinc-700 dark:text-zinc-300">
                   {item.name}
                 </div>
-                <div className="mt-1.5">
-                  <span className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                    {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
-                  </span>
+                <div className="mt-1.5 text-[13px] font-black leading-none tabular-nums tracking-tight text-emerald-700 dark:text-emerald-300">
+                  {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
                 </div>
-                <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
-                  <span>매입 <b className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{krw(item.price)}</b></span>
-                  {item.marketBasis?.medianPrice && item.marketBasis.medianPrice > 0 ? (
-                    <>
-                      <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                      <span>시세 <b className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{krw(item.marketBasis.medianPrice)}</b></span>
-                      {sourceBadge ? (
-                        sourceBadge.tone === "reference"
-                          ? <DanawaSourceBadge label={sourceBadge.label} />
-                          : <BunjangSourceBadge label={sourceBadge.label} />
-                      ) : null}
-                    </>
-                  ) : null}
+                <div className="mt-0.5 text-[10px] font-bold tabular-nums text-zinc-500 dark:text-zinc-400">
+                  매입 {krw(item.price)} · +{profitPct}%
                 </div>
-                {/* Wave 394.7.c (외부 review #21): "왜 추천인지 기준이 안 보임" 정정 — 추천 이유 chip. */}
-                {/* 차익률 + condition (미개봉/S급) 강조. 다른 매물 대비 우월성 직관. */}
-                {(() => {
-                  const profitPct = item.price > 0 ? Math.round((item.expectedProfitMax / item.price) * 100) : 0;
-                  const cond = item.marketBasis?.conditionClass ?? null;
-                  const condLabel = cond === "unopened" ? "미개봉"
-                    : cond === "mint" ? "S급 매물"
-                    : cond === "clean" ? "A급"
-                    : null;
-                  if (profitPct <= 0 && !condLabel) return null;
-                  return (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {profitPct > 0 ? (
-                        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                          profitPct >= 30
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-                            : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-                        }`}>
-                          차익률 +{profitPct}%{profitPct >= 30 ? " 큼" : ""}
-                        </span>
-                      ) : null}
-                      {condLabel ? (
-                        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                          {condLabel}
-                        </span>
-                      ) : null}
-                    </div>
-                  );
-                })()}
               </div>
             </button>
           );
