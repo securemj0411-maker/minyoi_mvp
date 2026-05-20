@@ -8,38 +8,43 @@ function source(path: string) {
   return readFileSync(new URL(path, ROOT), "utf8");
 }
 
-test("detail modal keeps product photo compact enough for market evidence", () => {
+test("detail modal keeps product photo immersive without breaking the mobile shell", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
 
-  assert.match(modal, /aspect-\[4\/3\] max-h-\[42dvh\]/);
-  assert.match(modal, /sm:h-\[168px\] sm:w-\[168px\]/);
-  assert.match(modal, /lg:h-\[196px\] lg:w-\[196px\]/);
-  assert.match(modal, /sm:grid-cols-\[168px_minmax\(0,1fr\)\]/);
-  assert.match(modal, /lg:grid-cols-\[196px_minmax\(0,1fr\)\]/);
-  assert.match(modal, /sizes="\(max-width: 639px\) 100vw, \(max-width: 1023px\) 168px, 196px"/);
-  assert.doesNotMatch(modal, /aspect-\[4\/4\.2\] max-h-\[58dvh\]/);
+  assert.match(modal, /h-\[56dvh\] min-h-\[380px\] max-h-\[560px\]/);
+  assert.match(modal, /sizes="\(max-width: 480px\) 100vw, 480px"/);
+  assert.match(modal, /sm:w-\[min\(480px,calc\(100vw-32px\)\)\]/);
+  assert.match(modal, /sm:max-w-\[480px\]/);
   assert.doesNotMatch(modal, /sm:h-\[240px\] sm:w-\[240px\]/);
   assert.doesNotMatch(modal, /lg:h-\[280px\] lg:w-\[280px\]/);
+  assert.doesNotMatch(modal, /sm:grid-cols-\[168px_minmax\(0,1fr\)\]/);
 });
 
-test("detail modal uses layered image treatment so compact photos are not cropped", () => {
+test("detail modal uses a single large product image treatment", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
+  const imageBlock = modal.slice(
+    modal.indexOf("function RevealProductImage"),
+    modal.indexOf("function SkuListingFlowMini"),
+  );
 
-  assert.match(modal, /absolute inset-0 scale-\[1\.03\] opacity-75 blur-\[2px\]/);
-  assert.match(modal, /className="object-cover object-center"/);
-  assert.match(modal, /absolute inset-0 p-3 sm:p-2/);
-  assert.match(modal, /rounded-\[16px\] object-contain object-center/);
-  assert.match(modal, /shadow-\[0_12px_24px_rgba\(34,49,39,0\.12\)\] ring-1 ring-black\/8/);
-  assert.doesNotMatch(modal, /rounded-none object-cover object-center sm:scale-100/);
+  assert.match(imageBlock, /className="object-cover object-center"/);
+  assert.match(imageBlock, /크게 보기/);
+  assert.match(imageBlock, /absolute bottom-8 left-3/);
+  assert.match(imageBlock, /absolute bottom-8 right-3/);
+  assert.doesNotMatch(imageBlock, /scale-\[1\.03\] opacity-75 blur-\[2px\]/);
+  assert.doesNotMatch(imageBlock, /absolute inset-0 p-3 sm:p-2/);
+  assert.doesNotMatch(imageBlock, /rounded-\[16px\] object-contain object-center/);
 });
 
-test("detail modal tones down expected profit typography", () => {
+test("detail modal keeps expected profit typography compact and dark-mode aware", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
 
   assert.match(modal, /💎 예상 순익/);
-  assert.match(modal, /fontSize: 22, fontWeight: 900/);
-  assert.match(modal, /fontSize: 76, fontWeight: 900/);
-  assert.match(modal, /padding: "14px 14px 12px"/);
+  assert.match(modal, /text-\[22px\] font-black/);
+  assert.match(modal, /text-\[76px\] font-black/);
+  assert.match(modal, /dark:from-emerald-950\/22 dark:to-zinc-950 dark:shadow-none/);
+  assert.match(modal, /dark:bg-zinc-950\/70 dark:text-emerald-200/);
   assert.doesNotMatch(modal, /fontSize: 28, fontWeight: 900, color: isMarketInvalidated/);
   assert.doesNotMatch(modal, /fontSize: 100, fontWeight: 900, color: isMarketInvalidated/);
+  assert.doesNotMatch(modal, /padding: "14px 14px 12px"/);
 });

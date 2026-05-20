@@ -354,3 +354,30 @@ test("detail modal fixed CTA and profit card honor dark mode", () => {
   assert.match(fixedFooter, /dark:bg-\[linear-gradient\(180deg,rgba\(24,24,27,0\)_0%,#18181b_28%\)\]/);
   assert.doesNotMatch(fixedFooter, /style=\{\{\s*background: "linear-gradient\(180deg, rgba\(235,230,220,0\)/);
 });
+
+test("detail modal secondary cards no longer force light surfaces in dark mode", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const faq = modal.slice(
+    modal.indexOf("function WhyTrustCollapse"),
+    modal.indexOf("function CounterfeitChecklistPanel"),
+  );
+  const checklist = modal.slice(
+    modal.indexOf("function CounterfeitChecklistPanel"),
+    modal.indexOf("function SellHelperPanel"),
+  );
+  const platform = modal.slice(
+    modal.indexOf("function PlatformProfitCompare"),
+    modal.indexOf("function sellerQuestionText"),
+  );
+
+  assert.match(faq, /dark:bg-zinc-900/);
+  assert.match(faq, /dark:bg-zinc-950\/55/);
+  assert.doesNotMatch(faq, /background: "#ffffff"/);
+  assert.match(checklist, /dark:bg-amber-950\/18/);
+  assert.match(checklist, /dark:text-zinc-50/);
+  assert.doesNotMatch(checklist, /style=\{\{ background: "#fffbef"/);
+  assert.match(platform, /dark:bg-zinc-900/);
+  assert.match(platform, /dark:from-amber-950\/35 dark:to-zinc-950/);
+  assert.doesNotMatch(platform, /background: "#ffffff"/);
+  assert.doesNotMatch(platform, /background: "linear-gradient\(135deg, #fffaf0/);
+});
