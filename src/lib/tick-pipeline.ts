@@ -1468,13 +1468,15 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
       last_seen_at: now,
     }, RAW_TOUCH_WRITE_CHUNK_SIZE);
   });
-  await timedOptionalSearchWrite("request_terminal_lifecycle_recheck", () => requestTerminalLifecycleRecheck(
-    items
-      .filter((item) => statePatches.get(item.pid)?.terminal_preserved)
-      .map((item) => Number(item.pid))
-      .filter(Number.isFinite),
-    now,
-  ));
+  await timedOptionalSearchWrite("request_terminal_lifecycle_recheck", async () => {
+    await requestTerminalLifecycleRecheck(
+      items
+        .filter((item) => statePatches.get(item.pid)?.terminal_preserved)
+        .map((item) => Number(item.pid))
+        .filter(Number.isFinite),
+      now,
+    );
+  });
   await timedSearchSubstage(timingsMs, "insert_observations", () => insertObservationsWithPayloads(observationRows));
   const searchSellerRows = items.flatMap((item) => {
     if (!item.sellerUid) return [];

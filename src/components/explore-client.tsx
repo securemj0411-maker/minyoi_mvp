@@ -56,6 +56,14 @@ type StatsResponse = {
   freshLagHours: number;
 };
 
+type DetailAccessResponse = {
+  ok?: boolean;
+  error?: string;
+  message?: string;
+  dailyUsed?: number;
+  dailyLimit?: number;
+};
+
 function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
@@ -225,6 +233,9 @@ export default function ExploreClient() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [detailAccessMessage, setDetailAccessMessage] = useState<string | null>(null);
+  const [detailAccessLoadingPid, setDetailAccessLoadingPid] = useState<number | null>(null);
+  const openedDetailPidsRef = useRef<Set<number>>(new Set());
   const [now, setNow] = useState(Date.now());
   const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
   // Wave 346: refresh modal — 기다리기/충전 옵션
@@ -465,11 +476,42 @@ export default function ExploreClient() {
     }));
   }, [items, selectedCard]);
 
+  const openItemDetail = useCallback(async (item: PoolItem) => {
+    if (item.soldOut) return;
+    if (openedDetailPidsRef.current.has(item.pid)) {
+      setDetailAccessMessage(null);
+      setSelectedCard(poolItemToRevealCard(item));
+      return;
+    }
+
+    setDetailAccessLoadingPid(item.pid);
+    setDetailAccessMessage(null);
+    try {
+      const res = await fetch("/api/packs/pool/detail-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pid: item.pid }),
+        cache: "no-store",
+      });
+      const data = (await res.json()) as DetailAccessResponse;
+      if (!res.ok) {
+        setDetailAccessMessage(data.message ?? "상세보기를 열 수 없어요. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+      openedDetailPidsRef.current.add(item.pid);
+      setSelectedCard(poolItemToRevealCard(item));
+    } catch (err) {
+      setDetailAccessMessage(err instanceof Error ? err.message : "상세보기 요청 중 오류가 발생했어요.");
+    } finally {
+      setDetailAccessLoadingPid((prev) => (prev === item.pid ? null : prev));
+    }
+  }, []);
+
   // 다른 매물 클릭 시 modal 전환
   const handleOpenRelatedItem = useCallback((pid: number) => {
     const item = items.find((it) => it.pid === pid);
-    if (item) setSelectedCard(poolItemToRevealCard(item));
-  }, [items]);
+    if (item) void openItemDetail(item);
+  }, [items, openItemDetail]);
 
   // Wave 339b: /api/packs/pool/analysis로 marketBasis/velocityBasis lazy-fill.
   // assertRevealAccess 우회 (pid 기반). 가져온 분석으로 selectedCard 갱신.
@@ -601,6 +643,15 @@ export default function ExploreClient() {
         </div>
       ) : null}
 
+      {detailAccessMessage ? (
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-bold text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-100">
+          <span className="min-w-0 flex-1">{detailAccessMessage}</span>
+          <Link href="/plans" className="shrink-0 rounded-full bg-emerald-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-emerald-700">
+            Plus 보기
+          </Link>
+        </div>
+      ) : null}
+
       {/* 로딩 / 에러 / 매물 grid */}
       {loading ? (
         <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0 sm:grid sm:grid-cols-2 sm:divide-y-0 sm:gap-3 lg:grid-cols-3">
@@ -721,12 +772,14 @@ export default function ExploreClient() {
                 type="button"
                 onClick={() => {
                   if (isSoldOut) return;
-                  setSelectedCard(poolItemToRevealCard(item));
+                  void openItemDetail(item);
                 }}
-                disabled={isSoldOut}
+                disabled={isSoldOut || detailAccessLoadingPid === item.pid}
                 className={`relative grid w-full grid-cols-[120px_minmax(0,1fr)] gap-3 px-3 py-4 text-left transition sm:rounded-xl sm:border sm:p-3 ${
                   isSoldOut
                     ? "cursor-not-allowed sm:border-zinc-200 sm:bg-zinc-50 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/30"
+                    : detailAccessLoadingPid === item.pid
+                      ? "cursor-wait sm:border-emerald-200 sm:bg-emerald-50/50 dark:sm:border-emerald-900 dark:sm:bg-emerald-950/20"
                     : "active:bg-zinc-50 dark:active:bg-zinc-900/40 sm:border-zinc-200 sm:bg-white sm:hover:border-emerald-300 sm:hover:shadow-md dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 dark:sm:hover:border-emerald-700"
                 }`}
               >

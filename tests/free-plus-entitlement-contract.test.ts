@@ -1,0 +1,41 @@
+import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
+import { test } from "node:test";
+import { PLANS } from "../src/lib/plan-config";
+
+const ROOT = new URL("../", import.meta.url);
+
+function source(path: string) {
+  return readFileSync(new URL(path, ROOT), "utf8");
+}
+
+test("free and plus define the first paid entitlement boundary", () => {
+  assert.equal(PLANS.free.dailyOpenLimit, 3);
+  assert.match(PLANS.free.features.join(" "), /상세보기 하루 3회/);
+
+  assert.equal(PLANS.plus.dailyOpenLimit, 200);
+  assert.match(PLANS.plus.features.join(" "), /상세보기\/원본 확인 하루 200회/);
+});
+
+test("pool detail access consumes quota once per pid per day", () => {
+  const helper = source("src/lib/detail-access.ts");
+  const route = source("src/app/api/packs/pool/detail-access/route.ts");
+
+  assert.match(helper, /consumeDailyQuota/);
+  assert.match(helper, /refundDailyQuota/);
+  assert.match(helper, /mvp_rate_limits/);
+  assert.match(helper, /detail-access:\$\{userRef\}:\$\{pid\}/);
+
+  assert.match(route, /consumeDetailAccess/);
+  assert.match(route, /mvp_candidate_pool/);
+  assert.match(route, /status=eq\.ready/);
+});
+
+test("explore opens the modal only after detail access is granted", () => {
+  const explore = source("src/components/explore-client.tsx");
+
+  assert.match(explore, /\/api\/packs\/pool\/detail-access/);
+  assert.match(explore, /openedDetailPidsRef/);
+  assert.match(explore, /setDetailAccessMessage/);
+  assert.match(explore, /void openItemDetail\(item\)/);
+});
