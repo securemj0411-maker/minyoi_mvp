@@ -3844,8 +3844,11 @@ function BeginnerGuideSummaryVisual() {
 function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
   const [listings, setListings] = useState<ComparableListing[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const ck = card.marketBasis?.comparableKey ?? null;
   const cc = card.marketBasis?.conditionClass ?? null;
+  const INITIAL_VISIBLE = 4;
+  const EXPANDED_VISIBLE = 8;
   const ccLabel =
     cc === "unopened" ? "미개봉"
     : cc === "mint" ? "S급"
@@ -3860,6 +3863,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
     if (!ck) return;
     let cancelled = false;
     setLoading(true);
+    setExpanded(false);
     fetch(`/api/listings/${card.pid}/market-source`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: { comparables?: ComparableListing[] }) => {
@@ -3867,7 +3871,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
         const filtered = (j.comparables ?? [])
           .filter((item) => item.listingState !== "disappeared")
           .sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
-          .slice(0, 2);
+          .slice(0, 16);
         setListings(filtered);
       })
       .catch(() => {
@@ -3889,6 +3893,9 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
     );
   }
 
+  const visibleListings = listings?.slice(0, expanded ? EXPANDED_VISIBLE : INITIAL_VISIBLE) ?? [];
+  const moreCount = listings ? Math.max(0, Math.min(listings.length, EXPANDED_VISIBLE) - INITIAL_VISIBLE) : 0;
+
   return (
     <div data-beginner-guide-comparables className="mt-4 overflow-hidden rounded-[22px] bg-white/86 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
       <div className="flex items-center justify-between gap-2 px-4 py-3">
@@ -3901,7 +3908,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
         <div className="px-4 pb-4 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">비교 매물 누적 중</div>
       ) : (
         <div className="divide-y divide-[#eee5d8] dark:divide-zinc-800">
-          {listings.map((item) => {
+          {visibleListings.map((item) => {
             const diff = item.price - card.price;
             const diffLabel = diff > 0 ? `이 매물보다 ${krw(diff)} 비쌈` : diff < 0 ? `이 매물보다 ${krw(Math.abs(diff))} 쌈` : "비슷한 가격";
             const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
@@ -3925,6 +3932,15 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
               </div>
             );
           })}
+          {listings.length > INITIAL_VISIBLE ? (
+            <button
+              type="button"
+              onClick={() => setExpanded((value) => !value)}
+              className="w-full px-4 py-2.5 text-center text-[11.5px] font-black text-[#3182f6] transition hover:bg-[#f5f9ff] dark:text-blue-300 dark:hover:bg-blue-950/20"
+            >
+              {expanded ? "접기 ↑" : `비교 매물 ${moreCount.toLocaleString("ko-KR")}개 더 보기 ↓`}
+            </button>
+          ) : null}
         </div>
       )}
     </div>

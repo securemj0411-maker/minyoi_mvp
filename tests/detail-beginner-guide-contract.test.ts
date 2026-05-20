@@ -56,6 +56,10 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /data-beginner-guide-market-evidence/);
   assert.match(modal, /data-beginner-guide-comparables/);
   assert.match(modal, /BeginnerGuideComparablePreview/);
+  assert.match(modal, /INITIAL_VISIBLE = 4/);
+  assert.match(modal, /EXPANDED_VISIBLE = 8/);
+  assert.match(modal, /visibleListings/);
+  assert.match(modal, /비교 매물 \$\{moreCount\.toLocaleString\("ko-KR"\)\}개 더 보기/);
   assert.match(modal, /MarketHistoryChart/);
   assert.match(modal, /data-beginner-guide-market-trend/);
   assert.match(modal, /data-beginner-guide-buy-cost/);
