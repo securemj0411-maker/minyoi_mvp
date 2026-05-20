@@ -42,10 +42,13 @@ type BetaFilter = "all" | "beta" | "non-beta";
 export default function MembersTable({ initialRows }: { initialRows: MemberRow[] }) {
   const [rows, setRows] = useState<MemberRow[]>(initialRows);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const [creditPendingIds, setCreditPendingIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [planFilter, setPlanFilter] = useState<PlanFilter>("all");
   const [betaFilter, setBetaFilter] = useState<BetaFilter>("all");
+  const [creditDrafts, setCreditDrafts] = useState<Record<string, string>>({});
 
   const filteredRows = rows.filter((row) => {
     if (search.trim()) {
@@ -101,8 +104,62 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
     }
   }
 
+  async function grantCredits(row: MemberRow) {
+    const rawAmount = creditDrafts[row.authUserId] ?? "";
+    const amount = Math.round(Number(rawAmount));
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("지급할 크레딧 개수를 1 이상으로 입력해주세요.");
+      setNotice(null);
+      return;
+    }
+    const target = row.nickname || row.email || row.authUserId;
+    const ok = window.confirm(`${target} 회원에게 크레딧 ${amount.toLocaleString("ko-KR")}개를 지급할까요?`);
+    if (!ok) return;
+
+    setError(null);
+    setNotice(null);
+    setCreditPendingIds((prev) => new Set(prev).add(row.authUserId));
+    try {
+      const res = await fetch("/api/admin/credits/grant", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          authUserId: row.authUserId,
+          amount,
+          note: "operator members table",
+        }),
+      });
+      const data = (await res.json()) as { ok?: boolean; amount?: number; balance?: number; error?: string; maxAmount?: number };
+      if (!res.ok || !data.ok) {
+        const maxHint = data.maxAmount ? ` (최대 ${data.maxAmount.toLocaleString("ko-KR")}개)` : "";
+        setError(`${data.error ?? "credit_grant_failed"}${maxHint}`);
+        return;
+      }
+      setRows((prev) => prev.map((r) =>
+        r.authUserId === row.authUserId
+          ? { ...r, balance: Number(data.balance ?? r.balance ?? 0), creditRowExists: true }
+          : r,
+      ));
+      setCreditDrafts((prev) => ({ ...prev, [row.authUserId]: "" }));
+      setNotice(`${target} 회원에게 크레딧 ${Number(data.amount ?? amount).toLocaleString("ko-KR")}개 지급 완료`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "network error");
+    } finally {
+      setCreditPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(row.authUserId);
+        return next;
+      });
+    }
+  }
+
   return (
     <>
+      {notice ? (
+        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+          {notice}
+        </div>
+      ) : null}
       {error ? (
         <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
           {error}
@@ -166,7 +223,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
               <th className="px-3 py-2">최근 결제</th>
               <th className="px-3 py-2">가입일</th>
               <th className="px-3 py-2">마지막 로그인</th>
-              <th className="px-3 py-2 text-right">크레딧</th>
+              <th className="px-3 py-2">크레딧</th>
               <th className="px-3 py-2">베타 체험단</th>
               <th className="px-3 py-2">provider</th>
             </tr>
@@ -176,6 +233,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
               const planActive = row.planStatus === "active";
               const badge = PLAN_BADGE[row.planKey] ?? PLAN_BADGE.free;
               const pending = pendingIds.has(row.authUserId);
+              const creditPending = creditPendingIds.has(row.authUserId);
               return (
                 <tr key={row.authUserId} className="border-b border-gray-100 hover:bg-amber-50/40 dark:border-zinc-900 dark:hover:bg-amber-950/20">
                   <td className="px-3 py-2 font-semibold">{row.nickname || "—"}</td>
@@ -207,7 +265,30 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                   </td>
                   <td className="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400">{fmt(row.createdAt)}</td>
                   <td className="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400">{fmt(row.lastSignInAt)}</td>
-                  <td className="px-3 py-2 text-right font-mono">{row.balance ?? "—"}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center justify-end gap-2">
+                      <span className="min-w-12 text-right font-mono">{row.balance ?? "—"}</span>
+                      <input
+                        type="number"
+                        min={1}
+                        step={1}
+                        inputMode="numeric"
+                        value={creditDrafts[row.authUserId] ?? ""}
+                        onChange={(e) => setCreditDrafts((prev) => ({ ...prev, [row.authUserId]: e.target.value }))}
+                        placeholder="개수"
+                        className="h-7 w-20 rounded-md border border-gray-300 bg-white px-2 text-right font-mono text-xs outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:ring-emerald-950"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void grantCredits(row)}
+                        disabled={creditPending}
+                        className="inline-flex h-7 items-center rounded-md bg-emerald-600 px-2.5 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                        title="운영자 수동 크레딧 지급"
+                      >
+                        {creditPending ? "..." : "지급"}
+                      </button>
+                    </div>
+                  </td>
                   <td className="px-3 py-2">
                     <button
                       type="button"
