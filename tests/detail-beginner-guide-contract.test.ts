@@ -336,3 +336,21 @@ test("pack reveal exposes listing photo count for beginner checks", () => {
   assert.match(packOpen, /shop_review_count,image_count,num_comment/);
   assert.match(packOpen, /imageCount: rawMeta\.image_count/);
 });
+
+test("detail modal fixed CTA and profit card honor dark mode", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const revealCard = modal.slice(
+    modal.indexOf("function RevealCardItem"),
+    modal.indexOf("function FixedBunjangFooter"),
+  );
+  const fixedFooter = modal.slice(
+    modal.indexOf("function FixedBunjangFooter"),
+    modal.indexOf("function PackRevealModal"),
+  );
+
+  assert.match(revealCard, /dark:from-emerald-950\/22 dark:to-zinc-950 dark:shadow-none/);
+  assert.match(revealCard, /dark:bg-zinc-950\/70 dark:text-emerald-200/);
+  assert.match(revealCard, /stroke="currentColor"/);
+  assert.match(fixedFooter, /dark:bg-\[linear-gradient\(180deg,rgba\(24,24,27,0\)_0%,#18181b_28%\)\]/);
+  assert.doesNotMatch(fixedFooter, /style=\{\{\s*background: "linear-gradient\(180deg, rgba\(235,230,220,0\)/);
+});

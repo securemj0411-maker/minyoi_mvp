@@ -5166,6 +5166,15 @@ function RevealCardItem({
       : verdictGuidance.verdict === "fair"
         ? { label: "협상 권장", cls: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200" }
         : { label: "협상 필수", cls: "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200" };
+  const profitCardClass = isMarketInvalidated
+    ? "border-rose-200 bg-gradient-to-br from-rose-50 to-rose-100 shadow-[0_10px_28px_rgba(45,51,42,0.08)] dark:border-rose-900/50 dark:from-rose-950/30 dark:to-zinc-950 dark:shadow-none"
+    : "border-emerald-200 bg-gradient-to-br from-[#f3faf5] to-[#e6f4ec] shadow-[0_10px_28px_rgba(45,51,42,0.08)] dark:border-emerald-900/50 dark:from-emerald-950/22 dark:to-zinc-950 dark:shadow-none";
+  const profitToneClass = isMarketInvalidated ? "text-rose-800 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300";
+  const profitChipClass = isMarketInvalidated
+    ? "bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-200"
+    : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200";
+  const profitMutedClass = "text-[#6f7c6d] dark:text-zinc-400";
+  const profitStrongClass = "text-[#344136] dark:text-zinc-100";
   // Wave 2026-05-19 v2: grossGap, dailyProfit 표시 제거 (일반인 헷갈림 / 노이즈 큼).
   useEffect(() => {
     const id = window.setTimeout(() => setShown(true), delay);
@@ -5248,63 +5257,55 @@ function RevealCardItem({
                 <PurchaseDecisionHeader card={card} />
               {/* Wave 395.1: PDF처럼 "예상 순익 + 계산식/비교매물 보기"만 독립 카드로 분리. */}
               <div
-                className="relative overflow-hidden"
-                style={{
-                  marginTop: 14,
-                  background: isMarketInvalidated
-                    ? "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)"
-                    : "linear-gradient(135deg, #f3faf5 0%, #e6f4ec 100%)",
-                  border: `1px solid ${isMarketInvalidated ? "#fecdd3" : "#c8e6d4"}`,
-                  borderRadius: 18,
-                  padding: "14px 14px 12px",
-                  boxShadow: "0 10px 28px rgba(45, 51, 42, 0.08)",
-                }}
+                className={`relative mt-3.5 overflow-hidden rounded-[18px] border px-3.5 pb-3 pt-3.5 ${profitCardClass}`}
               >
-                <div style={{ position: "absolute", right: -12, top: -12, opacity: 0.05, fontSize: 76, fontWeight: 900, color: isMarketInvalidated ? "#be123c" : "#059669", lineHeight: 1, pointerEvents: "none" }}>₩</div>
+                <div className={`pointer-events-none absolute -right-3 -top-3 text-[76px] font-black leading-none opacity-[0.05] ${profitToneClass}`}>
+                  ₩
+                </div>
 
                 {/* Eyebrow — left "💎 예상 순익" + right "{age} · 비교 N개" */}
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: isMarketInvalidated ? "#9f1239" : "#047857", textTransform: "uppercase", letterSpacing: "0.16em", whiteSpace: "nowrap" }}>💎 예상 순익</span>
-                  <span style={{ fontSize: 11, color: "#6f7c6d", fontWeight: 600, whiteSpace: "nowrap" }}>
+                <div className="mb-2 flex items-baseline justify-between gap-3">
+                  <span className={`whitespace-nowrap text-[10px] font-extrabold uppercase tracking-[0.16em] ${profitToneClass}`}>💎 예상 순익</span>
+                  <span className={`whitespace-nowrap text-[11px] font-semibold ${profitMutedClass}`}>
                     {uploadAgoLabel(card.firstSeenAt) ?? freshLabel(card.freshSeconds)}
                     {(card.marketBasis?.sampleCount ?? 0) > 0 ? ` · 비교 ${card.marketBasis?.sampleCount}개` : ""}
                   </span>
                 </div>
 
                 {/* 큰 차익 */}
-                <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 22, fontWeight: 900, color: isMarketInvalidated ? "#9f1239" : "#047857", letterSpacing: -0.5, lineHeight: 1.12, marginBottom: 7 }}>
+                <div className={`mb-2 text-[22px] font-black leading-[1.12] tracking-[-0.02em] tabular-nums ${profitToneClass}`}>
                   {displayProfitRange(card)}
                 </div>
 
                 {/* Chips — handoff Chip tone em (#e6f4ec / #047857) */}
-                <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                <div className="flex flex-wrap items-center gap-1.5">
                   {netPct != null ? (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#e6f4ec", color: "#047857", borderRadius: 999, padding: "3px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>
+                    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${profitChipClass}`}>
                       {netPct >= 0 ? "+" : ""}{netPct}%
                     </span>
                   ) : null}
                   {verdictTier ? (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#e6f4ec", color: "#047857", borderRadius: 999, padding: "3px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>
+                    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${profitChipClass}`}>
                       {verdictTier.label}
                     </span>
                   ) : null}
                   {isMarketInvalidated ? (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#ffe4e6", color: "#9f1239", borderRadius: 999, padding: "3px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-bold text-rose-800 dark:bg-rose-950/50 dark:text-rose-200">
                       판매완료 처리
                     </span>
                   ) : null}
                 </div>
 
                 {/* 매입 · 시세 line */}
-                <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 11, color: "#6f7c6d", fontWeight: 600, marginTop: 8, whiteSpace: "nowrap" }}>
-                  매입 <span style={{ color: "#344136", fontWeight: 800 }}>{krw(card.price)}</span>
+                <div className={`mt-2 whitespace-nowrap text-[11px] font-semibold tabular-nums ${profitMutedClass}`}>
+                  매입 <span className={`font-extrabold ${profitStrongClass}`}>{krw(card.price)}</span>
                   {card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0 ? (
-                    <> · 시세 <span style={{ color: "#344136", fontWeight: 800 }}>{krw(card.marketBasis.medianPrice)}</span></>
+                    <> · 시세 <span className={`font-extrabold ${profitStrongClass}`}>{krw(card.marketBasis.medianPrice)}</span></>
                   ) : (
-                    <> · <span style={{ color: "#92400e", background: "#fef3c7", padding: "2px 6px", borderRadius: 999, fontSize: 10 }}>시세 확인중</span></>
+                    <> · <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">시세 확인중</span></>
                   )}
                   {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
-                    <> · <span style={{ color: "#92400e", background: "#fef3c7", padding: "2px 6px", borderRadius: 999, fontSize: 10 }}>기본 옵션 가정</span></>
+                    <> · <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">기본 옵션 가정</span></>
                   ) : null}
                 </div>
 
@@ -5312,30 +5313,18 @@ function RevealCardItem({
                 <button
                   type="button"
                   onClick={showProfitCalculationBasis}
-                  style={{
-                    marginTop: 14,
-                    width: "100%",
-                    background: "#fff",
-                    border: "1px solid #c8e6d4",
-                    color: "#047857",
-                    fontSize: 13,
-                    fontWeight: 800,
-                    padding: "11px 12px",
-                    borderRadius: 12,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                  }}
+                  className={`mt-3.5 flex w-full cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border px-3 py-2.5 text-[13px] font-extrabold transition active:scale-[0.99] ${
+                    isMarketInvalidated
+                      ? "border-rose-200 bg-white text-rose-800 hover:bg-rose-50 dark:border-rose-900/60 dark:bg-zinc-950/70 dark:text-rose-200 dark:hover:bg-rose-950/20"
+                      : "border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-zinc-950/70 dark:text-emerald-200 dark:hover:bg-emerald-950/20"
+                  }`}
                 >
-                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="11" cy="11" r="7" />
                     <path d="M21 21l-4.3-4.3" />
                   </svg>
                   <span>수익 계산 근거 보기</span>
-                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: "rotate(90deg)", transition: "transform .2s" }}>
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rotate-90 transition">
                     <path d="M9 18l6-6-6-6" />
                   </svg>
                 </button>
@@ -5712,11 +5701,7 @@ function FixedBunjangFooter({
   // Wave 394.7.u (handoff StickyCTA 1:1): emerald pill + 검정 원 N + 검정 원 ⚡ + bg gradient.
   return (
     <div
-      className="shrink-0"
-      style={{
-        background: "linear-gradient(180deg, rgba(235,230,220,0) 0%, rgba(235,230,220,0.95) 28%)",
-        padding: "14px 14px 28px",
-      }}
+      className="shrink-0 bg-[linear-gradient(180deg,rgba(235,230,220,0)_0%,rgba(235,230,220,0.95)_28%)] px-[14px] pb-[calc(env(safe-area-inset-bottom)+14px)] pt-[14px] dark:bg-[linear-gradient(180deg,rgba(24,24,27,0)_0%,#18181b_28%)]"
     >
       <button
         type="button"
