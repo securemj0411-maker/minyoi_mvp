@@ -2712,20 +2712,22 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
           {open ? "✕" : "?"}
         </button>
       </div>
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        <div className="rounded-md bg-zinc-50 px-3 py-2.5 dark:bg-zinc-900/60">
+      {/* Wave 394.7.m (Claude Design reference SellWhere): 2-col card + 당근 추천 badge. */}
+      <div className="mt-2 grid grid-cols-2 gap-2.5">
+        <div className="rounded-xl border border-zinc-200 bg-white px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900/60">
           <div className="flex items-center gap-1.5">
-            <BunjangLogo className="h-4 w-4 rounded-[4px]" />
-            <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">번개장터 판매</span>
+            <span className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-[#0b1413]">
+              <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+            </span>
+            <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">번개장터</span>
           </div>
-          <div className="mt-1 text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-300">
+          <div className="mt-2 text-lg font-black tabular-nums tracking-tight text-emerald-700 dark:text-emerald-300">
             +{krw(bunjangProfit)}
           </div>
           <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
             수수료 3.5% 차감
           </div>
-          {/* Wave 394.2 (외부 review #13): 채널 리스크 chip — 단순 순익 비교가 당근 무조건 좋아 보이는 문제. */}
-          <div className="mt-1.5 flex flex-wrap gap-1">
+          <div className="mt-2 flex flex-wrap gap-1">
             <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
               전국 거래
             </span>
@@ -2734,19 +2736,24 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
             </span>
           </div>
         </div>
-        <div className="rounded-md bg-orange-50 px-3 py-2.5 dark:bg-orange-950/30">
-          <div className="flex items-center gap-1.5">
-            <DaangnLogo className="h-4 w-4" />
-            <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">당근 직거래</span>
+        {/* 당근 — 추천 (당근 차익 > 번개) */}
+        <div className="relative rounded-xl border-2 border-amber-300 bg-gradient-to-br from-orange-50 to-amber-50 px-3 py-3 dark:border-amber-700 dark:from-orange-950/30 dark:to-amber-950/20">
+          <div className="absolute -top-2.5 right-2.5 rounded-full bg-amber-700 px-2 py-0.5 text-[9px] font-black tracking-wide text-amber-50">
+            +{krw(bonusFromDaangn)} 더
           </div>
-          <div className="mt-1 text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-300">
+          <div className="flex items-center gap-1.5">
+            <span className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-[#ff6f0f]">
+              <DaangnLogo className="h-3.5 w-3.5" />
+            </span>
+            <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">당근 직거래</span>
+          </div>
+          <div className="mt-2 text-lg font-black tabular-nums tracking-tight text-amber-800 dark:text-amber-300">
             +{krw(daangnProfit)}
           </div>
-          <div className="text-[10px] font-medium text-orange-700 dark:text-orange-300">
-            +{krw(bonusFromDaangn)} 더 (수수료 0)
+          <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+            수수료 0원
           </div>
-          {/* Wave 394.2 (외부 review #13): 당근 리스크 chip — "당근 = 무조건 더 좋다"는 단순화 정정. */}
-          <div className="mt-1.5 flex flex-wrap gap-1">
+          <div className="mt-2 flex flex-wrap gap-1">
             <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
               지역 제한
             </span>
