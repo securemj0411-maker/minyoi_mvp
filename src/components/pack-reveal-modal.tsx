@@ -3176,12 +3176,11 @@ function RevealCardItem({
                 <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
               </div>
               {dealExpanded ? <DealEvidencePanel card={card} /> : null}
-              {/* Wave 394.7.l (Claude Design reference): 차익 헤드라인 = ProfitHero 카드 톤.
-                  gradient bg + border + rounded-2xl + ₩ watermark + 큰 폰트. */}
-              {/* Wave 394.7.l.fix3: reference inline style 정확 매칭 — #c8e6d4 border + #f3faf5→#e6f4ec gradient + #059669 watermark. */}
+              {/* Wave 394.7.q (Claude Design handoff 정확 1:1): ProfitHero JSX 그대로 + 데이터 매핑. */}
               <div
-                className="relative mt-3 overflow-hidden"
+                className="relative overflow-hidden"
                 style={{
+                  marginTop: 14,
                   background: isMarketInvalidated
                     ? "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)"
                     : "linear-gradient(135deg, #f3faf5 0%, #e6f4ec 100%)",
@@ -3190,115 +3189,85 @@ function RevealCardItem({
                   padding: "16px 16px 14px",
                 }}
               >
-                {/* ₩ watermark — reference 정확 톤 */}
-                <div
-                  className="pointer-events-none absolute select-none font-black leading-none"
-                  style={{
-                    right: -16,
-                    top: -16,
-                    opacity: 0.05,
-                    fontSize: 100,
-                    color: isMarketInvalidated ? "#be123c" : "#059669",
-                  }}
-                >₩</div>
+                <div style={{ position: "absolute", right: -16, top: -16, opacity: 0.05, fontSize: 100, fontWeight: 900, color: isMarketInvalidated ? "#be123c" : "#059669", lineHeight: 1, pointerEvents: "none" }}>₩</div>
 
-                <div className={`relative flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.16em] ${
-                  isMarketInvalidated ? "text-rose-800 dark:text-rose-300" : "text-emerald-800 dark:text-emerald-300"
-                }`}>
-                  <WalletIcon className="h-3 w-3" />
-                  💎 예상 순익
-                </div>
-                <div className="relative mt-1 flex flex-wrap items-baseline gap-2">
-                  <span className={`text-3xl font-black leading-none tabular-nums tracking-tight ${
-                    isMarketInvalidated
-                      ? "text-rose-700 dark:text-rose-300"
-                      : "text-emerald-800 dark:text-emerald-200"
-                  }`}>
-                    {displayProfitRange(card)}
+                {/* Eyebrow — left "💎 예상 순익" + right "{age} · 비교 N개" */}
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: isMarketInvalidated ? "#9f1239" : "#047857", textTransform: "uppercase", letterSpacing: "0.16em", whiteSpace: "nowrap" }}>💎 예상 순익</span>
+                  <span style={{ fontSize: 11, color: "#6f7c6d", fontWeight: 600, whiteSpace: "nowrap" }}>
+                    {uploadAgoLabel(card.firstSeenAt) ?? freshLabel(card.freshSeconds)}
+                    {(card.marketBasis?.sampleCount ?? 0) > 0 ? ` · 비교 ${card.marketBasis?.sampleCount}개` : ""}
                   </span>
+                </div>
+
+                {/* 큰 차익 */}
+                <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 28, fontWeight: 900, color: isMarketInvalidated ? "#9f1239" : "#047857", letterSpacing: -1, lineHeight: 1.1, marginBottom: 8 }}>
+                  {displayProfitRange(card)}
+                </div>
+
+                {/* Chips — handoff Chip tone em (#e6f4ec / #047857) */}
+                <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                   {netPct != null ? (
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold tabular-nums ${
-                      isMarketInvalidated
-                        ? "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
-                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
-                    }`}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#e6f4ec", color: "#047857", borderRadius: 999, padding: "3px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>
                       {netPct >= 0 ? "+" : ""}{netPct}%
                     </span>
                   ) : null}
-                  {/* Wave 394.6.a (외부 review #1): 3초 결정 chip — "매입 OK / 협상 권장 / 협상 필수". */}
                   {verdictTier ? (
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${verdictTier.cls}`}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#e6f4ec", color: "#047857", borderRadius: 999, padding: "3px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>
                       {verdictTier.label}
                     </span>
                   ) : null}
                   {isMarketInvalidated ? (
-                    <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-900 dark:bg-rose-900/40 dark:text-rose-100">
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#ffe4e6", color: "#9f1239", borderRadius: 999, padding: "3px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>
                       판매완료 처리
                     </span>
                   ) : null}
                 </div>
-                {/* Wave 2026-05-19 v2 (사용자 피드백): "일수익 표본 부족 · 참고용" 거의 모든 매물에 떠서 가치 없음 → 제거.
-                    회수 속도 정보는 UpperFold 회수 속도 타일에서 보임. */}
-                <div className="relative mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium tabular-nums text-zinc-600 dark:text-zinc-400">
-                  <span>매입 <span className="font-bold text-zinc-900 dark:text-zinc-100">{krw(card.price)}</span></span>
-                  {/* Wave 246 (2026-05-19): explicit > 0 guard — 0 미스리딩 차단.
-                     없으면 "시세 확인중" 보여서 사용자가 추정 데이터임을 인지. */}
+
+                {/* 매입 · 시세 line */}
+                <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 11, color: "#6f7c6d", fontWeight: 600, marginTop: 8, whiteSpace: "nowrap" }}>
+                  매입 <span style={{ color: "#344136", fontWeight: 800 }}>{krw(card.price)}</span>
                   {card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0 ? (
-                    <>
-                      <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                      <span>시세 <span className="font-bold text-zinc-900 dark:text-zinc-100">{krw(card.marketBasis.medianPrice)}</span></span>
-                      {sourceBadge ? (
-                        sourceBadge.tone === "reference"
-                          ? <DanawaSourceBadge label={sourceBadge.label} />
-                          : <BunjangSourceBadge label={sourceBadge.label} />
-                      ) : null}
-                    </>
+                    <> · 시세 <span style={{ color: "#344136", fontWeight: 800 }}>{krw(card.marketBasis.medianPrice)}</span></>
                   ) : (
-                    <>
-                      <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" title="시세 표본 부족 또는 갱신중 — 차익은 추정치">
-                        시세 확인중
-                      </span>
-                    </>
+                    <> · <span style={{ color: "#92400e", background: "#fef3c7", padding: "2px 6px", borderRadius: 999, fontSize: 10 }}>시세 확인중</span></>
                   )}
-                  <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                  {/* 2026-05-20 P0-Upload: 셀러 등록 시점 우선. 검증 시점은 title hover로 강등. */}
-                  <span className="text-zinc-500" title={uploadAgoLabel(card.firstSeenAt) ? `데이터 ${freshLabel(card.freshSeconds)}` : undefined}>
-                    {uploadAgoLabel(card.firstSeenAt) ?? freshLabel(card.freshSeconds)}
-                  </span>
                   {card.optionBaseAssumed && card.optionBaseAssumed.length > 0 ? (
-                    <span
-                      title={`옵션 명시 안 됨 → SKU 기본 옵션 가정`}
-                      className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
-                    >
-                      기본 옵션 가정
-                    </span>
+                    <> · <span style={{ color: "#92400e", background: "#fef3c7", padding: "2px 6px", borderRadius: 999, fontSize: 10 }}>기본 옵션 가정</span></>
                   ) : null}
                 </div>
 
-                {/* Wave 394.5.a.fix (사용자 짚음 — "토글 어디있어?"): 메타 line 안 작은 chip 묻힘.
-                    별도 row + emerald 강조로 옮김. 일반인 친화 디폴트는 유지 (simple), 토글이 또렷이 보임. */}
-                <div className="mt-2 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={toggleMode}
-                    className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100 hover:shadow dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
-                    title={mode === "simple" ? "더 자세한 정보 보기 (계산식 + 비교 매물 12개 + 신뢰도 분해)" : "간단하게 보기"}
-                  >
-                    {mode === "simple" ? (
-                      <>
-                        <span aria-hidden="true">🔍</span>
-                        <span>상세 보기</span>
-                        <span className="font-medium text-emerald-600/70 dark:text-emerald-400/70">— 계산식 · 비교 12개</span>
-                      </>
-                    ) : (
-                      <>
-                        <span aria-hidden="true">←</span>
-                        <span>간단 보기</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                {/* 큰 흰 버튼 — "계산식 · 비교 매물 N개 보기" — handoff 핵심. mode 토글. */}
+                <button
+                  type="button"
+                  onClick={toggleMode}
+                  style={{
+                    marginTop: 14,
+                    width: "100%",
+                    background: "#fff",
+                    border: "1px solid #c8e6d4",
+                    color: "#047857",
+                    fontSize: 13,
+                    fontWeight: 800,
+                    padding: "11px 12px",
+                    borderRadius: 12,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M21 21l-4.3-4.3" />
+                  </svg>
+                  <span>{mode === "detailed" ? "간단 보기" : `계산식 · 비교 매물 ${card.marketBasis?.sampleCount ?? 0}개 보기`}</span>
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: mode === "detailed" ? "rotate(90deg)" : "none", transition: "transform .2s" }}>
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
 
                 {/* Wave 394.6.b.fix2 (사용자 정확 지적): 비교 매물 = "이 시세 진짜야?" 직빵 증명.
                     차익 헤드라인 직후 위치 — 외부 review #7 "3. 데이터 믿을 만한가" 핵심 신호.
