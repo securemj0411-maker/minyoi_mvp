@@ -40,3 +40,17 @@
 3. source-aware URL/link builder를 추가하고 기존 번장 하드코딩 지점을 교체한다.
 4. DB migration 후보를 검토한다: `source_external_id`, source별 unique index, source-aware indexes.
 5. `/me`, 상세, admin pool에서 출처 뱃지/필터를 노출한다.
+
+## 2026-05-21 현재 상태 확인
+
+- `vercel.json`에는 아직 중고나라 전용 cron route가 없다.
+- `mvp_raw_listings`에서 `source='joongna'` row는 0건이다.
+- `mvp_collect_runs`에서도 중고나라 관련 cron/collect run은 0건이다.
+- `mvp_source_health`에도 `source='joongna'` row는 아직 없다.
+- no-write probe는 성공했다:
+  - robots.txt 200
+  - `sitemap-recent-product-index.xml.gz` 200
+  - recent product sitemap 1개에서 상품 URL 10개 샘플 확인
+  - 차단/429/CAPTCHA 신호 없음
+- no-write 상세 HTML 샘플도 200으로 읽혔고, Next payload에서 `productTitle`, `productPrice`, `categoryName`, `productStatus`, `parcelFeeYn`를 추출할 수 있었다.
+- 결론: 중고나라는 아직 cadence를 타고 DB에 들어오는 상태가 아니다. 현재는 안전장치와 no-write probe 단계이며, 다음 구현은 shadow ingest route + adapter + source-aware upsert다.
