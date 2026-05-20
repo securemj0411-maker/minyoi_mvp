@@ -3178,17 +3178,17 @@ function RevealCardItem({
               {dealExpanded ? <DealEvidencePanel card={card} /> : null}
               {/* Wave 394.7.l (Claude Design reference): 차익 헤드라인 = ProfitHero 카드 톤.
                   gradient bg + border + rounded-2xl + ₩ watermark + 큰 폰트. */}
-              {/* Wave 394.7.l.fix: 사용자 안 보임 → 더 진하게. bg-emerald-100, border-emerald-300, watermark 15%. */}
-              <div className={`relative mt-3 overflow-hidden rounded-2xl border-2 px-4 py-4 shadow-sm ${
+              {/* Wave 394.7.l.fix2: reference PDF 톤 — 매우 옅은 emerald tint (거의 cream). border 1px + bg-emerald-50 옅음. */}
+              <div className={`relative mt-3 overflow-hidden rounded-2xl border px-4 py-4 ${
                 isMarketInvalidated
-                  ? "border-rose-300 bg-gradient-to-br from-rose-100 to-rose-50 dark:border-rose-800 dark:from-rose-950/50 dark:to-rose-950/20"
-                  : "border-emerald-300 bg-gradient-to-br from-emerald-100 to-emerald-50 dark:border-emerald-800 dark:from-emerald-950/50 dark:to-emerald-950/20"
+                  ? "border-rose-100 bg-gradient-to-br from-rose-50/70 to-rose-50/20 dark:border-rose-900/30 dark:from-rose-950/30 dark:to-rose-950/10"
+                  : "border-emerald-100 bg-gradient-to-br from-emerald-50/70 to-emerald-50/20 dark:border-emerald-900/30 dark:from-emerald-950/30 dark:to-emerald-950/10"
               }`}>
-                {/* ₩ watermark — 우상단 큰 emerald (보임) */}
+                {/* ₩ watermark — 우상단 옅은 emerald */}
                 <div className={`pointer-events-none absolute -right-2 -top-4 select-none text-8xl font-black leading-none ${
                   isMarketInvalidated
-                    ? "text-rose-600/15 dark:text-rose-400/20"
-                    : "text-emerald-600/15 dark:text-emerald-400/20"
+                    ? "text-rose-700/[0.06] dark:text-rose-400/10"
+                    : "text-emerald-700/[0.07] dark:text-emerald-400/10"
                 }`}>₩</div>
 
                 <div className={`relative flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.16em] ${
