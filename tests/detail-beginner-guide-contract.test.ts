@@ -37,6 +37,15 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.match(modal, /BEGINNER_GUIDE_HANDLED_PIDS_STORAGE_KEY/);
   assert.match(modal, /BEGINNER_GUIDE_SKIP_COUNT_STORAGE_KEY/);
   assert.match(modal, /shouldAutoShowBeginnerGuide/);
+
+  const order = modal.slice(
+    modal.indexOf("function beginnerGuideSteps"),
+    modal.indexOf("function displayProfitRange"),
+  );
+  assert.ok(order.indexOf("marketTrendGuideStep(card)") < order.indexOf("velocityGuideStep(card)"));
+  assert.ok(order.indexOf("velocityGuideStep(card)") < order.indexOf("buyCostGuideStep(card)"));
+  assert.match(modal, /eyebrow: "4\. 판매 속도"/);
+  assert.match(modal, /eyebrow: "5\. 매입가"/);
 });
 
 test("detail modal uses the mobile detail shell on desktop", () => {

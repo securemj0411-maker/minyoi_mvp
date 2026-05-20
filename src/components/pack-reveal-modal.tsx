@@ -459,7 +459,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
     const label = velocityHoursLabel(velocity.medianHoursToSold);
     const dailySold = dailySoldCountLabel(velocity.sold7dCount);
     return {
-      eyebrow: "8. 판매 속도",
+      eyebrow: "4. 판매 속도",
       title: `되팔면 보통 ${label} 안에 팔린 기록이 있어요`,
       metric: label,
       metricLabel: `동일 모델 하루 평균 판매량 ${dailySold}`,
@@ -470,7 +470,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   return {
-    eyebrow: "8. 판매 속도",
+    eyebrow: "4. 판매 속도",
     title: analysisPending ? "판매 속도를 불러오는 중이에요" : "판매 속도는 더 확인이 필요해요",
     metric: marketSoldSample ? `${marketSoldSample.toLocaleString("ko-KR")}건` : "확인 중",
     metricLabel: marketSoldSample ? "비슷한 거래 기록" : "판매 기록 확인 중",
@@ -494,7 +494,7 @@ function buyCostGuideStep(card: RevealCard): BeginnerGuideStep {
       : `상품가격은 ${krw(card.price)}예요. 여기에 내가 낼 배송비 ${snapshot.shippingValueLabel}를 더해서 실제 매입가는 ${snapshot.buyerCostLabel}로 봅니다.`;
 
   return {
-    eyebrow: "4. 매입가",
+    eyebrow: "5. 매입가",
     title: "상품가에 배송비를 더해요",
     metric: snapshot.buyerCostLabel,
     metricLabel: "상품가 + 내가 낼 배송비",
@@ -510,7 +510,7 @@ function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
   const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} (${krw(snapshot.sellingFee)})`;
 
   return {
-    eyebrow: "5. 되팔 때 비용",
+    eyebrow: "6. 되팔 때 비용",
     title: "되팔 때 드는 비용을 빼요",
     metric: displayProfitRange(card),
     metricLabel: "수수료·배송비까지 뺀 예상 차익",
@@ -522,7 +522,7 @@ function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
 
 function safePaymentGuideStep(): BeginnerGuideStep {
   return {
-    eyebrow: "6. 안전결제",
+    eyebrow: "7. 안전결제",
     title: "앱 안에서 결제해야 가장 안전해요",
     metric: "구매확정 전 확인",
     metricLabel: "문제 있으면 구매확정 누르지 않기",
@@ -540,7 +540,7 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   const betterChannel = daangnProfit > bunjangProfit ? "당근 직거래가 더 남을 수 있지만" : "번개장터 재판매는";
 
   return {
-    eyebrow: "7. 되팔 곳",
+    eyebrow: "8. 되팔 곳",
     title: "팔 곳에 따라 남는 돈이 달라요",
     metric: displayProfitRange(card),
     metricLabel: "번개장터 기준 예상 차익",
@@ -567,11 +567,11 @@ function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
     sellerTrustGuideStep(card),
     marketCompareGuideStep(card),
     marketTrendGuideStep(card),
+    velocityGuideStep(card),
     buyCostGuideStep(card),
     resellCostGuideStep(card),
     safePaymentGuideStep(),
     channelGuideStep(card),
-    velocityGuideStep(card),
     summaryGuideStep(),
   ];
 }
