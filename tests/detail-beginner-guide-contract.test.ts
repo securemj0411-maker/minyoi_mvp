@@ -76,6 +76,7 @@ test("detail modal uses the mobile detail shell on desktop", () => {
     modal.indexOf("function RevealProductImage"),
     modal.indexOf("function SkuListingFlowMini"),
   );
+  const revealProductImageInline = revealProductImage.slice(revealProductImage.indexOf("  return ("));
   const footer = modal.slice(
     modal.indexOf("function ModalActionFooter"),
     modal.indexOf("function FixedBunjangFooter"),
@@ -90,10 +91,12 @@ test("detail modal uses the mobile detail shell on desktop", () => {
   assert.doesNotMatch(skeleton, /lg:grid-cols-2|sm:grid-cols|sm:h-\[|sm:w-\[|sm:flex|sm:block/);
   assert.doesNotMatch(revealCard, /lg:grid-cols-2|sm:grid-cols|sm:h-\[|sm:w-\[|hidden sm:block|sm:hidden/);
   assert.doesNotMatch(footer, /hidden sm:block|sm:hidden|sm:p-3/);
-  assert.doesNotMatch(revealProductImage, /blur-\[2px\]|scale-\[1\.03\]|aria-hidden="true"/);
-  assert.match(revealProductImage, /px-3 pb-7 pt-3/);
-  assert.match(revealProductImage, /bottom-5 left-3/);
-  assert.match(revealProductImage, /bottom-5 right-3/);
+  assert.doesNotMatch(revealProductImageInline, /blur-\[2px\]|scale-\[1\.03\]|aria-hidden="true"/);
+  assert.match(revealProductImageInline, /object-cover object-center/);
+  assert.doesNotMatch(revealProductImageInline, /object-contain object-center/);
+  assert.match(revealProductImageInline, /from-black\/18 to-transparent/);
+  assert.match(revealProductImageInline, /bottom-4 left-3/);
+  assert.match(revealProductImageInline, /bottom-4 right-3/);
 });
 
 test("beginner guide uses existing evidence without guaranteed-profit copy", () => {
