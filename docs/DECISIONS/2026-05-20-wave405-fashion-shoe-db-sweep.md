@@ -10,7 +10,7 @@
 - DB-clean rows that current catalog rejects: 0
 - pool exposed with catalog/parser drift: 0
 - flagged comparable groups: 25
-- null SKU rows that would match current catalog now: 41
+- null SKU rows that would match current catalog now: 80
 
 ## Deferred
 - No DB mutation in this wave. If confirmed, next step is a no-write reclassification plan for stale fashion `sku_id` rows, then a capped apply/backfill.

@@ -423,11 +423,14 @@ function categoryForBeginnerGuide(card: RevealCard) {
 }
 
 function batteryCheckAsk(category: string | null) {
-  if (category === "earphone") return "배터리 지속 시간, 페어링 화면, 충전 케이스 상태를 사진이나 영상으로 받아보세요.";
+  // Wave 394.7.z (사용자 짚음): 무지성 "배터리 효율 캡처" 카피 fix.
+  // 에어팟맥스/이어폰류는 iPhone 같은 "최대 용량 %" 화면이 없음.
+  // 셀러에게 실사용 시간 직접 물어보는 게 정직한 가이드. 충전 케이스도 모델 따라 X (over-ear).
+  if (category === "earphone") return "이어폰/헤드폰은 배터리 효율 표시가 따로 없어요. 한 번 완충 후 실제 몇 시간 들었는지 셀러에게 물어보세요. 페어링 화면, (모델에 충전 케이스가 있다면) 케이스 상태도 함께.";
   if (category === "smartwatch") return "배터리 성능 화면, 페어링 해제 화면, 충전 상태를 같이 받아보세요.";
   if (category === "laptop") return "배터리 사이클/성능 상태와 충전기 포함 여부를 물어보세요.";
   if (category === "drone" || category === "camera") return "배터리 개수, 충전 상태, 사이클 정보를 물어보세요.";
-  return "배터리 효율 캡처나 설정 화면을 구매 전에 물어보세요.";
+  return "배터리 효율 화면이 있는 기기면 캡처를 받고, 없으면 실제 사용 시간을 셀러에게 직접 물어보세요.";
 }
 
 function authenticityCheckAsk(card: RevealCard, category: string | null) {
@@ -488,10 +491,14 @@ function beginnerPurchaseChecks(card: RevealCard): BeginnerPurchaseCheck[] {
   }
 
   if (category && BEGINNER_BATTERY_CHECK_CATEGORIES.has(category) && !BEGINNER_BATTERY_DISCLOSED_RE.test(description)) {
+    // Wave 394.7.z: 카테고리별 body 카피 정직화 — 이어폰/헤드폰엔 "사용 시간이나 효율" 표시가 없는 게 일반적.
+    const batteryBody = category === "earphone"
+      ? "이어폰/헤드폰은 배터리가 닳으면 사용 시간이 줄지만 따로 효율 표시가 안 떠요. 셀러가 실제로 얼마나 들었는지 확인하는 게 핵심."
+      : "배터리 제품은 겉상태가 좋아도 사용 시간이나 효율에 따라 되팔 때 가격이 달라질 수 있어요.";
     checks.push({
       id: "battery",
       title: "배터리 상태를 물어보세요",
-      body: "배터리 제품은 겉상태가 좋아도 사용 시간이나 효율에 따라 되팔 때 가격이 달라질 수 있어요.",
+      body: batteryBody,
       ask: batteryCheckAsk(category),
       label: "배터리",
       tone: "blue",
@@ -549,7 +556,7 @@ function purchaseCheckGuideStep(card: RevealCard): BeginnerGuideStep {
   const checks = beginnerPurchaseChecks(card);
   const first = checks[0];
   return {
-    eyebrow: "2. 구매 전 체크",
+    eyebrow: "8. 구매 전 체크",
     title: "구매 전에 이것만 물어보면 돼요",
     metric: `${checks.length.toLocaleString("ko-KR")}개 체크`,
     metricLabel: first ? first.title : "구매 전 질문",
@@ -585,7 +592,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
         : `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준과 거의 비슷한 가격이에요.`;
 
     return {
-      eyebrow: "3. 비교 매물",
+      eyebrow: "2. 비교 매물",
       title,
       metric,
       metricLabel: `비슷한 상태 시세 ${krw(median)} · 이 매물 ${krw(card.price)}`,
@@ -598,7 +605,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   return {
-    eyebrow: "3. 비교 매물",
+    eyebrow: "2. 비교 매물",
     title: "시세 표본을 더 모으는 중이에요",
     metric: "표본 부족",
     metricLabel: market?.label ?? card.skuName,
@@ -613,7 +620,7 @@ function marketTrendGuideStep(card: RevealCard): BeginnerGuideStep {
   const condition = marketConditionLabel(card);
 
   return {
-    eyebrow: "4. 시세 흐름",
+    eyebrow: "3. 시세 흐름",
     title: "그 다음 시세가 흔들렸는지 봐요",
     metric: median ? krw(median) : "수집 중",
     metricLabel: `${condition} 기준 시세`,
@@ -639,7 +646,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
     const label = velocityHoursLabel(velocity.medianHoursToSold);
     const dailySold = dailySoldCountLabel(velocity.sold7dCount);
     return {
-      eyebrow: "5. 판매 속도",
+      eyebrow: "4. 판매 속도",
       title: `되팔면 보통 ${label} 안에 팔리는 편이에요`,
       metric: label,
       metricLabel: `동일 모델 하루 평균 판매량 ${dailySold}`,
@@ -650,7 +657,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   return {
-    eyebrow: "5. 판매 속도",
+    eyebrow: "4. 판매 속도",
     title: analysisPending ? "판매 속도를 불러오는 중이에요" : "판매 속도는 더 확인이 필요해요",
     metric: marketSoldSample ? `${marketSoldSample.toLocaleString("ko-KR")}건` : "확인 중",
     metricLabel: marketSoldSample ? "비슷한 거래 기록" : "판매 기록 확인 중",
@@ -674,7 +681,7 @@ function buyCostGuideStep(card: RevealCard): BeginnerGuideStep {
       : `상품가격은 ${krw(card.price)}예요. 여기에 내가 낼 배송비 ${snapshot.shippingValueLabel}를 더해서 실제 매입가는 ${snapshot.buyerCostLabel}로 봅니다.`;
 
   return {
-    eyebrow: "6. 매입가",
+    eyebrow: "5. 매입가",
     title: "상품가에 배송비를 더해요",
     metric: snapshot.buyerCostLabel,
     metricLabel: "상품가 + 내가 낼 배송비",
@@ -690,7 +697,7 @@ function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
   const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} (${krw(snapshot.sellingFee)})`;
 
   return {
-    eyebrow: "7. 되팔 때 비용",
+    eyebrow: "6. 되팔 때 비용",
     title: "되팔 때 드는 비용을 빼요",
     metric: displayProfitRange(card),
     metricLabel: "수수료·배송비까지 뺀 예상 차익",
@@ -711,7 +718,7 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   const betterChannel = daangnProfit > bunjangProfit ? "당근 직거래가 더 남을 수 있지만" : "번개장터 재판매는";
 
   return {
-    eyebrow: "8. 되팔 곳",
+    eyebrow: "7. 되팔 곳",
     title: "팔 곳에 따라 남는 돈이 달라요",
     metric: displayProfitRange(card),
     metricLabel: "번개장터 기준 예상 차익",
@@ -735,16 +742,19 @@ function summaryGuideStep(): BeginnerGuideStep {
 }
 
 function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
-  // Wave 394.7.y (사용자 피드백): 안전결제 step 제거 → 셀러 신뢰 안으로 흡수. 10→9 step.
+  // Wave 394.7.y: 안전결제 step 제거 → 셀러 신뢰 안으로 흡수. 10→9 step.
+  // Wave 394.7.z (사용자 피드백): 구매 전 체크 #2 → 끝쪽으로. 흐름 =
+  //   신뢰(셀러) → 시세 사실(비교/추이/속도) → 돈(매입/리셀/채널) → "사기로 했네, 그럼 뭐 확인할까" (구매 전 체크)
+  //   → 요약. 사용자 의사결정 순서 그대로.
   return [
     sellerTrustGuideStep(card),
-    purchaseCheckGuideStep(card),
     marketCompareGuideStep(card),
     marketTrendGuideStep(card),
     velocityGuideStep(card),
     buyCostGuideStep(card),
     resellCostGuideStep(card),
     channelGuideStep(card),
+    purchaseCheckGuideStep(card),
     summaryGuideStep(),
   ];
 }
