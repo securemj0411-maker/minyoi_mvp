@@ -256,6 +256,8 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /확인하고 번개장터 보기/);
   assert.match(modal, /더 살펴볼래요/);
   assert.doesNotMatch(modal, /지금까지 핵심 판단 근거|비교 표본 .* 실제 결과/);
+  assert.doesNotMatch(modal, /function DealEvidencePanel|dealExpanded/);
+  assert.doesNotMatch(modal, /AI 분석 신뢰도|번개장터 안전결제 — 셀러 의무 부담|평점 양호/);
   assert.doesNotMatch(modal, /하루 가격 한 점만 보지 않고|상품가만 보지 않고 배송비 확인 필요|시세 차이에서 수수료|전국 거래와 직거래를 나눠 봐서|겁주려는 단계가 아니라|그 비용까지 뺀 뒤 남는 예상 차익/);
   assert.doesNotMatch(modal, /안에 팔린 기록이 있어요/);
   assert.doesNotMatch(modal, /상태가 비슷한 매물보다 낮아요|상태가 비슷한 매물보다 싸게 나왔어요|그 기준보다 .* 낮아요|같은 상태 매물을 기준/);

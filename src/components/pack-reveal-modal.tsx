@@ -1841,28 +1841,12 @@ function revealRiskScoreInput(card: RevealCard): RiskScoreInput {
 // Wave 333: fixedSafetyCtaClass 제거 — FixedBunjangFooter에서 안전도 버튼 빠지면서 미사용.
 
 // Wave 359+361: 득템 점수 — 당근 Manner Meter 영감 (작고 우측).
-// state는 부모 (RevealCardItem)가 관리 → button + evidence 분리.
-function DealMeterButton({
-  card,
-  expanded,
-  onToggle,
-}: {
-  card: RevealCard;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
+// 2026-05-21: 점수는 지표로만 사용한다. 확장 요약은 아래 상세 섹션과 중복되어 제거.
+function DealMeterButton({ card }: { card: RevealCard }) {
   const { score, toneClass } = calculateDealScore(card);
   return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        onToggle();
-      }}
-      aria-expanded={expanded}
-      className="group flex shrink-0 flex-col items-end whitespace-nowrap leading-tight"
-    >
-      <span className="mb-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#047857] transition group-hover:text-[#065f46] dark:text-emerald-300">
+    <div className="flex shrink-0 flex-col items-end whitespace-nowrap leading-tight" aria-label={`득템 점수 ${score}점`}>
+      <span className="mb-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#047857] dark:text-emerald-300">
         득템 점수
       </span>
       <span className="flex items-baseline gap-0.5">
@@ -1871,8 +1855,8 @@ function DealMeterButton({
         </span>
         <span className="text-[13px] font-bold text-zinc-400 dark:text-zinc-500">/100</span>
       </span>
-      <span className="mt-1 h-[3px] w-[70px] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700 transition group-hover:from-emerald-600 group-hover:to-emerald-800" />
-    </button>
+      <span className="mt-1 h-[3px] w-[70px] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700" />
+    </div>
   );
 }
 
@@ -1968,67 +1952,6 @@ function PurchaseDecisionHeader({ card }: { card: RevealCard }) {
         </span>
       </div>
     </section>
-  );
-}
-
-function DealEvidencePanel({ card }: { card: RevealCard }) {
-  const profitPct = netProfitPercent(card);
-  const profitAvg = expectedProfitAverage(card);
-  const sampleCount = card.marketBasis?.sampleCount ?? 0;
-  const sellerRating = card.savedDetail?.sellerReviewRating ?? null;
-  const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
-  const confidencePct = Math.round((card.confidence ?? 0) * 100);
-  return (
-    <div className="mt-2 space-y-2 rounded-xl border border-[#e1dacd] bg-[#fbf6ee] px-3 py-2.5 text-xs dark:border-zinc-800 dark:bg-zinc-900/40">
-      <div className="flex items-start gap-2">
-        <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">1</span>
-        <div className="min-w-0 flex-1">
-          <div className="font-bold text-zinc-900 dark:text-zinc-100">
-            예상 차익 {signedKrw(profitAvg)}{profitPct != null ? ` (+${profitPct}%)` : ""}
-          </div>
-          <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
-            매입가 {krw(card.price)}
-            {card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0
-              ? ` · 시세 ${krw(card.marketBasis.medianPrice)}`
-              : " · 시세 표본 부족"}
-          </div>
-        </div>
-      </div>
-      <div className="flex items-start gap-2">
-        <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-100 text-[9px] font-bold text-sky-700 dark:bg-sky-950/40 dark:text-sky-200">2</span>
-        <div className="min-w-0 flex-1">
-          <div className="font-bold text-zinc-900 dark:text-zinc-100">AI 분석 신뢰도 {confidencePct}%</div>
-          <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
-            {sampleCount > 0 ? `같은 매물 ${sampleCount}건 비교 분석` : "표본 부족 — 추정치"}
-          </div>
-        </div>
-      </div>
-      <div className="flex items-start gap-2">
-        <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-100 text-[9px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">3</span>
-        <div className="min-w-0 flex-1">
-          <div className="font-bold text-zinc-900 dark:text-zinc-100">
-            {sellerRating != null
-              ? `셀러 평점 ${sellerRating.toFixed(1)}점 · 후기 ${reviewCount.toLocaleString("ko-KR")}건`
-              : "셀러 후기 없음"}
-          </div>
-          <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">
-            {sellerRating != null && sellerRating >= 4.8 && reviewCount >= 30
-              ? "우수 셀러 — 거래 신뢰도 ↑"
-              : sellerRating != null && sellerRating >= 4.5
-              ? "평점 양호"
-              : "안전결제 + 직거래 검수 권장"}
-          </div>
-        </div>
-      </div>
-      <div className="flex items-start gap-2">
-        {/* Wave 394.7.b (외부 review #18): 안전결제 = 안전 의미인데 rose (위험 색) → emerald (안전 색) 정정. */}
-        <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">4</span>
-        <div className="min-w-0 flex-1">
-          <div className="font-bold text-zinc-900 dark:text-zinc-100">번개장터 안전결제 — 셀러 의무 부담 (3.5%)</div>
-          <div className="mt-0.5 text-zinc-500 dark:text-zinc-400">구매자(나)는 0원 — 결제 안 들어가도 셀러가 부담</div>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -5132,7 +5055,6 @@ function RevealCardItem({
   onBeginnerGuideClick?: () => void;
 }) {
   const [shown, setShown] = useState(false);
-  const [dealExpanded, setDealExpanded] = useState(false);
   // Wave 394.5.a (외부 review #23 — 사용자 명시 채택): 초보/상세 모드 토글.
   // 디폴트 = simple (메모리 룰 일반인 친화). detailed = "디테일 펼침" (이미 있는 정보 더 자세히).
   // localStorage 기억 — 한 번 선택하면 다음 모달도 자동.
@@ -5179,18 +5101,13 @@ function RevealCardItem({
     const id = window.setTimeout(() => setShown(true), delay);
     return () => window.clearTimeout(id);
   }, [delay]);
-  // Wave 394.5.a: localStorage 기억 mount sync. (dealExpanded sync 는 별 useEffect 가 자동.)
+  // Wave 394.5.a: localStorage 기억 mount sync.
   useEffect(() => {
     try {
       const stored = localStorage.getItem("minyoi_modal_mode");
       if (stored === "detailed") setMode("detailed");
     } catch {}
   }, []);
-  // Wave 394.5.a.fix2 (사용자 버그 짚음 — "간단 보기 누르면 다시 안돌아가는데?"):
-  // mode 변경 시 양방향 sync. detailed → 펼침 / simple → 접힘.
-  useEffect(() => {
-    setDealExpanded(mode === "detailed");
-  }, [mode]);
   const showProfitCalculationBasis = useCallback(() => {
     setMode("detailed");
     try { localStorage.setItem("minyoi_modal_mode", "detailed"); } catch {}
@@ -5223,7 +5140,7 @@ function RevealCardItem({
                 AI 판단 · 매물 설명(텍스트) 기준 · 사진은 직접 확인 권장
               </div>
               <div className="absolute right-0 top-[-2px]">
-                <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
+                <DealMeterButton card={card} />
               </div>
             </div>
             <div className="flex w-full items-start justify-between gap-3">
@@ -5238,7 +5155,7 @@ function RevealCardItem({
                     {card.name}
                   </div>
                   <div className="hidden">
-                    <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
+                    <DealMeterButton card={card} />
                   </div>
                 </div>
                 {onBeginnerGuideClick ? (
@@ -5252,7 +5169,6 @@ function RevealCardItem({
                     <span>쉽게 보기</span>
                   </button>
                 ) : null}
-                {dealExpanded ? <DealEvidencePanel card={card} /> : null}
                 <PurchaseDecisionHeader card={card} />
               {/* Wave 395.1: PDF처럼 "예상 순익 + 계산식/비교매물 보기"만 독립 카드로 분리. */}
               <div
