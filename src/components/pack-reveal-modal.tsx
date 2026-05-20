@@ -342,6 +342,16 @@ type BeginnerGuideStep = {
   tone: "trust" | "check" | "market" | "trend" | "buy" | "resell" | "safety" | "channel" | "speed" | "summary";
 };
 
+type BeginnerGuideSafetyStats = {
+  total_blocked_7d?: number;
+  fake_or_lock_7d?: number;
+  listing_parts_7d?: number;
+  listing_accessory_7d?: number;
+  listing_commercial_7d?: number;
+  listing_multi_7d?: number;
+  needs_review_7d?: number;
+};
+
 const SELLER_TRUST_MIN_REVIEW_COUNT = 10;
 const BEGINNER_PURCHASE_CHECK_LIMIT = 4;
 const BEGINNER_BATTERY_CHECK_CATEGORIES = new Set(["smartphone", "tablet", "smartwatch", "laptop", "drone", "camera"]);
@@ -4607,6 +4617,85 @@ function BeginnerGuideValueNote({ note, tone }: { note?: string; tone: BeginnerG
   );
 }
 
+function formatBeginnerStatCount(value: number) {
+  return value.toLocaleString("ko-KR");
+}
+
+function beginnerPositiveStatParts(stats: BeginnerGuideSafetyStats) {
+  const partsOnly = (stats.listing_parts_7d ?? 0) + (stats.listing_accessory_7d ?? 0) + (stats.listing_multi_7d ?? 0);
+  const sellerNoise = stats.listing_commercial_7d ?? 0;
+  const needsReview = stats.needs_review_7d ?? 0;
+  const fakeOrLock = stats.fake_or_lock_7d ?? 0;
+
+  return [
+    partsOnly > 0 ? `단품·구성품만 ${formatBeginnerStatCount(partsOnly)}건` : null,
+    sellerNoise > 0 ? `업자성 매물 ${formatBeginnerStatCount(sellerNoise)}건` : null,
+    needsReview > 0 ? `모델 확인 필요 ${formatBeginnerStatCount(needsReview)}건` : null,
+    fakeOrLock > 0 ? `잠금·가품 의심 ${formatBeginnerStatCount(fakeOrLock)}건` : null,
+  ].filter(Boolean) as string[];
+}
+
+function BeginnerGuideSafetyFilterNote() {
+  const [stats, setStats] = useState<BeginnerGuideSafetyStats | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  useEffect(() => {
+    if (stats || loadFailed) return;
+
+    const controller = new AbortController();
+
+    void fetch("/api/public/safety-stats", { cache: "no-store", signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error("safety stats failed");
+        return res.json() as Promise<{ stats?: BeginnerGuideSafetyStats }>;
+      })
+      .then((payload) => {
+        if (!controller.signal.aborted) setStats(payload.stats ?? null);
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        console.warn("[beginner-guide] safety stats unavailable", err instanceof Error ? err.message : err);
+        setLoadFailed(true);
+      });
+
+    return () => controller.abort();
+  }, [loadFailed, stats]);
+
+  const totalBlocked = stats?.total_blocked_7d ?? 0;
+  if (!stats || totalBlocked <= 0) return null;
+
+  const parts = beginnerPositiveStatParts(stats).slice(0, 3);
+
+  return (
+    <div
+      data-beginner-guide-safety-filter-note
+      className="mt-3 rounded-[18px] bg-[#f7fafe] px-3.5 py-3 ring-1 ring-blue-100 dark:bg-blue-950/18 dark:ring-blue-900/45"
+    >
+      <div className="flex items-center gap-1.5 text-[10.5px] font-black text-[#3182f6] dark:text-blue-300">
+        <ShieldIcon className="h-3.5 w-3.5" />
+        <span>추천 전에 걸러진 매물</span>
+      </div>
+      <p className="mt-1.5 break-keep text-[12.5px] font-semibold leading-5 text-[#53605a] dark:text-zinc-300">
+        최근 24시간 전체 추천 풀에서 단품·액세서리·업자성·모델 확인 필요 매물{" "}
+        <strong className="font-black text-[#172019] dark:text-zinc-50">{formatBeginnerStatCount(totalBlocked)}건</strong>
+        은 먼저 걸러졌어요. 이 화면에는 남은 확인 질문만 보여드려요.
+      </p>
+      {parts.length > 0 ? (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {parts.map((part) => (
+            <span
+              key={part}
+              className="rounded-full bg-white/86 px-2.5 py-1 text-[10.5px] font-black text-[#58655d] ring-1 ring-blue-100 dark:bg-zinc-950/54 dark:text-zinc-300 dark:ring-blue-900/35"
+            >
+              {part}
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function BeginnerGuideWalkthrough({
   card,
   stepIndex,
@@ -4783,6 +4872,7 @@ function BeginnerGuideWalkthrough({
             ) : null}
 
             <BeginnerGuideValueNote note={step.valueNote} tone={step.tone} />
+            {step.tone === "check" ? <BeginnerGuideSafetyFilterNote /> : null}
 
             {step.tone === "trust" ? (
               <BeginnerGuideTrustMetric card={card} />

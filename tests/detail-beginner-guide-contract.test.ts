@@ -97,6 +97,14 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /하루 가격 한 점만 보지 않고/);
   assert.match(modal, /실제 거래 흐름으로 돈이 얼마나 오래 묶일지/);
   assert.match(modal, /수수료, 재배송비, 안전버퍼/);
+  assert.match(modal, /BeginnerGuideSafetyFilterNote/);
+  assert.match(modal, /data-beginner-guide-safety-filter-note/);
+  assert.match(modal, /\/api\/public\/safety-stats/);
+  assert.match(modal, /추천 전에 걸러진 매물/);
+  assert.match(modal, /최근 24시간 전체 추천 풀/);
+  assert.match(modal, /이 화면에는 남은 확인 질문만 보여드려요/);
+  assert.match(modal, /단품·구성품만/);
+  assert.match(modal, /모델 확인 필요/);
   assert.match(modal, /data-beginner-guide-purchase-check/);
   assert.match(modal, /구매 전에 이것만 물어보면 돼요/);
   assert.match(modal, /혼자 보면 놓치기 쉬운 질문/);
