@@ -599,9 +599,8 @@ function purchaseCheckGuideStep(card: RevealCard): BeginnerGuideStep {
     title: "구매 전에 이것만 물어보면 돼요",
     metric: `${checks.length.toLocaleString("ko-KR")}개 체크`,
     metricLabel: first ? first.title : "구매 전 질문",
-    body: "겁주려는 단계가 아니라, 혼자 보면 놓치기 쉬운 질문만 골라주는 단계예요.",
+    body: `사진 수, 후기 표본, 구성품, 잠금, 정품 위험 중 이 매물에서 먼저 물어볼 것 ${checks.length.toLocaleString("ko-KR")}개만 추렸어요.`,
     note: first?.ask ?? "판매자에게 확인할 질문을 먼저 정리해요.",
-    valueNote: `사진 수, 후기 표본, 구성품, 잠금, 정품 위험 중 이 매물에서 먼저 물어볼 것 ${checks.length.toLocaleString("ko-KR")}개만 추렸어요.`,
     tone: "check",
   };
 }
@@ -670,7 +669,6 @@ function marketTrendGuideStep(card: RevealCard): BeginnerGuideStep {
     metricLabel: `${condition} 기준 시세`,
     body: "비교 매물 가격이 오늘만 튄 건지, 며칠 동안 비슷하게 유지됐는지 그래프로 확인해요.",
     note: "점이 적으면 아직 누적 중인 데이터라 참고용으로만 봐야 합니다.",
-    valueNote: "하루 가격 한 점만 보지 않고, 최근 가격 흐름에서 오늘 매입가가 튀는지 같이 봅니다.",
     tone: "trend",
   };
 }
@@ -705,7 +703,6 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
       metricLabel: `동일 모델 하루 평균 판매량 ${dailySold}`,
       body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}개 거래됐어요. 하루로 나누면 동일 모델이 ${dailySold} 정도 팔려나간 셈이라, 매입 후 돈이 얼마나 오래 묶일지 가늠할 때 보는 정보예요.`,
       note: "과거 거래 기록이라 실제 판매일을 보장하지는 않습니다.",
-      valueNote: "가격만 보는 게 아니라, 실제 거래 흐름으로 돈이 얼마나 오래 묶일지도 같이 봅니다.",
       tone: "speed",
     };
   }
@@ -722,7 +719,6 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
       metricLabel: `7일 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 — 표본 부족`,
       body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}건만 거래됐어요. 추세 잡기엔 표본이 적어서 "이 정도 빠르다" 단정 안 하고 참고용으로만 보면 됩니다.`,
       note: "표본이 적은 모델은 판매가 늦어질 수 있어서 매입가를 더 보수적으로 잡는 게 안전해요.",
-      valueNote: "표본이 적으면 빠르다고 포장하지 않고, 참고용으로 낮춰 보여줍니다.",
       tone: "speed",
     };
   }
@@ -736,7 +732,6 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
       metricLabel: "분석 진행 중",
       body: "이 매물의 비교 기록을 가져오는 중이에요. 잠시 후 다시 확인하거나, 상세 분석에서 시세와 비교 매물을 먼저 보면 돼요.",
       note: "데이터가 비어 있을 땐 가격과 판매자 신뢰도를 더 보수적으로 봅니다.",
-      valueNote: "시세와 거래 기록은 뒤에서 계속 채우고, 아직 비어 있으면 보수적으로 표시합니다.",
       tone: "speed",
     };
   }
@@ -753,7 +748,6 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
         ? `현재 비교 매물은 ${marketActiveSample.toLocaleString("ko-KR")}건 잡혔는데 과거 판매 기록은 부족해요. 매물 자체가 자주 나오는 모델이 아니거나, 거래가 천천히 도는 카테고리일 수 있어요.`
         : "이 모델은 같은 상태로 팔린 기록이 아직 충분히 누적되지 않았어요. 회전 속도 단정 대신 비교 매물 가격과 셀러 신뢰도를 우선 보세요.",
     note: "상세 분석에서 시세 그래프와 비교 매물을 함께 확인하세요.",
-    valueNote: "거래 속도 표본이 약하면 약하다고 표시하고, 가격 판단 쪽으로 무게를 옮깁니다.",
     tone: "speed",
   };
 }
@@ -774,7 +768,6 @@ function buyCostGuideStep(card: RevealCard): BeginnerGuideStep {
     metricLabel: "상품가 + 내가 낼 배송비",
     body,
     note: "택포/배송비 별도 문구는 구매 전 판매자에게 한 번 더 확인하는 게 안전합니다.",
-    valueNote: "상품가만 보지 않고 배송비 확인 필요까지 매입가에 얹어, 실제 들어갈 돈으로 다시 봅니다.",
     tone: "buy",
   };
 }
@@ -789,9 +782,8 @@ function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
     title: "되팔 때 드는 비용을 빼요",
     metric: displayProfitRange(card),
     metricLabel: "수수료·배송비까지 뺀 예상 차익",
-    body: `번개장터에서 되팔 때는 예상 판매가에서 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}를 먼저 빼요. 그 비용까지 뺀 뒤 남는 예상 차익이 ${displayProfitRange(card)}입니다.`,
+    body: `번개장터에서 되팔 때는 예상 판매가에서 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}를 먼저 빼요.`,
     note: "단순 시세 차이가 아니라 되팔 때 드는 비용까지 뺀 값으로 봅니다.",
-    valueNote: "시세 차이에서 수수료, 재배송비, 안전버퍼를 빼서 더 현실적인 숫자로 바꿉니다.",
     tone: "resell",
   };
 }
@@ -813,7 +805,6 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
     metricLabel: "번개장터 기준 예상 차익",
     body: `${betterChannel}, 거래 범위와 네고 부담이 달라요. 그래서 번개장터에 다시 팔 때와 당근 직거래로 팔 때를 나눠서 보여드릴게요.`,
     note: "당근은 수수료가 적을 수 있지만 지역/직거래/네고 부담이 있고, 번개장터는 전국 거래와 안전결제 흐름이 장점이에요.",
-    valueNote: "전국 거래와 직거래를 나눠 봐서, 어디에 팔 때 남는 금액이 달라지는지도 같이 계산합니다.",
     tone: "channel",
   };
 }
@@ -1315,32 +1306,6 @@ function conditionProductLabel(card: RevealCard) {
   if (conditionClass === "flawed") return "하자가 있는 상품";
   if (conditionClass === "low_batt") return "배터리 약한 상품";
   return `${marketConditionLabel(card)} 상품`;
-}
-
-function conditionComparisonMethodLine(card: RevealCard) {
-  const market = card.marketBasis;
-  if (market?.priceSource === "reference" || market?.conditionClass === "unopened") {
-    return "새상품·단순개봉처럼 미개봉으로 보이는 매물만 묶어서 봤어요.";
-  }
-  if (market?.conditionClass === "mint") {
-    return "실사용 흔적이 거의 없는 S급 매물끼리 먼저 비교했어요.";
-  }
-  if (market?.conditionClass === "clean") {
-    return "깨끗한 편인 A급 매물끼리 먼저 비교했어요.";
-  }
-  if (market?.conditionClass === "normal") {
-    return "보통 사용감이 있는 매물끼리 따로 비교했어요.";
-  }
-  if (market?.conditionClass === "worn") {
-    return "사용감이 어느 정도 있는 상품끼리 따로 비교했어요.";
-  }
-  if (market?.conditionClass === "flawed") {
-    return "하자 있는 상품은 깨끗한 상품 시세를 섞지 않고 따로 비교했어요.";
-  }
-  if (market?.conditionClass === "low_batt") {
-    return "배터리 상태가 약한 상품끼리 따로 비교했어요.";
-  }
-  return "새상품과 중고 상태를 섞지 않고, 비슷한 상태끼리 먼저 비교했어요.";
 }
 
 function conditionBasisSentence(card: RevealCard) {
@@ -4290,17 +4255,20 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   // Wave 394.7.ab: "확인 중" → "표본 부족" — 정직 카피.
   const sampleLabel = dailySoldValue ? "동일 모델 하루 판매량" : sampleCount > 0 ? "비슷한 거래 기록" : "거래 기록";
   const sampleValue = dailySoldValue ?? (sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "표본 부족");
+  const speedIsWeak = speed.label === "표본 부족" || speed.label === "수집 중";
 
   return (
-    <div className="rounded-[22px] bg-white/82 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
-      <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
-          <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">되팔 때 판매 주기</div>
-          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{speed.label}</div>
+    <div className="rounded-[22px] bg-white p-4 shadow-[0_16px_34px_rgba(34,49,39,0.07)] ring-1 ring-[#e9dfd0] dark:bg-zinc-950/70 dark:ring-zinc-800">
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="rounded-[18px] bg-[#f5f9ff] px-3 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
+          <div className="break-keep text-[11px] font-bold text-[#6f7b73] dark:text-zinc-400">되팔 때 판매 주기</div>
+          <div className={`mt-1 text-[20px] font-black leading-tight ${speedIsWeak ? "text-[#3182f6] dark:text-blue-300" : "text-[#172019] dark:text-zinc-50"}`}>
+            {speed.label}
+          </div>
         </div>
-        <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
-          <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{sampleLabel}</div>
-          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{sampleValue}</div>
+        <div className="rounded-[18px] bg-[#f5f9ff] px-3 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
+          <div className="break-keep text-[11px] font-bold text-[#6f7b73] dark:text-zinc-400">{sampleLabel}</div>
+          <div className="mt-1 text-[20px] font-black leading-tight text-[#3182f6] dark:text-blue-300">{sampleValue}</div>
         </div>
       </div>
     </div>
@@ -4436,51 +4404,9 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
   );
 }
 
-function BeginnerGuideConditionBasisCard({ card }: { card: RevealCard }) {
-  const market = card.marketBasis;
-  const condition = conditionComparisonGroupLabel(card);
-  const sampleCount = market?.sampleCount ?? 0;
-  const sourceText = market?.priceSource === "reference" ? "다나와 + 번개장터" : "번개장터";
-
-  return (
-    <div data-beginner-guide-condition-basis className="mt-4 rounded-[22px] bg-[#eef6ec] p-4 ring-1 ring-[#cfe3ca] dark:bg-emerald-950/20 dark:ring-emerald-900/45">
-      <div className="flex items-start gap-3">
-        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950/70 dark:text-emerald-200 dark:ring-emerald-900/50">
-          <ScaleIcon className="h-5 w-5" />
-        </span>
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950/60 dark:text-emerald-200 dark:ring-emerald-900/50">
-              {condition}
-            </span>
-            <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-black text-[#5c6b5f] ring-1 ring-[#dfe8da] dark:bg-zinc-950/45 dark:text-zinc-300 dark:ring-zinc-800">
-              {sourceText} 기준
-            </span>
-          </div>
-          <div className="mt-2 break-keep text-[14px] font-black leading-5 text-[#172019] dark:text-zinc-50">
-            {condition}끼리 비교했어요
-          </div>
-          <p className="mt-1.5 break-keep text-[12.5px] font-semibold leading-5 text-[#546252] dark:text-zinc-300">
-            {conditionComparisonMethodLine(card)}
-          </p>
-          <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-black">
-            <span className="rounded-full bg-white/82 px-2 py-0.5 tabular-nums text-[#344136] ring-1 ring-[#dfe8da] dark:bg-zinc-950/50 dark:text-zinc-200 dark:ring-zinc-800">
-              {sampleCount > 0 ? `비슷한 매물 ${sampleCount.toLocaleString("ko-KR")}건` : "표본 확인 중"}
-            </span>
-            <span className="rounded-full bg-white/82 px-2 py-0.5 text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950/50 dark:text-emerald-200 dark:ring-emerald-900/45">
-              {marketPricePositionLine(card)}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function BeginnerGuideMarketVisual({ card }: { card: RevealCard }) {
   return (
     <div data-beginner-guide-market-evidence>
-      <BeginnerGuideConditionBasisCard card={card} />
       <BeginnerGuideComparablePreview card={card} />
     </div>
   );

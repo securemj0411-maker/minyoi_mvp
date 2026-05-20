@@ -238,7 +238,6 @@ export default function MarketHistoryChart({
   // 2026-05-19 P0: "30일 추이" 거짓 카피 정직화. 5/16 incident로 historical 4일밖에 없는데
   // 30일이라 표기하면 사용자가 trend 풍부함으로 오인. 실제 data.length 기반 동적 표기.
   const daysSpan = data.length;
-  const isThinHistory = daysSpan < 7;
   // 2026-05-19 P1: 최신 confidence (high/medium/low) 뱃지 표시. API는 이미 confidence 컬럼 반환 중.
   const latestConfidence = data[data.length - 1]?.confidence ?? "low";
   const confidenceBadge: { label: string; cls: string } | null =
@@ -261,13 +260,6 @@ export default function MarketHistoryChart({
 
   return (
     <div className="rounded-md bg-white px-2 py-2 dark:bg-zinc-900">
-      {/* 2026-05-19 P0: 표본 부족 배너 — 5/16 incident historical loss 후 회복 중임을 명시.
-          7일 미만 데이터로 trend 그릴 때 사용자가 변동성 오인하지 않게 안내. 7일 이상이면 자동 사라짐. */}
-      {isThinHistory && priceSource !== "reference" ? (
-        <div className="mb-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">
-          📊 시세 데이터 누적 중 ({daysSpan}일째) — 표본이 더 쌓이면 추이가 안정화돼요
-        </div>
-      ) : null}
       <div className="flex items-center justify-between gap-2 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
         <span className="inline-flex items-center gap-1.5">
           {title}

@@ -95,8 +95,6 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /BeginnerGuideContextNote/);
   assert.match(modal, /후기 수와 평점을 같이 봐서/);
   assert.match(modal, /상태가 다른 매물은 섞지 않고/);
-  assert.match(modal, /하루 가격 한 점만 보지 않고/);
-  assert.match(modal, /실제 거래 흐름으로 돈이 얼마나 오래 묶일지/);
   assert.match(modal, /수수료, 재배송비, 안전버퍼/);
   assert.match(modal, /BeginnerGuideSafetyFilterNote/);
   assert.match(modal, /beginnerSafetyStatsUrl/);
@@ -120,7 +118,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /step\.tone === "intro" \? <BeginnerGuideSafetyFilterNote card=\{card\} variant="intro" \/> : null/);
   assert.match(modal, /data-beginner-guide-purchase-check/);
   assert.match(modal, /구매 전에 이것만 물어보면 돼요/);
-  assert.match(modal, /혼자 보면 놓치기 쉬운 질문/);
+  assert.match(modal, /사진 수, 후기 표본, 구성품, 잠금, 정품 위험 중 이 매물에서 먼저 물어볼 것/);
   assert.match(modal, /사진이 적어요/);
   assert.match(modal, /배터리 상태를 물어보세요/);
   assert.match(modal, /잠금 해제 상태를 확인해요/);
@@ -139,11 +137,8 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /후기가 <strong/);
   assert.match(modal, /marketConditionLabel\(card\)/);
   assert.match(modal, /conditionComparisonGroupLabel\(card\)/);
-  assert.match(modal, /conditionComparisonMethodLine\(card\)/);
   assert.match(modal, /conditionBasisSentence\(card\)/);
   assert.match(modal, /conditionProductLabel\(card\)/);
-  assert.match(modal, /data-beginner-guide-condition-basis/);
-  assert.match(modal, /끼리 비교했어요/);
   assert.match(modal, /득템잡이는 번개장터에 있는/);
   assert.match(modal, /하자가 있는 상품/);
   assert.match(modal, /\$\{groupLabel\} 중에서도 싸게 나왔어요/);
@@ -153,7 +148,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /기준보다 <strong/);
   assert.match(modal, /아래는 비싼 순 비교 매물이에요/);
   assert.doesNotMatch(modal, /아래에는 기준이 된 매물을 비싼 순으로 보여드릴게요/);
-  assert.match(modal, /사용감이 어느 정도 있는 상품끼리/);
+  assert.doesNotMatch(modal, /data-beginner-guide-condition-basis|끼리 비교했어요|사용감이 어느 정도 있는 상품끼리/);
   assert.match(modal, /\.sort\(\(a, b\) => \(b\.price \?\? 0\) - \(a\.price \?\? 0\)\)/);
   assert.match(modal, /저렴/);
   assert.match(modal, /data-beginner-guide-product-image/);
@@ -179,7 +174,6 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /배송비를 누가 부담하는지 한 번 더 확인/);
   assert.match(modal, /되팔 때 드는 비용을 빼요/);
   assert.match(modal, /수수료·배송비까지 뺀 예상 차익/);
-  assert.match(modal, /그 비용까지 뺀 뒤 남는 예상 차익/);
   assert.ok(modal.includes('<BunjangLogo className="h-6 w-6 rounded-full" />'));
   assert.match(modal, /내가 낼 배송비/);
   assert.match(modal, /data-beginner-guide-safe-payment/);
@@ -202,6 +196,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /비슷한 거래 기록/);
   assert.match(modal, /거래 기록 데이터를 받는 중이에요/);
   assert.match(modal, /표본 부족/);
+  assert.match(modal, /bg-\[#f5f9ff\]/);
   assert.match(modal, /h-14 w-14/);
   assert.match(modal, /후기와 평점이 없어요/);
   assert.match(modal, /번개장터 신규 판매자/);
@@ -212,6 +207,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /확인하고 번개장터 보기/);
   assert.match(modal, /더 살펴볼래요/);
   assert.doesNotMatch(modal, /지금까지 핵심 판단 근거|비교 표본 .* 실제 결과/);
+  assert.doesNotMatch(modal, /하루 가격 한 점만 보지 않고|상품가만 보지 않고 배송비 확인 필요|시세 차이에서 수수료|전국 거래와 직거래를 나눠 봐서|겁주려는 단계가 아니라|그 비용까지 뺀 뒤 남는 예상 차익/);
   assert.doesNotMatch(modal, /안에 팔린 기록이 있어요/);
   assert.doesNotMatch(modal, /상태가 비슷한 매물보다 낮아요|상태가 비슷한 매물보다 싸게 나왔어요|그 기준보다 .* 낮아요|같은 상태 매물을 기준/);
   assert.doesNotMatch(modal, /판매완료 누적|판매완료 표본|시세 거래 표본|거래완료 표본|최근 등록/);
