@@ -1821,7 +1821,6 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   // - sub line-clamp-2 + 고정 높이 (정렬 어긋남 방지)
   // - 라벨 한 줄 고정
   return (
-    {/* Wave 394.7.o (reference MarketStats): rounded-2xl + border-[#ece3d2] + bg-white (모든 viewport). */}
     <div className="mt-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="grid grid-cols-3 divide-x divide-zinc-100 dark:divide-zinc-800">
         {tiles.map((tile) => {
@@ -3646,8 +3645,8 @@ function FixedBunjangFooter({
   // Wave 394.7 (외부 review #5): "정보 앱인데 광고 랜딩페이지 같음. 모바일 분석 내용 읽는 공간 줄어듦".
   // 사이즈 ↓ — py-3 → py-2.5, text-sm → text-[13px], shadow-lg → shadow-md, ring-1 제거.
   // min-h-11 (iOS 44px tap target) 유지. brand color 유지 (핵심 액션 색은 강조).
+  // Wave 394.7.o (reference StickyCTA): emerald pill + 검정 원 + 노란 번개 아이콘.
   return (
-    {/* Wave 394.7.o (reference StickyCTA): emerald pill + 검정 원 + 노란 번개 아이콘. */}
     <div className="shrink-0 bg-gradient-to-t from-[#ebe6dc] from-30% to-transparent px-3 pb-5 pt-4 dark:from-zinc-900">
       <a
         href={card.url}
