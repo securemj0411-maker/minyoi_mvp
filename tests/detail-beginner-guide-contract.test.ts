@@ -97,8 +97,8 @@ test("detail modal uses the mobile detail shell on desktop", () => {
   assert.match(revealProductImageInline, /object-cover object-center/);
   assert.doesNotMatch(revealProductImageInline, /object-contain object-center/);
   assert.match(revealProductImageInline, /from-black\/18 to-transparent/);
-  assert.match(revealProductImageInline, /bottom-4 left-3/);
-  assert.match(revealProductImageInline, /bottom-4 right-3/);
+  assert.match(revealProductImageInline, /bottom-8 left-3/);
+  assert.match(revealProductImageInline, /bottom-8 right-3/);
 });
 
 test("beginner guide uses existing evidence without guaranteed-profit copy", () => {

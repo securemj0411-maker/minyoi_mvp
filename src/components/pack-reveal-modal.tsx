@@ -2093,7 +2093,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/18 to-transparent" />
           {/* Wave 394.7.w (사용자 짚음 + handoff): 좌하 condition pill — nav(top-left)랑 안 겹침. */}
           {card.marketBasis?.conditionClass ? (
-            <div className="absolute bottom-4 left-3 z-10">
+            <div className="absolute bottom-8 left-3 z-10">
               <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-[#4b5650] shadow-[0_2px_8px_rgba(0,0,0,0.18)] backdrop-blur">
                 <span className="mr-1 text-emerald-600">●</span>
                 {conditionFriendlyText(card.marketBasis.conditionClass)}
@@ -2106,7 +2106,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
               e.stopPropagation();
               setPreviewOpen(true);
             }}
-            className="absolute bottom-4 right-3 z-10 rounded-full bg-zinc-950/75 px-3.5 py-2 text-xs font-black text-white shadow-lg backdrop-blur transition hover:bg-zinc-950/86"
+            className="absolute bottom-8 right-3 z-10 rounded-full bg-zinc-950/75 px-3.5 py-2 text-xs font-black text-white shadow-lg backdrop-blur transition hover:bg-zinc-950/86"
           >
             크게 보기
           </button>
