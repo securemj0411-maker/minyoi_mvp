@@ -100,8 +100,12 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /beginnerSafetyStatsUrl/);
   assert.match(modal, /data-beginner-guide-safety-filter-note/);
   assert.match(modal, /\/api\/public\/safety-stats\?\$\{query\}/);
+  assert.match(modal, /beginnerSafetyStatsUrl\(card, variant === "intro" \? "category" : "precise"\)/);
+  assert.match(modal, /scope: "category" \| "precise" = "precise"/);
   assert.match(modal, /params\.set\("skuId", card\.skuId\)/);
   assert.match(modal, /params\.set\("comparableKey", card\.marketBasis\.comparableKey\)/);
+  assert.match(modal, /if \(scope === "precise"\)/);
+  assert.match(modal, /이어폰\/헤드폰 제품/);
   assert.match(modal, /introGuideStep/);
   assert.match(modal, /tone: "intro"/);
   assert.match(modal, /오늘 볼 만한 매물만 남겨뒀어요/);

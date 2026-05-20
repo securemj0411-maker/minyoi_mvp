@@ -4595,7 +4595,7 @@ function formatBeginnerStatCount(value: number) {
 }
 
 const BEGINNER_CATEGORY_LABELS: Record<string, string> = {
-  earphone: "이어폰/헤드폰",
+  earphone: "이어폰/헤드폰 제품",
   smartphone: "폰",
   tablet: "태블릿",
   smartwatch: "스마트워치",
@@ -4613,11 +4613,13 @@ function compactBeginnerSkuLabel(card: RevealCard) {
   return category ? BEGINNER_CATEGORY_LABELS[category] ?? "비슷한 상품" : "비슷한 상품";
 }
 
-function beginnerSafetyStatsUrl(card: RevealCard) {
+function beginnerSafetyStatsUrl(card: RevealCard, scope: "category" | "precise" = "precise") {
   const params = new URLSearchParams();
-  if (card.skuId) params.set("skuId", card.skuId);
-  if (card.marketBasis?.comparableKey) params.set("comparableKey", card.marketBasis.comparableKey);
   const category = categoryForBeginnerGuide(card);
+  if (scope === "precise") {
+    if (card.skuId) params.set("skuId", card.skuId);
+    if (card.marketBasis?.comparableKey) params.set("comparableKey", card.marketBasis.comparableKey);
+  }
   if (category) params.set("category", category);
   const query = params.toString();
   return query ? `/api/public/safety-stats?${query}` : "/api/public/safety-stats";
@@ -4637,7 +4639,7 @@ function beginnerSafetyStatRows(stats: BeginnerGuideSafetyStats) {
 function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: RevealCard; variant?: "intro" | "inline" }) {
   const [stats, setStats] = useState<BeginnerGuideSafetyStats | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
-  const statsUrl = beginnerSafetyStatsUrl(card);
+  const statsUrl = beginnerSafetyStatsUrl(card, variant === "intro" ? "category" : "precise");
 
   useEffect(() => {
     if (stats || loadFailed) return;
@@ -4673,7 +4675,7 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
 
   const totalBlocked = stats?.total_blocked_7d ?? 0;
   const rows = stats ? beginnerSafetyStatRows(stats) : [];
-  const scopedSubject = stats?.scope?.level === "lane" || stats?.scope?.level === "sku"
+  const scopedSubject = variant !== "intro" && (stats?.scope?.level === "lane" || stats?.scope?.level === "sku")
     ? `${compactBeginnerSkuLabel(card)} 매물 중`
     : stats?.scope?.level === "category" && stats.scope.category
       ? `${BEGINNER_CATEGORY_LABELS[stats.scope.category] ?? "비슷한 상품"} 중`
