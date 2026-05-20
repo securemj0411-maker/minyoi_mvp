@@ -114,6 +114,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 2990000,
     released: 2024,
     confusionNote: "LV broad — 모델 추정 안 되는 LV 가방 fallback. variant 50만~3000만 wide. sku_median 신뢰도 낮음. 사용자에게 confidence_low 표시.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -156,6 +157,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 1990000,
     released: 2024,
     confusionNote: "Gucci broad — 모델 추정 안 되는 구찌 가방 fallback.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -184,6 +186,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 9900000,
     released: 2024,
     confusionNote: "Chanel broad — 모델 추정 안 되는 샤넬 가방 fallback. variant 100만~5000만 wide.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -212,6 +215,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 4990000,
     released: 2024,
     confusionNote: "Dior broad — 모델 추정 안 되는 디올 가방 fallback.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -254,6 +258,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 1690000,
     released: 2024,
     confusionNote: "Prada broad — 모델 추정 안 되는 프라다 가방 fallback.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -291,6 +296,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 2990000,
     released: 2024,
     confusionNote: "Celine broad — 모델 추정 안 되는 셀린느 가방 fallback.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -318,6 +324,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 2690000,
     released: 2024,
     confusionNote: "Bottega broad — 모델 추정 안 되는 보테가 가방 fallback.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -348,6 +355,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 5990000,
     released: 2024,
     confusionNote: "Hermes broad (non-Birkin/Kelly) — Constance/Garden Party/Evelyne/Picotin 등 fallback.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -375,6 +383,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 2390000,
     released: 2024,
     confusionNote: "Balenciaga broad — 모델 추정 안 되는 발렌시아가 가방 fallback.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -404,6 +413,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 1490000,
     released: 2024,
     confusionNote: "Burberry broad — 모델 추정 안 되는 버버리 가방 fallback.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -436,6 +446,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 590000,
     released: 2024,
     confusionNote: "Coach broad — 모델 추정 안 되는 코치 가방 fallback (signature-tote 외).",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -472,6 +483,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 990000,
     released: 2024,
     confusionNote: "Margiela bag broad — 5AC mini 외 fallback.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -497,6 +509,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 1690000,
     released: 2024,
     confusionNote: "Valentino broad — Rockstud/VLogo 등 fallback.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -525,6 +538,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 2890000,
     released: 2024,
     confusionNote: "YSL broad — Loulou/Sac de Jour/Niki 등 fallback.",
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -552,6 +566,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     msrpKrw: 690000,
     released: 2024,
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown fallback
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -576,6 +591,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     msrpKrw: 1290000,
     released: 2024,
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown fallback
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -599,6 +615,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     msrpKrw: 1890000,
     released: 2024,
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown fallback
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -624,6 +641,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     msrpKrw: 990000,
     released: 2024,
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown fallback
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -653,6 +671,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     msrpKrw: 290000,
     released: 2024,
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown fallback
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -680,5 +699,6 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     ],
     msrpKrw: 1490000,
     released: 2024,
+    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown fallback
   },
 ];
