@@ -334,10 +334,40 @@ type BeginnerGuideStep = {
   metricLabel: string;
   body: string;
   note: string;
-  tone: "trust" | "market" | "trend" | "buy" | "resell" | "safety" | "channel" | "speed" | "summary";
+  tone: "trust" | "check" | "market" | "trend" | "buy" | "resell" | "safety" | "channel" | "speed" | "summary";
 };
 
 const SELLER_TRUST_MIN_REVIEW_COUNT = 10;
+const BEGINNER_PURCHASE_CHECK_LIMIT = 4;
+const BEGINNER_BATTERY_CHECK_CATEGORIES = new Set(["smartphone", "tablet", "smartwatch", "laptop", "earphone", "drone", "camera"]);
+const BEGINNER_LOCK_CHECK_CATEGORIES = new Set(["smartphone", "tablet", "smartwatch", "laptop"]);
+const BEGINNER_AUTH_CHECK_CATEGORIES = new Set(["earphone", "shoe", "bag", "perfume", "watch", "clothing"]);
+const BEGINNER_COMPONENT_CHECK_CATEGORIES = new Set([
+  "smartphone",
+  "tablet",
+  "smartwatch",
+  "laptop",
+  "earphone",
+  "drone",
+  "camera",
+  "game_console",
+  "shoe",
+  "bag",
+  "watch",
+  "perfume",
+  "clothing",
+]);
+const BEGINNER_BATTERY_DISCLOSED_RE = /배터리\s*(효율|성능|상태|사이클)|효율\s*[:：]?\s*\d{2,3}\s*%|사이클\s*\d+|battery\s*(health|cycle)/i;
+const BEGINNER_COMPONENT_DISCLOSED_RE = /구성품|풀박|풀\s*박스|박스|케이스|영수증|구매\s*내역|보증서|충전기|케이블|스트랩|택\b|더스트백|인보이스/i;
+
+type BeginnerPurchaseCheck = {
+  id: "seller" | "photo" | "battery" | "lock" | "authenticity" | "components" | "condition";
+  title: string;
+  body: string;
+  ask: string;
+  label: string;
+  tone: "amber" | "blue" | "emerald";
+};
 
 function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   const rating = card.savedDetail?.sellerReviewRating ?? null;
@@ -383,6 +413,147 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   };
 }
 
+function categoryForBeginnerGuide(card: RevealCard) {
+  return categoryFromComparableKey(card.marketBasis?.comparableKey ?? null);
+}
+
+function batteryCheckAsk(category: string | null) {
+  if (category === "earphone") return "배터리 지속 시간, 페어링 화면, 충전 케이스 상태를 사진이나 영상으로 받아보세요.";
+  if (category === "smartwatch") return "배터리 성능 화면, 페어링 해제 화면, 충전 상태를 같이 받아보세요.";
+  if (category === "laptop") return "배터리 사이클/성능 상태와 충전기 포함 여부를 물어보세요.";
+  if (category === "drone" || category === "camera") return "배터리 개수, 충전 상태, 사이클 정보를 물어보세요.";
+  return "배터리 효율 캡처나 설정 화면을 구매 전에 물어보세요.";
+}
+
+function authenticityCheckAsk(card: RevealCard, category: string | null) {
+  const brandDepth = detectBrandDepth(category, {
+    skuId: card.skuId ?? null,
+    skuName: card.skuName ?? null,
+    name: card.name ?? null,
+  });
+  const brandCheck = brandDepth?.brand.counterfeitChecks[0];
+  if (brandDepth && brandCheck) return `${brandDepth.brand.label}은 ${brandCheck} 사진을 먼저 받아보세요.`;
+  if (category === "earphone") return "시리얼, 정품 인증 화면, 페어링 화면을 받아보세요.";
+  if (category === "shoe") return "사이즈 택, 박스 라벨, 안쪽 라벨 사진을 받아보세요.";
+  if (category === "bag") return "라벨, 안감, 시리얼, 구성품 사진을 받아보세요.";
+  if (category === "watch") return "보증서, 시리얼, 뒷면 각인 사진을 받아보세요.";
+  if (category === "perfume") return "박스 라벨, 배치코드, 분사구 사진을 받아보세요.";
+  return "라벨, 택, 시리얼처럼 정품 확인에 필요한 사진을 받아보세요.";
+}
+
+function componentsCheckAsk(category: string | null) {
+  if (category === "shoe") return "박스, 여분 끈, 택 포함 여부를 물어보세요.";
+  if (category === "bag") return "더스트백, 보증서, 영수증, 기본 스트랩 포함 여부를 물어보세요.";
+  if (category === "watch" || category === "smartwatch") return "충전기, 스트랩, 박스, 보증서 포함 여부를 물어보세요.";
+  if (category === "clothing") return "택, 영수증, 하자 부위 사진이 있는지 물어보세요.";
+  if (category === "perfume") return "박스, 영수증, 남은 용량 사진을 물어보세요.";
+  return "박스, 케이스, 영수증, 충전 케이블 포함 여부를 물어보세요.";
+}
+
+function beginnerPurchaseChecks(card: RevealCard): BeginnerPurchaseCheck[] {
+  const checks: BeginnerPurchaseCheck[] = [];
+  const detail = card.savedDetail;
+  const category = categoryForBeginnerGuide(card);
+  const description = detail?.descriptionPreview ?? "";
+  const imageCount = detail?.imageCount ?? null;
+  const reviewCount = detail?.sellerReviewCount ?? 0;
+
+  if (reviewCount < SELLER_TRUST_MIN_REVIEW_COUNT) {
+    checks.push({
+      id: "seller",
+      title: reviewCount > 0 ? "후기가 아직 적어요" : "후기 없는 판매자예요",
+      body: reviewCount > 0
+        ? `후기가 ${reviewCount.toLocaleString("ko-KR")}건이라 평점만으로 판단하기엔 표본이 적어요.`
+        : "거래 이력이 없는 계정일 수 있어서 결제 방식부터 보수적으로 잡는 게 좋아요.",
+      ask: "번개장터 안전결제로 진행 가능한지 먼저 물어보세요.",
+      label: "안전결제",
+      tone: "amber",
+    });
+  }
+
+  if (imageCount != null && imageCount <= 2) {
+    checks.push({
+      id: "photo",
+      title: imageCount <= 1 ? "사진이 적어요" : "사진을 조금 더 보면 좋아요",
+      body: `지금 확인된 사진은 ${imageCount.toLocaleString("ko-KR")}장이에요. 사진이 적으면 생활 흠집이나 구성품을 놓치기 쉬워요.`,
+      ask: "앞면, 뒷면, 구성품, 하자 부위 사진을 더 받아보세요.",
+      label: "사진 확인",
+      tone: "blue",
+    });
+  }
+
+  if (category && BEGINNER_BATTERY_CHECK_CATEGORIES.has(category) && !BEGINNER_BATTERY_DISCLOSED_RE.test(description)) {
+    checks.push({
+      id: "battery",
+      title: "배터리 상태를 물어보세요",
+      body: "배터리 제품은 겉상태가 좋아도 사용 시간이나 효율에 따라 되팔 때 가격이 달라질 수 있어요.",
+      ask: batteryCheckAsk(category),
+      label: "배터리",
+      tone: "blue",
+    });
+  }
+
+  if (category && BEGINNER_LOCK_CHECK_CATEGORIES.has(category)) {
+    checks.push({
+      id: "lock",
+      title: "잠금 해제 상태를 확인해요",
+      body: "폰, 태블릿, 워치, 노트북은 계정 잠금이 남아 있으면 정상 사용이나 재판매가 어려울 수 있어요.",
+      ask: "계정 로그아웃, 초기화 화면, 잠금 해제 상태를 사진으로 받아보세요.",
+      label: "잠금",
+      tone: "amber",
+    });
+  }
+
+  if (category && BEGINNER_AUTH_CHECK_CATEGORIES.has(category)) {
+    checks.push({
+      id: "authenticity",
+      title: "정품 확인 포인트를 먼저 봐요",
+      body: "정품 여부를 앱이 보장하는 건 아니지만, 구매 전에 받아야 할 사진은 미리 정해둘 수 있어요.",
+      ask: authenticityCheckAsk(card, category),
+      label: "정품 확인",
+      tone: "blue",
+    });
+  }
+
+  if (category && BEGINNER_COMPONENT_CHECK_CATEGORIES.has(category) && !BEGINNER_COMPONENT_DISCLOSED_RE.test(description)) {
+    checks.push({
+      id: "components",
+      title: "구성품을 확인해요",
+      body: "구성품이 빠지면 되팔 때 설명이 약해지고 예상 판매가도 달라질 수 있어요.",
+      ask: componentsCheckAsk(category),
+      label: "구성품",
+      tone: "emerald",
+    });
+  }
+
+  if (checks.length === 0) {
+    checks.push({
+      id: "condition",
+      title: "상태만 한 번 더 확인하면 돼요",
+      body: "큰 체크포인트는 적지만, 구매 전에는 설명과 사진이 같은지 마지막으로 맞춰보는 게 좋아요.",
+      ask: "실사용 흠집, 구성품, 배송비 부담 여부를 한 번에 물어보세요.",
+      label: "마지막 확인",
+      tone: "emerald",
+    });
+  }
+
+  return checks.slice(0, BEGINNER_PURCHASE_CHECK_LIMIT);
+}
+
+function purchaseCheckGuideStep(card: RevealCard): BeginnerGuideStep {
+  const checks = beginnerPurchaseChecks(card);
+  const first = checks[0];
+  return {
+    eyebrow: "2. 구매 전 체크",
+    title: "구매 전에 이것만 물어보면 돼요",
+    metric: `${checks.length.toLocaleString("ko-KR")}개 체크`,
+    metricLabel: first ? first.title : "구매 전 질문",
+    body: "겁주려는 단계가 아니라, 혼자 보면 놓치기 쉬운 질문만 골라주는 단계예요.",
+    note: first?.ask ?? "판매자에게 확인할 질문을 먼저 정리해요.",
+    tone: "check",
+  };
+}
+
 function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
   const market = card.marketBasis;
   const median = market?.medianPrice ?? null;
@@ -409,7 +580,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
         : `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준과 거의 비슷한 가격이에요.`;
 
     return {
-      eyebrow: "2. 비교 매물",
+      eyebrow: "3. 비교 매물",
       title,
       metric,
       metricLabel: `비슷한 상태 시세 ${krw(median)} · 이 매물 ${krw(card.price)}`,
@@ -422,7 +593,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   return {
-    eyebrow: "2. 비교 매물",
+    eyebrow: "3. 비교 매물",
     title: "시세 표본을 더 모으는 중이에요",
     metric: "표본 부족",
     metricLabel: market?.label ?? card.skuName,
@@ -437,7 +608,7 @@ function marketTrendGuideStep(card: RevealCard): BeginnerGuideStep {
   const condition = marketConditionLabel(card);
 
   return {
-    eyebrow: "3. 시세 흐름",
+    eyebrow: "4. 시세 흐름",
     title: "그 다음 시세가 흔들렸는지 봐요",
     metric: median ? krw(median) : "수집 중",
     metricLabel: `${condition} 기준 시세`,
@@ -463,7 +634,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
     const label = velocityHoursLabel(velocity.medianHoursToSold);
     const dailySold = dailySoldCountLabel(velocity.sold7dCount);
     return {
-      eyebrow: "4. 판매 속도",
+      eyebrow: "5. 판매 속도",
       title: `되팔면 보통 ${label} 안에 팔리는 편이에요`,
       metric: label,
       metricLabel: `동일 모델 하루 평균 판매량 ${dailySold}`,
@@ -474,7 +645,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   return {
-    eyebrow: "4. 판매 속도",
+    eyebrow: "5. 판매 속도",
     title: analysisPending ? "판매 속도를 불러오는 중이에요" : "판매 속도는 더 확인이 필요해요",
     metric: marketSoldSample ? `${marketSoldSample.toLocaleString("ko-KR")}건` : "확인 중",
     metricLabel: marketSoldSample ? "비슷한 거래 기록" : "판매 기록 확인 중",
@@ -498,7 +669,7 @@ function buyCostGuideStep(card: RevealCard): BeginnerGuideStep {
       : `상품가격은 ${krw(card.price)}예요. 여기에 내가 낼 배송비 ${snapshot.shippingValueLabel}를 더해서 실제 매입가는 ${snapshot.buyerCostLabel}로 봅니다.`;
 
   return {
-    eyebrow: "5. 매입가",
+    eyebrow: "6. 매입가",
     title: "상품가에 배송비를 더해요",
     metric: snapshot.buyerCostLabel,
     metricLabel: "상품가 + 내가 낼 배송비",
@@ -514,7 +685,7 @@ function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
   const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} (${krw(snapshot.sellingFee)})`;
 
   return {
-    eyebrow: "6. 되팔 때 비용",
+    eyebrow: "7. 되팔 때 비용",
     title: "되팔 때 드는 비용을 빼요",
     metric: displayProfitRange(card),
     metricLabel: "수수료·배송비까지 뺀 예상 차익",
@@ -526,7 +697,7 @@ function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
 
 function safePaymentGuideStep(): BeginnerGuideStep {
   return {
-    eyebrow: "7. 안전결제",
+    eyebrow: "8. 안전결제",
     title: "앱 안에서 결제해야 가장 안전해요",
     metric: "구매확정 전 확인",
     metricLabel: "문제 있으면 구매확정 누르지 않기",
@@ -544,7 +715,7 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   const betterChannel = daangnProfit > bunjangProfit ? "당근 직거래가 더 남을 수 있지만" : "번개장터 재판매는";
 
   return {
-    eyebrow: "8. 되팔 곳",
+    eyebrow: "9. 되팔 곳",
     title: "팔 곳에 따라 남는 돈이 달라요",
     metric: displayProfitRange(card),
     metricLabel: "번개장터 기준 예상 차익",
@@ -569,6 +740,7 @@ function summaryGuideStep(): BeginnerGuideStep {
 function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
   return [
     sellerTrustGuideStep(card),
+    purchaseCheckGuideStep(card),
     marketCompareGuideStep(card),
     marketTrendGuideStep(card),
     velocityGuideStep(card),
@@ -606,7 +778,7 @@ function calculateDealScore(card: RevealCard): DealScore {
   if (confidence >= 0.8) score += 8;
   else if (confidence >= 0.6) score += 4;
   // 셀러 신뢰
-  if (sellerRating != null && sellerRating >= 4.8 && reviewCount >= 30) score += 6;
+  if (sellerRating != null && sellerRating >= 4.8 && reviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT) score += 6;
   else if (sellerRating != null && sellerRating >= 4.5) score += 2;
   // 시세 표본
   if (sampleCount >= 20) score += 4;
@@ -1540,11 +1712,13 @@ function revealRiskScoreInput(card: RevealCard): RiskScoreInput {
   return {
     descriptionPreview: card.savedDetail?.descriptionPreview ?? null,
     conditionClass: card.marketBasis?.conditionClass ?? null,
+    categorySlug: categoryForBeginnerGuide(card),
     price: card.price,
     skuMedian: card.marketBasis?.medianPrice ?? null,
     confidence: card.confidence,
     sellerReviewRating: card.savedDetail?.sellerReviewRating ?? null,
     sellerReviewCount: card.savedDetail?.sellerReviewCount ?? null,
+    photoCount: card.savedDetail?.imageCount ?? null,
   };
 }
 
@@ -3816,6 +3990,69 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
   );
 }
 
+function BeginnerGuidePurchaseCheckVisual({ card }: { card: RevealCard }) {
+  const checks = beginnerPurchaseChecks(card);
+  const toneClasses: Record<BeginnerPurchaseCheck["tone"], { icon: string; badge: string; card: string }> = {
+    amber: {
+      icon: "bg-amber-100 text-amber-700 dark:bg-amber-950/55 dark:text-amber-200",
+      badge: "bg-amber-50 text-amber-700 ring-amber-100 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-900/55",
+      card: "ring-amber-100 dark:ring-amber-900/45",
+    },
+    blue: {
+      icon: "bg-blue-100 text-blue-700 dark:bg-blue-950/55 dark:text-blue-200",
+      badge: "bg-blue-50 text-blue-700 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-900/55",
+      card: "ring-blue-100 dark:ring-blue-900/45",
+    },
+    emerald: {
+      icon: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/55 dark:text-emerald-200",
+      badge: "bg-emerald-50 text-emerald-700 ring-emerald-100 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-900/55",
+      card: "ring-emerald-100 dark:ring-emerald-900/45",
+    },
+  };
+
+  return (
+    <div data-beginner-guide-purchase-check className="mt-4 space-y-2.5">
+      {checks.map((check, index) => {
+        const tone = toneClasses[check.tone];
+        const Icon =
+          check.id === "seller" || check.id === "lock" || check.id === "authenticity"
+            ? ShieldIcon
+            : check.id === "battery"
+              ? ZapIcon
+              : check.id === "photo" || check.id === "components"
+                ? PackageIcon
+                : CheckCircleIcon;
+
+        return (
+          <div key={check.id} className={`rounded-[20px] bg-white/86 p-3.5 ring-1 ${tone.card} dark:bg-zinc-950/60`}>
+            <div className="flex items-start gap-3">
+              <span className={`mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${tone.icon}`}>
+                <Icon className="h-[18px] w-[18px]" />
+              </span>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ring-1 ${tone.badge}`}>
+                    {index + 1}. {check.label}
+                  </span>
+                  <h3 className="break-keep text-[14px] font-black leading-5 text-[#172019] dark:text-zinc-50">
+                    {check.title}
+                  </h3>
+                </div>
+                <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-[#657064] dark:text-zinc-400">
+                  {check.body}
+                </p>
+                <div className="mt-2 break-keep rounded-[14px] bg-[#f6f1e8] px-3 py-2 text-[12px] font-black leading-5 text-[#344136] dark:bg-zinc-900 dark:text-zinc-200">
+                  {check.ask}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   const speed = saleSpeedDisplay(card);
   const velocity = card.velocityBasis;
@@ -4118,6 +4355,7 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
 
 function BeginnerGuideStepVisual({ card, tone }: { card: RevealCard; tone: BeginnerGuideStep["tone"] }) {
   if (tone === "trust") return <BeginnerGuideProductVisual card={card} />;
+  if (tone === "check") return <BeginnerGuidePurchaseCheckVisual card={card} />;
   if (tone === "market") return <BeginnerGuideMarketVisual card={card} />;
   if (tone === "trend") return <BeginnerGuideTrendVisual card={card} />;
   if (tone === "buy") return <BeginnerGuideBuyCostVisual card={card} />;
@@ -4155,6 +4393,11 @@ function BeginnerGuideWalkthrough({
       bg: "bg-[#eef6ec]",
       text: "text-[#2f6440]",
       ring: "ring-[#cfe3ca]",
+    },
+    check: {
+      bg: "bg-amber-50",
+      text: "text-amber-800",
+      ring: "ring-amber-100",
     },
     market: {
       bg: "bg-sky-50",

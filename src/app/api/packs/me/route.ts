@@ -101,6 +101,7 @@ type RawRow = {
   num_faved: number;
   free_shipping: boolean;
   description_preview: string;
+  image_count: number | null;
   shop_review_rating: number | null;
   shop_review_count: number;
   sku_id: string | null;
@@ -197,6 +198,7 @@ type RevealItem = {
   favoriteCount: number | null;
   freeShipping: boolean;
   descriptionPreview: string;
+  imageCount: number | null;
   sellerUid: string | null;
   sellerName: string | null;
   sellerReviewRating: number | null;
@@ -579,7 +581,7 @@ export async function GET(req: Request) {
   const packOpenList = packOpenIds.join(",");
   const [rawRows, listingCostRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at&pid=in.(${pidList})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,image_count,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at&pid=in.(${pidList})`,
     ),
     loadJson<ListingCostRow[]>(
       `${tableUrl("mvp_listings")}?select=pid,price,shipping_fee,shipping_fee_general,estimated_buy_cost&pid=in.(${pidList})`,
@@ -710,6 +712,7 @@ export async function GET(req: Request) {
         favoriteCount: raw ? Number(raw.num_faved ?? 0) : null,
         freeShipping: Boolean(raw?.free_shipping),
         descriptionPreview: raw?.description_preview ?? "",
+        imageCount: raw?.image_count == null ? null : Number(raw.image_count),
         sellerUid: null,
         sellerName: null,
         sellerReviewRating: raw?.shop_review_rating == null ? null : Number(raw.shop_review_rating),

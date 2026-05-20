@@ -26,7 +26,7 @@ export type RiskScoreInput = {
   scoreFlags?: readonly string[] | null;
   descriptionPreview?: string | null;
   conditionClass?: string | null;
-  categorySlug?: string | null; // smartphone / earbuds / smartwatch / etc.
+  categorySlug?: string | null; // smartphone / earphone / smartwatch / etc.
   price?: number | null;
   skuMedian?: number | null;
   confidence?: number | null;
@@ -44,6 +44,7 @@ const PHOTO_REQUEST_HINT_RE = /사진\s*(추가|더|요청|드림)|직거래\s*�
 // 카테고리 — 배터리가 가격 핵심 변수인 SKU.
 const BATTERY_SENSITIVE_CATEGORIES = new Set([
   "smartphone",
+  "earphone",
   "earbuds",
   "smartwatch",
   "tablet",
@@ -96,7 +97,7 @@ function scoreLock(input: RiskScoreInput, flags: Set<string>): RiskAxisResult {
   return { axis: "lock", level: 0, reason: null };
 }
 
-function scoreBattery(input: RiskScoreInput, flags: Set<string>): RiskAxisResult {
+function scoreBattery(input: RiskScoreInput, _flags: Set<string>): RiskAxisResult {
   if (input.conditionClass === "low_batt") {
     return { axis: "battery", level: 2, reason: "배터리 저하" };
   }

@@ -77,6 +77,7 @@ type RawListingMeta = {
   first_seen_at: string | null;
   shop_review_rating: number | null;
   shop_review_count: number | null;
+  image_count: number | null;
   description_preview: string | null;
 };
 
@@ -270,7 +271,7 @@ async function loadPool(
   const comparableKeys = [...new Set(pool.map((r) => r.comparable_key).filter((k): k is string => Boolean(k)))];
   const [metaRes, marketBands, v7SiblingPresence] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,description_preview&pid=in.(${pids.join(",")})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview&pid=in.(${pids.join(",")})`,
       { headers },
     ),
     loadMarketBandsForPool(headers, comparableKeys),
@@ -359,6 +360,7 @@ function buildItems(
         freeShipping: meta?.free_shipping ?? false,
         sellerReviewRating: meta?.shop_review_rating ?? null,
         sellerReviewCount: meta?.shop_review_count ?? 0,
+        imageCount: meta?.image_count ?? null,
         descriptionPreview: meta?.description_preview ?? "",
         lastSeenAt: meta?.last_seen_at ?? null,
         soldOut: row.soldOut,

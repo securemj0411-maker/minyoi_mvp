@@ -18,6 +18,7 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.match(modal, /&& !guideModeActive \? \(/);
   assert.match(modal, /초보자 가이드/);
   assert.match(modal, /판매자 신뢰/);
+  assert.match(modal, /구매 전 체크/);
   assert.match(modal, /비교 매물/);
   assert.match(modal, /시세 흐름/);
   assert.match(modal, /매입가/);
@@ -44,8 +45,10 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   );
   assert.ok(order.indexOf("marketTrendGuideStep(card)") < order.indexOf("velocityGuideStep(card)"));
   assert.ok(order.indexOf("velocityGuideStep(card)") < order.indexOf("buyCostGuideStep(card)"));
-  assert.match(modal, /eyebrow: "4\. 판매 속도"/);
-  assert.match(modal, /eyebrow: "5\. 매입가"/);
+  assert.ok(order.indexOf("purchaseCheckGuideStep(card)") < order.indexOf("marketCompareGuideStep(card)"));
+  assert.match(modal, /eyebrow: "2\. 구매 전 체크"/);
+  assert.match(modal, /eyebrow: "5\. 판매 속도"/);
+  assert.match(modal, /eyebrow: "6\. 매입가"/);
 });
 
 test("detail modal uses the mobile detail shell on desktop", () => {
@@ -80,6 +83,19 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /sellerReviewRating/);
   assert.match(modal, /sellerReviewCount/);
   assert.match(modal, /SELLER_TRUST_MIN_REVIEW_COUNT = 10/);
+  assert.match(modal, /BEGINNER_PURCHASE_CHECK_LIMIT = 4/);
+  assert.match(modal, /beginnerPurchaseChecks/);
+  assert.match(modal, /data-beginner-guide-purchase-check/);
+  assert.match(modal, /구매 전에 이것만 물어보면 돼요/);
+  assert.match(modal, /혼자 보면 놓치기 쉬운 질문/);
+  assert.match(modal, /사진이 적어요/);
+  assert.match(modal, /배터리 상태를 물어보세요/);
+  assert.match(modal, /잠금 해제 상태를 확인해요/);
+  assert.match(modal, /정품 확인 포인트를 먼저 봐요/);
+  assert.match(modal, /구성품을 확인해요/);
+  assert.match(modal, /imageCount/);
+  assert.match(modal, /photoCount: card\.savedDetail\?\.imageCount/);
+  assert.match(modal, /categorySlug: categoryForBeginnerGuide\(card\)/);
   assert.match(modal, /이 상품 판매자는 후기가/);
   assert.match(modal, /평점은/);
   assert.match(modal, /판단 표본이 적어요/);
@@ -154,4 +170,13 @@ test("market velocity reads the stable all-condition materialization", () => {
   assert.match(sync, /condition_class text not null default 'all'/);
   assert.match(sync, /primary key \(date, comparable_key, condition_class\)/);
   assert.match(sync, /on conflict \(date, comparable_key, condition_class\)/);
+});
+
+test("pack reveal exposes listing photo count for beginner checks", () => {
+  const packOpen = source("src/lib/pack-open.ts");
+
+  assert.match(packOpen, /imageCount: number \| null/);
+  assert.match(packOpen, /image_count: number \| null/);
+  assert.match(packOpen, /shop_review_count,image_count,num_comment/);
+  assert.match(packOpen, /imageCount: rawMeta\.image_count/);
 });

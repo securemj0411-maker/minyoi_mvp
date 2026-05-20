@@ -36,6 +36,7 @@ type PoolItem = {
   freeShipping: boolean;
   sellerReviewRating: number | null;
   sellerReviewCount: number;
+  imageCount: number | null;
   descriptionPreview: string;
   soldOut: boolean;
 };
@@ -171,6 +172,7 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
       descriptionPreview: item.descriptionPreview,
       favoriteCount: null,
       freeShipping: item.freeShipping,
+      imageCount: item.imageCount,
       sellerName: null,
       sellerReviewRating: item.sellerReviewRating,
       sellerReviewCount: item.sellerReviewCount,
@@ -329,6 +331,7 @@ function revealCardToPoolItem(card: RevealCard): PoolItem {
     freeShipping: Boolean(card.savedDetail?.freeShipping),
     sellerReviewRating: card.savedDetail?.sellerReviewRating ?? null,
     sellerReviewCount: card.savedDetail?.sellerReviewCount ?? 0,
+    imageCount: card.savedDetail?.imageCount ?? null,
     descriptionPreview: card.savedDetail?.descriptionPreview ?? "",
     soldOut: false,
   };

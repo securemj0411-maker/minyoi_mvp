@@ -18,6 +18,7 @@ type RevealItem = {
   favoriteCount: number | null;
   freeShipping: boolean;
   descriptionPreview: string;
+  imageCount: number | null;
   sellerUid: string | null;
   sellerName: string | null;
   sellerReviewRating: number | null;
@@ -373,6 +374,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         favoriteCount: null,
         freeShipping: false,
         descriptionPreview: "",
+        imageCount: card.savedDetail?.imageCount ?? null,
         sellerUid: null,
         sellerName: null,
         sellerReviewRating: null,
@@ -486,6 +488,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         descriptionPreview: storedDescriptionPreview(selectedItem.descriptionPreview),
         favoriteCount: selectedItem.favoriteCount,
         freeShipping: selectedItem.freeShipping,
+        imageCount: selectedItem.imageCount,
         sellerName: selectedItem.sellerName,
         sellerReviewRating: selectedItem.sellerReviewRating,
         sellerReviewCount: selectedItem.sellerReviewCount,

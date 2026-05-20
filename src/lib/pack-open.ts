@@ -58,6 +58,7 @@ export type RevealCard = {
     descriptionPreview: string;
     favoriteCount: number | null;
     freeShipping: boolean;
+    imageCount: number | null;
     sellerName: string | null;
     sellerReviewRating: number | null;
     sellerReviewCount: number;
@@ -248,6 +249,7 @@ type RawSkuMeta = {
   free_shipping: boolean | null;
   shop_review_rating: number | null;
   shop_review_count: number | null;
+  image_count: number | null;
   num_comment: number | null;
   detail_enriched_at: string | null;
 };
@@ -550,7 +552,7 @@ async function fetchListings(pids: number[]): Promise<Map<number, ListingMeta>> 
   if (pids.length === 0) return new Map();
   const pidFilter = pids.join(",");
   const listingCols = "pid,name,url,price,sku_name,thumbnail_url";
-  const rawCols = "pid,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,num_comment,detail_enriched_at";
+  const rawCols = "pid,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,image_count,num_comment,detail_enriched_at";
   const [listingRes, rawRes] = await Promise.all([
     callSupabase(`/mvp_listings?select=${listingCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
     callSupabase(`/mvp_raw_listings?select=${rawCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
@@ -1623,6 +1625,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
             descriptionPreview: rawMeta.description_preview ?? "",
             favoriteCount: rawMeta.num_faved,
             freeShipping: Boolean(rawMeta.free_shipping),
+            imageCount: rawMeta.image_count,
             sellerName: null,
             sellerReviewRating: rawMeta.shop_review_rating,
             sellerReviewCount: rawMeta.shop_review_count ?? 0,
