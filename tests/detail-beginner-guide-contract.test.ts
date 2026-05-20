@@ -144,6 +144,13 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /\.sort\(\(a, b\) => \(b\.price \?\? 0\) - \(a\.price \?\? 0\)\)/);
   assert.match(modal, /저렴/);
   assert.match(modal, /data-beginner-guide-product-image/);
+  const productVisual = modal.slice(
+    modal.indexOf("function BeginnerGuideProductVisual"),
+    modal.indexOf("function BeginnerGuideStarGlyph"),
+  );
+  assert.match(productVisual, /rounded-\[28px\]/);
+  assert.match(productVisual, /object-contain object-center p-2\.5/);
+  assert.doesNotMatch(productVisual, /aria-hidden="true"|blur-\[3px\]|scale-105|drop-shadow/);
   assert.match(modal, /data-beginner-guide-market-evidence/);
   assert.match(modal, /data-beginner-guide-comparables/);
   assert.match(modal, /BeginnerGuideComparablePreview/);

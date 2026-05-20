@@ -3991,38 +3991,25 @@ function BeginnerGuideProductVisual({ card }: { card: RevealCard }) {
   return (
     <div
       data-beginner-guide-product-image
-      className="relative -mx-5 overflow-hidden bg-[#efe7da] shadow-[0_12px_30px_rgba(34,49,39,0.10)] dark:bg-zinc-950 sm:mx-0 sm:rounded-[24px] sm:ring-1 sm:ring-[#e4dacb] sm:dark:ring-zinc-800"
+      className="relative -mx-5 overflow-visible bg-[#f3ede3] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+14px)] dark:bg-zinc-950 sm:mx-0 sm:rounded-[26px] sm:px-4 sm:pt-4 sm:ring-1 sm:ring-[#e4dacb] sm:dark:ring-zinc-800"
     >
-      <div className="relative h-[152px] w-full sm:h-[210px]">
+      <div className="relative h-[166px] w-full overflow-hidden rounded-[28px] bg-[#fffaf2] shadow-[0_18px_36px_rgba(34,49,39,0.14)] ring-1 ring-white/80 dark:bg-zinc-900 dark:ring-zinc-800 sm:h-[212px]">
         {card.thumbnailUrl ? (
-          <>
-            <div className="absolute inset-0 scale-105 opacity-55 blur-[3px]">
-              <Image
-                src={card.thumbnailUrl}
-                alt=""
-                aria-hidden="true"
-                fill
-                sizes="(max-width: 639px) 100vw, 640px"
-                className="object-cover object-center"
-              />
-            </div>
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,251,244,0.10),rgba(255,251,244,0.34))] dark:bg-zinc-950/30" />
-            <Image
-              src={card.thumbnailUrl}
-              alt={card.name}
-              fill
-              sizes="(max-width: 639px) 100vw, 640px"
-              className="object-contain object-center p-3 drop-shadow-[0_12px_22px_rgba(34,49,39,0.15)]"
-              priority={false}
-            />
-          </>
+          <Image
+            src={card.thumbnailUrl}
+            alt={card.name}
+            fill
+            sizes="(max-width: 639px) 100vw, 640px"
+            className="rounded-[28px] object-contain object-center p-2.5"
+            priority={false}
+          />
         ) : (
           <div className="flex h-full items-center justify-center text-sm font-bold text-zinc-500 dark:text-zinc-400">
             이미지 없음
           </div>
         )}
       </div>
-      <div className="absolute bottom-3 left-3 flex max-w-[calc(100%-24px)] flex-wrap items-center gap-1.5">
+      <div className="absolute bottom-7 left-7 flex max-w-[calc(100%-56px)] flex-wrap items-center gap-1.5">
         <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black tabular-nums text-[#223127] shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:text-zinc-100">
           매입 {krw(card.price)}
         </span>
