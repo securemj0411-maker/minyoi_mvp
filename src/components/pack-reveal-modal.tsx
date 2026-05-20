@@ -3172,24 +3172,39 @@ function RevealCardItem({
                 <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
               </div>
               {dealExpanded ? <DealEvidencePanel card={card} /> : null}
-              <div className="mt-2">
-                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              {/* Wave 394.7.l (Claude Design reference): 차익 헤드라인 = ProfitHero 카드 톤.
+                  gradient bg + border + rounded-2xl + ₩ watermark + 큰 폰트. */}
+              <div className={`relative mt-3 overflow-hidden rounded-2xl border px-4 py-3.5 ${
+                isMarketInvalidated
+                  ? "border-rose-200/60 bg-gradient-to-br from-rose-50/80 to-rose-50/30 dark:border-rose-900/40 dark:from-rose-950/30 dark:to-rose-950/10"
+                  : "border-emerald-200/60 bg-gradient-to-br from-emerald-50/80 to-emerald-50/30 dark:border-emerald-900/40 dark:from-emerald-950/30 dark:to-emerald-950/10"
+              }`}>
+                {/* ₩ watermark — 우상단 큰 emerald (subtle) */}
+                <div className={`pointer-events-none absolute -right-2 -top-3 select-none text-7xl font-black leading-none ${
+                  isMarketInvalidated
+                    ? "text-rose-700/[0.06] dark:text-rose-400/[0.06]"
+                    : "text-emerald-700/[0.07] dark:text-emerald-400/[0.07]"
+                }`}>₩</div>
+
+                <div className={`relative flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.16em] ${
+                  isMarketInvalidated ? "text-rose-700 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400"
+                }`}>
                   <WalletIcon className="h-3 w-3" />
                   예상 순익
                 </div>
-                <div className="mt-0.5 flex flex-wrap items-baseline gap-2">
-                  <span className={`text-2xl font-bold leading-none tabular-nums ${
+                <div className="relative mt-1 flex flex-wrap items-baseline gap-2">
+                  <span className={`text-2xl font-black leading-none tabular-nums tracking-tight ${
                     isMarketInvalidated
                       ? "text-rose-600 dark:text-rose-300"
-                      : "text-emerald-600 dark:text-emerald-300"
+                      : "text-emerald-700 dark:text-emerald-300"
                   }`}>
                     {displayProfitRange(card)}
                   </span>
                   {netPct != null ? (
                     <span className={`rounded-full px-2 py-0.5 text-xs font-bold tabular-nums ${
                       isMarketInvalidated
-                        ? "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
-                        : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                        ? "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
+                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
                     }`}>
                       {netPct >= 0 ? "+" : ""}{netPct}%
                     </span>
@@ -3208,7 +3223,7 @@ function RevealCardItem({
                 </div>
                 {/* Wave 2026-05-19 v2 (사용자 피드백): "일수익 표본 부족 · 참고용" 거의 모든 매물에 떠서 가치 없음 → 제거.
                     회수 속도 정보는 UpperFold 회수 속도 타일에서 보임. */}
-                <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium tabular-nums text-zinc-600 dark:text-zinc-400">
+                <div className="relative mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium tabular-nums text-zinc-600 dark:text-zinc-400">
                   <span>매입 <span className="font-bold text-zinc-900 dark:text-zinc-100">{krw(card.price)}</span></span>
                   {/* Wave 246 (2026-05-19): explicit > 0 guard — 0 미스리딩 차단.
                      없으면 "시세 확인중" 보여서 사용자가 추정 데이터임을 인지. */}
