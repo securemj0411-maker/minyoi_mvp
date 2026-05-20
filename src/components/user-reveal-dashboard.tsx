@@ -40,6 +40,7 @@ type RevealItem = {
   transactionFeedbackNote: string | null;
   reportFeedbackType: string | null;
   reportFeedbackNote: string | null;
+  saved: boolean;
   // Wave 216: /me 목록은 marketBasis 중심. velocity/flow는 상품 보기 상세 호출 때 lazy-fill.
   marketBasis: RevealMarketBasis | null;
   velocityBasis: RevealVelocityBasis | null;
@@ -206,6 +207,14 @@ function previewModeFromUrl(value: string | null): "listing" | "guide" {
 }
 
 function applyFeedbackState(item: RevealItem, feedbackType: RevealFeedbackType, note?: string): RevealItem {
+  if (feedbackType === "watching") {
+    return {
+      ...item,
+      saved: true,
+      feedbackType: item.feedbackType ?? feedbackType,
+      feedbackNote: item.feedbackNote ?? note ?? null,
+    };
+  }
   if (isTransactionFeedbackType(feedbackType)) {
     return {
       ...item,
@@ -225,6 +234,15 @@ function applyFeedbackState(item: RevealItem, feedbackType: RevealFeedbackType, 
     };
   }
   return { ...item, feedbackType, feedbackNote: note ?? item.feedbackNote };
+}
+
+function applySavedState(item: RevealItem, saved: boolean): RevealItem {
+  return {
+    ...item,
+    saved,
+    feedbackType: item.feedbackType === "watching" && !saved ? null : item.feedbackType,
+    feedbackNote: item.feedbackType === "watching" && !saved ? null : item.feedbackNote,
+  };
 }
 
 export default function UserRevealDashboard({ userRef, welcomePending = false }: { userRef: string; welcomePending?: boolean }) {
@@ -380,6 +398,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         transactionFeedbackNote: null,
         reportFeedbackType: null,
         reportFeedbackNote: null,
+        saved: false,
         marketBasis: card.marketBasis,
         velocityBasis: card.velocityBasis,
         skuListingFlow: card.skuListingFlow ?? null,
@@ -641,6 +660,30 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       prev?.pid === pid ? applyFeedbackState(prev, feedbackType, note) : prev
     ));
     void fetchWithAuth("/api/packs/reveals/feedback", { pid, feedbackType, note }).catch(() => undefined);
+  }
+
+  function handleSaveToggle(pid: number, saved: boolean) {
+    if (!userRef) return;
+    setItems((prev) => prev.map((item) => (
+      item.pid === pid ? applySavedState(item, saved) : item
+    )));
+    setSelectedItem((prev) => (
+      prev?.pid === pid ? applySavedState(prev, saved) : prev
+    ));
+    void fetchWithAuth("/api/packs/reveals/save", { pid, saved })
+      .then((res) => {
+        if (!res.ok) throw new Error("save failed");
+      })
+      .catch((err) => {
+        console.error("[user-reveal-dashboard] save toggle failed", err);
+        setItems((prev) => prev.map((item) => (
+          item.pid === pid ? applySavedState(item, !saved) : item
+        )));
+        setSelectedItem((prev) => (
+          prev?.pid === pid ? applySavedState(prev, !saved) : prev
+        ));
+        setError("스크랩 저장 상태를 반영하지 못했어요. 잠시 후 다시 시도해주세요.");
+      });
   }
 
   // Wave 182c/Wave 245: 정보 오류 신고 — inaccurate_report endpoint (운영자 승인 시 토큰 +3).
@@ -1638,6 +1681,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           selectedItem?.transactionFeedbackType
           ?? (isTransactionFeedbackType(selectedItem?.feedbackType) ? selectedItem.feedbackType : null)
         }
+        currentSaved={Boolean(selectedItem?.saved || selectedItem?.feedbackType === "watching")}
+        onSaveToggle={handleSaveToggle}
         onLoadDetail={handleLoadDetail}
         onRetry={closeSelectedDetail}
         // Wave 182b: 손해 신고 — 매물 상세 모달 안 1곳에만 박음. 카드 list 에선 빠짐.

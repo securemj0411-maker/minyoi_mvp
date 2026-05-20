@@ -80,6 +80,8 @@ type Props = {
   onLinkClicked: (pid: number) => void;
   onFeedback: (pid: number, feedbackType: RevealFeedbackType, note?: string) => void;
   currentFeedbackType?: string | null;
+  currentSaved?: boolean;
+  onSaveToggle?: (pid: number, saved: boolean) => void;
   onLoadDetail: (pid: number) => Promise<RevealListingDetail>;
   relatedItems?: RelatedRevealItem[];
   onOpenRelatedItem?: (pid: number) => void;
@@ -176,6 +178,46 @@ const LOADING_STEPS = [
   "방금 팔면 얼마나 남는지 시세를 계산 중...",
   "리스크 신호와 단품 여부를 마지막으로 걸러내는 중...",
 ];
+
+const SAVED_REVEAL_PIDS_STORAGE_KEY = "minyoi_saved_reveal_pids_v1";
+const MAX_LOCAL_SAVED_REVEALS = 500;
+
+function readSavedRevealPidSet() {
+  if (typeof window === "undefined") return new Set<number>();
+  try {
+    const raw = window.localStorage.getItem(SAVED_REVEAL_PIDS_STORAGE_KEY);
+    if (!raw) return new Set<number>();
+    const parsed: unknown = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return new Set(
+        parsed
+          .map((value) => Number(value))
+          .filter((value) => Number.isFinite(value)),
+      );
+    }
+    if (parsed && typeof parsed === "object") {
+      return new Set(
+        Object.keys(parsed)
+          .map((value) => Number(value))
+          .filter((value) => Number.isFinite(value)),
+      );
+    }
+  } catch {}
+  return new Set<number>();
+}
+
+function writeSavedRevealPid(pid: number, saved: boolean) {
+  if (typeof window === "undefined" || !Number.isFinite(pid)) return;
+  try {
+    const next = readSavedRevealPidSet();
+    if (saved) next.add(pid);
+    else next.delete(pid);
+    window.localStorage.setItem(
+      SAVED_REVEAL_PIDS_STORAGE_KEY,
+      JSON.stringify(Array.from(next).slice(-MAX_LOCAL_SAVED_REVEALS)),
+    );
+  } catch {}
+}
 
 function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
@@ -3198,6 +3240,61 @@ function LoadingStage({ completing = false }: { completing?: boolean }) {
   );
 }
 
+function BookmarkGlyph({ saved, className }: { saved: boolean; className: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill={saved ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function RevealSaveButton({
+  saved,
+  visible,
+  variant,
+  onToggle,
+}: {
+  saved: boolean;
+  visible: boolean;
+  variant: "floating" | "sticky";
+  onToggle: () => void;
+}) {
+  const label = saved ? "스크랩 저장됨" : "스크랩 저장";
+  const floating = variant === "floating";
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={label}
+      aria-pressed={saved}
+      title={label}
+      tabIndex={visible ? 0 : -1}
+      data-scrap-save-button
+      className={
+        floating
+          ? "pointer-events-auto inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90"
+          : `pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full transition active:scale-90 ${
+              saved
+                ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-200 dark:hover:bg-emerald-900/50"
+                : "text-zinc-900 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800"
+            }`
+      }
+      style={floating ? { filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" } : undefined}
+    >
+      <BookmarkGlyph saved={saved} className={floating ? "h-6 w-6" : "h-5 w-5"} />
+    </button>
+  );
+}
+
 function RevealCardItem({
   card,
   delay,
@@ -3882,6 +3979,8 @@ export default function PackRevealModal({
   onLinkClicked,
   onFeedback,
   currentFeedbackType,
+  currentSaved,
+  onSaveToggle,
   onLoadDetail,
   relatedItems = [],
   onOpenRelatedItem,
@@ -3901,7 +4000,34 @@ export default function PackRevealModal({
   const photoRef = useRef<HTMLDivElement | null>(null);
   // Wave 364: 사진이 viewport에 보이면 floating nav (icon-only), 안 보이면 sticky nav bar.
   const [photoVisible, setPhotoVisible] = useState(true);
-  const activeRevealPid = result?.result === "success" ? result.reveals[0]?.pid ?? null : null;
+  const activeRevealCard = result?.result === "success" ? result.reveals[0] ?? null : null;
+  const activeRevealPid = activeRevealCard?.pid ?? null;
+  const [savedPids, setSavedPids] = useState<Set<number>>(() => new Set());
+  const activeRevealSaved = activeRevealPid != null && savedPids.has(activeRevealPid);
+
+  useEffect(() => {
+    if (!open || activeRevealPid == null) return;
+    const locallySaved = readSavedRevealPidSet().has(activeRevealPid);
+    setSavedPids((prev) => {
+      const next = new Set(prev);
+      if ((currentSaved ?? locallySaved)) next.add(activeRevealPid);
+      else next.delete(activeRevealPid);
+      return next;
+    });
+  }, [open, activeRevealPid, currentSaved]);
+
+  const handleToggleSave = useCallback(() => {
+    if (!activeRevealCard) return;
+    const nextSaved = !activeRevealSaved;
+    setSavedPids((prev) => {
+      const next = new Set(prev);
+      if (nextSaved) next.add(activeRevealCard.pid);
+      else next.delete(activeRevealCard.pid);
+      return next;
+    });
+    if (currentSaved == null) writeSavedRevealPid(activeRevealCard.pid, nextSaved);
+    onSaveToggle?.(activeRevealCard.pid, nextSaved);
+  }, [activeRevealCard, activeRevealSaved, currentSaved, onSaveToggle]);
 
   // 사진 영역 IntersectionObserver — scrollAreaRef 안에서 사진 visibility 추적.
   useEffect(() => {
@@ -4127,6 +4253,20 @@ export default function PackRevealModal({
                 </svg>
               </button>
             </div>
+            {activeRevealCard ? (
+              <div
+                className={`pointer-events-none absolute right-3 top-3 z-20 flex items-center gap-1 transition-opacity duration-200 sm:right-4 sm:top-4 ${
+                  photoVisible ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <RevealSaveButton
+                  saved={activeRevealSaved}
+                  visible={photoVisible}
+                  variant="floating"
+                  onToggle={handleToggleSave}
+                />
+              </div>
+            ) : null}
 
             {/* (B) Sticky nav bar — 사진 사라지면 등장 */}
             <div
@@ -4134,30 +4274,40 @@ export default function PackRevealModal({
                 photoVisible ? "opacity-0" : "opacity-100"
               }`}
             >
-              <div className="flex items-center gap-1 px-3 py-2 sm:px-4">
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  aria-label="뒤로가기"
-                  tabIndex={photoVisible ? -1 : 0}
-                  className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center text-zinc-900 transition hover:bg-zinc-100 rounded-full active:scale-90 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-                    <path d="m15 18-6-6 6-6" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  aria-label="대시보드로"
-                  tabIndex={photoVisible ? -1 : 0}
-                  className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center text-zinc-900 transition hover:bg-zinc-100 rounded-full active:scale-90 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                    <path d="M9 22V12h6v10" />
-                  </svg>
-                </button>
+              <div className="flex items-center justify-between gap-1 px-3 py-2 sm:px-4">
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    aria-label="뒤로가기"
+                    tabIndex={photoVisible ? -1 : 0}
+                    className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-900 transition hover:bg-zinc-100 active:scale-90 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                      <path d="m15 18-6-6 6-6" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    aria-label="대시보드로"
+                    tabIndex={photoVisible ? -1 : 0}
+                    className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-900 transition hover:bg-zinc-100 active:scale-90 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                      <path d="M9 22V12h6v10" />
+                    </svg>
+                  </button>
+                </div>
+                {activeRevealCard ? (
+                  <RevealSaveButton
+                    saved={activeRevealSaved}
+                    visible={!photoVisible}
+                    variant="sticky"
+                    onToggle={handleToggleSave}
+                  />
+                ) : null}
               </div>
             </div>
           </>

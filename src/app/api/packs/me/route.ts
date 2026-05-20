@@ -219,6 +219,7 @@ type RevealItem = {
   transactionFeedbackNote: string | null;
   reportFeedbackType: string | null;
   reportFeedbackNote: string | null;
+  saved: boolean;
   // Wave 216: 목록 응답은 market/current profit 중심. velocity/flow는 상품 보기에서 lazy-fill.
   marketBasis: RevealMarketBasis | null;
   velocityBasis: RevealVelocityBasis | null;
@@ -603,9 +604,11 @@ export async function GET(req: Request) {
   const feedbackByPid = new Map<number, FeedbackRow>();
   const transactionFeedbackByPid = new Map<number, FeedbackRow>();
   const reportFeedbackByPid = new Map<number, FeedbackRow>();
+  const savedFeedbackByPid = new Set<number>();
   for (const row of feedbackRows) {
     const pid = Number(row.pid);
     if (!Number.isFinite(pid)) continue;
+    if (row.feedback_type === "watching") savedFeedbackByPid.add(pid);
     feedbackByPid.set(pid, pickDisplayFeedback(feedbackByPid.get(pid), row));
     const transactionFeedback = pickFeedbackOfKind(transactionFeedbackByPid.get(pid), row, TRANSACTION_FEEDBACK_PRIORITY);
     if (transactionFeedback) transactionFeedbackByPid.set(pid, transactionFeedback);
@@ -731,6 +734,7 @@ export async function GET(req: Request) {
         transactionFeedbackNote: transactionFeedback?.note ?? null,
         reportFeedbackType: reportFeedback?.feedback_type ?? null,
         reportFeedbackNote: reportFeedback?.note ?? null,
+        saved: savedFeedbackByPid.has(Number(reveal.pid)),
         // Wave 130 (2026-05-16): 매물 condition_class 전달 → 매칭되는 시세 우선 표시 (사업 보고서 L2).
         marketBasis: computedMarketBasis,
         // 2026-05-20 P0-Demand-A: 하드코딩 null 제거. reveal/pool 라우트와 동일 채움.
