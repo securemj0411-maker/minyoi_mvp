@@ -6963,6 +6963,9 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "벨트", "지갑", "모자",
       "그리즐리", "grizzly", "자켓", "jacket", "코트", "coat", "재킷"],
     msrpKrw: 420000, released: 2020,
+    // Wave 408: terse "RRL 데님" rows are jeans by default; explicit 셔츠/쇼츠/pants
+    // keywords still win in parseClothingProductType before catalog fallback.
+    defaultProductType: "jeans",
   },
   // Wave 247.1 (2026-05-19): Polo RRL shirt-pants narrow 추가 split.
   //   기존 broad clothing-polo-rrl-shirt-pants 는 catch-all 로 유지 (additive only).
@@ -7209,7 +7212,7 @@ export const CATALOG: Sku[] = [
     brand: "The North Face", category: "clothing", laneKey: "tnf_nuptse_1996",
     modelName: "TNF 1996 Retro Nuptse",
     aliases: ["1996 Nuptse", "1996 눕시", "노스페이스 눕시"],
-    mustContain: [["노스페이스", "north face", "tnf"], ["눕시", "nuptse", "1996"]],
+    mustContain: [["노스페이스", "north face", "tnf"], ["1996"]],
     // collab은 별도 SKU
     // Wave 248 (2026-05-19): 사용자 코멘트 id 192~194 mismatch fix.
     //   - 쇼츠/반바지 (pid 331382713 "빔즈 노스페이스 눕시 쇼츠" 89k) — 다운자켓 아닌 반바지 variant
@@ -7239,6 +7242,8 @@ export const CATALOG: Sku[] = [
     // Wave 235 (2026-05-19): Cecilie Bahnsen collab 93만, Mountain Light/Mountain Parka 별 모델 차단.
     mustNotContain: [
       "supreme", "슈프림", "키즈", "kids", "purple label", "퍼플라벨", "퍼플 라벨",
+      "north face purple", "the north face purple", "tnf purple", "purple mountain",
+      "nanamica", "나나미카", "하이마운틴", "high mountain",
       // Wave 235 collab 차단
       "cecilie", "세실리에", "bahnsen", "반센", "세실리에 반센",
       "brain dead", "브레인데드", "junya", "준야", "gucci", "구찌",
@@ -7255,7 +7260,11 @@ export const CATALOG: Sku[] = [
     modelName: "TNF Denali Fleece",
     aliases: ["Denali", "데날리", "노스페이스 데날리"],
     mustContain: [["노스페이스", "north face", "tnf"], ["denali", "데날리"]],
-    mustNotContain: ["supreme", "슈프림", "키즈", "kids", "purple label"],
+    mustNotContain: [
+      "supreme", "슈프림", "키즈", "kids", "purple label",
+      // Wave 407: Denali fleece lane should not absorb pants/bottoms.
+      "팬츠", "바지", "pants", "트레이닝", "조거",
+    ],
     msrpKrw: 290000, released: 1988,
     defaultProductType: "jacket", // Wave 236d — Denali = 플리스 자켓 라인 확정.
   },
@@ -8733,6 +8742,8 @@ export const CATALOG: Sku[] = [
       "wales bonner", "웨일즈보너", "웨일즈 보너", "pleasure", "플레저", "pleasures",
       "닌자 거북이", "닌자거북이", "tmnt", "거북이 슈퍼스타", "thug club", "떠그클럽", "떠그 클럽",
       "ot-tech", "ot tech", "clot 슈퍼스타", "프라다 슈퍼스타",
+      // Wave 422: Superstar 본품 sneaker lane에서 apparel/mule 파생상품 분리.
+      "트랙수트", "트랙탑", "져지", "저지", "jersey", "아디폼", "adifom", "뮬", "mule",
     ],
     msrpKrw: 119000, released: 1969,
   },
@@ -8814,10 +8825,12 @@ export const CATALOG: Sku[] = [
   {
     id: "clothing-bape-tee",
     brand: "A Bathing Ape (BAPE)", category: "clothing", laneKey: "bape_tee",
-    modelName: "BAPE T-Shirt / Hoodie (basic Ape Head/카모)",
-    aliases: ["BAPE Tee", "베이프 티셔츠", "BAPE Hoodie", "베이프 후드", "Ape Head"],
-    mustContain: [["bape", "베이프", "a bathing ape"], ["반팔", "티셔츠", "tee ", "t-shirt", "후드", "hoodie", "맨투맨", "크루넥", "ape head"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "carbon", "샤크 후드", "shark hoodie", "yeezy", "스타워즈", "신발", "스니커즈", "운동화",
+    modelName: "BAPE T-Shirt (basic Ape Head/카모)",
+    aliases: ["BAPE Tee", "베이프 티셔츠", "Ape Head Tee"],
+    mustContain: [["bape", "베이프", "a bathing ape"], ["반팔", "티셔츠", "tee ", "t-shirt", "tshirt"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "carbon",
+      "후드", "후디", "hoodie", "후드집업", "집업", "zip", "맨투맨", "크루넥", "crewneck", "sweatshirt",
+      "샤크", "shark", "yeezy", "스타워즈", "신발", "스니커즈", "운동화",
       // Wave 241 (2026-05-19): 사용자 코멘트 — BAPE tee SKU 안 콜라보 가격 45~520k 다 한 시세.
       //   collab 별 가격 천차만별 — 별도 SKU 또는 차단 필요.
       "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack",
@@ -8833,13 +8846,51 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 199000, released: 1993,
   },
+  // Wave 413 (2026-05-20): BAPE basic apparel product-type split.
+  // Existing bape_tee was catching hoodie/hoodie_zip/crewneck rows, so keep the
+  // split lanes blocked until sample quality is audited separately.
+  {
+    id: "clothing-bape-hoodie",
+    brand: "A Bathing Ape (BAPE)", category: "clothing", laneKey: "bape_hoodie",
+    modelName: "BAPE Hoodie (basic/camo, non-Shark)",
+    aliases: ["BAPE Hoodie", "베이프 후드", "베이프 후드티"],
+    mustContain: [["bape", "베이프", "a bathing ape"], ["후드", "후드티", "후디", "hoodie"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "샤크", "shark", "집업", "zip", "반집업", "half zip", "신발", "스니커즈", "운동화"],
+    msrpKrw: 320000, released: 1993,
+  },
+  {
+    id: "clothing-bape-hoodie-zip",
+    brand: "A Bathing Ape (BAPE)", category: "clothing", laneKey: "bape_hoodie_zip",
+    modelName: "BAPE Hoodie Zip (basic/camo, non-Shark)",
+    aliases: ["BAPE Hoodie Zip", "베이프 후드집업", "베이프 집업후드"],
+    mustContain: [["bape", "베이프", "a bathing ape"], ["후드집업", "집업후드", "집업", "zip up", "zip-up", "full zip"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "샤크", "shark", "신발", "스니커즈", "운동화"],
+    msrpKrw: 360000, released: 1993,
+  },
+  {
+    id: "clothing-bape-crewneck",
+    brand: "A Bathing Ape (BAPE)", category: "clothing", laneKey: "bape_crewneck",
+    modelName: "BAPE Crewneck / Sweatshirt",
+    aliases: ["BAPE Crewneck", "베이프 맨투맨", "베이프 크루넥"],
+    mustContain: [["bape", "베이프", "a bathing ape"], ["맨투맨", "크루넥", "crewneck", "sweatshirt", "스웻셔츠", "스웻 셔츠"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "샤크", "shark", "후드", "hoodie", "집업", "zip", "신발", "스니커즈", "운동화"],
+    msrpKrw: 280000, released: 1993,
+  },
   {
     id: "clothing-bape-shark-hoodie",
     brand: "A Bathing Ape (BAPE)", category: "clothing", laneKey: "bape_shark_hoodie",
     modelName: "BAPE Shark Hoodie (시그니처 한정)",
     aliases: ["BAPE Shark", "베이프 샤크", "Shark Hoodie", "샤크 후드"],
-    mustContain: [["bape", "베이프", "a bathing ape"], ["샤크", "shark"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "신발", "운동화", "야구", "농구", "축구"],
+    mustContain: [
+      ["bape", "베이프", "a bathing ape"],
+      ["샤크", "shark"],
+      ["후드", "후드티", "후디", "hoodie", "hooded", "후드집업", "집업후드", "반집업", "half zip", "풀집업", "full zip", "zip up"],
+    ],
+    mustNotContain: [
+      "키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "신발", "운동화", "야구", "농구", "축구",
+      "티셔츠", "tee ", "t-shirt", "tshirt", "롱슬리브", "long sleeve", "팬츠", "pants", "바지", "쇼츠", "shorts", "반바지",
+      "맨투맨", "크루넥", "crewneck", "sweatshirt",
+    ],
     msrpKrw: 450000, released: 2005,
     // Wave 236f (2026-05-19): audit 발견 — BAPE Shark 패턴이 pants/tee/조거에도 출시 (multi-line model).
     //   사용자 코멘트: "이게 왜 같은 sample?" — Shark 패딩 SKU 에 조거팬츠 매칭.
@@ -9023,7 +9074,9 @@ export const CATALOG: Sku[] = [
     aliases: ["Torrentshell", "토렌쉘", "Patagonia Shell"],
     mustContain: [["patagonia", "파타고니아"], ["torrentshell", "토렌쉘", "바람막이", "shell", "h2no", "윈드"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack", "retro", "레트로", "다운", "down",
-      "아동", "유아", "3t", "4t", "5t", "infant"],
+      "아동", "유아", "3t", "4t", "5t", "infant",
+      // Brand-stuffed outdoor listings. Patagonia keyword is often used as style bait.
+      "나이키", "nike", "acg", "몽벨", "montbell", "로아", "roa"],
     msrpKrw: 199000, released: 1980,
   },
   // MLB 모자 + 의류 mainstream
@@ -9778,9 +9831,18 @@ export function normalize(text: string): string {
 }
 
 function tokenHit(normalizedText: string, token: string): boolean {
-  const n = normalize(token).trim();
+  const normalizedToken = normalize(token);
+  const n = normalizedToken.trim();
   if (!n) return false;
+  // Bag broad uses "백 " as a Korean suffix signal (레이디백/게임백/에르백).
+  // Keep suffix matching, but do not let department-store or beauty-line words
+  // like "백화점판" / "백스테이지" become a bag product-type signal.
+  if (n === "백") return /백(?!화점|스테이지)/.test(normalizedText);
+  if (/^\s|\s$/.test(token)) return normalizedText.includes(normalizedToken);
   if (/^\d+$/.test(n)) return normalizedText.includes(` ${n} `);
+  // Short latin tokens such as "lv", "nb", "ps", "se" should not hit inside
+  // longer model strings (e.g. Nike AF1 LV8 was leaking into Louis Vuitton).
+  if (/^[a-z0-9]{1,3}$/.test(n)) return normalizedText.includes(` ${n} `);
   return normalizedText.includes(n);
 }
 
@@ -9805,7 +9867,10 @@ const GLOBAL_FASHION_NOISE: string[] = [
   //   sample sweep 발견 — "(구매) rrl 반다나" 9,999,999 / "RRL 콩그레스 구매 원합니다" 11,111,111 등.
   //   셀러가 사는 매물 = 미뇨이 candidate pool 에 들어오면 안 됨 (시세 inflation).
   "구매 원함", "구매원함", "구매원해요", "구매 원해요", "구매원합니다", "구매 원합니다",
-  "(구매)", "[구매]", "구매희망", "구매 희망", "구해 봅니다", "사고 싶어요", "사고싶어요",
+  // Bracketed "(구매)" is handled in classifyListing using raw title punctuation.
+  // Keeping it here normalizes to bare "구매" and blocks purchase-proof text
+  // such as "백화점구매인증가능".
+  "구매희망", "구매 희망", "구해 봅니다", "사고 싶어요", "사고싶어요",
   // Wave 235: SOLD / 판매완료 마커 차단 — 1B/placeholder 가격 동반 빈도 높음.
   "sold", "판매완료", "판완료", "거래완료", "예약완료", "판매됨",
   // 사이즈 미상
@@ -9855,6 +9920,9 @@ const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, strin
   bag: [
     // Wave 232 (2026-05-19): bag SKU 에 시계/신발/의류 차단 강화.
     //   사용자 명시 "프라다 빈티지 시계가 bag-prada SKU 매칭" — Wave 230 noise 부족.
+    "뷰티", "beauty", "코스메틱", "cosmetic", "화장품",
+    "백스테이지", "backstage", "블러셔", "blusher", "팔레트", "palette", "아이크림", "하이라이터",
+    "립스틱", "립밤", "어딕트", "홀리데이",
     "운동화", "sneaker", "스니커즈", "부츠", "boot", "샌들", "sandal",
     "슈즈", "shoes", "메리제인", "mary jane", "더비", "derby", "펌프스", "pumps",
     "플랫슈즈", "flat shoes", "로퍼", "loafer", "옥스포드", "oxford",
@@ -9881,7 +9949,8 @@ const UNIVERSAL_BUY_REQUEST_NOISE: string[] = [
   "구매 원함", "구매원함", "구매원해요", "구매 원해요", "구매원합니다", "구매 원합니다",
   // Wave 237 (2026-05-19): production audit — Apple Watch Ultra "구매합니다(가격상의)" 500k 매물 통과.
   "구매합니다", "구매 합니다",
-  "(구매)", "[구매]", "구매희망", "구매 희망",
+  // Bracketed "(구매)" is raw-punctuation sensitive; see pipeline.buyingHits.
+  "구매희망", "구매 희망",
   "사고 싶어요", "사고싶어요", "사고싶습니다", "삽니다", "살게요", "매입",
 ];
 
@@ -9918,6 +9987,7 @@ const CLOTHING_JACKET_PRODUCT_TYPE_MISMATCH_NOISE: string[] = [
   // cap/hat variant (Supreme 모자 / TNF 모자 / 비니)
   "모자", "비니", "beanie", "볼캡", "ball cap", "야구모자", "버킷햇", "bucket hat",
   "벙거지", "스냅백", "snapback", "메쉬캡", "트러커캡", "trucker cap",
+  "5패널", "파이브패널", "five panel", "5 panel",
   // belt variant (Supreme 벨트 / Polo RRL 벨트)
   "벨트", "belt",
   // wallet variant (지갑 / 카드지갑 / 콘초 월렛)
@@ -9939,9 +10009,13 @@ const SHOE_CATEGORY_MISMATCH_NOISE: string[] = [
   "바지", "팬츠", "pants",
   // tops
   "트랙탑", "트랙 탑", "track top", "트랙수트", "tracksuit", "츄리닝",
+  "져지", "저지", "jersey", "유니폼", "uniform",
   "티셔츠", "t-shirt", "tee", "반팔", "롱슬리브", "long sleeve", "맨투맨", "후드티", "후드집업", "후드 집업",
   // jackets / coats
-  "자켓", "재킷", "jacket", "패딩", "다운", "코트", "coat", "바람막이", "windbreaker", "파카", "parka",
+  "자켓", "재킷", "jacket", "패딩", "코트", "coat", "바람막이", "windbreaker", "파카", "parka",
+  // Wave 414 (2026-05-20): bare "다운"은 Prada Downtown 같은 정상 신발명을 오염시켜서 compound만 차단.
+  "다운자켓", "다운 자켓", "다운재킷", "다운 재킷", "다운패딩", "다운 패딩", "다운점퍼", "다운 점퍼",
+  "다운베스트", "다운 베스트", "패딩베스트", "패딩 베스트", "니트베스트", "니트 베스트", "조끼", "vest",
   // shorts
   "반바지", "쇼츠", "shorts", "버뮤다",
   // shirts
@@ -9949,7 +10023,11 @@ const SHOE_CATEGORY_MISMATCH_NOISE: string[] = [
   // jeans / denim
   "청바지", "데님", "denim", "jeans", "트러커",
   // bag (shoe SKU 매칭 잘못 시 차단)
-  "토트백", "토트 백", "tote bag", "백팩 단품",
+  "토트백", "토트 백", "tote bag", "백팩", "backpack", "백팩 단품",
+  "크로스백", "크로스 백", "crossbody", "cross bag",
+  "숄더백", "숄더 백", "shoulder bag",
+  "웨이스트백", "웨이스트 백", "waist bag", "웨이스트팩", "waist pack",
+  "메신저백", "메신저 백", "messenger bag",
 ];
 
 const GLOBAL_DESIGNER_COLLAB_NOISE: string[] = [
@@ -10092,7 +10170,7 @@ function skuMatches(sku: Sku, normalizedText: string): boolean {
       const tokenLower = token.toLowerCase();
       // 정확 매치 또는 sku 토큰이 collab noise 토큰의 substring (3자+) 이면 skip.
       if (skuTokens.has(tokenLower)) continue;
-      if (skuTokensArr.some((skuTok) => skuTok.length >= 3 && tokenLower.includes(skuTok))) continue;
+      if (skuTokensArr.some((skuTok) => skuTok.length >= 3 && (tokenLower.includes(skuTok) || skuTok.includes(tokenLower)))) continue;
       if (tokenHit(normalizedText, token)) return false;
     }
     // Wave 254.6 (2026-05-20): clothing jacket/down_jacket/coat SKU 가 다른 product_type 매물 매칭 차단.
@@ -10140,16 +10218,14 @@ function skuMatches(sku: Sku, normalizedText: string): boolean {
     //   policy: shoe SKU defaultProductType=sneaker/boot/sandal/loafer/slipper + 매물 text 가 clothing keyword 매치 시 reject.
     //   효과: clothing keyword 매물 sku_id=NULL → 시세 비교군 제외 + pool 차단.
     if (
-      sku.category === "shoe" &&
-      sku.defaultProductType &&
-      (sku.defaultProductType === "sneaker"
-        || sku.defaultProductType === "boot"
-        || sku.defaultProductType === "sandal"
-        || sku.defaultProductType === "loafer"
-        || sku.defaultProductType === "slipper")
+      sku.category === "shoe"
     ) {
+      const hasStrongShoeSignal = /스니커즈|스니커|운동화|러닝화|런닝화|신발(?!\s*상자|박스|용\s*더스트백)|슈즈|구두|로퍼|샌들|슬리퍼|sneaker|shoes?|loafer|sandal|slipper/.test(normalizedText);
       for (const token of SHOE_CATEGORY_MISMATCH_NOISE) {
         if (skuTokens.has(token.toLowerCase())) continue;
+        // Wave 415 (2026-05-20): denim 소재 스니커즈(LV Trainer Denim 등)는 정상 신발.
+        // 단, "부츠컷 데님"처럼 shoe word 없이 boot substring만 있는 의류는 계속 차단한다.
+        if ((token === "데님" || token === "denim") && hasStrongShoeSignal) continue;
         if (tokenHit(normalizedText, token)) return false;
       }
     }
@@ -10201,6 +10277,16 @@ function requiresCombinedLaneVeto(sku: Sku | null): sku is Sku {
 //   promotion 흐름에 카테고리 없어서 broad 매물 다수 잘못 매칭 (Arcteryx Gamma/Beta 매물이 broad에).
 //   사용자 지적 "ready 매물 분류 이상한 거 다 찾아내".
 const NARROW_PROMOTE_CATEGORIES = new Set(["smartphone", "laptop", "tablet", "watch", "sport_golf", "game_console", "clothing", "shoe", "bag"]);
+const FASHION_PROMOTE_CATEGORIES = new Set(["clothing", "shoe", "bag"]);
+
+function isFashionBroadPromotionTarget(sku: Sku) {
+  const laneKey = sku.laneKey ?? "";
+  return (
+    laneKey.endsWith("_broad") ||
+    laneKey.endsWith("_apparel") ||
+    sku.id.endsWith("-broad")
+  );
+}
 
 function tryNarrowLanePromotion(broad: Sku, combined: string, titleNorm: string): Sku | null {
   // Wave 223 (2026-05-19): `_broad` 또는 `_apparel` 접미사 lane key 는 broad lane —
@@ -10210,7 +10296,12 @@ function tryNarrowLanePromotion(broad: Sku, combined: string, titleNorm: string)
   if (!NARROW_PROMOTE_CATEGORIES.has(broad.category)) return null;
   if (combined === titleNorm) return null; // description 없으면 의미 X
   const narrowCandidates = CATALOG_WITH_NOISE_W94.filter(
-    (s) => Boolean(s.laneKey) && s.category === broad.category && skuMatches(s, combined),
+    (s) => (
+      Boolean(s.laneKey) &&
+      s.category === broad.category &&
+      (!FASHION_PROMOTE_CATEGORIES.has(broad.category) || !isFashionBroadPromotionTarget(s)) &&
+      skuMatches(s, combined)
+    ),
   );
   if (narrowCandidates.length === 1) return narrowCandidates[0];
   return null;

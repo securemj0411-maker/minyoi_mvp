@@ -181,6 +181,11 @@ const LOADING_STEPS = [
 
 const SAVED_REVEAL_PIDS_STORAGE_KEY = "minyoi_saved_reveal_pids_v1";
 const MAX_LOCAL_SAVED_REVEALS = 500;
+const BEGINNER_GUIDE_HANDLED_PIDS_STORAGE_KEY = "minyoi_reveal_beginner_guide_handled_pids_v1";
+const BEGINNER_GUIDE_SEEN_COUNT_STORAGE_KEY = "minyoi_reveal_beginner_guide_seen_count_v1";
+const BEGINNER_GUIDE_SKIP_COUNT_STORAGE_KEY = "minyoi_reveal_beginner_guide_skip_count_v1";
+const BEGINNER_GUIDE_AUTO_SHOW_LIMIT = 3;
+const BEGINNER_GUIDE_AUTO_HIDE_SKIP_THRESHOLD = 4;
 
 function readSavedRevealPidSet() {
   if (typeof window === "undefined") return new Set<number>();
@@ -219,6 +224,76 @@ function writeSavedRevealPid(pid: number, saved: boolean) {
   } catch {}
 }
 
+function readBeginnerGuideHandledPidSet() {
+  if (typeof window === "undefined") return new Set<number>();
+  try {
+    const raw = window.localStorage.getItem(BEGINNER_GUIDE_HANDLED_PIDS_STORAGE_KEY);
+    if (!raw) return new Set<number>();
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return new Set<number>();
+    return new Set(
+      parsed
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value)),
+    );
+  } catch {
+    return new Set<number>();
+  }
+}
+
+function writeBeginnerGuideHandledPid(pid: number) {
+  if (typeof window === "undefined" || !Number.isFinite(pid)) return;
+  try {
+    const next = readBeginnerGuideHandledPidSet();
+    next.add(pid);
+    window.localStorage.setItem(
+      BEGINNER_GUIDE_HANDLED_PIDS_STORAGE_KEY,
+      JSON.stringify(Array.from(next).slice(-MAX_LOCAL_SAVED_REVEALS)),
+    );
+  } catch {}
+}
+
+function readBeginnerGuideCounter(key: string) {
+  if (typeof window === "undefined") return 0;
+  try {
+    const value = Number(window.localStorage.getItem(key) ?? "0");
+    return Number.isFinite(value) ? value : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function incrementBeginnerGuideCounter(key: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, String(readBeginnerGuideCounter(key) + 1));
+  } catch {}
+}
+
+function shouldAutoShowBeginnerGuide(pid: number | null) {
+  if (typeof window === "undefined") return false;
+  if (pid == null || !Number.isFinite(pid)) return false;
+  try {
+    if (readBeginnerGuideHandledPidSet().has(pid)) return false;
+    if (readBeginnerGuideCounter(BEGINNER_GUIDE_SKIP_COUNT_STORAGE_KEY) >= BEGINNER_GUIDE_AUTO_HIDE_SKIP_THRESHOLD) {
+      return false;
+    }
+    return readBeginnerGuideCounter(BEGINNER_GUIDE_SEEN_COUNT_STORAGE_KEY) < BEGINNER_GUIDE_AUTO_SHOW_LIMIT;
+  } catch {
+    return true;
+  }
+}
+
+function recordBeginnerGuideCompleted(pid: number | null) {
+  if (pid != null) writeBeginnerGuideHandledPid(pid);
+  incrementBeginnerGuideCounter(BEGINNER_GUIDE_SEEN_COUNT_STORAGE_KEY);
+}
+
+function recordBeginnerGuideSkipped(pid: number | null) {
+  if (pid != null) writeBeginnerGuideHandledPid(pid);
+  incrementBeginnerGuideCounter(BEGINNER_GUIDE_SKIP_COUNT_STORAGE_KEY);
+}
+
 function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
@@ -250,6 +325,258 @@ function marketDiscountPercent(card: RevealCard) {
   if (!median || median <= 0 || !card.price || card.price <= 0) return null;
   const pct = Math.round(((median - card.price) / median) * 100);
   return Number.isFinite(pct) ? pct : null;
+}
+
+type BeginnerGuideStep = {
+  eyebrow: string;
+  title: string;
+  metric: string;
+  metricLabel: string;
+  body: string;
+  note: string;
+  tone: "trust" | "market" | "trend" | "buy" | "resell" | "safety" | "channel" | "speed" | "summary";
+};
+
+function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
+  const rating = card.savedDetail?.sellerReviewRating ?? null;
+  const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
+  const reviewLabel = reviewCount.toLocaleString("ko-KR");
+
+  if (rating != null && rating >= 4.8 && reviewCount >= 30) {
+    return {
+      eyebrow: "1. 판매자 신뢰",
+      title: "먼저 상품과 판매자를 같이 봐요",
+      metric: `후기 ${reviewLabel}건`,
+      metricLabel: `평점 ${rating.toFixed(1)}점`,
+      body: `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점으로 신뢰가 있는 판매자예요.`,
+      note: "가격만 좋아도 판매자 이력이 약하면 거래 방식과 상태 확인을 더 보수적으로 봅니다.",
+      tone: "trust",
+    };
+  }
+
+  if (rating != null && reviewCount > 0) {
+    return {
+      eyebrow: "1. 판매자 신뢰",
+      title: "먼저 상품과 판매자를 같이 봐요",
+      metric: `후기 ${reviewLabel}건`,
+      metricLabel: `평점 ${rating.toFixed(1)}점`,
+      body: `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점이에요. 후기가 많지 않은 편이면 안전결제와 실제 상태 확인을 조금 더 보수적으로 보면 좋아요.`,
+      note: "셀러 신뢰도는 참고 지표라서, 최종 거래 전에는 사진과 구성품을 직접 확인해야 합니다.",
+      tone: "trust",
+    };
+  }
+
+  return {
+    eyebrow: "1. 판매자 신뢰",
+    title: "먼저 상품과 판매자를 같이 봐요",
+    metric: "확인 필요",
+    metricLabel: "후기 표본 부족",
+    body: "이 상품 판매자의 후기 데이터는 아직 충분하지 않아요. 가격이 좋아 보여도 거래 방식, 사진, 구성품을 더 보수적으로 확인하는 쪽이 맞아요.",
+    note: "가능하면 안전결제, 직거래 검수, 추가 사진 요청을 같이 보세요.",
+    tone: "trust",
+  };
+}
+
+function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
+  const market = card.marketBasis;
+  const median = market?.medianPrice ?? null;
+  const condition = marketConditionLabel(card);
+  const sampleCount = market?.sampleCount ?? 0;
+
+  if (median != null && median > 0 && card.price > 0) {
+    const diff = median - card.price;
+    const diffAbs = Math.abs(diff);
+    const metric = diff > 0
+      ? `${krw(diffAbs)} 낮음`
+      : diff < 0
+        ? `${krw(diffAbs)} 높음`
+        : "시세와 비슷";
+    const title = diff > 0
+      ? "상태가 비슷한 매물보다 낮아요"
+      : diff < 0
+        ? "상태가 비슷한 매물보다 높아요"
+        : "상태가 비슷한 매물과 비슷해요";
+    const body = diff > 0
+      ? `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준보다 ${krw(diffAbs)} 낮아요.`
+      : diff < 0
+        ? `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준보다 ${krw(diffAbs)} 높아요.`
+        : `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준과 거의 비슷한 가격이에요.`;
+
+    return {
+      eyebrow: "2. 비교 매물",
+      title,
+      metric,
+      metricLabel: `비슷한 상태 시세 ${krw(median)} · 이 매물 ${krw(card.price)}`,
+      body: `${body} 아래에 보이는 매물들이 이 판단의 기준이에요.`,
+      note: sampleCount > 0
+        ? `비교 표본 ${sampleCount.toLocaleString("ko-KR")}건 중 일부를 먼저 보여드릴게요.`
+        : "상태 분류와 표본 수에 따라 시세 판단은 달라질 수 있어요.",
+      tone: "market",
+    };
+  }
+
+  return {
+    eyebrow: "2. 비교 매물",
+    title: "시세 표본을 더 모으는 중이에요",
+    metric: "표본 부족",
+    metricLabel: market?.label ?? card.skuName,
+    body: "같은 모델과 상태의 비교 매물이 충분하지 않으면 가격 판단을 강하게 단정하지 않아요. 그래도 현재 모인 비교 매물부터 보여드릴게요.",
+    note: "이 경우 상세 분석에서 비교 매물과 원본 링크를 직접 확인하는 게 중요합니다.",
+    tone: "market",
+  };
+}
+
+function marketTrendGuideStep(card: RevealCard): BeginnerGuideStep {
+  const median = card.marketBasis?.medianPrice ?? null;
+  const condition = marketConditionLabel(card);
+
+  return {
+    eyebrow: "3. 시세 흐름",
+    title: "그 다음 시세가 흔들렸는지 봐요",
+    metric: median ? krw(median) : "수집 중",
+    metricLabel: `${condition} 기준 시세`,
+    body: "비교 매물 가격이 오늘만 튄 건지, 며칠 동안 비슷하게 유지됐는지 그래프로 확인해요.",
+    note: "점이 적으면 아직 누적 중인 데이터라 참고용으로만 봐야 합니다.",
+    tone: "trend",
+  };
+}
+
+function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
+  const velocity = card.velocityBasis;
+  const flow = card.skuListingFlow;
+  const hasVelocity =
+    velocity?.medianHoursToSold != null &&
+    velocity.medianHoursToSold > 0 &&
+    velocity.sold7dCount > 0;
+
+  if (hasVelocity) {
+    const label = velocityHoursLabel(velocity.medianHoursToSold);
+    return {
+      eyebrow: "8. 판매 속도",
+      title: `비슷한 상품은 보통 ${label} 안에 팔렸어요`,
+      metric: label,
+      metricLabel: `최근 7일 거래 ${velocity.sold7dCount.toLocaleString("ko-KR")}건`,
+      body: `가격이 괜찮아도 오래 묶이면 부담이 커져요. 그래서 같은 모델의 판매완료 흐름을 보고, 보통 ${label} 안에 거래됐는지 같이 봤어요.`,
+      note: "판매 속도는 과거 관측치라 실제 판매일을 보장하지 않습니다.",
+      tone: "speed",
+    };
+  }
+
+  if (flow && flow.avgPerDay7d > 0) {
+    return {
+      eyebrow: "8. 판매 속도",
+      title: "최근 매물 유입량으로 시장 분위기를 봐요",
+      metric: `${flow.count24h.toLocaleString("ko-KR")}건`,
+      metricLabel: `24시간 등록 · 7일 평균 ${flow.avgPerDay7d.toLocaleString("ko-KR")}건/일`,
+      body: "판매완료 표본이 아직 부족해서, 대신 최근 등록량을 함께 봤어요. 매물이 너무 많이 쌓이는 시장인지 먼저 확인하는 흐름이에요.",
+      note: "유입량은 수요가 아니라 공급 흐름이므로 보조 지표로 봐야 합니다.",
+      tone: "speed",
+    };
+  }
+
+  return {
+    eyebrow: "8. 판매 속도",
+    title: "판매 속도 표본은 아직 부족해요",
+    metric: "수집 중",
+    metricLabel: "거래완료 표본 부족",
+    body: "거래완료 데이터가 충분하지 않아서 판매 주기를 단정하지 않았어요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 보는 게 좋아요.",
+    note: "상세 분석에서 시세 그래프와 비교 매물을 함께 확인하세요.",
+    tone: "speed",
+  };
+}
+
+function buyCostGuideStep(card: RevealCard): BeginnerGuideStep {
+  const snapshot = costAssuranceSnapshot(card);
+  const shippingText = snapshot.shippingValueLabel === "확인 필요"
+    ? "배송비는 아직 확인이 필요해요"
+    : `내가 낼 배송비는 ${snapshot.shippingValueLabel}로 계산했어요`;
+
+  return {
+    eyebrow: "4. 매입가",
+    title: "상품가에 배송비를 더해요",
+    metric: snapshot.buyerCostLabel,
+    metricLabel: "상품가 + 내가 낼 배송비",
+    body: `상품가격은 ${krw(card.price)}이지만, ${shippingText}. 그래서 실제 매입가는 ${snapshot.buyerCostLabel}로 봅니다.`,
+    note: "택포/배송비 별도 문구는 구매 전 판매자에게 한 번 더 확인하는 게 안전합니다.",
+    tone: "buy",
+  };
+}
+
+function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
+  const snapshot = costAssuranceSnapshot(card);
+  const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
+  const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} (${krw(snapshot.sellingFee)})`;
+
+  return {
+    eyebrow: "5. 되팔 때 비용",
+    title: "번개에 팔면 수수료를 빼요",
+    metric: displayProfitRange(card),
+    metricLabel: "번개장터 기준 예상 차익",
+    body: `번개장터로 다시 팔면 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}를 빼고 봐요.`,
+    note: "그래서 단순히 시세와 매입가 차이만 보는 것보다 보수적으로 계산합니다.",
+    tone: "resell",
+  };
+}
+
+function safePaymentGuideStep(): BeginnerGuideStep {
+  return {
+    eyebrow: "6. 안전결제",
+    title: "앱 안에서 결제해야 가장 안전해요",
+    metric: "구매확정 전 확인",
+    metricLabel: "문제 있으면 구매확정 누르지 않기",
+    body: "안전결제는 결제대금을 바로 판매자에게 보내지 않고 보관하는 방식이에요. 물건을 받고 상태를 확인한 뒤 구매확정을 누르는 흐름으로 보면 됩니다.",
+    note: "앱 밖 계좌이체나 외부 링크 결제는 보호 범위가 달라질 수 있어 피하는 게 좋아요.",
+    tone: "safety",
+  };
+}
+
+function channelGuideStep(card: RevealCard): BeginnerGuideStep {
+  const market = card.marketBasis;
+  const bunjangProfit = expectedProfitAverage(card);
+  const bunjangFee = market?.medianPrice ? Math.round(market.medianPrice * SELLING_FEE_RATE) : 0;
+  const daangnProfit = bunjangProfit + bunjangFee;
+  const betterChannel = daangnProfit > bunjangProfit ? "당근 직거래가 더 남을 수 있지만" : "번개장터 재판매는";
+
+  return {
+    eyebrow: "7. 되팔 곳",
+    title: "팔 곳에 따라 남는 돈이 달라요",
+    metric: displayProfitRange(card),
+    metricLabel: "번개장터 기준 예상 차익",
+    body: `${betterChannel}, 거래 범위와 네고 부담이 달라요. 그래서 번개장터에 다시 팔 때와 당근 직거래로 팔 때를 나눠서 보여드릴게요.`,
+    note: "당근은 수수료가 적을 수 있지만 지역/직거래/네고 부담이 있고, 번개장터는 전국 거래와 안전결제 흐름이 장점이에요.",
+    tone: "channel",
+  };
+}
+
+function summaryGuideStep(card: RevealCard): BeginnerGuideStep {
+  const market = card.marketBasis;
+  const sampleCount = market?.sampleCount ?? 0;
+
+  return {
+    eyebrow: "9. 마무리",
+    title: "이제 상세 분석으로 넘어가면 돼요",
+    metric: "근거 확인 완료",
+    metricLabel: "비교 매물 · 배송비 · 수수료 · 안전결제",
+    body: "지금까지 핵심 판단 근거를 한 장씩 봤어요. 더 자세한 계산식과 원본 매물은 상세 분석에서 확인하면 됩니다.",
+    note: sampleCount > 0
+      ? `비교 표본 ${sampleCount.toLocaleString("ko-KR")}건 기준이며, 실제 결과는 가격·상태·거래 조건에 따라 달라집니다.`
+      : "실제 결과는 가격·상태·거래 조건에 따라 달라집니다.",
+    tone: "summary",
+  };
+}
+
+function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
+  return [
+    sellerTrustGuideStep(card),
+    marketCompareGuideStep(card),
+    marketTrendGuideStep(card),
+    buyCostGuideStep(card),
+    resellCostGuideStep(card),
+    safePaymentGuideStep(),
+    channelGuideStep(card),
+    velocityGuideStep(card),
+    summaryGuideStep(card),
+  ];
 }
 
 function displayProfitRange(card: RevealCard) {
@@ -1451,34 +1778,36 @@ function RevealProductImage({ card }: { card: RevealCard }) {
   ) : null;
 
   return (
-    <div className="relative left-1/2 aspect-[4/4.2] max-h-[58dvh] w-screen -translate-x-1/2 overflow-hidden rounded-none bg-black dark:bg-black sm:left-auto sm:mx-0 sm:h-[240px] sm:w-[240px] sm:translate-x-0 sm:rounded-lg sm:bg-[#eee7da] sm:dark:bg-zinc-800 lg:h-[280px] lg:w-[280px]">
+    <div className="relative left-1/2 aspect-[4/3] max-h-[42dvh] w-screen -translate-x-1/2 overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-900 sm:left-auto sm:mx-0 sm:h-[168px] sm:w-[168px] sm:translate-x-0 sm:rounded-lg lg:h-[196px] lg:w-[196px]">
       {/* Wave 393.3: ConditionPhotoBadge 모달에선 nav (좌상 ← 🏠 floating)에 가려서 제거.
           텍스트 영역 LastVerifiedAtBadge 옆에 ConditionChip으로 대체 노출. */}
       {card.thumbnailUrl ? (
         <>
-          <Image
-            src={card.thumbnailUrl}
-            alt=""
-            aria-hidden="true"
-            fill
-            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 240px, 280px"
-            className="object-cover object-center opacity-100 sm:scale-[1.08] sm:opacity-55 sm:blur-sm"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/35 sm:bg-[linear-gradient(180deg,rgba(255,253,249,0.22),rgba(238,231,218,0.30))] dark:sm:bg-zinc-950/20" />
-          <div className="absolute inset-0 p-0 sm:p-2">
+          <div className="absolute inset-0 scale-[1.03] opacity-75 blur-[2px]">
+            <Image
+              src={card.thumbnailUrl}
+              alt=""
+              aria-hidden="true"
+              fill
+              sizes="(max-width: 639px) 100vw, (max-width: 1023px) 168px, 196px"
+              className="object-cover object-center"
+            />
+          </div>
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,251,244,0.10),rgba(238,231,218,0.28))] dark:bg-zinc-950/24" />
+          <div className="absolute inset-0 p-3 sm:p-2">
             <div className="relative h-full w-full">
               <Image
                 src={card.thumbnailUrl}
                 alt={card.name}
                 fill
-                sizes="(max-width: 639px) 100vw, (max-width: 1023px) 240px, 280px"
-                className="rounded-none object-cover object-center sm:scale-100 sm:rounded-md sm:object-contain sm:drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)]"
+                sizes="(max-width: 639px) 100vw, (max-width: 1023px) 168px, 196px"
+                className="rounded-[16px] object-contain object-center shadow-[0_12px_24px_rgba(34,49,39,0.12)] ring-1 ring-black/8 sm:rounded-md sm:drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)]"
               />
             </div>
           </div>
           {/* Wave 394.7.w (사용자 짚음 + handoff): 좌하 condition pill — nav(top-left)랑 안 겹침. */}
           {card.marketBasis?.conditionClass ? (
-            <div className="absolute bottom-4 left-4 z-10">
+            <div className="absolute bottom-3 left-3 z-10">
               <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-[#4b5650] shadow-[0_2px_8px_rgba(0,0,0,0.18)] backdrop-blur">
                 <span className="mr-1 text-emerald-600">●</span>
                 {conditionFriendlyText(card.marketBasis.conditionClass)}
@@ -1491,7 +1820,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
               e.stopPropagation();
               setPreviewOpen(true);
             }}
-            className="absolute bottom-4 right-4 z-10 rounded-full bg-zinc-950/75 px-4 py-2 text-xs font-black text-white shadow-lg backdrop-blur transition hover:bg-zinc-950/86"
+            className="absolute bottom-3 right-3 z-10 rounded-full bg-zinc-950/75 px-3.5 py-2 text-xs font-black text-white shadow-lg backdrop-blur transition hover:bg-zinc-950/86"
           >
             크게 보기
           </button>
@@ -3295,16 +3624,636 @@ function RevealSaveButton({
   );
 }
 
+function BeginnerGuideProductVisual({ card }: { card: RevealCard }) {
+  const condition = card.marketBasis?.conditionClass
+    ? conditionFriendlyText(card.marketBasis.conditionClass)
+    : marketConditionLabel(card);
+
+  return (
+    <div
+      data-beginner-guide-product-image
+      className="relative -mx-5 overflow-hidden bg-[#efe7da] shadow-[0_12px_30px_rgba(34,49,39,0.10)] dark:bg-zinc-950 sm:mx-0 sm:rounded-[24px] sm:ring-1 sm:ring-[#e4dacb] sm:dark:ring-zinc-800"
+    >
+      <div className="relative h-[152px] w-full sm:h-[210px]">
+        {card.thumbnailUrl ? (
+          <>
+            <div className="absolute inset-0 scale-105 opacity-55 blur-[3px]">
+              <Image
+                src={card.thumbnailUrl}
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="(max-width: 639px) 100vw, 640px"
+                className="object-cover object-center"
+              />
+            </div>
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,251,244,0.10),rgba(255,251,244,0.34))] dark:bg-zinc-950/30" />
+            <Image
+              src={card.thumbnailUrl}
+              alt={card.name}
+              fill
+              sizes="(max-width: 639px) 100vw, 640px"
+              className="object-contain object-center p-3 drop-shadow-[0_12px_22px_rgba(34,49,39,0.15)]"
+              priority={false}
+            />
+          </>
+        ) : (
+          <div className="flex h-full items-center justify-center text-sm font-bold text-zinc-500 dark:text-zinc-400">
+            이미지 없음
+          </div>
+        )}
+      </div>
+      <div className="absolute bottom-3 left-3 flex max-w-[calc(100%-24px)] flex-wrap items-center gap-1.5">
+        <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black tabular-nums text-[#223127] shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:text-zinc-100">
+          매입 {krw(card.price)}
+        </span>
+        <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black text-[#4d6654] shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:text-zinc-300">
+          {condition}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function BeginnerGuideStarGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        fill="currentColor"
+        d="m12 2.7 2.76 5.6 6.18.9-4.47 4.36 1.05 6.15L12 16.8l-5.52 2.9 1.05-6.14L3.06 9.2l6.18-.9L12 2.7Z"
+      />
+    </svg>
+  );
+}
+
+function BeginnerGuideTrustBody({ card, fallback }: { card: RevealCard; fallback: string }) {
+  const rating = card.savedDetail?.sellerReviewRating ?? null;
+  const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
+  const reviewLabel = reviewCount.toLocaleString("ko-KR");
+
+  if (rating == null || reviewCount <= 0) {
+    return (
+      <p className="mt-4 break-keep text-[16px] font-semibold leading-7 text-[#475449] dark:text-zinc-300">
+        {fallback}
+      </p>
+    );
+  }
+
+  return (
+    <p data-beginner-guide-trust-highlight className="mt-4 break-keep text-[16px] font-semibold leading-7 text-[#475449] dark:text-zinc-300">
+      이 상품 판매자는{" "}
+      <span className="inline-flex items-baseline rounded-full bg-emerald-50 px-2 py-0.5 font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-900/55">
+        후기가 <strong className="ml-1 text-[17px]">{reviewLabel}건</strong>
+      </span>
+      이고{" "}
+      <span className="inline-flex items-baseline rounded-full bg-amber-50 px-2 py-0.5 font-black text-amber-700 ring-1 ring-amber-100 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-900/55">
+        평점이 <strong className="ml-1 text-[17px]">{rating.toFixed(1)}점</strong>
+      </span>
+      으로 신뢰가 있는 판매자예요.
+    </p>
+  );
+}
+
+function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
+  const rating = card.savedDetail?.sellerReviewRating ?? null;
+  const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
+  const reviewLabel = reviewCount.toLocaleString("ko-KR");
+  const hasRating = rating != null && Number.isFinite(rating);
+  const starCount = hasRating ? Math.max(0, Math.min(5, Math.round(rating))) : 0;
+
+  return (
+    <div data-beginner-guide-trust-metric className="my-6 grid grid-cols-2 gap-3 border-y border-[#eee5d8] py-5 dark:border-zinc-800">
+      <div className="rounded-[20px] bg-white/84 p-4 ring-1 ring-amber-100 dark:bg-zinc-950/60 dark:ring-amber-900/40">
+        <div className="flex items-center gap-2 text-[12px] font-black text-amber-700 dark:text-amber-200">
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-200">
+            <BeginnerGuideStarGlyph className="h-4 w-4" />
+          </span>
+          <span>판매자 평점</span>
+        </div>
+        <div className="mt-3 flex items-end gap-1.5">
+          <span className="text-[32px] font-black leading-none text-amber-700 dark:text-amber-200">
+            {hasRating ? rating.toFixed(1) : "-"}
+          </span>
+          <span className="pb-1 text-[13px] font-black text-[#7b8378] dark:text-zinc-400">/ 5.0</span>
+        </div>
+        <div aria-label={hasRating ? `평점 ${rating.toFixed(1)}점` : "평점 없음"} className="mt-2 flex gap-0.5 text-amber-400">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <BeginnerGuideStarGlyph
+              key={index}
+              className={`h-3.5 w-3.5 ${index < starCount ? "opacity-100" : "opacity-18"}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-[20px] bg-white/84 p-4 ring-1 ring-emerald-100 dark:bg-zinc-950/60 dark:ring-emerald-900/40">
+        <div className="flex items-center gap-2 text-[12px] font-black text-emerald-700 dark:text-emerald-200">
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200">
+            <TrophyIcon className="h-4 w-4" />
+          </span>
+          <span>거래 후기</span>
+        </div>
+        <div className="mt-3 flex items-end gap-1.5">
+          <span className="text-[32px] font-black leading-none text-emerald-700 dark:text-emerald-200">
+            {reviewLabel}
+          </span>
+          <span className="pb-1 text-[13px] font-black text-[#7b8378] dark:text-zinc-400">건</span>
+        </div>
+        <div className="mt-2 text-[12px] font-bold text-[#6b7269] dark:text-zinc-400">
+          실제 거래 이력 기준
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
+  const speed = saleSpeedDisplay(card);
+  const flow = card.skuListingFlow;
+
+  return (
+    <div className="rounded-[22px] bg-white/82 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
+          <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">판매 주기</div>
+          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{speed.label}</div>
+        </div>
+        <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
+          <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">거래 표본</div>
+          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{speed.sold7dCount.toLocaleString("ko-KR")}건</div>
+        </div>
+        <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
+          <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">최근 등록</div>
+          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{flow?.count24h?.toLocaleString("ko-KR") ?? "수집중"}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BeginnerGuideSummaryVisual() {
+  return (
+    <div className="rounded-[22px] bg-white/82 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+      <div className="grid gap-2 text-[13px] font-bold text-[#4f5b52] dark:text-zinc-300">
+        {["비교 매물 확인", "시세 흐름 확인", "매입가·배송비 확인", "수수료·안전결제 확인"].map((label) => (
+          <div key={label} className="flex items-center gap-2 rounded-[14px] bg-[#f4efe5] px-3 py-2.5 dark:bg-zinc-900">
+            <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-300" />
+            <span>{label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
+  const [listings, setListings] = useState<ComparableListing[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const ck = card.marketBasis?.comparableKey ?? null;
+  const cc = card.marketBasis?.conditionClass ?? null;
+  const ccLabel =
+    cc === "unopened" ? "미개봉"
+    : cc === "mint" ? "S급"
+    : cc === "clean" ? "A급"
+    : cc === "worn" ? "사용감 있는"
+    : cc === "flawed" ? "하자 있는"
+    : cc === "low_batt" ? "배터리 약한"
+    : cc === "normal" ? "비슷한 상태"
+    : "비슷한 상태";
+
+  useEffect(() => {
+    if (!ck) return;
+    let cancelled = false;
+    setLoading(true);
+    fetch(`/api/listings/${card.pid}/market-source`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((j: { comparables?: ComparableListing[] }) => {
+        if (cancelled) return;
+        const filtered = (j.comparables ?? [])
+          .filter((item) => item.listingState !== "disappeared")
+          .sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
+          .slice(0, 2);
+        setListings(filtered);
+      })
+      .catch(() => {
+        if (!cancelled) setListings([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ck, card.pid]);
+
+  if (!ck) {
+    return (
+      <div data-beginner-guide-comparables className="mt-4 rounded-[20px] bg-white/84 px-4 py-4 text-[13px] font-bold text-[#6b7269] ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:text-zinc-400 dark:ring-zinc-800">
+        비교 매물은 아직 누적 중이에요.
+      </div>
+    );
+  }
+
+  return (
+    <div data-beginner-guide-comparables className="mt-4 overflow-hidden rounded-[22px] bg-white/86 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+      <div className="flex items-center justify-between gap-2 px-4 py-3">
+        <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">비교 매물</div>
+        <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{ccLabel}끼리</div>
+      </div>
+      {loading ? (
+        <div className="px-4 pb-4 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">비교 매물 불러오는 중...</div>
+      ) : !listings || listings.length === 0 ? (
+        <div className="px-4 pb-4 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">비교 매물 누적 중</div>
+      ) : (
+        <div className="divide-y divide-[#eee5d8] dark:divide-zinc-800">
+          {listings.map((item) => {
+            const diff = item.price - card.price;
+            const diffLabel = diff > 0 ? `이 매물보다 ${krw(diff)} 비쌈` : diff < 0 ? `이 매물보다 ${krw(Math.abs(diff))} 쌈` : "비슷한 가격";
+            const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
+            return (
+              <div key={item.pid} className="flex items-center gap-3 px-4 py-3">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-[#f2eadf] dark:bg-zinc-800">
+                  {item.thumbnailUrl ? (
+                    <Image src={item.thumbnailUrl} alt="" fill sizes="48px" className="object-cover" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="line-clamp-1 text-[12px] font-black text-[#172019] dark:text-zinc-100">{item.name || "비교 매물"}</div>
+                  <div className="mt-0.5 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{diffLabel}</div>
+                </div>
+                <div className="shrink-0 text-right">
+                  {isSold ? <div className="mb-0.5 text-[9px] font-black text-emerald-600 dark:text-emerald-300">판매완료</div> : null}
+                  <div className="text-[14px] font-black tabular-nums text-[#172019] dark:text-zinc-100">{krw(item.price)}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BeginnerGuideMarketVisual({ card }: { card: RevealCard }) {
+  return (
+    <div data-beginner-guide-market-evidence>
+      <BeginnerGuideComparablePreview card={card} />
+    </div>
+  );
+}
+
+function BeginnerGuideTrendVisual({ card }: { card: RevealCard }) {
+  return (
+    <div data-beginner-guide-market-trend className="mt-4 overflow-hidden rounded-[22px] bg-white/84 p-3 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">시세 그래프</div>
+        <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">같은 상태 30일 추이</div>
+      </div>
+      <MarketHistoryChart
+        comparableKey={card.marketBasis?.comparableKey ?? null}
+        currentPrice={card.price}
+        conditionClass={card.marketBasis?.conditionClass ?? null}
+        priceSource={card.marketBasis?.priceSource ?? null}
+        referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
+      />
+    </div>
+  );
+}
+
+function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
+  const snapshot = costAssuranceSnapshot(card);
+
+  return (
+    <div data-beginner-guide-buy-cost className="mt-4 overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+      <div className="px-4 py-4">
+        <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">최종 매입가</div>
+        <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
+          {snapshot.buyerCostLabel}
+        </div>
+      </div>
+      <div className="divide-y divide-[#eee5d8] border-y border-[#eee5d8] dark:divide-zinc-800 dark:border-zinc-800">
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <div>
+            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">상품가</div>
+            <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">현재 매입 기준</div>
+          </div>
+          <div className="text-[16px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{krw(card.price)}</div>
+        </div>
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <div>
+            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">내가 낼 배송비</div>
+            <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">구매 전 재확인</div>
+          </div>
+          <div className="text-[16px] font-black tabular-nums text-sky-700 dark:text-sky-300">{snapshot.shippingValueLabel}</div>
+        </div>
+      </div>
+      <div className={`m-4 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${snapshot.confidenceClass}`}>
+        {snapshot.confidenceLabel}
+      </div>
+    </div>
+  );
+}
+
+function BeginnerGuideResellCostVisual({ card }: { card: RevealCard }) {
+  const snapshot = costAssuranceSnapshot(card);
+  const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
+  const salePriceLabel = snapshot.salePrice == null ? "시세 확인 중" : krw(snapshot.salePrice);
+  const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`;
+
+  return (
+    <div data-beginner-guide-resell-cost className="mt-4 overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+      <div className="px-4 py-4">
+        <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">번개장터 기준 예상 차익</div>
+        <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
+          {displayProfitRange(card)}
+        </div>
+      </div>
+      <div className="divide-y divide-[#eee5d8] border-y border-[#eee5d8] dark:divide-zinc-800 dark:border-zinc-800">
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <span className="text-[13px] font-black text-[#172019] dark:text-zinc-50">되팔 시세</span>
+          <span className="text-[15px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{salePriceLabel}</span>
+        </div>
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <span className="text-[13px] font-black text-[#172019] dark:text-zinc-50">안전결제 수수료</span>
+          <span className="text-[15px] font-black tabular-nums text-amber-700 dark:text-amber-300">{sellingFeeLabel}</span>
+        </div>
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <span className="text-[13px] font-black text-[#172019] dark:text-zinc-50">재배송비 + 안전버퍼</span>
+          <span className="text-[15px] font-black tabular-nums text-amber-700 dark:text-amber-300">{krw(RESELL_SHIPPING_FEE + SAFETY_BUFFER)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BeginnerGuideSafetyVisual() {
+  const rows = [
+    ["앱 안 결제", "외부 계좌이체 대신 번개장터 안전결제로 진행"],
+    ["받고 나서 확정", "상태가 다르면 구매확정을 누르지 말고 문의/환불 절차로 이동"],
+  ];
+
+  return (
+    <div data-beginner-guide-safe-payment className="mt-5 rounded-[22px] bg-white/84 p-4 ring-1 ring-[#d7e6d5] dark:bg-zinc-950/60 dark:ring-emerald-900/40">
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200">
+          <ShieldIcon className="h-6 w-6" />
+        </div>
+        <div>
+          <div className="text-[14px] font-black text-[#172019] dark:text-zinc-50">안전결제는 에스크로 방식</div>
+          <div className="mt-0.5 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">거래완료 전까지 대금을 보관하는 구조</div>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-2">
+        {rows.map(([title, body], index) => (
+          <div key={title} className="flex gap-3 rounded-[16px] bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[11px] font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950 dark:text-emerald-200 dark:ring-emerald-900/50">
+              {index + 1}
+            </span>
+            <div>
+              <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">{title}</div>
+              <div className="mt-0.5 break-keep text-[12px] font-semibold leading-5 text-[#667164] dark:text-zinc-400">{body}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
+  const market = card.marketBasis;
+  const bunjangProfit = expectedProfitAverage(card);
+  const bunjangFee = market?.medianPrice ? Math.round(market.medianPrice * SELLING_FEE_RATE) : 0;
+  const daangnProfit = bunjangProfit + bunjangFee;
+
+  return (
+    <div data-beginner-guide-channel-profit className="mt-5 grid grid-cols-2 gap-3">
+      <div className="rounded-[22px] bg-white/84 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+        <div className="flex items-center gap-2">
+          <BunjangLogo className="h-7 w-7 rounded-full" />
+          <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">번개장터</div>
+        </div>
+        <div className="mt-3 text-[22px] font-black tabular-nums text-emerald-700 dark:text-emerald-300">+{krw(bunjangProfit)}</div>
+        <div className="mt-1 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">안전결제 수수료 차감</div>
+        <div className="mt-3 rounded-full bg-emerald-50 px-2.5 py-1 text-center text-[11px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200">전국 거래</div>
+      </div>
+      <div className="rounded-[22px] bg-amber-50/80 p-4 ring-1 ring-amber-200 dark:bg-amber-950/20 dark:ring-amber-900/55">
+        <div className="flex items-center gap-2">
+          <DaangnLogo className="h-7 w-7 rounded-full" />
+          <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">당근 직거래</div>
+        </div>
+        <div className="mt-3 text-[22px] font-black tabular-nums text-amber-700 dark:text-amber-200">+{krw(daangnProfit)}</div>
+        <div className="mt-1 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">수수료 0원 가정</div>
+        <div className="mt-3 rounded-full bg-white/80 px-2.5 py-1 text-center text-[11px] font-black text-amber-700 ring-1 ring-amber-100 dark:bg-zinc-950/60 dark:text-amber-200 dark:ring-amber-900/50">지역/네고 부담</div>
+      </div>
+    </div>
+  );
+}
+
+function BeginnerGuideStepVisual({ card, tone }: { card: RevealCard; tone: BeginnerGuideStep["tone"] }) {
+  if (tone === "trust") return <BeginnerGuideProductVisual card={card} />;
+  if (tone === "market") return <BeginnerGuideMarketVisual card={card} />;
+  if (tone === "trend") return <BeginnerGuideTrendVisual card={card} />;
+  if (tone === "buy") return <BeginnerGuideBuyCostVisual card={card} />;
+  if (tone === "resell") return <BeginnerGuideResellCostVisual card={card} />;
+  if (tone === "safety") return <BeginnerGuideSafetyVisual />;
+  if (tone === "channel") return <BeginnerGuideChannelVisual card={card} />;
+  if (tone === "speed") return <BeginnerGuideSpeedVisual card={card} />;
+  return <BeginnerGuideSummaryVisual />;
+}
+
+function BeginnerGuideWalkthrough({
+  card,
+  stepIndex,
+  onNext,
+  onSkip,
+  onClose,
+}: {
+  card: RevealCard;
+  stepIndex: number;
+  onNext: () => void;
+  onSkip: () => void;
+  onClose: () => void;
+}) {
+  const steps = beginnerGuideSteps(card);
+  const safeIndex = Math.max(0, Math.min(stepIndex, steps.length - 1));
+  const step = steps[safeIndex];
+  const isLast = safeIndex === steps.length - 1;
+  const toneClasses: Record<BeginnerGuideStep["tone"], { bg: string; text: string; ring: string; button: string }> = {
+    trust: {
+      bg: "bg-[#eef6ec]",
+      text: "text-[#2f6440]",
+      ring: "ring-[#cfe3ca]",
+      button: "bg-[var(--rd-em)] hover:bg-[var(--rd-em-700)]",
+    },
+    market: {
+      bg: "bg-sky-50",
+      text: "text-sky-700",
+      ring: "ring-sky-100",
+      button: "bg-[#3182f6] hover:bg-[#1c6fe8]",
+    },
+    trend: {
+      bg: "bg-blue-50",
+      text: "text-blue-700",
+      ring: "ring-blue-100",
+      button: "bg-[#3182f6] hover:bg-[#1c6fe8]",
+    },
+    buy: {
+      bg: "bg-emerald-50",
+      text: "text-emerald-700",
+      ring: "ring-emerald-100",
+      button: "bg-[var(--rd-em)] hover:bg-[var(--rd-em-700)]",
+    },
+    resell: {
+      bg: "bg-amber-50",
+      text: "text-amber-800",
+      ring: "ring-amber-100",
+      button: "bg-amber-600 hover:bg-amber-700",
+    },
+    safety: {
+      bg: "bg-[#eef6ec]",
+      text: "text-[#2f6440]",
+      ring: "ring-[#cfe3ca]",
+      button: "bg-[#223127] hover:bg-[#344136]",
+    },
+    channel: {
+      bg: "bg-orange-50",
+      text: "text-orange-700",
+      ring: "ring-orange-100",
+      button: "bg-orange-600 hover:bg-orange-700",
+    },
+    speed: {
+      bg: "bg-amber-50",
+      text: "text-amber-800",
+      ring: "ring-amber-100",
+      button: "bg-amber-600 hover:bg-amber-700",
+    },
+    summary: {
+      bg: "bg-[#f4f0e8]",
+      text: "text-[#344136]",
+      ring: "ring-[#e4dacb]",
+      button: "bg-[#223127] hover:bg-[#344136]",
+    },
+  };
+  const toneClass = toneClasses[step.tone];
+  const showDefaultMetric = step.tone === "speed";
+  const showNote = step.tone === "safety" || step.tone === "summary";
+
+  return (
+    <section
+      data-beginner-guide-fullscreen
+      className="relative min-h-[100dvh] overflow-hidden bg-[#fffbf4] px-5 pb-4 pt-0 dark:bg-zinc-900 sm:min-h-[calc(88vh-2rem)] sm:rounded-[22px] sm:px-6"
+    >
+      <style>{`
+        @keyframes minyoiGuideStepIn {
+          from { opacity: 0; transform: translateY(12px) scale(0.985); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-beginner-guide-step] { animation: none !important; }
+        }
+      `}</style>
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 mx-auto flex w-full max-w-[640px] items-start justify-between px-3 pt-[calc(env(safe-area-inset-top)+10px)] sm:px-0 sm:pt-4">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="닫기"
+          className="pointer-events-auto inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/88 text-[#223127] shadow-[0_6px_18px_rgba(34,49,39,0.12)] ring-1 ring-[#e6dece] backdrop-blur transition active:scale-95 dark:bg-zinc-950/84 dark:text-zinc-100 dark:ring-zinc-800"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </button>
+        <div className="pointer-events-auto rounded-full bg-white/82 px-2.5 py-1 text-[11px] font-black tabular-nums text-[#566154] shadow-[0_5px_16px_rgba(34,49,39,0.08)] ring-1 ring-[#e6dece] backdrop-blur dark:bg-zinc-950/80 dark:text-zinc-300 dark:ring-zinc-800">
+          {safeIndex + 1}/{steps.length}
+        </div>
+      </div>
+
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-[640px] flex-col sm:min-h-[calc(88vh-2rem)]">
+        <div
+          key={safeIndex}
+          data-beginner-guide-step
+          className={`flex min-h-0 flex-1 flex-col animate-[minyoiGuideStepIn_240ms_ease-out] ${step.tone === "trust" ? "pt-0" : "pt-[calc(env(safe-area-inset-top)+52px)] sm:pt-16"}`}
+        >
+          {step.tone === "trust" ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
+
+          <div className={step.tone === "trust" ? "mt-4" : ""}>
+            <div className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ${toneClass.bg} ${toneClass.text} ring-1 ${toneClass.ring}`}>
+              {step.eyebrow}
+            </div>
+            <h2 className="mt-3 break-keep text-[24px] font-black leading-[1.16] text-[#172019] dark:text-zinc-50 sm:text-[28px]">
+              {step.title}
+            </h2>
+            {step.tone === "trust" ? (
+              <BeginnerGuideTrustBody card={card} fallback={step.body} />
+            ) : (
+              <p className="mt-3 break-keep text-[15px] font-semibold leading-6 text-[#475449] dark:text-zinc-300">
+                {step.body}
+              </p>
+            )}
+
+            {step.tone === "trust" ? (
+              <BeginnerGuideTrustMetric card={card} />
+            ) : showDefaultMetric ? (
+              <div className="my-4 border-y border-[#eee5d8] py-4 dark:border-zinc-800">
+                <div className={`text-[30px] font-black leading-none ${toneClass.text}`}>
+                  {step.metric}
+                </div>
+                <div className="mt-2 break-keep text-[13px] font-bold leading-5 text-[#6b7269] dark:text-zinc-400">
+                  {step.metricLabel}
+                </div>
+              </div>
+            ) : null}
+
+            {showNote ? (
+              <p className="mt-3 break-keep rounded-[16px] bg-[#f4efe5] px-3.5 py-2.5 text-[12px] font-semibold leading-5 text-[#687166] dark:bg-zinc-950/50 dark:text-zinc-400">
+                {step.note}
+              </p>
+            ) : null}
+          </div>
+
+          {step.tone !== "trust" ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
+
+          <div className="sticky bottom-0 -mx-5 mt-auto bg-[linear-gradient(180deg,rgba(255,251,244,0),#fffbf4_26%)] px-5 pb-[calc(env(safe-area-inset-bottom)+2px)] pt-6 dark:bg-[linear-gradient(180deg,rgba(24,24,27,0),#18181b_26%)] sm:-mx-6 sm:px-6">
+            <button
+              type="button"
+              onClick={onNext}
+              className={`flex min-h-[50px] w-full items-center justify-center rounded-[17px] px-4 text-[16px] font-black text-white shadow-[0_14px_28px_rgba(34,49,39,0.18)] transition active:scale-[0.99] ${toneClass.button}`}
+            >
+              {isLast ? "상세 분석 보기" : "다음"}
+            </button>
+            <button
+              type="button"
+              onClick={onSkip}
+              className="mx-auto mt-2 flex min-h-9 items-center justify-center px-3 text-[12px] font-black text-[#7b8378] underline-offset-4 hover:text-[#223127] hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+            >
+              초보자 가이드 스킵하기
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function RevealCardItem({
   card,
   delay,
   currentFeedbackType,
   photoRef,
+  onBeginnerGuideClick,
 }: {
   card: RevealCard;
   delay: number;
   currentFeedbackType?: string | null;
   photoRef?: React.RefObject<HTMLDivElement | null>;
+  onBeginnerGuideClick?: () => void;
 }) {
   const [shown, setShown] = useState(false);
   const [dealExpanded, setDealExpanded] = useState(false);
@@ -3376,7 +4325,7 @@ function RevealCardItem({
        * 이전엔 cream gradient + border + shadow 로 ProfitHero ~ SellHelper 다 묶었는데
        * 그 안 ProfitHero 초록이 크게 보여 "전체 초록 박스" 처럼 보였음. wrapper 자체를 없애고
        * 각 panel 이 페이지 배경 위 평평하게 배치. */}
-      <div className="order-1 grid gap-0 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-3 lg:grid-cols-[150px_minmax(0,1fr)]">
+      <div className="order-1 grid gap-0 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent sm:grid-cols-[168px_minmax(0,1fr)] sm:gap-3 lg:grid-cols-[196px_minmax(0,1fr)]">
         <div ref={photoRef}>
           <RevealProductImage card={card} />
         </div>
@@ -3407,8 +4356,19 @@ function RevealCardItem({
                     <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
                   </div>
                 </div>
-              {dealExpanded ? <DealEvidencePanel card={card} /> : null}
-              <PurchaseDecisionHeader card={card} />
+                {onBeginnerGuideClick ? (
+                  <button
+                    type="button"
+                    onClick={onBeginnerGuideClick}
+                    data-beginner-guide-reopen
+                    className="mt-2 inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#d7e6d5] bg-white/80 px-3 text-[12px] font-black text-[#047857] shadow-sm transition hover:bg-[#f3faf5] active:scale-[0.98] dark:border-zinc-700 dark:bg-zinc-950/70 dark:text-emerald-300 dark:hover:bg-zinc-900"
+                  >
+                    <ShieldIcon className="h-3.5 w-3.5" />
+                    <span>쉽게 보기</span>
+                  </button>
+                ) : null}
+                {dealExpanded ? <DealEvidencePanel card={card} /> : null}
+                <PurchaseDecisionHeader card={card} />
               {/* Wave 395.1: PDF처럼 "예상 순익 + 계산식/비교매물 보기"만 독립 카드로 분리. */}
               <div
                 className="relative overflow-hidden"
@@ -3419,11 +4379,11 @@ function RevealCardItem({
                     : "linear-gradient(135deg, #f3faf5 0%, #e6f4ec 100%)",
                   border: `1px solid ${isMarketInvalidated ? "#fecdd3" : "#c8e6d4"}`,
                   borderRadius: 18,
-                  padding: "16px 16px 14px",
+                  padding: "14px 14px 12px",
                   boxShadow: "0 10px 28px rgba(45, 51, 42, 0.08)",
                 }}
               >
-                <div style={{ position: "absolute", right: -16, top: -16, opacity: 0.05, fontSize: 100, fontWeight: 900, color: isMarketInvalidated ? "#be123c" : "#059669", lineHeight: 1, pointerEvents: "none" }}>₩</div>
+                <div style={{ position: "absolute", right: -12, top: -12, opacity: 0.05, fontSize: 76, fontWeight: 900, color: isMarketInvalidated ? "#be123c" : "#059669", lineHeight: 1, pointerEvents: "none" }}>₩</div>
 
                 {/* Eyebrow — left "💎 예상 순익" + right "{age} · 비교 N개" */}
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
@@ -3435,7 +4395,7 @@ function RevealCardItem({
                 </div>
 
                 {/* 큰 차익 */}
-                <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 28, fontWeight: 900, color: isMarketInvalidated ? "#9f1239" : "#047857", letterSpacing: -1, lineHeight: 1.1, marginBottom: 8 }}>
+                <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 22, fontWeight: 900, color: isMarketInvalidated ? "#9f1239" : "#047857", letterSpacing: -0.5, lineHeight: 1.12, marginBottom: 7 }}>
                   {displayProfitRange(card)}
                 </div>
 
@@ -4004,8 +4964,11 @@ export default function PackRevealModal({
   const activeRevealPid = activeRevealCard?.pid ?? null;
   const [savedPids, setSavedPids] = useState<Set<number>>(() => new Set());
   const activeRevealSaved = activeRevealPid != null && savedPids.has(activeRevealPid);
+  const [beginnerGuideVisible, setBeginnerGuideVisible] = useState(false);
+  const [beginnerGuideStep, setBeginnerGuideStep] = useState(0);
   const [saveToast, setSaveToast] = useState<string | null>(null);
   const saveToastTimerRef = useRef<number | null>(null);
+  const guideModeActive = result?.result === "success" && activeRevealCard != null && beginnerGuideVisible;
 
   useEffect(() => {
     if (!open || activeRevealPid == null) return;
@@ -4058,7 +5021,7 @@ export default function PackRevealModal({
 
   // 사진 영역 IntersectionObserver — scrollAreaRef 안에서 사진 visibility 추적.
   useEffect(() => {
-    if (!open || activeRevealPid == null) return;
+    if (!open || activeRevealPid == null || guideModeActive) return;
     const photoEl = photoRef.current;
     const scrollEl = scrollAreaRef.current;
     if (!photoEl || !scrollEl) return;
@@ -4068,7 +5031,7 @@ export default function PackRevealModal({
     );
     observer.observe(photoEl);
     return () => observer.disconnect();
-  }, [open, activeRevealPid]);
+  }, [open, activeRevealPid, guideModeActive]);
 
   const resetDetailScroll = useCallback((behavior: ScrollBehavior = "auto") => {
     const node = scrollAreaRef.current;
@@ -4076,6 +5039,37 @@ export default function PackRevealModal({
     node.scrollTop = 0;
     node.scrollTo({ top: 0, behavior });
   }, []);
+
+  useEffect(() => {
+    if (!open || loading || result?.result !== "success" || activeRevealPid == null) {
+      setBeginnerGuideVisible(false);
+      setBeginnerGuideStep(0);
+      return;
+    }
+    setBeginnerGuideStep(0);
+    setBeginnerGuideVisible(shouldAutoShowBeginnerGuide(activeRevealPid));
+  }, [open, loading, result?.result, activeRevealPid]);
+
+  const skipBeginnerGuide = useCallback(() => {
+    recordBeginnerGuideSkipped(activeRevealPid);
+    setBeginnerGuideVisible(false);
+    setBeginnerGuideStep(0);
+    window.requestAnimationFrame(() => resetDetailScroll("auto"));
+  }, [activeRevealPid, resetDetailScroll]);
+
+  const advanceBeginnerGuide = useCallback(() => {
+    if (!activeRevealCard) return;
+    const maxIndex = beginnerGuideSteps(activeRevealCard).length - 1;
+    if (beginnerGuideStep >= maxIndex) {
+      recordBeginnerGuideCompleted(activeRevealPid);
+      setBeginnerGuideVisible(false);
+      setBeginnerGuideStep(0);
+      window.requestAnimationFrame(() => resetDetailScroll("auto"));
+      return;
+    }
+    setBeginnerGuideStep((prev) => Math.min(prev + 1, maxIndex));
+    window.requestAnimationFrame(() => resetDetailScroll("auto"));
+  }, [activeRevealCard, activeRevealPid, beginnerGuideStep, resetDetailScroll]);
 
   // Wave 76: loading 종료 후 LoadingStage를 잠깐 더 보여줘서 100% 도달 + smooth
   // 카드 reveal. 이전엔 응답 도착 시 중간 % 상태에서 갑자기 카드 노출됐음.
@@ -4102,6 +5096,14 @@ export default function PackRevealModal({
     setPreviewGuideLoading(false);
     setPreviewGuideError(null);
   }, []);
+
+  const openBeginnerGuide = useCallback(() => {
+    if (!activeRevealCard) return;
+    closePreviewPanel();
+    setBeginnerGuideStep(0);
+    setBeginnerGuideVisible(true);
+    window.requestAnimationFrame(() => resetDetailScroll("auto"));
+  }, [activeRevealCard, closePreviewPanel, resetDetailScroll]);
 
   const handleClose = useCallback(() => {
     closePreviewPanel();
@@ -4255,7 +5257,7 @@ export default function PackRevealModal({
         {/* Wave 360+361+362+364: 당근식 nav 유기적 전환.
             사진 보일 때 → floating icon (drop-shadow on photo).
             사진 사라지면 → sticky nav bar (cream 배경 + border + zinc icon). */}
-        {!loading ? (
+        {!loading && !guideModeActive ? (
           <>
             {/* (A) Floating icon nav — 사진 위 */}
             <div
@@ -4364,22 +5366,32 @@ export default function PackRevealModal({
           ) : null}
 
           {!displayLoading && result?.result === "success" ? (
-            <div className="space-y-4">
-              <div>
-                {/* 2026-05-17: 각 RevealCardItem 자체가 lg:grid-cols-2 (listing card + market card).
-                    outer grid 는 1 column — 한 줄에 1 매물 (= 2 카드 옆에). */}
-                <div className="grid gap-4">
-                  {result.reveals.map((card, idx) => (
-                    <RevealCardItem
-                      key={card.pid}
-                      card={card}
-                      delay={idx * 250}
-                      currentFeedbackType={currentFeedbackType}
-                      photoRef={idx === 0 ? photoRef : undefined}
-                    />
-                  ))}
+            guideModeActive && activeRevealCard ? (
+              <BeginnerGuideWalkthrough
+                card={activeRevealCard}
+                stepIndex={beginnerGuideStep}
+                onNext={advanceBeginnerGuide}
+                onSkip={skipBeginnerGuide}
+                onClose={handleClose}
+              />
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  {/* 2026-05-17: 각 RevealCardItem 자체가 lg:grid-cols-2 (listing card + market card).
+                      outer grid 는 1 column — 한 줄에 1 매물 (= 2 카드 옆에). */}
+                  <div className="grid gap-4">
+                    {result.reveals.map((card, idx) => (
+                      <RevealCardItem
+                        key={card.pid}
+                        card={card}
+                        delay={idx * 250}
+                        currentFeedbackType={currentFeedbackType}
+                        photoRef={idx === 0 ? photoRef : undefined}
+                        onBeginnerGuideClick={idx === 0 ? openBeginnerGuide : undefined}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
               {previewCard ? (
                 <div
                   className={`fixed inset-x-3 bottom-3 top-12 z-[70] sm:inset-x-auto sm:bottom-4 sm:top-4 sm:w-[min(460px,calc(100vw-32px))] ${
@@ -4434,6 +5446,7 @@ export default function PackRevealModal({
                 </div>
               </details>
             </div>
+            )
           ) : null}
 
           {!displayLoading && result?.result === "refunded" ? (
@@ -4491,7 +5504,7 @@ export default function PackRevealModal({
             </div>
           ) : null}
         </div>
-        {!displayLoading && result?.result === "success" && result.reveals[0] ? (
+        {!displayLoading && result?.result === "success" && result.reveals[0] && !guideModeActive ? (
           <FixedBunjangFooter
             card={result.reveals[0]}
             onLinkClicked={onLinkClicked}

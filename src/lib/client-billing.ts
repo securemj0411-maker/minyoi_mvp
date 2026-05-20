@@ -50,14 +50,14 @@ export async function loadClientPlan(): Promise<ClientPlanState | null> {
   };
 }
 
-export async function subscribeClientPlan(planKey: "starter" | "plus" | "pro", paymentKey: string, orderId: string) {
+export async function subscribeClientPlan(planKey: "starter" | "plus" | "pro", paymentId: string, orderId: string) {
   const res = await authedFetch("/api/billing/subscribe", {
     method: "POST",
-    body: JSON.stringify({ planKey, paymentKey, orderId }),
+    body: JSON.stringify({ planKey, paymentId, orderId }),
   });
   if (!res) throw new Error("로그인이 필요합니다");
   const json = await res.json();
-  if (!res.ok) throw new Error(json.error ?? "결제 실패");
+  if (!res.ok) throw new Error(json.message ?? json.error ?? "결제 실패");
   return json as {
     ok: boolean;
     planKey: string;
@@ -65,6 +65,8 @@ export async function subscribeClientPlan(planKey: "starter" | "plus" | "pro", p
     currentPeriodEnd: string | null;
     amount: number;
     monthlyCredits: number;
+    paymentId: string;
+    verification: "verified" | "skipped_dev_no_secret";
   };
 }
 

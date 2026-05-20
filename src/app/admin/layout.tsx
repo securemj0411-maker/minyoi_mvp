@@ -1,7 +1,14 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { isAdminUser } from "@/lib/auth-users";
+import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  const auth = await requireSupabaseUserFromCookies();
+  if (!auth.ok) redirect("/login?next=/admin");
+  if (!isAdminUser(auth.user)) redirect("/");
+
   return (
     <>
       <div className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs dark:border-amber-900/60 dark:bg-amber-950/30 sm:px-6 lg:px-8">

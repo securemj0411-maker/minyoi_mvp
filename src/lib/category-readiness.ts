@@ -485,25 +485,25 @@ export const LANE_READINESS: LaneReadinessMap = {
   polo_pique_classic: { status: "ready", label: "Polo Pique Classic Fit", note: "Wave 198" },
   polo_pony_tee: { status: "ready", label: "Polo Pony Logo T-Shirt", note: "Wave 198" },
   polo_oxford_shirt: { status: "ready", label: "Polo Oxford Shirt (Standard)", note: "Wave 198" },
-  polo_bear_collab: { status: "ready", label: "Polo Bear Print (한정)", note: "Wave 198" },
-  polo_rrl: { status: "ready", label: "Polo RRL Double RL (broad fallback)", note: "Wave 218: narrow 5개 분리 후 catch-all" },
+  polo_bear_collab: { status: "blocked", label: "Polo Bear Print (한정)", note: "Wave 407: product-type mixed hold — sweater/sweat/tee must split before pool." },
+  polo_rrl: { status: "blocked", label: "Polo RRL Double RL (broad fallback)", note: "Wave 407: clothing broad fallback hold — narrow RRL lanes only." },
   // Wave 218 (2026-05-19): RRL narrow 5개 — product type 별 가격대 완전 다름 (CV 1.56 분산)
-  polo_rrl_tee: { status: "ready", label: "Polo RRL Tee / Sweat / Hoodie", note: "Wave 218" },
+  polo_rrl_tee: { status: "blocked", label: "Polo RRL Tee / Sweat / Hoodie", note: "Wave 407: tee/sweat/hoodie mixed hold until product-type split." },
   polo_rrl_denim: { status: "ready", label: "Polo RRL Denim (jeans/shirt)", note: "Wave 218" },
-  polo_rrl_shirt_pants: { status: "ready", label: "Polo RRL Shirt / Pants (catch-all)", note: "Wave 218. Wave 247.1: shirt / pants narrow 신설 후 catch-all (코듀로이/워크 등 모호한 매물만)." },
+  polo_rrl_shirt_pants: { status: "blocked", label: "Polo RRL Shirt / Pants (catch-all)", note: "Wave 407: catch-all hold. Use shirt/pants narrow lanes." },
   // Wave 247.1 (2026-05-19): shirt-pants split — production sample 74건 (CV 0.86) → shirt 49 / pants 20 narrow 분리.
   polo_rrl_shirt: { status: "ready", label: "Polo RRL Shirt (옥스포드/플란넬)", note: "Wave 247.1 — broad 의 66% 셔츠 매물 분리 (49건, median 34만)" },
   polo_rrl_pants: { status: "ready", label: "Polo RRL Pants (치노/슬랙스)", note: "Wave 247.1 — broad 의 27% 팬츠 매물 분리 (20건, median 37만)" },
-  polo_rrl_accessory: { status: "ready", label: "Polo RRL Accessory", note: "Wave 218" },
+  polo_rrl_accessory: { status: "blocked", label: "Polo RRL Accessory", note: "Wave 407: accessory lane is not clothing-ready; re-home/split before pool." },
   polo_rrl_sneaker: { status: "ready", label: "Polo RRL Sneaker", note: "Wave 218 — shoe 카테고리" },
   polo_rrl_jacket_coat: { status: "ready", label: "Polo RRL Jacket / Coat", note: "Wave 245 — broad 의 42% 자켓 매물 분리 (median 150만, p25/p75=82만/264만)" },
-  polo_rrl_broad: { status: "ready", label: "Polo RRL (broad fallback)", note: "Wave 218: narrow 분리 후 catch-all" },
+  polo_rrl_broad: { status: "blocked", label: "Polo RRL (broad fallback)", note: "Wave 407: clothing broad fallback hold — narrow RRL lanes only." },
   tnf_nuptse_1996: { status: "ready", label: "TNF 1996 Retro Nuptse", note: "Wave 198" },
   tnf_mountain_jacket: { status: "ready", label: "TNF Mountain Jacket (Gore-Tex)", note: "Wave 198" },
   tnf_denali_fleece: { status: "ready", label: "TNF Denali Fleece", note: "Wave 198" },
-  tnf_purple_label: { status: "ready", label: "TNF Purple Label (일본 Nanamica)", note: "Wave 198" },
-  tnf_supreme_collab: { status: "ready", label: "Supreme × TNF (legacy laneKey)", note: "Wave 219. Wave 245.3 에서 tnf_supreme_collab_broad 로 리네임. 호환성 유지." },
-  tnf_supreme_collab_broad: { status: "ready", label: "Supreme × TNF (broad fallback — 기타 자켓/베스트)", note: "Wave 245.3: 자켓 모델별 narrow 7개 분리 후 catch-all" },
+  tnf_purple_label: { status: "blocked", label: "TNF Purple Label (일본 Nanamica)", note: "Wave 407: Purple Label line mixes shirts/shorts/outerwear; needs model/product split." },
+  tnf_supreme_collab: { status: "blocked", label: "Supreme × TNF (legacy laneKey)", note: "Wave 407: legacy broad hold. Use model-specific Supreme x TNF lanes." },
+  tnf_supreme_collab_broad: { status: "blocked", label: "Supreme × TNF (broad fallback — 기타 자켓/베스트)", note: "Wave 407: broad hold. Use model-specific Supreme x TNF lanes." },
   // Wave 245.3 (2026-05-19): Supreme × TNF 자켓 모델별 narrow 7개 신설 (production 107건 측정, 자켓 53건/50%).
   tnf_supreme_nuptse: { status: "ready", label: "Supreme × TNF 1996 Nuptse", note: "Wave 245.3 — median 83만 / msrp down_jacket" },
   tnf_supreme_mountain_jacket: { status: "ready", label: "Supreme × TNF Mountain Jacket (Gore-Tex)", note: "Wave 245.3 — median 68만" },
@@ -520,9 +520,9 @@ export const LANE_READINESS: LaneReadinessMap = {
   tnf_hotshot: { status: "ready", label: "TNF Hot Shot Backpack", note: "Wave 198 bag" },
   tnf_bigshot: { status: "ready", label: "TNF Big Shot Backpack", note: "Wave 198 bag" },
   tnf_nuptse_mule: { status: "ready", label: "TNF Nuptse Mule (슬리퍼)", note: "Wave 198 shoe" },
-  stussy_nike_collab: { status: "ready", label: "Nike × Stüssy (collab)", note: "Wave 198 ⭐ 매물 압도적 (109건/14d)" },
-  stussy_basic_tee: { status: "ready", label: "Stüssy Basic Tee (8 Ball/World Tour)", note: "Wave 198" },
-  stussy_hoodie: { status: "ready", label: "Stüssy Hoodie / Crewneck", note: "Wave 198" },
+  stussy_nike_collab: { status: "blocked", label: "Nike × Stüssy Apparel (collab)", note: "Wave 407: apparel collab mixes fleece/track/hoodie/tee. Shoe lane remains separate." },
+  stussy_basic_tee: { status: "blocked", label: "Stüssy Basic Tee (8 Ball/World Tour)", note: "Wave 407: operator comments show graphic/model mix. Hold until 8ball/world-tour/stock split." },
+  stussy_hoodie: { status: "blocked", label: "Stüssy Hoodie / Crewneck", note: "Wave 407: operator comments show hoodie/zip/crewneck/model mix. Hold until sub-line split." },
   stussy_waist_bag: { status: "ready", label: "Stüssy Waist Bag", note: "Wave 198 bag" },
   stussy_dior_collab: { status: "ready", label: "Dior × Stüssy (FW21 한정)", note: "Wave 198 한정판" },
   // Wave 199 (2026-05-18): 매물 mining 발견 후속 SKU
@@ -567,7 +567,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   margiela_german_army: { status: "ready", label: "Margiela German Army Trainer (Replica)", note: "Wave 203" },
   mm6_salomon_collab: { status: "ready", label: "Salomon × MM6 (X-ALP/ACS)", note: "Wave 203 collab" },
   margiela_glam_slam: { status: "ready", label: "Margiela Glam Slam (시그니처)", note: "Wave 203 bag" },
-  mm6_margiela_apparel: { status: "ready", label: "MM6 Margiela Apparel (broad)", note: "Wave 203" },
+  mm6_margiela_apparel: { status: "blocked", label: "MM6 Margiela Apparel (broad)", note: "Wave 407: broad apparel hold until model-level audit." },
   // Wave 204 (2026-05-18): 슈프림 collab 8 SKU — 매물 80건 sample 거의 다 슈프림.
   supreme_nike_airforce1_collab: { status: "ready", label: "Supreme × Nike Air Force 1 (collab)", note: "Wave 204 — 매물 20+건 압도적" },
   supreme_nike_airmax_collab: { status: "ready", label: "Supreme × Nike Air Max (collab)", note: "Wave 204" },
@@ -591,7 +591,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   acne_bertin_boots: { status: "ready", label: "Acne Bertin Boots", note: "Wave 205 shoe" },
   acne_pvc_tote: { status: "ready", label: "Acne PVC Tote", note: "Wave 205 bag" },
   acne_musubi: { status: "ready", label: "Acne Musubi (시그니처)", note: "Wave 205 bag" },
-  acne_apparel: { status: "ready", label: "Acne Apparel (broad fallback)", note: "Wave 219: product type 분리 후 catch-all" },
+  acne_apparel: { status: "blocked", label: "Acne Apparel (broad fallback)", note: "Wave 407: catch-all hold. Use Acne product-type lanes." },
   // Wave 219 (2026-05-19): Acne product type 5분리 — 티 130K vs 맨투맨 230K vs 자켓 590K vs 데님 320K vs 셔츠 380K
   acne_tee: { status: "ready", label: "Acne Tee / Long-Sleeve", note: "Wave 219" },
   acne_sweat: { status: "ready", label: "Acne Sweat/Hoodie (Fairview)", note: "Wave 219" },
@@ -659,8 +659,8 @@ export const LANE_READINESS: LaneReadinessMap = {
   adidas_samba_sporty_rich: { status: "ready", label: "Sporty & Rich × Samba", note: "Wave 226 한정" },
   // Wave 227 (2026-05-19): 의류/가방 누락 narrow.
   // Wave 245.2 (2026-05-19): FOG Essentials 6 narrow + 1 broad — product-type 별 시세 분리.
-  fog_essentials: { status: "ready", label: "FOG Essentials (legacy laneKey)", note: "Wave 227. Wave 245.2 에서 fog_essentials_broad 로 리네임. 호환성 유지." },
-  fog_essentials_broad: { status: "ready", label: "FOG Essentials (broad fallback — 베스트/니트/플리스/모자)", note: "Wave 245.2: narrow 6개 분리 후 catch-all" },
+  fog_essentials: { status: "blocked", label: "FOG Essentials (legacy laneKey)", note: "Wave 407: legacy broad hold. Use product-type Essentials lanes." },
+  fog_essentials_broad: { status: "blocked", label: "FOG Essentials (broad fallback — 베스트/니트/플리스/모자)", note: "Wave 407: broad hold. Use product-type Essentials lanes." },
   fog_essentials_hoodie: { status: "ready", label: "FOG Essentials Hoodie", note: "Wave 245.2 — median 16만" },
   fog_essentials_crewneck: { status: "ready", label: "FOG Essentials Crewneck / Sweat", note: "Wave 245.2 — median 7.2만" },
   fog_essentials_tee: { status: "ready", label: "FOG Essentials Tee", note: "Wave 245.2 — median 5.5만" },
@@ -671,7 +671,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   coach_tabby: { status: "ready", label: "Coach Tabby (시그니처)", note: "Wave 227" },
   longchamp_le_pliage: { status: "ready", label: "Longchamp Le Pliage (시그니처)", note: "Wave 227 나일론" },
   nike_tailwind_79: { status: "ready", label: "Nike Tailwind 79 (Vintage Runner)", note: "Wave 227" },
-  adidas_trefoil: { status: "ready", label: "Adidas Trefoil/Track Suit", note: "Wave 227 의류" },
+  adidas_trefoil: { status: "blocked", label: "Adidas Trefoil/Track Suit", note: "Wave 407: broad apparel hold until track-suit model audit." },
   // Wave 233 (2026-05-19): Vans 시리즈 누락 — 239 매물 unmatched (일반인 친화 15~60K).
   vans_old_skool: { status: "ready", label: "Vans Old Skool", note: "Wave 233" },
   vans_sk8_hi: { status: "ready", label: "Vans SK8-Hi", note: "Wave 233" },
@@ -705,32 +705,35 @@ export const LANE_READINESS: LaneReadinessMap = {
   adidas_balenciaga_collab: { status: "ready", label: "Adidas × Balenciaga (한정)", note: "Wave 212 collab" },
   adidas_rafsimons_collab: { status: "ready", label: "Adidas × Raf Simons", note: "Wave 212 collab" },
   // Wave 214 (2026-05-19): 의류 mainstream 9 SKU — 사용자 정책 "옷 안 버린다"
-  bape_tee: { status: "ready", label: "BAPE T-Shirt/Hoodie (Ape Head/카모)", note: "Wave 214 — 매물 118건 faved 94!" },
+  bape_tee: { status: "blocked", label: "BAPE T-Shirt (Ape Head/카모)", note: "Wave 413: split from mixed tee/hoodie broad; hold until tee-only sample audit." },
+  bape_hoodie: { status: "blocked", label: "BAPE Hoodie (basic/camo)", note: "Wave 413: split from bape_tee; hold until non-Shark hoodie sample audit." },
+  bape_hoodie_zip: { status: "blocked", label: "BAPE Hoodie Zip (basic/camo)", note: "Wave 413: split from bape_tee; hold until non-Shark zip hoodie sample audit." },
+  bape_crewneck: { status: "blocked", label: "BAPE Crewneck / Sweatshirt", note: "Wave 413: split from bape_tee; hold until crewneck sample audit." },
   bape_shark_hoodie: { status: "ready", label: "BAPE Shark Hoodie (시그니처)", note: "Wave 214 한정" },
-  matinkim_apparel: { status: "ready", label: "Matin Kim Apparel (한국 designer)", note: "Wave 214 친화" },
-  reebok_apparel: { status: "ready", label: "Reebok Apparel (트랙수트/티)", note: "Wave 214" },
-  arcteryx_apparel: { status: "ready", label: "Arc'teryx Apparel (broad fallback)", note: "Wave 218: narrow 5개 분리 후 catch-all" },
+  matinkim_apparel: { status: "blocked", label: "Matin Kim Apparel (한국 designer)", note: "Wave 407: broad apparel hold until model-level audit." },
+  reebok_apparel: { status: "blocked", label: "Reebok Apparel (트랙수트/티)", note: "Wave 407: broad apparel hold until model-level audit." },
+  arcteryx_apparel: { status: "blocked", label: "Arc'teryx Apparel (broad fallback)", note: "Wave 407: broad hold. Use Arc'teryx model lanes." },
   // Wave 218 (2026-05-19): Arc'teryx 모델별 narrow 5개 — 가격대 X 3-5 (Beta 600K vs Squamish 190K)
   arcteryx_beta: { status: "ready", label: "Arc'teryx Beta (SL/AR/LT)", note: "Wave 218 Gore-Tex" },
   arcteryx_gamma: { status: "ready", label: "Arc'teryx Gamma (MX/SL/LT)", note: "Wave 218 softshell" },
   arcteryx_alpha: { status: "ready", label: "Arc'teryx Alpha (SV/AR/FL)", note: "Wave 218 등반/expedition" },
   arcteryx_atom: { status: "ready", label: "Arc'teryx Atom (LT/SL/HW)", note: "Wave 218 insulated" },
   arcteryx_vertex_squamish: { status: "ready", label: "Arc'teryx Vertex / Squamish", note: "Wave 218 etc" },
-  arcteryx_broad: { status: "ready", label: "Arc'teryx (broad fallback)", note: "Wave 218: narrow 분리 후 catch-all" },
-  fila_apparel: { status: "ready", label: "Fila Apparel", note: "Wave 214 친화" },
-  patagonia_apparel: { status: "ready", label: "Patagonia (broad fallback)", note: "Wave 219: 모델별 분리 후 catch-all" },
+  arcteryx_broad: { status: "blocked", label: "Arc'teryx (broad fallback)", note: "Wave 407: broad hold. Use Arc'teryx model lanes." },
+  fila_apparel: { status: "blocked", label: "Fila Apparel", note: "Wave 407: broad apparel hold until model-level audit." },
+  patagonia_apparel: { status: "blocked", label: "Patagonia (broad fallback)", note: "Wave 407: broad hold. Use Patagonia model lanes." },
   // Wave 219 (2026-05-19): Patagonia 3분리 — Retro X 199K / Down 290K / Shell 199K
-  patagonia_retro_x: { status: "ready", label: "Patagonia Retro X Fleece", note: "Wave 219" },
-  patagonia_down: { status: "ready", label: "Patagonia Down (Nano Puff)", note: "Wave 219" },
+  patagonia_retro_x: { status: "blocked", label: "Patagonia Retro X / Synchilla Fleece", note: "Wave 407: DB sample shows Retro-X/Synchilla/Retro Pile mix. Keep Deep Pile only until split." },
+  patagonia_down: { status: "blocked", label: "Patagonia Down (Nano Puff)", note: "Wave 407: DB sample shows cross-brand/reference contamination. Hold until stricter brand/model audit." },
   patagonia_shell: { status: "ready", label: "Patagonia Shell (Torrentshell)", note: "Wave 219" },
   // Wave 251.2 (2026-05-19): Deep Pile 90s 빈티지 콜렉터 narrow split (p50 ₩390k vs mainstream ₩165k).
   patagonia_deep_pile: { status: "ready", label: "Patagonia Deep Pile (90s 빈티지)", note: "Wave 251.2 — n=10, mainstream 2.4배 시세" },
-  mlb_apparel: { status: "ready", label: "MLB Cap (broad fallback)", note: "Wave 219: collab 분리 후 catch-all" },
+  mlb_apparel: { status: "blocked", label: "MLB Cap (broad fallback)", note: "Wave 407: broad hold. Use MLB cap collab/narrow lanes." },
   // Wave 219 (2026-05-19): MLB collab 분리 — Gucci 480K / Nike 79K / Murakami 220K vs 일반 49K
   mlb_cap_gucci_collab: { status: "ready", label: "Gucci × MLB Cap (한정 명품)", note: "Wave 219" },
   mlb_cap_nike_collab: { status: "ready", label: "Nike × MLB Cap", note: "Wave 219" },
   mlb_cap_murakami_collab: { status: "ready", label: "Murakami × MLB Cap (9twenty)", note: "Wave 219" },
-  discovery_apparel: { status: "ready", label: "Discovery Expedition", note: "Wave 214 outdoor" },
+  discovery_apparel: { status: "blocked", label: "Discovery Expedition", note: "Wave 407: broad apparel hold until model-level audit." },
   // Wave 215 (2026-05-19): Yeezy + BAPE STA + Stussy 8 Ball
   yeezy_boost_350: { status: "ready", label: "Yeezy Boost 350 (V1/V2)", note: "Wave 215 — Yeezy 매물 521건 압도적" },
   yeezy_boost_500_700: { status: "ready", label: "Yeezy Boost 500/700", note: "Wave 215" },
@@ -934,14 +937,13 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minTrustedKeys: 4,
   },
   // Wave 198 (2026-05-18): 새 카테고리 "clothing" — Polo / TNF / Stüssy.
-  // 사용자 정책: broad 사이즈 무관, collab narrow 분리, 가품 floor 0.30 (의류 시장 가품 ↑).
-  // production 14d sweep: Polo 419건 / TNF 153건 / Stüssy 195건. Nike×Stussy collab 109건 (56%) — narrow 필수.
-  // Wave 215 (2026-05-19): 사용자 명시 "ready 바로 되게 다 준비" → internal_only → ready 승격.
-  //   Wave 198~214 catalog 26 의류 SKU + lane 다 ready 등록. 가품 floor 0.30 + AD 패턴 14종 + collab narrow 분리 완료.
+  // Wave 407 (2026-05-20): category-level ready 폐기.
+  //   의류는 brand/apparel broad가 너무 넓어 operator-pool 비교매물 오염이 반복됨.
+  //   이제 명시적으로 검수된 LANE_READINESS ready lane만 public pool 진입.
   clothing: {
-    status: "ready",
+    status: "internal_only",
     label: "Clothing",
-    note: "Wave 215 ready 승격 (2026-05-19): 의류 26 SKU + lane 다 ready. Polo/TNF/Stüssy/Supreme/Margiela/CDG/Lacoste/Acne/Carhartt/Lululemon/Kitsuné/BAPE/마뗑킴/Reebok/Arcteryx/Fila/Patagonia/MLB/Discovery 박음. broad 사이즈 무관, collab narrow 분리. 가품 floor 0.30 + AD 14종.",
+    note: "Wave 407 hold (2026-05-20): category-wide clothing ready disabled. Only audited narrow laneKey entries in LANE_READINESS can enter public pool; broad/apparel/fallback lanes stay internal.",
     minReadyPool: 8,
     minParseRate: 0.85,
     minTrustedKeys: 5,

@@ -151,6 +151,10 @@ async function invalidatePoolRows(entries) {
 }
 
 function categoryCanEnterPool(readinessMap, category) {
+  // Wave 407 (2026-05-20): this legacy script is category-only and cannot
+  // evaluate LANE_READINESS. Keep clothing out here; tick-pipeline handles
+  // audited clothing narrow lanes with the lane-aware gate.
+  if (category === "clothing") return false;
   return readinessMap.get(category) === "ready";
 }
 

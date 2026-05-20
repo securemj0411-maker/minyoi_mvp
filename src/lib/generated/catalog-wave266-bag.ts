@@ -38,11 +38,20 @@ const BAG_COMMON_NOISE = [
   "스트랩만", "체인만", "장식만", "팁만", "핸들만", "벨트만",
   "삽니다", "구합니다", "구해요", "구함", "매입",
   "감정 가능", "감정 문의", "정가품 문의", "감정 후 입금", "감정원", "감정사", "외관 부분만",
+  // 포장재/구성품 단품. "쇼퍼백" 본품과 다르게 종이 shopping bag은 비교군 오염.
+  "종이백", "종이 백", "쇼핑백", "쇼핑 백", "shopping bag", "패키지",
+  // 뷰티/화장품 사은품 pouch/tote. 명품 본품 가방 비교군에서 제외.
+  "뷰티", "beauty", "코스메틱", "cosmetic", "화장품", "립스틱", "립밤", "어딕트", "홀리데이",
+  "백스테이지", "backstage", "블러셔", "blusher", "팔레트", "palette", "아이크림", "하이라이터",
+  // SPA/협업 저가 라인. 럭셔리 broad fallback과 가격대가 다름.
+  "유니클로", "유니클로u", "uniqlo", "uniqlo u",
   // 반대 카테고리
   "신발", "스니커즈", "운동화",
   "티셔츠", "후드티", "맨투맨",
+  "모자", "볼캡", "스냅백", "5패널", "파이브패널", "five panel", "5 panel",
   // 액세서리
   "넥타이핀", "스트로공", "벨트", "키링", "키체인", "안경", "선글라스",
+  "백앤센스", "bag and sense",
   "박스만", "더스트백만", "보증서만",
 ];
 
@@ -59,7 +68,9 @@ const BAG_TYPES = [
 const BAG_NON_BAG_NOISE = [
   // 의류
   "반팔", "반팔티", "티셔츠", "tee ", "맨투맨", "후드티", "후드 티",
+  "니트", "knit", "캐시미어", "cashmere",
   "데님자켓", "데님 자켓", "데님셔츠", "데님 셔츠", "데님셔츠자켓", "셔츠자켓",
+  "청바지", "jeans", "스케이트진", "skate jean", "skate jeans",
   "하프집업", "하프 집업", "half zip", "풀집업",
   "스웻", "sweat", "스웻셔츠", "스웻 셔츠",
   "점퍼", "jumper", "점프수트",
@@ -211,6 +222,8 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
       "퍼퓸", "perfume", "오 드", "edp", "edt", "향수", "ml ",
       "립스틱", "립밤", "립글로스", "쿠션", "파데", "마스카라", "아이섀도",
       "신발", "스니커즈", "벨트",
+      // J'ADIOR slingback shoe.
+      "j'adior", "jadior", "j adior",
     ],
     msrpKrw: 4990000,
     released: 2024,
@@ -318,7 +331,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
       ...BAG_NON_BAG_NOISE,
       ...WALLET_NOISE,
       // 별도 narrow
-      "cassette mini", "카세트 미니",
+      "cassette", "카세트", "cassette mini", "카세트 미니",
       "신발", "벨트",
     ],
     msrpKrw: 2690000,
@@ -413,39 +426,6 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 1490000,
     released: 2024,
     confusionNote: "Burberry broad — 모델 추정 안 되는 버버리 가방 fallback.",
-    defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
-  },
-
-  // ═══════════════════════════════════════════════════════════
-  // Coach — Broad (signature-tote 외 broad)
-  // ═══════════════════════════════════════════════════════════
-  {
-    id: "bag-coach-apparel-broad",
-    brand: "Coach",
-    category: "bag",
-    laneKey: "coach_apparel_broad",
-    modelName: "Coach 가방 (Broad — 일반 라인)",
-    aliases: ["Coach", "코치"],
-    mustContain: [
-      ["coach", "코치"],
-      BAG_TYPES,
-    ],
-    mustNotContain: [
-      ...BAG_COMMON_NOISE,
-      ...BAG_NON_BAG_NOISE,
-      ...WALLET_NOISE,
-      // 별도 narrow
-      "signature tote", "시그니처 토트",
-      // 코치 자켓 (의류)
-      "자켓", "jacket", "야구점퍼",
-      // 굿즈 (주술회전 등)
-      "주술회전", "고죠", "굿즈", "교복", "회옥절",
-      // 코치 (스포츠 코치) 의류
-      "코치자켓", "코치 자켓",
-    ],
-    msrpKrw: 590000,
-    released: 2024,
-    confusionNote: "Coach broad — 모델 추정 안 되는 코치 가방 fallback (signature-tote 외).",
     defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
   },
 

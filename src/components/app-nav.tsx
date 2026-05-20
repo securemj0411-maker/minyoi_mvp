@@ -319,7 +319,7 @@ export default function AppNav() {
     { href: "/", label: "추천 상품" },
     // Wave 343: /explore 폐기 — /me history view에 통합. nav "탐색" 링크 제거.
     { href: "/how-it-works", label: "서비스 안내" },
-    { href: "/plans", label: "요금제" },
+    { href: "/plans", label: "크레딧 충전" },
     ...(user ? [{ href: "/me", label: "내 대시보드" }] : []),
     ...(admin ? [{ href: "/debug", label: "운영 로그" }] : []),
   ];
@@ -440,7 +440,7 @@ export default function AppNav() {
                         </span>
                       </div>
                       <div className="mt-2 text-[11px] font-semibold leading-5 text-[#6b7269] dark:text-zinc-400">
-                        부족하면 요금제에서 월 크레딧을 충전할 수 있어요.
+                        부족하면 크레딧 패키지를 단건 충전할 수 있어요.
                       </div>
                     </div>
                     <div className="mt-2 grid gap-1.5">
@@ -457,7 +457,7 @@ export default function AppNav() {
                         onClick={() => setCreditMenuOpen(false)}
                         className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-[#344136] transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
                       >
-                        <span>요금제 비교 / 구독 관리</span>
+                        <span>크레딧 패키지 보기</span>
                         <span className="text-zinc-400">↗</span>
                       </Link>
                     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 // 2026-05-17: 비로그인 사용자 메인 페이지 — 마스킹된 매물 5개 + 로그인 CTA.
-// 사용자 의도: 즉시 가치 인식 ("와 이게 돈 되는 거구나") + curiosity gap → 가입 motivation.
+// 사용자 의도: 즉시 가치 인식 + curiosity gap → 가입 motivation.
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -53,19 +53,19 @@ function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
 
-// 2026-05-17: 차익 표시 — min === max 면 단일 (구간 표시 어색 fix).
-function profitLabel(min: number, max: number): string {
-  if (Math.round(min) === Math.round(max)) return `+${Math.round(min).toLocaleString("ko-KR")}원`;
-  return `+${Math.round(min).toLocaleString("ko-KR")}~${Math.round(max).toLocaleString("ko-KR")}원`;
+// 2026-05-17: 시세 차이 표시 — min === max 면 단일 (구간 표시 어색 fix).
+function marketGapLabel(min: number, max: number): string {
+  if (Math.round(min) === Math.round(max)) return `${Math.round(min).toLocaleString("ko-KR")}원 낮음`;
+  return `${Math.round(min).toLocaleString("ko-KR")}~${Math.round(max).toLocaleString("ko-KR")}원 낮음`;
 }
 
-// 수익률 % — 매입 대비 차익 비율 (대시보드 통일 패턴).
-function profitPctLabel(price: number, profitMin: number, profitMax: number): string | null {
+// 시세 차이 % — 매입가 대비 차이 비율 (대시보드 통일 패턴).
+function marketGapPctLabel(price: number, gapMin: number, gapMax: number): string | null {
   if (!Number.isFinite(price) || price <= 0) return null;
-  const avg = (profitMin + profitMax) / 2;
+  const avg = (gapMin + gapMax) / 2;
   const pct = Math.round((avg / price) * 100);
   if (!Number.isFinite(pct)) return null;
-  return `+${pct}%`;
+  return `${pct}% 낮음`;
 }
 
 function priceBandLabel(price: number): string {
@@ -221,13 +221,13 @@ export default function PreviewMaskedDashboard() {
                           </>
                         ) : null}
                       </div>
-                      {/* 차익 (원) + 수익률 (%) */}
+                      {/* 시세 차이 (원) + 비율 (%) */}
                       <div className="mt-1.5 flex flex-wrap items-baseline gap-1.5">
                         <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-black tabular-nums text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                          {profitLabel(item.expectedProfitMin, item.expectedProfitMax)}
+                          {marketGapLabel(item.expectedProfitMin, item.expectedProfitMax)}
                         </span>
                         {(() => {
-                          const pct = profitPctLabel(item.price, item.expectedProfitMin, item.expectedProfitMax);
+                          const pct = marketGapPctLabel(item.price, item.expectedProfitMin, item.expectedProfitMax);
                           return pct ? (
                             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-black tabular-nums text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
                               {pct}

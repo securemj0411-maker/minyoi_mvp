@@ -27,6 +27,12 @@ function krwShort(value: number): string {
   return `${Math.round(value / 1000)}천`;
 }
 
+function shortDateLabel(date: string): string {
+  const month = Number(date.slice(5, 7));
+  const day = Number(date.slice(8, 10));
+  return `${month}/${day}`;
+}
+
 function ChartSkeleton() {
   return (
     <div className="animate-pulse rounded-md bg-white px-2 py-2 dark:bg-zinc-900" aria-busy="true">
@@ -159,7 +165,7 @@ export default function MarketHistoryChart({
   }
 
   // 좌표 계산. 우측은 가격 라벨 공간 확보 위해 padR 더 크게.
-  // 하단 padBottom은 sold 날짜 X축 라벨 공간.
+  // 하단 padBottom은 전체 기간 X축 라벨 공간.
   const width = 360;
   const height = 160;
   const padX = 28;
@@ -196,14 +202,35 @@ export default function MarketHistoryChart({
     return padTop + innerH - ((price - minP) / rangeP) * innerH;
   }
 
-  const activePath = data
-    .map((p, i) => (p.active != null ? `${i === 0 ? "M" : "L"}${x(i)},${y(p.active)}` : null))
-    .filter(Boolean)
-    .join(" ");
-  const soldPath = data
-    .map((p, i) => (p.sold != null ? `${i === 0 ? "M" : "L"}${x(i)},${y(p.sold)}` : null))
-    .filter(Boolean)
-    .join(" ");
+  const linePath = (pickPrice: (point: Point) => number | null) => {
+    let pathStarted = false;
+    return data
+      .map((p, i) => {
+        const price = pickPrice(p);
+        if (price == null) return null;
+        const command = pathStarted ? "L" : "M";
+        pathStarted = true;
+        return `${command}${x(i)},${y(price)}`;
+      })
+      .filter(Boolean)
+      .join(" ");
+  };
+  const activePath = linePath((p) => p.active);
+  const soldPath = linePath((p) => p.sold);
+  const xAxisTicks = (() => {
+    const maxLabels = 5;
+    if (data.length <= maxLabels) {
+      return data.map((p, i) => ({ i, date: p.date }));
+    }
+    const lastIndex = data.length - 1;
+    const indexes = new Set<number>();
+    for (let step = 0; step < maxLabels; step += 1) {
+      indexes.add(Math.round((step * lastIndex) / (maxLabels - 1)));
+    }
+    return [...indexes]
+      .sort((a, b) => a - b)
+      .map((i) => ({ i, date: data[i]!.date }));
+  })();
 
   const latestActive = data[data.length - 1]?.active;
   const latestSold = data[data.length - 1]?.sold;
@@ -279,34 +306,26 @@ export default function MarketHistoryChart({
         {/* min/max 라벨 */}
         <text x={4} y={padTop + 4} fontSize="9" fill="#9ca3af">{krwShort(maxP)}</text>
         <text x={4} y={height - padBottom} fontSize="9" fill="#9ca3af">{krwShort(minP)}</text>
-        {/* 거래 날짜 X축 라벨 — sold 있는 날만 표시 (호가는 매일 누적이라 의미 X) */}
-        {(() => {
-          const soldDays = data
-            .map((p, i) => (p.sold != null ? { i, date: p.date } : null))
-            .filter((v): v is { i: number; date: string } => v !== null);
-          // 너무 많으면 일부만 (균등 sampling, max 6개)
-          const maxLabels = 6;
-          const shown = soldDays.length <= maxLabels
-            ? soldDays
-            : soldDays.filter((_, idx) => idx % Math.ceil(soldDays.length / maxLabels) === 0).slice(0, maxLabels);
-          return shown.map((s) => {
-            const xPos = x(s.i);
-            const month = Number(s.date.slice(5, 7));
-            const day = Number(s.date.slice(8, 10));
-            return (
-              <g key={s.date}>
-                <line x1={xPos} y1={height - padBottom} x2={xPos} y2={height - padBottom + 3} stroke="#3b82f6" strokeWidth="1" />
-                <text x={xPos} y={height - padBottom + 13} fontSize="9" fill="#3b82f6" textAnchor="middle">
-                  {month}/{day}
-                </text>
-              </g>
-            );
-          });
-        })()}
+        {/* 전체 기간 X축 라벨 — 거래가가 없는 왼쪽 구간도 어느 날짜인지 보이게 한다. */}
+        {xAxisTicks.map((s) => {
+          const xPos = x(s.i);
+          return (
+            <g key={s.date}>
+              <line x1={xPos} y1={height - padBottom} x2={xPos} y2={height - padBottom + 3} stroke="#d1d5db" strokeWidth="0.75" />
+              <text x={xPos} y={height - padBottom + 13} fontSize="9" fill="#9ca3af" textAnchor="middle">
+                {shortDateLabel(s.date)}
+              </text>
+            </g>
+          );
+        })}
         {/* active 라인 (emerald) */}
         {activePath ? <path d={activePath} fill="none" stroke="#10b981" strokeWidth="1.5" /> : null}
         {/* sold 라인 (blue) */}
         {soldPath ? <path d={soldPath} fill="none" stroke="#3b82f6" strokeWidth="1.5" /> : null}
+        {/* 거래가가 실제 관측된 날짜들. X축 라벨과 분리해 "전체 기간"과 "거래 관측일"을 혼동하지 않게 한다. */}
+        {data.map((p, i) => p.sold != null ? (
+          <circle key={`sold-${p.date}`} cx={x(i)} cy={y(p.sold)} r="2.5" fill="#3b82f6" stroke="white" strokeWidth="0.75" />
+        ) : null)}
         {/* 현재 매물 가격 horizontal line — 가장 위에 그림 */}
         {showCurrentPrice ? (
           <line x1={padX} y1={y(currentPrice as number)} x2={width - padR} y2={y(currentPrice as number)} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,3" />

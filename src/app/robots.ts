@@ -11,7 +11,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: ["/", "/plans", "/how-it-works", "/login", "/signup", "/privacy", "/terms", "/refund-policy", "/youth-policy"],
-        disallow: ["/api/", "/me/", "/debug/", "/admin/", "/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY/", "/billing/checkout/"],
+        disallow: ["/api/", "/me/", "/debug/", "/admin/", "/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY/", "/billing/checkout/", "/peek-pool-7f3kz9"],
       },
     ],
     sitemap: `${SITE_ORIGIN}/sitemap.xml`,

@@ -161,7 +161,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `shoe conditionNotes 비어있음: ${JSON.stringify(result.conditionNotes)}`);
     });
 
-    it("parser_version shoe = wave92-shoe-v10 (v7 → v8 bump)", () => {
+    it("parser_version shoe = wave92-shoe-v11 (Wave 414 EU size hardening)", () => {
       const result = parseListingOptions({
         title: "나이키 덩크 로우",
         description: "270",
@@ -169,7 +169,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Nike Dunk Low",
         category: "shoe",
       });
-      assert.equal(result.parserVersion, "wave92-shoe-v10",
+      assert.equal(result.parserVersion, "wave92-shoe-v11",
         `parser_version mismatch: ${result.parserVersion}`);
     });
 
@@ -185,7 +185,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `bag parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version clothing = wave216-clothing-v10 (Wave 254.5 step 3 일괄)", () => {
+    it("parser_version clothing = wave216-clothing-v12 (Wave 413 shirt/polo priority)", () => {
       const result = parseListingOptions({
         title: "스투시 후드",
         description: "L 사이즈",
@@ -193,7 +193,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Stussy Hoodie",
         category: "clothing",
       });
-      assert.equal(result.parserVersion, "wave216-clothing-v10",
+      assert.equal(result.parserVersion, "wave216-clothing-v12",
         `clothing parser_version mismatch: ${result.parserVersion}`);
     });
 
@@ -279,6 +279,48 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
   });
 
   describe("clothing-specific signals (Wave 254.5 step 3 신규)", () => {
+    it("Wave 406: 폴로베어 티셔츠와 롱슬리브를 다른 comparable_key로 분리", () => {
+      const tee = parseListingOptions({
+        title: "폴로베어 슬림핏 네이비 티셔츠",
+        description: "정품 상태 좋음",
+        skuId: "clothing-polo-bear-collab",
+        skuName: "Polo Bear Print",
+        category: "clothing",
+      });
+      const longSleeve = parseListingOptions({
+        title: "a418) 폴로랄프로렌 베어 와플 롱슬리브",
+        description: "정품 상태 좋음",
+        skuId: "clothing-polo-bear-collab",
+        skuName: "Polo Bear Print",
+        category: "clothing",
+      });
+
+      assert.equal(tee.parsedJson.clothing_product_type, "tee");
+      assert.equal(longSleeve.parsedJson.clothing_product_type, "long_sleeve_tee");
+      assert.notEqual(tee.comparableKey, longSleeve.comparableKey);
+    });
+
+    it("Wave 406: 스투시 후드와 후드집업을 다른 comparable_key로 분리", () => {
+      const hoodie = parseListingOptions({
+        title: "스투시 후드 L 팝니다",
+        description: "정품 상태 좋음",
+        skuId: "clothing-stussy-hoodie",
+        skuName: "Stussy Hoodie / Crewneck",
+        category: "clothing",
+      });
+      const zipHoodie = parseListingOptions({
+        title: "스투시 후드집업 급처 정품",
+        description: "정품 상태 좋음",
+        skuId: "clothing-stussy-hoodie",
+        skuName: "Stussy Hoodie / Crewneck",
+        category: "clothing",
+      });
+
+      assert.equal(hoodie.parsedJson.clothing_product_type, "hoodie");
+      assert.equal(zipHoodie.parsedJson.clothing_product_type, "hoodie_zip");
+      assert.notEqual(hoodie.comparableKey, zipHoodie.comparableKey);
+    });
+
     it("보풀 → clothing_pilling", () => {
       const { conditionNotes } = conditionFromTextFashion(
         "스투시 후드 보풀 있어요",

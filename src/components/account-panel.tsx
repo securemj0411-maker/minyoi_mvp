@@ -114,7 +114,7 @@ export function AccountPanel({
         <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">크레딧 사용</div>
         <div className="mt-2">
           <div className="flex items-center justify-between text-[11px] font-bold text-[#5d735f] dark:text-emerald-400">
-            <span>월 크레딧</span>
+            <span>보유 크레딧</span>
             <span className="tabular-nums text-[#223127] dark:text-zinc-100">
               {unlimited ? "∞" : `${tokens} / ${monthlyTotal || tokens || "—"}`}
             </span>
@@ -163,7 +163,7 @@ export function AccountPanel({
           </div>
         ) : null}
         <div className="mt-1.5 text-[11px] font-semibold text-[#7a8478] dark:text-zinc-500">
-          {isPaidPlan ? "탭해서 변경 · 구독 취소" : "탭해서 요금제 보기"}
+          {isPaidPlan ? "탭해서 패키지 변경" : "탭해서 크레딧 충전"}
         </div>
       </Link>
 

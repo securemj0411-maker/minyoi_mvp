@@ -191,8 +191,8 @@ export default function AuthForm({ mode }: Props) {
         </h1>
         <p className="mt-2 text-sm leading-6 text-[#5a6658] dark:text-zinc-400">
           {isSignup
-            ? "한국 사용자 기준으로 카카오 계정만 받아요. 첫 로그인 때 무료 크레딧이 1회 지급됩니다."
-            : "카카오 계정으로 추천 상품과 피드백 기록을 이어서 봅니다."}
+            ? "카카오 또는 이메일로 가입할 수 있어요. 첫 로그인 때 무료 크레딧이 1회 지급됩니다."
+            : "가입한 계정으로 추천 상품과 피드백 기록을 이어서 봅니다."}
         </p>
       </div>
 
@@ -330,20 +330,19 @@ export default function AuthForm({ mode }: Props) {
         </Link>
       </div>
 
-      {/* FAQ: 왜 카카오만 받나 — 본인 인증 + 한정 수량 분배 정책 */}
+      {/* FAQ: 공정한 분배 정책 */}
       <details className="mt-5 rounded-xl border border-[#e7dece] bg-[#fffaf1] px-4 py-3 text-sm font-semibold text-[#5a6658] dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300">
         <summary className="cursor-pointer text-[13px] font-black text-[#344136] dark:text-zinc-100">
-          카카오 외 다른 로그인은 안 되나요?
+          왜 계정이 필요한가요?
         </summary>
         <div className="mt-3 space-y-2 text-xs leading-6">
           <p>
-            득템잡이는 <strong className="font-black">엄선한 리셀 중고 제품을 하루 정해진 수량만</strong> 추천합니다.
-            누구나 만들 수 있는 구글·이메일 계정으로는 한 명이 여러 계정을 만들어 추천 매물을 독점할 수 있어
-            다른 사용자에게 돌아가는 기회가 줄어듭니다.
+            득템잡이는 <strong className="font-black">선별한 중고 매물을 하루 정해진 수량만</strong> 추천합니다.
+            같은 사용자가 여러 계정으로 추천 매물을 반복 열람하면 다른 사용자에게 돌아가는 기회가 줄어듭니다.
           </p>
           <p>
-            그래서 본인 인증이 가능한 카카오 계정만 받고 있습니다. 카카오 이외 가입 수단을 막아야
-            <strong className="font-black"> 공정한 분배</strong>가 가능해서 양해 부탁드립니다.
+            계정은 무료 크레딧 중복 지급을 막고, 열람한 추천 기록과 피드백을 안전하게 이어가기 위해 사용합니다.
+            카카오 로그인과 이메일 가입 중 편한 방식을 선택할 수 있습니다.
           </p>
         </div>
       </details>

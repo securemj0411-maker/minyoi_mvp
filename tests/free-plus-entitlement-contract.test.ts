@@ -9,12 +9,13 @@ function source(path: string) {
   return readFileSync(new URL(path, ROOT), "utf8");
 }
 
-test("free and plus define the first paid entitlement boundary", () => {
+test("free and 200-credit package define the first paid entitlement boundary", () => {
   assert.equal(PLANS.free.dailyOpenLimit, 3);
   assert.match(PLANS.free.features.join(" "), /상세보기 하루 3회/);
 
   assert.equal(PLANS.plus.dailyOpenLimit, 200);
-  assert.match(PLANS.plus.features.join(" "), /상세보기\/원본 확인 하루 200회/);
+  assert.equal(PLANS.plus.name, "200 크레딧");
+  assert.match(PLANS.plus.features.join(" "), /상세보기\/원본 확인 200회분/);
 });
 
 test("pool detail access consumes quota once per pid per day", () => {
@@ -38,7 +39,8 @@ test("explore opens the modal only after detail access is granted", () => {
   assert.match(explore, /openedDetailPidsRef/);
   assert.match(explore, /DetailAccessPaywallModal/);
   assert.match(explore, /setDetailAccessLimit/);
-  assert.match(explore, /Plus로 계속 보기/);
+  assert.match(explore, /크레딧 충전하고 계속 보기/);
+  assert.doesNotMatch(explore, /Plus로 계속 보기/);
   assert.match(explore, /void openItemDetail\(item\)/);
 });
 

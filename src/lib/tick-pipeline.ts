@@ -301,6 +301,25 @@ async function rawScoreDirtySchemaAvailable() {
 
 const catalogById = new Map(CATALOG.map((sku) => [sku.id, sku]));
 
+function isFashionCategory(category: string | null | undefined): boolean {
+  return category === "clothing" || category === "shoe" || category === "bag";
+}
+
+function isFashionSkuId(skuId: string | null | undefined): boolean {
+  return Boolean(skuId?.startsWith("clothing-") || skuId?.startsWith("shoe-") || skuId?.startsWith("bag-"));
+}
+
+function effectiveCatalogSkuForScorableRow(row: Pick<ScorableRawRow, "sku_id" | "name" | "description_preview">): Sku | null {
+  const stored = catalogById.get(row.sku_id ?? "") ?? null;
+  if (isFashionCategory(stored?.category) || isFashionSkuId(row.sku_id)) {
+    // Wave 412: fashion broad/fallback rows are too risky to trust from stored raw sku_id.
+    // Re-evaluate against the current catalog on every score parse; if the current catalog
+    // rejects it, do not let stale shoe/bag/clothing sku_ids keep pool access.
+    return ruleMatch(row.name, row.description_preview) ?? null;
+  }
+  return stored ?? ruleMatch(row.name, row.description_preview) ?? null;
+}
+
 const SKIP_DETAIL_DECISION: DetailQueueDecision = {
   queue: false,
   reason: "search_only_update",
@@ -2214,8 +2233,10 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   //   clothing: 베이스볼 저지/야구점퍼/바시티/코치자켓/하드쉘/소프트쉘/MA-1/레터맨/스타디움자켓
   //   bag: 캔버스백/쇼핑백/마트백 → tote, 데이팩/캠퍼백/책가방/학생가방 → backpack
   //   + catalog 대폭 보강 — 신발 30+ SKU (살로몬/NB/Shox/명품 broad), 의류 17 SKU (폴로/베이프/스투시/슈프림/아크네/꼼데/칼하트/톰브라운 broad), 가방 20 SKU (명품 brand-broad fallback)
-  clothing: "wave216-clothing-v10",
-  shoe: "wave92-shoe-v10",
+  // Wave 406 (2026-05-20): v11 — 운영자풀 코멘트 기반 sleeve/zip hoodie 분리.
+  //   롱슬리브/긴팔 → long_sleeve_tee, 후드집업 → hoodie_zip.
+  clothing: "wave216-clothing-v12",
+  shoe: "wave92-shoe-v11",
   bag: "wave92-bag-v10",
   bike: "wave92-fashion-mobility-v7",
 };
@@ -2236,12 +2257,12 @@ async function ensureParsedRows(rows: ScorableRawRow[], parsedByPid: Map<number,
   if (missingRows.length === 0) return parsedByPid;
 
   const parsedRows = missingRows.map((row) => {
-    const sku = catalogById.get(row.sku_id ?? "");
+    const sku = effectiveCatalogSkuForScorableRow(row);
     const parsed = parseListingOptions({
       title: row.name,
       description: row.description_preview,
-      skuId: row.sku_id,
-      skuName: row.sku_name,
+      skuId: sku?.id ?? null,
+      skuName: sku?.modelName ?? null,
       // Wave 217: bunjang metadata 전달 (shoe/bag/clothing 도 활용 가능하게).
       bunjangConditionLabel: row.bunjang_condition_label,
       category: sku?.category ?? null,
@@ -4356,7 +4377,8 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     // 2026-05-16: placeholder price (999999999, 111111111 등) 매물의 가격을 시세 fallback sample에서 제외.
     // Wave 218 (2026-05-19): isPlaceholderPrice 헬퍼 사용 (같은 자리수 반복 5+ 패턴 포함).
     if (isPlaceholderPrice(row.price)) continue;
-    const skuId = row.sku_id ?? "";
+    const effectiveSku = effectiveCatalogSkuForScorableRow(row);
+    const skuId = effectiveSku?.id ?? "";
     const parsedRow = parsedByPid.get(row.pid);
     const marketKey = marketGroupKey(row, parsedRow);
     const condClass = parsedRow?.condition_class ?? "normal";
@@ -4407,7 +4429,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     // 처리 시도 자체를 했다면 dirty=false 후보. needs_review가 다시 false로 바뀌면
     // detail-worker의 raw patch에서 score_dirty=true로 재마킹된다.
     handledPids.push(Number(row.pid));
-    const skuId = row.sku_id ?? "";
+    const effectiveSku = effectiveCatalogSkuForScorableRow(row);
+    if (!effectiveSku) continue;
+    const skuId = effectiveSku?.id ?? "";
     const parsed = parsedByPid.get(row.pid);
     // P0-8: needs_review=true인 parsed는 신뢰도 낮음. score 계산 자체를 건너뛰고
     // mvp_listings/mvp_listing_analysis output에 못 들어가게 한다. pool에는 이미 pool-policy에서 차단되어 있지만,
@@ -4545,7 +4569,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       name: row.name,
       price: row.price,
       skuId,
-      skuName: row.sku_name ?? skuId,
+      skuName: effectiveSku?.modelName ?? skuId,
       skuMedian: Math.round(skuMedian),
       saleStatus: row.sale_status,
       descriptionPreview: row.description_preview?.slice(0, 200) ?? null,

@@ -43,30 +43,30 @@ export default function AppFooter() {
               대표 <b className="font-bold text-[#344136] dark:text-zinc-300">이민제</b>
             </div>
             <div>
-              사업자등록번호 <b className="font-bold text-[#344136] dark:text-zinc-300">123-45-67890</b>
+              사업자등록번호 <b className="font-bold text-[#344136] dark:text-zinc-300">563-62-00789</b>
               <span className="mx-1.5 text-zinc-300 dark:text-zinc-700">·</span>
-              통신판매업신고 <b className="font-bold text-[#344136] dark:text-zinc-300">2026-서울강남-00000</b>
+              통신판매업신고 <b className="font-bold text-[#344136] dark:text-zinc-300">신고 준비 중</b>
             </div>
             <div>
-              주소 서울특별시 강남구 테헤란로 000, 0층
+              주소 제주특별자치도 제주시 수덕로 75, 302호
             </div>
             <div>
-              이메일 <a href="mailto:help@minyoi.kr" className="font-bold text-[#344136] hover:text-[var(--brand-accent-strong)] dark:text-zinc-300">help@minyoi.kr</a>
+              이메일 <a href="mailto:mj12270411@gmail.com" className="font-bold text-[#344136] hover:text-[var(--brand-accent-strong)] dark:text-zinc-300">mj12270411@gmail.com</a>
               <span className="mx-1.5 text-zinc-300 dark:text-zinc-700">·</span>
-              대표번호 02-1234-5678
+              대표번호 010-8168-5816
               <span className="mx-1.5 text-zinc-300 dark:text-zinc-700">·</span>
               평일 10:00–18:00
             </div>
             <div>
               호스팅 Vercel
               <span className="mx-1.5 text-zinc-300 dark:text-zinc-700">·</span>
-              서비스명 득템잡이 MVP — 중고 상품 추천 및 모니터링
+              서비스명 득템잡이 — 중고 매물 시세 분석 및 크레딧 기반 정보 제공 서비스
             </div>
           </div>
         </details>
 
         <div className="mt-4 text-[10px] leading-4 text-[#9aa097] dark:text-zinc-500">
-          현재 표시되는 사업자 정보와 정책은 MVP 검토용 mock입니다. 실제 운영 전 최종 값으로 교체 예정.
+          득템잡이는 중고거래 매물의 시세 차이·거래 리스크를 분석해 제공하는 정보 서비스이며, 실제 거래의 당사자가 아닙니다.
         </div>
       </div>
     </footer>

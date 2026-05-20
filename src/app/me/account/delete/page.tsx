@@ -106,9 +106,9 @@ export default function AccountDeletePage() {
         <section className="rounded-2xl border border-red-200 bg-red-50 p-5 dark:border-red-900 dark:bg-red-950/20">
           <h2 className="text-sm font-black text-red-900 dark:text-red-200">⚠️ 탈퇴 시 일어나는 일</h2>
           <ul className="mt-3 list-disc space-y-1.5 pl-5 text-xs leading-6 text-red-900 dark:text-red-200">
-            <li>로그인 정보, 텔레그램 연결, 크레딧 잔액, 구독 플랜 — 모두 즉시 삭제됩니다.</li>
+            <li>로그인 정보, 텔레그램 연결, 크레딧 잔액, 활성 패키지 — 모두 즉시 삭제됩니다.</li>
             <li>지난 추천 기록·결제 내역은 통계 보존을 위해 <strong>익명화</strong>됩니다 (개인 식별 X).</li>
-            <li>현재 활성 구독은 자동으로 종료되며, 남은 기간 환불은 없습니다.</li>
+            <li>남은 크레딧 환불은 환불정책 기준에 따라 별도로 검토됩니다.</li>
             <li>같은 카카오 계정으로 다시 가입하면 새 사용자로 시작합니다 (이전 데이터 복구 X).</li>
           </ul>
         </section>

@@ -2059,8 +2059,8 @@ revoke execute on function public.prune_raw_listings_dead_text(integer, integer,
 grant execute on function public.prune_raw_listings_dead_text(integer, integer, boolean) to service_role;
 
 -- =====================================================================
--- 요금제/구독/일일 한도 (2026-05-15 추가)
--- Starter (30크/월, 일2회) / Plus (80크/월, 일5회) / Pro (200크/월, 일20회)
+-- 크레딧 충전권/일일 안전 한도 (2026-05-15 추가)
+-- Starter (20크 충전권) / Plus (200크 충전권) / Pro (500크 충전권)
 -- mock Toss 결제 — 실제 결제 연동 전까지 mvp_payment_events에 mock 기록.
 -- =====================================================================
 

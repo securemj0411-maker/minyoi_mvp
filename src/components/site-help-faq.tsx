@@ -242,7 +242,7 @@ export default function SiteHelpFaq() {
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <a
-                    href="mailto:help@minyoi.kr?subject=%EC%B0%A8%EC%9D%B5%EC%9E%A1%EC%9D%B4%20%ED%94%BC%EB%93%9C%EB%B0%B1"
+                    href="mailto:mj12270411@gmail.com?subject=%EB%93%9D%ED%85%9C%EC%9E%A1%EC%9D%B4%20%ED%94%BC%EB%93%9C%EB%B0%B1"
                     className="flex h-10 items-center justify-center rounded-xl bg-[#314238] px-3 text-xs font-black text-[#f7f1e6] transition hover:bg-[#27362e]"
                   >
                     고객센터

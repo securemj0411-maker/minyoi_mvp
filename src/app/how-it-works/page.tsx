@@ -48,7 +48,7 @@ const engineSteps = [
   },
   {
     step: "3. 시세/위험 계산",
-    text: "같은 비교군의 시세와 예상 차익을 계산하고, 노이즈·부품·매입글·파손글은 미리 제외합니다.",
+    text: "같은 비교군의 시세 차이를 계산하고, 노이즈·부품·매입글·파손글은 미리 제외합니다.",
   },
   {
     step: "4. 공개 게이트",
@@ -197,7 +197,7 @@ export default function HowItWorksPage() {
                   href="/plans"
                   className="inline-flex items-center justify-center rounded-2xl border border-[#ddd4c7] bg-[#fffaf1] px-5 py-3.5 text-sm font-black text-[#344136] transition hover:bg-[var(--brand-accent-soft)]"
                 >
-                  요금제 보기
+                  크레딧 충전
                 </Link>
               </div>
             </div>
@@ -328,10 +328,10 @@ export default function HowItWorksPage() {
           {/* 택배비 명시 — 사용자 결제 결정 직결 */}
           <div className="mt-3 rounded-[22px] border-l-4 border-[#caab78] bg-[#fff8ea] px-5 py-4 dark:border-amber-900/60 dark:bg-amber-950/20">
             <p className="text-sm font-black leading-7 text-[#7b5724] dark:text-amber-200 sm:text-base">
-              예상 수익은 택배비를 포함해서 계산합니다.
+              시세 차이는 택배비를 포함해서 계산합니다.
             </p>
             <p className="mt-2 text-sm leading-6 text-[#9a7f4f] dark:text-amber-200/80">
-              사용자가 별도로 배송비를 빼서 계산할 필요가 없습니다. 카드에 표시된 수익이 곧 손에 남는 실 수익입니다.
+              사용자가 별도로 배송비를 빼서 계산하지 않아도, 카드에서 비용 반영 기준을 함께 확인할 수 있습니다.
             </p>
           </div>
 
@@ -346,7 +346,7 @@ export default function HowItWorksPage() {
               href="/plans"
               className="inline-flex items-center justify-center rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] px-5 py-3.5 text-sm font-black text-[#344136] transition hover:bg-[var(--brand-accent-soft)]"
             >
-              알람 플랜 보기
+              크레딧 충전 보기
             </Link>
           </div>
         </section>
@@ -436,7 +436,7 @@ export default function HowItWorksPage() {
             </div>
             <div className="mt-4 space-y-4 text-sm leading-6 text-[#586356]">
               <p>
-                우리는 전문 리셀러만을 위한 복잡한 분석 화면보다, 일반 사용자도 바로 이해할 수 있는 추천
+                우리는 중고 거래에 익숙한 사용자만을 위한 복잡한 분석 화면보다, 일반 사용자도 바로 이해할 수 있는 추천
                 경험을 먼저 만듭니다. 대신 내부 엔진은 오히려 더 보수적으로 돌아가게 설계합니다.
               </p>
               <p>

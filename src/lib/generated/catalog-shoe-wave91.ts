@@ -480,6 +480,7 @@ export const SHOE_CATALOG: Sku[] = [
     mustContain: [
       ["삼바", "samba"],
       ["웨일즈보너", "웨일즈 보너", "wales bonner", "wb"],
+      ["black green", "블랙 그린", "블랙그린", "검초"],
     ],
     mustNotContain: [
       "cream", "크림", "silver", "실버", "metallic", "메탈릭", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "og", "오지",
@@ -567,10 +568,12 @@ export const SHOE_CATALOG: Sku[] = [
     aliases: [],
     mustContain: [
       ["뉴발란스", "new balance", "nb"],
-      ["530"],
+      ["530", "530sg", "mr530sg"],
+      ["화이트 실버 네이비", "white silver navy", "530sg", "mr530sg"],
     ],
     mustNotContain: [
       "miu miu", "미우미우", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
+      "미우 미우", "miu-miu",
       // Wave 235 (2026-05-19): Ronnie Fieg(Kith) collab 40만 mismatch. Miu Miu 145만 이미 차단됨.
       "ronnie fieg", "로니피그", "로니 피그", "kith", "키스",
       "aime leon dore", "ald", "에메레옹도레", "joe freshgoods", "조 프레쉬굿즈",
@@ -798,6 +801,9 @@ export const SHOE_CATALOG: Sku[] = [
       "삽니다", "매입", "구합니다", "구해요", "구함",
       "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "복각", "이미테이션", "레플리카", "짝퉁",
       "트랙팬츠", "티셔츠", "맨투맨", "후드", "자켓", "쇼츠", "반바지",
+      // Wave 405: newer shoe-adidas-tobacco-broad owns this lane. Keep this
+      // legacy SKU out of matching so broad/current catalog does not collide.
+      "토바코", "tobacco",
     ],
     msrpKrw: 140000,
     released: 2024,

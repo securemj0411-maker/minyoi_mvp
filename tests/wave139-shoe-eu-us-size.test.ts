@@ -23,6 +23,14 @@ describe("Wave 139 — EU/US 사이즈 → mm 변환", () => {
     assert.equal(parseShoeSizeMm("39 닥터마틴 2976 첼시부츠"), null);
   });
 
+  it("Wave 414 — 명품 신발 EU decimal/bracket/suffix 표기를 보수적으로 파싱", () => {
+    assert.equal(parseShoeSizeMm("[40] 에르메스 바운싱 스니커즈 카프스킨 누아블랑"), 250);
+    assert.equal(parseShoeSizeMm("[40.5사이즈]에르메스 H 부메랑 스니커즈"), 255);
+    assert.equal(parseShoeSizeMm("[37.5사이즈]프라다 브러쉬드 레더 스니커즈 화이트"), 240);
+    assert.equal(parseShoeSizeMm("[풀구성] 42.5 / 에르메스 바운싱 스니커즈 블랑"), 270);
+    assert.equal(parseShoeSizeMm("프라다 청키 스니커즈 베이지 43"), 275);
+  });
+
   it("US 8 → 260mm (남성 기준)", () => {
     assert.equal(parseShoeSizeMm("US 8 나이키 페가수스"), 260);
   });

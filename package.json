@@ -204,6 +204,7 @@
     "apply:internal-acquisition-executor": "tsx scripts/apply-internal-acquisition-executor.ts"
   },
   "dependencies": {
+    "@portone/browser-sdk": "^0.1.7",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
     "next": "16.2.6",

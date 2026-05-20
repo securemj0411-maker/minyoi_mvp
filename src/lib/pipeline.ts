@@ -174,6 +174,12 @@ function buyingHits(title: string, desc: string): string[] {
   ) {
     hits.push("buying_title_suffix");
   }
+  if (
+    !historicalPurchaseSignal &&
+    /^\s*[\(\[]\s*구매\s*[\)\]]/.test(title)
+  ) {
+    hits.push("buying_title_bracket");
+  }
 
   return [...new Set(hits)];
 }

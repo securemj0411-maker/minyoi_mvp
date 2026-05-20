@@ -27,8 +27,7 @@ export default function LegalPageShell({
             <h1 className="mt-3 text-3xl font-black tracking-tight text-[#223127] sm:text-4xl">{title}</h1>
             <div className="mt-3 text-sm font-semibold text-[#6c756a]">최종 업데이트: {updatedAt}</div>
             <p className="mt-4 text-sm leading-6 text-[#5a6658] sm:text-[15px]">
-              본 문서는 MVP 검토용 mock 정책 페이지입니다. 실제 서비스 운영 전 법률 검토와 실사업자
-              정보 반영이 필요합니다.
+              본 문서는 득템잡이 서비스 운영 기준을 안내하기 위한 정책 문서입니다.
             </p>
           </div>
 

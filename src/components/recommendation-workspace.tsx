@@ -1011,9 +1011,9 @@ function PackSelectorCard({
                   </div>
                   <div className="mt-1 leading-5 text-[#7a6a4a] dark:text-amber-100/80">
                     {dailyReached
-                      ? "내일 다시 열 수 있고, 지금 더 보려면 한도가 큰 요금제로 바로 이어갈 수 있어요."
+                      ? "내일 다시 열 수 있고, 지금 더 보려면 한도가 큰 크레딧 패키지로 바로 이어갈 수 있어요."
                       : monthlyReached
-                        ? "요금제를 올리면 이번 달에도 바로 더 볼 수 있어요."
+                        ? "크레딧 패키지를 충전하면 바로 더 볼 수 있어요."
                         : insufficient
                           ? "추천을 멈추지 않게 필요한 크레딧과 한도를 같이 늘릴 수 있어요."
                           : "다 쓰기 전에 더 큰 한도로 바꾸면 흐름이 끊기지 않아요."}

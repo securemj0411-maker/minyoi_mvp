@@ -19,17 +19,22 @@ export const SHOE_BROAD_CATALOG: Sku[] = [
     aliases: ["뉴발란스 530", "NB 530", "뉴발 530"],
     mustContain: [
       // Wave 226 (2026-05-19): "뉴발란스530" (붙임) 추가 — Bunjang 매물 718건 unmatched 중 다수 패턴.
-      ["뉴발란스 530", "뉴발란스530", "뉴발 530", "nb 530", "nb530", "new balance 530"],
+      ["뉴발란스", "뉴발", "new balance", "nb", "nb530"],
+      ["530", "nb530", "530sg", "mr530sg"],
     ],
     mustNotContain: [
       // 콜라보
-      "aimé leon dore", "ald", "에이메 레옹 도르", "miu miu", "미우미우",
+      "aimé leon dore", "ald", "에이메 레옹 도르", "miu miu", "miu-miu", "미우미우", "미우 미우",
+      "salehe", "salehe bembury", "살레헤", "샐러헤", "bembury", "벰버리", "뱀버리",
+      // Wave 422: exact color/model lane is handled by shoe-newbalance-530-white-silver-navy.
+      "화이트 실버 네이비", "white silver navy", "530sg", "mr530sg",
       // 가품
       "짭", "가품", "레플리카", "replica", "fake", "미러", "샘플", "sample", "1:1", "11급",
       // 키즈
       "td", "ps", "키즈", "유아", "아동", "toddler", "kids", "infant", "ks",
       // 단품
       "한짝", "한쪽만", "사이즈 미상", "파손", "찢어짐", "구멍",
+      "신발박스", "신발 박스", "신발상자", "신발 상자", "슈박스", "shoebox", "shoe box", "박스만",
       // 매입글
       "삽니다", "구합니다", "구해요", "매입",
     ],
@@ -61,6 +66,8 @@ export const SHOE_BROAD_CATALOG: Sku[] = [
       "프링글스", "pringles",
       "wensleydale",
       // 다른 시리즈
+      "삼배", "sambae", "삼바로즈", "samba rose", "sambarose",
+      "인도어", "indoor", "adv", "lt",
       "rose", "vegan", "비건", "decon", "데콘", "spezial", "스페지알",
       "rm", "rose mary", "edition",
       // 가품

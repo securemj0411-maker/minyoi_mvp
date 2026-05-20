@@ -295,7 +295,7 @@ export default function PackShop({ showcases, kpis }: { showcases: LandingShowca
                     href="/plans"
                     className="inline-flex items-center justify-center rounded-2xl border border-[#ddd4c7] bg-[#fffaf1] px-5 py-3.5 text-sm font-black text-[#344136] transition hover:bg-[#f4eee3] dark:border-zinc-700 dark:bg-zinc-950/40 dark:text-zinc-200"
                   >
-                    요금제 보기
+                    크레딧 충전
                   </Link>
                   <Link
                     href="/how-it-works"

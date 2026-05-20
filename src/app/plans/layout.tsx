@@ -3,8 +3,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "요금제",
-  description: "득템잡이 요금제 — Free 5크레딧 / Starter 9,900원 / Plus 19,900원 / Pro 39,900원 (핫딜 알림 전용). 베타 기간 mock 결제로 운영, 실제 청구 X.",
+  title: "크레딧 충전",
+  description: "득템잡이 크레딧 충전 — 3,900원 20크레딧 / 19,900원 200크레딧 / 39,900원 500크레딧. 자동 갱신 없는 단건 결제 방식입니다.",
 };
 
 export default function PlansLayout({ children }: { children: React.ReactNode }) {

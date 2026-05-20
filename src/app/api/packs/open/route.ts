@@ -116,7 +116,7 @@ export async function POST(req: Request) {
     const dailyLimit = planState.plan.dailyOpenLimit;
     if (dailyLimit === 0) {
       return NextResponse.json(
-        { error: "no_plan", message: "요금제를 먼저 선택해주세요.", dailyUsed: 0, dailyLimit: 0 },
+        { error: "no_plan", message: "크레딧을 먼저 충전해주세요.", dailyUsed: 0, dailyLimit: 0 },
         { status: 402 },
       );
     }

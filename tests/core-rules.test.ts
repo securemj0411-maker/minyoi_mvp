@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
+import { buildCandidatePoolRows, evaluatePoolGate } from "@/lib/candidate-pool-builder";
 import { CATALOG, ruleMatch } from "@/lib/catalog";
+import { CATEGORY_READINESS, LANE_READINESS } from "@/lib/category-readiness";
 import { parseGameConsoleListing } from "@/lib/game-console-parser";
 import { parseListingOptions } from "@/lib/option-parser";
 import { classifyListing } from "@/lib/pipeline";
@@ -1297,6 +1298,24 @@ test("description-level buying intent is excluded without blocking purchase-hist
 
   assert.notEqual(
     classifyListing(
+      "보테가베네타 카세트백 미니 블랙 (백화점구매인증가능)",
+      "정품 구매인증 가능합니다.",
+      760_000,
+    ).listingType,
+    "buying",
+  );
+
+  assert.equal(
+    classifyListing(
+      "(구매) rrl 반다나",
+      "가격 맞으면 바로 구매합니다.",
+      9_999_999,
+    ).listingType,
+    "buying",
+  );
+
+  assert.notEqual(
+    classifyListing(
       "애플워치 울트라 49MM",
       "중고거래했습니다. 도난제품 아닙니다. 알아서 초기화 하시고 쓰실분 구합니다.",
       266_000,
@@ -1520,6 +1539,143 @@ test("candidate pool builder hard-blocks pool_eligible=false rows before lane re
 
   assert.equal(result.entries.length, 0);
   assert.deepEqual(result.invalidations, [{ pid: 10, reason: "pool_eligible_false" }]);
+});
+
+test("clothing broad SKUs cannot enter pool through category-level readiness", () => {
+  const sku = CATALOG.find((item) => item.id === "clothing-stussy-apparel-broad");
+  assert.ok(sku, "expected Stussy broad clothing SKU in catalog");
+
+  const decision = evaluatePoolGate(
+    { sku, category: "clothing" },
+    {
+      // Guard must hold even if a DB/operator override accidentally says clothing is ready.
+      categoryReadiness: {
+        clothing: {
+          status: "ready",
+          label: "Clothing",
+          note: "override",
+          minReadyPool: 1,
+          minParseRate: 0,
+          minTrustedKeys: 0,
+        },
+      },
+      laneReadiness: {},
+    },
+  );
+
+  assert.equal(decision.canEnterPool, false);
+  assert.equal(decision.reason, "category_internal_only_clothing_lane_required");
+});
+
+test("bag broad SKUs cannot enter pool through category-level readiness unless lane-vetted", () => {
+  const broadSku = CATALOG.find((item) => item.id === "bag-miumiu-broad");
+  const vettedBroadSku = CATALOG.find((item) => item.id === "bag-coach-broad");
+  assert.ok(broadSku, "expected Miu Miu broad bag SKU in catalog");
+  assert.ok(vettedBroadSku, "expected Coach broad bag SKU in catalog");
+
+  const blocked = evaluatePoolGate(
+    { sku: broadSku, category: "bag" },
+    {
+      categoryReadiness: {
+        bag: {
+          status: "ready",
+          label: "Bags",
+          note: "override",
+          minReadyPool: 1,
+          minParseRate: 0,
+          minTrustedKeys: 0,
+        },
+      },
+      laneReadiness: {},
+    },
+  );
+
+  assert.equal(blocked.canEnterPool, false);
+  assert.equal(blocked.reason, "category_internal_only_bag_broad_lane_required");
+
+  const allowed = evaluatePoolGate(
+    { sku: vettedBroadSku, category: "bag" },
+    { categoryReadiness: CATEGORY_READINESS, laneReadiness: LANE_READINESS },
+  );
+
+  assert.equal(allowed.canEnterPool, true);
+  assert.equal(allowed.reason, "lane_ready_coach_broad");
+});
+
+test("low-purity clothing product-type lanes stay held out of the pool", () => {
+  const heldIds = [
+    "clothing-polo-bear-collab",
+    "clothing-polo-rrl-tee",
+    "clothing-polo-rrl-accessory",
+    "clothing-bape-tee",
+    "clothing-bape-hoodie",
+    "clothing-bape-hoodie-zip",
+    "clothing-bape-crewneck",
+    "clothing-tnf-purple-label",
+    "clothing-stussy-nike-collab",
+    "clothing-patagonia-retro-x",
+    "clothing-patagonia-down",
+  ];
+
+  for (const id of heldIds) {
+    const sku = CATALOG.find((item) => item.id === id);
+    assert.ok(sku, `expected held clothing SKU in catalog: ${id}`);
+    const decision = evaluatePoolGate(
+      { sku, category: "clothing" },
+      { categoryReadiness: CATEGORY_READINESS },
+    );
+    assert.equal(decision.canEnterPool, false, id);
+    assert.equal(decision.reason, `lane_blocked_${sku.laneKey}`, id);
+  }
+});
+
+test("candidate pool builder allows audited clothing narrow lanes but blocks held broad lanes", () => {
+  const narrowSku = CATALOG.find((item) => item.id === "clothing-tnf-nuptse-1996");
+  const heldSku = CATALOG.find((item) => item.id === "clothing-stussy-hoodie");
+  assert.ok(narrowSku, "expected TNF 1996 Nuptse SKU in catalog");
+  assert.ok(heldSku, "expected held Stussy hoodie SKU in catalog");
+
+  const parsedByPid = new Map([
+    [21, {
+      category: "clothing" as const,
+      comparable_key: "clothing|tnf_nuptse_1996|down_jacket|a_grade",
+      parse_confidence: 1,
+      needs_review: false,
+    }],
+    [22, {
+      category: "clothing" as const,
+      comparable_key: "clothing|stussy_hoodie|hoodie|a_grade",
+      parse_confidence: 1,
+      needs_review: false,
+    }],
+  ]);
+  const base = {
+    price: 100_000,
+    skuMedian: 300_000,
+    estimatedBuyCost: 100_000,
+    shippingFee: 0,
+    shippingFeeGeneral: 0,
+    riskHits: 0,
+    thumbnailUrl: "https://example.test/item.jpg",
+    score: 90,
+    scoreFlags: [],
+    saleStatus: "selling",
+  };
+
+  const result = buildCandidatePoolRows({
+    rows: [
+      { ...base, pid: 21, skuId: narrowSku.id },
+      { ...base, pid: 22, skuId: heldSku.id },
+    ],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: CATEGORY_READINESS,
+    now: "2026-05-20T00:00:00.000Z",
+  });
+
+  assert.equal(result.entries.length, 1);
+  assert.equal(result.entries[0]?.pid, 21);
+  assert.ok(result.invalidations.some((row) => row.pid === 22 && row.reason === "lane_blocked_stussy_hoodie"));
 });
 
 test("score output mapper preserves rows while assigning rank by score", () => {

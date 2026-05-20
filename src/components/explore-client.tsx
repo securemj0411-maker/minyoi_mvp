@@ -309,7 +309,7 @@ function revealCardToPoolItem(card: RevealCard): PoolItem {
     price: card.price,
     skuMedian: card.marketBasis?.medianPrice ?? null,
     thumbnailUrl: card.thumbnailUrl,
-    skuId: card.skuId,
+    skuId: card.skuId ?? null,
     skuName: card.skuName,
     expectedProfitMin: card.expectedProfitMin,
     expectedProfitMax: card.expectedProfitMax,
@@ -398,7 +398,7 @@ function DetailAccessPaywallModal({
               href="/plans"
               className="flex min-h-12 items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-base font-black text-white shadow-[0_12px_26px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8]"
             >
-              Plus로 계속 보기
+              크레딧 충전하고 계속 보기
             </Link>
             <button
               type="button"
@@ -458,6 +458,8 @@ export default function ExploreClient() {
   // Wave 376: 가입 직후 (prefs X) → 모달 자동 열림 + 예산만 묻기 (성향은 default balanced).
   // 답 또는 dismiss 전에는 첫 fetch 보류 — 첫 30개부터 personalized 가치 체감.
   const [awaitingInitialPrefs, setAwaitingInitialPrefs] = useState(false);
+  // Wave 403: localStorage 확인 전 자동 effect가 먼저 /api/packs/pool을 치지 않도록 초기화 완료를 별도 추적.
+  const [prefsInitialized, setPrefsInitialized] = useState(false);
   // Wave 382: pool API에서 fallback 적용된 예산 (사용자 prefs와 다르면 배너 표시)
   const [appliedBudget, setAppliedBudget] = useState<Budget | null>(null);
 
@@ -473,6 +475,7 @@ export default function ExploreClient() {
       setAwaitingInitialPrefs(true);
       setRefreshModalOpen(true);
     }
+    setPrefsInitialized(true);
   }, []);
 
   // 모달 mount 후 다음 frame에 애니메이션 활성화 (slide up / fade in)
@@ -615,10 +618,11 @@ export default function ExploreClient() {
     }
   }, []);
 
-  // 초기 1회 통계 fetch
+  // 초기 1회 통계 fetch. 가입 직후 예산 모달이 떠 있으면 매물/통계 DB 호출 모두 보류.
   useEffect(() => {
+    if (!prefsInitialized || awaitingInitialPrefs) return;
     void loadStats();
-  }, [loadStats]);
+  }, [loadStats, prefsInitialized, awaitingInitialPrefs]);
 
   // Wave 394.7.j: 더 찾아보기 후 새 매물 첫 카드로 자동 스크롤.
   useEffect(() => {
@@ -634,9 +638,9 @@ export default function ExploreClient() {
   // 필터/정렬 변경 시 자동 재로드.
   // Wave 376: 가입 직후 가드 — preferences 답하기 전엔 fetch 보류 (random 30 안 보이게).
   useEffect(() => {
-    if (awaitingInitialPrefs) return;
+    if (!prefsInitialized || awaitingInitialPrefs) return;
     void loadPool(false);
-  }, [loadPool, awaitingInitialPrefs]);
+  }, [loadPool, prefsInitialized, awaitingInitialPrefs]);
 
   // Wave 353: 클라이언트 사이드 카테고리 필터. 전체 풀(items)에서 selectedCategories에 속한 매물만.
   // category가 null이면 selectedCategories 활성 시 제외 (안전).
@@ -727,7 +731,7 @@ export default function ExploreClient() {
           title: isLimit && dailyLimit
             ? `오늘 무료 상세보기 ${dailyLimit.toLocaleString("ko-KR")}회를 모두 썼어요`
             : "상세보기를 열 수 없어요",
-          message: data.message ?? "Plus로 전환하면 기다리지 않고 바로 이어서 볼 수 있어요.",
+          message: data.message ?? "크레딧을 충전하면 기다리지 않고 바로 이어서 볼 수 있어요.",
           dailyUsed,
           dailyLimit,
         });
@@ -1125,7 +1129,7 @@ export default function ExploreClient() {
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-medium">
                     {isSoldOut ? (
                       <span className="flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
-                        💡 구독자는 잡을 수 있었어요
+                        💡 크레딧 충전하면 잡을 수 있었어요
                       </span>
                     ) : (
                       <>
@@ -1181,7 +1185,7 @@ export default function ExploreClient() {
               {stats && stats.freshLocked > 0 ? (
                 <div className="mt-2 flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1.5 text-[11px] font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
                   <ZapIcon className="h-3 w-3" />
-                  <span>지금 즉시 매물 {stats.freshLocked.toLocaleString("ko-KR")}건은 <b className="font-bold">구독자 전용</b> (곧 출시)</span>
+                  <span>지금 즉시 매물 {stats.freshLocked.toLocaleString("ko-KR")}건은 <b className="font-bold">크레딧 충전 사용자 전용</b> (곧 출시)</span>
                 </div>
               ) : null}
             </div>
@@ -1381,11 +1385,8 @@ export default function ExploreClient() {
                             savePreferences(newPrefs);
                             setPreferences(newPrefs);
                             setEditingPrefs(false);
-                            // Wave 390: 폼 답 = cooldown 시작 X (가입 보너스). refresh=false로 fetch.
-                            // 첫 "더 찾아보기" 클릭에서 cooldown 시작됨.
-                            if (canRefresh) {
-                              void loadPool(false, newPrefs);
-                            }
+                            // Wave 403: 직접 loadPool 하지 않음. preferences 반영 후 auto effect가 한 번만 fetch.
+                            // 폼 답 = cooldown 시작 X(refresh=false), 첫 "더 찾아보기" 클릭에서 cooldown 시작.
                             closeRefreshModal();
                           }}
                           className={`w-full rounded-2xl bg-[var(--brand-accent-strong)] px-5 ${lightweightMode ? "py-4 text-base" : "py-3.5 text-base"} font-bold text-[var(--brand-cream)] shadow-[0_12px_28px_rgba(34,49,39,0.28)] transition hover:shadow-[0_16px_34px_rgba(34,49,39,0.34)] active:scale-[0.99]`}
@@ -1513,7 +1514,7 @@ export default function ExploreClient() {
                               </span>
                             </button>
 
-                            {/* Wave 386: amber → 밝은 emerald. 카피 변경. chip "구독" 작게 유지 (paywall 인지) + 클릭 시 plans. */}
+                            {/* Wave 386: amber → 밝은 emerald. 카피 변경. 충전 chip + 클릭 시 plans. */}
                             <Link
                               href="/plans"
                               className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-emerald-500 px-5 py-4 text-left shadow-[0_4px_14px_rgba(16,185,129,0.35)] transition hover:bg-emerald-600 active:scale-[0.99]"
@@ -1524,15 +1525,15 @@ export default function ExploreClient() {
                                 </span>
                                 <div className="min-w-0">
                                   <div className="text-base font-bold text-white">
-                                    지금 바로 득템 더 보기
+                                    크레딧 충전하고 더 보기
                                   </div>
                                   <div className="mt-0.5 text-[11px] font-medium text-white/85">
-                                    대기 없이 즉시 + 신규 매물 알림
+                                    상세보기와 원본 확인에 사용
                                   </div>
                                 </div>
                               </div>
                               <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
-                                PRO
+                                충전
                               </span>
                             </Link>
                           </>

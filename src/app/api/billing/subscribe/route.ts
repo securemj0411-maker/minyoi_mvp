@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { planForKey, type PlanKey } from "@/lib/plan-config";
+import { verifyPortOnePayment } from "@/lib/portone-server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { subscribeUserPlan } from "@/lib/user-plan";
@@ -14,13 +15,13 @@ export const dynamic = "force-dynamic";
 const RATE_LIMIT_MAX = 3;
 const RATE_LIMIT_WINDOW_SECONDS = 60;
 
-// Mock Toss 결제. 실제 결제 연동 전까지 client에서 보낸 paymentKey/orderId만 검증.
-// 프로덕션 전환 시 토스 servlet 호출(approve) 단계가 여기에 들어간다.
+// PortOne V2 결제 완료 처리.
+// client에서 받은 paymentId를 서버에서 PortOne 결제 조회 API로 검증한 뒤 크레딧을 지급한다.
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  let body: { planKey?: string; paymentKey?: string; orderId?: string };
+  let body: { planKey?: string; paymentId?: string; paymentKey?: string; orderId?: string };
   try {
     body = await req.json();
   } catch {
@@ -32,7 +33,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_plan" }, { status: 400 });
   }
   const plan = planForKey(planKey);
-  const paymentKey = String(body.paymentKey ?? `mock_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
+  const paymentId = String(body.paymentId ?? body.paymentKey ?? "").trim();
+  if (!paymentId) {
+    return NextResponse.json({ error: "missing_payment_id", message: "결제 ID가 필요합니다." }, { status: 400 });
+  }
 
   const userRef = userRefForAuthUser(auth.user.id);
 
@@ -53,18 +57,38 @@ export async function POST(req: Request) {
       );
     }
   }
+
+  const verification = await verifyPortOnePayment({
+    paymentId,
+    expectedAmount: plan.priceKrw,
+  });
+  if (!verification.ok) {
+    console.warn("[billing/subscribe] PortOne verification failed", {
+      userRef,
+      planKey,
+      paymentId,
+      error: verification.error,
+    });
+    return NextResponse.json(
+      { error: verification.error, message: verification.message },
+      { status: verification.statusCode },
+    );
+  }
+
   try {
     const result = await subscribeUserPlan({
       user: auth.user,
       userRef,
       planKey: planKey as Exclude<PlanKey, "free">,
-      paymentKey,
+      paymentKey: paymentId,
     });
     return NextResponse.json({
       ok: true,
       planKey: result.planKey,
       balance: result.balance,
       currentPeriodEnd: result.currentPeriodEnd,
+      paymentId,
+      verification: verification.skipped ? "skipped_dev_no_secret" : "verified",
       amount: plan.priceKrw,
       monthlyCredits: plan.monthlyCredits,
     });

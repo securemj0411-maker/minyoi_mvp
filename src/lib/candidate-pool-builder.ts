@@ -153,6 +153,35 @@ export function evaluatePoolGate(
       laneKey: laneDecision.laneKey,
     };
   }
+  // Wave 407 (2026-05-20): clothing is only safe when a specific vetted lane
+  // is ready. Brand/apparel broad catalog rows should not inherit category-ready.
+  if (input.category === "clothing") {
+    return {
+      ...categoryDecision,
+      status: "blocked",
+      canEnterPool: false,
+      reason: "category_internal_only_clothing_lane_required",
+    };
+  }
+  // Wave 412b (2026-05-20): bag category can stay ready for vetted lanes, but
+  // luxury brand-broad fallback rows must not inherit category-level readiness.
+  // Model/shape variance is too wide; only explicit lane readiness may release
+  // a broad bag fallback such as coach_broad.
+  if (
+    input.category === "bag" &&
+    input.sku &&
+    (
+      input.sku.id.endsWith("-broad") ||
+      input.sku.laneKey?.endsWith("_broad")
+    )
+  ) {
+    return {
+      ...categoryDecision,
+      status: "blocked",
+      canEnterPool: false,
+      reason: "category_internal_only_bag_broad_lane_required",
+    };
+  }
   return categoryDecision;
 }
 
