@@ -26,15 +26,15 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.match(modal, /안전결제/);
   assert.match(modal, /되팔 곳/);
   assert.match(modal, /판매 속도/);
-  assert.match(modal, /이제 상세 분석으로 넘어가면 돼요/);
-  assert.match(modal, /상세 분석 보기/);
+  assert.match(modal, /이 매물 자세히 살펴볼래요/);
+  assert.match(modal, /이 매물 자세히 보기/);
   assert.match(modal, /초보자 가이드 스킵하기/);
   assert.match(modal, /onPrev/);
   assert.match(modal, /retreatBeginnerGuide/);
   assert.match(modal, /이전/);
   assert.ok(modal.includes("disabled={!canGoPrev}"));
-  assert.match(modal, /BEGINNER_GUIDE_AUTO_SHOW_LIMIT = 3/);
-  assert.match(modal, /BEGINNER_GUIDE_AUTO_HIDE_SKIP_THRESHOLD = 4/);
+  assert.match(modal, /BEGINNER_GUIDE_AUTO_SHOW_LIMIT = 5/);
+  assert.match(modal, /BEGINNER_GUIDE_AUTO_HIDE_SKIP_THRESHOLD = 6/);
   assert.match(modal, /BEGINNER_GUIDE_HANDLED_PIDS_STORAGE_KEY/);
   assert.match(modal, /BEGINNER_GUIDE_SKIP_COUNT_STORAGE_KEY/);
   assert.match(modal, /shouldAutoShowBeginnerGuide/);
@@ -43,12 +43,14 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
     modal.indexOf("function beginnerGuideSteps"),
     modal.indexOf("function displayProfitRange"),
   );
+  assert.ok(order.indexOf("marketCompareGuideStep(card)") < order.indexOf("marketTrendGuideStep(card)"));
   assert.ok(order.indexOf("marketTrendGuideStep(card)") < order.indexOf("velocityGuideStep(card)"));
   assert.ok(order.indexOf("velocityGuideStep(card)") < order.indexOf("buyCostGuideStep(card)"));
-  assert.ok(order.indexOf("purchaseCheckGuideStep(card)") < order.indexOf("marketCompareGuideStep(card)"));
-  assert.match(modal, /eyebrow: "2\. 구매 전 체크"/);
-  assert.match(modal, /eyebrow: "5\. 판매 속도"/);
-  assert.match(modal, /eyebrow: "6\. 매입가"/);
+  assert.ok(order.indexOf("channelGuideStep(card)") < order.indexOf("purchaseCheckGuideStep(card)"));
+  assert.match(modal, /eyebrow: "2\. 비교 매물"/);
+  assert.match(modal, /eyebrow: "4\. 판매 속도"/);
+  assert.match(modal, /eyebrow: "5\. 매입가"/);
+  assert.match(modal, /eyebrow: "8\. 구매 전 체크"/);
 });
 
 test("detail modal uses the mobile detail shell on desktop", () => {
@@ -105,9 +107,14 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /평점이 <strong/);
   assert.match(modal, /후기가 <strong/);
   assert.match(modal, /marketConditionLabel\(card\)/);
+  assert.match(modal, /conditionBasisSentence\(card\)/);
+  assert.match(modal, /conditionProductLabel\(card\)/);
+  assert.match(modal, /data-beginner-guide-condition-basis/);
+  assert.match(modal, /상태까지 맞춰서 시세를 봤어요/);
+  assert.match(modal, /득템잡이는 번개장터에 있는/);
+  assert.match(modal, /하자가 있는 상품/);
   assert.match(modal, /상태가 비슷한 매물보다 싸게 나왔어요/);
   assert.match(modal, /저렴/);
-  assert.match(modal, /상태가 비슷한 .*매물의 시세를 모아봤어요/);
   assert.match(modal, /data-beginner-guide-product-image/);
   assert.match(modal, /data-beginner-guide-market-evidence/);
   assert.match(modal, /data-beginner-guide-comparables/);
@@ -128,7 +135,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.ok(modal.includes('<BunjangLogo className="h-6 w-6 rounded-full" />'));
   assert.match(modal, /내가 낼 배송비/);
   assert.match(modal, /data-beginner-guide-safe-payment/);
-  assert.match(modal, /구매확정 전 확인/);
+  assert.match(modal, /구매확정/);
   assert.match(modal, /data-beginner-guide-channel-profit/);
   assert.match(modal, /당근 직거래/);
   assert.match(modal, /minyoiGuideStepIn/);
@@ -145,13 +152,17 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /동일 모델 하루 평균 판매량/);
   assert.match(modal, /동일 모델 하루 판매량/);
   assert.match(modal, /비슷한 거래 기록/);
-  assert.match(modal, /판매 속도를 불러오는 중이에요/);
-  assert.match(modal, /확인 중/);
+  assert.match(modal, /거래 기록 데이터를 받는 중이에요/);
+  assert.match(modal, /표본 부족/);
   assert.match(modal, /h-14 w-14/);
   assert.match(modal, /후기와 평점이 없어요/);
   assert.match(modal, /번개장터 신규 판매자/);
   assert.match(modal, /requestedAnalysisPidsRef/);
   assert.match(modal, /guidePrimaryButtonClass/);
+  assert.match(modal, /data-bunjang-exit-confirm/);
+  assert.match(modal, /원본 매물로 이동하기 전/);
+  assert.match(modal, /확인하고 번개장터 보기/);
+  assert.match(modal, /더 살펴볼래요/);
   assert.doesNotMatch(modal, /지금까지 핵심 판단 근거|비교 표본 .* 실제 결과/);
   assert.doesNotMatch(modal, /안에 팔린 기록이 있어요/);
   assert.doesNotMatch(modal, /상태가 비슷한 매물보다 낮아요|그 기준보다 .* 낮아요/);

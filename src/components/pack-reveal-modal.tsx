@@ -569,7 +569,6 @@ function purchaseCheckGuideStep(card: RevealCard): BeginnerGuideStep {
 function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
   const market = card.marketBasis;
   const median = market?.medianPrice ?? null;
-  const condition = marketConditionLabel(card);
   const sampleCount = market?.sampleCount ?? 0;
 
   if (median != null && median > 0 && card.price > 0) {
@@ -585,11 +584,12 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
       : diff < 0
         ? "상태가 비슷한 매물보다 높아요"
         : "상태가 비슷한 매물과 비슷해요";
+    const conditionBasis = conditionBasisSentence(card);
     const body = diff > 0
-      ? `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준보다 ${krw(diffAbs)} 싸게 나왔어요.`
+      ? `${conditionBasis} 이 상품은 그 기준보다 ${krw(diffAbs)} 싸게 나왔어요.`
       : diff < 0
-        ? `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준보다 ${krw(diffAbs)} 높아요.`
-        : `같은 모델에서 상태가 비슷한 ${condition} 매물의 시세를 모아봤어요. 이 상품은 그 기준과 거의 비슷한 가격이에요.`;
+        ? `${conditionBasis} 이 상품은 그 기준보다 ${krw(diffAbs)} 높아요.`
+        : `${conditionBasis} 이 상품은 그 기준과 거의 비슷한 가격이에요.`;
 
     return {
       eyebrow: "2. 비교 매물",
@@ -1241,6 +1241,47 @@ function marketConditionLabel(card: RevealCard) {
   const market = card.marketBasis;
   if (market?.priceSource === "reference") return "미개봉/새상품";
   return market?.conditionLabel ?? "같은 상태";
+}
+
+function conditionProductLabel(card: RevealCard) {
+  const market = card.marketBasis;
+  if (market?.priceSource === "reference") return "미개봉품";
+  const conditionClass = market?.conditionClass ?? null;
+  if (conditionClass === "unopened") return "미개봉품";
+  if (conditionClass === "mint") return "S급 상품";
+  if (conditionClass === "clean") return "A급 상품";
+  if (conditionClass === "normal") return "상태 보통 상품";
+  if (conditionClass === "worn") return "사용감 있는 상품";
+  if (conditionClass === "flawed") return "하자가 있는 상품";
+  if (conditionClass === "low_batt") return "배터리 약한 상품";
+  return `${marketConditionLabel(card)} 상품`;
+}
+
+function conditionBasisSentence(card: RevealCard) {
+  const market = card.marketBasis;
+  const productLabel = conditionProductLabel(card);
+  const condition = marketConditionLabel(card);
+  const model = market?.label ?? card.skuName;
+  if (market?.priceSource === "reference") {
+    return `이 상품은 ${productLabel}이에요. 득템잡이는 다나와 새 가격과 번개장터에 있는 ${model} ${condition} 흐름을 같이 보면서 시세를 측정했어요.`;
+  }
+  if (market?.conditionClass === "flawed") {
+    return `이 상품은 ${productLabel}이에요. 그래서 깨끗한 상품 시세를 섞지 않고, 번개장터에 있는 ${model} ${condition}끼리 따로 비교했어요.`;
+  }
+  if (market?.conditionClass === "mint") {
+    return `이 상품은 ${productLabel}이에요. 득템잡이는 번개장터에 있는 ${model} ${condition} 상품을 기준으로 시세를 분석했어요.`;
+  }
+  return `이 상품은 ${productLabel}이에요. 득템잡이는 번개장터에 있는 ${model} ${condition} 매물을 기준으로 시세를 측정했어요.`;
+}
+
+function marketPricePositionLine(card: RevealCard) {
+  const median = card.marketBasis?.medianPrice ?? null;
+  if (median == null || median <= 0 || card.price <= 0) return "가격 판단은 비교 매물과 상태 기준을 같이 보고 있어요.";
+  const diff = median - card.price;
+  const diffAbs = Math.abs(diff);
+  if (diff > 0) return `같은 상태 시세보다 ${krw(diffAbs)} 싸게 나온 편이에요.`;
+  if (diff < 0) return `같은 상태 시세보다 ${krw(diffAbs)} 높아서 가격은 더 보수적으로 봐야 해요.`;
+  return "같은 상태 시세와 거의 비슷한 가격이에요.";
 }
 
 function marketBasisPlainSentence(card: RevealCard) {
@@ -4274,9 +4315,51 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
   );
 }
 
+function BeginnerGuideConditionBasisCard({ card }: { card: RevealCard }) {
+  const market = card.marketBasis;
+  const condition = marketConditionLabel(card);
+  const sampleCount = market?.sampleCount ?? 0;
+  const sourceText = market?.priceSource === "reference" ? "다나와 + 번개장터" : "번개장터";
+
+  return (
+    <div data-beginner-guide-condition-basis className="mt-4 rounded-[22px] bg-[#eef6ec] p-4 ring-1 ring-[#cfe3ca] dark:bg-emerald-950/20 dark:ring-emerald-900/45">
+      <div className="flex items-start gap-3">
+        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950/70 dark:text-emerald-200 dark:ring-emerald-900/50">
+          <ScaleIcon className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950/60 dark:text-emerald-200 dark:ring-emerald-900/50">
+              {condition}
+            </span>
+            <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-black text-[#5c6b5f] ring-1 ring-[#dfe8da] dark:bg-zinc-950/45 dark:text-zinc-300 dark:ring-zinc-800">
+              {sourceText} 기준
+            </span>
+          </div>
+          <div className="mt-2 break-keep text-[14px] font-black leading-5 text-[#172019] dark:text-zinc-50">
+            상태까지 맞춰서 시세를 봤어요
+          </div>
+          <p className="mt-1.5 break-keep text-[12.5px] font-semibold leading-5 text-[#546252] dark:text-zinc-300">
+            {conditionBasisSentence(card)}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-black">
+            <span className="rounded-full bg-white/82 px-2 py-0.5 tabular-nums text-[#344136] ring-1 ring-[#dfe8da] dark:bg-zinc-950/50 dark:text-zinc-200 dark:ring-zinc-800">
+              {sampleCount > 0 ? `비슷한 매물 ${sampleCount.toLocaleString("ko-KR")}건` : "표본 확인 중"}
+            </span>
+            <span className="rounded-full bg-white/82 px-2 py-0.5 text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950/50 dark:text-emerald-200 dark:ring-emerald-900/45">
+              {marketPricePositionLine(card)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BeginnerGuideMarketVisual({ card }: { card: RevealCard }) {
   return (
     <div data-beginner-guide-market-evidence>
+      <BeginnerGuideConditionBasisCard card={card} />
       <BeginnerGuideComparablePreview card={card} />
     </div>
   );
@@ -5249,6 +5332,19 @@ function FixedBunjangFooter({
   card: RevealCard;
   onLinkClicked: (pid: number) => void;
 }) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const checks = beginnerPurchaseChecks(card).slice(0, 3);
+  const sellerReviewCount = card.savedDetail?.sellerReviewCount ?? 0;
+  const sellerLine = sellerReviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT
+    ? `후기 ${sellerReviewCount.toLocaleString("ko-KR")}건 판매자예요. 그래도 원본에서 사진과 구성품은 한 번 더 보세요.`
+    : sellerReviewCount > 0
+      ? `후기 ${sellerReviewCount.toLocaleString("ko-KR")}건이라 안전결제로만 진행하는 게 좋아요.`
+      : "후기 없는 판매자일 수 있어요. 안전결제 가능 여부를 먼저 확인하세요.";
+  const handleConfirmClick = () => {
+    onLinkClicked(card.pid);
+    setConfirmOpen(false);
+  };
+
   // Wave 333 (사용자 피드백): 안전도("주의 1건") 버튼 제거 — 모달 안 셀러 카드/거래 안전 타일에 이미 있음.
   // 하단 fixed는 번개장터 이동 버튼만 풀 너비로.
   // Wave 394.1 (외부 review #6): CTA 문구 "번개장터에서 확인하기" 의미 불명확
@@ -5265,11 +5361,9 @@ function FixedBunjangFooter({
         padding: "14px 14px 28px",
       }}
     >
-      <a
-        href={card.url}
-        target="_blank"
-        rel="noreferrer"
-        onClick={() => onLinkClicked(card.pid)}
+      <button
+        type="button"
+        onClick={() => setConfirmOpen(true)}
         style={{
           display: "flex",
           alignItems: "center",
@@ -5282,6 +5376,9 @@ function FixedBunjangFooter({
           boxShadow: "0 10px 24px rgba(5,150,105,0.28), 0 4px 8px rgba(5,150,105,0.18)",
           color: "#fff",
           textDecoration: "none",
+          border: "none",
+          width: "100%",
+          cursor: "pointer",
         }}
       >
         <span style={{ position: "absolute", left: 6, top: "50%", transform: "translateY(-50%)", width: 34, height: 34, borderRadius: 999, background: "#0b1413", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -5293,7 +5390,83 @@ function FixedBunjangFooter({
           </span>
           <span>번개장터 원본 매물 보기</span>
         </span>
-      </a>
+      </button>
+      {confirmOpen ? (
+        <div
+          data-bunjang-exit-confirm
+          role="dialog"
+          aria-modal="true"
+          aria-label="번개장터 이동 전 확인"
+          className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/38 px-4 pb-[calc(env(safe-area-inset-bottom)+14px)] backdrop-blur-[2px] sm:items-center sm:pb-4"
+        >
+          <button
+            type="button"
+            aria-label="확인창 닫기"
+            onClick={() => setConfirmOpen(false)}
+            className="absolute inset-0 cursor-default"
+          />
+          <div className="relative w-full max-w-[430px] overflow-hidden rounded-[26px] bg-[#fffbf4] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] ring-1 ring-[#e4dacb] dark:bg-zinc-900 dark:ring-zinc-800">
+            <div className="flex items-start gap-3">
+              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/55 dark:text-emerald-200 dark:ring-emerald-900/60">
+                <ShieldIcon className="h-6 w-6" />
+              </span>
+              <div className="min-w-0">
+                <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-200">원본 매물로 이동하기 전</div>
+                <h3 className="mt-1 break-keep text-[21px] font-black leading-[1.18] text-[#172019] dark:text-zinc-50">
+                  이 세 가지만 기억하세요
+                </h3>
+              </div>
+            </div>
+            <div className="mt-4 space-y-2.5">
+              <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/55 dark:ring-zinc-800">
+                <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">상태별 시세 기준</div>
+                <p className="mt-1 break-keep text-[13px] font-bold leading-5 text-[#223127] dark:text-zinc-100">
+                  {conditionBasisSentence(card)}
+                </p>
+                <div className="mt-1.5 text-[12px] font-black text-emerald-700 dark:text-emerald-200">
+                  {marketPricePositionLine(card)}
+                </div>
+              </div>
+              <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/55 dark:ring-zinc-800">
+                <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">판매자 확인</div>
+                <p className="mt-1 break-keep text-[13px] font-bold leading-5 text-[#223127] dark:text-zinc-100">
+                  {sellerLine}
+                </p>
+              </div>
+              {checks.length > 0 ? (
+                <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/55 dark:ring-zinc-800">
+                  <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">판매자에게 물어볼 것</div>
+                  <ul className="mt-2 space-y-1.5">
+                    {checks.map((check) => (
+                      <li key={check.id} className="break-keep text-[12.5px] font-bold leading-5 text-[#344136] dark:text-zinc-200">
+                        {check.ask}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+            <div className="mt-4 grid gap-2">
+              <a
+                href={card.url}
+                target="_blank"
+                rel="noreferrer"
+                onClick={handleConfirmClick}
+                className="flex min-h-[52px] items-center justify-center rounded-[18px] bg-[#059669] px-4 text-[15px] font-black text-white shadow-[0_14px_30px_rgba(5,150,105,0.22)] transition active:scale-[0.99]"
+              >
+                확인하고 번개장터 보기
+              </a>
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+                className="flex min-h-[46px] items-center justify-center rounded-[16px] bg-white/86 px-4 text-[14px] font-black text-[#344136] ring-1 ring-[#e6dece] transition active:scale-[0.99] dark:bg-zinc-950/60 dark:text-zinc-100 dark:ring-zinc-800"
+              >
+                더 살펴볼래요
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
