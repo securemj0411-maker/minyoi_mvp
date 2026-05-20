@@ -2077,7 +2077,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
   ) : null;
 
   return (
-    <div className="relative aspect-[4/3] max-h-[42dvh] w-full overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-900">
+    <div className="relative h-[56dvh] min-h-[380px] max-h-[560px] w-full overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-900">
       {/* Wave 393.3: ConditionPhotoBadge 모달에선 nav (좌상 ← 🏠 floating)에 가려서 제거.
           텍스트 영역 LastVerifiedAtBadge 옆에 ConditionChip으로 대체 노출. */}
       {card.thumbnailUrl ? (

@@ -92,6 +92,8 @@ test("detail modal uses the mobile detail shell on desktop", () => {
   assert.doesNotMatch(revealCard, /lg:grid-cols-2|sm:grid-cols|sm:h-\[|sm:w-\[|hidden sm:block|sm:hidden/);
   assert.doesNotMatch(footer, /hidden sm:block|sm:hidden|sm:p-3/);
   assert.doesNotMatch(revealProductImageInline, /blur-\[2px\]|scale-\[1\.03\]|aria-hidden="true"/);
+  assert.match(revealProductImageInline, /h-\[56dvh\] min-h-\[380px\] max-h-\[560px\]/);
+  assert.doesNotMatch(revealProductImageInline, /aspect-\[4\/3\] max-h-\[42dvh\]/);
   assert.match(revealProductImageInline, /object-cover object-center/);
   assert.doesNotMatch(revealProductImageInline, /object-contain object-center/);
   assert.match(revealProductImageInline, /from-black\/18 to-transparent/);
