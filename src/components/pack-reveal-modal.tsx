@@ -2082,31 +2082,21 @@ function RevealProductImage({ card }: { card: RevealCard }) {
           텍스트 영역 LastVerifiedAtBadge 옆에 ConditionChip으로 대체 노출. */}
       {card.thumbnailUrl ? (
         <>
-          <div className="absolute inset-0 scale-[1.03] opacity-75 blur-[2px]">
-            <Image
-              src={card.thumbnailUrl}
-              alt=""
-              aria-hidden="true"
-              fill
-              sizes="(max-width: 480px) 100vw, 480px"
-              className="object-cover object-center"
-            />
-          </div>
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,251,244,0.10),rgba(238,231,218,0.28))] dark:bg-zinc-950/24" />
-          <div className="absolute inset-0 p-3">
+          <div className="absolute inset-0 bg-[#eee7da] dark:bg-zinc-900" />
+          <div className="absolute inset-0 px-3 pb-7 pt-3">
             <div className="relative h-full w-full">
               <Image
                 src={card.thumbnailUrl}
                 alt={card.name}
                 fill
                 sizes="(max-width: 480px) 100vw, 480px"
-                className="rounded-[16px] object-contain object-center shadow-[0_12px_24px_rgba(34,49,39,0.12)] ring-1 ring-black/8"
+                className="rounded-[18px] object-contain object-center shadow-[0_12px_24px_rgba(34,49,39,0.10)] ring-1 ring-black/8"
               />
             </div>
           </div>
           {/* Wave 394.7.w (사용자 짚음 + handoff): 좌하 condition pill — nav(top-left)랑 안 겹침. */}
           {card.marketBasis?.conditionClass ? (
-            <div className="absolute bottom-3 left-3 z-10">
+            <div className="absolute bottom-5 left-3 z-10">
               <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-[#4b5650] shadow-[0_2px_8px_rgba(0,0,0,0.18)] backdrop-blur">
                 <span className="mr-1 text-emerald-600">●</span>
                 {conditionFriendlyText(card.marketBasis.conditionClass)}
@@ -2119,7 +2109,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
               e.stopPropagation();
               setPreviewOpen(true);
             }}
-            className="absolute bottom-3 right-3 z-10 rounded-full bg-zinc-950/75 px-3.5 py-2 text-xs font-black text-white shadow-lg backdrop-blur transition hover:bg-zinc-950/86"
+            className="absolute bottom-5 right-3 z-10 rounded-full bg-zinc-950/75 px-3.5 py-2 text-xs font-black text-white shadow-lg backdrop-blur transition hover:bg-zinc-950/86"
           >
             크게 보기
           </button>
@@ -5251,7 +5241,7 @@ function RevealCardItem({
                     type="button"
                     onClick={onBeginnerGuideClick}
                     data-beginner-guide-reopen
-                    className="mt-2 inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#d7e6d5] bg-white/80 px-3 text-[12px] font-black text-[#047857] shadow-sm transition hover:bg-[#f3faf5] active:scale-[0.98] dark:border-zinc-700 dark:bg-zinc-950/70 dark:text-emerald-300 dark:hover:bg-zinc-900"
+                    className="mx-auto mt-3 flex min-h-10 w-full max-w-[180px] items-center justify-center gap-1.5 rounded-full border border-[#d7e6d5] bg-white/86 px-4 text-[12px] font-black text-[#047857] shadow-sm transition hover:bg-[#f3faf5] active:scale-[0.98] dark:border-zinc-700 dark:bg-zinc-950/70 dark:text-emerald-300 dark:hover:bg-zinc-900"
                   >
                     <ShieldIcon className="h-3.5 w-3.5" />
                     <span>쉽게 보기</span>

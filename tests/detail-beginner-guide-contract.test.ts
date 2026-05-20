@@ -72,6 +72,10 @@ test("detail modal uses the mobile detail shell on desktop", () => {
     modal.indexOf("function RevealCardItem"),
     modal.indexOf("function GuidePreviewPanel"),
   );
+  const revealProductImage = modal.slice(
+    modal.indexOf("function RevealProductImage"),
+    modal.indexOf("function SkuListingFlowMini"),
+  );
   const footer = modal.slice(
     modal.indexOf("function ModalActionFooter"),
     modal.indexOf("function FixedBunjangFooter"),
@@ -86,6 +90,10 @@ test("detail modal uses the mobile detail shell on desktop", () => {
   assert.doesNotMatch(skeleton, /lg:grid-cols-2|sm:grid-cols|sm:h-\[|sm:w-\[|sm:flex|sm:block/);
   assert.doesNotMatch(revealCard, /lg:grid-cols-2|sm:grid-cols|sm:h-\[|sm:w-\[|hidden sm:block|sm:hidden/);
   assert.doesNotMatch(footer, /hidden sm:block|sm:hidden|sm:p-3/);
+  assert.doesNotMatch(revealProductImage, /blur-\[2px\]|scale-\[1\.03\]|aria-hidden="true"/);
+  assert.match(revealProductImage, /px-3 pb-7 pt-3/);
+  assert.match(revealProductImage, /bottom-5 left-3/);
+  assert.match(revealProductImage, /bottom-5 right-3/);
 });
 
 test("beginner guide uses existing evidence without guaranteed-profit copy", () => {
@@ -217,6 +225,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /seenAgoLabel/);
   assert.match(modal, /minyoiGuideStepIn/);
   assert.match(modal, /data-beginner-guide-reopen/);
+  assert.match(modal, /mx-auto mt-3 flex min-h-10 w-full max-w-\[180px\]/);
   assert.match(modal, /쉽게 보기/);
   assert.match(modal, /recordBeginnerGuideSkipped\(activeRevealPid\)/);
   assert.match(modal, /recordBeginnerGuideCompleted\(activeRevealPid\)/);
