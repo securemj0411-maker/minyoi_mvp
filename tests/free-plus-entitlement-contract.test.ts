@@ -53,3 +53,11 @@ test("detail modal keeps purchase decision and market evidence in the first fold
   assert.ok(decisionIndex > 0, "purchase decision header should render in the detail modal");
   assert.ok(comparableIndex > decisionIndex, "market comparables should stay directly after the decision/profit block");
 });
+
+test("related item clicks do not scroll before access is granted", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+
+  assert.doesNotMatch(modal, /onBeforeOpenRelatedItem/);
+  assert.match(modal, /activeRevealPid/);
+  assert.match(modal, /resetDetailScroll\("auto"\)/);
+});

@@ -3803,11 +3803,9 @@ function FixedBunjangFooter({
 
 function RelatedRevealStrip({
   items,
-  onBeforeOpenRelatedItem,
   onOpenRelatedItem,
 }: {
   items: RelatedRevealItem[];
-  onBeforeOpenRelatedItem?: () => void;
   onOpenRelatedItem?: (pid: number) => void;
 }) {
   const visibleItems = items.slice(0, 8);
@@ -3831,10 +3829,7 @@ function RelatedRevealStrip({
             <button
               key={item.pid}
               type="button"
-              onClick={() => {
-                onBeforeOpenRelatedItem?.();
-                onOpenRelatedItem(item.pid);
-              }}
+              onClick={() => onOpenRelatedItem(item.pid)}
               className="flex w-[140px] shrink-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white text-left transition hover:border-emerald-300 hover:shadow-sm active:scale-[0.98] dark:border-zinc-800 dark:bg-zinc-900/40"
             >
               <div className="relative aspect-square w-full overflow-hidden bg-[#f2eadf] dark:bg-zinc-800">
@@ -4223,7 +4218,6 @@ export default function PackRevealModal({
               ) : null}
               <RelatedRevealStrip
                 items={relatedItems}
-                onBeforeOpenRelatedItem={() => resetDetailScroll("auto")}
                 onOpenRelatedItem={onOpenRelatedItem}
               />
               {result.reveals[0] ? (
