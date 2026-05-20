@@ -1918,19 +1918,19 @@ const EARPHONE: CategoryBrandDepth = {
       detectKeywords: ["에어팟 맥스", "airpods max"],
       skuIdPrefixes: ["airpods-max"],
       label: "Apple AirPods Max",
-      counterfeitRisk: "high",
+      counterfeitRisk: "low",
       counterfeitChecks: [
-        "무게 = 384.8g (정확). 가품 350~400g",
+        "무게 = 384.8g 기준으로 구성품/이어쿠션 포함 상태 확인",
         "Smart Case 자석 끼임 — 케이스 분리 시 자동 꺼짐",
         "USB-C (2024+) vs Lightning (2020) 구분",
         "Digital Crown 회전 부드러움 + 노이즈 캔슬링 동작",
       ],
       marketRisks: [
-        "가품 흔함 (₩50만 이상 시세)",
+        "이어쿠션/헤드밴드 마모와 기능 상태 확인이 더 중요",
         "이어컵 (메모리폼) 마모 — 교체 부품 시세 ₩15만",
         "Lightning vs USB-C — USB-C 신규 권장 (가격 +)",
       ],
-      authentication: ["Apple checkcoverage", "iOS 페어링"],
+      authentication: ["Apple 보증 조회", "iOS 페어링/노이즈 캔슬링 작동 확인"],
     },
     "galaxy-buds": {
       detectKeywords: ["갤럭시 버즈", "galaxy buds", "버즈 프로", "buds pro"],

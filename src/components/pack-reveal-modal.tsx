@@ -38,6 +38,7 @@ import {
 // Wave A (2026-05-20): 카테고리별 브랜드 깊이 정보 (Nike Jordan, Adidas Yeezy 등).
 // CounterfeitChecklistPanel + WhyTrustCollapse 가품 Q 답 둘 다 사용.
 import {
+  categoryDefaultDepth,
   detectBrandDepth,
   COUNTERFEIT_RISK_LABEL,
   type BrandDepthMatch,
@@ -342,7 +343,7 @@ type BeginnerGuideStep = {
 
 const SELLER_TRUST_MIN_REVIEW_COUNT = 10;
 const BEGINNER_PURCHASE_CHECK_LIMIT = 4;
-const BEGINNER_BATTERY_CHECK_CATEGORIES = new Set(["smartphone", "tablet", "smartwatch", "laptop", "earphone", "drone", "camera"]);
+const BEGINNER_BATTERY_CHECK_CATEGORIES = new Set(["smartphone", "tablet", "smartwatch", "laptop", "drone", "camera"]);
 const BEGINNER_LOCK_CHECK_CATEGORIES = new Set(["smartphone", "tablet", "smartwatch", "laptop"]);
 const BEGINNER_AUTH_CHECK_CATEGORIES = new Set(["earphone", "shoe", "bag", "perfume", "watch", "clothing"]);
 const BEGINNER_COMPONENT_CHECK_CATEGORIES = new Set([
@@ -424,22 +425,29 @@ function categoryForBeginnerGuide(card: RevealCard) {
 }
 
 function batteryCheckAsk(category: string | null) {
-  // Wave 394.7.z (사용자 짚음): 무지성 "배터리 효율 캡처" 카피 fix.
-  // 에어팟맥스/이어폰류는 iPhone 같은 "최대 용량 %" 화면이 없음.
-  // 셀러에게 실사용 시간 직접 물어보는 게 정직한 가이드. 충전 케이스도 모델 따라 X (over-ear).
-  if (category === "earphone") return "이어폰/헤드폰은 배터리 효율 표시가 따로 없어요. 한 번 완충 후 실제 몇 시간 들었는지 셀러에게 물어보세요. 페어링 화면, (모델에 충전 케이스가 있다면) 케이스 상태도 함께.";
   if (category === "smartwatch") return "배터리 성능 화면, 페어링 해제 화면, 충전 상태를 같이 받아보세요.";
   if (category === "laptop") return "배터리 사이클/성능 상태와 충전기 포함 여부를 물어보세요.";
   if (category === "drone" || category === "camera") return "배터리 개수, 충전 상태, 사이클 정보를 물어보세요.";
   return "배터리 효율 화면이 있는 기기면 캡처를 받고, 없으면 실제 사용 시간을 셀러에게 직접 물어보세요.";
 }
 
-function authenticityCheckAsk(card: RevealCard, category: string | null) {
-  const brandDepth = detectBrandDepth(category, {
+function brandDepthForCard(card: RevealCard, category: string | null) {
+  return detectBrandDepth(category, {
     skuId: card.skuId ?? null,
     skuName: card.skuName ?? null,
     name: card.name ?? null,
   });
+}
+
+function hasMeaningfulCounterfeitRisk(card: RevealCard, category: string | null) {
+  const brandDepth = brandDepthForCard(card, category);
+  if (brandDepth) return brandDepth.brand.counterfeitRisk !== "low";
+  const defaultDepth = categoryDefaultDepth(category);
+  return defaultDepth ? defaultDepth.brand.counterfeitRisk !== "low" : false;
+}
+
+function authenticityCheckAsk(card: RevealCard, category: string | null) {
+  const brandDepth = brandDepthForCard(card, category);
   const brandCheck = brandDepth?.brand.counterfeitChecks[0];
   if (brandDepth && brandCheck) return `${brandDepth.brand.label}은 ${brandCheck} 사진을 먼저 받아보세요.`;
   if (category === "earphone") return "시리얼, 정품 인증 화면, 페어링 화면을 받아보세요.";
@@ -492,14 +500,10 @@ function beginnerPurchaseChecks(card: RevealCard): BeginnerPurchaseCheck[] {
   }
 
   if (category && BEGINNER_BATTERY_CHECK_CATEGORIES.has(category) && !BEGINNER_BATTERY_DISCLOSED_RE.test(description)) {
-    // Wave 394.7.z: 카테고리별 body 카피 정직화 — 이어폰/헤드폰엔 "사용 시간이나 효율" 표시가 없는 게 일반적.
-    const batteryBody = category === "earphone"
-      ? "이어폰/헤드폰은 배터리가 닳으면 사용 시간이 줄지만 따로 효율 표시가 안 떠요. 셀러가 실제로 얼마나 들었는지 확인하는 게 핵심."
-      : "배터리 제품은 겉상태가 좋아도 사용 시간이나 효율에 따라 되팔 때 가격이 달라질 수 있어요.";
     checks.push({
       id: "battery",
       title: "배터리 상태를 물어보세요",
-      body: batteryBody,
+      body: "배터리 제품은 겉상태가 좋아도 사용 시간이나 효율에 따라 되팔 때 가격이 달라질 수 있어요.",
       ask: batteryCheckAsk(category),
       label: "배터리",
       tone: "blue",
@@ -517,7 +521,7 @@ function beginnerPurchaseChecks(card: RevealCard): BeginnerPurchaseCheck[] {
     });
   }
 
-  if (category && BEGINNER_AUTH_CHECK_CATEGORIES.has(category)) {
+  if (category && BEGINNER_AUTH_CHECK_CATEGORIES.has(category) && hasMeaningfulCounterfeitRisk(card, category)) {
     checks.push({
       id: "authenticity",
       title: "정품 확인 포인트를 먼저 봐요",
@@ -3097,9 +3101,13 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
   // Wave C+E.fix (사용자 짚음 — "에어팟맥스가 차이팟이랑 뭔 관련이길래"):
   // brand 감지된 매물은 brand label 헤드라인 우선. AirPods Max (헤드폰) ≠ 차이팟 (인이어 가품).
   // brand 미감지 시 카테고리 default fallback.
+  const lowCounterfeitRiskBrand = brandDepth?.brand.counterfeitRisk === "low";
   const headlineText = brandDepth?.brand.label
-    ? `${brandDepth.brand.label} 정품 점검 ${totalCount}개`
+    ? `${brandDepth.brand.label} ${lowCounterfeitRiskBrand ? "상태 점검" : "정품 점검"} ${totalCount}개`
     : headlineByCategory[checklist.category] ?? `구매 전 점검 ${totalCount}개`;
+  const riskSummary = lowCounterfeitRiskBrand
+    ? `${brandDepth.brand.label}은 기능, 구성품, 보증 상태를 먼저 확인하는 게 중요해요.`
+    : checklist.riskHeadline;
 
   // 카테고리별 uppercase 헤더도 자연어
   // Wave 394.1 (외부 review #9): 정품 단정형 ("정품 확인") → 방어적 ("정품 확인 필요").
@@ -3151,7 +3159,7 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
             {headlineText}
           </h4>
           <div className="mt-0.5 line-clamp-2 text-xs font-medium leading-4 text-zinc-600 dark:text-zinc-400 sm:line-clamp-none">
-            {checklist.riskHeadline}
+            {riskSummary}
           </div>
           {brandDepth ? (
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[10px] font-medium leading-4">
@@ -3182,11 +3190,13 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
             <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-900/40 dark:bg-amber-950/20">
               <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 dark:text-amber-200">
                 <span aria-hidden="true">🎯</span>
-                <span>{brandDepth.brand.label} — 모델별 변별 포인트</span>
+                <span>{brandDepth.brand.label} — {lowCounterfeitRiskBrand ? "모델별 상태 포인트" : "모델별 변별 포인트"}</span>
               </div>
               {brandDepth.brand.counterfeitChecks.length > 0 ? (
                 <div>
-                  <div className="text-[11px] font-bold text-zinc-800 dark:text-zinc-100">가품 변별 (구체 항목)</div>
+                  <div className="text-[11px] font-bold text-zinc-800 dark:text-zinc-100">
+                    {lowCounterfeitRiskBrand ? "상태 확인 (구체 항목)" : "가품 변별 (구체 항목)"}
+                  </div>
                   <ul className="mt-1 space-y-1">
                     {brandDepth.brand.counterfeitChecks.map((c, i) => (
                       <li
@@ -3233,7 +3243,9 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
                 </div>
               ) : null}
               <div className="text-[10px] font-medium leading-4 text-zinc-600 dark:text-zinc-400">
-                ※ 미뇨이는 정품 판정 X. 직접 거래 시 셀러에게 사진/영상 요청해 본인 판단 권장.
+                {lowCounterfeitRiskBrand
+                  ? "※ 미뇨이는 기능 상태를 보장하지 않아요. 직접 거래 전 셀러에게 사진/영상 요청을 권장합니다."
+                  : "※ 미뇨이는 정품 판정 X. 직접 거래 시 셀러에게 사진/영상 요청해 본인 판단 권장."}
               </div>
             </div>
           ) : null}

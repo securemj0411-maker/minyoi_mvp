@@ -87,6 +87,8 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /SELLER_TRUST_MIN_REVIEW_COUNT = 10/);
   assert.match(modal, /BEGINNER_PURCHASE_CHECK_LIMIT = 4/);
   assert.match(modal, /beginnerPurchaseChecks/);
+  assert.match(modal, /hasMeaningfulCounterfeitRisk\(card, category\)/);
+  assert.match(modal, /categoryDefaultDepth/);
   assert.match(modal, /data-beginner-guide-purchase-check/);
   assert.match(modal, /구매 전에 이것만 물어보면 돼요/);
   assert.match(modal, /혼자 보면 놓치기 쉬운 질문/);
@@ -174,7 +176,24 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.doesNotMatch(modal, /상태가 비슷한 매물보다 낮아요|상태가 비슷한 매물보다 싸게 나왔어요|그 기준보다 .* 낮아요|같은 상태 매물을 기준/);
   assert.doesNotMatch(modal, /판매완료 누적|판매완료 표본|시세 거래 표본|거래완료 표본|최근 등록/);
   assert.doesNotMatch(modal, /0원로|수집중|후기 데이터는 아직 충분하지/);
+  assert.doesNotMatch(modal, /이어폰\/헤드폰은 배터리/);
   assert.doesNotMatch(modal, /무조건|본전|수익 보장|돈을 벌|얼마를 벌/);
+});
+
+test("AirPods Max does not inherit generic earphone battery or counterfeit prompts", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const brandDepth = source("src/lib/category-brand-depth.ts");
+  const batteryLine = modal.match(/const BEGINNER_BATTERY_CHECK_CATEGORIES = new Set\(\[([^\]]+)\]\)/)?.[1] ?? "";
+  const airpodsMaxBlock = brandDepth.slice(
+    brandDepth.indexOf('"airpods-max"'),
+    brandDepth.indexOf('"galaxy-buds"'),
+  );
+
+  assert.ok(!batteryLine.includes('"earphone"'));
+  assert.match(modal, /lowCounterfeitRiskBrand \? "상태 점검" : "정품 점검"/);
+  assert.match(modal, /기능, 구성품, 보증 상태를 먼저 확인/);
+  assert.match(airpodsMaxBlock, /counterfeitRisk: "low"/);
+  assert.doesNotMatch(airpodsMaxBlock, /가품 흔함|차이팟/);
 });
 
 test("cost assurance does not turn market delta into buyer shipping", () => {
