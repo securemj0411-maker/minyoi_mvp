@@ -1317,14 +1317,18 @@ export default function ExploreClient() {
             <div className="min-w-0 flex-1">
               <div className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
                 {creditFeedEnabled
-                  ? "계속 내려보면 새 매물이 이어져요"
+                  ? feedExhausted
+                    ? "오늘 볼 수 있는 추천 매물은 여기까지예요"
+                    : "계속 내려보면 새 매물이 이어져요"
                   : canRefresh
                     ? "다른 30개 매물 받을 수 있어요"
                     : "다음 라운드 준비 중"}
               </div>
               <div className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {creditFeedEnabled
-                  ? "피드 탐색은 무제한 · 크레딧은 상세 분석을 열 때만 차감"
+                  ? feedExhausted
+                    ? "수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요."
+                    : "피드 탐색은 무제한 · 크레딧은 상세 분석을 열 때만 차감"
                   : canRefresh
                   ? "새로운 매물 풀로 갱신 · 다양한 카테고리"
                   : `${formatCooldown(remainingSec)} 후 새 매물 자동으로 풀려요`}
@@ -1367,17 +1371,13 @@ export default function ExploreClient() {
         </div>
       ) : null}
 
-      {!loading && !scrapOnly && creditFeedEnabled && items.length > 0 ? (
+      {!loading && !scrapOnly && creditFeedEnabled && !feedExhausted && items.length > 0 ? (
         <div
           ref={infiniteFeedSentinelRef}
           data-credit-infinite-feed-sentinel
           className="mt-4 flex min-h-16 items-center justify-center px-4 text-center text-xs font-bold text-zinc-500 dark:text-zinc-400"
         >
-          {refreshing
-            ? "새 매물 붙이는 중..."
-            : feedExhausted
-              ? "지금 볼 수 있는 추천 매물은 여기까지예요"
-              : "계속 내려보면 새 매물이 이어져요"}
+          {refreshing ? "새 매물 붙이는 중..." : "계속 내려보면 새 매물이 이어져요"}
         </div>
       ) : null}
 

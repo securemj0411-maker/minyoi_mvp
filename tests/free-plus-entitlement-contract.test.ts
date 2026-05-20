@@ -68,6 +68,10 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(explore, /크레딧 충전하고 바로 이어보기/);
   assert.match(explore, /피드 무제한/);
   assert.match(explore, /크레딧 1개 이상이면 대기 없이 피드 계속 보기/);
+  assert.match(explore, /오늘 볼 수 있는 추천 매물은 여기까지예요/);
+  assert.match(explore, /수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요/);
+  assert.match(explore, /creditFeedEnabled && !feedExhausted && items\.length > 0/);
+  assert.doesNotMatch(explore, /지금 볼 수 있는 추천 매물/);
   assert.doesNotMatch(explore, /지금 즉시 매물/);
   assert.doesNotMatch(explore, /크레딧 충전 사용자 전용/);
   assert.match(explore, /!creditFeedEnabled && items\.length > 0/);
