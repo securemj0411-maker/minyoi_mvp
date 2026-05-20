@@ -460,7 +460,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
     const dailySold = dailySoldCountLabel(velocity.sold7dCount);
     return {
       eyebrow: "4. 판매 속도",
-      title: `되팔면 보통 ${label} 안에 팔린 기록이 있어요`,
+      title: `되팔면 보통 ${label} 안에 팔리는 편이에요`,
       metric: label,
       metricLabel: `동일 모델 하루 평균 판매량 ${dailySold}`,
       body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}개 거래됐어요. 하루로 나누면 동일 모델이 ${dailySold} 정도 팔려나간 셈이라, 매입 후 돈이 얼마나 오래 묶일지 가늠할 때 보는 정보예요.`,
