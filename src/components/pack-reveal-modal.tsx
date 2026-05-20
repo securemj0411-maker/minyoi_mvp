@@ -459,12 +459,13 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
 
   if (hasVelocity) {
     const label = velocityHoursLabel(velocity.medianHoursToSold);
+    const dailySold = dailySoldCountLabel(velocity.sold7dCount);
     return {
       eyebrow: "8. 판매 속도",
       title: `비슷한 상품은 보통 ${label} 안에 팔렸어요`,
       metric: label,
-      metricLabel: `최근 7일 거래 ${velocity.sold7dCount.toLocaleString("ko-KR")}건`,
-      body: `가격이 괜찮아도 오래 묶이면 부담이 커져요. 그래서 같은 모델의 판매완료 흐름을 보고, 보통 ${label} 안에 거래됐는지 같이 봤어요.`,
+      metricLabel: `최근 7일 기준 하루 ${dailySold} 팔림`,
+      body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}개 거래됐고, 하루로 나누면 ${dailySold} 정도예요. 보통 ${label} 안에 팔린 기록이라 오래 묶일 가능성도 같이 봤어요.`,
       note: "판매 속도는 과거 관측치라 실제 판매일을 보장하지 않습니다.",
       tone: "speed",
     };
@@ -476,7 +477,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
       title: "최근 매물 유입량으로 시장 분위기를 봐요",
       metric: `${flow.count24h.toLocaleString("ko-KR")}건`,
       metricLabel: `24시간 등록 · 7일 평균 ${flow.avgPerDay7d.toLocaleString("ko-KR")}건/일`,
-      body: "판매완료 표본이 아직 부족해서, 대신 최근 등록량을 함께 봤어요. 매물이 너무 많이 쌓이는 시장인지 먼저 확인하는 흐름이에요.",
+      body: "팔린 기록이 아직 적어서, 대신 최근 등록량을 함께 봤어요. 매물이 너무 많이 쌓이는 시장인지 먼저 확인하는 흐름이에요.",
       note: "유입량은 수요가 아니라 공급 흐름이므로 보조 지표로 봐야 합니다.",
       tone: "speed",
     };
@@ -484,14 +485,14 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
 
   return {
     eyebrow: "8. 판매 속도",
-    title: analysisPending ? "판매 속도를 불러오는 중이에요" : "판매 속도 표본은 더 확인이 필요해요",
+    title: analysisPending ? "판매 속도를 불러오는 중이에요" : "판매 속도는 더 확인이 필요해요",
     metric: marketSoldSample ? `${marketSoldSample.toLocaleString("ko-KR")}건` : "확인 중",
-    metricLabel: marketSoldSample ? "시세 거래 표본" : "판매완료 표본 확인 중",
+    metricLabel: marketSoldSample ? "비슷한 거래 기록" : "판매 기록 확인 중",
     body: analysisPending
       ? "비슷한 상품이 보통 얼마나 걸려 팔리는지 다시 확인하고 있어요. 잠시 후에도 비어 있으면 상세 분석에서 시세와 비교 매물을 먼저 보세요."
       : marketSoldSample
-      ? "거래완료 표본은 잡혔지만, 판매까지 걸린 시간을 안정적으로 말할 만큼은 아직 부족해요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 봅니다."
-      : "판매완료 데이터가 아직 충분하지 않아서 판매 주기를 단정하지 않았어요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 보는 게 좋아요.",
+      ? "비슷한 거래 기록은 잡혔지만, 판매까지 걸린 시간을 안정적으로 말할 만큼은 아직 부족해요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 봅니다."
+      : "팔린 기록이 아직 충분하지 않아서 판매 주기를 단정하지 않았어요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 보는 게 좋아요.",
     note: "상세 분석에서 시세 그래프와 비교 매물을 함께 확인하세요.",
     tone: "speed",
   };
@@ -1011,6 +1012,14 @@ function velocityHoursLabel(value: number | null) {
   if (value == null || !Number.isFinite(Number(value))) return "-";
   if (value < 24) return `${Math.round(value * 10) / 10}시간`;
   return `${Math.round((value / 24) * 10) / 10}일`;
+}
+
+function dailySoldCountLabel(sold7dCount: number) {
+  const avg = Math.max(0, sold7dCount / 7);
+  if (avg <= 0) return "확인 중";
+  if (avg < 1) return "1개 미만";
+  const rounded = avg < 10 ? Math.round(avg * 10) / 10 : Math.round(avg);
+  return `약 ${rounded.toLocaleString("ko-KR")}개`;
 }
 
 function marketSampleLabel(card: RevealCard) {
@@ -3807,8 +3816,9 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   const velocity = card.velocityBasis;
   const market = card.marketBasis;
   const sampleCount = velocity?.observedSoldSampleCount ?? market?.soldSampleCount ?? 0;
-  const sampleLabel = velocity ? "판매완료 누적" : "시세 거래 표본";
-  const sampleValue = sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "확인 중";
+  const dailySoldValue = velocity?.sold7dCount ? dailySoldCountLabel(velocity.sold7dCount) : null;
+  const sampleLabel = dailySoldValue ? "하루 평균 팔림" : sampleCount > 0 ? "비슷한 거래 기록" : "거래 기록";
+  const sampleValue = dailySoldValue ?? (sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "확인 중");
   const recentListingValue = flow?.count24h != null ? `${flow.count24h.toLocaleString("ko-KR")}건` : "확인 중";
 
   return (

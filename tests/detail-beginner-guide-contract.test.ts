@@ -82,7 +82,10 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /recordBeginnerGuideCompleted\(activeRevealPid\)/);
   assert.match(modal, /medianHoursToSold/);
   assert.match(modal, /observedSoldSampleCount/);
-  assert.match(modal, /시세 거래 표본/);
+  assert.match(modal, /dailySoldCountLabel/);
+  assert.match(modal, /하루 평균 팔림/);
+  assert.match(modal, /최근 7일 기준 하루/);
+  assert.match(modal, /비슷한 거래 기록/);
   assert.match(modal, /판매 속도를 불러오는 중이에요/);
   assert.match(modal, /확인 중/);
   assert.match(modal, /h-14 w-14/);
@@ -91,6 +94,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /requestedAnalysisPidsRef/);
   assert.match(modal, /guidePrimaryButtonClass/);
   assert.doesNotMatch(modal, /지금까지 핵심 판단 근거|비교 표본 .* 실제 결과/);
+  assert.doesNotMatch(modal, /판매완료 누적|판매완료 표본|시세 거래 표본|거래완료 표본/);
   assert.doesNotMatch(modal, /0원로|수집중|후기 데이터는 아직 충분하지/);
   assert.doesNotMatch(modal, /무조건|본전|수익 보장|돈을 벌|얼마를 벌/);
 });
