@@ -7,7 +7,7 @@ import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
-import { BunjangLogo, BunjangSourceBadge, DanawaLogo, DanawaSourceBadge } from "@/components/market-brand-logo";
+import { BunjangLogo, DanawaLogo } from "@/components/market-brand-logo";
 import {
   ActivityIcon,
   AlertTriangleIcon,
@@ -460,7 +460,7 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
   ];
 
   return (
-    <div style={{ marginTop: 18, marginLeft: 14, marginRight: 14, overflow: "hidden", background: "#ffffff", border: "1px solid #ece3d2", borderRadius: 16 }}>
+    <div style={{ marginTop: 18, overflow: "hidden", background: "#ffffff", border: "1px solid #ece3d2", borderRadius: 16 }}>
       {/* Wave 394.7.t: handoff FAQ 정확 — bg #fdfaf3 header + border-bottom #ece3d2 + shield #b45309. */}
       <div style={{ padding: "12px 14px 8px", display: "flex", alignItems: "center", gap: 6, borderBottom: "1px solid #ece3d2", background: "#fdfaf3" }}>
         <ShieldIcon className="h-3.5 w-3.5 shrink-0" style={{ color: "#b45309" }} />
@@ -554,21 +554,14 @@ function costAssuranceSnapshot(card: RevealCard) {
     sellingFee,
     buyerCostLabel,
     shippingLabel,
+    shippingValueLabel: freeShipping
+      ? "0원"
+      : shippingLow == null || shippingHigh == null
+        ? "확인 필요"
+        : krwRange(shippingLow, shippingHigh),
     confidenceLabel,
     confidenceClass,
   };
-}
-
-function marketSourceBadge(card: RevealCard) {
-  const market = card.marketBasis;
-  if (!market) return null;
-  // Wave 246 (2026-05-19): medianPrice 가 0/null 이면 출처 배지 자체가 의미 없음.
-  // 사용자 사례 (pid 406974440): "번개 S급 시세 0원" — 시세 0인데 S급 배지만 떠서 미스리딩.
-  // 정책 (b): 0원 시 표시 안 함. 호출 측 가드와 중복이지만 defense-in-depth.
-  if (!market.medianPrice || market.medianPrice <= 0) return null;
-  if (market.priceSource === "reference") return { label: "다나와", tone: "reference" as const };
-  if (market.conditionClass === "mint") return { label: "번개 S급", tone: "mint" as const };
-  return null;
 }
 
 // Wave 2026-05-19 v2 (외부인 #7 권장 매입가 프레임):
@@ -615,6 +608,17 @@ function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
       </div>
     </div>
   );
+}
+
+function conditionFriendlyText(conditionClass: string | null | undefined) {
+  if (conditionClass === "unopened") return "미개봉";
+  if (conditionClass === "mint") return "거의 새것";
+  if (conditionClass === "clean") return "깨끗한 편";
+  if (conditionClass === "normal") return "상태 보통";
+  if (conditionClass === "worn") return "사용감 있음";
+  if (conditionClass === "flawed") return "하자 있음";
+  if (conditionClass === "low_batt") return "배터리 약함";
+  return conditionClass ?? "상태 확인";
 }
 
 function velocityHoursLabel(value: number | null) {
@@ -1183,17 +1187,16 @@ function DealMeterButton({
       aria-expanded={expanded}
       className="group flex shrink-0 flex-col items-end whitespace-nowrap leading-tight"
     >
+      <span className="mb-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#047857] transition group-hover:text-[#065f46] dark:text-emerald-300">
+        득템 점수
+      </span>
       <span className="flex items-baseline gap-0.5">
-        <span className={`text-lg font-bold tabular-nums ${toneClass}`}>
+        <span className={`text-[28px] font-black tabular-nums tracking-[-0.03em] sm:text-lg sm:font-bold ${toneClass}`}>
           {score}
         </span>
-        <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">/100</span>
+        <span className="text-[13px] font-bold text-zinc-400 dark:text-zinc-500 sm:text-[10px] sm:font-medium">/100</span>
       </span>
-      {/* Wave 394.7.f (외부 review 2라운드 #2): "득템 점수" → "수익 기회" — 점수 의미 명확화.
-          사용자가 100/100을 "종합 점수" (가품/리스크 포함) 로 오해 → 수익성 점수임을 명시. */}
-      <span className="mt-0.5 text-[10px] font-medium text-zinc-500 underline underline-offset-2 transition group-hover:text-zinc-800 dark:text-zinc-400 dark:group-hover:text-zinc-100">
-        수익 기회
-      </span>
+      <span className="mt-1 h-[3px] w-[70px] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700 transition group-hover:from-emerald-600 group-hover:to-emerald-800 sm:hidden" />
     </button>
   );
 }
@@ -1304,7 +1307,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
   ) : null;
 
   return (
-    <div className="relative left-1/2 h-[290px] w-screen -translate-x-1/2 overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-800 sm:left-auto sm:mx-0 sm:h-[240px] sm:w-[240px] sm:translate-x-0 sm:rounded-lg lg:h-[280px] lg:w-[280px]">
+    <div className="relative left-1/2 aspect-[4/4.2] max-h-[58dvh] w-screen -translate-x-1/2 overflow-hidden rounded-none bg-black dark:bg-black sm:left-auto sm:mx-0 sm:h-[240px] sm:w-[240px] sm:translate-x-0 sm:rounded-lg sm:bg-[#eee7da] sm:dark:bg-zinc-800 lg:h-[280px] lg:w-[280px]">
       {/* Wave 393.3: ConditionPhotoBadge 모달에선 nav (좌상 ← 🏠 floating)에 가려서 제거.
           텍스트 영역 LastVerifiedAtBadge 옆에 ConditionChip으로 대체 노출. */}
       {card.thumbnailUrl ? (
@@ -1315,9 +1318,17 @@ function RevealProductImage({ card }: { card: RevealCard }) {
             aria-hidden="true"
             fill
             sizes="(max-width: 639px) 100vw, (max-width: 1023px) 240px, 280px"
-            className="scale-[1.08] object-cover object-center opacity-55 blur-sm"
+            className="object-cover object-center opacity-100 sm:scale-[1.08] sm:opacity-55 sm:blur-sm"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,253,249,0.22),rgba(238,231,218,0.30))] dark:bg-none dark:bg-zinc-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/35 sm:bg-[linear-gradient(180deg,rgba(255,253,249,0.22),rgba(238,231,218,0.30))] dark:sm:bg-zinc-950/20" />
+          <div className="absolute right-3 top-[76px] z-10 flex gap-1 rounded-full bg-black/45 px-2.5 py-1.5 backdrop-blur sm:hidden">
+            {[0, 1, 2, 3].map((idx) => (
+              <span
+                key={idx}
+                className={`h-1.5 w-1.5 rounded-full ${idx === 0 ? "bg-white" : "bg-white/40"}`}
+              />
+            ))}
+          </div>
           <div className="absolute inset-0 p-0 sm:p-2">
             <div className="relative h-full w-full">
               <Image
@@ -1325,14 +1336,17 @@ function RevealProductImage({ card }: { card: RevealCard }) {
                 alt={card.name}
                 fill
                 sizes="(max-width: 639px) 100vw, (max-width: 1023px) 240px, 280px"
-                className="scale-[1.08] rounded-none object-contain object-center drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)] sm:scale-100 sm:rounded-md"
+                className="rounded-none object-cover object-center sm:scale-100 sm:rounded-md sm:object-contain sm:drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)]"
               />
             </div>
           </div>
           {/* Wave 394.7.w (사용자 짚음 + handoff): 좌하 condition pill — nav(top-left)랑 안 겹침. */}
           {card.marketBasis?.conditionClass ? (
-            <div className="absolute bottom-2 left-2 z-10">
-              <ConditionPhotoBadge conditionClass={card.marketBasis.conditionClass} />
+            <div className="absolute bottom-4 left-4 z-10">
+              <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-[#4b5650] shadow-[0_2px_8px_rgba(0,0,0,0.18)] backdrop-blur">
+                <span className="mr-1 text-emerald-600">●</span>
+                {conditionFriendlyText(card.marketBasis.conditionClass)}
+              </span>
             </div>
           ) : null}
           <button
@@ -1341,7 +1355,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
               e.stopPropagation();
               setPreviewOpen(true);
             }}
-            className="absolute bottom-2 right-2 z-10 rounded-full bg-zinc-950/72 px-3 py-1.5 text-xs font-black text-white shadow-lg backdrop-blur transition hover:bg-zinc-950/86"
+            className="absolute bottom-4 right-4 z-10 rounded-full bg-zinc-950/75 px-4 py-2 text-xs font-black text-white shadow-lg backdrop-blur transition hover:bg-zinc-950/86"
           >
             크게 보기
           </button>
@@ -2333,7 +2347,7 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
   // Wave 393.5: rose → amber (사용자 짚음 — rose는 "이 매물 가품"으로 헷갈림.
   // 실제 의미 = 구매 전 정품 점검 체크리스트).
   return (
-    <section style={{ marginTop: 18, padding: "0 14px" }}>
+    <section style={{ marginTop: 18 }}>
       {/* Wave 394.7.s: handoff AuthenticityCheck 정확 — bg #fffbef + border 1px #fde68a + border-left 3px #f59e0b + radius 16. */}
       <div style={{ background: "#fffbef", border: "1px solid #fde68a", borderLeftWidth: 3, borderLeftColor: "#f59e0b", borderLeftStyle: "solid", borderRadius: 16, padding: 16 }}>
       <button
@@ -2710,7 +2724,6 @@ function DaangnLogo({ className = "h-4 w-4" }: { className?: string }) {
 }
 
 function PlatformProfitCompare({ card }: { card: RevealCard }) {
-  const [open, setOpen] = useState(false);
   const market = card.marketBasis;
   if (!market?.medianPrice || market.medianPrice <= 0) return null;
 
@@ -2723,7 +2736,7 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
   const bonusFromDaangn = bunjangFee;
 
   return (
-    <section style={{ marginTop: 18, padding: "0 14px" }}>
+    <section style={{ marginTop: 18 }}>
       {/* Wave 394.7.r: handoff SellWhere JSX 1:1. */}
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", margin: "0 0 10px" }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#1a2620", letterSpacing: -0.3 }}>어디에 팔지?</h3>
@@ -2768,19 +2781,6 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
           </div>
         </div>
       </div>
-      {open ? (
-        <div className="mt-2 space-y-1.5 rounded-md bg-zinc-50 px-3 py-2 text-[11px] font-medium leading-5 text-zinc-600 dark:bg-zinc-900/60 dark:text-zinc-300">
-          <div>
-            <span className="font-bold text-zinc-900 dark:text-zinc-100">번개장터:</span> 안전결제 의무 — 셀러 돈 받기 안전 (구매자 결제 후 셀러 정산). 대신 거래액의 3.5% 수수료.
-          </div>
-          <div>
-            <span className="font-bold text-zinc-900 dark:text-zinc-100">당근 직거래:</span> 수수료 0이지만 셀러도 주의 — 위조지폐 / 입금 미루기 / 반품 가짜 클레임 가능. 동네 직거래는 현장에서 현금 확인 필수.
-          </div>
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
-            ※ 당근페이 사용 시 셀러도 보호 (입금 보장) — 별도 수수료 일부. 가장 안전한 셀러 보호는 번개 안전결제 또는 당근페이.
-          </div>
-        </div>
-      ) : null}
     </section>
   );
 }
@@ -2804,7 +2804,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
   // Wave 394.7.h (외부 review 2라운드 #8): 비용 그룹 분리 — 구매 / 재판매. 초보자 헷갈림 차단.
   const purchaseRows = [
     { label: "상품가", value: krw(card.price), note: "현재 매입 기준" },
-    { label: "내가 낼 배송비", value: snapshot.shippingLabel, note: "택포/별도 문구는 구매 전 재확인" },
+    { label: "내가 낼 배송비", value: snapshot.shippingValueLabel, note: "택포/별도 문구는 구매 전 재확인" },
     {
       label: "결제 수수료",
       value: "0원",
@@ -2840,78 +2840,110 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
   const verdictClass = !guidance ? "" : (guidance.verdict === "great" || guidance.verdict === "good")
     ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
     : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200";
+  const profitFormula = snapshot.salePrice != null
+    ? `시세 ${krw(snapshot.salePrice)} − 매입 ${snapshot.buyerCostLabel} − 비용`
+    : `매입 ${snapshot.buyerCostLabel} − 비용 확인`;
 
   return (
-    <section className="mt-3 border-t border-zinc-200 bg-white/0 py-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
-      {/* Wave 323 (디자인 평탄화): 박스 안 박스 제거, 단일 평면 + 섹션 구분선. */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          최종 매입가 체크
-        </div>
-        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${snapshot.confidenceClass}`}>
-          {snapshot.confidenceLabel}
-        </span>
-      </div>
-      <div className="mt-1 text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
-        {snapshot.buyerCostLabel}
-      </div>
-
-      {/* Wave 394.7.h: 비용 분해 — 구매 / 재판매 그룹 분리. */}
-      {/* Wave 394.7.h.fix (사용자 짚음): 헤더 sub 제거. "구매 비용" / "리셀 비용" 페어 단순화. */}
-      <div className="mt-3 space-y-1.5 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
-          구매 비용
-        </div>
-        {purchaseRows.map((row) => (
-          <div key={row.label} className="flex items-baseline justify-between gap-2 text-xs">
-            <div className="font-medium text-zinc-500 dark:text-zinc-400">{row.label}</div>
-            <div className="min-w-0 text-right">
-              <div className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                {row.value}
+    <section className="mt-3">
+      {/* Wave 395.3: 최종 매입가도 PDF handoff처럼 독립 비용 카드로 재구성. */}
+      <div className="overflow-hidden rounded-2xl border border-[#ece3d2] bg-white shadow-[0_10px_26px_rgba(45,51,42,0.06)] dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="px-4 pb-3 pt-3.5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-[10px] font-bold tracking-tight text-[#6f7c6d] dark:text-zinc-400">
+                최종 매입가 체크
               </div>
-              <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
-                {row.note}
+              <div className="mt-1 text-[22px] font-black leading-tight tracking-[-0.03em] text-[#17221d] dark:text-zinc-50">
+                {snapshot.buyerCostLabel}
               </div>
             </div>
+            <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-extrabold ${snapshot.confidenceClass}`}>
+              {snapshot.confidenceLabel}
+            </span>
           </div>
-        ))}
-      </div>
-
-      <div className="mt-3 space-y-1.5 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-400">
-          리셀 비용
         </div>
-        {resellRows.map((row) => (
-          <div key={row.label} className="flex items-baseline justify-between gap-2 text-xs">
-            <div className="font-medium text-zinc-500 dark:text-zinc-400">{row.label}</div>
-            <div className="min-w-0 text-right">
-              <div className="font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                {row.value}
-              </div>
-              <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
-                {row.note}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
 
-      {/* Wave 333: 결과 라벨 명시 — 24,739원이 뭔지 가시적이지 않았던 거 fix */}
-      {snapshot.salePrice != null ? (
-        <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-          <div className="text-[10px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
-            시세 {krw(snapshot.salePrice)} − 매입 {snapshot.buyerCostLabel} − 비용
+        {/* Wave 394.7.h: 비용 분해 — 구매 / 재판매 그룹 분리. */}
+        <div className="border-t border-[#ece3d2] px-4 py-3 dark:border-zinc-800">
+          <div className="mb-2 text-[10px] font-black tracking-wide text-[#047857] dark:text-emerald-300">
+            구매 비용
           </div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <div className="space-y-3">
+            {purchaseRows.map((row) => (
+              <div key={row.label} className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="text-[12px] font-extrabold leading-tight text-[#17221d] dark:text-zinc-100">
+                    {row.label}
+                  </div>
+                  <div className="mt-0.5 text-[10px] font-medium leading-tight text-[#aaa391] dark:text-zinc-500">
+                    {row.note}
+                  </div>
+                </div>
+                <div className="shrink-0 text-right text-[12.5px] font-black tabular-nums tracking-tight text-[#17221d] dark:text-zinc-100">
+                  {row.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t border-[#ece3d2] px-4 py-3 dark:border-zinc-800">
+          <div className="mb-2 text-[10px] font-black tracking-wide text-[#9a9384] dark:text-zinc-400">
+            리셀 비용
+          </div>
+          <div className="space-y-3">
+            {resellRows.map((row) => (
+              <div key={row.label} className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="text-[12px] font-extrabold leading-tight text-[#17221d] dark:text-zinc-100">
+                    {row.label}
+                  </div>
+                  <div className="mt-0.5 text-[10px] font-medium leading-tight text-[#aaa391] dark:text-zinc-500">
+                    {row.note}
+                  </div>
+                </div>
+                <div className="shrink-0 text-right text-[12.5px] font-black tabular-nums tracking-tight text-[#17221d] dark:text-zinc-100">
+                  {row.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t border-dashed border-[#e2d8c4] px-4 pb-4 pt-3 dark:border-zinc-700">
+          <div className="text-[10.5px] font-semibold leading-4 text-[#6f7c6d] dark:text-zinc-400">
+            {profitFormula}
+          </div>
+          <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-[#b8e5ce] bg-[#effbf4] px-3 py-2.5 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+            <span className="text-[12px] font-black text-[#047857] dark:text-emerald-300">
               = 예상 차익
             </span>
-            <span className="text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+            <span className="text-[14px] font-black tabular-nums tracking-tight text-[#047857] dark:text-emerald-300">
               {displayProfitRange(card)}
             </span>
           </div>
         </div>
-      ) : null}
+      </div>
+
+      <details className="group mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <span>문의 전 확인 3가지 (복붙)</span>
+          <span className="text-zinc-400 transition group-open:rotate-45">+</span>
+        </summary>
+        <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs font-medium leading-5 text-zinc-700 dark:text-zinc-300">
+          <li>표시 가격에 택배비가 포함돼 있는지</li>
+          <li>번개페이/안전결제 수수료를 누가 부담하는지</li>
+          <li>구성품이 사진과 설명에 보이는 것 전부인지</li>
+        </ol>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="mt-2 w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        >
+          {copied ? "복사됨" : "문장 복사"}
+        </button>
+      </details>
 
       {/* Wave 326: 협상 가이드 — 가격대별 의미 명시. "이 이상에 사면" 동사 명시 + 위험 구간(차익 1만 미만) 별도. */}
       {/* Wave 394.7.e: caps 단어 토막 → 친절 문장. */}
@@ -2942,6 +2974,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
                 차익 +{krw(guidance.currentProfit)}
               </div>
             </div>
+
 
             {/* 협상 시도 — em row */}
             <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 px-3 py-3 dark:bg-emerald-950/30">
@@ -2990,24 +3023,6 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
         </div>
       ) : null}
 
-      <details className="group mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          <span>문의 전 확인 3가지 (복붙)</span>
-          <span className="text-zinc-400 transition group-open:rotate-45">+</span>
-        </summary>
-        <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs font-medium leading-5 text-zinc-700 dark:text-zinc-300">
-          <li>표시 가격에 택배비가 포함돼 있는지</li>
-          <li>번개페이/안전결제 수수료를 누가 부담하는지</li>
-          <li>구성품이 사진과 설명에 보이는 것 전부인지</li>
-        </ol>
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="mt-2 w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-        >
-          {copied ? "복사됨" : "문장 복사"}
-        </button>
-      </details>
     </section>
   );
 }
@@ -3108,7 +3123,6 @@ function RevealCardItem({
   // 본질 = 일반인 친화 단일 톤 유지 + "더 자세히 보고 싶은 사용자" 옵션. 전문가 통계 도구 X (별 wave).
   const [mode, setMode] = useState<"simple" | "detailed">("simple");
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
-  const sourceBadge = marketSourceBadge(card);
   const netPct = netProfitPercent(card);
   // Wave 394.7.f (외부 review 2라운드 #3): brand 가품 위험 큰 카테고리는 "조건부 매입 OK".
   // 사용자 짚음 — "매입 OK + 가품 위험 큼" 충돌. 정품 확인 필요 명시.
@@ -3170,25 +3184,39 @@ function RevealCardItem({
        * 이전엔 cream gradient + border + shadow 로 ProfitHero ~ SellHelper 다 묶었는데
        * 그 안 ProfitHero 초록이 크게 보여 "전체 초록 박스" 처럼 보였음. wrapper 자체를 없애고
        * 각 panel 이 페이지 배경 위 평평하게 배치. */}
-      <div className="order-1 grid gap-3 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
+      <div className="order-1 grid gap-0 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-3 lg:grid-cols-[150px_minmax(0,1fr)]">
         <div ref={photoRef}>
           <RevealProductImage card={card} />
         </div>
 
-        <div className="min-w-0 w-full space-y-3 px-3 sm:px-0">
-          <div className="flex w-full items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              {/* Wave 392.2: 신선도 강조 — 매우 신선 매물 즉시 인지 + Pro USP hint. */}
-              <LastVerifiedAtBadge card={card} />
-              {/* Wave 359+361: 득템 점수 — 제목과 같은 행 우측 작게 (당근 36.8°C 톤). */}
-              <div className="flex items-start gap-3">
-                <div className="min-w-0 flex-1 line-clamp-2 text-base font-bold leading-tight text-zinc-900 dark:text-zinc-50">
-                  {card.name}
-                </div>
+        <div className="relative z-10 -mt-4 min-w-0 w-full space-y-3 rounded-t-[22px] bg-[#ebe6dc] px-4 pb-2 pt-7 dark:bg-zinc-900 sm:mt-0 sm:rounded-none sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-0 sm:dark:bg-transparent">
+          <div className="absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 rounded-full bg-[#d0c6b1] sm:hidden" />
+          <div className="space-y-1.5">
+            <div className="relative">
+              <div className="pr-[92px] text-[10.5px] font-semibold leading-4 text-[#6f7c6d] dark:text-zinc-400 sm:hidden">
+                AI 판단 · 매물 설명(텍스트) 기준 · 사진은 직접 확인 권장
+              </div>
+              <div className="absolute right-0 top-[-2px] sm:hidden">
                 <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
               </div>
+            </div>
+            <div className="flex w-full items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                {/* Wave 392.2: 신선도 강조 — 매우 신선 매물 즉시 인지 + Pro USP hint. */}
+                <div className="hidden sm:block">
+                  <LastVerifiedAtBadge card={card} />
+                </div>
+                {/* Wave 359+361: 득템 점수 — 제목과 같은 행 우측 작게 (당근 36.8°C 톤). */}
+                <div className="flex items-start gap-3">
+                  <div className="min-w-0 flex-1 line-clamp-2 pr-[92px] text-[20px] font-black leading-[1.25] tracking-[-0.01em] text-[#111915] dark:text-zinc-50 sm:pr-0 sm:text-base sm:font-bold sm:leading-tight">
+                    {card.name}
+                  </div>
+                  <div className="hidden sm:block">
+                    <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
+                  </div>
+                </div>
               {dealExpanded ? <DealEvidencePanel card={card} /> : null}
-              {/* Wave 394.7.q (Claude Design handoff 정확 1:1): ProfitHero JSX 그대로 + 데이터 매핑. */}
+              {/* Wave 395.1: PDF처럼 "예상 순익 + 계산식/비교매물 보기"만 독립 카드로 분리. */}
               <div
                 className="relative overflow-hidden"
                 style={{
@@ -3199,6 +3227,7 @@ function RevealCardItem({
                   border: `1px solid ${isMarketInvalidated ? "#fecdd3" : "#c8e6d4"}`,
                   borderRadius: 18,
                   padding: "16px 16px 14px",
+                  boxShadow: "0 10px 28px rgba(45, 51, 42, 0.08)",
                 }}
               >
                 <div style={{ position: "absolute", right: -16, top: -16, opacity: 0.05, fontSize: 100, fontWeight: 900, color: isMarketInvalidated ? "#be123c" : "#059669", lineHeight: 1, pointerEvents: "none" }}>₩</div>
@@ -3281,28 +3310,25 @@ function RevealCardItem({
                   </svg>
                 </button>
 
-                {/* Wave 394.6.b.fix2 (사용자 정확 지적): 비교 매물 = "이 시세 진짜야?" 직빵 증명.
-                    차익 헤드라인 직후 위치 — 외부 review #7 "3. 데이터 믿을 만한가" 핵심 신호.
-                    "데이터 믿을 만한가? 의 측면에서 직빵으로 active 매물 중 비교매물 보여주는게 직빵.
-                     시세가 진짜인지가 비교매물로 제일 증명." */}
-                <ComparableListingsPanel card={card} mode={mode} />
-
-                {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
-                <WhyCheapPanel card={card} />
-                <UpperFoldFearReducers card={card} />
-                {/* Wave 394.6.b (외부 review #7): 정보 순서 재정렬 — 사용자 판단 흐름 따름.
-                    "1. 사도 되나 → 2. 얼마 남나 → 3. 데이터 믿을 만? → 4. 위험? → 5. 깎기 → 6. 어디 팔까".
-                    가품/리스크 위로 (구매 결정 핵심), 채널 비교 아래로 (판매 결정). */}
-                <CounterfeitChecklistPanel card={card} />
-                <CostAssurancePanel card={card} />
-                {/* Wave 392.3: 진입장벽/불안감 해소 Q&A — 4개 자주 묻는 거 collapse. */}
-                <WhyTrustCollapse card={card} />
-                {/* Wave 394.6.b: 채널 비교 → SellHelper 위 (둘 다 "판매" 관련 단위). */}
-                <PlatformProfitCompare card={card} />
-                {/* Wave 393.6: SellerTrustPanel 제거 — UpperFoldFearReducers 셀러 tile +
-                    WhyTrustCollapse Q&A에 셀러 정보 이미 있음. 3중 중복 해소. */}
-                <SellHelperPanel card={card} currentFeedbackType={currentFeedbackType} />
               </div>
+
+              {/* Wave 395.2: 비교 매물은 Profit 카드 안이 아니라 PDF처럼 별도 섹션/리스트 카드로 분리. */}
+              <ComparableListingsPanel card={card} mode={mode} />
+              {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
+              <WhyCheapPanel card={card} />
+              <UpperFoldFearReducers card={card} />
+              {/* Wave 394.6.b (외부 review #7): 정보 순서 재정렬 — 사용자 판단 흐름 따름.
+                  "1. 사도 되나 → 2. 얼마 남나 → 3. 데이터 믿을 만? → 4. 위험? → 5. 깎기 → 6. 어디 팔까".
+                  가품/리스크 위로 (구매 결정 핵심), 채널 비교 아래로 (판매 결정). */}
+              <CounterfeitChecklistPanel card={card} />
+              <CostAssurancePanel card={card} />
+              {/* Wave 392.3: 진입장벽/불안감 해소 Q&A — 4개 자주 묻는 거 collapse. */}
+              <WhyTrustCollapse card={card} />
+              {/* Wave 394.6.b: 채널 비교 → SellHelper 위 (둘 다 "판매" 관련 단위). */}
+              <PlatformProfitCompare card={card} />
+              {/* Wave 393.6: SellerTrustPanel 제거 — UpperFoldFearReducers 셀러 tile +
+                  WhyTrustCollapse Q&A에 셀러 정보 이미 있음. 3중 중복 해소. */}
+              <SellHelperPanel card={card} currentFeedbackType={currentFeedbackType} />
               <RecommendationReasonPanel
                 card={card}
                 className="mt-2 border-t border-[#e1dacd] pt-2 sm:rounded-xl sm:border sm:p-3 sm:shadow-none sm:ring-0"
@@ -3324,6 +3350,7 @@ function RevealCardItem({
               </summary>
               <ConfidenceBreakdown card={card} />
             </details>
+          </div>
           </div>
 
         <div className="hidden sm:block">
@@ -3654,19 +3681,21 @@ function FixedBunjangFooter({
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 8,
+          justifyContent: "center",
+          position: "relative",
           background: "#059669",
           borderRadius: 999,
-          padding: "4px 4px 4px 6px",
+          minHeight: 54,
+          padding: "4px 46px",
           boxShadow: "0 10px 24px rgba(5,150,105,0.28), 0 4px 8px rgba(5,150,105,0.18)",
           color: "#fff",
           textDecoration: "none",
         }}
       >
-        <span style={{ width: 34, height: 34, borderRadius: 999, background: "#0b1413", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <span style={{ position: "absolute", left: 6, top: "50%", transform: "translateY(-50%)", width: 34, height: 34, borderRadius: 999, background: "#0b1413", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <span style={{ fontFamily: "ui-monospace, monospace", fontWeight: 800, color: "#10b981", fontSize: 16 }}>N</span>
         </span>
-        <span style={{ flex: 1, fontSize: 14, fontWeight: 800, letterSpacing: -0.3, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 0", whiteSpace: "nowrap" }}>
+        <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.3, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, whiteSpace: "nowrap" }}>
           <span style={{ width: 20, height: 20, borderRadius: 999, background: "#0b1413", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fbbf24", flexShrink: 0 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>
           </span>
@@ -3957,7 +3986,7 @@ export default function PackRevealModal({
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-stretch justify-stretch overscroll-contain bg-[#fffdf9] p-0 dark:bg-zinc-950 sm:items-center sm:justify-center sm:bg-[rgba(31,40,34,0.48)] sm:p-6 sm:backdrop-blur-sm sm:dark:bg-[rgba(9,9,11,0.62)]"
+      className="fixed inset-0 z-[90] flex items-stretch justify-stretch overscroll-contain bg-[#ebe6dc] p-0 dark:bg-zinc-950 sm:items-center sm:justify-center sm:bg-[rgba(31,40,34,0.48)] sm:p-6 sm:backdrop-blur-sm sm:dark:bg-[rgba(9,9,11,0.62)]"
       role="dialog"
       aria-modal="true"
       onClick={() => {
@@ -3965,7 +3994,7 @@ export default function PackRevealModal({
       }}
     >
       <div
-        className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#fffdf9] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-h-[88vh] sm:max-w-6xl sm:rounded-2xl sm:border sm:border-[#ddd6ca] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.16)] sm:dark:border-zinc-800"
+        className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#ebe6dc] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-h-[88vh] sm:max-w-6xl sm:rounded-2xl sm:border sm:border-[#ddd6ca] sm:bg-[#fffdf9] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.16)] sm:dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Wave 360+361+362+364: 당근식 nav 유기적 전환.
@@ -4008,7 +4037,7 @@ export default function PackRevealModal({
 
             {/* (B) Sticky nav bar — 사진 사라지면 등장 */}
             <div
-              className={`pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-[#e2dbcf] bg-[#fffdf9]/95 backdrop-blur transition-opacity duration-200 dark:border-zinc-800 dark:bg-zinc-900/95 ${
+              className={`pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-[#e2dbcf] bg-[#ebe6dc]/95 backdrop-blur transition-opacity duration-200 dark:border-zinc-800 dark:bg-zinc-900/95 sm:bg-[#fffdf9]/95 ${
                 photoVisible ? "opacity-0" : "opacity-100"
               }`}
             >

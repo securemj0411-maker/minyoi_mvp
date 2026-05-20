@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-05-20T07:36:16.599Z",
+  "generatedAt": "2026-05-20T08:04:45.079Z",
   "summary": {
     "totalSkus": 414,
     "skusWithResults": 344,
-    "totalFetched": 25077,
-    "totalTP": 14572,
-    "totalUnmatched": 8671,
-    "totalTypeUnknown": 977,
-    "avgTPRate": 0.5398993207689348
+    "totalFetched": 25076,
+    "totalTP": 14569,
+    "totalUnmatched": 8654,
+    "totalTypeUnknown": 682,
+    "avgTPRate": 0.539788793253177
   },
   "topUnmatchedTokens": [
     [
       "나이키",
-      354
+      352
     ],
     [
       "아디다스",
-      299
+      298
     ],
     [
       "뉴발란스",
-      180
+      177
     ],
     [
       "스니커즈",
@@ -36,23 +36,23 @@
     ],
     [
       "자켓",
-      107
+      105
     ],
     [
       "로우",
-      95
+      96
     ],
     [
       "슈프림",
-      94
+      93
     ],
     [
       "꼼데가르송",
-      84
+      80
     ],
     [
       "반스",
-      74
+      73
     ],
     [
       "컨버스",
@@ -60,15 +60,15 @@
     ],
     [
       "폴로",
-      69
-    ],
-    [
-      "하이",
-      66
+      68
     ],
     [
       "마르지엘라",
       66
+    ],
+    [
+      "하이",
+      64
     ],
     [
       "아식스",
@@ -76,46 +76,50 @@
     ],
     [
       "키즈",
-      64
-    ],
-    [
-      "티셔츠",
       62
     ],
     [
-      "발렌시아가",
+      "티셔츠",
       60
     ],
     [
-      "베이프",
-      56
+      "발렌시아가",
+      58
     ],
     [
       "og",
-      54
+      55
+    ],
+    [
+      "베이프",
+      55
     ],
     [
       "덩크",
-      54
+      53
     ],
     [
       "클래식",
-      51
-    ],
-    [
-      "구찌",
-      51
-    ],
-    [
-      "루이비통",
       50
     ],
     [
-      "블루",
-      47
+      "판매합니다",
+      49
     ],
     [
-      "판매합니다",
+      "구찌",
+      49
+    ],
+    [
+      "루이비통",
+      49
+    ],
+    [
+      "블루",
+      48
+    ],
+    [
+      "삼바",
       47
     ],
     [
@@ -123,43 +127,43 @@
       46
     ],
     [
-      "삼바",
+      "부츠",
       46
     ],
     [
-      "부츠",
+      "푸마",
       45
     ],
     [
-      "푸마",
-      44
+      "반팔",
+      45
     ],
     [
       "랄프로렌",
-      44
+      45
     ],
     [
-      "반팔",
+      "새제품",
       43
+    ],
+    [
+      "구매",
+      42
     ],
     [
       "니트",
-      43
+      42
+    ],
+    [
+      "블레이저",
+      42
     ],
     [
       "크록스",
       42
     ],
     [
-      "새제품",
-      41
-    ],
-    [
-      "블레이저",
-      41
-    ],
-    [
-      "구매",
+      "셔츠",
       40
     ],
     [
@@ -168,18 +172,14 @@
     ],
     [
       "스투시",
-      38
-    ],
-    [
-      "셔츠",
-      37
+      39
     ],
     [
       "조던",
       36
     ],
     [
-      "닥터마틴",
+      "에어맥스",
       36
     ],
     [
@@ -187,7 +187,11 @@
       35
     ],
     [
-      "에어맥스",
+      "판매",
+      35
+    ],
+    [
+      "닥터마틴",
       35
     ],
     [
@@ -195,20 +199,16 @@
       35
     ],
     [
-      "콜라보",
+      "빈티지",
       34
-    ],
-    [
-      "메종",
-      34
-    ],
-    [
-      "오프화이트",
-      33
     ],
     [
       "v2",
-      32
+      33
+    ],
+    [
+      "메종",
+      33
     ]
   ],
   "topContamination": [
@@ -225,7 +225,7 @@
     },
     {
       "contaminatedSkuId": "clothing-cdg-apparel-broad",
-      "count": 70,
+      "count": 77,
       "samples": [
         "bag-cdg-broad → clothing-cdg-apparel-broad: 정품)새상품 꼼데가르송 반팔 레드와펜 남녀공용",
         "bag-cdg-broad → clothing-cdg-apparel-broad: 꼼데가르송 플레이 하트 반팔 티셔츠 흰/검",
@@ -236,10 +236,10 @@
     },
     {
       "contaminatedSkuId": "shoe-nike-sakai-collab",
-      "count": 55,
+      "count": 56,
       "samples": [
+        "shoe-nike-cortez-broad → shoe-nike-sakai-collab: [새상품 / 260mm]나이키x사카이 줌 코르테즈SP",
         "shoe-nike-cortez-broad → shoe-nike-sakai-collab: 나이키 사카이 코르테즈 255",
-        "shoe-nike-cortez-broad → shoe-nike-sakai-collab: 나이키 사카이 줌 코르테즈SP 화이트 앤 유니버시티 레드",
         "shoe-nike-moonracer-broad → shoe-nike-sakai-collab: 발렌시아가 트리플s, 나이키 문레이서, 사카이 베이퍼와플, LD와플 판매",
         "shoe-balenciaga-triple-s-broad → shoe-nike-sakai-collab: 발렌시아가 트리플s, 나이키 문레이서, 사카이 베이퍼와플, LD와플 판매",
         "shoe-nike-blazer-broad → shoe-nike-sakai-collab: 나이키 사카이 레더 블레이저 로우 블랙/화이트 230"
@@ -247,13 +247,24 @@
     },
     {
       "contaminatedSkuId": "shoe-stussy-nike-collab",
-      "count": 51,
+      "count": 49,
       "samples": [
         "shoe-nike-airforce-1-low-black → shoe-stussy-nike-collab: 나이키 x 스투시 에어포스 1 '07 미드 SP 블랙 앤 라이트 본",
-        "shoe-nike-airforce-1-low-black → shoe-stussy-nike-collab: 나이키 x 스투시 에어포스 1 로우 트리플 블랙 265팝니다",
-        "shoe-nike-spiridon-broad → shoe-stussy-nike-collab: 빈티지하서 230 나이키 스투시 에어 줌 스피리돈 케이지 2 파슬",
         "shoe-nike-spiridon-broad → shoe-stussy-nike-collab: 나이키 스투시 스피리돈2",
-        "clothing-stussy-nike-collab → shoe-stussy-nike-collab: 여성의류(아디다스,스투시,마뗑킴,나이키,아메리칸이글)"
+        "shoe-nike-spiridon-broad → shoe-stussy-nike-collab: 빈티지하서 230 나이키 스투시 에어 줌 스피리돈 케이지 2 파슬",
+        "clothing-stussy-nike-collab → shoe-stussy-nike-collab: 여성의류(아디다스,스투시,마뗑킴,나이키,아메리칸이글)",
+        "clothing-stussy-nike-collab → shoe-stussy-nike-collab: 여성의류 나이키 에어 스투시 운동화"
+      ]
+    },
+    {
+      "contaminatedSkuId": "clothing-patagonia-retro-x",
+      "count": 48,
+      "samples": [
+        "clothing-patagonia → clothing-patagonia-retro-x: [새상품/ S] 파타고니아 신칠라 린스드그린",
+        "clothing-patagonia → clothing-patagonia-retro-x: [옷장정리떨이] 파타고니아 레트로X 아노락 풀오버",
+        "clothing-patagonia-deep-pile → clothing-patagonia-retro-x: Patagonia 파타고니아 신칠라 딥 파일 재킷입니다",
+        "clothing-patagonia-apparel-broad → clothing-patagonia-retro-x: [새상품/ S] 파타고니아 신칠라 린스드그린",
+        "clothing-patagonia-apparel-broad → clothing-patagonia-retro-x: [옷장정리떨이] 파타고니아 레트로X 아노락 풀오버"
       ]
     },
     {
@@ -268,22 +279,11 @@
       ]
     },
     {
-      "contaminatedSkuId": "clothing-patagonia-retro-x",
-      "count": 45,
-      "samples": [
-        "clothing-patagonia → clothing-patagonia-retro-x: (S)파타고니아 90s Usa 블루 신칠라 플리스",
-        "clothing-patagonia → clothing-patagonia-retro-x: (L)파타고니아 15s Mexico 블루 기하학 패턴 신칠라",
-        "clothing-patagonia-deep-pile → clothing-patagonia-retro-x: Patagonia 파타고니아 신칠라 딥 파일 재킷입니다",
-        "clothing-patagonia-apparel-broad → clothing-patagonia-retro-x: (S)파타고니아 90s Usa 블루 신칠라 플리스",
-        "clothing-patagonia-apparel-broad → clothing-patagonia-retro-x: (L)파타고니아 15s Mexico 블루 기하학 패턴 신칠라"
-      ]
-    },
-    {
       "contaminatedSkuId": "shoe-mizuno-morelia-neo",
       "count": 44,
       "samples": [
-        "shoe-mizuno-morelia → shoe-mizuno-morelia-neo: 미즈노 모렐리아 네오4 260 선수지급용 미즈노 축구화 메이드인 제팬",
-        "shoe-mizuno-morelia → shoe-mizuno-morelia-neo: 미즈노 모렐리아 네오 4 프로 275"
+        "shoe-mizuno-morelia → shoe-mizuno-morelia-neo: 미즈노 모렐리아 네오4 베타 JPN 245",
+        "shoe-mizuno-morelia → shoe-mizuno-morelia-neo: 미즈노 모렐리아 네오4 260 선수지급용 미즈노 축구화 메이드인 제팬"
       ]
     },
     {
@@ -294,6 +294,17 @@
         "shoe-onrunning-cloud-monster → shoe-onrunning-paf-collab: 온러닝 포스트 아카이브 팩션 (파프) 클라우드 몬스터2 블랙 285",
         "shoe-onrunning-cloud-basic → shoe-onrunning-paf-collab: [280] 온러닝x파프 클라우드몬스터2 쏜 브라운",
         "shoe-onrunning-cloud-basic → shoe-onrunning-paf-collab: 온러닝 포스트 아카이브 팩션 (파프) 클라우드 몬스터2 블랙 285"
+      ]
+    },
+    {
+      "contaminatedSkuId": "clothing-supreme-apparel-broad",
+      "count": 37,
+      "samples": [
+        "bag-margiela-broad → clothing-supreme-apparel-broad: 슈프림 마르지엘라 후드 집업 그린 M",
+        "bag-margiela-broad → clothing-supreme-apparel-broad: [XXL] 슈프림 X 마르지엘라 mm6 스플릿 반팔 블랙 새제품",
+        "clothing-mm6-margiela → clothing-supreme-apparel-broad: [XXL] 슈프림 X 마르지엘라 mm6 스플릿 반팔 블랙 새제품",
+        "clothing-mm6-margiela → clothing-supreme-apparel-broad: [L] 슈프림 x MM6 메종 마르지엘라 스플릿 스타디움 자켓 블랙",
+        "shoe-supreme-nike-airmax-collab → clothing-supreme-apparel-broad: 슈프림 나이키  자수로고 에어맥스 블랙 색상 후드 집업 후드티"
       ]
     },
     {
@@ -308,14 +319,14 @@
       ]
     },
     {
-      "contaminatedSkuId": "clothing-supreme-apparel-broad",
-      "count": 35,
+      "contaminatedSkuId": "shoe-converse-chuck70-cdg-play-white",
+      "count": 36,
       "samples": [
-        "bag-margiela-broad → clothing-supreme-apparel-broad: [XXL] 슈프림 X 마르지엘라 mm6 스플릿 반팔 블랙 새제품",
-        "clothing-mm6-margiela → clothing-supreme-apparel-broad: [XXL] 슈프림 X 마르지엘라 mm6 스플릿 반팔 블랙 새제품",
-        "clothing-mm6-margiela → clothing-supreme-apparel-broad: [L] 슈프림 x MM6 메종 마르지엘라 스플릿 스타디움 자켓 블랙",
-        "shoe-supreme-nike-airmax-collab → clothing-supreme-apparel-broad: 슈프림 나이키  자수로고 에어맥스 블랙 색상 후드 집업 후드티",
-        "shoe-supreme-nike-airmax-collab → clothing-supreme-apparel-broad: 슈프림 나이키 자수로고 에어맥스 그레이 조거 팬츠 면바지 기모"
+        "shoe-converse-chuck70-black → shoe-converse-chuck70-cdg-play-white: 컨버스 꼼데가르송 척테일러 70 블랙 로우",
+        "shoe-converse-chuck70-black → shoe-converse-chuck70-cdg-play-white: 꼼데가르송 플레이 컨버스 척테일러 70 로우 블랙 레드하트",
+        "shoe-converse-chuck70-white → shoe-converse-chuck70-cdg-play-white: [정품] 컨버스 X 꼼데가르송 플레이 척 70 로우 (화이트/275)",
+        "shoe-converse-chuck70-white → shoe-converse-chuck70-cdg-play-white: 컨버스 x 플레이 꼼데가르송 척 70 로우 화이트",
+        "shoe-converse-chuck70-high-broad → shoe-converse-chuck70-cdg-play-white: 컨버스x꼼데가르송 척 70 하이"
       ]
     },
     {
@@ -326,17 +337,6 @@
         "shoe-mizuno-morelia → shoe-mizuno-sala: [판매] 미즈노 모렐리아 살라 엘리트 TF 풋살 축구 260",
         "shoe-mizuno-morelia-neo → shoe-mizuno-sala: 미즈노 모렐리아 네오 살라 베타 JPN TF",
         "shoe-mizuno-morelia-neo → shoe-mizuno-sala: 미즈노 모렐리아 네오  살라 베타 tf 판매합니다"
-      ]
-    },
-    {
-      "contaminatedSkuId": "shoe-converse-chuck70-cdg-play-white",
-      "count": 34,
-      "samples": [
-        "shoe-converse-chuck70-black → shoe-converse-chuck70-cdg-play-white: 컨버스 꼼데가르송 척테일러 70 블랙 로우",
-        "shoe-converse-chuck70-black → shoe-converse-chuck70-cdg-play-white: 꼼데가르송 플레이 컨버스 척테일러 70 로우 블랙 레드하트",
-        "shoe-converse-chuck70-white → shoe-converse-chuck70-cdg-play-white: [정품] 컨버스 X 꼼데가르송 플레이 척 70 로우 (화이트/275)",
-        "shoe-converse-chuck70-white → shoe-converse-chuck70-cdg-play-white: 컨버스 x 플레이 꼼데가르송 척 70 로우 화이트",
-        "shoe-converse-chuck70-high-broad → shoe-converse-chuck70-cdg-play-white: 컨버스x꼼데가르송 척 70 하이"
       ]
     },
     {
@@ -356,8 +356,8 @@
         "shoe-acne-triplo → clothing-acne-apparel: [43] 아크네 페리 벨크로 트리플화이트",
         "clothing-acne-tee → clothing-acne-apparel: 아크네 패치포켓 나그랑 롱 슬리브",
         "clothing-acne-tee → clothing-acne-apparel: 아크네 스튜디오 롱슬리프 패치 긴팔 s",
-        "clothing-acne-broad → clothing-acne-apparel: [OS]아크네 스튜디오 모헤어 머플러(구형로고)",
-        "clothing-acne-broad → clothing-acne-apparel: 아크네 스튜디오 모헤어 체크 머플러"
+        "clothing-acne-broad → clothing-acne-apparel: 아크네 머플러",
+        "clothing-acne-broad → clothing-acne-apparel: 아크네 스튜디오 울 머플러 로즈 멜란지"
       ]
     },
     {
@@ -383,12 +383,12 @@
     },
     {
       "contaminatedSkuId": "clothing-polo-rrl-jacket-leather-suede",
-      "count": 31,
+      "count": 32,
       "samples": [
+        "clothing-polo-rrl-jacket-coat → clothing-polo-rrl-jacket-leather-suede: 더블알엘 러프아웃 나바호 자켓 S",
         "clothing-polo-rrl-jacket-coat → clothing-polo-rrl-jacket-leather-suede: RRL 더블알엘 시어링 칼라 스웨이드 자켓 L",
-        "clothing-polo-rrl-jacket-coat → clothing-polo-rrl-jacket-leather-suede: RRL 25fw 오일 레더 트러커 자켓 L",
-        "clothing-polo-rrl → clothing-polo-rrl-jacket-leather-suede: RRL 더블알엘 시어링 칼라 스웨이드 자켓 L",
-        "clothing-polo-rrl → clothing-polo-rrl-jacket-leather-suede: RRL 더블알엘 나바호 자켓 XL"
+        "clothing-polo-rrl → clothing-polo-rrl-jacket-leather-suede: 더블알엘 러프아웃 나바호 자켓 S",
+        "clothing-polo-rrl → clothing-polo-rrl-jacket-leather-suede: RRL 더블알엘 시어링 칼라 스웨이드 자켓 L"
       ]
     },
     {
@@ -423,6 +423,17 @@
       ]
     },
     {
+      "contaminatedSkuId": "shoe-hoka-bondi-9",
+      "count": 27,
+      "samples": [
+        "shoe-hoka-bondi-8 → shoe-hoka-bondi-9: 정품)새상품 호카 본디9 레귤러 러닝화 블랙&화이트",
+        "shoe-hoka-bondi-x → shoe-hoka-bondi-9: 정품)새상품 호카 본디9 레귤러 러닝화 블랙&화이트",
+        "shoe-hoka-bondi-x → shoe-hoka-bondi-9: 호카 본디 9 x-wide hoka",
+        "shoe-hoka-clifton-9 → shoe-hoka-bondi-9: 정품)새상품 호카 본디9 레귤러 러닝화 블랙&화이트",
+        "shoe-hoka-bondi-7 → shoe-hoka-bondi-9: 정품)새상품 호카 본디9 레귤러 러닝화 블랙&화이트"
+      ]
+    },
+    {
       "contaminatedSkuId": "shoe-puma-palermo",
       "count": 27,
       "samples": [
@@ -431,17 +442,6 @@
         "shoe-puma-palermo-white → shoe-puma-palermo: 푸마 팔레르모 OG 스니커즈 화이트 블랙",
         "shoe-puma-palermo-white → shoe-puma-palermo: 푸마 퓨마 팔레르모 블랙 화이트 230",
         "shoe-puma-suede-classic → shoe-puma-palermo: 새상품)퓨마 팔레르모 스웨이드 운동화240"
-      ]
-    },
-    {
-      "contaminatedSkuId": "shoe-hoka-bondi-9",
-      "count": 26,
-      "samples": [
-        "shoe-hoka-bondi-8 → shoe-hoka-bondi-9: 정품)새상품 호카 본디9 레귤러 러닝화 블랙&화이트",
-        "shoe-hoka-bondi-x → shoe-hoka-bondi-9: 정품)새상품 호카 본디9 레귤러 러닝화 블랙&화이트",
-        "shoe-hoka-bondi-x → shoe-hoka-bondi-9: 호카 본디 9 x-wide hoka",
-        "shoe-hoka-clifton-9 → shoe-hoka-bondi-9: 정품)새상품 호카 본디9 레귤러 러닝화 블랙&화이트",
-        "shoe-hoka-bondi-7 → shoe-hoka-bondi-9: 정품)새상품 호카 본디9 레귤러 러닝화 블랙&화이트"
       ]
     },
     {
@@ -457,10 +457,11 @@
     },
     {
       "contaminatedSkuId": "clothing-moncler-broad",
-      "count": 23,
+      "count": 24,
       "samples": [
         "clothing-arcteryx-gamma → clothing-moncler-broad: 몽클레르 감마 블루 그레이 체크 스냅 버튼 블레이저 자켓",
-        "clothing-arcteryx-gamma → clothing-moncler-broad: 정품 몽클레어 감마블루 디스트레스드 스트라이프 블레이져 자켓"
+        "clothing-arcteryx-gamma → clothing-moncler-broad: 정품 몽클레어 감마블루 디스트레스드 스트라이프 블레이져 자켓",
+        "clothing-canada-goose-broad → clothing-moncler-broad: (정품) 캐나다구스 파카 패딩 XS사이즈 (명품 여자 자켓 점퍼 몽클레어"
       ]
     },
     {
@@ -486,10 +487,10 @@
     },
     {
       "contaminatedSkuId": "clothing-fog-essentials-hoodie",
-      "count": 22,
+      "count": 21,
       "samples": [
-        "clothing-fog-essentials → clothing-fog-essentials-hoodie: [m,L] 피오갓 에센셜 더 코어 컬렉션 후드 스트레치 블랙,그레이",
         "clothing-fog-essentials → clothing-fog-essentials-hoodie: (정품) 피어오브갓 에센셜 골찌 브라운 플리스 오버핏 후드티 XS",
+        "clothing-fog-essentials → clothing-fog-essentials-hoodie: [m,L] 피오갓 에센셜 더 코어 컬렉션 후드 스트레치 블랙,그레이",
         "clothing-fog-essentials-tee → clothing-fog-essentials-hoodie: FOG Essentials 후드티",
         "clothing-fog-essentials-tee → clothing-fog-essentials-hoodie: [새상품] 에센셜 essentials FOG 스모크 후드티 (XL)"
       ]
@@ -513,13 +514,11 @@
       ]
     },
     {
-      "contaminatedSkuId": "clothing-stussy-nike-collab",
-      "count": 19,
+      "contaminatedSkuId": "clothing-fog-essentials-tee",
+      "count": 20,
       "samples": [
-        "clothing-stussy-basic-tee → clothing-stussy-nike-collab: 택포)나이키x스투시 8볼 반팔 티셔츠 화이트 s사이즈 루즈핏",
-        "clothing-stussy-basic-tee → clothing-stussy-nike-collab: 나이키 X 스투시 NRG 반팔 티셔츠",
-        "clothing-stussy-hoodie → clothing-stussy-nike-collab: 나이키 x 스투시 맨투맨 헤더 그레이 L (나투시)",
-        "clothing-stussy-hoodie → clothing-stussy-nike-collab: [S] 나이키 스투시 맨투맨 블랙"
+        "clothing-fog-essentials → clothing-fog-essentials-tee: 피어오브갓 에센셜 롱슬리브 긴팔",
+        "clothing-fog-essentials → clothing-fog-essentials-tee: 피오갓 에센셜 더 코어 반팔티셔츠 (스트레치 리모) (극미중고)"
       ]
     }
   ],
@@ -529,15 +528,7 @@
       26
     ],
     [
-      "꼼데가르송",
-      26
-    ],
-    [
       "아디다스",
-      21
-    ],
-    [
-      "마르지엘라",
       20
     ],
     [
@@ -557,8 +548,12 @@
       19
     ],
     [
+      "꼼데가르송",
+      18
+    ],
+    [
       "루이비통",
-      17
+      16
     ],
     [
       "더블알엘",
@@ -573,20 +568,20 @@
       16
     ],
     [
-      "mlb",
+      "마르지엘라",
       16
     ],
     [
-      "rrl",
+      "mlb",
       15
+    ],
+    [
+      "rrl",
+      14
     ],
     [
       "데님",
       13
-    ],
-    [
-      "스니커즈",
-      12
     ],
     [
       "스투시",
@@ -597,16 +592,12 @@
       12
     ],
     [
-      "메종",
+      "백팩",
       11
     ],
     [
-      "발렌시아가",
-      10
-    ],
-    [
-      "백팩",
-      10
+      "스니커즈",
+      11
     ],
     [
       "mm6",
@@ -617,23 +608,23 @@
       10
     ],
     [
-      "에센셜",
-      10
-    ],
-    [
       "wip",
       10
     ],
     [
-      "메종마르지엘라",
+      "랄프로렌",
       9
     ],
     [
-      "디올",
+      "아크네",
       9
     ],
     [
       "타미힐피거",
+      9
+    ],
+    [
+      "에센셜",
       9
     ],
     [
@@ -649,15 +640,19 @@
       9
     ],
     [
-      "미니",
-      8
-    ],
-    [
       "폴로",
       8
     ],
     [
-      "랄프로렌",
+      "디올",
+      8
+    ],
+    [
+      "메종",
+      8
+    ],
+    [
+      "스튜디오",
       8
     ],
     [
@@ -665,12 +660,20 @@
       8
     ],
     [
+      "신칠라",
+      8
+    ],
+    [
       "코치",
       8
     ],
     [
-      "스톤아일랜드",
-      8
+      "미니",
+      7
+    ],
+    [
+      "지샥",
+      7
     ],
     [
       "오블리크",
@@ -685,11 +688,15 @@
       7
     ],
     [
+      "블루",
+      7
+    ],
+    [
       "샤크",
       7
     ],
     [
-      "피어오브갓",
+      "스톤아일랜드",
       7
     ],
     [
@@ -705,23 +712,15 @@
       6
     ],
     [
-      "보테가베네타",
-      6
-    ],
-    [
-      "키링",
-      6
-    ],
-    [
       "새제품",
       6
     ],
     [
-      "지샥",
+      "글램",
       6
     ],
     [
-      "글램",
+      "슬램",
       6
     ]
   ],
@@ -737,6 +736,7 @@
       "unmatched": 25,
       "topSpread": [],
       "unmatchedSamples": [
+        "[280]나이키 덩크 로우 SP 시라큐스",
         "나이키 덩크 로우 SP 시라큐스 2020 285 28.5",
         "나이키 덩크 로우 시라큐스 250",
         "나이키 덩크 로우 SP 시라큐스 2022",
@@ -745,8 +745,7 @@
         "나이키 덩크 로우 sp 시라큐스 275",
         "[무료배송] 나이키 덩크 로우 SP 시라큐스 2022 265mm",
         "덩크로우 시라큐스 2020/2022",
-        "나이키 덩크 시라큐스 280",
-        "덩크 시라큐스 2020 255"
+        "나이키 덩크 시라큐스 280"
       ]
     },
     {
@@ -830,8 +829,8 @@
       "topSpread": [],
       "unmatchedSamples": [
         "아디다스 이지부스트 700 웨이브 러너",
-        "새상품급 이지부스트700 275",
         "[235] 이지부스트 700",
+        "새상품급 이지부스트700 275",
         "이지부스트 웨이브러너 700 og",
         "아디다스 이지부스트700 웨이브러너 235",
         "이지부스트 700 웨이브러너 295",
@@ -997,14 +996,14 @@
       ],
       "unmatchedSamples": [
         "뉴발란스 1906R V1 씨솔트 레드 255(새상품) 팝니다",
+        "뉴발란스 1906R V1 씨솔트 레드 255(새상품) 팝니다",
+        "뉴발란스1906 메탈릭실버 m1906ree",
         "[270]뉴발란스 1906R 슬레이트 그레이",
-        "[245] 뉴발란스 1906R ganni 판매",
         "뉴발란스 1906 화이트그레이 290사이즈 판매",
         "뉴발란스 1906R 화이트 골드 운동화",
         "뉴발란스 1906R 실버 메탈릭 (265 D)",
         "(가격제안O)뉴발란스 1906R 하버 그레이 실버 메탈릭(290)",
-        "뉴발란스 1906R 화이트 메탈릭 골드 255사이즈",
-        "뉴발란스 1906r 폴카닷 265",
+        "[245] 뉴발란스 1906R ganni 판매",
         "[260] 뉴발란스 x 꼼데가르송 옴므 1906R 화이트"
       ]
     },
@@ -1024,16 +1023,16 @@
         ]
       ],
       "unmatchedSamples": [
+        "[아식스 젤-1130] 남성 캐주얼 런닝화 차콜블랙",
+        "아식스 젤-1130 실용주의 빈티지 밀레니엄 로우 레더 블랙",
+        "아식스 젤-1130 빈티지 트렌드 직물 내마모성 로우탑 러버 스니커즈",
         "아식스 젤 1130 블랙 그래파이트 그레이280",
+        "[새상품] 아식스 UB4-S 젤-1130 데미타스 퍼 그린",
         "아식스 젤 1130 키코 , 240",
         "아식스 젤 1130 화이트 미드나잇 275mm",
-        "[새상품] 아식스 UB4-S 젤-1130 데미타스 퍼 그린",
         "[240] 아식스 젤 1130 화이트 미드나잇",
         "(중고 285) 아식스 UB4-S 젤 1130 데미타스",
-        "아식스 젤 1130 클라우드 그레이 오트밀 260 택 그대로 새상품",
-        "아식스 젤1130  무신사에디션 280 민트급(신발단품)",
-        "아식스 젤1130스틸그레이",
-        "아식스 I4P 젤1130 밍크 글레이셔 270mm"
+        "아식스 젤 1130 클라우드 그레이 오트밀 260 택 그대로 새상품"
       ]
     },
     {
@@ -1052,16 +1051,16 @@
         ]
       ],
       "unmatchedSamples": [
+        "아디다스 가젤 인도어 오렌지 필 클라우드 화이트 W275 (옐로우)",
         "아디다스 가젤 인도어 그린 새상품",
         "245 여성 신발 운동화 아디다스 가젤 인도어 그린 스니커즈",
-        "아디다스 가젤 인도어 블루 퓨전 클라우드 화이트 285",
         "아디다스 가젤 인도어 IH7502  270사이즈",
+        "아디다스 가젤 인도어 블루 퓨전 클라우드 화이트 285",
         "아디다스 가젤 인도어 블루 250",
         "새제품 아디다스 가젤 인도어 브라이트 블루 220",
         "아디다스 / 가젤 인도어 / 네이비 / 265",
         "[245] 아디다스 가젤 인도어 블루 버드",
-        "아디다스 가젤 인도어 블루 265",
-        "아디다스 우먼 가젤 인도어 블리스 핑크 235"
+        "아디다스 가젤 인도어 블루 265"
       ]
     },
     {
@@ -1100,24 +1099,24 @@
       "fetched": 96,
       "tp": 0,
       "tpRate": 0,
-      "unmatched": 92,
+      "unmatched": 91,
       "topSpread": [
         [
           "shoe-nike-sakai-collab",
-          4
+          5
         ]
       ],
       "unmatchedSamples": [
+        "나이키 코르테즈 블랙 스니커즈 새상품 lp-1000",
         "[285] 나이키 코르테즈",
+        "나이키 단화 스니커즈 코르테즈 270",
         "나이키 코르테즈 실버 295",
         "나이키 코르테즈 스웨이드 네이비 235mm",
         "[새상품] 나이키 코르테즈 화이트 바이올렛 DN1791-105 225",
         "[미착용][새상품] 나이키 코르테즈 레더 807471-101 235",
-        "나이키 코르테즈 레더 SE 코카오 브라운",
         "나이키 코르테즈",
         "나이키 코르테즈코랄 245새상품",
-        "(새상품) 나이키 정품 여성 펀칭로고 가죽 코르테즈 250사이즈",
-        "나이키 단화 스니커즈 코르테즈 270"
+        "(새상품) 나이키 정품 여성 펀칭로고 가죽 코르테즈 250사이즈"
       ]
     },
     {
@@ -1137,6 +1136,7 @@
       ],
       "unmatchedSamples": [
         "새상품) 265 나이키 줌 베이퍼플라이 넥스트4 런닝화",
+        "나이키 머큐리얼 슈퍼플라이10 FG 245",
         "나이키 머큐리얼 줌 슈퍼플라이10 엘리트 FG NU1 300mm 판매",
         "[285] 나이키 머큐리얼 슈퍼플라이 6 CR7 CR7STIANO FG",
         "나이키 슈퍼플라이 머큐리얼 다크 그레이 (250cm)",
@@ -1144,8 +1144,7 @@
         "나이키 슈퍼플라이 머큐리얼 다크 옵시디언 (250cm)",
         "최상급 나이키 머큐리얼 슈퍼플라이5 네이마르 FG [265] 축구화",
         "머큐리얼 슈퍼플라이 V SE FG 260사이즈 팝니다. (EA스포츠 콜라",
-        "나이키 머큐리얼 슈퍼플라이14 fg 엘리트",
-        "나이키 머큐리얼 슈퍼플라이 7 엘리트 FG"
+        "나이키 머큐리얼 슈퍼플라이14 fg 엘리트"
       ]
     },
     {
@@ -1159,11 +1158,11 @@
       "unmatched": 96,
       "topSpread": [],
       "unmatchedSamples": [
-        "발렌시아가 스피드러너 그래피티",
         "발렌시아가 스피드러너2.0 라잇블루 사이즈 40 미사용",
+        "발렌시아가 스피드러너 그래피티",
         "25fw 발렌시아가 스피드러너 42",
-        "발렌시아가 스피드러너 블랙 급처",
         "[280] 발렌시아가 스피드 트레이너 (스피드러너) 검흰 43",
+        "발렌시아가 스피드러너 블랙 급처",
         "[급처]발렌시아가 스피드러너 43",
         "발렌시아가 스피드러너 블랙",
         "발렌시아가 정품 스피드러너 블랙 운동화 39",
@@ -1243,8 +1242,8 @@
       ],
       "unmatchedSamples": [
         "루이비통  지피월릿",
-        "루이비통 쉐도우 모노그램 레더 브라짜 월릿 장지갑 M62900",
         "루이비통 장지갑",
+        "루이비통 쉐도우 모노그램 레더 브라짜 월릿 장지갑 M62900",
         "루이비통 이클립스 잡지갑 풀구성 판매합니다",
         "진짜착한가격[상태굿] 루이비통 지피월릿 장지갑 모노그램 지퍼장지갑",
         "루이비통 지퍼월릿 M42616",
@@ -1322,8 +1321,8 @@
         "(새제품) 살로몬 220/ XT-6익스팬스 인디아잉크고스트그레이",
         "살로몬 XT-6 익스팬스 알로이 260",
         "[270] 살로몬 XT-6 익스팬스 알로이 콰이엇 쉐이드",
-        "사용감없음 245 살로몬 x 샌디 리앙 XT-6 익스팬스 크래들 핑크",
         "살로몬 XT-6 익스팬스 알로이 콰이엇 쉐이드 270사이즈 판매",
+        "사용감없음 245 살로몬 x 샌디 리앙 XT-6 익스팬스 크래들 핑크",
         "살로몬 XT6 익스팬스 알로이 콰이엇 쉐이드 295사이즈",
         "살로몬 x 꼼데 가르송 XT-6 익스팬스 플랫폼  Salomon CDG",
         "살로몬 XT-6 익스팬스 바닐라 아이스 화이트 265 판매합니다",
@@ -1378,16 +1377,16 @@
         ]
       ],
       "unmatchedSamples": [
+        "[아식스 젤-1130] 남성 캐주얼 런닝화 차콜블랙",
+        "아식스 젤-1130 실용주의 빈티지 밀레니엄 로우 레더 블랙",
+        "아식스 젤-1130 빈티지 트렌드 직물 내마모성 로우탑 러버 스니커즈",
         "아식스 젤 1130 블랙 그래파이트 그레이280",
+        "[새상품] 아식스 UB4-S 젤-1130 데미타스 퍼 그린",
         "아식스 젤 1130 키코 , 240",
         "아식스 젤 1130 화이트 미드나잇 275mm",
-        "[새상품] 아식스 UB4-S 젤-1130 데미타스 퍼 그린",
         "[240] 아식스 젤 1130 화이트 미드나잇",
         "(중고 285) 아식스 UB4-S 젤 1130 데미타스",
-        "아식스 젤 1130 클라우드 그레이 오트밀 260 택 그대로 새상품",
-        "아식스 젤1130  무신사에디션 280 민트급(신발단품)",
-        "아식스 젤1130스틸그레이",
-        "아식스 I4P 젤1130 밍크 글레이셔 270mm"
+        "아식스 젤 1130 클라우드 그레이 오트밀 260 택 그대로 새상품"
       ]
     },
     {
@@ -1401,16 +1400,16 @@
       "unmatched": 96,
       "topSpread": [],
       "unmatchedSamples": [
+        "아식스 세실리에 반센 230사이즈 새상품 판매",
+        "[새상품230]아식스 세실리에 반센 젤 퀀텀 360 블랙",
         "아식스 x 세실리에 반센 새상품",
-        "아식스 세실리에반센 230 새상품급",
         "[240] 아식스 x 세실리에 반센 GT-2160 퓨어 실버 미드나잇",
+        "아식스 세실리에반센 230 새상품급",
         "아식스 세실리에반센 240",
         "(240)아식스 세실리에반센",
         "아식스 세실리에반센  GT-2160 화이트 하바네로 235 새상품",
         "아식스 x 세실리에 반센 젤-테레인 MT 미드나잇 250 새상품",
-        "아식스 x 세실리에 반센 젤 큐물러스 16 블랙 235mm",
-        "아식스 x 세실리에 반센 콜라보젤 코뮬러스 16 SSCB 플라워",
-        "아식스 x 세실리에 반센 GT-2160 화이트 240사이즈"
+        "아식스 x 세실리에 반센 젤 큐물러스 16 블랙 235mm"
       ]
     },
     {
@@ -1480,16 +1479,16 @@
         ]
       ],
       "unmatchedSamples": [
+        "디스커버리 익스페디션 조거플렉스 어글리 운동화 245",
         "디스커버리 익스페디션 블랙 맨투맨 티셔츠 105 (ng630",
-        "디스커버리 익스페디션 마운틴쿡숏패딩 블랙  드라이클리닝 완",
         "디스커버리 익스페디션 남성 운동화260",
-        "빈티지하서 250 디스커버리 익스페디션 조거 플렉스 스니커즈 운동화",
         "디스커버리 익스페디션 겨자 노란색 반팔티 95사이즈",
+        "빈티지하서 250 디스커버리 익스페디션 조거 플렉스 스니커즈 운동화",
         "디스커버리 익스페디션 블랙 샌들형 운동화 230",
-        "매장정품 디스커버리익스페디션 후드바람막이집업 M95",
+        "디스커버리 익스페디션 마운틴쿡숏패딩 블랙  드라이클리닝 완",
         "디스커버리 익스페디션 덕다운 패딩 M",
-        "디스커버리 익스페디션 오트밀 색상 반팔티 105",
-        "디스커버리 익스페디션 블랙 티셔츠"
+        "매장정품 디스커버리익스페디션 후드바람막이집업 M95",
+        "디스커버리 익스페디션 오트밀 색상 반팔티 105"
       ]
     },
     {
@@ -1518,63 +1517,6 @@
   ],
   "highTypeUnknownSkus": [
     {
-      "skuId": "bag-cdg-broad",
-      "category": "bag",
-      "fetched": 96,
-      "typeUnknown": 95,
-      "typeUnknownRate": 99,
-      "typeUnknownSamples": [
-        "정품)새상품 꼼데가르송 반팔 레드와펜 남녀공용",
-        "꼼데가르송 플레이 하트 반팔 티셔츠 흰/검",
-        "꼼데 롱슬리브",
-        "꼼데가르송 롱슬리브 s",
-        "꼼데가르송",
-        "#꼼데 남녀공용 롱슬리브(새상품/정품)판매합니다~!!",
-        "#꼼데 블랙와펜 롱슬리브(정품/새상품) 판매합니다~",
-        "[M]슈프림 x 꼼데가르송 투톤체크셔츠",
-        "[290]꼼데가르송 x 뉴발란스 ML610SCD",
-        "꼼데가르송 정품 플레이 블랙 반팔티"
-      ]
-    },
-    {
-      "skuId": "bag-balenciaga-broad",
-      "category": "bag",
-      "fetched": 96,
-      "typeUnknown": 91,
-      "typeUnknownRate": 95,
-      "typeUnknownSamples": [
-        "발렌시아가 그래피티 오버사이즈 데님자켓 2사이즈",
-        "발렌시아가 로고 바람막이 자켓 M (105)",
-        "발렌시아가 x 아디다스 발디다스 빅로고 반팔 티셔츠 흰색",
-        "발렌시아가 타투 후드집업",
-        "발렌시아가 네오 클래식 시티백 그레이 새상품",
-        "발렌시아가 3B 풋볼 오버사이즈V넥 티셔츠 블랙 정품",
-        "발렌시아가 안경",
-        "발렌시아가 트렌치코트",
-        "발렌시아가 후드티 팝니다",
-        "발렌시아가 백로고 셔츠"
-      ]
-    },
-    {
-      "skuId": "bag-margiela-broad",
-      "category": "bag",
-      "fetched": 96,
-      "typeUnknown": 74,
-      "typeUnknownRate": 77,
-      "typeUnknownSamples": [
-        "메종마르지엘라 레이지선데이모닝 오드뚜왈렛 100ml (미개봉새상품)",
-        "메종마르지엘라 재즈클럽 EDT 100ml 미사용새제품",
-        "마르지엘라 페인트 스플래터 팬츠 36",
-        "메종마르지엘라 반팔",
-        "메종마르지엘라 세일링데이 오드뚜왈렛 100ml (미개봉새제품)",
-        "메종 마르지엘라 캐시미어 가디건 실버",
-        "살로몬 마르지엘라 X-ALP 블랙 250",
-        "마르지엘라 렉탱글 링 오닉스 925 M",
-        "(50)메종마르지엘라 데님워싱 엘보패치 맨투맨",
-        "메종 마르지엘라x젠틀몬스터 선글라스 MM202 블랙"
-      ]
-    },
-    {
       "skuId": "clothing-fila-apparel",
       "category": "clothing",
       "fetched": 40,
@@ -1594,22 +1536,22 @@
       ]
     },
     {
-      "skuId": "bag-bottega-broad",
-      "category": "bag",
+      "skuId": "clothing-arcteryx",
+      "category": "clothing",
       "fetched": 96,
-      "typeUnknown": 49,
-      "typeUnknownRate": 51,
+      "typeUnknown": 45,
+      "typeUnknownRate": 47,
       "typeUnknownSamples": [
-        "보테가베네타 패딩 카세트백 미니",
-        "[정품]보테가베네타 유광 카세트백 패러킷",
-        "보테가베네타 안디아모 가방",
-        "보테가베네타 안디아모 미디움 가방",
-        "보테가 베네타 데님 자켓&팬츠 48",
-        "보테가베네타 퍼들부츠 블랙 39",
-        "보테가베네타 블랙 선글라스",
-        "(정품) 보테가 베네타 나파 레더 매듭 키링 키홀더",
-        "정품 보테가 베네타 스니커즈 신발 EU 43 사이즈 270-280 팝니다",
-        "Bottega Veneta 체크 패턴 스니커즈36(230)정품"
+        "아크테릭스 맨티스 16 백팩",
+        "[구매] 카키스 아크테릭스 텀블러 블랙 새상품 구매합니다!!!",
+        "아크테릭스 하네스 ar-395a 남성 하네스 M",
+        "아크테릭스 리프 프로 택티컬 패치",
+        "아크테릭스 리프 콜드 wx lt gen1",
+        "아크테릭스 빔즈 웨이스트백",
+        "아크테릭스 베타 LT 페놈 L",
+        "아크테릭스 여성 슬리브 다크블루",
+        "아크테릭스 그로토 토크",
+        "아크테릭스 남자 스포츠 장목양말 9켤레"
       ]
     },
     {
@@ -1619,35 +1561,35 @@
       "typeUnknown": 45,
       "typeUnknownRate": 47,
       "typeUnknownSamples": [
+        "나이키 토론토 블루제이스 mlb캡",
         "새제품 나이키 주니어 90 95 MLB 휴스턴 애스트로스 유니폼/P01",
-        "MLB 나이키 샌프란시스코 자이언츠 이정후 유니폼 팝니다",
         "나이키 mlb 샌프란시스코 스넬 베이퍼리미티드 xxl",
+        "MLB 나이키 샌프란시스코 자이언츠 이정후 유니폼 팝니다",
         "나이키 MLB 샌프란시스코 베이퍼리미티드 유니폼 져지 xxl",
         "나이키 MLB 신시내티 시티커넥트 유니폼 져지 xl",
         "나이키 MLB  휴스턴 알튜베 베이퍼리미티드 유니폼 xxl",
         "나이키 MLB 뉴욕 양키스 유니폼 저지 엘리트  선수지급용 44",
         "MLB 나이키 필라델피아 필리스 웜업",
-        "Mlb 나이키",
         "(새상품) 샌디에고 후안소토 MLB 밀리터리 레플리카 판매 (나이키)"
       ]
     },
     {
-      "skuId": "clothing-arcteryx",
+      "skuId": "clothing-acne-broad",
       "category": "clothing",
       "fetched": 96,
-      "typeUnknown": 42,
-      "typeUnknownRate": 44,
+      "typeUnknown": 40,
+      "typeUnknownRate": 42,
       "typeUnknownSamples": [
-        "아크테릭스 리프 콜드 wx lt gen1",
-        "아크테릭스 베타 LT 페놈 L",
-        "아크테릭스 남자 스포츠 장목양말 9켤레",
-        "아크테릭스 남자 스포츠 장목양말 9켤레",
-        "아크테릭스 ar 헤비웨이트",
-        "아크테릭스 노반 LD3 (285사이즈)",
-        "[M] 아크테릭스 제타 SL",
-        "아크테릭스 노반 브림 햇",
-        "아크테릭스 프로톤 라이트웨이트 M 사이즈 블랙  상티 9.0/10  사진",
-        "아크테릭스 여성 슬리브 다크블루"
+        "아크네 머플러",
+        "아크네 스튜디오 울 머플러 로즈 멜란지",
+        "아크네 머플러 블랙",
+        "아크네 스튜디오 페일 라일락 페이스 스니커즈 230",
+        "아크네 스튜디오 데님 토트백",
+        "아크네 스튜디오 모헤어 체크 머플러",
+        "[OS]아크네 스튜디오 모헤어 머플러(구형로고)",
+        "아크네스튜디오 무스탕",
+        "아크네스튜디오 바디백 라벤더퍼플 남녀공용",
+        "아크네 스튜디오 그린 머플러"
       ]
     },
     {
@@ -1676,35 +1618,16 @@
       "typeUnknown": 39,
       "typeUnknownRate": 41,
       "typeUnknownSamples": [
+        "MM6 독일군 마르지엘라 독일군 41",
+        "MM6 Maison Margiela 38",
+        "MM6 마르지엘라  / 1",
         "살로몬 x MM6 메종 마르지엘라 XT-MM6 바닐라 아이스 블랙 230",
         "살로몬 MM6 마르지엘라 질레 ADV 스킨 5 미개봉 새상품",
         "메종마르지엘라 mm6 숫자 로고 크로스백 스몰백",
         "슈프림 x MM6 메종 마르지엘라 스플릿 6-패널 블랙",
         "살로몬 x MM6 메종 마르지엘라 XT-15 블랙",
         "[285,uk9.5] 닥터마틴 X 메종 마르지엘라 부츠 블랙 mm6",
-        "MM6 메종 마르지엘라 재패니즈 백",
-        "MM6 메종마르지엘라 재페니즈 스몰 토드백",
-        "살로몬 x MM6 메종 마르지엘라 크로스 로우 블랙",
-        "마르지엘라 MM6 퍼 이펙트 네클리스"
-      ]
-    },
-    {
-      "skuId": "clothing-acne-broad",
-      "category": "clothing",
-      "fetched": 96,
-      "typeUnknown": 39,
-      "typeUnknownRate": 41,
-      "typeUnknownSamples": [
-        "아크네 스튜디오 페일 라일락 페이스 스니커즈 230",
-        "[OS]아크네 스튜디오 모헤어 머플러(구형로고)",
-        "아크네 스튜디오 모헤어 체크 머플러",
-        "아크네스튜디오 무스탕",
-        "동아제약 아크네 프로 겔제 30ml",
-        "가격내림끝(길고 풍성한) 아크네스튜디오 목도리 머플러 acne",
-        "아크네 스튜디오 그린 머플러",
-        "Acne Studios 울 머플러 회색",
-        "아크네스튜디오 바디백 라벤더퍼플 남녀공용",
-        "아크네스튜디오 페이스로고 셋업 100/30"
+        "MM6 메종 마르지엘라 재패니즈 백"
       ]
     },
     {

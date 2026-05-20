@@ -7903,6 +7903,11 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "샘플", "vial", "공병", "재현향", "type", "마이퍼퓸", "tabi", "타비", "salomon", "살로몬", "닥터마틴", "가방", "bag", "신발", "shoe",
       // Wave 238 (2026-05-19): production audit — "준지 롱야상 MM67" 매물이 MM6 SKU 매칭 (Juun.J 모델).
       "준지", "juun", "juun.j", "juun j",
+      // Wave 269 (2026-05-20): API sweep — 39/96 type_unknown 매물 중 mm6 독일군 (Margiela 독일군 sneaker) catch.
+      //   독일군 = 신발 (replica/military style) → 의류 SKU에서 격리.
+      "독일군", "german army", "리오파", "reproduction", "리프로덕션",
+      // 토드백/재패니즈 백 (가방, 별도 SKU 후보)
+      "토드백", "토드 백", "재패니즈", "재페니즈", "japanese", "japanese bag",
     ],
     msrpKrw: 290000, released: 2020,
   },
@@ -8538,8 +8543,15 @@ export const CATALOG: Sku[] = [
     brand: "Tommy Hilfiger", category: "bag", laneKey: "tommy_hilfiger_bag",
     modelName: "Tommy Hilfiger Bag (Cross/Tote/Nylon)",
     aliases: ["Tommy Hilfiger Bag", "타미힐피거 가방", "토미힐피거 백"],
-    mustContain: [["tommy hilfiger", "토미힐피거", "타미힐피거"], ["크로스백", "cross", "토트백", "tote", "나일론", "여행가방"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "시계", "watch"],
+    // Wave 269 (2026-05-20): "가방" 단순 매물도 catch — mustContain group 2 확장.
+    mustContain: [["tommy hilfiger", "토미힐피거", "타미힐피거"], ["크로스백", "cross", "토트백", "tote", "나일론", "여행가방", "가방", "백팩", "backpack", "숄더", "shoulder"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "시계", "watch",
+      // 의류 (Wave 269 API sweep — 39%)
+      "반팔", "반팔티", "티셔츠", "tee ", "맨투맨", "후드티", "셔츠 ", "자켓", "벨트",
+      // 향수
+      "edt", "edp", "오드뚜왈렛", "100ml", "50ml",
+    ],
+    defaultProductType: "shoulder", // Wave 269: 단순 "가방" 매물 fallback
     msrpKrw: 100000, released: 2020,
   },
   // Wave 211 (2026-05-19): 나이키 Air Max 시리즈 + Blazer 매물 폭발적.
@@ -8641,7 +8653,13 @@ export const CATALOG: Sku[] = [
     modelName: "Adidas Shering Hobo Bag (시그니처)",
     aliases: ["Adidas Shering", "아디다스 셔링백", "Adidas Hobo", "아디다스 호보백"],
     mustContain: [["adidas", "아디다스"], ["셔링", "shering", "호보", "hobo"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "신발", "스니커즈", "운동화"],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "신발", "스니커즈", "운동화",
+      // Wave 269 (2026-05-20): API sweep — "아디다스 백셔링 데님 셔츠 우먼즈" 의류 매물 잘못 매칭.
+      //   백셔링 = 의류 셔링 디테일 (러플 셔츠 등). 가방 SKU 격리.
+      "데님 셔츠", "데님셔츠", "데님 자켓", "셔츠 우먼즈", "백셔링 데님", "러플 셔츠",
+      "반팔", "반팔티", "티셔츠", "tee ", "맨투맨", "후드티",
+    ],
+    defaultProductType: "shoulder", // Wave 269: 호보백 = shoulder
     msrpKrw: 89000, released: 2023,
   },
   {

@@ -206,6 +206,10 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "맨투맨", "sweat",
       // 화장품
       "립밤", "립스틱", "토너", "에센스",
+      // Wave 269 (2026-05-20): API sweep — 머플러/스카프/벨트 액세서리 격리.
+      //   매물 "아크네 스튜디오 울 머플러 로즈 멜란지" 같은 액세서리는 의류 시세군 ≠.
+      "머플러", "muffler", "스카프", "scarf", "벨트", "belt", "키링", "키체인",
+      "쇼핑백", "shopping bag", "쇼핑 백",
     ],
     msrpKrw: 590000,
     released: 1996,

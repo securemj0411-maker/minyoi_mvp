@@ -429,7 +429,8 @@ function parseBagProductType(text: string): BagProductType {
   // Wave 266 (2026-05-20): 캔버스 백 / 토트 백 영문 / 빈티지 토트 보강.
   // Wave 267b (2026-05-20): 토드백/japanese bag/재패니즈/명품 쇼핑백 보강 (API sweep 발견).
   // Wave 268 (2026-05-20): 서류 가방/비즈니스 백/세컨 백/세컨드 백/포트폴리오/도큐먼트 케이스 보강 (API sweep).
-  if (/토트|tote\b|쇼퍼|shopper|탑 ?핸들|top ?handle|핸드 ?백|handbag|캔버스 ?백|canvas ?bag|마트 ?백|쇼핑 ?백|토드 ?백|todd ?bag|재패니즈 ?백|japanese ?bag|명품 ?쇼핑백|쇼핑백|서류 ?가방|서류 ?백|business ?bag|비즈니스 ?백|세컨 ?백|세컨드 ?백|포트폴리오 ?백|portfolio ?bag|도큐먼트 ?케이스|document ?case|브리프 ?케이스|briefcase/.test(t)) return "tote";
+  // Wave 269 (2026-05-20): PVC 백 (CDG/구찌 콜라보) + 라피아 백 / 스트로 백 (여름 토트) 보강.
+  if (/토트|tote\b|쇼퍼|shopper|탑 ?핸들|top ?handle|핸드 ?백|handbag|캔버스 ?백|canvas ?bag|마트 ?백|쇼핑 ?백|토드 ?백|todd ?bag|재패니즈 ?백|japanese ?bag|명품 ?쇼핑백|쇼핑백|서류 ?가방|서류 ?백|business ?bag|비즈니스 ?백|세컨 ?백|세컨드 ?백|포트폴리오 ?백|portfolio ?bag|도큐먼트 ?케이스|document ?case|브리프 ?케이스|briefcase|pvc ?백|pvc ?bag|투명 ?백|투명 ?가방|라피아 ?백|raffia|스트로 ?백|straw ?bag|왁스 ?백|wax ?bag/.test(t)) return "tote";
   // backpack — 빅샷/보레알리스 (TNF 모델명).
   // Wave 266: 백오프 ?팩 / 데이팩 / 캠퍼 백 / 트래블 백 / 캐리 백 / 학생 가방 (school bag) / 책가방 보강.
   if (/백팩|backpack|배낭|knapsack|빅샷|big ?shot|보레알리스|borealis(?!\s*sling)|핫샷|hot ?shot|데이 ?팩|day ?pack|캠퍼 ?백|camper ?bag|책 ?가방|학생 ?가방|school ?bag|학생가방/.test(t)) return "backpack";
