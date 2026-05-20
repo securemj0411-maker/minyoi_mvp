@@ -580,16 +580,17 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
       : diff < 0
         ? `${krw(diffAbs)} 높음`
         : "시세와 비슷";
+    const groupLabel = conditionComparisonGroupLabel(card);
     const title = diff > 0
-      ? "상태가 비슷한 매물보다 싸게 나왔어요"
+      ? `${groupLabel} 중에서도 싸게 나왔어요`
       : diff < 0
-        ? "상태가 비슷한 매물보다 높아요"
-        : "상태가 비슷한 매물과 비슷해요";
+        ? `${groupLabel} 중에서는 가격이 높아요`
+        : `${groupLabel} 시세와 비슷해요`;
     const conditionBasis = conditionBasisSentence(card);
     const body = diff > 0
-      ? `${conditionBasis} 이 상품은 그 기준보다 ${krw(diffAbs)} 싸게 나왔어요.`
+      ? `${conditionBasis} 이 매물은 그 기준보다 ${krw(diffAbs)} 싸요.`
       : diff < 0
-        ? `${conditionBasis} 이 상품은 그 기준보다 ${krw(diffAbs)} 높아요.`
+        ? `${conditionBasis} 이 매물은 그 기준보다 ${krw(diffAbs)} 높아요.`
         : `${conditionBasis} 이 상품은 그 기준과 거의 비슷한 가격이에요.`;
 
     return {
@@ -597,7 +598,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
       title,
       metric,
       metricLabel: `비슷한 상태 시세 ${krw(median)} · 이 매물 ${krw(card.price)}`,
-      body: `${body} 아래에 보이는 매물들이 이 판단의 기준이에요.`,
+      body: `${body} 아래에는 기준이 된 매물을 비싼 순으로 보여드릴게요.`,
       note: sampleCount > 0
         ? `비교 표본 ${sampleCount.toLocaleString("ko-KR")}건 중 일부를 먼저 보여드릴게요.`
         : "상태 분류와 표본 수에 따라 시세 판단은 달라질 수 있어요.",
@@ -1236,6 +1237,20 @@ function marketConditionLabel(card: RevealCard) {
   return market?.conditionLabel ?? "같은 상태";
 }
 
+function conditionComparisonGroupLabel(card: RevealCard) {
+  const market = card.marketBasis;
+  if (market?.priceSource === "reference") return "미개봉품";
+  const conditionClass = market?.conditionClass ?? null;
+  if (conditionClass === "unopened") return "미개봉품";
+  if (conditionClass === "mint") return "S급 상품";
+  if (conditionClass === "clean") return "A급 상품";
+  if (conditionClass === "normal") return "보통 상태 상품";
+  if (conditionClass === "worn") return "사용감 있는 상품";
+  if (conditionClass === "flawed") return "하자 있는 상품";
+  if (conditionClass === "low_batt") return "배터리 약한 상품";
+  return "비슷한 상태 상품";
+}
+
 function conditionProductLabel(card: RevealCard) {
   const market = card.marketBasis;
   if (market?.priceSource === "reference") return "미개봉품";
@@ -1250,21 +1265,41 @@ function conditionProductLabel(card: RevealCard) {
   return `${marketConditionLabel(card)} 상품`;
 }
 
+function conditionComparisonMethodLine(card: RevealCard) {
+  const market = card.marketBasis;
+  if (market?.priceSource === "reference" || market?.conditionClass === "unopened") {
+    return "새상품·단순개봉처럼 미개봉으로 보이는 매물만 묶어서 봤어요.";
+  }
+  if (market?.conditionClass === "mint") {
+    return "실사용 흔적이 거의 없는 S급 매물끼리 먼저 비교했어요.";
+  }
+  if (market?.conditionClass === "clean") {
+    return "깨끗한 편인 A급 매물끼리 먼저 비교했어요.";
+  }
+  if (market?.conditionClass === "normal") {
+    return "보통 사용감이 있는 매물끼리 따로 비교했어요.";
+  }
+  if (market?.conditionClass === "worn") {
+    return "사용감이 어느 정도 있는 상품끼리 따로 비교했어요.";
+  }
+  if (market?.conditionClass === "flawed") {
+    return "하자 있는 상품은 깨끗한 상품 시세를 섞지 않고 따로 비교했어요.";
+  }
+  if (market?.conditionClass === "low_batt") {
+    return "배터리 상태가 약한 상품끼리 따로 비교했어요.";
+  }
+  return "새상품과 중고 상태를 섞지 않고, 비슷한 상태끼리 먼저 비교했어요.";
+}
+
 function conditionBasisSentence(card: RevealCard) {
   const market = card.marketBasis;
   const productLabel = conditionProductLabel(card);
-  const condition = marketConditionLabel(card);
+  const groupLabel = conditionComparisonGroupLabel(card);
   const model = market?.label ?? card.skuName;
   if (market?.priceSource === "reference") {
-    return `이 상품은 ${productLabel}이에요. 득템잡이는 다나와 새 가격과 번개장터에 있는 ${model} ${condition} 흐름을 같이 보면서 시세를 측정했어요.`;
+    return `이 상품은 ${productLabel}이에요. 득템잡이는 다나와 새 가격과 번개장터에 있는 ${model} ${groupLabel} 흐름을 같이 보면서 시세를 측정했어요.`;
   }
-  if (market?.conditionClass === "flawed") {
-    return `이 상품은 ${productLabel}이에요. 그래서 깨끗한 상품 시세를 섞지 않고, 번개장터에 있는 ${model} ${condition}끼리 따로 비교했어요.`;
-  }
-  if (market?.conditionClass === "mint") {
-    return `이 상품은 ${productLabel}이에요. 득템잡이는 번개장터에 있는 ${model} ${condition} 상품을 기준으로 시세를 분석했어요.`;
-  }
-  return `이 상품은 ${productLabel}이에요. 득템잡이는 번개장터에 있는 ${model} ${condition} 매물을 기준으로 시세를 측정했어요.`;
+  return `이 상품은 ${productLabel}이에요. 득템잡이는 번개장터에 있는 ${model} ${groupLabel}끼리 시세를 비교했어요.`;
 }
 
 function marketPricePositionLine(card: RevealCard) {
@@ -1272,9 +1307,10 @@ function marketPricePositionLine(card: RevealCard) {
   if (median == null || median <= 0 || card.price <= 0) return "가격 판단은 비교 매물과 상태 기준을 같이 보고 있어요.";
   const diff = median - card.price;
   const diffAbs = Math.abs(diff);
-  if (diff > 0) return `같은 상태 시세보다 ${krw(diffAbs)} 싸게 나온 편이에요.`;
-  if (diff < 0) return `같은 상태 시세보다 ${krw(diffAbs)} 높아서 가격은 더 보수적으로 봐야 해요.`;
-  return "같은 상태 시세와 거의 비슷한 가격이에요.";
+  const groupLabel = conditionComparisonGroupLabel(card);
+  if (diff > 0) return `${groupLabel} 시세보다 ${krw(diffAbs)} 싸게 나온 편이에요.`;
+  if (diff < 0) return `${groupLabel} 시세보다 ${krw(diffAbs)} 높아서 가격은 더 보수적으로 봐야 해요.`;
+  return `${groupLabel} 시세와 거의 비슷한 가격이에요.`;
 }
 
 function marketBasisPlainSentence(card: RevealCard) {
@@ -4218,7 +4254,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
         if (cancelled) return;
         const filtered = (j.comparables ?? [])
           .filter((item) => item.listingState !== "disappeared")
-          .sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
+          .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
           .slice(0, 16);
         setListings(filtered);
       })
@@ -4310,7 +4346,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
 
 function BeginnerGuideConditionBasisCard({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
-  const condition = marketConditionLabel(card);
+  const condition = conditionComparisonGroupLabel(card);
   const sampleCount = market?.sampleCount ?? 0;
   const sourceText = market?.priceSource === "reference" ? "다나와 + 번개장터" : "번개장터";
 
@@ -4330,10 +4366,10 @@ function BeginnerGuideConditionBasisCard({ card }: { card: RevealCard }) {
             </span>
           </div>
           <div className="mt-2 break-keep text-[14px] font-black leading-5 text-[#172019] dark:text-zinc-50">
-            상태까지 맞춰서 시세를 봤어요
+            {condition}끼리 비교했어요
           </div>
           <p className="mt-1.5 break-keep text-[12.5px] font-semibold leading-5 text-[#546252] dark:text-zinc-300">
-            {conditionBasisSentence(card)}
+            {conditionComparisonMethodLine(card)}
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-black">
             <span className="rounded-full bg-white/82 px-2 py-0.5 tabular-nums text-[#344136] ring-1 ring-[#dfe8da] dark:bg-zinc-950/50 dark:text-zinc-200 dark:ring-zinc-800">
@@ -4359,11 +4395,12 @@ function BeginnerGuideMarketVisual({ card }: { card: RevealCard }) {
 }
 
 function BeginnerGuideTrendVisual({ card }: { card: RevealCard }) {
+  const groupLabel = conditionComparisonGroupLabel(card);
   return (
     <div data-beginner-guide-market-trend className="mt-4 overflow-hidden rounded-[22px] bg-white/84 p-3 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">시세 그래프</div>
-        <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">같은 상태 30일 추이</div>
+        <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{groupLabel} 30일 추이</div>
       </div>
       <MarketHistoryChart
         comparableKey={card.marketBasis?.comparableKey ?? null}
