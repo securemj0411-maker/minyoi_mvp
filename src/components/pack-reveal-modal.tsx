@@ -3216,6 +3216,7 @@ function RevealCardItem({
   // localStorage 기억 — 한 번 선택하면 다음 모달도 자동.
   // 본질 = 일반인 친화 단일 톤 유지 + "더 자세히 보고 싶은 사용자" 옵션. 전문가 통계 도구 X (별 wave).
   const [mode, setMode] = useState<"simple" | "detailed">("simple");
+  const profitCalculationRef = useRef<HTMLDivElement | null>(null);
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const netPct = netProfitPercent(card);
   // Wave 394.7.f (외부 review 2라운드 #3): brand 가품 위험 큰 카테고리는 "조건부 매입 OK".
@@ -3259,11 +3260,11 @@ function RevealCardItem({
   useEffect(() => {
     setDealExpanded(mode === "detailed");
   }, [mode]);
-  const toggleMode = useCallback(() => {
-    setMode((prev) => {
-      const next = prev === "simple" ? "detailed" : "simple";
-      try { localStorage.setItem("minyoi_modal_mode", next); } catch {}
-      return next;
+  const showProfitCalculationBasis = useCallback(() => {
+    setMode("detailed");
+    try { localStorage.setItem("minyoi_modal_mode", "detailed"); } catch {}
+    window.requestAnimationFrame(() => {
+      profitCalculationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }, []);
 
@@ -3376,7 +3377,7 @@ function RevealCardItem({
                 {/* 큰 흰 버튼 — 계산 근거 토글. 비교 매물은 바로 아래 독립 섹션에서 전담. */}
                 <button
                   type="button"
-                  onClick={toggleMode}
+                  onClick={showProfitCalculationBasis}
                   style={{
                     marginTop: 14,
                     width: "100%",
@@ -3399,8 +3400,8 @@ function RevealCardItem({
                     <circle cx="11" cy="11" r="7" />
                     <path d="M21 21l-4.3-4.3" />
                   </svg>
-                  <span>{mode === "detailed" ? "간단 보기" : "계산 근거 보기"}</span>
-                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: mode === "detailed" ? "rotate(90deg)" : "none", transition: "transform .2s" }}>
+                  <span>수익 계산 근거 보기</span>
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: "rotate(90deg)", transition: "transform .2s" }}>
                     <path d="M9 18l6-6-6-6" />
                   </svg>
                 </button>
@@ -3416,7 +3417,9 @@ function RevealCardItem({
                   "1. 사도 되나 → 2. 얼마 남나 → 3. 데이터 믿을 만? → 4. 위험? → 5. 깎기 → 6. 어디 팔까".
                   가품/리스크 위로 (구매 결정 핵심), 채널 비교 아래로 (판매 결정). */}
               <CounterfeitChecklistPanel card={card} />
-              <CostAssurancePanel card={card} />
+              <div ref={profitCalculationRef} data-profit-calculation-basis className="scroll-mt-14">
+                <CostAssurancePanel card={card} />
+              </div>
               {/* Wave 392.3: 진입장벽/불안감 해소 Q&A — 4개 자주 묻는 거 collapse. */}
               <WhyTrustCollapse card={card} />
               {/* Wave 394.6.b: 채널 비교 → SellHelper 위 (둘 다 "판매" 관련 단위). */}
