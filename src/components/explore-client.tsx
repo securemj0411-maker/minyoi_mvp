@@ -1432,12 +1432,12 @@ export default function ExploreClient() {
                   ? (lightweightMode ? "환영해요 👋 예산 알려주세요" : (preferences ? "선호 수정" : "내 매물 취향 알려주세요"))
                   : canRefresh
                     ? "더 찾아보기"
-                    : "크레딧 1개면 피드 무제한";
+                    : "조금만 기다리거나 바로 이어보기";
                 const headerSub = showForm
                   ? (lightweightMode ? "그 예산 안에서 30개 골라드릴게요 (나중에 수정 가능)" : "예산과 매물 성향에 맞춰 30개 골라드려요")
                   : (canRefresh
                       ? "현재 선호로 새 30개 받기"
-                      : "피드는 차감 없이 계속 보고, 상세 분석을 열 때만 1크레딧을 써요");
+                      : `${formatCooldown(remainingSec)} 후 무료로 새 30개가 열려요`);
                 return (
                   <>
                     {/* Wave 380: 노션 톤 — 큰 👋 + "환영해요!" + 본 메시지. */}
@@ -1660,25 +1660,25 @@ export default function ExploreClient() {
                                 </span>
                                 <div className="min-w-0">
                                   <div className="text-base font-black tracking-tight text-[#123c2b] dark:text-emerald-100">
-                                    크레딧 1개만 있어도 계속 둘러볼 수 있어요
+                                    크레딧 보유자는 피드 계속 보기
                                   </div>
                                   <div className="mt-1 text-[12px] font-bold leading-5 text-emerald-800/80 dark:text-emerald-200/80">
-                                    무한 피드는 크레딧 차감 없음. 크레딧은 새 상품의 상세 분석을 열 때만 1개씩 빠져요.
+                                    1개 이상 있으면 다음 매물이 자동으로 이어지고, 피드는 차감 0개예요.
                                   </div>
                                 </div>
                               </div>
                               <div className="mt-3 grid grid-cols-3 gap-2">
                                 <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
-                                  <div className="text-[11px] font-black text-[#008f5f] dark:text-emerald-300">1개 이상</div>
-                                  <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">보유 조건</div>
-                                </div>
-                                <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
                                   <div className="text-[11px] font-black text-[#008f5f] dark:text-emerald-300">0개</div>
                                   <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">피드 차감</div>
                                 </div>
                                 <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
-                                  <div className="text-[11px] font-black text-[#008f5f] dark:text-emerald-300">상세만</div>
-                                  <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">차감 대상</div>
+                                  <div className="text-[11px] font-black text-[#008f5f] dark:text-emerald-300">1개</div>
+                                  <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">상세 분석</div>
+                                </div>
+                                <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
+                                  <div className="text-[11px] font-black text-[#008f5f] dark:text-emerald-300">1개+</div>
+                                  <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">보유 조건</div>
                                 </div>
                               </div>
                             </div>
@@ -1693,15 +1693,15 @@ export default function ExploreClient() {
                                 </span>
                                 <div className="min-w-0">
                                   <div className="text-base font-bold text-white">
-                                    크레딧 충전하고 무제한 피드 열기
+                                    크레딧 충전하고 바로 이어보기
                                   </div>
                                   <div className="mt-0.5 text-[11px] font-medium text-white/85">
-                                    20크레딧 3,900원부터 · 피드는 차감 없음
+                                    20크레딧 3,900원부터
                                   </div>
                                 </div>
                               </div>
                               <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
-                                1개 이상
+                                피드 무제한
                               </span>
                             </Link>
 
