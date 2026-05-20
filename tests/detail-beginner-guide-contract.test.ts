@@ -47,10 +47,11 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.ok(order.indexOf("marketTrendGuideStep(card)") < order.indexOf("velocityGuideStep(card)"));
   assert.ok(order.indexOf("velocityGuideStep(card)") < order.indexOf("buyCostGuideStep(card)"));
   assert.ok(order.indexOf("channelGuideStep(card)") < order.indexOf("purchaseCheckGuideStep(card)"));
-  assert.match(modal, /eyebrow: "2\. 비교 매물"/);
-  assert.match(modal, /eyebrow: "4\. 판매 속도"/);
-  assert.match(modal, /eyebrow: "5\. 매입가"/);
-  assert.match(modal, /eyebrow: "8\. 구매 전 체크"/);
+  assert.match(modal, /eyebrow: "1\. 먼저 걸렀어요"/);
+  assert.match(modal, /eyebrow: "3\. 비교 매물"/);
+  assert.match(modal, /eyebrow: "5\. 판매 속도"/);
+  assert.match(modal, /eyebrow: "6\. 매입가"/);
+  assert.match(modal, /eyebrow: "9\. 구매 전 체크"/);
 });
 
 test("detail modal uses the mobile detail shell on desktop", () => {
@@ -103,12 +104,17 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /\/api\/public\/safety-stats\?\$\{query\}/);
   assert.match(modal, /params\.set\("skuId", card\.skuId\)/);
   assert.match(modal, /params\.set\("comparableKey", card\.marketBasis\.comparableKey\)/);
-  assert.match(modal, /득템잡이가 오늘 돈 안 되는 매물/);
+  assert.match(modal, /introGuideStep/);
+  assert.match(modal, /tone: "intro"/);
+  assert.match(modal, /오늘 볼 만한 매물만 남겨뒀어요/);
+  assert.match(modal, /득템잡이가 오늘 \{subjectLabel\}/);
   assert.match(modal, /에어팟 맥스/);
   assert.match(modal, /돈 안 되는 것/);
+  assert.match(modal, /사기 의심/);
+  assert.match(modal, /모델 확인 필요/);
   assert.match(modal, /을 먼저 걸렀어요/);
   assert.match(modal, /이제 이 매물만 보면 돼요/);
-  assert.match(modal, /step\.tone === "trust" \? <BeginnerGuideSafetyFilterNote card=\{card\} \/> : null/);
+  assert.match(modal, /step\.tone === "intro" \? <BeginnerGuideSafetyFilterNote card=\{card\} variant="intro" \/> : null/);
   assert.match(modal, /data-beginner-guide-purchase-check/);
   assert.match(modal, /구매 전에 이것만 물어보면 돼요/);
   assert.match(modal, /혼자 보면 놓치기 쉬운 질문/);
