@@ -127,6 +127,7 @@ describe("Wave 254.6 — clothing product_type regex 우선순위", () => {
       { title: "챔피온 X 글로니 캐미솔 나시 탑 White", expected: "tee" },
       { title: "90s 빈티지 챔피온 리버스위브 멜란지 그레이 스웻 XL 버버진", expected: "crewneck" },
       { title: "[32x32] 칼하트 wip 스트레이드 데님 (34)", expected: "jeans" },
+      { title: "칼하트 스티치 데님 31x32", expected: "jeans" },
     ];
 
     for (const { title, expected } of cases) {

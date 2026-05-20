@@ -68,9 +68,10 @@ export type RevealCard = {
   optionBaseAssumed?: string[] | null;
 };
 
+// Wave 394.7.ab: confidence "low" 도 통과 (UI 측 분기로 "참고용" 톤 표시).
 export type RevealVelocityBasis = {
   comparableKey: string;
-  confidence: "high" | "medium";
+  confidence: "high" | "medium" | "low";
   observedSoldSampleCount: number;
   activeSampleCount: number;
   sold24hCount: number;
@@ -1079,7 +1080,11 @@ export function velocityBasisForCandidate(
   const category = categoryFromComparableKey(comparableKey);
   if (!category || readinessMap[category]?.status !== "ready") return null;
   const stat = velocityStats.get(comparableKey);
-  if (!stat || (stat.confidence !== "high" && stat.confidence !== "medium")) return null;
+  // Wave 394.7.ab (사용자 짚음 — "에어팟맥스면 기록이 없을수가 없는데 수집 중만 뜸"):
+  // 이전엔 confidence high/medium 만 통과 → low 인 케이스 데이터 있어도 전부 null 반환.
+  // 사용자 입장 = "수집 중" 만 보임. "데이터 진짜 있긴 한 거?" 의심.
+  // 이제 low 도 통과 — UI 측 (velocityGuideStep) 에서 confidence 별 분기로 정직 표시.
+  if (!stat) return null;
   return {
     comparableKey,
     confidence: stat.confidence,

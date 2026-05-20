@@ -633,16 +633,24 @@ function marketTrendGuideStep(card: RevealCard): BeginnerGuideStep {
 function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
   const velocity = card.velocityBasis;
   const marketSoldSample = card.marketBasis?.soldSampleCount ?? 0;
+  const marketActiveSample = card.marketBasis?.sampleCount ?? 0;
   const analysisPending =
     !velocity &&
     marketSoldSample <= 0 &&
+    marketActiveSample <= 0 &&
     card.marketBasis?.computedAt == null;
-  const hasVelocity =
+  const hasStrongVelocity =
     velocity?.medianHoursToSold != null &&
     velocity.medianHoursToSold > 0 &&
+    velocity.sold7dCount > 0 &&
+    (velocity.confidence === "high" || velocity.confidence === "medium");
+  // Wave 394.7.ab: low confidence 도 통과 — 표본 적어도 "참고용" 톤으로 보여줌.
+  // 사용자 "에어팟맥스면 기록이 없을수가 없는데" — confidence low 인 경우 데이터는 있지만 표본 적은 거.
+  const hasReferenceVelocity =
+    velocity?.confidence === "low" &&
     velocity.sold7dCount > 0;
 
-  if (hasVelocity) {
+  if (hasStrongVelocity && velocity) {
     const label = velocityHoursLabel(velocity.medianHoursToSold);
     const dailySold = dailySoldCountLabel(velocity.sold7dCount);
     return {
@@ -656,16 +664,46 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
     };
   }
 
+  // Wave 394.7.ab: low confidence — 데이터는 있지만 표본 적음. "참고용" 톤.
+  if (hasReferenceVelocity && velocity) {
+    const label = velocity.medianHoursToSold != null && velocity.medianHoursToSold > 0
+      ? velocityHoursLabel(velocity.medianHoursToSold)
+      : `${velocity.sold7dCount.toLocaleString("ko-KR")}건`;
+    return {
+      eyebrow: "4. 판매 속도",
+      title: "거래 기록이 적어서 참고용으로만 봐요",
+      metric: label,
+      metricLabel: `7일 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 — 표본 부족`,
+      body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}건만 거래됐어요. 추세 잡기엔 표본이 적어서 "이 정도 빠르다" 단정 안 하고 참고용으로만 보면 됩니다.`,
+      note: "표본이 적은 모델은 판매가 늦어질 수 있어서 매입가를 더 보수적으로 잡는 게 안전해요.",
+      tone: "speed",
+    };
+  }
+
+  // Wave 394.7.ab: marketBasis 자체가 안 채워졌으면 lazy-fill 진행 중. 정직 카피.
+  if (analysisPending) {
+    return {
+      eyebrow: "4. 판매 속도",
+      title: "거래 기록 데이터를 받는 중이에요",
+      metric: "잠시만요",
+      metricLabel: "분석 진행 중",
+      body: "이 매물의 비교 기록을 가져오는 중이에요. 잠시 후 다시 확인하거나, 상세 분석에서 시세와 비교 매물을 먼저 보면 돼요.",
+      note: "데이터가 비어 있을 땐 가격과 판매자 신뢰도를 더 보수적으로 봅니다.",
+      tone: "speed",
+    };
+  }
+
+  // Wave 394.7.ab: 판매 기록 자체 부족 — 정직 카피 ("수집 중" 단어 X).
   return {
     eyebrow: "4. 판매 속도",
-    title: analysisPending ? "판매 속도를 불러오는 중이에요" : "판매 속도는 더 확인이 필요해요",
-    metric: marketSoldSample ? `${marketSoldSample.toLocaleString("ko-KR")}건` : "확인 중",
-    metricLabel: marketSoldSample ? "비슷한 거래 기록" : "판매 기록 확인 중",
-    body: analysisPending
-      ? "비슷한 상품이 보통 얼마나 걸려 팔리는지 다시 확인하고 있어요. 잠시 후에도 비어 있으면 상세 분석에서 시세와 비교 매물을 먼저 보세요."
-      : marketSoldSample
-      ? "비슷한 거래 기록은 잡혔지만, 판매까지 걸린 시간을 안정적으로 말할 만큼은 아직 부족해요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 봅니다."
-      : "팔린 기록이 아직 충분하지 않아서 판매 주기를 단정하지 않았어요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 보는 게 좋아요.",
+    title: marketSoldSample > 0 ? "거래 기록은 있지만 판매까지 걸린 시간은 부족해요" : "이 모델은 거래 기록 표본이 부족해요",
+    metric: marketSoldSample > 0 ? `${marketSoldSample.toLocaleString("ko-KR")}건` : (marketActiveSample > 0 ? `${marketActiveSample.toLocaleString("ko-KR")}건` : "—"),
+    metricLabel: marketSoldSample > 0 ? "비슷한 거래 기록" : (marketActiveSample > 0 ? "현재 비교 매물" : "표본 부족"),
+    body: marketSoldSample > 0
+      ? "거래 기록은 잡혔지만 판매까지 걸린 시간을 안정적으로 말할 만큼은 아직 모자라요. 가격과 판매자 신뢰도를 더 보수적으로 보는 게 좋아요."
+      : marketActiveSample > 0
+        ? `현재 비교 매물은 ${marketActiveSample.toLocaleString("ko-KR")}건 잡혔는데 과거 판매 기록은 부족해요. 매물 자체가 자주 나오는 모델이 아니거나, 거래가 천천히 도는 카테고리일 수 있어요.`
+        : "이 모델은 같은 상태로 팔린 기록이 아직 충분히 누적되지 않았어요. 회전 속도 단정 대신 비교 매물 가격과 셀러 신뢰도를 우선 보세요.",
     note: "상세 분석에서 시세 그래프와 비교 매물을 함께 확인하세요.",
     tone: "speed",
   };
@@ -2063,7 +2101,10 @@ function saleSpeedDisplay(card: RevealCard) {
     : (VELOCITY_UI_TEST_ENABLED ? UI_TEST_FALLBACK_VELOCITY_HOURS : null);
   return {
     hours,
-    label: hours == null ? "수집 중" : velocityHoursLabel(hours),
+    // Wave 394.7.ab: "수집 중" → "표본 부족" — 데이터가 진짜 모이는 중인지 부족한 건지 정직 표시.
+    // 사용자 짚음 — "에어팟맥스면 기록이 없을수가 없는데 수집 중만 뜸". "수집 중"은 진행감 주는데
+    // 실제로는 confidence low 라서 가드에 막힌 케이스가 대부분. 정직 표시.
+    label: hours == null ? (hasRealTurnEstimate ? "확인 어려움" : "표본 부족") : velocityHoursLabel(hours),
     isFallback: !hasRealTurnEstimate,
     isFast: hours != null && hours > 0 && hours <= 48,
     isSlow: hours != null && hours > 168,
@@ -4084,8 +4125,9 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
   const sampleCount = velocity?.observedSoldSampleCount ?? market?.soldSampleCount ?? 0;
   const dailySoldValue = velocity?.sold7dCount ? dailySoldCountLabel(velocity.sold7dCount) : null;
+  // Wave 394.7.ab: "확인 중" → "표본 부족" — 정직 카피.
   const sampleLabel = dailySoldValue ? "동일 모델 하루 판매량" : sampleCount > 0 ? "비슷한 거래 기록" : "거래 기록";
-  const sampleValue = dailySoldValue ?? (sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "확인 중");
+  const sampleValue = dailySoldValue ?? (sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "표본 부족");
 
   return (
     <div className="rounded-[22px] bg-white/82 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">

@@ -417,6 +417,8 @@ function parseClothingProductType(text: string): ClothingProductType {
   if (/기모 ?집업|풀집업|풀 ?집업|집업(?!\s*가능)|zip ?up/.test(t)) return "jacket";
   // Wave 408/413: "피케티셔츠"/"카라티" are polo/pique shirts, not generic tee.
   if (/피케 ?티|피케 ?셔츠|pique|카라 ?티|카라 ?셔츠|pk ?티|pk ?셔츠/.test(t)) return "polo_shirt";
+  // Wave 428: denim bottoms often omit "팬츠/바지" and only expose denim + waist/inseam sizing.
+  if (/데님|denim/.test(t) && /\b\d{2}\s*x\s*\d{2}\b|\b(?:2[6-9]|3[0-9]|4[0-4])\s*(?:사이즈|size)?\b/.test(t)) return "jeans";
   // Wave 236b: 반팔 단독 + 탱크탑/민소매 추가.
   // Wave 264: 블라우스 추가 (acne-apparel sample 발견).
   if (/티 ?셔츠|tee\b|반팔 ?티|반팔티|t-shirt|tshirt|t ?셔츠|반팔(?!\s*티 ?셔츠)|탱크 ?탑|tank ?top|민소매|sleeveless|반 ?소매|블라우스|blouse|크롭 ?탑|crop ?top|볼레로|bolero|캐미솔|camisole|나시 ?탑|나시\b/.test(t)) return "tee";
