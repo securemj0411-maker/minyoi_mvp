@@ -512,6 +512,7 @@ export type PipelineRuntimeConfig = {
   scoreAiConditionDailyLimit: number;
   marketStatsLimit: number;
   deepCrawlMaxPage: number;
+  deepCrawlQueryLimit: number;
   sellerSearchRefreshMs: number;
   rawTouchCoalesceActiveSeenOnly: boolean;
   rawTouchCoalesceActiveSeenOnlyDryRun: boolean;
@@ -632,6 +633,9 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     //   1 chunk ≈ 5s → 8 chunks ≈ 40s + group/upsert. maxDuration 90 안에 들어옴.
     marketStatsLimit: envInt("PIPELINE_MARKET_STATS_LIMIT", 8000, 100, 20000),
     deepCrawlMaxPage: envInt("PIPELINE_DEEP_CRAWL_MAX_PAGE", 3, 1, 30),
+    // Deep crawl ignores cadence by design, so a full catalog-sized query list can otherwise
+    // hit the 90s route ceiling during post-processing. Rotate a bounded window each run.
+    deepCrawlQueryLimit: envInt("PIPELINE_DEEP_CRAWL_QUERY_LIMIT", 80, 10, 1000),
     sellerSearchRefreshMs: envInt("PIPELINE_SELLER_SEARCH_REFRESH_MS", 3 * 60 * 60 * 1000, 10 * 60 * 1000, 24 * 60 * 60 * 1000),
     rawTouchCoalesceActiveSeenOnly: envBool("RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY", false),
     rawTouchCoalesceActiveSeenOnlyDryRun: envBool("RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY_DRY_RUN", false),

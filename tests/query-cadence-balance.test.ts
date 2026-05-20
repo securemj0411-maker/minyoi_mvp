@@ -4,7 +4,7 @@ import test from "node:test";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { getCategoryPageOverrides } from "@/lib/pipeline-config";
 import { queryFamily } from "@/lib/search-query-cadence";
-import { interleaveSearchQueriesByFamilyForTest } from "@/lib/tick-pipeline";
+import { interleaveSearchQueriesByFamilyForTest, rotateDeepCrawlQueriesForTest } from "@/lib/tick-pipeline";
 
 test("public category sweep no longer deep-crawls shoes in the regular freshness loop", () => {
   const overrides = getCategoryPageOverrides();
@@ -39,6 +39,14 @@ test("due query ordering interleaves families instead of letting one category mo
     "에어팟 프로2",
     "애플워치 9",
   ]);
+});
+
+test("deep crawl rotates a bounded query window instead of scanning the full catalog each run", () => {
+  const queries = Array.from({ length: 10 }, (_, index) => `q${index}`);
+
+  assert.deepEqual(rotateDeepCrawlQueriesForTest(queries, 4, 0), ["q0", "q1", "q2", "q3"]);
+  assert.deepEqual(rotateDeepCrawlQueriesForTest(queries, 4, 30 * 60 * 1000), ["q4", "q5", "q6", "q7"]);
+  assert.deepEqual(rotateDeepCrawlQueriesForTest(queries, 4, 60 * 60 * 1000), ["q8", "q9", "q0", "q1"]);
 });
 
 test("newer public categories are inferable from comparable keys for pack diversity", () => {

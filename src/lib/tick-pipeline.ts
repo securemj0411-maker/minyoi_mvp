@@ -1041,6 +1041,22 @@ function rotatedDeepPage(deepCrawlMaxPage: number, nowMs = Date.now()) {
   return 1 + (tickBucket % maxDeep);
 }
 
+function rotatedDeepQueryWindow<T>(items: T[], limit: number, nowMs = Date.now()): { items: T[]; start: number; limit: number } {
+  const safeLimit = Math.max(1, Math.round(limit));
+  if (items.length <= safeLimit) return { items, start: 0, limit: safeLimit };
+  const tickBucket = Math.floor(nowMs / (30 * 60 * 1000));
+  const start = (tickBucket * safeLimit) % items.length;
+  const windowed = items.slice(start, start + safeLimit);
+  if (windowed.length < safeLimit) {
+    windowed.push(...items.slice(0, safeLimit - windowed.length));
+  }
+  return { items: windowed, start, limit: safeLimit };
+}
+
+export function rotateDeepCrawlQueriesForTest(queries: string[], limit: number, nowMs = Date.now()): string[] {
+  return rotatedDeepQueryWindow(queries, limit, nowMs).items;
+}
+
 function searchPagesForTick(pagesPerQuery: number, deepCrawlMaxPage: number, nowMs = Date.now()) {
   if (pagesPerQuery <= 1) return [0];
   const maxDeep = Math.max(1, deepCrawlMaxPage);
@@ -1115,10 +1131,19 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
   timingsMs.search_queries_total = config.searchQueries.length;
   timingsMs.search_queries_due = dueQueries.length;
   timingsMs.search_queries_skipped_by_cadence = config.searchQueries.length - dueQueries.length;
+  const queryWindow = mode === "deep"
+    ? rotatedDeepQueryWindow(dueQueries, config.deepCrawlQueryLimit)
+    : { items: dueQueries, start: 0, limit: dueQueries.length };
+  const scanQueries = queryWindow.items;
+  if (mode === "deep") {
+    timingsMs.search_queries_deep_window_start = queryWindow.start;
+    timingsMs.search_queries_deep_window_limit = queryWindow.limit;
+    timingsMs.search_queries_deep_window_size = scanQueries.length;
+  }
   const scannedQueries: string[] = [];
 
   searchLoop:
-  for (const query of dueQueries) {
+  for (const query of scanQueries) {
     let pagesAttempted = false;
     const pagesForQuery = categoryPageOverrides[query] ?? defaultPages;
     for (const page of pagesForQuery) {
