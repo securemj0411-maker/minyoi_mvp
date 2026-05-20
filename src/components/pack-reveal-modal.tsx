@@ -1172,9 +1172,9 @@ function SkeletonLine({ className = "" }: { className?: string }) {
 
 function RevealResultSkeleton() {
   return (
-    <div className="grid gap-3 lg:grid-cols-2" aria-hidden="true">
-      <div className="grid gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
-        <div className="h-[118px] w-full rounded-lg bg-zinc-200/80 dark:bg-zinc-800 sm:h-[132px] sm:w-[132px] lg:h-[150px] lg:w-[150px]" />
+    <div className="grid gap-3" aria-hidden="true">
+      <div className="grid gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="h-[118px] w-full rounded-lg bg-zinc-200/80 dark:bg-zinc-800" />
         <div className="min-w-0 space-y-3">
           <SkeletonLine className="h-4 w-4/5" />
           <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-3 dark:border-emerald-900/40 dark:bg-emerald-950/20">
@@ -1182,12 +1182,12 @@ function RevealResultSkeleton() {
             <SkeletonLine className="mt-2 h-7 w-36 bg-emerald-200/80 dark:bg-emerald-900/60" />
             <SkeletonLine className="mt-2 h-3 w-52" />
           </div>
-          <div className="hidden flex-wrap gap-1.5 sm:flex">
+          <div className="hidden flex-wrap gap-1.5">
             <SkeletonLine className="h-5 w-16" />
             <SkeletonLine className="h-5 w-20" />
             <SkeletonLine className="h-5 w-14" />
           </div>
-          <div className="hidden rounded-lg border border-[#e2d9cb] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40 sm:block">
+          <div className="hidden rounded-lg border border-[#e2d9cb] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40">
             <SkeletonLine className="h-3 w-24" />
             <SkeletonLine className="mt-2 h-4 w-4/5" />
             <SkeletonLine className="mt-2 h-3 w-2/3" />
@@ -1586,12 +1586,12 @@ function DealMeterButton({
         득템 점수
       </span>
       <span className="flex items-baseline gap-0.5">
-        <span className={`text-[28px] font-black tabular-nums tracking-[-0.03em] sm:text-lg sm:font-bold ${toneClass}`}>
+        <span className={`text-[28px] font-black tabular-nums tracking-[-0.03em] ${toneClass}`}>
           {score}
         </span>
-        <span className="text-[13px] font-bold text-zinc-400 dark:text-zinc-500 sm:text-[10px] sm:font-medium">/100</span>
+        <span className="text-[13px] font-bold text-zinc-400 dark:text-zinc-500">/100</span>
       </span>
-      <span className="mt-1 h-[3px] w-[70px] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700 transition group-hover:from-emerald-600 group-hover:to-emerald-800 sm:hidden" />
+      <span className="mt-1 h-[3px] w-[70px] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700 transition group-hover:from-emerald-600 group-hover:to-emerald-800" />
     </button>
   );
 }
@@ -1797,7 +1797,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
   ) : null;
 
   return (
-    <div className="relative left-1/2 aspect-[4/3] max-h-[42dvh] w-screen -translate-x-1/2 overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-900 sm:left-auto sm:mx-0 sm:h-[168px] sm:w-[168px] sm:translate-x-0 sm:rounded-lg lg:h-[196px] lg:w-[196px]">
+    <div className="relative aspect-[4/3] max-h-[42dvh] w-full overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-900">
       {/* Wave 393.3: ConditionPhotoBadge 모달에선 nav (좌상 ← 🏠 floating)에 가려서 제거.
           텍스트 영역 LastVerifiedAtBadge 옆에 ConditionChip으로 대체 노출. */}
       {card.thumbnailUrl ? (
@@ -1808,19 +1808,19 @@ function RevealProductImage({ card }: { card: RevealCard }) {
               alt=""
               aria-hidden="true"
               fill
-              sizes="(max-width: 639px) 100vw, (max-width: 1023px) 168px, 196px"
+              sizes="(max-width: 480px) 100vw, 480px"
               className="object-cover object-center"
             />
           </div>
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,251,244,0.10),rgba(238,231,218,0.28))] dark:bg-zinc-950/24" />
-          <div className="absolute inset-0 p-3 sm:p-2">
+          <div className="absolute inset-0 p-3">
             <div className="relative h-full w-full">
               <Image
                 src={card.thumbnailUrl}
                 alt={card.name}
                 fill
-                sizes="(max-width: 639px) 100vw, (max-width: 1023px) 168px, 196px"
-                className="rounded-[16px] object-contain object-center shadow-[0_12px_24px_rgba(34,49,39,0.12)] ring-1 ring-black/8 sm:rounded-md sm:drop-shadow-[0_10px_18px_rgba(34,49,39,0.18)]"
+                sizes="(max-width: 480px) 100vw, 480px"
+                className="rounded-[16px] object-contain object-center shadow-[0_12px_24px_rgba(34,49,39,0.12)] ring-1 ring-black/8"
               />
             </div>
           </div>
@@ -4388,7 +4388,7 @@ function RevealCardItem({
 
   return (
     <div
-      className={`grid gap-3 transition-all duration-700 lg:grid-cols-2 ${
+      className={`grid gap-3 transition-all duration-700 ${
         shown ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
       }`}
     >
@@ -4397,34 +4397,34 @@ function RevealCardItem({
        * 이전엔 cream gradient + border + shadow 로 ProfitHero ~ SellHelper 다 묶었는데
        * 그 안 ProfitHero 초록이 크게 보여 "전체 초록 박스" 처럼 보였음. wrapper 자체를 없애고
        * 각 panel 이 페이지 배경 위 평평하게 배치. */}
-      <div className="order-1 grid gap-0 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent sm:grid-cols-[168px_minmax(0,1fr)] sm:gap-3 lg:grid-cols-[196px_minmax(0,1fr)]">
+      <div className="order-1 grid gap-0 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent">
         <div ref={photoRef}>
           <RevealProductImage card={card} />
         </div>
 
-        <div className="relative z-10 -mt-4 min-w-0 w-full space-y-3 rounded-t-[22px] bg-[#ebe6dc] px-4 pb-2 pt-7 dark:bg-zinc-900 sm:mt-0 sm:rounded-none sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-0 sm:dark:bg-transparent">
-          <div className="absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 rounded-full bg-[#d0c6b1] sm:hidden" />
+        <div className="relative z-10 -mt-4 min-w-0 w-full space-y-3 rounded-t-[22px] bg-[#ebe6dc] px-4 pb-2 pt-7 dark:bg-zinc-900">
+          <div className="absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 rounded-full bg-[#d0c6b1]" />
           <div className="space-y-1.5">
             <div className="relative">
-              <div className="pr-[92px] text-[10.5px] font-semibold leading-4 text-[#6f7c6d] dark:text-zinc-400 sm:hidden">
+              <div className="pr-[92px] text-[10.5px] font-semibold leading-4 text-[#6f7c6d] dark:text-zinc-400">
                 AI 판단 · 매물 설명(텍스트) 기준 · 사진은 직접 확인 권장
               </div>
-              <div className="absolute right-0 top-[-2px] sm:hidden">
+              <div className="absolute right-0 top-[-2px]">
                 <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
               </div>
             </div>
             <div className="flex w-full items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 {/* Wave 392.2: 신선도 강조 — 매우 신선 매물 즉시 인지 + Pro USP hint. */}
-                <div className="hidden sm:block">
+                <div className="hidden">
                   <LastVerifiedAtBadge card={card} />
                 </div>
                 {/* Wave 359+361: 득템 점수 — 제목과 같은 행 우측 작게 (당근 36.8°C 톤). */}
                 <div className="flex items-start gap-3">
-                  <div className="min-w-0 flex-1 line-clamp-2 pr-[92px] text-[20px] font-black leading-[1.25] tracking-[-0.01em] text-[#111915] dark:text-zinc-50 sm:pr-0 sm:text-base sm:font-bold sm:leading-tight">
+                  <div className="min-w-0 flex-1 line-clamp-2 pr-[92px] text-[20px] font-black leading-[1.25] tracking-[-0.01em] text-[#111915] dark:text-zinc-50">
                     {card.name}
                   </div>
-                  <div className="hidden sm:block">
+                  <div className="hidden">
                     <DealMeterButton card={card} expanded={dealExpanded} onToggle={() => setDealExpanded((v) => !v)} />
                   </div>
                 </div>
@@ -4558,13 +4558,13 @@ function RevealCardItem({
               <SellHelperPanel card={card} currentFeedbackType={currentFeedbackType} />
               <RecommendationReasonPanel
                 card={card}
-                className="mt-2 border-t border-[#e1dacd] pt-2 sm:rounded-xl sm:border sm:p-3 sm:shadow-none sm:ring-0"
+                className="mt-2 border-t border-[#e1dacd] pt-2"
               />
             </div>
             {/* Wave 394.5.c: detailed 모드 시 신뢰도 분해 자동 펼침 (사용자 재닫음 가능). */}
             <details
               open={mode === "detailed"}
-              className="group hidden shrink-0 rounded-full border border-[#d9e5d7] bg-[#f4faf1] px-3 py-1 text-right shadow-sm dark:border-zinc-700 dark:bg-zinc-800 sm:block sm:min-w-[72px]"
+              className="hidden"
             >
               <summary className="cursor-pointer list-none">
                 <div className="flex items-center justify-end gap-1 text-[10px] font-bold text-zinc-400">
@@ -4580,7 +4580,7 @@ function RevealCardItem({
           </div>
           </div>
 
-        <div className="hidden sm:block">
+        <div className="hidden">
           <VerdictBadgesMini card={card} />
         </div>
 
@@ -4593,7 +4593,7 @@ function RevealCardItem({
         ) : null}
 
         {/* 시세 근거 (요약) — desktop/tablet 카드. mobile은 "왜 이 상품을 추천했나요?" 안으로 접어 첫 화면 밀도를 낮춤. */}
-        <div className="hidden sm:block">
+        <div className="hidden">
           <MarketBasisMini card={card} />
         </div>
       </div>
@@ -4602,7 +4602,7 @@ function RevealCardItem({
 
       {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
       {/* Wave 394.7.w (사용자 짚음): handoff 패턴 — 섹션 제목 카드 밖으로. desktop wrapper card 제거. */}
-      <div className="order-2 space-y-2 px-3 lg:order-2">
+      <div className="order-2 space-y-2 px-3">
         <div className="flex items-center justify-between gap-2">
           <h3 className="m-0 text-[16px] font-extrabold tracking-tight text-[#1a2620] dark:text-zinc-100">
             시세 그래프 · 시장 분석
@@ -4719,8 +4719,8 @@ function ModalActionFooter({
   const statusLabel = localStatus ? TRANSACTION_STATUS_LABEL[localStatus] : "진행 전";
 
   return (
-    <div className="rounded-2xl border border-[#e7dece] bg-[#fffdf9] p-2 dark:border-zinc-800 dark:bg-zinc-900 sm:p-3">
-      <div className="sm:hidden">
+    <div className="rounded-2xl border border-[#e7dece] bg-[#fffdf9] p-2 dark:border-zinc-800 dark:bg-zinc-900">
+      <div>
         <div className="flex items-center gap-1.5">
           <details className="group relative min-w-0 flex-1">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-lg border border-[#d8d2c6] bg-white/85 px-2.5 py-1.5 text-[11px] font-bold text-[#425247] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
@@ -4801,7 +4801,7 @@ function ModalActionFooter({
         </div>
       </div>
 
-      <div className="hidden sm:block">
+      <div className="hidden">
         <div className="mb-2 rounded-xl border border-[#e1dacd] bg-white/85 p-2 dark:border-zinc-800 dark:bg-zinc-950/40">
           <div className="mb-1.5 flex items-center justify-between gap-2">
             <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#758174] dark:text-zinc-400">
@@ -5322,7 +5322,7 @@ export default function PackRevealModal({
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-stretch justify-stretch overscroll-contain bg-[#ebe6dc] p-0 dark:bg-zinc-950 sm:items-center sm:justify-center sm:bg-[rgba(31,40,34,0.48)] sm:p-6 sm:backdrop-blur-sm sm:dark:bg-[rgba(9,9,11,0.62)]"
+      className="fixed inset-0 z-[90] flex items-stretch justify-stretch overscroll-contain bg-[#ebe6dc] p-0 dark:bg-zinc-950 sm:items-center sm:justify-center sm:bg-[rgba(31,40,34,0.48)] sm:p-4 sm:backdrop-blur-sm sm:dark:bg-[rgba(9,9,11,0.62)]"
       role="dialog"
       aria-modal="true"
       onClick={() => {
@@ -5330,7 +5330,8 @@ export default function PackRevealModal({
       }}
     >
       <div
-        className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#ebe6dc] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-h-[88vh] sm:max-w-6xl sm:rounded-2xl sm:border sm:border-[#ddd6ca] sm:bg-[#fffdf9] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.16)] sm:dark:border-zinc-800"
+        data-mobile-detail-shell
+        className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#ebe6dc] shadow-none dark:bg-zinc-900 sm:h-[min(92dvh,920px)] sm:max-h-[92dvh] sm:w-[min(480px,calc(100vw-32px))] sm:max-w-[480px] sm:rounded-[28px] sm:border sm:border-[#ddd6ca] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.20)] sm:dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
         {saveToast ? (
@@ -5396,7 +5397,7 @@ export default function PackRevealModal({
 
             {/* (B) Sticky nav bar — 사진 사라지면 등장 */}
             <div
-              className={`pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-[#e2dbcf] bg-[#ebe6dc]/95 backdrop-blur transition-opacity duration-200 dark:border-zinc-800 dark:bg-zinc-900/95 sm:bg-[#fffdf9]/95 ${
+              className={`pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-[#e2dbcf] bg-[#ebe6dc]/95 backdrop-blur transition-opacity duration-200 dark:border-zinc-800 dark:bg-zinc-900/95 ${
                 photoVisible ? "opacity-0" : "opacity-100"
               }`}
             >
@@ -5442,10 +5443,10 @@ export default function PackRevealModal({
         <div
           key={activeRevealPid ?? "empty"}
           ref={scrollAreaRef}
-          className="min-h-0 flex-1 overflow-y-auto px-0 pb-3 pt-0 sm:p-4"
+          className="min-h-0 flex-1 overflow-y-auto px-0 pb-3 pt-0"
         >
           {displayLoading ? (
-            <div className="space-y-4 px-3 sm:px-0">
+            <div className="space-y-4 px-3">
               <LoadingStage completing={completing} />
               <div className="animate-pulse">
                 <RevealResultSkeleton />
@@ -5466,8 +5467,8 @@ export default function PackRevealModal({
             ) : (
               <div className="space-y-4">
                 <div>
-                  {/* 2026-05-17: 각 RevealCardItem 자체가 lg:grid-cols-2 (listing card + market card).
-                      outer grid 는 1 column — 한 줄에 1 매물 (= 2 카드 옆에). */}
+                  {/* 2026-05-21: PC에서도 모바일 상세 셸을 그대로 사용한다.
+                      데스크톱 2단 레이아웃은 좁은 모달 안에서 깨져서 제거했다. */}
                   <div className="grid gap-4">
                     {result.reveals.map((card, idx) => (
                       <RevealCardItem

@@ -39,6 +39,32 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.match(modal, /shouldAutoShowBeginnerGuide/);
 });
 
+test("detail modal uses the mobile detail shell on desktop", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const skeleton = modal.slice(
+    modal.indexOf("function RevealResultSkeleton"),
+    modal.indexOf("// 2026-05-15"),
+  );
+  const revealCard = modal.slice(
+    modal.indexOf("function RevealCardItem"),
+    modal.indexOf("function GuidePreviewPanel"),
+  );
+  const footer = modal.slice(
+    modal.indexOf("function ModalActionFooter"),
+    modal.indexOf("function FixedBunjangFooter"),
+  );
+
+  assert.match(modal, /data-mobile-detail-shell/);
+  assert.match(modal, /sm:w-\[min\(480px,calc\(100vw-32px\)\)\]/);
+  assert.match(modal, /sm:max-w-\[480px\]/);
+  assert.match(modal, /PC에서도 모바일 상세 셸/);
+  assert.doesNotMatch(modal, /sm:max-w-6xl/);
+  assert.doesNotMatch(modal, /sm:h-auto sm:max-h-\[88vh\]/);
+  assert.doesNotMatch(skeleton, /lg:grid-cols-2|sm:grid-cols|sm:h-\[|sm:w-\[|sm:flex|sm:block/);
+  assert.doesNotMatch(revealCard, /lg:grid-cols-2|sm:grid-cols|sm:h-\[|sm:w-\[|hidden sm:block|sm:hidden/);
+  assert.doesNotMatch(footer, /hidden sm:block|sm:hidden|sm:p-3/);
+});
+
 test("beginner guide uses existing evidence without guaranteed-profit copy", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
 
