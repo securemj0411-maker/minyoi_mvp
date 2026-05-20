@@ -50,6 +50,12 @@ test("explore opens the modal only after detail access is granted", () => {
   assert.match(explore, /크레딧 충전하고 계속 보기/);
   assert.match(explore, /첫 3개 상품은 무료로 열리고/);
   assert.match(explore, /새 상품을 열 때마다 1크레딧/);
+  assert.match(explore, /DetailAccessValueSummary/);
+  assert.match(explore, /무료 \{summary\.openedCount\.toLocaleString\("ko-KR"\)\}건 동안 이렇게 봤어요/);
+  assert.match(explore, /비교 매물/);
+  assert.match(explore, /예상 기회 수익/);
+  assert.match(explore, /판단 시간/);
+  assert.match(explore, /accessValueForItem\(item\)/);
   assert.match(explore, /minyoi:credits-changed/);
   assert.doesNotMatch(explore, /Plus로 계속 보기/);
   assert.doesNotMatch(explore, /오늘 무료 상세보기|하루 기준으로 다시 열려요/);

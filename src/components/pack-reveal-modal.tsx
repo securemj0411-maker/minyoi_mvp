@@ -596,7 +596,7 @@ function purchaseCheckGuideStep(card: RevealCard): BeginnerGuideStep {
   const checks = beginnerPurchaseChecks(card);
   const first = checks[0];
   return {
-    eyebrow: "8. 구매 전 체크",
+    eyebrow: "7. 구매 전 체크",
     title: "구매 전에 이것만 물어보면 돼요",
     metric: `${checks.length.toLocaleString("ko-KR")}개 체크`,
     metricLabel: first ? first.title : "구매 전 질문",
@@ -738,39 +738,19 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
   };
 }
 
-function buyCostGuideStep(card: RevealCard): BeginnerGuideStep {
-  const snapshot = costAssuranceSnapshot(card);
-  const isFreeShipping = snapshot.shippingValueLabel === "판매자 무료배송";
-  const body = isFreeShipping
-    ? `판매자는 무료배송으로 올렸어요. 그래도 실제 거래 전에 배송비를 누가 부담하는지 한 번 더 확인하고, 현재 매입가는 상품가 ${krw(card.price)} 기준으로 봅니다.`
-    : snapshot.shippingValueLabel === "확인 필요"
-      ? `상품가격은 ${krw(card.price)}예요. 배송비는 아직 확인이 필요해서, 실제 매입가는 상품가에 배송비를 더해서 봐야 합니다.`
-      : `상품가격은 ${krw(card.price)}예요. 배송비는 ${snapshot.shippingValueLabel}로 보수적으로 잡아서 실제 매입가를 ${snapshot.buyerCostLabel}로 봅니다.`;
-
-  return {
-    eyebrow: "6. 매입가",
-    title: "상품가에 배송비를 더해요",
-    metric: snapshot.buyerCostLabel,
-    metricLabel: "상품가 + 내가 낼 배송비",
-    body,
-    note: "택포/배송비 별도 문구는 구매 전 판매자에게 한 번 더 확인하는 게 안전합니다.",
-    tone: "buy",
-  };
-}
-
-function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
+function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
   const snapshot = costAssuranceSnapshot(card);
   const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
   const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} (${krw(snapshot.sellingFee)})`;
 
   return {
-    eyebrow: "7. 되팔 때 비용",
-    title: "되팔 때 드는 비용을 빼요",
+    eyebrow: "6. 최종 순익",
+    title: "최종으로 손에 남는 돈을 봐요",
     metric: displayProfitRange(card),
-    metricLabel: "수수료·배송비까지 뺀 예상 차익",
-    body: `번개장터에서 되팔 때는 예상 판매가에서 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}를 먼저 빼요.`,
-    note: "단순 시세 차이가 아니라 되팔 때 드는 비용까지 뺀 값으로 봅니다.",
-    tone: "resell",
+    metricLabel: "매입가·배송비·수수료 반영",
+    body: `상품가 ${krw(card.price)}에 구매 배송비를 더하고, 되팔 때 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}까지 뺀 값이에요.`,
+    note: "배송비와 수수료를 따로 보지 말고 최종 순익 기준으로 판단하면 됩니다.",
+    tone: "buy",
   };
 }
 
@@ -830,8 +810,7 @@ function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
     channelGuideStep(card),
     sellerTrustGuideStep(card),
     velocityGuideStep(card),
-    buyCostGuideStep(card),
-    resellCostGuideStep(card),
+    finalMoneyGuideStep(card),
     purchaseCheckGuideStep(card),
     summaryGuideStep(card),
   ];
@@ -1211,6 +1190,16 @@ function uploadAgoLabel(firstSeenAtIso: string | null | undefined): string | nul
   if (seconds < 3600) return `${Math.round(seconds / 60)}분 전 등록`;
   if (seconds < 24 * 3600) return `${Math.round(seconds / 3600)}시간 전 등록`;
   return `${Math.round(seconds / 86400)}일 전 등록`;
+}
+
+function seenAgoLabel(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const ms = Date.now() - new Date(iso).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return null;
+  const seconds = Math.floor(ms / 1000);
+  if (seconds < 3600) return `${Math.max(1, Math.round(seconds / 60))}분 전 확인`;
+  if (seconds < 24 * 3600) return `${Math.round(seconds / 3600)}시간 전 확인`;
+  return `${Math.round(seconds / 86400)}일 전 확인`;
 }
 
 // Wave 393.7: 신선도 chip + Pro link 제거 (사용자 짚음 — 모달엔 불필요).
@@ -2505,6 +2494,15 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
 
             const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
             const isReserved = item.saleStatus === "reserved" || item.saleStatus === "RESERVED" || item.saleStatus === "예약중";
+            const evidenceType = isSold ? "판매완료" : isReserved ? "예약중" : "판매중";
+            const seenLabel = seenAgoLabel(item.lastSeenAt);
+            const relationLabel = mode === "detailed"
+              ? idx === 0
+                ? "동일 기준"
+                : idx <= 2
+                  ? "상태 유사"
+                  : "참고 매물"
+              : null;
 
             const statusBadge = isSold
               ? { label: "판매완료", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200" }
@@ -2527,6 +2525,28 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                   <div className="line-clamp-2 text-[12.5px] font-bold leading-tight tracking-tight text-zinc-700 dark:text-zinc-300">
                     {item.name || "이름 없음"}
                   </div>
+                  {mode === "detailed" ? (
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                      {relationLabel ? (
+                        <span className="rounded-full bg-blue-50 px-1.5 py-0.5 text-[9.5px] font-black text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-900/50">
+                          {relationLabel}
+                        </span>
+                      ) : null}
+                      <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                        {evidenceType}
+                      </span>
+                      {ccLabel ? (
+                        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                          {ccLabel}
+                        </span>
+                      ) : null}
+                      {seenLabel ? (
+                        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                          {seenLabel}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="shrink-0 text-right">
                   {statusBadge ? (
@@ -2546,6 +2566,16 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                   ) : (
                     <div className="mt-px text-[10px] font-medium text-zinc-400">비슷</div>
                   )}
+                  {mode === "detailed" ? (
+                    <a
+                      href={item.bunjangUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 inline-flex rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-black text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                    >
+                      원문 보기
+                    </a>
+                  ) : null}
                 </div>
               </li>
             );
@@ -4495,68 +4525,45 @@ function BeginnerGuideTrendVisual({ card }: { card: RevealCard }) {
 
 function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
   const snapshot = costAssuranceSnapshot(card);
-
-  return (
-    <div data-beginner-guide-buy-cost className="mt-4 overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
-      <div className="px-4 py-4">
-        <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">최종 매입가</div>
-        <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
-          {snapshot.buyerCostLabel}
-        </div>
-      </div>
-      <div className="divide-y divide-[#eee5d8] border-y border-[#eee5d8] dark:divide-zinc-800 dark:border-zinc-800">
-        <div className="flex items-center justify-between gap-4 px-4 py-3">
-          <div>
-            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">상품가</div>
-            <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">현재 매입 기준</div>
-          </div>
-          <div className="text-[16px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{krw(card.price)}</div>
-        </div>
-        <div className="flex items-center justify-between gap-4 px-4 py-3">
-          <div>
-            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">내가 낼 배송비</div>
-            <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">구매 전 재확인</div>
-          </div>
-          <div className="text-[16px] font-black tabular-nums text-sky-700 dark:text-sky-300">{snapshot.shippingValueLabel}</div>
-        </div>
-      </div>
-      <div className={`m-4 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${snapshot.confidenceClass}`}>
-        {snapshot.confidenceLabel}
-      </div>
-    </div>
-  );
-}
-
-function BeginnerGuideResellCostVisual({ card }: { card: RevealCard }) {
-  const snapshot = costAssuranceSnapshot(card);
   const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
-  const salePriceLabel = snapshot.salePriceLabel;
   const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`;
 
   return (
-    <div data-beginner-guide-resell-cost className="mt-4 overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+    <div data-beginner-guide-final-money data-beginner-guide-buy-cost className="mt-4 overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
       <div className="px-4 py-4">
-        <div className="flex items-center gap-2">
-          <BunjangLogo className="h-6 w-6 rounded-full" />
-          <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">번개장터 기준 예상 차익</div>
-        </div>
+        <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">최종 예상 순익</div>
         <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
           {displayProfitRange(card)}
         </div>
       </div>
       <div className="divide-y divide-[#eee5d8] border-y border-[#eee5d8] dark:divide-zinc-800 dark:border-zinc-800">
         <div className="flex items-center justify-between gap-4 px-4 py-3">
-          <span className="text-[13px] font-black text-[#172019] dark:text-zinc-50">수익 기준 시세</span>
-          <span className="text-[15px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{salePriceLabel}</span>
+          <div>
+            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">실제 매입가</div>
+            <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">상품가 + 구매 배송비</div>
+          </div>
+          <div className="text-[16px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{snapshot.buyerCostLabel}</div>
         </div>
         <div className="flex items-center justify-between gap-4 px-4 py-3">
-          <span className="text-[13px] font-black text-[#172019] dark:text-zinc-50">안전결제 수수료</span>
-          <span className="text-[15px] font-black tabular-nums text-amber-700 dark:text-amber-300">{sellingFeeLabel}</span>
+          <div>
+            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">수익 기준 시세</div>
+            <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">상세 근거 기준</div>
+          </div>
+          <div className="text-[16px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{snapshot.salePriceLabel}</div>
         </div>
         <div className="flex items-center justify-between gap-4 px-4 py-3">
-          <span className="text-[13px] font-black text-[#172019] dark:text-zinc-50">재배송비 + 안전버퍼</span>
-          <span className="text-[15px] font-black tabular-nums text-amber-700 dark:text-amber-300">{krw(RESELL_SHIPPING_FEE + SAFETY_BUFFER)}</span>
+          <div>
+            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">되팔 때 비용</div>
+            <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">수수료 + 재배송 + 안전버퍼</div>
+          </div>
+          <div className="text-right">
+            <div className="text-[15px] font-black tabular-nums text-amber-700 dark:text-amber-300">{sellingFeeLabel}</div>
+            <div className="mt-0.5 text-[11px] font-bold tabular-nums text-amber-700/80 dark:text-amber-300/80">+ {krw(RESELL_SHIPPING_FEE + SAFETY_BUFFER)}</div>
+          </div>
         </div>
+      </div>
+      <div className={`m-4 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${snapshot.confidenceClass}`}>
+        {snapshot.confidenceLabel}
       </div>
     </div>
   );
@@ -4646,7 +4653,6 @@ function BeginnerGuideStepVisual({ card, tone }: { card: RevealCard; tone: Begin
   if (tone === "market") return <BeginnerGuideMarketVisual card={card} />;
   if (tone === "trend") return <BeginnerGuideTrendVisual card={card} />;
   if (tone === "buy") return <BeginnerGuideBuyCostVisual card={card} />;
-  if (tone === "resell") return <BeginnerGuideResellCostVisual card={card} />;
   if (tone === "safety") return <BeginnerGuideSafetyVisual />;
   if (tone === "channel") return <BeginnerGuideChannelVisual card={card} />;
   if (tone === "speed") return <BeginnerGuideSpeedVisual card={card} />;

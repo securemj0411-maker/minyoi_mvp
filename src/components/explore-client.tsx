@@ -80,6 +80,15 @@ type DetailAccessLimitModal = {
   creditBalance: number | null;
   freeUsed: number | null;
   freeLimit: number | null;
+  valueSummary?: DetailAccessValueSummary | null;
+};
+
+type DetailAccessValueSummary = {
+  openedCount: number;
+  comparableCount: number;
+  expectedProfitTotal: number;
+  cautionCount: number;
+  estimatedMinutesSaved: number;
 };
 
 function krw(value: number) {
@@ -108,6 +117,36 @@ function profitAvg(item: PoolItem) {
 function profitPct(item: PoolItem) {
   if (!item.price || item.price <= 0) return null;
   return Math.round((profitAvg(item) / item.price) * 100);
+}
+
+function accessValueForItem(item: PoolItem): DetailAccessValueSummary {
+  const cautionCount = [
+    item.sellerReviewCount < 10,
+    (item.imageCount ?? 0) > 0 && (item.imageCount ?? 0) < 3,
+    !item.freeShipping,
+  ].filter(Boolean).length;
+
+  return {
+    openedCount: 1,
+    comparableCount: 12,
+    expectedProfitTotal: Math.max(0, profitAvg(item)),
+    cautionCount,
+    estimatedMinutesSaved: 15,
+  };
+}
+
+function mergeAccessValueSummary(
+  left: DetailAccessValueSummary | null,
+  right: DetailAccessValueSummary,
+): DetailAccessValueSummary {
+  if (!left) return right;
+  return {
+    openedCount: left.openedCount + right.openedCount,
+    comparableCount: left.comparableCount + right.comparableCount,
+    expectedProfitTotal: left.expectedProfitTotal + right.expectedProfitTotal,
+    cautionCount: left.cautionCount + right.cautionCount,
+    estimatedMinutesSaved: left.estimatedMinutesSaved + right.estimatedMinutesSaved,
+  };
 }
 
 function hoursAgoLabel(iso: string) {
@@ -349,6 +388,7 @@ function DetailAccessPaywallModal({
   const freeUsed = Math.min(freeLimit, Math.max(0, state.freeUsed ?? freeLimit));
   const segments = Math.min(3, Math.max(1, freeLimit));
   const creditBalance = Math.max(0, Number(state.creditBalance ?? 0));
+  const summary = state.valueSummary ?? null;
 
   return (
     <div
@@ -407,6 +447,40 @@ function DetailAccessPaywallModal({
             </div>
           </div>
 
+          {summary && summary.openedCount > 0 ? (
+            <div className="mt-3 rounded-[22px] bg-[#f5f9ff] p-4 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
+              <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">
+                무료 {summary.openedCount.toLocaleString("ko-KR")}건 동안 이렇게 봤어요
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="rounded-[16px] bg-white px-3 py-2.5 ring-1 ring-blue-50 dark:bg-zinc-950/65 dark:ring-blue-900/40">
+                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">비교 매물</div>
+                  <div className="mt-1 text-[15px] font-black text-[#3182f6] dark:text-blue-300">
+                    {summary.comparableCount.toLocaleString("ko-KR")}건
+                  </div>
+                </div>
+                <div className="rounded-[16px] bg-white px-3 py-2.5 ring-1 ring-blue-50 dark:bg-zinc-950/65 dark:ring-blue-900/40">
+                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">예상 기회 수익</div>
+                  <div className="mt-1 text-[15px] font-black text-emerald-700 dark:text-emerald-300">
+                    +{krw(summary.expectedProfitTotal)}
+                  </div>
+                </div>
+                <div className="rounded-[16px] bg-white px-3 py-2.5 ring-1 ring-blue-50 dark:bg-zinc-950/65 dark:ring-blue-900/40">
+                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">주의 신호</div>
+                  <div className="mt-1 text-[15px] font-black text-amber-700 dark:text-amber-300">
+                    {summary.cautionCount.toLocaleString("ko-KR")}개
+                  </div>
+                </div>
+                <div className="rounded-[16px] bg-white px-3 py-2.5 ring-1 ring-blue-50 dark:bg-zinc-950/65 dark:ring-blue-900/40">
+                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">판단 시간</div>
+                  <div className="mt-1 text-[15px] font-black text-zinc-900 dark:text-zinc-50">
+                    약 {summary.estimatedMinutesSaved.toLocaleString("ko-KR")}분 절약
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           <div className="mt-5 grid gap-2">
             <Link
               href="/plans"
@@ -456,6 +530,7 @@ export default function ExploreClient() {
   const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
   const [detailAccessLoadingPid, setDetailAccessLoadingPid] = useState<number | null>(null);
   const openedDetailPidsRef = useRef<Set<number>>(new Set());
+  const detailAccessValueRef = useRef<DetailAccessValueSummary | null>(null);
   const [scrapItems, setScrapItems] = useState<ScrappedPoolItem[]>([]);
   const [legacySavedPids, setLegacySavedPids] = useState<Set<number>>(() => new Set());
   const [now, setNow] = useState(Date.now());
@@ -750,11 +825,18 @@ export default function ExploreClient() {
           creditBalance,
           freeUsed,
           freeLimit,
+          valueSummary: detailAccessValueRef.current,
         });
         return;
       }
       if (Number(data.creditSpent ?? 0) > 0 && typeof window !== "undefined") {
         window.dispatchEvent(new Event("minyoi:credits-changed"));
+      }
+      if (!data.alreadyOpened && data.accessType === "free") {
+        detailAccessValueRef.current = mergeAccessValueSummary(
+          detailAccessValueRef.current,
+          accessValueForItem(item),
+        );
       }
       openedDetailPidsRef.current.add(item.pid);
       setSelectedCard(poolItemToRevealCard(item));
@@ -765,6 +847,7 @@ export default function ExploreClient() {
         creditBalance: null,
         freeUsed: null,
         freeLimit: null,
+        valueSummary: detailAccessValueRef.current,
       });
     } finally {
       setDetailAccessLoadingPid((prev) => (prev === item.pid ? null : prev));

@@ -48,7 +48,9 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.ok(order.indexOf("marketCompareGuideStep(card)") < order.indexOf("channelGuideStep(card)"));
   assert.ok(order.indexOf("channelGuideStep(card)") < order.indexOf("sellerTrustGuideStep(card)"));
   assert.ok(order.indexOf("sellerTrustGuideStep(card)") < order.indexOf("velocityGuideStep(card)"));
-  assert.ok(order.indexOf("velocityGuideStep(card)") < order.indexOf("buyCostGuideStep(card)"));
+  assert.ok(order.indexOf("velocityGuideStep(card)") < order.indexOf("finalMoneyGuideStep(card)"));
+  assert.equal(order.indexOf("buyCostGuideStep(card)"), -1);
+  assert.equal(order.indexOf("resellCostGuideStep(card)"), -1);
   assert.ok(order.indexOf("channelGuideStep(card)") < order.indexOf("purchaseCheckGuideStep(card)"));
   assert.equal(order.indexOf("marketTrendGuideStep(card)"), -1);
   assert.match(modal, /eyebrow: "1\. 먼저 걸렀어요"/);
@@ -56,8 +58,8 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.match(modal, /eyebrow: "3\. 되팔 곳"/);
   assert.match(modal, /eyebrow: "4\. 판매자 신뢰"/);
   assert.match(modal, /eyebrow: "5\. 판매 속도"/);
-  assert.match(modal, /eyebrow: "6\. 매입가"/);
-  assert.match(modal, /eyebrow: "8\. 구매 전 체크"/);
+  assert.match(modal, /eyebrow: "6\. 최종 순익"/);
+  assert.match(modal, /eyebrow: "7\. 구매 전 체크"/);
 });
 
 test("detail modal uses the mobile detail shell on desktop", () => {
@@ -191,14 +193,14 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /비교 매물 \$\{moreCount\.toLocaleString\("ko-KR"\)\}개 더 보기/);
   assert.match(modal, /MarketHistoryChart/);
   assert.match(modal, /data-beginner-guide-market-trend/);
+  assert.match(modal, /data-beginner-guide-final-money/);
   assert.match(modal, /data-beginner-guide-buy-cost/);
-  assert.match(modal, /data-beginner-guide-resell-cost/);
-  assert.match(modal, /판매자 무료배송/);
-  assert.match(modal, /배송비를 누가 부담하는지 한 번 더 확인/);
-  assert.match(modal, /되팔 때 드는 비용을 빼요/);
-  assert.match(modal, /수수료·배송비까지 뺀 예상 차익/);
-  assert.ok(modal.includes('<BunjangLogo className="h-6 w-6 rounded-full" />'));
-  assert.match(modal, /내가 낼 배송비/);
+  assert.doesNotMatch(modal, /data-beginner-guide-resell-cost/);
+  assert.match(modal, /최종으로 손에 남는 돈을 봐요/);
+  assert.match(modal, /실제 매입가/);
+  assert.match(modal, /되팔 때 비용/);
+  assert.match(modal, /매입가·배송비·수수료 반영/);
+  assert.ok(modal.includes('<BunjangLogo className="h-7 w-7 rounded-full" />'));
   assert.match(modal, /data-beginner-guide-safe-payment/);
   assert.match(modal, /구매확정/);
   assert.match(modal, /data-beginner-guide-channel-profit/);
@@ -208,6 +210,11 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /최대 매입가/);
   assert.match(modal, /이번에 정리한 근거/);
   assert.match(modal, /원본 매물과 계산값까지/);
+  assert.match(modal, /원문 보기/);
+  assert.match(modal, /동일 기준/);
+  assert.match(modal, /상태 유사/);
+  assert.match(modal, /참고 매물/);
+  assert.match(modal, /seenAgoLabel/);
   assert.match(modal, /minyoiGuideStepIn/);
   assert.match(modal, /data-beginner-guide-reopen/);
   assert.match(modal, /쉽게 보기/);
