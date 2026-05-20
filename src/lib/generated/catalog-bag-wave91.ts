@@ -204,7 +204,6 @@ export const BAG_CATALOG: Sku[] = [
     released: 2024,
     laneKey: "bag_prada_galleria_mini_saffiano",
     defaultProductType: "tote", // Wave 269d: narrow SKU type fallback
-    defaultProductType: "tote", // Wave 236d — Galleria = 토트백 시그니처.
   },
   {
     id: "bag-prada-nylon-hobo-vintage",
