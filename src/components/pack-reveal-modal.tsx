@@ -4004,6 +4004,8 @@ export default function PackRevealModal({
   const activeRevealPid = activeRevealCard?.pid ?? null;
   const [savedPids, setSavedPids] = useState<Set<number>>(() => new Set());
   const activeRevealSaved = activeRevealPid != null && savedPids.has(activeRevealPid);
+  const [saveToast, setSaveToast] = useState<string | null>(null);
+  const saveToastTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!open || activeRevealPid == null) return;
@@ -4027,7 +4029,32 @@ export default function PackRevealModal({
     });
     if (currentSaved == null) writeSavedRevealPid(activeRevealCard.pid, nextSaved);
     onSaveToggle?.(activeRevealCard.pid, nextSaved);
+    setSaveToast(nextSaved ? "스크랩에 저장했어요" : "스크랩에서 해제했어요");
+    if (saveToastTimerRef.current != null) {
+      window.clearTimeout(saveToastTimerRef.current);
+    }
+    saveToastTimerRef.current = window.setTimeout(() => {
+      setSaveToast(null);
+      saveToastTimerRef.current = null;
+    }, 1600);
   }, [activeRevealCard, activeRevealSaved, currentSaved, onSaveToggle]);
+
+  useEffect(() => {
+    if (open) return;
+    setSaveToast(null);
+    if (saveToastTimerRef.current != null) {
+      window.clearTimeout(saveToastTimerRef.current);
+      saveToastTimerRef.current = null;
+    }
+  }, [open]);
+
+  useEffect(() => {
+    return () => {
+      if (saveToastTimerRef.current != null) {
+        window.clearTimeout(saveToastTimerRef.current);
+      }
+    };
+  }, []);
 
   // 사진 영역 IntersectionObserver — scrollAreaRef 안에서 사진 visibility 추적.
   useEffect(() => {
@@ -4216,6 +4243,15 @@ export default function PackRevealModal({
         className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#ebe6dc] shadow-none dark:bg-zinc-900 sm:h-auto sm:max-h-[88vh] sm:max-w-6xl sm:rounded-2xl sm:border sm:border-[#ddd6ca] sm:bg-[#fffdf9] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.16)] sm:dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
+        {saveToast ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className="pointer-events-none absolute left-1/2 top-14 z-40 -translate-x-1/2 rounded-full bg-zinc-950/90 px-3.5 py-2 text-xs font-black text-white shadow-[0_12px_28px_rgba(0,0,0,0.22)] backdrop-blur dark:bg-white/95 dark:text-zinc-950 sm:top-5"
+          >
+            {saveToast}
+          </div>
+        ) : null}
         {/* Wave 360+361+362+364: 당근식 nav 유기적 전환.
             사진 보일 때 → floating icon (drop-shadow on photo).
             사진 사라지면 → sticky nav bar (cream 배경 + border + zinc icon). */}

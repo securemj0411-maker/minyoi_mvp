@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
-import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, TargetIcon, HourglassIcon } from "@/components/icons";
+import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, TargetIcon, HourglassIcon, BookmarkIcon } from "@/components/icons";
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import KakaoLogo from "@/components/kakao-logo";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
@@ -37,6 +37,10 @@ type PoolItem = {
   sellerReviewCount: number;
   descriptionPreview: string;
   soldOut: boolean;
+};
+
+type ScrappedPoolItem = PoolItem & {
+  savedAt: string;
 };
 
 type PoolResponse = {
@@ -189,6 +193,9 @@ type Budget = "150k" | "300k" | "500k" | "unlimited";
 type Preference = "safe" | "balanced" | "aggressive";
 type UserPreferences = { budget: Budget; preference: Preference };
 const PREFS_STORAGE_KEY = "minyoi_explore_prefs_v1";
+const SCRAP_SNAPSHOTS_STORAGE_KEY = "minyoi_scrap_snapshots_v1";
+const LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY = "minyoi_saved_reveal_pids_v1";
+const MAX_LOCAL_SCRAP_SNAPSHOTS = 500;
 
 function loadPreferences(): UserPreferences | null {
   if (typeof window === "undefined") return null;
@@ -213,6 +220,112 @@ function savePreferences(prefs: UserPreferences) {
   } catch {
     // ignore
   }
+}
+
+function isScrappedPoolItem(value: unknown): value is ScrappedPoolItem {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Partial<ScrappedPoolItem>;
+  return (
+    Number.isFinite(Number(item.pid)) &&
+    typeof item.name === "string" &&
+    Number.isFinite(Number(item.price)) &&
+    typeof item.savedAt === "string"
+  );
+}
+
+function loadScrapSnapshots(): ScrappedPoolItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(SCRAP_SNAPSHOTS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(isScrappedPoolItem)
+      .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime())
+      .slice(0, MAX_LOCAL_SCRAP_SNAPSHOTS);
+  } catch {
+    return [];
+  }
+}
+
+function saveScrapSnapshots(items: ScrappedPoolItem[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      SCRAP_SNAPSHOTS_STORAGE_KEY,
+      JSON.stringify(items.slice(0, MAX_LOCAL_SCRAP_SNAPSHOTS)),
+    );
+  } catch {
+    // ignore
+  }
+}
+
+function readLocalSavedPidSet() {
+  if (typeof window === "undefined") return new Set<number>();
+  try {
+    const raw = window.localStorage.getItem(LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY);
+    if (!raw) return new Set<number>();
+    const parsed: unknown = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return new Set(
+        parsed
+          .map((value) => Number(value))
+          .filter((value) => Number.isFinite(value)),
+      );
+    }
+    if (parsed && typeof parsed === "object") {
+      return new Set(
+        Object.keys(parsed)
+          .map((value) => Number(value))
+          .filter((value) => Number.isFinite(value)),
+      );
+    }
+  } catch {
+    // ignore
+  }
+  return new Set<number>();
+}
+
+function writeLocalSavedPid(pid: number, saved: boolean) {
+  if (typeof window === "undefined" || !Number.isFinite(pid)) return;
+  try {
+    const next = readLocalSavedPidSet();
+    if (saved) next.add(pid);
+    else next.delete(pid);
+    window.localStorage.setItem(
+      LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY,
+      JSON.stringify(Array.from(next).slice(-MAX_LOCAL_SCRAP_SNAPSHOTS)),
+    );
+  } catch {
+    // ignore
+  }
+}
+
+function revealCardToPoolItem(card: RevealCard): PoolItem {
+  return {
+    pid: card.pid,
+    name: card.name,
+    price: card.price,
+    skuMedian: card.marketBasis?.medianPrice ?? null,
+    thumbnailUrl: card.thumbnailUrl,
+    skuId: card.skuId,
+    skuName: card.skuName,
+    expectedProfitMin: card.expectedProfitMin,
+    expectedProfitMax: card.expectedProfitMax,
+    profitBand: Number(card.band ?? 2),
+    confidence: card.confidence,
+    category: null,
+    conditionClass: card.marketBasis?.conditionClass ?? null,
+    comparableKey: card.marketBasis?.comparableKey ?? null,
+    lastVerifiedAt: card.lastVerifiedAt,
+    firstSeenAt: card.firstSeenAt ?? null,
+    freeShipping: Boolean(card.savedDetail?.freeShipping),
+    sellerReviewRating: card.savedDetail?.sellerReviewRating ?? null,
+    sellerReviewCount: card.savedDetail?.sellerReviewCount ?? 0,
+    descriptionPreview: card.savedDetail?.descriptionPreview ?? "",
+    soldOut: false,
+  };
 }
 
 function DetailAccessPaywallModal({
@@ -329,6 +442,8 @@ export default function ExploreClient() {
   const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
   const [detailAccessLoadingPid, setDetailAccessLoadingPid] = useState<number | null>(null);
   const openedDetailPidsRef = useRef<Set<number>>(new Set());
+  const [scrapItems, setScrapItems] = useState<ScrappedPoolItem[]>([]);
+  const [legacySavedPids, setLegacySavedPids] = useState<Set<number>>(() => new Set());
   const [now, setNow] = useState(Date.now());
   const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
   // Wave 346: refresh modal — 기다리기/충전 옵션
@@ -393,15 +508,31 @@ export default function ExploreClient() {
     const raw = searchParams.get("sort");
     return raw === "latest" ? "latest" : "profit_desc";
   });
+  const [scrapOnly, setScrapOnly] = useState(() => searchParams.get("view") === "scrap");
+
+  useEffect(() => {
+    const loadedScraps = loadScrapSnapshots();
+    const loadedPids = readLocalSavedPidSet();
+    loadedScraps.forEach((item) => openedDetailPidsRef.current.add(item.pid));
+    setScrapItems(loadedScraps);
+    setLegacySavedPids(loadedPids);
+  }, []);
+
+  const savedPidSet = useMemo(() => {
+    const next = new Set(legacySavedPids);
+    scrapItems.forEach((item) => next.add(item.pid));
+    return next;
+  }, [legacySavedPids, scrapItems]);
 
   // 필터/정렬 변경 시 URL 갱신
   useEffect(() => {
     const params = new URLSearchParams();
-    if (selectedCategories.size > 0) params.set("categories", Array.from(selectedCategories).join(","));
+    if (scrapOnly) params.set("view", "scrap");
+    else if (selectedCategories.size > 0) params.set("categories", Array.from(selectedCategories).join(","));
     if (sort !== "profit_desc") params.set("sort", sort);
     const queryString = params.toString();
     router.replace(`${pathname}${queryString ? `?${queryString}` : ""}`, { scroll: false });
-  }, [selectedCategories, sort, router, pathname]);
+  }, [selectedCategories, scrapOnly, sort, router, pathname]);
 
   // Cooldown tick (매초 갱신)
   useEffect(() => {
@@ -510,9 +641,10 @@ export default function ExploreClient() {
   // Wave 353: 클라이언트 사이드 카테고리 필터. 전체 풀(items)에서 selectedCategories에 속한 매물만.
   // category가 null이면 selectedCategories 활성 시 제외 (안전).
   const displayItems = useMemo(() => {
+    if (scrapOnly) return scrapItems;
     if (selectedCategories.size === 0) return items;
     return items.filter((it) => it.category != null && selectedCategories.has(it.category));
-  }, [items, selectedCategories]);
+  }, [items, scrapItems, scrapOnly, selectedCategories]);
 
   // PackRevealModal용 result wrapper (single card)
   const modalResult: RevealResult | null = useMemo(() => {
@@ -621,6 +753,37 @@ export default function ExploreClient() {
     if (item) void openItemDetail(item);
   }, [items, openItemDetail]);
 
+  const handleScrapToggle = useCallback((pid: number, saved: boolean) => {
+    writeLocalSavedPid(pid, saved);
+    setLegacySavedPids((prev) => {
+      const next = new Set(prev);
+      if (saved) next.add(pid);
+      else next.delete(pid);
+      return next;
+    });
+    setScrapItems((prev) => {
+      const withoutTarget = prev.filter((item) => item.pid !== pid);
+      if (!saved) {
+        saveScrapSnapshots(withoutTarget);
+        return withoutTarget;
+      }
+
+      const sourceItem =
+        items.find((item) => item.pid === pid) ??
+        prev.find((item) => item.pid === pid) ??
+        (selectedCard?.pid === pid ? revealCardToPoolItem(selectedCard) : null);
+      if (!sourceItem) return prev;
+
+      openedDetailPidsRef.current.add(pid);
+      const next = [
+        { ...sourceItem, savedAt: new Date().toISOString() },
+        ...withoutTarget,
+      ].slice(0, MAX_LOCAL_SCRAP_SNAPSHOTS);
+      saveScrapSnapshots(next);
+      return next;
+    });
+  }, [items, selectedCard]);
+
   // Wave 339b: /api/packs/pool/analysis로 marketBasis/velocityBasis lazy-fill.
   // assertRevealAccess 우회 (pid 기반). 가져온 분석으로 selectedCard 갱신.
   const handleLoadDetail = useCallback(async (pid: number): Promise<RevealListingDetail> => {
@@ -683,6 +846,26 @@ export default function ExploreClient() {
 
       {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음). */}
       <div className="sticky top-0 z-20 -mx-3 mb-2 flex items-center gap-1.5 overflow-x-auto bg-[#f6f1e8]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:px-6">
+        <button
+          type="button"
+          onClick={() => {
+            setScrapOnly((prev) => !prev);
+            setSelectedCategories(new Set());
+          }}
+          className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
+            scrapOnly
+              ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
+              : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
+          }`}
+        >
+          <BookmarkIcon className="h-3.5 w-3.5 shrink-0" strokeWidth={2} fill={scrapOnly ? "currentColor" : "none"} />
+          스크랩
+          {scrapItems.length > 0 ? (
+            <span className={scrapOnly ? "text-white/70 dark:text-zinc-950/70" : "text-zinc-400"}>
+              {scrapItems.length.toLocaleString("ko-KR")}
+            </span>
+          ) : null}
+        </button>
         {CATEGORY_OPTIONS.map((opt) => {
           const isActive = selectedCategories.has(opt.value);
           return (
@@ -696,6 +879,7 @@ export default function ExploreClient() {
                   else next.add(opt.value);
                   return next;
                 });
+                setScrapOnly(false);
               }}
               className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
                 isActive
@@ -709,10 +893,13 @@ export default function ExploreClient() {
             </button>
           );
         })}
-        {selectedCategories.size > 0 ? (
+        {selectedCategories.size > 0 || scrapOnly ? (
           <button
             type="button"
-            onClick={() => setSelectedCategories(new Set())}
+            onClick={() => {
+              setSelectedCategories(new Set());
+              setScrapOnly(false);
+            }}
             className="shrink-0 px-1.5 py-1 text-[10px] font-medium text-zinc-500 underline dark:text-zinc-400"
           >
             초기화
@@ -783,7 +970,7 @@ export default function ExploreClient() {
         <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200">
           {error}
         </div>
-      ) : items.length === 0 ? (
+      ) : !scrapOnly && items.length === 0 ? (
         // Wave 370 + 381: preferences 적용 결과 빈 경우 명확화. 예산 수정 유도.
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 px-5 py-8 text-center dark:border-amber-900/40 dark:bg-amber-950/20">
           <HourglassIcon className="mx-auto h-8 w-8 text-amber-600 dark:text-amber-300" />
@@ -823,33 +1010,38 @@ export default function ExploreClient() {
         // Wave 353: 클라이언트 필터 결과 빈 경우 — 풀엔 있는데 선택 카테고리에만 없음.
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
           <p className="text-sm font-bold text-amber-900 dark:text-amber-100">
-            이번 30개 풀에 해당 카테고리 매물이 없어요
+            {scrapOnly ? "아직 스크랩한 매물이 없어요" : "이번 30개 풀에 해당 카테고리 매물이 없어요"}
           </p>
           <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-            필터 초기화하거나, 다른 30개를 받아보세요.
+            {scrapOnly ? "상세보기에서 북마크를 누르면 여기에 모여요." : "필터 초기화하거나, 다른 30개를 받아보세요."}
           </p>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             <button
               type="button"
-              onClick={() => setSelectedCategories(new Set())}
+              onClick={() => {
+                setSelectedCategories(new Set());
+                setScrapOnly(false);
+              }}
               className="rounded-full border border-amber-400 bg-white px-3 py-1.5 text-xs font-bold text-amber-800 dark:border-amber-700 dark:bg-zinc-900 dark:text-amber-200"
             >
-              전체 카테고리 보기
+              전체 매물 보기
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (canRefresh) {
-                  void loadPool(true);
-                } else {
-                  setRefreshModalOpen(true);
-                }
-              }}
-              className="rounded-full bg-amber-600 px-3 py-1.5 text-xs font-bold text-white"
-            >
-              <SearchIcon className="mr-1 inline h-3 w-3" />
-              더 찾아보기
-            </button>
+            {!scrapOnly ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (canRefresh) {
+                    void loadPool(true);
+                  } else {
+                    setRefreshModalOpen(true);
+                  }
+                }}
+                className="rounded-full bg-amber-600 px-3 py-1.5 text-xs font-bold text-white"
+              >
+                <SearchIcon className="mr-1 inline h-3 w-3" />
+                더 찾아보기
+              </button>
+            ) : null}
           </div>
         </div>
       ) : (
@@ -971,7 +1163,7 @@ export default function ExploreClient() {
       )}
 
       {/* Wave 358: 빈 공간 채우기 — 매물 끝에 다음 라운드 안내 카드. */}
-      {!loading && items.length > 0 ? (
+      {!loading && !scrapOnly && items.length > 0 ? (
         <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900/50">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/40">
@@ -1004,7 +1196,7 @@ export default function ExploreClient() {
       {/* Wave 390: "다른 매물 찾기" → "더 찾아보기".
           canRefresh이면 모달 X, 직접 loadPool(true) — 자연스럽게 append.
           !canRefresh면 cooldown 모달 (카톡/즉시받기/대기). */}
-      {!loading && items.length > 0 ? (
+      {!loading && !scrapOnly && items.length > 0 ? (
         <div className="sticky bottom-4 z-20 mt-4 flex justify-center px-4 sm:mt-6 sm:px-0">
           <button
             type="button"
@@ -1373,6 +1565,8 @@ export default function ExploreClient() {
         onRetry={() => {}}
         relatedItems={relatedItems}
         onOpenRelatedItem={handleOpenRelatedItem}
+        currentSaved={selectedCard ? savedPidSet.has(selectedCard.pid) : undefined}
+        onSaveToggle={handleScrapToggle}
       />
     </div>
   );
