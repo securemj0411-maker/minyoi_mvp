@@ -550,19 +550,14 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   };
 }
 
-function summaryGuideStep(card: RevealCard): BeginnerGuideStep {
-  const market = card.marketBasis;
-  const sampleCount = market?.sampleCount ?? 0;
-
+function summaryGuideStep(): BeginnerGuideStep {
   return {
-    eyebrow: "9. 마무리",
+    eyebrow: "",
     title: "이제 상세 분석으로 넘어가면 돼요",
     metric: "근거 확인 완료",
     metricLabel: "비교 매물 · 배송비 · 수수료 · 안전결제",
-    body: "지금까지 핵심 판단 근거를 한 장씩 봤어요. 더 자세한 계산식과 원본 매물은 상세 분석에서 확인하면 됩니다.",
-    note: sampleCount > 0
-      ? `비교 표본 ${sampleCount.toLocaleString("ko-KR")}건 기준이며, 실제 결과는 가격·상태·거래 조건에 따라 달라집니다.`
-      : "실제 결과는 가격·상태·거래 조건에 따라 달라집니다.",
+    body: "",
+    note: "",
     tone: "summary",
   };
 }
@@ -577,7 +572,7 @@ function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
     safePaymentGuideStep(),
     channelGuideStep(card),
     velocityGuideStep(card),
-    summaryGuideStep(card),
+    summaryGuideStep(),
   ];
 }
 
@@ -3803,14 +3798,9 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
 
 function BeginnerGuideSummaryVisual() {
   return (
-    <div className="rounded-[22px] bg-white/82 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
-      <div className="grid gap-2 text-[13px] font-bold text-[#4f5b52] dark:text-zinc-300">
-        {["비교 매물 확인", "시세 흐름 확인", "매입가·배송비 확인", "수수료·안전결제 확인"].map((label) => (
-          <div key={label} className="flex items-center gap-2 rounded-[14px] bg-[#f4efe5] px-3 py-2.5 dark:bg-zinc-900">
-            <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-300" />
-            <span>{label}</span>
-          </div>
-        ))}
+    <div className="flex justify-center">
+      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/55 dark:text-emerald-200 dark:ring-emerald-900/60">
+        <CheckCircleIcon className="h-14 w-14" />
       </div>
     </div>
   );
@@ -4097,6 +4087,7 @@ function BeginnerGuideWalkthrough({
   const step = steps[safeIndex];
   const isLast = safeIndex === steps.length - 1;
   const canGoPrev = safeIndex > 0;
+  const isSummary = step.tone === "summary";
   const toneClasses: Record<BeginnerGuideStep["tone"], { bg: string; text: string; ring: string; button: string }> = {
     trust: {
       bg: "bg-[#eef6ec]",
@@ -4155,7 +4146,7 @@ function BeginnerGuideWalkthrough({
   };
   const toneClass = toneClasses[step.tone];
   const showDefaultMetric = step.tone === "speed";
-  const showNote = step.tone === "safety" || step.tone === "summary";
+  const showNote = step.tone === "safety";
 
   return (
     <section
@@ -4195,20 +4186,23 @@ function BeginnerGuideWalkthrough({
         >
           {step.tone === "trust" ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
 
-          <div className={step.tone === "trust" ? "mt-4" : ""}>
-            <div className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ${toneClass.bg} ${toneClass.text} ring-1 ${toneClass.ring}`}>
-              {step.eyebrow}
-            </div>
-            <h2 className="mt-3 break-keep text-[24px] font-black leading-[1.16] text-[#172019] dark:text-zinc-50 sm:text-[28px]">
+          <div className={step.tone === "trust" ? "mt-4" : isSummary ? "flex flex-1 flex-col items-center justify-center text-center" : ""}>
+            {isSummary ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
+            {!isSummary ? (
+              <div className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ${toneClass.bg} ${toneClass.text} ring-1 ${toneClass.ring}`}>
+                {step.eyebrow}
+              </div>
+            ) : null}
+            <h2 className={`${isSummary ? "mt-7 max-w-[280px]" : "mt-3"} break-keep text-[24px] font-black leading-[1.16] text-[#172019] dark:text-zinc-50 sm:text-[28px]`}>
               {step.title}
             </h2>
             {step.tone === "trust" ? (
               <BeginnerGuideTrustBody card={card} fallback={step.body} />
-            ) : (
+            ) : step.body ? (
               <p className="mt-3 break-keep text-[15px] font-semibold leading-6 text-[#475449] dark:text-zinc-300">
                 {step.body}
               </p>
-            )}
+            ) : null}
 
             {step.tone === "trust" ? (
               <BeginnerGuideTrustMetric card={card} />
@@ -4230,7 +4224,7 @@ function BeginnerGuideWalkthrough({
             ) : null}
           </div>
 
-          {step.tone !== "trust" ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
+          {step.tone !== "trust" && !isSummary ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
 
         </div>
       </div>

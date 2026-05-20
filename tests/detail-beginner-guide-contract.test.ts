@@ -25,7 +25,7 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.match(modal, /안전결제/);
   assert.match(modal, /되팔 곳/);
   assert.match(modal, /판매 속도/);
-  assert.match(modal, /마무리/);
+  assert.match(modal, /이제 상세 분석으로 넘어가면 돼요/);
   assert.match(modal, /상세 분석 보기/);
   assert.match(modal, /초보자 가이드 스킵하기/);
   assert.match(modal, /onPrev/);
@@ -75,7 +75,8 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /medianHoursToSold/);
   assert.match(modal, /observedSoldSampleCount/);
   assert.match(modal, /시세 거래 표본/);
-  assert.match(modal, /실제 결과는 가격·상태·거래 조건에 따라 달라집니다/);
+  assert.match(modal, /h-14 w-14/);
+  assert.doesNotMatch(modal, /지금까지 핵심 판단 근거|비교 표본 .* 실제 결과/);
   assert.doesNotMatch(modal, /무조건|본전|수익 보장|돈을 벌|얼마를 벌/);
 });
 
