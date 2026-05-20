@@ -13,7 +13,8 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 // 정책:
 // - 인증 필수 (로그인 사용자만)
 // - 30개 매물 / 1 페이지 (limit)
-// - "새 30개 받기" = 30min cooldown (mvp_user_credits.last_free_browse_at)
+// - 무료 "새 30개 받기" = 2h cooldown (mvp_user_credits.last_free_browse_at)
+// - 크레딧 1개 이상 보유자는 피드 탐색 쿨다운 우회. 크레딧은 상세 분석 열람 때만 차감.
 // - 정렬: profit_band desc, expected_profit_max desc (안정적 = 같은 사용자 같은 매물)
 // - 마스킹 X (가입한 사용자는 다 봄)
 //

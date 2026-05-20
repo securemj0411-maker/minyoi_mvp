@@ -12,7 +12,8 @@ import KakaoLogo from "@/components/kakao-logo";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
-// 무료 사용자 매물 풀 browsing. 6h+ 매물 30개 (ready 25 + 오늘 invalidated 5) + 30min cooldown
+// 무료 사용자 매물 풀 browsing. 30개 풀 + 2h cooldown.
+// 크레딧 1개 이상 보유자는 피드 탐색 무제한, 크레딧은 상세 분석 열람 때만 차감.
 // + 통계 배너 + paywall 예고 + sold out 오버레이 + PackRevealModal 통합.
 
 type PoolItem = {
@@ -1328,14 +1329,10 @@ export default function ExploreClient() {
                   ? "새로운 매물 풀로 갱신 · 다양한 카테고리"
                   : `${formatCooldown(remainingSec)} 후 새 매물 자동으로 풀려요`}
               </div>
-              {stats && stats.freshLocked > 0 ? (
-                <div className="mt-2 flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1.5 text-[11px] font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+              {!creditFeedEnabled ? (
+                <div className="mt-2 flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-1.5 text-[11px] font-bold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
                   <ZapIcon className="h-3 w-3" />
-                  <span>
-                    {creditFeedEnabled
-                      ? `크레딧 보유 중 · 피드 탐색 무제한`
-                      : `지금 즉시 매물 ${stats.freshLocked.toLocaleString("ko-KR")}건은 크레딧 충전 사용자 전용`}
-                  </span>
+                  <span>크레딧 1개 이상이면 대기 없이 피드 계속 보기</span>
                 </div>
               ) : null}
             </div>

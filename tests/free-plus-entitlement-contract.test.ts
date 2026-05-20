@@ -42,8 +42,10 @@ test("pool detail access gives first three unique pids free, then spends one cre
 
 test("credit holders can browse the feed without refresh cooldown", () => {
   const poolRoute = source("src/app/api/packs/pool/route.ts");
+  const statsRoute = source("src/app/api/stats/pool/route.ts");
   const explore = source("src/components/explore-client.tsx");
 
+  assert.match(poolRoute, /2h cooldown/);
   assert.match(poolRoute, /select=user_ref,balance,last_free_browse_at/);
   assert.match(poolRoute, /const creditFeed = isAdminUser\(auth\.user\) \|\| Number\(credits\?\.balance \?\? 0\) > 0/);
   assert.match(poolRoute, /if \(refresh && !creditFeed && !cooldown\.canRefresh\)/);
@@ -62,7 +64,14 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(explore, /피드는 차감 0개예요/);
   assert.match(explore, /크레딧 충전하고 바로 이어보기/);
   assert.match(explore, /피드 무제한/);
+  assert.match(explore, /크레딧 1개 이상이면 대기 없이 피드 계속 보기/);
+  assert.doesNotMatch(explore, /지금 즉시 매물/);
+  assert.doesNotMatch(explore, /크레딧 충전 사용자 전용/);
   assert.match(explore, /!creditFeedEnabled && items\.length > 0/);
+
+  assert.match(statsRoute, /freshLocked: 0/);
+  assert.match(statsRoute, /freshLagHours: 0/);
+  assert.doesNotMatch(statsRoute, /FRESH_LAG_HOURS = 6/);
 });
 
 test("explore opens the modal only after detail access is granted", () => {

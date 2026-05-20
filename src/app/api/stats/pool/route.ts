@@ -5,16 +5,14 @@ import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 // /explore 페이지 상단 배너에 표시.
 //
 // "오늘 X건 잡힘" = 오늘 invalidated 된 매물 (다른 사용자가 채감, sold-out)
-// "Y건 놓침" = 무료 사용자가 못 본 신선 매물 (last_verified_at > NOW() - 6h, 유료 전용 영역)
-//
-// FOMO 효과: "유료면 6h 전에 X건 잡았을 텐데" 후회 시각화.
+// freshLocked는 이전 "신선 매물 잠금" 정책의 legacy 필드.
+// 현재 정책은 6h 신선 매물 차단이 아니라 무료 2h 쿨다운 vs 크레딧 보유자 무제한 피드다.
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const CACHE_SECONDS = 60;
-const FRESH_LAG_HOURS = 6;
 
 export async function GET() {
   try {
@@ -22,20 +20,11 @@ export async function GET() {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const todayIso = todayStart.toISOString();
-    const sixHoursAgo = new Date(Date.now() - FRESH_LAG_HOURS * 60 * 60 * 1000).toISOString();
 
-    const [caughtRes, freshRes] = await Promise.all([
-      // 오늘 invalidated 된 매물 (다른 사용자가 잡았거나 sold out)
-      restFetch(
-        `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}`,
-        { headers: { ...headers, Prefer: "count=exact" } },
-      ),
-      // 무료 사용자가 못 본 신선 매물 (6h 미만, 유료 전용 영역)
-      restFetch(
-        `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.ready&last_verified_at=gt.${encodeURIComponent(sixHoursAgo)}`,
-        { headers: { ...headers, Prefer: "count=exact" } },
-      ),
-    ]);
+    const caughtRes = await restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}`,
+      { headers: { ...headers, Prefer: "count=exact" } },
+    );
 
     // Supabase REST: Content-Range header에 total count
     function parseCount(res: Response): number {
@@ -45,12 +34,11 @@ export async function GET() {
     }
 
     const caughtToday = parseCount(caughtRes);
-    const freshLocked = parseCount(freshRes);
 
     return NextResponse.json({
       caughtToday,    // "오늘 N건 잡힘"
-      freshLocked,    // "Y건 놓침" (무료 사용자가 못 본 신선 매물)
-      freshLagHours: FRESH_LAG_HOURS,
+      freshLocked: 0, // legacy: 신선 매물 잠금 없음
+      freshLagHours: 0,
     }, {
       headers: { "Cache-Control": `public, max-age=${CACHE_SECONDS}, s-maxage=${CACHE_SECONDS}` },
     });
