@@ -60,6 +60,11 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(poolRoute, /creditFeed/);
 
   assert.match(explore, /creditFeedEnabled/);
+  assert.match(explore, /lockedPreviewTitle/);
+  assert.match(explore, /원제목·원본 사진·판매자 정보는 상세 분석에서 보여드려요/);
+  assert.match(explore, /원본 사진은/);
+  assert.match(explore, /상세 열면 원본 공개/);
+  assert.match(explore, /openedDetailPids/);
   assert.match(explore, /data-credit-infinite-feed-sentinel/);
   assert.match(explore, /IntersectionObserver/);
   assert.match(explore, /autoScrollNew: false/);

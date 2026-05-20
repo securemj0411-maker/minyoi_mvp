@@ -98,6 +98,18 @@ function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
 
+function krwTenThousandBand(value: number) {
+  const rounded = Math.max(0, Math.floor(value / 10000));
+  if (rounded <= 0) return "1만원 미만";
+  return `${rounded.toLocaleString("ko-KR")}만원대`;
+}
+
+function lockedProfitLabel(item: PoolItem) {
+  const avg = profitAvg(item);
+  if (avg <= 0) return "수익 후보";
+  return `+${krwTenThousandBand(avg)}`;
+}
+
 // Wave 383+385: cooldown 표시 — 초까지 보여서 카운트다운 실시간 가시.
 // 매초 setNow 갱신 (line ~213 setInterval) → remainingSec useMemo 재계산 → 표시 매초 변경.
 function formatCooldown(sec: number): string {
@@ -234,6 +246,42 @@ const CATEGORY_OPTIONS = [
   { value: "bag", label: "가방" },
   { value: "clothing", label: "옷" },
 ];
+
+const CATEGORY_LABEL_BY_VALUE = new Map(CATEGORY_OPTIONS.map((opt) => [opt.value, opt.label]));
+
+const CONDITION_PREVIEW_LABELS: Record<string, string> = {
+  unopened: "미개봉",
+  mint: "S급",
+  clean: "A급",
+  normal: "상태 보통",
+  worn: "사용감 있음",
+  flawed: "하자 있음",
+  low_batt: "배터리 약함",
+};
+
+function conditionPreviewLabel(conditionClass: string | null) {
+  if (!conditionClass) return "상태 확인";
+  return CONDITION_PREVIEW_LABELS[conditionClass] ?? "상태 확인";
+}
+
+function lockedPreviewModelLabel(item: PoolItem) {
+  const raw = `${item.skuName ?? ""} ${item.name ?? ""}`.toLowerCase();
+  if (raw.includes("airpods max") || raw.includes("에어팟 맥스") || raw.includes("에어팟맥스")) return "에어팟 맥스 계열";
+  if (raw.includes("airpods pro") || raw.includes("에어팟 프로") || raw.includes("에어팟프로")) return "에어팟 프로 계열";
+  if (raw.includes("airpods") || raw.includes("에어팟")) return "에어팟 계열";
+  if (raw.includes("macbook") || raw.includes("맥북")) return "맥북 계열";
+  if (raw.includes("ipad") || raw.includes("아이패드")) return "아이패드 계열";
+  if (raw.includes("apple watch") || raw.includes("애플워치")) return "애플워치 계열";
+  if (raw.includes("dji")) return "DJI 계열";
+  if (raw.includes("supreme") || raw.includes("슈프림")) return "슈프림 계열";
+  if (raw.includes("rrl") || raw.includes("더블알엘")) return "RRL 계열";
+  if (raw.includes("arcteryx") || raw.includes("아크테릭스")) return "아크테릭스 계열";
+  return `${CATEGORY_LABEL_BY_VALUE.get(item.category ?? "") ?? "추천"} 매물`;
+}
+
+function lockedPreviewTitle(item: PoolItem) {
+  return `${lockedPreviewModelLabel(item)} · ${conditionPreviewLabel(item.conditionClass)} 후보`;
+}
 
 type SortOption = "profit_desc" | "latest" | "price_asc";
 
@@ -535,6 +583,7 @@ export default function ExploreClient() {
   const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
   const [detailAccessLoadingPid, setDetailAccessLoadingPid] = useState<number | null>(null);
   const openedDetailPidsRef = useRef<Set<number>>(new Set());
+  const [openedDetailPids, setOpenedDetailPids] = useState<Set<number>>(() => new Set());
   const detailAccessValueRef = useRef<DetailAccessValueSummary | null>(null);
   const infiniteFeedSentinelRef = useRef<HTMLDivElement | null>(null);
   const [scrapItems, setScrapItems] = useState<ScrappedPoolItem[]>([]);
@@ -615,6 +664,8 @@ export default function ExploreClient() {
     const loadedScraps = loadScrapSnapshots();
     const loadedPids = readLocalSavedPidSet();
     loadedScraps.forEach((item) => openedDetailPidsRef.current.add(item.pid));
+    loadedPids.forEach((pid) => openedDetailPidsRef.current.add(pid));
+    setOpenedDetailPids(new Set(openedDetailPidsRef.current));
     setScrapItems(loadedScraps);
     setLegacySavedPids(loadedPids);
   }, []);
@@ -911,6 +962,7 @@ export default function ExploreClient() {
         );
       }
       openedDetailPidsRef.current.add(item.pid);
+      setOpenedDetailPids(new Set(openedDetailPidsRef.current));
       setSelectedCard(poolItemToRevealCard(item));
     } catch (err) {
       setDetailAccessLimit({
@@ -954,6 +1006,7 @@ export default function ExploreClient() {
       if (!sourceItem) return prev;
 
       openedDetailPidsRef.current.add(pid);
+      setOpenedDetailPids(new Set(openedDetailPidsRef.current));
       const next = [
         { ...sourceItem, savedAt: new Date().toISOString() },
         ...withoutTarget,
@@ -1259,6 +1312,8 @@ export default function ExploreClient() {
             const pct = profitPct(item);
             const isPremiumSeller = (item.sellerReviewRating ?? 0) >= 4.8 && item.sellerReviewCount >= 30;
             const isSoldOut = item.soldOut;
+            const exactUnlocked = creditFeedEnabled || scrapOnly || savedPidSet.has(item.pid) || openedDetailPids.has(item.pid);
+            const lockedPreview = !exactUnlocked;
             return (
               <button
                 key={item.pid}
@@ -1282,7 +1337,18 @@ export default function ExploreClient() {
               >
                 {/* Wave 351: sold out — 사진만 흐리게 + 우상단 칩. 카드 내용 그대로 (FOMO). */}
                 <div className={`relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ${isSoldOut ? "grayscale" : ""}`}>
-                  {item.thumbnailUrl ? (
+                  {lockedPreview ? (
+                    <div className="flex h-full w-full flex-col items-center justify-center bg-[linear-gradient(135deg,#f8faf9_0%,#e9f4ef_100%)] px-3 text-center dark:bg-[linear-gradient(135deg,#18181b_0%,#0f2a21_100%)]">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/85 text-emerald-700 shadow-sm ring-1 ring-emerald-100 dark:bg-zinc-950/70 dark:text-emerald-300 dark:ring-emerald-900/40">
+                        <CategoryIcon category={item.category ?? "default"} className="h-5 w-5" strokeWidth={1.9} />
+                      </div>
+                      <div className="mt-2 text-[10px] font-black leading-tight text-zinc-700 dark:text-zinc-200">
+                        원본 사진은
+                        <br />
+                        상세에서 공개
+                      </div>
+                    </div>
+                  ) : item.thumbnailUrl ? (
                     <Image
                       src={item.thumbnailUrl}
                       alt={item.name}
@@ -1307,24 +1373,43 @@ export default function ExploreClient() {
                 </div>
                 <div className={`min-w-0 ${isSoldOut ? "opacity-60" : ""}`}>
                   <div className="line-clamp-2 text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-100">
-                    {item.name}
+                    {lockedPreview ? lockedPreviewTitle(item) : item.name}
                   </div>
+                  {lockedPreview ? (
+                    <div className="mt-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+                      원제목·원본 사진·판매자 정보는 상세 분석에서 보여드려요
+                    </div>
+                  ) : null}
                   <div className="mt-1.5 flex items-baseline gap-1.5">
                     <span className={`text-lg font-bold tabular-nums ${isSoldOut ? "text-zinc-500 line-through dark:text-zinc-500" : "text-emerald-600 dark:text-emerald-400"}`}>
-                      +{krw(profitAvg(item))}
+                      {lockedPreview ? lockedProfitLabel(item) : `+${krw(profitAvg(item))}`}
                     </span>
-                    {pct != null ? (
+                    {lockedPreview ? (
+                      <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                        정확한 금액 잠김
+                      </span>
+                    ) : pct != null ? (
                       <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${isSoldOut ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500" : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"}`}>
                         +{pct}%
                       </span>
                     ) : null}
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
-                    <span>매입 <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{krw(item.price)}</span></span>
+                    <span>
+                      매입{" "}
+                      <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                        {lockedPreview ? krwTenThousandBand(item.price) : krw(item.price)}
+                      </span>
+                    </span>
                     {item.skuMedian ? (
                       <>
                         <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                        <span>시세 <span className="font-bold tabular-nums">{krw(item.skuMedian)}</span></span>
+                        <span>
+                          시세{" "}
+                          <span className="font-bold tabular-nums">
+                            {lockedPreview ? krwTenThousandBand(item.skuMedian) : krw(item.skuMedian)}
+                          </span>
+                        </span>
                       </>
                     ) : null}
                   </div>
@@ -1356,6 +1441,11 @@ export default function ExploreClient() {
                         {item.freeShipping ? (
                           <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                             무료배송
+                          </span>
+                        ) : null}
+                        {lockedPreview ? (
+                          <span className="rounded-full bg-blue-50 px-1.5 py-0.5 font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-200">
+                            상세 열면 원본 공개
                           </span>
                         ) : null}
                       </>
