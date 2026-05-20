@@ -5881,74 +5881,74 @@ function RelatedRevealStrip({
         <div className="text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
           다른 수익 매물
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
-            {visibleItems.length}개
-          </span>
-          <button
-            type="button"
-            onClick={() => scrollRelatedItems("prev")}
-            disabled={!canScrollPrev}
-            aria-label="다른 수익 매물 왼쪽으로 보기"
-            className="hidden h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-sm font-black text-zinc-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-emerald-700 dark:hover:text-emerald-300 sm:inline-flex"
-          >
-            ←
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollRelatedItems("next")}
-            disabled={!canScrollNext}
-            aria-label="다른 수익 매물 오른쪽으로 보기"
-            className="hidden h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-sm font-black text-zinc-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-emerald-700 dark:hover:text-emerald-300 sm:inline-flex"
-          >
-            →
-          </button>
-        </div>
+        <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+          {visibleItems.length}개
+        </span>
       </div>
-      <div
-        ref={stripRef}
-        data-related-reveal-scroll
-        className="-mx-3 flex scroll-px-3 gap-2.5 overflow-x-auto px-3 pb-2 sm:mx-0 sm:scroll-px-0 sm:px-0 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
-      >
-        {visibleItems.map((item) => {
-          const profitPct = item.price > 0 ? Math.round((item.expectedProfitMax / item.price) * 100) : 0;
-          return (
-            <button
-              key={item.pid}
-              type="button"
-              onClick={() => onOpenRelatedItem(item.pid)}
-              className="flex w-[140px] shrink-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white text-left transition hover:border-emerald-300 hover:shadow-sm active:scale-[0.98] dark:border-zinc-800 dark:bg-zinc-900/40"
-            >
-              <div className="relative aspect-square w-full overflow-hidden bg-[#f2eadf] dark:bg-zinc-800">
-                <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
-                {item.thumbnailUrl ? (
-                  <Image
-                    src={item.thumbnailUrl}
-                    alt=""
-                    fill
-                    sizes="140px"
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center px-2 text-center text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
-                    사진 없음
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => scrollRelatedItems("prev")}
+          disabled={!canScrollPrev}
+          aria-label="다른 수익 매물 왼쪽으로 보기"
+          className="absolute left-1 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-black/72 text-lg font-black text-white shadow-[0_12px_32px_rgba(0,0,0,0.35)] backdrop-blur transition hover:bg-black/84 disabled:pointer-events-none disabled:opacity-0 dark:border-zinc-700/80 sm:left-2"
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          onClick={() => scrollRelatedItems("next")}
+          disabled={!canScrollNext}
+          aria-label="다른 수익 매물 오른쪽으로 보기"
+          className="absolute right-1 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-black/72 text-lg font-black text-white shadow-[0_12px_32px_rgba(0,0,0,0.35)] backdrop-blur transition hover:bg-black/84 disabled:pointer-events-none disabled:opacity-0 dark:border-zinc-700/80 sm:right-2"
+        >
+          →
+        </button>
+        <div
+          ref={stripRef}
+          data-related-reveal-scroll
+          className="-mx-3 flex scroll-px-3 gap-2.5 overflow-x-auto px-3 pb-2 sm:mx-0 sm:scroll-px-0 sm:px-0 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+        >
+          {visibleItems.map((item) => {
+            const profitPct = item.price > 0 ? Math.round((item.expectedProfitMax / item.price) * 100) : 0;
+            return (
+              <button
+                key={item.pid}
+                type="button"
+                onClick={() => onOpenRelatedItem(item.pid)}
+                className="flex w-[140px] shrink-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white text-left transition hover:border-emerald-300 hover:shadow-sm active:scale-[0.98] dark:border-zinc-800 dark:bg-zinc-900/40"
+              >
+                <div className="relative aspect-square w-full overflow-hidden bg-[#f2eadf] dark:bg-zinc-800">
+                  <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
+                  {item.thumbnailUrl ? (
+                    <Image
+                      src={item.thumbnailUrl}
+                      alt=""
+                      fill
+                      sizes="140px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-2 text-center text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                      사진 없음
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col px-2.5 py-2.5">
+                  <div className="line-clamp-2 min-h-[32px] text-[11px] font-bold leading-tight text-zinc-700 dark:text-zinc-300">
+                    {item.name}
                   </div>
-                )}
-              </div>
-              <div className="flex flex-1 flex-col px-2.5 py-2.5">
-                <div className="line-clamp-2 min-h-[32px] text-[11px] font-bold leading-tight text-zinc-700 dark:text-zinc-300">
-                  {item.name}
+                  <div className="mt-1.5 text-[13px] font-black leading-none tabular-nums tracking-tight text-emerald-700 dark:text-emerald-300">
+                    {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
+                  </div>
+                  <div className="mt-0.5 text-[10px] font-bold tabular-nums text-zinc-500 dark:text-zinc-400">
+                    매입 {krw(item.price)} · +{profitPct}%
+                  </div>
                 </div>
-                <div className="mt-1.5 text-[13px] font-black leading-none tabular-nums tracking-tight text-emerald-700 dark:text-emerald-300">
-                  {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
-                </div>
-                <div className="mt-0.5 text-[10px] font-bold tabular-nums text-zinc-500 dark:text-zinc-400">
-                  매입 {krw(item.price)} · +{profitPct}%
-                </div>
-              </div>
-            </button>
-          );
-        })}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
