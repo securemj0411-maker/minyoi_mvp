@@ -16,6 +16,20 @@ import { SHOE_BROAD_WAVE138_CATALOG } from "@/lib/generated/catalog-shoe-broad-w
 import { SHOE_WAVE140_CATALOG } from "@/lib/generated/catalog-shoe-narrow-wave140";
 import { BAG_CATALOG } from "@/lib/generated/catalog-bag-wave91";
 import { BIKE_CATALOG } from "@/lib/generated/catalog-bike-wave91";
+// Wave 266 (2026-05-20): 번개장터 deep sweep — fashion/shoe/bag catalog 대폭 보강.
+//  · shoe: 살로몬 X울트라/판타즘/RX슬라이드/XT-4/ACS Pro, NB 1300/1400/1500/1600/2002,
+//    나이키 샥스 R4/Z/TL/Ride2, 코르테즈, 문레이서, 스피리돈, 슈퍼플라이/티엠포/머큐리얼,
+//    SFB, 송포더뮤트, 스탠스미스, Y-3 콰사/일반, 원스타, 디워커, 발렌시아가
+//    트리플S/스피드/트랙/러너, 명품 신발 broad (LV/구찌/프라다/에르메스/디올)
+//  · clothing: 폴로 broad, 베이프 자켓, 스투시 broad, 슈프림 broad, 아크네 broad,
+//    꼼데가르송 broad, 칼하트 broad, 톰브라운 broad, 챔피온 broad, MLB apparel,
+//    디스커버리 broad, TNF 눕시/발토로/맥머도/히말라야, 파타고니아 broad, 스톤아일랜드,
+//    Moncler, Canada Goose
+//  · bag: 명품 brand-broad fallback — LV/Gucci/Chanel/Dior/Prada/Celine/Bottega/Hermes/
+//    Balenciaga/Burberry/Coach/Margiela/Valentino/YSL/MCM/Ferragamo/Miu Miu/Lemaire/CDG/Thom Browne
+import { SHOE_WAVE266_CATALOG } from "@/lib/generated/catalog-wave266-shoe";
+import { CLOTHING_WAVE266_CATALOG } from "@/lib/generated/catalog-wave266-clothing";
+import { BAG_WAVE266_CATALOG } from "@/lib/generated/catalog-wave266-bag";
 
 export type Sku = {
   id: string;
@@ -6848,7 +6862,9 @@ export const CATALOG: Sku[] = [
   ...SHOE_BROAD_CATALOG,
   ...SHOE_BROAD_WAVE138_CATALOG,
   ...SHOE_WAVE140_CATALOG,
+  ...SHOE_WAVE266_CATALOG, // Wave 266 — 살로몬/NB/Shox/명품 신발 broad 등 30+ SKU
   ...BAG_CATALOG,
+  ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
   // ─── Wave 198 (2026-05-18): 새 카테고리 "clothing" — Polo / TNF / Stussy ───
   // 사용자 정책: broad 사이즈 무관, collab narrow 분리, 가품 floor 0.30.
@@ -9526,6 +9542,11 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "nike", "나이키", "converse", "컨버스", "dior"],
     msrpKrw: 290000, released: 2018,
   },
+  // ─── Wave 266 (2026-05-20): clothing catalog 대폭 보강 — 폴로 broad / 베이프 자켓 /
+  //     스투시 broad / 슈프림 broad / 아크네 broad / 꼼데가르송 broad / 칼하트 broad /
+  //     톰브라운 broad / 챔피온 broad / MLB apparel / 디스커버리 broad /
+  //     TNF 눕시·발토로·맥머도·히말라야 / 파타고니아 broad / 스톤아일랜드 / Moncler / Canada Goose
+  ...CLOTHING_WAVE266_CATALOG,
 ];
 
 // Wave 94: CATALOG 전체 SKU에도 카테고리별 NOISE 자동 spread (GENERATED + CORE + Wave 91 신규 다 포함).

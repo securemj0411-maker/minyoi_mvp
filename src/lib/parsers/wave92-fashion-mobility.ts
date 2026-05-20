@@ -380,7 +380,10 @@ function parseClothingProductType(text: string): ClothingProductType {
   if (/플리스|fleece|레트로 ?x|retro ?x|덴알리|denali|숄카라|숄 ?카라|shawl/.test(t)) return "jacket"; // 플리스/베스트 자켓 류
   // Wave 236b: windbreaker/바람막이/아노락/안타르티카/마운틴 라이트 등 자켓 류.
   // Wave 264: 윈드러너/스팁 테크/패딩 자켓 보강 (TNF Supreme collab).
-  if (/자켓|재킷|jacket|아노락|anorak|봄버|bomber|블레이저(?!\s*미드)|윈드 ?브레이커|windbreaker|바람막이|마운틴 ?라이트|mountain ?light|마운틴 ?파카|mountain ?parka|마운틴 ?자켓|mountain ?jacket|트랙 ?탑|track ?top|트랙수트|tracksuit|덱 ?자켓|deck ?jacket|쉴드|shield|윈드러너|windrunner|스팁 ?테크|steep ?tech|패딩 ?자켓|padded ?jacket/.test(t)) return "jacket";
+  // Wave 266 (2026-05-20): 베이스볼 저지/야구점퍼/바시티 자켓/코치자켓/하드쉘/소프트쉘/푸퍼 자켓 보강.
+  //   번개장터 sweep 발견 — BAPE 베이스볼 저지/베이프 야구점퍼/Stussy varsity 등 jacket 잘못 분류.
+  //   하드쉘/소프트쉘 (아크테릭스 변형) / 푸퍼 자켓 (다운자켓 위에서 잡힘) / 패딩베스트 (이미 vest)
+  if (/자켓|재킷|jacket|아노락|anorak|봄버|bomber|블레이저(?!\s*미드)|윈드 ?브레이커|windbreaker|바람막이|마운틴 ?라이트|mountain ?light|마운틴 ?파카|mountain ?parka|마운틴 ?자켓|mountain ?jacket|트랙 ?탑|track ?top|트랙수트|tracksuit|덱 ?자켓|deck ?jacket|쉴드|shield|윈드러너|windrunner|스팁 ?테크|steep ?tech|패딩 ?자켓|padded ?jacket|베이스볼 ?저지|baseball ?jersey|야구 ?점퍼|야구점퍼|바시티|varsity|코치자켓|코치 ?자켓|coach ?jacket|하드쉘|hardshell|소프트쉘|softshell|sherpa ?자켓|셰르파 ?자켓|레터맨|letterman|스타디움 ?자켓|stadium ?jacket|MA-1|ma-1|MA1\b/.test(t)) return "jacket";
   if (/후드(?!\s*티 ?셔츠)|후디|hoodie|hooded sweat/.test(t)) return "hoodie";
   if (/맨투맨|크루넥|crewneck|sweatshirt|스웻 ?셔츠|스웻\(맨투맨\)|풀오버(?!\s*조끼)|스웻 ?셔트|sweat ?shirt/.test(t)) return "crewneck";
   if (/롱슬리브|long sleeve|롱 ?티|장 ?티|long sleeved/.test(t)) return "tee"; // 롱슬리브 = tee 류
@@ -421,22 +424,30 @@ function parseBagProductType(text: string): BagProductType {
   // crossbody — 카메라백/미니체인백/사이드백.
   if (/크로스(?!\s*?백 ?팩)|crossbody|cross ?bag|크로스 ?백(?!팩)|카메라 ?백|camera ?bag|사이드 ?백|side ?bag/.test(t)) return "crossbody";
   // tote — 탑핸들/핸드백.
-  if (/토트|tote\b|쇼퍼|shopper|탑 ?핸들|top ?handle|핸드 ?백|handbag/.test(t)) return "tote";
+  // Wave 266 (2026-05-20): 캔버스 백 / 토트 백 영문 / 빈티지 토트 보강.
+  if (/토트|tote\b|쇼퍼|shopper|탑 ?핸들|top ?handle|핸드 ?백|handbag|캔버스 ?백|canvas ?bag|마트 ?백|쇼핑 ?백/.test(t)) return "tote";
   // backpack — 빅샷/보레알리스 (TNF 모델명).
-  if (/백팩|backpack|배낭|knapsack|빅샷|big ?shot|보레알리스|borealis(?!\s*sling)|핫샷|hot ?shot/.test(t)) return "backpack";
+  // Wave 266: 백오프 ?팩 / 데이팩 / 캠퍼 백 / 트래블 백 / 캐리 백 / 학생 가방 (school bag) / 책가방 보강.
+  if (/백팩|backpack|배낭|knapsack|빅샷|big ?shot|보레알리스|borealis(?!\s*sling)|핫샷|hot ?shot|데이 ?팩|day ?pack|캠퍼 ?백|camper ?bag|책 ?가방|학생 ?가방|school ?bag|학생가방/.test(t)) return "backpack";
   return "type_unknown";
 }
 
 function parseShoeProductType(text: string): ShoeProductType {
   const t = text.toLowerCase();
-  if (/부츠|boot\b|첼시|chelsea|앵클 ?부츠|ankle ?boot|컴뱃|combat ?boot|콤뱃/.test(t)) return "boot";
-  if (/샌들|sandal|쪼리/.test(t)) return "sandal";
-  if (/로퍼|loafer|페니|penny/.test(t)) return "loafer";
+  // Wave 266 (2026-05-20): 등산화/트레킹화 → boot (등산화는 발목 보호 부츠류).
+  //   번개장터 deep sweep 발견 — Salomon X Ultra/Quest/Speedcross 등산화 매물 다수 type_unknown.
+  //   "노스페이스 워킹화 hiking boot", "살로몬 X 울트라 등산화" 등 sample.
+  if (/부츠|boot\b|첼시|chelsea|앵클 ?부츠|ankle ?boot|컴뱃|combat ?boot|콤뱃|등산화|트레킹화|hiking ?boot|hiking ?shoe|hiking ?shoes|워킹화 ?미드|미드 ?컷 ?신발|등산 ?신발|등산 ?슈즈/.test(t)) return "boot";
+  if (/샌들|sandal|쪼리|아쿠아 ?슈즈|aqua ?shoe|아쿠아슈즈/.test(t)) return "sandal";
+  if (/로퍼|loafer|페니|penny|드라이빙 ?슈즈|driving ?shoe|모카신|moccasin/.test(t)) return "loafer";
   // Wave 264 (2026-05-20): 슬라이드 (Yeezy Slide) / 클로그 한글 / 아딜렛 (Adidas Adilette) / 폼러너 보강.
   //   사용자 발견 type_unknown sample: "이지슬라이드" / "아디다스 아딜렛 클로그 플랫폼" / "Crocs 클로그".
-  if (/슬리퍼|slipper|뮬\b|mule\b|에스파드류|espadrille|크록스|crocs|clog|클로그|슬라이드|slide|이지 ?슬라이드|yeezy ?slide|아딜렛|adilette|adilet|adilete|폼 ?러너|foam ?runner|푸쉬 ?에어|nb 슬리퍼/.test(t)) return "slipper";
+  // Wave 266: 플립플롭 / 우프 (Ugg slipper)도 보강.
+  if (/슬리퍼|slipper|뮬\b|mule\b|에스파드류|espadrille|크록스|crocs|clog|클로그|슬라이드|slide|이지 ?슬라이드|yeezy ?slide|아딜렛|adilette|adilet|adilete|폼 ?러너|foam ?runner|푸쉬 ?에어|nb 슬리퍼|플립 ?플롭|flip ?flop|어그 ?슬리퍼|ugg ?slipper|아디다스 ?슬리퍼/.test(t)) return "slipper";
   // Wave 264: 축구화/풋살화 (F50/프레데터/코파/네메지즈/메시/crazyfast) — sneaker 분류 (운동화 광의).
-  if (/스니커즈|sneaker|운동화|단화\b|러닝화|러닝 ?화|블레이저|blazer|에어맥스|airmax|에어포스|airforce|덩크|dunk|조던|jordan|올드스쿨|sk8|에라\b|어센틱|슬립온|체커보드|축구화|풋살화|풋볼화|football ?boot|football ?shoes|f50|프레데터|predator|코파(?:\s|$)|copa\b|네메지즈|nemeziz|메시|messi|crazyfast|크레이지 ?패스트/.test(t)) return "sneaker";
+  // Wave 266: 트레일러닝/러닝화/스피드 트레이너/스피드러너/골프화/테니스화/농구화/배드민턴화/탁구화/볼링화/배구화/태권도화 등.
+  //   번개장터 sweep — 위 카테고리 매물 type_unknown 다수 (NB/아식스/Nike Pegasus 등).
+  if (/스니커즈|sneaker|운동화|단화\b|러닝화|러닝 ?화|런닝화|블레이저|blazer|에어맥스|airmax|에어포스|airforce|덩크|dunk|조던|jordan|올드스쿨|sk8|에라\b|어센틱|슬립온|체커보드|축구화|풋살화|풋볼화|football ?boot|football ?shoes|f50|프레데터|predator|코파(?:\s|$)|copa\b|네메지즈|nemeziz|메시|messi|crazyfast|크레이지 ?패스트|트레일 ?러닝|trail ?running|트레일러닝|러닝 ?슈즈|running ?shoes|running ?shoe|스피드 ?러너|speed ?runner|스피드 ?트레이너|speed ?trainer|골프화|golf ?shoes|테니스화|tennis ?shoes|농구화|basketball ?shoes|배드민턴화|배구화|볼링화|탁구화|핸드볼화|태권도화|핸드 ?스티치 ?슈즈|승마 ?부츠 ?없는|훈련화|trainer ?shoe|trainer ?shoes/.test(t)) return "sneaker";
   return "type_unknown";
 }
 
@@ -467,8 +478,13 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 //   clothing: 블라우스/가디건/윈드러너/캡모자/베이스볼캡/풋볼캡/6패널/워싱진/슬림내로우/데님 와이드 등
 //   shoe: 슬라이드/이지 슬라이드/클로그/아딜렛/폼러너/축구화/풋살화/F50/프레데터/코파/네메지즈/메시
 //   ~320건 type_unknown 매물 자동 product_type 추출 → comparable_key 정확 분리.
-const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v9";
-const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v9";
+// Wave 266 (2026-05-20) v10: 번개장터 deep sweep 결과 — 추가 regex 보강.
+//   shoe: 등산화/트레킹화/hiking boot → boot, 트레일러닝/러닝슈즈/스피드러너/골프화/테니스화/농구화/배드민턴화/볼링화/탁구화/태권도화 → sneaker, 플립플롭/Ugg slipper → slipper, 아쿠아슈즈 → sandal, 드라이빙슈즈/모카신 → loafer
+//   clothing: 베이스볼 저지/야구점퍼/바시티/코치자켓/하드쉘/소프트쉘/MA-1/레터맨/스타디움자켓 → jacket
+//   bag: 캔버스백/쇼핑백/마트백 → tote, 데이팩/캠퍼백/책가방/학생가방 → backpack
+//   ~500+건 type_unknown 추가 catch 추정.
+const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v10";
+const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v10";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
@@ -484,7 +500,8 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v9";
 // Wave 254.5 step 3 v8 (2026-05-20): conditionFromTextFashion 통합 (의류 specific signals).
 const PARSER_VERSION_W216_CLOTHING = "wave216-clothing-v7";
 // Wave 264 v9: 블라우스/가디건/윈드러너/캡모자/베이스볼캡/풋볼캡/6패널/워싱진/슬림내로우 regex 보강.
-const PARSER_VERSION_W216_CLOTHING_V8 = "wave216-clothing-v9";
+// Wave 266 v10: 베이스볼 저지/야구점퍼/바시티/코치자켓/하드쉘/소프트쉘/MA-1/레터맨/스타디움자켓 regex 보강.
+const PARSER_VERSION_W216_CLOTHING_V8 = "wave216-clothing-v10";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");

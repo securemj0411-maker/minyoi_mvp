@@ -2169,9 +2169,14 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   //   clothing: 블라우스/가디건/윈드러너/캡모자/베이스볼캡/6패널/워싱진/슬림내로우/데님와이드
   //   shoe: 슬라이드/이지슬라이드/클로그/아딜렛/폼러너/축구화/풋살화/F50/프레데터/코파/네메지즈/메시
   //   + catalog false positive 차단 (bag-lv-monogram-key-pouch / clothing-acne-apparel 화장품)
-  clothing: "wave216-clothing-v9",
-  shoe: "wave92-shoe-v9",
-  bag: "wave92-bag-v9",
+  // Wave 266 (2026-05-20): v10 — 번개장터 deep sweep (15K+ 미매칭 매물 분석) → 추가 regex 보강.
+  //   shoe: 등산화/트레킹화/hiking boot/트레일러닝/러닝슈즈/스피드러너/골프화/테니스화/농구화/배드민턴화 등
+  //   clothing: 베이스볼 저지/야구점퍼/바시티/코치자켓/하드쉘/소프트쉘/MA-1/레터맨/스타디움자켓
+  //   bag: 캔버스백/쇼핑백/마트백 → tote, 데이팩/캠퍼백/책가방/학생가방 → backpack
+  //   + catalog 대폭 보강 — 신발 30+ SKU (살로몬/NB/Shox/명품 broad), 의류 17 SKU (폴로/베이프/스투시/슈프림/아크네/꼼데/칼하트/톰브라운 broad), 가방 20 SKU (명품 brand-broad fallback)
+  clothing: "wave216-clothing-v10",
+  shoe: "wave92-shoe-v10",
+  bag: "wave92-bag-v10",
   bike: "wave92-fashion-mobility-v7",
 };
 function isParsedStale(row: ParsedListingRow): boolean {

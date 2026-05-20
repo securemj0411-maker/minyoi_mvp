@@ -161,7 +161,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `shoe conditionNotes 비어있음: ${JSON.stringify(result.conditionNotes)}`);
     });
 
-    it("parser_version shoe = wave92-shoe-v9 (v7 → v8 bump)", () => {
+    it("parser_version shoe = wave92-shoe-v10 (v7 → v8 bump)", () => {
       const result = parseListingOptions({
         title: "나이키 덩크 로우",
         description: "270",
@@ -169,11 +169,11 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Nike Dunk Low",
         category: "shoe",
       });
-      assert.equal(result.parserVersion, "wave92-shoe-v9",
+      assert.equal(result.parserVersion, "wave92-shoe-v10",
         `parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version bag = wave92-bag-v9 (Wave 254.5 step 2 일괄)", () => {
+    it("parser_version bag = wave92-bag-v10 (Wave 254.5 step 2 일괄)", () => {
       const result = parseListingOptions({
         title: "구찌 마몬트 토트백",
         description: "정품",
@@ -181,11 +181,11 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Gucci Marmont",
         category: "bag",
       });
-      assert.equal(result.parserVersion, "wave92-bag-v9",
+      assert.equal(result.parserVersion, "wave92-bag-v10",
         `bag parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version clothing = wave216-clothing-v9 (Wave 254.5 step 3 일괄)", () => {
+    it("parser_version clothing = wave216-clothing-v10 (Wave 254.5 step 3 일괄)", () => {
       const result = parseListingOptions({
         title: "스투시 후드",
         description: "L 사이즈",
@@ -193,7 +193,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Stussy Hoodie",
         category: "clothing",
       });
-      assert.equal(result.parserVersion, "wave216-clothing-v9",
+      assert.equal(result.parserVersion, "wave216-clothing-v10",
         `clothing parser_version mismatch: ${result.parserVersion}`);
     });
 
