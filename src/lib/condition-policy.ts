@@ -33,13 +33,12 @@ export const POOL_BLOCK_NOTES = [
   "accessory_compatible_for_other_product",
 ] as const;
 
-// 비교군 UI 제외 = POOL_BLOCK + premium/noise tier (별도 grouping 으로 시세 분리됨).
-// new_or_open_box / low_battery_health = condition_class 별도 (unopened / low_batt) 시세 grouping.
+// 비교군 UI 제외 = POOL_BLOCK + premium/noise tier.
+// new_or_open_box / low_battery_health 는 condition_class 별도 grouping
+// (unopened / low_batt) 이므로 여기서 제외하면 같은 상태 비교군이 전부 비어버린다.
 // applecare_premium / full_set = 프리미엄 (시세 비싸짐). accessory_bundle = noise.
 export const COMPARABLE_EXCLUDE_NOTES = [
   ...POOL_BLOCK_NOTES,
-  "new_or_open_box",
-  "low_battery_health",
   "applecare_premium",
   "accessory_bundle",
   "full_set",

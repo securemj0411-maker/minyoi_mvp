@@ -64,6 +64,10 @@ describe("Wave 204 — buy-intent 매물 broad catalog 일반 차단", () => {
     it("buying_post 는 COMPARABLE_EXCLUDE_NOTES 에 있음 (POOL_BLOCK subset 자동)", () => {
       assert.ok((COMPARABLE_EXCLUDE_NOTES as readonly string[]).includes("buying_post"));
     });
+    it("condition_class 자체를 만드는 notes는 비교군 UI 제외 목록에 두지 않음", () => {
+      assert.ok(!(COMPARABLE_EXCLUDE_NOTES as readonly string[]).includes("new_or_open_box"));
+      assert.ok(!(COMPARABLE_EXCLUDE_NOTES as readonly string[]).includes("low_battery_health"));
+    });
   });
 
   describe("regression — 정상 판매 매물 false positive 차단", () => {
