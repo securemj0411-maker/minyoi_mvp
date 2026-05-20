@@ -47,10 +47,9 @@ export async function POST(req: Request) {
       {
         error: access.error,
         message: access.message,
-        planKey: access.planKey,
-        dailyUsed: access.dailyUsed,
-        dailyLimit: access.dailyLimit,
-        resetAt: access.resetAt,
+        creditBalance: access.creditBalance,
+        freeUsed: access.freeUsed,
+        freeLimit: access.freeLimit,
       },
       { status: access.status },
     );
@@ -58,10 +57,11 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: true,
-    planKey: access.planKey,
-    dailyUsed: access.dailyUsed,
-    dailyLimit: access.dailyLimit,
+    accessType: access.accessType,
     alreadyOpened: access.alreadyOpened,
-    resetAt: access.resetAt,
+    creditSpent: access.creditSpent,
+    creditBalance: access.creditBalance,
+    freeUsed: access.freeUsed,
+    freeLimit: access.freeLimit,
   });
 }

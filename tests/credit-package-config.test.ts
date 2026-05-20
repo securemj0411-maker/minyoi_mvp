@@ -2,6 +2,7 @@ import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { PLANS, formatKrw } from "../src/lib/plan-config";
+import { FREE_CREDIT_GRANT } from "../src/lib/user-credits";
 
 const ROOT = new URL("../", import.meta.url);
 
@@ -10,6 +11,8 @@ function source(path: string) {
 }
 
 test("credit top-up package prices and grants stay aligned", () => {
+  assert.equal(FREE_CREDIT_GRANT, 0);
+
   assert.equal(PLANS.starter.priceKrw, 3_900);
   assert.equal(PLANS.starter.monthlyCredits, 20);
   assert.equal(PLANS.starter.dailyOpenLimit, 20);

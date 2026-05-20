@@ -10,26 +10,34 @@ function source(path: string) {
 }
 
 test("free and 200-credit package define the first paid entitlement boundary", () => {
+  assert.equal(PLANS.free.monthlyCredits, 0);
   assert.equal(PLANS.free.dailyOpenLimit, 3);
-  assert.match(PLANS.free.features.join(" "), /상세보기 하루 3회/);
+  assert.match(PLANS.free.features.join(" "), /첫 상세보기 3개 무료/);
+  assert.match(PLANS.free.features.join(" "), /새 상품 1개당 1크레딧/);
 
   assert.equal(PLANS.plus.dailyOpenLimit, 200);
   assert.equal(PLANS.plus.name, "200 크레딧");
   assert.match(PLANS.plus.features.join(" "), /상세보기\/원본 확인 200회분/);
 });
 
-test("pool detail access consumes quota once per pid per day", () => {
+test("pool detail access gives first three unique pids free, then spends one credit", () => {
   const helper = source("src/lib/detail-access.ts");
   const route = source("src/app/api/packs/pool/detail-access/route.ts");
 
-  assert.match(helper, /consumeDailyQuota/);
-  assert.match(helper, /refundDailyQuota/);
+  assert.match(helper, /FREE_DETAIL_ACCESS_LIMIT = 3/);
+  assert.match(helper, /spendUserCredits/);
+  assert.match(helper, /amount: 1/);
+  assert.match(helper, /source: "detail_access"/);
   assert.match(helper, /mvp_rate_limits/);
   assert.match(helper, /detail-access:\$\{userRef\}:\$\{pid\}/);
+  assert.match(helper, /detail-access-free:\$\{userRef\}/);
+  assert.doesNotMatch(helper, /consumeDailyQuota|refundDailyQuota|daily_limit_reached/);
 
   assert.match(route, /consumeDetailAccess/);
   assert.match(route, /mvp_candidate_pool/);
   assert.match(route, /status=eq\.ready/);
+  assert.match(route, /creditSpent/);
+  assert.match(route, /freeUsed/);
 });
 
 test("explore opens the modal only after detail access is granted", () => {
@@ -40,7 +48,11 @@ test("explore opens the modal only after detail access is granted", () => {
   assert.match(explore, /DetailAccessPaywallModal/);
   assert.match(explore, /setDetailAccessLimit/);
   assert.match(explore, /크레딧 충전하고 계속 보기/);
+  assert.match(explore, /첫 3개 상품은 무료로 열리고/);
+  assert.match(explore, /새 상품을 열 때마다 1크레딧/);
+  assert.match(explore, /minyoi:credits-changed/);
   assert.doesNotMatch(explore, /Plus로 계속 보기/);
+  assert.doesNotMatch(explore, /오늘 무료 상세보기|하루 기준으로 다시 열려요/);
   assert.match(explore, /void openItemDetail\(item\)/);
 });
 

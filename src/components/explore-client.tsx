@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import CreditIcon from "@/components/credit-icon";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, TargetIcon, HourglassIcon, BookmarkIcon } from "@/components/icons";
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
@@ -64,15 +65,20 @@ type DetailAccessResponse = {
   ok?: boolean;
   error?: string;
   message?: string;
-  dailyUsed?: number;
-  dailyLimit?: number;
+  accessType?: "admin" | "already_opened" | "free" | "credit";
+  alreadyOpened?: boolean;
+  creditSpent?: number;
+  creditBalance?: number | null;
+  freeUsed?: number;
+  freeLimit?: number;
 };
 
 type DetailAccessLimitModal = {
   title: string;
   message: string;
-  dailyUsed: number | null;
-  dailyLimit: number | null;
+  creditBalance: number | null;
+  freeUsed: number | null;
+  freeLimit: number | null;
 };
 
 function krw(value: number) {
@@ -336,9 +342,10 @@ function DetailAccessPaywallModal({
   onClose: () => void;
 }) {
   if (!state) return null;
-  const dailyLimit = state.dailyLimit && state.dailyLimit > 0 ? state.dailyLimit : 3;
-  const used = Math.min(dailyLimit, Math.max(0, state.dailyUsed ?? dailyLimit));
-  const segments = Math.min(3, Math.max(1, dailyLimit));
+  const freeLimit = state.freeLimit && state.freeLimit > 0 ? state.freeLimit : 3;
+  const freeUsed = Math.min(freeLimit, Math.max(0, state.freeUsed ?? freeLimit));
+  const segments = Math.min(3, Math.max(1, freeLimit));
+  const creditBalance = Math.max(0, Number(state.creditBalance ?? 0));
 
   return (
     <div
@@ -353,8 +360,8 @@ function DetailAccessPaywallModal({
       >
         <div className="px-5 pb-5 pt-5 sm:px-6 sm:pt-6">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-[#eef6ff] text-lg font-black text-[#3182f6] dark:bg-blue-950/50 dark:text-blue-300">
-              3
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-[#eef6ff] text-[#3182f6] dark:bg-blue-950/50 dark:text-blue-300">
+              <CreditIcon size={26} />
             </div>
             <button
               type="button"
@@ -366,7 +373,7 @@ function DetailAccessPaywallModal({
           </div>
 
           <div className="mt-5">
-            <p className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">무료 상세보기</p>
+            <p className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">크레딧 상세보기</p>
             <h2 className="mt-2 break-keep text-[25px] font-black leading-[1.18] tracking-tight text-zinc-950 dark:text-zinc-50">
               {state.title}
             </h2>
@@ -377,20 +384,24 @@ function DetailAccessPaywallModal({
 
           <div className="mt-5 rounded-[22px] bg-zinc-50 p-4 dark:bg-zinc-900/70">
             <div className="flex items-center justify-between text-xs font-bold text-zinc-500 dark:text-zinc-400">
-              <span>오늘 사용량</span>
-              <span>{used.toLocaleString("ko-KR")} / {dailyLimit.toLocaleString("ko-KR")}</span>
+              <span>첫 무료 상세보기</span>
+              <span>{freeUsed.toLocaleString("ko-KR")} / {freeLimit.toLocaleString("ko-KR")}</span>
             </div>
             <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: `repeat(${segments}, minmax(0, 1fr))` }}>
               {Array.from({ length: segments }).map((_, idx) => (
                 <div
                   key={idx}
-                  className={`h-2.5 rounded-full ${idx < Math.min(used, segments) ? "bg-[#3182f6]" : "bg-zinc-200 dark:bg-zinc-700"}`}
+                  className={`h-2.5 rounded-full ${idx < Math.min(freeUsed, segments) ? "bg-[#3182f6]" : "bg-zinc-200 dark:bg-zinc-700"}`}
                 />
               ))}
             </div>
             <p className="mt-3 text-[12px] font-medium leading-5 text-zinc-500 dark:text-zinc-400">
-              무료 상세보기는 하루 기준으로 다시 열려요.
+              첫 3개 상품은 무료로 열리고, 이후에는 새 상품을 열 때마다 1크레딧이 차감됩니다.
             </p>
+            <div className="mt-3 flex items-center justify-between rounded-2xl bg-white px-3 py-2 text-xs font-black text-zinc-600 ring-1 ring-zinc-100 dark:bg-zinc-950 dark:text-zinc-300 dark:ring-zinc-800">
+              <span>현재 보유 크레딧</span>
+              <span>{creditBalance.toLocaleString("ko-KR")}개</span>
+            </div>
           </div>
 
           <div className="mt-5 grid gap-2">
@@ -405,7 +416,7 @@ function DetailAccessPaywallModal({
               onClick={onClose}
               className="min-h-12 rounded-2xl bg-zinc-100 px-4 text-sm font-black text-zinc-700 transition hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
-              오늘은 여기까지 볼게요
+              닫기
             </button>
           </div>
         </div>
@@ -724,18 +735,23 @@ export default function ExploreClient() {
       });
       const data = (await res.json()) as DetailAccessResponse;
       if (!res.ok) {
-        const dailyLimit = Number.isFinite(Number(data.dailyLimit)) ? Number(data.dailyLimit) : null;
-        const dailyUsed = Number.isFinite(Number(data.dailyUsed)) ? Number(data.dailyUsed) : null;
-        const isLimit = data.error === "daily_limit_reached" || data.error === "no_plan";
+        const freeLimit = Number.isFinite(Number(data.freeLimit)) ? Number(data.freeLimit) : null;
+        const freeUsed = Number.isFinite(Number(data.freeUsed)) ? Number(data.freeUsed) : null;
+        const creditBalance = Number.isFinite(Number(data.creditBalance)) ? Number(data.creditBalance) : null;
+        const isCreditShort = data.error === "insufficient_credits";
         setDetailAccessLimit({
-          title: isLimit && dailyLimit
-            ? `오늘 무료 상세보기 ${dailyLimit.toLocaleString("ko-KR")}회를 모두 썼어요`
+          title: isCreditShort
+            ? "크레딧이 부족해요"
             : "상세보기를 열 수 없어요",
           message: data.message ?? "크레딧을 충전하면 기다리지 않고 바로 이어서 볼 수 있어요.",
-          dailyUsed,
-          dailyLimit,
+          creditBalance,
+          freeUsed,
+          freeLimit,
         });
         return;
+      }
+      if (Number(data.creditSpent ?? 0) > 0 && typeof window !== "undefined") {
+        window.dispatchEvent(new Event("minyoi:credits-changed"));
       }
       openedDetailPidsRef.current.add(item.pid);
       setSelectedCard(poolItemToRevealCard(item));
@@ -743,8 +759,9 @@ export default function ExploreClient() {
       setDetailAccessLimit({
         title: "상세보기 요청이 잠시 막혔어요",
         message: err instanceof Error ? err.message : "잠시 후 다시 시도해주세요.",
-        dailyUsed: null,
-        dailyLimit: null,
+        creditBalance: null,
+        freeUsed: null,
+        freeLimit: null,
       });
     } finally {
       setDetailAccessLoadingPid((prev) => (prev === item.pid ? null : prev));

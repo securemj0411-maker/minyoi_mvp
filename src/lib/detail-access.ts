@@ -1,8 +1,10 @@
 import type { User } from "@supabase/supabase-js";
-import { consumeDailyQuota, getUserPlanState, refundDailyQuota } from "@/lib/user-plan";
+import { isAdminUser } from "@/lib/auth-users";
+import { getUserCreditsReadOnly, spendUserCredits } from "@/lib/user-credits";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
-const DETAIL_ACCESS_WINDOW_SECONDS = 24 * 60 * 60;
+export const FREE_DETAIL_ACCESS_LIMIT = 3;
+const DETAIL_ACCESS_UNLOCK_WINDOW_SECONDS = 10 * 365 * 24 * 60 * 60;
 
 type RateLimitRow = {
   window_started_at?: string | null;
@@ -18,66 +20,91 @@ type RateLimitRpcRow = {
 export type DetailAccessResult =
   | {
       ok: true;
-      planKey: string;
-      dailyUsed: number;
-      dailyLimit: number;
+      accessType: "admin" | "already_opened" | "free" | "credit";
       alreadyOpened: boolean;
-      resetAt: string | null;
+      creditSpent: number;
+      creditBalance: number | null;
+      freeUsed: number;
+      freeLimit: number;
     }
   | {
       ok: false;
-      status: 402 | 429 | 500;
-      error: "no_plan" | "daily_limit_reached" | "detail_access_failed";
+      status: 402 | 500;
+      error: "insufficient_credits" | "detail_access_failed";
       message: string;
-      planKey: string;
-      dailyUsed: number;
-      dailyLimit: number;
-      resetAt: string | null;
+      creditBalance: number;
+      freeUsed: number;
+      freeLimit: number;
     };
 
 function detailAccessBucket(userRef: string, pid: number) {
   return `detail-access:${userRef}:${pid}`.slice(0, 200);
 }
 
-function currentWindowStart(windowSeconds: number) {
-  const nowSeconds = Math.floor(Date.now() / 1000);
-  return new Date(Math.floor(nowSeconds / windowSeconds) * windowSeconds * 1000);
+function freeDetailAccessBucket(userRef: string) {
+  return `detail-access-free:${userRef}`.slice(0, 200);
 }
 
-function secondsUntilReset(windowSeconds: number) {
-  const nowSeconds = Math.floor(Date.now() / 1000);
-  return Math.max(1, windowSeconds - (nowSeconds % windowSeconds));
-}
-
-async function hasOpenedPidToday(bucketKey: string): Promise<boolean> {
+async function loadRateLimitCount(bucketKey: string): Promise<number> {
   const rows = await restFetch(
     `${tableUrl("mvp_rate_limits")}?select=window_started_at,request_count&bucket_key=eq.${encodeURIComponent(bucketKey)}&limit=1`,
     { headers: serviceHeaders() },
   ).then((res) => res.json() as Promise<RateLimitRow[]>);
   const row = rows[0];
-  if (!row) return false;
-  const count = Math.max(0, Number(row.request_count ?? 0));
-  if (count <= 0) return false;
-  const started = row.window_started_at ? new Date(row.window_started_at).getTime() : NaN;
-  return Number.isFinite(started) && started === currentWindowStart(DETAIL_ACCESS_WINDOW_SECONDS).getTime();
+  return Math.max(0, Number(row?.request_count ?? 0));
 }
 
-async function markOpenedPidToday(bucketKey: string): Promise<{ firstOpen: boolean; resetAt: string | null }> {
+async function markOpenedPid(bucketKey: string): Promise<{ firstOpen: boolean }> {
   const res = await restFetch(rpcUrl("check_mvp_rate_limit"), {
     method: "POST",
     headers: serviceHeaders(),
     body: jsonBody({
       p_bucket_key: bucketKey,
       p_max_requests: 1,
-      p_window_seconds: DETAIL_ACCESS_WINDOW_SECONDS,
+      p_window_seconds: DETAIL_ACCESS_UNLOCK_WINDOW_SECONDS,
     }),
   });
   const rows = (await res.json()) as RateLimitRpcRow[];
   const row = rows[0] ?? {};
   return {
     firstOpen: Boolean(row.allowed),
-    resetAt: row.reset_at ?? null,
   };
+}
+
+async function forgetOpenedPid(bucketKey: string): Promise<void> {
+  await restFetch(`${tableUrl("mvp_rate_limits")}?bucket_key=eq.${encodeURIComponent(bucketKey)}`, {
+    method: "DELETE",
+    headers: serviceHeaders(),
+  });
+}
+
+async function consumeFreeDetailAccess(userRef: string): Promise<{ ok: boolean; used: number }> {
+  const bucketKey = freeDetailAccessBucket(userRef);
+  const used = await loadRateLimitCount(bucketKey);
+  if (used >= FREE_DETAIL_ACCESS_LIMIT) {
+    return { ok: false, used };
+  }
+
+  const res = await restFetch(rpcUrl("check_mvp_rate_limit"), {
+    method: "POST",
+    headers: serviceHeaders(),
+    body: jsonBody({
+      p_bucket_key: bucketKey,
+      p_max_requests: FREE_DETAIL_ACCESS_LIMIT,
+      p_window_seconds: DETAIL_ACCESS_UNLOCK_WINDOW_SECONDS,
+    }),
+  });
+  const rows = (await res.json()) as RateLimitRpcRow[];
+  const row = rows[0] ?? {};
+  return {
+    ok: Boolean(row.allowed),
+    used: Math.max(0, Number(row.current_count ?? used)),
+  };
+}
+
+async function readCreditBalance(user: User, userRef: string): Promise<number> {
+  const credits = await getUserCreditsReadOnly(user, userRef);
+  return Math.max(0, Number(credits?.tokens ?? 0));
 }
 
 export async function consumeDetailAccess(input: {
@@ -85,78 +112,99 @@ export async function consumeDetailAccess(input: {
   userRef: string;
   pid: number;
 }): Promise<DetailAccessResult> {
-  const state = await getUserPlanState(input.user, input.userRef);
-  const dailyLimit = state.plan.dailyOpenLimit;
-  const resetAt = new Date(Date.now() + secondsUntilReset(DETAIL_ACCESS_WINDOW_SECONDS) * 1000).toISOString();
+  const freeUsedBefore = await loadRateLimitCount(freeDetailAccessBucket(input.userRef));
 
-  if (dailyLimit < 0) {
+  if (isAdminUser(input.user)) {
     return {
       ok: true,
-      planKey: state.plan.key,
-      dailyUsed: state.dailyUsed,
-      dailyLimit,
+      accessType: "admin",
       alreadyOpened: false,
-      resetAt: null,
+      creditSpent: 0,
+      creditBalance: null,
+      freeUsed: freeUsedBefore,
+      freeLimit: FREE_DETAIL_ACCESS_LIMIT,
     };
   }
 
   const bucketKey = detailAccessBucket(input.userRef, input.pid);
-  if (await hasOpenedPidToday(bucketKey)) {
+  if ((await loadRateLimitCount(bucketKey)) > 0) {
+    const creditBalance = await readCreditBalance(input.user, input.userRef);
     return {
       ok: true,
-      planKey: state.plan.key,
-      dailyUsed: state.dailyUsed,
-      dailyLimit,
+      accessType: "already_opened",
       alreadyOpened: true,
-      resetAt,
+      creditSpent: 0,
+      creditBalance,
+      freeUsed: freeUsedBefore,
+      freeLimit: FREE_DETAIL_ACCESS_LIMIT,
     };
   }
 
-  const consume = await consumeDailyQuota({
-    user: input.user,
-    userRef: input.userRef,
-    limit: dailyLimit,
-  });
-
-  if (!consume.ok) {
-    const noPlan = dailyLimit === 0 || consume.message === "no_plan";
+  const mark = await markOpenedPid(bucketKey);
+  if (!mark.firstOpen) {
+    const creditBalance = await readCreditBalance(input.user, input.userRef);
     return {
-      ok: false,
-      status: noPlan ? 402 : 429,
-      error: noPlan ? "no_plan" : "daily_limit_reached",
-      message: noPlan
-        ? "Plus 충전 후 상세보기를 열 수 있어요."
-        : `오늘 무료 상세보기 ${consume.limit.toLocaleString("ko-KR")}회를 모두 사용했어요. Plus로 바로 더 볼 수 있어요.`,
-      planKey: state.plan.key,
-      dailyUsed: consume.used,
-      dailyLimit: consume.limit,
-      resetAt,
+      ok: true,
+      accessType: "already_opened",
+      alreadyOpened: true,
+      creditSpent: 0,
+      creditBalance,
+      freeUsed: freeUsedBefore,
+      freeLimit: FREE_DETAIL_ACCESS_LIMIT,
     };
   }
 
   try {
-    const mark = await markOpenedPidToday(bucketKey);
-    if (!mark.firstOpen) {
-      await refundDailyQuota(input.user, input.userRef);
+    const freeAccess = await consumeFreeDetailAccess(input.userRef);
+    if (freeAccess.ok) {
+      const creditBalance = await readCreditBalance(input.user, input.userRef);
       return {
         ok: true,
-        planKey: state.plan.key,
-        dailyUsed: Math.max(0, consume.used - 1),
-        dailyLimit: consume.limit,
-        alreadyOpened: true,
-        resetAt: mark.resetAt ?? resetAt,
+        accessType: "free",
+        alreadyOpened: false,
+        creditSpent: 0,
+        creditBalance,
+        freeUsed: freeAccess.used,
+        freeLimit: FREE_DETAIL_ACCESS_LIMIT,
       };
     }
+
+    const spend = await spendUserCredits({
+      user: input.user,
+      userRef: input.userRef,
+      amount: 1,
+      metadata: {
+        source: "detail_access",
+        pid: input.pid,
+        free_detail_access_used: freeAccess.used,
+        free_detail_access_limit: FREE_DETAIL_ACCESS_LIMIT,
+      },
+    });
+
+    if (!spend.ok) {
+      await forgetOpenedPid(bucketKey);
+      return {
+        ok: false,
+        status: 402,
+        error: "insufficient_credits",
+        message: "크레딧이 부족해요. 충전하면 상세보기를 계속 열 수 있어요.",
+        creditBalance: Math.max(0, Number(spend.tokens ?? 0)),
+        freeUsed: freeAccess.used,
+        freeLimit: FREE_DETAIL_ACCESS_LIMIT,
+      };
+    }
+
     return {
       ok: true,
-      planKey: state.plan.key,
-      dailyUsed: consume.used,
-      dailyLimit: consume.limit,
+      accessType: "credit",
       alreadyOpened: false,
-      resetAt: mark.resetAt ?? resetAt,
+      creditSpent: 1,
+      creditBalance: spend.tokens,
+      freeUsed: freeAccess.used,
+      freeLimit: FREE_DETAIL_ACCESS_LIMIT,
     };
   } catch (err) {
-    await refundDailyQuota(input.user, input.userRef);
+    await forgetOpenedPid(bucketKey).catch(() => undefined);
     console.error("[detail-access] mark failed", {
       err: err instanceof Error ? err.message : String(err),
       userRef: input.userRef,
@@ -167,10 +215,9 @@ export async function consumeDetailAccess(input: {
       status: 500,
       error: "detail_access_failed",
       message: "상세보기 권한을 확인하지 못했어요. 잠시 후 다시 시도해주세요.",
-      planKey: state.plan.key,
-      dailyUsed: Math.max(0, consume.used - 1),
-      dailyLimit: consume.limit,
-      resetAt,
+      creditBalance: await readCreditBalance(input.user, input.userRef).catch(() => 0),
+      freeUsed: freeUsedBefore,
+      freeLimit: FREE_DETAIL_ACCESS_LIMIT,
     };
   }
 }

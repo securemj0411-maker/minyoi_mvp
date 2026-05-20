@@ -1,6 +1,6 @@
 "use client";
 
-// Wave 104: 신규 가입 사용자에게 "5크레딧 받았어요" + 시작 안내 배너.
+// Wave 424: 신규 가입 사용자에게 첫 상세보기 3개 무료 안내 배너.
 // 표시 조건: freeGrantedAt < 24h ago AND localStorage 미dismiss.
 // dismiss는 X 버튼 또는 "추천 받기" CTA 클릭 시.
 
@@ -14,7 +14,6 @@ const FRESH_GRANT_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export default function OnboardingBanner({ onStart }: { onStart?: () => void }) {
   const [show, setShow] = useState(false);
-  const [tokens, setTokens] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -29,7 +28,6 @@ export default function OnboardingBanner({ onStart }: { onStart?: () => void }) 
         const grantedAt = new Date(credits.freeGrantedAt).getTime();
         if (!Number.isFinite(grantedAt)) return;
         if (Date.now() - grantedAt > FRESH_GRANT_WINDOW_MS) return;
-        setTokens(credits.tokens);
         setShow(true);
       })
       .catch(() => {});
@@ -55,15 +53,15 @@ export default function OnboardingBanner({ onStart }: { onStart?: () => void }) 
               가입 환영
             </span>
             <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200">
-              크레딧 {tokens}개
+              상세보기 3개 무료
             </span>
           </div>
           <h3 className="mt-1 text-base font-black text-[#223127] dark:text-zinc-100">
-            첫 5크레딧 받았어요
+            첫 3개 상품은 무료로 볼 수 있어요
           </h3>
           <p className="mt-1 text-xs font-semibold leading-6 text-[#5a6658] dark:text-zinc-300">
             “추천 상품 받기”에서 <strong>안전</strong> 또는 <strong>균형</strong> 프로필로 시작해보세요.
-            매번 크레딧이 줄어들고, 다 쓰면 크레딧 패키지를 충전할 수 있어요.
+            이후에는 새 상품을 열 때마다 1크레딧이 줄고, 이미 본 상품은 다시 봐도 차감되지 않아요.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Link

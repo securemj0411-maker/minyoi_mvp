@@ -100,16 +100,14 @@ export function AccountPanel({
 
   const monthlyTotal = plan?.monthlyCredits ?? 0;
   const monthlyUsed = monthlyTotal > 0 ? Math.max(0, monthlyTotal - tokens) : 0;
-  const dailyLimit = plan?.dailyLimit ?? 0;
-  const dailyUsed = plan?.dailyUsed ?? 0;
-  const unlimited = infiniteCredits || dailyLimit < 0;
+  const unlimited = infiniteCredits || plan?.dailyLimit === -1;
   const planLabel = plan?.planName ?? (loading ? "불러오는 중…" : "Free");
   const cancelled = plan?.cancelAtPeriodEnd === true;
   const isPaidPlan = plan?.planKey === "starter" || plan?.planKey === "plus" || plan?.planKey === "pro";
 
   return (
     <div className={wrap}>
-      {/* 카드 1 — 크레딧 (월 + 일일 사용량) */}
+      {/* 카드 1 — 크레딧 */}
       <div className={card}>
         <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">크레딧 사용</div>
         <div className="mt-2">
@@ -123,19 +121,8 @@ export function AccountPanel({
             <UsageBar used={monthlyUsed} total={monthlyTotal} unlimited={unlimited || monthlyTotal === 0} />
           </div>
         </div>
-        <div className="mt-3">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#8b6914] dark:text-amber-400">
-            <span>오늘 열람</span>
-            <span className="tabular-nums text-[#223127] dark:text-zinc-100">
-              {unlimited ? "∞" : `${dailyUsed} / ${dailyLimit || "—"}`}
-            </span>
-          </div>
-          <div className="mt-1.5">
-            <UsageBar used={dailyUsed} total={dailyLimit} tone="amber" unlimited={unlimited || dailyLimit <= 0} />
-          </div>
-          {!unlimited && dailyLimit > 0 && dailyUsed >= dailyLimit ? (
-            <div className="mt-1.5 text-[11px] font-bold text-red-600">오늘 한도를 모두 사용했어요. 내일 다시 열 수 있습니다.</div>
-          ) : null}
+        <div className="mt-3 rounded-xl bg-white/70 px-3 py-2 text-[11px] font-semibold leading-5 text-[#7a8478] ring-1 ring-[#eadfce] dark:bg-zinc-950/50 dark:text-zinc-400 dark:ring-zinc-800">
+          첫 3개 상품은 무료로 열리고, 이후 새 상품은 1크레딧씩 차감됩니다. 이미 본 상품은 다시 봐도 차감되지 않아요.
         </div>
       </div>
 

@@ -2,7 +2,7 @@ import type { User } from "@supabase/supabase-js";
 import { isAdminUser } from "@/lib/auth-users";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
-export const FREE_CREDIT_GRANT = 5;
+export const FREE_CREDIT_GRANT = 0;
 export const ADMIN_CREDIT_LABEL = "∞";
 
 export type UserCreditState = {
