@@ -16,7 +16,7 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.match(modal, /guideModeActive && activeRevealCard/);
   assert.match(modal, /!guideModeActive \? \(/);
   assert.match(modal, /&& !guideModeActive \? \(/);
-  assert.match(modal, /초보자 가이드/);
+  assert.match(modal, /쉽게 보기/);
   assert.match(modal, /판매자 신뢰/);
   assert.match(modal, /구매 전 체크/);
   assert.match(modal, /비교 매물/);
@@ -26,9 +26,10 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.match(modal, /안전결제/);
   assert.match(modal, /되팔 곳/);
   assert.match(modal, /판매 속도/);
-  assert.match(modal, /이 매물 자세히 살펴볼래요/);
+  assert.match(modal, /최종 판단만 정리했어요/);
   assert.match(modal, /이 매물 자세히 보기/);
-  assert.match(modal, /초보자 가이드 스킵하기/);
+  assert.match(modal, /상세 숫자 리포트 보기/);
+  assert.doesNotMatch(modal, /초보자 가이드 스킵하기/);
   assert.match(modal, /onPrev/);
   assert.match(modal, /retreatBeginnerGuide/);
   assert.match(modal, /이전/);
@@ -136,6 +137,8 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /data-beginner-guide-purchase-check/);
   assert.match(modal, /구매 전에 이것만 물어보면 돼요/);
   assert.match(modal, /사진 수, 후기 표본, 구성품, 잠금, 정품 위험 중 이 매물에서 먼저 물어볼 것/);
+  assert.match(modal, /문의 문구 복사/);
+  assert.match(modal, /사진, 구성품, 안전결제를 피하면 구매 보류/);
   assert.match(modal, /사진이 적어요/);
   assert.match(modal, /배터리 상태를 물어보세요/);
   assert.match(modal, /잠금 해제 상태를 확인해요/);
@@ -200,6 +203,11 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /구매확정/);
   assert.match(modal, /data-beginner-guide-channel-profit/);
   assert.match(modal, /당근 직거래/);
+  assert.match(modal, /추천: \{preferDaangn \? "당근 먼저 등록" : "번개장터 먼저 등록"\}/);
+  assert.match(modal, /안 팔리면 번개장터로 넓히면 됩니다/);
+  assert.match(modal, /최대 매입가/);
+  assert.match(modal, /이번에 정리한 근거/);
+  assert.match(modal, /원본 매물과 계산값까지/);
   assert.match(modal, /minyoiGuideStepIn/);
   assert.match(modal, /data-beginner-guide-reopen/);
   assert.match(modal, /쉽게 보기/);
@@ -217,7 +225,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /거래 기록 데이터를 받는 중이에요/);
   assert.match(modal, /표본 부족/);
   assert.match(modal, /bg-\[#f5f9ff\]/);
-  assert.match(modal, /h-14 w-14/);
+  assert.match(modal, /h-11 w-11/);
   assert.match(modal, /후기와 평점이 없어요/);
   assert.match(modal, /번개장터 신규 판매자/);
   assert.match(modal, /requestedAnalysisPidsRef/);

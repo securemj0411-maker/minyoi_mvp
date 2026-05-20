@@ -795,16 +795,26 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   };
 }
 
-function summaryGuideStep(): BeginnerGuideStep {
+function summaryGuideStep(card: RevealCard): BeginnerGuideStep {
+  const guidance = buyPriceGuidance({
+    price: card.price,
+    currentProfit: expectedProfitAverage(card),
+  });
+  const recommendation = guidance?.verdict === "great" || guidance?.verdict === "good"
+    ? "조건부 매수 가능"
+    : guidance?.verdict === "fair"
+      ? "협상 후 판단"
+      : "보수적으로 판단";
+
   return {
     eyebrow: "",
-    // Wave 394.7.y (사용자 피드백): summary CTA 명확화 — "이 매물 자세히 보기" 행동 지시.
-    title: "이 매물 자세히 살펴볼래요?",
-    metric: "근거 확인 완료",
-    metricLabel: "비교 매물 · 배송비 · 수수료 · 안전결제",
-    body: "",
+    title: "최종 판단만 정리했어요",
+    metric: recommendation,
+    metricLabel: displayProfitRange(card),
+    body: guidance
+      ? `${krw(guidance.dangerStart)} 이상이면 차익이 얇아져요. 판매자에게 확인 질문을 보낸 뒤 상세 숫자 리포트에서 근거를 펼쳐보면 됩니다.`
+      : "판매자에게 확인 질문을 보낸 뒤 상세 숫자 리포트에서 근거를 펼쳐보면 됩니다.",
     note: "",
-    valueNote: "여기까지가 득템잡이가 먼저 정리한 핵심입니다. 더 보고 싶으면 상세 분석에서 원본 근거를 펼쳐보면 돼요.",
     tone: "summary",
   };
 }
@@ -823,7 +833,7 @@ function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
     buyCostGuideStep(card),
     resellCostGuideStep(card),
     purchaseCheckGuideStep(card),
-    summaryGuideStep(),
+    summaryGuideStep(card),
   ];
 }
 
@@ -4169,7 +4179,9 @@ function BeginnerGuideMarketBody({ card, fallback }: { card: RevealCard; fallbac
 }
 
 function BeginnerGuidePurchaseCheckVisual({ card }: { card: RevealCard }) {
+  const [copied, setCopied] = useState(false);
   const checks = beginnerPurchaseChecks(card);
+  const questions = sellerQuestionText(card);
   const toneClasses: Record<BeginnerPurchaseCheck["tone"], { icon: string; badge: string; card: string }> = {
     amber: {
       icon: "bg-amber-100 text-amber-700 dark:bg-amber-950/55 dark:text-amber-200",
@@ -4187,6 +4199,16 @@ function BeginnerGuidePurchaseCheckVisual({ card }: { card: RevealCard }) {
       card: "ring-emerald-100 dark:ring-emerald-900/45",
     },
   };
+
+  async function handleCopyQuestions() {
+    try {
+      await navigator.clipboard.writeText(questions);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  }
 
   return (
     <div data-beginner-guide-purchase-check className="mt-4 space-y-2.5">
@@ -4227,6 +4249,26 @@ function BeginnerGuidePurchaseCheckVisual({ card }: { card: RevealCard }) {
           </div>
         );
       })}
+      <div className="rounded-[20px] bg-[#172019] p-3.5 text-white shadow-[0_14px_30px_rgba(23,32,25,0.18)] dark:bg-zinc-100 dark:text-zinc-950">
+        <div className="flex items-start gap-3">
+          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/12 text-white dark:bg-zinc-950/10 dark:text-zinc-950">
+            <CheckCircleIcon className="h-[18px] w-[18px]" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="break-keep text-[14px] font-black leading-5">판매자에게 바로 물어볼 문구</div>
+            <p className="mt-1 break-keep text-[12px] font-semibold leading-5 text-white/72 dark:text-zinc-700">
+              사진, 구성품, 안전결제를 피하면 구매 보류로 보면 돼요.
+            </p>
+            <button
+              type="button"
+              onClick={handleCopyQuestions}
+              className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-[14px] bg-white px-3 text-[13px] font-black text-[#172019] transition active:scale-[0.99] dark:bg-zinc-950 dark:text-zinc-50"
+            >
+              {copied ? "복사됨" : "문의 문구 복사"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -4260,11 +4302,46 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   );
 }
 
-function BeginnerGuideSummaryVisual() {
+function BeginnerGuideSummaryVisual({ card }: { card: RevealCard }) {
+  const guidance = buyPriceGuidance({
+    price: card.price,
+    currentProfit: expectedProfitAverage(card),
+  });
+  const sampleCount = card.marketBasis?.sampleCount ?? 0;
+  const checkCount = beginnerPurchaseChecks(card).length;
+  const verdict =
+    guidance?.verdict === "great" || guidance?.verdict === "good"
+      ? "조건부 매수 가능"
+      : guidance?.verdict === "fair"
+        ? "협상 후 판단"
+        : "보수적으로 판단";
+  const items = [
+    ["예상 순익", displayProfitRange(card)],
+    ["최대 매입가", guidance ? krw(guidance.dangerStart) : "상세에서 확인"],
+    ["비교 매물", sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "근거 확인"],
+    ["확인 질문", `${checkCount}개`],
+  ] as const;
+
   return (
-    <div className="flex justify-center">
-      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/55 dark:text-emerald-200 dark:ring-emerald-900/60">
-        <CheckCircleIcon className="h-14 w-14" />
+    <div className="mt-4 space-y-3">
+      <div className="flex justify-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/55 dark:text-emerald-200 dark:ring-emerald-900/60">
+          <CheckCircleIcon className="h-11 w-11" />
+        </div>
+      </div>
+      <div className="rounded-[22px] bg-white p-4 shadow-[0_16px_34px_rgba(34,49,39,0.07)] ring-1 ring-[#e9dfd0] dark:bg-zinc-950/70 dark:ring-zinc-800">
+        <div className="text-center text-[15px] font-black text-[#172019] dark:text-zinc-50">{verdict}</div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {items.map(([label, value]) => (
+            <div key={label} className="rounded-[16px] bg-[#f6f1e8] px-3 py-2.5 dark:bg-zinc-900">
+              <div className="text-[10.5px] font-bold text-[#7b8378] dark:text-zinc-400">{label}</div>
+              <div className="mt-1 break-keep text-[14px] font-black leading-5 text-[#172019] dark:text-zinc-50">{value}</div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 break-keep text-center text-[12px] font-bold leading-5 text-[#667164] dark:text-zinc-400">
+          이번에 정리한 근거는 상세 숫자 리포트에서 원본 매물과 계산값까지 이어서 볼 수 있어요.
+        </p>
       </div>
     </div>
   );
@@ -4524,26 +4601,39 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
   const bunjangProfit = expectedProfitAverage(card);
   const bunjangFee = market?.medianPrice ? Math.round(market.medianPrice * SELLING_FEE_RATE) : 0;
   const daangnProfit = bunjangProfit + bunjangFee;
+  const preferDaangn = daangnProfit > bunjangProfit;
 
   return (
-    <div data-beginner-guide-channel-profit className="mt-5 grid grid-cols-2 gap-3">
-      <div className="rounded-[22px] bg-white/84 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
-        <div className="flex items-center gap-2">
-          <BunjangLogo className="h-7 w-7 rounded-full" />
-          <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">번개장터</div>
+    <div data-beginner-guide-channel-profit className="mt-5 space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-[22px] bg-white/84 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+          <div className="flex items-center gap-2">
+            <BunjangLogo className="h-7 w-7 rounded-full" />
+            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">번개장터</div>
+          </div>
+          <div className="mt-3 text-[22px] font-black tabular-nums text-emerald-700 dark:text-emerald-300">+{krw(bunjangProfit)}</div>
+          <div className="mt-1 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">안전결제 수수료 차감</div>
+          <div className="mt-3 rounded-full bg-emerald-50 px-2.5 py-1 text-center text-[11px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200">전국 거래</div>
         </div>
-        <div className="mt-3 text-[22px] font-black tabular-nums text-emerald-700 dark:text-emerald-300">+{krw(bunjangProfit)}</div>
-        <div className="mt-1 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">안전결제 수수료 차감</div>
-        <div className="mt-3 rounded-full bg-emerald-50 px-2.5 py-1 text-center text-[11px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200">전국 거래</div>
+        <div className="rounded-[22px] bg-amber-50/80 p-4 ring-1 ring-amber-200 dark:bg-amber-950/20 dark:ring-amber-900/55">
+          <div className="flex items-center gap-2">
+            <DaangnLogo className="h-7 w-7 rounded-full" />
+            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">당근 직거래</div>
+          </div>
+          <div className="mt-3 text-[22px] font-black tabular-nums text-amber-700 dark:text-amber-200">+{krw(daangnProfit)}</div>
+          <div className="mt-1 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">수수료 0원 가정</div>
+          <div className="mt-3 rounded-full bg-white/80 px-2.5 py-1 text-center text-[11px] font-black text-amber-700 ring-1 ring-amber-100 dark:bg-zinc-950/60 dark:text-amber-200 dark:ring-amber-900/50">지역/네고 부담</div>
+        </div>
       </div>
-      <div className="rounded-[22px] bg-amber-50/80 p-4 ring-1 ring-amber-200 dark:bg-amber-950/20 dark:ring-amber-900/55">
-        <div className="flex items-center gap-2">
-          <DaangnLogo className="h-7 w-7 rounded-full" />
-          <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">당근 직거래</div>
+      <div className="rounded-[18px] bg-[#f5f9ff] px-3.5 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
+        <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">
+          추천: {preferDaangn ? "당근 먼저 등록" : "번개장터 먼저 등록"}
         </div>
-        <div className="mt-3 text-[22px] font-black tabular-nums text-amber-700 dark:text-amber-200">+{krw(daangnProfit)}</div>
-        <div className="mt-1 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">수수료 0원 가정</div>
-        <div className="mt-3 rounded-full bg-white/80 px-2.5 py-1 text-center text-[11px] font-black text-amber-700 ring-1 ring-amber-100 dark:bg-zinc-950/60 dark:text-amber-200 dark:ring-amber-900/50">지역/네고 부담</div>
+        <p className="mt-1 break-keep text-[12px] font-semibold leading-5 text-[#667164] dark:text-zinc-400">
+          {preferDaangn
+            ? "수익은 더 높지만 지역 제한과 네고 부담이 있어요. 안 팔리면 번개장터로 넓히면 됩니다."
+            : "전국 거래가 더 맞는 매물이에요. 안전결제 수수료까지 뺀 숫자로 봅니다."}
+        </p>
       </div>
     </div>
   );
@@ -4560,7 +4650,7 @@ function BeginnerGuideStepVisual({ card, tone }: { card: RevealCard; tone: Begin
   if (tone === "safety") return <BeginnerGuideSafetyVisual />;
   if (tone === "channel") return <BeginnerGuideChannelVisual card={card} />;
   if (tone === "speed") return <BeginnerGuideSpeedVisual card={card} />;
-  return <BeginnerGuideSummaryVisual />;
+  return <BeginnerGuideSummaryVisual card={card} />;
 }
 
 function BeginnerGuideContextNote({ note, tone }: { note?: string; tone: BeginnerGuideStep["tone"] }) {
@@ -5028,7 +5118,7 @@ function BeginnerGuideWalkthrough({
             onClick={onSkip}
             className="mx-auto mt-2 flex min-h-9 items-center justify-center px-3 text-[12px] font-black text-[#7b8378] underline-offset-4 hover:text-[#223127] hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
           >
-            초보자 가이드 스킵하기
+            상세 숫자 리포트 보기
           </button>
         </div>
       </div>
