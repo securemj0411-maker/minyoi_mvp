@@ -53,6 +53,9 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(poolRoute, /const readyCandidateLimit = refresh \? FETCH_POOL_OVERFETCH : READY_SLOTS/);
   assert.match(poolRoute, /diversifyByCategory\(readyFiltered, options\.readyCandidateLimit \?\? READY_SLOTS\)/);
   assert.match(poolRoute, /items = items\.slice\(0, PAGE_SIZE\)/);
+  assert.match(poolRoute, /sortParam === "latest" \|\| sortParam === "price_asc"/);
+  assert.match(poolRoute, /if \(sort === "price_asc"\)/);
+  assert.match(poolRoute, /return a\.price - b\.price/);
   assert.match(poolRoute, /feedMode: creditFeed \? "credit" : "free"/);
   assert.match(poolRoute, /creditFeed/);
 
@@ -68,6 +71,10 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(explore, /크레딧 충전하고 바로 이어보기/);
   assert.match(explore, /피드 무제한/);
   assert.match(explore, /크레딧 1개 이상이면 대기 없이 피드 계속 보기/);
+  assert.match(explore, /data-category-filter-scroll/);
+  assert.match(explore, /scrollCategories/);
+  assert.match(explore, /카테고리 오른쪽으로 보기/);
+  assert.match(explore, /<option value="price_asc">매입단가순<\/option>/);
   assert.match(explore, /오늘 볼 수 있는 추천 매물은 여기까지예요/);
   assert.match(explore, /수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요/);
   assert.match(explore, /creditFeedEnabled && !feedExhausted && items\.length > 0/);

@@ -183,7 +183,7 @@ function bandAwareMedian(
 async function loadPool(
   headers: Record<string, string>,
   options: {
-    sort?: "profit_desc" | "latest";
+    sort?: "profit_desc" | "latest" | "price_asc";
     priceMax?: number | null;
     excludePids?: number[];
     readyCandidateLimit?: number;
@@ -412,7 +412,8 @@ export async function GET(req: Request) {
     const refresh = url.searchParams.get("refresh") === "1";
     // Wave 340: 정렬 옵션. Wave 353: 카테고리 필터는 클라이언트로 이동 (전체 vs 카테고리 일관성).
     const sortParam = url.searchParams.get("sort");
-    const sort: "profit_desc" | "latest" = sortParam === "latest" ? "latest" : "profit_desc";
+    const sort: "profit_desc" | "latest" | "price_asc" =
+      sortParam === "latest" || sortParam === "price_asc" ? sortParam : "profit_desc";
 
     // Wave 373: personalization 필터 — 예산(가격 상한) + 성향(정렬/필터 우선순위).
     const budgetParam = url.searchParams.get("budget");
@@ -509,7 +510,12 @@ export async function GET(req: Request) {
     //   safe: 우수 셀러 (평점 4.5+ & 후기 10+) 우선
     //   aggressive: 차익 큰 매물 우선 (expected_profit_max desc)
     //   balanced: loadPool의 기존 정렬 유지 (profit_band desc + random shuffle)
-    if (preference === "safe") {
+    if (sort === "price_asc") {
+      items = [...items].sort((a, b) => {
+        if (a.price !== b.price) return a.price - b.price;
+        return b.expectedProfitMax - a.expectedProfitMax;
+      });
+    } else if (preference === "safe") {
       const isPremium = (it: (typeof items)[number]) =>
         (it.sellerReviewRating ?? 0) >= 4.5 && it.sellerReviewCount >= 10;
       items = [...items].sort((a, b) => {

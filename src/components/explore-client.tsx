@@ -235,7 +235,7 @@ const CATEGORY_OPTIONS = [
   { value: "clothing", label: "옷" },
 ];
 
-type SortOption = "profit_desc" | "latest";
+type SortOption = "profit_desc" | "latest" | "price_asc";
 
 // Wave 374: personalization — 예산 + 매물 성향. localStorage에 저장 (디바이스 단위).
 // Wave 381: 옵션 10만 → 15만 (10~15만 사이 매물이 가장 많은 가격대).
@@ -604,9 +604,12 @@ export default function ExploreClient() {
   });
   const [sort, setSort] = useState<SortOption>(() => {
     const raw = searchParams.get("sort");
-    return raw === "latest" ? "latest" : "profit_desc";
+    return raw === "latest" || raw === "price_asc" ? raw : "profit_desc";
   });
   const [scrapOnly, setScrapOnly] = useState(() => searchParams.get("view") === "scrap");
+  const categoryScrollRef = useRef<HTMLDivElement | null>(null);
+  const [canScrollCategoriesPrev, setCanScrollCategoriesPrev] = useState(false);
+  const [canScrollCategoriesNext, setCanScrollCategoriesNext] = useState(false);
 
   useEffect(() => {
     const loadedScraps = loadScrapSnapshots();
@@ -621,6 +624,37 @@ export default function ExploreClient() {
     scrapItems.forEach((item) => next.add(item.pid));
     return next;
   }, [legacySavedPids, scrapItems]);
+
+  const updateCategoryScrollButtons = useCallback(() => {
+    const node = categoryScrollRef.current;
+    if (!node) return;
+    const maxScrollLeft = Math.max(0, node.scrollWidth - node.clientWidth);
+    setCanScrollCategoriesPrev(node.scrollLeft > 4);
+    setCanScrollCategoriesNext(node.scrollLeft < maxScrollLeft - 4);
+  }, []);
+
+  useEffect(() => {
+    const node = categoryScrollRef.current;
+    if (!node) return;
+    updateCategoryScrollButtons();
+    node.addEventListener("scroll", updateCategoryScrollButtons, { passive: true });
+    window.addEventListener("resize", updateCategoryScrollButtons);
+    return () => {
+      node.removeEventListener("scroll", updateCategoryScrollButtons);
+      window.removeEventListener("resize", updateCategoryScrollButtons);
+    };
+  }, [updateCategoryScrollButtons]);
+
+  const scrollCategories = useCallback((direction: "prev" | "next") => {
+    const node = categoryScrollRef.current;
+    if (!node) return;
+    const distance = Math.min(Math.max(node.clientWidth * 0.72, 180), 360);
+    node.scrollBy({
+      left: direction === "next" ? distance : -distance,
+      behavior: "smooth",
+    });
+    window.setTimeout(updateCategoryScrollButtons, 240);
+  }, [updateCategoryScrollButtons]);
 
   // 필터/정렬 변경 시 URL 갱신
   useEffect(() => {
@@ -990,72 +1024,97 @@ export default function ExploreClient() {
       </div>
 
       {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음). */}
-      <div className="sticky top-0 z-20 -mx-3 mb-2 flex items-center gap-1.5 overflow-x-auto bg-[#f6f1e8]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:px-6">
+      <div className="sticky top-0 z-20 -mx-3 mb-2 flex items-center gap-1.5 bg-[#f6f1e8]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:px-6">
         <button
           type="button"
-          onClick={() => {
-            setScrapOnly((prev) => !prev);
-            setSelectedCategories(new Set());
-          }}
-          className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
-            scrapOnly
-              ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
-              : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
-          }`}
+          onClick={() => scrollCategories("prev")}
+          disabled={!canScrollCategoriesPrev}
+          aria-label="카테고리 왼쪽으로 보기"
+          className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-sm font-black text-zinc-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-emerald-700 dark:hover:text-emerald-300 sm:inline-flex"
         >
-          <BookmarkIcon className="h-3.5 w-3.5 shrink-0" strokeWidth={2} fill={scrapOnly ? "currentColor" : "none"} />
-          스크랩
-          {scrapItems.length > 0 ? (
-            <span className={scrapOnly ? "text-white/70 dark:text-zinc-950/70" : "text-zinc-400"}>
-              {scrapItems.length.toLocaleString("ko-KR")}
-            </span>
-          ) : null}
+          ←
         </button>
-        {CATEGORY_OPTIONS.map((opt) => {
-          const isActive = selectedCategories.has(opt.value);
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => {
-                setSelectedCategories((prev) => {
-                  const next = new Set(prev);
-                  if (next.has(opt.value)) next.delete(opt.value);
-                  else next.add(opt.value);
-                  return next;
-                });
-                setScrapOnly(false);
-              }}
-              className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
-                isActive
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
-                  : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
-              }`}
-            >
-              {/* 2026-05-19: SF Symbol 스타일 라인 아이콘 추가. 텍스트만 칩 촌스러움 해소. */}
-              <CategoryIcon category={opt.value} className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
-              {opt.label}
-            </button>
-          );
-        })}
-        {selectedCategories.size > 0 || scrapOnly ? (
+        <div
+          ref={categoryScrollRef}
+          data-category-filter-scroll
+          className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+        >
           <button
             type="button"
             onClick={() => {
+              setScrapOnly((prev) => !prev);
               setSelectedCategories(new Set());
-              setScrapOnly(false);
             }}
-            className="shrink-0 px-1.5 py-1 text-[10px] font-medium text-zinc-500 underline dark:text-zinc-400"
+            className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
+              scrapOnly
+                ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
+                : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
+            }`}
           >
-            초기화
+            <BookmarkIcon className="h-3.5 w-3.5 shrink-0" strokeWidth={2} fill={scrapOnly ? "currentColor" : "none"} />
+            스크랩
+            {scrapItems.length > 0 ? (
+              <span className={scrapOnly ? "text-white/70 dark:text-zinc-950/70" : "text-zinc-400"}>
+                {scrapItems.length.toLocaleString("ko-KR")}
+              </span>
+            ) : null}
           </button>
-        ) : null}
+          {CATEGORY_OPTIONS.map((opt) => {
+            const isActive = selectedCategories.has(opt.value);
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  setSelectedCategories((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(opt.value)) next.delete(opt.value);
+                    else next.add(opt.value);
+                    return next;
+                  });
+                  setScrapOnly(false);
+                }}
+                className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
+                  isActive
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                    : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
+                }`}
+              >
+                {/* 2026-05-19: SF Symbol 스타일 라인 아이콘 추가. 텍스트만 칩 촌스러움 해소. */}
+                <CategoryIcon category={opt.value} className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+                {opt.label}
+              </button>
+            );
+          })}
+          {selectedCategories.size > 0 || scrapOnly ? (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCategories(new Set());
+                setScrapOnly(false);
+              }}
+              className="shrink-0 px-1.5 py-1 text-[10px] font-medium text-zinc-500 underline dark:text-zinc-400"
+            >
+              초기화
+            </button>
+          ) : null}
+        </div>
+        <button
+          type="button"
+          onClick={() => scrollCategories("next")}
+          disabled={!canScrollCategoriesNext}
+          aria-label="카테고리 오른쪽으로 보기"
+          className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-sm font-black text-zinc-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-emerald-700 dark:hover:text-emerald-300 sm:inline-flex"
+        >
+          →
+        </button>
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
           className="ml-auto shrink-0 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
         >
           <option value="profit_desc">차익순</option>
+          <option value="price_asc">매입단가순</option>
           <option value="latest">최신순</option>
         </select>
       </div>
