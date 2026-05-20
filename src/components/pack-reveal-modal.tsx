@@ -641,7 +641,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
         : "상태 분류와 표본 수에 따라 시세 판단은 달라질 수 있어요.",
       valueNote: sampleCount > 0
         ? `상태가 다른 매물은 섞지 않고, 같은 모델·같은 상태 표본 ${sampleCount.toLocaleString("ko-KR")}건에서 기준을 잡았어요.`
-        : "표본이 부족하면 부족하다고 표시하고, 억지로 싸다고 단정하지 않습니다.",
+        : undefined,
       tone: "market",
     };
   }
@@ -4038,11 +4038,11 @@ function BeginnerGuideTrustBody({ card, fallback }: { card: RevealCard; fallback
   if (!hasEnoughReviews) {
     return (
       <p data-beginner-guide-trust-highlight className="mt-4 break-keep text-[16px] font-semibold leading-7 text-[#475449] dark:text-zinc-300">
-        <span className="inline-flex items-baseline rounded-full bg-white px-2 py-0.5 font-black text-[#172019] ring-1 ring-[#e7ded1] dark:bg-zinc-950/60 dark:text-zinc-50 dark:ring-zinc-800">
+        <span className="font-black text-[#172019] dark:text-zinc-50">
           평점은 <strong className="ml-1 text-[17px]">{rating.toFixed(1)}점</strong>
         </span>
         이지만{" "}
-        <span className="inline-flex items-baseline rounded-full bg-white px-2 py-0.5 font-black text-[#172019] ring-1 ring-[#e7ded1] dark:bg-zinc-950/60 dark:text-zinc-50 dark:ring-zinc-800">
+        <span className="font-black text-[#172019] dark:text-zinc-50">
           후기가 <strong className="ml-1 text-[17px]">{reviewLabel}건</strong>
         </span>
         이라 아직 판단 표본이 적어요. 안전결제와 실제 상태 확인을 더 보수적으로 보면 좋아요.
@@ -4053,11 +4053,11 @@ function BeginnerGuideTrustBody({ card, fallback }: { card: RevealCard; fallback
   return (
     <p data-beginner-guide-trust-highlight className="mt-4 break-keep text-[16px] font-semibold leading-7 text-[#475449] dark:text-zinc-300">
       이 상품 판매자는{" "}
-      <span className="inline-flex items-baseline rounded-full bg-white px-2 py-0.5 font-black text-[#172019] ring-1 ring-[#e7ded1] dark:bg-zinc-950/60 dark:text-zinc-50 dark:ring-zinc-800">
+      <span className="font-black text-[#172019] dark:text-zinc-50">
         후기가 <strong className="ml-1 text-[17px]">{reviewLabel}건</strong>
       </span>
       이고{" "}
-      <span className="inline-flex items-baseline rounded-full bg-white px-2 py-0.5 font-black text-[#172019] ring-1 ring-[#e7ded1] dark:bg-zinc-950/60 dark:text-zinc-50 dark:ring-zinc-800">
+      <span className="font-black text-[#172019] dark:text-zinc-50">
         평점이 <strong className="ml-1 text-[17px]">{rating.toFixed(1)}점</strong>
       </span>
       으로 신뢰가 있는 판매자예요.
@@ -4074,7 +4074,7 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
 
   if (!hasRating && reviewCount <= 0) {
     return (
-      <div data-beginner-guide-trust-metric className="my-6 rounded-[22px] bg-white p-4 ring-1 ring-[#ece4d7] dark:bg-zinc-950/70 dark:ring-zinc-800">
+      <div data-beginner-guide-trust-metric className="my-5 border-y border-[#eee5d8] py-4 dark:border-zinc-800">
         <div className="flex items-center gap-3">
           <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#fff7e6] text-[#b7791f] ring-1 ring-[#f2dfbd] dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-900/50">
             <AlertTriangleIcon className="h-6 w-6" />
@@ -4091,14 +4091,14 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
   }
 
   return (
-    <div data-beginner-guide-trust-metric className={`my-6 grid gap-2.5 border-y border-[#eee5d8] py-4 dark:border-zinc-800 ${hasRating ? "grid-cols-2" : "grid-cols-1"}`}>
+    <div data-beginner-guide-trust-metric className={`my-5 grid gap-0 divide-x divide-[#eee5d8] border-y border-[#eee5d8] py-4 dark:divide-zinc-800 dark:border-zinc-800 ${hasRating ? "grid-cols-2" : "grid-cols-1"}`}>
       {hasRating ? (
-        <div className="rounded-[18px] bg-white p-3.5 ring-1 ring-[#ece4d7] dark:bg-zinc-950/70 dark:ring-zinc-800">
+        <div className="px-3">
           <div className="flex items-center gap-2 text-[12px] font-black text-[#6b7269] dark:text-zinc-400">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#fff7e6] text-[#d5961d] dark:bg-amber-950/45 dark:text-amber-200">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#fff7e6] text-[#d5961d] dark:bg-amber-950/45 dark:text-amber-200">
               <BeginnerGuideStarGlyph className="h-4 w-4" />
             </span>
-            <span>판매자 평점</span>
+            <span>평점</span>
           </div>
           <div className="mt-3 flex items-end gap-1.5">
             <span className="text-[30px] font-black leading-none text-[#172019] dark:text-zinc-50">
@@ -4117,12 +4117,12 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
         </div>
       ) : null}
 
-      <div className="rounded-[18px] bg-white p-3.5 ring-1 ring-[#ece4d7] dark:bg-zinc-950/70 dark:ring-zinc-800">
+      <div className="px-3">
         <div className="flex items-center gap-2 text-[12px] font-black text-[#6b7269] dark:text-zinc-400">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#edf8f2] text-[#0f9f6e] dark:bg-emerald-950/45 dark:text-emerald-200">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#edf8f2] text-[#0f9f6e] dark:bg-emerald-950/45 dark:text-emerald-200">
             <TrophyIcon className="h-4 w-4" />
           </span>
-          <span>거래 후기</span>
+          <span>후기</span>
         </div>
         <div className="mt-3 flex items-end gap-1.5">
           <span className="text-[30px] font-black leading-none text-[#172019] dark:text-zinc-50">
@@ -4627,7 +4627,7 @@ function beginnerSafetyStatRows(stats: BeginnerGuideSafetyStats) {
   const rows = [
     { label: "돈 안 되는 것", value: (stats.profit_low_7d ?? 0) + (stats.stat_missing_7d ?? 0) },
     { label: "사기 의심", value: (stats.fake_or_lock_7d ?? 0) + (stats.suspicious_price_7d ?? 0) },
-    { label: "모델 확인 필요", value: stats.needs_review_7d ?? 0 },
+    { label: "무슨 상품인지 애매", value: stats.needs_review_7d ?? 0 },
     { label: "단품·구성품 애매", value: (stats.listing_parts_7d ?? 0) + (stats.listing_accessory_7d ?? 0) + (stats.listing_multi_7d ?? 0) },
   ];
 
@@ -4671,23 +4671,23 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
     return () => controller.abort();
   }, [loadFailed, stats, statsUrl]);
 
-  if (variant === "intro" && !stats && !loadFailed) {
-    return null;
-  }
-
-  if (variant === "intro" && (!stats || (stats.total_blocked_7d ?? 0) <= 0)) return null;
-
   const totalBlocked = stats?.total_blocked_7d ?? 0;
-  if (!stats || totalBlocked <= 0) return null;
-  const rows = beginnerSafetyStatRows(stats);
-  const scopedSubject = stats.scope?.level === "lane" || stats.scope?.level === "sku"
+  const rows = stats ? beginnerSafetyStatRows(stats) : [];
+  const scopedSubject = stats?.scope?.level === "lane" || stats?.scope?.level === "sku"
     ? `${compactBeginnerSkuLabel(card)} 매물 중`
-    : stats.scope?.level === "category" && stats.scope.category
+    : stats?.scope?.level === "category" && stats.scope.category
       ? `${BEGINNER_CATEGORY_LABELS[stats.scope.category] ?? "비슷한 상품"} 중`
       : null;
   const subjectLabel = scopedSubject ?? "전체 추천 풀에서";
 
   if (variant === "intro") {
+    const showFallbackTotal = !stats || totalBlocked <= 0;
+    const displayRows = rows.length > 0 ? rows : [
+      { label: "돈 안 되는 것", value: null },
+      { label: "사기 의심", value: null },
+      { label: "무슨 상품인지 애매", value: null },
+    ];
+
     return (
       <div
         data-beginner-guide-safety-filter-note
@@ -4708,18 +4708,20 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
         </div>
 
         <div className="mt-5 space-y-2.5">
-          {rows.length > 0 ? rows.map((row) => (
+          {showFallbackTotal ? null : displayRows.map((row) => (
             <div key={row.label} className="flex items-center justify-between gap-4 rounded-[16px] bg-[#faf7f1] px-3.5 py-3 dark:bg-zinc-900/70">
               <span className="break-keep text-[14px] font-bold text-[#475449] dark:text-zinc-300">{row.label}</span>
               <span className="shrink-0 text-[18px] font-black tabular-nums text-[#172019] dark:text-zinc-50">
-                {formatBeginnerStatCount(row.value)}건
+                {row.value == null ? "확인 중" : `${formatBeginnerStatCount(row.value)}건`}
               </span>
             </div>
-          )) : (
-            <div className="rounded-[16px] bg-[#faf7f1] px-3.5 py-3 text-[14px] font-bold text-[#475449] dark:bg-zinc-900/70 dark:text-zinc-300">
-              돈 안 되는 것 <span className="font-black text-[#172019] dark:text-zinc-50">{formatBeginnerStatCount(totalBlocked)}건</span>
+          ))}
+          {showFallbackTotal ? (
+            <div className="rounded-[16px] bg-[#f5f9ff] px-3.5 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
+              <div className="text-[12px] font-bold text-[#6f7b73] dark:text-zinc-400">오늘 걸러낸 매물 수</div>
+              <div className="mt-1 text-[22px] font-black tabular-nums text-[#3182f6] dark:text-blue-300">확인 중</div>
             </div>
-          )}
+          ) : null}
         </div>
 
         <p className="mt-4 break-keep text-[13px] font-semibold leading-5 text-[#687166] dark:text-zinc-400">
@@ -4728,6 +4730,8 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
       </div>
     );
   }
+
+  if (!stats || totalBlocked <= 0) return null;
 
   const leadingCopy = scopedSubject
     ? `오늘 ${scopedSubject} 돈 안 되는 것`
