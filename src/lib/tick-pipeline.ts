@@ -1135,6 +1135,18 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
     ? rotatedDeepQueryWindow(dueQueries, config.deepCrawlQueryLimit)
     : { items: dueQueries, start: 0, limit: dueQueries.length };
   const scanQueries = queryWindow.items;
+  const tolerateNonCriticalWriteErrors = mode === "deep";
+  async function timedOptionalSearchWrite(name: string, fn: () => Promise<void>) {
+    try {
+      await timedSearchSubstage(timingsMs, name, fn);
+    } catch (err) {
+      if (!tolerateNonCriticalWriteErrors) throw err;
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`deep crawl optional write failed: ${name}`, { error: message });
+      timingsMs[`${name}_soft_failed`] = 1;
+      timingsMs[`${name}_soft_error_len`] = message.length;
+    }
+  }
   if (mode === "deep") {
     timingsMs.search_queries_deep_window_start = queryWindow.start;
     timingsMs.search_queries_deep_window_limit = queryWindow.limit;
@@ -1350,7 +1362,7 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
     return [...groups.values()];
   });
   timingsMs.title_triage_skip_rows = titleTriageSkipGroups.reduce((sum, group) => sum + group.ids.length, 0);
-  await timedSearchSubstage(timingsMs, "patch_title_triage_skips", async () => {
+  await timedOptionalSearchWrite("patch_title_triage_skips", async () => {
     for (const group of titleTriageSkipGroups) {
       await patchRowsByIds("mvp_raw_listings", group.ids, {
         ...group.payload,
@@ -1369,7 +1381,7 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
   //   자세한 진단: docs/DECISIONS/2026-05-19-p1-velocity-condition-confidence-sold-detection.md
   const skippedPids = titleTriageSkipGroups.flatMap((group) => group.ids);
   if (skippedPids.length > 0) {
-    await timedSearchSubstage(timingsMs, "seed_lifecycle_for_skipped", async () => {
+    await timedOptionalSearchWrite("seed_lifecycle_for_skipped", async () => {
       const seeded = await seedLifecycleChecks(
         skippedPids.map((pid) => ({ pid, priorityTier: "general" as const })),
       );
@@ -1441,7 +1453,7 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
     timingsMs.raw_touch_active_seen_coalesce_non_pool_rows = nonPoolRows;
     timingsMs.raw_touch_active_seen_coalesce_enabled = config.rawTouchCoalesceActiveSeenOnly ? 1 : 0;
   }
-  await timedSearchSubstage(timingsMs, "touch_raw_listings", async () => {
+  await timedOptionalSearchWrite("touch_raw_listings", async () => {
     await patchRowsByIds("mvp_raw_listings", activeSeenOnlyTouchNow, {
       last_seen_at: now,
     }, RAW_TOUCH_WRITE_CHUNK_SIZE);
@@ -1456,7 +1468,7 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
       last_seen_at: now,
     }, RAW_TOUCH_WRITE_CHUNK_SIZE);
   });
-  await timedSearchSubstage(timingsMs, "request_terminal_lifecycle_recheck", () => requestTerminalLifecycleRecheck(
+  await timedOptionalSearchWrite("request_terminal_lifecycle_recheck", () => requestTerminalLifecycleRecheck(
     items
       .filter((item) => statePatches.get(item.pid)?.terminal_preserved)
       .map((item) => Number(item.pid))

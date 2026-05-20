@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { categoryFromComparableKey } from "@/lib/category-readiness";
-import { getCategoryPageOverrides } from "@/lib/pipeline-config";
+import { getCategoryPageOverrides, loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { queryFamily } from "@/lib/search-query-cadence";
 import { interleaveSearchQueriesByFamilyForTest, rotateDeepCrawlQueriesForTest } from "@/lib/tick-pipeline";
 
@@ -47,6 +47,10 @@ test("deep crawl rotates a bounded query window instead of scanning the full cat
   assert.deepEqual(rotateDeepCrawlQueriesForTest(queries, 4, 0), ["q0", "q1", "q2", "q3"]);
   assert.deepEqual(rotateDeepCrawlQueriesForTest(queries, 4, 30 * 60 * 1000), ["q4", "q5", "q6", "q7"]);
   assert.deepEqual(rotateDeepCrawlQueriesForTest(queries, 4, 60 * 60 * 1000), ["q8", "q9", "q0", "q1"]);
+});
+
+test("deep crawl default query window keeps serverless post-processing below the route ceiling", () => {
+  assert.equal(loadPipelineRuntimeConfig().deepCrawlQueryLimit, 40);
 });
 
 test("newer public categories are inferable from comparable keys for pack diversity", () => {

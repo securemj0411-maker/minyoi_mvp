@@ -22,3 +22,15 @@
 
 - QStash/Vercel runtime 로그 직접 조회는 로컬 Vercel CLI token invalid 때문에 보류.
 - 배포 후 2~3회 deep-crawl run에서 duration과 stale rate가 내려가는지 DB run log로 재확인한다.
+
+## 추가 확인 및 후속 조치
+
+- `2026-05-20T11:07Z` scheduled deep-crawl도 stale 처리됐다.
+- production manual call: `/api/cron/deep-crawl?force=1&page=1`
+  - 결과: 84.6초 후 500.
+  - error: `Supabase REST timed out PATCH /rest/v1/mvp_raw_listings?pid=in.(363269848,397884133)`.
+  - 해당 2개 row는 실제로 `updated_at=2026-05-20T11:12:09Z`까지 반영되어, REST timeout이 run finish를 막은 형태로 보인다.
+- 추가 결정:
+  - 기본 deep window를 80 → 40으로 낮춰 post-processing 대상량을 더 줄인다.
+  - deep-crawl의 비핵심 write(`patch_title_triage_skips`, skipped lifecycle seed, raw touch, terminal recheck request)는 timeout 시 전체 run 실패로 전파하지 않고 timings에 soft failure로 남긴다.
+  - 일반 tick/fresh mode는 기존처럼 hard failure 유지.
