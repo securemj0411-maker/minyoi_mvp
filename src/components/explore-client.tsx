@@ -48,6 +48,8 @@ type ScrappedPoolItem = PoolItem & {
 type PoolResponse = {
   items: PoolItem[];
   cooldown: { canRefresh: boolean; remainingSec: number; nextAvailableAt: string | null };
+  feedMode?: "free" | "credit";
+  creditFeed?: boolean;
   total: number;
   pageSize: number;
   freshLagHours: number;
@@ -526,11 +528,14 @@ export default function ExploreClient() {
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [creditFeedEnabled, setCreditFeedEnabled] = useState(false);
+  const [feedExhausted, setFeedExhausted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
   const [detailAccessLoadingPid, setDetailAccessLoadingPid] = useState<number | null>(null);
   const openedDetailPidsRef = useRef<Set<number>>(new Set());
   const detailAccessValueRef = useRef<DetailAccessValueSummary | null>(null);
+  const infiniteFeedSentinelRef = useRef<HTMLDivElement | null>(null);
   const [scrapItems, setScrapItems] = useState<ScrappedPoolItem[]>([]);
   const [legacySavedPids, setLegacySavedPids] = useState<Set<number>>(() => new Set());
   const [now, setNow] = useState(Date.now());
@@ -638,14 +643,21 @@ export default function ExploreClient() {
     return Math.max(0, Math.ceil(ms / 1000));
   }, [cooldown, now]);
 
-  const canRefresh = remainingSec === 0;
+  const canRefresh = creditFeedEnabled || remainingSec === 0;
 
   // Wave 353: 카테고리 필터는 클라이언트 사이드 (서버 → 항상 다양화된 30개 풀, 클라가 필터링).
   // 정렬은 백엔드 유지 — 풀 구성 자체가 달라짐 (latest = 최신 30 vs profit_desc = 차익 상위 30).
   // Wave 374: preferences (budget/preference) 인자도 전달.
-  const loadPool = useCallback(async (refresh: boolean, prefsOverride?: UserPreferences | null) => {
+  const loadPool = useCallback(async (
+    refresh: boolean,
+    prefsOverride?: UserPreferences | null,
+    options?: { autoScrollNew?: boolean },
+  ) => {
     if (refresh) setRefreshing(true);
-    else setLoading(true);
+    else {
+      setLoading(true);
+      setFeedExhausted(false);
+    }
     setError(null);
     try {
       const params = new URLSearchParams();
@@ -673,18 +685,23 @@ export default function ExploreClient() {
           // 사용자 의도 — 더 둘러보고 싶어서 "다른 매물 찾기" 누르는데 기존이 사라지면 X.
           // 초기 load (refresh=false)는 덮어쓰기 (첫 데이터).
           if (refresh) {
+            const existingPids = new Set(itemsRef.current.map((it) => it.pid));
+            const incomingFresh = data.items.filter((it) => !existingPids.has(it.pid));
+            setFeedExhausted(incomingFresh.length === 0);
             setItems((prev) => {
-              const existingPids = new Set(prev.map((it) => it.pid));
-              const fresh = data.items!.filter((it) => !existingPids.has(it.pid));
+              const latestExistingPids = new Set(prev.map((it) => it.pid));
+              const fresh = data.items!.filter((it) => !latestExistingPids.has(it.pid));
               // Wave 394.7.j: 새 매물 첫 pid 저장 — useEffect 가 mount 후 scroll.
-              if (fresh.length > 0) setScrollTargetPid(fresh[0].pid);
+              if (fresh.length > 0 && options?.autoScrollNew !== false) setScrollTargetPid(fresh[0].pid);
               return [...prev, ...fresh];
             });
           } else {
             setItems(data.items);
+            setFeedExhausted(data.items.length === 0);
           }
         }
         setCooldown(data.cooldown);
+        setCreditFeedEnabled(data.creditFeed === true || data.feedMode === "credit");
         // Wave 382: 응답의 fallback 적용된 budget 저장 (사용자 prefs와 비교 위해)
         if (data.appliedBudget) setAppliedBudget(data.appliedBudget);
       } else {
@@ -730,6 +747,23 @@ export default function ExploreClient() {
     if (!prefsInitialized || awaitingInitialPrefs) return;
     void loadPool(false);
   }, [loadPool, prefsInitialized, awaitingInitialPrefs]);
+
+  useEffect(() => {
+    if (!creditFeedEnabled || loading || refreshing || feedExhausted || scrapOnly || items.length === 0) return;
+    const el = infiniteFeedSentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          void loadPool(true, undefined, { autoScrollNew: false });
+        }
+      },
+      { rootMargin: "900px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [creditFeedEnabled, feedExhausted, items.length, loadPool, loading, refreshing, scrapOnly]);
 
   // Wave 353: 클라이언트 사이드 카테고리 필터. 전체 풀(items)에서 selectedCategories에 속한 매물만.
   // category가 null이면 selectedCategories 활성 시 제외 (안전).
@@ -831,6 +865,9 @@ export default function ExploreClient() {
       }
       if (Number(data.creditSpent ?? 0) > 0 && typeof window !== "undefined") {
         window.dispatchEvent(new Event("minyoi:credits-changed"));
+      }
+      if (data.creditBalance != null) {
+        setCreditFeedEnabled(Number(data.creditBalance) > 0);
       }
       if (!data.alreadyOpened && data.accessType === "free") {
         detailAccessValueRef.current = mergeAccessValueSummary(
@@ -1278,17 +1315,27 @@ export default function ExploreClient() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-                {canRefresh ? "다른 30개 매물 받을 수 있어요" : "다음 라운드 준비 중"}
+                {creditFeedEnabled
+                  ? "계속 내려보면 새 매물이 이어져요"
+                  : canRefresh
+                    ? "다른 30개 매물 받을 수 있어요"
+                    : "다음 라운드 준비 중"}
               </div>
               <div className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                {canRefresh
+                {creditFeedEnabled
+                  ? "피드 탐색은 무제한 · 크레딧은 상세 분석을 열 때만 차감"
+                  : canRefresh
                   ? "새로운 매물 풀로 갱신 · 다양한 카테고리"
                   : `${formatCooldown(remainingSec)} 후 새 매물 자동으로 풀려요`}
               </div>
               {stats && stats.freshLocked > 0 ? (
                 <div className="mt-2 flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1.5 text-[11px] font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
                   <ZapIcon className="h-3 w-3" />
-                  <span>지금 즉시 매물 {stats.freshLocked.toLocaleString("ko-KR")}건은 <b className="font-bold">크레딧 충전 사용자 전용</b> (곧 출시)</span>
+                  <span>
+                    {creditFeedEnabled
+                      ? `크레딧 보유 중 · 피드 탐색 무제한`
+                      : `지금 즉시 매물 ${stats.freshLocked.toLocaleString("ko-KR")}건은 크레딧 충전 사용자 전용`}
+                  </span>
                 </div>
               ) : null}
             </div>
@@ -1303,7 +1350,7 @@ export default function ExploreClient() {
       {/* Wave 390: "다른 매물 찾기" → "더 찾아보기".
           canRefresh이면 모달 X, 직접 loadPool(true) — 자연스럽게 append.
           !canRefresh면 cooldown 모달 (카톡/즉시받기/대기). */}
-      {!loading && !scrapOnly && items.length > 0 ? (
+      {!loading && !scrapOnly && !creditFeedEnabled && items.length > 0 ? (
         <div className="sticky bottom-4 z-20 mt-4 flex justify-center px-4 sm:mt-6 sm:px-0">
           <button
             type="button"
@@ -1320,6 +1367,20 @@ export default function ExploreClient() {
             <SearchIcon className="h-4 w-4" />
             {refreshing ? "받는 중..." : "더 찾아보기"}
           </button>
+        </div>
+      ) : null}
+
+      {!loading && !scrapOnly && creditFeedEnabled && items.length > 0 ? (
+        <div
+          ref={infiniteFeedSentinelRef}
+          data-credit-infinite-feed-sentinel
+          className="mt-4 flex min-h-16 items-center justify-center px-4 text-center text-xs font-bold text-zinc-500 dark:text-zinc-400"
+        >
+          {refreshing
+            ? "새 매물 붙이는 중..."
+            : feedExhausted
+              ? "지금 볼 수 있는 추천 매물은 여기까지예요"
+              : "계속 내려보면 새 매물이 이어져요"}
         </div>
       ) : null}
 

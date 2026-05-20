@@ -40,6 +40,25 @@ test("pool detail access gives first three unique pids free, then spends one cre
   assert.match(route, /freeUsed/);
 });
 
+test("credit holders can browse the feed without refresh cooldown", () => {
+  const poolRoute = source("src/app/api/packs/pool/route.ts");
+  const explore = source("src/components/explore-client.tsx");
+
+  assert.match(poolRoute, /select=user_ref,balance,last_free_browse_at/);
+  assert.match(poolRoute, /const creditFeed = isAdminUser\(auth\.user\) \|\| Number\(credits\?\.balance \?\? 0\) > 0/);
+  assert.match(poolRoute, /if \(refresh && !creditFeed && !cooldown\.canRefresh\)/);
+  assert.match(poolRoute, /if \(refresh && !creditFeed && cooldown\.canRefresh\)/);
+  assert.match(poolRoute, /feedMode: creditFeed \? "credit" : "free"/);
+  assert.match(poolRoute, /creditFeed/);
+
+  assert.match(explore, /creditFeedEnabled/);
+  assert.match(explore, /data-credit-infinite-feed-sentinel/);
+  assert.match(explore, /IntersectionObserver/);
+  assert.match(explore, /autoScrollNew: false/);
+  assert.match(explore, /피드 탐색은 무제한 · 크레딧은 상세 분석을 열 때만 차감/);
+  assert.match(explore, /!creditFeedEnabled && items\.length > 0/);
+});
+
 test("explore opens the modal only after detail access is granted", () => {
   const explore = source("src/components/explore-client.tsx");
 

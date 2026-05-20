@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/auth-users";
 import { loadV7SiblingPresence, type V7SiblingPresenceMap } from "@/lib/band-aware-median";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
@@ -83,6 +84,7 @@ type RawListingMeta = {
 
 type UserCreditsRow = {
   user_ref: string;
+  balance: number | null;
   last_free_browse_at: string | null;
 };
 
@@ -371,7 +373,7 @@ function buildItems(
 
 async function loadUserCredits(headers: Record<string, string>, userRef: string): Promise<UserCreditsRow | null> {
   const res = await restFetch(
-    `${tableUrl("mvp_user_credits")}?select=user_ref,last_free_browse_at&user_ref=eq.${encodeURIComponent(userRef)}&limit=1`,
+    `${tableUrl("mvp_user_credits")}?select=user_ref,balance,last_free_browse_at&user_ref=eq.${encodeURIComponent(userRef)}&limit=1`,
     { headers },
   );
   const rows = (await res.json()) as UserCreditsRow[];
@@ -427,19 +429,26 @@ export async function GET(req: Request) {
 
     const headers = serviceHeaders();
     const credits = await loadUserCredits(headers, userRef);
+    const creditFeed = isAdminUser(auth.user) || Number(credits?.balance ?? 0) > 0;
     const cooldown = computeCooldown(credits?.last_free_browse_at ?? null);
+    const effectiveCooldown = creditFeed
+      ? { canRefresh: true, remainingSec: 0, nextAvailableAt: null }
+      : cooldown;
 
     // refresh 요청인데 cooldown 안 끝났으면 거부
-    if (refresh && !cooldown.canRefresh) {
+    if (refresh && !creditFeed && !cooldown.canRefresh) {
       return NextResponse.json({
         items: [],
         cooldown,
+        feedMode: "free",
+        creditFeed: false,
         message: `${Math.ceil(cooldown.remainingSec / 60)}분 후 새 30개 매물을 받을 수 있어요.`,
       }, { status: 200 });
     }
 
-    // refresh 요청이고 cooldown 통과면 last_free_browse_at 갱신
-    if (refresh && cooldown.canRefresh) {
+    // refresh 요청이고 무료 cooldown 통과면 last_free_browse_at 갱신.
+    // 크레딧 보유자는 피드 탐색에는 과금/쿨다운을 걸지 않는다.
+    if (refresh && !creditFeed && cooldown.canRefresh) {
       await upsertLastBrowse(headers, userRef, authUserId);
     }
 
@@ -497,13 +506,17 @@ export async function GET(req: Request) {
     }
 
     // refresh 후 새 cooldown 정보
-    const nextCooldown = refresh && cooldown.canRefresh
+    const nextCooldown = creditFeed
+      ? effectiveCooldown
+      : refresh && cooldown.canRefresh
       ? computeCooldown(new Date().toISOString())
       : cooldown;
 
     return NextResponse.json({
       items,
       cooldown: nextCooldown,
+      feedMode: creditFeed ? "credit" : "free",
+      creditFeed,
       total: items.length,
       pageSize: PAGE_SIZE,
       freshLagHours: FRESH_LAG_HOURS,
