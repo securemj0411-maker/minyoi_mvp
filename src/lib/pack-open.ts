@@ -1217,6 +1217,95 @@ function normalizedTerminalSaleStatus(value: string | null | undefined) {
   return upper === "SOLD" || upper === "SOLD_OUT" ? upper : "SOLD_OUT";
 }
 
+type RevealTerminalMarketMeta = {
+  raw: {
+    name: string | null;
+    price: number | null;
+    num_faved: number | null;
+    sale_status: string | null;
+    sku_id: string | null;
+    sku_name: string | null;
+    seller_uid: string | null;
+  } | null;
+  parsed: {
+    comparable_key: string | null;
+    parse_confidence: number | null;
+    parser_version: string | null;
+  } | null;
+};
+
+async function loadRevealTerminalMarketMeta(pid: number): Promise<RevealTerminalMarketMeta | null> {
+  const [rawRes, parsedRes] = await Promise.all([
+    callSupabase(
+      `/mvp_raw_listings?select=name,price,num_faved,sale_status,sku_id,sku_name,seller_uid&pid=eq.${pid}&limit=1`,
+      { headers: authHeaders() },
+    ),
+    callSupabase(
+      `/mvp_listing_parsed?select=comparable_key,parse_confidence,parser_version&pid=eq.${pid}&limit=1`,
+      { headers: authHeaders() },
+    ),
+  ]);
+  const rawRows = (await rawRes.json()) as RevealTerminalMarketMeta["raw"][];
+  const parsedRows = (await parsedRes.json()) as RevealTerminalMarketMeta["parsed"][];
+  return {
+    raw: rawRows[0] ?? null,
+    parsed: parsedRows[0] ?? null,
+  };
+}
+
+async function enqueueRevealTerminalMarketInvalidation(
+  pid: number,
+  meta: RevealTerminalMarketMeta | null,
+  reason: string,
+) {
+  const comparableKey = meta?.parsed?.comparable_key?.trim();
+  if (!comparableKey) return;
+  await callSupabase("/rpc/enqueue_mvp_market_key_invalidation", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      p_comparable_key: comparableKey,
+      p_reason: `reveal_detail_${reason}`.slice(0, 120),
+      p_priority: 100,
+      p_affected_pid: pid,
+      p_old_comparable_key: comparableKey,
+      p_new_comparable_key: comparableKey,
+      p_parser_version: meta?.parsed?.parser_version ?? null,
+    }),
+  });
+}
+
+async function insertRevealTerminalObservation(
+  pid: number,
+  state: "sold_confirmed" | "disappeared",
+  saleStatus: string | null,
+  now: string,
+  meta: RevealTerminalMarketMeta | null,
+) {
+  const raw = meta?.raw;
+  if (!raw?.name) return;
+  await callSupabase("/mvp_listing_observations", {
+    method: "POST",
+    headers: authHeaders("return=minimal"),
+    body: JSON.stringify({
+      pid,
+      observed_at: now,
+      event_type: "state_changed",
+      listing_state: state,
+      price: Number(raw.price ?? 0),
+      num_faved: Number(raw.num_faved ?? 0),
+      name: raw.name,
+      sale_status: saleStatus ?? raw.sale_status ?? "",
+      sku_id: raw.sku_id ?? null,
+      sku_name: raw.sku_name ?? null,
+      comparable_key: meta?.parsed?.comparable_key ?? null,
+      parse_confidence: meta?.parsed?.parse_confidence ?? null,
+      seller_uid: raw.seller_uid ?? null,
+      source: "reveal_detail",
+    }),
+  });
+}
+
 async function patchRevealDetailTerminalState(
   pid: number,
   state: "sold_confirmed" | "disappeared",
@@ -1224,8 +1313,10 @@ async function patchRevealDetailTerminalState(
   reason: string,
 ) {
   const now = new Date().toISOString();
+  const meta = await loadRevealTerminalMarketMeta(pid).catch(() => null);
   const rawPatch: Record<string, unknown> = {
     listing_state: state,
+    last_seen_at: now,
     updated_at: now,
   };
   if (saleStatus != null) rawPatch.sale_status = saleStatus;
@@ -1264,6 +1355,8 @@ async function patchRevealDetailTerminalState(
         updated_at: now,
       }),
     }),
+    enqueueRevealTerminalMarketInvalidation(pid, meta, reason),
+    insertRevealTerminalObservation(pid, state, saleStatus, now, meta),
   ]);
 }
 
