@@ -34,3 +34,17 @@
   - 기본 deep window를 80 → 40으로 낮춰 post-processing 대상량을 더 줄인다.
   - deep-crawl의 비핵심 write(`patch_title_triage_skips`, skipped lifecycle seed, raw touch, terminal recheck request)는 timeout 시 전체 run 실패로 전파하지 않고 timings에 soft failure로 남긴다.
   - 일반 tick/fresh mode는 기존처럼 hard failure 유지.
+
+## production 재검증
+
+- `2026-05-20T11:18Z` manual call `/api/cron/deep-crawl?force=1&page=1` 성공.
+- 응답: HTTP 200, total 37.9초.
+- runId: `8c152f71-b825-466a-91d7-25d478802fdb`.
+- 결과:
+  - `stageDurationsMs.deep=37537`
+  - `search_queries_total=2299`
+  - `search_queries_deep_window_limit=80` (production env override 또는 직전 배포 설정)
+  - `search_queries_deep_window_size=80`
+  - `searchSucceeded=80`, `searchFailed=0`
+  - `collected=1642`, `queued=129`
+- 결론: deep-crawl stale/90초 병목은 production에서 정상 종료 확인. `mvp_source_health`는 다음 health snapshot까지 기존 degraded가 남을 수 있다.
