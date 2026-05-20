@@ -460,13 +460,13 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
   ];
 
   return (
-    <div className="mt-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
-      {/* Wave 394.7.o (reference FAQ): 헤더 박스 (warm cream bg + shield icon amber + border-bottom). */}
-      <div className="flex items-center gap-1.5 border-b border-zinc-100 bg-amber-50/40 px-4 py-3 dark:border-zinc-800 dark:bg-amber-950/10">
-        <ShieldIcon className="h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-400" />
-        <div className="text-[13px] font-bold tracking-tight text-zinc-800 dark:text-zinc-100">
+    <div style={{ marginTop: 18, marginLeft: 14, marginRight: 14, overflow: "hidden", background: "#ffffff", border: "1px solid #ece3d2", borderRadius: 16 }}>
+      {/* Wave 394.7.t: handoff FAQ 정확 — bg #fdfaf3 header + border-bottom #ece3d2 + shield #b45309. */}
+      <div style={{ padding: "12px 14px 8px", display: "flex", alignItems: "center", gap: 6, borderBottom: "1px solid #ece3d2", background: "#fdfaf3" }}>
+        <ShieldIcon className="h-3.5 w-3.5 shrink-0" style={{ color: "#b45309" }} />
+        <span style={{ fontSize: 12.5, fontWeight: 800, color: "#344136" }}>
           구매 전 확인 — 자주 묻는 4가지
-        </div>
+        </span>
       </div>
       <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
         {qas.map((item, idx) => {
@@ -3610,22 +3610,38 @@ function FixedBunjangFooter({
   // Wave 394.7 (외부 review #5): "정보 앱인데 광고 랜딩페이지 같음. 모바일 분석 내용 읽는 공간 줄어듦".
   // 사이즈 ↓ — py-3 → py-2.5, text-sm → text-[13px], shadow-lg → shadow-md, ring-1 제거.
   // min-h-11 (iOS 44px tap target) 유지. brand color 유지 (핵심 액션 색은 강조).
-  // Wave 394.7.o (reference StickyCTA): emerald pill + 검정 원 + 노란 번개 아이콘.
+  // Wave 394.7.u (handoff StickyCTA 1:1): emerald pill + 검정 원 N + 검정 원 ⚡ + bg gradient.
   return (
-    <div className="shrink-0 bg-gradient-to-t from-[#ebe6dc] from-30% to-transparent px-3 pb-5 pt-4 dark:from-zinc-900">
+    <div
+      className="shrink-0"
+      style={{
+        background: "linear-gradient(180deg, rgba(235,230,220,0) 0%, rgba(235,230,220,0.95) 28%)",
+        padding: "14px 14px 28px",
+      }}
+    >
       <a
         href={card.url}
         target="_blank"
         rel="noreferrer"
         onClick={() => onLinkClicked(card.pid)}
-        className="flex items-center gap-2 rounded-full bg-emerald-600 px-1.5 py-1 text-white shadow-[0_10px_24px_rgba(5,150,105,0.28),0_4px_8px_rgba(5,150,105,0.18)] transition hover:bg-emerald-700"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          background: "#059669",
+          borderRadius: 999,
+          padding: "4px 4px 4px 6px",
+          boxShadow: "0 10px 24px rgba(5,150,105,0.28), 0 4px 8px rgba(5,150,105,0.18)",
+          color: "#fff",
+          textDecoration: "none",
+        }}
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0b1413]">
-          <BunjangLogo className="h-[18px] w-[18px] rounded-[4px]" />
+        <span style={{ width: 34, height: 34, borderRadius: 999, background: "#0b1413", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <span style={{ fontFamily: "ui-monospace, monospace", fontWeight: 800, color: "#10b981", fontSize: 16 }}>N</span>
         </span>
-        <span className="flex flex-1 items-center justify-center gap-2 py-2 text-sm font-black tracking-tight">
-          <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0b1413] text-amber-400">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>
+        <span style={{ flex: 1, fontSize: 14, fontWeight: 800, letterSpacing: -0.3, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 0", whiteSpace: "nowrap" }}>
+          <span style={{ width: 20, height: 20, borderRadius: 999, background: "#0b1413", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fbbf24", flexShrink: 0 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>
           </span>
           <span>번개장터 원본 매물 보기</span>
         </span>
