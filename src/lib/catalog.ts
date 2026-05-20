@@ -8925,7 +8925,11 @@ export const CATALOG: Sku[] = [
     modelName: "Fila Apparel (트랙수트 / 빅로고 티)",
     aliases: ["Fila Apparel", "휠라 의류"],
     mustContain: [["fila", "휠라"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "자켓", "jacket", "트랙수트", "윈드브레이커"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "운동화", "스니커즈", "신발", "디스럽터"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "운동화", "스니커즈", "신발", "디스럽터",
+      // Wave 268 (2026-05-20): API sweep 발견 — 휠라 골프웨어 26/40 (65%) 일반 의류 SKU 잘못 매칭.
+      //   골프웨어 시세군 (택가 50~150만) ≠ 일반 휠라 의류 (3~10만). 별도 차단.
+      "골프", "골프웨어", "골프 의류", "골프 셔츠", "골프 셋업", "골프채", "퍼터", "드라이버", "아이언",
+    ],
     msrpKrw: 69000, released: 2018,
   },
   // 파타고니아 — 매물 17건, faved 19, outdoor

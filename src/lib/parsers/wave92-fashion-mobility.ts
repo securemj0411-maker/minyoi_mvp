@@ -347,7 +347,8 @@ function parseClothingProductType(text: string): ClothingProductType {
   //
   // ── PRIORITY 1: 명시적 product_type 키워드 (모델명과 충돌 가능) ──
   // shorts — "눕시 쇼츠" / "마운틴 쇼츠" / "RRL 쇼츠" 등 (down_jacket/jacket/jeans 모델명 + 쇼츠 매물).
-  if (/반바지|쇼츠|shorts\b|버뮤다|bermuda/.test(t)) return "shorts";
+  // Wave 268 (2026-05-20): 배기스 / baggies (파타고니아 쇼츠) / 5인치 / 7인치 (사이즈 표기 = 쇼츠) 보강.
+  if (/반바지|쇼츠|shorts\b|버뮤다|bermuda|배기스|baggies|5\s?인치|7\s?인치|5인치|7인치/.test(t)) return "shorts";
   // dress — "원피스" 단독 (셔츠 등과 다름).
   if (/원피스|dress\b|드레스(?!\s*셔츠)|미니 ?원피스|롱 ?원피스/.test(t)) return "dress";
   // skirt.
@@ -418,7 +419,8 @@ function parseBagProductType(text: string): BagProductType {
   // ── PRIORITY 2: 형태 명시 (메신저/더플/허리/숄더 등) ──
   if (/메신저|messenger/.test(t)) return "messenger";
   if (/더플|duffle|duffel|보스턴 ?백|boston ?bag|여행 ?가방|트래블/.test(t)) return "duffle";
-  if (/웨이스트|허리|힙색|waist ?bag|fanny ?pack|벨트 ?백|fanny|슬링 ?백|sling ?bag|sling\b|보레알리스 ?슬링|borealis ?sling/.test(t)) return "waist";
+  // Wave 268 (2026-05-20): Mantis Waistpack / 웨이스트팩 (Arc'teryx 모델) 보강 + 크로스 슬링 보강.
+  if (/웨이스트|허리|힙색|waist ?bag|waist ?pack|웨이스트 ?팩|fanny ?pack|벨트 ?백|fanny|슬링 ?백|sling ?bag|sling\b|보레알리스 ?슬링|borealis ?sling|mantis ?2|mantis ?waist|만티스 ?웨이스트/.test(t)) return "waist";
   // shoulder — 호보백/버킷백/체인백 추가.
   if (/숄더|shoulder ?bag(?!\s*backpack)|어깨 ?가방|호보 ?백|hobo ?bag|hobo\b|버킷 ?백|bucket ?bag|체인 ?백|chain ?bag|chain ?미니/.test(t)) return "shoulder";
   // crossbody — 카메라백/미니체인백/사이드백.
@@ -426,7 +428,8 @@ function parseBagProductType(text: string): BagProductType {
   // tote — 탑핸들/핸드백.
   // Wave 266 (2026-05-20): 캔버스 백 / 토트 백 영문 / 빈티지 토트 보강.
   // Wave 267b (2026-05-20): 토드백/japanese bag/재패니즈/명품 쇼핑백 보강 (API sweep 발견).
-  if (/토트|tote\b|쇼퍼|shopper|탑 ?핸들|top ?handle|핸드 ?백|handbag|캔버스 ?백|canvas ?bag|마트 ?백|쇼핑 ?백|토드 ?백|todd ?bag|재패니즈 ?백|japanese ?bag|명품 ?쇼핑백|쇼핑백/.test(t)) return "tote";
+  // Wave 268 (2026-05-20): 서류 가방/비즈니스 백/세컨 백/세컨드 백/포트폴리오/도큐먼트 케이스 보강 (API sweep).
+  if (/토트|tote\b|쇼퍼|shopper|탑 ?핸들|top ?handle|핸드 ?백|handbag|캔버스 ?백|canvas ?bag|마트 ?백|쇼핑 ?백|토드 ?백|todd ?bag|재패니즈 ?백|japanese ?bag|명품 ?쇼핑백|쇼핑백|서류 ?가방|서류 ?백|business ?bag|비즈니스 ?백|세컨 ?백|세컨드 ?백|포트폴리오 ?백|portfolio ?bag|도큐먼트 ?케이스|document ?case|브리프 ?케이스|briefcase/.test(t)) return "tote";
   // backpack — 빅샷/보레알리스 (TNF 모델명).
   // Wave 266: 백오프 ?팩 / 데이팩 / 캠퍼 백 / 트래블 백 / 캐리 백 / 학생 가방 (school bag) / 책가방 보강.
   if (/백팩|backpack|배낭|knapsack|빅샷|big ?shot|보레알리스|borealis(?!\s*sling)|핫샷|hot ?shot|데이 ?팩|day ?pack|캠퍼 ?백|camper ?bag|책 ?가방|학생 ?가방|school ?bag|학생가방/.test(t)) return "backpack";

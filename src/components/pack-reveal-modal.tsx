@@ -1920,7 +1920,8 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
 
   return (
     <>
-      <section className={`rounded-none border-0 bg-transparent p-0 shadow-none dark:bg-transparent sm:rounded-2xl sm:border sm:border-[#d6e2d3] sm:bg-[linear-gradient(180deg,#f8fcf5_0%,#eef7eb_100%)] sm:p-3.5 sm:shadow-[0_12px_28px_rgba(49,66,56,0.08)] sm:dark:border-emerald-900/40 sm:dark:bg-none sm:dark:bg-emerald-950/20 lg:col-span-2 ${className}`}>
+      {/* Wave 394.7.x: 초록 gradient 제거 — handoff WhyRec 흰 카드 + ✓ icon 원. */}
+      <section className={`rounded-2xl border border-[#ece3d2] bg-white p-3.5 dark:border-zinc-800 dark:bg-zinc-900 lg:col-span-2 ${className}`}>
         <button
           type="button"
           onClick={(e) => {
@@ -3164,8 +3165,12 @@ function RevealCardItem({
         shown ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
       }`}
     >
-      {/* 좌측 카드 — 매물 정보 (image + 메타 + verdicts + 노트 + 버튼) */}
-      <div className="order-1 grid gap-3 overflow-hidden rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent sm:rounded-2xl sm:border sm:border-[#dfd6c9] sm:bg-[linear-gradient(180deg,#fffdf9_0%,#fbf6ee_100%)] sm:p-3 sm:shadow-[0_16px_34px_rgba(49,66,56,0.09)] sm:ring-1 sm:ring-white/70 sm:dark:border-zinc-800 sm:dark:bg-none sm:dark:bg-zinc-900 sm:dark:ring-zinc-800/70 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
+      {/* 좌측 영역 — 매물 정보 (image + 메타 + verdicts + 노트 + 버튼) */}
+      {/* Wave 394.7.x (사용자 짚음): 큰 wrapper 카드 제거 — handoff 처럼 각 섹션 평평하게.
+       * 이전엔 cream gradient + border + shadow 로 ProfitHero ~ SellHelper 다 묶었는데
+       * 그 안 ProfitHero 초록이 크게 보여 "전체 초록 박스" 처럼 보였음. wrapper 자체를 없애고
+       * 각 panel 이 페이지 배경 위 평평하게 배치. */}
+      <div className="order-1 grid gap-3 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none ring-0 dark:bg-transparent sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)]">
         <div ref={photoRef}>
           <RevealProductImage card={card} />
         </div>
