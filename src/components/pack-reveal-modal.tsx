@@ -3178,18 +3178,29 @@ function RevealCardItem({
               {dealExpanded ? <DealEvidencePanel card={card} /> : null}
               {/* Wave 394.7.l (Claude Design reference): 차익 헤드라인 = ProfitHero 카드 톤.
                   gradient bg + border + rounded-2xl + ₩ watermark + 큰 폰트. */}
-              {/* Wave 394.7.l.fix2: reference PDF 톤 — 매우 옅은 emerald tint (거의 cream). border 1px + bg-emerald-50 옅음. */}
-              <div className={`relative mt-3 overflow-hidden rounded-2xl border px-4 py-4 ${
-                isMarketInvalidated
-                  ? "border-rose-100 bg-gradient-to-br from-rose-50/70 to-rose-50/20 dark:border-rose-900/30 dark:from-rose-950/30 dark:to-rose-950/10"
-                  : "border-emerald-100 bg-gradient-to-br from-emerald-50/70 to-emerald-50/20 dark:border-emerald-900/30 dark:from-emerald-950/30 dark:to-emerald-950/10"
-              }`}>
-                {/* ₩ watermark — 우상단 옅은 emerald */}
-                <div className={`pointer-events-none absolute -right-2 -top-4 select-none text-8xl font-black leading-none ${
-                  isMarketInvalidated
-                    ? "text-rose-700/[0.06] dark:text-rose-400/10"
-                    : "text-emerald-700/[0.07] dark:text-emerald-400/10"
-                }`}>₩</div>
+              {/* Wave 394.7.l.fix3: reference inline style 정확 매칭 — #c8e6d4 border + #f3faf5→#e6f4ec gradient + #059669 watermark. */}
+              <div
+                className="relative mt-3 overflow-hidden"
+                style={{
+                  background: isMarketInvalidated
+                    ? "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)"
+                    : "linear-gradient(135deg, #f3faf5 0%, #e6f4ec 100%)",
+                  border: `1px solid ${isMarketInvalidated ? "#fecdd3" : "#c8e6d4"}`,
+                  borderRadius: 18,
+                  padding: "16px 16px 14px",
+                }}
+              >
+                {/* ₩ watermark — reference 정확 톤 */}
+                <div
+                  className="pointer-events-none absolute select-none font-black leading-none"
+                  style={{
+                    right: -16,
+                    top: -16,
+                    opacity: 0.05,
+                    fontSize: 100,
+                    color: isMarketInvalidated ? "#be123c" : "#059669",
+                  }}
+                >₩</div>
 
                 <div className={`relative flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.16em] ${
                   isMarketInvalidated ? "text-rose-800 dark:text-rose-300" : "text-emerald-800 dark:text-emerald-300"
