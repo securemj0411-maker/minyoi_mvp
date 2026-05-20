@@ -184,6 +184,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 2350000,
     released: 2024,
     laneKey: "bag_gucci_dionysus_mini",
+    defaultProductType: "shoulder", // Wave 269d: narrow SKU type fallback
   },
   {
     id: "bag-prada-saffiano-galleria-mini",
@@ -202,6 +203,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 3400000,
     released: 2024,
     laneKey: "bag_prada_galleria_mini_saffiano",
+    defaultProductType: "tote", // Wave 269d: narrow SKU type fallback
     defaultProductType: "tote", // Wave 236d — Galleria = 토트백 시그니처.
   },
   {
@@ -258,6 +260,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 950000,
     released: 2024,
     laneKey: "bag_celine_trio_crossbody",
+    defaultProductType: "crossbody", // Wave 269d: narrow SKU type fallback
     defaultProductType: "crossbody", // Wave 236d — Trio = crossbody 확정.
   },
   {
@@ -311,6 +314,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 1700000,
     released: 2024,
     laneKey: "bag_margiela_5ac_mini",
+    defaultProductType: "crossbody", // Wave 269d: narrow SKU type fallback
   },
   {
     id: "bag-baobao-issey-miyake-lucent",
@@ -366,6 +370,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 890000,
     released: 2024,
     laneKey: "bag_mcm_visetos_stark",
+    defaultProductType: "backpack", // Wave 269d: narrow SKU type fallback
     defaultProductType: "backpack", // Wave 236d — Stark = backpack 확정 (mustContain).
   },
   {
@@ -384,6 +389,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 590000,
     released: 2024,
     laneKey: "bag_coach_signature",
+    defaultProductType: "tote", // Wave 269d: narrow SKU type fallback
     defaultProductType: "tote", // Wave 236d — Signature Canvas = tote.
   },
   {
