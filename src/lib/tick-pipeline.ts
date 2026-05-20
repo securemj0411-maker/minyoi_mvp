@@ -2235,9 +2235,11 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   //   + catalog 대폭 보강 — 신발 30+ SKU (살로몬/NB/Shox/명품 broad), 의류 17 SKU (폴로/베이프/스투시/슈프림/아크네/꼼데/칼하트/톰브라운 broad), 가방 20 SKU (명품 brand-broad fallback)
   // Wave 406 (2026-05-20): v11 — 운영자풀 코멘트 기반 sleeve/zip hoodie 분리.
   //   롱슬리브/긴팔 → long_sleeve_tee, 후드집업 → hoodie_zip.
-  clothing: "wave216-clothing-v12",
+  // Wave 424 (2026-05-20): bag v11 — 제목의 bag product_type을 설명 수납품보다 우선.
+  // Wave 425 (2026-05-20): clothing v13 — targeted type_unknown cleanup.
+  clothing: "wave216-clothing-v13",
   shoe: "wave92-shoe-v11",
-  bag: "wave92-bag-v10",
+  bag: "wave92-bag-v11",
   bike: "wave92-fashion-mobility-v7",
 };
 function isParsedStale(row: ParsedListingRow): boolean {

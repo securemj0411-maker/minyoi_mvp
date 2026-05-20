@@ -173,7 +173,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version bag = wave92-bag-v10 (Wave 254.5 step 2 일괄)", () => {
+    it("parser_version bag = wave92-bag-v11 (Wave 424 bag title-first)", () => {
       const result = parseListingOptions({
         title: "구찌 마몬트 토트백",
         description: "정품",
@@ -181,11 +181,11 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Gucci Marmont",
         category: "bag",
       });
-      assert.equal(result.parserVersion, "wave92-bag-v10",
+      assert.equal(result.parserVersion, "wave92-bag-v11",
         `bag parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version clothing = wave216-clothing-v12 (Wave 413 shirt/polo priority)", () => {
+    it("parser_version clothing = wave216-clothing-v13 (Wave 425 type_unknown cleanup)", () => {
       const result = parseListingOptions({
         title: "스투시 후드",
         description: "L 사이즈",
@@ -193,7 +193,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Stussy Hoodie",
         category: "clothing",
       });
-      assert.equal(result.parserVersion, "wave216-clothing-v12",
+      assert.equal(result.parserVersion, "wave216-clothing-v13",
         `clothing parser_version mismatch: ${result.parserVersion}`);
     });
 

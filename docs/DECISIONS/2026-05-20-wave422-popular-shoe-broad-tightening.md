@@ -56,4 +56,5 @@
 ## Deferred
 - Size별 가격 차이는 현재 크게 다루지 않고, 회전률/샘플 수 bucket은 Wave420에 별도 wave로 보류했다.
 - Samba ADV/LT, Sambae, Samba Rose, Adifom Superstar Mule, NB 530 collab 등은 충분한 sample purity와 거래량을 확인한 뒤 별도 internal/narrow candidate로 검토한다.
-- Remaining dirty queue 37개는 Carhartt/CDG/NB530/limited exact/YSK broad 등 internal blocked lane이다. 현재 ready 노출은 없으므로 공개 비교군 정리와 별도로 다음 wave에서 parser stale/key drift 정리를 진행한다.
+- Final dirty queue는 0으로 비웠다. 다음 wave에서는 새로 들어오는 internal broad lane drift가 쌓이지 않도록 lane-filtered sweep으로 parser stale/key drift를 나눠 확인한다.
+- Full 30-day fashion sweep은 14,817 raw rows replay 단계에서 런타임이 과해 중단했다. 다음 wave는 전체 sweep 대신 lane-filtered sweep으로 Champion/Thom Browne/Carhartt/CDG broad를 나눠 확인한다.

@@ -38,6 +38,13 @@ const COLLAB_COMMON_NOISE = [
   // 자체 collab 일반 차단
 ];
 
+const CDG_APPAREL_NOISE = [
+  ...CLOTHING_COMMON_NOISE,
+  "나이키", "컨버스", "뉴발란스", "반스", "구찌",
+  "pvc", "pvc백", "pvc 백", "pvc bag", "핸드백", "토트백", "백 ",
+  "맛", "스타일", "느낌",
+];
+
 const CLOTHING_PRODUCT_TYPES = [
   "반팔", "티셔츠", "tee ", "t-shirt", "후드", "hoodie", "후드티", "후디",
   "맨투맨", "크루넥", "스웨트셔츠", "sweatshirt",
@@ -77,7 +84,7 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "purple label", "퍼플라벨", "rlx",
       // Wave 266b API sweep — 75건 contamination (pony/oxford narrow가 우선이어야 함).
       "빅포니", "big pony", "포니",  // → clothing-polo-pony-tee
-      "옥스포드 셔츠", "oxford shirt", "옥스퍼드",  // → clothing-polo-oxford-shirt
+      "옥스포드", "옥스포드셔츠", "옥스포드 셔츠", "oxford", "oxford shirt", "옥스퍼드",  // → clothing-polo-oxford-shirt
       "피케 폴로", "피케 셔츠", "pique polo", "pique",  // → clothing-polo-pique-classic
       // 자체 colab
       "supreme x polo", "polo x supreme",
@@ -219,6 +226,136 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
   // Comme des Garçons — Broad
   // ═══════════════════════════════════════════════════════════
   {
+    id: "clothing-cdg-play-hoodie",
+    brand: "Comme des Garçons",
+    category: "clothing",
+    laneKey: "cdg_play_hoodie",
+    modelName: "Comme des Garçons PLAY Heart Hoodie / Zip Hoodie",
+    aliases: ["Comme des Garcons PLAY", "꼼데가르송 플레이", "CDG PLAY"],
+    mustContain: [
+      ["comme des", "꼼데가르송", "cdg ", "꼼 데", "comme des garcons"],
+      ["play", "플레이", "하트", "heart", "와펜"],
+      ["후드", "후드티", "후드집업", "집업후드", "hoodie", "zip hoodie"],
+    ],
+    mustNotContain: [
+      ...CDG_APPAREL_NOISE,
+      "supreme",
+      "nike",
+      "converse",
+      "salomon", "살로몬",
+      "bape", "베이프",
+      "stussy",
+    ],
+    msrpKrw: 360000,
+    released: 2002,
+  },
+  {
+    id: "clothing-cdg-play-polo",
+    brand: "Comme des Garçons",
+    category: "clothing",
+    laneKey: "cdg_play_polo",
+    modelName: "Comme des Garçons PLAY Heart Polo",
+    aliases: ["Comme des Garcons PLAY", "꼼데가르송 플레이", "CDG PLAY"],
+    mustContain: [
+      ["comme des", "꼼데가르송", "cdg ", "꼼 데", "comme des garcons"],
+      ["play", "플레이", "하트", "heart", "와펜"],
+      ["카라티", "카라 티", "카라 셔츠", "폴로 셔츠", "폴로셔츠", "polo", "pk", "피케"],
+    ],
+    mustNotContain: [
+      ...CDG_APPAREL_NOISE,
+      "supreme",
+      "nike",
+      "converse",
+      "salomon", "살로몬",
+      "bape", "베이프",
+      "stussy",
+    ],
+    msrpKrw: 180000,
+    released: 2002,
+    defaultProductType: "polo_shirt",
+  },
+  {
+    id: "clothing-cdg-play-shirt",
+    brand: "Comme des Garçons",
+    category: "clothing",
+    laneKey: "cdg_play_shirt",
+    modelName: "Comme des Garçons PLAY Heart Shirt",
+    aliases: ["Comme des Garcons PLAY", "꼼데가르송 플레이", "CDG PLAY"],
+    mustContain: [
+      ["comme des", "꼼데가르송", "cdg ", "꼼 데", "comme des garcons"],
+      ["play", "플레이", "하트", "heart", "와펜"],
+      ["셔츠", "shirt", "포플린", "스트라이프 셔츠"],
+    ],
+    mustNotContain: [
+      ...CDG_APPAREL_NOISE,
+      "supreme",
+      "nike",
+      "converse",
+      "salomon", "살로몬",
+      "bape", "베이프",
+      "stussy",
+      "티셔츠", "반팔티", "긴팔티", "tee", "t-shirt", "tshirt",
+      "카라티", "카라 티", "카라 셔츠", "폴로 셔츠", "폴로셔츠", "폴로", "polo", "pk", "피케",
+      "후드", "hoodie", "후드집업", "집업후드",
+      "가디건", "cardigan",
+    ],
+    msrpKrw: 290000,
+    released: 2002,
+    defaultProductType: "shirt",
+  },
+  {
+    id: "clothing-cdg-play-tee",
+    brand: "Comme des Garçons",
+    category: "clothing",
+    laneKey: "cdg_play_tee",
+    modelName: "Comme des Garçons PLAY Heart Tee",
+    aliases: ["Comme des Garcons PLAY", "꼼데가르송 플레이", "CDG PLAY"],
+    mustContain: [
+      ["comme des", "꼼데가르송", "cdg ", "꼼 데", "comme des garcons"],
+      ["play", "플레이", "하트", "heart", "와펜"],
+      ["티셔츠", "반팔", "반팔티", "tee", "t-shirt", "tshirt"],
+    ],
+    mustNotContain: [
+      ...CDG_APPAREL_NOISE,
+      "supreme",
+      "nike",
+      "converse",
+      "salomon", "살로몬",
+      "bape", "베이프",
+      "stussy",
+      "카라티", "카라 티", "카라 셔츠", "폴로 셔츠", "폴로셔츠", "폴로", "polo", "pk", "피케",
+      "후드", "hoodie", "후드집업", "집업후드",
+    ],
+    msrpKrw: 135000,
+    released: 2002,
+    defaultProductType: "tee",
+  },
+  {
+    id: "clothing-cdg-play-cardigan",
+    brand: "Comme des Garçons",
+    category: "clothing",
+    laneKey: "cdg_play_cardigan",
+    modelName: "Comme des Garçons PLAY Heart Cardigan",
+    aliases: ["Comme des Garcons PLAY", "꼼데가르송 플레이", "CDG PLAY"],
+    mustContain: [
+      ["comme des", "꼼데가르송", "cdg ", "꼼 데", "comme des garcons"],
+      ["play", "플레이", "하트", "heart", "와펜"],
+      ["가디건", "cardigan"],
+    ],
+    mustNotContain: [
+      ...CDG_APPAREL_NOISE,
+      "supreme",
+      "nike",
+      "converse",
+      "salomon", "살로몬",
+      "bape", "베이프",
+      "stussy",
+    ],
+    msrpKrw: 420000,
+    released: 2002,
+    defaultProductType: "cardigan",
+  },
+  {
     id: "clothing-cdg-apparel-broad",
     brand: "Comme des Garçons",
     category: "clothing",
@@ -230,7 +367,7 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       CLOTHING_PRODUCT_TYPES,
     ],
     mustNotContain: [
-      ...CLOTHING_COMMON_NOISE,
+      ...CDG_APPAREL_NOISE,
       // 콜라보 별도
       "supreme",
       "nike",
@@ -238,6 +375,8 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "salomon", "살로몬",
       "bape", "베이프",
       "stussy",
+      // Wave 428: PLAY heart/와펜 staples get narrow lanes to keep broad CDG samples from mixing basics.
+      "play", "플레이", "하트", "heart", "와펜",
     ],
     msrpKrw: 390000,
     released: 1969,
@@ -246,6 +385,48 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
   // ═══════════════════════════════════════════════════════════
   // Carhartt — Broad apparel
   // ═══════════════════════════════════════════════════════════
+  {
+    id: "clothing-carhartt-detroit-jacket",
+    brand: "Carhartt",
+    category: "clothing",
+    laneKey: "carhartt_detroit_jacket",
+    modelName: "Carhartt Detroit Jacket",
+    aliases: ["Carhartt", "칼하트", "Carhartt WIP", "칼하트 WIP"],
+    mustContain: [
+      ["carhartt", "칼하트"],
+      ["detroit", "디트로이트", "j001", "j01"],
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme",
+      "junya watanabe", "준야와타나베",
+      "wacko maria", "와코마리아",
+    ],
+    msrpKrw: 299000,
+    released: 1954,
+    defaultProductType: "jacket",
+  },
+  {
+    id: "clothing-carhartt-active-jacket",
+    brand: "Carhartt",
+    category: "clothing",
+    laneKey: "carhartt_active_jacket",
+    modelName: "Carhartt Active Jacket / J130",
+    aliases: ["Carhartt", "칼하트", "Carhartt WIP", "칼하트 WIP"],
+    mustContain: [
+      ["carhartt", "칼하트"],
+      ["active jacket", "액티브 자켓", "액티브 후드자켓", "j130"],
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme",
+      "junya watanabe", "준야와타나베",
+      "wacko maria", "와코마리아",
+    ],
+    msrpKrw: 229000,
+    released: 1980,
+    defaultProductType: "jacket",
+  },
   {
     id: "clothing-carhartt-apparel-broad",
     brand: "Carhartt",
@@ -262,10 +443,14 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       // 콜라보 별도
       "supreme",
       "junya watanabe", "준야와타나베",
+      "wacko maria", "와코마리아",
       "neighborhood", "네이버후드",
       "wtaps", "더블탭스",
       "kith",
       "stussy", "스투시",
+      // Wave 427: repeated jacket models get their own lanes; do not pollute broad apparel price samples.
+      "detroit", "디트로이트", "j001", "j01",
+      "active jacket", "액티브 자켓", "액티브 후드자켓", "j130",
     ],
     msrpKrw: 179000,
     released: 1889,
@@ -288,6 +473,12 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     mustNotContain: [
       ...CLOTHING_COMMON_NOISE,
       "tom ford", "톰포드",  // 다른 브랜드
+      // Wave 426: "톰브라운 스타일/룩"·pet apparel bait는 정품 사람 의류 시세군에서 제외.
+      "톰브라운 스타일", "톰브라운스타일", "톰브라운 스탈", "톰브라운스탈",
+      "톰브라운 룩", "톰브라운룩",
+      "강아지 니트", "애견 니트", "반려견 니트", "dog knit",
+      "서스펜더", "suspender", "타미진스", "타미힐피거", "tommy hilfiger",
+      "koe", "코에", "미스터톰", "mister thom",
     ],
     msrpKrw: 990000,
     released: 2003,
@@ -313,6 +504,9 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "bape", "베이프",
       "stussy",
       "kith",
+      // "championship court" 등 신발 컬러웨이/라인명이 Champion 의류 broad로 섞이는 것을 차단.
+      "nike", "나이키", "dunk", "덩크", "air jordan", "조던", "air force", "에어포스",
+      "championship", "챔피언쉽", "챔피언십", "court purple", "코트 퍼플",
       // "Champion" 양주
       "위스키", "whisky", "샴페인",
     ],

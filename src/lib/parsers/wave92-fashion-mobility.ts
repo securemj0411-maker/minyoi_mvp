@@ -374,7 +374,7 @@ function parseClothingProductType(text: string): ClothingProductType {
   if (/지갑|wallet|반지갑|장지갑|카드지갑|머니 ?클립|콘초 ?월렛|콘초 ?지갑/.test(t)) return "wallet";
   // jeans — 청바지 명시 (데님 팬츠보다 specific).
   // Wave 264: "워싱진/슬림내로우 진/데님 와이드/와이드 진" 보강 (RRL/TNF Purple Label sample 발견).
-  if (/청바지|진(?:즈)?\b|jean(?:s)?\b|데님 ?팬츠|데님 ?진|denim ?jean|빈파포|빈티지 ?파이브 ?포켓|파이브 ?포켓|five ?pocket|5 ?포켓|5-pocket|기빈스|미드랜드|이스트웨스트|힐스뷰|에이버리|키팅진|워싱진|슬림 ?내로우 ?진|슬림내로우 ?진|데님 ?와이드|와이드 ?진|데님 ?스트레이트|스트레이트 ?진/.test(t)) return "jeans";
+  if (/청바지|진(?:즈)?\b|jean(?:s)?\b|데님 ?팬츠|데님 ?진|denim ?jean|빈파포|빈티지 ?파이브 ?포켓|파이브 ?포켓|five ?pocket|5 ?포켓|5-pocket|기빈스|미드랜드|이스트웨스트|힐스뷰|에이버리|키팅진|워싱진|슬림 ?내로우 ?진|슬림내로우 ?진|데님 ?와이드|와이드 ?진|데님 ?스트레이트|스트레이트 ?진|스트레이트 ?데님|스트레이드 ?데님/.test(t)) return "jeans";
   // pants — "RRL 데님 팬츠" 등 (jeans 보다 narrow 한 데님은 위에서 잡힘).
   if (/팬츠|pants\b|바지(?!\s*받침)|trouser|치노|chino|슬랙스|slacks|조거|jogger|카고|cargo|트랙 ?팬츠|track ?pants|카펜터|carpenter|워크팬츠|workwear ?pants/.test(t)) return "pants";
 
@@ -404,8 +404,10 @@ function parseClothingProductType(text: string): ClothingProductType {
   // Wave 406 (2026-05-20): 운영자풀 코멘트 — 후드와 후드집업은 시세군이 다름.
   if (/(베이프|bape)/.test(t) && /(샤크|shark)/.test(t) && /(반집업|반 ?집업|half ?zip)/.test(t)) return "hoodie_zip";
   if (/후드\s*집업|후드집업|집업\s*후드|집업후드|zip ?up ?hoodie|hoodie ?zip|full ?zip ?hoodie|풀 ?집업 ?후드|기모 ?후드 ?집업/.test(t)) return "hoodie_zip";
+  // Wave 424: 중고마켓 "후드티/후드티셔츠"는 일반 티셔츠가 아니라 hoodie.
+  if (/후드\s*티 ?셔츠|후드티셔츠|후드 ?티\b|hooded sweatshirt/.test(t)) return "hoodie";
   if (/후드(?!\s*티 ?셔츠)|후디|hoodie|hooded sweat/.test(t)) return "hoodie";
-  if (/맨투맨|크루넥|crewneck|sweatshirt|스웻 ?셔츠|스웻\(맨투맨\)|풀오버(?!\s*조끼)|스웻 ?셔트|sweat ?shirt/.test(t)) return "crewneck";
+  if (/맨투맨|크루넥|crewneck|sweatshirt|스웻 ?셔츠|스웻\(맨투맨\)|풀오버(?!\s*조끼)|스웻 ?셔트|sweat ?shirt|스웻(?![가-힣])/.test(t)) return "crewneck";
   // Wave 269c (2026-05-20): 긴팔 / 반집업 / 1/4 zip 추가 (API sweep — 아크네/스튜시 매물 type_unknown).
   //   반집업/half zip = pullover style jacket (Patagonia Better Sweater 등).
   // Wave 406: 티셔츠와 롱슬리브를 같은 tee로 뭉개면 Polo Bear/브랜드 티 시세가 오염된다.
@@ -417,7 +419,7 @@ function parseClothingProductType(text: string): ClothingProductType {
   if (/피케 ?티|피케 ?셔츠|pique|카라 ?티|카라 ?셔츠|pk ?티|pk ?셔츠/.test(t)) return "polo_shirt";
   // Wave 236b: 반팔 단독 + 탱크탑/민소매 추가.
   // Wave 264: 블라우스 추가 (acne-apparel sample 발견).
-  if (/티 ?셔츠|tee\b|반팔 ?티|반팔티|t-shirt|tshirt|t ?셔츠|반팔(?!\s*티 ?셔츠)|탱크 ?탑|tank ?top|민소매|sleeveless|반 ?소매|블라우스|blouse/.test(t)) return "tee";
+  if (/티 ?셔츠|tee\b|반팔 ?티|반팔티|t-shirt|tshirt|t ?셔츠|반팔(?!\s*티 ?셔츠)|탱크 ?탑|tank ?top|민소매|sleeveless|반 ?소매|블라우스|blouse|크롭 ?탑|crop ?top|볼레로|bolero|캐미솔|camisole|나시 ?탑|나시\b/.test(t)) return "tee";
   // Shirt must win over Polo/Polo Ralph Lauren brand tokens.
   if (/셔츠(?!\s*ZIP)|shirt(?! sleeve)|남방|button ?up|버튼 ?다운|button ?down|옥스포드 ?셔츠|oxford ?shirt/.test(t)) return "shirt";
   // Wave 254.6: polo_shirt lookahead group bug fix — `(?!\s*rrl|랄프)` 의 alternation
@@ -524,8 +526,10 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 // Wave 414 (2026-05-20) v11: EU decimal / bracket / suffix shoe size parsing 보강.
 //   명품 신발 매물의 "[40]", "40.5사이즈", "42.5 /", "스니커즈 43" 패턴을 잡아
 //   unknown_size broad key 비율을 낮춘다.
+// Wave 424 (2026-05-20) bag v11: bag product_type title-first.
+//   제목의 토트백/크로스백/숄더백을 설명 수납품(지갑/파우치)보다 우선한다.
 const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v11";
-const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v10";
+const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v11";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
@@ -543,7 +547,8 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v10";
 // Wave 266 v10: 베이스볼 저지/야구점퍼/바시티/코치자켓/하드쉘/소프트쉘/MA-1/레터맨/스타디움자켓 regex 보강.
 // Wave 406 v11: 운영자풀 코멘트 — 롱슬리브/긴팔과 후드집업을 tee/hoodie에서 분리.
 // Wave 413 v12: 반팔셔츠/옥스포드 짚업셔츠/카라티 product_type 우선순위 보강.
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v12";
+// Wave 425 v13: targeted type_unknown cleanup — camisole/crop top/bolero, bare 스웻, straight denim.
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v13";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");
@@ -722,7 +727,14 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     // Wave 236 (2026-05-19): product-type 추출 — bag 가장 큰 영향 (TNF×Supreme 백팩/숄더/토트 섞임).
     //   사용자 코멘트: "백팩이랑 숄더백이랑 다른거 아닌가???" / "지갑이랑 뭐하냐?"
     // Wave 236d (2026-05-19): catalog defaultProductType 정확 정책 (narrow model 만 박힘).
-    let productType: string = parseBagProductType(text);
+    // Wave 424 (2026-05-20): bag product type also trusts the title first.
+    // Descriptions often list contents/ways to carry ("지갑, 파우치", "숄더/크로스 연출")
+    // and used to override a clear title such as "토트백".
+    const titleProductType = parseBagProductType(title);
+    let productType: string = titleProductType !== "type_unknown"
+      ? titleProductType
+      : parseBagProductType(text);
+    const productTypeSource = titleProductType !== "type_unknown" ? "title" : "combined";
     let typeFromCatalog = false;
     if (productType === "type_unknown" && input.defaultProductType) {
       productType = input.defaultProductType;
@@ -730,6 +742,7 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     }
     parsedJson.bag_product_type = productType;
     parsedJson.bag_product_type_from_catalog = typeFromCatalog;
+    parsedJson.bag_product_type_source = typeFromCatalog ? "catalog" : productTypeSource;
     partsForKey.push(productType);
     if (productType !== "type_unknown") {
       parseConfidence += typeFromCatalog ? 0.05 : 0.1; // bag 은 product-type 가격 차 큼.

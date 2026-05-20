@@ -184,8 +184,10 @@ const MAX_LOCAL_SAVED_REVEALS = 500;
 const BEGINNER_GUIDE_HANDLED_PIDS_STORAGE_KEY = "minyoi_reveal_beginner_guide_handled_pids_v1";
 const BEGINNER_GUIDE_SEEN_COUNT_STORAGE_KEY = "minyoi_reveal_beginner_guide_seen_count_v1";
 const BEGINNER_GUIDE_SKIP_COUNT_STORAGE_KEY = "minyoi_reveal_beginner_guide_skip_count_v1";
-const BEGINNER_GUIDE_AUTO_SHOW_LIMIT = 3;
-const BEGINNER_GUIDE_AUTO_HIDE_SKIP_THRESHOLD = 4;
+// Wave 394.7.y (사용자 피드백): 자동 표시 한도 ↑ + skip 임계 ↑. 신규/일반인 더 자주 노출.
+// 3→5: 다른 카드 5장 볼 때까지 자동 표시. 4→6: 6번 skip해야 hide (이전 4번은 너무 빠름).
+const BEGINNER_GUIDE_AUTO_SHOW_LIMIT = 5;
+const BEGINNER_GUIDE_AUTO_HIDE_SKIP_THRESHOLD = 6;
 
 function readSavedRevealPidSet() {
   if (typeof window === "undefined") return new Set<number>();
@@ -381,7 +383,8 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
       metric: `후기 ${reviewLabel}건`,
       metricLabel: `평점 ${rating.toFixed(1)}점`,
       body: `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점으로 신뢰가 있는 판매자예요.`,
-      note: "가격만 좋아도 판매자 이력이 약하면 거래 방식과 상태 확인을 더 보수적으로 봅니다.",
+      // Wave 394.7.y: 안전결제 step 흡수 — 신뢰 강함이라도 앱 안 결제 룰 한 줄로 강조.
+      note: "그래도 거래는 번개장터 앱 안 안전결제로만 진행하세요. 물건 받고 확인한 뒤 구매확정 누르는 흐름이에요.",
       tone: "trust",
     };
   }
@@ -395,7 +398,8 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
       body: reviewCount < SELLER_TRUST_MIN_REVIEW_COUNT
         ? `평점은 ${rating.toFixed(1)}점이지만 후기가 ${reviewLabel}건이라 아직 판단 표본이 적어요. 안전결제와 실제 상태 확인을 조금 더 보수적으로 보면 좋아요.`
         : `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점이에요. 안전결제와 실제 상태 확인을 같이 보면 좋아요.`,
-      note: "셀러 신뢰도는 참고 지표라서, 최종 거래 전에는 사진과 구성품을 직접 확인해야 합니다.",
+      // Wave 394.7.y: 안전결제 흡수.
+      note: "거래는 번개장터 앱 안 안전결제로만 진행하고, 물건 받아 상태 확인한 뒤 구매확정을 누르세요. 외부 계좌이체나 외부 링크 결제는 피하는 게 좋아요.",
       tone: "trust",
     };
   }
@@ -408,7 +412,8 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
     body: reviewCount > 0
       ? `이 상품 판매자는 후기가 ${reviewLabel}건 있지만 평점 정보는 없어요. 거래 방식과 상품 상태를 조금 더 보수적으로 확인하는 게 좋아요.`
       : "이 상품 판매자는 아직 거래 후기와 평점이 없어요. 번개장터 신규 판매자이거나 거래 이력이 적은 계정일 수 있어서 더 보수적으로 확인해야 해요.",
-    note: "안전결제, 추가 사진, 구성품, 택배 발송 조건을 먼저 확인하세요.",
+    // Wave 394.7.y: 안전결제 흡수 — 신뢰 약한 셀러일수록 더 중요.
+    note: "특히 신뢰 약한 셀러는 반드시 번개장터 앱 안 안전결제로만. 외부 결제 유도 시 거절하세요. 추가 사진·구성품·택배 조건도 결제 전 확인.",
     tone: "trust",
   };
 }
@@ -695,17 +700,8 @@ function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
   };
 }
 
-function safePaymentGuideStep(): BeginnerGuideStep {
-  return {
-    eyebrow: "8. 안전결제",
-    title: "앱 안에서 결제해야 가장 안전해요",
-    metric: "구매확정 전 확인",
-    metricLabel: "문제 있으면 구매확정 누르지 않기",
-    body: "안전결제는 결제대금을 바로 판매자에게 보내지 않고 보관하는 방식이에요. 물건을 받고 상태를 확인한 뒤 구매확정을 누르는 흐름으로 보면 됩니다.",
-    note: "앱 밖 계좌이체나 외부 링크 결제는 보호 범위가 달라질 수 있어 피하는 게 좋아요.",
-    tone: "safety",
-  };
-}
+// Wave 394.7.y (사용자 피드백): 안전결제 → 셀러 신뢰 step 안으로 흡수 (10→9 step).
+// safePaymentGuideStep 함수는 sellerTrustGuideStep note 에 합쳐짐 — 이 함수는 더 이상 사용 X.
 
 function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   const market = card.marketBasis;
@@ -715,7 +711,7 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   const betterChannel = daangnProfit > bunjangProfit ? "당근 직거래가 더 남을 수 있지만" : "번개장터 재판매는";
 
   return {
-    eyebrow: "9. 되팔 곳",
+    eyebrow: "8. 되팔 곳",
     title: "팔 곳에 따라 남는 돈이 달라요",
     metric: displayProfitRange(card),
     metricLabel: "번개장터 기준 예상 차익",
@@ -728,7 +724,8 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
 function summaryGuideStep(): BeginnerGuideStep {
   return {
     eyebrow: "",
-    title: "이제 상세 분석으로 넘어가면 돼요",
+    // Wave 394.7.y (사용자 피드백): summary CTA 명확화 — "이 매물 자세히 보기" 행동 지시.
+    title: "이 매물 자세히 살펴볼래요?",
     metric: "근거 확인 완료",
     metricLabel: "비교 매물 · 배송비 · 수수료 · 안전결제",
     body: "",
@@ -738,6 +735,7 @@ function summaryGuideStep(): BeginnerGuideStep {
 }
 
 function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
+  // Wave 394.7.y (사용자 피드백): 안전결제 step 제거 → 셀러 신뢰 안으로 흡수. 10→9 step.
   return [
     sellerTrustGuideStep(card),
     purchaseCheckGuideStep(card),
@@ -746,7 +744,6 @@ function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
     velocityGuideStep(card),
     buyCostGuideStep(card),
     resellCostGuideStep(card),
-    safePaymentGuideStep(),
     channelGuideStep(card),
     summaryGuideStep(),
   ];
@@ -4386,6 +4383,28 @@ function BeginnerGuideWalkthrough({
   const step = steps[safeIndex];
   const isLast = safeIndex === steps.length - 1;
   const canGoPrev = safeIndex > 0;
+
+  // Wave 394.7.y (사용자 피드백): 좌우 swipe gesture — 토스 톤. threshold 50px, vertical scroll 차단 X.
+  const touchStartRef = useRef<{ x: number; y: number; t: number } | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStartRef.current = { x: t.clientX, y: t.clientY, t: Date.now() };
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    const dt = Date.now() - start.t;
+    // 가로 ↑↑ 세로보다 + 빠른 swipe + 최소 거리 50px
+    if (Math.abs(dx) < 50) return;
+    if (Math.abs(dx) < Math.abs(dy) * 1.5) return; // 수직 스크롤 우선
+    if (dt > 600) return;
+    if (dx < 0 && !isLast) onNext();
+    else if (dx > 0 && canGoPrev) onPrev();
+  };
   const isSummary = step.tone === "summary";
   const guidePrimaryButtonClass = "bg-[#3182f6] hover:bg-[#1c6fe8]";
   const toneClasses: Record<BeginnerGuideStep["tone"], { bg: string; text: string; ring: string }> = {
@@ -4447,6 +4466,8 @@ function BeginnerGuideWalkthrough({
   return (
     <section
       data-beginner-guide-fullscreen
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       className="relative h-[100dvh] overflow-hidden bg-[#fffbf4] px-5 pt-0 dark:bg-zinc-900 sm:h-[calc(88vh-2rem)] sm:rounded-[22px] sm:px-6"
     >
       <style>{`
@@ -4469,8 +4490,25 @@ function BeginnerGuideWalkthrough({
             <path d="m15 18-6-6 6-6" />
           </svg>
         </button>
-        <div className="pointer-events-auto rounded-full bg-white/82 px-2.5 py-1 text-[11px] font-black tabular-nums text-[#566154] shadow-[0_5px_16px_rgba(34,49,39,0.08)] ring-1 ring-[#e6dece] backdrop-blur dark:bg-zinc-950/80 dark:text-zinc-300 dark:ring-zinc-800">
-          {safeIndex + 1}/{steps.length}
+        {/* Wave 394.7.y (사용자 피드백): dot indicator + N/N 텍스트 hybrid — 토스 톤. */}
+        <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-white/82 px-2.5 py-1 shadow-[0_5px_16px_rgba(34,49,39,0.08)] ring-1 ring-[#e6dece] backdrop-blur dark:bg-zinc-950/80 dark:ring-zinc-800">
+          <div className="flex items-center gap-[3px]">
+            {steps.map((_, i) => (
+              <span
+                key={i}
+                className={`h-[5px] rounded-full transition-all duration-200 ${
+                  i === safeIndex
+                    ? "w-3 bg-[#3182f6] dark:bg-[#5a9cff]"
+                    : i < safeIndex
+                      ? "w-[5px] bg-[#9aaa9c] dark:bg-zinc-500"
+                      : "w-[5px] bg-[#dcd4c4] dark:bg-zinc-700"
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-[10px] font-black tabular-nums text-[#566154] dark:text-zinc-300">
+            {safeIndex + 1}/{steps.length}
+          </span>
         </div>
       </div>
 
@@ -4541,7 +4579,8 @@ function BeginnerGuideWalkthrough({
               onClick={onNext}
               className={`flex min-h-[50px] items-center justify-center rounded-[17px] px-4 text-[16px] font-black text-white shadow-[0_14px_28px_rgba(34,49,39,0.18)] transition active:scale-[0.99] ${guidePrimaryButtonClass}`}
             >
-              {isLast ? "상세 분석 보기" : "다음"}
+              {/* Wave 394.7.y: 마지막 step CTA 행동 지시 — "이 매물 자세히 보기" */}
+              {isLast ? "이 매물 자세히 보기" : "다음"}
             </button>
           </div>
           <button

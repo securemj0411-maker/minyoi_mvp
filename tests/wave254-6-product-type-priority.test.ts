@@ -42,6 +42,7 @@ describe("Wave 254.6 — clothing product_type regex 우선순위", () => {
       { title: "아크테릭스 감마LT 후디", expected: "jacket", reason: "Arc'teryx Hoody = jacket line" },
       { title: "아크테릭스 아톰 블랙 후드 달려있음", expected: "jacket", reason: "Arc'teryx hooded jacket description" },
       { title: "BAPE ABC Camo Shark Half Zip 베이프 반집업", expected: "hoodie_zip", reason: "BAPE Shark half zip = hoodie zip" },
+      { title: "챔피온 리버스위브 후드티셔츠 판매합니다", expected: "hoodie", reason: "후드티셔츠 is hoodie, not tee" },
       { title: "라코스테 피케티셔츠 새상품", expected: "polo_shirt", reason: "pique tee = polo shirt" },
       { title: "폴로 랄프로렌 옥스포드 멀티포니 체크셔츠 M", expected: "shirt", reason: "Polo brand token should not beat explicit shirt" },
       { title: "톰브라운 반팔셔츠 100", expected: "shirt", reason: "반팔셔츠 is shirt, not tee" },
@@ -118,6 +119,43 @@ describe("Wave 254.6 — clothing product_type regex 우선순위", () => {
       assert.equal(result.parsedJson.clothing_product_type_source, "combined");
       assert.equal(result.parsedJson.clothing_product_type_from_catalog, false);
     });
+  });
+
+  describe("Wave 425 — clothing type_unknown cleanup", () => {
+    const cases = [
+      { title: "꼼데가르송 유니크한 크롭탑 볼레로 comme des garcons 컬렉션", expected: "tee" },
+      { title: "챔피온 X 글로니 캐미솔 나시 탑 White", expected: "tee" },
+      { title: "90s 빈티지 챔피온 리버스위브 멜란지 그레이 스웻 XL 버버진", expected: "crewneck" },
+      { title: "[32x32] 칼하트 wip 스트레이드 데님 (34)", expected: "jeans" },
+    ];
+
+    for (const { title, expected } of cases) {
+      it(`${title} -> ${expected}`, () => {
+        const result = parseListingOptions({
+          title,
+          description: title,
+          skuId: "clothing-champion-apparel-broad",
+          skuName: "Champion apparel",
+          category: "clothing",
+        });
+
+        assert.equal(result.parsedJson.clothing_product_type, expected);
+        assert.equal(result.needsReview, false);
+      });
+    }
+  });
+
+  describe("Wave 424 — Polo Oxford spacing variants", () => {
+    for (const title of [
+      "폴로 랄프로렌 옥스포드셔츠(XL)",
+      "폴로 랄프로렌 블루 화이트 스트라이프 옥스포드셔츠(L)",
+      "폴로 랄프로렌 클래식핏 옥스포드 깅엄 체크 셔츠 105 L 새제",
+    ]) {
+      it(`${title} -> clothing-polo-oxford-shirt`, () => {
+        const sku = ruleMatch(title, title);
+        assert.equal(sku?.id, "clothing-polo-oxford-shirt");
+      });
+    }
   });
 
   describe("BAPE basic apparel catalog split", () => {
@@ -521,6 +559,26 @@ describe("Wave 254.6 — bag 모델명 false positive 차단", () => {
     assert.equal(result.comparableKey, "bag|cassette_mini|crossbody|era_unknown|unknown_size_variant");
   });
 
+  it("bag product type은 제목의 토트백을 설명 수납품보다 우선한다", () => {
+    const result = parseListingOptions({
+      title: "메종 마르지엘라 5AC 드로스트링 미니 토트백",
+      description: "지갑, 휴대폰, 파우치 정도는 들어가고 스트랩으로 숄더나 크로스로도 연출 가능합니다.",
+      skuId: "bag-margiela-5ac-mini",
+      skuName: "5AC Mini/Micro Bag",
+      category: "bag",
+      defaultProductType: "crossbody",
+    });
+
+    assert.equal(result.parsedJson.bag_product_type, "tote");
+    assert.equal(result.parsedJson.bag_product_type_source, "title");
+    assert.equal(result.comparableKey, "bag|5ac_mini|tote|era_unknown|unknown_size_variant");
+  });
+
+  it("Margiela 5AC glued notation은 broad fallback이 아니라 5AC narrow로 간다", () => {
+    assert.equal(ruleMatch("마르지엘라 5ac크로스백", "정품끈 보유")?.id, "bag-margiela-5ac-mini");
+    assert.equal(ruleMatch("메종마르지엘라 5ac미니백", "브라운 가방")?.id, "bag-margiela-5ac-mini");
+  });
+
   it("명품 종이 쇼핑백/패키지는 broad bag SKU로 매칭하지 않음", () => {
     for (const text of [
       "생로랑 쇼핑백",
@@ -532,6 +590,23 @@ describe("Wave 254.6 — bag 모델명 false positive 차단", () => {
         `paper shopping bag이 bag SKU로 잘못 매칭됨: ${text} -> ${sku?.id}`,
       );
     }
+  });
+
+  it("paper shopping-bag accessory rows do not enter clothing broad, while included shopping bag remains allowed", () => {
+    const accessory = ruleMatch(
+      "톰브라운 쇼핑백 미사용 (중) 맨투맨,니트,가디건,후드,후드집업용",
+      "쇼핑백 단품",
+    );
+    assert.ok(
+      accessory === null || accessory.category !== "clothing",
+      `shopping-bag accessory matched clothing SKU: ${accessory?.id}`,
+    );
+
+    const fullItem = ruleMatch(
+      "톰브라운 밀라노스티치 가디건 쇼핑백 포함",
+      "정품 가디건 본품",
+    );
+    assert.equal(fullItem?.id, "clothing-thombrowne-apparel-broad");
   });
 
   it("정상 명품 가방 표현은 broad bag fallback 유지", () => {
@@ -599,6 +674,98 @@ describe("Wave 254.6 — bag 모델명 false positive 차단", () => {
         `백화점판/의류 매물이 bag SKU로 잘못 매칭됨: ${text} -> ${sku?.id}`,
       );
     }
+  });
+
+  it("톰브라운 스타일/룩 bait와 강아지 니트는 Thom Browne apparel broad에 매칭하지 않음", () => {
+    const dogKnit = ruleMatch("톰브라운 스탈 강아지 니트L", "5kg 아가가 입으면 잘 맞아요");
+    assert.ok(
+      dogKnit === null || dogKnit.id !== "clothing-thombrowne-apparel-broad",
+      `pet/style bait가 Thom Browne apparel broad로 잘못 매칭됨: ${dogKnit?.id}`,
+    );
+
+    const suspender = ruleMatch(
+      "[정품] 장원영의 타미진스 빈티지 톰브라운 타미힐피거 서스펜더",
+      "타미정품 박스풀. 톰브라운룩 코디용 서스펜더입니다.",
+    );
+    assert.ok(
+      suspender === null || suspender.id !== "clothing-thombrowne-apparel-broad",
+      `Tommy/style bait가 Thom Browne apparel broad로 잘못 매칭됨: ${suspender?.id}`,
+    );
+  });
+
+  it("Thom Browne / Carhartt 별도 콜라보 라인은 broad apparel fallback에 섞지 않음", () => {
+    for (const [title, blockedSku] of [
+      ["톰브라운X코에 KOE 옥스포드 버튼다운 화이트 셔츠", "clothing-thombrowne-apparel-broad"],
+      ["톰브라운 미스터톰 스웨트셔츠 백화점 한정판", "clothing-thombrowne-apparel-broad"],
+      ["와코마리아 x 칼하트 레오파드 셔츠", "clothing-carhartt-apparel-broad"],
+    ] as const) {
+      const sku = ruleMatch(title, title);
+      assert.ok(
+        sku === null || sku.id !== blockedSku,
+        `separate collab/limited line matched broad SKU: ${title} -> ${sku?.id}`,
+      );
+    }
+  });
+
+  it("Nike championship court shoe wording does not match Champion clothing broad", () => {
+    const sku = ruleMatch("나이키 덩크 로우 레트로 챔피언쉽 코트 퍼플 275", "스니커즈");
+    assert.ok(
+      sku === null || sku.id !== "clothing-champion-apparel-broad",
+      `Nike shoe colorway matched Champion clothing broad: ${sku?.id}`,
+    );
+  });
+
+  it("CDG PLAY heart staples are split from generic Comme des Garcons broad", () => {
+    assert.equal(
+      ruleMatch("꼼데가르송 플레이 검정 하트 반팔 티셔츠", "정품")?.id,
+      "clothing-cdg-play-tee",
+    );
+    assert.equal(
+      ruleMatch("꼼데가르송 하트 와펜 가디건 S", "정품")?.id,
+      "clothing-cdg-play-cardigan",
+    );
+    assert.equal(
+      ruleMatch("꼼데가르송 플레이 블랙 하트 PK 반팔 카라티", "정품")?.id,
+      "clothing-cdg-play-polo",
+    );
+    assert.equal(
+      ruleMatch("꼼데가르송 플레이 스트라이프 셔츠", "정품")?.id,
+      "clothing-cdg-play-shirt",
+    );
+    assert.equal(
+      ruleMatch("꼼데가르송 플레이 하트 후드 집업", "정품")?.id,
+      "clothing-cdg-play-hoodie",
+    );
+    assert.equal(
+      ruleMatch("꼼데가르송 옴므 comme des garcons homme 셔츠", "정품")?.id,
+      "clothing-cdg-apparel-broad",
+    );
+    for (const title of [
+      "요지 재패니즈 하이웨스트 비대칭 스커트 꼼데가르송 맛",
+      "꼼데가르송 구찌 홀리데이 PVC백",
+      "나이키 플레이 꼼데가르송 콜라보 후드티 남성 사이즈 XL",
+    ]) {
+      const sku = ruleMatch(title, "정품");
+      assert.ok(
+        sku === null || !sku.id.startsWith("clothing-cdg-"),
+        `CDG apparel bait should not match clothing CDG SKU: ${title} -> ${sku?.id}`,
+      );
+    }
+  });
+
+  it("Carhartt Detroit/Active jacket은 broad apparel이 아니라 실모델 lane으로 분리한다", () => {
+    assert.equal(
+      ruleMatch("칼하트 WIP 디트로이트 자켓 OG", "정품")?.id,
+      "clothing-carhartt-detroit-jacket",
+    );
+    assert.equal(
+      ruleMatch("(XL)칼하트 덕 액티브 후드자켓 J130 BRN 칼하트브라운", "정품")?.id,
+      "clothing-carhartt-active-jacket",
+    );
+    assert.equal(
+      ruleMatch("칼하트 wip 메디슨 자켓 네이비 L", "정품")?.id,
+      "clothing-carhartt-apparel-broad",
+    );
   });
 
   it("Dior J'ADIOR 슬링백 신발은 Dior bag broad로 매칭하지 않음", () => {

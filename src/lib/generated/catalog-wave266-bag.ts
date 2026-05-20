@@ -451,6 +451,7 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
       "5ac mini",
       // Wave 266b API sweep 발견 — 64건 contamination. 5AC 전 사이즈 (mini/small/medium/large) 모두 narrow에 맡김.
       "5ac",
+      "5ac백", "5ac가방", "5ac크로스", "5ac크로스백", "5ac미니", "5ac마이크로", "5ac스몰",
       "글램 슬램", "glam slam",
       "재팬 백", "japanese bag",
       // 의류 별도 (MM6 의류) — 반팔/티셔츠 강화

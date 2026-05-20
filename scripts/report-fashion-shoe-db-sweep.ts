@@ -93,8 +93,8 @@ type SweepCase = {
 
 const EXPECTED_PARSER_BY_CATEGORY: Record<FashionCategory, string> = {
   shoe: "wave92-shoe-v11",
-  clothing: "wave216-clothing-v11",
-  bag: "wave92-bag-v10",
+  clothing: "wave216-clothing-v13",
+  bag: "wave92-bag-v11",
 };
 
 async function loadEnvFile(filePath: string) {
@@ -265,11 +265,13 @@ function categoryConflictFlags(category: string | null, text: string) {
   t = t
     .replace(/벨트백|belt bag|웨이스트백|waist bag|힙색|슬링백|slingback/g, " ")
     .replace(/의류\/잡화|의류 잡화|clothing\/accessor(?:y|ies)/g, " ")
-    .replace(/보관\s*가방|더스트백|dust bag|슈즈백|shoe bag|신발\s*주머니/g, " ");
+    .replace(/보관\s*가방|더스트백|dust bag|슈즈백|shoe bag|신발\s*주머니/g, " ")
+    .replace(/가방과\s*같이\s*받(?:았)?던?\s*종이|가방과\s*함께\s*받(?:았)?던?\s*종이/g, " ");
+  t = t.replace(/더플\s*자켓|더플\s*재킷|duffle\s*(?:coat|jacket)|패딩\s*테크\s*카세트/g, " ");
   const flags: string[] = [];
   const clothing = /트랙팬츠|트랙 팬츠|바지|팬츠|자켓|재킷|패딩|코트|후드|맨투맨|티셔츠|반팔|롱슬리브|셔츠|쇼츠|청바지|데님|니트|가디건|모자|볼캡|벨트|pants|jacket|hoodie|shirt|shorts|denim|jeans|cap|belt/.test(t);
   const shoe = /운동화|스니커|스니커즈|부츠|샌들|슬리퍼|로퍼|슈즈|러닝화|등산화|트레킹화|축구화|풋살화|sneaker|shoe|shoes|boot|sandal|loafer|slipper/.test(t);
-  const bag = /가방|백팩|토트|숄더|크로스백|메신저|더플|클러치|파우치|지갑|카드지갑|월렛|bag|backpack|tote|shoulder|crossbody|wallet|pouch/.test(t);
+  const bag = /가방|백팩|토트|숄더|크로스백|메신저|더플|클러치|파우치|지갑|카드지갑|월렛|\bbag\b|\bbackpack\b|\btote\b|\bshoulder\s+bag\b|\bcrossbody\b|\bwallet\b|\bpouch\b/.test(t);
   if (category === "shoe" && clothing) flags.push("shoe_row_has_clothing_terms");
   if (category === "shoe" && bag) flags.push("shoe_row_has_bag_terms");
   if (category === "clothing" && shoe) flags.push("clothing_row_has_shoe_terms");

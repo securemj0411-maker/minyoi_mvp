@@ -9899,6 +9899,9 @@ const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, strin
   clothing: [
     "가방", "backpack", "백팩", "토트백", "tote bag", "숄더백", "크로스백", "메신저", "messenger",
     "월렛", "wallet", "지갑", "장지갑",
+    // Wave 424: paper shopping-bag accessory-only rows were leaking into clothing broad.
+    // Keep plain "쇼핑백 포함" allowed for full-set clothing listings.
+    "쇼핑백 미사용", "쇼핑백만", "쇼핑백 단품", "종이백", "종이 백", "paper bag",
     "운동화", "sneaker", "스니커즈", "부츠", "boot", "샌들", "슬리퍼", "뮬",
     // Wave 235 (2026-05-19): 모자/캡 매물이 의류 SKU 매칭 차단.
     //   sample sweep 발견 — Stussy x Bape 트러커 캡이 bag-stussy-crossbody 매칭.
