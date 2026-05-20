@@ -445,11 +445,9 @@ function marketTrendGuideStep(card: RevealCard): BeginnerGuideStep {
 
 function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
   const velocity = card.velocityBasis;
-  const flow = card.skuListingFlow;
   const marketSoldSample = card.marketBasis?.soldSampleCount ?? 0;
   const analysisPending =
     !velocity &&
-    !flow &&
     marketSoldSample <= 0 &&
     card.marketBasis?.computedAt == null;
   const hasVelocity =
@@ -462,23 +460,11 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
     const dailySold = dailySoldCountLabel(velocity.sold7dCount);
     return {
       eyebrow: "8. 판매 속도",
-      title: `비슷한 상품은 보통 ${label} 안에 팔렸어요`,
+      title: `되팔면 보통 ${label} 안에 팔린 기록이 있어요`,
       metric: label,
-      metricLabel: `최근 7일 기준 하루 ${dailySold} 팔림`,
-      body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}개 거래됐고, 하루로 나누면 ${dailySold} 정도예요. 보통 ${label} 안에 팔린 기록이라 오래 묶일 가능성도 같이 봤어요.`,
-      note: "판매 속도는 과거 관측치라 실제 판매일을 보장하지 않습니다.",
-      tone: "speed",
-    };
-  }
-
-  if (flow && flow.avgPerDay7d > 0) {
-    return {
-      eyebrow: "8. 판매 속도",
-      title: "최근 매물 유입량으로 시장 분위기를 봐요",
-      metric: `${flow.count24h.toLocaleString("ko-KR")}건`,
-      metricLabel: `24시간 등록 · 7일 평균 ${flow.avgPerDay7d.toLocaleString("ko-KR")}건/일`,
-      body: "팔린 기록이 아직 적어서, 대신 최근 등록량을 함께 봤어요. 매물이 너무 많이 쌓이는 시장인지 먼저 확인하는 흐름이에요.",
-      note: "유입량은 수요가 아니라 공급 흐름이므로 보조 지표로 봐야 합니다.",
+      metricLabel: `동일 모델 하루 평균 판매량 ${dailySold}`,
+      body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}개 거래됐어요. 하루로 나누면 동일 모델이 ${dailySold} 정도 팔려나간 셈이라, 매입 후 돈이 얼마나 오래 묶일지 가늠할 때 보는 정보예요.`,
+      note: "과거 거래 기록이라 실제 판매일을 보장하지는 않습니다.",
       tone: "speed",
     };
   }
@@ -3812,29 +3798,23 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
 
 function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   const speed = saleSpeedDisplay(card);
-  const flow = card.skuListingFlow;
   const velocity = card.velocityBasis;
   const market = card.marketBasis;
   const sampleCount = velocity?.observedSoldSampleCount ?? market?.soldSampleCount ?? 0;
   const dailySoldValue = velocity?.sold7dCount ? dailySoldCountLabel(velocity.sold7dCount) : null;
-  const sampleLabel = dailySoldValue ? "하루 평균 팔림" : sampleCount > 0 ? "비슷한 거래 기록" : "거래 기록";
+  const sampleLabel = dailySoldValue ? "동일 모델 하루 판매량" : sampleCount > 0 ? "비슷한 거래 기록" : "거래 기록";
   const sampleValue = dailySoldValue ?? (sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "확인 중");
-  const recentListingValue = flow?.count24h != null ? `${flow.count24h.toLocaleString("ko-KR")}건` : "확인 중";
 
   return (
     <div className="rounded-[22px] bg-white/82 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
-          <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">판매 주기</div>
+          <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">되팔 때 판매 주기</div>
           <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{speed.label}</div>
         </div>
         <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
           <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{sampleLabel}</div>
           <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{sampleValue}</div>
-        </div>
-        <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
-          <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">최근 등록</div>
-          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{recentListingValue}</div>
         </div>
       </div>
     </div>
