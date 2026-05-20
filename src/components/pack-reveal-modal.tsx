@@ -4599,21 +4599,15 @@ function BeginnerGuideStepVisual({ card, tone }: { card: RevealCard; tone: Begin
   return <BeginnerGuideSummaryVisual />;
 }
 
-function BeginnerGuideValueNote({ note, tone }: { note?: string; tone: BeginnerGuideStep["tone"] }) {
+function BeginnerGuideContextNote({ note, tone }: { note?: string; tone: BeginnerGuideStep["tone"] }) {
   if (!note) return null;
   return (
-    <div
-      data-beginner-guide-value-note
-      className={`${tone === "summary" ? "mx-auto mt-5 max-w-[340px] text-left" : "mt-4"} rounded-[18px] bg-white/72 px-3.5 py-3 ring-1 ring-[#e8dfd0] dark:bg-zinc-950/48 dark:ring-zinc-800`}
+    <p
+      data-beginner-guide-context-note
+      className={`${tone === "summary" ? "mx-auto mt-5 max-w-[340px] text-center" : "mt-3"} break-keep text-[13px] font-semibold leading-5 text-[#667064] dark:text-zinc-400`}
     >
-      <div className="flex items-center gap-1.5 text-[10.5px] font-black text-[#3182f6] dark:text-blue-300">
-        <TargetIcon className="h-3.5 w-3.5" />
-        <span>대신 확인한 것</span>
-      </div>
-      <p className="mt-1.5 break-keep text-[12.5px] font-semibold leading-5 text-[#5b665a] dark:text-zinc-300">
-        {note}
-      </p>
-    </div>
+      {note}
+    </p>
   );
 }
 
@@ -4671,15 +4665,18 @@ function BeginnerGuideSafetyFilterNote() {
       data-beginner-guide-safety-filter-note
       className="mt-3 rounded-[18px] bg-[#f7fafe] px-3.5 py-3 ring-1 ring-blue-100 dark:bg-blue-950/18 dark:ring-blue-900/45"
     >
-      <div className="flex items-center gap-1.5 text-[10.5px] font-black text-[#3182f6] dark:text-blue-300">
-        <ShieldIcon className="h-3.5 w-3.5" />
-        <span>추천 전에 걸러진 매물</span>
+      <div className="flex items-start gap-2.5">
+        <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[#3182f6] ring-1 ring-blue-100 dark:bg-zinc-950/60 dark:text-blue-300 dark:ring-blue-900/45">
+          <ShieldIcon className="h-3.5 w-3.5" />
+        </span>
+        <div className="min-w-0">
+          <p className="break-keep text-[12.5px] font-semibold leading-5 text-[#53605a] dark:text-zinc-300">
+            최근 24시간 전체 추천 풀에서 단품·액세서리·업자성·모델 확인 필요 매물{" "}
+            <strong className="font-black text-[#172019] dark:text-zinc-50">{formatBeginnerStatCount(totalBlocked)}건</strong>
+            은 먼저 걸러졌어요. 그래서 여기서는 이 매물을 살 때 남은 질문만 차례대로 보면 돼요.
+          </p>
+        </div>
       </div>
-      <p className="mt-1.5 break-keep text-[12.5px] font-semibold leading-5 text-[#53605a] dark:text-zinc-300">
-        최근 24시간 전체 추천 풀에서 단품·액세서리·업자성·모델 확인 필요 매물{" "}
-        <strong className="font-black text-[#172019] dark:text-zinc-50">{formatBeginnerStatCount(totalBlocked)}건</strong>
-        은 먼저 걸러졌어요. 이 화면에는 남은 확인 질문만 보여드려요.
-      </p>
       {parts.length > 0 ? (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {parts.map((part) => (
@@ -4871,8 +4868,8 @@ function BeginnerGuideWalkthrough({
               </p>
             ) : null}
 
-            <BeginnerGuideValueNote note={step.valueNote} tone={step.tone} />
-            {step.tone === "check" ? <BeginnerGuideSafetyFilterNote /> : null}
+            {step.tone === "trust" ? <BeginnerGuideSafetyFilterNote /> : null}
+            <BeginnerGuideContextNote note={step.valueNote} tone={step.tone} />
 
             {step.tone === "trust" ? (
               <BeginnerGuideTrustMetric card={card} />
