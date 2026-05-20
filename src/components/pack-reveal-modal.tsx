@@ -1321,14 +1321,6 @@ function RevealProductImage({ card }: { card: RevealCard }) {
             className="object-cover object-center opacity-100 sm:scale-[1.08] sm:opacity-55 sm:blur-sm"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/35 sm:bg-[linear-gradient(180deg,rgba(255,253,249,0.22),rgba(238,231,218,0.30))] dark:sm:bg-zinc-950/20" />
-          <div className="absolute right-3 top-[76px] z-10 flex gap-1 rounded-full bg-black/45 px-2.5 py-1.5 backdrop-blur sm:hidden">
-            {[0, 1, 2, 3].map((idx) => (
-              <span
-                key={idx}
-                className={`h-1.5 w-1.5 rounded-full ${idx === 0 ? "bg-white" : "bg-white/40"}`}
-              />
-            ))}
-          </div>
           <div className="absolute inset-0 p-0 sm:p-2">
             <div className="relative h-full w-full">
               <Image
