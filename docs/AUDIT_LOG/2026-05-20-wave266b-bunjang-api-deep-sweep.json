@@ -1,0 +1,2439 @@
+{
+  "generatedAt": "2026-05-20T00:22:34.818Z",
+  "summary": {
+    "totalSkus": 414,
+    "skusWithResults": 407,
+    "totalFetched": 33287,
+    "totalTP": 14951,
+    "totalUnmatched": 14656,
+    "totalTypeUnknown": 33287,
+    "avgTPRate": 0.4568356137063743
+  },
+  "topUnmatchedTokens": [
+    [
+      "나이키",
+      503
+    ],
+    [
+      "아디다스",
+      378
+    ],
+    [
+      "뉴발란스",
+      201
+    ],
+    [
+      "자켓",
+      161
+    ],
+    [
+      "스니커즈",
+      158
+    ],
+    [
+      "살로몬",
+      142
+    ],
+    [
+      "노스페이스",
+      123
+    ],
+    [
+      "구찌",
+      120
+    ],
+    [
+      "air",
+      113
+    ],
+    [
+      "슈프림",
+      109
+    ],
+    [
+      "루이비통",
+      102
+    ],
+    [
+      "폴로",
+      93
+    ],
+    [
+      "반팔",
+      92
+    ],
+    [
+      "로우",
+      92
+    ],
+    [
+      "꼼데가르송",
+      92
+    ],
+    [
+      "아식스",
+      82
+    ],
+    [
+      "티셔츠",
+      79
+    ],
+    [
+      "컨버스",
+      78
+    ],
+    [
+      "키즈",
+      73
+    ],
+    [
+      "빈티지",
+      73
+    ],
+    [
+      "클래식",
+      72
+    ],
+    [
+      "발렌시아가",
+      72
+    ],
+    [
+      "마르지엘라",
+      72
+    ],
+    [
+      "에어",
+      69
+    ],
+    [
+      "반스",
+      69
+    ],
+    [
+      "nike",
+      63
+    ],
+    [
+      "숄더백",
+      63
+    ],
+    [
+      "프라다",
+      63
+    ],
+    [
+      "반팔티",
+      61
+    ],
+    [
+      "블루",
+      59
+    ],
+    [
+      "에어맥스",
+      59
+    ],
+    [
+      "랄프로렌",
+      56
+    ],
+    [
+      "져지",
+      55
+    ],
+    [
+      "미니",
+      55
+    ],
+    [
+      "하이",
+      54
+    ],
+    [
+      "니트",
+      53
+    ],
+    [
+      "셔츠",
+      53
+    ],
+    [
+      "패딩",
+      52
+    ],
+    [
+      "스웨이드",
+      49
+    ],
+    [
+      "gg",
+      48
+    ],
+    [
+      "삼바",
+      47
+    ],
+    [
+      "구매",
+      46
+    ],
+    [
+      "카드지갑",
+      46
+    ],
+    [
+      "판매합니다",
+      45
+    ],
+    [
+      "에어포스",
+      45
+    ],
+    [
+      "백팩",
+      45
+    ],
+    [
+      "코치",
+      45
+    ],
+    [
+      "크록스",
+      45
+    ],
+    [
+      "베이프",
+      44
+    ],
+    [
+      "부츠",
+      43
+    ]
+  ],
+  "topContamination": [
+    {
+      "contaminatedSkuId": "clothing-adidas-trefoil",
+      "count": 236,
+      "samples": [
+        "shoe-adidas-yeezy-350-v2-zebra → clothing-adidas-trefoil: 아디다스 오리지널스 유로파 트랙탑(안감나비패턴)",
+        "shoe-adidas-yeezy-350-v2-zebra → clothing-adidas-trefoil: 아디다스 삼선 트랙탑 파이어버드 네이비 져지",
+        "shoe-adidas-yeezy-350-v2-bred → clothing-adidas-trefoil: 아디다스 오리지널스 유로파 트랙탑(안감나비패턴)",
+        "shoe-adidas-yeezy-350-v2-bred → clothing-adidas-trefoil: 아디다스 삼선 트랙탑 파이어버드 네이비 져지",
+        "shoe-adidas-yeezy-350-v2-beluga → clothing-adidas-trefoil: 아디다스 오리지널스 유로파 트랙탑(안감나비패턴)"
+      ]
+    },
+    {
+      "contaminatedSkuId": "bag-gucci-broad",
+      "count": 229,
+      "samples": [
+        "bag-gucci-gg-marmont-mini → bag-gucci-broad: 구찌 오피디아 GG 미니 숄더백",
+        "bag-gucci-gg-marmont-mini → bag-gucci-broad: 구찌 GG캔버스 쇼퍼백",
+        "bag-gucci-gg-marmont-camera → bag-gucci-broad: 구찌 오피디아 GG 미니 숄더백",
+        "bag-gucci-gg-marmont-camera → bag-gucci-broad: 구찌 GG캔버스 쇼퍼백",
+        "bag-gucci-gg-supreme-card-wallet → bag-gucci-broad: 구찌 오피디아 GG 미니 숄더백"
+      ]
+    },
+    {
+      "contaminatedSkuId": "bag-prada-broad",
+      "count": 209,
+      "samples": [
+        "bag-prada-saffiano-galleria-mini → bag-prada-broad: 프라다 리나일론 크로스백",
+        "bag-prada-saffiano-galleria-mini → bag-prada-broad: 프라다 슬링백, 프라다 백팩, 2vz105",
+        "bag-prada-nylon-hobo-vintage → bag-prada-broad: 프라다 Re-Edition 테수토 체인 크로스백",
+        "bag-prada-nylon-hobo-vintage → bag-prada-broad: 프라다 리라일론 호보백 (가격내림!)",
+        "bag-prada-saffiano-card-wallet → bag-prada-broad: 프라다 리나일론 크로스백"
+      ]
+    },
+    {
+      "contaminatedSkuId": "bag-lv-broad",
+      "count": 203,
+      "samples": [
+        "bag-lv-monogram-pochette-accessoires → bag-lv-broad: 루이비통 티볼리 pm Monogram 캔버스 토트백 m401",
+        "bag-lv-monogram-pochette-accessoires → bag-lv-broad: 루이비통 조쉬 백팩",
+        "bag-lv-monogram-neverfull-pm → bag-lv-broad: 루이비통 네버풀 GM 토트백",
+        "bag-lv-monogram-neverfull-pm → bag-lv-broad: 루이비통 모노그램 네버풀 토트백 GM",
+        "bag-lv-monogram-speedy-25 → bag-lv-broad: 루이비통 스피디 30 모노그램 토트백"
+      ]
+    },
+    {
+      "contaminatedSkuId": "bag-celine-broad",
+      "count": 92,
+      "samples": [
+        "bag-celine-trio-medium → bag-celine-broad: 셀린느 트리옹프 버킷백 Celine",
+        "bag-celine-trio-medium → bag-celine-broad: 셀린느 클로드 트리옹프 캔버스 카프스킨 숄더백",
+        "bag-celine-vintage-macadam → bag-celine-broad: 빈티지 셀린느 토트백 숄더백",
+        "bag-celine-vintage-macadam → bag-celine-broad: 셀린느 빈티지 크로스백",
+        "bag-celine-vintage-trio-pouch → bag-celine-broad: 빈티지 셀린느 토트백 숄더백"
+      ]
+    },
+    {
+      "contaminatedSkuId": "clothing-cdg-apparel-broad",
+      "count": 79,
+      "samples": [
+        "bag-coach-apparel-broad → clothing-cdg-apparel-broad: 꼼데 가르송 보아털 코치 자켓 CDG",
+        "bag-cdg-broad → clothing-cdg-apparel-broad: 정품)새상품 꼼데가르송 반팔 레드와펜 남녀공용",
+        "bag-cdg-broad → clothing-cdg-apparel-broad: 꼼데가르송 플레이 하트 반팔 티셔츠 흰/검",
+        "shoe-cdg-nike-collab → clothing-cdg-apparel-broad: 꼼데가르송 X 나이키 티셔츠",
+        "shoe-cdg-nike-collab → clothing-cdg-apparel-broad: 블랙 꼼데가르송  x 나이키 티셔츠"
+      ]
+    },
+    {
+      "contaminatedSkuId": "clothing-polo-apparel-broad",
+      "count": 75,
+      "samples": [
+        "clothing-polo-pony-tee → clothing-polo-apparel-broad: 폴로 랄프로렌 반팔 티셔츠 카라티 XL 하늘 블루 블랙 포니 정품",
+        "clothing-polo-pony-tee → clothing-polo-apparel-broad: Polo  폴로 랄프로렌 빅포니 클럽 1967 화이트 반팔 카라 티셔츠",
+        "clothing-polo-rrl-tee → clothing-polo-apparel-broad: POLO 폴로 랄프로렌 맨투맨 (새상품급)",
+        "clothing-polo-rrl-tee → clothing-polo-apparel-broad: [S] 폴로 랄프로렌 카모플라쥬 맨투맨",
+        "clothing-polo-rrl-denim → clothing-polo-apparel-broad: 28inch) 폴로 랄프로렌 페인트 스플레터 리페어 데님 청바지"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-stussy-nike-collab",
+      "count": 73,
+      "samples": [
+        "shoe-nike-jordan-1-high-chicago-lost-and-found → shoe-stussy-nike-collab: Nike x Stussy Air Huarache LE 데저트 오크 255",
+        "shoe-nike-jordan-1-high-royal-2017 → shoe-stussy-nike-collab: Nike x Stussy Air Huarache LE 데저트 오크 255",
+        "shoe-nike-jordan-1-high-bred-toe → shoe-stussy-nike-collab: Nike x Stussy Air Huarache LE 데저트 오크 255",
+        "shoe-nike-jordan-1-high-unc-2016 → shoe-stussy-nike-collab: Nike x Stussy Air Huarache LE 데저트 오크 255",
+        "shoe-nike-jordan-1-high-shadow-2-0 → shoe-stussy-nike-collab: Nike x Stussy Air Huarache LE 데저트 오크 255"
+      ]
+    },
+    {
+      "contaminatedSkuId": "clothing-thombrowne-apparel-broad",
+      "count": 71,
+      "samples": [
+        "bag-thombrowne-broad → clothing-thombrowne-apparel-broad: [4] 톰브라운 화이트 포켓 반팔티",
+        "bag-thombrowne-broad → clothing-thombrowne-apparel-broad: 톰브라운 반팔티",
+        "shoe-nike-blazer-high → clothing-thombrowne-apparel-broad: 톰브라운 120수 울 하이암홀 블레이저 자켓"
+      ]
+    },
+    {
+      "contaminatedSkuId": "bag-margiela-broad",
+      "count": 64,
+      "samples": [
+        "bag-margiela-5ac-mini → bag-margiela-broad: [L] MM 메종 마르지엘라 여성 5AC 라지 숄더 핸드백 토트백 브라운",
+        "bag-margiela-5ac-mini → bag-margiela-broad: 새상품 마르지엘라 신상 레드 빈티지 5AC 라지 숄더백 토드백",
+        "bag-margiela-glam-slam → bag-margiela-broad: 메종 마르지엘라 글램 슬램 미니 백팩",
+        "bag-margiela-glam-slam → bag-margiela-broad: 메종 마르지엘라 미니 글램 슬램 플랩 숄더백 그레이지",
+        "clothing-mm6-margiela → bag-margiela-broad: (새상품) 마르지엘라 mm6 6로고 버킷백"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-nike-sakai-collab",
+      "count": 62,
+      "samples": [
+        "shoe-nike-cortez-broad → shoe-nike-sakai-collab: 나이키 x 사카이 코르테즈 270사이즈",
+        "shoe-nike-cortez-broad → shoe-nike-sakai-collab: 나이키 사카이 코르테즈 255",
+        "shoe-nike-moonracer-broad → shoe-nike-sakai-collab: 발렌시아가 트리플s, 나이키 문레이서, 사카이 베이퍼와플, LD와플 판매",
+        "shoe-balenciaga-triple-s-broad → shoe-nike-sakai-collab: 발렌시아가 트리플s, 나이키 문레이서, 사카이 베이퍼와플, LD와플 판매",
+        "shoe-nike-blazer-broad → shoe-nike-sakai-collab: 나이키 x 사카이 블레이저 로우 마그마 오렌지"
+      ]
+    },
+    {
+      "contaminatedSkuId": "clothing-patagonia-retro-x",
+      "count": 61,
+      "samples": [
+        "clothing-patagonia → clothing-patagonia-retro-x: 파타고니아 클래식 레트로 X 플리스 베스트",
+        "clothing-patagonia → clothing-patagonia-retro-x: 파타고니아 플리스 풀오버 시수/브라운",
+        "clothing-patagonia-deep-pile → clothing-patagonia-retro-x: Patagonia 파타고니아 신칠라 딥 파일 재킷입니다",
+        "clothing-patagonia-apparel-broad → clothing-patagonia-retro-x: 파타고니아 클래식 레트로 X 플리스 베스트",
+        "clothing-patagonia-apparel-broad → clothing-patagonia-retro-x: 파타고니아 플리스 풀오버 시수/브라운"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-gucci-broad",
+      "count": 57,
+      "samples": [
+        "bag-gucci-gg-marmont-mini → shoe-gucci-broad: 구찌 트렌디 신상 스니커즈 GG 스트라이프 로우탑사이즈/245",
+        "bag-gucci-gg-marmont-mini → shoe-gucci-broad: 구찌 GG 수프림 라이톤 스니커즈 6/5 (250-255) S",
+        "bag-gucci-gg-marmont-camera → shoe-gucci-broad: 구찌 트렌디 신상 스니커즈 GG 스트라이프 로우탑사이즈/245",
+        "bag-gucci-gg-marmont-camera → shoe-gucci-broad: 구찌 GG 수프림 라이톤 스니커즈 6/5 (250-255) S",
+        "bag-gucci-gg-supreme-card-wallet → shoe-gucci-broad: 구찌 트렌디 신상 스니커즈 GG 스트라이프 로우탑사이즈/245"
+      ]
+    },
+    {
+      "contaminatedSkuId": "bag-cdg-broad",
+      "count": 56,
+      "samples": [
+        "bag-cdg-pvc → bag-cdg-broad: 꼼데가르송 구찌 홀리데이 PVC백",
+        "bag-cdg-pvc → bag-cdg-broad: 꼼데가르송 옴므플러스 PVC 메신저백 오렌지",
+        "clothing-cdg-apparel-broad → bag-cdg-broad: 꼼데가르송 걸즈 라인 페인트 백",
+        "clothing-cdg-apparel-broad → bag-cdg-broad: 꼼데가르송 더블 지퍼백 M사이즈 OZ-K211"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-adidas-football",
+      "count": 54,
+      "samples": [
+        "shoe-adidas-yeezy-350-v2-zebra → shoe-adidas-football: 아디다스 풋살화 회색/주황색",
+        "shoe-adidas-yeezy-350-v2-zebra → shoe-adidas-football: 아디다스 코파19.1 ag 255",
+        "shoe-adidas-yeezy-350-v2-bred → shoe-adidas-football: 아디다스 풋살화 회색/주황색",
+        "shoe-adidas-yeezy-350-v2-bred → shoe-adidas-football: 아디다스 코파19.1 ag 255",
+        "shoe-adidas-yeezy-350-v2-beluga → shoe-adidas-football: 아디다스 풋살화 회색/주황색"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-supreme-nike-airmax-collab",
+      "count": 51,
+      "samples": [
+        "shoe-nike-jordan-1-high-chicago-lost-and-found → shoe-supreme-nike-airmax-collab: nike supreme airmax tn 11.5 (290)",
+        "shoe-nike-jordan-1-high-chicago-lost-and-found → shoe-supreme-nike-airmax-collab: Nike x Supreme Air max 1 '87 purple",
+        "shoe-nike-jordan-1-high-royal-2017 → shoe-supreme-nike-airmax-collab: nike supreme airmax tn 11.5 (290)",
+        "shoe-nike-jordan-1-high-royal-2017 → shoe-supreme-nike-airmax-collab: Nike x Supreme Air max 1 '87 purple",
+        "shoe-nike-jordan-1-high-bred-toe → shoe-supreme-nike-airmax-collab: nike supreme airmax tn 11.5 (290)"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-onrunning-paf-collab",
+      "count": 47,
+      "samples": [
+        "shoe-onrunning-cloud-monster → shoe-onrunning-paf-collab: 온러닝 파프 클라우드 몬스터2 블랙마그넷(265)",
+        "shoe-onrunning-cloud-monster → shoe-onrunning-paf-collab: 온러닝 x 파프 클라우드몬스터 2 블랙 255",
+        "shoe-onrunning-cloud-basic → shoe-onrunning-paf-collab: 온러닝 파프 클라우드 몬스터2 블랙마그넷(265)",
+        "shoe-onrunning-cloud-basic → shoe-onrunning-paf-collab: 온러닝 x 파프 클라우드몬스터 2 블랙 255"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-mizuno-morelia-neo",
+      "count": 44,
+      "samples": [
+        "shoe-mizuno-morelia → shoe-mizuno-morelia-neo: 미즈노 모렐리아 네오 형광 270",
+        "shoe-mizuno-morelia → shoe-mizuno-morelia-neo: 미즈노 모렐리아 네오 IV 베타 재팬 280"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-converse-chuck70-high-broad",
+      "count": 42,
+      "samples": [
+        "shoe-converse-chuck70-cdg-play-white → shoe-converse-chuck70-high-broad: [230]컨버스 척테일러1970s 하이 운동화/신발(화이트)",
+        "shoe-converse-chuck70-cdg-play-white → shoe-converse-chuck70-high-broad: converse 컨버스 애니멀 프린트 척 70 올스타 하이 230",
+        "shoe-converse-chuck70-black → shoe-converse-chuck70-high-broad: 컨버스 척테일러 70 하이 블랙 270",
+        "shoe-converse-chuck70-black → shoe-converse-chuck70-high-broad: 컨버스 척테일러 척 70 클래식 블랙 하이 225",
+        "shoe-converse-chuck70-white → shoe-converse-chuck70-high-broad: 컨버스 척70 빈티지 캔버스 화이트 하이 255 실착 2회 박스o 고무끈"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-prada-broad",
+      "count": 42,
+      "samples": [
+        "bag-prada-saffiano-galleria-mini → shoe-prada-broad: PRADA Saffiano Leather Oxford Shoes",
+        "bag-prada-nylon-hobo-vintage → shoe-prada-broad: 프라다 Re-Edition 스웨이드 스니커즈 브라운",
+        "bag-prada-saffiano-card-wallet → shoe-prada-broad: PRADA Saffiano Leather Oxford Shoes",
+        "bag-prada-tessuto-vintage-shoulder → shoe-prada-broad: 275) 프라다 스포츠 빈티지 아메리칸 컵 레더 스니커즈 신발",
+        "bag-prada-tessuto-vintage-shoulder → shoe-prada-broad: 프라다 로퍼 블랙 스퀘어토 로퍼 남성용 빈티지 구두"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-converse-chuck70-cdg-play-white",
+      "count": 39,
+      "samples": [
+        "shoe-converse-chuck70-black → shoe-converse-chuck70-cdg-play-white: 컨버스 꼼데가르송 척테일러 70 블랙 로우",
+        "shoe-converse-chuck70-black → shoe-converse-chuck70-cdg-play-white: 꼼데가르송 플레이 컨버스 척테일러 70 로우 블랙 레드하트",
+        "shoe-converse-chuck70-white → shoe-converse-chuck70-cdg-play-white: [정품] 컨버스 X 꼼데가르송 플레이 척 70 로우 (화이트/275)",
+        "shoe-converse-chuck70-white → shoe-converse-chuck70-cdg-play-white: 컨버스 x 플레이 꼼데가르송 척 70 로우 화이트",
+        "shoe-converse-chuck70-high-broad → shoe-converse-chuck70-cdg-play-white: 컨버스x꼼데가르송 척 70 하이"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-adidas-superstar-broad",
+      "count": 38,
+      "samples": [
+        "shoe-adidas-yeezy-350-v2-zebra → shoe-adidas-superstar-broad: 아디다스 슈퍼스타 트리플블랙 스니커즈",
+        "shoe-adidas-yeezy-350-v2-zebra → shoe-adidas-superstar-broad: 아디다스 슈퍼스타 트랙탑 져지 소라",
+        "shoe-adidas-yeezy-350-v2-bred → shoe-adidas-superstar-broad: 아디다스 슈퍼스타 트리플블랙 스니커즈",
+        "shoe-adidas-yeezy-350-v2-bred → shoe-adidas-superstar-broad: 아디다스 슈퍼스타 트랙탑 져지 소라",
+        "shoe-adidas-yeezy-350-v2-beluga → shoe-adidas-superstar-broad: 아디다스 슈퍼스타 트리플블랙 스니커즈"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-newbalance-327-broad",
+      "count": 37,
+      "samples": [
+        "shoe-newbalance-9060-grey-day → shoe-newbalance-327-broad: 올 뉴 NB 뉴발란스 327 올블랙 빈티지 조깅화",
+        "shoe-newbalance-9060-grey-day → shoe-newbalance-327-broad: 뉴발란스 327 블루 275 1회착 팝니다.",
+        "shoe-newbalance-990v6-grey → shoe-newbalance-327-broad: 올 뉴 NB 뉴발란스 327 올블랙 빈티지 조깅화",
+        "shoe-newbalance-990v6-grey → shoe-newbalance-327-broad: 뉴발란스 327 블루 275 1회착 팝니다.",
+        "shoe-newbalance-990v6-triple-black → shoe-newbalance-327-broad: 올 뉴 NB 뉴발란스 327 올블랙 빈티지 조깅화"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-mizuno-sala",
+      "count": 37,
+      "samples": [
+        "shoe-mizuno-morelia → shoe-mizuno-sala: 미즈노 모렐리아 살라 재팬 흰파 255 TF",
+        "shoe-mizuno-morelia → shoe-mizuno-sala: [새상품]미즈노 모렐리아 살라 JPN TF Bright Gold팩",
+        "shoe-mizuno-morelia-neo → shoe-mizuno-sala: 미즈노 모렐리아 네오 살라 베타 제펜",
+        "shoe-mizuno-morelia-neo → shoe-mizuno-sala: [새상품]미즈노 모렐리아 네오 살라 베타 JPN TF 275mm"
+      ]
+    },
+    {
+      "contaminatedSkuId": "bag-balenciaga-broad",
+      "count": 36,
+      "samples": [
+        "bag-balenciaga-classic-city-mini → bag-balenciaga-broad: [S급] 발렌시아가 클래식 클러치 판매합니다!!!",
+        "bag-balenciaga-classic-city-mini → bag-balenciaga-broad: 발렌시아가(BALENCIAGA) 클래식 모터 클립 레더 클러치백"
+      ]
+    },
+    {
+      "contaminatedSkuId": "shoe-nike-airmax-1",
+      "count": 35,
+      "samples": [
+        "shoe-nike-jordan-1-high-chicago-lost-and-found → shoe-nike-airmax-1: Nike Air Max 1000",
+        "shoe-nike-jordan-1-high-chicago-lost-and-found → shoe-nike-airmax-1: 나이키 에어맥스 1000 air max1000",
+        "shoe-nike-jordan-1-high-royal-2017 → shoe-nike-airmax-1: Nike Air Max 1000",
+        "shoe-nike-jordan-1-high-royal-2017 → shoe-nike-airmax-1: 나이키 에어맥스 1000 air max1000",
+        "shoe-nike-jordan-1-high-bred-toe → shoe-nike-airmax-1: Nike Air Max 1000"
+      ]
+    },
+    {
+      "contaminatedSkuId": "clothing-supreme-apparel-broad",
+      "count": 35,
+      "samples": [
+        "bag-coach-apparel-broad → clothing-supreme-apparel-broad: [XL] 슈프림 x 언더커버 코치자켓",
+        "clothing-mm6-margiela → clothing-supreme-apparel-broad: 슈프림 x MM6 메종 마르지엘라 박스로고 티셔츠 XL",
+        "clothing-mm6-margiela → clothing-supreme-apparel-broad: [XL]슈프림 x mm6 메종 마르지엘라 바시티 자켓",
+        "shoe-supreme-nike-airmax-collab → clothing-supreme-apparel-broad: 슈프림 나이키  자수로고 에어맥스 블랙 색상 후드 집업 후드티",
+        "shoe-supreme-nike-airmax-collab → clothing-supreme-apparel-broad: 슈프림 나이키 자수로고 에어맥스 그레이 조거 팬츠 면바지 기모"
+      ]
+    },
+    {
+      "contaminatedSkuId": "clothing-stussy-basic-tee",
+      "count": 35,
+      "samples": [
+        "clothing-stussy-8ball-knit → clothing-stussy-basic-tee: 정품)새상품 스투시 STUSSY 8볼 당구공 반팔티 남녀공용",
+        "clothing-stussy-8ball-knit → clothing-stussy-basic-tee: 스투시 8볼 반팔티 M",
+        "clothing-stussy-apparel-broad → clothing-stussy-basic-tee: 정품)스투시 베이직 반팔티셔츠 남녀공용 블랙&화이트",
+        "clothing-stussy-apparel-broad → clothing-stussy-basic-tee: 정품)새상품 스투시 STUSSY 8볼 당구공 반팔티 남녀공용"
+      ]
+    },
+    {
+      "contaminatedSkuId": "clothing-tnf-supreme-baltoro",
+      "count": 34,
+      "samples": [
+        "clothing-tnf-supreme-mountain-jacket → clothing-tnf-supreme-baltoro: [M] 슈프림 노스페이스 설산 마운틴 발토로 패딩 다운 자켓",
+        "clothing-tnf-supreme-mountain-jacket → clothing-tnf-supreme-baltoro: 슈프림 x 노스페이스 마운틴 발토로 다운 푸퍼 패딩 자켓 브라운",
+        "clothing-tnf-baltoro-broad → clothing-tnf-supreme-baltoro: [M] 슈프림 노스페이스 설산 마운틴 발토로 패딩 다운 자켓",
+        "clothing-tnf-baltoro-broad → clothing-tnf-supreme-baltoro: 슈프림 노스페이스 설산 발토로 [L]"
+      ]
+    },
+    {
+      "contaminatedSkuId": "clothing-acne-apparel",
+      "count": 33,
+      "samples": [
+        "shoe-acne-triplo → clothing-acne-apparel: [43] 아크네 페리 벨크로 트리플화이트",
+        "clothing-acne-tee → clothing-acne-apparel: 아크네 패치포켓 나그랑 롱 슬리브",
+        "clothing-acne-tee → clothing-acne-apparel: 아크네 스튜디오 롱슬리프 패치 긴팔 s",
+        "clothing-acne-broad → clothing-acne-apparel: 아크네 스튜디오 울 머플러 로즈 멜란지",
+        "clothing-acne-broad → clothing-acne-apparel: [32x32] 아크네 스튜디오 노스 스키니 피트 진"
+      ]
+    }
+  ],
+  "topTypeUnknownTokens": [
+    [
+      "나이키",
+      577
+    ],
+    [
+      "아디다스",
+      409
+    ],
+    [
+      "뉴발란스",
+      215
+    ],
+    [
+      "스니커즈",
+      205
+    ],
+    [
+      "노스페이스",
+      202
+    ],
+    [
+      "자켓",
+      198
+    ],
+    [
+      "슈프림",
+      179
+    ],
+    [
+      "살로몬",
+      164
+    ],
+    [
+      "구찌",
+      113
+    ],
+    [
+      "반팔",
+      112
+    ],
+    [
+      "air",
+      111
+    ],
+    [
+      "로우",
+      109
+    ],
+    [
+      "루이비통",
+      109
+    ],
+    [
+      "아식스",
+      108
+    ],
+    [
+      "폴로",
+      89
+    ],
+    [
+      "스투시",
+      87
+    ],
+    [
+      "에어",
+      84
+    ],
+    [
+      "블루",
+      84
+    ],
+    [
+      "빈티지",
+      83
+    ],
+    [
+      "컨버스",
+      82
+    ],
+    [
+      "숄더백",
+      79
+    ],
+    [
+      "호카",
+      79
+    ],
+    [
+      "티셔츠",
+      77
+    ],
+    [
+      "꼼데가르송",
+      77
+    ],
+    [
+      "클래식",
+      75
+    ],
+    [
+      "마르지엘라",
+      74
+    ],
+    [
+      "반스",
+      74
+    ],
+    [
+      "발렌시아가",
+      70
+    ],
+    [
+      "프라다",
+      66
+    ],
+    [
+      "rrl",
+      66
+    ],
+    [
+      "백팩",
+      65
+    ],
+    [
+      "푸마",
+      65
+    ],
+    [
+      "토트백",
+      65
+    ],
+    [
+      "nike",
+      62
+    ],
+    [
+      "에어맥스",
+      62
+    ],
+    [
+      "반팔티",
+      61
+    ],
+    [
+      "하이",
+      60
+    ],
+    [
+      "스웨이드",
+      57
+    ],
+    [
+      "새제품",
+      56
+    ],
+    [
+      "아크네",
+      56
+    ],
+    [
+      "크로스백",
+      54
+    ],
+    [
+      "파타고니아",
+      53
+    ],
+    [
+      "셔츠",
+      52
+    ],
+    [
+      "맨투맨",
+      51
+    ],
+    [
+      "미니",
+      51
+    ],
+    [
+      "져지",
+      50
+    ],
+    [
+      "베이프",
+      50
+    ],
+    [
+      "부츠",
+      48
+    ],
+    [
+      "칼하트",
+      48
+    ],
+    [
+      "미즈노",
+      48
+    ]
+  ],
+  "lowTPSkus": [
+    {
+      "skuId": "shoe-nike-jordan-1-high-chicago-lost-and-found",
+      "brand": "Nike",
+      "modelName": "Air Jordan 1 High OG Chicago Lost and Found",
+      "query": "Nike Air",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 85,
+      "topSpread": [
+        [
+          "shoe-nike-airmax-1",
+          3
+        ],
+        [
+          "shoe-supreme-nike-airmax-collab",
+          2
+        ],
+        [
+          "shoe-nike-jordan-1-high-royal-2017",
+          2
+        ],
+        [
+          "shoe-nike-superfly-broad",
+          1
+        ],
+        [
+          "shoe-nike-airmax-97",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-high-bred-toe",
+      "brand": "Nike",
+      "modelName": "Air Jordan 1 High OG Bred Toe",
+      "query": "Nike Air",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 85,
+      "topSpread": [
+        [
+          "shoe-nike-airmax-1",
+          3
+        ],
+        [
+          "shoe-supreme-nike-airmax-collab",
+          2
+        ],
+        [
+          "shoe-nike-jordan-1-high-royal-2017",
+          2
+        ],
+        [
+          "shoe-nike-superfly-broad",
+          1
+        ],
+        [
+          "shoe-nike-airmax-97",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-high-unc-2016",
+      "brand": "Nike",
+      "modelName": "Air Jordan 1 High OG UNC University Blue",
+      "query": "Nike Air",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 85,
+      "topSpread": [
+        [
+          "shoe-nike-airmax-1",
+          3
+        ],
+        [
+          "shoe-supreme-nike-airmax-collab",
+          2
+        ],
+        [
+          "shoe-nike-jordan-1-high-royal-2017",
+          2
+        ],
+        [
+          "shoe-nike-superfly-broad",
+          1
+        ],
+        [
+          "shoe-nike-airmax-97",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-high-shadow-2-0",
+      "brand": "Nike",
+      "modelName": "Air Jordan 1 High OG Shadow 2.0",
+      "query": "Nike Air",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 85,
+      "topSpread": [
+        [
+          "shoe-nike-airmax-1",
+          3
+        ],
+        [
+          "shoe-supreme-nike-airmax-collab",
+          2
+        ],
+        [
+          "shoe-nike-jordan-1-high-royal-2017",
+          2
+        ],
+        [
+          "shoe-nike-superfly-broad",
+          1
+        ],
+        [
+          "shoe-nike-airmax-97",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-high-satin-bred",
+      "brand": "Nike",
+      "modelName": "Air Jordan 1 High OG Satin Bred",
+      "query": "Nike Air",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 85,
+      "topSpread": [
+        [
+          "shoe-nike-airmax-1",
+          3
+        ],
+        [
+          "shoe-supreme-nike-airmax-collab",
+          2
+        ],
+        [
+          "shoe-nike-jordan-1-high-royal-2017",
+          2
+        ],
+        [
+          "shoe-nike-superfly-broad",
+          1
+        ],
+        [
+          "shoe-nike-airmax-97",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-low-travis-scott-mocha",
+      "brand": "Nike",
+      "modelName": "Air Jordan 1 Low OG SP Travis Scott Mocha",
+      "query": "Nike Air",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 85,
+      "topSpread": [
+        [
+          "shoe-nike-airmax-1",
+          3
+        ],
+        [
+          "shoe-supreme-nike-airmax-collab",
+          2
+        ],
+        [
+          "shoe-nike-jordan-1-high-royal-2017",
+          2
+        ],
+        [
+          "shoe-nike-superfly-broad",
+          1
+        ],
+        [
+          "shoe-nike-airmax-97",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-low-unc",
+      "brand": "Nike",
+      "modelName": "Air Jordan 1 Low OG UNC",
+      "query": "Nike Air",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 85,
+      "topSpread": [
+        [
+          "shoe-nike-airmax-1",
+          3
+        ],
+        [
+          "shoe-supreme-nike-airmax-collab",
+          2
+        ],
+        [
+          "shoe-nike-jordan-1-high-royal-2017",
+          2
+        ],
+        [
+          "shoe-nike-superfly-broad",
+          1
+        ],
+        [
+          "shoe-nike-airmax-97",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-low-reverse-mocha",
+      "brand": "Nike",
+      "modelName": "Air Jordan 1 Low OG SP Travis Scott Reverse Mocha",
+      "query": "Nike Air",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 85,
+      "topSpread": [
+        [
+          "shoe-nike-airmax-1",
+          3
+        ],
+        [
+          "shoe-supreme-nike-airmax-collab",
+          2
+        ],
+        [
+          "shoe-nike-jordan-1-high-royal-2017",
+          2
+        ],
+        [
+          "shoe-nike-superfly-broad",
+          1
+        ],
+        [
+          "shoe-nike-airmax-97",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-4-bred-reimagined",
+      "brand": "Nike",
+      "modelName": "Air Jordan 4 Retro Bred Reimagined",
+      "query": "Nike Air",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 85,
+      "topSpread": [
+        [
+          "shoe-nike-airmax-1",
+          3
+        ],
+        [
+          "shoe-supreme-nike-airmax-collab",
+          2
+        ],
+        [
+          "shoe-nike-jordan-1-high-royal-2017",
+          2
+        ],
+        [
+          "shoe-nike-superfly-broad",
+          1
+        ],
+        [
+          "shoe-nike-airmax-97",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-4-military-black",
+      "brand": "Nike",
+      "modelName": "Air Jordan 4 Retro Military Black",
+      "query": "Nike Air",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 85,
+      "topSpread": [
+        [
+          "shoe-nike-airmax-1",
+          3
+        ],
+        [
+          "shoe-supreme-nike-airmax-collab",
+          2
+        ],
+        [
+          "shoe-nike-jordan-1-high-royal-2017",
+          2
+        ],
+        [
+          "shoe-nike-superfly-broad",
+          1
+        ],
+        [
+          "shoe-nike-airmax-97",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-panda",
+      "brand": "Nike",
+      "modelName": "Nike Dunk Low Retro White Black Panda",
+      "query": "Nike Nike",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 86,
+      "topSpread": [
+        [
+          "shoe-nike-airforce-1-low-white",
+          2
+        ],
+        [
+          "shoe-nike-tailwind-79",
+          2
+        ],
+        [
+          "shoe-nike-shox-r4-broad",
+          1
+        ],
+        [
+          "shoe-stussy-nike-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-sb-collab",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 화이트 져지 L",
+        "데일리중목 면양말(10족)무배",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)",
+        "나이키 아노락 바람막이 집업"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-reverse-panda",
+      "brand": "Nike",
+      "modelName": "Nike Dunk Low Reverse Panda",
+      "query": "Nike Nike",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 86,
+      "topSpread": [
+        [
+          "shoe-nike-airforce-1-low-white",
+          2
+        ],
+        [
+          "shoe-nike-tailwind-79",
+          2
+        ],
+        [
+          "shoe-nike-shox-r4-broad",
+          1
+        ],
+        [
+          "shoe-stussy-nike-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-sb-collab",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 화이트 져지 L",
+        "나이키 ACG 오렌지 바람막이 자켓",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)",
+        "나이키 아노락 바람막이 집업"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-syracuse",
+      "brand": "Nike",
+      "modelName": "Nike Dunk Low SP Syracuse",
+      "query": "Nike Nike",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 86,
+      "topSpread": [
+        [
+          "shoe-nike-airforce-1-low-white",
+          2
+        ],
+        [
+          "shoe-nike-tailwind-79",
+          2
+        ],
+        [
+          "shoe-stussy-nike-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-sb-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-airforce1-collab",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "나이키 화이트 져지 L",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 ACG 오렌지 바람막이 자켓",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)",
+        "나이키 아노락 바람막이 집업"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-kentucky",
+      "brand": "Nike",
+      "modelName": "Nike Dunk Low SP Kentucky",
+      "query": "Nike Nike",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 86,
+      "topSpread": [
+        [
+          "shoe-nike-airforce-1-low-white",
+          2
+        ],
+        [
+          "shoe-nike-tailwind-79",
+          2
+        ],
+        [
+          "shoe-stussy-nike-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-sb-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-airforce1-collab",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 화이트 져지 L",
+        "데일리중목 면양말(10족)무배",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)",
+        "나이키 아노락 바람막이 집업"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-michigan",
+      "brand": "Nike",
+      "modelName": "Nike Dunk Low SP Michigan",
+      "query": "Nike Nike",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 86,
+      "topSpread": [
+        [
+          "shoe-nike-airforce-1-low-white",
+          2
+        ],
+        [
+          "shoe-nike-tailwind-79",
+          2
+        ],
+        [
+          "shoe-stussy-nike-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-sb-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-airforce1-collab",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "나이키 화이트 져지 L",
+        "데일리중목 면양말(10족)무배",
+        "남성 나이키 줌 프릭5 오레오 농구화, 운동화 (280)",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-seoul",
+      "brand": "Nike",
+      "modelName": "Nike Dunk Low Seoul",
+      "query": "Nike Nike",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 86,
+      "topSpread": [
+        [
+          "shoe-nike-airforce-1-low-white",
+          2
+        ],
+        [
+          "shoe-nike-tailwind-79",
+          2
+        ],
+        [
+          "shoe-stussy-nike-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-sb-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-airforce1-collab",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "나이키 화이트 져지 L",
+        "나이키 ACG 오렌지 바람막이 자켓",
+        "남성 나이키 줌 프릭5 오레오 농구화, 운동화 (280)",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-sb-strangelove",
+      "brand": "Nike",
+      "modelName": "Nike SB Dunk Low Strangelove",
+      "query": "Nike Nike",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 86,
+      "topSpread": [
+        [
+          "shoe-nike-airforce-1-low-white",
+          2
+        ],
+        [
+          "shoe-nike-tailwind-79",
+          2
+        ],
+        [
+          "shoe-stussy-nike-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-sb-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-airforce1-collab",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 화이트 져지 L",
+        "데일리중목 면양말(10족)무배",
+        "남성 나이키 줌 프릭5 오레오 농구화, 운동화 (280)",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-sb-chunky-dunky",
+      "brand": "Nike",
+      "modelName": "Nike SB Dunk Low Ben & Jerry's Chunky Dunky",
+      "query": "Nike Nike",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 86,
+      "topSpread": [
+        [
+          "shoe-nike-airforce-1-low-white",
+          2
+        ],
+        [
+          "shoe-nike-tailwind-79",
+          2
+        ],
+        [
+          "shoe-stussy-nike-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-sb-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-airforce1-collab",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "나이키 화이트 져지 L",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 ACG 오렌지 바람막이 자켓",
+        "남성 나이키 줌 프릭5 오레오 농구화, 운동화 (280)",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-airforce1-shadow-1972",
+      "brand": "Nike",
+      "modelName": "Nike Air Force 1 Low 1972",
+      "query": "Nike Nike",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 87,
+      "topSpread": [
+        [
+          "shoe-nike-airforce-1-low-white",
+          2
+        ],
+        [
+          "shoe-nike-tailwind-79",
+          2
+        ],
+        [
+          "shoe-stussy-nike-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-sb-collab",
+          1
+        ],
+        [
+          "shoe-supreme-nike-airforce1-collab",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "나이키 화이트 져지 L",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 ACG 오렌지 바람막이 자켓",
+        "남성 나이키 줌 프릭5 오레오 농구화, 운동화 (280)",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)"
+      ]
+    },
+    {
+      "skuId": "shoe-adidas-yeezy-350-v2-zebra",
+      "brand": "Adidas",
+      "modelName": "Adidas Yeezy Boost 350 V2 Zebra",
+      "query": "Adidas Adidas",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 69,
+      "topSpread": [
+        [
+          "clothing-adidas-trefoil",
+          13
+        ],
+        [
+          "shoe-adidas-football",
+          6
+        ],
+        [
+          "shoe-adidas-superstar-broad",
+          4
+        ],
+        [
+          "shoe-adidas-spezial",
+          1
+        ],
+        [
+          "shoe-adidas-gazelle-og-broad",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "아디다스 멕시코 신발",
+        "아디다스 레알마드리드 트레이닝탑 져지 100",
+        "아디다스 스포티앤리치 반팔 티셔츠",
+        "[정품]아디다스 골프 남성 육각 패턴 반팔 95",
+        "XXS.XS / 구찌 X 아디다스 코튼 폴로 반팔 스커트 세트",
+        "아디다스 숄더백 택 달린새상품",
+        "아디다스/트레이닝 자켓 점퍼 져지 공용160/라덴",
+        "아디다스 키즈 플라워 패턴 져지 자켓 130 0518",
+        "아디다스 체인 숄더백 블랙",
+        "구찌 아디다스 여성 점퍼 (민트)"
+      ]
+    },
+    {
+      "skuId": "shoe-adidas-yeezy-350-v2-bred",
+      "brand": "Adidas",
+      "modelName": "Adidas Yeezy Boost 350 V2 Bred Black Red",
+      "query": "Adidas Adidas",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 69,
+      "topSpread": [
+        [
+          "clothing-adidas-trefoil",
+          14
+        ],
+        [
+          "shoe-adidas-football",
+          6
+        ],
+        [
+          "shoe-adidas-superstar-broad",
+          3
+        ],
+        [
+          "shoe-adidas-spezial",
+          1
+        ],
+        [
+          "shoe-adidas-gazelle-og-broad",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "아디다스 멕시코 신발",
+        "아디다스 레알마드리드 트레이닝탑 져지 100",
+        "아디다스 스포티앤리치 반팔 티셔츠",
+        "[정품]아디다스 골프 남성 육각 패턴 반팔 95",
+        "XXS.XS / 구찌 X 아디다스 코튼 폴로 반팔 스커트 세트",
+        "아디다스 숄더백 택 달린새상품",
+        "아디다스/트레이닝 자켓 점퍼 져지 공용160/라덴",
+        "아디다스 키즈 플라워 패턴 져지 자켓 130 0518",
+        "아디다스 체인 숄더백 블랙",
+        "구찌 아디다스 여성 점퍼 (민트)"
+      ]
+    },
+    {
+      "skuId": "shoe-adidas-yeezy-350-v2-beluga",
+      "brand": "Adidas",
+      "modelName": "Adidas Yeezy Boost 350 V2 Beluga",
+      "query": "Adidas Adidas",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 70,
+      "topSpread": [
+        [
+          "clothing-adidas-trefoil",
+          14
+        ],
+        [
+          "shoe-adidas-football",
+          5
+        ],
+        [
+          "shoe-adidas-superstar-broad",
+          3
+        ],
+        [
+          "shoe-adidas-spezial",
+          1
+        ],
+        [
+          "shoe-adidas-gazelle-og-broad",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "아디다스 멕시코 신발",
+        "아디다스 레알마드리드 트레이닝탑 져지 100",
+        "아디다스 스포티앤리치 반팔 티셔츠",
+        "[정품]아디다스 골프 남성 육각 패턴 반팔 95",
+        "XXS.XS / 구찌 X 아디다스 코튼 폴로 반팔 스커트 세트",
+        "아디다스 숄더백 택 달린새상품",
+        "아디다스/트레이닝 자켓 점퍼 져지 공용160/라덴",
+        "아디다스 키즈 플라워 패턴 져지 자켓 130 0518",
+        "아디다스 체인 숄더백 블랙",
+        "구찌 아디다스 여성 점퍼 (민트)"
+      ]
+    },
+    {
+      "skuId": "shoe-adidas-yeezy-350-v2-onyx",
+      "brand": "Adidas",
+      "modelName": "Adidas Yeezy Boost 350 V2 Onyx",
+      "query": "Adidas Adidas",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 70,
+      "topSpread": [
+        [
+          "clothing-adidas-trefoil",
+          14
+        ],
+        [
+          "shoe-adidas-football",
+          5
+        ],
+        [
+          "shoe-adidas-superstar-broad",
+          3
+        ],
+        [
+          "shoe-adidas-spezial",
+          1
+        ],
+        [
+          "shoe-adidas-gazelle-og-broad",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "아디다스 멕시코 신발",
+        "아디다스 레알마드리드 트레이닝탑 져지 100",
+        "아디다스 스포티앤리치 반팔 티셔츠",
+        "[정품]아디다스 골프 남성 육각 패턴 반팔 95",
+        "XXS.XS / 구찌 X 아디다스 코튼 폴로 반팔 스커트 세트",
+        "아디다스 숄더백 택 달린새상품",
+        "아디다스/트레이닝 자켓 점퍼 져지 공용160/라덴",
+        "아디다스 키즈 플라워 패턴 져지 자켓 130 0518",
+        "아디다스 체인 숄더백 블랙",
+        "구찌 아디다스 여성 점퍼 (민트)"
+      ]
+    },
+    {
+      "skuId": "shoe-adidas-yeezy-700-wave-runner",
+      "brand": "Adidas",
+      "modelName": "Adidas Yeezy Boost 700 Wave Runner Solid Grey",
+      "query": "Adidas Adidas",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 70,
+      "topSpread": [
+        [
+          "clothing-adidas-trefoil",
+          14
+        ],
+        [
+          "shoe-adidas-football",
+          5
+        ],
+        [
+          "shoe-adidas-superstar-broad",
+          3
+        ],
+        [
+          "shoe-adidas-spezial",
+          1
+        ],
+        [
+          "shoe-adidas-gazelle-og-broad",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "아디다스 멕시코 신발",
+        "아디다스 레알마드리드 트레이닝탑 져지 100",
+        "아디다스 스포티앤리치 반팔 티셔츠",
+        "[정품]아디다스 골프 남성 육각 패턴 반팔 95",
+        "XXS.XS / 구찌 X 아디다스 코튼 폴로 반팔 스커트 세트",
+        "아디다스 숄더백 택 달린새상품",
+        "아디다스/트레이닝 자켓 점퍼 져지 공용160/라덴",
+        "아디다스 키즈 플라워 패턴 져지 자켓 130 0518",
+        "아디다스 체인 숄더백 블랙",
+        "구찌 아디다스 여성 점퍼 (민트)"
+      ]
+    },
+    {
+      "skuId": "shoe-adidas-samba-og-black",
+      "brand": "Adidas",
+      "modelName": "Adidas Samba OG Cloud White Core Black",
+      "query": "Adidas Adidas",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 71,
+      "topSpread": [
+        [
+          "clothing-adidas-trefoil",
+          14
+        ],
+        [
+          "shoe-adidas-football",
+          4
+        ],
+        [
+          "shoe-adidas-superstar-broad",
+          3
+        ],
+        [
+          "shoe-adidas-spezial",
+          1
+        ],
+        [
+          "shoe-adidas-gazelle-og-broad",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "아디다스 멕시코 신발",
+        "아디다스 레알마드리드 트레이닝탑 져지 100",
+        "아디다스 스포티앤리치 반팔 티셔츠",
+        "[정품]아디다스 골프 남성 육각 패턴 반팔 95",
+        "XXS.XS / 구찌 X 아디다스 코튼 폴로 반팔 스커트 세트",
+        "아디다스 숄더백 택 달린새상품",
+        "아디다스/트레이닝 자켓 점퍼 져지 공용160/라덴",
+        "아디다스 키즈 플라워 패턴 져지 자켓 130 0518",
+        "아디다스 체인 숄더백 블랙",
+        "아디다스 퀄팅자켓 깔깔이"
+      ]
+    },
+    {
+      "skuId": "shoe-adidas-samba-wales-bonner-black-green",
+      "brand": "Adidas",
+      "modelName": "Adidas x Wales Bonner Samba Black Green",
+      "query": "Adidas Adidas",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 70,
+      "topSpread": [
+        [
+          "clothing-adidas-trefoil",
+          14
+        ],
+        [
+          "shoe-adidas-football",
+          5
+        ],
+        [
+          "shoe-adidas-superstar-broad",
+          3
+        ],
+        [
+          "shoe-adidas-spezial",
+          1
+        ],
+        [
+          "shoe-adidas-gazelle-og-broad",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "아디다스 멕시코 신발",
+        "아디다스 레알마드리드 트레이닝탑 져지 100",
+        "아디다스 스포티앤리치 반팔 티셔츠",
+        "[정품]아디다스 골프 남성 육각 패턴 반팔 95",
+        "XXS.XS / 구찌 X 아디다스 코튼 폴로 반팔 스커트 세트",
+        "아디다스 숄더백 택 달린새상품",
+        "아디다스/트레이닝 자켓 점퍼 져지 공용160/라덴",
+        "아디다스 키즈 플라워 패턴 져지 자켓 130 0518",
+        "아디다스 체인 숄더백 블랙",
+        "아디다스 퀄팅자켓 깔깔이"
+      ]
+    },
+    {
+      "skuId": "shoe-adidas-gazelle-indoor-bold-orange",
+      "brand": "Adidas",
+      "modelName": "Adidas Gazelle Indoor Bold Orange",
+      "query": "Adidas Adidas",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 70,
+      "topSpread": [
+        [
+          "clothing-adidas-trefoil",
+          14
+        ],
+        [
+          "shoe-adidas-football",
+          5
+        ],
+        [
+          "shoe-adidas-superstar-broad",
+          3
+        ],
+        [
+          "shoe-adidas-spezial",
+          1
+        ],
+        [
+          "shoe-adidas-gazelle-og-broad",
+          1
+        ]
+      ],
+      "unmatchedSamples": [
+        "아디다스 멕시코 신발",
+        "아디다스 레알마드리드 트레이닝탑 져지 100",
+        "아디다스 스포티앤리치 반팔 티셔츠",
+        "[정품]아디다스 골프 남성 육각 패턴 반팔 95",
+        "XXS.XS / 구찌 X 아디다스 코튼 폴로 반팔 스커트 세트",
+        "아디다스 숄더백 택 달린새상품",
+        "아디다스/트레이닝 자켓 점퍼 져지 공용160/라덴",
+        "아디다스 키즈 플라워 패턴 져지 자켓 130 0518",
+        "아디다스 체인 숄더백 블랙",
+        "[235] 아디다스 도쿄 데콘 스니커즈 그린 미시착"
+      ]
+    },
+    {
+      "skuId": "shoe-newbalance-9060-grey-day",
+      "brand": "New Balance",
+      "modelName": "New Balance 9060 Grey Day",
+      "query": "New Balance New",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 78,
+      "topSpread": [
+        [
+          "shoe-newbalance-327-broad",
+          6
+        ],
+        [
+          "shoe-newbalance-993",
+          3
+        ],
+        [
+          "shoe-newbalance-992",
+          2
+        ],
+        [
+          "shoe-newbalance-574-broad",
+          2
+        ],
+        [
+          "shoe-newbalance-990v5",
+          2
+        ]
+      ],
+      "unmatchedSamples": [
+        "뉴 발란스 New Balance u327 스니커즈 270",
+        "(무료배송) 뉴발란스 UNI 뉴보이 바시티 패딩 자켓",
+        "[270] 뉴발란스 뉴메릭 1010 티아고 레모스 된장",
+        "뉴 애트모스 x 뉴발란스 NB 2002R 베이지 프리미엄 런닝화",
+        "빈티지하서 275 뉴발란스 프레쉬폼 1080 v14 페일 모스 뉴 스프러",
+        "110] 뉴발란스(new bclance)반팔티",
+        "뉴발란스 Classic is New 반팔 티셔츠 블랙",
+        "뉴트로스페이스 뉴스스 빈티지 커스텀 뉴발란스 홀커 그레이 집업",
+        "뉴발란스 블랙 맨투맨 Classic is New S",
+        "뉴발란스 뉴비130"
+      ]
+    },
+    {
+      "skuId": "shoe-newbalance-990v6-grey",
+      "brand": "New Balance",
+      "modelName": "New Balance 990v6 Made in USA Grey",
+      "query": "New Balance New",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 78,
+      "topSpread": [
+        [
+          "shoe-newbalance-327-broad",
+          6
+        ],
+        [
+          "shoe-newbalance-993",
+          3
+        ],
+        [
+          "shoe-newbalance-992",
+          2
+        ],
+        [
+          "shoe-newbalance-574-broad",
+          2
+        ],
+        [
+          "shoe-newbalance-990v5",
+          2
+        ]
+      ],
+      "unmatchedSamples": [
+        "뉴 발란스 New Balance u327 스니커즈 270",
+        "(무료배송) 뉴발란스 UNI 뉴보이 바시티 패딩 자켓",
+        "[270] 뉴발란스 뉴메릭 1010 티아고 레모스 된장",
+        "뉴 애트모스 x 뉴발란스 NB 2002R 베이지 프리미엄 런닝화",
+        "빈티지하서 275 뉴발란스 프레쉬폼 1080 v14 페일 모스 뉴 스프러",
+        "110] 뉴발란스(new bclance)반팔티",
+        "뉴발란스 Classic is New 반팔 티셔츠 블랙",
+        "뉴트로스페이스 뉴스스 빈티지 커스텀 뉴발란스 홀커 그레이 집업",
+        "뉴발란스 블랙 맨투맨 Classic is New S",
+        "뉴발란스 뉴비130"
+      ]
+    },
+    {
+      "skuId": "shoe-newbalance-990v6-triple-black",
+      "brand": "New Balance",
+      "modelName": "New Balance 990v6 Made in USA Triple Black",
+      "query": "New Balance New",
+      "fetched": 96,
+      "tp": 0,
+      "tpRate": 0,
+      "unmatched": 78,
+      "topSpread": [
+        [
+          "shoe-newbalance-327-broad",
+          6
+        ],
+        [
+          "shoe-newbalance-993",
+          3
+        ],
+        [
+          "shoe-newbalance-992",
+          2
+        ],
+        [
+          "shoe-newbalance-574-broad",
+          2
+        ],
+        [
+          "shoe-newbalance-990v5",
+          2
+        ]
+      ],
+      "unmatchedSamples": [
+        "뉴 발란스 New Balance u327 스니커즈 270",
+        "(무료배송) 뉴발란스 UNI 뉴보이 바시티 패딩 자켓",
+        "[270] 뉴발란스 뉴메릭 1010 티아고 레모스 된장",
+        "뉴 애트모스 x 뉴발란스 NB 2002R 베이지 프리미엄 런닝화",
+        "빈티지하서 275 뉴발란스 프레쉬폼 1080 v14 페일 모스 뉴 스프러",
+        "110] 뉴발란스(new bclance)반팔티",
+        "뉴발란스 Classic is New 반팔 티셔츠 블랙",
+        "뉴트로스페이스 뉴스스 빈티지 커스텀 뉴발란스 홀커 그레이 집업",
+        "뉴발란스 블랙 맨투맨 Classic is New S",
+        "뉴발란스 뉴비130"
+      ]
+    }
+  ],
+  "highTypeUnknownSkus": [
+    {
+      "skuId": "shoe-nike-jordan-1-high-chicago-lost-and-found",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-high-royal-2017",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-high-bred-toe",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-high-unc-2016",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-high-shadow-2-0",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-high-satin-bred",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-low-travis-scott-mocha",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-low-unc",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-1-low-reverse-mocha",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-4-bred-reimagined",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-jordan-4-military-black",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "나이키 Nike Air Max Triax 96 usa 270",
+        "나이키 AIR 하프집업 후드 블랙 XXL",
+        "S 나이키 AIR 라운드 반팔티 B.8061",
+        "Nike Air Terra Humara SP 나이키 에어 테라 휴마라",
+        "265 나이키 에어 줌 테니스 클래식 AC 프라그먼트 NIKE AIR",
+        "나이키 AIR 캠프 자켓 그레이 블루 S",
+        "90s 나이키 AIR 흰색 반팔 티셔츠",
+        "M 나이키 AIR 라운드 반팔티 N.8339",
+        "나이키 에어맥스 SNDR 고어텍스 NIKE Air Max Gore-Tex",
+        "나이키 x 슈프림 에어 포스 1 로우 블랙 NIKE SUPREME AIR"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-panda",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 화이트 져지 L",
+        "데일리중목 면양말(10족)무배",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)",
+        "나이키 아노락 바람막이 집업"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-reverse-panda",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 화이트 져지 L",
+        "나이키 ACG 오렌지 바람막이 자켓",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)",
+        "나이키 아노락 바람막이 집업"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-syracuse",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "나이키 화이트 져지 L",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 ACG 오렌지 바람막이 자켓",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)",
+        "나이키 아노락 바람막이 집업"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-kentucky",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 화이트 져지 L",
+        "데일리중목 면양말(10족)무배",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)",
+        "나이키 아노락 바람막이 집업"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-michigan",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "나이키 화이트 져지 L",
+        "데일리중목 면양말(10족)무배",
+        "남성 나이키 줌 프릭5 오레오 농구화, 운동화 (280)",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-seoul",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "나이키 화이트 져지 L",
+        "나이키 ACG 오렌지 바람막이 자켓",
+        "남성 나이키 줌 프릭5 오레오 농구화, 운동화 (280)",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-sb-strangelove",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "나이키 화이트 져지 L",
+        "데일리중목 면양말(10족)무배",
+        "남성 나이키 줌 프릭5 오레오 농구화, 운동화 (280)",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-dunk-low-sb-chunky-dunky",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "나이키 화이트 져지 L",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 ACG 오렌지 바람막이 자켓",
+        "남성 나이키 줌 프릭5 오레오 농구화, 운동화 (280)",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)"
+      ]
+    },
+    {
+      "skuId": "shoe-nike-airforce1-shadow-1972",
+      "category": "shoe",
+      "fetched": 96,
+      "typeUnknown": 96,
+      "typeUnknownRate": 100,
+      "typeUnknownSamples": [
+        "#(정품/새상품) 스튜시 나이키 반팔티 판매합니다~",
+        "나이키 화이트 져지 L",
+        "나이키 NBA브루클린 카이리  네츠 져지 11번 XL",
+        "270) 나이키 꼼데가르송 에어맥스 tl 블랙 270사이즈",
+        "나이키 스트라이드 러닝팬츠 XL",
+        "정품)새상품 나이키 에어포스 1 07 로우 스니커즈 3가지컬러",
+        "나이키 ACG 오렌지 바람막이 자켓",
+        "남성 나이키 줌 프릭5 오레오 농구화, 운동화 (280)",
+        "나이키 GT 컷 아카데미 2 EP 화이트 급처 후려친 가격",
+        "여성 나이키 에어 줌 인피니티 투어 화이트 골프화  (235)"
+      ]
+    }
+  ]
+}

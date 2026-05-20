@@ -339,12 +339,13 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...SHOE_COMMON_NOISE,
-      // 콜라보
+      // 콜라보 (Wave 266b API sweep — 62건 sakai 콜라보 catch)
       "stussy", "스투시",
       "supreme", "슈프림",
       "louis vuitton", "루이비통",
       "kendrick lamar", "켄드릭",
       "off-white", "오프화이트",
+      "sakai", "사카이",
     ],
     msrpKrw: 119000,
     released: 1972,
@@ -727,8 +728,11 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
     mustNotContain: [
       ...SHOE_COMMON_NOISE,
       ...SHOE_HIGH_END_NOISE,
-      "가방", "백팩", "토트", "숄더", "크로스백", "벨트", "belt", "키링",
-      "캡", "모자", "후드", "티셔츠",
+      // Wave 266b API sweep 발견 — 57건 bag-gucci-gg-marmont-mini query 결과에서 신발이 잡힘.
+      //   bag 카테고리 매물 차단 (가방/숄더/토트/크로스백/백팩/포셰트 등).
+      "가방", "백팩", "토트", "숄더", "크로스백", "shoulder", "shopper", "tote", "pochette", "포셰트",
+      "벨트", "belt", "키링", "키체인",
+      "캡", "모자", "후드티", "티셔츠", "셔츠 ",
       // 콜라보 (아디다스 콜라보 별도)
       "adidas x gucci", "gucci x adidas", "아디다스 x 구찌",
     ],

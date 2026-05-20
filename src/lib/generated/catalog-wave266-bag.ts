@@ -115,11 +115,21 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
       // 별도 narrow SKU
       "marmont mini", "마몽 미니",
       "marmont camera", "마몽 카메라",
-      "dionysus mini", "디오니소스 미니",
-      "jackie mini", "재키 미니",
+      "dionysus mini", "디오니소스 미니", "디오니소스",
+      "jackie mini", "재키 미니", "재키 1961",
       "supreme card", "카드지갑",
-      // 의류/신발
+      // Wave 266b API sweep 발견 — 229건 contamination. narrow keyword 강화.
+      "오피디아", "ophidia",
+      "마몽 슈퍼미니", "marmont super mini", "마몽 백팩",
+      "gg 마몽", "gg marmont", "더블 g 마몽",
+      "재키", "jackie",
+      "gg 캔버스 쇼퍼", "gg supreme shopper", "gg 캔버스 토트",
+      "수프림 캔버스", "supreme canvas",
+      "혹스턴", "horsebit",
+      "실비", "sylvie", "뱀부", "bamboo",
+      // 의류/신발/액세서리
       "신발", "스니커즈", "벨트", "스카프", "후드티",
+      "키링", "키체인",
     ],
     msrpKrw: 1990000,
     released: 2024,
@@ -203,6 +213,15 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
       "tessuto vintage",
       "pocono vintage",
       "nylon hobo",
+      // Wave 266b API sweep 발견 — 209건 contamination. narrow keyword 강화.
+      "리나일론", "re-nylon", "re nylon",
+      "사피아노", "saffiano",
+      "테수토", "tessuto",
+      "포코노", "pocono",
+      "갈레리아", "galleria",
+      "심볼", "symbole",
+      "트라이앵글", "triangle",
+      "클리오", "cleo",
       "신발", "스니커즈", "벨트", "스카프",
       // 향수
       "퍼퓸", "perfume", "향수", "edp", "edt", "ml ",
@@ -233,6 +252,12 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
       "trio medium", "트리오 미디엄",
       "trio pouch",
       "vintage macadam",
+      // Wave 266b API sweep 발견 — 92건 contamination. narrow keyword 강화.
+      "트리옹프", "triomphe",
+      "셀린느 클로드", "claude",
+      "벨트 백", "belt bag",
+      "16 백", "16 bag",
+      "보스턴 백", "boston bag",  // 트리옹프 모델 다수
       // 향수
       "퍼퓸", "perfume", "향수", "edp", "edt", "ml ",
       "신발", "벨트",
@@ -401,8 +426,12 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
       ...WALLET_NOISE,
       // 별도 narrow
       "5ac mini",
-      // 의류 별도 (MM6 의류)
-      "티셔츠", "후드티", "맨투맨", "자켓 ", "셔츠 ",
+      // Wave 266b API sweep 발견 — 64건 contamination. 5AC 전 사이즈 (mini/small/medium/large) 모두 narrow에 맡김.
+      "5ac",
+      "글램 슬램", "glam slam",
+      "재팬 백", "japanese bag",
+      // 의류 별도 (MM6 의류) — 반팔/티셔츠 강화
+      "티셔츠", "후드티", "맨투맨", "자켓 ", "셔츠 ", "반팔", "반팔티",
       // 살로몬 콜라보 (신발)
       "살로몬", "salomon", "xt-4",
       // 향수 (Replica)
@@ -577,9 +606,11 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
       ...BAG_COMMON_NOISE,
       ...WALLET_NOISE,
       // 의류
-      "셔츠", "팬츠", "자켓", "코트", "후드티", "맨투맨", "티셔츠",
+      "셔츠", "팬츠", "자켓", "코트", "후드티", "맨투맨", "티셔츠", "반팔", "반팔티",
       // 신발 콜라보 (살로몬 등)
       "살로몬", "converse", "컨버스",
+      // Wave 266b API sweep 발견 — PVC 가방 narrow 가능. broad는 PVC 외 일반 catch.
+      "pvc",
     ],
     msrpKrw: 290000,
     released: 2024,
@@ -604,6 +635,8 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
       ...WALLET_NOISE,
       "tom ford", "톰포드",  // 다른 브랜드
       "셔츠", "팬츠", "자켓", "코트",
+      // Wave 266b API sweep 발견 — 71건 contamination (의류 반팔티 다수).
+      "반팔", "반팔티", "티셔츠", "tee ", "후드", "맨투맨", "포켓 반팔", "포켓 티",
     ],
     msrpKrw: 1490000,
     released: 2024,

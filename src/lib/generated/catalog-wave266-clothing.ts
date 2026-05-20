@@ -75,6 +75,10 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "rrl", "double rl",
       "polo bear", "bear sweater", "곰", "베어",
       "purple label", "퍼플라벨", "rlx",
+      // Wave 266b API sweep — 75건 contamination (pony/oxford narrow가 우선이어야 함).
+      "빅포니", "big pony", "포니",  // → clothing-polo-pony-tee
+      "옥스포드 셔츠", "oxford shirt", "옥스퍼드",  // → clothing-polo-oxford-shirt
+      "피케 폴로", "피케 셔츠", "pique polo", "pique",  // → clothing-polo-pique-classic
       // 자체 colab
       "supreme x polo", "polo x supreme",
     ],
