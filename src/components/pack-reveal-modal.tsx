@@ -129,6 +129,7 @@ type RecommendationFeatureCard = {
 const UI_TEST_FALLBACK_VELOCITY_HOURS = 48;
 const VELOCITY_UI_TEST_ENABLED =
   typeof process !== "undefined" && process.env.NEXT_PUBLIC_VELOCITY_UI_TEST === "1";
+const DEFAULT_BUYER_SHIPPING_FEE_MAX = 3_500;
 
 const TRANSACTION_STATUS_LABEL: Record<TransactionFeedbackType, string> = {
   contacted: "문의함",
@@ -716,7 +717,7 @@ function buyCostGuideStep(card: RevealCard): BeginnerGuideStep {
     ? `판매자는 무료배송으로 올렸어요. 그래도 실제 거래 전에 배송비를 누가 부담하는지 한 번 더 확인하고, 현재 매입가는 상품가 ${krw(card.price)} 기준으로 봅니다.`
     : snapshot.shippingValueLabel === "확인 필요"
       ? `상품가격은 ${krw(card.price)}예요. 배송비는 아직 확인이 필요해서, 실제 매입가는 상품가에 배송비를 더해서 봐야 합니다.`
-      : `상품가격은 ${krw(card.price)}예요. 여기에 내가 낼 배송비 ${snapshot.shippingValueLabel}를 더해서 실제 매입가는 ${snapshot.buyerCostLabel}로 봅니다.`;
+      : `상품가격은 ${krw(card.price)}예요. 배송비는 ${snapshot.shippingValueLabel}로 보수적으로 잡아서 실제 매입가를 ${snapshot.buyerCostLabel}로 봅니다.`;
 
   return {
     eyebrow: "5. 매입가",
@@ -1102,60 +1103,52 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
 }
 
 function costAssuranceSnapshot(card: RevealCard) {
-  const salePrice = finiteKrw(card.marketBasis?.medianPrice);
-  const sellingFee = salePrice == null ? null : Math.round(salePrice * SELLING_FEE_RATE);
   const freeShipping = Boolean(card.savedDetail?.freeShipping);
-  const inferredBuyCostMin = salePrice == null || sellingFee == null
+  const buyerShippingLow = 0;
+  const buyerShippingHigh = freeShipping ? 0 : DEFAULT_BUYER_SHIPPING_FEE_MAX;
+  const buyCostLow = card.price + buyerShippingLow;
+  const buyCostHigh = card.price + buyerShippingHigh;
+  const buyerCostLabel = krwRange(buyCostLow, buyCostHigh);
+  const profitBasisSaleLow = resalePriceFromProfit(card.expectedProfitMin, buyCostHigh);
+  const profitBasisSaleHigh = resalePriceFromProfit(card.expectedProfitMax, buyCostLow);
+  const fallbackSalePrice = finiteKrw(card.marketBasis?.medianPrice);
+  const salePriceLow = profitBasisSaleLow ?? fallbackSalePrice;
+  const salePriceHigh = profitBasisSaleHigh ?? salePriceLow;
+  const salePrice = salePriceLow == null || salePriceHigh == null
     ? null
-    : finiteKrw(salePrice - card.expectedProfitMax - sellingFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
-  const inferredBuyCostMax = salePrice == null || sellingFee == null
-    ? null
-    : finiteKrw(salePrice - card.expectedProfitMin - sellingFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
-  const buyCostLow = freeShipping
-    ? card.price
-    : inferredBuyCostMin == null
-      ? null
-      : Math.max(card.price, Math.min(inferredBuyCostMin, inferredBuyCostMax ?? inferredBuyCostMin));
-  const buyCostHigh = freeShipping
-    ? card.price
-    : inferredBuyCostMax == null
-      ? null
-      : Math.max(buyCostLow ?? card.price, Math.max(inferredBuyCostMax, inferredBuyCostMin ?? inferredBuyCostMax));
-  const shippingLow = buyCostLow == null ? null : Math.max(0, buyCostLow - card.price);
-  const shippingHigh = buyCostHigh == null ? null : Math.max(shippingLow ?? 0, buyCostHigh - card.price);
-  const shippingKnown = freeShipping || shippingLow != null;
-  const buyerCostLabel = buyCostLow == null || buyCostHigh == null
-    ? `${krw(card.price)} + 배송비 확인`
-    : krwRange(buyCostLow, buyCostHigh);
+    : Math.round((salePriceLow + salePriceHigh) / 2);
+  const salePriceLabel = salePriceLow == null || salePriceHigh == null
+    ? "시세 확인 중"
+    : krwRange(Math.min(salePriceLow, salePriceHigh), Math.max(salePriceLow, salePriceHigh));
+  const sellingFee = salePrice == null ? null : Math.round(salePrice * SELLING_FEE_RATE);
   const shippingLabel = freeShipping
     ? "0원 · 무료배송 확인"
-    : shippingLow == null || shippingHigh == null
-      ? "확인 필요"
-      : `${krwRange(shippingLow, shippingHigh)} 계산 반영`;
+    : `${krwRange(buyerShippingLow, buyerShippingHigh)} 보수 반영`;
   const confidenceLabel = freeShipping
     ? "배송비 확인됨"
-    : shippingKnown
-      ? "배송비 계산 반영"
-      : "비용 확인 필요";
+    : "배송비 확인 필요";
   const confidenceClass = freeShipping
     ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
-    : shippingKnown
-      ? "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-200"
-      : "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200";
+    : "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200";
 
   return {
     salePrice,
+    salePriceLabel,
     sellingFee,
     buyerCostLabel,
     shippingLabel,
     shippingValueLabel: freeShipping
       ? "판매자 무료배송"
-      : shippingLow == null || shippingHigh == null
-        ? "확인 필요"
-        : krwRange(shippingLow, shippingHigh),
+      : krwRange(buyerShippingLow, buyerShippingHigh),
     confidenceLabel,
     confidenceClass,
   };
+}
+
+function resalePriceFromProfit(profit: number, buyCost: number) {
+  const denominator = 1 - SELLING_FEE_RATE;
+  if (!Number.isFinite(profit) || !Number.isFinite(buyCost) || denominator <= 0) return null;
+  return finiteKrw((profit + buyCost + RESELL_SHIPPING_FEE + SAFETY_BUFFER) / denominator);
 }
 
 // Wave 2026-05-19 v2 (외부인 #7 권장 매입가 프레임):
@@ -3596,7 +3589,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
     ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
     : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200";
   const profitFormula = snapshot.salePrice != null
-    ? `시세 ${krw(snapshot.salePrice)} − 매입 ${snapshot.buyerCostLabel} − 비용`
+    ? `수익 기준 시세 ${snapshot.salePriceLabel} − 매입 ${snapshot.buyerCostLabel} − 비용`
     : `매입 ${snapshot.buyerCostLabel} − 비용 확인`;
 
   return (
@@ -4420,7 +4413,7 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
 function BeginnerGuideResellCostVisual({ card }: { card: RevealCard }) {
   const snapshot = costAssuranceSnapshot(card);
   const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
-  const salePriceLabel = snapshot.salePrice == null ? "시세 확인 중" : krw(snapshot.salePrice);
+  const salePriceLabel = snapshot.salePriceLabel;
   const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`;
 
   return (
@@ -4436,7 +4429,7 @@ function BeginnerGuideResellCostVisual({ card }: { card: RevealCard }) {
       </div>
       <div className="divide-y divide-[#eee5d8] border-y border-[#eee5d8] dark:divide-zinc-800 dark:border-zinc-800">
         <div className="flex items-center justify-between gap-4 px-4 py-3">
-          <span className="text-[13px] font-black text-[#172019] dark:text-zinc-50">되팔 시세</span>
+          <span className="text-[13px] font-black text-[#172019] dark:text-zinc-50">수익 기준 시세</span>
           <span className="text-[15px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{salePriceLabel}</span>
         </div>
         <div className="flex items-center justify-between gap-4 px-4 py-3">

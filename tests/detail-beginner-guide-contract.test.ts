@@ -171,6 +171,23 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.doesNotMatch(modal, /무조건|본전|수익 보장|돈을 벌|얼마를 벌/);
 });
 
+test("cost assurance does not turn market delta into buyer shipping", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const snapshot = modal.slice(
+    modal.indexOf("function costAssuranceSnapshot"),
+    modal.indexOf("// Wave 2026-05-19 v2"),
+  );
+
+  assert.match(modal, /DEFAULT_BUYER_SHIPPING_FEE_MAX = 3_500/);
+  assert.match(snapshot, /buyerShippingLow = 0/);
+  assert.match(snapshot, /buyerShippingHigh = freeShipping \? 0 : DEFAULT_BUYER_SHIPPING_FEE_MAX/);
+  assert.match(snapshot, /resalePriceFromProfit\(card\.expectedProfitMin, buyCostHigh\)/);
+  assert.match(snapshot, /resalePriceFromProfit\(card\.expectedProfitMax, buyCostLow\)/);
+  assert.match(modal, /수익 기준 시세/);
+  assert.doesNotMatch(snapshot, /salePrice - card\.expectedProfit/);
+  assert.doesNotMatch(snapshot, /buyCostLow - card\.price/);
+});
+
 test("market velocity reads the stable all-condition materialization", () => {
   const packOpen = source("src/lib/pack-open.ts");
   const sync = source("scripts/sync-market-velocity.mjs");
