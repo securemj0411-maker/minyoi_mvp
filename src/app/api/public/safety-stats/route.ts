@@ -103,6 +103,8 @@ export async function GET(request: Request) {
       listingCallout, listingCommercial, listingBuying, listingMulti,
       // 파싱 단계 차단 (needs_review)
       needsReview,
+      // 전체 후보 모수: "전체 X건 중 Y건" 표시용. pool 기준 live/rejected 후보를 함께 본다.
+      poolReviewed,
     ] = await Promise.all([
       // 1) 가격 dummy (셀러 거래 거부 표시 매물)
       countHead("mvp_raw_listings", rawQuery(`select=pid&price=gte.10000000&first_seen_at=gte.${since24h}`)),
@@ -146,6 +148,8 @@ export async function GET(request: Request) {
       countHead("mvp_raw_listings", rawQuery(`select=pid&listing_type=eq.multi&first_seen_at=gte.${since24h}`)),
       // 21) needs_review (파싱 단계 — 모델 식별 실패. listing_parsed JOIN)
       countHead("mvp_listing_parsed", parsedQuery(`select=pid&needs_review=eq.true&parsed_at=gte.${since24h}`)),
+      // 22) 추천 후보 pool 전체 모수 (표시용 denominator)
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&updated_at=gte.${since24h}`)),
     ]);
 
     const wholesalerTotal = wholesalerComment + wholesalerQty + sellerMulti + multiIdFraud;
@@ -156,11 +160,13 @@ export async function GET(request: Request) {
     // 2026-05-16 (2차): 진짜 차단 total — 수집 + 파싱 + 풀 단계 모두 합산.
     // 사용자 코멘트: "invalidate도 차단이고, 진짜 차단 수 훨씬 큼".
     const totalBlocked7d = safetyTotal + collectionStageTotal + needsReview + poolInvalidate;
+    const totalReviewed7d = Math.max(poolReviewed + safetyTotal + collectionStageTotal + needsReview, totalBlocked7d);
 
     return NextResponse.json({
       stats: {
         // 사용자 표시용 핵심 숫자 — 이번 주 차단 매물 총합
         total_blocked_7d: totalBlocked7d,
+        total_reviewed_7d: totalReviewed7d,
         // 카테고리별 breakdown
         price_dummy_7d: priceDummy,
         fake_or_lock_7d: fakeLock,

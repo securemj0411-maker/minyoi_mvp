@@ -344,6 +344,7 @@ type BeginnerGuideStep = {
 
 type BeginnerGuideSafetyStats = {
   total_blocked_7d?: number;
+  total_reviewed_7d?: number;
   fake_or_lock_7d?: number;
   profit_low_7d?: number;
   suspicious_price_7d?: number;
@@ -411,11 +412,11 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
 
   if (rating != null && rating >= 4.8 && reviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT) {
     return {
-      eyebrow: "2. 판매자 신뢰",
+      eyebrow: "4. 판매자 신뢰",
       title: "먼저 상품과 판매자를 같이 봐요",
       metric: `후기 ${reviewLabel}건`,
       metricLabel: `평점 ${rating.toFixed(1)}점`,
-      body: `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점으로 신뢰가 있는 판매자예요.`,
+      body: `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점이라 신뢰 신호가 있는 편이에요.`,
       // Wave 394.7.y: 안전결제 step 흡수 — 신뢰 강함이라도 앱 안 결제 룰 한 줄로 강조.
       note: "그래도 거래는 번개장터 앱 안 안전결제로만 진행하세요. 물건 받고 확인한 뒤 구매확정 누르는 흐름이에요.",
       valueNote: "후기 수와 평점을 같이 봐서, 평점만 높고 거래 이력이 적은 계정에 속지 않게 봅니다.",
@@ -425,13 +426,13 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
 
   if (rating != null && reviewCount > 0) {
     return {
-      eyebrow: "2. 판매자 신뢰",
+      eyebrow: "4. 판매자 신뢰",
       title: "먼저 상품과 판매자를 같이 봐요",
       metric: `후기 ${reviewLabel}건`,
       metricLabel: `평점 ${rating.toFixed(1)}점`,
       body: reviewCount < SELLER_TRUST_MIN_REVIEW_COUNT
         ? `평점은 ${rating.toFixed(1)}점이지만 후기가 ${reviewLabel}건이라 아직 판단 표본이 적어요. 안전결제와 실제 상태 확인을 조금 더 보수적으로 보면 좋아요.`
-        : `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점이에요. 안전결제와 실제 상태 확인을 같이 보면 좋아요.`,
+        : `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점이라 신뢰 신호가 있는 편이에요. 안전결제와 실제 상태 확인을 같이 보면 좋아요.`,
       // Wave 394.7.y: 안전결제 흡수.
       note: "거래는 번개장터 앱 안 안전결제로만 진행하고, 물건 받아 상태 확인한 뒤 구매확정을 누르세요. 외부 계좌이체나 외부 링크 결제는 피하는 게 좋아요.",
       valueNote: "후기 표본, 평점, 안전결제 흐름을 한 번에 묶어서 판매자 신뢰도를 보수적으로 봅니다.",
@@ -440,7 +441,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   return {
-    eyebrow: "2. 판매자 신뢰",
+    eyebrow: "4. 판매자 신뢰",
     title: "먼저 상품과 판매자를 같이 봐요",
     metric: reviewCount > 0 ? `후기 ${reviewLabel}건` : "후기 없음",
     metricLabel: rating == null ? "평점 없음" : `평점 ${rating.toFixed(1)}점`,
@@ -595,7 +596,7 @@ function purchaseCheckGuideStep(card: RevealCard): BeginnerGuideStep {
   const checks = beginnerPurchaseChecks(card);
   const first = checks[0];
   return {
-    eyebrow: "9. 구매 전 체크",
+    eyebrow: "8. 구매 전 체크",
     title: "구매 전에 이것만 물어보면 돼요",
     metric: `${checks.length.toLocaleString("ko-KR")}개 체크`,
     metricLabel: first ? first.title : "구매 전 질문",
@@ -631,13 +632,13 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
         : `${groupLabel} 기준과 거의 비슷한 가격이에요.`;
 
     return {
-      eyebrow: "3. 비교 매물",
+      eyebrow: "2. 비교 매물",
       title,
       metric,
       metricLabel: `비슷한 상태 시세 ${krw(median)} · 이 매물 ${krw(card.price)}`,
       body,
       note: sampleCount > 0
-        ? `비교 표본 ${sampleCount.toLocaleString("ko-KR")}건 중 일부를 먼저 보여드릴게요.`
+        ? `총 ${sampleCount.toLocaleString("ko-KR")}건 중 비싼 순 일부를 먼저 보여드릴게요.`
         : "상태 분류와 표본 수에 따라 시세 판단은 달라질 수 있어요.",
       valueNote: sampleCount > 0
         ? `상태가 다른 매물은 섞지 않고, 같은 모델·같은 상태 표본 ${sampleCount.toLocaleString("ko-KR")}건에서 기준을 잡았어요.`
@@ -647,7 +648,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   return {
-    eyebrow: "3. 비교 매물",
+    eyebrow: "2. 비교 매물",
     title: "시세 표본을 더 모으는 중이에요",
     metric: "표본 부족",
     metricLabel: market?.label ?? card.skuName,
@@ -655,21 +656,6 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
     note: "이 경우 상세 분석에서 비교 매물과 원본 링크를 직접 확인하는 게 중요합니다.",
     valueNote: "비교 매물이 부족한 모델은 부족하다고 표시하고, 다른 상태 시세를 섞어 수익을 부풀리지 않아요.",
     tone: "market",
-  };
-}
-
-function marketTrendGuideStep(card: RevealCard): BeginnerGuideStep {
-  const median = card.marketBasis?.medianPrice ?? null;
-  const condition = marketConditionLabel(card);
-
-  return {
-    eyebrow: "4. 시세 흐름",
-    title: "그 다음 시세가 흔들렸는지 봐요",
-    metric: median ? krw(median) : "수집 중",
-    metricLabel: `${condition} 기준 시세`,
-    body: "비교 매물 가격이 오늘만 튄 건지, 며칠 동안 비슷하게 유지됐는지 그래프로 확인해요.",
-    note: "점이 적으면 아직 누적 중인 데이터라 참고용으로만 봐야 합니다.",
-    tone: "trend",
   };
 }
 
@@ -799,7 +785,7 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   const betterChannel = daangnProfit > bunjangProfit ? "당근 직거래가 더 남을 수 있지만" : "번개장터 재판매는";
 
   return {
-    eyebrow: "8. 되팔 곳",
+    eyebrow: "3. 되팔 곳",
     title: "팔 곳에 따라 남는 돈이 달라요",
     metric: displayProfitRange(card),
     metricLabel: "번개장터 기준 예상 차익",
@@ -830,13 +816,12 @@ function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
   //   → 요약. 사용자 의사결정 순서 그대로.
   return [
     introGuideStep(),
-    sellerTrustGuideStep(card),
     marketCompareGuideStep(card),
-    marketTrendGuideStep(card),
+    channelGuideStep(card),
+    sellerTrustGuideStep(card),
     velocityGuideStep(card),
     buyCostGuideStep(card),
     resellCostGuideStep(card),
-    channelGuideStep(card),
     purchaseCheckGuideStep(card),
     summaryGuideStep(),
   ];
@@ -4060,7 +4045,7 @@ function BeginnerGuideTrustBody({ card, fallback }: { card: RevealCard; fallback
       <span className="font-black text-[#172019] dark:text-zinc-50">
         평점이 <strong className="ml-1 text-[17px]">{rating.toFixed(1)}점</strong>
       </span>
-      으로 신뢰가 있는 판매자예요.
+      이라 신뢰 신호가 있는 편이에요.
     </p>
   );
 }
@@ -4685,6 +4670,7 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
   }, [loadFailed, stats, variant]);
 
   const totalBlocked = stats?.total_blocked_7d ?? 0;
+  const totalReviewed = stats?.total_reviewed_7d ?? 0;
   const rows = stats ? beginnerSafetyStatRows(stats) : [];
   const scopedSubject = variant !== "intro" && (stats?.scope?.level === "lane" || stats?.scope?.level === "sku")
     ? `${compactBeginnerSkuLabel(card)} 매물 중`
@@ -4748,7 +4734,7 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
               득템잡이가 오늘 {subjectLabel}
             </div>
             <div className="mt-1 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">
-              먼저 걸러낸 매물
+              {totalReviewed > 0 ? `후보 ${formatBeginnerStatCount(totalReviewed)}건 중 먼저 걸러낸 매물` : "먼저 걸러낸 매물"}
             </div>
           </div>
         </div>

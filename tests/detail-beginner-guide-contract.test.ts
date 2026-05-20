@@ -20,7 +20,7 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.match(modal, /판매자 신뢰/);
   assert.match(modal, /구매 전 체크/);
   assert.match(modal, /비교 매물/);
-  assert.match(modal, /시세 흐름/);
+  assert.doesNotMatch(modal, /eyebrow: "4\. 시세 흐름"/);
   assert.match(modal, /매입가/);
   assert.match(modal, /되팔 때 비용/);
   assert.match(modal, /안전결제/);
@@ -43,15 +43,20 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
     modal.indexOf("function beginnerGuideSteps"),
     modal.indexOf("function displayProfitRange"),
   );
-  assert.ok(order.indexOf("marketCompareGuideStep(card)") < order.indexOf("marketTrendGuideStep(card)"));
-  assert.ok(order.indexOf("marketTrendGuideStep(card)") < order.indexOf("velocityGuideStep(card)"));
+  assert.ok(order.indexOf("introGuideStep()") < order.indexOf("marketCompareGuideStep(card)"));
+  assert.ok(order.indexOf("marketCompareGuideStep(card)") < order.indexOf("channelGuideStep(card)"));
+  assert.ok(order.indexOf("channelGuideStep(card)") < order.indexOf("sellerTrustGuideStep(card)"));
+  assert.ok(order.indexOf("sellerTrustGuideStep(card)") < order.indexOf("velocityGuideStep(card)"));
   assert.ok(order.indexOf("velocityGuideStep(card)") < order.indexOf("buyCostGuideStep(card)"));
   assert.ok(order.indexOf("channelGuideStep(card)") < order.indexOf("purchaseCheckGuideStep(card)"));
+  assert.equal(order.indexOf("marketTrendGuideStep(card)"), -1);
   assert.match(modal, /eyebrow: "1\. 먼저 걸렀어요"/);
-  assert.match(modal, /eyebrow: "3\. 비교 매물"/);
+  assert.match(modal, /eyebrow: "2\. 비교 매물"/);
+  assert.match(modal, /eyebrow: "3\. 되팔 곳"/);
+  assert.match(modal, /eyebrow: "4\. 판매자 신뢰"/);
   assert.match(modal, /eyebrow: "5\. 판매 속도"/);
   assert.match(modal, /eyebrow: "6\. 매입가"/);
-  assert.match(modal, /eyebrow: "9\. 구매 전 체크"/);
+  assert.match(modal, /eyebrow: "8\. 구매 전 체크"/);
 });
 
 test("detail modal uses the mobile detail shell on desktop", () => {
@@ -111,6 +116,8 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /오늘 볼 만한 매물만 남겨뒀어요/);
   assert.match(modal, /return fetchStats\("\/api\/public\/safety-stats"\)/);
   assert.match(modal, /전체 추천 풀에서/);
+  assert.match(modal, /total_reviewed_7d/);
+  assert.match(modal, /후보 \$\{formatBeginnerStatCount\(totalReviewed\)\}건 중 먼저 걸러낸 매물/);
   assert.doesNotMatch(modal, /곧 숫자까지 보여드릴게요/);
   assert.match(modal, /introLoadingHold/);
   assert.match(modal, /data-beginner-guide-safety-loading/);
@@ -145,6 +152,8 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /BeginnerGuideStarGlyph/);
   assert.match(modal, /평점이 <strong/);
   assert.match(modal, /후기가 <strong/);
+  assert.match(modal, /신뢰 신호가 있는 편/);
+  assert.doesNotMatch(modal, /신뢰가 있는 판매자예요/);
   assert.match(modal, /marketConditionLabel\(card\)/);
   assert.match(modal, /conditionComparisonGroupLabel\(card\)/);
   assert.match(modal, /conditionBasisSentence\(card\)/);
@@ -156,6 +165,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /BeginnerGuideMarketBody/);
   assert.match(modal, /data-beginner-guide-market-body/);
   assert.match(modal, /기준보다 <strong/);
+  assert.match(modal, /총 \$\{sampleCount\.toLocaleString\("ko-KR"\)\}건 중 비싼 순 일부/);
   assert.match(modal, /아래는 비싼 순 비교 매물이에요/);
   assert.doesNotMatch(modal, /아래에는 기준이 된 매물을 비싼 순으로 보여드릴게요/);
   assert.doesNotMatch(modal, /data-beginner-guide-condition-basis|끼리 비교했어요|사용감이 어느 정도 있는 상품끼리/);
@@ -240,6 +250,8 @@ test("safety stats API supports scoped SKU and lane counts", () => {
   assert.match(route, /raw_scoped/);
   assert.match(route, /pool_scoped/);
   assert.match(route, /parsed_scoped/);
+  assert.match(route, /poolReviewed/);
+  assert.match(route, /total_reviewed_7d/);
 });
 
 test("AirPods Max does not inherit generic earphone battery or counterfeit prompts", () => {
