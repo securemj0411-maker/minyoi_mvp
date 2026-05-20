@@ -1489,13 +1489,13 @@ export default function ExploreClient() {
                 const headerTitle = showForm
                   ? (lightweightMode ? "환영해요 👋 예산 알려주세요" : (preferences ? "선호 수정" : "내 매물 취향 알려주세요"))
                   : canRefresh
-                    ? "더 찾아보기"
-                    : "조금만 기다리거나 바로 이어보기";
+                    ? "새 상품 30개 받기"
+                    : "조금만 기다리면 새 상품이 열려요";
                 const headerSub = showForm
                   ? (lightweightMode ? "그 예산 안에서 30개 골라드릴게요 (나중에 수정 가능)" : "예산과 매물 성향에 맞춰 30개 골라드려요")
                   : (canRefresh
-                      ? "현재 선호로 새 30개 받기"
-                      : `${formatCooldown(remainingSec)} 후 무료로 새 30개가 열려요`);
+                      ? "예산 + 성향 기준으로 다시 골라드려요"
+                      : `${formatCooldown(remainingSec)} 후 무료로 새 상품을 볼 수 있어요`);
                 return (
                   <>
                     {/* Wave 380: 노션 톤 — 큰 👋 + "환영해요!" + 본 메시지. */}
@@ -1691,14 +1691,16 @@ export default function ExploreClient() {
                           <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                <GiftIcon className="h-5 w-5" />
-                                <span className="text-base font-bold">내 취향대로 30개 받기</span>
+                                {canRefresh ? <GiftIcon className="h-5 w-5" /> : <HourglassIcon className="h-5 w-5" />}
+                                <span className="text-base font-bold">
+                                  {canRefresh ? "새 상품 30개 받기" : `${formatCooldown(remainingSec)} 후 새 상품 보기`}
+                                </span>
                                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${canRefresh ? "bg-white/20 text-[var(--brand-cream)]" : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"}`}>
                                   무료
                                 </span>
                               </div>
                               <div className={`mt-1.5 text-xs font-medium ${canRefresh ? "text-[var(--brand-cream)]/75" : "text-zinc-500 dark:text-zinc-500"}`}>
-                                {canRefresh ? "예산 + 성향 적용해서 새 30개" : `${formatCooldown(remainingSec)} 후 자동으로 풀려요`}
+                                {canRefresh ? "내 취향대로 다시 골라드려요" : "기다리면 크레딧 없이 다음 라운드가 열려요"}
                               </div>
                             </div>
                             {canRefresh ? (

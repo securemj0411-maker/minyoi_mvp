@@ -64,8 +64,9 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(explore, /IntersectionObserver/);
   assert.match(explore, /autoScrollNew: false/);
   assert.match(explore, /피드 탐색은 무제한 · 크레딧은 상세 분석을 열 때만 차감/);
-  assert.match(explore, /조금만 기다리거나 바로 이어보기/);
-  assert.match(explore, /무료로 새 30개가 열려요/);
+  assert.match(explore, /조금만 기다리면 새 상품이 열려요/);
+  assert.match(explore, /무료로 새 상품을 볼 수 있어요/);
+  assert.match(explore, /후 새 상품 보기/);
   assert.match(explore, /크레딧 보유자는 피드 계속 보기/);
   assert.match(explore, /피드는 차감 0개예요/);
   assert.match(explore, /크레딧 충전하고 바로 이어보기/);
