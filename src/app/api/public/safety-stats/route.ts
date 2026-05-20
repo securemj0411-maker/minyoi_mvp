@@ -2,6 +2,7 @@
 // "이번 주 위험 매물 X건 차단됨" 사용자 dashboard 표시.
 // retention killer — "내 50만원 잃을 뻔한 거 막아줬다" 감정.
 import { NextResponse } from "next/server";
+import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { restFetch, serviceHeaders } from "@/lib/supabase-rest";
 
 export const dynamic = "force-dynamic";
@@ -14,168 +15,142 @@ function rpc(path: string, query: string) {
   return `${URL_BASE}/${path}?${query}`;
 }
 
-export async function GET() {
+type SafetyStatsScope = {
+  skuId: string | null;
+  comparableKey: string | null;
+  category: string | null;
+  level: "lane" | "sku" | "category" | "global";
+};
+
+function normalizeScopeValue(value: string | null) {
+  const normalized = value?.trim() ?? "";
+  if (!normalized || normalized.length > 180) return null;
+  return /^[a-z0-9_.|\-]+$/i.test(normalized) ? normalized : null;
+}
+
+function safetyStatsScope(request: Request): SafetyStatsScope {
+  const url = new URL(request.url);
+  const skuId = normalizeScopeValue(url.searchParams.get("skuId"));
+  const comparableKey = normalizeScopeValue(url.searchParams.get("comparableKey"));
+  const categoryParam = normalizeScopeValue(url.searchParams.get("category"));
+  const category = categoryFromComparableKey(categoryParam) ?? categoryFromComparableKey(comparableKey) ?? null;
+  const level = comparableKey ? "lane" : skuId ? "sku" : category ? "category" : "global";
+  return { skuId, comparableKey, category, level };
+}
+
+function eqFilter(column: string, value: string | null) {
+  return value ? `&${column}=eq.${encodeURIComponent(value)}` : "";
+}
+
+function rawScopeFilter(scope: SafetyStatsScope) {
+  if (scope.level === "global") return "";
+  return scope.skuId ? eqFilter("sku_id", scope.skuId) : null;
+}
+
+function poolScopeFilter(scope: SafetyStatsScope) {
+  if (scope.level === "global") return "";
+  if (scope.comparableKey) return eqFilter("comparable_key", scope.comparableKey);
+  if (scope.category) return eqFilter("category", scope.category);
+  return null;
+}
+
+function parsedScopeFilter(scope: SafetyStatsScope) {
+  if (scope.level === "global") return "";
+  if (scope.comparableKey) return eqFilter("comparable_key", scope.comparableKey);
+  if (scope.category) return eqFilter("category", scope.category);
+  return null;
+}
+
+function parseCount(res: Response): number {
+  const range = res.headers.get("content-range") ?? "";
+  const totalStr = range.split("/")[1];
+  return totalStr ? Number(totalStr) : 0;
+}
+
+export async function GET(request: Request) {
   try {
     // 2026-05-16 (사용자 코멘트): "이번 주 말고 오늘" — 24h window로 변경.
     // 24h 측정: listing_type 6.4K + needs_review 0.9K + pool invalidated 1.3K = ~8,600건 차단/일.
     // 사용자에게 "오늘만 N건 차단" 인상 강력 (예: "하루에 8천건을 어떻게 다 걸러내냐").
     const since24h = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const scope = safetyStatsScope(request);
+    const rawFilter = rawScopeFilter(scope);
+    const poolFilter = poolScopeFilter(scope);
+    const parsedFilter = parsedScopeFilter(scope);
+    const scoped = scope.level !== "global";
+    const countHead = async (path: string, query: string | null) => {
+      if (query == null) return 0;
+      const res = await restFetch(
+        rpc(path, query),
+        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+      );
+      return parseCount(res);
+    };
+    const rawQuery = (query: string) => rawFilter == null ? null : `${query}${rawFilter}`;
+    const poolQuery = (query: string) => poolFilter == null ? null : `${query}${poolFilter}`;
+    const parsedQuery = (query: string) => parsedFilter == null ? null : `${query}${parsedFilter}`;
 
     // Wave 139 (2026-05-16): 도매/사기 그룹 차단 카운터 추가 (Wave 132/137/138a/138b).
     // 사용자 retention: "와, 이 사이트 진짜 사기/업자도 걸러내는구나" UI 신뢰 시그널.
     // 2026-05-16 (사용자 코멘트 후속): 폰 치우침 → generalize + 차단 사유 더 보강 (차익 미달, 매물 사라짐, 시세 신뢰).
     // 2026-05-16 (2차 후속): listing_type/needs_review 추가 — 진짜 차단 source ~35K (지금 표시 ~2.4K의 15배).
     const [
-      priceDummyRes, fakeLockRes, carrierRes, poolInvalidateRes,
-      wholesalerCommentRes, wholesalerQtyRes, sellerMultiRes, multiIdFraudRes,
-      profitLowRes, lifecycleGoneRes, thinMarketRes, statMissingRes, suspiciousPriceRes,
+      priceDummy, fakeLock, carrier, poolInvalidate,
+      wholesalerComment, wholesalerQty, sellerMulti, multiIdFraud,
+      profitLow, lifecycleGone, thinMarket, statMissing, suspiciousPrice,
       // 수집 단계 차단 (listing_type)
-      listingPartsRes, listingDamagedRes, listingAccessoryRes,
-      listingCalloutRes, listingCommercialRes, listingBuyingRes, listingMultiRes,
+      listingParts, listingDamaged, listingAccessory,
+      listingCallout, listingCommercial, listingBuying, listingMulti,
       // 파싱 단계 차단 (needs_review)
-      needsReviewRes,
+      needsReview,
     ] = await Promise.all([
       // 1) 가격 dummy (셀러 거래 거부 표시 매물)
-      restFetch(
-        rpc("mvp_raw_listings", `select=pid&price=gte.10000000&first_seen_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_raw_listings", rawQuery(`select=pid&price=gte.10000000&first_seen_at=gte.${since24h}`)),
       // 2) 가품/잠금 keyword 매물
-      restFetch(
-        rpc("mvp_raw_listings", `select=pid&first_seen_at=gte.${since24h}&or=(name.ilike.*차이팟*,name.ilike.*짝퉁*,name.ilike.*레플리카*,name.ilike.*이미테이션*,name.ilike.*아이클라우드*,name.ilike.*잠김*,name.ilike.*분실폰*)`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_raw_listings", rawQuery(`select=pid&first_seen_at=gte.${since24h}&or=(name.ilike.*차이팟*,name.ilike.*짝퉁*,name.ilike.*레플리카*,name.ilike.*이미테이션*,name.ilike.*아이클라우드*,name.ilike.*잠김*,name.ilike.*분실폰*)`)),
       // 3) 통신사 약정/할부 매물 (자급제 lane reject)
-      restFetch(
-        rpc("mvp_raw_listings", `select=pid&first_seen_at=gte.${since24h}&or=(name.ilike.*kt%20약정*,name.ilike.*skt%20완납*,name.ilike.*할부%20잔여*,name.ilike.*개통폰*)`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_raw_listings", rawQuery(`select=pid&first_seen_at=gte.${since24h}&or=(name.ilike.*kt%20약정*,name.ilike.*skt%20완납*,name.ilike.*할부%20잔여*,name.ilike.*개통폰*)`)),
       // 4) pool invalidate (lifecycle/profit/시세 confidence) — Wave 132/137/138 reason 모두 포함
-      restFetch(
-        rpc("mvp_candidate_pool", `select=pid&invalidated_reason=not.is.null&updated_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&invalidated_reason=not.is.null&updated_at=gte.${since24h}`)),
       // 5) Wave 132: 댓글 ≥ 8 차단 (호가-실거래 괴리 = 흥정 사기)
-      restFetch(
-        rpc("mvp_candidate_pool", `select=pid&invalidated_reason=like.num_comment_above*&updated_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&invalidated_reason=like.num_comment_above*&updated_at=gte.${since24h}`)),
       // 6) Wave 137: qty > 1 차단 (대량 판매업자)
-      restFetch(
-        rpc("mvp_candidate_pool", `select=pid&invalidated_reason=like.qty_above*&updated_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&invalidated_reason=like.qty_above*&updated_at=gte.${since24h}`)),
       // 7) Wave 138a: 같은 셀러 다수 매물 차단 (qty 위장 업자)
-      restFetch(
-        rpc("mvp_candidate_pool", `select=pid&invalidated_reason=like.seller_above*&updated_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&invalidated_reason=like.seller_above*&updated_at=gte.${since24h}`)),
       // 8) Wave 138b: 다중 ID 사기 그룹 차단 (같은 description + 다른 셀러)
-      restFetch(
-        rpc("mvp_candidate_pool", `select=pid&invalidated_reason=like.multi_id_fraud*&updated_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&invalidated_reason=like.multi_id_fraud*&updated_at=gte.${since24h}`)),
       // 9) 차익 미달 (profit_below_pack_band) — 가장 큰 카테고리. 모든 카테고리.
-      restFetch(
-        rpc("mvp_candidate_pool", `select=pid&invalidated_reason=eq.profit_below_pack_band&updated_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&invalidated_reason=eq.profit_below_pack_band&updated_at=gte.${since24h}`)),
       // 10) 매물 사라짐/거래 종료 (lifecycle_* + pool_warmer_*_inactive). 모든 카테고리.
-      restFetch(
-        rpc("mvp_candidate_pool", `select=pid&or=(invalidated_reason.like.lifecycle_*,invalidated_reason.like.pool_warmer_*_inactive,invalidated_reason.like.pool_sweep_*_inactive)&updated_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&or=(invalidated_reason.like.lifecycle_*,invalidated_reason.like.pool_warmer_*_inactive,invalidated_reason.like.pool_sweep_*_inactive)&updated_at=gte.${since24h}`)),
       // 11) 시세 표본 부족 (wave99_thin_market + wave106_low_confidence_thin_sample)
-      restFetch(
-        rpc("mvp_candidate_pool", `select=pid&or=(invalidated_reason.eq.wave99_thin_market_n_lt_5,invalidated_reason.eq.wave106_low_confidence_thin_sample)&updated_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&or=(invalidated_reason.eq.wave99_thin_market_n_lt_5,invalidated_reason.eq.wave106_low_confidence_thin_sample)&updated_at=gte.${since24h}`)),
       // 12) 시세 신뢰 부족 (blocked_coarse_market_price + blocked_market_stat_missing)
-      restFetch(
-        rpc("mvp_candidate_pool", `select=pid&or=(invalidated_reason.eq.blocked_coarse_market_price,invalidated_reason.eq.blocked_market_stat_missing)&updated_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&or=(invalidated_reason.eq.blocked_coarse_market_price,invalidated_reason.eq.blocked_market_stat_missing)&updated_at=gte.${since24h}`)),
       // 13) 의심 가격 매물 (blocked_deep_discount + blocked_extreme_discount review)
-      restFetch(
-        rpc("mvp_candidate_pool", `select=pid&or=(invalidated_reason.eq.blocked_deep_discount_review,invalidated_reason.eq.blocked_extreme_discount_review)&updated_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&or=(invalidated_reason.eq.blocked_deep_discount_review,invalidated_reason.eq.blocked_extreme_discount_review)&updated_at=gte.${since24h}`)),
       // 14) 수집 단계 차단 — listing_type=parts (부품만 매물)
-      restFetch(
-        rpc("mvp_raw_listings", `select=pid&listing_type=eq.parts&first_seen_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_raw_listings", rawQuery(`select=pid&listing_type=eq.parts&first_seen_at=gte.${since24h}`)),
       // 15) listing_type=damaged (손상 매물)
-      restFetch(
-        rpc("mvp_raw_listings", `select=pid&listing_type=eq.damaged&first_seen_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_raw_listings", rawQuery(`select=pid&listing_type=eq.damaged&first_seen_at=gte.${since24h}`)),
       // 16) listing_type=accessory (액세서리/구성품만)
-      restFetch(
-        rpc("mvp_raw_listings", `select=pid&listing_type=eq.accessory&first_seen_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_raw_listings", rawQuery(`select=pid&listing_type=eq.accessory&first_seen_at=gte.${since24h}`)),
       // 17) listing_type=callout (광고/매크로/홍보)
-      restFetch(
-        rpc("mvp_raw_listings", `select=pid&listing_type=eq.callout&first_seen_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_raw_listings", rawQuery(`select=pid&listing_type=eq.callout&first_seen_at=gte.${since24h}`)),
       // 18) listing_type=commercial (업자/상업 매물)
-      restFetch(
-        rpc("mvp_raw_listings", `select=pid&listing_type=eq.commercial&first_seen_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_raw_listings", rawQuery(`select=pid&listing_type=eq.commercial&first_seen_at=gte.${since24h}`)),
       // 19) listing_type=buying (매입 글)
-      restFetch(
-        rpc("mvp_raw_listings", `select=pid&listing_type=eq.buying&first_seen_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_raw_listings", rawQuery(`select=pid&listing_type=eq.buying&first_seen_at=gte.${since24h}`)),
       // 20) listing_type=multi (다중 상품 묶음)
-      restFetch(
-        rpc("mvp_raw_listings", `select=pid&listing_type=eq.multi&first_seen_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_raw_listings", rawQuery(`select=pid&listing_type=eq.multi&first_seen_at=gte.${since24h}`)),
       // 21) needs_review (파싱 단계 — 모델 식별 실패. listing_parsed JOIN)
-      restFetch(
-        rpc("mvp_listing_parsed", `select=pid&needs_review=eq.true&parsed_at=gte.${since24h}`),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
-      ),
+      countHead("mvp_listing_parsed", parsedQuery(`select=pid&needs_review=eq.true&parsed_at=gte.${since24h}`)),
     ]);
 
-    const parseCount = (res: Response): number => {
-      const range = res.headers.get("content-range") ?? "";
-      const totalStr = range.split("/")[1];
-      return totalStr ? Number(totalStr) : 0;
-    };
-
-    const priceDummy = parseCount(priceDummyRes);
-    const fakeLock = parseCount(fakeLockRes);
-    const carrier = parseCount(carrierRes);
-    const poolInvalidate = parseCount(poolInvalidateRes);
-    // Wave 139: 도매/사기 그룹 4종
-    const wholesalerComment = parseCount(wholesalerCommentRes);
-    const wholesalerQty = parseCount(wholesalerQtyRes);
-    const sellerMulti = parseCount(sellerMultiRes);
-    const multiIdFraud = parseCount(multiIdFraudRes);
     const wholesalerTotal = wholesalerComment + wholesalerQty + sellerMulti + multiIdFraud;
-    // 2026-05-16: generalize 항목 (모든 카테고리 적용)
-    const profitLow = parseCount(profitLowRes);
-    const lifecycleGone = parseCount(lifecycleGoneRes);
-    const thinMarket = parseCount(thinMarketRes);
-    const statMissing = parseCount(statMissingRes);
-    const suspiciousPrice = parseCount(suspiciousPriceRes);
-    // 2026-05-16 (2차): 수집 단계 차단 (listing_type)
-    const listingParts = parseCount(listingPartsRes);
-    const listingDamaged = parseCount(listingDamagedRes);
-    const listingAccessory = parseCount(listingAccessoryRes);
-    const listingCallout = parseCount(listingCalloutRes);
-    const listingCommercial = parseCount(listingCommercialRes);
-    const listingBuying = parseCount(listingBuyingRes);
-    const listingMulti = parseCount(listingMultiRes);
     const collectionStageTotal = listingParts + listingDamaged + listingAccessory +
       listingCallout + listingCommercial + listingBuying + listingMulti;
-    // 2026-05-16 (2차): 파싱 단계 차단
-    const needsReview = parseCount(needsReviewRes);
 
     const safetyTotal = priceDummy + fakeLock + carrier;
     // 2026-05-16 (2차): 진짜 차단 total — 수집 + 파싱 + 풀 단계 모두 합산.
@@ -213,6 +188,17 @@ export async function GET() {
         listing_buying_7d: listingBuying,
         listing_multi_7d: listingMulti,
         needs_review_7d: needsReview,
+        scope: scoped
+          ? {
+              level: scope.level,
+              sku_id: scope.skuId,
+              comparable_key: scope.comparableKey,
+              category: scope.category,
+              raw_scoped: rawFilter != null,
+              pool_scoped: poolFilter != null,
+              parsed_scoped: parsedFilter != null,
+            }
+          : null,
         // 메타
         period_start: since24h,
         period_end: new Date().toISOString(),

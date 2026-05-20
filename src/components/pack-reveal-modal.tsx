@@ -344,6 +344,12 @@ type BeginnerGuideStep = {
 
 type BeginnerGuideSafetyStats = {
   total_blocked_7d?: number;
+  scope?: {
+    level?: "lane" | "sku" | "category" | "global";
+    sku_id?: string | null;
+    comparable_key?: string | null;
+    category?: string | null;
+  } | null;
 };
 
 const SELLER_TRUST_MIN_REVIEW_COUNT = 10;
@@ -4609,16 +4615,46 @@ function formatBeginnerStatCount(value: number) {
   return value.toLocaleString("ko-KR");
 }
 
-function BeginnerGuideSafetyFilterNote() {
+const BEGINNER_CATEGORY_LABELS: Record<string, string> = {
+  earphone: "이어폰/헤드폰",
+  smartphone: "폰",
+  tablet: "태블릿",
+  smartwatch: "스마트워치",
+  laptop: "노트북",
+  shoe: "신발",
+  bag: "가방",
+  clothing: "의류",
+};
+
+function compactBeginnerSkuLabel(card: RevealCard) {
+  if (/airpods\s*max/i.test(card.skuName) || /에어팟\s*맥스|에어팟맥스/i.test(card.name)) return "에어팟 맥스";
+  const withoutParen = card.skuName.replace(/\s*\([^)]*\)/g, "").replace(/\s+/g, " ").trim();
+  if (withoutParen && withoutParen.length <= 18) return withoutParen;
+  const category = categoryForBeginnerGuide(card);
+  return category ? BEGINNER_CATEGORY_LABELS[category] ?? "비슷한 상품" : "비슷한 상품";
+}
+
+function beginnerSafetyStatsUrl(card: RevealCard) {
+  const params = new URLSearchParams();
+  if (card.skuId) params.set("skuId", card.skuId);
+  if (card.marketBasis?.comparableKey) params.set("comparableKey", card.marketBasis.comparableKey);
+  const category = categoryForBeginnerGuide(card);
+  if (category) params.set("category", category);
+  const query = params.toString();
+  return query ? `/api/public/safety-stats?${query}` : "/api/public/safety-stats";
+}
+
+function BeginnerGuideSafetyFilterNote({ card }: { card: RevealCard }) {
   const [stats, setStats] = useState<BeginnerGuideSafetyStats | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
+  const statsUrl = beginnerSafetyStatsUrl(card);
 
   useEffect(() => {
     if (stats || loadFailed) return;
 
     const controller = new AbortController();
 
-    void fetch("/api/public/safety-stats", { cache: "no-store", signal: controller.signal })
+    void fetch(statsUrl, { cache: "no-store", signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error("safety stats failed");
         return res.json() as Promise<{ stats?: BeginnerGuideSafetyStats }>;
@@ -4633,25 +4669,36 @@ function BeginnerGuideSafetyFilterNote() {
       });
 
     return () => controller.abort();
-  }, [loadFailed, stats]);
+  }, [loadFailed, stats, statsUrl]);
 
   const totalBlocked = stats?.total_blocked_7d ?? 0;
   if (!stats || totalBlocked <= 0) return null;
+  const scopedSubject = stats.scope?.level === "lane" || stats.scope?.level === "sku"
+    ? `${compactBeginnerSkuLabel(card)} 매물 중`
+    : stats.scope?.level === "category" && stats.scope.category
+      ? `${BEGINNER_CATEGORY_LABELS[stats.scope.category] ?? "비슷한 상품"} 중`
+      : null;
+  const leadingCopy = scopedSubject
+    ? `득템잡이가 오늘 ${scopedSubject} 돈 안 되는 것`
+    : "득템잡이가 오늘 돈 안 되는 매물";
 
   return (
     <div
       data-beginner-guide-safety-filter-note
-      className="mt-3 rounded-[18px] bg-[#f7fafe] px-3.5 py-3 ring-1 ring-blue-100 dark:bg-blue-950/18 dark:ring-blue-900/45"
+      className="mt-4 rounded-[24px] bg-[#f7fafe] px-4 py-4 ring-1 ring-blue-100 dark:bg-blue-950/18 dark:ring-blue-900/45"
     >
-      <div className="flex items-start gap-2.5">
-        <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[#3182f6] ring-1 ring-blue-100 dark:bg-zinc-950/60 dark:text-blue-300 dark:ring-blue-900/45">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[#3182f6] ring-1 ring-blue-100 dark:bg-zinc-950/60 dark:text-blue-300 dark:ring-blue-900/45">
           <ShieldIcon className="h-3.5 w-3.5" />
         </span>
         <div className="min-w-0">
-          <p className="break-keep text-[12.5px] font-semibold leading-5 text-[#53605a] dark:text-zinc-300">
-            득템잡이가 오늘 돈 안 되는 매물{" "}
+          <p className="break-keep text-[14px] font-bold leading-6 text-[#38443d] dark:text-zinc-200">
+            {leadingCopy}{" "}
             <strong className="font-black text-[#172019] dark:text-zinc-50">{formatBeginnerStatCount(totalBlocked)}건</strong>
-            은 먼저 걸렀어요. 이제 이 매물만 보면 돼요.
+            을 먼저 걸렀어요.
+          </p>
+          <p className="mt-1 break-keep text-[12.5px] font-semibold leading-5 text-[#6a756b] dark:text-zinc-400">
+            이제 이 매물만 보면 돼요.
           </p>
         </div>
       </div>
@@ -4834,7 +4881,7 @@ function BeginnerGuideWalkthrough({
               </p>
             ) : null}
 
-            {step.tone === "trust" ? <BeginnerGuideSafetyFilterNote /> : null}
+            {step.tone === "trust" ? <BeginnerGuideSafetyFilterNote card={card} /> : null}
             <BeginnerGuideContextNote note={step.valueNote} tone={step.tone} />
 
             {step.tone === "trust" ? (

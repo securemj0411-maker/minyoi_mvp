@@ -98,12 +98,17 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /실제 거래 흐름으로 돈이 얼마나 오래 묶일지/);
   assert.match(modal, /수수료, 재배송비, 안전버퍼/);
   assert.match(modal, /BeginnerGuideSafetyFilterNote/);
+  assert.match(modal, /beginnerSafetyStatsUrl/);
   assert.match(modal, /data-beginner-guide-safety-filter-note/);
-  assert.match(modal, /\/api\/public\/safety-stats/);
+  assert.match(modal, /\/api\/public\/safety-stats\?\$\{query\}/);
+  assert.match(modal, /params\.set\("skuId", card\.skuId\)/);
+  assert.match(modal, /params\.set\("comparableKey", card\.marketBasis\.comparableKey\)/);
   assert.match(modal, /득템잡이가 오늘 돈 안 되는 매물/);
-  assert.match(modal, /은 먼저 걸렀어요/);
+  assert.match(modal, /에어팟 맥스/);
+  assert.match(modal, /돈 안 되는 것/);
+  assert.match(modal, /을 먼저 걸렀어요/);
   assert.match(modal, /이제 이 매물만 보면 돼요/);
-  assert.match(modal, /step\.tone === "trust" \? <BeginnerGuideSafetyFilterNote \/> : null/);
+  assert.match(modal, /step\.tone === "trust" \? <BeginnerGuideSafetyFilterNote card=\{card\} \/> : null/);
   assert.match(modal, /data-beginner-guide-purchase-check/);
   assert.match(modal, /구매 전에 이것만 물어보면 돼요/);
   assert.match(modal, /혼자 보면 놓치기 쉬운 질문/);
@@ -194,6 +199,21 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.doesNotMatch(modal, /이어폰\/헤드폰은 배터리/);
   assert.doesNotMatch(modal, /대신 확인한 것|추천 전에 걸러진 매물|전체 추천 풀|단품·액세서리·업자성·모델 확인 필요/);
   assert.doesNotMatch(modal, /무조건|본전|수익 보장|돈을 벌|얼마를 벌/);
+});
+
+test("safety stats API supports scoped SKU and lane counts", () => {
+  const route = source("src/app/api/public/safety-stats/route.ts");
+
+  assert.match(route, /function safetyStatsScope\(request: Request\)/);
+  assert.match(route, /url\.searchParams\.get\("skuId"\)/);
+  assert.match(route, /url\.searchParams\.get\("comparableKey"\)/);
+  assert.match(route, /categoryFromComparableKey\(comparableKey\)/);
+  assert.match(route, /eqFilter\("sku_id", scope\.skuId\)/);
+  assert.match(route, /eqFilter\("comparable_key", scope\.comparableKey\)/);
+  assert.match(route, /scope: scoped/);
+  assert.match(route, /raw_scoped/);
+  assert.match(route, /pool_scoped/);
+  assert.match(route, /parsed_scoped/);
 });
 
 test("AirPods Max does not inherit generic earphone battery or counterfeit prompts", () => {
