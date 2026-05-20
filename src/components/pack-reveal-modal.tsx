@@ -338,6 +338,7 @@ type BeginnerGuideStep = {
   metricLabel: string;
   body: string;
   note: string;
+  valueNote?: string;
   tone: "trust" | "check" | "market" | "trend" | "buy" | "resell" | "safety" | "channel" | "speed" | "summary";
 };
 
@@ -387,6 +388,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
       body: `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점으로 신뢰가 있는 판매자예요.`,
       // Wave 394.7.y: 안전결제 step 흡수 — 신뢰 강함이라도 앱 안 결제 룰 한 줄로 강조.
       note: "그래도 거래는 번개장터 앱 안 안전결제로만 진행하세요. 물건 받고 확인한 뒤 구매확정 누르는 흐름이에요.",
+      valueNote: "후기 수와 평점을 같이 봐서, 평점만 높고 거래 이력이 적은 계정에 속지 않게 봅니다.",
       tone: "trust",
     };
   }
@@ -402,6 +404,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
         : `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점이에요. 안전결제와 실제 상태 확인을 같이 보면 좋아요.`,
       // Wave 394.7.y: 안전결제 흡수.
       note: "거래는 번개장터 앱 안 안전결제로만 진행하고, 물건 받아 상태 확인한 뒤 구매확정을 누르세요. 외부 계좌이체나 외부 링크 결제는 피하는 게 좋아요.",
+      valueNote: "후기 표본, 평점, 안전결제 흐름을 한 번에 묶어서 판매자 신뢰도를 보수적으로 봅니다.",
       tone: "trust",
     };
   }
@@ -416,6 +419,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
       : "이 상품 판매자는 아직 거래 후기와 평점이 없어요. 번개장터 신규 판매자이거나 거래 이력이 적은 계정일 수 있어서 더 보수적으로 확인해야 해요.",
     // Wave 394.7.y: 안전결제 흡수 — 신뢰 약한 셀러일수록 더 중요.
     note: "특히 신뢰 약한 셀러는 반드시 번개장터 앱 안 안전결제로만. 외부 결제 유도 시 거절하세요. 추가 사진·구성품·택배 조건도 결제 전 확인.",
+    valueNote: "후기 없는 계정은 자동으로 더 조심스럽게 보고, 안전결제와 추가 확인 질문을 먼저 띄웁니다.",
     tone: "trust",
   };
 }
@@ -567,6 +571,7 @@ function purchaseCheckGuideStep(card: RevealCard): BeginnerGuideStep {
     metricLabel: first ? first.title : "구매 전 질문",
     body: "겁주려는 단계가 아니라, 혼자 보면 놓치기 쉬운 질문만 골라주는 단계예요.",
     note: first?.ask ?? "판매자에게 확인할 질문을 먼저 정리해요.",
+    valueNote: `사진 수, 후기 표본, 구성품, 잠금, 정품 위험 중 이 매물에서 먼저 물어볼 것 ${checks.length.toLocaleString("ko-KR")}개만 추렸어요.`,
     tone: "check",
   };
 }
@@ -606,6 +611,9 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
       note: sampleCount > 0
         ? `비교 표본 ${sampleCount.toLocaleString("ko-KR")}건 중 일부를 먼저 보여드릴게요.`
         : "상태 분류와 표본 수에 따라 시세 판단은 달라질 수 있어요.",
+      valueNote: sampleCount > 0
+        ? `상태가 다른 매물은 섞지 않고, 같은 모델·같은 상태 표본 ${sampleCount.toLocaleString("ko-KR")}건에서 기준을 잡았어요.`
+        : "표본이 부족하면 부족하다고 표시하고, 억지로 싸다고 단정하지 않습니다.",
       tone: "market",
     };
   }
@@ -617,6 +625,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
     metricLabel: market?.label ?? card.skuName,
     body: "같은 모델과 상태의 비교 매물이 충분하지 않으면 가격 판단을 강하게 단정하지 않아요. 그래도 현재 모인 비교 매물부터 보여드릴게요.",
     note: "이 경우 상세 분석에서 비교 매물과 원본 링크를 직접 확인하는 게 중요합니다.",
+    valueNote: "비교 매물이 부족한 모델은 부족하다고 표시하고, 다른 상태 시세를 섞어 수익을 부풀리지 않아요.",
     tone: "market",
   };
 }
@@ -632,6 +641,7 @@ function marketTrendGuideStep(card: RevealCard): BeginnerGuideStep {
     metricLabel: `${condition} 기준 시세`,
     body: "비교 매물 가격이 오늘만 튄 건지, 며칠 동안 비슷하게 유지됐는지 그래프로 확인해요.",
     note: "점이 적으면 아직 누적 중인 데이터라 참고용으로만 봐야 합니다.",
+    valueNote: "하루 가격 한 점만 보지 않고, 최근 가격 흐름에서 오늘 매입가가 튀는지 같이 봅니다.",
     tone: "trend",
   };
 }
@@ -666,6 +676,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
       metricLabel: `동일 모델 하루 평균 판매량 ${dailySold}`,
       body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}개 거래됐어요. 하루로 나누면 동일 모델이 ${dailySold} 정도 팔려나간 셈이라, 매입 후 돈이 얼마나 오래 묶일지 가늠할 때 보는 정보예요.`,
       note: "과거 거래 기록이라 실제 판매일을 보장하지는 않습니다.",
+      valueNote: "가격만 보는 게 아니라, 실제 거래 흐름으로 돈이 얼마나 오래 묶일지도 같이 봅니다.",
       tone: "speed",
     };
   }
@@ -682,6 +693,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
       metricLabel: `7일 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 — 표본 부족`,
       body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}건만 거래됐어요. 추세 잡기엔 표본이 적어서 "이 정도 빠르다" 단정 안 하고 참고용으로만 보면 됩니다.`,
       note: "표본이 적은 모델은 판매가 늦어질 수 있어서 매입가를 더 보수적으로 잡는 게 안전해요.",
+      valueNote: "표본이 적으면 빠르다고 포장하지 않고, 참고용으로 낮춰 보여줍니다.",
       tone: "speed",
     };
   }
@@ -695,6 +707,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
       metricLabel: "분석 진행 중",
       body: "이 매물의 비교 기록을 가져오는 중이에요. 잠시 후 다시 확인하거나, 상세 분석에서 시세와 비교 매물을 먼저 보면 돼요.",
       note: "데이터가 비어 있을 땐 가격과 판매자 신뢰도를 더 보수적으로 봅니다.",
+      valueNote: "시세와 거래 기록은 뒤에서 계속 채우고, 아직 비어 있으면 보수적으로 표시합니다.",
       tone: "speed",
     };
   }
@@ -711,6 +724,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
         ? `현재 비교 매물은 ${marketActiveSample.toLocaleString("ko-KR")}건 잡혔는데 과거 판매 기록은 부족해요. 매물 자체가 자주 나오는 모델이 아니거나, 거래가 천천히 도는 카테고리일 수 있어요.`
         : "이 모델은 같은 상태로 팔린 기록이 아직 충분히 누적되지 않았어요. 회전 속도 단정 대신 비교 매물 가격과 셀러 신뢰도를 우선 보세요.",
     note: "상세 분석에서 시세 그래프와 비교 매물을 함께 확인하세요.",
+    valueNote: "거래 속도 표본이 약하면 약하다고 표시하고, 가격 판단 쪽으로 무게를 옮깁니다.",
     tone: "speed",
   };
 }
@@ -731,6 +745,7 @@ function buyCostGuideStep(card: RevealCard): BeginnerGuideStep {
     metricLabel: "상품가 + 내가 낼 배송비",
     body,
     note: "택포/배송비 별도 문구는 구매 전 판매자에게 한 번 더 확인하는 게 안전합니다.",
+    valueNote: "상품가만 보지 않고 배송비 확인 필요까지 매입가에 얹어, 실제 들어갈 돈으로 다시 봅니다.",
     tone: "buy",
   };
 }
@@ -747,6 +762,7 @@ function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
     metricLabel: "수수료·배송비까지 뺀 예상 차익",
     body: `번개장터에서 되팔 때는 예상 판매가에서 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}를 먼저 빼요. 그 비용까지 뺀 뒤 남는 예상 차익이 ${displayProfitRange(card)}입니다.`,
     note: "단순 시세 차이가 아니라 되팔 때 드는 비용까지 뺀 값으로 봅니다.",
+    valueNote: "시세 차이에서 수수료, 재배송비, 안전버퍼를 빼서 더 현실적인 숫자로 바꿉니다.",
     tone: "resell",
   };
 }
@@ -768,6 +784,7 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
     metricLabel: "번개장터 기준 예상 차익",
     body: `${betterChannel}, 거래 범위와 네고 부담이 달라요. 그래서 번개장터에 다시 팔 때와 당근 직거래로 팔 때를 나눠서 보여드릴게요.`,
     note: "당근은 수수료가 적을 수 있지만 지역/직거래/네고 부담이 있고, 번개장터는 전국 거래와 안전결제 흐름이 장점이에요.",
+    valueNote: "전국 거래와 직거래를 나눠 봐서, 어디에 팔 때 남는 금액이 달라지는지도 같이 계산합니다.",
     tone: "channel",
   };
 }
@@ -781,6 +798,7 @@ function summaryGuideStep(): BeginnerGuideStep {
     metricLabel: "비교 매물 · 배송비 · 수수료 · 안전결제",
     body: "",
     note: "",
+    valueNote: "여기까지가 득템잡이가 먼저 정리한 핵심입니다. 더 보고 싶으면 상세 분석에서 원본 근거를 펼쳐보면 돼요.",
     tone: "summary",
   };
 }
@@ -4571,6 +4589,24 @@ function BeginnerGuideStepVisual({ card, tone }: { card: RevealCard; tone: Begin
   return <BeginnerGuideSummaryVisual />;
 }
 
+function BeginnerGuideValueNote({ note, tone }: { note?: string; tone: BeginnerGuideStep["tone"] }) {
+  if (!note) return null;
+  return (
+    <div
+      data-beginner-guide-value-note
+      className={`${tone === "summary" ? "mx-auto mt-5 max-w-[340px] text-left" : "mt-4"} rounded-[18px] bg-white/72 px-3.5 py-3 ring-1 ring-[#e8dfd0] dark:bg-zinc-950/48 dark:ring-zinc-800`}
+    >
+      <div className="flex items-center gap-1.5 text-[10.5px] font-black text-[#3182f6] dark:text-blue-300">
+        <TargetIcon className="h-3.5 w-3.5" />
+        <span>대신 확인한 것</span>
+      </div>
+      <p className="mt-1.5 break-keep text-[12.5px] font-semibold leading-5 text-[#5b665a] dark:text-zinc-300">
+        {note}
+      </p>
+    </div>
+  );
+}
+
 function BeginnerGuideWalkthrough({
   card,
   stepIndex,
@@ -4745,6 +4781,8 @@ function BeginnerGuideWalkthrough({
                 {step.body}
               </p>
             ) : null}
+
+            <BeginnerGuideValueNote note={step.valueNote} tone={step.tone} />
 
             {step.tone === "trust" ? (
               <BeginnerGuideTrustMetric card={card} />

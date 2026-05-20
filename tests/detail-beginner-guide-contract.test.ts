@@ -89,6 +89,14 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /beginnerPurchaseChecks/);
   assert.match(modal, /hasMeaningfulCounterfeitRisk\(card, category\)/);
   assert.match(modal, /categoryDefaultDepth/);
+  assert.match(modal, /valueNote\?: string/);
+  assert.match(modal, /data-beginner-guide-value-note/);
+  assert.match(modal, /대신 확인한 것/);
+  assert.match(modal, /후기 수와 평점을 같이 봐서/);
+  assert.match(modal, /상태가 다른 매물은 섞지 않고/);
+  assert.match(modal, /하루 가격 한 점만 보지 않고/);
+  assert.match(modal, /실제 거래 흐름으로 돈이 얼마나 오래 묶일지/);
+  assert.match(modal, /수수료, 재배송비, 안전버퍼/);
   assert.match(modal, /data-beginner-guide-purchase-check/);
   assert.match(modal, /구매 전에 이것만 물어보면 돼요/);
   assert.match(modal, /혼자 보면 놓치기 쉬운 질문/);
