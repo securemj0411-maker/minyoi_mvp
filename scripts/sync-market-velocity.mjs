@@ -120,6 +120,7 @@ const createTableSql = `
 create table if not exists public.mvp_market_velocity_daily (
   date date not null,
   comparable_key text not null,
+  condition_class text not null default 'all',
   category text,
   family text,
   model text,
@@ -135,11 +136,34 @@ create table if not exists public.mvp_market_velocity_daily (
   clock_basis text not null default 'first_seen_to_sold_detected'
     check (clock_basis in ('first_seen_to_sold_detected')),
   computed_at timestamptz not null default now(),
-  primary key (date, comparable_key)
+  primary key (date, comparable_key, condition_class)
 );
+
+alter table public.mvp_market_velocity_daily
+  add column if not exists condition_class text not null default 'all';
+
+do $$
+begin
+  if exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.mvp_market_velocity_daily'::regclass
+      and conname = 'mvp_market_velocity_daily_pkey'
+      and array_length(conkey, 1) = 2
+  ) then
+    alter table public.mvp_market_velocity_daily
+      drop constraint mvp_market_velocity_daily_pkey;
+    alter table public.mvp_market_velocity_daily
+      add constraint mvp_market_velocity_daily_pkey
+      primary key (date, comparable_key, condition_class);
+  end if;
+end $$;
 
 create index if not exists mvp_market_velocity_daily_comparable_date_idx
   on public.mvp_market_velocity_daily(comparable_key, date desc);
+
+create index if not exists mvp_market_velocity_daily_comparable_condition_date_idx
+  on public.mvp_market_velocity_daily(comparable_key, condition_class, date desc);
 
 alter table public.mvp_market_velocity_daily enable row level security;
 `;
@@ -183,6 +207,7 @@ key_velocity as (
   select
     current_date as date,
     comparable_key,
+    'all'::text as condition_class,
     max(category) as category,
     max(family) as family,
     max(model) as model,
@@ -275,6 +300,7 @@ key_velocity as (
   select
     current_date as date,
     comparable_key,
+    'all'::text as condition_class,
     max(category) as category,
     max(family) as family,
     max(model) as model,
@@ -306,6 +332,7 @@ upserted as (
   insert into public.mvp_market_velocity_daily (
     date,
     comparable_key,
+    condition_class,
     category,
     family,
     model,
@@ -324,6 +351,7 @@ upserted as (
   select
     date,
     comparable_key,
+    condition_class,
     category,
     family,
     model,
@@ -339,7 +367,7 @@ upserted as (
     clock_basis,
     computed_at
   from daily_rows
-  on conflict (date, comparable_key) do update set
+  on conflict (date, comparable_key, condition_class) do update set
     category = excluded.category,
     family = excluded.family,
     model = excluded.model,

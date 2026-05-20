@@ -477,9 +477,11 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
   return {
     eyebrow: "8. 판매 속도",
     title: "판매 속도 표본은 아직 부족해요",
-    metric: "수집 중",
-    metricLabel: "거래완료 표본 부족",
-    body: "거래완료 데이터가 충분하지 않아서 판매 주기를 단정하지 않았어요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 보는 게 좋아요.",
+    metric: card.marketBasis?.soldSampleCount ? `${card.marketBasis.soldSampleCount.toLocaleString("ko-KR")}건` : "수집 중",
+    metricLabel: card.marketBasis?.soldSampleCount ? "시세 거래 표본" : "거래완료 표본 부족",
+    body: card.marketBasis?.soldSampleCount
+      ? "거래완료 표본은 잡혔지만, 판매까지 걸린 시간을 안정적으로 말할 만큼은 아직 부족해요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 봅니다."
+      : "거래완료 데이터가 충분하지 않아서 판매 주기를 단정하지 않았어요. 이런 경우에는 가격과 판매자 신뢰도를 더 보수적으로 보는 게 좋아요.",
     note: "상세 분석에서 시세 그래프와 비교 매물을 함께 확인하세요.",
     tone: "speed",
   };
@@ -509,7 +511,7 @@ function resellCostGuideStep(card: RevealCard): BeginnerGuideStep {
 
   return {
     eyebrow: "5. 되팔 때 비용",
-    title: "번개에 팔면 수수료를 빼요",
+    title: "번개장터에 팔면 수수료를 빼요",
     metric: displayProfitRange(card),
     metricLabel: "번개장터 기준 예상 차익",
     body: `번개장터로 다시 팔면 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}를 빼고 봐요.`,
@@ -3774,6 +3776,10 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
 function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   const speed = saleSpeedDisplay(card);
   const flow = card.skuListingFlow;
+  const velocity = card.velocityBasis;
+  const market = card.marketBasis;
+  const sampleCount = velocity?.observedSoldSampleCount ?? market?.soldSampleCount ?? 0;
+  const sampleLabel = velocity ? "판매완료 누적" : "시세 거래 표본";
 
   return (
     <div className="rounded-[22px] bg-white/82 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
@@ -3783,8 +3789,8 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
           <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{speed.label}</div>
         </div>
         <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
-          <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">거래 표본</div>
-          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{speed.sold7dCount.toLocaleString("ko-KR")}건</div>
+          <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{sampleLabel}</div>
+          <div className="mt-1 text-[17px] font-black text-[#223127] dark:text-zinc-50">{sampleCount.toLocaleString("ko-KR")}건</div>
         </div>
         <div className="rounded-2xl bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
           <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">최근 등록</div>
@@ -3969,7 +3975,10 @@ function BeginnerGuideResellCostVisual({ card }: { card: RevealCard }) {
   return (
     <div data-beginner-guide-resell-cost className="mt-4 overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
       <div className="px-4 py-4">
-        <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">번개장터 기준 예상 차익</div>
+        <div className="flex items-center gap-2">
+          <BunjangLogo className="h-6 w-6 rounded-full" />
+          <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">번개장터 기준 예상 차익</div>
+        </div>
         <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
           {displayProfitRange(card)}
         </div>
@@ -4072,12 +4081,14 @@ function BeginnerGuideWalkthrough({
   card,
   stepIndex,
   onNext,
+  onPrev,
   onSkip,
   onClose,
 }: {
   card: RevealCard;
   stepIndex: number;
   onNext: () => void;
+  onPrev: () => void;
   onSkip: () => void;
   onClose: () => void;
 }) {
@@ -4085,6 +4096,7 @@ function BeginnerGuideWalkthrough({
   const safeIndex = Math.max(0, Math.min(stepIndex, steps.length - 1));
   const step = steps[safeIndex];
   const isLast = safeIndex === steps.length - 1;
+  const canGoPrev = safeIndex > 0;
   const toneClasses: Record<BeginnerGuideStep["tone"], { bg: string; text: string; ring: string; button: string }> = {
     trust: {
       bg: "bg-[#eef6ec]",
@@ -4148,7 +4160,7 @@ function BeginnerGuideWalkthrough({
   return (
     <section
       data-beginner-guide-fullscreen
-      className="relative min-h-[100dvh] overflow-hidden bg-[#fffbf4] px-5 pb-4 pt-0 dark:bg-zinc-900 sm:min-h-[calc(88vh-2rem)] sm:rounded-[22px] sm:px-6"
+      className="relative h-[100dvh] overflow-hidden bg-[#fffbf4] px-5 pt-0 dark:bg-zinc-900 sm:h-[calc(88vh-2rem)] sm:rounded-[22px] sm:px-6"
     >
       <style>{`
         @keyframes minyoiGuideStepIn {
@@ -4175,11 +4187,11 @@ function BeginnerGuideWalkthrough({
         </div>
       </div>
 
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-[640px] flex-col sm:min-h-[calc(88vh-2rem)]">
+      <div className="mx-auto flex h-full w-full max-w-[640px] flex-col">
         <div
           key={safeIndex}
           data-beginner-guide-step
-          className={`flex min-h-0 flex-1 flex-col animate-[minyoiGuideStepIn_240ms_ease-out] ${step.tone === "trust" ? "pt-0" : "pt-[calc(env(safe-area-inset-top)+52px)] sm:pt-16"}`}
+          className={`flex min-h-0 flex-1 flex-col overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+126px)] animate-[minyoiGuideStepIn_240ms_ease-out] ${step.tone === "trust" ? "pt-0" : "pt-[calc(env(safe-area-inset-top)+52px)] sm:pt-16"}`}
         >
           {step.tone === "trust" ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
 
@@ -4220,22 +4232,35 @@ function BeginnerGuideWalkthrough({
 
           {step.tone !== "trust" ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
 
-          <div className="sticky bottom-0 -mx-5 mt-auto bg-[linear-gradient(180deg,rgba(255,251,244,0),#fffbf4_26%)] px-5 pb-[calc(env(safe-area-inset-bottom)+2px)] pt-6 dark:bg-[linear-gradient(180deg,rgba(24,24,27,0),#18181b_26%)] sm:-mx-6 sm:px-6">
+        </div>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 z-30 bg-[linear-gradient(180deg,rgba(255,251,244,0),#fffbf4_26%)] pb-[calc(env(safe-area-inset-bottom)+8px)] pt-6 dark:bg-[linear-gradient(180deg,rgba(24,24,27,0),#18181b_26%)]">
+        <div className="mx-auto w-full max-w-[640px] px-5 sm:px-6">
+          <div className="grid grid-cols-[88px_minmax(0,1fr)] gap-2">
+            <button
+              type="button"
+              onClick={onPrev}
+              disabled={!canGoPrev}
+              className="flex min-h-[50px] items-center justify-center rounded-[17px] bg-white/92 px-3 text-[15px] font-black text-[#223127] ring-1 ring-[#e6dece] transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-35 dark:bg-zinc-950/70 dark:text-zinc-100 dark:ring-zinc-800"
+            >
+              이전
+            </button>
             <button
               type="button"
               onClick={onNext}
-              className={`flex min-h-[50px] w-full items-center justify-center rounded-[17px] px-4 text-[16px] font-black text-white shadow-[0_14px_28px_rgba(34,49,39,0.18)] transition active:scale-[0.99] ${toneClass.button}`}
+              className={`flex min-h-[50px] items-center justify-center rounded-[17px] px-4 text-[16px] font-black text-white shadow-[0_14px_28px_rgba(34,49,39,0.18)] transition active:scale-[0.99] ${toneClass.button}`}
             >
               {isLast ? "상세 분석 보기" : "다음"}
             </button>
-            <button
-              type="button"
-              onClick={onSkip}
-              className="mx-auto mt-2 flex min-h-9 items-center justify-center px-3 text-[12px] font-black text-[#7b8378] underline-offset-4 hover:text-[#223127] hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
-            >
-              초보자 가이드 스킵하기
-            </button>
           </div>
+          <button
+            type="button"
+            onClick={onSkip}
+            className="mx-auto mt-2 flex min-h-9 items-center justify-center px-3 text-[12px] font-black text-[#7b8378] underline-offset-4 hover:text-[#223127] hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+          >
+            초보자 가이드 스킵하기
+          </button>
         </div>
       </div>
     </section>
@@ -5071,6 +5096,11 @@ export default function PackRevealModal({
     window.requestAnimationFrame(() => resetDetailScroll("auto"));
   }, [activeRevealCard, activeRevealPid, beginnerGuideStep, resetDetailScroll]);
 
+  const retreatBeginnerGuide = useCallback(() => {
+    setBeginnerGuideStep((prev) => Math.max(0, prev - 1));
+    window.requestAnimationFrame(() => resetDetailScroll("auto"));
+  }, [resetDetailScroll]);
+
   // Wave 76: loading 종료 후 LoadingStage를 잠깐 더 보여줘서 100% 도달 + smooth
   // 카드 reveal. 이전엔 응답 도착 시 중간 % 상태에서 갑자기 카드 노출됐음.
   const [displayLoading, setDisplayLoading] = useState(loading);
@@ -5371,6 +5401,7 @@ export default function PackRevealModal({
                 card={activeRevealCard}
                 stepIndex={beginnerGuideStep}
                 onNext={advanceBeginnerGuide}
+                onPrev={retreatBeginnerGuide}
                 onSkip={skipBeginnerGuide}
                 onClose={handleClose}
               />

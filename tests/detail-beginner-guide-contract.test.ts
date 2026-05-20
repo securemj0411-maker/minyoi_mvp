@@ -28,6 +28,10 @@ test("detail modal starts with a beginner guide before dense analysis", () => {
   assert.match(modal, /마무리/);
   assert.match(modal, /상세 분석 보기/);
   assert.match(modal, /초보자 가이드 스킵하기/);
+  assert.match(modal, /onPrev/);
+  assert.match(modal, /retreatBeginnerGuide/);
+  assert.match(modal, /이전/);
+  assert.ok(modal.includes("disabled={!canGoPrev}"));
   assert.match(modal, /BEGINNER_GUIDE_AUTO_SHOW_LIMIT = 3/);
   assert.match(modal, /BEGINNER_GUIDE_AUTO_HIDE_SKIP_THRESHOLD = 4/);
   assert.match(modal, /BEGINNER_GUIDE_HANDLED_PIDS_STORAGE_KEY/);
@@ -56,6 +60,8 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /data-beginner-guide-market-trend/);
   assert.match(modal, /data-beginner-guide-buy-cost/);
   assert.match(modal, /data-beginner-guide-resell-cost/);
+  assert.match(modal, /번개장터에 팔면 수수료를 빼요/);
+  assert.ok(modal.includes('<BunjangLogo className="h-6 w-6 rounded-full" />'));
   assert.match(modal, /내가 낼 배송비/);
   assert.match(modal, /data-beginner-guide-safe-payment/);
   assert.match(modal, /구매확정 전 확인/);
@@ -67,6 +73,20 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /recordBeginnerGuideSkipped\(activeRevealPid\)/);
   assert.match(modal, /recordBeginnerGuideCompleted\(activeRevealPid\)/);
   assert.match(modal, /medianHoursToSold/);
+  assert.match(modal, /observedSoldSampleCount/);
+  assert.match(modal, /시세 거래 표본/);
   assert.match(modal, /실제 결과는 가격·상태·거래 조건에 따라 달라집니다/);
   assert.doesNotMatch(modal, /무조건|본전|수익 보장|돈을 벌|얼마를 벌/);
+});
+
+test("market velocity reads the stable all-condition materialization", () => {
+  const packOpen = source("src/lib/pack-open.ts");
+  const sync = source("scripts/sync-market-velocity.mjs");
+
+  assert.match(packOpen, /"condition_class"/);
+  assert.match(packOpen, /condition_class=eq\.all/);
+  assert.match(packOpen, /observed_sold_sample_count\.desc/);
+  assert.match(sync, /condition_class text not null default 'all'/);
+  assert.match(sync, /primary key \(date, comparable_key, condition_class\)/);
+  assert.match(sync, /on conflict \(date, comparable_key, condition_class\)/);
 });

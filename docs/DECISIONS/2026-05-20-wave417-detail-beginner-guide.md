@@ -16,6 +16,9 @@
 - 안전결제 단계는 보장형 환불 문구를 피하고, 에스크로 구조·구매확정 전 확인·문제 발생 시 확정 보류 중심으로 설명한다.
 - 되팔 곳 단계는 번개장터 재판매와 당근 직거래 예상 차익을 비교하되, 당근은 지역/네고 부담을 같이 표시한다.
 - 문구는 지표 나열이 아니라 “이 상품 판매자는 후기가 n건이고 평점이 n점...”처럼 초보자가 바로 이해할 수 있는 문장으로 쓴다.
+- 2026-05-20 추가 결정: 쉬운모드 조작부(`이전`/`다음`/`초보자 가이드 스킵하기`)는 단계 내용 높이와 무관하게 항상 하단에 고정한다.
+- 2026-05-20 추가 결정: 상단 `<` 버튼은 가이드 닫기/상세 복귀 역할로 유지하고, 단계 안에서 되돌아가는 별도 `이전` 버튼을 하단에 둔다.
+- 2026-05-20 velocity 점검 결과: AirPods Max는 표본이 부족한 문제가 아니었다. `mvp_market_velocity_daily`에 2026-05-20 기준 `airpods|airpods_max|usbc` all row가 누적 21건/최근 7일 18건/high, `airpods|airpods_max|lightning` all row가 누적 54건/최근 7일 45건/high로 존재한다. 문제는 `condition_class` 분리 후 조회가 `all`을 고정하지 않아 batch 응답에서 condition row가 섞이고 limit/정렬에 따라 누락 또는 낮은 표본 row가 선택될 수 있었던 점이다.
 
 ## 변경
 - `pack-reveal-modal.tsx`에 `BeginnerGuideWalkthrough`를 추가했다.
@@ -27,7 +30,13 @@
 - 마지막 마무리 단계는 앞에서 이미 설명한 매입가/수수료/차익 계산을 반복하지 않고, 확인한 근거 체크리스트와 상세 분석 진입만 담당한다.
 - 기존 상세 화면 첫 영역에 `쉽게 보기` 버튼을 추가해 수동 재진입 경로를 둔다.
 - 판매자 평점/후기 수는 문장 속 숫자로 묻히지 않도록 별 SVG, 후기 배지, 굵은 숫자 카드로 강조한다.
+- 하단 CTA를 `absolute bottom` 영역으로 고정하고, 내용 영역만 내부 스크롤되도록 바꿨다.
+- 되팔 때 비용 단계 문구를 `번개장터에 팔면...`으로 명확히 하고, 번개장터 로고를 예상 차익 카드에 추가했다.
+- 판매 속도 단계의 `거래 표본`은 7일 판매 수 대신 velocity 누적 판매완료 표본(`observedSoldSampleCount`)을 우선 보여주고, velocity가 없으면 시세 거래 표본으로 fallback한다.
+- `fetchLatestMarketVelocity()`는 `condition_class=eq.all`을 고정 조회한다. condition별 velocity row가 섞여 batch limit을 잡아먹거나 임의 row가 먼저 선택되는 문제를 차단한다.
+- `scripts/sync-market-velocity.mjs`는 `condition_class='all'`, PK `(date, comparable_key, condition_class)`, 동일 conflict target을 사용하도록 맞췄다. 2026-05-20 23:21 KST에 script apply, 23:24 KST에 운영 RPC `sync_market_velocity_daily`까지 실행해 all/condition split materialization을 갱신했다.
 
 ## 보류
 - 사용자 계정 단위의 초보자 모드 설정 저장은 아직 하지 않는다. 현재는 브라우저 localStorage 기준이다.
 - A/B 테스트와 계정 설정 UI는 후속 UX 다듬기에서 본다.
+- condition별 판매 주기(예: 미개봉/S급/사용감별 velocity)는 후속 작업으로 남긴다. 지금은 화면 안정성과 충분한 표본 확보를 위해 `all` 기준을 쓴다.

@@ -281,6 +281,7 @@ type MarketPriceRow = {
 
 type MarketVelocityRow = {
   comparable_key: string;
+  condition_class: string;
   category: string | null;
   observed_sold_sample_count: number;
   active_sample_count: number;
@@ -880,6 +881,7 @@ export async function fetchLatestMarketVelocity(comparableKeys: (string | null)[
 
   const cols = [
     "comparable_key",
+    "condition_class",
     "category",
     "observed_sold_sample_count",
     "active_sample_count",
@@ -894,7 +896,7 @@ export async function fetchLatestMarketVelocity(comparableKeys: (string | null)[
   ].join(",");
   const encoded = missing.map((key) => encodeURIComponent(key)).join(",");
   const res = await callSupabase(
-    `/mvp_market_velocity_daily?select=${cols}&comparable_key=in.(${encoded})&confidence=in.(high,medium)&order=date.desc,computed_at.desc&limit=${Math.max(100, missing.length * 5)}`,
+    `/mvp_market_velocity_daily?select=${cols}&comparable_key=in.(${encoded})&condition_class=eq.all&confidence=in.(high,medium)&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=${Math.max(100, missing.length * 2)}`,
     { headers: authHeaders() },
   );
   const rows = (await res.json()) as MarketVelocityRow[];
