@@ -2699,68 +2699,48 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
   const bonusFromDaangn = bunjangFee;
 
   return (
-    <section className="mt-3 border-t border-zinc-200 bg-white/0 py-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40">
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          어디에 팔지? — 차익 비교
-        </div>
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-bold text-zinc-700 transition hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-          aria-label="수수료 차이 설명"
-        >
-          {open ? "✕" : "?"}
-        </button>
+    <section style={{ marginTop: 18, padding: "0 14px" }}>
+      {/* Wave 394.7.r: handoff SellWhere JSX 1:1. */}
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", margin: "0 0 10px" }}>
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#1a2620", letterSpacing: -0.3 }}>어디에 팔지?</h3>
+        <span style={{ color: "#6f7c6d", fontWeight: 600, fontSize: 11, whiteSpace: "nowrap" }}>채널별 예상 차익</span>
       </div>
-      {/* Wave 394.7.m (Claude Design reference SellWhere): 2-col card + 당근 추천 badge. */}
-      <div className="mt-2 grid grid-cols-2 gap-2.5">
-        <div className="rounded-xl border border-zinc-200 bg-white px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900/60">
-          <div className="flex items-center gap-1.5">
-            <span className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-[#0b1413]">
-              <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        {/* 번개장터 — 흰 카드 */}
+        <div style={{ background: "#ffffff", border: "1px solid #ece3d2", borderRadius: 14, padding: "12px 12px 13px", position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+            <span style={{ width: 22, height: 22, borderRadius: 999, background: "#0b1413", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><path d="M13 2L3 14h7l-1 8 10-12h-7z" /></svg>
             </span>
-            <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">번개장터</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#344136" }}>번개장터</span>
           </div>
-          <div className="mt-2 text-lg font-black tabular-nums tracking-tight text-emerald-700 dark:text-emerald-300">
+          <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 19, fontWeight: 900, color: "#047857", letterSpacing: -0.4 }}>
             +{krw(bunjangProfit)}
           </div>
-          <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-            수수료 3.5% 차감
-          </div>
-          <div className="mt-2 flex flex-wrap gap-1">
-            <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-              전국 거래
-            </span>
-            <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-              안전결제
-            </span>
+          <div style={{ fontSize: 10.5, color: "#6f7c6d", marginTop: 3, fontWeight: 600 }}>수수료 3.5% 차감</div>
+          <div style={{ display: "flex", gap: 4, marginTop: 8, flexWrap: "wrap" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#e6f4ec", color: "#047857", borderRadius: 999, padding: "2px 7px", fontSize: 10, fontWeight: 700, whiteSpace: "nowrap" }}>전국 거래</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#e6f4ec", color: "#047857", borderRadius: 999, padding: "2px 7px", fontSize: 10, fontWeight: 700, whiteSpace: "nowrap" }}>안전결제</span>
           </div>
         </div>
-        {/* 당근 — 추천 (당근 차익 > 번개) */}
-        <div className="relative rounded-xl border-2 border-amber-300 bg-gradient-to-br from-orange-50 to-amber-50 px-3 py-3 dark:border-amber-700 dark:from-orange-950/30 dark:to-amber-950/20">
-          <div className="absolute -top-2.5 right-2.5 rounded-full bg-amber-700 px-2 py-0.5 text-[9px] font-black tracking-wide text-amber-50">
+        {/* 당근 — 추천 (gradient + amber badge) */}
+        <div style={{ background: "linear-gradient(135deg, #fffaf0 0%, #fff5dc 100%)", border: "1.5px solid #fbbf24", borderRadius: 14, padding: "12px 12px 13px", position: "relative" }}>
+          <div style={{ position: "absolute", top: -8, right: 10, background: "#b45309", color: "#fef3c7", fontSize: 9, fontWeight: 800, padding: "3px 7px", borderRadius: 999, letterSpacing: "0.05em" }}>
             +{krw(bonusFromDaangn)} 더
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-[#ff6f0f]">
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+            <span style={{ width: 22, height: 22, borderRadius: 999, background: "#ff6f0f", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
               <DaangnLogo className="h-3.5 w-3.5" />
             </span>
-            <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">당근 직거래</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#344136" }}>당근 직거래</span>
           </div>
-          <div className="mt-2 text-lg font-black tabular-nums tracking-tight text-amber-800 dark:text-amber-300">
+          <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 19, fontWeight: 900, color: "#b45309", letterSpacing: -0.4 }}>
             +{krw(daangnProfit)}
           </div>
-          <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-            수수료 0원
-          </div>
-          <div className="mt-2 flex flex-wrap gap-1">
-            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-              지역 제한
-            </span>
-            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-              네고 부담
-            </span>
+          <div style={{ fontSize: 10.5, color: "#6f7c6d", marginTop: 3, fontWeight: 600 }}>수수료 0원</div>
+          <div style={{ display: "flex", gap: 4, marginTop: 8, flexWrap: "wrap" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#fef3c7", color: "#92400e", borderRadius: 999, padding: "2px 7px", fontSize: 10, fontWeight: 700, whiteSpace: "nowrap" }}>지역 제한</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#fef3c7", color: "#92400e", borderRadius: 999, padding: "2px 7px", fontSize: 10, fontWeight: 700, whiteSpace: "nowrap" }}>네고 부담</span>
           </div>
         </div>
       </div>
