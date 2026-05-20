@@ -4718,15 +4718,25 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
 
     const controller = new AbortController();
 
-    void fetch(statsUrl, { cache: "no-store", signal: controller.signal })
-      .then((res) => {
+    const loadStats = async () => {
+      const fetchStats = async (url: string) => {
+        const res = await fetch(url, { cache: "no-store", signal: controller.signal });
         if (!res.ok) throw new Error("safety stats failed");
-        return res.json() as Promise<{ stats?: BeginnerGuideSafetyStats }>;
-      })
-      .then((payload) => {
-        if (!controller.signal.aborted) setStats(payload.stats ?? null);
-      })
-      .catch((err) => {
+        const payload = await res.json() as { stats?: BeginnerGuideSafetyStats };
+        return payload.stats ?? null;
+      };
+
+      const scopedStats = await fetchStats(statsUrl);
+      if ((scopedStats?.total_blocked_7d ?? 0) > 0 || statsUrl === "/api/public/safety-stats") {
+        return scopedStats;
+      }
+      return fetchStats("/api/public/safety-stats");
+    };
+
+    void loadStats()
+      .then((nextStats) => {
+        if (!controller.signal.aborted) setStats(nextStats);
+      }).catch((err) => {
         if (controller.signal.aborted) return;
         console.warn("[beginner-guide] safety stats unavailable", err instanceof Error ? err.message : err);
         setLoadFailed(true);
@@ -4735,28 +4745,11 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
     return () => controller.abort();
   }, [loadFailed, stats, statsUrl]);
 
-  if (variant === "intro" && (!stats || (stats.total_blocked_7d ?? 0) <= 0)) {
-    return (
-      <div
-        data-beginner-guide-safety-filter-note
-        className="mt-6 rounded-[28px] bg-white px-5 py-5 shadow-[0_18px_44px_rgba(34,49,39,0.08)] ring-1 ring-[#ece4d7] dark:bg-zinc-950/70 dark:ring-zinc-800"
-      >
-        <div className="flex items-center gap-3">
-          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f2f7ff] text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/45">
-            <ShieldIcon className="h-5 w-5" />
-          </span>
-          <div>
-            <div className="break-keep text-[14px] font-black leading-5 text-[#172019] dark:text-zinc-50">
-              득템잡이가 오늘 비슷한 매물을 먼저 걸러봤어요
-            </div>
-            <div className="mt-1 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">
-              곧 숫자까지 보여드릴게요.
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  if (variant === "intro" && !stats && !loadFailed) {
+    return null;
   }
+
+  if (variant === "intro" && (!stats || (stats.total_blocked_7d ?? 0) <= 0)) return null;
 
   const totalBlocked = stats?.total_blocked_7d ?? 0;
   if (!stats || totalBlocked <= 0) return null;
@@ -4766,7 +4759,7 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
     : stats.scope?.level === "category" && stats.scope.category
       ? `${BEGINNER_CATEGORY_LABELS[stats.scope.category] ?? "비슷한 상품"} 중`
       : null;
-  const subjectLabel = scopedSubject ?? "추천 풀에서";
+  const subjectLabel = scopedSubject ?? "전체 추천 풀에서";
 
   if (variant === "intro") {
     return (
