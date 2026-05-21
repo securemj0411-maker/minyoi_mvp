@@ -9,20 +9,20 @@ import {
 } from "@/lib/collect-logs";
 import { checkCronAuth } from "@/lib/cron-auth";
 import { acquireCronGuardWithSourceHealth, cronGuardSkipBody } from "@/lib/cron-guard";
-import { runJoongnaShadowIngest } from "@/lib/joongna-shadow-ingest";
+import { runJoongnaIngest } from "@/lib/joongna-ingest";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 
 export const maxDuration = 90;
 
-async function handleJoongnaShadowWorker(req: NextRequest) {
+async function handleJoongnaWorker(req: NextRequest) {
   const { authOk, authReason } = checkCronAuth(req);
-  const meta = buildCronRequestMeta(req, authOk, authReason, "joongna-shadow-worker");
+  const meta = buildCronRequestMeta(req, authOk, authReason, "joongna-worker");
 
   if (!authOk) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const guard = await acquireCronGuardWithSourceHealth("joongna_shadow_worker", req);
+  const guard = await acquireCronGuardWithSourceHealth("joongna_worker", req);
   if (!guard.allowed) {
     return NextResponse.json(cronGuardSkipBody(guard));
   }
@@ -32,20 +32,20 @@ async function handleJoongnaShadowWorker(req: NextRequest) {
     ...meta,
     requestMeta: {
       ...meta.requestMeta,
-      pipelineMode: "joongna_shadow_worker",
+      pipelineMode: "joongna_worker",
       staleMarkedBeforeRun: staleMarked,
     },
   });
   if (!run.id) {
     guard.release();
     return NextResponse.json(
-      { ok: false, mode: "joongna_shadow_worker", error: "supabase_unavailable_before_pipeline", ts: run.startedAt },
+      { ok: false, mode: "joongna_worker", error: "supabase_unavailable_before_pipeline", ts: run.startedAt },
       { status: 503 },
     );
   }
 
   try {
-    const result = await runJoongnaShadowIngest({
+    const result = await runJoongnaIngest({
       params: req.nextUrl.searchParams,
       runId: run.id,
     });
@@ -69,7 +69,7 @@ async function handleJoongnaShadowWorker(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       runId: run.id,
-      mode: "joongna_shadow_worker",
+      mode: "joongna_worker",
       result,
       ts: run.startedAt,
     });
@@ -79,7 +79,7 @@ async function handleJoongnaShadowWorker(req: NextRequest) {
       {
         ok: false,
         runId: run.id,
-        mode: "joongna_shadow_worker",
+        mode: "joongna_worker",
         error: err instanceof Error ? err.message : String(err),
         ts: run.startedAt,
       },
@@ -91,5 +91,5 @@ async function handleJoongnaShadowWorker(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  return handleJoongnaShadowWorker(req);
+  return handleJoongnaWorker(req);
 }

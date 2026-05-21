@@ -29,7 +29,7 @@
       "schedule": "27 * * * *"
     },
     {
-      "path": "/api/cron/joongna-shadow-worker",
+      "path": "/api/cron/joongna-worker",
       "schedule": "3,18,33,48 * * * *"
     },
     {

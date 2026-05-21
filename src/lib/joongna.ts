@@ -5,7 +5,7 @@ export const JOONGNA_SOURCE_ID = "joongna" as const;
 export const JOONGNA_BASE_URL = "https://web.joongna.com";
 export const JOONGNA_RECENT_PRODUCT_INDEX_URL = `${JOONGNA_BASE_URL}/sitemap-recent-product-index.xml.gz`;
 
-export type JoongnaSourceMode = "off" | "shadow" | "active";
+export type JoongnaSourceMode = "off" | "active";
 
 export type JoongnaBlockSignal = {
   blocked: boolean;
@@ -46,7 +46,7 @@ export type JoongnaProbeReport = {
     sample: string[];
     blockSignals: JoongnaBlockSignal[];
   };
-  decision: "disabled" | "shadow_safe_to_continue" | "stop_on_block_or_error";
+  decision: "disabled" | "source_safe_to_continue" | "stop_on_block_or_error";
 };
 
 export type JoongnaDetail = {
@@ -88,7 +88,7 @@ const DEFAULT_HEADERS = {
 
 function normalizeMode(raw: string | null | undefined): JoongnaSourceMode {
   const value = String(raw ?? "").trim().toLowerCase();
-  if (value === "shadow" || value === "active") return value;
+  if (value === "active") return value;
   return "off";
 }
 
@@ -435,6 +435,6 @@ export async function probeJoongnaPublicSource(options: {
       sample,
       blockSignals,
     },
-    decision: blockSignals.some((signal) => signal.blocked) ? "stop_on_block_or_error" : "shadow_safe_to_continue",
+    decision: blockSignals.some((signal) => signal.blocked) ? "stop_on_block_or_error" : "source_safe_to_continue",
   };
 }

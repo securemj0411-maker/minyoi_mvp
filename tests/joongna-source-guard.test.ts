@@ -11,9 +11,9 @@ import {
   parseRobotsTxt,
 } from "../src/lib/joongna";
 
-test("joongna source defaults to off and only accepts explicit shadow or active", () => {
+test("joongna source defaults to off and only accepts explicit active", () => {
   assert.equal(getJoongnaSourceMode({}), "off");
-  assert.equal(getJoongnaSourceMode({ JOONGNA_SOURCE_MODE: "shadow" }), "shadow");
+  assert.equal(getJoongnaSourceMode({ JOONGNA_SOURCE_MODE: "shadow" }), "off");
   assert.equal(getJoongnaSourceMode({ JOONGNA_SOURCE_MODE: "active" }), "active");
   assert.equal(getJoongnaSourceMode({ JOONGNA_SOURCE_MODE: "enabled" }), "off");
 });

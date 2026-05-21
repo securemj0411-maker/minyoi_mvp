@@ -19,7 +19,7 @@ const DEFAULT_QUERIES = [
   "맥북",
 ];
 
-type ShadowConfig = {
+type JoongnaIngestConfig = {
   queries: string[];
   detailsPerQuery: number;
   maxDetails: number;
@@ -27,7 +27,7 @@ type ShadowConfig = {
   timeoutMs: number;
 };
 
-export type JoongnaShadowIngestResult = {
+export type JoongnaIngestResult = {
   source: typeof JOONGNA_SOURCE_ID;
   mode: ReturnType<typeof getJoongnaSourceMode>;
   skipped: boolean;
@@ -50,11 +50,11 @@ function boundedInt(raw: string | number | null | undefined, fallback: number, m
   return Math.max(min, Math.min(max, parsed));
 }
 
-function configFromEnvAndParams(params?: URLSearchParams): ShadowConfig {
+function configFromEnvAndParams(params?: URLSearchParams): JoongnaIngestConfig {
   const rawQueries =
     params?.get("queries") ??
     params?.get("query") ??
-    process.env.JOONGNA_SHADOW_QUERIES ??
+    process.env.JOONGNA_INGEST_QUERIES ??
     DEFAULT_QUERIES.join(",");
   const queries = rawQueries
     .split(",")
@@ -63,10 +63,25 @@ function configFromEnvAndParams(params?: URLSearchParams): ShadowConfig {
     .slice(0, 8);
   return {
     queries: queries.length > 0 ? queries : DEFAULT_QUERIES,
-    detailsPerQuery: boundedInt(params?.get("detailsPerQuery") ?? process.env.JOONGNA_SHADOW_DETAILS_PER_QUERY, 5, 1, 20),
-    maxDetails: boundedInt(params?.get("maxDetails") ?? params?.get("max") ?? process.env.JOONGNA_SHADOW_MAX_DETAILS, 12, 1, 50),
-    delayMs: boundedInt(params?.get("delayMs") ?? process.env.JOONGNA_SHADOW_DELAY_MS, 450, 0, 5_000),
-    timeoutMs: boundedInt(params?.get("timeoutMs") ?? process.env.JOONGNA_SHADOW_TIMEOUT_MS, 10_000, 1_000, 20_000),
+    detailsPerQuery: boundedInt(
+      params?.get("detailsPerQuery") ?? process.env.JOONGNA_INGEST_DETAILS_PER_QUERY,
+      5,
+      1,
+      20,
+    ),
+    maxDetails: boundedInt(
+      params?.get("maxDetails") ?? params?.get("max") ?? process.env.JOONGNA_INGEST_MAX_DETAILS,
+      12,
+      1,
+      50,
+    ),
+    delayMs: boundedInt(params?.get("delayMs") ?? process.env.JOONGNA_INGEST_DELAY_MS, 450, 0, 5_000),
+    timeoutMs: boundedInt(
+      params?.get("timeoutMs") ?? process.env.JOONGNA_INGEST_TIMEOUT_MS,
+      10_000,
+      1_000,
+      20_000,
+    ),
   };
 }
 
@@ -117,11 +132,16 @@ function isWritableDetail(detail: JoongnaDetail) {
   );
 }
 
-function buildRows(details: JoongnaDetail[], now: string, runId: string | null) {
+function buildRows(
+  details: JoongnaDetail[],
+  now: string,
+  runId: string | null,
+) {
   const rawRows: Record<string, unknown>[] = [];
   const parsedRows: Record<string, unknown>[] = [];
   const observationRows: Record<string, unknown>[] = [];
   const payloadRows: Record<string, unknown>[] = [];
+  const ingestSource = "joongna_active";
 
   for (const detail of details) {
     const title = detail.title ?? "";
@@ -150,7 +170,7 @@ function buildRows(details: JoongnaDetail[], now: string, runId: string | null) 
       price: detail.price,
       num_faved: 0,
       free_shipping: detail.parcelFeeYn === 1,
-      query: "joongna_shadow",
+      query: ingestSource,
       source: JOONGNA_SOURCE_ID,
       description_preview: description.slice(0, 1_500),
       sale_status: saleStatus,
@@ -174,13 +194,13 @@ function buildRows(details: JoongnaDetail[], now: string, runId: string | null) 
       last_missing_at: null,
       source_uploaded_at: detail.sourceUpdatedAt,
       source_updated_at: detail.sourceUpdatedAt,
-      pool_eligible: false,
-      score_dirty: false,
+      pool_eligible: true,
+      score_dirty: true,
       last_seen_at: now,
       last_changed_at: now,
       updated_at: now,
       raw_json: {
-        source: "joongna_shadow",
+        source: ingestSource,
         sourceExternalId: detail.externalId,
         productStatus: detail.productStatus,
         categoryName: detail.categoryName,
@@ -225,7 +245,7 @@ function buildRows(details: JoongnaDetail[], now: string, runId: string | null) 
       pid: detail.internalPid,
       observed_at: now,
       raw_json: {
-        source: "joongna_shadow",
+        source: ingestSource,
         sourceExternalId: detail.externalId,
         url: detail.url,
         productStatus: detail.productStatus,
@@ -288,15 +308,15 @@ async function insertSourceHealth(input: {
     disappeared_transition_rate: 0,
     search_result_count: input.searchResultCount,
     baseline_json: input.metrics,
-    hysteresis_json: { note: "joongna_shadow_ingest_initial_probe" },
+    hysteresis_json: { note: "joongna_ingest_initial_probe" },
     reason: input.reason,
   }]);
 }
 
-export async function runJoongnaShadowIngest(options: {
+export async function runJoongnaIngest(options: {
   params?: URLSearchParams;
   runId?: string | null;
-} = {}): Promise<JoongnaShadowIngestResult> {
+} = {}): Promise<JoongnaIngestResult> {
   const mode = getJoongnaSourceMode();
   const config = configFromEnvAndParams(options.params);
   if (mode === "off") {
@@ -382,7 +402,7 @@ export async function runJoongnaShadowIngest(options: {
       ? "search_partial_failure"
       : writableDetails.length === 0
         ? "no_writable_details"
-        : "shadow_ingest_ok";
+        : "active_ingest_ok";
 
   await insertSourceHealth({
     status: sourceHealthStatus,

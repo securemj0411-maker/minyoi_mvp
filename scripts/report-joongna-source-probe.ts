@@ -9,7 +9,7 @@ async function main() {
 
   console.log(JSON.stringify({
     ...report,
-    note: "No database writes. Joongna source must remain off unless JOONGNA_SOURCE_MODE=shadow or active is explicitly set.",
+    note: "No database writes. Joongna source writes only when JOONGNA_SOURCE_MODE=active is explicitly set.",
   }, null, 2));
 
   if (report.decision === "stop_on_block_or_error") {

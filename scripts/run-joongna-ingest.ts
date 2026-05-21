@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { runJoongnaShadowIngest } from "@/lib/joongna-shadow-ingest";
+import { runJoongnaIngest } from "@/lib/joongna-ingest";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const appDir = path.join(__dirname, "..");
@@ -31,7 +31,7 @@ async function main() {
     params.set(key, rest.join("="));
   }
 
-  const result = await runJoongnaShadowIngest({ params });
+  const result = await runJoongnaIngest({ params });
   console.log(JSON.stringify(result, null, 2));
 }
 
@@ -39,7 +39,7 @@ main().catch((err) => {
   console.error(JSON.stringify({
     ok: false,
     source: "joongna",
-    mode: "joongna_shadow_ingest",
+    mode: "joongna_ingest",
     error: err instanceof Error ? err.message : String(err),
   }, null, 2));
   process.exitCode = 1;
