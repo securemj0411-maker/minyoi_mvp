@@ -81,6 +81,7 @@ import { restFetchAll } from "@/lib/rest-paginated";
 
 type RawListingRow = {
   pid: number;
+  source?: string | null;
   name: string;
   price: number;
   num_faved: number;
@@ -2038,12 +2039,27 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
   // Wave 132: num_comment 추가 — candidate-pool-builder가 >= 8 차단.
   // Wave 217 (2026-05-19): bunjang_condition_label 추가 — parseFashionMobility 가 metadata 활용.
-  const baseColumns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status,num_comment,qty,description_hash,bunjang_condition_label";
+  const baseColumns = "pid,source,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status,num_comment,qty,description_hash,bunjang_condition_label";
   const columns = scoreDirtyAvailable ? `${baseColumns},pool_eligible` : baseColumns;
   const dirtyFilter = scoreDirtyAvailable ? "&score_dirty=eq.true" : "";
-  const url = `${tableUrl("mvp_raw_listings")}?select=${columns}${dirtyFilter}&detail_status=eq.done&or=(listing_type.eq.normal,listing_type_override.eq.normal)&sku_id=not.is.null&listing_state=eq.active&order=last_seen_at.desc&limit=${limit}`;
-  const res = await restFetch(url, { headers: serviceHeaders() });
-  return (await res.json()) as ScorableRawRow[];
+  const baseFilter = `${dirtyFilter}&detail_status=eq.done&or=(listing_type.eq.normal,listing_type_override.eq.normal)&sku_id=not.is.null&listing_state=eq.active`;
+  const buildUrl = (extraFilter: string, rowLimit: number) =>
+    `${tableUrl("mvp_raw_listings")}?select=${columns}${baseFilter}${extraFilter}&order=last_seen_at.desc&limit=${rowLimit}`;
+
+  if (!scoreDirtyAvailable) {
+    const res = await restFetch(buildUrl("", limit), { headers: serviceHeaders() });
+    return (await res.json()) as ScorableRawRow[];
+  }
+
+  const sourceReserveLimit = Math.min(limit, 100);
+  const joongnaRes = await restFetch(buildUrl("&source=eq.joongna", sourceReserveLimit), { headers: serviceHeaders() });
+  const joongnaRows = (await joongnaRes.json()) as ScorableRawRow[];
+  const remainingLimit = Math.max(0, limit - joongnaRows.length);
+  if (remainingLimit === 0) return joongnaRows;
+
+  const generalRes = await restFetch(buildUrl("&source=neq.joongna", remainingLimit), { headers: serviceHeaders() });
+  const generalRows = (await generalRes.json()) as ScorableRawRow[];
+  return [...joongnaRows, ...generalRows];
 }
 
 async function clearScoreDirty(pids: number[]): Promise<void> {

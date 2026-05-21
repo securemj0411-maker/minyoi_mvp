@@ -101,6 +101,7 @@
   - Vercel Cron schedule은 `* * * * *`로 둔다.
   - DB guard mode는 `score_worker`, cooldown 60초, lease 90초.
   - 기본 score budget은 `PIPELINE_SCORE_WORKER_BUDGET_MS=70000`으로 둬 Vercel 90초 한도 안에서 dirty backlog를 별도로 drain한다.
+  - `loadScorableRows()`에 `source='joongna'` reserve를 먼저 태우는 fetch를 추가했다. 번개장터 search touch가 매분 수천 건 발생해도 중고나라 active row가 score backlog 뒤로 계속 밀리지 않게 한다.
 - 보류:
   - `tick` 안 search/score 순서 재배치 또는 source-aware fair score ordering은 별도 작업으로 둔다.
   - score-worker 안정화 후 `tick`은 search-only에 가깝게 축소할지 검토한다.
