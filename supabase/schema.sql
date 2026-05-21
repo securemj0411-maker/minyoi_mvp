@@ -483,6 +483,26 @@ create table if not exists public.mvp_detail_queue (
   unique (pid)
 );
 
+create table if not exists public.mvp_joongna_detail_queue (
+  id uuid primary key default gen_random_uuid(),
+  product_url text not null,
+  external_id text,
+  source_query text,
+  status text not null default 'pending' check (status in ('pending','processing','done','failed')),
+  priority integer not null default 0,
+  attempts integer not null default 0 check (attempts >= 0),
+  max_attempts integer not null default 3 check (max_attempts >= 1),
+  available_at timestamptz not null default now(),
+  locked_at timestamptz,
+  locked_until timestamptz,
+  last_error text,
+  last_fetched_at timestamptz,
+  raw_json jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (product_url)
+);
+
 create table if not exists public.mvp_collect_runs (
   id uuid primary key default gen_random_uuid(),
   status text not null check (status in ('running', 'succeeded', 'failed')),
@@ -755,6 +775,16 @@ create index if not exists mvp_detail_queue_claim_idx
 create index if not exists mvp_detail_queue_locked_until_idx
   on public.mvp_detail_queue(locked_until);
 
+create index if not exists mvp_joongna_detail_queue_claim_idx
+  on public.mvp_joongna_detail_queue(status, priority desc, available_at asc, created_at asc);
+
+create index if not exists mvp_joongna_detail_queue_locked_until_idx
+  on public.mvp_joongna_detail_queue(locked_until);
+
+create index if not exists mvp_joongna_detail_queue_external_id_idx
+  on public.mvp_joongna_detail_queue(external_id)
+  where external_id is not null;
+
 create index if not exists mvp_collect_runs_started_at_idx
   on public.mvp_collect_runs(started_at desc);
 
@@ -784,6 +814,10 @@ alter table public.mvp_source_health enable row level security;
 alter table public.mvp_lifecycle_checks enable row level security;
 alter table public.mvp_market_key_invalidation enable row level security;
 alter table public.mvp_detail_queue enable row level security;
+alter table public.mvp_joongna_detail_queue enable row level security;
+revoke all on public.mvp_joongna_detail_queue from anon;
+revoke all on public.mvp_joongna_detail_queue from authenticated;
+grant select, insert, update, delete on public.mvp_joongna_detail_queue to service_role;
 alter table public.mvp_collect_runs enable row level security;
 alter table public.mvp_landing_showcases enable row level security;
 
@@ -847,6 +881,60 @@ revoke all on function public.claim_mvp_detail_queue(integer, integer) from publ
 revoke execute on function public.claim_mvp_detail_queue(integer, integer) from anon;
 revoke execute on function public.claim_mvp_detail_queue(integer, integer) from authenticated;
 grant execute on function public.claim_mvp_detail_queue(integer, integer) to service_role;
+
+create or replace function public.claim_mvp_joongna_detail_queue(
+  p_batch_size integer default 30,
+  p_lease_seconds integer default 90
+)
+returns table (
+  queue_id uuid,
+  product_url text,
+  external_id text,
+  source_query text,
+  attempts integer
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return query
+  with candidates as (
+    select q.id
+    from public.mvp_joongna_detail_queue q
+    where (
+      q.status = 'pending'
+      or (q.status = 'processing' and q.locked_until < now())
+      or (q.status = 'failed' and q.attempts < q.max_attempts and q.available_at <= now())
+    )
+    order by q.priority desc, q.available_at asc, q.created_at asc
+    limit greatest(1, least(coalesce(p_batch_size, 30), 200))
+    for update skip locked
+  ), claimed as (
+    update public.mvp_joongna_detail_queue q
+    set status = 'processing',
+        attempts = q.attempts + 1,
+        locked_at = now(),
+        locked_until = now() + (greatest(10, least(coalesce(p_lease_seconds, 90), 900)) || ' seconds')::interval,
+        updated_at = now(),
+        last_error = null
+    from candidates c
+    where q.id = c.id
+    returning q.id, q.product_url, q.external_id, q.source_query, q.attempts
+  )
+  select c.id as queue_id,
+         c.product_url,
+         c.external_id,
+         c.source_query,
+         c.attempts
+  from claimed c;
+end;
+$$;
+
+revoke all on function public.claim_mvp_joongna_detail_queue(integer, integer) from public;
+revoke execute on function public.claim_mvp_joongna_detail_queue(integer, integer) from anon;
+revoke execute on function public.claim_mvp_joongna_detail_queue(integer, integer) from authenticated;
+grant execute on function public.claim_mvp_joongna_detail_queue(integer, integer) to service_role;
 
 drop function if exists public.claim_mvp_lifecycle_checks(integer, integer);
 

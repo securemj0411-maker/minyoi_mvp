@@ -8,6 +8,7 @@ import {
   fetchJoongnaSellerStoreInfo,
   getJoongnaSourceMode,
   JOONGNA_SOURCE_ID,
+  parseJoongnaProductExternalId,
   type JoongnaBlockSignal,
   type JoongnaDetail,
   type JoongnaOrderTransactionCount,
@@ -31,6 +32,8 @@ const DEFAULT_JOONGNA_SELLER_FACT_TTL_MS = 6 * 60 * 60_000;
 const JOONGNA_SEARCH_FAILURE_RATE_DEGRADED_THRESHOLD = 0.15;
 const JOONGNA_DETAIL_SUCCESS_RATE_DEGRADED_THRESHOLD = 0.85;
 const JOONGNA_INGEST_DEADLINE_SAFETY_MS = 20_000;
+const JOONGNA_DETAIL_QUEUE_TABLE = "mvp_joongna_detail_queue";
+const JOONGNA_DETAIL_QUEUE_LEASE_SECONDS = 180;
 
 type ReadyCatalogQuery = {
   query: string;
@@ -72,6 +75,11 @@ export type JoongnaIngestResult = {
   sellerProfilesFetched: number;
   sellerTransactionsFetched: number;
   sellerCacheHits: number;
+  queueMode: boolean;
+  detailQueueEnqueued: number;
+  detailQueueClaimed: number;
+  detailQueueDone: number;
+  detailQueueFailed: number;
   budgetStopped: boolean;
   sourceHealthStatus: "healthy" | "degraded" | "unhealthy";
   sourceHealthReason: string;
@@ -82,6 +90,24 @@ type JoongnaMarketInvalidationEvent = {
   affectedPid: number;
   parserVersion: string | null;
   priority: number;
+};
+
+type JoongnaQueuedProductUrl = {
+  url: string;
+  query: string;
+};
+
+type JoongnaDetailQueueClaim = {
+  queue_id: string;
+  product_url: string;
+  external_id: string | null;
+  source_query: string | null;
+  attempts: number;
+};
+
+type JoongnaDetailTarget = {
+  url: string;
+  claim: JoongnaDetailQueueClaim | null;
 };
 
 function boundedInt(raw: string | number | null | undefined, fallback: number, min: number, max: number) {
@@ -526,6 +552,138 @@ async function insertRows(table: string, rows: Record<string, unknown>[]) {
   return (await res.json()) as Array<Record<string, unknown>>;
 }
 
+let joongnaDetailQueueAvailableCache: boolean | null = null;
+
+async function joongnaDetailQueueAvailable() {
+  if (process.env.JOONGNA_DETAIL_QUEUE_ENABLED === "0") return false;
+  if (joongnaDetailQueueAvailableCache != null) return joongnaDetailQueueAvailableCache;
+
+  try {
+    const res = await restFetch(`${tableUrl(JOONGNA_DETAIL_QUEUE_TABLE)}?select=id&limit=1`, {
+      headers: serviceHeaders(),
+    });
+    joongnaDetailQueueAvailableCache = res.ok;
+  } catch (err) {
+    joongnaDetailQueueAvailableCache = false;
+    console.warn("joongna detail queue unavailable; falling back to direct ingest", {
+      error: err instanceof Error ? err.message.slice(0, 200) : String(err).slice(0, 200),
+    });
+  }
+
+  return joongnaDetailQueueAvailableCache;
+}
+
+function joongnaDetailQueuePriority(item: JoongnaQueuedProductUrl) {
+  const normalized = normalizeQueryKey(item.query);
+  if (/(신발|운동화|스니커|나이키|아디다스|호카|아식스|뉴발|살로몬|노바블라스트|삼바|가젤)/.test(normalized)) {
+    return 80;
+  }
+  if (/(의류|자켓|후드|맨투맨|셔츠|니트|바지|데님|폴로|스투시|슈프림|아크테릭스|rrl)/i.test(normalized)) {
+    return 80;
+  }
+  if (/(가방|백|프라다|셀린느|샤넬|보테가|루이비통)/.test(normalized)) {
+    return 70;
+  }
+  return 50;
+}
+
+async function enqueueJoongnaDetailQueue(items: JoongnaQueuedProductUrl[]): Promise<number> {
+  if (items.length === 0) return 0;
+  const deduped = [...items.reduce((acc, item) => {
+    if (item.url.trim()) acc.set(item.url, item);
+    return acc;
+  }, new Map<string, JoongnaQueuedProductUrl>()).values()];
+  const now = new Date().toISOString();
+  const rows = deduped.map((item) => ({
+    product_url: item.url,
+    external_id: parseJoongnaProductExternalId(item.url),
+    source_query: item.query.slice(0, 200),
+    status: "pending",
+    priority: joongnaDetailQueuePriority(item),
+    available_at: now,
+    updated_at: now,
+    raw_json: {
+      source: "joongna_search",
+      query: item.query,
+      discoveredAt: now,
+    },
+  }));
+  const res = await restFetch(
+    `${tableUrl(JOONGNA_DETAIL_QUEUE_TABLE)}?on_conflict=product_url`,
+    {
+      method: "POST",
+      headers: serviceHeaders("resolution=ignore-duplicates,return=minimal"),
+      body: jsonBody(rows),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`joongna detail queue enqueue failed: ${res.status} ${await res.text()}`);
+  }
+  return rows.length;
+}
+
+async function claimJoongnaDetailQueue(limit: number): Promise<JoongnaDetailQueueClaim[]> {
+  const res = await restFetch(rpcUrl("claim_mvp_joongna_detail_queue"), {
+    method: "POST",
+    headers: serviceHeaders(),
+    body: jsonBody({
+      p_batch_size: limit,
+      p_lease_seconds: JOONGNA_DETAIL_QUEUE_LEASE_SECONDS,
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`joongna detail queue claim failed: ${res.status} ${await res.text()}`);
+  }
+  return (await res.json()) as JoongnaDetailQueueClaim[];
+}
+
+async function patchJoongnaDetailQueue(queueId: string, payload: Record<string, unknown>) {
+  const res = await restFetch(
+    `${tableUrl(JOONGNA_DETAIL_QUEUE_TABLE)}?id=eq.${encodeURIComponent(queueId)}`,
+    {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: jsonBody(payload),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`joongna detail queue patch failed: ${res.status} ${await res.text()}`);
+  }
+}
+
+async function markJoongnaDetailQueueDone(claims: JoongnaDetailQueueClaim[]) {
+  if (claims.length === 0) return 0;
+  const now = new Date().toISOString();
+  await Promise.all(claims.map((claim) => patchJoongnaDetailQueue(claim.queue_id, {
+    status: "done",
+    locked_at: null,
+    locked_until: null,
+    last_error: null,
+    last_fetched_at: now,
+    updated_at: now,
+  })));
+  return claims.length;
+}
+
+async function markJoongnaDetailQueueFailed(
+  failures: Array<{ claim: JoongnaDetailQueueClaim; error: string }>,
+) {
+  if (failures.length === 0) return 0;
+  const nowMs = Date.now();
+  await Promise.all(failures.map(({ claim, error }) => {
+    const retryMinutes = Math.min(60, 5 * Math.max(1, claim.attempts));
+    return patchJoongnaDetailQueue(claim.queue_id, {
+      status: "failed",
+      locked_at: null,
+      locked_until: null,
+      last_error: error.slice(0, 500),
+      available_at: new Date(nowMs + retryMinutes * 60_000).toISOString(),
+      updated_at: new Date(nowMs).toISOString(),
+    });
+  }));
+  return failures.length;
+}
+
 function joongnaMarketInvalidationPriority(comparableKey: string | null | undefined) {
   const prefix = String(comparableKey ?? "").split("|")[0] ?? "";
   if (prefix === "shoe" || prefix === "clothing") return 96;
@@ -890,13 +1048,27 @@ export async function runJoongnaIngest(options: {
       sellerProfilesFetched: 0,
       sellerTransactionsFetched: 0,
       sellerCacheHits: 0,
+      queueMode: false,
+      detailQueueEnqueued: 0,
+      detailQueueClaimed: 0,
+      detailQueueDone: 0,
+      detailQueueFailed: 0,
       budgetStopped: false,
       sourceHealthStatus: "degraded",
       sourceHealthReason: "source_mode_off",
     };
   }
 
+  let queueMode = await joongnaDetailQueueAvailable();
+  let detailQueueEnqueued = 0;
+  let detailQueueClaimed = 0;
+  let detailQueueDone = 0;
+  let detailQueueFailed = 0;
   const productUrls = new Set<string>();
+  const queuedProductUrls = new Map<string, JoongnaQueuedProductUrl>();
+  const searchDiscoveryLimit = queueMode
+    ? Math.min(500, Math.max(config.maxDetails, config.queryLimit * config.detailsPerQuery))
+    : config.maxDetails;
   const searchFailures: string[] = [];
   let budgetStopped = false;
   let searchAttempts = 0;
@@ -913,39 +1085,73 @@ export async function runJoongnaIngest(options: {
       });
       for (const url of urls) {
         productUrls.add(url);
-        if (productUrls.size >= config.maxDetails) break;
+        if (!queuedProductUrls.has(url)) queuedProductUrls.set(url, { url, query });
+        if (productUrls.size >= searchDiscoveryLimit) break;
       }
     } catch (err) {
       searchFailures.push(`${query}:${err instanceof Error ? err.message : String(err)}`);
     }
-    if (productUrls.size >= config.maxDetails) break;
+    if (productUrls.size >= searchDiscoveryLimit) break;
     if (config.delayMs > 0) await sleep(config.delayMs);
+  }
+
+  let detailTargets: JoongnaDetailTarget[] = [...productUrls]
+    .slice(0, config.maxDetails)
+    .map((url) => ({ url, claim: null }));
+  if (queueMode) {
+    try {
+      detailQueueEnqueued = await enqueueJoongnaDetailQueue([...queuedProductUrls.values()]);
+      const claims = await claimJoongnaDetailQueue(config.maxDetails);
+      detailQueueClaimed = claims.length;
+      detailTargets = claims.map((claim) => ({ url: claim.product_url, claim }));
+    } catch (err) {
+      queueMode = false;
+      console.warn("joongna detail queue failed; falling back to direct ingest for this run", {
+        error: err instanceof Error ? err.message.slice(0, 300) : String(err).slice(0, 300),
+      });
+    }
   }
 
   const details: JoongnaDetail[] = [];
   const blockedSignals: JoongnaBlockSignal[] = [];
   const detailFetchFailures: string[] = [];
+  const detailQueueDoneClaims: JoongnaDetailQueueClaim[] = [];
+  const detailQueueFailedClaims: Array<{ claim: JoongnaDetailQueueClaim; error: string }> = [];
   let detailAttempts = 0;
   let detail404 = 0;
   let detail5xx = 0;
-  for (const url of [...productUrls].slice(0, config.maxDetails)) {
+  for (const target of detailTargets) {
     if (shouldStopForJoongnaDeadline(options.deadlineMs)) {
       budgetStopped = true;
       break;
     }
     detailAttempts += 1;
     try {
-      const detail = await fetchJoongnaDetail(url, config.timeoutMs);
+      const detail = await fetchJoongnaDetail(target.url, config.timeoutMs);
       details.push(detail);
       if (detail.status === 404) detail404 += 1;
       if (detail.status >= 500) detail5xx += 1;
+      if (target.claim) {
+        if (detail.blockSignal.blocked || detail.status >= 500) {
+          detailQueueFailedClaims.push({
+            claim: target.claim,
+            error: detail.blockSignal.reason ?? `http_${detail.status}`,
+          });
+        } else {
+          detailQueueDoneClaims.push(target.claim);
+        }
+      }
       if (detail.blockSignal.blocked) {
         blockedSignals.push(detail.blockSignal);
         break;
       }
     } catch (err) {
       detail5xx += 1;
-      detailFetchFailures.push(`${url}:${err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120)}`);
+      const message = err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120);
+      detailFetchFailures.push(`${target.url}:${message}`);
+      if (target.claim) {
+        detailQueueFailedClaims.push({ claim: target.claim, error: message });
+      }
     }
     if (config.delayMs > 0) await sleep(config.delayMs);
   }
@@ -970,6 +1176,10 @@ export async function runJoongnaIngest(options: {
   }
   const marketInvalidationsQueued = await enqueueJoongnaMarketInvalidations(marketInvalidationEvents);
   const observationInserted = await insertObservations(observationRows, payloadRows);
+  if (queueMode) {
+    detailQueueDone = await markJoongnaDetailQueueDone(detailQueueDoneClaims);
+    detailQueueFailed = await markJoongnaDetailQueueFailed(detailQueueFailedClaims);
+  }
 
   const detailSuccessRate = detailAttempts > 0
     ? Number((details.filter((detail) => detail.ok).length / detailAttempts).toFixed(3))
@@ -978,20 +1188,25 @@ export async function runJoongnaIngest(options: {
   const searchFailureRate = searchAttempts > 0 ? Number((searchFailures.length / searchAttempts).toFixed(3)) : 0;
   const searchFailureRateHigh = searchFailureRate >= JOONGNA_SEARCH_FAILURE_RATE_DEGRADED_THRESHOLD;
   const detailSuccessRateLow = detailAttempts > 0 && detailSuccessRate < JOONGNA_DETAIL_SUCCESS_RATE_DEGRADED_THRESHOLD;
-  const sourceHealthStatus = hasBlock
-    ? "unhealthy"
-    : writableDetails.length === 0 || searchFailureRateHigh || detailSuccessRateLow
-      ? "degraded"
-      : "healthy";
-  const sourceHealthReason = hasBlock
-    ? blockedSignals.find((signal) => signal.blocked)?.reason ?? "blocked"
-    : searchFailureRateHigh
-      ? "search_failure_rate_high"
-      : detailSuccessRateLow
-        ? "detail_success_rate_low"
-      : writableDetails.length === 0
-        ? "no_writable_details"
-        : "active_ingest_ok";
+  const queueNoPendingDetails = queueMode && productUrls.size > 0 && detailQueueClaimed === 0 && detailAttempts === 0;
+  let sourceHealthStatus: JoongnaIngestResult["sourceHealthStatus"] = "healthy";
+  let sourceHealthReason = "active_ingest_ok";
+  if (hasBlock) {
+    sourceHealthStatus = "unhealthy";
+    sourceHealthReason = blockedSignals.find((signal) => signal.blocked)?.reason ?? "blocked";
+  } else if (queueNoPendingDetails) {
+    sourceHealthStatus = "healthy";
+    sourceHealthReason = "queue_no_pending_details";
+  } else if (searchFailureRateHigh) {
+    sourceHealthStatus = "degraded";
+    sourceHealthReason = "search_failure_rate_high";
+  } else if (detailSuccessRateLow) {
+    sourceHealthStatus = "degraded";
+    sourceHealthReason = "detail_success_rate_low";
+  } else if (writableDetails.length === 0) {
+    sourceHealthStatus = "degraded";
+    sourceHealthReason = "no_writable_details";
+  }
 
   await insertSourceHealth({
     status: sourceHealthStatus,
@@ -1007,6 +1222,12 @@ export async function runJoongnaIngest(options: {
       queryLimit: config.queryLimit,
       maxDetails: config.maxDetails,
       detailsPerQuery: config.detailsPerQuery,
+      queueMode,
+      detailQueueEnqueued,
+      detailQueueClaimed,
+      detailQueueDone,
+      detailQueueFailed,
+      searchDiscoveryLimit,
       searchUrls: productUrls.size,
       searchAttempts,
       searchFailures,
@@ -1055,6 +1276,11 @@ export async function runJoongnaIngest(options: {
     sellerProfilesFetched: sellerEnrichment.sellerProfilesFetched,
     sellerTransactionsFetched: sellerEnrichment.sellerTransactionsFetched,
     sellerCacheHits: sellerEnrichment.sellerCacheHits,
+    queueMode,
+    detailQueueEnqueued,
+    detailQueueClaimed,
+    detailQueueDone,
+    detailQueueFailed,
     sourceHealthStatus,
     sourceHealthReason,
   };
