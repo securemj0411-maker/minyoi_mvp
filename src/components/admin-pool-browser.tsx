@@ -11,7 +11,7 @@ import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
-import { BunjangLogo, DanawaLogo } from "@/components/market-brand-logo";
+import { BunjangLogo, DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { CATALOG } from "@/lib/catalog";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 import { buyPriceGuidance } from "@/lib/buy-price-guidance";
@@ -25,6 +25,9 @@ type PoolItem = {
   skuMedian: number;
   thumbnailUrl: string | null;
   bunjangUrl: string;
+  listingUrl: string;
+  marketplaceSource: string;
+  marketplaceLabel: string;
   comparableKey: string | null;
   parseConfidence: number | null;
   needsReview: boolean;
@@ -81,6 +84,7 @@ type Resp = {
     bySku: Array<{ sku_id: string; sku_name: string | null; ready_count: number }>;
     byPriceBucket: Array<{ key: string; label: string; ready_count: number }>;
     byCategory: Array<{ category: string; ready_count: number }>;
+    bySource: Array<{ source: string; label: string; ready_count: number }>;
   } | null;
 };
 
@@ -300,6 +304,23 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
         {stats && (
           <div className="mt-3 grid gap-2 lg:grid-cols-2">
             <div className="rounded-lg border border-zinc-200 bg-white p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
+              <div className="mb-2 font-bold text-zinc-700 dark:text-zinc-200">출처별 ready</div>
+              <div className="flex flex-wrap gap-1.5">
+                {stats.bySource.map((row) => (
+                  <span
+                    key={row.source}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-black text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                  >
+                    <MarketplaceSourceBadge source={row.source} label={row.label} />
+                    <span className="font-mono">{row.ready_count.toLocaleString()}</span>
+                  </span>
+                ))}
+                {stats.bySource.length === 0 ? (
+                  <span className="text-[11px] text-zinc-400">ready 출처 집계 없음</span>
+                ) : null}
+              </div>
+            </div>
+            <div className="rounded-lg border border-zinc-200 bg-white p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div className="font-bold text-zinc-700 dark:text-zinc-200">가격대별 ready</div>
                 {priceBucket ? (
@@ -329,6 +350,11 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {stats && (
+          <div className="mt-2 grid gap-2 lg:grid-cols-2">
             <div className="rounded-lg border border-zinc-200 bg-white p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div className="font-bold text-zinc-700 dark:text-zinc-200">카테고리별 ready</div>
@@ -566,6 +592,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       ) : null}
                     </div>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
                       <span>{item.skuName ?? "—"} · {item.poolStatus} · {relAge(item.lastVerifiedAt)} · 노출 {item.exposureCount}/{item.maxExposure}</span>
                       {(() => {
                         const stale = verifiedAtStaleness(item.lastVerifiedAt);
@@ -652,10 +679,12 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
                       <span className="font-mono">{item.skuId ?? "—"}</span> · query: {item.query ?? "—"}
                     </div>
-                    <a href={item.bunjangUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
-                      <BunjangLogo className="h-4 w-4 rounded-[4px]" />
-                      번장 열기
-                    </a>
+                    {item.listingUrl ? (
+                      <a href={item.listingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
+                        <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
+                        열기
+                      </a>
+                    ) : null}
                   </div>
                 </div>
                 {item.hasComment && item.commentPreview && (

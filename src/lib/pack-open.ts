@@ -2,11 +2,14 @@ import { fetchDetail } from "@/lib/bunjang";
 import { CATALOG } from "@/lib/catalog";
 import { categoryFromComparableKey, loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
+import { fetchJoongnaDetail } from "@/lib/joongna";
+import { isJoongnaMarketplaceSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import {
   canPermanentlyInvalidateSoldOut,
   detectSoldOut,
   describeSignals,
   isSoldOut,
+  soldOutTextHits,
   type SourceHealthStatus,
 } from "@/lib/sold-out";
 import {
@@ -27,6 +30,8 @@ export type RevealCard = {
   pid: number;
   name: string;
   url: string;
+  marketplaceSource?: string;
+  marketplaceLabel?: string;
   price: number;
   skuId?: string | null;
   skuName: string;
@@ -238,12 +243,17 @@ type ListingMeta = {
   sku_id: string | null;
   sku_name: string;
   thumbnail_url: string | null;
+  marketplaceSource: string;
+  marketplaceLabel: string;
   // Wave 82: raw listing 부가 데이터 (savedDetail용)
   _raw?: RawSkuMeta;
 };
 
 type RawSkuMeta = {
   pid: number;
+  source: string | null;
+  seller_source: string | null;
+  url: string | null;
   sku_id: string | null;
   description_preview: string | null;
   num_faved: number | null;
@@ -553,17 +563,25 @@ async function fetchListings(pids: number[]): Promise<Map<number, ListingMeta>> 
   if (pids.length === 0) return new Map();
   const pidFilter = pids.join(",");
   const listingCols = "pid,name,url,price,sku_name,thumbnail_url";
-  const rawCols = "pid,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,image_count,num_comment,detail_enriched_at";
+  const rawCols = "pid,source,seller_source,url,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,image_count,num_comment,detail_enriched_at";
   const [listingRes, rawRes] = await Promise.all([
     callSupabase(`/mvp_listings?select=${listingCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
     callSupabase(`/mvp_raw_listings?select=${rawCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
   ]);
-  const rows = (await listingRes.json()) as Omit<ListingMeta, "sku_id">[];
+  const rows = (await listingRes.json()) as Array<Pick<ListingMeta, "pid" | "name" | "url" | "price" | "sku_name" | "thumbnail_url">>;
   const rawRows = (await rawRes.json()) as RawSkuMeta[];
   const rawByPid = new Map(rawRows.map((row) => [Number(row.pid), row]));
   return new Map(rows.map((row) => {
     const raw = rawByPid.get(Number(row.pid));
-    return [Number(row.pid), { ...row, sku_id: raw?.sku_id ?? null, _raw: raw }];
+    const marketplaceSource = normalizeMarketplaceSource(raw?.source ?? raw?.seller_source);
+    return [Number(row.pid), {
+      ...row,
+      url: raw?.url || row.url,
+      sku_id: raw?.sku_id ?? null,
+      marketplaceSource,
+      marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
+      _raw: raw,
+    }];
   }));
 }
 
@@ -1598,29 +1616,56 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       let liveVerifiedAt = candidate.last_verified_at;
       const shouldLiveVerify = !isFresh || hasStaleRawCommentCount(meta._raw);
       if (shouldLiveVerify) {
-        const { detail, signals } = await verifyAndCheckSold(candidate.pid, meta.price, meta.name);
-        if (isSoldOut(signals)) {
-          if (canPermanentlyInvalidateSoldOut(signals, sourceHealth)) {
-            await rpcInvalidate(candidate.pid, `${sourceHealth}_${describeSignals(signals)}`);
-          } else {
+        if (isJoongnaMarketplaceSource(meta.marketplaceSource)) {
+          const detail = await fetchJoongnaDetail(meta.url, 8_000).catch((err) => {
+            console.error("pack_open joongna live verify failed", {
+              pid: candidate.pid,
+              err: err instanceof Error ? err.message : String(err),
+            });
+            return null;
+          });
+          if (!detail?.ok) {
             releasePids.push(candidate.pid);
+            continue;
           }
-          continue;
+          const soldByStatus = detail.productStatus != null && detail.productStatus !== 0;
+          const soldByText = soldOutTextHits(detail.title, detail.description, meta.name).length > 0;
+          if (soldByStatus || soldByText) {
+            await rpcInvalidate(candidate.pid, soldByStatus ? `joongna_product_status_${detail.productStatus}` : "joongna_text_traded");
+            continue;
+          }
+          const liveType = classifyListing(meta.name, detail.description ?? "", meta.price).listingType;
+          if (liveType !== "normal") {
+            await rpcInvalidate(candidate.pid, `pack_open_live_${liveType}`);
+            continue;
+          }
+          await patchPoolVerified(candidate.pid);
+          liveVerifiedAt = new Date().toISOString();
+        } else {
+          const { detail, signals } = await verifyAndCheckSold(candidate.pid, meta.price, meta.name);
+          if (isSoldOut(signals)) {
+            if (canPermanentlyInvalidateSoldOut(signals, sourceHealth)) {
+              await rpcInvalidate(candidate.pid, `${sourceHealth}_${describeSignals(signals)}`);
+            } else {
+              releasePids.push(candidate.pid);
+            }
+            continue;
+          }
+          if (isPackOpenCommentBlocked(detail?.commentCount ?? null)) {
+            await invalidateHighCommentCandidate(candidate.pid, Number(detail?.commentCount), "detail_comment_count");
+            continue;
+          }
+          if (detail?.commentCount != null) {
+            await patchRawCommentCount(candidate.pid, detail.commentCount);
+          }
+          const liveType = classifyListing(meta.name, detail?.description ?? "", meta.price).listingType;
+          if (liveType !== "normal") {
+            await rpcInvalidate(candidate.pid, `pack_open_live_${liveType}`);
+            continue;
+          }
+          await patchPoolVerified(candidate.pid);
+          liveVerifiedAt = new Date().toISOString();
         }
-        if (isPackOpenCommentBlocked(detail?.commentCount ?? null)) {
-          await invalidateHighCommentCandidate(candidate.pid, Number(detail?.commentCount), "detail_comment_count");
-          continue;
-        }
-        if (detail?.commentCount != null) {
-          await patchRawCommentCount(candidate.pid, detail.commentCount);
-        }
-        const liveType = classifyListing(meta.name, detail?.description ?? "", meta.price).listingType;
-        if (liveType !== "normal") {
-          await rpcInvalidate(candidate.pid, `pack_open_live_${liveType}`);
-          continue;
-        }
-        await patchPoolVerified(candidate.pid);
-        liveVerifiedAt = new Date().toISOString();
       }
 
       const verifiedAtMs = new Date(liveVerifiedAt).getTime();
@@ -1649,6 +1694,8 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         pid: candidate.pid,
         name: meta.name,
         url: meta.url,
+        marketplaceSource: meta.marketplaceSource,
+        marketplaceLabel: meta.marketplaceLabel,
         price: meta.price,
         skuId: meta.sku_id,
         skuName: meta.sku_name,

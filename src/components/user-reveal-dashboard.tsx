@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ConditionPhotoBadge } from "@/components/condition-chip";
-import { BunjangSourceBadge, DanawaSourceBadge } from "@/components/market-brand-logo";
+import { BunjangSourceBadge, DanawaSourceBadge, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
@@ -15,6 +15,8 @@ type RevealItem = {
   pid: number;
   name: string;
   url: string;
+  marketplaceSource: string;
+  marketplaceLabel: string;
   price: number;
   favoriteCount: number | null;
   freeShipping: boolean;
@@ -381,6 +383,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         pid: card.pid,
         name: card.name,
         url: card.url,
+        marketplaceSource: card.marketplaceSource ?? "bunjang",
+        marketplaceLabel: card.marketplaceLabel ?? "번개장터",
         price: card.price,
         favoriteCount: null,
         freeShipping: false,
@@ -480,6 +484,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       pid: selectedItem.pid,
       name: selectedItem.name,
       url: selectedItem.url,
+      marketplaceSource: selectedItem.marketplaceSource,
+      marketplaceLabel: selectedItem.marketplaceLabel,
       price: selectedItem.price,
       skuId: selectedItem.skuId,
       skuName: selectedItem.skuName ?? selectedItem.name,
@@ -1496,6 +1502,12 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   </>
                 ) : null}
                 <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                {!isTerminal ? (
+                  <>
+                    <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
+                    <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                  </>
+                ) : null}
                 <span>{timeLabel(item.revealedAt)}</span>
                 {/* 2026-05-17 (사용자 요청): listing_state 명시 표시. terminal 매물도 사라지지 않게. */}
                 {(() => {

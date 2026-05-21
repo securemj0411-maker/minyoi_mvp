@@ -6,6 +6,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { loadMarketBandsForKeys, loadV7SiblingPresence, resolveSkuMedianForDisplay } from "@/lib/band-aware-median";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
+import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -279,7 +280,7 @@ export async function GET(req: NextRequest) {
         { headers: serviceHeaders() },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sale_status,listing_state,last_seen_at,query,seller_uid,shop_review_rating,shop_review_count,free_shipping,num_faved,num_comment&pid=in.(${pidsCsv})`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sale_status,listing_state,last_seen_at,query,seller_uid,shop_review_rating,shop_review_count,free_shipping,num_faved,num_comment,source,seller_source,url&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -391,6 +392,12 @@ export async function GET(req: NextRequest) {
       const note = (fb?.note as string | undefined) ?? "";
       const comparableKey = (p.comparable_key as string | null) ?? null;
       const conditionClass = (p.condition_class as string | null) ?? null;
+      const marketplaceSource = normalizeMarketplaceSource((r.source as string | null | undefined) ?? (r.seller_source as string | null | undefined));
+      const listingUrl = listingUrlForSource(
+        pid,
+        (r.url as string | null | undefined) ?? (l.url as string | null | undefined),
+        marketplaceSource,
+      );
       const velocity = comparableKey ? velocityMap.get(comparableKey) ?? null : null;
       const priceStats = comparableKey ? priceMap.get(comparableKey) ?? null : null;
       // Wave 252.A (2026-05-20): band-aware sku_median — (comparable_key, condition_class) 매칭
@@ -415,6 +422,9 @@ export async function GET(req: NextRequest) {
         skuMedian: skuMedianFinal,
         thumbnailUrl: (l.thumbnail_url as string | null) ?? null,
         bunjangUrl: `https://m.bunjang.co.kr/products/${pid}`,
+        listingUrl,
+        marketplaceSource,
+        marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
         comparableKey: (p.comparable_key as string | null) ?? null,
         parseConfidence: p.parse_confidence != null ? Number(p.parse_confidence) : null,
         needsReview: Boolean(p.needs_review),
@@ -471,6 +481,7 @@ export async function GET(req: NextRequest) {
       bySku: Array<{ sku_id: string; sku_name: string | null; ready_count: number }>;
       byPriceBucket: Array<{ key: string; label: string; ready_count: number }>;
       byCategory: Array<{ category: string; ready_count: number }>;
+      bySource: Array<{ source: string; label: string; ready_count: number }>;
     } | null = null;
     if (page === 1) {
       const bands = [1, 2, 3];
@@ -507,6 +518,7 @@ export async function GET(req: NextRequest) {
       }
       const skuCount = new Map<string, { name: string | null; count: number }>();
       const priceBucketCount = new Map<string, number>();
+      const sourceCount = new Map<string, number>();
       if (readyPids.length > 0) {
         // chunk fetch
         const chunkSize = 500;
@@ -514,7 +526,7 @@ export async function GET(req: NextRequest) {
           const chunk = readyPids.slice(i, i + chunkSize);
           const [rawRes, listingRes] = await Promise.all([
             restFetch(
-              `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name&pid=in.(${chunk.join(",")})`,
+              `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name,source,seller_source&pid=in.(${chunk.join(",")})`,
               { headers: serviceHeaders() },
             ),
             restFetch(
@@ -522,13 +534,15 @@ export async function GET(req: NextRequest) {
               { headers: serviceHeaders() },
             ),
           ]);
-          const rows = (await rawRes.json()) as Array<{ sku_id: string | null; sku_name: string | null }>;
+          const rows = (await rawRes.json()) as Array<{ sku_id: string | null; sku_name: string | null; source: string | null; seller_source: string | null }>;
           for (const r of rows) {
             const sku = r.sku_id ?? "(no_sku)";
             const entry = skuCount.get(sku) ?? { name: r.sku_name, count: 0 };
             entry.count += 1;
             if (!entry.name && r.sku_name) entry.name = r.sku_name;
             skuCount.set(sku, entry);
+            const source = normalizeMarketplaceSource(r.source ?? r.seller_source);
+            sourceCount.set(source, (sourceCount.get(source) ?? 0) + 1);
           }
           const listingRows = (await listingRes.json()) as Array<{ price: number | null }>;
           for (const row of listingRows) {
@@ -550,8 +564,11 @@ export async function GET(req: NextRequest) {
       const byCategory = [...categoryCount.entries()]
         .map(([category, count]) => ({ category, ready_count: count }))
         .sort((a, b) => b.ready_count - a.ready_count);
+      const bySource = [...sourceCount.entries()]
+        .map(([source, count]) => ({ source, label: marketplaceSourceLabel(source), ready_count: count }))
+        .sort((a, b) => b.ready_count - a.ready_count);
 
-      stats = { byBandStatus, totals, totalAll, bySku, byPriceBucket, byCategory };
+      stats = { byBandStatus, totals, totalAll, bySku, byPriceBucket, byCategory, bySource };
     }
 
     return NextResponse.json({

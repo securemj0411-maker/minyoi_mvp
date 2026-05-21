@@ -9,6 +9,7 @@ import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-mod
 import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, HourglassIcon, BookmarkIcon } from "@/components/icons";
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import KakaoLogo from "@/components/kakao-logo";
+import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 
@@ -23,6 +24,9 @@ type PoolItem = {
   name: string;
   price: number;
   skuMedian: number | null;
+  listingUrl?: string | null;
+  marketplaceSource?: string | null;
+  marketplaceLabel?: string | null;
   thumbnailUrl: string | null;
   skuId: string | null;
   skuName: string | null;
@@ -200,7 +204,9 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
   return {
     pid: item.pid,
     name: item.name,
-    url: bunjangUrl(item.pid),
+    url: item.listingUrl || bunjangUrl(item.pid),
+    marketplaceSource: item.marketplaceSource ?? "bunjang",
+    marketplaceLabel: item.marketplaceLabel ?? "번개장터",
     price: item.price,
     skuId: item.skuId,
     skuName: item.skuName ?? item.name,
@@ -383,6 +389,9 @@ function revealCardToPoolItem(card: RevealCard): PoolItem {
     name: card.name,
     price: card.price,
     skuMedian: card.marketBasis?.medianPrice ?? null,
+    listingUrl: card.url,
+    marketplaceSource: card.marketplaceSource ?? "bunjang",
+    marketplaceLabel: card.marketplaceLabel ?? "번개장터",
     thumbnailUrl: card.thumbnailUrl,
     skuId: card.skuId ?? null,
     skuName: card.skuName,
@@ -1330,6 +1339,7 @@ export default function ExploreClient() {
                             ? `${hoursAgoLabel(item.firstSeenAt)} 등록`
                             : hoursAgoLabel(item.lastVerifiedAt)}
                         </span>
+                        <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
                         {isPremiumSeller ? (
                           <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
                             <TrophyIcon className="h-3 w-3" />

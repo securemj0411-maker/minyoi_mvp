@@ -1,3 +1,5 @@
+import { marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+
 type LogoProps = {
   className?: string;
 };
@@ -40,4 +42,22 @@ export function BunjangSourceBadge({ label = "번개" }: { label?: string }) {
       {label}
     </span>
   );
+}
+
+export function JoongnaSourceBadge({ label = "중고나라" }: { label?: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-black text-sky-700 ring-1 ring-sky-100 dark:bg-sky-950/40 dark:text-sky-200 dark:ring-sky-900/60">
+      <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] bg-sky-600 text-[8px] font-black leading-none text-white">
+        중
+      </span>
+      {label}
+    </span>
+  );
+}
+
+export function MarketplaceSourceBadge({ source, label }: { source?: string | null; label?: string | null }) {
+  const normalized = normalizeMarketplaceSource(source);
+  const displayLabel = label ?? marketplaceSourceLabel(normalized);
+  if (normalized === "joongna") return <JoongnaSourceBadge label={displayLabel} />;
+  return <BunjangSourceBadge label={displayLabel} />;
 }

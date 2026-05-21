@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { consumeDetailAccess } from "@/lib/detail-access";
+import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -35,7 +36,7 @@ async function loadExactPoolItem(pid: number) {
       last_verified_at: string;
     }>>),
     restFetch(
-      `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url,url&pid=eq.${pid}&limit=1`,
       { headers },
     ).then((res) => res.json() as Promise<Array<{
       pid: number;
@@ -43,12 +44,16 @@ async function loadExactPoolItem(pid: number) {
       price: number;
       sku_median: number | null;
       thumbnail_url: string | null;
+      url: string | null;
     }>>),
     restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview&pid=eq.${pid}&limit=1`,
       { headers },
     ).then((res) => res.json() as Promise<Array<{
       pid: number;
+      source: string | null;
+      seller_source: string | null;
+      url: string | null;
       sku_id: string | null;
       sku_name: string | null;
       free_shipping: boolean | null;
@@ -65,11 +70,15 @@ async function loadExactPoolItem(pid: number) {
   const raw = rawRows[0];
   const meta = metaRows[0];
   if (!pool || !raw) return null;
+  const marketplaceSource = normalizeMarketplaceSource(meta?.source ?? meta?.seller_source);
   return {
     pid,
     name: raw.name,
     price: raw.price,
     skuMedian: raw.sku_median,
+    listingUrl: listingUrlForSource(pid, meta?.url ?? raw.url, marketplaceSource),
+    marketplaceSource,
+    marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
     thumbnailUrl: raw.thumbnail_url,
     skuId: meta?.sku_id ?? null,
     skuName: meta?.sku_name ?? null,

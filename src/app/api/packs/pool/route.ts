@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { loadV7SiblingPresence, type V7SiblingPresenceMap } from "@/lib/band-aware-median";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
+import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -63,6 +64,7 @@ type PoolRow = {
 type RawRow = {
   pid: number;
   name: string;
+  url: string | null;
   price: number;
   sku_median: number | null;
   thumbnail_url: string | null;
@@ -70,6 +72,9 @@ type RawRow = {
 
 type RawListingMeta = {
   pid: number;
+  source: string | null;
+  seller_source: string | null;
+  url: string | null;
   sku_id: string | null;
   sku_name: string | null;
   free_shipping: boolean | null;
@@ -258,7 +263,7 @@ async function loadPool(
   const rawByPid = new Map<number, RawRow>();
   if (allCandidatePids.length > 0) {
     const rawAllRes = await restFetch(
-      `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url&pid=in.(${allCandidatePids.join(",")})&limit=${allCandidatePids.length + 100}`,
+      `${tableUrl("mvp_listings")}?select=pid,name,url,price,sku_median,thumbnail_url&pid=in.(${allCandidatePids.join(",")})&limit=${allCandidatePids.length + 100}`,
       { headers },
     );
     const rawAll = (await rawAllRes.json()) as RawRow[];
@@ -314,7 +319,7 @@ async function loadPool(
   const comparableKeys = [...new Set(pool.map((r) => r.comparable_key).filter((k): k is string => Boolean(k)))];
   const [metaRes, marketBands, v7SiblingPresence] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview&pid=in.(${pids.join(",")})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview&pid=in.(${pids.join(",")})`,
       { headers },
     ),
     loadMarketBandsForPool(headers, comparableKeys),
@@ -338,6 +343,7 @@ function buildItems(
       const raw = rawByPid.get(row.pid);
       const meta = metaByPid.get(row.pid);
       if (!raw) return null;
+      const marketplaceSource = normalizeMarketplaceSource(meta?.source ?? meta?.seller_source);
       // Wave 247.2 (2026-05-19): band-aware sku_median.
       //   기존: raw.sku_median (mvp_listings — condition_class 무시, 전체 median).
       //   사용자 풀의 16% (82/500) sku_median=0 → "시세 0원" 미스리딩.
@@ -385,6 +391,9 @@ function buildItems(
       return {
         pid: row.pid,
         name: raw.name,
+        listingUrl: listingUrlForSource(row.pid, meta?.url ?? raw.url, marketplaceSource),
+        marketplaceSource,
+        marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
         price: raw.price,
         skuMedian: skuMedianFinal,
         thumbnailUrl: raw.thumbnail_url,

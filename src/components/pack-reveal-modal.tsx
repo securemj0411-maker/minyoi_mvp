@@ -7,7 +7,7 @@ import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
-import { BunjangLogo, DanawaLogo } from "@/components/market-brand-logo";
+import { BunjangLogo, DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import {
   ActivityIcon,
   AlertTriangleIcon,
@@ -5137,6 +5137,9 @@ function RevealCardItem({
           <div className="space-y-1.5">
             <div className="relative">
               <div className="pr-[92px] text-[10.5px] font-semibold leading-4 text-[#6f7c6d] dark:text-zinc-400">
+                <span className="mr-1.5 inline-flex align-middle">
+                  <MarketplaceSourceBadge source={card.marketplaceSource} label={card.marketplaceLabel} />
+                </span>
                 AI 판단 · 매물 설명(텍스트) 기준 · 사진은 직접 확인 권장
               </div>
               <div className="absolute right-0 top-[-2px]">
@@ -5596,6 +5599,7 @@ function FixedBunjangFooter({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const checks = beginnerPurchaseChecks(card).slice(0, 3);
   const sellerReviewCount = card.savedDetail?.sellerReviewCount ?? 0;
+  const marketplaceLabel = card.marketplaceLabel ?? "번개장터";
   const sellerLine = sellerReviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT
     ? `후기 ${sellerReviewCount.toLocaleString("ko-KR")}건 판매자예요. 그래도 원본에서 사진과 구성품은 한 번 더 보세요.`
     : sellerReviewCount > 0
@@ -5645,7 +5649,7 @@ function FixedBunjangFooter({
           <span style={{ width: 20, height: 20, borderRadius: 999, background: "#0b1413", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fbbf24", flexShrink: 0 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>
           </span>
-          <span>번개장터 원본 매물 보기</span>
+          <span>{marketplaceLabel} 원본 매물 보기</span>
         </span>
       </button>
       {confirmOpen ? (
@@ -5653,7 +5657,7 @@ function FixedBunjangFooter({
           data-bunjang-exit-confirm
           role="dialog"
           aria-modal="true"
-          aria-label="번개장터 이동 전 확인"
+          aria-label={`${marketplaceLabel} 이동 전 확인`}
           className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/38 px-4 pb-[calc(env(safe-area-inset-bottom)+14px)] backdrop-blur-[2px] sm:items-center sm:pb-4"
         >
           <button
@@ -5711,7 +5715,7 @@ function FixedBunjangFooter({
                 onClick={handleConfirmClick}
                 className="flex min-h-[52px] items-center justify-center rounded-[18px] bg-[#059669] px-4 text-[15px] font-black text-white shadow-[0_14px_30px_rgba(5,150,105,0.22)] transition active:scale-[0.99]"
               >
-                확인하고 번개장터 보기
+                확인하고 {marketplaceLabel} 보기
               </a>
               <button
                 type="button"

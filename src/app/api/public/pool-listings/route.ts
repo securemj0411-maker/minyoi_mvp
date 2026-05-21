@@ -3,6 +3,7 @@
 // URL obfuscated 페이지에서만 호출하기 위한 endpoint. 절대 검색엔진 노출 X (robots).
 
 import { NextResponse, type NextRequest } from "next/server";
+import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 export const runtime = "nodejs";
@@ -250,7 +251,7 @@ export async function GET(req: NextRequest) {
         { headers: serviceHeaders() },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sale_status,listing_state,last_seen_at,query,seller_uid&pid=in.(${pidsCsv})`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sale_status,listing_state,last_seen_at,query,seller_uid,source,seller_source,url&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -271,6 +272,12 @@ export async function GET(req: NextRequest) {
       const l = listingsMap.get(pid) || {};
       const r = rawMap.get(pid) || {};
       const p = parsedMap.get(pid) || {};
+      const marketplaceSource = normalizeMarketplaceSource((r.source as string | null | undefined) ?? (r.seller_source as string | null | undefined));
+      const listingUrl = listingUrlForSource(
+        pid,
+        (r.url as string | null | undefined) ?? (l.url as string | null | undefined),
+        marketplaceSource,
+      );
       return {
         // user-specific feedback 필드는 public이라 omit
         hasComment: false,
@@ -284,6 +291,9 @@ export async function GET(req: NextRequest) {
         skuMedian: Number(l.sku_median ?? 0),
         thumbnailUrl: (l.thumbnail_url as string | null) ?? null,
         bunjangUrl: `https://m.bunjang.co.kr/products/${pid}`,
+        listingUrl,
+        marketplaceSource,
+        marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
         comparableKey: (p.comparable_key as string | null) ?? null,
         parseConfidence: p.parse_confidence != null ? Number(p.parse_confidence) : null,
         needsReview: Boolean(p.needs_review),

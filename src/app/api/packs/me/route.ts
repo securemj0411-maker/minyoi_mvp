@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { fetchDetail } from "@/lib/bunjang";
+import { fetchJoongnaDetail } from "@/lib/joongna";
+import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import {
   fetchReferencePrices,
   fetchLatestMarketStats,
@@ -13,7 +15,7 @@ import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
-import { detectSoldOut, describeSignals, isSoldOut } from "@/lib/sold-out";
+import { detectSoldOut, describeSignals, isSoldOut, soldOutTextHits } from "@/lib/sold-out";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -95,6 +97,8 @@ type PackOpenRow = {
 
 type RawRow = {
   pid: number;
+  source: string | null;
+  seller_source: string | null;
   name: string;
   url: string;
   price: number;
@@ -194,6 +198,8 @@ type RevealItem = {
   pid: number;
   name: string;
   url: string;
+  marketplaceSource: string;
+  marketplaceLabel: string;
   price: number;
   favoriteCount: number | null;
   freeShipping: boolean;
@@ -448,6 +454,38 @@ async function liveVerifyVisibleItems(userRef: string, items: RevealItem[]): Pro
       }
 
       try {
+        if (isJoongnaMarketplaceSource(item.marketplaceSource)) {
+          if (!item.url) {
+            verified[index] = item;
+            continue;
+          }
+          const detail = await fetchJoongnaDetail(item.url, 8_000);
+          if (!detail.ok) {
+            verified[index] = item;
+            continue;
+          }
+          const saleStatus = detail.productStatus == null ? item.saleStatus : `JOONGNA_STATUS_${detail.productStatus}`;
+          const soldByStatus = detail.productStatus != null && detail.productStatus !== 0;
+          const soldByText = soldOutTextHits(detail.title, detail.description, item.descriptionPreview).length > 0;
+          if (soldByStatus || soldByText) {
+            const reason = soldByStatus ? `joongna_product_status_${detail.productStatus}` : "joongna_text_traded";
+            await patchLiveTerminalState(item, "sold_confirmed", saleStatus, reason);
+            verified[index] = {
+              ...item,
+              listingState: "sold_confirmed",
+              saleStatus,
+            };
+            continue;
+          }
+
+          verified[index] = {
+            ...item,
+            listingState: "active",
+            saleStatus,
+          };
+          continue;
+        }
+
         const detail = await fetchDetail(String(item.pid));
         if (!detail) {
           await patchLiveTerminalState(item, "disappeared", null, "detail_fetch_missing");
@@ -581,7 +619,7 @@ export async function GET(req: Request) {
   const packOpenList = packOpenIds.join(",");
   const [rawRows, listingCostRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,num_faved,free_shipping,description_preview,image_count,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at&pid=in.(${pidList})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,url,price,num_faved,free_shipping,description_preview,image_count,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at&pid=in.(${pidList})`,
     ),
     loadJson<ListingCostRow[]>(
       `${tableUrl("mvp_listings")}?select=pid,price,shipping_fee,shipping_fee_general,estimated_buy_cost&pid=in.(${pidList})`,
@@ -680,6 +718,7 @@ export async function GET(req: Request) {
       const comparableKey = comparableKeyByPid.get(Number(reveal.pid)) ?? null;
       const skuName = raw?.sku_name ?? null;
       const skuId = raw?.sku_id ?? null;
+      const marketplaceSource = normalizeMarketplaceSource(raw?.source ?? raw?.seller_source);
       // Wave 213 (2026-05-18): 실시간 marketBasis 계산 후 순현재차익 min/max 산출.
       // Wave 208 (2026-05-18): /me display는 request-time marketBasis를 source of truth로 사용.
       // DB current_profit_*는 cron lag/cache 값이라, 있더라도 stale할 수 있다. 사용자가 /me를
@@ -707,7 +746,9 @@ export async function GET(req: Request) {
       return {
         pid: Number(reveal.pid),
         name: raw?.name ?? `PID ${reveal.pid}`,
-        url: raw?.url ?? `https://m.bunjang.co.kr/products/${reveal.pid}`,
+        url: listingUrlForSource(Number(reveal.pid), raw?.url, marketplaceSource),
+        marketplaceSource,
+        marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
         price: Number(raw?.price ?? 0),
         favoriteCount: raw ? Number(raw.num_faved ?? 0) : null,
         freeShipping: Boolean(raw?.free_shipping),
