@@ -49,6 +49,8 @@
 - 검증:
   - low-budget live run에서 searchUrls 1, detailQueueEnqueued 1, detailQueueClaimed 0, budgetStopped true, health `healthy`, reason `queue_search_only_budget_stop` 확인.
   - 이전 run에서 남은 expired `processing` 80건은 `pending`으로 수동 release했다. 이후 queue 상태는 done 2, pending 102.
+  - 배포 전 기존 worker가 한 차례 더 claim한 뒤 done 11, processing 69를 남겼다. lease 만료 후 expired processing 69건을 추가 release했고, 이후 queue 상태는 done 13, pending 240, processing 0.
+  - 최신 source health는 `queue_search_only_budget_stop`, queueMode true, enqueued 99, claimed 0, budgetStopped true로 기록되어 새 budget guard가 작동함을 확인했다.
 
 ## Deferred
 - 별도 detail-only endpoint로 route를 완전히 분리하는 작업은 다음 단계로 보류.
