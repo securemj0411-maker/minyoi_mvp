@@ -78,3 +78,11 @@
   - `/api/cron/lifecycle-worker`
   - `/api/cron/pool-warmer`
 - 결론: DB 실행 로그 기준으로 QStash 중복 호출은 끊기고 Vercel Cron 호출은 정상 유입 중이다. 단, 로컬 Vercel CLI token이 유효하지 않아 Vercel 플랫폼 로그 직접 조회는 하지 못했다.
+
+## 2026-05-21 중고나라 Shadow Cron 추가
+
+- `/api/cron/joongna-shadow-worker`를 Vercel Cron에 추가했다.
+- schedule: `3,18,33,48 * * * *` (15분 간격, UTC)
+- `JOONGNA_SOURCE_MODE=off`면 route는 collect log에 skipped만 남기고 DB write를 하지 않는다.
+- `JOONGNA_SOURCE_MODE=shadow`일 때도 `pool_eligible=false`, `score_dirty=false`로만 저장해 사용자 pool에는 들어가지 않게 했다.
+- 운영 전제: Vercel production env에서 `JOONGNA_SOURCE_MODE=shadow`를 켜야 실제 중고나라 shadow ingest가 시작된다.

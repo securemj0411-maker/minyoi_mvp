@@ -54,3 +54,31 @@
   - 차단/429/CAPTCHA 신호 없음
 - no-write 상세 HTML 샘플도 200으로 읽혔고, Next payload에서 `productTitle`, `productPrice`, `categoryName`, `productStatus`, `parcelFeeYn`를 추출할 수 있었다.
 - 결론: 중고나라는 아직 cadence를 타고 DB에 들어오는 상태가 아니다. 현재는 안전장치와 no-write probe 단계이며, 다음 구현은 shadow ingest route + adapter + source-aware upsert다.
+
+## 2026-05-21 Shadow Ingest 1차 구현/검증
+
+- 구현:
+  - `src/lib/joongna.ts`에 search page product URL 추출, detail HTML parser, detail fetch helper를 추가했다.
+  - `src/lib/joongna-shadow-ingest.ts`를 추가해 중고나라 detail을 기존 내부 raw listing contract로 정규화한다.
+  - `/api/cron/joongna-shadow-worker` route를 추가했다.
+  - `vercel.json`에 `/api/cron/joongna-shadow-worker`를 `3,18,33,48 * * * *`로 등록했다.
+  - 로컬/운영 수동 검증용 `npm run run:joongna-shadow-ingest` 스크립트를 추가했다.
+- 안전장치:
+  - `JOONGNA_SOURCE_MODE=off`면 route는 DB write 없이 collect log에 skipped로 남긴다.
+  - `shadow` 모드 write도 항상 `source='joongna'`, `pool_eligible=false`, `score_dirty=false`로 저장한다.
+  - candidate pool에는 직접 넣지 않는다.
+  - 차단/429/CAPTCHA 신호가 있으면 `mvp_source_health.status='unhealthy'`로 남길 수 있게 했다.
+- 실제 DB shadow write 테스트:
+  - command: `JOONGNA_SOURCE_MODE=shadow ... npm run run:joongna-shadow-ingest -- --query=에어팟맥스 --maxDetails=3 --detailsPerQuery=3`
+  - result: `searchUrls=3`, `fetchedDetails=3`, `rawUpserted=3`, `parsedUpserted=3`, `observationInserted=3`
+  - `mvp_source_health(source='joongna')`: `healthy`, reason `shadow_ingest_ok`
+  - 저장된 sample pids: `7002963627810`, `7003194343236`, `7000212566884`
+  - 세 row 모두 `sku_id='airpods-max-usbc'`, `detail_status='done'`, `listing_state='active'`, `pool_eligible=false`, `score_dirty=false`
+  - 같은 pids의 `mvp_candidate_pool` row는 0건이었다.
+- route 검증:
+  - 기존 localhost:3000 dev server에서 `/api/cron/joongna-shadow-worker`를 호출해 route compile/auth/response를 확인했다.
+  - 해당 dev server는 env가 `JOONGNA_SOURCE_MODE=off`라 expected skip 응답을 반환했다.
+- 다음 작업:
+  - Vercel production env에 `JOONGNA_SOURCE_MODE=shadow`를 켜야 Vercel Cron에서 실제 shadow ingest가 시작된다.
+  - 운영 1~2시간 후 `mvp_source_health`/`mvp_raw_listings`/`mvp_candidate_pool`를 확인해 차단 신호와 pool 격리가 유지되는지 본다.
+  - shadow row 품질이 안정적이면 source badge와 source-aware link builder를 붙인다.

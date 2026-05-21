@@ -49,6 +49,33 @@ export type JoongnaProbeReport = {
   decision: "disabled" | "shadow_safe_to_continue" | "stop_on_block_or_error";
 };
 
+export type JoongnaDetail = {
+  source: typeof JOONGNA_SOURCE_ID;
+  externalId: string;
+  internalPid: number;
+  url: string;
+  ok: boolean;
+  status: number;
+  blockSignal: JoongnaBlockSignal;
+  title: string | null;
+  description: string | null;
+  price: number | null;
+  productStatus: number | null;
+  categoryName: string | null;
+  categorySeq: string | null;
+  parcelFeeYn: number | null;
+  productTradeType: number | null;
+  storeSeq: number | null;
+  nickName: string | null;
+  viewCount: number | null;
+  labels: string[];
+  thumbnailUrl: string | null;
+  imageCount: number;
+  sortDate: string | null;
+  updateDate: string | null;
+  sourceUpdatedAt: string | null;
+};
+
 const TRANSPARENT_USER_AGENT =
   process.env.JOONGNA_USER_AGENT ??
   `MinyoiSourceProbe/0.1 (+${process.env.SOURCE_CONTACT_URL ?? process.env.SOURCE_CONTACT_EMAIL ?? "contact: operator"})`;
@@ -65,11 +92,13 @@ function normalizeMode(raw: string | null | undefined): JoongnaSourceMode {
   return "off";
 }
 
-export function getJoongnaSourceMode(env: NodeJS.ProcessEnv = process.env): JoongnaSourceMode {
+type JoongnaEnv = Record<string, string | undefined>;
+
+export function getJoongnaSourceMode(env: JoongnaEnv = process.env): JoongnaSourceMode {
   return normalizeMode(env.JOONGNA_SOURCE_MODE ?? env.MARKET_SOURCE_JOONGNA_MODE);
 }
 
-export function isJoongnaRuntimeEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+export function isJoongnaRuntimeEnabled(env: JoongnaEnv = process.env): boolean {
   return getJoongnaSourceMode(env) !== "off";
 }
 
@@ -186,6 +215,147 @@ export function parseJoongnaProductExternalId(url: string): string | null {
   }
 }
 
+function decodeHtmlEntity(value: string): string {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#x27;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function decodeReactFlightString(value: string | undefined): string | null {
+  if (value == null) return null;
+  try {
+    return (JSON.parse(`"${value}"`) as string)
+      .replace(/\\n/g, "\n")
+      .replace(/\\u0026/g, "&");
+  } catch {
+    return value
+      .replace(/\\n/g, "\n")
+      .replace(/\\"/g, "\"")
+      .replace(/\\u0026/g, "&")
+      .replace(/\\\\/g, "\\");
+  }
+}
+
+function escapedStringField(html: string, key: string): string | null {
+  const pattern = new RegExp(`\\\\"${key}\\\\"\\s*:\\s*\\\\"((?:\\\\\\\\.|[^\\\\"])*)\\\\"`);
+  return decodeReactFlightString(pattern.exec(html)?.[1]);
+}
+
+function escapedNumberField(html: string, key: string): number | null {
+  const pattern = new RegExp(`\\\\"${key}\\\\"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)`);
+  const raw = pattern.exec(html)?.[1];
+  if (raw == null) return null;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function metaContent(html: string, selector: string): string | null {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`<meta\\s+${escaped}\\s+content="([^"]*)"`, "i");
+  const value = pattern.exec(html)?.[1];
+  return value ? decodeHtmlEntity(value) : null;
+}
+
+function parseKstDateTime(value: string | null): string | null {
+  if (!value) return null;
+  const normalized = value.trim().replace(" ", "T");
+  const ms = Date.parse(`${normalized}+09:00`);
+  return Number.isFinite(ms) ? new Date(ms).toISOString() : null;
+}
+
+function extractJoongnaImageUrls(html: string): string[] {
+  const urls = new Set<string>();
+  for (const match of html.matchAll(/https:\/\/img\d+\.joongna\.com\/[^"'\\<\s]+/g)) {
+    urls.add(decodeHtmlEntity(match[0]).replace(/\\u0026/g, "&"));
+  }
+  return [...urls];
+}
+
+function extractJoongnaLabels(html: string): string[] {
+  const labelsBlock = /\\"labels\\"\s*:\s*\[((?:\\.|[^\]])*)\]/.exec(html)?.[1];
+  if (!labelsBlock) return [];
+  const labels = new Set<string>();
+  for (const match of labelsBlock.matchAll(/\\"((?:\\\\.|[^\\"])*)\\"/g)) {
+    const label = decodeReactFlightString(match[1]);
+    if (label) labels.add(label);
+  }
+  return [...labels];
+}
+
+export function parseJoongnaDetailHtml(url: string, html: string, status = 200): JoongnaDetail {
+  const externalId = parseJoongnaProductExternalId(url) ?? "";
+  const contentType = "text/html";
+  const blockSignal = detectJoongnaBlockSignal({ status, contentType, bodyPreview: html });
+  const productStatus = escapedNumberField(html, "productStatus");
+  const sortDate = escapedStringField(html, "sortDate");
+  const updateDate = escapedStringField(html, "updateDate");
+  const images = extractJoongnaImageUrls(html);
+  const ogImage = metaContent(html, 'property="og:image"');
+  const thumbnailUrl = images[0] ?? ogImage ?? null;
+  const title =
+    escapedStringField(html, "productTitle") ??
+    metaContent(html, 'property="og:title"') ??
+    html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, " ").trim() ??
+    null;
+  const description =
+    escapedStringField(html, "productDescription") ??
+    metaContent(html, 'property="og:description"') ??
+    metaContent(html, 'name="description"');
+
+  return {
+    source: JOONGNA_SOURCE_ID,
+    externalId,
+    internalPid: externalId ? joongnaInternalPid(externalId) : 0,
+    url,
+    ok: status >= 200 && status < 300 && !blockSignal.blocked,
+    status,
+    blockSignal,
+    title,
+    description,
+    price: escapedNumberField(html, "productPrice"),
+    productStatus,
+    categoryName: escapedStringField(html, "categoryName"),
+    categorySeq: escapedStringField(html, "categorySeq"),
+    parcelFeeYn: escapedNumberField(html, "parcelFeeYn"),
+    productTradeType: escapedNumberField(html, "productTradeType"),
+    storeSeq: escapedNumberField(html, "storeSeq"),
+    nickName: escapedStringField(html, "nickName"),
+    viewCount: escapedNumberField(html, "viewCount"),
+    labels: extractJoongnaLabels(html),
+    thumbnailUrl,
+    imageCount: images.length,
+    sortDate,
+    updateDate,
+    sourceUpdatedAt: parseKstDateTime(updateDate) ?? parseKstDateTime(sortDate),
+  };
+}
+
+export async function fetchJoongnaDetail(url: string, timeoutMs = 10_000): Promise<JoongnaDetail> {
+  const fetched = await fetchJoongnaText(url, timeoutMs);
+  return parseJoongnaDetailHtml(fetched.url || url, fetched.body, fetched.status);
+}
+
+export async function fetchJoongnaSearchProductUrls(keyword: string, options: {
+  limit?: number;
+  timeoutMs?: number;
+} = {}): Promise<string[]> {
+  const limit = Math.max(1, Math.min(100, Math.round(options.limit ?? 30)));
+  const timeoutMs = Math.max(1_000, options.timeoutMs ?? 10_000);
+  const url = `${JOONGNA_BASE_URL}/search/${encodeURIComponent(keyword.trim())}`;
+  const fetched = await fetchJoongnaText(url, timeoutMs);
+  if (!fetched.ok) return [];
+  const urls = new Set<string>();
+  for (const match of fetched.body.matchAll(/\/product\/(\d+)/g)) {
+    urls.add(`${JOONGNA_BASE_URL}/product/${match[1]}`);
+    if (urls.size >= limit) break;
+  }
+  return [...urls];
+}
+
 function stopReport(mode: JoongnaSourceMode, robots: JoongnaProbeReport["robots"], recentProductIndex: JoongnaProbeReport["recentProductIndex"]): JoongnaProbeReport {
   return {
     source: JOONGNA_SOURCE_ID,
@@ -207,7 +377,7 @@ export async function probeJoongnaPublicSource(options: {
   maxSitemaps?: number;
   maxProductUrls?: number;
   timeoutMs?: number;
-  env?: NodeJS.ProcessEnv;
+  env?: JoongnaEnv;
 } = {}): Promise<JoongnaProbeReport> {
   const mode = getJoongnaSourceMode(options.env);
   const maxSitemaps = Math.max(0, Math.min(3, Math.round(options.maxSitemaps ?? 1)));

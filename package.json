@@ -146,6 +146,7 @@
     "report:lifecycle-recheck-drain-plan": "node scripts/report-lifecycle-recheck-drain-plan.mjs",
     "report:source-time-fields": "node scripts/report-source-time-fields.mjs",
     "report:joongna-source-probe": "tsx scripts/report-joongna-source-probe.ts",
+    "run:joongna-shadow-ingest": "tsx scripts/run-joongna-shadow-ingest.ts",
     "report:sold-velocity-prereqs": "node scripts/report-sold-velocity-prereqs.mjs",
     "report:market-velocity": "node scripts/report-market-velocity.mjs",
     "report:terminal-interval-candidates": "node scripts/report-terminal-interval-candidates.mjs",
