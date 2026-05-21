@@ -83,7 +83,7 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   housekeeper_ai_cache_prune: 30 * 60_000,
   hotdeal_worker: 60_000,
   reference_price_refresh: 60 * 60_000,
-  joongna_worker: 2 * 60_000,
+  joongna_worker: 5 * 60_000,
   score_worker: 60_000,
 };
 
@@ -316,7 +316,8 @@ export async function acquireCronGuardWithSourceHealth(
 
   // P0-3: DB lease 보강. CRON_GUARD_DB_LOCK_ENABLED=1일 때만 활성.
   // 멀티 인스턴스에서 동일 mode 동시 실행을 차단한다. 실패하면 메모리 release 후 skip.
-  if (!envBool("CRON_GUARD_DB_LOCK_ENABLED", false) || isForceRun(req)) {
+  const dbLockEnabled = mode === "joongna_worker" || envBool("CRON_GUARD_DB_LOCK_ENABLED", false);
+  if (!dbLockEnabled || isForceRun(req)) {
     return memoryResult;
   }
   const leaseMs = envMs(modeEnvKey("CRON_GUARD_LEASE_MS", mode), DEFAULT_LEASE_MS[mode], 10_000, 30 * 60_000);

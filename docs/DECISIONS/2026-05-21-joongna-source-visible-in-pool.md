@@ -217,6 +217,7 @@
   - Fixed detail-read timeout classification: a thrown fetch timeout is now counted as a transient detail failure, not as a block signal. Only an actual Joongna detail response block signal can mark the source `unhealthy`.
   - Added `joongna_worker` to source-health guard and made it read `source=joongna`; if Joongna ever becomes `unhealthy`, the worker will skip like the heavy Bunjang workers.
   - Lowered `joongna_worker` cron-guard cooldown from 10 minutes to 2 minutes so the 3-minute Vercel cron cadence is not silently throttled on warm instances.
+  - Enabled DB-backed cron lock by default for `joongna_worker` and extended its lease to 5 minutes. Vercel can run different warm deployments/instances concurrently, so memory guard alone is not enough for Joongna.
 - Verification:
   - `npx eslint src/lib/cron-watchdog.ts src/lib/cron-guard.ts src/lib/joongna.ts src/lib/joongna-ingest.ts src/app/api/cron/joongna-worker/route.ts tests/cron-guard.test.ts`: passed.
   - `npx tsx --test tests/cron-guard.test.ts`: passed.
