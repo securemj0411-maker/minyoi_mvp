@@ -1092,6 +1092,7 @@ function searchPagesForTick(pagesPerQuery: number, deepCrawlMaxPage: number, now
 type SearchStageOptions = {
   pages?: number[];
   mode?: "fresh" | "deep" | "mixed";
+  maxQueries?: number;
 };
 
 async function timedSearchSubstage<T>(
@@ -1154,7 +1155,9 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
   const queryWindow = mode === "deep"
     ? rotatedDeepQueryWindow(dueQueries, config.deepCrawlQueryLimit)
     : { items: dueQueries, start: 0, limit: dueQueries.length };
-  const scanQueries = queryWindow.items;
+  const scanQueries = options.maxQueries == null
+    ? queryWindow.items
+    : queryWindow.items.slice(0, Math.max(0, options.maxQueries));
   const tolerateNonCriticalWriteErrors = mode === "deep";
   async function timedOptionalSearchWrite(name: string, fn: () => Promise<void>) {
     try {
@@ -1219,6 +1222,8 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
     }
   }
   timingsMs.search_queries_scanned = scannedQueries.length;
+  timingsMs.search_queries_window_size = queryWindow.items.length;
+  timingsMs.search_queries_max = options.maxQueries ?? queryWindow.items.length;
   timingsMs.search_queries_enforce_cadence = enforceCadence ? 1 : 0;
 
   const items = [...seen.values()];
@@ -4887,6 +4892,7 @@ export async function runSearchScorePipeline(): Promise<TickResult> {
   const search = await timedStage(stageDurationsMs, "search", () => searchStage(Date.now() + config.tickSearchBudgetMs, {
     pages: [0],
     mode: "fresh",
+    maxQueries: config.tickSearchQueryLimit,
   }));
   const score = config.tickInlineScoreEnabled
     ? await timedStage(stageDurationsMs, "score", () => scoreStage(Date.now() + config.tickScoreBudgetMs))

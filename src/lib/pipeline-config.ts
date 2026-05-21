@@ -497,6 +497,7 @@ export type PipelineRuntimeConfig = {
   maxAiReviewConcurrency: number;
   staleRunMinutes: number;
   tickSearchBudgetMs: number;
+  tickSearchQueryLimit: number;
   tickDetailBudgetMs: number;
   // Wave 187 B2: lifecycle 전용 budget (route maxDuration 90s 활용).
   lifecycleBudgetMs: number;
@@ -602,6 +603,7 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     // Wave 88 follow-up: 15s → 25s. 127 narrow + 10 category sweep을 한 tick에 다 처리.
     // Vercel maxDuration 60s 안에 search(25s) + score(10s) + DB write(~5s) = 40s 여유.
     tickSearchBudgetMs: envInt("PIPELINE_TICK_SEARCH_BUDGET_MS", 25_000, 1_000, 120_000),
+    tickSearchQueryLimit: envInt("PIPELINE_TICK_SEARCH_QUERY_LIMIT", 40, 5, 300),
     tickDetailBudgetMs: envInt("PIPELINE_TICK_DETAIL_BUDGET_MS", 20_000, 1_000, 120_000),
     // Wave 187 B2 (2026-05-17): lifecycle 전용 budget. tickDetailBudgetMs (20s) 공유 시
     //   batch 800 매물 처리에 timeout (claimed 800 / enriched 139). budget 늘려서 cycle 처리량 ↑.

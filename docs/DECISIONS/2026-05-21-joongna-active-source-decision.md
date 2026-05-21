@@ -140,3 +140,17 @@
 - 후속:
   - 배포 후 tick은 1분마다 search-only로 빠르게 성공해야 한다.
   - source health는 recovery hysteresis 때문에 즉시 healthy가 아니라 약 15분 이상 정상 run이 누적된 뒤 회복될 수 있다.
+
+### 추가 확인/보강
+
+- 배포 후 수동 운영 tick 확인:
+  - status 200
+  - `scored=0`으로 inline score OFF 반영 확인
+  - 다만 search stage가 72초 걸림.
+- timing root cause:
+  - `search_queries_scanned=139`
+  - `unique_items=2104`
+  - `build_detail_decisions=39793ms`
+- 추가 조치:
+  - fresh tick search query window를 기본 40개로 제한한다. (`PIPELINE_TICK_SEARCH_QUERY_LIMIT`)
+  - deep-crawl은 별도 worker가 담당하므로 tick은 1분 cadence를 지키는 fresh/light scan 역할로 좁힌다.
