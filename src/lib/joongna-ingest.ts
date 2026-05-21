@@ -285,6 +285,16 @@ function joongnaTrustRating(detail: Pick<JoongnaDetail, "sellerActivityScore" | 
   return Number(Math.max(0, Math.min(5, total / 200)).toFixed(2));
 }
 
+function dedupeRowsByKey<T extends Record<string, unknown>>(rows: T[], keyFor: (row: T) => string | null) {
+  const byKey = new Map<string, T>();
+  for (const row of rows) {
+    const key = keyFor(row);
+    if (!key) continue;
+    byKey.set(key, row);
+  }
+  return [...byKey.values()];
+}
+
 type SellerEnrichmentResult = {
   details: JoongnaDetail[];
   sellerProfilesFetched: number;
@@ -583,7 +593,13 @@ function buildRows(
     });
   }
 
-  return { rawRows, parsedRows, observationRows, payloadRows, sellerRows };
+  return {
+    rawRows,
+    parsedRows,
+    observationRows,
+    payloadRows,
+    sellerRows: dedupeRowsByKey(sellerRows, (row) => `${row.source}:${row.seller_uid}`),
+  };
 }
 
 async function insertObservations(

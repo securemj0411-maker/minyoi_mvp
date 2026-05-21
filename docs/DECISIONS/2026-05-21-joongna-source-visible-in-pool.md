@@ -180,3 +180,20 @@
   - `npm run build`: passed.
 - Deferred:
   - Do not implement Joongna comment-count gate until a stable public field/API is found. Current `num_comment` stays null for Joongna rows.
+
+## Follow-up — Joongna ready count stall diagnosis and seller upsert fix
+- Operator observed Joongna ready count stalled around low double digits and asked whether the source was dead or simply rotating slowly.
+- Finding:
+  - Joongna collection was not blocked by dead listings: current Joongna pool showed `ready=32`, `invalidated=2`.
+  - Acquisition had worked earlier in the hour (`raw=646`, `parsed=349`), but recent Joongna worker runs started failing after seller trust enrichment.
+  - Failure root cause: `mvp_sellers` upsert received duplicate `(source, seller_uid)` rows when multiple Joongna listings in the same batch belonged to the same seller. Postgres rejected the batch with `ON CONFLICT DO UPDATE command cannot affect row a second time`, so raw/listing writes after that point did not happen.
+  - Downstream scoring was alive: `score-worker` continued every minute and had no Joongna scorable dirty backlog once it processed rows. Most parsed-but-not-ready rows were normal gate decisions (`coarse_market_price`, `market_confidence_low`, `market_stat_missing`, low profit/overpriced/deep-discount review), not lifecycle deaths.
+- Fix:
+  - Deduplicate Joongna `mvp_sellers` payload by `source:seller_uid` inside `runJoongnaIngest` before the upsert.
+  - Keep the latest seller fact row from the current batch; this is safe because seller profile facts are store-level, not listing-level.
+- Verification:
+  - `npx eslint src/lib/joongna-ingest.ts src/app/api/cron/joongna-worker/route.ts`: passed.
+  - Local active smoke ingest: `query=에어팟맥스`, `maxDetails=8` completed with `rawUpserted=8`, `parsedUpserted=6`, `sellerProfilesFetched=8`, `sellerTransactionsFetched=8`, `sourceHealthStatus=healthy`.
+  - Manual score stage after the smoke ingest processed 39 rows and added 4 pool rows; top skips were expected business gates (`price_above_pool_max`, `sku_median_unavailable`, `negative_resell_gap`).
+- Deferred:
+  - Joongna fashion/shoe ready count is still limited mostly by market confidence and comparable-key sample availability. That is a pool-quality policy issue, not a crawler liveness issue.
