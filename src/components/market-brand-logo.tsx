@@ -26,6 +26,17 @@ export function DanawaLogo({ className = "h-4 w-4" }: LogoProps) {
   );
 }
 
+export function JoongnaLogo({ className = "h-4 w-4" }: LogoProps) {
+  return (
+    <img
+      src="/brand/jungna.svg"
+      alt=""
+      aria-hidden="true"
+      className={`${className} shrink-0 rounded-md object-cover`}
+    />
+  );
+}
+
 export function DanawaSourceBadge({ label = "다나와" }: { label?: string }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900/50">
@@ -47,9 +58,7 @@ export function BunjangSourceBadge({ label = "번개" }: { label?: string }) {
 export function JoongnaSourceBadge({ label = "중고나라" }: { label?: string }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-black text-sky-700 ring-1 ring-sky-100 dark:bg-sky-950/40 dark:text-sky-200 dark:ring-sky-900/60">
-      <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] bg-sky-600 text-[8px] font-black leading-none text-white">
-        중
-      </span>
+      <JoongnaLogo className="h-3.5 w-3.5 rounded-[3px]" />
       {label}
     </span>
   );

@@ -7,7 +7,7 @@ import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
-import { BunjangLogo, DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
+import { BunjangLogo, DanawaLogo, JoongnaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import {
   ActivityIcon,
   AlertTriangleIcon,
@@ -3542,9 +3542,7 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
               {channel.source === "bunjang" ? (
                 <BunjangLogo className="h-[22px] w-[22px] rounded-full" />
               ) : (
-                <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-sky-600 text-[10px] font-black text-white">
-                  중
-                </span>
+                <JoongnaLogo className="h-[22px] w-[22px] rounded-full" />
               )}
               <span className="text-[12px] font-bold text-[#344136] dark:text-zinc-100">{channel.label}</span>
             </div>
@@ -4587,38 +4585,36 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
   ];
 
   return (
-    <div data-beginner-guide-channel-profit className="mt-5 space-y-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div data-beginner-guide-channel-profit className="mt-4 space-y-3">
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
         {marketChannels.map((channel) => (
-          <div key={channel.source} className="relative rounded-[22px] bg-white/84 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+          <div key={channel.source} className="relative min-w-0 rounded-[16px] bg-white/84 px-2 py-2.5 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800 sm:rounded-[22px] sm:p-4">
             {channel.source === currentSource ? (
-              <div className="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-black text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200">
+              <div className="absolute right-1.5 top-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[8px] font-black text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200 sm:right-3 sm:top-3 sm:px-2 sm:text-[9px]">
                 원본 출처
               </div>
             ) : null}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-2">
               {channel.source === "bunjang" ? (
-                <BunjangLogo className="h-7 w-7 rounded-full" />
+                <BunjangLogo className="h-6 w-6 rounded-full sm:h-7 sm:w-7" />
               ) : (
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-600 text-[12px] font-black text-white">
-                  중
-                </span>
+                <JoongnaLogo className="h-6 w-6 rounded-full sm:h-7 sm:w-7" />
               )}
-              <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">{channel.label}</div>
+              <div className="text-[10.5px] font-black leading-tight text-[#172019] dark:text-zinc-50 sm:text-[13px]">{channel.label}</div>
             </div>
-            <div className="mt-3 text-[22px] font-black tabular-nums text-emerald-700 dark:text-emerald-300">+{krw(marketplaceProfit)}</div>
-            <div className="mt-1 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{channel.note}</div>
-            <div className="mt-3 rounded-full bg-emerald-50 px-2.5 py-1 text-center text-[11px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200">{channel.chip}</div>
+            <div className="mt-2 text-[15px] font-black leading-tight tabular-nums text-emerald-700 dark:text-emerald-300 sm:mt-3 sm:text-[22px]">+{krw(marketplaceProfit)}</div>
+            <div className="mt-1 min-h-[26px] break-keep text-[9px] font-bold leading-[1.35] text-[#7b8378] dark:text-zinc-400 sm:min-h-0 sm:text-[11px]">{channel.note}</div>
+            <div className="mt-2 rounded-full bg-emerald-50 px-1.5 py-1 text-center text-[9px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200 sm:mt-3 sm:px-2.5 sm:text-[11px]">{channel.chip}</div>
           </div>
         ))}
-        <div className="rounded-[22px] bg-amber-50/80 p-4 ring-1 ring-amber-200 dark:bg-amber-950/20 dark:ring-amber-900/55">
-          <div className="flex items-center gap-2">
-            <DaangnLogo className="h-7 w-7 rounded-full" />
-            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">당근 직거래</div>
+        <div className="min-w-0 rounded-[16px] bg-amber-50/80 px-2 py-2.5 ring-1 ring-amber-200 dark:bg-amber-950/20 dark:ring-amber-900/55 sm:rounded-[22px] sm:p-4">
+          <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+            <DaangnLogo className="h-6 w-6 rounded-full sm:h-7 sm:w-7" />
+            <div className="text-[10.5px] font-black leading-tight text-[#172019] dark:text-zinc-50 sm:text-[13px]">당근 직거래</div>
           </div>
-          <div className="mt-3 text-[22px] font-black tabular-nums text-amber-700 dark:text-amber-200">+{krw(daangnProfit)}</div>
-          <div className="mt-1 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">수수료 0원 가정</div>
-          <div className="mt-3 rounded-full bg-white/80 px-2.5 py-1 text-center text-[11px] font-black text-amber-700 ring-1 ring-amber-100 dark:bg-zinc-950/60 dark:text-amber-200 dark:ring-amber-900/50">지역/네고 부담</div>
+          <div className="mt-2 text-[15px] font-black leading-tight tabular-nums text-amber-700 dark:text-amber-200 sm:mt-3 sm:text-[22px]">+{krw(daangnProfit)}</div>
+          <div className="mt-1 min-h-[26px] break-keep text-[9px] font-bold leading-[1.35] text-[#7b8378] dark:text-zinc-400 sm:min-h-0 sm:text-[11px]">수수료 0원 가정</div>
+          <div className="mt-2 rounded-full bg-white/80 px-1.5 py-1 text-center text-[9px] font-black text-amber-700 ring-1 ring-amber-100 dark:bg-zinc-950/60 dark:text-amber-200 dark:ring-amber-900/50 sm:mt-3 sm:px-2.5 sm:text-[11px]">지역/네고 부담</div>
         </div>
       </div>
       <div className="rounded-[18px] bg-[#f5f9ff] px-3.5 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
