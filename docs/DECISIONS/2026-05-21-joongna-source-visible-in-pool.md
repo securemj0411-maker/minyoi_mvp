@@ -42,3 +42,11 @@
   - `ready_total=365`
   - recent ready by `added_at` top 80: `joongna=5`, `bunjang=75`
   - newest ready added row was Joongna: `아이패드 미니 7 a17 pro 준신동 팝니다`
+
+## Follow-up — /me pool source selector
+- Added the same source selector to the `/me` pool feed.
+- `/api/packs/pool` now accepts `source=bunjang|joongna` and applies the source scope before category diversification, budget filtering, and response masking.
+- `/me` UI now preserves `source` in the URL and reloads the feed when the operator selects `출처 전체`, `번개장터`, or `중고나라`.
+- Verification:
+  - `npx eslint src/app/api/packs/pool/route.ts src/components/explore-client.tsx`: passed.
+  - `npm run build`: passed.

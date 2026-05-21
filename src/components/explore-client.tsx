@@ -298,6 +298,13 @@ function lockedPreviewTitle(item: PoolItem) {
 }
 
 type SortOption = "profit_desc" | "latest" | "price_asc";
+type SourceOption = "all" | "bunjang" | "joongna";
+
+const SOURCE_OPTIONS: Array<{ value: SourceOption; label: string }> = [
+  { value: "all", label: "출처 전체" },
+  { value: "bunjang", label: "번개장터" },
+  { value: "joongna", label: "중고나라" },
+];
 
 const SCRAP_SNAPSHOTS_STORAGE_KEY = "minyoi_scrap_snapshots_v1";
 const LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY = "minyoi_saved_reveal_pids_v1";
@@ -599,6 +606,10 @@ export default function ExploreClient() {
     const raw = searchParams.get("sort");
     return raw === "latest" || raw === "price_asc" ? raw : "profit_desc";
   });
+  const [source, setSource] = useState<SourceOption>(() => {
+    const raw = searchParams.get("source");
+    return raw === "bunjang" || raw === "joongna" ? raw : "all";
+  });
   const [scrapOnly, setScrapOnly] = useState(() => searchParams.get("view") === "scrap");
   const categoryScrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollCategoriesPrev, setCanScrollCategoriesPrev] = useState(false);
@@ -657,9 +668,10 @@ export default function ExploreClient() {
     if (scrapOnly) params.set("view", "scrap");
     else if (selectedCategories.size > 0) params.set("categories", Array.from(selectedCategories).join(","));
     if (sort !== "profit_desc") params.set("sort", sort);
+    if (source !== "all") params.set("source", source);
     const queryString = params.toString();
     router.replace(`${pathname}${queryString ? `?${queryString}` : ""}`, { scroll: false });
-  }, [selectedCategories, scrapOnly, sort, router, pathname]);
+  }, [selectedCategories, scrapOnly, sort, source, router, pathname]);
 
   // Cooldown tick (매초 갱신)
   useEffect(() => {
@@ -692,6 +704,7 @@ export default function ExploreClient() {
       const params = new URLSearchParams();
       if (refresh) params.set("refresh", "1");
       if (sort !== "profit_desc") params.set("sort", sort);
+      if (source !== "all") params.set("source", source);
       // Wave 391: refresh 시 이미 본 pids 전달 → 백엔드가 제외하고 다른 매물 fetch.
       // 안 그러면 같은 풀에서 같은 30개 다양화 결과 → frontend dedupe 후 0개 추가.
       // itemsRef로 fresh 접근 (deps에 items 박으면 infinite loop).
@@ -737,7 +750,7 @@ export default function ExploreClient() {
       setRefreshing(false);
       setLoading(false);
     }
-  }, [sort]);
+  }, [sort, source]);
 
   const loadStats = useCallback(async () => {
     try {
@@ -1120,9 +1133,21 @@ export default function ExploreClient() {
           </div>
         </div>
         <select
+          value={source}
+          onChange={(e) => {
+            setSource(e.target.value as SourceOption);
+            setScrapOnly(false);
+          }}
+          className="shrink-0 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
+        >
+          {SOURCE_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
-          className="ml-auto shrink-0 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
+          className="shrink-0 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
         >
           <option value="profit_desc">차익순</option>
           <option value="price_asc">매입단가순</option>

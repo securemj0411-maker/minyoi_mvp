@@ -222,6 +222,7 @@ async function loadPool(
   headers: Record<string, string>,
   options: {
     sort?: "profit_desc" | "latest" | "price_asc";
+    source?: "bunjang" | "joongna" | null;
     priceMax?: number | null;
     excludePids?: number[];
     readyCandidateLimit?: number;
@@ -240,15 +241,27 @@ async function loadPool(
   const excludeClause = options.excludePids && options.excludePids.length > 0
     ? `&pid=not.in.(${options.excludePids.join(",")})`
     : "";
+  let sourceClause = "";
+  if (options.source) {
+    const sourceRows = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid&source=eq.${encodeURIComponent(options.source)}&limit=5000`,
+      { headers },
+    );
+    const sourcePids = ((await sourceRows.json()) as Array<{ pid: number }>).map((row) => Number(row.pid));
+    if (sourcePids.length === 0) {
+      return { pool: [], raws: [], metas: [], marketBands: new Map(), v7SiblingPresence: new Map() };
+    }
+    sourceClause = `&pid=in.(${sourcePids.join(",")})`;
+  }
 
   // Wave 388: fetch 순서 재정렬 — budget filter를 다양화 전에 적용.
   const [readyRes, soldOutRes] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready${excludeClause}&${orderClause}&limit=${FETCH_POOL_OVERFETCH}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready${sourceClause}${excludeClause}&${orderClause}&limit=${FETCH_POOL_OVERFETCH}`,
       { headers },
     ),
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}${excludeClause}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS * 4}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}${sourceClause}${excludeClause}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS * 4}`,
       { headers },
     ),
   ]);
@@ -493,6 +506,11 @@ export async function GET(req: Request) {
       preferenceParam === "safe" ? "safe" :
       preferenceParam === "aggressive" ? "aggressive" :
       "balanced";
+    const sourceParam = url.searchParams.get("source")?.trim().toLowerCase();
+    const source: "bunjang" | "joongna" | null =
+      sourceParam === "bunjang" || sourceParam === "joongna"
+        ? normalizeMarketplaceSource(sourceParam)
+        : null;
 
     // Wave 391: 클라이언트가 이미 본 pids 제외 — refresh 시 새 매물 보장.
     const excludePidsParam = url.searchParams.get("excludePids");
@@ -556,6 +574,7 @@ export async function GET(req: Request) {
         const candidate = fallbackChain[i];
         const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, {
           sort,
+          source,
           priceMax: candidate.max,
           excludePids: excludeAllPids,
           readyCandidateLimit,
@@ -571,6 +590,7 @@ export async function GET(req: Request) {
       // priceMax 없으면 unlimited 한 번만 fetch.
       const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, {
         sort,
+        source,
         excludePids: excludeAllPids,
         readyCandidateLimit,
       });
