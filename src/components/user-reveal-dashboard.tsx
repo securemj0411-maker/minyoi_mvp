@@ -7,6 +7,7 @@ import { ConditionPhotoBadge } from "@/components/condition-chip";
 import { BunjangSourceBadge, DanawaSourceBadge } from "@/components/market-brand-logo";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
+import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import { buyPriceGuidance } from "@/lib/buy-price-guidance";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
@@ -190,6 +191,16 @@ function currentProfitMaxOrSnapshot(item: RevealItem) {
 
 function currentProfitAverage(item: RevealItem) {
   return Math.round((currentProfitMinOrSnapshot(item) + currentProfitMaxOrSnapshot(item)) / 2);
+}
+
+function recomputeCurrentProfitFromMarketBasis(item: RevealItem, marketBasis: RevealMarketBasis | null | undefined) {
+  const market = marketBasis?.medianPrice ?? null;
+  if (!market || market <= 0 || !item.price || item.price <= 0) return null;
+  const assumedBuyShipping = item.freeShipping ? 0 : 3500;
+  const sellFee = Math.round(market * SELLING_FEE_RATE);
+  const max = Math.round(market - item.price - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
+  const min = Math.round(market - (item.price + assumedBuyShipping) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
+  return { min, max };
 }
 
 function profitPercent(item: RevealItem) {
@@ -607,13 +618,20 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       const detailData = (await res.json()) as RevealDetailResponse;
       if (!res.ok || !detailData.detail) throw new Error(detailData.error ?? "상세 정보 요청 실패");
       if (detailData.analysis) {
-        const applyAnalysis = (item: RevealItem): RevealItem => ({
-          ...item,
-          marketBasis: detailData.analysis?.marketBasis ?? item.marketBasis,
-          velocityBasis: detailData.analysis?.velocityBasis ?? item.velocityBasis,
-          skuListingFlow: detailData.analysis?.skuListingFlow ?? item.skuListingFlow,
-          optionBaseAssumed: detailData.analysis?.optionBaseAssumed ?? item.optionBaseAssumed,
-        });
+        const applyAnalysis = (item: RevealItem): RevealItem => {
+          const marketBasis = detailData.analysis?.marketBasis ?? item.marketBasis;
+          const recomputedProfit = recomputeCurrentProfitFromMarketBasis(item, marketBasis);
+          return {
+            ...item,
+            marketBasis,
+            velocityBasis: detailData.analysis?.velocityBasis ?? item.velocityBasis,
+            skuListingFlow: detailData.analysis?.skuListingFlow ?? item.skuListingFlow,
+            optionBaseAssumed: detailData.analysis?.optionBaseAssumed ?? item.optionBaseAssumed,
+            marketGapKrw: recomputedProfit?.min ?? item.marketGapKrw,
+            marketGapKrwMax: recomputedProfit?.max ?? item.marketGapKrwMax,
+            marketStale: recomputedProfit ? recomputedProfit.max <= 0 : item.marketStale,
+          };
+        };
         setItems((prev) => prev.map((item) => (item.pid === pid ? applyAnalysis(item) : item)));
         setSelectedItem((prev) => (prev?.pid === pid ? applyAnalysis(prev) : prev));
       }

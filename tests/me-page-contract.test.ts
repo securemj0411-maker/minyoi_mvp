@@ -32,6 +32,20 @@ test("/me treats zero net profit as terminal for user-facing display", () => {
   assert.match(modal, /Math\.min\(card\.expectedProfitMin, card\.expectedProfitMax\) <= 0/);
 });
 
+test("/me detail refresh keeps market price and profit on the same basis", () => {
+  const dashboard = source("src/components/user-reveal-dashboard.tsx");
+
+  assert.match(dashboard, /function recomputeCurrentProfitFromMarketBasis/);
+  assert.match(dashboard, /SELLING_FEE_RATE/);
+  assert.match(dashboard, /RESELL_SHIPPING_FEE/);
+  assert.match(dashboard, /SAFETY_BUFFER/);
+  assert.match(dashboard, /const marketBasis = detailData\.analysis\?\.marketBasis \?\? item\.marketBasis/);
+  assert.match(dashboard, /const recomputedProfit = recomputeCurrentProfitFromMarketBasis\(item, marketBasis\)/);
+  assert.match(dashboard, /marketGapKrw: recomputedProfit\?\.min \?\? item\.marketGapKrw/);
+  assert.match(dashboard, /marketGapKrwMax: recomputedProfit\?\.max \?\? item\.marketGapKrwMax/);
+  assert.match(dashboard, /marketStale: recomputedProfit \? recomputedProfit\.max <= 0 : item\.marketStale/);
+});
+
 test("/me user modal explains recommendation trust in plain language", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
 
