@@ -65,3 +65,12 @@
 - Changed user/operator wording from `번개 ... 매물 기준/median/추이` to `통합 ... 매물 기준/median/추이` where it refers to the market sample.
 - `/api/listings/[pid]/market-source` now returns `marketplaceSource`, `marketplaceLabel`, and source-aware `listingUrl` for the target listing and comparison rows, while preserving legacy `bunjangUrl` as a compatibility alias.
 - Deferred: historical `mvp_market_price_daily` rows were not recomputed in this change; the code path already aggregates by product/condition, and Joongna volume will naturally join the same aggregate as source data grows.
+
+## Follow-up — detail-access live verification parity
+- Operator asked whether the `/me` product feed treats Joongna like Bunjang for live validation before users see details.
+- Finding: already-opened `/api/packs/me` rows live-verify on page load, and pack-open reservation live-verifies before reveal. But `/api/packs/pool/detail-access` was only checking `ready` before consuming free/credit detail access.
+- Fix: `detail-access` now loads the exact ready pool item and runs source-aware live verification before consuming the user's free view/credit.
+- Bunjang path now checks raw/detail comment count >= 8, missing detail, sold-out signals, and live listing classification before detail access is granted.
+- Joongna path now checks product detail fetch, 404 disappearance, `productStatus !== 0`, sold-out text signals, and live listing classification before detail access is granted.
+- If live verification fails because the source is temporarily unstable, the route returns an error without spending the free view/credit.
+- Deferred: Joongna comment-count blocking remains unavailable because current Joongna public product HTML does not expose a stable comment count field in the parser sample; `num_comment` remains `null` for Joongna rows until a reliable field/API is found.

@@ -1,14 +1,20 @@
 import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
+import { fetchDetail } from "@/lib/bunjang";
 import { consumeDetailAccess } from "@/lib/detail-access";
-import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { fetchJoongnaDetail } from "@/lib/joongna";
+import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { classifyListing } from "@/lib/pipeline";
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { detectSoldOut, describeSignals, isSoldOut, soldOutTextHits } from "@/lib/sold-out";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const MAX_DETAIL_ACCESS_NUM_COMMENT = 8;
 
 async function isReadyPoolPid(pid: number): Promise<boolean> {
   const rows = await restFetch(
@@ -47,7 +53,7 @@ async function loadExactPoolItem(pid: number) {
       url: string | null;
     }>>),
     restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,listing_state,sale_status,num_comment&pid=eq.${pid}&limit=1`,
       { headers },
     ).then((res) => res.json() as Promise<Array<{
       pid: number;
@@ -63,6 +69,9 @@ async function loadExactPoolItem(pid: number) {
       shop_review_count: number | null;
       image_count: number | null;
       description_preview: string | null;
+      listing_state: string | null;
+      sale_status: string | null;
+      num_comment: number | null;
     }>>),
   ]);
 
@@ -96,7 +105,198 @@ async function loadExactPoolItem(pid: number) {
     sellerReviewCount: meta?.shop_review_count ?? 0,
     imageCount: meta?.image_count ?? null,
     descriptionPreview: meta?.description_preview ?? "",
+    listingState: meta?.listing_state ?? "unknown",
+    saleStatus: meta?.sale_status ?? "",
+    commentCount: meta?.num_comment == null ? null : Number(meta.num_comment),
     soldOut: false,
+  };
+}
+
+type ExactPoolItem = NonNullable<Awaited<ReturnType<typeof loadExactPoolItem>>>;
+
+function isCommentBlocked(value: number | null | undefined) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= MAX_DETAIL_ACCESS_NUM_COMMENT;
+}
+
+function normalizedTerminalSaleStatus(value: string | null | undefined) {
+  const upper = String(value ?? "").toUpperCase();
+  return upper === "SOLD" || upper === "SOLD_OUT" ? upper : "SOLD_OUT";
+}
+
+async function patchPoolVerified(pid: number) {
+  const now = new Date().toISOString();
+  await restFetch(`${tableUrl("mvp_candidate_pool")}?pid=eq.${pid}&status=eq.ready`, {
+    method: "PATCH",
+    headers: serviceHeaders("return=minimal"),
+    body: JSON.stringify({
+      last_verified_at: now,
+      updated_at: now,
+    }),
+  });
+}
+
+async function patchRawCommentCount(pid: number, commentCount: number) {
+  const now = new Date().toISOString();
+  await restFetch(`${tableUrl("mvp_raw_listings")}?pid=eq.${pid}`, {
+    method: "PATCH",
+    headers: serviceHeaders("return=minimal"),
+    body: JSON.stringify({
+      num_comment: commentCount,
+      detail_enriched_at: now,
+      updated_at: now,
+    }),
+  });
+}
+
+async function invalidateReadyPoolItem(pid: number, reason: string, rawPatch: Record<string, unknown> = {}) {
+  const now = new Date().toISOString();
+  await Promise.allSettled([
+    restFetch(`${tableUrl("mvp_raw_listings")}?pid=eq.${pid}`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: JSON.stringify({
+        ...rawPatch,
+        updated_at: now,
+      }),
+    }),
+    restFetch(`${tableUrl("mvp_candidate_pool")}?pid=eq.${pid}&status=in.(ready,reserved)`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: JSON.stringify({
+        status: "invalidated",
+        invalidated_reason: reason.slice(0, 120),
+        updated_at: now,
+      }),
+    }),
+  ]);
+}
+
+async function markTerminalBeforeAccess(
+  item: ExactPoolItem,
+  state: "sold_confirmed" | "disappeared",
+  saleStatus: string | null,
+  reason: string,
+) {
+  const now = new Date().toISOString();
+  const rawPatch: Record<string, unknown> = {
+    listing_state: state,
+  };
+  if (saleStatus != null) rawPatch.sale_status = saleStatus;
+  if (state === "sold_confirmed") rawPatch.sold_detected_at = now;
+  if (state === "disappeared") {
+    rawPatch.disappeared_at = now;
+    rawPatch.last_missing_at = now;
+  }
+  await invalidateReadyPoolItem(item.pid, `detail_access_${reason}`, rawPatch);
+}
+
+type DetailAccessLiveVerifyResult =
+  | { ok: true; item: ExactPoolItem }
+  | { ok: false; status: number; error: string; message: string };
+
+async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAccessLiveVerifyResult> {
+  if (isCommentBlocked(item.commentCount)) {
+    await invalidateReadyPoolItem(item.pid, `num_comment_above_${MAX_DETAIL_ACCESS_NUM_COMMENT}`, {
+      num_comment: item.commentCount,
+      pool_eligible: false,
+      score_dirty: false,
+    });
+    return {
+      ok: false,
+      status: 404,
+      error: "not_ready",
+      message: "댓글이 많이 몰린 매물이라 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요.",
+    };
+  }
+
+  if (isJoongnaMarketplaceSource(item.marketplaceSource)) {
+    if (!item.listingUrl) {
+      return { ok: false, status: 503, error: "live_verify_unavailable", message: "원본 매물을 확인하지 못했어요. 새로고침 후 다시 시도해주세요." };
+    }
+    const detail = await fetchJoongnaDetail(item.listingUrl, 8_000).catch((err) => {
+      console.error("pool/detail-access joongna live verify failed", {
+        pid: item.pid,
+        err: err instanceof Error ? err.message : String(err),
+      });
+      return null;
+    });
+    if (!detail) {
+      return { ok: false, status: 503, error: "live_verify_unavailable", message: "중고나라 원본 확인이 잠시 실패했어요. 크레딧은 사용하지 않았어요." };
+    }
+    if (!detail.ok) {
+      if (detail.status === 404) {
+        await markTerminalBeforeAccess(item, "disappeared", null, "joongna_detail_404");
+        return { ok: false, status: 404, error: "not_ready", message: "원본 매물이 사라져 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요." };
+      }
+      return { ok: false, status: 503, error: "live_verify_unavailable", message: "중고나라 원본 확인이 잠시 불안정해요. 크레딧은 사용하지 않았어요." };
+    }
+
+    const saleStatus = detail.productStatus == null ? item.saleStatus : `JOONGNA_STATUS_${detail.productStatus}`;
+    const soldByStatus = detail.productStatus != null && detail.productStatus !== 0;
+    const soldByText = soldOutTextHits(detail.title, detail.description, item.descriptionPreview).length > 0;
+    if (soldByStatus || soldByText) {
+      const reason = soldByStatus ? `joongna_product_status_${detail.productStatus}` : "joongna_text_traded";
+      await markTerminalBeforeAccess(item, "sold_confirmed", saleStatus, reason);
+      return { ok: false, status: 404, error: "not_ready", message: "이미 거래가 끝난 매물이라 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요." };
+    }
+
+    const liveType = classifyListing(detail.title ?? item.name, detail.description ?? item.descriptionPreview, item.price).listingType;
+    if (liveType !== "normal") {
+      await invalidateReadyPoolItem(item.pid, `detail_access_live_${liveType}`);
+      return { ok: false, status: 404, error: "not_ready", message: "원본 확인 결과 추천 기준에서 벗어나 내려뒀어요. 새로고침하면 다른 매물을 보여드릴게요." };
+    }
+
+    await patchPoolVerified(item.pid);
+    return { ok: true, item: { ...item, listingState: "active", saleStatus } };
+  }
+
+  const detail = await fetchDetail(String(item.pid));
+  if (!detail) {
+    await markTerminalBeforeAccess(item, "disappeared", null, "detail_fetch_missing");
+    return { ok: false, status: 404, error: "not_ready", message: "원본 매물이 사라져 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요." };
+  }
+
+  if (isCommentBlocked(detail.commentCount)) {
+    await invalidateReadyPoolItem(item.pid, `num_comment_above_${MAX_DETAIL_ACCESS_NUM_COMMENT}`, {
+      num_comment: detail.commentCount,
+      pool_eligible: false,
+      score_dirty: false,
+    });
+    return {
+      ok: false,
+      status: 404,
+      error: "not_ready",
+      message: "댓글이 많이 몰린 매물이라 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요.",
+    };
+  }
+
+  const signals = detectSoldOut(detail, item.price, {
+    title: item.name,
+    description: item.descriptionPreview,
+  });
+  if (isSoldOut(signals)) {
+    const saleStatus = normalizedTerminalSaleStatus(detail.saleStatus);
+    await markTerminalBeforeAccess(item, "sold_confirmed", saleStatus, describeSignals(signals));
+    return { ok: false, status: 404, error: "not_ready", message: "이미 거래가 끝난 매물이라 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요." };
+  }
+
+  if (detail.commentCount != null) await patchRawCommentCount(item.pid, detail.commentCount);
+  const liveType = classifyListing(item.name, detail.description ?? item.descriptionPreview, item.price).listingType;
+  if (liveType !== "normal") {
+    await invalidateReadyPoolItem(item.pid, `detail_access_live_${liveType}`);
+    return { ok: false, status: 404, error: "not_ready", message: "원본 확인 결과 추천 기준에서 벗어나 내려뒀어요. 새로고침하면 다른 매물을 보여드릴게요." };
+  }
+
+  await patchPoolVerified(item.pid);
+  return {
+    ok: true,
+    item: {
+      ...item,
+      listingState: "active",
+      saleStatus: detail.saleStatus || item.saleStatus,
+      commentCount: detail.commentCount ?? item.commentCount,
+    },
   };
 }
 
@@ -126,6 +326,22 @@ export async function POST(req: Request) {
     );
   }
 
+  const item = await loadExactPoolItem(pid);
+  if (!item) {
+    return NextResponse.json(
+      { error: "not_ready", message: "이 매물은 지금 상세보기 대상이 아니에요. 새로고침 후 다시 확인해주세요." },
+      { status: 404 },
+    );
+  }
+
+  const liveVerify = await verifyBeforeDetailAccess(item);
+  if (!liveVerify.ok) {
+    return NextResponse.json(
+      { error: liveVerify.error, message: liveVerify.message },
+      { status: liveVerify.status },
+    );
+  }
+
   const userRef = userRefForAuthUser(auth.user.id);
   const access = await consumeDetailAccess({ user: auth.user, userRef, pid });
   if (!access.ok) {
@@ -149,6 +365,6 @@ export async function POST(req: Request) {
     creditBalance: access.creditBalance,
     freeUsed: access.freeUsed,
     freeLimit: access.freeLimit,
-    item: await loadExactPoolItem(pid),
+    item: liveVerify.item,
   });
 }
