@@ -689,11 +689,17 @@ function FirstFeedOnboardingCard({
   onDismiss: () => void;
 }) {
   const [step, setStep] = useState(0);
+  const [pendingBudget, setPendingBudget] = useState<BudgetFilterOption>(selectedBudget);
   const totalReviewed = stats ? safetyStatNumber(stats.total_reviewed_7d) : 0;
   const rows = safetyRowsForExplore(stats);
   const reviewedLabel = statsLoaded && totalReviewed > 0
     ? `${totalReviewed.toLocaleString("ko-KR")}건`
     : "확인 중";
+  const pendingBudgetOption = budgetFilterOption(pendingBudget);
+
+  useEffect(() => {
+    setPendingBudget(selectedBudget);
+  }, [selectedBudget]);
 
   return (
     <section
@@ -757,12 +763,13 @@ function FirstFeedOnboardingCard({
 
             <div className="mt-9 grid gap-2">
               {BUDGET_FILTER_OPTIONS.map((option) => {
-                const active = selectedBudget === option.value;
+                const active = pendingBudget === option.value;
                 return (
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => onSelectBudget(option.value)}
+                    onClick={() => setPendingBudget(option.value)}
+                    aria-pressed={active}
                     className={`flex min-h-[58px] items-center justify-between rounded-[18px] px-4 text-left text-[16px] font-black transition ${
                       active
                         ? "bg-[#3182f6] text-white shadow-[0_14px_32px_rgba(49,130,246,0.25)]"
@@ -791,10 +798,10 @@ function FirstFeedOnboardingCard({
             ) : (
               <button
                 type="button"
-                onClick={() => onSelectBudget("all")}
+                onClick={() => onSelectBudget(pendingBudget)}
                 className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-zinc-950 text-[16px] font-black text-white shadow-[0_14px_34px_rgba(24,24,27,0.18)] active:scale-[0.99] dark:bg-white dark:text-zinc-950"
               >
-                전체 피드로 시작하기
+                {pendingBudgetOption.value === "all" ? "전체 피드로 시작하기" : `${pendingBudgetOption.shortLabel}로 확인하고 보기`}
               </button>
             )}
           </div>

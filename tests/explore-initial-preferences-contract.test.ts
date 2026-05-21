@@ -24,9 +24,14 @@ test("ExploreClient loads the broad feed immediately without a preference gate",
   assert.match(explore, /15만원 이하/);
   assert.match(explore, /30만원 이하/);
   assert.match(explore, /50만원 이하/);
+  assert.match(explore, /pendingBudget/);
+  assert.match(explore, /setPendingBudget\(option\.value\)/);
+  assert.match(explore, /onSelectBudget\(pendingBudget\)/);
+  assert.match(explore, /확인하고 보기/);
   assert.match(explore, /data-budget-filter-select/);
   assert.match(explore, /void loadStats\(\);/);
   assert.match(explore, /void loadPool\(false\);/);
+  assert.doesNotMatch(explore, /onClick=\{\(\) => onSelectBudget\(option\.value\)\}/);
   assert.doesNotMatch(explore, /prefsInitialized|awaitingInitialPrefs|loadPreferences|savePreferences/);
   assert.doesNotMatch(explore, /params\.set\("budget"|params\.set\("preference"/);
 });
