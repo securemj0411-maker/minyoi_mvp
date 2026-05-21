@@ -108,6 +108,21 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.doesNotMatch(statsRoute, /FRESH_LAG_HOURS = 6/);
 });
 
+test("explore detail refresh keeps feed price and profit aligned with detail analysis", () => {
+  const explore = source("src/components/explore-client.tsx");
+
+  assert.match(explore, /function recomputePoolProfit/);
+  assert.match(explore, /SELLING_FEE_RATE/);
+  assert.match(explore, /RESELL_SHIPPING_FEE/);
+  assert.match(explore, /SAFETY_BUFFER/);
+  assert.match(explore, /const marketBasis = data\.analysis\.marketBasis \?\? null/);
+  assert.match(explore, /expectedProfitMin: recomputedProfit\?\.min \?\? prev\.expectedProfitMin/);
+  assert.match(explore, /expectedProfitMax: recomputedProfit\?\.max \?\? prev\.expectedProfitMax/);
+  assert.match(explore, /setItems\(\(prev\) => prev\.map/);
+  assert.match(explore, /skuMedian: marketBasis\?\.medianPrice \?\? item\.skuMedian/);
+  assert.match(explore, /expectedProfitMin: recomputedProfit\?\.min \?\? item\.expectedProfitMin/);
+});
+
 test("explore opens the modal only after detail access is granted", () => {
   const explore = source("src/components/explore-client.tsx");
 

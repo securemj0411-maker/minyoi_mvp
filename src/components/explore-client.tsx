@@ -10,6 +10,7 @@ import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, Hou
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import KakaoLogo from "@/components/kakao-logo";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
+import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
 // 무료 사용자 매물 풀 browsing. 30개 풀 + 2h cooldown.
@@ -132,6 +133,15 @@ function profitAvg(item: PoolItem) {
 function profitPct(item: PoolItem) {
   if (!item.price || item.price <= 0) return null;
   return Math.round((profitAvg(item) / item.price) * 100);
+}
+
+function recomputePoolProfit(price: number, marketPrice: number | null | undefined, freeShipping: boolean) {
+  if (!marketPrice || marketPrice <= 0 || !price || price <= 0) return null;
+  const buyShipping = freeShipping ? 0 : 3500;
+  const sellFee = Math.round(marketPrice * SELLING_FEE_RATE);
+  const max = Math.round(marketPrice - price - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
+  const min = Math.round(marketPrice - (price + buyShipping) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
+  return { min, max };
 }
 
 function accessValueForItem(item: PoolItem): DetailAccessValueSummary {
@@ -945,16 +955,32 @@ export default function ExploreClient() {
       if (res.ok) {
         const data = (await res.json()) as { analysis?: { marketBasis: RevealCard["marketBasis"] | null; velocityBasis: RevealCard["velocityBasis"]; skuListingFlow: RevealCard["skuListingFlow"]; optionBaseAssumed: RevealCard["optionBaseAssumed"] } };
         if (data.analysis) {
+          const marketBasis = data.analysis.marketBasis ?? null;
           setSelectedCard((prev) => {
             if (!prev || prev.pid !== pid) return prev;
+            const recomputedProfit = recomputePoolProfit(prev.price, marketBasis?.medianPrice, prev.savedDetail?.freeShipping ?? false);
             return {
               ...prev,
-              marketBasis: data.analysis!.marketBasis ?? prev.marketBasis,
+              expectedProfitMin: recomputedProfit?.min ?? prev.expectedProfitMin,
+              expectedProfitMax: recomputedProfit?.max ?? prev.expectedProfitMax,
+              marketBasis: marketBasis ?? prev.marketBasis,
               velocityBasis: data.analysis!.velocityBasis ?? prev.velocityBasis,
               skuListingFlow: data.analysis!.skuListingFlow ?? prev.skuListingFlow,
               optionBaseAssumed: data.analysis!.optionBaseAssumed ?? prev.optionBaseAssumed,
             };
           });
+          setItems((prev) => prev.map((item) => {
+            if (item.pid !== pid) return item;
+            const recomputedProfit = recomputePoolProfit(item.price, marketBasis?.medianPrice, item.freeShipping);
+            return {
+              ...item,
+              skuMedian: marketBasis?.medianPrice ?? item.skuMedian,
+              conditionClass: marketBasis?.conditionClass ?? item.conditionClass,
+              comparableKey: marketBasis?.comparableKey ?? item.comparableKey,
+              expectedProfitMin: recomputedProfit?.min ?? item.expectedProfitMin,
+              expectedProfitMax: recomputedProfit?.max ?? item.expectedProfitMax,
+            };
+          }));
         }
       }
     } catch {
