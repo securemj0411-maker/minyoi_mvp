@@ -29,6 +29,7 @@ const JOONGNA_QUERY_ROTATION_MINUTES = 3;
 const JOONGNA_SELLER_FACT_READ_CHUNK_SIZE = 80;
 const DEFAULT_JOONGNA_SELLER_FACT_TTL_MS = 6 * 60 * 60_000;
 const JOONGNA_SEARCH_FAILURE_RATE_DEGRADED_THRESHOLD = 0.15;
+const JOONGNA_DETAIL_SUCCESS_RATE_DEGRADED_THRESHOLD = 0.85;
 
 type ReadyCatalogQuery = {
   query: string;
@@ -837,9 +838,12 @@ export async function runJoongnaIngest(options: {
 
   const details: JoongnaDetail[] = [];
   const blockedSignals: JoongnaBlockSignal[] = [];
+  const detailFetchFailures: string[] = [];
+  let detailAttempts = 0;
   let detail404 = 0;
   let detail5xx = 0;
   for (const url of [...productUrls].slice(0, config.maxDetails)) {
+    detailAttempts += 1;
     try {
       const detail = await fetchJoongnaDetail(url, config.timeoutMs);
       details.push(detail);
@@ -851,8 +855,7 @@ export async function runJoongnaIngest(options: {
       }
     } catch (err) {
       detail5xx += 1;
-      blockedSignals.push({ blocked: true, reason: err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120), status: 0 });
-      break;
+      detailFetchFailures.push(`${url}:${err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120)}`);
     }
     if (config.delayMs > 0) await sleep(config.delayMs);
   }
@@ -877,21 +880,24 @@ export async function runJoongnaIngest(options: {
   }
   const observationInserted = await insertObservations(observationRows, payloadRows);
 
-  const detailSuccessRate = details.length > 0
-    ? Number((details.filter((detail) => detail.ok).length / details.length).toFixed(3))
+  const detailSuccessRate = detailAttempts > 0
+    ? Number((details.filter((detail) => detail.ok).length / detailAttempts).toFixed(3))
     : 0;
   const hasBlock = blockedSignals.some((signal) => signal.blocked);
   const searchFailureRate = searchAttempts > 0 ? Number((searchFailures.length / searchAttempts).toFixed(3)) : 0;
   const searchFailureRateHigh = searchFailureRate >= JOONGNA_SEARCH_FAILURE_RATE_DEGRADED_THRESHOLD;
+  const detailSuccessRateLow = detailAttempts > 0 && detailSuccessRate < JOONGNA_DETAIL_SUCCESS_RATE_DEGRADED_THRESHOLD;
   const sourceHealthStatus = hasBlock
     ? "unhealthy"
-    : writableDetails.length === 0 || searchFailureRateHigh
+    : writableDetails.length === 0 || searchFailureRateHigh || detailSuccessRateLow
       ? "degraded"
       : "healthy";
   const sourceHealthReason = hasBlock
     ? blockedSignals.find((signal) => signal.blocked)?.reason ?? "blocked"
     : searchFailureRateHigh
       ? "search_failure_rate_high"
+      : detailSuccessRateLow
+        ? "detail_success_rate_low"
       : writableDetails.length === 0
         ? "no_writable_details"
         : "active_ingest_ok";
@@ -915,12 +921,15 @@ export async function runJoongnaIngest(options: {
       searchFailures,
       searchFailureRate,
       searchFailureRateDegradedThreshold: JOONGNA_SEARCH_FAILURE_RATE_DEGRADED_THRESHOLD,
+      detailAttempts,
+      detailFetchFailures: detailFetchFailures.slice(0, 20),
       fetchedDetails: details.length,
       writableDetails: writableDetails.length,
       skippedDetails,
       detailSuccessRate,
-      detail404Rate: details.length > 0 ? Number((detail404 / details.length).toFixed(3)) : 0,
-      detail5xxRate: details.length > 0 ? Number((detail5xx / Math.max(1, details.length)).toFixed(3)) : 0,
+      detailSuccessRateDegradedThreshold: JOONGNA_DETAIL_SUCCESS_RATE_DEGRADED_THRESHOLD,
+      detail404Rate: detailAttempts > 0 ? Number((detail404 / detailAttempts).toFixed(3)) : 0,
+      detail5xxRate: detailAttempts > 0 ? Number((detail5xx / detailAttempts).toFixed(3)) : 0,
       rawUpserted: rawRows.length,
       parsedUpserted: parsedRows.length,
       observationInserted,

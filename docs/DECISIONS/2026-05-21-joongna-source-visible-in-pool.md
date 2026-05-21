@@ -214,6 +214,7 @@
   - Added 6h TTL cache for Joongna seller profile/transaction facts using `mvp_sellers.source_json`.
   - Added `sellerCacheHits` to Joongna result/collect-run stage stats.
   - Adjusted Joongna source-health classification so a tiny search timeout rate does not mark the source degraded. Degrade now requires no writable details, a block, or search failure rate >= 15%.
+  - Fixed detail-read timeout classification: a thrown fetch timeout is now counted as a transient detail failure, not as a block signal. Only an actual Joongna detail response block signal can mark the source `unhealthy`.
   - Added `joongna_worker` to source-health guard and made it read `source=joongna`; if Joongna ever becomes `unhealthy`, the worker will skip like the heavy Bunjang workers.
 - Verification:
   - `npx eslint src/lib/cron-watchdog.ts src/lib/cron-guard.ts src/lib/joongna.ts src/lib/joongna-ingest.ts src/app/api/cron/joongna-worker/route.ts tests/cron-guard.test.ts`: passed.
