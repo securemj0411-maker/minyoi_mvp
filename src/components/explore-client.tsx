@@ -378,6 +378,7 @@ const LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY = "minyoi_saved_reveal_pids_v1";
 const FIRST_FEED_ONBOARDING_STORAGE_KEY = "minyoi_first_feed_value_hook_v1";
 const FEED_BUDGET_FILTER_STORAGE_KEY = "minyoi_feed_budget_filter_v1";
 const DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY = "minyoi_detail_access_snapshot_v1";
+const SAFETY_STATS_FETCH_TIMEOUT_MS = 3500;
 const MAX_LOCAL_SCRAP_SNAPSHOTS = 500;
 
 function scopedStorageKey(baseKey: string, storageScope: string) {
@@ -483,8 +484,8 @@ function safetyRowsForExplore(stats: SafetyStatsResponse["stats"] | null | undef
   ];
 }
 
-function formatStatMaybe(value: number | null) {
-  if (value == null) return "확인 중";
+function formatStatMaybe(value: number | null, loaded = false) {
+  if (value == null) return loaded ? "잠시 후" : "확인 중";
   return `${value.toLocaleString("ko-KR")}건`;
 }
 
@@ -743,7 +744,9 @@ function FirstFeedOnboardingCard({
   const rows = safetyRowsForExplore(stats);
   const reviewedLabel = statsLoaded && totalReviewed > 0
     ? `${totalReviewed.toLocaleString("ko-KR")}건`
-    : "확인 중";
+    : statsLoaded
+      ? "잠시 후 갱신"
+      : "확인 중";
   const pendingBudgetOption = budgetFilterOption(pendingBudget);
 
   useEffect(() => {
@@ -792,7 +795,7 @@ function FirstFeedOnboardingCard({
                 <div key={row.label} className="flex items-end justify-between border-b border-zinc-200/80 pb-4 dark:border-zinc-800">
                   <div className="text-[16px] font-black text-zinc-700 dark:text-zinc-200">{row.label}</div>
                   <div className="text-[30px] font-black leading-none text-[#0a9f69] dark:text-emerald-300">
-                    {formatStatMaybe(row.value)}
+                    {formatStatMaybe(row.value, statsLoaded)}
                   </div>
                 </div>
               ))}
@@ -1158,8 +1161,11 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
   }, []);
 
   const loadSafetyStats = useCallback(async () => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), SAFETY_STATS_FETCH_TIMEOUT_MS);
     try {
-      const res = await fetch("/api/public/safety-stats", { cache: "no-store" });
+      // CDN/browser cache를 살린다. 이 숫자는 온보딩 value hook이라 실시간 exact query보다 빠른 표시가 우선.
+      const res = await fetch("/api/public/safety-stats", { signal: controller.signal });
       if (res.ok) {
         const data = (await res.json()) as SafetyStatsResponse;
         setSafetyStats(data.stats ?? null);
@@ -1167,6 +1173,7 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
     } catch {
       // 첫 방문 가치 카드 통계 실패는 피드 로딩을 막지 않는다.
     } finally {
+      window.clearTimeout(timeoutId);
       setSafetyStatsLoaded(true);
     }
   }, []);

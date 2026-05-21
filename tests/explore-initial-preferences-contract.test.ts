@@ -19,6 +19,9 @@ test("ExploreClient loads the broad feed immediately without a preference gate",
   assert.match(explore, /updateBudgetFilter/);
   assert.match(explore, /writeBudgetFilterOption\(storageScope, value\)/);
   assert.match(explore, /\/api\/public\/safety-stats/);
+  assert.match(explore, /SAFETY_STATS_FETCH_TIMEOUT_MS = 3500/);
+  assert.match(explore, /controller\.abort\(\)/);
+  assert.doesNotMatch(explore, /\/api\/public\/safety-stats", \{ cache: "no-store" \}/);
   assert.match(explore, /fixed inset-0 z-\[90\]/);
   assert.match(explore, /오늘 볼 만한/);
   assert.match(explore, /MIN_BUDGET_FILTER_RESULTS/);

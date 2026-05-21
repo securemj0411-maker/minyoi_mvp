@@ -109,11 +109,14 @@ export async function GET(request: Request) {
     const poolFilter = poolScopeFilter(scope);
     const parsedFilter = parsedScopeFilter(scope);
     const scoped = scope.level !== "global";
+    // 첫 온보딩 global 통계는 정확한 과금/정산 숫자가 아니라 value hook이다.
+    // global exact count 20+개가 느려지면 화면이 "확인 중"에 머무르므로 planned count로 낮춘다.
+    const countPreference = scoped ? "count=exact" : "count=planned";
     const countHead = async (path: string, query: string | null) => {
       if (query == null) return 0;
       const res = await restFetch(
         rpc(path, query),
-        { headers: { ...serviceHeaders(), Prefer: "count=exact" }, method: "HEAD" },
+        { headers: { ...serviceHeaders(), Prefer: countPreference }, method: "HEAD" },
       );
       return parseCount(res);
     };

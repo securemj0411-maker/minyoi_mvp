@@ -265,6 +265,7 @@ test("safety stats API supports scoped SKU and lane counts", () => {
   assert.match(route, /SAFETY_STATS_CACHE_TTL_MS = 30 \* 60 \* 1000/);
   assert.match(route, /safetyStatsCache/);
   assert.match(route, /s-maxage=1800/);
+  assert.match(route, /countPreference = scoped \? "count=exact" : "count=planned"/);
   assert.match(route, /x-minyoi-safety-stats-cache/);
   assert.match(route, /url\.searchParams\.get\("skuId"\)/);
   assert.match(route, /url\.searchParams\.get\("comparableKey"\)/);
