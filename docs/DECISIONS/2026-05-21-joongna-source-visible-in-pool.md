@@ -93,3 +93,20 @@
   - Local production-mode ingest after fix: 50-query window, `queryPoolSize=680`, `searchUrls=32`, `fetchedDetails=32`, `parsedUpserted=20`, no block signals.
   - Forced score stage after ingest: `scored=72`, `poolUpserted=3`; many non-ready rows were correctly skipped for `sku_median_unavailable`, low profit, negative gap, or internal-only clothing.
 - Deferred: Joongna volume will still not jump to every raw row immediately. Rows only become ready when the same product/condition has usable market median, profit band, volume, and risk gates.
+
+## Follow-up — Joongna local no-write rate probe
+- Operator asked for a local stress/rate-limit check similar to the earlier Bunjang calibration.
+- Boundary decision: do not intentionally hammer Joongna until it blocks. Use a no-write, bounded, stop-on-first-block probe to estimate a conservative operating envelope.
+- Added `scripts/report-joongna-rate-probe.ts` and npm alias `report:joongna-rate-probe`.
+- Probe behavior:
+  - Collects product URLs from normal search pages.
+  - Fetches product detail HTML only; no Supabase writes.
+  - Records latency, HTTP/block signals, 404s, and errors.
+  - Stops immediately on 401/403/429/451/block-like response or thrown fetch error.
+- Local results on 2026-05-21:
+  - Smoke: 4 URLs, 2 detail reads at 1000ms delay, 0 blocks.
+  - Conservative stair-step: 80 URLs collected; 40 detail reads across 1200/800/500/350/250ms delay, all 40 OK, 0 blocks, 0 errors.
+  - Short burst check: 40 URLs collected; 12 detail reads across 200/150ms delay, all 12 OK, 0 blocks, 0 errors.
+- Recommendation:
+  - Production should stay materially below the fastest burst. Current worker settings (`queryLimit=50`, `detailsPerQuery=2`, `maxDetails=50`, `delayMs=450`) are within the observed no-block envelope, but source-health stop conditions must remain active.
+  - Avoid parallel Joongna workers. Keep one worker lease/guard and back off immediately on `sourceHealthStatus != healthy` or any block signal.
