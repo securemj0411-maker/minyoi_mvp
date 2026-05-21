@@ -89,15 +89,16 @@ test("/me modal keeps market evidence compact before the graph on mobile", () =>
   const modal = source("src/components/pack-reveal-modal.tsx");
   const graphIndex = modal.indexOf("<MarketHistoryChart");
   const trustIndex = modal.indexOf("<MarketGraphTrustLine");
+  const comparableIndex = modal.indexOf("<ComparableListingsPanel card={card} mode={mode} />");
 
   assert.match(modal, /compactSourceLabel/);
   assert.match(modal, /표본 \{market\.sampleCount\.toLocaleString/);
   assert.match(modal, /신뢰 \{confidenceLabel\}/);
-  assert.match(modal, /className=\"order-2 mx-3 space-y-2/);
-  assert.match(modal, /lg:order-2/);
+  assert.match(modal, /data-detail-market-graph-before-comparables/);
   assert.match(modal, /hidden sm:inline-flex/);
   assert.match(modal, /그래프 기준 보기/);
   assert.ok(graphIndex >= 0 && trustIndex > graphIndex);
+  assert.ok(comparableIndex > graphIndex);
 });
 
 test("/me market graph labels Bunjang-sourced prices explicitly", () => {

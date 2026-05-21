@@ -2424,11 +2424,11 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: { comparables?: ComparableListing[] }) => {
         if (!cancelled) {
-          // disappeared 매물 제외, 가격 낮은 순 정렬 (사용자 짚음), max 16 보관 (mode 따라 render slice).
+          // disappeared 매물 제외, 가격 높은 순 정렬. outlier는 market-source API에서 먼저 제거된다.
           // simple = 6, detailed = 12 표시. fetch 한 번에 16 까지 보관해서 mode 변경 시 re-fetch X.
           const filtered = (j.comparables ?? [])
             .filter((c) => c.listingState !== "disappeared")
-            .sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
+            .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
             .slice(0, 16);
           setListings(filtered);
         }
@@ -5471,6 +5471,29 @@ function RevealCardItem({
 
               </div>
 
+              {/* Wave 509: 상세 숫자 모드에서는 쉬운모드에 없는 그래프를 비교 매물 바로 위에 둔다. */}
+              <div className="mt-3 space-y-2" data-detail-market-graph-before-comparables>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="m-0 text-[16px] font-extrabold tracking-tight text-[#1a2620] dark:text-zinc-100">
+                    시세 그래프 · 시장 분석
+                  </h3>
+                  <span className="rounded-full bg-[#eef6ec] px-2.5 py-1 text-[11px] font-bold text-[#4f6a52] ring-1 ring-[#d8e2d7] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
+                    최신 수집 기준
+                  </span>
+                </div>
+                <div className="overflow-hidden rounded-2xl border border-[#ece3d2] bg-white p-3 space-y-2 dark:border-zinc-800 dark:bg-zinc-900">
+                  <MarketHistoryChart
+                    comparableKey={card.marketBasis?.comparableKey ?? null}
+                    currentPrice={card.price}
+                    conditionClass={card.marketBasis?.conditionClass ?? null}
+                    priceSource={card.marketBasis?.priceSource ?? null}
+                    referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
+                  />
+                  <MarketGraphTrustLine card={card} />
+                  <SkuListingFlowMini card={card} />
+                </div>
+              </div>
+
               {/* Wave 395.2: 비교 매물은 Profit 카드 안이 아니라 PDF처럼 별도 섹션/리스트 카드로 분리. */}
               <ComparableListingsPanel card={card} mode={mode} />
               {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
@@ -5533,40 +5556,6 @@ function RevealCardItem({
       </div>
       </div>
       {/* 좌측 카드 닫음 — 우측 카드 = 시세 그래프 + 디테일. */}
-
-      {/* 우측 카드 — 시세 그래프 + 회전/유입 (시각 강조). */}
-      {/* Wave 394.7.w (사용자 짚음): handoff 패턴 — 섹션 제목 카드 밖으로. desktop wrapper card 제거. */}
-      <div className="order-2 space-y-2 px-3">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="m-0 text-[16px] font-extrabold tracking-tight text-[#1a2620] dark:text-zinc-100">
-            시세 그래프 · 시장 분석
-          </h3>
-          <span className="rounded-full bg-[#eef6ec] px-2.5 py-1 text-[11px] font-bold text-[#4f6a52] ring-1 ring-[#d8e2d7] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
-            {/* Wave 394.1 (외부 review #19): "실시간" 과장 — 표본 부족 / 호가 추정인데 "실시간"이라 신뢰 역효과. */}
-            최신 수집 기준
-          </span>
-        </div>
-
-        {/* Wave 394.6.b.fix2 (사용자 재지적): 비교 매물 → 좌측 카드 안으로 이동 (차익 헤드라인 직후).
-            "데이터 믿을 만한가? 의 측면에서 직빵으로 비교매물 보여주는게 active 매물 중에서 직빵.
-             일단 시세가 진짜인지가 비교매물로 제일 증명." — 사용자 짚음.
-            우측 카드 (자세한 그래프 추이) 와 분리 — 좌측 카드 = 매물 정보 + 시세 신뢰 증명. */}
-        {/* ComparableListingsPanel 호출 = 좌측 카드 안 (차익 메타 line 다음). 우측 카드에선 제거. */}
-
-        {/* Wave 394.7.w: 흰 카드 wrapper — handoff PriceGraph 패턴 매칭. */}
-        <div className="overflow-hidden rounded-2xl border border-[#ece3d2] bg-white p-3 space-y-2 dark:border-zinc-800 dark:bg-zinc-900">
-          <MarketHistoryChart
-            comparableKey={card.marketBasis?.comparableKey ?? null}
-            currentPrice={card.price}
-            conditionClass={card.marketBasis?.conditionClass ?? null}
-            priceSource={card.marketBasis?.priceSource ?? null}
-            referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
-          />
-          <MarketGraphTrustLine card={card} />
-          <SkuListingFlowMini card={card} />
-        </div>
-      </div>
-      {/* 우측 카드 (시세 분석) 닫음. */}
 
     </div>
   );

@@ -178,6 +178,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /data-beginner-guide-market-evidence/);
   assert.match(modal, /data-beginner-guide-comparables/);
   assert.match(modal, /BeginnerGuideComparablePreview/);
+  assert.match(modal, /\.sort\(\(a, b\) => \(b\.price \?\? 0\) - \(a\.price \?\? 0\)\)/);
   assert.match(modal, /INITIAL_VISIBLE = 4/);
   assert.match(modal, /EXPANDED_VISIBLE = 8/);
   assert.match(modal, /visibleListings/);
