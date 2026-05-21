@@ -34,7 +34,7 @@
     },
     {
       "path": "/api/cron/joongna-worker",
-      "schedule": "3,18,33,48 * * * *"
+      "schedule": "* * * * *"
     },
     {
       "path": "/api/cron/daily-backup",

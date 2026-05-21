@@ -110,3 +110,21 @@
 - Recommendation:
   - Production should stay materially below the fastest burst. Current worker settings (`queryLimit=50`, `detailsPerQuery=2`, `maxDetails=50`, `delayMs=450`) are within the observed no-block envelope, but source-health stop conditions must remain active.
   - Avoid parallel Joongna workers. Keep one worker lease/guard and back off immediately on `sourceHealthStatus != healthy` or any block signal.
+
+## Follow-up — Joongna cadence moved closer to Bunjang
+- Operator clarified that Joongna should be calibrated against the Bunjang operating envelope, not treated as a tiny probe.
+- Production comparison before this change:
+  - Bunjang `tick`: roughly 28k search rows/hour in the last 6h sample.
+  - Bunjang `detail-worker`: roughly 436 enriched details/hour.
+  - Joongna worker: roughly 30 fetched details/hour because it ran every 15 minutes and capped each run at a small batch.
+- Local active ingest test after the safe probe:
+  - `queryLimit=80`, `maxDetails=80`, `detailsPerQuery=2`, `delayMs=200`.
+  - Result: `searchUrls=80`, `fetchedDetails=80`, `rawUpserted=80`, `parsedUpserted=40`, `blockedSignals=[]`, `sourceHealthStatus=healthy`.
+- Decision:
+  - Move `/api/cron/joongna-worker` from every 15 minutes to every minute.
+  - Clamp non-param production defaults to at least `queryLimit=80` and `maxDetails=80`.
+  - Clamp non-param production delay to max 250ms; env target is 200ms.
+  - Keep `detailsPerQuery=2` to spread coverage across many ready SKU searches instead of over-sampling a few broad queries.
+- Risk control:
+  - Keep the cron guard/lease so overlapping minute ticks skip instead of parallelizing Joongna.
+  - Keep source-health stop behavior; any block signal should degrade/unhealthy the source and stop worker admission.

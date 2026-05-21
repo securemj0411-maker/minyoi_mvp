@@ -133,8 +133,8 @@ async function configFromEnvAndParams(params?: URLSearchParams): Promise<Joongna
 
   const queryLimit = boundedInt(
     params?.get("queryLimit") ?? process.env.JOONGNA_INGEST_QUERY_LIMIT,
-    50,
-    1,
+    80,
+    explicitQueryOverride ? 1 : 80,
     120,
   );
 
@@ -150,6 +150,7 @@ async function configFromEnvAndParams(params?: URLSearchParams): Promise<Joongna
 
   const explicitDetailsPerQuery = Boolean(params?.get("detailsPerQuery"));
   const explicitMaxDetails = Boolean(params?.get("maxDetails") ?? params?.get("max"));
+  const explicitDelayMs = Boolean(params?.get("delayMs"));
   return {
     queries: queries.length > 0 ? queries : DEFAULT_SEED_QUERIES,
     queryPoolSize: seedQueries.length + readyCatalogQueries.length,
@@ -162,12 +163,17 @@ async function configFromEnvAndParams(params?: URLSearchParams): Promise<Joongna
     ),
     maxDetails: boundedInt(
       params?.get("maxDetails") ?? params?.get("max") ?? process.env.JOONGNA_INGEST_MAX_DETAILS,
-      50,
-      explicitMaxDetails ? 1 : 32,
+      80,
+      explicitMaxDetails ? 1 : 80,
       80,
     ),
     queryLimit,
-    delayMs: boundedInt(params?.get("delayMs") ?? process.env.JOONGNA_INGEST_DELAY_MS, 450, 0, 5_000),
+    delayMs: boundedInt(
+      params?.get("delayMs") ?? process.env.JOONGNA_INGEST_DELAY_MS,
+      200,
+      0,
+      explicitDelayMs ? 5_000 : 250,
+    ),
     timeoutMs: boundedInt(
       params?.get("timeoutMs") ?? process.env.JOONGNA_INGEST_TIMEOUT_MS,
       10_000,
