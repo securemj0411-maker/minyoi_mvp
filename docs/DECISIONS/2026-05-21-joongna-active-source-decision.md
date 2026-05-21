@@ -90,3 +90,32 @@
 - cron path는 `/api/cron/joongna-worker`로 정리했다.
 - env upload용 `.env.local`에는 active 설정을 추가했다.
 - 신규 운영 env는 `JOONGNA_INGEST_*`를 사용한다.
+
+## 2026-05-21 운영 재배포 후 확인
+
+- owner가 Vercel env 업로드 후 redeploy를 실행했다.
+- 운영 `/api/cron/joongna-worker` 수동 호출 결과:
+  - status 200
+  - `mode='active'`
+  - `rawUpserted=1`, `parsedUpserted=1`, `observationInserted=1`
+  - `sourceHealthStatus='healthy'`, `sourceHealthReason='active_ingest_ok'`
+- Vercel Cron 자동 실행도 확인했다:
+  - `/api/cron/joongna-worker`, trigger `vercel-cron/1.0`, status `succeeded`
+  - collected/upserted 12
+- 운영 DB 최신 중고나라 row 확인:
+  - `source='joongna'`
+  - `query='joongna_active'`
+  - 신규 row는 `sale_status='ACTIVE'`
+  - `pool_eligible=true`
+  - `score_dirty=false`까지 내려간 row 확인
+- score drain 병목 보강:
+  - `/api/cron/score-worker`를 추가하고 `* * * * *`로 등록했다.
+  - score drain이 번개장터 last_seen row에 밀리지 않도록 `scoreStage`에서 `source='joongna'` dirty row를 먼저 일부 reserve한다.
+  - 중고나라 `productStatus=0`은 active sale로 정규화하고, 기존 `JOONGNA_STATUS_0` row도 pool policy에서 active로 인정한다.
+- 운영 score-worker 확인:
+  - 자동 score-worker run들이 `scored`, `upserted`, `poolUpserted`를 발생시키는 것 확인.
+  - 수동 score-worker 호출도 status 200, `scored=205`, `poolUpserted=9` 확인.
+  - 최신 Joongna AirPods Max row 중 `candidate_pool.status='ready'`, `profit_band=3`, 예상 차익 약 79,695원 row 확인.
+- 주의:
+  - score-worker는 현재 70초 예산 + 90초 lease로 크게 도는 중이라 1분 cron에서 일부 run이 collect log 상 `running`으로 잠깐 남을 수 있다.
+  - DB lock과 lease가 있어 다음 run을 영구적으로 막는 구조는 아니지만, 운영 로그에서 `running` stale이 계속 쌓이면 score batch size 또는 cron 간격을 조정한다.
