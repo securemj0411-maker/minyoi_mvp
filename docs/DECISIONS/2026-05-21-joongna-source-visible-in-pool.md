@@ -141,3 +141,21 @@
   - This reduces Joongna request pressure to roughly one-third of the previous aggressive setting while still rotating the ~680 ready query pool in about 25-30 minutes.
 - Deferred:
   - Re-check production after several hours. If Joongna ready pool still grows too slowly and source health stays clean, move to every 2 minutes before increasing per-run batch size.
+
+## Follow-up — Joongna category-balanced query rotation
+- Operator noticed Joongna appeared to bring almost no shoes/fashion rows.
+- Finding:
+  - Joongna raw/parsed had started to receive some `shoe` rows, but `candidate_pool` ready had no shoe/clothing rows in the latest sample.
+  - The ready catalog query pool itself was not missing fashion: dry config showed `shoe=226`, `clothing=48`, `bag=41` ready catalog queries.
+  - Root cause was query-window bias: the worker rotated a contiguous catalog-order slice, so a single 80-query run could be almost entirely smartwatch/phone/tablet/laptop. The rotation interval was also still 15 minutes, so the 3-minute cron repeated the same category-clumped window five times.
+- Fix:
+  - Change Joongna query rotation to 3 minutes to match the current Vercel cron cadence.
+  - Replace contiguous catalog-order windows with category-balanced rotating windows.
+  - Keep seed queries first, then fill the remaining batch with a round-robin category mix across ready catalog queries.
+  - Record `readyCatalogCategoryPoolCounts` and `selectedReadyCatalogCategoryCounts` in Joongna result/source-health metadata so future operator checks can see category coverage directly.
+- Verification:
+  - Dry config with `JOONGNA_SOURCE_MODE=off` selected an 80-query batch with fashion represented every run: `shoe=4`, `clothing=4`, `bag=4` in the selected ready catalog portion, plus all other available categories.
+  - `npx eslint src/lib/joongna-ingest.ts src/app/api/cron/joongna-worker/route.ts`: passed.
+  - `npm run build`: passed.
+- Deferred:
+  - This fixes acquisition coverage, not the downstream ready gate itself. Shoe/clothing rows still need the normal market median, profit, risk, seller, and low-volume gates before users see them.

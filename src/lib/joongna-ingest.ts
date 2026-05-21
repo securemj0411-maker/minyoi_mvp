@@ -21,12 +21,20 @@ const DEFAULT_SEED_QUERIES = [
   "맥북",
 ];
 
-const JOONGNA_QUERY_ROTATION_MINUTES = 15;
+const JOONGNA_QUERY_ROTATION_MINUTES = 3;
+
+type ReadyCatalogQuery = {
+  query: string;
+  category: Sku["category"];
+  skuId: string;
+};
 
 type JoongnaIngestConfig = {
   queries: string[];
   queryPoolSize: number;
   readyCatalogQueryPoolSize: number;
+  readyCatalogCategoryPoolCounts: Record<string, number>;
+  selectedReadyCatalogCategoryCounts: Record<string, number>;
   detailsPerQuery: number;
   maxDetails: number;
   queryLimit: number;
@@ -41,6 +49,8 @@ export type JoongnaIngestResult = {
   queries: string[];
   queryPoolSize: number;
   readyCatalogQueryPoolSize: number;
+  readyCatalogCategoryPoolCounts: Record<string, number>;
+  selectedReadyCatalogCategoryCounts: Record<string, number>;
   searchUrls: number;
   fetchedDetails: number;
   parsedDetails: number;
@@ -73,9 +83,9 @@ function queryListForSku(sku: Sku): string[] {
   return preferred ? [preferred] : [];
 }
 
-function buildReadyCatalogQueries(readinessMap: CategoryReadinessMap): string[] {
+function buildReadyCatalogQueries(readinessMap: CategoryReadinessMap): ReadyCatalogQuery[] {
   const seen = new Set<string>();
-  const queries: string[] = [];
+  const queries: ReadyCatalogQuery[] = [];
   for (const sku of CATALOG) {
     const gate = evaluatePoolGate({ sku, category: sku.category }, { categoryReadiness: readinessMap });
     if (!gate.canEnterPool) continue;
@@ -83,40 +93,108 @@ function buildReadyCatalogQueries(readinessMap: CategoryReadinessMap): string[] 
       const key = normalizeQueryKey(query);
       if (seen.has(key)) continue;
       seen.add(key);
-      queries.push(query);
+      queries.push({ query, category: sku.category, skuId: sku.id });
     }
   }
   return queries;
 }
 
-function rotatingWindow<T>(items: T[], limit: number, nowMs = Date.now()): T[] {
+function countReadyCatalogCategories(items: ReadyCatalogQuery[]) {
+  return items.reduce<Record<string, number>>((acc, item) => {
+    acc[item.category] = (acc[item.category] ?? 0) + 1;
+    return acc;
+  }, {});
+}
+
+function categoryBalancedRotatingWindow(items: ReadyCatalogQuery[], limit: number, nowMs = Date.now()): ReadyCatalogQuery[] {
   if (items.length <= limit) return items;
+
   const safeLimit = Math.max(1, limit);
-  const slots = Math.max(1, Math.ceil(items.length / safeLimit));
-  const slot = Math.floor(nowMs / (JOONGNA_QUERY_ROTATION_MINUTES * 60 * 1000)) % slots;
-  const start = slot * safeLimit;
-  const window = items.slice(start, start + safeLimit);
-  if (window.length >= safeLimit) return window;
-  return [...window, ...items.slice(0, safeLimit - window.length)];
+  const groups = new Map<Sku["category"], ReadyCatalogQuery[]>();
+  for (const item of items) {
+    const list = groups.get(item.category) ?? [];
+    list.push(item);
+    groups.set(item.category, list);
+  }
+
+  const categories = [...groups.keys()].sort((a, b) => {
+    const sizeDiff = (groups.get(b)?.length ?? 0) - (groups.get(a)?.length ?? 0);
+    return sizeDiff || String(a).localeCompare(String(b));
+  });
+  if (categories.length === 0) return [];
+
+  const slot = Math.floor(nowMs / (JOONGNA_QUERY_ROTATION_MINUTES * 60 * 1000));
+  const categoryStart = slot % categories.length;
+  const categoryOrder = [
+    ...categories.slice(categoryStart),
+    ...categories.slice(0, categoryStart),
+  ];
+  const perCategoryAdvance = Math.max(1, Math.floor(safeLimit / categories.length));
+  const usedByCategory = new Map<Sku["category"], number>();
+  const picked: ReadyCatalogQuery[] = [];
+
+  while (picked.length < safeLimit) {
+    let progressed = false;
+    for (const category of categoryOrder) {
+      const group = groups.get(category) ?? [];
+      const used = usedByCategory.get(category) ?? 0;
+      if (used >= group.length) continue;
+
+      const start = (slot * perCategoryAdvance) % group.length;
+      picked.push(group[(start + used) % group.length]);
+      usedByCategory.set(category, used + 1);
+      progressed = true;
+      if (picked.length >= safeLimit) break;
+    }
+    if (!progressed) break;
+  }
+
+  return picked;
 }
 
 function mergeQueries(input: {
   seedQueries: string[];
-  readyCatalogQueries: string[];
+  readyCatalogQueries: ReadyCatalogQuery[];
   queryLimit: number;
   rotate: boolean;
 }) {
   const seen = new Set<string>();
   const merged: string[] = [];
-  for (const query of [...input.seedQueries, ...input.readyCatalogQueries]) {
+  const selectedReadyCatalogQueries: ReadyCatalogQuery[] = [];
+
+  for (const query of input.seedQueries) {
     const trimmed = query.trim();
     if (!trimmed) continue;
     const key = normalizeQueryKey(trimmed);
     if (seen.has(key)) continue;
     seen.add(key);
     merged.push(trimmed);
+    if (merged.length >= input.queryLimit) {
+      return { queries: merged, selectedReadyCatalogQueries };
+    }
   }
-  return input.rotate ? rotatingWindow(merged, input.queryLimit) : merged.slice(0, input.queryLimit);
+
+  const readyCatalogCandidates = input.readyCatalogQueries.filter((entry) => {
+    const key = normalizeQueryKey(entry.query);
+    return !seen.has(key);
+  });
+  const remainingLimit = Math.max(0, input.queryLimit - merged.length);
+  const readyCatalogWindow = input.rotate
+    ? categoryBalancedRotatingWindow(readyCatalogCandidates, remainingLimit)
+    : readyCatalogCandidates.slice(0, remainingLimit);
+
+  for (const entry of readyCatalogWindow) {
+    const trimmed = entry.query.trim();
+    if (!trimmed) continue;
+    const key = normalizeQueryKey(trimmed);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(trimmed);
+    selectedReadyCatalogQueries.push(entry);
+    if (merged.length >= input.queryLimit) break;
+  }
+
+  return { queries: merged, selectedReadyCatalogQueries };
 }
 
 async function configFromEnvAndParams(params?: URLSearchParams): Promise<JoongnaIngestConfig> {
@@ -141,7 +219,7 @@ async function configFromEnvAndParams(params?: URLSearchParams): Promise<Joongna
   const readyCatalogQueries = explicitQueryOverride || process.env.JOONGNA_INGEST_DISABLE_READY_CATALOG_QUERIES === "1"
     ? []
     : buildReadyCatalogQueries(await loadCategoryReadinessMap());
-  const queries = mergeQueries({
+  const mergedQueries = mergeQueries({
     seedQueries,
     readyCatalogQueries,
     queryLimit,
@@ -152,9 +230,11 @@ async function configFromEnvAndParams(params?: URLSearchParams): Promise<Joongna
   const explicitMaxDetails = Boolean(params?.get("maxDetails") ?? params?.get("max"));
   const explicitDelayMs = Boolean(params?.get("delayMs"));
   return {
-    queries: queries.length > 0 ? queries : DEFAULT_SEED_QUERIES,
+    queries: mergedQueries.queries.length > 0 ? mergedQueries.queries : DEFAULT_SEED_QUERIES,
     queryPoolSize: seedQueries.length + readyCatalogQueries.length,
     readyCatalogQueryPoolSize: readyCatalogQueries.length,
+    readyCatalogCategoryPoolCounts: countReadyCatalogCategories(readyCatalogQueries),
+    selectedReadyCatalogCategoryCounts: countReadyCatalogCategories(mergedQueries.selectedReadyCatalogQueries),
     detailsPerQuery: boundedInt(
       params?.get("detailsPerQuery") ?? process.env.JOONGNA_INGEST_DETAILS_PER_QUERY,
       2,
@@ -426,6 +506,8 @@ export async function runJoongnaIngest(options: {
       queries: config.queries,
       queryPoolSize: config.queryPoolSize,
       readyCatalogQueryPoolSize: config.readyCatalogQueryPoolSize,
+      readyCatalogCategoryPoolCounts: config.readyCatalogCategoryPoolCounts,
+      selectedReadyCatalogCategoryCounts: config.selectedReadyCatalogCategoryCounts,
       searchUrls: 0,
       fetchedDetails: 0,
       parsedDetails: 0,
@@ -514,6 +596,8 @@ export async function runJoongnaIngest(options: {
       queries: config.queries,
       queryPoolSize: config.queryPoolSize,
       readyCatalogQueryPoolSize: config.readyCatalogQueryPoolSize,
+      readyCatalogCategoryPoolCounts: config.readyCatalogCategoryPoolCounts,
+      selectedReadyCatalogCategoryCounts: config.selectedReadyCatalogCategoryCounts,
       queryLimit: config.queryLimit,
       maxDetails: config.maxDetails,
       detailsPerQuery: config.detailsPerQuery,
@@ -538,6 +622,8 @@ export async function runJoongnaIngest(options: {
     queries: config.queries,
     queryPoolSize: config.queryPoolSize,
     readyCatalogQueryPoolSize: config.readyCatalogQueryPoolSize,
+    readyCatalogCategoryPoolCounts: config.readyCatalogCategoryPoolCounts,
+    selectedReadyCatalogCategoryCounts: config.selectedReadyCatalogCategoryCounts,
     searchUrls: productUrls.size,
     fetchedDetails: details.length,
     parsedDetails: writableDetails.length,

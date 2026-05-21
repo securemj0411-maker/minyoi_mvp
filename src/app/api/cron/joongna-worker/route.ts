@@ -59,6 +59,8 @@ async function handleJoongnaWorker(req: NextRequest) {
       mode: result.mode,
       skipped: result.skipped,
       queries: result.queries,
+      readyCatalogCategoryPoolCounts: result.readyCatalogCategoryPoolCounts,
+      selectedReadyCatalogCategoryCounts: result.selectedReadyCatalogCategoryCounts,
       skippedDetails: result.skippedDetails,
       parsedUpserted: result.parsedUpserted,
       observationInserted: result.observationInserted,
