@@ -4888,7 +4888,9 @@ export async function runSearchScorePipeline(): Promise<TickResult> {
     pages: [0],
     mode: "fresh",
   }));
-  const score = await timedStage(stageDurationsMs, "score", () => scoreStage(Date.now() + config.tickScoreBudgetMs));
+  const score = config.tickInlineScoreEnabled
+    ? await timedStage(stageDurationsMs, "score", () => scoreStage(Date.now() + config.tickScoreBudgetMs))
+    : emptyStats();
   const detail = emptyStats();
   const total = mergeStats([search, detail, score]);
   return {

@@ -119,3 +119,24 @@
 - 주의:
   - score-worker는 현재 70초 예산 + 90초 lease로 크게 도는 중이라 1분 cron에서 일부 run이 collect log 상 `running`으로 잠깐 남을 수 있다.
   - DB lock과 lease가 있어 다음 run을 영구적으로 막는 구조는 아니지만, 운영 로그에서 `running` stale이 계속 쌓이면 score batch size 또는 cron 간격을 조정한다.
+
+## 2026-05-21 Tick degraded 알림 후 조치
+
+- Telegram `tick degraded` 계열 알림 원인:
+  - 중고나라 source는 `healthy`.
+  - 번개장터 source health가 `tick_failure_rate_elevated`로 degraded.
+  - 최근 `/api/cron/tick` run 다수가 `stale running run auto-marked after 3m`로 실패 처리됨.
+- 판단:
+  - score-worker를 분리했지만 `/api/cron/tick`이 여전히 search 뒤에 inline `scoreStage`를 실행하고 있었다.
+  - `scoreStage`는 deadline 체크 전에 최대 800건 기준 DB preload/parse/market stat fetch를 먼저 수행하므로, tick 90초 안에 끝나지 않는 run이 발생했다.
+- 조치:
+  - tick의 inline score는 기본 OFF로 바꿨다. (`PIPELINE_TICK_INLINE_SCORE_ENABLED=1`이면 rollback 가능)
+  - score 전용 worker가 scoring을 담당한다.
+  - 기본 score batch limit을 800 → 300으로 낮췄다.
+  - score-worker budget cap을 70초 → 55초로 낮춰 1분 cron cadence와 충돌을 줄였다.
+- 검증:
+  - `npx eslint src/lib/pipeline-config.ts src/lib/tick-pipeline.ts src/app/api/cron/score-worker/route.ts` 에러 없음. 기존 `trimmedSellerMarket` unused warning만 유지.
+  - `npm run build` 성공.
+- 후속:
+  - 배포 후 tick은 1분마다 search-only로 빠르게 성공해야 한다.
+  - source health는 recovery hysteresis 때문에 즉시 healthy가 아니라 약 15분 이상 정상 run이 누적된 뒤 회복될 수 있다.

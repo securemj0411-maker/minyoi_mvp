@@ -32,7 +32,7 @@ function envInt(name: string, fallback: number, min: number, max: number): numbe
 }
 
 function scoreWorkerBudgetMs() {
-  return envInt("PIPELINE_SCORE_WORKER_BUDGET_MS", 70_000, 5_000, 80_000);
+  return envInt("PIPELINE_SCORE_WORKER_BUDGET_MS", 55_000, 5_000, 55_000);
 }
 
 function requestMeta(req: NextRequest, authOk: boolean, authReason: string): CollectRunRequestMeta {

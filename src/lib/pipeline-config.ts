@@ -501,6 +501,7 @@ export type PipelineRuntimeConfig = {
   // Wave 187 B2: lifecycle 전용 budget (route maxDuration 90s 활용).
   lifecycleBudgetMs: number;
   tickScoreBudgetMs: number;
+  tickInlineScoreEnabled: boolean;
   tickDetailBatchSize: number;
   terminalLifecycleRecheckBatchSize: number;
   terminalLifecycleRecheckCooldownMs: number;
@@ -609,6 +610,9 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     //   실측 75s budget 시 batch 800 → enriched 621 (78%). 60s 시 ~466 enriched 예상.
     lifecycleBudgetMs: envInt("PIPELINE_LIFECYCLE_BUDGET_MS", 60_000, 1_000, 120_000),
     tickScoreBudgetMs: envInt("PIPELINE_TICK_SCORE_BUDGET_MS", 10_000, 1_000, 120_000),
+    // 2026-05-21: score-worker가 분리된 뒤 tick은 수집 cadence를 지키는 게 우선.
+    // 필요 시 PIPELINE_TICK_INLINE_SCORE_ENABLED=1로 이전 inline score path를 다시 켤 수 있다.
+    tickInlineScoreEnabled: envBool("PIPELINE_TICK_INLINE_SCORE_ENABLED", false),
     tickDetailBatchSize: envInt("PIPELINE_TICK_DETAIL_BATCH_SIZE", 20, 1, 200),
     terminalLifecycleRecheckBatchSize: envInt("PIPELINE_TERMINAL_LIFECYCLE_RECHECK_BATCH_SIZE", 10, 1, 50),
     terminalLifecycleRecheckCooldownMs: envInt("PIPELINE_TERMINAL_LIFECYCLE_RECHECK_COOLDOWN_MS", 30 * 60 * 1000, 60 * 1000, 24 * 60 * 60 * 1000),
@@ -617,7 +621,7 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     // Wave 159j (2026-05-17): 150 → 800. score_dirty backlog 119K건 처리 매우 느림 (13h 추정).
     // budget 10초 안에서 처리 가능 (단순 DB read + score + write, detail 호출 X).
     // 매물당 ~12ms 가정 → 800건/9.6초.
-    tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 800, 10, 2000),
+    tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 300, 10, 2000),
     // Wave 159k (2026-05-17): score-stage condition AI 호출 daily limit.
     // 0 = 비활성 (default). 측정 결과 11,243건 trigger 대상이지만 실제 호출 0건.
     // 운영자가 enable 시 PIPELINE_SCORE_AI_CONDITION_DAILY_LIMIT=500 같이 박음.
