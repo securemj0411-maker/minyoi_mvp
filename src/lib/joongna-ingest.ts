@@ -1,4 +1,6 @@
-import { ruleMatch } from "@/lib/catalog";
+import { CATALOG, ruleMatch, type Sku } from "@/lib/catalog";
+import { evaluatePoolGate } from "@/lib/candidate-pool-builder";
+import { loadCategoryReadinessMap, type CategoryReadinessMap } from "@/lib/category-readiness";
 import {
   fetchJoongnaDetail,
   fetchJoongnaSearchProductUrls,
@@ -11,7 +13,7 @@ import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import { classifyListing } from "@/lib/pipeline";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
-const DEFAULT_QUERIES = [
+const DEFAULT_SEED_QUERIES = [
   "에어팟맥스",
   "아이폰 17 프로",
   "아이패드 프로",
@@ -19,10 +21,15 @@ const DEFAULT_QUERIES = [
   "맥북",
 ];
 
+const JOONGNA_QUERY_ROTATION_MINUTES = 15;
+
 type JoongnaIngestConfig = {
   queries: string[];
+  queryPoolSize: number;
+  readyCatalogQueryPoolSize: number;
   detailsPerQuery: number;
   maxDetails: number;
+  queryLimit: number;
   delayMs: number;
   timeoutMs: number;
 };
@@ -32,6 +39,8 @@ export type JoongnaIngestResult = {
   mode: ReturnType<typeof getJoongnaSourceMode>;
   skipped: boolean;
   queries: string[];
+  queryPoolSize: number;
+  readyCatalogQueryPoolSize: number;
   searchUrls: number;
   fetchedDetails: number;
   parsedDetails: number;
@@ -50,31 +59,114 @@ function boundedInt(raw: string | number | null | undefined, fallback: number, m
   return Math.max(min, Math.min(max, parsed));
 }
 
-function configFromEnvAndParams(params?: URLSearchParams): JoongnaIngestConfig {
+function normalizeQueryKey(raw: string) {
+  return raw.trim().toLowerCase();
+}
+
+function queryListForSku(sku: Sku): string[] {
+  const list = sku.searchQueries ?? sku.aliases;
+  if (!Array.isArray(list)) return [];
+  const candidates = list
+    .map((query) => query.trim())
+    .filter((query) => query.length >= 4);
+  const preferred = candidates.find((query) => /[가-힣]/.test(query)) ?? candidates[0];
+  return preferred ? [preferred] : [];
+}
+
+function buildReadyCatalogQueries(readinessMap: CategoryReadinessMap): string[] {
+  const seen = new Set<string>();
+  const queries: string[] = [];
+  for (const sku of CATALOG) {
+    const gate = evaluatePoolGate({ sku, category: sku.category }, { categoryReadiness: readinessMap });
+    if (!gate.canEnterPool) continue;
+    for (const query of queryListForSku(sku)) {
+      const key = normalizeQueryKey(query);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      queries.push(query);
+    }
+  }
+  return queries;
+}
+
+function rotatingWindow<T>(items: T[], limit: number, nowMs = Date.now()): T[] {
+  if (items.length <= limit) return items;
+  const safeLimit = Math.max(1, limit);
+  const slots = Math.max(1, Math.ceil(items.length / safeLimit));
+  const slot = Math.floor(nowMs / (JOONGNA_QUERY_ROTATION_MINUTES * 60 * 1000)) % slots;
+  const start = slot * safeLimit;
+  const window = items.slice(start, start + safeLimit);
+  if (window.length >= safeLimit) return window;
+  return [...window, ...items.slice(0, safeLimit - window.length)];
+}
+
+function mergeQueries(input: {
+  seedQueries: string[];
+  readyCatalogQueries: string[];
+  queryLimit: number;
+  rotate: boolean;
+}) {
+  const seen = new Set<string>();
+  const merged: string[] = [];
+  for (const query of [...input.seedQueries, ...input.readyCatalogQueries]) {
+    const trimmed = query.trim();
+    if (!trimmed) continue;
+    const key = normalizeQueryKey(trimmed);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(trimmed);
+  }
+  return input.rotate ? rotatingWindow(merged, input.queryLimit) : merged.slice(0, input.queryLimit);
+}
+
+async function configFromEnvAndParams(params?: URLSearchParams): Promise<JoongnaIngestConfig> {
+  const explicitQueryOverride = Boolean(params?.get("queries") ?? params?.get("query"));
   const rawQueries =
     params?.get("queries") ??
     params?.get("query") ??
     process.env.JOONGNA_INGEST_QUERIES ??
-    DEFAULT_QUERIES.join(",");
-  const queries = rawQueries
+    DEFAULT_SEED_QUERIES.join(",");
+  const seedQueries = rawQueries
     .split(",")
     .map((query) => query.trim())
-    .filter(Boolean)
-    .slice(0, 8);
+    .filter(Boolean);
+
+  const queryLimit = boundedInt(
+    params?.get("queryLimit") ?? process.env.JOONGNA_INGEST_QUERY_LIMIT,
+    50,
+    1,
+    120,
+  );
+
+  const readyCatalogQueries = explicitQueryOverride || process.env.JOONGNA_INGEST_DISABLE_READY_CATALOG_QUERIES === "1"
+    ? []
+    : buildReadyCatalogQueries(await loadCategoryReadinessMap());
+  const queries = mergeQueries({
+    seedQueries,
+    readyCatalogQueries,
+    queryLimit,
+    rotate: !explicitQueryOverride,
+  });
+
+  const explicitDetailsPerQuery = Boolean(params?.get("detailsPerQuery"));
+  const explicitMaxDetails = Boolean(params?.get("maxDetails") ?? params?.get("max"));
   return {
-    queries: queries.length > 0 ? queries : DEFAULT_QUERIES,
+    queries: queries.length > 0 ? queries : DEFAULT_SEED_QUERIES,
+    queryPoolSize: seedQueries.length + readyCatalogQueries.length,
+    readyCatalogQueryPoolSize: readyCatalogQueries.length,
     detailsPerQuery: boundedInt(
       params?.get("detailsPerQuery") ?? process.env.JOONGNA_INGEST_DETAILS_PER_QUERY,
-      5,
+      2,
       1,
-      20,
+      explicitDetailsPerQuery ? 20 : 2,
     ),
     maxDetails: boundedInt(
       params?.get("maxDetails") ?? params?.get("max") ?? process.env.JOONGNA_INGEST_MAX_DETAILS,
-      12,
-      1,
       50,
+      explicitMaxDetails ? 1 : 32,
+      80,
     ),
+    queryLimit,
     delayMs: boundedInt(params?.get("delayMs") ?? process.env.JOONGNA_INGEST_DELAY_MS, 450, 0, 5_000),
     timeoutMs: boundedInt(
       params?.get("timeoutMs") ?? process.env.JOONGNA_INGEST_TIMEOUT_MS,
@@ -319,13 +411,15 @@ export async function runJoongnaIngest(options: {
   runId?: string | null;
 } = {}): Promise<JoongnaIngestResult> {
   const mode = getJoongnaSourceMode();
-  const config = configFromEnvAndParams(options.params);
+  const config = await configFromEnvAndParams(options.params);
   if (mode === "off") {
     return {
       source: JOONGNA_SOURCE_ID,
       mode,
       skipped: true,
       queries: config.queries,
+      queryPoolSize: config.queryPoolSize,
+      readyCatalogQueryPoolSize: config.readyCatalogQueryPoolSize,
       searchUrls: 0,
       fetchedDetails: 0,
       parsedDetails: 0,
@@ -412,6 +506,11 @@ export async function runJoongnaIngest(options: {
     metrics: {
       mode,
       queries: config.queries,
+      queryPoolSize: config.queryPoolSize,
+      readyCatalogQueryPoolSize: config.readyCatalogQueryPoolSize,
+      queryLimit: config.queryLimit,
+      maxDetails: config.maxDetails,
+      detailsPerQuery: config.detailsPerQuery,
       searchUrls: productUrls.size,
       searchFailures,
       fetchedDetails: details.length,
@@ -431,6 +530,8 @@ export async function runJoongnaIngest(options: {
     mode,
     skipped: false,
     queries: config.queries,
+    queryPoolSize: config.queryPoolSize,
+    readyCatalogQueryPoolSize: config.readyCatalogQueryPoolSize,
     searchUrls: productUrls.size,
     fetchedDetails: details.length,
     parsedDetails: writableDetails.length,

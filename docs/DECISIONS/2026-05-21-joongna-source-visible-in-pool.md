@@ -81,3 +81,15 @@
 - Fix: resale comparison now shows Bunjang, Joongna, and Daangn cards. Bunjang/Joongna use the same conservative marketplace-fee estimate; Daangn remains local/direct-trade upside with region/negotiation burden.
 - Fix: detail-modal images are marked `unoptimized`, and `next.config.ts` now allows `**.joongna.com` image hosts so Joongna CDN thumbnails render in the detail modal and beginner view.
 - Deferred: Joongna-specific exact payment/fee policy is not hardcoded. UI says to confirm 안전거래/수수료 in the original listing, while profit math keeps using the existing conservative marketplace-fee estimate.
+
+## Follow-up — Joongna ready SKU crawl breadth
+- Operator reported that Joongna ready pool stayed at only 4-5 rows after multiple hours.
+- Finding: Joongna worker was healthy and not blocked, but it only scanned the static seed queries from env (`에어팟맥스, 아이폰 17 프로, 아이패드 프로, 애플워치, 맥북`) and `JOONGNA_INGEST_MAX_DETAILS=12`. It was a narrow probe, not a ready-SKU crawl.
+- Fix: Joongna ingest now builds a source-specific rotating query pool from catalog SKUs that can enter the public pool under `evaluatePoolGate` + DB category readiness. Internal-only/blocked categories remain excluded.
+- Fix: use one representative query per ready SKU for Joongna to avoid expanding every alias into a 1,900+ query backlog.
+- Fix: legacy low env values are bounded for cron runs: query pool window defaults to 50 queries, details per query is capped at 2 unless an explicit request param overrides it, and max details is coerced to at least 32 unless explicitly overridden.
+- Verification:
+  - Recent production DB check before fix: Joongna worker succeeded every 15 minutes, source health was `healthy`, but ready pool was 4 rows.
+  - Local production-mode ingest after fix: 50-query window, `queryPoolSize=680`, `searchUrls=32`, `fetchedDetails=32`, `parsedUpserted=20`, no block signals.
+  - Forced score stage after ingest: `scored=72`, `poolUpserted=3`; many non-ready rows were correctly skipped for `sku_median_unavailable`, low profit, negative gap, or internal-only clothing.
+- Deferred: Joongna volume will still not jump to every raw row immediately. Rows only become ready when the same product/condition has usable market median, profit band, volume, and risk gates.
