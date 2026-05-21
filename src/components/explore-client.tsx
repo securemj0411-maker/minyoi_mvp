@@ -1735,7 +1735,8 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
                 ? "배송비 포함"
                 : item.freeShipping ? "무료배송" : null;
             const isSoldOut = item.soldOut;
-            const exactUnlocked = creditFeedEnabled || scrapOnly || savedPidSet.has(item.pid) || openedDetailPids.has(item.pid);
+            const freePreviewUnlocked = !creditFeedEnabled && freeDetailRemaining > 0;
+            const exactUnlocked = creditFeedEnabled || freePreviewUnlocked || scrapOnly || savedPidSet.has(item.pid) || openedDetailPids.has(item.pid);
             const lockedPreview = !exactUnlocked;
             const freeDetailAvailable = lockedPreview && !creditFeedEnabled && freeDetailRemaining > 0;
             return (

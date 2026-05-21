@@ -8,6 +8,12 @@ import { restFetch, serviceHeaders } from "@/lib/supabase-rest";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+const SAFETY_STATS_CACHE_TTL_MS = 30 * 60 * 1000;
+const SAFETY_STATS_CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600",
+};
+const safetyStatsCache = new Map<string, { expiresAt: number; payload: unknown }>();
+
 const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const URL_BASE = SUPABASE_URL.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "") + "/rest/v1";
 
@@ -67,13 +73,38 @@ function parseCount(res: Response): number {
   return totalStr ? Number(totalStr) : 0;
 }
 
+function safetyStatsCacheKey(scope: SafetyStatsScope) {
+  return [
+    "v2",
+    scope.level,
+    scope.skuId ?? "",
+    scope.comparableKey ?? "",
+    scope.category ?? "",
+  ].join(":");
+}
+
+function safetyStatsJson(payload: unknown, cache: "hit" | "miss") {
+  return NextResponse.json(payload, {
+    headers: {
+      ...SAFETY_STATS_CACHE_HEADERS,
+      "x-minyoi-safety-stats-cache": cache,
+    },
+  });
+}
+
 export async function GET(request: Request) {
   try {
     // 2026-05-16 (사용자 코멘트): "이번 주 말고 오늘" — 24h window로 변경.
     // 24h 측정: listing_type 6.4K + needs_review 0.9K + pool invalidated 1.3K = ~8,600건 차단/일.
     // 사용자에게 "오늘만 N건 차단" 인상 강력 (예: "하루에 8천건을 어떻게 다 걸러내냐").
-    const since24h = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
     const scope = safetyStatsScope(request);
+    const cacheKey = safetyStatsCacheKey(scope);
+    const cached = safetyStatsCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return safetyStatsJson(cached.payload, "hit");
+    }
+
+    const since24h = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
     const rawFilter = rawScopeFilter(scope);
     const poolFilter = poolScopeFilter(scope);
     const parsedFilter = parsedScopeFilter(scope);
@@ -162,7 +193,7 @@ export async function GET(request: Request) {
     const totalBlocked7d = safetyTotal + collectionStageTotal + needsReview + poolInvalidate;
     const totalReviewed7d = Math.max(poolReviewed + safetyTotal + collectionStageTotal + needsReview, totalBlocked7d);
 
-    return NextResponse.json({
+    const payload = {
       stats: {
         // 사용자 표시용 핵심 숫자 — 이번 주 차단 매물 총합
         total_blocked_7d: totalBlocked7d,
@@ -209,7 +240,12 @@ export async function GET(request: Request) {
         period_start: since24h,
         period_end: new Date().toISOString(),
       },
+    };
+    safetyStatsCache.set(cacheKey, {
+      expiresAt: Date.now() + SAFETY_STATS_CACHE_TTL_MS,
+      payload,
     });
+    return safetyStatsJson(payload, "miss");
   } catch (err) {
     // Wave 184 (2026-05-17): public endpoint — err.message 노출 차단.
     // 이전: err.message 가 response 에 직접 박혀 DB schema / internal path leak 가능.
