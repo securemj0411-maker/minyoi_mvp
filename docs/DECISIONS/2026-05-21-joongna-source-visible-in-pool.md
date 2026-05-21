@@ -197,3 +197,30 @@
   - Manual score stage after the smoke ingest processed 39 rows and added 4 pool rows; top skips were expected business gates (`price_above_pool_max`, `sku_median_unavailable`, `negative_resell_gap`).
 - Deferred:
   - Joongna fashion/shoe ready count is still limited mostly by market confidence and comparable-key sample availability. That is a pool-quality policy issue, not a crawler liveness issue.
+
+## Follow-up — Cron watchdog false positive and Joongna sustainability patch
+- Operator received Telegram incidents:
+  - `deep-crawl 6시간+ 안 돎`
+  - `housekeeper 6시간+ 안 돎`
+  - `joongna_worker 63% failure`
+- Findings:
+  - `deep-crawl` was not actually down. Production `mvp_collect_runs` showed hourly successful runs at `2026-05-21T01:27Z` through `05:27Z`.
+  - `housekeeper` was not actually down. Production showed successful runs at `05:07Z`, `05:37Z`, and `06:07Z`.
+  - The watchdog issue was false-positive behavior: a transient Supabase/PostgREST lookup failure could return `null`, and the caller interpreted that the same as "no run in lookback."
+  - Joongna failure-rate alert was real historical failure noise from the seller upsert duplicate bug fixed in commit `28be0a0`. After that fix, production Joongna runs succeeded with `fetchedDetails=80`, `parsedUpserted=39-49`, `blockedSignals=[]`.
+  - Remaining sustainability concern: Joongna runs took roughly `79-115s` because each 80-detail batch also fetched seller profile/transaction facts for ~75 sellers. This is not a 60s cron limit and not a block signal, but it is too heavy as a steady-state pattern.
+- Fix:
+  - Changed cron watchdog lookup semantics: DB/REST lookup failure is now tracked as `lookupFailed` and does not send a stale-worker alert. A genuine empty lookback still alerts.
+  - Added 6h TTL cache for Joongna seller profile/transaction facts using `mvp_sellers.source_json`.
+  - Added `sellerCacheHits` to Joongna result/collect-run stage stats.
+  - Adjusted Joongna source-health classification so a tiny search timeout rate does not mark the source degraded. Degrade now requires no writable details, a block, or search failure rate >= 15%.
+  - Added `joongna_worker` to source-health guard and made it read `source=joongna`; if Joongna ever becomes `unhealthy`, the worker will skip like the heavy Bunjang workers.
+- Verification:
+  - `npx eslint src/lib/cron-watchdog.ts src/lib/cron-guard.ts src/lib/joongna.ts src/lib/joongna-ingest.ts src/app/api/cron/joongna-worker/route.ts tests/cron-guard.test.ts`: passed.
+  - `npx tsx --test tests/cron-guard.test.ts`: passed.
+  - `npm run build`: passed.
+  - Local active smoke, `query=에어팟맥스`, `maxDetails=8`: first cache-aware run returned `sellerCacheHits=7`, `sellerProfilesFetched=1`, `sellerTransactionsFetched=1`, `blockedSignals=[]`, `sourceHealthStatus=healthy`.
+  - Immediate second smoke returned `sellerCacheHits=8`, `sellerProfilesFetched=0`, `sellerTransactionsFetched=0`, `sourceHealthStatus=healthy`.
+- Deferred:
+  - Re-check production after deploy and one Joongna cron cycle. Expected result: `sellerCacheHits` appears in `/api/cron/joongna-worker` stage stats and run duration drops as repeated sellers are cached.
+  - The 120-minute operational alert window may still mention old Joongna failures until those failed runs age out.

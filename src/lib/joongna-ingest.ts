@@ -26,6 +26,9 @@ const DEFAULT_SEED_QUERIES = [
 ];
 
 const JOONGNA_QUERY_ROTATION_MINUTES = 3;
+const JOONGNA_SELLER_FACT_READ_CHUNK_SIZE = 80;
+const DEFAULT_JOONGNA_SELLER_FACT_TTL_MS = 6 * 60 * 60_000;
+const JOONGNA_SEARCH_FAILURE_RATE_DEGRADED_THRESHOLD = 0.15;
 
 type ReadyCatalogQuery = {
   query: string;
@@ -65,6 +68,7 @@ export type JoongnaIngestResult = {
   observationInserted: number;
   sellerProfilesFetched: number;
   sellerTransactionsFetched: number;
+  sellerCacheHits: number;
   sourceHealthStatus: "healthy" | "degraded" | "unhealthy";
   sourceHealthReason: string;
 };
@@ -299,7 +303,118 @@ type SellerEnrichmentResult = {
   details: JoongnaDetail[];
   sellerProfilesFetched: number;
   sellerTransactionsFetched: number;
+  sellerCacheHits: number;
 };
+
+type CachedJoongnaSellerRow = {
+  seller_uid: string;
+  review_rating: number | null;
+  review_count: number | null;
+  sales_count: number | null;
+  follower_count: number | null;
+  is_proshop: boolean | null;
+  is_official_seller: boolean | null;
+  source_json: Record<string, unknown> | null;
+  last_seen_at: string | null;
+  updated_at: string | null;
+};
+
+type JoongnaSellerFact = {
+  profile: JoongnaSellerStoreInfo | null;
+  transactions: JoongnaOrderTransactionCount | null;
+  fetchedAt: string | null;
+  source: "live" | "cache";
+};
+
+function chunkArray<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function numberOrNull(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function stringOrNull(value: unknown) {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function joongnaSellerFactTtlMs() {
+  return boundedInt(
+    process.env.JOONGNA_INGEST_SELLER_FACT_TTL_MINUTES,
+    DEFAULT_JOONGNA_SELLER_FACT_TTL_MS / 60_000,
+    15,
+    24 * 60,
+  ) * 60_000;
+}
+
+function cachedFactFetchedAt(row: CachedJoongnaSellerRow) {
+  const sourceJson = asRecord(row.source_json);
+  return stringOrNull(sourceJson.sellerFactsFetchedAt) ?? row.updated_at ?? row.last_seen_at;
+}
+
+function cachedSellerFactFromRow(row: CachedJoongnaSellerRow, nowMs: number, ttlMs: number): JoongnaSellerFact | null {
+  const sourceJson = asRecord(row.source_json);
+  const fetchedAt = cachedFactFetchedAt(row);
+  const fetchedAtMs = fetchedAt ? Date.parse(fetchedAt) : 0;
+  if (!Number.isFinite(fetchedAtMs) || fetchedAtMs <= 0 || nowMs - fetchedAtMs > ttlMs) return null;
+
+  const storeSeq = numberOrNull(sourceJson.storeSeq) ?? numberOrNull(row.seller_uid.replace(/^joongna:/, ""));
+  if (!storeSeq) return null;
+
+  return {
+    source: "cache",
+    fetchedAt,
+    profile: {
+      storeSeq,
+      nickName: stringOrNull(sourceJson.nickName),
+      userType: numberOrNull(sourceJson.userType),
+      profileImageUrl: stringOrNull(sourceJson.profileImageUrl),
+      activityScore: numberOrNull(sourceJson.activityScore),
+      reliabilityScore: numberOrNull(sourceJson.reliabilityScore),
+      reviewCount: numberOrNull(sourceJson.reviewCount) ?? row.review_count,
+      followerCount: numberOrNull(sourceJson.followerCount) ?? row.follower_count,
+      storeAbout: stringOrNull(sourceJson.storeAbout),
+      businessInfo: sourceJson.businessInfo ?? null,
+    },
+    transactions: {
+      salesCount: numberOrNull(sourceJson.safeOrderSalesCount) ?? row.sales_count,
+      purchasesCount: numberOrNull(sourceJson.safeOrderPurchasesCount),
+      safeOrderSalesCntText: stringOrNull(sourceJson.safeOrderSalesText),
+    },
+  };
+}
+
+async function loadCachedSellerFacts(storeSeqs: number[], nowMs: number, ttlMs: number) {
+  const unique = [...new Set(storeSeqs.filter((seq) => Number.isFinite(seq) && seq > 0))];
+  const facts = new Map<number, JoongnaSellerFact>();
+  if (unique.length === 0) return facts;
+
+  for (const chunk of chunkArray(unique, JOONGNA_SELLER_FACT_READ_CHUNK_SIZE)) {
+    const sellerUids = chunk.map((seq) => sellerUidForStoreSeq(seq)).filter((uid): uid is string => Boolean(uid));
+    const encoded = sellerUids.map((uid) => encodeURIComponent(uid)).join(",");
+    const res = await restFetch(
+      `${tableUrl("mvp_sellers")}?select=seller_uid,review_rating,review_count,sales_count,follower_count,is_proshop,is_official_seller,source_json,last_seen_at,updated_at&source=eq.${JOONGNA_SOURCE_ID}&seller_uid=in.(${encoded})`,
+      { headers: serviceHeaders() },
+    );
+    const rows = (await res.json()) as CachedJoongnaSellerRow[];
+    for (const row of rows) {
+      const fact = cachedSellerFactFromRow(row, nowMs, ttlMs);
+      if (!fact?.profile?.storeSeq) continue;
+      facts.set(fact.profile.storeSeq, fact);
+    }
+  }
+
+  return facts;
+}
 
 async function mapWithConcurrency<T, R>(
   items: T[],
@@ -325,30 +440,33 @@ async function enrichWritableDetailsWithSellerFacts(
 ): Promise<SellerEnrichmentResult> {
   const storeSeqs = [...new Set(details.flatMap((detail) => detail.storeSeq ? [detail.storeSeq] : []))];
   if (storeSeqs.length === 0) {
-    return { details, sellerProfilesFetched: 0, sellerTransactionsFetched: 0 };
+    return { details, sellerProfilesFetched: 0, sellerTransactionsFetched: 0, sellerCacheHits: 0 };
   }
 
   const concurrency = boundedInt(process.env.JOONGNA_INGEST_SELLER_PROFILE_CONCURRENCY, 4, 1, 8);
-  const sellerFacts = new Map<number, {
-    profile: JoongnaSellerStoreInfo | null;
-    transactions: JoongnaOrderTransactionCount | null;
-  }>();
+  const nowMs = Date.now();
+  const cachedFacts = await loadCachedSellerFacts(storeSeqs, nowMs, joongnaSellerFactTtlMs()).catch(() => new Map<number, JoongnaSellerFact>());
+  const sellerFacts = new Map<number, JoongnaSellerFact>(cachedFacts);
+  const sellerCacheHits = cachedFacts.size;
   let sellerProfilesFetched = 0;
   let sellerTransactionsFetched = 0;
+  const fetchStartedAt = new Date(nowMs).toISOString();
+  const missingStoreSeqs = storeSeqs.filter((storeSeq) => !sellerFacts.has(storeSeq));
 
-  await mapWithConcurrency(storeSeqs, concurrency, async (storeSeq) => {
+  await mapWithConcurrency(missingStoreSeqs, concurrency, async (storeSeq) => {
     const [profile, transactions] = await Promise.all([
       fetchJoongnaSellerStoreInfo(storeSeq, timeoutMs).catch(() => null),
       fetchJoongnaOrderTransactionCount(storeSeq, timeoutMs).catch(() => null),
     ]);
     if (profile) sellerProfilesFetched += 1;
     if (transactions) sellerTransactionsFetched += 1;
-    sellerFacts.set(storeSeq, { profile, transactions });
+    sellerFacts.set(storeSeq, { profile, transactions, fetchedAt: fetchStartedAt, source: "live" });
   });
 
   return {
     sellerProfilesFetched,
     sellerTransactionsFetched,
+    sellerCacheHits,
     details: details.map((detail) => {
       if (!detail.storeSeq) return detail;
       const facts = sellerFacts.get(detail.storeSeq);
@@ -368,6 +486,8 @@ async function enrichWritableDetailsWithSellerFacts(
         sellerSafeOrderSalesCount: transactions?.salesCount ?? detail.sellerSafeOrderSalesCount,
         sellerSafeOrderPurchasesCount: transactions?.purchasesCount ?? detail.sellerSafeOrderPurchasesCount,
         sellerSafeOrderSalesText: transactions?.safeOrderSalesCntText ?? detail.sellerSafeOrderSalesText,
+        sellerFactsFetchedAt: facts.fetchedAt,
+        sellerFactsSource: facts.source,
       };
     }),
   };
@@ -477,6 +597,8 @@ function buildRows(
           safeOrderSalesCount: detail.sellerSafeOrderSalesCount,
           safeOrderPurchasesCount: detail.sellerSafeOrderPurchasesCount,
           safeOrderSalesText: detail.sellerSafeOrderSalesText,
+          sellerFactsFetchedAt: detail.sellerFactsFetchedAt ?? now,
+          sellerFactsSource: detail.sellerFactsSource ?? "live",
           ratingScale: sellerReviewRating == null ? null : "joongna_activity_plus_reliability_score_1000_to_5",
         },
         last_seen_at: now,
@@ -546,6 +668,8 @@ function buildRows(
           safeOrderPurchasesCount: detail.sellerSafeOrderPurchasesCount,
           safeOrderSalesText: detail.sellerSafeOrderSalesText,
           trustRatingNormalized: sellerReviewRating,
+          sellerFactsFetchedAt: detail.sellerFactsFetchedAt ?? now,
+          sellerFactsSource: detail.sellerFactsSource ?? "live",
         },
         commentCount: detail.commentCount,
         commentCountSource: detail.commentCount == null ? "joongna_public_chat_count_unavailable" : "joongna",
@@ -684,6 +808,7 @@ export async function runJoongnaIngest(options: {
       observationInserted: 0,
       sellerProfilesFetched: 0,
       sellerTransactionsFetched: 0,
+      sellerCacheHits: 0,
       sourceHealthStatus: "degraded",
       sourceHealthReason: "source_mode_off",
     };
@@ -691,7 +816,9 @@ export async function runJoongnaIngest(options: {
 
   const productUrls = new Set<string>();
   const searchFailures: string[] = [];
+  let searchAttempts = 0;
   for (const query of config.queries) {
+    searchAttempts += 1;
     try {
       const urls = await fetchJoongnaSearchProductUrls(query, {
         limit: config.detailsPerQuery,
@@ -754,11 +881,17 @@ export async function runJoongnaIngest(options: {
     ? Number((details.filter((detail) => detail.ok).length / details.length).toFixed(3))
     : 0;
   const hasBlock = blockedSignals.some((signal) => signal.blocked);
-  const sourceHealthStatus = hasBlock ? "unhealthy" : searchFailures.length > 0 || writableDetails.length === 0 ? "degraded" : "healthy";
+  const searchFailureRate = searchAttempts > 0 ? Number((searchFailures.length / searchAttempts).toFixed(3)) : 0;
+  const searchFailureRateHigh = searchFailureRate >= JOONGNA_SEARCH_FAILURE_RATE_DEGRADED_THRESHOLD;
+  const sourceHealthStatus = hasBlock
+    ? "unhealthy"
+    : writableDetails.length === 0 || searchFailureRateHigh
+      ? "degraded"
+      : "healthy";
   const sourceHealthReason = hasBlock
     ? blockedSignals.find((signal) => signal.blocked)?.reason ?? "blocked"
-    : searchFailures.length > 0
-      ? "search_partial_failure"
+    : searchFailureRateHigh
+      ? "search_failure_rate_high"
       : writableDetails.length === 0
         ? "no_writable_details"
         : "active_ingest_ok";
@@ -778,7 +911,10 @@ export async function runJoongnaIngest(options: {
       maxDetails: config.maxDetails,
       detailsPerQuery: config.detailsPerQuery,
       searchUrls: productUrls.size,
+      searchAttempts,
       searchFailures,
+      searchFailureRate,
+      searchFailureRateDegradedThreshold: JOONGNA_SEARCH_FAILURE_RATE_DEGRADED_THRESHOLD,
       fetchedDetails: details.length,
       writableDetails: writableDetails.length,
       skippedDetails,
@@ -790,6 +926,7 @@ export async function runJoongnaIngest(options: {
       observationInserted,
       sellerProfilesFetched: sellerEnrichment.sellerProfilesFetched,
       sellerTransactionsFetched: sellerEnrichment.sellerTransactionsFetched,
+      sellerCacheHits: sellerEnrichment.sellerCacheHits,
     },
   });
 
@@ -812,6 +949,7 @@ export async function runJoongnaIngest(options: {
     observationInserted,
     sellerProfilesFetched: sellerEnrichment.sellerProfilesFetched,
     sellerTransactionsFetched: sellerEnrichment.sellerTransactionsFetched,
+    sellerCacheHits: sellerEnrichment.sellerCacheHits,
     sourceHealthStatus,
     sourceHealthReason,
   };

@@ -24,6 +24,10 @@ type WatchdogTarget = {
   alertAfterMinutes: number; // 이 시간 이상 안 돌면 alert
 };
 
+type LastRunLookup =
+  | { ok: true; lastRun: Date | null }
+  | { ok: false; error: string };
+
 // Wave 106: 운영 readiness audit. 진짜 stale 3개만 추가 추적.
 // - landing-showcases / ai-cache-prune / compliance-retention: 별도 cron에서만 호출 (다른 cron 흡수 X). 24h 0회 = 진짜 stale.
 // - collect / hotdeal-worker는 다른 cron 흡수 (tick:searchStage / pool-warmer:hotdeal stage) → 추적 제외 (의도).
@@ -54,7 +58,7 @@ function lookbackMinutesForTarget(target: WatchdogTarget): number {
   return Math.max(360, Math.min(Math.round(target.alertAfterMinutes * 1.5), 48 * 60));
 }
 
-async function loadLastRunForTarget(target: WatchdogTarget): Promise<Date | null> {
+async function loadLastRunForTarget(target: WatchdogTarget): Promise<LastRunLookup> {
   const lookbackMinutes = lookbackMinutesForTarget(target);
   const sinceIso = new Date(Date.now() - lookbackMinutes * 60_000).toISOString();
   // PostgREST `like` pattern: * in place of %.
@@ -63,12 +67,12 @@ async function loadLastRunForTarget(target: WatchdogTarget): Promise<Date | null
   const url = `${tableUrl("mvp_collect_runs")}?select=started_at&request_path=${encodeURIComponent(filterValue)}&started_at=gte.${encodeURIComponent(sinceIso)}&order=started_at.desc&limit=1`;
   try {
     const res = await restFetch(url, { method: "GET", headers: serviceHeaders() });
-    if (!res.ok) return null;
+    if (!res.ok) return { ok: false, error: `status_${res.status}` };
     const rows = (await res.json()) as Array<{ started_at: string }>;
-    if (rows.length === 0) return null;
-    return new Date(rows[0].started_at);
-  } catch {
-    return null;
+    if (rows.length === 0) return { ok: true, lastRun: null };
+    return { ok: true, lastRun: new Date(rows[0].started_at) };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message.slice(0, 160) : String(err).slice(0, 160) };
   }
 }
 
@@ -98,9 +102,11 @@ async function tryAcquireAlertCooldown(workerName: string): Promise<boolean> {
 export async function checkCronWatchdog(): Promise<{
   checked: number;
   stale: { worker: string; minutesSinceLast: number }[];
+  lookupFailed: { worker: string; error: string }[];
   alertsSent: number;
 }> {
   const stale: { worker: string; minutesSinceLast: number }[] = [];
+  const lookupFailed: { worker: string; error: string }[] = [];
   let alertsSent = 0;
 
   try {
@@ -108,13 +114,21 @@ export async function checkCronWatchdog(): Promise<{
     const targetsWithLastRun = await Promise.all(
       WATCHDOG_TARGETS.map(async (target) => ({
         target,
-        lastRun: await loadLastRunForTarget(target),
+        lookup: await loadLastRunForTarget(target),
       })),
     );
 
     const now = Date.now();
 
-    for (const { target, lastRun } of targetsWithLastRun) {
+    for (const { target, lookup } of targetsWithLastRun) {
+      if (!lookup.ok) {
+        // DB/REST 일시 실패를 "worker가 안 돌았다"로 오판하지 않는다.
+        // 다음 tick에서 다시 확인하면 되므로 alert는 보내지 않는다.
+        lookupFailed.push({ worker: target.name, error: lookup.error });
+        continue;
+      }
+
+      const lastRun = lookup.lastRun;
       if (!lastRun) {
         // lookback window 안에 한 번도 안 돔 → stale.
         const lookback = lookbackMinutesForTarget(target);
@@ -158,5 +172,5 @@ export async function checkCronWatchdog(): Promise<{
     console.error("[cron-watchdog] error", err instanceof Error ? err.message : String(err));
   }
 
-  return { checked: WATCHDOG_TARGETS.length, stale, alertsSent };
+  return { checked: WATCHDOG_TARGETS.length, stale, lookupFailed, alertsSent };
 }

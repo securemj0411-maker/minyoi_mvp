@@ -79,6 +79,8 @@ export type JoongnaDetail = {
   sellerSafeOrderSalesCount: number | null;
   sellerSafeOrderPurchasesCount: number | null;
   sellerSafeOrderSalesText: string | null;
+  sellerFactsFetchedAt?: string | null;
+  sellerFactsSource?: "live" | "cache" | null;
   commentCount: number | null;
   viewCount: number | null;
   labels: string[];

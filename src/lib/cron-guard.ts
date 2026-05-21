@@ -110,6 +110,7 @@ const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([
   "market_worker",
   "pool_warmer",
   "lifecycle_terminal_recheck",
+  "joongna_worker",
 ]);
 
 let sourceHealthLoaderForTests: (() => Promise<SourceHealthForGuard | null>) | null = null;
@@ -225,10 +226,15 @@ function shouldSkipForSourceHealth(
   };
 }
 
-async function loadLatestSourceHealthForGuard(): Promise<SourceHealthForGuard | null> {
+function sourceForHealthGuard(mode: CronWorkerMode) {
+  return mode === "joongna_worker" ? "joongna" : "bunjang";
+}
+
+async function loadLatestSourceHealthForGuard(mode: CronWorkerMode): Promise<SourceHealthForGuard | null> {
   if (sourceHealthLoaderForTests) return sourceHealthLoaderForTests();
   try {
-    const url = `${tableUrl("mvp_source_health")}?select=status,checked_at,reason&source=eq.bunjang&order=checked_at.desc&limit=1`;
+    const source = sourceForHealthGuard(mode);
+    const url = `${tableUrl("mvp_source_health")}?select=status,checked_at,reason&source=eq.${source}&order=checked_at.desc&limit=1`;
     const res = await restFetch(url, { headers: serviceHeaders() });
     const rows = (await res.json()) as SourceHealthForGuard[];
     return rows[0] ?? null;
@@ -303,7 +309,7 @@ export async function acquireCronGuardWithSourceHealth(
 ): Promise<CronGuardAllowed | CronGuardSkipped> {
   const sourceHealth =
     HEAVY_SOURCE_HEALTH_GUARD_MODES.has(mode) && !isForceRun(req)
-      ? await loadLatestSourceHealthForGuard()
+      ? await loadLatestSourceHealthForGuard(mode)
       : null;
   const memoryResult = acquireCronGuardInternal(mode, req, sourceHealth);
   if (!memoryResult.allowed) return memoryResult;
