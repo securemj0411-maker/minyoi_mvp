@@ -33,3 +33,12 @@
 - `npx eslint` on touched source files: passed with only pre-existing `<img>` warnings in `market-brand-logo.tsx`.
 - `npm run build`: passed.
 - DB spot check: 4 Joongna ready candidates are active and have `https://web.joongna.com/product/...` URLs.
+
+## Follow-up — source filter
+- A later production check showed Joongna is present in recent pool rows, but sparse enough to be visually buried in default mixed-source lists.
+- Added `source` filtering to admin/public pool listing APIs and the operator pool UI.
+- Operator can now click the source ready chip or use the source dropdown to view only Joongna/Bunjang rows.
+- Production DB check at the time of this follow-up:
+  - `ready_total=365`
+  - recent ready by `added_at` top 80: `joongna=5`, `bunjang=75`
+  - newest ready added row was Joongna: `아이패드 미니 7 a17 pro 준신동 팝니다`

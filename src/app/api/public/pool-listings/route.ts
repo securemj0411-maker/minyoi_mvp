@@ -64,6 +64,7 @@ export async function GET(req: NextRequest) {
   const categoryFilter = url.searchParams.get("category");
   const priceBucket = url.searchParams.get("priceBucket");
   const skuFilter = url.searchParams.get("sku")?.trim() || null;
+  const sourceFilter = url.searchParams.get("source")?.trim().toLowerCase() || null;
   // Wave 176 (2026-05-17): 검색어 — admin route와 동일 (peek-pool도 검색).
   const searchQuery = url.searchParams.get("q")?.trim() || null;
   const sort = url.searchParams.get("sort") ?? "profit_high";
@@ -93,6 +94,19 @@ export async function GET(req: NextRequest) {
     }
     pidScope = new Set(pids);
   };
+
+  if (sourceFilter) {
+    const normalizedSource = normalizeMarketplaceSource(sourceFilter);
+    const sourceRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid&source=eq.${encodeURIComponent(normalizedSource)}&limit=5000`,
+      { headers: serviceHeaders() },
+    );
+    const sourcePids = ((await sourceRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+    if (sourcePids.length === 0) {
+      return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
+    }
+    applyPidScope(sourcePids);
+  }
 
   let skuPids: number[] | null = null;
   if (skuFilter) {

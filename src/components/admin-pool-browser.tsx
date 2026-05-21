@@ -168,6 +168,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
   const [category, setCategory] = useState<string>("");
   const [priceBucket, setPriceBucket] = useState<string>("");
   const [sku, setSku] = useState<string>("");
+  const [source, setSource] = useState<string>("");
   const [sort, setSort] = useState("newest_added");
   // Wave 176 (2026-05-17): 검색 — searchDraft는 input 입력 buffer, searchQuery는 실제 fetch 파라미터.
   // Enter 또는 🔍 버튼 클릭 시 draft → query 적용 (typing 마다 fetch 안 함, UX 부담 ↓).
@@ -183,6 +184,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
       if (category) params.set("category", category);
       if (priceBucket) params.set("priceBucket", priceBucket);
       if (sku) params.set("sku", sku);
+      if (source) params.set("source", source);
       if (searchQuery) params.set("q", searchQuery);
       const res = await fetch(`${endpoint}?${params}`, { credentials: "include" });
       if (!res.ok) {
@@ -198,7 +200,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, status, band, category, priceBucket, sku, sort, searchQuery, endpoint]);
+  }, [page, pageSize, status, band, category, priceBucket, sku, source, sort, searchQuery, endpoint]);
 
   // Wave 176: Enter / 🔍 버튼 / X 클릭 시 draft → query 적용 + 페이지 리셋.
   const applySearch = useCallback(() => {
@@ -217,6 +219,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
     setCategory("");
     setPriceBucket("");
     setSku("");
+    setSource("");
     setPage(1);
   }, []);
 
@@ -307,13 +310,15 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
               <div className="mb-2 font-bold text-zinc-700 dark:text-zinc-200">출처별 ready</div>
               <div className="flex flex-wrap gap-1.5">
                 {stats.bySource.map((row) => (
-                  <span
+                  <button
                     key={row.source}
+                    type="button"
+                    onClick={() => { setSource(row.source); setPage(1); }}
                     className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-black text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
                   >
                     <MarketplaceSourceBadge source={row.source} label={row.label} />
                     <span className="font-mono">{row.ready_count.toLocaleString()}</span>
-                  </span>
+                  </button>
                 ))}
                 {stats.bySource.length === 0 ? (
                   <span className="text-[11px] text-zinc-400">ready 출처 집계 없음</span>
@@ -434,6 +439,16 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
             <option value="2">band 2</option>
             <option value="3">band 3</option>
           </select>
+          {stats && stats.bySource.length > 0 && (
+            <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
+              <option value="">출처 전체</option>
+              {stats.bySource.map((row) => (
+                <option key={row.source} value={row.source}>
+                  {row.label} — {row.ready_count}건
+                </option>
+              ))}
+            </select>
+          )}
           {stats && stats.byPriceBucket.length > 0 && (
             <select value={priceBucket} onChange={(e) => { setPriceBucket(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
               <option value="">가격대 전체</option>

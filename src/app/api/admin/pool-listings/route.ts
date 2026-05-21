@@ -77,6 +77,7 @@ export async function GET(req: NextRequest) {
   const categoryFilter = url.searchParams.get("category");
   const priceBucket = url.searchParams.get("priceBucket");
   const skuFilter = url.searchParams.get("sku")?.trim() || null;
+  const sourceFilter = url.searchParams.get("source")?.trim().toLowerCase() || null;
   // Wave 176 (2026-05-17): 검색어 — 매물명/SKU명/comparable_key/pid 통합 검색.
   // 운영자가 특정 매물/모델 찾을 때 (예: "327", "Gazelle", "shoe|nb_327").
   const searchQuery = url.searchParams.get("q")?.trim() || null;
@@ -110,6 +111,19 @@ export async function GET(req: NextRequest) {
     }
     pidScope = new Set(pids);
   };
+
+  if (sourceFilter) {
+    const normalizedSource = normalizeMarketplaceSource(sourceFilter);
+    const sourceRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid&source=eq.${encodeURIComponent(normalizedSource)}&limit=5000`,
+      { headers: serviceHeaders() },
+    );
+    const sourcePids = ((await sourceRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+    if (sourcePids.length === 0) {
+      return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
+    }
+    applyPidScope(sourcePids);
+  }
 
   // SKU filter — mvp_candidate_pool에는 sku_id 컬럼 없음 → mvp_raw_listings에서 pid pre-filter
   let skuPids: number[] | null = null;
