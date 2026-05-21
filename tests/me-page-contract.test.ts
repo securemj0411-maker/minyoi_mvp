@@ -85,20 +85,17 @@ test("/me user modal explains recommendation trust in plain language", () => {
   assert.doesNotMatch(modal, />\s*band \{card\.band\}/);
 });
 
-test("/me modal keeps market evidence compact before the graph on mobile", () => {
+test("/me detail keeps comparables visible while MVP market graph is hidden", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
-  const graphIndex = modal.indexOf("<MarketHistoryChart");
-  const trustIndex = modal.indexOf("<MarketGraphTrustLine");
   const comparableIndex = modal.indexOf("<ComparableListingsPanel card={card} mode={mode} />");
 
   assert.match(modal, /compactSourceLabel/);
   assert.match(modal, /표본 \{market\.sampleCount\.toLocaleString/);
   assert.match(modal, /신뢰 \{confidenceLabel\}/);
-  assert.match(modal, /data-detail-market-graph-before-comparables/);
+  assert.doesNotMatch(modal, /data-detail-market-graph-before-comparables/);
   assert.match(modal, /hidden sm:inline-flex/);
   assert.match(modal, /그래프 기준 보기/);
-  assert.ok(graphIndex >= 0 && trustIndex > graphIndex);
-  assert.ok(comparableIndex > graphIndex);
+  assert.ok(comparableIndex >= 0);
 });
 
 test("/me market graph labels Bunjang-sourced prices explicitly", () => {

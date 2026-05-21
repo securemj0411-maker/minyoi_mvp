@@ -5471,29 +5471,6 @@ function RevealCardItem({
 
               </div>
 
-              {/* Wave 509: 상세 숫자 모드에서는 쉬운모드에 없는 그래프를 비교 매물 바로 위에 둔다. */}
-              <div className="mt-3 space-y-2" data-detail-market-graph-before-comparables>
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="m-0 text-[16px] font-extrabold tracking-tight text-[#1a2620] dark:text-zinc-100">
-                    시세 그래프 · 시장 분석
-                  </h3>
-                  <span className="rounded-full bg-[#eef6ec] px-2.5 py-1 text-[11px] font-bold text-[#4f6a52] ring-1 ring-[#d8e2d7] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
-                    최신 수집 기준
-                  </span>
-                </div>
-                <div className="overflow-hidden rounded-2xl border border-[#ece3d2] bg-white p-3 space-y-2 dark:border-zinc-800 dark:bg-zinc-900">
-                  <MarketHistoryChart
-                    comparableKey={card.marketBasis?.comparableKey ?? null}
-                    currentPrice={card.price}
-                    conditionClass={card.marketBasis?.conditionClass ?? null}
-                    priceSource={card.marketBasis?.priceSource ?? null}
-                    referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
-                  />
-                  <MarketGraphTrustLine card={card} />
-                  <SkuListingFlowMini card={card} />
-                </div>
-              </div>
-
               {/* Wave 395.2: 비교 매물은 Profit 카드 안이 아니라 PDF처럼 별도 섹션/리스트 카드로 분리. */}
               <ComparableListingsPanel card={card} mode={mode} />
               {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
