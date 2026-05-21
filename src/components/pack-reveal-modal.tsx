@@ -197,6 +197,9 @@ const BEGINNER_GUIDE_SKIP_COUNT_STORAGE_KEY = "minyoi_reveal_beginner_guide_skip
 // 3→5: 다른 카드 5장 볼 때까지 자동 표시. 4→6: 6번 skip해야 hide (이전 4번은 너무 빠름).
 const BEGINNER_GUIDE_AUTO_SHOW_LIMIT = 5;
 const BEGINNER_GUIDE_AUTO_HIDE_SKIP_THRESHOLD = 6;
+const JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE = 0.01;
+const JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE = 0.035;
+const JOONGNA_SAFE_PAYMENT_FEE_FREE_UNDER_KRW = 20_000;
 
 function readSavedRevealPidSet() {
   if (typeof window === "undefined") return new Set<number>();
@@ -818,7 +821,7 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
     title: "팔 곳에 따라 남는 돈이 달라요",
     metric: displayProfitRange(card),
     metricLabel: "중고 마켓 기준 예상 차익",
-    body: `${betterChannel}, 거래 범위와 네고 부담이 달라요. 그래서 번개장터·중고나라에 다시 팔 때와 당근 직거래로 팔 때를 나눠서 보여드릴게요.`,
+    body: `${betterChannel}, 거래 범위와 네고 부담이 달라요. 그래서 번개장터, 중고나라, 당근 직거래를 나눠서 보여드릴게요.`,
     note: "당근은 수수료가 적을 수 있지만 지역/직거래/네고 부담이 있고, 중고 마켓은 전국 거래와 플랫폼 결제 흐름이 장점이에요.",
     tone: "channel",
   };
@@ -3568,6 +3571,12 @@ function SellHelperPanel({
 // Wave 331 (사용자 + 메모리 정책 박혀있던 거):
 // 번개장터 안전결제 의무화 → 셀러 3.5% 수수료. 당근마켓 직거래는 수수료 0.
 // 사용자가 어디 팔지 선택지 보고 결정.
+function joongnaSellerSafePaymentFee(salePrice: number | null | undefined) {
+  const price = Number(salePrice ?? 0);
+  if (!Number.isFinite(price) || price <= JOONGNA_SAFE_PAYMENT_FEE_FREE_UNDER_KRW) return 0;
+  return Math.round(price * JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE);
+}
+
 function DaangnLogo({ className = "h-4 w-4" }: { className?: string }) {
   // 당근마켓 로고 — 녹색 잎 + 주황 핀 본체 + 흰 원 (정식 형태 근사).
   // 사용자가 정식 SVG/PNG 주면 교체.
@@ -3585,7 +3594,9 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
   if (!market?.medianPrice || market.medianPrice <= 0) return null;
 
   const marketplaceFee = Math.round(market.medianPrice * SELLING_FEE_RATE);
+  const joongnaFee = joongnaSellerSafePaymentFee(market.medianPrice);
   const marketplaceProfit = expectedProfitAverage(card);
+  const joongnaProfit = marketplaceProfit + marketplaceFee - joongnaFee;
   const daangnProfit = marketplaceProfit + marketplaceFee;
   if (marketplaceProfit <= 0 && daangnProfit <= 0) return null;
   const bonusFromDaangn = marketplaceFee;
@@ -3595,15 +3606,15 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
       source: "bunjang",
       label: "번개장터",
       profit: marketplaceProfit,
-      note: "안전결제 수수료 보수 차감",
+      note: `${Math.round(SELLING_FEE_RATE * 1000) / 10}% 셀러 수수료 차감`,
       chips: ["전국 거래", "앱 결제"],
     },
     {
       source: "joongna",
       label: "중고나라",
-      profit: marketplaceProfit,
-      note: "안전거래 조건 재확인",
-      chips: ["전국 거래", "문의 많음"],
+      profit: joongnaProfit,
+      note: `판매자 ${Math.round(JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE * 100)}% 차감`,
+      chips: ["전국 거래", `구매자 ${Math.round(JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE * 1000) / 10}% 별도`],
     },
   ];
 
@@ -4626,9 +4637,9 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
   return (
     <div data-beginner-guide-final-money data-beginner-guide-buy-cost className="mt-4 overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
       <div className="px-4 py-4">
-        <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">최종 예상 순익</div>
-        <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
-          {displayProfitRange(card)}
+        <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">수익 계산 흐름</div>
+        <div className="mt-1 break-keep text-[17px] font-black leading-6 text-[#172019] dark:text-zinc-50">
+          매입가, 기준 시세, 되팔 때 비용을 뺀 뒤 마지막에 순익을 봐요
         </div>
       </div>
       <div className="divide-y divide-[#eee5d8] border-y border-[#eee5d8] dark:divide-zinc-800 dark:border-zinc-800">
@@ -4657,8 +4668,14 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
           </div>
         </div>
       </div>
-      <div className={`m-4 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${snapshot.confidenceClass}`}>
-        {snapshot.confidenceLabel}
+      <div className="px-4 py-4">
+        <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">최종 예상 순익</div>
+        <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
+          {displayProfitRange(card)}
+        </div>
+        <div className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${snapshot.confidenceClass}`}>
+          {snapshot.confidenceLabel}
+        </div>
       </div>
     </div>
   );
@@ -4704,12 +4721,14 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
   const marketplaceProfit = expectedProfitAverage(card);
   const marketplaceFee = market?.medianPrice ? Math.round(market.medianPrice * SELLING_FEE_RATE) : 0;
+  const joongnaFee = joongnaSellerSafePaymentFee(market?.medianPrice ?? null);
+  const joongnaProfit = marketplaceProfit + marketplaceFee - joongnaFee;
   const daangnProfit = marketplaceProfit + marketplaceFee;
   const preferDaangn = daangnProfit > marketplaceProfit;
   const currentSource = card.marketplaceSource === "joongna" ? "joongna" : "bunjang";
   const marketChannels = [
-    { source: "bunjang", label: "번개장터", note: "수수료 보수 차감", chip: "전국 거래" },
-    { source: "joongna", label: "중고나라", note: "안전거래 조건 확인", chip: "전국 거래" },
+    { source: "bunjang", label: "번개장터", profit: marketplaceProfit, note: `${Math.round(SELLING_FEE_RATE * 1000) / 10}% 셀러 수수료`, chip: "전국 거래" },
+    { source: "joongna", label: "중고나라", profit: joongnaProfit, note: `판매자 ${Math.round(JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE * 100)}% 수수료`, chip: `구매자 ${Math.round(JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE * 1000) / 10}% 별도` },
   ];
 
   return (
@@ -4730,7 +4749,7 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
               )}
               <div className="text-[10.5px] font-black leading-tight text-[#172019] dark:text-zinc-50 sm:text-[13px]">{channel.label}</div>
             </div>
-            <div className="mt-2 text-[15px] font-black leading-tight tabular-nums text-emerald-700 dark:text-emerald-300 sm:mt-3 sm:text-[22px]">+{krw(marketplaceProfit)}</div>
+            <div className="mt-2 text-[15px] font-black leading-tight tabular-nums text-emerald-700 dark:text-emerald-300 sm:mt-3 sm:text-[22px]">+{krw(channel.profit)}</div>
             <div className="mt-1 min-h-[26px] break-keep text-[9px] font-bold leading-[1.35] text-[#7b8378] dark:text-zinc-400 sm:min-h-0 sm:text-[11px]">{channel.note}</div>
             <div className="mt-2 rounded-full bg-emerald-50 px-1.5 py-1 text-center text-[9px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200 sm:mt-3 sm:px-2.5 sm:text-[11px]">{channel.chip}</div>
           </div>

@@ -188,9 +188,17 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /data-beginner-guide-buy-cost/);
   assert.doesNotMatch(modal, /data-beginner-guide-resell-cost/);
   assert.match(modal, /최종으로 손에 남는 돈을 봐요/);
+  assert.match(modal, /수익 계산 흐름/);
+  assert.match(modal, /마지막에 순익을 봐요/);
   assert.match(modal, /실제 매입가/);
   assert.match(modal, /되팔 때 비용/);
   assert.match(modal, /매입가·배송비·수수료 반영/);
+  assert.match(modal, /JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE = 0\.01/);
+  assert.match(modal, /JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE = 0\.035/);
+  assert.match(modal, /JOONGNA_SAFE_PAYMENT_FEE_FREE_UNDER_KRW = 20_000/);
+  assert.match(modal, /function joongnaSellerSafePaymentFee/);
+  assert.match(modal, /const joongnaProfit = marketplaceProfit \+ marketplaceFee - joongnaFee/);
+  assert.match(modal, /구매자 \$\{Math\.round\(JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE \* 1000\) \/ 10\}% 별도/);
   assert.ok(modal.includes('<BunjangLogo className="h-6 w-6 rounded-full sm:h-7 sm:w-7" />'));
   assert.ok(modal.includes('<JoongnaLogo className="h-6 w-6 rounded-full sm:h-7 sm:w-7" />'));
   assert.match(modal, /data-beginner-guide-safe-payment/);
