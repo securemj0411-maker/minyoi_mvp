@@ -86,3 +86,21 @@
 - `JOONGNA_SOURCE_MODE=off`면 route는 collect log에 skipped만 남기고 DB write를 하지 않는다.
 - `JOONGNA_SOURCE_MODE=active`일 때는 `pool_eligible=true`, `score_dirty=true`로 저장해 기존 score/pool pipeline이 중고나라 매물을 평가하게 한다.
 - 운영 전제: Vercel production env에서 `JOONGNA_SOURCE_MODE=active`를 켜야 실제 중고나라 ingest가 시작된다.
+
+## 2026-05-21 Score Worker 분리
+
+- redeploy/env 적용 후 `/api/cron/joongna-worker`는 Vercel Cron으로 정상 실행됐다.
+  - `trigger_source='vercel-cron/1.0'`
+  - `mode='active'`
+  - `rawUpserted=12`
+  - `sourceHealthReason='active_ingest_ok'`
+- 확인 중 `tick`의 search stage가 55~58초를 소모하고 score stage가 `timedOut=true`, `scored=0`으로 끝나는 병목을 확인했다.
+- 중고나라 row는 `pool_eligible=true`, `score_dirty=true`로 들어왔지만 score dirty backlog가 1.5만 건 이상이라 pool/listing 산출이 지연될 수 있었다.
+- 조치:
+  - `/api/cron/score-worker`를 추가해 score stage만 독립 실행한다.
+  - Vercel Cron schedule은 `* * * * *`로 둔다.
+  - DB guard mode는 `score_worker`, cooldown 60초, lease 90초.
+  - 기본 score budget은 `PIPELINE_SCORE_WORKER_BUDGET_MS=70000`으로 둬 Vercel 90초 한도 안에서 dirty backlog를 별도로 drain한다.
+- 보류:
+  - `tick` 안 search/score 순서 재배치 또는 source-aware fair score ordering은 별도 작업으로 둔다.
+  - score-worker 안정화 후 `tick`은 search-only에 가깝게 축소할지 검토한다.

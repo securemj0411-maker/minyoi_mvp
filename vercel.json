@@ -9,6 +9,10 @@
       "schedule": "* * * * *"
     },
     {
+      "path": "/api/cron/score-worker",
+      "schedule": "* * * * *"
+    },
+    {
       "path": "/api/cron/lifecycle-worker",
       "schedule": "*/5 * * * *"
     },

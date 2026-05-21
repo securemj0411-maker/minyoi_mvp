@@ -15,7 +15,8 @@ export type CronWorkerMode =
   | "housekeeper_ai_cache_prune"
   | "hotdeal_worker"
   | "reference_price_refresh"
-  | "joongna_worker";
+  | "joongna_worker"
+  | "score_worker";
 
 type CronGuardSkipReason = "cooldown" | "same_worker_running" | "source_health_unhealthy";
 
@@ -83,6 +84,7 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   hotdeal_worker: 60_000,
   reference_price_refresh: 60 * 60_000,
   joongna_worker: 10 * 60_000,
+  score_worker: 60_000,
 };
 
 const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
@@ -100,6 +102,7 @@ const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
   hotdeal_worker: 60_000,
   reference_price_refresh: 2 * 60_000,
   joongna_worker: 2 * 60_000,
+  score_worker: 90_000,
 };
 
 const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([
