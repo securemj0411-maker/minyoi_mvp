@@ -45,6 +45,8 @@ export type MarketplaceSafetyDisplay = {
     tileValue: string;
     tileSub: string;
     badgeLabel: string | null;
+    assessment: string;
+    assessmentLabel: string;
     trustScore: number | null;
     reviewCount: number;
   };
@@ -119,6 +121,72 @@ export function joongnaTrustScoreBand(score: number | null | undefined): string 
   return `${Math.floor(n / 10) * 10}점대`;
 }
 
+function joongnaSellerTrustAssessment(input: {
+  trustScore: number | null;
+  trustBand: string | null;
+  reviewCount: number;
+  safeSales: number;
+}) {
+  const reviewLabel = input.reviewCount.toLocaleString("ko-KR");
+  const safeSalesLabel = input.safeSales.toLocaleString("ko-KR");
+  const scoreText = input.trustBand ? `신뢰지수 ${input.trustBand}` : "신뢰지수 미확인";
+  const hasReviews = input.reviewCount > 0;
+  const hasSafeSales = input.safeSales > 0;
+  const tinyHistory = input.reviewCount > 0 && input.reviewCount < 3;
+  const modestHistory = input.reviewCount >= 3 && input.reviewCount < 10;
+  const enoughHistory = input.reviewCount >= 10;
+  const lowScore = input.trustScore != null && input.trustScore < 500;
+  const mediumScore = input.trustScore != null && input.trustScore >= 500 && input.trustScore < 650;
+  const highScore = input.trustScore != null && input.trustScore >= 650;
+  const strongScore = input.trustScore != null && input.trustScore >= 800;
+
+  if (!hasReviews && input.trustScore == null) {
+    return {
+      label: "검증 표본 부족",
+      summary: "판매자 신호가 거의 없어요. 가격이 좋아도 안심결제 가능 여부, 실사진, 구성품 답변이 확인되기 전에는 보류하는 편이 좋아요.",
+      tileSub: "후기 없음 · 원본 확인 필요",
+      valueNote: "점수나 후기가 없으면 판매자 신뢰를 판단할 표본이 부족하므로 거래 조건 확인이 먼저입니다.",
+    };
+  }
+
+  if (tinyHistory || lowScore) {
+    const safeText = hasSafeSales ? ` 안심거래 판매 ${safeSalesLabel}건은 보조 신호지만,` : "";
+    return {
+      label: "표본 적음",
+      summary: `${scoreText}와 거래후기 ${reviewLabel}건 기준으로는 강한 신뢰 신호라기보다 거래 이력이 조금 확인된 수준이에요.${safeText} 최근 후기 내용과 응답, 안심결제 가능 여부까지 맞아야 진행할 만해요.`,
+      tileSub: `후기 ${reviewLabel}건 · 보수 확인`,
+      valueNote: "신뢰지수는 참고값이고, 후기 수가 적으면 점수 하나만으로 믿을 만하다고 보지 않습니다.",
+    };
+  }
+
+  if (modestHistory || mediumScore) {
+    return {
+      label: "기본 신호 있음",
+      summary: `${scoreText}와 거래후기 ${reviewLabel}건이면 기본 거래 이력은 보여요. 다만 후기 표본이 아주 많은 편은 아니라 최근 후기 내용, 실사진 답변, 안심결제 조건을 같이 확인하세요.`,
+      tileSub: `후기 ${reviewLabel}건 · 조건 확인`,
+      valueNote: "중간 신뢰 신호는 거래를 바로 확정하는 근거가 아니라, 원본 후기와 결제 조건을 확인할 출발점입니다.",
+    };
+  }
+
+  if (highScore && enoughHistory) {
+    return {
+      label: strongScore ? "신뢰 신호 강함" : "신뢰 신호 있음",
+      summary: `${scoreText}와 거래후기 ${reviewLabel}건이 같이 있어서 판매자 신뢰 신호는 있는 편이에요. 그래도 중고거래라서 원본 최근 후기와 안심결제 조건, 실사진 답변은 결제 전에 확인하세요.`,
+      tileSub: `후기 ${reviewLabel}건 · 신호 있음`,
+      valueNote: "후기 수와 신뢰지수가 함께 받쳐줄 때만 판매자 신호가 강해집니다. 그래도 안전을 보장한다는 뜻은 아닙니다.",
+    };
+  }
+
+  return {
+    label: hasReviews ? "조건 확인" : "점수만 확인",
+    summary: hasReviews
+      ? `${scoreText}와 거래후기 ${reviewLabel}건을 확인했어요. 이 정도 신호는 단독 판단보다 최근 후기 내용, 응답, 결제 방식과 같이 봐야 해요.`
+      : `${scoreText}는 확인되지만 거래후기 표본이 없어요. 점수만 보고 진행하지 말고 원본 판매자 정보와 안심결제 가능 여부를 먼저 확인하세요.`,
+    tileSub: hasReviews ? `후기 ${reviewLabel}건 · 같이 확인` : "후기 없음 · 점수만 확인",
+    valueNote: "중고나라는 별점 평점이 아니라 신뢰지수, 거래후기, 안심거래 이력을 함께 해석해야 합니다.",
+  };
+}
+
 export function inferMarketplaceTransaction(facts: MarketplaceSafetyFacts): {
   transactionMode: MarketplaceTransactionMode;
   assumption: MarketplaceShippingAssumption;
@@ -164,6 +232,7 @@ export function buildMarketplaceSafetyDisplay(facts: MarketplaceSafetyFacts): Ma
   const safeSalesLabel = safeSales > 0
     ? `안심거래 판매 ${safeSales.toLocaleString("ko-KR")}건`
     : null;
+  const joongnaTrust = joongnaSellerTrustAssessment({ trustScore, trustBand, reviewCount, safeSales });
   const tx = inferMarketplaceTransaction(facts);
   const isDirectOnly = tx.assumption === "direct_only";
   const isIncluded = tx.assumption === "included";
@@ -178,19 +247,17 @@ export function buildMarketplaceSafetyDisplay(facts: MarketplaceSafetyFacts): Ma
         metricLabel: [reviewCount > 0 ? `거래후기 ${reviewLabel}건` : null, safeSalesLabel]
           .filter((part): part is string => Boolean(part))
           .join(" · ") || "중고나라 판매자 정보",
-        headline: "중고나라는 신뢰지수와 거래후기를 같이 봐요",
-        body: trustBand
-          ? `중고나라 신뢰지수는 ${trustBand}이고 거래후기는 ${reviewLabel}건이에요.`
-          : reviewCount > 0
-            ? `중고나라 거래후기 ${reviewLabel}건을 확인했어요. 신뢰지수는 원본에서 한 번 더 확인하세요.`
-            : "중고나라 판매자 신뢰 정보가 적어요. 거래 방식과 실사진을 더 보수적으로 확인하세요.",
+        headline: `판매자 신호: ${joongnaTrust.label}`,
+        body: joongnaTrust.summary,
         note: `${marketplaceLabel} 원본 안에서 ${paymentLabel} 가능 여부와 거래후기, 판매자 정보를 확인하고 진행하세요.`,
-        valueNote: "중고나라는 별점 평점이 아니라 신뢰지수, 거래후기, 안심거래 이력을 나눠 봅니다.",
+        valueNote: joongnaTrust.valueNote,
         tileValue: trustBand ? `신뢰지수 ${trustBand}` : reviewCount > 0 ? `거래후기 ${reviewLabel}건` : "확인 필요",
-        tileSub: [reviewCount > 0 ? `거래후기 ${reviewLabel}건` : "거래후기 부족", safeSalesLabel]
-          .filter(Boolean)
+        tileSub: [joongnaTrust.tileSub, safeSalesLabel]
+          .filter((part): part is string => Boolean(part))
           .join(" · "),
         badgeLabel: safeSalesLabel,
+        assessment: joongnaTrust.summary,
+        assessmentLabel: joongnaTrust.label,
         trustScore,
         reviewCount,
       }
@@ -215,6 +282,14 @@ export function buildMarketplaceSafetyDisplay(facts: MarketplaceSafetyFacts): Ma
           ? `평점 ${Number(facts.sellerReviewRating).toFixed(1)} · 후기 ${reviewLabel}건`
           : reviewCount > 0 ? `후기 ${reviewLabel}건` : "차단 필터 통과",
         badgeLabel: reviewCount > 0 ? `후기 ${reviewLabel}` : null,
+        assessment: facts.sellerReviewRating != null && reviewCount >= 10
+          ? "평점과 후기 수가 함께 있어 판매자 신호가 있는 편이에요. 그래도 원본 후기와 안전결제 조건은 확인하세요."
+          : reviewCount > 0
+            ? "거래후기는 있지만 표본이 적을 수 있어 안전결제와 실제 상태 확인을 더 보수적으로 보면 좋아요."
+            : "판매자 후기 표본이 부족해 안전결제 가능 여부와 실사진 답변을 먼저 확인하세요.",
+        assessmentLabel: facts.sellerReviewRating != null && reviewCount >= 10
+          ? "신뢰 신호 있음"
+          : reviewCount > 0 ? "표본 확인" : "검증 표본 부족",
         trustScore: null,
         reviewCount,
       };

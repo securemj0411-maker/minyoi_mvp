@@ -31,6 +31,30 @@ test("joongna seller trust is displayed as trust score, not rating", () => {
   assert.doesNotMatch(text, /평점\s*\d|우수 셀러|평점 양호/);
 });
 
+test("joongna low trust score with tiny review count is interpreted conservatively", () => {
+  const display = buildMarketplaceSafetyDisplay({
+    marketplaceSource: "joongna",
+    marketplaceLabel: "중고나라",
+    sellerReviewCount: 1,
+    joongnaTrustScore: 442,
+    joongnaSafeOrderSalesCount: 1,
+  });
+
+  const text = [
+    display.sellerTrust.metric,
+    display.sellerTrust.metricLabel,
+    display.sellerTrust.assessmentLabel,
+    display.sellerTrust.assessment,
+    display.sellerTrust.tileSub,
+  ].join(" ");
+
+  assert.match(text, /신뢰지수 440점대/);
+  assert.match(text, /거래후기 1건/);
+  assert.match(text, /안심거래 판매 1건/);
+  assert.match(text, /표본 적음|강한 신뢰 신호라기보다|보수 확인/);
+  assert.doesNotMatch(text, /믿을 만|우수 셀러|평점/);
+});
+
 test("joongna direct-only shipping is not treated as free shipping", () => {
   const display = buildMarketplaceSafetyDisplay({
     marketplaceSource: "joongna",

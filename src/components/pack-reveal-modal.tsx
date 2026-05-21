@@ -1097,9 +1097,9 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
       q: "셀러 믿을 만한가요?",
       a: safety.isJoongna ? (
         <>
-          {safety.sellerTrust.body}
+          {safety.sellerTrust.assessment}
           {safety.sellerTrust.badgeLabel ? <> <b className="font-bold">{safety.sellerTrust.badgeLabel}</b>도 같이 확인했어요.</> : null}
-          {" "}신뢰지수는 참고값이라 원본에서 최근 거래후기와 응답 내용을 같이 확인하세요.
+          {" "}선입금이나 외부 결제 유도가 나오면 구매를 멈추세요.
         </>
       ) : sellerRating != null ? (
         <>
@@ -1499,8 +1499,8 @@ function recommendationFeatureCards(card: RevealCard): RecommendationFeatureCard
   } else if (safety.isJoongna && (safety.sellerTrust.trustScore != null || safety.sellerTrust.reviewCount > 0)) {
     cards.push({
       icon: <ShieldIcon className="h-4 w-4" />,
-      title: safety.sellerTrust.metric,
-      body: `${safety.sellerTrust.metricLabel || "중고나라 판매자 정보"}도 같이 봤어요.`,
+      title: safety.sellerTrust.assessmentLabel,
+      body: safety.sellerTrust.assessment,
       tone: "quality",
     });
   } else if (detail?.sellerReviewRating != null && detail.sellerReviewRating >= 4.5) {
@@ -2291,6 +2291,9 @@ function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>
   const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
   const reviewCountLabel = reviewCount.toLocaleString("ko-KR");
   if (safety.isJoongna) {
+    const hasSupportedSellerSignal = reviewCount >= 3 && (
+      safety.sellerTrust.trustScore == null || safety.sellerTrust.trustScore >= 500
+    );
     const badge = safety.sellerTrust.badgeLabel
       ? { label: safety.sellerTrust.badgeLabel, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/35 dark:text-emerald-200" }
       : reviewCount > 0
@@ -2301,7 +2304,7 @@ function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>
       sub: safety.sellerTrust.tileSub || "중고나라 판매자 정보 확인",
       Icon: ShieldIcon,
       badge,
-      tone: reviewCount > 0 || safety.sellerTrust.trustScore != null ? "safe" as const : risk.tone,
+      tone: hasSupportedSellerSignal ? "safe" as const : risk.tone,
     };
   }
   const reviewBadge =
@@ -4118,11 +4121,7 @@ function BeginnerGuideTrustBody({ card, fallback }: { card: RevealCard; fallback
   if (safety.isJoongna) {
     return (
       <p data-beginner-guide-trust-highlight className="mt-4 break-keep text-[16px] font-semibold leading-7 text-[#475449] dark:text-zinc-300">
-        <span className="font-black text-[#172019] dark:text-zinc-50">
-          {safety.sellerTrust.metric}
-        </span>
-        {safety.sellerTrust.metricLabel ? <> · {safety.sellerTrust.metricLabel}</> : null}
-        . 중고나라는 별점 평점이 아니라 신뢰지수와 거래후기로 판매자 신호를 봐요.
+        {safety.sellerTrust.assessment}
       </p>
     );
   }
