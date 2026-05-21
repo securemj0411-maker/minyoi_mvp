@@ -18,7 +18,7 @@
   - `/me` reveal cards
   - `/explore` cards
   - reveal detail modal header and original listing CTA
-- Keep market-price basis labels separate. “번개 S급 median” still means price evidence came from Bunjang market stats, not necessarily that the listing itself is a Bunjang listing.
+- Keep marketplace source labels separate from price-evidence labels. A candidate listing can be Joongna/Bunjang, while the market sample is still grouped by same product/status (`comparable_key` + condition), not by marketplace source.
 - Make live verification source-aware:
   - Bunjang listings still use Bunjang detail API and comment-count checks.
   - Joongna listings use Joongna product detail URL and productStatus/text sold checks.
@@ -58,3 +58,10 @@
 - Verification:
   - `npx eslint src/app/api/admin/pool-listings/route.ts src/app/api/public/pool-listings/route.ts`: passed.
   - `npm run build`: passed.
+
+## Follow-up — source-agnostic market sample wording
+- Operator corrected the product strategy: there is no separate “Joongna 시세” vs “Bunjang 시세” in the user-facing sample. The market price should be a social/common used-market price for the same product and condition.
+- Decision: comparison sample/evidence remains source-agnostic (`comparable_key` + condition + safety filters). Marketplace source is only provenance for the original listing and optional operator filtering.
+- Changed user/operator wording from `번개 ... 매물 기준/median/추이` to `통합 ... 매물 기준/median/추이` where it refers to the market sample.
+- `/api/listings/[pid]/market-source` now returns `marketplaceSource`, `marketplaceLabel`, and source-aware `listingUrl` for the target listing and comparison rows, while preserving legacy `bunjangUrl` as a compatibility alias.
+- Deferred: historical `mvp_market_price_daily` rows were not recomputed in this change; the code path already aggregates by product/condition, and Joongna volume will naturally join the same aggregate as source data grows.

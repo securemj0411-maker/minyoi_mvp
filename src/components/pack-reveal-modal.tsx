@@ -1298,9 +1298,9 @@ function conditionBasisSentence(card: RevealCard) {
   const groupLabel = conditionComparisonGroupLabel(card);
   const model = market?.label ?? card.skuName;
   if (market?.priceSource === "reference") {
-    return `이 상품은 ${productLabel}이에요. 득템잡이는 다나와 새 가격과 번개장터에 있는 ${model} ${groupLabel} 흐름을 같이 보면서 시세를 측정했어요.`;
+    return `이 상품은 ${productLabel}이에요. 득템잡이는 새상품 기준가와 중고 마켓의 ${model} ${groupLabel} 흐름을 같이 보면서 시세를 측정했어요.`;
   }
-  return `이 상품은 ${productLabel}이에요. 득템잡이는 번개장터에 있는 ${model} ${groupLabel}끼리 시세를 비교했어요.`;
+  return `이 상품은 ${productLabel}이에요. 득템잡이는 중고 마켓에 있는 ${model} ${groupLabel}끼리 시세를 비교했어요.`;
 }
 
 function marketPricePositionLine(card: RevealCard) {
@@ -1318,7 +1318,7 @@ function marketBasisPlainSentence(card: RevealCard) {
   const market = card.marketBasis;
   if (!market) return "모델과 상태 분류가 충분하지 않으면 추천 강도를 낮춰요.";
   if (market.priceSource === "reference") {
-    return "미개봉/새상품은 다나와 새 가격을 기준으로 보고, 번개 미개봉 거래 추이는 따로 확인해요.";
+    return "미개봉/새상품은 새상품 기준가를 먼저 보고, 중고 마켓의 미개봉 거래 추이는 따로 확인해요.";
   }
   const condition = market.conditionLabel ?? "같은 상태";
   return `${condition}로 분류된 매물끼리 먼저 비교해요. 새상품이나 더 깨끗한 상품 시세를 섞어 수익을 부풀리지 않아요.`;
@@ -1627,13 +1627,11 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
       : "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200";
   const hasCondition = market.conditionClass && market.conditionClass !== "all";
   const sourceLabel = market.priceSource === "reference"
-    ? "다나와 새 가격 기준"
-    : market.conditionClass === "mint"
-      ? "번개 S급 매물 기준"
-      : `번개 ${market.conditionLabel ?? "같은 상태"} 매물 기준`;
+    ? "새상품 기준가 + 중고 마켓 흐름"
+    : `${market.conditionLabel ?? "같은 상태"} 통합 매물 기준`;
   const compactSourceLabel = market.priceSource === "reference"
-    ? "다나와"
-    : `번개 ${market.conditionLabel ?? "같은 상태"}`;
+    ? "새상품 기준"
+    : `통합 ${market.conditionLabel ?? "같은 상태"}`;
   return (
     <div className="rounded-lg border border-[#e2d9cb] bg-white px-2.5 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
@@ -1647,7 +1645,9 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
           {market.priceSource === "reference" ? (
             <DanawaLogo className="h-3.5 w-3.5 rounded-[3px]" />
           ) : (
-            <BunjangLogo className="h-3.5 w-3.5 rounded-[3px]" />
+            <span className="flex h-3.5 w-3.5 items-center justify-center rounded-[3px] bg-zinc-900 text-[8px] font-black text-white dark:bg-zinc-100 dark:text-zinc-900">
+              통
+            </span>
           )}
           {compactSourceLabel}
         </span>
@@ -1689,7 +1689,9 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
               {market.priceSource === "reference" ? (
                 <DanawaLogo className="h-4 w-4 rounded-[4px]" />
               ) : (
-                <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+                <span className="flex h-4 w-4 items-center justify-center rounded-[4px] bg-zinc-900 text-[8px] font-black text-white dark:bg-zinc-100 dark:text-zinc-900">
+                  통
+                </span>
               )}
               {sourceLabel}
             </span>
@@ -2106,7 +2108,7 @@ function marketEvidenceSummary(card: RevealCard) {
   const market = card.marketBasis;
   if (!market) return "시세 기준 확인중";
   const sample = market.sampleCount ?? 0;
-  const source = market.priceSource === "reference" ? "다나와" : "번개";
+  const source = market.priceSource === "reference" ? "새상품 기준" : "통합 표본";
   const condition = marketConditionLabel(card);
   if (sample > 0) return `${condition} · ${source} ${sample.toLocaleString("ko-KR")}건`;
   return `${condition} · ${source} 기준`;
@@ -2290,6 +2292,9 @@ type ComparableListing = {
   listingState: string | null;
   lastSeenAt: string | null;
   sourceQuery: string | null;
+  marketplaceSource?: string | null;
+  marketplaceLabel?: string | null;
+  listingUrl?: string | null;
   bunjangUrl: string;
 };
 
@@ -2478,7 +2483,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                   )}
                   {mode === "detailed" ? (
                     <a
-                      href={item.bunjangUrl}
+                      href={item.listingUrl || item.bunjangUrl}
                       target="_blank"
                       rel="noreferrer"
                       className="mt-1 inline-flex rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-black text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
@@ -2843,7 +2848,7 @@ function MarketGraphTrustLine({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
   if (!market) return null;
   const condition = marketConditionLabel(card);
-  const source = market.priceSource === "reference" ? "다나와 기준선 + 번개 미개봉 추이" : `번개 ${condition} 매물 추이`;
+  const source = market.priceSource === "reference" ? "새상품 기준선 + 중고 마켓 미개봉 추이" : `통합 ${condition} 매물 추이`;
   return (
     <details className="rounded-lg border border-[#e2d9cb] bg-white/70 px-3 py-2 text-[11px] font-semibold leading-5 text-[#5f6d5f] dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-300">
       <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2">
@@ -4089,8 +4094,8 @@ function BeginnerGuideMarketBody({ card, fallback }: { card: RevealCard; fallbac
   const diff = median - card.price;
   const amount = krw(Math.abs(diff));
   const sourceLine = market?.priceSource === "reference"
-    ? `다나와 새 가격과 번개 ${groupLabel} 흐름을 같이 봤어요.`
-    : `번개장터 ${groupLabel}끼리만 비교했어요.`;
+    ? `새상품 기준가와 중고 마켓 ${groupLabel} 흐름을 같이 봤어요.`
+    : `중고 마켓 ${groupLabel}끼리만 비교했어요.`;
   const verdict = diff > 0
     ? "싸요"
     : diff < 0

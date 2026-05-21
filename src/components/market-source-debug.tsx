@@ -7,7 +7,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BunjangLogo, DanawaLogo } from "@/components/market-brand-logo";
+import { DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -20,6 +20,9 @@ type Comparable = {
   listingState: string | null;
   lastSeenAt: string | null;
   sourceQuery: string | null;
+  marketplaceSource: string;
+  marketplaceLabel: string;
+  listingUrl: string;
   bunjangUrl: string;
 };
 
@@ -42,6 +45,9 @@ type MarketSourceResponse = {
     parseConfidence: number | null;
     needsReview: boolean;
     thumbnailUrl: string | null;
+    marketplaceSource: string;
+    marketplaceLabel: string;
+    listingUrl: string;
     bunjangUrl: string;
   };
   marketDailyStats: {
@@ -347,7 +353,9 @@ export function MarketSourceDebug({
                             {data.ourListing.marketPriceSource === "reference" ? (
                               <DanawaLogo className="h-4 w-4 rounded-[4px]" />
                             ) : (
-                              <BunjangLogo className="h-4 w-4 rounded-[4px]" />
+                              <span className="flex h-4 w-4 items-center justify-center rounded-[4px] bg-zinc-900 text-[8px] font-black text-white dark:bg-zinc-100 dark:text-zinc-900">
+                                통
+                              </span>
                             )}
                             {data.ourListing.marketPriceLabel}{" "}
                             {krw(data.ourListing.displayMarketPrice ?? data.ourListing.skuMedian)}
@@ -362,13 +370,13 @@ export function MarketSourceDebug({
                           </div>
                         )}
                         <a
-                          href={data.ourListing.bunjangUrl}
+                          href={data.ourListing.listingUrl || data.ourListing.bunjangUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:underline dark:text-emerald-400"
                         >
-                          <BunjangLogo className="h-4 w-4 rounded-[4px]" />
-                          번장에서 이 매물 열기 →
+                          <MarketplaceSourceBadge source={data.ourListing.marketplaceSource} label={data.ourListing.marketplaceLabel} />
+                          원본 매물 열기 →
                         </a>
                       </div>
                     </div>
@@ -452,7 +460,7 @@ export function MarketSourceDebug({
                         return (
                           <a
                             key={c.pid}
-                            href={c.bunjangUrl}
+                            href={c.listingUrl || c.bunjangUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className={`flex items-center gap-2 rounded-md border px-2 py-1.5 text-[11px] hover:bg-zinc-100 dark:hover:bg-zinc-800 ${
@@ -477,6 +485,7 @@ export function MarketSourceDebug({
                               <div className="truncate font-medium text-zinc-800 dark:text-zinc-100">{c.name}</div>
                               <div className="flex gap-2 text-zinc-500">
                                 <span>{saleStatusLabel(c.saleStatus)}</span>
+                                <span>· {c.marketplaceLabel}</span>
                                 <span>· {relativeAge(c.lastSeenAt)}</span>
                                 {c.sourceQuery && <span>· {c.sourceQuery.slice(0, 24)}</span>}
                               </div>

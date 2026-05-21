@@ -8,6 +8,7 @@
 
 import { NextResponse } from "next/server";
 import { fetchLatestMarketStats, fetchReferencePrices, fetchV7SiblingPresence, marketBasisForCandidate } from "@/lib/pack-open";
+import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
@@ -29,6 +30,9 @@ type Comparable = {
   listingState: string | null;
   lastSeenAt: string | null;
   sourceQuery: string | null;
+  marketplaceSource: string;
+  marketplaceLabel: string;
+  listingUrl: string;
   bunjangUrl: string;
 };
 
@@ -69,7 +73,7 @@ export async function GET(
         { headers: serviceHeaders() },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=eq.${pid}`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=eq.${pid}`,
         { headers: serviceHeaders() },
       ),
     ]);
@@ -141,7 +145,7 @@ export async function GET(
         // Wave 90: listing_type=normal + risk_hits=0 + 새상품 제외 필터.
         const [rawListRes, analysisRes, parsedRes2] = await Promise.all([
           restFetch(
-            `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=in.(${sameKeyPids.join(",")})&listing_type=eq.normal&order=last_seen_at.desc`,
+            `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=in.(${sameKeyPids.join(",")})&listing_type=eq.normal&order=last_seen_at.desc`,
             { headers: serviceHeaders() },
           ),
           restFetch(
@@ -195,17 +199,25 @@ export async function GET(
           if (excludeByPid.get(pid) === true) return false;
           return true;
         });
-        comparables = safeRows.map((row) => ({
-          pid: Number(row.pid),
-          name: String(row.name ?? ""),
-          price: Number(row.price ?? 0),
-          thumbnailUrl: (row.thumbnail_url as string | null) ?? null,
-          saleStatus: (row.sale_status as string | null) ?? null,
-          listingState: (row.listing_state as string | null) ?? null,
-          lastSeenAt: (row.last_seen_at as string | null) ?? null,
-          sourceQuery: (row.query as string | null) ?? null,
-          bunjangUrl: `https://m.bunjang.co.kr/products/${Number(row.pid)}`,
-        }));
+        comparables = safeRows.map((row) => {
+          const rowPid = Number(row.pid);
+          const marketplaceSource = normalizeMarketplaceSource((row.source as string | null) ?? (row.seller_source as string | null));
+          const listingUrl = listingUrlForSource(rowPid, row.url as string | null, marketplaceSource);
+          return {
+            pid: rowPid,
+            name: String(row.name ?? ""),
+            price: Number(row.price ?? 0),
+            thumbnailUrl: (row.thumbnail_url as string | null) ?? null,
+            saleStatus: (row.sale_status as string | null) ?? null,
+            listingState: (row.listing_state as string | null) ?? null,
+            lastSeenAt: (row.last_seen_at as string | null) ?? null,
+            sourceQuery: (row.query as string | null) ?? null,
+            marketplaceSource,
+            marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
+            listingUrl,
+            bunjangUrl: listingUrl,
+          };
+        });
       }
     }
 
@@ -228,6 +240,9 @@ export async function GET(
       mean: Math.round(activePrices.reduce((s, p) => s + p, 0) / activePrices.length),
     } : null;
 
+    const ourMarketplaceSource = normalizeMarketplaceSource((raw?.source as string | null) ?? (raw?.seller_source as string | null));
+    const ourListingUrl = listingUrlForSource(pid, raw?.url as string | null, ourMarketplaceSource);
+
     return NextResponse.json({
       ourListing: {
         pid,
@@ -241,17 +256,20 @@ export async function GET(
         displayMarketPrice: displayMarketBasis?.medianPrice ?? null,
         marketPriceSource: displayMarketBasis?.priceSource ?? "market",
         marketPriceLabel: displayMarketBasis?.priceSource === "reference"
-          ? "다나와 새상품 시세"
+          ? "새상품 기준 시세"
           : displayMarketBasis?.conditionLabel
-            ? `번개 ${displayMarketBasis.conditionLabel} 시세`
-            : "번개 중고 시세",
+            ? `통합 ${displayMarketBasis.conditionLabel} 시세`
+            : "통합 중고 시세",
         marketConditionLabel: displayMarketBasis?.conditionLabel ?? null,
         // Wave 251.4 (2026-05-19): 본 매물 clothing_product_type 노출 — 비교군 필터 투명성.
         productType: targetProductType,
         parseConfidence: Number(parsed?.parse_confidence ?? 0) || null,
         needsReview: Boolean(parsed?.needs_review),
         thumbnailUrl: (raw?.thumbnail_url as string | null) ?? null,
-        bunjangUrl: `https://m.bunjang.co.kr/products/${pid}`,
+        marketplaceSource: ourMarketplaceSource,
+        marketplaceLabel: marketplaceSourceLabel(ourMarketplaceSource),
+        listingUrl: ourListingUrl,
+        bunjangUrl: ourListingUrl,
       },
       marketDailyStats: marketStats ? {
         blendedMedian: marketStats.blended_median_price ?? null,

@@ -11,7 +11,7 @@ import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
-import { BunjangLogo, DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
+import { DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { CATALOG } from "@/lib/catalog";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 import { buyPriceGuidance } from "@/lib/buy-price-guidance";
@@ -31,7 +31,7 @@ type PoolItem = {
   comparableKey: string | null;
   parseConfidence: number | null;
   needsReview: boolean;
-  // 2026-05-16 (사용자 코멘트 #120): 시세 출처 표시 (다나와 새 가격 / 번개 S급 / 번개 중고 매물)
+  // 2026-05-16 (사용자 코멘트 #120): 시세 출처 표시 (새상품 기준 / 통합 S급 / 통합 중고 매물)
   conditionClass: string | null;
   saleStatus: string | null;
   listingState: string | null;
@@ -682,13 +682,17 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       </div>
                     ) : item.conditionClass === "mint" ? (
                       <div className="inline-flex items-center gap-1 text-[10px] font-bold text-zinc-700 dark:text-zinc-200">
-                        <BunjangLogo className="h-4 w-4 rounded-[4px]" />
-                        번개 S급 매물 median
+                        <span className="flex h-4 w-4 items-center justify-center rounded-[4px] bg-zinc-900 text-[8px] font-black text-white dark:bg-zinc-100 dark:text-zinc-900">
+                          통
+                        </span>
+                        통합 S급 매물 median
                       </div>
                     ) : item.conditionClass ? (
                       <div className="inline-flex items-center gap-1 text-[10px] text-zinc-400 dark:text-zinc-500">
-                        <BunjangLogo className="h-4 w-4 rounded-[4px]" />
-                        번개 중고 매물 median ({item.conditionClass})
+                        <span className="flex h-4 w-4 items-center justify-center rounded-[4px] bg-zinc-900 text-[8px] font-black text-white dark:bg-zinc-100 dark:text-zinc-900">
+                          통
+                        </span>
+                        통합 중고 매물 median ({item.conditionClass})
                       </div>
                     ) : null}
                     <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
