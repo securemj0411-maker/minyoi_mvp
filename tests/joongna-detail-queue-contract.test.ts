@@ -30,6 +30,7 @@ test("joongna ingest falls back when the detail queue is unavailable", () => {
 test("joongna ingest enqueues discovered URLs and claims details separately", () => {
   assert.match(ingestSource, /enqueueJoongnaDetailQueue/);
   assert.match(ingestSource, /claimJoongnaDetailQueue/);
+  assert.match(ingestSource, /claimedBeforeSearch/);
   assert.match(ingestSource, /resolution=ignore-duplicates,return=minimal/);
   assert.match(ingestSource, /claim_mvp_joongna_detail_queue/);
   assert.match(ingestSource, /markJoongnaDetailQueueDone/);

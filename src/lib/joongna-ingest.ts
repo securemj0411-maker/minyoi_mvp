@@ -1088,39 +1088,62 @@ export async function runJoongnaIngest(options: {
   let detailQueueReleased = 0;
   const productUrls = new Set<string>();
   const queuedProductUrls = new Map<string, JoongnaQueuedProductUrl>();
+  let detailTargets: JoongnaDetailTarget[] = [];
+  let claimedBeforeSearch = false;
   const searchDiscoveryLimit = queueMode
     ? Math.min(500, Math.max(config.maxDetails, config.queryLimit * config.detailsPerQuery))
     : config.maxDetails;
   const searchFailures: string[] = [];
   let budgetStopped = false;
   let searchAttempts = 0;
-  for (const query of config.queries) {
-    if (shouldStopForJoongnaDeadline(options.deadlineMs)) {
-      budgetStopped = true;
-      break;
-    }
-    searchAttempts += 1;
+
+  if (queueMode && hasJoongnaDetailQueueBudget(options.deadlineMs)) {
     try {
-      const urls = await fetchJoongnaSearchProductUrls(query, {
-        limit: config.detailsPerQuery,
-        timeoutMs: config.timeoutMs,
-      });
-      for (const url of urls) {
-        productUrls.add(url);
-        if (!queuedProductUrls.has(url)) queuedProductUrls.set(url, { url, query });
-        if (productUrls.size >= searchDiscoveryLimit) break;
+      const claims = await claimJoongnaDetailQueue(config.maxDetails);
+      detailQueueClaimed = claims.length;
+      if (claims.length > 0) {
+        claimedBeforeSearch = true;
+        detailTargets = claims.map((claim) => ({ url: claim.product_url, claim }));
       }
     } catch (err) {
-      searchFailures.push(`${query}:${err instanceof Error ? err.message : String(err)}`);
+      queueMode = false;
+      console.warn("joongna detail queue pre-claim failed; falling back to direct ingest for this run", {
+        error: err instanceof Error ? err.message.slice(0, 300) : String(err).slice(0, 300),
+      });
     }
-    if (productUrls.size >= searchDiscoveryLimit) break;
-    if (config.delayMs > 0) await sleep(config.delayMs);
   }
 
-  let detailTargets: JoongnaDetailTarget[] = [...productUrls]
-    .slice(0, config.maxDetails)
-    .map((url) => ({ url, claim: null }));
-  if (queueMode) {
+  if (!claimedBeforeSearch) {
+    for (const query of config.queries) {
+      if (shouldStopForJoongnaDeadline(options.deadlineMs)) {
+        budgetStopped = true;
+        break;
+      }
+      searchAttempts += 1;
+      try {
+        const urls = await fetchJoongnaSearchProductUrls(query, {
+          limit: config.detailsPerQuery,
+          timeoutMs: config.timeoutMs,
+        });
+        for (const url of urls) {
+          productUrls.add(url);
+          if (!queuedProductUrls.has(url)) queuedProductUrls.set(url, { url, query });
+          if (productUrls.size >= searchDiscoveryLimit) break;
+        }
+      } catch (err) {
+        searchFailures.push(`${query}:${err instanceof Error ? err.message : String(err)}`);
+      }
+      if (productUrls.size >= searchDiscoveryLimit) break;
+      if (config.delayMs > 0) await sleep(config.delayMs);
+    }
+  }
+
+  if (detailTargets.length === 0) {
+    detailTargets = [...productUrls]
+      .slice(0, config.maxDetails)
+      .map((url) => ({ url, claim: null }));
+  }
+  if (queueMode && !claimedBeforeSearch) {
     try {
       detailQueueEnqueued = await enqueueJoongnaDetailQueue([...queuedProductUrls.values()]);
       if (!hasJoongnaDetailQueueBudget(options.deadlineMs)) {
@@ -1128,7 +1151,7 @@ export async function runJoongnaIngest(options: {
         detailTargets = [];
       } else {
         const claims = await claimJoongnaDetailQueue(config.maxDetails);
-        detailQueueClaimed = claims.length;
+        detailQueueClaimed += claims.length;
         detailTargets = claims.map((claim) => ({ url: claim.product_url, claim }));
       }
     } catch (err) {
@@ -1269,6 +1292,7 @@ export async function runJoongnaIngest(options: {
       detailQueueDone,
       detailQueueFailed,
       detailQueueReleased,
+      claimedBeforeSearch,
       searchDiscoveryLimit,
       searchUrls: productUrls.size,
       searchAttempts,
