@@ -649,7 +649,9 @@ export async function GET(req: Request) {
       items = [...items].sort((a, b) => b.expectedProfitMax - a.expectedProfitMax);
     }
     items = items.slice(0, PAGE_SIZE);
-    const responseItems = creditFeed ? items : maskFreeFeedItems(items);
+    const freePreviewRemaining = Math.max(0, Number(detailAccess.freeLimit) - Number(detailAccess.freeUsed));
+    const exactFeedAllowed = creditFeed || freePreviewRemaining > 0;
+    const responseItems = exactFeedAllowed ? items : maskFreeFeedItems(items);
 
     // refresh 후 새 cooldown 정보
     const nextCooldown = creditFeed

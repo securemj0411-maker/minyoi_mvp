@@ -62,6 +62,9 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(poolRoute, /creditFeed/);
   assert.match(poolRoute, /getDetailAccessSnapshot/);
   assert.match(poolRoute, /detailAccess/);
+  assert.match(poolRoute, /const freePreviewRemaining = Math\.max\(0, Number\(detailAccess\.freeLimit\) - Number\(detailAccess\.freeUsed\)\)/);
+  assert.match(poolRoute, /const exactFeedAllowed = creditFeed \|\| freePreviewRemaining > 0/);
+  assert.match(poolRoute, /const responseItems = exactFeedAllowed \? items : maskFreeFeedItems\(items\)/);
   assert.match(poolRoute, /maskFreeFeedItems/);
   assert.match(poolRoute, /createPoolAccessToken/);
   assert.match(poolRoute, /syntheticPidForPoolToken/);
