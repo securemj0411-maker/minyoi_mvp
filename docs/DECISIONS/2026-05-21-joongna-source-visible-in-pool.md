@@ -128,3 +128,16 @@
 - Risk control:
   - Keep the cron guard/lease so overlapping minute ticks skip instead of parallelizing Joongna.
   - Keep source-health stop behavior; any block signal should degrade/unhealthy the source and stop worker admission.
+
+## Follow-up — Joongna cadence normalized to market size
+- Operator pointed out that Joongna should not simply run at the maximum safe local probe rate; it should roughly track market size versus Bunjang.
+- Re-evaluation:
+  - Bunjang acquisition gets many rows from one search API call, while Joongna currently needs a search page read plus product detail HTML reads to get usable fields.
+  - Therefore `80 details every minute` is not equivalent to a Bunjang minute tick; it is heavier per accepted listing even though Joongna source volume is lower.
+  - The safe local probe established headroom, not the desired steady-state cadence.
+- Decision:
+  - Keep Joongna batch breadth at `queryLimit=80`, `maxDetails=80`, `detailsPerQuery=2`, `delayMs=200` so each run spreads across many ready SKU searches.
+  - Change `/api/cron/joongna-worker` from every minute to every 3 minutes.
+  - This reduces Joongna request pressure to roughly one-third of the previous aggressive setting while still rotating the ~680 ready query pool in about 25-30 minutes.
+- Deferred:
+  - Re-check production after several hours. If Joongna ready pool still grows too slowly and source health stays clean, move to every 2 minutes before increasing per-run batch size.
