@@ -102,6 +102,7 @@
   - DB guard mode는 `score_worker`, cooldown 60초, lease 90초.
   - 기본 score budget은 `PIPELINE_SCORE_WORKER_BUDGET_MS=70000`으로 둬 Vercel 90초 한도 안에서 dirty backlog를 별도로 drain한다.
   - `loadScorableRows()`에 `source='joongna'` reserve를 먼저 태우는 fetch를 추가했다. 번개장터 search touch가 매분 수천 건 발생해도 중고나라 active row가 score backlog 뒤로 계속 밀리지 않게 한다.
+  - 중고나라 `productStatus=0`은 active sale status로 인정한다. 기존 row의 `JOONGNA_STATUS_0`도 active로 보고, 신규 ingest는 `ACTIVE`로 정규화한다.
 - 보류:
   - `tick` 안 search/score 순서 재배치 또는 source-aware fair score ordering은 별도 작업으로 둔다.
   - score-worker 안정화 후 `tick`은 search-only에 가깝게 축소할지 검토한다.

@@ -26,7 +26,7 @@ const TRADED_KEYWORDS = [
   "soldout",
 ];
 
-const ACTIVE_SALE_STATUSES = new Set(["SELLING", "AVAILABLE", "ON_SALE", "ACTIVE", ""]);
+const ACTIVE_SALE_STATUSES = new Set(["SELLING", "AVAILABLE", "ON_SALE", "ACTIVE", "JOONGNA_STATUS_0", ""]);
 
 export function isActiveSaleStatus(value: unknown): boolean {
   const status = String(value ?? "").trim().toUpperCase();

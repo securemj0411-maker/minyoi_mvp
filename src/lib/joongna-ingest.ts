@@ -117,6 +117,7 @@ function listingStateFor(detail: JoongnaDetail) {
 }
 
 function saleStatusFor(detail: JoongnaDetail) {
+  if (detail.productStatus === 0) return "ACTIVE";
   return detail.productStatus == null ? "JOONGNA_STATUS_UNKNOWN" : `JOONGNA_STATUS_${detail.productStatus}`;
 }
 
