@@ -72,8 +72,13 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(analysisRoute, /detail_access_required/);
 
   assert.match(explore, /creditFeedEnabled/);
+  assert.match(explore, /DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 3/);
+  assert.match(explore, /DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY/);
+  assert.match(explore, /readDetailAccessSnapshot\(storageScope\)/);
+  assert.match(explore, /writeDetailAccessSnapshot\(storageScope, nextDetailAccess\)/);
   assert.match(explore, /detailAccessSnapshot/);
   assert.match(explore, /freeDetailRemaining/);
+  assert.match(explore, /Number\(detailAccessSnapshot\.freeLimit\) - Number\(detailAccessSnapshot\.freeUsed\)/);
   assert.match(explore, /lockedPreviewTitle/);
   assert.match(explore, /원제목·원본 사진·판매자 정보는 상세 분석에서 보여드려요/);
   assert.match(explore, /무료 상세 가능/);

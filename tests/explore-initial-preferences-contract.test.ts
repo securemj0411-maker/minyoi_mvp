@@ -16,6 +16,8 @@ test("ExploreClient loads the broad feed immediately without a preference gate",
   assert.match(explore, /scopedStorageKey/);
   assert.match(explore, /storageScope/);
   assert.match(explore, /FEED_BUDGET_FILTER_STORAGE_KEY, storageScope/);
+  assert.match(explore, /updateBudgetFilter/);
+  assert.match(explore, /writeBudgetFilterOption\(storageScope, value\)/);
   assert.match(explore, /\/api\/public\/safety-stats/);
   assert.match(explore, /fixed inset-0 z-\[90\]/);
   assert.match(explore, /오늘 볼 만한/);
@@ -32,6 +34,7 @@ test("ExploreClient loads the broad feed immediately without a preference gate",
   assert.match(explore, /void loadStats\(\);/);
   assert.match(explore, /void loadPool\(false\);/);
   assert.doesNotMatch(explore, /onClick=\{\(\) => onSelectBudget\(option\.value\)\}/);
+  assert.doesNotMatch(explore, /writeBudgetFilterOption\(storageScope, budgetFilter\)/);
   assert.doesNotMatch(explore, /prefsInitialized|awaitingInitialPrefs|loadPreferences|savePreferences/);
   assert.doesNotMatch(explore, /params\.set\("budget"|params\.set\("preference"/);
 });

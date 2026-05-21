@@ -18,6 +18,7 @@ import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/prof
 // 무료 사용자 매물 풀 browsing. 30개 풀 + 2h cooldown.
 // 크레딧 1개 이상 보유자는 피드 탐색 무제한, 크레딧은 상세 분석 열람 때만 차감.
 // + 통계 배너 + paywall 예고 + sold out 오버레이 + PackRevealModal 통합.
+const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 3;
 
 type PoolItem = {
   pid: number;
@@ -75,6 +76,12 @@ type PoolResponse = {
   pageSize: number;
   freshLagHours: number;
   message?: string;
+};
+
+type DetailAccessSnapshot = {
+  creditBalance: number | null;
+  freeUsed: number;
+  freeLimit: number;
 };
 
 type StatsResponse = {
@@ -370,6 +377,7 @@ const SCRAP_SNAPSHOTS_STORAGE_KEY = "minyoi_scrap_snapshots_v1";
 const LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY = "minyoi_saved_reveal_pids_v1";
 const FIRST_FEED_ONBOARDING_STORAGE_KEY = "minyoi_first_feed_value_hook_v1";
 const FEED_BUDGET_FILTER_STORAGE_KEY = "minyoi_feed_budget_filter_v1";
+const DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY = "minyoi_detail_access_snapshot_v1";
 const MAX_LOCAL_SCRAP_SNAPSHOTS = 500;
 
 function scopedStorageKey(baseKey: string, storageScope: string) {
@@ -394,6 +402,47 @@ function writeBudgetFilterOption(storageScope: string, value: BudgetFilterOption
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(scopedStorageKey(FEED_BUDGET_FILTER_STORAGE_KEY, storageScope), value);
+  } catch {
+    // ignore
+  }
+}
+
+function defaultDetailAccessSnapshot(): DetailAccessSnapshot {
+  return { creditBalance: null, freeUsed: 0, freeLimit: DEFAULT_FREE_DETAIL_ACCESS_LIMIT };
+}
+
+function normalizeDetailAccessSnapshot(value: unknown): DetailAccessSnapshot | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Partial<DetailAccessSnapshot>;
+  const freeLimit = Number(record.freeLimit ?? DEFAULT_FREE_DETAIL_ACCESS_LIMIT);
+  const freeUsed = Number(record.freeUsed ?? 0);
+  const creditBalance = record.creditBalance == null ? null : Number(record.creditBalance);
+  if (!Number.isFinite(freeLimit) || freeLimit <= 0 || !Number.isFinite(freeUsed)) return null;
+  return {
+    creditBalance: creditBalance != null && Number.isFinite(creditBalance) ? creditBalance : null,
+    freeUsed: Math.min(Math.max(0, freeUsed), freeLimit),
+    freeLimit,
+  };
+}
+
+function readDetailAccessSnapshot(storageScope: string): DetailAccessSnapshot {
+  if (typeof window === "undefined") return defaultDetailAccessSnapshot();
+  try {
+    const raw = window.localStorage.getItem(scopedStorageKey(DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY, storageScope));
+    const parsed = raw ? normalizeDetailAccessSnapshot(JSON.parse(raw)) : null;
+    return parsed ?? defaultDetailAccessSnapshot();
+  } catch {
+    return defaultDetailAccessSnapshot();
+  }
+}
+
+function writeDetailAccessSnapshot(storageScope: string, value: DetailAccessSnapshot) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      scopedStorageKey(DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY, storageScope),
+      JSON.stringify(value),
+    );
   } catch {
     // ignore
   }
@@ -826,7 +875,7 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [creditFeedEnabled, setCreditFeedEnabled] = useState(false);
-  const [detailAccessSnapshot, setDetailAccessSnapshot] = useState<{ creditBalance: number | null; freeUsed: number; freeLimit: number } | null>(null);
+  const [detailAccessSnapshot, setDetailAccessSnapshot] = useState<DetailAccessSnapshot>(() => readDetailAccessSnapshot(storageScope));
   const [feedExhausted, setFeedExhausted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
@@ -886,6 +935,11 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
   const [canScrollCategoriesPrev, setCanScrollCategoriesPrev] = useState(false);
   const [canScrollCategoriesNext, setCanScrollCategoriesNext] = useState(false);
 
+  const updateBudgetFilter = useCallback((value: BudgetFilterOption) => {
+    setBudgetFilter(value);
+    writeBudgetFilterOption(storageScope, value);
+  }, [storageScope]);
+
   useEffect(() => {
     const loadedScraps = loadScrapSnapshots();
     const loadedPids = readLocalSavedPidSet();
@@ -937,15 +991,12 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
     if (typeof window === "undefined") return;
     try {
       setBudgetFilter(readBudgetFilterOption(storageScope));
+      setDetailAccessSnapshot(readDetailAccessSnapshot(storageScope));
       setShowFirstFeedOnboarding(window.localStorage.getItem(scopedStorageKey(FIRST_FEED_ONBOARDING_STORAGE_KEY, storageScope)) !== "1");
     } catch {
       setShowFirstFeedOnboarding(false);
     }
   }, [storageScope]);
-
-  useEffect(() => {
-    writeBudgetFilterOption(storageScope, budgetFilter);
-  }, [budgetFilter, storageScope]);
 
   const dismissFirstFeedOnboarding = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -959,9 +1010,9 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
   }, [storageScope]);
 
   const selectFirstFeedBudget = useCallback((value: BudgetFilterOption) => {
-    setBudgetFilter(value);
+    updateBudgetFilter(value);
     dismissFirstFeedOnboarding();
-  }, [dismissFirstFeedOnboarding]);
+  }, [dismissFirstFeedOnboarding, updateBudgetFilter]);
 
   // 필터/정렬 변경 시 URL 갱신
   useEffect(() => {
@@ -1081,7 +1132,11 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
         }
         setCooldown(data.cooldown);
         setCreditFeedEnabled(data.creditFeed === true || data.feedMode === "credit");
-        if (data.detailAccess) setDetailAccessSnapshot(data.detailAccess);
+        if (data.detailAccess) {
+          const nextDetailAccess = normalizeDetailAccessSnapshot(data.detailAccess) ?? defaultDetailAccessSnapshot();
+          setDetailAccessSnapshot(nextDetailAccess);
+          writeDetailAccessSnapshot(storageScope, nextDetailAccess);
+        }
       } else {
         setError(data.message ?? "매물 불러오기 실패");
       }
@@ -1091,7 +1146,7 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
       setRefreshing(false);
       setLoading(false);
     }
-  }, [sort, source]);
+  }, [sort, source, storageScope]);
 
   const loadStats = useCallback(async () => {
     try {
@@ -1231,7 +1286,7 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
 
   const freeDetailRemaining = Math.max(
     0,
-    Number(detailAccessSnapshot?.freeLimit ?? 0) - Number(detailAccessSnapshot?.freeUsed ?? 0),
+    Number(detailAccessSnapshot.freeLimit) - Number(detailAccessSnapshot.freeUsed),
   );
 
   const openItemDetail = useCallback(async (item: PoolItem) => {
@@ -1257,7 +1312,9 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
         const freeUsed = Number.isFinite(Number(data.freeUsed)) ? Number(data.freeUsed) : null;
         const creditBalance = Number.isFinite(Number(data.creditBalance)) ? Number(data.creditBalance) : null;
         if (freeLimit != null && freeUsed != null) {
-          setDetailAccessSnapshot({ creditBalance, freeUsed, freeLimit });
+          const nextDetailAccess = normalizeDetailAccessSnapshot({ creditBalance, freeUsed, freeLimit }) ?? defaultDetailAccessSnapshot();
+          setDetailAccessSnapshot(nextDetailAccess);
+          writeDetailAccessSnapshot(storageScope, nextDetailAccess);
         }
         const isCreditShort = data.error === "insufficient_credits";
         setDetailAccessLimit({
@@ -1285,11 +1342,13 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
         setCreditFeedEnabled(Number(data.creditBalance) > 0);
       }
       if (data.freeLimit != null && data.freeUsed != null) {
-        setDetailAccessSnapshot({
+        const nextDetailAccess = normalizeDetailAccessSnapshot({
           creditBalance: data.creditBalance ?? null,
           freeUsed: data.freeUsed,
           freeLimit: data.freeLimit,
-        });
+        }) ?? defaultDetailAccessSnapshot();
+        setDetailAccessSnapshot(nextDetailAccess);
+        writeDetailAccessSnapshot(storageScope, nextDetailAccess);
       }
       const exactItem = data.item ?? item;
       if (data.item) {
@@ -1535,7 +1594,7 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
                 onClick={() => {
                   setSelectedCategories(new Set());
                   setScrapOnly(false);
-                  setBudgetFilter("all");
+                  updateBudgetFilter("all");
                 }}
                 className="shrink-0 px-1.5 py-1 text-[10px] font-medium text-zinc-500 underline dark:text-zinc-400"
               >
@@ -1548,7 +1607,7 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
           data-budget-filter-select
           value={budgetFilter}
           onChange={(e) => {
-            setBudgetFilter(e.target.value as BudgetFilterOption);
+            updateBudgetFilter(e.target.value as BudgetFilterOption);
             setScrapOnly(false);
           }}
           className="shrink-0 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
