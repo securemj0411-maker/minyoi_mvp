@@ -34,8 +34,11 @@ test("joongna ingest enqueues discovered URLs and claims details separately", ()
   assert.match(ingestSource, /claim_mvp_joongna_detail_queue/);
   assert.match(ingestSource, /markJoongnaDetailQueueDone/);
   assert.match(ingestSource, /markJoongnaDetailQueueFailed/);
+  assert.match(ingestSource, /releaseJoongnaDetailQueuePending/);
   assert.match(ingestSource, /detailQueueClaimed/);
   assert.match(ingestSource, /queue_no_pending_details/);
+  assert.match(ingestSource, /queue_search_only_budget_stop/);
+  assert.match(ingestSource, /JOONGNA_DETAIL_QUEUE_MIN_DETAIL_BUDGET_MS\s*=\s*30_000/);
 });
 
 test("joongna worker logs detail queue counters", () => {
@@ -44,4 +47,5 @@ test("joongna worker logs detail queue counters", () => {
   assert.match(workerRouteSource, /detailQueueClaimed: result\.detailQueueClaimed/);
   assert.match(workerRouteSource, /detailQueueDone: result\.detailQueueDone/);
   assert.match(workerRouteSource, /detailQueueFailed: result\.detailQueueFailed/);
+  assert.match(workerRouteSource, /detailQueueReleased: result\.detailQueueReleased/);
 });

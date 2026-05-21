@@ -39,6 +39,17 @@
   - health `healthy`, reason `active_ingest_ok`.
 - 같은 query 재실행 시 이미 처리한 URL만 발견되어 detailQueueClaimed 0이 됐고, health는 `healthy`, reason `queue_no_pending_details`로 기록됨을 확인했다.
 
+## Follow-up Fix
+- 운영 health 로그에서 한 cron run이 `queueMode=true`, `detailQueueEnqueued=102`, `detailQueueClaimed=80`을 기록했지만 `detailQueueDone=0`, `detailQueueFailed=0`으로 끝난 케이스가 발견됐다.
+- 원인: 검색 phase가 route budget 대부분을 사용한 뒤 detail queue claim까지 해버리면, 실제 detail fetch 전에 budget stop이 걸릴 수 있다.
+- 수정:
+  - detail 처리 최소 예산 30초가 남아 있지 않으면 claim하지 않고 `queue_search_only_budget_stop`으로 healthy no-op 기록.
+  - claim 후 detail loop 중 budget stop이 걸리면 아직 시도하지 않은 claim을 즉시 `pending`으로 release한다.
+  - 운영 로그에 `detailQueueReleased` counter를 추가한다.
+- 검증:
+  - low-budget live run에서 searchUrls 1, detailQueueEnqueued 1, detailQueueClaimed 0, budgetStopped true, health `healthy`, reason `queue_search_only_budget_stop` 확인.
+  - 이전 run에서 남은 expired `processing` 80건은 `pending`으로 수동 release했다. 이후 queue 상태는 done 2, pending 102.
+
 ## Deferred
 - 별도 detail-only endpoint로 route를 완전히 분리하는 작업은 다음 단계로 보류.
 - seller enrichment를 별도 async queue로 빼는 작업도 보류. 지금은 detail claim 후 writable detail에 한해 기존 캐시/라이브 보강을 유지한다.

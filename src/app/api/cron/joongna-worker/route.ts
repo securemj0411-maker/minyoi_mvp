@@ -89,6 +89,7 @@ async function handleJoongnaWorker(req: NextRequest) {
       detailQueueClaimed: result.detailQueueClaimed,
       detailQueueDone: result.detailQueueDone,
       detailQueueFailed: result.detailQueueFailed,
+      detailQueueReleased: result.detailQueueReleased,
       blockedSignals: result.blockedSignals,
       sourceHealthStatus: result.sourceHealthStatus,
       sourceHealthReason: result.sourceHealthReason,
