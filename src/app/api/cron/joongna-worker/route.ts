@@ -14,6 +14,16 @@ import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 
 export const maxDuration = 90;
 
+function envInt(name: string, fallback: number, min: number, max: number): number {
+  const parsed = Number.parseInt(process.env[name] ?? "", 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
+function joongnaWorkerBudgetMs() {
+  return envInt("JOONGNA_WORKER_BUDGET_MS", 75_000, 10_000, 85_000);
+}
+
 async function handleJoongnaWorker(req: NextRequest) {
   const { authOk, authReason } = checkCronAuth(req);
   const meta = buildCronRequestMeta(req, authOk, authReason, "joongna-worker");
@@ -27,12 +37,16 @@ async function handleJoongnaWorker(req: NextRequest) {
     return NextResponse.json(cronGuardSkipBody(guard));
   }
 
+  const budgetMs = joongnaWorkerBudgetMs();
   const staleMarked = await markStaleCollectRuns(loadPipelineRuntimeConfig().staleRunMinutes);
   const run = await startCollectRun({
     ...meta,
     requestMeta: {
       ...meta.requestMeta,
       pipelineMode: "joongna_worker",
+      budgets: {
+        joongna: budgetMs,
+      },
       staleMarkedBeforeRun: staleMarked,
     },
   });
@@ -48,6 +62,7 @@ async function handleJoongnaWorker(req: NextRequest) {
     const result = await runJoongnaIngest({
       params: req.nextUrl.searchParams,
       runId: run.id,
+      deadlineMs: Date.now() + budgetMs,
     });
     await finishCollectRunMinimal(run.id, run.startedAt, {
       collected: result.searchUrls,
@@ -65,6 +80,7 @@ async function handleJoongnaWorker(req: NextRequest) {
       parsedUpserted: result.parsedUpserted,
       marketInvalidationsQueued: result.marketInvalidationsQueued,
       observationInserted: result.observationInserted,
+      budgetStopped: result.budgetStopped,
       sellerProfilesFetched: result.sellerProfilesFetched,
       sellerTransactionsFetched: result.sellerTransactionsFetched,
       sellerCacheHits: result.sellerCacheHits,

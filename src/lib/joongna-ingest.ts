@@ -30,6 +30,7 @@ const JOONGNA_SELLER_FACT_READ_CHUNK_SIZE = 80;
 const DEFAULT_JOONGNA_SELLER_FACT_TTL_MS = 6 * 60 * 60_000;
 const JOONGNA_SEARCH_FAILURE_RATE_DEGRADED_THRESHOLD = 0.15;
 const JOONGNA_DETAIL_SUCCESS_RATE_DEGRADED_THRESHOLD = 0.85;
+const JOONGNA_INGEST_DEADLINE_SAFETY_MS = 20_000;
 
 type ReadyCatalogQuery = {
   query: string;
@@ -71,6 +72,7 @@ export type JoongnaIngestResult = {
   sellerProfilesFetched: number;
   sellerTransactionsFetched: number;
   sellerCacheHits: number;
+  budgetStopped: boolean;
   sourceHealthStatus: "healthy" | "degraded" | "unhealthy";
   sourceHealthReason: string;
 };
@@ -855,9 +857,14 @@ async function insertSourceHealth(input: {
   }]);
 }
 
+function shouldStopForJoongnaDeadline(deadlineMs: number | null | undefined) {
+  return deadlineMs != null && Date.now() >= deadlineMs - JOONGNA_INGEST_DEADLINE_SAFETY_MS;
+}
+
 export async function runJoongnaIngest(options: {
   params?: URLSearchParams;
   runId?: string | null;
+  deadlineMs?: number | null;
 } = {}): Promise<JoongnaIngestResult> {
   const mode = getJoongnaSourceMode();
   const config = await configFromEnvAndParams(options.params);
@@ -883,6 +890,7 @@ export async function runJoongnaIngest(options: {
       sellerProfilesFetched: 0,
       sellerTransactionsFetched: 0,
       sellerCacheHits: 0,
+      budgetStopped: false,
       sourceHealthStatus: "degraded",
       sourceHealthReason: "source_mode_off",
     };
@@ -890,8 +898,13 @@ export async function runJoongnaIngest(options: {
 
   const productUrls = new Set<string>();
   const searchFailures: string[] = [];
+  let budgetStopped = false;
   let searchAttempts = 0;
   for (const query of config.queries) {
+    if (shouldStopForJoongnaDeadline(options.deadlineMs)) {
+      budgetStopped = true;
+      break;
+    }
     searchAttempts += 1;
     try {
       const urls = await fetchJoongnaSearchProductUrls(query, {
@@ -916,6 +929,10 @@ export async function runJoongnaIngest(options: {
   let detail404 = 0;
   let detail5xx = 0;
   for (const url of [...productUrls].slice(0, config.maxDetails)) {
+    if (shouldStopForJoongnaDeadline(options.deadlineMs)) {
+      budgetStopped = true;
+      break;
+    }
     detailAttempts += 1;
     try {
       const detail = await fetchJoongnaDetail(url, config.timeoutMs);
@@ -1008,6 +1025,8 @@ export async function runJoongnaIngest(options: {
       parsedUpserted: parsedRows.length,
       marketInvalidationsQueued,
       observationInserted,
+      budgetStopped,
+      deadlineSafetyMs: JOONGNA_INGEST_DEADLINE_SAFETY_MS,
       sellerProfilesFetched: sellerEnrichment.sellerProfilesFetched,
       sellerTransactionsFetched: sellerEnrichment.sellerTransactionsFetched,
       sellerCacheHits: sellerEnrichment.sellerCacheHits,
@@ -1032,6 +1051,7 @@ export async function runJoongnaIngest(options: {
     parsedUpserted: parsedRows.length,
     marketInvalidationsQueued,
     observationInserted,
+    budgetStopped,
     sellerProfilesFetched: sellerEnrichment.sellerProfilesFetched,
     sellerTransactionsFetched: sellerEnrichment.sellerTransactionsFetched,
     sellerCacheHits: sellerEnrichment.sellerCacheHits,
