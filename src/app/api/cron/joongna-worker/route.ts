@@ -63,6 +63,7 @@ async function handleJoongnaWorker(req: NextRequest) {
       selectedReadyCatalogCategoryCounts: result.selectedReadyCatalogCategoryCounts,
       skippedDetails: result.skippedDetails,
       parsedUpserted: result.parsedUpserted,
+      marketInvalidationsQueued: result.marketInvalidationsQueued,
       observationInserted: result.observationInserted,
       sellerProfilesFetched: result.sellerProfilesFetched,
       sellerTransactionsFetched: result.sellerTransactionsFetched,

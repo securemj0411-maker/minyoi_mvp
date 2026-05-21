@@ -15,7 +15,7 @@ import {
 } from "@/lib/joongna";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import { classifyListing } from "@/lib/pipeline";
-import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 const DEFAULT_SEED_QUERIES = [
   "에어팟맥스",
@@ -66,12 +66,20 @@ export type JoongnaIngestResult = {
   blockedSignals: JoongnaBlockSignal[];
   rawUpserted: number;
   parsedUpserted: number;
+  marketInvalidationsQueued: number;
   observationInserted: number;
   sellerProfilesFetched: number;
   sellerTransactionsFetched: number;
   sellerCacheHits: number;
   sourceHealthStatus: "healthy" | "degraded" | "unhealthy";
   sourceHealthReason: string;
+};
+
+type JoongnaMarketInvalidationEvent = {
+  comparableKey: string;
+  affectedPid: number;
+  parserVersion: string | null;
+  priority: number;
 };
 
 function boundedInt(raw: string | number | null | undefined, fallback: number, min: number, max: number) {
@@ -516,6 +524,59 @@ async function insertRows(table: string, rows: Record<string, unknown>[]) {
   return (await res.json()) as Array<Record<string, unknown>>;
 }
 
+function joongnaMarketInvalidationPriority(comparableKey: string | null | undefined) {
+  const prefix = String(comparableKey ?? "").split("|")[0] ?? "";
+  if (prefix === "shoe" || prefix === "clothing") return 96;
+  if (prefix === "bag") return 86;
+  return 78;
+}
+
+async function enqueueJoongnaMarketInvalidations(events: JoongnaMarketInvalidationEvent[]): Promise<number> {
+  const merged = new Map<string, JoongnaMarketInvalidationEvent>();
+  for (const event of events) {
+    const key = event.comparableKey.trim();
+    if (!key) continue;
+    const existing = merged.get(key);
+    if (!existing || event.priority > existing.priority) {
+      merged.set(key, { ...event, comparableKey: key });
+    }
+  }
+
+  let queued = 0;
+  const failures: Array<{ key: string; error: string }> = [];
+  for (const event of merged.values()) {
+    try {
+      await restFetch(rpcUrl("enqueue_mvp_market_key_invalidation"), {
+        method: "POST",
+        headers: serviceHeaders(),
+        body: jsonBody({
+          p_comparable_key: event.comparableKey,
+          p_reason: "joongna_active_snapshot",
+          p_priority: event.priority,
+          p_affected_pid: event.affectedPid,
+          p_old_comparable_key: null,
+          p_new_comparable_key: event.comparableKey,
+          p_parser_version: event.parserVersion,
+        }),
+      });
+      queued += 1;
+    } catch (err) {
+      failures.push({
+        key: event.comparableKey,
+        error: err instanceof Error ? err.message.slice(0, 300) : String(err).slice(0, 300),
+      });
+    }
+  }
+  if (failures.length > 0) {
+    console.error("joongna market key invalidation enqueue failed", {
+      failed: failures.length,
+      total: merged.size,
+      sample: failures.slice(0, 3),
+    });
+  }
+  return queued;
+}
+
 function listingStateFor(detail: JoongnaDetail) {
   if (detail.productStatus === 0) return "active";
   return "source_nonactive";
@@ -545,6 +606,7 @@ function buildRows(
 ) {
   const rawRows: Record<string, unknown>[] = [];
   const parsedRows: Record<string, unknown>[] = [];
+  const marketInvalidationEvents: JoongnaMarketInvalidationEvent[] = [];
   const observationRows: Record<string, unknown>[] = [];
   const payloadRows: Record<string, unknown>[] = [];
   const sellerRows: Record<string, unknown>[] = [];
@@ -687,6 +749,14 @@ function buildRows(
 
     if (parsed && matched) {
       parsedRows.push(toParsedListingRow(detail.internalPid, parsed));
+      if (!parsed.needsReview && parsed.comparableKey) {
+        marketInvalidationEvents.push({
+          comparableKey: parsed.comparableKey,
+          affectedPid: detail.internalPid,
+          parserVersion: parsed.parserVersion,
+          priority: joongnaMarketInvalidationPriority(parsed.comparableKey),
+        });
+      }
     }
 
     observationRows.push({
@@ -722,6 +792,7 @@ function buildRows(
   return {
     rawRows,
     parsedRows,
+    marketInvalidationEvents,
     observationRows,
     payloadRows,
     sellerRows: dedupeRowsByKey(sellerRows, (row) => `${row.source}:${row.seller_uid}`),
@@ -807,6 +878,7 @@ export async function runJoongnaIngest(options: {
       blockedSignals: [],
       rawUpserted: 0,
       parsedUpserted: 0,
+      marketInvalidationsQueued: 0,
       observationInserted: 0,
       sellerProfilesFetched: 0,
       sellerTransactionsFetched: 0,
@@ -865,7 +937,7 @@ export async function runJoongnaIngest(options: {
   const skippedDetails = details.length - writableDetails.length;
   const sellerEnrichment = await enrichWritableDetailsWithSellerFacts(writableDetails, config.timeoutMs);
   const now = new Date().toISOString();
-  const { rawRows, parsedRows, observationRows, payloadRows, sellerRows } = buildRows(
+  const { rawRows, parsedRows, marketInvalidationEvents, observationRows, payloadRows, sellerRows } = buildRows(
     sellerEnrichment.details,
     now,
     options.runId ?? null,
@@ -879,6 +951,7 @@ export async function runJoongnaIngest(options: {
   if (parsedRows.length > 0) {
     await upsertRows("mvp_listing_parsed", parsedRows, "pid");
   }
+  const marketInvalidationsQueued = await enqueueJoongnaMarketInvalidations(marketInvalidationEvents);
   const observationInserted = await insertObservations(observationRows, payloadRows);
 
   const detailSuccessRate = detailAttempts > 0
@@ -933,6 +1006,7 @@ export async function runJoongnaIngest(options: {
       detail5xxRate: detailAttempts > 0 ? Number((detail5xx / detailAttempts).toFixed(3)) : 0,
       rawUpserted: rawRows.length,
       parsedUpserted: parsedRows.length,
+      marketInvalidationsQueued,
       observationInserted,
       sellerProfilesFetched: sellerEnrichment.sellerProfilesFetched,
       sellerTransactionsFetched: sellerEnrichment.sellerTransactionsFetched,
@@ -956,6 +1030,7 @@ export async function runJoongnaIngest(options: {
     blockedSignals,
     rawUpserted: rawRows.length,
     parsedUpserted: parsedRows.length,
+    marketInvalidationsQueued,
     observationInserted,
     sellerProfilesFetched: sellerEnrichment.sellerProfilesFetched,
     sellerTransactionsFetched: sellerEnrichment.sellerTransactionsFetched,

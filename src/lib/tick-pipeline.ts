@@ -252,6 +252,9 @@ type MarketKeyInvalidationRow = {
   reason: string;
   priority: number;
   event_count: number;
+  last_event_at?: string | null;
+  affected_pid?: number | null;
+  affected_source?: string | null;
 };
 
 type PoolWarmRow = {
@@ -2364,29 +2367,116 @@ function pickMarketStatByCondition(
   return row;
 }
 
-async function loadPendingMarketInvalidations(limit = 200): Promise<MarketKeyInvalidationRow[]> {
+const DEFAULT_MARKET_INVALIDATION_CLAIM_LIMIT = 500;
+const DEFAULT_MARKET_INVALIDATION_PRIORITY_WINDOW = 3000;
+const MARKET_INVALIDATION_READ_PAGE_SIZE = 1000;
+const MARKET_INVALIDATION_FAST_LANE_PREFIXES = new Set(["shoe", "clothing"]);
+const MARKET_INVALIDATION_PATCH_CHUNK_SIZE = 100;
+
+function marketInvalidationPrefix(comparableKey: string | null | undefined): string {
+  return String(comparableKey ?? "").split("|")[0] ?? "";
+}
+
+function marketInvalidationFastLaneBoost(row: MarketKeyInvalidationRow): number {
+  const prefix = marketInvalidationPrefix(row.comparable_key);
+  let boost = 0;
+  if (row.affected_source === "joongna") boost += 100;
+  if (prefix === "shoe") boost += 20;
+  else if (prefix === "clothing") boost += 15;
+  else if (prefix === "bag") boost += 5;
+  return boost;
+}
+
+function compareMarketInvalidations(a: MarketKeyInvalidationRow, b: MarketKeyInvalidationRow): number {
+  const priorityDiff = Number(b.priority ?? 0) - Number(a.priority ?? 0);
+  if (priorityDiff !== 0) return priorityDiff;
+
+  const boostDiff = marketInvalidationFastLaneBoost(b) - marketInvalidationFastLaneBoost(a);
+  if (boostDiff !== 0) return boostDiff;
+
+  const parsedATime = Date.parse(a.last_event_at ?? "");
+  const parsedBTime = Date.parse(b.last_event_at ?? "");
+  const aTime = Number.isFinite(parsedATime) ? parsedATime : Number.MAX_SAFE_INTEGER;
+  const bTime = Number.isFinite(parsedBTime) ? parsedBTime : Number.MAX_SAFE_INTEGER;
+  if (aTime !== bTime) return aTime - bTime;
+
+  return Number(b.event_count ?? 0) - Number(a.event_count ?? 0);
+}
+
+async function loadAffectedSourcesForInvalidations(rows: MarketKeyInvalidationRow[]): Promise<Map<number, string>> {
+  const pids = [...new Set(rows.map((row) => Number(row.affected_pid)).filter(Number.isFinite))];
+  const out = new Map<number, string>();
+  for (const chunk of chunkArray(pids, REST_READ_CHUNK_SIZE)) {
+    const res = await restFetch(`${tableUrl("mvp_raw_listings")}?select=pid,source&pid=in.(${chunk.join(",")})`, { headers: serviceHeaders() });
+    const rawRows = (await res.json()) as Array<{ pid: number; source: string | null }>;
+    for (const row of rawRows) {
+      if (row.source) out.set(Number(row.pid), row.source);
+    }
+  }
+  return out;
+}
+
+async function loadPendingMarketInvalidations(limit = DEFAULT_MARKET_INVALIDATION_CLAIM_LIMIT): Promise<MarketKeyInvalidationRow[]> {
   try {
-    const columns = "comparable_key,reason,priority,event_count";
-    const url = `${tableUrl("mvp_market_key_invalidation")}?select=${columns}&status=eq.pending&order=priority.desc,last_event_at.asc&limit=${limit}`;
-    const res = await restFetch(url, { headers: serviceHeaders() });
-    return (await res.json()) as MarketKeyInvalidationRow[];
+    const claimLimit = boundedInt(
+      process.env.PIPELINE_MARKET_INVALIDATION_CLAIM_LIMIT ?? null,
+      limit,
+      50,
+      1000,
+    );
+    const priorityWindow = boundedInt(
+      process.env.PIPELINE_MARKET_INVALIDATION_PRIORITY_WINDOW ?? null,
+      Math.max(DEFAULT_MARKET_INVALIDATION_PRIORITY_WINDOW, claimLimit * 2),
+      claimLimit,
+      3000,
+    );
+    const columns = "comparable_key,reason,priority,event_count,last_event_at,affected_pid";
+    const rows: MarketKeyInvalidationRow[] = [];
+    for (let offset = 0; offset < priorityWindow; offset += MARKET_INVALIDATION_READ_PAGE_SIZE) {
+      const pageLimit = Math.min(MARKET_INVALIDATION_READ_PAGE_SIZE, priorityWindow - offset);
+      const url = `${tableUrl("mvp_market_key_invalidation")}?select=${columns}&status=eq.pending&order=priority.desc,last_event_at.asc&limit=${pageLimit}&offset=${offset}`;
+      const res = await restFetch(url, { headers: serviceHeaders() });
+      const pageRows = (await res.json()) as MarketKeyInvalidationRow[];
+      rows.push(...pageRows);
+      if (pageRows.length < pageLimit) break;
+    }
+    const affectedSources = await loadAffectedSourcesForInvalidations(rows).catch((err) => {
+      console.error("load invalidation affected sources failed (non-fatal)", err);
+      return new Map<number, string>();
+    });
+    const enriched = rows.map((row) => ({
+      ...row,
+      affected_source: row.affected_pid ? affectedSources.get(Number(row.affected_pid)) ?? null : null,
+    }));
+    return enriched.sort(compareMarketInvalidations).slice(0, claimLimit);
   } catch (err) {
     console.error("load pending market invalidations failed", err);
     return [];
   }
 }
 
+function countMarketInvalidationPrefixes(rows: MarketKeyInvalidationRow[]): Record<string, number> {
+  return rows.reduce<Record<string, number>>((acc, row) => {
+    const prefix = marketInvalidationPrefix(row.comparable_key) || "unknown";
+    acc[prefix] = (acc[prefix] ?? 0) + 1;
+    return acc;
+  }, {});
+}
+
 async function markMarketInvalidationsDone(comparableKeys: string[]): Promise<number> {
   const unique = [...new Set(comparableKeys.filter(Boolean))];
   if (unique.length === 0) return 0;
   try {
-    const encoded = unique.map((key) => encodeURIComponent(key)).join(",");
-    await patchRows("mvp_market_key_invalidation", `comparable_key=in.(${encoded})`, {
-      status: "done",
-      last_recomputed_at: new Date().toISOString(),
-      locked_until: null,
-      last_error: null,
-    });
+    const now = new Date().toISOString();
+    for (const chunk of chunkArray(unique, MARKET_INVALIDATION_PATCH_CHUNK_SIZE)) {
+      const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
+      await patchRows("mvp_market_key_invalidation", `comparable_key=in.(${encoded})`, {
+        status: "done",
+        last_recomputed_at: now,
+        locked_until: null,
+        last_error: null,
+      });
+    }
     return unique.length;
   } catch (err) {
     console.error("mark market invalidations done failed", err);
@@ -3365,6 +3455,14 @@ export async function marketStatsStage(): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
   const pendingInvalidations = await loadPendingMarketInvalidations();
+  const pendingPrefixCounts = countMarketInvalidationPrefixes(pendingInvalidations);
+  stats.timingsMs = {
+    ...(stats.timingsMs ?? {}),
+    market_invalidation_claimed_keys: pendingInvalidations.length,
+    market_invalidation_claimed_joongna_keys: pendingInvalidations.filter((row) => row.affected_source === "joongna").length,
+    market_invalidation_claimed_shoe_keys: pendingPrefixCounts.shoe ?? 0,
+    market_invalidation_claimed_clothing_keys: pendingPrefixCounts.clothing ?? 0,
+  };
   const pendingKeys = new Set(pendingInvalidations.map((row) => row.comparable_key));
   const invalidatedParsedByPid = await loadParsedRowsByComparableKeys([...pendingKeys], config.marketStatsLimit);
   const invalidatedPids = [...invalidatedParsedByPid.keys()];
