@@ -116,6 +116,29 @@ export async function hasDetailAccess(input: {
   return (await loadRateLimitCount(detailAccessBucket(input.userRef, input.pid))) > 0;
 }
 
+export async function getDetailAccessSnapshot(input: {
+  user: User;
+  userRef: string;
+}): Promise<{
+  creditBalance: number | null;
+  freeUsed: number;
+  freeLimit: number;
+}> {
+  const freeUsed = await loadRateLimitCount(freeDetailAccessBucket(input.userRef));
+  if (isAdminUser(input.user)) {
+    return {
+      creditBalance: null,
+      freeUsed,
+      freeLimit: FREE_DETAIL_ACCESS_LIMIT,
+    };
+  }
+  return {
+    creditBalance: await readCreditBalance(input.user, input.userRef),
+    freeUsed,
+    freeLimit: FREE_DETAIL_ACCESS_LIMIT,
+  };
+}
+
 export async function consumeDetailAccess(input: {
   user: User;
   userRef: string;

@@ -9,6 +9,7 @@ import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/prof
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
+import { getDetailAccessSnapshot } from "@/lib/detail-access";
 
 // Wave 338 (Phase 1a — Freemium /explore):
 // 무료 사용자 매물 풀 browsing. 6h 이상 지난 매물만 노출 (유료는 즉시 — Phase 2).
@@ -553,6 +554,7 @@ export async function GET(req: Request) {
 
     const headers = serviceHeaders();
     const credits = await loadUserCredits(headers, userRef);
+    const detailAccess = await getDetailAccessSnapshot({ user: auth.user, userRef });
     const creditFeed = isAdminUser(auth.user) || Number(credits?.balance ?? 0) > 0;
     const cooldown = computeCooldown(credits?.last_free_browse_at ?? null);
     const effectiveCooldown = creditFeed
@@ -566,6 +568,7 @@ export async function GET(req: Request) {
         cooldown,
         feedMode: "free",
         creditFeed: false,
+        detailAccess,
         message: `${Math.ceil(cooldown.remainingSec / 60)}분 후 새 30개 매물을 받을 수 있어요.`,
       }, { status: 200 });
     }
@@ -660,6 +663,7 @@ export async function GET(req: Request) {
       cooldown: nextCooldown,
       feedMode: creditFeed ? "credit" : "free",
       creditFeed,
+      detailAccess,
       total: responseItems.length,
       pageSize: PAGE_SIZE,
       freshLagHours: FRESH_LAG_HOURS,

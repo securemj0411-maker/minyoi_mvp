@@ -54,6 +54,7 @@ import {
   commonMarketplaceSafetyChecks,
   type MarketplaceSafetyFacts,
 } from "@/lib/marketplace-safety";
+import type { DetailEventType } from "@/lib/detail-analytics";
 
 type RevealResult =
   | {
@@ -85,6 +86,7 @@ type Props = {
   onClose: () => void;
   onLinkClicked: (pid: number) => void;
   onFeedback: (pid: number, feedbackType: RevealFeedbackType, note?: string) => void;
+  onTrackEvent?: (pid: number, eventType: DetailEventType, metadata?: Record<string, unknown>) => void;
   currentFeedbackType?: string | null;
   currentSaved?: boolean;
   onSaveToggle?: (pid: number, saved: boolean) => void;
@@ -398,18 +400,6 @@ type BeginnerPurchaseCheck = {
   tone: "amber" | "blue" | "emerald";
 };
 
-function introGuideStep(): BeginnerGuideStep {
-  return {
-    eyebrow: "1. 먼저 걸렀어요",
-    title: "오늘 볼 만한 매물만 남겨뒀어요",
-    metric: "",
-    metricLabel: "",
-    body: "득템잡이가 같은 상품군에서 돈 안 되거나 확인이 필요한 매물을 먼저 걷어냈어요. 이제 이 매물만 차례대로 보면 돼요.",
-    note: "",
-    tone: "intro",
-  };
-}
-
 function marketplaceLabelForCard(card: Pick<RevealCard, "marketplaceLabel" | "marketplaceSource">) {
   if (card.marketplaceLabel) return card.marketplaceLabel;
   return card.marketplaceSource === "joongna" ? "중고나라" : "번개장터";
@@ -457,7 +447,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
 
   if (safety.isJoongna) {
     return {
-      eyebrow: "4. 판매자 신뢰",
+      eyebrow: "3. 판매자 신뢰",
       title: "먼저 상품과 판매자를 같이 봐요",
       metric: safety.sellerTrust.metric,
       metricLabel: safety.sellerTrust.metricLabel,
@@ -470,7 +460,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
 
   if (rating != null && rating >= 4.8 && reviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT) {
     return {
-      eyebrow: "4. 판매자 신뢰",
+      eyebrow: "3. 판매자 신뢰",
       title: "먼저 상품과 판매자를 같이 봐요",
       metric: safety.sellerTrust.metric,
       metricLabel: `평점 ${rating.toFixed(1)}점`,
@@ -484,7 +474,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
 
   if (rating != null && reviewCount > 0) {
     return {
-      eyebrow: "4. 판매자 신뢰",
+      eyebrow: "3. 판매자 신뢰",
       title: "먼저 상품과 판매자를 같이 봐요",
       metric: safety.sellerTrust.metric,
       metricLabel: `평점 ${rating.toFixed(1)}점`,
@@ -499,7 +489,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   return {
-    eyebrow: "4. 판매자 신뢰",
+    eyebrow: "3. 판매자 신뢰",
     title: "먼저 상품과 판매자를 같이 봐요",
     metric: safety.sellerTrust.metric,
     metricLabel: rating == null ? "평점 없음" : `평점 ${rating.toFixed(1)}점`,
@@ -655,7 +645,7 @@ function purchaseCheckGuideStep(card: RevealCard): BeginnerGuideStep {
   const checks = beginnerPurchaseChecks(card);
   const first = checks[0];
   return {
-    eyebrow: "7. 구매 전 체크",
+    eyebrow: "6. 구매 전 체크",
     title: "구매 전에 이것만 물어보면 돼요",
     metric: `${checks.length.toLocaleString("ko-KR")}개 체크`,
     metricLabel: first ? first.title : "구매 전 질문",
@@ -691,7 +681,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
         : `${groupLabel} 기준과 거의 비슷한 가격이에요.`;
 
     return {
-      eyebrow: "2. 비교 매물",
+      eyebrow: "1. 비교 매물",
       title,
       metric,
       metricLabel: `비슷한 상태 시세 ${krw(median)} · 이 매물 ${krw(card.price)}`,
@@ -707,7 +697,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   return {
-    eyebrow: "2. 비교 매물",
+    eyebrow: "1. 비교 매물",
     title: "시세 표본을 더 모으는 중이에요",
     metric: "표본 부족",
     metricLabel: market?.label ?? card.skuName,
@@ -742,7 +732,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
     const label = velocityHoursLabel(velocity.medianHoursToSold);
     const dailySold = dailySoldCountLabel(velocity.sold7dCount);
     return {
-      eyebrow: "5. 판매 속도",
+      eyebrow: "4. 판매 속도",
       title: `되팔면 보통 ${label} 안에 팔리는 편이에요`,
       metric: label,
       metricLabel: `동일 모델 하루 평균 판매량 ${dailySold}`,
@@ -758,7 +748,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
       ? velocityHoursLabel(velocity.medianHoursToSold)
       : `${velocity.sold7dCount.toLocaleString("ko-KR")}건`;
     return {
-      eyebrow: "5. 판매 속도",
+      eyebrow: "4. 판매 속도",
       title: "거래 기록이 적어서 참고용으로만 봐요",
       metric: label,
       metricLabel: `7일 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 — 표본 부족`,
@@ -771,7 +761,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
   // Wave 394.7.ab: marketBasis 자체가 안 채워졌으면 lazy-fill 진행 중. 정직 카피.
   if (analysisPending) {
     return {
-      eyebrow: "5. 판매 속도",
+      eyebrow: "4. 판매 속도",
       title: "거래 기록 데이터를 받는 중이에요",
       metric: "잠시만요",
       metricLabel: "분석 진행 중",
@@ -783,7 +773,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
 
   // Wave 394.7.ab: 판매 기록 자체 부족 — 정직 카피 ("수집 중" 단어 X).
   return {
-    eyebrow: "5. 판매 속도",
+    eyebrow: "4. 판매 속도",
     title: marketSoldSample > 0 ? "거래 기록은 있지만 판매까지 걸린 시간은 부족해요" : "이 모델은 거래 기록 표본이 부족해요",
     metric: marketSoldSample > 0 ? `${marketSoldSample.toLocaleString("ko-KR")}건` : (marketActiveSample > 0 ? `${marketActiveSample.toLocaleString("ko-KR")}건` : "—"),
     metricLabel: marketSoldSample > 0 ? "비슷한 거래 기록" : (marketActiveSample > 0 ? "현재 비교 매물" : "표본 부족"),
@@ -803,7 +793,7 @@ function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
   const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} (${krw(snapshot.sellingFee)})`;
 
   return {
-    eyebrow: "6. 최종 순익",
+    eyebrow: "5. 최종 순익",
     title: "최종으로 손에 남는 돈을 봐요",
     metric: displayProfitRange(card),
     metricLabel: "매입가·배송비·수수료 반영",
@@ -824,7 +814,7 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   const betterChannel = daangnProfit > marketplaceProfit ? "당근 직거래가 더 남을 수 있지만" : "중고 마켓 재판매는";
 
   return {
-    eyebrow: "3. 되팔 곳",
+    eyebrow: "2. 되팔 곳",
     title: "팔 곳에 따라 남는 돈이 달라요",
     metric: displayProfitRange(card),
     metricLabel: "중고 마켓 기준 예상 차익",
@@ -863,8 +853,9 @@ function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
   // Wave 394.7.z (사용자 피드백): 구매 전 체크 #2 → 끝쪽으로. 흐름 =
   //   신뢰(셀러) → 시세 사실(비교/추이/속도) → 돈(매입/리셀/채널) → "사기로 했네, 그럼 뭐 확인할까" (구매 전 체크)
   //   → 요약. 사용자 의사결정 순서 그대로.
+  // Wave 500: "오늘 걸러낸 매물" 가치는 첫 방문 피드 온보딩으로 이동.
+  // 상세 쉬운모드는 반복 피로를 줄이기 위해 바로 이 매물의 판단 근거부터 시작한다.
   return [
-    introGuideStep(),
     marketCompareGuideStep(card),
     channelGuideStep(card),
     sellerTrustGuideStep(card),
@@ -5193,7 +5184,6 @@ function BeginnerGuideWalkthrough({
               </p>
             ) : null}
 
-            {step.tone === "intro" ? <BeginnerGuideSafetyFilterNote card={card} variant="intro" /> : null}
             <BeginnerGuideContextNote note={step.valueNote} tone={step.tone} />
 
             {step.tone === "trust" ? (
@@ -5805,9 +5795,11 @@ function ModalActionFooter({
 function FixedBunjangFooter({
   card,
   onLinkClicked,
+  onTrackEvent,
 }: {
   card: RevealCard;
   onLinkClicked: (pid: number) => void;
+  onTrackEvent?: (pid: number, eventType: DetailEventType, metadata?: Record<string, unknown>) => void;
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const safety = marketplaceSafetyForCard(card);
@@ -5822,6 +5814,7 @@ function FixedBunjangFooter({
         ? `후기 ${sellerReviewCount.toLocaleString("ko-KR")}건이라 ${safety.paymentLabel}로만 진행하는 게 좋아요.`
         : `후기 없는 판매자일 수 있어요. ${safety.paymentLabel} 가능 여부를 먼저 확인하세요.`;
   const handleConfirmClick = () => {
+    onTrackEvent?.(card.pid, "original_clicked", { marketplace: marketplaceLabel });
     onLinkClicked(card.pid);
     setConfirmOpen(false);
   };
@@ -5840,7 +5833,10 @@ function FixedBunjangFooter({
     >
       <button
         type="button"
-        onClick={() => setConfirmOpen(true)}
+        onClick={() => {
+          onTrackEvent?.(card.pid, "original_confirm_opened", { marketplace: marketplaceLabel });
+          setConfirmOpen(true);
+        }}
         style={{
           display: "flex",
           alignItems: "center",
@@ -5951,7 +5947,10 @@ function FixedBunjangFooter({
               </a>
               <button
                 type="button"
-                onClick={() => setConfirmOpen(false)}
+                onClick={() => {
+                  onTrackEvent?.(card.pid, "original_cancelled", { marketplace: marketplaceLabel });
+                  setConfirmOpen(false);
+                }}
                 className="flex min-h-[46px] items-center justify-center rounded-[16px] bg-white/86 px-4 text-[14px] font-black text-[#344136] ring-1 ring-[#e6dece] transition active:scale-[0.99] dark:bg-zinc-950/60 dark:text-zinc-100 dark:ring-zinc-800"
               >
                 더 살펴볼래요
@@ -6102,6 +6101,7 @@ export default function PackRevealModal({
   onClose,
   onLinkClicked,
   onFeedback,
+  onTrackEvent,
   currentFeedbackType,
   currentSaved,
   onSaveToggle,
@@ -6223,34 +6223,64 @@ export default function PackRevealModal({
     }
     requestRevealAnalysis(activeRevealPid);
     setBeginnerGuideStep(0);
-    setBeginnerGuideVisible(shouldAutoShowBeginnerGuide(activeRevealPid));
-  }, [open, loading, result?.result, activeRevealPid, requestRevealAnalysis]);
+    const shouldShow = shouldAutoShowBeginnerGuide(activeRevealPid);
+    setBeginnerGuideVisible(shouldShow);
+    if (shouldShow) {
+      onTrackEvent?.(activeRevealPid, "easy_mode_started", { trigger: "auto" });
+    }
+  }, [open, loading, result?.result, activeRevealPid, onTrackEvent, requestRevealAnalysis]);
+
+  useEffect(() => {
+    if (!guideModeActive || !activeRevealCard || activeRevealPid == null) return;
+    const steps = beginnerGuideSteps(activeRevealCard);
+    const step = steps[Math.max(0, Math.min(beginnerGuideStep, steps.length - 1))];
+    onTrackEvent?.(activeRevealPid, "easy_mode_step_view", {
+      stepIndex: beginnerGuideStep,
+      stepTotal: steps.length,
+      tone: step?.tone ?? "",
+      title: step?.title ?? "",
+    });
+  }, [activeRevealCard, activeRevealPid, beginnerGuideStep, guideModeActive, onTrackEvent]);
 
   const skipBeginnerGuide = useCallback(() => {
     recordBeginnerGuideSkipped(activeRevealPid);
+    if (activeRevealPid != null) {
+      onTrackEvent?.(activeRevealPid, "easy_mode_skipped", { stepIndex: beginnerGuideStep });
+      onTrackEvent?.(activeRevealPid, "detail_report_opened", { source: "easy_mode_skip" });
+    }
     setBeginnerGuideVisible(false);
     setBeginnerGuideStep(0);
     window.requestAnimationFrame(() => resetDetailScroll("auto"));
-  }, [activeRevealPid, resetDetailScroll]);
+  }, [activeRevealPid, beginnerGuideStep, onTrackEvent, resetDetailScroll]);
 
   const advanceBeginnerGuide = useCallback(() => {
     if (!activeRevealCard) return;
     const maxIndex = beginnerGuideSteps(activeRevealCard).length - 1;
     if (beginnerGuideStep >= maxIndex) {
       recordBeginnerGuideCompleted(activeRevealPid);
+      if (activeRevealPid != null) {
+        onTrackEvent?.(activeRevealPid, "easy_mode_completed", { stepTotal: maxIndex + 1 });
+        onTrackEvent?.(activeRevealPid, "detail_report_opened", { source: "easy_mode_complete" });
+      }
       setBeginnerGuideVisible(false);
       setBeginnerGuideStep(0);
       window.requestAnimationFrame(() => resetDetailScroll("auto"));
       return;
     }
+    if (activeRevealPid != null) {
+      onTrackEvent?.(activeRevealPid, "easy_mode_next", { from: beginnerGuideStep, to: Math.min(beginnerGuideStep + 1, maxIndex) });
+    }
     setBeginnerGuideStep((prev) => Math.min(prev + 1, maxIndex));
     window.requestAnimationFrame(() => resetDetailScroll("auto"));
-  }, [activeRevealCard, activeRevealPid, beginnerGuideStep, resetDetailScroll]);
+  }, [activeRevealCard, activeRevealPid, beginnerGuideStep, onTrackEvent, resetDetailScroll]);
 
   const retreatBeginnerGuide = useCallback(() => {
+    if (activeRevealPid != null) {
+      onTrackEvent?.(activeRevealPid, "easy_mode_prev", { from: beginnerGuideStep, to: Math.max(0, beginnerGuideStep - 1) });
+    }
     setBeginnerGuideStep((prev) => Math.max(0, prev - 1));
     window.requestAnimationFrame(() => resetDetailScroll("auto"));
-  }, [resetDetailScroll]);
+  }, [activeRevealPid, beginnerGuideStep, onTrackEvent, resetDetailScroll]);
 
   // Wave 76: loading 종료 후 LoadingStage를 잠깐 더 보여줘서 100% 도달 + smooth
   // 카드 reveal. 이전엔 응답 도착 시 중간 % 상태에서 갑자기 카드 노출됐음.
@@ -6284,8 +6314,10 @@ export default function PackRevealModal({
     requestRevealAnalysis(activeRevealCard.pid);
     setBeginnerGuideStep(0);
     setBeginnerGuideVisible(true);
+    onTrackEvent?.(activeRevealCard.pid, "easy_mode_reopened", { trigger: "easy_button" });
+    onTrackEvent?.(activeRevealCard.pid, "easy_mode_started", { trigger: "manual" });
     window.requestAnimationFrame(() => resetDetailScroll("auto"));
-  }, [activeRevealCard, closePreviewPanel, requestRevealAnalysis, resetDetailScroll]);
+  }, [activeRevealCard, closePreviewPanel, onTrackEvent, requestRevealAnalysis, resetDetailScroll]);
 
   const handleClose = useCallback(() => {
     closePreviewPanel();
@@ -6690,6 +6722,7 @@ export default function PackRevealModal({
           <FixedBunjangFooter
             card={result.reveals[0]}
             onLinkClicked={onLinkClicked}
+            onTrackEvent={onTrackEvent}
           />
         ) : null}
       </div>

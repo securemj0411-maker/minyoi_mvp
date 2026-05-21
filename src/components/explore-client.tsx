@@ -10,6 +10,7 @@ import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, Hou
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import KakaoLogo from "@/components/kakao-logo";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
+import type { DetailEventType } from "@/lib/detail-analytics";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 
@@ -65,6 +66,11 @@ type PoolResponse = {
   cooldown: { canRefresh: boolean; remainingSec: number; nextAvailableAt: string | null };
   feedMode?: "free" | "credit";
   creditFeed?: boolean;
+  detailAccess?: {
+    creditBalance: number | null;
+    freeUsed: number;
+    freeLimit: number;
+  };
   total: number;
   pageSize: number;
   freshLagHours: number;
@@ -75,6 +81,24 @@ type StatsResponse = {
   caughtToday: number;
   freshLocked: number;
   freshLagHours: number;
+};
+
+type SafetyStatsResponse = {
+  stats?: {
+    total_reviewed_7d?: number;
+    profit_low_7d?: number;
+    stat_missing_7d?: number;
+    fake_or_lock_7d?: number;
+    suspicious_price_7d?: number;
+    needs_review_7d?: number;
+    listing_parts_7d?: number;
+    listing_damaged_7d?: number;
+    listing_accessory_7d?: number;
+    listing_callout_7d?: number;
+    listing_commercial_7d?: number;
+    listing_buying_7d?: number;
+    listing_multi_7d?: number;
+  };
 };
 
 type DetailAccessResponse = {
@@ -106,6 +130,11 @@ type DetailAccessValueSummary = {
   cautionCount: number;
   estimatedMinutesSaved: number;
 };
+
+function createDetailSessionId(pid: number) {
+  const rand = Math.random().toString(36).slice(2, 8);
+  return `detail:${pid}:${Date.now().toString(36)}:${rand}`;
+}
 
 function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
@@ -321,6 +350,7 @@ function lockedPreviewTitle(item: PoolItem) {
 
 type SortOption = "profit_desc" | "latest" | "price_asc";
 type SourceOption = "all" | "bunjang" | "joongna";
+type BudgetFilterOption = "all" | "150000" | "300000" | "500000";
 
 const SOURCE_OPTIONS: Array<{ value: SourceOption; label: string }> = [
   { value: "all", label: "출처 전체" },
@@ -328,9 +358,86 @@ const SOURCE_OPTIONS: Array<{ value: SourceOption; label: string }> = [
   { value: "joongna", label: "중고나라" },
 ];
 
+const BUDGET_FILTER_OPTIONS: Array<{ value: BudgetFilterOption; label: string; shortLabel: string; max: number | null }> = [
+  { value: "all", label: "상관없음", shortLabel: "예산 전체", max: null },
+  { value: "150000", label: "15만원 이하", shortLabel: "15만원↓", max: 150000 },
+  { value: "300000", label: "30만원 이하", shortLabel: "30만원↓", max: 300000 },
+  { value: "500000", label: "50만원 이하", shortLabel: "50만원↓", max: 500000 },
+];
+const MIN_BUDGET_FILTER_RESULTS = 6;
+
 const SCRAP_SNAPSHOTS_STORAGE_KEY = "minyoi_scrap_snapshots_v1";
 const LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY = "minyoi_saved_reveal_pids_v1";
+const FIRST_FEED_ONBOARDING_STORAGE_KEY = "minyoi_first_feed_value_hook_v1";
+const FEED_BUDGET_FILTER_STORAGE_KEY = "minyoi_feed_budget_filter_v1";
 const MAX_LOCAL_SCRAP_SNAPSHOTS = 500;
+
+function scopedStorageKey(baseKey: string, storageScope: string) {
+  return `${baseKey}:${storageScope || "anonymous"}`;
+}
+
+function isBudgetFilterOption(value: string | null): value is BudgetFilterOption {
+  return value === "all" || value === "150000" || value === "300000" || value === "500000";
+}
+
+function readBudgetFilterOption(storageScope: string): BudgetFilterOption {
+  if (typeof window === "undefined") return "all";
+  try {
+    const raw = window.localStorage.getItem(scopedStorageKey(FEED_BUDGET_FILTER_STORAGE_KEY, storageScope));
+    return isBudgetFilterOption(raw) ? raw : "all";
+  } catch {
+    return "all";
+  }
+}
+
+function writeBudgetFilterOption(storageScope: string, value: BudgetFilterOption) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(scopedStorageKey(FEED_BUDGET_FILTER_STORAGE_KEY, storageScope), value);
+  } catch {
+    // ignore
+  }
+}
+
+function budgetFilterOption(value: BudgetFilterOption) {
+  return BUDGET_FILTER_OPTIONS.find((option) => option.value === value) ?? BUDGET_FILTER_OPTIONS[0];
+}
+
+function safetyStatNumber(value: unknown) {
+  const n = Number(value ?? 0);
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
+}
+
+function safetyRowsForExplore(stats: SafetyStatsResponse["stats"] | null | undefined) {
+  if (!stats) {
+    return [
+      { label: "돈 안 되는 것", value: null as number | null },
+      { label: "거래 주의 신호", value: null as number | null },
+      { label: "상품 확인 필요", value: null as number | null },
+    ];
+  }
+  const lowProfit = safetyStatNumber(stats.profit_low_7d) + safetyStatNumber(stats.stat_missing_7d);
+  const caution = safetyStatNumber(stats.fake_or_lock_7d) + safetyStatNumber(stats.suspicious_price_7d);
+  const unclear =
+    safetyStatNumber(stats.needs_review_7d) +
+    safetyStatNumber(stats.listing_parts_7d) +
+    safetyStatNumber(stats.listing_damaged_7d) +
+    safetyStatNumber(stats.listing_accessory_7d) +
+    safetyStatNumber(stats.listing_callout_7d) +
+    safetyStatNumber(stats.listing_commercial_7d) +
+    safetyStatNumber(stats.listing_buying_7d) +
+    safetyStatNumber(stats.listing_multi_7d);
+  return [
+    { label: "돈 안 되는 것", value: lowProfit },
+    { label: "거래 주의 신호", value: caution },
+    { label: "상품 확인 필요", value: unclear },
+  ];
+}
+
+function formatStatMaybe(value: number | null) {
+  if (value == null) return "확인 중";
+  return `${value.toLocaleString("ko-KR")}건`;
+}
 
 function isScrappedPoolItem(value: unknown): value is ScrappedPoolItem {
   if (!value || typeof value !== "object") return false;
@@ -568,7 +675,136 @@ function DetailAccessPaywallModal({
   );
 }
 
-export default function ExploreClient() {
+function FirstFeedOnboardingCard({
+  stats,
+  statsLoaded,
+  selectedBudget,
+  onSelectBudget,
+  onDismiss,
+}: {
+  stats: SafetyStatsResponse["stats"] | null;
+  statsLoaded: boolean;
+  selectedBudget: BudgetFilterOption;
+  onSelectBudget: (value: BudgetFilterOption) => void;
+  onDismiss: () => void;
+}) {
+  const [step, setStep] = useState(0);
+  const totalReviewed = stats ? safetyStatNumber(stats.total_reviewed_7d) : 0;
+  const rows = safetyRowsForExplore(stats);
+  const reviewedLabel = statsLoaded && totalReviewed > 0
+    ? `${totalReviewed.toLocaleString("ko-KR")}건`
+    : "확인 중";
+
+  return (
+    <section
+      data-first-feed-onboarding
+      className="fixed inset-0 z-[90] flex bg-[#f7f3ea] text-[#172019] dark:bg-zinc-950 dark:text-zinc-50"
+    >
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-[520px] flex-col px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-[calc(env(safe-area-inset-top)+18px)]">
+        <div className="flex items-center justify-between">
+          <div className="flex gap-1.5" aria-label={`${step + 1}/2`}>
+            {[0, 1].map((idx) => (
+              <span
+                key={idx}
+                className={`h-1.5 rounded-full transition-all ${idx === step ? "w-7 bg-[#3182f6]" : "w-1.5 bg-zinc-300 dark:bg-zinc-700"}`}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="min-h-9 rounded-full px-3 text-[13px] font-black text-zinc-400 transition hover:bg-black/5 hover:text-zinc-700 dark:hover:bg-white/10 dark:hover:text-zinc-100"
+          >
+            닫기
+          </button>
+        </div>
+
+        {step === 0 ? (
+          <div className="flex flex-1 flex-col justify-center pb-24">
+            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">첫 피드 준비</div>
+            <h2 className="mt-3 break-keep text-[34px] font-black leading-[1.12] tracking-tight sm:text-[42px]">
+              오늘 볼 만한
+              <br />
+              후보만 남겼어요
+            </h2>
+            <p className="mt-5 break-keep text-[16px] font-bold leading-7 text-zinc-600 dark:text-zinc-300">
+              전체 추천 풀 <span className="font-black text-[#3182f6] dark:text-blue-300">{reviewedLabel}</span> 중에서
+              바로 보기 어려운 매물은 먼저 걷어냈어요.
+            </p>
+
+            <div className="mt-9 space-y-5">
+              {rows.map((row) => (
+                <div key={row.label} className="flex items-end justify-between border-b border-zinc-200/80 pb-4 dark:border-zinc-800">
+                  <div className="text-[16px] font-black text-zinc-700 dark:text-zinc-200">{row.label}</div>
+                  <div className="text-[30px] font-black leading-none text-[#0a9f69] dark:text-emerald-300">
+                    {formatStatMaybe(row.value)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-1 flex-col justify-center pb-24">
+            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">처음 보는 기준</div>
+            <h2 className="mt-3 break-keep text-[34px] font-black leading-[1.12] tracking-tight sm:text-[42px]">
+              감당 가능한
+              <br />
+              금액부터 볼까요?
+            </h2>
+            <p className="mt-5 break-keep text-[16px] font-bold leading-7 text-zinc-600 dark:text-zinc-300">
+              후보가 적으면 좋은 매물을 놓치지 않게 전체 피드도 같이 보여드려요. 예산은 위 필터에서 언제든 바꿀 수 있어요.
+            </p>
+
+            <div className="mt-9 grid gap-2">
+              {BUDGET_FILTER_OPTIONS.map((option) => {
+                const active = selectedBudget === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => onSelectBudget(option.value)}
+                    className={`flex min-h-[58px] items-center justify-between rounded-[18px] px-4 text-left text-[16px] font-black transition ${
+                      active
+                        ? "bg-[#3182f6] text-white shadow-[0_14px_32px_rgba(49,130,246,0.25)]"
+                        : "bg-white text-zinc-900 ring-1 ring-zinc-200 active:scale-[0.99] dark:bg-zinc-900 dark:text-zinc-50 dark:ring-zinc-800"
+                    }`}
+                  >
+                    <span>{option.label}</span>
+                    <span className={active ? "text-white/80" : "text-zinc-300"}>→</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="fixed bottom-0 left-0 right-0 z-[91] bg-[linear-gradient(180deg,rgba(247,243,234,0)_0%,#f7f3ea_34%)] px-6 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-8 dark:bg-[linear-gradient(180deg,rgba(9,9,11,0)_0%,#09090b_34%)]">
+          <div className="mx-auto max-w-[520px]">
+            {step === 0 ? (
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-[#3182f6] text-[16px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] active:scale-[0.99]"
+              >
+                내 예산 맞춰보기
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onSelectBudget("all")}
+                className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-zinc-950 text-[16px] font-black text-white shadow-[0_14px_34px_rgba(24,24,27,0.18)] active:scale-[0.99] dark:bg-white dark:text-zinc-950"
+              >
+                전체 피드로 시작하기
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function ExploreClient({ storageScope = "anonymous" }: { storageScope?: string }) {
   const [items, setItems] = useState<PoolItem[]>([]);
   // Wave 391: loadPool에서 items deps에 박으면 infinite loop. ref로 fresh 접근.
   const itemsRef = useRef<PoolItem[]>([]);
@@ -578,9 +814,12 @@ export default function ExploreClient() {
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
   const [cooldown, setCooldown] = useState<PoolResponse["cooldown"] | null>(null);
   const [stats, setStats] = useState<StatsResponse | null>(null);
+  const [safetyStats, setSafetyStats] = useState<SafetyStatsResponse["stats"] | null>(null);
+  const [safetyStatsLoaded, setSafetyStatsLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [creditFeedEnabled, setCreditFeedEnabled] = useState(false);
+  const [detailAccessSnapshot, setDetailAccessSnapshot] = useState<{ creditBalance: number | null; freeUsed: number; freeLimit: number } | null>(null);
   const [feedExhausted, setFeedExhausted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
@@ -593,6 +832,7 @@ export default function ExploreClient() {
   const [legacySavedPids, setLegacySavedPids] = useState<Set<number>>(() => new Set());
   const [now, setNow] = useState(Date.now());
   const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
+  const detailSessionIdRef = useRef<string | null>(null);
   // Wave 346: refresh modal — 기다리기/충전 옵션
   // Wave 358: 슬라이드 업 애니메이션 — open/close 사이 250ms transition.
   const [refreshModalOpen, setRefreshModalOpen] = useState(false);
@@ -632,6 +872,8 @@ export default function ExploreClient() {
     const raw = searchParams.get("source");
     return raw === "bunjang" || raw === "joongna" ? raw : "all";
   });
+  const [budgetFilter, setBudgetFilter] = useState<BudgetFilterOption>(() => readBudgetFilterOption(storageScope));
+  const [showFirstFeedOnboarding, setShowFirstFeedOnboarding] = useState(false);
   const [scrapOnly, setScrapOnly] = useState(() => searchParams.get("view") === "scrap");
   const categoryScrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollCategoriesPrev, setCanScrollCategoriesPrev] = useState(false);
@@ -684,6 +926,36 @@ export default function ExploreClient() {
     window.setTimeout(updateCategoryScrollButtons, 240);
   }, [updateCategoryScrollButtons]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      setBudgetFilter(readBudgetFilterOption(storageScope));
+      setShowFirstFeedOnboarding(window.localStorage.getItem(scopedStorageKey(FIRST_FEED_ONBOARDING_STORAGE_KEY, storageScope)) !== "1");
+    } catch {
+      setShowFirstFeedOnboarding(false);
+    }
+  }, [storageScope]);
+
+  useEffect(() => {
+    writeBudgetFilterOption(storageScope, budgetFilter);
+  }, [budgetFilter, storageScope]);
+
+  const dismissFirstFeedOnboarding = useCallback(() => {
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem(scopedStorageKey(FIRST_FEED_ONBOARDING_STORAGE_KEY, storageScope), "1");
+      } catch {
+        // ignore
+      }
+    }
+    setShowFirstFeedOnboarding(false);
+  }, [storageScope]);
+
+  const selectFirstFeedBudget = useCallback((value: BudgetFilterOption) => {
+    setBudgetFilter(value);
+    dismissFirstFeedOnboarding();
+  }, [dismissFirstFeedOnboarding]);
+
   // 필터/정렬 변경 시 URL 갱신
   useEffect(() => {
     const params = new URLSearchParams();
@@ -709,9 +981,48 @@ export default function ExploreClient() {
 
   const canRefresh = creditFeedEnabled || remainingSec === 0;
 
+  const trackDetailEvent = useCallback((
+    pid: number,
+    eventType: DetailEventType,
+    metadata?: Record<string, unknown>,
+    sessionId = detailSessionIdRef.current,
+  ) => {
+    if (!Number.isFinite(pid)) return;
+    const body = {
+      pid,
+      eventType,
+      sessionId,
+      metadata: metadata ?? {},
+    };
+    void fetch("/api/packs/reveals/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      cache: "no-store",
+      keepalive: JSON.stringify(body).length < 6000,
+    }).catch(() => {});
+  }, []);
+
+  const beginDetailSession = useCallback((
+    item: PoolItem,
+    metadata: Record<string, unknown>,
+  ) => {
+    const sessionId = createDetailSessionId(item.pid);
+    detailSessionIdRef.current = sessionId;
+    setSelectedCard(poolItemToRevealCard(item));
+    trackDetailEvent(item.pid, "detail_opened", {
+      source: item.marketplaceSource ?? "bunjang",
+      category: item.category,
+      conditionClass: item.conditionClass,
+      price: item.price,
+      expectedProfit: profitAvg(item),
+      ...metadata,
+    }, sessionId);
+  }, [trackDetailEvent]);
+
   // Wave 353: 카테고리 필터는 클라이언트 사이드 (서버 → 항상 다양화된 30개 풀, 클라가 필터링).
   // 정렬은 백엔드 유지 — 풀 구성 자체가 달라짐 (latest = 최신 30 vs profit_desc = 차익 상위 30).
-  // 2026-05-21: 예산/성향 질문 제거. 희귀 pool이라 기본은 전체 후보를 최대한 많이 보여준다.
+  // 2026-05-21: 서버 예산/성향 질문 제거. 희귀 pool이라 API는 전체 후보를 최대한 많이 가져오고, 예산은 클라이언트에서만 우선 필터링한다.
   const loadPool = useCallback(async (
     refresh: boolean,
     options?: { autoScrollNew?: boolean },
@@ -763,6 +1074,7 @@ export default function ExploreClient() {
         }
         setCooldown(data.cooldown);
         setCreditFeedEnabled(data.creditFeed === true || data.feedMode === "credit");
+        if (data.detailAccess) setDetailAccessSnapshot(data.detailAccess);
       } else {
         setError(data.message ?? "매물 불러오기 실패");
       }
@@ -783,10 +1095,29 @@ export default function ExploreClient() {
     }
   }, []);
 
-  // 초기 1회 통계 fetch.
+  const loadSafetyStats = useCallback(async () => {
+    try {
+      const res = await fetch("/api/public/safety-stats", { cache: "no-store" });
+      if (res.ok) {
+        const data = (await res.json()) as SafetyStatsResponse;
+        setSafetyStats(data.stats ?? null);
+      }
+    } catch {
+      // 첫 방문 가치 카드 통계 실패는 피드 로딩을 막지 않는다.
+    } finally {
+      setSafetyStatsLoaded(true);
+    }
+  }, []);
+
+  // 초기 1회 통계 fetch. 서버 예산/성향 게이트 제거 상태를 유지한다.
   useEffect(() => {
     void loadStats();
   }, [loadStats]);
+
+  useEffect(() => {
+    if (!showFirstFeedOnboarding || safetyStatsLoaded) return;
+    void loadSafetyStats();
+  }, [loadSafetyStats, safetyStatsLoaded, showFirstFeedOnboarding]);
 
   // Wave 394.7.j: 더 찾아보기 후 새 매물 첫 카드로 자동 스크롤.
   useEffect(() => {
@@ -825,9 +1156,16 @@ export default function ExploreClient() {
   // category가 null이면 selectedCategories 활성 시 제외 (안전).
   const displayItems = useMemo(() => {
     if (scrapOnly) return scrapItems;
-    if (selectedCategories.size === 0) return items;
-    return items.filter((it) => it.category != null && selectedCategories.has(it.category));
-  }, [items, scrapItems, scrapOnly, selectedCategories]);
+    const categoryFiltered = selectedCategories.size === 0
+      ? items
+      : items.filter((it) => it.category != null && selectedCategories.has(it.category));
+    const budget = budgetFilterOption(budgetFilter);
+    if (!budget.max) return categoryFiltered;
+    const budgetFiltered = categoryFiltered.filter((it) => it.price > 0 && it.price <= budget.max!);
+    // Pool이 희귀하므로 예산 필터가 화면을 1~3개로 죽이면 첫 경험이 망가진다.
+    // 최소 후보가 있을 때만 좁히고, 부족하면 전체 후보를 유지한다.
+    return budgetFiltered.length >= MIN_BUDGET_FILTER_RESULTS ? budgetFiltered : categoryFiltered;
+  }, [budgetFilter, items, scrapItems, scrapOnly, selectedCategories]);
 
   // PackRevealModal용 result wrapper (single card)
   const modalResult: RevealResult | null = useMemo(() => {
@@ -884,11 +1222,16 @@ export default function ExploreClient() {
     }));
   }, [items, selectedCard]);
 
+  const freeDetailRemaining = Math.max(
+    0,
+    Number(detailAccessSnapshot?.freeLimit ?? 0) - Number(detailAccessSnapshot?.freeUsed ?? 0),
+  );
+
   const openItemDetail = useCallback(async (item: PoolItem) => {
     if (item.soldOut) return;
     if (openedDetailPidsRef.current.has(item.pid)) {
       setDetailAccessLimit(null);
-      setSelectedCard(poolItemToRevealCard(item));
+      beginDetailSession(item, { accessType: "already_opened_local" });
       return;
     }
 
@@ -906,6 +1249,9 @@ export default function ExploreClient() {
         const freeLimit = Number.isFinite(Number(data.freeLimit)) ? Number(data.freeLimit) : null;
         const freeUsed = Number.isFinite(Number(data.freeUsed)) ? Number(data.freeUsed) : null;
         const creditBalance = Number.isFinite(Number(data.creditBalance)) ? Number(data.creditBalance) : null;
+        if (freeLimit != null && freeUsed != null) {
+          setDetailAccessSnapshot({ creditBalance, freeUsed, freeLimit });
+        }
         const isCreditShort = data.error === "insufficient_credits";
         setDetailAccessLimit({
           title: isCreditShort
@@ -917,6 +1263,12 @@ export default function ExploreClient() {
           freeLimit,
           valueSummary: detailAccessValueRef.current,
         });
+        trackDetailEvent(item.pid, "free_limit_paywall_shown", {
+          reason: data.error ?? "detail_access_failed",
+          freeUsed,
+          freeLimit,
+          creditBalance,
+        }, createDetailSessionId(item.pid));
         return;
       }
       if (Number(data.creditSpent ?? 0) > 0 && typeof window !== "undefined") {
@@ -924,6 +1276,13 @@ export default function ExploreClient() {
       }
       if (data.creditBalance != null) {
         setCreditFeedEnabled(Number(data.creditBalance) > 0);
+      }
+      if (data.freeLimit != null && data.freeUsed != null) {
+        setDetailAccessSnapshot({
+          creditBalance: data.creditBalance ?? null,
+          freeUsed: data.freeUsed,
+          freeLimit: data.freeLimit,
+        });
       }
       const exactItem = data.item ?? item;
       if (data.item) {
@@ -938,7 +1297,12 @@ export default function ExploreClient() {
       openedDetailPidsRef.current.add(item.pid);
       openedDetailPidsRef.current.add(exactItem.pid);
       setOpenedDetailPids(new Set(openedDetailPidsRef.current));
-      setSelectedCard(poolItemToRevealCard(exactItem));
+      beginDetailSession(exactItem, {
+        accessType: data.accessType ?? "unknown",
+        alreadyOpened: Boolean(data.alreadyOpened),
+        creditSpent: Number(data.creditSpent ?? 0),
+        creditBalance: data.creditBalance ?? null,
+      });
     } catch (err) {
       setDetailAccessLimit({
         title: "상세보기 요청이 잠시 막혔어요",
@@ -951,15 +1315,19 @@ export default function ExploreClient() {
     } finally {
       setDetailAccessLoadingPid((prev) => (prev === item.pid ? null : prev));
     }
-  }, []);
+  }, [beginDetailSession, trackDetailEvent]);
 
   // 다른 매물 클릭 시 modal 전환
   const handleOpenRelatedItem = useCallback((pid: number) => {
+    if (selectedCard) {
+      trackDetailEvent(selectedCard.pid, "related_clicked", { targetPid: pid });
+    }
     const item = items.find((it) => it.pid === pid);
     if (item) void openItemDetail(item);
-  }, [items, openItemDetail]);
+  }, [items, openItemDetail, selectedCard, trackDetailEvent]);
 
   const handleScrapToggle = useCallback((pid: number, saved: boolean) => {
+    trackDetailEvent(pid, saved ? "scrap_saved" : "scrap_removed");
     writeLocalSavedPid(pid, saved);
     setLegacySavedPids((prev) => {
       const next = new Set(prev);
@@ -989,7 +1357,7 @@ export default function ExploreClient() {
       saveScrapSnapshots(next);
       return next;
     });
-  }, [items, selectedCard]);
+  }, [items, selectedCard, trackDetailEvent]);
 
   // Wave 339b: /api/packs/pool/analysis로 marketBasis/velocityBasis lazy-fill.
   // assertRevealAccess 우회 (pid 기반). 가져온 분석으로 selectedCard 갱신.
@@ -1046,6 +1414,16 @@ export default function ExploreClient() {
   // sticky 통일 후 의미 없어짐 → button과 footer 사이 큰 빈 공간 제거.
   return (
     <div className="mx-auto w-full max-w-6xl px-3 pb-4 pt-2 sm:px-6 sm:pt-4">
+      {showFirstFeedOnboarding && !scrapOnly ? (
+        <FirstFeedOnboardingCard
+          stats={safetyStats}
+          statsLoaded={safetyStatsLoaded}
+          selectedBudget={budgetFilter}
+          onSelectBudget={selectFirstFeedBudget}
+          onDismiss={dismissFirstFeedOnboarding}
+        />
+      ) : null}
+
       {/* Wave 383+393: 6h lag 제거 + 사이트 핵심 가치 (band-aware 비교) 강조. */}
       <div className="mb-2 rounded-xl border border-[#e7dece] bg-[#fffaf1] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
         <div className="flex items-center gap-1.5 text-[12px] font-bold text-emerald-800 dark:text-emerald-300">
@@ -1144,12 +1522,13 @@ export default function ExploreClient() {
                 </button>
               );
             })}
-            {selectedCategories.size > 0 || scrapOnly ? (
+            {selectedCategories.size > 0 || scrapOnly || budgetFilter !== "all" ? (
               <button
                 type="button"
                 onClick={() => {
                   setSelectedCategories(new Set());
                   setScrapOnly(false);
+                  setBudgetFilter("all");
                 }}
                 className="shrink-0 px-1.5 py-1 text-[10px] font-medium text-zinc-500 underline dark:text-zinc-400"
               >
@@ -1158,6 +1537,20 @@ export default function ExploreClient() {
             ) : null}
           </div>
         </div>
+        <select
+          data-budget-filter-select
+          value={budgetFilter}
+          onChange={(e) => {
+            setBudgetFilter(e.target.value as BudgetFilterOption);
+            setScrapOnly(false);
+          }}
+          className="shrink-0 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
+          aria-label="예산 필터"
+        >
+          {BUDGET_FILTER_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>{option.shortLabel}</option>
+          ))}
+        </select>
         <select
           value={source}
           onChange={(e) => {
@@ -1278,6 +1671,7 @@ export default function ExploreClient() {
             const isSoldOut = item.soldOut;
             const exactUnlocked = creditFeedEnabled || scrapOnly || savedPidSet.has(item.pid) || openedDetailPids.has(item.pid);
             const lockedPreview = !exactUnlocked;
+            const freeDetailAvailable = lockedPreview && !creditFeedEnabled && freeDetailRemaining > 0;
             return (
               <button
                 key={item.pid}
@@ -1307,9 +1701,9 @@ export default function ExploreClient() {
                         <CategoryIcon category={item.category ?? "default"} className="h-5 w-5" strokeWidth={1.9} />
                       </div>
                       <div className="mt-2 text-[10px] font-black leading-tight text-zinc-700 dark:text-zinc-200">
-                        원본 사진은
+                        {freeDetailAvailable ? "무료 상세에서" : "원본 사진은"}
                         <br />
-                        상세에서 공개
+                        {freeDetailAvailable ? "원본 공개" : "상세에서 공개"}
                       </div>
                     </div>
                   ) : item.thumbnailUrl ? (
@@ -1341,7 +1735,9 @@ export default function ExploreClient() {
                   </div>
                   {lockedPreview ? (
                     <div className="mt-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-                      원제목·원본 사진·판매자 정보는 상세 분석에서 보여드려요
+                      {freeDetailAvailable
+                        ? `무료 상세 ${freeDetailRemaining.toLocaleString("ko-KR")}회 남음 · 열면 원제목과 사진이 보여요`
+                        : "원제목·원본 사진·판매자 정보는 상세 분석에서 보여드려요"}
                     </div>
                   ) : null}
                   <div className="mt-1.5 flex items-baseline gap-1.5">
@@ -1350,7 +1746,7 @@ export default function ExploreClient() {
                     </span>
                     {lockedPreview ? (
                       <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                        정확한 금액 잠김
+                        {freeDetailAvailable ? "무료 상세 가능" : "정확한 금액 잠김"}
                       </span>
                     ) : pct != null ? (
                       <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${isSoldOut ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500" : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"}`}>
@@ -1410,7 +1806,7 @@ export default function ExploreClient() {
                         ) : null}
                         {lockedPreview ? (
                           <span className="rounded-full bg-blue-50 px-1.5 py-0.5 font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-200">
-                            상세 열면 원본 공개
+                            {freeDetailAvailable ? "무료 상세 열기" : "상세 열면 원본 공개"}
                           </span>
                         ) : null}
                       </>
@@ -1677,9 +2073,14 @@ export default function ExploreClient() {
         band={2}
         loading={false}
         result={modalResult}
-        onClose={() => setSelectedCard(null)}
+        onClose={() => {
+          if (selectedCard) trackDetailEvent(selectedCard.pid, "detail_closed");
+          setSelectedCard(null);
+          detailSessionIdRef.current = null;
+        }}
         onLinkClicked={() => {}}
         onFeedback={() => {}}
+        onTrackEvent={trackDetailEvent}
         onLoadDetail={handleLoadDetail}
         onRetry={() => {}}
         relatedItems={relatedItems}

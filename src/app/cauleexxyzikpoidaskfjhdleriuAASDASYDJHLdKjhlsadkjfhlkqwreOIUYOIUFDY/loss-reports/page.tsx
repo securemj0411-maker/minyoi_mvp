@@ -2,7 +2,7 @@
 // URL obfuscation + admin auth 이중 보호 (같은 디렉토리 패턴 — members-table 옆).
 
 import { notFound } from "next/navigation";
-import { OPS_ADMIN_BASE_PATH, OPS_ADMIN_FEEDBACK_STATS_PATH } from "@/lib/admin-routes";
+import { OPS_ADMIN_BASE_PATH, OPS_ADMIN_DETAIL_EVENTS_PATH, OPS_ADMIN_FEEDBACK_STATS_PATH } from "@/lib/admin-routes";
 import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import LossReportsClient from "./loss-reports-client";
@@ -32,6 +32,12 @@ export default async function LossReportsAdminPage() {
             className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 font-black text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-100"
           >
             📊 신고 통계
+          </a>
+          <a
+            href={OPS_ADMIN_DETAIL_EVENTS_PATH}
+            className="rounded-full border border-sky-300 bg-sky-50 px-2.5 py-1 font-black text-sky-900 hover:bg-sky-100 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-100"
+          >
+            👀 상세 행동
           </a>
         </nav>
         <header className="mb-6 border-b border-[#e2d9cb] pb-4 dark:border-zinc-800">

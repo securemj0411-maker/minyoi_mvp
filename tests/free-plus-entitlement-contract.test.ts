@@ -60,18 +60,24 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(poolRoute, /return a\.price - b\.price/);
   assert.match(poolRoute, /feedMode: creditFeed \? "credit" : "free"/);
   assert.match(poolRoute, /creditFeed/);
+  assert.match(poolRoute, /getDetailAccessSnapshot/);
+  assert.match(poolRoute, /detailAccess/);
   assert.match(poolRoute, /maskFreeFeedItems/);
   assert.match(poolRoute, /createPoolAccessToken/);
   assert.match(poolRoute, /syntheticPidForPoolToken/);
   assert.match(poolRoute, /excludeTokens/);
   assert.match(detailAccessRoute, /decodePoolAccessToken/);
-  assert.match(detailAccessRoute, /item: await loadExactPoolItem\(pid\)/);
+  assert.match(detailAccessRoute, /const item = await loadExactPoolItem\(pid\)/);
   assert.match(analysisRoute, /hasDetailAccess/);
   assert.match(analysisRoute, /detail_access_required/);
 
   assert.match(explore, /creditFeedEnabled/);
+  assert.match(explore, /detailAccessSnapshot/);
+  assert.match(explore, /freeDetailRemaining/);
   assert.match(explore, /lockedPreviewTitle/);
   assert.match(explore, /원제목·원본 사진·판매자 정보는 상세 분석에서 보여드려요/);
+  assert.match(explore, /무료 상세 가능/);
+  assert.match(explore, /무료 상세 열기/);
   assert.match(explore, /원본 사진은/);
   assert.match(explore, /상세 열면 원본 공개/);
   assert.match(explore, /openedDetailPids/);

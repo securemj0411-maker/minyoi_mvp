@@ -2,7 +2,7 @@
 // Wave 182c 박은 inaccurate_report 데이터 활용 — 어떤 카테고리 신고 많은지 + 어떤 매물 systemic.
 
 import { notFound } from "next/navigation";
-import { OPS_ADMIN_BASE_PATH, OPS_ADMIN_LOSS_REPORTS_PATH } from "@/lib/admin-routes";
+import { OPS_ADMIN_BASE_PATH, OPS_ADMIN_DETAIL_EVENTS_PATH, OPS_ADMIN_LOSS_REPORTS_PATH } from "@/lib/admin-routes";
 import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import FeedbackStatsClient from "./feedback-stats-client";
@@ -33,6 +33,12 @@ export default async function FeedbackStatsAdminPage() {
           <span className="rounded-full bg-emerald-100 px-2.5 py-1 font-black text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100">
             📊 신고 통계 (현재)
           </span>
+          <a
+            href={OPS_ADMIN_DETAIL_EVENTS_PATH}
+            className="rounded-full border border-sky-300 bg-sky-50 px-2.5 py-1 font-black text-sky-900 hover:bg-sky-100 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-100"
+          >
+            👀 상세 행동
+          </a>
         </nav>
         <header className="mb-6 border-b border-[#e2d9cb] pb-4 dark:border-zinc-800">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
