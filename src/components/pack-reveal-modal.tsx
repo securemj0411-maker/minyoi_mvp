@@ -405,10 +405,30 @@ function introGuideStep(): BeginnerGuideStep {
   };
 }
 
+function marketplaceLabelForCard(card: Pick<RevealCard, "marketplaceLabel" | "marketplaceSource">) {
+  if (card.marketplaceLabel) return card.marketplaceLabel;
+  return card.marketplaceSource === "joongna" ? "중고나라" : "번개장터";
+}
+
+function marketplacePaymentLabel(card: Pick<RevealCard, "marketplaceSource">) {
+  return card.marketplaceSource === "joongna" ? "안전거래" : "안전결제";
+}
+
+function marketplacePaymentNote(card: Pick<RevealCard, "marketplaceLabel" | "marketplaceSource">) {
+  const marketplace = marketplaceLabelForCard(card);
+  const payment = marketplacePaymentLabel(card);
+  if (card.marketplaceSource === "joongna") {
+    return `${marketplace} ${payment} 가능 여부와 수수료를 원본에서 확인하세요.`;
+  }
+  return `${marketplace} ${payment}로 진행하고, 외부 계좌이체나 외부 링크 결제는 피하세요.`;
+}
+
 function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   const rating = card.savedDetail?.sellerReviewRating ?? null;
   const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
   const reviewLabel = reviewCount.toLocaleString("ko-KR");
+  const marketplace = marketplaceLabelForCard(card);
+  const payment = marketplacePaymentLabel(card);
 
   if (rating != null && rating >= 4.8 && reviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT) {
     return {
@@ -418,7 +438,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
       metricLabel: `평점 ${rating.toFixed(1)}점`,
       body: `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점이라 신뢰 신호가 있는 편이에요.`,
       // Wave 394.7.y: 안전결제 step 흡수 — 신뢰 강함이라도 앱 안 결제 룰 한 줄로 강조.
-      note: "그래도 거래는 번개장터 앱 안 안전결제로만 진행하세요. 물건 받고 확인한 뒤 구매확정 누르는 흐름이에요.",
+      note: `그래도 거래는 ${marketplace} 원본 안에서 ${payment} 가능 여부를 확인하고 진행하세요. 물건 받고 상태 확인한 뒤 구매확정하는 흐름이 안전해요.`,
       valueNote: "후기 수와 평점을 같이 봐서, 평점만 높고 거래 이력이 적은 계정에 속지 않게 봅니다.",
       tone: "trust",
     };
@@ -434,7 +454,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
         ? `평점은 ${rating.toFixed(1)}점이지만 후기가 ${reviewLabel}건이라 아직 판단 표본이 적어요. 안전결제와 실제 상태 확인을 조금 더 보수적으로 보면 좋아요.`
         : `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${rating.toFixed(1)}점이라 신뢰 신호가 있는 편이에요. 안전결제와 실제 상태 확인을 같이 보면 좋아요.`,
       // Wave 394.7.y: 안전결제 흡수.
-      note: "거래는 번개장터 앱 안 안전결제로만 진행하고, 물건 받아 상태 확인한 뒤 구매확정을 누르세요. 외부 계좌이체나 외부 링크 결제는 피하는 게 좋아요.",
+      note: `${marketplace} 원본 안에서 ${payment} 조건을 확인하고, 물건 받아 상태 확인한 뒤 구매확정을 누르세요. 외부 계좌이체나 외부 링크 결제는 피하는 게 좋아요.`,
       valueNote: "후기 표본, 평점, 안전결제 흐름을 한 번에 묶어서 판매자 신뢰도를 보수적으로 봅니다.",
       tone: "trust",
     };
@@ -447,9 +467,9 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
     metricLabel: rating == null ? "평점 없음" : `평점 ${rating.toFixed(1)}점`,
     body: reviewCount > 0
       ? `이 상품 판매자는 후기가 ${reviewLabel}건 있지만 평점 정보는 없어요. 거래 방식과 상품 상태를 조금 더 보수적으로 확인하는 게 좋아요.`
-      : "이 상품 판매자는 아직 거래 후기와 평점이 없어요. 번개장터 신규 판매자이거나 거래 이력이 적은 계정일 수 있어서 더 보수적으로 확인해야 해요.",
+      : `이 상품 판매자는 아직 거래 후기와 평점이 없어요. ${marketplace} 신규 판매자이거나 거래 이력이 적은 계정일 수 있어서 더 보수적으로 확인해야 해요.`,
     // Wave 394.7.y: 안전결제 흡수 — 신뢰 약한 셀러일수록 더 중요.
-    note: "특히 신뢰 약한 셀러는 반드시 번개장터 앱 안 안전결제로만. 외부 결제 유도 시 거절하세요. 추가 사진·구성품·택배 조건도 결제 전 확인.",
+    note: `특히 신뢰 약한 셀러는 ${payment} 가능 여부를 먼저 확인하세요. 외부 결제 유도 시 거절하고, 추가 사진·구성품·택배 조건도 결제 전 확인.`,
     valueNote: "후기 없는 계정은 자동으로 더 조심스럽게 보고, 안전결제와 추가 확인 질문을 먼저 띄웁니다.",
     tone: "trust",
   };
@@ -517,7 +537,7 @@ function beginnerPurchaseChecks(card: RevealCard): BeginnerPurchaseCheck[] {
       body: reviewCount > 0
         ? `후기가 ${reviewCount.toLocaleString("ko-KR")}건이라 평점만으로 판단하기엔 표본이 적어요.`
         : "거래 이력이 없는 계정일 수 있어서 결제 방식부터 보수적으로 잡는 게 좋아요.",
-      ask: "번개장터 안전결제로 진행 가능한지 먼저 물어보세요.",
+      ask: `${marketplaceLabelForCard(card)} ${marketplacePaymentLabel(card)}로 진행 가능한지 먼저 물어보세요.`,
       label: "안전결제",
       tone: "amber",
     });
@@ -759,18 +779,18 @@ function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
 
 function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   const market = card.marketBasis;
-  const bunjangProfit = expectedProfitAverage(card);
-  const bunjangFee = market?.medianPrice ? Math.round(market.medianPrice * SELLING_FEE_RATE) : 0;
-  const daangnProfit = bunjangProfit + bunjangFee;
-  const betterChannel = daangnProfit > bunjangProfit ? "당근 직거래가 더 남을 수 있지만" : "번개장터 재판매는";
+  const marketplaceProfit = expectedProfitAverage(card);
+  const marketplaceFee = market?.medianPrice ? Math.round(market.medianPrice * SELLING_FEE_RATE) : 0;
+  const daangnProfit = marketplaceProfit + marketplaceFee;
+  const betterChannel = daangnProfit > marketplaceProfit ? "당근 직거래가 더 남을 수 있지만" : "중고 마켓 재판매는";
 
   return {
     eyebrow: "3. 되팔 곳",
     title: "팔 곳에 따라 남는 돈이 달라요",
     metric: displayProfitRange(card),
-    metricLabel: "번개장터 기준 예상 차익",
-    body: `${betterChannel}, 거래 범위와 네고 부담이 달라요. 그래서 번개장터에 다시 팔 때와 당근 직거래로 팔 때를 나눠서 보여드릴게요.`,
-    note: "당근은 수수료가 적을 수 있지만 지역/직거래/네고 부담이 있고, 번개장터는 전국 거래와 안전결제 흐름이 장점이에요.",
+    metricLabel: "중고 마켓 기준 예상 차익",
+    body: `${betterChannel}, 거래 범위와 네고 부담이 달라요. 그래서 번개장터·중고나라에 다시 팔 때와 당근 직거래로 팔 때를 나눠서 보여드릴게요.`,
+    note: "당근은 수수료가 적을 수 있지만 지역/직거래/네고 부담이 있고, 중고 마켓은 전국 거래와 안전결제 흐름이 장점이에요.",
     tone: "channel",
   };
 }
@@ -1056,8 +1076,8 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
       q: "안전결제 어떻게 되나요?",
       a: (
         <>
-          번개장터는 <b className="font-bold">안전결제 셀러 의무</b>예요. 셀러가 3.5% 수수료 부담하고, 구매자는 0원.
-          {" "}결제 후 셀러 정산은 거래 완료 확인 후 진행돼요. 입금 사기 X.
+          {marketplacePaymentNote(card)}
+          {" "}결제 후 정산·환불 조건은 원본 플랫폼에서 마지막으로 확인하세요.
         </>
       ),
     },
@@ -1065,7 +1085,7 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
       q: "사기 당하면 어떻게 하나요?",
       a: (
         <>
-          안전결제 매물이면 <b className="font-bold">번개장터 분쟁센터</b>에 신고하면 거래 정지 + 환불 절차 진행돼요.
+          안전결제/안전거래 매물이면 <b className="font-bold">원본 플랫폼 고객센터</b>에 신고해 거래 정지와 환불 절차를 확인하세요.
           {" "}직거래 사기는 경찰서 사이버수사대 신고. 미뇨이는 거래 당사자 아니지만 위험 신호를 사전 알려드려요.
         </>
       ),
@@ -1984,6 +2004,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
             alt={card.name}
             fill
             sizes="100vw"
+            unoptimized
             className="object-contain object-center"
           />
         </div>
@@ -2012,6 +2033,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
             alt={card.name}
             fill
             sizes="(max-width: 480px) 100vw, 480px"
+            unoptimized
             className="object-cover object-center"
             priority
           />
@@ -2431,7 +2453,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
               >
                 <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-[#f2eadf] dark:bg-zinc-800">
                   {item.thumbnailUrl ? (
-                    <Image src={item.thumbnailUrl} alt="" fill sizes="52px" className="object-cover" />
+                    <Image src={item.thumbnailUrl} alt="" fill sizes="52px" unoptimized className="object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
                   )}
@@ -3004,7 +3026,7 @@ function _SellerTrustPanel({ card }: { card: RevealCard }) {
       </div>
       {(trustLevel === "caution" || trustLevel === "danger") ? (
         <div className="mt-2 border-t border-zinc-100 pt-2 text-[11px] font-medium leading-4 text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
-          후기 적은 셀러는 번개페이 안전결제 + 직거래 검수 권장.
+          후기 적은 셀러는 원본 플랫폼 안전결제/안전거래 + 직거래 검수 권장.
         </div>
       ) : null}
     </section>
@@ -3475,13 +3497,28 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
   if (!market?.medianPrice || market.medianPrice <= 0) return null;
 
-  const bunjangFee = Math.round(market.medianPrice * SELLING_FEE_RATE);
-  const bunjangProfit = expectedProfitAverage(card);
-  // 당근 차익 = 번개 차익 + 수수료 (당근 직거래는 수수료 0)
-  // 단 당근 안전결제 사용 시 0.x% 수수료 — 무시할 수준이라 0으로.
-  const daangnProfit = bunjangProfit + bunjangFee;
-  if (bunjangProfit <= 0 && daangnProfit <= 0) return null;
-  const bonusFromDaangn = bunjangFee;
+  const marketplaceFee = Math.round(market.medianPrice * SELLING_FEE_RATE);
+  const marketplaceProfit = expectedProfitAverage(card);
+  const daangnProfit = marketplaceProfit + marketplaceFee;
+  if (marketplaceProfit <= 0 && daangnProfit <= 0) return null;
+  const bonusFromDaangn = marketplaceFee;
+  const currentSource = card.marketplaceSource === "joongna" ? "joongna" : "bunjang";
+  const marketplaceCards = [
+    {
+      source: "bunjang",
+      label: "번개장터",
+      profit: marketplaceProfit,
+      note: "안전결제 수수료 보수 차감",
+      chips: ["전국 거래", "앱 결제"],
+    },
+    {
+      source: "joongna",
+      label: "중고나라",
+      profit: marketplaceProfit,
+      note: "안전거래 조건 재확인",
+      chips: ["전국 거래", "문의 많음"],
+    },
+  ];
 
   return (
     <section className="mt-[18px]">
@@ -3490,25 +3527,40 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
         <h3 className="m-0 text-[16px] font-extrabold tracking-tight text-[#1a2620] dark:text-zinc-50">어디에 팔지?</h3>
         <span className="whitespace-nowrap text-[11px] font-semibold text-[#6f7c6d] dark:text-zinc-400">채널별 예상 차익</span>
       </div>
-      <div className="grid grid-cols-2 gap-2.5">
-        {/* 번개장터 — 흰 카드 */}
-        <div className="relative rounded-[14px] border border-[#ece3d2] bg-white px-3 pb-3 pt-3 dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="mb-2 flex items-center gap-1.5">
-            <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#0b1413]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><path d="M13 2L3 14h7l-1 8 10-12h-7z" /></svg>
-            </span>
-            <span className="text-[12px] font-bold text-[#344136] dark:text-zinc-100">번개장터</span>
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+        {marketplaceCards.map((channel) => (
+          <div
+            key={channel.source}
+            className="relative rounded-[14px] border border-[#ece3d2] bg-white px-3 pb-3 pt-3 dark:border-zinc-800 dark:bg-zinc-900"
+          >
+            {channel.source === currentSource ? (
+              <div className="absolute -top-2 right-2.5 rounded-full bg-emerald-700 px-2 py-1 text-[9px] font-extrabold tracking-wide text-white dark:bg-emerald-500 dark:text-zinc-950">
+                원본 출처
+              </div>
+            ) : null}
+            <div className="mb-2 flex items-center gap-1.5">
+              {channel.source === "bunjang" ? (
+                <BunjangLogo className="h-[22px] w-[22px] rounded-full" />
+              ) : (
+                <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-sky-600 text-[10px] font-black text-white">
+                  중
+                </span>
+              )}
+              <span className="text-[12px] font-bold text-[#344136] dark:text-zinc-100">{channel.label}</span>
+            </div>
+            <div className="text-[19px] font-black tracking-tight text-emerald-700 tabular-nums dark:text-emerald-300">
+              +{krw(channel.profit)}
+            </div>
+            <div className="mt-1 text-[10.5px] font-semibold text-[#6f7c6d] dark:text-zinc-400">{channel.note}</div>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {channel.chips.map((chip) => (
+                <span key={chip} className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200">
+                  {chip}
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="text-[19px] font-black tracking-tight text-emerald-700 tabular-nums dark:text-emerald-300">
-            +{krw(bunjangProfit)}
-          </div>
-          <div className="mt-1 text-[10.5px] font-semibold text-[#6f7c6d] dark:text-zinc-400">수수료 3.5% 차감</div>
-          <div className="mt-2 flex flex-wrap gap-1">
-            <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200">전국 거래</span>
-            <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200">안전결제</span>
-          </div>
-        </div>
-        {/* 당근 — 추천 (gradient + amber badge) */}
+        ))}
         <div className="relative rounded-[14px] border-[1.5px] border-amber-400 bg-gradient-to-br from-[#fffaf0] to-[#fff5dc] px-3 pb-3 pt-3 dark:border-amber-800 dark:from-amber-950/35 dark:to-zinc-950">
           <div className="absolute -top-2 right-2.5 rounded-full bg-amber-700 px-2 py-1 text-[9px] font-extrabold tracking-wide text-amber-100 dark:bg-amber-500 dark:text-zinc-950">
             +{krw(bonusFromDaangn)} 더
@@ -3534,10 +3586,12 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
 }
 
 function sellerQuestionText(card: RevealCard) {
+  const marketplace = marketplaceLabelForCard(card);
+  const payment = marketplacePaymentLabel(card);
   return [
     `${card.name} 보고 문의드립니다.`,
     "1. 표시 가격에 택배비가 포함돼 있나요?",
-    "2. 번개페이/안전결제 수수료는 누가 부담하나요?",
+    `2. ${marketplace} ${payment}로 진행 가능하고, 수수료는 누가 부담하나요?`,
     "3. 구성품은 사진과 설명에 보이는 것 전부 포함인가요?",
   ].join("\n");
 }
@@ -3556,7 +3610,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
     {
       label: "결제 수수료",
       value: "0원",
-      note: "번개 안전결제는 셀러 의무 부담 (3.5%)",
+      note: `${marketplaceLabelForCard(card)} ${marketplacePaymentLabel(card)} 조건은 구매 전 재확인`,
     },
   ];
   const resellRows = [
@@ -3681,7 +3735,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
         </summary>
         <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs font-medium leading-5 text-zinc-700 dark:text-zinc-300">
           <li>표시 가격에 택배비가 포함돼 있는지</li>
-          <li>번개페이/안전결제 수수료를 누가 부담하는지</li>
+          <li>안전결제/안전거래 수수료를 누가 부담하는지</li>
           <li>구성품이 사진과 설명에 보이는 것 전부인지</li>
         </ol>
         <button
@@ -3845,7 +3899,7 @@ function LoadingStage({ completing = false }: { completing?: boolean }) {
         </div>
         <div className="mt-1 text-center text-xs text-zinc-400 dark:text-zinc-500">
           {/* Wave 394.1 (외부 review #19): "실시간 검증" → "최신 호가" — 호가는 추정 가능, 검증은 단정형. */}
-          번개장터 최신 호가 · 시세 재계산 · 리스크 필터
+          중고 마켓 최신 호가 · 시세 재계산 · 리스크 필터
         </div>
       </div>
     </div>
@@ -3924,6 +3978,7 @@ function BeginnerGuideProductVisual({ card }: { card: RevealCard }) {
             alt={card.name}
             fill
             sizes="(max-width: 639px) 100vw, 640px"
+            unoptimized
             className="rounded-[28px] object-contain object-center p-2.5"
             priority={false}
           />
@@ -4379,7 +4434,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
               <div key={item.pid} className="flex items-center gap-3 px-4 py-3">
                 <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-[#f2eadf] dark:bg-zinc-800">
                   {item.thumbnailUrl ? (
-                    <Image src={item.thumbnailUrl} alt="" fill sizes="48px" className="object-cover" />
+                    <Image src={item.thumbnailUrl} alt="" fill sizes="48px" unoptimized className="object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
                   )}
@@ -4483,9 +4538,11 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
   );
 }
 
-function BeginnerGuideSafetyVisual() {
+function BeginnerGuideSafetyVisual({ card }: { card: RevealCard }) {
+  const marketplace = marketplaceLabelForCard(card);
+  const payment = marketplacePaymentLabel(card);
   const rows = [
-    ["앱 안 결제", "외부 계좌이체 대신 번개장터 안전결제로 진행"],
+    ["원본 앱 안 결제", `외부 계좌이체 대신 ${marketplace} ${payment} 조건 확인`],
     ["받고 나서 확정", "상태가 다르면 구매확정을 누르지 말고 문의/환불 절차로 이동"],
   ];
 
@@ -4519,23 +4576,41 @@ function BeginnerGuideSafetyVisual() {
 
 function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
-  const bunjangProfit = expectedProfitAverage(card);
-  const bunjangFee = market?.medianPrice ? Math.round(market.medianPrice * SELLING_FEE_RATE) : 0;
-  const daangnProfit = bunjangProfit + bunjangFee;
-  const preferDaangn = daangnProfit > bunjangProfit;
+  const marketplaceProfit = expectedProfitAverage(card);
+  const marketplaceFee = market?.medianPrice ? Math.round(market.medianPrice * SELLING_FEE_RATE) : 0;
+  const daangnProfit = marketplaceProfit + marketplaceFee;
+  const preferDaangn = daangnProfit > marketplaceProfit;
+  const currentSource = card.marketplaceSource === "joongna" ? "joongna" : "bunjang";
+  const marketChannels = [
+    { source: "bunjang", label: "번개장터", note: "수수료 보수 차감", chip: "전국 거래" },
+    { source: "joongna", label: "중고나라", note: "안전거래 조건 확인", chip: "전국 거래" },
+  ];
 
   return (
     <div data-beginner-guide-channel-profit className="mt-5 space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-[22px] bg-white/84 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
-          <div className="flex items-center gap-2">
-            <BunjangLogo className="h-7 w-7 rounded-full" />
-            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">번개장터</div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {marketChannels.map((channel) => (
+          <div key={channel.source} className="relative rounded-[22px] bg-white/84 p-4 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+            {channel.source === currentSource ? (
+              <div className="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-black text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200">
+                원본 출처
+              </div>
+            ) : null}
+            <div className="flex items-center gap-2">
+              {channel.source === "bunjang" ? (
+                <BunjangLogo className="h-7 w-7 rounded-full" />
+              ) : (
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-600 text-[12px] font-black text-white">
+                  중
+                </span>
+              )}
+              <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">{channel.label}</div>
+            </div>
+            <div className="mt-3 text-[22px] font-black tabular-nums text-emerald-700 dark:text-emerald-300">+{krw(marketplaceProfit)}</div>
+            <div className="mt-1 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{channel.note}</div>
+            <div className="mt-3 rounded-full bg-emerald-50 px-2.5 py-1 text-center text-[11px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200">{channel.chip}</div>
           </div>
-          <div className="mt-3 text-[22px] font-black tabular-nums text-emerald-700 dark:text-emerald-300">+{krw(bunjangProfit)}</div>
-          <div className="mt-1 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">안전결제 수수료 차감</div>
-          <div className="mt-3 rounded-full bg-emerald-50 px-2.5 py-1 text-center text-[11px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200">전국 거래</div>
-        </div>
+        ))}
         <div className="rounded-[22px] bg-amber-50/80 p-4 ring-1 ring-amber-200 dark:bg-amber-950/20 dark:ring-amber-900/55">
           <div className="flex items-center gap-2">
             <DaangnLogo className="h-7 w-7 rounded-full" />
@@ -4548,11 +4623,11 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
       </div>
       <div className="rounded-[18px] bg-[#f5f9ff] px-3.5 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
         <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">
-          추천: {preferDaangn ? "당근 먼저 등록" : "번개장터 먼저 등록"}
+          추천: {preferDaangn ? "당근 먼저 등록" : "중고 마켓 먼저 등록"}
         </div>
         <p className="mt-1 break-keep text-[12px] font-semibold leading-5 text-[#667164] dark:text-zinc-400">
           {preferDaangn
-            ? "수익은 더 높지만 지역 제한과 네고 부담이 있어요. 안 팔리면 번개장터로 넓히면 됩니다."
+            ? "수익은 더 높지만 지역 제한과 네고 부담이 있어요. 안 팔리면 번개장터·중고나라로 넓히면 됩니다."
             : "전국 거래가 더 맞는 매물이에요. 안전결제 수수료까지 뺀 숫자로 봅니다."}
         </p>
       </div>
@@ -4567,7 +4642,7 @@ function BeginnerGuideStepVisual({ card, tone }: { card: RevealCard; tone: Begin
   if (tone === "market") return <BeginnerGuideMarketVisual card={card} />;
   if (tone === "trend") return <BeginnerGuideTrendVisual card={card} />;
   if (tone === "buy") return <BeginnerGuideBuyCostVisual card={card} />;
-  if (tone === "safety") return <BeginnerGuideSafetyVisual />;
+  if (tone === "safety") return <BeginnerGuideSafetyVisual card={card} />;
   if (tone === "channel") return <BeginnerGuideChannelVisual card={card} />;
   if (tone === "speed") return <BeginnerGuideSpeedVisual card={card} />;
   return <BeginnerGuideSummaryVisual card={card} />;
@@ -5604,7 +5679,7 @@ function FixedBunjangFooter({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const checks = beginnerPurchaseChecks(card).slice(0, 3);
   const sellerReviewCount = card.savedDetail?.sellerReviewCount ?? 0;
-  const marketplaceLabel = card.marketplaceLabel ?? "번개장터";
+  const marketplaceLabel = marketplaceLabelForCard(card);
   const sellerLine = sellerReviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT
     ? `후기 ${sellerReviewCount.toLocaleString("ko-KR")}건 판매자예요. 그래도 원본에서 사진과 구성품은 한 번 더 보세요.`
     : sellerReviewCount > 0
@@ -5835,6 +5910,7 @@ function RelatedRevealStrip({
                       alt=""
                       fill
                       sizes="140px"
+                      unoptimized
                       className="object-cover"
                     />
                   ) : (

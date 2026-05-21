@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "media.bunjang.co.kr",
       },
+      {
+        protocol: "https",
+        hostname: "**.joongna.com",
+      },
     ],
   },
 };

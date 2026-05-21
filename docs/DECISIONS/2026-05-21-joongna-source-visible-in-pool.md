@@ -74,3 +74,10 @@
 - Joongna path now checks product detail fetch, 404 disappearance, `productStatus !== 0`, sold-out text signals, and live listing classification before detail access is granted.
 - If live verification fails because the source is temporarily unstable, the route returns an error without spending the free view/credit.
 - Deferred: Joongna comment-count blocking remains unavailable because current Joongna public product HTML does not expose a stable comment count field in the parser sample; `num_comment` remains `null` for Joongna rows until a reliable field/API is found.
+
+## Follow-up — reveal modal source wording and Joongna images
+- Operator found source drift inside the easy-view/detail modal: beginner copy and channel-profit cards still implied Bunjang-only comparison/resale even for Joongna listings.
+- Fix: beginner trust, payment, market/channel copy now uses the listing marketplace label or generic `중고 마켓` wording instead of Bunjang-only text where the logic is source-agnostic.
+- Fix: resale comparison now shows Bunjang, Joongna, and Daangn cards. Bunjang/Joongna use the same conservative marketplace-fee estimate; Daangn remains local/direct-trade upside with region/negotiation burden.
+- Fix: detail-modal images are marked `unoptimized`, and `next.config.ts` now allows `**.joongna.com` image hosts so Joongna CDN thumbnails render in the detail modal and beginner view.
+- Deferred: Joongna-specific exact payment/fee policy is not hardcoded. UI says to confirm 안전거래/수수료 in the original listing, while profit math keeps using the existing conservative marketplace-fee estimate.
