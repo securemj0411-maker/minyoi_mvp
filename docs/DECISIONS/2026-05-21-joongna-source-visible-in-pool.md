@@ -50,3 +50,11 @@
 - Verification:
   - `npx eslint src/app/api/packs/pool/route.ts src/components/explore-client.tsx`: passed.
   - `npm run build`: passed.
+
+## Follow-up — admin source filter bug
+- Operator reported selecting `중고나라 — 5건` in the admin candidate pool still showed the full mixed 365 ready rows.
+- Root cause: admin/public pool APIs created a `pidScope` for `source`, but the paginated fetch path only treated price/SKU/search as external filters. Source-only filtering built the scope and then ignored it.
+- Fix: include any `scopedPids` in the external filter path and reject rows not in the scoped pid set.
+- Verification:
+  - `npx eslint src/app/api/admin/pool-listings/route.ts src/app/api/public/pool-listings/route.ts`: passed.
+  - `npm run build`: passed.

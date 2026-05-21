@@ -190,7 +190,8 @@ export async function GET(req: NextRequest) {
     const cols = "pid,profit_band,status,category,comparable_key,expected_profit_min,expected_profit_max,confidence,exposure_count,max_exposure,last_verified_at";
     let total = 0;
     let poolRows: PoolRow[] = [];
-    const hasExternalFilters = Boolean(priceBucket || skuFilter || searchQuery);
+    const scopedPidSet = scopedPids ? new Set(scopedPids) : null;
+    const hasExternalFilters = Boolean(scopedPidSet || priceBucket || skuFilter || searchQuery);
 
     if (hasExternalFilters) {
       // price/SKU/search 필터는 외부 테이블을 보지만, total/page는 candidate_pool base row 기준으로 한 번에 계산한다.
@@ -234,6 +235,7 @@ export async function GET(req: NextRequest) {
       const exactPid = Number(searchQuery);
       const allFilteredRows = allBaseRows.filter((row) => {
         const pid = Number(row.pid);
+        if (scopedPidSet && !scopedPidSet.has(pid)) return false;
         const listing = listingMap.get(pid);
         if (priceBucket) {
           const price = Number(listing?.price ?? 0);
