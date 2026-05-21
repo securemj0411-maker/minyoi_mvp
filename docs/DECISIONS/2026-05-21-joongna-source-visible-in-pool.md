@@ -159,3 +159,24 @@
   - `npm run build`: passed.
 - Deferred:
   - This fixes acquisition coverage, not the downstream ready gate itself. Shoe/clothing rows still need the normal market median, profit, risk, seller, and low-volume gates before users see them.
+
+## Follow-up — Joongna seller trust enrichment
+- Operator asked whether Joongna has seller review/rating/comment signals like Bunjang and why they were not appearing.
+- Finding:
+  - Joongna product-detail HTML only carries basic seller ids (`storeSeq`, `nickName`) plus product facts.
+  - Joongna has a separate public seller profile API: `main-api.joongna.com/user/info/product-detail?storeSeq=...`.
+  - Sample no-write check returned seller trust facts: `reviewCount=96`, `followerCount=11`, `activityScore=300`, `reliabilityScore=672`, profile image, and store intro.
+  - Joongna safe-order transaction count is available via `boot.joongna.com/api-order/transactions/count?storeSeq=...`; sample returned `salesCount=97`, `purchasesCount=60`.
+  - A product chat/comment count endpoint exists in the client bundle, but no-write probing returned 403 from public endpoints. Do not treat it as a reliable Bunjang-style public comment count yet.
+- Fix:
+  - Added Joongna seller-profile and order-transaction fetchers.
+  - Joongna ingest now enriches writable details by unique `storeSeq`, writes seller facts into `mvp_sellers`, and stores per-listing seller review/trust facts on `mvp_raw_listings`.
+  - `shop_review_count` now uses Joongna `reviewCount`.
+  - `shop_review_rating` uses a source-tagged normalized trust score from `activityScore + reliabilityScore` on a 0-5 scale, with the original Joongna score components retained in `raw_json.seller` and `mvp_sellers.source_json`.
+  - Cron run metadata records seller profile/transaction fetch counts.
+- Verification:
+  - No-write API check for store `5792829` returned the expected profile and transaction count JSON.
+  - `npx eslint src/lib/joongna.ts src/lib/joongna-ingest.ts src/app/api/cron/joongna-worker/route.ts`: passed.
+  - `npm run build`: passed.
+- Deferred:
+  - Do not implement Joongna comment-count gate until a stable public field/API is found. Current `num_comment` stays null for Joongna rows.

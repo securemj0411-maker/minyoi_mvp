@@ -3,6 +3,8 @@ import { gunzipSync } from "node:zlib";
 
 export const JOONGNA_SOURCE_ID = "joongna" as const;
 export const JOONGNA_BASE_URL = "https://web.joongna.com";
+export const JOONGNA_MAIN_API_BASE_URL = "https://main-api.joongna.com";
+export const JOONGNA_BOOT_API_BASE_URL = "https://boot.joongna.com";
 export const JOONGNA_RECENT_PRODUCT_INDEX_URL = `${JOONGNA_BASE_URL}/sitemap-recent-product-index.xml.gz`;
 
 export type JoongnaSourceMode = "off" | "active";
@@ -67,6 +69,17 @@ export type JoongnaDetail = {
   productTradeType: number | null;
   storeSeq: number | null;
   nickName: string | null;
+  sellerProfileImageUrl: string | null;
+  sellerStoreAbout: string | null;
+  sellerUserType: number | null;
+  sellerActivityScore: number | null;
+  sellerReliabilityScore: number | null;
+  sellerReviewCount: number | null;
+  sellerFollowerCount: number | null;
+  sellerSafeOrderSalesCount: number | null;
+  sellerSafeOrderPurchasesCount: number | null;
+  sellerSafeOrderSalesText: string | null;
+  commentCount: number | null;
   viewCount: number | null;
   labels: string[];
   thumbnailUrl: string | null;
@@ -74,6 +87,25 @@ export type JoongnaDetail = {
   sortDate: string | null;
   updateDate: string | null;
   sourceUpdatedAt: string | null;
+};
+
+export type JoongnaSellerStoreInfo = {
+  storeSeq: number;
+  nickName: string | null;
+  userType: number | null;
+  profileImageUrl: string | null;
+  activityScore: number | null;
+  reliabilityScore: number | null;
+  reviewCount: number | null;
+  followerCount: number | null;
+  storeAbout: string | null;
+  businessInfo: unknown;
+};
+
+export type JoongnaOrderTransactionCount = {
+  salesCount: number | null;
+  purchasesCount: number | null;
+  safeOrderSalesCntText: string | null;
 };
 
 const TRANSPARENT_USER_AGENT =
@@ -84,6 +116,14 @@ const DEFAULT_HEADERS = {
   "User-Agent": TRANSPARENT_USER_AGENT,
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
   "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.6",
+};
+
+const API_HEADERS = {
+  ...DEFAULT_HEADERS,
+  Accept: "application/json,text/plain,*/*",
+  Origin: JOONGNA_BASE_URL,
+  Referer: `${JOONGNA_BASE_URL}/`,
+  "Os-Type": "2",
 };
 
 function normalizeMode(raw: string | null | undefined): JoongnaSourceMode {
@@ -170,6 +210,75 @@ export async function fetchJoongnaText(url: string, timeoutMs = 10_000): Promise
     contentType,
     body,
     blockSignal,
+  };
+}
+
+async function fetchJoongnaApiJson<T>(url: string, timeoutMs = 10_000): Promise<T | null> {
+  const res = await fetch(url, {
+    headers: API_HEADERS,
+    redirect: "follow",
+    signal: AbortSignal.timeout(Math.max(1_000, timeoutMs)),
+  });
+  const contentType = res.headers.get("content-type") ?? "";
+  const body = await res.text();
+  const blockSignal = detectJoongnaBlockSignal({ status: res.status, contentType, bodyPreview: body });
+  if (!res.ok || blockSignal.blocked || !contentType.includes("json")) return null;
+
+  try {
+    const parsed = JSON.parse(body) as { data?: T; meta?: { code?: number; status?: string } };
+    return parsed.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function finiteNumber(value: unknown): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function nullableString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+export async function fetchJoongnaSellerStoreInfo(
+  storeSeq: number,
+  timeoutMs = 10_000,
+): Promise<JoongnaSellerStoreInfo | null> {
+  if (!Number.isFinite(storeSeq) || storeSeq <= 0) return null;
+  const data = await fetchJoongnaApiJson<Record<string, unknown>>(
+    `${JOONGNA_MAIN_API_BASE_URL}/user/info/product-detail?storeSeq=${encodeURIComponent(String(storeSeq))}`,
+    timeoutMs,
+  );
+  if (!data) return null;
+  return {
+    storeSeq,
+    nickName: nullableString(data.nickName),
+    userType: finiteNumber(data.userType),
+    profileImageUrl: nullableString(data.profileImageUrl),
+    activityScore: finiteNumber(data.activityScore),
+    reliabilityScore: finiteNumber(data.reliabilityScore),
+    reviewCount: finiteNumber(data.reviewCount),
+    followerCount: finiteNumber(data.followerCount),
+    storeAbout: nullableString(data.storeAbout),
+    businessInfo: data.businessInfo ?? null,
+  };
+}
+
+export async function fetchJoongnaOrderTransactionCount(
+  storeSeq: number,
+  timeoutMs = 10_000,
+): Promise<JoongnaOrderTransactionCount | null> {
+  if (!Number.isFinite(storeSeq) || storeSeq <= 0) return null;
+  const data = await fetchJoongnaApiJson<Record<string, unknown>>(
+    `${JOONGNA_BOOT_API_BASE_URL}/api-order/transactions/count?storeSeq=${encodeURIComponent(String(storeSeq))}`,
+    timeoutMs,
+  );
+  if (!data) return null;
+  return {
+    salesCount: finiteNumber(data.salesCount),
+    purchasesCount: finiteNumber(data.purchasesCount),
+    safeOrderSalesCntText: nullableString(data.safeOrderSalesCntText),
   };
 }
 
@@ -324,6 +433,20 @@ export function parseJoongnaDetailHtml(url: string, html: string, status = 200):
     productTradeType: escapedNumberField(html, "productTradeType"),
     storeSeq: escapedNumberField(html, "storeSeq"),
     nickName: escapedStringField(html, "nickName"),
+    sellerProfileImageUrl: null,
+    sellerStoreAbout: null,
+    sellerUserType: null,
+    sellerActivityScore: null,
+    sellerReliabilityScore: null,
+    sellerReviewCount: null,
+    sellerFollowerCount: null,
+    sellerSafeOrderSalesCount: null,
+    sellerSafeOrderPurchasesCount: null,
+    sellerSafeOrderSalesText: null,
+    // Joongna product pages do not expose a Bunjang-style public comment count.
+    // The chat-count endpoint exists but returned 403 in no-write probing, so
+    // we keep this null instead of inventing a popularity gate from unavailable data.
+    commentCount: null,
     viewCount: escapedNumberField(html, "viewCount"),
     labels: extractJoongnaLabels(html),
     thumbnailUrl,

@@ -64,6 +64,8 @@ async function handleJoongnaWorker(req: NextRequest) {
       skippedDetails: result.skippedDetails,
       parsedUpserted: result.parsedUpserted,
       observationInserted: result.observationInserted,
+      sellerProfilesFetched: result.sellerProfilesFetched,
+      sellerTransactionsFetched: result.sellerTransactionsFetched,
       blockedSignals: result.blockedSignals,
       sourceHealthStatus: result.sourceHealthStatus,
       sourceHealthReason: result.sourceHealthReason,
