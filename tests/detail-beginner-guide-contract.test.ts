@@ -270,6 +270,18 @@ test("safety stats API supports scoped SKU and lane counts", () => {
   assert.match(route, /total_reviewed_7d/);
 });
 
+test("market source API trims price outliers before returning display comparables", () => {
+  const route = source("src/app/api/listings/[pid]/market-source/route.ts");
+
+  assert.match(route, /import \{ madTrim \} from "@\/lib\/market-math"/);
+  assert.match(route, /function trimComparableOutlierRows/);
+  assert.match(route, /trimmed\.removed <= 0/);
+  assert.match(route, /minAllowed/);
+  assert.match(route, /maxAllowed/);
+  assert.match(route, /const displayRows = trimComparableOutlierRows\(safeRows\)/);
+  assert.match(route, /comparables = displayRows\.map/);
+});
+
 test("AirPods Max does not inherit generic earphone battery or counterfeit prompts", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const brandDepth = source("src/lib/category-brand-depth.ts");

@@ -12,6 +12,7 @@ import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
+import { madTrim } from "@/lib/market-math";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +36,20 @@ type Comparable = {
   listingUrl: string;
   bunjangUrl: string;
 };
+
+function trimComparableOutlierRows(rows: Array<Record<string, unknown>>) {
+  const prices = rows
+    .map((row) => Number(row.price ?? 0))
+    .filter((price) => Number.isFinite(price) && price > 0);
+  const trimmed = madTrim(prices);
+  if (trimmed.removed <= 0 || trimmed.values.length === 0) return rows;
+  const minAllowed = Math.min(...trimmed.values);
+  const maxAllowed = Math.max(...trimmed.values);
+  return rows.filter((row) => {
+    const price = Number(row.price ?? 0);
+    return Number.isFinite(price) && price > 0 && price >= minAllowed && price <= maxAllowed;
+  });
+}
 
 export async function GET(
   req: Request,
@@ -199,7 +214,8 @@ export async function GET(
           if (excludeByPid.get(pid) === true) return false;
           return true;
         });
-        comparables = safeRows.map((row) => {
+        const displayRows = trimComparableOutlierRows(safeRows);
+        comparables = displayRows.map((row) => {
           const rowPid = Number(row.pid);
           const marketplaceSource = normalizeMarketplaceSource((row.source as string | null) ?? (row.seller_source as string | null));
           const listingUrl = listingUrlForSource(rowPid, row.url as string | null, marketplaceSource);
