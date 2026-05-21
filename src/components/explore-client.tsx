@@ -43,6 +43,14 @@ type PoolItem = {
   freeShipping: boolean;
   sellerReviewRating: number | null;
   sellerReviewCount: number;
+  joongnaTrustScore?: number | null;
+  joongnaSafeOrderSalesCount?: number | null;
+  joongnaSafeOrderSalesText?: string | null;
+  productTradeType?: number | null;
+  parcelFeeYn?: number | null;
+  tradeLabels?: string[];
+  transactionMode?: string | null;
+  shippingAssumption?: string | null;
   imageCount: number | null;
   descriptionPreview: string;
   soldOut: boolean;
@@ -139,9 +147,15 @@ function profitPct(item: PoolItem) {
   return Math.round((profitAvg(item) / item.price) * 100);
 }
 
-function recomputePoolProfit(price: number, marketPrice: number | null | undefined, freeShipping: boolean) {
+function buyerShippingForPoolItem(item: Pick<PoolItem, "freeShipping" | "transactionMode" | "shippingAssumption">) {
+  if (item.transactionMode === "direct_only") return 0;
+  if (item.shippingAssumption === "included" || item.shippingAssumption === "free_shipping") return 0;
+  return item.freeShipping ? 0 : 3500;
+}
+
+function recomputePoolProfit(price: number, marketPrice: number | null | undefined, item: Pick<PoolItem, "freeShipping" | "transactionMode" | "shippingAssumption">) {
   if (!marketPrice || marketPrice <= 0 || !price || price <= 0) return null;
-  const buyShipping = freeShipping ? 0 : 3500;
+  const buyShipping = buyerShippingForPoolItem(item);
   const sellFee = Math.round(marketPrice * SELLING_FEE_RATE);
   const max = Math.round(marketPrice - price - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
   const min = Math.round(marketPrice - (price + buyShipping) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
@@ -246,6 +260,14 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
       sellerName: null,
       sellerReviewRating: item.sellerReviewRating,
       sellerReviewCount: item.sellerReviewCount,
+      joongnaTrustScore: item.joongnaTrustScore ?? null,
+      joongnaSafeOrderSalesCount: item.joongnaSafeOrderSalesCount ?? null,
+      joongnaSafeOrderSalesText: item.joongnaSafeOrderSalesText ?? null,
+      productTradeType: item.productTradeType ?? null,
+      parcelFeeYn: item.parcelFeeYn ?? null,
+      tradeLabels: item.tradeLabels ?? [],
+      transactionMode: item.transactionMode === "direct_only" || item.transactionMode === "shipping_only" || item.transactionMode === "direct_and_shipping" ? item.transactionMode : "unknown",
+      shippingAssumption: item.shippingAssumption === "direct_only" || item.shippingAssumption === "included" || item.shippingAssumption === "separate" || item.shippingAssumption === "free_shipping" ? item.shippingAssumption : "unknown",
     },
     optionBaseAssumed: null,
   };
@@ -980,7 +1002,11 @@ export default function ExploreClient() {
           const marketBasis = data.analysis.marketBasis ?? null;
           setSelectedCard((prev) => {
             if (!prev || prev.pid !== pid) return prev;
-            const recomputedProfit = recomputePoolProfit(prev.price, marketBasis?.medianPrice, prev.savedDetail?.freeShipping ?? false);
+            const recomputedProfit = recomputePoolProfit(prev.price, marketBasis?.medianPrice, {
+              freeShipping: prev.savedDetail?.freeShipping ?? false,
+              transactionMode: prev.savedDetail?.transactionMode ?? null,
+              shippingAssumption: prev.savedDetail?.shippingAssumption ?? null,
+            });
             return {
               ...prev,
               expectedProfitMin: recomputedProfit?.min ?? prev.expectedProfitMin,
@@ -993,7 +1019,7 @@ export default function ExploreClient() {
           });
           setItems((prev) => prev.map((item) => {
             if (item.pid !== pid) return item;
-            const recomputedProfit = recomputePoolProfit(item.price, marketBasis?.medianPrice, item.freeShipping);
+            const recomputedProfit = recomputePoolProfit(item.price, marketBasis?.medianPrice, item);
             return {
               ...item,
               skuMedian: marketBasis?.medianPrice ?? item.skuMedian,
@@ -1242,7 +1268,13 @@ export default function ExploreClient() {
         <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0 sm:grid sm:grid-cols-2 sm:divide-y-0 sm:gap-3 lg:grid-cols-3">
           {displayItems.map((item) => {
             const pct = profitPct(item);
-            const isPremiumSeller = (item.sellerReviewRating ?? 0) >= 4.8 && item.sellerReviewCount >= 30;
+            const isJoongna = item.marketplaceSource === "joongna";
+            const isPremiumSeller = !isJoongna && (item.sellerReviewRating ?? 0) >= 4.8 && item.sellerReviewCount >= 30;
+            const shippingChip = item.transactionMode === "direct_only"
+              ? "직거래 전제"
+              : item.shippingAssumption === "included"
+                ? "배송비 포함"
+                : item.freeShipping ? "무료배송" : null;
             const isSoldOut = item.soldOut;
             const exactUnlocked = creditFeedEnabled || scrapOnly || savedPidSet.has(item.pid) || openedDetailPids.has(item.pid);
             const lockedPreview = !exactUnlocked;
@@ -1371,9 +1403,9 @@ export default function ExploreClient() {
                             우수 셀러
                           </span>
                         ) : null}
-                        {item.freeShipping ? (
+                        {shippingChip ? (
                           <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                            무료배송
+                            {shippingChip}
                           </span>
                         ) : null}
                         {lockedPreview ? (

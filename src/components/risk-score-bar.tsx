@@ -15,6 +15,7 @@ import {
   type RiskAxisResult,
   type RiskScoreInput,
 } from "@/lib/risk-score";
+import { isJoongnaMarketplaceSource } from "@/lib/marketplace-source";
 
 type Props = RiskScoreInput & {
   // showDetail: true = 문장형 버튼 + popover (admin-pool 상세 / pack-reveal 상세).
@@ -35,8 +36,9 @@ function detailTriggerLabel(tone: "safe" | "caution" | "danger", hitCount: numbe
   return `위험 신호 ${hitCount}건 확인`;
 }
 
-function riskActionSummary(axis: RiskAxisResult): string | null {
+function riskActionSummary(axis: RiskAxisResult, input: RiskScoreInput): string | null {
   const reason = axis.reason ?? "";
+  const paymentLabel = isJoongnaMarketplaceSource(input.marketplaceSource) ? "안심결제" : "안전결제";
   if (axis.level === 0) return null;
   if (axis.axis === "fraud") {
     if (reason.includes("시세")) return "가격이 시세보다 크게 낮아요. 정품 인증, 구매 영수증, 구성품 사진을 한 번 더 확인하세요.";
@@ -51,7 +53,7 @@ function riskActionSummary(axis: RiskAxisResult): string | null {
     return "배터리 상태가 가격에 영향을 줄 수 있어요. 효율 수치와 충전 상태를 확인하세요.";
   }
   if (axis.axis === "seller") {
-    if (reason.includes("후기 0")) return "후기가 0건인 신규 판매자예요. 안전결제나 직거래, 실물 인증 사진을 우선으로 보세요.";
+    if (reason.includes("후기 0")) return `후기가 0건인 신규 판매자예요. ${paymentLabel}나 직거래, 실물 인증 사진을 우선으로 보세요.`;
     return "판매자 후기가 적거나 낮아요. 최근 거래 후기와 응답 태도를 확인하고 진행하세요.";
   }
   if (axis.axis === "photo") {
@@ -75,11 +77,12 @@ export function RiskScoreBar({
   const [open, setOpen] = useState(false);
   const [portalReady, setPortalReady] = useState(false);
   const score = buildRiskScore(input);
+  const paymentLabel = isJoongnaMarketplaceSource(input.marketplaceSource) ? "안심결제" : "안전결제";
   const toneClass = RISK_TONE_CLASS[score.tone];
   const detailLabel = detailTriggerLabel(score.tone, score.hitCount);
   const DetailIcon = score.tone === "safe" ? ShieldIcon : AlertTriangleIcon;
   const actionSummaries = score.axes
-    .map((axis) => riskActionSummary(axis))
+    .map((axis) => riskActionSummary(axis, input))
     .filter((text): text is string => Boolean(text));
   useEffect(() => {
     setPortalReady(true);
@@ -175,7 +178,7 @@ export function RiskScoreBar({
             )}
           </div>
           <div className="mt-3 rounded-xl border border-[#ebe3d8] bg-white px-3.5 py-3 text-xs font-semibold leading-5 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/35 dark:text-zinc-400">
-            득템잡이는 가품 의심, 잠금/할부 의심처럼 강한 차단 신호가 있는 매물은 추천 풀에 넣지 않아요. 이 화면은 통과한 매물에서 남은 확인 포인트만 보여줘요. 신호가 0이어도 거래 전 실사진과 안전결제는 마지막으로 확인하세요.
+            득템잡이는 가품 의심, 잠금/할부 의심처럼 강한 차단 신호가 있는 매물은 추천 풀에 넣지 않아요. 이 화면은 통과한 매물에서 남은 확인 포인트만 보여줘요. 신호가 0이어도 거래 전 실사진과 {paymentLabel} 가능 여부는 마지막으로 확인하세요.
           </div>
         </div>
       </div>

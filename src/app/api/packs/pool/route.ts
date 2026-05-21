@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { loadV7SiblingPresence, type V7SiblingPresenceMap } from "@/lib/band-aware-median";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
+import { inferMarketplaceTransaction, marketplaceFactsFromRawJson } from "@/lib/marketplace-safety";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
@@ -87,6 +88,7 @@ type RawListingMeta = {
   shop_review_count: number | null;
   image_count: number | null;
   description_preview: string | null;
+  raw_json: Record<string, unknown> | null;
 };
 
 type UserCreditsRow = {
@@ -332,7 +334,7 @@ async function loadPool(
   const comparableKeys = [...new Set(pool.map((r) => r.comparable_key).filter((k): k is string => Boolean(k)))];
   const [metaRes, marketBands, v7SiblingPresence] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview&pid=in.(${pids.join(",")})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json&pid=in.(${pids.join(",")})`,
       { headers },
     ),
     loadMarketBandsForPool(headers, comparableKeys),
@@ -357,6 +359,15 @@ function buildItems(
       const meta = metaByPid.get(row.pid);
       if (!raw) return null;
       const marketplaceSource = normalizeMarketplaceSource(meta?.source ?? meta?.seller_source);
+      const facts = marketplaceFactsFromRawJson({
+        marketplaceSource,
+        marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
+        freeShipping: meta?.free_shipping ?? false,
+        sellerReviewRating: meta?.shop_review_rating ?? null,
+        sellerReviewCount: meta?.shop_review_count ?? 0,
+        rawJson: meta?.raw_json,
+      });
+      const tx = inferMarketplaceTransaction(facts);
       // Wave 247.2 (2026-05-19): band-aware sku_median.
       //   기존: raw.sku_median (mvp_listings — condition_class 무시, 전체 median).
       //   사용자 풀의 16% (82/500) sku_median=0 → "시세 0원" 미스리딩.
@@ -383,7 +394,13 @@ function buildItems(
       //
       // 정확한 buyer_shipping/estimated_buy_cost는 raw mvp_listings에 없어서 단순 가정.
       // 더 정확한 값 필요 시 mvp_listings join 추가 (별도 wave).
-      const ASSUMED_BUY_SHIPPING = 3500;
+      const assumedBuyShipping =
+        tx.transactionMode === "direct_only" ||
+        tx.assumption === "included" ||
+        tx.assumption === "free_shipping" ||
+        meta?.free_shipping === true
+          ? 0
+          : 3500;
       let recomputedProfitMin = row.expected_profit_min;
       let recomputedProfitMax = row.expected_profit_max;
       if (skuMedianFinal && skuMedianFinal > 0 && Number.isFinite(raw.price) && raw.price > 0) {
@@ -394,7 +411,7 @@ function buildItems(
         );
         recomputedProfitMin = Math.max(
           0,
-          skuMedianFinal - (raw.price + ASSUMED_BUY_SHIPPING) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER,
+          skuMedianFinal - (raw.price + assumedBuyShipping) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER,
         );
       }
       // Wave 368: 안전망 — 재계산 후 차익이 0이면 응답에서 제외 (사용자 화면 노출 차단).
@@ -425,6 +442,14 @@ function buildItems(
         freeShipping: meta?.free_shipping ?? false,
         sellerReviewRating: meta?.shop_review_rating ?? null,
         sellerReviewCount: meta?.shop_review_count ?? 0,
+        joongnaTrustScore: facts.joongnaTrustScore ?? null,
+        joongnaSafeOrderSalesCount: facts.joongnaSafeOrderSalesCount ?? null,
+        joongnaSafeOrderSalesText: facts.joongnaSafeOrderSalesText ?? null,
+        productTradeType: facts.productTradeType ?? null,
+        parcelFeeYn: facts.parcelFeeYn ?? null,
+        tradeLabels: [...(facts.tradeLabels ?? [])],
+        transactionMode: tx.transactionMode,
+        shippingAssumption: tx.assumption,
         imageCount: meta?.image_count ?? null,
         descriptionPreview: meta?.description_preview ?? "",
         lastSeenAt: meta?.last_seen_at ?? null,

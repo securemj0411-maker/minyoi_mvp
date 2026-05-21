@@ -85,6 +85,7 @@ export type JoongnaDetail = {
   viewCount: number | null;
   labels: string[];
   thumbnailUrl: string | null;
+  imageUrls: string[];
   imageCount: number;
   sortDate: string | null;
   updateDate: string | null;
@@ -452,6 +453,7 @@ export function parseJoongnaDetailHtml(url: string, html: string, status = 200):
     viewCount: escapedNumberField(html, "viewCount"),
     labels: extractJoongnaLabels(html),
     thumbnailUrl,
+    imageUrls: images,
     imageCount: images.length,
     sortDate,
     updateDate,

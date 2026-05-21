@@ -2,6 +2,15 @@
 // 득템잡이 차별화 = "근거 있는 추천" — chip 으로 왜 좋은지 명시.
 // 3 화면 통일 (pack-reveal-modal / admin-pool-browser / preview-masked-dashboard) — drift 차단.
 
+import { isJoongnaMarketplaceSource } from "@/lib/marketplace-source";
+import {
+  inferMarketplaceTransaction,
+  joongnaTrustScoreBand,
+  joongnaTrustScoreFromFacts,
+  type MarketplaceShippingAssumption,
+  type MarketplaceTransactionMode,
+} from "@/lib/marketplace-safety";
+
 export type VerdictTone = "good" | "warn" | "info";
 export type Verdict = { label: string; tone: VerdictTone };
 
@@ -25,6 +34,13 @@ export type VerdictInput = {
   // 셀러
   sellerReviewRating?: number | null;
   sellerReviewCount?: number | null;
+  marketplaceSource?: string | null;
+  joongnaTrustScore?: number | null;
+  joongnaSafeOrderSalesCount?: number | null;
+  // source-aware 거래/배송
+  tradeLabels?: readonly string[] | null;
+  shippingAssumption?: MarketplaceShippingAssumption | string | null;
+  transactionMode?: MarketplaceTransactionMode | string | null;
   // 매물 메타
   freeShipping?: boolean | null;
   favoriteCount?: number | null;
@@ -66,6 +82,10 @@ const MAX_VERDICTS = 6;
 
 export function buildVerdicts(input: VerdictInput): Verdict[] {
   const out: Verdict[] = [];
+  const isJoongna = isJoongnaMarketplaceSource(input.marketplaceSource);
+  const trustScore = joongnaTrustScoreFromFacts(input);
+  const trustBand = joongnaTrustScoreBand(trustScore);
+  const shipping = inferMarketplaceTransaction(input);
 
   // 1. 강한 부정 (위험 noticeable — 우선)
   if (input.descriptionPreview && NEGATIVE_DESC_RE.test(input.descriptionPreview)) {
@@ -188,7 +208,9 @@ export function buildVerdicts(input: VerdictInput): Verdict[] {
   }
 
   // 5. 셀러 신뢰
-  if (input.sellerReviewRating != null && input.sellerReviewRating >= 4.5
+  if (isJoongna && trustBand && (input.sellerReviewCount ?? 0) >= 1) {
+    out.push({ label: `신뢰지수 ${trustBand}`, tone: "good" });
+  } else if (!isJoongna && input.sellerReviewRating != null && input.sellerReviewRating >= 4.5
       && (input.sellerReviewCount ?? 0) >= 5) {
     out.push({ label: `★${input.sellerReviewRating.toFixed(1)} 셀러`, tone: "good" });
   }
@@ -213,7 +235,9 @@ export function buildVerdicts(input: VerdictInput): Verdict[] {
   }
 
   // Wave 196: 우수 셀러 (별점 + 후기 수 둘 다 높음).
-  if (input.sellerReviewRating != null && input.sellerReviewRating >= 4.8
+  if (isJoongna && (input.joongnaSafeOrderSalesCount ?? 0) > 0) {
+    out.push({ label: `안심거래 판매 ${input.joongnaSafeOrderSalesCount}건`, tone: "good" });
+  } else if (!isJoongna && input.sellerReviewRating != null && input.sellerReviewRating >= 4.8
       && (input.sellerReviewCount ?? 0) >= 50) {
     out.push({ label: `🏆 우수 셀러 (${input.sellerReviewCount}건)`, tone: "good" });
   }
@@ -228,7 +252,11 @@ export function buildVerdicts(input: VerdictInput): Verdict[] {
   }
 
   // 8. 무료배송
-  if (input.freeShipping) {
+  if (shipping.assumption === "direct_only") {
+    out.push({ label: "직거래 전제", tone: "info" });
+  } else if (shipping.assumption === "included") {
+    out.push({ label: "배송비 포함", tone: "info" });
+  } else if (input.freeShipping && !isJoongna) {
     out.push({ label: "무료배송", tone: "info" });
   }
 

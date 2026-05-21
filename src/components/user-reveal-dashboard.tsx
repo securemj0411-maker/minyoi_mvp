@@ -26,6 +26,14 @@ type RevealItem = {
   sellerName: string | null;
   sellerReviewRating: number | null;
   sellerReviewCount: number;
+  joongnaTrustScore?: number | null;
+  joongnaSafeOrderSalesCount?: number | null;
+  joongnaSafeOrderSalesText?: string | null;
+  productTradeType?: number | null;
+  parcelFeeYn?: number | null;
+  tradeLabels?: string[];
+  transactionMode?: string | null;
+  shippingAssumption?: string | null;
   skuId: string | null;
   thumbnailUrl: string | null;
   skuName: string | null;
@@ -198,7 +206,13 @@ function currentProfitAverage(item: RevealItem) {
 function recomputeCurrentProfitFromMarketBasis(item: RevealItem, marketBasis: RevealMarketBasis | null | undefined) {
   const market = marketBasis?.medianPrice ?? null;
   if (!market || market <= 0 || !item.price || item.price <= 0) return null;
-  const assumedBuyShipping = item.freeShipping ? 0 : 3500;
+  const assumedBuyShipping =
+    item.transactionMode === "direct_only" ||
+    item.shippingAssumption === "included" ||
+    item.shippingAssumption === "free_shipping" ||
+    item.freeShipping
+      ? 0
+      : 3500;
   const sellFee = Math.round(market * SELLING_FEE_RATE);
   const max = Math.round(market - item.price - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
   const min = Math.round(market - (item.price + assumedBuyShipping) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
@@ -387,13 +401,21 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         marketplaceLabel: card.marketplaceLabel ?? "번개장터",
         price: card.price,
         favoriteCount: null,
-        freeShipping: false,
-        descriptionPreview: "",
+        freeShipping: card.savedDetail?.freeShipping ?? false,
+        descriptionPreview: card.savedDetail?.descriptionPreview ?? "",
         imageCount: card.savedDetail?.imageCount ?? null,
         sellerUid: null,
         sellerName: null,
-        sellerReviewRating: null,
-        sellerReviewCount: 0,
+        sellerReviewRating: card.savedDetail?.sellerReviewRating ?? null,
+        sellerReviewCount: card.savedDetail?.sellerReviewCount ?? 0,
+        joongnaTrustScore: card.savedDetail?.joongnaTrustScore ?? null,
+        joongnaSafeOrderSalesCount: card.savedDetail?.joongnaSafeOrderSalesCount ?? null,
+        joongnaSafeOrderSalesText: card.savedDetail?.joongnaSafeOrderSalesText ?? null,
+        productTradeType: card.savedDetail?.productTradeType ?? null,
+        parcelFeeYn: card.savedDetail?.parcelFeeYn ?? null,
+        tradeLabels: card.savedDetail?.tradeLabels ?? [],
+        transactionMode: card.savedDetail?.transactionMode ?? "unknown",
+        shippingAssumption: card.savedDetail?.shippingAssumption ?? "unknown",
         skuId: card.skuId ?? null,
         thumbnailUrl: card.thumbnailUrl,
         skuName: card.skuName,
@@ -509,6 +531,14 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         sellerName: selectedItem.sellerName,
         sellerReviewRating: selectedItem.sellerReviewRating,
         sellerReviewCount: selectedItem.sellerReviewCount,
+        joongnaTrustScore: selectedItem.joongnaTrustScore ?? null,
+        joongnaSafeOrderSalesCount: selectedItem.joongnaSafeOrderSalesCount ?? null,
+        joongnaSafeOrderSalesText: selectedItem.joongnaSafeOrderSalesText ?? null,
+        productTradeType: selectedItem.productTradeType ?? null,
+        parcelFeeYn: selectedItem.parcelFeeYn ?? null,
+        tradeLabels: selectedItem.tradeLabels ?? [],
+        transactionMode: selectedItem.transactionMode === "direct_only" || selectedItem.transactionMode === "shipping_only" || selectedItem.transactionMode === "direct_and_shipping" ? selectedItem.transactionMode : "unknown",
+        shippingAssumption: selectedItem.shippingAssumption === "direct_only" || selectedItem.shippingAssumption === "included" || selectedItem.shippingAssumption === "separate" || selectedItem.shippingAssumption === "free_shipping" ? selectedItem.shippingAssumption : "unknown",
       },
       skuListingFlow: selectedItem.skuListingFlow ?? undefined,
       optionBaseAssumed: selectedItem.optionBaseAssumed ?? null,
@@ -667,8 +697,14 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           officialSeller: false,
           joinDate: null,
         },
-        shippingOptions: fallbackItem.freeShipping ? [{ kind: "free", amount: 0 }] : [],
-        shippingSummary: fallbackItem.freeShipping ? "무료배송" : "-",
+        shippingOptions: fallbackItem.freeShipping || fallbackItem.shippingAssumption === "included" ? [{ kind: "free", amount: 0 }] : [],
+        shippingSummary: fallbackItem.transactionMode === "direct_only"
+          ? "0원 · 직거래 전제"
+          : fallbackItem.shippingAssumption === "included"
+            ? "0원 · 배송비 포함"
+            : fallbackItem.freeShipping ? "무료배송" : "-",
+        transactionMode: fallbackItem.transactionMode === "direct_only" || fallbackItem.transactionMode === "shipping_only" || fallbackItem.transactionMode === "direct_and_shipping" ? fallbackItem.transactionMode : "unknown",
+        shippingAssumption: fallbackItem.shippingAssumption === "direct_only" || fallbackItem.shippingAssumption === "included" || fallbackItem.shippingAssumption === "separate" || fallbackItem.shippingAssumption === "free_shipping" ? fallbackItem.shippingAssumption : "unknown",
       };
     }
   }

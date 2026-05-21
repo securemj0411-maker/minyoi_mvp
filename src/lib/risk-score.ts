@@ -4,6 +4,9 @@
 //
 // 3 화면 통일 (admin-pool-browser / pack-reveal-modal / user-reveal-dashboard) — drift 차단.
 
+import { isJoongnaMarketplaceSource } from "@/lib/marketplace-source";
+import { joongnaTrustScoreBand, joongnaTrustScoreFromFacts } from "@/lib/marketplace-safety";
+
 export type RiskAxis = "fraud" | "lock" | "battery" | "seller" | "photo";
 export type RiskLevel = 0 | 1 | 2; // safe / caution / warn
 export type RiskTone = "safe" | "caution" | "danger";
@@ -32,6 +35,8 @@ export type RiskScoreInput = {
   confidence?: number | null;
   sellerReviewRating?: number | null;
   sellerReviewCount?: number | null;
+  marketplaceSource?: string | null;
+  joongnaTrustScore?: number | null;
   photoCount?: number | null;
 };
 
@@ -123,6 +128,21 @@ function scoreBattery(input: RiskScoreInput, _flags: Set<string>): RiskAxisResul
 function scoreSeller(input: RiskScoreInput): RiskAxisResult {
   const count = input.sellerReviewCount ?? null;
   const rating = input.sellerReviewRating ?? null;
+  if (isJoongnaMarketplaceSource(input.marketplaceSource)) {
+    const trustScore = joongnaTrustScoreFromFacts(input);
+    const trustBand = joongnaTrustScoreBand(trustScore);
+    if (count === 0) {
+      return { axis: "seller", level: 2, reason: "거래후기 0건" };
+    }
+    if (count != null && count < 3) {
+      return { axis: "seller", level: 1, reason: `거래후기 ${count}건` };
+    }
+    if (trustScore != null) {
+      if (trustScore < 500) return { axis: "seller", level: 2, reason: `신뢰지수 ${trustBand ?? `${trustScore}점`}` };
+      if (trustScore < 650) return { axis: "seller", level: 1, reason: `신뢰지수 ${trustBand ?? `${trustScore}점`}` };
+    }
+    return { axis: "seller", level: 0, reason: null };
+  }
   if (count === 0) {
     return { axis: "seller", level: 2, reason: "신규 판매자 (후기 0)" };
   }

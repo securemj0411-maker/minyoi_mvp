@@ -4,6 +4,7 @@ import { fetchDetail } from "@/lib/bunjang";
 import { consumeDetailAccess } from "@/lib/detail-access";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { inferMarketplaceTransaction, marketplaceFactsFromRawJson } from "@/lib/marketplace-safety";
 import { classifyListing } from "@/lib/pipeline";
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -53,7 +54,7 @@ async function loadExactPoolItem(pid: number) {
       url: string | null;
     }>>),
     restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,listing_state,sale_status,num_comment&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,listing_state,sale_status,num_comment,raw_json&pid=eq.${pid}&limit=1`,
       { headers },
     ).then((res) => res.json() as Promise<Array<{
       pid: number;
@@ -72,6 +73,7 @@ async function loadExactPoolItem(pid: number) {
       listing_state: string | null;
       sale_status: string | null;
       num_comment: number | null;
+      raw_json: Record<string, unknown> | null;
     }>>),
   ]);
 
@@ -80,6 +82,15 @@ async function loadExactPoolItem(pid: number) {
   const meta = metaRows[0];
   if (!pool || !raw) return null;
   const marketplaceSource = normalizeMarketplaceSource(meta?.source ?? meta?.seller_source);
+  const facts = marketplaceFactsFromRawJson({
+    marketplaceSource,
+    marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
+    freeShipping: meta?.free_shipping ?? false,
+    sellerReviewRating: meta?.shop_review_rating ?? null,
+    sellerReviewCount: meta?.shop_review_count ?? 0,
+    rawJson: meta?.raw_json,
+  });
+  const tx = inferMarketplaceTransaction(facts);
   return {
     pid,
     name: raw.name,
@@ -103,6 +114,14 @@ async function loadExactPoolItem(pid: number) {
     freeShipping: meta?.free_shipping ?? false,
     sellerReviewRating: meta?.shop_review_rating ?? null,
     sellerReviewCount: meta?.shop_review_count ?? 0,
+    joongnaTrustScore: facts.joongnaTrustScore ?? null,
+    joongnaSafeOrderSalesCount: facts.joongnaSafeOrderSalesCount ?? null,
+    joongnaSafeOrderSalesText: facts.joongnaSafeOrderSalesText ?? null,
+    productTradeType: facts.productTradeType ?? null,
+    parcelFeeYn: facts.parcelFeeYn ?? null,
+    tradeLabels: [...(facts.tradeLabels ?? [])],
+    transactionMode: tx.transactionMode,
+    shippingAssumption: tx.assumption,
     imageCount: meta?.image_count ?? null,
     descriptionPreview: meta?.description_preview ?? "",
     listingState: meta?.listing_state ?? "unknown",

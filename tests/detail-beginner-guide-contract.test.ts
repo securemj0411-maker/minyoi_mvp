@@ -107,14 +107,14 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /sellerReviewRating/);
   assert.match(modal, /sellerReviewCount/);
   assert.match(modal, /SELLER_TRUST_MIN_REVIEW_COUNT = 10/);
-  assert.match(modal, /BEGINNER_PURCHASE_CHECK_LIMIT = 4/);
+  assert.match(modal, /BEGINNER_PURCHASE_CHECK_LIMIT = 3/);
   assert.match(modal, /beginnerPurchaseChecks/);
   assert.match(modal, /hasMeaningfulCounterfeitRisk\(card, category\)/);
   assert.match(modal, /categoryDefaultDepth/);
   assert.match(modal, /valueNote\?: string/);
   assert.match(modal, /data-beginner-guide-context-note/);
   assert.match(modal, /BeginnerGuideContextNote/);
-  assert.match(modal, /후기 수와 평점을 같이 봐서/);
+  assert.match(modal, /valueNote: safety\.sellerTrust\.valueNote/);
   assert.match(modal, /상태가 다른 매물은 섞지 않고/);
   assert.match(modal, /수수료, 재배송비, 안전버퍼/);
   assert.match(modal, /BeginnerGuideSafetyFilterNote/);
@@ -151,7 +151,11 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /step\.tone === "intro" \? <BeginnerGuideSafetyFilterNote card=\{card\} variant="intro" \/> : null/);
   assert.match(modal, /data-beginner-guide-purchase-check/);
   assert.match(modal, /구매 전에 이것만 물어보면 돼요/);
-  assert.match(modal, /사진 수, 후기 표본, 구성품, 잠금, 정품 위험 중 이 매물에서 먼저 물어볼 것/);
+  assert.match(modal, /외부 결제 유도, 선입금, 입금자명 변경 같은 멈춤 신호/);
+  assert.match(modal, /commonMarketplaceSafetyChecks/);
+  assert.match(modal, /외부 결제 링크/);
+  assert.match(modal, /외부 메신저/);
+  assert.match(modal, /신분증 인증 요구/);
   assert.match(modal, /문의 문구 복사/);
   assert.match(modal, /사진, 구성품, 안전결제를 피하면 구매 보류/);
   assert.match(modal, /사진이 적어요/);
@@ -162,7 +166,9 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /imageCount/);
   assert.match(modal, /photoCount: card\.savedDetail\?\.imageCount/);
   assert.match(modal, /categorySlug: categoryForBeginnerGuide\(card\)/);
-  assert.match(modal, /이 상품 판매자는 후기가/);
+  assert.match(modal, /이 상품 판매자는/);
+  assert.match(modal, /safety\.isJoongna/);
+  assert.match(modal, /신뢰지수/);
   assert.match(modal, /평점은/);
   assert.match(modal, /판단 표본이 적어요/);
   assert.match(modal, /data-beginner-guide-trust-highlight/);
@@ -251,7 +257,7 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /bg-\[#f5f9ff\]/);
   assert.match(modal, /h-11 w-11/);
   assert.match(modal, /후기와 평점이 없어요/);
-  assert.match(modal, /\$\{marketplace\} 신규 판매자/);
+  assert.match(modal, /safety\.marketplaceLabel\} 신규 판매자/);
   assert.match(modal, /requestedAnalysisPidsRef/);
   assert.match(modal, /guidePrimaryButtonClass/);
   assert.match(modal, /data-bunjang-exit-confirm/);
@@ -313,7 +319,9 @@ test("cost assurance does not turn market delta into buyer shipping", () => {
 
   assert.match(modal, /DEFAULT_BUYER_SHIPPING_FEE_MAX = 3_500/);
   assert.match(snapshot, /buyerShippingLow = 0/);
-  assert.match(snapshot, /buyerShippingHigh = freeShipping \? 0 : DEFAULT_BUYER_SHIPPING_FEE_MAX/);
+  assert.match(snapshot, /buyerShippingHigh = safety\.shipping\.buyerShippingHigh/);
+  assert.match(snapshot, /shippingValueLabel: safety\.shipping\.valueLabel/);
+  assert.match(snapshot, /shippingNote: safety\.shipping\.note/);
   assert.match(snapshot, /resalePriceFromProfit\(card\.expectedProfitMin, buyCostHigh\)/);
   assert.match(snapshot, /resalePriceFromProfit\(card\.expectedProfitMax, buyCostLow\)/);
   assert.match(modal, /수익 기준 시세/);

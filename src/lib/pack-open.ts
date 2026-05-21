@@ -3,7 +3,14 @@ import { CATALOG } from "@/lib/catalog";
 import { categoryFromComparableKey, loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { fetchJoongnaDetail } from "@/lib/joongna";
-import { isJoongnaMarketplaceSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import {
+  buildMarketplaceSafetyDisplay,
+  inferMarketplaceTransaction,
+  marketplaceFactsFromRawJson,
+  type MarketplaceShippingAssumption,
+  type MarketplaceTransactionMode,
+} from "@/lib/marketplace-safety";
 import {
   canPermanentlyInvalidateSoldOut,
   detectSoldOut,
@@ -67,6 +74,14 @@ export type RevealCard = {
     sellerName: string | null;
     sellerReviewRating: number | null;
     sellerReviewCount: number;
+    joongnaTrustScore?: number | null;
+    joongnaSafeOrderSalesCount?: number | null;
+    joongnaSafeOrderSalesText?: string | null;
+    productTradeType?: number | null;
+    parcelFeeYn?: number | null;
+    tradeLabels?: string[];
+    transactionMode?: MarketplaceTransactionMode;
+    shippingAssumption?: MarketplaceShippingAssumption;
   };
   // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
   // null/[] 이면 옵션 명시 매물. 값 있으면 "기본 옵션 가정" UI badge 표시.
@@ -148,6 +163,8 @@ export type RevealListingDetail = {
     amount: number;
   }[];
   shippingSummary: string;
+  transactionMode?: MarketplaceTransactionMode;
+  shippingAssumption?: MarketplaceShippingAssumption;
 };
 
 export type PackOpenInput = {
@@ -263,6 +280,7 @@ type RawSkuMeta = {
   image_count: number | null;
   num_comment: number | null;
   detail_enriched_at: string | null;
+  raw_json: Record<string, unknown> | null;
 };
 
 type UserRevealDedupe = {
@@ -563,7 +581,7 @@ async function fetchListings(pids: number[]): Promise<Map<number, ListingMeta>> 
   if (pids.length === 0) return new Map();
   const pidFilter = pids.join(",");
   const listingCols = "pid,name,url,price,sku_name,thumbnail_url";
-  const rawCols = "pid,source,seller_source,url,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,image_count,num_comment,detail_enriched_at";
+  const rawCols = "pid,source,seller_source,url,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,image_count,num_comment,detail_enriched_at,raw_json";
   const [listingRes, rawRes] = await Promise.all([
     callSupabase(`/mvp_listings?select=${listingCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
     callSupabase(`/mvp_raw_listings?select=${rawCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
@@ -1276,6 +1294,36 @@ type RevealTerminalMarketMeta = {
   } | null;
 };
 
+type RevealDetailSourceMeta = {
+  pid: number;
+  source: string | null;
+  seller_source: string | null;
+  url: string | null;
+  free_shipping: boolean | null;
+  shop_review_rating: number | null;
+  shop_review_count: number | null;
+  raw_json: Record<string, unknown> | null;
+};
+
+async function loadRevealDetailSourceMeta(pid: number): Promise<RevealDetailSourceMeta | null> {
+  const res = await callSupabase(
+    `/mvp_raw_listings?select=pid,source,seller_source,url,free_shipping,shop_review_rating,shop_review_count,raw_json&pid=eq.${pid}&limit=1`,
+    { headers: authHeaders() },
+  );
+  const rows = (await res.json()) as RevealDetailSourceMeta[];
+  return rows[0] ?? null;
+}
+
+function shippingOptionsFromSafety(display: ReturnType<typeof buildMarketplaceSafetyDisplay>): RevealListingDetail["shippingOptions"] {
+  if (display.shipping.assumption === "free_shipping" || display.shipping.assumption === "included") {
+    return [{ kind: "free", amount: 0 }];
+  }
+  if (display.shipping.assumption === "separate" || display.shipping.assumption === "unknown") {
+    return [{ kind: "unknown", amount: display.shipping.buyerShippingHigh }];
+  }
+  return [];
+}
+
 async function loadRevealTerminalMarketMeta(pid: number): Promise<RevealTerminalMarketMeta | null> {
   const [rawRes, parsedRes] = await Promise.all([
     callSupabase(
@@ -1428,6 +1476,8 @@ function terminalRevealDetail(pid: number, saleStatus = "SOLD_OUT"): RevealListi
     },
     shippingOptions: [],
     shippingSummary: "판매완료",
+    transactionMode: "unknown",
+    shippingAssumption: "unknown",
   };
 }
 
@@ -1436,6 +1486,83 @@ export async function loadRevealListingDetail(input: {
   pid: number;
 }): Promise<RevealListingDetail> {
   await assertRevealAccess(input.userRef, input.pid);
+  const meta = await loadRevealDetailSourceMeta(input.pid);
+  const marketplaceSource = normalizeMarketplaceSource(meta?.source ?? meta?.seller_source);
+
+  if (isJoongnaMarketplaceSource(marketplaceSource)) {
+    const listingUrl = listingUrlForSource(input.pid, meta?.url, marketplaceSource);
+    if (!listingUrl) {
+      throw new Error("joongna detail url missing");
+    }
+    const detail = await fetchJoongnaDetail(listingUrl, 10_000);
+    if (!detail.ok) {
+      throw new Error(`joongna detail fetch failed: ${detail.status}`);
+    }
+
+    const soldByStatus = detail.productStatus != null && detail.productStatus !== 0;
+    const soldByText = soldOutTextHits(detail.title, detail.description, null).length > 0;
+    if (soldByStatus || soldByText) {
+      const saleStatus = soldByStatus ? `JOONGNA_STATUS_${detail.productStatus}` : "SOLD_OUT";
+      await patchRevealDetailTerminalState(input.pid, "sold_confirmed", saleStatus, soldByStatus ? `joongna_product_status_${detail.productStatus}` : "joongna_text_traded");
+      return {
+        ...terminalRevealDetail(input.pid, saleStatus),
+        description: detail.description || "추천 당시 매물이 현재 판매완료되어 더 이상 상세 정보를 확인할 수 없어요.",
+        thumbnailUrl: detail.thumbnailUrl,
+        imageUrls: detail.imageUrls,
+        metrics: {
+          viewCount: detail.viewCount,
+          favoriteCount: null,
+          commentCount: detail.commentCount,
+        },
+      };
+    }
+
+    const baseFacts = marketplaceFactsFromRawJson({
+      marketplaceSource,
+      marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
+      freeShipping: detail.parcelFeeYn === 1 || meta?.free_shipping === true,
+      sellerReviewRating: meta?.shop_review_rating ?? null,
+      sellerReviewCount: meta?.shop_review_count ?? 0,
+      rawJson: meta?.raw_json,
+    });
+    const facts = {
+      ...baseFacts,
+      productTradeType: detail.productTradeType ?? baseFacts.productTradeType ?? null,
+      parcelFeeYn: detail.parcelFeeYn ?? baseFacts.parcelFeeYn ?? null,
+      tradeLabels: detail.labels.length > 0 ? detail.labels : baseFacts.tradeLabels,
+    };
+    const safety = buildMarketplaceSafetyDisplay(facts);
+
+    return {
+      pid: input.pid,
+      description: detail.description ?? "",
+      saleStatus: detail.productStatus === 0 ? "SELLING" : `JOONGNA_STATUS_${detail.productStatus ?? "UNKNOWN"}`,
+      conditionLabel: null,
+      thumbnailUrl: detail.thumbnailUrl,
+      imageUrls: detail.imageUrls,
+      metrics: {
+        viewCount: detail.viewCount,
+        favoriteCount: null,
+        commentCount: detail.commentCount,
+      },
+      seller: {
+        uid: detail.storeSeq ? `joongna:${detail.storeSeq}` : null,
+        name: detail.nickName,
+        reviewRating: meta?.shop_review_rating ?? null,
+        reviewCount: safety.sellerTrust.reviewCount,
+        followerCount: 0,
+        salesCount: facts.joongnaSafeOrderSalesCount ?? 0,
+        proshop: false,
+        officialSeller: false,
+        joinDate: null,
+      },
+      shippingOptions: shippingOptionsFromSafety(safety),
+      shippingSummary: safety.shipping.label,
+      transactionMode: safety.shipping.transactionMode,
+      shippingAssumption: safety.shipping.assumption,
+    };
+  }
+
   const detail = await fetchDetail(String(input.pid));
   if (!detail) {
     await patchRevealDetailTerminalState(input.pid, "disappeared", "SOLD_OUT", "detail_fetch_missing");
@@ -1496,6 +1623,10 @@ export async function loadRevealListingDetail(input: {
     },
     shippingOptions,
     shippingSummary: shippingSummary(shippingOptions),
+    transactionMode: "unknown",
+    shippingAssumption: shippingOptions.some((option) => option.kind === "free" && option.amount === 0)
+      ? "free_shipping"
+      : "unknown",
   };
 }
 
@@ -1676,7 +1807,17 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       // 기존엔 type 선언만 있고 populate 안 돼서 verdict chip 다수 미발동.
       const rawMeta = meta._raw;
       const savedDetail = rawMeta
-        ? {
+        ? (() => {
+          const facts = marketplaceFactsFromRawJson({
+            marketplaceSource: meta.marketplaceSource,
+            marketplaceLabel: meta.marketplaceLabel,
+            freeShipping: rawMeta.free_shipping,
+            sellerReviewRating: rawMeta.shop_review_rating,
+            sellerReviewCount: rawMeta.shop_review_count ?? 0,
+            rawJson: rawMeta.raw_json,
+          });
+          const tx = inferMarketplaceTransaction(facts);
+          return {
             descriptionPreview: rawMeta.description_preview ?? "",
             favoriteCount: rawMeta.num_faved,
             freeShipping: Boolean(rawMeta.free_shipping),
@@ -1684,7 +1825,16 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
             sellerName: null,
             sellerReviewRating: rawMeta.shop_review_rating,
             sellerReviewCount: rawMeta.shop_review_count ?? 0,
-          }
+            joongnaTrustScore: facts.joongnaTrustScore ?? null,
+            joongnaSafeOrderSalesCount: facts.joongnaSafeOrderSalesCount ?? null,
+            joongnaSafeOrderSalesText: facts.joongnaSafeOrderSalesText ?? null,
+            productTradeType: facts.productTradeType ?? null,
+            parcelFeeYn: facts.parcelFeeYn ?? null,
+            tradeLabels: [...(facts.tradeLabels ?? [])],
+            transactionMode: tx.transactionMode,
+            shippingAssumption: tx.assumption,
+          };
+        })()
         : undefined;
       // 2026-05-16: catalog confusionNote (헷갈림 안내) — UI 카드에 표시.
       const skuConfusionNote = meta.sku_id

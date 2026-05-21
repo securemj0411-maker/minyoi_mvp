@@ -1,0 +1,375 @@
+import { isJoongnaMarketplaceSource, marketplaceSourceLabel } from "@/lib/marketplace-source";
+
+export type MarketplaceTransactionMode =
+  | "direct_only"
+  | "shipping_only"
+  | "direct_and_shipping"
+  | "unknown";
+
+export type MarketplaceShippingAssumption =
+  | "direct_only"
+  | "included"
+  | "separate"
+  | "free_shipping"
+  | "unknown";
+
+export type MarketplaceChecklistTone = "amber" | "blue" | "emerald";
+
+export type MarketplaceSafetyFacts = {
+  marketplaceSource?: string | null;
+  marketplaceLabel?: string | null;
+  freeShipping?: boolean | null;
+  sellerReviewRating?: number | null;
+  sellerReviewCount?: number | null;
+  joongnaTrustScore?: number | null;
+  joongnaSafeOrderSalesCount?: number | null;
+  joongnaSafeOrderSalesText?: string | null;
+  productTradeType?: number | null;
+  parcelFeeYn?: number | null;
+  tradeLabels?: readonly string[] | null;
+};
+
+export type MarketplaceSafetyDisplay = {
+  source: string;
+  marketplaceLabel: string;
+  isJoongna: boolean;
+  paymentLabel: string;
+  sellerTrust: {
+    kind: "joongna_trust_score" | "bunjang_rating";
+    metric: string;
+    metricLabel: string;
+    headline: string;
+    body: string;
+    note: string;
+    valueNote: string;
+    tileValue: string;
+    tileSub: string;
+    badgeLabel: string | null;
+    trustScore: number | null;
+    reviewCount: number;
+  };
+  shipping: {
+    transactionMode: MarketplaceTransactionMode;
+    assumption: MarketplaceShippingAssumption;
+    buyerShippingLow: number;
+    buyerShippingHigh: number;
+    label: string;
+    valueLabel: string;
+    confidenceLabel: string;
+    note: string;
+    question: string;
+    allowFreeShippingBadge: boolean;
+  };
+  sourceAction: {
+    label: string;
+    href: string;
+    note: string;
+  } | null;
+};
+
+export type MarketplacePurchaseCheck = {
+  id: string;
+  title: string;
+  body: string;
+  ask: string;
+  label: string;
+  tone: MarketplaceChecklistTone;
+};
+
+const DEFAULT_BUYER_SHIPPING_FEE_MAX = 3_500;
+
+function cleanNumber(value: unknown): number | null {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function cleanLabels(labels: readonly string[] | null | undefined): string[] {
+  if (!Array.isArray(labels)) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const label of labels) {
+    const clean = String(label ?? "").trim();
+    if (!clean || seen.has(clean)) continue;
+    seen.add(clean);
+    out.push(clean);
+  }
+  return out;
+}
+
+function krw(value: number) {
+  return `${value.toLocaleString("ko-KR")}원`;
+}
+
+function krwRange(low: number, high: number) {
+  return low === high ? krw(low) : `${krw(low)} ~ ${krw(high)}`;
+}
+
+export function joongnaTrustScoreFromFacts(facts: MarketplaceSafetyFacts): number | null {
+  const explicit = cleanNumber(facts.joongnaTrustScore);
+  if (explicit != null && explicit > 0) return Math.max(0, Math.round(explicit));
+  if (!isJoongnaMarketplaceSource(facts.marketplaceSource)) return null;
+  const normalizedRating = cleanNumber(facts.sellerReviewRating);
+  if (normalizedRating == null || normalizedRating <= 0) return null;
+  return Math.max(0, Math.min(1000, Math.round(normalizedRating * 200)));
+}
+
+export function joongnaTrustScoreBand(score: number | null | undefined): string | null {
+  const n = cleanNumber(score);
+  if (n == null || n <= 0) return null;
+  return `${Math.floor(n / 10) * 10}점대`;
+}
+
+export function inferMarketplaceTransaction(facts: MarketplaceSafetyFacts): {
+  transactionMode: MarketplaceTransactionMode;
+  assumption: MarketplaceShippingAssumption;
+  labels: string[];
+} {
+  const labels = cleanLabels(facts.tradeLabels);
+  const joined = labels.join(" ");
+  const hasDirect = /직거래/.test(joined);
+  const hasShipping = /택배|배송/.test(joined);
+  const hasIncluded = /배송비\s*포함|택배비\s*포함|택포|무료\s*배송|무료배송/.test(joined);
+  const hasSeparate = /배송비\s*별도|택배비\s*별도|착불|별도\s*배송/.test(joined);
+  const parcelFee = cleanNumber(facts.parcelFeeYn);
+  const isJoongna = isJoongnaMarketplaceSource(facts.marketplaceSource);
+
+  let transactionMode: MarketplaceTransactionMode = "unknown";
+  if (hasDirect && hasShipping) transactionMode = "direct_and_shipping";
+  else if (hasDirect) transactionMode = "direct_only";
+  else if (hasShipping || (isJoongna && parcelFee != null)) transactionMode = "shipping_only";
+
+  let assumption: MarketplaceShippingAssumption = "unknown";
+  if (transactionMode === "direct_only") {
+    assumption = "direct_only";
+  } else if (isJoongna && (hasIncluded || parcelFee === 1 || facts.freeShipping === true)) {
+    assumption = "included";
+  } else if (!isJoongna && facts.freeShipping === true) {
+    assumption = "free_shipping";
+  } else if (hasSeparate || parcelFee === 0) {
+    assumption = "separate";
+  }
+
+  return { transactionMode, assumption, labels };
+}
+
+export function buildMarketplaceSafetyDisplay(facts: MarketplaceSafetyFacts): MarketplaceSafetyDisplay {
+  const isJoongna = isJoongnaMarketplaceSource(facts.marketplaceSource);
+  const marketplaceLabel = facts.marketplaceLabel || marketplaceSourceLabel(facts.marketplaceSource);
+  const paymentLabel = isJoongna ? "안심결제" : "안전결제";
+  const reviewCount = Math.max(0, Math.round(cleanNumber(facts.sellerReviewCount) ?? 0));
+  const reviewLabel = reviewCount.toLocaleString("ko-KR");
+  const trustScore = joongnaTrustScoreFromFacts(facts);
+  const trustBand = joongnaTrustScoreBand(trustScore);
+  const safeSales = Math.max(0, Math.round(cleanNumber(facts.joongnaSafeOrderSalesCount) ?? 0));
+  const safeSalesLabel = safeSales > 0
+    ? `안심거래 판매 ${safeSales.toLocaleString("ko-KR")}건`
+    : null;
+  const tx = inferMarketplaceTransaction(facts);
+  const isDirectOnly = tx.assumption === "direct_only";
+  const isIncluded = tx.assumption === "included";
+  const isFreeShipping = tx.assumption === "free_shipping";
+  const buyerShippingLow = 0;
+  const buyerShippingHigh = isDirectOnly || isIncluded || isFreeShipping ? 0 : DEFAULT_BUYER_SHIPPING_FEE_MAX;
+
+  const sellerTrust = isJoongna
+    ? {
+        kind: "joongna_trust_score" as const,
+        metric: trustBand ? `신뢰지수 ${trustBand}` : reviewCount > 0 ? `거래후기 ${reviewLabel}건` : "신뢰 정보 확인 필요",
+        metricLabel: [reviewCount > 0 ? `거래후기 ${reviewLabel}건` : null, safeSalesLabel]
+          .filter((part): part is string => Boolean(part))
+          .join(" · ") || "중고나라 판매자 정보",
+        headline: "중고나라는 신뢰지수와 거래후기를 같이 봐요",
+        body: trustBand
+          ? `중고나라 신뢰지수는 ${trustBand}이고 거래후기는 ${reviewLabel}건이에요.`
+          : reviewCount > 0
+            ? `중고나라 거래후기 ${reviewLabel}건을 확인했어요. 신뢰지수는 원본에서 한 번 더 확인하세요.`
+            : "중고나라 판매자 신뢰 정보가 적어요. 거래 방식과 실사진을 더 보수적으로 확인하세요.",
+        note: `${marketplaceLabel} 원본 안에서 ${paymentLabel} 가능 여부와 거래후기, 판매자 정보를 확인하고 진행하세요.`,
+        valueNote: "중고나라는 별점 평점이 아니라 신뢰지수, 거래후기, 안심거래 이력을 나눠 봅니다.",
+        tileValue: trustBand ? `신뢰지수 ${trustBand}` : reviewCount > 0 ? `거래후기 ${reviewLabel}건` : "확인 필요",
+        tileSub: [reviewCount > 0 ? `거래후기 ${reviewLabel}건` : "거래후기 부족", safeSalesLabel]
+          .filter(Boolean)
+          .join(" · "),
+        badgeLabel: safeSalesLabel,
+        trustScore,
+        reviewCount,
+      }
+    : {
+        kind: "bunjang_rating" as const,
+        metric: reviewCount > 0 ? `후기 ${reviewLabel}건` : "후기 없음",
+        metricLabel: facts.sellerReviewRating == null ? "평점 없음" : `평점 ${Number(facts.sellerReviewRating).toFixed(1)}점`,
+        headline: "번개장터 평점과 후기를 같이 봐요",
+        body: facts.sellerReviewRating != null && reviewCount > 0
+          ? `이 상품 판매자는 후기가 ${reviewLabel}건이고 평점이 ${Number(facts.sellerReviewRating).toFixed(1)}점이에요.`
+          : reviewCount > 0
+            ? `이 상품 판매자는 후기가 ${reviewLabel}건 있지만 평점 정보는 없어요.`
+            : "이 상품 판매자는 아직 거래 후기와 평점이 없어요.",
+        note: `${marketplaceLabel} 원본 안에서 ${paymentLabel} 가능 여부를 확인하고, 외부 계좌이체나 외부 링크 결제는 피하세요.`,
+        valueNote: "후기 수와 평점을 같이 봐서, 평점만 높고 거래 이력이 적은 계정에 속지 않게 봅니다.",
+        tileValue: facts.sellerReviewRating != null && reviewCount >= 10
+          ? `평점 ${Number(facts.sellerReviewRating).toFixed(1)} 셀러`
+          : reviewCount > 0
+            ? `후기 ${reviewLabel}건`
+            : "확인 필요",
+        tileSub: facts.sellerReviewRating != null && reviewCount > 0
+          ? `평점 ${Number(facts.sellerReviewRating).toFixed(1)} · 후기 ${reviewLabel}건`
+          : reviewCount > 0 ? `후기 ${reviewLabel}건` : "차단 필터 통과",
+        badgeLabel: reviewCount > 0 ? `후기 ${reviewLabel}` : null,
+        trustScore: null,
+        reviewCount,
+      };
+
+  const shipping = (() => {
+    if (tx.assumption === "direct_only") {
+      return {
+        transactionMode: tx.transactionMode,
+        assumption: tx.assumption,
+        buyerShippingLow,
+        buyerShippingHigh,
+        label: "0원 · 직거래 전제",
+        valueLabel: "0원",
+        confidenceLabel: "직거래 전제",
+        note: "거래 가능 지역 확인 필요",
+        question: "직거래 가능 지역과 시간을 먼저 확인할게요.",
+        allowFreeShippingBadge: false,
+      };
+    }
+    if (tx.assumption === "included") {
+      return {
+        transactionMode: tx.transactionMode,
+        assumption: tx.assumption,
+        buyerShippingLow,
+        buyerShippingHigh,
+        label: "0원 · 배송비 포함",
+        valueLabel: "배송비 포함",
+        confidenceLabel: "배송비 포함 확인",
+        note: "원문 배송비 포함 기준",
+        question: "표시 가격에 배송비가 포함된 조건이 맞나요?",
+        allowFreeShippingBadge: false,
+      };
+    }
+    if (tx.assumption === "free_shipping") {
+      return {
+        transactionMode: tx.transactionMode,
+        assumption: tx.assumption,
+        buyerShippingLow,
+        buyerShippingHigh,
+        label: "0원 · 무료배송 확인",
+        valueLabel: "판매자 무료배송",
+        confidenceLabel: "배송비 확인됨",
+        note: "원문 무료배송 기준",
+        question: "표시 가격에 택배비가 포함된 조건이 맞나요?",
+        allowFreeShippingBadge: true,
+      };
+    }
+    if (tx.assumption === "separate") {
+      return {
+        transactionMode: tx.transactionMode,
+        assumption: tx.assumption,
+        buyerShippingLow,
+        buyerShippingHigh,
+        label: `${krwRange(buyerShippingLow, buyerShippingHigh)} 보수 반영`,
+        valueLabel: krwRange(buyerShippingLow, buyerShippingHigh),
+        confidenceLabel: "배송비 별도 가능",
+        note: "기본 배송비 보수 반영",
+        question: "배송비 별도라면 실제 배송비가 얼마인지 알려주세요.",
+        allowFreeShippingBadge: false,
+      };
+    }
+    return {
+      transactionMode: tx.transactionMode,
+      assumption: tx.assumption,
+      buyerShippingLow,
+      buyerShippingHigh,
+      label: `${krwRange(buyerShippingLow, buyerShippingHigh)} 보수 반영`,
+      valueLabel: krwRange(buyerShippingLow, buyerShippingHigh),
+      confidenceLabel: "배송비 확인 필요",
+      note: "구매 전 배송비 재확인",
+      question: "표시 가격에 배송비가 포함돼 있나요?",
+      allowFreeShippingBadge: false,
+    };
+  })();
+
+  return {
+    source: isJoongna ? "joongna" : "bunjang",
+    marketplaceLabel,
+    isJoongna,
+    paymentLabel,
+    sellerTrust,
+    shipping,
+    sourceAction: isJoongna
+      ? {
+          label: "중고나라 사기조회 열기",
+          href: "https://web.joongna.com/fraud",
+          note: "중고나라 매물은 사기조회에서 판매자 정보도 같이 확인해보세요.",
+        }
+      : null,
+  };
+}
+
+export function commonMarketplaceSafetyChecks(facts: MarketplaceSafetyFacts): MarketplacePurchaseCheck[] {
+  const display = buildMarketplaceSafetyDisplay(facts);
+  const checks: MarketplacePurchaseCheck[] = [
+    {
+      id: "fraud-stop-signals",
+      title: "이런 요청이면 구매를 멈추세요",
+      body: "선입금, 외부 결제 링크, 외부 메신저 유도가 나오면 진행하지 마세요.",
+      ask: `${display.paymentLabel} 또는 직거래 확인으로만 진행하세요.`,
+      label: "멈춤 신호",
+      tone: "amber",
+    },
+    {
+      id: "payer-name-id-photo",
+      title: "입금자명·신분증 요청을 조심해요",
+      body: "입금자명 변경 요청, 신분증 인증 요구, 도용 사진 의심이 있으면 보류하세요.",
+      ask: "실제 상품 사진과 원본 플랫폼 안 거래 조건을 다시 확인하세요.",
+      label: "거래 안전",
+      tone: "amber",
+    },
+  ];
+  if (display.sourceAction) {
+    checks.push({
+      id: "joongna-fraud-lookup",
+      title: "중고나라 사기조회도 확인해요",
+      body: display.sourceAction.note,
+      ask: "판매자 정보가 맞는지 사기조회에서 한 번 더 확인하세요.",
+      label: "사기조회",
+      tone: "blue",
+    });
+  }
+  return checks;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+export function marketplaceFactsFromRawJson(input: {
+  marketplaceSource?: string | null;
+  marketplaceLabel?: string | null;
+  freeShipping?: boolean | null;
+  sellerReviewRating?: number | null;
+  sellerReviewCount?: number | null;
+  rawJson?: unknown;
+}): MarketplaceSafetyFacts {
+  const raw = asRecord(input.rawJson);
+  const seller = asRecord(raw.seller);
+  const activityScore = cleanNumber(seller.activityScore);
+  const reliabilityScore = cleanNumber(seller.reliabilityScore);
+  const trustScore = activityScore != null || reliabilityScore != null
+    ? Math.max(0, Math.round((activityScore ?? 0) + (reliabilityScore ?? 0)))
+    : joongnaTrustScoreFromFacts(input);
+  return {
+    marketplaceSource: input.marketplaceSource,
+    marketplaceLabel: input.marketplaceLabel,
+    freeShipping: input.freeShipping,
+    sellerReviewRating: input.sellerReviewRating,
+    sellerReviewCount: input.sellerReviewCount ?? cleanNumber(seller.reviewCount),
+    joongnaTrustScore: trustScore,
+    joongnaSafeOrderSalesCount: cleanNumber(seller.safeOrderSalesCount),
+    joongnaSafeOrderSalesText: typeof seller.safeOrderSalesText === "string" ? seller.safeOrderSalesText : null,
+    productTradeType: cleanNumber(raw.productTradeType),
+    parcelFeeYn: cleanNumber(raw.parcelFeeYn),
+    tradeLabels: Array.isArray(raw.labels) ? raw.labels.map((label) => String(label)) : [],
+  };
+}

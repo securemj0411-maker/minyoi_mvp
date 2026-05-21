@@ -3,6 +3,7 @@ import { isAdminUser } from "@/lib/auth-users";
 import { fetchDetail } from "@/lib/bunjang";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { inferMarketplaceTransaction, marketplaceFactsFromRawJson } from "@/lib/marketplace-safety";
 import {
   fetchReferencePrices,
   fetchLatestMarketStats,
@@ -116,6 +117,7 @@ type RawRow = {
   num_comment: number | null;
   // 2026-05-20: 셀러 업로드 시점 추정 (미뇨이가 처음 발견한 시점).
   first_seen_at: string | null;
+  raw_json: Record<string, unknown> | null;
 };
 
 type ListingCostRow = {
@@ -209,6 +211,14 @@ type RevealItem = {
   sellerName: string | null;
   sellerReviewRating: number | null;
   sellerReviewCount: number;
+  joongnaTrustScore: number | null;
+  joongnaSafeOrderSalesCount: number | null;
+  joongnaSafeOrderSalesText: string | null;
+  productTradeType: number | null;
+  parcelFeeYn: number | null;
+  tradeLabels: string[];
+  transactionMode: string;
+  shippingAssumption: string;
   skuId: string | null;
   thumbnailUrl: string | null;
   skuName: string | null;
@@ -619,7 +629,7 @@ export async function GET(req: Request) {
   const packOpenList = packOpenIds.join(",");
   const [rawRows, listingCostRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,url,price,num_faved,free_shipping,description_preview,image_count,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at&pid=in.(${pidList})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,url,price,num_faved,free_shipping,description_preview,image_count,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at,raw_json&pid=in.(${pidList})`,
     ),
     loadJson<ListingCostRow[]>(
       `${tableUrl("mvp_listings")}?select=pid,price,shipping_fee,shipping_fee_general,estimated_buy_cost&pid=in.(${pidList})`,
@@ -719,6 +729,15 @@ export async function GET(req: Request) {
       const skuName = raw?.sku_name ?? null;
       const skuId = raw?.sku_id ?? null;
       const marketplaceSource = normalizeMarketplaceSource(raw?.source ?? raw?.seller_source);
+      const facts = marketplaceFactsFromRawJson({
+        marketplaceSource,
+        marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
+        freeShipping: raw?.free_shipping ?? false,
+        sellerReviewRating: raw?.shop_review_rating ?? null,
+        sellerReviewCount: raw?.shop_review_count ?? 0,
+        rawJson: raw?.raw_json,
+      });
+      const tx = inferMarketplaceTransaction(facts);
       // Wave 213 (2026-05-18): 실시간 marketBasis 계산 후 순현재차익 min/max 산출.
       // Wave 208 (2026-05-18): /me display는 request-time marketBasis를 source of truth로 사용.
       // DB current_profit_*는 cron lag/cache 값이라, 있더라도 stale할 수 있다. 사용자가 /me를
@@ -758,6 +777,14 @@ export async function GET(req: Request) {
         sellerName: null,
         sellerReviewRating: raw?.shop_review_rating == null ? null : Number(raw.shop_review_rating),
         sellerReviewCount: Number(raw?.shop_review_count ?? 0),
+        joongnaTrustScore: facts.joongnaTrustScore ?? null,
+        joongnaSafeOrderSalesCount: facts.joongnaSafeOrderSalesCount ?? null,
+        joongnaSafeOrderSalesText: facts.joongnaSafeOrderSalesText ?? null,
+        productTradeType: facts.productTradeType ?? null,
+        parcelFeeYn: facts.parcelFeeYn ?? null,
+        tradeLabels: [...(facts.tradeLabels ?? [])],
+        transactionMode: tx.transactionMode,
+        shippingAssumption: tx.assumption,
         skuId,
         thumbnailUrl: raw?.thumbnail_url ?? null,
         skuName,

@@ -650,6 +650,7 @@ function buildRows(
         productStatus: detail.productStatus,
         categoryName: detail.categoryName,
         categorySeq: detail.categorySeq,
+        parcelFeeYn: detail.parcelFeeYn,
         productTradeType: detail.productTradeType,
         viewCount: detail.viewCount,
         labels: detail.labels,
