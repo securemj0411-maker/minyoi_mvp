@@ -8230,6 +8230,9 @@ export const CATALOG: Sku[] = [
       "supreme", "슈프림", "구찌", "gucci", "off-white", "오프화이트", "sacai", "사카이", "travis", "트래비스",
       "white", "화이트", "트리플 화이트", "흰색", "블루", "그린", "핑크", "레드", "옐로우",
       // 다른 색 차단 (위 black 외 colorway 매물 제외)
+      // Wave 544 (2026-05-22): production audit — HTM 한정 (Hiroshi Tinker Mark, 200만대) 차단.
+      "htm", "hiroshi", "tinker hatfield", "마크 파커",
+      "앰부쉬", "ambush",
     ],
     msrpKrw: 139000, released: 1982,
   },
