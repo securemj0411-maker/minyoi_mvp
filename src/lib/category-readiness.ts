@@ -913,6 +913,15 @@ export const LANE_READINESS: LaneReadinessMap = {
   shoe_asics_hyper: { status: "ready", label: "Asics Hyper 시리즈", note: "Wave 701 — 13 매물." },
   shoe_asics_anderson_bell_collab: { status: "ready", label: "Asics x Anderson Bell Collab", note: "Wave 701 — 12 매물." },
   shoe_asics_jjjjound_collab: { status: "ready", label: "Asics x JJJJound (가품 위험 ★★★)", note: "Wave 701 — 11 매물 평균 33만." },
+  // Wave 702 (2026-05-23) — On Running 8 SKU
+  shoe_onrunning_cloudtilt_broad: { status: "ready", label: "On Cloudtilt broad", note: "Wave 702 — 31 매물 (non-Loewe)." },
+  shoe_onrunning_kith_collab: { status: "ready", label: "On x Kith Collab", note: "Wave 702 — 9 매물 평균 45만." },
+  shoe_onrunning_cloudboom_broad: { status: "ready", label: "On Cloudboom broad (Echo 3/Strike/LS)", note: "Wave 702 — 8 매물 마라톤 카본." },
+  shoe_onrunning_cloudaway_broad: { status: "ready", label: "On Cloudaway broad", note: "Wave 702 — 10 매물." },
+  shoe_onrunning_cloudzone_broad: { status: "ready", label: "On Cloudzone broad (non-Kith)", note: "Wave 702 — 5 매물." },
+  shoe_onrunning_cloudvista_broad: { status: "ready", label: "On Cloudvista Waterproof", note: "Wave 702 — 6 매물." },
+  shoe_onrunning_cloudventure_broad: { status: "ready", label: "On Cloudventure broad (non-PAF/Loewe)", note: "Wave 702 — 5 매물." },
+  shoe_onrunning_pleasures_collab: { status: "ready", label: "On x Pleasures Collab", note: "Wave 702 — 3 매물." },
 };
 
 export type CategoryReadinessConfig = {

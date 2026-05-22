@@ -2305,6 +2305,115 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
   },
 
   // ═══════════════════════════════════════════════════════════
+  // Wave 702 (2026-05-23): On Running 8 SKU + 2 기존 수정
+  // Agent deep sweep 500 raw — Cloudmonster 210, Cloudtilt 31, Kith collab 9, Cloudaway 10, Cloudboom 8, Cloudzone 10
+  // ═══════════════════════════════════════════════════════════
+
+  {
+    id: "shoe-onrunning-cloudtilt-broad",
+    brand: "On Running", category: "shoe",
+    modelName: "On Cloudtilt broad (non-Loewe — 이클립스/문/리믹스/아크틱)",
+    aliases: ["On Cloudtilt", "온 클라우드틸트"],
+    mustContain: [["on running", "온러닝", "온 ", "on cloud"], ["cloudtilt", "클라우드틸트", "클라우드 틸트", "cloud tilt"]],
+    mustNotContain: ["loewe", "로에베", "paf", "파프",
+      "키즈", "kids", "slip on", "slipon", "slip-on", "prada", "tods",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 230000, released: 2023, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-onrunning-kith-collab",
+    brand: "On Running x Kith", category: "shoe",
+    modelName: "On Running x Kith (K-Tech 1 + Cloudzone)",
+    aliases: ["Kith On Running", "키스 온러닝"],
+    mustContain: [["on running", "온러닝", "온 ", "on cloud"], ["kith", "키스", "k-tech", "k 테크"]],
+    mustNotContain: ["paf", "파프", "loewe", "로에베",
+      "키즈", "kids",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 450000, released: 2024, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-onrunning-cloudboom-broad",
+    brand: "On Running", category: "shoe",
+    modelName: "On Cloudboom broad (Echo 3 / Strike / LS 카본 마라톤)",
+    aliases: ["On Cloudboom", "온 클라우드붐", "클붐"],
+    mustContain: [["on running", "온러닝", "온 ", "on cloud"], ["cloudboom", "클라우드붐", "클붐", "boom strike", "echo 3"]],
+    mustNotContain: ["paf", "파프", "loewe", "로에베",
+      "키즈", "kids", "slip on", "slipon", "prada", "vans", "반스",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 320000, released: 2023, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-onrunning-cloudaway-broad",
+    brand: "On Running", category: "shoe",
+    modelName: "On Cloudaway broad (lifestyle 입문)",
+    aliases: ["On Cloudaway", "온 클라우드어웨이"],
+    mustContain: [["on running", "온러닝", "온 ", "on cloud"], ["cloudaway", "클라우드어웨이", "클라우드 어웨이"]],
+    mustNotContain: ["paf", "파프", "loewe", "로에베",
+      "키즈", "kids",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 200000, released: 2022, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-onrunning-cloudzone-broad",
+    brand: "On Running", category: "shoe",
+    modelName: "On Cloudzone broad (non-Kith)",
+    aliases: ["On Cloudzone", "온 클라우드존"],
+    mustContain: [["on running", "온러닝", "온 ", "on cloud"], ["cloudzone", "클라우드존"]],
+    mustNotContain: ["kith", "키스", "paf", "파프",
+      "키즈", "kids",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 180000, released: 2024, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-onrunning-cloudvista-broad",
+    brand: "On Running", category: "shoe",
+    modelName: "On Cloudvista Waterproof broad (트레일 mid-tier)",
+    aliases: ["On Cloudvista", "온 클라우드비스타"],
+    mustContain: [["on running", "온러닝", "온 ", "on cloud"], ["cloudvista", "클라우드비스타", "클라우드 비스타"]],
+    mustNotContain: ["paf", "파프",
+      "키즈", "kids",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 200000, released: 2023, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-onrunning-cloudventure-broad",
+    brand: "On Running", category: "shoe",
+    modelName: "On Cloudventure broad (non-PAF/Loewe)",
+    aliases: ["On Cloudventure", "온 클라우드벤처"],
+    mustContain: [["on running", "온러닝", "온 ", "on cloud"], ["cloudventure", "클라우드벤처", "클라우드벤쳐", "cloud venture"]],
+    mustNotContain: ["paf", "파프", "loewe", "로에베",
+      "키즈", "kids",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 250000, released: 2022, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-onrunning-pleasures-collab",
+    brand: "On Running x Pleasures", category: "shoe",
+    modelName: "On Running x Pleasures Collab",
+    aliases: ["Pleasures On Running", "플레져스 온러닝"],
+    mustContain: [["on running", "온러닝", "온 ", "on cloud"], ["pleasures", "플레져스", "플레저스"]],
+    mustNotContain: ["paf", "파프", "loewe", "로에베", "kith", "키스",
+      "키즈", "kids",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 350000, released: 2024, defaultProductType: "sneaker",
+  },
+
+  // ═══════════════════════════════════════════════════════════
   // Wave 696 (2026-05-23): AF1 + Air Max 1단계 22 SKU 신설
   // Agent deep sweep — AF1 960건 (기존 3 → 53 후보), Air Max 1476건 (기존 5 → 23 후보).
   // Pareto 80% 흡수 (1단계).
