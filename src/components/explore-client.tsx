@@ -123,7 +123,11 @@ type DetailAccessResponse = {
   item?: PoolItem | null;
 };
 
+// Wave launch-14 (사용자 짚음): error 종류 따라 다른 모달 톤.
+// paywall = 크레딧 부족 (충전 안내), sold = 매물 거래완료/사라짐 (새로고침), verify_fail = 일시 통신 (재시도).
+type DetailAccessLimitVariant = "paywall" | "sold" | "verify_fail";
 type DetailAccessLimitModal = {
+  variant: DetailAccessLimitVariant;
   title: string;
   message: string;
   creditBalance: number | null;
@@ -646,11 +650,24 @@ function DetailAccessPaywallModal({
   onClose: () => void;
 }) {
   if (!state) return null;
+  const variant = state.variant ?? "paywall";
   const freeLimit = state.freeLimit && state.freeLimit > 0 ? state.freeLimit : 3;
   const freeUsed = Math.min(freeLimit, Math.max(0, state.freeUsed ?? freeLimit));
   const segments = Math.min(3, Math.max(1, freeLimit));
   const creditBalance = Math.max(0, Number(state.creditBalance ?? 0));
   const summary = state.valueSummary ?? null;
+
+  // Wave launch-14: variant 별 톤 분기.
+  const isPaywall = variant === "paywall";
+  const isSold = variant === "sold";
+  const isVerifyFail = variant === "verify_fail";
+  const iconBg = isPaywall ? "bg-[#eef6ff] text-[#3182f6] dark:bg-blue-950/50 dark:text-blue-300"
+    : isSold ? "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300"
+    : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+  const eyebrowText = isPaywall ? "크레딧 상세보기" : isSold ? "방금 거래된 상품" : "잠시 후 다시 시도";
+  const eyebrowCls = isPaywall ? "text-[#3182f6] dark:text-blue-300"
+    : isSold ? "text-rose-600 dark:text-rose-300"
+    : "text-amber-700 dark:text-amber-300";
 
   return (
     <div
@@ -665,8 +682,21 @@ function DetailAccessPaywallModal({
       >
         <div className="px-5 pb-5 pt-5 sm:px-6 sm:pt-6">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-[#eef6ff] text-[#3182f6] dark:bg-blue-950/50 dark:text-blue-300">
-              <CreditIcon size={26} />
+            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] ${iconBg}`}>
+              {/* variant 별 아이콘 — paywall=CreditIcon, sold=원 안 X, verify_fail=시계 */}
+              {isPaywall ? (
+                <CreditIcon size={26} />
+              ) : isSold ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M9 9l6 6M15 9l-6 6" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+              )}
             </div>
             <button
               type="button"
@@ -678,7 +708,7 @@ function DetailAccessPaywallModal({
           </div>
 
           <div className="mt-5">
-            <p className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">크레딧 상세보기</p>
+            <p className={`text-[13px] font-black ${eyebrowCls}`}>{eyebrowText}</p>
             <h2 className="mt-2 break-keep text-[25px] font-black leading-[1.18] tracking-tight text-zinc-950 dark:text-zinc-50">
               {state.title}
             </h2>
@@ -687,29 +717,44 @@ function DetailAccessPaywallModal({
             </p>
           </div>
 
-          <div className="mt-5 rounded-[22px] bg-zinc-50 p-4 dark:bg-zinc-900/70">
-            <div className="flex items-center justify-between text-xs font-bold text-zinc-500 dark:text-zinc-400">
-              <span>첫 무료 상세보기</span>
-              <span>{freeUsed.toLocaleString("ko-KR")} / {freeLimit.toLocaleString("ko-KR")}</span>
+          {/* Wave launch-14: paywall variant 만 크레딧 정보 표시.
+              sold / verify_fail = 크레딧 무관 — 매물 자체 issue. */}
+          {isPaywall ? (
+            <div className="mt-5 rounded-[22px] bg-zinc-50 p-4 dark:bg-zinc-900/70">
+              <div className="flex items-center justify-between text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                <span>첫 무료 상세보기</span>
+                <span>{freeUsed.toLocaleString("ko-KR")} / {freeLimit.toLocaleString("ko-KR")}</span>
+              </div>
+              <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: `repeat(${segments}, minmax(0, 1fr))` }}>
+                {Array.from({ length: segments }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`h-2.5 rounded-full ${idx < Math.min(freeUsed, segments) ? "bg-[#3182f6]" : "bg-zinc-200 dark:bg-zinc-700"}`}
+                  />
+                ))}
+              </div>
+              <p className="mt-3 text-[12px] font-medium leading-5 text-zinc-500 dark:text-zinc-400">
+                첫 3개 상품은 무료로 열리고, 이후에는 새 상품을 열 때마다 1크레딧이 차감됩니다.
+              </p>
+              <div className="mt-3 flex items-center justify-between rounded-2xl bg-white px-3 py-2 text-xs font-black text-zinc-600 ring-1 ring-zinc-100 dark:bg-zinc-950 dark:text-zinc-300 dark:ring-zinc-800">
+                <span>현재 보유 크레딧</span>
+                <span>{creditBalance.toLocaleString("ko-KR")}개</span>
+              </div>
             </div>
-            <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: `repeat(${segments}, minmax(0, 1fr))` }}>
-              {Array.from({ length: segments }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`h-2.5 rounded-full ${idx < Math.min(freeUsed, segments) ? "bg-[#3182f6]" : "bg-zinc-200 dark:bg-zinc-700"}`}
-                />
-              ))}
-            </div>
-            <p className="mt-3 text-[12px] font-medium leading-5 text-zinc-500 dark:text-zinc-400">
-              첫 3개 상품은 무료로 열리고, 이후에는 새 상품을 열 때마다 1크레딧이 차감됩니다.
-            </p>
-            <div className="mt-3 flex items-center justify-between rounded-2xl bg-white px-3 py-2 text-xs font-black text-zinc-600 ring-1 ring-zinc-100 dark:bg-zinc-950 dark:text-zinc-300 dark:ring-zinc-800">
-              <span>현재 보유 크레딧</span>
-              <span>{creditBalance.toLocaleString("ko-KR")}개</span>
-            </div>
-          </div>
+          ) : null}
 
-          {summary && summary.openedCount > 0 ? (
+          {/* sold / verify_fail variant 의 action button — "새로고침해서 다른 매물 보기" */}
+          {(isSold || isVerifyFail) ? (
+            <button
+              type="button"
+              onClick={() => { onClose(); if (typeof window !== "undefined") window.location.reload(); }}
+              className="mt-5 flex h-12 w-full items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-sm font-black text-white shadow-sm transition active:scale-[0.98] hover:bg-[#1c6fe8]"
+            >
+              {isSold ? "새로고침해서 다른 매물 보기" : "다시 시도하기"}
+            </button>
+          ) : null}
+
+          {isPaywall && summary && summary.openedCount > 0 ? (
             <div className="mt-3 rounded-[22px] bg-[#f5f9ff] p-4 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
               <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">
                 무료 {summary.openedCount.toLocaleString("ko-KR")}건 동안 이렇게 봤어요
@@ -1468,12 +1513,33 @@ export default function ExploreClient({
           setDetailAccessSnapshot(nextDetailAccess);
           writeDetailAccessSnapshot(storageScope, nextDetailAccess);
         }
+        // Wave launch-14: error code 따라 다른 variant.
+        // - insufficient_credits / free_limit_exhausted = 크레딧 충전 paywall
+        // - not_ready (매물 거래완료/사라짐/검증 실패) = sold variant ("방금 거래된 상품이에요" 톤)
+        // - live_verify_unavailable = verify_fail variant ("잠시 통신 불안정" 톤)
+        // - detail_access_required (보관함 race) = paywall variant
         const isCreditShort = data.error === "insufficient_credits";
+        const isLiveVerifyFail = data.error === "live_verify_unavailable";
+        const isNotReady = data.error === "not_ready";
+        const variant: DetailAccessLimitVariant = isCreditShort
+          ? "paywall"
+          : isLiveVerifyFail
+            ? "verify_fail"
+            : isNotReady
+              ? "sold"
+              : "paywall"; // detail_access_required 등 기타 = paywall fallback
+        const titleByVariant =
+          variant === "paywall" ? (isCreditShort ? "크레딧이 부족해요" : "상세보기를 열 수 없어요") :
+          variant === "sold"    ? "방금 거래된 상품이에요" :
+                                  "잠시 통신이 불안정해요";
+        const defaultMessageByVariant =
+          variant === "paywall" ? "크레딧을 충전하면 기다리지 않고 바로 이어서 볼 수 있어요." :
+          variant === "sold"    ? "이 매물은 방금 다른 곳에서 거래되었거나 셀러가 내린 것 같아요. 새로고침하면 다른 매물을 보여드릴게요." :
+                                  "원본 매물 확인이 잠시 실패했어요. 크레딧은 사용하지 않았어요. 잠시 후 다시 시도해주세요.";
         setDetailAccessLimit({
-          title: isCreditShort
-            ? "크레딧이 부족해요"
-            : "상세보기를 열 수 없어요",
-          message: data.message ?? "크레딧을 충전하면 기다리지 않고 바로 이어서 볼 수 있어요.",
+          variant,
+          title: titleByVariant,
+          message: data.message ?? defaultMessageByVariant,
           creditBalance,
           freeUsed,
           freeLimit,
@@ -1522,7 +1588,9 @@ export default function ExploreClient({
         creditBalance: data.creditBalance ?? null,
       });
     } catch (err) {
+      // Wave launch-14: network 에러 = verify_fail variant.
       setDetailAccessLimit({
+        variant: "verify_fail",
         title: "상세보기 요청이 잠시 막혔어요",
         message: err instanceof Error ? err.message : "잠시 후 다시 시도해주세요.",
         creditBalance: null,
