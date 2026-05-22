@@ -702,6 +702,11 @@ export const BAG_CATALOG: Sku[] = [
       "타일러", "tyler the creator", "tyler",  // LV x Tyler 콜라보
       "클라우드", "마이애미 포켓", "그린 라이츠",  // 한정 컬러 (90만~99만)
       "p급", "P급",  // 가품 (마이애미 P급 85만 = 가품 추정)
+      // Wave 578 (2026-05-22): Delvaux 다른 명품 brand 격리 (LV SKU 아님).
+      "델보", "delvaux",
+      // 다른 명품 brand 카드지갑 (별도 시세군)
+      "구찌 카드지갑", "프라다 카드지갑", "샤넬 카드지갑", "에르메스 카드지갑",
+      "보테가 카드지갑", "디올 카드지갑",
     ],
     msrpKrw: 500000, // Wave 258 — 실제 LV organizer/card holder 시세 평균 (월릿 broad: 보레알리스 670k / 이클립스 530k / 모노그램 600k 등 → median ~500k)
     released: 2024,
