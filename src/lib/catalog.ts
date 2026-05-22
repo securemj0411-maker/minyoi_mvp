@@ -9941,13 +9941,19 @@ export const CATALOG: Sku[] = [
   {
     id: "clothing-patagonia-retro-x",
     brand: "Patagonia", category: "clothing", laneKey: "patagonia_retro_x",
-    modelName: "Patagonia Retro X / Classic Retro / Synchilla Fleece",
-    aliases: ["Retro X", "레트로 X", "Synchilla", "Snap-T"],
-    mustContain: [["patagonia", "파타고니아"], ["retro x", "retro-x", "레트로x", "레트로 x", "retro", "레트로", "fleece", "플리스", "후리스", "synchilla", "신칠라", "snap-t", "파일"]],
+    modelName: "Patagonia Retro X / Classic Retro",
+    aliases: ["Retro X", "레트로 X", "Classic Retro X"],
+    // Wave 654 (2026-05-22): mustContain에서 "synchilla"/"신칠라"/"snap-t"/"fleece"/"플리스" 제거.
+    //   이전: 합쳐서 broad — spread 8.75x b_grade (49건), 신칠라(16~22만) vs 레트로X(25~35만) 별도 라인.
+    //   now: Retro X 단독 — 신칠라는 별도 broad SKU로 흘림 (fallback).
+    mustContain: [["patagonia", "파타고니아"], ["retro x", "retro-x", "레트로x", "레트로 x", "classic retro", "클래식 레트로"]],
     // Wave 251.2: 딥파일 narrow 로 routing.
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack",
       "딥파일", "deep pile", "mesclun", "40주년", "legacy",
       "레트로파일", "레트로 파일", "retro pile", "retro-pile",
+      // Wave 654: 별도 라인 (synchilla / snap-t / 일반 fleece) 차단.
+      "synchilla", "신칠라", "snap-t", "스냅t", "스냅 t",
+      "신칠라 스냅", "신칠라스냅",
       // Wave 549 (2026-05-22): 레어 빈티지/50주년/내추럴 블렌드/모음 차단 (390만, 100만 outlier).
       "레어", "희귀", "희소", "rare",
       "50주년", "내추럴 블렌드", "natural blend",
