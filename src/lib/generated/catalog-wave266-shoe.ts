@@ -286,6 +286,9 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
     mustNotContain: [
       ...SHOE_COMMON_NOISE,
       "martine rose", "마틴 로즈", "supreme", "슈프림",
+      // Wave 599b: production sample — collab + 한정 색상 차단.
+      "네이키드", "naked", "x naked", "naked wolfe",
+      "메탈릭 헤마타이트", "메탈릭 실버", "metallic hematite", "metallic silver",
     ],
     msrpKrw: 159000,
     released: 2003,
