@@ -7863,6 +7863,15 @@ export const CATALOG: Sku[] = [
       "본 앤 레이즈드", "born x raised", "born and raised", "본앤레이즈드",
       // Wave 594e: Stussy DICE 한정 라인 (200k outlier vs basic 5~7만).
       "다이스 반팔", "다이스 티", "퍼지 다이스", "stussy dice", "스투시 다이스",
+      // Wave 630: 추가 collab/한정 표기 변형 (Wave 593-596 follow-up).
+      "born-raised", "born_raised", "8ball born",
+      "마크제이콥스", "marc-jacobs", "marcjacobs",
+      "아워 레가시", "ourlegacy",
+      "빌트 터프", "built tough", "built-tough",
+      "8볼 카모", "8 볼 카모", "8볼 티셔츠 카모", "8 ball camo",
+      "리빈 라지 하마", "리빈 하마",
+      "엔젤 8볼", "angel 8ball", "angel 8 ball",
+    ],
     ],
     msrpKrw: 89000, released: 2020,
     defaultProductType: "tee", // Wave 236d — Basic Tee = tee 확정.
