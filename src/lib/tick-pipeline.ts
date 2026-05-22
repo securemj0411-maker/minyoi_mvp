@@ -335,7 +335,10 @@ const DEFAULT_SELLER_SEARCH_REFRESH_MS = 3 * 60 * 60 * 1000;
 const PARSED_PID_READ_CHUNK_SIZE = 300;
 const REST_KEY_READ_CHUNK_SIZE = 50;
 const TERMINAL_LISTING_STATES = new Set(["sold_confirmed", "disappeared", "archived"]);
-const TITLE_TRIAGE_SKIP_VERSION = "title_triage_v1";
+// Wave 713 (2026-05-23): v1→v2 bump — Wave 712 catalog 152 신설 후 stale 168K 매물 reparse.
+//   bias-free 검증으로 brand 매물 매칭 가능한데 title_triage_v1 단계에서 차단된 매물 대량 발견.
+//   v2 bump 시 isCurrentTitleTriageSkip false → cron이 점진적 reparse.
+const TITLE_TRIAGE_SKIP_VERSION = "title_triage_v2";
 let rawScoreDirtySchemaAvailablePromise: Promise<boolean> | null = null;
 
 async function rawScoreDirtySchemaAvailable() {
