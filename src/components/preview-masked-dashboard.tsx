@@ -274,6 +274,11 @@ export default function PreviewMaskedDashboard() {
                           ) : null;
                         })()}
                       </div>
+
+                      <div className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#e2ded5] bg-[#fbfaf6] px-2.5 py-1 text-[11px] font-black text-[#526057] dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 sm:hidden">
+                        <CheckCircleIcon width={13} height={13} className={signal.tone === "seller" ? "text-[#059669]" : "text-[#7b8479]"} />
+                        <span className="truncate">{signal.label}</span>
+                      </div>
                     </div>
 
                     <div className="hidden shrink-0 text-right sm:block">
