@@ -7048,6 +7048,10 @@ export const CATALOG: Sku[] = [
       // 미국/USA 한정 컬렉션 + 도시 한정 패턴
       "성조기 pk", "성조기pk", "성조기 카라", "성조기카라",
       "올림픽 한정", "team usa", "팀 usa",
+      // Wave 671 (2026-05-22): RLX 골프 라인 차단 (별도 시세).
+      // pid 408213485 "랄프로렌 RLX 반팔카라티" 28k score 56 — RLX는 골프 라인 (별도 SKU 필요).
+      "rlx", "rlx 골프", "rlx golf", "rlx 카라", "rlx 반팔",
+      "랄프로렌 rlx", "polo rlx", "rlx polo",
     ],
     msrpKrw: 159000, released: 2020,
     defaultProductType: "polo_shirt", // Wave 236d — Polo Pique = polo shirt 라인 확정.
@@ -10981,6 +10985,13 @@ const GLOBAL_FASHION_NOISE: string[] = [
   "느낌 오시", "느낌오시",
   "저렴하게 판매", "저렴하게드려요", "저렴하게 드려요",
   "오시면 압니다", "와서 보시면", "사진 보시면", "사진보시면",
+  // Wave 671 (2026-05-22): 짭/짝퉁 코드 워딩 (탭체/택체 — 정품 표기 모방).
+  //   pid 409056204 꼼데 컨버스 60k 발견 ("탭체 새제품" — 정상 12-18만 대비 1/3).
+  //   "탭체"는 정품 표기처럼 보이게 한 한국 fake 마켓 코드.
+  "탭체", "탭 체", "택체", "택 체",
+  "택1급", "1급 정품", "1:1 정품",
+  "스급정품", "s급 정품", "ss급정품", "ss급 정품",
+  "11급", "정품 11", "고급 1:1",
 ];
 
 // Wave 230: CATEGORY-specific cross-category noise.
