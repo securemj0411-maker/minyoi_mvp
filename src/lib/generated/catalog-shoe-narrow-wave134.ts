@@ -358,11 +358,14 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     id: "shoe-nike-dunk-low-black-white",
     brand: "Nike",
     category: "shoe",
-    modelName: "Nike Dunk Low (Standard Colors)",
-    aliases: ["덩크 로우", "Dunk Low"],
+    modelName: "Nike Dunk Low Black/White (Standard Panda variant)",
+    aliases: ["덩크 로우 블랙 화이트", "Dunk Low Black White", "검흰"],
+    // Wave 692 (2026-05-23): mustContain narrow — 정확히 black-white 명시 매물만.
+    //   일반 colorway 매물은 shoe-nike-dunk-low-broad (Wave 691)로 흘림 → needs_review 면제.
     mustContain: [
       ["덩크 로우", "덩크로우", "dunk low"],
-      ["nike", "나이키", "정품", "retail"],
+      ["nike", "나이키"],
+      ["블랙 화이트", "블랙화이트", "검흰", "흰검", "black white", "white black", "black/white", "white/black"],
     ],
     mustNotContain: [
       // 한정판 차단
