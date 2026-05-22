@@ -6979,6 +6979,15 @@ export const CATALOG: Sku[] = [
       // 다른 명품 brand polo (디올/구찌/프라다 폴로 등도 별도 시세군)
       "dior", "디올", "gucci", "구찌", "prada", "프라다", "burberry", "버버리",
       "hermes", "에르메스", "louis vuitton", "루이비통",
+      // Wave 658 (2026-05-22): c_grade spread 6.9x audit (6건) — 빅포니 한정 차단.
+      // 일반 polo_pique 45~60k 정상, 빅포니 성조기/USA/벤쿠버 110~145k outlier.
+      "빅포니 성조기", "빅포니성조기", "성조기 빅포니", "big pony usa flag",
+      "usa 빅포니", "usa빅포니", "미국 빅포니", "미국빅포니", "usa big pony",
+      "벤쿠버 한정", "vancouver limited", "벤쿠버한정",
+      "희귀 빅포니", "희귀빅포니", "rare big pony",
+      // 미국/USA 한정 컬렉션 + 도시 한정 패턴
+      "성조기 pk", "성조기pk", "성조기 카라", "성조기카라",
+      "올림픽 한정", "team usa", "팀 usa",
     ],
     msrpKrw: 159000, released: 2020,
     defaultProductType: "polo_shirt", // Wave 236d — Polo Pique = polo shirt 라인 확정.
