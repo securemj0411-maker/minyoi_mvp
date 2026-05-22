@@ -427,14 +427,16 @@ function parseClothingProductType(text: string): ClothingProductType {
   //   ("모자" 단독 / "모자가" / "모자에" 매칭 실패). fix: bare "모자" (자켓에 모자 부속 등 false positive 낮음).
   //   "모자이크/모자보호" 등 false positive 차단 — 명시적 negative lookahead.
   // Wave 264 (2026-05-20): 캡모자/베이스볼 캡/풋볼캡 보강 — 사용자 발견 type_unknown 매물.
-  if (/볼캡|ball ?cap|야구모자|버킷햇|bucket hat|벙거지|비니|beanie|메쉬캡|메쉬 ?캡|트러커 ?캡|trucker cap|cap\b|모자(?!이크|보호)|스냅백|snapback|캡모자|베이스볼 ?캡|baseball ?cap|풋볼 ?캡|football ?cap|6 ?패널/.test(t)) return "cap";
+  // Wave 556 (2026-05-22): 뉴스보이 캡/헌팅캡/플랫캡/베레/도리/베이스볼 모자 추가.
+  if (/볼캡|ball ?cap|야구모자|버킷햇|bucket hat|벙거지|비니|beanie|메쉬캡|메쉬 ?캡|트러커 ?캡|trucker cap|cap\b|모자(?!이크|보호)|스냅백|snapback|캡모자|베이스볼 ?캡|baseball ?cap|풋볼 ?캡|football ?cap|6 ?패널|뉴스보이 ?캡|뉴스보이 ?모자|newsboy ?cap|헌팅 ?캡|hunting ?cap|플랫 ?캡|flat ?cap|페도라|fedora|베레|beret|클로쉬|cloche/.test(t)) return "cap";
   // belt — "Supreme 벨트" / "Polo RRL 벨트" 등.
   if (/벨트|belt\b/.test(t)) return "belt";
   // wallet — "콘초 월렛" / "장지갑" 등.
   if (/지갑|wallet|반지갑|장지갑|카드지갑|머니 ?클립|콘초 ?월렛|콘초 ?지갑/.test(t)) return "wallet";
   // jeans — 청바지 명시 (데님 팬츠보다 specific).
   // Wave 264: "워싱진/슬림내로우 진/데님 와이드/와이드 진" 보강 (RRL/TNF Purple Label sample 발견).
-  if (/청바지|진(?:즈)?\b|jean(?:s)?\b|데님 ?팬츠|데님 ?진|denim ?jean|빈파포|빈티지 ?파이브 ?포켓|파이브 ?포켓|five ?pocket|5 ?포켓|5-pocket|기빈스|미드랜드|이스트웨스트|힐스뷰|에이버리|키팅진|워싱진|스키니진|블랙진|화이트진|플레어 ?진|리버 ?진|그레이 ?진|2021m|1992m|슬림 ?내로우 ?진|슬림내로우 ?진|데님 ?와이드|와이드 ?진|데님 ?스트레이트|스트레이트 ?진|스트레이트 ?데님|스트레이드 ?데님/.test(t)) return "jeans";
+  // Wave 556 (2026-05-22): 데님 사이즈 표기 (31x32 등) + 셀비지/리버스테이블랙진/배기진/슈퍼 배기진 보강.
+  if (/청바지|진(?:즈)?\b|jean(?:s)?\b|데님 ?팬츠|데님 ?진|denim ?jean|빈파포|빈티지 ?파이브 ?포켓|파이브 ?포켓|five ?pocket|5 ?포켓|5-pocket|기빈스|미드랜드|이스트웨스트|힐스뷰|에이버리|키팅진|워싱진|스키니진|블랙진|화이트진|플레어 ?진|리버 ?진|그레이 ?진|2021m|1992m|슬림 ?내로우 ?진|슬림내로우 ?진|데님 ?와이드|와이드 ?진|데님 ?스트레이트|스트레이트 ?진|스트레이트 ?데님|스트레이드 ?데님|셀비지 ?데님|selvedge|리버스테이블랙진|배기진|슈퍼 ?배기진|루즈 ?배기진|스트레이트핏|스트레이트 ?핏|밀너|그랜드폴스|콘초 ?진|빈티지파이브포켓|31x32|32x32|33x32|34x32|36x32|29x32|30x32/.test(t)) return "jeans";
   // pants — "RRL 데님 팬츠" 등 (jeans 보다 narrow 한 데님은 위에서 잡힘).
   // Wave 438: bare "카고/cargo" is not enough. "카고 자켓/카고 바람막이" was parsed as pants.
   if (/팬츠|pants\b|바지(?!\s*받침)|trouser|트라우저|치노|chino|슬랙스|slacks|조거|jogger|카고 ?(?:팬츠|바지)|cargo ?(?:pants|trouser)|트랙 ?팬츠|track ?pants|카펜터|carpenter|워크팬츠|workwear ?pants/.test(t)) return "pants";
@@ -480,7 +482,8 @@ function parseClothingProductType(text: string): ClothingProductType {
   if (/롱슬리브|long sleeve|롱 ?티|장 ?티|long sleeved|긴팔|long ?sleeve\b/.test(t)) return "long_sleeve_tee";
   if (/반집업|반 ?집업|half ?zip|1\/?4 ?zip|쿼터 ?집업|쿼터 ?지퍼|1\/?4 ?집업|풀오버 ?집업/.test(t)) return "jacket";
   // Wave 269d (2026-05-20): "기모 집업/풀집업/집업" 단독 (니트 집업/반집업/카디건이 위에서 캐치된 후).
-  if (/기모 ?집업|풀집업|풀 ?집업|집업(?!\s*가능)|zip ?up/.test(t)) return "jacket";
+  // Wave 556 (2026-05-22): 풀 집업 (공백) + 다른 패턴 보강.
+  if (/기모 ?집업|풀집업|풀 ?집업|집업(?!\s*가능)|zip ?up|full ?zip/.test(t)) return "jacket";
   // Wave 408/413: "피케티셔츠"/"카라티" are polo/pique shirts, not generic tee.
   if (/피케 ?티|피케 ?셔츠|pique|카라 ?티|카라 ?셔츠|폴로 ?셔츠|폴로 ?티 ?셔츠|폴로 ?티(?!지)|pk ?티|pk ?셔츠|럭비 ?티|럭비 ?셔츠|rugby ?shirt/.test(t)) return "polo_shirt";
   // Wave 428: denim bottoms often omit "팬츠/바지" and only expose denim + waist/inseam sizing.
@@ -528,7 +531,8 @@ function parseBagProductType(text: string): BagProductType {
 
   // ── PRIORITY 2: 형태 명시 (메신저/더플/허리/숄더 등) ──
   if (/메신저|messenger/.test(t)) return "messenger";
-  if (/더플|duffle|duffel|보스턴 ?백|boston ?bag|여행 ?가방|트래블/.test(t)) return "duffle";
+  // Wave 556 (2026-05-22): 원통백/배럴백/스포츠백 → duffle (Stussy 30주년 원통백 sample 발견).
+  if (/더플|duffle|duffel|보스턴 ?백|boston ?bag|여행 ?가방|트래블|원통백|원통 ?백|배럴백|배럴 ?백|스포츠 ?백|sport ?bag|jim ?bag|짐 ?백/.test(t)) return "duffle";
   // Wave 268 (2026-05-20): Mantis Waistpack / 웨이스트팩 (Arc'teryx 모델) 보강 + 크로스 슬링 보강.
   if (/웨이스트|허리|힙색|waist ?bag|waist ?pack|웨이스트 ?팩|fanny ?pack|벨트 ?백|fanny|슬링 ?백|sling ?bag|sling\b|보레알리스 ?슬링|borealis ?sling|mantis ?2|mantis ?waist|만티스 ?웨이스트/.test(t)) return "waist";
   // shoulder — 호보백/버킷백/체인백 추가.
@@ -619,9 +623,9 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 //   Adidas football line, Nike Sacai shape, Salomon ACS+/ACS Pro, and Hoka Kaha boot type.
 // Wave 536 (2026-05-22) shoe v17: Dr. Martens Flora Chelsea no longer shares 2976 samples.
 // Wave 537 (2026-05-22) shoe v18: Acne Manhattan/Rockaway mixed titles are ambiguous and held out.
-const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v18";
+const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v19";
 // Wave 538 (2026-05-22) bag v14: Longchamp Le Pliage requires explicit line text.
-const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v14";
+const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v15";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
@@ -644,7 +648,7 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v14";
 // Wave 455 v17: clothing broad fallback + title-level multi-item bundle ("두개/일괄/묶음") needsReview.
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v21";
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v22";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");

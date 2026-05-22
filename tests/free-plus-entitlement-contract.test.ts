@@ -49,11 +49,14 @@ test("credit holders can browse the feed without refresh cooldown", () => {
 
   assert.match(poolRoute, /2h cooldown/);
   assert.match(poolRoute, /select=user_ref,balance,last_free_browse_at/);
-  assert.match(poolRoute, /const creditFeed = isAdminUser\(auth\.user\) \|\| Number\(credits\?\.balance \?\? 0\) > 0/);
+  assert.match(poolRoute, /const creditFeed = unlimitedAccess \|\| Number\(credits\?\.balance \?\? 0\) > 0/);
   assert.match(poolRoute, /if \(refresh && !creditFeed && !cooldown\.canRefresh\)/);
   assert.match(poolRoute, /if \(refresh && !creditFeed && cooldown\.canRefresh\)/);
   assert.match(poolRoute, /const readyCandidateLimit = refresh \? FETCH_POOL_OVERFETCH : READY_SLOTS/);
   assert.match(poolRoute, /diversifyByCategory\(readyFiltered, options\.readyCandidateLimit \?\? READY_SLOTS\)/);
+  assert.match(poolRoute, /예산 필터가 있을 때 더 넓은 가격대로 조용히 fallback하지 않는다/);
+  assert.doesNotMatch(poolRoute, /fallbackChain/);
+  assert.doesNotMatch(poolRoute, /FALLBACK_THRESHOLD/);
   assert.match(poolRoute, /items = items\.slice\(0, PAGE_SIZE\)/);
   assert.match(poolRoute, /sortParam === "latest" \|\| sortParam === "price_asc"/);
   assert.match(poolRoute, /if \(sort === "price_asc"\)/);
@@ -114,6 +117,13 @@ test("credit holders can browse the feed without refresh cooldown", () => {
   assert.match(explore, /오늘 볼 수 있는 추천 매물은 여기까지예요/);
   assert.match(explore, /수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요/);
   assert.match(explore, /creditFeedEnabled && !feedExhausted && items\.length > 0/);
+  assert.match(explore, /rootMargin: "1800px 0px"/);
+  assert.match(explore, /조건 맞는 후보를 미리 찾는 중/);
+  assert.match(explore, /조건은 오늘 여기까지예요/);
+  assert.match(explore, /가격대를 넓히면 더 볼 수 있어요/);
+  assert.match(explore, /function nextBudgetFilterOption/);
+  assert.match(explore, /nextBudgetOption\.value === "all" \? "가격 제한 풀고 보기"/);
+  assert.doesNotMatch(explore, /새 매물 붙이는 중/);
   assert.doesNotMatch(explore, /지금 볼 수 있는 추천 매물/);
   assert.doesNotMatch(explore, /지금 즉시 매물/);
   assert.doesNotMatch(explore, /크레딧 충전 사용자 전용/);
@@ -160,6 +170,27 @@ test("explore opens the modal only after detail access is granted", () => {
   assert.doesNotMatch(explore, /Plus로 계속 보기/);
   assert.doesNotMatch(explore, /오늘 무료 상세보기|하루 기준으로 다시 열려요/);
   assert.match(explore, /void openItemDetail\(item\)/);
+});
+
+test("direct-only items ask for confirmation before spending detail access", () => {
+  const explore = source("src/components/explore-client.tsx");
+  const poolRoute = source("src/app/api/packs/pool/route.ts");
+  const detailAccessRoute = source("src/app/api/packs/pool/detail-access/route.ts");
+  const safety = source("src/lib/marketplace-safety.ts");
+
+  assert.match(safety, /function marketplaceLocationFromRawJson/);
+  assert.match(poolRoute, /marketplaceLocationFromRawJson/);
+  assert.match(poolRoute, /directTradeLocation: marketplaceLocationFromRawJson\(meta\?\.raw_json\)/);
+  assert.match(poolRoute, /directTradeLocation: null/);
+  assert.match(detailAccessRoute, /directTradeLocation: marketplaceLocationFromRawJson\(meta\?\.raw_json\)/);
+  assert.match(explore, /type DirectTradeConfirmState/);
+  assert.match(explore, /function DirectTradeConfirmModal/);
+  assert.match(explore, /이 상품은 직거래만 가능한 매물이에요/);
+  assert.match(explore, /거래 가능 지역/);
+  assert.match(explore, /그래도 상세 분석 열기/);
+  assert.match(explore, /const hasDetailEntitlement = creditFeedEnabled \|\| freeDetailRemaining > 0/);
+  assert.match(explore, /isDirectOnlyItem\(item\) && hasDetailEntitlement/);
+  assert.match(explore, /openItemDetail\(item, \{ directTradeConfirmed: true \}\)/);
 });
 
 test("detail modal keeps purchase decision and market evidence in the first fold", () => {

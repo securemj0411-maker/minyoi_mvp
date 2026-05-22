@@ -11,6 +11,8 @@ function source(path: string) {
 test("PG review public pages expose legal links and business information", () => {
   const footer = source("src/components/app-footer.tsx");
   const plans = source("src/app/plans/page.tsx");
+  const terms = source("src/app/terms/page.tsx");
+  const refundPolicy = source("src/app/refund-policy/page.tsx");
 
   assert.match(footer, /\/terms/);
   assert.match(footer, /\/privacy/);
@@ -22,7 +24,16 @@ test("PG review public pages expose legal links and business information", () =>
   assert.match(footer, /대표번호/);
   assert.match(plans, /3가지 충전권/);
   assert.match(plans, /자동 갱신 없이 한 번만 결제/);
+  assert.match(plans, /1년 동안 사용할 수/);
+  assert.match(plans, /타인 양도·재판매·현금화가 불가/);
   assert.match(plans, /환불정책 확인/);
+  assert.match(terms, /통신판매중개 구조를 운영하지 않습니다/);
+  assert.match(terms, /지급일로부터 1년/);
+  assert.match(terms, /양도, 대여, 담보 제공, 재판매/);
+  assert.match(terms, /전환·출금·현금화/);
+  assert.match(refundPolicy, /유효기간은 지급일로부터 1년/);
+  assert.match(refundPolicy, /양도, 대여, 담보 제공, 재판매/);
+  assert.match(refundPolicy, /전환·출금·현금화/);
 });
 
 test("PG review checkout collects Inicis required buyer fields", () => {
@@ -33,6 +44,8 @@ test("PG review checkout collects Inicis required buyer fields", () => {
   assert.match(checkout, /결제자 이름/);
   assert.match(checkout, /결제자 휴대폰 번호/);
   assert.match(checkout, /\/login\?next=/);
+  assert.match(checkout, /충전일로부터 1년/);
+  assert.match(checkout, /타인 양도·재판매·현금화 불가/);
   assert.match(checkout, /email,\n\s+fullName,\n\s+phoneNumber/);
   assert.match(privacy, /결제자 이름, 이메일 주소, 휴대폰 번호/);
   assert.match(privacy, /KG이니시스/);

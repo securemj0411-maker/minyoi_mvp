@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   buildMarketplaceSafetyDisplay,
+  marketplaceLocationFromRawJson,
 } from "../src/lib/marketplace-safety";
 import { buildVerdicts } from "../src/lib/listing-verdicts";
 
@@ -83,6 +84,26 @@ test("joongna included shipping says shipping included, not free shipping", () =
   assert.equal(display.shipping.assumption, "included");
   assert.equal(display.shipping.valueLabel, "배송비 포함");
   assert.equal(display.shipping.allowFreeShippingBadge, false);
+});
+
+test("marketplace location is extracted from stored raw metadata for direct-only prompts", () => {
+  assert.equal(
+    marketplaceLocationFromRawJson({
+      searchMeta: {
+        location: " 서울특별시 강남구  ",
+      },
+    }),
+    "서울특별시 강남구",
+  );
+
+  assert.equal(
+    marketplaceLocationFromRawJson({
+      product: {
+        regionName: "대구 수성구",
+      },
+    }),
+    "대구 수성구",
+  );
 });
 
 test("source-aware verdicts do not emit joongna rating or free-shipping badges", () => {

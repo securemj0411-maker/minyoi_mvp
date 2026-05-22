@@ -233,7 +233,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `shoe conditionNotes 비어있음: ${JSON.stringify(result.conditionNotes)}`);
     });
 
-    it("parser_version shoe = wave92-shoe-v18 (Wave 537 Acne Manhattan Rockaway ambiguity)", () => {
+    it("parser_version shoe = wave92-shoe-v19 (Wave 537 Acne Manhattan Rockaway ambiguity)", () => {
       const result = parseListingOptions({
         title: "나이키 덩크 로우",
         description: "270",
@@ -241,11 +241,11 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Nike Dunk Low",
         category: "shoe",
       });
-      assert.equal(result.parserVersion, "wave92-shoe-v18",
+      assert.equal(result.parserVersion, "wave92-shoe-v19",
         `parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version bag = wave92-bag-v14 (Wave 538 Longchamp Le Pliage tightening)", () => {
+    it("parser_version bag = wave92-bag-v15 (Wave 538 Longchamp Le Pliage tightening)", () => {
       const result = parseListingOptions({
         title: "구찌 마몬트 토트백",
         description: "정품",
@@ -253,11 +253,11 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Gucci Marmont",
         category: "bag",
       });
-      assert.equal(result.parserVersion, "wave92-bag-v14",
+      assert.equal(result.parserVersion, "wave92-bag-v15",
         `bag parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version clothing = wave216-clothing-v21 (Wave 540 Polo Oxford boys/youth hold)", () => {
+    it("parser_version clothing = wave216-clothing-v22 (Wave 540 Polo Oxford boys/youth hold)", () => {
       const result = parseListingOptions({
         title: "스투시 후드",
         description: "L 사이즈",
@@ -265,7 +265,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Stussy Hoodie",
         category: "clothing",
       });
-      assert.equal(result.parserVersion, "wave216-clothing-v21",
+      assert.equal(result.parserVersion, "wave216-clothing-v22",
         `clothing parser_version mismatch: ${result.parserVersion}`);
     });
 
