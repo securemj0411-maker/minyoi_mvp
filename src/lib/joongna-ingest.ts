@@ -17,6 +17,8 @@ import {
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import { classifyListing } from "@/lib/pipeline";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+// Wave launch-41 (사용자 짚음): joongna lifecycle 추적 활성. 매물 detail enrich 후 lifecycle_checks seed.
+import { lifecycleTierForParsed, seedLifecycleChecks } from "@/lib/tick-pipeline";
 
 const DEFAULT_SEED_QUERIES = [
   "에어팟맥스",
@@ -794,6 +796,8 @@ function buildRows(
   const observationRows: Record<string, unknown>[] = [];
   const payloadRows: Record<string, unknown>[] = [];
   const sellerRows: Record<string, unknown>[] = [];
+  // Wave launch-41: joongna lifecycle seed rows. detail enrich 된 매물 모두 추적 대상 (active 상태).
+  const lifecycleSeedRows: { pid: number; source: "joongna"; priorityTier: ReturnType<typeof lifecycleTierForParsed> }[] = [];
   const ingestSource = "joongna_active";
 
   for (const detail of details) {
@@ -943,6 +947,21 @@ function buildRows(
       }
     }
 
+    // Wave launch-41: lifecycle seed. parsed 정보 따라 tier 결정 (market_sample / exploration / general).
+    //   active 매물만 seed (sold/disappeared 는 detail enrich 자체가 listingState 로 마킹됨).
+    //   active 외 상태는 이미 invalidate 대상이라 lifecycle 추적 필요 X.
+    if (listingState === "active") {
+      lifecycleSeedRows.push({
+        pid: detail.internalPid,
+        source: JOONGNA_SOURCE_ID,
+        priorityTier: lifecycleTierForParsed({
+          parseConfidence: parsed?.parseConfidence,
+          needsReview: parsed?.needsReview,
+          comparableKey: parsed?.comparableKey,
+        }),
+      });
+    }
+
     observationRows.push({
       pid: detail.internalPid,
       observed_at: now,
@@ -980,6 +999,8 @@ function buildRows(
     observationRows,
     payloadRows,
     sellerRows: dedupeRowsByKey(sellerRows, (row) => `${row.source}:${row.seller_uid}`),
+    // Wave launch-41: joongna lifecycle seed rows.
+    lifecycleSeedRows,
   };
 }
 
@@ -1242,7 +1263,7 @@ export async function runJoongnaIngest(options: {
   const skippedDetails = details.length - writableDetails.length;
   const sellerEnrichment = await enrichWritableDetailsWithSellerFacts(writableDetails, config.timeoutMs);
   const now = new Date().toISOString();
-  const { rawRows, parsedRows, marketInvalidationEvents, observationRows, payloadRows, sellerRows } = buildRows(
+  const { rawRows, parsedRows, marketInvalidationEvents, observationRows, payloadRows, sellerRows, lifecycleSeedRows } = buildRows(
     sellerEnrichment.details,
     now,
     options.runId ?? null,
@@ -1255,6 +1276,16 @@ export async function runJoongnaIngest(options: {
   }
   if (parsedRows.length > 0) {
     await upsertRows("mvp_listing_parsed", parsedRows, "pid");
+  }
+  // Wave launch-41 (사용자 짚음 "joongna 도 bunjang 처럼"): lifecycle 추적 시작.
+  //   raw_listings upsert 후 seed (PK 무결성). best-effort — 실패해도 ingest 진행.
+  let lifecycleSeeded = 0;
+  if (lifecycleSeedRows.length > 0) {
+    try {
+      lifecycleSeeded = await seedLifecycleChecks(lifecycleSeedRows);
+    } catch (err) {
+      console.warn("joongna lifecycle seed failed (non-fatal)", err instanceof Error ? err.message : String(err));
+    }
   }
   const marketInvalidationsQueued = await enqueueJoongnaMarketInvalidations(marketInvalidationEvents);
   const observationInserted = await insertObservations(observationRows, payloadRows);
@@ -1335,6 +1366,7 @@ export async function runJoongnaIngest(options: {
       parsedUpserted: parsedRows.length,
       marketInvalidationsQueued,
       observationInserted,
+      lifecycleSeeded,
       budgetStopped,
       deadlineSafetyMs: JOONGNA_INGEST_DEADLINE_SAFETY_MS,
       sellerProfilesFetched: sellerEnrichment.sellerProfilesFetched,

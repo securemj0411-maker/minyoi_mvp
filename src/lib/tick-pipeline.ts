@@ -67,8 +67,12 @@ import {
   hasStrongSoldOutSignal,
   isActiveSaleStatus,
   isSoldOut,
+  soldOutTextHits,
+  type SoldOutSignal,
   type SourceHealthStatus,
 } from "@/lib/sold-out";
+// Wave launch-41: joongna lifecycle detail fetch.
+import { fetchJoongnaDetail } from "@/lib/joongna";
 import {
   analysisOutputDiffReasons,
   analysisOutputChanged,
@@ -129,6 +133,10 @@ type LifecycleClaimMode = "default" | "terminal_recheck";
 
 type LifecycleClaimRow = {
   pid: number;
+  // Wave launch-41: source/url 추가 — joongna lifecycle 지원.
+  // claim RPC (migration launch_41_lifecycle_claim_return_source_url_v2) 가 raw_listings.source/url 같이 select.
+  source: "bunjang" | "joongna" | string;
+  url: string | null;
   lifecycle_status: LifecycleStatus;
   priority_tier: LifecyclePriorityTier;
   consecutive_missing_count: number;
@@ -703,20 +711,27 @@ function lifecycleNextCheckAt(tier: LifecyclePriorityTier, status: LifecycleStat
   return new Date(Date.now() + lifecycleDelayMs(tier, status)).toISOString();
 }
 
-function lifecycleTierForParsed(parsed: { parseConfidence?: number; needsReview?: boolean; comparableKey?: string | null }) {
+// Wave launch-41: export — joongna-ingest 가 lifecycle seed 시 동일 tier 결정 로직 사용.
+export function lifecycleTierForParsed(parsed: { parseConfidence?: number; needsReview?: boolean; comparableKey?: string | null }) {
   if (!parsed.comparableKey) return "general" as const;
   if (Number(parsed.parseConfidence ?? 0) >= 0.65 && !parsed.needsReview) return "market_sample" as const;
   return "exploration" as const;
 }
 
-async function seedLifecycleChecks(rows: {
+// Wave launch-41 (사용자 짚음 "joongna 도 bunjang 처럼 lifecycle 되면 좋은거 아닌가"):
+//   source 파라미터화. 이전엔 `source: "bunjang"` 하드코딩 → joongna 매물은 lifecycle_checks 에
+//   영구 누락 → sold/disappeared 추적 X → 사용자에게 sold 매물 노출 신뢰 박살 risk.
+//   joongna-ingest 가 detail 처리 후 이 함수 호출하면 lifecycle 추적 가능.
+//   export 추가 — joongna-ingest 에서 import 사용.
+export async function seedLifecycleChecks(rows: {
   pid: number;
+  source?: "bunjang" | "joongna";
   priorityTier: LifecyclePriorityTier;
   nextCheckAt?: string;
 }[]) {
   if (rows.length === 0) return 0;
   const now = new Date().toISOString();
-  const deduped = new Map<number, { pid: number; priorityTier: LifecyclePriorityTier; nextCheckAt?: string }>();
+  const deduped = new Map<number, { pid: number; source: "bunjang" | "joongna"; priorityTier: LifecyclePriorityTier; nextCheckAt?: string }>();
   const priorityScore: Record<LifecyclePriorityTier, number> = {
     pool: 5,
     near_pool: 4,
@@ -726,13 +741,14 @@ async function seedLifecycleChecks(rows: {
   };
   for (const row of rows) {
     const existing = deduped.get(row.pid);
-    if (!existing || priorityScore[row.priorityTier] > priorityScore[existing.priorityTier]) {
-      deduped.set(row.pid, row);
+    const next = { ...row, source: row.source ?? ("bunjang" as const) };
+    if (!existing || priorityScore[next.priorityTier] > priorityScore[existing.priorityTier]) {
+      deduped.set(row.pid, next);
     }
   }
   await insertIgnoreRows("mvp_lifecycle_checks", [...deduped.values()].map((row) => ({
     pid: row.pid,
-    source: "bunjang",
+    source: row.source,
     status: "active",
     priority_tier: row.priorityTier,
     next_check_at: row.nextCheckAt ?? lifecycleNextCheckAt(row.priorityTier),
@@ -4651,6 +4667,39 @@ function shouldSkipLifecycleForHealth(row: LifecycleClaimRow, health: SourceHeal
   return row.priority_tier !== "pool" && row.priority_tier !== "near_pool";
 }
 
+// Wave launch-41: source 별 lifecycle detail fetch + sold signal 감지.
+//   bunjang: fetchDetail (bunjang API) + detectSoldOut (sale_status / text / image 종합)
+//   joongna: fetchJoongnaDetail (HTML parse) + productStatus + text hit
+//     pack-open.ts:1503-1507 의 joongna sold 감지 패턴 통합.
+//   반환값: LifecycleClaimRow 의 나머지 코드 (isSoldOut, canPermanentlyInvalidateSoldOut,
+//   markRawLifecycleState) 에서 사용할 saleStatus 와 signals.
+//   detail null 일 때는 fetch_failed signal — bunjang/joongna 동일.
+async function fetchLifecycleDetailBySource(row: LifecycleClaimRow): Promise<{
+  detail: { saleStatus: string | null } | null;
+  signals: SoldOutSignal[];
+}> {
+  if (row.source === "joongna") {
+    if (!row.url) return { detail: null, signals: ["fetch_failed"] };
+    const j = await fetchJoongnaDetail(row.url, 10_000);
+    if (!j.ok) return { detail: null, signals: ["fetch_failed"] };
+    const signals: SoldOutSignal[] = [];
+    const soldByStatus = j.productStatus != null && j.productStatus !== 0;
+    if (soldByStatus) signals.push("sale_status_inactive");
+    const textHits = soldOutTextHits(j.title, j.description);
+    if (textHits.length > 0) signals.push("description_traded");
+    const saleStatus = j.productStatus === 0
+      ? "JOONGNA_STATUS_0"
+      : j.productStatus != null
+      ? `JOONGNA_STATUS_${j.productStatus}`
+      : null;
+    return { detail: { saleStatus }, signals };
+  }
+  // bunjang default
+  const d = await fetchDetail(String(row.pid));
+  const signals = detectSoldOut(d, row.price, { title: row.name });
+  return { detail: d ? { saleStatus: d.saleStatus } : null, signals };
+}
+
 export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMode = "default"): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
@@ -4689,9 +4738,9 @@ export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMod
     }
 
     try {
-      const detail = await fetchDetail(String(row.pid));
+      // Wave launch-41: source 별 detail fetch + sold signal 통합. joongna 도 추적 대상.
+      const { detail, signals } = await fetchLifecycleDetailBySource(row);
       if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
-      const signals = detectSoldOut(detail, row.price, { title: row.name });
       const reason = describeSignals(signals);
       stats.enriched += detail ? 1 : 0;
       stats.detailFailed += detail ? 0 : 1;
