@@ -7134,11 +7134,19 @@ export const CATALOG: Sku[] = [
     brand: "RRL", category: "clothing", laneKey: "polo_rrl_tee",
     modelName: "Polo RRL Tee / Sweat / Hoodie",
     aliases: ["RRL tee", "RRL 맨투맨", "RRL 후디", "더블알엘 티"],
-    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["티셔츠", "tee", "맨투맨", "sweat", "후디", "hoodie", "후드", "롱슬리브", "헨리넥", "긴팔티", "반팔", "크루넥"]],
+    mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["티셔츠", "tee", "맨투맨", "sweat", "후디", "hoodie", "후드", "롱슬리브", "긴팔티", "반팔", "크루넥"]],
     mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일", "스니커즈", "데님", "denim", "청바지",
       // Wave 491: waffle/knit henleys belong with the RRL knit lane, not tee/sweat.
-      "니트", "knit", "와플", "waffle", "스웨터", "sweater",
-      "벨트", "지갑", "모자", "넥타이", "키링", "클러치", "목걸이"],
+      "니트", "knit", "와플", "waffle", "스웨터", "sweater", "스위터", "스웻터",
+      "벨트", "지갑", "모자", "넥타이", "키링", "클러치", "목걸이",
+      // Wave 684 (2026-05-22): spread 13x audit — 파카/자카드/셀럽/리페어 차단.
+      "헨리넥", "henley",  // 헨리넥은 니트 라인 (knit lane)
+      "마운틴 파카", "mountain parka", "파카", "parka", "후디드 파카",
+      "자카드", "jacquard", "인디고 자카드",
+      "류준열", "셀럽 착용", "셀럽 매물",
+      "리페어", "repair", "가먼트 리페어", "garment repair",
+      "와시드", "워시드", "washed", "washing",  // washed/distressed 빈티지 변형
+    ],
     msrpKrw: 250000, released: 2020,
   },
   {

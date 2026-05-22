@@ -670,7 +670,7 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v23";
 // Wave 455 v17: clothing broad fallback + title-level multi-item bundle ("두개/일괄/묶음") needsReview.
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v37";
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v38";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");

@@ -488,7 +488,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   polo_bear_collab: { status: "ready", label: "Polo Bear Print (한정)", note: "Wave 682 release — Wave 572/580/682 누적 차단: 양말/파자마/이불/잠옷/보이즈/걸즈/패밀리 후디/큐알신형(가품)/y2k 빈티지 명시." },
   polo_rrl: { status: "blocked", label: "Polo RRL Double RL (broad fallback)", note: "Wave 407: clothing broad fallback hold — narrow RRL lanes only." },
   // Wave 218 (2026-05-19): RRL narrow 5개 — product type 별 가격대 완전 다름 (CV 1.56 분산)
-  polo_rrl_tee: { status: "blocked", label: "Polo RRL Tee / Sweat / Hoodie", note: "Wave 407: tee/sweat/hoodie mixed hold until product-type split." },
+  polo_rrl_tee: { status: "ready", label: "Polo RRL Tee / Sweat / Hoodie", note: "Wave 684 release — 스위터/마운틴 파카/헨리넥/자카드/셀럽(류준열)/리페어/와시드 차단. product_type별 comparable_key 자동 분리." },
   polo_rrl_denim: { status: "ready", label: "Polo RRL Denim (jeans/shirt)", note: "Wave 218" },
   polo_rrl_shirt_pants: { status: "blocked", label: "Polo RRL Shirt / Pants (catch-all)", note: "Wave 407: catch-all hold. Use shirt/pants narrow lanes." },
   // Wave 247.1 (2026-05-19): shirt-pants split — production sample 74건 (CV 0.86) → shirt 49 / pants 20 narrow 분리.
