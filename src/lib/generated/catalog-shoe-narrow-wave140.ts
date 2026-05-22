@@ -57,6 +57,11 @@ export const SHOE_WAVE140_CATALOG: Sku[] = [
       "스케치에디션", "sketch edition",
       "uv 팩", "uv 변색",
       "잭퍼셀", "jack purcell",
+      // Wave 639: 추가 collab — Rick Owens / Ambush / Feng Chen Wang.
+      "릭 오웬스", "rick owens", "drkshdw", "다크쉐도우 drkshdw",
+      "앰부쉬", "ambush",
+      "펑첸왕", "feng chen wang", "fengchenwang",
+      "투인원", "two-in-one",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],
