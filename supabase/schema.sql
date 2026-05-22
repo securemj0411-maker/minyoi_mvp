@@ -2219,11 +2219,35 @@ declare
   v_now timestamptz := now();
   v_period_end timestamptz;
   v_balance integer;
+  -- Wave launch-21 (audit HIGH): schema.sql 과 migration 20260515000300 sync.
+  -- 멱등성 가드 누락 시 fresh deploy 에서 동일 payment_key 재호출 = 크레딧 이중 grant risk.
+  v_existing record;
 begin
   v_user_ref := nullif(left(trim(coalesce(p_user_ref,'')), 64), '');
   if v_user_ref is null then raise exception 'missing user ref'; end if;
   if p_plan_key not in ('starter','plus','pro') then
     raise exception 'invalid plan: %', p_plan_key;
+  end if;
+
+  -- Wave launch-21: H3 멱등성 가드 — 동일 payment_key 재호출이면 기존 결과 반환.
+  if p_payment_key is not null and length(trim(p_payment_key)) > 0 then
+    select pe.user_ref, up.plan_key, up.current_period_end, uc.balance
+      into v_existing
+      from public.mvp_payment_events pe
+      left join public.mvp_user_plans up on up.user_ref = pe.user_ref
+      left join public.mvp_user_credits uc on uc.user_ref = pe.user_ref
+     where pe.payment_key = p_payment_key
+     limit 1;
+    if found then
+      if v_existing.user_ref != v_user_ref then
+        raise exception 'payment_key already used by another user';
+      end if;
+      plan_key := coalesce(v_existing.plan_key, p_plan_key);
+      balance := coalesce(v_existing.balance, 0);
+      current_period_end := v_existing.current_period_end;
+      return next;
+      return;
+    end if;
   end if;
 
   v_period_end := v_now + make_interval(days => greatest(1, coalesce(p_period_days, 30)));
@@ -2265,6 +2289,7 @@ begin
   values (v_user_ref, p_auth_user_id, 'plan_grant', greatest(0, coalesce(p_credits,0)), v_balance,
           jsonb_build_object('source','subscribe_mvp_plan','plan',p_plan_key,'payment_key',p_payment_key));
 
+  -- Wave launch-21: payment_key UNIQUE 위반 시 race condition 안전망 (동시 두 번째 insert 자동 차단).
   insert into public.mvp_payment_events (user_ref, auth_user_id, event_type, plan_key, amount, payment_method, payment_key, metadata)
   values (v_user_ref, p_auth_user_id, 'subscribe', p_plan_key, coalesce(p_amount,0), 'toss_mock', p_payment_key,
           jsonb_build_object('credits',p_credits,'period_days',p_period_days));
@@ -2275,6 +2300,10 @@ begin
   return next;
 end;
 $$;
+
+-- Wave launch-21: payment_key UNIQUE index — migration 20260515000300 sync.
+create unique index if not exists mvp_payment_events_payment_key_uniq
+  on public.mvp_payment_events(payment_key) where payment_key is not null;
 
 revoke all on function public.subscribe_mvp_plan(text, uuid, text, integer, integer, text, integer) from public;
 revoke execute on function public.subscribe_mvp_plan(text, uuid, text, integer, integer, text, integer) from anon;

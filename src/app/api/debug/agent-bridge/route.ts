@@ -98,12 +98,14 @@ async function handlePost(req: NextRequest) {
   return NextResponse.json({ ok: true, mode: "push", message });
 }
 
+// Wave launch-21 (audit HIGH): admin gate 통과 후라도 raw err.message client 노출 X.
+// schema / 파일 경로 / internal 정보 누출 차단. 상세는 server console.
 export async function GET(req: NextRequest) {
   try {
     return await handleGet(req);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    console.error("debug/agent-bridge GET failed", error instanceof Error ? error.message : String(error));
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }
 
@@ -111,7 +113,7 @@ export async function POST(req: NextRequest) {
   try {
     return await handlePost(req);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    console.error("debug/agent-bridge POST failed", error instanceof Error ? error.message : String(error));
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }
