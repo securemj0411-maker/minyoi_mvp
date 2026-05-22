@@ -1429,14 +1429,26 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     released: 2024,
   },
   // Wave 182 Phase 2 chunk 4 (2026-05-17): Galaxy S20 시리즈 (2020.2) — 누락.
+  // Wave 604 (2026-05-22): production false positive 발견 — pid 167726339 '후지 x-s20', 408889097 '삼성 비스포크 vs20',
+  //   408917411 '가민 랠리 RS200', 409026880 '투어이슈 S200' 골프 샤프트 다 galaxy_s20|128gb 매칭.
+  //   'galaxy'/'갤럭시'/'삼성' brand 강제 추가 + 's20' 단독 단어 매칭 (양쪽 공백) 만 허용.
   {
     id: "galaxy-s20",
     brand: "Samsung",
     category: "smartphone",
     modelName: "Galaxy S20",
     aliases: ["갤럭시 S20", "갤럭시S20", "Galaxy S20"],
-    mustContain: [["갤럭시 s20", "갤럭시s20", "galaxy s20", "s20"]],
-    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", "노트", "note", ...PHONE_NOISE],
+    mustContain: [["갤럭시", "galaxy"], ["갤럭시 s20", "갤럭시s20", "galaxy s20", "s20"]],
+    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", "노트", "note", ...PHONE_NOISE,
+      // Wave 604: 다른 카테고리 false positive 차단.
+      "후지", "fuji", "fujifilm", "x-s20", "x s20",  // Fujifilm 카메라
+      "비스포크", "bespoke", "청소기", "vacuum", "vs20",  // 삼성 청소기
+      "가민", "garmin", "랠리", "rally", "rs200",  // Garmin 자전거 파워미터
+      "골프", "골프채", "아이언", "퍼터", "샤프트", "s200", "x100", "s300",  // 골프 (다이나믹 골드 샤프트)
+      "타이틀리스트", "titleist", "캘러웨이", "callaway", "테일러메이드", "taylormade",
+      "미즈노", "mizuno", "브리지스톤", "bridgestone", "스릭슨", "srixon", "에폰", "epon",
+      "로디아", "rodio", "rodd", "조디아", "포지드", "forged",
+    ],
     msrpKrw: 1359000,
     released: 2020,
   },
