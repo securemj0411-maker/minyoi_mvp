@@ -1431,14 +1431,14 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
   // Wave 182 Phase 2 chunk 4 (2026-05-17): Galaxy S20 시리즈 (2020.2) — 누락.
   // Wave 604 (2026-05-22): production false positive 발견 — pid 167726339 '후지 x-s20', 408889097 '삼성 비스포크 vs20',
   //   408917411 '가민 랠리 RS200', 409026880 '투어이슈 S200' 골프 샤프트 다 galaxy_s20|128gb 매칭.
-  //   'galaxy'/'갤럭시'/'삼성' brand 강제 추가 + 's20' 단독 단어 매칭 (양쪽 공백) 만 허용.
+  // Wave 604b: brand 강제는 줄임 표기 ('S23울트라') 정상 매물도 차단 → mustNotContain 차단어만 유지.
   {
     id: "galaxy-s20",
     brand: "Samsung",
     category: "smartphone",
     modelName: "Galaxy S20",
     aliases: ["갤럭시 S20", "갤럭시S20", "Galaxy S20"],
-    mustContain: [["갤럭시", "galaxy"], ["갤럭시 s20", "갤럭시s20", "galaxy s20", "s20"]],
+    mustContain: [["갤럭시 s20", "갤럭시s20", "galaxy s20", "s20"]],
     mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", "노트", "note", ...PHONE_NOISE,
       // Wave 604: 다른 카테고리 false positive 차단.
       "후지", "fuji", "fujifilm", "x-s20", "x s20",  // Fujifilm 카메라
@@ -1448,6 +1448,14 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
       "타이틀리스트", "titleist", "캘러웨이", "callaway", "테일러메이드", "taylormade",
       "미즈노", "mizuno", "브리지스톤", "bridgestone", "스릭슨", "srixon", "에폰", "epon",
       "로디아", "rodio", "rodd", "조디아", "포지드", "forged",
+      // Wave 604b: 추가 광범위 false positive.
+      "캐논", "canon", "파워샷", "powershot",  // Canon 카메라
+      "리솜", "레스트리", "숙박",  // 숙박권 양도
+      "callas20", "soocoo", "yas207", "xls202",  // 자전거/액션캠/사운드바/앰프 model code
+      "벨로스터", "veloster", "터빈", "turbine",  // 자동차 부품
+      "ns207", "샤프", "펜텔",  // 골프 셔츠 + 문구
+      "토미카", "tomica", "1:64", "1/64", "미니카",  // 미니카
+      "스프린터", "hs2069", "byss20",  // 아디다스 의류 model code
     ],
     msrpKrw: 1359000,
     released: 2020,
