@@ -187,6 +187,13 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "stussy",
       // Wave 492: brand-stuffed listings should not fall into plain Supreme broad.
       "nike", "나이키", "adidas", "아디다스", "mlb", "엠엘비", "puma", "푸마", "퓨마", "reebok", "리복",
+      // Wave 618: 다른 collab brand 추가 (Timberland/Champion/Honda/Hysteric Glamour 등).
+      "timberland", "팀버랜드", "champion", "챔피온",
+      "honda", "혼다", "ducati", "두카티",
+      "hysteric glamour", "히스테릭 글래머", "히스테릭글래머",
+      "vans", "반스",
+      "schott", "쇼트",
+      "levi", "리바이스",
       // 가짜
       "1:1", "11급", "미러", "복각",
     ],
