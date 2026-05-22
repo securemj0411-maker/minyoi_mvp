@@ -1804,6 +1804,21 @@ describe("Wave 254.6 — bag 모델명 false positive 차단", () => {
     assert.equal(result.comparableKey, "bag|margiela_5ac_mini|tote|era_unknown|unknown_size_variant");
   });
 
+  it("Longchamp Le Pliage requires explicit line text, not generic Longchamp bag wording", () => {
+    assert.equal(
+      ruleMatch("롱샴 르 플리아쥬 핸드백 블랙", "정품")?.id,
+      "bag-longchamp-le-pliage",
+    );
+    assert.equal(
+      ruleMatch("롱샴 토트백 블랙", "정품")?.id ?? null,
+      null,
+    );
+    assert.equal(
+      ruleMatch("롱샴 핸드백 블랙", "정품")?.id ?? null,
+      null,
+    );
+  });
+
   it("Margiela 5AC glued notation은 broad fallback이 아니라 5AC narrow로 간다", () => {
     assert.equal(ruleMatch("마르지엘라 5ac크로스백", "정품끈 보유")?.id, "bag-margiela-5ac-mini");
     assert.equal(ruleMatch("메종마르지엘라 5ac미니백", "브라운 가방")?.id, "bag-margiela-5ac-mini");

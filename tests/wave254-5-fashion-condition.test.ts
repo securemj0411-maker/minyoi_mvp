@@ -245,7 +245,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version bag = wave92-bag-v13 (Wave 501 bag variant key tightening)", () => {
+    it("parser_version bag = wave92-bag-v14 (Wave 538 Longchamp Le Pliage tightening)", () => {
       const result = parseListingOptions({
         title: "구찌 마몬트 토트백",
         description: "정품",
@@ -253,7 +253,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Gucci Marmont",
         category: "bag",
       });
-      assert.equal(result.parserVersion, "wave92-bag-v13",
+      assert.equal(result.parserVersion, "wave92-bag-v14",
         `bag parser_version mismatch: ${result.parserVersion}`);
     });
 

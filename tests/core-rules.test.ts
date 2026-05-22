@@ -1888,6 +1888,57 @@ test("candidate pool builder holds fashion broad and unknown-condition rows for 
   assert.ok(result.invalidations.some((row) => row.pid === 13 && row.reason === "fashion_unknown_condition_review"));
 });
 
+test("candidate pool builder holds Longchamp Le Pliage rows without size variant", () => {
+  const sku = CATALOG.find((item) => item.id === "bag-longchamp-le-pliage");
+  assert.ok(sku, "expected Longchamp Le Pliage SKU in catalog");
+
+  const parsedByPid = new Map([
+    [16, {
+      parser_version: "wave92-bag-v14",
+      category: "bag" as const,
+      comparable_key: "bag|longchamp_le_pliage|tote|era_unknown|unknown_size_variant|a_grade",
+      parse_confidence: 0.95,
+      needs_review: false,
+      condition_class: "mint",
+    }],
+    [17, {
+      parser_version: "wave92-bag-v14",
+      category: "bag" as const,
+      comparable_key: "bag|longchamp_le_pliage|tote|era_unknown|small|a_grade",
+      parse_confidence: 0.95,
+      needs_review: false,
+      condition_class: "mint",
+    }],
+  ]);
+  const base = {
+    price: 75_000,
+    skuMedian: 100_000,
+    estimatedBuyCost: 75_000,
+    shippingFee: 0,
+    shippingFeeGeneral: 0,
+    riskHits: 0,
+    thumbnailUrl: "https://example.test/bag.jpg",
+    shopReviewCount: 10,
+    score: 80,
+    scoreFlags: [],
+  };
+  const result = buildCandidatePoolRows({
+    rows: [
+      { ...base, pid: 16, skuId: sku.id, name: "롱샴 르 플리아쥬 핸드백 블랙" },
+      { ...base, pid: 17, skuId: sku.id, name: "롱샴 르 플리아쥬 스몰 토트백 블랙" },
+    ],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: CATEGORY_READINESS,
+    latestParserVersionByCategory: { bag: "wave92-bag-v14" },
+    now: "2026-05-22T00:00:00.000Z",
+  });
+
+  assert.equal(result.entries.length, 1);
+  assert.equal(result.entries[0]?.pid, 17);
+  assert.ok(result.invalidations.some((row) => row.pid === 16 && row.reason === "longchamp_le_pliage_unknown_size_variant_review"));
+});
+
 test("candidate pool builder holds explicit fashion collab rows unless sku is a collab lane", () => {
   const genericSku = CATALOG.find((item) => item.id === "shoe-vans-authentic");
   const collabSku = CATALOG.find((item) => item.id === "shoe-supreme-vans-collab");

@@ -256,6 +256,13 @@ function fashionPrecisionReviewReason(input: {
     /\b(?:collab|collaboration)\b|콜라보|협업/i.test(text)
   );
   if (!skuIsCollabLane && explicitExternalCollab) return "fashion_external_collab_review";
+  if (
+    input.category === "bag" &&
+    input.sku?.laneKey === "longchamp_le_pliage" &&
+    keyParts.includes("unknown_size_variant")
+  ) {
+    return "longchamp_le_pliage_unknown_size_variant_review";
+  }
   return null;
 }
 

@@ -620,7 +620,8 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 // Wave 536 (2026-05-22) shoe v17: Dr. Martens Flora Chelsea no longer shares 2976 samples.
 // Wave 537 (2026-05-22) shoe v18: Acne Manhattan/Rockaway mixed titles are ambiguous and held out.
 const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v18";
-const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v13";
+// Wave 538 (2026-05-22) bag v14: Longchamp Le Pliage requires explicit line text.
+const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v14";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.

@@ -10100,7 +10100,7 @@ export const CATALOG: Sku[] = [
     brand: "Longchamp", category: "bag", laneKey: "longchamp_le_pliage",
     modelName: "Longchamp Le Pliage (시그니처 나일론)",
     aliases: ["Longchamp Le Pliage", "롱샴 르 플리아쥬", "롱샴 플리아쥬"],
-    mustContain: [["longchamp", "롱샴"], ["pliage", "플리아쥬", "토트", "tote", "숄더", "shoulder", "크로스", "cross", "백", "bag", "핸드백", "미니"]],
+    mustContain: [["longchamp", "롱샴"], ["pliage", "플리아쥬", "플리 아쥬", "르 플리아쥬"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
     msrpKrw: 169000, released: 1993,
     defaultProductType: "tote", // Wave 236d — Le Pliage = 토트백 시그니처 라인.
