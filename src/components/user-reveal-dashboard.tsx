@@ -112,7 +112,9 @@ function krw(value: number) {
 
 function timeLabel(value: string) {
   try {
+    // Wave launch-28.b: timeZone 명시 (Asia/Seoul) — SSR/hydration mismatch + UTC 표시 방지.
     return new Date(value).toLocaleString("ko-KR", {
+      timeZone: "Asia/Seoul",
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",

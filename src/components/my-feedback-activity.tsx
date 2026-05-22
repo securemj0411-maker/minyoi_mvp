@@ -51,7 +51,9 @@ function krw(value: number | null) {
 
 function timeLabel(iso: string) {
   try {
+    // Wave launch-28.b: timeZone 명시 (Asia/Seoul).
     return new Date(iso).toLocaleString("ko-KR", {
+      timeZone: "Asia/Seoul",
       month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
     });
   } catch { return iso; }
@@ -138,8 +140,8 @@ export function MyFeedbackActivity() {
   const hasAny = allTime.totalCount > 0;
   if (!hasAny && emptyHidden) return null;
   const shellClassName = hasAny
-    ? "mb-4 rounded-xl border-2 border-[#d5dfd2] bg-[#f3f7f1] p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20"
-    : "mb-4 hidden rounded-xl border-2 border-[#d5dfd2] bg-[#f3f7f1] p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:block";
+    ? "mb-4 rounded-xl border-2 border-blue-100 bg-[#f3f7f1] p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20"
+    : "mb-4 hidden rounded-xl border-2 border-blue-100 bg-[#f3f7f1] p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:block";
 
   function hideEmptyForWeek() {
     const until = Date.now() + HIDE_FOR_MS;
@@ -174,7 +176,7 @@ export function MyFeedbackActivity() {
 
       <div className={shellClassName}>
         <div className="mb-2 flex items-start justify-between gap-2">
-          <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
+          <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-emerald-400">
             <SearchIcon className="h-3.5 w-3.5" />
             내 피드백 활동
             {/* Wave 194: 미확인 운영자 응답 배지. */}
@@ -192,7 +194,7 @@ export function MyFeedbackActivity() {
               <button
                 type="button"
                 onClick={hideEmptyForWeek}
-                className="rounded-full border border-[#d5dfd2] bg-white px-2 py-0.5 text-[10px] font-bold text-zinc-500 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                className="rounded-full border border-blue-100 bg-white px-2 py-0.5 text-[10px] font-bold text-zinc-500 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
               >
                 7일 숨김
               </button>
@@ -212,7 +214,7 @@ export function MyFeedbackActivity() {
           <>
             <div className="grid grid-cols-4 gap-2 text-center">
               <div className="rounded-lg bg-white px-2 py-2 dark:bg-zinc-900">
-                <div className="text-base font-black tabular-nums text-[#223127] dark:text-zinc-100">
+                <div className="text-base font-black tabular-nums text-zinc-950 dark:text-zinc-100">
                   {thisMonth.totalCount}
                 </div>
                 <div className="text-[9px] font-bold text-zinc-600 dark:text-zinc-400">신고</div>
@@ -271,7 +273,7 @@ export function MyFeedbackActivity() {
               className={`mt-2 w-full rounded-lg border px-3 py-1.5 text-[11px] font-black transition ${
                 data.unreadCount > 0
                   ? "border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
-                  : "border-[#d5dfd2] bg-white text-[#5d735f] hover:bg-[#edf3ea] dark:border-emerald-900/40 dark:bg-zinc-900 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
+                  : "border-blue-100 bg-white text-[#3182f6] hover:bg-[#edf3ea] dark:border-emerald-900/40 dark:bg-zinc-900 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
               }`}
             >
               {data.unreadCount > 0 ? `운영자 응답 ${data.unreadCount}건 확인 →` : "자세히 보기 →"}
