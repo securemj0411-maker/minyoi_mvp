@@ -9543,6 +9543,13 @@ export const CATALOG: Sku[] = [
       "인슐레이티드", "insulated",
       "다운 인슐레이티드", "다운 자켓", "다운자켓",
       "팬츠", "pants",
+      // Wave 584 (2026-05-22): Beta 변형/콜라보 narrow 차단 (다른 세션 narrow 좁힘 패턴).
+      "솔레스", "soles",  // Soles Beta = 별도 variant
+      "카딘", "cardin",  // Cardin x Arc'teryx 변형
+      "하이브리드", "hybrid",  // Beta SL Hybrid 별도 라인 (가격 +20%)
+      "데이즈", "daze",  // Daze 한정 컬러
+      // 여성 size 별도 시세 (남성과 가격 변동) — Wave 539 패턴 (Polo boys hold)
+      "여성 2xl", "여성2xl", "우먼스 2xl", "women's 2xl",  // 여성 큰 사이즈 narrow
     ],
     msrpKrw: 590000, released: 1998,
     defaultProductType: "jacket", // Wave 236d — Beta = Gore-Tex 자켓 라인 확정.
