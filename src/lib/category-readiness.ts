@@ -888,6 +888,17 @@ export const LANE_READINESS: LaneReadinessMap = {
   shoe_newbalance_jjjjound_collab: { status: "ready", label: "NB x JJJJound", note: "Wave 698 — 11 매물 평균 45만." },
   shoe_newbalance_jcrew_collab: { status: "ready", label: "NB x J.Crew (1400)", note: "Wave 698 — 15 매물." },
   shoe_newbalance_casablanca_collab: { status: "ready", label: "NB x Casablanca (327)", note: "Wave 698 — 13 매물." },
+  // Wave 700 (2026-05-23) — Crocs collab + 부츠/슬리퍼 + Puma 4 broad
+  shoe_crocs_salehe_bembury_collab: { status: "ready", label: "Crocs x Salehe Bembury", note: "Wave 700 — 얼친/팜 한정." },
+  shoe_crocs_bape_collab: { status: "ready", label: "Crocs x BAPE", note: "Wave 700 — 네이비/카모 collab." },
+  shoe_crocs_balenciaga_collab: { status: "ready", label: "Crocs x Balenciaga (luxury)", note: "Wave 700 — 가품 폭탄, 45만+." },
+  shoe_crocs_boots_broad: { status: "ready", label: "Crocs Boots broad", note: "Wave 700 — Classic Boot / Mega Crush / Echo Boot." },
+  shoe_crocs_slipper_broad: { status: "ready", label: "Crocs Slipper/Sandal broad", note: "Wave 700 — 산라/슬라이드/털 슬리퍼." },
+  shoe_crocs_light_ride_broad: { status: "ready", label: "Crocs LiteRide broad", note: "Wave 700 — Light Ride 360." },
+  shoe_puma_speedcat_broad: { status: "ready", label: "Puma Speedcat broad", note: "Wave 700 — OG/Open YY collab." },
+  shoe_puma_palermo_broad: { status: "ready", label: "Puma Palermo broad", note: "Wave 700 — Elevata/OG." },
+  shoe_puma_suede_broad: { status: "ready", label: "Puma Suede broad", note: "Wave 700 — Classic." },
+  shoe_puma_clyde_broad: { status: "ready", label: "Puma Clyde broad", note: "Wave 700 — Classic." },
 };
 
 export type CategoryReadinessConfig = {

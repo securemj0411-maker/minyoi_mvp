@@ -2074,6 +2074,61 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
   // shoe-newbalance-levis-collab는 catalog-shoe-wave91.ts에 이미 있음 — 별 추가 X
 
   // ═══════════════════════════════════════════════════════════
+  // Wave 700 (2026-05-23): Puma 4 broad 신설 (Speedcat/Palermo/Suede/Clyde)
+  // 사용자 인용 분석 — Puma 460 매물/월, 매칭률 65%, Speedcat/Palermo catalog 부재.
+  // ═══════════════════════════════════════════════════════════
+
+  {
+    id: "shoe-puma-speedcat-broad",
+    brand: "Puma", category: "shoe",
+    modelName: "Puma Speedcat (OG / Open YY collab broad)",
+    aliases: ["Puma Speedcat", "푸마 스피드캣"],
+    mustContain: [["puma", "푸마"], ["speedcat", "스피드캣", "스피드 캣", "speed cat"]],
+    mustNotContain: ["키즈", "kids", "td", "gs", "유아", "아동",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 99000, released: 2024, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-puma-palermo-broad",
+    brand: "Puma", category: "shoe",
+    modelName: "Puma Palermo (Elevata / OG broad)",
+    aliases: ["Puma Palermo", "푸마 팔레르모"],
+    mustContain: [["puma", "푸마"], ["palermo", "팔레르모"]],
+    mustNotContain: ["키즈", "kids", "td", "gs", "유아", "아동",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 99000, released: 2024, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-puma-suede-broad",
+    brand: "Puma", category: "shoe",
+    modelName: "Puma Suede (Classic broad)",
+    aliases: ["Puma Suede", "푸마 스웨이드"],
+    mustContain: [["puma", "푸마"], ["suede", "스웨이드"]],
+    mustNotContain: ["키즈", "kids", "td", "gs", "유아", "아동",
+      "rhuigi", "ruyy",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 89000, released: 1968, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-puma-clyde-broad",
+    brand: "Puma", category: "shoe",
+    modelName: "Puma Clyde (Classic broad)",
+    aliases: ["Puma Clyde", "푸마 클라이드"],
+    mustContain: [["puma", "푸마"], ["clyde", "클라이드"]],
+    mustNotContain: ["키즈", "kids", "td", "gs", "유아", "아동",
+      "atelier de copine",  // collab 별도
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 89000, released: 1973, defaultProductType: "sneaker",
+  },
+
+  // ═══════════════════════════════════════════════════════════
   // Wave 696 (2026-05-23): AF1 + Air Max 1단계 22 SKU 신설
   // Agent deep sweep — AF1 960건 (기존 3 → 53 후보), Air Max 1476건 (기존 5 → 23 후보).
   // Pareto 80% 흡수 (1단계).

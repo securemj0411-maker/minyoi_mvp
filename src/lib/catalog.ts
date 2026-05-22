@@ -8784,6 +8784,78 @@ export const CATALOG: Sku[] = [
     msrpKrw: 69000, released: 2023,
     defaultProductType: "slipper", // Wave 236e
   },
+
+  // Wave 700 (2026-05-23): Crocs collab + 부츠/슬리퍼/Light Ride SKU 신설.
+  // unmatched 216건 분석 — collab/부츠/털 슬리퍼 등 누락.
+
+  {
+    id: "shoe-crocs-salehe-bembury-collab",
+    brand: "Crocs x Salehe Bembury", category: "shoe",
+    modelName: "Crocs x Salehe Bembury (얼친/팜 한정)",
+    aliases: ["Salehe Bembury Crocs", "살레헤 벰버리 크록스"],
+    mustContain: [["crocs", "크록스"], ["살레헤", "salehe", "벰버리", "bembury"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "11급", "1:1",
+      "삽니다", "구합니다", "매입"],
+    msrpKrw: 220000, released: 2022, defaultProductType: "slipper",
+  },
+
+  {
+    id: "shoe-crocs-bape-collab",
+    brand: "Crocs x BAPE", category: "shoe",
+    modelName: "Crocs x BAPE Collab (네이비/카모/퍼플)",
+    aliases: ["BAPE Crocs", "베이프 크록스"],
+    mustContain: [["crocs", "크록스"], ["bape", "베이프", "a bathing ape"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "11급",
+      "삽니다", "구합니다", "매입"],
+    msrpKrw: 220000, released: 2023, defaultProductType: "slipper",
+  },
+
+  {
+    id: "shoe-crocs-balenciaga-collab",
+    brand: "Crocs x Balenciaga", category: "shoe",
+    modelName: "Crocs x Balenciaga (러버부츠/플랫폼 luxury)",
+    aliases: ["Balenciaga Crocs", "발렌시아가 크록스"],
+    mustContain: [["crocs", "크록스"], ["발렌시아가", "balenciaga"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "11급", "1:1", "미러",
+      "삽니다", "구합니다", "매입"],
+    msrpKrw: 800000, released: 2022, defaultProductType: "boot",
+  },
+
+  {
+    id: "shoe-crocs-boots-broad",
+    brand: "Crocs", category: "shoe",
+    modelName: "Crocs Boots (Classic Boot / Mega Crush / Echo Boot)",
+    aliases: ["Crocs Boots", "크록스 부츠"],
+    mustContain: [["crocs", "크록스"], ["부츠", "boot", "boots"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake",
+      "발렌시아가", "balenciaga",  // luxury collab 별도
+      "ocean minded",
+      "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2022, defaultProductType: "boot",
+  },
+
+  {
+    id: "shoe-crocs-slipper-broad",
+    brand: "Crocs", category: "shoe",
+    modelName: "Crocs Slipper / 털 슬리퍼 / Sandal (Sanrah/Slide)",
+    aliases: ["Crocs Slipper", "크록스 슬리퍼", "크록스 샌들"],
+    mustContain: [["crocs", "크록스"], ["슬리퍼", "slipper", "샌들", "sandal", "산라", "sanrah", "슬라이드", "slide", "털"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake",
+      "클로그", "clog", "boots", "부츠",
+      "삽니다", "구합니다", "매입"],
+    msrpKrw: 69000, released: 2020, defaultProductType: "slipper",
+  },
+
+  {
+    id: "shoe-crocs-light-ride-broad",
+    brand: "Crocs", category: "shoe",
+    modelName: "Crocs LiteRide / Light Ride 360",
+    aliases: ["Crocs LiteRide", "크록스 라이트라이드"],
+    mustContain: [["crocs", "크록스"], ["라이트라이드", "literide", "light ride", "라이트 라이드", "360"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake",
+      "삽니다", "구합니다", "매입"],
+    msrpKrw: 89000, released: 2018, defaultProductType: "slipper",
+  },
   // 칼하트 — 백팩/메신저/Carhartt WIP collab
   {
     id: "bag-carhartt-backpack",
