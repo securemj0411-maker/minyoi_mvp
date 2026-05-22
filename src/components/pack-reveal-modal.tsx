@@ -5330,6 +5330,14 @@ function RevealCardItem({
       if (stored === "detailed") setMode("detailed");
     } catch {}
   }, []);
+  useEffect(() => {
+    const handleModeChanged = (event: Event) => {
+      const nextMode = (event as CustomEvent<{ mode?: "simple" | "detailed" }>).detail?.mode;
+      if (nextMode === "simple" || nextMode === "detailed") setMode(nextMode);
+    };
+    window.addEventListener("minyoi:modal-mode-changed", handleModeChanged);
+    return () => window.removeEventListener("minyoi:modal-mode-changed", handleModeChanged);
+  }, []);
   const showProfitCalculationBasis = useCallback(() => {
     setMode("detailed");
     try { localStorage.setItem("minyoi_modal_mode", "detailed"); } catch {}
@@ -6076,6 +6084,67 @@ function RelatedRevealStrip({
   );
 }
 
+function DetailReportModeChoiceSheet({
+  open,
+  onThisItem,
+  onAlwaysDetailed,
+  onCancel,
+}: {
+  open: boolean;
+  onThisItem: () => void;
+  onAlwaysDetailed: () => void;
+  onCancel: () => void;
+}) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/45 px-3 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-8 backdrop-blur-sm sm:items-center sm:px-6 sm:pb-8">
+      <div className="w-full max-w-[420px] rounded-[28px] bg-[#fffbf4] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.28)] ring-1 ring-black/10 dark:bg-zinc-950 dark:ring-white/10">
+        <div className="rounded-[22px] bg-white px-4 py-4 ring-1 ring-[#ebe3d4] dark:bg-zinc-900 dark:ring-zinc-800">
+          <div className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-black text-emerald-800 ring-1 ring-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900/60">
+            보기 방식 선택
+          </div>
+          <h3 className="mt-3 break-keep text-[21px] font-black leading-[1.2] text-[#172019] dark:text-zinc-50">
+            상세 숫자 리포트를 어떻게 볼까요?
+          </h3>
+          <p className="mt-2 break-keep text-[13px] font-semibold leading-5 text-[#667164] dark:text-zinc-400">
+            이번 매물만 숫자로 보거나, 앞으로 기본 화면을 상세 리포트로 바꿀 수 있어요.
+          </p>
+          <p className="mt-3 break-keep rounded-[16px] bg-[#f4efe5] px-3 py-2 text-[12px] font-bold leading-5 text-[#687166] dark:bg-zinc-950/70 dark:text-zinc-400">
+            기본을 바꿔도 나중에 상단의 <span className="text-[#223127] dark:text-zinc-100">쉽게 보기</span> 버튼으로 언제든 다시 볼 수 있어요.
+          </p>
+        </div>
+
+        <div className="mt-3 grid gap-2">
+          <button
+            type="button"
+            onClick={onThisItem}
+            className="flex min-h-[54px] items-center justify-center rounded-[18px] bg-[#172019] px-4 text-[15px] font-black text-white shadow-[0_14px_30px_rgba(23,32,25,0.22)] transition active:scale-[0.99] dark:bg-zinc-100 dark:text-zinc-950"
+          >
+            이번만 상세 리포트 보기
+          </button>
+          <button
+            type="button"
+            onClick={onAlwaysDetailed}
+            className="flex min-h-[52px] items-center justify-center rounded-[18px] bg-white px-4 text-[14px] font-black text-[#223127] ring-1 ring-[#e6dece] transition active:scale-[0.99] dark:bg-zinc-900 dark:text-zinc-100 dark:ring-zinc-800"
+          >
+            앞으로 상세 리포트를 기본으로 보기
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="mx-auto flex min-h-9 items-center justify-center px-3 text-[12px] font-black text-[#7b8378] underline-offset-4 hover:text-[#223127] hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+          >
+            계속 쉬운모드 볼래요
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type DetailReportModeChoiceSource = "easy_mode_skip" | "easy_mode_complete";
+
 export default function PackRevealModal({
   open,
   band: _band,
@@ -6116,10 +6185,19 @@ export default function PackRevealModal({
   const activeRevealSaved = activeRevealPid != null && savedPids.has(activeRevealPid);
   const [beginnerGuideVisible, setBeginnerGuideVisible] = useState(false);
   const [beginnerGuideStep, setBeginnerGuideStep] = useState(0);
+  const [detailModeChoice, setDetailModeChoice] = useState<{
+    source: DetailReportModeChoiceSource;
+    stepIndex: number;
+    stepTotal: number;
+  } | null>(null);
   const [saveToast, setSaveToast] = useState<string | null>(null);
   const saveToastTimerRef = useRef<number | null>(null);
   const requestedAnalysisPidsRef = useRef<Set<number>>(new Set());
   const guideModeActive = result?.result === "success" && activeRevealCard != null && beginnerGuideVisible;
+
+  useEffect(() => {
+    setDetailModeChoice(null);
+  }, [activeRevealPid]);
 
   useEffect(() => {
     if (!open || activeRevealPid == null) return;
@@ -6228,29 +6306,65 @@ export default function PackRevealModal({
     });
   }, [activeRevealCard, activeRevealPid, beginnerGuideStep, guideModeActive, onTrackEvent]);
 
-  const skipBeginnerGuide = useCallback(() => {
-    recordBeginnerGuideSkipped(activeRevealPid);
-    if (activeRevealPid != null) {
-      onTrackEvent?.(activeRevealPid, "easy_mode_skipped", { stepIndex: beginnerGuideStep });
-      onTrackEvent?.(activeRevealPid, "detail_report_opened", { source: "easy_mode_skip" });
+  const requestDetailReportModeChoice = useCallback((source: DetailReportModeChoiceSource) => {
+    if (!activeRevealCard) return;
+    const stepTotal = beginnerGuideSteps(activeRevealCard).length;
+    setDetailModeChoice({
+      source,
+      stepIndex: beginnerGuideStep,
+      stepTotal,
+    });
+  }, [activeRevealCard, beginnerGuideStep]);
+
+  const cancelDetailReportModeChoice = useCallback(() => {
+    setDetailModeChoice(null);
+  }, []);
+
+  const openDetailedReportFromGuide = useCallback((makeDefault: boolean) => {
+    if (!detailModeChoice) return;
+    const source = detailModeChoice.source;
+    if (makeDefault) {
+      try { localStorage.setItem("minyoi_modal_mode", "detailed"); } catch {}
     }
+    window.dispatchEvent(new CustomEvent("minyoi:modal-mode-changed", { detail: { mode: "detailed" } }));
+    if (source === "easy_mode_skip") {
+      recordBeginnerGuideSkipped(activeRevealPid);
+      if (activeRevealPid != null) {
+        onTrackEvent?.(activeRevealPid, "easy_mode_skipped", {
+          stepIndex: detailModeChoice.stepIndex,
+          defaultDetailed: makeDefault,
+        });
+      }
+    } else {
+      recordBeginnerGuideCompleted(activeRevealPid);
+      if (activeRevealPid != null) {
+        onTrackEvent?.(activeRevealPid, "easy_mode_completed", {
+          stepTotal: detailModeChoice.stepTotal,
+          defaultDetailed: makeDefault,
+        });
+      }
+    }
+    if (activeRevealPid != null) {
+      onTrackEvent?.(activeRevealPid, "detail_report_opened", {
+        source,
+        defaultDetailed: makeDefault,
+      });
+    }
+    setDetailModeChoice(null);
     setBeginnerGuideVisible(false);
     setBeginnerGuideStep(0);
     window.requestAnimationFrame(() => resetDetailScroll("auto"));
-  }, [activeRevealPid, beginnerGuideStep, onTrackEvent, resetDetailScroll]);
+  }, [activeRevealPid, detailModeChoice, onTrackEvent, resetDetailScroll]);
+
+  const skipBeginnerGuide = useCallback(() => {
+    requestDetailReportModeChoice("easy_mode_skip");
+  }, [requestDetailReportModeChoice]);
 
   const advanceBeginnerGuide = useCallback(() => {
     if (!activeRevealCard) return;
     const maxIndex = beginnerGuideSteps(activeRevealCard).length - 1;
     if (beginnerGuideStep >= maxIndex) {
-      recordBeginnerGuideCompleted(activeRevealPid);
-      if (activeRevealPid != null) {
-        onTrackEvent?.(activeRevealPid, "easy_mode_completed", { stepTotal: maxIndex + 1 });
-        onTrackEvent?.(activeRevealPid, "detail_report_opened", { source: "easy_mode_complete" });
-      }
-      setBeginnerGuideVisible(false);
-      setBeginnerGuideStep(0);
-      window.requestAnimationFrame(() => resetDetailScroll("auto"));
+      requestDetailReportModeChoice("easy_mode_complete");
       return;
     }
     if (activeRevealPid != null) {
@@ -6258,7 +6372,7 @@ export default function PackRevealModal({
     }
     setBeginnerGuideStep((prev) => Math.min(prev + 1, maxIndex));
     window.requestAnimationFrame(() => resetDetailScroll("auto"));
-  }, [activeRevealCard, activeRevealPid, beginnerGuideStep, onTrackEvent, resetDetailScroll]);
+  }, [activeRevealCard, activeRevealPid, beginnerGuideStep, onTrackEvent, requestDetailReportModeChoice, resetDetailScroll]);
 
   const retreatBeginnerGuide = useCallback(() => {
     if (activeRevealPid != null) {
@@ -6566,14 +6680,22 @@ export default function PackRevealModal({
 
           {!displayLoading && result?.result === "success" ? (
             guideModeActive && activeRevealCard ? (
-              <BeginnerGuideWalkthrough
-                card={activeRevealCard}
-                stepIndex={beginnerGuideStep}
-                onNext={advanceBeginnerGuide}
-                onPrev={retreatBeginnerGuide}
-                onSkip={skipBeginnerGuide}
-                onClose={handleClose}
-              />
+              <>
+                <BeginnerGuideWalkthrough
+                  card={activeRevealCard}
+                  stepIndex={beginnerGuideStep}
+                  onNext={advanceBeginnerGuide}
+                  onPrev={retreatBeginnerGuide}
+                  onSkip={skipBeginnerGuide}
+                  onClose={handleClose}
+                />
+                <DetailReportModeChoiceSheet
+                  open={detailModeChoice != null}
+                  onThisItem={() => openDetailedReportFromGuide(false)}
+                  onAlwaysDetailed={() => openDetailedReportFromGuide(true)}
+                  onCancel={cancelDetailReportModeChoice}
+                />
+              </>
             ) : (
               <div className="space-y-4">
                 <div>
