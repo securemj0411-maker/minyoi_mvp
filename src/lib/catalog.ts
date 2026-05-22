@@ -6529,7 +6529,11 @@ export const CATALOG: Sku[] = [
     modelName: "GoPro Max (360)",
     aliases: ["GoPro Max", "고프로 맥스", "GoPro 360"],
     mustContain: [["gopro", "고프로"], ["max", "맥스"]],
-    mustNotContain: ["hero", "히어로", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["hero", "히어로", "케이스만", "배터리만", "충전기만", "마운트만", "마운트", "케이지", "그립만", "와후", "k엣지", "콤보 마운트", "고장", "파손", "수리", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE,
+      // Wave 606: production false positive — 'pid 406573617 미니고프로맥스 60암페어' 4M (전기 부품 매물).
+      "암페어", "ampere", "암페아",
+      "미니고프로", "미니 고프로",  // 광고/혼합 brand 표기
+    ],
     msrpKrw: 599000, released: 2019,
   },
   // ─── Wave 188 (2026-05-18): 새 카테고리 "lego" — 한정판/UCS/모듈러 12 SKU ───
