@@ -1191,4 +1191,574 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     released: 1995,
     defaultProductType: "sneaker",
   },
+
+  // ═══════════════════════════════════════════════════════════
+  // Wave 694 (2026-05-23): Dunk Low 32 narrow SKU 신설
+  // Agent deep sweep (966건 raw, 89% 색상 식별) → 30+ 새 colorway 발견.
+  // 한국 줄임말 (코퍼/미네/유레드/검흰/코끼리덩크) + collab + silhouette 분리.
+  // ═══════════════════════════════════════════════════════════
+
+  // --- 1단계: COLLAB narrow (가격 spread 큼, 별 SKU 필수) ---
+
+  {
+    id: "shoe-nike-dunk-low-offwhite",
+    brand: "Nike x Off-White", category: "shoe",
+    modelName: "Nike x Off-White Dunk Low (The 50)",
+    aliases: ["Off-White Dunk Low", "오프화이트 덩크 로우", "Dunk Low The 50"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["오프화이트", "off-white", "off white", "offwhite", "lot ", "the 50", "더 50", "더50"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs", "유아", "아동",
+      "에어맥스", "에어포스", "조던", "jordan", "blazer", "force",
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "구해요", "매입"],
+    msrpKrw: 1500000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-supreme",
+    brand: "Nike x Supreme", category: "shoe",
+    modelName: "Nike SB x Supreme Dunk Low",
+    aliases: ["Supreme Dunk Low", "슈프림 덩크 로우", "Supreme SB Dunk"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["슈프림", "supreme", "라멜지", "ramellzee", "오션 포그", "오션포그", "ocean fog", "쥬얼 스우시", "쥬얼"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "조던", "jordan", "에어맥스", "에어포스",
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "11급", "ss급정품", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 350000, released: 2002,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-kasina",
+    brand: "Nike x Kasina", category: "shoe",
+    modelName: "Nike x Kasina Dunk Low (한국 collab)",
+    aliases: ["Kasina Dunk Low", "카시나 덩크 로우", "80's Bus"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["카시나", "kasina", "80's 버스", "80s 버스", "블루버스", "넵튠 그린", "아이언스톤"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs", "조던", "jordan",
+      "짝퉁", "카피", "rep ", "replica", "fake", "11급", "ss급정품", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 300000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-travis-scott",
+    brand: "Nike x Travis Scott", category: "shoe",
+    modelName: "Nike SB Dunk Low Travis Scott",
+    aliases: ["Travis Scott SB Dunk Low", "트래비스 스캇 덩크 로우", "트스 덩크"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["트래비스", "travis", "travis scott", "트래비스스캇", "트레비스", "cactus jack", "트스"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "조던", "jordan", "에어맥스", "에어포스", "force",
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 1500000, released: 2020,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-undefeated",
+    brand: "Nike x Undefeated", category: "shoe",
+    modelName: "Nike x Undefeated Dunk Low SP",
+    aliases: ["Undefeated Dunk Low", "언디핏 덩크 로우", "Dunk Low 5 On It"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["언디핏", "언디피티드", "undefeated", "undftd", "5 on it", "sp 5"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "조던", "jordan",
+      "짝퉁", "카피", "rep ", "replica", "fake", "11급", "ss급정품", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 200000, released: 2020,
+    defaultProductType: "sneaker",
+  },
+
+  // --- 1단계: Mass narrow (인기 colorway, 8~22만) ---
+
+  {
+    id: "shoe-nike-dunk-low-university-red",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low University Red (유레드)",
+    aliases: ["Dunk Low University Red", "덩크 로우 유레드", "Dunk Low UR"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["유니버시티 레드", "유니버시티레드", "university red", "유레드", "u red", "팀 레드", "팀레드", "team red"],
+    ],
+    mustNotContain: ["sb ", "에스비",
+      "짐레드", "짐 레드", "gym red",
+      "챔피언쉽", "championship", "trail red",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-university-blue",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low University Blue (유블루)",
+    aliases: ["Dunk Low University Blue", "덩크 로우 유블루"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["유니버시티 블루", "유니버시티블루", "university blue", "유블루"],
+    ],
+    mustNotContain: ["sb ", "에스비", "코스트", "coast",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-court-purple",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Court Purple (코퍼)",
+    aliases: ["Dunk Low Court Purple", "덩크 로우 코퍼", "코트 퍼플"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["코트 퍼플", "코트퍼플", "court purple", "코퍼", "챔피언쉽 코트 퍼플", "championship court purple"],
+    ],
+    mustNotContain: ["sb ", "에스비",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-coast",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Coast (WMNS 연파랑)",
+    aliases: ["Dunk Low Coast", "덩크 로우 코스트"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["코스트", "coast", "발리언트 블루"],
+    ],
+    mustNotContain: ["sb ", "유니버시티 블루", "university blue",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-wolf-grey",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Wolf Grey",
+    aliases: ["Dunk Low Wolf Grey", "덩크 로우 울프 그레이"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["울프 그레이", "울프그레이", "wolf grey", "wolf gray"],
+    ],
+    mustNotContain: ["sb ", "그레이 포그", "grey fog", "smoke",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-grey-fog",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Grey Fog",
+    aliases: ["Dunk Low Grey Fog", "덩크 로우 그레이 포그"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["그레이 포그", "그레이포그", "grey fog", "gray fog"],
+    ],
+    mustNotContain: ["sb ", "울프", "wolf", "smoke",
+      "잭팟", "jackpot",  // Jackpot Grey Fog 별도
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-midnight-navy",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Midnight Navy (미네)",
+    aliases: ["Dunk Low Midnight Navy", "덩크 로우 미드나잇", "미네"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["미드나잇 네이비", "미드나잇네이비", "midnight navy", "미네", "미드나잇", "midnight"],
+    ],
+    mustNotContain: ["sb ", "유니버시티 블루", "university blue", "컬리지", "college navy",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-chicago",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Chicago",
+    aliases: ["Dunk Low Chicago", "덩크 로우 시카고"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["시카고", "chicago"],
+    ],
+    mustNotContain: ["sb pro", "sb 프로",  // SB Pro Chicago 별도 + 가품 위험
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-varsity-green",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Varsity Green",
+    aliases: ["Dunk Low Varsity Green", "덩크 로우 바시티 그린"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["바시티 그린", "바시티그린", "varsity green"],
+    ],
+    mustNotContain: ["sb ", "바시티 메이즈", "varsity maize",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  // --- 1단계: 시즌/한정 + Silhouette 분리 ---
+
+  {
+    id: "shoe-nike-dunk-low-halloween",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Halloween (시즌 한정)",
+    aliases: ["Dunk Low Halloween", "덩크 로우 할로윈"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["할로윈", "halloween", "할로원", "glow"],
+    ],
+    mustNotContain: ["sb ", "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-disrupt",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Disrupt (Disrupt 2 — silhouette 다름)",
+    aliases: ["Dunk Low Disrupt", "덩크 로우 디스럽트", "Disrupt 2"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["디스럽트", "disrupt"],
+    ],
+    mustNotContain: ["sb ", "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 139000, released: 2020,
+    defaultProductType: "sneaker",
+  },
+
+  // --- 2단계: MEDIUM narrow (5~10건/月, 매물 있음) ---
+
+  {
+    id: "shoe-nike-dunk-low-gym-red",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Gym Red (≠ University Red)",
+    aliases: ["Dunk Low Gym Red", "덩크 로우 짐 레드"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["짐 레드", "짐레드", "gym red"],
+    ],
+    mustNotContain: ["sb ", "유니버시티 레드", "university red", "유레드",
+      "키즈", "kids", "td", "gs", "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2020,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-lx",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low LX (Premium Leather/Suede)",
+    aliases: ["Dunk Low LX", "덩크 로우 LX"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["lx ", "dunk lx", "덩크 lx"],
+    ],
+    mustNotContain: ["sb ", "키즈", "kids", "td", "gs", "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-medium-curry",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Medium Curry (커리)",
+    aliases: ["Dunk Low Medium Curry", "덩크 로우 미디엄 커리"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["미디엄 커리", "미디움 커리", "medium curry", "커리", "curry"],
+    ],
+    mustNotContain: ["sb ", "키즈", "kids", "td", "gs", "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-smoke-grey",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Smoke Grey",
+    aliases: ["Dunk Low Smoke Grey", "덩크 로우 스모크 그레이"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["스모크 그레이", "스모크그레이", "smoke grey", "smoke gray", "라이트 스모크"],
+    ],
+    mustNotContain: ["sb ", "울프", "wolf", "키즈", "kids", "td", "gs", "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-photon-dust",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Photon Dust",
+    aliases: ["Dunk Low Photon Dust", "덩크 로우 포톤더스트"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["포톤 더스트", "포톤더스트", "photon dust", "포톤"],
+    ],
+    mustNotContain: ["sb ", "키즈", "kids", "td", "gs", "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-golden-road",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Golden Road",
+    aliases: ["Dunk Low Golden Road", "덩크 로우 골든로드", "Championship Goldenrod"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["골든로드", "골든 로드", "golden road", "goldenrod", "챔피언쉽 골든로드"],
+    ],
+    mustNotContain: ["sb ", "키즈", "kids", "td", "gs", "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-varsity-maize",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Varsity Maize",
+    aliases: ["Dunk Low Varsity Maize", "덩크 로우 바시티 메이즈"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["바시티 메이즈", "varsity maize"],
+    ],
+    mustNotContain: ["sb ", "바시티 그린", "varsity green", "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-jackpot",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Jackpot (Malachite)",
+    aliases: ["Dunk Low Jackpot", "덩크 로우 잭팟", "Jackpot Malachite"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["잭팟", "jackpot", "말라카이트", "malachite"],
+    ],
+    mustNotContain: ["sb ", "키즈", "kids", "td", "gs", "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 139000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-paisley",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Paisley",
+    aliases: ["Dunk Low Paisley", "덩크 로우 페이즐리", "Bandana"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["페이즐리", "paisley", "반다나"],
+    ],
+    mustNotContain: ["sb ", "발레이", "valerian", "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 139000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-zebra",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Zebra",
+    aliases: ["Dunk Low Zebra", "덩크 로우 지브라"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["지브라", "zebra"],
+    ],
+    mustNotContain: ["sb pro", "쿼터스낵스", "quartersnacks",  // SB collab 별도
+      "키즈", "kids", "td", "gs", "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 139000, released: 2023,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-light-bone",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Light Bone",
+    aliases: ["Dunk Low Light Bone", "덩크 로우 라이트 본"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["라이트 본", "라이트본", "light bone"],
+    ],
+    mustNotContain: ["sb ", "키즈", "kids", "td", "gs", "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-clear-jade",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Clear Jade (코끼리덩크)",
+    aliases: ["Dunk Low Clear Jade", "덩크 로우 클리어 제이드", "코끼리덩크"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["클리어 제이드", "clear jade", "코끼리", "elephant"],
+    ],
+    mustNotContain: ["sb ", "키즈", "kids", "td", "gs", "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 139000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-summit-white",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Summit White (Triple White)",
+    aliases: ["Dunk Low Summit White", "덩크 로우 트리플 화이트", "Triple White"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["서밋 화이트", "서밋화이트", "summit white", "트리플 화이트", "triple white", "올화이트", "올 화이트"],
+    ],
+    mustNotContain: ["sb ", "panda", "범고래", "팬더", "판다", "blackwhite", "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2021,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-akio-pink",
+    brand: "Nike", category: "shoe",
+    modelName: "Nike Dunk Low Akio Pink (WMNS)",
+    aliases: ["Dunk Low Akio", "덩크 로우 아키오 핑크"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["아키오", "akio"],
+    ],
+    mustNotContain: ["sb ", "트리플 핑크", "triple pink", "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-union",
+    brand: "Nike x Union", category: "shoe",
+    modelName: "Nike x Union Dunk Low (Passport Pack)",
+    aliases: ["Union Dunk Low", "유니온 덩크 로우", "Passport Pack"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["유니온", "union", "패스포트 팩", "passport pack", "피스타치오"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs", "조던", "jordan",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 250000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-dunk-low-lebron-pebbles",
+    brand: "Nike x LeBron", category: "shoe",
+    modelName: "Nike Dunk Low LeBron James x Fruity Pebbles",
+    aliases: ["LeBron Dunk Low", "르브론 덩크", "Fruity Pebbles"],
+    mustContain: [
+      ["덩크 로우", "덩크로우", "dunk low"],
+      ["르브론", "lebron", "페블스", "pebbles", "fruity"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs", "조던", "jordan",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 200000, released: 2023,
+    defaultProductType: "sneaker",
+  },
+
+  // --- SB Pro broad (silhouette 분리 — 일반 Dunk Low와 별도 ecosystem) ---
+  {
+    id: "shoe-nike-sb-dunk-low-broad",
+    brand: "Nike SB", category: "shoe",
+    modelName: "Nike SB Dunk Low Pro (Broad — 일반 colorway, collab 별도)",
+    aliases: ["Nike SB Dunk Low", "SB 덩크 로우", "SB Pro Dunk Low"],
+    mustContain: [
+      ["sb 덩크 로우", "sb 덩크로우", "sb dunk low", "에스비 덩크 로우", "에스비덩크로우", "nike sb dunk"],
+    ],
+    mustNotContain: [
+      // 일반 Dunk Low와 분리
+      // collab (가품 위험 매우 큼)
+      "travis", "트래비스", "오프화이트", "off-white", "off white",
+      "supreme", "슈프림", "ramellzee", "라멜지",
+      "concepts", "콘셉트", "lobster", "랍스터",
+      "stussy", "스투시", "civilist", "시빌리스트",
+      "chunky dunky", "청키 덩키", "ben jerry", "벤앤제리",
+      "stranglove", "strangelove", "스트레인지러브",
+      "born x raised", "bxr", "born raised",
+      "yuto", "호리고메", "헤일리", "hayley",
+      "albino", "알비노", "프레토", "pretto",
+      "쿼터스낵스", "quartersnacks", "나헌터스",
+      "아츠-렉", "art-rec", "트럭잇", "truck it",
+      "파워퍼프", "powerpuff", "패리스 괴벨",
+      "j balvin", "jbalvin", "발빈",
+      "패리스 괴벨", "paris goebel",
+      "한정판", "limited edition", "sp ",
+      // 일반 차단
+      "키즈", "kids", "td", "gs", "유아", "아동",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "구해요", "매입",
+    ],
+    msrpKrw: 159000, released: 2002,
+    defaultProductType: "sneaker",
+  },
 ];

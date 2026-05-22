@@ -644,7 +644,7 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 //   Adidas football line, Nike Sacai shape, Salomon ACS+/ACS Pro, and Hoka Kaha boot type.
 // Wave 536 (2026-05-22) shoe v17: Dr. Martens Flora Chelsea no longer shares 2976 samples.
 // Wave 537 (2026-05-22) shoe v18: Acne Manhattan/Rockaway mixed titles are ambiguous and held out.
-const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v26";
+const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v27";
 // Wave 538 (2026-05-22) bag v14: Longchamp Le Pliage requires explicit line text.
 const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v23";
 // Wave 652 (2026-05-22): clothing v25 — TNF Nuptse broad 추가 변형 + adidas_trefoil 레더/세트.

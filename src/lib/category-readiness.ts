@@ -761,6 +761,43 @@ export const LANE_READINESS: LaneReadinessMap = {
   shoe_nike_airjordan_3: { status: "ready", label: "Air Jordan 3 (broad)", note: "Wave 693 — 34 매물/주, Retro 3세대. Travis/Off-White/Dior collab 차단." },
   shoe_nike_airjordan_4: { status: "ready", label: "Air Jordan 4 (broad)", note: "Wave 693 — 130 매물/주, 가품 매우 큼. Travis/Off-White/KAWS/Union/에미넴/OVO collab 차단." },
   shoe_nike_airjordan_11: { status: "ready", label: "Air Jordan 11 (broad)", note: "Wave 693 — 45 매물/주, Retro 11세대." },
+  // Wave 694 (2026-05-23) — Dunk Low 32 narrow SKU 신설 (Agent deep sweep 966건 분석 후 89% 색상 식별률 달성).
+  // 1단계 (16): COLLAB 5 + Mass narrow 11
+  shoe_nike_dunk_low_offwhite: { status: "ready", label: "Off-White x Dunk Low (The 50)", note: "Wave 694 — 56 매물, 가격 5~65만 collab. mustContain lot/the 50/오프화이트." },
+  shoe_nike_dunk_low_supreme: { status: "ready", label: "Supreme SB Dunk Low", note: "Wave 694 — 29 매물 15~95만, Supreme/라멜지/오션포그/쥬얼." },
+  shoe_nike_dunk_low_kasina: { status: "ready", label: "Kasina x Dunk Low (한국 collab)", note: "Wave 694 — 13 매물 5~75만, 80's 버스/넵튠." },
+  shoe_nike_dunk_low_travis_scott: { status: "ready", label: "Travis Scott SB Dunk Low", note: "Wave 694 — 8 매물 200~400만 한정. 가품 위험 매우 큼." },
+  shoe_nike_dunk_low_undefeated: { status: "ready", label: "Undefeated x Dunk Low SP", note: "Wave 694 — 12 매물, 5 On It / SP 시리즈." },
+  shoe_nike_dunk_low_university_red: { status: "ready", label: "Dunk Low University Red (유레드)", note: "Wave 694 — 18 매물, 유레드/팀레드 줄임말 포함." },
+  shoe_nike_dunk_low_university_blue: { status: "ready", label: "Dunk Low University Blue (유블루)", note: "Wave 694 — 14 매물." },
+  shoe_nike_dunk_low_court_purple: { status: "ready", label: "Dunk Low Court Purple (코퍼)", note: "Wave 694 — 17 매물, 한국 줄임말 코퍼/챔피언쉽 코트 퍼플." },
+  shoe_nike_dunk_low_coast: { status: "ready", label: "Dunk Low Coast (WMNS)", note: "Wave 694 — 14 매물 연파랑." },
+  shoe_nike_dunk_low_wolf_grey: { status: "ready", label: "Dunk Low Wolf Grey", note: "Wave 694 — 12 매물." },
+  shoe_nike_dunk_low_grey_fog: { status: "ready", label: "Dunk Low Grey Fog", note: "Wave 694 — 12 매물 (Jackpot Grey Fog 별도)." },
+  shoe_nike_dunk_low_midnight_navy: { status: "ready", label: "Dunk Low Midnight Navy (미네)", note: "Wave 694 — 11 매물, 미네 줄임말." },
+  shoe_nike_dunk_low_chicago: { status: "ready", label: "Dunk Low Chicago", note: "Wave 694 — 11 매물 (SB Pro Chicago 별도)." },
+  shoe_nike_dunk_low_varsity_green: { status: "ready", label: "Dunk Low Varsity Green", note: "Wave 694 — 11 매물." },
+  shoe_nike_dunk_low_halloween: { status: "ready", label: "Dunk Low Halloween (시즌 한정)", note: "Wave 694 — 18 매물, 시즌 한정." },
+  shoe_nike_dunk_low_disrupt: { status: "ready", label: "Dunk Low Disrupt (silhouette 분리)", note: "Wave 694 — 15 매물, Disrupt 2 통합." },
+  // 2단계 (16): MEDIUM narrow (5~10 매물)
+  shoe_nike_dunk_low_gym_red: { status: "ready", label: "Dunk Low Gym Red (≠ University Red)", note: "Wave 694 — 8 매물, 짐레드 별 colorway." },
+  shoe_nike_dunk_low_lx: { status: "ready", label: "Dunk Low LX (Premium Leather/Suede)", note: "Wave 694 — 9 매물." },
+  shoe_nike_dunk_low_medium_curry: { status: "ready", label: "Dunk Low Medium Curry", note: "Wave 694 — 9 매물, 미디엄 커리/커리 통합." },
+  shoe_nike_dunk_low_smoke_grey: { status: "ready", label: "Dunk Low Smoke Grey", note: "Wave 694 — 8 매물." },
+  shoe_nike_dunk_low_photon_dust: { status: "ready", label: "Dunk Low Photon Dust", note: "Wave 694 — 8 매물." },
+  shoe_nike_dunk_low_golden_road: { status: "ready", label: "Dunk Low Golden Road", note: "Wave 694 — 8 매물 Championship Goldenrod." },
+  shoe_nike_dunk_low_varsity_maize: { status: "ready", label: "Dunk Low Varsity Maize", note: "Wave 694 — 7 매물." },
+  shoe_nike_dunk_low_jackpot: { status: "ready", label: "Dunk Low Jackpot (Malachite)", note: "Wave 694 — 7 매물." },
+  shoe_nike_dunk_low_paisley: { status: "ready", label: "Dunk Low Paisley (Bandana)", note: "Wave 694 — 7 매물." },
+  shoe_nike_dunk_low_zebra: { status: "ready", label: "Dunk Low Zebra", note: "Wave 694 — 6 매물 (SB Quartersnacks 별도)." },
+  shoe_nike_dunk_low_light_bone: { status: "ready", label: "Dunk Low Light Bone", note: "Wave 694 — 6 매물." },
+  shoe_nike_dunk_low_clear_jade: { status: "ready", label: "Dunk Low Clear Jade (코끼리덩크)", note: "Wave 694 — 6 매물, 한국 별명 코끼리덩크." },
+  shoe_nike_dunk_low_summit_white: { status: "ready", label: "Dunk Low Summit White (Triple White)", note: "Wave 694 — 6 매물, Panda와 분리." },
+  shoe_nike_dunk_low_akio_pink: { status: "ready", label: "Dunk Low Akio Pink (WMNS)", note: "Wave 694 — 5 매물." },
+  shoe_nike_dunk_low_union: { status: "ready", label: "Union x Dunk Low (Passport Pack)", note: "Wave 694 — 5 매물 collab." },
+  shoe_nike_dunk_low_lebron_pebbles: { status: "ready", label: "LeBron x Fruity Pebbles Dunk Low", note: "Wave 694 — 5 매물 collab." },
+  // SB Pro broad (silhouette 분리)
+  shoe_nike_sb_dunk_low_broad: { status: "ready", label: "Nike SB Dunk Low Pro (Broad)", note: "Wave 694 — SB Pro 일반 (collab 16+ 차단). 가품 위험 큼." },
 };
 
 export type CategoryReadinessConfig = {
