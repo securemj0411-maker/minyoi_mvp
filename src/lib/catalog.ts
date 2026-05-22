@@ -7597,7 +7597,7 @@ export const CATALOG: Sku[] = [
       "슈노 퍼", "슈노퍼", "shuno fur", "shuno-fur", "snow fur",  // 1.1-1.5M 한정
       "페이퍼", "paper",   // 페이퍼 카모 800k-1.2M 한정
       "트롱프 뢰유", "trompe loeil", "trompe l'oeil", "trompe-loeil", "프린티드 눕시",
-      "낙엽", "16fw",
+      "낙엽", "16fw", "24fw", "23fw", "22fw", "21fw", "20fw", "19fw", "18fw", "17fw", "15fw", "13fw", "12fw",
       "스플릿 카모", "split camo",
       "블리치드 데님", "bleached denim", "데님 프린트", "데님 눕시", "denim print",
       "스터드", "studded",
