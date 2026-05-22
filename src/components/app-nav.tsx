@@ -442,7 +442,7 @@ export default function AppNav() {
                             {infiniteCredits ? "∞" : tokens}
                           </span>
                         </div>
-                        <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-black text-[#4f6f58] dark:bg-emerald-950/30 dark:text-emerald-200">
+                        <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-black text-[#3182f6] dark:bg-emerald-950/30 dark:text-emerald-200">
                           즉시 사용
                         </span>
                       </div>

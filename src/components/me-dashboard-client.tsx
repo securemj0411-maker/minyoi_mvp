@@ -28,21 +28,21 @@ function GuideLibraryView() {
     <section className="px-3 py-4 sm:px-4 sm:py-6 lg:px-8 lg:py-8">
       <PlaybookOverview />
 
-      <div className="mt-6 rounded-[24px] border border-[#e2d9cb] bg-[#fffaf6] p-4 shadow-[0_18px_36px_rgba(34,49,39,0.06)] dark:border-zinc-800 dark:bg-zinc-900 sm:p-6 lg:rounded-[28px]">
+      <div className="mt-6 rounded-[24px] border border-zinc-200 bg-white p-4 shadow-[0_18px_36px_rgba(15,23,42,0.06)] dark:border-zinc-800 dark:bg-zinc-900 sm:p-6 lg:rounded-[28px]">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-emerald-400">
               Model Guides
             </p>
-            <h2 className="mt-1.5 text-xl font-black tracking-tight text-[#223127] dark:text-white sm:text-2xl lg:text-3xl">
+            <h2 className="mt-1.5 text-xl font-black tracking-tight text-zinc-950 dark:text-white sm:text-2xl lg:text-3xl">
               모델별 공략
             </h2>
-            <p className="mt-2 max-w-2xl text-xs font-semibold leading-6 text-[#687366] dark:text-zinc-400 sm:text-sm">
+            <p className="mt-2 max-w-2xl text-xs font-semibold leading-6 text-zinc-500 dark:text-zinc-400 sm:text-sm">
               추천 상품을 보기 전에 확인할 모델별 옵션 축과 리셀 체크포인트입니다.
               같은 이름처럼 보여도 옵션이 다르면 다른 상품으로 봅니다.
             </p>
           </div>
-          <span className="rounded-full border border-[#d5dfd2] bg-[var(--brand-accent-soft)] px-3 py-1 text-xs font-black text-[var(--brand-accent-strong)] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100">
+          <span className="rounded-full border border-blue-100 bg-[var(--brand-accent-soft)] px-3 py-1 text-xs font-black text-[var(--brand-accent-strong)] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100">
             {MODEL_GUIDES.length}개
           </span>
         </div>
@@ -51,24 +51,24 @@ function GuideLibraryView() {
           {MODEL_GUIDES.map((guide) => (
             <article
               key={guide.guideKey}
-              className="flex min-h-[190px] flex-col rounded-2xl border border-[#e7dece] bg-[#fffbf4] p-4 transition hover:border-[#c8d8c4] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-950/40 dark:hover:bg-zinc-800"
+              className="flex min-h-[190px] flex-col rounded-2xl border border-zinc-200 bg-white p-4 transition hover:border-blue-200 hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-950/40 dark:hover:bg-zinc-800"
             >
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#7a8577] dark:text-zinc-500">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-500">
                 <span>{guide.category === "earphone" ? "이어폰" : "워치"}</span>
                 <span>·</span>
                 <span>{guide.family}</span>
               </div>
-              <h2 className="mt-2 line-clamp-2 text-base font-black leading-6 text-[#223127] dark:text-zinc-100">
+              <h2 className="mt-2 line-clamp-2 text-base font-black leading-6 text-zinc-950 dark:text-zinc-100">
                 {guide.title}
               </h2>
-              <p className="mt-2 line-clamp-3 text-sm font-semibold leading-6 text-[#626d61] dark:text-zinc-400">
+              <p className="mt-2 line-clamp-3 text-sm font-semibold leading-6 text-zinc-500 dark:text-zinc-400">
                 {guide.summary}
               </p>
               <div className="mt-auto flex flex-wrap gap-1.5 pt-4">
                 {guide.quickFacts.slice(0, 4).map((fact) => (
                   <span
                     key={`${guide.guideKey}-${fact}`}
-                    className="rounded-full bg-[#f3eee5] px-2 py-1 text-[10px] font-bold text-[#657060] dark:bg-zinc-800 dark:text-zinc-300"
+                    className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-300"
                   >
                     {fact}
                   </span>
@@ -189,20 +189,20 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#f6f1e8] dark:bg-zinc-950">
+      <main className="min-h-screen bg-[#f5f7fb] dark:bg-zinc-950">
         <div className="grid min-h-screen lg:grid-cols-[220px_minmax(0,1fr)]">
           {/* Sidebar skeleton — layout 점프 방지 */}
-          <aside className="border-b border-[#e2d9cb] bg-[#f8f4ec] dark:border-zinc-800 dark:bg-zinc-950 lg:border-b-0 lg:border-r">
+          <aside className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 lg:border-b-0 lg:border-r">
             <div className="px-3 py-2 lg:px-4 lg:py-5">
               <div className="space-y-2 px-2 pb-3">
-                <div className="h-2.5 w-24 animate-pulse rounded bg-[#e7dece] dark:bg-zinc-800" />
-                <div className="h-4 w-32 animate-pulse rounded bg-[#e7dece] dark:bg-zinc-800" />
+                <div className="h-2.5 w-24 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-4 w-32 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
               </div>
               <div className="flex gap-1 overflow-hidden pb-1 lg:block lg:space-y-2 lg:pb-0">
                 {[0, 1, 2].map((i) => (
                   <div
                     key={i}
-                    className="h-10 w-32 shrink-0 animate-pulse rounded-xl bg-[#e7dece] dark:bg-zinc-800 lg:w-full"
+                    className="h-10 w-32 shrink-0 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800 lg:w-full"
                   />
                 ))}
               </div>
@@ -211,13 +211,13 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
           {/* Main content skeleton — 추천 카드 grid 자리 */}
           <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
             <div className="space-y-4">
-              <div className="h-6 w-48 animate-pulse rounded bg-[#e7dece] dark:bg-zinc-800" />
-              <div className="h-4 w-72 max-w-full animate-pulse rounded bg-[#e7dece] dark:bg-zinc-800" />
+              <div className="h-6 w-48 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+              <div className="h-4 w-72 max-w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
               <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div
                     key={i}
-                    className="h-44 animate-pulse rounded-2xl bg-[#f1eadf] dark:bg-zinc-800/60"
+                    className="h-44 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800/60"
                   />
                 ))}
               </div>
@@ -235,21 +235,21 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f1e8] dark:bg-zinc-950">
+    <main className="min-h-screen bg-[#f5f7fb] dark:bg-zinc-950">
       {/* mobile = flex stack (sidebar chip bar 위, content 아래).
           lg+ = 2 col grid. 이전에 mobile에서도 `grid` 박혀 있어서 child의
           `lg:col-start-2`가 일부 브라우저 implicit-grid 처리로 빈 column 만들어
           content가 오른쪽으로 치우치는 보고 있었음 → mobile에선 grid 비활성. */}
       <div className={`flex min-h-screen flex-col lg:grid ${sidebarCollapsed ? "lg:grid-cols-[44px_minmax(0,1fr)]" : "lg:grid-cols-[220px_minmax(0,1fr)]"} transition-[grid-template-columns] duration-200`}>
         {/* Mobile: 상품 피드 우선. 탭 바는 숨기고 desktop sidebar 에서만 view 전환. */}
-        <aside className="hidden border-b border-[#e2d9cb] bg-[#f8f4ec]/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:sticky lg:top-[60px] lg:z-30 lg:row-span-2 lg:block lg:h-[calc(100dvh-60px)] lg:border-b-0 lg:border-r lg:bg-[#f8f4ec] lg:backdrop-blur-none xl:row-span-1">
+        <aside className="hidden border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:sticky lg:top-[60px] lg:z-30 lg:row-span-2 lg:block lg:h-[calc(100dvh-60px)] lg:border-b-0 lg:border-r lg:bg-white lg:backdrop-blur-none xl:row-span-1">
           <div className="flex h-full items-center px-3 py-1 lg:block lg:h-auto lg:px-2 lg:py-3">
             {/* desktop only: collapse toggle 버튼 — 우측 정렬 (saas 표준 패턴) */}
             <div className="hidden lg:flex lg:justify-end lg:mb-1.5">
               <button
                 type="button"
                 onClick={toggleSidebar}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-[#5a6658] hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-600 hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 aria-label={sidebarCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
                 title={sidebarCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
               >
@@ -257,10 +257,10 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
               </button>
             </div>
             <div className={`hidden px-2 pb-3 lg:block ${sidebarCollapsed ? "lg:hidden" : ""}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-emerald-400">
                 My Dashboard
               </p>
-              <div className="mt-1 text-sm font-black text-[#223127] dark:text-zinc-100">작업 메뉴</div>
+              <div className="mt-1 text-sm font-black text-zinc-950 dark:text-zinc-100">작업 메뉴</div>
             </div>
             <div className={`-mx-1 flex w-full items-center gap-1.5 overflow-x-auto px-1 lg:mx-0 lg:block lg:w-auto lg:space-y-1 lg:overflow-visible lg:px-0 ${sidebarCollapsed ? "lg:hidden" : ""}`}>
               {/* 2026-05-17: "recommend" 메뉴 제거 — "나의 상품" 1 페이지 통합 + "더 찾아보기" 버튼으로 흡수. */}
@@ -283,8 +283,8 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
                     onClick={() => setActiveView(v)}
                     className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-black transition lg:w-full lg:justify-between lg:rounded-xl lg:border lg:px-3 lg:py-2 lg:text-sm dark:text-zinc-100 dark:hover:bg-zinc-800 ${
                       active
-                        ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] lg:border-[#c8d8c4] lg:bg-[var(--brand-accent-soft)] lg:text-[var(--brand-accent-strong)]"
-                        : "bg-transparent text-[#344136] hover:bg-[var(--brand-accent-soft)] lg:border-transparent"
+                        ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] lg:border-blue-200 lg:bg-[var(--brand-accent-soft)] lg:text-[var(--brand-accent-strong)]"
+                        : "bg-transparent text-zinc-900 hover:bg-[var(--brand-accent-soft)] lg:border-transparent"
                     }`}
                   >
                     <span className="lg:hidden">{label}</span>
