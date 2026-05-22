@@ -9912,6 +9912,9 @@ export const CATALOG: Sku[] = [
       // Wave 634: 추가 한정 colorway 차단.
       "sacajawea", "사카자위아", "아즈텍 나바호", "aztec navajo", "navajo print",
       "안소희", "celebrity wear", "셀럽 착용",
+      // Wave 642: 추가 셀럽 + 다중 가방 표기 (한 매물에 여러 가방).
+      "손나은", "셀럽 픽", "celeb pick",
+      "토트백 보스턴백", "토트 보스턴 세일러", "다중백",
       "모음", "세트 모음", "set 모음",
       "지디", "지드래곤",  // 셀럽 착용 (가격 inflated)
     ],
