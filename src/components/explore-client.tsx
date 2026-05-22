@@ -1279,14 +1279,13 @@ export default function ExploreClient({
     const shareUrl = `${baseUrl}?ref=kakao_share`;
 
     try {
-      // Wave launch-56 (사용자 짚음 "사이트 설명 말고 진짜 맞춤형처럼"):
-      //   친구한테 보내는 톤 — "지금 팔면 돈되는 중고 상품 있어요".
-      //   site 소개 X, 사용자가 직접 알려주는 느낌.
+      // Wave launch-57 (사용자 정정 "친구말투 X, 존댓말로"):
+      //   존댓말 + 정중한 톤 — 정직한 상품 추천 느낌.
       kakao.Share.sendDefault({
         objectType: "feed",
         content: {
-          title: "지금 팔면 바로 돈 되는 중고 매물 있어",
-          description: "AI 가 매일 찾아준 차익 매물, 무료로 확인해봐",
+          title: "지금 팔면 바로 돈 되는 중고 상품이 있어요",
+          description: "AI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요",
           link: {
             mobileWebUrl: shareUrl,
             webUrl: shareUrl,
