@@ -2659,28 +2659,29 @@ export default function ExploreClient({
 
                             {/* Wave 384 (placeholder): 카카오톡 공유 → 30개 즉시 받기. App Key + DB migration 필요해서 일단 UI만 + "곧 출시". */}
                             {/* Wave 385: 정통 카카오 노란 (#fbe300) 배경 + 갈색 텍스트 (#3b1e1e).
-                                Wave 386: 카피 명확화 — 친구 가입 무관, 공유만으로 reward. */}
+                                Wave 386: 카피 명확화 — 친구 가입 무관, 공유만으로 reward.
+                                Wave launch-50 (사용자 짚음): alert "곧 출시예요" 박스 = 구식 UX + 미완성 기능 misleading.
+                                  진짜 박기 = Kakao SDK + App Key + DB schema (큰 작업, 별 wave).
+                                  단기: button disabled + "준비중" 톤. 사용자 기대 명확. */}
                             <button
                               type="button"
-                              onClick={() => {
-                                // TODO Wave 384 phase 2: Kakao.Share.sendDefault + POST /api/packs/pool/share-bonus
-                                alert("카카오톡 공유 보너스는 곧 출시예요! 조금만 기다려주세요 🙏");
-                              }}
-                              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-[#fbe300] px-5 py-4 text-left shadow-[0_4px_14px_rgba(251,227,0,0.35)] transition hover:bg-[#fae100] active:scale-[0.99]"
+                              disabled
+                              title="카카오톡 공유 보너스는 준비중이에요"
+                              className="mt-3 flex w-full cursor-not-allowed items-center justify-between gap-3 rounded-2xl bg-[#fbe300]/40 px-5 py-4 text-left opacity-70"
                             >
                               <div className="flex min-w-0 items-center gap-2.5">
-                                <KakaoLogo className="h-7 w-7 shrink-0 rounded-[8px]" />
+                                <KakaoLogo className="h-7 w-7 shrink-0 rounded-[8px] opacity-80" />
                                 <div className="min-w-0">
-                                  <div className="text-base font-bold text-[#3b1e1e]">
+                                  <div className="text-base font-bold text-[#3b1e1e]/80">
                                     카톡 공유하고 1초만에 더 보기
                                   </div>
-                                  <div className="mt-0.5 text-[11px] font-medium text-[#3b1e1e]/70">
-                                    친구 가입 X · 공유 클릭 1번이면 끝
+                                  <div className="mt-0.5 text-[11px] font-medium text-[#3b1e1e]/60">
+                                    곧 출시예요 · 조금만 기다려주세요
                                   </div>
                                 </div>
                               </div>
-                              <span className="shrink-0 rounded-full bg-[#3b1e1e] px-2 py-0.5 text-[10px] font-bold text-[#fbe300]">
-                                무료
+                              <span className="shrink-0 rounded-full bg-[#3b1e1e]/70 px-2 py-0.5 text-[10px] font-bold text-[#fbe300]/90">
+                                준비중
                               </span>
                             </button>
                           </>
