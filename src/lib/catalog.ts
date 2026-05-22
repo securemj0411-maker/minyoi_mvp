@@ -9661,7 +9661,14 @@ export const CATALOG: Sku[] = [
     // Wave 251.2: 딥파일 narrow 로 routing.
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack",
       "딥파일", "deep pile", "mesclun", "40주년", "legacy",
-      "레트로파일", "레트로 파일", "retro pile", "retro-pile"],
+      "레트로파일", "레트로 파일", "retro pile", "retro-pile",
+      // Wave 549 (2026-05-22): 레어 빈티지/50주년/내추럴 블렌드/모음 차단 (390만, 100만 outlier).
+      "레어", "희귀", "희소", "rare",
+      "50주년", "내추럴 블렌드", "natural blend",
+      "us made", "usa made", "1990", "1989", "1992",  // 빈티지 us made (가격 +20배)
+      "모음", "세트 모음", "set 모음",
+      "지디", "지드래곤",  // 셀럽 착용 (가격 inflated)
+    ],
     msrpKrw: 199000, released: 1985,
     defaultProductType: "jacket", // Wave 236d — Retro X/Synchilla = 플리스 자켓 라인 확정.
   },
