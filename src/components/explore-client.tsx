@@ -710,14 +710,15 @@ function DetailAccessPaywallModal({
   onClose,
   kakaoShareReady,
   kakaoShareLoading,
+  kakaoShareCooldownHours,
   onKakaoShare,
 }: {
   state: DetailAccessLimitModal | null;
   onClose: () => void;
-  // Wave launch-52 (사용자 짚음 "저 모달에 카톡 공유 이식"):
-  //   크레딧 부족 모달에 카톡 공유 button 추가. 사용자가 가장 정직히 보는 시점 — 즉시 +1 크레딧 받을 옵션.
+  // Wave launch-52/53: 카카오 공유 button — cooldown 시 비활성 + "N시간 후" 카피.
   kakaoShareReady: boolean;
   kakaoShareLoading: boolean;
+  kakaoShareCooldownHours: number;
   onKakaoShare: () => void;
 }) {
   if (!state) return null;
@@ -872,28 +873,28 @@ function DetailAccessPaywallModal({
                 type="button"
                 disabled={kakaoShareLoading || !kakaoShareReady}
                 onClick={onKakaoShare}
-                title={kakaoShareReady ? "카톡으로 공유하고 크레딧 1개 받기" : "카카오 공유 로딩 중..."}
+                title={kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : (kakaoShareReady ? "카톡으로 공유하고 크레딧 1개 받기" : "카카오 공유 로딩 중...")}
                 className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition ${
-                  kakaoShareReady
+                  kakaoShareReady && kakaoShareCooldownHours === 0
                     ? "bg-[#fbe300] shadow-[0_4px_14px_rgba(251,227,0,0.35)] hover:bg-[#fae100] active:scale-[0.99]"
                     : "cursor-not-allowed bg-[#fbe300]/40 opacity-70"
                 }`}
               >
                 <div className="flex min-w-0 items-center gap-2.5">
-                  <KakaoLogo className={`h-6 w-6 shrink-0 rounded-[6px] ${kakaoShareReady ? "" : "opacity-80"}`} />
+                  <KakaoLogo className={`h-6 w-6 shrink-0 rounded-[6px] ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "" : "opacity-80"}`} />
                   <div className="min-w-0">
-                    <div className={`text-sm font-bold ${kakaoShareReady ? "text-[#3b1e1e]" : "text-[#3b1e1e]/80"}`}>
-                      {kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 무료로 1개 받기"}
+                    <div className={`text-sm font-bold ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]" : "text-[#3b1e1e]/80"}`}>
+                      {kakaoShareCooldownHours > 0 ? "오늘은 이미 받았어요" : kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 무료로 1개 받기"}
                     </div>
-                    <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
-                      하루 1번 · 충전 안 해도 OK
+                    <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
+                      {kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : "하루 1번 · 충전 안 해도 OK"}
                     </div>
                   </div>
                 </div>
                 <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                  kakaoShareReady ? "bg-[#3b1e1e] text-[#fbe300]" : "bg-[#3b1e1e]/70 text-[#fbe300]/90"
+                  kakaoShareReady && kakaoShareCooldownHours === 0 ? "bg-[#3b1e1e] text-[#fbe300]" : "bg-[#3b1e1e]/70 text-[#fbe300]/90"
                 }`}>
-                  +1 크레딧
+                  {kakaoShareCooldownHours > 0 ? "내일" : "+1 크레딧"}
                 </span>
               </button>
             ) : null}
@@ -1207,6 +1208,28 @@ export default function ExploreClient({
   // Wave launch-51: Kakao share state.
   const [kakaoShareReady, setKakaoShareReady] = useState(false);
   const [kakaoShareLoading, setKakaoShareLoading] = useState(false);
+  // Wave launch-53 (사용자 짚음 "하루 1번이면 button 비활성/알림"):
+  //   cooldown 상태 mount 시 fetch. cooldown 안이면 button 비활성 + "N시간 후 다시" 카피.
+  const [kakaoShareCooldownHours, setKakaoShareCooldownHours] = useState<number>(0);
+
+  // mount 시 cooldown 상태 fetch (인증 안 됐으면 fail → 0 으로 가정)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    void (async () => {
+      try {
+        const res = await fetch("/api/packs/pool/share-bonus", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json() as { canShare?: boolean; remainingHours?: number };
+        if (data.canShare === false && typeof data.remainingHours === "number") {
+          setKakaoShareCooldownHours(data.remainingHours);
+        } else {
+          setKakaoShareCooldownHours(0);
+        }
+      } catch {
+        // ignore — button 활성 유지
+      }
+    })();
+  }, []);
 
   // SDK init — script tag 로드 끝나면 window.Kakao 사용 가능. polling 으로 확인 (script async).
   useEffect(() => {
@@ -1235,6 +1258,11 @@ export default function ExploreClient({
   // 공유 button click handler
   const handleKakaoShare = useCallback(async () => {
     if (typeof window === "undefined" || kakaoShareLoading) return;
+    // Wave launch-53: cooldown 안이면 카카오 다이얼로그 띄우지 X. alert 으로 안내.
+    if (kakaoShareCooldownHours > 0) {
+      window.alert(`오늘은 이미 받았어요! ${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요`);
+      return;
+    }
     const kakao = (window as unknown as {
       Kakao?: {
         isInitialized: () => boolean;
@@ -1279,22 +1307,26 @@ export default function ExploreClient({
       const res = await fetch("/api/packs/pool/share-bonus", { method: "POST" });
       const data = await res.json() as { ok?: boolean; bonus?: number; balance?: number; message?: string; remainingHours?: number };
       if (data.ok) {
-        // 보너스 받음 — modal 닫고 페이지 reload (loadPool 가 useCallback hoisting 위라 직접 호출 X).
-        // reload = 새 credits 반영 + 새 매물 fetch + URL 의 ?ref=kakao_share 제거 가능.
+        // 보너스 받음 — cooldown 24h 박힘. button 비활성 위해 상태 갱신.
+        setKakaoShareCooldownHours(24);
         setRefreshModalOpen(false);
-        // soft reload — 사용자 view 유지 (scroll position 등)
         if (typeof window !== "undefined") {
           window.location.reload();
         }
+      } else if (typeof data.remainingHours === "number") {
+        // 서버 cooldown 응답 (race condition — mount 시 갱신 후 다른 tab 에서 받았을 때)
+        setKakaoShareCooldownHours(data.remainingHours);
+        if (typeof window !== "undefined") {
+          window.alert(`오늘은 이미 받았어요! ${data.remainingHours}시간 후 다시 받을 수 있어요`);
+        }
       }
-      // 사용자에게 결과 표시 — UI toast/alert 없이 console (cooldown 시 사용자 button hover 시 tooltip).
       console.info("[kakao-share]", data.message ?? "");
     } catch (err) {
       console.error("kakao share failed", err);
     } finally {
       setKakaoShareLoading(false);
     }
-  }, [kakaoShareLoading]);
+  }, [kakaoShareCooldownHours, kakaoShareLoading]);
   // 모달 mount 후 다음 frame에 애니메이션 활성화 (slide up / fade in)
   useEffect(() => {
     if (refreshModalOpen) {
@@ -2801,28 +2833,28 @@ export default function ExploreClient({
                               type="button"
                               disabled={kakaoShareLoading || !kakaoShareReady}
                               onClick={handleKakaoShare}
-                              title={kakaoShareReady ? "카톡으로 공유하고 크레딧 받기" : "카카오 공유 로딩 중..."}
+                              title={kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : (kakaoShareReady ? "카톡으로 공유하고 크레딧 받기" : "카카오 공유 로딩 중...")}
                               className={`mt-3 flex w-full items-center justify-between gap-3 rounded-2xl px-5 py-4 text-left transition ${
-                                kakaoShareReady
+                                kakaoShareReady && kakaoShareCooldownHours === 0
                                   ? "bg-[#fbe300] shadow-[0_4px_14px_rgba(251,227,0,0.35)] hover:bg-[#fae100] active:scale-[0.99]"
                                   : "cursor-not-allowed bg-[#fbe300]/40 opacity-70"
                               }`}
                             >
                               <div className="flex min-w-0 items-center gap-2.5">
-                                <KakaoLogo className={`h-7 w-7 shrink-0 rounded-[8px] ${kakaoShareReady ? "" : "opacity-80"}`} />
+                                <KakaoLogo className={`h-7 w-7 shrink-0 rounded-[8px] ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "" : "opacity-80"}`} />
                                 <div className="min-w-0">
-                                  <div className={`text-base font-bold ${kakaoShareReady ? "text-[#3b1e1e]" : "text-[#3b1e1e]/80"}`}>
-                                    {kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 크레딧 받기"}
+                                  <div className={`text-base font-bold ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]" : "text-[#3b1e1e]/80"}`}>
+                                    {kakaoShareCooldownHours > 0 ? "오늘은 이미 받았어요" : kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 크레딧 받기"}
                                   </div>
-                                  <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
-                                    하루 1번, 공유 후 크레딧 1개 자동 지급
+                                  <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
+                                    {kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : "하루 1번, 공유 후 크레딧 1개 자동 지급"}
                                   </div>
                                 </div>
                               </div>
                               <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                                kakaoShareReady ? "bg-[#3b1e1e] text-[#fbe300]" : "bg-[#3b1e1e]/70 text-[#fbe300]/90"
+                                kakaoShareReady && kakaoShareCooldownHours === 0 ? "bg-[#3b1e1e] text-[#fbe300]" : "bg-[#3b1e1e]/70 text-[#fbe300]/90"
                               }`}>
-                                +1 크레딧
+                                {kakaoShareCooldownHours > 0 ? "내일" : "+1 크레딧"}
                               </span>
                             </button>
                           </>
@@ -2843,6 +2875,7 @@ export default function ExploreClient({
         onClose={() => setDetailAccessLimit(null)}
         kakaoShareReady={kakaoShareReady}
         kakaoShareLoading={kakaoShareLoading}
+        kakaoShareCooldownHours={kakaoShareCooldownHours}
         onKakaoShare={handleKakaoShare}
       />
 
