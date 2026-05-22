@@ -9,6 +9,9 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  // Wave launch-19 (audit MEDIUM): viewport-fit=cover — 노치/홈바 영역까지 페이지가 그려지게.
+  // safe-area-inset-* CSS (pack-reveal-modal 의 sticky CTA + BeginnerGuide 풀스크린) 가 정확히 동작.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f5f7fb" },
     { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },

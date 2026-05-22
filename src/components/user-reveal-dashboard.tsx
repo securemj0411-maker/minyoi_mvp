@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ConditionPhotoBadge } from "@/components/condition-chip";
+import { BookmarkIcon } from "@/components/icons";
 import { BunjangSourceBadge, DanawaSourceBadge, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
@@ -1744,8 +1746,24 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             </div>
           </div>
         ) : (
-          <div className="mx-3 mt-4 rounded-xl bg-white p-4 text-center text-xs text-zinc-500 dark:bg-zinc-950 dark:text-zinc-400 sm:mx-0">
-            아직 본 추천 상품이 없습니다.
+          // Wave launch-19 (audit HIGH): 빈 상태 CTA 박음. 이전엔 안내 한 줄 + 행동 0 → 사용자 막힘.
+          // 신규 사용자가 들어왔을 때 다음 step 명확.
+          <div className="mx-3 mt-4 rounded-2xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-950 sm:mx-0">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
+              <BookmarkIcon className="h-6 w-6" />
+            </div>
+            <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              아직 본 추천 상품이 없어요
+            </div>
+            <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+              매물 추천을 받으면 여기에 모아둘게요. 마음에 드는 매물은 보관해두고 나중에 다시 볼 수 있어요.
+            </p>
+            <Link
+              href="/me?tab=explore"
+              className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-5 text-sm font-black text-white shadow-sm transition active:scale-[0.98] hover:bg-emerald-700"
+            >
+              매물 추천 받으러 가기
+            </Link>
           </div>
         )
       ) : null}

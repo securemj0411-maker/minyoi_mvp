@@ -113,17 +113,23 @@ export async function GET(req: Request) {
     let priceFilteredCount = usable.length;
     const byCategory: Record<string, number> = {};
     if (filters.priceMax != null && usable.length > 0) {
+      // Wave launch-19 (audit HIGH): chunked fetch parallel.
+      // 이전엔 200-pid chunk sequential — 1000 pid 면 5번 sequential = 느림.
+      // Promise.all 로 parallel → mobile 응답 빠름.
       const pids = usable.map(r => r.pid);
       const chunks: number[][] = [];
       for (let i = 0; i < pids.length; i += 200) chunks.push(pids.slice(i, i + 200));
+      const chunkResults = await Promise.all(
+        chunks.map((chunk) => {
+          const rawQuery = `${tableUrl("mvp_raw_listings")}?select=pid,price&pid=in.(${chunk.join(",")})&price=lte.${filters.priceMax}`;
+          return restFetch(rawQuery, { headers: serviceHeaders() })
+            .then(async (res) => (res.ok ? ((await res.json()) as RawRow[]) : []))
+            .catch(() => [] as RawRow[]);
+        }),
+      );
       const allowedPids = new Set<number>();
-      for (const chunk of chunks) {
-        const rawQuery = `${tableUrl("mvp_raw_listings")}?select=pid,price&pid=in.(${chunk.join(",")})&price=lte.${filters.priceMax}`;
-        const rawRes = await restFetch(rawQuery, { headers: serviceHeaders() });
-        if (rawRes.ok) {
-          const rawRows = (await rawRes.json()) as RawRow[];
-          for (const r of rawRows) allowedPids.add(r.pid);
-        }
+      for (const rows of chunkResults) {
+        for (const r of rows) allowedPids.add(r.pid);
       }
       const filtered = usable.filter(r => allowedPids.has(r.pid));
       priceFilteredCount = filtered.length;
