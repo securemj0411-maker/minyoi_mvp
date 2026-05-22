@@ -188,10 +188,21 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "the north face", "노스페이스", "tnf",
       "bape", "베이프",
       "louis vuitton", "루이비통", "lv",
-      "stone island", "스톤아일랜드",
+      "stone island", "스톤아일랜드", "스톤 아일랜드", "stone-island",
       "comme des", "꼼데가르송",
       "nike x supreme", "supreme x nike",
       "stussy",
+      // Wave 677 (2026-05-22): supreme_apparel_broad v31 spread 6.44x audit (11건).
+      // 추가 collab/한정 차단 (Wave 593-618 보완).
+      "martine rose", "마틴 로즈", "마틴로즈",
+      "fox racing", "폭스레이싱", "폭스 레이싱", "fox-racing",
+      "서밋 슈노", "summit sherpa", "서밋 시즌",
+      "팀 퍼피", "team puppy", "팀퍼피",
+      "cheetah pile", "치타 파일",
+      "벨루어 트랙", "velour track",
+      "20fw", "21fw", "22fw", "23fw", "24fw",  // 빈티지 시즌 (broad 가격대 다름)
+      "20ss", "21ss", "22ss", "23ss", "24ss",
+      "코듀로이 자켓",  // 코듀로이 라인 별도 시세
       // Wave 492: brand-stuffed listings should not fall into plain Supreme broad.
       "nike", "나이키", "adidas", "아디다스", "mlb", "엠엘비", "puma", "푸마", "퓨마", "reebok", "리복",
       // Wave 618: 다른 collab brand 추가 (Timberland/Champion/Honda/Hysteric Glamour 등).
