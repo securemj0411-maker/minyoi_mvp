@@ -448,6 +448,9 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
       ...SHOE_COMMON_NOISE,
       "한정", "한정판", "limited", "베이프", "bape",
       "supreme", "슈프림",
+      // Wave 547 (2026-05-22): 화이트누우보/누우보/nuovo 한정 컬러 (159만 vs 일반 20~60만 +5배).
+      "누우보", "nuovo", "화이트누우보", "메르쿠리알 누우보",
+      "에어 줌 메르쿠리알", "메시 메르쿠리알",
     ],
     msrpKrw: 289000,
     released: 1998,

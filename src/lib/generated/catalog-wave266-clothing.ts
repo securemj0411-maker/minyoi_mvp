@@ -939,6 +939,14 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     mustNotContain: [
       ...CLOTHING_COMMON_NOISE,
       "supreme",  // Supreme x Stone Island 별도 SKU
+      // Wave 547 (2026-05-22): 한정 시리즈 차단 (아이스 니트 500만, 스카라베오 125만 등 +5~10배).
+      "아이스 니트", "아이스니트", "ice knit",
+      "스카라베오", "scarabeo",
+      "shadow project", "쉐도우 프로젝트",
+      "ghost piece", "고스트 피스",
+      "ice jacket", "아이스 자켓",
+      "프리즘", "prism",
+      "ghost",
     ],
     msrpKrw: 490000,
     released: 1982,
