@@ -667,8 +667,8 @@ export const LANE_READINESS: LaneReadinessMap = {
   adidas_samba_sporty_rich: { status: "ready", label: "Sporty & Rich × Samba", note: "Wave 226 한정" },
   // Wave 227 (2026-05-19): 의류/가방 누락 narrow.
   // Wave 245.2 (2026-05-19): FOG Essentials 6 narrow + 1 broad — product-type 별 시세 분리.
-  fog_essentials: { status: "blocked", label: "FOG Essentials (legacy laneKey)", note: "Wave 407: legacy broad hold. Use product-type Essentials lanes." },
-  fog_essentials_broad: { status: "blocked", label: "FOG Essentials (broad fallback — 베스트/니트/플리스/모자)", note: "Wave 407: broad hold. Use product-type Essentials lanes." },
+  fog_essentials: { status: "ready", label: "FOG Essentials (legacy laneKey)", note: "Wave 686 release — broad fallback (narrow 6개 다 ready), 데님/뉴에라/벨트백/아노락 추가 차단." },
+  fog_essentials_broad: { status: "ready", label: "FOG Essentials (broad fallback — 베스트/니트/플리스/모자)", note: "Wave 686 release — narrow 6개 fallback, 데님/캡/가방/아노락 cross-category 차단." },
   fog_essentials_hoodie: { status: "ready", label: "FOG Essentials Hoodie", note: "Wave 245.2 — median 16만" },
   fog_essentials_crewneck: { status: "ready", label: "FOG Essentials Crewneck / Sweat", note: "Wave 245.2 — median 7.2만" },
   fog_essentials_tee: { status: "ready", label: "FOG Essentials Tee", note: "Wave 245.2 — median 5.5만" },

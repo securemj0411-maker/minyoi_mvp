@@ -10514,7 +10514,14 @@ export const CATALOG: Sku[] = [
       "쇼츠", "shorts", "반바지", "하프팬츠", "숏팬츠",
       "자켓", "jacket", "재킷", "블레이저", "점퍼", "코트", "coat",
       // 신발 차단 (cross-category) — 컨버스 척70 콜라보 같은 거.
-      "컨버스", "converse", "척70", "chuck 70", "신발", "운동화"],
+      "컨버스", "converse", "척70", "chuck 70", "신발", "운동화",
+      // Wave 686 (2026-05-22): broad fallback 추가 차단 (narrow 6개 다 ready).
+      "데님 팬츠", "denim pants", "청바지", "데님",  // 별도 라인 (FOG denim 없음 — 다른 brand)
+      "뉴에라", "new era", "59fifty", "59 fifty",  // 캡 (accessory)
+      "벨트백", "belt bag", "벨트 백", "백",  // bag
+      "스트레치 리모", "리모", "remo",  // 별도 라인 (의류 X 가능성)
+      "아노락", "anorak", "풀오버 아노락",  // 별도 product_type
+    ],
     msrpKrw: 99000, released: 2018,
   },
   // Wave 245.2 (2026-05-19): FOG Essentials product-type 별 narrow 분리.
