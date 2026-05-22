@@ -7951,6 +7951,10 @@ export const CATALOG: Sku[] = [
       "반달", "vandal", "에어 페니", "air penny", "ld-1000", "ld1000",
       "줌", "zoom", "쿠키니", "kukini", "척테일러", "척 70", "chuck",
       "신발", "운동화", "스니커즈", "sneakers", "슬리퍼", "slipper", "슬라이드", "slide",
+      // Wave 690 (2026-05-22): release 전 narrow — 묶음/한정 차단.
+      "셋업", "set up", "setup", "상하의 세트", "상의 하의", "상하의세트",
+      "월드투어", "world tour",  // 한정 시즌 (380k variant)
+      "오프 느와르 셋업", "오프 누아르 셋업", "off noir setup",
     ],
     msrpKrw: 150000, released: 2020,
   },

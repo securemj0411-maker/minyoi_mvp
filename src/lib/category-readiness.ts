@@ -520,7 +520,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   tnf_hotshot: { status: "ready", label: "TNF Hot Shot Backpack", note: "Wave 198 bag" },
   tnf_bigshot: { status: "ready", label: "TNF Big Shot Backpack", note: "Wave 198 bag" },
   tnf_nuptse_mule: { status: "ready", label: "TNF Nuptse Mule (슬리퍼)", note: "Wave 198 shoe" },
-  stussy_nike_collab: { status: "blocked", label: "Nike × Stüssy Apparel (collab)", note: "Wave 407: apparel collab mixes fleece/track/hoodie/tee. Shoe lane remains separate." },
+  stussy_nike_collab: { status: "ready", label: "Nike × Stüssy Apparel (collab)", note: "Wave 690 release — 30~50만 가격대 안정 (fleece/windrunner/tee/hoodie), 셋업/월드투어 한정 차단." },
   stussy_basic_tee: { status: "ready", label: "Stüssy Basic Tee (8 Ball/World Tour)", note: "Wave 678 release — Wave 656에서 도시 한정/DSM/마틴로즈/CPFM/돌리/갱스타/월드투어 명시 차단. LATEST v32 spread <4x." },
   stussy_hoodie: { status: "ready", label: "Stüssy Hoodie / Crewneck", note: "Wave 678 release — Wave 655에서 월드투어/CPFM/스컬본즈/iD 매거진 명시 차단. LATEST v32 spread <4x." },
   stussy_waist_bag: { status: "ready", label: "Stüssy Waist Bag", note: "Wave 198 bag" },
