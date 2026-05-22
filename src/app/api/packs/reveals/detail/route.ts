@@ -86,25 +86,45 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
     };
   }
 
-  const [marketStats, velocityStats, readinessMap, referencePrices, skuListingFlow, v7SiblingPresence] = await Promise.all([
+  // Wave launch-9: Promise.allSettled — 부분 실패 차단 (pool/analysis 와 동일 패턴).
+  const results = await Promise.allSettled([
     fetchLatestMarketStats([comparableKey]),
     fetchLatestMarketVelocity([comparableKey]),
     loadCategoryReadinessMap(),
     fetchReferencePrices([comparableKey]),
     loadSkuListingFlow(raw?.sku_id ?? null),
-    // Wave 252.A real (2026-05-20): v3 clothing key + v7 sibling 존재 시 mixed-pool median 차단.
     fetchV7SiblingPresence([comparableKey]),
   ]);
 
+  function unwrap<T>(r: PromiseSettledResult<T>, slot: string, fallback: T): T {
+    if (r.status === "fulfilled") return r.value;
+    console.warn(`[reveals/detail/analysis] ${slot} failed`, {
+      pid,
+      err: r.reason instanceof Error ? r.reason.message : String(r.reason),
+    });
+    return fallback;
+  }
+
+  const marketStats = unwrap(results[0], "marketStats", new Map());
+  const velocityStats = unwrap(results[1], "velocityStats", new Map());
+  const readinessMap = unwrap(results[2], "readinessMap", {} as Awaited<ReturnType<typeof loadCategoryReadinessMap>>);
+  const referencePrices = unwrap(results[3], "referencePrices", new Map());
+  const skuListingFlow = unwrap(results[4], "skuListingFlow", null);
+  const v7SiblingPresence = unwrap(results[5], "v7SiblingPresence", new Map());
+
+  const marketBasis = marketStats.size > 0
+    ? marketBasisForCandidate(
+        comparableKey,
+        raw?.sku_name ?? raw?.name ?? "",
+        marketStats,
+        parsed?.condition_class ?? null,
+        referencePrices,
+        v7SiblingPresence,
+      )
+    : null;
+
   return {
-    marketBasis: marketBasisForCandidate(
-      comparableKey,
-      raw?.sku_name ?? raw?.name ?? "",
-      marketStats,
-      parsed?.condition_class ?? null,
-      referencePrices,
-      v7SiblingPresence,
-    ),
+    marketBasis,
     velocityBasis: velocityBasisForCandidate(comparableKey, velocityStats, readinessMap),
     skuListingFlow,
     optionBaseAssumed,

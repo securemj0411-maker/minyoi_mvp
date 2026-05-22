@@ -89,25 +89,49 @@ async function loadAnalysis(pid: number): Promise<Analysis> {
     };
   }
 
-  const [marketStats, velocityStats, readinessMap, referencePrices, skuListingFlow, v7SiblingPresence] = await Promise.all([
-    fetchLatestMarketStats([comparableKey]),
-    fetchLatestMarketVelocity([comparableKey]),
-    loadCategoryReadinessMap(),
-    fetchReferencePrices([comparableKey]),
-    loadSkuListingFlow(raw?.sku_id ?? null),
-    // Wave 252.A real (2026-05-20): v3 clothing key + v7 sibling 존재 시 mixed-pool median 차단.
-    fetchV7SiblingPresence([comparableKey]),
+  // Wave launch-9 (audit CRITICAL #8): Promise.allSettled — 부분 실패 시 전체 null 차단.
+  // 이전 Promise.all = 1개 fetch timeout 나도 6개 다 throw → analysis 전체 null → UI silent fail.
+  // 사용자는 expected_profit 표시되는데 시세 근거 미확정 안내 없이 그대로 신뢰 → 손해 risk.
+  // 이제 marketStats 만 필수, 나머지는 보조 (실패 시 그 항목만 null, 나머지 표시).
+  const results = await Promise.allSettled([
+    fetchLatestMarketStats([comparableKey]),         // 0: 필수
+    fetchLatestMarketVelocity([comparableKey]),       // 1: 보조
+    loadCategoryReadinessMap(),                        // 2: 보조 (velocity 가드용)
+    fetchReferencePrices([comparableKey]),             // 3: 보조
+    loadSkuListingFlow(raw?.sku_id ?? null),           // 4: 보조
+    fetchV7SiblingPresence([comparableKey]),           // 5: 보조 (v3 clothing 가드)
   ]);
 
+  function unwrap<T>(r: PromiseSettledResult<T>, slot: string, fallback: T): T {
+    if (r.status === "fulfilled") return r.value;
+    console.warn(`[pool/analysis] ${slot} failed`, {
+      pid,
+      err: r.reason instanceof Error ? r.reason.message : String(r.reason),
+    });
+    return fallback;
+  }
+
+  const marketStats = unwrap(results[0], "marketStats", new Map());
+  const velocityStats = unwrap(results[1], "velocityStats", new Map());
+  const readinessMap = unwrap(results[2], "readinessMap", {} as Awaited<ReturnType<typeof loadCategoryReadinessMap>>);
+  const referencePrices = unwrap(results[3], "referencePrices", new Map());
+  const skuListingFlow = unwrap(results[4], "skuListingFlow", null);
+  const v7SiblingPresence = unwrap(results[5], "v7SiblingPresence", new Map());
+
+  // marketStats (필수) 비었으면 marketBasis null — UI 가 "시세 확인중" 표시
+  const marketBasis = marketStats.size > 0
+    ? marketBasisForCandidate(
+        comparableKey,
+        raw?.sku_name ?? raw?.name ?? "",
+        marketStats,
+        parsed?.condition_class ?? null,
+        referencePrices,
+        v7SiblingPresence,
+      )
+    : null;
+
   return {
-    marketBasis: marketBasisForCandidate(
-      comparableKey,
-      raw?.sku_name ?? raw?.name ?? "",
-      marketStats,
-      parsed?.condition_class ?? null,
-      referencePrices,
-      v7SiblingPresence,
-    ),
+    marketBasis,
     velocityBasis: velocityBasisForCandidate(comparableKey, velocityStats, readinessMap),
     skuListingFlow,
     optionBaseAssumed,
