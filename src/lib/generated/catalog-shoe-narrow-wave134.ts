@@ -841,4 +841,224 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     msrpKrw: 159000,
     released: 1968,
   },
+
+  // ─── Wave 691 (2026-05-23): UGG / Adidas Samba broad / Gazelle / Dunk broad — Pareto top brand 신설 ──
+  // 사용자 명시: 여성 친화 (UGG) + 신발 풀 0~30만 친화가 확보 우선.
+  // raw 7d 매물 = 5,300건/주 (lane 부재 → 매칭 0).
+
+  // ─── UGG (695 매물/주) — 여성 친화 ──────────────────────
+  // 인기 모델: Classic Short/Mini/Tall, Tasman, Ultra Mini, Neumel, Disquette
+  // Noise: "어그로 아님" (자전거 매물), 가방/파우치, 패딩
+  {
+    id: "shoe-ugg-classic-broad",
+    brand: "UGG",
+    category: "shoe",
+    modelName: "UGG Classic Boot (Short / Mini / Tall / Ultra Mini broad)",
+    aliases: ["UGG Classic", "어그 클래식", "어그 미니", "어그 부츠"],
+    mustContain: [
+      ["ugg", "어그"],
+      ["부츠", "boot", "미니", "mini", "숏", "short", "톨", "tall", "타스만", "tasman", "뉴멜", "neumel", "디스켓", "disquette", "디퍼", "오즈웨어"],
+    ],
+    mustNotContain: [
+      // 짝퉁
+      "uggs", "짝퉁", "카피", "이미테이션",
+      // 자전거 매물 "어그로" 슬랭 false positive
+      "어그로", "어그로아님", "어그로ㄴ", "어그로 ㄴ", "어그로 x", "어그로x", "어그로 xx",
+      // cross-category (어그 가방/파우치/패딩)
+      "가방", "토트", "토트백", "크로스백", "파우치", "월렛", "지갑",
+      "패딩", "다운", "구스다운", "덕다운", "오리털", "폭스",
+      // 자전거 부품
+      "픽시", "mtb", "기어", "픽시바이크", "카본 88림", "카본픽시", "스기노젠",
+      "콘스탄틴", "디페", "엔진 11", "스프린트", "랩3", "지프 스프린트",
+      // 슬리퍼는 별도 (옵션)
+      "슬리퍼", "slipper",
+      // 짝/단품/박스
+      "한짝", "한쪽만", "박스만", "사이즈 미상", "사이즈 모름",
+      // 키즈
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td",
+      // 명품/콜라보 한정 (가격대 다름)
+      "프라다 x", "x 프라다", "telfar", "텔파", "molly goddard",
+      // 셀럽
+      "셀럽 착용",
+      // 매입
+      "삽니다", "구합니다", "구해요", "매입",
+    ],
+    msrpKrw: 250000,
+    released: 1978,
+    defaultProductType: "boot",
+  },
+
+  // ─── Adidas Samba broad (596 매물/주, collab 별도) ──────
+  {
+    id: "shoe-adidas-samba-broad",
+    brand: "Adidas",
+    category: "shoe",
+    modelName: "Adidas Samba (Broad — OG/Classic, collab 별도)",
+    aliases: ["Adidas Samba", "아디다스 삼바", "Samba OG", "Samba Classic"],
+    mustContain: [
+      ["adidas", "아디다스"],
+      ["samba", "삼바"],
+    ],
+    mustNotContain: [
+      // collab 별도 SKU 다 있음
+      "kith", "키스",
+      "wales bonner", "웨일스 보너", "웨일즈보너", "웨일즈 보너",
+      "pharrell", "퍼렐",
+      "sporty rich", "스포티앤리치", "스포티 앤 리치", "sporty & rich",
+      "ronnie fieg", "로니피그",
+      // 한정 / 명품
+      "gucci", "구찌", "prada", "프라다",
+      "한정판", "limited edition",
+      // 키즈
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td",
+      // 가품
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake",
+      // 단품/박스
+      "한짝", "한쪽만", "박스만",
+      // 매입
+      "삽니다", "구합니다", "구해요", "매입",
+    ],
+    msrpKrw: 159000,
+    released: 1950,
+    defaultProductType: "sneaker",
+  },
+
+  // ─── Adidas Gazelle (601 매물/주) ──────────────────────
+  {
+    id: "shoe-adidas-gazelle-broad",
+    brand: "Adidas",
+    category: "shoe",
+    modelName: "Adidas Gazelle (OG/Indoor broad)",
+    aliases: ["Adidas Gazelle", "아디다스 가젤", "Gazelle OG", "Gazelle Indoor"],
+    mustContain: [
+      ["adidas", "아디다스"],
+      ["gazelle", "가젤"],
+    ],
+    mustNotContain: [
+      // collab
+      "wales bonner", "웨일즈 보너", "웨일스 보너",
+      "gucci", "구찌",
+      "kith", "키스",
+      // 한정
+      "한정판", "limited edition",
+      // 키즈
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td",
+      // 가품
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake",
+      // 단품/박스
+      "한짝", "한쪽만", "박스만",
+      // 매입
+      "삽니다", "구합니다", "구해요", "매입",
+    ],
+    msrpKrw: 139000,
+    released: 1968,
+    defaultProductType: "sneaker",
+  },
+
+  // ─── Nike Dunk Low broad (1374 매물/주) ────────────────
+  // Wave 134 narrow 2개 (Panda + Black/White Standard) 있고 일반 colorway broad 없음.
+  // 이미 narrow에서 한정/SP 다 차단 → broad는 일반 colorway 다 흡수.
+  {
+    id: "shoe-nike-dunk-low-broad",
+    brand: "Nike",
+    category: "shoe",
+    modelName: "Nike Dunk Low (Broad — 일반 colorway)",
+    aliases: ["Nike Dunk Low", "덩크 로우", "Dunk Low"],
+    mustContain: [
+      ["nike", "나이키"],
+      ["덩크 로우", "덩크로우", "dunk low"],
+    ],
+    mustNotContain: [
+      // narrow SKU 우선 — Panda / Black-White Standard 차단
+      "판다", "panda",
+      // 한정/SP collab (가격 200~500만+)
+      "오프화이트", "off-white", "off white",
+      "travis", "트래비스", "트래비스 스캇", "트래비스스캇",
+      "supreme", "슈프림", "sb dunk", "sb low",
+      "civilist", "civilist", "ben & jerry", "벤앤제리",
+      "ambush", "앰부쉬", "co.jp",
+      "stussy", "스투시", "kasina", "카시나",
+      "stranglove", "strangelove", "스트레인지러브",
+      "chunky dunky", "청키 덩키",
+      "reverse panda", "리버스 판다",
+      // 다른 모델
+      "high", "하이", "미드", "mid",
+      // 다른 SKU
+      "syracuse", "시라큐스", "kentucky", "켄터키", "michigan", "미시간",
+      "veneer", "베니자나", "huf", "헤마초",
+      // 키즈
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td", "gs",
+      // 가품
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "11급", "ss급",
+      // 단품/박스
+      "한짝", "한쪽만", "박스만",
+      // 매입
+      "삽니다", "구합니다", "구해요", "매입",
+    ],
+    msrpKrw: 119000,
+    released: 1985,
+    defaultProductType: "sneaker",
+  },
+
+  // ─── Air Jordan 1 broad (AJ 2,231 매물/주 — Pareto 1위) ─
+  // AJ1 가품 위험 매우 큼 — narrow Mid / Low 만 broad, High 별도 + collab 다 차단.
+  {
+    id: "shoe-nike-airjordan-1-low",
+    brand: "Nike",
+    category: "shoe",
+    modelName: "Air Jordan 1 Low (broad)",
+    aliases: ["Air Jordan 1 Low", "조던 1 로우", "AJ1 Low"],
+    mustContain: [
+      ["조던", "jordan", "aj1", "에어조던"],
+      ["로우", "low"],
+      ["1 ", "1세대", " 1\\b"],
+    ],
+    mustNotContain: [
+      "high", "하이", "mid", "미드",
+      // collab (가품 매우 큼)
+      "travis", "트래비스", "오프화이트", "off-white", "off white",
+      "fragment", "프래그먼트", "dior", "디올",
+      "union", "유니온",
+      "한정판", "limited edition",
+      // 키즈
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td", "gs",
+      // 가품
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "11급", "ss급정품", "1:1",
+      // 단품/박스
+      "한짝", "한쪽만", "박스만",
+      // 매입
+      "삽니다", "구합니다", "구해요", "매입",
+    ],
+    msrpKrw: 139000,
+    released: 1985,
+    defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-nike-airjordan-1-mid",
+    brand: "Nike",
+    category: "shoe",
+    modelName: "Air Jordan 1 Mid (broad)",
+    aliases: ["Air Jordan 1 Mid", "조던 1 미드", "AJ1 Mid"],
+    mustContain: [
+      ["조던", "jordan", "aj1", "에어조던"],
+      ["미드", "mid"],
+      ["1 ", "1세대", " 1\\b"],
+    ],
+    mustNotContain: [
+      "high", "하이", "low", "로우",
+      // collab
+      "travis", "트래비스", "오프화이트", "off-white", "off white",
+      "fragment", "프래그먼트", "dior", "디올", "union", "유니온",
+      "한정판", "limited edition",
+      // 키즈
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td", "gs",
+      // 가품
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "11급", "ss급정품", "1:1",
+      "한짝", "한쪽만", "박스만",
+      "삽니다", "구합니다", "구해요", "매입",
+    ],
+    msrpKrw: 139000,
+    released: 1985,
+    defaultProductType: "sneaker",
+  },
 ];

@@ -749,6 +749,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   yeezy_foam_runner: { status: "ready", label: "Yeezy Foam Runner", note: "Wave 215" },
   bape_sta: { status: "ready", label: "BAPE STA (Bapesta 신발)", note: "Wave 215" },
   stussy_8ball_knit: { status: "ready", label: "Stüssy 8 Ball Knit", note: "Wave 215" },
+  // Wave 691 (2026-05-23) — 신규 핵심 brand 신설 (Pareto top — 5,300건/주 매물 lane 없던 brand).
+  shoe_ugg_classic_broad: { status: "ready", label: "UGG Classic Boot (Short/Mini/Tall/Ultra Mini)", note: "Wave 691 — 695 매물/주, 여성 친화. '어그로' 슬랭/가방/패딩/픽시 자전거 차단." },
+  shoe_adidas_samba_broad: { status: "ready", label: "Adidas Samba (Broad — OG/Classic)", note: "Wave 691 — 400+ 매물/주, collab 4개 별도. Wales Bonner/Pharrell/Kith/Sporty 차단." },
+  shoe_adidas_gazelle_broad: { status: "ready", label: "Adidas Gazelle (OG/Indoor broad)", note: "Wave 691 — 601 매물/주, lane 부재 신설. Wales Bonner/Gucci/Kith collab 차단." },
+  shoe_nike_dunk_low_broad: { status: "ready", label: "Nike Dunk Low (Broad — 일반 colorway)", note: "Wave 691 — 1,374 매물/주, Wave 134 narrow (Panda + Black/White)에서 흡수 안 된 일반 colorway. SP/한정/SB/Travis/Off-White/AMBUSH 차단." },
+  shoe_nike_airjordan_1_low: { status: "ready", label: "Air Jordan 1 Low (broad)", note: "Wave 691 — AJ 2,231 매물/주. 가품 위험 큼 — collab(Travis/Off-White/Fragment/Dior/Union)/11급/SS급정품 강력 차단." },
+  shoe_nike_airjordan_1_mid: { status: "ready", label: "Air Jordan 1 Mid (broad)", note: "Wave 691 — Mid colorway broad. High/Low 별도, collab/한정 다 차단." },
 };
 
 export type CategoryReadinessConfig = {
