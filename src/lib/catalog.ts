@@ -5800,7 +5800,10 @@ export const CATALOG: Sku[] = [
       ["애플워치", "applewatch", "apple watch", "에플워치", "워치"],
       ["울트라 3", "ultra 3", "울트라3", "ultra3"],
     ],
-    mustNotContain: ["울트라 2", "ultra 2", "울트라2", "ultra2", "울트라 1", "ultra 1"],
+    mustNotContain: ["울트라 2", "ultra 2", "울트라2", "ultra2", "울트라 1", "ultra 1",
+      // Wave 646: 에르메스 에디션은 별도 시세군 (1.5-2.1M, 일반 700-900k 대비 2-3배 outlier).
+      "에르메스", "hermes", "사티네", "satine",
+    ],
     msrpKrw: 1199000,
     released: 2025,
     confusionNote: "Ultra 3 신상 (2025-09). S11 chip, 위성 통신 추가. Ultra 1/2와 외형 거의 동일 (49mm 티타늄). 시세 ~₩200K 차이.",
