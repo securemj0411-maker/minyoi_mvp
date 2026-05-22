@@ -571,6 +571,8 @@ function parseShoeProductType(text: string): ShoeProductType {
   if (/메리 ?제인|mary ?jane/.test(t)) return "mary_jane";
   if (/펌프스|pump(?:s)?\b|힐\b|heel\b/.test(t)) return "pump";
   if (/발레 ?플랫|ballet ?flat|플랫 ?슈즈|flat ?shoes?|플랫\b|(?:타비|tabi).{0,12}(슬립온|slip ?on|slip-on)|(?:슬립온|slip ?on|slip-on).{0,12}(타비|tabi)/.test(t)) return "flat";
+  // Wave 598: "에어 페니" / "air penny" = Nike Penny Hardaway 농구화 (Air Penny 1/2/3) → sneaker, not loafer.
+  if (/에어 ?페니|air ?penny|페니 ?하더 ?웨이|penny ?hardaway/.test(t)) return "sneaker";
   if (/로퍼|loafer|페니|penny|드라이빙 ?슈즈|driving ?shoe|모카신|moccasin/.test(t)) return "loafer";
   // Wave 264 (2026-05-20): 슬라이드 (Yeezy Slide) / 클로그 한글 / 아딜렛 (Adidas Adilette) / 폼러너 보강.
   //   사용자 발견 type_unknown sample: "이지슬라이드" / "아디다스 아딜렛 클로그 플랫폼" / "Crocs 클로그".
@@ -629,7 +631,7 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 //   Adidas football line, Nike Sacai shape, Salomon ACS+/ACS Pro, and Hoka Kaha boot type.
 // Wave 536 (2026-05-22) shoe v17: Dr. Martens Flora Chelsea no longer shares 2976 samples.
 // Wave 537 (2026-05-22) shoe v18: Acne Manhattan/Rockaway mixed titles are ambiguous and held out.
-const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v19";
+const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v20";
 // Wave 538 (2026-05-22) bag v14: Longchamp Le Pliage requires explicit line text.
 const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v15";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
