@@ -135,7 +135,7 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
     aliases: ["Salomon ACS Pro", "살로몬 ACS Pro", "ACS Pro Advanced"],
     mustContain: [
       ["살로몬", "salomon"],
-      ["acs pro", "acs-pro", "acspro", "acs 프로"],
+      ["acs pro", "acs-pro", "acspro", "acs 프로", "acs프로"],
     ],
     mustNotContain: [
       ...SHOE_COMMON_NOISE,
@@ -155,7 +155,7 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
     modelName: "New Balance 1300 (Broad)",
     aliases: ["뉴발란스 1300", "NB 1300", "M1300"],
     mustContain: [
-      ["뉴발란스 1300", "뉴발 1300", "nb 1300", "nb1300", "new balance 1300", "m1300"],
+      ["뉴발란스 1300", "뉴발 1300", "nb 1300", "nb1300", "new balance 1300", "m1300", "1300jp", "1300 jp", "1300dsp", "1300 dsp"],
     ],
     mustNotContain: [
       ...SHOE_COMMON_NOISE,
@@ -176,7 +176,7 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
     modelName: "New Balance 1400 (Broad)",
     aliases: ["뉴발란스 1400", "NB 1400", "M1400"],
     mustContain: [
-      ["뉴발란스 1400", "뉴발 1400", "nb 1400", "nb1400", "new balance 1400", "m1400"],
+      ["뉴발란스 1400", "뉴발 1400", "nb 1400", "nb1400", "new balance 1400", "m1400", "1400jp", "1400 jp"],
     ],
     mustNotContain: [
       ...SHOE_COMMON_NOISE,
@@ -216,7 +216,7 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
     modelName: "New Balance 1600 (Broad, 엘리트 라인)",
     aliases: ["뉴발란스 1600", "NB 1600", "CM1600"],
     mustContain: [
-      ["뉴발란스 1600", "뉴발 1600", "nb 1600", "nb1600", "new balance 1600", "cm1600"],
+      ["뉴발란스 1600", "뉴발 1600", "nb 1600", "nb1600", "new balance 1600", "cm1600", "1600lg", "1600 lg"],
     ],
     mustNotContain: [
       ...SHOE_COMMON_NOISE,
@@ -461,7 +461,7 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
     aliases: ["Nike SFB", "나이키 SFB", "SFB B1"],
     mustContain: [
       ["nike", "나이키"],
-      ["sfb"],
+      ["sfb", "sfb6", "sfb 6"],
     ],
     mustNotContain: [
       ...SHOE_COMMON_NOISE,
@@ -549,6 +549,7 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
       ...SHOE_COMMON_NOISE,
       // 의류 (Y-3 의류도 많아서 차단)
       "티셔츠", "tee ", "후드", "hoodie", "맨투맨", "팬츠", "셔츠", "자켓",
+      "모자", "캡", "cap", "버킷", "bucket", "햇", "hat",
       "가방", "백팩", "토트", "크로스백",
       // 모델별 별도 SKU 있는 거
       "qasa", "콰사",

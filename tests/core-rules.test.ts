@@ -295,6 +295,26 @@ test("AirPods 4 no-ANC wording becomes precise comparable key", () => {
   });
   assert.equal(parsed.comparableKey, "airpods|airpods_4|usbc|no_anc");
   assert.equal(parsed.needsReview, false);
+
+  const corrected = parseListingOptions({
+    category: "earphone",
+    skuId: "airpods-4-anc",
+    title: "에어팟 4세대 노캔 ㄴㄴ",
+    description: "노캔 안되는 일반모델입니다.",
+  });
+  assert.equal(corrected.model, "airpods_4");
+  assert.equal(corrected.comparableKey, "airpods|airpods_4|usbc|no_anc");
+});
+
+test("AirPods 4 no-ANC wording does not enter ANC catalog lane", () => {
+  const noAncTitle = ruleMatch("에어팟 4세대 노캔 ㄴㄴ", "");
+  assert.equal(noAncTitle?.id, "airpods-4");
+
+  const noAncDescription = ruleMatch("에어팟 4세대 노캔", "노캔 안되는 일반모델입니다.");
+  assert.equal(noAncDescription?.id, "airpods-4");
+
+  const anc = ruleMatch("에어팟 4세대 노캔", "노이즈 캔슬링 기능 있습니다.");
+  assert.equal(anc?.id, "airpods-4-anc");
 });
 
 test("AirPods Max color/model hints infer USB-C generation", () => {
@@ -1324,6 +1344,71 @@ test("description-level buying intent is excluded without blocking purchase-hist
   );
 });
 
+test("exchange-request posts are excluded before direct catalog matching", () => {
+  assert.equal(
+    ruleMatch(
+      "아이폰15프로 128기가 화이트 -> 아이폰 17 일반 교환해요!",
+      "아이폰17 일반과 추가금 드리고 교환하고 싶습니다",
+    ),
+    null,
+  );
+  assert.equal(
+    ruleMatch("[교환] 아이폰15프로맥스 512 애케플 -> 아이폰15프로 1테라", "컬러 무관하게 1테라로 구합니다."),
+    null,
+  );
+  assert.equal(
+    ruleMatch("아이폰 15 프로 128기가", "정상 판매합니다. 교환/환불 불가")?.id,
+    CATALOG.find((sku) => sku.id === "iphone-15-pro")?.id,
+  );
+  assert.equal(
+    ruleMatch("루이비통 모노그램 알마 BB 백", "사용감 있는 상태라 사진 꼭 확인해주세요. 물품 교환 안해요")?.id,
+    "bag-lv-monogram-alma-bb",
+  );
+  assert.equal(
+    ruleMatch("베이프 컬리지 티셔츠 블랙", "모든 제품 검수하고 업로드합니다. 교환 환불은 불가합니다.")?.id,
+    "clothing-bape-tee",
+  );
+  assert.equal(
+    ruleMatch("M 아크네스튜디오 포바 아쿠아블루 오버사이즈 맨투맨 오버핏 스웻셔츠", "교환 환불 x")?.id,
+    "clothing-acne-sweat",
+  );
+  assert.equal(
+    ruleMatch("새제품XS)아디다스 베켄바우어 트랙탑 나이트인디고 네이비 ip0418", "교환환불→사절")?.id,
+    "clothing-adidas-trefoil",
+  );
+  assert.equal(
+    ruleMatch("칼하트 WIP 반팔 L", "빈티지 제품 특성상 교환 및 환불 안됩니다.")?.id,
+    "clothing-carhartt-apparel-broad",
+  );
+  assert.equal(
+    ruleMatch("아디다스 수원삼성 블루윙즈 콘디보 16 트랙 자켓 수트 져지 95", "중고 거래 특성상 반품 교환 환불 불가하니 꼭 확인하고 구매 바랍니다")?.id,
+    "clothing-adidas-trefoil",
+  );
+  assert.equal(
+    ruleMatch("아디다스 삼선 트랙탑", "교환 / 환불은 안됩니다.")?.id,
+    "clothing-adidas-trefoil",
+  );
+  assert.equal(
+    ruleMatch("칼하트 헤리티지 투포켓 워크셔츠 2XL", "빈티지 특성 상 교환 ❌ 환불 ❌")?.id,
+    "clothing-carhartt-apparel-broad",
+  );
+  assert.equal(
+    ruleMatch(
+      "칼하트 헤리티지 투포켓 워크셔츠 2XL",
+      "사이즈는 1,2cm 오차가 있을 수 있습니다. 색상은 모니터 해상도에 따라 다를 수 있습니다. 빈티지 특성 상 사진에서 확인되지 않은 미세한 오염이나 얼룩이 있을 수 있습니다. 빈티지 특성 상 교환 ",
+    )?.id,
+    "clothing-carhartt-apparel-broad",
+  );
+  assert.equal(
+    ruleMatch("빈티지9. 꼼데가르송 빈티지 pvc 페이퍼 토트백 가방 핸드백 베이지", "빈티지 상품으로 환불 교환 취소 어렵습니다")?.id,
+    "bag-cdg-pvc",
+  );
+  assert.equal(
+    ruleMatch("베이프 퍼스트카모 컬리지 반팔티셔츠", "XL.xxl도 교환 합니다"),
+    null,
+  );
+});
+
 test("pool policy gives one shared skip reason for blocked flags", () => {
   // Wave 13: coarse_market_price/market_confidence_low POOL_BLOCK 제거됨.
   // 다른 POOL_BLOCK_FLAGS (risk_keyword_review 등)로 동일 share-reason 동작 검증.
@@ -1510,9 +1595,9 @@ test("candidate pool builder hard-blocks pool_eligible=false rows before lane re
   const result = buildCandidatePoolRows({
     rows: [{
       pid: 10,
-      price: 300_000,
+      price: 450_000,
       skuMedian: 600_000,
-      estimatedBuyCost: 300_000,
+      estimatedBuyCost: 450_000,
       shippingFee: 0,
       shippingFeeGeneral: 0,
       riskHits: 0,
@@ -1539,6 +1624,320 @@ test("candidate pool builder hard-blocks pool_eligible=false rows before lane re
 
   assert.equal(result.entries.length, 0);
   assert.deepEqual(result.invalidations, [{ pid: 10, reason: "pool_eligible_false" }]);
+});
+
+test("candidate pool builder ignores stale Bunjang pool_eligible=false values", () => {
+  const sku = CATALOG.find((item) => item.laneKey === "airpods_max_usbc" || item.id === "airpods-max-usbc");
+  assert.ok(sku, "expected AirPods Max USB-C SKU in catalog");
+  const parsedByPid = new Map([
+    [12, {
+      category: "earphone" as const,
+      comparable_key: "airpods|airpods_max_usbc|usbc",
+      parse_confidence: 1,
+      needs_review: false,
+    }],
+  ]);
+  const result = buildCandidatePoolRows({
+    rows: [{
+      pid: 12,
+      source: "bunjang",
+      price: 450_000,
+      skuMedian: 600_000,
+      estimatedBuyCost: 450_000,
+      shippingFee: 0,
+      shippingFeeGeneral: 0,
+      riskHits: 0,
+      thumbnailUrl: "https://example.test/airpods-max.jpg",
+      poolEligible: false,
+      poolEligibleFalseStale: true,
+      skuId: sku.id,
+      score: 95,
+      scoreFlags: [],
+    }],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: {
+      earphone: {
+        status: "ready",
+        label: "Audio",
+        note: "ready",
+        minReadyPool: 6,
+        minParseRate: 0.85,
+        minTrustedKeys: 5,
+      },
+    },
+    now: "2026-05-22T00:00:00.000Z",
+  });
+
+  assert.equal(result.invalidations.length, 0);
+  assert.equal(result.entries.length, 1);
+});
+
+test("candidate pool builder holds rows from explicitly low-rated sellers", () => {
+  const sku = CATALOG.find((item) => item.id === "clothing-polo-oxford-shirt");
+  assert.ok(sku, "expected Polo Oxford Shirt SKU in catalog");
+  const parsedByPid = new Map([
+    [16, {
+      parser_version: "wave216-clothing-v20",
+      category: "clothing" as const,
+      comparable_key: "clothing|polo_oxford_shirt|shirt|a_grade",
+      parse_confidence: 0.95,
+      needs_review: false,
+      condition_class: "clean",
+    }],
+  ]);
+
+  const result = buildCandidatePoolRows({
+    rows: [{
+      pid: 16,
+      price: 75_000,
+      skuMedian: 120_000,
+      estimatedBuyCost: 75_000,
+      shippingFee: 0,
+      shippingFeeGeneral: 0,
+      riskHits: 0,
+      thumbnailUrl: "https://example.test/polo.jpg",
+      skuId: sku.id,
+      score: 90,
+      scoreFlags: [],
+      shopReviewCount: 2,
+      shopReviewRating: 2.56,
+      saleStatus: "selling",
+    }],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: CATEGORY_READINESS,
+    latestParserVersionByCategory: { clothing: "wave216-clothing-v20" },
+    now: "2026-05-21T00:00:00.000Z",
+  });
+
+  assert.equal(result.entries.length, 0);
+  assert.deepEqual(result.invalidations, [{ pid: 16, reason: "seller_rating_below_3_5_review" }]);
+});
+
+test("candidate pool builder does not punish missing seller rating by itself", () => {
+  const sku = CATALOG.find((item) => item.id === "clothing-polo-oxford-shirt");
+  assert.ok(sku, "expected Polo Oxford Shirt SKU in catalog");
+  const parsedByPid = new Map([
+    [17, {
+      parser_version: "wave216-clothing-v20",
+      category: "clothing" as const,
+      comparable_key: "clothing|polo_oxford_shirt|shirt|a_grade",
+      parse_confidence: 0.95,
+      needs_review: false,
+      condition_class: "clean",
+    }],
+  ]);
+
+  const result = buildCandidatePoolRows({
+    rows: [{
+      pid: 17,
+      price: 75_000,
+      skuMedian: 120_000,
+      estimatedBuyCost: 75_000,
+      shippingFee: 0,
+      shippingFeeGeneral: 0,
+      riskHits: 0,
+      thumbnailUrl: "https://example.test/polo.jpg",
+      skuId: sku.id,
+      score: 90,
+      scoreFlags: [],
+      shopReviewCount: null,
+      shopReviewRating: null,
+      saleStatus: "selling",
+    }],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: CATEGORY_READINESS,
+    latestParserVersionByCategory: { clothing: "wave216-clothing-v20" },
+    now: "2026-05-21T00:00:00.000Z",
+  });
+
+  assert.equal(result.invalidations.length, 0);
+  assert.equal(result.entries.length, 1);
+});
+
+test("candidate pool builder does not block low seller rating when review count is zero", () => {
+  const sku = CATALOG.find((item) => item.id === "shoe-asics-gel-nimbus");
+  assert.ok(sku, "expected Asics Gel Nimbus SKU in catalog");
+  const parsedByPid = new Map([
+    [18, {
+      parser_version: "wave92-shoe-v16",
+      category: "shoe" as const,
+      comparable_key: "shoe|gel_nimbus|sneaker|280|a_grade",
+      parse_confidence: 0.92,
+      needs_review: false,
+      condition_class: "mint",
+    }],
+  ]);
+
+  const result = buildCandidatePoolRows({
+    rows: [{
+      pid: 18,
+      price: 140_000,
+      skuMedian: 207_000,
+      estimatedBuyCost: 140_000,
+      shippingFee: 0,
+      shippingFeeGeneral: 0,
+      riskHits: 0,
+      thumbnailUrl: "https://example.test/asics.jpg",
+      skuId: sku.id,
+      score: 90,
+      scoreFlags: [],
+      shopReviewCount: 0,
+      shopReviewRating: 2.46,
+      saleStatus: "selling",
+    }],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: CATEGORY_READINESS,
+    latestParserVersionByCategory: { shoe: "wave92-shoe-v16" },
+    now: "2026-05-22T00:00:00.000Z",
+  });
+
+  assert.equal(result.invalidations.length, 0);
+  assert.equal(result.entries.length, 1);
+});
+
+test("candidate pool builder blocks stale parser versions before ready entry", () => {
+  const sku = CATALOG.find((item) => item.id === "shoe-balenciaga-3xl");
+  assert.ok(sku, "expected Balenciaga 3XL SKU in catalog");
+  const parsedByPid = new Map([
+    [11, {
+      parser_version: "wave92-shoe-v11",
+      category: "shoe" as const,
+      comparable_key: "shoe|3xl|sneaker|275|a_grade",
+      parse_confidence: 1,
+      needs_review: false,
+    }],
+  ]);
+  const result = buildCandidatePoolRows({
+    rows: [{
+      pid: 11,
+      price: 600_000,
+      skuMedian: 900_000,
+      estimatedBuyCost: 600_000,
+      shippingFee: 0,
+      shippingFeeGeneral: 0,
+      riskHits: 0,
+      thumbnailUrl: "https://example.test/3xl.jpg",
+      skuId: sku.id,
+      score: 95,
+      scoreFlags: [],
+    }],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: CATEGORY_READINESS,
+    latestParserVersionByCategory: { shoe: "wave92-shoe-v16" },
+    now: "2026-05-21T00:00:00.000Z",
+  });
+
+  assert.equal(result.entries.length, 0);
+  assert.deepEqual(result.invalidations, [{ pid: 11, reason: "stale_parser_version_shoe" }]);
+});
+
+test("candidate pool builder holds fashion broad and unknown-condition rows for review", () => {
+  const broadSku = CATALOG.find((item) => item.id === "shoe-newbalance-574-broad");
+  const exactSku = CATALOG.find((item) => item.id === "shoe-vans-authentic");
+  assert.ok(broadSku, "expected New Balance 574 broad SKU in catalog");
+  assert.ok(exactSku, "expected Vans Authentic SKU in catalog");
+
+  const parsedByPid = new Map([
+    [12, {
+      parser_version: "wave92-shoe-v16",
+      category: "shoe" as const,
+      comparable_key: "shoe|newbalance_574_broad|sneaker|275|a_grade",
+      parse_confidence: 0.92,
+      needs_review: false,
+      condition_class: "clean",
+    }],
+    [13, {
+      parser_version: "wave92-shoe-v16",
+      category: "shoe" as const,
+      comparable_key: "shoe|authentic|sneaker|275|unknown_condition",
+      parse_confidence: 0.92,
+      needs_review: false,
+      condition_class: "clean",
+    }],
+  ]);
+  const base = {
+    price: 100_000,
+    skuMedian: 140_000,
+    estimatedBuyCost: 100_000,
+    shippingFee: 0,
+    shippingFeeGeneral: 0,
+    riskHits: 0,
+    thumbnailUrl: "https://example.test/shoe.jpg",
+    score: 80,
+    scoreFlags: [],
+  };
+  const result = buildCandidatePoolRows({
+    rows: [
+      { ...base, pid: 12, skuId: broadSku.id },
+      { ...base, pid: 13, skuId: exactSku.id },
+    ],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: CATEGORY_READINESS,
+    latestParserVersionByCategory: { shoe: "wave92-shoe-v16" },
+    now: "2026-05-21T00:00:00.000Z",
+  });
+
+  assert.equal(result.entries.length, 0);
+  assert.ok(result.invalidations.some((row) => row.pid === 12 && row.reason === "fashion_broad_sku_review"));
+  assert.ok(result.invalidations.some((row) => row.pid === 13 && row.reason === "fashion_unknown_condition_review"));
+});
+
+test("candidate pool builder holds explicit fashion collab rows unless sku is a collab lane", () => {
+  const genericSku = CATALOG.find((item) => item.id === "shoe-vans-authentic");
+  const collabSku = CATALOG.find((item) => item.id === "shoe-supreme-vans-collab");
+  assert.ok(genericSku, "expected Vans Authentic SKU in catalog");
+  assert.ok(collabSku, "expected Supreme x Vans collab SKU in catalog");
+
+  const parsedByPid = new Map([
+    [14, {
+      parser_version: "wave92-shoe-v16",
+      category: "shoe" as const,
+      comparable_key: "shoe|authentic|sneaker|260|a_grade",
+      parse_confidence: 0.95,
+      needs_review: false,
+      condition_class: "clean",
+    }],
+    [15, {
+      parser_version: "wave92-shoe-v16",
+      category: "shoe" as const,
+      comparable_key: "shoe|supreme_vans_collab|sneaker|260|a_grade",
+      parse_confidence: 0.95,
+      needs_review: false,
+      condition_class: "clean",
+    }],
+  ]);
+  const base = {
+    price: 100_000,
+    skuMedian: 140_000,
+    estimatedBuyCost: 100_000,
+    shippingFee: 0,
+    shippingFeeGeneral: 0,
+    riskHits: 0,
+    thumbnailUrl: "https://example.test/shoe.jpg",
+    score: 80,
+    scoreFlags: [],
+  };
+  const result = buildCandidatePoolRows({
+    rows: [
+      { ...base, pid: 14, skuId: genericSku.id, name: "반스 어센틱 x Pendleton 타탄체크" },
+      { ...base, pid: 15, skuId: collabSku.id, name: "슈프림 x 반스 스케이트 하이" },
+    ],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: CATEGORY_READINESS,
+    latestParserVersionByCategory: { shoe: "wave92-shoe-v16" },
+    now: "2026-05-21T00:00:00.000Z",
+  });
+
+  assert.equal(result.entries.length, 1);
+  assert.equal(result.entries[0]?.pid, 15);
+  assert.ok(result.invalidations.some((row) => row.pid === 14 && row.reason === "fashion_external_collab_review"));
 });
 
 test("clothing broad SKUs cannot enter pool through category-level readiness", () => {
@@ -1651,7 +2050,8 @@ test("candidate pool builder allows audited clothing narrow lanes but blocks hel
   ]);
   const base = {
     price: 100_000,
-    skuMedian: 300_000,
+    // Keep ROI below the weak-signal review gate; this test is about lane readiness.
+    skuMedian: 150_000,
     estimatedBuyCost: 100_000,
     shippingFee: 0,
     shippingFeeGeneral: 0,

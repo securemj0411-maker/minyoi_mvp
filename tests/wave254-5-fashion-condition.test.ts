@@ -48,6 +48,78 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `buying_post 없음: ${conditionNotes.join(",")}`);
     });
 
+    it("exchange_only 감지 — 교환 전용 글만 flawed로 보냄", () => {
+      const exchange = conditionFromTextFashion(
+        "아이폰15프로 128기가 화이트 -> 아이폰 17 일반 교환해요!",
+        "clothing",
+      );
+      assert.ok(exchange.conditionNotes.includes("exchange_only"),
+        `exchange_only 없음: ${exchange.conditionNotes.join(",")}`);
+      assert.equal(extractConditionClass(exchange.conditionNotes), "flawed");
+
+      const saleDisclaimer = conditionFromTextFashion(
+        "아이폰 15 프로 128기가 정상 판매합니다 교환/환불 불가",
+        "clothing",
+      );
+      assert.ok(!saleDisclaimer.conditionNotes.includes("exchange_only"),
+        `판매 disclaimer를 exchange_only로 잘못 잡음: ${saleDisclaimer.conditionNotes.join(",")}`);
+
+      const bracketed = parseListingOptions({
+        title: "[교환] 아이폰15프로맥스 512 애케플 -> 아이폰15프로 1테라",
+        description: "컬러 무관하게 1테라로 구합니다.",
+        skuId: "iphone-15-pro-max",
+        skuName: "iPhone 15 Pro Max",
+        category: "smartphone",
+      });
+      assert.ok(bracketed.conditionNotes.includes("exchange_only"),
+        `[교환] title exchange_only 없음: ${bracketed.conditionNotes.join(",")}`);
+      assert.ok(bracketed.needsReview);
+    });
+
+    it("parts_only 감지 — 부속품/Type-C 베이스 단품은 본체 비교군에서 제외", () => {
+      const accessory = parseListingOptions({
+        title: "다이슨 에어랩 부속품 팝니다",
+        description: "",
+        skuId: "dyson-airwrap-hs05",
+        skuName: "Dyson Airwrap Multi-styler Complete (HS05)",
+        category: "home_appliance",
+      });
+      assert.ok(accessory.conditionNotes.includes("parts_only"),
+        `parts_only 없음: ${accessory.conditionNotes.join(",")}`);
+      assert.ok(accessory.needsReview);
+      assert.equal(accessory.conditionClass, "flawed");
+
+      const typeCBase = parseListingOptions({
+        title: "Ulanzi DJI 오즈모 포켓3 Type-C 베이스",
+        description: "",
+        skuId: "dji-osmo-pocket-3",
+        skuName: "DJI Osmo Pocket 3",
+        category: "drone",
+      });
+      assert.ok(typeCBase.conditionNotes.includes("parts_only"),
+        `Type-C 베이스 parts_only 없음: ${typeCBase.conditionNotes.join(",")}`);
+
+      const fullSet = parseListingOptions({
+        title: "[새상품] 다이슨 에어랩 스타일러 풀세트 + 케이스",
+        description: "",
+        skuId: "dyson-airwrap-hs05",
+        skuName: "Dyson Airwrap Multi-styler Complete (HS05)",
+        category: "home_appliance",
+      });
+      assert.ok(!fullSet.conditionNotes.includes("parts_only"),
+        `풀세트+케이스를 parts_only로 잘못 잡음: ${fullSet.conditionNotes.join(",")}`);
+
+      const fullUnitWithAccessories = parseListingOptions({
+        title: "다이슨 에어랩 스타일러 오렌지 + 부속품",
+        description: "",
+        skuId: "dyson-airwrap-hs05",
+        skuName: "Dyson Airwrap Multi-styler Complete (HS05)",
+        category: "home_appliance",
+      });
+      assert.ok(!fullUnitWithAccessories.conditionNotes.includes("parts_only"),
+        `본체+부속품 포함 매물을 parts_only로 잘못 잡음: ${fullUnitWithAccessories.conditionNotes.join(",")}`);
+    });
+
     it("good_condition 감지 — '상태 좋'", () => {
       const { conditionNotes } = conditionFromTextFashion(
         "나이키 덩크 로우 상태 좋아요",
@@ -161,7 +233,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `shoe conditionNotes 비어있음: ${JSON.stringify(result.conditionNotes)}`);
     });
 
-    it("parser_version shoe = wave92-shoe-v11 (Wave 414 EU size hardening)", () => {
+    it("parser_version shoe = wave92-shoe-v16 (Wave 506 ready sample axis tightening)", () => {
       const result = parseListingOptions({
         title: "나이키 덩크 로우",
         description: "270",
@@ -169,11 +241,11 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Nike Dunk Low",
         category: "shoe",
       });
-      assert.equal(result.parserVersion, "wave92-shoe-v11",
+      assert.equal(result.parserVersion, "wave92-shoe-v16",
         `parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version bag = wave92-bag-v11 (Wave 424 bag title-first)", () => {
+    it("parser_version bag = wave92-bag-v13 (Wave 501 bag variant key tightening)", () => {
       const result = parseListingOptions({
         title: "구찌 마몬트 토트백",
         description: "정품",
@@ -181,11 +253,11 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Gucci Marmont",
         category: "bag",
       });
-      assert.equal(result.parserVersion, "wave92-bag-v11",
+      assert.equal(result.parserVersion, "wave92-bag-v13",
         `bag parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version clothing = wave216-clothing-v13 (Wave 425 type_unknown cleanup)", () => {
+    it("parser_version clothing = wave216-clothing-v20 (Wave 507 final condition key sync)", () => {
       const result = parseListingOptions({
         title: "스투시 후드",
         description: "L 사이즈",
@@ -193,8 +265,36 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Stussy Hoodie",
         category: "clothing",
       });
-      assert.equal(result.parserVersion, "wave216-clothing-v13",
+      assert.equal(result.parserVersion, "wave216-clothing-v20",
         `clothing parser_version mismatch: ${result.parserVersion}`);
+    });
+
+    it("clothing broad fallback → needsReview=true", () => {
+      const result = parseListingOptions({
+        title: "아크네스튜디오 반집업 긴팔 XL 블랙",
+        description: "정품",
+        skuId: "clothing-acne-apparel",
+        skuName: "Acne Studios Apparel (broad)",
+        category: "clothing",
+      });
+      assert.ok(result.needsReview,
+        `broad fallback needsReview 안 박힘: ${JSON.stringify(result.parsedJson)}`);
+      assert.deepEqual(result.parsedJson.clothing_broad_fallback, true);
+      assert.ok((result.parsedJson.critical_unknown as string[]).includes("clothing_broad_fallback"));
+    });
+
+    it("clothing title multi-item bundle → needsReview=true", () => {
+      const result = parseListingOptions({
+        title: "아크네 반바지 두개",
+        description: "정품",
+        skuId: "clothing-acne-apparel",
+        skuName: "Acne Studios Apparel (broad)",
+        category: "clothing",
+      });
+      assert.ok(result.needsReview,
+        `multi-item bundle needsReview 안 박힘: ${JSON.stringify(result.parsedJson)}`);
+      assert.deepEqual(result.parsedJson.clothing_multi_item_bundle, true);
+      assert.ok((result.parsedJson.critical_unknown as string[]).includes("clothing_multi_item_bundle"));
     });
 
     it("strong negative signal (buying_post) → needsReview=true", () => {
@@ -360,6 +460,48 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
       );
       assert.ok(conditionNotes.includes("clothing_seam_damage"));
       assert.equal(extractConditionClass(conditionNotes), "flawed");
+    });
+
+    it("데미지/보강 필요 → clothing_structural_damage + flawed", () => {
+      const { conditionNotes } = conditionFromTextFashion(
+        "RRL 빈티지파이브포켓 뒷 다리에 작은 데미지 2개, 엉덩이 포켓 보강이 좀 필요한 것 같아요",
+        "clothing",
+      );
+      assert.ok(conditionNotes.includes("clothing_structural_damage"),
+        `clothing_structural_damage 없음: ${conditionNotes.join(",")}`);
+      assert.ok(conditionNotes.includes("repair_or_defect_signal"),
+        `repair_or_defect_signal 없음: ${conditionNotes.join(",")}`);
+      assert.equal(extractConditionClass(conditionNotes), "flawed");
+    });
+
+    it("RRL denim integration — structural damage wins over a_grade", () => {
+      const result = parseListingOptions({
+        title: "RRL 빈티지파이브포켓 기빈스 데님 청바지 28x30",
+        description: "뒷 다리에 작은 데미지 2개, 엉덩이 포켓 보강이 좀 필요한 것 같아요",
+        skuId: "clothing-polo-rrl-denim",
+        skuName: "Polo RRL Denim (jeans / shirt)",
+        category: "clothing",
+        defaultProductType: "jeans",
+      });
+      assert.equal(result.conditionClass, "flawed",
+        `expected flawed, got ${result.conditionClass} (notes: ${result.conditionNotes.join(",")})`);
+      assert.ok(!result.comparableKey.endsWith("|a_grade"),
+        `damaged RRL denim stayed in a_grade key: ${result.comparableKey}`);
+    });
+
+    it("RRL denim integration — metadata a_grade is rewritten by structural damage", () => {
+      const result = parseListingOptions({
+        title: "RRL 빈티지파이브포켓 기빈스 데님 청바지 28x30",
+        description: "뒷 다리에 작은 데미지 2개, 엉덩이 포켓 보강이 좀 필요한 것 같아요",
+        skuId: "clothing-polo-rrl-denim",
+        skuName: "Polo RRL Denim (jeans / shirt)",
+        category: "clothing",
+        defaultProductType: "jeans",
+        bunjangConditionLabel: "새상품급",
+      });
+      assert.equal(result.conditionClass, "flawed",
+        `expected flawed, got ${result.conditionClass} (notes: ${result.conditionNotes.join(",")})`);
+      assert.equal(result.comparableKey, "clothing|polo_rrl_denim|jeans|reject");
     });
 
     it("디자인 트임은 무시 ('사이드 트임')", () => {

@@ -132,6 +132,81 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
   // Gucci — Broad
   // ═══════════════════════════════════════════════════════════
   {
+    id: "bag-gucci-gg-marmont-small-shoulder",
+    brand: "Gucci",
+    category: "bag",
+    laneKey: "bag_gucci_marmont_small_shoulder",
+    modelName: "Gucci GG Marmont Matelasse Small Shoulder Bag",
+    aliases: ["Gucci GG Marmont Small Shoulder", "구찌 GG 마몽 스몰 숄더백", "구찌 마몬트 마틀라세 스몰"],
+    mustContain: [
+      ["gucci", "구찌", "구치"],
+      ["마몽", "marmont", "마몬트", "마몽트"],
+      ["스몰", "small", "443497"],
+      ["숄더", "shoulder", "크로스", "cross", "마틀라세", "matelasse"],
+    ],
+    mustNotContain: [
+      ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
+      ...WALLET_NOISE,
+      "미니", "mini", "슈퍼미니", "super mini", "카메라", "camera", "카드지갑", "반지갑", "지갑",
+      "탑핸들", "top handle", "백팩", "backpack", "벨트백", "belt bag",
+      "버킷백", "버킷 백", "bucket", "토트", "tote",
+      "신발", "스니커즈", "의류", "옷",
+    ],
+    msrpKrw: 3600000,
+    released: 2024,
+    confusionNote: "Wave 485 후보: Gucci broad에서 GG Marmont small shoulder/matelasse 분리.",
+    defaultProductType: "shoulder",
+  },
+  {
+    id: "bag-gucci-ophidia-top-handle",
+    brand: "Gucci",
+    category: "bag",
+    laneKey: "bag_gucci_ophidia_top_handle",
+    modelName: "Gucci Ophidia Top Handle Bag",
+    aliases: ["Gucci Ophidia Top Handle", "구찌 오피디아 탑핸들백"],
+    mustContain: [
+      ["gucci", "구찌", "구치"],
+      ["오피디아", "ophidia"],
+      ["탑핸들", "탑 핸들", "top handle", "핸들백"],
+    ],
+    mustNotContain: [
+      ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
+      ...WALLET_NOISE,
+      "토트", "tote", "라지", "large", "카드지갑", "반지갑", "지갑",
+      "신발", "스니커즈", "의류", "옷",
+    ],
+    msrpKrw: 3200000,
+    released: 2024,
+    confusionNote: "Wave 485 후보: Gucci broad에서 Ophidia top-handle 분리.",
+    defaultProductType: "top_handle",
+  },
+  {
+    id: "bag-gucci-ophidia-tote",
+    brand: "Gucci",
+    category: "bag",
+    laneKey: "bag_gucci_ophidia_tote",
+    modelName: "Gucci Ophidia Tote Bag",
+    aliases: ["Gucci Ophidia Tote", "구찌 오피디아 토트백"],
+    mustContain: [
+      ["gucci", "구찌", "구치"],
+      ["오피디아", "ophidia"],
+      ["토트", "tote", "쇼퍼", "shopper"],
+    ],
+    mustNotContain: [
+      ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
+      ...WALLET_NOISE,
+      "탑핸들", "탑 핸들", "top handle", "카드지갑", "반지갑", "지갑",
+      "신발", "스니커즈", "의류", "옷",
+    ],
+    msrpKrw: 3900000,
+    released: 2024,
+    confusionNote: "Wave 485 후보: Gucci broad에서 Ophidia tote/shopper 분리.",
+    defaultProductType: "tote",
+  },
+  {
     id: "bag-gucci-broad",
     brand: "Gucci",
     category: "bag",
@@ -174,6 +249,75 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
   // ═══════════════════════════════════════════════════════════
   // Chanel — Broad
   // ═══════════════════════════════════════════════════════════
+  {
+    id: "bag-chanel-cosmetic-box",
+    brand: "Chanel",
+    category: "bag",
+    laneKey: "chanel_cosmetic_box",
+    modelName: "Chanel Cosmetic Box / Cosmetic Chain Bag",
+    aliases: ["Chanel Cosmetic Box", "샤넬 코스메틱백", "샤넬 코스메틱 박스백"],
+    mustContain: [
+      ["chanel", "샤넬"],
+      ["코스메틱", "cosmetic"],
+      ["백", "bag", "가방", "체인", "박스백", "box bag"],
+    ],
+    mustNotContain: [
+      ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
+      "립스틱", "립밤", "퍼퓸", "perfume", "오 드", "edp", "edt", "향수", "ml ",
+      "립", "립글로스", "화장품", "뷰티", "beauty",
+      "신발", "스니커즈", "벨트", "종이백", "종이 백", "쇼핑백 단품", "쇼핑백만",
+    ],
+    msrpKrw: 4200000,
+    released: 2020,
+    confusionNote: "Wave 484 후보: Chanel broad에서 반복된 코스메틱 박스/체인백 분리. Beauty/cosmetic item은 계속 차단.",
+    defaultProductType: "crossbody",
+  },
+  {
+    id: "bag-chanel-woc-charm-wallet",
+    brand: "Chanel",
+    category: "bag",
+    laneKey: "chanel_woc_charm_wallet",
+    modelName: "Chanel Wallet on Chain / Charm Wallet",
+    aliases: ["Chanel WOC", "샤넬 참월렛", "샤넬 체인 월렛"],
+    mustContain: [
+      ["chanel", "샤넬"],
+      ["참월렛", "참 월렛", "체인 월렛", "체인월렛", "wallet on chain", "woc"],
+    ],
+    mustNotContain: [
+      ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
+      "립스틱", "립밤", "퍼퓸", "perfume", "오 드", "edp", "edt", "향수", "ml ",
+      "신발", "스니커즈", "벨트", "종이백", "종이 백", "쇼핑백 단품", "쇼핑백만",
+    ],
+    msrpKrw: 5800000,
+    released: 2018,
+    confusionNote: "Wave 484 후보: Chanel broad 내 wallet-on-chain/charm-wallet 분리.",
+    defaultProductType: "crossbody",
+  },
+  {
+    id: "bag-chanel-shopper-new-surf",
+    brand: "Chanel",
+    category: "bag",
+    laneKey: "chanel_shopper_new_surf",
+    modelName: "Chanel Shopper / New Surf Bag",
+    aliases: ["Chanel Shopper", "샤넬 쇼퍼백", "샤넬 뉴서프"],
+    mustContain: [
+      ["chanel", "샤넬"],
+      ["쇼퍼백", "shopper", "뉴서프", "new surf", "new-surf"],
+    ],
+    mustNotContain: [
+      ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
+      "립스틱", "립밤", "퍼퓸", "perfume", "오 드", "edp", "edt", "향수", "ml ",
+      "신발", "스니커즈", "벨트", "종이백", "종이 백", "paper bag", "쇼핑백 단품", "쇼핑백만",
+      "패키지", "박스만", "더스트백만",
+    ],
+    msrpKrw: 9000000,
+    released: 2024,
+    confusionNote: "Wave 484 후보: Chanel broad 내 실제 shopper/new-surf bag. 종이 쇼핑백은 mustNot으로 유지.",
+    defaultProductType: "tote",
+  },
   {
     id: "bag-chanel-broad",
     brand: "Chanel",
@@ -272,6 +416,32 @@ export const BAG_WAVE266_CATALOG: Sku[] = [
     released: 2024,
     confusionNote: "Prada broad — 모델 추정 안 되는 프라다 가방 fallback.",
     defaultProductType: "shoulder", // Wave 269: broad SKU type_unknown 매물 fallback (variant wide, confidence_low 표시됨)
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // Celine — Triomphe family
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: "bag-celine-triomphe-broad",
+    brand: "Celine",
+    category: "bag",
+    laneKey: "celine_triomphe_broad",
+    modelName: "Celine Triomphe Bag Family (오벌/버킷/폴코/베사체/호보)",
+    aliases: ["Celine Triomphe", "셀린느 트리옹프", "셀린 트리옹프"],
+    mustContain: [
+      ["celine", "céline", "셀린느", "셀린"],
+      ["트리옹프", "트리옴프", "triomphe"],
+      BAG_TYPES,
+    ],
+    mustNotContain: [
+      ...BAG_COMMON_NOISE,
+      ...BAG_NON_BAG_NOISE,
+      ...WALLET_NOISE,
+      "신발", "벨트", "향수", "perfume", "퍼퓸", "edp", "edt", "ml ",
+    ],
+    msrpKrw: 3200000,
+    released: 2019,
+    confusionNote: "Celine Triomphe family broad — exact variant still wide; separated from generic Celine broad.",
   },
 
   // ═══════════════════════════════════════════════════════════

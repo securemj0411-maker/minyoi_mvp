@@ -121,7 +121,9 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "puma", "푸마",
       "꼼데가르송", "cdg",
       "타미", "tommy",
-      "아디다스",
+      "아디다스", "adidas",
+      "aape", "오마주", "fubu", "푸부",
+      "콜라보", "collab", "lacoste", "라코스테", "자운드", "jound",
     ],
     msrpKrw: 590000,
     released: 1993,
@@ -183,6 +185,8 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "comme des", "꼼데가르송",
       "nike x supreme", "supreme x nike",
       "stussy",
+      // Wave 492: brand-stuffed listings should not fall into plain Supreme broad.
+      "nike", "나이키", "adidas", "아디다스", "mlb", "엠엘비", "puma", "푸마", "퓨마", "reebok", "리복",
       // 가짜
       "1:1", "11급", "미러", "복각",
     ],
@@ -211,6 +215,10 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "tee", "티셔츠", "반팔",
       "hoodie", "후드티",
       "맨투맨", "sweat",
+      // Wave 451: explicit Acne pants lane 이 받도록 generated broad 에서는 제외.
+      "팬츠", "pants", "트라우저", "trouser", "치노", "chino", "슬랙스", "slacks",
+      // Wave 453: explicit Acne knit/cardigan lane 이 받도록 generated broad 에서는 제외.
+      "니트", "knit", "스웨터", "sweater", "가디건", "cardigan", "peele",
       // 화장품
       "립밤", "립스틱", "토너", "에센스",
       // Wave 269 (2026-05-20): API sweep — 머플러/스카프/벨트 액세서리 격리.
@@ -356,6 +364,57 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     defaultProductType: "cardigan",
   },
   {
+    id: "clothing-cdg-homme-plus-apparel-broad",
+    brand: "Comme des Garçons",
+    category: "clothing",
+    laneKey: "cdg_homme_plus_apparel_broad",
+    modelName: "Comme des Garçons Homme Plus Apparel (Broad)",
+    aliases: ["Comme des Garcons Homme Plus", "꼼데가르송 옴므 플러스"],
+    mustContain: [
+      ["comme des", "꼼데가르송", "cdg ", "꼼 데", "comme des garcons"],
+      ["homme plus", "옴므 플러스", "옴므플러스"],
+      CLOTHING_PRODUCT_TYPES,
+    ],
+    mustNotContain: [
+      ...CDG_APPAREL_NOISE,
+      "supreme",
+      "nike",
+      "converse",
+      "salomon", "살로몬",
+      "bape", "베이프",
+      "stussy",
+      "play", "플레이", "하트", "heart", "와펜",
+    ],
+    msrpKrw: 690000,
+    released: 1984,
+  },
+  {
+    id: "clothing-cdg-homme-apparel-broad",
+    brand: "Comme des Garçons",
+    category: "clothing",
+    laneKey: "cdg_homme_apparel_broad",
+    modelName: "Comme des Garçons Homme Apparel (Broad)",
+    aliases: ["Comme des Garcons Homme", "꼼데가르송 옴므"],
+    mustContain: [
+      ["comme des", "꼼데가르송", "cdg ", "꼼 데", "comme des garcons"],
+      ["homme", "옴므"],
+      CLOTHING_PRODUCT_TYPES,
+    ],
+    mustNotContain: [
+      ...CDG_APPAREL_NOISE,
+      "homme plus", "옴므 플러스", "옴므플러스",
+      "supreme",
+      "nike",
+      "converse",
+      "salomon", "살로몬",
+      "bape", "베이프",
+      "stussy",
+      "play", "플레이", "하트", "heart", "와펜",
+    ],
+    msrpKrw: 490000,
+    released: 1978,
+  },
+  {
     id: "clothing-cdg-apparel-broad",
     brand: "Comme des Garçons",
     category: "clothing",
@@ -375,8 +434,13 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "salomon", "살로몬",
       "bape", "베이프",
       "stussy",
+      // Wave 492: CDG Shirt x Lacoste collab should not fall into generic CDG broad.
+      "lacoste", "라코스테",
       // Wave 428: PLAY heart/와펜 staples get narrow lanes to keep broad CDG samples from mixing basics.
       "play", "플레이", "하트", "heart", "와펜",
+      // Wave 428: Homme lines are repeated enough to keep out of generic CDG broad.
+      "homme plus", "옴므 플러스", "옴므플러스",
+      "homme", "옴므",
     ],
     msrpKrw: 390000,
     released: 1969,
@@ -419,6 +483,7 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...CLOTHING_COMMON_NOISE,
+      "쇼츠", "shorts", "반바지", "숏팬츠",
       "supreme",
       "junya watanabe", "준야와타나베",
       "wacko maria", "와코마리아",
@@ -426,6 +491,137 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     msrpKrw: 229000,
     released: 1980,
     defaultProductType: "jacket",
+  },
+  {
+    id: "clothing-carhartt-double-knee-pants",
+    brand: "Carhartt",
+    category: "clothing",
+    laneKey: "carhartt_double_knee_pants",
+    modelName: "Carhartt Double Knee Pants",
+    aliases: ["Carhartt Double Knee", "칼하트 더블니"],
+    mustContain: [
+      ["carhartt", "칼하트"],
+      ["double knee", "doubleknee", "더블니", "더블 니", "b01"],
+      ["팬츠", "pants", "바지", "워크팬츠", "work pants"],
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme",
+      "junya watanabe", "준야와타나베",
+      "wacko maria", "와코마리아",
+    ],
+    msrpKrw: 189000,
+    released: 1939,
+    defaultProductType: "pants",
+  },
+  {
+    id: "clothing-carhartt-cargo-pants",
+    brand: "Carhartt",
+    category: "clothing",
+    laneKey: "carhartt_cargo_pants",
+    modelName: "Carhartt Cargo Pants / Shorts",
+    aliases: ["Carhartt Cargo", "칼하트 카고"],
+    mustContain: [
+      ["carhartt", "칼하트"],
+      ["cargo", "카고"],
+      ["팬츠", "pants", "바지", "쇼츠", "shorts", "반바지"],
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme",
+      "junya watanabe", "준야와타나베",
+      "wacko maria", "와코마리아",
+    ],
+    msrpKrw: 159000,
+    released: 1970,
+  },
+  {
+    id: "clothing-carhartt-santa-fe-jacket",
+    brand: "Carhartt",
+    category: "clothing",
+    laneKey: "carhartt_santa_fe_jacket",
+    modelName: "Carhartt Santa Fe Jacket",
+    aliases: ["Carhartt Santa Fe Jacket", "칼하트 산타페 자켓"],
+    mustContain: [
+      ["carhartt", "칼하트"],
+      ["santa fe", "santafe", "산타페"],
+      ["jacket", "자켓", "재킷"],
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme",
+      "junya watanabe", "준야와타나베",
+      "wacko maria", "와코마리아",
+    ],
+    msrpKrw: 329000,
+    released: 1990,
+    defaultProductType: "jacket",
+  },
+  {
+    id: "clothing-carhartt-madison-apparel-broad",
+    brand: "Carhartt",
+    category: "clothing",
+    laneKey: "carhartt_madison_apparel_broad",
+    modelName: "Carhartt WIP Madison Apparel (Broad)",
+    aliases: ["Carhartt Madison", "칼하트 메디슨"],
+    mustContain: [
+      ["carhartt", "칼하트"],
+      ["madison", "메디슨"],
+      CLOTHING_PRODUCT_TYPES,
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme",
+      "junya watanabe", "준야와타나베",
+      "wacko maria", "와코마리아",
+    ],
+    msrpKrw: 179000,
+    released: 2010,
+  },
+  {
+    id: "clothing-carhartt-landon-pants",
+    brand: "Carhartt",
+    category: "clothing",
+    laneKey: "carhartt_landon_pants",
+    modelName: "Carhartt WIP Landon Pants",
+    aliases: ["Carhartt Landon Pants", "칼하트 랜든 팬츠"],
+    mustContain: [
+      ["carhartt", "칼하트"],
+      ["landon", "랜든"],
+      ["팬츠", "pants", "바지"],
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "쇼츠", "shorts", "반바지", "숏팬츠",
+      "supreme",
+      "junya watanabe", "준야와타나베",
+      "wacko maria", "와코마리아",
+    ],
+    msrpKrw: 179000,
+    released: 2018,
+    defaultProductType: "pants",
+  },
+  {
+    id: "clothing-carhartt-chase-sweatpants",
+    brand: "Carhartt",
+    category: "clothing",
+    laneKey: "carhartt_chase_sweatpants",
+    modelName: "Carhartt WIP Chase Sweatpants",
+    aliases: ["Carhartt Chase Sweatpants", "칼하트 체이스 스웻팬츠"],
+    mustContain: [
+      ["carhartt", "칼하트"],
+      ["chase", "체이스"],
+      ["스웻팬츠", "스웨트팬츠", "sweatpants", "sweat pants", "팬츠", "pants", "바지"],
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme",
+      "junya watanabe", "준야와타나베",
+      "wacko maria", "와코마리아",
+    ],
+    msrpKrw: 159000,
+    released: 2010,
+    defaultProductType: "pants",
   },
   {
     id: "clothing-carhartt-apparel-broad",
@@ -451,6 +647,14 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       // Wave 427: repeated jacket models get their own lanes; do not pollute broad apparel price samples.
       "detroit", "디트로이트", "j001", "j01",
       "active jacket", "액티브 자켓", "액티브 후드자켓", "j130",
+      // Wave 428: repeated pants lanes get their own samples.
+      "double knee", "doubleknee", "더블니", "더블 니", "b01",
+      "cargo", "카고",
+      // Wave 428: repeated WIP/vintage model lanes stay out of generic Carhartt broad.
+      "santa fe", "santafe", "산타페",
+      "madison", "메디슨",
+      "landon", "랜든",
+      "chase", "체이스",
     ],
     msrpKrw: 179000,
     released: 1889,
@@ -485,6 +689,34 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
   },
 
   // ═══════════════════════════════════════════════════════════
+  // Champion — Reverse Weave
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: "clothing-champion-reverse-weave",
+    brand: "Champion",
+    category: "clothing",
+    laneKey: "champion_reverse_weave",
+    modelName: "Champion Reverse Weave",
+    aliases: ["Champion Reverse Weave", "챔피온 리버스위브", "챔피언 리버스위브"],
+    mustContain: [
+      ["champion", "챔피온", "챔피언"],
+      ["reverse weave", "reverseweave", "리버스위브", "리버스 위브"],
+      CLOTHING_PRODUCT_TYPES,
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme",
+      "bape", "베이프",
+      "stussy",
+      "kith",
+      "nike", "나이키", "dunk", "덩크", "air jordan", "조던", "air force", "에어포스",
+      "위스키", "whisky", "샴페인",
+    ],
+    msrpKrw: 129000,
+    released: 1938,
+  },
+
+  // ═══════════════════════════════════════════════════════════
   // Champion — Broad
   // ═══════════════════════════════════════════════════════════
   {
@@ -492,8 +724,8 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     brand: "Champion",
     category: "clothing",
     laneKey: "champion_apparel_broad",
-    modelName: "Champion Apparel (Broad, Reverse Weave)",
-    aliases: ["Champion", "챔피온", "챔피언", "Reverse Weave"],
+    modelName: "Champion Apparel (Broad)",
+    aliases: ["Champion", "챔피온", "챔피언"],
     mustContain: [
       ["champion", "챔피온", "챔피언"],
       CLOTHING_PRODUCT_TYPES,
@@ -507,6 +739,12 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       // "championship court" 등 신발 컬러웨이/라인명이 Champion 의류 broad로 섞이는 것을 차단.
       "nike", "나이키", "dunk", "덩크", "air jordan", "조던", "air force", "에어포스",
       "championship", "챔피언쉽", "챔피언십", "court purple", "코트 퍼플",
+      // Reverse Weave is a repeated premium/vintage lane; keep broad for generic Champion apparel only.
+      "reverse weave", "reverseweave", "리버스위브", "리버스 위브",
+      // Repeated collab / limited lanes should not pollute generic Champion broad comps.
+      "glowny", "글로니",
+      "thisisneverthat", "디스이즈네버댓", "디네댓",
+      "fuct", "퍽트",
       // "Champion" 양주
       "위스키", "whisky", "샴페인",
     ],
@@ -672,8 +910,8 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     mustNotContain: [
       ...CLOTHING_COMMON_NOISE,
       // narrow SKU 있는 거 차단
-      "retro x", "retro-x", "레트로 x",
-      "deep pile", "딥파일",
+      "retro x", "retro-x", "레트로 x", "레트로x",
+      "deep pile", "딥파일", "레트로파일", "레트로 파일", "retro pile", "retro-pile",
       // 다운/쉘은 별도 narrow
       "다운", "down",
       "쉘", "shell",
@@ -736,6 +974,8 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "fragment",
       "1017",
       "bape", "베이프",
+      // Wave 486: Moncler broad is a high-price outerwear fallback; polo/pique shirts need a separate lane before scoring.
+      "피케", "pique", "폴로", "polo", "카라티", "카라 티", "pk티", "pk 티",
     ],
     msrpKrw: 1490000,
     released: 1952,

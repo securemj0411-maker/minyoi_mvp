@@ -20,7 +20,7 @@ export const SHOE_BROAD_WAVE138_CATALOG: Sku[] = [
     modelName: "New Balance 327 (Broad)",
     aliases: ["뉴발란스 327", "NB 327", "뉴발 327"],
     mustContain: [
-      ["뉴발란스 327", "뉴발 327", "nb 327", "nb327", "new balance 327", "ms327", "ws327"],
+      ["뉴발란스 327", "뉴발 327", "nb 327", "nb327", "new balance 327", "ms327", "ws327", "327lab", "327 lab", "327fe", "327 fe"],
     ],
     mustNotContain: [
       // 콜라보 (가격 다름)
@@ -91,9 +91,15 @@ export const SHOE_BROAD_WAVE138_CATALOG: Sku[] = [
       // 인도어 별도 SKU
       "인도어", "indoor",
       "spzl", "spezial", "스페지알",
-      "bold orange", "bold-orange",
+      // Gazelle Bold is a distinct demand lane; keep OG broad clean until it has its own vetted sample.
+      "bold", "볼드",
+      "boost", "부스트", "gazelle boost", "가젤부스트",
+      "platform", "플랫폼",
+      "샌들", "샌달", "sandal", "슬라이드", "slide", "비치",
+      "gazelle 85", "가젤 85", "가젤85",
       // 콜라보
       "wales bonner", "웨일스 보너",
+      "clot", "클랏", "edison", "에디슨",
       "kith", "키스 ",
       "pharrell", "퍼렐",
       "humanrace", "휴먼레이스",

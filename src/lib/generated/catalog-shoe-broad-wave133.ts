@@ -56,7 +56,7 @@ export const SHOE_BROAD_CATALOG: Sku[] = [
       "wales bonner", "웨일즈 보너", "웨일스 보너", "pharrell", "퍼렐", "humanrace", "휴먼레이스",
       "kith", "키스", "sporty rich",
       // Wave 138: 한정 컬러 차단 (broad지만 가격 큰 한정 컬러는 분리)
-      "원더 화이트 코어 블랙", "원더 화이트", "코어 블랙 한정",
+      "원더 화이트 코어 블랙", "원더 화이트", "코어 블랙", "core black",
       "스칼렛", "scarlet",
       "그린 스웨이드", "green suede 한정",
       "흰초", "흰초 새상품",  // 한정 컬러
@@ -65,9 +65,15 @@ export const SHOE_BROAD_CATALOG: Sku[] = [
       "anatomy", "아나토미",
       "프링글스", "pringles",
       "wensleydale",
+      "kasina", "카시나",
+      "이태리", "이탈리아", "italy", "italia",
+      "유벤투스", "juventus", "바이에른", "bayern", "뮌헨", "munich", "셀틱", "celtic",
+      "team", "팀 쉐도우", "팀 섀도우", "fc ",
+      "벨라하디드", "bella hadid",
       // 다른 시리즈
       "삼배", "sambae", "삼바로즈", "samba rose", "sambarose",
       "인도어", "indoor", "adv", "lt",
+      "하이", "high", "클래식", "classic",
       "rose", "vegan", "비건", "decon", "데콘", "spezial", "스페지알",
       "rm", "rose mary", "edition",
       // 가품

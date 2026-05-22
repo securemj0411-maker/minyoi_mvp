@@ -9,7 +9,7 @@
 //   - ready promotion gate 통과 매물 중 AI 안 본 매물 강제 호출 (shadow audit)
 //   - AI verdict reject/hold → learning queue 적재 (regex 후보 박음)
 //   - Phase 1 = shadow only (status='ready' 유지, ai_audit_status 컬럼만 박음)
-//   - Phase 2 별도 wave 에서 실제 차단 활성화
+//   - Phase 2 = tick-pipeline residue cleanup 에서 non-pass fashion ready 차단
 //
 // 비용 cap (사용자 명시):
 //   - AI_L2_DAILY_BUDGET_USD env ($10/일 default, 초과 시 disable)
@@ -19,9 +19,9 @@
 // 정책 (사용자 명시):
 //   - regex patch 금지 — AI 가 catch. 기존 regex 는 fallback 만.
 //   - decision log 필수 (memory feedback_decision_log_required)
-//   - 비파괴 — Phase 1 shadow only
+//   - Phase 1 기록은 비파괴, Phase 2 차단은 tick-pipeline 에서 수행
 
-import { classifyWithCache, aiSecondOpinionDecision, aiHasHardRisk, type PipelineRow } from "@/lib/pipeline";
+import { classifyWithCache, contentHash, aiSecondOpinionDecision, aiHasHardRisk, type PipelineRow } from "@/lib/pipeline";
 import { enqueueLearningSignal } from "@/lib/ai-l2-learning-queue";
 import { reportCriticalIncident } from "@/lib/operational-notifier";
 
@@ -141,6 +141,7 @@ export type PoolEntryWithRowMeta = {
  */
 export async function findUnauditedPoolEntries(
   poolEntries: Array<{ pid: number; category?: string | null }>,
+  contentHashByPid?: Map<number, string>,
 ): Promise<Set<number>> {
   if (poolEntries.length === 0) return new Set();
   if (!SUPABASE_URL_ENV || !SUPABASE_KEY_ENV) return new Set();
@@ -154,11 +155,15 @@ export async function findUnauditedPoolEntries(
     for (let i = 0; i < pids.length; i += chunkSize) {
       const chunk = pids.slice(i, i + chunkSize);
       const pidList = chunk.map((p) => String(p)).join(",");
-      const url = `${supabaseRestBase()}/rest/v1/mvp_listing_ai_classifications?select=pid&pid=in.(${pidList})`;
+      const url = `${supabaseRestBase()}/rest/v1/mvp_listing_ai_classifications?select=pid,content_hash&pid=in.(${pidList})`;
       const res = await fetch(url, { headers: supabaseHeaders() });
       if (!res.ok) continue;
-      const rows = await res.json() as Array<{ pid: number }>;
-      for (const r of rows) seen.add(Number(r.pid));
+      const rows = await res.json() as Array<{ pid: number; content_hash: string | null }>;
+      for (const r of rows) {
+        const pid = Number(r.pid);
+        const expectedHash = contentHashByPid?.get(pid);
+        if (!expectedHash || r.content_hash === expectedHash) seen.add(pid);
+      }
     }
     const unaudited = new Set<number>();
     for (const p of pids) {
@@ -206,8 +211,8 @@ export type ShadowAuditInput = {
  *   - mvp_catalog_learning_queue upsert (reject/hold verdict 매물).
  *   - mvp_candidate_pool.ai_audit_status PATCH.
  *
- * Phase 1 = NON-BLOCKING — pool 차단 X. status='ready' 그대로 유지.
- * ai_audit_status 만 박음. Phase 2 별도 wave 에서 차단 활성화.
+ * 이 함수 자체는 pool 차단 X. status='ready' 그대로 두고 ai_audit_status 만 박음.
+ * Phase 2 차단은 tick-pipeline 의 residue cleanup 이 담당한다.
  */
 export async function runShadowAudit(input: ShadowAuditInput): Promise<ShadowAuditStats> {
   const t0 = Date.now();
@@ -244,7 +249,12 @@ export async function runShadowAudit(input: ShadowAuditInput): Promise<ShadowAud
   }
 
   // 2. AI 안 본 ready pool 매물 식별.
-  const unaudited = await findUnauditedPoolEntries(input.poolEntries);
+  const contentHashByPid = new Map<number, string>();
+  for (const row of input.rows) {
+    const pid = Number(row.pid);
+    if (Number.isFinite(pid)) contentHashByPid.set(pid, contentHash(row));
+  }
+  const unaudited = await findUnauditedPoolEntries(input.poolEntries, contentHashByPid);
   stats.candidates = unaudited.size;
   if (stats.candidates === 0) {
     stats.durationMs = Date.now() - t0;
@@ -259,6 +269,11 @@ export async function runShadowAudit(input: ShadowAuditInput): Promise<ShadowAud
       rowByPid.set(pid, r);
     }
   }
+  const categoryByPid = new Map<number, string | null>();
+  for (const entry of input.poolEntries) {
+    const pid = Number(entry.pid);
+    if (Number.isFinite(pid)) categoryByPid.set(pid, entry.category ?? null);
+  }
   const auditTargets = Array.from(rowByPid.values());
   if (auditTargets.length === 0) {
     stats.durationMs = Date.now() - t0;
@@ -272,8 +287,8 @@ export async function runShadowAudit(input: ShadowAuditInput): Promise<ShadowAud
     .slice()
     .sort((a, b) => {
       // fashion 우선
-      const af = FASHION.has(a.skuName ?? "") ? 1 : 0;
-      const bf = FASHION.has(b.skuName ?? "") ? 1 : 0;
+      const af = FASHION.has(categoryByPid.get(Number(a.pid)) ?? "") ? 1 : 0;
+      const bf = FASHION.has(categoryByPid.get(Number(b.pid)) ?? "") ? 1 : 0;
       if (af !== bf) return bf - af;
       // score 높은 순 (사용자 노출 가능성 높은 매물 먼저)
       return b.score - a.score;
@@ -375,40 +390,26 @@ async function persistAuditStatus(
   if (results.size === 0) return;
   if (!SUPABASE_URL_ENV || !SUPABASE_KEY_ENV) return;
   const now = new Date().toISOString();
-  // chunked PATCH — pid IN (...).
-  const byVerdict = new Map<string, number[]>();
-  for (const [pid, v] of results) {
-    const list = byVerdict.get(v) ?? [];
-    list.push(pid);
-    byVerdict.set(v, list);
-  }
-  for (const [verdict, pids] of byVerdict) {
-    const chunkSize = 200;
-    for (let i = 0; i < pids.length; i += chunkSize) {
-      const chunk = pids.slice(i, i + chunkSize);
-      const pidList = chunk.map((p) => String(p)).join(",");
-      const url = `${supabaseRestBase()}/rest/v1/mvp_candidate_pool?pid=in.(${pidList})`;
-      // per-pid reason 다르므로 verdict 별로 batch + reason 은 첫 매물 만 박음 (대표값).
-      // 상세 reason 은 mvp_listing_ai_classifications.reason 으로 join 가능.
-      const body: Record<string, unknown> = {
-        ai_audit_status: verdict === "skipped_unavailable" ? "skipped_unavailable" : verdict,
-        ai_audit_at: now,
-      };
-      const sampleReason = reasons.get(chunk[0]) ?? "";
-      if (sampleReason.length > 0) body.ai_audit_reason = sampleReason.slice(0, 200);
-      try {
-        const res = await fetch(url, {
-          method: "PATCH",
-          headers: supabaseHeaders(),
-          body: JSON.stringify(body),
-        });
-        if (!res.ok) {
-          const t = await res.text().catch(() => "");
-          console.warn(`persistAuditStatus PATCH failed status=${res.status}`, t.slice(0, 100));
-        }
-      } catch (err) {
-        console.warn("persistAuditStatus exception (non-fatal)", err);
+  for (const [pid, verdict] of results) {
+    const url = `${supabaseRestBase()}/rest/v1/mvp_candidate_pool?pid=eq.${pid}`;
+    const body: Record<string, unknown> = {
+      ai_audit_status: verdict === "skipped_unavailable" ? "skipped_unavailable" : verdict,
+      ai_audit_at: now,
+    };
+    const reason = reasons.get(pid) ?? "";
+    if (reason.length > 0) body.ai_audit_reason = reason.slice(0, 200);
+    try {
+      const res = await fetch(url, {
+        method: "PATCH",
+        headers: supabaseHeaders(),
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        console.warn(`persistAuditStatus PATCH failed status=${res.status}`, t.slice(0, 100));
       }
+    } catch (err) {
+      console.warn("persistAuditStatus exception (non-fatal)", err);
     }
   }
 }

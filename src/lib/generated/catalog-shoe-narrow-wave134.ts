@@ -101,10 +101,10 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     brand: "Hoka",
     category: "shoe",
     modelName: "Hoka Bondi 8",
-    aliases: ["호카 본디 8", "Hoka Bondi 8"],
+    aliases: ["호카 본디 8", "호카본디8", "Hoka Bondi 8"],
     mustContain: [
       ["호카", "hoka"],
-      ["본디 8", "본디8", "bondi 8", "bondi8"],
+      ["본디 8", "본디8", "본디 8ts", "본디8ts", "호카본디 8", "호카본디8", "호카원본디 8", "호카원본디8", "bondi 8", "bondi8", "bondi 8ts", "bondi8ts"],
     ],
     mustNotContain: [
       "본디 9", "본디9", "bondi 9", "bondi9",
@@ -123,10 +123,10 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     brand: "Hoka",
     category: "shoe",
     modelName: "Hoka Bondi 9",
-    aliases: ["호카 본디 9", "Hoka Bondi 9"],
+    aliases: ["호카 본디 9", "호카본디9", "Hoka Bondi 9"],
     mustContain: [
       ["호카", "hoka"],
-      ["본디 9", "본디9", "bondi 9", "bondi9"],
+      ["본디 9", "본디9", "호카본디 9", "호카본디9", "호카원본디 9", "호카원본디9", "bondi 9", "bondi9"],
     ],
     mustNotContain: [
       "본디 8", "본디8", "bondi 8", "bondi8",
@@ -386,6 +386,7 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       // Wave 137: 한정 컬러/SP 변형 차단 (가격 매우 다름)
       "잭팟", "jackpot", "말라카이트", "malachite",
       "플럼", "plum", "라이트 스모크 그레이",
+      "넵튠", "neptune", "그린 앤 세일", "green and sail", "green & sail",
       "sp", "스페셜 박스", "special box",
       "retro",
       ...COMMON_BLOCK,

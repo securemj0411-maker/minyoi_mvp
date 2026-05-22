@@ -24,6 +24,8 @@ export const POOL_BLOCK_NOTES = [
   // Wave 204 (2026-05-18): buy-intent 매물 — 정상 거래 X. 사용자 손해 명확.
   // 사용자 코멘트 #155 (pid 397387660 "갤탭 s9 fe 플러스 구함") broad catalog 누락 fix.
   "buying_post",
+  // Wave 531 (2026-05-22): exchange-only posts — 살 수 있는 매물이 아니라 비교군/풀 모두 제외.
+  "exchange_only",
   // Wave 207 (2026-05-18): earphone single-side — 페어 매물 아님 (시세 부풀림).
   // 사용자 코멘트 #153 (pid 343583659 "에어팟프로2세대 C타입 왼쪽") AirPods 본체 SKU 매칭 fix.
   "single_side_only",

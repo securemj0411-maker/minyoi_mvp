@@ -19,8 +19,8 @@ import { loadCategoryReadinessMap, loadLaneReadinessMap } from "@/lib/category-r
 import { evaluatePhase2Escrow, isPhase2EscrowEnabled } from "@/lib/ai-l2-escrow";
 import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
 // Wave 238 (2026-05-19): AI L2 coverage gap fix. ready pool 매물 중 91.1% 가 AI 안 봄.
-//   Phase 1 = shadow audit (status='ready' 유지, ai_audit_status 만 박음).
-//   Phase 2 별도 wave 에서 차단 활성화.
+//   Phase 1 = shadow audit (ai_audit_status 기록).
+//   Phase 2 = fashion non-pass residue cleanup 에서 ready/reserved 차단.
 import { runShadowAudit } from "@/lib/ai-l2-shadow-audit";
 import { CATALOG, ruleMatch, skuById, type Sku } from "@/lib/catalog";
 import {
@@ -33,12 +33,16 @@ import { notifyOperationalAlerts, type OperationalAlert } from "@/lib/operationa
 import { bunjangLabelToConditionClass, extractConditionClass, parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import { conditionFallbackChain, pickByConditionFallback } from "@/lib/condition-fallback";
 import {
+  aiHasHardRisk,
+  aiSecondOpinionDecision,
   applyAiReview,
   classifyConditionWithAi,
   classifyListing,
+  contentHash,
   parseShippingFromDescription,
   parseShippingFromTrade,
   resolveShipping,
+  type AiClassification,
   type PipelineRow,
 } from "@/lib/pipeline";
 import { loadPipelineRuntimeConfig, getCategoryPageOverrides, boundedInt } from "@/lib/pipeline-config";
@@ -86,10 +90,12 @@ type RawListingRow = {
   price: number;
   num_faved: number;
   free_shipping: boolean;
+  query?: string | null;
   url: string;
   seller_uid: string | null;
   thumbnail_url: string | null;
   listing_type: string;
+  listing_type_override?: string | null;
   sku_id: string | null;
   sku_name: string | null;
   detail_status: string;
@@ -103,6 +109,7 @@ type RawListingRow = {
   num_comment: number | null;
   missing_count: number;
   last_missing_at: string | null;
+  raw_json?: Record<string, unknown> | null;
 };
 
 type QueueClaimRow = {
@@ -161,6 +168,7 @@ type ScorableRawRow = RawListingRow & {
   //   shoe 4011건 / bag 1018건 등 8000+ 매물에 박혀있는데 parseFashionMobility 가 안 씀.
   //   parseFashionMobility 안에서 bunjangLabelToConditionClass + resolveConditionClass 로 활용.
   bunjang_condition_label: string | null;
+  pool_eligible?: boolean | null;
 };
 
 type ParsedListingRow = {
@@ -230,6 +238,43 @@ type MarketPriceRow = {
 // Wave 130: comparable_key → (condition_class → row) 이중 map.
 type MarketPriceStatsMap = Map<string, Map<string, MarketPriceRow>>;
 
+function rawJsonSource(row: { raw_json?: Record<string, unknown> | null }): string {
+  const source = row.raw_json?.source;
+  return typeof source === "string" ? source : "";
+}
+
+function isInternalObservationPoolIneligible(row: {
+  query?: string | null;
+  raw_json?: Record<string, unknown> | null;
+}): boolean {
+  const query = String(row.query ?? "");
+  const source = rawJsonSource(row);
+  return (
+    query.startsWith("internal_acquisition:") ||
+    /^wave\d+_.*boost:/.test(query) ||
+    source === "internal_acquisition_executor" ||
+    /^wave\d+_.*boost$/.test(source)
+  );
+}
+
+function isStaleBunjangPoolEligibleFalse(row: {
+  source?: string | null;
+  query?: string | null;
+  raw_json?: Record<string, unknown> | null;
+  pool_eligible?: boolean | null;
+}): boolean {
+  return row.pool_eligible === false && row.source === "bunjang" && !isInternalObservationPoolIneligible(row);
+}
+
+function isRawPublicPoolEligible(row: {
+  source?: string | null;
+  query?: string | null;
+  raw_json?: Record<string, unknown> | null;
+  pool_eligible?: boolean | null;
+}): boolean {
+  return row.pool_eligible !== false || isStaleBunjangPoolEligibleFalse(row);
+}
+
 type CollectRunHealthRow = {
   status: string;
   collected_count: number | null;
@@ -275,6 +320,9 @@ const RAW_TOUCH_WRITE_CHUNK_SIZE = 400;
 const SELLER_WRITE_CHUNK_SIZE = 200;
 // Keep seller_uid=in.(...) URLs under common proxy/request-line limits.
 const SELLER_READ_CHUNK_SIZE = 80;
+const GENERAL_SCORE_SOURCES = ["bunjang"];
+const POOL_LOW_SELLER_RATING_REVIEW = 3.5;
+const SKU_MEDIAN_UNAVAILABLE_MARKET_REFRESH_COOLDOWN_MS = 6 * 60 * 60 * 1000;
 const DEFAULT_SELLER_SEARCH_REFRESH_MS = 3 * 60 * 60 * 1000;
 const PARSED_PID_READ_CHUNK_SIZE = 300;
 const REST_KEY_READ_CHUNK_SIZE = 50;
@@ -322,6 +370,13 @@ function effectiveCatalogSkuForScorableRow(row: Pick<ScorableRawRow, "sku_id" | 
     return ruleMatch(row.name, row.description_preview) ?? null;
   }
   return stored ?? ruleMatch(row.name, row.description_preview) ?? null;
+}
+
+function isScorableRawCandidate(row: Pick<ScorableRawRow, "detail_status" | "sku_id" | "listing_state" | "listing_type"> & { listing_type_override?: string | null }): boolean {
+  return row.detail_status === "done"
+    && Boolean(row.sku_id)
+    && row.listing_state === "active"
+    && (row.listing_type === "normal" || row.listing_type_override === "normal");
 }
 
 const SKIP_DETAIL_DECISION: DetailQueueDecision = {
@@ -2047,27 +2102,131 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
   // Wave 132: num_comment 추가 — candidate-pool-builder가 >= 8 차단.
   // Wave 217 (2026-05-19): bunjang_condition_label 추가 — parseFashionMobility 가 metadata 활용.
-  const baseColumns = "pid,source,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,sale_status,num_comment,qty,description_hash,bunjang_condition_label";
+  const baseColumns = "pid,source,query,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,detail_status,listing_type,listing_type_override,listing_state,sale_status,num_comment,qty,description_hash,bunjang_condition_label,raw_json";
   const columns = scoreDirtyAvailable ? `${baseColumns},pool_eligible` : baseColumns;
   const dirtyFilter = scoreDirtyAvailable ? "&score_dirty=eq.true" : "";
-  const baseFilter = `${dirtyFilter}&detail_status=eq.done&or=(listing_type.eq.normal,listing_type_override.eq.normal)&sku_id=not.is.null&listing_state=eq.active`;
+  const baseFilter = dirtyFilter;
+  const scorableBaseFilter = `${dirtyFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active`;
   const buildUrl = (extraFilter: string, rowLimit: number) =>
     `${tableUrl("mvp_raw_listings")}?select=${columns}${baseFilter}${extraFilter}&order=last_seen_at.desc&limit=${rowLimit}`;
+  const fetchScorableRows = async (extraFilter: string, rowLimit: number, seenPids = new Set<number>()) => {
+    const rows: ScorableRawRow[] = [];
+    const scanLimit = scoreDirtyAvailable
+      ? Math.max(rowLimit, Math.min(1000, Math.max(200, rowLimit * 20)))
+      : rowLimit;
+    const collect = (batch: ScorableRawRow[]) => {
+      for (const row of batch) {
+        if (scoreDirtyAvailable && !isScorableRawCandidate(row)) continue;
+        const pid = Number(row.pid);
+        if (!Number.isFinite(pid) || seenPids.has(pid)) continue;
+        seenPids.add(pid);
+        rows.push(row);
+        if (rows.length >= rowLimit) break;
+      }
+    };
+
+    if (scoreDirtyAvailable) {
+      const dirtyRes = await restFetch(buildUrl(extraFilter, scanLimit), { headers: serviceHeaders() });
+      collect((await dirtyRes.json()) as ScorableRawRow[]);
+    } else {
+      const normalRes = await restFetch(buildUrl(`${extraFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&listing_type=eq.normal`, rowLimit), { headers: serviceHeaders() });
+      collect((await normalRes.json()) as ScorableRawRow[]);
+
+      const remaining = Math.max(0, rowLimit - rows.length);
+      if (remaining > 0) {
+        const overrideRes = await restFetch(buildUrl(`${extraFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&listing_type_override=eq.normal`, remaining), { headers: serviceHeaders() });
+        collect((await overrideRes.json()) as ScorableRawRow[]);
+      }
+    }
+
+    return rows.slice(0, rowLimit);
+  };
 
   if (!scoreDirtyAvailable) {
-    const res = await restFetch(buildUrl("", limit), { headers: serviceHeaders() });
-    return (await res.json()) as ScorableRawRow[];
+    return fetchScorableRows("", limit);
   }
 
-  const sourceReserveLimit = Math.min(limit, 100);
-  const joongnaRes = await restFetch(buildUrl("&source=eq.joongna", sourceReserveLimit), { headers: serviceHeaders() });
-  const joongnaRows = (await joongnaRes.json()) as ScorableRawRow[];
-  const remainingLimit = Math.max(0, limit - joongnaRows.length);
-  if (remainingLimit === 0) return joongnaRows;
+  // Market/parser recovery can mark old pool rows dirty. If we only order by
+  // raw last_seen_at, visible or newly recovered candidates can sit behind a
+  // large fresh-dirty backlog while showing stale profit math.
+  const poolRows = await loadDirtyPoolScorableRows(columns, scorableBaseFilter, Math.min(limit, 50));
+  const seenPids = new Set(poolRows.map((row) => Number(row.pid)).filter(Number.isFinite));
+  const remainingAfterPool = Math.max(0, limit - poolRows.length);
+  if (remainingAfterPool === 0) return poolRows.slice(0, limit);
 
-  const generalRes = await restFetch(buildUrl("&source=neq.joongna", remainingLimit), { headers: serviceHeaders() });
-  const generalRows = (await generalRes.json()) as ScorableRawRow[];
-  return [...joongnaRows, ...generalRows];
+  const sourceReserveLimit = Math.min(limit, 100);
+  const joongnaRows = await (async () => {
+    try {
+      return fetchScorableRows("&source=eq.joongna", Math.min(sourceReserveLimit, remainingAfterPool), seenPids);
+    } catch (err) {
+      console.warn("loadScorableRows joongna fetch failed (non-fatal)", err);
+      return [];
+    }
+  })();
+  const remainingLimit = Math.max(0, limit - poolRows.length - joongnaRows.length);
+  if (remainingLimit === 0) return [...poolRows, ...joongnaRows].slice(0, limit);
+
+  const generalRows: ScorableRawRow[] = [];
+  for (const source of GENERAL_SCORE_SOURCES) {
+    const sourceRemaining = Math.max(0, limit - poolRows.length - joongnaRows.length - generalRows.length);
+    if (sourceRemaining === 0) break;
+    try {
+      generalRows.push(...await fetchScorableRows(`&source=eq.${source}`, sourceRemaining, seenPids));
+    } catch (err) {
+      console.warn(`loadScorableRows ${source} fetch failed (non-fatal)`, err);
+    }
+  }
+  return [...poolRows, ...joongnaRows, ...generalRows].slice(0, limit);
+}
+
+async function loadDirtyPoolScorableRows(
+  columns: string,
+  baseFilter: string,
+  limit: number,
+): Promise<ScorableRawRow[]> {
+  const rowLimit = Math.max(0, Math.min(limit, 50));
+  if (rowLimit === 0) return [];
+  const scanLimit = Math.max(200, Math.min(1000, rowLimit * 20));
+  const [oldestRes, newestRes] = await Promise.all([
+    restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=pid&status=in.(ready,reserved,invalidated)&order=updated_at.asc&limit=${Math.ceil(scanLimit / 2)}`,
+      { headers: serviceHeaders() },
+    ),
+    restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=pid&status=in.(ready,reserved,invalidated)&order=updated_at.desc&limit=${Math.floor(scanLimit / 2)}`,
+      { headers: serviceHeaders() },
+    ),
+  ]);
+  const poolRows = [
+    ...(oldestRes.ok ? ((await oldestRes.json()) as Array<{ pid: number | string | null }>) : []),
+    ...(newestRes.ok ? ((await newestRes.json()) as Array<{ pid: number | string | null }>) : []),
+  ];
+  const pids = [...new Set(poolRows.map((row) => Number(row.pid)).filter(Number.isFinite))];
+  if (pids.length === 0) return [];
+
+  const rows: ScorableRawRow[] = [];
+  for (const chunk of chunkArray(pids, PARSED_PID_READ_CHUNK_SIZE)) {
+    const remaining = rowLimit - rows.length;
+    if (remaining <= 0) break;
+    const seen = new Set(rows.map((row) => Number(row.pid)).filter(Number.isFinite));
+    for (const listingTypeFilter of ["&listing_type=eq.normal", "&listing_type_override=eq.normal"]) {
+      const nextRemaining = rowLimit - rows.length;
+      if (nextRemaining <= 0) break;
+      const res = await restFetch(
+        `${tableUrl("mvp_raw_listings")}?select=${columns}${baseFilter}${listingTypeFilter}&pid=in.(${chunk.join(",")})&limit=${Math.min(nextRemaining, chunk.length)}`,
+        { headers: serviceHeaders() },
+      );
+      if (!res.ok) continue;
+      const batch = (await res.json()) as ScorableRawRow[];
+      for (const row of batch) {
+        const pid = Number(row.pid);
+        if (!Number.isFinite(pid) || seen.has(pid)) continue;
+        seen.add(pid);
+        rows.push(row);
+      }
+    }
+  }
+  return rows.slice(0, rowLimit);
 }
 
 async function clearScoreDirty(pids: number[]): Promise<void> {
@@ -2076,6 +2235,65 @@ async function clearScoreDirty(pids: number[]): Promise<void> {
   if (unique.length === 0) return;
   for (const chunk of chunkArray(unique, REST_WRITE_CHUNK_SIZE)) {
     await patchRowsByIds("mvp_raw_listings", chunk, { score_dirty: false }, REST_WRITE_CHUNK_SIZE);
+  }
+}
+
+async function clearNonScorableScoreDirty(limit: number): Promise<number> {
+  if (!(await rawScoreDirtySchemaAvailable())) return 0;
+  const rowLimit = Math.max(1, Math.min(limit, 1000));
+  try {
+    const res = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid,listing_type,listing_type_override&score_dirty=eq.true&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&listing_type=neq.normal&listing_type_override=is.null&limit=${rowLimit}`,
+      { headers: serviceHeaders() },
+    );
+    const rows = (await res.json()) as Array<{
+      pid: number | string | null;
+      listing_type: string | null;
+      listing_type_override: string | null;
+    }>;
+    const pids = rows
+      .filter((row) => row.listing_type !== "normal" && row.listing_type_override !== "normal")
+      .map((row) => Number(row.pid))
+      .filter(Number.isFinite);
+    await clearScoreDirty(pids);
+    return pids.length;
+  } catch (err) {
+    console.warn("clear non-scorable score_dirty failed (non-fatal)", err);
+    return 0;
+  }
+}
+
+async function clearUnscorableScoreDirty(limit: number): Promise<number> {
+  if (!(await rawScoreDirtySchemaAvailable())) return 0;
+  const rowLimit = Math.max(1, Math.min(limit, 2000));
+  try {
+    const res = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid,detail_status,listing_type,listing_type_override,sku_id,listing_state&score_dirty=eq.true&order=last_seen_at.desc&limit=${rowLimit}`,
+      { headers: serviceHeaders() },
+    );
+    const rows = (await res.json()) as Array<{
+      pid: number | string | null;
+      detail_status: string | null;
+      listing_type: string | null;
+      listing_type_override: string | null;
+      sku_id: string | null;
+      listing_state: string | null;
+    }>;
+    const pids = rows
+      .filter((row) => !isScorableRawCandidate({
+        detail_status: row.detail_status ?? "",
+        sku_id: row.sku_id,
+        listing_state: row.listing_state ?? "",
+        listing_type: row.listing_type ?? "",
+        listing_type_override: row.listing_type_override,
+      }))
+      .map((row) => Number(row.pid))
+      .filter(Number.isFinite);
+    await clearScoreDirty(pids);
+    return pids.length;
+  } catch (err) {
+    console.warn("clear unscorable score_dirty failed (non-fatal)", err);
+    return 0;
   }
 }
 
@@ -2227,6 +2445,23 @@ async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: n
   return new Map(rows.slice(0, limit).map((row) => [row.pid, row]));
 }
 
+async function loadParsedRowsByShoeSizeSiblingKeys(comparableKeys: string[], limit: number): Promise<Map<number, ParsedListingRow>> {
+  const patterns = [...new Set(comparableKeys.map(shoeSizeSiblingLikePattern).filter((key): key is string => Boolean(key)))];
+  if (patterns.length === 0 || limit <= 0) return new Map();
+  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,needs_review,parsed_json";
+  const rows: ParsedListingRow[] = [];
+  for (const pattern of patterns.slice(0, REST_KEY_READ_CHUNK_SIZE)) {
+    const baseUrl = `${tableUrl("mvp_listing_parsed")}?select=${columns}&comparable_key=like.${encodeURIComponent(pattern)}&parse_confidence=gte.0.65&needs_review=eq.false`;
+    const pageRows = await restFetchAll<ParsedListingRow>(baseUrl, {
+      maxRows: Math.max(0, limit - rows.length),
+      orderBy: "pid.asc",
+    });
+    rows.push(...pageRows);
+    if (rows.length >= limit) break;
+  }
+  return new Map(rows.slice(0, limit).map((row) => [row.pid, row]));
+}
+
 // Wave 216 (2026-05-19): parser_version drift 체크 — 카테고리별 최신 parser version.
 //   기존: missing 만 re-parse → 새 parser 박혀도 옛 row 영원히 stale.
 //   증상 (Wave 216): clothing 1253건 default 분기 (parse_confidence 0.45 + needs_review=true)
@@ -2261,10 +2496,18 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   //   롱슬리브/긴팔 → long_sleeve_tee, 후드집업 → hoodie_zip.
   // Wave 424 (2026-05-20): bag v11 — 제목의 bag product_type을 설명 수납품보다 우선.
   // Wave 425 (2026-05-20): clothing v13 — targeted type_unknown cleanup.
-  clothing: "wave216-clothing-v13",
-  shoe: "wave92-shoe-v11",
-  bag: "wave92-bag-v11",
+  // Wave 438 (2026-05-21): clothing v14 — cargo jacket no longer parses as pants.
+  clothing: "wave216-clothing-v20",
+  // Wave 498: shoe/bag comparable_key now preserves bag brand/lane and shoe
+  // broad brand. Force stale rows to reparse so market samples stop sharing
+  // generic `bag|backpack` and `shoe|broad` buckets.
+  shoe: "wave92-shoe-v16",
+  bag: "wave92-bag-v13",
   bike: "wave92-fashion-mobility-v7",
+  // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
+  // full-unit pollution for these active pool categories.
+  home_appliance: "option-parser-v55",
+  drone: "option-parser-v55",
 };
 function isParsedStale(row: ParsedListingRow): boolean {
   if (!row.category) return false;
@@ -2331,6 +2574,8 @@ async function loadMarketPriceStats(comparableKeys: string[]): Promise<MarketPri
     "sold_sample_count",
     "disappeared_sample_count",
     "confidence",
+    "p25_price",
+    "p75_price",
     "computed_at",
   ].join(",");
   // Wave 221 (2026-05-19): URL too long fix — comparable_keys 가 많아지면
@@ -2489,6 +2734,40 @@ function marketGroupKey(row: ScorableRawRow, parsed: ParsedListingRow | undefine
     return parsed.comparable_key;
   }
   return row.sku_id ?? "";
+}
+
+function shoeSizeAgnosticComparableKey(comparableKey: string | null | undefined): string | null {
+  const parts = String(comparableKey ?? "").split("|");
+  if (parts[0] !== "shoe") return null;
+  if (parts.includes("size_any")) return null;
+  if (parts.length >= 5) {
+    const next = [...parts];
+    next[3] = "size_any";
+    return next.join("|");
+  }
+  if (parts.length === 4) {
+    const next = [...parts];
+    next[2] = "size_any";
+    return next.join("|");
+  }
+  return null;
+}
+
+function shoeSizeSiblingLikePattern(comparableKey: string | null | undefined): string | null {
+  const parts = String(comparableKey ?? "").split("|");
+  if (parts[0] !== "shoe") return null;
+  if (parts.includes("size_any")) return null;
+  if (parts.length >= 5) {
+    const next = [...parts];
+    next[3] = "*";
+    return next.join("|");
+  }
+  if (parts.length === 4) {
+    const next = [...parts];
+    next[2] = "*";
+    return next.join("|");
+  }
+  return null;
 }
 
 function preciseComparableKey(parsed: ParsedListingRow | undefined) {
@@ -3239,26 +3518,35 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
       const missingMs = Date.now() - new Date(row.last_missing_at).getTime();
       if (missingMs > 6 * 3600 * 1000) continue;
     }
-    // Wave 130: grouping key = (comparable_key, condition_class). 같은 SKU+옵션이라도
-    // condition별 별도 시세 산정.
-    const key = `${parsed.comparable_key}|${conditionClass}`;
-    if (!byKey.has(key)) {
-      byKey.set(key, {
-        comparableKey: parsed.comparable_key,
-        conditionClass,
-        rows: [],
-        activeRows: [],
-        soldRows: [],
-        disappearedRows: [],
-        skuId: row.sku_id,
-      });
-    }
-    const group = byKey.get(key)!;
-    group.rows.push(row);
     const effectiveState = isActiveSaleStatus(row.sale_status) ? row.listing_state : "sold_confirmed";
-    if (effectiveState === "sold_confirmed") group.soldRows.push(row);
-    else if (effectiveState === "disappeared") group.disappearedRows.push(row);
-    else group.activeRows.push(row);
+    // Wave 520: 신발 가격 시세는 exact size key와 size_any 보조 key를 함께 산정한다.
+    // 사용자는 "사이즈별 가격은 크게 달라지지 않는다"고 봤고, 회전률/특이 사이즈 보정은 별도 wave로 보류.
+    // exact key는 유지하고, score 단계에서 exact median이 부족할 때만 size_any를 fallback으로 사용한다.
+    const comparableKeys = [
+      parsed.comparable_key,
+      shoeSizeAgnosticComparableKey(parsed.comparable_key),
+    ].filter((key): key is string => Boolean(key));
+    for (const comparableKey of comparableKeys) {
+      // Wave 130: grouping key = (comparable_key, condition_class). 같은 SKU+옵션이라도
+      // condition별 별도 시세 산정.
+      const key = `${comparableKey}|${conditionClass}`;
+      if (!byKey.has(key)) {
+        byKey.set(key, {
+          comparableKey,
+          conditionClass,
+          rows: [],
+          activeRows: [],
+          soldRows: [],
+          disappearedRows: [],
+          skuId: row.sku_id,
+        });
+      }
+      const group = byKey.get(key)!;
+      group.rows.push(row);
+      if (effectiveState === "sold_confirmed") group.soldRows.push(row);
+      else if (effectiveState === "disappeared") group.disappearedRows.push(row);
+      else group.activeRows.push(row);
+    }
   }
 
   const today = kstDateString();
@@ -3465,6 +3753,13 @@ export async function marketStatsStage(): Promise<StageStats> {
   };
   const pendingKeys = new Set(pendingInvalidations.map((row) => row.comparable_key));
   const invalidatedParsedByPid = await loadParsedRowsByComparableKeys([...pendingKeys], config.marketStatsLimit);
+  const remainingSiblingLimit = Math.max(0, config.marketStatsLimit - invalidatedParsedByPid.size);
+  const siblingParsedByPid = remainingSiblingLimit > 0
+    ? await loadParsedRowsByShoeSizeSiblingKeys([...pendingKeys], remainingSiblingLimit)
+    : new Map<number, ParsedListingRow>();
+  for (const [pid, parsed] of siblingParsedByPid.entries()) {
+    if (!invalidatedParsedByPid.has(pid)) invalidatedParsedByPid.set(pid, parsed);
+  }
   const invalidatedPids = [...invalidatedParsedByPid.keys()];
   if (pendingInvalidations.length > 0 && invalidatedPids.length === 0) {
     stats.queued = pendingInvalidations.length;
@@ -3539,7 +3834,13 @@ export async function marketStatsStage(): Promise<StageStats> {
   return stats;
 }
 
-async function invalidatePoolEntries(entries: { pid: number; reason: string }[]) {
+async function invalidatePoolEntries(entries: {
+  pid: number;
+  reason: string;
+  category?: Sku["category"] | null;
+  comparable_key?: string | null;
+  condition_class?: string | null;
+}[]) {
   const byReason = new Map<string, Set<number>>();
   for (const entry of entries) {
     const pid = Number(entry.pid);
@@ -3554,7 +3855,7 @@ async function invalidatePoolEntries(entries: { pid: number; reason: string }[])
     for (const chunk of chunkArray([...pids], REST_WRITE_CHUNK_SIZE)) {
       patches.push(patchRows(
         "mvp_candidate_pool",
-        `pid=in.(${chunk.join(",")})&status=in.(ready,reserved)`,
+        `pid=in.(${chunk.join(",")})&status=in.(ready,reserved,invalidated)`,
         {
           status: "invalidated",
           invalidated_reason: reason,
@@ -3573,6 +3874,635 @@ async function invalidatePoolEntries(entries: { pid: number; reason: string }[])
       errors: failed.slice(0, 3).map((result) => result.reason instanceof Error ? result.reason.message : String(result.reason)),
     });
   }
+
+  const metadataGroups = new Map<string, { body: Record<string, unknown>; pids: Set<number> }>();
+  for (const entry of entries) {
+    const pid = Number(entry.pid);
+    if (!Number.isFinite(pid)) continue;
+    if (entry.category === undefined && entry.comparable_key === undefined && entry.condition_class === undefined) continue;
+    const body: Record<string, unknown> = {
+      updated_at: updatedAt,
+    };
+    if (entry.category !== undefined) body.category = entry.category;
+    if (entry.comparable_key !== undefined) body.comparable_key = entry.comparable_key;
+    if (entry.condition_class !== undefined) body.condition_class = entry.condition_class;
+    const key = JSON.stringify(body);
+    if (!metadataGroups.has(key)) metadataGroups.set(key, { body, pids: new Set<number>() });
+    metadataGroups.get(key)?.pids.add(pid);
+  }
+  const metadataPatches: Promise<void>[] = [];
+  for (const group of metadataGroups.values()) {
+    for (const chunk of chunkArray([...group.pids], REST_WRITE_CHUNK_SIZE)) {
+      metadataPatches.push(patchRows(
+        "mvp_candidate_pool",
+        `pid=in.(${chunk.join(",")})&status=eq.invalidated`,
+        group.body,
+      ));
+    }
+  }
+  const metadataResults = await Promise.allSettled(metadataPatches);
+  const metadataFailed = metadataResults.filter((result) => result.status === "rejected");
+  if (metadataFailed.length > 0) {
+    console.error("pool invalidation metadata refresh partially failed", {
+      failed: metadataFailed.length,
+      total: metadataPatches.length,
+      errors: metadataFailed.slice(0, 3).map((result) => result.reason instanceof Error ? result.reason.message : String(result.reason)),
+    });
+  }
+}
+
+async function invalidatePoolIneligibleResidues(limit: number): Promise<number> {
+  const res = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid&status=in.(ready,reserved)&limit=${limit}`,
+    { headers: serviceHeaders() },
+  );
+  if (!res.ok) {
+    console.warn(`invalidatePoolIneligibleResidues fetch failed: ${res.status}`);
+    return 0;
+  }
+
+  const poolRows = (await res.json()) as Array<{ pid: number | string }>;
+  const pids = poolRows.map((row) => Number(row.pid)).filter(Number.isFinite);
+  if (pids.length === 0) return 0;
+
+  const ineligible = await loadRawPoolIneligiblePids(pids);
+
+  if (ineligible.size === 0) return 0;
+  await invalidatePoolEntries([...ineligible].map((pid) => ({ pid, reason: "pool_eligible_false_residue" })));
+  return ineligible.size;
+}
+
+async function invalidatePoolLowSellerRatingResidues(limit: number): Promise<number> {
+  const res = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid&status=in.(ready,reserved)&limit=${limit}`,
+    { headers: serviceHeaders() },
+  );
+  if (!res.ok) {
+    console.warn(`invalidatePoolLowSellerRatingResidues fetch failed: ${res.status}`);
+    return 0;
+  }
+
+  const poolRows = (await res.json()) as Array<{ pid: number | string }>;
+  const pids = poolRows.map((row) => Number(row.pid)).filter(Number.isFinite);
+  if (pids.length === 0) return 0;
+
+  const lowSellerPids = new Set<number>();
+  for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
+    const rawRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid,shop_review_rating,shop_review_count&shop_review_rating=lt.${POOL_LOW_SELLER_RATING_REVIEW}&pid=in.(${chunk.join(",")})`,
+      { headers: serviceHeaders() },
+    );
+    const rawRows = (await rawRes.json()) as Array<{
+      pid: number | string;
+      shop_review_rating: number | null;
+      shop_review_count: number | null;
+    }>;
+    for (const row of rawRows) {
+      const pid = Number(row.pid);
+      const count = Number(row.shop_review_count);
+      const rating = Number(row.shop_review_rating);
+      if (
+        Number.isFinite(pid) &&
+        Number.isFinite(count) &&
+        count > 0 &&
+        Number.isFinite(rating) &&
+        rating < POOL_LOW_SELLER_RATING_REVIEW
+      ) {
+        lowSellerPids.add(pid);
+      }
+    }
+  }
+
+  if (lowSellerPids.size === 0) return 0;
+  await invalidatePoolEntries([...lowSellerPids].map((pid) => ({ pid, reason: "seller_rating_below_3_5_review" })));
+  return lowSellerPids.size;
+}
+
+async function loadRawPoolIneligiblePids(pids: number[]): Promise<Set<number>> {
+  const unique = [...new Set(pids.filter(Number.isFinite))];
+  const ineligible = new Set<number>();
+  for (const chunk of chunkArray(unique, REST_WRITE_CHUNK_SIZE)) {
+    const rawRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,query,raw_json,pool_eligible&pool_eligible=eq.false&pid=in.(${chunk.join(",")})`,
+      { headers: serviceHeaders() },
+    );
+    const rawRows = (await rawRes.json()) as Array<{
+      pid: number | string;
+      source: string | null;
+      query: string | null;
+      raw_json: Record<string, unknown> | null;
+      pool_eligible: boolean | null;
+    }>;
+    for (const row of rawRows) {
+      const pid = Number(row.pid);
+      if (Number.isFinite(pid) && row.pool_eligible === false && !isRawPublicPoolEligible(row)) {
+        ineligible.add(pid);
+      }
+    }
+  }
+  return ineligible;
+}
+
+async function invalidatePoolStaleParserResidues(limit: number): Promise<number> {
+  const res = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid,category&status=in.(ready,reserved)&limit=${limit}`,
+    { headers: serviceHeaders() },
+  );
+  if (!res.ok) {
+    console.warn(`invalidatePoolStaleParserResidues fetch failed: ${res.status}`);
+    return 0;
+  }
+
+  const poolRows = (await res.json()) as Array<{ pid: number | string; category: Sku["category"] | null }>;
+  const byCategory = new Map<Sku["category"], number[]>();
+  for (const row of poolRows) {
+    const pid = Number(row.pid);
+    const category = row.category;
+    if (!Number.isFinite(pid) || !category || !LATEST_PARSER_VERSION_BY_CATEGORY[category]) continue;
+    byCategory.set(category, [...(byCategory.get(category) ?? []), pid]);
+  }
+
+  const staleByReason = new Map<string, Set<number>>();
+  for (const [category, pids] of byCategory.entries()) {
+    const expected = LATEST_PARSER_VERSION_BY_CATEGORY[category];
+    if (!expected) continue;
+
+    const parsedByPid = new Map<number, { parser_version: string | null }>();
+    for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
+      const parsedRes = await restFetch(
+        `${tableUrl("mvp_listing_parsed")}?select=pid,parser_version&pid=in.(${chunk.join(",")})`,
+        { headers: serviceHeaders() },
+      );
+      if (!parsedRes.ok) {
+        console.warn(`invalidatePoolStaleParserResidues parsed fetch failed: ${parsedRes.status}`);
+        continue;
+      }
+      const parsedRows = (await parsedRes.json()) as Array<{ pid: number | string; parser_version: string | null }>;
+      for (const parsed of parsedRows) {
+        const pid = Number(parsed.pid);
+        if (Number.isFinite(pid)) parsedByPid.set(pid, { parser_version: parsed.parser_version ?? null });
+      }
+    }
+
+    const reason = `stale_parser_version_${category}_residue`;
+    for (const pid of pids) {
+      const parsed = parsedByPid.get(pid);
+      if (!parsed || parsed.parser_version !== expected) {
+        if (!staleByReason.has(reason)) staleByReason.set(reason, new Set());
+        staleByReason.get(reason)?.add(pid);
+      }
+    }
+  }
+
+  const stalePids = [...staleByReason.values()].flatMap((set) => [...set]);
+  if (stalePids.length === 0) return 0;
+  await invalidatePoolEntries([...staleByReason.entries()].flatMap(([reason, pids]) =>
+    [...pids].map((pid) => ({ pid, reason })),
+  ));
+  await patchRowsByIds("mvp_raw_listings", stalePids, { score_dirty: true }, REST_WRITE_CHUNK_SIZE);
+  return stalePids.length;
+}
+
+async function markStaleInvalidatedPoolRowsDirty(limit: number): Promise<number> {
+  const res = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid,category,invalidated_reason&status=eq.invalidated&category=in.(clothing,shoe,bag)&invalidated_reason=not.is.null&limit=${limit}`,
+    { headers: serviceHeaders() },
+  );
+  if (!res.ok) {
+    console.warn(`markStaleInvalidatedPoolRowsDirty fetch failed: ${res.status}`);
+    return 0;
+  }
+
+  const poolRows = (await res.json()) as Array<{
+    pid: number | string;
+    category: Sku["category"] | null;
+    invalidated_reason: string | null;
+  }>;
+  const byCategory = new Map<Sku["category"], number[]>();
+  for (const row of poolRows) {
+    const pid = Number(row.pid);
+    const category = row.category;
+    if (!Number.isFinite(pid) || !category || !LATEST_PARSER_VERSION_BY_CATEGORY[category]) continue;
+    byCategory.set(category, [...(byCategory.get(category) ?? []), pid]);
+  }
+  if (byCategory.size === 0) return 0;
+
+  const stalePids: number[] = [];
+  for (const [category, pids] of byCategory.entries()) {
+    const expected = LATEST_PARSER_VERSION_BY_CATEGORY[category];
+    if (!expected) continue;
+
+    const parsedByPid = new Map<number, string | null>();
+    const rawEligible = new Set<number>();
+    for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
+      const [parsedRes, rawRes] = await Promise.all([
+        restFetch(
+          `${tableUrl("mvp_listing_parsed")}?select=pid,parser_version&pid=in.(${chunk.join(",")})`,
+          { headers: serviceHeaders() },
+        ),
+        restFetch(
+          `${tableUrl("mvp_raw_listings")}?select=pid,source,query,raw_json,pool_eligible,detail_status,listing_state,listing_type,listing_type_override,sku_id&pid=in.(${chunk.join(",")})`,
+          { headers: serviceHeaders() },
+        ),
+      ]);
+      if (!parsedRes.ok || !rawRes.ok) {
+        console.warn(`markStaleInvalidatedPoolRowsDirty detail fetch failed: parsed=${parsedRes.status} raw=${rawRes.status}`);
+        continue;
+      }
+      const parsedRows = (await parsedRes.json()) as Array<{ pid: number | string; parser_version: string | null }>;
+      for (const parsed of parsedRows) {
+        const pid = Number(parsed.pid);
+        if (Number.isFinite(pid)) parsedByPid.set(pid, parsed.parser_version ?? null);
+      }
+      const rawRows = (await rawRes.json()) as Array<{
+        pid: number | string;
+        source: string | null;
+        query: string | null;
+        raw_json: Record<string, unknown> | null;
+        pool_eligible: boolean | null;
+        detail_status: string | null;
+        listing_state: string | null;
+        listing_type: string | null;
+        listing_type_override: string | null;
+        sku_id: string | null;
+      }>;
+      for (const raw of rawRows) {
+        const pid = Number(raw.pid);
+        if (!Number.isFinite(pid)) continue;
+        const normalListing = raw.listing_type === "normal" || raw.listing_type_override === "normal";
+        if (isRawPublicPoolEligible(raw) && raw.detail_status === "done" && raw.listing_state === "active" && normalListing && raw.sku_id) {
+          rawEligible.add(pid);
+        }
+      }
+    }
+
+    for (const pid of pids) {
+      if (!rawEligible.has(pid)) continue;
+      const parserVersion = parsedByPid.get(pid) ?? null;
+      if (parserVersion !== expected) stalePids.push(pid);
+    }
+  }
+
+  if (stalePids.length === 0) return 0;
+  const unique = [...new Set(stalePids)];
+  await patchRowsByIds("mvp_raw_listings", unique, { score_dirty: true }, REST_WRITE_CHUNK_SIZE);
+  return unique.length;
+}
+
+async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promise<number> {
+  const rowLimit = Math.max(1, Math.min(limit, 250));
+  const res = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.invalidated&category=in.(clothing,shoe,bag)&invalidated_reason=eq.sku_median_unavailable&order=updated_at.desc&limit=${rowLimit}`,
+    { headers: serviceHeaders() },
+  );
+  if (!res.ok) {
+    console.warn(`markRecoveredMarketInvalidatedPoolRowsDirty fetch failed: ${res.status}`);
+    return 0;
+  }
+
+  const poolRows = (await res.json()) as Array<{ pid: number | string | null }>;
+  const pids = [...new Set(poolRows.map((row) => Number(row.pid)).filter(Number.isFinite))];
+  if (pids.length === 0) return 0;
+
+  const eligibleRaw = new Set<number>();
+  const recoveredMarket = new Set<number>();
+  const parsedByPid = new Map<number, {
+    category: Sku["category"] | null;
+    comparable_key: string | null;
+    condition_class: string | null;
+  }>();
+  for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
+    const [rawRes, listingRes, parsedRes] = await Promise.all([
+      restFetch(
+        `${tableUrl("mvp_raw_listings")}?select=pid,source,query,raw_json,pool_eligible,detail_status,listing_state,listing_type,listing_type_override,sku_id&pid=in.(${chunk.join(",")})`,
+        { headers: serviceHeaders() },
+      ),
+      restFetch(
+        `${tableUrl("mvp_listings")}?select=pid,sku_median&pid=in.(${chunk.join(",")})&sku_median=gt.0`,
+        { headers: serviceHeaders() },
+      ),
+      restFetch(
+        `${tableUrl("mvp_listing_parsed")}?select=pid,category,comparable_key,condition_class&pid=in.(${chunk.join(",")})`,
+        { headers: serviceHeaders() },
+      ),
+    ]);
+    if (!rawRes.ok || !listingRes.ok || !parsedRes.ok) {
+      console.warn(`markRecoveredMarketInvalidatedPoolRowsDirty detail fetch failed: raw=${rawRes.status} listing=${listingRes.status} parsed=${parsedRes.status}`);
+      continue;
+    }
+    const rawRows = (await rawRes.json()) as Array<{
+      pid: number | string;
+      source: string | null;
+      query: string | null;
+      raw_json: Record<string, unknown> | null;
+      pool_eligible: boolean | null;
+      detail_status: string | null;
+      listing_state: string | null;
+      listing_type: string | null;
+      listing_type_override: string | null;
+      sku_id: string | null;
+    }>;
+    for (const raw of rawRows) {
+      const pid = Number(raw.pid);
+      if (!Number.isFinite(pid)) continue;
+      const normalListing = raw.listing_type === "normal" || raw.listing_type_override === "normal";
+      if (isRawPublicPoolEligible(raw) && raw.detail_status === "done" && raw.listing_state === "active" && normalListing && raw.sku_id) {
+        eligibleRaw.add(pid);
+      }
+    }
+    const listingRows = (await listingRes.json()) as Array<{ pid: number | string; sku_median: number | null }>;
+    for (const listing of listingRows) {
+      const pid = Number(listing.pid);
+      if (Number.isFinite(pid) && Number(listing.sku_median ?? 0) > 0) recoveredMarket.add(pid);
+    }
+    const parsedRows = (await parsedRes.json()) as Array<{
+      pid: number | string;
+      category: Sku["category"] | null;
+      comparable_key: string | null;
+      condition_class: string | null;
+    }>;
+    for (const parsed of parsedRows) {
+      const pid = Number(parsed.pid);
+      if (!Number.isFinite(pid)) continue;
+      parsedByPid.set(pid, {
+        category: parsed.category ?? null,
+        comparable_key: parsed.comparable_key ?? null,
+        condition_class: parsed.condition_class ?? null,
+      });
+    }
+  }
+
+  const comparableKeys = [...new Set([...parsedByPid.values()].map((row) => row.comparable_key).filter(Boolean) as string[])];
+  const marketStatsByKey = await loadMarketPriceStats([
+    ...comparableKeys,
+    ...comparableKeys.map(shoeSizeAgnosticComparableKey).filter((key): key is string => Boolean(key)),
+  ]);
+  for (const [pid, parsed] of parsedByPid.entries()) {
+    if (recoveredMarket.has(pid) || !parsed.comparable_key) continue;
+    const byCondition = marketStatsByKey.get(parsed.comparable_key);
+    const stat = pickMarketStatByCondition(byCondition, parsed.condition_class ?? null);
+    const exactMedian = trustedMarketMedian(stat, parsed.category);
+    const sizeAnyKey = shoeSizeAgnosticComparableKey(parsed.comparable_key);
+    const sizeAnyStat = pickMarketStatByCondition(
+      sizeAnyKey ? marketStatsByKey.get(sizeAnyKey) : undefined,
+      parsed.condition_class ?? null,
+    );
+    if (exactMedian != null || trustedMarketMedian(sizeAnyStat, parsed.category) != null) recoveredMarket.add(pid);
+  }
+
+  const recovered = pids.filter((pid) => eligibleRaw.has(pid) && recoveredMarket.has(pid));
+  if (recovered.length === 0) return 0;
+  await patchRowsByIds("mvp_raw_listings", recovered, { score_dirty: true }, REST_WRITE_CHUNK_SIZE);
+  return recovered.length;
+}
+
+async function enqueueSkuMedianUnavailableMarketInvalidations(limit: number): Promise<number> {
+  const rowLimit = Math.max(1, Math.min(limit, 250));
+  const res = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid,category,comparable_key&status=eq.invalidated&category=in.(clothing,shoe,bag)&invalidated_reason=eq.sku_median_unavailable&order=updated_at.desc&limit=${rowLimit}`,
+    { headers: serviceHeaders() },
+  );
+  if (!res.ok) {
+    console.warn(`enqueueSkuMedianUnavailableMarketInvalidations fetch failed: ${res.status}`);
+    return 0;
+  }
+
+  const poolRows = (await res.json()) as Array<{
+    pid: number | string | null;
+    category: Sku["category"] | null;
+    comparable_key: string | null;
+  }>;
+  const pids = [...new Set(poolRows.map((row) => Number(row.pid)).filter(Number.isFinite))];
+  if (pids.length === 0) return 0;
+
+  const eligibleRaw = new Set<number>();
+  for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
+    const rawRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,query,raw_json,pool_eligible,detail_status,listing_state,listing_type,listing_type_override,sku_id&pid=in.(${chunk.join(",")})`,
+      { headers: serviceHeaders() },
+    );
+    if (!rawRes.ok) {
+      console.warn(`enqueueSkuMedianUnavailableMarketInvalidations raw fetch failed: ${rawRes.status}`);
+      continue;
+    }
+    const rawRows = (await rawRes.json()) as Array<{
+      pid: number | string;
+      source: string | null;
+      query: string | null;
+      raw_json: Record<string, unknown> | null;
+      pool_eligible: boolean | null;
+      detail_status: string | null;
+      listing_state: string | null;
+      listing_type: string | null;
+      listing_type_override: string | null;
+      sku_id: string | null;
+    }>;
+    for (const raw of rawRows) {
+      const pid = Number(raw.pid);
+      if (!Number.isFinite(pid)) continue;
+      if (isRawPublicPoolEligible(raw) && isScorableRawCandidate({
+        detail_status: raw.detail_status ?? "",
+        sku_id: raw.sku_id,
+        listing_state: raw.listing_state ?? "",
+        listing_type: raw.listing_type ?? "",
+        listing_type_override: raw.listing_type_override,
+      })) {
+        eligibleRaw.add(pid);
+      }
+    }
+  }
+
+  const events = poolRows
+    .map((row) => ({
+      pid: Number(row.pid),
+      comparableKey: row.comparable_key,
+      category: row.category,
+    }))
+    .filter((row) => Number.isFinite(row.pid) && eligibleRaw.has(row.pid) && Boolean(row.comparableKey))
+    .map((row) => ({
+      comparableKey: row.comparableKey,
+      reason: row.category === "shoe"
+        ? "sku_median_unavailable_size_any_refresh"
+        : "sku_median_unavailable_refresh",
+      priority: row.category === "shoe" ? 85 : 55,
+      affectedPid: row.pid,
+    }));
+
+  const cooldownKeys = await loadMarketInvalidationCooldownKeys(
+    events.map((event) => event.comparableKey).filter((key): key is string => Boolean(key)),
+    SKU_MEDIAN_UNAVAILABLE_MARKET_REFRESH_COOLDOWN_MS,
+  );
+  const refreshEvents = events.filter((event) => !cooldownKeys.has(event.comparableKey ?? ""));
+  return enqueueMarketKeyInvalidations(refreshEvents);
+}
+
+async function loadMarketInvalidationCooldownKeys(comparableKeys: string[], cooldownMs: number): Promise<Set<string>> {
+  const unique = [...new Set(comparableKeys.filter(Boolean))];
+  const cooldown = new Set<string>();
+  if (unique.length === 0) return cooldown;
+  const cutoffIso = new Date(Date.now() - Math.max(0, cooldownMs)).toISOString();
+  const nowIso = new Date().toISOString();
+
+  for (const chunk of chunkArray(unique, REST_KEY_READ_CHUNK_SIZE)) {
+    const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
+    const res = await restFetch(
+      `${tableUrl("mvp_market_key_invalidation")}?select=comparable_key,status,last_recomputed_at,locked_until&comparable_key=in.(${encoded})&limit=${chunk.length}`,
+      { headers: serviceHeaders() },
+    );
+    const rows = (await res.json()) as Array<{
+      comparable_key: string | null;
+      status: string | null;
+      last_recomputed_at: string | null;
+      locked_until: string | null;
+    }>;
+    for (const row of rows) {
+      const key = row.comparable_key;
+      if (!key) continue;
+      if (row.status === "pending" || row.status === "processing") {
+        cooldown.add(key);
+        continue;
+      }
+      if (row.locked_until && row.locked_until > nowIso) {
+        cooldown.add(key);
+        continue;
+      }
+      if (row.status === "done" && row.last_recomputed_at && row.last_recomputed_at >= cutoffIso) {
+        cooldown.add(key);
+      }
+    }
+  }
+
+  return cooldown;
+}
+
+function aiAuditResidueReason(status: string | null | undefined): string {
+  if (status === "hold") return "ai_audit_hold_review";
+  if (status === "reject") return "ai_audit_reject_review";
+  if (status === "skipped_unavailable") return "ai_audit_unavailable_review";
+  if (status == null) return "ai_audit_missing_review";
+  return "ai_audit_unavailable_review";
+}
+
+function isAiAuditPoolPass(status: string | null | undefined): boolean {
+  return status === "pass";
+}
+
+function isAiAuditDefiniteNonPass(status: string | null | undefined): boolean {
+  return status === "hold" || status === "reject" || status === "skipped_unavailable";
+}
+
+function aiAuditVerdictFromClassification(
+  result: AiClassification,
+): "pass" | "hold" | "reject" {
+  const decision = aiSecondOpinionDecision(result);
+  const hardRisk = aiHasHardRisk(result);
+  if (decision === "pass" && result.listingType === "normal" && result.confidence === "high" && !hardRisk) {
+    return "pass";
+  }
+  if (decision === "reject" && result.confidence !== "low") {
+    return "reject";
+  }
+  return "hold";
+}
+
+async function syncPoolAiAuditStatusesFromCurrentCache(
+  poolEntries: Array<Record<string, unknown>>,
+  rows: PipelineRow[],
+): Promise<number> {
+  const rowByPid = new Map<number, PipelineRow>();
+  for (const row of rows) {
+    const pid = Number(row.pid);
+    if (Number.isFinite(pid)) rowByPid.set(pid, row);
+  }
+
+  const contentHashByPid = new Map<number, string>();
+  const pids = poolEntries
+    .filter((entry) => entry.category === "clothing" || entry.category === "shoe" || entry.category === "bag")
+    .map((entry) => Number(entry.pid))
+    .filter((pid) => Number.isFinite(pid) && rowByPid.has(pid));
+  for (const pid of pids) {
+    const row = rowByPid.get(pid);
+    if (row) contentHashByPid.set(pid, contentHash(row));
+  }
+  if (pids.length === 0) return 0;
+
+  const now = new Date().toISOString();
+  let synced = 0;
+  for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
+    const res = await restFetch(
+      `${tableUrl("mvp_listing_ai_classifications")}?select=pid,content_hash,listing_type,confidence,reason,risk_keywords,model&pid=in.(${chunk.join(",")})`,
+      { headers: serviceHeaders() },
+    );
+    if (!res.ok) {
+      console.warn(`syncPoolAiAuditStatusesFromCurrentCache fetch failed: ${res.status}`);
+      continue;
+    }
+    const cachedRows = (await res.json()) as Array<{
+      pid: number | string;
+      content_hash: string | null;
+      listing_type: AiClassification["listingType"];
+      confidence: AiClassification["confidence"];
+      reason: string | null;
+      risk_keywords: string[] | null;
+      model: string | null;
+    }>;
+    for (const cached of cachedRows) {
+      const pid = Number(cached.pid);
+      if (!Number.isFinite(pid)) continue;
+      const expectedHash = contentHashByPid.get(pid);
+      if (!expectedHash || cached.content_hash !== expectedHash) continue;
+      const verdict = aiAuditVerdictFromClassification({
+        listingType: cached.listing_type,
+        decision: null,
+        confidence: cached.confidence,
+        reason: cached.reason ?? "",
+        riskKeywords: cached.risk_keywords ?? [],
+        conditionClass: null,
+        conditionReason: "",
+        model: cached.model ?? "cache",
+        inputTokens: null,
+        outputTokens: null,
+        costUsd: null,
+      });
+      await patchRows(
+        "mvp_candidate_pool",
+        `pid=eq.${pid}`,
+        {
+          ai_audit_status: verdict,
+          ai_audit_at: now,
+          ai_audit_reason: (cached.reason ?? "").slice(0, 200),
+        },
+      );
+      synced += 1;
+    }
+  }
+  return synced;
+}
+
+async function invalidatePoolAiAuditResidues(limit: number): Promise<number> {
+  const res = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid,ai_audit_status&status=in.(ready,reserved)&category=in.(clothing,shoe,bag)&limit=${limit}`,
+    { headers: serviceHeaders() },
+  );
+  if (!res.ok) {
+    console.warn(`invalidatePoolAiAuditResidues fetch failed: ${res.status}`);
+    return 0;
+  }
+
+  const rows = (await res.json()) as Array<{ pid: number | string; ai_audit_status: string | null }>;
+  const invalidations = rows
+    // Missing/null means "not audited yet", not "unsafe". The shadow audit can
+    // be budget-capped, so treating null as a hard residue would shrink the
+    // pool before AI gets a chance to classify it.
+    .filter((row) => !isAiAuditPoolPass(row.ai_audit_status) && isAiAuditDefiniteNonPass(row.ai_audit_status))
+    .map((row) => ({
+      pid: Number(row.pid),
+      reason: aiAuditResidueReason(row.ai_audit_status),
+    }))
+    .filter((entry) => Number.isFinite(entry.pid));
+  if (invalidations.length === 0) return 0;
+  await invalidatePoolEntries(invalidations);
+  return invalidations.length;
 }
 
 async function loadPoolWarmRows(limit: number): Promise<PoolWarmRow[]> {
@@ -4455,16 +5385,45 @@ export async function housekeeperStage(): Promise<StageStats> {
 export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
+  const unscorableDirtyCleared = await clearUnscorableScoreDirty(Math.max(config.tickScoreLimit * 20, 1000));
+  const nonScorableDirtyCleared = await clearNonScorableScoreDirty(Math.max(config.tickScoreLimit * 2, 500));
+  const poolIneligibleResidues = await invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  const poolLowSellerRatingResidues = await invalidatePoolLowSellerRatingResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  const poolStaleParserResidues = await invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  const staleInvalidatedPoolDirtyMarked = await markStaleInvalidatedPoolRowsDirty(
+    Math.min(Math.max(config.tickScoreLimit, 100), 250),
+  );
+  const skuMedianUnavailableMarketInvalidations = await enqueueSkuMedianUnavailableMarketInvalidations(
+    Math.min(Math.max(config.tickScoreLimit, 100), 250),
+  );
+  const recoveredMarketInvalidatedPoolDirtyMarked = await markRecoveredMarketInvalidatedPoolRowsDirty(
+    Math.min(Math.max(config.tickScoreLimit, 100), 250),
+  );
+  const poolAiAuditResidues = await invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  stats.timingsMs = {
+    ...(stats.timingsMs ?? {}),
+    score_unscorable_dirty_cleared_rows: unscorableDirtyCleared,
+    score_non_scorable_dirty_cleared_rows: nonScorableDirtyCleared,
+    score_pool_ineligible_residue_invalidated_rows: poolIneligibleResidues,
+    score_pool_low_seller_rating_residue_invalidated_rows: poolLowSellerRatingResidues,
+    score_pool_stale_parser_residue_invalidated_rows: poolStaleParserResidues,
+    score_stale_invalidated_pool_dirty_marked_rows: staleInvalidatedPoolDirtyMarked,
+    score_sku_median_unavailable_market_invalidations: skuMedianUnavailableMarketInvalidations,
+    score_recovered_market_invalidated_pool_dirty_marked_rows: recoveredMarketInvalidatedPoolDirtyMarked,
+    score_pool_ai_audit_residue_invalidated_rows: poolAiAuditResidues,
+  };
   const rows = await loadScorableRows(config.tickScoreLimit);
   if (rows.length === 0) return stats;
   const categoryReadiness = await loadCategoryReadinessMap();
   const laneReadiness = await loadLaneReadinessMap();
   const parsedByPid = await ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid)));
-  const marketStatsByKey = await loadMarketPriceStats(
-    rows
-      .map((row) => preciseComparableKey(parsedByPid.get(row.pid)))
-      .filter((key): key is string => Boolean(key))
-  );
+  const preciseKeys = rows
+    .map((row) => preciseComparableKey(parsedByPid.get(row.pid)))
+    .filter((key): key is string => Boolean(key));
+  const marketStatsByKey = await loadMarketPriceStats([
+    ...preciseKeys,
+    ...preciseKeys.map(shoeSizeAgnosticComparableKey).filter((key): key is string => Boolean(key)),
+  ]);
 
   // 2026-05-15: 미개봉/새상품 매물 시세 = 다나와 reference price (쿠팡/네이버 등 합산 최저가).
   // 중고 시세와 비교하면 호가 부풀려 풀에서 빠짐 → 진짜 꿀 매물 놓침.
@@ -4539,6 +5498,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   }
 
   let needsReviewSkipped = 0;
+  const parserNeedsReviewPoolInvalidations: { pid: number; reason: string }[] = [];
   let phase2EscrowSelected = 0;
   const phase2EscrowFlagByPid = new Map<string, "ai_escrow_pending">();
   const handledPids: number[] = [];
@@ -4567,6 +5527,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       const escrow = evaluatePhase2Escrow({ parsed, selectedSoFar: phase2EscrowSelected });
       if (!escrow.eligible) {
         needsReviewSkipped += 1;
+        parserNeedsReviewPoolInvalidations.push({ pid: Number(row.pid), reason: "parser_needs_review" });
         continue;
       }
       phase2EscrowSelected += 1;
@@ -4595,8 +5556,23 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     // Wave 130 (2026-05-16): 매물 condition_class에 매칭되는 시세 row 선택 (sample 부족 시 fallback).
     // 사업 보고서 L2: 같은 SKU+옵션도 condition별 시세 spread 15~40% — 정확성 ↑.
     const byCondition = comparableKey ? marketStatsByKey.get(comparableKey) : undefined;
-    const marketStat = pickMarketStatByCondition(byCondition, parsed?.condition_class ?? null);
-    const trustedMedian = trustedMarketMedian(marketStat, parsed?.category);
+    const exactMarketStat = pickMarketStatByCondition(byCondition, parsed?.condition_class ?? null);
+    let marketStat = exactMarketStat;
+    let trustedMedian = trustedMarketMedian(marketStat, parsed?.category);
+    let usedShoeSizeAnyMarket = false;
+    if (trustedMedian == null && comparableKey) {
+      const sizeAnyKey = shoeSizeAgnosticComparableKey(comparableKey);
+      const sizeAnyStat = pickMarketStatByCondition(
+        sizeAnyKey ? marketStatsByKey.get(sizeAnyKey) : undefined,
+        parsed?.condition_class ?? null,
+      );
+      const sizeAnyMedian = trustedMarketMedian(sizeAnyStat, parsed?.category);
+      if (sizeAnyMedian != null) {
+        marketStat = sizeAnyStat;
+        trustedMedian = sizeAnyMedian;
+        usedShoeSizeAnyMarket = true;
+      }
+    }
     // Wave 179b (2026-05-17 사용자 코멘트): 매물 condition 매칭 batch median 우선.
     // 같은 marketKey + condition_class 매물끼리만 batch (broad SKU mixed 차단).
     // sample 부족 시 condition-fallback chain (worn → normal → all, mint/unopened 위로 X).
@@ -4676,6 +5652,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
         if (!hasShoeUsableMedian) scoreFlags.push("market_stat_missing");
       } else if (marketStat.confidence === "low") scoreFlags.push("market_confidence_low");
     }
+    if (usedShoeSizeAnyMarket) scoreFlags.push("shoe_size_any_market_price");
     if (parseConfidence > 0 && parseConfidence < 0.65) scoreFlags.push("option_parse_review");
     if (parsed?.needs_review) scoreFlags.push("option_needs_review");
     const escrowFlag = phase2EscrowFlagByPid.get(String(row.pid));
@@ -4698,6 +5675,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       imageUrlTemplate: row.image_url_template,
       imageCount: row.image_count ?? null,
       thumbnailUrl: row.thumbnail_url,
+      source: row.source ?? null,
       priceGap,
       numFaved: row.num_faved,
       velocity,
@@ -4724,8 +5702,14 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       // Wave 145 (2026-05-16): 셀러 신뢰도 → 가품 floor v2 tier 2 gate.
       shopReviewCount: row.shop_review_count ?? null,
       shopReviewRating: row.shop_review_rating ?? null,
+      poolEligible: row.pool_eligible ?? null,
+      poolEligibleFalseStale: isStaleBunjangPoolEligibleFalse(row),
       ...shipping,
     });
+  }
+
+  if (parserNeedsReviewPoolInvalidations.length > 0) {
+    await invalidatePoolEntries(parserNeedsReviewPoolInvalidations);
   }
 
   const aiReview = await applyAiReview(scoredRows, {
@@ -4814,24 +5798,57 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     categoryReadiness,
     laneReadiness,
     now,
+    latestParserVersionByCategory: LATEST_PARSER_VERSION_BY_CATEGORY,
     existingPoolSellerCounts,
     fraudGroupHashes,
     lowVolumeSkuIds,
   });
-  const poolEntries = poolBuild.entries;
+  const poolBuildPids = poolBuild.entries
+    .map((entry) => Number(entry.pid))
+    .filter(Number.isFinite);
+  const rawPoolEligibilityByPid = new Map(rows.map((row) => [Number(row.pid), {
+    source: row.source ?? null,
+    query: row.query ?? null,
+    raw_json: row.raw_json ?? null,
+    pool_eligible: row.pool_eligible ?? null,
+  }]));
+  const rawPoolIneligiblePids = await loadRawPoolIneligiblePids(poolBuildPids);
+  const poolEntries = poolBuild.entries.filter((entry) => {
+    const pid = Number(entry.pid);
+    const rawEligibility = rawPoolEligibilityByPid.get(pid);
+    return (!rawEligibility || isRawPublicPoolEligible(rawEligibility)) && !rawPoolIneligiblePids.has(pid);
+  });
+  const runtimePoolEligibilityInvalidations = poolBuild.entries
+    .filter((entry) => {
+      const pid = Number(entry.pid);
+      const rawEligibility = rawPoolEligibilityByPid.get(pid);
+      return (rawEligibility ? !isRawPublicPoolEligible(rawEligibility) : false) || rawPoolIneligiblePids.has(pid);
+    })
+    .map((entry) => ({ pid: Number(entry.pid), reason: "pool_eligible_false" }))
+    .filter((entry) => Number.isFinite(entry.pid));
   await upsertRows("mvp_candidate_pool", poolEntries, "pid");
+  const poolAiAuditCacheSynced = await syncPoolAiAuditStatusesFromCurrentCache(poolEntries, aiReview.rows);
   await promoteLifecyclePriority(
     poolEntries.map((entry) => Number(entry.pid)).filter(Number.isFinite),
     "pool",
     new Date(Date.now() + 30 * 60 * 1000).toISOString(),
   );
-  await invalidatePoolEntries(poolBuild.invalidations);
+  await invalidatePoolEntries([...poolBuild.invalidations, ...runtimePoolEligibilityInvalidations].map((entry) => {
+    const parsed = parsedByPid.get(Number(entry.pid));
+    return {
+      ...entry,
+      category: parsed?.category ?? null,
+      comparable_key: parsed?.comparable_key ?? null,
+      condition_class: parsed?.condition_class ?? null,
+    };
+  }));
+  const postPoolIneligibleResidues = await invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  const postPoolStaleParserResidues = await invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000));
 
   // Wave 238 (2026-05-19): shadow audit — ready 매물 중 AI 안 본 매물 강제 호출.
   //   baseline 91.1% AI 안 봄 → fashion mismatch 근본 source. Option A 본체.
-  //   Phase 1 = shadow only (ai_audit_status 컬럼만 박음, status='ready' 유지).
+  //   Phase 1 = shadow audit 기록, Phase 2 = fashion non-pass ready/reserved 즉시 cleanup.
   //   비용 cap (AI_L2_DAILY_BUDGET_USD env, default $10/일) + telegram alert.
-  //   Phase 2 별도 wave 에서 실제 차단 활성화.
   try {
     const auditStats = await runShadowAudit({
       rows: aiReview.rows,
@@ -4873,6 +5890,15 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     console.warn("[wave238] shadow audit failed (non-fatal)", err);
     (stats as Record<string, unknown>).aiL2ShadowAuditError = (err as Error).message?.slice(0, 200) ?? "unknown";
   }
+  const postAuditPoolAiAuditResidues = await invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  stats.timingsMs = {
+    ...(stats.timingsMs ?? {}),
+    score_pool_ineligible_pre_upsert_blocked_rows: runtimePoolEligibilityInvalidations.length,
+    score_pool_ineligible_post_residue_invalidated_rows: postPoolIneligibleResidues,
+    score_pool_stale_parser_post_residue_invalidated_rows: postPoolStaleParserResidues,
+    score_pool_ai_audit_synced_from_cache: poolAiAuditCacheSynced,
+    score_pool_ai_audit_post_residue_invalidated_rows: postAuditPoolAiAuditResidues,
+  };
   stats.poolUpserted = poolEntries.length;
   stats.poolSkipped = poolBuild.skipped;
   // Wave 190 (2026-05-18): 풀 진입 0건 디버깅 — skip reason 별 카운터.
@@ -4902,6 +5928,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     ...(stats.timingsMs ?? {}),
     score_dirty_cleared_rows: processedPids.length,
     score_needs_review_skipped: needsReviewSkipped,
+    score_needs_review_pool_invalidated: parserNeedsReviewPoolInvalidations.length,
     score_phase2_escrow_selected: phase2EscrowSelected,
     score_phase2_escrow_gate_enabled: isPhase2EscrowEnabled() ? 1 : 0,
     score_phase2_escrow_resolved_pass: aiReview.stats.escrowResolvedPass,

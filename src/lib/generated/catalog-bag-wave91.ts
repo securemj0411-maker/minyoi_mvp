@@ -59,15 +59,18 @@ export const BAG_CATALOG: Sku[] = [
     modelName: "Alma BB Monogram (빈티지)",
     aliases: [],
     mustContain: [
+      ["루이비통", "louis vuitton", "lv"],
       ["알마", "alma"],
-      ["bb"],
+      ["bb", "알마bb", "almabb"],
+      ["모노그램", "monogram", "m53152", "캔버스", "canvas"],
     ],
     mustNotContain: [
-      "pm", "mm", "gm", "에삐", "epi", "베르니", "vernis", "다미에", "damier", "앙프렝뜨", "empreinte", "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔", "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정", "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
+      "pm", "mm", "gm", "네오", "neo", "버블그램", "bubblegram", "백팩", "backpack", "에삐", "epi", "베르니", "vernis", "다미에", "damier", "앙프렝뜨", "empreinte", "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔", "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정", "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
     ],
     msrpKrw: 2590000,
     released: 2024,
     laneKey: "bag_lv_alma_bb_monogram",
+    defaultProductType: "tote",
   },
   {
     id: "bag-lv-pochette-metis-monogram",
@@ -336,6 +339,86 @@ export const BAG_CATALOG: Sku[] = [
     defaultProductType: "tote",
   },
   {
+    id: "bag-bottega-cassette-padded-tech",
+    brand: "Bottega Veneta",
+    category: "bag",
+    modelName: "Bottega Veneta Padded Tech Cassette",
+    aliases: [],
+    mustContain: [
+      ["보테가", "bottega", "보테가베네타", "bottega veneta"],
+      ["카세트", "cassette"],
+      ["테크", "tech", "628951", "749878"],
+    ],
+    mustNotContain: [
+      "지갑", "wallet", "카드지갑", "카드 지갑", "반지갑", "장지갑", "오거나이저", "버킷백", "토트백", "클러치",
+      "키링", "스트랩 단품", "더스트백만", "박스만", "보증서만",
+    ],
+    msrpKrw: 3200000,
+    released: 2022,
+    laneKey: "bag_bottega_cassette_padded_tech",
+    defaultProductType: "crossbody",
+  },
+  {
+    id: "bag-bottega-cassette-padded",
+    brand: "Bottega Veneta",
+    category: "bag",
+    modelName: "Bottega Veneta Padded Cassette",
+    aliases: [],
+    mustContain: [
+      ["보테가", "bottega", "보테가베네타", "bottega veneta"],
+      ["카세트", "cassette"],
+      ["패딩", "패디드", "padded", "padding", "591970", "램스킨"],
+    ],
+    mustNotContain: [
+      "테크", "tech", "628951", "749878",
+      "지갑", "wallet", "카드지갑", "카드 지갑", "반지갑", "장지갑", "오거나이저", "버킷백", "토트백", "클러치",
+      "키링", "스트랩 단품", "더스트백만", "박스만", "보증서만",
+    ],
+    msrpKrw: 3000000,
+    released: 2021,
+    laneKey: "bag_bottega_cassette_padded",
+    defaultProductType: "crossbody",
+  },
+  {
+    id: "bag-bottega-cassette-camera",
+    brand: "Bottega Veneta",
+    category: "bag",
+    modelName: "Bottega Veneta Cassette Camera / Cobble Bag",
+    aliases: [],
+    mustContain: [
+      ["보테가", "bottega", "보테가베네타", "bottega veneta"],
+      ["카세트", "cassette"],
+      ["카메라", "camera", "코블", "cobble", "776209"],
+    ],
+    mustNotContain: [
+      "패딩", "패디드", "padded", "padding", "테크", "tech",
+      "지갑", "wallet", "카드지갑", "카드 지갑", "반지갑", "장지갑", "오거나이저", "버킷백", "토트백", "클러치",
+    ],
+    msrpKrw: 2500000,
+    released: 2022,
+    laneKey: "bag_bottega_cassette_camera",
+    defaultProductType: "crossbody",
+  },
+  {
+    id: "bag-bottega-cassette-bucket",
+    brand: "Bottega Veneta",
+    category: "bag",
+    modelName: "Bottega Veneta Cassette Bucket Bag",
+    aliases: [],
+    mustContain: [
+      ["보테가", "bottega", "보테가베네타", "bottega veneta"],
+      ["카세트", "cassette"],
+      ["버킷", "bucket"],
+    ],
+    mustNotContain: [
+      "지갑", "wallet", "카드지갑", "카드 지갑", "반지갑", "장지갑", "오거나이저",
+    ],
+    msrpKrw: 2500000,
+    released: 2022,
+    laneKey: "bag_bottega_cassette_bucket",
+    defaultProductType: "shoulder",
+  },
+  {
     id: "bag-bottega-cassette-mini",
     brand: "Bottega Veneta",
     category: "bag",
@@ -346,7 +429,11 @@ export const BAG_CATALOG: Sku[] = [
       ["카세트", "cassette"],
     ],
     mustNotContain: [
-      "라지", "large", "체인", "chain", "맥시", "maxi", "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔", "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정", "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
+      "라지", "large", "체인", "chain", "맥시", "maxi",
+      "패딩", "패디드", "padded", "padding", "테크", "tech", "591970", "628951", "749878",
+      "카메라", "camera", "코블", "cobble", "776209", "버킷", "bucket", "토트", "tote", "클러치", "clutch",
+      "지갑", "wallet", "카드지갑", "카드 지갑", "반지갑", "장지갑", "오거나이저", "organizer", "3단", "폴더형", "미니지갑",
+      "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔", "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정", "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
     ],
     msrpKrw: 2950000,
     released: 2024,
@@ -506,14 +593,16 @@ export const BAG_CATALOG: Sku[] = [
     // Wave 264 (2026-05-20): mustContain group 1 추가 — LV brand 강제 (사용자 발견 false positive).
     //   기존: ["키 포셰트", "키 파우치", ...] 만 — "나이키 에어포스 1 로우" 매물의 "키" 매칭? false positive 의심.
     //   fix: mustContain 에 LV brand 강제 group 추가. + mustNotContain 에 nike/adidas/스니커즈 추가.
+    // Wave 470 (2026-05-21): "클레" 단독은 몽클레르/클레이/클래식/클레오 stale 오염이 커서 명시형만 허용.
     mustContain: [
       ["루이비통", "lv", "louis vuitton"],
-      ["키 포셰트", "키포셰트", "키 파우치", "키파우치", "키 포쉐트", "키포쉐트", "key pouch", "cles", "클레"],
+      ["키 포셰트", "키포셰트", "키 파우치", "키파우치", "키 포쉐트", "키포쉐트", "key pouch", "cles", "클레 포셰트", "클레포셰트", "클레 포쉐트", "클레포쉐트", "클레 파우치", "클레파우치"],
     ],
     mustNotContain: [
       "다미에", "damier", "에삐", "epi", "앙프렝뜨",
       // Wave 264 false positive 차단 — 다른 brand 신발/잡화
       "나이키", "nike", "아디다스", "adidas", "에어포스", "airforce", "에어맥스", "airmax", "스니커즈", "운동화", "조던", "jordan",
+      "몽클레어", "몽클레르", "moncler", "클레이", "클래식", "클레식", "클레오",
       "넥타이핀", "키링", "키체인", "키링만", "스트랩 단품", "체인만", "장식만", "팁만", "스트로공", "벨트", "shoe", "신발", "의류", "옷", "반팔", "감정 가능", "감정 문의", "정가품 문의", "st급", "ST급", "레플리카", "복각", "정가품감정", "스트랩만", "더스트백만", "박스만", "보증서만", "감정 후 입금", "감정원", "감정사", "외관 부분만",
     ],
     msrpKrw: 380000,
@@ -625,7 +714,7 @@ export const BAG_CATALOG: Sku[] = [
     mustContain: [
       ["보테가", "bottega", "보테가베네타", "bottega veneta"],
       ["카세트", "cassette"],
-      ["카드지갑", "카드 지갑", "반지갑", "지갑", "wallet", "월릿", "카드 홀더", "card holder", "카드케이스", "카드 케이스"],
+      ["카드지갑", "카드 지갑", "반지갑", "지갑", "wallet", "월릿", "카드 홀더", "card holder", "카드케이스", "카드 케이스", "오거나이저", "organizer", "3단", "폴더형", "미니지갑"],
     ],
     mustNotContain: [
       "크로스백", "카메라백", "백팩", "토트백", "숄더백", "미니백", "버킷백",

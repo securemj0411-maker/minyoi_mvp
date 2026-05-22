@@ -144,9 +144,9 @@ describe("Wave 249 — negative_resell_gap gate", () => {
     assert.equal(skip, undefined, "price < skuMedian 은 negative_resell_gap 차단 X (profit band 가 잡을 수도 있음)");
   });
 
-  it("차익 양수 (skuMedian=200K, listing=100K) → pool 진입 정상 (negative_resell_gap 통과)", () => {
+  it("차익 양수 (skuMedian=148K, listing=100K) → pool 진입 정상 (negative_resell_gap 통과)", () => {
     const result = buildCandidatePoolRows({
-      rows: [{ ...baseRow, price: 100000, skuMedian: 200000 }],
+      rows: [{ ...baseRow, price: 100000, skuMedian: 148000 }],
       parsedByPid: baseParsed,
       catalogById,
       categoryReadiness,
@@ -200,7 +200,7 @@ describe("Wave 249 — band-aware fallback 후 정상 매물 처리 (Wave 247.2 
     // Wave 247.2 (band-aware) 후 production 의 16% sku_median=0 → 0% 감소.
     // 그 fallback 으로 채워진 skuMedian 가 양수 & price < skuMedian 인 매물은 정상 pool 진입.
     const result = buildCandidatePoolRows({
-      rows: [{ ...baseRow, price: 80000, skuMedian: 150000 }],
+      rows: [{ ...baseRow, price: 100000, skuMedian: 148000 }],
       parsedByPid: baseParsed,
       catalogById,
       categoryReadiness,

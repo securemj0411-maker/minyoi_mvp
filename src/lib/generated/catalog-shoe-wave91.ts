@@ -114,7 +114,7 @@ export const SHOE_CATALOG: Sku[] = [
     modelName: "Air Jordan 1 Low OG SP Travis Scott Mocha",
     aliases: [],
     mustContain: [
-      ["조던1", "jordan 1", "aj1"],
+      ["조던1", "조던1x", "조던 1x", "jordan 1", "aj1"],
       ["로우", "low"],
       ["트래비스", "travis", "트스", "ts", "cactus jack"],
     ],
@@ -463,6 +463,7 @@ export const SHOE_CATALOG: Sku[] = [
     mustContain: [
       ["삼바", "samba"],
       ["og", "오지"],
+      ["core black", "코어 블랙", "화이트 블랙", "블랙 화이트", "흰검", "검흰", "black"],
     ],
     mustNotContain: [
       "wales bonner", "웨일즈보너", "edison", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "wb", "웨일즈 보너",

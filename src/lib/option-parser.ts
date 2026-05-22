@@ -71,6 +71,7 @@ export const FLAWED_NOTES = [
   "installment_risk",
   // Wave 204 (2026-05-18): buy-intent 매물 (구함/삽니다/매입) — 정상 거래 X (사용자 손해 명확).
   "buying_post",
+  "exchange_only",
   // Wave 207 (2026-05-18): earphone single-side (한쪽만) — 페어 단위 매물 아님 (시세 부풀림).
   "single_side_only",
   // Wave 208 (2026-05-18): "X용 + 액세서리" 호환 매물 — 본품 sku 매칭 잘못 (시세 부풀림).
@@ -218,7 +219,10 @@ export function resolveConditionClass(
 // Wave 209 (2026-05-18) v54: objective measurement 우선 (worse-of 무시).
 //   사용자 #159 재확인 — Wave 203 박았는데 worse-of 가 metadata "사용감 적음" 우선해서 여전히 normal.
 //   battery 95+ 객관적 신호 있으면 metadata override 차단.
-export const PARSER_VERSION = "option-parser-v54";
+// Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
+//   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
+//   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
+export const PARSER_VERSION = "option-parser-v55";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -926,6 +930,7 @@ function modelFromSku(skuId?: string | null, skuName?: string | null) {
   if (id === "watch_casio_gshock_dw5600") return "gshock_dw5600";
   if (id === "watch_casio_gshock_ga2100") return "gshock_ga2100";
   if (id === "watch_casio_gshock_gmwb5000") return "gshock_gmwb5000";
+  if (id === "watch_tnf_supreme_gshock_dw6900" || id === "clothing_tnf_supreme_gshock") return "tnf_supreme_gshock_dw6900";
   if (id === "watch_seiko_5_sports_srpd") return "seiko5_srpd";
   if (id === "watch_seiko_5_sports_sbsa") return "seiko5_sbsa";
   if (id === "sport_golf_titleist_tsr2_driver") return "titleist_tsr2_driver";
@@ -957,7 +962,7 @@ function familyFrom(category: Sku["category"] | null, model: string | null) {
   }
   // Wave 67/74: 신 사업 카테고리 brand 매핑.
   if (category === "watch") {
-    if (model.startsWith("gshock") || model.includes("casio")) return "casio";
+    if (model.startsWith("gshock") || model.includes("gshock") || model.includes("casio")) return "casio";
     if (model.startsWith("seiko")) return "seiko";
     return "watch";
   }
@@ -1000,7 +1005,9 @@ function defaultAirpodsConnector(model: string | null, text: string) {
 function parseAirpodsMaxGeneration(model: string | null, text: string) {
   if (!model?.includes("airpods_max")) return null;
   const lower = normalize(text).toLowerCase();
-  const rawLower = (text ?? "").normalize("NFKC").toLowerCase();
+  // Wave 429 (2026-05-21): NFKC가 "ㄴㄴ"을 초성 자모로 분해해 no-ANC 부정 표현을 놓쳤다.
+  // raw text는 그대로 lower 처리해서 "노캔 ㄴㄴ" / "노캔ㄴㄴ"을 보존한다.
+  const rawLower = (text ?? "").toLowerCase();
   const rawCompact = rawLower.replace(/\s+/g, "");
 
   const ambiguous =
@@ -1044,10 +1051,10 @@ function parseAirpodsNoiseControl(model: string | null, text: string) {
   }
 
   if (
-    /노캔\s*(?:x|×|❌|ㄴㄴ|노노|없|아님|아니|안됨|안\s*됨|미지원)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)\s*(?:x|×|❌|없|아님|아니|안됨|안\s*됨|미지원)|anc\s*(?:x|no|없|미지원)/.test(rawLower) ||
-    /노캔\s*(?:x|없|아님|아니|안됨|안\s*됨|미지원)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)\s*(?:x|없|아님|아니|안됨|안\s*됨|미지원)|anc\s*(?:x|no|없|미지원)/.test(lower) ||
-    /노캔이되는모델은아니|노캔안되는|노캔없는|노캔x|노캔❌|노캔ㄴㄴ|노캔노노|노캔아님|노캔아니|노캔착각|노클x|ancx/.test(rawCompact) ||
-    /노캔이되는모델은아니|노캔안되는|노캔없는|노캔x|노캔아님|노캔아니|노캔착각|노클x|ancx/.test(compact) ||
+    /노캔\s*(?:x|×|❌|ㄴㄴ|ᄂᄂ|노노|없|아님|아니|안됨|안\s*됨|안\s*돼|안돼|안\s*되는|미지원)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)\s*(?:x|×|❌|없|아님|아니|안됨|안\s*됨|안\s*돼|안돼|안\s*되는|미지원)|anc\s*(?:x|no|없|미지원)/.test(rawLower) ||
+    /노캔\s*(?:x|없|아님|아니|안됨|안\s*됨|안\s*돼|안돼|안\s*되는|미지원)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)\s*(?:x|없|아님|아니|안됨|안\s*됨|안\s*돼|안돼|안\s*되는|미지원)|anc\s*(?:x|no|없|미지원)/.test(lower) ||
+    /노캔이되는모델은아니|노캔안되는|노캔안돼|노캔없는|노캔x|노캔❌|노캔ㄴㄴ|노캔ᄂᄂ|노캔노노|노캔아님|노캔아니|노캔착각|노클x|노이즈캔슬링안되는|노이즈캔슬안되는|ancx/.test(rawCompact) ||
+    /노캔이되는모델은아니|노캔안되는|노캔안돼|노캔없는|노캔x|노캔아님|노캔아니|노캔착각|노클x|노이즈캔슬링안되는|노이즈캔슬안되는|ancx/.test(compact) ||
     /일반\s*모델|일반형|기본\s*모델|기본모델|유선\s*충전|유선충전|mxp63/.test(lower) ||
     // Wave 90: "비노캔" 키워드 추가 (사용자 코멘트로 발견 — pid 403846241)
     /비\s*노캔|비노캔|비\s*노이즈\s*캔슬|비노이즈캔슬/.test(lower) ||
@@ -1235,6 +1242,14 @@ function conditionFromText(
     add("buying_post", -0.4);
   }
 
+  // Wave 531 (2026-05-22): exchange-only listings are not buyable acquisition targets.
+  // Keep "교환/환불 불가" and "교환 가능" sale disclaimers out of this block by requiring
+  // directional/exclusive wording in the title.
+  const exchangeOnlyPattern = /\[\s*교환\s*\]|^교환\s+|(?:^|[\s[\]()])교환글|(?:^|[\s[\]()])교환\s*(?:해요|합니다|희망|원해|구해|구합니다|만|글)|(?:->|→).{0,36}교환|교환.{0,12}(?:->|→)/i;
+  if (exchangeOnlyPattern.test(titleNormalized)) {
+    add("exchange_only", -0.4);
+  }
+
   // Wave 207 (2026-05-18): earphone single-side (한쪽만) 매물 차단.
   // 사용자 코멘트 #153 (pid 343583659): "에어팟프로2세대 C타입 왼쪽, A-급" → AirPods Pro 2 본체 SKU 매칭.
   // 무선 이어폰류는 페어 단위 시세 — 한쪽만 매물은 단품 (정상 거래 X, 시세 부풀림).
@@ -1256,6 +1271,11 @@ function conditionFromText(
   const accessoryCompatibilityPattern = /[가-힣A-Za-z0-9]+\s*용\s*(?:pov\s*)?(?:렌즈|필터|마운트|어댑터|거치대|충전기|배터리|케이블|보호\s*필름|보호필름|폴리오|스타일러스|손목\s*밴드|와이파이\s*동글|동글|그립|마이크|sd\s*카드|메모리\s*카드|스트랩\s*어댑터|케이스|커버|파우치|크래들|스탠드|홀더|클립|독|도크)/i;
   if (accessoryCompatibilityPattern.test(titleNormalized)) {
     add("accessory_compatible_for_other_product", -0.4);
+  }
+  const explicitPartsOnlyTitlePattern = /(?:부속품|악세사리|액세서리)\s*(?:만|단품|팝니다|판매|팔아요|처분)|(?:type\s*[- ]?c\s*)?(?:베이스|마운트|어댑터|거치대|렌즈|필터|독|도크)\s*(?:만|단품|팝니다|판매|팔아요)?$/i;
+  const explicitBodyMissingPattern = /(?:본체|바디)\s*(?:없|미포함|제외)|(?:본품|본체)\s*(?:없이|없는)/i;
+  if (explicitPartsOnlyTitlePattern.test(titleNormalized) || explicitBodyMissingPattern.test(titleNormalized)) {
+    add("parts_only", -0.4);
   }
 
   // 2026-05-15 (사용자 코멘트 pid 408124976): 애플케어/AC+/삼성케어 매물은
@@ -1540,6 +1560,17 @@ export function conditionFromTextFashion(
     // 봉제 풀림/터짐/뜯어짐 — 수선 필요.
     if (/봉제\s*(?:풀|터|뜯|벌어)|솔기\s*(?:풀|터|뜯|벌어)|박음질\s*(?:풀|터|뜯)|시접\s*(?:풀|터)/.test(lower)) {
       add("clothing_seam_damage", -0.15);
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal");
+      }
+    }
+    // 데미지/구멍/해짐/보강 필요 — 빈티지 의류에서 "상태 좋음"과 함께 적히는 수선 신호.
+    const noStructuralDamage = /(?:데미지|구멍|찢어짐|찢김|해짐|보강)\s*(?:없|없음|아님|없습니다|없어요)/.test(lower);
+    if (
+      !noStructuralDamage &&
+      /(?:작은\s*)?데미지\s*(?:있|있음|\d+|두\s*개|여러|조금|살짝)|구멍\s*(?:있|있음|\d+|작게|작은)|찢어(?:짐|졌|진)|찢김|해짐|헤짐|터짐|보강\s*(?:필요|해야|요망)|수선\s*(?:필요|해야|요망)/.test(lower)
+    ) {
+      add("clothing_structural_damage", -0.2);
       if (!notes.includes("repair_or_defect_signal")) {
         notes.push("repair_or_defect_signal");
       }
@@ -1988,6 +2019,17 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   });
   const variantKey = parts ? parts.slice(2).join(" / ") : null;
   const criticalUnknown = criticalUnknowns(category, comparableKey);
+  const poolBlockConditionNote = conditionNotes.some((note) => [
+    "multi_device_bundle",
+    "display_defect",
+    "screen_replaced",
+    "faceid_issue",
+    "parts_only",
+    "buying_post",
+    "exchange_only",
+    "single_side_only",
+    "accessory_compatible_for_other_product",
+  ].includes(note));
   // Wave 90 v38: 번들 매물 정책 변경 (사용자 결정).
   // 이전: tablet 번들 (+애플펜슬/매직키보드/케이스) → needs_review → 풀 진입 차단
   // 변경: 번들 매물도 풀 진입 OK. 시세 비교는 순정 매물 기준 그대로.
@@ -1995,6 +2037,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   // parsedJson.tablet_bundle_price_review는 그대로 박혀서 후속 UI 뱃지 표시 가능.
   const needsReview = parseConfidence < 0.65
     || criticalUnknown.length > 0
+    || poolBlockConditionNote
     || airpodsMaxGeneration === "unknown_generation"
     || (airpodsMaxGeneration === "max_lightning" && !airpodsMaxFullProductContext)
     || (category === "monitor" && !monitorModelCode)

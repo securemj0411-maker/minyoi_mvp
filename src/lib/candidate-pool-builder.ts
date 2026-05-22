@@ -59,6 +59,44 @@ const MAX_POOL_LISTINGS_PER_SELLER = 1;
 // MIN_SELLERS_FOR_FRAUD_GROUP = 2 = 같은 hash에 다른 셀러 2명 이상이면 사기 그룹.
 const MIN_SELLERS_FOR_FRAUD_GROUP = 2;
 
+const HIGH_PROFIT_ELECTRONICS_ROI = 0.4;
+const HIGH_PROFIT_WEAK_SIGNAL_ROI = 0.45;
+const HIGH_PROFIT_DEFAULT_ROI = 0.6;
+const HIGH_PROFIT_MARKETPLACE_VARIANCE_ROI = 0.7;
+
+const HIGH_PROFIT_ELECTRONICS_CATEGORIES = new Set<Sku["category"]>([
+  "earphone",
+  "smartwatch",
+  "smartphone",
+  "tablet",
+  "laptop",
+  "monitor",
+  "speaker",
+  "camera",
+  "game_console",
+  "desktop",
+  "home_appliance",
+  "small_appliance",
+  "watch",
+  "drone",
+  "kickboard",
+]);
+
+const HIGH_PROFIT_MARKETPLACE_VARIANCE_CATEGORIES = new Set<Sku["category"]>([
+  "shoe",
+  "bag",
+  "clothing",
+  "perfume",
+  "sport_golf",
+  "bike",
+]);
+
+const LOW_SELLER_RATING_REVIEW = 3.5;
+
+function shouldHonorPoolEligibleFalse(row: Pick<PoolCandidateInput, "poolEligibleFalseStale">): boolean {
+  return row.poolEligibleFalseStale !== true;
+}
+
 // Wave 129 (2026-05-16): parse_confidence threshold 명시 — 사업 보고서 L1.
 // "AI normalization 매칭 confidence < 0.85면 매물 풀에서 제외".
 // 우리 정책 (LAUNCH_PLAN 12b precision-first):
@@ -72,6 +110,7 @@ export const PARSE_CONFIDENCE_LOW = 0.55;
 
 export type PoolCandidateInput = {
   pid: number | string;
+  name?: string | null;
   price: number;
   skuMedian: number;
   estimatedBuyCost: number;
@@ -79,7 +118,9 @@ export type PoolCandidateInput = {
   shippingFeeGeneral: number | null;
   riskHits: number;
   thumbnailUrl?: string | null;
+  source?: string | null;
   poolEligible?: boolean | null;
+  poolEligibleFalseStale?: boolean | null;
   skuId: string | null;
   score: number;
   scoreFlags: string[];
@@ -111,6 +152,7 @@ export type PoolCandidateInput = {
 };
 
 export type PoolParsedInput = {
+  parser_version?: string | null;
   category: Sku["category"] | null;
   comparable_key: string | null;
   parse_confidence: number | null;
@@ -128,6 +170,113 @@ export type CandidatePoolBuildResult = {
   // 신규 카테고리 풀 진입 0건 디버깅 시 어느 gate가 차단했는지 즉시 확인 가능.
   skipReasonCounts: Record<string, number>;
 };
+
+function formatRoiPctForReason(roi: number): string {
+  return `${Math.round(roi * 100)}pct`;
+}
+
+function highProfitAnomalyReason(input: {
+  category: Sku["category"] | null;
+  sku?: Sku | null;
+  comparableKey: string | null;
+  price: number;
+  estimatedBuyCost: number;
+  profitMin: number;
+  profitMax: number;
+  confidence: number;
+  imageCount?: number | null;
+  shopReviewCount?: number | null;
+  conditionClass?: string | null;
+}): string | null {
+  const buyBase = Math.max(input.estimatedBuyCost, input.price, 1);
+  const avgProfit = (input.profitMin + input.profitMax) / 2;
+  if (!Number.isFinite(buyBase) || !Number.isFinite(avgProfit) || avgProfit <= 0) return null;
+
+  const roi = avgProfit / buyBase;
+  if (!Number.isFinite(roi) || roi < HIGH_PROFIT_ELECTRONICS_ROI) return null;
+
+  const category = input.category;
+  if (category && HIGH_PROFIT_ELECTRONICS_CATEGORIES.has(category) && roi >= HIGH_PROFIT_ELECTRONICS_ROI) {
+    return `profit_roi_above_${formatRoiPctForReason(HIGH_PROFIT_ELECTRONICS_ROI)}_electronics_review`;
+  }
+
+  const comparableKey = input.comparableKey ?? "";
+  const broadSku = Boolean(
+    input.sku?.id.endsWith("-broad") ||
+    input.sku?.laneKey?.endsWith("_broad") ||
+    comparableKey.split("|").some((token) => token.endsWith("_broad")),
+  );
+  const unknownCondition = !input.conditionClass || comparableKey.split("|").includes("unknown_condition");
+  const fewImages = input.imageCount != null && input.imageCount <= 2;
+  const weakSeller = input.shopReviewCount == null || input.shopReviewCount < 5;
+  const weakSignals = broadSku || unknownCondition || fewImages || weakSeller || input.confidence < PARSE_CONFIDENCE_HIGH;
+
+  if (weakSignals && roi >= HIGH_PROFIT_WEAK_SIGNAL_ROI) {
+    return `profit_roi_above_${formatRoiPctForReason(HIGH_PROFIT_WEAK_SIGNAL_ROI)}_weak_signal_review`;
+  }
+
+  const threshold = category && HIGH_PROFIT_MARKETPLACE_VARIANCE_CATEGORIES.has(category)
+    ? HIGH_PROFIT_MARKETPLACE_VARIANCE_ROI
+    : HIGH_PROFIT_DEFAULT_ROI;
+
+  if (roi >= threshold) {
+    const categoryKey = category ?? "unknown";
+    return `profit_roi_above_${formatRoiPctForReason(threshold)}_${categoryKey}_review`;
+  }
+
+  return null;
+}
+
+function fashionPrecisionReviewReason(input: {
+  category: Sku["category"] | null;
+  sku?: Sku | null;
+  comparableKey: string | null;
+  text?: string | null;
+}): string | null {
+  if (input.category !== "shoe" && input.category !== "bag" && input.category !== "clothing") return null;
+  const comparableKey = input.comparableKey ?? "";
+  const keyParts = comparableKey.split("|");
+  const broadSku = Boolean(
+    input.sku?.id.endsWith("-broad") ||
+    input.sku?.laneKey?.endsWith("_broad") ||
+    keyParts.some((token) => token.endsWith("_broad")),
+  );
+  if (broadSku) return "fashion_broad_sku_review";
+  if (keyParts.includes("unknown_condition")) return "fashion_unknown_condition_review";
+  const skuIsCollabLane = Boolean(
+    input.sku?.id.endsWith("-collab") ||
+    input.sku?.laneKey?.includes("collab") ||
+    /(?:\bx\b|×)/i.test(input.sku?.brand ?? ""),
+  );
+  const text = input.text ?? "";
+  const explicitExternalCollab = (
+    /[a-z가-힣][a-z0-9가-힣.&'’_-]{1,24}\s+(?:x|×)\s+[a-z가-힣][a-z0-9가-힣.&'’_-]{1,24}/i.test(text) ||
+    /[가-힣]{2,}\s*(?:x|×)\s*[가-힣]{2,}/.test(text) ||
+    /×/.test(text) ||
+    /\b(?:collab|collaboration)\b|콜라보|협업/i.test(text)
+  );
+  if (!skuIsCollabLane && explicitExternalCollab) return "fashion_external_collab_review";
+  return null;
+}
+
+function sellerTrustReviewReason(input: {
+  shopReviewCount?: number | null;
+  shopReviewRating?: number | null;
+}): string | null {
+  const count = input.shopReviewCount;
+  const rating = input.shopReviewRating;
+  if (
+    count != null &&
+    Number.isFinite(count) &&
+    count > 0 &&
+    rating != null &&
+    Number.isFinite(rating) &&
+    rating < LOW_SELLER_RATING_REVIEW
+  ) {
+    return `seller_rating_below_${String(LOW_SELLER_RATING_REVIEW).replace(".", "_")}_review`;
+  }
+  return null;
+}
 
 // Lane-aware pool gate. A SKU tagged with a `ready` laneKey enters the pool
 // even when its broader category is `internal_only`. SKUs without a lane (or
@@ -202,6 +351,9 @@ export function buildCandidatePoolRows(input: {
   //   sparse SKU (Yeezy V2 colorway / LV variant / Hoka Clifton 10 등) pool 진입 차단.
   //   tick-pipeline 가 사전 SQL 집계 후 전달.
   lowVolumeSkuIds?: Set<string>;
+  // Wave 502 (2026-05-21): pool 입장 직전 parser freshness gate.
+  // parsed row가 최신 parser가 아니면 stale comparable_key가 ready로 재진입할 수 있다.
+  latestParserVersionByCategory?: Partial<Record<Sku["category"], string>>;
 }): CandidatePoolBuildResult {
   const entries: Record<string, unknown>[] = [];
   const invalidations: { pid: number; reason: string }[] = [];
@@ -219,9 +371,18 @@ export function buildCandidatePoolRows(input: {
 
   for (const row of sortedRows) {
     const pid = Number(row.pid);
-    if (row.poolEligible === false) {
+    const parsed = input.parsedByPid.get(pid);
+    const sku = input.catalogById.get(row.skuId ?? "");
+    const category = parsed?.category ?? sku?.category ?? null;
+    if (row.poolEligible === false && shouldHonorPoolEligibleFalse(row)) {
       skipped += 1;
       invalidations.push({ pid, reason: "pool_eligible_false" });
+      continue;
+    }
+    const expectedParserVersion = category ? input.latestParserVersionByCategory?.[category] : undefined;
+    if (expectedParserVersion && parsed?.parser_version !== expectedParserVersion) {
+      skipped += 1;
+      invalidations.push({ pid, reason: `stale_parser_version_${category}` });
       continue;
     }
     // Wave 224/225 (2026-05-19): sparse SKU pool 진입 차단.
@@ -397,6 +558,16 @@ export function buildCandidatePoolRows(input: {
       continue;
     }
 
+    const sellerTrustReason = sellerTrustReviewReason({
+      shopReviewCount: row.shopReviewCount,
+      shopReviewRating: row.shopReviewRating,
+    });
+    if (sellerTrustReason) {
+      skipped += 1;
+      invalidations.push({ pid, reason: sellerTrustReason });
+      continue;
+    }
+
     // Wave 249 (2026-05-19): Option 3 — pool 진입 단계에서 차익 음수 + sku_median 부재 매물 명시 차단.
     //   사용자 결정: candidates.ts:103-104 `Math.max(0, ...)` clamp 정책 root fix.
     //   기존: 차익 음수/시세 부재 매물이 `bandFromProfit` 의 `null` 반환에 묶여 모두
@@ -435,10 +606,6 @@ export function buildCandidatePoolRows(input: {
       invalidations.push({ pid, reason: "profit_below_pack_band" });
       continue;
     }
-
-    const parsed = input.parsedByPid.get(pid);
-    const sku = input.catalogById.get(row.skuId ?? "");
-    const category = parsed?.category ?? sku?.category ?? null;
 
     // Wave 141 (2026-05-16): 시세 floor 가품 detection — 신발/가방 카테고리.
     // 패턴: price < max(msrp, skuMedian) * 0.15 (85% 이상 할인) → 가품 확실
@@ -583,8 +750,42 @@ export function buildCandidatePoolRows(input: {
       continue;
     }
 
+    const highProfitReason = highProfitAnomalyReason({
+      category,
+      sku,
+      comparableKey,
+      price: row.price,
+      estimatedBuyCost: row.estimatedBuyCost,
+      profitMin,
+      profitMax,
+      confidence,
+      imageCount: row.imageCount,
+      shopReviewCount: row.shopReviewCount,
+      conditionClass: parsed?.condition_class ?? null,
+    });
+    if (highProfitReason) {
+      skipped += 1;
+      invalidations.push({ pid, reason: highProfitReason });
+      continue;
+    }
+
+    const fashionPrecisionReason = fashionPrecisionReviewReason({
+      category,
+      sku,
+      comparableKey,
+      text: [row.name, row.descriptionPreview].filter(Boolean).join(" "),
+    });
+    if (fashionPrecisionReason) {
+      skipped += 1;
+      invalidations.push({ pid, reason: fashionPrecisionReason });
+      continue;
+    }
+
     entries.push({
       pid,
+      status: "ready",
+      invalidated_reason: null,
+      reserved_until: null,
       profit_band: band,
       category,
       expected_profit_min: profitMin,

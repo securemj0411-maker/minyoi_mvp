@@ -970,6 +970,7 @@ export type PipelineRow = {
   imageUrlTemplate?: string | null;
   imageCount?: number;
   thumbnailUrl?: string | null;
+  source?: string | null;
   priceGap: number;
   numFaved: number;
   velocity: number;
@@ -996,6 +997,11 @@ export type PipelineRow = {
   // Wave 145 (2026-05-16): 셀러 신뢰도 → 가품 floor v2 tier 2 gate.
   shopReviewCount?: number | null;
   shopReviewRating?: number | null;
+  // Public candidate-pool admission flag. Internal observation rows must never
+  // enter ready even if later scoring math looks profitable. Source is carried
+  // with this flag because legacy Bunjang rows can contain stale false values.
+  poolEligible?: boolean | null;
+  poolEligibleFalseStale?: boolean | null;
   shippingFee: number;
   shippingFeeGeneral: number | null;
   shippingSource: string;
