@@ -9685,6 +9685,9 @@ export const CATALOG: Sku[] = [
       "메가 샤크", "mega shark", "메가샤크",
       "보아 후드", "boa hoodie", "보아샤크",
       "네온 카모", "neon camo",
+      // Wave 638: 추가 한정 (Japanese Tattoo / 야광 시티카모).
+      "재패니즈 타투", "japanese tattoo", "tattoo shark",
+      "야광 시티", "야광시티", "야광 카모", "글로우 인 더 다크", "glow in the dark",
     ],
     msrpKrw: 450000, released: 2005,
     // Wave 236f (2026-05-19): audit 발견 — BAPE Shark 패턴이 pants/tee/조거에도 출시 (multi-line model).
