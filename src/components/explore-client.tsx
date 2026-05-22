@@ -53,6 +53,7 @@ type PoolItem = {
   tradeLabels?: string[];
   transactionMode?: string | null;
   shippingAssumption?: string | null;
+  directTradeLocation?: string | null;
   imageCount: number | null;
   descriptionPreview: string;
   soldOut: boolean;
@@ -67,6 +68,7 @@ type PoolResponse = {
   cooldown: { canRefresh: boolean; remainingSec: number; nextAvailableAt: string | null };
   feedMode?: "free" | "credit";
   creditFeed?: boolean;
+  appliedBudget?: "150k" | "300k" | "500k" | "unlimited";
   detailAccess?: {
     creditBalance: number | null;
     freeUsed: number;
@@ -138,6 +140,11 @@ type DetailAccessValueSummary = {
   estimatedMinutesSaved: number;
 };
 
+type DirectTradeConfirmState = {
+  item: PoolItem;
+  costLabel: string;
+};
+
 function createDetailSessionId(pid: number) {
   const rand = Math.random().toString(36).slice(2, 8);
   return `detail:${pid}:${Date.now().toString(36)}:${rand}`;
@@ -196,6 +203,16 @@ function recomputePoolProfit(price: number, marketPrice: number | null | undefin
   const max = Math.round(marketPrice - price - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
   const min = Math.round(marketPrice - (price + buyShipping) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
   return { min, max };
+}
+
+function isDirectOnlyItem(item: Pick<PoolItem, "transactionMode" | "shippingAssumption">) {
+  return item.transactionMode === "direct_only" || item.shippingAssumption === "direct_only";
+}
+
+function directTradeCostLabel(snapshot: DetailAccessSnapshot) {
+  const freeRemaining = Math.max(0, Number(snapshot.freeLimit) - Number(snapshot.freeUsed));
+  if (freeRemaining > 0) return "무료 상세보기 1회";
+  return "1크레딧";
 }
 
 function accessValueForItem(item: PoolItem): DetailAccessValueSummary {
@@ -304,6 +321,7 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
       tradeLabels: item.tradeLabels ?? [],
       transactionMode: item.transactionMode === "direct_only" || item.transactionMode === "shipping_only" || item.transactionMode === "direct_and_shipping" ? item.transactionMode : "unknown",
       shippingAssumption: item.shippingAssumption === "direct_only" || item.shippingAssumption === "included" || item.shippingAssumption === "separate" || item.shippingAssumption === "free_shipping" ? item.shippingAssumption : "unknown",
+      directTradeLocation: item.directTradeLocation ?? null,
     },
     optionBaseAssumed: null,
   };
@@ -449,6 +467,13 @@ function writeDetailAccessSnapshot(storageScope: string, value: DetailAccessSnap
 
 function budgetFilterOption(value: BudgetFilterOption) {
   return BUDGET_FILTER_OPTIONS.find((option) => option.value === value) ?? BUDGET_FILTER_OPTIONS[0];
+}
+
+function nextBudgetFilterOption(value: BudgetFilterOption): BudgetFilterOption | null {
+  if (value === "150000") return "300000";
+  if (value === "300000") return "500000";
+  if (value === "500000") return "all";
+  return null;
 }
 
 function budgetApiParam(value: BudgetFilterOption) {
@@ -598,6 +623,15 @@ function revealCardToPoolItem(card: RevealCard): PoolItem {
     freeShipping: Boolean(card.savedDetail?.freeShipping),
     sellerReviewRating: card.savedDetail?.sellerReviewRating ?? null,
     sellerReviewCount: card.savedDetail?.sellerReviewCount ?? 0,
+    joongnaTrustScore: card.savedDetail?.joongnaTrustScore ?? null,
+    joongnaSafeOrderSalesCount: card.savedDetail?.joongnaSafeOrderSalesCount ?? null,
+    joongnaSafeOrderSalesText: card.savedDetail?.joongnaSafeOrderSalesText ?? null,
+    productTradeType: card.savedDetail?.productTradeType ?? null,
+    parcelFeeYn: card.savedDetail?.parcelFeeYn ?? null,
+    tradeLabels: card.savedDetail?.tradeLabels ?? [],
+    transactionMode: card.savedDetail?.transactionMode ?? "unknown",
+    shippingAssumption: card.savedDetail?.shippingAssumption ?? "unknown",
+    directTradeLocation: card.savedDetail?.directTradeLocation ?? null,
     imageCount: card.savedDetail?.imageCount ?? null,
     descriptionPreview: card.savedDetail?.descriptionPreview ?? "",
     soldOut: false,
@@ -730,6 +764,81 @@ function DetailAccessPaywallModal({
   );
 }
 
+function DirectTradeConfirmModal({
+  state,
+  onClose,
+  onConfirm,
+}: {
+  state: DirectTradeConfirmState | null;
+  onClose: () => void;
+  onConfirm: (item: PoolItem) => void;
+}) {
+  if (!state) return null;
+  const location = state.item.directTradeLocation?.trim() || "원본에서 위치 확인 필요";
+
+  return (
+    <div
+      className="fixed inset-0 z-[94] flex items-end justify-center bg-black/45 px-3 pb-3 pt-10 backdrop-blur-[2px] sm:items-center sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label="직거래 전용 매물 확인"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-[420px] overflow-hidden rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.28)] dark:bg-zinc-950"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="px-5 pb-5 pt-5 sm:px-6 sm:pt-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-amber-50 text-amber-700 dark:bg-amber-950/45 dark:text-amber-300">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+              <path d="M12 21s7-4.7 7-11a7 7 0 0 0-14 0c0 6.3 7 11 7 11Z" />
+              <path d="M12 10.5h.01" />
+            </svg>
+          </div>
+
+          <p className="mt-5 text-[13px] font-black text-[#3182f6] dark:text-blue-300">열기 전 확인</p>
+          <h2 className="mt-2 break-keep text-[25px] font-black leading-[1.18] tracking-tight text-zinc-950 dark:text-zinc-50">
+            이 상품은 직거래만 가능한 매물이에요
+          </h2>
+          <p className="mt-3 break-keep text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+            택배로 받을 수 있는 조건이 아니라서, 실제로 만날 수 있는 지역인지 먼저 봐야 해요.
+            계속 열면 이 상품 상세 분석에 {state.costLabel}가 사용됩니다.
+          </p>
+
+          <div className="mt-5 rounded-[22px] bg-zinc-50 p-4 ring-1 ring-zinc-100 dark:bg-zinc-900/70 dark:ring-zinc-800">
+            <div className="text-[11px] font-black uppercase tracking-[0.14em] text-zinc-400">
+              거래 가능 지역
+            </div>
+            <div className="mt-1.5 break-keep text-lg font-black text-zinc-950 dark:text-zinc-50">
+              {location}
+            </div>
+            <div className="mt-3 text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+              위치가 멀면 수익이 좋아 보여도 시간비용이 커질 수 있어요. 원본에서 정확한 동네와 시간을 다시 확인하세요.
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-2">
+            <button
+              type="button"
+              onClick={() => onConfirm(state.item)}
+              className="flex min-h-12 items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-base font-black text-white shadow-[0_12px_26px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8]"
+            >
+              그래도 상세 분석 열기
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="min-h-12 rounded-2xl bg-zinc-100 px-4 text-sm font-black text-zinc-700 transition hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              다른 매물 볼게요
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FirstFeedOnboardingCard({
   stats,
   statsLoaded,
@@ -760,7 +869,7 @@ function FirstFeedOnboardingCard({
   return (
     <section
       data-first-feed-onboarding
-      className="fixed inset-0 z-[90] flex bg-[#f7f3ea] text-[#172019] dark:bg-zinc-950 dark:text-zinc-50"
+      className="fixed inset-0 z-[90] flex bg-[#f5f7fb] text-[#172019] dark:bg-zinc-950 dark:text-zinc-50"
     >
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[520px] flex-col px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-[calc(env(safe-area-inset-top)+18px)]">
         <div className="flex items-center justify-between">
@@ -849,7 +958,7 @@ function FirstFeedOnboardingCard({
           </div>
         )}
 
-        <div className="fixed bottom-0 left-0 right-0 z-[91] bg-[linear-gradient(180deg,rgba(247,243,234,0)_0%,#f7f3ea_34%)] px-6 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-8 dark:bg-[linear-gradient(180deg,rgba(9,9,11,0)_0%,#09090b_34%)]">
+        <div className="fixed bottom-0 left-0 right-0 z-[91] bg-[linear-gradient(180deg,rgba(245,247,251,0)_0%,#f5f7fb_34%)] px-6 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-8 dark:bg-[linear-gradient(180deg,rgba(9,9,11,0)_0%,#09090b_34%)]">
           <div className="mx-auto max-w-[520px]">
             {step === 0 ? (
               <button
@@ -900,6 +1009,7 @@ export default function ExploreClient({
   const [feedExhausted, setFeedExhausted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
+  const [directTradeConfirm, setDirectTradeConfirm] = useState<DirectTradeConfirmState | null>(null);
   const [detailAccessLoadingPid, setDetailAccessLoadingPid] = useState<number | null>(null);
   const openedDetailPidsRef = useRef<Set<number>>(new Set());
   const [openedDetailPids, setOpenedDetailPids] = useState<Set<number>>(() => new Set());
@@ -950,6 +1060,9 @@ export default function ExploreClient({
     return raw === "bunjang" || raw === "joongna" ? raw : "all";
   });
   const [budgetFilter, setBudgetFilter] = useState<BudgetFilterOption>(() => readBudgetFilterOption(storageScope));
+  const budgetOption = budgetFilterOption(budgetFilter);
+  const nextBudgetValue = nextBudgetFilterOption(budgetFilter);
+  const nextBudgetOption = nextBudgetValue ? budgetFilterOption(nextBudgetValue) : null;
   const [showFirstFeedOnboarding, setShowFirstFeedOnboarding] = useState(false);
   const [scrapOnly, setScrapOnly] = useState(() => searchParams.get("view") === "scrap");
   const categoryScrollRef = useRef<HTMLDivElement | null>(null);
@@ -958,6 +1071,7 @@ export default function ExploreClient({
 
   const updateBudgetFilter = useCallback((value: BudgetFilterOption) => {
     setBudgetFilter(value);
+    setFeedExhausted(false);
     writeBudgetFilterOption(storageScope, value);
   }, [storageScope]);
 
@@ -1239,7 +1353,7 @@ export default function ExploreClient({
           void loadPool(true, { autoScrollNew: false });
         }
       },
-      { rootMargin: "900px 0px" },
+      { rootMargin: "1800px 0px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -1252,11 +1366,10 @@ export default function ExploreClient({
     const categoryFiltered = selectedCategories.size === 0
       ? items
       : items.filter((it) => it.category != null && selectedCategories.has(it.category));
-    const budget = budgetFilterOption(budgetFilter);
-    if (!budget.max) return categoryFiltered;
-    const budgetFiltered = categoryFiltered.filter((it) => it.price > 0 && it.price <= budget.max!);
+    if (!budgetOption.max) return categoryFiltered;
+    const budgetFiltered = categoryFiltered.filter((it) => it.price > 0 && it.price <= budgetOption.max!);
     return budgetFiltered;
-  }, [budgetFilter, items, scrapItems, scrapOnly, selectedCategories]);
+  }, [budgetOption.max, items, scrapItems, scrapOnly, selectedCategories]);
 
   // PackRevealModal용 result wrapper (single card)
   const modalResult: RevealResult | null = useMemo(() => {
@@ -1318,16 +1431,26 @@ export default function ExploreClient({
     Number(detailAccessSnapshot.freeLimit) - Number(detailAccessSnapshot.freeUsed),
   );
 
-  const openItemDetail = useCallback(async (item: PoolItem) => {
+  const openItemDetail = useCallback(async (item: PoolItem, options?: { directTradeConfirmed?: boolean }) => {
     if (item.soldOut) return;
     if (openedDetailPidsRef.current.has(item.pid)) {
       setDetailAccessLimit(null);
       beginDetailSession(item, { accessType: "already_opened_local" });
       return;
     }
+    const hasDetailEntitlement = creditFeedEnabled || freeDetailRemaining > 0;
+    if (!options?.directTradeConfirmed && isDirectOnlyItem(item) && hasDetailEntitlement) {
+      setDetailAccessLimit(null);
+      setDirectTradeConfirm({
+        item,
+        costLabel: directTradeCostLabel(detailAccessSnapshot),
+      });
+      return;
+    }
 
     setDetailAccessLoadingPid(item.pid);
     setDetailAccessLimit(null);
+    setDirectTradeConfirm(null);
     try {
       const res = await fetch("/api/packs/pool/detail-access", {
         method: "POST",
@@ -1410,7 +1533,12 @@ export default function ExploreClient({
     } finally {
       setDetailAccessLoadingPid((prev) => (prev === item.pid ? null : prev));
     }
-  }, [beginDetailSession, trackDetailEvent]);
+  }, [beginDetailSession, creditFeedEnabled, detailAccessSnapshot, freeDetailRemaining, storageScope, trackDetailEvent]);
+
+  const confirmDirectTradeDetail = useCallback((item: PoolItem) => {
+    setDirectTradeConfirm(null);
+    void openItemDetail(item, { directTradeConfirmed: true });
+  }, [openItemDetail]);
 
   // 다른 매물 클릭 시 modal 전환
   const handleOpenRelatedItem = useCallback((pid: number) => {
@@ -1520,7 +1648,7 @@ export default function ExploreClient({
       ) : null}
 
       {/* Wave 383+393: 6h lag 제거 + 사이트 핵심 가치 (band-aware 비교) 강조. */}
-      <div className="mb-2 hidden rounded-xl border border-[#e7dece] bg-[#fffaf1] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40 sm:block">
+      <div className="mb-2 hidden rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40 sm:block">
         <div className="flex items-center gap-1.5 text-[12px] font-bold text-emerald-800 dark:text-emerald-300">
           <span aria-hidden="true">⚖</span>
           <span>같은 상태 매물끼리만 비교 — 진짜 싼 매물만</span>
@@ -1545,7 +1673,7 @@ export default function ExploreClient({
       </div>
 
       {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음). */}
-      <div className="sticky top-0 z-20 -mx-3 mb-2 flex flex-col items-stretch gap-1.5 bg-[#f6f1e8]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:flex-row sm:items-center sm:px-6">
+      <div className="sticky top-0 z-20 -mx-3 mb-2 flex flex-col items-stretch gap-1.5 bg-[#f5f7fb]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:flex-row sm:items-center sm:px-6">
         <div className="relative min-w-0 flex-1">
           <button
             type="button"
@@ -1568,7 +1696,9 @@ export default function ExploreClient({
           <div
             ref={categoryScrollRef}
             data-category-filter-scroll
-            className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto px-8 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+            className={`flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none] ${
+              canScrollCategoriesPrev ? "pl-8" : "pl-0"
+            } ${canScrollCategoriesNext ? "pr-8" : "pr-0"}`}
           >
             <button
               type="button"
@@ -1707,11 +1837,33 @@ export default function ExploreClient({
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 px-5 py-8 text-center dark:border-amber-900/40 dark:bg-amber-950/20">
           <HourglassIcon className="mx-auto h-8 w-8 text-amber-600 dark:text-amber-300" />
           <p className="mt-3 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-            잠시 후 다시 와주세요
+            {budgetFilter !== "all" ? `${budgetOption.label} 조건은 아직 후보가 적어요` : "잠시 후 다시 와주세요"}
           </p>
           <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            매물 분석 중이에요. 곧 새 풀이 풀려요.
+            {budgetFilter !== "all"
+              ? "수익, 시세, 상태 조건을 통과한 매물만 보여주다 보니 오늘은 아직 이 가격대 후보가 부족해요."
+              : "매물 분석 중이에요. 곧 새 풀이 풀려요."}
           </p>
+          {budgetFilter !== "all" ? (
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              {nextBudgetOption ? (
+                <button
+                  type="button"
+                  onClick={() => updateBudgetFilter(nextBudgetOption.value)}
+                  className="rounded-full bg-[#3182f6] px-3 py-1.5 text-xs font-black text-white"
+                >
+                  {nextBudgetOption.value === "all" ? "가격 제한 풀기" : `${nextBudgetOption.label}로 넓히기`}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => updateBudgetFilter("all")}
+                className="rounded-full border border-amber-400 bg-white px-3 py-1.5 text-xs font-bold text-amber-800 dark:border-amber-700 dark:bg-zinc-900 dark:text-amber-200"
+              >
+                전체 가격대 보기
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : displayItems.length === 0 ? (
         // Wave 353: 클라이언트 필터 결과 빈 경우 — 풀엔 있는데 선택 카테고리에만 없음.
@@ -1928,7 +2080,9 @@ export default function ExploreClient({
               <div className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
                 {creditFeedEnabled
                   ? feedExhausted
-                    ? "오늘 볼 수 있는 추천 매물은 여기까지예요"
+                    ? budgetFilter !== "all"
+                      ? `${budgetOption.label} 조건은 오늘 여기까지예요`
+                      : "오늘 볼 수 있는 추천 매물은 여기까지예요"
                     : "계속 내려보면 새 매물이 이어져요"
                   : canRefresh
                     ? "다른 30개 매물 받을 수 있어요"
@@ -1937,12 +2091,34 @@ export default function ExploreClient({
               <div className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {creditFeedEnabled
                   ? feedExhausted
-                    ? "수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요."
+                    ? budgetFilter !== "all"
+                      ? `${budgetOption.label}에서 수익, 시세, 상태 조건을 통과한 후보만 남긴 결과예요. 가격대를 넓히면 더 볼 수 있어요.`
+                      : "수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요."
                     : "피드 탐색은 무제한 · 크레딧은 상세 분석을 열 때만 차감"
                   : canRefresh
                   ? "새로운 매물 풀로 갱신 · 다양한 카테고리"
                   : `${formatCooldown(remainingSec)} 후 새 매물 자동으로 풀려요`}
               </div>
+              {creditFeedEnabled && feedExhausted && budgetFilter !== "all" ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {nextBudgetOption ? (
+                    <button
+                      type="button"
+                      onClick={() => updateBudgetFilter(nextBudgetOption.value)}
+                      className="rounded-full bg-[#3182f6] px-3 py-1.5 text-[11px] font-black text-white transition hover:bg-[#1c6fe8]"
+                    >
+                      {nextBudgetOption.value === "all" ? "가격 제한 풀고 보기" : `${nextBudgetOption.label}로 넓히기`}
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => updateBudgetFilter("all")}
+                    className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-[11px] font-black text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                  >
+                    전체 가격대 보기
+                  </button>
+                </div>
+              ) : null}
               {!creditFeedEnabled ? (
                 <div className="mt-2 flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-1.5 text-[11px] font-bold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
                   <ZapIcon className="h-3 w-3" />
@@ -1973,7 +2149,7 @@ export default function ExploreClient({
               }
             }}
             disabled={refreshing}
-            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3.5 text-base font-bold text-[var(--brand-cream)] shadow-[0_20px_44px_rgba(34,49,39,0.38),0_4px_12px_rgba(34,49,39,0.20)] ring-1 ring-white/10 transition active:scale-[0.97] hover:translate-y-[-1px] hover:shadow-[0_24px_48px_rgba(34,49,39,0.42)] sm:min-h-0 sm:py-3 sm:text-sm sm:shadow-[0_16px_34px_rgba(34,49,39,0.32)]"
+            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3.5 text-base font-bold text-[var(--brand-cream)] shadow-[0_20px_44px_rgba(15,23,42,0.38),0_4px_12px_rgba(15,23,42,0.20)] ring-1 ring-white/10 transition active:scale-[0.97] hover:translate-y-[-1px] hover:shadow-[0_24px_48px_rgba(15,23,42,0.42)] sm:min-h-0 sm:py-3 sm:text-sm sm:shadow-[0_16px_34px_rgba(15,23,42,0.32)]"
           >
             <SearchIcon className="h-4 w-4" />
             {refreshing ? "받는 중..." : "더 찾아보기"}
@@ -1987,7 +2163,7 @@ export default function ExploreClient({
           data-credit-infinite-feed-sentinel
           className="mt-4 flex min-h-16 items-center justify-center px-4 text-center text-xs font-bold text-zinc-500 dark:text-zinc-400"
         >
-          {refreshing ? "새 매물 붙이는 중..." : "계속 내려보면 새 매물이 이어져요"}
+          {refreshing ? "조건 맞는 후보를 미리 찾는 중..." : "계속 내려보면 새 매물이 이어져요"}
         </div>
       ) : null}
 
@@ -2046,7 +2222,7 @@ export default function ExploreClient({
                 disabled={!canRefresh}
                 className={`group relative w-full overflow-hidden rounded-2xl px-5 py-4 text-left transition ${
                   canRefresh
-                    ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-[0_12px_28px_rgba(34,49,39,0.28)] hover:shadow-[0_16px_34px_rgba(34,49,39,0.34)] active:scale-[0.99]"
+                    ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-[0_12px_28px_rgba(15,23,42,0.28)] hover:shadow-[0_16px_34px_rgba(15,23,42,0.34)] active:scale-[0.99]"
                     : "cursor-not-allowed bg-zinc-100 text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-500"
                 }`}
               >
@@ -2159,6 +2335,12 @@ export default function ExploreClient({
           </div>
         </div>
       ) : null}
+
+      <DirectTradeConfirmModal
+        state={directTradeConfirm}
+        onClose={() => setDirectTradeConfirm(null)}
+        onConfirm={confirmDirectTradeDetail}
+      />
 
       <DetailAccessPaywallModal
         state={detailAccessLimit}

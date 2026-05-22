@@ -1141,11 +1141,11 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
   ];
 
   return (
-    <div className="mt-[18px] overflow-hidden rounded-2xl border border-[#ece3d2] bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      {/* Wave 394.7.t: handoff FAQ 정확 — bg #fdfaf3 header + border-bottom #ece3d2 + shield #b45309. */}
-      <div className="flex items-center gap-1.5 border-b border-[#ece3d2] bg-[#fdfaf3] px-3.5 pb-2 pt-3 dark:border-zinc-800 dark:bg-zinc-950/55">
+    <div className="mt-[18px] overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      {/* Wave 394.7.t: handoff FAQ 정확 — FAQ header + border + shield tone. */}
+      <div className="flex items-center gap-1.5 border-b border-zinc-200 bg-zinc-50 px-3.5 pb-2 pt-3 dark:border-zinc-800 dark:bg-zinc-950/55">
         <ShieldIcon className="h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-300" />
-        <span className="text-[12.5px] font-extrabold text-[#344136] dark:text-zinc-100">
+        <span className="text-[12.5px] font-extrabold text-zinc-900 dark:text-zinc-100">
           구매 전 확인 — 자주 묻는 4가지
         </span>
       </div>
@@ -1525,7 +1525,7 @@ function SkeletonLine({ className = "" }: { className?: string }) {
 function RevealResultSkeleton() {
   return (
     <div className="grid gap-3" aria-hidden="true">
-      <div className="grid gap-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="grid gap-3 rounded-xl border border-[#e3ddd2] bg-white p-3 shadow-lg shadow-[rgba(49,130,246,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
         <div className="h-[118px] w-full rounded-lg bg-zinc-200/80 dark:bg-zinc-800" />
         <div className="min-w-0 space-y-3">
           <SkeletonLine className="h-4 w-4/5" />
@@ -1539,14 +1539,14 @@ function RevealResultSkeleton() {
             <SkeletonLine className="h-5 w-20" />
             <SkeletonLine className="h-5 w-14" />
           </div>
-          <div className="hidden rounded-lg border border-[#e2d9cb] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40">
+          <div className="hidden rounded-lg border border-zinc-200 bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/40">
             <SkeletonLine className="h-3 w-24" />
             <SkeletonLine className="mt-2 h-4 w-4/5" />
             <SkeletonLine className="mt-2 h-3 w-2/3" />
           </div>
         </div>
       </div>
-      <div className="space-y-3 rounded-xl border border-[#e3ddd2] bg-[#fffdf9] p-3 shadow-lg shadow-[rgba(92,116,95,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="space-y-3 rounded-xl border border-[#e3ddd2] bg-white p-3 shadow-lg shadow-[rgba(49,130,246,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
         <SkeletonLine className="h-3 w-36" />
         <div className="h-[190px] rounded-md bg-white p-3 dark:bg-zinc-900">
           <div className="flex h-full items-end gap-2">
@@ -1707,7 +1707,7 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
     ? "새상품 기준"
     : `통합 ${market.conditionLabel ?? "같은 상태"}`;
   return (
-    <div className="rounded-lg border border-[#e2d9cb] bg-white px-2.5 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
+    <div className="rounded-lg border border-zinc-200 bg-white px-2.5 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
         <span className="font-black text-zinc-700 dark:text-zinc-200">시세 근거</span>
         {hasCondition && market.conditionLabel ? (
@@ -2474,32 +2474,32 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
 
       {loading ? (
         // Wave 394.7.aa: skeleton 4개 row — 디폴트 visible 갯수와 동일 shape.
-        <ul className="overflow-hidden rounded-2xl border border-[#ece3d2] bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <ul className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
           {[0, 1, 2, 3].map((i) => (
             <li
               key={i}
-              className={`flex items-center gap-3 px-3 py-3 ${i === 0 ? "" : "border-t border-[#ece3d2] dark:border-zinc-800"}`}
+              className={`flex items-center gap-3 px-3 py-3 ${i === 0 ? "" : "border-t border-zinc-200 dark:border-zinc-800"}`}
             >
-              <div className="h-[52px] w-[52px] shrink-0 animate-pulse rounded-[9px] bg-[#ece3d2] dark:bg-zinc-800" />
+              <div className="h-[52px] w-[52px] shrink-0 animate-pulse rounded-[9px] bg-zinc-200 dark:bg-zinc-800" />
               <div className="min-w-0 flex-1 space-y-1.5">
-                <div className="h-3 w-[82%] animate-pulse rounded-full bg-[#ece3d2] dark:bg-zinc-800" />
-                <div className="h-2.5 w-[58%] animate-pulse rounded-full bg-[#ece3d2]/70 dark:bg-zinc-800/70" />
+                <div className="h-3 w-[82%] animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-2.5 w-[58%] animate-pulse rounded-full bg-zinc-200/70 dark:bg-zinc-800/70" />
               </div>
               <div className="shrink-0 space-y-1 text-right">
-                <div className="ml-auto h-3.5 w-16 animate-pulse rounded-full bg-[#ece3d2] dark:bg-zinc-800" />
-                <div className="ml-auto h-2.5 w-10 animate-pulse rounded-full bg-[#ece3d2]/70 dark:bg-zinc-800/70" />
+                <div className="ml-auto h-3.5 w-16 animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                <div className="ml-auto h-2.5 w-10 animate-pulse rounded-full bg-zinc-200/70 dark:bg-zinc-800/70" />
               </div>
             </li>
           ))}
         </ul>
       ) : error ? (
-        <div className="rounded-2xl border border-[#ece3d2] bg-white px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">비교 매물 불러오기 실패</div>
+        <div className="rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">비교 매물 불러오기 실패</div>
       ) : !listings || listings.length === 0 ? (
-        <div className="rounded-2xl border border-[#ece3d2] bg-white px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+        <div className="rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
           {ccLabel ? `${ccLabel} 비교 매물 누적 중` : "비교 매물 누적 중"} — 데이터 쌓이면 자동 표시
         </div>
       ) : (
-        <ul className="overflow-hidden rounded-2xl border border-[#ece3d2] bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <ul className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
           {/* Wave 394.5.b: mode 따라 slice. simple = 6 / detailed = 12. */}
           {/* Wave 394.7.i: 4개 이상이면 처음 3개만 — 펼침 후 전체 limit. */}
           {listings.slice(0, expanded ? limit : INITIAL_VISIBLE).map((item, idx) => {
@@ -2529,7 +2529,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
             return (
               <li
                 key={item.pid}
-                className={`flex items-center gap-3 px-3 py-3 ${idx === 0 ? "" : "border-t border-[#ece3d2] dark:border-zinc-800"}`}
+                className={`flex items-center gap-3 px-3 py-3 ${idx === 0 ? "" : "border-t border-zinc-200 dark:border-zinc-800"}`}
               >
                 <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-[#f2eadf] dark:bg-zinc-800">
                   {item.thumbnailUrl ? (
@@ -2599,7 +2599,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
           })}
           {/* 펼침 footer — handoff: 카드 바닥 안쪽에 line divider + 중앙 텍스트 버튼 */}
           {totalListings > INITIAL_VISIBLE ? (
-            <li className="border-t border-[#ece3d2] text-center dark:border-zinc-800">
+            <li className="border-t border-zinc-200 text-center dark:border-zinc-800">
               <button
                 type="button"
                 onClick={() => setExpanded((v) => !v)}
@@ -2691,13 +2691,13 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
     ? "비슷한 상태의 매물 중에서도 셀러가 낮게 등록한 것 같아요"
     : "비슷한 상태의 매물끼리만 비교한 결과예요";
   return (
-    <div className="mt-3 overflow-hidden rounded-2xl border border-[#ece3d2] bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
+    <div className="mt-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
       {/* handoff: bg em-50 + 💡 + bold 11.5px text */}
       <div className="mx-3 mt-3 flex items-center gap-2 rounded-[10px] bg-emerald-50 px-2.5 py-2 dark:bg-emerald-950/30">
         <span className="text-[14px]" aria-hidden="true">💡</span>
         <span className="text-[11.5px] font-bold leading-tight text-emerald-800 dark:text-emerald-200">{hint}</span>
       </div>
-      <div className="mt-3 grid grid-cols-3 divide-x divide-[#ece3d2] dark:divide-zinc-800">
+      <div className="mt-3 grid grid-cols-3 divide-x divide-zinc-200 dark:divide-zinc-800">
         {tiles.map((tile) => {
           const tone = upperFoldTileClass(tile.tone);
           return (
@@ -2756,7 +2756,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
     profit: "border-emerald-100 bg-emerald-50/70 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-100",
     market: "border-sky-100 bg-sky-50/70 text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/20 dark:text-sky-100",
     speed: "border-amber-100 bg-amber-50/70 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-100",
-    quality: "border-[#d8e2d7] bg-white/85 text-[#223127] dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-100",
+    quality: "border-[#d8e2d7] bg-white/85 text-zinc-950 dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-100",
   } satisfies Record<RecommendationFeatureTone, string>;
   const reasonSummary = isMarketInvalidated
     ? "지금 기준으로는 차익이 없어 판매완료 상품처럼 정리하는 게 맞아요."
@@ -2778,7 +2778,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
   return (
     <>
       {/* Wave 394.7.x: 초록 gradient 제거 — handoff WhyRec 흰 카드 + ✓ icon 원. */}
-      <section className={`rounded-2xl border border-[#ece3d2] bg-white p-3.5 dark:border-zinc-800 dark:bg-zinc-900 lg:col-span-2 ${className}`}>
+      <section className={`rounded-2xl border border-zinc-200 bg-white p-3.5 dark:border-zinc-800 dark:bg-zinc-900 lg:col-span-2 ${className}`}>
         <button
           type="button"
           onClick={(e) => {
@@ -2790,7 +2790,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
           className="group flex w-full items-center justify-between gap-3 text-left"
         >
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
+            <div className="flex items-center gap-2 text-sm font-black text-zinc-950 dark:text-zinc-100">
               <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
               왜 이 상품을 추천했나요?
             </div>
@@ -2818,11 +2818,11 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
             aria-modal="true"
             aria-label="추천 이유 자세히 보기"
             onClick={(e) => e.stopPropagation()}
-            className="recommendation-reason-dialog fixed left-1/2 top-1/2 z-[130] max-h-[min(82dvh,640px)] w-[calc(100vw-28px)] max-w-[540px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-[#d6e2d3] bg-[#fffdf9] shadow-2xl shadow-zinc-950/24 dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[84vh]"
+            className="recommendation-reason-dialog fixed left-1/2 top-1/2 z-[130] max-h-[min(82dvh,640px)] w-[calc(100vw-28px)] max-w-[540px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-[#d6e2d3] bg-white shadow-2xl shadow-zinc-950/24 dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[84vh]"
           >
-            <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
+            <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-sm font-black text-[#223127] dark:text-zinc-100">
+                <div className="flex items-center gap-2 text-sm font-black text-zinc-950 dark:text-zinc-100">
                   <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
                   왜 이 상품을 추천했나요?
                 </div>
@@ -2889,12 +2889,12 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
                 </summary>
                 <div className="mt-2 grid gap-2 text-[11px] font-semibold leading-5 text-[#647064] dark:text-zinc-400 sm:grid-cols-2">
                   <div>
-                    <b className="text-[#223127] dark:text-zinc-100">비교군</b>
+                    <b className="text-zinc-950 dark:text-zinc-100">비교군</b>
                     <br />
                     {market?.label ? `${market.label} · ${condition} 기준으로 비교했어요.` : "모델 분류가 약하면 추천 강도를 낮춰요."}
                   </div>
                   <div>
-                    <b className="text-[#223127] dark:text-zinc-100">비용/상태</b>
+                    <b className="text-zinc-950 dark:text-zinc-100">비용/상태</b>
                     <br />
                     판매수수료, 재배송비, 안전버퍼를 차감하고 상품 보기 전후로 판매완료 여부를 다시 봐요.
                   </div>
@@ -2952,7 +2952,7 @@ function MarketGraphTrustLine({ card }: { card: RevealCard }) {
   const condition = marketConditionLabel(card);
   const source = market.priceSource === "reference" ? "새상품 기준선 + 중고 마켓 미개봉 추이" : `통합 ${condition} 매물 추이`;
   return (
-    <details className="rounded-lg border border-[#e2d9cb] bg-white/70 px-3 py-2 text-[11px] font-semibold leading-5 text-[#5f6d5f] dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-300">
+    <details className="rounded-lg border border-zinc-200 bg-white/70 px-3 py-2 text-[11px] font-semibold leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-300">
       <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2">
         <span className="font-black text-[#4f6a52] dark:text-emerald-200">그래프 기준 보기</span>
         <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
@@ -2987,35 +2987,35 @@ function _SavedDetailMini({ card }: { card: RevealCard }) {
   const rating = savedRatingLabel(detail.sellerReviewRating);
 
   return (
-    <div className="rounded-lg border border-[#e7dece] bg-[#fffaf1] px-3 py-2 text-[11px] leading-5 text-[#5f675e] dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-300">
+    <div className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-[11px] leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-300">
       <div className="flex flex-wrap gap-1.5">
         {detail.favoriteCount != null ? (
-          <span className="rounded-full bg-[#f3eee5] px-2 py-0.5 font-black text-[#344136] dark:bg-zinc-900 dark:text-zinc-200">
+          <span className="rounded-full bg-blue-50 px-2 py-0.5 font-black text-zinc-900 dark:bg-zinc-900 dark:text-zinc-200">
             찜 {detail.favoriteCount.toLocaleString("ko-KR")}
           </span>
         ) : null}
         {safety.isJoongna && safety.sellerTrust.trustScore != null ? (
-          <span className="rounded-full bg-[#f3eee5] px-2 py-0.5 font-black text-[#344136] dark:bg-zinc-900 dark:text-zinc-200">
+          <span className="rounded-full bg-blue-50 px-2 py-0.5 font-black text-zinc-900 dark:bg-zinc-900 dark:text-zinc-200">
             신뢰지수 {safety.sellerTrust.metric.replace("신뢰지수 ", "")}
           </span>
         ) : rating ? (
-          <span className="rounded-full bg-[#f3eee5] px-2 py-0.5 font-black text-[#344136] dark:bg-zinc-900 dark:text-zinc-200">
+          <span className="rounded-full bg-blue-50 px-2 py-0.5 font-black text-zinc-900 dark:bg-zinc-900 dark:text-zinc-200">
             리뷰 {rating}
           </span>
         ) : null}
         {detail.sellerReviewCount > 0 ? (
-          <span className="rounded-full bg-[#f3eee5] px-2 py-0.5 font-black text-[#344136] dark:bg-zinc-900 dark:text-zinc-200">
+          <span className="rounded-full bg-blue-50 px-2 py-0.5 font-black text-zinc-900 dark:bg-zinc-900 dark:text-zinc-200">
             {safety.isJoongna ? "거래후기" : "리뷰"} {detail.sellerReviewCount.toLocaleString("ko-KR")}개
           </span>
         ) : null}
         {safety.shipping.allowFreeShippingBadge || safety.shipping.assumption === "included" || safety.shipping.assumption === "direct_only" ? (
-          <span className="rounded-full bg-[#f3eee5] px-2 py-0.5 font-black text-[#344136] dark:bg-zinc-900 dark:text-zinc-200">
+          <span className="rounded-full bg-blue-50 px-2 py-0.5 font-black text-zinc-900 dark:bg-zinc-900 dark:text-zinc-200">
             {safety.shipping.assumption === "direct_only" ? "직거래 전제" : safety.shipping.assumption === "included" ? "배송비 포함" : "무료배송"}
           </span>
         ) : null}
       </div>
       {description ? (
-        <p className="mt-2 line-clamp-3 whitespace-pre-line font-semibold text-[#6b7269] dark:text-zinc-400">
+        <p className="mt-2 line-clamp-3 whitespace-pre-line font-semibold text-zinc-500 dark:text-zinc-400">
           {description}
         </p>
       ) : null}
@@ -3623,13 +3623,13 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
       {/* Wave 394.7.r: handoff SellWhere JSX 1:1. */}
       <div className="mb-2.5 flex items-baseline justify-between gap-3">
         <h3 className="m-0 text-[16px] font-extrabold tracking-tight text-[#1a2620] dark:text-zinc-50">어디에 팔지?</h3>
-        <span className="whitespace-nowrap text-[11px] font-semibold text-[#6f7c6d] dark:text-zinc-400">채널별 예상 차익</span>
+        <span className="whitespace-nowrap text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">채널별 예상 차익</span>
       </div>
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
         {marketplaceCards.map((channel) => (
           <div
             key={channel.source}
-            className="relative rounded-[14px] border border-[#ece3d2] bg-white px-3 pb-3 pt-3 dark:border-zinc-800 dark:bg-zinc-900"
+            className="relative rounded-[14px] border border-zinc-200 bg-white px-3 pb-3 pt-3 dark:border-zinc-800 dark:bg-zinc-900"
           >
             {channel.source === currentSource ? (
               <div className="absolute -top-2 right-2.5 rounded-full bg-emerald-700 px-2 py-1 text-[9px] font-extrabold tracking-wide text-white dark:bg-emerald-500 dark:text-zinc-950">
@@ -3642,12 +3642,12 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
               ) : (
                 <JoongnaLogo className="h-[22px] w-[22px] rounded-full" />
               )}
-              <span className="text-[12px] font-bold text-[#344136] dark:text-zinc-100">{channel.label}</span>
+              <span className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">{channel.label}</span>
             </div>
             <div className="text-[19px] font-black tracking-tight text-emerald-700 tabular-nums dark:text-emerald-300">
               +{krw(channel.profit)}
             </div>
-            <div className="mt-1 text-[10.5px] font-semibold text-[#6f7c6d] dark:text-zinc-400">{channel.note}</div>
+            <div className="mt-1 text-[10.5px] font-semibold text-zinc-500 dark:text-zinc-400">{channel.note}</div>
             <div className="mt-2 flex flex-wrap gap-1">
               {channel.chips.map((chip) => (
                 <span key={chip} className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200">
@@ -3665,12 +3665,12 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
             <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#ff6f0f]">
               <DaangnLogo className="h-3.5 w-3.5" />
             </span>
-            <span className="text-[12px] font-bold text-[#344136] dark:text-zinc-100">당근 직거래</span>
+            <span className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">당근 직거래</span>
           </div>
           <div className="text-[19px] font-black tracking-tight text-amber-700 tabular-nums dark:text-amber-300">
             +{krw(daangnProfit)}
           </div>
-          <div className="mt-1 text-[10.5px] font-semibold text-[#6f7c6d] dark:text-zinc-400">수수료 0원</div>
+          <div className="mt-1 text-[10.5px] font-semibold text-zinc-500 dark:text-zinc-400">수수료 0원</div>
           <div className="mt-2 flex flex-wrap gap-1">
             <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">지역 제한</span>
             <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">네고 부담</span>
@@ -3747,11 +3747,11 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
   return (
     <section className="mt-3">
       {/* Wave 395.3: 최종 매입가도 PDF handoff처럼 독립 비용 카드로 재구성. */}
-      <div className="overflow-hidden rounded-2xl border border-[#ece3d2] bg-white shadow-[0_10px_26px_rgba(45,51,42,0.06)] dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_10px_26px_rgba(45,51,42,0.06)] dark:border-zinc-800 dark:bg-zinc-900">
         <div className="px-4 pb-3 pt-3.5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-[10px] font-bold tracking-tight text-[#6f7c6d] dark:text-zinc-400">
+              <div className="text-[10px] font-bold tracking-tight text-zinc-500 dark:text-zinc-400">
                 최종 매입가 체크
               </div>
               <div className="mt-1 text-[22px] font-black leading-tight tracking-[-0.03em] text-[#17221d] dark:text-zinc-50">
@@ -3765,7 +3765,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
         </div>
 
         {/* Wave 394.7.h: 비용 분해 — 구매 / 재판매 그룹 분리. */}
-        <div className="border-t border-[#ece3d2] px-4 py-3 dark:border-zinc-800">
+        <div className="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">
           <div className="mb-2 text-[10px] font-black tracking-wide text-[#047857] dark:text-emerald-300">
             구매 비용
           </div>
@@ -3788,7 +3788,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
           </div>
         </div>
 
-        <div className="border-t border-[#ece3d2] px-4 py-3 dark:border-zinc-800">
+        <div className="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">
           <div className="mb-2 text-[10px] font-black tracking-wide text-[#9a9384] dark:text-zinc-400">
             리셀 비용
           </div>
@@ -3812,7 +3812,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
         </div>
 
         <div className="border-t border-dashed border-[#e2d8c4] px-4 pb-4 pt-3 dark:border-zinc-700">
-          <div className="text-[10.5px] font-semibold leading-4 text-[#6f7c6d] dark:text-zinc-400">
+          <div className="text-[10.5px] font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
             {profitFormula}
           </div>
           <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-[#b8e5ce] bg-[#effbf4] px-3 py-2.5 dark:border-emerald-900/60 dark:bg-emerald-950/30">
@@ -3860,7 +3860,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
           </div>
 
           {/* 흰 카드 wrapper — rows 안에 */}
-          <div className="rounded-2xl border border-[#ece3d2] bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
           <div className="space-y-1.5">
             {/* 현재 매입가 — em row */}
             <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 px-3 py-3 dark:bg-emerald-950/30">
@@ -3976,7 +3976,7 @@ function LoadingStage({ completing = false }: { completing?: boolean }) {
     <div className="flex flex-col items-center gap-6 py-12">
       <div className="relative h-20 w-20">
         <div className="absolute inset-0 animate-ping rounded-full bg-[var(--brand-accent)]/20" />
-        <div className="absolute inset-2 animate-pulse rounded-full bg-gradient-to-br from-[var(--brand-accent)] to-[var(--brand-accent-strong)] shadow-lg shadow-[rgba(92,116,95,0.35)]" />
+        <div className="absolute inset-2 animate-pulse rounded-full bg-gradient-to-br from-[var(--brand-accent)] to-[var(--brand-accent-strong)] shadow-lg shadow-[rgba(49,130,246,0.35)]" />
         <div className="absolute inset-5 flex items-center justify-center rounded-full bg-white text-[11px] font-black tabular-nums text-[var(--brand-accent-strong)] dark:bg-zinc-900 dark:text-zinc-100">
           {Math.round(pct)}%
         </div>
@@ -4067,9 +4067,9 @@ function BeginnerGuideProductVisual({ card }: { card: RevealCard }) {
   return (
     <div
       data-beginner-guide-product-image
-      className="relative -mx-5 overflow-visible bg-[#f3ede3] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+14px)] dark:bg-zinc-950 sm:mx-0 sm:rounded-[26px] sm:px-4 sm:pt-4 sm:ring-1 sm:ring-[#e4dacb] sm:dark:ring-zinc-800"
+      className="relative -mx-5 overflow-visible bg-[#f3ede3] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+14px)] dark:bg-zinc-950 sm:mx-0 sm:rounded-[26px] sm:px-4 sm:pt-4 sm:ring-1 sm:ring-zinc-200 sm:dark:ring-zinc-800"
     >
-      <div className="relative h-[166px] w-full overflow-hidden rounded-[28px] bg-[#fffaf2] shadow-[0_18px_36px_rgba(34,49,39,0.14)] ring-1 ring-white/80 dark:bg-zinc-900 dark:ring-zinc-800 sm:h-[212px]">
+      <div className="relative h-[166px] w-full overflow-hidden rounded-[28px] bg-[#fffaf2] shadow-[0_18px_36px_rgba(15,23,42,0.14)] ring-1 ring-white/80 dark:bg-zinc-900 dark:ring-zinc-800 sm:h-[212px]">
         {card.thumbnailUrl ? (
           <Image
             src={card.thumbnailUrl}
@@ -4087,7 +4087,7 @@ function BeginnerGuideProductVisual({ card }: { card: RevealCard }) {
         )}
       </div>
       <div className="absolute bottom-7 left-7 flex max-w-[calc(100%-56px)] flex-wrap items-center gap-1.5">
-        <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black tabular-nums text-[#223127] shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:text-zinc-100">
+        <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black tabular-nums text-zinc-950 shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:text-zinc-100">
           매입 {krw(card.price)}
         </span>
         <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black text-[#4d6654] shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:text-zinc-300">
@@ -4122,7 +4122,7 @@ function BeginnerGuideTrustBody({ card, fallback }: { card: RevealCard; fallback
 
   if (safety.isJoongna) {
     return (
-      <p data-beginner-guide-trust-highlight className="mt-4 break-keep text-[16px] font-semibold leading-7 text-[#475449] dark:text-zinc-300">
+      <p data-beginner-guide-trust-highlight className="mt-4 break-keep text-[16px] font-semibold leading-7 text-zinc-600 dark:text-zinc-300">
         {safety.sellerTrust.assessment}
       </p>
     );
@@ -4130,7 +4130,7 @@ function BeginnerGuideTrustBody({ card, fallback }: { card: RevealCard; fallback
 
   if (rating == null || reviewCount <= 0) {
     return (
-      <p className="mt-4 break-keep text-[16px] font-semibold leading-7 text-[#475449] dark:text-zinc-300">
+      <p className="mt-4 break-keep text-[16px] font-semibold leading-7 text-zinc-600 dark:text-zinc-300">
         {fallback}
       </p>
     );
@@ -4138,7 +4138,7 @@ function BeginnerGuideTrustBody({ card, fallback }: { card: RevealCard; fallback
 
   if (!hasEnoughReviews) {
     return (
-      <p data-beginner-guide-trust-highlight className="mt-4 break-keep text-[16px] font-semibold leading-7 text-[#475449] dark:text-zinc-300">
+      <p data-beginner-guide-trust-highlight className="mt-4 break-keep text-[16px] font-semibold leading-7 text-zinc-600 dark:text-zinc-300">
         <span className="font-black text-[#172019] dark:text-zinc-50">
           평점은 <strong className="ml-1 text-[17px]">{rating.toFixed(1)}점</strong>
         </span>
@@ -4152,7 +4152,7 @@ function BeginnerGuideTrustBody({ card, fallback }: { card: RevealCard; fallback
   }
 
   return (
-    <p data-beginner-guide-trust-highlight className="mt-4 break-keep text-[16px] font-semibold leading-7 text-[#475449] dark:text-zinc-300">
+    <p data-beginner-guide-trust-highlight className="mt-4 break-keep text-[16px] font-semibold leading-7 text-zinc-600 dark:text-zinc-300">
       이 상품 판매자는{" "}
       <span className="font-black text-[#172019] dark:text-zinc-50">
         후기가 <strong className="ml-1 text-[17px]">{reviewLabel}건</strong>
@@ -4176,9 +4176,9 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
 
   if (safety.isJoongna) {
     return (
-      <div data-beginner-guide-trust-metric className="my-5 grid gap-0 divide-x divide-[#eee5d8] border-y border-[#eee5d8] py-4 dark:divide-zinc-800 dark:border-zinc-800 grid-cols-2">
+      <div data-beginner-guide-trust-metric className="my-5 grid gap-0 divide-x divide-zinc-200 border-y border-zinc-200 py-4 dark:divide-zinc-800 dark:border-zinc-800 grid-cols-2">
         <div className="px-3">
-          <div className="flex items-center gap-2 text-[12px] font-black text-[#6b7269] dark:text-zinc-400">
+          <div className="flex items-center gap-2 text-[12px] font-black text-zinc-500 dark:text-zinc-400">
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#eefbf3] text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200">
               <ShieldIcon className="h-4 w-4" />
             </span>
@@ -4189,7 +4189,7 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
           </div>
         </div>
         <div className="px-3">
-          <div className="text-[12px] font-black text-[#6b7269] dark:text-zinc-400">거래후기</div>
+          <div className="text-[12px] font-black text-zinc-500 dark:text-zinc-400">거래후기</div>
           <div className="mt-3 text-[26px] font-black leading-none tabular-nums text-[#172019] dark:text-zinc-50">
             {reviewLabel}건
           </div>
@@ -4205,7 +4205,7 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
 
   if (!hasRating && reviewCount <= 0) {
     return (
-      <div data-beginner-guide-trust-metric className="my-5 border-y border-[#eee5d8] py-4 dark:border-zinc-800">
+      <div data-beginner-guide-trust-metric className="my-5 border-y border-zinc-200 py-4 dark:border-zinc-800">
         <div className="flex items-center gap-3">
           <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#fff7e6] text-[#b7791f] ring-1 ring-[#f2dfbd] dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-900/50">
             <AlertTriangleIcon className="h-6 w-6" />
@@ -4222,10 +4222,10 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
   }
 
   return (
-    <div data-beginner-guide-trust-metric className={`my-5 grid gap-0 divide-x divide-[#eee5d8] border-y border-[#eee5d8] py-4 dark:divide-zinc-800 dark:border-zinc-800 ${hasRating ? "grid-cols-2" : "grid-cols-1"}`}>
+    <div data-beginner-guide-trust-metric className={`my-5 grid gap-0 divide-x divide-zinc-200 border-y border-zinc-200 py-4 dark:divide-zinc-800 dark:border-zinc-800 ${hasRating ? "grid-cols-2" : "grid-cols-1"}`}>
       {hasRating ? (
         <div className="px-3">
-          <div className="flex items-center gap-2 text-[12px] font-black text-[#6b7269] dark:text-zinc-400">
+          <div className="flex items-center gap-2 text-[12px] font-black text-zinc-500 dark:text-zinc-400">
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#fff7e6] text-[#d5961d] dark:bg-amber-950/45 dark:text-amber-200">
               <BeginnerGuideStarGlyph className="h-4 w-4" />
             </span>
@@ -4249,7 +4249,7 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
       ) : null}
 
       <div className="px-3">
-        <div className="flex items-center gap-2 text-[12px] font-black text-[#6b7269] dark:text-zinc-400">
+        <div className="flex items-center gap-2 text-[12px] font-black text-zinc-500 dark:text-zinc-400">
           <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#edf8f2] text-[#0f9f6e] dark:bg-emerald-950/45 dark:text-emerald-200">
             <TrophyIcon className="h-4 w-4" />
           </span>
@@ -4261,7 +4261,7 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
           </span>
           <span className="pb-1 text-[13px] font-black text-[#7b8378] dark:text-zinc-400">건</span>
         </div>
-        <div className="mt-2 text-[12px] font-bold text-[#6b7269] dark:text-zinc-400">
+        <div className="mt-2 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
           실제 거래 이력 기준
         </div>
       </div>
@@ -4277,7 +4277,7 @@ function BeginnerGuideMarketBody({ card, fallback }: { card: RevealCard; fallbac
 
   if (median == null || median <= 0 || card.price <= 0) {
     return (
-      <p className="mt-3 break-keep text-[15px] font-semibold leading-6 text-[#475449] dark:text-zinc-300">
+      <p className="mt-3 break-keep text-[15px] font-semibold leading-6 text-zinc-600 dark:text-zinc-300">
         {fallback}
       </p>
     );
@@ -4301,7 +4301,7 @@ function BeginnerGuideMarketBody({ card, fallback }: { card: RevealCard; fallbac
 
   return (
     <div data-beginner-guide-market-body className="mt-3 break-keep">
-      <p className="text-[15px] font-semibold leading-6 text-[#475449] dark:text-zinc-300">
+      <p className="text-[15px] font-semibold leading-6 text-zinc-600 dark:text-zinc-300">
         이 상품은 {productLabel}이에요. {sourceLine}
       </p>
       <p className="mt-2 text-[16px] font-black leading-6 text-[#172019] dark:text-zinc-50">
@@ -4377,7 +4377,7 @@ function BeginnerGuidePurchaseCheckVisual({ card }: { card: RevealCard }) {
                 <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-[#657064] dark:text-zinc-400">
                   {check.body}
                 </p>
-                <div className="mt-2 break-keep rounded-[14px] bg-[#f6f1e8] px-3 py-2 text-[12px] font-black leading-5 text-[#344136] dark:bg-zinc-900 dark:text-zinc-200">
+                <div className="mt-2 break-keep rounded-[14px] bg-[#f5f7fb] px-3 py-2 text-[12px] font-black leading-5 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-200">
                   {check.ask}
                 </div>
               </div>
@@ -4421,7 +4421,7 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   const speedIsWeak = speed.label === "표본 부족" || speed.label === "수집 중";
 
   return (
-    <div className="rounded-[22px] bg-white p-4 shadow-[0_16px_34px_rgba(34,49,39,0.07)] ring-1 ring-[#e9dfd0] dark:bg-zinc-950/70 dark:ring-zinc-800">
+    <div className="rounded-[22px] bg-white p-4 shadow-[0_16px_34px_rgba(15,23,42,0.07)] ring-1 ring-zinc-200 dark:bg-zinc-950/70 dark:ring-zinc-800">
       <div className="grid grid-cols-2 gap-2.5">
         <div className="rounded-[18px] bg-[#f5f9ff] px-3 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
           <div className="break-keep text-[11px] font-bold text-[#6f7b73] dark:text-zinc-400">되팔 때 판매 주기</div>
@@ -4465,11 +4465,11 @@ function BeginnerGuideSummaryVisual({ card }: { card: RevealCard }) {
           <CheckCircleIcon className="h-11 w-11" />
         </div>
       </div>
-      <div className="rounded-[22px] bg-white p-4 shadow-[0_16px_34px_rgba(34,49,39,0.07)] ring-1 ring-[#e9dfd0] dark:bg-zinc-950/70 dark:ring-zinc-800">
+      <div className="rounded-[22px] bg-white p-4 shadow-[0_16px_34px_rgba(15,23,42,0.07)] ring-1 ring-zinc-200 dark:bg-zinc-950/70 dark:ring-zinc-800">
         <div className="text-center text-[15px] font-black text-[#172019] dark:text-zinc-50">{verdict}</div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           {items.map(([label, value]) => (
-            <div key={label} className="rounded-[16px] bg-[#f6f1e8] px-3 py-2.5 dark:bg-zinc-900">
+            <div key={label} className="rounded-[16px] bg-[#f5f7fb] px-3 py-2.5 dark:bg-zinc-900">
               <div className="text-[10.5px] font-bold text-[#7b8378] dark:text-zinc-400">{label}</div>
               <div className="mt-1 break-keep text-[14px] font-black leading-5 text-[#172019] dark:text-zinc-50">{value}</div>
             </div>
@@ -4529,7 +4529,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
 
   if (!ck) {
     return (
-      <div data-beginner-guide-comparables className="mt-4 rounded-[20px] bg-white/84 px-4 py-4 text-[13px] font-bold text-[#6b7269] ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:text-zinc-400 dark:ring-zinc-800">
+      <div data-beginner-guide-comparables className="mt-4 rounded-[20px] bg-white/84 px-4 py-4 text-[13px] font-bold text-zinc-500 ring-1 ring-zinc-200 dark:bg-zinc-950/60 dark:text-zinc-400 dark:ring-zinc-800">
         비교 매물은 아직 누적 중이에요.
       </div>
     );
@@ -4539,7 +4539,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
   const moreCount = listings ? Math.max(0, Math.min(listings.length, EXPANDED_VISIBLE) - INITIAL_VISIBLE) : 0;
 
   return (
-    <div data-beginner-guide-comparables className="mt-4 overflow-hidden rounded-[22px] bg-white/86 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+    <div data-beginner-guide-comparables className="mt-4 overflow-hidden rounded-[22px] bg-white/86 ring-1 ring-zinc-200 dark:bg-zinc-950/60 dark:ring-zinc-800">
       <div className="flex items-center justify-between gap-2 px-4 py-3">
         <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">비교 매물</div>
         <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{ccLabel}끼리</div>
@@ -4547,22 +4547,22 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
       {loading ? (
         // Wave 394.7.aa (사용자 짚음): skeleton row 4개 — 디폴트 4개 보이는 것과 동일 shape.
         // 텍스트만 깜빡이면 layout shift 큼 + "비교 매물이 진짜 있나?" 의심. shape preview 가 신뢰 ↑.
-        <div className="divide-y divide-[#eee5d8] dark:divide-zinc-800">
+        <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="flex items-center gap-3 px-4 py-3">
-              <div className="h-12 w-12 shrink-0 animate-pulse rounded-[12px] bg-[#ece3d2] dark:bg-zinc-800" />
+              <div className="h-12 w-12 shrink-0 animate-pulse rounded-[12px] bg-zinc-200 dark:bg-zinc-800" />
               <div className="min-w-0 flex-1 space-y-1.5">
-                <div className="h-3 w-[80%] animate-pulse rounded-full bg-[#ece3d2] dark:bg-zinc-800" />
-                <div className="h-2.5 w-[55%] animate-pulse rounded-full bg-[#ece3d2]/70 dark:bg-zinc-800/70" />
+                <div className="h-3 w-[80%] animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-2.5 w-[55%] animate-pulse rounded-full bg-zinc-200/70 dark:bg-zinc-800/70" />
               </div>
-              <div className="h-4 w-14 shrink-0 animate-pulse rounded-full bg-[#ece3d2] dark:bg-zinc-800" />
+              <div className="h-4 w-14 shrink-0 animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-800" />
             </div>
           ))}
         </div>
       ) : !listings || listings.length === 0 ? (
         <div className="px-4 pb-4 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">비교 매물 누적 중</div>
       ) : (
-        <div className="divide-y divide-[#eee5d8] dark:divide-zinc-800">
+        <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
           {visibleListings.map((item) => {
             const diff = item.price - card.price;
             const diffLabel = diff > 0 ? `이 매물보다 ${krw(diff)} 비쌈` : diff < 0 ? `이 매물보다 ${krw(Math.abs(diff))} 쌈` : "비슷한 가격";
@@ -4613,7 +4613,7 @@ function BeginnerGuideMarketVisual({ card }: { card: RevealCard }) {
 function BeginnerGuideTrendVisual({ card }: { card: RevealCard }) {
   const groupLabel = conditionComparisonGroupLabel(card);
   return (
-    <div data-beginner-guide-market-trend className="mt-4 overflow-hidden rounded-[22px] bg-white/84 p-3 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+    <div data-beginner-guide-market-trend className="mt-4 overflow-hidden rounded-[22px] bg-white/84 p-3 ring-1 ring-zinc-200 dark:bg-zinc-950/60 dark:ring-zinc-800">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">시세 그래프</div>
         <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{groupLabel} 30일 추이</div>
@@ -4635,14 +4635,14 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
   const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`;
 
   return (
-    <div data-beginner-guide-final-money data-beginner-guide-buy-cost className="mt-4 overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800">
+    <div data-beginner-guide-final-money data-beginner-guide-buy-cost className="mt-4 overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-zinc-200 dark:bg-zinc-950/60 dark:ring-zinc-800">
       <div className="px-4 py-4">
         <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">수익 계산 흐름</div>
         <div className="mt-1 break-keep text-[17px] font-black leading-6 text-[#172019] dark:text-zinc-50">
           매입가, 기준 시세, 되팔 때 비용을 뺀 뒤 마지막에 순익을 봐요
         </div>
       </div>
-      <div className="divide-y divide-[#eee5d8] border-y border-[#eee5d8] dark:divide-zinc-800 dark:border-zinc-800">
+      <div className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
         <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div>
             <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">실제 매입가</div>
@@ -4702,7 +4702,7 @@ function BeginnerGuideSafetyVisual({ card }: { card: RevealCard }) {
       </div>
       <div className="mt-4 grid gap-2">
         {rows.map(([title, body], index) => (
-          <div key={title} className="flex gap-3 rounded-[16px] bg-[#f4efe5] px-3 py-3 dark:bg-zinc-900">
+          <div key={title} className="flex gap-3 rounded-[16px] bg-zinc-50 px-3 py-3 dark:bg-zinc-900">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[11px] font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950 dark:text-emerald-200 dark:ring-emerald-900/50">
               {index + 1}
             </span>
@@ -4735,7 +4735,7 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
     <div data-beginner-guide-channel-profit className="mt-4 space-y-3">
       <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
         {marketChannels.map((channel) => (
-          <div key={channel.source} className="relative min-w-0 rounded-[16px] bg-white/84 px-2 py-2.5 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/60 dark:ring-zinc-800 sm:rounded-[22px] sm:p-4">
+          <div key={channel.source} className="relative min-w-0 rounded-[16px] bg-white/84 px-2 py-2.5 ring-1 ring-zinc-200 dark:bg-zinc-950/60 dark:ring-zinc-800 sm:rounded-[22px] sm:p-4">
             {channel.source === currentSource ? (
               <div className="absolute right-1.5 top-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[8px] font-black text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200 sm:right-3 sm:top-3 sm:px-2 sm:text-[9px]">
                 원본 출처
@@ -4913,7 +4913,7 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
         <div
           data-beginner-guide-safety-filter-note
           data-beginner-guide-safety-loading
-          className="mt-6 overflow-hidden rounded-[28px] bg-white px-5 py-5 shadow-[0_18px_44px_rgba(34,49,39,0.08)] ring-1 ring-[#ece4d7] dark:bg-zinc-950/70 dark:ring-zinc-800"
+          className="mt-6 overflow-hidden rounded-[28px] bg-white px-5 py-5 shadow-[0_18px_44px_rgba(15,23,42,0.08)] ring-1 ring-[#ece4d7] dark:bg-zinc-950/70 dark:ring-zinc-800"
         >
           <div className="flex items-center gap-3">
             <span className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f2f7ff] text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/45">
@@ -4951,7 +4951,7 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
     return (
       <div
         data-beginner-guide-safety-filter-note
-        className="mt-6 rounded-[28px] bg-white px-5 py-5 shadow-[0_18px_44px_rgba(34,49,39,0.08)] ring-1 ring-[#ece4d7] dark:bg-zinc-950/70 dark:ring-zinc-800"
+        className="mt-6 rounded-[28px] bg-white px-5 py-5 shadow-[0_18px_44px_rgba(15,23,42,0.08)] ring-1 ring-[#ece4d7] dark:bg-zinc-950/70 dark:ring-zinc-800"
       >
         <div className="flex items-center gap-3">
           <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f2f7ff] text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/45">
@@ -4970,7 +4970,7 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
         <div className="mt-5 space-y-2.5">
           {showFallbackTotal ? null : displayRows.map((row) => (
             <div key={row.label} className="flex items-center justify-between gap-4 rounded-[16px] bg-[#faf7f1] px-3.5 py-3 dark:bg-zinc-900/70">
-              <span className="break-keep text-[14px] font-bold text-[#475449] dark:text-zinc-300">{row.label}</span>
+              <span className="break-keep text-[14px] font-bold text-zinc-600 dark:text-zinc-300">{row.label}</span>
               <span className="shrink-0 text-[18px] font-black tabular-nums text-[#172019] dark:text-zinc-50">
                 {row.value == null ? "확인 중" : `${formatBeginnerStatCount(row.value)}건`}
               </span>
@@ -4984,7 +4984,7 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
           ) : null}
         </div>
 
-        <p className="mt-4 break-keep text-[13px] font-semibold leading-5 text-[#687166] dark:text-zinc-400">
+        <p className="mt-4 break-keep text-[13px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
           그래서 이제 이 매물만 차례대로 보면 돼요.
         </p>
       </div>
@@ -5117,9 +5117,9 @@ function BeginnerGuideWalkthrough({
       ring: "ring-amber-100",
     },
     summary: {
-      bg: "bg-[#f4f0e8]",
-      text: "text-[#344136]",
-      ring: "ring-[#e4dacb]",
+      bg: "bg-zinc-50",
+      text: "text-zinc-900",
+      ring: "ring-zinc-200",
     },
   };
   const toneClass = toneClasses[step.tone];
@@ -5131,7 +5131,7 @@ function BeginnerGuideWalkthrough({
       data-beginner-guide-fullscreen
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="relative h-[100dvh] overflow-hidden bg-[#fffbf4] px-5 pt-0 dark:bg-zinc-900 sm:h-[calc(88vh-2rem)] sm:rounded-[22px] sm:px-6"
+      className="relative h-[100dvh] overflow-hidden bg-white px-5 pt-0 dark:bg-zinc-900 sm:h-[calc(88vh-2rem)] sm:rounded-[22px] sm:px-6"
     >
       <style>{`
         @keyframes minyoiGuideStepIn {
@@ -5147,14 +5147,14 @@ function BeginnerGuideWalkthrough({
           type="button"
           onClick={onClose}
           aria-label="닫기"
-          className="pointer-events-auto inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/88 text-[#223127] shadow-[0_6px_18px_rgba(34,49,39,0.12)] ring-1 ring-[#e6dece] backdrop-blur transition active:scale-95 dark:bg-zinc-950/84 dark:text-zinc-100 dark:ring-zinc-800"
+          className="pointer-events-auto inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/88 text-zinc-950 shadow-[0_6px_18px_rgba(15,23,42,0.12)] ring-1 ring-zinc-200 backdrop-blur transition active:scale-95 dark:bg-zinc-950/84 dark:text-zinc-100 dark:ring-zinc-800"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
             <path d="m15 18-6-6 6-6" />
           </svg>
         </button>
         {/* Wave 394.7.y (사용자 피드백): dot indicator + N/N 텍스트 hybrid — 토스 톤. */}
-        <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-white/82 px-2.5 py-1 shadow-[0_5px_16px_rgba(34,49,39,0.08)] ring-1 ring-[#e6dece] backdrop-blur dark:bg-zinc-950/80 dark:ring-zinc-800">
+        <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-white/82 px-2.5 py-1 shadow-[0_5px_16px_rgba(15,23,42,0.08)] ring-1 ring-zinc-200 backdrop-blur dark:bg-zinc-950/80 dark:ring-zinc-800">
           <div className="flex items-center gap-[3px]">
             {steps.map((_, i) => (
               <span
@@ -5163,13 +5163,13 @@ function BeginnerGuideWalkthrough({
                   i === safeIndex
                     ? "w-3 bg-[#3182f6] dark:bg-[#5a9cff]"
                     : i < safeIndex
-                      ? "w-[5px] bg-[#9aaa9c] dark:bg-zinc-500"
-                      : "w-[5px] bg-[#dcd4c4] dark:bg-zinc-700"
+                      ? "w-[5px] bg-blue-300 dark:bg-zinc-500"
+                      : "w-[5px] bg-zinc-200 dark:bg-zinc-700"
                 }`}
               />
             ))}
           </div>
-          <span className="text-[10px] font-black tabular-nums text-[#566154] dark:text-zinc-300">
+          <span className="text-[10px] font-black tabular-nums text-zinc-500 dark:text-zinc-300">
             {safeIndex + 1}/{steps.length}
           </span>
         </div>
@@ -5198,7 +5198,7 @@ function BeginnerGuideWalkthrough({
             ) : step.tone === "market" ? (
               <BeginnerGuideMarketBody card={card} fallback={step.body} />
             ) : step.body ? (
-              <p className="mt-3 break-keep text-[15px] font-semibold leading-6 text-[#475449] dark:text-zinc-300">
+              <p className="mt-3 break-keep text-[15px] font-semibold leading-6 text-zinc-600 dark:text-zinc-300">
                 {step.body}
               </p>
             ) : null}
@@ -5208,18 +5208,18 @@ function BeginnerGuideWalkthrough({
             {step.tone === "trust" ? (
               <BeginnerGuideTrustMetric card={card} />
             ) : showDefaultMetric ? (
-              <div className="my-4 border-y border-[#eee5d8] py-4 dark:border-zinc-800">
+              <div className="my-4 border-y border-zinc-200 py-4 dark:border-zinc-800">
                 <div className={`text-[30px] font-black leading-none ${toneClass.text}`}>
                   {step.metric}
                 </div>
-                <div className="mt-2 break-keep text-[13px] font-bold leading-5 text-[#6b7269] dark:text-zinc-400">
+                <div className="mt-2 break-keep text-[13px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
                   {step.metricLabel}
                 </div>
               </div>
             ) : null}
 
             {showNote ? (
-              <p className="mt-3 break-keep rounded-[16px] bg-[#f4efe5] px-3.5 py-2.5 text-[12px] font-semibold leading-5 text-[#687166] dark:bg-zinc-950/50 dark:text-zinc-400">
+              <p className="mt-3 break-keep rounded-[16px] bg-zinc-50 px-3.5 py-2.5 text-[12px] font-semibold leading-5 text-zinc-500 dark:bg-zinc-950/50 dark:text-zinc-400">
                 {step.note}
               </p>
             ) : null}
@@ -5230,21 +5230,21 @@ function BeginnerGuideWalkthrough({
         </div>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-30 bg-[linear-gradient(180deg,rgba(255,251,244,0),#fffbf4_26%)] pb-[calc(env(safe-area-inset-bottom)+8px)] pt-6 dark:bg-[linear-gradient(180deg,rgba(24,24,27,0),#18181b_26%)]">
+      <div className="absolute inset-x-0 bottom-0 z-30 bg-[linear-gradient(180deg,rgba(255,255,255,0),#ffffff_26%)] pb-[calc(env(safe-area-inset-bottom)+8px)] pt-6 dark:bg-[linear-gradient(180deg,rgba(24,24,27,0),#18181b_26%)]">
         <div className="mx-auto w-full max-w-[640px] px-5 sm:px-6">
           <div className="grid grid-cols-[88px_minmax(0,1fr)] gap-2">
             <button
               type="button"
               onClick={onPrev}
               disabled={!canGoPrev}
-              className="flex min-h-[50px] items-center justify-center rounded-[17px] bg-white/92 px-3 text-[15px] font-black text-[#223127] ring-1 ring-[#e6dece] transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-35 dark:bg-zinc-950/70 dark:text-zinc-100 dark:ring-zinc-800"
+              className="flex min-h-[50px] items-center justify-center rounded-[17px] bg-white/92 px-3 text-[15px] font-black text-zinc-950 ring-1 ring-zinc-200 transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-35 dark:bg-zinc-950/70 dark:text-zinc-100 dark:ring-zinc-800"
             >
               이전
             </button>
             <button
               type="button"
               onClick={onNext}
-              className={`flex min-h-[50px] items-center justify-center rounded-[17px] px-4 text-[16px] font-black text-white shadow-[0_14px_28px_rgba(34,49,39,0.18)] transition active:scale-[0.99] ${guidePrimaryButtonClass}`}
+              className={`flex min-h-[50px] items-center justify-center rounded-[17px] px-4 text-[16px] font-black text-white shadow-[0_14px_28px_rgba(15,23,42,0.18)] transition active:scale-[0.99] ${guidePrimaryButtonClass}`}
             >
               {/* Wave 394.7.y: 마지막 step CTA 행동 지시 — "이 매물 자세히 보기" */}
               {isLast ? "이 매물 자세히 보기" : "다음"}
@@ -5253,7 +5253,7 @@ function BeginnerGuideWalkthrough({
           <button
             type="button"
             onClick={onSkip}
-            className="mx-auto mt-2 flex min-h-9 items-center justify-center px-3 text-[12px] font-black text-[#7b8378] underline-offset-4 hover:text-[#223127] hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+            className="mx-auto mt-2 flex min-h-9 items-center justify-center px-3 text-[12px] font-black text-[#7b8378] underline-offset-4 hover:text-zinc-950 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
           >
             상세 숫자 리포트 보기
           </button>
@@ -5316,8 +5316,8 @@ function RevealCardItem({
   const profitChipClass = isMarketInvalidated
     ? "bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-200"
     : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200";
-  const profitMutedClass = "text-[#6f7c6d] dark:text-zinc-400";
-  const profitStrongClass = "text-[#344136] dark:text-zinc-100";
+  const profitMutedClass = "text-zinc-500 dark:text-zinc-400";
+  const profitStrongClass = "text-zinc-900 dark:text-zinc-100";
   // Wave 2026-05-19 v2: grossGap, dailyProfit 표시 제거 (일반인 헷갈림 / 노이즈 큼).
   useEffect(() => {
     const id = window.setTimeout(() => setShown(true), delay);
@@ -5362,11 +5362,11 @@ function RevealCardItem({
           <RevealProductImage card={card} />
         </div>
 
-        <div className="relative z-10 -mt-4 min-w-0 w-full space-y-3 rounded-t-[22px] bg-[#ebe6dc] px-4 pb-2 pt-7 dark:bg-zinc-900">
+        <div className="relative z-10 -mt-4 min-w-0 w-full space-y-3 rounded-t-[22px] bg-[#f5f7fb] px-4 pb-2 pt-7 dark:bg-zinc-900">
           <div className="absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 rounded-full bg-[#d0c6b1]" />
           <div className="space-y-1.5">
             <div className="relative">
-              <div className="pr-[92px] text-[10.5px] font-semibold leading-4 text-[#6f7c6d] dark:text-zinc-400">
+              <div className="pr-[92px] text-[10.5px] font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
                 <span className="mr-1.5 inline-flex align-middle">
                   <MarketplaceSourceBadge source={card.marketplaceSource} label={card.marketplaceLabel} />
                 </span>
@@ -5561,7 +5561,7 @@ function GuidePreviewPanel({
 }) {
   if (loading) {
     return (
-      <div className="flex max-h-[calc(100vh-24px)] items-center justify-center overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] p-6 shadow-2xl shadow-[rgba(49,66,56,0.16)] dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex max-h-[calc(100vh-24px)] items-center justify-center overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl shadow-[rgba(49,130,246,0.16)] dark:border-zinc-800 dark:bg-zinc-900">
         <div className="text-sm font-semibold text-zinc-500 dark:text-zinc-300">공략 정보를 정리하는 중...</div>
       </div>
     );
@@ -5569,7 +5569,7 @@ function GuidePreviewPanel({
 
   if (error) {
     return (
-      <div className="flex max-h-[calc(100vh-24px)] overflow-hidden rounded-2xl border border-[#ddd6ca] bg-[#fffdf9] shadow-2xl shadow-[rgba(49,66,56,0.16)] dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex max-h-[calc(100vh-24px)] overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl shadow-[rgba(49,130,246,0.16)] dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex min-h-0 w-full flex-col">
           <div className="border-b border-zinc-200 p-4 dark:border-zinc-800">
             <div className="text-sm font-black text-[var(--brand-accent-strong)] dark:text-zinc-100">공략 정보를 아직 불러오지 못했어요</div>
@@ -5579,7 +5579,7 @@ function GuidePreviewPanel({
             <button
               type="button"
               onClick={onClose}
-              className="w-full rounded-xl border border-[#d5dfd2] bg-white px-4 py-3 text-center text-sm font-bold text-[var(--brand-accent-strong)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              className="w-full rounded-xl border border-blue-100 bg-white px-4 py-3 text-center text-sm font-bold text-[var(--brand-accent-strong)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
             >
               닫기
             </button>
@@ -5627,7 +5627,7 @@ function ModalActionFooter({
   const statusLabel = localStatus ? TRANSACTION_STATUS_LABEL[localStatus] : "진행 전";
 
   return (
-    <div className="rounded-2xl border border-[#e7dece] bg-[#fffdf9] p-2 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-2xl border border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-900">
       <div>
         <div className="flex items-center gap-1.5">
           <details className="group relative min-w-0 flex-1">
@@ -5635,7 +5635,7 @@ function ModalActionFooter({
               <span>거래 상태</span>
               <span className="truncate text-[var(--brand-accent-strong)] dark:text-zinc-200">{statusLabel}</span>
             </summary>
-            <div className="absolute inset-x-0 bottom-[calc(100%+8px)] z-20 rounded-xl border border-[#e1dacd] bg-[#fffdf9] p-2 shadow-2xl shadow-[rgba(49,66,56,0.18)] dark:border-zinc-800 dark:bg-zinc-950">
+            <div className="absolute inset-x-0 bottom-[calc(100%+8px)] z-20 rounded-xl border border-[#e1dacd] bg-white p-2 shadow-2xl shadow-[rgba(49,130,246,0.18)] dark:border-zinc-800 dark:bg-zinc-950">
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#758174] dark:text-zinc-400">
                   거래 상태
@@ -5654,8 +5654,8 @@ function ModalActionFooter({
                       onClick={() => handleTransactionFeedback(action.type, action.note)}
                       className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
                         active
-                          ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
-                          : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                          ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,130,246,0.18)]"
+                          : "border-[#d8d2c6] bg-white text-[#425247] hover:border-blue-200 hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
                       }`}
                     >
                       {action.label}
@@ -5678,8 +5678,8 @@ function ModalActionFooter({
                           onClick={() => handleTransactionFeedback(action.type, action.note)}
                           className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
                             active
-                              ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
-                              : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                              ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,130,246,0.18)]"
+                              : "border-[#d8d2c6] bg-white text-[#425247] hover:border-blue-200 hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
                           }`}
                         >
                           {action.label}
@@ -5729,8 +5729,8 @@ function ModalActionFooter({
                   onClick={() => handleTransactionFeedback(action.type, action.note)}
                   className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
                     active
-                      ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
-                      : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                      ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,130,246,0.18)]"
+                      : "border-[#d8d2c6] bg-white text-[#425247] hover:border-blue-200 hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
                   }`}
                 >
                   {action.label}
@@ -5753,8 +5753,8 @@ function ModalActionFooter({
                       onClick={() => handleTransactionFeedback(action.type, action.note)}
                       className={`rounded-lg border px-2 py-2 text-[11px] font-black transition ${
                         active
-                          ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,66,56,0.18)]"
-                          : "border-[#d8d2c6] bg-[#fffdf9] text-[#425247] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                          ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] shadow-sm shadow-[rgba(49,130,246,0.18)]"
+                          : "border-[#d8d2c6] bg-white text-[#425247] hover:border-blue-200 hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
                       }`}
                     >
                       {action.label}
@@ -5872,7 +5872,7 @@ function FixedBunjangFooter({
             onClick={() => setConfirmOpen(false)}
             className="absolute inset-0 cursor-default"
           />
-          <div className="relative w-full max-w-[430px] overflow-hidden rounded-[26px] bg-[#fffbf4] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] ring-1 ring-[#e4dacb] dark:bg-zinc-900 dark:ring-zinc-800">
+          <div className="relative w-full max-w-[430px] overflow-hidden rounded-[26px] bg-white p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800">
             <div className="flex items-start gap-3">
               <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/55 dark:text-emerald-200 dark:ring-emerald-900/60">
                 <ShieldIcon className="h-6 w-6" />
@@ -5885,27 +5885,27 @@ function FixedBunjangFooter({
               </div>
             </div>
             <div className="mt-4 space-y-2.5">
-              <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/55 dark:ring-zinc-800">
+              <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-zinc-200 dark:bg-zinc-950/55 dark:ring-zinc-800">
                 <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">상태별 시세 기준</div>
-                <p className="mt-1 break-keep text-[13px] font-bold leading-5 text-[#223127] dark:text-zinc-100">
+                <p className="mt-1 break-keep text-[13px] font-bold leading-5 text-zinc-950 dark:text-zinc-100">
                   {conditionBasisSentence(card)}
                 </p>
                 <div className="mt-1.5 text-[12px] font-black text-emerald-700 dark:text-emerald-200">
                   {marketPricePositionLine(card)}
                 </div>
               </div>
-              <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/55 dark:ring-zinc-800">
+              <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-zinc-200 dark:bg-zinc-950/55 dark:ring-zinc-800">
                 <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">판매자 확인</div>
-                <p className="mt-1 break-keep text-[13px] font-bold leading-5 text-[#223127] dark:text-zinc-100">
+                <p className="mt-1 break-keep text-[13px] font-bold leading-5 text-zinc-950 dark:text-zinc-100">
                   {sellerLine}
                 </p>
               </div>
               {checks.length > 0 ? (
-                <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-[#e9dfd0] dark:bg-zinc-950/55 dark:ring-zinc-800">
+                <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-zinc-200 dark:bg-zinc-950/55 dark:ring-zinc-800">
                   <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">구매 전 멈춤 신호</div>
                   <ul className="mt-2 space-y-1.5">
                     {checks.map((check) => (
-                      <li key={check.id} className="break-keep text-[12.5px] font-bold leading-5 text-[#344136] dark:text-zinc-200">
+                      <li key={check.id} className="break-keep text-[12.5px] font-bold leading-5 text-zinc-900 dark:text-zinc-200">
                         {check.ask}
                       </li>
                     ))}
@@ -5945,7 +5945,7 @@ function FixedBunjangFooter({
                   onTrackEvent?.(card.pid, "original_cancelled", { marketplace: marketplaceLabel });
                   setConfirmOpen(false);
                 }}
-                className="flex min-h-[46px] items-center justify-center rounded-[16px] bg-white/86 px-4 text-[14px] font-black text-[#344136] ring-1 ring-[#e6dece] transition active:scale-[0.99] dark:bg-zinc-950/60 dark:text-zinc-100 dark:ring-zinc-800"
+                className="flex min-h-[46px] items-center justify-center rounded-[16px] bg-white/86 px-4 text-[14px] font-black text-zinc-900 ring-1 ring-zinc-200 transition active:scale-[0.99] dark:bg-zinc-950/60 dark:text-zinc-100 dark:ring-zinc-800"
               >
                 더 살펴볼래요
               </button>
@@ -6099,7 +6099,7 @@ function DetailReportModeChoiceSheet({
 
   return (
     <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/45 px-3 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-8 backdrop-blur-sm sm:items-center sm:px-6 sm:pb-8">
-      <div className="w-full max-w-[420px] rounded-[28px] bg-[#fffbf4] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.28)] ring-1 ring-black/10 dark:bg-zinc-950 dark:ring-white/10">
+      <div className="w-full max-w-[420px] rounded-[28px] bg-white p-4 shadow-[0_24px_80px_rgba(0,0,0,0.28)] ring-1 ring-black/10 dark:bg-zinc-950 dark:ring-white/10">
         <div className="rounded-[22px] bg-white px-4 py-4 ring-1 ring-[#ebe3d4] dark:bg-zinc-900 dark:ring-zinc-800">
           <div className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-black text-emerald-800 ring-1 ring-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900/60">
             보기 방식 선택
@@ -6110,8 +6110,8 @@ function DetailReportModeChoiceSheet({
           <p className="mt-2 break-keep text-[13px] font-semibold leading-5 text-[#667164] dark:text-zinc-400">
             이번 매물만 숫자로 보거나, 앞으로 기본 화면을 상세 리포트로 바꿀 수 있어요.
           </p>
-          <p className="mt-3 break-keep rounded-[16px] bg-[#f4efe5] px-3 py-2 text-[12px] font-bold leading-5 text-[#687166] dark:bg-zinc-950/70 dark:text-zinc-400">
-            기본을 바꿔도 나중에 상단의 <span className="text-[#223127] dark:text-zinc-100">쉽게 보기</span> 버튼으로 언제든 다시 볼 수 있어요.
+          <p className="mt-3 break-keep rounded-[16px] bg-zinc-50 px-3 py-2 text-[12px] font-bold leading-5 text-zinc-500 dark:bg-zinc-950/70 dark:text-zinc-400">
+            기본을 바꿔도 나중에 상단의 <span className="text-zinc-950 dark:text-zinc-100">쉽게 보기</span> 버튼으로 언제든 다시 볼 수 있어요.
           </p>
         </div>
 
@@ -6126,14 +6126,14 @@ function DetailReportModeChoiceSheet({
           <button
             type="button"
             onClick={onAlwaysDetailed}
-            className="flex min-h-[52px] items-center justify-center rounded-[18px] bg-white px-4 text-[14px] font-black text-[#223127] ring-1 ring-[#e6dece] transition active:scale-[0.99] dark:bg-zinc-900 dark:text-zinc-100 dark:ring-zinc-800"
+            className="flex min-h-[52px] items-center justify-center rounded-[18px] bg-white px-4 text-[14px] font-black text-zinc-950 ring-1 ring-zinc-200 transition active:scale-[0.99] dark:bg-zinc-900 dark:text-zinc-100 dark:ring-zinc-800"
           >
             앞으로 상세 리포트를 기본으로 보기
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="mx-auto flex min-h-9 items-center justify-center px-3 text-[12px] font-black text-[#7b8378] underline-offset-4 hover:text-[#223127] hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+            className="mx-auto flex min-h-9 items-center justify-center px-3 text-[12px] font-black text-[#7b8378] underline-offset-4 hover:text-zinc-950 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
           >
             계속 쉬운모드 볼래요
           </button>
@@ -6546,7 +6546,7 @@ export default function PackRevealModal({
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-stretch justify-stretch overscroll-contain bg-[#ebe6dc] p-0 dark:bg-zinc-950 sm:items-center sm:justify-center sm:bg-[rgba(31,40,34,0.48)] sm:p-4 sm:backdrop-blur-sm sm:dark:bg-[rgba(9,9,11,0.62)]"
+      className="fixed inset-0 z-[90] flex items-stretch justify-stretch overscroll-contain bg-[#f5f7fb] p-0 dark:bg-zinc-950 sm:items-center sm:justify-center sm:bg-[rgba(31,40,34,0.48)] sm:p-4 sm:backdrop-blur-sm sm:dark:bg-[rgba(9,9,11,0.62)]"
       role="dialog"
       aria-modal="true"
       onClick={() => {
@@ -6555,7 +6555,7 @@ export default function PackRevealModal({
     >
       <div
         data-mobile-detail-shell
-        className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#ebe6dc] shadow-none dark:bg-zinc-900 sm:h-[min(92dvh,920px)] sm:max-h-[92dvh] sm:w-[min(480px,calc(100vw-32px))] sm:max-w-[480px] sm:rounded-[28px] sm:border sm:border-[#ddd6ca] sm:shadow-2xl sm:shadow-[rgba(49,66,56,0.20)] sm:dark:border-zinc-800"
+        className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#f5f7fb] shadow-none dark:bg-zinc-900 sm:h-[min(92dvh,920px)] sm:max-h-[92dvh] sm:w-[min(480px,calc(100vw-32px))] sm:max-w-[480px] sm:rounded-[28px] sm:border sm:border-zinc-200 sm:shadow-2xl sm:shadow-[rgba(49,130,246,0.20)] sm:dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
         {saveToast ? (
@@ -6621,7 +6621,7 @@ export default function PackRevealModal({
 
             {/* (B) Sticky nav bar — 사진 사라지면 등장 */}
             <div
-              className={`pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-[#e2dbcf] bg-[#ebe6dc]/95 backdrop-blur transition-opacity duration-200 dark:border-zinc-800 dark:bg-zinc-900/95 ${
+              className={`pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-zinc-200 bg-[#f5f7fb]/95 backdrop-blur transition-opacity duration-200 dark:border-zinc-800 dark:bg-zinc-900/95 ${
                 photoVisible ? "opacity-0" : "opacity-100"
               }`}
             >
@@ -6752,7 +6752,7 @@ export default function PackRevealModal({
                   alreadyReportedLoss={alreadyReportedLoss}
                 />
               ) : null}
-              <details className="border-t border-[#e5dccf] pt-3 text-[11px] font-semibold leading-5 text-[#7a8478] dark:border-zinc-800 dark:text-zinc-500">
+              <details className="border-t border-zinc-200 pt-3 text-[11px] font-semibold leading-5 text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
                 <summary className="cursor-pointer list-none font-black text-[#647064] dark:text-zinc-400">
                   시세 추천 유의사항
                 </summary>

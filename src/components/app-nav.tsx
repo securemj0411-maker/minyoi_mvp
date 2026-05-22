@@ -103,15 +103,15 @@ function ThemeToggle({
 
   if (variant === "compact") {
     return (
-      <div className={`flex items-center gap-1 rounded-full border border-[#ddd4c7] bg-[#fbf8f2] p-1 shadow-[0_8px_18px_rgba(45,57,48,0.06)] dark:border-zinc-700 dark:bg-zinc-900 ${className}`}>
+      <div className={`flex items-center gap-1 rounded-full border border-zinc-200 bg-white p-1 shadow-[0_8px_18px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-900 ${className}`}>
         <button
           type="button"
           onClick={() => setTheme("light")}
           aria-label="라이트 모드"
           className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition ${
             !effectiveDark
-              ? "bg-[var(--brand-accent)] text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] dark:bg-zinc-100 dark:text-zinc-950"
-              : "text-[#5f675e] hover:bg-[var(--brand-accent-soft)] dark:text-zinc-400 dark:hover:bg-zinc-800"
+              ? "bg-[var(--brand-accent)] text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(49,130,246,0.18)] dark:bg-zinc-100 dark:text-zinc-950"
+              : "text-zinc-600 hover:bg-[var(--brand-accent-soft)] dark:text-zinc-400 dark:hover:bg-zinc-800"
           }`}
         >
           <SunIcon />
@@ -122,8 +122,8 @@ function ThemeToggle({
           aria-label="다크 모드"
           className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition ${
             effectiveDark
-              ? "bg-[var(--brand-accent)] text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] dark:bg-zinc-100 dark:text-zinc-950"
-              : "text-[#5f675e] hover:bg-[var(--brand-accent-soft)] dark:text-zinc-400 dark:hover:bg-zinc-800"
+              ? "bg-[var(--brand-accent)] text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(49,130,246,0.18)] dark:bg-zinc-100 dark:text-zinc-950"
+              : "text-zinc-600 hover:bg-[var(--brand-accent-soft)] dark:text-zinc-400 dark:hover:bg-zinc-800"
           }`}
         >
           <MoonIcon />
@@ -138,7 +138,7 @@ function ThemeToggle({
     ["dark", "다크", <MoonIcon key="moon" />],
   ];
   return (
-    <div className={`flex items-stretch gap-0.5 rounded-xl border border-[#ddd4c7] bg-[#fbf8f2] p-0.5 shadow-[0_8px_18px_rgba(45,57,48,0.06)] dark:border-zinc-700 dark:bg-zinc-900 ${className}`}>
+    <div className={`flex items-stretch gap-0.5 rounded-xl border border-zinc-200 bg-white p-0.5 shadow-[0_8px_18px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-900 ${className}`}>
       {items.map(([value, label, icon]) => (
         <button
           key={value}
@@ -148,8 +148,8 @@ function ThemeToggle({
           title={label}
           className={`flex flex-1 items-center justify-center rounded-lg py-2 transition ${
             theme === value
-              ? "bg-[var(--brand-accent)] text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] dark:bg-zinc-100 dark:text-zinc-950"
-              : "text-[#5f675e] hover:bg-[var(--brand-accent-soft)] dark:text-zinc-400 dark:hover:bg-zinc-800"
+              ? "bg-[var(--brand-accent)] text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(49,130,246,0.18)] dark:bg-zinc-100 dark:text-zinc-950"
+              : "text-zinc-600 hover:bg-[var(--brand-accent-soft)] dark:text-zinc-400 dark:hover:bg-zinc-800"
           }`}
         >
           {icon}
@@ -323,10 +323,23 @@ export default function AppNav() {
     ...(user ? [{ href: "/me", label: "내 대시보드" }] : []),
     ...(admin ? [{ href: "/debug", label: "운영 로그" }] : []),
   ];
+  const mobileHomeHref = user ? "/me" : "/";
+  const mobileNavLinks = user
+    ? [
+        { href: "/me", label: "추천 피드", caption: "오늘 볼 만한 매물" },
+        { href: "/plans", label: "크레딧 충전", caption: "상세 분석 열기" },
+        { href: "/how-it-works", label: "서비스 안내", caption: "득템잡이 사용법" },
+        ...(admin ? [{ href: "/debug", label: "운영 로그", caption: "관리자 전용" }] : []),
+      ]
+    : [
+        { href: "/", label: "추천 상품", caption: "오늘의 후보" },
+        { href: "/how-it-works", label: "서비스 안내", caption: "득템잡이 사용법" },
+        { href: "/plans", label: "크레딧 충전", caption: "가격 보기" },
+      ];
 
   return (
     <>
-    <nav className="sticky top-0 z-40 border-b border-[#e2d9cb] bg-[#f8f4ec]/92 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
+    <nav className="sticky top-0 z-40 border-b border-zinc-200 bg-white/92 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
       <div className="mx-auto grid max-w-[1380px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-3 sm:px-6 md:gap-3 md:px-4 lg:px-8">
         {/* 왼쪽: mobile = 햄버거, desktop = 로고 + admin dot */}
         <div className="flex items-center gap-2 justify-self-start">
@@ -334,7 +347,7 @@ export default function AppNav() {
             type="button"
             onClick={() => setMobileDrawerOpen(true)}
             aria-label="메뉴 열기"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#344136] transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800 md:hidden"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-900 transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800 md:hidden"
           >
             <HamburgerIcon />
           </button>
@@ -342,13 +355,13 @@ export default function AppNav() {
             type="button"
             onClick={handleAdminDotClick}
             aria-label="admin-toggle"
-            className={`hidden h-2 w-2 rounded-full transition-colors md:block ${adminOverride ? "bg-emerald-500" : "bg-[#d6cdbc] dark:bg-zinc-700"}`}
+            className={`hidden h-2 w-2 rounded-full transition-colors md:block ${adminOverride ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-700"}`}
           />
           <Link href="/" className="hidden items-center gap-2 md:flex">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-sm font-black text-white shadow-md shadow-emerald-500/20">
               M
             </div>
-            <span className="font-black tracking-tight text-[#223127] dark:text-white">득템잡이</span>
+            <span className="font-black tracking-tight text-zinc-950 dark:text-white">득템잡이</span>
             <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:ring-emerald-900">
               Beta
             </span>
@@ -356,8 +369,8 @@ export default function AppNav() {
         </div>
 
         {/* 가운데: mobile = "득템잡이" 텍스트, desktop = nav links */}
-        <Link href="/" className="flex items-center justify-self-center md:hidden">
-          <span className="text-base font-black tracking-tight text-[#223127] dark:text-white">득템잡이</span>
+        <Link href={mobileHomeHref} className="flex items-center justify-self-center md:hidden">
+          <span className="text-base font-black tracking-tight text-zinc-950 dark:text-white">득템잡이</span>
         </Link>
 
         <div className="hidden items-center justify-self-center gap-1 md:flex">
@@ -367,8 +380,8 @@ export default function AppNav() {
               href={link.href}
               className={`rounded-xl px-3 py-1.5 text-xs font-black transition ${
                 isActive(pathname, link.href)
-                  ? "bg-[var(--brand-accent)] text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] dark:bg-zinc-100 dark:text-zinc-950"
-                  : "text-[#5f675e] hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+                  ? "bg-[var(--brand-accent)] text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(49,130,246,0.18)] dark:bg-zinc-100 dark:text-zinc-950"
+                  : "text-zinc-600 hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
               }`}
             >
               {link.label}
@@ -377,19 +390,13 @@ export default function AppNav() {
         </div>
 
         <div className="flex items-center justify-self-end gap-1.5">
-          {/* mobile 전용: 로그인 시 대시보드 / 비로그인 시 로그인 */}
+          {/* mobile 전용: 로그인 시 크레딧 잔액만 상시 노출 / 비로그인 시 로그인 */}
           {user ? (
             <div className="flex items-center gap-1 md:hidden">
               <Link
-                href="/me"
-                className="inline-flex h-9 items-center rounded-xl bg-[var(--brand-accent-strong)] px-3 text-xs font-black text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(92,116,95,0.18)] transition hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-950"
-              >
-                대시보드
-              </Link>
-              <Link
                 href="/plans"
                 aria-label={`크레딧 ${infiniteCredits ? "무제한" : `${tokens}개`} 충전하기`}
-                className="inline-flex h-9 items-center gap-1 rounded-xl border border-[#cfd9c9] bg-[#edf4e8] px-2 text-xs font-black tabular-nums text-[#223127] shadow-[0_8px_14px_rgba(92,116,95,0.10)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                className="inline-flex h-9 items-center gap-1 rounded-xl border border-blue-100 bg-blue-50 px-2.5 text-xs font-black tabular-nums text-zinc-950 shadow-[0_8px_14px_rgba(49,130,246,0.10)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
               >
                 <CreditIcon size={16} className="shrink-0" />
                 {infiniteCredits ? "∞" : tokens}
@@ -398,7 +405,7 @@ export default function AppNav() {
           ) : (
             <Link
               href="/login"
-              className="inline-flex h-9 items-center rounded-xl border border-[#ddd4c7] bg-[#fbf8f2] px-3 text-xs font-black text-[#344136] shadow-[0_8px_18px_rgba(45,57,48,0.06)] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:hidden"
+              className="inline-flex h-9 items-center rounded-xl border border-zinc-200 bg-white px-3 text-xs font-black text-zinc-900 shadow-[0_8px_18px_rgba(15,23,42,0.06)] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:hidden"
             >
               로그인
             </Link>
@@ -416,30 +423,30 @@ export default function AppNav() {
                   }}
                   aria-expanded={creditMenuOpen}
                   aria-label="크레딧 충전 메뉴 열기"
-                  className="flex h-9 items-center gap-1.5 rounded-xl border border-[#cfd9c9] bg-[#edf4e8] px-2.5 shadow-[0_8px_16px_rgba(92,116,95,0.10)] transition hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700/70 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  className="flex h-9 items-center gap-1.5 rounded-xl border border-blue-100 bg-blue-50 px-2.5 shadow-[0_8px_16px_rgba(49,130,246,0.10)] transition hover:border-blue-200 hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700/70 dark:bg-zinc-900 dark:hover:bg-zinc-800"
                 >
                   <CreditIcon size={20} className="shrink-0 drop-shadow-[0_1px_1px_rgba(63,42,10,0.25)]" />
-                  <span className="text-xs font-black leading-none tabular-nums text-[#223127] dark:text-zinc-100">
+                  <span className="text-xs font-black leading-none tabular-nums text-zinc-950 dark:text-zinc-100">
                     {infiniteCredits ? "∞" : tokens}
                   </span>
-                  <span className="text-[10px] leading-none text-[#6f7c6d] dark:text-zinc-500">{creditMenuOpen ? "▴" : "▾"}</span>
+                  <span className="text-[10px] leading-none text-zinc-500 dark:text-zinc-500">{creditMenuOpen ? "▴" : "▾"}</span>
                 </button>
                 {creditMenuOpen ? (
-                  <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-64 rounded-2xl border border-[#ddd4c7] bg-[#fbf8f2] p-3 shadow-[0_20px_40px_rgba(45,57,48,0.14)] dark:border-zinc-800 dark:bg-zinc-900">
-                    <div className="rounded-xl bg-[#fffaf1] px-3 py-3 dark:bg-zinc-950/50">
+                  <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-64 rounded-2xl border border-zinc-200 bg-white p-3 shadow-[0_20px_40px_rgba(15,23,42,0.14)] dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="rounded-xl bg-white px-3 py-3 dark:bg-zinc-950/50">
                       <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">보유 크레딧</div>
                       <div className="mt-2 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <CreditIcon size={24} className="shrink-0" />
-                          <span className="text-2xl font-black tabular-nums text-[#223127] dark:text-zinc-100">
+                          <span className="text-2xl font-black tabular-nums text-zinc-950 dark:text-zinc-100">
                             {infiniteCredits ? "∞" : tokens}
                           </span>
                         </div>
-                        <span className="rounded-full bg-[#eef6eb] px-2 py-1 text-[10px] font-black text-[#4f6f58] dark:bg-emerald-950/30 dark:text-emerald-200">
+                        <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-black text-[#4f6f58] dark:bg-emerald-950/30 dark:text-emerald-200">
                           즉시 사용
                         </span>
                       </div>
-                      <div className="mt-2 text-[11px] font-semibold leading-5 text-[#6b7269] dark:text-zinc-400">
+                      <div className="mt-2 text-[11px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
                         부족하면 크레딧 패키지를 단건 충전할 수 있어요.
                       </div>
                     </div>
@@ -455,7 +462,7 @@ export default function AppNav() {
                       <Link
                         href="/plans"
                         onClick={() => setCreditMenuOpen(false)}
-                        className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-[#344136] transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-zinc-900 transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
                       >
                         <span>크레딧 패키지 보기</span>
                         <span className="text-zinc-400">↗</span>
@@ -467,7 +474,7 @@ export default function AppNav() {
               {admin ? (
                 <Link
                   href="/plans"
-                  className="hidden h-9 items-center rounded-xl border border-[#cfd9c9] bg-[#fbf8f2] px-2.5 text-xs font-black leading-none text-[#344136] shadow-[0_8px_18px_rgba(45,57,48,0.06)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:inline-flex"
+                  className="hidden h-9 items-center rounded-xl border border-blue-100 bg-white px-2.5 text-xs font-black leading-none text-zinc-900 shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:inline-flex"
                 >
                   충전하기
                 </Link>
@@ -476,23 +483,23 @@ export default function AppNav() {
                 <button
                   type="button"
                   onClick={() => setMenuOpen((prev) => !prev)}
-                  className="flex h-9 items-center gap-1.5 rounded-xl border border-[#ddd4c7] bg-[#fbf8f2] px-2.5 text-left text-xs leading-none shadow-[0_8px_18px_rgba(45,57,48,0.06)] transition hover:bg-[#f1ebe1] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  className="flex h-9 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 text-left text-xs leading-none shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
                 >
                   <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-[10px] font-black leading-none text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
                     {userInitial}
                   </span>
 	                  <span className="hidden min-w-0 sm:block">
-	                    <span className="block max-w-16 truncate text-xs font-black leading-none text-[#223127] dark:text-zinc-100">{userName}</span>
+	                    <span className="block max-w-16 truncate text-xs font-black leading-none text-zinc-950 dark:text-zinc-100">{userName}</span>
 	                  </span>
                   <span className="text-[10px] leading-none text-zinc-400">{menuOpen ? "▴" : "▾"}</span>
                 </button>
                 {menuOpen ? (
-                  <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-56 rounded-2xl border border-[#ddd4c7] bg-[#fbf8f2] p-2 shadow-[0_20px_40px_rgba(45,57,48,0.14)] dark:border-zinc-800 dark:bg-zinc-900">
+                  <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-56 rounded-2xl border border-zinc-200 bg-white p-2 shadow-[0_20px_40px_rgba(15,23,42,0.14)] dark:border-zinc-800 dark:bg-zinc-900">
 	                    <div className="rounded-xl px-3 py-2">
 	                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">계정</div>
-	                      <div className="mt-1 truncate text-sm font-black text-[#223127] dark:text-zinc-100">{userName}</div>
+	                      <div className="mt-1 truncate text-sm font-black text-zinc-950 dark:text-zinc-100">{userName}</div>
 	                      {user.email ? (
-	                        <div className="mt-0.5 truncate text-xs font-semibold text-[#6b7269] dark:text-zinc-400">{user.email}</div>
+	                        <div className="mt-0.5 truncate text-xs font-semibold text-zinc-500 dark:text-zinc-400">{user.email}</div>
 	                      ) : null}
 	                    </div>
                     <div className="px-2 py-1">
@@ -510,7 +517,7 @@ export default function AppNav() {
                     <button
                       type="button"
                       onClick={handleSignOut}
-                      className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-[#344136] transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
+                      className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
                     >
                       <span>로그아웃</span>
                       <span className="text-zinc-400">↗</span>
@@ -524,7 +531,7 @@ export default function AppNav() {
               <ThemeToggle variant="compact" className="hidden md:flex" />
               <Link
                 href="/login"
-                className="hidden rounded-xl border border-[#ddd4c7] bg-[#fbf8f2] px-3 py-1.5 text-xs font-black text-[#344136] shadow-[0_8px_18px_rgba(45,57,48,0.06)] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:inline-flex"
+                className="hidden rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-black text-zinc-900 shadow-[0_8px_18px_rgba(15,23,42,0.06)] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:inline-flex"
               >
                 카카오 로그인
               </Link>
@@ -549,23 +556,49 @@ export default function AppNav() {
           onClick={() => setMobileDrawerOpen(false)}
         />
         <aside
-          className={`absolute inset-y-0 left-0 flex w-[78%] max-w-[320px] flex-col bg-[#f8f4ec] shadow-[0_24px_64px_rgba(34,49,39,0.24)] transition-transform duration-300 ease-out dark:bg-zinc-950 ${
+          className={`absolute inset-y-0 left-0 flex w-[78%] max-w-[320px] flex-col bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)] transition-transform duration-300 ease-out dark:bg-zinc-950 ${
             mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
             {/* drawer header */}
-            <div className="flex items-center justify-between border-b border-[#e2d9cb] px-4 py-3 dark:border-zinc-800">
-              <Link href="/" onClick={() => setMobileDrawerOpen(false)} className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-sm font-black text-white shadow-md shadow-emerald-500/20">
-                  M
+            <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => setAccountSheetOpen(true)}
+                  className="-ml-1 flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-1.5 py-1.5 text-left ring-1 ring-transparent transition hover:bg-[var(--brand-accent-soft)] hover:ring-blue-100 active:scale-[0.99] dark:hover:bg-zinc-900 dark:hover:ring-zinc-800"
+                  aria-label="계정 관리 열기"
+                >
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-sm font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
+                    {userInitial}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[15px] font-black tracking-tight text-zinc-950 dark:text-white">
+                      {userName}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                      계정 설정 열기
+                    </span>
+                  </span>
+                  <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-black text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+                    →
+                  </span>
+                </button>
+              ) : (
+                <div className="min-w-0">
+                  <div className="text-[15px] font-black tracking-tight text-zinc-950 dark:text-white">
+                    로그인하고 시작하기
+                  </div>
+                  <div className="mt-0.5 truncate text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                    첫 3개 상세 리포트 무료
+                  </div>
                 </div>
-                <span className="font-black tracking-tight text-[#223127] dark:text-white">득템잡이</span>
-              </Link>
+              )}
               <button
                 type="button"
                 onClick={() => setMobileDrawerOpen(false)}
                 aria-label="메뉴 닫기"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-900 hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
               >
                 <CloseIcon />
               </button>
@@ -573,58 +606,64 @@ export default function AppNav() {
 
             {/* nav links */}
             <div className="flex-1 overflow-y-auto px-3 py-4">
+              {user ? (
+                <Link
+                  href="/plans"
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="mb-3 block rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-emerald-400">
+                        보유 크레딧
+                      </div>
+                      <div className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
+                        상세 분석을 열 때만 차감돼요
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1.5 text-sm font-black tabular-nums text-zinc-950 shadow-sm dark:bg-zinc-950 dark:text-zinc-100">
+                      <CreditIcon size={18} className="shrink-0" />
+                      {infiniteCredits ? "∞" : tokens}
+                    </div>
+                  </div>
+                </Link>
+              ) : null}
               <div className="space-y-1">
-                {navLinks.map((link) => (
+                {mobileNavLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileDrawerOpen(false)}
-                    className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-black transition ${
+                    className={`flex items-center justify-between rounded-xl px-3 py-2.5 transition ${
                       isActive(pathname, link.href)
                         ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950"
-                        : "text-[#344136] hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        : "text-zinc-900 hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
                     }`}
                   >
-                    <span>{link.label}</span>
+                    <span>
+                      <span className="block text-sm font-black">{link.label}</span>
+                      <span className={`mt-0.5 block text-[11px] font-semibold ${
+                        isActive(pathname, link.href)
+                          ? "text-white/70 dark:text-zinc-950/60"
+                          : "text-zinc-400 dark:text-zinc-500"
+                      }`}>
+                        {link.caption}
+                      </span>
+                    </span>
                     <span className="text-zinc-400">↗</span>
                   </Link>
                 ))}
               </div>
             </div>
 
-            {/* bottom: 크레딧 + 화면 모드 + 계정 chip (chip 클릭 시 bottom sheet) */}
-            <div className="border-t border-[#e2d9cb] p-3 dark:border-zinc-800">
+            {/* bottom: 화면 모드 */}
+            <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
               {user ? (
                 <div className="space-y-2">
-                  <Link
-                    href="/plans"
-                    onClick={() => setMobileDrawerOpen(false)}
-                    className="flex items-center justify-between rounded-xl bg-[#edf4e8] px-3 py-2.5 transition hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                  >
-                    <span className="text-xs font-black text-[#5d735f] dark:text-emerald-400">크레딧</span>
-                    <div className="flex items-center gap-1.5">
-                      <CreditIcon size={20} className="shrink-0" />
-                      <span className="text-sm font-black tabular-nums text-[#223127] dark:text-zinc-100">
-                        {infiniteCredits ? "∞" : tokens}
-                      </span>
-                      <span className="text-[11px] font-black text-[#6f7c6d] dark:text-zinc-500">충전</span>
-                    </div>
-                  </Link>
-                  {/* 계정 chip — 클릭 시 bottom sheet (이메일/플랜/화면모드/충전/로그아웃) */}
-                  <button
-                    type="button"
-                    onClick={() => setAccountSheetOpen(true)}
-                    className="flex w-full items-center gap-3 rounded-xl bg-[#fffaf1] px-3 py-2.5 text-left transition hover:bg-[var(--brand-accent-soft)] dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                  >
-                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-sm font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
-                      {userInitial}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-black text-[#223127] dark:text-zinc-100">{userName}</div>
-                      <div className="text-[11px] font-semibold text-[#7a8478] dark:text-zinc-500">계정 관리</div>
-                    </div>
-                    <span className="text-zinc-400">▴</span>
-                  </button>
+                  <div className="rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-900">
+                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-emerald-400">화면 모드</div>
+                    <ThemeToggle className="mt-2 w-full" />
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -635,8 +674,8 @@ export default function AppNav() {
                   >
                     카카오 로그인
                   </Link>
-                  <div className="rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-900">
-                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#5d735f] dark:text-emerald-400">화면 모드</div>
+                  <div className="rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-900">
+                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-emerald-400">화면 모드</div>
                     <ThemeToggle className="mt-2 w-full" />
                   </div>
                 </div>
@@ -661,19 +700,19 @@ export default function AppNav() {
           onClick={() => setAccountSheetOpen(false)}
         />
         <div
-          className={`absolute inset-x-0 bottom-0 rounded-t-3xl bg-[#fffaf1] p-4 pb-6 shadow-[0_-12px_32px_rgba(34,49,39,0.18)] transition-transform duration-300 ease-out dark:bg-zinc-950 ${
+          className={`absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-4 pb-6 shadow-[0_-12px_32px_rgba(15,23,42,0.18)] transition-transform duration-300 ease-out dark:bg-zinc-950 ${
             accountSheetOpen ? "translate-y-0" : "translate-y-full"
           }`}
         >
-          <div className="mx-auto h-1.5 w-12 rounded-full bg-[#ddd4c7] dark:bg-zinc-700" />
-          <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#f6efe4] px-3 py-3 dark:bg-zinc-900">
+          <div className="mx-auto h-1.5 w-12 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+          <div className="mt-4 flex items-center gap-3 rounded-xl bg-zinc-50 px-3 py-3 dark:bg-zinc-900">
             <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-base font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
               {userInitial}
             </span>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-base font-black text-[#223127] dark:text-zinc-100">{userName}</div>
+              <div className="truncate text-base font-black text-zinc-950 dark:text-zinc-100">{userName}</div>
               {user.email ? (
-                <div className="truncate text-xs font-semibold text-[#6b7269] dark:text-zinc-400">{user.email}</div>
+                <div className="truncate text-xs font-semibold text-zinc-500 dark:text-zinc-400">{user.email}</div>
               ) : null}
             </div>
           </div>
@@ -687,8 +726,8 @@ export default function AppNav() {
             />
           </div>
           {/* 화면 모드 */}
-          <div className="mt-3 rounded-xl bg-[#fffaf1] px-3 py-2.5 dark:bg-zinc-950/50">
-            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#5d735f] dark:text-emerald-400">화면 모드</div>
+          <div className="mt-3 rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-950/50">
+            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-emerald-400">화면 모드</div>
             <ThemeToggle className="mt-2 w-full" />
           </div>
           <div className="mt-3">

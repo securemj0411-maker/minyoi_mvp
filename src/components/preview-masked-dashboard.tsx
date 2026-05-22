@@ -170,7 +170,7 @@ export default function PreviewMaskedDashboard() {
             </Link>
             <Link
               href="/intro"
-              className="inline-flex h-11 items-center justify-center rounded-2xl border border-[#d8cfbf] bg-white/80 px-4 text-[13px] font-black text-[#344136] transition hover:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:h-12 sm:px-5 sm:text-[15px]"
+              className="inline-flex h-11 items-center justify-center rounded-2xl border border-zinc-200 bg-white/80 px-4 text-[13px] font-black text-zinc-900 transition hover:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:h-12 sm:px-5 sm:text-[15px]"
             >
               서비스 소개
             </Link>
@@ -182,21 +182,21 @@ export default function PreviewMaskedDashboard() {
               ["1년", "충전 크레딧"],
               ["0원", "피드 차감"],
             ].map(([value, label]) => (
-              <div key={label} className="rounded-2xl border border-[#ded6c9] bg-white/65 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-900/70">
+              <div key={label} className="rounded-2xl border border-zinc-200 bg-white/65 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-900/70">
                 <div className="text-[18px] font-black leading-none text-[var(--rd-ink)] dark:text-zinc-50">{value}</div>
-                <div className="mt-1.5 break-keep text-[11px] font-bold text-[#7b8479] dark:text-zinc-400">{label}</div>
+                <div className="mt-1.5 break-keep text-[11px] font-bold text-zinc-500 dark:text-zinc-400">{label}</div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[30px] border border-[#ddd4c7] bg-[#fbf8f1] shadow-[0_22px_60px_rgba(44,39,31,0.12)] dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="flex items-center justify-between border-b border-[#e6ded1] px-4 py-3 dark:border-zinc-800 sm:px-5">
+        <section className="overflow-hidden rounded-[30px] border border-zinc-200 bg-white shadow-[0_22px_60px_rgba(15,23,42,0.12)] dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800 sm:px-5">
             <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#9b8f7f] dark:text-zinc-500">Preview feed</div>
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-zinc-400 dark:text-zinc-500">Preview feed</div>
               <div className="mt-0.5 text-[16px] font-black text-[var(--rd-ink)] dark:text-zinc-50">오늘의 추천 매물</div>
             </div>
-            <div className="rounded-full bg-[#eef4eb] px-3 py-1 text-[11px] font-black text-[#3c6349] dark:bg-emerald-950/40 dark:text-emerald-200">
+            <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-[#3182f6] dark:bg-emerald-950/40 dark:text-emerald-200">
               로그인 후 공개
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function PreviewMaskedDashboard() {
               ))}
             </div>
           ) : items.length === 0 ? (
-            <div className="rounded-2xl border border-[#ddd4c7] bg-white/80 p-6 text-center text-sm text-[#6b7269] dark:border-zinc-800 dark:bg-zinc-950/50 dark:text-zinc-400">
+            <div className="rounded-2xl border border-zinc-200 bg-white/80 p-6 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/50 dark:text-zinc-400">
               지금 추천 매물 준비 중. 잠시 후 다시 와 보세요.
             </div>
           ) : (
@@ -221,12 +221,12 @@ export default function PreviewMaskedDashboard() {
                 <Link
                   href="/login"
                   key={item.slot}
-                  className="group block rounded-2xl border border-[#e6ded2] bg-white px-3.5 py-3 transition hover:border-[#b9cab8] hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-emerald-900"
+                  className="group block rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 transition hover:border-blue-200 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-emerald-900"
                 >
                   <div className="flex items-center gap-3">
                     {/* 2026-05-17 보안: 서버 sharp blur 된 base64 — 원본 URL 노출 X. DevTools 우회 불가.
                         2026-05-19: 카테고리 힌트 제거 — 비로그인에서는 신발/가전/워치 같은 분류를 노출하지 않음. */}
-                    <div className="relative flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-[#eee7db] text-[#7a8478] dark:bg-zinc-800 dark:text-zinc-400 sm:h-[104px] sm:w-[104px]">
+                    <div className="relative flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 sm:h-[104px] sm:w-[104px]">
                       {item.blurredImage ? (
                         <img
                           src={item.blurredImage}
@@ -241,22 +241,22 @@ export default function PreviewMaskedDashboard() {
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="rounded-full bg-[#f2f0eb] px-2 py-0.5 text-[10px] font-black text-[#6f776d] dark:bg-zinc-800 dark:text-zinc-300">
+                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                           {conditionLabel(item.conditionClass)}
                         </span>
-                        <span className="truncate text-[11px] font-bold text-[#90998e] dark:text-zinc-500">{previewStatusLabel(item)}</span>
+                        <span className="truncate text-[11px] font-bold text-zinc-400 dark:text-zinc-500">{previewStatusLabel(item)}</span>
                       </div>
 
-                      <div className="mt-2 select-none truncate text-[15px] font-black tracking-tight text-[#1f2822] blur-[3px] dark:text-zinc-100 sm:text-[17px]">
+                      <div className="mt-2 select-none truncate text-[15px] font-black tracking-tight text-zinc-950 blur-[3px] dark:text-zinc-100 sm:text-[17px]">
                         {item.maskedName}
                       </div>
 
-                      <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[12px] font-bold text-[#717a70] dark:text-zinc-400">
-                        <span>매입 <span className="tabular-nums text-[#1f2822] dark:text-zinc-100">{krw(item.price)}</span></span>
+                      <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
+                        <span>매입 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.price)}</span></span>
                         {item.skuMedian && item.skuMedian > 0 ? (
                           <>
-                            <span className="text-[#c7c0b5] dark:text-zinc-700">·</span>
-                            <span>시세 <span className="tabular-nums text-[#1f2822] dark:text-zinc-100">{krw(item.skuMedian)}</span></span>
+                            <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                            <span>시세 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.skuMedian)}</span></span>
                           </>
                         ) : null}
                       </div>
@@ -268,23 +268,23 @@ export default function PreviewMaskedDashboard() {
                         {(() => {
                           const pct = marketGapPctLabel(item.price, item.expectedProfitMin, item.expectedProfitMax);
                           return pct ? (
-                            <span className="text-[11px] font-black text-[#748075] dark:text-zinc-400">
+                            <span className="text-[11px] font-black text-zinc-500 dark:text-zinc-400">
                               {pct}
                             </span>
                           ) : null;
                         })()}
                       </div>
 
-                      <div className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#e2ded5] bg-[#fbfaf6] px-2.5 py-1 text-[11px] font-black text-[#526057] dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 sm:hidden">
-                        <CheckCircleIcon width={13} height={13} className={signal.tone === "seller" ? "text-[#059669]" : "text-[#7b8479]"} />
+                      <div className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-black text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 sm:hidden">
+                        <CheckCircleIcon width={13} height={13} className={signal.tone === "seller" ? "text-[#059669]" : "text-zinc-500"} />
                         <span className="truncate">{signal.label}</span>
                       </div>
                     </div>
 
                     <div className="hidden shrink-0 text-right sm:block">
-                      <div className="text-[11px] font-black text-[#8a9389] dark:text-zinc-500">{budgetLabel}</div>
-                      <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#e2ded5] px-2.5 py-1 text-[11px] font-black text-[#526057] dark:border-zinc-800 dark:text-zinc-300">
-                        <CheckCircleIcon width={13} height={13} className={signal.tone === "seller" ? "text-[#059669]" : "text-[#7b8479]"} />
+                      <div className="text-[11px] font-black text-zinc-400 dark:text-zinc-500">{budgetLabel}</div>
+                      <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-2.5 py-1 text-[11px] font-black text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
+                        <CheckCircleIcon width={13} height={13} className={signal.tone === "seller" ? "text-[#059669]" : "text-zinc-500"} />
                         {signal.label}
                       </div>
                     </div>
@@ -296,13 +296,13 @@ export default function PreviewMaskedDashboard() {
           )}
           </div>
 
-          <div className="border-t border-[#e6ded1] bg-white/55 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/30 sm:px-5">
+          <div className="border-t border-zinc-200 bg-white/55 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/30 sm:px-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <SearchIcon width={18} height={18} className="text-[#059669]" />
                 <div>
                   <div className="text-[14px] font-black text-[var(--rd-ink)] dark:text-zinc-50">이름과 원본 링크까지 열어볼까요?</div>
-                  <div className="mt-0.5 text-[11px] font-bold text-[#7b8479] dark:text-zinc-500">첫 3개 상세 리포트는 무료로 확인할 수 있어요.</div>
+                  <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">첫 3개 상세 리포트는 무료로 확인할 수 있어요.</div>
                 </div>
               </div>
             <Link
