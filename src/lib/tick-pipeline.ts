@@ -2516,7 +2516,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 498: shoe/bag comparable_key now preserves bag brand/lane and shoe
   // broad brand. Force stale rows to reparse so market samples stop sharing
   // generic `bag|backpack` and `shoe|broad` buckets.
-  shoe: "wave92-shoe-v21",
+  // Wave 662 (2026-05-22): shoe v23 — 2976 Chelsea 메이볼/SE13 플로랄 + 다중 색상 묶음 차단.
+  shoe: "wave92-shoe-v23",
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
   bag: "wave92-bag-v23",
   // Wave 658 (2026-05-22): clothing v30 — Polo Pique 빅포니 성조기/USA/벤쿠버 한정 + acne_denim 상단 outlier.

@@ -586,6 +586,12 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "옥스포드", "oxford",
       "메리제인", "mary jane",
       "스무스 vintage", "스무스 빈티지",
+      // Wave 662 (2026-05-22): 추가 variant — c_grade spread 4.17x audit.
+      "메이볼", "maybelle", "pascal maybelle",  // Maybelle variant (Pascal 라인)
+      "se13", "플로랄",  // Floral SE13 변형 (Wave 537 flora 보완)
+      // 다중 색상 묶음 매물 (한 매물에 두 색상)
+      "블랙 브라운", "블랙/브라운", "블랙 브라운 세트", "블랙브라운",
+      "브라운 블랙", "브라운/블랙", "두색상", "두 색상",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],

@@ -9418,6 +9418,10 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "에어맥스 1", "에어맥스 90", "에어맥스 95", "off-white", "오프화이트", "스켑타", "skepta", "언디핏", "undefeated", "퓨추라", "futura", "clot",
       // Wave 543 (2026-05-22): ASIA 한정 (일본 매장 한정, 정품 가격 380~400만 — 일반 30~50만 대비 +20배).
       "asia 정품", "asia 한정", "asia limited", "japan only", "japan 한정", "일본 한정",
+      // Wave 661 (2026-05-22): 270 b_grade spread 5.03x audit — OG 실버불렛 200k outlier 차단.
+      //   실버불렛은 Air Max 97 OG 시그니처 (1997 데뷔, retro reissue 한정).
+      "실버불렛", "silver bullet", "실버 불렛", "og 실버",
+      "1997 og", "1997og", "og 1997",
     ],
     msrpKrw: 219000, released: 1997,
   },
