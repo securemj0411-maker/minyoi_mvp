@@ -1279,16 +1279,15 @@ export default function ExploreClient({
     const shareUrl = `${baseUrl}?ref=kakao_share`;
 
     try {
-      // Wave launch-54 (사용자 짚음): 앱 이름 = "득템잡이" ("미뇨이" 는 내부 메모 잔존).
-      //   카피: 사용자 추천 톤 — "지금 리셀하면 바로 돈되는 중고매물".
-      //   imageUrl: og-image.png 가 public/ 에 없음 → landing 의 매물 이미지 사용.
-      //   (별 wave: 전용 OG image 디자인 후 박기)
+      // Wave launch-55 (사용자 짚음 "imageUrl 안 박으면 카카오가 알아서 fetch"):
+      //   imageUrl 제거 → 카카오가 link URL 페이지의 OG meta 또는 첫 image 자동 추출.
+      //   사용자가 본 경험 — 친구한테 공유 시 site 의 매물 사진 자동 표시.
+      //   layout.tsx 의 openGraph 또는 페이지 안 매물 image tag 가 source.
       kakao.Share.sendDefault({
         objectType: "feed",
         content: {
           title: "득템잡이 — 지금 리셀하면 바로 돈되는 중고매물",
           description: "AI 가 매일 골라준 차익 매물, 무료 가입 후 바로 보세요",
-          imageUrl: `${baseUrl}/landing/airpods-max-purple.webp`,
           link: {
             mobileWebUrl: shareUrl,
             webUrl: shareUrl,
