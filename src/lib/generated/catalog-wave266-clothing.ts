@@ -1020,6 +1020,10 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     ],
     mustNotContain: [
       ...CLOTHING_COMMON_NOISE,
+      // Wave 621: 베트멍 패러디/카피 매물 차단.
+      //   production: pid 385601963 '베트멍 캐나다구스 패러디 패딩 자켓' 1.79M (가품 영향).
+      "패러디", "parody", "베트멍", "vetements",  // 베트멍 자체는 collab 아닌 패러디 (다른 brand)
+      "카피", "복각", "rep ", "replica",
     ],
     msrpKrw: 1290000,
     released: 1957,
