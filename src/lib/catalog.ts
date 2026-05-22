@@ -7250,7 +7250,9 @@ export const CATALOG: Sku[] = [
       // "HOUSTON" 일본 빈티지 브랜드 (RRL 아님) — RRL 키워드 같이 박는 광고 패턴.
       "리미티드 카우보이", "limited cowboy",
       "휴스턴 체인스티치", "휴스턴 드리즐러", "houston chainstitch", "houston drizzler",
-      "rrl&", "&rrl", "&lvc", "lvc&", "&폴로",
+      // Wave 595: '&' punctuation은 normalize 시 공백으로 변환됨 → 'rrl&' false positive.
+      // 대신 brand-mix 표기 'lvc'/'리바이스 빈티지 클로딩' 명시 차단.
+      "lvc ", " lvc", "리바이스 빈티지 클로딩", "levis vintage clothing", "levi's vintage clothing",
     ],
     msrpKrw: 1500000, released: 2020,
     // jacket + coat 둘 다 가능. defaultProductType 안 박음 — text 추출 의존 (regex 가 jacket/coat 구분).
@@ -7778,7 +7780,7 @@ export const CATALOG: Sku[] = [
       "cpfm", "cactus plant flea market",
       "한정판", "limited edition",
       // Wave 594d: Born X Raised collab (Stussy LA collab line).
-      "본 앤 레이즈드", "born x raised", "born and raised", "born&raised", "본앤레이즈드",
+      "본 앤 레이즈드", "born x raised", "born and raised", "본앤레이즈드",
       // Wave 594e: Stussy DICE 한정 라인 (200k outlier vs basic 5~7만).
       "다이스 반팔", "다이스 티", "퍼지 다이스", "stussy dice", "스투시 다이스",
     ],
