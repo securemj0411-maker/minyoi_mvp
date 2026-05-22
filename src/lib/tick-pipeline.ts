@@ -4637,9 +4637,10 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const conditionNotesScore = (parsedJsonObject(parsed)?.condition_notes as string[] | undefined) ?? [];
     const isNewItem = conditionNotesScore.includes("new_or_open_box");
     const referencePrice = comparableKey && isNewItem ? referencePricesByKey.get(comparableKey) : null;
-    const skuMedian = referencePrice != null && referencePrice > 0
+    const skuMedianCandidate = referencePrice != null && referencePrice > 0
       ? referencePrice
       : hasTrustedMarket ? trustedMedian : fallbackMedian;
+    const skuMedian = Math.max(0, Number(skuMedianCandidate ?? 0));
     // 2026-05-16: placeholder price 매물 (999999999, 111111111 등)은 priceGap 0 강제 → score 0 → 풀 진입 차단.
     // Wave 218 (2026-05-19): isPlaceholderPrice 헬퍼 사용 (같은 자리수 반복 5+ 패턴 포함).
     const placeholder = isPlaceholderPrice(row.price);

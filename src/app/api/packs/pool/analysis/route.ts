@@ -11,6 +11,8 @@ import {
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { hasDetailAccess } from "@/lib/detail-access";
+import { isAdminUser } from "@/lib/auth-users";
+import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -125,7 +127,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "invalid pid" }, { status: 400 });
     }
     const userRef = userRefForAuthUser(auth.user.id);
-    if (!(await hasDetailAccess({ user: auth.user, userRef, pid }))) {
+    const unlimitedAccess = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+    if (!(await hasDetailAccess({ user: auth.user, userRef, pid, unlimited: unlimitedAccess }))) {
       return NextResponse.json({ error: "detail_access_required" }, { status: 403 });
     }
 

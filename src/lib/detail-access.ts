@@ -111,21 +111,23 @@ export async function hasDetailAccess(input: {
   user: User;
   userRef: string;
   pid: number;
+  unlimited?: boolean;
 }): Promise<boolean> {
-  if (isAdminUser(input.user)) return true;
+  if (input.unlimited || isAdminUser(input.user)) return true;
   return (await loadRateLimitCount(detailAccessBucket(input.userRef, input.pid))) > 0;
 }
 
 export async function getDetailAccessSnapshot(input: {
   user: User;
   userRef: string;
+  unlimited?: boolean;
 }): Promise<{
   creditBalance: number | null;
   freeUsed: number;
   freeLimit: number;
 }> {
   const freeUsed = await loadRateLimitCount(freeDetailAccessBucket(input.userRef));
-  if (isAdminUser(input.user)) {
+  if (input.unlimited || isAdminUser(input.user)) {
     return {
       creditBalance: null,
       freeUsed,
@@ -143,10 +145,11 @@ export async function consumeDetailAccess(input: {
   user: User;
   userRef: string;
   pid: number;
+  unlimited?: boolean;
 }): Promise<DetailAccessResult> {
   const freeUsedBefore = await loadRateLimitCount(freeDetailAccessBucket(input.userRef));
 
-  if (isAdminUser(input.user)) {
+  if (input.unlimited || isAdminUser(input.user)) {
     return {
       ok: true,
       accessType: "admin",

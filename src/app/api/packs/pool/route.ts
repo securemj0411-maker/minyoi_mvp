@@ -10,6 +10,7 @@ import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 import { getDetailAccessSnapshot } from "@/lib/detail-access";
+import { isBetaTesterAuthId } from "@/lib/beta-tester";
 
 // Wave 338 (Phase 1a — Freemium /explore):
 // 무료 사용자 매물 풀 browsing. 6h 이상 지난 매물만 노출 (유료는 즉시 — Phase 2).
@@ -554,8 +555,9 @@ export async function GET(req: Request) {
 
     const headers = serviceHeaders();
     const credits = await loadUserCredits(headers, userRef);
-    const detailAccess = await getDetailAccessSnapshot({ user: auth.user, userRef });
-    const creditFeed = isAdminUser(auth.user) || Number(credits?.balance ?? 0) > 0;
+    const unlimitedAccess = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+    const detailAccess = await getDetailAccessSnapshot({ user: auth.user, userRef, unlimited: unlimitedAccess });
+    const creditFeed = unlimitedAccess || Number(credits?.balance ?? 0) > 0;
     const cooldown = computeCooldown(credits?.last_free_browse_at ?? null);
     const effectiveCooldown = creditFeed
       ? { canRefresh: true, remainingSec: 0, nextAvailableAt: null }

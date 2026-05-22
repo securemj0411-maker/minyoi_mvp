@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { fetchDetail } from "@/lib/bunjang";
 import { consumeDetailAccess } from "@/lib/detail-access";
+import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson } from "@/lib/marketplace-safety";
@@ -338,7 +339,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_pid", message: "매물 정보가 올바르지 않아요." }, { status: 400 });
   }
 
-  if (!isAdminUser(auth.user) && !(await isReadyPoolPid(pid))) {
+  const unlimitedAccess = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+
+  if (!unlimitedAccess && !(await isReadyPoolPid(pid))) {
     return NextResponse.json(
       { error: "not_ready", message: "이 매물은 지금 상세보기 대상이 아니에요. 새로고침 후 다시 확인해주세요." },
       { status: 404 },
@@ -362,7 +365,7 @@ export async function POST(req: Request) {
   }
 
   const userRef = userRefForAuthUser(auth.user.id);
-  const access = await consumeDetailAccess({ user: auth.user, userRef, pid });
+  const access = await consumeDetailAccess({ user: auth.user, userRef, pid, unlimited: unlimitedAccess });
   if (!access.ok) {
     return NextResponse.json(
       {
