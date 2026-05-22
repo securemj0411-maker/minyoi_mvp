@@ -6368,7 +6368,24 @@ export default function PackRevealModal({
     if (!activeRevealCard) return;
     const maxIndex = beginnerGuideSteps(activeRevealCard).length - 1;
     if (beginnerGuideStep >= maxIndex) {
-      requestDetailReportModeChoice("easy_mode_complete");
+      // Wave launch-22 (사용자 짚음): 끝까지 본 사용자는 "이번만 vs 앞으로 기본" 선택 모달 안 띄움.
+      // 이미 9 step 다 봤는데 또 안내 묻는 건 짜증. 바로 detailed mode 로 진입.
+      // skip 사용자만 모달 (정보 못 본 상태에서 detail 진입 시 가이드).
+      recordBeginnerGuideCompleted(activeRevealPid);
+      if (activeRevealPid != null) {
+        onTrackEvent?.(activeRevealPid, "easy_mode_completed", {
+          stepTotal: maxIndex + 1,
+          defaultDetailed: false,
+        });
+        onTrackEvent?.(activeRevealPid, "detail_report_opened", {
+          source: "easy_mode_complete",
+          defaultDetailed: false,
+        });
+      }
+      window.dispatchEvent(new CustomEvent("minyoi:modal-mode-changed", { detail: { mode: "detailed" } }));
+      setBeginnerGuideVisible(false);
+      setBeginnerGuideStep(0);
+      window.requestAnimationFrame(() => resetDetailScroll("auto"));
       return;
     }
     if (activeRevealPid != null) {
@@ -6376,7 +6393,7 @@ export default function PackRevealModal({
     }
     setBeginnerGuideStep((prev) => Math.min(prev + 1, maxIndex));
     window.requestAnimationFrame(() => resetDetailScroll("auto"));
-  }, [activeRevealCard, activeRevealPid, beginnerGuideStep, onTrackEvent, requestDetailReportModeChoice, resetDetailScroll]);
+  }, [activeRevealCard, activeRevealPid, beginnerGuideStep, onTrackEvent, resetDetailScroll]);
 
   const retreatBeginnerGuide = useCallback(() => {
     if (activeRevealPid != null) {
