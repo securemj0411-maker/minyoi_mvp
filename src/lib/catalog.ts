@@ -7491,7 +7491,17 @@ export const CATALOG: Sku[] = [
       "백팩", "backpack", "숄더백", "토트백", "shoulder bag", "tote bag", "tote", "토트", "shoulder", "숄더",
       "웨이스트백", "벨트백", "데이팩", "duffle", "duffel",
       "뮬", "슬리퍼", "샌들",
-      "지샥", "g-shock", "dw-6900"],
+      "지샥", "g-shock", "dw-6900",
+      // Wave 541 (2026-05-22): production sample audit — variant 가격 폭 20배 spread (24만~500만).
+      //   특수 한정 (별도 시세군) + 가품 의심 + 팬츠 격리.
+      // 특수 한정 (시세 +3~5배, 별도 SKU 후보):
+      "레오파드", "leopard", "치토스", "cheetah",
+      "레더 눕시", "leather nuptse", "레더눕시", "가죽 눕시",
+      // 가품 의심 표기
+      "슈프림맛", "슈프림스럽", "느낌", "노벨티 얼룩", "얼룩 슈프림",
+      // 팬츠 (jacket SKU 분리)
+      "팬츠", "pants", "스터드 눕시 팬츠",
+    ],
     msrpKrw: 830000, released: 2017,
     defaultProductType: "down_jacket",
   },
