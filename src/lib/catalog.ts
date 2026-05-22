@@ -9047,7 +9047,13 @@ export const CATALOG: Sku[] = [
     modelName: "Salomon XT Series (Quest/Whisper/Wings/PU.RE/4/TX-6)",
     aliases: ["Salomon XT-Quest", "살로몬 XT-퀘스트", "XT-Whisper", "XT-위스퍼", "XT-Wings", "XT-4", "TX-6"],
     mustContain: [["salomon", "살로몬"], ["xt-quest", "xt 퀘스트", "xt-whisper", "xt 위스퍼", "xt-wings", "xt 윙스", "xt-pu", "xt pu", "xt-4", "xt 4", "xt4", "살로몬xt 4", "tx-6", "tx 6"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "xt-6", "xt 6", "xt6", "cdg", "꼼데", "mm6", "carhartt", "칼하트"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "xt-6", "xt 6", "xt6", "cdg", "꼼데", "mm6", "carhartt", "칼하트",
+      // Wave 641: collab/한정 차단.
+      "샌디리앙", "sandy liang",
+      "슬램잼", "slam jam",
+      "더브로큰암", "the broken arm", "broken arm",
+      "x j.l-a.l", "jl-a.l", "and wander", "앤원더",
+    ],
     msrpKrw: 220000, released: 2016,
   },
   {
@@ -9183,7 +9189,11 @@ export const CATALOG: Sku[] = [
     modelName: "Hoka Mafate Speed 4 (트레일 러닝화)",
     aliases: ["Hoka Mafate Speed", "호카 마파테 스피드"],
     mustContain: [["hoka", "호카"], ["마파테", "mafate"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "satisfy", "새티스파이", "오프닝세레머니", "opening ceremony"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "satisfy", "새티스파이", "오프닝세레머니", "opening ceremony",
+      // Wave 641b: collab 차단.
+      "엑슬림", "x-lim", "xlim",
+      "j.l-a.l", "jl-a.l", "jl_a_l",
+    ],
     msrpKrw: 240000, released: 2023,
   },
   {
