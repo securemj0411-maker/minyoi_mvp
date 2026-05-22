@@ -5148,7 +5148,8 @@ function BeginnerGuideWalkthrough({
       data-beginner-guide-fullscreen
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="relative h-[100dvh] overflow-hidden bg-white px-5 pt-0 dark:bg-zinc-900 sm:h-[calc(88vh-2rem)] sm:rounded-[22px] sm:px-6"
+      /* Wave launch-29: BeginnerGuide 풀스크린도 PC 에서 더 크게 (부모 모달 100% 차지). */
+      className="relative h-[100dvh] overflow-hidden bg-white px-5 pt-0 dark:bg-zinc-900 sm:h-full sm:rounded-[22px] sm:px-6"
     >
       <style>{`
         @keyframes minyoiGuideStepIn {
@@ -6591,9 +6592,11 @@ export default function PackRevealModal({
         if (!loading) handleClose();
       }}
     >
+      {/* Wave launch-29 (사용자 짚음 PC 빈 공간): 폭 480 → 560, 높이 92dvh → 95dvh.
+       * PC 에서 모달 꽉 채워도 OK (모바일 톤은 별개). */}
       <div
         data-mobile-detail-shell
-        className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#f5f7fb] shadow-none dark:bg-zinc-900 sm:h-[min(92dvh,920px)] sm:max-h-[92dvh] sm:w-[min(480px,calc(100vw-32px))] sm:max-w-[480px] sm:rounded-[28px] sm:border sm:border-zinc-200 sm:shadow-2xl sm:shadow-[rgba(49,130,246,0.20)] sm:dark:border-zinc-800"
+        className="relative flex h-dvh max-h-dvh w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#f5f7fb] shadow-none dark:bg-zinc-900 sm:h-[min(95dvh,960px)] sm:max-h-[95dvh] sm:w-[min(560px,calc(100vw-32px))] sm:max-w-[560px] sm:rounded-[28px] sm:border sm:border-zinc-200 sm:shadow-2xl sm:shadow-[rgba(49,130,246,0.20)] sm:dark:border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
         {saveToast ? (

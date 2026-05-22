@@ -790,13 +790,18 @@ function DetailAccessPaywallModal({
             </div>
           ) : null}
 
+          {/* Wave launch-29 (사용자 짚음): "방금 거래된 상품" 모달에 "크레딧 충전하고 계속 보기"
+           * 떴던 거 fix. sold / verify_fail variant 엔 위 (L749-757) 에 이미 적절한 action button
+           * 있음. 크레딧 충전은 paywall variant 만 의미 있음. */}
           <div className="mt-5 grid gap-2">
-            <Link
-              href="/plans"
-              className="flex min-h-12 items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-base font-black text-white shadow-[0_12px_26px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8]"
-            >
-              크레딧 충전하고 계속 보기
-            </Link>
+            {isPaywall ? (
+              <Link
+                href="/plans"
+                className="flex min-h-12 items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-base font-black text-white shadow-[0_12px_26px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8]"
+              >
+                크레딧 충전하고 계속 보기
+              </Link>
+            ) : null}
             <button
               type="button"
               onClick={onClose}
