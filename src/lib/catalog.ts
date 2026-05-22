@@ -9163,7 +9163,10 @@ export const CATALOG: Sku[] = [
     modelName: "Asics Gel Kinetic / Kinetic Fluent",
     aliases: ["Asics Gel Kinetic", "아식스 키네틱", "젤 키네틱"],
     mustContain: [["asics", "아식스"], ["kinetic", "키네틱"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "슈슈통"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "슈슈통",
+      // Wave 649: SP 한정 라인 차단 (330k outlier vs 일반 ~250k).
+      "sp ", " sp", "키네틱 sp", "kinetic sp",
+    ],
     msrpKrw: 199000, released: 2018,
   },
   {
