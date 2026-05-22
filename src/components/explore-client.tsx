@@ -1279,12 +1279,16 @@ export default function ExploreClient({
     const shareUrl = `${baseUrl}?ref=kakao_share`;
 
     try {
+      // Wave launch-54 (사용자 짚음): 앱 이름 = "득템잡이" ("미뇨이" 는 내부 메모 잔존).
+      //   카피: 사용자 추천 톤 — "지금 리셀하면 바로 돈되는 중고매물".
+      //   imageUrl: og-image.png 가 public/ 에 없음 → landing 의 매물 이미지 사용.
+      //   (별 wave: 전용 OG image 디자인 후 박기)
       kakao.Share.sendDefault({
         objectType: "feed",
         content: {
-          title: "미뇨이 — AI 가 매일 찾아주는 차익 매물",
-          description: "지금 사면 차익 나는 매물 30개. 무료 회원가입 후 바로 보기.",
-          imageUrl: `${baseUrl}/og-image.png`,
+          title: "득템잡이 — 지금 리셀하면 바로 돈되는 중고매물",
+          description: "AI 가 매일 골라준 차익 매물, 무료 가입 후 바로 보세요",
+          imageUrl: `${baseUrl}/landing/airpods-max-purple.webp`,
           link: {
             mobileWebUrl: shareUrl,
             webUrl: shareUrl,
