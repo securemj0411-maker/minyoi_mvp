@@ -55,6 +55,11 @@ export default function CheckoutClient() {
 
   const [stage, setStage] = useState<Stage>("ready");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Wave launch-7: paymentId 보존 — subscribeClientPlan 실패 시 사용자에게 "다시 등록 시도" 옵션.
+  // PortOne 측 결제는 끝났는데 우리 DB credit 박는 step 만 실패한 경우 = 사용자 돈 냈는데 못 받음.
+  // paymentId 보존 → 동일 paymentId 로 retry → idempotency RPC 가 중복 차감 차단.
+  const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
   const [orderId] = useState(
     () => `MNYO_${Date.now().toString(36).toUpperCase()}_${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
   );
@@ -159,7 +164,10 @@ export default function CheckoutClient() {
         throw new Error(response.message ?? "결제가 취소되었거나 실패했습니다.");
       }
 
+      // Wave launch-7: subscribe 실패 시 paymentId 보존해서 재시도 가능하게.
+      setPendingPaymentId(response.paymentId);
       await subscribeClientPlan(planKey, response.paymentId, orderId);
+      setPendingPaymentId(null);
       setStage("success");
       // 크레딧 nav refresh
       window.dispatchEvent(new Event("minyoi:credits-changed"));
@@ -170,20 +178,39 @@ export default function CheckoutClient() {
     }
   }
 
+  // Wave launch-7: 결제는 됐는데 등록 실패한 경우 — 동일 paymentId 로 재시도.
+  // 우리 RPC 가 멱등성 보장 (paymentId UNIQUE) → 중복 차감 X.
+  async function handleRetrySubscribe() {
+    if (!pendingPaymentId) return;
+    setRetrying(true);
+    setErrorMessage(null);
+    try {
+      await subscribeClientPlan(planKey, pendingPaymentId, orderId);
+      setPendingPaymentId(null);
+      setStage("success");
+      window.dispatchEvent(new Event("minyoi:credits-changed"));
+      setTimeout(() => router.push("/me?tab=account"), 1400);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "다시 시도 실패");
+    } finally {
+      setRetrying(false);
+    }
+  }
+
   return (
-    <main className="min-h-screen bg-[#f6f1e8] px-4 py-10 dark:bg-zinc-950">
+    <main className="min-h-screen bg-[#f5f7fb] px-4 py-10 dark:bg-zinc-950">
       <div className="mx-auto w-full max-w-[520px]">
-        <div className="mb-4 flex items-center justify-between text-xs font-black text-[#6b7269]">
-          <Link href="/plans" className="inline-flex items-center gap-1 hover:text-[#223127]">
+        <div className="mb-4 flex items-center justify-between text-xs font-black text-zinc-500">
+          <Link href="/plans" className="inline-flex items-center gap-1 hover:text-zinc-950">
             <span>←</span>
             <span>크레딧 충전으로 돌아가기</span>
           </Link>
           <span>주문 {orderId.slice(0, 14)}…</span>
         </div>
 
-        <div className="overflow-hidden rounded-[26px] border border-[#ddd4c7] bg-white shadow-[0_30px_60px_rgba(34,49,39,0.10)] dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="overflow-hidden rounded-[26px] border border-zinc-200 bg-white shadow-[0_30px_60px_rgba(15,23,42,0.10)] dark:border-zinc-800 dark:bg-zinc-900">
           {/* PG 심사용 결제창 placeholder — 실제 PG 채널 연동 후 교체. */}
-          <div className="flex items-center justify-between border-b border-[#eee5d8] bg-[#059669] px-5 py-4 dark:border-zinc-800">
+          <div className="flex items-center justify-between border-b border-zinc-200 bg-[#059669] px-5 py-4 dark:border-zinc-800">
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-sm font-black text-[#059669]">
                 ₩
@@ -196,20 +223,22 @@ export default function CheckoutClient() {
           </div>
 
           <div className="px-5 pb-2 pt-5 sm:px-7">
-            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#6b7269]">크레딧 충전</div>
+            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">크레딧 충전</div>
             <h1 className="mt-1 text-2xl font-black tracking-tight text-[#1a1f1c] dark:text-zinc-50">득템잡이 {plan.name} 충전권</h1>
             <p className="mt-1 text-sm text-[#5d6358] dark:text-zinc-400">{plan.tagline}</p>
           </div>
 
-          <div className="mx-5 mt-5 grid gap-3 rounded-2xl border border-[#eee5d8] bg-[#fafaf7] p-4 text-sm dark:border-zinc-800 dark:bg-zinc-950/40 sm:mx-7">
+          <div className="mx-5 mt-5 grid gap-3 rounded-2xl border border-zinc-200 bg-[#fafaf7] p-4 text-sm dark:border-zinc-800 dark:bg-zinc-950/40 sm:mx-7">
             <Row label="충전 상품" value={`득템잡이 ${plan.monthlyCredits.toLocaleString("ko-KR")} 크레딧 충전권`} />
             <Row label="충전 크레딧" value={`${plan.monthlyCredits.toLocaleString("ko-KR")}개`} />
             <Row label="사용 기준" value="상세보기 1회 = 1크레딧" />
+            <Row label="유효기간" value="충전일로부터 1년" />
+            <Row label="이용 제한" value="타인 양도·재판매·현금화 불가" />
             <Row label="결제 방식" value="단건 결제 (자동 갱신 없음)" />
             <Row label="결제 수단" value="신용카드 일반결제" />
             {buyerEmail || userEmail ? <Row label="결제자" value={buyerEmail || userEmail || ""} /> : null}
-            <div className="mt-1 flex items-end justify-between border-t border-[#eee5d8] pt-3 dark:border-zinc-800">
-              <span className="text-xs font-black uppercase tracking-[0.16em] text-[#6b7269]">최종 결제</span>
+            <div className="mt-1 flex items-end justify-between border-t border-zinc-200 pt-3 dark:border-zinc-800">
+              <span className="text-xs font-black uppercase tracking-[0.16em] text-zinc-500">최종 결제</span>
               <span className="text-3xl font-black tabular-nums text-[#1a1f1c] dark:text-zinc-50">{formatKrw(plan.priceKrw)}</span>
             </div>
           </div>
@@ -226,7 +255,26 @@ export default function CheckoutClient() {
 
             {stage === "error" && errorMessage ? (
               <div className="mb-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800">
-                {errorMessage}
+                <div>{errorMessage}</div>
+                {/* Wave launch-7: PortOne 결제 됐는데 등록 실패한 경우 — 같은 paymentId 로 재시도. */}
+                {pendingPaymentId ? (
+                  <div className="mt-3 space-y-2">
+                    <div className="text-xs font-bold text-red-700">
+                      💡 결제는 완료되었어요. 크레딧 등록만 실패했어요. 같은 결제로 다시 등록 시도할 수 있어요 (중복 차감 X).
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRetrySubscribe}
+                      disabled={retrying}
+                      className="inline-flex h-10 items-center justify-center rounded-xl bg-red-700 px-4 text-sm font-black text-white shadow-sm transition hover:bg-red-800 active:scale-[0.98] disabled:opacity-60"
+                    >
+                      {retrying ? "다시 시도 중…" : "크레딧 다시 등록"}
+                    </button>
+                    <div className="text-[10px] font-medium text-red-600">
+                      그래도 실패하면 카톡 채널로 결제 ID <code className="font-mono">{pendingPaymentId.slice(0, 20)}…</code> 보내주세요. 운영자가 직접 처리해드릴게요.
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : null}
 
@@ -241,7 +289,7 @@ export default function CheckoutClient() {
                 onChange={(event) => setBuyerEmail(event.target.value.slice(0, 120))}
                 placeholder="you@example.com"
                 disabled={needsLogin || stage === "processing"}
-                className="h-12 w-full rounded-xl border border-[#ddd4c7] bg-[#fffaf1] px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-emerald-950/60"
+                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-emerald-950/60"
               />
             </label>
 
@@ -256,7 +304,7 @@ export default function CheckoutClient() {
                 onChange={(event) => setBuyerName(event.target.value.slice(0, 40))}
                 placeholder="홍길동"
                 disabled={needsLogin || stage === "processing"}
-                className="h-12 w-full rounded-xl border border-[#ddd4c7] bg-[#fffaf1] px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-emerald-950/60"
+                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-emerald-950/60"
               />
             </label>
 
@@ -272,7 +320,7 @@ export default function CheckoutClient() {
                 onChange={(event) => setBuyerPhone(normalizePhoneNumber(event.target.value))}
                 placeholder="01012345678"
                 disabled={needsLogin || stage === "processing"}
-                className="h-12 w-full rounded-xl border border-[#ddd4c7] bg-[#fffaf1] px-4 text-base font-black tabular-nums text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-emerald-950/60"
+                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black tabular-nums text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-emerald-950/60"
               />
               <span className="mt-1.5 block text-[11px] leading-5 text-[#8a8a7c]">
                 KG이니시스 결제창 호출에 필요한 정보입니다. 결제 알림과 승인 확인에만 사용됩니다.
@@ -295,13 +343,13 @@ export default function CheckoutClient() {
             )}
 
             <p className="mt-3 text-center text-[11px] leading-5 text-[#8a8a7c]">
-              결제 완료 후 크레딧이 보유 잔액에 즉시 더해집니다.
+              결제 완료 후 크레딧이 보유 잔액에 즉시 더해집니다. 충전 크레딧은 1년 동안 사용할 수 있으며 타인 양도·현금화는 불가합니다.
             </p>
           </div>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-[#ddd4c7] bg-[#fffbf4] px-4 py-3 text-xs leading-5 text-[#6b7269] dark:border-zinc-800 dark:bg-zinc-900">
-          크레딧 충전은 단건 결제이며 자동 갱신되지 않습니다. 환불 기준은 환불정책을 확인해주세요.
+        <div className="mt-4 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-xs leading-5 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">
+          크레딧 충전은 단건 결제이며 자동 갱신되지 않습니다. 유효기간과 환불 기준은 이용약관 및 환불정책을 확인해주세요.
         </div>
       </div>
     </main>
