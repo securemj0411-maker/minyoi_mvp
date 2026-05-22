@@ -812,7 +812,8 @@ export const LANE_READINESS: LaneReadinessMap = {
   shoe_nike_jordan_1_high_hyper_royal: { status: "ready", label: "AJ1 High Hyper Royal", note: "Wave 695 — 18 매물." },
   shoe_nike_jordan_1_high_shattered_backboard: { status: "ready", label: "AJ1 High Shattered Backboard (SBB)", note: "Wave 695 — 14 매물." },
   shoe_nike_jordan_1_high_killer_whale: { status: "ready", label: "AJ1 High Killer Whale (범고래)", note: "Wave 695 — 11 매물, 한국 은어." },
-  shoe_nike_jordan_1_high_latushi_pearl: { status: "ready", label: "AJ1 High Latushi (Pearl Pink)", note: "Wave 695 — 12 매물, 한국 한정 명칭." },
+  // Wave 703 (2026-05-23) HOTFIX: latushi 라벨 정정 — Pearl Pink가 아닌 SB Defiant LA to Chicago (Court Purple).
+  shoe_nike_jordan_1_high_sb_la_to_chicago: { status: "ready", label: "AJ1 High SB Defiant LA to Chicago", note: "Wave 703 fix — 라투시/벗투시 = LA to Chicago (Court Purple/Sail/Univ Gold). 12 매물." },
   shoe_nike_jordan_1_high_black_toe: { status: "ready", label: "AJ1 High Black Toe", note: "Wave 695 — 8 매물." },
   shoe_nike_jordan_1_low_starfish: { status: "ready", label: "AJ1 Low Starfish", note: "Wave 695 — 25 매물." },
   shoe_nike_jordan_1_mid_grey_fog_w: { status: "ready", label: "AJ1 Mid Grey Fog (WMNS)", note: "Wave 695 — 15 매물 WMNS." },
@@ -884,7 +885,8 @@ export const LANE_READINESS: LaneReadinessMap = {
   shoe_newbalance_junya_watanabe_collab: { status: "ready", label: "NB x Junya Watanabe", note: "Wave 698 — 29 매물." },
   shoe_newbalance_auralee_collab: { status: "ready", label: "NB x Auralee", note: "Wave 698 — 23 매물." },
   shoe_newbalance_stone_island_collab: { status: "ready", label: "NB x Stone Island", note: "Wave 698 — 21 매물." },
-  shoe_newbalance_miumiu_collab: { status: "ready", label: "NB x Miu Miu (luxury 가품 폭탄)", note: "Wave 698 — 21 매물 평균 80만~115만." },
+  // Wave 703 (2026-05-23) HOTFIX: 미우미우 SKU 제거 — 사용자 명품 정책 위반 (premium-only ⭐, 가품 풀 큼).
+  // shoe_newbalance_miumiu_collab — SKU 삭제됨.
   shoe_newbalance_jjjjound_collab: { status: "ready", label: "NB x JJJJound", note: "Wave 698 — 11 매물 평균 45만." },
   shoe_newbalance_jcrew_collab: { status: "ready", label: "NB x J.Crew (1400)", note: "Wave 698 — 15 매물." },
   shoe_newbalance_casablanca_collab: { status: "ready", label: "NB x Casablanca (327)", note: "Wave 698 — 13 매물." },

@@ -8271,10 +8271,14 @@ export const CATALOG: Sku[] = [
   {
     id: "shoe-onrunning-cloudtilt-loewe-collab",
     brand: "Loewe x On Running", category: "shoe", laneKey: "onrunning_loewe_collab",
-    modelName: "Loewe × On Cloudtilt (한정 collab)",
-    aliases: ["Loewe On", "로에베 온러닝", "Loewe Cloudtilt"],
-    mustContain: [["loewe", "로에베"], ["온러닝", "on running", "cloudtilt", "클라우드틸트"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "paf", "파프"],
+    modelName: "Loewe × On Cloudtilt / Cloudventure 2 (한정 collab)",
+    aliases: ["Loewe On", "로에베 온러닝", "Loewe Cloudtilt", "Loewe Cloudventure"],
+    // Wave 703 (2026-05-23) HOTFIX: cloudventure 추가 + decon 차단.
+    //   bias-free 검증 — Loewe collab은 Cloudtilt + Cloudventure 2 둘 다. 기존 regex Cloudtilt만 catch.
+    //   "Decon Cloud" (Adidas Stan Smith Decon Cloud) false-positive 차단.
+    mustContain: [["loewe", "로에베"], ["온러닝", "on running", "cloudtilt", "클라우드틸트", "cloudventure", "클라우드벤처"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "paf", "파프",
+      "decon", "데콘", "스탠스미스", "stan smith", "삼바", "samba"],
     msrpKrw: 750000, released: 2024,
   },
   {
@@ -11232,6 +11236,13 @@ const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, strin
     "팬츠", "pants", "바지", "쇼츠",
     "니트", "knit", "패딩", "down jacket", "롱슬리브",
     "가방", "backpack", "백팩", "토트백", "월렛", "지갑",
+    // Wave 703 (2026-05-23) HOTFIX: Crocs 비신발 + 가품 lookalike 차단.
+    //   bias-free 검증 — Crocs 28건 비신발 noise (지비츠 단품/iPhone 케이스/Crocs bag) + 11건 가품 (크록스st)
+    "지비츠 단품", "지비츠만", "지비츠 세트", "led 지비츠", "체인 지비츠", "꽃지비츠", "실리콘 참",
+    "아이폰 케이스", "iphone 케이스", "폰 케이스", "폰케이스", "iphone case",
+    "크록스백", "크록스 백", "크록스 쇼퍼", "크록스 토트", "크록스 메신저",
+    // 가품 lookalike (크록스 외 brand에도 안 나옴 — 안전)
+    "크록스st", "크록스 st", "크록샌들", "eva슬리퍼", "eva 슬리퍼", "크록스 스타일", "크록스 느낌", "크록스킨",
   ],
   bag: [
     // Wave 232 (2026-05-19): bag SKU 에 시계/신발/의류 차단 강화.

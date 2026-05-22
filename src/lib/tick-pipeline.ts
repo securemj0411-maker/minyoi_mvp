@@ -2517,7 +2517,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // broad brand. Force stale rows to reparse so market samples stop sharing
   // generic `bag|backpack` and `shoe|broad` buckets.
   // Wave 702 (2026-05-23): shoe v35 — On Running 8 SKU (Cloudtilt/Kith/Cloudboom/Cloudaway/Cloudzone/Cloudvista/Cloudventure/Pleasures).
-  shoe: "wave92-shoe-v35",
+  // Wave 703 (2026-05-23): shoe v36 — bias-free critical hotfix. AF1 Mid '07 ('07 bleed 124건 fix) / AF1 LV ("lv" 단독 49건 fix) / Dunk panda 범고래 추가 / Palermo black-white collision 제거 / AJ1 latushi 라벨 정정 (LA to Chicago) / NB miumiu 명품 제거 / On Loewe cloudventure / Crocs 비신발+가품 차단.
+  shoe: "wave92-shoe-v36",
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
   bag: "wave92-bag-v23",
   // Wave 690 (2026-05-22): clothing v44 — stussy_nike_collab release (셋업/월드투어 차단, 30~50만 가격대 안정).

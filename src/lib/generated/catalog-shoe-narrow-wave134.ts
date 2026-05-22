@@ -337,11 +337,14 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     id: "shoe-nike-dunk-low-panda",
     brand: "Nike",
     category: "shoe",
-    modelName: "Nike Dunk Low Panda (White Black)",
-    aliases: ["덩크 로우 판다", "Dunk Low Panda"],
+    modelName: "Nike Dunk Low Panda (White Black) — 범고래",
+    aliases: ["덩크 로우 판다", "Dunk Low Panda", "범고래", "덩크 범고래"],
+    // Wave 703 (2026-05-23) HOTFIX: "범고래" 추가.
+    //   bias-free 검증 — raw에서 "범고래" 표기 127건 / "panda" 영어 87건.
+    //   "범고래" 단독 91건이 panda SKU에 안 잡혀서 broad fallback. 즉시 catch.
     mustContain: [
       ["덩크 로우", "덩크로우", "dunk low"],
-      ["판다", "panda", "white black", "화이트 블랙", "화이트블랙"],
+      ["판다", "panda", "범고래", "white black", "화이트 블랙", "화이트블랙"],
     ],
     mustNotContain: [
       "오프화이트", "off-white", "travis", "트래비스",
@@ -603,47 +606,11 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     defaultProductType: "boot", // Wave 236e — 2976 Chelsea = boot.
   },
 
-  // ─── 푸마 팔레르모 (컬러 분리) ─────────────────────────
-  {
-    id: "shoe-puma-palermo-black",
-    brand: "Puma",
-    category: "shoe",
-    modelName: "Puma Palermo Black",
-    aliases: ["푸마 팔레르모 블랙", "Puma Palermo Black"],
-    mustContain: [
-      ["푸마", "puma"],
-      ["팔레르모", "palermo"],
-      ["블랙", "black"],
-    ],
-    mustNotContain: [
-      "화이트", "white", "그린", "green", "베이지", "beige",
-      "premium", "프리미엄", "한정",
-      ...COMMON_BLOCK,
-      ...COLLAB_BLOCK,
-    ],
-    msrpKrw: 119000,
-    released: 2024,
-  },
-  {
-    id: "shoe-puma-palermo-white",
-    brand: "Puma",
-    category: "shoe",
-    modelName: "Puma Palermo White",
-    aliases: ["푸마 팔레르모 화이트", "Puma Palermo White"],
-    mustContain: [
-      ["푸마", "puma"],
-      ["팔레르모", "palermo"],
-      ["화이트", "white"],
-    ],
-    mustNotContain: [
-      "블랙", "black", "그린", "green", "베이지", "beige",
-      "한정",
-      ...COMMON_BLOCK,
-      ...COLLAB_BLOCK,
-    ],
-    msrpKrw: 119000,
-    released: 2024,
-  },
+  // Wave 703 (2026-05-23) HOTFIX: Palermo Black/White narrow 2개 제거.
+  //   bias-free 검증 — chooseUniqueCandidate 충돌 버그 발견.
+  //   catalog.ts shoe-puma-palermo (laneKey: puma_palermo)와 동시 매칭되어 32+ 매물 NULL.
+  //   가격 spread 너무 좁아 (블랙 5만 vs 화이트 7.5만) narrow ROI 없음 → broad 단일로 흡수.
+  //   복구된 32 매물 → catalog.ts:9229 shoe-puma-palermo SKU로 직접 catch.
 
   // ─── 컨버스 척70 (컬러 분리) ───────────────────────────
   {
@@ -2011,20 +1978,10 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     msrpKrw: 400000, released: 2022, defaultProductType: "sneaker",
   },
 
-  {
-    id: "shoe-newbalance-miumiu-collab",
-    brand: "NB x Miu Miu", category: "shoe",
-    modelName: "NB x Miu Miu Collab (530 SL/442) — luxury 가품 폭탄",
-    aliases: ["NB Miu Miu", "미우미우 뉴발란스"],
-    mustContain: [
-      ["뉴발란스", "뉴발", "new balance", "newbalance", "nb"],
-      ["미우미우", "miumiu", "miu miu"],
-    ],
-    mustNotContain: ["키즈", "kids", "td", "gs",
-      "짝퉁", "rep ", "replica", "fake", "11급", "1:1", "미러", "복각",
-      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
-    msrpKrw: 800000, released: 2023, defaultProductType: "sneaker",
-  },
+  // Wave 703 (2026-05-23) HOTFIX: NB × Miu Miu collab 제거.
+  //   memory "[미뇨이 핵심 원칙] — 일반인 친화. premium-only 모델 금지" 위반.
+  //   bias-free 검증: 13건/월 / p50 18만 / 가품 풀 큼. 일반인 친화도 ⭐.
+  //   기존 mustContain 키워드 "miumiu", "미우미우"는 NB broad의 mustNotContain에서 차단됨.
 
   {
     id: "shoe-newbalance-jjjjound-collab",
@@ -2480,11 +2437,13 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     brand: "Nike", category: "shoe",
     modelName: "Air Force 1 Mid '07 (Black/White/Triple)",
     aliases: ["AF1 Mid 07", "에어포스1 미드 07"],
+    // Wave 703 (2026-05-23) HOTFIX: '07/07 토큰 제거. '07은 AF1 Low '07 release year 표기.
+    //   bias-free 검증 결과 162건 매칭 중 110건 (67%) Low '07 매물 false positive 흡수.
     mustContain: [
       ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
-      ["미드", "mid", "07", "'07"],
+      ["미드", "mid"],
     ],
-    mustNotContain: ["low", "로우", "high", "하이",
+    mustNotContain: ["low", "로우", "high", "하이", "07", "'07",
       "supreme", "슈프림", "오프화이트", "off-white", "스투시", "stussy",
       "키즈", "kids", "td", "gs",
       "짝퉁", "rep ", "replica", "fake", "11급",
@@ -2631,11 +2590,17 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     brand: "Nike x Louis Vuitton", category: "shoe",
     modelName: "Air Force 1 Louis Vuitton x Virgil Abloh (luxury 가품 폭탄)",
     aliases: ["AF1 LV", "에어포스1 루이비통"],
+    // Wave 703 (2026-05-23) HOTFIX: "lv" 단독 토큰 제거.
+    //   bias-free 검증 결과 51건 매칭 중 49건 (96%) Nike LV8 sub-series 잘못 흡수.
+    //   LV8 = Nike "Luxe Version 8" (NBA/Athletic Club/한글날/Independence Day) — Louis Vuitton 무관.
     mustContain: [
       ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
-      ["루이비통", "louis vuitton", "lv", "버질 아블로", "virgil abloh"],
+      ["루이비통", "louis vuitton", "버질 아블로", "virgil abloh"],
     ],
     mustNotContain: ["키즈", "kids", "td", "gs",
+      // Wave 703: LV8 sub-series 차단 (Nike 자체 sub-line, LV 아님)
+      "lv8", "lv 8", "lv-8", "lv0", "lv1", "lv2", "lv3", "lv4", "lv5", "lv6", "lv7", "lv9",
+      "별포스", "한글날", "hangeul", "독립기념일", "independence day", "40주년", "애슬레틱 클럽", "athletic club",
       "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러", "복각",
       "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
     msrpKrw: 2500000, released: 2022,
@@ -2997,20 +2962,23 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
   },
 
   {
-    id: "shoe-nike-jordan-1-high-latushi-pearl",
-    brand: "Nike", category: "shoe",
-    modelName: "AJ1 High Latushi (Pearl Pink — Korea 명칭)",
-    aliases: ["AJ1 High Latushi", "라투시"],
+    // Wave 703 (2026-05-23) HOTFIX: DATA POISONING 정정.
+    //   bias-free 검증 — 라투시 = "LA to Chicago" (SB Defiant Court Purple), NOT Pearl Pink.
+    //   sneakerbar/footsell/카멜 모두 LA→Chicago 별명 확인. 잘못된 colorway 라벨 신뢰 손상 차단.
+    id: "shoe-nike-jordan-1-high-sb-la-to-chicago",
+    brand: "Nike SB x Jordan", category: "shoe",
+    modelName: "AJ1 High SB Defiant LA to Chicago (라투시/벗투시 — Court Purple/Sail/University Gold)",
+    aliases: ["AJ1 SB LA to Chicago", "라투시", "벗투시", "SB Defiant LA Chicago"],
     mustContain: [
       ["조던 1", "조던1", "jordan 1", "aj1"],
       ["하이", "high"],
-      ["라투시", "latushi"],
+      ["라투시", "벗투시", "la to chicago", "la to ch", "court purple", "sb defiant"],
     ],
     mustNotContain: ["low", "로우", "mid", "미드",
       "키즈", "kids", "td", "gs",
       "짝퉁", "rep ", "replica", "fake", "11급",
       "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
-    msrpKrw: 200000, released: 2024,
+    msrpKrw: 300000, released: 2018,
     defaultProductType: "sneaker",
   },
 
