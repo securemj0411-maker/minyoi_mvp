@@ -15,6 +15,9 @@ import {
   extractConditionClass,
   CONDITION_RANK,
 } from "@/lib/option-parser";
+// Wave 714 (2026-05-23): 신발/의류 5-tier grading (S/A/B/C/D + UNKNOWN).
+//   기존 conditionClass (전자기기용 grouping key) 와 별개. parsedJson.conditionGrade 에 박음.
+import { gradeShoeCondition, gradeClothingCondition, type ConditionGrade } from "@/lib/grading";
 
 // Wave 236f (2026-05-19): ParseInput type 통합 — option-parser 가 source of truth.
 //   audit 발견: 두 별도 정의 → drift risk. 통합 import 로 fix.
@@ -1310,6 +1313,25 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
       unknown_parts: unknownParts,
       critical_unknown: criticalUnknown,
       wave92_parser: true,
+      // Wave 714 (2026-05-23): 5-tier S/A/B/C/D grading + flags (raw text 기반).
+      //   신발/의류만. bag/bike 는 skip (사용자 정책: 가방 ready X).
+      condition_grade: computeConditionGrade(category, title, input.description ?? null, input.bunjangConditionLabel ?? null),
     },
   };
+}
+
+// Wave 714 (2026-05-23): 신발/의류 grading dispatch.
+function computeConditionGrade(
+  category: string,
+  title: string,
+  description: string | null,
+  enumLabel: string | null,
+): ConditionGrade | null {
+  if (category === "shoe") {
+    return gradeShoeCondition({ name: title, description, enumLabel });
+  }
+  if (category === "clothing") {
+    return gradeClothingCondition({ name: title, description, enumLabel });
+  }
+  return null;
 }

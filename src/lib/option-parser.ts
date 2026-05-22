@@ -2236,6 +2236,19 @@ export function evaluateNarrowLane(
 }
 
 export function toParsedListingRow(pid: number | string, parsed: ParsedListingOptions) {
+  // Wave 714 (2026-05-23): condition_grade — 신발/의류 5-tier S/A/B/C/D grading.
+  //   parser (wave92-fashion-mobility) 가 parsedJson.condition_grade 에 박음.
+  //   여기서 별도 column 4개로 분리 write — query 효율 (jsonb path 보다 column index 가 빠름).
+  const grade = (parsed.parsedJson as Record<string, unknown>).condition_grade as
+    | {
+        tier?: string;
+        cluster?: string;
+        confidence?: number;
+        flags?: Record<string, unknown>;
+        chips?: string[];
+      }
+    | null
+    | undefined;
   return {
     pid: Number(pid),
     parser_version: parsed.parserVersion,
@@ -2264,5 +2277,13 @@ export function toParsedListingRow(pid: number | string, parsed: ParsedListingOp
     needs_review: parsed.needsReview,
     parsed_json: parsed.parsedJson,
     parsed_at: new Date().toISOString(),
+    // Wave 714 (2026-05-23): 5-tier grading column. 전자기기는 grade=null → 모두 null.
+    condition_tier: grade?.tier ?? null,
+    condition_cluster: grade?.cluster ?? null,
+    condition_confidence: grade?.confidence ?? null,
+    condition_flags: grade?.flags ?? null,
+    // Wave 714 (2026-05-23): 정규화 chip array — UI / 필터 / /me 페이지 상세보기.
+    //   예: ["wear:unworn", "box:full", "auth:kream", "extra:extra_laces"]
+    condition_chips: grade?.chips ?? null,
   };
 }
