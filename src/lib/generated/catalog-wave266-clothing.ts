@@ -441,6 +441,9 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       // Wave 428: Homme lines are repeated enough to keep out of generic CDG broad.
       "homme plus", "옴므 플러스", "옴므플러스",
       "homme", "옴므",
+      // Wave 609: production sample — pid 401863017 '꼼데가르송 구찌 홀리데이 PVC백' 1.05M (bag 매물 clothing 잘못).
+      //   PVC 백/PVC 가방/구찌 홀리데이/구찌 콜라보 차단 (다른 lane으로 가야).
+      "pvc 백", "pvc백", "pvc 가방", "구찌 홀리데이", "gucci holiday",
     ],
     msrpKrw: 390000,
     released: 1969,
