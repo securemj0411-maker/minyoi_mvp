@@ -833,7 +833,12 @@ function DirectTradeConfirmModal({
   onConfirm: (item: PoolItem) => void;
 }) {
   if (!state) return null;
-  const location = state.item.directTradeLocation?.trim() || "원본에서 위치 확인 필요";
+  // Wave launch-36 (사용자 짚음): "원본에서 위치 확인 필요" 카피 정직화.
+  // 진단: 중고나라 raw_json 에 location 키 없음 (collector list API 만 사용).
+  // 진짜 위치 = 매물 원본 페이지에만. 따라서 카피를 명확히 + "원본에서 위치 보기" 버튼 추가.
+  const location = state.item.directTradeLocation?.trim();
+  const hasLocation = Boolean(location);
+  const listingUrl = state.item.listingUrl ?? null;
 
   return (
     <div
@@ -868,12 +873,28 @@ function DirectTradeConfirmModal({
             <div className="text-[11px] font-black uppercase tracking-[0.14em] text-zinc-400">
               거래 가능 지역
             </div>
-            <div className="mt-1.5 break-keep text-lg font-black text-zinc-950 dark:text-zinc-50">
-              {location}
-            </div>
+            {hasLocation ? (
+              <div className="mt-1.5 break-keep text-lg font-black text-zinc-950 dark:text-zinc-50">
+                {location}
+              </div>
+            ) : (
+              <div className="mt-1.5 break-keep text-[15px] font-bold leading-6 text-zinc-700 dark:text-zinc-200">
+                직거래 동네는 매물 원본 페이지에 표시돼요
+              </div>
+            )}
             <div className="mt-3 text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              위치가 멀면 수익이 좋아 보여도 시간비용이 커질 수 있어요. 원본에서 정확한 동네와 시간을 다시 확인하세요.
+              위치가 멀면 수익이 좋아 보여도 시간비용이 커질 수 있어요. 상세 분석 열기 전 원본에서 동네 확인 권장.
             </div>
+            {!hasLocation && listingUrl ? (
+              <a
+                href={listingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex h-9 items-center justify-center gap-1 rounded-full bg-white px-3.5 text-[12px] font-black text-zinc-800 ring-1 ring-zinc-200 transition hover:bg-zinc-50 dark:bg-zinc-950 dark:text-zinc-100 dark:ring-zinc-700 dark:hover:bg-zinc-900"
+              >
+                원본에서 위치 확인 →
+              </a>
+            ) : null}
           </div>
 
           <div className="mt-5 grid gap-2">
