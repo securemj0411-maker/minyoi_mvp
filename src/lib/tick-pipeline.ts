@@ -2520,8 +2520,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   shoe: "wave92-shoe-v23",
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
   bag: "wave92-bag-v23",
-  // Wave 681 (2026-05-22): clothing v35 — bape_hoodie_zip + bape_crewneck 동일 패턴 narrow 후 lane release (BAPE family 4 lane 다 ready).
-  clothing: "wave216-clothing-v35",
+  // Wave 682 (2026-05-22): clothing v36 — polo_bear_collab 양말/파자마/이불/보이즈/패밀리 후디/큐알신형(가품)/y2k 차단 후 release.
+  clothing: "wave216-clothing-v36",
   bike: "wave92-fashion-mobility-v7",
   // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
   // full-unit pollution for these active pool categories.
@@ -6214,6 +6214,49 @@ export async function runPoolWarmerPipeline(): Promise<TickResult> {
   return {
     ...total,
     stages: { search, detail, hotdeal: hotdealStats, score },
+    stageDurationsMs,
+  };
+}
+
+// Wave launch-44 (사용자 짚음 "invalidated to ready cron 해결책"):
+//   recovery-worker 전용 stage. score-worker 에서 분리.
+//
+//   배경 측정 (launch-43):
+//   - score_worker avg 40s / p95 72s / max 88s / 33% timeout (90s lease 한계)
+//   - 1 stage 안 7 책임 (scoring + 4종 residue + 2종 recovery) 묶임
+//   - recovery cron 마킹 매 분 200+ (가치 검증) but score_worker 시간 ~5-10s 차지
+//
+//   분리 효과:
+//   - score_worker 부담 ↓ (33% timeout → 20-25% 추정)
+//   - recovery 자체 limit ↑ 가능 (250 → 500) — 더 빠른 backlog 해소
+//   - 새 worker 가벼움 (한 함수만 호출, 예상 5-15초)
+//
+//   향후 (별 wave) 큰 fix:
+//   - 옵션 E (event-driven scheduled retry) — invalidate 시점 next_score_check_at 박음
+//   - 옵션 F (worker split 전체) — score-worker 의 cleanup/residue 도 별 worker
+export async function recoveryStage(): Promise<StageStats> {
+  const config = loadPipelineRuntimeConfig();
+  const stats = emptyStats();
+  // launch-44: limit 250 → 500 (별 worker 라 시간 여유). 60s lease 안 충분.
+  const recoveryLimit = Math.min(Math.max(config.tickScoreLimit * 2, 250), 500);
+  const recoveredMarked = await markRecoveredMarketInvalidatedPoolRowsDirty(recoveryLimit);
+  stats.upserted = recoveredMarked;
+  stats.timingsMs = {
+    recovery_marked_rows: recoveredMarked,
+    recovery_limit: recoveryLimit,
+  };
+  return stats;
+}
+
+export async function runRecoveryWorkerPipeline(): Promise<TickResult> {
+  const stageDurationsMs: Record<string, number> = {};
+  const search = emptyStats();
+  const detail = emptyStats();
+  const score = await timedStage(stageDurationsMs, "recovery", () => recoveryStage());
+  const total = mergeStats([search, detail, score]);
+  return {
+    ...total,
+    stages: { search, detail, recovery: score, score: emptyStats() },
     stageDurationsMs,
   };
 }

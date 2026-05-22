@@ -13,6 +13,10 @@
       "schedule": "* * * * *"
     },
     {
+      "path": "/api/cron/recovery-worker",
+      "schedule": "* * * * *"
+    },
+    {
       "path": "/api/cron/lifecycle-worker",
       "schedule": "*/5 * * * *"
     },

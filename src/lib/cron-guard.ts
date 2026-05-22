@@ -16,7 +16,10 @@ export type CronWorkerMode =
   | "hotdeal_worker"
   | "reference_price_refresh"
   | "joongna_worker"
-  | "score_worker";
+  | "score_worker"
+  // Wave launch-44 (사용자 짚음 "invalidated to ready cron 해결책"):
+  //   recovery cron 별도 worker 분리. score_worker 부담 ↓ (33% timeout 대응) + 회복 처리량 ↑.
+  | "recovery_worker";
 
 type CronGuardSkipReason = "cooldown" | "same_worker_running" | "source_health_unhealthy";
 
@@ -85,6 +88,7 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   reference_price_refresh: 60 * 60_000,
   joongna_worker: 5 * 60_000,
   score_worker: 60_000,
+  recovery_worker: 60_000,
 };
 
 const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
@@ -103,6 +107,7 @@ const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
   reference_price_refresh: 2 * 60_000,
   joongna_worker: 2 * 60_000,
   score_worker: 90_000,
+  recovery_worker: 60_000,
 };
 
 const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([
