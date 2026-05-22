@@ -1678,7 +1678,7 @@ test("candidate pool builder holds rows from explicitly low-rated sellers", () =
   assert.ok(sku, "expected Polo Oxford Shirt SKU in catalog");
   const parsedByPid = new Map([
     [16, {
-      parser_version: "wave216-clothing-v20",
+      parser_version: "wave216-clothing-v21",
       category: "clothing" as const,
       comparable_key: "clothing|polo_oxford_shirt|shirt|a_grade",
       parse_confidence: 0.95,
@@ -1707,7 +1707,7 @@ test("candidate pool builder holds rows from explicitly low-rated sellers", () =
     parsedByPid,
     catalogById: new Map(CATALOG.map((item) => [item.id, item])),
     categoryReadiness: CATEGORY_READINESS,
-    latestParserVersionByCategory: { clothing: "wave216-clothing-v20" },
+    latestParserVersionByCategory: { clothing: "wave216-clothing-v21" },
     now: "2026-05-21T00:00:00.000Z",
   });
 
@@ -1720,7 +1720,7 @@ test("candidate pool builder does not punish missing seller rating by itself", (
   assert.ok(sku, "expected Polo Oxford Shirt SKU in catalog");
   const parsedByPid = new Map([
     [17, {
-      parser_version: "wave216-clothing-v20",
+      parser_version: "wave216-clothing-v21",
       category: "clothing" as const,
       comparable_key: "clothing|polo_oxford_shirt|shirt|a_grade",
       parse_confidence: 0.95,
@@ -1749,7 +1749,7 @@ test("candidate pool builder does not punish missing seller rating by itself", (
     parsedByPid,
     catalogById: new Map(CATALOG.map((item) => [item.id, item])),
     categoryReadiness: CATEGORY_READINESS,
-    latestParserVersionByCategory: { clothing: "wave216-clothing-v20" },
+    latestParserVersionByCategory: { clothing: "wave216-clothing-v21" },
     now: "2026-05-21T00:00:00.000Z",
   });
 

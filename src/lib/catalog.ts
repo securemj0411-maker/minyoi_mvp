@@ -6924,7 +6924,7 @@ export const CATALOG: Sku[] = [
     aliases: ["Polo Oxford", "폴로 옥스포드", "Ralph Lauren Oxford"],
     mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["옥스포드", "oxford"]],
     // RRL 옥스포드는 별도 SKU (가격 5배)
-    mustNotContain: ["RRL", "더블 알엘", "double rl", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "키즈", "kids"],
+    mustNotContain: ["RRL", "더블 알엘", "double rl", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "키즈", "kids", "보이즈", "boys", "주니어", "youth", "14~16", "14-16"],
     msrpKrw: 159000, released: 2020,
     defaultProductType: "shirt", // Wave 236d — Oxford = 셔츠 라인.
   },

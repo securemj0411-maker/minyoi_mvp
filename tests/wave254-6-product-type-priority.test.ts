@@ -489,6 +489,17 @@ describe("Wave 254.6 — clothing product_type regex 우선순위", () => {
         assert.equal(sku?.id, "clothing-polo-oxford-shirt");
       });
     }
+
+    for (const title of [
+      "55)폴로랄프로렌 옥스포드 셔츠 보이즈l",
+      "[폴로반팔티증정][2제품] 폴로 보이즈 화이트 옥스포드 셔츠/ 베이지",
+      "폴로 랄프로렌 옥스포드 셔츠 14~16",
+    ]) {
+      it(`${title} does not enter adult Oxford`, () => {
+        const sku = ruleMatch(title, title);
+        assert.equal(sku?.id ?? null, null);
+      });
+    }
   });
 
   describe("Wave 456 — duplicate generated/manual shoe SKU candidates", () => {
