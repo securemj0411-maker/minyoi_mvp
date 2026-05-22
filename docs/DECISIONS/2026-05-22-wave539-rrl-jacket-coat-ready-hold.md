@@ -17,3 +17,8 @@
 
 - Do not add a generic RRL jacket model parser in this wave.
 - Re-open only after repeated exact model names have enough clean samples to split into explicit lanes.
+
+## Production Follow-Up
+
+- Narrowly invalidated existing ready pool rows `pid=408286790` and `pid=409376084`.
+- Reason: `wave539_rrl_jacket_coat_ready_hold`.
