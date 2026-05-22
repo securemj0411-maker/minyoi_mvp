@@ -547,6 +547,9 @@ function parseBagProductType(text: string): BagProductType {
   if (/캐리올|carryall|carry ?all/.test(t)) return "tote";
   // Wave 612: Bottega Arco (아르코) = 대형 토트백. title 'arco/아르코' 단독 → tote (description '지갑' false positive 차단).
   if (/아르코|\barco\b/.test(t)) return "tote";
+  // Wave 613: Hermes 시그니처 모델명 — title 우선 매칭 (description '지갑/장지갑' false positive 차단).
+  // 알린 (Aline) = 크로스백/숄더, 시네틱 (Cinetique) = 숄더백.
+  if (/알린백|aline\b|시네틱|cinetique|cinétique/.test(t)) return "shoulder";
   // tote — 탑핸들/핸드백.
   // Wave 266 (2026-05-20): 캔버스 백 / 토트 백 영문 / 빈티지 토트 보강.
   // Wave 267b (2026-05-20): 토드백/japanese bag/재패니즈/명품 쇼핑백 보강 (API sweep 발견).
@@ -639,7 +642,7 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 // Wave 537 (2026-05-22) shoe v18: Acne Manhattan/Rockaway mixed titles are ambiguous and held out.
 const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v21";
 // Wave 538 (2026-05-22) bag v14: Longchamp Le Pliage requires explicit line text.
-const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v17";
+const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v18";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
