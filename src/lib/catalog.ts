@@ -7305,6 +7305,10 @@ export const CATALOG: Sku[] = [
       "1994", "1992", "1990", "2000년대", "2000s", "2010", "2012",
       // Wave 248: Eco Nuptse 별도 라인 (재활용 소재, 2023+ 리메이크)
       "에코 눕시", "에코눕시", "eco nuptse", "리메이크", "remake",
+      // Wave 574 (2026-05-22): production audit — 포켓몬 루기아 콜라보 83.5만 outlier (정상 30만 +3배).
+      "포켓몬", "pokemon", "루기아", "lugia", "피카츄", "pikachu",
+      // 다른 brand mix 매물 (k2/아이다/몽벨 등 비교 매물)
+      "k2 아이다", "k2아이다", "아이다 몽벨", "몽벨 눕시",
     ],
     msrpKrw: 360000, released: 1996,
     defaultProductType: "down_jacket", // Wave 236d — Nuptse = 다운자켓 라인 확정.
