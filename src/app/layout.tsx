@@ -67,6 +67,15 @@ export default function RootLayout({
             __html: `(function(){try{var s=localStorage.getItem("minyoi-theme-v1");var d=s==="dark"||((s==="system"||!s)&&matchMedia("(prefers-color-scheme: dark)").matches);if(d){document.documentElement.classList.add("dark");document.documentElement.dataset.theme="dark";}else{document.documentElement.dataset.theme="light";}}catch(e){}})();`,
           }}
         />
+        {/* Wave launch-51: Kakao JS SDK — Share.sendDefault 카톡 공유.
+            init 은 explore-client mount 시 (NEXT_PUBLIC_KAKAO_JS_KEY 사용).
+            async 로드 — 페이지 다른 작업 안 막음. integrity hash = Kakao 공식. */}
+        <script
+          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"
+          integrity="sha384-DKYJZ8NLiK8MN4/C5P2dtSmLQ4KwPaoqAfyA/DfmEc1VDxu4yyC7wy6K1Hs90nka"
+          crossOrigin="anonymous"
+          async
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <AppNav />

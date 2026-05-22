@@ -1161,6 +1161,98 @@ export default function ExploreClient({
   // Wave 358: 슬라이드 업 애니메이션 — open/close 사이 250ms transition.
   const [refreshModalOpen, setRefreshModalOpen] = useState(false);
   const [refreshModalAnimating, setRefreshModalAnimating] = useState(false);
+
+  // Wave launch-51: Kakao share state.
+  const [kakaoShareReady, setKakaoShareReady] = useState(false);
+  const [kakaoShareLoading, setKakaoShareLoading] = useState(false);
+
+  // SDK init — script tag 로드 끝나면 window.Kakao 사용 가능. polling 으로 확인 (script async).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
+    if (!jsKey) return;  // env 없으면 button disabled 유지
+
+    let attempts = 0;
+    const maxAttempts = 50;  // 5초 timeout (100ms × 50)
+    const poll = window.setInterval(() => {
+      attempts += 1;
+      const kakao = (window as unknown as { Kakao?: { isInitialized: () => boolean; init: (key: string) => void } }).Kakao;
+      if (kakao) {
+        if (!kakao.isInitialized()) {
+          try { kakao.init(jsKey); } catch (err) { console.warn("Kakao init failed", err); }
+        }
+        setKakaoShareReady(kakao.isInitialized());
+        window.clearInterval(poll);
+      } else if (attempts >= maxAttempts) {
+        window.clearInterval(poll);
+      }
+    }, 100);
+    return () => window.clearInterval(poll);
+  }, []);
+
+  // 공유 button click handler
+  const handleKakaoShare = useCallback(async () => {
+    if (typeof window === "undefined" || kakaoShareLoading) return;
+    const kakao = (window as unknown as {
+      Kakao?: {
+        isInitialized: () => boolean;
+        Share?: {
+          sendDefault: (config: Record<string, unknown>) => void;
+        };
+      };
+    }).Kakao;
+    if (!kakao?.Share?.sendDefault || !kakao.isInitialized()) {
+      return;
+    }
+
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://minyoi-mvp.vercel.app";
+    const shareUrl = `${baseUrl}?ref=kakao_share`;
+
+    try {
+      kakao.Share.sendDefault({
+        objectType: "feed",
+        content: {
+          title: "미뇨이 — AI 가 매일 찾아주는 차익 매물",
+          description: "지금 사면 차익 나는 매물 30개. 무료 회원가입 후 바로 보기.",
+          imageUrl: `${baseUrl}/og-image.png`,
+          link: {
+            mobileWebUrl: shareUrl,
+            webUrl: shareUrl,
+          },
+        },
+        buttons: [
+          {
+            title: "지금 보러가기",
+            link: {
+              mobileWebUrl: shareUrl,
+              webUrl: shareUrl,
+            },
+          },
+        ],
+      });
+
+      // Kakao callback 은 다이얼로그 닫혔을 때 호출되는데 신뢰 X (사용자가 안 보내고 닫기만 해도 호출).
+      // 단순화 = sendDefault 호출 직후 보너스 API call. 24h 제한이 abuse 차단.
+      setKakaoShareLoading(true);
+      const res = await fetch("/api/packs/pool/share-bonus", { method: "POST" });
+      const data = await res.json() as { ok?: boolean; bonus?: number; balance?: number; message?: string; remainingHours?: number };
+      if (data.ok) {
+        // 보너스 받음 — modal 닫고 페이지 reload (loadPool 가 useCallback hoisting 위라 직접 호출 X).
+        // reload = 새 credits 반영 + 새 매물 fetch + URL 의 ?ref=kakao_share 제거 가능.
+        setRefreshModalOpen(false);
+        // soft reload — 사용자 view 유지 (scroll position 등)
+        if (typeof window !== "undefined") {
+          window.location.reload();
+        }
+      }
+      // 사용자에게 결과 표시 — UI toast/alert 없이 console (cooldown 시 사용자 button hover 시 tooltip).
+      console.info("[kakao-share]", data.message ?? "");
+    } catch (err) {
+      console.error("kakao share failed", err);
+    } finally {
+      setKakaoShareLoading(false);
+    }
+  }, [kakaoShareLoading]);
   // 모달 mount 후 다음 frame에 애니메이션 활성화 (slide up / fade in)
   useEffect(() => {
     if (refreshModalOpen) {
@@ -2657,31 +2749,38 @@ export default function ExploreClient({
                               </span>
                             </Link>
 
-                            {/* Wave 384 (placeholder): 카카오톡 공유 → 30개 즉시 받기. App Key + DB migration 필요해서 일단 UI만 + "곧 출시". */}
-                            {/* Wave 385: 정통 카카오 노란 (#fbe300) 배경 + 갈색 텍스트 (#3b1e1e).
-                                Wave 386: 카피 명확화 — 친구 가입 무관, 공유만으로 reward.
-                                Wave launch-50 (사용자 짚음): alert "곧 출시예요" 박스 = 구식 UX + 미완성 기능 misleading.
-                                  진짜 박기 = Kakao SDK + App Key + DB schema (큰 작업, 별 wave).
-                                  단기: button disabled + "준비중" 톤. 사용자 기대 명확. */}
+                            {/* Wave launch-51 (사용자 짚음 "App Key 받아왔음"): 진짜 카카오 공유 박음.
+                                - Kakao SDK Share.sendDefault → 다이얼로그 표시
+                                - callback 호출 시 POST /api/packs/pool/share-bonus
+                                - server 가 24h 1회 제한 검증 + 통과 시 credits +1
+                                - 카카오는 webhook 없어 진짜 공유 검증 X — abuse 차단 = 24h 제한.
+                                NEXT_PUBLIC_KAKAO_JS_KEY env 필요 (Vercel 박음). 없으면 button disabled. */}
                             <button
                               type="button"
-                              disabled
-                              title="카카오톡 공유 보너스는 준비중이에요"
-                              className="mt-3 flex w-full cursor-not-allowed items-center justify-between gap-3 rounded-2xl bg-[#fbe300]/40 px-5 py-4 text-left opacity-70"
+                              disabled={kakaoShareLoading || !kakaoShareReady}
+                              onClick={handleKakaoShare}
+                              title={kakaoShareReady ? "카톡으로 공유하고 크레딧 받기" : "카카오 공유 로딩 중..."}
+                              className={`mt-3 flex w-full items-center justify-between gap-3 rounded-2xl px-5 py-4 text-left transition ${
+                                kakaoShareReady
+                                  ? "bg-[#fbe300] shadow-[0_4px_14px_rgba(251,227,0,0.35)] hover:bg-[#fae100] active:scale-[0.99]"
+                                  : "cursor-not-allowed bg-[#fbe300]/40 opacity-70"
+                              }`}
                             >
                               <div className="flex min-w-0 items-center gap-2.5">
-                                <KakaoLogo className="h-7 w-7 shrink-0 rounded-[8px] opacity-80" />
+                                <KakaoLogo className={`h-7 w-7 shrink-0 rounded-[8px] ${kakaoShareReady ? "" : "opacity-80"}`} />
                                 <div className="min-w-0">
-                                  <div className="text-base font-bold text-[#3b1e1e]/80">
-                                    카톡 공유하고 1초만에 더 보기
+                                  <div className={`text-base font-bold ${kakaoShareReady ? "text-[#3b1e1e]" : "text-[#3b1e1e]/80"}`}>
+                                    {kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 크레딧 받기"}
                                   </div>
-                                  <div className="mt-0.5 text-[11px] font-medium text-[#3b1e1e]/60">
-                                    곧 출시예요 · 조금만 기다려주세요
+                                  <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
+                                    하루 1번, 공유 후 크레딧 1개 자동 지급
                                   </div>
                                 </div>
                               </div>
-                              <span className="shrink-0 rounded-full bg-[#3b1e1e]/70 px-2 py-0.5 text-[10px] font-bold text-[#fbe300]/90">
-                                준비중
+                              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                kakaoShareReady ? "bg-[#3b1e1e] text-[#fbe300]" : "bg-[#3b1e1e]/70 text-[#fbe300]/90"
+                              }`}>
+                                +1 크레딧
                               </span>
                             </button>
                           </>
