@@ -82,6 +82,7 @@ export type RevealCard = {
     tradeLabels?: string[];
     transactionMode?: MarketplaceTransactionMode;
     shippingAssumption?: MarketplaceShippingAssumption;
+    directTradeLocation?: string | null;
   };
   // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
   // null/[] 이면 옵션 명시 매물. 값 있으면 "기본 옵션 가정" UI badge 표시.
