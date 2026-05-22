@@ -537,7 +537,9 @@ function parseBagProductType(text: string): BagProductType {
   // Wave 268 (2026-05-20): Mantis Waistpack / 웨이스트팩 (Arc'teryx 모델) 보강 + 크로스 슬링 보강.
   if (/웨이스트|허리|힙색|waist ?bag|waist ?pack|웨이스트 ?팩|fanny ?pack|벨트 ?백|fanny|슬링 ?백|sling ?bag|sling\b|보레알리스 ?슬링|borealis ?sling|mantis ?2|mantis ?waist|만티스 ?웨이스트/.test(t)) return "waist";
   // shoulder — 호보백/버킷백/체인백 추가.
-  if (/숄더|shoulder ?bag(?!\s*backpack)|어깨 ?가방|호보 ?백|hobo ?bag|hobo\b|버킷 ?백|bucket ?bag|체인 ?백|chain ?bag|chain ?미니/.test(t)) return "shoulder";
+  // Wave 558 (2026-05-22): 사첼/무수비/르시티 → shoulder fallback.
+  //   주의: "미니 백"/"스몰 백" 은 "미니 백팩"과 collision (룰루레몬 등) → backpack 키워드 우선.
+  if (/숄더|shoulder ?bag(?!\s*backpack)|어깨 ?가방|호보 ?백|hobo ?bag|hobo\b|버킷 ?백|bucket ?bag|체인 ?백|chain ?bag|chain ?미니|사첼|satchel|무수비|musubi|르시티|le ?city|시티백|city ?bag/.test(t)) return "shoulder";
   // crossbody — 카메라백/미니체인백/사이드백.
   if (/크로스(?!\s*?백 ?팩)|crossbody|cross ?bag|크로스 ?백(?!팩)|카메라 ?백|camera ?bag|사이드 ?백|side ?bag/.test(t)) return "crossbody";
   // tote — 탑핸들/핸드백.
