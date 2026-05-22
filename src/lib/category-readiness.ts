@@ -756,6 +756,11 @@ export const LANE_READINESS: LaneReadinessMap = {
   shoe_nike_dunk_low_broad: { status: "ready", label: "Nike Dunk Low (Broad — 일반 colorway)", note: "Wave 691 — 1,374 매물/주, Wave 134 narrow (Panda + Black/White)에서 흡수 안 된 일반 colorway. SP/한정/SB/Travis/Off-White/AMBUSH 차단." },
   shoe_nike_airjordan_1_low: { status: "ready", label: "Air Jordan 1 Low (broad)", note: "Wave 691 — AJ 2,231 매물/주. 가품 위험 큼 — collab(Travis/Off-White/Fragment/Dior/Union)/11급/SS급정품 강력 차단." },
   shoe_nike_airjordan_1_mid: { status: "ready", label: "Air Jordan 1 Mid (broad)", note: "Wave 691 — Mid colorway broad. High/Low 별도, collab/한정 다 차단." },
+  // Wave 693 (2026-05-23): AJ family 확장 (AJ1 High / AJ3 / AJ4 / AJ11) — 337 매물/주.
+  shoe_nike_airjordan_1_high: { status: "ready", label: "Air Jordan 1 High (broad)", note: "Wave 693 — 128 매물/주, 가품 위험 큼. Travis/Off-White/Dior/Fragment/Union/Spider Verse + 11급/SS급/1:1 차단." },
+  shoe_nike_airjordan_3: { status: "ready", label: "Air Jordan 3 (broad)", note: "Wave 693 — 34 매물/주, Retro 3세대. Travis/Off-White/Dior collab 차단." },
+  shoe_nike_airjordan_4: { status: "ready", label: "Air Jordan 4 (broad)", note: "Wave 693 — 130 매물/주, 가품 매우 큼. Travis/Off-White/KAWS/Union/에미넴/OVO collab 차단." },
+  shoe_nike_airjordan_11: { status: "ready", label: "Air Jordan 11 (broad)", note: "Wave 693 — 45 매물/주, Retro 11세대." },
 };
 
 export type CategoryReadinessConfig = {

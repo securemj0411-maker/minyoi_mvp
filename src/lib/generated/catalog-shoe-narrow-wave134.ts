@@ -1064,4 +1064,131 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     released: 1985,
     defaultProductType: "sneaker",
   },
+
+  // Wave 693 (2026-05-23): Air Jordan family 확장 (AJ1 High / AJ3 / AJ4 / AJ11).
+  // AJ family raw 매물 7d:
+  //   AJ4 130, AJ1 High 128, AJ11 45, AJ3 34 (= 337건/주 추가).
+  //   AJ family 가품 위험 매우 큼 — Travis/Off-White/Dior/Union/Fragment + 11급/SS급/1:1 명시 차단.
+
+  {
+    id: "shoe-nike-airjordan-1-high",
+    brand: "Nike",
+    category: "shoe",
+    modelName: "Air Jordan 1 High (broad)",
+    aliases: ["Air Jordan 1 High", "조던 1 하이", "AJ1 High"],
+    mustContain: [
+      ["조던", "jordan", "aj1", "에어조던"],
+      ["하이", "high"],
+      ["1 ", "1세대", " 1\\b"],
+    ],
+    mustNotContain: [
+      "mid", "미드", "low", "로우",
+      // collab (가품 매우 큼)
+      "travis", "트래비스", "오프화이트", "off-white", "off white",
+      "fragment", "프래그먼트", "dior", "디올", "union", "유니온",
+      "spider verse", "스파이더버스", "off noir",
+      "한정판", "limited edition",
+      // 키즈
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td", "gs",
+      // 가품
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "11급", "ss급정품", "ss급 정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만",
+      "삽니다", "구합니다", "구해요", "매입",
+    ],
+    msrpKrw: 189000,
+    released: 1985,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airjordan-3",
+    brand: "Nike",
+    category: "shoe",
+    modelName: "Air Jordan 3 (broad)",
+    aliases: ["Air Jordan 3", "조던 3", "AJ3"],
+    mustContain: [
+      ["조던", "jordan", "에어조던"],
+      ["aj3", " 3 ", "3세대", "3 retro"],
+    ],
+    mustNotContain: [
+      // 다른 세대
+      "aj1", "aj4", "aj5", "aj6", "aj11", "aj13", "조던 1", "조던 4", "조던 5", "조던 11",
+      "1 미드", "1 하이", "1 로우", "1 mid", "1 high", "1 low", "4 retro",
+      // collab
+      "travis", "트래비스", "오프화이트", "off-white", "off white",
+      "fragment", "프래그먼트", "dior", "디올",
+      "한정판", "limited edition",
+      // 키즈
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td", "gs",
+      // 가품
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만",
+      "삽니다", "구합니다", "구해요", "매입",
+    ],
+    msrpKrw: 219000,
+    released: 1988,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airjordan-4",
+    brand: "Nike",
+    category: "shoe",
+    modelName: "Air Jordan 4 (broad)",
+    aliases: ["Air Jordan 4", "조던 4", "AJ4"],
+    mustContain: [
+      ["조던", "jordan", "에어조던"],
+      ["aj4", " 4 ", "4세대", "4 retro", "조던4"],
+    ],
+    mustNotContain: [
+      // 다른 세대
+      "aj1", "aj3", "aj5", "aj11", "조던 1", "조던 3", "조던 5", "조던 11",
+      "1 미드", "1 하이", "3 retro", "5 retro", "11 retro",
+      // collab (가품 매우 큼)
+      "travis", "트래비스", "오프화이트", "off-white", "off white",
+      "fragment", "프래그먼트", "dior", "디올",
+      "kaws", "카우스", "union", "유니온",
+      "에미넴", "eminem", "ovo",
+      "한정판", "limited edition", "sp",
+      // 키즈
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td", "gs",
+      // 가품
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만",
+      "삽니다", "구합니다", "구해요", "매입",
+    ],
+    msrpKrw: 219000,
+    released: 1989,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airjordan-11",
+    brand: "Nike",
+    category: "shoe",
+    modelName: "Air Jordan 11 (broad)",
+    aliases: ["Air Jordan 11", "조던 11", "AJ11"],
+    mustContain: [
+      ["조던", "jordan", "에어조던"],
+      ["aj11", " 11 ", "11세대", "11 retro", "조던11"],
+    ],
+    mustNotContain: [
+      // 다른 세대
+      "aj1", "aj3", "aj4", "aj5", "aj13", "조던 1", "조던 3", "조던 4", "조던 13",
+      "1 미드", "1 하이", "3 retro", "4 retro", "13 retro",
+      // collab
+      "travis", "트래비스", "오프화이트", "off-white", "off white",
+      "fragment", "프래그먼트", "dior", "디올",
+      "한정판", "limited edition",
+      // 키즈
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td", "gs",
+      // 가품
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만",
+      "삽니다", "구합니다", "구해요", "매입",
+    ],
+    msrpKrw: 269000,
+    released: 1995,
+    defaultProductType: "sneaker",
+  },
 ];
