@@ -9697,14 +9697,24 @@ export const CATALOG: Sku[] = [
       // Wave 422: Superstar 본품 sneaker lane에서 apparel/mule 파생상품 분리.
       "트랙수트", "트랙탑", "져지", "저지", "jersey", "아디폼", "adifom", "뮬", "mule",
       // Wave 457: named Superstar derivatives stay out of the plain broad lane until separately vetted.
-      "80s", "80's", "80 s", "80S", "80v", "80 v", "dlx",
-      "프리미엄", "premium", "메탈토", "metal toe",
+      // Wave 699 (2026-05-23): 차단 완화 — 80s/Premium/메탈토는 정상 colorway variant. 광범위 차단으로 253건 매칭 fail (37.6%).
+      // narrow SKU 부재한 80s/Premium variant도 broad에서 흡수 → 풀 +250건.
+      // "80s", "80's", "80 s", "80S", "80v", "80 v", "dlx",  ← 제거
+      // "프리미엄", "premium", "메탈토", "metal toe",  ← 제거
       "farm", "팜", "parley", "팔리",
       "슬립온", "slip-on", "slip on", "slipon", "360",
       "마운티어링", "mountaineering", "d-mop", "dmop", "디몹",
-      "퓨어", "pure", "스칼렛", "발렌타인", "지브라", "한정판",
+      "발렌타인", "한정판",
       "레고", "lego", "보네가", "bonega",
       "션 우더스푼", "션우더스푼", "sean wotherspoon", "wotherspoon",
+      // Wave 699 추가 차단 (다른 brand 충돌):
+      "골든구스", "golden goose", "ggdb",  // 골든구스 슈퍼스타 (다른 brand)
+      "y-3", "y3", "요지", "yohji",  // Y-3 collab (별 시세)
+      "닌텐도", "nintendo", "마리오", "mario",  // 닌텐도 게임 false positive
+      "퍼렐 윌리엄스", "pharrell williams",  // 퍼렐 collab
+      "songforthemute", "송포더뮤트",  // 이미 있음 보강
+      "30주년", "30 anniversary", "duke", "듀스",  // 30주년/Duke 한정
+      "콘 슈퍼스타", "콘슈퍼스타",  // 콘 (콘솔/캐릭터) variant
     ],
     msrpKrw: 119000, released: 1969,
   },

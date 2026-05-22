@@ -2516,8 +2516,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 498: shoe/bag comparable_key now preserves bag brand/lane and shoe
   // broad brand. Force stale rows to reparse so market samples stop sharing
   // generic `bag|backpack` and `shoe|broad` buckets.
-  // Wave 698 (2026-05-23): shoe v31 — NB 25 SKU 신설 (14 broad + 11 collab). 327/2002R/992/530/993/1906R/990v6 + ALD/CDG/Kith/Junya/Auralee/Stone Island/Miumiu (luxury)/JJJJound/J.Crew/Casablanca collab.
-  shoe: "wave92-shoe-v31",
+  // Wave 699 (2026-05-23): shoe v32 — Superstar broad mustNotContain 완화 (80s/Premium/메탈토 제거, 253 매물 fail 해결) + 골든구스/Y-3/닌텐도/퍼렐 false positive 차단.
+  shoe: "wave92-shoe-v32",
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
   bag: "wave92-bag-v23",
   // Wave 690 (2026-05-22): clothing v44 — stussy_nike_collab release (셋업/월드투어 차단, 30~50만 가격대 안정).
