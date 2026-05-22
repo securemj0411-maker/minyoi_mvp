@@ -98,6 +98,27 @@ function cleanLabels(labels: readonly string[] | null | undefined): string[] {
   return out;
 }
 
+function cleanText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.replace(/\s+/g, " ").trim();
+  return text ? text.slice(0, 80) : null;
+}
+
+function textFromUnknown(value: unknown): string | null {
+  const direct = cleanText(value);
+  if (direct) return direct;
+  const record = asRecord(value);
+  return (
+    cleanText(record.location) ??
+    cleanText(record.region) ??
+    cleanText(record.regionName) ??
+    cleanText(record.areaName) ??
+    cleanText(record.address) ??
+    cleanText(record.name) ??
+    cleanText(record.label)
+  );
+}
+
 function krw(value: number) {
   return `${value.toLocaleString("ko-KR")}원`;
 }
@@ -447,4 +468,43 @@ export function marketplaceFactsFromRawJson(input: {
     parcelFeeYn: cleanNumber(raw.parcelFeeYn),
     tradeLabels: Array.isArray(raw.labels) ? raw.labels.map((label) => String(label)) : [],
   };
+}
+
+export function marketplaceLocationFromRawJson(rawJson: unknown): string | null {
+  const raw = asRecord(rawJson);
+  const searchMeta = asRecord(raw.searchMeta);
+  const search = asRecord(raw.search);
+  const product = asRecord(raw.product);
+  const seller = asRecord(raw.seller);
+  const candidates = [
+    raw.location,
+    raw.tradeLocation,
+    raw.tradeRegion,
+    raw.region,
+    raw.regionName,
+    raw.areaName,
+    raw.address,
+    searchMeta.location,
+    searchMeta.tradeLocation,
+    searchMeta.region,
+    searchMeta.regionName,
+    search.location,
+    search.tradeLocation,
+    search.region,
+    search.regionName,
+    product.location,
+    product.tradeLocation,
+    product.region,
+    product.regionName,
+    product.areaName,
+    seller.location,
+    seller.region,
+    seller.regionName,
+    seller.areaName,
+  ];
+  for (const candidate of candidates) {
+    const text = textFromUnknown(candidate);
+    if (text) return text;
+  }
+  return null;
 }
