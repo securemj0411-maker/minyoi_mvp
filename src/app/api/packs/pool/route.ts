@@ -248,30 +248,21 @@ async function loadPool(
   const excludeClause = options.excludePids && options.excludePids.length > 0
     ? `&pid=not.in.(${options.excludePids.join(",")})`
     : "";
-  let sourceClause = "";
-  if (options.source) {
-    const sourceRows = await restFetch(
-      // Wave launch-12 (audit CRITICAL #11): 5000 → 2000 축소.
-      // 한 source (joongna / bunjang) 의 active pid 가 풀 매칭에 5000건까지 필요하지 않음.
-      // 2000 이면 모든 카테고리 충분 + DB scan 비용 감소 + 모바일 응답 빠름.
-      `${tableUrl("mvp_raw_listings")}?select=pid&source=eq.${encodeURIComponent(options.source)}&limit=2000`,
-      { headers },
-    );
-    const sourcePids = ((await sourceRows.json()) as Array<{ pid: number }>).map((row) => Number(row.pid));
-    if (sourcePids.length === 0) {
-      return { pool: [], raws: [], metas: [], marketBands: new Map(), v7SiblingPresence: new Map() };
-    }
-    sourceClause = `&pid=in.(${sourcePids.join(",")})`;
-  }
 
-  // Wave 388: fetch 순서 재정렬 — budget filter를 다양화 전에 적용.
+  // Wave launch-40 (사용자 짚음 "joongna 풀 있는데 안 나옴"):
+  // 이전 방식 = raw_listings 에서 source=joongna pid 2000개 fetch → candidate_pool 의
+  //   `pid=in.(P1,...,P2000)` 절에 박음. pid 가 13자리 × 2000 ≈ 28KB → PostgREST URL too long
+  //   (414) → restFetch throw → /api/packs/pool 500 → 사용자 화면 "매물을 잠시 못 가져왔어요".
+  // DB 확인: joongna ready 55 / bunjang ready 280 / 총 ready 335. candidate_pool 풀이 작아서
+  //   전체 다 가져와 application-level 에서 source filter 가 더 안전. mvp_candidate_pool 에
+  //   source 컬럼 없어서 별도 raw_listings.source 짧은 fetch 로 mapping 만든다.
   const [readyRes, soldOutRes] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready${sourceClause}${excludeClause}&${orderClause}&limit=${FETCH_POOL_OVERFETCH}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready${excludeClause}&${orderClause}&limit=${FETCH_POOL_OVERFETCH}`,
       { headers },
     ),
     restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}${sourceClause}${excludeClause}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS * 4}`,
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}${excludeClause}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS * 4}`,
       { headers },
     ),
   ]);
@@ -293,14 +284,31 @@ async function loadPool(
     for (const r of rawAll) rawByPid.set(r.pid, r);
   }
 
+  // Wave launch-40: source 별도 mapping. allCandidatePids (≈335) 의 source 만 fetch.
+  // URL 크기 ≈ 335 × 14 = 4.7KB 안전. options.source 있을 때만 fetch.
+  const sourceByPid = new Map<number, string | null>();
+  if (options.source && allCandidatePids.length > 0) {
+    const sourceRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid,source&pid=in.(${allCandidatePids.join(",")})&limit=${allCandidatePids.length + 100}`,
+      { headers },
+    );
+    const sourceRows = (await sourceRes.json()) as Array<{ pid: number; source: string | null }>;
+    for (const row of sourceRows) sourceByPid.set(Number(row.pid), row.source);
+  }
+  const sourcePass = (row: PoolRow & { soldOut: boolean }) => {
+    if (!options.source) return true;
+    return sourceByPid.get(row.pid) === options.source;
+  };
+
   // Wave 388: budget filter — priceMax 있으면 raw.price <= priceMax인 매물만.
   const budgetPass = (row: PoolRow & { soldOut: boolean }) => {
     if (options.priceMax == null) return true;
     const raw = rawByPid.get(row.pid);
     return raw != null && Number.isFinite(raw.price) && raw.price > 0 && raw.price <= options.priceMax;
   };
-  const readyFiltered = readyRowsRaw.filter(budgetPass);
-  const soldOutFiltered = soldOutRowsRaw.filter(budgetPass);
+  // Wave launch-40: source + budget 통합 필터. 다양화 전.
+  const readyFiltered = readyRowsRaw.filter((r) => sourcePass(r) && budgetPass(r));
+  const soldOutFiltered = soldOutRowsRaw.filter((r) => sourcePass(r) && budgetPass(r));
 
   // Wave 346: 카테고리 다양화 — budget filter 통과 매물 안에서만.
   function diversifyByCategory(rows: (PoolRow & { soldOut: boolean })[], maxRows: number) {
