@@ -15,3 +15,8 @@
 
 - No separate boys/youth Polo Oxford lane in this wave.
 - Reconsider only if boys/youth rows become dense enough for a separate clean market sample.
+
+## Production Follow-Up
+
+- Narrowly invalidated existing ready pool row `pid=407451001`.
+- Reason: `wave540_polo_oxford_boys_size_hold`.
