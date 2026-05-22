@@ -263,6 +263,36 @@ const PHONE_NOISE = [
   "kt 완납",
   "lgu+ 약정",
   "유플 약정",
+  // Wave 605 (2026-05-22): galaxy_sXX systemic false positive 차단 (Wave 604 follow-up).
+  //   production audit: galaxy_s21/22/23/24/25/26 SKU에 오토바이/디올 클러치/POS기/소니 카메라/풀카운트 의류/
+  //   핫토이 피규어/카시오 시계/숙박권/미니카 등 false positive 150+건.
+  //   모든 phone SKU 적용 (PHONE_NOISE spread).
+  // 오토바이/자동차
+  "pcx", "pcx125", "ninja", "mt-09", "r3 ", "벨로스터", "veloster", "터빈",
+  // 디지털 카메라 (소니 사이버샷 DSC-S2100, 캐논 파워샷 s20, 후지 x-s20 등)
+  "dsc-", "dsc s", "사이버샷", "cybershot", "캐논", "canon", "파워샷", "powershot",
+  "후지", "fuji", "fujifilm",
+  // 의류 시즌/model code (풀카운트 데님 S2107, 디올 클러치 S2107, 미우미우 SS21, 아디다스 HS2069 등)
+  "풀카운트", "fullcount", "ss21", "fw21", "ss22", "fw22", "ss23", "fw23", "ss24", "fw24",
+  "s2107", "hs2069", "byss20",
+  // POS기/IT 기기
+  "posbank", "bigpos", "키오스크", "kiosk",
+  // 피규어
+  "핫토이", "hot toys", "hottoys", "mms214",
+  // 시계 (카시오 GMA-S2100, G-Shock)
+  "gma s", "gma-s", "ga-2100", "ga2100", "카시오 gma", "g-shock", "지샥",
+  // 숙박권/리조트
+  "리솜", "레스트리", "숙박 양도", "양도해요",
+  // 골프 (다이나믹 골드 샤프트 S200/S300, 타이틀리스트 등)
+  "타이틀리스트", "titleist", "캘러웨이", "callaway", "테일러메이드", "taylormade",
+  "미즈노", "mizuno", "브리지스톤", "bridgestone", "스릭슨", "srixon", "에폰", "epon",
+  "포지드", "forged", "다이나믹 골드", "다골", "투어이슈",
+  // 자전거 (Garmin Rally RS200 등)
+  "가민", "garmin", "랠리", "rally", "rs200",
+  // 액션캠/사운드바/앰프
+  "callas20", "soocoo", "yas207", "xls202",
+  // 미니카
+  "토미카", "tomica", "1:64", "1/64", "미니카",
 ];
 
 const TABLET_NOISE = [
