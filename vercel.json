@@ -17,6 +17,10 @@
       "schedule": "* * * * *"
     },
     {
+      "path": "/api/cron/safety-stats-warmer",
+      "schedule": "*/30 * * * *"
+    },
+    {
       "path": "/api/cron/lifecycle-worker",
       "schedule": "*/5 * * * *"
     },

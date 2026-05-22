@@ -99,9 +99,36 @@ export async function GET(request: Request) {
     // 사용자에게 "오늘만 N건 차단" 인상 강력 (예: "하루에 8천건을 어떻게 다 걸러내냐").
     const scope = safetyStatsScope(request);
     const cacheKey = safetyStatsCacheKey(scope);
-    const cached = safetyStatsCache.get(cacheKey);
+    // Wave launch-62: warmer cron 의 cache bypass. _warmer param 또는 header 시 fresh count.
+    const url = new URL(request.url);
+    const bypassCache = url.searchParams.get("_warmer") != null || request.headers.get("x-minyoi-warmer") === "1";
+    const cached = !bypassCache ? safetyStatsCache.get(cacheKey) : null;
     if (cached && cached.expiresAt > Date.now()) {
       return safetyStatsJson(cached.payload, "hit");
+    }
+
+    // Wave launch-62 (사용자 짚음 "cron 으로 캐싱해서 바로 보여줄 수 없냐"):
+    //   DB snapshot table read 우선. cron 이 매 30분 채워둠.
+    //   사용자 첫 visit (in-memory cache miss) 라도 DB row read 1번이면 즉시 응답.
+    //   global scope (level=global) 만 DB cache — scoped query 는 user-specific 라 live 유지.
+    if (scope.level === "global" && !bypassCache) {
+      try {
+        const snapRes = await restFetch(
+          `${URL_BASE}/mvp_safety_stats_snapshot?select=payload,updated_at&scope_key=eq.${encodeURIComponent(cacheKey)}&limit=1`,
+          { headers: serviceHeaders() },
+        );
+        const rows = (await snapRes.json()) as Array<{ payload: unknown; updated_at: string }>;
+        if (rows[0]?.payload) {
+          // in-memory cache 도 채워서 다음 호출 빠르게
+          safetyStatsCache.set(cacheKey, {
+            expiresAt: Date.now() + SAFETY_STATS_CACHE_TTL_MS,
+            payload: rows[0].payload,
+          });
+          return safetyStatsJson(rows[0].payload, "hit");
+        }
+      } catch (err) {
+        console.warn("[safety-stats] snapshot read failed, falling back to live", err instanceof Error ? err.message : err);
+      }
     }
 
     const since24h = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
