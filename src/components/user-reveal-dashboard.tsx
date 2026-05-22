@@ -8,7 +8,7 @@ import { BunjangSourceBadge, DanawaSourceBadge, MarketplaceSourceBadge } from "@
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
-import { buyPriceGuidance } from "@/lib/buy-price-guidance";
+import { buyPriceGuidance, verdictUiLabel } from "@/lib/buy-price-guidance";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type RevealItem = {
@@ -947,13 +947,13 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
   }, [hideTerminal, items, selectedPids.size]);
 
   return (
-    <section id="my-reveals-list" className="scroll-mt-4 px-0 sm:rounded-2xl sm:border sm:border-[#ddd4c7] sm:bg-[#fffbf4] sm:p-5 sm:shadow-sm sm:dark:border-zinc-800 sm:dark:bg-zinc-900">
+    <section id="my-reveals-list" className="scroll-mt-4 px-0 sm:rounded-2xl sm:border sm:border-zinc-200 sm:bg-white sm:p-5 sm:shadow-sm sm:dark:border-zinc-800 sm:dark:bg-zinc-900">
       <div className="hidden flex-col gap-2 sm:flex sm:gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="flex flex-wrap items-center gap-2 text-base font-black text-[#223127] dark:text-zinc-100">
+          <div className="flex flex-wrap items-center gap-2 text-base font-black text-zinc-950 dark:text-zinc-100">
             <span>내 추천 보관함</span>
           </div>
-          <div className="mt-1 hidden text-xs font-semibold text-[#6b7269] dark:text-zinc-400 sm:block">현재 시세와 판매 상태를 다시 맞춘 추천 기록입니다.</div>
+          <div className="mt-1 hidden text-xs font-semibold text-zinc-500 dark:text-zinc-400 sm:block">현재 시세와 판매 상태를 다시 맞춘 추천 기록입니다.</div>
         </div>
         <div className="flex items-center gap-2">
           {/* 2026-05-17: 선택 모드 토글 + 전체 삭제. */}
@@ -963,7 +963,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 type="button"
                 onClick={() => setSelectMode(true)}
                 disabled={items.length === 0}
-                className="rounded-full border border-[#ddd4c7] bg-white px-3 py-1 text-xs font-bold text-[#344136] hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-bold text-zinc-900 hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
               >
                 선택
               </button>
@@ -992,7 +992,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       </div>
 
       {hasReveals ? (
-        <div className="mx-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-y border-[#e5dccf] bg-transparent py-2 text-[11px] font-black tabular-nums text-[#223127] dark:border-zinc-800 dark:text-zinc-100 sm:hidden">
+        <div className="mx-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-y border-zinc-200 bg-transparent py-2 text-[11px] font-black tabular-nums text-zinc-950 dark:border-zinc-800 dark:text-zinc-100 sm:hidden">
           <span>{loading ? "로딩" : `${total.toLocaleString("ko-KR")}건`}</span>
           <span>판매중 {dashboardSummary.activeCount.toLocaleString("ko-KR")}건</span>
           <span className="text-[#b45d19] dark:text-amber-200">평균 {signedKrw(dashboardSummary.avgProfit)}</span>
@@ -1003,9 +1003,9 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       ) : null}
 
       <div className="mt-4 hidden gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-[#e5dccf] bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
+        <div className="rounded-xl border border-zinc-200 bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
           <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#8a8276] dark:text-zinc-500">표시 중</div>
-          <div className="mt-1 text-xl font-black tabular-nums text-[#223127] dark:text-zinc-100">{dashboardSummary.visibleCount.toLocaleString("ko-KR")}건</div>
+          <div className="mt-1 text-xl font-black tabular-nums text-zinc-950 dark:text-zinc-100">{dashboardSummary.visibleCount.toLocaleString("ko-KR")}건</div>
           {dashboardSummary.terminalCount > 0 ? (
             <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
               판매완료 {dashboardSummary.terminalCount.toLocaleString("ko-KR")}건 포함
@@ -1213,7 +1213,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       {shouldShowListTools ? (
         <>
-          <details className="mx-3 mt-2 rounded-lg border border-[#e5dccf] bg-white/75 px-2.5 py-1.5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:hidden">
+          <details className="mx-3 mt-2 rounded-lg border border-zinc-200 bg-white/75 px-2.5 py-1.5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:hidden">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[11px] font-black text-[#4f6a52] dark:text-emerald-200 [&::-webkit-details-marker]:hidden">
               <span>검색/정렬</span>
               <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "최신순"} · {viewMode === "grid" ? "카드" : "목록"}</span>
@@ -1223,7 +1223,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
                 placeholder="상품명, PID, 모델명 검색"
-                className="h-10 rounded-lg border border-[#ddd4c7] bg-white px-3 text-xs font-semibold text-[#223127] outline-none transition placeholder:text-[#9a9389] focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                className="h-10 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-950 outline-none transition placeholder:text-[#9a9389] focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
               />
               <div className="grid grid-cols-[minmax(0,1fr)_112px] gap-2">
                 <select
@@ -1232,7 +1232,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                     setPage(1);
                     setSort(event.target.value as RevealSort);
                   }}
-                  className="h-10 rounded-lg border border-[#ddd4c7] bg-white px-2 text-xs font-black text-[#344136] outline-none transition focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                  className="h-10 rounded-lg border border-zinc-200 bg-white px-2 text-xs font-black text-zinc-900 outline-none transition focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
                 >
                   {SORT_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -1240,7 +1240,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                     </option>
                   ))}
                 </select>
-                <div className="grid h-10 grid-cols-2 rounded-lg border border-[#ddd4c7] bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950">
+                <div className="grid h-10 grid-cols-2 rounded-lg border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950">
                   <button
                     type="button"
                     onClick={() => setViewMode("grid")}
@@ -1264,7 +1264,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                       type="button"
                       onClick={() => setSelectMode(true)}
                       disabled={items.length === 0}
-                      className="rounded-full border border-[#ddd4c7] bg-white px-3 py-1 text-[11px] font-bold text-[#344136] hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                      className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-bold text-zinc-900 hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
                     >
                       선택
                     </button>
@@ -1295,7 +1295,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="상품명, PID, 모델명 검색"
-              className="h-11 rounded-xl border border-[#ddd4c7] bg-white px-3 text-sm font-semibold text-[#223127] outline-none transition placeholder:text-[#9a9389] focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-950 outline-none transition placeholder:text-[#9a9389] focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
             />
             <select
               value={sort}
@@ -1303,7 +1303,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 setPage(1);
                 setSort(event.target.value as RevealSort);
               }}
-              className="h-11 rounded-xl border border-[#ddd4c7] bg-white px-3 text-sm font-black text-[#344136] outline-none transition focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-black text-zinc-900 outline-none transition focus:border-[var(--brand-accent)] focus:ring-2 focus:ring-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -1311,7 +1311,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 </option>
               ))}
             </select>
-            <div className="grid h-11 grid-cols-2 rounded-xl border border-[#ddd4c7] bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950">
+            <div className="grid h-11 grid-cols-2 rounded-xl border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950">
               <button
                 type="button"
                 onClick={() => setViewMode("grid")}
@@ -1332,7 +1332,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       ) : null}
 
       {!loading && total > 0 ? (
-        <div className="mx-3 mt-3 flex items-center justify-between gap-2 text-xs text-[#6b7269] dark:text-zinc-400 sm:mx-0">
+        <div className="mx-3 mt-3 flex items-center justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400 sm:mx-0">
           <div>
             {firstIndex.toLocaleString("ko-KR")}~{lastIndex.toLocaleString("ko-KR")} / {total.toLocaleString("ko-KR")}개
           </div>
@@ -1348,8 +1348,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
               key={`skeleton-${i}`}
               className={
                 viewMode === "grid"
-                  ? "grid animate-pulse grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b border-[#e5dccf] bg-transparent px-3 py-3 dark:border-zinc-800 sm:grid-cols-[64px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-[#fffdf9] sm:p-2 dark:sm:bg-zinc-950/40"
-                  : "grid animate-pulse grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b border-[#e5dccf] bg-transparent px-3 py-3 dark:border-zinc-800 sm:grid-cols-[56px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-[#fffdf9] sm:p-2 dark:sm:bg-zinc-950/40"
+                  ? "grid animate-pulse grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b border-zinc-200 bg-transparent px-3 py-3 dark:border-zinc-800 sm:grid-cols-[64px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-white sm:p-2 dark:sm:bg-zinc-950/40"
+                  : "grid animate-pulse grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b border-zinc-200 bg-transparent px-3 py-3 dark:border-zinc-800 sm:grid-cols-[56px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-white sm:p-2 dark:sm:bg-zinc-950/40"
               }
               aria-hidden
             >
@@ -1460,8 +1460,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             aria-label={`${item.name} 상세 보기`}
             className={`relative ${
               viewMode === "grid"
-                ? "grid grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b bg-transparent px-3 py-3 transition dark:bg-transparent sm:grid-cols-[76px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-[#fffdf9] sm:p-2.5 dark:sm:bg-zinc-950/40"
-                : "grid grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b bg-transparent px-3 py-3 transition dark:bg-transparent sm:grid-cols-[64px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-[#fffdf9] sm:p-2.5 dark:sm:bg-zinc-950/40"
+                ? "grid grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b bg-transparent px-3 py-3 transition dark:bg-transparent sm:grid-cols-[76px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-white sm:p-2.5 dark:sm:bg-zinc-950/40"
+                : "grid grid-cols-[118px_minmax(0,1fr)] gap-3 border-x-0 border-t-0 border-b bg-transparent px-3 py-3 transition dark:bg-transparent sm:grid-cols-[64px_minmax(0,1fr)] sm:rounded-xl sm:border sm:bg-white sm:p-2.5 dark:sm:bg-zinc-950/40"
             } ${
               selectMode && selectedPids.has(item.pid)
                 ? "border-rose-400 bg-rose-50 ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/30"
@@ -1469,7 +1469,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   ? "border-rose-400 bg-rose-50/70 shadow-[0_0_0_4px_rgba(244,63,94,0.12),0_18px_38px_rgba(244,63,94,0.18)] ring-2 ring-rose-300 dark:border-rose-700 dark:bg-rose-950/20 dark:ring-rose-700/70"
                 : isTerminal
                   ? "border-zinc-200 bg-zinc-50/70 opacity-75 dark:border-zinc-800 dark:bg-zinc-900/40"
-                  : "border-[#e5dccf] hover:border-[#b9c9b9] hover:bg-[var(--brand-accent-soft)] focus-visible:border-[#8ca88c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]/30 dark:border-zinc-800 dark:hover:border-emerald-900 dark:hover:bg-emerald-950/20"
+                  : "border-zinc-200 hover:border-blue-200 hover:bg-[var(--brand-accent-soft)] focus-visible:border-[#8ca88c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]/30 dark:border-zinc-800 dark:hover:border-emerald-900 dark:hover:bg-emerald-950/20"
             } ${selectMode ? "cursor-pointer" : "cursor-pointer"}`}
           >
             {/* 2026-05-17: 선택 모드 체크박스 */}
@@ -1484,7 +1484,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 />
               </div>
             )}
-            <div className="relative aspect-square overflow-hidden rounded-xl bg-[#f1eadf] dark:bg-zinc-800 sm:rounded-lg">
+            <div className="relative aspect-square overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800 sm:rounded-lg">
               <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
               {item.thumbnailUrl ? (
                 <Image
@@ -1499,7 +1499,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             </div>
             <div className="min-w-0 self-center">
               <div className="flex items-start gap-1.5">
-                <div className="line-clamp-2 min-w-0 flex-1 text-[16px] font-black leading-[1.25] text-[#223127] dark:text-zinc-100 sm:truncate sm:text-[15px] sm:leading-5">{item.name}</div>
+                <div className="line-clamp-2 min-w-0 flex-1 text-[16px] font-black leading-[1.25] text-zinc-950 dark:text-zinc-100 sm:truncate sm:text-[15px] sm:leading-5">{item.name}</div>
                 {isNewlyRevealed ? (
                   <span className="shrink-0 rounded-full bg-rose-600 px-1.5 py-0.5 text-[10px] font-black text-white shadow-sm">
                     방금 추가
@@ -1511,13 +1511,13 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
               {/* Wave 246 (2026-05-19): medianPrice 0/null 시 "시세 확인중" 명시 — "번개 S급 시세 0원" 미스리딩 차단.
                  terminal 카드는 별도 tombstone 으로 가서 여기 안 옴. */}
               <div className={`mt-1 flex flex-wrap items-baseline gap-x-2 text-[11px] font-semibold ${
-                isTerminal ? "text-zinc-400 line-through decoration-zinc-400 dark:text-zinc-500" : "text-[#6b7269] dark:text-zinc-400"
+                isTerminal ? "text-zinc-400 line-through decoration-zinc-400 dark:text-zinc-500" : "text-zinc-500 dark:text-zinc-400"
               }`}>
-                <span>매입 <span className={`font-black tabular-nums ${isTerminal ? "" : "text-[#223127] dark:text-zinc-100"}`}>{krw(item.price)}</span></span>
+                <span>매입 <span className={`font-black tabular-nums ${isTerminal ? "" : "text-zinc-950 dark:text-zinc-100"}`}>{krw(item.price)}</span></span>
                 {item.marketBasis?.medianPrice && item.marketBasis.medianPrice > 0 ? (
                   <>
                     <span className="text-zinc-300 dark:text-zinc-600 no-underline">·</span>
-                    <span>시세 <span className={`font-black tabular-nums ${isTerminal ? "" : "text-[#223127] dark:text-zinc-100"}`}>{krw(item.marketBasis.medianPrice)}</span></span>
+                    <span>시세 <span className={`font-black tabular-nums ${isTerminal ? "" : "text-zinc-950 dark:text-zinc-100"}`}>{krw(item.marketBasis.medianPrice)}</span></span>
                     {/* Wave 207: only show Danawa when the reference anchor was actually used. */}
                     {!isTerminal && item.marketBasis.priceSource === "reference" ? (
                       <span className="ml-1" title="다나와 새 가격 anchor — 이 매물 미개봉">
@@ -1579,7 +1579,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                         {signedProfitRange(displayProfitMin, displayProfitMax)}
                       </span>
                       {pct != null ? (
-                        <span className="rounded-full bg-[#f7f3ea] px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-[#59665c] ring-1 ring-[#e7dece] dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700 sm:px-2 sm:text-xs">
+                        <span className="rounded-full bg-zinc-50 px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-zinc-600 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700 sm:px-2 sm:text-xs">
                           {pct >= 0 ? "+" : ""}{pct}%
                         </span>
                       ) : null}
@@ -1597,23 +1597,20 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                           currentProfit: displayProfitAvg,
                         });
                         if (!guidance) return null;
-                        const cls = (guidance.verdict === "great" || guidance.verdict === "good")
+                        // Wave launch-3: 단일 출처 VERDICT_LABELS 사용 (3 화면 통일).
+                        const label = verdictUiLabel(guidance.verdict);
+                        if (!label) return null;
+                        const cls = label.tone === "em"
                           ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/60"
-                          : "bg-amber-50 text-amber-800 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/60";
-                        // 카드는 공간 좁아서 짧게: verdict label만
-                        const shortLabel = guidance.verdict === "great"
-                          ? "충분"
-                          : guidance.verdict === "good"
-                            ? "괜찮음"
-                            : guidance.verdict === "fair"
-                              ? "협상 권장"
-                              : "협상 필수";
+                          : label.tone === "amber"
+                            ? "bg-amber-50 text-amber-800 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/60"
+                            : "bg-rose-50 text-rose-800 ring-1 ring-rose-200 dark:bg-rose-950/30 dark:text-rose-200 dark:ring-rose-900/60";
                         return (
                           <span
                             className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold sm:px-2 ${cls}`}
                             title={`차익 +${signedProfitRange(guidance.currentProfit, guidance.currentProfit).replace("+", "")} · 협상 시도 ${signedProfitRange(guidance.negotiationTarget, guidance.negotiationTarget).replace("+", "")} 이하 / ${signedProfitRange(guidance.breakEven, guidance.breakEven).replace("+", "")} 이상에 사면 손해`}
                           >
-                            {shortLabel}
+                            {label.card}
                           </span>
                         );
                       })()}
@@ -1624,7 +1621,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
               {isTransactionFeedbackType(item.transactionFeedbackType) || isReportFeedbackType(item.reportFeedbackType) ? (
                 <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5">
                   {isTransactionFeedbackType(item.transactionFeedbackType) ? (
-                    <span className="rounded-full bg-[#eef6eb] px-2 py-0.5 text-[10px] font-black text-[#3f5e45] ring-1 ring-[#d8e8d5] dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/50">
+                    <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-black text-[#3f5e45] ring-1 ring-[#d8e8d5] dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/50">
                       거래 상태 · {TRANSACTION_FEEDBACK_LABEL[item.transactionFeedbackType]}
                     </span>
                   ) : null}
@@ -1643,7 +1640,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       {/* Wave 303 (2026-05-19): terminal 기록 안내는 첫 화면 CTA를 밀지 않도록 목록 아래 보조 컨트롤로만 둔다. */}
       {dashboardSummary.terminalCount > 0 ? (
-        <div className="mx-3 mt-3 flex items-center justify-between gap-2 border-t border-[#e5dccf] pt-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 sm:mx-0">
+        <div className="mx-3 mt-3 flex items-center justify-between gap-2 border-t border-zinc-200 pt-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 sm:mx-0">
           <span className="min-w-0 truncate">
             {hideTerminal
               ? `판매완료 기록 ${dashboardSummary.terminalCount.toLocaleString("ko-KR")}건 숨김`
@@ -1697,7 +1694,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
 
       {!loading && total === 0 ? (
         query ? (
-          <div className="mx-3 mt-4 rounded-xl bg-[#fffaf1] p-4 text-center text-xs text-[#6b7269] dark:bg-zinc-950 dark:text-zinc-400 sm:mx-0">
+          <div className="mx-3 mt-4 rounded-xl bg-white p-4 text-center text-xs text-zinc-500 dark:bg-zinc-950 dark:text-zinc-400 sm:mx-0">
             검색 결과가 없습니다.
           </div>
         ) : welcomePending ? (
@@ -1705,26 +1702,26 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           // "갑자기 스켈레톤 없어지고 작은 글씨 보여서 당황" → 페이지 로딩 스켈레톤과
           // 자연스럽게 이어지게 콘텐츠 영역도 스켈레톤 + 가시적 spinner + 안내.
           <div className="mt-6 space-y-5">
-            <div className="rounded-2xl border border-[#e2d9cb] bg-[#fffaf1] px-5 py-5 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-              <div className="inline-flex items-center gap-2.5 text-base font-black text-[#223127] dark:text-zinc-100 sm:text-lg">
-                <svg className="h-5 w-5 animate-spin text-[#5d735f] dark:text-emerald-400" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+            <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-5 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="inline-flex items-center gap-2.5 text-base font-black text-zinc-950 dark:text-zinc-100 sm:text-lg">
+                <svg className="h-5 w-5 animate-spin text-[#3182f6] dark:text-emerald-400" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
                 가입 환영 매물 준비 중
               </div>
-              <p className="mt-2 text-sm font-semibold leading-6 text-[#5a6658] dark:text-zinc-400">
+              <p className="mt-2 text-sm font-semibold leading-6 text-zinc-600 dark:text-zinc-400">
                 첫 추천 매물 4개를 골라서 가져오고 있어요. 잠시만 기다려주세요.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-48 animate-pulse rounded-2xl bg-[#f1eadf] dark:bg-zinc-800/60" />
+                <div key={i} className="h-48 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800/60" />
               ))}
             </div>
           </div>
         ) : (
-          <div className="mx-3 mt-4 rounded-xl bg-[#fffaf1] p-4 text-center text-xs text-[#6b7269] dark:bg-zinc-950 dark:text-zinc-400 sm:mx-0">
+          <div className="mx-3 mt-4 rounded-xl bg-white p-4 text-center text-xs text-zinc-500 dark:bg-zinc-950 dark:text-zinc-400 sm:mx-0">
             아직 본 추천 상품이 없습니다.
           </div>
         )

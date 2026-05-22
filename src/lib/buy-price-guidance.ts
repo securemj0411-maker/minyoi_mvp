@@ -31,6 +31,28 @@ export type BuyPriceGuidance = {
 
 export const DANGER_PROFIT_THRESHOLD = 10000;
 
+// Wave launch-3 (사용자 launch audit CRITICAL #3 — 메모리 룰 3 화면 일관성 위반 fix):
+// 단일 출처 verdict 카피 — admin-pool-browser / user-reveal-dashboard / pack-reveal-modal
+// 셋 다 다른 단어 ("차익 충분" vs "충분" vs "매입 OK") 쓰던 거 통일.
+// card = 짧은 chip 라벨 (verdict chip / 카드 우측 상단), short = 더 좁은 공간 (모바일).
+export type VerdictUiLabel = {
+  card: string;
+  short: string;
+  tone: "em" | "amber" | "rose";
+};
+
+export const VERDICT_LABELS: Record<BuyPriceVerdict, VerdictUiLabel> = {
+  great: { card: "매입 OK", short: "매입 OK", tone: "em" },
+  good:  { card: "매입 OK", short: "매입 OK", tone: "em" },
+  fair:  { card: "협상 권장", short: "협상", tone: "amber" },
+  tight: { card: "협상 필수", short: "협상!", tone: "rose" },
+};
+
+export function verdictUiLabel(verdict: BuyPriceVerdict | null | undefined): VerdictUiLabel | null {
+  if (!verdict) return null;
+  return VERDICT_LABELS[verdict] ?? null;
+}
+
 export function buyPriceGuidance(input: BuyPriceGuidanceInput): BuyPriceGuidance | null {
   const { price, currentProfit } = input;
   if (price == null || !Number.isFinite(price) || price <= 0) return null;

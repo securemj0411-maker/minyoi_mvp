@@ -28,7 +28,7 @@ import {
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
-import { buyPriceGuidance } from "@/lib/buy-price-guidance";
+import { buyPriceGuidance, verdictUiLabel } from "@/lib/buy-price-guidance";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import {
   counterfeitChecklistFor,
@@ -5299,16 +5299,19 @@ function RevealCardItem({
   const verdictGuidance = !isMarketInvalidated
     ? buyPriceGuidance({ price: card.price, currentProfit: expectedProfitAverage(card) })
     : null;
-  const verdictTier = !verdictGuidance
+  // Wave launch-3: 단일 출처 VERDICT_LABELS 사용 (admin/user/modal 3 화면 통일).
+  const verdictUi = verdictGuidance ? verdictUiLabel(verdictGuidance.verdict) : null;
+  const verdictTier = !verdictUi
     ? null
-    : verdictGuidance.verdict === "great" || verdictGuidance.verdict === "good"
-      ? {
-          label: hasHighCounterfeitRisk ? "조건부 매입 OK" : "매입 OK",
-          cls: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200",
-        }
-      : verdictGuidance.verdict === "fair"
-        ? { label: "협상 권장", cls: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200" }
-        : { label: "협상 필수", cls: "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200" };
+    : {
+        // counterfeit 위험 시 "조건부" 접두 (em verdict 한정)
+        label: hasHighCounterfeitRisk && verdictUi.tone === "em" ? `조건부 ${verdictUi.card}` : verdictUi.card,
+        cls: verdictUi.tone === "em"
+          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+          : verdictUi.tone === "amber"
+            ? "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+            : "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200",
+      };
   const profitCardClass = isMarketInvalidated
     ? "border-rose-200 bg-gradient-to-br from-rose-50 to-rose-100 shadow-[0_10px_28px_rgba(45,51,42,0.08)] dark:border-rose-900/50 dark:from-rose-950/30 dark:to-zinc-950 dark:shadow-none"
     : "border-emerald-200 bg-gradient-to-br from-[#f3faf5] to-[#e6f4ec] shadow-[0_10px_28px_rgba(45,51,42,0.08)] dark:border-emerald-900/50 dark:from-emerald-950/22 dark:to-zinc-950 dark:shadow-none";

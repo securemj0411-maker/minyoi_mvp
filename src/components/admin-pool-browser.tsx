@@ -14,7 +14,7 @@ import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
 import { DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { CATALOG } from "@/lib/catalog";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
-import { buyPriceGuidance } from "@/lib/buy-price-guidance";
+import { buyPriceGuidance, verdictUiLabel } from "@/lib/buy-price-guidance";
 
 type PoolItem = {
   pid: number;
@@ -251,12 +251,12 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
 
   return (
     <section className="space-y-4 px-3 py-4 sm:px-4 sm:py-6 lg:px-8 lg:py-8">
-      <div className="rounded-2xl border border-[#e2d9cb] bg-[#fffaf6] p-5 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">Admin · candidate_pool</p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight text-[#223127] dark:text-white">운영자 풀 매물 검증</h1>
-            <p className="mt-1 text-xs text-[#687366] dark:text-zinc-400">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-emerald-400">Admin · candidate_pool</p>
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-zinc-950 dark:text-white">운영자 풀 매물 검증</h1>
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
               팩 결제 없이 candidate_pool 전체 매물 페이지네이션 조회. 카드별 시세 근거 디버그 가능.
             </p>
           </div>
@@ -501,7 +501,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="flex animate-pulse gap-3 rounded-lg border border-[#e3ddd2] bg-[#fffdf9] p-3 dark:border-zinc-800 dark:bg-zinc-900"
+              className="flex animate-pulse gap-3 rounded-lg border border-[#e3ddd2] bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900"
             >
               <div className="h-[100px] w-[100px] shrink-0 rounded bg-zinc-200 dark:bg-zinc-800" />
               <div className="min-w-0 flex-1 space-y-2">
@@ -521,7 +521,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
             {data.items.map((item) => (
               <article
                 key={item.pid}
-                className={`relative rounded-lg border bg-[#fffdf9] p-3 shadow-sm dark:bg-zinc-900 ${
+                className={`relative rounded-lg border bg-white p-3 shadow-sm dark:bg-zinc-900 ${
                   item.hasComment
                     ? "border-emerald-400 ring-2 ring-emerald-200 dark:border-emerald-700 dark:ring-emerald-900/40"
                     : "border-[#e3ddd2] dark:border-zinc-800"
@@ -573,25 +573,23 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       <span>· 신뢰 {(item.confidence * 100).toFixed(0)}%</span>
                       {/* Wave 329: 헤드라인 차익(expectedProfitMin/Max 평균)을 그대로 사용 — 가이드와 일치 */}
                       {(() => {
+                        // Wave launch-3: 단일 출처 VERDICT_LABELS 사용 (3 화면 통일).
                         const avgProfit = Math.round((item.expectedProfitMin + item.expectedProfitMax) / 2);
                         const guidance = buyPriceGuidance({ price: item.price, currentProfit: avgProfit });
                         if (!guidance) return null;
-                        const cls = (guidance.verdict === "great" || guidance.verdict === "good")
+                        const label = verdictUiLabel(guidance.verdict);
+                        if (!label) return null;
+                        const cls = label.tone === "em"
                           ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
-                          : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200";
-                        const shortLabel = guidance.verdict === "great"
-                          ? "차익 충분"
-                          : guidance.verdict === "good"
-                            ? "차익 OK"
-                            : guidance.verdict === "fair"
-                              ? "협상 권장"
-                              : "차익 박함";
+                          : label.tone === "amber"
+                            ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
+                            : "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200";
                         return (
                           <span
                             className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${cls}`}
                             title={`차익 +${krw(guidance.currentProfit)} · 협상 시도 ${krw(guidance.negotiationTarget)} / ${krw(guidance.breakEven)} 이상에 사면 손해`}
                           >
-                            {shortLabel}
+                            {label.card}
                           </span>
                         );
                       })()}
