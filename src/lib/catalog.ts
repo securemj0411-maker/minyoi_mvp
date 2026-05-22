@@ -7011,6 +7011,38 @@ export const CATALOG: Sku[] = [
   // production 14d sweep 검증 — 매물량 ≥ 3건 SKU만 catalog 박음.
   // 스투시 Nike collab 109건 (전체 195건 중 56%) → narrow 필수.
   // Polo:
+  // Wave 712a (2026-05-23) 신설 — Big Pony Pique 193건/주 black hole 회복.
+  //   bias-free 검증: catalog 룰 충돌로 어떤 SKU에도 안 잡힘.
+  //   broad mustNotContain "빅포니, big pony, 포니" + pony-tee mustNotContain "카라티" → black hole.
+  //   별 narrow SKU로 빅포니 카라티/PK 매물 직접 catch.
+  {
+    id: "clothing-polo-bigpony-pique",
+    brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_bigpony_pique",
+    modelName: "Polo Big Pony Pique Polo Shirt (카라티)",
+    aliases: ["Polo Big Pony", "폴로 빅포니", "Big Pony Polo"],
+    mustContain: [
+      ["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"],
+      ["빅포니", "big pony", "빅 포니", "큰 포니", "큰포니"],
+      ["피케", "pique", "pk ", "pk티", "pk 티", "카라티", "카라 티", "polo shirt", "폴로 셔츠"],
+    ],
+    mustNotContain: [
+      "키즈", "kids", "여아", "남아", "토들러", "복각", "rep ", "replica", "fake",
+      "RRL", "purple label", "퍼플라벨", "polo bear", "베어",
+      // 다른 brand polo 차단
+      "라코스테", "lacoste", "헤지스", "hazzys", "타미힐피거", "tommy hilfiger",
+      "j.lindeberg", "j lindeberg", "제이린드버그", "마크앤로나", "mark&lona", "마크 앤 로나",
+      "waac", "왁 골프", "디스커버리", "discovery expedition", "u.s. polo", "us polo", "미국폴로협회",
+      "무신사 스탠다드", "무신사스탠다드", "탑텐", "topten", "닥스", "daks",
+      "내셔널지오그래픽", "national geographic", "natgeo",
+      "fendi", "펜디", "dior", "디올", "gucci", "구찌", "prada", "프라다", "burberry", "버버리",
+      // 가품 시그널
+      "미러급", "s급", "sa급", "n급", "1:1", "탭체",
+      // RLX 차단
+      "rlx", "rlx 골프", "rlx polo",
+    ],
+    msrpKrw: 159000, released: 2015,
+    defaultProductType: "polo_shirt",
+  },
   {
     id: "clothing-polo-pique-classic",
     brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_pique_classic",
@@ -7999,6 +8031,8 @@ export const CATALOG: Sku[] = [
     mustContain: [["stussy", "스투시", "stüssy"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "8 ball", "8ball", "world tour", "월드투어", "stock", "스톡", "script", "스크립트"]],
     mustNotContain: ["nike", "나이키", "dior", "디올", "birkenstock", "버켄스탁", "carhartt", "칼하트", "키즈", "kids", "후드", "hoodie", "맨투맨", "긴팔", "복각", "rep ", "replica",
       "자켓", "재킷", "jacket", "코치자켓", "coach jacket", "쉘 자켓", "shell jacket", "바람막이", "윈드브레이커",
+      // Wave 712a (2026-05-23) HOTFIX: bias-free 검증 — STOCK WATER SHORT 5건/월드투어 셔츠 2건 false positive 차단.
+      "워터 쇼츠", "water short", "비치팬츠", "워터쇼츠", "비치 팬츠", "쇼츠", "shorts", "반바지", "셔츠", "shirt",
       // Wave 593c: 90s/올드 빈티지 + 콜라보 차단 (basic tee 시세 정리).
       "90s ", "90's ", "90s stussy", "올드 스투시", "olds stussy", "old stussy", "빈티지 올드", "킹 사이즈 크라운", "킹사이즈 크라운", "kingsize crown",
       "샤넬", "chanel", "칼 라거펠트", "karl lagerfeld",
@@ -8078,12 +8112,18 @@ export const CATALOG: Sku[] = [
   },
   {
     // Wave 199 신규 — Stüssy 가방 broad (크로스백 / 토트백 / 30주년 / 성조기 / 에코백 / 파우치)
+    // Wave 712a (2026-05-23) HOTFIX: bias-free 검증 — 정확도 52% (22건 오분류).
+    //   토트/원통/30주년 매물이 시세 다른데 한 SKU에 묶임. crossbody narrow로 좁힘.
+    //   토트/30주년/원통은 broad SKU (bag-stussy-broad)로 fallback 또는 별도 narrow 신설 권고.
     id: "bag-stussy-crossbody",
     brand: "Stussy", category: "bag", laneKey: "stussy_crossbody",
-    modelName: "Stüssy Crossbody / Tote / 30주년",
-    aliases: ["Stussy Crossbody", "스투시 크로스백", "Stussy Tote", "스투시 토트", "스투시 30주년", "Stussy 30th"],
-    mustContain: [["stussy", "스투시", "stüssy"], ["크로스백", "crossbody", "토트백", "tote", "30주년", "30th", "에코백", "성조기", "캔버스 파우치", "원통백", "스포츠백", "더플", "duffel"]],
-    mustNotContain: ["nike", "나이키", "dior", "디올", "키즈", "kids", "복각", "rep ", "replica", "waist", "웨이스트"],
+    modelName: "Stüssy Crossbody / Sling / Shoulder",
+    aliases: ["Stussy Crossbody", "스투시 크로스백", "Stussy Sling"],
+    mustContain: [["stussy", "스투시", "stüssy"], ["크로스백", "crossbody", "cross body", "숄더백", "shoulder", "sling", "슬링", "메신저", "messenger"]],
+    mustNotContain: ["nike", "나이키", "dior", "디올", "키즈", "kids", "복각", "rep ", "replica", "waist", "웨이스트",
+      // Wave 712a: 토트/30주년/원통/스포츠백/잡지부록 미니백 차단 (다른 시세군).
+      "토트백", "tote", "원통", "스포츠백", "더플", "duffel", "30주년", "30th", "잡지부록", "미니백",
+      "에코백", "성조기", "캔버스 파우치"],
     msrpKrw: 89000, released: 2018,
   },
   {
@@ -10209,6 +10249,25 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 69000, released: 2018,
   },
+  // Wave 712a (2026-05-23) 신설 — Synchilla / Snap-T 162건/주 black hole 회복.
+  //   bias-free 검증: Wave 654가 broad에서 신칠라/snap-t 차단했지만 fallback narrow 안 박음 → 131건 retro-x 잘못 매칭 + 30건 drop.
+  {
+    id: "clothing-patagonia-synchilla",
+    brand: "Patagonia", category: "clothing", laneKey: "patagonia_synchilla",
+    modelName: "Patagonia Synchilla / Snap-T Fleece Pullover",
+    aliases: ["Patagonia Synchilla", "파타고니아 신칠라", "Patagonia Snap-T", "스냅티", "Snap T"],
+    mustContain: [["patagonia", "파타고니아"], ["synchilla", "신칠라", "snap-t", "snap t", "스냅티", "스냅 t", "스냅 풀오버", "snap pullover", "신찰라", "싱칠라", "신질라", "신키라"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      "retro x", "레트로 엑스", "레트로엑스", "classic retro",
+      "deep pile", "딥파일", "레트로파일", "레트로 파일", "retro pile",
+      // 40주년/50주년 한정 차단
+      "40주년", "50주년", "anniversary", "레거시", "legacy", "sacajawea",
+      // 셀럽 outlier 차단
+      "gd", "지디", "지드래곤", "안소희", "손나은",
+      // Nike collab 차단 (의류 단일)
+      "나이키", "nike", "머큐리얼", "mercurial", "컨버스", "converse", "airmax", "에어맥스"],
+    msrpKrw: 365000, released: 1985,
+  },
   // 파타고니아 — 매물 17건, faved 19, outdoor
   {
     id: "clothing-patagonia",
@@ -10314,9 +10373,11 @@ export const CATALOG: Sku[] = [
     id: "clothing-mlb-cap",
     brand: "MLB", category: "clothing", laneKey: "mlb_apparel",
     modelName: "MLB Cap (broad)",
-    aliases: ["MLB Cap", "MLB 모자"],
+    aliases: ["MLB Cap", "MLB 모자", "엠엘비 모자"],
     // Wave 492: generic MLB apparel now has clothing-mlb-apparel-broad; keep this lane cap-only.
-    mustContain: [["mlb"], ["모자", "cap", "캡", "볼캡", "ballcap"]],
+    // Wave 712a (2026-05-23) HOTFIX: bias-free 검증 — "엠엘비 모자" 한글 매물 47건/주 NULL.
+    //   mustContain `["mlb"]` only → 한국 표기 매물 catch 못함. apparel-broad는 이미 박혀있는데 cap만 누락.
+    mustContain: [["mlb", "엠엘비"], ["모자", "cap", "캡", "볼캡", "ballcap"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "ml b", "신발", "스니커즈", "양말", "에어팟", "케이스",
       "구찌", "gucci", "무라카미", "murakami", "카이카이", "kaikai", "nike x mlb", "nike × mlb", "나이키 x mlb", "나이키 × mlb"],
     msrpKrw: 49000, released: 2020,
@@ -10806,6 +10867,14 @@ export const CATALOG: Sku[] = [
       "campus", "캠퍼스", "superstar", "슈퍼스타", "spezial", "스페지알",
       // 한정판 차단
       "wales bonner", "웨일스", "웨일즈보너", "웨일즈 보너", "kith", "pharrell", "퍼렐", "sporty rich",
+      // Wave 712a (2026-05-23) HOTFIX: bias-free 검증 spread 31.80x. Thug Club 109건 + SFTM 125건 + Y-3 68건 + FOG 65건 콜라보 trefoil 흡수로 시세 오염.
+      "thug club", "떠그클럽", "떠그 클럽", "팀가이스트", "team geist",
+      "sftm", "송포더뮤트", "송 포 더 뮤트", "song for the mute",
+      "y-3", "y3", "요지", "yohji", "yamamoto", "야마모토",
+      "fear of god", "피어오브갓", "피오갓", "fog ", "에센셜", "essentials", "fg athletics",
+      "raf simons", "라프시몬스", "raf simon",
+      "alexander wang", "알렉산더왕", "alexander 왕",
+      "clot", "에디슨첸", "edison chen",
       // Wave 235 (2026-05-19): Balenciaga × Adidas collab 200만~270만 8건 mismatch 발견 (별도 SKU 또는 차단).
       "balenciaga", "발렌시아가", "demna", "뎀나",
       // Wave 235: Gucci × Adidas Trefoil 자켓 62만 mismatch.
@@ -11709,10 +11778,30 @@ function directSpecificMatch(text: string): Sku | null {
   ) {
     return skuById("clothing-mlb-cap-gucci-collab") ?? null;
   }
+  // Wave 712a (2026-05-23) HOTFIX: Nike × MLB cap self-block 우회 path.
+  //   bias-free 검증 — clothing-mlb-cap-nike-collab mustContain `볼캡` 박혔는데
+  //   CATEGORY_FASHION_NOISE.clothing 의 unconditional 차단에 `볼캡` 포함 → 자기 자신 차단.
+  //   113건/주 Nike × MLB cap NULL. Gucci 패턴 미러로 directSpecificMatch 우회.
+  if (
+    /(?:나이키|nike)/i.test(normalizedText) &&
+    /(?:\bmlb\b|엠엘비)/i.test(normalizedText) &&
+    /(?:캡|모자|볼캡|cap|ball\s*cap|ballcap)/i.test(normalizedText) &&
+    !/(?:유니폼|uniform|져지|jersey|베이퍼리미티드|vapor\s*limited|구찌|gucci|무라카미|murakami|지갑|wallet|벨트|belt|가방|bag|백팩|backpack|시계|watch|운동화|스니커즈|sneaker)/i.test(normalizedText)
+  ) {
+    return skuById("clothing-mlb-cap-nike-collab") ?? null;
+  }
+  if (
+    /(?:무라카미|murakami|카이카이|kaikai)/i.test(normalizedText) &&
+    /(?:\bmlb\b|엠엘비)/i.test(normalizedText) &&
+    /(?:캡|모자|볼캡|cap|ball\s*cap|ballcap|9twenty|뉴에라)/i.test(normalizedText) &&
+    !/(?:야구공|baseball|유니폼|uniform|저지|jersey|토트|tote|백팩|backpack|지갑|wallet|카드|card|탑스|topps|도쿄시리즈|tokyo\s*series|구찌|gucci|운동화|스니커즈|sneaker)/i.test(normalizedText)
+  ) {
+    return skuById("clothing-mlb-cap-murakami-collab") ?? null;
+  }
   if (
     /(?:\bmlb\b|엠엘비)/i.test(normalizedText) &&
     /(?:캡|모자|볼캡|cap|ball\s*cap|ballcap)/i.test(normalizedText) &&
-    !/(?:구찌|gucci|무라카미|murakami|카이카이|kaikai|nike\s*x\s*mlb|나이키\s*(?:x|×)\s*mlb|지갑|wallet|반지갑|장지갑|벨트|belt|가방|bag|백팩|backpack|시계|watch|운동화|스니커즈|sneaker)/i.test(normalizedText)
+    !/(?:구찌|gucci|무라카미|murakami|카이카이|kaikai|nike\s*x\s*mlb|나이키\s*(?:x|×)\s*mlb|나이키|nike|지갑|wallet|반지갑|장지갑|벨트|belt|가방|bag|백팩|backpack|시계|watch|운동화|스니커즈|sneaker)/i.test(normalizedText)
   ) {
     return skuById("clothing-mlb-cap") ?? null;
   }

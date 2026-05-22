@@ -2522,7 +2522,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
   bag: "wave92-bag-v23",
   // Wave 690 (2026-05-22): clothing v44 — stussy_nike_collab release (셋업/월드투어 차단, 30~50만 가격대 안정).
-  clothing: "wave216-clothing-v44",
+  // Wave 712a (2026-05-23): clothing v45 — bias-free 14 brand 검증 hotfix. MLB cap 엠엘비 alias + Nike/Murakami directSpecificMatch / Stussy crossbody narrow split + basic-tee shorts 차단 / Adidas trefoil Thug+SFTM+Y3+FOG+Raf 콜라보 차단 / Patagonia Synchilla 신설 (162건 회복) / Polo Big Pony Pique 신설 (193건 black hole 회복).
+  clothing: "wave216-clothing-v45",
   bike: "wave92-fashion-mobility-v7",
   // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
   // full-unit pollution for these active pool categories.

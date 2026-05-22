@@ -483,6 +483,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   lego_21054_white_house: { status: "ready", label: "LEGO 21054 White House", note: "Wave 188" },
   // Wave 198 (2026-05-18): 의류 narrow lane 19개 — Polo / TNF / Stüssy 시그니처 + collab.
   polo_pique_classic: { status: "ready", label: "Polo Pique Classic Fit", note: "Wave 198" },
+  polo_bigpony_pique: { status: "ready", label: "Polo Big Pony Pique (카라티)", note: "Wave 712a — bias-free 검증으로 193건/주 black hole 발견. 빅포니 카라티 + pique mustContain 강제로 catch." },
   polo_pony_tee: { status: "ready", label: "Polo Pony Logo T-Shirt", note: "Wave 198" },
   polo_oxford_shirt: { status: "ready", label: "Polo Oxford Shirt (Standard)", note: "Wave 198" },
   polo_bear_collab: { status: "ready", label: "Polo Bear Print (한정)", note: "Wave 682 release — Wave 572/580/682 누적 차단: 양말/파자마/이불/잠옷/보이즈/걸즈/패밀리 후디/큐알신형(가품)/y2k 빈티지 명시." },
@@ -730,6 +731,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   arcteryx_broad: { status: "ready", label: "Arc'teryx (broad fallback)", note: "Wave 688 release — narrow 5개 ready, 특수 라인 (LEAF/System A/Fission/Solano/Gen 2.1) cross-product 차단." },
   fila_apparel: { status: "ready", label: "Fila Apparel", note: "Wave 689 release — 6건 spread 3.5x (2~7만), 가격대 안정." },
   patagonia_apparel: { status: "ready", label: "Patagonia (broad fallback)", note: "Wave 687 release — broad fallback (narrow retro_x/shell/deep_pile/down 다 ready), 40주년/레거시/빈티지(80s/90s/00s)/US Made/딥파일 차단." },
+  patagonia_synchilla: { status: "ready", label: "Patagonia Synchilla / Snap-T (시그니처 플리스)", note: "Wave 712a — bias-free 검증으로 162건/주 시그니처 모델. Wave 654가 broad에서 차단만 하고 narrow 안 박아 30~131건 잘못 매칭됐던 black hole 해결." },
   // Wave 219 (2026-05-19): Patagonia 3분리 — Retro X 199K / Down 290K / Shell 199K
   patagonia_retro_x: { status: "ready", label: "Patagonia Retro X (단독, 신칠라 분리됨)", note: "Wave 678 release — Wave 654에서 mustContain narrow + 신칠라/스냅T/캔버스 fleece 명시 차단. LATEST v32 spread <4x." },
   patagonia_down: { status: "ready", label: "Patagonia Down (Nano Puff)", note: "Wave 687 release — 40주년 레거시/80s 빈티지/US Made/00s Fitz Roy 차단." },
