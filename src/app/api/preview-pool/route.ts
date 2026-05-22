@@ -25,6 +25,36 @@ const TIER_A_MAX_KRW = 100_000;
 const TIER_A_COUNT = 2;
 const TIER_B_MAX_KRW = 300_000;
 const TIER_B_COUNT = 3;
+const PREVIEW_POOL_SCAN_LIMIT = 500;
+const HIGH_PROFIT_ELECTRONICS_ROI = 0.4;
+const HIGH_PROFIT_WEAK_SIGNAL_ROI = 0.45;
+const HIGH_PROFIT_DEFAULT_ROI = 0.6;
+const HIGH_PROFIT_MARKETPLACE_VARIANCE_ROI = 0.7;
+const HIGH_PROFIT_ELECTRONICS_CATEGORIES = new Set([
+  "earphone",
+  "smartwatch",
+  "smartphone",
+  "tablet",
+  "laptop",
+  "monitor",
+  "speaker",
+  "camera",
+  "game_console",
+  "desktop",
+  "home_appliance",
+  "small_appliance",
+  "watch",
+  "drone",
+  "kickboard",
+]);
+const HIGH_PROFIT_MARKETPLACE_VARIANCE_CATEGORIES = new Set([
+  "shoe",
+  "bag",
+  "clothing",
+  "perfume",
+  "sport_golf",
+  "bike",
+]);
 
 // 2026-05-17: 진짜 thumbnail 서버 사이드 blur 처리.
 // 원본 URL 노출 X → blur 된 base64 data URL 만 클라이언트 전송. DevTools 우회 차단.
@@ -87,12 +117,40 @@ type RawListingMeta = {
   shop_review_count: number | null;
 };
 
+function previewProfitRoi(row: PoolRow, raw: RawRow | undefined): number | null {
+  const buyBase = Math.max(Number(raw?.price ?? 0), 1);
+  const avgProfit = (Number(row.expected_profit_min ?? 0) + Number(row.expected_profit_max ?? 0)) / 2;
+  if (!Number.isFinite(buyBase) || !Number.isFinite(avgProfit) || avgProfit <= 0) return null;
+  const roi = avgProfit / buyBase;
+  return Number.isFinite(roi) ? roi : null;
+}
+
+function isPreviewHighProfitAnomaly(row: PoolRow, raw: RawRow | undefined): boolean {
+  const roi = previewProfitRoi(row, raw);
+  if (roi == null || roi < HIGH_PROFIT_ELECTRONICS_ROI) return false;
+
+  const category = row.category ?? "";
+  if (HIGH_PROFIT_ELECTRONICS_CATEGORIES.has(category) && roi >= HIGH_PROFIT_ELECTRONICS_ROI) return true;
+
+  const weakSignals =
+    row.confidence == null ||
+    Number(row.confidence) < 0.85 ||
+    !row.condition_class ||
+    row.comparable_key?.split("|").includes("unknown_condition");
+  if (weakSignals && roi >= HIGH_PROFIT_WEAK_SIGNAL_ROI) return true;
+
+  const threshold = HIGH_PROFIT_MARKETPLACE_VARIANCE_CATEGORIES.has(category)
+    ? HIGH_PROFIT_MARKETPLACE_VARIANCE_ROI
+    : HIGH_PROFIT_DEFAULT_ROI;
+  return roi >= threshold;
+}
+
 export async function GET() {
   try {
     const headers = serviceHeaders();
 
     // ready 매물 fetch — band desc + profit desc. filter (price/sku 다양화) 위해 더 많이 가져옴.
-    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key&status=eq.ready&order=profit_band.desc,expected_profit_max.desc&limit=200`;
+    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key&status=eq.ready&order=profit_band.desc,expected_profit_max.desc&limit=${PREVIEW_POOL_SCAN_LIMIT}`;
     const poolRes = await restFetch(poolUrl, { headers });
     const pool = (await poolRes.json()) as PoolRow[];
 
@@ -135,6 +193,7 @@ export async function GET() {
         if (selected.some((s) => s.pid === row.pid)) continue;
         const raw = rawByPid.get(row.pid);
         if (!raw || raw.price > maxPriceKrw) continue;
+        if (isPreviewHighProfitAnomaly(row, raw)) continue;
         const sku = skuByPid.get(row.pid);
         if (sku && usedSkus.has(sku)) continue;
         const cat = row.category ?? "other";
@@ -154,6 +213,7 @@ export async function GET() {
           if (tierPicked.some((s) => s.pid === row.pid)) continue;
           const raw = rawByPid.get(row.pid);
           if (!raw || raw.price > maxPriceKrw) continue;
+          if (isPreviewHighProfitAnomaly(row, raw)) continue;
           const sku = skuByPid.get(row.pid);
           if (sku && usedSkus.has(sku)) continue;
           const cat = row.category ?? "other";
@@ -171,6 +231,7 @@ export async function GET() {
           if (tierPicked.some((s) => s.pid === row.pid)) continue;
           const raw = rawByPid.get(row.pid);
           if (!raw || raw.price > maxPriceKrw) continue;
+          if (isPreviewHighProfitAnomaly(row, raw)) continue;
           const sku = skuByPid.get(row.pid);
           if (sku && usedSkus.has(sku)) continue;
           tierPicked.push(row);
