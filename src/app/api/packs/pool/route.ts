@@ -690,7 +690,8 @@ export async function GET(req: Request) {
       appliedBudget,
     }, { headers: cacheHeader });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Wave launch-23 (audit HIGH 잔존): raw err.message client 노출 차단. 상세는 server console.
+    console.error("packs/pool failed", err instanceof Error ? err.message : String(err));
+    return NextResponse.json({ error: "pool_load_failed" }, { status: 500 });
   }
 }
