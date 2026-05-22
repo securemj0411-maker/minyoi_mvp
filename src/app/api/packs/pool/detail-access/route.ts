@@ -5,7 +5,7 @@ import { consumeDetailAccess } from "@/lib/detail-access";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
-import { inferMarketplaceTransaction, marketplaceFactsFromRawJson } from "@/lib/marketplace-safety";
+import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationFromRawJson } from "@/lib/marketplace-safety";
 import { classifyListing } from "@/lib/pipeline";
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -123,6 +123,7 @@ async function loadExactPoolItem(pid: number) {
     tradeLabels: [...(facts.tradeLabels ?? [])],
     transactionMode: tx.transactionMode,
     shippingAssumption: tx.assumption,
+    directTradeLocation: marketplaceLocationFromRawJson(meta?.raw_json),
     imageCount: meta?.image_count ?? null,
     descriptionPreview: meta?.description_preview ?? "",
     listingState: meta?.listing_state ?? "unknown",
@@ -262,7 +263,11 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
     }
 
     const liveType = classifyListing(detail.title ?? item.name, detail.description ?? item.descriptionPreview, item.price).listingType;
-    if (liveType !== "normal") {
+    // Wave launch-13 (사용자 짚음 — LEGO 75331): "unknown" = SKU 카탈로그 외 매물.
+    // 풀 진입은 comparable_key + AI audit 로 통과했는데 detail-verify 가 classifier 의 SKU rule match
+    // 실패로 invalidate → 사용자 막힘. 풀에 카드 보였는데 클릭 시 에러 = 신뢰 박살.
+    // unknown 만 통과 (multi/callout/part/batch 등 다른 분기는 그대로 invalidate).
+    if (liveType !== "normal" && liveType !== "unknown") {
       await invalidateReadyPoolItem(item.pid, `detail_access_live_${liveType}`);
       return { ok: false, status: 404, error: "not_ready", message: "원본 확인 결과 추천 기준에서 벗어나 내려뒀어요. 새로고침하면 다른 매물을 보여드릴게요." };
     }
@@ -303,7 +308,8 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
 
   if (detail.commentCount != null) await patchRawCommentCount(item.pid, detail.commentCount);
   const liveType = classifyListing(item.name, detail.description ?? item.descriptionPreview, item.price).listingType;
-  if (liveType !== "normal") {
+  // Wave launch-13: unknown 통과 (위 joongna 분기와 동일 — bunjang 측도 동일 룰).
+  if (liveType !== "normal" && liveType !== "unknown") {
     await invalidateReadyPoolItem(item.pid, `detail_access_live_${liveType}`);
     return { ok: false, status: 404, error: "not_ready", message: "원본 확인 결과 추천 기준에서 벗어나 내려뒀어요. 새로고침하면 다른 매물을 보여드릴게요." };
   }
