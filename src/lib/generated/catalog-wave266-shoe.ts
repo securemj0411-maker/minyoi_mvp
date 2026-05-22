@@ -337,8 +337,9 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
     id: "shoe-nike-cortez-broad",
     brand: "Nike",
     category: "shoe",
-    modelName: "Nike Cortez (Broad)",
-    aliases: ["Nike Cortez", "나이키 코르테즈", "코르테즈"],
+    modelName: "Nike Cortez (Broad — Classic/Leather/SE/SP variant 모두 흡수)",
+    aliases: ["Nike Cortez", "나이키 코르테즈", "코르테즈", "Classic Cortez"],
+    // Wave 697 (2026-05-23): 단일 활성 SKU로 (catalog.ts shoe-nike-cortez 중복 제거).
     mustContain: [
       ["nike", "나이키"],
       ["cortez", "코르테즈"],
@@ -352,6 +353,14 @@ export const SHOE_WAVE266_CATALOG: Sku[] = [
       "kendrick lamar", "켄드릭",
       "off-white", "오프화이트",
       "sakai", "사카이",
+      // Wave 697 추가 차단 (sample audit에서 발견한 한정/collab):
+      "유니온", "union",  // Union LA collab "세서미" 등 — 별 SKU 필요시 분리
+      "한글날", "hangeul",  // 한글날 한정
+      "리본", "발레코어", "ballet core",  // Ballet Core 한정 라인 (별 시세)
+      "샤크", "shark",  // Shark colorway (별 한정)
+      "한정판", "limited edition",
+      // 신발 외 (다른 카테고리 false positive)
+      "셔츠", "shirt", "티셔츠", "tee", "후드",
     ],
     msrpKrw: 119000,
     released: 1972,

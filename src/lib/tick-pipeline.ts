@@ -2516,8 +2516,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 498: shoe/bag comparable_key now preserves bag brand/lane and shoe
   // broad brand. Force stale rows to reparse so market samples stop sharing
   // generic `bag|backpack` and `shoe|broad` buckets.
-  // Wave 696 (2026-05-23): shoe v29 — AF1 13 + Air Max 8 (= 22 1단계 SKU) 신설. AF1 트화/트블/지디 파라노이즈/티파니/LV + Air Max DN/270/Plus-TN/카시나/Travis/CDG.
-  shoe: "wave92-shoe-v29",
+  // Wave 697 (2026-05-23): shoe v30 — Cortez duplicate SKU 제거 (catalog.ts에서 nike_cortez 삭제, catalog-wave266의 broad만 활성). 231 매물 매칭 fail 해결.
+  shoe: "wave92-shoe-v30",
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
   bag: "wave92-bag-v23",
   // Wave 690 (2026-05-22): clothing v44 — stussy_nike_collab release (셋업/월드투어 차단, 30~50만 가격대 안정).

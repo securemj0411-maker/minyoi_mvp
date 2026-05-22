@@ -7297,7 +7297,18 @@ export const CATALOG: Sku[] = [
     // Wave 228: 팬츠/자켓/코트 차단 (shirt-pants / jacket-coat lane 으로 가야).
     mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "목걸이", "925",
       "팬츠", "pants", "바지", "하프팬츠", "쇼츠",
-      "자켓", "jacket", "코트", "coat", "재킷"],
+      "자켓", "jacket", "코트", "coat", "재킷",
+      // Wave 691 (2026-05-22): 한정/이그조틱 차단 (spread 33x).
+      "리미티드", "limited", "limited edition", "한정", "스페셜 에디션",
+      "슈퍼레어", "super rare", "super-rare", "레어", "rare",
+      "다크호스", "dark horse", "darkhorse",
+      "롱혼 버팔로", "롱혼버팔로", "longhorn buffalo",
+      "카이만 크로커다일", "caiman crocodile", "악어 가죽", "alligator", "엘리게이터",
+      "라스코", "rasko", "라스코벨트",
+      "셀럽 착용", "지디 착용",
+      // 카디건/가디건 (apparel — accessory 아님)
+      "카디건", "cardigan", "가디건", "숄카라가디건",
+    ],
     msrpKrw: 220000, released: 2020,
   },
   {
@@ -10462,18 +10473,9 @@ export const CATALOG: Sku[] = [
       "990v3", "990v5", "990v6", "v3", "v5", "v6"],
     msrpKrw: 299000, released: 2017,
   },
-  {
-    id: "shoe-nike-cortez",
-    brand: "Nike", category: "shoe", laneKey: "nike_cortez",
-    modelName: "Nike Cortez (Classic / Nylon / Leather)",
-    aliases: ["Nike Cortez", "나이키 코르테즈", "코르테즈"],
-    mustContain: [["코르테즈", "cortez"], ["나이키", "nike"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
-      "짭", "가품", "미러", "샘플", "1:1", "11급", "삽니다", "구합니다", "매입",
-      // 한정판 분리 — 일반 broad 에서는 차단 (다른 lane으로 가야함)
-      "45주년 한정", "kendrick", "켄드릭", "stussy", "스투시", "sacai", "사카이"],
-    msrpKrw: 89000, released: 1972,
-  },
+  // Wave 697 (2026-05-23): nike_cortez SKU 제거 — catalog-wave266-shoe.ts의 shoe-nike-cortez-broad와 duplicate.
+  // ruleMatch ambiguity로 chooseUniqueCandidate가 null 반환 → 231 매물 매칭 fail (매칭률 6.9%).
+  // catalog-wave266-shoe.ts의 broad SKU 단일 활성 + 룰 확장으로 대체.
   // Samba collab narrow (Wave 226)
   {
     id: "shoe-adidas-samba-kith",
