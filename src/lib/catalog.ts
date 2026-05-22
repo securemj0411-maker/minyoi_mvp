@@ -9801,7 +9801,19 @@ export const CATALOG: Sku[] = [
       "콜라보", "collab", "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack", "puma", "푸마", "adidas", "아디다스", "aape", "오마주", "fubu", "푸부",
       "lacoste", "라코스테", "tommy", "타미", "자운드", "jound",
       "네이버후드", "neighborhood", "wtaps", "더블탭스", "갓 셀렉션", "god selection",
-      "톰과제리", "tom and jerry", "chocolate", "chocolte", "스노우보드자켓", "스노우보드재킷", "snowboard"],
+      "톰과제리", "tom and jerry", "chocolate", "chocolte", "스노우보드자켓", "스노우보드재킷", "snowboard",
+      // Wave 680 (2026-05-22): spread 20x audit — collab/한정 추가 차단 + 가품 시그널.
+      "ponr", "point of no return", "스페이스 카모",
+      "patchwork", "패치워크", "abc camo patchwork", "패치워크 후드",
+      "85주년", "85th", "85 anniversary",
+      "돌 멀티 인형", "인형 세트", "돌 인형", "인형 2개", "인형 묶음",
+      "흑계", "흑계 정품",  // 가품 거래 코드 워딩
+      "대장급", "대장 급", "탑급",  // 가품 의심 워딩
+      "정품 택O", "정품택 o", "정품 보관",  // 가품 마케팅 표지
+      // 시즌 빈티지 (가격대 다름)
+      "2013 베이프", "2014 베이프", "2015 베이프", "2016 베이프",
+      "2017 베이프", "2018 베이프", "2019 베이프",
+      "베이프 2013", "베이프 2014", "베이프 2015"],
     msrpKrw: 320000, released: 1993,
   },
   {

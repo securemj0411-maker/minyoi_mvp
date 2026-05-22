@@ -714,7 +714,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   adidas_rafsimons_collab: { status: "ready", label: "Adidas × Raf Simons", note: "Wave 212 collab" },
   // Wave 214 (2026-05-19): 의류 mainstream 9 SKU — 사용자 정책 "옷 안 버린다"
   bape_tee: { status: "ready", label: "BAPE T-Shirt (Ape Head/카모)", note: "Wave 679 release — Wave 241/593/632/679 누적 차단: 요시다포터/챔피온/풋볼/사쿠라/빅사루/롱슬리브/빈티지 시즌 명시. spread 9.5x → 차단 후 추정 <6x." },
-  bape_hoodie: { status: "blocked", label: "BAPE Hoodie (basic/camo)", note: "Wave 413: split from bape_tee; hold until non-Shark hoodie sample audit." },
+  bape_hoodie: { status: "ready", label: "BAPE Hoodie (basic/camo)", note: "Wave 680 release — PONR/Patchwork/85주년/톰제리/인형 묶음 + 가품 시그널 (흑계/대장급/정품 택O) + 빈티지 시즌 차단." },
   bape_hoodie_zip: { status: "blocked", label: "BAPE Hoodie Zip (basic/camo)", note: "Wave 413: split from bape_tee; hold until non-Shark zip hoodie sample audit." },
   bape_crewneck: { status: "blocked", label: "BAPE Crewneck / Sweatshirt", note: "Wave 413: split from bape_tee; hold until crewneck sample audit." },
   bape_shark_hoodie: { status: "ready", label: "BAPE Shark Hoodie (시그니처)", note: "Wave 214 한정" },
