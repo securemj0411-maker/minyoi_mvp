@@ -974,16 +974,19 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     mustNotContain: [
       ...CLOTHING_COMMON_NOISE,
       // 콜라보
-      "supreme",
-      "genius",
-      "alyx",
-      "palm angels",
-      "rick owens",
-      "fragment",
+      "supreme", "슈프림",
+      "genius", "지니어스",
+      "alyx", "알릭스",
+      "palm angels", "팜 엔젤스", "팜엔젤스",
+      "rick owens", "릭 오웬스", "릭오웬스",
+      "fragment", "프래그먼트",
       "1017",
       "bape", "베이프",
       // Wave 486: Moncler broad is a high-price outerwear fallback; polo/pique shirts need a separate lane before scoring.
       "피케", "pique", "폴로", "polo", "카라티", "카라 티", "pk티", "pk 티",
+      // Wave 602: 한국어 collab 표기 변형 추가 (영문만 박혀있던 collab 키워드).
+      "사이클로픽", "cyclopic",  // Rick Owens collab 모델명
+      "람사우", "람자우", "ramsau",  // Palm Angels collab 모델명
     ],
     msrpKrw: 1490000,
     released: 1952,
