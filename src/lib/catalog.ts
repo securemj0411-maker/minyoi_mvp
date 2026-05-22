@@ -6893,6 +6893,12 @@ export const CATALOG: Sku[] = [
       // Wave 251.1 (2026-05-19): 사용자 코멘트 (id 195, 196) — "내셔널지오그래픽 반팔 피케 폴로 셔츠" 16k 가 polo-pique-classic 비교군에 섞임.
       //   National Geographic 은 폴로 카라티 자체 라인이 있어 "폴로/pique" 둘 다 만족 → 폴로 SKU 차단 필요.
       "내셔널지오그래픽", "내셔널 지오그래픽", "national geographic", "natgeo", "nat geo",
+      // Wave 570 (2026-05-22): production audit — "펜디 로고 피케 폴로 카라 티셔츠" 75만 매물이 polo_pique 비교군 오염.
+      //   "피케 폴로" 키워드만으로 catch (펜디는 다른 명품 brand).
+      "fendi", "펜디",
+      // 다른 명품 brand polo (디올/구찌/프라다 폴로 등도 별도 시세군)
+      "dior", "디올", "gucci", "구찌", "prada", "프라다", "burberry", "버버리",
+      "hermes", "에르메스", "louis vuitton", "루이비통",
     ],
     msrpKrw: 159000, released: 2020,
     defaultProductType: "polo_shirt", // Wave 236d — Polo Pique = polo shirt 라인 확정.
