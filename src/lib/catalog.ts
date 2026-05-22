@@ -6986,7 +6986,10 @@ export const CATALOG: Sku[] = [
       "벤튼", "클리어빌"]],
     // Wave 228 (2026-05-19): jacket/coat 차단 (jacket-coat lane 으로 가야).
     mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "벨트", "지갑", "모자",
-      "그리즐리", "grizzly", "자켓", "jacket", "코트", "coat", "재킷", "트러커", "trucker"],
+      "그리즐리", "grizzly", "자켓", "jacket", "코트", "coat", "재킷", "트러커", "trucker",
+      // Wave 596b: 리미티드 빈티지 한정 라인 (900k outlier vs 일반 230~700k).
+      "리미티드 빈티지", "limited vintage", "리미티드 라인",
+    ],
     msrpKrw: 420000, released: 2020,
     // Wave 408: terse "RRL 데님" rows are jeans by default; explicit 셔츠/쇼츠/pants
     // keywords still win in parseClothingProductType before catalog fallback.
@@ -7797,6 +7800,11 @@ export const CATALOG: Sku[] = [
       // Wave 545 (2026-05-22): 시어링 (양털/가죽 라인, 160만 한정) 차단 — 일반 후드 8~25만 대비 +6배.
       "시어링", "shearling", "쉬어링", "fleece collar shearling",
       "레더", "leather", "가죽 자켓",
+      // Wave 596: hoodie b_grade audit — Our Legacy / No Vacancy Inn / 레게맨 / 바카르 collab 차단.
+      "아워레가시", "our legacy", "ourlegacy",
+      "노바디스 홈", "no vacancy inn", "novacancy",
+      "바카르 노바디스", "bacar nobody",
+      "레게맨",
     ],
     msrpKrw: 159000, released: 2020,
   },
