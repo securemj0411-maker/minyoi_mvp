@@ -9552,7 +9552,12 @@ export const CATALOG: Sku[] = [
     // Wave 229 (2026-05-19) Iter10: 다른 brand 매물 차단 ("몽벨 ... 아크테릭스 포지션" 같은 비교 매물).
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance",
       "몽벨", "montbell", "콜롬비아", "columbia", "마운틴 하드웨어", "mountain hardware",
-      "포지션", "포지셔닝", "비교", "vs"],
+      "포지션", "포지셔닝", "비교", "vs",
+      // Wave 572 (2026-05-22): production audit — "아크테릭스 LEAF Alpha G2 멀티캠" 345만 catch (LEAF = 군용 라인).
+      //   일반 Alpha SV 80~130만 vs LEAF 345만 = +3배. 별도 시세군.
+      "leaf", "alpha g2", "alpha g 2", "멀티캠", "multicam", "law enforcement",
+      "law enforcement and armed forces",
+    ],
     msrpKrw: 850000, released: 1998,
     defaultProductType: "jacket", // Wave 236d — Alpha = expedition 자켓 확정.
   },
