@@ -16,3 +16,8 @@
 
 - No dedicated Longchamp size-code parser beyond existing small/medium/large/numeric tokens.
 - If enough clean Le Pliage rows remain, add Korean shorthand handling for short-handle / long-handle / size codes in a later wave.
+
+## Production Follow-Up
+
+- Narrowly invalidated existing ready pool row `pid=404471002` because its key was `bag|longchamp_le_pliage|tote|era_unknown|unknown_size_variant|a_grade`.
+- Reason: `wave538_longchamp_le_pliage_unknown_size_variant_review`.
