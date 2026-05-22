@@ -543,6 +543,8 @@ function parseBagProductType(text: string): BagProductType {
   if (/숄더|shoulder ?bag(?!\s*backpack)|어깨 ?가방|호보 ?백|hobo ?bag|hobo\b|버킷 ?백|bucket ?bag|체인 ?백|chain ?bag|chain ?미니|사첼|satchel|무수비|musubi|르시티|le ?city|시티백|city ?bag/.test(t)) return "shoulder";
   // crossbody — 카메라백/미니체인백/사이드백.
   if (/크로스(?!\s*?백 ?팩)|crossbody|cross ?bag|크로스 ?백(?!팩)|카메라 ?백|camera ?bag|사이드 ?백|side ?bag/.test(t)) return "crossbody";
+  // Wave 611: LV 캐리올 (Carryall) = 대형 토트 / 숄더백 (pouch 아님). 'pouch|pochette' 매칭 전에 우선.
+  if (/캐리올|carryall|carry ?all/.test(t)) return "tote";
   // tote — 탑핸들/핸드백.
   // Wave 266 (2026-05-20): 캔버스 백 / 토트 백 영문 / 빈티지 토트 보강.
   // Wave 267b (2026-05-20): 토드백/japanese bag/재패니즈/명품 쇼핑백 보강 (API sweep 발견).
@@ -635,7 +637,7 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 // Wave 537 (2026-05-22) shoe v18: Acne Manhattan/Rockaway mixed titles are ambiguous and held out.
 const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v21";
 // Wave 538 (2026-05-22) bag v14: Longchamp Le Pliage requires explicit line text.
-const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v15";
+const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v16";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
