@@ -5803,6 +5803,7 @@ function FixedBunjangFooter({
     onLinkClicked(card.pid);
     setConfirmOpen(false);
   };
+  const SourceLogo = safety.isJoongna ? JoongnaLogo : BunjangLogo;
 
   // Wave 333 (사용자 피드백): 안전도("주의 1건") 버튼 제거 — 모달 안 셀러 카드/거래 안전 타일에 이미 있음.
   // 하단 fixed는 번개장터 이동 버튼만 풀 너비로.
@@ -5840,7 +5841,7 @@ function FixedBunjangFooter({
         }}
       >
         <span style={{ position: "absolute", left: 6, top: "50%", transform: "translateY(-50%)", width: 34, height: 34, borderRadius: 999, background: "#0b1413", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <span style={{ fontFamily: "ui-monospace, monospace", fontWeight: 800, color: "#10b981", fontSize: 16 }}>N</span>
+          <SourceLogo className="h-6 w-6 rounded-full" />
         </span>
         <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.3, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, whiteSpace: "nowrap" }}>
           <span style={{ width: 20, height: 20, borderRadius: 999, background: "#0b1413", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fbbf24", flexShrink: 0 }}>
