@@ -9769,6 +9769,22 @@ export const CATALOG: Sku[] = [
       "stussy", "스투시 x bape", "스투시x베이프",
       "wtaps", "더블탭스",
       "갓 셀렉션", "god selection", "톰과제리", "tom and jerry", "chocolate", "chocolte",
+      // Wave 679 (2026-05-22): 추가 collab/한정/롱슬리브 차단 (bape_tee release 전 narrow).
+      // 요시다포터 / 챔피온 collab + 풋볼/사쿠라/빅사루 한정 + 빈티지 시즌 + 묶음 매물.
+      "요시다포터", "요시다 포터", "yoshida porter", "포터",
+      "챔피온", "champion", "x champion", "champion x",
+      "풋볼 티셔츠", "풋볼 져지", "football tee", "football jersey", "풋볼티",
+      "사쿠라 포토", "sakura photo", "사쿠라",
+      "빅사루", "big saru", "big-saru",
+      "베이비 마일로", "baby milo", "babymilo", "milo on",
+      // 빈티지 시즌 (2013~2020 빈티지 시세 별도)
+      "2013 베이프", "2014 베이프", "2015 베이프", "2016 베이프",
+      "2017 베이프", "2018 베이프", "2019 베이프",
+      "베이프 2013", "베이프 2014", "베이프 2015",
+      // 롱슬리브 (별도 product_type)
+      "롱슬리브", "long sleeve", "long-sleeve", "롱슬리브 티셔츠", "긴팔",
+      // 묶음 매물
+      "tee-s & tote", "tee-s tote", "tee tote set", "tee 토트 세트",
     ],
     msrpKrw: 199000, released: 1993,
   },

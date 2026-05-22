@@ -2520,8 +2520,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   shoe: "wave92-shoe-v23",
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
   bag: "wave92-bag-v23",
-  // Wave 677 (2026-05-22): clothing v32 — supreme_apparel_broad 스톤아일랜드 한글 변형 + Martine Rose/Fox Racing/시즌 빈티지 차단.
-  clothing: "wave216-clothing-v32",
+  // Wave 679 (2026-05-22): clothing v33 — bape_tee 요시다포터/챔피온/풋볼/사쿠라/빅사루/롱슬리브/빈티지 시즌 차단 후 lane release.
+  clothing: "wave216-clothing-v33",
   bike: "wave92-fashion-mobility-v7",
   // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
   // full-unit pollution for these active pool categories.
