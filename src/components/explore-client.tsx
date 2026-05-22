@@ -708,9 +708,17 @@ function revealCardToPoolItem(card: RevealCard): PoolItem {
 function DetailAccessPaywallModal({
   state,
   onClose,
+  kakaoShareReady,
+  kakaoShareLoading,
+  onKakaoShare,
 }: {
   state: DetailAccessLimitModal | null;
   onClose: () => void;
+  // Wave launch-52 (사용자 짚음 "저 모달에 카톡 공유 이식"):
+  //   크레딧 부족 모달에 카톡 공유 button 추가. 사용자가 가장 정직히 보는 시점 — 즉시 +1 크레딧 받을 옵션.
+  kakaoShareReady: boolean;
+  kakaoShareLoading: boolean;
+  onKakaoShare: () => void;
 }) {
   if (!state) return null;
   const variant = state.variant ?? "paywall";
@@ -855,6 +863,40 @@ function DetailAccessPaywallModal({
            * 떴던 거 fix. sold / verify_fail variant 엔 위 (L749-757) 에 이미 적절한 action button
            * 있음. 크레딧 충전은 paywall variant 만 의미 있음. */}
           <div className="mt-5 grid gap-2">
+            {/* Wave launch-52 (사용자 짚음 "이 모달에 카톡 공유 이식 ㄱ"):
+             *   크레딧 부족 = 사용자가 즉시 +1 크레딧 받고 싶은 시점.
+             *   카톡 공유 button = 무료 옵션 (충전 외 대안). 24h 1회 제한 + auth.
+             *   paywall variant 만 표시 (sold/verify_fail 은 크레딧 무관). */}
+            {isPaywall ? (
+              <button
+                type="button"
+                disabled={kakaoShareLoading || !kakaoShareReady}
+                onClick={onKakaoShare}
+                title={kakaoShareReady ? "카톡으로 공유하고 크레딧 1개 받기" : "카카오 공유 로딩 중..."}
+                className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition ${
+                  kakaoShareReady
+                    ? "bg-[#fbe300] shadow-[0_4px_14px_rgba(251,227,0,0.35)] hover:bg-[#fae100] active:scale-[0.99]"
+                    : "cursor-not-allowed bg-[#fbe300]/40 opacity-70"
+                }`}
+              >
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <KakaoLogo className={`h-6 w-6 shrink-0 rounded-[6px] ${kakaoShareReady ? "" : "opacity-80"}`} />
+                  <div className="min-w-0">
+                    <div className={`text-sm font-bold ${kakaoShareReady ? "text-[#3b1e1e]" : "text-[#3b1e1e]/80"}`}>
+                      {kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 무료로 1개 받기"}
+                    </div>
+                    <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
+                      하루 1번 · 충전 안 해도 OK
+                    </div>
+                  </div>
+                </div>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                  kakaoShareReady ? "bg-[#3b1e1e] text-[#fbe300]" : "bg-[#3b1e1e]/70 text-[#fbe300]/90"
+                }`}>
+                  +1 크레딧
+                </span>
+              </button>
+            ) : null}
             {isPaywall ? (
               <Link
                 href="/plans"
@@ -2799,6 +2841,9 @@ export default function ExploreClient({
       <DetailAccessPaywallModal
         state={detailAccessLimit}
         onClose={() => setDetailAccessLimit(null)}
+        kakaoShareReady={kakaoShareReady}
+        kakaoShareLoading={kakaoShareLoading}
+        onKakaoShare={handleKakaoShare}
       />
 
       {/* PackRevealModal — 카드 클릭 시 띄움 */}
