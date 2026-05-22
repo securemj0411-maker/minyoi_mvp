@@ -805,6 +805,12 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "gucci", "구찌",
       "murakami", "무라카미",
       "nike",
+      // Wave 689 (2026-05-22): 선수/한정 + FOG x MLB collab + 빈티지 차단.
+      "어센틱 덕아웃", "어센틱 패딩", "authentic dugout",
+      "이정후", "류현진", "김광현", "오타니", "ohtani",
+      "선수 한정", "선수 사인",
+      "fog x mlb", "에센셜 x mlb", "essentials x mlb", "fear of god x mlb",
+      "빈티지 mlb", "90s mlb", "00s mlb",
     ],
     msrpKrw: 89000,
     released: 1997,

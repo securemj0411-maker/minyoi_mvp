@@ -718,7 +718,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   bape_hoodie_zip: { status: "ready", label: "BAPE Hoodie Zip (basic/camo)", note: "Wave 681 release — bape_hoodie 패턴 spread (PONR/Patchwork/85주년/가품 시그널/빈티지) 동일 차단." },
   bape_crewneck: { status: "ready", label: "BAPE Crewneck / Sweatshirt", note: "Wave 681 release — 추가 collab/한정/가품 시그널/빈티지 시즌 명시 차단." },
   bape_shark_hoodie: { status: "ready", label: "BAPE Shark Hoodie (시그니처)", note: "Wave 214 한정" },
-  matinkim_apparel: { status: "blocked", label: "Matin Kim Apparel (한국 designer)", note: "Wave 407: broad apparel hold until model-level audit." },
+  matinkim_apparel: { status: "ready", label: "Matin Kim Apparel (한국 designer)", note: "Wave 689 release — 매물 풀 거의 없음 (release 안전), 한국 designer 가격대 명확." },
   reebok_apparel: { status: "blocked", label: "Reebok Apparel (트랙수트/티)", note: "Wave 407: broad apparel hold until model-level audit." },
   arcteryx_apparel: { status: "ready", label: "Arc'teryx Apparel (broad fallback)", note: "Wave 688 release — narrow Beta/Gamma/Alpha/Atom/Vertex 다 ready, LEAF/System A/Fission/Solano/Gen 2.1 차단." },
   // Wave 218 (2026-05-19): Arc'teryx 모델별 narrow 5개 — 가격대 X 3-5 (Beta 600K vs Squamish 190K)
@@ -728,7 +728,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   arcteryx_atom: { status: "ready", label: "Arc'teryx Atom (LT/SL/HW)", note: "Wave 218 insulated" },
   arcteryx_vertex_squamish: { status: "ready", label: "Arc'teryx Vertex / Squamish", note: "Wave 218 etc" },
   arcteryx_broad: { status: "ready", label: "Arc'teryx (broad fallback)", note: "Wave 688 release — narrow 5개 ready, 특수 라인 (LEAF/System A/Fission/Solano/Gen 2.1) cross-product 차단." },
-  fila_apparel: { status: "blocked", label: "Fila Apparel", note: "Wave 407: broad apparel hold until model-level audit." },
+  fila_apparel: { status: "ready", label: "Fila Apparel", note: "Wave 689 release — 6건 spread 3.5x (2~7만), 가격대 안정." },
   patagonia_apparel: { status: "ready", label: "Patagonia (broad fallback)", note: "Wave 687 release — broad fallback (narrow retro_x/shell/deep_pile/down 다 ready), 40주년/레거시/빈티지(80s/90s/00s)/US Made/딥파일 차단." },
   // Wave 219 (2026-05-19): Patagonia 3분리 — Retro X 199K / Down 290K / Shell 199K
   patagonia_retro_x: { status: "ready", label: "Patagonia Retro X (단독, 신칠라 분리됨)", note: "Wave 678 release — Wave 654에서 mustContain narrow + 신칠라/스냅T/캔버스 fleece 명시 차단. LATEST v32 spread <4x." },
@@ -736,12 +736,12 @@ export const LANE_READINESS: LaneReadinessMap = {
   patagonia_shell: { status: "ready", label: "Patagonia Shell (Torrentshell)", note: "Wave 219" },
   // Wave 251.2 (2026-05-19): Deep Pile 90s 빈티지 콜렉터 narrow split (p50 ₩390k vs mainstream ₩165k).
   patagonia_deep_pile: { status: "ready", label: "Patagonia Deep Pile (90s 빈티지)", note: "Wave 251.2 — n=10, mainstream 2.4배 시세" },
-  mlb_apparel: { status: "blocked", label: "MLB Cap (broad fallback)", note: "Wave 407: broad hold. Use MLB cap collab/narrow lanes." },
+  mlb_apparel: { status: "ready", label: "MLB Cap (broad fallback)", note: "Wave 689 release — cap-only SKU (mustContain '모자/cap' 강제), Wave 689에서 어센틱 덕아웃/이정후/오타니/FOG x MLB collab/빈티지 차단." },
   // Wave 219 (2026-05-19): MLB collab 분리 — Gucci 480K / Nike 79K / Murakami 220K vs 일반 49K
   mlb_cap_gucci_collab: { status: "ready", label: "Gucci × MLB Cap (한정 명품)", note: "Wave 219" },
   mlb_cap_nike_collab: { status: "ready", label: "Nike × MLB Cap", note: "Wave 219" },
   mlb_cap_murakami_collab: { status: "ready", label: "Murakami × MLB Cap (9twenty)", note: "Wave 219" },
-  discovery_apparel: { status: "blocked", label: "Discovery Expedition", note: "Wave 407: broad apparel hold until model-level audit." },
+  discovery_apparel: { status: "ready", label: "Discovery Expedition", note: "Wave 689 release — 한국 익숙 브랜드, 매물 풀 작아 안전." },
   // Wave 215 (2026-05-19): Yeezy + BAPE STA + Stussy 8 Ball
   yeezy_boost_350: { status: "ready", label: "Yeezy Boost 350 (V1/V2)", note: "Wave 215 — Yeezy 매물 521건 압도적" },
   yeezy_boost_500_700: { status: "ready", label: "Yeezy Boost 500/700", note: "Wave 215" },
