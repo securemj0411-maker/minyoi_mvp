@@ -131,6 +131,9 @@ async function loadExactPoolItem(pid: number) {
     saleStatus: meta?.sale_status ?? "",
     commentCount: meta?.num_comment == null ? null : Number(meta.num_comment),
     soldOut: false,
+    // Wave launch-38: detail HTML 에서 추출한 위치 patch 시 기존 raw_json 보존용.
+    rawJson: meta?.raw_json ?? null,
+    tradeLocation: null as string | null,
   };
 }
 
@@ -273,8 +276,17 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
       return { ok: false, status: 404, error: "not_ready", message: "원본 확인 결과 추천 기준에서 벗어나 내려뒀어요. 새로고침하면 다른 매물을 보여드릴게요." };
     }
 
+    // Wave launch-38: detail HTML 안 별도 button 영역 동네 추출 → raw_json.tradeLocation patch
+    if (detail.tradeLocation) {
+      await restFetch(`${tableUrl("mvp_raw_listings")}?pid=eq.${item.pid}`, {
+        method: "PATCH",
+        headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+        body: JSON.stringify({ raw_json: { ...(typeof item.rawJson === "object" && item.rawJson != null ? (item.rawJson as Record<string, unknown>) : {}), tradeLocation: detail.tradeLocation } }),
+      }).catch((err) => console.warn("[detail-access] tradeLocation patch failed", err instanceof Error ? err.message : String(err)));
+    }
+
     await patchPoolVerified(item.pid);
-    return { ok: true, item: { ...item, listingState: "active", saleStatus } };
+    return { ok: true, item: { ...item, listingState: "active", saleStatus, tradeLocation: detail.tradeLocation } };
   }
 
   const detail = await fetchDetail(String(item.pid));

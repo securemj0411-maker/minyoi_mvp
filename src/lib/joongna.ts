@@ -90,6 +90,8 @@ export type JoongnaDetail = {
   sortDate: string | null;
   updateDate: string | null;
   sourceUpdatedAt: string | null;
+  // Wave launch-38 (사용자 짚음): "만나서 직거래" 다음 button 안 동네 텍스트.
+  tradeLocation: string | null;
 };
 
 export type JoongnaSellerStoreInfo = {
@@ -458,7 +460,24 @@ export function parseJoongnaDetailHtml(url: string, html: string, status = 200):
     sortDate,
     updateDate,
     sourceUpdatedAt: parseKstDateTime(updateDate) ?? parseKstDateTime(sortDate),
+    // Wave launch-38: HTML 안 "만나서 직거래" <dt> 뒤 span role="button" 안 동네 추출.
+    tradeLocation: extractJoongnaTradeLocation(html),
   };
+}
+
+// 중고나라 detail HTML 패턴:
+//   <dt class="...">만나서 직거래</dt>
+//   ... 몇 가지 inline element ...
+//   <span class="..." role="button">송하동</span>
+//   <span class="..." role="button">강남구 역삼동</span>
+function extractJoongnaTradeLocation(html: string): string | null {
+  // "만나서 직거래" 다음 800자 안 첫 span role="button" 안 텍스트
+  const m = html.match(/만나서\s*직거래<\/dt>[\s\S]{0,800}?role="button"[^>]*>([^<]{1,40})<\/span>/);
+  if (!m) return null;
+  const raw = m[1].trim();
+  // 한국어 동/시/구/군 패턴 검증
+  if (!/[가-힣]{1,8}(?:동|시|구|군|읍|면)/.test(raw)) return null;
+  return raw;
 }
 
 export async function fetchJoongnaDetail(url: string, timeoutMs = 10_000): Promise<JoongnaDetail> {
