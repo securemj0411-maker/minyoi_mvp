@@ -9254,7 +9254,14 @@ export const CATALOG: Sku[] = [
     modelName: "Nike Air Max 1 (broad)",
     aliases: ["Nike Air Max 1", "나이키 에어맥스 1", "에어맥스 1"],
     mustContain: [["nike", "나이키"], ["에어맥스 1", "에어맥스1", "air max 1", "airmax 1", "airmax1"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "에어맥스 90", "에어맥스 95", "에어맥스 97", "air max 90", "air max 95", "air max 97", "travis scott", "트래비스", "오프화이트", "off-white", "off white", "꼼데", "cdg", "리바이스", "levis", "코르테이즈"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "에어맥스 90", "에어맥스 95", "에어맥스 97", "air max 90", "air max 95", "air max 97", "travis scott", "트래비스", "오프화이트", "off-white", "off white", "꼼데", "cdg", "리바이스", "levis", "코르테이즈",
+      // Wave 622: 추가 collab/한정 차단 (production audit — 아트모스 엘리펀트 850k, 션 우더스푼 800k).
+      "아트모스", "atmos", "엘리펀트", "elephant",
+      "션 우더스푼", "sean wotherspoon",
+      "1/97", "97/1",  // 션 우더스푼 1/97 변형
+      "shima", "시마", "patta", "파타", "stussy x", "x stussy",
+      "프린세스 다이아나", "princess diana",
+    ],
     msrpKrw: 169000, released: 1987,
   },
   {
