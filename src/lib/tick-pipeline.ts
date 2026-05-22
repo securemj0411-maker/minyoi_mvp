@@ -2518,8 +2518,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // generic `bag|backpack` and `shoe|broad` buckets.
   shoe: "wave92-shoe-v21",
   bag: "wave92-bag-v21",
-  // Wave 655 (2026-05-22): clothing v28 — Stussy Hoodie 월드투어/월드트라이브/스컬본즈/iD 매거진/스택드 한정 차단.
-  clothing: "wave216-clothing-v28",
+  // Wave 656 (2026-05-22): clothing v29 — Stussy Basic Tee 도시 한정/DSM/마틴로즈/갱스타/돌리/오사카/도쿄 collab.
+  clothing: "wave216-clothing-v29",
   bike: "wave92-fashion-mobility-v7",
   // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
   // full-unit pollution for these active pool categories.

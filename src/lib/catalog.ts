@@ -7893,11 +7893,25 @@ export const CATALOG: Sku[] = [
       // Wave 630: 추가 collab/한정 표기 변형 (Wave 593-596 follow-up).
       "born-raised", "born_raised", "8ball born",
       "마크제이콥스", "marc-jacobs", "marcjacobs",
-      "아워 레가시", "ourlegacy",
+      "아워 레가시", "ourlegacy", "our legacy", "ourlegacy stussy",
       "빌트 터프", "built tough", "built-tough",
       "8볼 카모", "8 볼 카모", "8볼 티셔츠 카모", "8 ball camo",
       "리빈 라지 하마", "리빈 하마",
       "엔젤 8볼", "angel 8ball", "angel 8 ball",
+      // Wave 656 (2026-05-22): a_grade spread 8.25x audit (71건) — 월드투어/도시 한정/collab 추가.
+      "월드투어", "world tour", "월드 투어",  // 모든 variant
+      "갱스타", "gang starr", "gangstarr",
+      "돌리", "dolly", "돌리 블러쉬", "blush pink",
+      "오사카", "osaka", "스투시 오사카",
+      "도쿄", "tokyo", "스투시 도쿄",
+      "파리", "paris", "스투시 파리",
+      "런던", "london",
+      "뉴욕", "new york", "ny limited",
+      "도버스트릿", "도버 스트릿", "dover street", "dsm",
+      "마틴로즈", "martine rose", "martin rose",
+      "써멀", "thermal", "thermal tee",
+      "썬 페이디드", "썬페이디드", "sun faded", "sunfaded",
+      "스투시 ic", "stussy ic", "스투시 ix",
     ],
     msrpKrw: 89000, released: 2020,
     defaultProductType: "tee", // Wave 236d — Basic Tee = tee 확정.
