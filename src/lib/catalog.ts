@@ -10485,7 +10485,14 @@ export const CATALOG: Sku[] = [
     modelName: "Coach Tabby (시그니처 — 체인/숄더)",
     aliases: ["Coach Tabby", "코치 태비", "코치 Tabby"],
     mustContain: [["coach", "코치"], ["tabby", "태비"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품"],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품",
+      // Wave 660 (2026-05-22): 폴리쉬드 페블 레더 (top tier 680~820k) 차단.
+      //   일반 태비 100~205k 대비 +4배. 별도 narrow SKU로 분리 검토.
+      "폴리쉬드 페블", "polished pebble", "폴리쉬드페블",
+      "페블 레더", "pebble leather", "페블레더",
+      // Wave 660: 타임스퀘어 퀼팅 한정 (CW629 — 별도 라인)
+      "cw629", "b4mer",  // SKU 코드 단독은 정확한 매칭만
+    ],
     msrpKrw: 590000, released: 2021,
     defaultProductType: "shoulder", // Wave 236d — Tabby = 숄더백 시그니처 (체인/숄더).
   },
