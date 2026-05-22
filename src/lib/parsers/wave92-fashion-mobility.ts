@@ -430,7 +430,8 @@ function parseClothingProductType(text: string): ClothingProductType {
   // Wave 556 (2026-05-22): 뉴스보이 캡/헌팅캡/플랫캡/베레/도리/베이스볼 모자 추가.
   if (/볼캡|ball ?cap|야구모자|버킷햇|bucket hat|벙거지|비니|beanie|메쉬캡|메쉬 ?캡|트러커 ?캡|trucker cap|cap\b|모자(?!이크|보호)|스냅백|snapback|캡모자|베이스볼 ?캡|baseball ?cap|풋볼 ?캡|football ?cap|6 ?패널|뉴스보이 ?캡|뉴스보이 ?모자|newsboy ?cap|헌팅 ?캡|hunting ?cap|플랫 ?캡|flat ?cap|페도라|fedora|베레|beret|클로쉬|cloche/.test(t)) return "cap";
   // belt — "Supreme 벨트" / "Polo RRL 벨트" 등.
-  if (/벨트|belt\b/.test(t)) return "belt";
+  // Wave 568 (2026-05-22): 넥타이/tie/bowtie/스카프 etc 액세서리 → belt 범주 (시세 비교군 단위 같음).
+  if (/벨트|belt\b|넥타이|necktie|bowtie|보우타이|크라바트|스카프(?!\s*포함)|머플러(?!\s*포함)|장갑(?!\s*포함)|gloves\b/.test(t)) return "belt";
   // wallet — "콘초 월렛" / "장지갑" 등.
   if (/지갑|wallet|반지갑|장지갑|카드지갑|머니 ?클립|콘초 ?월렛|콘초 ?지갑/.test(t)) return "wallet";
   // jeans — 청바지 명시 (데님 팬츠보다 specific).
