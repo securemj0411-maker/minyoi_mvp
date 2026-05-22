@@ -160,7 +160,8 @@ export async function GET(
         // Wave 90: listing_type=normal + risk_hits=0 + 새상품 제외 필터.
         const [rawListRes, analysisRes, parsedRes2] = await Promise.all([
           restFetch(
-            `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=in.(${sameKeyPids.join(",")})&listing_type=eq.normal&order=last_seen_at.desc`,
+            // Wave launch-31 (사용자 짚음): 같은 셀러 다중 가격 매물 dedup 위해 seller_uid 추가.
+            `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query,seller_uid&pid=in.(${sameKeyPids.join(",")})&listing_type=eq.normal&order=last_seen_at.desc`,
             { headers: serviceHeaders() },
           ),
           restFetch(
@@ -214,7 +215,28 @@ export async function GET(
           if (excludeByPid.get(pid) === true) return false;
           return true;
         });
-        const displayRows = trimComparableOutlierRows(safeRows);
+        // Wave launch-31 (사용자 짚음): 같은 셀러 다수 매물 dedup.
+        // 동일 셀러가 같은 상품 여러 가격으로 올린 경우 UI list 신뢰 박살.
+        // → seller_uid 별 가장 낮은 가격 1개만 keep (사용자 best buy 톤).
+        const dedupedBySeller = (() => {
+          const bestPerSeller = new Map<string, Record<string, unknown>>();
+          const noSellerRows: Array<Record<string, unknown>> = [];
+          for (const row of safeRows) {
+            const sellerUid = typeof row.seller_uid === "string" && row.seller_uid.trim() ? row.seller_uid.trim() : null;
+            if (!sellerUid) {
+              noSellerRows.push(row);
+              continue;
+            }
+            const existing = bestPerSeller.get(sellerUid);
+            const price = Number(row.price ?? 0);
+            const existingPrice = existing ? Number(existing.price ?? 0) : Number.POSITIVE_INFINITY;
+            if (!existing || (price > 0 && price < existingPrice)) {
+              bestPerSeller.set(sellerUid, row);
+            }
+          }
+          return [...bestPerSeller.values(), ...noSellerRows];
+        })();
+        const displayRows = trimComparableOutlierRows(dedupedBySeller);
         comparables = displayRows.map((row) => {
           const rowPid = Number(row.pid);
           const marketplaceSource = normalizeMarketplaceSource((row.source as string | null) ?? (row.seller_source as string | null));
