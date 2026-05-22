@@ -9016,7 +9016,13 @@ export const CATALOG: Sku[] = [
     modelName: "Asics Gel Nimbus (9 / 10.1 / 다수)",
     aliases: ["Asics Gel Nimbus", "아식스 님버스", "젤 님버스", "젤님버스"],
     mustContain: [["asics", "아식스"], ["nimbus", "님버스", "넘버스", "젤님버스", "젤 님버스"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      // Wave 600: production sample (IQR 2.27) — collab + 한정 색상 차단.
+      "언어펙티드", "unaffected", "x unaffected",
+      "민나노", "minnano", "x minnano",
+      "윈드앤씨", "wind and sea", "x wind and sea", "windandsea",
+      "럼 레이진", "rum raisin",
+    ],
     msrpKrw: 199000, released: 1999,
   },
   {
