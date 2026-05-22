@@ -4654,8 +4654,13 @@ export const CATALOG: Sku[] = [
     modelName: "Sony A7 III",
     aliases: ["Sony A7 III", "Sony A7M3", "소니 A7M3", "ILCE-7M3"],
     // Wave 86: body 요구 제거. A7R/A7S/A7C 모든 변형 격리 강화.
-    mustContain: [["a7m3", "a7 iii", "a7 3", "ilce 7m3"]],
-    mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "a7m2", "a7m4", "a7r3", "a7rm3", "a7r iii", "a7r3", "a7s3", "a7s iii", "a7s ii", "a7sm3", "a7c", "a7c2", "a7c ll", "a7cr", "a7c ii", "ilce-7cm2", "ilce 7cm2", "ilce-7sm2", "ilce 7sm2", "+ rf", "+ ef", "+ 28-75", "+ 24-", "+ 70-", "케이지"],
+    // Wave 617 (2026-05-22): production false positive — pid 409263245 '삼성 갤럭시 탭 A7 32GB' 100k 매물이
+    //   'a7 3' substring match로 잘못 매칭 ('a7 32gb' 안에 'a7 3' 들어감). 'a7 3' → 'a7 iii' 만 사용.
+    mustContain: [["a7m3", "a7 iii", "ilce 7m3"]],
+    mustNotContain: [...CAMERA_BODY_ONLY_NOISE, "a7m2", "a7m4", "a7r3", "a7rm3", "a7r iii", "a7r3", "a7s3", "a7s iii", "a7s ii", "a7sm3", "a7c", "a7c2", "a7c ll", "a7cr", "a7c ii", "ilce-7cm2", "ilce 7cm2", "ilce-7sm2", "ilce 7sm2", "+ rf", "+ ef", "+ 28-75", "+ 24-", "+ 70-", "케이지",
+      // Wave 617: 다른 카테고리 false positive (Galaxy Tab A7 등).
+      "갤럭시", "galaxy", "삼성", "samsung", "tab a7", "탭 a7", "탭a7",
+    ],
     msrpKrw: 2499000,
     released: 2018,
   },
