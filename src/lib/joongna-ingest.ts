@@ -53,6 +53,7 @@ type JoongnaIngestConfig = {
   queryLimit: number;
   delayMs: number;
   timeoutMs: number;
+  detailConcurrency: number;
 };
 
 export type JoongnaIngestResult = {
@@ -278,6 +279,7 @@ async function configFromEnvAndParams(params?: URLSearchParams): Promise<Joongna
   const explicitDetailsPerQuery = Boolean(params?.get("detailsPerQuery"));
   const explicitMaxDetails = Boolean(params?.get("maxDetails") ?? params?.get("max"));
   const explicitDelayMs = Boolean(params?.get("delayMs"));
+  const explicitDetailConcurrency = Boolean(params?.get("detailConcurrency"));
   return {
     queries: mergedQueries.queries.length > 0 ? mergedQueries.queries : DEFAULT_SEED_QUERIES,
     queryPoolSize: seedQueries.length + readyCatalogQueries.length,
@@ -308,6 +310,12 @@ async function configFromEnvAndParams(params?: URLSearchParams): Promise<Joongna
       10_000,
       1_000,
       20_000,
+    ),
+    detailConcurrency: boundedInt(
+      params?.get("detailConcurrency") ?? process.env.JOONGNA_INGEST_DETAIL_CONCURRENCY,
+      2,
+      1,
+      explicitDetailConcurrency ? 8 : 2,
     ),
   };
 }
@@ -1170,8 +1178,7 @@ export async function runJoongnaIngest(options: {
   let detailAttempts = 0;
   let detail404 = 0;
   let detail5xx = 0;
-  for (let index = 0; index < detailTargets.length; index += 1) {
-    const target = detailTargets[index];
+  for (let index = 0; index < detailTargets.length; index += config.detailConcurrency) {
     if (shouldStopForJoongnaDeadline(options.deadlineMs)) {
       budgetStopped = true;
       if (queueMode) {
@@ -1185,9 +1192,30 @@ export async function runJoongnaIngest(options: {
       }
       break;
     }
-    detailAttempts += 1;
-    try {
-      const detail = await fetchJoongnaDetail(target.url, config.timeoutMs);
+
+    const wave = detailTargets.slice(index, index + config.detailConcurrency);
+    const waveResults = await Promise.all(wave.map(async (target) => {
+      try {
+        const detail = await fetchJoongnaDetail(target.url, config.timeoutMs);
+        return { target, detail, error: null as string | null };
+      } catch (err) {
+        const message = err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120);
+        return { target, detail: null, error: message };
+      }
+    }));
+
+    for (const result of waveResults) {
+      detailAttempts += 1;
+      const { target, detail, error } = result;
+      if (!detail) {
+        detail5xx += 1;
+        detailFetchFailures.push(`${target.url}:${error ?? "unknown_error"}`);
+        if (target.claim) {
+          detailQueueFailedClaims.push({ claim: target.claim, error: error ?? "unknown_error" });
+        }
+        continue;
+      }
+
       details.push(detail);
       if (detail.status === 404) detail404 += 1;
       if (detail.status >= 500) detail5xx += 1;
@@ -1203,16 +1231,10 @@ export async function runJoongnaIngest(options: {
       }
       if (detail.blockSignal.blocked) {
         blockedSignals.push(detail.blockSignal);
-        break;
-      }
-    } catch (err) {
-      detail5xx += 1;
-      const message = err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120);
-      detailFetchFailures.push(`${target.url}:${message}`);
-      if (target.claim) {
-        detailQueueFailedClaims.push({ claim: target.claim, error: message });
       }
     }
+
+    if (blockedSignals.some((signal) => signal.blocked)) break;
     if (config.delayMs > 0) await sleep(config.delayMs);
   }
 
@@ -1286,6 +1308,7 @@ export async function runJoongnaIngest(options: {
       queryLimit: config.queryLimit,
       maxDetails: config.maxDetails,
       detailsPerQuery: config.detailsPerQuery,
+      detailConcurrency: config.detailConcurrency,
       queueMode,
       detailQueueEnqueued,
       detailQueueClaimed,
