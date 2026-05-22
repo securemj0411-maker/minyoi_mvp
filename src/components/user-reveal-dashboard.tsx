@@ -9,6 +9,8 @@ import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import { buyPriceGuidance, verdictUiLabel } from "@/lib/buy-price-guidance";
+import { categoryFromComparableKey } from "@/lib/category-readiness";
+import { detectBrandDepth } from "@/lib/category-brand-depth";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type RevealItem = {
@@ -1611,6 +1613,27 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                             title={`차익 +${signedProfitRange(guidance.currentProfit, guidance.currentProfit).replace("+", "")} · 협상 시도 ${signedProfitRange(guidance.negotiationTarget, guidance.negotiationTarget).replace("+", "")} 이하 / ${signedProfitRange(guidance.breakEven, guidance.breakEven).replace("+", "")} 이상에 사면 손해`}
                           >
                             {label.card}
+                          </span>
+                        );
+                      })()}
+                      {/* Wave launch-17 (3 화면 일관성): 가품 위험 chip — high counterfeit brand 만.
+                       * 메모리 룰: 일반인 보호 + 3 화면 (admin / user / modal) 일관. */}
+                      {(() => {
+                        if (isTerminal) return null;
+                        const category = categoryFromComparableKey(item.marketBasis?.comparableKey ?? null);
+                        const brandDepth = detectBrandDepth(category, {
+                          skuId: item.skuId ?? null,
+                          skuName: item.skuName ?? null,
+                          name: item.name ?? null,
+                        });
+                        if (!brandDepth || brandDepth.brand.counterfeitRisk !== "high") return null;
+                        return (
+                          <span
+                            className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-900 ring-1 ring-amber-300 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900/60 sm:px-2"
+                            title={`${brandDepth.brand.label} = 가품 위험 큰 브랜드. 정품 사진 확인 필수.`}
+                          >
+                            <span aria-hidden="true">⚠</span>
+                            <span>정품 확인</span>
                           </span>
                         );
                       })()}

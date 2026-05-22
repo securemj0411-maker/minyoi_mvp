@@ -15,6 +15,8 @@ import { DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-lo
 import { CATALOG } from "@/lib/catalog";
 import { buildVerdicts, VERDICT_TONE_CLASS } from "@/lib/listing-verdicts";
 import { buyPriceGuidance, verdictUiLabel } from "@/lib/buy-price-guidance";
+import { categoryFromComparableKey } from "@/lib/category-readiness";
+import { detectBrandDepth } from "@/lib/category-brand-depth";
 
 type PoolItem = {
   pid: number;
@@ -590,6 +592,25 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                             title={`차익 +${krw(guidance.currentProfit)} · 협상 시도 ${krw(guidance.negotiationTarget)} / ${krw(guidance.breakEven)} 이상에 사면 손해`}
                           >
                             {label.card}
+                          </span>
+                        );
+                      })()}
+                      {/* Wave launch-17 (3 화면 일관성): 가품 위험 chip — high counterfeit brand 만. */}
+                      {(() => {
+                        const category = categoryFromComparableKey(item.comparableKey ?? null);
+                        const brandDepth = detectBrandDepth(category, {
+                          skuId: item.skuId ?? null,
+                          skuName: item.skuName ?? null,
+                          name: item.name ?? null,
+                        });
+                        if (!brandDepth || brandDepth.brand.counterfeitRisk !== "high") return null;
+                        return (
+                          <span
+                            className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-900 ring-1 ring-amber-300 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900/60"
+                            title={`${brandDepth.brand.label} = 가품 위험 큰 브랜드`}
+                          >
+                            <span aria-hidden="true">⚠</span>
+                            <span>정품 확인</span>
                           </span>
                         );
                       })()}

@@ -10,6 +10,8 @@ import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, Hou
 import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
 import KakaoLogo from "@/components/kakao-logo";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
+import { categoryFromComparableKey } from "@/lib/category-readiness";
+import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
@@ -1085,6 +1087,22 @@ export default function ExploreClient({
     return () => clearTimeout(t);
   }, []);
 
+  // Wave launch-17 #3: 모바일 뒤로가기 (swipe-back / 안드로이드 hardware back) → 모달 닫기.
+  // pack-reveal-modal 와 동일 패턴. history.pushState 박고 popstate 시 close.
+  useEffect(() => {
+    if (!refreshModalOpen) return;
+    const state = { minyoi_refresh_modal: true };
+    window.history.pushState(state, "");
+    const handlePopState = () => {
+      setRefreshModalAnimating(false);
+      setRefreshModalOpen(false);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [refreshModalOpen]);
+
   // Wave 341 + 344: URL state sync — 새로고침/공유 시 카테고리/정렬 유지.
   // Wave 344: /me에 통합되면서 동적 pathname 사용 (이전엔 "/explore" 하드코딩 → /me에서 404 발생).
   const router = useRouter();
@@ -2113,12 +2131,53 @@ export default function ExploreClient({
                             : hoursAgoLabel(item.lastVerifiedAt)}
                         </span>
                         <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
+                        {/* Wave launch-17: 가품 위험 chip — 메인 feed 카드에서도 1차 노출 (사용자 보호). */}
+                        {(() => {
+                          const category = categoryFromComparableKey(item.comparableKey ?? null);
+                          const brandDepth = detectBrandDepth(category, {
+                            skuId: item.skuId ?? null,
+                            skuName: item.skuName ?? null,
+                            name: item.name ?? null,
+                          });
+                          if (!brandDepth || brandDepth.brand.counterfeitRisk !== "high") return null;
+                          return (
+                            <span
+                              className="flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 font-bold text-amber-900 ring-1 ring-amber-300 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900/60"
+                              title={`${brandDepth.brand.label} = 가품 위험 큰 브랜드`}
+                            >
+                              <span aria-hidden="true">⚠</span>
+                              정품 확인
+                            </span>
+                          );
+                        })()}
                         {isPremiumSeller ? (
                           <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
                             <TrophyIcon className="h-3 w-3" />
                             우수 셀러
                           </span>
                         ) : null}
+                        {/* Wave launch-17 #2: 신규 셀러 chip — shopReviewCount=0 + 가품 위험 큰 카테고리 = 추가 주의. */}
+                        {(() => {
+                          if (isPremiumSeller) return null;
+                          if (item.sellerReviewCount > 0) return null;
+                          const category = categoryFromComparableKey(item.comparableKey ?? null);
+                          const brandDepth = detectBrandDepth(category, {
+                            skuId: item.skuId ?? null,
+                            skuName: item.skuName ?? null,
+                            name: item.name ?? null,
+                          });
+                          // 고위험 카테고리 (가품 위험 high) 만 chip — 일반 카테고리는 신규 셀러 OK
+                          if (!brandDepth || brandDepth.brand.counterfeitRisk !== "high") return null;
+                          return (
+                            <span
+                              className="flex items-center gap-0.5 rounded-full bg-rose-50 px-1.5 py-0.5 font-bold text-rose-700 ring-1 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-200 dark:ring-rose-900/60"
+                              title="이 셀러는 거래 후기가 아직 없어요. 명품/음향처럼 가품 위험 큰 상품은 더 보수적으로 확인하세요."
+                            >
+                              <span aria-hidden="true">!</span>
+                              신규 셀러
+                            </span>
+                          );
+                        })()}
                         {shippingChip ? (
                           <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                             {shippingChip}
