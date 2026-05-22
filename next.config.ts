@@ -29,11 +29,6 @@ export default withSentryConfig(nextConfig, {
   // source map upload — SENTRY_AUTH_TOKEN env 있을 때만 동작.
   widenClientFileUpload: true,
 
-  // tree-shake Sentry SDK debug 로직 — 번들 size ↓.
-  disableLogger: true,
-
-  // React component name annotate — 비활성 (성능 우선).
-  reactComponentAnnotation: {
-    enabled: false,
-  },
+  // Wave launch-13: disableLogger + reactComponentAnnotation 제거.
+  // Sentry v10 에서 deprecated + Turbopack (Next 16) 무시. build log 노이즈만 ↑.
 });
