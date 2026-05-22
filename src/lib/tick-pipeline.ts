@@ -2520,8 +2520,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   shoe: "wave92-shoe-v23",
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
   bag: "wave92-bag-v23",
-  // Wave 680 (2026-05-22): clothing v34 — bape_hoodie PONR/Patchwork/85주년/톰제리/가품 시그널 차단 후 lane release.
-  clothing: "wave216-clothing-v34",
+  // Wave 681 (2026-05-22): clothing v35 — bape_hoodie_zip + bape_crewneck 동일 패턴 narrow 후 lane release (BAPE family 4 lane 다 ready).
+  clothing: "wave216-clothing-v35",
   bike: "wave92-fashion-mobility-v7",
   // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
   // full-unit pollution for these active pool categories.
@@ -5505,9 +5505,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const skuMedianUnavailableMarketInvalidations = await enqueueSkuMedianUnavailableMarketInvalidations(
     Math.min(Math.max(config.tickScoreLimit, 100), 250),
   );
-  const recoveredMarketInvalidatedPoolDirtyMarked = await markRecoveredMarketInvalidatedPoolRowsDirty(
-    Math.min(Math.max(config.tickScoreLimit, 100), 250),
-  );
+  // Wave launch-44 (사용자 짚음 "invalidated to ready cron 해결책"):
+  //   markRecoveredMarketInvalidatedPoolRowsDirty 호출 제거. recovery-worker (별도 cron) 로 이전.
+  //   score_worker 부담 ↓ (33% timeout 대응) + recovery 자체 처리량 ↑ (큰 limit 가능).
   const poolAiAuditResidues = await invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000));
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
@@ -5518,7 +5518,6 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     score_pool_stale_parser_residue_invalidated_rows: poolStaleParserResidues,
     score_stale_invalidated_pool_dirty_marked_rows: staleInvalidatedPoolDirtyMarked,
     score_sku_median_unavailable_market_invalidations: skuMedianUnavailableMarketInvalidations,
-    score_recovered_market_invalidated_pool_dirty_marked_rows: recoveredMarketInvalidatedPoolDirtyMarked,
     score_pool_ai_audit_residue_invalidated_rows: poolAiAuditResidues,
   };
   const rows = await loadScorableRows(config.tickScoreLimit);
