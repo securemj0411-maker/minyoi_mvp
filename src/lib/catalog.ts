@@ -9676,6 +9676,13 @@ export const CATALOG: Sku[] = [
       "콜라보", "collab", "puma", "푸마", "adidas", "아디다스", "aape", "오마주", "fubu", "푸부",
       "lacoste", "라코스테", "tommy", "타미", "자운드", "jound",
       "네이버후드", "neighborhood", "wtaps", "더블탭스", "갓 셀렉션", "god selection",
+      // Wave 635: BAPE Shark 한정 colorway/variant 차단 (시세 600k+ outlier vs 일반 ~250k).
+      "스켈레톤 샤크", "skeleton shark", "skeleton",
+      "퍼스트 카모", "first camo",
+      "스플릿 카모", "split camo",
+      "메가 샤크", "mega shark", "메가샤크",
+      "보아 후드", "boa hoodie", "보아샤크",
+      "네온 카모", "neon camo",
     ],
     msrpKrw: 450000, released: 2005,
     // Wave 236f (2026-05-19): audit 발견 — BAPE Shark 패턴이 pants/tee/조거에도 출시 (multi-line model).
