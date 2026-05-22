@@ -501,7 +501,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   tnf_nuptse_1996: { status: "ready", label: "TNF 1996 Retro Nuptse", note: "Wave 198" },
   tnf_mountain_jacket: { status: "ready", label: "TNF Mountain Jacket (Gore-Tex)", note: "Wave 198" },
   tnf_denali_fleece: { status: "ready", label: "TNF Denali Fleece", note: "Wave 198" },
-  tnf_purple_label: { status: "blocked", label: "TNF Purple Label (일본 Nanamica)", note: "Wave 407: Purple Label line mixes shirts/shorts/outerwear; needs model/product split." },
+  tnf_purple_label: { status: "ready", label: "TNF Purple Label (일본 Nanamica)", note: "Wave 683 release — 일본 정품 라인, product_type별 comparable_key 자동 분리됨 (셔츠 5만 vs 다운 56만). 몽키타임/빔스/Fragment collab + 가품 시그널 차단." },
   tnf_supreme_collab: { status: "blocked", label: "Supreme × TNF (legacy laneKey)", note: "Wave 407: legacy broad hold. Use model-specific Supreme x TNF lanes." },
   tnf_supreme_collab_broad: { status: "blocked", label: "Supreme × TNF (broad fallback — 기타 자켓/베스트)", note: "Wave 407: broad hold. Use model-specific Supreme x TNF lanes." },
   // Wave 245.3 (2026-05-19): Supreme × TNF 자켓 모델별 narrow 7개 신설 (production 107건 측정, 자켓 53건/50%).

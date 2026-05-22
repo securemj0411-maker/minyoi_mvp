@@ -7552,7 +7552,16 @@ export const CATALOG: Sku[] = [
     // Wave 229 (2026-05-19) Iter1: clothing SKU 인데 토트백/가방 매물 매칭 → cross-category 차단.
     mustNotContain: ["supreme", "슈프림", "키즈", "kids",
       "가방", "bag", "backpack", "토트백", "tote", "숄더백", "크로스백", "메신저", "messenger", "월렛", "wallet", "지갑",
-      "운동화", "sneaker", "스니커즈", "부츠", "boot", "샌들"],
+      "운동화", "sneaker", "스니커즈", "부츠", "boot", "샌들",
+      // Wave 683 (2026-05-22): spread 15x — collab/한정 차단 (Purple Label 자체 가격 ±2x이지만 collab은 +50%).
+      "몽키타임", "monkey time", "beauty youth",
+      "빔스", "beams", "x beams",
+      "유나이티드 애로우", "united arrows",
+      "fragment", "프래그먼트",
+      "셀럽 착용", "지디 착용", "지드래곤",
+      // 가품 시그널
+      "흑계", "대장급", "정품 택O",
+    ],
     msrpKrw: 290000, released: 2003,
   },
   {
