@@ -1520,7 +1520,7 @@ export default function ExploreClient({
       ) : null}
 
       {/* Wave 383+393: 6h lag 제거 + 사이트 핵심 가치 (band-aware 비교) 강조. */}
-      <div className="mb-2 rounded-xl border border-[#e7dece] bg-[#fffaf1] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="mb-2 hidden rounded-xl border border-[#e7dece] bg-[#fffaf1] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40 sm:block">
         <div className="flex items-center gap-1.5 text-[12px] font-bold text-emerald-800 dark:text-emerald-300">
           <span aria-hidden="true">⚖</span>
           <span>같은 상태 매물끼리만 비교 — 진짜 싼 매물만</span>
@@ -1545,7 +1545,7 @@ export default function ExploreClient({
       </div>
 
       {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음). */}
-      <div className="sticky top-0 z-20 -mx-3 mb-2 flex items-center gap-1.5 bg-[#f6f1e8]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:px-6">
+      <div className="sticky top-0 z-20 -mx-3 mb-2 flex flex-col items-stretch gap-1.5 bg-[#f6f1e8]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:flex-row sm:items-center sm:px-6">
         <div className="relative min-w-0 flex-1">
           <button
             type="button"
@@ -1632,41 +1632,43 @@ export default function ExploreClient({
             ) : null}
           </div>
         </div>
-        <select
-          data-budget-filter-select
-          value={budgetFilter}
-          onChange={(e) => {
-            updateBudgetFilter(e.target.value as BudgetFilterOption);
-            setScrapOnly(false);
-          }}
-          className="shrink-0 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
-          aria-label="예산 필터"
-        >
-          {BUDGET_FILTER_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>{option.shortLabel}</option>
-          ))}
-        </select>
-        <select
-          value={source}
-          onChange={(e) => {
-            setSource(e.target.value as SourceOption);
-            setScrapOnly(false);
-          }}
-          className="shrink-0 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
-        >
-          {SOURCE_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>{option.label}</option>
-          ))}
-        </select>
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as SortOption)}
-          className="shrink-0 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300"
-        >
-          <option value="profit_desc">차익순</option>
-          <option value="price_asc">매입단가순</option>
-          <option value="latest">최신순</option>
-        </select>
+        <div className="grid w-full grid-cols-3 gap-1.5 sm:flex sm:w-auto sm:items-center">
+          <select
+            data-budget-filter-select
+            value={budgetFilter}
+            onChange={(e) => {
+              updateBudgetFilter(e.target.value as BudgetFilterOption);
+              setScrapOnly(false);
+            }}
+            className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
+            aria-label="예산 필터"
+          >
+            {BUDGET_FILTER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.shortLabel}</option>
+            ))}
+          </select>
+          <select
+            value={source}
+            onChange={(e) => {
+              setSource(e.target.value as SourceOption);
+              setScrapOnly(false);
+            }}
+            className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
+          >
+            {SOURCE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortOption)}
+            className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
+          >
+            <option value="profit_desc">차익순</option>
+            <option value="price_asc">매입단가순</option>
+            <option value="latest">최신순</option>
+          </select>
+        </div>
       </div>
 
       {/* 로딩 / 에러 / 매물 grid */}
