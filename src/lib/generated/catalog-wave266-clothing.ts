@@ -842,6 +842,11 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "베스트", "vest", "조끼",
       // 키즈
       "꼬마", "주니어",
+      // Wave 633: 한정 라인 차단 (broad 시세 부풀림).
+      "레더 눕시", "레더눕시", "가죽 눕시", "leather nuptse", "leather-nuptse",
+      "화이트라벨", "화이트 라벨", "white label", "white-label",
+      "노벨티 눕시", "novelty nuptse", "novelty",
+      "카모 눕시", "camo nuptse",
     ],
     msrpKrw: 459000,
     released: 1996,
