@@ -9455,6 +9455,10 @@ export const CATALOG: Sku[] = [
       "재팬시티", "재팬 시티", "japan city",
       "stash", "x stash", "스태쉬",
       "러셀", "russell", "x russell",
+      // Wave 594: Union LA collab 추가.
+      "union", "유니온", "x union", "union x",
+      // Wave 594b: COACH collab 추가 (c_grade audit).
+      "coach", "코치", "x coach", "coach x", "bape x coach",
       "네이버후드", "neighborhood", "바시티",
       "몽클레어", "몽클레르", "moncler",
       "stussy", "스투시 x bape", "스투시x베이프",
@@ -9505,6 +9509,11 @@ export const CATALOG: Sku[] = [
       "톰과제리", "tom and jerry", "chocolate", "chocolte",
       // Wave 591 (2026-05-22): 스와로브스키 OG 한정 (49만 outlier vs 일반 6.5~30만 +6배).
       "스와로브스키", "swarovski", "1st 스와로브스키",
+      // Wave 594c: 추가 한정 디자인 차단 (sample audit — a_grade spread 4.3x).
+      "라인스톤", "rhinestone", "크리스탈 라인스톤",
+      "유니언잭", "union jack",
+      "시티 카모", "city camo", "페인팅 크루넥",
+      "25ss", "25fw", "아트 카모", "art camo",
     ],
     msrpKrw: 280000, released: 1993,
   },
