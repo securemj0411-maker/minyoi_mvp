@@ -9270,7 +9270,12 @@ export const CATALOG: Sku[] = [
     modelName: "Nike Air Max 90 (broad)",
     aliases: ["Nike Air Max 90", "나이키 에어맥스 90"],
     mustContain: [["nike", "나이키"], ["에어맥스 90", "에어맥스90", "나이키에어맥스90", "에어맥스90다크", "air max 90", "airmax 90", "airmax90"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "에어맥스 1", "에어맥스 95", "에어맥스 97", "air max 1", "air max 95", "air max 97", "off-white", "오프화이트", "꼼데", "cdg", "지갑", "wallet", "카드"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "에어맥스 1", "에어맥스 95", "에어맥스 97", "air max 1", "air max 95", "air max 97", "off-white", "오프화이트", "꼼데", "cdg", "지갑", "wallet", "카드",
+      // Wave 623: collab/한정 차단.
+      "올라올루", "olaolu", "slawn", "올라올루 슬론",
+      "밸런타인데이 한정", "qs 밸런타인", "qs valentine",
+      "patta", "파타",
+    ],
     msrpKrw: 159000, released: 1990,
   },
   {
