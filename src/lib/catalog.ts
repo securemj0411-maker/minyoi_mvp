@@ -7924,6 +7924,13 @@ export const CATALOG: Sku[] = [
       "디지스탁", "digistack",
       "월드투어 후드", "world tour hoodie", "world tour 후드",
       "부아나 피그먼트", "boana pigment",
+      // Wave 655 (2026-05-22): c_grade spread 8.4x audit — 월드투어/CPFM/월드 트라이브/SKULL & BONES 등 추가.
+      "월드투어", "world tour", "월드 투어",  // Wave 631 "월드투어 후드"만 → 모든 월드투어 variant
+      "월드 트라이브", "월드트라이브", "world tribe", "world-tribe",
+      "skull & bones", "skull and bones", "스컬 본즈", "스컬 앤 본즈",
+      "id 매거진", "iD 매거진", "id magazine", "스투시 id", "stussy id",
+      "스택드", "stacked", "스택드 피그먼트",
+      "다이아 후드", "diamond hoodie", "피그먼트 다이아",
     ],
     msrpKrw: 159000, released: 2020,
   },
