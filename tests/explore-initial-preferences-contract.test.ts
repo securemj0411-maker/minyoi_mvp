@@ -11,7 +11,6 @@ function source(path: string) {
 test("ExploreClient loads the broad feed immediately without a preference gate", () => {
   const explore = source("src/components/explore-client.tsx");
 
-  assert.match(explore, /예산\/성향 질문 제거/);
   assert.match(explore, /FIRST_FEED_ONBOARDING_STORAGE_KEY/);
   assert.match(explore, /scopedStorageKey/);
   assert.match(explore, /storageScope/);
@@ -29,8 +28,9 @@ test("ExploreClient loads the broad feed immediately without a preference gate",
   assert.doesNotMatch(explore, /잠시 후 갱신/);
   assert.match(explore, /fixed inset-0 z-\[90\]/);
   assert.match(explore, /오늘 볼 만한/);
-  assert.match(explore, /MIN_BUDGET_FILTER_RESULTS/);
-  assert.match(explore, /budgetFiltered\.length >= MIN_BUDGET_FILTER_RESULTS/);
+  assert.match(explore, /function budgetApiParam/);
+  assert.match(explore, /params\.set\("budget", budgetParam\)/);
+  assert.match(explore, /return budgetFiltered/);
   assert.match(explore, /15만원 이하/);
   assert.match(explore, /30만원 이하/);
   assert.match(explore, /50만원 이하/);
@@ -44,7 +44,7 @@ test("ExploreClient loads the broad feed immediately without a preference gate",
   assert.doesNotMatch(explore, /onClick=\{\(\) => onSelectBudget\(option\.value\)\}/);
   assert.doesNotMatch(explore, /writeBudgetFilterOption\(storageScope, budgetFilter\)/);
   assert.doesNotMatch(explore, /prefsInitialized|awaitingInitialPrefs|loadPreferences|savePreferences/);
-  assert.doesNotMatch(explore, /params\.set\("budget"|params\.set\("preference"/);
+  assert.doesNotMatch(explore, /params\.set\("preference"/);
 });
 
 test("Refresh modal does not show budget and preference summary controls", () => {

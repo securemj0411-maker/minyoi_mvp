@@ -371,8 +371,6 @@ const BUDGET_FILTER_OPTIONS: Array<{ value: BudgetFilterOption; label: string; s
   { value: "300000", label: "30만원 이하", shortLabel: "30만원↓", max: 300000 },
   { value: "500000", label: "50만원 이하", shortLabel: "50만원↓", max: 500000 },
 ];
-const MIN_BUDGET_FILTER_RESULTS = 6;
-
 const SCRAP_SNAPSHOTS_STORAGE_KEY = "minyoi_scrap_snapshots_v1";
 const LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY = "minyoi_saved_reveal_pids_v1";
 const FIRST_FEED_ONBOARDING_STORAGE_KEY = "minyoi_first_feed_value_hook_v1";
@@ -451,6 +449,13 @@ function writeDetailAccessSnapshot(storageScope: string, value: DetailAccessSnap
 
 function budgetFilterOption(value: BudgetFilterOption) {
   return BUDGET_FILTER_OPTIONS.find((option) => option.value === value) ?? BUDGET_FILTER_OPTIONS[0];
+}
+
+function budgetApiParam(value: BudgetFilterOption) {
+  if (value === "150000") return "150k";
+  if (value === "300000") return "300k";
+  if (value === "500000") return "500k";
+  return null;
 }
 
 function safetyStatNumber(value: unknown) {
@@ -1100,7 +1105,7 @@ export default function ExploreClient({
 
   // Wave 353: 카테고리 필터는 클라이언트 사이드 (서버 → 항상 다양화된 30개 풀, 클라가 필터링).
   // 정렬은 백엔드 유지 — 풀 구성 자체가 달라짐 (latest = 최신 30 vs profit_desc = 차익 상위 30).
-  // 2026-05-21: 서버 예산/성향 질문 제거. 희귀 pool이라 API는 전체 후보를 최대한 많이 가져오고, 예산은 클라이언트에서만 우선 필터링한다.
+  // Wave 514: 온보딩 예산은 서버 pool 요청에도 전달한다. 선택 직후 피드 자체가 예산권으로 다시 잡혀야 한다.
   const loadPool = useCallback(async (
     refresh: boolean,
     options?: { autoScrollNew?: boolean },
@@ -1116,6 +1121,8 @@ export default function ExploreClient({
       if (refresh) params.set("refresh", "1");
       if (sort !== "profit_desc") params.set("sort", sort);
       if (source !== "all") params.set("source", source);
+      const budgetParam = budgetApiParam(budgetFilter);
+      if (budgetParam) params.set("budget", budgetParam);
       // Wave 391: refresh 시 이미 본 pids 전달 → 백엔드가 제외하고 다른 매물 fetch.
       // 안 그러면 같은 풀에서 같은 30개 다양화 결과 → frontend dedupe 후 0개 추가.
       // itemsRef로 fresh 접근 (deps에 items 박으면 infinite loop).
@@ -1166,7 +1173,7 @@ export default function ExploreClient({
       setRefreshing(false);
       setLoading(false);
     }
-  }, [sort, source, storageScope]);
+  }, [budgetFilter, sort, source, storageScope]);
 
   const loadStats = useCallback(async () => {
     try {
@@ -1248,9 +1255,7 @@ export default function ExploreClient({
     const budget = budgetFilterOption(budgetFilter);
     if (!budget.max) return categoryFiltered;
     const budgetFiltered = categoryFiltered.filter((it) => it.price > 0 && it.price <= budget.max!);
-    // Pool이 희귀하므로 예산 필터가 화면을 1~3개로 죽이면 첫 경험이 망가진다.
-    // 최소 후보가 있을 때만 좁히고, 부족하면 전체 후보를 유지한다.
-    return budgetFiltered.length >= MIN_BUDGET_FILTER_RESULTS ? budgetFiltered : categoryFiltered;
+    return budgetFiltered;
   }, [budgetFilter, items, scrapItems, scrapOnly, selectedCategories]);
 
   // PackRevealModal용 result wrapper (single card)
