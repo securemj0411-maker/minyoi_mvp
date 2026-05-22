@@ -720,14 +720,14 @@ export const LANE_READINESS: LaneReadinessMap = {
   bape_shark_hoodie: { status: "ready", label: "BAPE Shark Hoodie (시그니처)", note: "Wave 214 한정" },
   matinkim_apparel: { status: "blocked", label: "Matin Kim Apparel (한국 designer)", note: "Wave 407: broad apparel hold until model-level audit." },
   reebok_apparel: { status: "blocked", label: "Reebok Apparel (트랙수트/티)", note: "Wave 407: broad apparel hold until model-level audit." },
-  arcteryx_apparel: { status: "blocked", label: "Arc'teryx Apparel (broad fallback)", note: "Wave 407: broad hold. Use Arc'teryx model lanes." },
+  arcteryx_apparel: { status: "ready", label: "Arc'teryx Apparel (broad fallback)", note: "Wave 688 release — narrow Beta/Gamma/Alpha/Atom/Vertex 다 ready, LEAF/System A/Fission/Solano/Gen 2.1 차단." },
   // Wave 218 (2026-05-19): Arc'teryx 모델별 narrow 5개 — 가격대 X 3-5 (Beta 600K vs Squamish 190K)
   arcteryx_beta: { status: "ready", label: "Arc'teryx Beta (SL/AR/LT)", note: "Wave 218 Gore-Tex" },
   arcteryx_gamma: { status: "ready", label: "Arc'teryx Gamma (MX/SL/LT)", note: "Wave 218 softshell" },
   arcteryx_alpha: { status: "ready", label: "Arc'teryx Alpha (SV/AR/FL)", note: "Wave 218 등반/expedition" },
   arcteryx_atom: { status: "ready", label: "Arc'teryx Atom (LT/SL/HW)", note: "Wave 218 insulated" },
   arcteryx_vertex_squamish: { status: "ready", label: "Arc'teryx Vertex / Squamish", note: "Wave 218 etc" },
-  arcteryx_broad: { status: "blocked", label: "Arc'teryx (broad fallback)", note: "Wave 407: broad hold. Use Arc'teryx model lanes." },
+  arcteryx_broad: { status: "ready", label: "Arc'teryx (broad fallback)", note: "Wave 688 release — narrow 5개 ready, 특수 라인 (LEAF/System A/Fission/Solano/Gen 2.1) cross-product 차단." },
   fila_apparel: { status: "blocked", label: "Fila Apparel", note: "Wave 407: broad apparel hold until model-level audit." },
   patagonia_apparel: { status: "ready", label: "Patagonia (broad fallback)", note: "Wave 687 release — broad fallback (narrow retro_x/shell/deep_pile/down 다 ready), 40주년/레거시/빈티지(80s/90s/00s)/US Made/딥파일 차단." },
   // Wave 219 (2026-05-19): Patagonia 3분리 — Retro X 199K / Down 290K / Shell 199K

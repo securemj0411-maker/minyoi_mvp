@@ -10080,6 +10080,15 @@ export const CATALOG: Sku[] = [
       "발렌시아가 x", "x 발렌시아가", "balenciaga x",
       "빔즈", "beams",  // BEAMS 콜라보 (별도 시세군)
       "정품 아크테릭스 빔즈",
+      // Wave 688 (2026-05-22): 특수 라인 / 군용 차단 (broad fallback에 흘러옴).
+      "리프", "leaf", "리프 콜드", "leaf cold", "리프 알파", "leaf alpha",  // LEAF (군용/방산)
+      "시스템 a", "system a", "오지 인슐레이티드", "ogi insulated",
+      "피션", "fission",  // Fission 고어텍스 한정
+      "솔라노", "solano", "솔라노 후디",
+      "베일런스", "veilance",  // 이미 있음, 변형
+      "랄로", "라로", "rallo",
+      // Gen 2.1 같은 generation 표기 (한정/특수)
+      "gen2", "gen 2", "gen2.1", "2.1 gen",
     ],
     msrpKrw: 400000, released: 1989,
   },

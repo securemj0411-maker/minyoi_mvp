@@ -2520,8 +2520,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   shoe: "wave92-shoe-v23",
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
   bag: "wave92-bag-v23",
-  // Wave 687 (2026-05-22): clothing v41 — patagonia_apparel + patagonia_down release (40주년/빈티지/US Made/딥파일 차단).
-  clothing: "wave216-clothing-v41",
+  // Wave 688 (2026-05-22): clothing v42 — arcteryx_broad + arcteryx_apparel release (LEAF/System A/Fission/Solano/Gen 2.1 차단).
+  clothing: "wave216-clothing-v42",
   bike: "wave92-fashion-mobility-v7",
   // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
   // full-unit pollution for these active pool categories.
