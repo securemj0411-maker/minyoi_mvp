@@ -1946,46 +1946,31 @@ export default function ExploreClient({
            * 사용자가 가격 필터 끝까지 내려서 매물 부족할 때, 우리가 얼마나 빡세게 거른 후
            * 이렇게 보여주는지 안내. 사회적 증명 + 정직. */}
           {stats && (stats.totalTracked || stats.caughtToday || stats.scannedToday) ? (
-            <div className="mt-5 rounded-xl border border-amber-300/60 bg-white/70 px-4 py-3 text-left dark:border-amber-900/50 dark:bg-zinc-950/40">
-              <div className="text-[11px] font-black uppercase tracking-[0.12em] text-amber-800 dark:text-amber-300">
-                왜 이게 전부냐면
+            <div className="mt-5 rounded-xl border border-zinc-200 bg-white px-4 py-4 text-left dark:border-zinc-800 dark:bg-zinc-950/60">
+              <div className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">
+                지금 살만한 매물만 모은 결과예요
               </div>
-              <ul className="mt-2 space-y-1.5 text-[11.5px] font-medium leading-5 text-zinc-700 dark:text-zinc-300">
+              <ul className="mt-3 space-y-2 text-[12.5px] leading-5 text-zinc-600 dark:text-zinc-400">
                 {stats.totalTracked ? (
-                  <li className="flex items-baseline gap-1.5">
-                    <span aria-hidden="true">📊</span>
-                    <span>
-                      현재 <b className="font-black text-zinc-900 dark:text-zinc-100">{stats.totalTracked.toLocaleString("ko-KR")}건</b> 매물을 추적 중이지만,
-                    </span>
+                  <li>
+                    매물 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.totalTracked.toLocaleString("ko-KR")}건</b>을 추적하고 있어요
                   </li>
                 ) : null}
                 {stats.scannedToday ? (
-                  <li className="flex items-baseline gap-1.5">
-                    <span aria-hidden="true">🤖</span>
-                    <span>
-                      AI 가 오늘만 <b className="font-black text-zinc-900 dark:text-zinc-100">{stats.scannedToday.toLocaleString("ko-KR")}건</b>을 분류·필터하고,
-                    </span>
+                  <li>
+                    오늘 AI 가 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.scannedToday.toLocaleString("ko-KR")}건</b>을 살펴봤어요
                   </li>
                 ) : null}
-                <li className="flex items-baseline gap-1.5">
-                  <span aria-hidden="true">🛡</span>
-                  <span>
-                    가품 위험·시세 어그로·중복 셀러를 제외한 <b className="font-black text-zinc-900 dark:text-zinc-100">진짜 살만한 매물만</b> 보여드려요.
-                  </span>
+                <li>
+                  가품·어그로·중복 셀러를 빼고 보여드려요
                 </li>
                 {stats.caughtToday ? (
-                  <li className="flex items-baseline gap-1.5">
-                    <span aria-hidden="true">⚡</span>
-                    <span>
-                      오늘 <b className="font-black text-zinc-900 dark:text-zinc-100">{stats.caughtToday.toLocaleString("ko-KR")}건</b>이 이미 거래 완료됐어요 (방금 잡은 매물).
-                    </span>
+                  <li>
+                    오늘 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.caughtToday.toLocaleString("ko-KR")}건</b>은 이미 거래됐어요
                   </li>
                 ) : null}
-                <li className="flex items-baseline gap-1.5">
-                  <span aria-hidden="true">🔄</span>
-                  <span>
-                    매물은 <b className="font-black text-zinc-900 dark:text-zinc-100">실시간으로 업데이트</b>되니까 잠시 후 다시 와보세요.
-                  </span>
+                <li>
+                  잠시 후 다시 와보세요. 매물은 실시간으로 갱신돼요
                 </li>
               </ul>
             </div>
@@ -2312,46 +2297,31 @@ export default function ExploreClient({
                * 사용자가 끝까지 스크롤하고 "왜 이것밖에 없냐" 의문 → 우리 시스템이 얼마나
                * 빡세게 거른 후 보여주는지 사회적 증명 + 정직. */}
               {creditFeedEnabled && feedExhausted && stats && (stats.totalTracked || stats.scannedToday) ? (
-                <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
-                  <div className="text-[10.5px] font-black uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">
-                    왜 이것밖에 안 보이냐면
+                <div className="mt-4 rounded-xl border border-zinc-200 bg-white px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/60">
+                  <div className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">
+                    지금 살만한 매물만 모은 결과예요
                   </div>
-                  <ul className="mt-2 space-y-1.5 text-[11.5px] font-medium leading-5 text-zinc-700 dark:text-zinc-300">
+                  <ul className="mt-2.5 space-y-2 text-[12px] leading-5 text-zinc-600 dark:text-zinc-400">
                     {stats.totalTracked ? (
-                      <li className="flex items-baseline gap-1.5">
-                        <span aria-hidden="true">📊</span>
-                        <span>
-                          현재 <b className="font-black text-zinc-900 dark:text-zinc-100">{stats.totalTracked.toLocaleString("ko-KR")}건</b> 매물을 추적 중이지만,
-                        </span>
+                      <li>
+                        매물 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.totalTracked.toLocaleString("ko-KR")}건</b>을 추적하고 있어요
                       </li>
                     ) : null}
                     {stats.scannedToday ? (
-                      <li className="flex items-baseline gap-1.5">
-                        <span aria-hidden="true">🤖</span>
-                        <span>
-                          AI 가 오늘만 <b className="font-black text-zinc-900 dark:text-zinc-100">{stats.scannedToday.toLocaleString("ko-KR")}건</b>을 분류·필터하고,
-                        </span>
+                      <li>
+                        오늘 AI 가 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.scannedToday.toLocaleString("ko-KR")}건</b>을 살펴봤어요
                       </li>
                     ) : null}
-                    <li className="flex items-baseline gap-1.5">
-                      <span aria-hidden="true">🛡</span>
-                      <span>
-                        가품 위험·시세 어그로·중복 셀러를 제외한 <b className="font-black text-zinc-900 dark:text-zinc-100">진짜 살만한 매물만</b> 남깁니다.
-                      </span>
+                    <li>
+                      가품·어그로·중복 셀러를 빼고 보여드려요
                     </li>
                     {stats.caughtToday ? (
-                      <li className="flex items-baseline gap-1.5">
-                        <span aria-hidden="true">⚡</span>
-                        <span>
-                          오늘 <b className="font-black text-zinc-900 dark:text-zinc-100">{stats.caughtToday.toLocaleString("ko-KR")}건</b>이 이미 거래 완료됐어요.
-                        </span>
+                      <li>
+                        오늘 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.caughtToday.toLocaleString("ko-KR")}건</b>은 이미 거래됐어요
                       </li>
                     ) : null}
-                    <li className="flex items-baseline gap-1.5">
-                      <span aria-hidden="true">🔄</span>
-                      <span>
-                        매물은 <b className="font-black text-zinc-900 dark:text-zinc-100">실시간으로 업데이트</b>되니까 잠시 후 다시 와보세요.
-                      </span>
+                    <li>
+                      잠시 후 다시 와보세요. 매물은 실시간으로 갱신돼요
                     </li>
                   </ul>
                 </div>
