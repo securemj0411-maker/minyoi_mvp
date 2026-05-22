@@ -2517,7 +2517,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // broad brand. Force stale rows to reparse so market samples stop sharing
   // generic `bag|backpack` and `shoe|broad` buckets.
   shoe: "wave92-shoe-v21",
-  bag: "wave92-bag-v21",
+  // Wave 659 (2026-05-22): bag v22 — Acne PVC Tote 나일론/캔버스/프린지 차단 (spread 8.73x).
+  bag: "wave92-bag-v22",
   // Wave 658 (2026-05-22): clothing v30 — Polo Pique 빅포니 성조기/USA/벤쿠버 한정 + acne_denim 상단 outlier.
   clothing: "wave216-clothing-v30",
   bike: "wave92-fashion-mobility-v7",

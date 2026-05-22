@@ -646,7 +646,7 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 // Wave 537 (2026-05-22) shoe v18: Acne Manhattan/Rockaway mixed titles are ambiguous and held out.
 const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v21";
 // Wave 538 (2026-05-22) bag v14: Longchamp Le Pliage requires explicit line text.
-const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v21";
+const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v22";
 // Wave 652 (2026-05-22): clothing v25 — TNF Nuptse broad 추가 변형 + adidas_trefoil 레더/세트.
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher

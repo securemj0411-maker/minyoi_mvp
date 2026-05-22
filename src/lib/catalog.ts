@@ -8759,7 +8759,10 @@ export const CATALOG: Sku[] = [
     brand: "Acne Studios", category: "bag", laneKey: "acne_pvc_tote",
     modelName: "Acne Studios PVC Tote / Logo Tote",
     aliases: ["Acne PVC Tote", "아크네 PVC 토트백", "아크네 토트"],
-    mustContain: [["acne", "아크네"], ["pvc", "토트", "tote"]],
+    // Wave 659 (2026-05-22): mustContain narrow — PVC + 토트 둘 다 강제.
+    //   이전: pvc OR 토트/tote — 모든 acne 토트 (나일론/캔버스/프린지) 흡수, spread 8.73x.
+    //   now: PVC 라인 단독 — 다른 토트는 broad bag SKU로 fallback.
+    mustContain: [["acne", "아크네"], ["pvc"], ["토트", "tote"]],
     // Wave 243 (2026-05-19): production audit — "테디 쇼퍼/테디 데님" 730k~1M 매물 broad PVC 매칭.
     // Wave 245.4 (2026-05-19): "무스비" (Musubi 한국 표기 다른 변형) 추가 차단 — production 220만 매물 발견.
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake",
@@ -8768,7 +8771,10 @@ export const CATALOG: Sku[] = [
       "여드름", "진정패치", "포켓몬", "치코리타", "클렌저", "클렌징폼", "폼클렌징", "화장품", "코스메틱",
       "테디 쇼퍼", "teddy shopper", "테디 데님", "teddy denim", "테디\\b",
       // Wave 492: Baker/dog-bag rows are not PVC/logo tote comparables.
-      "베이커백", "베이커 백", "baker bag", "댕댕이"],
+      "베이커백", "베이커 백", "baker bag", "댕댕이",
+      // Wave 659: 별도 라인 (나일론/캔버스/프린지) — 가격대 별개.
+      "나일론 토트", "nylon tote", "캔버스 토트", "canvas tote",
+      "프린지", "fringe", "페이퍼리", "papery"],
     msrpKrw: 250000, released: 2019,
     defaultProductType: "tote",
   },
