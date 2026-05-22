@@ -2518,8 +2518,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // generic `bag|backpack` and `shoe|broad` buckets.
   shoe: "wave92-shoe-v21",
   bag: "wave92-bag-v21",
-  // Wave 652 (2026-05-22): clothing v25 — TNF Nuptse broad 화이트라벨/노벨티 변형 + 1992/카모/에글론 + adidas_trefoil 레더/세트.
-  clothing: "wave216-clothing-v25",
+  // Wave 653 (2026-05-22): clothing v26 — 가품 거래 코드 워딩 ("느낌 아시", "저렴하게 판매") 글로벌 차단.
+  clothing: "wave216-clothing-v26",
   bike: "wave92-fashion-mobility-v7",
   // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
   // full-unit pollution for these active pool categories.

@@ -10861,6 +10861,13 @@ const GLOBAL_FASHION_NOISE: string[] = [
   "샘플", "박물관", "전시품", "디스플레이용", "display only",
   // Wave 231: 단순 옵션/사이즈 변형/리워크
   "리워크", "rework", "리메이크", "remake", "업사이클링", "upcycling",
+  // Wave 653 (2026-05-22): 가품 거래 코드 워딩 (combined match path 차단).
+  //   pid 408135119 Arc'teryx Beta SL 130k 가품 발견 ("느낌 아시니깐 연락주세요").
+  //   주의: "느낌" 단독은 line 10792에 박혀 있지만 substring collision 위험 — 명시 패턴만.
+  "느낌 아시", "느낌아시", "느낌 알", "느낌알",
+  "느낌 오시", "느낌오시",
+  "저렴하게 판매", "저렴하게드려요", "저렴하게 드려요",
+  "오시면 압니다", "와서 보시면", "사진 보시면", "사진보시면",
 ];
 
 // Wave 230: CATEGORY-specific cross-category noise.
