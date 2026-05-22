@@ -1441,9 +1441,14 @@ export default function ExploreClient({
   }, [scrollTargetPid, items]);
 
   // 필터/정렬 변경 시 자동 재로드.
+  // Wave launch-48 (사용자 짚음 "예산 선택 모달 뒤에 50만 매물 이미 보임"):
+  //   onboarding modal 떠 있으면 fetch skip. 사용자 예산 선택 후 first fetch.
+  //   selectFirstFeedBudget = setBudgetFilter + dismissFirstFeedOnboarding → 두 state batch update
+  //   → useEffect 재실행 (showFirstFeedOnboarding=false + budgetFilter 변경) → loadPool(false) 호출.
   useEffect(() => {
+    if (showFirstFeedOnboarding) return;
     void loadPool(false);
-  }, [loadPool]);
+  }, [loadPool, showFirstFeedOnboarding]);
 
   // Wave launch-39 (사용자 짚음): error 가드 추가. error 발생 시 IntersectionObserver
   // 자체 비활성 — 빨간 box 깜빡임의 근원이 sentinel 자동 retry.
