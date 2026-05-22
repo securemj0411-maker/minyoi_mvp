@@ -43,7 +43,9 @@ export async function GET() {
       headers: { "Cache-Control": `public, max-age=${CACHE_SECONDS}, s-maxage=${CACHE_SECONDS}` },
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: message, caughtToday: 0, freshLocked: 0 }, { status: 500 });
+    // Wave launch-15 (audit HIGH): public endpoint 인데 raw err.message 그대로 client 반환했던 거 fix.
+    // DB schema / PostgREST 에러 누출 차단. 상세 로그는 서버 console 만.
+    console.error("stats/pool failed", err instanceof Error ? err.message : String(err));
+    return NextResponse.json({ error: "stats_unavailable", caughtToday: 0, freshLocked: 0 }, { status: 500 });
   }
 }

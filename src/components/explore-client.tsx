@@ -1910,7 +1910,7 @@ export default function ExploreClient({
           <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
             {budgetFilter !== "all"
               ? "수익, 시세, 상태 조건을 통과한 매물만 보여주다 보니 오늘은 아직 이 가격대 후보가 부족해요."
-              : "매물 분석 중이에요. 곧 새 풀이 풀려요."}
+              : "오늘 잡은 매물이 충분치 않아요. 잠시 후 새로고침하면 새 매물이 보일 수 있어요."}
           </p>
           {budgetFilter !== "all" ? (
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
@@ -2156,7 +2156,7 @@ export default function ExploreClient({
                     : "계속 내려보면 새 매물이 이어져요"
                   : canRefresh
                     ? "다른 30개 매물 받을 수 있어요"
-                    : "다음 라운드 준비 중"}
+                    : "쿨다운 대기 중"}
               </div>
               <div className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {creditFeedEnabled

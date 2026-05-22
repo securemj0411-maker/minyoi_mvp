@@ -15,8 +15,10 @@ export async function verifyPortOnePayment(input: {
   expectedAmount: number;
 }): Promise<PortOneVerificationResult> {
   const apiSecret = process.env.PORTONE_API_SECRET?.trim();
-  const canSkipVerification =
-    process.env.NODE_ENV !== "production" || process.env.PORTONE_SKIP_VERIFY === "1";
+  // Wave launch-15 (audit HIGH): prod 에서는 PORTONE_SKIP_VERIFY 무시.
+  // 이전엔 prod 라도 env 켜면 검증 skip → ops 실수 시 위조 paymentId 무한 credit risk.
+  // 이제 dev / preview 에서만 skip 허용.
+  const canSkipVerification = process.env.NODE_ENV !== "production";
 
   if (!apiSecret) {
     if (canSkipVerification) {
