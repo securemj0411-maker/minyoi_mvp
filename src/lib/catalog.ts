@@ -10470,7 +10470,10 @@ export const CATALOG: Sku[] = [
     modelName: "BAPE STA (Bapesta 시그니처 신발)",
     aliases: ["BAPE STA", "Bapesta", "베이프스타", "베이프 스타"],
     mustContain: [["bape", "베이프"], ["sta", "스타"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "샤크 후드", "shark hoodie", "후드", "hoodie", "티셔츠"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "샤크 후드", "shark hoodie", "후드", "hoodie", "티셔츠",
+      // Wave 636: 한정 variant 차단 (Skull Sta + 새상품 한정 컬러).
+      "스컬 스타", "skull sta", "skullsta",
+    ],
     msrpKrw: 390000, released: 2002,
   },
   // Stussy 8 Ball Knit — 한정
