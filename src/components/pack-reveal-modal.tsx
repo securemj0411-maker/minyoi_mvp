@@ -6640,14 +6640,16 @@ export default function PackRevealModal({
               </div>
             ) : null}
 
-            {/* (B) Sticky nav bar — 사진 사라지면 등장 */}
+            {/* (B) Sticky nav bar — 사진 사라지면 등장.
+             * Wave launch-25 (사용자 짚음): 매물 이름 + 차익 추가. 스크롤 내려도
+             * "어떤 매물 보고 있더라 / 차익 얼마였더라" 잊지 않게 (토스 결제 흐름 톤). */}
             <div
               className={`pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-zinc-200 bg-[#f5f7fb]/95 backdrop-blur transition-opacity duration-200 dark:border-zinc-800 dark:bg-zinc-900/95 ${
                 photoVisible ? "opacity-0" : "opacity-100"
               }`}
             >
-              <div className="flex items-center justify-between gap-1 px-3 py-2 sm:px-4">
-                <div className="flex items-center gap-1">
+              <div className="flex items-center justify-between gap-2 px-2 py-2 sm:px-3">
+                <div className="flex shrink-0 items-center gap-0.5">
                   <button
                     type="button"
                     onClick={handleClose}
@@ -6672,6 +6674,19 @@ export default function PackRevealModal({
                     </svg>
                   </button>
                 </div>
+                {/* Wave launch-25: 매물 이름 + 차익 — sticky bar 중앙. */}
+                {activeRevealCard ? (
+                  <div className="min-w-0 flex-1 px-1">
+                    <div className="truncate text-[11.5px] font-bold leading-tight text-zinc-900 dark:text-zinc-100">
+                      {activeRevealCard.name}
+                    </div>
+                    <div className="mt-0.5 truncate text-[12.5px] font-black leading-none tabular-nums text-emerald-600 dark:text-emerald-400">
+                      {Math.min(activeRevealCard.expectedProfitMin, activeRevealCard.expectedProfitMax) <= 0
+                        ? <span className="text-rose-600 dark:text-rose-400">판매완료 처리</span>
+                        : displayProfitRange(activeRevealCard)}
+                    </div>
+                  </div>
+                ) : null}
                 {activeRevealCard ? (
                   <RevealSaveButton
                     saved={activeRevealSaved}
