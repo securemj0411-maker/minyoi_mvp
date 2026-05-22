@@ -9598,6 +9598,9 @@ export const CATALOG: Sku[] = [
       "union", "유니온", "x union", "union x",
       // Wave 594b: COACH collab 추가 (c_grade audit).
       "coach", "코치", "x coach", "coach x", "bape x coach",
+      // Wave 632: 추가 한정 collab/패턴.
+      "반고흐뮤지엄", "반고흐 뮤지엄", "van gogh", "vangogh", "고흐",
+      "abc 도트", "abc dot", "도트 카모", "dot camo",
       "네이버후드", "neighborhood", "바시티",
       "몽클레어", "몽클레르", "moncler",
       "stussy", "스투시 x bape", "스투시x베이프",
