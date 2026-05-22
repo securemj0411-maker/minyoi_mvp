@@ -5884,6 +5884,8 @@ export const CATALOG: Sku[] = [
       "se",
       "series 9",
       "series 10",
+      // Wave 647: 에르메스 에디션 차단 (별도 시세군).
+      "에르메스", "hermes", "사티네", "satine",
       "케이스만",
       "밴드만",
       "스트랩만",
