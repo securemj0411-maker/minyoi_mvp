@@ -1307,7 +1307,8 @@ function velocityHoursLabel(value: number | null) {
 
 function dailySoldCountLabel(sold7dCount: number) {
   const avg = Math.max(0, sold7dCount / 7);
-  if (avg <= 0) return "확인 중";
+  // Wave launch-26: "확인 중" → "기록 없음" 정직 (sold7dCount=0 = 진짜 기록 없는 거).
+  if (avg <= 0) return "기록 없음";
   if (avg < 1) return "1개 미만";
   const rounded = avg < 10 ? Math.round(avg * 10) / 10 : Math.round(avg);
   return `약 ${rounded.toLocaleString("ko-KR")}개`;
@@ -2175,8 +2176,9 @@ function saleSpeedDisplay(card: RevealCard) {
     isFallback: !hasRealTurnEstimate,
     isFast: hours != null && hours > 0 && hours <= 48,
     isSlow: hours != null && hours > 168,
+    // Wave launch-26: "데이터 수집 중" → "표본 부족" 정직.
     confidenceLabel: !hasRealTurnEstimate
-      ? (VELOCITY_UI_TEST_ENABLED ? "UI 테스트" : "데이터 수집 중")
+      ? (VELOCITY_UI_TEST_ENABLED ? "UI 테스트" : "표본 부족")
       : velocity?.confidence === "high"
         ? "신뢰 높음"
         : velocity?.confidence === "medium"
@@ -2664,14 +2666,17 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
     {
       key: "speed",
       label: "팔리는 속도",
-      // 2026-05-19 P0: 폴백 운영 게이트 OFF면 value/sub 정직하게. 거짓 "카테고리 평균" 카피 제거.
+      // 2026-05-19 P0: 폴백 운영 게이트 OFF면 value/sub 정직하게.
+      // Wave launch-26 (audit UX MEDIUM): "수집 중" / "회전 데이터 수집 중" 카피 정직화.
+      // 사용자 메모리 룰 — 진행감 카피 (수집 중) 가 실제로는 표본 부족이라 frustrate.
+      // 사용자 짚음 (Wave 394.7.ab): "수집 중" → "표본 부족" 정직 표시 동일 적용.
       value: speed.isFallback && !VELOCITY_UI_TEST_ENABLED
-        ? "수집 중"
+        ? "표본 부족"
         : (speed.isFast ? "빠름" : speed.isSlow ? "느림" : "보통"),
       sub: speed.isFallback
         ? (VELOCITY_UI_TEST_ENABLED
             ? `약 ${speed.label} · 표본 부족 (UI 테스트 표시)`
-            : "회전 데이터 수집 중")
+            : "거래 기록 표본 부족")
         : `약 ${speed.label} · 최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
       tone: speedTone,
       icon: renderSpeedIcon(speed, speedIconClass),
