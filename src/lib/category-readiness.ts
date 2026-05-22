@@ -521,8 +521,8 @@ export const LANE_READINESS: LaneReadinessMap = {
   tnf_bigshot: { status: "ready", label: "TNF Big Shot Backpack", note: "Wave 198 bag" },
   tnf_nuptse_mule: { status: "ready", label: "TNF Nuptse Mule (슬리퍼)", note: "Wave 198 shoe" },
   stussy_nike_collab: { status: "blocked", label: "Nike × Stüssy Apparel (collab)", note: "Wave 407: apparel collab mixes fleece/track/hoodie/tee. Shoe lane remains separate." },
-  stussy_basic_tee: { status: "blocked", label: "Stüssy Basic Tee (8 Ball/World Tour)", note: "Wave 407: operator comments show graphic/model mix. Hold until 8ball/world-tour/stock split." },
-  stussy_hoodie: { status: "blocked", label: "Stüssy Hoodie / Crewneck", note: "Wave 407: operator comments show hoodie/zip/crewneck/model mix. Hold until sub-line split." },
+  stussy_basic_tee: { status: "ready", label: "Stüssy Basic Tee (8 Ball/World Tour)", note: "Wave 678 release — Wave 656에서 도시 한정/DSM/마틴로즈/CPFM/돌리/갱스타/월드투어 명시 차단. LATEST v32 spread <4x." },
+  stussy_hoodie: { status: "ready", label: "Stüssy Hoodie / Crewneck", note: "Wave 678 release — Wave 655에서 월드투어/CPFM/스컬본즈/iD 매거진 명시 차단. LATEST v32 spread <4x." },
   stussy_waist_bag: { status: "ready", label: "Stüssy Waist Bag", note: "Wave 198 bag" },
   stussy_dior_collab: { status: "ready", label: "Dior × Stüssy (FW21 한정)", note: "Wave 198 한정판" },
   // Wave 199 (2026-05-18): 매물 mining 발견 후속 SKU
@@ -679,7 +679,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   coach_tabby: { status: "ready", label: "Coach Tabby (시그니처)", note: "Wave 227" },
   longchamp_le_pliage: { status: "ready", label: "Longchamp Le Pliage (시그니처)", note: "Wave 227 나일론" },
   nike_tailwind_79: { status: "ready", label: "Nike Tailwind 79 (Vintage Runner)", note: "Wave 227" },
-  adidas_trefoil: { status: "blocked", label: "Adidas Trefoil/Track Suit", note: "Wave 407: broad apparel hold until track-suit model audit." },
+  adidas_trefoil: { status: "ready", label: "Adidas Trefoil/Track Suit", note: "Wave 678 release — Wave 652/676에서 레더/세트/누빔/플라워/빈티지 블루종 명시 차단. LATEST v32 spread <4x." },
   // Wave 233 (2026-05-19): Vans 시리즈 누락 — 239 매물 unmatched (일반인 친화 15~60K).
   vans_old_skool: { status: "ready", label: "Vans Old Skool", note: "Wave 233" },
   vans_sk8_hi: { status: "ready", label: "Vans SK8-Hi", note: "Wave 233" },
@@ -731,7 +731,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   fila_apparel: { status: "blocked", label: "Fila Apparel", note: "Wave 407: broad apparel hold until model-level audit." },
   patagonia_apparel: { status: "blocked", label: "Patagonia (broad fallback)", note: "Wave 407: broad hold. Use Patagonia model lanes." },
   // Wave 219 (2026-05-19): Patagonia 3분리 — Retro X 199K / Down 290K / Shell 199K
-  patagonia_retro_x: { status: "blocked", label: "Patagonia Retro X / Synchilla Fleece", note: "Wave 407: DB sample shows Retro-X/Synchilla/Retro Pile mix. Keep Deep Pile only until split." },
+  patagonia_retro_x: { status: "ready", label: "Patagonia Retro X (단독, 신칠라 분리됨)", note: "Wave 678 release — Wave 654에서 mustContain narrow + 신칠라/스냅T/캔버스 fleece 명시 차단. LATEST v32 spread <4x." },
   patagonia_down: { status: "blocked", label: "Patagonia Down (Nano Puff)", note: "Wave 407: DB sample shows cross-brand/reference contamination. Hold until stricter brand/model audit." },
   patagonia_shell: { status: "ready", label: "Patagonia Shell (Torrentshell)", note: "Wave 219" },
   // Wave 251.2 (2026-05-19): Deep Pile 90s 빈티지 콜렉터 narrow split (p50 ₩390k vs mainstream ₩165k).
