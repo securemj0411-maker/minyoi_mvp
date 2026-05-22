@@ -473,7 +473,7 @@ function parseClothingProductType(text: string): ClothingProductType {
   if (/옥스포드.{0,16}셔츠|셔츠.{0,16}옥스포드|반팔 ?셔츠|긴팔 ?셔츠|체크 ?셔츠|드레스 ?셔츠|짚업 ?셔츠|집업 ?셔츠|zip ?shirt/.test(t)) return "shirt";
   // Wave 406 (2026-05-20): 운영자풀 코멘트 — 후드와 후드집업은 시세군이 다름.
   if (/(베이프|bape)/.test(t) && /(샤크|shark)/.test(t) && /(반집업|반 ?집업|half ?zip)/.test(t)) return "hoodie_zip";
-  if (/후드\s*집업|후드집업|집업\s*후드|집업후드|zip ?up ?hoodie|hoodie ?zip|full ?zip ?hoodie|풀 ?집업 ?후드|기모 ?후드 ?집업/.test(t)) return "hoodie_zip";
+  if (/후드\s*집업|후드집업|집업\s*후드|집업후드|zip ?up ?hoodie|hoodie ?zip|full ?zip ?hoodie|풀 ?집업 ?후드|풀 ?집 ?후드|풀집 ?후드|기모 ?후드 ?집업/.test(t)) return "hoodie_zip";
   // Wave 424: 중고마켓 "후드티/후드티셔츠"는 일반 티셔츠가 아니라 hoodie.
   if (/후드\s*티 ?셔츠|후드티셔츠|후드 ?티\b|hooded sweatshirt/.test(t)) return "hoodie";
   if (/후드(?!\s*티 ?셔츠)|후디|hoodie|hooded sweat/.test(t)) return "hoodie";
@@ -654,7 +654,7 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v15";
 // Wave 455 v17: clothing broad fallback + title-level multi-item bundle ("두개/일괄/묶음") needsReview.
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v22";
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v23";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");
