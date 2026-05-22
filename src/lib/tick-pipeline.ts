@@ -2518,8 +2518,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // generic `bag|backpack` and `shoe|broad` buckets.
   shoe: "wave92-shoe-v21",
   bag: "wave92-bag-v21",
-  // Wave 653 (2026-05-22): clothing v26 — 가품 거래 코드 워딩 ("느낌 아시", "저렴하게 판매") 글로벌 차단.
-  clothing: "wave216-clothing-v26",
+  // Wave 654 (2026-05-22): clothing v27 — Patagonia Retro X 신칠라/스냅T 분리 (별도 라인, 시세 8.75x spread).
+  clothing: "wave216-clothing-v27",
   bike: "wave92-fashion-mobility-v7",
   // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
   // full-unit pollution for these active pool categories.
@@ -4166,10 +4166,62 @@ async function markStaleInvalidatedPoolRowsDirty(limit: number): Promise<number>
   return unique.length;
 }
 
+// Wave launch-42 (사용자 짚음 "profit_below_pack_band 685건 ready→invalidated 전환"):
+//   기존: sku_median_unavailable 사유만 재평가 후보. 다른 회복 가능 사유 (특히
+//   profit_below_pack_band: SQL 검증 결과 100% had_last_verified_at + 99.7% transitioned)
+//   는 영구 잠금.
+//   확장: 회복 가능 사유 whitelist. fashion 카테고리 (clothing/shoe/bag) 는 사용자 지시
+//   대로 유지 (다른 카테고리는 파서 강화 진행 중 — 다른 세션).
+//
+//   검증 로직 (raw active+eligible + sku_median/comparable 회복) 그대로 — score_dirty
+//   마킹은 안전한 매물만. score-worker 다음 tick → candidate-pool-builder 재호출 →
+//   현재 시세/가격 기준 차익 1만+ 이면 ready 복귀, 아니면 사유 갱신.
+//
+//   회복 가능 사유 (의도적 영구 차단 제외):
+//   - 시세/가격 변동: sku_median_unavailable, profit_below_pack_band, negative_resell_gap,
+//     wave99_thin_market_n_lt_5
+//   - raw 복구: pool_eligible_false_residue
+//   - parser/policy stale: wave410_pool_key_drift, wave408/410_*_lane/category_*,
+//     wave498/500/501_stale_*, wave226_wrong_sku_match_cleanup, wave230_sku_id_null_stale,
+//     stale_parser_version_*_residue
+//   - AI/검토 가치: blocked_deep_discount_review, fashion_unknown_condition_review,
+//     fashion_broad_sku_review
+//
+//   회복 불가 사유 (whitelist 제외):
+//   - lifecycle_state_* (매물 사라짐), num_comment_above_8 (인기 매물 의도 차단),
+//     seller_rating_below_*, multi_id_fraud_group_*, fake_suspect_*, ad_or_retail_listing,
+//     category_*_blocked, lane_blocked_*, price_above_pool_max, placeholder_price,
+//     option_needs_review, *_low_confidence, ai_audit_*, ai_escrow_*
+const RECOVERABLE_INVALIDATED_REASONS = [
+  "sku_median_unavailable",
+  "wave99_thin_market_n_lt_5",
+  "profit_below_pack_band",
+  "negative_resell_gap",
+  "pool_eligible_false_residue",
+  "wave410_pool_key_drift",
+  "wave408_category_internal_only_clothing_lane_required",
+  "wave410_category_internal_only_shoe",
+  "wave410_category_internal_only_clothing",
+  "wave410_category_internal_only_bag",
+  "wave498_stale_comparable_key",
+  "wave500_stale_or_review_comparable_key",
+  "wave501_stale_pool_cleanup",
+  "wave501_final_ready_sample_qa",
+  "wave226_wrong_sku_match_cleanup",
+  "wave230_sku_id_null_stale",
+  "stale_parser_version_shoe_residue",
+  "stale_parser_version_clothing_residue",
+  "stale_parser_version_bag_residue",
+  "blocked_deep_discount_review",
+  "fashion_unknown_condition_review",
+  "fashion_broad_sku_review",
+] as const;
+
 async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promise<number> {
   const rowLimit = Math.max(1, Math.min(limit, 250));
+  const reasonsClause = `invalidated_reason=in.(${RECOVERABLE_INVALIDATED_REASONS.join(",")})`;
   const res = await restFetch(
-    `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.invalidated&category=in.(clothing,shoe,bag)&invalidated_reason=eq.sku_median_unavailable&order=updated_at.desc&limit=${rowLimit}`,
+    `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.invalidated&category=in.(clothing,shoe,bag)&${reasonsClause}&order=updated_at.desc&limit=${rowLimit}`,
     { headers: serviceHeaders() },
   );
   if (!res.ok) {
