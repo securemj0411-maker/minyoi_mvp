@@ -7412,6 +7412,10 @@ export const CATALOG: Sku[] = [
       "마운틴 파카", "mountain parka", "마운틴파카",
       "마운틴 가이드", "mountain guide", "안타르티카", "antarctica",
       "안토라", "antora",
+      // Wave 640: 화이트라벨 (Korea Limited) + 노벨티 (한정 colorway) — 일반 마운틴 자켓 시세 대비 outlier.
+      "화이트라벨", "화이트 라벨", "white label",
+      "노벨티 마운틴", "novelty mountain", "novelty",
+      "베이덴", "baeden",
     ],
     msrpKrw: 590000, released: 1985,
     defaultProductType: "jacket", // Wave 236d — Mountain Jacket = jacket 라인 확정.
