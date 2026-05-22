@@ -313,18 +313,30 @@ function krw(value: number) {
 }
 
 function signedKrw(value: number) {
+  // Wave launch-27 (audit MEDIUM): NaN / Infinity 가드. signedKrw(NaN) → "NaN원" 표시 차단.
+  if (!Number.isFinite(value)) return "—";
   const rounded = Math.round(value);
   const sign = rounded >= 0 ? "+" : "";
   return `${sign}${rounded.toLocaleString("ko-KR")}원`;
 }
 
 function profitRange(min: number, max: number) {
+  // Wave launch-27: NaN 가드.
+  if (!Number.isFinite(min) && !Number.isFinite(max)) return "—";
+  if (!Number.isFinite(min)) return signedKrw(max);
+  if (!Number.isFinite(max)) return signedKrw(min);
   if (min === max) return signedKrw(max);
   return `${signedKrw(min)} ~ ${signedKrw(max)}`;
 }
 
 function expectedProfitAverage(card: RevealCard) {
-  return Math.round((card.expectedProfitMin + card.expectedProfitMax) / 2);
+  // Wave launch-27: NaN 가드.
+  const min = card.expectedProfitMin;
+  const max = card.expectedProfitMax;
+  if (!Number.isFinite(min) && !Number.isFinite(max)) return 0;
+  if (!Number.isFinite(min)) return Math.round(max);
+  if (!Number.isFinite(max)) return Math.round(min);
+  return Math.round((min + max) / 2);
 }
 
 function netProfitPercent(card: RevealCard) {
