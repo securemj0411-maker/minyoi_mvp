@@ -46,15 +46,6 @@ function priceBucketFor(price: number): PriceBucketKey {
   return "gte_150";
 }
 
-function priceBucketFilter(key: string | null) {
-  const bucket = PRICE_BUCKETS.find((item) => item.key === key);
-  if (!bucket) return "";
-  const parts: string[] = [];
-  if (bucket.min != null) parts.push(`price=gt.${bucket.min}`);
-  if (bucket.max != null) parts.push(`price=lte.${bucket.max}`);
-  return parts.join("&");
-}
-
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const page = Math.max(1, Number(url.searchParams.get("page") ?? "1") || 1);
@@ -62,7 +53,8 @@ export async function GET(req: NextRequest) {
   const statusFilter = (url.searchParams.get("status") ?? "ready").trim();
   const bandFilter = url.searchParams.get("band");
   const categoryFilter = url.searchParams.get("category");
-  const priceBucket = url.searchParams.get("priceBucket");
+  const priceBucketParam = url.searchParams.get("priceBucket");
+  const priceBucket = PRICE_BUCKETS.some((item) => item.key === priceBucketParam) ? priceBucketParam : null;
   const skuFilter = url.searchParams.get("sku")?.trim() || null;
   const sourceFilter = url.searchParams.get("source")?.trim().toLowerCase() || null;
   // Wave 176 (2026-05-17): 검색어 — admin route와 동일 (peek-pool도 검색).
@@ -121,20 +113,9 @@ export async function GET(req: NextRequest) {
     applyPidScope(skuPids);
   }
 
-  if (priceBucket) {
-    const priceFilter = priceBucketFilter(priceBucket);
-    if (priceFilter) {
-      const priceRes = await restFetch(
-        `${tableUrl("mvp_listings")}?select=pid&${priceFilter}&limit=5000`,
-        { headers: serviceHeaders() },
-      );
-      const pricePids = ((await priceRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
-      if (pricePids.length === 0) {
-        return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
-      }
-      applyPidScope(pricePids);
-    }
-  }
+  // Price bucket filtering is applied after loading the scoped candidate_pool rows.
+  // A global mvp_listings price pre-scope can silently drop valid pool pids when
+  // low-price listings exceed the REST limit.
 
   // Wave 176: 검색어 ILIKE (name + sku_name + comparable_key) + pid 정확 매칭.
   let searchPids: number[] | null = null;
