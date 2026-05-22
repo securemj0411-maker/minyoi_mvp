@@ -5820,7 +5820,8 @@ function FixedBunjangFooter({
   // Wave 394.7 (외부 review #5): "정보 앱인데 광고 랜딩페이지 같음. 모바일 분석 내용 읽는 공간 줄어듦".
   // 사이즈 ↓ — py-3 → py-2.5, text-sm → text-[13px], shadow-lg → shadow-md, ring-1 제거.
   // min-h-11 (iOS 44px tap target) 유지. brand color 유지 (핵심 액션 색은 강조).
-  // Wave 394.7.u (handoff StickyCTA 1:1): emerald pill + 검정 원 N + 검정 원 ⚡ + bg gradient.
+  // Wave 537: source-aware logo + Toss-style blue CTA. Bolt decoration removed
+  // so Bunjang/Joongna logos are the primary source signal.
   return (
     <div
       className="shrink-0 bg-[linear-gradient(180deg,rgba(235,230,220,0)_0%,rgba(235,230,220,0.95)_28%)] px-[14px] pb-[calc(env(safe-area-inset-bottom)+14px)] pt-[14px] dark:bg-[linear-gradient(180deg,rgba(24,24,27,0)_0%,#18181b_28%)]"
@@ -5836,11 +5837,11 @@ function FixedBunjangFooter({
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
-          background: "#059669",
+          background: "#3182f6",
           borderRadius: 999,
           minHeight: 54,
           padding: "4px 46px",
-          boxShadow: "0 10px 24px rgba(5,150,105,0.28), 0 4px 8px rgba(5,150,105,0.18)",
+          boxShadow: "0 12px 28px rgba(49,130,246,0.28), 0 4px 10px rgba(49,130,246,0.18)",
           color: "#fff",
           textDecoration: "none",
           border: "none",
@@ -5848,13 +5849,10 @@ function FixedBunjangFooter({
           cursor: "pointer",
         }}
       >
-        <span style={{ position: "absolute", left: 6, top: "50%", transform: "translateY(-50%)", width: 34, height: 34, borderRadius: 999, background: "#0b1413", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <SourceLogo className="h-6 w-6 rounded-full" />
+        <span style={{ position: "absolute", left: 7, top: "50%", transform: "translateY(-50%)", width: 38, height: 38, borderRadius: 999, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 1px 4px rgba(15,23,42,0.12)" }}>
+          <SourceLogo className="h-7 w-7 rounded-full" />
         </span>
         <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.3, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, whiteSpace: "nowrap" }}>
-          <span style={{ width: 20, height: 20, borderRadius: 999, background: "#0b1413", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fbbf24", flexShrink: 0 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>
-          </span>
           <span>{marketplaceLabel} 원본 매물 보기</span>
         </span>
       </button>
@@ -5935,8 +5933,11 @@ function FixedBunjangFooter({
                 target="_blank"
                 rel="noreferrer"
                 onClick={handleConfirmClick}
-                className="flex min-h-[52px] items-center justify-center rounded-[18px] bg-[#059669] px-4 text-[15px] font-black text-white shadow-[0_14px_30px_rgba(5,150,105,0.22)] transition active:scale-[0.99]"
+                className="flex min-h-[52px] items-center justify-center gap-2 rounded-[18px] bg-[#3182f6] px-4 text-[15px] font-black text-white shadow-[0_14px_30px_rgba(49,130,246,0.24)] transition active:scale-[0.99]"
               >
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                  <SourceLogo className="h-5 w-5 rounded-full" />
+                </span>
                 확인하고 {marketplaceLabel} 보기
               </a>
               <button
