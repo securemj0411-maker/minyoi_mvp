@@ -7048,6 +7048,8 @@ export const CATALOG: Sku[] = [
       "그리즐리", "grizzly", "자켓", "jacket", "코트", "coat", "재킷", "트러커", "trucker",
       // Wave 596b: 리미티드 빈티지 한정 라인 (900k outlier vs 일반 230~700k).
       "리미티드 빈티지", "limited vintage", "리미티드 라인",
+      // Wave 637: 추가 한정 표기 (pid 402179391 '리미티드에디션 빈티지파이브포켓 올리브' 750k).
+      "리미티드 에디션", "limited edition", "리미티드에디션", "limited-edition",
     ],
     msrpKrw: 420000, released: 2020,
     // Wave 408: terse "RRL 데님" rows are jeans by default; explicit 셔츠/쇼츠/pants
