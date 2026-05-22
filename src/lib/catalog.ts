@@ -9592,6 +9592,13 @@ export const CATALOG: Sku[] = [
       "norvan", "노르반", "aerios", "에어리오스", "konseal", "콘실",
       "트레일 러닝화", "trail running shoe", "러닝화",
       "크래그", "crag",  // 크래그는 보행 신발 라인
+      // Wave 548 (2026-05-22): 다른 brand cross-catch 차단.
+      //   "프라다 x 아디다스 리나일론 트랙수트 정품 아크테릭스 빔즈" 240만 — Prada/Adidas 매물인데 아크테릭스 broad에 catch.
+      "프라다 x", "x 프라다", "prada x", "x prada",
+      "아디다스 x", "x 아디다스", "adidas x", "x adidas",
+      "발렌시아가 x", "x 발렌시아가", "balenciaga x",
+      "빔즈", "beams",  // BEAMS 콜라보 (별도 시세군)
+      "정품 아크테릭스 빔즈",
     ],
     msrpKrw: 400000, released: 1989,
   },
