@@ -7535,6 +7535,8 @@ export const CATALOG: Sku[] = [
       "마운틴 라이트", "mountain light", "마운틴 파카", "mountain parka",
       "마운틴 가이드", "mountain guide",
       "아크로고", "아크 로고", "arc logo", "반다나", "bandana", "레더 마운틴", "leather mountain",
+      // Wave 588 (2026-05-22): 마운틴 + 레더 변형 (공백 없는 형태) 추가.
+      "마운틴레더", "mountainleather", "mountain-leather",
       "백팩", "backpack", "숄더백", "토트백", "tote", "토트", "shoulder",
       "뮬", "슬리퍼", "지샥"],
     msrpKrw: 680000, released: 2017,
