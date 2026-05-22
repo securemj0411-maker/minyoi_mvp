@@ -556,6 +556,63 @@ function loadScrapSnapshots(): ScrappedPoolItem[] {
   }
 }
 
+// Wave launch-49: DB sync — fetch user scraps from server.
+//   localStorage 와 다른 점: device 간 sync, logout 후 복귀해도 유지, 5MB 한도 X.
+//   호출 실패 시 caller 가 localStorage fallback.
+async function fetchServerScraps(): Promise<ScrappedPoolItem[] | null> {
+  try {
+    const res = await fetch("/api/packs/scraps", { cache: "no-store" });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { items?: Array<{ pid: number; pool_item: unknown; updated_at?: string; created_at?: string }> };
+    if (!data.items) return [];
+    return data.items
+      .map((row) => {
+        const item = row.pool_item as Record<string, unknown> | null;
+        if (!item || typeof item !== "object") return null;
+        const candidate = { ...item, pid: row.pid, savedAt: row.updated_at ?? row.created_at ?? new Date().toISOString() };
+        return isScrappedPoolItem(candidate) ? candidate : null;
+      })
+      .filter((item): item is ScrappedPoolItem => item != null);
+  } catch {
+    return null;
+  }
+}
+
+// Wave launch-49: API call wrappers — fail silently (localStorage 가 fallback).
+async function postScrapToServer(item: ScrappedPoolItem): Promise<void> {
+  try {
+    await fetch("/api/packs/scraps", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ pid: item.pid, pool_item: item }),
+    });
+  } catch {
+    // ignore — localStorage fallback
+  }
+}
+
+async function deleteScrapFromServer(pid: number): Promise<void> {
+  try {
+    await fetch(`/api/packs/scraps?pid=${pid}`, { method: "DELETE" });
+  } catch {
+    // ignore
+  }
+}
+
+async function importLocalScrapsToServer(items: ScrappedPoolItem[]): Promise<boolean> {
+  if (items.length === 0) return true;
+  try {
+    const res = await fetch("/api/packs/scraps", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ items: items.map((item) => ({ pid: item.pid, pool_item: item })) }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 function saveScrapSnapshots(items: ScrappedPoolItem[]) {
   if (typeof window === "undefined") return;
   try {
@@ -1171,6 +1228,10 @@ export default function ExploreClient({
     writeBudgetFilterOption(storageScope, value);
   }, [storageScope]);
 
+  // Wave launch-49: scrap localStorage → DB hybrid.
+  //   1) localStorage 의 기존 scrap 으로 즉시 표시 (빠른 mount, offline)
+  //   2) background 에서 DB GET → server source 가 진짜 (device sync)
+  //   3) localStorage 에만 있던 매물 (legacy) → DB 로 1회 import + localStorage 유지 (cache)
   useEffect(() => {
     const loadedScraps = loadScrapSnapshots();
     const loadedPids = readLocalSavedPidSet();
@@ -1179,6 +1240,34 @@ export default function ExploreClient({
     setOpenedDetailPids(new Set(openedDetailPidsRef.current));
     setScrapItems(loadedScraps);
     setLegacySavedPids(loadedPids);
+
+    // Background DB sync — server source 가 진짜.
+    void (async () => {
+      const serverScraps = await fetchServerScraps();
+      if (serverScraps == null) return;  // auth fail 또는 network — localStorage 유지
+      // localStorage 에만 있던 매물 import (server 누락분 backfill)
+      const serverPidSet = new Set(serverScraps.map((item) => item.pid));
+      const localOnly = loadedScraps.filter((item) => !serverPidSet.has(item.pid));
+      if (localOnly.length > 0) {
+        await importLocalScrapsToServer(localOnly);
+        // import 후 다시 fetch 해서 server 가 진짜 source
+        const reFetched = await fetchServerScraps();
+        if (reFetched) {
+          setScrapItems(reFetched);
+          saveScrapSnapshots(reFetched);  // localStorage cache 동기화
+          reFetched.forEach((item) => openedDetailPidsRef.current.add(item.pid));
+          setOpenedDetailPids(new Set(openedDetailPidsRef.current));
+        }
+        return;
+      }
+      // server 매물이 더 많거나 다름 → server 가 진짜
+      if (serverScraps.length !== loadedScraps.length || serverScraps.some((it, idx) => loadedScraps[idx]?.pid !== it.pid)) {
+        setScrapItems(serverScraps);
+        saveScrapSnapshots(serverScraps);
+        serverScraps.forEach((item) => openedDetailPidsRef.current.add(item.pid));
+        setOpenedDetailPids(new Set(openedDetailPidsRef.current));
+      }
+    })();
   }, []);
 
   const savedPidSet = useMemo(() => {
@@ -1714,6 +1803,8 @@ export default function ExploreClient({
       const withoutTarget = prev.filter((item) => item.pid !== pid);
       if (!saved) {
         saveScrapSnapshots(withoutTarget);
+        // Wave launch-49: DB sync — fire and forget, localStorage 가 fallback
+        void deleteScrapFromServer(pid);
         return withoutTarget;
       }
 
@@ -1725,11 +1816,11 @@ export default function ExploreClient({
 
       openedDetailPidsRef.current.add(pid);
       setOpenedDetailPids(new Set(openedDetailPidsRef.current));
-      const next = [
-        { ...sourceItem, savedAt: new Date().toISOString() },
-        ...withoutTarget,
-      ].slice(0, MAX_LOCAL_SCRAP_SNAPSHOTS);
+      const newScrap: ScrappedPoolItem = { ...sourceItem, savedAt: new Date().toISOString() };
+      const next = [newScrap, ...withoutTarget].slice(0, MAX_LOCAL_SCRAP_SNAPSHOTS);
       saveScrapSnapshots(next);
+      // Wave launch-49: DB sync — fire and forget
+      void postScrapToServer(newScrap);
       return next;
     });
   }, [items, selectedCard, trackDetailEvent]);
