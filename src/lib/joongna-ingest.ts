@@ -288,17 +288,22 @@ async function configFromEnvAndParams(params?: URLSearchParams): Promise<Joongna
     readyCatalogQueryPoolSize: readyCatalogQueries.length,
     readyCatalogCategoryPoolCounts: countReadyCatalogCategories(readyCatalogQueries),
     selectedReadyCatalogCategoryCounts: countReadyCatalogCategories(mergedQueries.selectedReadyCatalogQueries),
+    // Wave launch-45 (사용자 짚음 "joongna sweep depth 부족"):
+    //   실측: joongna search page 1 = 50 매물 / 우리 fetch 2 매물 = 96% 누락.
+    //   detailsPerQuery cap 2 (env override X) → cap 20 으로 풀어줌. env 박으면 바로 적용.
+    //   maxDetails cap 80 → cap 300. 매 run 처리량 ↑ 가능.
+    //   joongna API rate (delay 200ms 그대로) 안전 마진 유지.
     detailsPerQuery: boundedInt(
       params?.get("detailsPerQuery") ?? process.env.JOONGNA_INGEST_DETAILS_PER_QUERY,
       2,
       1,
-      explicitDetailsPerQuery ? 20 : 2,
+      20,
     ),
     maxDetails: boundedInt(
       params?.get("maxDetails") ?? params?.get("max") ?? process.env.JOONGNA_INGEST_MAX_DETAILS,
       80,
-      explicitMaxDetails ? 1 : 80,
-      80,
+      1,
+      300,
     ),
     queryLimit,
     delayMs: boundedInt(
