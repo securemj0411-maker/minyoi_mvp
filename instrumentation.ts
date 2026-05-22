@@ -2,12 +2,15 @@
 // Next.js register hook 으로 서버 시작 시 Sentry init.
 
 export async function register() {
+  // Wave launch-16: dev 에선 SDK import 자체 skip. dev hot reload + Sentry SDK 충돌 차단.
+  if (process.env.NODE_ENV !== "production") return;
+  if (!process.env.SENTRY_DSN && !process.env.NEXT_PUBLIC_SENTRY_DSN) return;
+
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const Sentry = await import("@sentry/nextjs");
     Sentry.init({
       dsn: process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN,
       tracesSampleRate: 1.0,
-      enabled: process.env.NODE_ENV === "production",
       sendDefaultPii: false,
     });
   }
@@ -16,7 +19,6 @@ export async function register() {
     Sentry.init({
       dsn: process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN,
       tracesSampleRate: 1.0,
-      enabled: process.env.NODE_ENV === "production",
       sendDefaultPii: false,
     });
   }
