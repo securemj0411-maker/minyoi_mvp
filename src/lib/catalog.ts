@@ -9478,7 +9478,22 @@ export const CATALOG: Sku[] = [
     modelName: "Arc'teryx Beta (SL / AR / LT) Gore-Tex 자켓",
     aliases: ["Beta Jacket", "베타 자켓", "Beta SL", "Beta AR", "Beta LT", "Beta Globe"],
     mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["beta", "베타"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance",
+      // Wave 540 (2026-05-22): production sample audit — 22건 오염 발견.
+      //   사용자 명령 "파서 더 강화". DB sweep + supabase로 확인.
+      //   sample 가격 폭이 변동 큰 variant 차단:
+      //   - 빔즈/Beams 콜라보 (가격 +40~50% premium)
+      //   - 바이탈리티/VITALITY 한정 컬러 (60~140만, +30~50%)
+      //   - Beta SV (Severe Weather, top tier, +30%)
+      //   - Beta Insulated (다운자켓 변형, 970만대)
+      //   - 팬츠/pants (jacket SKU에 팬츠 매물 잘못)
+      "빔즈", "beams", "나고미", "nagomi",
+      "바이탈리티", "vitality",
+      "베타 sv", "beta sv", " sv ",
+      "인슐레이티드", "insulated",
+      "다운 인슐레이티드", "다운 자켓", "다운자켓",
+      "팬츠", "pants",
+    ],
     msrpKrw: 590000, released: 1998,
     defaultProductType: "jacket", // Wave 236d — Beta = Gore-Tex 자켓 라인 확정.
   },
