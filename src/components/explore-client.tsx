@@ -1471,10 +1471,29 @@ export default function ExploreClient({
     const categoryFiltered = selectedCategories.size === 0
       ? items
       : items.filter((it) => it.category != null && selectedCategories.has(it.category));
-    if (!budgetOption.max) return categoryFiltered;
-    const budgetFiltered = categoryFiltered.filter((it) => it.price > 0 && it.price <= budgetOption.max!);
+    const budgetFiltered = budgetOption.max
+      ? categoryFiltered.filter((it) => it.price > 0 && it.price <= budgetOption.max!)
+      : categoryFiltered;
+
+    // Wave launch-47 (사용자 짚음 "매입단가순인데 뒤에 더 싼게 나옴"):
+    //   backend 가 PAGE_SIZE 30 단위로만 정렬 → frontend append 시 batch 별 정렬 유지되어
+    //   전체 순서 깨짐. client-side 에서 전체 items 정렬 박음.
+    //   profit_desc 는 backend 가 다양화 + random shuffle 이라 client sort X.
+    if (sort === "price_asc") {
+      return [...budgetFiltered].sort((a, b) => {
+        if (a.price !== b.price) return a.price - b.price;
+        return b.expectedProfitMax - a.expectedProfitMax;
+      });
+    }
+    if (sort === "latest") {
+      return [...budgetFiltered].sort((a, b) => {
+        const aTime = a.lastVerifiedAt ? Date.parse(a.lastVerifiedAt) : 0;
+        const bTime = b.lastVerifiedAt ? Date.parse(b.lastVerifiedAt) : 0;
+        return bTime - aTime;
+      });
+    }
     return budgetFiltered;
-  }, [budgetOption.max, items, scrapItems, scrapOnly, selectedCategories]);
+  }, [budgetOption.max, items, scrapItems, scrapOnly, selectedCategories, sort]);
 
   // PackRevealModal용 result wrapper (single card)
   const modalResult: RevealResult | null = useMemo(() => {
