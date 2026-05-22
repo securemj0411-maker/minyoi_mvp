@@ -1997,7 +1997,7 @@ function PurchaseDecisionHeader({ card }: { card: RevealCard }) {
               eyebrow: "text-emerald-700 dark:text-emerald-300",
               badge: "후보",
               badgeClass: "bg-emerald-100 text-emerald-800 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900/60",
-              borderClass: "border-[#d7e4d2] bg-[#fffdf8] dark:border-zinc-800 dark:bg-zinc-900",
+              borderClass: "border-emerald-200 bg-white dark:border-zinc-800 dark:bg-zinc-900",
               headline: "근거 있는 매입 후보",
               body: discountText
                 ? `${conditionLabel} 비교 ${sampleText} 기준 ${discountText} 잡힌 매물이에요.`
@@ -2007,7 +2007,7 @@ function PurchaseDecisionHeader({ card }: { card: RevealCard }) {
               eyebrow: "text-zinc-500 dark:text-zinc-400",
               badge: "대기",
               badgeClass: "bg-zinc-100 text-zinc-700 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700",
-              borderClass: "border-[#e3dccf] bg-[#fffdf8] dark:border-zinc-800 dark:bg-zinc-900",
+              borderClass: "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900",
               headline: "추가 확인이 필요한 매물",
               body: "가격 차이가 크지 않아 비교 매물과 리스크를 같이 확인해야 해요.",
             };
@@ -2531,7 +2531,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                 key={item.pid}
                 className={`flex items-center gap-3 px-3 py-3 ${idx === 0 ? "" : "border-t border-zinc-200 dark:border-zinc-800"}`}
               >
-                <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-[#f2eadf] dark:bg-zinc-800">
+                <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 dark:bg-zinc-800">
                   {item.thumbnailUrl ? (
                     <Image src={item.thumbnailUrl} alt="" fill sizes="52px" unoptimized className="object-cover" />
                   ) : (
@@ -4069,7 +4069,7 @@ function BeginnerGuideProductVisual({ card }: { card: RevealCard }) {
       data-beginner-guide-product-image
       className="relative -mx-5 overflow-visible bg-[#f3ede3] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+14px)] dark:bg-zinc-950 sm:mx-0 sm:rounded-[26px] sm:px-4 sm:pt-4 sm:ring-1 sm:ring-zinc-200 sm:dark:ring-zinc-800"
     >
-      <div className="relative h-[166px] w-full overflow-hidden rounded-[28px] bg-[#fffaf2] shadow-[0_18px_36px_rgba(15,23,42,0.14)] ring-1 ring-white/80 dark:bg-zinc-900 dark:ring-zinc-800 sm:h-[212px]">
+      <div className="relative h-[166px] w-full overflow-hidden rounded-[28px] bg-white shadow-[0_18px_36px_rgba(15,23,42,0.14)] ring-1 ring-white/80 dark:bg-zinc-900 dark:ring-zinc-800 sm:h-[212px]">
         {card.thumbnailUrl ? (
           <Image
             src={card.thumbnailUrl}
@@ -4569,7 +4569,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
             const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
             return (
               <div key={item.pid} className="flex items-center gap-3 px-4 py-3">
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-[#f2eadf] dark:bg-zinc-800">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-zinc-100 dark:bg-zinc-800">
                   {item.thumbnailUrl ? (
                     <Image src={item.thumbnailUrl} alt="" fill sizes="48px" unoptimized className="object-cover" />
                   ) : (
@@ -4932,7 +4932,7 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
           <div className="mt-5 space-y-2.5">
             {[0, 1, 2].map((index) => (
               <div key={index} className="flex items-center justify-between gap-4 rounded-[16px] bg-[#faf7f1] px-3.5 py-3 dark:bg-zinc-900/70">
-                <span className="h-3.5 w-28 animate-pulse rounded-full bg-[#e9dfd0] dark:bg-zinc-800" />
+                <span className="h-3.5 w-28 animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-800" />
                 <span className="h-4 w-14 animate-pulse rounded-full bg-[#dce9ff] dark:bg-blue-950/50" />
               </div>
             ))}
@@ -6048,7 +6048,7 @@ function RelatedRevealStrip({
                 onClick={() => onOpenRelatedItem(item.pid)}
                 className="flex w-[140px] shrink-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white text-left transition hover:border-emerald-300 hover:shadow-sm active:scale-[0.98] dark:border-zinc-800 dark:bg-zinc-900/40"
               >
-                <div className="relative aspect-square w-full overflow-hidden bg-[#f2eadf] dark:bg-zinc-800">
+                <div className="relative aspect-square w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
                   <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
                   {item.thumbnailUrl ? (
                     <Image
