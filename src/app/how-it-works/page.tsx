@@ -34,7 +34,8 @@ const supportRows = [
   { category: "게임 콘솔", status: "지금 지원", note: "PS5 · Switch (소량)" },
   { category: "데스크탑 / 스피커", status: "지금 지원", note: "표본 작아 추천 빈도 낮음" },
   { category: "스마트폰", status: "비공개 검증", note: "자급제 vs 통신사 구분 정확도 보강 중" },
-  { category: "신발 · 가방 · 의류", status: "지원 예정 (X)", note: "현재 미지원 — 추후 wave에서 source 다양화 예정" },
+  { category: "신발 · 의류", status: "지금 지원", note: "narrow lane 별 점진적 release — 가품 risk 보수적 검토" },
+  { category: "가방", status: "비공개 검증", note: "시세 sample 확보 중 (확장 예정)" },
 ];
 
 const engineSteps = [
