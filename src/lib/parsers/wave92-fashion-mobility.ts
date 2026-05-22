@@ -460,7 +460,7 @@ function parseClothingProductType(text: string): ClothingProductType {
   //   번개장터 sweep 발견 — BAPE 베이스볼 저지/베이프 야구점퍼/Stussy varsity 등 jacket 잘못 분류.
   //   하드쉘/소프트쉘 (아크테릭스 변형) / 푸퍼 자켓 (다운자켓 위에서 잡힘) / 패딩베스트 (이미 vest)
   // Wave 557 (2026-05-22): 져지/jersey 단독 + 트레포일 져지 (아디다스 sportswear track jacket) + 라이더 자켓 보강.
-  if (/자켓|재킷|jacket|아노락|anorak|봄버|bomber|블레이저(?!\s*미드)|윈드 ?브레이커|windbreaker|바람막이|마운틴 ?라이트|mountain ?light|마운틴 ?파카|mountain ?parka|마운틴 ?자켓|mountain ?jacket|트랙 ?탑|track ?top|트랙수트|tracksuit|덱 ?자켓|deck ?jacket|쉴드|shield|윈드러너|windrunner|스팁 ?테크|steep ?tech|패딩 ?자켓|padded ?jacket|무스탕|야상|필드 ?점퍼|점퍼|베이스볼 ?저지|baseball ?jersey|야구 ?점퍼|야구점퍼|바시티|varsity|코치자켓|코치 ?자켓|coach ?jacket|하드쉘|hardshell|소프트쉘|softshell|sherpa ?자켓|셰르파 ?자켓|레터맨|letterman|스타디움 ?자켓|stadium ?jacket|MA-1|ma-1|MA1\b|져지|jersey|라이더 ?자켓|rider ?jacket|레더 ?자켓|leather ?jacket|샤퍼|chopper|덕다운 ?베스트|벤치 ?파카|bench ?parka/.test(t)) return "jacket";
+  if (/자켓|재킷|jacket|아노락|anorak|봄버|bomber|블레이저(?!\s*미드)|윈드 ?브레이커|windbreaker|바람막이|마운틴 ?라이트|mountain ?light|마운틴 ?파카|mountain ?parka|마운틴 ?자켓|mountain ?jacket|블리치드 ?마운틴|bleached ?mountain|트랙 ?탑|track ?top|트랙수트|tracksuit|덱 ?자켓|deck ?jacket|쉴드|shield|윈드러너|windrunner|스팁 ?테크|steep ?tech|패딩 ?자켓|padded ?jacket|무스탕|야상|필드 ?점퍼|점퍼|베이스볼 ?저지|baseball ?jersey|야구 ?점퍼|야구점퍼|바시티|varsity|코치자켓|코치 ?자켓|coach ?jacket|하드쉘|hardshell|소프트쉘|softshell|sherpa ?자켓|셰르파 ?자켓|레터맨|letterman|스타디움 ?자켓|stadium ?jacket|MA-1|ma-1|MA1\b|져지|jersey|라이더 ?자켓|rider ?jacket|레더 ?자켓|leather ?jacket|샤퍼|chopper|덕다운 ?베스트|벤치 ?파카|bench ?parka/.test(t)) return "jacket";
   // Wave 532 (2026-05-22): Arc'teryx Alpha SV/AR/FL titles often omit "jacket".
   // Keep this after explicit cap/belt/wallet/pants checks so accessory/product-type words still win.
   if (/(아크테릭스|arc'?teryx).{0,24}(알파\s*(?:sv|ar|fl)|alpha\s*(?:sv|ar|fl))/i.test(t)) return "jacket";
@@ -665,7 +665,7 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v18";
 // Wave 455 v17: clothing broad fallback + title-level multi-item bundle ("두개/일괄/묶음") needsReview.
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v23";
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v24";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");

@@ -444,6 +444,8 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       // Wave 609: production sample — pid 401863017 '꼼데가르송 구찌 홀리데이 PVC백' 1.05M (bag 매물 clothing 잘못).
       //   PVC 백/PVC 가방/구찌 홀리데이/구찌 콜라보 차단 (다른 lane으로 가야).
       "pvc 백", "pvc백", "pvc 가방", "구찌 홀리데이", "gucci holiday",
+      // Wave 615: accessory 매물 차단 (clothing 아님).
+      "머플러", "muffler", "스카프", "scarf", "넥워머",
     ],
     msrpKrw: 390000,
     released: 1969,
