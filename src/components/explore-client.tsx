@@ -1971,10 +1971,12 @@ export default function ExploreClient({
                     <ConditionPhotoBadge conditionClass={item.conditionClass} compact />
                   ) : null}
                   {isSoldOut ? (
-                    // Wave 357: SaaS 친화 톤 — 단순 "잡힘" → sympathy 표현 + emoji.
+                    // Wave 357 → launch-5 (사용자 짚음): "다른 분이 잡았어요" = 우리 사이트 사용자가
+                    // 잡은 게 아님 (lifecycle cron 의 판매완료/disappeared 마킹). 거짓 정보 가능성.
+                    // "방금 거래된 상품" = 정직 (번개 측 판매완료) + FOMO 톤 유지.
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-zinc-900/35 px-2">
                       <span className="rounded-full bg-rose-600/95 px-2.5 py-1 text-center text-[10px] font-bold leading-tight text-white shadow-lg">
-                        다른 분이 잡았어요 ㅠㅠ
+                        방금 거래된 상품
                       </span>
                     </div>
                   ) : null}
