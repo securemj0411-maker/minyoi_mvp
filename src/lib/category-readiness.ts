@@ -862,6 +862,32 @@ export const LANE_READINESS: LaneReadinessMap = {
   shoe_cdg_nike_airmax_collab: { status: "ready", label: "Air Max CDG Collab (premium — 가품 위험)", note: "Wave 696 — 27 매물, 평균 43만." },
   shoe_travis_nike_airmax_1: { status: "ready", label: "AM1 Travis Scott (Cactus Jack/Wheat)", note: "Wave 696 — 24 매물, 평균 26만." },
   shoe_offwhite_nike_airmax_collab: { status: "ready", label: "Air Max Off-White (90/97)", note: "Wave 696 — 23 매물, 평균 32만." },
+  // Wave 698 (2026-05-23) — NB 25 SKU (1단계 14 broad + 11 collab) — Agent deep sweep 3,629건
+  shoe_newbalance_327_broad: { status: "ready", label: "NB 327 broad", note: "Wave 698 — 332 매물 mass 1위." },
+  shoe_newbalance_2002r_broad: { status: "ready", label: "NB 2002R broad", note: "Wave 698 — 217 매물 mass." },
+  shoe_newbalance_992: { status: "ready", label: "NB 992 (Made in USA Premium)", note: "Wave 698 — 215 매물 평균 30만." },
+  shoe_newbalance_530_broad: { status: "ready", label: "NB 530 broad (mass 베스트셀러)", note: "Wave 698 — 213 매물." },
+  shoe_newbalance_993: { status: "ready", label: "NB 993 (Made in USA)", note: "Wave 698 — 162 매물." },
+  shoe_newbalance_1906r_broad: { status: "ready", label: "NB 1906R broad (신상 mass)", note: "Wave 698 — 146 매물." },
+  shoe_newbalance_990v6_broad: { status: "ready", label: "NB 990v6 (Made in USA 신상)", note: "Wave 698 — 81 매물." },
+  shoe_newbalance_991_broad: { status: "ready", label: "NB 991 (Made in UK)", note: "Wave 698 — 67 매물." },
+  shoe_newbalance_1906a_broad: { status: "ready", label: "NB 1906A (실버 메탈릭)", note: "Wave 698 — 63 매물." },
+  shoe_newbalance_1400_broad: { status: "ready", label: "NB 1400 (vintage USA)", note: "Wave 698 — 65 매물." },
+  shoe_newbalance_1300_broad: { status: "ready", label: "NB 1300 (vintage USA premium)", note: "Wave 698 — 61 매물 평균 27만." },
+  shoe_newbalance_1600_broad: { status: "ready", label: "NB 1600 (vintage USA mass)", note: "Wave 698 — 61 매물." },
+  shoe_newbalance_1500_broad: { status: "ready", label: "NB 1500 (Made in UK)", note: "Wave 698 — 56 매물." },
+  shoe_newbalance_550_broad: { status: "ready", label: "NB 550 broad (농구 retro)", note: "Wave 698 — 29 매물." },
+  // NB COLLAB 11개 (가품 위험):
+  shoe_newbalance_aime_leon_dore_collab: { status: "ready", label: "NB x ALD Collab", note: "Wave 698 — 76 매물 collab, 가품 위험 큼." },
+  shoe_newbalance_cdg_collab: { status: "ready", label: "NB x CDG Collab", note: "Wave 698 — 44 매물." },
+  shoe_newbalance_kith_collab: { status: "ready", label: "NB x Kith Collab", note: "Wave 698 — 34 매물." },
+  shoe_newbalance_junya_watanabe_collab: { status: "ready", label: "NB x Junya Watanabe", note: "Wave 698 — 29 매물." },
+  shoe_newbalance_auralee_collab: { status: "ready", label: "NB x Auralee", note: "Wave 698 — 23 매물." },
+  shoe_newbalance_stone_island_collab: { status: "ready", label: "NB x Stone Island", note: "Wave 698 — 21 매물." },
+  shoe_newbalance_miumiu_collab: { status: "ready", label: "NB x Miu Miu (luxury 가품 폭탄)", note: "Wave 698 — 21 매물 평균 80만~115만." },
+  shoe_newbalance_jjjjound_collab: { status: "ready", label: "NB x JJJJound", note: "Wave 698 — 11 매물 평균 45만." },
+  shoe_newbalance_jcrew_collab: { status: "ready", label: "NB x J.Crew (1400)", note: "Wave 698 — 15 매물." },
+  shoe_newbalance_casablanca_collab: { status: "ready", label: "NB x Casablanca (327)", note: "Wave 698 — 13 매물." },
 };
 
 export type CategoryReadinessConfig = {

@@ -1727,6 +1727,353 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
   },
 
   // ═══════════════════════════════════════════════════════════
+  // Wave 698 (2026-05-23): NB 25 SKU 신설 (1단계 14 broad + 11 collab)
+  // Agent deep sweep 3,629건 — 한국 은어 다 매핑 (문빔/씨솔트/머쉬룸/마카다미아).
+  // collab 가품 위험 — ALD/CDG/Kith/Junya/Miumiu (luxury) 등 별 SKU 필수.
+  // ═══════════════════════════════════════════════════════════
+
+  // --- NB 1단계 Mass Broad 14개 ---
+
+  {
+    id: "shoe-newbalance-327-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "New Balance 327 (Broad — 332 매물, mass 인기)",
+    aliases: ["NB 327", "뉴발란스 327", "U327", "MS327"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["327", "u327", "ms327", "wl327", "ws327"]],
+    mustNotContain: ["키즈", "kids", "td", "gs", "유아", "아동",
+      "casablanca", "카사블랑카", "ald", "에임", "joe freshgoods",
+      "키스", "kith", "junya", "준야",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2020, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-2002r-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 2002R (Broad — 217 매물)",
+    aliases: ["NB 2002R", "뉴발란스 2002R", "M2002R"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["2002r", "2002 r"]],
+    mustNotContain: ["키즈", "kids", "td", "gs", "유아", "아동",
+      "ald", "에임", "kith", "키스", "고어텍스", "gore-tex",  // GTX variant 가격 다름
+      "jjjjound", "자운드",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2010, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-992",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 992 (Made in USA Premium, 215 매물 평균 30만)",
+    aliases: ["NB 992", "뉴발란스 992"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["992"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "kith", "키스", "ald", "에임",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 290000, released: 2006, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-530-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 530 (Broad — 213 매물 mass 베스트셀러)",
+    aliases: ["NB 530", "뉴발란스 530", "MR530", "PZ530"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["530", "mr530", "pz530", "gr530"]],
+    mustNotContain: ["키즈", "kids", "td", "gs", "유아", "아동",
+      "miumiu", "미우미우", "530 sl", "530sl",  // luxury collab 별도
+      "joe freshgoods",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 99000, released: 2020, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-993",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 993 (Made in USA, 162 매물)",
+    aliases: ["NB 993", "뉴발란스 993"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["993"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "kith", "키스", "joe freshgoods", "ald", "에임",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 250000, released: 2008, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-1906r-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 1906R (Broad — 신상 mass, 146 매물)",
+    aliases: ["NB 1906R", "뉴발란스 1906R"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["1906r", "1906 r"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "1906a", "1906d",  // 다른 모델
+      "cdg", "꼼데", "auralee", "오라리",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2022, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-990v6-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 990v6 (Made in USA 신상, 81 매물)",
+    aliases: ["NB 990v6", "뉴발란스 990v6"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["990v6", "990 v6", "990v 6"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "990v3", "990v4", "990v5", "990v7",
+      "action bronson",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 290000, released: 2022, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-991-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 991 (Made in UK, 67 매물)",
+    aliases: ["NB 991", "뉴발란스 991", "M991"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["991", "m991"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "kith", "키스", "stone island", "스톤아일랜드", "jjjjound", "자운드",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 230000, released: 2001, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-1906a-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 1906A (신상 mass — 실버 메탈릭, 63 매물)",
+    aliases: ["NB 1906A", "뉴발란스 1906A"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["1906a", "1906 a"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "1906r", "1906d",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2024, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-1400-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 1400 (vintage USA, 65 매물)",
+    aliases: ["NB 1400", "뉴발란스 1400", "M1400"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["1400", "m1400"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "j.crew", "j crew", "제이크루",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 219000, released: 1994, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-1300-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 1300 (vintage USA, 61 매물 평균 27만)",
+    aliases: ["NB 1300", "뉴발란스 1300"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["1300", "m1300"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "ald", "에임", "kith", "키스",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 350000, released: 1985, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-1600-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 1600 (vintage USA mass, 61 매물)",
+    aliases: ["NB 1600", "뉴발란스 1600", "CM1600"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["1600", "cm1600"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2002, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-1500-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 1500 (Made in UK, 56 매물)",
+    aliases: ["NB 1500", "뉴발란스 1500", "M1500"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["1500", "m1500"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 219000, released: 1989, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-550-broad",
+    brand: "New Balance", category: "shoe",
+    modelName: "NB 550 (농구 retro, 29 매물)",
+    aliases: ["NB 550", "뉴발란스 550", "BB550"],
+    mustContain: [["뉴발란스", "뉴발", "new balance", "newbalance", "nb"], ["550", "bb550"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "ald", "에임", "district vision", "디스트릭트", "joe freshgoods",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 1989, defaultProductType: "sneaker",
+  },
+
+  // --- NB 1단계 COLLAB 11개 (가품 위험 큼) ---
+
+  {
+    id: "shoe-newbalance-aime-leon-dore-collab",
+    brand: "NB x Aimé Leon Dore", category: "shoe",
+    modelName: "NB x ALD Collab (1300/990/993/550/860v2/475)",
+    aliases: ["NB ALD", "뉴발 에임레온도르"],
+    mustContain: [
+      ["뉴발란스", "뉴발", "new balance", "newbalance", "nb"],
+      ["에임 레온 도르", "에임레온도르", "에메레온도르", "aime leon dore", "aimé leon dore", "ald"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 280000, released: 2020, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-cdg-collab",
+    brand: "NB x CDG", category: "shoe",
+    modelName: "NB x Comme des Garcons Collab (1906R/574/610/509/2010)",
+    aliases: ["NB CDG", "꼼데가르송 뉴발란스"],
+    mustContain: [
+      ["뉴발란스", "뉴발", "new balance", "newbalance", "nb"],
+      ["꼼데가르송", "꼼데 가르송", "comme des garcons", "cdg", "꼼데 준야", "junya"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 350000, released: 2022, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-kith-collab",
+    brand: "NB x Kith", category: "shoe",
+    modelName: "NB x Kith Collab (990v4/991v2/992/993/1300/2010)",
+    aliases: ["NB Kith", "키스 뉴발란스"],
+    mustContain: [
+      ["뉴발란스", "뉴발", "new balance", "newbalance", "nb"],
+      ["키스", "kith"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs", "skirt", "스커트",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 380000, released: 2022, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-junya-watanabe-collab",
+    brand: "NB x Junya Watanabe", category: "shoe",
+    modelName: "NB x Junya Watanabe Collab (574/471/480/AM574)",
+    aliases: ["NB Junya", "준야 와타나베 뉴발란스"],
+    mustContain: [
+      ["뉴발란스", "뉴발", "new balance", "newbalance", "nb"],
+      ["준야", "junya", "와타나베", "watanabe"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 350000, released: 2020, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-auralee-collab",
+    brand: "NB x Auralee", category: "shoe",
+    modelName: "NB x Auralee Collab (990v4/1906R/475/XC-72/WRPD)",
+    aliases: ["NB Auralee", "오라리 뉴발란스"],
+    mustContain: [
+      ["뉴발란스", "뉴발", "new balance", "newbalance", "nb"],
+      ["오라리", "auralee"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 320000, released: 2022, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-stone-island-collab",
+    brand: "NB x Stone Island", category: "shoe",
+    modelName: "NB x Stone Island Collab (991v2/574)",
+    aliases: ["NB Stone Island", "스톤아일랜드 뉴발란스"],
+    mustContain: [
+      ["뉴발란스", "뉴발", "new balance", "newbalance", "nb"],
+      ["스톤아일랜드", "스톤 아일랜드", "stone island", "stone-island"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 400000, released: 2022, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-miumiu-collab",
+    brand: "NB x Miu Miu", category: "shoe",
+    modelName: "NB x Miu Miu Collab (530 SL/442) — luxury 가품 폭탄",
+    aliases: ["NB Miu Miu", "미우미우 뉴발란스"],
+    mustContain: [
+      ["뉴발란스", "뉴발", "new balance", "newbalance", "nb"],
+      ["미우미우", "miumiu", "miu miu"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1", "미러", "복각",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 800000, released: 2023, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-jjjjound-collab",
+    brand: "NB x JJJJound", category: "shoe",
+    modelName: "NB x JJJJound Collab (990v3/v4/991/2002R Gore-Tex)",
+    aliases: ["NB JJJJound", "자운드 뉴발란스"],
+    mustContain: [
+      ["뉴발란스", "뉴발", "new balance", "newbalance", "nb"],
+      ["자운드", "jjjjound"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 450000, released: 2021, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-jcrew-collab",
+    brand: "NB x J.Crew", category: "shoe",
+    modelName: "NB x J.Crew Collab (1400)",
+    aliases: ["NB J.Crew", "제이크루 뉴발란스"],
+    mustContain: [
+      ["뉴발란스", "뉴발", "new balance", "newbalance", "nb"],
+      ["제이크루", "j.crew", "j crew", "jcrew"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 220000, released: 2018, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-newbalance-casablanca-collab",
+    brand: "NB x Casablanca", category: "shoe",
+    modelName: "NB x Casablanca Collab (327)",
+    aliases: ["NB Casablanca", "카사블랑카 뉴발란스"],
+    mustContain: [
+      ["뉴발란스", "뉴발", "new balance", "newbalance", "nb"],
+      ["카사블랑카", "casablanca"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 200000, released: 2021, defaultProductType: "sneaker",
+  },
+
+  // shoe-newbalance-levis-collab는 catalog-shoe-wave91.ts에 이미 있음 — 별 추가 X
+
+  // ═══════════════════════════════════════════════════════════
   // Wave 696 (2026-05-23): AF1 + Air Max 1단계 22 SKU 신설
   // Agent deep sweep — AF1 960건 (기존 3 → 53 후보), Air Max 1476건 (기존 5 → 23 후보).
   // Pareto 80% 흡수 (1단계).
