@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { loadV7SiblingPresence, type V7SiblingPresenceMap } from "@/lib/band-aware-median";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
-import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationFromRawJson } from "@/lib/marketplace-safety";
+import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombined } from "@/lib/marketplace-safety";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
@@ -485,7 +485,8 @@ function buildItems(
         tradeLabels: [...(facts.tradeLabels ?? [])],
         transactionMode: tx.transactionMode,
         shippingAssumption: tx.assumption,
-        directTradeLocation: marketplaceLocationFromRawJson(meta?.raw_json),
+        // Wave launch-37: raw_json 없으면 description 에서 "직거래는 안동 송하동" 같은 패턴 추출.
+        directTradeLocation: marketplaceLocationCombined(meta?.raw_json, meta?.description_preview ?? null),
         imageCount: meta?.image_count ?? null,
         descriptionPreview: meta?.description_preview ?? "",
         lastSeenAt: meta?.last_seen_at ?? null,

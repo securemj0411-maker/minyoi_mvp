@@ -508,3 +508,48 @@ export function marketplaceLocationFromRawJson(rawJson: unknown): string | null 
   }
   return null;
 }
+
+// Wave launch-37 (사용자 짚음): 중고나라 collector 가 list API 만 → raw_json 에 location 없음.
+// 단 셀러가 description 에 "직거래는 안동 송하동 입니다" 같이 박는 경우 많음.
+// description 에서 시/구/동 패턴 추출.
+//
+// 룰:
+// 1. "직거래" / "만나" / "위치" / "지역" 같은 trigger 키워드 근처 (±60자)에 위치 패턴 찾기
+// 2. 패턴 우선순위: "OO시 OO동" > "OO구 OO동" > "OO동" > "OO시" / "OO구"
+// 3. 무난한 false positive 차단: "유아동", "신학기 ... 동" 같은 일반어
+const LOCATION_TRIGGERS = ["직거래", "만나", "거래 가능", "위치는", "지역은", "동네는"];
+const BAD_TOKENS = new Set(["유아동", "남아동", "여아동", "기타운동", "반려동"]);
+
+function extractDongFromText(text: string): string | null {
+  if (!text || typeof text !== "string") return null;
+  const normalized = text.replace(/\s+/g, " ");
+  for (const trigger of LOCATION_TRIGGERS) {
+    const idx = normalized.indexOf(trigger);
+    if (idx < 0) continue;
+    // trigger 뒤 80자 window 안 위치 패턴 검색
+    const window = normalized.slice(idx, idx + 100);
+    // 1순위: "안동 송하동", "강남구 역삼동" 같은 두 단어 — "[도시] [동]"
+    //   도시 단어 = 동/시/구/군/읍/면 으로 끝나는 2~5글자 ("안동", "강남구", "수원시")
+    const twoWord = window.match(/([가-힣]{2,5}(?:동|시|구|군|읍|면))\s+([가-힣]{1,5}동)/);
+    if (twoWord && !BAD_TOKENS.has(twoWord[1]) && !BAD_TOKENS.has(twoWord[2])) {
+      return `${twoWord[1]} ${twoWord[2]}`;
+    }
+    // 2순위: 단독 "동" 단어
+    const dongOnly = window.match(/([가-힣]{1,5}동)\b/);
+    if (dongOnly && !BAD_TOKENS.has(dongOnly[1])) return dongOnly[1];
+    // 3순위: 단독 시/구/군
+    const cityOnly = window.match(/([가-힣]{2,5}(?:시|구|군))/);
+    if (cityOnly && !BAD_TOKENS.has(cityOnly[1])) return cityOnly[1];
+  }
+  return null;
+}
+
+export function marketplaceLocationFromDescription(description: string | null | undefined): string | null {
+  if (!description) return null;
+  return extractDongFromText(description);
+}
+
+// raw_json 우선, 없으면 description fallback.
+export function marketplaceLocationCombined(rawJson: unknown, description: string | null | undefined): string | null {
+  return marketplaceLocationFromRawJson(rawJson) ?? marketplaceLocationFromDescription(description);
+}

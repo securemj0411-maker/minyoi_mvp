@@ -5,7 +5,7 @@ import { consumeDetailAccess } from "@/lib/detail-access";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
-import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationFromRawJson } from "@/lib/marketplace-safety";
+import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombined } from "@/lib/marketplace-safety";
 import { classifyListing } from "@/lib/pipeline";
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -123,7 +123,8 @@ async function loadExactPoolItem(pid: number) {
     tradeLabels: [...(facts.tradeLabels ?? [])],
     transactionMode: tx.transactionMode,
     shippingAssumption: tx.assumption,
-    directTradeLocation: marketplaceLocationFromRawJson(meta?.raw_json),
+    // Wave launch-37: raw_json 없으면 description 에서 "직거래는 안동 송하동" 같은 패턴 추출.
+    directTradeLocation: marketplaceLocationCombined(meta?.raw_json, meta?.description_preview ?? null),
     imageCount: meta?.image_count ?? null,
     descriptionPreview: meta?.description_preview ?? "",
     listingState: meta?.listing_state ?? "unknown",
