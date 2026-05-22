@@ -10175,6 +10175,10 @@ export const CATALOG: Sku[] = [
       "balenciaga", "발렌시아가", "demna", "뎀나",
       // Wave 235: Gucci × Adidas Trefoil 자켓 62만 mismatch.
       "gucci", "구찌",
+      // Wave 546 (2026-05-22): production audit — 프라다/베이프 콜라보 100~200만 추가 차단.
+      "prada", "프라다", "사피아노",
+      "bape", "베이프", "비에이프",
+      "포플린 트랙", "포플린 자켓", "포플린", // 발렌시아가 포플린 트랙 시리즈
       // 가방 차단
       "가방", "bag", "backpack", "백팩"],
     msrpKrw: 119000, released: 1949,
