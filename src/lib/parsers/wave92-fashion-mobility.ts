@@ -617,7 +617,8 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 //   generic `bag|backpack` / `shoe|broad` buckets and mix unrelated brands.
 // Wave 506 (2026-05-21) shoe v16: split remaining ready shoe sample axes:
 //   Adidas football line, Nike Sacai shape, Salomon ACS+/ACS Pro, and Hoka Kaha boot type.
-const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v16";
+// Wave 536 (2026-05-22) shoe v17: Dr. Martens Flora Chelsea no longer shares 2976 samples.
+const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v17";
 const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v13";
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher

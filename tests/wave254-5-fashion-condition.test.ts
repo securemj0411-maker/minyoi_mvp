@@ -233,7 +233,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `shoe conditionNotes 비어있음: ${JSON.stringify(result.conditionNotes)}`);
     });
 
-    it("parser_version shoe = wave92-shoe-v16 (Wave 506 ready sample axis tightening)", () => {
+    it("parser_version shoe = wave92-shoe-v17 (Wave 536 Flora split)", () => {
       const result = parseListingOptions({
         title: "나이키 덩크 로우",
         description: "270",
@@ -241,7 +241,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Nike Dunk Low",
         category: "shoe",
       });
-      assert.equal(result.parserVersion, "wave92-shoe-v16",
+      assert.equal(result.parserVersion, "wave92-shoe-v17",
         `parser_version mismatch: ${result.parserVersion}`);
     });
 

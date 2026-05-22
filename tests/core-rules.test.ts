@@ -1762,7 +1762,7 @@ test("candidate pool builder does not block low seller rating when review count 
   assert.ok(sku, "expected Asics Gel Nimbus SKU in catalog");
   const parsedByPid = new Map([
     [18, {
-      parser_version: "wave92-shoe-v16",
+      parser_version: "wave92-shoe-v17",
       category: "shoe" as const,
       comparable_key: "shoe|gel_nimbus|sneaker|280|a_grade",
       parse_confidence: 0.92,
@@ -1791,7 +1791,7 @@ test("candidate pool builder does not block low seller rating when review count 
     parsedByPid,
     catalogById: new Map(CATALOG.map((item) => [item.id, item])),
     categoryReadiness: CATEGORY_READINESS,
-    latestParserVersionByCategory: { shoe: "wave92-shoe-v16" },
+    latestParserVersionByCategory: { shoe: "wave92-shoe-v17" },
     now: "2026-05-22T00:00:00.000Z",
   });
 
@@ -1828,7 +1828,7 @@ test("candidate pool builder blocks stale parser versions before ready entry", (
     parsedByPid,
     catalogById: new Map(CATALOG.map((item) => [item.id, item])),
     categoryReadiness: CATEGORY_READINESS,
-    latestParserVersionByCategory: { shoe: "wave92-shoe-v16" },
+    latestParserVersionByCategory: { shoe: "wave92-shoe-v17" },
     now: "2026-05-21T00:00:00.000Z",
   });
 
@@ -1844,7 +1844,7 @@ test("candidate pool builder holds fashion broad and unknown-condition rows for 
 
   const parsedByPid = new Map([
     [12, {
-      parser_version: "wave92-shoe-v16",
+      parser_version: "wave92-shoe-v17",
       category: "shoe" as const,
       comparable_key: "shoe|newbalance_574_broad|sneaker|275|a_grade",
       parse_confidence: 0.92,
@@ -1852,7 +1852,7 @@ test("candidate pool builder holds fashion broad and unknown-condition rows for 
       condition_class: "clean",
     }],
     [13, {
-      parser_version: "wave92-shoe-v16",
+      parser_version: "wave92-shoe-v17",
       category: "shoe" as const,
       comparable_key: "shoe|authentic|sneaker|275|unknown_condition",
       parse_confidence: 0.92,
@@ -1879,7 +1879,7 @@ test("candidate pool builder holds fashion broad and unknown-condition rows for 
     parsedByPid,
     catalogById: new Map(CATALOG.map((item) => [item.id, item])),
     categoryReadiness: CATEGORY_READINESS,
-    latestParserVersionByCategory: { shoe: "wave92-shoe-v16" },
+    latestParserVersionByCategory: { shoe: "wave92-shoe-v17" },
     now: "2026-05-21T00:00:00.000Z",
   });
 
@@ -1896,7 +1896,7 @@ test("candidate pool builder holds explicit fashion collab rows unless sku is a 
 
   const parsedByPid = new Map([
     [14, {
-      parser_version: "wave92-shoe-v16",
+      parser_version: "wave92-shoe-v17",
       category: "shoe" as const,
       comparable_key: "shoe|authentic|sneaker|260|a_grade",
       parse_confidence: 0.95,
@@ -1904,7 +1904,7 @@ test("candidate pool builder holds explicit fashion collab rows unless sku is a 
       condition_class: "clean",
     }],
     [15, {
-      parser_version: "wave92-shoe-v16",
+      parser_version: "wave92-shoe-v17",
       category: "shoe" as const,
       comparable_key: "shoe|supreme_vans_collab|sneaker|260|a_grade",
       parse_confidence: 0.95,
@@ -1931,7 +1931,7 @@ test("candidate pool builder holds explicit fashion collab rows unless sku is a 
     parsedByPid,
     catalogById: new Map(CATALOG.map((item) => [item.id, item])),
     categoryReadiness: CATEGORY_READINESS,
-    latestParserVersionByCategory: { shoe: "wave92-shoe-v16" },
+    latestParserVersionByCategory: { shoe: "wave92-shoe-v17" },
     now: "2026-05-21T00:00:00.000Z",
   });
 

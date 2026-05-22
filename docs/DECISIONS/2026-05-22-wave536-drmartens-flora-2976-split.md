@@ -9,6 +9,7 @@
 
 - Add `플로라` / `flora` to the 2976 Chelsea catalog blocklist.
 - Add a regression test that Flora Chelsea rows do not match `shoe-drmartens-2976-chelsea`.
+- Bump shoe parser freshness from `wave92-shoe-v16` to `wave92-shoe-v17` so existing parsed 2976 rows are forced through the new catalog blocklist.
 
 ## Deferred
 
