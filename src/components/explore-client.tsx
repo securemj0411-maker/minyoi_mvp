@@ -1375,10 +1375,17 @@ export default function ExploreClient({
           writeDetailAccessSnapshot(storageScope, nextDetailAccess);
         }
       } else {
-        setError(data.message ?? "매물 불러오기 실패");
+        // Wave launch-39 (사용자 짚음): "빨간 위에 뭐 깜빡깜빡". error 가 set 되어도
+        // feedExhausted 안 박혀서 IntersectionObserver 가 sentinel 보고 또 loadPool(true)
+        // → 또 error → 빨간 box 들였다 사라졌다 반복. error 발생 시도 feedExhausted=true
+        // 박아서 자동 retry 자체 차단. 사용자가 직접 새로고침 누르도록.
+        setError(data.message ?? "매물을 잠시 못 가져왔어요. 잠시 후 다시 시도해주세요.");
+        setFeedExhausted(true);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "네트워크 오류");
+      // 네트워크 끊김도 동일 — 무한 retry 차단.
+      setError(e instanceof Error && e.message ? e.message : "네트워크가 잠시 불안정해요. 잠시 후 다시 시도해주세요.");
+      setFeedExhausted(true);
     } finally {
       setRefreshing(false);
       setLoading(false);
@@ -1438,8 +1445,10 @@ export default function ExploreClient({
     void loadPool(false);
   }, [loadPool]);
 
+  // Wave launch-39 (사용자 짚음): error 가드 추가. error 발생 시 IntersectionObserver
+  // 자체 비활성 — 빨간 box 깜빡임의 근원이 sentinel 자동 retry.
   useEffect(() => {
-    if (!creditFeedEnabled || loading || refreshing || feedExhausted || scrapOnly || items.length === 0) return;
+    if (!creditFeedEnabled || loading || refreshing || feedExhausted || scrapOnly || items.length === 0 || error) return;
     const el = infiniteFeedSentinelRef.current;
     if (!el) return;
 
@@ -1453,7 +1462,7 @@ export default function ExploreClient({
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [creditFeedEnabled, feedExhausted, items.length, loadPool, loading, refreshing, scrapOnly]);
+  }, [creditFeedEnabled, error, feedExhausted, items.length, loadPool, loading, refreshing, scrapOnly]);
 
   // Wave 353: 클라이언트 사이드 카테고리 필터. 전체 풀(items)에서 selectedCategories에 속한 매물만.
   // category가 null이면 selectedCategories 활성 시 제외 (안전).
@@ -1949,8 +1958,20 @@ export default function ExploreClient({
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200">
-          {error}
+        // Wave launch-39 (사용자 짚음): 빨간 rose 톤 → 부드러운 amber 톤. 사용자가 "위협적
+        // 빨간색 깜빡임" 으로 받아들였음. 메시지도 informational 이라 톤 일치. 자동 retry 차단
+        // 후엔 깜빡임도 없고 사용자가 직접 새로고침 누르는 흐름.
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/70 px-5 py-6 text-center dark:border-amber-900/40 dark:bg-amber-950/20">
+          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            {error}
+          </p>
+          <button
+            type="button"
+            onClick={() => { setError(null); setFeedExhausted(false); void loadPool(false); }}
+            className="mt-4 inline-flex h-10 items-center justify-center rounded-full bg-zinc-900 px-4 text-[13px] font-bold text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            다시 시도하기
+          </button>
         </div>
       ) : !scrapOnly && items.length === 0 ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 px-5 py-8 text-center dark:border-amber-900/40 dark:bg-amber-950/20">

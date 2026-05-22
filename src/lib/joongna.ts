@@ -465,19 +465,51 @@ export function parseJoongnaDetailHtml(url: string, html: string, status = 200):
   };
 }
 
-// 중고나라 detail HTML 패턴:
-//   <dt class="...">만나서 직거래</dt>
-//   ... 몇 가지 inline element ...
-//   <span class="..." role="button">송하동</span>
-//   <span class="..." role="button">강남구 역삼동</span>
+// 중고나라 detail HTML 안 직거래 위치 추출.
+// Wave launch-38 (1차): "만나서 직거래" <dt> 뒤 button 안 텍스트만 잡음 → render flow 의존성 큼.
+// Wave launch-39 (사용자 짚음): 실제 HTML payload 분석 결과, 중고나라는 `__next_f.push` (React
+//   Flight) streaming JSON 에 구조화된 위치 데이터를 박아놓음:
+//   - "locations":[{"dongCode":"...","locationName":"송하동","lon":...,"lat":...}]
+//   - "tradeDetail":[{... "subContents":[{"text":"<u>송하동</u>","location":{...}}]}]
+//   이 두 키가 button 보다 안정적 (button 없는 매물도 location 박힘).
+//   payload 는 escape 됐을 수도 (`\"locationName\":\"송하동\"`) 안 됐을 수도 — 둘 다 시도.
+const HANGUL_LOCATION_TOKEN = /[가-힣]{1,8}(?:동|시|구|군|읍|면)/;
+
 function extractJoongnaTradeLocation(html: string): string | null {
-  // "만나서 직거래" 다음 800자 안 첫 span role="button" 안 텍스트
-  const m = html.match(/만나서\s*직거래<\/dt>[\s\S]{0,800}?role="button"[^>]*>([^<]{1,40})<\/span>/);
-  if (!m) return null;
-  const raw = m[1].trim();
-  // 한국어 동/시/구/군 패턴 검증
-  if (!/[가-힣]{1,8}(?:동|시|구|군|읍|면)/.test(raw)) return null;
-  return raw;
+  // 1) React Flight escape 형태 — \"locationName\":\"송하동\"
+  //    joongna.ts 의 escapedStringField 와 동일 패턴.
+  const escapedLocation = /\\"locationName\\"\s*:\s*\\"([^\\"]{1,30})\\"/.exec(html)?.[1];
+  if (escapedLocation && HANGUL_LOCATION_TOKEN.test(escapedLocation)) {
+    return escapedLocation.trim();
+  }
+
+  // 2) Unescape 형태 — "locationName":"송하동"
+  //    SSR 후 hydration data, 또는 다른 inline script.
+  const plainLocation = /"locationName"\s*:\s*"([^"]{1,30})"/.exec(html)?.[1];
+  if (plainLocation && HANGUL_LOCATION_TOKEN.test(plainLocation)) {
+    return plainLocation.trim();
+  }
+
+  // 3) tradeDetail.subContents[].text — <u>송하동</u> 패턴 (escape 형태)
+  const escapedSubText = /\\"text\\"\s*:\s*\\"<u>([^<]{1,30})<\\\/u>\\"/.exec(html)?.[1];
+  if (escapedSubText && HANGUL_LOCATION_TOKEN.test(escapedSubText)) {
+    return escapedSubText.trim();
+  }
+
+  // 4) tradeDetail.subContents[].text — unescape 형태
+  const plainSubText = /"text"\s*:\s*"<u>([^<]{1,30})<\/u>"/.exec(html)?.[1];
+  if (plainSubText && HANGUL_LOCATION_TOKEN.test(plainSubText)) {
+    return plainSubText.trim();
+  }
+
+  // 5) Fallback: 기존 button regex (render flow 의존, 가장 약함)
+  const buttonMatch = html.match(/만나서\s*직거래<\/dt>[\s\S]{0,800}?role="button"[^>]*>([^<]{1,40})<\/span>/);
+  if (buttonMatch) {
+    const raw = buttonMatch[1].trim();
+    if (HANGUL_LOCATION_TOKEN.test(raw)) return raw;
+  }
+
+  return null;
 }
 
 export async function fetchJoongnaDetail(url: string, timeoutMs = 10_000): Promise<JoongnaDetail> {
