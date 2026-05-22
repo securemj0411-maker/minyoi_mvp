@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { loadV7SiblingPresence, type V7SiblingPresenceMap } from "@/lib/band-aware-median";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
-import { inferMarketplaceTransaction, marketplaceFactsFromRawJson } from "@/lib/marketplace-safety";
+import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationFromRawJson } from "@/lib/marketplace-safety";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
@@ -91,6 +91,9 @@ type RawListingMeta = {
   image_count: number | null;
   description_preview: string | null;
   raw_json: Record<string, unknown> | null;
+  // Wave launch-4 (launch audit CRITICAL #4): listing_state 받아서 'active' 외 매물 사용자 풀에서 차단.
+  // candidate_pool.status=ready 가드만으로는 lifecycle cron lag 시 sold_confirmed/disappeared 노출 가능.
+  listing_state: string | null;
 };
 
 type UserCreditsRow = {
@@ -336,14 +339,41 @@ async function loadPool(
   const comparableKeys = [...new Set(pool.map((r) => r.comparable_key).filter((k): k is string => Boolean(k)))];
   const [metaRes, marketBands, v7SiblingPresence] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json&pid=in.(${pids.join(",")})`,
+      // Wave launch-4: listing_state 컬럼 추가 select. 응답 후 ready 였지만 active 아닌 row 차단.
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json,listing_state&pid=in.(${pids.join(",")})`,
       { headers },
     ),
     loadMarketBandsForPool(headers, comparableKeys),
     loadV7SiblingPresence(headers, comparableKeys),
   ]);
   const metas = (await metaRes.json()) as RawListingMeta[];
-  return { pool, raws, metas, marketBands, v7SiblingPresence };
+
+  // Wave launch-4 (launch audit CRITICAL #4): ready 였지만 listing_state != 'active' 인 매물 사용자 풀 차단.
+  // candidate_pool.status=ready 가드만으로는 lifecycle cron lag 시 sold_confirmed / disappeared /
+  // missing_suspect 매물이 사용자 화면에 노출됨. 신뢰 박살 risk.
+  // soldOut row (status=invalidated) 는 그대로 — 이미 sold_out 마스킹 디자인 적용됨.
+  const metaByPidLocal = new Map(metas.map((m) => [m.pid, m]));
+  const blockedPids = new Set<number>();
+  for (const row of pool) {
+    if (row.soldOut) continue; // sold_out 행은 의도적으로 살림
+    const meta = metaByPidLocal.get(row.pid);
+    const state = meta?.listing_state ?? null;
+    // listing_state null 은 옛 데이터 — 의심스러우면 일단 차단 (보수)
+    if (state !== "active") {
+      blockedPids.add(row.pid);
+    }
+  }
+  if (blockedPids.size > 0) {
+    console.warn("[pool] listing_state stale block", {
+      blocked: blockedPids.size,
+      total_ready: pool.filter((r) => !r.soldOut).length,
+    });
+  }
+  const filteredPool = pool.filter((r) => !blockedPids.has(r.pid));
+  const filteredRaws = raws.filter((r) => !blockedPids.has(r.pid));
+  const filteredMetas = metas.filter((m) => !blockedPids.has(m.pid));
+
+  return { pool: filteredPool, raws: filteredRaws, metas: filteredMetas, marketBands, v7SiblingPresence };
 }
 
 function buildItems(
@@ -452,6 +482,7 @@ function buildItems(
         tradeLabels: [...(facts.tradeLabels ?? [])],
         transactionMode: tx.transactionMode,
         shippingAssumption: tx.assumption,
+        directTradeLocation: marketplaceLocationFromRawJson(meta?.raw_json),
         imageCount: meta?.image_count ?? null,
         descriptionPreview: meta?.description_preview ?? "",
         lastSeenAt: meta?.last_seen_at ?? null,
@@ -478,6 +509,7 @@ function maskFreeFeedItems<T extends ReturnType<typeof buildItems>[number]>(item
       expectedProfitMax: roundDownTenThousand(item.expectedProfitMax) ?? 0,
       sellerReviewRating: null,
       sellerReviewCount: 0,
+      directTradeLocation: null,
       descriptionPreview: "",
     };
   });
@@ -581,52 +613,25 @@ export async function GET(req: Request) {
       await upsertLastBrowse(headers, userRef, authUserId);
     }
 
-    // Wave 388: budget filter를 loadPool 안으로 (다양화 전에). fallback chain은
-    // loadPool 재호출 — 각 단계 priceMax로 fetch + filter + 다양화 다시.
-    // Wave 389: threshold 5 → 1. budget 통과 매물 1개라도 있으면 그대로 보여줌
-    // (사용자가 본 매물 = 자기 예산 안 매물). 진짜 0개일 때만 fallback.
-    // 다양화 cap 풀기는 diversifyByCategory의 "부족분 채움" 로직에서 이미 처리.
-    const FALLBACK_THRESHOLD = 1;
     const readyCandidateLimit = refresh ? FETCH_POOL_OVERFETCH : READY_SLOTS;
-    const fallbackChain: { code: "150k" | "300k" | "500k" | "unlimited"; max: number | null }[] = [
-      { code: "150k", max: 150000 },
-      { code: "300k", max: 300000 },
-      { code: "500k", max: 500000 },
-      { code: "unlimited", max: null },
-    ];
-    let appliedBudget: "150k" | "300k" | "500k" | "unlimited" = "unlimited";
+    const appliedBudget: "150k" | "300k" | "500k" | "unlimited" =
+      priceMax === 150000 ? "150k" :
+      priceMax === 300000 ? "300k" :
+      priceMax === 500000 ? "500k" :
+      "unlimited";
     let items: ReturnType<typeof buildItems> = [];
 
-    if (priceMax != null) {
-      const startIdx = fallbackChain.findIndex((c) => c.max === priceMax);
-      const effectiveStart = startIdx >= 0 ? startIdx : 0;
-      for (let i = effectiveStart; i < fallbackChain.length; i++) {
-        const candidate = fallbackChain[i];
-        const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, {
-          sort,
-          source,
-          priceMax: candidate.max,
-          excludePids: excludeAllPids,
-          readyCandidateLimit,
-        });
-        const candItems = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
-        if (candItems.length >= FALLBACK_THRESHOLD || i === fallbackChain.length - 1) {
-          items = candItems;
-          appliedBudget = candidate.code;
-          break;
-        }
-      }
-    } else {
-      // priceMax 없으면 unlimited 한 번만 fetch.
-      const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, {
-        sort,
-        source,
-        excludePids: excludeAllPids,
-        readyCandidateLimit,
-      });
-      items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
-      appliedBudget = "unlimited";
-    }
+    // 예산 필터가 있을 때 더 넓은 가격대로 조용히 fallback하지 않는다.
+    // 15만원 이하를 보고 있는데 서버가 30/50만원 매물을 가져와도 프론트에서 다시 숨겨져
+    // "새 매물 붙이는 중"만 길게 보이는 문제가 생긴다.
+    const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, {
+      sort,
+      source,
+      priceMax,
+      excludePids: excludeAllPids,
+      readyCandidateLimit,
+    });
+    items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
 
     // Wave 373: 성향 정렬 — preference 따라 우선순위 재정렬.
     //   safe: 우수 셀러 (평점 4.5+ & 후기 10+) 우선
