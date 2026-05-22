@@ -7887,10 +7887,17 @@ export const CATALOG: Sku[] = [
       "시어링", "shearling", "쉬어링", "fleece collar shearling",
       "레더", "leather", "가죽 자켓",
       // Wave 596: hoodie b_grade audit — Our Legacy / No Vacancy Inn / 레게맨 / 바카르 collab 차단.
-      "아워레가시", "our legacy", "ourlegacy",
+      "아워레가시", "our legacy", "ourlegacy", "아워 레가시",
       "노바디스 홈", "no vacancy inn", "novacancy",
       "바카르 노바디스", "bacar nobody",
       "레게맨",
+      // Wave 631: 추가 collab/한정 (Stussy hoodie b_grade IQR 9.7x audit).
+      "cpfm", "cactus plant flea market", "x cpfm",
+      "stussy paris", "스투시 파리", "스투시 파리 후드",
+      "데이비드 카슨", "david carson", "베스파",
+      "디지스탁", "digistack",
+      "월드투어 후드", "world tour hoodie", "world tour 후드",
+      "부아나 피그먼트", "boana pigment",
     ],
     msrpKrw: 159000, released: 2020,
   },
