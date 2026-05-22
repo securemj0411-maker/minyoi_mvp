@@ -3,8 +3,11 @@
 // URL obfuscated 페이지에서만 호출하기 위한 endpoint. 절대 검색엔진 노출 X (robots).
 
 import { NextResponse, type NextRequest } from "next/server";
+import { isAdminUser } from "@/lib/auth-users";
+import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,6 +50,18 @@ function priceBucketFor(price: number): PriceBucketKey {
 }
 
 export async function GET(req: NextRequest) {
+  // Wave launch-18 #6 (audit HIGH): obscurity-only URL → 인증 게이트 추가.
+  // 이전엔 누구나 URL 알면 풀 전체 (수익 차익, profit_band, confidence) 노출.
+  // 이제 admin + beta tester 만. 인증 실패 시 404 (existence 자체 숨김).
+  const auth = await requireSupabaseUser(req);
+  if (!auth.ok) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+  const allowed = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+  if (!allowed) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
   const url = new URL(req.url);
   const page = Math.max(1, Number(url.searchParams.get("page") ?? "1") || 1);
   const pageSize = Math.max(1, Math.min(MAX_PAGE_SIZE, Number(url.searchParams.get("pageSize") ?? String(DEFAULT_PAGE_SIZE)) || DEFAULT_PAGE_SIZE));
