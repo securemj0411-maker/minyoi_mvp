@@ -34,6 +34,10 @@ import { BAG_WAVE266_CATALOG } from "@/lib/generated/catalog-wave266-bag";
 //   - 의류: Adidas collab 5 (Thug/BAPE/SFTM/Y-3/FOG) / FOG Main Line 4 / Polo 7 / Stone Island 3 / Arc'teryx Down / NB collab 2 / BAPE Adidas + Longsleeve + Bag / Stussy 3 + Nike sub 2 / TNF Novelty + Steep Tech / Junya + CDG Converse broad / Polo Chief Keef
 //   - 신발: Onitsuka 2 / AF1 LV8 + Tune Squad + UNDEFEATED / Salomon RX Slide+Phantasm+Mary Jane+XT-Whisper / Hoka Mafate Xlim+Hopara+Mach 6+Kaha 3 / Mizuno Golf JPX+MX+Wave Prophecy / Sacai split 4 / Adidas Adios Pro+Takumi+NMD R1+Pureboost / Dr.Martens 5 / Vans Anaheim+Style 36 / Converse Chuck All Star+Chuck70 Low+RunStarHike+FCW / Yeezy 350 Zebra+Foam Sand+Quantum / Crocs Sanrio+Crocband+Anderson Bell / Puma Rose+Nitro
 import { WAVE_712B_BIAS_FREE_SKUS } from "@/lib/generated/catalog-712b-bias-free";
+// Wave 712c (2026-05-23): 신발 bias-free 21 brand 검증 — Wave 712b 24 SKU 박은 후 누락 100+ 추가.
+//   NB vintage 12 / Asics+Onitsuka 8 / Air Max 3 / Dr.Martens 14 / Yeezy 6 / Hoka 3 / Salomon 6 /
+//   On Running 5 / Superstar 5 / Cortez 4 / AJ1 5 / Puma 5 / Crocs 4 / Blazer 5 / Mizuno 2 / Adidas Boost 4
+import { WAVE_712C_SHOE_BULK } from "@/lib/generated/catalog-712c-shoe-bulk";
 
 export type Sku = {
   id: string;
@@ -7008,6 +7012,7 @@ export const CATALOG: Sku[] = [
   ...SHOE_WAVE140_CATALOG,
   ...SHOE_WAVE266_CATALOG, // Wave 266 — 살로몬/NB/Shox/명품 신발 broad 등 30+ SKU
   ...WAVE_712B_BIAS_FREE_SKUS, // Wave 712b — bias-free 14+21 brand 검증 50+ SKU 일괄 신설
+  ...WAVE_712C_SHOE_BULK, // Wave 712c — 신발 추가 100+ SKU (NB vintage / Asics+Onitsuka / Dr.Martens family / Yeezy broad / 등)
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
