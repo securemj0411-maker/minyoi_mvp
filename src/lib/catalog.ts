@@ -7747,7 +7747,11 @@ export const CATALOG: Sku[] = [
     modelName: "Stüssy Hoodie / Crewneck",
     aliases: ["Stussy Hoodie", "스투시 후드", "Stussy Crewneck", "스투시 맨투맨"],
     mustContain: [["stussy", "스투시", "stüssy"], ["후드", "hoodie", "맨투맨", "크루넥", "crewneck", "sweatshirt", "스웻셔츠"]],
-    mustNotContain: ["nike", "나이키", "dior", "디올", "birkenstock", "버켄스탁", "carhartt", "칼하트", "키즈", "kids", "반팔", "복각", "rep ", "replica"],
+    mustNotContain: ["nike", "나이키", "dior", "디올", "birkenstock", "버켄스탁", "carhartt", "칼하트", "키즈", "kids", "반팔", "복각", "rep ", "replica",
+      // Wave 545 (2026-05-22): 시어링 (양털/가죽 라인, 160만 한정) 차단 — 일반 후드 8~25만 대비 +6배.
+      "시어링", "shearling", "쉬어링", "fleece collar shearling",
+      "레더", "leather", "가죽 자켓",
+    ],
     msrpKrw: 159000, released: 2020,
   },
   {
@@ -9339,6 +9343,12 @@ export const CATALOG: Sku[] = [
       "정품 보장", "100% 정품 보장",
       // buy intent
       "삽니다", "매입", "구합니다", "구해요", "구함",
+      // Wave 545 (2026-05-22): broad football sample wide variant.
+      //   주의: "f50 엘리트" 단독은 test fixture 정상 매물 expectation → 차단 X.
+      //   대신: 메시 시그니처 라인 + 축구공 동봉 세트만 차단 (variant 분산 큼).
+      "축구공 세트", "축구공/가방", "축구공 가방", "축구공 동봉", "축구공포함",
+      "메시 튜닛 엘리트", "messi tunit elite", "메시 튜닛",
+      "최상급 축구화",
     ],
     msrpKrw: 199000, released: 2014,
   },
