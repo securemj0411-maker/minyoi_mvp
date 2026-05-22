@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/auth-users";
+import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { loadCategoryReadinessMap } from "@/lib/category-readiness";
+import { hasDetailAccess } from "@/lib/detail-access";
 import {
   fetchLatestMarketStats,
   fetchLatestMarketVelocity,
@@ -129,6 +132,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "user ref does not match session" }, { status: 403 });
   }
   if (!Number.isFinite(pid)) return NextResponse.json({ error: "invalid pid" }, { status: 400 });
+
+  // Wave launch-6 (launch audit CRITICAL #5): paywall 가드 추가.
+  // 이전엔 assertRevealAccess (mvp_pack_reveals row 만 확인) 만 거치고 detail 반환.
+  // 사용자가 detail-access endpoint 우회하고 직접 reveals/detail POST 호출 시 credit
+  // 차감 없이 매물 상세 정보 (description / imageUrls / metrics) 받기 가능했음.
+  // hasDetailAccess = markOpenedPid 로 박힌 access 확인 (정상 흐름: detail-access POST 가 먼저
+  // credit 차감 + markOpenedPid 박음 → 그 후 reveals/detail 호출).
+  const unlimitedAccess = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+  if (!unlimitedAccess) {
+    const hasAccess = await hasDetailAccess({ user: auth.user, userRef, pid, unlimited: false });
+    if (!hasAccess) {
+      console.warn("reveal_detail paywall block", { userRef, pid });
+      return NextResponse.json(
+        { error: "detail_access_required", message: "상세보기 접근 권한이 없어요. 먼저 상세보기를 열어주세요." },
+        { status: 402 },
+      );
+    }
+  }
 
   try {
     const detail = await loadRevealListingDetail({ userRef, pid });
