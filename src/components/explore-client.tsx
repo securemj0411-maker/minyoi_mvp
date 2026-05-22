@@ -1284,8 +1284,8 @@ export default function ExploreClient({
       kakao.Share.sendDefault({
         objectType: "feed",
         content: {
-          title: "지금 팔면 바로 돈 되는 중고 상품이 있어요!",
-          description: "AI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요",
+          title: "지금 팔면 바로 돈 되는 중고 상품이 있어요",
+          description: "AI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요!",
           link: {
             mobileWebUrl: shareUrl,
             webUrl: shareUrl,
