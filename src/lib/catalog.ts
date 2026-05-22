@@ -7986,7 +7986,11 @@ export const CATALOG: Sku[] = [
     modelName: "Birkenstock Arizona (시그니처)",
     aliases: ["Arizona", "버켄스탁 아리조나"],
     mustContain: [["버켄스탁", "birkenstock"], ["아리조나", "arizona"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "dior", "디올", "아더에러"],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "dior", "디올", "아더에러",
+      // Wave 543 (2026-05-22): production audit — 크롬하츠 콜라보 500만 (정품 15~30만 대비 +20배).
+      "크롬하츠", "chrome hearts", "건슬링어", "gunslinger", "rhodium",
+      "스투시", "stussy", "manolo blahnik", "manolo",
+    ],
     msrpKrw: 159000, released: 1973,
     defaultProductType: "sandal", // Wave 236e — Arizona = 2-strap sandal.
   },
@@ -9130,7 +9134,10 @@ export const CATALOG: Sku[] = [
     modelName: "Nike Air Max 97 (broad)",
     aliases: ["Nike Air Max 97", "나이키 에어맥스 97"],
     mustContain: [["nike", "나이키"], ["에어맥스 97", "에어맥스97", "나이키에어맥스97", "air max 97", "airmax 97", "airmax97"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "에어맥스 1", "에어맥스 90", "에어맥스 95", "off-white", "오프화이트", "스켑타", "skepta", "언디핏", "undefeated", "퓨추라", "futura", "clot"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "에어맥스 1", "에어맥스 90", "에어맥스 95", "off-white", "오프화이트", "스켑타", "skepta", "언디핏", "undefeated", "퓨추라", "futura", "clot",
+      // Wave 543 (2026-05-22): ASIA 한정 (일본 매장 한정, 정품 가격 380~400만 — 일반 30~50만 대비 +20배).
+      "asia 정품", "asia 한정", "asia limited", "japan only", "japan 한정", "일본 한정",
+    ],
     msrpKrw: 219000, released: 1997,
   },
   {
