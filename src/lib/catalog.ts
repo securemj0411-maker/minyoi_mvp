@@ -5995,7 +5995,16 @@ export const CATALOG: Sku[] = [
       ["갤럭시 워치", "갤워치", "galaxy watch", "갤럭시워치"],
       [" 4 ", "워치4", "워치 4"],
     ],
-    mustNotContain: [" 5 ", "워치5", " 6 ", "워치6", " 7 ", "워치7", "ultra", "울트라", "classic"],
+    mustNotContain: [" 5 ", "워치5", " 6 ", "워치6", " 7 ", "워치7", "ultra", "울트라", "classic",
+      // Wave 664 (2026-05-22): 42mm spread 236x audit — 톰브라운 collab + 부품 차단.
+      "톰브라운", "thom browne", "thom-browne", "tb collab",
+      "디올", "dior", "마틴 마르지엘라",
+      "에디션", "edition", "한정 에디션", "limited edition",
+      // 부품 단품 (5k 베젤 outlier)
+      "베젤 부품", "베젤만", "베젤 단품", "베젤만 판매",
+      "케이스만", "케이스 단품", "스트랩만", "줄만", "줄만 판매",
+      "프레임만", "보호 케이스만", "tpu 케이스만",
+    ],
     msrpKrw: 299000,
     released: 2021,
   },
