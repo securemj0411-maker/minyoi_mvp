@@ -496,7 +496,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   polo_rrl_pants: { status: "ready", label: "Polo RRL Pants (치노/슬랙스)", note: "Wave 247.1 — broad 의 27% 팬츠 매물 분리 (20건, median 37만)" },
   polo_rrl_accessory: { status: "blocked", label: "Polo RRL Accessory", note: "Wave 407: accessory lane is not clothing-ready; re-home/split before pool." },
   polo_rrl_sneaker: { status: "ready", label: "Polo RRL Sneaker", note: "Wave 218 — shoe 카테고리" },
-  polo_rrl_jacket_coat: { status: "ready", label: "Polo RRL Jacket / Coat", note: "Wave 245 — broad 의 42% 자켓 매물 분리 (median 150만, p25/p75=82만/264만)" },
+  polo_rrl_jacket_coat: { status: "blocked", label: "Polo RRL Jacket / Coat", note: "Wave 539: broad jacket/coat p25/p75=82만/264만 is too wide for public ready. Keep split RRL denim/leather/grizzly/Browns Beach lanes only." },
   polo_rrl_broad: { status: "blocked", label: "Polo RRL (broad fallback)", note: "Wave 407: clothing broad fallback hold — narrow RRL lanes only." },
   tnf_nuptse_1996: { status: "ready", label: "TNF 1996 Retro Nuptse", note: "Wave 198" },
   tnf_mountain_jacket: { status: "ready", label: "TNF Mountain Jacket (Gore-Tex)", note: "Wave 198" },

@@ -2057,6 +2057,7 @@ test("low-purity clothing product-type lanes stay held out of the pool", () => {
     "clothing-polo-bear-collab",
     "clothing-polo-rrl-tee",
     "clothing-polo-rrl-accessory",
+    "clothing-polo-rrl-jacket-coat",
     "clothing-bape-tee",
     "clothing-bape-hoodie",
     "clothing-bape-hoodie-zip",
