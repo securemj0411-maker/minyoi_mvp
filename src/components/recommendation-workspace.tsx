@@ -62,10 +62,10 @@ function sliderTrackStyle(
   disabled = false,
 ): React.CSSProperties {
   if (disabled) {
-    return { background: "#e5dccf" };
+    return { background: "#e5e7eb" };
   }
   const ratio = max > min ? Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100)) : 0;
-  const empty = "#d6cebd";
+  const empty = "#d1d5db";
   return {
     background: `linear-gradient(to right, ${color} 0%, ${color} ${ratio}%, ${empty} ${ratio}%, ${empty} 100%)`,
   };
@@ -236,7 +236,7 @@ function packCardClasses(band: PackBand) {
   if (band === 3)
     return "border-[#ead8a7] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(251,245,230,0.96)_100%)] shadow-[0_24px_60px_rgba(183,143,54,0.12)] hover:shadow-[0_28px_70px_rgba(183,143,54,0.18)] dark:border-amber-800/60 dark:bg-[linear-gradient(180deg,rgba(31,25,18,0.98)_0%,rgba(24,20,15,0.98)_100%)] dark:shadow-amber-950/40";
   if (band === 2)
-    return "border-[#d8dccd] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(247,243,233,0.98)_100%)] shadow-[0_24px_60px_rgba(63,99,67,0.10)] hover:shadow-[0_28px_70px_rgba(63,99,67,0.16)] dark:border-emerald-900/40 dark:bg-[linear-gradient(180deg,rgba(18,28,22,0.98)_0%,rgba(15,22,18,0.98)_100%)]";
+    return "border-[#d8dccd] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(247,243,233,0.98)_100%)] shadow-[0_24px_60px_rgba(49,130,246,0.10)] hover:shadow-[0_28px_70px_rgba(49,130,246,0.16)] dark:border-emerald-900/40 dark:bg-[linear-gradient(180deg,rgba(18,28,22,0.98)_0%,rgba(15,22,18,0.98)_100%)]";
   return "border-[#d8e4e2] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(242,247,247,0.98)_100%)] shadow-[0_24px_60px_rgba(73,113,126,0.10)] hover:shadow-[0_28px_70px_rgba(73,113,126,0.16)] dark:border-sky-900/40 dark:bg-[linear-gradient(180deg,rgba(15,22,28,0.98)_0%,rgba(12,18,22,0.98)_100%)]";
 }
 
@@ -279,7 +279,7 @@ function needsHighProfitWarning(pack: PackDef) {
 
 function CostBadge({ value }: { value: number }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-[#f3eee5] px-2.5 py-1 text-xs font-black tabular-nums text-[var(--brand-accent-strong)] ring-1 ring-[#d9e3d7]">
+    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-black tabular-nums text-[var(--brand-accent-strong)] ring-1 ring-[#d9e3d7]">
       <CreditIcon size={18} className="shrink-0 drop-shadow-[0_1px_1px_rgba(63,42,10,0.25)]" />
       <span>{value}</span>
     </span>
@@ -526,12 +526,12 @@ function PackSelectorCard({
           100% { transform: translateX(160%); }
         }
       `}</style>
-      <div className={isModalSurface ? "w-full" : `w-full max-w-[460px] overflow-hidden rounded-[28px] border p-4 shadow-[0_18px_36px_rgba(34,49,39,0.08)] transition sm:p-4.5 ${packCardClasses(selectedPack.band)}`}>
+      <div className={isModalSurface ? "w-full" : `w-full max-w-[460px] overflow-hidden rounded-[28px] border p-4 shadow-[0_18px_36px_rgba(15,23,42,0.08)] transition sm:p-4.5 ${packCardClasses(selectedPack.band)}`}>
         <div>
-          <h2 className="text-xl font-black tracking-tight text-[#223127] dark:text-zinc-50 sm:text-2xl">
+          <h2 className="text-xl font-black tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-2xl">
             {needsPersonalization ? "내 추천 조건 맞추기" : "추천 상품 찾기"}
           </h2>
-          <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
+          <p className="mt-1 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
             {needsPersonalization ? "처음 한 번만 답하면 다음부터 추천 수만 고르면 돼요." : "저장된 조건으로 맞춰두었어요. 추천 상품 수만 고르면 됩니다."}
           </p>
         </div>
@@ -542,7 +542,7 @@ function PackSelectorCard({
               <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#667466] dark:text-zinc-400">
                 질문 {stepIndex} / 2
               </div>
-              <div className="text-[11px] font-bold text-[#7a8478] dark:text-zinc-500">
+              <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-500">
                 {personalizationStep === "budget" ? "예산 먼저" : "성향 선택"}
               </div>
             </div>
@@ -560,10 +560,10 @@ function PackSelectorCard({
             >
               {personalizationStep === "budget" ? (
                 <>
-                  <div className="text-[22px] font-black tracking-tight text-[#223127] dark:text-zinc-50">
+                  <div className="text-[22px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">
                     매입 예산은 어느 정도가 편하세요?
                   </div>
-                  <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
+                  <p className="mt-1 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                     부담 없는 가격대부터 후보를 줄여볼게요.
                   </p>
                   <div className="mt-4 grid grid-cols-2 gap-2.5">
@@ -576,8 +576,8 @@ function PackSelectorCard({
                           onClick={() => chooseBudget(option.value)}
                           className={`rounded-[20px] border px-3.5 py-4 text-left transition duration-200 hover:-translate-y-0.5 ${
                             active
-                              ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] shadow-[0_16px_30px_rgba(49,66,56,0.14)]"
-                              : "border-[#e0d6c5] bg-white/70 text-[#5e675d] hover:border-[#b9c9b9] hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300"
+                              ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] shadow-[0_16px_30px_rgba(49,130,246,0.14)]"
+                              : "border-[#e0d6c5] bg-white/70 text-[#5e675d] hover:border-blue-200 hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300"
                           }`}
                         >
                           <div className="text-sm font-black">{option.label}</div>
@@ -589,10 +589,10 @@ function PackSelectorCard({
                 </>
               ) : (
                 <>
-                  <div className="text-[22px] font-black tracking-tight text-[#223127] dark:text-zinc-50">
+                  <div className="text-[22px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">
                     어떤 후보를 먼저 볼까요?
                   </div>
-                  <p className="mt-1 text-sm font-semibold text-[#6b7269] dark:text-zinc-400">
+                  <p className="mt-1 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                     추천 정렬과 필터 강도를 이 기준으로 맞춰둘게요.
                   </p>
                   <div className="mt-4 space-y-2.5">
@@ -605,8 +605,8 @@ function PackSelectorCard({
                           onClick={() => setDraftStyle(option.value)}
                           className={`flex w-full items-center gap-3 rounded-[20px] border px-3.5 py-4 text-left transition duration-200 hover:-translate-y-0.5 ${
                             active
-                              ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] shadow-[0_16px_30px_rgba(49,66,56,0.14)]"
-                              : "border-[#e0d6c5] bg-white/70 text-[#5e675d] hover:border-[#b9c9b9] hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300"
+                              ? "border-[var(--brand-accent)] bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] shadow-[0_16px_30px_rgba(49,130,246,0.14)]"
+                              : "border-[#e0d6c5] bg-white/70 text-[#5e675d] hover:border-blue-200 hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300"
                           }`}
                         >
                           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/80 shadow-sm dark:bg-zinc-950/50">
@@ -637,7 +637,7 @@ function PackSelectorCard({
               <button
                 type="button"
                 onClick={personalizationStep === "budget" ? () => setPersonalizationStep("style") : savePersonalization}
-                className="h-12 flex-1 rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-sm font-black text-[var(--brand-cream)] shadow-[0_16px_36px_rgba(49,66,56,0.20)] transition hover:bg-[#29382f]"
+                className="h-12 flex-1 rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-sm font-black text-[var(--brand-cream)] shadow-[0_16px_36px_rgba(49,130,246,0.20)] transition hover:bg-[#29382f]"
               >
                 {personalizationStep === "budget" ? "다음 질문" : "조건 저장하고 추천 수 고르기"}
               </button>
@@ -645,7 +645,7 @@ function PackSelectorCard({
 	        </div>
 	      ) : (
 	      <>
-	      <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
+	      <div className="mt-3 rounded-[24px] border border-zinc-200 bg-white p-3 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
 	        <div className="flex flex-wrap items-center justify-between gap-2">
 	          <div className="min-w-0">
 	            <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#667466] dark:text-zinc-400">
@@ -671,14 +671,14 @@ function PackSelectorCard({
 	                setPersonalizationStep("budget");
 	                setEditingPersonalization(true);
 	              }}
-	              className="rounded-full border border-[#d8d2c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#59665b] transition hover:border-[#b9c9b9] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+	              className="rounded-full border border-[#d8d2c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#59665b] transition hover:border-blue-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
 	            >
 	              수정
 	            </button>
 		            <button
 		              type="button"
 		              onClick={toggleAdvancedSearch}
-		              className="rounded-full border border-[#d8d2c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#59665b] transition hover:border-[#b9c9b9] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+		              className="rounded-full border border-[#d8d2c4] bg-white px-2.5 py-1 text-[11px] font-black text-[#59665b] transition hover:border-blue-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
 		            >
 		              {showAdvancedSearch ? "고급 닫기" : "고급 검색"}
 		            </button>
@@ -687,7 +687,7 @@ function PackSelectorCard({
 		    </div>
 
 		      {showAdvancedSearch ? (
-	      <div className="mt-2 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
+	      <div className="mt-2 rounded-[24px] border border-zinc-200 bg-white p-3 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
         {/* Risk profile preset */}
         <div className="grid grid-cols-3 gap-1.5">
           {(Object.keys(RISK_PRESETS) as RiskProfile[]).map((profile) => {
@@ -706,10 +706,10 @@ function PackSelectorCard({
             );
           })}
         </div>
-        <div className="mt-1.5 text-center text-[11px] text-[#7a8478] dark:text-zinc-500">{RISK_PRESETS[riskProfile].desc}</div>
+        <div className="mt-1.5 text-center text-[11px] text-zinc-500 dark:text-zinc-500">{RISK_PRESETS[riskProfile].desc}</div>
 
         {/* 압축 슬라이더 그룹 — 매입가 + 신선도는 항상, 차익 + 신뢰도는 자세히 옵션 안에. */}
-        <div className="mt-3 space-y-2 rounded-[18px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
+        <div className="mt-3 space-y-2 rounded-[18px] bg-zinc-50 p-3 dark:bg-zinc-950/40">
           {/* 매입가 */}
           <div>
             <div className="flex items-center justify-between text-xs">
@@ -818,14 +818,14 @@ function PackSelectorCard({
           <button
             type="button"
             onClick={() => setShowAdvancedSliders((s) => !s)}
-            className="flex w-full items-center justify-between rounded-md px-1 py-1 text-[11px] font-black text-[#7a8478] hover:text-[#59665b] dark:text-zinc-500 dark:hover:text-zinc-300"
+            className="flex w-full items-center justify-between rounded-md px-1 py-1 text-[11px] font-black text-zinc-500 hover:text-[#59665b] dark:text-zinc-500 dark:hover:text-zinc-300"
           >
             <span>{showAdvancedSliders ? "자세히 옵션 닫기" : "자세히 옵션 (차익 · 신뢰도)"}</span>
             <span>{showAdvancedSliders ? "▲" : "▼"}</span>
           </button>
 
           {!isPro && (
-            <p className="rounded-md bg-[#fffaf1] px-2 py-1 text-[10px] font-bold leading-4 text-[#7b5724] dark:bg-zinc-800 dark:text-zinc-400">
+            <p className="rounded-md bg-white px-2 py-1 text-[10px] font-bold leading-4 text-[#7b5724] dark:bg-zinc-800 dark:text-zinc-400">
               신선도 3시간 미만은 Pro 플랜부터 조정 가능합니다.
             </p>
           )}
@@ -835,7 +835,7 @@ function PackSelectorCard({
         <button
           type="button"
           onClick={() => setShowCategories(s => !s)}
-          className="mt-2 flex w-full items-center justify-between rounded-[16px] bg-[#f6efe4] px-3 py-2 text-xs font-black text-[#59665b] hover:bg-[#efe7d6] dark:bg-zinc-950/40 dark:text-zinc-300"
+          className="mt-2 flex w-full items-center justify-between rounded-[16px] bg-zinc-50 px-3 py-2 text-xs font-black text-[#59665b] hover:bg-[#efe7d6] dark:bg-zinc-950/40 dark:text-zinc-300"
         >
           <span className="inline-flex items-center gap-1.5"><PackageIcon className="h-3.5 w-3.5" /> 카테고리 {advancedFilters.categories.length === 0 ? "(전체)" : `(${advancedFilters.categories.length}개 선택)`}</span>
           <span className="text-[10px]">{showCategories ? "▲" : "▼"}</span>
@@ -876,7 +876,7 @@ function PackSelectorCard({
         ) : null}
 
         {/* 자세한 정보 collapsible */}
-        <details className="mt-2 rounded-[14px] bg-[#f6efe4] px-3 py-1.5 dark:bg-zinc-950/40">
+        <details className="mt-2 rounded-[14px] bg-zinc-50 px-3 py-1.5 dark:bg-zinc-950/40">
           <summary className="cursor-pointer text-[10.5px] font-black text-[#59665b] dark:text-zinc-400">
             <span className="inline-flex items-center gap-1.5"><LightbulbIcon className="h-3.5 w-3.5" /> 자세한 정보</span>
           </summary>
@@ -899,7 +899,7 @@ function PackSelectorCard({
                 );
               })()}
             </div>
-            <div className="pt-1 text-[10px] text-[#7a8478] dark:text-zinc-500">
+            <div className="pt-1 text-[10px] text-zinc-500 dark:text-zinc-500">
               ⓘ AI 시세 추정. 수익 보장 X — 매입 협상·판매 시점·구성품에 따라 달라집니다.
             </div>
           </div>
@@ -907,14 +907,14 @@ function PackSelectorCard({
 	      </div>
 	      ) : null}
 
-	      <div className="mt-3 rounded-[24px] border border-[#e6dccf] bg-[#fffaf1] p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
+	      <div className="mt-3 rounded-[24px] border border-zinc-200 bg-white p-3.5 backdrop-blur dark:border-zinc-700/60 dark:bg-zinc-900/55">
         <div className="space-y-2.5">
-          <div className="rounded-[20px] bg-[#f6efe4] p-3 dark:bg-zinc-950/40">
+          <div className="rounded-[20px] bg-zinc-50 p-3 dark:bg-zinc-950/40">
             <div className="flex items-end justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-baseline gap-1.5 text-sm font-black text-[#59665b] dark:text-zinc-300">
                   <span>추천 상품 수</span>
-                  <span className="text-[11px] font-bold text-[#7a8478] dark:text-zinc-500">
+                  <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-500">
                     {previewLoading
                       ? "(확인 중…)"
                       : previewInventory
@@ -1052,7 +1052,7 @@ function PackSelectorCard({
               className={`${ctaClasses(selectedPack.ctaTone, false)} flex items-center justify-center`}
             >
               <span className="inline-flex items-center justify-center gap-2">
-                <span>{limitBlocked ? "한도 늘리고 계속 보기" : "크레딧 충전하고 계속 보기"}</span>
+                <span>{limitBlocked ? "한도 늘리러 가기" : "크레딧 충전하러 가기"}</span>
                 <CostBadge value={totalCost} />
               </span>
             </a>
@@ -1060,7 +1060,7 @@ function PackSelectorCard({
             <>
               {busyStatusText ? (
                 <div
-                  className="rounded-2xl border border-[#d8dccd] bg-[#f8fbf4] px-3 py-3 shadow-[0_12px_28px_rgba(63,99,67,0.10)] dark:border-emerald-900/50 dark:bg-emerald-950/20"
+                  className="rounded-2xl border border-[#d8dccd] bg-[#f8fbf4] px-3 py-3 shadow-[0_12px_28px_rgba(49,130,246,0.10)] dark:border-emerald-900/50 dark:bg-emerald-950/20"
                   role="status"
                   aria-live="polite"
                 >
@@ -1072,7 +1072,7 @@ function PackSelectorCard({
                       </svg>
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-black text-[#223127] dark:text-zinc-100">
+                      <div className="text-sm font-black text-zinc-950 dark:text-zinc-100">
                         {busyStatusText}
                       </div>
                       <div className="mt-1 text-[11px] font-semibold leading-5 text-[#667466] dark:text-emerald-100/80">
@@ -1116,7 +1116,7 @@ function PackSelectorCard({
 
           {/* "재고 N건 남음" 박스 제거 — 위 funnel 박스에 통합됨 (band-only 옛 로직) */}
 
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e7dece] pt-2.5 text-[11px] text-zinc-500 dark:border-zinc-700/60 dark:text-zinc-400">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-200 pt-2.5 text-[11px] text-zinc-500 dark:border-zinc-700/60 dark:text-zinc-400">
             <p>같은 전체 본품 기준으로만 비교</p>
             <p>검증 실패 시 자동 환불</p>
 	            <p>택배비 포함 수익 계산</p>
@@ -1134,21 +1134,21 @@ function PackSelectorCard({
         onClick={() => setWarningOpen(false)}
       >
         <div
-          className="w-full max-w-md rounded-[24px] border border-[#ddd4c7] bg-[#fffaf6] p-5 shadow-[0_24px_64px_rgba(34,49,39,0.20)] dark:border-zinc-800 dark:bg-zinc-900"
+          className="w-full max-w-md rounded-[24px] border border-zinc-200 bg-white p-5 shadow-[0_24px_64px_rgba(15,23,42,0.20)] dark:border-zinc-800 dark:bg-zinc-900"
           onClick={(event) => event.stopPropagation()}
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-[#e4d6bd] bg-[#f7ecd8] px-3 py-1 text-xs font-black text-[#7b5724] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
             <CostBadge value={totalCost} />
             고수익 검색
           </div>
-          <h3 className="mt-4 text-xl font-black tracking-tight text-[#223127] dark:text-white">
+          <h3 className="mt-4 text-xl font-black tracking-tight text-zinc-950 dark:text-white">
             매입가도 높을 수 있어요
           </h3>
-          <p className="mt-2 text-sm font-semibold leading-6 text-[#626d61] dark:text-zinc-300">
+          <p className="mt-2 text-sm font-semibold leading-6 text-zinc-500 dark:text-zinc-300">
             수익 구간이 높은 상품은 예상 차익이 큰 대신, 실제 매입가도 같이 높아질 수 있습니다.
             구매 전에는 판매 상태, 구성품, 판매자 리뷰를 한 번 더 확인해주세요.
           </p>
-          <label className="mt-4 flex cursor-pointer items-center gap-2 rounded-2xl border border-[#e7dece] bg-[#fffbf4] px-3 py-2 text-sm font-bold text-[#344136] dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-200">
+          <label className="mt-4 flex cursor-pointer items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm font-bold text-zinc-900 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-200">
             <input
               type="checkbox"
               checked={hideWarningForSession}
@@ -1161,14 +1161,14 @@ function PackSelectorCard({
             <button
               type="button"
               onClick={() => setWarningOpen(false)}
-              className="rounded-xl border border-[#ddd4c7] bg-[#fffaf6] px-4 py-3 text-sm font-black text-[#344136] transition hover:bg-[#f4eee3] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-black text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
               취소
             </button>
             <button
               type="button"
               onClick={handleConfirmHighProfitSearch}
-              className="rounded-xl bg-[var(--brand-accent-strong)] px-4 py-3 text-sm font-black text-[var(--brand-cream)] shadow-[0_14px_30px_rgba(49,66,56,0.22)] transition hover:bg-[#29382f]"
+              className="rounded-xl bg-[var(--brand-accent-strong)] px-4 py-3 text-sm font-black text-[var(--brand-cream)] shadow-[0_14px_30px_rgba(49,130,246,0.22)] transition hover:bg-[#29382f]"
             >
               확인하고 검색
             </button>

@@ -799,7 +799,10 @@ function DetailAccessPaywallModal({
                 href="/plans"
                 className="flex min-h-12 items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-base font-black text-white shadow-[0_12px_26px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8]"
               >
-                크레딧 충전하고 계속 보기
+                {/* Wave launch-30 (사용자 짚음): "계속 보기" = misleading.
+                 * 충전한다고 *이* 매물 계속 보는 게 아니라 *다른* 매물 더 보는 거.
+                 * 정직 카피로 변경 — "크레딧 충전하러 가기". */}
+                크레딧 충전하러 가기
               </Link>
             ) : null}
             <button
@@ -1556,7 +1559,7 @@ export default function ExploreClient({
           variant === "sold"    ? "방금 거래된 상품이에요" :
                                   "잠시 통신이 불안정해요";
         const defaultMessageByVariant =
-          variant === "paywall" ? "크레딧을 충전하면 기다리지 않고 바로 이어서 볼 수 있어요." :
+          variant === "paywall" ? "크레딧을 충전하면 이 매물과 다른 매물 더 볼 수 있어요." :
           variant === "sold"    ? "이 매물은 방금 다른 곳에서 거래되었거나 셀러가 내린 것 같아요. 새로고침하면 다른 매물을 보여드릴게요." :
                                   "원본 매물 확인이 잠시 실패했어요. 크레딧은 사용하지 않았어요. 잠시 후 다시 시도해주세요.";
         setDetailAccessLimit({
@@ -2425,7 +2428,7 @@ export default function ExploreClient({
                                 </span>
                                 <div className="min-w-0">
                                   <div className="text-base font-bold text-white">
-                                    크레딧 충전하고 바로 이어보기
+                                    크레딧 충전하러 가기
                                   </div>
                                   <div className="mt-0.5 text-[11px] font-medium text-white/85">
                                     20크레딧 3,900원부터
