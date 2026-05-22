@@ -65,7 +65,14 @@ const BAG_TYPES = [
 
 // Wave 267b (2026-05-20): bag broad SKU에 일관 적용할 의류/신발/향수 차단 noise.
 //   API sweep 발견 — bag-cdg-broad 98%/bag-balenciaga-broad 83%/bag-margiela-broad 79% 가 의류/향수 매물에 잡힘.
+// Wave 553 (2026-05-22): production audit — broad bag SKU에 종이 쇼핑백/이너백 단독 매물.
+//   주의: "이너백 포함" 은 본품 + 이너백 같이 판매 (정상). "이너백 단독/만" 만 차단.
 const BAG_NON_BAG_NOISE = [
+  // Wave 553: 종이 쇼핑백 / 박스 단독 (이너백/더스트백은 본품 포함 문구와 collision → strict로만)
+  "종이백", "종이 백", "paper bag",
+  "더스트백만", "더스트백 단품", "dustbag only",
+  "이너백만", "이너백 단품",
+  "가방박스 판매", "박스 상자",
   // 의류
   "반팔", "반팔티", "티셔츠", "tee ", "맨투맨", "후드티", "후드 티",
   "니트", "knit", "캐시미어", "cashmere",
