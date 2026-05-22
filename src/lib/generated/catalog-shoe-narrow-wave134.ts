@@ -570,6 +570,8 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "mie", "made in england", "메이드 인 잉글랜드",
       "vintage", "빈티지",
       "버클", "buckle",
+      // Wave 536: Flora is a separate women's Chelsea line and should not share 2976 samples.
+      "플로라", "flora",
       // Wave 139: 추가 변형
       "2076",  // 별도 모델 (2976과 다름)
       "하이", "hi top", "하이탑", "high",

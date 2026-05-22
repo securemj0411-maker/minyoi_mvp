@@ -617,6 +617,15 @@ describe("Wave 254.6 — clothing product_type regex 우선순위", () => {
       );
     });
 
+    it("Dr. Martens Flora Chelsea does not enter 2976 Chelsea samples", () => {
+      const sku = ruleMatch("닥터마틴 첼시부츠 플로라 체리레드 39사이즈 새것", "");
+      assert.notEqual(
+        sku?.id,
+        "shoe-drmartens-2976-chelsea",
+        `Flora Chelsea row matched 2976 lane: ${sku?.id}`,
+      );
+    });
+
     it("shoe title product type wins over description heel measurements", () => {
       const title = "이태리명품 발렌시아가 트리플S 올 오버 로고 오버솔 스니커즈240";
       const description = "Triple S Oversole Sneakers SIZE EUR 37 JP 24.5 Heel height about 6cm";
