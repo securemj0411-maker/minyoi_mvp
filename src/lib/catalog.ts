@@ -7899,7 +7899,6 @@ export const CATALOG: Sku[] = [
       "리빈 라지 하마", "리빈 하마",
       "엔젤 8볼", "angel 8ball", "angel 8 ball",
     ],
-    ],
     msrpKrw: 89000, released: 2020,
     defaultProductType: "tee", // Wave 236d — Basic Tee = tee 확정.
   },
@@ -8478,7 +8477,27 @@ export const CATALOG: Sku[] = [
     modelName: "Supreme Backpack (FW/SS 시그니처)",
     aliases: ["Supreme Backpack", "슈프림 백팩", "Supreme 백팩"],
     mustContain: [["supreme", "슈프림"], ["백팩", "backpack"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "구찌", "gucci", "노스페이스", "north face", "tnf", "tnf collab"],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake",
+      "구찌", "gucci", "노스페이스", "north face", "tnf", "tnf collab",
+      // Wave 651: 빈티지/collab 차단 (spread 5.8x outlier).
+      // 빈티지 FW2011 박스로그 다미에 코듀라 (pid 404980509, 550k).
+      "fw2011", "fw 2011", "2011fw", "2011 fw", "fw2010", "fw 2010", "2010fw",
+      "fw2009", "fw 2009", "2009fw", "fw2008", "fw 2008", "2008fw",
+      "fw2007", "fw 2007", "2007fw", "fw2006", "fw 2006", "2006fw",
+      "fw2005", "fw 2005", "2005fw", "fw2004", "fw 2004", "2004fw",
+      "fw2003", "fw 2003", "2003fw", "fw2002", "fw 2002", "2002fw",
+      "fw2001", "fw 2001", "2001fw", "fw2000", "fw 2000", "2000fw",
+      "ss2010", "ss 2010", "2010ss", "ss2009", "ss 2009", "2009ss",
+      "ss2008", "ss 2008", "2008ss", "ss2007", "ss 2007", "2007ss",
+      "ss2006", "ss 2006", "2006ss", "ss2005", "ss 2005", "2005ss",
+      "다미에", "damier", "다미에코듀라", "damier cordura",
+      // B.B Simon collab (pid 396906080, 500k).
+      "bb 사이먼", "b.b 사이먼", "b.b. 사이먼", "비비 사이먼", "비비사이먼",
+      "bb simon", "b.b simon", "b.b. simon", "bbsimon",
+      // Bounty Hunter collab (pid 292777736, 220k).
+      "바운티 헌터", "바운티헌터", "bounty hunter", "bountyhunter",
+    ],
     msrpKrw: 250000, released: 2018,
     defaultProductType: "backpack", // Wave 236d — Supreme Backpack (mustContain 강제됨).
   },
