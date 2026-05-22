@@ -2501,7 +2501,7 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 498: shoe/bag comparable_key now preserves bag brand/lane and shoe
   // broad brand. Force stale rows to reparse so market samples stop sharing
   // generic `bag|backpack` and `shoe|broad` buckets.
-  shoe: "wave92-shoe-v17",
+  shoe: "wave92-shoe-v18",
   bag: "wave92-bag-v13",
   bike: "wave92-fashion-mobility-v7",
   // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only

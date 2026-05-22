@@ -8491,7 +8491,10 @@ export const CATALOG: Sku[] = [
     modelName: "Acne Studios Manhattan Sneakers",
     aliases: ["Acne Manhattan", "아크네 맨하탄", "아크네 맨해튼"],
     mustContain: [["acne", "아크네"], ["맨하탄", "맨해튼", "manhattan"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "가방", "bag", "백", "토트", "tote"],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake",
+      // Wave 537: titles with both Manhattan and Rockaway are search-stuffed/ambiguous.
+      "락어웨이", "락 어웨이", "rockaway",
+      "가방", "bag", "백", "토트", "tote"],
     defaultProductType: "sneaker",
     msrpKrw: 520000, released: 2018,
   },

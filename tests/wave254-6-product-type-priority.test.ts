@@ -893,8 +893,8 @@ describe("Wave 254.6 — clothing product_type regex 우선순위", () => {
         "shoe-acne-manhattan",
       );
       assert.equal(
-        ruleMatch("[40] 아크네스튜디오 맨하탄 락어웨이 더티", "정품")?.id,
-        "shoe-acne-manhattan",
+        ruleMatch("[40] 아크네스튜디오 맨하탄 락어웨이 더티", "정품")?.id ?? null,
+        null,
       );
       assert.equal(
         ruleMatch("아크네 스튜디오 락어웨이 41사이즈", "정품")?.id,
