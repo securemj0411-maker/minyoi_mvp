@@ -106,7 +106,7 @@ export function SavedMoneyCounter() {
         {/* 번 돈 (본인 bought 신호). 없으면 안내. */}
         <div className="rounded-xl border-2 border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/60 dark:bg-amber-950/30">
           <div className="text-[11px] font-bold text-amber-700 dark:text-amber-300">
-            💎 이번 달 번 돈
+            이번 달 번 돈
           </div>
           <div className="mt-1 text-2xl font-black tabular-nums text-amber-900 dark:text-amber-100">
             +₩{krw(data.earnedThisMonthKrw)}원

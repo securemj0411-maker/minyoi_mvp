@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     }
 
     if (/^\/start\b/.test(text)) {
-      await sendTelegramMessage(chatId, "안녕하세요! 득템잡이 핫딜 알림 봇입니다.\n\n/me 대시보드에서 '🔥 핫딜 알림' 메뉴로 들어가 연결 코드를 받으세요.");
+      await sendTelegramMessage(chatId, "안녕하세요! 득템잡이 핫딜 알림 봇입니다.\n\n/me 대시보드에서 '핫딜 알림' 메뉴로 들어가 연결 코드를 받으세요.");
       return NextResponse.json({ ok: true });
     }
 

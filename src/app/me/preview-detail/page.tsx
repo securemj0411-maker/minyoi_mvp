@@ -583,7 +583,7 @@ function ProfitHero({ data }: { data: BoundData | null }) {
       >
         <div style={{ position: "absolute", right: -16, top: -16, opacity: 0.05, fontSize: 100, fontWeight: 900, color: "#059669", lineHeight: 1 }}>₩</div>
         <Eyebrow tone="em" right={<span style={{ color: "#6f7c6d", fontWeight: 600, whiteSpace: "nowrap" }}>{firstSeen} · 비교 {sample}개</span>}>
-          💎 예상 순익
+          예상 순익
         </Eyebrow>
         <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 28, fontWeight: 900, color: tokens.em700, letterSpacing: -1, lineHeight: 1.1, marginBottom: 8 }}>
           +{Math.round(profitMin).toLocaleString()}<span style={{ fontSize: 17 }}>원</span>

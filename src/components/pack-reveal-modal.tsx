@@ -5432,9 +5432,9 @@ function RevealCardItem({
                   ₩
                 </div>
 
-                {/* Eyebrow — left "💎 예상 순익" + right "{age} · 비교 N개" */}
+                {/* Eyebrow — left "예상 순익" + right "{age} · 비교 N개". launch-60: 사용자 메모리 룰 (이모지 치워라). */}
                 <div className="mb-2 flex items-baseline justify-between gap-3">
-                  <span className={`whitespace-nowrap text-[10px] font-extrabold uppercase tracking-[0.16em] ${profitToneClass}`}>💎 예상 순익</span>
+                  <span className={`whitespace-nowrap text-[10px] font-extrabold uppercase tracking-[0.16em] ${profitToneClass}`}>예상 순익</span>
                   <span className={`whitespace-nowrap text-[11px] font-semibold ${profitMutedClass}`}>
                     {uploadAgoLabel(card.firstSeenAt) ?? freshLabel(card.freshSeconds)}
                     {(card.marketBasis?.sampleCount ?? 0) > 0 ? ` · 비교 ${card.marketBasis?.sampleCount}개` : ""}
