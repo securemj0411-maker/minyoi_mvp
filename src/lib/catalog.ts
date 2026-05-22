@@ -489,6 +489,10 @@ const LAPTOP_NOISE = [
   "사생활 보호 필름",
   // Wave 122: 공통 noise 패턴
   ...COMMON_PRODUCT_NOISE,
+  // Wave 648: 교환 매물 차단 (Wave 235 PHONE_NOISE 패턴 spread).
+  //   production: pid 407486538 '맥북프로 m5 max 14인치 교환만' 5.79M (placeholder/교환).
+  "교환 원함", "교환원함", "교환원해요", "교환 원해요", "교환원합니다", "교환 원합니다",
+  "교환희망", "교환 희망", "교환합니다", "교환만",
 ];
 
 // Wave 94 (2026-05-15): pollution audit 발견 패턴 강화.
