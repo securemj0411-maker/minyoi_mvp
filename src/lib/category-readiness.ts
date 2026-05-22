@@ -798,6 +798,44 @@ export const LANE_READINESS: LaneReadinessMap = {
   shoe_nike_dunk_low_lebron_pebbles: { status: "ready", label: "LeBron x Fruity Pebbles Dunk Low", note: "Wave 694 — 5 매물 collab." },
   // SB Pro broad (silhouette 분리)
   shoe_nike_sb_dunk_low_broad: { status: "ready", label: "Nike SB Dunk Low Pro (Broad)", note: "Wave 694 — SB Pro 일반 (collab 16+ 차단). 가품 위험 큼." },
+  // Wave 695 (2026-05-23) — AJ1 30 narrow SKU 신설 (Agent deep sweep 1500건, 한국 은어 다 매핑).
+  // 1단계 COLLAB 7개 (가품 위험 매우 큼):
+  shoe_nike_jordan_1_low_cactus_jack_olive: { status: "ready", label: "AJ1 Low Travis Scott Cactus Jack Olive", note: "Wave 695 — 41 매물 collab, 평균 567K." },
+  shoe_nike_jordan_1_low_travis_phantom: { status: "ready", label: "AJ1 Low Travis Phantom", note: "Wave 695 — 19 매물 collab, 평균 717K." },
+  shoe_nike_jordan_1_low_fragment: { status: "ready", label: "AJ1 Low Fragment", note: "Wave 695 — 23 매물 collab, 평균 1.43M." },
+  shoe_nike_jordan_1_low_fragment_travis_military_blue: { status: "ready", label: "AJ1 Low Fragment x Travis Military Blue (highest tier)", note: "Wave 695 — 4 매물, 평균 2.11M 최고가." },
+  shoe_nike_jordan_1_high_union_la: { status: "ready", label: "AJ1 High Union LA", note: "Wave 695 — 22 매물 collab, 평균 346K." },
+  shoe_nike_jordan_1_high_off_white: { status: "ready", label: "AJ1 High Off-White", note: "Wave 695 — 26 매물 collab, 평균 1.36M." },
+  shoe_nike_jordan_1_high_alaska_vaa: { status: "ready", label: "AJ1 High Alaska VAA (Vibram)", note: "Wave 695 — 17 매물 collab, 평균 660K." },
+  // 1단계 Mass narrow 10개:
+  shoe_nike_jordan_1_high_dark_mocha: { status: "ready", label: "AJ1 High Dark Mocha", note: "Wave 695 — 23 매물, 평균 209K." },
+  shoe_nike_jordan_1_high_hyper_royal: { status: "ready", label: "AJ1 High Hyper Royal", note: "Wave 695 — 18 매물." },
+  shoe_nike_jordan_1_high_shattered_backboard: { status: "ready", label: "AJ1 High Shattered Backboard (SBB)", note: "Wave 695 — 14 매물." },
+  shoe_nike_jordan_1_high_killer_whale: { status: "ready", label: "AJ1 High Killer Whale (범고래)", note: "Wave 695 — 11 매물, 한국 은어." },
+  shoe_nike_jordan_1_high_latushi_pearl: { status: "ready", label: "AJ1 High Latushi (Pearl Pink)", note: "Wave 695 — 12 매물, 한국 한정 명칭." },
+  shoe_nike_jordan_1_high_black_toe: { status: "ready", label: "AJ1 High Black Toe", note: "Wave 695 — 8 매물." },
+  shoe_nike_jordan_1_low_starfish: { status: "ready", label: "AJ1 Low Starfish", note: "Wave 695 — 25 매물." },
+  shoe_nike_jordan_1_mid_grey_fog_w: { status: "ready", label: "AJ1 Mid Grey Fog (WMNS)", note: "Wave 695 — 15 매물 WMNS." },
+  shoe_nike_jordan_1_mid_midnight_navy_cojp: { status: "ready", label: "AJ1 Mid Midnight Navy CO.JP", note: "Wave 695 — 7 매물 Japan exclusive." },
+  shoe_nike_jordan_1_low_magpie_snkrs_korea: { status: "ready", label: "AJ1 Low Magpie 까치 (SNKRS Day Korea)", note: "Wave 695 — 한국 발매 명칭." },
+  // 2단계 Mass narrow (5~10 매물):
+  shoe_nike_jordan_1_high_court_purple: { status: "ready", label: "AJ1 High Court Purple", note: "Wave 695 — 11 매물." },
+  shoe_nike_jordan_1_high_pine_green: { status: "ready", label: "AJ1 High Pine Green", note: "Wave 695 — 7 매물." },
+  shoe_nike_jordan_1_high_lucky_green: { status: "ready", label: "AJ1 High Lucky Green", note: "Wave 695 — 10 매물." },
+  shoe_nike_jordan_1_high_obsidian: { status: "ready", label: "AJ1 High Obsidian", note: "Wave 695 — 6 매물." },
+  shoe_nike_jordan_1_high_yellow_toe_taxi: { status: "ready", label: "AJ1 High Yellow Toe (Taxi)", note: "Wave 695 — 7 매물." },
+  shoe_nike_jordan_1_high_bordeaux: { status: "ready", label: "AJ1 High Bordeaux", note: "Wave 695 — 5 매물." },
+  shoe_nike_jordan_1_high_patent_bred: { status: "ready", label: "AJ1 High Patent Bred", note: "Wave 695 — 5 매물." },
+  shoe_nike_jordan_1_mid_smoke_grey: { status: "ready", label: "AJ1 Mid Smoke Grey (+Light Smoke)", note: "Wave 695 — 39 매물 (smoke + light smoke 통합)." },
+  shoe_nike_jordan_1_low_wolf_grey: { status: "ready", label: "AJ1 Low Wolf Grey", note: "Wave 695 — 12 매물." },
+  shoe_nike_jordan_1_low_tokyo_gyokuro: { status: "ready", label: "AJ1 Low Tokyo Gyokuro", note: "Wave 695 — 8 매물." },
+  // Collab 2단계:
+  shoe_nike_jordan_1_low_nigel_sylvester: { status: "ready", label: "AJ1 Low Nigel Sylvester", note: "Wave 695 — 6 매물 collab." },
+  shoe_nike_jordan_1_low_zion_williamson: { status: "ready", label: "AJ1 Low Zion Williamson", note: "Wave 695 — 8 매물 collab." },
+  shoe_nike_jordan_1_high_trophy_room: { status: "ready", label: "AJ1 High Trophy Room", note: "Wave 695 — 4 매물 collab." },
+  // Silhouette variant:
+  shoe_nike_jordan_1_element_goretex: { status: "ready", label: "AJ1 Element Gore-Tex", note: "Wave 695 — 7 매물 silhouette." },
+  shoe_nike_jordan_1_zoom_comfort: { status: "ready", label: "AJ1 Zoom Comfort CMFT", note: "Wave 695 — 6 매물 silhouette." },
 };
 
 export type CategoryReadinessConfig = {
