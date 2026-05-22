@@ -926,6 +926,226 @@ export const LANE_READINESS: LaneReadinessMap = {
   shoe_onrunning_cloudvista_broad: { status: "ready", label: "On Cloudvista Waterproof", note: "Wave 702 — 6 매물." },
   shoe_onrunning_cloudventure_broad: { status: "ready", label: "On Cloudventure broad (non-PAF/Loewe)", note: "Wave 702 — 5 매물." },
   shoe_onrunning_pleasures_collab: { status: "ready", label: "On x Pleasures Collab", note: "Wave 702 — 3 매물." },
+
+  // ============================================================================
+  // Wave 712b (2026-05-23) — 의류 14 brand + 신발 21 brand bias-free 검증 신설 (52 SKU)
+  // ============================================================================
+  // Adidas 의류 collab (trefoil 31.80x spread fix)
+  adidas_thugclub_collab: { status: "ready", label: "Adidas × Thug Club 의류", note: "Wave 712b — 109건/주 23만, trefoil 흡수 fix." },
+  adidas_bape_collab: { status: "ready", label: "Adidas × BAPE 의류", note: "Wave 712b — 133건/주 27.8만." },
+  adidas_sftm_collab: { status: "ready", label: "Adidas × Song For The Mute 의류", note: "Wave 712b — 125건/주 17만." },
+  adidas_y3_collab: { status: "ready", label: "Adidas × Y-3 의류 (요지 야마모토)", note: "Wave 712b — 68건/주 9만." },
+  adidas_fog_apparel: { status: "ready", label: "Adidas × FOG Athletics 의류", note: "Wave 712b — 65건/주 15만, 2025-12 partnership 종료." },
+  // FOG Main Line 의류
+  fog_main_jacket: { status: "ready", label: "FOG Main Line 자켓 (Eternal/California)", note: "Wave 712b — 24건/주 40만 premium." },
+  fog_main_pants: { status: "ready", label: "FOG Main Line 팬츠", note: "Wave 712b — 18건/주 27.5만." },
+  fog_main_tee: { status: "ready", label: "FOG Main Line 티셔츠/롱슬리브", note: "Wave 712b — 22건/주 18.7만." },
+  fog_main_hoodie: { status: "ready", label: "FOG Main Line 후드", note: "Wave 712b — 20건/주 21.5만." },
+  // Polo Ralph Lauren 7개
+  polo_shirt_pattern: { status: "ready", label: "Polo 패턴 셔츠 (체크/스트라이프/깅엄)", note: "Wave 712b — 315건/주 누락 회복." },
+  polo_sweatshirt_crewneck: { status: "ready", label: "Polo 맨투맨/스웻셔츠", note: "Wave 712b — 150건/주 카테고리 SKU 부재 회복." },
+  polo_knit_sweater: { status: "ready", label: "Polo 니트/케이블/꽈배기", note: "Wave 712b — 161건/주." },
+  polo_pants_chino: { status: "ready", label: "Polo 치노/슬랙스/와이드", note: "Wave 712b — 90건/주." },
+  polo_purple_label: { status: "ready", label: "Polo Purple Label (top tier)", note: "Wave 712b — 30건/주 69만 premium." },
+  polo_sport_90s: { status: "ready", label: "Polo Sport (90s vintage athletic)", note: "Wave 712b — 21건/주 12만." },
+  polo_rlx_golf: { status: "ready", label: "Polo RLX Golf", note: "Wave 712b — 11건/주 5만." },
+  polo_chiefkeef_stadium: { status: "ready", label: "Polo Stadium / Chief Keef", note: "Wave 712b — 71건/주 8만 (Polo P-Wing graphic)." },
+  // Stone Island sub-line
+  stone_island_shadow_project: { status: "ready", label: "Stone Island Shadow Project", note: "Wave 712b — 15건/주 55만." },
+  stone_island_ghost_piece: { status: "ready", label: "Stone Island Ghost Piece", note: "Wave 712b — 15건/주 34.5만." },
+  stone_island_crinkle_reps: { status: "ready", label: "Stone Island Crinkle Reps (패딩 시그니처)", note: "Wave 712b — 38건/주 64.8만." },
+  // Arc'teryx Down
+  arcteryx_down: { status: "ready", label: "Arc'teryx Down (Cerium/Thorium/Nuclei)", note: "Wave 712b — 39건/주 60만." },
+  // BAPE
+  bape_adidas_collab: { status: "ready", label: "BAPE × Adidas 의류 collab", note: "Wave 712b — 174건/주 (가장 큰 misclassification fix)." },
+  bape_longsleeve: { status: "ready", label: "BAPE 롱슬리브 (FW)", note: "Wave 712b — 32건/주 14.8만." },
+  bape_backpack: { status: "ready", label: "BAPE 백팩/메신저", note: "Wave 712b — 39건/주 13만." },
+  // TNF
+  tnf_white_label_novelty: { status: "ready", label: "TNF White Label Novelty Down (KR 단독)", note: "Wave 712b — 54건/주 21.5만." },
+  tnf_steep_tech_original: { status: "ready", label: "TNF Steep Tech Original (1989 헤리티지)", note: "Wave 712b — 36건/주 40만." },
+  // CDG/Junya
+  junya_watanabe_apparel: { status: "ready", label: "Junya Watanabe 의류 broad", note: "Wave 712b — 70+건/주 (NB collab 외 단독 의류)." },
+  cdg_converse_chuck70_broad: { status: "ready", label: "CDG Play × Converse Chuck 70 broad", note: "Wave 712b — 125건/주 white narrow 외 흡수." },
+  // Stussy
+  stussy_8ball_hoodie: { status: "ready", label: "Stussy 8 Ball 후드", note: "Wave 712b — 시그니처." },
+  stussy_world_tour_tee: { status: "ready", label: "Stussy World Tour Tee", note: "Wave 712b — 194건/주 8만." },
+  stussy_pigment_dye_hoodie: { status: "ready", label: "Stussy Pigment Dye Hoodie", note: "Wave 712b — 114건/주 9만." },
+  stussy_nike_spiridon: { status: "ready", label: "Stussy × Nike Spiridon Cage 2", note: "Wave 712b — 74건/주 16.7만." },
+  stussy_nike_af1_mid: { status: "ready", label: "Stussy × Nike AF1 Mid", note: "Wave 712b — 57건/주 12.5만." },
+  // NB collab
+  nb_thisisneverthat_collab: { status: "ready", label: "NB × This Is Never That (디스이즈네버댓)", note: "Wave 712b — 21건/주 20만." },
+  nb_salehe_collab: { status: "ready", label: "NB × Salehe Bembury", note: "Wave 712b — 6건/주 23.5만." },
+
+  // 신발 SKU (712b)
+  onitsuka_mexico_66: { status: "ready", label: "Onitsuka Tiger Mexico 66", note: "Wave 712b — 90건/주 10.7만 (Asics와 별 brand)." },
+  onitsuka_broad: { status: "ready", label: "Onitsuka Tiger broad (Tokuten/Serrano/EDR78)", note: "Wave 712b — 95건/주." },
+  nike_af1_lv8_low: { status: "ready", label: "Nike AF1 Low LV8 sub-series", note: "Wave 712b — 55건/주 (NBA/Athletic Club/한글날)." },
+  nike_af1_tune_squad: { status: "ready", label: "Nike AF1 × Tune Squad (Space Jam)", note: "Wave 712b — 14건/주 23.5만." },
+  nike_af1_undefeated: { status: "ready", label: "Nike AF1 × UNDEFEATED", note: "Wave 712b — 11건/주 12.5만." },
+  salomon_rx_slide_3: { status: "ready", label: "Salomon RX Slide 3.0", note: "Wave 712b — 56건/주 11만, 친화도 ⭐⭐⭐⭐⭐ entry." },
+  salomon_phantasm_broad: { status: "ready", label: "Salomon S/LAB Phantasm 2/3", note: "Wave 712b — 63건/주 37만 카본 러닝." },
+  salomon_rx_mary_jane: { status: "ready", label: "Salomon RX Mary Jane / Marie-Jeanne", note: "Wave 712b — 23건/주 17만." },
+  salomon_xt_whisper_narrow: { status: "ready", label: "Salomon XT-Whisper", note: "Wave 712b — 79건/주 19만 (XT-series에서 분리)." },
+  hoka_mafate_xlim: { status: "ready", label: "Hoka × Xlim Mafate Speed 2", note: "Wave 712b — 31건/주 35.2만 premium collab." },
+  hoka_hopara: { status: "ready", label: "Hoka Hopara 워터 슬립온", note: "Wave 712b — 30건/주 13.8만." },
+  hoka_mach_6: { status: "ready", label: "Hoka Mach 6 러닝", note: "Wave 712b — 39건/주 12만." },
+  hoka_kaha_3_gtx: { status: "ready", label: "Hoka Kaha 3 GTX 등산화", note: "Wave 712b — 10건/주 27.9만 신상." },
+  mizuno_jpx_golf: { status: "ready", label: "Mizuno JPX Golf 아이언", note: "Wave 712b — 36건/주 26.3만." },
+  mizuno_mx_golf: { status: "ready", label: "Mizuno MX Golf 아이언 (한국 베스트)", note: "Wave 712b — 15건/주 17만." },
+  mizuno_wave_prophecy: { status: "ready", label: "Mizuno Wave Prophecy + collab", note: "Wave 712b — 25건/주 24만 (Graphpaper/Blankof/Nonnative)." },
+  nike_sakai_vaporwaffle: { status: "ready", label: "Nike × Sacai Vaporwaffle", note: "Wave 712b — 84건/주 35만 split." },
+  nike_sakai_ldwaffle: { status: "ready", label: "Nike × Sacai LDV Waffle", note: "Wave 712b — 93건/주 25만 split." },
+  nike_sakai_blazer_low: { status: "ready", label: "Nike × Sacai Blazer Low", note: "Wave 712b — 69건/주 18만 split." },
+  nike_sakai_cortez: { status: "ready", label: "Nike × Sacai Zoom Cortez 4.0", note: "Wave 712b — 17건/주 20만." },
+  adidas_adios_pro: { status: "ready", label: "Adidas Adizero Adios Pro 3/4", note: "Wave 712b — 52건/주 29.9만 카본 마라톤." },
+  adidas_takumi_sen: { status: "ready", label: "Adidas Adizero Takumi Sen 9/10", note: "Wave 712b — 25만 카본 racer." },
+  adidas_nmd_r1: { status: "ready", label: "Adidas NMD R1", note: "Wave 712b — 9건/주 19.9만." },
+  adidas_pureboost: { status: "ready", label: "Adidas Pureboost 22/23/Go", note: "Wave 712b — 13건/주 15.9만." },
+  drmartens_1461_smooth_black: { status: "ready", label: "Dr. Martens 1461 Smooth Black", note: "Wave 712b — 71건/주 15.5만." },
+  drmartens_wingtip_3989: { status: "ready", label: "Dr. Martens Wingtip 3989", note: "Wave 712b — 63건/주 7.3만." },
+  drmartens_jadon: { status: "ready", label: "Dr. Martens Jadon platform", note: "Wave 712b — 24건/주 12.7만." },
+  drmartens_adrian: { status: "ready", label: "Dr. Martens Adrian Tassel Loafer", note: "Wave 712b — 19건/주 10.9만." },
+  drmartens_sandal_broad: { status: "ready", label: "Dr. Martens Sandal broad", note: "Wave 712b — 54건/주 7만 (Gryphon/Myles/Blaire)." },
+  vans_anaheim_factory: { status: "ready", label: "Vans Anaheim Factory", note: "Wave 712b — 63건/주 5만 ⭐⭐⭐⭐⭐." },
+  vans_style_36: { status: "ready", label: "Vans Style 36", note: "Wave 712b — 42건/주 5만." },
+  converse_chuck_allstar_broad: { status: "ready", label: "Converse Chuck Taylor All Star broad", note: "Wave 712b — 436건/주 unmatched 회복." },
+  converse_chuck70_low_broad: { status: "ready", label: "Converse Chuck 70 Low/Ox broad", note: "Wave 712b — 106건/주 7.7만." },
+  converse_runstar_hike: { status: "ready", label: "Converse Run Star Hike 플랫폼", note: "Wave 712b — 43건/주 5만." },
+  fcw_converse_collab: { status: "ready", label: "Feng Chen Wang × Converse 2-in-1", note: "Wave 712b — 36건/주 12만 SS25 신상." },
+  yeezy_350_zebra: { status: "ready", label: "Yeezy Boost 350 V2 Zebra", note: "Wave 712b — 23건/주 35만." },
+  yeezy_foam_runner_sand: { status: "ready", label: "Yeezy Foam Runner Sand", note: "Wave 712b — 24건/주 21.7만 premium colorway." },
+  yeezy_quantum: { status: "ready", label: "Yeezy Quantum 농구화", note: "Wave 712b — 13건/주 12.1만." },
+  crocs_sanrio_collab: { status: "ready", label: "Crocs × Sanrio (Hello Kitty 등)", note: "Wave 712b — 63건/주 2만 mass." },
+  crocs_crocband: { status: "ready", label: "Crocs Crocband (Bayaband 별개)", note: "Wave 712b — 5건/주." },
+  crocs_anderson_bell_collab: { status: "ready", label: "Crocs × Anderson Bell (한국 디자이너)", note: "Wave 712b — 9건/주 26만." },
+  puma_rose_speedcat: { status: "ready", label: "Puma × Rosé Speedcat (BLACKPINK)", note: "Wave 712b — 41건/주 13.8만." },
+  puma_nitro_running: { status: "ready", label: "Puma Nitro 러닝 패밀리 (Deviate/Velocity/ForeverRun)", note: "Wave 712b — 61건/주 11.7만." },
+
+  // ============================================================================
+  // Wave 712c (2026-05-23) — 신발 추가 100+ SKU
+  // ============================================================================
+  // NB Vintage / Mass Entry
+  nb_509: { status: "ready", label: "NB 509 / XLIM", note: "Wave 712c — 26건/주 15.5만 꼼데 collab 활발." },
+  nb_610: { status: "ready", label: "NB 610 / ML610", note: "Wave 712c — 24건/주 16만 꼼데/말차." },
+  nb_1906l: { status: "ready", label: "NB 1906L 로퍼", note: "Wave 712c — 21건/주 16만 1906 파생." },
+  nb_996: { status: "ready", label: "NB 996 (Made in USA 헤리티지)", note: "Wave 712c — 13건/주 9.6만." },
+  nb_5740: { status: "ready", label: "NB 5740 빈티지 럭스 (5만대 entry)", note: "Wave 712c — 9건/주 5.3만 ⭐⭐⭐⭐ mass entry." },
+  nb_237: { status: "ready", label: "NB 237 (4만대 entry)", note: "Wave 712c — 5건/주 4만 ⭐⭐⭐⭐⭐." },
+  nb_725: { status: "ready", label: "NB 725", note: "Wave 712c — 6건/주 5.1만." },
+  nb_740: { status: "ready", label: "NB 740 (씨솔트)", note: "Wave 712c — 8건/주 9.7만." },
+  nb_fuelcell: { status: "ready", label: "NB FuelCell 러닝 broad", note: "Wave 712c — 42건/주 13만." },
+  nb_1080: { status: "ready", label: "NB 1080 Fresh Foam X 러닝", note: "Wave 712c — 10건/주 8.7만." },
+  nb_tds_collab: { status: "ready", label: "NB × Tokyo Design Studio", note: "Wave 712c — 11건/주 15만." },
+  nb_kale_collab: { status: "ready", label: "NB × Kale (1906R)", note: "Wave 712c — 8건/주." },
+
+  // Asics 추가
+  asics_gel_quantum: { status: "ready", label: "Asics Gel-Quantum", note: "Wave 712c — 113건/주 23만." },
+  asics_metaspeed: { status: "ready", label: "Asics Metaspeed Sky/Edge/Tokyo/Ray", note: "Wave 712c — 56건/주 25.5만." },
+  asics_gt_2160: { status: "ready", label: "Asics GT-2160", note: "Wave 712c — 54건/주 18만." },
+  asics_gel_1090: { status: "ready", label: "Asics Gel-1090 V1/V2", note: "Wave 712c — 46건/주 9.5만." },
+  asics_gel_venture: { status: "ready", label: "Asics Gel-Venture 6/10 트레일", note: "Wave 712c — 38건/주 8만." },
+  asics_gel_sonoma: { status: "ready", label: "Asics Gel-Sonoma 15-50 트레일", note: "Wave 712c — 37건/주 9.9만." },
+  asics_jjjjound_collab: { status: "ready", label: "Asics × JJJJound", note: "Wave 712c — 34건/주 30만." },
+  asics_andersson_collab: { status: "ready", label: "Asics × Andersson Bell (한국 디자이너)", note: "Wave 712c — 33건/주 15.9만." },
+
+  // Air Max
+  nike_airmax_95_og_neon: { status: "ready", label: "Nike Air Max 95 OG Neon", note: "Wave 712c — 34건/주 20.1만 시그니처." },
+  levis_nike_airmax_95: { status: "ready", label: "Levi's × Nike AM95", note: "Wave 712c — 30건/주 25.6만." },
+  nike_airmax_97_silver_bullet: { status: "ready", label: "Nike Air Max 97 Silver Bullet", note: "Wave 712c — 16건/주 9.5만." },
+
+  // Dr.Martens family
+  drmartens_1461_classic: { status: "ready", label: "Dr. Martens 1461 Classic broad", note: "Wave 712c — 69건/주 12.9만 variant 미특정." },
+  drmartens_1461_mono: { status: "ready", label: "Dr. Martens 1461 Mono 올블랙", note: "Wave 712c — 36건/주 9.9만." },
+  drmartens_1461_bex: { status: "ready", label: "Dr. Martens 1461 Bex 두꺼운 솔", note: "Wave 712c — 16건/주 15.4만." },
+  drmartens_1461_quad: { status: "ready", label: "Dr. Martens 1461 Quad 플랫폼", note: "Wave 712c — 11건/주 16.6만." },
+  drmartens_1461_cherry: { status: "ready", label: "Dr. Martens 1461 Cherry/Oxblood", note: "Wave 712c — 11건/주 14.4만." },
+  drmartens_1461_crazy_horse: { status: "ready", label: "Dr. Martens 1461 Crazy Horse 수공", note: "Wave 712c — 13건/주 17.3만." },
+  drmartens_1461_mie: { status: "ready", label: "Dr. Martens 1461 MIE (Made in England)", note: "Wave 712c — 12건/주 14.7만 premium." },
+  drmartens_1460_smooth: { status: "ready", label: "Dr. Martens 1460 Smooth Leather", note: "Wave 712c — 21건/주 10.5만." },
+  drmartens_1460_mono: { status: "ready", label: "Dr. Martens 1460 Mono 올블랙", note: "Wave 712c — 17건/주 10.6만." },
+  drmartens_1460_nappa: { status: "ready", label: "Dr. Martens 1460 Nappa premium 가죽", note: "Wave 712c — 10건/주 13만." },
+  drmartens_2976_smooth: { status: "ready", label: "Dr. Martens 2976 Chelsea Smooth", note: "Wave 712c — 21건/주 11.5만." },
+  drmartens_2976_mono: { status: "ready", label: "Dr. Martens 2976 Chelsea Mono", note: "Wave 712c — 14건/주 10.3만." },
+  drmartens_pascal: { status: "ready", label: "Dr. Martens Pascal (별도 모델)", note: "Wave 712c — 19건/주 11.9만." },
+  drmartens_polley: { status: "ready", label: "Dr. Martens Polley Mary Jane", note: "Wave 712c — 7건/주 14.4만." },
+
+  // Yeezy broad
+  yeezy_350_broad: { status: "ready", label: "Yeezy Boost 350 V2 broad", note: "Wave 712c — 152건/주 18.2만." },
+  yeezy_700_wave_runner: { status: "ready", label: "Yeezy Boost 700 Wave Runner", note: "Wave 712c — 22건/주 25.5만." },
+  yeezy_500_broad: { status: "ready", label: "Yeezy Boost 500", note: "Wave 712c — 107건/주 15.9만." },
+  yeezy_slide_broad: { status: "ready", label: "Yeezy Slide", note: "Wave 712c — 87건/주 17.1만." },
+  yeezy_foam_runner_broad: { status: "ready", label: "Yeezy Foam Runner", note: "Wave 712c — 117건/주 16.8만." },
+  yeezy_ys_sl_pod: { status: "ready", label: "Yeezy YS-01/SL-02 POD 슬리퍼", note: "Wave 712c — 21건/주 8만 신상." },
+
+  // Hoka 추가
+  hoka_mafate_satisfy: { status: "ready", label: "Hoka × Satisfy Mafate Speed 4", note: "Wave 712c — 13건/주 31.8만." },
+  hoka_bondi_eg: { status: "ready", label: "Hoka × Engineered Garments Bondi B/L", note: "Wave 712c — 14건/주 19.7만." },
+  hoka_cielo_x1: { status: "ready", label: "Hoka Cielo X1 마라톤 카본", note: "Wave 712c — 10건/주 14.6만." },
+
+  // Salomon 추가
+  salomon_xt_4: { status: "ready", label: "Salomon XT-4 OG/Advanced", note: "Wave 712c — 32건/주 17만." },
+  salomon_xt_quest: { status: "ready", label: "Salomon XT-Quest", note: "Wave 712c — 55건/주 18.5만." },
+  salomon_xt_wings_2: { status: "ready", label: "Salomon XT Wings 2", note: "Wave 712c — 58건/주 17.4만." },
+  salomon_acs_pro_og: { status: "ready", label: "Salomon ACS Pro OG/Plus", note: "Wave 712c — 48건/주 12.8만." },
+  salomon_x_alp: { status: "ready", label: "Salomon X-Alp Leather/GTX 부츠", note: "Wave 712c — 20건/주 27.4만." },
+  mm6_salomon_spectur: { status: "ready", label: "MM6 × Salomon Spectur/XT-15/Mary Jane", note: "Wave 712c — premium collab 분리." },
+
+  // On Running
+  on_cloud_6: { status: "ready", label: "On Cloud 6 신상 2025-03", note: "Wave 712c — 19건/주 15.5만." },
+  on_cloudtilt_mainline: { status: "ready", label: "On Cloudtilt mainline (Loewe 제외)", note: "Wave 712c — 21건/주 16만." },
+  on_cloudaway: { status: "ready", label: "On Cloudaway 1/2", note: "Wave 712c — 24건/주 16.1만." },
+  on_cloudboom: { status: "ready", label: "On Cloudboom (Strike/LS/Eco/Max)", note: "Wave 712c — 17건/주 24만 premium racing." },
+  on_kith_ktech: { status: "ready", label: "Kith × On K-Tech 1/2", note: "Wave 712c — 9건/주 45만 premium." },
+
+  // Superstar
+  bape_adidas_superstar: { status: "ready", label: "BAPE × Adidas Superstar", note: "Wave 712c — 48건/주 21.1만 (단일 최대 누락 fix)." },
+  adidas_superstar_82: { status: "ready", label: "Adidas Superstar 82 retro", note: "Wave 712c — 37건/주 8만 신상." },
+  adidas_superstar_adifom: { status: "ready", label: "Adidas Adifom Superstar rainboot", note: "Wave 712c — 19건/주 6.9만." },
+  sftm_adidas_superstar: { status: "ready", label: "SFTM × Adidas Superstar 82", note: "Wave 712c — 9건/주 15.4만." },
+  wotherspoon_adidas_superstar: { status: "ready", label: "Sean Wotherspoon × Adidas Superstar", note: "Wave 712c — 5건/주 12.4만." },
+
+  // Cortez collab
+  nike_cortez_union: { status: "ready", label: "Nike × Union LA Cortez", note: "Wave 712c — 14건/주 11.6만." },
+  nike_cortez_kendrick: { status: "ready", label: "Nike × Kendrick Lamar Cortez", note: "Wave 712c — 3건/주 18.6만." },
+  nike_cortez_shark: { status: "ready", label: "Nike Cortez Shark (size?)", note: "Wave 712c — 2건/주 15만." },
+  nike_cortez_hangul_day: { status: "ready", label: "Nike Cortez 한글날", note: "Wave 712c — 5건/주 10만." },
+
+  // AJ1 추가
+  aj1_low_powder_blue: { status: "ready", label: "AJ1 Low OG Black & Dark Powder Blue", note: "Wave 712c — 22건/주 10만." },
+  aj1_high_royal_toe: { status: "ready", label: "AJ1 High Royal Toe", note: "Wave 712c — 15건/주 7.5만." },
+  aj1_low_travis_sail_reservoir: { status: "ready", label: "AJ1 Low × Travis Sail & Reservoir", note: "Wave 712c — 10건/주 48만." },
+  aj1_low_travis_velvet_brown: { status: "ready", label: "AJ1 Low × Travis Velvet Brown 2025 신상", note: "Wave 712c — 9건/주 48만." },
+  aj1_high_gym_red: { status: "ready", label: "AJ1 High OG Gym Red 피고래", note: "Wave 712c — 10건/주 10만." },
+
+  // Puma
+  puma_mostro: { status: "ready", label: "Puma Mostro Y2K 리바이벌", note: "Wave 712c — 9건/주 9.4만 (A$AP Rocky 2026 ↑)." },
+  puma_hstreet_pure: { status: "ready", label: "Puma H-Street pure", note: "Wave 712c — 4건/주 8.8만." },
+  puma_mb_basketball: { status: "ready", label: "Puma MB.04/Stewie 농구화", note: "Wave 712c — 6건/주 6.1만." },
+  puma_openyy_hstreet: { status: "ready", label: "Puma × Open YY H-Street (별 silhouette)", note: "Wave 712c — 32건/주 14.7만." },
+  puma_cell_broad: { status: "ready", label: "Puma Cell Dome/Venom/Geo Y2K", note: "Wave 712c — 12건/주 13.9만." },
+
+  // Crocs 추가
+  crocs_eco_non_clog: { status: "ready", label: "Crocs Eco non-clog (서지/웨이브/메리제인)", note: "Wave 712c — 11건/주." },
+  crocs_fashion_dress_flat: { status: "ready", label: "Crocs Fashion Dress Flat (브루클린/이사벨라/세레나)", note: "Wave 712c — 10건/주 여성 dress 카테고리 신설." },
+  crocs_wedge_broad: { status: "ready", label: "Crocs Wedge broad", note: "Wave 712c — 4-7건/주 웨지." },
+  crocs_fur_lined: { status: "ready", label: "Crocs Fur-Lined (퍼클로그/털크록스)", note: "Wave 712c — 5건/주 winter." },
+
+  // Blazer
+  readymade_blazer_collab: { status: "ready", label: "Nike × Readymade Blazer Mid", note: "Wave 712c — 16건/주 14.7만." },
+  supreme_sb_blazer_collab: { status: "ready", label: "Nike × Supreme SB Blazer", note: "Wave 712c — 9건/주 17만 가품 risk 高." },
+  stranger_blazer_collab: { status: "ready", label: "Nike × Stranger Things Blazer Hawkins", note: "Wave 712c — 8건/주 8.9만." },
+  offwhite_blazer_low_collab: { status: "ready", label: "Off-White × Nike Blazer Low", note: "Wave 712c — 48건/주 9.4만." },
+  cdg_blazer_collab: { status: "ready", label: "CDG × Nike Blazer", note: "Wave 712c — 20건/주 9.7만." },
+
+  // Mizuno
+  mizuno_morelia_basic: { status: "ready", label: "Mizuno Morelia / Morelia II 클래식", note: "Wave 712c — 67건/주 10.1만." },
+  mizuno_wave_rider: { status: "ready", label: "Mizuno Wave Rider 10/26/28", note: "Wave 712c — 15건/주 9만." },
+
+  // Adidas Boost 추가
+  adidas_adios_pro_evo: { status: "ready", label: "Adidas Adios Pro Evo 1 premium 슈퍼슈즈", note: "Wave 712c — 4건/주 80만 한정." },
+  adidas_evo_sl: { status: "ready", label: "Adidas Adizero Evo SL 신상", note: "Wave 712c — 53건/주 14만." },
+  adidas_aruku: { status: "ready", label: "Adidas Aruku 워킹화", note: "Wave 712c — 3건/주 8.3만." },
+  adidas_y3_shoe_collab: { status: "ready", label: "Y-3 × Adidas Adios/Takumi 신발", note: "Wave 712c — 14건/주 33만 collab." },
 };
 
 export type CategoryReadinessConfig = {
