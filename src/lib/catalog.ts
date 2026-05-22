@@ -7564,7 +7564,15 @@ export const CATALOG: Sku[] = [
       // Wave 588 (2026-05-22): 마운틴 + 레더 변형 (공백 없는 형태) 추가.
       "마운틴레더", "mountainleather", "mountain-leather",
       "백팩", "backpack", "숄더백", "토트백", "tote", "토트", "shoulder",
-      "뮬", "슬리퍼", "지샥"],
+      "뮬", "슬리퍼", "지샥",
+      // Wave 601b: 시즌별 한정 colorway/digit 차단 (Nuptse 패턴과 동일 — 시즌별 가격대 2-3배 차이).
+      "슈노 닷샷", "슈노닷샷", "snow dot shot",  // 1.0M+ 한정
+      "코듀로이", "corduroy",  // 12fw 한정 600k
+      "자유의 여신상", "자유 여신상", "statue of liberty",  // 19fw 한정 450-560k
+      "파워오렌지", "파워 오렌지", "power orange",  // 한정 색상
+      "12fw", "13fw", "15fw", "17fw", "18fw", "19fw", "20fw", "21fw", "22fw",  // 빈티지 시즌
+      "데님 마운틴", "denim mountain",  // 슈노 닷샷 데님 1M+
+    ],
     msrpKrw: 680000, released: 2017,
     defaultProductType: "jacket",
   },
