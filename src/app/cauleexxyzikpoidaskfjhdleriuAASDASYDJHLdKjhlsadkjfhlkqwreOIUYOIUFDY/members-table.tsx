@@ -31,9 +31,25 @@ const PLAN_BADGE: Record<string, { label: string; cls: string }> = {
   pro: { label: "Pro", cls: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300" },
 };
 
+// Wave launch-28 (사용자 짚음): 가입일 / 마지막 로그인 = UTC 그대로 표시되던 거. KST 변환.
+// 이전 `value.slice(0,16).replace("T"," ")` = ISO UTC 문자열 그냥 자름 → KST 사용자 -9시간 보임.
+const KST_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
+  timeZone: "Asia/Seoul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
 function fmt(value: string | null | undefined): string {
   if (!value) return "—";
-  return value.slice(0, 16).replace("T", " ");
+  const d = new Date(value);
+  if (!Number.isFinite(d.getTime())) return value.slice(0, 16).replace("T", " ");
+  // ko-KR + Asia/Seoul → "2026. 05. 22. 17:08" 식. "." 를 "-" 로 변환 후 공백 정리.
+  const parts = KST_FORMATTER.formatToParts(d);
+  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}`;
 }
 
 type PlanFilter = "all" | "free" | "starter" | "plus" | "pro";
