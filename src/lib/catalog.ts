@@ -317,6 +317,9 @@ const TABLET_NOISE = [
   "렌탈",
   // Wave 122: 공통 noise 패턴 (케이지/콜라보/광고/교신)
   ...COMMON_PRODUCT_NOISE,
+  // Wave 648b: 교환 매물 차단 (Wave 235/645/648 패턴 spread to tablet).
+  "교환 원함", "교환원함", "교환원해요", "교환 원해요", "교환원합니다", "교환 원합니다",
+  "교환희망", "교환 희망", "교환합니다", "교환만",
 ];
 
 const HEADPHONE_NOISE = [
