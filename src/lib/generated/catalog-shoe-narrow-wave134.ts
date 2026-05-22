@@ -389,6 +389,14 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "넵튠", "neptune", "그린 앤 세일", "green and sail", "green & sail",
       "sp", "스페셜 박스", "special box",
       "retro",
+      // Wave 599: production sample (pid 231299330/318174330/367318466/262029485/393706757) 발견 —
+      // 명시 colorway 매물이 standard black/white SKU에 잘못 매칭. 각 colorway 차단.
+      "유니버시티 블루", "university blue", "ub blue",
+      "클리어제이드", "clear jade", "clearjade",
+      "코끼리덩크", "코끼리 덩크", "elephant dunk", "엘레펀트",
+      "미디움 커리", "medium curry", "커리\\b",
+      "비비드 그린", "vivid green",
+      "울프 그레이", "wolf grey", "wolf gray",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],
