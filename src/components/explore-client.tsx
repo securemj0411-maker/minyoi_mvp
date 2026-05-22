@@ -1945,17 +1945,12 @@ export default function ExploreClient({
           {/* Wave launch-32 (사용자 짚음): "왜 이게 전부냐" 신뢰 메시지.
            * 사용자가 가격 필터 끝까지 내려서 매물 부족할 때, 우리가 얼마나 빡세게 거른 후
            * 이렇게 보여주는지 안내. 사회적 증명 + 정직. */}
-          {stats && (stats.totalTracked || stats.caughtToday || stats.scannedToday) ? (
+          {stats && (stats.scannedToday || stats.caughtToday) ? (
             <div className="mt-5 rounded-xl border border-zinc-200 bg-white px-4 py-4 text-left dark:border-zinc-800 dark:bg-zinc-950/60">
               <div className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">
                 지금 살만한 매물만 모은 결과예요
               </div>
               <ul className="mt-3 space-y-2 text-[12.5px] leading-5 text-zinc-600 dark:text-zinc-400">
-                {stats.totalTracked ? (
-                  <li>
-                    매물 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.totalTracked.toLocaleString("ko-KR")}건</b>을 추적하고 있어요
-                  </li>
-                ) : null}
                 {stats.scannedToday ? (
                   <li>
                     오늘 AI 가 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.scannedToday.toLocaleString("ko-KR")}건</b>을 살펴봤어요
@@ -2296,17 +2291,12 @@ export default function ExploreClient({
               {/* Wave launch-33 (사용자 짚음): feed exhausted 상태에도 신뢰 메시지.
                * 사용자가 끝까지 스크롤하고 "왜 이것밖에 없냐" 의문 → 우리 시스템이 얼마나
                * 빡세게 거른 후 보여주는지 사회적 증명 + 정직. */}
-              {creditFeedEnabled && feedExhausted && stats && (stats.totalTracked || stats.scannedToday) ? (
+              {creditFeedEnabled && feedExhausted && stats && (stats.scannedToday || stats.caughtToday) ? (
                 <div className="mt-4 rounded-xl border border-zinc-200 bg-white px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/60">
                   <div className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">
                     지금 살만한 매물만 모은 결과예요
                   </div>
                   <ul className="mt-2.5 space-y-2 text-[12px] leading-5 text-zinc-600 dark:text-zinc-400">
-                    {stats.totalTracked ? (
-                      <li>
-                        매물 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.totalTracked.toLocaleString("ko-KR")}건</b>을 추적하고 있어요
-                      </li>
-                    ) : null}
                     {stats.scannedToday ? (
                       <li>
                         오늘 AI 가 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.scannedToday.toLocaleString("ko-KR")}건</b>을 살펴봤어요

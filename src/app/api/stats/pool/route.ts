@@ -20,7 +20,6 @@ export async function GET() {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const todayIso = todayStart.toISOString();
-    const last24hIso = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     function parseCount(res: Response): number {
       const range = res.headers.get("content-range") ?? "";
@@ -28,16 +27,11 @@ export async function GET() {
       return m ? Number(m[1]) : 0;
     }
 
-    // Wave launch-32 (사용자 짚음): 빈 상태에 "왜 이게 전부인지" 신뢰 메시지.
-    // 추적 중인 매물 / 오늘 거른 매물 / 24h 신선 매물 카운트 모두 fetch.
-    const [caughtRes, trackedRes, scannedTodayRes, freshRes] = await Promise.all([
+    // Wave launch-32 + launch-35 (사용자 짚음): 빈 상태 신뢰 메시지용 stats.
+    // totalTracked (285k) 빼고 오늘 활동만 — 285k vs 22k mismatch 가 의문 야기.
+    const [caughtRes, scannedTodayRes] = await Promise.all([
       restFetch(
         `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}`,
-        { headers: { ...headers, Prefer: "count=exact" } },
-      ),
-      // 우리가 추적 중 (mvp_raw_listings 전체 — listing_state=active)
-      restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid&listing_state=eq.active`,
         { headers: { ...headers, Prefer: "count=exact" } },
       ),
       // 오늘 우리 시스템이 분류한 매물 (mvp_listing_parsed 오늘 박힌 거)
@@ -45,23 +39,14 @@ export async function GET() {
         `${tableUrl("mvp_listing_parsed")}?select=pid&parsed_at=gte.${encodeURIComponent(todayIso)}`,
         { headers: { ...headers, Prefer: "count=exact" } },
       ),
-      // 최근 24h 신선 매물 (listing_state=active + last_seen 24h)
-      restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid&listing_state=eq.active&last_seen_at=gte.${encodeURIComponent(last24hIso)}`,
-        { headers: { ...headers, Prefer: "count=exact" } },
-      ),
     ]);
 
     const caughtToday = parseCount(caughtRes);
-    const totalTracked = parseCount(trackedRes);
     const scannedToday = parseCount(scannedTodayRes);
-    const freshLast24h = parseCount(freshRes);
 
     return NextResponse.json({
       caughtToday,    // "오늘 N건 잡힘"
-      totalTracked,   // 우리가 추적 중인 active 매물 총 수
       scannedToday,   // 오늘 분류된 매물 수 (AI parser 작동량)
-      freshLast24h,   // 최근 24h 안 신선 매물
       freshLocked: 0, // legacy: 신선 매물 잠금 없음
       freshLagHours: 0,
     }, {
