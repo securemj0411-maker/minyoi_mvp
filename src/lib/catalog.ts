@@ -10111,7 +10111,13 @@ export const CATALOG: Sku[] = [
       "retro", "레트로", "fleece", "플리스", "synchilla", "신칠라", "snap-t",
       "레트로파일", "레트로 파일", "retro pile", "retro-pile",
       "다운", "down", "패딩",
-      "torrentshell", "토렌쉘", "바람막이", "shell"],
+      "torrentshell", "토렌쉘", "바람막이", "shell",
+      // Wave 687: 한정/빈티지/가방 추가 차단.
+      "40주년", "50주년", "anniversary", "레거시", "legacy",
+      "80s patagonia", "90s patagonia", "00s patagonia",
+      "us made", "usa made", "made in usa",
+      "딥파일", "deep pile", "레트로파일",
+    ],
     msrpKrw: 99000, released: 1973,
   },
   // Wave 219 (2026-05-19): Patagonia 모델별 분리 — Retro X 플리스 65~150K vs 다운 100K vs 셸 110K
@@ -10171,7 +10177,13 @@ export const CATALOG: Sku[] = [
     modelName: "Patagonia Down (Nano Puff / Down Sweater / 경량 다운)",
     aliases: ["Patagonia Down", "파타고니아 다운", "Nano Puff", "Down Sweater"],
     mustContain: [["patagonia", "파타고니아"], ["다운", "down", "nano puff", "패딩", "구스다운"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack", "retro", "레트로"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "가방", "backpack", "retro", "레트로",
+      // Wave 687 (2026-05-22): 한정/빈티지 차단.
+      "40주년", "50주년", "40th", "50th", "anniversary", "레거시", "legacy",
+      "80s patagonia", "90s patagonia", "00s patagonia",
+      "80s 파타고니아", "90s 파타고니아", "00s 파타고니아",
+      "빈티지 파타고니아", "vintage patagonia", "us made", "usa made",
+    ],
     msrpKrw: 290000, released: 2004,
     defaultProductType: "down_jacket", // Wave 236d — Patagonia Down = 다운 자켓 라인.
   },

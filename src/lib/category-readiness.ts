@@ -729,10 +729,10 @@ export const LANE_READINESS: LaneReadinessMap = {
   arcteryx_vertex_squamish: { status: "ready", label: "Arc'teryx Vertex / Squamish", note: "Wave 218 etc" },
   arcteryx_broad: { status: "blocked", label: "Arc'teryx (broad fallback)", note: "Wave 407: broad hold. Use Arc'teryx model lanes." },
   fila_apparel: { status: "blocked", label: "Fila Apparel", note: "Wave 407: broad apparel hold until model-level audit." },
-  patagonia_apparel: { status: "blocked", label: "Patagonia (broad fallback)", note: "Wave 407: broad hold. Use Patagonia model lanes." },
+  patagonia_apparel: { status: "ready", label: "Patagonia (broad fallback)", note: "Wave 687 release — broad fallback (narrow retro_x/shell/deep_pile/down 다 ready), 40주년/레거시/빈티지(80s/90s/00s)/US Made/딥파일 차단." },
   // Wave 219 (2026-05-19): Patagonia 3분리 — Retro X 199K / Down 290K / Shell 199K
   patagonia_retro_x: { status: "ready", label: "Patagonia Retro X (단독, 신칠라 분리됨)", note: "Wave 678 release — Wave 654에서 mustContain narrow + 신칠라/스냅T/캔버스 fleece 명시 차단. LATEST v32 spread <4x." },
-  patagonia_down: { status: "blocked", label: "Patagonia Down (Nano Puff)", note: "Wave 407: DB sample shows cross-brand/reference contamination. Hold until stricter brand/model audit." },
+  patagonia_down: { status: "ready", label: "Patagonia Down (Nano Puff)", note: "Wave 687 release — 40주년 레거시/80s 빈티지/US Made/00s Fitz Roy 차단." },
   patagonia_shell: { status: "ready", label: "Patagonia Shell (Torrentshell)", note: "Wave 219" },
   // Wave 251.2 (2026-05-19): Deep Pile 90s 빈티지 콜렉터 narrow split (p50 ₩390k vs mainstream ₩165k).
   patagonia_deep_pile: { status: "ready", label: "Patagonia Deep Pile (90s 빈티지)", note: "Wave 251.2 — n=10, mainstream 2.4배 시세" },
