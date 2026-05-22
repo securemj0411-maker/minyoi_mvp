@@ -1279,15 +1279,14 @@ export default function ExploreClient({
     const shareUrl = `${baseUrl}?ref=kakao_share`;
 
     try {
-      // Wave launch-55 (사용자 짚음 "imageUrl 안 박으면 카카오가 알아서 fetch"):
-      //   imageUrl 제거 → 카카오가 link URL 페이지의 OG meta 또는 첫 image 자동 추출.
-      //   사용자가 본 경험 — 친구한테 공유 시 site 의 매물 사진 자동 표시.
-      //   layout.tsx 의 openGraph 또는 페이지 안 매물 image tag 가 source.
+      // Wave launch-56 (사용자 짚음 "사이트 설명 말고 진짜 맞춤형처럼"):
+      //   친구한테 보내는 톤 — "지금 팔면 돈되는 중고 상품 있어요".
+      //   site 소개 X, 사용자가 직접 알려주는 느낌.
       kakao.Share.sendDefault({
         objectType: "feed",
         content: {
-          title: "득템잡이 — 지금 리셀하면 바로 돈되는 중고매물",
-          description: "AI 가 매일 골라준 차익 매물, 무료 가입 후 바로 보세요",
+          title: "지금 팔면 바로 돈 되는 중고 매물 있어",
+          description: "AI 가 매일 찾아준 차익 매물, 무료로 확인해봐",
           link: {
             mobileWebUrl: shareUrl,
             webUrl: shareUrl,
@@ -1295,7 +1294,7 @@ export default function ExploreClient({
         },
         buttons: [
           {
-            title: "지금 보러가기",
+            title: "바로 보러가기",
             link: {
               mobileWebUrl: shareUrl,
               webUrl: shareUrl,
