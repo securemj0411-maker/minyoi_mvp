@@ -136,6 +136,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 2150000,
     released: 2024,
     laneKey: "bag_gucci_marmont_mini_shoulder",
+    defaultProductType: "shoulder", // Wave 608: Marmont Mini 본질 = 숄더백 (체인 미니).
   },
   {
     id: "bag-gucci-gg-marmont-camera",
@@ -298,6 +299,7 @@ export const BAG_CATALOG: Sku[] = [
     msrpKrw: 3200000,
     released: 2024,
     laneKey: "bag_balenciaga_classic_city",
+    defaultProductType: "shoulder", // Wave 608: Classic City 본질 = 숄더백/핸드백.
   },
   {
     id: "bag-margiela-5ac-mini",

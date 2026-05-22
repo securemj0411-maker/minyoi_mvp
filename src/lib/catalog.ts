@@ -8326,6 +8326,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["마르지엘라", "margiela", "maison margiela"], ["글램슬램", "glam slam", "glamslam"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "샘플", "vial", "공병", "재현향", "type", "마이퍼퓸"],
     msrpKrw: 1800000, released: 2018,
+    defaultProductType: "shoulder", // Wave 608: Glam Slam 본질 = 숄더백/핸드백.
   },
   {
     id: "clothing-mm6-margiela",
@@ -8501,6 +8502,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["supreme", "슈프림"], ["메쉬", "mesh"], ["백", "bag"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "백팩", "backpack", "캡", "cap", "스냅백", "5패널", "5 패널", "5-패널", "6패널", "6 패널", "6-패널", "5 panel", "6 panel", "토트", "tote", "더플", "더블백", "더블 백", "double bag", "duffle", "duffel", "헤드폰", "headphone"],
     msrpKrw: 160000, released: 2024,
+    defaultProductType: "shoulder", // Wave 608: Mesh Bag 본질 = 숄더/크로스.
   },
   {
     id: "bag-supreme-shoulder",
@@ -8682,6 +8684,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["acne", "아크네"], ["musubi", "무수비", "무스비"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "pvc", "토트만"],
     msrpKrw: 650000, released: 2017,
+    defaultProductType: "shoulder", // Wave 608: Musubi 본질 = 숄더백 (매듭 시그니처).
   },
   {
     id: "clothing-acne-apparel",
