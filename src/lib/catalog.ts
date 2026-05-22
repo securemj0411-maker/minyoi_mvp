@@ -9284,7 +9284,15 @@ export const CATALOG: Sku[] = [
     modelName: "Nike Air Max 95 (broad)",
     aliases: ["Nike Air Max 95", "나이키 에어맥스 95"],
     mustContain: [["nike", "나이키"], ["에어맥스 95", "에어맥스95", "나이키에어맥스95", "에어맥스95og", "에어맥스95se", "에어맥스 95og", "에어맥스 95se", "air max 95", "airmax 95", "airmax95"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "에어맥스 1", "에어맥스 90", "에어맥스 97", "off-white", "오프화이트", "꼼데", "cdg", "리바이스", "levis", "코르테이즈", "카하트", "carhartt", "fog "],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "에어맥스 1", "에어맥스 90", "에어맥스 97", "off-white", "오프화이트", "꼼데", "cdg", "리바이스", "levis", "코르테이즈", "카하트", "carhartt", "fog ",
+      // Wave 624: collab/한정 색상 차단.
+      "캑터스 플라워", "cactus flower",
+      "스투시", "stussy",
+      "아트모스", "atmos",
+      "사이언", "scion",
+      "swarovski", "스와로브스키",
+      "데이브린", "dave brian", "davebrian",
+    ],
     msrpKrw: 199000, released: 1995,
   },
   {
