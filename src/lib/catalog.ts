@@ -9883,6 +9883,9 @@ export const CATALOG: Sku[] = [
       "레어", "희귀", "희소", "rare",
       "50주년", "내추럴 블렌드", "natural blend",
       "us made", "usa made", "1990", "1989", "1992",  // 빈티지 us made (가격 +20배)
+      // Wave 634: 추가 한정 colorway 차단.
+      "sacajawea", "사카자위아", "아즈텍 나바호", "aztec navajo", "navajo print",
+      "안소희", "celebrity wear", "셀럽 착용",
       "모음", "세트 모음", "set 모음",
       "지디", "지드래곤",  // 셀럽 착용 (가격 inflated)
     ],
