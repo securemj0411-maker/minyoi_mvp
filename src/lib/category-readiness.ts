@@ -836,6 +836,32 @@ export const LANE_READINESS: LaneReadinessMap = {
   // Silhouette variant:
   shoe_nike_jordan_1_element_goretex: { status: "ready", label: "AJ1 Element Gore-Tex", note: "Wave 695 — 7 매물 silhouette." },
   shoe_nike_jordan_1_zoom_comfort: { status: "ready", label: "AJ1 Zoom Comfort CMFT", note: "Wave 695 — 6 매물 silhouette." },
+  // Wave 696 (2026-05-23) — AF1 + Air Max 1단계 22 SKU 신설 (Pareto 80% 흡수)
+  // AF1 1단계 Mass narrow 7개:
+  shoe_nike_airforce_1_low_triple_white: { status: "ready", label: "AF1 Low Triple White (트화/올화)", note: "Wave 696 — 323 매물 mass, 평균 8만." },
+  shoe_nike_airforce_1_low_triple_black: { status: "ready", label: "AF1 Low Triple Black (트블/올블)", note: "Wave 696 — 123 매물 mass." },
+  shoe_nike_airforce_1_low_black_white: { status: "ready", label: "AF1 Low Black/White Two-tone", note: "Wave 696 — 27 매물." },
+  shoe_nike_airforce_1_mid_07: { status: "ready", label: "AF1 Mid '07 (Black/White)", note: "Wave 696 — 67 매물, Mid 가장 인기." },
+  shoe_nike_airforce_1_low_shadow: { status: "ready", label: "AF1 Low Shadow (WMNS)", note: "Wave 696 — 14 매물." },
+  shoe_nike_airforce_1_low_goretex: { status: "ready", label: "AF1 Low Gore-Tex (고어텍스포스)", note: "Wave 696 — 20 매물." },
+  shoe_nike_airforce_1_low_wheat: { status: "ready", label: "AF1 Low Wheat/Khaki (된장포스)", note: "Wave 696 — 9 매물, 된장포스 한국 은어." },
+  // AF1 1단계 COLLAB 6개 (가품 위험):
+  shoe_gdragon_airforce1_paranoise: { status: "ready", label: "AF1 Paranoise (지디 콜라보 — 한국 핵심)", note: "Wave 696 — 38 매물, 평균 29만." },
+  shoe_stussy_airforce1_collab: { status: "ready", label: "AF1 Stussy Collab", note: "Wave 696 — 33 매물." },
+  shoe_offwhite_airforce1_collab: { status: "ready", label: "AF1 Off-White (Brooklyn/MoMA/Lemonade)", note: "Wave 696 — 29 매물, 평균 36만, 가품 폭탄." },
+  shoe_ambush_airforce1_collab: { status: "ready", label: "AF1 AMBUSH Collab", note: "Wave 696 — 20 매물." },
+  shoe_tiffany_airforce1_collab: { status: "ready", label: "AF1 Tiffany & Co. (가품 위험 매우 큼)", note: "Wave 696 — 평균 70만+." },
+  shoe_louis_vuitton_airforce1_virgil: { status: "ready", label: "AF1 LV x Virgil Abloh (luxury 가품 폭탄)", note: "Wave 696 — 평균 43만+, 차단 강력." },
+  // Air Max 1단계 — Generation broad 4개:
+  shoe_nike_airmax_plus_tn_broad: { status: "ready", label: "Air Max Plus / TN broad", note: "Wave 696 — 30 매물, '플러스' 단독 금지." },
+  shoe_nike_airmax_dn_broad: { status: "ready", label: "Air Max DN / DN8 broad (2024 신모델)", note: "Wave 696 — 43 매물." },
+  shoe_nike_airmax_270_broad: { status: "ready", label: "Air Max 270 broad", note: "Wave 696 — 30 매물." },
+  shoe_nike_airmax_98_broad: { status: "ready", label: "Air Max 98 broad", note: "Wave 696 — 37 매물, 평균 19만." },
+  // Air Max 1단계 COLLAB 4개:
+  shoe_kasina_airmax_1_sp: { status: "ready", label: "AM1 SP Kasina (원앙) — 한국 collab", note: "Wave 696 — 38 매물." },
+  shoe_cdg_nike_airmax_collab: { status: "ready", label: "Air Max CDG Collab (premium — 가품 위험)", note: "Wave 696 — 27 매물, 평균 43만." },
+  shoe_travis_nike_airmax_1: { status: "ready", label: "AM1 Travis Scott (Cactus Jack/Wheat)", note: "Wave 696 — 24 매물, 평균 26만." },
+  shoe_offwhite_nike_airmax_collab: { status: "ready", label: "Air Max Off-White (90/97)", note: "Wave 696 — 23 매물, 평균 32만." },
 };
 
 export type CategoryReadinessConfig = {

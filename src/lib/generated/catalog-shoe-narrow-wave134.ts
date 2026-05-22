@@ -1727,6 +1727,369 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
   },
 
   // ═══════════════════════════════════════════════════════════
+  // Wave 696 (2026-05-23): AF1 + Air Max 1단계 22 SKU 신설
+  // Agent deep sweep — AF1 960건 (기존 3 → 53 후보), Air Max 1476건 (기존 5 → 23 후보).
+  // Pareto 80% 흡수 (1단계).
+  // ═══════════════════════════════════════════════════════════
+
+  // --- AF1 1단계 — Mass narrow 7개 ---
+
+  {
+    id: "shoe-nike-airforce-1-low-triple-white",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Force 1 Low Triple White (트화/올화)",
+    aliases: ["AF1 Low Triple White", "에어포스1 트리플 화이트", "트화"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1", "에어 포스 1"],
+      ["트리플 화이트", "트리플화이트", "triple white", "트화", "올화", "흰포스", "올 화이트", "white/white"],
+    ],
+    mustNotContain: ["mid", "미드", "high", "하이",
+      "트리플 블랙", "트블", "올블", "supreme", "슈프림", "오프화이트", "off-white",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 139000, released: 1982,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airforce-1-low-triple-black",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Force 1 Low Triple Black (트블/올블/올검)",
+    aliases: ["AF1 Low Triple Black", "에어포스1 트리플 블랙", "트블"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["트리플 블랙", "트리플블랙", "triple black", "트블", "올블", "올검", "검포스", "올검포스", "black/black"],
+    ],
+    mustNotContain: ["mid", "미드", "high", "하이",
+      "트리플 화이트", "트화", "올화", "supreme", "슈프림", "오프화이트", "off-white", "스투시", "stussy",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 139000, released: 1982,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airforce-1-low-black-white",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Force 1 Low Black/White (Two-tone)",
+    aliases: ["AF1 Low Black White", "에어포스1 블랙 화이트"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["블랙/화이트", "블랙 화이트", "흰검", "black/white", "white/black", "black white"],
+    ],
+    mustNotContain: ["mid", "미드", "high", "하이",
+      "트리플", "올블", "올화", "supreme", "슈프림",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 139000, released: 1982,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airforce-1-mid-07",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Force 1 Mid '07 (Black/White/Triple)",
+    aliases: ["AF1 Mid 07", "에어포스1 미드 07"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["미드", "mid", "07", "'07"],
+    ],
+    mustNotContain: ["low", "로우", "high", "하이",
+      "supreme", "슈프림", "오프화이트", "off-white", "스투시", "stussy",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 139000, released: 2007,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airforce-1-low-shadow",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Force 1 Low Shadow (WMNS)",
+    aliases: ["AF1 Low Shadow", "에어포스1 섀도우"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["섀도", "쉐도", "쉐도우", "shadow"],
+    ],
+    mustNotContain: ["mid", "미드", "high", "하이",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 139000, released: 2020,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airforce-1-low-goretex",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Force 1 Low Gore-Tex",
+    aliases: ["AF1 Low Gore-Tex", "에어포스1 고어텍스", "고어텍스포스"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["고어텍스", "gore-tex", "goretex"],
+    ],
+    mustNotContain: ["mid", "미드",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 199000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airforce-1-low-wheat",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Force 1 Low Wheat / Khaki (된장포스)",
+    aliases: ["AF1 Low Wheat", "에어포스1 휘트", "된장포스"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["휘트", "wheat", "카키", "khaki", "올리브", "olive", "된장포스"],
+    ],
+    mustNotContain: ["mid", "미드", "high", "하이",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  // --- AF1 1단계 COLLAB 6개 (가품 위험 큼) ---
+
+  {
+    id: "shoe-gdragon-airforce1-paranoise",
+    brand: "Nike x Peaceminusone (GD)", category: "shoe",
+    modelName: "Air Force 1 Paranoise (지디 콜라보 — 한국 핵심)",
+    aliases: ["AF1 Paranoise", "에어포스1 파라노이즈", "피마원", "지디포스"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["피마원", "피스마이너스원", "paranoise", "파라노이즈", "지디", "지드래곤", "peaceminusone"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 290000, released: 2019,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-stussy-airforce1-collab",
+    brand: "Nike x Stussy", category: "shoe",
+    modelName: "Air Force 1 Stussy Collab",
+    aliases: ["AF1 Stussy", "에어포스1 스투시"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["스투시", "stussy", "스튜시"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 200000, released: 2020,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-offwhite-airforce1-collab",
+    brand: "Nike x Off-White", category: "shoe",
+    modelName: "Air Force 1 Off-White (Brooklyn/MoMA/Lemonade)",
+    aliases: ["AF1 Off-White", "에어포스1 오프화이트"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["오프화이트", "off-white", "off white", "offwhite", "버질", "virgil", "moma", "brooklyn", "lemonade"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 800000, released: 2017,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-ambush-airforce1-collab",
+    brand: "Nike x AMBUSH", category: "shoe",
+    modelName: "Air Force 1 AMBUSH Collab",
+    aliases: ["AF1 AMBUSH", "에어포스1 앰부쉬"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["앰부쉬", "엠부쉬", "ambush"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 250000, released: 2020,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-tiffany-airforce1-collab",
+    brand: "Nike x Tiffany", category: "shoe",
+    modelName: "Air Force 1 Tiffany & Co. (가품 위험 매우 큼)",
+    aliases: ["AF1 Tiffany", "에어포스1 티파니"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["티파니", "tiffany"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 700000, released: 2023,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-louis-vuitton-airforce1-virgil",
+    brand: "Nike x Louis Vuitton", category: "shoe",
+    modelName: "Air Force 1 Louis Vuitton x Virgil Abloh (luxury 가품 폭탄)",
+    aliases: ["AF1 LV", "에어포스1 루이비통"],
+    mustContain: [
+      ["에어포스 1", "에어포스1", "air force 1", "airforce 1", "airforce1", "af1"],
+      ["루이비통", "louis vuitton", "lv", "버질 아블로", "virgil abloh"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러", "복각",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 2500000, released: 2022,
+    defaultProductType: "sneaker",
+  },
+
+  // --- Air Max 1단계 — Generation broad 4개 ---
+
+  {
+    id: "shoe-nike-airmax-plus-tn-broad",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Max Plus / TN (Broad — 에맥 플러스/TN)",
+    aliases: ["Air Max Plus", "Air Max TN", "에어맥스 플러스", "에맥 플러스"],
+    // 주의: "플러스" 단독 매칭 금지 (갤럭시/아이폰/꼼데 옴므플러스 false positive).
+    // mustContain에 "에어맥스 플러스" 또는 "TN" 동반 강제.
+    mustContain: [
+      ["에어맥스 플러스", "에어맥스플러스", "에어 맥스 플러스", "air max plus", "airmax plus",
+       "에어맥스 tn", "에어맥스tn", "air max tn", "airmax tn", "am tn", "am plus"],
+    ],
+    mustNotContain: ["supreme", "슈프림", "nocta", "녹타", "drake", "드레이크",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 199000, released: 1998,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airmax-dn-broad",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Max DN / DN8 (Broad — 2024 신모델)",
+    aliases: ["Air Max DN", "Air Max DN8", "에어맥스 DN"],
+    mustContain: [
+      ["에어맥스 dn", "에어맥스dn", "air max dn", "airmax dn", "에어맥스 dn8", "airmax dn8", "am dn"],
+    ],
+    mustNotContain: ["supreme", "슈프림", "palace", "팰리스",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 199000, released: 2024,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airmax-270-broad",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Max 270 (Broad)",
+    aliases: ["Air Max 270", "에어맥스 270", "AM270"],
+    mustContain: [
+      ["에어맥스 270", "에어맥스270", "air max 270", "airmax 270", "am270", "에맥 270"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 199000, released: 2018,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-nike-airmax-98-broad",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Max 98 (Broad)",
+    aliases: ["Air Max 98", "에어맥스 98", "AM98"],
+    mustContain: [
+      ["에어맥스 98", "에어맥스98", "air max 98", "airmax 98", "am98"],
+    ],
+    mustNotContain: ["supreme", "슈프림", "tailwind",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 219000, released: 1998,
+    defaultProductType: "sneaker",
+  },
+
+  // --- Air Max 1단계 COLLAB 4개 ---
+
+  {
+    id: "shoe-kasina-airmax-1-sp",
+    brand: "Nike x Kasina", category: "shoe",
+    modelName: "Air Max 1 SP Kasina (원앙)",
+    aliases: ["AM1 Kasina", "카시나 에어맥스", "원앙 에어맥스"],
+    mustContain: [
+      ["에어맥스 1", "에어맥스1", "air max 1", "airmax 1", "am1"],
+      ["카시나", "kasina", "원앙"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 200000, released: 2023,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-cdg-nike-airmax-collab",
+    brand: "Nike x CDG", category: "shoe",
+    modelName: "Air Max CDG Collab (premium — 가품 위험)",
+    aliases: ["Air Max CDG", "꼼데가르송 에어맥스"],
+    mustContain: [
+      ["에어맥스", "air max", "airmax"],
+      ["꼼데가르송", "cdg", "꼼데", "comme des garcons", "옴므플러스"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 500000, released: 2020,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-travis-nike-airmax-1",
+    brand: "Nike x Travis Scott", category: "shoe",
+    modelName: "Air Max 1 Travis Scott (Cactus Jack/Wheat)",
+    aliases: ["AM1 Travis", "에어맥스1 트래비스"],
+    mustContain: [
+      ["에어맥스 1", "에어맥스1", "air max 1", "airmax 1", "am1"],
+      ["트래비스", "travis", "스캇", "scott", "cactus jack", "와트", "wheat"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 300000, released: 2023,
+    defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-offwhite-nike-airmax-collab",
+    brand: "Nike x Off-White", category: "shoe",
+    modelName: "Air Max Off-White (90 The Ten / 97)",
+    aliases: ["Air Max Off-White", "에어맥스 오프화이트"],
+    mustContain: [
+      ["에어맥스", "air max", "airmax"],
+      ["오프화이트", "off-white", "off white", "offwhite", "버질", "virgil", "더 텐", "the ten"],
+    ],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 800000, released: 2017,
+    defaultProductType: "sneaker",
+  },
+
+  // ═══════════════════════════════════════════════════════════
   // Wave 695 (2026-05-23): AJ1 30 narrow SKU 신설 (1단계 17 + 2단계 13)
   // Agent deep sweep (1500건 raw, 22.3% colorway 미기재) — 45+ SKU 확장.
   // 가품 위험 매우 큼 — collab 별 SKU 분리 + broad mustNotContain 강력 차단.
