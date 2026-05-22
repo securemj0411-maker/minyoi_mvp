@@ -7777,6 +7777,10 @@ export const CATALOG: Sku[] = [
       "마크 제이콥스", "marc jacobs",
       "cpfm", "cactus plant flea market",
       "한정판", "limited edition",
+      // Wave 594d: Born X Raised collab (Stussy LA collab line).
+      "본 앤 레이즈드", "born x raised", "born and raised", "born&raised", "본앤레이즈드",
+      // Wave 594e: Stussy DICE 한정 라인 (200k outlier vs basic 5~7만).
+      "다이스 반팔", "다이스 티", "퍼지 다이스", "stussy dice", "스투시 다이스",
     ],
     msrpKrw: 89000, released: 2020,
     defaultProductType: "tee", // Wave 236d — Basic Tee = tee 확정.
