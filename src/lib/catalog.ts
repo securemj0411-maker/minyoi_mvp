@@ -10313,6 +10313,7 @@ export const CATALOG: Sku[] = [
       // 다른 brand
       "coccinelle", "코치넬레"],
     msrpKrw: 290000, released: 1941,
+    defaultProductType: "shoulder", // Wave 614: Coach broad 본질 = 숄더/크로스 (대다수 모델).
   },
   {
     id: "bag-coach-tabby",
