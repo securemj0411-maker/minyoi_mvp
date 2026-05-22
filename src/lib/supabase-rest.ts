@@ -97,6 +97,13 @@ function describeRestTarget(path: string) {
   }
 }
 
+// Wave launch-46 (사용자 짚음 "score_worker 89% failed 즉시 진단"):
+//   진단: 모든 failed = "Supabase REST timed out" — 8s timeout. joongna depth 10 박은 후
+//   raw_listings 매물 ↑ → query (특히 pid=in.(N 큰 list)) 8s 안 응답 못 받음 → throw → score_worker 실패.
+//   fix: 8s → 15s. Vercel function maxDuration 90s 안 안전 마진. retry 3회 그대로.
+//   24h 평균 23% failed → 1h spike 89% 의 root cause.
+const REST_FETCH_TIMEOUT_MS = Number(process.env.SUPABASE_REST_TIMEOUT_MS ?? 15_000);
+
 export async function restFetch(path: string, init: RequestInit = {}) {
   const method = init.method ?? "GET";
   const target = describeRestTarget(path);
@@ -106,7 +113,7 @@ export async function restFetch(path: string, init: RequestInit = {}) {
     try {
       res = await fetch(path, {
         ...init,
-        signal: init.signal ?? AbortSignal.timeout(8_000),
+        signal: init.signal ?? AbortSignal.timeout(REST_FETCH_TIMEOUT_MS),
       });
     } catch (err) {
       if (err instanceof Error && err.name === "TimeoutError") {
