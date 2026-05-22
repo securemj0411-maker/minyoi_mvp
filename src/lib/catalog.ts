@@ -8880,13 +8880,16 @@ export const CATALOG: Sku[] = [
     brand: "Acne Studios", category: "clothing", laneKey: "acne_denim",
     modelName: "Acne Studios Denim (Jean / Shorts)",
     aliases: ["Acne 데님", "Acne 청바지"],
-    mustContain: [["acne", "아크네"], ["데님", "denim", "청바지", "반바지", "shorts", "jean", "2021m", "1992m", "플레어진", "플레어 진", "리버진", "리버 진", "워싱진", "그레이 진", "스키니진", "블랙진", "화이트진", "리버스테이"]],
+    // Wave 629: '2021m'/'1992m' 한정 라인은 시세 5-7배 outlier — mustContain 제거 + mustNotContain 추가 (narrow lane 별도).
+    mustContain: [["acne", "아크네"], ["데님", "denim", "청바지", "반바지", "shorts", "jean", "플레어진", "플레어 진", "리버진", "리버 진", "워싱진", "그레이 진", "스키니진", "블랙진", "화이트진", "리버스테이"]],
     mustNotContain: [
       "키즈", "kids", "복각", "rep", "replica", "fake",
       "max", "맥스", "bla konst", "블라 콘스트", "블라콘스트",
       "super baggy", "슈퍼 배기", "슈퍼배기",
       "반바지", "shorts", "쇼츠", "오버롤", "멜빵", "점프수트", "overall",
       "기프트", "패키지", "쇼핑백", "스카프", "머플러", "목도리", "scarf",
+      // Wave 629: 한정 라인 분리 (시세 5-7배 outlier).
+      "2021m", "1992m", "2003 ", "2003 데님",
     ],
     msrpKrw: 320000, released: 2020,
     defaultProductType: "jeans", // Wave 236d — Acne Denim = jeans 라인 확정.
