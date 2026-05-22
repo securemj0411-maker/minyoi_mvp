@@ -571,6 +571,8 @@ function parseShoeProductType(text: string): ShoeProductType {
   // Wave 264 (2026-05-20): 슬라이드 (Yeezy Slide) / 클로그 한글 / 아딜렛 (Adidas Adilette) / 폼러너 보강.
   //   사용자 발견 type_unknown sample: "이지슬라이드" / "아디다스 아딜렛 클로그 플랫폼" / "Crocs 클로그".
   // Wave 266: 플립플롭 / 우프 (Ugg slipper)도 보강.
+  // Wave 557 (2026-05-22): Tabi 단독은 모호 (sneaker/sandal/boot variant 다양) — defaultProductType="sneaker" fallback에 맡김.
+  //   직접 차단 안 함 (test fixture: "리복 x 마르지엘라 타비 슈즈" 는 sneaker expectation).
   if (/슬리퍼|slipper|뮬\b|mule\b|에스파드류|espadrille|크록스|crocs|clog|클로그|슬라이드|slide|이지 ?슬라이드|yeezy ?slide|아딜렛|adilette|adilet|adilete|폼 ?러너|foam ?runner|푸쉬 ?에어|nb 슬리퍼|플립 ?플롭|flip ?flop|어그 ?슬리퍼|ugg ?slipper|아디다스 ?슬리퍼/.test(t)) return "slipper";
   // Wave 264: 축구화/풋살화 (F50/프레데터/코파/네메지즈/메시/crazyfast) — sneaker 분류 (운동화 광의).
   // Wave 266: 트레일러닝/러닝화/스피드 트레이너/스피드러너/골프화/테니스화/농구화/배드민턴화/탁구화/볼링화/배구화/태권도화 등.
