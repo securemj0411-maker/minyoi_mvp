@@ -311,7 +311,7 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
           // Wave 404: 수익/손실 회피 카운터는 PG 심사 톤에 맞지 않아 /me에서 제거.
           // "더 찾아보기" 버튼들 폐기 — ExploreClient의 "새 30개 받기" cooldown으로 대체.
           <section className="w-full min-w-0 pb-4 lg:col-start-2">
-            <ExploreClient storageScope={user.id} />
+            <ExploreClient storageScope={user.id} showFirstFeedIntro={!effectiveAdmin} />
             <MyFeedbackActivity />
           </section>
         )}

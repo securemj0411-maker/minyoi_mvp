@@ -21,7 +21,12 @@ test("ExploreClient loads the broad feed immediately without a preference gate",
   assert.match(explore, /\/api\/public\/safety-stats/);
   assert.match(explore, /SAFETY_STATS_FETCH_TIMEOUT_MS = 3500/);
   assert.match(explore, /controller\.abort\(\)/);
+  assert.match(explore, /showFirstFeedIntro = true/);
+  assert.match(explore, /if \(!showFirstFeedIntro\) \{/);
+  assert.match(explore, /showFirstFeedIntro && showFirstFeedOnboarding && !scrapOnly/);
+  assert.match(explore, /statsLoaded && !stats/);
   assert.doesNotMatch(explore, /\/api\/public\/safety-stats", \{ cache: "no-store" \}/);
+  assert.doesNotMatch(explore, /잠시 후 갱신/);
   assert.match(explore, /fixed inset-0 z-\[90\]/);
   assert.match(explore, /오늘 볼 만한/);
   assert.match(explore, /MIN_BUDGET_FILTER_RESULTS/);
@@ -55,5 +60,5 @@ test("Refresh modal does not show budget and preference summary controls", () =>
 test("MeDashboard scopes feed onboarding storage to the signed-in user", () => {
   const dashboard = source("src/components/me-dashboard-client.tsx");
 
-  assert.match(dashboard, /<ExploreClient storageScope=\{user\.id\} \/>/);
+  assert.match(dashboard, /<ExploreClient storageScope=\{user\.id\} showFirstFeedIntro=\{!effectiveAdmin\} \/>/);
 });

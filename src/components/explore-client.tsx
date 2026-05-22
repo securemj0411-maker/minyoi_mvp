@@ -485,7 +485,7 @@ function safetyRowsForExplore(stats: SafetyStatsResponse["stats"] | null | undef
 }
 
 function formatStatMaybe(value: number | null, loaded = false) {
-  if (value == null) return loaded ? "잠시 후" : "확인 중";
+  if (value == null) return loaded ? "" : "확인 중";
   return `${value.toLocaleString("ko-KR")}건`;
 }
 
@@ -742,11 +742,10 @@ function FirstFeedOnboardingCard({
   const [pendingBudget, setPendingBudget] = useState<BudgetFilterOption>(selectedBudget);
   const totalReviewed = stats ? safetyStatNumber(stats.total_reviewed_7d) : 0;
   const rows = safetyRowsForExplore(stats);
+  const showStats = !statsLoaded || stats != null;
   const reviewedLabel = statsLoaded && totalReviewed > 0
     ? `${totalReviewed.toLocaleString("ko-KR")}건`
-    : statsLoaded
-      ? "잠시 후 갱신"
-      : "확인 중";
+    : "확인 중";
   const pendingBudgetOption = budgetFilterOption(pendingBudget);
 
   useEffect(() => {
@@ -786,20 +785,28 @@ function FirstFeedOnboardingCard({
               후보만 남겼어요
             </h2>
             <p className="mt-5 break-keep text-[16px] font-bold leading-7 text-zinc-600 dark:text-zinc-300">
-              전체 추천 풀 <span className="font-black text-[#3182f6] dark:text-blue-300">{reviewedLabel}</span> 중에서
-              바로 보기 어려운 매물은 먼저 걷어냈어요.
+              {statsLoaded && !stats ? (
+                <>전체 추천 풀에서 바로 보기 어려운 매물은 먼저 걷어냈어요.</>
+              ) : (
+                <>
+                  전체 추천 풀 <span className="font-black text-[#3182f6] dark:text-blue-300">{reviewedLabel}</span> 중에서
+                  바로 보기 어려운 매물은 먼저 걷어냈어요.
+                </>
+              )}
             </p>
 
-            <div className="mt-9 space-y-5">
-              {rows.map((row) => (
-                <div key={row.label} className="flex items-end justify-between border-b border-zinc-200/80 pb-4 dark:border-zinc-800">
-                  <div className="text-[16px] font-black text-zinc-700 dark:text-zinc-200">{row.label}</div>
-                  <div className="text-[30px] font-black leading-none text-[#0a9f69] dark:text-emerald-300">
-                    {formatStatMaybe(row.value, statsLoaded)}
+            {showStats ? (
+              <div className="mt-9 space-y-5">
+                {rows.map((row) => (
+                  <div key={row.label} className="flex items-end justify-between border-b border-zinc-200/80 pb-4 dark:border-zinc-800">
+                    <div className="text-[16px] font-black text-zinc-700 dark:text-zinc-200">{row.label}</div>
+                    <div className="text-[30px] font-black leading-none text-[#0a9f69] dark:text-emerald-300">
+                      {formatStatMaybe(row.value, statsLoaded)}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : null}
           </div>
         ) : (
           <div className="flex flex-1 flex-col justify-center pb-24">
@@ -863,7 +870,13 @@ function FirstFeedOnboardingCard({
   );
 }
 
-export default function ExploreClient({ storageScope = "anonymous" }: { storageScope?: string }) {
+export default function ExploreClient({
+  storageScope = "anonymous",
+  showFirstFeedIntro = true,
+}: {
+  storageScope?: string;
+  showFirstFeedIntro?: boolean;
+}) {
   const [items, setItems] = useState<PoolItem[]>([]);
   // Wave 391: loadPool에서 items deps에 박으면 infinite loop. ref로 fresh 접근.
   const itemsRef = useRef<PoolItem[]>([]);
@@ -992,6 +1005,10 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!showFirstFeedIntro) {
+      setShowFirstFeedOnboarding(false);
+      return;
+    }
     try {
       setBudgetFilter(readBudgetFilterOption(storageScope));
       setDetailAccessSnapshot(readDetailAccessSnapshot(storageScope));
@@ -999,7 +1016,7 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
     } catch {
       setShowFirstFeedOnboarding(false);
     }
-  }, [storageScope]);
+  }, [showFirstFeedIntro, storageScope]);
 
   const dismissFirstFeedOnboarding = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -1487,7 +1504,7 @@ export default function ExploreClient({ storageScope = "anonymous" }: { storageS
   // sticky 통일 후 의미 없어짐 → button과 footer 사이 큰 빈 공간 제거.
   return (
     <div className="mx-auto w-full max-w-6xl px-3 pb-4 pt-2 sm:px-6 sm:pt-4">
-      {showFirstFeedOnboarding && !scrapOnly ? (
+      {showFirstFeedIntro && showFirstFeedOnboarding && !scrapOnly ? (
         <FirstFeedOnboardingCard
           stats={safetyStats}
           statsLoaded={safetyStatsLoaded}
