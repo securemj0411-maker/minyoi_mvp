@@ -6930,7 +6930,11 @@ export const CATALOG: Sku[] = [
     aliases: ["Polo Oxford", "폴로 옥스포드", "Ralph Lauren Oxford"],
     mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["옥스포드", "oxford"]],
     // RRL 옥스포드는 별도 SKU (가격 5배)
-    mustNotContain: ["RRL", "더블 알엘", "double rl", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "키즈", "kids", "보이즈", "boys", "주니어", "youth", "14~16", "14-16"],
+    mustNotContain: ["RRL", "더블 알엘", "double rl", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "키즈", "kids", "보이즈", "boys", "주니어", "youth", "14~16", "14-16",
+      // Wave 593d: BEAMS 한정 collab + 90s 빈티지 outlier 차단.
+      "빔즈", "beams", "x beams", "beams x", "리미티드", "limited edition", "한정판",
+      "90s ", "90's", "90s 폴로", "vintage polo", "빈티지 폴로",
+    ],
     msrpKrw: 159000, released: 2020,
     defaultProductType: "shirt", // Wave 236d — Oxford = 셔츠 라인.
   },
@@ -7240,7 +7244,14 @@ export const CATALOG: Sku[] = [
       "브라운스비치", "브라운스 비치", "brown's beach", "browns beach", "brownsbeach",
       "데님", "denim", "인디고", "셀비지", "selvedge",
       "lot271", "lot 271", "웨스트뷰", "웨스트 뷰", "westview",
-      "그리즐리", "grizzly"],
+      "그리즐리", "grizzly",
+      // Wave 593: production sample audit — RRL 한정 라인 + 혼합 브랜드 광고 차단.
+      // "리미티드 카우보이" 2.66M outlier 매물 (한정 라인 가격대 분리).
+      // "HOUSTON" 일본 빈티지 브랜드 (RRL 아님) — RRL 키워드 같이 박는 광고 패턴.
+      "리미티드 카우보이", "limited cowboy",
+      "휴스턴 체인스티치", "휴스턴 드리즐러", "houston chainstitch", "houston drizzler",
+      "rrl&", "&rrl", "&lvc", "lvc&", "&폴로",
+    ],
     msrpKrw: 1500000, released: 2020,
     // jacket + coat 둘 다 가능. defaultProductType 안 박음 — text 추출 의존 (regex 가 jacket/coat 구분).
   },
@@ -7759,7 +7770,14 @@ export const CATALOG: Sku[] = [
     aliases: ["Stussy Tee", "스투시 반팔", "Stussy T-Shirt"],
     mustContain: [["stussy", "스투시", "stüssy"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "8 ball", "8ball", "world tour", "월드투어", "stock", "스톡", "script", "스크립트"]],
     mustNotContain: ["nike", "나이키", "dior", "디올", "birkenstock", "버켄스탁", "carhartt", "칼하트", "키즈", "kids", "후드", "hoodie", "맨투맨", "긴팔", "복각", "rep ", "replica",
-      "자켓", "재킷", "jacket", "코치자켓", "coach jacket", "쉘 자켓", "shell jacket", "바람막이", "윈드브레이커"],
+      "자켓", "재킷", "jacket", "코치자켓", "coach jacket", "쉘 자켓", "shell jacket", "바람막이", "윈드브레이커",
+      // Wave 593c: 90s/올드 빈티지 + 콜라보 차단 (basic tee 시세 정리).
+      "90s ", "90's ", "90s stussy", "올드 스투시", "olds stussy", "old stussy", "빈티지 올드", "킹 사이즈 크라운", "킹사이즈 크라운", "kingsize crown",
+      "샤넬", "chanel", "칼 라거펠트", "karl lagerfeld",
+      "마크 제이콥스", "marc jacobs",
+      "cpfm", "cactus plant flea market",
+      "한정판", "limited edition",
+    ],
     msrpKrw: 89000, released: 2020,
     defaultProductType: "tee", // Wave 236d — Basic Tee = tee 확정.
   },
@@ -9426,6 +9444,17 @@ export const CATALOG: Sku[] = [
       "스왈로브스키", "swarovski", "1st 스왈로브스키",
       "뉴진스", "newjeans", "하니 컬리지", "황계",
       "세인트미카엘", "saint michael", "st michael",
+      // Wave 593: 띄어쓰기 변형 + 산리오/DSM/한정 collab 추가 차단.
+      "세인트 마이클", "세인트마이클", "세인트 베이프", "saint bape", "saint mxxxxxx",
+      "산리오", "sanrio", "키티 캐릭터", "헬로키티", "hello kitty",
+      "dsm", "dover street market", "도버 스트리트 마켓",
+      "힙플페", "힙합플레이어", "hiphopplayer",
+      "익스클루시브", "exclusive",
+      "한정판", "limited edition", " 한정 ",
+      // Wave 593b: 재팬시티/STASH/Russell collab 추가.
+      "재팬시티", "재팬 시티", "japan city",
+      "stash", "x stash", "스태쉬",
+      "러셀", "russell", "x russell",
       "네이버후드", "neighborhood", "바시티",
       "몽클레어", "몽클레르", "moncler",
       "stussy", "스투시 x bape", "스투시x베이프",
