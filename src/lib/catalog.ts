@@ -7537,6 +7537,16 @@ export const CATALOG: Sku[] = [
       "슈프림맛", "슈프림스럽", "느낌", "노벨티 얼룩", "얼룩 슈프림",
       // 팬츠 (jacket SKU 분리)
       "팬츠", "pants", "스터드 눕시 팬츠",
+      // Wave 601 (2026-05-22): 시즌별/colorway별 한정 매물 차단 (가격대 3-4배 차이).
+      //   사용자 expected_profit 부풀려질 위험 (예: 23SS 트롱프 뢰유 540k 매물 sku_median 874k 잘못 산정).
+      "스웨이드", "suede",   // 1.7M 한정
+      "슈노 퍼", "슈노퍼", "shuno fur", "shuno-fur", "snow fur",  // 1.1-1.5M 한정
+      "페이퍼", "paper",   // 페이퍼 카모 800k-1.2M 한정
+      "트롱프 뢰유", "trompe loeil", "trompe l'oeil", "trompe-loeil", "프린티드 눕시",
+      "낙엽", "16fw",
+      "스플릿 카모", "split camo",
+      "블리치드 데님", "bleached denim", "데님 프린트", "데님 눕시", "denim print",
+      "스터드", "studded",
     ],
     msrpKrw: 830000, released: 2017,
     defaultProductType: "down_jacket",
