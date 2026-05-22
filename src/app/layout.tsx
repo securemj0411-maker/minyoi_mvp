@@ -55,6 +55,15 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css"
         />
+        {/* Wave launch-10 (audit CRITICAL #9): Dark mode FOUC fix.
+         * React mount 전에 즉시 .dark class 적용 — 시스템 dark 사용자가 흰 화면 깜빡 안 보게.
+         * inline script (blocking) — paint 전에 실행. minified.
+         * localStorage 키 = `minyoi-theme-v1` (app-nav.tsx 와 동일 source). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem("minyoi-theme-v1");var d=s==="dark"||((s==="system"||!s)&&matchMedia("(prefers-color-scheme: dark)").matches);if(d){document.documentElement.classList.add("dark");document.documentElement.dataset.theme="dark";}else{document.documentElement.dataset.theme="light";}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <AppNav />
