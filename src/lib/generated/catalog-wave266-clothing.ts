@@ -847,6 +847,18 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "화이트라벨", "화이트 라벨", "white label", "white-label",
       "노벨티 눕시", "novelty nuptse", "novelty",
       "카모 눕시", "camo nuptse",
+      // Wave 652 (2026-05-22): c_grade spread 10x audit — 추가 변형/한정 차단.
+      // 화이트라벨/노벨티 표기 변형 (Wave 633 보강 후에도 c_grade에 흘러들어옴).
+      "화이트레이블", "화이트 레이블", "whitelabel", "wl 눕시",
+      "노벨티 다운", "노벨티눕시", "noveltynuptse",
+      "노벨티 자켓", "노벨티 아이스그레이", "노벨티 아보카도",
+      // 1992 special edition (1996 retro와 별개 시즌).
+      "1992 눕시", "1992눕시", "1992 white", "1992 화이트",
+      // 700필/800필 카모 variant (broad 가격대 벗어남).
+      "700필 카모", "800필 카모", "카모 패딩", "카모 다운",
+      "700 카모", "800 카모", "카모 700", "카모 800",
+      // Wave 615 등에서 강화한 매물 그룹 별도 spread 보호.
+      "에글론", "에그론", "aglon", "aglone",
     ],
     msrpKrw: 459000,
     released: 1996,

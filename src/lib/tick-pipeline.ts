@@ -2513,12 +2513,13 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 424 (2026-05-20): bag v11 — 제목의 bag product_type을 설명 수납품보다 우선.
   // Wave 425 (2026-05-20): clothing v13 — targeted type_unknown cleanup.
   // Wave 438 (2026-05-21): clothing v14 — cargo jacket no longer parses as pants.
-  clothing: "wave216-clothing-v24",
   // Wave 498: shoe/bag comparable_key now preserves bag brand/lane and shoe
   // broad brand. Force stale rows to reparse so market samples stop sharing
   // generic `bag|backpack` and `shoe|broad` buckets.
   shoe: "wave92-shoe-v21",
   bag: "wave92-bag-v21",
+  // Wave 652 (2026-05-22): clothing v25 — TNF Nuptse broad 화이트라벨/노벨티 변형 + 1992/카모/에글론 + adidas_trefoil 레더/세트.
+  clothing: "wave216-clothing-v25",
   bike: "wave92-fashion-mobility-v7",
   // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
   // full-unit pollution for these active pool categories.

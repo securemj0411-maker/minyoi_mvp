@@ -647,6 +647,7 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v21";
 // Wave 538 (2026-05-22) bag v14: Longchamp Le Pliage requires explicit line text.
 const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v21";
+// Wave 652 (2026-05-22): clothing v25 — TNF Nuptse broad 추가 변형 + adidas_trefoil 레더/세트.
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
 //   다른 분기에서 default 0.45 confidence + needs_review=true 박힘 → market_price_daily 0건 → pool 0건.
@@ -669,7 +670,7 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v21";
 // Wave 455 v17: clothing broad fallback + title-level multi-item bundle ("두개/일괄/묶음") needsReview.
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v24";
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v25";
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");
