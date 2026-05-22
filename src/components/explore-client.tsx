@@ -2308,6 +2308,54 @@ export default function ExploreClient({
                   </button>
                 </div>
               ) : null}
+              {/* Wave launch-33 (사용자 짚음): feed exhausted 상태에도 신뢰 메시지.
+               * 사용자가 끝까지 스크롤하고 "왜 이것밖에 없냐" 의문 → 우리 시스템이 얼마나
+               * 빡세게 거른 후 보여주는지 사회적 증명 + 정직. */}
+              {creditFeedEnabled && feedExhausted && stats && (stats.totalTracked || stats.scannedToday) ? (
+                <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
+                  <div className="text-[10.5px] font-black uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">
+                    왜 이것밖에 안 보이냐면
+                  </div>
+                  <ul className="mt-2 space-y-1.5 text-[11.5px] font-medium leading-5 text-zinc-700 dark:text-zinc-300">
+                    {stats.totalTracked ? (
+                      <li className="flex items-baseline gap-1.5">
+                        <span aria-hidden="true">📊</span>
+                        <span>
+                          현재 <b className="font-black text-zinc-900 dark:text-zinc-100">{stats.totalTracked.toLocaleString("ko-KR")}건</b> 매물을 추적 중이지만,
+                        </span>
+                      </li>
+                    ) : null}
+                    {stats.scannedToday ? (
+                      <li className="flex items-baseline gap-1.5">
+                        <span aria-hidden="true">🤖</span>
+                        <span>
+                          AI 가 오늘만 <b className="font-black text-zinc-900 dark:text-zinc-100">{stats.scannedToday.toLocaleString("ko-KR")}건</b>을 분류·필터하고,
+                        </span>
+                      </li>
+                    ) : null}
+                    <li className="flex items-baseline gap-1.5">
+                      <span aria-hidden="true">🛡</span>
+                      <span>
+                        가품 위험·시세 어그로·중복 셀러를 제외한 <b className="font-black text-zinc-900 dark:text-zinc-100">진짜 살만한 매물만</b> 남깁니다.
+                      </span>
+                    </li>
+                    {stats.caughtToday ? (
+                      <li className="flex items-baseline gap-1.5">
+                        <span aria-hidden="true">⚡</span>
+                        <span>
+                          오늘 <b className="font-black text-zinc-900 dark:text-zinc-100">{stats.caughtToday.toLocaleString("ko-KR")}건</b>이 이미 거래 완료됐어요.
+                        </span>
+                      </li>
+                    ) : null}
+                    <li className="flex items-baseline gap-1.5">
+                      <span aria-hidden="true">🔄</span>
+                      <span>
+                        매물은 <b className="font-black text-zinc-900 dark:text-zinc-100">실시간으로 업데이트</b>되니까 잠시 후 다시 와보세요.
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              ) : null}
               {!creditFeedEnabled ? (
                 <div className="mt-2 flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-1.5 text-[11px] font-bold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
                   <ZapIcon className="h-3 w-3" />
