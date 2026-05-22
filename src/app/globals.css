@@ -2,23 +2,23 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f6f1e8;
-  --foreground: #1f2822;
-  --brand-accent: #5c745f;
-  --brand-accent-strong: #314238;
-  --brand-accent-soft: #edf3eb;
-  --brand-cream: #f7f1e6;
+  --background: #f5f7fb;
+  --foreground: #191f28;
+  --brand-accent: #3182f6;
+  --brand-accent-strong: #3182f6;
+  --brand-accent-soft: #eff6ff;
+  --brand-cream: #ffffff;
   /* Wave 394.7.n (Claude Design handoff reference): 디자인 토큰 — 모든 panel 통일. */
-  --rd-bg: #ebe6dc;
-  --rd-cream: #f7f2e8;
+  --rd-bg: #f5f7fb;
+  --rd-cream: #ffffff;
   --rd-card: #ffffff;
-  --rd-card-warm: #fffaf0;
-  --rd-line: #ece3d2;
-  --rd-line-strong: #ddd4c0;
-  --rd-ink: #1a2620;
-  --rd-ink-2: #344136;
-  --rd-ink-3: #6f7c6d;
-  --rd-ink-4: #98a497;
+  --rd-card-warm: #ffffff;
+  --rd-line: #e5e8ef;
+  --rd-line-strong: #d8e0ea;
+  --rd-ink: #191f28;
+  --rd-ink-2: #333d4b;
+  --rd-ink-3: #6b7684;
+  --rd-ink-4: #8b95a1;
   --rd-em: #059669;
   --rd-em-700: #047857;
   --rd-em-50: #ecfdf5;
@@ -138,6 +138,131 @@ a {
   .showcase-content-in {
     animation: none;
   }
+}
+
+/* Wave 531: Toss-like light mode.
+ * 기존 Claude/cream 톤의 하드코딩 hex를 전역에서 neutral white/gray/blue로 리맵한다.
+ * dark mode는 아래 .dark override가 담당하므로 light에서만 적용한다. */
+html:not(.dark) .bg-\[\#f6f1e8\],
+html:not(.dark) .bg-\[\#f7f3ea\],
+html:not(.dark) .bg-\[\#f7f1e6\],
+html:not(.dark) .bg-\[\#f7f2e8\],
+html:not(.dark) .bg-\[\#ebe6dc\],
+html:not(.dark) .bg-\[\#f3ede3\] {
+  background-color: #f5f7fb !important;
+}
+
+html:not(.dark) .bg-\[\#f8f4ec\],
+html:not(.dark) .bg-\[\#fbf8f2\],
+html:not(.dark) .bg-\[\#fffbf4\],
+html:not(.dark) .bg-\[\#fffbef\],
+html:not(.dark) .bg-\[\#fffaf6\],
+html:not(.dark) .bg-\[\#fffaf1\],
+html:not(.dark) .bg-\[\#fffaf0\],
+html:not(.dark) .bg-\[\#fff7e6\],
+html:not(.dark) .bg-\[\#fffdf9\],
+html:not(.dark) .bg-\[\#fffdf8\],
+html:not(.dark) .bg-\[\#fdfaf3\],
+html:not(.dark) .bg-\[\#faf7f1\] {
+  background-color: #ffffff !important;
+}
+
+html:not(.dark) .bg-\[\#f3eee5\],
+html:not(.dark) .bg-\[\#f4eee3\],
+html:not(.dark) .bg-\[\#f1ebe2\],
+html:not(.dark) .bg-\[\#f2eadf\],
+html:not(.dark) .bg-\[\#f4efe5\] {
+  background-color: #f2f5f9 !important;
+}
+
+html:not(.dark) .bg-\[\#edf4e8\],
+html:not(.dark) .bg-\[\#edf3eb\],
+html:not(.dark) .bg-\[\#eef6ec\],
+html:not(.dark) .bg-\[\#f3faf5\],
+html:not(.dark) .bg-\[\#e6f4ec\] {
+  background-color: #eff6ff !important;
+}
+
+html:not(.dark) .border-\[\#ddd4c7\],
+html:not(.dark) .border-\[\#e5dccf\],
+html:not(.dark) .border-\[\#e4dacb\],
+html:not(.dark) .border-\[\#d8decd\],
+html:not(.dark) .border-\[\#d7d1c5\],
+html:not(.dark) .border-\[\#e3d5ba\],
+html:not(.dark) .border-\[\#e2d9cb\],
+html:not(.dark) .border-\[\#ece3d6\],
+html:not(.dark) .border-\[\#ece3d2\],
+html:not(.dark) .border-\[\#e7dece\],
+html:not(.dark) .border-\[\#e9dfd0\],
+html:not(.dark) .border-\[\#eee5d8\],
+html:not(.dark) .border-\[\#e6ded1\],
+html:not(.dark) .border-\[\#e6dece\],
+html:not(.dark) .border-\[\#e2ded5\],
+html:not(.dark) .border-\[\#e1dacd\],
+html:not(.dark) .border-\[\#ddd6ca\],
+html:not(.dark) .border-\[\#d8d2c6\] {
+  border-color: #e5e8ef !important;
+}
+
+html:not(.dark) .border-\[\#bfd2c1\],
+html:not(.dark) .border-\[\#cfd9c9\],
+html:not(.dark) .border-\[\#d6e2d3\],
+html:not(.dark) .border-\[\#b9c9b9\] {
+  border-color: #cfe0ff !important;
+}
+
+html:not(.dark) .divide-\[\#ece3d6\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e5e8ef !important;
+}
+
+html:not(.dark) .text-\[\#223127\],
+html:not(.dark) .text-\[\#1f2822\],
+html:not(.dark) .text-\[\#172019\],
+html:not(.dark) .text-\[\#1a2620\],
+html:not(.dark) .text-\[\#17221d\] {
+  color: #191f28 !important;
+}
+
+html:not(.dark) .text-\[\#344136\],
+html:not(.dark) .text-\[\#314238\],
+html:not(.dark) .text-\[\#475449\],
+html:not(.dark) .text-\[\#425247\],
+html:not(.dark) .text-\[\#526057\],
+html:not(.dark) .text-\[\#5d735f\],
+html:not(.dark) .text-\[\#5f675e\],
+html:not(.dark) .text-\[\#60705f\],
+html:not(.dark) .text-\[\#2f6440\],
+html:not(.dark) .text-\[\#4f6a52\],
+html:not(.dark) .text-\[\#4d6654\] {
+  color: #333d4b !important;
+}
+
+html:not(.dark) .text-\[\#5a6658\],
+html:not(.dark) .text-\[\#556252\],
+html:not(.dark) .text-\[\#566252\],
+html:not(.dark) .text-\[\#6a6f62\],
+html:not(.dark) .text-\[\#6b7269\],
+html:not(.dark) .text-\[\#6f7c6d\],
+html:not(.dark) .text-\[\#6f7b73\],
+html:not(.dark) .text-\[\#667164\],
+html:not(.dark) .text-\[\#687166\],
+html:not(.dark) .text-\[\#647064\],
+html:not(.dark) .text-\[\#758174\],
+html:not(.dark) .text-\[\#7b8378\],
+html:not(.dark) .text-\[\#7b8479\],
+html:not(.dark) .text-\[\#98a497\] {
+  color: #6b7684 !important;
+}
+
+html:not(.dark) .hover\:bg-\[\#fffbf4\]:hover,
+html:not(.dark) .hover\:bg-\[\#fffaf1\]:hover,
+html:not(.dark) .hover\:bg-\[\#f4eee3\]:hover,
+html:not(.dark) .hover\:bg-\[\#f6fbf4\]:hover {
+  background-color: #f2f7ff !important;
+}
+
+html:not(.dark) .hover\:text-\[var\(--brand-accent-strong\)\]:hover {
+  color: #3182f6 !important;
 }
 
 .dark .bg-white,
