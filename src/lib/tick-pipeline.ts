@@ -4169,15 +4169,19 @@ async function markStaleInvalidatedPoolRowsDirty(limit: number): Promise<number>
 }
 
 // Wave launch-42 (사용자 짚음 "profit_below_pack_band 685건 ready→invalidated 전환"):
-//   기존: sku_median_unavailable 사유만 재평가 후보. 다른 회복 가능 사유 (특히
-//   profit_below_pack_band: SQL 검증 결과 100% had_last_verified_at + 99.7% transitioned)
-//   는 영구 잠금.
-//   확장: 회복 가능 사유 whitelist. fashion 카테고리 (clothing/shoe/bag) 는 사용자 지시
-//   대로 유지 (다른 카테고리는 파서 강화 진행 중 — 다른 세션).
+//   기존: sku_median_unavailable 사유만 + fashion (clothing/shoe/bag) 카테고리만 재평가.
+//   1차 확장: 회복 가능 사유 22종 whitelist 추가.
+//
+// Wave launch-42b (사용자 정정 "테크 기기들은 완벽, 다른 카테고리는 fashion 안 세부 SKU 의미"):
+//   초기 launch-42 에서 fashion 한정 유지했는데 사용자 진짜 의도는 전자기기 카테고리
+//   (earphone/tablet/smartphone/smartwatch/laptop/watch 등) 도 포함. fashion 안 세부 SKU
+//   강화는 별 영역이라 cron 작동해도 안전 (candidate-pool-builder 가 최신 parser 로 재평가).
+//   → 카테고리 필터 자체 제거. 모든 카테고리 회복 cron.
 //
 //   검증 로직 (raw active+eligible + sku_median/comparable 회복) 그대로 — score_dirty
 //   마킹은 안전한 매물만. score-worker 다음 tick → candidate-pool-builder 재호출 →
 //   현재 시세/가격 기준 차익 1만+ 이면 ready 복귀, 아니면 사유 갱신.
+//   → fashion 내부 SKU 강화 진행 중 매물도 평가 통과해야 ready 가니까 안전.
 //
 //   회복 가능 사유 (의도적 영구 차단 제외):
 //   - 시세/가격 변동: sku_median_unavailable, profit_below_pack_band, negative_resell_gap,
@@ -4222,8 +4226,9 @@ const RECOVERABLE_INVALIDATED_REASONS = [
 async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promise<number> {
   const rowLimit = Math.max(1, Math.min(limit, 250));
   const reasonsClause = `invalidated_reason=in.(${RECOVERABLE_INVALIDATED_REASONS.join(",")})`;
+  // Wave launch-42b: category 필터 제거 (전자기기 카테고리 다 포함).
   const res = await restFetch(
-    `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.invalidated&category=in.(clothing,shoe,bag)&${reasonsClause}&order=updated_at.desc&limit=${rowLimit}`,
+    `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.invalidated&${reasonsClause}&order=updated_at.desc&limit=${rowLimit}`,
     { headers: serviceHeaders() },
   );
   if (!res.ok) {
