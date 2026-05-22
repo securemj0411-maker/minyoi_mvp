@@ -6940,7 +6940,13 @@ export const CATALOG: Sku[] = [
     modelName: "Polo Bear Print (한정)",
     aliases: ["Polo Bear", "폴로 베어", "Polo Bear Tee"],
     mustContain: [["폴로", "polo", "ralph lauren"], ["베어", "bear"]],
-    mustNotContain: ["RRL", "purple label", "키즈", "kids", "토들러", "스티커", "키링"],
+    mustNotContain: ["RRL", "purple label", "키즈", "kids", "토들러", "스티커", "키링",
+      // Wave 572 (2026-05-22): 빈티지 90s 폴로베어 (85만 outlier vs 일반 22~30만 +3배).
+      "92년", "91년", "90년", "93년", "94년", "95년",
+      "92년도", "91년도", "90년도", "93년도",
+      "vintage 9", "빈티지 9", "ornament", "오너먼트",
+      "이불", "침구", "퀸사이즈", "테디", "teddy",  // 폴로베어 인형/이불
+    ],
     msrpKrw: 159000, released: 2020,
   },
   // Wave 218 (2026-05-19): clothing-polo-rrl narrow 분리.
