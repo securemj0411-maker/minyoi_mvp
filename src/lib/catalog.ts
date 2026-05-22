@@ -6193,7 +6193,12 @@ export const CATALOG: Sku[] = [
       "tcm", "티타늄 카모", "티타늄카모", "titanium camo",
       "에릭헤이즈", "에릭 헤이즈", "eric haze", "ericharze", "eh-9",
       "40주년", "40th", "40 주년", "pg-9", "pg9", "민트급 한정",
-      "mrg", "커스텀 블랙", "커스텀블랙"],
+      "mrg", "커스텀 블랙", "커스텀블랙",
+      // Wave 643: 추가 collab (Ader Error / Evangelion / Manga).
+      "아더에러", "ader error", "ader x", "ade-1",
+      "에반게리온", "evangelion", "ev-1", "레이", "rei",
+      "망가", "manga", "ga-2100",
+    ],
     msrpKrw: 990000,
     released: 2018,
   },
