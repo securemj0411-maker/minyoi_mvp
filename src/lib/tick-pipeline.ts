@@ -2516,8 +2516,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 498: shoe/bag comparable_key now preserves bag brand/lane and shoe
   // broad brand. Force stale rows to reparse so market samples stop sharing
   // generic `bag|backpack` and `shoe|broad` buckets.
-  // Wave 700 (2026-05-23): shoe v33 — Crocs collab (Salehe/BAPE/Balenciaga) + Crocs Boots/Slipper/LightRide broad + Puma 4 broad (Speedcat/Palermo/Suede/Clyde).
-  shoe: "wave92-shoe-v33",
+  // Wave 701 (2026-05-23): shoe v34 — Asics 13 SKU (gel-1130/superblast/lifewalker/gel-venture/i4p(IAB)/gt-2160/metaspeed/gel-1090/gel-sonoma/gel-quantum/hyper/anderson-bell/jjjjound).
+  shoe: "wave92-shoe-v34",
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
   bag: "wave92-bag-v23",
   // Wave 690 (2026-05-22): clothing v44 — stussy_nike_collab release (셋업/월드투어 차단, 30~50만 가격대 안정).

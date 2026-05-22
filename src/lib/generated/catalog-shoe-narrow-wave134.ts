@@ -2129,6 +2129,182 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
   },
 
   // ═══════════════════════════════════════════════════════════
+  // Wave 701 (2026-05-23): Asics 13 SKU 신설 (1단계 CRITICAL)
+  // Agent deep sweep 1,785건 — 53% 매칭, 832 누락. 가장 큰 누락 gel-1130 (217건).
+  // ═══════════════════════════════════════════════════════════
+
+  {
+    id: "shoe-asics-gel-1130-broad",
+    brand: "Asics", category: "shoe",
+    modelName: "Asics Gel-1130 broad (198 매물)",
+    aliases: ["Gel-1130", "젤 1130", "젤1130", "Asics 1130"],
+    mustContain: [["asics", "아식스"], ["1130", "gel-1130", "젤1130", "젤 1130", "젤-1130"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "i4p", "iab", "아이앱", "기리보이",  // i4p collab 별도
+      "kiko", "키코", "hal", "할 스튜디오", "kith", "키스",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 99000, released: 2008, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-superblast",
+    brand: "Asics", category: "shoe",
+    modelName: "Asics Superblast (2/3 통합)",
+    aliases: ["Asics Superblast", "슈퍼블라스트", "Super Blast"],
+    mustContain: [["asics", "아식스"], ["superblast", "슈퍼블라스트", "슈퍼 블라스트"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "노바블라스트", "novablast", "메가블라스트", "megablast", "소닉블라스트", "sonicblast", "프로토블라스트",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 250000, released: 2023, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-lifewalker",
+    brand: "Asics", category: "shoe",
+    modelName: "Asics Lifewalker (M010/M101/M307 시니어 mass)",
+    aliases: ["Asics Lifewalker", "라이프워커"],
+    mustContain: [["asics", "아식스"], ["lifewalker", "라이프워커", "라이프 워커"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 89000, released: 2018, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-gel-venture",
+    brand: "Asics", category: "shoe",
+    modelName: "Asics Gel-Venture (6/7/8/10 트레일)",
+    aliases: ["Gel-Venture", "벤처"],
+    mustContain: [["asics", "아식스"], ["venture", "벤처", "벤쳐"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "story mfg",  // Story mfg collab 일부 별도 가능
+      "iab", "i4p", "아이앱",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 99000, released: 2015, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-i4p-collab",
+    brand: "Asics x i4p (IAB Studio)", category: "shoe",
+    modelName: "Asics i4p Collab (1130 글레이셔 그레이 밍크/딥 마스/데미타스)",
+    aliases: ["i4p Collab", "아이앱 아식스"],
+    mustContain: [["asics", "아식스"], ["i4p", "iab", "아이앱", "아이앱스튜디오", "기리보이"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 200000, released: 2023, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-gt-2160-broad",
+    brand: "Asics", category: "shoe",
+    modelName: "Asics GT-2160 broad (화이트/실버/그레이/라벤더 다양)",
+    aliases: ["Asics GT-2160", "GT 2160", "GT2160"],
+    mustContain: [["asics", "아식스"], ["gt-2160", "gt2160", "gt 2160", "2160"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "cecilie", "세실리에", "세실리아",  // cecilie collab 별도
+      "어보브더클라우즈", "어보브 더 클라우즈", "above the clouds",  // collab 별도
+      "beams", "빔즈", "페이퍼걸",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2024, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-metaspeed",
+    brand: "Asics", category: "shoe",
+    modelName: "Asics Metaspeed (Sky/Edge/Ray + 도쿄/파리/에키덴 한정)",
+    aliases: ["Asics Metaspeed", "메타스피드", "Meta Speed"],
+    mustContain: [["asics", "아식스"], ["metaspeed", "메타스피드", "메타 스피드"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 280000, released: 2021, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-gel-1090",
+    brand: "Asics", category: "shoe",
+    modelName: "Asics Gel-1090 (V2 화이트/멀티 + 앤더슨벨/베이프 collab base)",
+    aliases: ["Gel-1090", "젤 1090", "젤1090"],
+    mustContain: [["asics", "아식스"], ["1090", "gel-1090", "젤1090", "젤 1090"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "anderson bell", "앤더슨벨", "앤더슨 벨", "프레자위워", "freezewear",
+      "bape", "베이프", "iab", "아이앱",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 99000, released: 2015, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-gel-sonoma",
+    brand: "Asics", category: "shoe",
+    modelName: "Asics Gel-Sonoma (15-50/TR62 + 앤더슨벨/마뗑킴/아페쎄 collab base)",
+    aliases: ["Gel-Sonoma", "소노마"],
+    mustContain: [["asics", "아식스"], ["sonoma", "소노마"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "anderson bell", "앤더슨벨", "마뗑킴", "matin kim", "matinkim",
+      "아페쎄", "a.p.c.", "apc",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 119000, released: 2018, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-gel-quantum",
+    brand: "Asics", category: "shoe",
+    modelName: "Asics Gel-Quantum (360 / Kinetic SP plain only)",
+    aliases: ["Gel-Quantum", "퀀텀", "퀸텀"],
+    mustContain: [["asics", "아식스"], ["quantum", "퀀텀", "퀸텀"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "kiko", "키코", "cecilie", "세실리",
+      "cp company", "cp사",
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2014, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-hyper",
+    brand: "Asics", category: "shoe",
+    modelName: "Asics Hyper 시리즈 (Synth/Gel-Kan/MD)",
+    aliases: ["Asics Hyper", "하이퍼"],
+    mustContain: [["asics", "아식스"], ["hyper", "하이퍼"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "hyperframe",  // frame은 다른 product
+      "짝퉁", "rep ", "replica", "fake", "11급",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2018, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-anderson-bell-collab",
+    brand: "Asics x Anderson Bell", category: "shoe",
+    modelName: "Asics x Anderson Bell Collab (1090/소노마/프로토블라스트/카야노15)",
+    aliases: ["Anderson Bell Asics", "앤더슨벨 아식스"],
+    mustContain: [["asics", "아식스"], ["anderson bell", "앤더슨벨", "앤더슨 벨", "anderson-bell"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 159000, released: 2023, defaultProductType: "sneaker",
+  },
+
+  {
+    id: "shoe-asics-jjjjound-collab",
+    brand: "Asics x JJJJound", category: "shoe",
+    modelName: "Asics x JJJJound Collab (카야노14/퀀텀 360) — 가품 위험 ★★★",
+    aliases: ["JJJJound Asics", "자운드 아식스"],
+    mustContain: [["asics", "아식스"], ["jjjjound", "자운드"]],
+    mustNotContain: ["키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "매입"],
+    msrpKrw: 400000, released: 2023, defaultProductType: "sneaker",
+  },
+
+  // ═══════════════════════════════════════════════════════════
   // Wave 696 (2026-05-23): AF1 + Air Max 1단계 22 SKU 신설
   // Agent deep sweep — AF1 960건 (기존 3 → 53 후보), Air Max 1476건 (기존 5 → 23 후보).
   // Pareto 80% 흡수 (1단계).

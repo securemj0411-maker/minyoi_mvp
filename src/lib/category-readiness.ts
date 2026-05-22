@@ -899,6 +899,20 @@ export const LANE_READINESS: LaneReadinessMap = {
   shoe_puma_palermo_broad: { status: "ready", label: "Puma Palermo broad", note: "Wave 700 — Elevata/OG." },
   shoe_puma_suede_broad: { status: "ready", label: "Puma Suede broad", note: "Wave 700 — Classic." },
   shoe_puma_clyde_broad: { status: "ready", label: "Puma Clyde broad", note: "Wave 700 — Classic." },
+  // Wave 701 (2026-05-23) — Asics 13 SKU (Agent deep sweep 1,785건)
+  shoe_asics_gel_1130_broad: { status: "ready", label: "Asics Gel-1130 broad", note: "Wave 701 — 198 매물 (217 누락)." },
+  shoe_asics_superblast: { status: "ready", label: "Asics Superblast", note: "Wave 701 — 73 매물 평균 20만." },
+  shoe_asics_lifewalker: { status: "ready", label: "Asics Lifewalker", note: "Wave 701 — 53 매물 시니어 mass." },
+  shoe_asics_gel_venture: { status: "ready", label: "Asics Gel-Venture", note: "Wave 701 — 29 매물 트레일." },
+  shoe_asics_i4p_collab: { status: "ready", label: "Asics x i4p (IAB) Collab", note: "Wave 701 — 29 매물 한국 collab." },
+  shoe_asics_gt_2160_broad: { status: "ready", label: "Asics GT-2160 broad", note: "Wave 701 — 23 매물." },
+  shoe_asics_metaspeed: { status: "ready", label: "Asics Metaspeed", note: "Wave 701 — 21 매물 마라톤 hi-end." },
+  shoe_asics_gel_1090: { status: "ready", label: "Asics Gel-1090", note: "Wave 701 — 20 매물." },
+  shoe_asics_gel_sonoma: { status: "ready", label: "Asics Gel-Sonoma", note: "Wave 701 — 19 매물." },
+  shoe_asics_gel_quantum: { status: "ready", label: "Asics Gel-Quantum (plain)", note: "Wave 701 — 13 매물." },
+  shoe_asics_hyper: { status: "ready", label: "Asics Hyper 시리즈", note: "Wave 701 — 13 매물." },
+  shoe_asics_anderson_bell_collab: { status: "ready", label: "Asics x Anderson Bell Collab", note: "Wave 701 — 12 매물." },
+  shoe_asics_jjjjound_collab: { status: "ready", label: "Asics x JJJJound (가품 위험 ★★★)", note: "Wave 701 — 11 매물 평균 33만." },
 };
 
 export type CategoryReadinessConfig = {
