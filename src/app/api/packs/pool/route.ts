@@ -251,7 +251,10 @@ async function loadPool(
   let sourceClause = "";
   if (options.source) {
     const sourceRows = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid&source=eq.${encodeURIComponent(options.source)}&limit=5000`,
+      // Wave launch-12 (audit CRITICAL #11): 5000 → 2000 축소.
+      // 한 source (joongna / bunjang) 의 active pid 가 풀 매칭에 5000건까지 필요하지 않음.
+      // 2000 이면 모든 카테고리 충분 + DB scan 비용 감소 + 모바일 응답 빠름.
+      `${tableUrl("mvp_raw_listings")}?select=pid&source=eq.${encodeURIComponent(options.source)}&limit=2000`,
       { headers },
     );
     const sourcePids = ((await sourceRows.json()) as Array<{ pid: number }>).map((row) => Number(row.pid));
@@ -667,6 +670,13 @@ export async function GET(req: Request) {
       ? computeCooldown(new Date().toISOString())
       : cooldown;
 
+    // Wave launch-12: refresh=false (기본 fetch) 응답 사용자별 15초 캐시.
+    // refresh=true 또는 credit feed = DB write / 사용자별 카운터 갱신이라 캐시 X.
+    // private = 사용자별 캐시 (CDN 공유 X — detailAccess 같은 사용자별 정보 노출 차단).
+    const cacheHeader = !refresh && !creditFeed
+      ? { "Cache-Control": "private, max-age=15" }
+      : { "Cache-Control": "no-store" };
+
     return NextResponse.json({
       items: responseItems,
       cooldown: nextCooldown,
@@ -678,7 +688,7 @@ export async function GET(req: Request) {
       freshLagHours: FRESH_LAG_HOURS,
       // Wave 382: 사용자 예산이 fallback됐는지 (사용자 안내용).
       appliedBudget,
-    });
+    }, { headers: cacheHeader });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: message }, { status: 500 });
