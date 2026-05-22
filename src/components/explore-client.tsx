@@ -2393,20 +2393,11 @@ export default function ExploreClient({
                     : "active:bg-zinc-50 dark:active:bg-zinc-900/40 sm:border-zinc-200 sm:bg-white sm:hover:border-emerald-300 sm:hover:shadow-md dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 dark:sm:hover:border-emerald-700"
                 }`}
               >
-                {/* Wave 351: sold out — 사진만 흐리게 + 우상단 칩. 카드 내용 그대로 (FOMO). */}
+                {/* Wave launch-63 (사용자 짚음 "잠긴거 보고 클릭 안 함, conversion 0"):
+                    사진 + 제목 = 항상 unlock. 차익/가격/시세 mask 유지.
+                    사용자가 카드 보고 "클릭해볼까" 결정 → 4번째 click 시 modal "크레딧 부족" 자연 트리거. */}
                 <div className={`relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ${isSoldOut ? "grayscale" : ""}`}>
-                  {lockedPreview ? (
-                    <div className="flex h-full w-full flex-col items-center justify-center bg-[linear-gradient(135deg,#f8faf9_0%,#e9f4ef_100%)] px-3 text-center dark:bg-[linear-gradient(135deg,#18181b_0%,#0f2a21_100%)]">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/85 text-emerald-700 shadow-sm ring-1 ring-emerald-100 dark:bg-zinc-950/70 dark:text-emerald-300 dark:ring-emerald-900/40">
-                        <CategoryIcon category={item.category ?? "default"} className="h-5 w-5" strokeWidth={1.9} />
-                      </div>
-                      <div className="mt-2 text-[10px] font-black leading-tight text-zinc-700 dark:text-zinc-200">
-                        {freeDetailAvailable ? "무료 상세에서" : "원본 사진은"}
-                        <br />
-                        {freeDetailAvailable ? "원본 공개" : "상세에서 공개"}
-                      </div>
-                    </div>
-                  ) : item.thumbnailUrl ? (
+                  {item.thumbnailUrl ? (
                     <Image
                       src={item.thumbnailUrl}
                       alt={item.name}
@@ -2433,13 +2424,12 @@ export default function ExploreClient({
                 </div>
                 <div className={`min-w-0 ${isSoldOut ? "opacity-60" : ""}`}>
                   <div className="line-clamp-2 text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-100">
-                    {lockedPreview ? lockedPreviewTitle(item) : item.name}
+                    {/* Wave launch-63: 제목 = 항상 unlock. 차익/가격만 mask 유지. */}
+                    {item.name}
                   </div>
-                  {lockedPreview ? (
-                    <div className="mt-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-                      {freeDetailAvailable
-                        ? `무료 상세 ${freeDetailRemaining.toLocaleString("ko-KR")}회 남음 · 열면 원제목과 사진이 보여요`
-                        : "원제목·원본 사진·판매자 정보는 상세 분석에서 보여드려요"}
+                  {lockedPreview && freeDetailAvailable ? (
+                    <div className="mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                      무료 상세 {freeDetailRemaining.toLocaleString("ko-KR")}회 남음
                     </div>
                   ) : null}
                   <div className="mt-1.5 flex items-baseline gap-1.5">
