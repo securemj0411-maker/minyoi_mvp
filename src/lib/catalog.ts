@@ -441,6 +441,10 @@ const WATCH_NOISE = [
   "gmw-b5000gd", "gmwb5000gd",
   "dw-5600jv", "dw5600jv",
   "버스트", "drip",
+  // Wave 645: 교환 매물 차단 (Wave 235 PHONE_NOISE 패턴 spread to WATCH).
+  //   production: pid 405218598 '가민포러너265 교환 원합니다' 999,999 (placeholder).
+  "교환 원함", "교환원함", "교환원해요", "교환 원해요", "교환원합니다", "교환 원합니다",
+  "교환희망", "교환 희망", "교환합니다", "교환만",
 ];
 
 // Wave 67: 골프 narrow lane noise (드라이버 본체 매물 — 헤드만은 별개 분기).
