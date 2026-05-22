@@ -593,7 +593,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   acne_rockaway: { status: "ready", label: "Acne Rockaway Sneakers", note: "Wave 442 shoe split" },
   acne_pvc_tote: { status: "ready", label: "Acne PVC Tote", note: "Wave 205 bag" },
   acne_musubi: { status: "ready", label: "Acne Musubi (시그니처)", note: "Wave 205 bag" },
-  acne_apparel: { status: "blocked", label: "Acne Apparel (broad fallback)", note: "Wave 407: catch-all hold. Use Acne product-type lanes." },
+  acne_apparel: { status: "ready", label: "Acne Apparel (broad fallback)", note: "Wave 685 release — broad fallback (narrow 다 ready), cross-category 추가 차단 (숄더 백 변형/크로스백/비니/셋업/스커트/자카드 플랫)." },
   // Wave 219 (2026-05-19): Acne product type 5분리 — 티 130K vs 맨투맨 230K vs 자켓 590K vs 데님 320K vs 셔츠 380K
   acne_tee: { status: "ready", label: "Acne Tee / Long-Sleeve", note: "Wave 219" },
   acne_sweat: { status: "ready", label: "Acne Sweat/Hoodie (Fairview)", note: "Wave 219" },
