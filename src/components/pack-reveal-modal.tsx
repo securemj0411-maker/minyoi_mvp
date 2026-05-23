@@ -3123,6 +3123,166 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
 // Wave launch-83 (사용자 결정): 데이터 부족 시 "수집 중" placeholder 보이지 않게.
 //   MarketHistoryChart 가 onState 로 data 상태 알림 → "available" / "reference_only" 외엔 섹션 자체 hide.
 //   첫 mount default = "loading" — fetch 동안엔 wrapper + skeleton 표시. 빈 상태 확인되면 wrapper 사라짐.
+// Wave launch-103 (사용자 결정 — 매물 신고/피드백): 매물 잘못됐을 때 사용자가 신고 → 운영자 검토 → +20 크레딧.
+//   인라인 카드 (수익 계산 근거 / 채널 비교 / 추천 이유 다음). 보상 명시 → conversion ↑.
+function FeedbackReportPanel({ card }: { card: RevealCard }) {
+  const [open, setOpen] = useState(false);
+  const [category, setCategory] = useState<string>("fake");
+  const [message, setMessage] = useState("");
+  const [stage, setStage] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const categories: Array<{ value: string; label: string }> = [
+    { value: "fake", label: "가품 의심" },
+    { value: "price_wrong", label: "시세 / 차익 이상" },
+    { value: "sold_out", label: "이미 거래 완료된 매물" },
+    { value: "category_wrong", label: "카테고리 / 모델 오분류" },
+    { value: "other", label: "기타" },
+  ];
+
+  async function submit() {
+    setErrorMessage(null);
+    const clean = message.trim();
+    if (clean.length < 5) {
+      setErrorMessage("5자 이상 적어주세요.");
+      return;
+    }
+    setStage("submitting");
+    try {
+      const res = await fetch("/api/feedback/submit", {
+        method: "POST",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pid: card.pid,
+          pidContext: {
+            name: card.name,
+            skuName: card.skuName,
+            price: card.price,
+            comparableKey: card.marketBasis?.comparableKey ?? null,
+          },
+          category,
+          message: clean,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; message?: string };
+      if (!res.ok || !data.ok) {
+        setErrorMessage(data.message ?? "처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+        setStage("error");
+        return;
+      }
+      setStage("done");
+      setMessage("");
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "네트워크 오류");
+      setStage("error");
+    }
+  }
+
+  if (stage === "done") {
+    return (
+      <section className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 px-4 py-4 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+        <div className="flex items-center gap-2 text-[13px] font-black text-emerald-800 dark:text-emerald-200">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+          신고 접수됐어요
+        </div>
+        <p className="mt-1.5 text-[12px] font-bold leading-5 text-emerald-700/90 dark:text-emerald-300/90">
+          운영자가 검토 후 정당하면 +20 크레딧 지급해드릴게요.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/60 px-4 py-3.5 dark:border-amber-900/50 dark:bg-amber-950/20">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 text-left"
+      >
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 text-[13px] font-black text-amber-900 dark:text-amber-200">
+            <span aria-hidden="true">🚨</span>
+            <span>이 매물 정보 잘못됐어요?</span>
+          </div>
+          <div className="mt-1 text-[11.5px] font-bold leading-5 text-amber-800/85 dark:text-amber-300/80">
+            가품 의심 / 시세 이상 / 카테고리 오분류 등 — 운영자 검토 후 <b className="text-amber-900 dark:text-amber-100">+20 크레딧</b>
+          </div>
+        </div>
+        <span className={`shrink-0 rounded-full bg-amber-200/70 px-2.5 py-1 text-[11px] font-black text-amber-900 transition group-hover:bg-amber-300 dark:bg-amber-900/50 dark:text-amber-100 ${open ? "rotate-90" : ""}`}>
+          {open ? "닫기" : "신고하기 →"}
+        </span>
+      </button>
+
+      {open ? (
+        <div className="mt-3 space-y-3">
+          {/* 카테고리 */}
+          <div>
+            <label className="text-[11px] font-bold text-amber-800 dark:text-amber-300">카테고리</label>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {categories.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setCategory(c.value)}
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-black transition ${
+                    category === c.value
+                      ? "bg-amber-600 text-white"
+                      : "bg-white text-amber-900 ring-1 ring-amber-200 hover:bg-amber-100 dark:bg-zinc-900 dark:text-amber-200 dark:ring-amber-900/50"
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 내용 */}
+          <div>
+            <label htmlFor="feedback-message" className="text-[11px] font-bold text-amber-800 dark:text-amber-300">
+              어떻게 잘못됐는지 알려주세요 (5자 이상)
+            </label>
+            <textarea
+              id="feedback-message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              maxLength={2000}
+              placeholder="예) 가품 같아요. 박음질이 조잡하고 사진의 폰트가 다름..."
+              rows={3}
+              disabled={stage === "submitting"}
+              className="mt-1 w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-[12.5px] leading-5 text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-900/50 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+            />
+          </div>
+
+          {errorMessage ? (
+            <p className="text-[11.5px] font-bold text-rose-700 dark:text-rose-400">{errorMessage}</p>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={submit}
+            disabled={stage === "submitting" || message.trim().length < 5}
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 text-[13px] font-black text-white shadow-sm transition hover:bg-amber-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            {stage === "submitting" ? (
+              <>
+                <span className="h-2 w-2 animate-bounce rounded-full bg-white [animation-delay:-0.32s]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-white [animation-delay:-0.16s]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-white" />
+              </>
+            ) : (
+              <>신고 제출 — 검토 후 +20 크레딧</>
+            )}
+          </button>
+          <p className="text-[10.5px] font-medium text-amber-700/80 dark:text-amber-300/70">
+            운영자 검토 결과는 텔레그램으로 알려드려요. 정당한 신고만 보상돼요.
+          </p>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function DetailMarketGraphSection({ card }: { card: RevealCard }) {
   const [chartState, setChartState] = useState<MarketChartState>("loading");
   // 데이터 충분 / reference 매물 안내만 — 그 외 (empty / error / no_key) 는 wrapper 전체 hide.
@@ -5826,6 +5986,10 @@ function RevealCardItem({
                 card={card}
                 className="mt-2 border-t border-[#e1dacd] pt-2"
               />
+              {/* Wave launch-103 (사용자 결정): 매물 잘못 신고 → 운영자 검토 → +20 크레딧.
+                  스크랩 옆 X (자장 의미와 정반대 + 노출 ↓) → 모달 하단 prominent section.
+                  매물 ID 자동 부착 (운영자가 어떤 매물 issue 인지 즉시 확인). */}
+              <FeedbackReportPanel card={card} />
             </div>
             {/* Wave 394.5.c: detailed 모드 시 신뢰도 분해 자동 펼침 (사용자 재닫음 가능). */}
             <details

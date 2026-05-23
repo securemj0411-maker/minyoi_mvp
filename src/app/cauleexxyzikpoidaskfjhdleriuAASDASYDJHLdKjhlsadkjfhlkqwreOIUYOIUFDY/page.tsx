@@ -9,6 +9,8 @@ import { serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import MembersTable, { type MemberRow } from "./members-table";
 // Wave launch-97: cau page 에 충전 신청 승인 panel.
 import ManualDepositPanel from "./manual-deposit-panel";
+// Wave launch-103: 사용자 피드백 검토 panel.
+import FeedbackPanel from "./feedback-panel";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -224,6 +226,8 @@ export default async function MembersPage() {
         </section>
 
         <ManualDepositPanel />
+
+        <FeedbackPanel />
 
         <MembersTable initialRows={rows} />
       </div>
