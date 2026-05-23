@@ -5423,8 +5423,7 @@ function RevealCardItem({
                   <LastVerifiedAtBadge card={card} />
                 </div>
                 {/* Wave 714i (2026-05-23 사용자 요청): 상세보기 맨 위 — 매물명 위에 unconditional 등급 chip placeholder.
-                    빈 chip 도 표시 (사용자가 "여기 박혔구나" 디버깅 가능).
-                    backfill 진행 중인 매물 → "분석중" placeholder. */}
+                    Wave 714j (2026-05-23): pid + tier 디버그 텍스트 추가 — transform path 진단용. */}
                 <div className="mb-2 flex flex-wrap items-center gap-1.5 rounded-md bg-amber-50/80 px-2 py-1.5 ring-1 ring-amber-200/60 dark:bg-amber-900/20 dark:ring-amber-700/40">
                   <span className="text-[10px] font-black uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
                     상태:
@@ -5439,7 +5438,10 @@ function RevealCardItem({
                   {card.conditionChips && card.conditionChips.length > 0 && (
                     <ConditionChipsList chips={card.conditionChips} max={6} />
                   )}
-                  {/* 디버그: tier/chips 둘 다 null 이면 매물 backfill 안 됨 (raw 텍스트 분석 진행 중). */}
+                  {/* Wave 714j 디버그: pid + 실제 tier/cluster/chips 값. 사용자가 직접 보고 어디서 떨어지는지 확인. */}
+                  <span className="ml-auto font-mono text-[9px] text-zinc-400 dark:text-zinc-500">
+                    pid={card.pid} · tier={String(card.conditionTier ?? "null")} · cluster={String(card.conditionCluster ?? "null")} · chips={card.conditionChips?.length ?? 0}
+                  </span>
                 </div>
                 {/* Wave 359+361: 득템 점수 — 제목과 같은 행 우측 작게 (당근 36.8°C 톤). */}
                 <div className="flex items-start gap-3">
