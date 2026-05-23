@@ -2130,7 +2130,12 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     modelName: "Galaxy S26",
     aliases: ["갤럭시 S26", "갤럭시S26", "Galaxy S26"],
     mustContain: [["갤럭시 s26", "갤럭시s26", "galaxy s26", "s26"]],
-    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", "gs26", ...PHONE_NOISE],
+    // Wave 751b Pareto: 545x audit — Chanel SS26 collection + 붕스 키레네 오르골 false match.
+    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", "gs26",
+      "ss26", "ss 26", "fw26", "fw 26", // Chanel/명품 시즌 코드
+      "샤넬", "chanel", "디올", "dior", "구찌", "gucci",
+      "오르골", "music box", "키레네", "붕스",
+      ...PHONE_NOISE],
     msrpKrw: 1250000,
     released: 2026,
   },
@@ -2728,7 +2733,12 @@ const CORE_TABLET_CATALOG: Sku[] = [
     modelName: "iPad mini",
     aliases: ["아이패드 미니", "아이패드미니", "iPad mini"],
     mustContain: [["아이패드", "ipad"], ["미니", "mini"]],
-    mustNotContain: ["프로", "pro", "에어", "air", ...TABLET_NOISE],
+    // Wave 751b Pareto: 333x audit — 백팩/키보드/액세서리 false match 차단.
+    mustNotContain: ["프로", "pro", "에어", "air",
+      "백팩", "backpack", "복조리백", "복조리 백", "보부상",
+      "누에르", "나일론 백",
+      "호환 블루투스", "호환 키보드", "휴대용 키보드", "블루투스 키보드",
+      ...TABLET_NOISE],
     msrpKrw: 750000,
     released: 2024,
   },
@@ -4927,6 +4937,14 @@ export const CATALOG: Sku[] = [
       "충전기만", "케이스만", "독만", "도크만",
       "부품", "고장",
       "매입", "삽니다", "구해요", "구합니다",
+      // Wave 751b (2026-05-24) Pareto: 307x spread audit — 액세서리/게임 카트리지 false match 대량.
+      "메탈걸쇠", "메탈 걸쇠", "걸쇠 교체", "헐거움",
+      "조이콘 핸드그립", "조이콘핸드그립", "조이콘 핸들", "조이콘 스트랩", "조이콘 그립",
+      "핸드그립 세트", "그립 세트",
+      // 게임 타이틀 (스위치 게임 카트리지가 콘솔로 false match)
+      "fifa", "피파", "마리오카트", "큐브 크리에이터", "친구모아", "친구 모아",
+      "젤다", "zelda", "포켓몬", "pokemon", "스플래툰", "splatoon",
+      "닌텐도 스위치 수리", "스위치 수리",
     ],
     msrpKrw: 360000,
     released: 2017,
@@ -9603,7 +9621,10 @@ export const CATALOG: Sku[] = [
     modelName: "Mizuno Alpha (1 / 2 / 3 / 엘리트)",
     aliases: ["Mizuno Alpha", "미즈노 알파", "알파 재팬", "알파 엘리트"],
     mustContain: [["mizuno", "미즈노"], ["알파", "alpha"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "모렐리아", "morelia", "살라", "sala", "모나르시다", "monarcida", "골프", "아이언"],
+    // Wave 751b Pareto: 700x audit — "(가격 제시)" 같은 placeholder bait 차단.
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "모렐리아", "morelia", "살라", "sala", "모나르시다", "monarcida", "골프", "아이언",
+      "(가격 제시)", "가격 제시", "가격제시", "(가격제시)", "가격 제안", "가격제안받", "가격 제안받",
+    ],
     msrpKrw: 180000, released: 2022,
   },
   {
