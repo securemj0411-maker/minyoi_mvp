@@ -19,11 +19,14 @@
   --rd-ink-2: #333d4b;
   --rd-ink-3: #6b7684;
   --rd-ink-4: #8b95a1;
-  --rd-em: #059669;
-  --rd-em-700: #047857;
-  --rd-em-50: #ecfdf5;
-  --rd-em-100: #d1fae5;
-  --rd-em-soft: #edf4e8;
+  /* Wave launch-92 (사용자 정정 — "우리 시그니처 파란색 톤인데 충전 페이지 왜 녹색톤?"):
+   * --rd-em 토큰 group 토스 블루로 통일. 토큰 사용처 plans/page.tsx 단 1곳 (refund 등 import X).
+   * 이름은 emerald 잔재 (--rd-em*) 유지 — 사용처 광범위 안 함, 별도 cleanup wave 에서. */
+  --rd-em: #3182f6;
+  --rd-em-700: #1c6fe8;
+  --rd-em-50: #ebf5ff;
+  --rd-em-100: #d8e8ff;
+  --rd-em-soft: #eef5ff;
   --rd-amber: #b45309;
   --rd-amber-bg: #fef7e0;
   --rd-rose: #be123c;

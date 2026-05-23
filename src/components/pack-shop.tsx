@@ -21,7 +21,7 @@ function LandingCardIcon({ type }: { type: "start" | "filter" | "dashboard" }) {
   if (type === "filter") {
     return (
       <svg viewBox="0 0 88 88" className="h-14 w-14" aria-hidden="true">
-        <rect x="12" y="16" width="64" height="56" rx="20" fill="#edf3eb" stroke="#b9c9b9" strokeWidth="3" />
+        <rect x="12" y="16" width="64" height="56" rx="20" fill="#ebf2ff" stroke="#b9cbe9" strokeWidth="3" />
         <path d="M27 32h34M27 48h34M27 64h34" stroke="#314238" strokeWidth="5" strokeLinecap="round" />
         <circle cx="43" cy="32" r="6" fill="#fffbf4" stroke="#314238" strokeWidth="3" />
         <circle cx="54" cy="48" r="6" fill="#fffbf4" stroke="#314238" strokeWidth="3" />
@@ -34,7 +34,7 @@ function LandingCardIcon({ type }: { type: "start" | "filter" | "dashboard" }) {
     return (
       <svg viewBox="0 0 88 88" className="h-14 w-14" aria-hidden="true">
         <rect x="12" y="16" width="64" height="56" rx="18" fill="#fffaf1" stroke="#d8decd" strokeWidth="3" />
-        <rect x="24" y="28" width="18" height="16" rx="6" fill="#edf3eb" stroke="#9fb49c" strokeWidth="3" />
+        <rect x="24" y="28" width="18" height="16" rx="6" fill="#ebf2ff" stroke="#9cb4e0" strokeWidth="3" />
         <rect x="46" y="28" width="18" height="16" rx="6" fill="#314238" />
         <path d="M25 57h18M49 57h14M25 64h38" stroke="#314238" strokeWidth="4" strokeLinecap="round" />
       </svg>
@@ -43,7 +43,7 @@ function LandingCardIcon({ type }: { type: "start" | "filter" | "dashboard" }) {
 
   return (
     <svg viewBox="0 0 88 88" className="h-14 w-14" aria-hidden="true">
-      <circle cx="44" cy="44" r="30" fill="#edf3eb" stroke="#b9c9b9" strokeWidth="3" />
+      <circle cx="44" cy="44" r="30" fill="#ebf2ff" stroke="#b9cbe9" strokeWidth="3" />
       <path d="M34 52c8-18 16-18 24 0" fill="none" stroke="#314238" strokeWidth="6" strokeLinecap="round" />
       <path d="M44 25v22" stroke="#314238" strokeWidth="6" strokeLinecap="round" />
       <path d="M36 35h16" stroke="#314238" strokeWidth="6" strokeLinecap="round" />
@@ -159,7 +159,7 @@ function ShowcaseCard({
           </div>
 
           <div className="mt-3 flex flex-wrap items-end gap-x-3 gap-y-2">
-            <div className="text-[40px] font-black leading-none tracking-tight text-emerald-500 sm:text-[46px]">
+            <div className="text-[40px] font-black leading-none tracking-tight text-[#3182f6] sm:text-[46px]">
               {activeItem ? `+${Math.round(activeItem.expectedProfit).toLocaleString("ko-KR")}원` : "-"}
             </div>
           </div>
@@ -264,12 +264,12 @@ export default function PackShop({ showcases, kpis }: { showcases: LandingShowca
           <div className="grid grid-cols-1 gap-6 overflow-hidden px-6 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-9 xl:grid-cols-[minmax(0,1fr)_410px] xl:px-10 xl:py-9 2xl:grid-cols-[minmax(0,1.04fr)_430px] 2xl:px-12 2xl:py-10">
             <div className="flex min-w-0 flex-col">
               <div>
-                <div className="inline-flex rounded-full border border-[#cfd9c9] bg-[#edf3eb] px-3 py-1.5 text-xs font-black text-[#4f6f58]">
+                <div className="inline-flex rounded-full border border-[#cfddf7] bg-[#ebf2ff] px-3 py-1.5 text-xs font-black text-[#3182f6]">
                   AI 검증 추천
                 </div>
                 <h1 className="mt-4 max-w-[620px] break-keep text-[34px] font-black leading-[1.07] tracking-tight text-[#223127] [text-wrap:balance] sm:text-5xl sm:leading-[1.03] lg:text-[52px] dark:text-zinc-50">
                   <span className="block">검증된 중고 추천을</span>
-                  <span className="block text-[#4f6f58] dark:text-emerald-300">먼저 봅니다</span>
+                  <span className="block text-[#3182f6] dark:text-blue-300">먼저 봅니다</span>
                 </h1>
                 <ShowcaseCard
                   activeItem={activeItem}

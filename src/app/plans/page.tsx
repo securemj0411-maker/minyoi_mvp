@@ -33,7 +33,7 @@ function ChargeCard({ plan }: { plan: PlanDefinition }) {
     <article
       className={`rounded-[16px] border p-3.5 shadow-sm sm:p-4 ${
         isFeatured
-          ? "border-[#8fb394] bg-[#edf6eb] ring-2 ring-[#cfe3ca] dark:border-emerald-800 dark:bg-emerald-950/20 dark:ring-emerald-900/60"
+          ? "border-[#a5c4f7] bg-[#ebf2ff] ring-2 ring-[#cfddf7] dark:border-blue-800 dark:bg-blue-950/20 dark:ring-blue-900/60"
           : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
       }`}
     >
@@ -58,7 +58,7 @@ function ChargeCard({ plan }: { plan: PlanDefinition }) {
             {valueCopy}
           </p>
         </div>
-        <div className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-black text-[#3182f6] ring-1 ring-[#e0d8ca] dark:bg-zinc-950/50 dark:text-emerald-200 dark:ring-zinc-800">
+        <div className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-black text-[#3182f6] ring-1 ring-[#cfddf7] dark:bg-zinc-950/50 dark:text-blue-200 dark:ring-zinc-800">
           {formatUnitPrice(plan)}
         </div>
       </div>
@@ -76,7 +76,7 @@ function ChargeCard({ plan }: { plan: PlanDefinition }) {
           href={`/billing/checkout?credits=${plan.monthlyCredits}`}
           className={`flex h-10 shrink-0 items-center justify-center rounded-xl px-3.5 text-[13px] font-black transition sm:min-w-[112px] ${
             isFeatured
-              ? "bg-[var(--rd-em)] text-white shadow-[0_10px_22px_rgba(5,150,105,0.22)] hover:bg-[var(--rd-em-700)]"
+              ? "bg-[var(--rd-em)] text-white shadow-[0_10px_22px_rgba(49,130,246,0.28)] hover:bg-[var(--rd-em-700)]"
               : "border border-[#d9cfbf] bg-white text-zinc-900 hover:bg-[#f3eadc] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-800"
           }`}
         >
@@ -116,7 +116,7 @@ export default function PlansPage() {
         <section className="mt-3 rounded-[14px] border border-zinc-200 bg-white px-3.5 py-2.5 text-[11px] leading-5 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span>크레딧은 타인 양도·재판매·현금화가 불가하며, 미사용 환불은 결제일과 사용 여부 기준으로 처리됩니다.</span>
-            <Link href="/refund-policy" className="font-black text-[var(--rd-em)] hover:text-[var(--rd-em-700)] dark:text-emerald-300">
+            <Link href="/refund-policy" className="font-black text-[var(--rd-em)] hover:text-[var(--rd-em-700)] dark:text-blue-300">
               환불정책 확인
             </Link>
           </div>
@@ -134,7 +134,7 @@ export default function PlansPage() {
           <div className="mt-3 divide-y divide-zinc-200 dark:divide-zinc-800">
             {INFO_ROWS.map((row) => (
               <div key={row.label} className="grid grid-cols-[72px_minmax(0,1fr)] gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="text-[12px] font-black text-[#4f6f58] dark:text-emerald-300">{row.label}</div>
+                <div className="text-[12px] font-black text-[#3182f6] dark:text-blue-300">{row.label}</div>
                 <div className="break-keep text-[12px] leading-5 text-zinc-600 dark:text-zinc-300">{row.value}</div>
               </div>
             ))}
