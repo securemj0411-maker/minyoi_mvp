@@ -2539,6 +2539,36 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
         </div>
       ) : (
         <ul className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          {/* Wave launch-64 (사용자 짚음 "우리 상품 가격 어디있는지 모름, 사진 작게 + 매입가 표시"):
+              비교 매물 list 최상단에 "내 매물" row — 같은 format (사진 52px + 이름 + 매입가).
+              사용자가 비교 매물 가격과 즉시 비교 가능. */}
+          {card.price > 0 ? (
+            <li className="flex items-center gap-3 bg-[#fffbef] px-3 py-3 dark:bg-amber-950/20">
+              <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 ring-2 ring-amber-300 dark:bg-zinc-800 dark:ring-amber-700">
+                {card.thumbnailUrl ? (
+                  <Image src={card.thumbnailUrl} alt="" fill sizes="52px" unoptimized className="object-cover" />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[9.5px] font-black text-white">내 매물</span>
+                  <span className="line-clamp-1 text-[12.5px] font-bold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100">
+                    {card.name || "이 상품"}
+                  </span>
+                </div>
+                <div className="mt-0.5 text-[10.5px] font-bold text-amber-700 dark:text-amber-300">
+                  매입가 기준
+                </div>
+              </div>
+              <div className="shrink-0 text-right">
+                <div className="text-[14px] font-black tabular-nums text-amber-700 dark:text-amber-300">
+                  {card.price.toLocaleString("ko-KR")}원
+                </div>
+              </div>
+            </li>
+          ) : null}
           {/* Wave 394.5.b: mode 따라 slice. simple = 6 / detailed = 12. */}
           {/* Wave 394.7.i: 4개 이상이면 처음 3개만 — 펼침 후 전체 limit. */}
           {listings.slice(0, expanded ? limit : INITIAL_VISIBLE).map((item, idx) => {
@@ -2565,10 +2595,13 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
               : isReserved
                 ? { label: "예약중", cls: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" }
                 : null;
+            // Wave launch-64: 내 매물 row 가 있으면 첫 비교 매물 도 border-t (separator).
+            const hasMyItemRow = card.price > 0;
+            const needsBorder = hasMyItemRow || idx > 0;
             return (
               <li
                 key={item.pid}
-                className={`flex items-center gap-3 px-3 py-3 ${idx === 0 ? "" : "border-t border-zinc-200 dark:border-zinc-800"}`}
+                className={`flex items-center gap-3 px-3 py-3 ${needsBorder ? "border-t border-zinc-200 dark:border-zinc-800" : ""}`}
               >
                 <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 dark:bg-zinc-800">
                   {item.thumbnailUrl ? (
