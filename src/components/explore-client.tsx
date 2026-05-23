@@ -1338,22 +1338,32 @@ export default function ExploreClient({
 
     try {
       // Wave launch-57: 존댓말 톤.
-      // Wave 732: objectType "feed" → "text" (imageUrl 필요 없음, 링크 확실히 같이 감).
-      // Wave 734 (2026-05-24): 카카오 공유 webhook 기반으로 변경 — 다이얼로그만 띄우면 보상 받던 매크로
-      //   차단. `serverCallbackArgs` 에 user_id 박아서 친구가 메시지 클릭 시 카카오가 webhook 호출.
-      //   webhook 에서 cooldown 검증 후 +1 지급. (즉시 fetch POST share-bonus 제거)
+      // Wave 732 → 737 (2026-05-24): "text" 형식이 친구한테 link 안 보내는 문제 보고됨 →
+      //   "feed" 형식 복원 + imageUrl 박음 (이미지 = public/share-card.png, 사용자 첨부 이미지).
+      // Wave 734: serverCallbackArgs 로 친구 도달 시 webhook 통과 → +3 크레딧.
+      const imageUrl = `${baseUrl}/share-card.png`;
       kakao.Share.sendDefault({
-        objectType: "text",
-        text: "지금 팔면 바로 돈 되는 중고 상품이 있어요.\nAI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요!",
-        link: {
-          mobileWebUrl: shareUrl,
-          webUrl: shareUrl,
+        objectType: "feed",
+        content: {
+          title: "지금 팔면 바로 돈 되는 중고 상품이 있어요",
+          description: "AI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요!",
+          imageUrl,
+          link: {
+            mobileWebUrl: shareUrl,
+            webUrl: shareUrl,
+          },
         },
-        buttonTitle: "바로 보러가기",
-        // Wave 734: 카카오가 webhook URL 에 이 key/value 를 query param 으로 전달.
-        //   Kakao Console "사용자 정의 콜백 (웹훅)" 에서 입력 데이터 라벨 = user_id 등록 필요.
+        buttons: [
+          {
+            title: "바로 보러가기",
+            link: {
+              mobileWebUrl: shareUrl,
+              webUrl: shareUrl,
+            },
+          },
+        ],
+        // Wave 734: 카카오가 webhook URL 에 이 key/value 를 query param 으로 전달. user_id 박혀야 보상 가능.
         serverCallbackArgs: {
-          // Wave 734: storageScope = user.id (me-dashboard-client.tsx 에서 전달). 익명은 button disabled.
           user_id: storageScope && storageScope !== "anonymous" ? storageScope : "",
         },
       });

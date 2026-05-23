@@ -78,16 +78,28 @@ export default function InviteClient() {
         window.alert("카카오 공유가 준비되지 않았어요. 잠시 후 다시 시도해주세요.");
         return;
       }
-      // Wave 732 (2026-05-24): objectType "feed" 는 imageUrl 필수 — 없으면 카카오가 카드 안 만들고
-      //   텍스트만 fallback 해서 링크 묻힘. "text" 로 변경 — 본문 + 링크 + 버튼 보장.
+      // Wave 737 (2026-05-24): "text" 형식이 친구한테 link 안 보냄 보고됨 → "feed" 복원 + imageUrl 박음.
+      const imageUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/share-card.png`;
       kakao.Share.sendDefault({
-        objectType: "text",
-        text: "득템잡이 — 시세보다 싼 중고 매물 알려드려요.\n이 링크로 가입하면 둘 다 5크레딧 받아요 🎁",
-        link: {
-          mobileWebUrl: shareUrl,
-          webUrl: shareUrl,
+        objectType: "feed",
+        content: {
+          title: "득템잡이 — 친구 초대 5크레딧",
+          description: "시세보다 싼 중고 매물 알려드려요. 이 링크로 가입하면 둘 다 5크레딧 받아요 🎁",
+          imageUrl,
+          link: {
+            mobileWebUrl: shareUrl,
+            webUrl: shareUrl,
+          },
         },
-        buttonTitle: "가입하고 5크레딧 받기",
+        buttons: [
+          {
+            title: "가입하고 5크레딧 받기",
+            link: {
+              mobileWebUrl: shareUrl,
+              webUrl: shareUrl,
+            },
+          },
+        ],
       });
     } catch (err) {
       console.error("[invite] kakao share failed", err);
