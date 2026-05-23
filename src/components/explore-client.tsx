@@ -2439,6 +2439,11 @@ export default function ExploreClient({
                     {/* Wave launch-63: 제목 = 항상 unlock. 차익/가격만 mask 유지. */}
                     {item.name}
                   </div>
+                  {/* Wave 714m (2026-05-23) 디버그: 메인 list 카드에 PoolItem 의 tier 값 직접 표시.
+                      packs/pool API 응답에 conditionTier 박혔는지 즉시 확인용. */}
+                  <div className="mt-0.5 font-mono text-[9px] text-amber-700 dark:text-amber-400">
+                    [debug] pid={item.pid} · tier={String(item.conditionTier ?? "null")} · cluster={String(item.conditionCluster ?? "null")} · chips={item.conditionChips?.length ?? 0}
+                  </div>
                   {lockedPreview && freeDetailAvailable ? (
                     <div className="mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
                       무료 상세 {freeDetailRemaining.toLocaleString("ko-KR")}회 남음
