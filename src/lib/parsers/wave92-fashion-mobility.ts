@@ -673,7 +673,65 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v23";
 // Wave 455 v17: clothing broad fallback + title-level multi-item bundle ("두개/일괄/묶음") needsReview.
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v46";
+// Wave 742 (2026-05-24): 의류 사이즈 추출 (sizeAlpha + sizeKr).
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v47";
+
+// ─── 의류 사이즈 추출 (Wave 742) ─────────────────────────────────────────
+// Alpha: XS/S/M/L/XL/XXL/XXXL/2XL/3XL/FREE
+// 정확도 위해 명시 패턴 우선 (괄호/사이즈 키워드/단독 단어 명확).
+// "M" 단독 매칭 위험 — bare "M"은 모델명에 흔함. context 필수.
+export function parseClothingSizeAlpha(text: string): string | null {
+  // 1. Explicit "사이즈/size XS|S|M|L|XL|XXL|XXXL"
+  const explicit = text.match(/(?:사이즈|size|싸이즈)\s*[:\-]?\s*(XXXL|3XL|XXL|2XL|XL|L|M|S|XS|FREE|F)\b/i);
+  if (explicit) return normalizeSizeAlpha(explicit[1]);
+  // 2. Suffix: "M사이즈/L사이즈/XL사이즈"
+  const suffix = text.match(/\b(XXXL|3XL|XXL|2XL|XL|L|M|S|XS|FREE)\s*(?:사이즈|size|싸이즈)/i);
+  if (suffix) return normalizeSizeAlpha(suffix[1]);
+  // 3. Bracket: "(M)" "[L]" "{XL}" "(XS)" — narrow context, very common Korean listing pattern
+  const bracket = text.match(/[\(\[\{]\s*(XXXL|3XL|XXL|2XL|XL|L|M|S|XS|FREE|F)\s*[\)\]\}]/i);
+  if (bracket) return normalizeSizeAlpha(bracket[1]);
+  // 4. Leading bracket size at start of title (very common): "[M] ..."
+  //   Already covered by pattern 3.
+  return null;
+}
+
+function normalizeSizeAlpha(raw: string): string {
+  const u = raw.toUpperCase();
+  if (u === "F" || u === "FREE") return "FREE";
+  if (u === "2XL") return "XXL";
+  if (u === "3XL") return "XXXL";
+  return u;
+}
+
+// 한국 호수 사이즈 (남성 양복/외투): 85, 90, 95, 100, 105, 110, 115
+// 매물 패턴: "(105)" / "105 사이즈" / "105호" / "사이즈 100"
+// 여성 호수 (44/55/66/77/88) 별도 — 모델명에 흔함이라 명시만.
+export function parseClothingSizeKr(text: string): number | null {
+  // 명시 패턴: "사이즈 X" / "X 사이즈" / "X호" / "(X)" 같이 강한 context.
+  const explicit = text.match(/(?:사이즈|size|싸이즈)\s*[:\-]?\s*(85|90|95|100|105|110|115)\b/i);
+  if (explicit) return Number(explicit[1]);
+  // Korean word boundary \b doesn't work after "호" — drop trailing \b.
+  const suffix = text.match(/\b(85|90|95|100|105|110|115)\s*(?:사이즈|호수|호|size|싸이즈)/i);
+  if (suffix) return Number(suffix[1]);
+  // 괄호: "(100)" / "[105]" — 호수 표기 흔함
+  const bracket = text.match(/[\(\[\{]\s*(85|90|95|100|105|110|115)\s*[\)\]\}]/);
+  if (bracket) return Number(bracket[1]);
+  // Slash 표기 (alpha/numeric): "M/100" / "L/105"
+  const slash = text.match(/(?:XS|S|M|L|XL|XXL)\s*\/\s*(85|90|95|100|105|110|115)/i);
+  if (slash) return Number(slash[1]);
+  return null;
+}
+
+// Waist inch (팬츠/바지/데님): 26-44
+export function parseClothingWaistInch(text: string): number | null {
+  // "28인치" / "28x30" / "32 인치" / "사이즈 32" 다음 청바지 컨텍스트
+  const inchMatch = text.match(/\b(2[6-9]|3[0-9]|4[0-4])\s*(?:인치|inch|in\b)/i);
+  if (inchMatch) return Number(inchMatch[1]);
+  // "28x30" / "32x32" — denim/팬츠 waist x inseam
+  const denimSizeMatch = text.match(/\b(2[6-9]|3[0-9]|4[0-4])\s*[xX]\s*(?:2[6-9]|3[0-9]|4[0-4])\b/);
+  if (denimSizeMatch) return Number(denimSizeMatch[1]);
+  return null;
+}
 
 function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");
@@ -1138,6 +1196,20 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     if (titleAccessoryOnly) {
       parsedJson.clothing_accessory_title_block = true;
     }
+
+    // Wave 742 (2026-05-24): 의류 사이즈 추출 (sizeAlpha/sizeKr/waistInch).
+    //   title-only 우선 (description은 검색 노출용 cross-size 키워드 섞임).
+    const sizeAlpha = parseClothingSizeAlpha(title) ?? parseClothingSizeAlpha(text);
+    const sizeKr = parseClothingSizeKr(title) ?? parseClothingSizeKr(text);
+    const waistInch = (productType === "pants" || productType === "shorts" || productType === "jeans")
+      ? (parseClothingWaistInch(title) ?? parseClothingWaistInch(text))
+      : null;
+    parsedJson.clothing_size_alpha = sizeAlpha;
+    parsedJson.clothing_size_kr = sizeKr;
+    parsedJson.clothing_size_waist_inch = waistInch;
+    if (sizeAlpha) parseConfidence += 0.05;
+    if (sizeKr) parseConfidence += 0.05;
+    if (waistInch) parseConfidence += 0.05;
     partsForKey.push(productType);
     if (productType !== "type_unknown") {
       parseConfidence += typeFromCatalog ? 0.05 : 0.1;
