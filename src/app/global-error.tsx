@@ -27,18 +27,28 @@ export default function GlobalError({
           <p style={{ marginTop: 12, fontSize: 14, color: "#5a6658", lineHeight: 1.6 }}>
             심각한 오류가 발생했어요. 페이지를 새로고침해주세요. 계속되면 잠시 후 다시 시도해주세요.
           </p>
+          {/* Wave 725 (2026-05-23): error.digest 는 운영자 추적용 anonymous hash.
+              이전엔 raw 노출 → 입문자에겐 무서운 텍스트.
+              details toggle 로 숨김 — CS 문의 시 사용자가 펼쳐서 복사 가능. */}
           {error.digest ? (
-            <p style={{ marginTop: 8, fontSize: 11, fontFamily: "monospace", color: "#9ca3af" }}>
-              오류 코드: {error.digest}
-            </p>
+            <details style={{ marginTop: 12, fontSize: 11, color: "#9ca3af", display: "inline-block", textAlign: "left" }}>
+              <summary style={{ cursor: "pointer", fontWeight: 700, textAlign: "center" }}>
+                기술 정보 (운영자 문의 시 사용)
+              </summary>
+              <p style={{ marginTop: 4, fontFamily: "monospace", color: "#9ca3af" }}>
+                {error.digest}
+              </p>
+            </details>
           ) : null}
-          <button
-            type="button"
-            onClick={reset}
-            style={{ marginTop: 24, height: 44, padding: "0 20px", borderRadius: 12, background: "#314238", color: "#f7f1e6", fontWeight: 900, fontSize: 14, border: "none", cursor: "pointer" }}
-          >
-            다시 시도
-          </button>
+          <div style={{ marginTop: 24 }}>
+            <button
+              type="button"
+              onClick={reset}
+              style={{ height: 44, padding: "0 20px", borderRadius: 12, background: "#2563eb", color: "#ffffff", fontWeight: 900, fontSize: 14, border: "none", cursor: "pointer" }}
+            >
+              다시 시도
+            </button>
+          </div>
         </div>
       </body>
     </html>

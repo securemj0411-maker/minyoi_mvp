@@ -63,6 +63,8 @@ function ChartSkeleton() {
   );
 }
 
+export type ChartState = "loading" | "available" | "empty" | "reference_only" | "error" | "no_key";
+
 export default function MarketHistoryChart({
   comparableKey,
   currentPrice,
@@ -70,16 +72,21 @@ export default function MarketHistoryChart({
   priceSource,
   referencePrice,
   lazy = false,
+  // Wave launch-83 (사용자 결정 — 데이터 부족 placeholder 미완성 인상 차단):
+  //   nullOnEmpty=true 면 데이터 부족/모델 미분류/에러 시 텍스트 안내 박스 대신 null 반환.
+  //   parent 가 onState 받아 wrapper section 자체 hide 가능.
+  //   admin-pool-browser 같은 운영자 도구에서는 텍스트 안내가 유용 (기본 false).
+  nullOnEmpty = false,
+  onState,
 }: {
   comparableKey: string | null;
   currentPrice?: number | null;
   conditionClass?: string | null;
-  // Wave 252.A real (2026-05-20): "v3_pending_rematch" 추가 — v3 clothing 매물 mixed-pool 시세 차단.
   priceSource?: "reference" | "market" | "v3_pending_rematch" | null;
   referencePrice?: number | null;
-  // 2026-05-16 (사용자 코멘트): admin pool 처럼 한 페이지에 chart 10+ 개면 rate limit (30/60s/IP) 즉시 초과.
-  // lazy=true → "시세 보기" 버튼 클릭 시만 fetch. admin-pool-browser 에서 사용.
   lazy?: boolean;
+  nullOnEmpty?: boolean;
+  onState?: (state: ChartState) => void;
 }) {
   const [data, setData] = useState<Point[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -91,9 +98,7 @@ export default function MarketHistoryChart({
     let cancelled = false;
     setLoading(true);
     setError(null);
-    // 2026-05-16 (사용자 코멘트 id 105): cc 옵션으로 condition_class 매칭 데이터만 fetch.
-    // Wave 227: 다나와 reference 기준인 미개봉 매물은 그래프 fallback 차단.
-    // 숫자는 다나와인데 그래프는 normal/clean 번개 median으로 보이는 UX 괴리를 막는다.
+    onState?.("loading");
     const isReferenceChart = priceSource === "reference";
     const chartConditionClass = isReferenceChart ? "unopened" : conditionClass;
     const ccQuery = chartConditionClass ? `&cc=${encodeURIComponent(chartConditionClass)}` : "";
@@ -112,9 +117,26 @@ export default function MarketHistoryChart({
     return () => {
       cancelled = true;
     };
-  }, [comparableKey, conditionClass, opened, priceSource]);
+  }, [comparableKey, conditionClass, opened, priceSource, onState]);
+
+  // Wave launch-83: data 상태 → parent 에 알림.
+  //   data null = 아직 fetch 안 됨 (loading 별도 처리).
+  //   data 빈 또는 1개 = empty (그래프 불가) — reference 매물은 "reference_only" 안내 가능.
+  //   data 2+ = available.
+  useEffect(() => {
+    if (!comparableKey) { onState?.("no_key"); return; }
+    if (error) { onState?.("error"); return; }
+    if (data == null) return; // loading
+    if (data.length >= 2) { onState?.("available"); return; }
+    if (priceSource === "reference" && referencePrice != null && referencePrice > 0) {
+      onState?.("reference_only");
+      return;
+    }
+    onState?.("empty");
+  }, [data, error, comparableKey, priceSource, referencePrice, onState]);
 
   if (!comparableKey) {
+    if (nullOnEmpty) return null;
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">모델 분류 미완료 — 시세 그래프 없음</div>;
   }
   if (lazy && !opened) {
@@ -132,7 +154,7 @@ export default function MarketHistoryChart({
     return <ChartSkeleton />;
   }
   if (error) {
-    // 2026-05-16: rate limit 429 친절한 메시지로 변환. 외부 시스템 노출 차단.
+    if (nullOnEmpty) return null;
     const friendly = error.includes("429") ? "잠시 후 다시 시도해주세요 (요청 너무 빠름)" : "시세 history 불러오기 실패";
     return <div className="rounded-md bg-red-50 px-3 py-2 text-[11px] text-red-700">{friendly}</div>;
   }
@@ -144,6 +166,7 @@ export default function MarketHistoryChart({
         </div>
       );
     }
+    if (nullOnEmpty) return null;
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">시세 누적 중 — 아직 history 없어요 (매물 처음 등록)</div>;
   }
   // 2026-05-17 fix: 임계값 3 → 2 낮춤. 시스템 fresh start (5/16) 라 history 누적
@@ -157,6 +180,7 @@ export default function MarketHistoryChart({
         </div>
       );
     }
+    if (nullOnEmpty) return null;
     return (
       <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
         시세 누적 1일째 — 내일부터 추이 그래프 자동 표시
@@ -188,6 +212,7 @@ export default function MarketHistoryChart({
   if (showReferencePrice) allPrices.push(referencePrice as number);
 
   if (allPrices.length === 0) {
+    if (nullOnEmpty) return null;
     return <div className="rounded-md bg-zinc-50 px-3 py-2 text-[11px] text-zinc-500">표본 부족 (가격 데이터 없음)</div>;
   }
 

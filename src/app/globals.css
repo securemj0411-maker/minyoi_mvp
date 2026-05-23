@@ -34,10 +34,13 @@
   --background: #09090b;
   --foreground: #f4f4f5;
   /* Wave 70: brand tokens dark variants. 89곳 var(--brand-*) 사용처가
-   * dark에서도 light green 그대로였던 문제. */
-  --brand-accent: #7a9580;
-  --brand-accent-strong: #d4ddd6;
-  --brand-accent-soft: #1f2a23;
+   * dark에서도 light green 그대로였던 문제.
+   * Wave 719 (2026-05-23): light tone이 토스 블루(#3182f6)로 통일됐는데
+   * dark variant가 여전히 회색-녹색이라 다크모드에서 nav/CTA 톤 깨짐.
+   * 토스 블루 dark variant로 교체 — blue-500/400/900 (Tailwind). */
+  --brand-accent: #3b82f6;
+  --brand-accent-strong: #60a5fa;
+  --brand-accent-soft: #1e3a8a;
   --brand-cream: #18181b;
 }
 
@@ -71,6 +74,11 @@ body {
 @media (hover: hover) and (pointer: fine) {
   html {
     scrollbar-gutter: stable;
+    /* Wave launch-85 (사용자 정정): PC 125% 확대가 예쁘다 → desktop 만 추가 zoom 110%.
+     *   mobile (touch 단말) 은 이미 충분히 크니 적용 X.
+     *   `zoom` 은 Chrome/Edge/Safari 표준 + Firefox 127+ 지원. layout reflow 영향 적음.
+     *   사용자가 별로면 이 줄만 제거하면 rollback. */
+    zoom: 1.10;
   }
 }
 

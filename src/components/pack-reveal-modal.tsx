@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { createPortal } from "react-dom";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import MarketHistoryChart from "@/components/market-history-chart";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import MarketHistoryChart, { type ChartState as MarketChartState } from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { ConditionChip, ConditionPhotoBadge, ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
@@ -193,6 +193,9 @@ const MAX_LOCAL_SAVED_REVEALS = 500;
 const BEGINNER_GUIDE_HANDLED_PIDS_STORAGE_KEY = "minyoi_reveal_beginner_guide_handled_pids_v1";
 const BEGINNER_GUIDE_SEEN_COUNT_STORAGE_KEY = "minyoi_reveal_beginner_guide_seen_count_v1";
 const BEGINNER_GUIDE_SKIP_COUNT_STORAGE_KEY = "minyoi_reveal_beginner_guide_skip_count_v1";
+// Wave launch-76: "앞으로 상세 리포트를 기본으로 보기" 선택 시 영구 저장 키.
+// 상품 클릭마다 쉬운모드로 회귀하던 lapse 차단 — shouldAutoShowBeginnerGuide에서 detailed 우선.
+const MODAL_MODE_STORAGE_KEY = "minyoi_modal_mode";
 // Wave 394.7.y (사용자 피드백): 자동 표시 한도 ↑ + skip 임계 ↑. 신규/일반인 더 자주 노출.
 // 3→5: 다른 카드 5장 볼 때까지 자동 표시. 4→6: 6번 skip해야 hide (이전 4번은 너무 빠름).
 const BEGINNER_GUIDE_AUTO_SHOW_LIMIT = 5;
@@ -288,6 +291,9 @@ function shouldAutoShowBeginnerGuide(pid: number | null) {
   if (typeof window === "undefined") return false;
   if (pid == null || !Number.isFinite(pid)) return false;
   try {
+    // Wave launch-76: 사용자가 "앞으로 상세 리포트를 기본으로 보기"를 누른 경우 — 영구적으로 detailed.
+    // 이전엔 매 상품마다 minyoi_modal_mode 무시하고 쉬운모드 부활 → 사용자가 매번 다시 skip 눌러야 했음.
+    if (window.localStorage.getItem(MODAL_MODE_STORAGE_KEY) === "detailed") return false;
     if (readBeginnerGuideHandledPidSet().has(pid)) return false;
     if (readBeginnerGuideCounter(BEGINNER_GUIDE_SKIP_COUNT_STORAGE_KEY) >= BEGINNER_GUIDE_AUTO_HIDE_SKIP_THRESHOLD) {
       return false;
@@ -1381,15 +1387,96 @@ function marketSampleLabel(card: RevealCard) {
   return "표본 부족";
 }
 
+// Wave launch-78 (사용자 정정): 신발/의류 5-tier(S/A/B/C/D)는 옛 conditionClass와 별개 axis (Wave 714).
+// 헤더 chip은 tier 보여주는데 비교 패널은 옛 conditionClass "clean"→"A급" 박혀 있어서 mismatch.
+// → 신발/의류 카테고리면 tier 기반 라벨 우선, 아니면 기존 conditionClass.
+function isShoeOrClothingCard(card: RevealCard): boolean {
+  const ck = card.marketBasis?.comparableKey ?? null;
+  return Boolean(ck && (ck.startsWith("shoe|") || ck.startsWith("clothing|")));
+}
+
+function tierGroupLabel(tier: string | null | undefined): string | null {
+  if (!tier) return null;
+  if (tier === "S") return "S급 상품";
+  if (tier === "A") return "A급 상품";
+  if (tier === "B") return "B급 상품";
+  if (tier === "C") return "C급 상품";
+  if (tier === "D") return "D급 상품";
+  if (tier === "UNKNOWN") return "정보 부족 상품";
+  return null;
+}
+
+function tierShortLabel(tier: string | null | undefined): string | null {
+  if (!tier) return null;
+  if (tier === "S") return "S급";
+  if (tier === "A") return "A급";
+  if (tier === "B") return "B급";
+  if (tier === "C") return "C급";
+  if (tier === "D") return "D급";
+  if (tier === "UNKNOWN") return "정보 부족";
+  return null;
+}
+
+// Wave launch-81 (사용자 정정 — 3 화면 비교 매물 통일):
+//   운영자풀(market-source-debug.tsx) 패턴 — `같은 등급(X급) > 인접 등급(±1) > 그 외 > 등급 정보 없음`
+//   을 상세페이지/쉬운모드에도 적용. 신발/의류 대상 (옛 conditionClass 매물은 grouping 적용 X).
+const TIER_ORDER_FOR_DISTANCE = ["S", "A", "B", "C", "D"] as const;
+function computeTierDistance(ourTier: string | null | undefined, sampleTier: string | null | undefined): number {
+  if (!ourTier || !sampleTier) return 99;
+  const ourIdx = TIER_ORDER_FOR_DISTANCE.indexOf(ourTier as typeof TIER_ORDER_FOR_DISTANCE[number]);
+  const sampleIdx = TIER_ORDER_FOR_DISTANCE.indexOf(sampleTier as typeof TIER_ORDER_FOR_DISTANCE[number]);
+  if (ourIdx < 0 || sampleIdx < 0) return 99;
+  return Math.abs(ourIdx - sampleIdx);
+}
+function tierGroupHeading(ourTier: string | null | undefined, distance: number): string {
+  if (!ourTier) return "";
+  if (distance === 0) return `같은 등급 (${ourTier}급)`;
+  if (distance === 1) return "인접 등급 (±1)";
+  if (distance === 99) return "등급 정보 없음";
+  return "그 외 등급";
+}
+// Wave launch-81: 비교 매물 list 를 tier distance group 으로 묶고 같은 group 안에서 가격 오름차순.
+function groupListingsByTierDistance<T extends { conditionTier?: string | null; price: number }>(
+  ourTier: string | null | undefined,
+  listings: T[],
+): Array<{ distance: number; heading: string; items: T[] }> {
+  if (!ourTier) {
+    return [{ distance: 0, heading: "", items: [...listings] }];
+  }
+  const buckets = new Map<number, T[]>();
+  for (const item of listings) {
+    const d = computeTierDistance(ourTier, item.conditionTier);
+    const arr = buckets.get(d) ?? [];
+    arr.push(item);
+    buckets.set(d, arr);
+  }
+  const orderedDistances = [...buckets.keys()].sort((a, b) => a - b);
+  return orderedDistances.map((d) => ({
+    distance: d,
+    heading: tierGroupHeading(ourTier, d),
+    items: (buckets.get(d) ?? []).sort((a, b) => a.price - b.price),
+  }));
+}
+
 function marketConditionLabel(card: RevealCard) {
   const market = card.marketBasis;
   if (market?.priceSource === "reference") return "미개봉/새상품";
+  // Wave launch-78: 신발/의류는 tier 우선.
+  if (isShoeOrClothingCard(card)) {
+    const tierLabel = tierShortLabel(card.conditionTier);
+    if (tierLabel) return tierLabel;
+  }
   return market?.conditionLabel ?? "같은 상태";
 }
 
 function conditionComparisonGroupLabel(card: RevealCard) {
   const market = card.marketBasis;
   if (market?.priceSource === "reference") return "미개봉품";
+  // Wave launch-78: 신발/의류는 5-tier 우선 — 옛 conditionClass "clean"이 같이 박혀 있어도 무시.
+  if (isShoeOrClothingCard(card)) {
+    const tierLabel = tierGroupLabel(card.conditionTier);
+    if (tierLabel) return tierLabel;
+  }
   const conditionClass = market?.conditionClass ?? null;
   if (conditionClass === "unopened") return "미개봉품";
   if (conditionClass === "mint") return "S급 상품";
@@ -1404,6 +1491,11 @@ function conditionComparisonGroupLabel(card: RevealCard) {
 function conditionProductLabel(card: RevealCard) {
   const market = card.marketBasis;
   if (market?.priceSource === "reference") return "미개봉품";
+  // Wave launch-78: 신발/의류 tier 우선.
+  if (isShoeOrClothingCard(card)) {
+    const tierLabel = tierGroupLabel(card.conditionTier);
+    if (tierLabel) return tierLabel;
+  }
   const conditionClass = market?.conditionClass ?? null;
   if (conditionClass === "unopened") return "미개봉품";
   if (conditionClass === "mint") return "S급 상품";
@@ -2462,6 +2554,9 @@ type ComparableListing = {
   marketplaceLabel?: string | null;
   listingUrl?: string | null;
   bunjangUrl: string;
+  // Wave launch-78: 신발/의류는 비교 매물 각자 tier 표시 (옛 conditionClass 일괄 "A급" 표시 차단).
+  // API(/api/listings/[pid]/market-source) 가 이미 부여하고 있음.
+  conditionTier?: string | null;
 };
 
 function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; mode?: "simple" | "detailed" }) {
@@ -2510,15 +2605,21 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
 
   if (!ck) return null;
 
-  const ccLabel =
-    cc === "unopened" ? "미개봉"
-    : cc === "mint" ? "S급"
-    : cc === "clean" ? "A급"
-    : cc === "worn" ? "사용감 있는"
-    : cc === "flawed" ? "하자 있는"
-    : cc === "low_batt" ? "배터리 약한"
-    : cc === "normal" ? "비슷한 상태"
-    : null;
+  // Wave launch-78: 신발/의류 tier 우선 — 옛 conditionClass "clean"→"A급" mismatch 차단.
+  const ccLabel = (() => {
+    if (isShoeOrClothingCard(card)) {
+      const tierLabel = tierShortLabel(card.conditionTier);
+      if (tierLabel) return tierLabel;
+    }
+    return cc === "unopened" ? "미개봉"
+      : cc === "mint" ? "S급"
+      : cc === "clean" ? "A급"
+      : cc === "worn" ? "사용감 있는"
+      : cc === "flawed" ? "하자 있는"
+      : cc === "low_batt" ? "배터리 약한"
+      : cc === "normal" ? "비슷한 상태"
+      : null;
+  })();
 
   const totalListings = listings?.length ?? 0;
   return (
@@ -2594,106 +2695,115 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
               </div>
             </li>
           ) : null}
-          {/* Wave 394.5.b: mode 따라 slice. simple = 6 / detailed = 12. */}
-          {/* Wave 394.7.i: 4개 이상이면 처음 3개만 — 펼침 후 전체 limit. */}
-          {listings.slice(0, expanded ? limit : INITIAL_VISIBLE).map((item, idx) => {
-            const itemPrice = item.price > 0 ? item.price : 0;
-            const priceDiff = card.price && itemPrice ? itemPrice - card.price : 0;
-            const diffPct = card.price && itemPrice ? Math.round((priceDiff / card.price) * 100) : 0;
-            const isSimilar = Math.abs(diffPct) <= 2;
-            const isMoreExpensive = !isSimilar && priceDiff > 0;
-
-            const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
-            const isReserved = item.saleStatus === "reserved" || item.saleStatus === "RESERVED" || item.saleStatus === "예약중";
-            const evidenceType = isSold ? "판매완료" : isReserved ? "예약중" : "판매중";
-            const seenLabel = seenAgoLabel(item.lastSeenAt);
-            const relationLabel = mode === "detailed"
-              ? idx === 0
-                ? "동일 기준"
-                : idx <= 2
-                  ? "상태 유사"
-                  : "참고 매물"
-              : null;
-
-            const statusBadge = isSold
-              ? { label: "판매완료", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200" }
-              : isReserved
-                ? { label: "예약중", cls: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" }
-                : null;
-            // Wave launch-64: 내 매물 row 가 있으면 첫 비교 매물 도 border-t (separator).
+          {/* Wave launch-81 (사용자 정정 — 운영자풀 패턴 통일):
+              `같은 등급(X급) > 인접 등급(±1) > 그 외 > 등급 정보 없음` group section + 각 매물 자기 tier chip.
+              relationLabel ("동일 기준/상태 유사/참고 매물") 은 grouping 과 의미 중복 → 제거.
+              신발/의류(ourTier 존재) 만 grouping. 옛 conditionClass 매물은 flat. */}
+          {(() => {
+            const visibleSlice = listings.slice(0, expanded ? limit : INITIAL_VISIBLE);
+            const ourTier = isShoeOrClothingCard(card) ? (card.conditionTier ?? null) : null;
+            const groups = groupListingsByTierDistance(ourTier, visibleSlice);
             const hasMyItemRow = card.price > 0;
-            const needsBorder = hasMyItemRow || idx > 0;
-            return (
-              <li
-                key={item.pid}
-                className={`flex items-center gap-3 px-3 py-3 ${needsBorder ? "border-t border-zinc-200 dark:border-zinc-800" : ""}`}
-              >
-                <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 dark:bg-zinc-800">
-                  {item.thumbnailUrl ? (
-                    <Image src={item.thumbnailUrl} alt="" fill sizes="52px" unoptimized className="object-cover" />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="line-clamp-2 text-[12.5px] font-bold leading-tight tracking-tight text-zinc-700 dark:text-zinc-300">
-                    {item.name || "이름 없음"}
-                  </div>
-                  {mode === "detailed" ? (
-                    <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                      {relationLabel ? (
-                        <span className="rounded-full bg-blue-50 px-1.5 py-0.5 text-[9.5px] font-black text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-900/50">
-                          {relationLabel}
-                        </span>
-                      ) : null}
-                      <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                        {evidenceType}
-                      </span>
-                      {ccLabel ? (
-                        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                          {ccLabel}
-                        </span>
-                      ) : null}
-                      {seenLabel ? (
-                        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                          {seenLabel}
-                        </span>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-                <div className="shrink-0 text-right">
-                  {statusBadge ? (
-                    <div className="mb-0.5">
-                      <span className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold ${statusBadge.cls}`}>
-                        {statusBadge.label}
-                      </span>
-                    </div>
-                  ) : null}
-                  <div className="text-[14px] font-black tabular-nums tracking-tight text-zinc-900 dark:text-zinc-100">
-                    {krw(itemPrice)}
-                  </div>
-                  {!isSimilar ? (
-                    <div className={`mt-px text-[11px] font-extrabold tabular-nums ${isMoreExpensive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-                      {isMoreExpensive ? `+${diffPct}%` : `${diffPct}%`}
-                    </div>
-                  ) : (
-                    <div className="mt-px text-[10px] font-medium text-zinc-400">비슷</div>
-                  )}
-                  {mode === "detailed" ? (
-                    <a
-                      href={item.listingUrl || item.bunjangUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-1 inline-flex rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-black text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            let overallIdx = 0;
+            return groups.map((group) => (
+              <Fragment key={`group-${group.distance}`}>
+                {ourTier && group.heading ? (
+                  <li className="border-t border-zinc-200 bg-[#f8faf7] px-3 py-1.5 text-[10.5px] font-black uppercase tracking-wide text-[#7b8378] dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-400">
+                    {group.heading} · {group.items.length}개
+                  </li>
+                ) : null}
+                {group.items.map((item) => {
+                  const itemPrice = item.price > 0 ? item.price : 0;
+                  const priceDiff = card.price && itemPrice ? itemPrice - card.price : 0;
+                  const diffPct = card.price && itemPrice ? Math.round((priceDiff / card.price) * 100) : 0;
+                  const isSimilar = Math.abs(diffPct) <= 2;
+                  const isMoreExpensive = !isSimilar && priceDiff > 0;
+                  const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
+                  const isReserved = item.saleStatus === "reserved" || item.saleStatus === "RESERVED" || item.saleStatus === "예약중";
+                  const evidenceType = isSold ? "판매완료" : isReserved ? "예약중" : "판매중";
+                  const seenLabel = seenAgoLabel(item.lastSeenAt);
+                  const statusBadge = isSold
+                    ? { label: "판매완료", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200" }
+                    : isReserved
+                      ? { label: "예약중", cls: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" }
+                      : null;
+                  const needsBorder = hasMyItemRow || overallIdx > 0;
+                  overallIdx += 1;
+                  const itemTierLabel = ourTier ? (tierShortLabel(item.conditionTier) ?? ccLabel) : ccLabel;
+                  return (
+                    <li
+                      key={item.pid}
+                      className={`flex items-center gap-3 px-3 py-3 ${needsBorder && !group.heading ? "border-t border-zinc-200 dark:border-zinc-800" : ""}`}
                     >
-                      원문 보기
-                    </a>
-                  ) : null}
-                </div>
-              </li>
-            );
-          })}
+                      <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 dark:bg-zinc-800">
+                        {item.thumbnailUrl ? (
+                          <Image src={item.thumbnailUrl} alt="" fill sizes="52px" unoptimized className="object-cover" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="line-clamp-2 text-[12.5px] font-bold leading-tight tracking-tight text-zinc-700 dark:text-zinc-300">
+                          {item.name || "이름 없음"}
+                        </div>
+                        {mode === "detailed" ? (
+                          <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                            <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                              {evidenceType}
+                            </span>
+                            {itemTierLabel ? (
+                              <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                                {itemTierLabel}
+                              </span>
+                            ) : null}
+                            {item.marketplaceLabel ? (
+                              <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                                {item.marketplaceLabel}
+                              </span>
+                            ) : null}
+                            {seenLabel ? (
+                              <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                                {seenLabel}
+                              </span>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="shrink-0 text-right">
+                        {statusBadge ? (
+                          <div className="mb-0.5">
+                            <span className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold ${statusBadge.cls}`}>
+                              {statusBadge.label}
+                            </span>
+                          </div>
+                        ) : null}
+                        <div className="text-[14px] font-black tabular-nums tracking-tight text-zinc-900 dark:text-zinc-100">
+                          {krw(itemPrice)}
+                        </div>
+                        {!isSimilar ? (
+                          <div className={`mt-px text-[11px] font-extrabold tabular-nums ${isMoreExpensive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                            {isMoreExpensive ? `+${diffPct}%` : `${diffPct}%`}
+                          </div>
+                        ) : (
+                          <div className="mt-px text-[10px] font-medium text-zinc-400">비슷</div>
+                        )}
+                        {mode === "detailed" ? (
+                          <a
+                            href={item.listingUrl || item.bunjangUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-1 inline-flex rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-black text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                          >
+                            원문 보기
+                          </a>
+                        ) : null}
+                      </div>
+                    </li>
+                  );
+                })}
+              </Fragment>
+            ));
+          })()}
           {/* 펼침 footer — handoff: 카드 바닥 안쪽에 line divider + 중앙 텍스트 버튼 */}
           {totalListings > INITIAL_VISIBLE ? (
             <li className="border-t border-zinc-200 text-center dark:border-zinc-800">
@@ -2742,6 +2852,13 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   // 4 타일 → 3 타일 (오늘 물량 / 보통 N일 안에 팔림 / 거래 안전).
   const activityIconClass = `mt-1 h-5 w-5 ${upperFoldTileClass(activity.tone).value}`;
   const speedIconClass = `mt-1 h-5 w-5 ${upperFoldTileClass(speedTone).value}`;
+  // Wave launch-84 (사용자 정정 — MVP audit): 표본 부족 타일 자체 제외 (일관성).
+  //   - speed: speed.isFallback 면 "거래 기록 표본 부족" boilerplate → hide
+  //   - activity: value === "데이터 부족" (demandLevel & supplyLevel 모두 null) → hide
+  //   사용자 짚음: "수요공급도 없으면 시세 안나오는거처럼? 평점만 나오게 해야되는거 아님?"
+  //   2 타일 다 hide 되면 거래 안전 (셀러 평점) 만 단독 표시. grid layout 동적 적응.
+  const activityTileAvailable = activity.value !== "데이터 부족";
+  const speedTileAvailable = !speed.isFallback || VELOCITY_UI_TEST_ENABLED;
   const tiles: Array<{
     key: string;
     label: string;
@@ -2749,55 +2866,47 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
     sub: string;
     tone: UpperFoldTileTone;
     icon: React.ReactNode;
-  }> = [
-    {
+  }> = [];
+  if (activityTileAvailable) {
+    tiles.push({
       key: "activity",
       label: activity.label,
       value: activity.value,
       sub: activity.sub,
       tone: activity.tone,
       icon: renderActivityIcon(activity.value, activityIconClass),
-    },
-    {
+    });
+  }
+  if (speedTileAvailable) {
+    tiles.push({
       key: "speed",
       label: "팔리는 속도",
-      // 2026-05-19 P0: 폴백 운영 게이트 OFF면 value/sub 정직하게.
-      // Wave launch-26 (audit UX MEDIUM): "수집 중" / "회전 데이터 수집 중" 카피 정직화.
-      // 사용자 메모리 룰 — 진행감 카피 (수집 중) 가 실제로는 표본 부족이라 frustrate.
-      // 사용자 짚음 (Wave 394.7.ab): "수집 중" → "표본 부족" 정직 표시 동일 적용.
-      value: speed.isFallback && !VELOCITY_UI_TEST_ENABLED
-        ? "표본 부족"
-        : (speed.isFast ? "빠름" : speed.isSlow ? "느림" : "보통"),
-      sub: speed.isFallback
-        ? (VELOCITY_UI_TEST_ENABLED
-            ? `약 ${speed.label} · 표본 부족 (UI 테스트 표시)`
-            : "거래 기록 표본 부족")
+      value: speed.isFast ? "빠름" : speed.isSlow ? "느림" : "보통",
+      sub: VELOCITY_UI_TEST_ENABLED && speed.isFallback
+        ? `약 ${speed.label} · 표본 부족 (UI 테스트 표시)`
         : `약 ${speed.label} · 최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
       tone: speedTone,
       icon: renderSpeedIcon(speed, speedIconClass),
-    },
-  ];
+    });
+  }
   const safetyTone = upperFoldTileClass(safety.tone);
   // Wave 334: 평가별 아이콘 — renderSafetyIcon이 JSX 반환 (컴포넌트 새로 만들지 않음).
   const safetyIconNode = renderSafetyIcon(safety.tone, safety.value, `mt-1 h-5 w-5 ${safetyTone.value}`);
   // - dot 크기 통일 (h-1.5 w-1.5) — ShieldIcon 대신 dot로 거래 안전도 통일
   // - sub line-clamp-2 + 고정 높이 (정렬 어긋남 방지)
   // - 라벨 한 줄 고정
-  // Wave 394.7.v (handoff MarketStats): 💡 hint box 위에 추가. 셀러 매입가가 비교 매물 대비 낮을 때 강조.
-  const median = card.marketBasis?.medianPrice ?? 0;
-  const buyerCost = card.price;
-  const isBelowMedian = median > 0 && buyerCost > 0 && buyerCost < median * 0.95;
-  const hint = isBelowMedian
-    ? "비슷한 상태의 매물 중에서도 셀러가 낮게 등록한 것 같아요"
-    : "비슷한 상태의 매물끼리만 비교한 결과예요";
+  // Wave launch-84 (사용자 정정 — MVP audit): 💡 hint box 제거.
+  //   "비슷한 상태의 매물끼리만 비교한 결과예요" 는 ComparableListingsPanel 헤더 ("X급 매물끼리만") 와 중복.
+  //   "셀러가 낮게 등록" 은 Profit 카드 chip ("+27%") 으로 이미 명시.
+  // Wave launch-84b: 표시되는 타일 수에 따라 grid cols 동적. safety + tiles 합산.
+  //   3개 (activity + speed + safety) → grid-cols-3
+  //   2개 (activity 또는 speed + safety) → grid-cols-2
+  //   1개 (safety 단독) → grid-cols-1
+  const cellCount = tiles.length + 1; // +1 for safety
+  const gridColsClass = cellCount === 3 ? "grid-cols-3" : cellCount === 2 ? "grid-cols-2" : "grid-cols-1";
   return (
     <div className="mt-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
-      {/* handoff: bg em-50 + 💡 + bold 11.5px text */}
-      <div className="mx-3 mt-3 flex items-center gap-2 rounded-[10px] bg-emerald-50 px-2.5 py-2 dark:bg-emerald-950/30">
-        <span className="text-[14px]" aria-hidden="true">💡</span>
-        <span className="text-[11.5px] font-bold leading-tight text-emerald-800 dark:text-emerald-200">{hint}</span>
-      </div>
-      <div className="mt-3 grid grid-cols-3 divide-x divide-zinc-200 dark:divide-zinc-800">
+      <div className={`mt-3 grid ${gridColsClass} divide-x divide-zinc-200 dark:divide-zinc-800`}>
         {tiles.map((tile) => {
           const tone = upperFoldTileClass(tile.tone);
           return (
@@ -2844,11 +2953,8 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
 function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard; className?: string }) {
   const [open, setOpen] = useState(false);
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
-  const market = card.marketBasis;
+  // Wave launch-84: market/marketSample/soldSample/condition 사용처 (계산 기준 details + footer chip) 제거됨.
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
-  const marketSample = market?.sampleCount ?? 0;
-  const soldSample = market?.soldSampleCount ?? 0;
-  const condition = marketConditionLabel(card);
   const goodSignals = recommendationGoodSignals(card);
   const watchSignals = recommendationWatchSignals(card);
   const featureCards = recommendationFeatureCards(card);
@@ -2983,44 +3089,10 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
                   </div>
                 </div>
               </div>
-              <details className="mt-2 rounded-xl border border-white/80 bg-white/75 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
-                <summary className="cursor-pointer text-[11px] font-black text-[#4f6a52] dark:text-emerald-200">
-                  계산 기준 보기
-                </summary>
-                <div className="mt-2 grid gap-2 text-[11px] font-semibold leading-5 text-[#647064] dark:text-zinc-400 sm:grid-cols-2">
-                  <div>
-                    <b className="text-zinc-950 dark:text-zinc-100">비교군</b>
-                    <br />
-                    {market?.label ? `${market.label} · ${condition} 기준으로 비교했어요.` : "모델 분류가 약하면 추천 강도를 낮춰요."}
-                  </div>
-                  <div>
-                    <b className="text-zinc-950 dark:text-zinc-100">비용/상태</b>
-                    <br />
-                    판매수수료, 재배송비, 안전버퍼를 차감하고 상품 보기 전후로 판매완료 여부를 다시 봐요.
-                  </div>
-                  <div className="sm:col-span-2">
-                    {marketBasisPlainSentence(card)}
-                  </div>
-                </div>
-              </details>
-              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#697768] dark:text-zinc-400">
-                <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
-                  {marketSample > 0 ? `비슷한 매물 ${marketSample.toLocaleString("ko-KR")}건` : "비슷한 매물 부족"}
-                </span>
-                <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
-                  {soldSample > 0 ? `최근 거래 ${soldSample.toLocaleString("ko-KR")}건` : "거래 데이터 누적 중"}
-                </span>
-                {/* 2026-05-20 P0-Upload: 셀러 등록 시점 우선 (있으면). 검증 시점은 sub로 강등. */}
-                {uploadAgoLabel(card.firstSeenAt) ? (
-                  <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60" title={`데이터 ${freshLabel(card.freshSeconds)}`}>
-                    {uploadAgoLabel(card.firstSeenAt)}
-                  </span>
-                ) : (
-                  <span className="rounded-full bg-white/80 px-2 py-0.5 dark:bg-zinc-900/60">
-                    {freshLabel(card.freshSeconds)}
-                  </span>
-                )}
-              </div>
+              {/* Wave launch-84 (사용자 정정 — MVP audit): 모달 내부 중복 제거.
+                  - "계산 기준 보기" details → CostAssurancePanel 과 100% 중복 (수익 계산 근거 보기 버튼이 같은 데로 scroll)
+                  - footer "비슷한 매물 N건 · 최근 거래 N건 · N시간 전" → Profit 카드 eyebrow "{age} · 비교 N개" 와 중복
+                  좋은 점/확인할 점 + featureCards 만 keep — 모달 진입 가치 있음. */}
             </div>
           </div>
           <style jsx global>{`
@@ -3043,6 +3115,38 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
         portalRoot,
       ) : null}
     </>
+  );
+}
+
+// Wave launch-83 (사용자 결정): 데이터 부족 시 "수집 중" placeholder 보이지 않게.
+//   MarketHistoryChart 가 onState 로 data 상태 알림 → "available" / "reference_only" 외엔 섹션 자체 hide.
+//   첫 mount default = "loading" — fetch 동안엔 wrapper + skeleton 표시. 빈 상태 확인되면 wrapper 사라짐.
+function DetailMarketGraphSection({ card }: { card: RevealCard }) {
+  const [chartState, setChartState] = useState<MarketChartState>("loading");
+  // 데이터 충분 / reference 매물 안내만 — 그 외 (empty / error / no_key) 는 wrapper 전체 hide.
+  const showWrapper = chartState === "loading" || chartState === "available" || chartState === "reference_only";
+  if (!showWrapper) return null;
+  return (
+    <div className="mt-3 space-y-2" data-detail-market-graph-before-comparables>
+      {/* Wave launch-84 (사용자 정정 — MVP audit): "최신 수집 기준" chip 제거 —
+          Profit 카드 eyebrow "{age} · 비교 N개" 와 중복 meta. h3 만 깔끔하게 유지. */}
+      <h3 className="m-0 text-[16px] font-extrabold tracking-tight text-[#1a2620] dark:text-zinc-100">
+        시세 그래프 · 시장 분석
+      </h3>
+      <div className="overflow-hidden rounded-2xl border border-[#ece3d2] bg-white p-3 space-y-2 dark:border-zinc-800 dark:bg-zinc-900">
+        <MarketHistoryChart
+          comparableKey={card.marketBasis?.comparableKey ?? null}
+          currentPrice={card.price}
+          conditionClass={card.marketBasis?.conditionClass ?? null}
+          priceSource={card.marketBasis?.priceSource ?? null}
+          referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
+          nullOnEmpty
+          onState={setChartState}
+        />
+        <MarketGraphTrustLine card={card} />
+        <SkuListingFlowMini card={card} />
+      </div>
+    </div>
   );
 }
 
@@ -4594,15 +4698,21 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
   const cc = card.marketBasis?.conditionClass ?? null;
   const INITIAL_VISIBLE = 4;
   const EXPANDED_VISIBLE = 8;
-  const ccLabel =
-    cc === "unopened" ? "미개봉"
-    : cc === "mint" ? "S급"
-    : cc === "clean" ? "A급"
-    : cc === "worn" ? "사용감 있는"
-    : cc === "flawed" ? "하자 있는"
-    : cc === "low_batt" ? "배터리 약한"
-    : cc === "normal" ? "비슷한 상태"
-    : "비슷한 상태";
+  // Wave launch-78 + launch-81: 신발/의류는 tier 우선, 아니면 옛 conditionClass.
+  const ccLabel = (() => {
+    if (isShoeOrClothingCard(card)) {
+      const tierLabel = tierShortLabel(card.conditionTier);
+      if (tierLabel) return tierLabel;
+    }
+    return cc === "unopened" ? "미개봉"
+      : cc === "mint" ? "S급"
+      : cc === "clean" ? "A급"
+      : cc === "worn" ? "사용감 있는"
+      : cc === "flawed" ? "하자 있는"
+      : cc === "low_batt" ? "배터리 약한"
+      : cc === "normal" ? "비슷한 상태"
+      : "비슷한 상태";
+  })();
 
   useEffect(() => {
     if (!ck) return;
@@ -4691,30 +4801,60 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
               </div>
             </div>
           ) : null}
-          {visibleListings.map((item) => {
-            const diff = item.price - card.price;
-            const diffLabel = diff > 0 ? `이 매물보다 ${krw(diff)} 비쌈` : diff < 0 ? `이 매물보다 ${krw(Math.abs(diff))} 쌈` : "비슷한 가격";
-            const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
-            return (
-              <div key={item.pid} className="flex items-center gap-3 px-4 py-3">
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-zinc-100 dark:bg-zinc-800">
-                  {item.thumbnailUrl ? (
-                    <Image src={item.thumbnailUrl} alt="" fill sizes="48px" unoptimized className="object-cover" />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="line-clamp-1 text-[12px] font-black text-[#172019] dark:text-zinc-100">{item.name || "비교 매물"}</div>
-                  <div className="mt-0.5 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{diffLabel}</div>
-                </div>
-                <div className="shrink-0 text-right">
-                  {isSold ? <div className="mb-0.5 text-[9px] font-black text-emerald-600 dark:text-emerald-300">판매완료</div> : null}
-                  <div className="text-[14px] font-black tabular-nums text-[#172019] dark:text-zinc-100">{krw(item.price)}</div>
-                </div>
+          {/* Wave launch-81: 운영자풀 패턴 — `같은 등급(X급) > 인접 등급(±1) > 그 외 > 등급 정보 없음`.
+              신발/의류 (ourTier 존재) 만 grouping. 옛 conditionClass 매물은 flat list. */}
+          {(() => {
+            const ourTier = isShoeOrClothingCard(card) ? (card.conditionTier ?? null) : null;
+            const groups = groupListingsByTierDistance(ourTier, visibleListings);
+            return groups.map((group) => (
+              <div key={`g${group.distance}`}>
+                {ourTier && group.heading ? (
+                  <div className="bg-[#f8faf7] px-4 py-1.5 text-[10.5px] font-black uppercase tracking-wide text-[#7b8378] dark:bg-zinc-900/50 dark:text-zinc-400">
+                    {group.heading} · {group.items.length}개
+                  </div>
+                ) : null}
+                {group.items.map((item) => {
+                  const diff = item.price - card.price;
+                  const diffLabel = diff > 0 ? `이 매물보다 ${krw(diff)} 비쌈` : diff < 0 ? `이 매물보다 ${krw(Math.abs(diff))} 쌈` : "비슷한 가격";
+                  const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
+                  const itemTierLabel = ourTier ? tierShortLabel(item.conditionTier) : null;
+                  const seenLabel = seenAgoLabel(item.lastSeenAt);
+                  const sourceLabel = item.marketplaceLabel ?? null;
+                  return (
+                    <div key={item.pid} className="flex items-center gap-3 px-4 py-3">
+                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-zinc-100 dark:bg-zinc-800">
+                        {item.thumbnailUrl ? (
+                          <Image src={item.thumbnailUrl} alt="" fill sizes="48px" unoptimized className="object-cover" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="line-clamp-1 text-[12px] font-black text-[#172019] dark:text-zinc-100">{item.name || "비교 매물"}</span>
+                          {itemTierLabel ? (
+                            <span className="shrink-0 rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                              {itemTierLabel}
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="mt-0.5 text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{diffLabel}</div>
+                        {(sourceLabel || seenLabel) ? (
+                          <div className="mt-0.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
+                            {sourceLabel ?? ""}{sourceLabel && seenLabel ? " · " : ""}{seenLabel ?? ""}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="shrink-0 text-right">
+                        {isSold ? <div className="mb-0.5 text-[9px] font-black text-emerald-600 dark:text-emerald-300">판매완료</div> : null}
+                        <div className="text-[14px] font-black tabular-nums text-[#172019] dark:text-zinc-100">{krw(item.price)}</div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            ));
+          })()}
           {listings.length > INITIAL_VISIBLE ? (
             <button
               type="button"
@@ -4740,6 +4880,10 @@ function BeginnerGuideMarketVisual({ card }: { card: RevealCard }) {
 
 function BeginnerGuideTrendVisual({ card }: { card: RevealCard }) {
   const groupLabel = conditionComparisonGroupLabel(card);
+  // Wave launch-83: 데이터 부족 시 wrapper 자체 hide. 쉬운모드도 동일 정책.
+  const [chartState, setChartState] = useState<MarketChartState>("loading");
+  const showWrapper = chartState === "loading" || chartState === "available" || chartState === "reference_only";
+  if (!showWrapper) return null;
   return (
     <div data-beginner-guide-market-trend className="mt-4 overflow-hidden rounded-[22px] bg-white/84 p-3 ring-1 ring-zinc-200 dark:bg-zinc-950/60 dark:ring-zinc-800">
       <div className="mb-2 flex items-center justify-between gap-2">
@@ -4752,6 +4896,8 @@ function BeginnerGuideTrendVisual({ card }: { card: RevealCard }) {
         conditionClass={card.marketBasis?.conditionClass ?? null}
         priceSource={card.marketBasis?.priceSource ?? null}
         referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
+        nullOnEmpty
+        onState={setChartState}
       />
     </div>
   );
@@ -5476,7 +5622,7 @@ function RevealCardItem({
   // Wave 394.5.a: localStorage 기억 mount sync.
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("minyoi_modal_mode");
+      const stored = localStorage.getItem(MODAL_MODE_STORAGE_KEY);
       if (stored === "detailed") setMode("detailed");
     } catch {}
   }, []);
@@ -5490,7 +5636,7 @@ function RevealCardItem({
   }, []);
   const showProfitCalculationBasis = useCallback(() => {
     setMode("detailed");
-    try { localStorage.setItem("minyoi_modal_mode", "detailed"); } catch {}
+    try { localStorage.setItem(MODAL_MODE_STORAGE_KEY, "detailed"); } catch {}
     window.requestAnimationFrame(() => {
       profitCalculationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -5644,6 +5790,11 @@ function RevealCardItem({
 
               </div>
 
+              {/* Wave launch-83 (사용자 결정): 데이터 부족 placeholder 안내 박스 보이는 게
+                  미완성 사이트 인상 → 빈 상태면 섹션 전체 hide. DetailMarketGraphSection 내부에서
+                  MarketHistoryChart 의 onState 콜백으로 데이터 여부 추적 + wrapper 가시성 제어. */}
+              <DetailMarketGraphSection card={card} />
+
               {/* Wave 395.2: 비교 매물은 Profit 카드 안이 아니라 PDF처럼 별도 섹션/리스트 카드로 분리. */}
               <ComparableListingsPanel card={card} mode={mode} />
               {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
@@ -5656,8 +5807,12 @@ function RevealCardItem({
               <div ref={profitCalculationRef} data-profit-calculation-basis className="scroll-mt-14">
                 <CostAssurancePanel card={card} />
               </div>
-              {/* Wave 392.3: 진입장벽/불안감 해소 Q&A — 4개 자주 묻는 거 collapse. */}
-              <WhyTrustCollapse card={card} />
+              {/* Wave launch-84 (사용자 정정 — MVP audit): WhyTrustCollapse 4 Q&A 제거.
+                  - 셀러 신뢰 Q → UpperFoldFearReducers 거래 안전 타일과 중복
+                  - 가품 Q → CounterfeitChecklistPanel 과 100% 중복
+                  - 안전결제 Q → PlatformProfitCompare 안심결제 chip 과 중복
+                  - 사기 신고 Q → 의사결정 무관 (일반 FAQ)
+                  컴포넌트 정의는 두고 호출만 제거 (rollback 쉽도록). */}
               {/* Wave 394.6.b: 채널 비교 → SellHelper 위 (둘 다 "판매" 관련 단위). */}
               <PlatformProfitCompare card={card} />
               {/* Wave 393.6: SellerTrustPanel 제거 — UpperFoldFearReducers 셀러 tile +
@@ -6511,7 +6666,7 @@ export default function PackRevealModal({
     if (!detailModeChoice) return;
     const source = detailModeChoice.source;
     if (makeDefault) {
-      try { localStorage.setItem("minyoi_modal_mode", "detailed"); } catch {}
+      try { localStorage.setItem(MODAL_MODE_STORAGE_KEY, "detailed"); } catch {}
     }
     window.dispatchEvent(new CustomEvent("minyoi:modal-mode-changed", { detail: { mode: "detailed" } }));
     if (source === "easy_mode_skip") {

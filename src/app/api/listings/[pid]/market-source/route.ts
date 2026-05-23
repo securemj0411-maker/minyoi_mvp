@@ -107,6 +107,13 @@ export async function GET(
 
     const comparableKey = (parsed?.comparable_key as string | null) ?? null;
     const conditionClass = (parsed?.condition_class as string | null) ?? null;
+    // Wave launch-78: 신발/의류 5-tier(S/A/B/C/D) — 옛 condition_class와 별개 axis.
+    // 본 매물이 D급인데 비교군에 A급 매물 섞이면 시세 신뢰 박살 (사용자 보고).
+    // → 신발/의류면 tier 같은 매물만 비교군 keep. tier 0/null 옛 매물은 보수 호환 (필터 skip).
+    const conditionTier = (parsed?.condition_tier as string | null) ?? null;
+    const isShoeOrClothingTarget = Boolean(
+      comparableKey && (comparableKey.startsWith("shoe|") || comparableKey.startsWith("clothing|")),
+    );
     const skuId = (raw?.sku_id as string | null) ?? null;
     // Wave 251.4 (2026-05-19): fashion sub-product 분리 — 본 매물 clothing_product_type 추출.
     //   사용자 frustration (id 201, 202, 203): BAPE tee 50+건 비교군에 tee/hoodie/crewneck/맨투맨 섞임.
@@ -225,6 +232,20 @@ export async function GET(
           }
           // condition_class 분리: 본 매물 cc != null && 비교 매물 cc != 본 매물 cc → exclude.
           if (conditionClass != null && p.condition_class != null && p.condition_class !== conditionClass) {
+            excludeByPid.set(Number(p.pid), true);
+            continue;
+          }
+          // Wave launch-78: 신발/의류 5-tier 분리. 본 D급에 A급 매물 섞이는 문제 차단.
+          //   본 매물 tier S/A/B/C/D 면 비교 매물도 같은 tier 만 keep.
+          //   본 매물 tier UNKNOWN/null 이면 필터 skip (정보 부족 — 보수). 비교 매물 tier null 도 보수 통과.
+          if (
+            isShoeOrClothingTarget
+            && conditionTier != null
+            && conditionTier !== "UNKNOWN"
+            && p.condition_tier != null
+            && p.condition_tier !== "UNKNOWN"
+            && p.condition_tier !== conditionTier
+          ) {
             excludeByPid.set(Number(p.pid), true);
             continue;
           }

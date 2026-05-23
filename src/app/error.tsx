@@ -27,16 +27,24 @@ export default function ErrorBoundary({
         <p className="mt-3 text-sm font-semibold leading-6 text-[#5a6658] dark:text-zinc-400">
           잠시 일시적인 문제가 났어요. 새로고침하거나 메인으로 돌아가서 다시 시도해주세요.
         </p>
+        {/* Wave 725 (2026-05-23): error.digest 는 운영자 추적용 anonymous hash.
+            이전엔 "오류 코드: <hash>" raw 노출 → 입문자에겐 무서운 텍스트.
+            details toggle 로 숨김 — CS 문의 시 사용자가 펼쳐서 복사 가능. */}
         {error.digest ? (
-          <p className="mt-2 text-[11px] font-mono text-zinc-400 dark:text-zinc-600">
-            오류 코드: {error.digest}
-          </p>
+          <details className="mt-3 inline-block text-[11px] text-zinc-400 dark:text-zinc-600">
+            <summary className="cursor-pointer font-bold hover:text-zinc-500 dark:hover:text-zinc-400">
+              기술 정보 (운영자 문의 시 사용)
+            </summary>
+            <p className="mt-1 font-mono text-zinc-400 dark:text-zinc-600">
+              {error.digest}
+            </p>
+          </details>
         ) : null}
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <button
             type="button"
             onClick={reset}
-            className="inline-flex h-11 items-center rounded-xl bg-emerald-600 px-5 text-sm font-black text-white hover:bg-emerald-700"
+            className="inline-flex h-11 items-center rounded-xl bg-blue-600 px-5 text-sm font-black text-white hover:bg-blue-700"
           >
             다시 시도
           </button>

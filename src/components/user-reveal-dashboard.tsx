@@ -1796,8 +1796,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
               매물 추천을 받으면 여기에 모아둘게요. 마음에 드는 매물은 보관해두고 나중에 다시 볼 수 있어요.
             </p>
             <Link
-              href="/me?tab=explore"
-              className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-5 text-sm font-black text-white shadow-sm transition active:scale-[0.98] hover:bg-emerald-700"
+              href="/me?view=history"
+              className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-blue-600 px-5 text-sm font-black text-white shadow-sm transition active:scale-[0.98] hover:bg-blue-700"
             >
               매물 추천 받으러 가기
             </Link>

@@ -89,7 +89,9 @@ const D_MAJOR = [
   "하자 있음",
   "하자있음",
 ];
-const D_MINOR = ["보풀", "보푸라기", "먼지", "오염 있음", "오염있음", "늘어", "줄어든"];
+// Wave launch-80 (audit 후 false positive 차단): "늘어" substring 매칭 → "늘어선/늘어가는/늘어나는" 무관 매칭.
+//   진짜 의류 늘어남 표현은 "늘어남/늘어진/늘어났" 어형이라 명확화. negation 처리도 동시에 더 잘 통함.
+const D_MINOR = ["보풀", "보푸라기", "먼지", "오염 있음", "오염있음", "늘어남", "늘어난", "늘어진", "늘어졌", "늘어났", "줄어든"];
 /**
  * D4 — 수선/줄임 = **POSITIVE** signal (의류 only, 1.59x).
  * 신발은 같은 표현이 negative — clothing-only axis.
@@ -108,7 +110,17 @@ const E_X10_SCORE_RE = /\b(\d{1,2})\s?[\/／]\s?10\b|\b(\d{1,2})\s?점\s?(\s?\/\
 // Negation-aware matcher (shoe-axes.ts 와 동일 패턴)
 // =============================================================================
 
-const NEGATION_SUFFIXES = ["없음", "없습", "없네", "없어", "안함", "X", "x", "X.", "x."];
+const NEGATION_SUFFIXES = ["없음", "없습", "없네", "없어", "없이", "안함", "X", "x", "X.", "x."];
+// Wave launch-80: list 끝 부정 패턴 — "X Y Z 없음", "X 등 없", "X 외에 깨끗" 같은 표현 처리.
+// audit 발견 (사용자 보고): "이염 늘어남 없음" → "늘어" 매칭 + after="남 없음" → NEGATION_SUFFIXES startsWith 미매칭.
+// 후행 20자 안에 list-terminator 부정 패턴이 있으면 negation 으로 간주.
+const LIST_NEG_TERMINATORS = [
+  /^[\s가-힣A-Za-z]*\s*등\s*(없음|없습|없네|없어|없이|X|x|x\.|X\.)/,
+  /^[\s가-힣A-Za-z]*\s*외(에|로)?\s*(없|깨끗|괜찮)/,
+  /^[\s가-힣A-Za-z,]*\s*(없음|없습|없네|없어|없이|없는)\b/,
+  // Wave launch-80b: "(늘어남,헤짐 X)" 같은 괄호/콤마 list 끝 negation 처리.
+  /^[\s가-힣A-Za-z,]*\s*(X|x)(\b|\.|\)|,|\s|$)/,
+];
 
 function matchesKeyword(text: string, keyword: string): boolean {
   let searchFrom = 0;
@@ -121,6 +133,13 @@ function matchesKeyword(text: string, keyword: string): boolean {
       if (after.startsWith(neg) || after.startsWith(" " + neg)) {
         isNegated = true;
         break;
+      }
+    }
+    // Wave launch-80: keyword 뒤 어미 흡수 + list 끝 부정 처리 ("늘어남 없음" / "스크래치 등 없이" / "이염 외 깨끗").
+    if (!isNegated) {
+      const afterExtended = text.slice(idx + keyword.length, idx + keyword.length + 20);
+      for (const re of LIST_NEG_TERMINATORS) {
+        if (re.test(afterExtended)) { isNegated = true; break; }
       }
     }
     if (!isNegated) {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { translateSupabaseAuthError } from "@/lib/auth-error-messages";
 import { KAKAO_LOGIN_SCOPES } from "@/lib/kakao";
 import { flushPendingConsents, persistPendingConsents } from "@/lib/pending-consents";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -34,6 +35,8 @@ function KakaoIcon() {
 }
 
 // Wave 104: auth callback 실패 메시지 한국어 매핑.
+// Wave 724 (2026-05-23): 카카오/Supabase 가 보내는 OAuth error param 분기 추가.
+//   이전엔 "missing-code" 한 case 라 사용자 취소(access_denied)와 DB 에러를 같은 메시지로 묶었음.
 function authErrorMessage(authParam: string | null): string | null {
   if (!authParam) return null;
   switch (authParam) {
@@ -43,6 +46,14 @@ function authErrorMessage(authParam: string | null): string | null {
       return "사이트 설정 문제로 로그인할 수 없어요. 잠시 후 다시 시도해주세요.";
     case "exchange-failed":
       return "로그인 처리 중 오류가 났어요. 한 번 더 시도해주세요.";
+    case "oauth-denied":
+      return "카카오 로그인이 취소됐어요. 다시 시도해주세요.";
+    case "oauth-db-error":
+      return "가입 처리 중 오류가 났어요. 잠시 후 다시 시도하거나 운영자에게 문의해주세요.";
+    case "oauth-rate-limit":
+      return "잠시 후 다시 시도해주세요. (보안을 위해 잠깐 차단됐어요)";
+    case "oauth-error":
+      return "카카오 로그인 중 오류가 났어요. 다시 시도하거나 이메일로 가입해주세요.";
     default:
       return null;
   }
@@ -104,7 +115,9 @@ export default function AuthForm({ mode }: Props) {
       },
     });
     if (error) {
-      setMessage(error.message);
+      // Wave 724: raw Supabase 영문 메시지 → 한글 mapping.
+      console.error("[auth] kakao signInWithOAuth failed", error.message);
+      setMessage(translateSupabaseAuthError(error.message));
       setBusy(false);
     }
   }
@@ -146,7 +159,9 @@ export default function AuthForm({ mode }: Props) {
         },
       });
       if (error) {
-        setMessage(error.message);
+        // Wave 724: raw Supabase 영문 메시지 → 한글 mapping.
+        console.error("[auth] signUp failed", error.message);
+        setMessage(translateSupabaseAuthError(error.message));
         setEmailBusy(false);
         return;
       }
@@ -156,7 +171,8 @@ export default function AuthForm({ mode }: Props) {
         window.location.href = nextPath;
         return;
       }
-      setMessage("가입 완료. 받은 이메일의 인증 링크를 눌러주세요. (Supabase 설정에 따라 자동 로그인일 수도 있어요)");
+      // Wave 724: "Supabase 설정에 따라 자동 로그인" 같은 운영 내부 표현 제거. 사용자 행동만 안내.
+      setMessage("가입 신청이 접수됐어요. 받은 이메일의 인증 링크를 눌러 로그인을 완료해주세요. 메일이 안 오면 스팸함도 확인해주세요.");
       setEmailBusy(false);
     } else {
       const { error } = await supabase.auth.signInWithPassword({
@@ -164,7 +180,9 @@ export default function AuthForm({ mode }: Props) {
         password,
       });
       if (error) {
-        setMessage(error.message);
+        // Wave 724: raw Supabase 영문 메시지 → 한글 mapping.
+        console.error("[auth] signInWithPassword failed", error.message);
+        setMessage(translateSupabaseAuthError(error.message));
         setEmailBusy(false);
         return;
       }
@@ -173,9 +191,11 @@ export default function AuthForm({ mode }: Props) {
   }
 
   if (!hasSupabasePublicEnv) {
+    // Wave 724: 운영자만 보는 메시지지만 prod 에서 env 망가지면 사용자도 봄.
+    //   ".env.local"/"NEXT_PUBLIC_SUPABASE_ANON_KEY" 같은 내부 표현 제거.
     return (
       <div className="rounded-[28px] border border-[#ddd4c7] bg-[#fffbf4] p-5 text-sm font-bold text-[#5a6658] shadow-[0_18px_40px_rgba(34,49,39,0.08)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
-        Supabase 공개 anon key가 필요해요. `.env.local`의 `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 확인하세요.
+        지금은 로그인을 받을 수 없는 상태예요. 잠시 후 다시 시도하거나 운영자에게 문의해주세요.
       </div>
     );
   }
