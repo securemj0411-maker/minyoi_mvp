@@ -417,6 +417,23 @@ export async function POST(req: Request) {
     );
   }
 
+  // Wave launch-106 (2026-05-24): 차익 음수 가드.
+  //   sold 가 아닌 active 매물이라도 시세 갱신으로 expected_profit_max 가 0 이하면
+  //   사용자한테 손해 매물 노출 금지. invalidate → recovery-worker (매 1분) 가 시세 회복 시 자동 ready 복귀.
+  //   사용자 frustration: "차익 마이너스인데 모달에 '판매완료' 헤더가 떠서 헷갈렸음".
+  const verifiedItem = liveVerify.item;
+  if (Number(verifiedItem.expectedProfitMax ?? 0) <= 0) {
+    await invalidateReadyPoolItem(verifiedItem.pid, "profit_negative");
+    return NextResponse.json(
+      {
+        error: "not_ready",
+        reason: "profit_lost",
+        message: "시세가 떨어져서 차익이 사라졌어요. 새로고침하면 다른 매물 보여드릴게요.",
+      },
+      { status: 404 },
+    );
+  }
+
   const userRef = userRefForAuthUser(auth.user.id);
   const access = await consumeDetailAccess({ user: auth.user, userRef, pid, unlimited: unlimitedAccess });
   if (!access.ok) {

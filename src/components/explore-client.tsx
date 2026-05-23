@@ -125,6 +125,8 @@ type SafetyStatsResponse = {
 type DetailAccessResponse = {
   ok?: boolean;
   error?: string;
+  // Wave launch-106: server sub-reason ("profit_lost" 등) — variant 결정에 사용.
+  reason?: string;
   message?: string;
   accessType?: "admin" | "already_opened" | "free" | "credit";
   alreadyOpened?: boolean;
@@ -137,7 +139,8 @@ type DetailAccessResponse = {
 
 // Wave launch-14 (사용자 짚음): error 종류 따라 다른 모달 톤.
 // paywall = 크레딧 부족 (충전 안내), sold = 매물 거래완료/사라짐 (새로고침), verify_fail = 일시 통신 (재시도).
-type DetailAccessLimitVariant = "paywall" | "sold" | "verify_fail";
+// Wave launch-106 (2026-05-24): profit_lost = active 매물인데 시세 떨어져 차익 -. "판매완료" 라벨 사용 금지.
+type DetailAccessLimitVariant = "paywall" | "sold" | "verify_fail" | "profit_lost";
 type DetailAccessLimitModal = {
   variant: DetailAccessLimitVariant;
   title: string;
@@ -747,15 +750,23 @@ function DetailAccessPaywallModal({
   const summary = state.valueSummary ?? null;
 
   // Wave launch-14: variant 별 톤 분기.
+  // Wave launch-106 (2026-05-24): profit_lost variant — sold 와 시각적으로 구분 (amber, 차트 아이콘).
+  //   "판매완료" 톤 사용 절대 금지 — active 매물이지만 차익이 - 가 된 케이스.
   const isPaywall = variant === "paywall";
   const isSold = variant === "sold";
+  const isProfitLost = variant === "profit_lost";
   const isVerifyFail = variant === "verify_fail";
   const iconBg = isPaywall ? "bg-[#eef6ff] text-[#3182f6] dark:bg-blue-950/50 dark:text-blue-300"
     : isSold ? "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300"
+    : isProfitLost ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
     : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
-  const eyebrowText = isPaywall ? "크레딧 상세보기" : isSold ? "방금 거래된 상품" : "잠시 후 다시 시도";
+  const eyebrowText = isPaywall ? "크레딧 상세보기"
+    : isSold ? "방금 거래된 상품"
+    : isProfitLost ? "시세 하락"
+    : "잠시 후 다시 시도";
   const eyebrowCls = isPaywall ? "text-[#3182f6] dark:text-blue-300"
     : isSold ? "text-rose-600 dark:text-rose-300"
+    : isProfitLost ? "text-amber-700 dark:text-amber-300"
     : "text-amber-700 dark:text-amber-300";
 
   return (
@@ -774,13 +785,18 @@ function DetailAccessPaywallModal({
         <div className="px-5 pb-5 pt-5 sm:px-6 sm:pt-6">
           <div className="flex items-start justify-between gap-4">
             <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] ${iconBg}`}>
-              {/* variant 별 아이콘 — paywall=CreditIcon, sold=원 안 X, verify_fail=시계 */}
+              {/* variant 별 아이콘 — paywall=CreditIcon, sold=원 안 X, profit_lost=↓ 화살표, verify_fail=시계 */}
               {isPaywall ? (
                 <CreditIcon size={26} />
               ) : isSold ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
                   <circle cx="12" cy="12" r="9" />
                   <path d="M9 9l6 6M15 9l-6 6" />
+                </svg>
+              ) : isProfitLost ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                  <path d="M3 7l6 6 4-4 8 8" />
+                  <path d="M21 17v-6h-6" />
                 </svg>
               ) : (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
@@ -1900,24 +1916,31 @@ export default function ExploreClient({
         // - not_ready (매물 거래완료/사라짐/검증 실패) = sold variant ("방금 거래된 상품이에요" 톤)
         // - live_verify_unavailable = verify_fail variant ("잠시 통신 불안정" 톤)
         // - detail_access_required (보관함 race) = paywall variant
+        // Wave launch-106 (2026-05-24): not_ready + reason="profit_lost" = profit_lost variant
+        //   (active 매물인데 시세 갱신으로 차익이 - 가 된 케이스. "판매완료" 라벨 절대 X.)
         const isCreditShort = data.error === "insufficient_credits";
         const isLiveVerifyFail = data.error === "live_verify_unavailable";
         const isNotReady = data.error === "not_ready";
+        const isProfitLost = isNotReady && data.reason === "profit_lost";
         const variant: DetailAccessLimitVariant = isCreditShort
           ? "paywall"
           : isLiveVerifyFail
             ? "verify_fail"
-            : isNotReady
-              ? "sold"
-              : "paywall"; // detail_access_required 등 기타 = paywall fallback
+            : isProfitLost
+              ? "profit_lost"
+              : isNotReady
+                ? "sold"
+                : "paywall"; // detail_access_required 등 기타 = paywall fallback
         const titleByVariant =
-          variant === "paywall" ? (isCreditShort ? "크레딧이 부족해요" : "상세보기를 열 수 없어요") :
-          variant === "sold"    ? "방금 거래된 상품이에요" :
-                                  "잠시 통신이 불안정해요";
+          variant === "paywall"     ? (isCreditShort ? "크레딧이 부족해요" : "상세보기를 열 수 없어요") :
+          variant === "sold"        ? "방금 거래된 상품이에요" :
+          variant === "profit_lost" ? "시세가 떨어져서 차익이 사라졌어요" :
+                                      "잠시 통신이 불안정해요";
         const defaultMessageByVariant =
-          variant === "paywall" ? "크레딧을 충전하면 이 매물과 다른 매물 더 볼 수 있어요." :
-          variant === "sold"    ? "이 매물은 방금 다른 곳에서 거래되었거나 셀러가 내린 것 같아요. 새로고침하면 다른 매물을 보여드릴게요." :
-                                  "원본 매물 확인이 잠시 실패했어요. 크레딧은 사용하지 않았어요. 잠시 후 다시 시도해주세요.";
+          variant === "paywall"     ? "크레딧을 충전하면 이 매물과 다른 매물 더 볼 수 있어요." :
+          variant === "sold"        ? "이 매물은 방금 다른 곳에서 거래되었거나 셀러가 내린 것 같아요. 새로고침하면 다른 매물을 보여드릴게요." :
+          variant === "profit_lost" ? "지금 사면 손해예요. 새로고침하면 다른 매물 보여드릴게요." :
+                                      "원본 매물 확인이 잠시 실패했어요. 크레딧은 사용하지 않았어요. 잠시 후 다시 시도해주세요.";
         setDetailAccessLimit({
           variant,
           title: titleByVariant,
