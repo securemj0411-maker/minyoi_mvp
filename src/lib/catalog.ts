@@ -5393,6 +5393,29 @@ export const CATALOG: Sku[] = [
   },
   {
     // Wave 118c (2026-05-15): Bose QC Ultra Earbuds (이어버드 — Headphones와 별도 모델, 2023-10 출시).
+    id: "bose-ultra-open-earbuds",
+    brand: "Bose",
+    category: "earphone",
+    modelName: "Bose Ultra Open Earbuds",
+    aliases: ["보스 울트라 오픈 이어버드", "Bose Ultra Open Earbuds", "보스 ULTRA Open"],
+    // Wave 749g (2026-05-24): Ultra Open Earbuds 2024 신상 (오픈형 ear cuff). 200k 매물 leak.
+    mustContain: [
+      ["보스", "bose"],
+      ["ultra open", "울트라 오픈", "ultra-open", "ultraopen", "울트라오픈"],
+    ],
+    mustNotContain: [
+      "qc", "quietcomfort",
+      "headphone", "헤드폰", "헤드셋",
+      "soundlink", "사운드링크",
+      "보스턴", "boston",  // 가방 false positive
+      "엠보스드", "embossed",
+      ...HEADPHONE_NOISE,
+    ],
+    msrpKrw: 379000,
+    released: 2024,
+    confusionNote: "Ultra Open Earbuds (오픈형 ear cuff, 귀에 걸기). QC Ultra Earbuds (인이어, 노이즈캔슬링)와 별도 모델 — 가격 ~₩80K 차이.",
+  },
+  {
     id: "bose-qc-ultra-earbuds",
     brand: "Bose",
     category: "earphone",
