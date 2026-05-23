@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
   const nowIso = new Date().toISOString();
   const upsertRes = await restFetch(
-    `${tableUrl("mvp_user_credits")}?on_conflict=user_ref,auth_user_id`,
+    `${tableUrl("mvp_user_credits")}?on_conflict=user_ref`,
     {
       method: "POST",
       headers: { ...serviceHeaders(), Prefer: "resolution=merge-duplicates,return=minimal" },

@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
   // user_credits upsert (balance, last_manual_deposit_at)
   const upsertRes = await restFetch(
-    `${tableUrl("mvp_user_credits")}?on_conflict=user_ref,auth_user_id`,
+    `${tableUrl("mvp_user_credits")}?on_conflict=user_ref`,
     {
       method: "POST",
       headers: { ...serviceHeaders(), Prefer: "resolution=merge-duplicates,return=minimal" },
