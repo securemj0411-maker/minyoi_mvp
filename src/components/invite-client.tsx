@@ -78,25 +78,16 @@ export default function InviteClient() {
         window.alert("카카오 공유가 준비되지 않았어요. 잠시 후 다시 시도해주세요.");
         return;
       }
+      // Wave 732 (2026-05-24): objectType "feed" 는 imageUrl 필수 — 없으면 카카오가 카드 안 만들고
+      //   텍스트만 fallback 해서 링크 묻힘. "text" 로 변경 — 본문 + 링크 + 버튼 보장.
       kakao.Share.sendDefault({
-        objectType: "feed",
-        content: {
-          title: "득템잡이 — 친구 초대 5크레딧",
-          description: `제 추천 코드 ${info.code} 로 가입하면 둘 다 5크레딧 받아요!`,
-          link: {
-            mobileWebUrl: shareUrl,
-            webUrl: shareUrl,
-          },
+        objectType: "text",
+        text: "득템잡이 — 시세보다 싼 중고 매물 알려드려요.\n이 링크로 가입하면 둘 다 5크레딧 받아요 🎁",
+        link: {
+          mobileWebUrl: shareUrl,
+          webUrl: shareUrl,
         },
-        buttons: [
-          {
-            title: "가입하고 5크레딧 받기",
-            link: {
-              mobileWebUrl: shareUrl,
-              webUrl: shareUrl,
-            },
-          },
-        ],
+        buttonTitle: "가입하고 5크레딧 받기",
       });
     } catch (err) {
       console.error("[invite] kakao share failed", err);
@@ -142,99 +133,94 @@ export default function InviteClient() {
           친구 초대하고 크레딧 받기
         </h1>
         <p className="mt-2 text-sm font-bold leading-6 text-zinc-500 dark:text-zinc-400">
-          친구가 가입하면 둘 다 <span className="text-blue-600 dark:text-blue-300">+5 크레딧</span>,<br />
-          친구가 처음 결제하면 나에게 추가 보상!
+          아래 링크를 친구에게 공유해주세요.<br />
+          친구가 <span className="text-blue-600 dark:text-blue-300">이 링크로 가입</span>하면 둘 다 <b>+5 크레딧</b>!
         </p>
       </div>
 
-      {/* 내 추천 코드 */}
-      <div className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-5 dark:border-blue-900/60 dark:bg-blue-950/20">
+      {/* 공유 액션 (메인) — 큰 버튼 두 개 */}
+      <div className="space-y-3">
+        {/* 카카오 공유 (주력) */}
+        <button
+          type="button"
+          onClick={shareKakao}
+          disabled={sharing}
+          className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#fee500] px-4 text-base font-black text-[#191600] shadow-sm transition hover:bg-[#f6dc00] disabled:opacity-60"
+        >
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#191600]" aria-hidden="true">
+            <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#fee500]" fill="currentColor">
+              <path d="M12 4C6.9 4 2.8 7.2 2.8 11.2c0 2.6 1.8 4.9 4.5 6.1l-.7 2.6c-.1.4.3.7.6.5l3.1-2.1c.5.1 1.1.1 1.7.1 5.1 0 9.2-3.2 9.2-7.2S17.1 4 12 4Z" />
+            </svg>
+          </span>
+          {sharing ? "공유 중..." : "카카오로 친구 초대하기"}
+        </button>
+
+        {/* 링크 복사 */}
+        <button
+          type="button"
+          onClick={copyLink}
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border-2 border-blue-200 bg-blue-50 px-4 text-sm font-black text-blue-700 transition hover:bg-blue-100 dark:border-blue-900/60 dark:bg-blue-950/20 dark:text-blue-200 dark:hover:bg-blue-950/40"
+        >
+          {copied ? "✓ 링크 복사됨" : "초대 링크 복사"}
+        </button>
+      </div>
+
+      {/* 보상 자세한 설명 — 사용자에게 가장 중요 */}
+      <div className="rounded-2xl border border-zinc-200 bg-white p-5 text-sm leading-7 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
         <div className="text-[10px] font-black uppercase tracking-widest text-blue-700 dark:text-blue-300">
-          내 추천 코드
+          이렇게 작동해요
         </div>
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <div className="font-mono text-3xl font-black tracking-[0.18em] text-blue-700 dark:text-blue-200">
-            {info.code}
-          </div>
-          <button
-            type="button"
-            onClick={copyLink}
-            className="shrink-0 rounded-xl border border-blue-300 bg-white px-3 py-2 text-xs font-black text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:bg-zinc-900 dark:text-blue-200"
-          >
-            {copied ? "✓ 복사됨" : "링크 복사"}
-          </button>
-        </div>
-        <div className="mt-2 truncate text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-          {shareUrl}
-        </div>
+        <ol className="mt-3 space-y-3 text-[13px] font-semibold">
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-black text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">1</span>
+            <span>위 링크를 카톡으로 공유하거나 복사해서 친구에게 보내세요.</span>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-black text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">2</span>
+            <span>친구가 그 링크로 들어와서 카카오 가입하면, <b className="text-zinc-900 dark:text-white">친구와 나 양쪽에 5크레딧</b> 즉시 지급돼요.</span>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-black text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">3</span>
+            <span>친구가 <b className="text-zinc-900 dark:text-white">처음 크레딧을 충전</b>하면 나에게 추가 보상이 와요.<br />
+              · 20크레딧 충전 → <b>+3 크레딧</b><br />
+              · 200크레딧 충전 → <b>+30 크레딧</b><br />
+              · 500크레딧 충전 → <b>+60 크레딧</b>
+            </span>
+          </li>
+        </ol>
+        <p className="mt-4 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">
+          * 한 사람은 한 번만 추천받을 수 있어요. 자기 자신 추천은 안 돼요.
+        </p>
       </div>
 
-      {/* 카카오 공유 */}
-      <button
-        type="button"
-        onClick={shareKakao}
-        disabled={sharing}
-        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#fee500] px-4 text-sm font-black text-[#191600] shadow-sm transition hover:bg-[#f6dc00] disabled:opacity-60"
-      >
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#191600]" aria-hidden="true">
-          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-[#fee500]" fill="currentColor">
-            <path d="M12 4C6.9 4 2.8 7.2 2.8 11.2c0 2.6 1.8 4.9 4.5 6.1l-.7 2.6c-.1.4.3.7.6.5l3.1-2.1c.5.1 1.1.1 1.7.1 5.1 0 9.2-3.2 9.2-7.2S17.1 4 12 4Z" />
-          </svg>
-        </span>
-        {sharing ? "공유 중..." : "카카오로 공유하기"}
-      </button>
-
-      {/* 추천 현황 */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-          추천 현황
+      {/* 추천 현황 (작게) */}
+      {(info.stats.signupCount > 0 || info.stats.totalCredits > 0) && (
+        <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+            지금까지 내가 초대한 친구
+          </div>
+          <dl className="mt-2 grid grid-cols-3 gap-2 text-center">
+            <div>
+              <dt className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">가입</dt>
+              <dd className="mt-1 text-lg font-black tabular-nums text-zinc-950 dark:text-white">
+                {info.stats.signupCount}<span className="text-[10px] text-zinc-500">명</span>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">결제</dt>
+              <dd className="mt-1 text-lg font-black tabular-nums text-zinc-950 dark:text-white">
+                {info.stats.paymentCount}<span className="text-[10px] text-zinc-500">명</span>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">받은 크레딧</dt>
+              <dd className="mt-1 text-lg font-black tabular-nums text-blue-700 dark:text-blue-300">
+                +{info.stats.totalCredits}
+              </dd>
+            </div>
+          </dl>
         </div>
-        <dl className="mt-3 grid grid-cols-3 gap-3">
-          <div>
-            <dt className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">가입 완료</dt>
-            <dd className="mt-1 text-xl font-black tabular-nums text-zinc-950 dark:text-white">
-              {info.stats.signupCount}<span className="text-xs text-zinc-500">명</span>
-            </dd>
-          </div>
-          <div>
-            <dt className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">결제 완료</dt>
-            <dd className="mt-1 text-xl font-black tabular-nums text-zinc-950 dark:text-white">
-              {info.stats.paymentCount}<span className="text-xs text-zinc-500">명</span>
-            </dd>
-          </div>
-          <div>
-            <dt className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">누적 크레딧</dt>
-            <dd className="mt-1 text-xl font-black tabular-nums text-blue-700 dark:text-blue-300">
-              +{info.stats.totalCredits}
-            </dd>
-          </div>
-        </dl>
-      </div>
-
-      {/* 보상 안내 */}
-      <details className="rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-bold text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-        <summary className="cursor-pointer text-sm font-black text-zinc-900 dark:text-zinc-100">
-          보상 구조 자세히
-        </summary>
-        <div className="mt-3 space-y-2 leading-6">
-          <p>
-            <span className="font-black text-blue-700 dark:text-blue-300">가입 시</span> —
-            친구와 나 양쪽에 <b>+5 크레딧</b> (오픈 이벤트)
-          </p>
-          <p>
-            <span className="font-black text-blue-700 dark:text-blue-300">친구 첫 결제 시</span> — 나에게 추가 크레딧
-            <br />
-            · 20크레딧 충전 → <b>+3</b>
-            <br />
-            · 200크레딧 충전 → <b>+30</b>
-            <br />
-            · 500크레딧 충전 → <b>+60</b>
-          </p>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-500">
-            * 한 사람당 1번만 추천받을 수 있어요. 자기 자신 추천은 불가합니다.
-          </p>
-        </div>
-      </details>
+      )}
 
       {/* 뒤로 */}
       <div className="text-center">

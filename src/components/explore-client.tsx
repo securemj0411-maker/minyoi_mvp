@@ -1339,25 +1339,16 @@ export default function ExploreClient({
     try {
       // Wave launch-57 (사용자 정정 "친구말투 X, 존댓말로"):
       //   존댓말 + 정중한 톤 — 정직한 상품 추천 느낌.
+      // Wave 732 (2026-05-24 사용자 보고): objectType "feed" 는 imageUrl 필수 — 없으면 카카오가
+      //   카드 안 만들고 텍스트만 fallback 해서 링크 묻힘. "text" 로 변경 — 본문 + 링크 + 버튼 보장.
       kakao.Share.sendDefault({
-        objectType: "feed",
-        content: {
-          title: "지금 팔면 바로 돈 되는 중고 상품이 있어요",
-          description: "AI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요!",
-          link: {
-            mobileWebUrl: shareUrl,
-            webUrl: shareUrl,
-          },
+        objectType: "text",
+        text: "지금 팔면 바로 돈 되는 중고 상품이 있어요.\nAI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요!",
+        link: {
+          mobileWebUrl: shareUrl,
+          webUrl: shareUrl,
         },
-        buttons: [
-          {
-            title: "바로 보러가기",
-            link: {
-              mobileWebUrl: shareUrl,
-              webUrl: shareUrl,
-            },
-          },
-        ],
+        buttonTitle: "바로 보러가기",
       });
 
       // Kakao callback 은 다이얼로그 닫혔을 때 호출되는데 신뢰 X (사용자가 안 보내고 닫기만 해도 호출).
