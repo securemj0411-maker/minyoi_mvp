@@ -8,7 +8,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import { MarketSourceDebug } from "@/components/market-source-debug";
-import { ConditionChip } from "@/components/condition-chip";
+import { ConditionChip, ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
 import { DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
@@ -63,6 +63,12 @@ type PoolItem = {
   scoreFlags: string[];
   // Wave 182 Phase 3 (2026-05-17): base option fallback metadata (옵션 명시 X → 가장 낮은 옵션 가정).
   optionBaseAssumed: string[] | null;
+  // Wave 714d (2026-05-23): 신발/의류 5-tier S/A/B/C/D + raw 표현 chips.
+  conditionTier?: string | null;
+  conditionCluster?: string | null;
+  conditionConfidence?: number | null;
+  conditionFlags?: Record<string, unknown> | null;
+  conditionChips?: string[] | null;
   // Wave 187 (2026-05-17): L6 Liquidity 곡선 입력 — comparable_key 별 velocity + price 분포.
   velocityP25Hours: number | null;
   velocityMedianHours: number | null;
@@ -558,7 +564,13 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">band {item.band}</span>
                       {/* 2026-05-17 (사용자 요청): 매물 등급 chip + ? 분류 정책 모달. 운영자풀 = showHelp. */}
                       <ConditionChip conditionClass={item.conditionClass} showHelp />
+                      {/* Wave 714d (2026-05-23): 신발/의류 5-tier 등급 chip (전자기기는 null → 표시 X). */}
+                      {item.conditionTier && <ConditionTierChip tier={item.conditionTier} showHelp />}
                     </div>
+                    {/* Wave 714d: raw 표현 chips (박스/하자/실착 등) */}
+                    {item.conditionChips && item.conditionChips.length > 0 && (
+                      <ConditionChipsList chips={item.conditionChips} max={5} className="mt-0.5" />
+                    )}
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-zinc-700 dark:text-zinc-300">
                       <span>매입 {krw(item.price)}</span>
                       {/* Wave 246 (2026-05-19): skuMedian=0/null 가드 — "시세 0원" 미스리딩 차단.

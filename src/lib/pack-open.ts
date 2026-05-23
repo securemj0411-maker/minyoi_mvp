@@ -87,6 +87,14 @@ export type RevealCard = {
   // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
   // null/[] 이면 옵션 명시 매물. 값 있으면 "기본 옵션 가정" UI badge 표시.
   optionBaseAssumed?: string[] | null;
+  // Wave 714d (2026-05-23): 신발/의류 5-tier S/A/B/C/D 등급 + raw 표현 chips.
+  //   pack-reveal-modal (쉬운모드) 등 UI 에서 ConditionTierChip + ConditionChipsList 표시.
+  //   전자기기는 null → 기존 ConditionChip(conditionClass) 그대로.
+  conditionTier?: string | null;
+  conditionCluster?: string | null;
+  conditionConfidence?: number | null;
+  conditionFlags?: Record<string, unknown> | null;
+  conditionChips?: string[] | null;
 };
 
 // Wave 394.7.ab: confidence "low" 도 통과 (UI 측 분기로 "참고용" 톤 표시).
@@ -701,6 +709,52 @@ export async function fetchPoolConditionClassByPids(pids: number[]): Promise<Map
     // Wave 130: condition_class fetch 실패는 critical 아님 — 'normal' default로 fallback.
     // 시세 매칭 정확도만 살짝 떨어짐 (모든 매물 normal class로 표시).
     console.warn("fetchPoolConditionClassByPids failed (non-fatal, fallback to normal)", err);
+  }
+  return map;
+}
+
+// Wave 714d (2026-05-23): 신발/의류 5-tier grading + chips by pid — pack-reveal-modal (쉬운모드) 노출용.
+export type GradingInfo = {
+  tier: string | null;
+  cluster: string | null;
+  confidence: number | null;
+  flags: Record<string, unknown> | null;
+  chips: string[] | null;
+};
+
+export async function fetchGradingByPids(pids: number[]): Promise<Map<number, GradingInfo>> {
+  if (pids.length === 0) return new Map();
+  const unique = [...new Set(pids.filter((p) => Number.isFinite(p)))];
+  if (unique.length === 0) return new Map();
+  const map = new Map<number, GradingInfo>();
+  try {
+    const res = await callSupabase(
+      `/mvp_listing_parsed?select=pid,condition_tier,condition_cluster,condition_confidence,condition_flags,parsed_json&pid=in.(${unique.join(",")})`,
+      { headers: authHeaders() },
+    );
+    const payload = await res.json().catch(() => null);
+    const rows = Array.isArray(payload)
+      ? (payload as Array<{
+          pid: number;
+          condition_tier: string | null;
+          condition_cluster: string | null;
+          condition_confidence: number | null;
+          condition_flags: Record<string, unknown> | null;
+          parsed_json: Record<string, unknown> | null;
+        }>)
+      : [];
+    for (const row of rows) {
+      const grade = (row.parsed_json?.condition_grade as { chips?: string[] } | null) ?? null;
+      map.set(Number(row.pid), {
+        tier: row.condition_tier ?? null,
+        cluster: row.condition_cluster ?? null,
+        confidence: row.condition_confidence ?? null,
+        flags: row.condition_flags ?? null,
+        chips: grade?.chips ?? null,
+      });
+    }
+  } catch (err) {
+    console.warn("fetchGradingByPids failed (non-fatal)", err);
   }
   return map;
 }
@@ -1688,7 +1742,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     const reservedPids = orderedReserved.map((r) => r.pid);
     // Wave 201 (2026-05-18): reference_prices fetch — unopened 매물 anchor (다나와 새 가격).
     // Wave 252.A real (2026-05-20): v7 sibling presence — v3 clothing key mixed-pool 차단 가드.
-    const [listingMap, marketStats, velocityStats, readinessMap, poolConditionMap, optionBaseAssumedMap, referencePrices, v7SiblingPresence] = await Promise.all([
+    const [listingMap, marketStats, velocityStats, readinessMap, poolConditionMap, optionBaseAssumedMap, referencePrices, v7SiblingPresence, gradingMap] = await Promise.all([
       fetchListings(reservedPids),
       fetchLatestMarketStats(orderedReserved.map((r) => r.comparable_key)),
       fetchLatestMarketVelocity(orderedReserved.map((r) => r.comparable_key)),
@@ -1697,6 +1751,8 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       fetchOptionBaseAssumedByPids(reservedPids),
       fetchReferencePrices(orderedReserved.map((r) => r.comparable_key)),
       fetchV7SiblingPresence(orderedReserved.map((r) => r.comparable_key)),
+      // Wave 714d (2026-05-23): 신발/의류 5-tier grading + chips for pack-reveal-modal.
+      fetchGradingByPids(reservedPids),
     ]);
     const sourceHealth = await loadLatestSourceHealth();
     const reveals: RevealCard[] = [];
@@ -1873,6 +1929,12 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         savedDetail,
         // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
         optionBaseAssumed: optionBaseAssumedMap.get(candidate.pid) ?? null,
+        // Wave 714d (2026-05-23): 신발/의류 5-tier grading + chips (쉬운모드 LastVerifiedAtBadge).
+        conditionTier: gradingMap.get(candidate.pid)?.tier ?? null,
+        conditionCluster: gradingMap.get(candidate.pid)?.cluster ?? null,
+        conditionConfidence: gradingMap.get(candidate.pid)?.confidence ?? null,
+        conditionFlags: gradingMap.get(candidate.pid)?.flags ?? null,
+        conditionChips: gradingMap.get(candidate.pid)?.chips ?? null,
       });
       if (candidate.comparable_key) seenComparableKeys.add(candidate.comparable_key);
       if (meta.sku_id) seenSkuIds.add(meta.sku_id);

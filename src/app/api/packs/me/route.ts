@@ -246,6 +246,12 @@ type RevealItem = {
   firstSeenAt: string | null;
   // Wave 182 Phase 3 (2026-05-17): base option fallback metadata — "기본 옵션 가정" UI badge.
   optionBaseAssumed: string[] | null;
+  // Wave 714d (2026-05-23): 신발/의류 5-tier S/A/B/C/D 등급 + raw 표현 chips.
+  conditionTier?: string | null;
+  conditionCluster?: string | null;
+  conditionConfidence?: number | null;
+  conditionFlags?: Record<string, unknown> | null;
+  conditionChips?: string[] | null;
   // Wave 213 (2026-05-18): request-time current net profit.
   // 운영자풀과 같은 비용 모델(매입 배송비, 판매수수료, 재배송비, 안전버퍼)을 차감한다.
   // 값은 signed로 둔다. 0원 이하이면 프론트에서 판매완료 tombstone으로 접는다.
@@ -645,7 +651,8 @@ export async function GET(req: Request) {
     loadJson<ParsedRow[]>(
       // Wave 130 (2026-05-16): condition_class 추가 — 매물별 condition에 맞는 시세 표시.
       // Wave 182 Phase 3 (2026-05-17): parsed_json 추가 — option_base_assumed UI badge 표시.
-      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,parsed_json&pid=in.(${pidList})`,
+      // Wave 714d (2026-05-23): 신발/의류 5-tier grading column 추가 — /me 피드 카드 등급 + chips.
+      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,parsed_json,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=in.(${pidList})`,
     ),
   ]);
 
@@ -671,6 +678,31 @@ export async function GET(req: Request) {
   const conditionClassByPid = new Map(
     parsedRows.map((row) => [Number(row.pid), (row as ParsedRow & { condition_class?: string | null }).condition_class ?? null]),
   );
+  // Wave 714d (2026-05-23): 신발/의류 5-tier grading + chips by pid.
+  const gradingByPid = new Map<number, {
+    tier: string | null;
+    cluster: string | null;
+    confidence: number | null;
+    flags: Record<string, unknown> | null;
+    chips: string[] | null;
+  }>();
+  for (const row of parsedRows) {
+    const r = row as ParsedRow & {
+      condition_tier?: string | null;
+      condition_cluster?: string | null;
+      condition_confidence?: number | null;
+      condition_flags?: Record<string, unknown> | null;
+      parsed_json?: Record<string, unknown> | null;
+    };
+    const grade = (r.parsed_json?.condition_grade as { chips?: string[] } | null) ?? null;
+    gradingByPid.set(Number(row.pid), {
+      tier: r.condition_tier ?? null,
+      cluster: r.condition_cluster ?? null,
+      confidence: r.condition_confidence ?? null,
+      flags: r.condition_flags ?? null,
+      chips: grade?.chips ?? null,
+    });
+  }
   // Wave 182 Phase 3 (2026-05-17): option_base_assumed by pid — "기본 옵션 가정" UI badge.
   const optionBaseAssumedByPid = new Map<number, string[] | null>(
     parsedRows.map((row) => {
@@ -818,6 +850,12 @@ export async function GET(req: Request) {
         firstSeenAt: raw?.first_seen_at ?? null,
         // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
         optionBaseAssumed: optionBaseAssumedByPid.get(Number(reveal.pid)) ?? null,
+        // Wave 714d (2026-05-23): 신발/의류 5-tier grading + chips.
+        conditionTier: gradingByPid.get(Number(reveal.pid))?.tier ?? null,
+        conditionCluster: gradingByPid.get(Number(reveal.pid))?.cluster ?? null,
+        conditionConfidence: gradingByPid.get(Number(reveal.pid))?.confidence ?? null,
+        conditionFlags: gradingByPid.get(Number(reveal.pid))?.flags ?? null,
+        conditionChips: gradingByPid.get(Number(reveal.pid))?.chips ?? null,
         // Wave 213 (2026-05-18): 실시간 순현재차익 min/max.
         marketGapKrw,
         marketGapKrwMax,

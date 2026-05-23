@@ -284,7 +284,8 @@ export async function GET(req: NextRequest) {
         // 2026-05-16 (사용자 코멘트 #120): condition_class 추가 — 운영자풀 시세 출처 표시 위해.
         // Wave 182 Phase 3 (2026-05-17): parsed_json 추가 — option_base_assumed UI 표시.
         // Wave 190: score_flags 제거 — mvp_listing_analysis 가 정식 location.
-        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,parsed_json&pid=in.(${pidsCsv})`,
+        // Wave 714d (2026-05-23): 신발/의류 5-tier grading column 추가 — admin pool 카드 등급 + chips.
+        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,parsed_json,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       // Wave 190 (2026-05-17): score_flags 정식 fetch — mvp_listing_analysis 에서.
@@ -447,6 +448,16 @@ export async function GET(req: NextRequest) {
           const pj = p.parsed_json as Record<string, unknown> | null | undefined;
           const arr = pj?.option_base_assumed;
           return Array.isArray(arr) ? arr as string[] : null;
+        })(),
+        // Wave 714d (2026-05-23): 신발/의류 5-tier grading + chips.
+        conditionTier: (p.condition_tier as string | null) ?? null,
+        conditionCluster: (p.condition_cluster as string | null) ?? null,
+        conditionConfidence: (p.condition_confidence as number | null) ?? null,
+        conditionFlags: (p.condition_flags as Record<string, unknown> | null) ?? null,
+        conditionChips: (() => {
+          const pj = p.parsed_json as Record<string, unknown> | null | undefined;
+          const grade = pj?.condition_grade as { chips?: string[] } | null | undefined;
+          return grade?.chips ?? null;
         })(),
         // Wave 187: L6 Liquidity 곡선 입력 — comparable_key 별 velocity + price 분포 (latest row).
         velocityP25Hours: velocity?.p25Hours ?? null,

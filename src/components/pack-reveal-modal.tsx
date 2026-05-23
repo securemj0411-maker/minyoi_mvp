@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
-import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
+import { ConditionChip, ConditionPhotoBadge, ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { BunjangLogo, DanawaLogo, JoongnaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import {
@@ -1283,7 +1283,9 @@ function seenAgoLabel(iso: string | null | undefined): string | null {
 // description (텍스트) 기반 판단이라는 한계 1줄. 사진 직접 확인 권장.
 function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
   const cond = card.marketBasis?.conditionClass ?? null;
-  if (!cond) return null;
+  const tier = card.conditionTier ?? null;
+  const chips = card.conditionChips ?? null;
+  if (!cond && !tier && (!chips || chips.length === 0)) return null;
   return (
     <div className="mb-2">
       {/* Wave 394.7.f (외부 review 2라운드 #7): chip 옆에 "판매글 기준" prefix — 사진 분석 X 명확. */}
@@ -1291,8 +1293,16 @@ function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
         <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
           판매글 기준
         </span>
-        <ConditionChip conditionClass={cond} variant="friendly" />
+        {cond && <ConditionChip conditionClass={cond} variant="friendly" />}
+        {/* Wave 714d (2026-05-23): 신발/의류 5-tier 등급 chip — 쉬운모드용 friendly variant. */}
+        {tier && <ConditionTierChip tier={tier} variant="friendly" />}
       </div>
+      {/* Wave 714d: raw 표현 chips (박스/하자/실착 등) */}
+      {chips && chips.length > 0 && (
+        <div className="mt-1.5">
+          <ConditionChipsList chips={chips} max={5} />
+        </div>
+      )}
       <div className="mt-1 text-[10px] font-medium leading-tight text-zinc-400 dark:text-zinc-500">
         사진은 직접 확인 권장
       </div>

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
-import { ConditionPhotoBadge } from "@/components/condition-chip";
+import { ConditionPhotoBadge, ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
 import { BookmarkIcon } from "@/components/icons";
 import { BunjangSourceBadge, DanawaSourceBadge, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
@@ -71,6 +71,12 @@ type RevealItem = {
   marketGapKrwMax: number | null;
   marketStale: boolean;
   commentCount: number | null;
+  // Wave 714d (2026-05-23): 신발/의류 5-tier S/A/B/C/D + chips.
+  conditionTier?: string | null;
+  conditionCluster?: string | null;
+  conditionConfidence?: number | null;
+  conditionFlags?: Record<string, unknown> | null;
+  conditionChips?: string[] | null;
 };
 
 type DashboardResponse = {
@@ -1512,6 +1518,15 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   </span>
                 ) : null}
               </div>
+              {/* Wave 714d (2026-05-23): 신발/의류 5-tier 등급 + chips (전자기기는 표시 X). */}
+              {(item.conditionTier || (item.conditionChips && item.conditionChips.length > 0)) && (
+                <div className="mt-1 flex flex-wrap items-center gap-1">
+                  {item.conditionTier && <ConditionTierChip tier={item.conditionTier} variant="friendly" />}
+                  {item.conditionChips && item.conditionChips.length > 0 && (
+                    <ConditionChipsList chips={item.conditionChips} max={4} />
+                  )}
+                </div>
+              )}
               {/* 2026-05-17: 매입 · 시세 표시 (대시보드 패턴 통일 — 운영자풀/preview 와 동일). */}
               {/* Wave 200 (2026-05-18): terminal 매물 시 strike-through — 정보 stale 명시. */}
               {/* Wave 246 (2026-05-19): medianPrice 0/null 시 "시세 확인중" 명시 — "번개 S급 시세 0원" 미스리딩 차단.
