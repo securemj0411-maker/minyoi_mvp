@@ -1057,6 +1057,11 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "fragment", "프래그먼트", "dior", "디올", "union", "유니온",
       "spider verse", "스파이더버스", "off noir",
       "한정판", "limited edition",
+      // Wave 753d (2026-05-24) Pareto: 226x spread — Trophy Room (Marcus Jordan 한정 콜라보) 차단.
+      "trophy room", "trophyroom", "트로피룸", "트로피 룸",
+      "프렌즈 앤 패밀리", "f&f", "friends and family", "friends & family",
+      // Fragment 변형
+      "프라그먼트", "후지와라",
       // 키즈
       "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td", "gs",
       // 가품
