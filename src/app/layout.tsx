@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import AppFooter from "@/components/app-footer";
 import AppNav from "@/components/app-nav";
+import ReferralCapture from "@/components/referral-capture";
 import SiteHelpFaq from "@/components/site-help-faq";
 import "./globals.css";
 
@@ -81,6 +82,8 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
+        {/* Wave 743 (2026-05-24): URL ?ref= 잡아서 sessionStorage 저장 — middleware fallback */}
+        <ReferralCapture />
         <AppNav />
         {/* 2026-05-19: SafetyStatsMarquee 글로벌 제거 — /me 모바일 fold 잡아먹는 문제 해소.
             비로그인 메인(PreviewMaskedDashboard) + "더 찾아보기" 모달(seekMore)에만 노출.

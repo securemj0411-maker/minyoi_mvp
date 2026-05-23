@@ -106,18 +106,26 @@ export default function AuthForm({ mode }: Props) {
     }
     setBusy(true);
     setMessage(null);
-    // Wave 733 (2026-05-24): 카카오 OAuth flow 중 쿠키 손실 가능성 fallback.
-    //   middleware 쿠키만 의존하면 vercel.app → kakao → supabase → vercel.app redirect 시 손실 risk.
-    //   URL ?ref= 또는 쿠키 둘 다에서 읽고 redirectTo 에 명시 전달 → callback 이 확실히 받음.
+    // Wave 733/743 (2026-05-24): refCode 추출 priority — URL > sessionStorage > cookie.
+    //   - URL ?ref= : signup 페이지 직접 진입 시
+    //   - sessionStorage : ReferralCapture component 가 다른 페이지 진입 시 저장 (Wave 743 — middleware fallback)
+    //   - cookie : middleware 가 박은 경우 (작동 시)
+    //   redirectTo URL 에 &ref= 명시 박아 callback 이 확실히 받음.
     let refCode: string | null = null;
     try {
       const urlRef = new URLSearchParams(window.location.search).get("ref");
       if (urlRef && /^[A-HJ-NP-Z2-9]{6}$/.test(urlRef.toUpperCase())) {
         refCode = urlRef.toUpperCase();
       } else {
-        // cookie fallback
-        const cookieMatch = document.cookie.match(/(?:^|;\s*)minyoi_referral=([A-HJ-NP-Z2-9]{6})/);
-        if (cookieMatch) refCode = cookieMatch[1];
+        // sessionStorage fallback (Wave 743)
+        const sessRef = window.sessionStorage.getItem("minyoi_referral");
+        if (sessRef && /^[A-HJ-NP-Z2-9]{6}$/.test(sessRef)) {
+          refCode = sessRef;
+        } else {
+          // cookie fallback
+          const cookieMatch = document.cookie.match(/(?:^|;\s*)minyoi_referral=([A-HJ-NP-Z2-9]{6})/);
+          if (cookieMatch) refCode = cookieMatch[1];
+        }
       }
     } catch {}
     const refParam = refCode ? `&ref=${refCode}` : "";
