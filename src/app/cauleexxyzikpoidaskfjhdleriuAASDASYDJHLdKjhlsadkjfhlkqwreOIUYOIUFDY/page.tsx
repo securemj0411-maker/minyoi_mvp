@@ -212,15 +212,15 @@ export default async function MembersPage() {
           </nav>
         </header>
 
-        {/* KPI ticker — 한 줄 dense */}
+        {/* KPI ticker — 한 줄 dense. Wave launch-102: bloomberg monochrome (amber primary). */}
         <section className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-zinc-800 bg-zinc-800 sm:grid-cols-4 md:grid-cols-7">
-          <TerminalKpi label="REV TODAY" value={`₩${revenueToday.toLocaleString("ko-KR")}`} accent="amber" />
-          <TerminalKpi label="REV MONTH" value={`₩${revenueMonth.toLocaleString("ko-KR")}`} accent="amber" />
-          <TerminalKpi label="ACTIVE SUB" value={String(activeSubs)} accent="emerald" sub={`P${totalPro}/PL${totalPlus}/ST${totalStarter}`} />
-          <TerminalKpi label="NEW SIGNUP" value={String(newSignupsToday)} accent="rose" />
-          <TerminalKpi label="PACK OPEN" value={String(packOpensToday)} accent="cyan" />
-          <TerminalKpi label="REVEAL" value={String(revealsToday)} accent="cyan" />
-          <TerminalKpi label="CLICK / CTR" value={String(clicksToday)} accent="cyan" sub={revealsToday > 0 ? `${Math.round((clicksToday / revealsToday) * 100)}%` : "—"} />
+          <TerminalKpi label="REV TODAY" value={`₩${revenueToday.toLocaleString("ko-KR")}`} />
+          <TerminalKpi label="REV MONTH" value={`₩${revenueMonth.toLocaleString("ko-KR")}`} />
+          <TerminalKpi label="ACTIVE SUB" value={String(activeSubs)} sub={`P${totalPro}/PL${totalPlus}/ST${totalStarter}`} />
+          <TerminalKpi label="NEW SIGNUP" value={String(newSignupsToday)} />
+          <TerminalKpi label="PACK OPEN" value={String(packOpensToday)} />
+          <TerminalKpi label="REVEAL" value={String(revealsToday)} />
+          <TerminalKpi label="CLICK / CTR" value={String(clicksToday)} sub={revealsToday > 0 ? `${Math.round((clicksToday / revealsToday) * 100)}%` : "—"} />
         </section>
 
         <ManualDepositPanel />
@@ -248,18 +248,13 @@ function KpiCard({ label, value, accent, sub }: { label: string; value: string |
   );
 }
 
-// Wave launch-101: 블룸버그 터미널 톤 KPI cell — dense, mono, accent color 만.
-function TerminalKpi({ label, value, accent, sub }: { label: string; value: string; accent: "amber" | "emerald" | "rose" | "cyan"; sub?: string }) {
-  const accentColor: Record<typeof accent, string> = {
-    amber: "text-amber-400",
-    emerald: "text-emerald-400",
-    rose: "text-rose-400",
-    cyan: "text-cyan-400",
-  };
+// Wave launch-101 → launch-102: bloomberg monochrome — amber primary only.
+//   사용자 정정: "색깔이 너무 알록달록. 블룸버그 느낌 모름?"
+function TerminalKpi({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="bg-zinc-950 px-3 py-3">
       <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-500">{label}</div>
-      <div className={`mt-1 truncate text-[18px] font-black tabular-nums leading-none ${accentColor[accent]}`}>{value}</div>
+      <div className="mt-1 truncate text-[18px] font-black tabular-nums leading-none text-amber-400">{value}</div>
       {sub ? <div className="mt-1 truncate text-[9px] uppercase tracking-wide text-zinc-600">{sub}</div> : null}
     </div>
   );

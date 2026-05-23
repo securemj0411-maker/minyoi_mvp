@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+// Wave launch-102 (사용자 정정): bloomberg 톤 monochrome + row 클릭 drawer + pagination + 가로 단축.
+//   주요 column 만 (닉네임/이메일/크레딧/상태) — 가입일/마지막 로그인 + grant/revoke/block 다 drawer 안.
+//   페이지네이션 (50/페이지 기본). 검색 + plan filter 그대로 keep.
+
+import { useMemo, useState } from "react";
 
 export type MemberRow = {
   authUserId: string;
@@ -26,249 +30,44 @@ export type MemberRow = {
   lastPaymentAmount: number | null;
 };
 
-const PLAN_BADGE: Record<string, { label: string; cls: string }> = {
-  free: { label: "Free", cls: "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-400" },
-  starter: { label: "Starter", cls: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300" },
-  plus: { label: "Plus", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" },
-  pro: { label: "Pro", cls: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300" },
-};
-
-// Wave launch-28 (사용자 짚음): 가입일 / 마지막 로그인 = UTC 그대로 표시되던 거. KST 변환.
-// 이전 `value.slice(0,16).replace("T"," ")` = ISO UTC 문자열 그냥 자름 → KST 사용자 -9시간 보임.
 const KST_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
+  year: "numeric", month: "2-digit", day: "2-digit",
+  hour: "2-digit", minute: "2-digit", hour12: false,
 });
 function fmt(value: string | null | undefined): string {
   if (!value) return "—";
   const d = new Date(value);
   if (!Number.isFinite(d.getTime())) return value.slice(0, 16).replace("T", " ");
-  // ko-KR + Asia/Seoul → "2026. 05. 22. 17:08" 식. "." 를 "-" 로 변환 후 공백 정리.
   const parts = KST_FORMATTER.formatToParts(d);
   const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? "";
   return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}`;
 }
 
-type PlanFilter = "all" | "free" | "starter" | "plus" | "pro";
-type BetaFilter = "all" | "beta" | "non-beta";
+const PAGE_SIZE = 50;
 
 export default function MembersTable({ initialRows }: { initialRows: MemberRow[] }) {
   const [rows, setRows] = useState<MemberRow[]>(initialRows);
-  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
-  const [creditPendingIds, setCreditPendingIds] = useState<Set<string>>(new Set());
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [planFilter, setPlanFilter] = useState<PlanFilter>("all");
-  const [betaFilter, setBetaFilter] = useState<BetaFilter>("all");
-  const [creditDrafts, setCreditDrafts] = useState<Record<string, string>>({});
-  // Wave launch-95: 회수 input + 차단/해제 toggle.
-  const [revokeDrafts, setRevokeDrafts] = useState<Record<string, string>>({});
-  const [revokePendingIds, setRevokePendingIds] = useState<Set<string>>(new Set());
-  const [blockPendingIds, setBlockPendingIds] = useState<Set<string>>(new Set());
-  // Wave launch-100: 회원 일괄 삭제용 체크박스 + 진행 상태.
+  const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [drawerId, setDrawerId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [deleteInProgress, setDeleteInProgress] = useState(false);
+  const [actionPending, setActionPending] = useState<Set<string>>(new Set());
 
-  const filteredRows = rows.filter((row) => {
-    if (search.trim()) {
-      const s = search.trim().toLowerCase();
-      const haystack = `${row.email ?? ""} ${row.nickname}`.toLowerCase();
-      if (!haystack.includes(s)) return false;
-    }
-    if (planFilter !== "all" && row.planKey !== planFilter) return false;
-    if (betaFilter === "beta" && !row.isBetaTester) return false;
-    if (betaFilter === "non-beta" && row.isBetaTester) return false;
-    return true;
-  });
+  const filteredRows = useMemo(() => {
+    if (!search.trim()) return rows;
+    const s = search.trim().toLowerCase();
+    return rows.filter((row) => `${row.email ?? ""} ${row.nickname}`.toLowerCase().includes(s));
+  }, [rows, search]);
 
-  async function toggleBeta(row: MemberRow) {
-    if (!row.creditRowExists) {
-      setError(`${row.email ?? row.authUserId} — 크레딧 row 없음 (회원이 추천/팩 1회 이상 사용해야 row 생성됨)`);
-      return;
-    }
-    setError(null);
-    const next = !row.isBetaTester;
-    if (next) {
-      const ok = window.confirm(`${row.nickname || row.email} 베타 체험단으로 승격할까요?`);
-      if (!ok) return;
-    } else {
-      const ok = window.confirm(`${row.nickname || row.email} 베타 체험단 해제할까요?`);
-      if (!ok) return;
-    }
-    setPendingIds((prev) => new Set(prev).add(row.authUserId));
-    try {
-      const res = await fetch("/api/admin/beta-tester", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ authUserId: row.authUserId, isBetaTester: next }),
-      });
-      const data = (await res.json()) as { ok?: boolean; isBetaTester?: boolean; error?: string };
-      if (!res.ok || !data.ok) {
-        setError(data.error ?? "update_failed");
-        return;
-      }
-      setRows((prev) => prev.map((r) =>
-        r.authUserId === row.authUserId
-          ? { ...r, isBetaTester: Boolean(data.isBetaTester), betaGrantedAt: data.isBetaTester ? new Date().toISOString() : null }
-          : r,
-      ));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "network error");
-    } finally {
-      setPendingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(row.authUserId);
-        return next;
-      });
-    }
-  }
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages - 1);
+  const pageRows = filteredRows.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE);
+  const drawerRow = drawerId ? rows.find((r) => r.authUserId === drawerId) ?? null : null;
 
-  async function grantCredits(row: MemberRow) {
-    const rawAmount = creditDrafts[row.authUserId] ?? "";
-    const amount = Math.round(Number(rawAmount));
-    if (!Number.isFinite(amount) || amount <= 0) {
-      setError("지급할 크레딧 개수를 1 이상으로 입력해주세요.");
-      setNotice(null);
-      return;
-    }
-    const target = row.nickname || row.email || row.authUserId;
-    const ok = window.confirm(`${target} 회원에게 크레딧 ${amount.toLocaleString("ko-KR")}개를 지급할까요?`);
-    if (!ok) return;
-
-    setError(null);
-    setNotice(null);
-    setCreditPendingIds((prev) => new Set(prev).add(row.authUserId));
-    try {
-      const res = await fetch("/api/admin/credits/grant", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          authUserId: row.authUserId,
-          amount,
-          note: "operator members table",
-        }),
-      });
-      const data = (await res.json()) as { ok?: boolean; amount?: number; balance?: number; error?: string; maxAmount?: number };
-      if (!res.ok || !data.ok) {
-        const maxHint = data.maxAmount ? ` (최대 ${data.maxAmount.toLocaleString("ko-KR")}개)` : "";
-        setError(`${data.error ?? "credit_grant_failed"}${maxHint}`);
-        return;
-      }
-      setRows((prev) => prev.map((r) =>
-        r.authUserId === row.authUserId
-          ? { ...r, balance: Number(data.balance ?? r.balance ?? 0), creditRowExists: true }
-          : r,
-      ));
-      setCreditDrafts((prev) => ({ ...prev, [row.authUserId]: "" }));
-      setNotice(`${target} 회원에게 크레딧 ${Number(data.amount ?? amount).toLocaleString("ko-KR")}개 지급 완료`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "network error");
-    } finally {
-      setCreditPendingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(row.authUserId);
-        return next;
-      });
-    }
-  }
-
-  // Wave launch-95: 크레딧 회수. 양심 신뢰 충전 후 입금 안 한 사용자 처리.
-  async function revokeCredits(row: MemberRow) {
-    const rawAmount = revokeDrafts[row.authUserId] ?? "";
-    const amount = Math.round(Number(rawAmount));
-    if (!Number.isFinite(amount) || amount <= 0) {
-      setError("회수할 크레딧 개수를 1 이상으로 입력해주세요.");
-      setNotice(null);
-      return;
-    }
-    const target = row.nickname || row.email || row.authUserId;
-    const ok = window.confirm(`${target} 회원의 크레딧 ${amount.toLocaleString("ko-KR")}개를 회수할까요?\n(입금 안 했거나 의심스러운 경우)`);
-    if (!ok) return;
-
-    setError(null);
-    setNotice(null);
-    setRevokePendingIds((prev) => new Set(prev).add(row.authUserId));
-    try {
-      const res = await fetch("/api/admin/credits/revoke", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ authUserId: row.authUserId, amount, note: "operator manual deposit revoke" }),
-      });
-      const data = (await res.json()) as { ok?: boolean; balance?: number; error?: string };
-      if (!res.ok || !data.ok) {
-        setError(data.error ?? "credit_revoke_failed");
-        return;
-      }
-      setRows((prev) => prev.map((r) =>
-        r.authUserId === row.authUserId
-          ? { ...r, balance: Number(data.balance ?? r.balance ?? 0) }
-          : r,
-      ));
-      setRevokeDrafts((prev) => ({ ...prev, [row.authUserId]: "" }));
-      setNotice(`${target} 회원의 크레딧 ${amount.toLocaleString("ko-KR")}개 회수 완료`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "network error");
-    } finally {
-      setRevokePendingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(row.authUserId);
-        return next;
-      });
-    }
-  }
-
-  // Wave launch-95: 계정 차단/해제 toggle.
-  async function toggleBlock(row: MemberRow) {
-    const blocking = !row.blockedAt;
-    const target = row.nickname || row.email || row.authUserId;
-    let reason: string | null = null;
-    if (blocking) {
-      const input = window.prompt(`${target} 회원 차단 사유 (선택):`, "manual deposit fraud");
-      if (input === null) return;
-      reason = input.trim() || "blocked by operator";
-    } else {
-      const ok = window.confirm(`${target} 회원 차단을 해제할까요?`);
-      if (!ok) return;
-    }
-
-    setError(null);
-    setNotice(null);
-    setBlockPendingIds((prev) => new Set(prev).add(row.authUserId));
-    try {
-      const res = await fetch("/api/admin/user/block", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ authUserId: row.authUserId, blocked: blocking, reason }),
-      });
-      const data = (await res.json()) as { ok?: boolean; blockedAt?: string | null; error?: string };
-      if (!res.ok || !data.ok) {
-        setError(data.error ?? "block_toggle_failed");
-        return;
-      }
-      setRows((prev) => prev.map((r) =>
-        r.authUserId === row.authUserId
-          ? { ...r, blockedAt: data.blockedAt ?? null, blockedReason: blocking ? reason : null }
-          : r,
-      ));
-      setNotice(blocking ? `${target} 회원 차단됨` : `${target} 회원 차단 해제됨`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "network error");
-    } finally {
-      setBlockPendingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(row.authUserId);
-        return next;
-      });
-    }
-  }
-
-  // Wave launch-100: 체크박스 toggle + 일괄 삭제.
   function toggleSelect(authUserId: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -277,250 +76,345 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
       return next;
     });
   }
-  function toggleSelectAll() {
-    if (selectedIds.size === filteredRows.length && filteredRows.length > 0) {
-      setSelectedIds(new Set());
+  function toggleSelectAllOnPage() {
+    const pageIds = pageRows.map((r) => r.authUserId);
+    const allSelected = pageIds.every((id) => selectedIds.has(id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      pageIds.forEach((id) => { if (allSelected) next.delete(id); else next.add(id); });
+      return next;
+    });
+  }
+
+  function markPending(id: string, on: boolean) {
+    setActionPending((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(id); else next.delete(id);
+      return next;
+    });
+  }
+
+  async function grantCredits(row: MemberRow, amount: number) {
+    if (amount <= 0) { setError("크레딧 개수를 1 이상으로 입력해주세요."); return; }
+    const target = row.nickname || row.email || row.authUserId;
+    if (!window.confirm(`${target} 에게 크레딧 ${amount.toLocaleString("ko-KR")}개 지급?`)) return;
+    setError(null); setNotice(null); markPending(row.authUserId, true);
+    try {
+      const res = await fetch("/api/admin/credits/grant", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ authUserId: row.authUserId, amount, note: "operator members drawer" }),
+      });
+      const data = (await res.json()) as { ok?: boolean; balance?: number; error?: string };
+      if (!res.ok || !data.ok) { setError(data.error ?? "credit_grant_failed"); return; }
+      setRows((prev) => prev.map((r) => r.authUserId === row.authUserId ? { ...r, balance: Number(data.balance ?? r.balance ?? 0), creditRowExists: true } : r));
+      setNotice(`${target} +${amount.toLocaleString("ko-KR")} 지급`);
+    } catch (err) { setError(err instanceof Error ? err.message : "network error"); }
+    finally { markPending(row.authUserId, false); }
+  }
+
+  async function revokeCredits(row: MemberRow, amount: number) {
+    if (amount <= 0) { setError("크레딧 개수를 1 이상으로 입력해주세요."); return; }
+    const target = row.nickname || row.email || row.authUserId;
+    if (!window.confirm(`${target} 회수 ${amount.toLocaleString("ko-KR")}개?`)) return;
+    setError(null); setNotice(null); markPending(row.authUserId, true);
+    try {
+      const res = await fetch("/api/admin/credits/revoke", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ authUserId: row.authUserId, amount, note: "operator members drawer" }),
+      });
+      const data = (await res.json()) as { ok?: boolean; balance?: number; error?: string };
+      if (!res.ok || !data.ok) { setError(data.error ?? "credit_revoke_failed"); return; }
+      setRows((prev) => prev.map((r) => r.authUserId === row.authUserId ? { ...r, balance: Number(data.balance ?? r.balance ?? 0) } : r));
+      setNotice(`${target} −${amount.toLocaleString("ko-KR")} 회수`);
+    } catch (err) { setError(err instanceof Error ? err.message : "network error"); }
+    finally { markPending(row.authUserId, false); }
+  }
+
+  async function toggleBlock(row: MemberRow) {
+    const blocking = !row.blockedAt;
+    const target = row.nickname || row.email || row.authUserId;
+    let reason: string | null = null;
+    if (blocking) {
+      const input = window.prompt(`${target} 차단 사유:`, "manual deposit fraud");
+      if (input === null) return;
+      reason = input.trim() || "blocked by operator";
     } else {
-      setSelectedIds(new Set(filteredRows.map((r) => r.authUserId)));
+      if (!window.confirm(`${target} 차단 해제?`)) return;
     }
+    setError(null); setNotice(null); markPending(row.authUserId, true);
+    try {
+      const res = await fetch("/api/admin/user/block", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ authUserId: row.authUserId, blocked: blocking, reason }),
+      });
+      const data = (await res.json()) as { ok?: boolean; blockedAt?: string | null; error?: string };
+      if (!res.ok || !data.ok) { setError(data.error ?? "block_toggle_failed"); return; }
+      setRows((prev) => prev.map((r) => r.authUserId === row.authUserId ? { ...r, blockedAt: data.blockedAt ?? null, blockedReason: blocking ? reason : null } : r));
+      setNotice(`${target} ${blocking ? "차단" : "차단 해제"}`);
+    } catch (err) { setError(err instanceof Error ? err.message : "network error"); }
+    finally { markPending(row.authUserId, false); }
   }
 
   async function deleteSelected() {
     const ids = [...selectedIds];
     if (ids.length === 0) return;
-    const summary = ids.length === 1
-      ? `${rows.find((r) => r.authUserId === ids[0])?.email ?? ids[0]} 계정`
-      : `${ids.length}명 계정`;
-    const confirm1 = window.confirm(`${summary}을 영구 삭제할까요?\n\n삭제 시 auth.users + 크레딧 + 결제 이력 등 모든 데이터가 사라져요.`);
-    if (!confirm1) return;
-    const phrase = window.prompt(`정말 삭제하려면 "삭제" 를 입력하세요:`, "");
-    if (phrase?.trim() !== "삭제") {
-      setError("삭제 확인 문구가 일치하지 않아 취소됐어요.");
-      return;
-    }
-
-    setError(null);
-    setNotice(null);
-    setDeleteInProgress(true);
+    if (!window.confirm(`${ids.length}명 계정을 영구 삭제? auth.users + 크레딧 + 결제 이력 다 사라짐.`)) return;
+    const phrase = window.prompt(`정말 삭제하려면 "삭제" 입력:`, "");
+    if (phrase?.trim() !== "삭제") { setError("삭제 확인 문구 불일치 — 취소됨."); return; }
+    setError(null); setNotice(null); setDeleteInProgress(true);
     try {
       const res = await fetch("/api/admin/users/delete", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
+        method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ authUserIds: ids }),
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; deleted?: number; total?: number; error?: string; message?: string };
-      if (!res.ok || !data.ok) {
-        setError(data.message ?? data.error ?? `삭제 실패 (${res.status})`);
-        return;
-      }
+      if (!res.ok || !data.ok) { setError(data.message ?? data.error ?? `삭제 실패 (${res.status})`); return; }
       setRows((prev) => prev.filter((r) => !selectedIds.has(r.authUserId)));
       setSelectedIds(new Set());
-      setNotice(`${data.deleted ?? 0}/${data.total ?? ids.length}명 삭제 완료`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "network error");
-    } finally {
-      setDeleteInProgress(false);
-    }
+      setNotice(`${data.deleted ?? 0}/${data.total ?? ids.length} 삭제 완료`);
+    } catch (err) { setError(err instanceof Error ? err.message : "network error"); }
+    finally { setDeleteInProgress(false); }
   }
 
   return (
-    <>
-      {notice ? (
-        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
-          {notice}
-        </div>
-      ) : null}
-      {error ? (
-        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
-          {error}
-        </div>
-      ) : null}
-
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <section className="mt-6 font-mono">
+      {/* header bar */}
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-400">▌MEMBERS</h2>
         <input
           type="search"
+          placeholder="SEARCH email / nickname"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="이메일 / 닉네임 검색..."
-          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 dark:border-zinc-700 dark:bg-zinc-900 dark:placeholder:text-gray-500 sm:max-w-xs"
+          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+          className="ml-auto h-7 w-[260px] rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-[11px] text-zinc-200 placeholder:text-zinc-600 focus:border-amber-500/50 focus:outline-none"
         />
-        <div className="flex flex-wrap gap-1.5 text-xs">
-          {(["all", "free", "starter", "plus", "pro"] as const).map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setPlanFilter(v)}
-              className={`rounded-md px-2 py-1 font-bold transition ${
-                planFilter === v
-                  ? "bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900"
-                  : "border border-gray-300 bg-white text-gray-600 hover:border-gray-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-400"
-              }`}
-            >
-              {v === "all" ? "플랜 전체" : v[0].toUpperCase() + v.slice(1)}
-            </button>
-          ))}
-          <span className="mx-1 inline-block w-px self-stretch bg-gray-200 dark:bg-zinc-700" />
-          {(["all", "beta", "non-beta"] as const).map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setBetaFilter(v)}
-              className={`rounded-md px-2 py-1 font-bold transition ${
-                betaFilter === v
-                  ? "bg-purple-600 text-white"
-                  : "border border-gray-300 bg-white text-gray-600 hover:border-purple-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-400"
-              }`}
-            >
-              {v === "all" ? "베타 전체" : v === "beta" ? "베타 ✓" : "베타 ✗"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-        <span>{filteredRows.length}건 표시 (전체 {rows.length})</span>
-        {/* Wave launch-100: 선택된 row 일괄 삭제 button. */}
         {selectedIds.size > 0 ? (
           <button
             type="button"
             onClick={() => void deleteSelected()}
             disabled={deleteInProgress}
-            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-rose-600 px-3 text-xs font-black text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-50"
+            className="inline-flex h-7 items-center gap-1 rounded-sm border border-rose-700 bg-rose-900/40 px-2.5 text-[10px] font-black uppercase tracking-wide text-rose-300 transition hover:bg-rose-900/60 disabled:opacity-50"
           >
-            {deleteInProgress ? "..." : `🗑 ${selectedIds.size}명 삭제`}
+            {deleteInProgress ? "..." : `DELETE ${selectedIds.size}`}
           </button>
         ) : null}
       </div>
 
-      {/* Wave launch-101: bloomberg 터미널 톤 — bg zinc-950 + mono + 작은 글자 + amber accent. */}
-      <div className="mt-2 overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950">
-        <table className="w-full min-w-[1500px] font-mono text-[11px]">
+      {notice ? (
+        <div className="mb-2 rounded-sm border border-emerald-900/50 bg-emerald-950/30 px-2.5 py-1.5 text-[10px] font-bold text-emerald-300">
+          {notice}
+        </div>
+      ) : null}
+      {error ? (
+        <div className="mb-2 rounded-sm border border-rose-900/50 bg-rose-950/30 px-2.5 py-1.5 text-[10px] font-bold text-rose-300">
+          {error}
+        </div>
+      ) : null}
+
+      {/* table */}
+      <div className="overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950">
+        <table className="w-full text-[11px]">
           <thead className="bg-zinc-900/80">
             <tr className="border-b border-zinc-800 text-left text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">
-              {/* Wave launch-100: 헤더 전체 선택 체크박스. */}
               <th className="w-9 px-3 py-2">
                 <input
                   type="checkbox"
-                  aria-label="전체 선택"
-                  checked={selectedIds.size > 0 && selectedIds.size === filteredRows.length}
-                  ref={(el) => { if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < filteredRows.length; }}
-                  onChange={toggleSelectAll}
-                  className="h-4 w-4 cursor-pointer accent-rose-600"
+                  aria-label="페이지 전체 선택"
+                  checked={pageRows.length > 0 && pageRows.every((r) => selectedIds.has(r.authUserId))}
+                  ref={(el) => {
+                    if (!el) return;
+                    const some = pageRows.some((r) => selectedIds.has(r.authUserId));
+                    const all = pageRows.every((r) => selectedIds.has(r.authUserId));
+                    el.indeterminate = some && !all;
+                  }}
+                  onChange={toggleSelectAllOnPage}
+                  className="h-3.5 w-3.5 cursor-pointer accent-amber-500"
                 />
               </th>
-              <th className="px-3 py-2">닉네임</th>
-              {/* Wave launch-96 (사용자 정정 — 구독제 무 / 베타 체험단 무): 플랜/플랜만료/일일 사용/최근 결제/베타 column 제거.
-                  현재 시스템 = 크레딧 패키지만. 단순화. */}
-              <th className="px-3 py-2">이메일</th>
-              <th className="px-3 py-2">가입일</th>
-              <th className="px-3 py-2">마지막 로그인</th>
-              <th className="px-3 py-2">크레딧</th>
-              <th className="px-3 py-2">회수</th>
-              <th className="px-3 py-2">차단</th>
-              <th className="px-3 py-2">provider</th>
+              <th className="px-3 py-2">NICK</th>
+              <th className="px-3 py-2">EMAIL</th>
+              <th className="px-3 py-2 text-right">CREDIT</th>
+              <th className="px-3 py-2">STATUS</th>
+              <th className="px-3 py-2">PROV</th>
             </tr>
           </thead>
           <tbody>
-            {filteredRows.map((row) => {
-              const planActive = row.planStatus === "active";
-              const badge = PLAN_BADGE[row.planKey] ?? PLAN_BADGE.free;
-              const pending = pendingIds.has(row.authUserId);
-              const creditPending = creditPendingIds.has(row.authUserId);
-              const revokePending = revokePendingIds.has(row.authUserId);
-              const blockPending = blockPendingIds.has(row.authUserId);
+            {pageRows.length === 0 ? (
+              <tr><td colSpan={6} className="px-3 py-6 text-center text-[10px] uppercase tracking-wide text-zinc-600">no results</td></tr>
+            ) : pageRows.map((row) => {
               const isBlocked = Boolean(row.blockedAt);
+              const isSelected = selectedIds.has(row.authUserId);
               return (
-                <tr key={row.authUserId} className={`border-b border-zinc-900 transition hover:bg-zinc-900/40 ${selectedIds.has(row.authUserId) ? "bg-rose-950/25" : ""}`}>
-                  {/* Wave launch-100: row 체크박스 */}
-                  <td className="px-3 py-2">
+                <tr
+                  key={row.authUserId}
+                  onClick={() => setDrawerId(row.authUserId)}
+                  className={`cursor-pointer border-b border-zinc-900 transition hover:bg-zinc-900/40 ${isSelected ? "bg-amber-950/20" : ""} ${isBlocked ? "opacity-70" : ""}`}
+                >
+                  <td className="px-3 py-2" onClick={(e) => { e.stopPropagation(); toggleSelect(row.authUserId); }}>
                     <input
                       type="checkbox"
-                      aria-label={`${row.email ?? row.authUserId} 선택`}
-                      checked={selectedIds.has(row.authUserId)}
+                      aria-label="row 선택"
+                      checked={isSelected}
                       onChange={() => toggleSelect(row.authUserId)}
-                      className="h-4 w-4 cursor-pointer accent-rose-600"
+                      className="h-3.5 w-3.5 cursor-pointer accent-amber-500"
                     />
                   </td>
-                  <td className="px-3 py-2 font-semibold">{row.nickname || "—"}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{row.email ?? "—"}</td>
-                  {/* Wave launch-96: 플랜/플랜만료/일일사용/최근결제 td 제거 (구독제 무). */}
-                  <td className="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400">{fmt(row.createdAt)}</td>
-                  <td className="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400">{fmt(row.lastSignInAt)}</td>
+                  <td className="px-3 py-2 font-semibold text-zinc-200">{row.nickname || "—"}</td>
+                  <td className="px-3 py-2 text-zinc-400">{row.email ?? "—"}</td>
+                  <td className="px-3 py-2 text-right font-bold tabular-nums text-amber-400">{row.balance?.toLocaleString("ko-KR") ?? "—"}</td>
                   <td className="px-3 py-2">
-                    <div className="flex items-center justify-end gap-2">
-                      <span className="min-w-12 text-right font-mono">{row.balance ?? "—"}</span>
-                      <input
-                        type="number"
-                        min={1}
-                        step={1}
-                        inputMode="numeric"
-                        value={creditDrafts[row.authUserId] ?? ""}
-                        onChange={(e) => setCreditDrafts((prev) => ({ ...prev, [row.authUserId]: e.target.value }))}
-                        placeholder="개수"
-                        className="h-7 w-20 rounded-md border border-gray-300 bg-white px-2 text-right font-mono text-xs outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:ring-emerald-950"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => void grantCredits(row)}
-                        disabled={creditPending}
-                        className="inline-flex h-7 items-center rounded-md bg-emerald-600 px-2.5 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-                        title="운영자 수동 크레딧 지급"
-                      >
-                        {creditPending ? "..." : "지급"}
-                      </button>
-                    </div>
+                    {isBlocked ? (
+                      <span className="rounded-sm border border-rose-800/60 bg-rose-950/40 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-rose-300">BLOCKED</span>
+                    ) : (
+                      <span className="text-[9px] uppercase tracking-wide text-zinc-600">active</span>
+                    )}
                   </td>
-                  {/* Wave launch-95: 회수 input + button. 양심 신뢰 충전 후 입금 안 한 사용자 회수 용도. */}
-                  <td className="px-3 py-2">
-                    <div className="flex items-center justify-end gap-2">
-                      <input
-                        type="number"
-                        min={1}
-                        step={1}
-                        inputMode="numeric"
-                        value={revokeDrafts[row.authUserId] ?? ""}
-                        onChange={(e) => setRevokeDrafts((prev) => ({ ...prev, [row.authUserId]: e.target.value }))}
-                        placeholder="개수"
-                        className="h-7 w-20 rounded-md border border-gray-300 bg-white px-2 text-right font-mono text-xs outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-100 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:ring-rose-950"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => void revokeCredits(row)}
-                        disabled={revokePending || !row.creditRowExists}
-                        className="inline-flex h-7 items-center rounded-md bg-rose-600 px-2.5 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50"
-                        title="입금 안 한 사용자 크레딧 회수"
-                      >
-                        {revokePending ? "..." : "회수"}
-                      </button>
-                    </div>
-                  </td>
-                  {/* Wave launch-95: 차단/해제 toggle. */}
-                  <td className="px-3 py-2">
-                    <button
-                      type="button"
-                      onClick={() => void toggleBlock(row)}
-                      disabled={blockPending || !row.creditRowExists}
-                      className={`inline-flex h-7 items-center rounded-md px-2.5 text-xs font-bold transition disabled:opacity-50 ${
-                        isBlocked
-                          ? "bg-zinc-800 text-white hover:bg-zinc-900"
-                          : "border border-gray-300 bg-white text-gray-700 hover:border-rose-400 hover:bg-rose-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-300"
-                      }`}
-                      title={isBlocked ? `차단됨: ${row.blockedReason ?? "-"} — 클릭하면 해제` : "결제 차단"}
-                    >
-                      {blockPending ? "..." : isBlocked ? "✕ 차단" : "차단"}
-                    </button>
-                    {isBlocked && row.blockedAt ? (
-                      <div className="mt-0.5 font-mono text-[10px] text-rose-600 dark:text-rose-400">{fmt(row.blockedAt)}</div>
-                    ) : null}
-                  </td>
-                  {/* Wave launch-96: 베타 체험단 td 제거 (현재 시스템 무관). */}
-                  <td className="px-3 py-2 text-xs text-gray-500">{row.provider ?? "—"}</td>
+                  <td className="px-3 py-2 text-[10px] uppercase text-zinc-500">{row.provider ?? "—"}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
-    </>
+
+      {/* pagination */}
+      {totalPages > 1 ? (
+        <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-wide text-zinc-500">
+          <span>page {currentPage + 1} / {totalPages} · {filteredRows.length} rows</span>
+          <div className="flex gap-1">
+            <button type="button" onClick={() => setPage(Math.max(0, currentPage - 1))} disabled={currentPage === 0} className="h-7 rounded-sm border border-zinc-800 bg-zinc-900 px-2.5 font-bold text-zinc-300 hover:border-zinc-700 disabled:opacity-30">‹ PREV</button>
+            <button type="button" onClick={() => setPage(Math.min(totalPages - 1, currentPage + 1))} disabled={currentPage >= totalPages - 1} className="h-7 rounded-sm border border-zinc-800 bg-zinc-900 px-2.5 font-bold text-zinc-300 hover:border-zinc-700 disabled:opacity-30">NEXT ›</button>
+          </div>
+        </div>
+      ) : null}
+
+      {/* drawer */}
+      {drawerRow ? (
+        <MemberDrawer
+          row={drawerRow}
+          onClose={() => setDrawerId(null)}
+          pending={actionPending.has(drawerRow.authUserId)}
+          onGrant={(amount) => void grantCredits(drawerRow, amount)}
+          onRevoke={(amount) => void revokeCredits(drawerRow, amount)}
+          onToggleBlock={() => void toggleBlock(drawerRow)}
+        />
+      ) : null}
+    </section>
+  );
+}
+
+function MemberDrawer({
+  row, onClose, pending, onGrant, onRevoke, onToggleBlock,
+}: {
+  row: MemberRow;
+  onClose: () => void;
+  pending: boolean;
+  onGrant: (amount: number) => void;
+  onRevoke: (amount: number) => void;
+  onToggleBlock: () => void;
+}) {
+  const [grantAmount, setGrantAmount] = useState("");
+  const [revokeAmount, setRevokeAmount] = useState("");
+  const isBlocked = Boolean(row.blockedAt);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      className="fixed inset-0 z-[80] flex justify-end bg-black/55 backdrop-blur-sm font-mono"
+    >
+      <aside
+        onClick={(e) => e.stopPropagation()}
+        className="flex h-full w-full max-w-[420px] flex-col overflow-y-auto border-l border-zinc-800 bg-zinc-950 px-5 py-6 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <div className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">MEMBER PROFILE</div>
+            <div className="mt-1 text-lg font-black text-zinc-50">{row.nickname || "—"}</div>
+            <div className="mt-0.5 text-[11px] text-zinc-500">{row.email ?? "—"}</div>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-400 hover:text-zinc-200">CLOSE</button>
+        </div>
+
+        {/* meta */}
+        <dl className="mt-6 grid grid-cols-[100px_minmax(0,1fr)] gap-y-2.5 text-[11px]">
+          <dt className="font-bold uppercase tracking-wide text-zinc-500">CREATED</dt>
+          <dd className="tabular-nums text-zinc-300">{fmt(row.createdAt)}</dd>
+          <dt className="font-bold uppercase tracking-wide text-zinc-500">LAST LOGIN</dt>
+          <dd className="tabular-nums text-zinc-300">{fmt(row.lastSignInAt)}</dd>
+          <dt className="font-bold uppercase tracking-wide text-zinc-500">PROVIDER</dt>
+          <dd className="text-zinc-300">{row.provider ?? "—"}</dd>
+          <dt className="font-bold uppercase tracking-wide text-zinc-500">CREDIT</dt>
+          <dd className="font-bold tabular-nums text-amber-400">{row.balance?.toLocaleString("ko-KR") ?? "—"}</dd>
+          <dt className="font-bold uppercase tracking-wide text-zinc-500">STATUS</dt>
+          <dd>
+            {isBlocked ? (
+              <span className="rounded-sm border border-rose-800/60 bg-rose-950/40 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-rose-300">BLOCKED</span>
+            ) : (
+              <span className="text-[11px] uppercase tracking-wide text-zinc-500">active</span>
+            )}
+          </dd>
+          {row.blockedReason ? (
+            <>
+              <dt className="font-bold uppercase tracking-wide text-zinc-500">BLOCK REASON</dt>
+              <dd className="text-[10px] text-rose-300/80">{row.blockedReason}</dd>
+            </>
+          ) : null}
+          <dt className="font-bold uppercase tracking-wide text-zinc-500">AUTH ID</dt>
+          <dd className="break-all font-mono text-[9px] text-zinc-600">{row.authUserId}</dd>
+        </dl>
+
+        {/* actions */}
+        <div className="mt-6 space-y-3">
+          {/* grant */}
+          <div>
+            <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-emerald-400">▌GRANT CREDIT</div>
+            <div className="flex gap-2">
+              <input
+                type="number" min={1} step={1} value={grantAmount}
+                onChange={(e) => setGrantAmount(e.target.value)}
+                placeholder="amount"
+                className="h-8 flex-1 rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-right text-[11px] tabular-nums text-zinc-200 focus:border-emerald-700 focus:outline-none"
+              />
+              <button
+                type="button" disabled={pending || !grantAmount} onClick={() => onGrant(Math.round(Number(grantAmount)))}
+                className="rounded-sm border border-emerald-800 bg-emerald-900/40 px-3 text-[10px] font-black uppercase tracking-wide text-emerald-300 hover:bg-emerald-900/60 disabled:opacity-40"
+              >GRANT</button>
+            </div>
+          </div>
+
+          {/* revoke */}
+          <div>
+            <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-rose-400">▌REVOKE CREDIT</div>
+            <div className="flex gap-2">
+              <input
+                type="number" min={1} step={1} value={revokeAmount}
+                onChange={(e) => setRevokeAmount(e.target.value)}
+                placeholder="amount"
+                className="h-8 flex-1 rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-right text-[11px] tabular-nums text-zinc-200 focus:border-rose-700 focus:outline-none"
+              />
+              <button
+                type="button" disabled={pending || !revokeAmount || !row.creditRowExists} onClick={() => onRevoke(Math.round(Number(revokeAmount)))}
+                className="rounded-sm border border-rose-800 bg-rose-900/40 px-3 text-[10px] font-black uppercase tracking-wide text-rose-300 hover:bg-rose-900/60 disabled:opacity-40"
+              >REVOKE</button>
+            </div>
+          </div>
+
+          {/* block toggle */}
+          <div>
+            <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400">▌ACCOUNT</div>
+            <button
+              type="button" disabled={pending || !row.creditRowExists} onClick={onToggleBlock}
+              className={`w-full rounded-sm border px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition disabled:opacity-40 ${
+                isBlocked
+                  ? "border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+                  : "border-zinc-700 bg-zinc-900 text-rose-300 hover:bg-rose-950/40"
+              }`}
+            >{isBlocked ? "UNBLOCK ACCOUNT" : "BLOCK ACCOUNT"}</button>
+          </div>
+        </div>
+      </aside>
+    </div>
   );
 }

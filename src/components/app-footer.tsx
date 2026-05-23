@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const legalLinks = [
   { href: "/terms", label: "이용약관" },
@@ -10,6 +13,11 @@ const legalLinks = [
 // Wave 372: 모바일 친화 푸터 — 사업자 정보 collapse. 한국 전자상거래법은 "표시" 요건만,
 // 형태 자유. 데스크탑은 기본 열림 (sm+), 모바일은 닫힘 → 사용자 클릭 시 펼침.
 export default function AppFooter() {
+  // Wave launch-102 (사용자 정정): cau* admin path 면 footer hide.
+  const pathname = usePathname();
+  if (pathname && pathname.startsWith("/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY")) {
+    return null;
+  }
   return (
     <footer className="mt-10 border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div className="mx-auto w-full max-w-[1380px] px-4 py-5 text-xs text-zinc-600 sm:px-6 sm:py-7 lg:px-8">
