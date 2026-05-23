@@ -7096,8 +7096,10 @@ export const CATALOG: Sku[] = [
     // Wave 236 (2026-05-19): brand 강제 — mustContain 첫 그룹이 "폴로/polo" 만이면 다른 brand 매물도 매칭.
     //   사용자 코멘트: 바나나리퍼블릭/타미힐피거/유니클로/나이키 골프/아디다스 스쿼드라/DKNY/무스너클/세터/렉토/캐피탈/빌보콰/폴스미스/헤지스 다 매칭.
     //   fix: mustContain 에 polo "랄프 로렌" / "ralph lauren" 그룹 강제 추가 OR mustNotContain 에 비폴로 brand.
-    //   둘 다 적용 — Polo Bear/RRL 별도 SKU 있으니 정확.
-    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"], ["피케", "pique", "pk ", "pk티", "pk 티", "카라티", "카라 티"], ["랄프", "ralph", "polo ralph", "rl", "pony", "포니"]],
+    // Wave 737 leak fix (2026-05-24): group 2 ["랄프", "포니", "rl"] 제거 — group 0의 "폴로/polo/랄프로렌"으로 충분.
+    //   462건 unmatched 분석: 매물 "폴로 피케티 카라티 네이비"는 group 0/1 매칭하지만 group 2 없어 leak.
+    //   mustNotContain에 이미 비폴로 brand 모두 차단되어 있어 false positive 위험 낮음.
+    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"], ["피케", "pique", "pk ", "pk티", "pk 티", "카라티", "카라 티"]],
     mustNotContain: [
       "RRL", "purple label", "퍼플라벨", "polo bear", "베어", "키즈", "kids", "여아", "남아", "토들러",
       // Wave 236: 비폴로 brand 매물 차단 (사용자 코멘트 직접 발견 brand 다수).
