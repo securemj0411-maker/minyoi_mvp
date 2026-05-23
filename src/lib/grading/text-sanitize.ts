@@ -104,6 +104,23 @@ function stripMarketingBoilerplate(text: string): string {
     /모든\s*제품\s*퀵\s*가능/g,
     // 명품 reseller 컨디션 표 (sanitize 안 되면 axis 오염)
     /컨디션\s*기준표/g,
+    // Wave 721 (2026-05-23): launch-79/80 후속 — D-tier "빈티지" 단독 매칭 371건 audit.
+    //   30 sample 분석 결과 60-70%가 "빈티지 매장 boilerplate" (셀러 disclaimers).
+    //   실제 매물 상태와 무관하지만 axis A의 wear=vintage 매칭 → D tier 강제.
+    //   진짜 vintage (연도/decade 명시) 는 보존, 매장 disclaimers만 마스킹.
+    /빈티지\s*(?:제품)?\s*특성상.{0,80}/g,    // "빈티지 특성상 교환/반품 불가능합니다 미처 발견하지 못한 하자나"
+    /빈티지\s*\/\s*세컨핸드/g,                // "판매되는 모든 제품은 빈티지/세컨핸드"
+    /빈티지의류\s*예민\s*하신/g,              // "빈티지의류 예민 하신분은 구매 하지마세요"
+    /빈티지\s*나\s*중고에\s*민감/g,           // "빈티지나 중고에 민감하신 분들은 패스"
+    /빈티지\s*샵에서\s*구매/g,                // "일본 빈티지 샵에서 구매했으며"
+    /정품\s*빈티지\s*구매\s*후/g,             // "정품 빈티지 구매 후 시착조차"
+    /빈티지\s*박스(?:입니다|예요)?/g,         // "(빈티지박스)" — 매장 표시
+    /#\s*빈티지\w*/g,                         // "#빈티지만냥" / "#빈티지샵" 해시태그
+    /빈티지의?\s*특성/g,                      // "빈티지 특성"
+    /빈티지\s*컨디션\s*사진\s*참고/g,         // "빈티지 컨디션 사진 참고해주세요"
+    // 매장 disclaimers 일반
+    /최저가로\s*주\s*\d\s*일\s*업데이트/g,    // "최저가로 주6일 업데이트중"
+    /낱개\s*구매시\s*바로\s*안전결제/g,       // 매장 boilerplate
   ];
   for (const re of RESELLER_BOILERPLATE_PATTERNS) {
     text = text.replace(re, "(reseller)");

@@ -71,9 +71,25 @@ export function gradeClothingCondition(input: ClothingGradeInput): ConditionGrad
 
   let finalTier: ConditionTier = tier;
   let confidence = computeConfidence(positiveMatches.length, negativeMatches.length, rawTextLength);
+  let finalReason = reason;
   if (tier === "B" && positiveMatches.length === 0 && negativeMatches.length === 0 && enumPrior) {
     finalTier = applyEnumPrior(enumPrior);
     confidence = 0.45;
+  }
+  // Wave 721 (2026-05-23): D-tier "빈티지" 단독 매칭 sample 30건 검토 결과 60-70%가 매장 boilerplate.
+  //   text-sanitize에서 boilerplate masking 강화했으나 잔여 가짜 신호 존재.
+  //   single-signal "빈티지" (다른 wear/damage 신호 0) 이면 → B로 demote + confidence ↓.
+  //   진짜 vintage 매물은 연도/decade 명시 (90s/2000년대) + wear signal 동반 → D 유지.
+  if (
+    tier === "D"
+    && labels.wear === "vintage"
+    && positiveMatches.length === 1
+    && positiveMatches[0] === "빈티지"
+    && negativeMatches.length === 0
+  ) {
+    finalTier = "B";
+    confidence = Math.min(confidence, 0.5);
+    finalReason = "wear=vintage 단독 매칭 → B로 demote (Wave 721 — 매장 boilerplate 가능성 ↑)";
   }
 
   return {
@@ -86,7 +102,7 @@ export function gradeClothingCondition(input: ClothingGradeInput): ConditionGrad
       axes: labels,
       rawTextLength,
       enumPrior,
-      reason,
+      reason: finalReason,
     },
     flags: buildFlags(labels),
     chips: chipsFromClothingAxes(labels),
