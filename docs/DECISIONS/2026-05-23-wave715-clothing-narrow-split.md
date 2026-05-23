@@ -89,11 +89,54 @@
 - score_dirty 트리거 (영향 매물 reparse)
 - 즉시 commit + log update
 
-## Phase 3 — 검증
+## Phase 2 실행 결과
 
-- 각 narrow SKU spread 측정 (목표: <5x)
-- ready 진입 비율 측정
-- 매물 sample audit (10건 random check)
+### P0 (commit `492235a`) — 5 SKU 박음
+- polo_chiefkeef_stadium → modern chiefkeef + vintage 1992 OG 분리 (132x → narrow)
+- adidas_trefoil × bape collab 강화 (샤크/ape head/ape sta)
+- fog_main_jacket — London Fog 25% / Nike collab 분리
+- fog_main_pants — 동일 패턴
+- acne_apparel — bag 모델명 추가 차단 (plaque/whitley/kobenhavn/banner)
+- 신설 SKU: polo_stadium_1992_og, nike_fog_apparel_collab
+
+### P1 (commit `b4763a2`) — 14 SKU 박음 (catalog-715-clothing-narrow.ts 신설)
+- Thom Browne 6-split: 4-bar / Cardigan / Knit / Shirt / Suit-Coat / Sweat-Hoodie
+- Polo Apparel Vintage (488건 110x → 90s/00s archive)
+- Moncler 3-split: Maya / Grenoble / Tricot
+- Supreme Box Logo narrow
+- CDG 3-split: PLAY / Homme Plus / Junya
+- Arc'teryx LEAF / Veilance 분리
+- 기존 broad 6개 mustNotContain 추가 강화
+
+### P2-P3 (commit `6296647`) — 6 SKU 박음 + parser bug fix
+- Carhartt Heritage USA (WIP과 시세 다름)
+- Polo Oxford Vintage / Polo Pique Vintage / Polo Bear Vintage
+- Adidas Trefoil Archive
+- Stussy Vintage Collab
+- Patagonia Retro X 신찰라/싱칠라 오탈자 + fleece/pile 차단
+
+**Wave 715 신설 SKU: 25개** (P0 + P1 + P2-P3 누적)
+
+## Phase 3 — 검증 (deployment 후 24-48h)
+
+### Baseline spread (deployment 전, 2026-05-23)
+
+| Rank | SKU | n | spread |
+|---|---|---|---|
+| 1 | polo_chiefkeef_stadium | 43 | 132.0x |
+| 2 | acne_apparel | 33 | 122.7x |
+| 3 | polo_apparel_broad | 501 | 110.0x |
+| 4 | patagonia_synchilla | 53 | 72.0x |
+| 5 | adidas_trefoil | 332 | 70.0x |
+| 6 | thombrowne_apparel_broad | 639 | 58.0x |
+
+**score_dirty trigger 실행** — 4,602 raw_listings 큐 박음 (20 broad SKU 14d).
+tick pipeline reparse 후 narrow SKU에 reassignment 예상.
+
+### 24-48h 후 재측정 예정 항목
+- 각 narrow SKU spread (목표: <5x)
+- ready 진입 비율 (현재 60.8% → 75%+ 목표)
+- 매물 sample audit 10건/narrow SKU
 
 ## Phase 4 — backfill 모니터링
 
@@ -102,9 +145,19 @@
 
 ## 관련 파일
 
-- [src/lib/catalog.ts](../../src/lib/catalog.ts) — narrow SKU 추가
-- [src/lib/category-readiness.ts](../../src/lib/category-readiness.ts) — LANE_READINESS ready 등록
+- [src/lib/catalog.ts](../../src/lib/catalog.ts) — narrow SKU 추가 + broad 차단 강화
+- [src/lib/category-readiness.ts](../../src/lib/category-readiness.ts) — 25개 신설 SKU ready 등록
+- [src/lib/generated/catalog-715-clothing-narrow.ts](../../src/lib/generated/catalog-715-clothing-narrow.ts) — P1+P2-P3 신설 SKU 모음
+- [src/lib/generated/catalog-712b-bias-free.ts](../../src/lib/generated/catalog-712b-bias-free.ts) — P0 patch inline
+- [src/lib/generated/catalog-wave266-clothing.ts](../../src/lib/generated/catalog-wave266-clothing.ts) — broad 차단 보강
 - Wave 714t commit `3b81f25` — patagonia_retro_x 빈티지 차단 (이전 fix)
+
+## Wave 715 commit 추적
+
+- `5617c9b` — Wave 715 plan log (Phase 0/1 식별 + 진행 계획)
+- `492235a` — Wave 715 P0 (5 SKU)
+- `b4763a2` — Wave 715 P1 (10 SKU 박음 + 4 narrow 신설 → 총 14 SKU)
+- `6296647` — Wave 715 P2-P3 (7 SKU + parser fix)
 
 ## Agent 추적
 
@@ -118,7 +171,7 @@
 ## 진행 상황
 
 - [x] Phase 0 — SQL spread audit (20 SKU 식별)
-- [ ] Phase 1 — agent deep sweep n=5,000 (진행 중)
-- [ ] Phase 2 — narrow split sequential (agent 결과 후)
-- [ ] Phase 3 — 검증
-- [ ] Phase 4 — backfill 모니터링
+- [x] Phase 1 — agent deep sweep n=5,000 (완료, 결과 → P0/P1/P2/P3 우선순위)
+- [x] Phase 2 — narrow split sequential (25 SKU 신설 완료)
+- [x] Phase 3 — 검증 baseline 기록 + score_dirty 4,602건 큐 박음
+- [ ] Phase 4 — backfill 모니터링 (24-48h 후 재측정)
