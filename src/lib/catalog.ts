@@ -59,6 +59,7 @@ import { WAVE_733_SHOE_BROAD } from "@/lib/generated/catalog-733-shoe-broad";
 import { WAVE_734_MEGA_BRAND } from "@/lib/generated/catalog-734-mega-brand";
 import { WAVE_735_GOLF_BROAD_2 } from "@/lib/generated/catalog-735-golf-broad-2";
 import { WAVE_736_MM6_LACOSTE } from "@/lib/generated/catalog-736-mm6-lacoste";
+import { WAVE_737_SHOE_BROAD_2 } from "@/lib/generated/catalog-737-shoe-broad-2";
 
 export type Sku = {
   id: string;
@@ -7046,6 +7047,7 @@ export const CATALOG: Sku[] = [
   ...WAVE_734_MEGA_BRAND, // Wave 734 — 거대한 미발견 brand (FOG Essentials/Patagonia/Acne Studios/Nanamica/Tommy Hilfiger)
   ...WAVE_735_GOLF_BROAD_2, // Wave 735 — 골프웨어 추가 (FootJoy/AmazingCree/Callaway)
   ...WAVE_736_MM6_LACOSTE, // Wave 736 — MM6 Margiela / Lacoste broad / Mountain Hardwear
+  ...WAVE_737_SHOE_BROAD_2, // Wave 737 — 신발 broad 추가 (Dr.Martens broad/Timberland/Keen/Fila/Clarks/Clae)
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,

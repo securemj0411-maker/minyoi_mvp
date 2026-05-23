@@ -1033,6 +1033,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   mm6_margiela_apparel_broad: { status: "ready", label: "MM6 Maison Margiela Apparel", note: "Wave 736 — 123건/주 p50 22만 (sub-brand mass)." },
   lacoste_apparel_broad: { status: "ready", label: "Lacoste Apparel (Broad — polo 외)", note: "Wave 736 — 32건/주 p50 4.9만." },
   mountain_hardwear_broad: { status: "ready", label: "Mountain Hardwear Apparel", note: "Wave 736 — 14건/주 p50 3.9만." },
+  // Wave 737 — 신발 broad 추가
+  drmartens_broad: { status: "ready", label: "Dr. Martens Broad (narrow 외)", note: "Wave 737 — 191건/주 p50 8만." },
+  timberland_broad: { status: "ready", label: "Timberland (6인치 부츠/Earthkeepers)", note: "Wave 737 — 135건/주 p50 13.3만." },
+  keen_broad: { status: "ready", label: "Keen (Newport/Targhee/Uneek)", note: "Wave 737 — 79건/주 p50 10만." },
+  fila_shoe_broad: { status: "ready", label: "Fila Shoe (Disruptor/Ray)", note: "Wave 737 — 35건/주 p50 4.8만." },
+  clarks_broad: { status: "ready", label: "Clarks (Wallabee/Desert Boot)", note: "Wave 737 — 29건/주 p50 10만." },
+  clae_broad: { status: "ready", label: "Clae (Bradley/Malone/Mills)", note: "Wave 737 — 22건/주 p50 20만." },
   // Wave 733 — 신발 broad 6 SKU (salomon_xt_6 narrow는 이미 line 624 Wave 208 존재)
   salomon_broad: { status: "ready", label: "Salomon Broad (Pulsar/Speedcross/Sense)", note: "Wave 733 — 23건/주 p50 12-15만." },
   hoka_bondi: { status: "ready", label: "Hoka Bondi (시그니처 max cushion)", note: "Wave 733 — 7+건/주 p50 20만." },
