@@ -1,36 +1,81 @@
 "use client";
 
-// Wave 743 (2026-05-24): 모든 페이지 mount 시 ?ref= URL param 잡아서 sessionStorage 에 저장.
-//   middleware 가 production 에서 작동 안 하는 경우 대비 fallback (client-side 추적).
-//   layout.tsx 에 박혀 모든 페이지에서 자동 실행.
+// Wave 743/744 (2026-05-24): 레퍼럴 추적 + 인증 후 자동 claim.
+//   가입 방식 무관 (카카오 / 이메일 autoConfirm / 등) universal 처리.
 //
-// 흐름:
-//   1. 사용자 /?ref=GSWXEA 진입 → useEffect 가 URL 검사 → sessionStorage 에 저장
-//   2. 다른 페이지로 navigate (/login → /signup) — URL 에서 ?ref= 사라져도 sessionStorage 유지
-//   3. signup 페이지 button 클릭 → auth-form.tsx 가 sessionStorage 우선 읽기
-//   4. signInWithOAuth redirectTo URL 에 &ref= 박아 callback 에 전달
+// 두 단계:
+//   1. URL ?ref= 잡아서 localStorage 에 저장 (모든 페이지 mount 시)
+//   2. 사용자 인증 상태 확인 → ref 있고 로그인됐으면 /api/me/referral/claim POST → 성공 시 storage clear
+//
+// localStorage 사용 이유: sessionStorage 는 탭 단위라 새 탭 열면 손실. localStorage 는 영구.
+// 단 callback 으로 이미 처리된 경우 — claim endpoint 가 already_referred 반환 → silent skip.
 
 import { useEffect } from "react";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
-const REFERRAL_SESSION_KEY = "minyoi_referral";
+const REFERRAL_STORAGE_KEY = "minyoi_referral";
 const REFERRAL_CODE_PATTERN = /^[A-HJ-NP-Z2-9]{6}$/;
 
 export default function ReferralCapture() {
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // 1. URL ?ref= → localStorage 저장
     try {
       const url = new URL(window.location.href);
       const ref = url.searchParams.get("ref");
-      if (!ref) return;
-      const normalized = ref.toUpperCase();
-      if (!REFERRAL_CODE_PATTERN.test(normalized)) return;
-      // 이미 저장된 게 있으면 덮어쓰지 않음 (첫 추천만 유효)
-      if (sessionStorage.getItem(REFERRAL_SESSION_KEY)) return;
-      sessionStorage.setItem(REFERRAL_SESSION_KEY, normalized);
-      console.log("[referral-capture] saved", { code: normalized });
+      if (ref) {
+        const normalized = ref.toUpperCase();
+        if (REFERRAL_CODE_PATTERN.test(normalized) && !localStorage.getItem(REFERRAL_STORAGE_KEY)) {
+          localStorage.setItem(REFERRAL_STORAGE_KEY, normalized);
+          console.log("[referral-capture] code saved", { code: normalized });
+        }
+      }
     } catch {
-      // ignore — storage 비활성 (private mode 등)
+      // storage 비활성 (private mode 등)
     }
+
+    // 2. 저장된 code 있고 인증된 사용자면 server claim
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const stored = localStorage.getItem(REFERRAL_STORAGE_KEY);
+        if (!stored || !REFERRAL_CODE_PATTERN.test(stored)) return;
+        const { data } = await supabase.auth.getUser();
+        if (!data?.user || cancelled) return;
+        // 인증된 사용자 — claim endpoint 호출
+        const res = await fetch("/api/me/referral/claim", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: stored }),
+        });
+        if (cancelled) return;
+        if (res.ok) {
+          const result = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+          // 성공 또는 already_referred / self_referral / referrer_not_found → storage clear (재시도 막음)
+          localStorage.removeItem(REFERRAL_STORAGE_KEY);
+          if (result.ok) {
+            console.log("[referral-capture] claim granted");
+            // app-nav 가 listen — 자동 refetch + nav UI 갱신
+            window.dispatchEvent(new CustomEvent("minyoi:credits-changed"));
+          } else {
+            console.log("[referral-capture] claim skipped", { reason: result.error });
+          }
+        } else {
+          // 401 = 인증 안 됨 (race condition) — storage 유지, 다음 페이지 진입에 다시 시도
+          console.warn("[referral-capture] claim http error", { status: res.status });
+        }
+      } catch (err) {
+        console.warn("[referral-capture] claim failed", err instanceof Error ? err.message : String(err));
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return null;
