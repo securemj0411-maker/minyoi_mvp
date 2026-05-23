@@ -1021,6 +1021,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   columbia_apparel_broad: { status: "ready", label: "Columbia Apparel (패딩/플리스)", note: "Wave 732 — 9건/주 p50 6.2만." },
   blackyak_apparel_broad: { status: "ready", label: "Blackyak Apparel (다운/패딩)", note: "Wave 732 — 8건/주 p50 6.3만." },
   barbour_quilted_jacket: { status: "ready", label: "Barbour Quilted Jacket", note: "Wave 732 — 4건/주 p50 10.5만 (시그니처)." },
+  // Wave 733 — 신발 broad 6 SKU (salomon_xt_6 narrow는 이미 line 624 Wave 208 존재)
+  salomon_broad: { status: "ready", label: "Salomon Broad (Pulsar/Speedcross/Sense)", note: "Wave 733 — 23건/주 p50 12-15만." },
+  hoka_bondi: { status: "ready", label: "Hoka Bondi (시그니처 max cushion)", note: "Wave 733 — 7+건/주 p50 20만." },
+  hoka_broad: { status: "ready", label: "Hoka Broad (Anacapa/Challenger/Transport)", note: "Wave 733 — 25+건/주 p50 12-19만." },
+  on_running_broad: { status: "ready", label: "On Running Broad (Cloudflow/Cloudtec/Vista)", note: "Wave 733 — 28건/주 p50 12만." },
+  skechers_broad: { status: "ready", label: "Skechers Broad (Go Walk/Ultra Go/Slip-Ins)", note: "Wave 733 — 50건/주 p50 5만." },
+  underarmour_broad: { status: "ready", label: "Under Armour Broad (Curry/Charged)", note: "Wave 733 — 27건/주 p50 4.8만." },
   // Wave 715 P2-P3 — 잔여 narrow split
   polo_oxford_vintage: { status: "ready", label: "Polo Oxford Vintage (90s/00s archive)", note: "Wave 715 — 67x spread 해소." },
   polo_pique_vintage: { status: "ready", label: "Polo Pique Vintage (90s/00s archive)", note: "Wave 715 — 65x spread 해소." },

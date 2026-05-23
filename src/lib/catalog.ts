@@ -55,6 +55,7 @@ import { WAVE_729_CARHARTT_BROAD } from "@/lib/generated/catalog-729-carhartt-br
 import { WAVE_730_NIKE_APPAREL_BROAD } from "@/lib/generated/catalog-730-nike-apparel-broad";
 import { WAVE_731_ADIDAS_APPAREL_BROAD } from "@/lib/generated/catalog-731-adidas-apparel-broad";
 import { WAVE_732_MULTI_BRAND } from "@/lib/generated/catalog-732-multi-brand";
+import { WAVE_733_SHOE_BROAD } from "@/lib/generated/catalog-733-shoe-broad";
 
 export type Sku = {
   id: string;
@@ -7038,6 +7039,7 @@ export const CATALOG: Sku[] = [
   ...WAVE_730_NIKE_APPAREL_BROAD, // Wave 730 — Nike apparel broad (Dri-FIT/Windbreaker/Hoodie_Sweat/Tee/Pants_Shorts)
   ...WAVE_731_ADIDAS_APPAREL_BROAD, // Wave 731 — Adidas apparel broad (Tracksuit/Tee/Windbreaker/Hoodie_Sweat/Pants_Shorts/Down_Padding)
   ...WAVE_732_MULTI_BRAND, // Wave 732 — Nike x MLB jersey + Uniqlo collab + Thisisneverthat + Columbia/Blackyak + Barbour quilted
+  ...WAVE_733_SHOE_BROAD, // Wave 733 — 신발 broad (Salomon XT-6 + broad / Hoka Bondi + broad / On Running broad / Skechers / Under Armour)
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
