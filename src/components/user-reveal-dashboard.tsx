@@ -1497,7 +1497,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
               </div>
             )}
             <div className="relative aspect-square overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800 sm:rounded-lg">
-              <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
+              {/* Wave 714d (2026-05-23 fix): 신발/의류는 기존 ConditionPhotoBadge 숨김 (전자기기용 mint/clean 라벨 정확도 낮음).
+                  새 ConditionTierChip 이 카드 본문에 표시. */}
+              {!(item.comparableKey?.startsWith("shoe|") || item.comparableKey?.startsWith("clothing|")) && (
+                <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
+              )}
               {item.thumbnailUrl ? (
                 <Image
                   src={item.thumbnailUrl}

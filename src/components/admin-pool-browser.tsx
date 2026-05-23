@@ -562,9 +562,11 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                           : `+${krw(item.expectedProfitMin)}~${krw(item.expectedProfitMax)}`}
                       </span>
                       <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">band {item.band}</span>
-                      {/* 2026-05-17 (사용자 요청): 매물 등급 chip + ? 분류 정책 모달. 운영자풀 = showHelp. */}
-                      <ConditionChip conditionClass={item.conditionClass} showHelp />
-                      {/* Wave 714d (2026-05-23): 신발/의류 5-tier 등급 chip (전자기기는 null → 표시 X). */}
+                      {/* Wave 714d (2026-05-23 fix): 신발/의류는 기존 ConditionChip 숨김 (전자기기용이라 정확도 낮음).
+                          신발/의류 = 새 ConditionTierChip (5-tier) 만 / 전자기기 = 기존 ConditionChip 그대로. */}
+                      {item.category !== "shoe" && item.category !== "clothing" && (
+                        <ConditionChip conditionClass={item.conditionClass} showHelp />
+                      )}
                       {item.conditionTier && <ConditionTierChip tier={item.conditionTier} showHelp />}
                     </div>
                     {/* Wave 714d: raw 표현 chips (박스/하자/실착 등) */}

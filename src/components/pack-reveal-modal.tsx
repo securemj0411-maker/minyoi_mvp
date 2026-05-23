@@ -1285,6 +1285,11 @@ function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
   const cond = card.marketBasis?.conditionClass ?? null;
   const tier = card.conditionTier ?? null;
   const chips = card.conditionChips ?? null;
+  // Wave 714d (2026-05-23 fix): 신발/의류는 기존 ConditionChip 숨김 (전자기기용 라벨 정확도 낮음).
+  const comparableKey = card.marketBasis?.comparableKey ?? null;
+  const isShoeOrClothing = Boolean(
+    comparableKey && (comparableKey.startsWith("shoe|") || comparableKey.startsWith("clothing|")),
+  );
   if (!cond && !tier && (!chips || chips.length === 0)) return null;
   return (
     <div className="mb-2">
@@ -1293,7 +1298,7 @@ function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
         <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
           판매글 기준
         </span>
-        {cond && <ConditionChip conditionClass={cond} variant="friendly" />}
+        {cond && !isShoeOrClothing && <ConditionChip conditionClass={cond} variant="friendly" />}
         {/* Wave 714d (2026-05-23): 신발/의류 5-tier 등급 chip — 쉬운모드용 friendly variant. */}
         {tier && <ConditionTierChip tier={tier} variant="friendly" />}
       </div>
@@ -6080,7 +6085,10 @@ function RelatedRevealStrip({
                 className="flex w-[140px] shrink-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white text-left transition hover:border-emerald-300 hover:shadow-sm active:scale-[0.98] dark:border-zinc-800 dark:bg-zinc-900/40"
               >
                 <div className="relative aspect-square w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                  <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
+                  {/* Wave 714d (2026-05-23 fix): 신발/의류는 기존 ConditionPhotoBadge 숨김. */}
+                  {!(item.marketBasis?.comparableKey?.startsWith("shoe|") || item.marketBasis?.comparableKey?.startsWith("clothing|")) && (
+                    <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
+                  )}
                   {item.thumbnailUrl ? (
                     <Image
                       src={item.thumbnailUrl}
