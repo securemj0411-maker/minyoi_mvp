@@ -50,15 +50,7 @@ function UsageBar({
   );
 }
 
-function formatPeriodEnd(iso: string | null): string {
-  if (!iso) return "—";
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" });
-  } catch {
-    return "—";
-  }
-}
+// Wave launch-89: formatPeriodEnd 제거 — 구독제 플랜 카드 없어지면서 사용처 없음.
 
 export function AccountPanel({
   tokens,
@@ -101,13 +93,14 @@ export function AccountPanel({
   const monthlyTotal = plan?.monthlyCredits ?? 0;
   const monthlyUsed = monthlyTotal > 0 ? Math.max(0, monthlyTotal - tokens) : 0;
   const unlimited = infiniteCredits || plan?.dailyLimit === -1;
-  const planLabel = plan?.planName ?? (loading ? "불러오는 중…" : "Free");
-  const cancelled = plan?.cancelAtPeriodEnd === true;
-  const isPaidPlan = plan?.planKey === "starter" || plan?.planKey === "plus" || plan?.planKey === "pro";
+
+  // Wave launch-89 (사용자 정정 — "우리 지금 구독제 없어서 플랜이란게 없음"):
+  //   "현재 플랜 / Free / 갱신 N월 N일" 카드 통째로 제거 — 구독제 무.
+  //   대신 크레딧 카드 안에 "충전하기" CTA 통합.
 
   return (
     <div className={wrap}>
-      {/* 카드 1 — 크레딧 */}
+      {/* 카드 1 — 크레딧 + 충전 CTA */}
       <div className={card}>
         <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">크레딧 사용</div>
         <div className="mt-2">
@@ -124,35 +117,15 @@ export function AccountPanel({
         <div className="mt-3 rounded-xl bg-white/70 px-3 py-2 text-[11px] font-semibold leading-5 text-[#7a8478] ring-1 ring-[#eadfce] dark:bg-zinc-950/50 dark:text-zinc-400 dark:ring-zinc-800">
           첫 3개 상품은 무료로 열리고, 이후 새 상품은 1크레딧씩 차감됩니다. 이미 본 상품은 다시 봐도 차감되지 않아요.
         </div>
+        <Link
+          href="/plans"
+          onClick={onCloseAfterAction}
+          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#3182f6] px-3 py-2.5 text-[13px] font-black text-white shadow-sm transition hover:bg-[#1c6fe8] active:scale-[0.99]"
+        >
+          크레딧 충전하기
+          <span className="text-white/85">→</span>
+        </Link>
       </div>
-
-      {/* 카드 2 — 플랜 (정보만. 카드 전체 클릭 → /plans 페이지에서 관리) */}
-      <Link
-        href="/plans"
-        onClick={onCloseAfterAction}
-        className={`block ${card} group cursor-pointer transition hover:bg-[var(--brand-accent-soft)] dark:hover:bg-zinc-800`}
-      >
-        <div className="flex items-center justify-between">
-          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">현재 플랜</div>
-          {cancelled ? (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800 dark:bg-amber-950/60 dark:text-amber-200">취소 예약</span>
-          ) : isPaidPlan ? (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">활성</span>
-          ) : null}
-        </div>
-        <div className="mt-1 flex items-center justify-between gap-2">
-          <div className="min-w-0 flex-1 truncate text-base font-black text-[#223127] dark:text-zinc-100">{planLabel}</div>
-          <span className="shrink-0 text-zinc-400 transition group-hover:translate-x-0.5 group-hover:text-[var(--brand-accent-strong)]">→</span>
-        </div>
-        {plan?.currentPeriodEnd ? (
-          <div className="mt-1 text-[11px] font-bold text-[#7a8478]">
-            {cancelled ? "종료 " : "갱신 "}{formatPeriodEnd(plan.currentPeriodEnd)}
-          </div>
-        ) : null}
-        <div className="mt-1.5 text-[11px] font-semibold text-[#7a8478] dark:text-zinc-500">
-          {isPaidPlan ? "탭해서 패키지 변경" : "탭해서 크레딧 충전"}
-        </div>
-      </Link>
 
       {/* Wave 106: 회원 탈퇴 entry — 한국 개인정보보호법 의무 + 사용자 권리. 별도 페이지로 분리해 실수 방지. */}
       <div className="mt-3 border-t border-[#eee5d8] pt-2 dark:border-zinc-800">
