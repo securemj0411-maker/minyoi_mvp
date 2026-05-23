@@ -102,6 +102,23 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       // 별도 narrow 라인 추가 차단
       "stadium", "스타디움", "chief keef", "치프키프",
       "p-wing", "p wing",
+      // Wave 726 P0 (2026-05-24): polo_apparel_broad 1,538건 unmatched 중 ~50% false positive 차단.
+      // 골프/명품 brand의 "폴로티셔츠"/"폴로셔츠" 단어가 Polo Ralph Lauren broad에 흡수됨.
+      // agent a34e36f9 sample 검증.
+      "말본", "malbon",
+      "페어리게이츠", "페어리 게이츠", "pearlygates", "pearly gates",
+      "지포어", "gfore", "g/fore", "g.fore",
+      "마크앤로나", "marklona", "mark lona", "mark&lona", "마크 앤 로나",
+      "타이틀리스트", "titleist",
+      "pxg", "p.x.g",
+      "j.lindeberg", "제이린드버그", "jlindeberg",
+      "amazingcree", "어메이징크리",
+      "ferragamo", "페라가모",
+      "캘러웨이", "callaway",
+      "핑", "ping 골프",
+      "라코스테", "lacoste",  // 빈번한 polo 혼동
+      "타미", "tommy", "타미힐피거",  // 이미 일부 SKU에 있지만 broad에 명시
+      "바나나리퍼블릭", "banana republic",
     ],
     msrpKrw: 169000,
     released: 1967,

@@ -8060,8 +8060,9 @@ export const CATALOG: Sku[] = [
     brand: "Stussy", category: "clothing", laneKey: "stussy_basic_tee",
     modelName: "Stüssy Basic Tee (8 Ball / World Tour / Stock)",
     aliases: ["Stussy Tee", "스투시 반팔", "Stussy T-Shirt"],
-    mustContain: [["stussy", "스투시", "stüssy"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "8 ball", "8ball", "world tour", "월드투어", "stock", "스톡", "script", "스크립트"]],
-    mustNotContain: ["nike", "나이키", "dior", "디올", "birkenstock", "버켄스탁", "carhartt", "칼하트", "키즈", "kids", "후드", "hoodie", "맨투맨", "긴팔", "복각", "rep ", "replica",
+    // Wave 726 (2026-05-24): "롱슬리브/긴팔티/긴팔" 추가 (agent + foreground 검증 — 209건 unmatched 중 105건이 반팔/롱슬리브 누락).
+    mustContain: [["stussy", "스투시", "stüssy"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "롱슬리브", "롱 슬리브", "긴팔티", "긴팔 티", "long sleeve", "8 ball", "8ball", "8볼", "world tour", "월드투어", "stock", "스톡", "script", "스크립트"]],
+    mustNotContain: ["nike", "나이키", "dior", "디올", "birkenstock", "버켄스탁", "carhartt", "칼하트", "키즈", "kids", "후드", "hoodie", "맨투맨", "복각", "rep ", "replica",
       "자켓", "재킷", "jacket", "코치자켓", "coach jacket", "쉘 자켓", "shell jacket", "바람막이", "윈드브레이커",
       // Wave 712a (2026-05-23) HOTFIX: bias-free 검증 — STOCK WATER SHORT 5건/월드투어 셔츠 2건 false positive 차단.
       "워터 쇼츠", "water short", "비치팬츠", "워터쇼츠", "비치 팬츠", "쇼츠", "shorts", "반바지", "셔츠", "shirt",
@@ -9156,7 +9157,12 @@ export const CATALOG: Sku[] = [
     brand: "Acne Studios", category: "clothing", laneKey: "acne_jacket_coat",
     modelName: "Acne Studios Jacket / Coat",
     aliases: ["Acne 자켓", "Acne 코트"],
-    mustContain: [["acne", "아크네"], ["자켓", "jacket", "코트", "coat", "재킷", "저켓", "무스탕", "블레이저", "야상", "점퍼", "봄버", "ma-1", "ma1", "후리스", "플리스", "fleece"]],
+    // Wave 726 (2026-05-24): 모델명 + 다운/패딩 추가 (agent + sample 검증 — 154건 unmatched 중 46건이 코트/롱패딩/트렌치 누락).
+    mustContain: [["acne", "아크네"], ["자켓", "jacket", "코트", "coat", "재킷", "저켓", "무스탕", "블레이저", "야상", "점퍼", "봄버", "ma-1", "ma1", "후리스", "플리스", "fleece",
+      "후드코트", "롱패딩", "트렌치", "다운", "패딩", "수트",
+      // 모델명
+      "밀턴", "몬트리올", "마틴파우",
+    ]],
     mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "오르빗", "orbit", "핸메", "jw anderson", "jw 앤더슨", "앤더슨", "loewe", "로에베", "르샵", "leshop", "le shop"],
     msrpKrw: 590000, released: 2020,
     // Wave 236d: multi (jacket + coat) — default 안 박음. text 추출 의존 (regex 가 jacket/coat 구분).
@@ -9978,7 +9984,8 @@ export const CATALOG: Sku[] = [
     brand: "A Bathing Ape (BAPE)", category: "clothing", laneKey: "bape_tee",
     modelName: "BAPE T-Shirt (basic Ape Head/카모)",
     aliases: ["BAPE Tee", "베이프 티셔츠", "Ape Head Tee"],
-    mustContain: [["bape", "베이프", "a bathing ape"], ["반팔", "티셔츠", "tee ", "t-shirt", "tshirt"]],
+    // Wave 726 (2026-05-24): 롱슬리브/긴팔티/슬리브리스 추가 (agent a34e36f9 결과 — 269건 unmatched).
+    mustContain: [["bape", "베이프", "a bathing ape"], ["반팔", "티셔츠", "tee ", "t-shirt", "tshirt", "긴팔티", "긴팔 티", "long sleeve", "롱슬리브", "롱 슬리브", "슬리브리스", "sleeveless"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "carbon",
       "후드", "후디", "hoodie", "후드집업", "집업", "zip", "맨투맨", "크루넥", "crewneck", "sweatshirt",
       "샤크", "shark", "yeezy", "스타워즈", "신발", "스니커즈", "운동화",

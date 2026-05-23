@@ -494,7 +494,8 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     mustContain: [
       ["acne", "아크네"],
       ["데님", "denim", "청바지", "진", "jean"],
-      ["2021m", "petit", "petit 기장", "플레어진", "flare jean", "리버진", "river jean"],
+      // Wave 726 (2026-05-24): "페니실린" 모델명 추가 (sample 검증 — 2021m 페니실린 데님 351k unmatched).
+      ["2021m", "petit", "petit 기장", "플레어진", "flare jean", "리버진", "river jean", "페니실린", "penicillin"],
     ],
     mustNotContain: [
       ...COMMON_NOISE,
