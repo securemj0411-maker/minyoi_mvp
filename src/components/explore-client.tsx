@@ -1087,18 +1087,20 @@ function FirstFeedOnboardingCard({
         {step === 0 ? (
           <div className="flex flex-1 flex-col justify-center pb-24">
             <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">첫 피드 준비</div>
+            {/* Wave launch-104 (사용자 정정 — 일반인 친화 카피):
+                "후보" / "추천 풀" 같은 내부 용어 → "중고 상품" / "어려운 상품 걸러냈어요". */}
             <h2 className="mt-3 break-keep text-[34px] font-black leading-[1.12] tracking-tight sm:text-[42px]">
               오늘 볼 만한
               <br />
-              후보만 남겼어요
+              중고 상품만 남겼어요
             </h2>
             <p className="mt-5 break-keep text-[16px] font-bold leading-7 text-zinc-600 dark:text-zinc-300">
               {statsLoaded && !stats ? (
-                <>전체 추천 풀에서 바로 보기 어려운 매물은 먼저 걷어냈어요.</>
+                <>전체 중고 상품에서 어려운 건 먼저 걸러냈어요.</>
               ) : (
                 <>
-                  전체 추천 풀 <span className="font-black text-[#3182f6] dark:text-blue-300">{reviewedLabel}</span> 중에서
-                  바로 보기 어려운 매물은 먼저 걷어냈어요.
+                  전체 중고 상품 <span className="font-black text-[#3182f6] dark:text-blue-300">{reviewedLabel}</span> 중에서
+                  어려운 상품은 먼저 걸러냈어요.
                 </>
               )}
             </p>
@@ -1130,14 +1132,15 @@ function FirstFeedOnboardingCard({
           </div>
         ) : (
           <div className="flex flex-1 flex-col justify-center pb-24">
-            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">처음 보는 기준</div>
+            {/* Wave launch-104: "감당 가능한" + "후보" 어색 → "예산" + "상품" 친화 카피. */}
+            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">예산</div>
             <h2 className="mt-3 break-keep text-[34px] font-black leading-[1.12] tracking-tight sm:text-[42px]">
-              감당 가능한
+              중고 상품
               <br />
-              금액부터 볼까요?
+              금액대는 어떤 게 좋아요?
             </h2>
             <p className="mt-5 break-keep text-[16px] font-bold leading-7 text-zinc-600 dark:text-zinc-300">
-              후보가 적으면 좋은 매물을 놓치지 않게 전체 피드도 같이 보여드려요. 예산은 위 필터에서 언제든 바꿀 수 있어요.
+              해당 금액대 상품이 적으면 좋은 걸 놓치지 않게 전체 상품도 같이 보여드려요. 예산은 위 필터에서 언제든 바꿀 수 있어요.
             </p>
 
             <div className="mt-9 grid gap-2">
