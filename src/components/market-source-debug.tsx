@@ -8,6 +8,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
+import { ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -24,6 +25,12 @@ type Comparable = {
   marketplaceLabel: string;
   listingUrl: string;
   bunjangUrl: string;
+  // Wave 714d (2026-05-23): 신발/의류 5-tier grading + chips.
+  conditionTier?: string | null;
+  conditionCluster?: string | null;
+  conditionConfidence?: number | null;
+  conditionFlags?: Record<string, unknown> | null;
+  conditionChips?: string[] | null;
 };
 
 type MarketSourceResponse = {
@@ -36,6 +43,12 @@ type MarketSourceResponse = {
     skuMedian: number;
     comparableKey: string | null;
     conditionClass: string | null;
+    // Wave 714d (2026-05-23): 신발/의류 5-tier grading + chips.
+    conditionTier?: string | null;
+    conditionCluster?: string | null;
+    conditionConfidence?: number | null;
+    conditionFlags?: Record<string, unknown> | null;
+    conditionChips?: string[] | null;
     displayMarketPrice: number | null;
     marketPriceSource: "reference" | "market";
     marketPriceLabel: string;
@@ -382,6 +395,29 @@ export function MarketSourceDebug({
                     </div>
                   </div>
 
+                  {/* Wave 714d (2026-05-23): 신발/의류 5-tier 등급 + raw 표현 chips */}
+                  {(data.ourListing.conditionTier || data.ourListing.conditionChips?.length) && (
+                    <div className="flex flex-wrap items-center gap-2 rounded-md bg-zinc-50 px-2 py-1.5 text-[11px] dark:bg-zinc-800/50">
+                      {data.ourListing.conditionTier && (
+                        <>
+                          <span className="text-zinc-500">등급:</span>
+                          <ConditionTierChip tier={data.ourListing.conditionTier} showHelp />
+                          {data.ourListing.conditionConfidence != null && (
+                            <span className="text-[10px] text-zinc-400">
+                              신뢰도 {(data.ourListing.conditionConfidence * 100).toFixed(0)}%
+                            </span>
+                          )}
+                          {data.ourListing.conditionCluster && (
+                            <span className="text-[10px] text-zinc-400">{data.ourListing.conditionCluster}</span>
+                          )}
+                        </>
+                      )}
+                      {data.ourListing.conditionChips && data.ourListing.conditionChips.length > 0 && (
+                        <ConditionChipsList chips={data.ourListing.conditionChips} max={6} />
+                      )}
+                    </div>
+                  )}
+
                   {/* parser 진단 줄 */}
                   <div className="flex flex-wrap gap-x-3 rounded-md bg-zinc-50 px-2 py-1.5 text-[11px] dark:bg-zinc-800/50">
                     <span>
@@ -489,6 +525,15 @@ export function MarketSourceDebug({
                                 <span>· {relativeAge(c.lastSeenAt)}</span>
                                 {c.sourceQuery && <span>· {c.sourceQuery.slice(0, 24)}</span>}
                               </div>
+                              {/* Wave 714d: 신발/의류 등급 + chips */}
+                              {(c.conditionTier || c.conditionChips?.length) && (
+                                <div className="mt-1 flex flex-wrap items-center gap-1">
+                                  {c.conditionTier && <ConditionTierChip tier={c.conditionTier} />}
+                                  {c.conditionChips && c.conditionChips.length > 0 && (
+                                    <ConditionChipsList chips={c.conditionChips} max={4} />
+                                  )}
+                                </div>
+                              )}
                             </div>
                             <div className="text-right">
                               <div className={`font-bold ${isCheaper ? "text-rose-600 dark:text-rose-300" : "text-zinc-800 dark:text-zinc-100"}`}>

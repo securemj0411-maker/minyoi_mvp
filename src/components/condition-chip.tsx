@@ -259,3 +259,216 @@ export function ConditionPhotoBadge({
 export function UnopenedPhotoBadge(props: Parameters<typeof ConditionPhotoBadge>[0]) {
   return <ConditionPhotoBadge {...props} />;
 }
+
+// =============================================================================
+// Wave 714d (2026-05-23): 신발/의류 5-tier S/A/B/C/D 등급 chip + raw 표현 chips.
+//
+// 기존 ConditionChip 은 전자기기 condition_class (unopened/mint/clean/normal/worn/...) 전용.
+// 신발/의류는 raw 텍스트 기반 grading (Wave 714 cross-tab sweep 결과 — S/A/B/C/D + 박스/하자/실착 chips).
+// 같은 컴포넌트에 박지 않고 분리 (axis 의미 다름).
+//
+// 노출 위치: /me 운영자 시세 근거 / /me 피드 상세 / 쉬운모드.
+// =============================================================================
+
+type TierStyle = {
+  label: string;
+  friendlyLabel: string;
+  bg: string;
+  text: string;
+  desc: string;
+};
+
+const TIER_STYLES: Record<string, TierStyle> = {
+  S: {
+    label: "S급",
+    friendlyLabel: "최상급",
+    // gold + green — 가장 strong (2축 이상 매칭).
+    bg: "border border-emerald-300/70 bg-gradient-to-r from-emerald-950 via-emerald-800 to-[#b78a2c] shadow-sm shadow-emerald-950/15 dark:border-emerald-300/30 dark:from-emerald-400/25 dark:via-emerald-900/70 dark:to-amber-500/25",
+    text: "text-amber-50 dark:text-emerald-50",
+    desc: "박스/풀구성 + 미시착/실착 1-2회 + 정품 anchor (kream/매장) 2축 이상 동시. 데이터 1.85~2.3x premium.",
+  },
+  A: {
+    label: "A급",
+    friendlyLabel: "양호",
+    bg: "border border-sky-200/80 bg-gradient-to-r from-white via-sky-50 to-teal-100 shadow-sm shadow-sky-900/10 dark:border-sky-300/20 dark:from-sky-400/20 dark:via-teal-900/50 dark:to-zinc-900",
+    text: "text-sky-950 dark:text-sky-50",
+    desc: "박스 또는 kream 또는 미시착 단일 strong signal. 데이터 1.4~1.7x.",
+  },
+  B: {
+    label: "B급",
+    friendlyLabel: "보통",
+    bg: "bg-zinc-100 dark:bg-zinc-800",
+    text: "text-zinc-700 dark:text-zinc-300",
+    desc: "상세 설명 부족 또는 약한 매칭. 대다수 매물 (default).",
+  },
+  C: {
+    label: "C급",
+    friendlyLabel: "사용감",
+    bg: "bg-orange-100 dark:bg-orange-900/40",
+    text: "text-orange-800 dark:text-orange-200",
+    desc: "경미 하자 (보풀/먼지/스크래치) 또는 사용감 명시. 데이터 0.5~0.7x.",
+  },
+  D: {
+    label: "D급",
+    friendlyLabel: "낡음/하자",
+    bg: "bg-rose-100 dark:bg-rose-900/40",
+    text: "text-rose-800 dark:text-rose-200",
+    desc: "빈티지/구제 또는 심각 하자 (이염/굽 닳음/터짐). 데이터 <0.5x.",
+  },
+  UNKNOWN: {
+    label: "정보 부족",
+    friendlyLabel: "확인 필요",
+    bg: "bg-zinc-100 dark:bg-zinc-800 italic",
+    text: "text-zinc-500 dark:text-zinc-400",
+    desc: "셀러가 상세 설명 안 적음. 시세 신뢰도 낮음 (보수적 평가).",
+  },
+};
+
+type ChipBadgeKey = string;
+
+/** Wave 714 chip key → 한국어 라벨 + 색상 mapping. */
+const CHIP_BADGES: Record<ChipBadgeKey, { label: string; type: "positive" | "negative" | "neutral" }> = {
+  // wear
+  "wear:unworn": { label: "미시착", type: "positive" },
+  "wear:worn_1to2": { label: "실착 1-2회", type: "positive" },
+  "wear:worn_3to5": { label: "실착 3-5회", type: "positive" },
+  "wear:used": { label: "사용감 있음", type: "neutral" },
+  "wear:heavily_used": { label: "많이 신음", type: "negative" },
+  "wear:vintage": { label: "빈티지", type: "negative" },
+  "wear:gunje": { label: "구제", type: "negative" },
+  // box (신발)
+  "box:full": { label: "풀구성", type: "positive" },
+  "box:box_included": { label: "박스 포함", type: "positive" },
+  "box:box_only": { label: "박스만", type: "neutral" },
+  "box:no_box": { label: "박스 없음", type: "negative" },
+  "box:box_damaged": { label: "박스 손상", type: "negative" },
+  // box (의류 - 태그 axis)
+  "box:tag_attached": { label: "택 부착", type: "positive" },
+  "box:tag_only_cut": { label: "택만 자름", type: "neutral" },
+  "box:no_box_no_tag": { label: "구성품 없음", type: "negative" },
+  // auth
+  "auth:kream": { label: "KREAM 인증", type: "positive" },
+  "auth:store": { label: "매장/공홈", type: "positive" },
+  "auth:musinsa": { label: "무신사", type: "positive" },
+  "auth:season": { label: "시즌 표기 (SS/FW)", type: "positive" },
+  // damage
+  "damage:minor": { label: "경미 하자", type: "negative" },
+  "damage:major": { label: "심각 하자", type: "negative" },
+  "damage:repair_pos": { label: "수선/사이즈 맞춤", type: "positive" },
+  // shoe extras
+  "shoe:extra_laces": { label: "여분끈", type: "positive" },
+  "shoe:insole_changed": { label: "깔창 교체", type: "neutral" },
+  "shoe:washed": { label: "세탁 통과", type: "negative" },
+  // clothing extras
+  "extra:collab": { label: "콜라보/한정", type: "positive" },
+  "extra:self_grade": { label: "셀러 등급 표기", type: "positive" },
+  "extra:x10_score": { label: "X/10 점수", type: "neutral" },
+  "extra:charms": { label: "지비츠 포함", type: "positive" },
+};
+
+export function ConditionTierChip({
+  tier,
+  variant = "default",
+  showHelp = false,
+}: {
+  tier: string | null | undefined;
+  variant?: "default" | "friendly";
+  showHelp?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  if (!tier) return null;
+  const style = TIER_STYLES[tier];
+  if (!style) {
+    return (
+      <span className="rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400">
+        {tier}
+      </span>
+    );
+  }
+  const displayLabel = variant === "friendly" ? style.friendlyLabel : style.label;
+  return (
+    <span className="relative inline-flex items-center gap-1">
+      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${style.bg} ${style.text}`}>
+        {displayLabel}
+      </span>
+      {showHelp && (
+        <>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+            className="flex h-4 w-4 items-center justify-center rounded-full bg-zinc-200 text-[9px] font-bold text-zinc-600 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-300"
+            aria-label="신발/의류 등급 분류 정책 보기"
+          >
+            ?
+          </button>
+          {open && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+              <div className="absolute left-0 top-5 z-50 w-72 rounded-lg border border-zinc-300 bg-white p-3 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+                <div className="mb-2 text-[11px] font-bold text-zinc-900 dark:text-zinc-100">
+                  신발/의류 등급 (5-tier)
+                </div>
+                <div className="space-y-1.5 text-[10px]">
+                  {(["S", "A", "B", "C", "D", "UNKNOWN"] as const).map((k) => {
+                    const s = TIER_STYLES[k];
+                    return (
+                      <div key={k} className="flex gap-2">
+                        <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${s.bg} ${s.text}`}>
+                          {s.label}
+                        </span>
+                        <span className="text-zinc-600 dark:text-zinc-400">{s.desc}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-2 border-t border-zinc-200 pt-2 text-[9px] text-zinc-500 dark:border-zinc-700">
+                  raw 텍스트 (제목 + 상세설명) 기반 자동 분류 (Wave 714). brand cluster 별 cluster-relative 시세.
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </span>
+  );
+}
+
+/** Wave 714d: chip 배열 → 한국어 라벨 chip 들 표시. raw 표현 기반. */
+export function ConditionChipsList({
+  chips,
+  max = 5,
+  className = "",
+}: {
+  chips: string[] | null | undefined;
+  max?: number;
+  className?: string;
+}) {
+  if (!chips || chips.length === 0) return null;
+  const visible = chips.slice(0, max);
+  return (
+    <div className={`flex flex-wrap gap-1 ${className}`}>
+      {visible.map((chip) => {
+        const badge = CHIP_BADGES[chip];
+        if (!badge) return null;
+        const colorClass =
+          badge.type === "positive"
+            ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200"
+            : badge.type === "negative"
+              ? "bg-rose-50 text-rose-800 dark:bg-rose-900/30 dark:text-rose-200"
+              : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
+        return (
+          <span
+            key={chip}
+            title={chip}
+            className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${colorClass}`}
+          >
+            {badge.label}
+          </span>
+        );
+      })}
+      {chips.length > max && (
+        <span className="text-[10px] text-zinc-400">+{chips.length - max}</span>
+      )}
+    </div>
+  );
+}

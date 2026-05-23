@@ -35,6 +35,12 @@ type Comparable = {
   marketplaceLabel: string;
   listingUrl: string;
   bunjangUrl: string;
+  // Wave 714d (2026-05-23): 신발/의류 5-tier grading + chips 노출.
+  conditionTier?: string | null;
+  conditionCluster?: string | null;
+  conditionConfidence?: number | null;
+  conditionFlags?: Record<string, unknown> | null;
+  conditionChips?: string[] | null;
 };
 
 function trimComparableOutlierRows(rows: Array<Record<string, unknown>>) {
@@ -84,7 +90,8 @@ export async function GET(
       restFetch(
         // Wave 130 (2026-05-16): condition_class 추가 — 시세 stats를 매칭 condition으로 조회.
         // Wave 251.4 (2026-05-19): parsed_json 추가 — clothing_product_type 비교군 필터용.
-        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,parsed_json&pid=eq.${pid}`,
+        // Wave 714d (2026-05-23): 신발/의류 5-tier grading column 추가 — UI chip 노출용.
+        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,parsed_json,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=eq.${pid}`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -169,13 +176,40 @@ export async function GET(
             { headers: serviceHeaders() },
           ),
           restFetch(
-            `${tableUrl("mvp_listing_parsed")}?select=pid,parsed_json,condition_class&pid=in.(${sameKeyPids.join(",")})`,
+            // Wave 714d (2026-05-23): 비교군 sample 에도 5-tier grading + chips 노출.
+            `${tableUrl("mvp_listing_parsed")}?select=pid,parsed_json,condition_class,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=in.(${sameKeyPids.join(",")})`,
             { headers: serviceHeaders() },
           ),
         ]);
         const rawRows = (await rawListRes.json()) as Array<Record<string, unknown>>;
         const analysisRows = (await analysisRes.json()) as Array<{ pid: number; risk_hits: number }>;
-        const parsedRowsForCond = (await parsedRes2.json()) as Array<{ pid: number; parsed_json: Record<string, unknown> | null; condition_class: string | null }>;
+        const parsedRowsForCond = (await parsedRes2.json()) as Array<{
+          pid: number;
+          parsed_json: Record<string, unknown> | null;
+          condition_class: string | null;
+          condition_tier?: string | null;
+          condition_cluster?: string | null;
+          condition_confidence?: number | null;
+          condition_flags?: Record<string, unknown> | null;
+        }>;
+        // Wave 714d (2026-05-23): grading + chips lookup map.
+        const gradingByPid = new Map<number, {
+          tier: string | null;
+          cluster: string | null;
+          confidence: number | null;
+          flags: Record<string, unknown> | null;
+          chips: string[] | null;
+        }>();
+        for (const p of parsedRowsForCond) {
+          const grade = (p.parsed_json?.condition_grade as { chips?: string[] } | null) ?? null;
+          gradingByPid.set(Number(p.pid), {
+            tier: p.condition_tier ?? null,
+            cluster: p.condition_cluster ?? null,
+            confidence: p.condition_confidence ?? null,
+            flags: p.condition_flags ?? null,
+            chips: grade?.chips ?? null,
+          });
+        }
         const riskByPid = new Map(analysisRows.map((r) => [Number(r.pid), Number(r.risk_hits ?? 0)]));
         const excludeByPid = new Map<number, boolean>();
         // 2026-05-17 v46 cleanup: COMPARABLE_EXCLUDE_NOTES condition-policy.ts 단일 source 로 옮김 (drift 차단).
@@ -241,6 +275,7 @@ export async function GET(
           const rowPid = Number(row.pid);
           const marketplaceSource = normalizeMarketplaceSource((row.source as string | null) ?? (row.seller_source as string | null));
           const listingUrl = listingUrlForSource(rowPid, row.url as string | null, marketplaceSource);
+          const grading = gradingByPid.get(rowPid);
           return {
             pid: rowPid,
             name: String(row.name ?? ""),
@@ -254,6 +289,12 @@ export async function GET(
             marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
             listingUrl,
             bunjangUrl: listingUrl,
+            // Wave 714d: 신발/의류 grading + chips 부착.
+            conditionTier: grading?.tier ?? null,
+            conditionCluster: grading?.cluster ?? null,
+            conditionConfidence: grading?.confidence ?? null,
+            conditionFlags: grading?.flags ?? null,
+            conditionChips: grading?.chips ?? null,
           };
         });
       }
@@ -281,6 +322,8 @@ export async function GET(
     const ourMarketplaceSource = normalizeMarketplaceSource((raw?.source as string | null) ?? (raw?.seller_source as string | null));
     const ourListingUrl = listingUrlForSource(pid, raw?.url as string | null, ourMarketplaceSource);
 
+    // Wave 714d (2026-05-23): 본 매물 grading + chips (신발/의류).
+    const ourGrade = (targetParsedJson?.condition_grade as { chips?: string[] } | null) ?? null;
     return NextResponse.json({
       ourListing: {
         pid,
@@ -291,6 +334,12 @@ export async function GET(
         skuMedian: Number(listing.sku_median ?? 0),
         comparableKey,
         conditionClass,
+        // Wave 714d: 신발/의류 5-tier S/A/B/C/D + chips. 전자기기는 null.
+        conditionTier: (parsed?.condition_tier as string | null) ?? null,
+        conditionCluster: (parsed?.condition_cluster as string | null) ?? null,
+        conditionConfidence: (parsed?.condition_confidence as number | null) ?? null,
+        conditionFlags: (parsed?.condition_flags as Record<string, unknown> | null) ?? null,
+        conditionChips: ourGrade?.chips ?? null,
         displayMarketPrice: displayMarketBasis?.medianPrice ?? null,
         marketPriceSource: displayMarketBasis?.priceSource ?? "market",
         marketPriceLabel: displayMarketBasis?.priceSource === "reference"
