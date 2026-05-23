@@ -624,7 +624,8 @@ export function buildCandidatePoolRows(input: {
     const buyMin = row.estimatedBuyCost;
     const profitMax = Math.max(0, row.skuMedian - buyMin - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
     const profitMin = Math.max(0, row.skuMedian - buyMax - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
-    const band = bandFromProfit(profitMin, profitMax);
+    // Wave 755 (2026-05-24): category 전달 → clothing/shoe/bag 10K threshold (일반인 친화).
+    const band = bandFromProfit(profitMin, profitMax, category);
     if (band === null) {
       skipped += 1;
       invalidations.push({ pid, reason: "profit_below_pack_band" });

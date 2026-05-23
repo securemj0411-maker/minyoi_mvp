@@ -1,7 +1,7 @@
 export const POOL_CONFIDENCE_FLOOR: number;
 export const POOL_BLOCK_FLAGS: readonly string[];
 
-export function bandFromProfit(profitMin: number, profitMax: number): 1 | 2 | 3 | null;
+export function bandFromProfit(profitMin: number, profitMax: number, category?: string | null): 1 | 2 | 3 | null;
 export function poolMaxExposure(band: 1 | 2 | 3): number;
 export function computePoolConfidence(
   parseConfidence: number | null | undefined,

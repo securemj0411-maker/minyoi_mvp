@@ -24,7 +24,10 @@ export const POOL_BLOCK_FLAGS = [
   "ai_escrow_unavailable",   // AI L2 API/cache 호출 실패 — 다음 tick에서 재시도.
 ];
 
-export function bandFromProfit(profitMin, profitMax) {
+export function bandFromProfit(profitMin, profitMax, _category) {
+  // Wave 755 (2026-05-24): _category 인자 추가 (현재 미사용, signature consistency).
+  //   profit.ts와 .d.ts 일관성. 향후 카테고리별 차등 threshold 도입 위한 placeholder.
+  // 현재 threshold: 모든 카테고리 1만/4만/7만 (Wave 90).
   const avg = Math.round((profitMin + profitMax) / 2);
   if (avg >= 70_000) return 3;
   if (avg >= 40_000) return 2;

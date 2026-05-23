@@ -106,11 +106,15 @@ export function expectedProfitAverage(item: ListingCandidate) {
   return Math.round((expectedProfitMin(item) + expectedProfitMax(item)) / 2);
 }
 
-export function bandFromProfit(profitMin: number, profitMax: number): 1 | 2 | 3 | null {
+export function bandFromProfit(profitMin: number, profitMax: number, _category?: string | null): 1 | 2 | 3 | null {
+  // Wave 755 (2026-05-24): profit.ts와 pool-policy.mjs sync — band 1 threshold 10K로 통일.
+  // Production pool-policy.mjs는 이미 10K (Wave 90 사용자 결정).
+  // profit.ts만 stale 20K였음 → UI badge / candidate.ts comparison logic 일관성 보강.
+  // category 인자는 향후 카테고리별 차등 위해 옵션 유지 (현재 미사용).
   const avg = Math.round((profitMin + profitMax) / 2);
   if (avg >= 70_000) return 3;
   if (avg >= 40_000) return 2;
-  if (avg >= 20_000) return 1;
+  if (avg >= 10_000) return 1;
   return null;
 }
 
