@@ -2428,6 +2428,21 @@ export default function ExploreClient({
                 type="button"
                 onClick={() => {
                   if (isSoldOut) return;
+                  // Wave launch-94 (사용자 정정 — "잠긴 카드 클릭하면 바로 paywall 떠야지 왜 API 호출하냐"):
+                  //   client 가 이미 fullLocked 상태 아는데 서버 verify 요청 X.
+                  //   즉시 paywall modal set (cached snapshot 으로) + API skip.
+                  if (fullLocked) {
+                    setDetailAccessLimit({
+                      variant: "paywall",
+                      title: "크레딧이 부족해요",
+                      message: "크레딧을 충전하면 이 매물과 다른 매물 더 볼 수 있어요.",
+                      creditBalance: detailAccessSnapshot.creditBalance ?? 0,
+                      freeUsed: detailAccessSnapshot.freeUsed ?? 0,
+                      freeLimit: detailAccessSnapshot.freeLimit ?? 0,
+                      valueSummary: detailAccessValueRef.current,
+                    });
+                    return;
+                  }
                   void openItemDetail(item);
                 }}
                 disabled={isSoldOut || detailAccessLoadingPid === item.pid}
