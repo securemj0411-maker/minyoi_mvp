@@ -70,6 +70,34 @@ export const WAVE_746_NEIGHBORHOOD_SCHOTT: Sku[] = [
     msrpKrw: 250000, released: 1994,
   },
 
+  // ─── Hunter Rain Boots (102건 / p50 8.1만) — 영국 레인부츠 시그니처 ───
+  {
+    id: "shoe-hunter-broad",
+    brand: "Hunter", category: "shoe", laneKey: "hunter_apparel_broad",
+    modelName: "Hunter Boots Broad (Original Tall / Short / Refined)",
+    aliases: ["Hunter", "헌터", "Hunter Boots"],
+    mustContain: [
+      ["hunter", "헌터"],
+      ["부츠", "boots", "boot",
+       "오리지널 톨", "original tall",
+       "오리지널 숏", "original short",
+       "리파인드", "refined",
+       "레인부츠", "rain boots", "장화", "고무 부츠",
+       "샌들", "sandal",
+       "tour", "투어",
+       "balmoral", "발모랄",
+       "신발", "운동화", "스니커즈"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, ...NON_APPAREL_GLOBAL,
+      // false positive (Hunter 도구/공구 brand 차단)
+      "공구", "전동", "예초기", "fishing", "낚시",
+      "더 헌터", "the hunter", "hunter x hunter",
+      "헌터 마운틴", "hunter mountain",
+    ],
+    msrpKrw: 230000, released: 1856,
+  },
+
   // ─── Schott (62건 / p50 9.9만) ───
   // 미국 가죽 자켓 시그니처 (Perfecto)
   {
