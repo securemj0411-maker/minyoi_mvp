@@ -989,6 +989,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   gfore_broad: { status: "ready", label: "G/FORE Golf Apparel", note: "Wave 727 — 291건/주 p50 10.9만." },
   jlindeberg_broad: { status: "ready", label: "J.Lindeberg Golf Apparel", note: "Wave 727 — 241건/주 p50 5.9만." },
   marklona_broad: { status: "ready", label: "Mark&Lona Golf Apparel", note: "Wave 727 — 190건/주 p50 9만." },
+  // Wave 728 — supreme/arcteryx leak fix
+  supreme_dickies_collab: { status: "ready", label: "Supreme × Dickies (카고팬츠/플란넬)", note: "Wave 728 — broad에서 차단되던 collab 회수." },
+  supreme_mm6_collab: { status: "ready", label: "Supreme × MM6 Margiela", note: "Wave 728 — broad에서 차단되던 collab." },
+  supreme_collab_broad: { status: "ready", label: "Supreme Collab Broad (Velvet Underground 등)", note: "Wave 728 — 일반 collab catch-all." },
+  arcteryx_proton: { status: "ready", label: "Arc'teryx Proton (Insulated)", note: "Wave 728 — 라인 누락 회복." },
+  arcteryx_solano: { status: "ready", label: "Arc'teryx Solano (light)", note: "Wave 728 — 한정 라인." },
+  arcteryx_rampart_pants: { status: "ready", label: "Arc'teryx Rampart Pants", note: "Wave 728 — pants 라인 누락 회복." },
   // Wave 715 P2-P3 — 잔여 narrow split
   polo_oxford_vintage: { status: "ready", label: "Polo Oxford Vintage (90s/00s archive)", note: "Wave 715 — 67x spread 해소." },
   polo_pique_vintage: { status: "ready", label: "Polo Pique Vintage (90s/00s archive)", note: "Wave 715 — 65x spread 해소." },

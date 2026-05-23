@@ -48,6 +48,9 @@ import { WAVE_726_CLOTHING_BRAND_ADD } from "@/lib/generated/catalog-726-clothin
 // Wave 727 (2026-05-24): 골프웨어 6 brand broad SKU 신설 (Titleist/PXG/Malbon/G·FORE/J.Lindeberg/Mark&Lona).
 //   2,624건 sku_id=null 풀 회복. 일반인 친화 가격대 (5-11만).
 import { WAVE_727_GOLF_BROAD } from "@/lib/generated/catalog-727-golf-broad";
+// Wave 728 (2026-05-24): supreme/arcteryx catalog leak fix — 누락 collab/한정 라인 narrow 신설.
+//   supreme dickies/mm6/collab broad + arcteryx proton/solano/rampart.
+import { WAVE_728_LEAK_FIX } from "@/lib/generated/catalog-728-leak-fix";
 
 export type Sku = {
   id: string;
@@ -7026,6 +7029,7 @@ export const CATALOG: Sku[] = [
   ...WAVE_715_CLOTHING_NARROW, // Wave 715 — 의류 체계적 narrow split (Thom Browne 6 / Moncler 3 / CDG 3 / Polo Vintage / Supreme Box Logo / 등)
   ...WAVE_726_CLOTHING_BRAND_ADD, // Wave 726 — 신규 brand (Alpha Industries / Levi's / Discovery Expedition)
   ...WAVE_727_GOLF_BROAD, // Wave 727 — 골프 6 brand (Titleist/PXG/Malbon/G·FORE/J.Lindeberg/Mark&Lona)
+  ...WAVE_728_LEAK_FIX, // Wave 728 — supreme/arcteryx leak fix (collab + 한정 라인 narrow)
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
