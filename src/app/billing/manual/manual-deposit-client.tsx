@@ -82,47 +82,76 @@ export default function ManualDepositClient() {
     return () => window.clearInterval(interval);
   }, [stage]);
 
-  // Wave launch-97 + launch-97b: waiting 상태에서 2초마다 status polling.
-  //   status = approved | auto_approved → setStage("approved") + credits-changed event.
-  //   token 가 stale 일 가능성 대비 — credentials:"include" 로 cookies 명시 + token fallback.
+  // Wave launch-98 (사용자 정정 — "polling 무식 / 실시간 인터럽트?"):
+  //   Supabase Realtime postgres_changes UPDATE 구독.
+  //   row update 시 즉시 client push → polling 없이 0~100ms 안에 status 인지.
+  //   안전망: 10초마다 1회 polling (realtime 끊김 / network unstable / publication miss).
   useEffect(() => {
     if (stage !== "waiting" || requestId == null) return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
     let cancelled = false;
-    let timer: number | null = null;
-    const poll = async () => {
+
+    const handleStatusUpdate = (status: string, decidedBy: string | null) => {
+      if (cancelled) return;
+      if (status === "approved" || status === "auto_approved") {
+        setApprovedBy(decidedBy === "admin" ? "admin" : "auto");
+        setStage("approved");
+        window.dispatchEvent(new CustomEvent("minyoi:credits-changed"));
+        window.setTimeout(() => router.push("/"), 2400);
+      } else if (status === "rejected") {
+        setErrorMessage("운영자가 신청을 거절했어요. 입금이 확인되지 않아요.");
+        setStage("error");
+      }
+    };
+
+    // Realtime channel — postgres_changes UPDATE on this row.
+    const channel = supabase
+      .channel(`manual-deposit-${requestId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "mvp_manual_deposit_requests",
+          filter: `id=eq.${requestId}`,
+        },
+        (payload) => {
+          const row = payload.new as { status?: string; decided_by?: string | null } | null;
+          if (!row?.status) return;
+          handleStatusUpdate(row.status, row.decided_by ?? null);
+        },
+      )
+      .subscribe((subStatus) => {
+        if (subStatus === "CHANNEL_ERROR" || subStatus === "TIMED_OUT") {
+          console.warn("[manual-deposit realtime] channel state", subStatus);
+        }
+      });
+
+    // 안전망 polling — 10초마다 1회. realtime 끊김 / RLS 거부 / publication miss 시 fallback.
+    const fallbackPoll = async () => {
       try {
-        const supabase = getSupabaseBrowserClient();
-        const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+        const session = (await supabase.auth.getSession()).data.session;
         const token = session?.access_token ?? null;
         const res = await fetch(`/api/billing/manual-deposit/${requestId}`, {
           cache: "no-store",
           credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-        if (!res.ok) {
-          console.warn("[manual-deposit poll] non-ok", res.status);
-          return;
-        }
+        if (!res.ok) return;
         const data = (await res.json()) as { status?: string; decidedBy?: string | null };
-        if (cancelled) return;
-        if (data.status === "approved" || data.status === "auto_approved") {
-          setApprovedBy(data.decidedBy === "admin" ? "admin" : "auto");
-          setStage("approved");
-          window.dispatchEvent(new CustomEvent("minyoi:credits-changed"));
-          window.setTimeout(() => router.push("/"), 2400);
-        } else if (data.status === "rejected") {
-          setErrorMessage("운영자가 신청을 거절했어요. 입금이 확인되지 않아요.");
-          setStage("error");
-        }
-      } catch (err) {
-        console.warn("[manual-deposit poll] threw", err instanceof Error ? err.message : String(err));
+        if (data.status) handleStatusUpdate(data.status, data.decidedBy ?? null);
+      } catch {
+        /* swallow — 다음 tick 에 재시도 */
       }
     };
-    void poll();
-    timer = window.setInterval(poll, 2000);
+    void fallbackPoll();
+    const timer = window.setInterval(fallbackPoll, 10000);
+
     return () => {
       cancelled = true;
-      if (timer != null) window.clearInterval(timer);
+      void supabase.removeChannel(channel);
+      window.clearInterval(timer);
     };
   }, [stage, requestId, router]);
 
