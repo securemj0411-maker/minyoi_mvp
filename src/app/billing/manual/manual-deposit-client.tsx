@@ -98,10 +98,11 @@ export default function ManualDepositClient() {
         setStage("error");
         return;
       }
-      // 크레딧 즉시 grant 됐음. credits-changed 이벤트 + redirect.
+      // 크레딧 즉시 grant 됐음. credits-changed 이벤트 + success modal 2.4초 후 redirect.
+      // Wave launch-95e (사용자 정정 — "충전 완료 표시 없음"): fullscreen 모달 + 큰 ✓ + 받은 크레딧.
       window.dispatchEvent(new CustomEvent("minyoi:credits-changed"));
       setStage("success");
-      window.setTimeout(() => router.push("/explore"), 1400);
+      window.setTimeout(() => router.push("/explore"), 2400);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "네트워크 오류가 발생했어요.");
       setStage("error");
@@ -219,6 +220,7 @@ export default function ManualDepositClient() {
               <>입금 완료 — 즉시 {plan.monthlyCredits.toLocaleString("ko-KR")}크레딧 받기</>
             )}
           </button>
+          {/* success overlay 는 main 끝에 fullscreen 으로 추가 (button 안 카피보다 prominent). */}
 
           {authReady === "guest" ? (
             <p className="mt-2 text-center text-[12px] font-bold text-rose-600 dark:text-rose-400">
@@ -241,6 +243,45 @@ export default function ManualDepositClient() {
           </Link>
         </section>
       </div>
+
+      {/* Wave launch-95e (사용자 정정): 충전 완료 fullscreen 모달.
+          큰 ✓ 체크 + "충전 완료" headline + 받은 크레딧 + sub. 2.4초 후 자동 redirect. */}
+      {stage === "success" ? (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/55 backdrop-blur-md"
+          role="dialog"
+          aria-modal="true"
+          aria-label="충전 완료"
+        >
+          <div className="mx-4 flex w-full max-w-[340px] flex-col items-center rounded-[28px] bg-white px-6 py-8 shadow-[0_24px_60px_rgba(15,23,42,0.35)] dark:bg-zinc-950">
+            <div className="success-check flex h-20 w-20 items-center justify-center rounded-full bg-[#3182f6] shadow-[0_10px_24px_rgba(49,130,246,0.42)]">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </div>
+            <h2 className="mt-5 text-[22px] font-black text-zinc-950 dark:text-zinc-50">충전이 완료되었어요</h2>
+            <div className="mt-2 text-[16px] font-bold text-[#3182f6] dark:text-blue-300">
+              +{plan.monthlyCredits.toLocaleString("ko-KR")} 크레딧
+            </div>
+            <p className="mt-4 text-center text-[12.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+              잠시 후 추천 피드로 이동해요.
+            </p>
+          </div>
+          <style jsx>{`
+            @keyframes minyoiSuccessPop {
+              0% { transform: scale(0.5); opacity: 0; }
+              60% { transform: scale(1.08); opacity: 1; }
+              100% { transform: scale(1); opacity: 1; }
+            }
+            .success-check {
+              animation: minyoiSuccessPop 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .success-check { animation: none; }
+            }
+          `}</style>
+        </div>
+      ) : null}
     </main>
   );
 }
