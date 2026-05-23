@@ -138,6 +138,9 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "아디다스", "adidas",
       "aape", "오마주", "fubu", "푸부",
       "콜라보", "collab", "lacoste", "라코스테", "자운드", "jound",
+      // Wave 716 (2026-05-23): 40x spread audit — varsity/coach narrow 신설.
+      "varsity", "바시티",
+      "coach", "코치", "코치자켓", "코치 자켓",
     ],
     msrpKrw: 590000,
     released: 1993,
@@ -904,6 +907,13 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "700 카모", "800 카모", "카모 700", "카모 800",
       // Wave 615 등에서 강화한 매물 그룹 별도 spread 보호.
       "에글론", "에그론", "aglon", "aglone",
+      // Wave 716 (2026-05-23): 30x spread audit — agent 권고 (split 효과 미미, 카테고리 외 제거).
+      "롱슬리브", "long sleeve", "긴팔티", "긴팔 티셔츠",
+      "플리스", "fleece", "후리스",
+      "반팔", "반팔티", "tee", "short sleeve",
+      "키즈", "kids", "baby", "베이비", "아동", "유아",
+      "1992", "us 1992", "1992 us", "white label 1992",
+      "us overseas", "us 직구", "미국직구",
     ],
     msrpKrw: 459000,
     released: 1996,

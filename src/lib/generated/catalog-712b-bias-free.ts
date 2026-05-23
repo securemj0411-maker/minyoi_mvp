@@ -22,14 +22,35 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
   // ============================================================================
 
   // ─── Adidas 의류 collab (trefoil에서 분리) ───
+  // Wave 716 (2026-05-23): 120x spread audit — 팀가이스트 후디 (~63만) 별도 신설 + 일반 트랙탑 (~10만) 분리.
   {
     id: "clothing-adidas-thugclub-collab",
     brand: "Adidas x Thug Club", category: "clothing", laneKey: "adidas_thugclub_collab",
-    modelName: "Thug Club × Adidas (트랙탑/조거/후드 의류)",
-    aliases: ["Thug Club Adidas", "떠그클럽 아디다스", "팀가이스트"],
-    mustContain: [["adidas", "아디다스"], ["thug club", "떠그클럽", "떠그 클럽", "팀가이스트", "team geist"]],
-    mustNotContain: [...COMMON_NOISE, "superstar", "슈퍼스타", "스니커즈", "sneaker", "운동화"],
-    msrpKrw: 230000, released: 2025,
+    modelName: "Thug Club × Adidas (트랙탑/조거 — 팀가이스트 후디 제외)",
+    aliases: ["Thug Club Adidas", "떠그클럽 아디다스"],
+    mustContain: [["adidas", "아디다스"], ["thug club", "떠그클럽", "떠그 클럽"]],
+    mustNotContain: [
+      ...COMMON_NOISE, "superstar", "슈퍼스타", "스니커즈", "sneaker", "운동화",
+      // Wave 716: 팀가이스트 후디 별도 narrow (가격 6배 차이)
+      "팀가이스트 후드", "팀가이스트 후디", "team geist hoodie",
+      "팀가이스트 레더", "team geist leather", "레더 후디",
+      // 비-collab 아디다스 축구 매물 차단
+      "수원삼성", "축구", "풋살", "아디컬러", "adicolor",
+    ],
+    msrpKrw: 100000, released: 2025,
+  },
+  // Wave 716: 팀가이스트 후디 별도 narrow (median 63만 — 일반 트랙탑 10만과 6배 차이).
+  {
+    id: "clothing-thugclub-teamgeist-hoodie",
+    brand: "Adidas x Thug Club", category: "clothing", laneKey: "thugclub_teamgeist_hoodie",
+    modelName: "Thug Club × Adidas Team Geist Hoodie / Leather",
+    aliases: ["Team Geist Hoodie", "팀가이스트 후드", "팀가이스트 레더"],
+    mustContain: [
+      ["떠그클럽", "thug club", "떠그 클럽", "팀가이스트", "team geist"],
+      ["후드", "후디", "hoodie", "후드티", "레더", "leather", "가죽"],
+    ],
+    mustNotContain: [...COMMON_NOISE, "스니커즈", "sneaker", "운동화"],
+    msrpKrw: 630000, released: 2025,
   },
   {
     id: "clothing-adidas-bape-collab",
@@ -414,14 +435,24 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     mustNotContain: [...COMMON_NOISE, "후드", "hoodie", "맨투맨", "nike"],
     msrpKrw: 73000, released: 2010,
   },
+  // Wave 716 (2026-05-23): 이름과 데이터 mismatch — 76% tees in this lane. Rename to Tee + 봄버/후디 차단.
   {
     id: "clothing-stussy-pigment-dye-hoodie",
     brand: "Stussy", category: "clothing", laneKey: "stussy_pigment_dye_hoodie",
-    modelName: "Stussy Pigment Dye Hoodie (피그먼트 다이드)",
-    aliases: ["Stussy Pigment Dye", "스투시 피그먼트", "피그먼트 후드"],
-    mustContain: [["stussy", "스투시", "stüssy"], ["피그먼트", "pigment", "다이드", "dyed", "디키"]],
-    mustNotContain: [...COMMON_NOISE, "nike"],
-    msrpKrw: 170000, released: 2020,
+    modelName: "Stussy Pigment Dye Tee (~7만 — 76% 매칭이 티셔츠)",
+    aliases: ["Stussy Pigment Dye Tee", "스투시 피그먼트 티", "피그먼트 다이드 티"],
+    mustContain: [
+      ["stussy", "스투시", "stüssy"],
+      ["피그먼트", "pigment", "다이드", "dyed", "디키"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, "nike",
+      // Wave 716: hoodie/bomber 별 SKU (가격 ~13만/40만)
+      "후드", "후디", "hoodie", "후드티",
+      "봄버", "bomber", "봄버자켓",
+      "자켓", "재킷", "jacket",
+    ],
+    msrpKrw: 70000, released: 2020,
   },
 
   // ─── Stussy × Nike Spiridon / AF1 Mid sub-model ───

@@ -993,6 +993,12 @@ export const LANE_READINESS: LaneReadinessMap = {
   junya_cp_company_collab: { status: "ready", label: "Junya × C.P. Company collab (premium)", note: "Wave 716 — 220만 premium tier." },
   junya_brooks_brothers_collab: { status: "ready", label: "Junya × Brooks Brothers collab", note: "Wave 716 — 68-94만 별도." },
   acne_denim_premium: { status: "ready", label: "Acne Denim Premium (2021M/Petit)", note: "Wave 716 — 50x spread → 600k tier 분리." },
+  // Wave 716 P0/P1 — agent 권고 적용
+  thugclub_teamgeist_hoodie: { status: "ready", label: "Thug Club × Adidas Team Geist Hoodie / Leather", note: "Wave 716 — 120x adidas_thugclub_collab spread 해소 (63만 tier)." },
+  polo_rrl_work_chore_jacket: { status: "ready", label: "Polo RRL Work / Chore Jacket", note: "Wave 716 — 75x polo_rrl_jacket_coat spread (53만 tier)." },
+  polo_rrl_wool_mackinaw_jacket: { status: "ready", label: "Polo RRL Wool / Mackinaw Jacket", note: "Wave 716 — 90만 premium tier." },
+  bape_varsity_jacket: { status: "ready", label: "BAPE Varsity Jacket", note: "Wave 716 — 40x bape_jacket_broad spread (22만 tier)." },
+  bape_coach_jacket: { status: "ready", label: "BAPE Coach Jacket", note: "Wave 716 — 19만 tier 분리." },
   // BAPE
   bape_adidas_collab: { status: "ready", label: "BAPE × Adidas 의류 collab", note: "Wave 712b — 174건/주 (가장 큰 misclassification fix)." },
   bape_longsleeve: { status: "ready", label: "BAPE 롱슬리브 (FW)", note: "Wave 712b — 32건/주 14.8만." },

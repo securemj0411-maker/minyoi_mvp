@@ -7504,6 +7504,10 @@ export const CATALOG: Sku[] = [
       // Wave 595: '&' punctuation은 normalize 시 공백으로 변환됨 → 'rrl&' false positive.
       // 대신 brand-mix 표기 'lvc'/'리바이스 빈티지 클로딩' 명시 차단.
       "lvc ", " lvc", "리바이스 빈티지 클로딩", "levis vintage clothing", "levi's vintage clothing",
+      // Wave 716 (2026-05-23): 75x spread audit — work_chore/wool_mackinaw narrow 분리.
+      "워크", "워크자켓", "초어", "초어자켓", "chore", "chore jacket", "work jacket",
+      "wool mackinaw", "맥키노", "wool 자켓",
+      "트러커", "trucker", "denim jacket",  // trucker는 별도 SKU (Polo RRL Denim Jacket)
     ],
     msrpKrw: 1500000, released: 2020,
     // jacket + coat 둘 다 가능. defaultProductType 안 박음 — text 추출 의존 (regex 가 jacket/coat 구분).

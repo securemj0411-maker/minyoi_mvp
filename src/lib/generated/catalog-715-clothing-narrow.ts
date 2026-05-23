@@ -503,6 +503,83 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     msrpKrw: 600000, released: 2021,
   },
 
+  // ─── Polo RRL Work / Chore Jacket (워크자켓 ~53만 median) ───
+  // Wave 716 (2026-05-23): polo_rrl_jacket_coat 75x spread audit — work_chore 7건 median 53만 분리.
+  {
+    id: "clothing-polo-rrl-work-chore",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_work_chore_jacket",
+    modelName: "Polo RRL Work / Chore Jacket (워크자켓)",
+    aliases: ["RRL Chore", "RRL 워크자켓", "RRL 초어자켓"],
+    mustContain: [
+      ["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"],
+      ["워크", "chore", "초어", "work jacket", "워크자켓", "초어자켓"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      "키즈", "kids",
+      "trucker", "트러커",
+      "데님", "denim",
+      "wool", "맥키노",
+    ],
+    msrpKrw: 530000, released: 2020,
+  },
+
+  // ─── Polo RRL Wool / Mackinaw Jacket (~90만 median) ───
+  {
+    id: "clothing-polo-rrl-wool-mackinaw",
+    brand: "RRL", category: "clothing", laneKey: "polo_rrl_wool_mackinaw_jacket",
+    modelName: "Polo RRL Wool / Mackinaw Jacket (~90만 premium tier)",
+    aliases: ["RRL Wool Mackinaw", "RRL 울 맥키노", "RRL 맥키노"],
+    mustContain: [
+      ["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"],
+      ["wool mackinaw", "맥키노", "wool 자켓", "울 자켓", "mackinaw"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      "키즈", "kids", "워크", "chore", "초어",
+      "trucker", "트러커",
+    ],
+    msrpKrw: 900000, released: 2020,
+  },
+
+  // ─── BAPE Varsity Jacket (바시티 ~22만 median) ───
+  // Wave 716: bape_jacket_broad 40x spread — varsity 11건 + coach 10건 분리.
+  {
+    id: "clothing-bape-varsity-jacket",
+    brand: "BAPE", category: "clothing", laneKey: "bape_varsity_jacket",
+    modelName: "BAPE Varsity Jacket (바시티 자켓)",
+    aliases: ["BAPE Varsity", "베이프 바시티"],
+    mustContain: [
+      ["bape", "베이프", "a bathing ape"],
+      ["바시티", "varsity"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      "키즈", "kids",
+      "coach", "코치", "코치자켓",
+      "down", "다운", "패딩",
+    ],
+    msrpKrw: 220000, released: 2018,
+  },
+
+  // ─── BAPE Coach Jacket (코치 ~19만 median) ───
+  {
+    id: "clothing-bape-coach-jacket",
+    brand: "BAPE", category: "clothing", laneKey: "bape_coach_jacket",
+    modelName: "BAPE Coach Jacket (코치 자켓)",
+    aliases: ["BAPE Coach", "베이프 코치"],
+    mustContain: [
+      ["bape", "베이프", "a bathing ape"],
+      ["coach", "코치", "코치자켓", "코치 자켓"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      "키즈", "kids",
+      "varsity", "바시티",
+    ],
+    msrpKrw: 190000, released: 2018,
+  },
+
   // ============================================================================
   // ===== Stussy: Nike collab은 existing clothing-stussy-nike-collab (laneKey stussy_nike_collab) 활용 =====
   // ============================================================================
