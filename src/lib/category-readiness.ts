@@ -1017,7 +1017,8 @@ export const LANE_READINESS: LaneReadinessMap = {
   // Wave 732 — Multi-brand (Nike x MLB jersey + Uniqlo collab + Thisisneverthat + Korean outdoor + Barbour)
   mlb_nike_jersey_collab: { status: "ready", label: "Nike × MLB Official Jersey", note: "Wave 732 — 54건/주 p50 12.5만 (mlb_apparel_broad nike 차단 leak)." },
   thisisneverthat_apparel: { status: "ready", label: "Thisisneverthat Apparel (Broad)", note: "Wave 732 — 15건/주 p50 5만." },
-  uniqlo_collab_broad: { status: "ready", label: "Uniqlo Collab (Lemaire/Marimekko/JW Anderson)", note: "Wave 732 — 17건/주 p50 4.9만." },
+  uniqlo_collab_broad: { status: "ready", label: "Uniqlo Collab (Lemaire/Marimekko/JW Anderson/Cecilie/KAWS/EG)", note: "Wave 732+737 — collab 확장." },
+  uniqlo_apparel_broad: { status: "ready", label: "Uniqlo Generic Apparel", note: "Wave 737 — 61건/주 0% 매칭 root fix." },
   columbia_apparel_broad: { status: "ready", label: "Columbia Apparel (패딩/플리스)", note: "Wave 732 — 9건/주 p50 6.2만." },
   blackyak_apparel_broad: { status: "ready", label: "Blackyak Apparel (다운/패딩)", note: "Wave 732 — 8건/주 p50 6.3만." },
   barbour_quilted_jacket: { status: "ready", label: "Barbour Quilted Jacket", note: "Wave 732 — 4건/주 p50 10.5만 (시그니처)." },

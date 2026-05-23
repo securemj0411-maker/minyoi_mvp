@@ -110,20 +110,28 @@ export const WAVE_732_MULTI_BRAND: Sku[] = [
   },
 
   // ─── Uniqlo Collab Broad (Lemaire/Marimekko/JW Anderson/Ines/Theory) (17건 / p50 4.9만) ───
+  // Wave 737 leak fix: collab brand 확장 (세실리에 반센/KAWS/Warhol/EG/JWA 누락 발견)
   {
     id: "clothing-uniqlo-collab",
     brand: "Uniqlo x Designer", category: "clothing", laneKey: "uniqlo_collab_broad",
-    modelName: "Uniqlo Collab (Lemaire/Marimekko/JW Anderson/Ines/Theory)",
-    aliases: ["Uniqlo Lemaire", "유니클로 르메르", "유니클로 마리메꼬", "유니클로 U"],
+    modelName: "Uniqlo Collab (Lemaire/Marimekko/JW Anderson/Cecilie Bahnsen/KAWS/EG)",
+    aliases: ["Uniqlo Lemaire", "유니클로 르메르", "유니클로 마리메꼬", "유니클로 U", "유니클로 UT"],
     mustContain: [
       ["유니클로", "uniqlo"],
       ["르메르", "lemaire",
        "마리메꼬", "marimekko",
-       "jw anderson", "anderson",
+       "jw anderson", "anderson", "jwa",
        "이네스", "ines",
        "theory", "테오리",
        "마메", "mame",
-       "유니클로 u", "uniqlo u"],
+       "유니클로 u", "uniqlo u", "uniqlo ut", "유니클로 ut",
+       // Wave 737 추가
+       "세실리에", "cecilie", "bahnsen", "반센",
+       "kaws", "카우스",
+       "워홀", "warhol",
+       "engineered garments", "엔지니어드 가먼츠", "엔지니어드가먼츠", "eg",
+       "supreme", "슈프림",  // Supreme x Uniqlo collab
+       "마리메코"],  // 다른 표기
     ],
     mustNotContain: [
       ...COMMON_NOISE, ...NON_APPAREL_GLOBAL,
@@ -132,6 +140,48 @@ export const WAVE_732_MULTI_BRAND: Sku[] = [
       ...OUTDOOR_SHOE_NOISE,
     ],
     msrpKrw: 79000, released: 2016,
+  },
+
+  // ─── Uniqlo Generic Broad (60건/주 / 0% 매칭 — Wave 737 새 SKU) ───
+  // Wave 737 (2026-05-24): Uniqlo 일반 매물 broad SKU 자체 없음 발견 (0% 매칭).
+  //   collab 외 일반 유니클로 매물 catch.
+  {
+    id: "clothing-uniqlo-broad",
+    brand: "Uniqlo", category: "clothing", laneKey: "uniqlo_apparel_broad",
+    modelName: "Uniqlo Generic Apparel (collab 외 일반)",
+    aliases: ["Uniqlo", "유니클로"],
+    mustContain: [
+      ["uniqlo", "유니클로"],
+      ["반팔", "티셔츠", "tee", "긴팔", "롱슬리브",
+       "후드", "hoodie", "후디", "맨투맨", "크루넥", "스웻", "sweat",
+       "셔츠", "shirt",
+       "니트", "knit", "스웨터", "sweater", "카디건",
+       "베스트", "vest", "조끼",
+       "자켓", "jacket", "재킷", "블루종", "봄버",
+       "바람막이", "windbreaker",
+       "다운", "패딩", "푸퍼", "puffer", "울트라 라이트", "울트라라이트",
+       "플리스", "fleece",
+       "트렌치", "trench", "코트", "coat",
+       "팬츠", "pants", "바지", "쇼츠", "shorts",
+       "스커트", "skirt", "원피스",
+       "히트텍", "heattech", "에어리즘", "airism",
+       "ut", "오버사이즈"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, ...NON_APPAREL_GLOBAL,
+      // collab 별 SKU (uniqlo_collab_broad)
+      "르메르", "lemaire",
+      "마리메꼬", "marimekko",
+      "jw anderson", "jwa",
+      "세실리에", "cecilie", "bahnsen", "반센",
+      "kaws", "카우스",
+      "워홀", "warhol",
+      "engineered garments", "엔지니어드 가먼츠", "엔지니어드가먼츠",
+      "supreme", "슈프림",
+      "마메", "mame", "이네스", "ines",
+      "퍼피 숄더백", "유틸리티백",  // 가방
+    ],
+    msrpKrw: 39000, released: 1949,
   },
 
   // ─── Columbia Apparel Broad (9건 / p50 6.2만) ───
