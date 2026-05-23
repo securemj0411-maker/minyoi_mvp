@@ -97,12 +97,12 @@ function describeRestTarget(path: string) {
   }
 }
 
-// Wave launch-46 (사용자 짚음 "score_worker 89% failed 즉시 진단"):
-//   진단: 모든 failed = "Supabase REST timed out" — 8s timeout. joongna depth 10 박은 후
-//   raw_listings 매물 ↑ → query (특히 pid=in.(N 큰 list)) 8s 안 응답 못 받음 → throw → score_worker 실패.
-//   fix: 8s → 15s. Vercel function maxDuration 90s 안 안전 마진. retry 3회 그대로.
-//   24h 평균 23% failed → 1h spike 89% 의 root cause.
-const REST_FETCH_TIMEOUT_MS = Number(process.env.SUPABASE_REST_TIMEOUT_MS ?? 15_000);
+// Wave launch-46: 8s → 15s. score_worker 89% failed 진단.
+// Wave 725a (2026-05-24): EXPLAIN ANALYZE 결과 DB query는 0.2ms 처리.
+//   15s timeout은 network/transport 한도 도달 (Vercel→Supabase). 30s로 늘림.
+//   추가: TimeoutError도 retry (이전엔 첫 timeout에 즉시 throw → transient 회복 못 함).
+//   Vercel function maxDuration 120s 안 안전 (30s × 3 = 90s).
+const REST_FETCH_TIMEOUT_MS = Number(process.env.SUPABASE_REST_TIMEOUT_MS ?? 30_000);
 
 export async function restFetch(path: string, init: RequestInit = {}) {
   const method = init.method ?? "GET";
@@ -116,7 +116,14 @@ export async function restFetch(path: string, init: RequestInit = {}) {
         signal: init.signal ?? AbortSignal.timeout(REST_FETCH_TIMEOUT_MS),
       });
     } catch (err) {
-      if (err instanceof Error && err.name === "TimeoutError") {
+      const isTimeout = err instanceof Error && err.name === "TimeoutError";
+      // Wave 725a: TimeoutError도 retry (transient network spike 회복).
+      // 마지막 attempt 시 throw — 너무 오래 끌지 않게.
+      if (isTimeout && attempt < maxAttempts) {
+        await sleep(150 * attempt);
+        continue;
+      }
+      if (isTimeout) {
         throw new Error(`Supabase REST timed out ${method} ${target}`);
       }
       if (attempt < maxAttempts) {
