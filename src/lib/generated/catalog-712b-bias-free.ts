@@ -871,6 +871,68 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     msrpKrw: 89000, released: 2017,
     defaultProductType: "sneaker",
   },
+  // Wave 740 (2026-05-24): Vans Vault premium broad — Vault/OG/LX 라인 별 시세 (8-20만)
+  {
+    id: "shoe-vans-vault-broad",
+    brand: "Vans", category: "shoe", laneKey: "vans_vault_broad",
+    modelName: "Vans Vault Broad (OG/LX/Premium reissue)",
+    aliases: ["Vans Vault", "반스 볼트"],
+    mustContain: [
+      ["반스", "vans"],
+      ["vault", "볼트",
+       " og ", " og)", "og)",
+       " lx ", " lx)", "lx)",
+       "premium", "프리미엄",
+       "anaheim factory",
+       "처카 lx", "처카lx", "chukka lx"],
+    ],
+    mustNotContain: [...COMMON_NOISE, "컨버스", "converse"],
+    msrpKrw: 159000, released: 2014,
+    defaultProductType: "sneaker",
+  },
+  // Wave 740 (2026-05-24): Vans Generic Broad — model name unspecified fallback.
+  {
+    id: "shoe-vans-generic-broad",
+    brand: "Vans", category: "shoe", laneKey: "vans_generic_broad",
+    modelName: "Vans Generic Broad (narrow 외 일반)",
+    aliases: ["Vans", "반스"],
+    mustContain: [
+      ["반스", "vans"],
+      ["스니커즈", "sneakers", "신발", "shoes", "shoe",
+       "운동화",
+       // Vans 모델 misc
+       "노트케이스", "noteacase",
+       "프로토타입", "prototype",
+       "코너스 스토어", "corner store",
+       "솔로 컬렉션", "solo",
+       "스폰지밥", "spongebob",
+       "디즈니", "disney",
+       "ucla",
+       "마스터드림", "masterdream",
+       "에라 95", "에라95", "era 95",
+       "ucfp",
+       "스폰서십"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      // narrow 우선
+      "old skool", "올드스쿨", "올드 스쿨", "oldskool",
+      "sk8", "스케이트",
+      "어센틱", "authentic",
+      "에라", " era ", "era ",  // Wave 235 한정 분리
+      "슬립온", "slip on", "slip-on",
+      "anaheim", "애너하임",
+      "style 36", "스타일 36",
+      "vault", "볼트", "프리미엄",
+      // collab
+      "kith", "fear of god", "fog", "wtaps", "fragment",
+      "마스터마인드", "mastermind", "bottega",
+      "리벤지", "revenge",
+      "나이젤카본", "nigel cabourn",
+    ],
+    msrpKrw: 79000, released: 1966,
+    defaultProductType: "sneaker",
+  },
 
   // ─── Converse 핵심 누락 ───
   {

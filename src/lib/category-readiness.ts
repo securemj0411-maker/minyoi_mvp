@@ -1022,6 +1022,8 @@ export const LANE_READINESS: LaneReadinessMap = {
   nb_1906_broad: { status: "ready", label: "New Balance 1906 Broad", note: "Wave 739 — 200건/주 p50 9.3만 (R/A/L 외 일반)." },
   nb_made_in_usa_uk: { status: "ready", label: "NB Made in USA / UK", note: "Wave 739 — 13건/주 p50 18만 (premium)." },
   nb_generic_broad: { status: "ready", label: "NB Generic Broad (narrow 외)", note: "Wave 739 — 789건/주 p50 11.5만 (1600/991/1400/650/670 등)." },
+  vans_vault_broad: { status: "ready", label: "Vans Vault Broad (OG/LX/Premium)", note: "Wave 740 — Vault premium reissue." },
+  vans_generic_broad: { status: "ready", label: "Vans Generic Broad (narrow 외)", note: "Wave 740 — 303건/주 p50 6만 (스폰지밥/디즈니/UCLA 등)." },
   columbia_apparel_broad: { status: "ready", label: "Columbia Apparel (패딩/플리스)", note: "Wave 732 — 9건/주 p50 6.2만." },
   blackyak_apparel_broad: { status: "ready", label: "Blackyak Apparel (다운/패딩)", note: "Wave 732 — 8건/주 p50 6.3만." },
   barbour_quilted_jacket: { status: "ready", label: "Barbour Quilted Jacket", note: "Wave 732 — 4건/주 p50 10.5만 (시그니처)." },
