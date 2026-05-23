@@ -44,6 +44,11 @@ export async function POST(req: NextRequest) {
   const authUserId = auth.user.id;
   const userRef = userRefForAuthUser(authUserId);
 
+  // Wave launch-95d (사용자 보고: 500 + balance 박힘 — ledger insert throw 가능성):
+  //   전체 endpoint try/catch + ledger insert 도 catch (grant 후 ledger fail 해도 500 응답 X).
+  //   이전엔 ledger restFetch timeout/throw 시 500 응답 + balance 박힘 inconsistency.
+  try {
+
   // 현재 user_credits state 조회 (blocked_at + last_manual_deposit_at + balance)
   const credRes = await restFetch(
     `${tableUrl("mvp_user_credits")}?select=balance,blocked_at,blocked_reason,last_manual_deposit_at&user_ref=eq.${encodeURIComponent(userRef)}&auth_user_id=eq.${authUserId}&limit=1`,
@@ -110,31 +115,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "grant_failed", message: "충전 신청을 처리하지 못했어요. 잠시 후 다시 시도해주세요." }, { status: 500 });
   }
 
-  // ledger row insert — admin 회수 시 reference.
-  const ledgerRes = await restFetch(
-    `${tableUrl("mvp_credit_ledger")}`,
-    {
-      method: "POST",
-      headers: { ...serviceHeaders(), Prefer: "return=minimal" },
-      body: jsonBody([{
-        user_ref: userRef,
-        auth_user_id: authUserId,
-        event_type: "manual_deposit_grant",
-        amount: plan.monthlyCredits,
-        balance_after: newBalance,
-        metadata: {
-          plan_key: planKey,
-          price_krw: plan.priceKrw,
-          depositor_name: depositorName,
-          honor_trust: true,
-          note: "토스페이먼츠 가맹심사 중 임시 흐름",
-        },
-        created_at: nowIso,
-      }]),
-    },
-  );
-  if (!ledgerRes.ok) {
-    console.warn("[manual-deposit] ledger insert failed (granted but no audit row)");
+  // ledger row insert — admin 회수 시 reference. throw 도 endpoint 500 만들지 않게 try/catch.
+  try {
+    const ledgerRes = await restFetch(
+      `${tableUrl("mvp_credit_ledger")}`,
+      {
+        method: "POST",
+        headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+        body: jsonBody([{
+          user_ref: userRef,
+          auth_user_id: authUserId,
+          event_type: "manual_deposit_grant",
+          amount: plan.monthlyCredits,
+          balance_after: newBalance,
+          metadata: {
+            plan_key: planKey,
+            price_krw: plan.priceKrw,
+            depositor_name: depositorName,
+            honor_trust: true,
+            note: "토스페이먼츠 가맹심사 중 임시 흐름",
+          },
+          created_at: nowIso,
+        }]),
+      },
+    );
+    if (!ledgerRes.ok) {
+      console.warn("[manual-deposit] ledger insert failed (granted but no audit row)", { status: ledgerRes.status });
+    }
+  } catch (ledgerErr) {
+    // ledger fail 은 grant 자체 무효화 X. log 만 (audit row 누락 — 운영자가 fallback 으로 ledger 봐서 회복).
+    console.warn("[manual-deposit] ledger insert threw", ledgerErr instanceof Error ? ledgerErr.message : String(ledgerErr));
   }
 
   return NextResponse.json({
@@ -143,4 +153,14 @@ export async function POST(req: NextRequest) {
     granted: plan.monthlyCredits,
     planKey,
   });
+
+  } catch (err) {
+    // Wave launch-95d: 전체 endpoint catch — restFetch throw 등 unhandled 잡고 message 응답.
+    //   잘못된 500 응답 차단. balance 박힌 후 ledger throw 시에도 frontend 가 success path 진입.
+    console.error("[manual-deposit] endpoint error", err instanceof Error ? err.message : String(err));
+    return NextResponse.json({
+      error: "deposit_failed",
+      message: `처리 중 오류가 발생했어요: ${err instanceof Error ? err.message.slice(0, 160) : "unknown"}`,
+    }, { status: 500 });
+  }
 }
