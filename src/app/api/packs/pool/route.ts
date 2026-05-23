@@ -435,12 +435,20 @@ function buildItems(
   // Wave 714k (2026-05-23): pid → grading + chips map.
   const gradingByPid = new Map<number, { tier: string | null; cluster: string | null; confidence: number | null; flags: Record<string, unknown> | null; chips: string[] | null }>();
   for (const row of parsedGradingRows) {
-    const grade = (row.parsed_json?.condition_grade as { chips?: string[] } | null) ?? null;
+    // Wave 714k+ (2026-05-23): PostgREST schema cache 문제 시 column 못 잡을 수 있음.
+    //   fallback — parsed_json.condition_grade 안에서 추출 (parser 가 거기 박은 데이터).
+    const grade = (row.parsed_json?.condition_grade as {
+      tier?: string;
+      cluster?: string;
+      confidence?: number;
+      flags?: Record<string, unknown>;
+      chips?: string[];
+    } | null) ?? null;
     gradingByPid.set(Number(row.pid), {
-      tier: row.condition_tier ?? null,
-      cluster: row.condition_cluster ?? null,
-      confidence: row.condition_confidence ?? null,
-      flags: row.condition_flags ?? null,
+      tier: row.condition_tier ?? grade?.tier ?? null,
+      cluster: row.condition_cluster ?? grade?.cluster ?? null,
+      confidence: row.condition_confidence ?? grade?.confidence ?? null,
+      flags: row.condition_flags ?? grade?.flags ?? null,
       chips: grade?.chips ?? null,
     });
   }

@@ -694,12 +694,19 @@ export async function GET(req: Request) {
       condition_flags?: Record<string, unknown> | null;
       parsed_json?: Record<string, unknown> | null;
     };
-    const grade = (r.parsed_json?.condition_grade as { chips?: string[] } | null) ?? null;
+    // Wave 714k+ (2026-05-23): PostgREST schema cache 못 잡을 시 fallback to parsed_json.condition_grade.
+    const grade = (r.parsed_json?.condition_grade as {
+      tier?: string;
+      cluster?: string;
+      confidence?: number;
+      flags?: Record<string, unknown>;
+      chips?: string[];
+    } | null) ?? null;
     gradingByPid.set(Number(row.pid), {
-      tier: r.condition_tier ?? null,
-      cluster: r.condition_cluster ?? null,
-      confidence: r.condition_confidence ?? null,
-      flags: r.condition_flags ?? null,
+      tier: r.condition_tier ?? grade?.tier ?? null,
+      cluster: r.condition_cluster ?? grade?.cluster ?? null,
+      confidence: r.condition_confidence ?? grade?.confidence ?? null,
+      flags: r.condition_flags ?? grade?.flags ?? null,
       chips: grade?.chips ?? null,
     });
   }
