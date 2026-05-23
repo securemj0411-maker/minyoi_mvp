@@ -5634,10 +5634,11 @@ export const CATALOG: Sku[] = [
     category: "earphone",
     laneKey: "galaxy_buds_3_pro",
     modelName: "Galaxy Buds 3 Pro",
-    aliases: ["갤럭시 버즈 3 프로", "갤버즈3프로", "Galaxy Buds 3 Pro", "갤럭시버즈3프로"],
+    aliases: ["갤럭시 버즈 3 프로", "갤버즈3프로", "Galaxy Buds 3 Pro", "갤럭시버즈3프로", "버즈프로3", "버즈 프로3"],
+    // Wave 749 leak fix: 한국 셀러 "버즈프로3 / 버즈 프로3" prefix 표기 흔함.
     mustContain: [
-      ["갤럭시 버즈", "갤버즈", "galaxy buds"],
-      ["3 프로", "3프로", "3 pro"],
+      ["갤럭시 버즈", "갤버즈", "galaxy buds", "버즈"],
+      ["3 프로", "3프로", "3 pro", "프로3", "프로 3"],
     ],
     mustNotContain: [
       "1세대",
@@ -5756,9 +5757,9 @@ export const CATALOG: Sku[] = [
     aliases: ["애플워치 7", "애플워치 시리즈 7", "Apple Watch Series 7"],
     mustContain: [
       ["애플워치", "apple watch", "applewatch"],
-      ["시리즈 7", "series 7", " 7 ", "s7", "워치7", "워치 7"],
+      ["시리즈 7", "시리즈7", "series 7", "series7", "s7", "워치7", "워치 7", "애플워치7"],
     ],
-    mustNotContain: ["se", "ultra", "시리즈 8", "시리즈 9", "시리즈 10", "series 8", "series 9", "series 10"],
+    mustNotContain: ["se", "ultra", "시리즈 8", "시리즈8", "시리즈 9", "시리즈9", "시리즈 10", "시리즈10", "시리즈 11", "시리즈11", "series 8", "series 9", "series 10", "series 11"],
     msrpKrw: 539000,
     released: 2021,
   },
@@ -5770,10 +5771,10 @@ export const CATALOG: Sku[] = [
     aliases: ["애플워치 8", "애플워치 시리즈 8", "Apple Watch Series 8"],
     mustContain: [
       ["애플워치", "apple watch", "applewatch"],
-      ["시리즈 8", "series 8", " 8 ", "s8", "워치8", "워치 8"],
+      ["시리즈 8", "시리즈8", "series 8", "series8", "s8", "워치8", "워치 8", "애플워치8"],
     ],
     // Wave 142 (2026-05-17): Hermes Edition 별도 SKU 격리 (applewatch-series8-hermes).
-    mustNotContain: ["se", "ultra", "시리즈 7", "시리즈 9", "시리즈 10", "series 7", "series 9", "series 10", "에르메스", "hermes"],
+    mustNotContain: ["se", "ultra", "시리즈 7", "시리즈7", "시리즈 9", "시리즈9", "시리즈 10", "시리즈10", "시리즈 11", "시리즈11", "series 7", "series 9", "series 10", "series 11", "에르메스", "hermes"],
     msrpKrw: 599000,
     released: 2022,
   },
@@ -5785,9 +5786,9 @@ export const CATALOG: Sku[] = [
     aliases: ["애플워치 9", "애플워치 시리즈 9", "Apple Watch Series 9"],
     mustContain: [
       ["애플워치", "apple watch", "applewatch"],
-      ["시리즈 9", "series 9", " 9 ", "s9", "워치9", "워치 9"],
+      ["시리즈 9", "시리즈9", "series 9", "series9", "s9", "워치9", "워치 9", "애플워치9"],
     ],
-    mustNotContain: ["se", "ultra", "시리즈 7", "시리즈 8", "시리즈 10", "series 7", "series 8", "series 10"],
+    mustNotContain: ["se", "ultra", "시리즈 7", "시리즈7", "시리즈 8", "시리즈8", "시리즈 10", "시리즈10", "시리즈 11", "시리즈11", "series 7", "series 8", "series 10", "series 11"],
     msrpKrw: 599000,
     released: 2023,
   },
@@ -5799,10 +5800,10 @@ export const CATALOG: Sku[] = [
     aliases: ["애플워치 10", "애플워치 시리즈 10", "Apple Watch Series 10"],
     mustContain: [
       ["애플워치", "apple watch", "applewatch"],
-      ["시리즈 10", "series 10", " 10 ", "s10", "워치10", "워치 10"],
+      ["시리즈 10", "시리즈10", "series 10", "series10", "s10", "워치10", "워치 10", "애플워치10"],
     ],
     // Wave 142 (2026-05-17): Hermes Edition 별도 SKU 격리 (applewatch-series10-hermes).
-    mustNotContain: ["se", "ultra", "시리즈 7", "시리즈 8", "시리즈 9", "series 7", "series 8", "series 9", "에르메스", "hermes"],
+    mustNotContain: ["se", "ultra", "시리즈 7", "시리즈7", "시리즈 8", "시리즈8", "시리즈 9", "시리즈9", "시리즈 11", "시리즈11", "series 7", "series 8", "series 9", "series 11", "에르메스", "hermes"],
     msrpKrw: 599000,
     released: 2024,
   },
@@ -5833,9 +5834,9 @@ export const CATALOG: Sku[] = [
     aliases: ["애플워치 11", "애플워치 시리즈 11", "Apple Watch Series 11"],
     mustContain: [
       ["애플워치", "apple watch", "applewatch"],
-      ["시리즈 11", "series 11", "s11", "워치11", "워치 11", "애플워치11", "애플워치 11"],
+      ["시리즈 11", "시리즈11", "series 11", "series11", "s11", "워치11", "워치 11", "애플워치11", "애플워치 11"],
     ],
-    mustNotContain: ["se", "ultra", "울트라", "시리즈 7", "시리즈 8", "시리즈 9", "시리즈 10", "series 7", "series 8", "series 9", "series 10"],
+    mustNotContain: ["se", "ultra", "울트라", "시리즈 7", "시리즈7", "시리즈 8", "시리즈8", "시리즈 9", "시리즈9", "시리즈 10", "시리즈10", "series 7", "series 8", "series 9", "series 10", "에르메스", "hermes"],
     msrpKrw: 649000,
     released: 2025,
   },
@@ -5893,9 +5894,9 @@ export const CATALOG: Sku[] = [
     aliases: ["애플워치 5", "애플워치 시리즈 5", "Apple Watch Series 5"],
     mustContain: [
       ["애플워치", "apple watch", "applewatch"],
-      ["시리즈 5", "series 5", "s5", "워치 5", "워치5", "애플워치 5", "애플워치5"],
+      ["시리즈 5", "시리즈5", "series 5", "series5", "s5", "워치 5", "워치5", "애플워치 5", "애플워치5"],
     ],
-    mustNotContain: ["se", "ultra", "울트라", "시리즈 3", "시리즈 4", "시리즈 6", "시리즈 7", "시리즈 8", "시리즈 9", "시리즈 10", "시리즈 11", "series 3", "series 4", "series 6", "series 7", "series 8", "series 9", "series 10", "series 11"],
+    mustNotContain: ["se", "ultra", "울트라", "시리즈 3", "시리즈3", "시리즈 4", "시리즈4", "시리즈 6", "시리즈6", "시리즈 7", "시리즈7", "시리즈 8", "시리즈8", "시리즈 9", "시리즈9", "시리즈 10", "시리즈10", "시리즈 11", "시리즈11", "series 3", "series 4", "series 6", "series 7", "series 8", "series 9", "series 10", "series 11"],
     msrpKrw: 539000,
     released: 2019,
   },
@@ -5907,9 +5908,9 @@ export const CATALOG: Sku[] = [
     aliases: ["애플워치 6", "애플워치 시리즈 6", "Apple Watch Series 6"],
     mustContain: [
       ["애플워치", "apple watch", "applewatch"],
-      ["시리즈 6", "series 6", "s6", "워치 6", "워치6", "애플워치 6", "애플워치6"],
+      ["시리즈 6", "시리즈6", "series 6", "series6", "s6", "워치 6", "워치6", "애플워치 6", "애플워치6"],
     ],
-    mustNotContain: ["se", "ultra", "울트라", "시리즈 3", "시리즈 4", "시리즈 5", "시리즈 7", "시리즈 8", "시리즈 9", "시리즈 10", "시리즈 11", "series 3", "series 4", "series 5", "series 7", "series 8", "series 9", "series 10", "series 11"],
+    mustNotContain: ["se", "ultra", "울트라", "시리즈 3", "시리즈3", "시리즈 4", "시리즈4", "시리즈 5", "시리즈5", "시리즈 7", "시리즈7", "시리즈 8", "시리즈8", "시리즈 9", "시리즈9", "시리즈 10", "시리즈10", "시리즈 11", "시리즈11", "series 3", "series 4", "series 5", "series 7", "series 8", "series 9", "series 10", "series 11"],
     msrpKrw: 539000,
     released: 2020,
   },
