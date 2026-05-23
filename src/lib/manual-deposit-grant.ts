@@ -1,6 +1,8 @@
 // Wave launch-96: 충전 신청 → 크레딧 grant 공통 로직.
 //   `/api/admin/manual-deposit/decide` 수동 승인 + cron auto-approve 양쪽에서 호출.
+// Wave 731 (2026-05-24): 첫 결제 시 추천인 보너스 (플랜 비례) 즉시 지급.
 
+import { grantReferralPaymentBonus } from "@/lib/referral";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 export type ManualDepositRequest = {
@@ -92,6 +94,27 @@ export async function grantManualDeposit(
     );
   } catch (err) {
     console.warn("[manual-deposit-grant] ledger insert threw", err instanceof Error ? err.message : String(err));
+  }
+
+  // Wave 731: 첫 결제 시 추천인 보너스 지급 (플랜 비례 +3/+30/+60).
+  //   - 추천받은 적 없는 사용자면 noop
+  //   - 이미 first_payment 보상 받은 추천이면 noop
+  //   - 실패해도 사용자 결제 흐름 영향 X (try-catch)
+  try {
+    const bonus = await grantReferralPaymentBonus({
+      referredUserId: request.auth_user_id,
+      planKey: request.plan_key,
+    });
+    if (bonus.ok) {
+      console.log("[manual-deposit-grant] referral payment bonus granted", {
+        referredUserId: request.auth_user_id,
+        planKey: request.plan_key,
+        bonusCredits: bonus.rewardedCredits,
+        referrerUserId: bonus.referrerUserId,
+      });
+    }
+  } catch (err) {
+    console.warn("[manual-deposit-grant] referral bonus failed", err instanceof Error ? err.message : String(err));
   }
 
   return { ok: true, newBalance };

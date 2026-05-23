@@ -354,6 +354,8 @@ export default function AppNav() {
         // Wave 726 (2026-05-23): 모바일에서 sidebar 숨김 (lg:block) 이라 텔레그램 알림 설정 접근 불가.
         //   모바일 사용자가 한 번이라도 설정 가능하게 drawer 에 link 박음.
         { href: "/me?view=hotdeal-alerts", label: "핫딜 알림", caption: "텔레그램 알림 설정" },
+        // Wave 731 (2026-05-24): 친구 초대 — 가입 시 양쪽 +5 / 첫 결제 시 추천인 +3/+30/+60
+        { href: "/invite", label: "친구 초대", caption: "가입하면 둘 다 +5 크레딧" },
         { href: "/plans", label: "크레딧 충전", caption: "상세 분석 열기" },
         { href: "/how-it-works", label: "서비스 안내", caption: "득템잡이 사용법" },
         ...(admin ? [{ href: "/debug", label: "운영 로그", caption: "관리자 전용" }] : []),

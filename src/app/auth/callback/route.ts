@@ -2,6 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { classifyOAuthCallbackError } from "@/lib/auth-error-messages";
+import { createReferralAndGrantSignupBonus, ensureReferralCode } from "@/lib/referral";
+import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,7 +62,7 @@ export async function GET(request: Request) {
     },
   });
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data: exchangeData, error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     // Wave 724: 운영자 추적용 로그. DB 저장 실패면 oauth-db-error 로 분기.
     console.error("[auth/callback] exchangeCodeForSession failed", error.message);
@@ -68,6 +70,42 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/login?auth=oauth-db-error`);
     }
     return NextResponse.redirect(`${origin}/login?auth=exchange-failed`);
+  }
+
+  // Wave 731 (2026-05-24): 레퍼럴 처리
+  //   1. 가입자에게 referral_code 자동 부여 (없으면 생성)
+  //   2. 쿠키 `minyoi_referral` 있으면 추천 관계 생성 + 양쪽 +5 토큰
+  //   가입 자체 흐름은 막지 않음 — 보상 실패해도 redirect 진행.
+  const authUser = exchangeData?.user;
+  if (authUser?.id) {
+    const userRef = userRefForAuthUser(authUser.id);
+    try {
+      await ensureReferralCode(authUser.id, userRef);
+    } catch (err) {
+      console.warn("[auth/callback] ensureReferralCode failed", err instanceof Error ? err.message : String(err));
+    }
+
+    const referralCookie = cookieStore.get("minyoi_referral")?.value;
+    if (referralCookie) {
+      try {
+        const result = await createReferralAndGrantSignupBonus({
+          referrerCode: referralCookie,
+          referredUserId: authUser.id,
+          referredUserRef: userRef,
+        });
+        if (!result.ok) {
+          console.warn("[auth/callback] referral signup skipped", { reason: result.error });
+        }
+      } catch (err) {
+        console.warn("[auth/callback] referral signup threw", err instanceof Error ? err.message : String(err));
+      }
+      // 성공/실패 무관 — 쿠키 clear (한 번 시도)
+      try {
+        cookieStore.set("minyoi_referral", "", { maxAge: 0, path: "/" });
+      } catch {
+        // route handler 외부 context 에서 set 실패 가능 — silent
+      }
+    }
   }
 
   const forwardedHost = request.headers.get("x-forwarded-host");
