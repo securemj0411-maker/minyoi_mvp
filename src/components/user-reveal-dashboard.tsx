@@ -554,6 +554,15 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       },
       skuListingFlow: selectedItem.skuListingFlow ?? undefined,
       optionBaseAssumed: selectedItem.optionBaseAssumed ?? null,
+      // Wave 714g (2026-05-23): /me 매물 클릭 → 모달 변환 시 새 5-tier grading 누락 fix.
+      //   packs/me API (Phase 2) 가 RevealItem 에 conditionTier 등 박았는데,
+      //   user-reveal-dashboard 의 RevealCard 변환에서 누락 → pack-reveal-modal 의
+      //   매물명 아래 ConditionTierChip 표시 X. 이제 정상 전달.
+      conditionTier: selectedItem.conditionTier ?? null,
+      conditionCluster: selectedItem.conditionCluster ?? null,
+      conditionConfidence: selectedItem.conditionConfidence ?? null,
+      conditionFlags: selectedItem.conditionFlags ?? null,
+      conditionChips: selectedItem.conditionChips ?? null,
     };
     return {
       result: "success",
