@@ -1341,10 +1341,15 @@ export function aiHasHardRisk(result: AiClassification): boolean {
 }
 
 // Wave 238: export 박음 — shadow audit 가 pass/hold/reject 동일 분류.
+// Wave 757 (2026-05-24): confidence='medium' 매물도 pass.
+//   기존: 'high' 만 pass. 'medium'/'low' 모두 hold (too conservative).
+//   sample audit: hold 매물 84%가 "description 짧음" 같은 weak signal — 일반인 친화 X.
+//   신규: confidence != 'low' 매물 pass (high OR medium). 'low'만 hold.
+//   핵심 원칙 "일반인도 편하게 돈 벌 수 있는" 반영.
 export function aiSecondOpinionDecision(result: AiClassification): AiDecision {
   if (result.decision) return result.decision;
   if (result.listingType === "normal") {
-    return result.confidence === "high" ? "pass" : "hold";
+    return result.confidence !== "low" ? "pass" : "hold";
   }
   if (result.listingType === "unknown" || result.confidence === "low") return "hold";
   return "reject";
