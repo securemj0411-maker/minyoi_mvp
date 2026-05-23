@@ -736,7 +736,9 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 13 Pro",
     aliases: ["아이폰 13 프로", "아이폰13프로", "iPhone 13 Pro"],
-    mustContain: [["아이폰 13 프로", "아이폰13프로", "iphone 13 pro"]],
+    // Wave 749c (2026-05-24): 한국 셀러 표기 변형 보강.
+    //   "아이폰 13프로" (mid-space), "아이폰13 프로" (반대 mid-space) 등 모두 catch.
+    mustContain: [["아이폰 13 프로", "아이폰13프로", "아이폰 13프로", "아이폰13 프로", "iphone 13 pro", "iphone13 pro", "iphone 13pro"]],
     mustNotContain: ["프로맥스", "프로 맥스", "promax", "프맥", "pro max", "플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1350000,
     released: 2021,
@@ -789,7 +791,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 14 Pro",
     aliases: ["아이폰 14 프로", "아이폰14프로", "iPhone 14 Pro"],
-    mustContain: [["아이폰 14 프로", "아이폰14프로", "iphone 14 pro"]],
+    // Wave 749c: 한국 셀러 mid-space 변형 보강.
+    mustContain: [["아이폰 14 프로", "아이폰14프로", "아이폰 14프로", "아이폰14 프로", "iphone 14 pro", "iphone14 pro", "iphone 14pro"]],
     mustNotContain: ["프로맥스", "프로 맥스", "promax", "프맥", "pro max", "플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1550000,
     released: 2022,
@@ -1193,7 +1196,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 16 Pro",
     aliases: ["아이폰 16 프로", "아이폰16프로", "iPhone 16 Pro"],
-    mustContain: [["아이폰 16 프로", "아이폰16프로", "iphone 16 pro"]],
+    // Wave 749c: 한국 셀러 mid-space 변형 보강.
+    mustContain: [["아이폰 16 프로", "아이폰16프로", "아이폰 16프로", "아이폰16 프로", "iphone 16 pro", "iphone16 pro", "iphone 16pro"]],
     mustNotContain: ["프로맥스", "프로 맥스", "promax", "프맥", "pro max", "플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1550000,
     released: 2024,
@@ -1413,7 +1417,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 17 Pro",
     aliases: ["아이폰 17 프로", "아이폰17프로", "iPhone 17 Pro"],
-    mustContain: [["아이폰 17 프로", "아이폰17프로", "iphone 17 pro"]],
+    // Wave 749c: 한국 셀러 mid-space 변형 보강.
+    mustContain: [["아이폰 17 프로", "아이폰17프로", "아이폰 17프로", "아이폰17 프로", "iphone 17 pro", "iphone17 pro", "iphone 17pro"]],
     mustNotContain: ["프로맥스", "promax", "pro max", "프로 맥스", "프맥", ...PHONE_NOISE],
     msrpKrw: 1700000,
     released: 2025,
