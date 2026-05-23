@@ -3676,20 +3676,22 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
   if (marketplaceProfit <= 0 && daangnProfit <= 0) return null;
   const bonusFromDaangn = marketplaceFee;
   const currentSource = card.marketplaceSource === "joongna" ? "joongna" : "bunjang";
+  // Wave launch-66 (사용자 짚음 "판매자/셀러 같은 의미 왜 다르게? 전국 거래 chip 의미 중복"):
+  //   "셀러" → "판매자" 통일. "전국 거래" chip 제거 (둘 다라 의미 X) — 차별화 정보 (결제 시스템) 로 교체.
   const marketplaceCards = [
     {
       source: "bunjang",
       label: "번개장터",
       profit: marketplaceProfit,
-      note: `${Math.round(SELLING_FEE_RATE * 1000) / 10}% 셀러 수수료 차감`,
-      chips: ["전국 거래", "앱 결제"],
+      note: `판매자 ${Math.round(SELLING_FEE_RATE * 1000) / 10}% 수수료 차감`,
+      chips: ["번개페이", "앱 결제"],
     },
     {
       source: "joongna",
       label: "중고나라",
       profit: joongnaProfit,
-      note: `판매자 ${Math.round(JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE * 100)}% 차감`,
-      chips: ["전국 거래", `구매자 ${Math.round(JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE * 1000) / 10}% 별도`],
+      note: `판매자 ${Math.round(JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE * 100)}% 수수료 차감`,
+      chips: ["안심결제", `구매자 ${Math.round(JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE * 1000) / 10}% 별도`],
     },
   ];
 
@@ -4826,8 +4828,9 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
   const daangnProfit = marketplaceProfit + marketplaceFee;
   const preferDaangn = daangnProfit > marketplaceProfit;
   const currentSource = card.marketplaceSource === "joongna" ? "joongna" : "bunjang";
+  // Wave launch-66: BeginnerGuide channel profit 도 같은 fix (판매자 통일, chip 차별화).
   const marketChannels = [
-    { source: "bunjang", label: "번개장터", profit: marketplaceProfit, note: `${Math.round(SELLING_FEE_RATE * 1000) / 10}% 셀러 수수료`, chip: "전국 거래" },
+    { source: "bunjang", label: "번개장터", profit: marketplaceProfit, note: `판매자 ${Math.round(SELLING_FEE_RATE * 1000) / 10}% 수수료`, chip: "번개페이" },
     { source: "joongna", label: "중고나라", profit: joongnaProfit, note: `판매자 ${Math.round(JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE * 100)}% 수수료`, chip: `구매자 ${Math.round(JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE * 1000) / 10}% 별도` },
   ];
 
