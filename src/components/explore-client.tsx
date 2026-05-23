@@ -1370,11 +1370,11 @@ export default function ExploreClient({
       Kakao?: {
         isInitialized: () => boolean;
         Share?: {
-          sendDefault: (config: Record<string, unknown>) => void;
+          sendScrap: (config: Record<string, unknown>) => void;
         };
       };
     }).Kakao;
-    if (!kakao?.Share?.sendDefault || !kakao.isInitialized()) {
+    if (!kakao?.Share?.sendScrap || !kakao.isInitialized()) {
       return;
     }
 
@@ -1382,32 +1382,12 @@ export default function ExploreClient({
     const shareUrl = `${baseUrl}?ref=kakao_share`;
 
     try {
-      // Wave launch-57: 존댓말 톤.
-      // Wave 732 → 737 (2026-05-24): "text" 형식이 친구한테 link 안 보내는 문제 보고됨 →
-      //   "feed" 형식 복원 + imageUrl 박음 (이미지 = public/share-card.png, 사용자 첨부 이미지).
-      // Wave 734: serverCallbackArgs 로 친구 도달 시 webhook 통과 → +3 크레딧.
-      const imageUrl = `${baseUrl}/new_balance.jpeg`;
-      kakao.Share.sendDefault({
-        objectType: "feed",
-        content: {
-          title: "지금 팔면 바로 돈 되는 중고 상품이 있어요",
-          description: "AI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요!",
-          imageUrl,
-          link: {
-            mobileWebUrl: shareUrl,
-            webUrl: shareUrl,
-          },
-        },
-        buttons: [
-          {
-            title: "바로 보러가기",
-            link: {
-              mobileWebUrl: shareUrl,
-              webUrl: shareUrl,
-            },
-          },
-        ],
-        // Wave 734: 카카오가 webhook URL 에 이 key/value 를 query param 으로 전달. user_id 박혀야 보상 가능.
+      // Wave 740 (2026-05-24): sendDefault → sendScrap. requestUrl 만 박으면 카카오가 OG meta
+      //   (og:title, og:description, og:image) 자동 fetch 해서 카드 만듦. 카카오 표준 방식.
+      //   기존 sendDefault + imageUrl 직접 박는 방식이 block URL 로 차단된 원인은 카카오 측
+      //   카드 검증 실패. sendScrap + og meta 가 검증 통과 가장 robust.
+      kakao.Share.sendScrap({
+        requestUrl: shareUrl,
         serverCallbackArgs: {
           user_id: storageScope && storageScope !== "anonymous" ? storageScope : "",
         },

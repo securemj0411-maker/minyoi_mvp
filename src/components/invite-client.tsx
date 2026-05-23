@@ -71,35 +71,16 @@ export default function InviteClient() {
       const kakao = (window as unknown as {
         Kakao?: {
           isInitialized: () => boolean;
-          Share?: { sendDefault: (config: Record<string, unknown>) => void };
+          Share?: { sendScrap: (config: Record<string, unknown>) => void };
         };
       }).Kakao;
-      if (!kakao?.Share?.sendDefault || !kakao.isInitialized()) {
+      if (!kakao?.Share?.sendScrap || !kakao.isInitialized()) {
         window.alert("카카오 공유가 준비되지 않았어요. 잠시 후 다시 시도해주세요.");
         return;
       }
-      // Wave 737 (2026-05-24): "text" 형식이 친구한테 link 안 보냄 보고됨 → "feed" 복원 + imageUrl 박음.
-      const imageUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/new_balance.jpeg`;
-      kakao.Share.sendDefault({
-        objectType: "feed",
-        content: {
-          title: "득템잡이 — 친구 초대 5크레딧",
-          description: "시세보다 싼 중고 매물 알려드려요. 이 링크로 가입하면 둘 다 5크레딧 받아요 🎁",
-          imageUrl,
-          link: {
-            mobileWebUrl: shareUrl,
-            webUrl: shareUrl,
-          },
-        },
-        buttons: [
-          {
-            title: "가입하고 5크레딧 받기",
-            link: {
-              mobileWebUrl: shareUrl,
-              webUrl: shareUrl,
-            },
-          },
-        ],
+      // Wave 740 (2026-05-24): sendDefault → sendScrap. requestUrl 박으면 카카오가 사이트 OG meta 자동 fetch.
+      kakao.Share.sendScrap({
+        requestUrl: shareUrl,
       });
     } catch (err) {
       console.error("[invite] kakao share failed", err);
