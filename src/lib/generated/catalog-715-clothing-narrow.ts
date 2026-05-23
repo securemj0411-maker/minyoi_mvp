@@ -428,20 +428,79 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     msrpKrw: 1100000, released: 1984,
   },
 
-  // ─── CDG Junya Watanabe ───
+  // ─── Junya Watanabe × Carhartt collab (워크 라인) ───
+  // Wave 716 (2026-05-23): cdg_junya 신설은 junya_watanabe_apparel broad와 중복 → 실제 collab narrow로 교체.
   {
-    id: "clothing-cdg-junya",
-    brand: "Junya Watanabe Comme des Garçons", category: "clothing", laneKey: "cdg_junya",
-    modelName: "Junya Watanabe Comme des Garçons (sub-line)",
-    aliases: ["Junya Watanabe", "준야 와타나베", "꼼데 준야"],
+    id: "clothing-junya-carhartt-collab",
+    brand: "Junya Watanabe x Carhartt", category: "clothing", laneKey: "junya_carhartt_collab",
+    modelName: "Junya Watanabe × Carhartt (워크자켓/카고팬츠 콜라보)",
+    aliases: ["Junya Carhartt", "준야 칼하트", "Junya x Carhartt"],
     mustContain: [
-      ["junya", "준야", "준야 와타나베", "준야와타나베"],
+      ["junya", "준야"],
+      ["carhartt", "칼하트"],
+    ],
+    mustNotContain: [...COMMON_NOISE],
+    msrpKrw: 750000, released: 2018,
+  },
+
+  // ─── Junya Watanabe × Levi's collab ───
+  {
+    id: "clothing-junya-levi-collab",
+    brand: "Junya Watanabe x Levi's", category: "clothing", laneKey: "junya_levi_collab",
+    modelName: "Junya Watanabe × Levi's (데님 콜라보)",
+    aliases: ["Junya Levi", "준야 리바이스", "Junya x Levis"],
+    mustContain: [
+      ["junya", "준야"],
+      ["levi", "리바이스", "리바이"],
+    ],
+    mustNotContain: [...COMMON_NOISE],
+    msrpKrw: 700000, released: 2019,
+  },
+
+  // ─── Junya Watanabe × CP Company collab (premium tier) ───
+  {
+    id: "clothing-junya-cp-company-collab",
+    brand: "Junya Watanabe x C.P. Company", category: "clothing", laneKey: "junya_cp_company_collab",
+    modelName: "Junya Watanabe × C.P. Company (M65 파카/다운 패딩 premium)",
+    aliases: ["Junya CP Company", "준야 CP 컴퍼니", "Junya x CP"],
+    mustContain: [
+      ["junya", "준야"],
+      ["cp company", "c.p. company", "씨피컴퍼니", "씨피 컴퍼니"],
+    ],
+    mustNotContain: [...COMMON_NOISE],
+    msrpKrw: 2200000, released: 2020,
+  },
+
+  // ─── Junya Watanabe × Brooks Brothers collab ───
+  {
+    id: "clothing-junya-brooks-brothers-collab",
+    brand: "Junya Watanabe x Brooks Brothers", category: "clothing", laneKey: "junya_brooks_brothers_collab",
+    modelName: "Junya Watanabe × Brooks Brothers (자켓/블레이저)",
+    aliases: ["Junya Brooks Brothers", "준야 브룩스브라더스"],
+    mustContain: [
+      ["junya", "준야"],
+      ["brooks brothers", "브룩스브라더스", "브룩스 브라더스"],
+    ],
+    mustNotContain: [...COMMON_NOISE],
+    msrpKrw: 850000, released: 2018,
+  },
+
+  // ─── Acne Denim 2021M / Petit (premium 라인) ───
+  {
+    id: "clothing-acne-denim-premium",
+    brand: "Acne Studios", category: "clothing", laneKey: "acne_denim_premium",
+    modelName: "Acne Denim Premium (2021M / Petit / Flare premium 라인 — 일반 데님과 시세 다름)",
+    aliases: ["Acne 2021M", "Acne Petit", "아크네 2021m", "아크네 petit"],
+    mustContain: [
+      ["acne", "아크네"],
+      ["데님", "denim", "청바지", "진", "jean"],
+      ["2021m", "petit", "petit 기장", "플레어진", "flare jean", "리버진", "river jean"],
     ],
     mustNotContain: [
       ...COMMON_NOISE,
-      "play", "플레이",
+      "키즈", "kids",
     ],
-    msrpKrw: 800000, released: 1992,
+    msrpKrw: 600000, released: 2021,
   },
 
   // ============================================================================

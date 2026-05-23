@@ -987,7 +987,12 @@ export const LANE_READINESS: LaneReadinessMap = {
   // Wave 715 P1 — CDG 3-split
   cdg_play: { status: "ready", label: "CDG PLAY (heart 로고 basic)", note: "Wave 715 — broad에서 PLAY 분리." },
   cdg_homme_plus: { status: "ready", label: "CDG Homme Plus (premium mainline)", note: "Wave 715 — 110만 premium tier." },
-  cdg_junya: { status: "ready", label: "Junya Watanabe CDG (sub-line)", note: "Wave 715 — 80만 별도 시세군." },
+  // Wave 716: cdg_junya 삭제 — junya_watanabe_apparel broad와 중복 → 실제 collab narrow로 교체.
+  junya_carhartt_collab: { status: "ready", label: "Junya × Carhartt collab (워크자켓)", note: "Wave 716 — 50-85만 별도." },
+  junya_levi_collab: { status: "ready", label: "Junya × Levi's collab (데님)", note: "Wave 716 — 66만 별도." },
+  junya_cp_company_collab: { status: "ready", label: "Junya × C.P. Company collab (premium)", note: "Wave 716 — 220만 premium tier." },
+  junya_brooks_brothers_collab: { status: "ready", label: "Junya × Brooks Brothers collab", note: "Wave 716 — 68-94만 별도." },
+  acne_denim_premium: { status: "ready", label: "Acne Denim Premium (2021M/Petit)", note: "Wave 716 — 50x spread → 600k tier 분리." },
   // BAPE
   bape_adidas_collab: { status: "ready", label: "BAPE × Adidas 의류 collab", note: "Wave 712b — 174건/주 (가장 큰 misclassification fix)." },
   bape_longsleeve: { status: "ready", label: "BAPE 롱슬리브 (FW)", note: "Wave 712b — 32건/주 14.8만." },

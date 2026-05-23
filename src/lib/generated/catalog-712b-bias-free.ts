@@ -222,7 +222,18 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       ["폴로", "polo", "ralph lauren", "랄프로렌"],
       ["퍼플라벨", "purple label", "퍼플 라벨"],
     ],
-    mustNotContain: [...COMMON_NOISE, "RRL", "polo bear", "rlx", "라코스테"],
+    mustNotContain: [
+      ...COMMON_NOISE, "RRL", "polo bear", "rlx", "라코스테",
+      // Wave 716 (2026-05-23): 42x spread audit — accessory + low-detail 매물 차단.
+      // 넥타이 12만은 의류 아님 (accessory 별 시세군).
+      "넥타이", "넥 타이", "tie ", "necktie",
+      "벨트", "belt", "지갑", "wallet", "월렛",
+      "포켓치프", "pocket square", "행커치프",
+      "양말", "socks", "스카프", "scarf", "머플러", "muffler",
+      "모자", "cap", "헷", "베레모", "fedora", "페도라",
+      "안경", "선글라스", "sunglasses", "glasses",
+      "쿠션", "타올", "수건", "베개", "이불",
+    ],
     msrpKrw: 990000, released: 2018,
   },
   {
@@ -442,7 +453,17 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     modelName: "Junya Watanabe 의류 broad (팬츠/자켓/스커트/원피스/모자)",
     aliases: ["Junya Watanabe", "준야 와타나베", "준야"],
     mustContain: [["junya", "준야", "와타나베", "watanabe"]],
-    mustNotContain: [...COMMON_NOISE, "스니커즈", "sneaker", "운동화", "신발", "574", "nb"],
+    mustNotContain: [
+      ...COMMON_NOISE, "스니커즈", "sneaker", "운동화", "신발", "574", "nb",
+      // Wave 716 (2026-05-23): 41x spread → collab narrow 분리.
+      "carhartt", "칼하트",
+      "levi", "리바이스", "리바이",
+      "cp company", "c.p. company", "씨피컴퍼니", "씨피 컴퍼니",
+      "brooks brothers", "브룩스브라더스", "브룩스 브라더스",
+      "베르베르진", "vere", "자미로콰이", "jamiroquai",
+      "carimor", "karimor", "카리모어",  // Junya × Karimor
+      "newmanual", "뉴매뉴얼", "new manual",
+    ],
     msrpKrw: 590000, released: 2018,
   },
 

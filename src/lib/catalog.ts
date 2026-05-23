@@ -9270,6 +9270,10 @@ export const CATALOG: Sku[] = [
       "기프트", "패키지", "쇼핑백", "스카프", "머플러", "목도리", "scarf",
       // Wave 629: 한정 라인 분리 (시세 5-7배 outlier).
       "2021m", "1992m", "2003 ", "2003 데님",
+      // Wave 716 (2026-05-23): 50x spread audit — Petit 750k outlier 차단 (premium narrow로 routing).
+      "petit", "petit 기장", "쁘띠 기장", "쁘띠",
+      // 추가 premium 라인 한정
+      "플레어 진 premium", "limited edition denim",
     ],
     msrpKrw: 320000, released: 2020,
     defaultProductType: "jeans", // Wave 236d — Acne Denim = jeans 라인 확정.
