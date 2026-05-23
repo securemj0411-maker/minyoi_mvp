@@ -10348,7 +10348,24 @@ export const CATALOG: Sku[] = [
     modelName: "Arc'teryx Apparel (broad — 모델 미식별)",
     aliases: ["Arc'teryx", "아크테릭스"],
     // Wave 218: narrow 5개 (Beta/Gamma/Alpha/Atom/Vertex-Squamish) 박은 후 broad 는 catch-all.
-    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "자켓", "jacket", "팬츠", "windbreaker", "윈드브레이커"]],
+    // Wave 738 leak fix: mustContain[1] 확장 — 비니/롱슬리브/셔츠/바지/플리스/베스트/조끼/토륨 등 누락.
+    //   99_other bucket 234건 분석 결과 다수 매물 missing keyword.
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"],
+      ["반팔", "티셔츠", "tee", "후드", "hoodie", "후디", "맨투맨", "크루넥",
+       "자켓", "jacket", "재킷",
+       "팬츠", "pants", "바지", "쇼츠", "shorts",
+       "windbreaker", "윈드브레이커", "바람막이",
+       // Wave 738 추가
+       "비니", "beanie", "모자", "cap", "캡",
+       "셔츠", "shirt", "남방",
+       "롱슬리브", "long sleeve", "긴팔",
+       "플리스", "fleece",
+       "베스트", "vest", "조끼",
+       // 시그니처 narrow 모델명 (narrow가 우선이지만 broad에서도 catch)
+       "토륨", "thorium", "토리움",
+       "노바", "nova", "코바트", "covert",
+       "엠바", "ember"],  // narrow 안 박힌 라인
+    ],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance",
       // narrow 매칭되는 키워드 제외
       "beta", "베타", "gamma", "감마", "alpha", "알파", "atom", "아톰", "vertex", "버텍스", "squamish", "스쿼미시",
