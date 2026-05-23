@@ -225,7 +225,9 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
               className={`rounded-sm border p-3 transition ${isSelected ? "border-amber-700/60 bg-amber-950/20" : "border-zinc-800 bg-zinc-950"} ${isBlocked ? "opacity-70" : ""}`}
             >
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2" onClick={(e) => { e.stopPropagation(); toggleSelect(row.authUserId); }}>
+                {/* Wave 748 (2026-05-24): 부모 onClick + input onChange 둘 다 toggleSelect 호출하면
+                    한 번 클릭에 두 번 toggle 되어 state 그대로 → 체크 안 됨 버그. stopPropagation 만 유지. */}
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     aria-label="row 선택"
@@ -287,7 +289,8 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                   onClick={() => setDrawerId(row.authUserId)}
                   className={`cursor-pointer border-b border-zinc-900 transition hover:bg-zinc-900/40 ${isSelected ? "bg-amber-950/20" : ""} ${isBlocked ? "opacity-70" : ""}`}
                 >
-                  <td className="px-3 py-2" onClick={(e) => { e.stopPropagation(); toggleSelect(row.authUserId); }}>
+                  {/* Wave 748: 부모 td onClick + input onChange 둘 다 toggle → 두 번 = 0 버그 fix. */}
+                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       aria-label="row 선택"
