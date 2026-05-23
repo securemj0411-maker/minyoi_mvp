@@ -364,6 +364,24 @@ type BeginnerGuideStep = {
   tone: "intro" | "trust" | "check" | "market" | "trend" | "buy" | "resell" | "safety" | "channel" | "speed" | "summary";
 };
 
+// Wave launch-71: title 안 숫자/금액 자동 파란색 강조 (토스 스타일).
+//   매칭 패턴: 소수점 포함 일/시간/분 / 원 / % / N건 / N개 등.
+function highlightMetricsInText(text: string): React.ReactNode {
+  const pattern = /([+-]?\d+(?:\.\d+)?(?:,\d{3})*(?:\.\d+)?\s*(?:일|시간|분|원|%|건|개|배))/g;
+  const parts = text.split(pattern);
+  return parts.map((part, idx) => {
+    if (pattern.test(part)) {
+      pattern.lastIndex = 0;  // reset for next match
+      return (
+        <span key={idx} className="text-[#3182f6] dark:text-blue-300">
+          {part}
+        </span>
+      );
+    }
+    return <span key={idx}>{part}</span>;
+  });
+}
+
 type BeginnerGuideSafetyStats = {
   total_blocked_7d?: number;
   total_reviewed_7d?: number;
@@ -5244,7 +5262,11 @@ function BeginnerGuideWalkthrough({
     },
   };
   const toneClass = toneClasses[step.tone];
-  const showDefaultMetric = step.tone === "speed";
+  // Wave launch-71 (사용자 짚음 "똑같은말 반복하지 말라고"):
+  //   speed tone 도 default metric block 표시 X — BeginnerGuideSpeedVisual 이 이미 sub metric 2개
+  //   표시 (되팔 때 판매 주기 / 동일 모델 하루 판매량). default metric 까지 박으면 "7.1일" 3번 표시.
+  //   title 의 자연 문장 + visual 의 sub metric = 2 layer 로 충분.
+  const showDefaultMetric = false;
   const showNote = step.tone === "safety";
 
   return (
@@ -5312,8 +5334,11 @@ function BeginnerGuideWalkthrough({
                 {step.eyebrow}
               </div>
             ) : null}
+            {/* Wave launch-71 (사용자 짚음 "토스식 가시적 강조"):
+                title 안 숫자/금액 부분 자동 파란색 강조. 패턴: "N일", "N시간", "₩N", "N원", "+N%", "N%".
+                토스 스타일 — 핵심 metric 만 색으로 띄움. 다른 단어는 그대로. */}
             <h2 className={`${isSummary ? "mt-7 max-w-[280px]" : "mt-3"} break-keep text-[24px] font-black leading-[1.16] text-[#172019] dark:text-zinc-50 sm:text-[28px]`}>
-              {step.title}
+              {highlightMetricsInText(step.title)}
             </h2>
             {step.tone === "trust" ? (
               <BeginnerGuideTrustBody card={card} fallback={step.body} />
