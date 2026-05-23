@@ -99,10 +99,11 @@ export default function ManualDepositClient() {
         return;
       }
       // 크레딧 즉시 grant 됐음. credits-changed 이벤트 + success modal 2.4초 후 redirect.
-      // Wave launch-95e (사용자 정정 — "충전 완료 표시 없음"): fullscreen 모달 + 큰 ✓ + 받은 크레딧.
+      // Wave launch-95e + 95f (사용자 정정 — "왜 /explore 로? 우리 메인 페이지가 피드인데"):
+      //   메인 path `/` = MeDashboardClient = 추천 피드. /explore 는 별개.
       window.dispatchEvent(new CustomEvent("minyoi:credits-changed"));
       setStage("success");
-      window.setTimeout(() => router.push("/explore"), 2400);
+      window.setTimeout(() => router.push("/"), 2400);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "네트워크 오류가 발생했어요.");
       setStage("error");
@@ -215,7 +216,7 @@ export default function ManualDepositClient() {
                 <span className="h-2 w-2 animate-bounce rounded-full bg-white" />
               </>
             ) : stage === "success" ? (
-              <>충전 완료! 잠시 후 피드로 이동해요</>
+              <>충전 완료! 잠시 후 내 피드로 이동해요</>
             ) : (
               <>입금 완료 — 즉시 {plan.monthlyCredits.toLocaleString("ko-KR")}크레딧 받기</>
             )}
@@ -264,7 +265,7 @@ export default function ManualDepositClient() {
               +{plan.monthlyCredits.toLocaleString("ko-KR")} 크레딧
             </div>
             <p className="mt-4 text-center text-[12.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              잠시 후 추천 피드로 이동해요.
+              잠시 후 내 피드로 이동해요.
             </p>
           </div>
           <style jsx>{`
