@@ -1,12 +1,12 @@
-// Wave launch-96: 운영자 텔레그램 알림 helper.
-//   env: TELEGRAM_BOT_TOKEN (BotFather 발급) + TELEGRAM_ADMIN_CHAT_ID (운영자 chat).
-//   둘 다 없으면 silent skip (개발 환경 / 미설정 운영 환경 안전).
+// Wave launch-96 / launch-96b (사용자 정정 — env 이름 일치):
+//   기존 운영자 알림 = TELEGRAM_BOT_TOKEN + TELEGRAM_ALERT_CHAT_ID (operational-notifier.ts 와 동일).
+//   사용자가 이미 박아둔 @minyoi_alert_bot env 그대로 활용.
 
 const TELEGRAM_TIMEOUT_MS = 5_000;
 
 export async function notifyAdminTelegram(message: string): Promise<{ ok: boolean; reason?: string }> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  const chatId = process.env.TELEGRAM_ALERT_CHAT_ID;
   if (!token || !chatId) {
     console.warn("[telegram-notify] env missing — skip", { hasToken: Boolean(token), hasChatId: Boolean(chatId) });
     return { ok: false, reason: "env_missing" };
